@@ -1,6 +1,6 @@
 ## Here is an example for HTML.
 
-syntax "html" "\.html?$"
+syntax html "\.html?$"
 magic "HTML document"
 comment "<!--|-->"
 

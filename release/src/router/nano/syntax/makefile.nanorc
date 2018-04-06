@@ -1,6 +1,6 @@
 ## Here is an example for Makefiles.
 
-syntax "makefile" "Makefile[^/]*$" "\.(make|mk)$"
+syntax makefile "Makefile[^/]*$" "\.(make|mk)$"
 magic "makefile script"
 comment "#"
 

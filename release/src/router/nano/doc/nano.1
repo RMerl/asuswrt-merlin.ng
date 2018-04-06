@@ -16,7 +16,7 @@
 .\"   Documentation License along with this program.  If not, see
 .\"   <http://www.gnu.org/licenses/>.
 .\"
-.TH NANO 1 "version 2.9.3" "January 2018"
+.TH NANO 1 "version 2.9.5" "March 2018"
 
 .SH NAME
 nano \- Nano's ANOther editor, an enhanced free Pico clone
@@ -54,9 +54,9 @@ highlighted), and then use \fB^K\fR to cut it, or \fBM\-6\fR to copy it to the
 cutbuffer.  One can also save the marked text to a file with \fB^O\fR, or
 spell check it with \fB^T\fR.
 .PP
-Since nano-2.7.0, text can also be selected by holding Shift and moving the
-cursor with the arrow keys.  Holding down the Alt key too will increase the
-stride.
+On some terminals, text can be selected also by holding down Shift while
+using the arrow keys.  Holding down the Alt key too will increase the stride.
+Any cursor movement without Shift being held will cancel such a selection.
 .PP
 The two lines at the bottom of the screen show some important commands;
 the built-in help (\fB^G\fR) lists all the available ones.
@@ -121,7 +121,6 @@ Use the blank line below the title bar as extra editing space.
 .BR \-P ", " \-\-positionlog
 For the 200 most recent files, log the last position of the cursor,
 and place it at that position again upon reopening such a file.
-(The old form of this option, \fB\-\-poslog\fR, is deprecated.)
 .TP
 .BR "\-Q ""\fIcharacters\fB""" ", " "\-\-quotestr=""" \fIcharacters """
 Set the quoting string for justifying.  The default is
@@ -304,8 +303,8 @@ cannot be undone any more.  The workaround is, of course, to exit without
 saving.
 .sp
 The recording and playback of keyboard macros works correctly only on a
-terminal emulator, not on a Linux console (VT), because the latter is a
-deficient terminal.
+terminal emulator, not on a Linux console (VT), because the latter does
+not by default distinguish modified from unmodified arrow keys.
 .sp
 Please report any other bugs that you encounter via:
 .br

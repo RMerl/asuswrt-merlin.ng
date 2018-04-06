@@ -1,6 +1,6 @@
 ## Here is an example for C/C++/Obj-C.
 
-syntax "m" "\.m$"
+syntax m "\.m$"
 magic "Objective-C source"
 comment "//"
 

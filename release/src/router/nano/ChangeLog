@@ -1,3 +1,145 @@
+Changes between v2.9.4 and v2.9.5:
+----------------------------------
+
+Benno Schulenberg (45):
+      build: exclude more things when configured with --disable-multibuffer
+      build: fix compilation again when configured with --enable-tiny
+      build: fix compilation when configured with --disable-multibuffer
+      build: fix compilation with --enable-{tiny,help,multibuffer}
+      bump version numbers and add a news item for the 2.9.5 release
+      cut: avoid calling renumber() on what might be NULL
+      docs: clarify how the Linux console is deficient: in the arrow keys
+      docs: clarify what the scrollup and scrolldown bindable functions do
+      docs: document the newly added color name "normal"
+      docs: mention in the FAQ that <Shift+Insert> pastes from the clipboard
+      files: prevent an infinite loop when reading from standard input fails
+      files: prevent the undo of reading a file into a new buffer
+      help: describe the Scroll-Up and Scroll-Down commands more precisely
+      help: do not reserve space for line numbers, as they are absent
+      linting: drop messages for other files when configured for one buffer
+      memory: plug a leak, by actually freeing a discarded undo struct
+      scrolling: first move the cursor before pushing current chunk offscreen
+      scrolling: let Scroll-Up/Down keep the cursor in the same text position
+      selecting: don't cancel a softmark when just scrolling the screen
+      small addition: understand color name "normal" to mean the default color
+      syntax: sh: color also the 'cut', 'head', 'tail', and 'sort' commands
+      syntax: sh: color options distinctively, and color also long options
+      syntax: sh: uncolor "tar" when it's part of a filename
+      tweaks: adjust a couple of types, to reduce the number of warnings
+      tweaks: adjust or correct some comments, and rename a function
+      tweaks: adjust the indentation after the previous changes
+      tweaks: bundle some settings for a new buffer
+      tweaks: change a parameter of open_buffer() and invert its logic
+      tweaks: condense some code, to remove a bit of duplication
+      tweaks: drop a handful of unhelpful asserts
+      tweaks: elide an unneeded and shadowing variable
+      tweaks: elide a parameter, as it's always the inverse of another
+      tweaks: elide a parameter that is always 1
+      tweaks: elide two parameters and thus a pair of wrapper functions
+      tweaks: factor out the check for 'viewok' into its own function
+      tweaks: fix a typo and adjust some wording and formatting in the FAQ
+      tweaks: frob some comments plus miscellaneous other stuff
+      tweaks: fuse two ifs into one
+      tweaks: move an 'if' and then remove an unneeded label
+      tweaks: reduce the font size of the questions in the FAQ
+      tweaks: remove an inconsistent space from two pointer declarations
+      tweaks: remove unneeded settings and unsettings of MULTIBUFFER
+      tweaks: reshuffle some movement code, to reduce the number of conditions
+      tweaks: revert commit c88a2fd9 -- the extra variable is needed
+      tweaks: rewrap and amend some lines in the NEWS file
+
+David Lawrence Ramsey (1):
+      tweaks: correct several parameter types
+
+Kamil Dudka (1):
+      input: do not crash if sctofunc() returns NULL
+
+Liu Hao (1):
+      build: fix compilation error when configured with --disable-justify
+
+
+Changes between v2.9.3 and v2.9.4:
+----------------------------------
+
+Benno Schulenberg (65):
+      bindings: make a key defined as string work also in browser and viewer
+      bindings: rename the bindable function 'gototext' to 'flipgoto'
+      bindings: revert the ^/ changes, as ^/ is not always Go-To-Line
+      bindings: show ^/ instead of ^_ for Go-To-Line
+      build: fix compilation when configured with --enable-tiny
+      bump version numbers and add a news item for the 2.9.4 release
+      docs: mention that a key can be bound to a string
+      docs: note also in the Info manual that text can be selected with Shift
+      editing: when --smooth is used, make <Enter>-at-bottom scroll one row
+      general: detect in a better way whether we're running on a Linux console
+      gnulib: update to its current upstream state
+      goto: avoid a segfault, by initializing 'answer' when it is NULL
+      help: mention that some keys work on a region when the mark is on
+      help: tweak the descriptions of ^X and ^R
+      input: handle the implant() function separately also for the prompt
+      input: handle the implant() function separately, as it is special
+      memory: avoid a leak when toggling from Search to Goto
+      memory: squeal when there is something wrong, instead of stumbling on
+      new feature: allow binding a key to a string (in a nanorc file)
+      prompt: disallow pasting when in restricted mode
+      rcfile: allow a syntax name to be unquoted
+      search: clear the existing answer when starting a new search
+      search: get rid of some unneeded recursion when just toggling things
+      selecting: cancel the softmark upon any attempt to move the cursor
+      small addition: allow customizing the color of an error message
+      syntax: color also ^/ in nano's help texts and in nanorc files
+      syntaxes: remove quotes from each syntax name, and color it differently
+      syntax: nanorc: color also bindings to a string as valid
+      tweaks: adjust comments and indentation after the previous change
+      tweaks: adjust two comments, move two declarations, rewrap three lines
+      tweaks: appease valgrind concerning syscalls with uninitialized values
+      tweaks: condense a comment and elide an 'if'
+      tweaks: correct a typo in NEWS
+      tweaks: correct a typo that broke binding a key to a string
+      tweaks: do not needlessly renumber the lines in the buffer
+      tweaks: don't call strcmp() to determine whether a string is empty
+      tweaks: drop an assert, add a warning, and change a 'for' to a 'while'
+      tweaks: drop some debugging stuff, and adjust what remains of it
+      tweaks: elide another variable, to call a function less often
+      tweaks: elide an unneeded variable
+      tweaks: elide an unneeded variable
+      tweaks: elide an unneeded variable
+      tweaks: elide an unused variable and parameter
+      tweaks: elide two unneeded booleans
+      tweaks: exclude an unlikely error message from the tiny version
+      tweaks: exclude an unlikely warning from the tiny version
+      tweaks: fix a copy-and-paste error
+      tweaks: make the fsfromline() call only for the undo types that need it
+      tweaks: plug a memory leak when using Verbatim Input at a prompt
+      tweaks: refactor the implanting of a key expansion
+      tweaks: remove another superfluous check
+      tweaks: remove a superfluous check
+      tweaks: remove two deprecated options and six rebindable function names
+      tweaks: remove two superfluous checks, and restrict two others
+      tweaks: rename a parameter and a variable, to be more fitting
+      tweaks: rename a variable to be more distinct and greppable
+      tweaks: rename two variables, to be more meaningful
+      tweaks: reshuffle some code, to be slightly less ugly
+      tweaks: reshuffle some of the search-and-replace cleanup calls
+      tweaks: reshuffle the undo types into mostly the same order everywhere
+      tweaks: shorten the name of two record elements
+      tweaks: slightly rewrap the FAQ's table of contents
+      tweaks: transform a 'do' to a 'while', and reshuffle a comment
+      tweaks: unabbreviate two variable names
+      undo: when redoing, don't try to find a line number that might not exist
+
+Brand Huntsman (1):
+      color: remove unneeded bright comparision to prevent duplicate pairs
+
+David Lawrence Ramsey (3):
+      docs: mention that errorcolor does have default colors
+      input: don't stop prepending when the user adds text via a shortcut
+      tweaks: fix typo in rebindable function name
+
+Tom Levy (1):
+      syntax: go: highlight also floats with leading zeroes as valid
+
+
 Changes between v2.9.2 and v2.9.3:
 ----------------------------------
 

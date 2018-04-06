@@ -1,6 +1,6 @@
 ## Syntax highlighting for CMake files.
 
-syntax "cmake" "(CMakeLists\.txt|\.cmake)$"
+syntax cmake "(CMakeLists\.txt|\.cmake)$"
 comment "#"
 
 icolor green "^[[:space:]]*[A-Z0-9_]+"

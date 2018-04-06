@@ -163,8 +163,9 @@ typedef enum {
 	CENTERING, FLOWING, STATIONARY
 } update_type;
 
+/* The kinds of undo actions.  ADD...REPLACE must come first. */
 typedef enum {
-	ADD, DEL, BACK, CUT, CUT_TO_EOF, REPLACE,
+	ADD, ENTER, BACK, DEL, JOIN, REPLACE,
 #ifdef ENABLE_WRAPPING
 	SPLIT_BEGIN, SPLIT_END,
 #endif
@@ -172,7 +173,7 @@ typedef enum {
 #ifdef ENABLE_COMMENT
 	COMMENT, UNCOMMENT, PREFLIGHT,
 #endif
-	JOIN, PASTE, INSERT, ENTER, OTHER
+	CUT, CUT_TO_EOF, PASTE, INSERT, OTHER
 } undo_type;
 
 /* Structure types. */
@@ -407,10 +408,12 @@ typedef struct openfilestruct {
 	colortype *colorstrings;
 		/* The file's associated colors. */
 #endif
+#ifdef ENABLE_MULTIBUFFER
 	struct openfilestruct *next;
 		/* The next open file, if any. */
 	struct openfilestruct *prev;
 		/* The preceding open file, if any. */
+#endif
 } openfilestruct;
 
 #ifdef ENABLE_NANORC
@@ -431,7 +434,7 @@ typedef struct sc {
 		/* The integer that, together with meta, identifies the keystroke. */
 	int menus;
 		/* Which menus this applies to. */
-	void (*scfunc)(void);
+	void (*func)(void);
 		/* The function we're going to run. */
 #ifndef NANO_TINY
 	int toggle;
@@ -440,12 +443,16 @@ typedef struct sc {
 		/* The how-manieth toggle this is, in order to be able to
 		 * keep them in sequence. */
 #endif
+#ifdef ENABLE_NANORC
+	char *expansion;
+		/* The string of keycodes to which this shortcut is expanded. */
+#endif
 	struct sc *next;
 		/* Next in the list. */
 } sc;
 
 typedef struct subnfunc {
-	void (*scfunc)(void);
+	void (*func)(void);
 		/* The actual function to call. */
 	int menus;
 		/* In what menus this function applies. */
@@ -480,6 +487,7 @@ enum
 	LINE_NUMBER,
 	SELECTED_TEXT,
 	STATUS_BAR,
+	ERROR_MESSAGE,
 	KEY_COMBO,
 	FUNCTION_TAG,
 	NUMBER_OF_ELEMENTS

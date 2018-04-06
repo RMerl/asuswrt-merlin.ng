@@ -32,8 +32,8 @@ volatile sig_atomic_t the_window_resized = FALSE;
 #endif
 
 #ifdef __linux__
-bool console;
-		/* Whether we're running on a Linux VC (TRUE) or under X (FALSE). */
+bool on_a_vt;
+		/* Whether we're running on a Linux VT or on something else. */
 #endif
 
 bool meta_key;
@@ -254,7 +254,7 @@ size_t length_of_list(int menu)
 	size_t i = 0;
 
 	for (f = allfuncs; f != NULL; f = f->next)
-		if ((f->menus & menu) && first_sc_for(menu, f->scfunc) != NULL)
+		if ((f->menus & menu) && first_sc_for(menu, f->func) != NULL)
 			i++;
 
 	return i;
@@ -279,7 +279,7 @@ void backwards_void(void)
 void flip_replace(void)
 {
 }
-void gototext_void(void)
+void flip_goto(void)
 {
 }
 #ifdef ENABLE_BROWSER
@@ -332,7 +332,7 @@ void add_to_funcs(void (*func)(void), int menus, const char *desc, const char *h
 	tailfunc = f;
 
 	f->next = NULL;
-	f->scfunc = func;
+	f->func = func;
 	f->menus = menus;
 	f->desc = desc;
 	f->viewok = viewok;
@@ -366,7 +366,7 @@ void add_to_sclist(int menus, const char *scstring, const int keycode,
 
 	/* Fill in the data. */
 	s->menus = menus;
-	s->scfunc = func;
+	s->func = func;
 #ifndef NANO_TINY
 	s->toggle = toggle;
 	if (toggle)
@@ -386,7 +386,7 @@ const sc *first_sc_for(int menu, void (*func)(void))
 	const sc *s;
 
 	for (s = sclist; s != NULL; s = s->next)
-		if ((s->menus & menu) && s->scfunc == func)
+		if ((s->menus & menu) && s->func == func)
 			return s;
 
 #ifdef DEBUG
@@ -415,7 +415,7 @@ functionptrtype func_from_key(int *kbinput)
 	const sc *s = get_shortcut(kbinput);
 
 	if (s)
-		return s->scfunc;
+		return s->func;
 	else
 		return NULL;
 }
@@ -515,16 +515,11 @@ void shortcut_init(void)
 	const char *cancel_gist = N_("Cancel the current function");
 	const char *help_gist = N_("Display this help text");
 	const char *exit_gist =
-#ifdef ENABLE_MULTIBUFFER
-		N_("Close the current file buffer / Exit from nano")
-#else
-		N_("Exit from nano")
-#endif
-		;
+		N_("Close the current buffer / Exit from nano");
 	const char *writeout_gist =
-		N_("Write the current file to disk");
+		N_("Write the current buffer (or the marked region) to disk");
 	const char *readfile_gist =
-		N_("Insert another file into the current one");
+		N_("Insert another file into current buffer (or into new buffer)");
 	const char *whereis_gist =
 		N_("Search forward for a string or a regular expression");
 	const char *wherewas_gist =
@@ -542,7 +537,7 @@ void shortcut_init(void)
 	const char *prevpage_gist = N_("Go one screenful up");
 	const char *nextpage_gist = N_("Go one screenful down");
 	const char *cut_gist =
-		N_("Cut the current line and store it in the cutbuffer");
+		N_("Cut current line (or marked region) and store it in cutbuffer");
 	const char *uncut_gist =
 		N_("Uncut from the cutbuffer into the current line");
 	const char *cursorpos_gist = N_("Display the position of the cursor");
@@ -555,7 +550,7 @@ void shortcut_init(void)
 #ifndef NANO_TINY
 	const char *mark_gist = N_("Mark text starting from the cursor position");
 	const char *copy_gist =
-		N_("Copy the current line and store it in the cutbuffer");
+		N_("Copy current line (or marked region) and store it in cutbuffer");
 	const char *indent_gist = N_("Indent the current line (or marked lines)");
 	const char *unindent_gist = N_("Unindent the current line (or marked lines)");
 	const char *undo_gist = N_("Undo the last operation");
@@ -582,9 +577,9 @@ void shortcut_init(void)
 #ifndef NANO_TINY
 	const char *bracket_gist = N_("Go to the matching bracket");
 	const char *scrollup_gist =
-		N_("Scroll up one line without scrolling the cursor");
+		N_("Scroll up one line without moving the cursor textually");
 	const char *scrolldown_gist =
-		N_("Scroll down one line without scrolling the cursor");
+		N_("Scroll down one line without moving the cursor textually");
 #endif
 #ifdef ENABLE_MULTIBUFFER
 	const char *prevfile_gist = N_("Switch to the previous file buffer");
@@ -822,7 +817,7 @@ void shortcut_init(void)
 	add_to_funcs(do_full_justify, MWHEREIS,
 		fulljustify_tag, WITHORSANS(fulljustify_gist), TOGETHER, NOVIEW);
 
-	add_to_funcs(do_gotolinecolumn_void, MWHEREIS,
+	add_to_funcs(flip_goto, MWHEREIS,
 		gotoline_tag, WITHORSANS(gotoline_gist), BLANKAFTER, VIEW);
 #endif
 
@@ -860,9 +855,9 @@ void shortcut_init(void)
 	add_to_funcs(do_end, MMAIN,
 		N_("End"), WITHORSANS(end_gist), BLANKAFTER, VIEW);
 
-	add_to_funcs(do_up_void, MMAIN|MHELP|MBROWSER,
+	add_to_funcs(do_up, MMAIN|MHELP|MBROWSER,
 		prevline_tag, WITHORSANS(prevline_gist), TOGETHER, VIEW);
-	add_to_funcs(do_down_void, MMAIN|MHELP|MBROWSER,
+	add_to_funcs(do_down, MMAIN|MHELP|MBROWSER,
 		nextline_tag, WITHORSANS(nextline_gist), TOGETHER, VIEW);
 #ifndef NANO_TINY
 	add_to_funcs(do_scroll_up, MMAIN,
@@ -991,11 +986,11 @@ void shortcut_init(void)
 #endif
 
 #ifndef ENABLE_JUSTIFY
-	add_to_funcs(do_gotolinecolumn_void, MWHEREIS,
+	add_to_funcs(flip_goto, MWHEREIS,
 		gotoline_tag, WITHORSANS(gotoline_gist), BLANKAFTER, VIEW);
 #endif
 
-	add_to_funcs(gototext_void, MGOTOLINE,
+	add_to_funcs(flip_goto, MGOTOLINE,
 		N_("Go To Text"), WITHORSANS(whereis_gist), BLANKAFTER, VIEW);
 
 #ifndef NANO_TINY
@@ -1018,8 +1013,7 @@ void shortcut_init(void)
 			N_("Backup File"), WITHORSANS(backup_gist), BLANKAFTER, NOVIEW);
 	}
 
-	/* If we're using restricted mode, file insertion is disabled, and
-	 * thus command execution and the multibuffer toggle have no place. */
+	/* Command execution is only available when not in restricted mode. */
 	if (!ISSET(RESTRICTED)) {
 		add_to_funcs(flip_execute, MINSERTFILE,
 			N_("Execute Command"), WITHORSANS(execute_gist), TOGETHER, NOVIEW);
@@ -1029,12 +1023,14 @@ void shortcut_init(void)
 	}
 #endif /* !NANO_TINY */
 #ifdef ENABLE_MULTIBUFFER
+	/* Multiple buffers are only available when not in restricted mode. */
 	if (!ISSET(RESTRICTED))
 		add_to_funcs(flip_newbuffer, MINSERTFILE|MEXTCMD,
 			N_("New Buffer"), WITHORSANS(newbuffer_gist), TOGETHER, NOVIEW);
 #endif
 
 #ifdef ENABLE_BROWSER
+	/* The file browser is only available when not in restricted mode. */
 	if (!ISSET(RESTRICTED))
 		add_to_funcs(to_files_void, MWRITEFILE|MINSERTFILE,
 			N_("To Files"), WITHORSANS(tofiles_gist), TOGETHER, VIEW);
@@ -1186,19 +1182,19 @@ void shortcut_init(void)
 	add_to_sclist((MMOST & ~MBROWSER), "Home", KEY_HOME, do_home, 0);
 	add_to_sclist((MMOST & ~MBROWSER), "^E", 0, do_end, 0);
 	add_to_sclist((MMOST & ~MBROWSER), "End", KEY_END, do_end, 0);
-	add_to_sclist(MMAIN|MHELP|MBROWSER, "^P", 0, do_up_void, 0);
-	add_to_sclist(MMAIN|MHELP|MBROWSER, "^N", 0, do_down_void, 0);
+	add_to_sclist(MMAIN|MHELP|MBROWSER, "^P", 0, do_up, 0);
+	add_to_sclist(MMAIN|MHELP|MBROWSER, "^N", 0, do_down, 0);
 #ifdef ENABLE_UTF8
 	if (using_utf8()) {
-		add_to_sclist(MMAIN|MHELP|MBROWSER, "\xE2\x96\xb2", KEY_UP, do_up_void, 0);
-		add_to_sclist(MMAIN|MHELP|MBROWSER, "\xE2\x96\xbc", KEY_DOWN, do_down_void, 0);
+		add_to_sclist(MMAIN|MHELP|MBROWSER, "\xE2\x96\xb2", KEY_UP, do_up, 0);
+		add_to_sclist(MMAIN|MHELP|MBROWSER, "\xE2\x96\xbc", KEY_DOWN, do_down, 0);
 		add_to_sclist(MMAIN|MBROWSER, "^\xE2\x96\xb2", CONTROL_UP, do_prev_block, 0);
 		add_to_sclist(MMAIN|MBROWSER, "^\xE2\x96\xbc", CONTROL_DOWN, do_next_block, 0);
 	} else
 #endif
 	{
-		add_to_sclist(MMAIN|MHELP|MBROWSER, "Up", KEY_UP, do_up_void, 0);
-		add_to_sclist(MMAIN|MHELP|MBROWSER, "Down", KEY_DOWN, do_down_void, 0);
+		add_to_sclist(MMAIN|MHELP|MBROWSER, "Up", KEY_UP, do_up, 0);
+		add_to_sclist(MMAIN|MHELP|MBROWSER, "Down", KEY_DOWN, do_down, 0);
 		add_to_sclist(MMAIN|MBROWSER, "^Up", CONTROL_UP, do_prev_block, 0);
 		add_to_sclist(MMAIN|MBROWSER, "^Down", CONTROL_DOWN, do_next_block, 0);
 	}
@@ -1281,8 +1277,7 @@ void shortcut_init(void)
 	add_to_sclist(MWHEREIS|MREPLACE|MREPLACEWITH, "^W", 0, do_para_begin_void, 0);
 	add_to_sclist(MWHEREIS|MREPLACE|MREPLACEWITH, "^O", 0, do_para_end_void, 0);
 #endif
-	add_to_sclist(MWHEREIS, "^T", 0, do_gotolinecolumn_void, 0);
-	add_to_sclist(MGOTOLINE, "^T", 0, gototext_void, 0);
+	add_to_sclist(MWHEREIS|MGOTOLINE, "^T", 0, flip_goto, 0);
 #ifdef ENABLE_HISTORIES
 	add_to_sclist(MWHEREIS|MREPLACE|MREPLACEWITH|MWHEREISFILE|MFINDINHELP|MEXTCMD, "^P", 0, get_history_older_void, 0);
 	add_to_sclist(MWHEREIS|MREPLACE|MREPLACEWITH|MWHEREISFILE|MFINDINHELP|MEXTCMD, "^N", 0, get_history_newer_void, 0);
@@ -1317,8 +1312,8 @@ void shortcut_init(void)
 #ifndef NANO_TINY
 	add_to_sclist(MWRITEFILE, "M-D", 0, dos_format_void, 0);
 	add_to_sclist(MWRITEFILE, "M-M", 0, mac_format_void, 0);
-	/* In restricted mode, don't allow Appending, Prepending, nor making
-	 * backups, nor executing a command, nor opening a new buffer. */
+	/* Only when not in restricted mode, allow Appending, Prepending,
+	 * making backups, and executing a command. */
 	if (!ISSET(RESTRICTED)) {
 		add_to_sclist(MWRITEFILE, "M-A", 0, append_void, 0);
 		add_to_sclist(MWRITEFILE, "M-P", 0, prepend_void, 0);
@@ -1327,11 +1322,12 @@ void shortcut_init(void)
 	}
 #endif
 #ifdef ENABLE_MULTIBUFFER
+	/* Only when not in restricted mode, allow multiple buffers. */
 	if (!ISSET(RESTRICTED))
 		add_to_sclist(MINSERTFILE|MEXTCMD, "M-F", 0, flip_newbuffer, 0);
 #endif
 #ifdef ENABLE_BROWSER
-	/* In restricted mode, don't allow entering the file browser. */
+	/* Only when not in restricted mode, allow entering the file browser. */
 	if (!ISSET(RESTRICTED))
 		add_to_sclist(MWRITEFILE|MINSERTFILE, "^T", 0, to_files_void, 0);
 #endif
@@ -1358,8 +1354,8 @@ void shortcut_init(void)
 void replace_scs_for(void (*oldfunc)(void), void (*newfunc)(void))
 {
 	for (sc *s = sclist; s != NULL; s = s->next)
-		if (s->scfunc == oldfunc)
-			s->scfunc = newfunc;
+		if (s->func == oldfunc)
+			s->func = newfunc;
 }
 
 void set_lint_or_format_shortcuts(void)
@@ -1384,7 +1380,7 @@ const subnfunc *sctofunc(const sc *s)
 {
 	subnfunc *f = allfuncs;
 
-	while (f != NULL && f->scfunc != s->scfunc)
+	while (f != NULL && f->func != s->func)
 		f = f->next;
 
 	return f;
@@ -1453,211 +1449,207 @@ sc *strtosc(const char *input)
 
 #ifdef ENABLE_HELP
 	if (!strcasecmp(input, "help"))
-		s->scfunc = do_help_void;
+		s->func = do_help_void;
 	else
 #endif
 	if (!strcasecmp(input, "cancel"))
-		s->scfunc = do_cancel;
+		s->func = do_cancel;
 	else if (!strcasecmp(input, "exit"))
-		s->scfunc = do_exit;
+		s->func = do_exit;
 	else if (!strcasecmp(input, "discardbuffer"))
-		s->scfunc = discard_buffer;
+		s->func = discard_buffer;
 	else if (!strcasecmp(input, "writeout"))
-		s->scfunc = do_writeout_void;
+		s->func = do_writeout_void;
 	else if (!strcasecmp(input, "savefile"))
-		s->scfunc = do_savefile;
+		s->func = do_savefile;
 	else if (!strcasecmp(input, "insert"))
-		s->scfunc = do_insertfile_void;
+		s->func = do_insertfile_void;
 	else if (!strcasecmp(input, "whereis"))
-		s->scfunc = do_search_forward;
+		s->func = do_search_forward;
 	else if (!strcasecmp(input, "wherewas"))
-		s->scfunc = do_search_backward;
-	else if (!strcasecmp(input, "searchagain") ||
-			 !strcasecmp(input, "research"))  /* Deprecated.  Remove in 2018. */
-		s->scfunc = do_research;
+		s->func = do_search_backward;
+	else if (!strcasecmp(input, "searchagain"))
+		s->func = do_research;
 #ifndef NANO_TINY
 	else if (!strcasecmp(input, "findprevious"))
-		s->scfunc = do_findprevious;
+		s->func = do_findprevious;
 	else if (!strcasecmp(input, "findnext"))
-		s->scfunc = do_findnext;
+		s->func = do_findnext;
 #endif
 	else if (!strcasecmp(input, "replace"))
-		s->scfunc = do_replace;
+		s->func = do_replace;
 	else if (!strcasecmp(input, "cut"))
-		s->scfunc = do_cut_text_void;
+		s->func = do_cut_text_void;
 	else if (!strcasecmp(input, "uncut"))
-		s->scfunc = do_uncut_text;
+		s->func = do_uncut_text;
 #ifndef NANO_TINY
 	else if (!strcasecmp(input, "cutrestoffile"))
-		s->scfunc = do_cut_till_eof;
+		s->func = do_cut_till_eof;
 	else if (!strcasecmp(input, "copytext"))
-		s->scfunc = do_copy_text;
+		s->func = do_copy_text;
 	else if (!strcasecmp(input, "mark"))
-		s->scfunc = do_mark;
+		s->func = do_mark;
 #endif
 #ifdef ENABLE_SPELLER
 	else if (!strcasecmp(input, "tospell") ||
 			 !strcasecmp(input, "speller"))
-		s->scfunc = do_spell;
+		s->func = do_spell;
 #endif
 #ifdef ENABLE_COLOR
 	else if (!strcasecmp(input, "linter"))
-		s->scfunc = do_linter;
+		s->func = do_linter;
 #endif
-	else if (!strcasecmp(input, "curpos") ||
-			 !strcasecmp(input, "cursorpos"))  /* Deprecated.  Remove in 2018. */
-		s->scfunc = do_cursorpos_void;
+	else if (!strcasecmp(input, "curpos"))
+		s->func = do_cursorpos_void;
 	else if (!strcasecmp(input, "gotoline"))
-		s->scfunc = do_gotolinecolumn_void;
+		s->func = do_gotolinecolumn_void;
 #ifdef ENABLE_JUSTIFY
 	else if (!strcasecmp(input, "justify"))
-		s->scfunc = do_justify_void;
+		s->func = do_justify_void;
 	else if (!strcasecmp(input, "fulljustify"))
-		s->scfunc = do_full_justify;
+		s->func = do_full_justify;
 	else if (!strcasecmp(input, "beginpara"))
-		s->scfunc = do_para_begin_void;
+		s->func = do_para_begin_void;
 	else if (!strcasecmp(input, "endpara"))
-		s->scfunc = do_para_end_void;
+		s->func = do_para_end_void;
 #endif
 #ifdef ENABLE_COMMENT
 	else if (!strcasecmp(input, "comment"))
-		s->scfunc = do_comment;
+		s->func = do_comment;
 #endif
 #ifdef ENABLE_WORDCOMPLETION
 	else if (!strcasecmp(input, "complete"))
-		s->scfunc = complete_a_word;
+		s->func = complete_a_word;
 #endif
 #ifndef NANO_TINY
 	else if (!strcasecmp(input, "indent"))
-		s->scfunc = do_indent;
+		s->func = do_indent;
 	else if (!strcasecmp(input, "unindent"))
-		s->scfunc = do_unindent;
+		s->func = do_unindent;
 	else if (!strcasecmp(input, "scrollup"))
-		s->scfunc = do_scroll_up;
+		s->func = do_scroll_up;
 	else if (!strcasecmp(input, "scrolldown"))
-		s->scfunc = do_scroll_down;
+		s->func = do_scroll_down;
 	else if (!strcasecmp(input, "cutwordleft"))
-		s->scfunc = do_cut_prev_word;
+		s->func = do_cut_prev_word;
 	else if (!strcasecmp(input, "cutwordright"))
-		s->scfunc = do_cut_next_word;
+		s->func = do_cut_next_word;
 	else if (!strcasecmp(input, "findbracket"))
-		s->scfunc = do_find_bracket;
+		s->func = do_find_bracket;
 	else if (!strcasecmp(input, "wordcount"))
-		s->scfunc = do_wordlinechar_count;
+		s->func = do_wordlinechar_count;
 	else if (!strcasecmp(input, "recordmacro"))
-		s->scfunc = record_macro;
+		s->func = record_macro;
 	else if (!strcasecmp(input, "runmacro"))
-		s->scfunc = run_macro;
+		s->func = run_macro;
 	else if (!strcasecmp(input, "undo"))
-		s->scfunc = do_undo;
+		s->func = do_undo;
 	else if (!strcasecmp(input, "redo"))
-		s->scfunc = do_redo;
+		s->func = do_redo;
 #endif
 	else if (!strcasecmp(input, "left") ||
 			 !strcasecmp(input, "back"))
-		s->scfunc = do_left;
+		s->func = do_left;
 	else if (!strcasecmp(input, "right") ||
 			 !strcasecmp(input, "forward"))
-		s->scfunc = do_right;
+		s->func = do_right;
 	else if (!strcasecmp(input, "up") ||
 			 !strcasecmp(input, "prevline"))
-		s->scfunc = do_up_void;
+		s->func = do_up;
 	else if (!strcasecmp(input, "down") ||
 			 !strcasecmp(input, "nextline"))
-		s->scfunc = do_down_void;
+		s->func = do_down;
 	else if (!strcasecmp(input, "prevword"))
-		s->scfunc = do_prev_word_void;
+		s->func = do_prev_word_void;
 	else if (!strcasecmp(input, "nextword"))
-		s->scfunc = do_next_word_void;
+		s->func = do_next_word_void;
 	else if (!strcasecmp(input, "home"))
-		s->scfunc = do_home;
+		s->func = do_home;
 	else if (!strcasecmp(input, "end"))
-		s->scfunc = do_end;
+		s->func = do_end;
 	else if (!strcasecmp(input, "prevblock"))
-		s->scfunc = do_prev_block;
+		s->func = do_prev_block;
 	else if (!strcasecmp(input, "nextblock"))
-		s->scfunc = do_next_block;
+		s->func = do_next_block;
 	else if (!strcasecmp(input, "pageup") ||
 			 !strcasecmp(input, "prevpage"))
-		s->scfunc = do_page_up;
+		s->func = do_page_up;
 	else if (!strcasecmp(input, "pagedown") ||
 			 !strcasecmp(input, "nextpage"))
-		s->scfunc = do_page_down;
+		s->func = do_page_down;
 	else if (!strcasecmp(input, "firstline"))
-		s->scfunc = to_first_line;
+		s->func = to_first_line;
 	else if (!strcasecmp(input, "lastline"))
-		s->scfunc = to_last_line;
+		s->func = to_last_line;
 #ifdef ENABLE_MULTIBUFFER
 	else if (!strcasecmp(input, "prevbuf"))
-		s->scfunc = switch_to_prev_buffer;
+		s->func = switch_to_prev_buffer;
 	else if (!strcasecmp(input, "nextbuf"))
-		s->scfunc = switch_to_next_buffer;
+		s->func = switch_to_next_buffer;
 #endif
 	else if (!strcasecmp(input, "verbatim"))
-		s->scfunc = do_verbatim_input;
+		s->func = do_verbatim_input;
 	else if (!strcasecmp(input, "tab"))
-		s->scfunc = do_tab;
+		s->func = do_tab;
 	else if (!strcasecmp(input, "enter"))
-		s->scfunc = do_enter;
+		s->func = do_enter;
 	else if (!strcasecmp(input, "delete"))
-		s->scfunc = do_delete;
+		s->func = do_delete;
 	else if (!strcasecmp(input, "backspace"))
-		s->scfunc = do_backspace;
+		s->func = do_backspace;
 	else if (!strcasecmp(input, "refresh"))
-		s->scfunc = total_refresh;
+		s->func = total_refresh;
 	else if (!strcasecmp(input, "suspend"))
-		s->scfunc = do_suspend_void;
+		s->func = do_suspend_void;
 	else if (!strcasecmp(input, "casesens"))
-		s->scfunc = case_sens_void;
-	else if (!strcasecmp(input, "regexp") ||
-			 !strcasecmp(input, "regex"))  /* Deprecated.  Remove in 2018. */
-		s->scfunc = regexp_void;
+		s->func = case_sens_void;
+	else if (!strcasecmp(input, "regexp"))
+		s->func = regexp_void;
 	else if (!strcasecmp(input, "backwards"))
-		s->scfunc = backwards_void;
-	else if (!strcasecmp(input, "flipreplace") ||
-			 !strcasecmp(input, "dontreplace"))  /* Deprecated.  Remove in 2018. */
-		s->scfunc = flip_replace;
-	else if (!strcasecmp(input, "gototext"))
-		s->scfunc = gototext_void;
+		s->func = backwards_void;
+	else if (!strcasecmp(input, "flipreplace"))
+		s->func = flip_replace;
+	else if (!strcasecmp(input, "flipgoto") ||
+			 !strcasecmp(input, "gototext"))  /* Deprecated.  Remove end of 2018. */
+		s->func = flip_goto;
 #ifdef ENABLE_HISTORIES
 	else if (!strcasecmp(input, "prevhistory"))
-		s->scfunc = get_history_older_void;
+		s->func = get_history_older_void;
 	else if (!strcasecmp(input, "nexthistory"))
-		s->scfunc = get_history_newer_void;
+		s->func = get_history_newer_void;
 #endif
 #ifndef NANO_TINY
 	else if (!strcasecmp(input, "dosformat"))
-		s->scfunc = dos_format_void;
+		s->func = dos_format_void;
 	else if (!strcasecmp(input, "macformat"))
-		s->scfunc = mac_format_void;
+		s->func = mac_format_void;
 	else if (!strcasecmp(input, "append"))
-		s->scfunc = append_void;
+		s->func = append_void;
 	else if (!strcasecmp(input, "prepend"))
-		s->scfunc = prepend_void;
+		s->func = prepend_void;
 	else if (!strcasecmp(input, "backup"))
-		s->scfunc = backup_file_void;
+		s->func = backup_file_void;
 	else if (!strcasecmp(input, "flipexecute"))
-		s->scfunc = flip_execute;
+		s->func = flip_execute;
 #endif
 #ifdef ENABLE_MULTIBUFFER
-	else if (!strcasecmp(input, "flipnewbuffer") ||
-			 !strcasecmp(input, "newbuffer"))  /* Deprecated.  Remove in 2018. */
-		s->scfunc = flip_newbuffer;
+	else if (!strcasecmp(input, "flipnewbuffer"))
+		s->func = flip_newbuffer;
 #endif
 #ifdef ENABLE_BROWSER
 	else if (!strcasecmp(input, "tofiles") ||
 			 !strcasecmp(input, "browser"))
-		s->scfunc = to_files_void;
+		s->func = to_files_void;
 	else if (!strcasecmp(input, "gotodir"))
-		s->scfunc = goto_dir_void;
+		s->func = goto_dir_void;
 	else if (!strcasecmp(input, "firstfile"))
-		s->scfunc = to_first_file;
+		s->func = to_first_file;
 	else if (!strcasecmp(input, "lastfile"))
-		s->scfunc = to_last_file;
+		s->func = to_last_file;
 #endif
 	else {
 #ifndef NANO_TINY
-		s->scfunc = do_toggle_void;
+		s->func = do_toggle_void;
 		if (!strcasecmp(input, "nohelp"))
 			s->toggle = NO_HELP;
 		else if (!strcasecmp(input, "constupdate"))
@@ -1721,8 +1713,7 @@ int strtomenu(const char *input)
 		return MWHEREIS;
 	else if (!strcasecmp(input, "replace"))
 		return MREPLACE;
-	else if (!strcasecmp(input, "replace2") ||  /* Deprecated.  Remove in 2018. */
-			 !strcasecmp(input, "replacewith"))
+	else if (!strcasecmp(input, "replacewith"))
 		return MREPLACEWITH;
 	else if (!strcasecmp(input, "gotoline"))
 		return MGOTOLINE;
@@ -1788,12 +1779,14 @@ void thanks_for_all_the_fish(void)
 	free(alt_speller);
 #endif
 	free_filestruct(cutbuffer);
+#ifdef ENABLE_MULTIBUFFER
 	/* Free the memory associated with each open file buffer. */
 	while (openfile != openfile->next) {
 		openfile = openfile->next;
 		delete_opennode(openfile->prev);
 	}
 	delete_opennode(openfile);
+#endif
 #ifdef ENABLE_COLOR
 	free(syntaxstr);
 	while (syntaxes != NULL) {

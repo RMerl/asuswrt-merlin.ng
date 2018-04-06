@@ -2,6 +2,9 @@ Improvements in GNU nano
 ========================
 
 Since 2.9.0:
+  - Addition of the color name "normal", meaning the default color.
+  - A key can be bound to a string -- any mix of text and commands.
+  - Error messages are shown by default in bright white on red.
   - <Tab> and <Shift+Tab> can be used to indent/unindent a marked region.
   - Can snip trailing whitespace while typing, with 'set trimblanks'.
   - The ability to record and replay a series of keystrokes (a macro).

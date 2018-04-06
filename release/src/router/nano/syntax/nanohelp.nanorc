@@ -1,7 +1,7 @@
 ## This is meant for highlighting key combos in a nano help text.
 
 # It should not apply to any normal file, so no fileregex.
-syntax "nanohelp"
+syntax nanohelp
 
 # Key combos:
 color cyan "\^[]4-8A-Z^\_◀▶▲▼]"  "[◀▶▲▼]"  "(\^|M-)Space"  "\<M-."  "\<F1?[0-9]"

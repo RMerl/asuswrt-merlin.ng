@@ -481,17 +481,11 @@ void do_end(void)
 		update_line(openfile->current, openfile->current_x);
 }
 
-/* Move the cursor to the preceding line or chunk.  If scroll_only is TRUE,
- * also scroll the screen one row, so the cursor stays in the same spot. */
-void do_up(bool scroll_only)
+/* Move the cursor to the preceding line or chunk. */
+void do_up(void)
 {
 	filestruct *was_current = openfile->current;
 	size_t leftedge, target_column;
-
-	/* When just scrolling and the top of the file is onscreen, get out. */
-	if (scroll_only && openfile->edittop == openfile->fileage &&
-						openfile->firstcolumn == 0)
-		return;
 
 	get_edge_and_target(&leftedge, &target_column);
 
@@ -501,18 +495,14 @@ void do_up(bool scroll_only)
 
 	set_proper_index_and_pww(&leftedge, target_column, FALSE);
 
-	if (scroll_only)
-		edit_scroll(BACKWARD, 1);
-
 	edit_redraw(was_current, FLOWING);
 
 	/* <Up> should not change placewewant, so restore it. */
 	openfile->placewewant = leftedge + target_column;
 }
 
-/* Move the cursor to next line or chunk.  If scroll_only is TRUE, also
- * scroll the screen one row, so the cursor stays in the same spot. */
-void do_down(bool scroll_only)
+/* Move the cursor to next line or chunk. */
+void do_down(void)
 {
 	filestruct *was_current = openfile->current;
 	size_t leftedge, target_column;
@@ -525,38 +515,39 @@ void do_down(bool scroll_only)
 
 	set_proper_index_and_pww(&leftedge, target_column, TRUE);
 
-	if (scroll_only)
-		edit_scroll(FORWARD, 1);
-
 	edit_redraw(was_current, FLOWING);
 
 	/* <Down> should not change placewewant, so restore it. */
 	openfile->placewewant = leftedge + target_column;
 }
 
-/* Move up one line or chunk. */
-void do_up_void(void)
-{
-	do_up(FALSE);
-}
-
-/* Move down one line or chunk. */
-void do_down_void(void)
-{
-	do_down(FALSE);
-}
-
-#ifndef NANO_TINY
+#ifdef ENABLE_HELP
 /* Scroll up one line or chunk without scrolling the cursor. */
 void do_scroll_up(void)
 {
-	do_up(TRUE);
+	/* When the top of the file is onscreen, we can't scroll. */
+	if (openfile->edittop->prev == NULL && openfile->firstcolumn == 0)
+		return;
+
+	if (openfile->current_y == editwinrows - 1)
+		do_up();
+
+	edit_scroll(BACKWARD);
 }
 
 /* Scroll down one line or chunk without scrolling the cursor. */
 void do_scroll_down(void)
 {
-	do_down(TRUE);
+	if (openfile->current_y == 0)
+		do_down();
+
+	if (openfile->edittop->next != NULL
+#ifndef NANO_TINY
+				|| chunk_for(openfile->firstcolumn, openfile->edittop) <
+					number_of_chunks_in(openfile->edittop)
+#endif
+										)
+		edit_scroll(FORWARD);
 }
 #endif
 

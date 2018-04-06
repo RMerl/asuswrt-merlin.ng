@@ -1,6 +1,6 @@
 ## Here is an example for Java.
 
-syntax "java" "\.java$"
+syntax java "\.java$"
 magic "Java "
 comment "//"
 

@@ -1,6 +1,6 @@
 ## Colouring for PO files.
 
-syntax "po" "\.pot?$"
+syntax po "\.pot?$"
 comment "#"
 
 # Comments.

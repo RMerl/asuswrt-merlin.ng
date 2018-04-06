@@ -1,6 +1,6 @@
 ## Here is an example for nftables.
 
-syntax "nftables" "\.(nft|nftables)$"
+syntax nftables "\.(nft|nftables)$"
 header "^#!.*(nft|nftables)"
 comment "#"
 

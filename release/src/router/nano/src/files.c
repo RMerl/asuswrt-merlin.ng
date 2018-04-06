@@ -66,16 +66,19 @@ void make_new_buffer(void)
 
 	if (openfile == NULL) {
 		/* Make the first open file the only element in the list. */
+#ifdef ENABLE_MULTIBUFFER
 		newnode->prev = newnode;
 		newnode->next = newnode;
+#endif
 		firstfile = newnode;
 	} else {
 		/* Add the new open file after the current one in the list. */
+#ifdef ENABLE_MULTIBUFFER
 		newnode->prev = openfile;
 		newnode->next = openfile->next;
 		openfile->next->prev = newnode;
 		openfile->next = newnode;
-
+#endif
 		/* There is more than one file open: show "Close" in help lines. */
 		exitfunc->desc = close_tag;
 		more_than_one = !inhelp || more_than_one;
@@ -406,13 +409,11 @@ void stat_with_alloc(const char *filename, struct stat **pstat)
 }
 #endif /* !NANO_TINY */
 
-/* This does one of three things.  If the filename is "", just create a new
- * empty buffer.  Otherwise, read the given file into the existing buffer,
- * or into a new buffer when MULTIBUFFER is set or there is no buffer yet. */
-bool open_buffer(const char *filename, bool undoable)
+/* This does one of three things.  If the filename is "", it just creates
+ * a new empty buffer.  When the filename is not empty, it reads that file
+ * into a new buffer when requested, otherwise into the existing buffer. */
+bool open_buffer(const char *filename, bool new_buffer)
 {
-	bool new_buffer = (openfile == NULL || ISSET(MULTIBUFFER));
-		/* Whether we load into the current buffer or a new one. */
 	char *realname;
 		/* The filename after tilde expansion. */
 	FILE *f;
@@ -435,7 +436,7 @@ bool open_buffer(const char *filename, bool undoable)
 
 	/* When the specified filename is not empty, and the corresponding
 	 * file exists, verify that it is a normal file. */
-	if (strcmp(filename, "") != 0) {
+	if (*filename != '\0') {
 		struct stat fileinfo;
 
 		if (stat(realname, &fileinfo) == 0 && !(S_ISREG(fileinfo.st_mode) ||
@@ -475,24 +476,20 @@ bool open_buffer(const char *filename, bool undoable)
 	rc = (filename[0] != '\0' && !ISSET(NOREAD_MODE)) ?
 				open_file(realname, new_buffer, inhelp, &f) : -2;
 
-	/* If we have a file, and we're loading into a new buffer, update
-	 * the filename. */
-	if (rc != -1 && new_buffer)
-		openfile->filename = mallocstrcpy(openfile->filename, realname);
-
 	/* If we have a non-new file, read it in.  Then, if the buffer has
 	 * no stat, update the stat, if applicable. */
 	if (rc > 0) {
-		read_file(f, rc, realname, undoable, new_buffer);
+		read_file(f, rc, realname, !new_buffer);
 #ifndef NANO_TINY
 		if (openfile->current_stat == NULL)
 			stat_with_alloc(realname, &openfile->current_stat);
 #endif
 	}
 
-	/* If we have a file, and we're loading into a new buffer, move back
-	 * to the beginning of the first line of the buffer. */
+	/* If we have a file, and we've loaded it into a new buffer, set
+	 * the filename and put the cursor at the start of the buffer. */
 	if (rc != -1 && new_buffer) {
+		openfile->filename = mallocstrcpy(openfile->filename, realname);
 		openfile->current = openfile->fileage;
 		openfile->current_x = 0;
 		openfile->placewewant = 0;
@@ -528,7 +525,7 @@ void replace_buffer(const char *filename)
 	initialize_buffer_text();
 
 	/* Insert the processed file into its place. */
-	read_file(f, descriptor, filename, FALSE, TRUE);
+	read_file(f, descriptor, filename, FALSE);
 
 	/* Put current at a place that is certain to exist. */
 	openfile->current = openfile->fileage;
@@ -559,7 +556,7 @@ void replace_marked_buffer(const char *filename, filestruct *top, size_t top_x,
 	 * where the marked text was. */
 	extract_buffer(&trash_top, &trash_bot, top, top_x, bot, bot_x);
 	free_filestruct(trash_top);
-	read_file(f, descriptor, filename, FALSE, TRUE);
+	read_file(f, descriptor, filename, FALSE);
 
 	/* Restore the magicline behavior now that we're done fiddling. */
 	if (!old_no_newlines)
@@ -716,13 +713,10 @@ char *encode_data(char *buf, size_t buf_len)
 	return mallocstrcpy(NULL, buf);
 }
 
-/* Read an open file into the current buffer.  f should be set to the
- * open file, and filename should be set to the name of the file.
- * undoable means do we want to create undo records to try and undo
- * this.  Will also attempt to check file writability if fd > 0 and
- * checkwritable == TRUE. */
-void read_file(FILE *f, int fd, const char *filename, bool undoable,
-				bool checkwritable)
+/* Read the given open file f into the current buffer.  filename should be
+ * set to the name of the file.  undoable means that undo records should be
+ * created and that the file does not need to be checked for writability. */
+void read_file(FILE *f, int fd, const char *filename, bool undoable)
 {
 	ssize_t was_lineno = openfile->current->lineno;
 		/* The line number where we start the insertion. */
@@ -838,7 +832,7 @@ void read_file(FILE *f, int fd, const char *filename, bool undoable,
 	if (ferror(f))
 		nperror(filename);
 	fclose(f);
-	if (fd > 0 && checkwritable) {
+	if (fd > 0 && !undoable) {
 		close(fd);
 		writable = is_file_writable(filename);
 	}
@@ -1125,7 +1119,7 @@ void do_insertfile(void)
 #ifdef ENABLE_MULTIBUFFER
 				/* When in multibuffer mode, first open a blank buffer. */
 				if (ISSET(MULTIBUFFER))
-					open_buffer("", FALSE);
+					open_buffer("", TRUE);
 #endif
 				/* If the command is not empty, execute it and read its output
 				 * into the buffer, and add the command to the history list. */
@@ -1152,8 +1146,8 @@ void do_insertfile(void)
 				/* Make sure the specified path is tilde-expanded. */
 				answer = free_and_assign(answer, real_dir_from_tilde(answer));
 
-				/* Read the specified file into the current buffer. */
-				open_buffer(answer, TRUE);
+				/* Read the file into a new buffer or into current buffer. */
+				open_buffer(answer, ISSET(MULTIBUFFER));
 			}
 
 #ifdef ENABLE_MULTIBUFFER
@@ -2429,8 +2423,8 @@ char **username_tab_completion(const char *buf, size_t *num_matches,
 
 /* We consider the first buf_len characters of buf for filename tab
  * completion. */
-char **cwd_tab_completion(const char *buf, bool allow_files, size_t
-		*num_matches, size_t buf_len)
+char **cwd_tab_completion(const char *buf, bool allow_files,
+		size_t *num_matches, size_t buf_len)
 {
 	char *dirname = mallocstrcpy(NULL, buf);
 	char *slash, *filename;
@@ -2609,7 +2603,8 @@ char *input_tab(char *buf, bool allow_files, size_t *place,
 		if (!*lastwastab)
 			*lastwastab = TRUE;
 		else if (num_matches > 1) {
-			int longest_name = 0, ncols, editline = 0;
+			size_t longest_name = 0, ncols;
+			int editline = 0;
 
 			/* Sort the list of available choices. */
 			qsort(matches, num_matches, sizeof(char *), diralphasort);

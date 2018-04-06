@@ -1,6 +1,6 @@
 ## Here is an example for PHP.
 
-syntax "php" "\.ph(p[23457s~]?|tml)$"
+syntax php "\.ph(p[23457s~]?|tml)$"
 magic "PHP script"
 comment "//"
 

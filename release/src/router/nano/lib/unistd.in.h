@@ -400,6 +400,13 @@ _GL_WARN_ON_USE (dup3, "dup3 is unportable - "
 
 
 #if @GNULIB_ENVIRON@
+# if defined __CYGWIN__ && !defined __i386__
+/* The 'environ' variable is defined in a DLL. Therefore its declaration needs
+   the '__declspec(dllimport)' attribute, but the system's <unistd.h> lacks it.
+   This leads to a link error on 64-bit Cygwin when the option
+   -Wl,--disable-auto-import is in use.  */
+_GL_EXTERN_C __declspec(dllimport) char **environ;
+# endif
 # if !@HAVE_DECL_ENVIRON@
 /* Set of environment variables and values.  An array of strings of the form
    "VARIABLE=VALUE", terminated with a NULL.  */

@@ -42,7 +42,6 @@ static const rcoption rcopts[] = {
 #ifdef ENABLE_JUSTIFY
 	{"brackets", 0},
 #endif
-	{"const", CONSTANT_SHOW},  /* deprecated form, remove in 2018 */
 	{"constantshow", CONSTANT_SHOW},
 #ifdef ENABLED_WRAPORJUSTIFY
 	{"fill", 0},
@@ -67,7 +66,6 @@ static const rcoption rcopts[] = {
 	{"operatingdir", 0},
 #endif
 #ifdef ENABLE_HISTORIES
-	{"poslog", POS_HISTORY},  /* deprecated form, remove in 2018 */
 	{"positionlog", POS_HISTORY},
 #endif
 	{"preserve", PRESERVE},
@@ -117,6 +115,7 @@ static const rcoption rcopts[] = {
 	{"numbercolor", 0},
 	{"selectedcolor", 0},
 	{"statuscolor", 0},
+	{"errorcolor", 0},
 	{"keycolor", 0},
 	{"functioncolor", 0},
 #endif
@@ -260,8 +259,7 @@ bool nregcomp(const char *regex, int compile_flags)
  * line at ptr, and add it to the global linked list of color syntaxes. */
 void parse_syntax(char *ptr)
 {
-	char *nameptr;
-		/* A pointer to what should be the name of the syntax. */
+	char *nameptr = ptr;
 
 	opensyntax = FALSE;
 
@@ -272,17 +270,19 @@ void parse_syntax(char *ptr)
 		return;
 	}
 
-	nameptr = ++ptr;
 	ptr = parse_next_word(ptr);
 
-	/* Check that the name starts and ends with a double quote. */
-	if (*(nameptr - 1) != '\x22' || nameptr[strlen(nameptr) - 1] != '\x22') {
-		rcfile_error(N_("A syntax name must be quoted"));
+	/* Check that quotes around the name are either paired or absent. */
+	if ((*nameptr == '\x22') ^ (nameptr[strlen(nameptr) - 1] == '\x22')) {
+		rcfile_error(N_("Unpaired quote in syntax name"));
 		return;
 	}
 
-	/* Strip the end quote. */
-	nameptr[strlen(nameptr) - 1] = '\0';
+	/* If the name is quoted, strip the quotes. */
+	if (*nameptr == '\x22') {
+		nameptr++;
+		nameptr[strlen(nameptr) - 1] = '\0';
+	}
 
 	/* Redefining the "none" syntax is not allowed. */
 	if (strcmp(nameptr, "none") == 0) {
@@ -327,22 +327,17 @@ void parse_syntax(char *ptr)
 }
 #endif /* ENABLE_COLOR */
 
-/* Check whether the given executable function is "universal" (meaning
- * any horizontal movement or deletion) and thus is present in almost
- * all menus. */
+/* Return TRUE when the given function is present in almost all menus. */
 bool is_universal(void (*func)(void))
 {
-	if (func == do_left || func == do_right ||
+	return (func == do_left || func == do_right ||
 		func == do_home || func == do_end ||
 #ifndef NANO_TINY
 		func == do_prev_word_void || func == do_next_word_void ||
 #endif
 		func == do_delete || func == do_backspace ||
 		func == do_cut_text_void || func == do_uncut_text ||
-		func == do_tab || func == do_enter || func == do_verbatim_input)
-		return TRUE;
-	else
-		return FALSE;
+		func == do_tab || func == do_enter || func == do_verbatim_input);
 }
 
 /* Bind or unbind a key combo, to or from a function. */
@@ -396,7 +391,7 @@ void parse_binding(char *ptr, bool dobind)
 
 	if (dobind) {
 		funcptr = ptr;
-		ptr = parse_next_word(ptr);
+		ptr = parse_argument(ptr);
 
 		if (funcptr[0] == '\0') {
 			rcfile_error(N_("Must specify a function to bind the key to"));
@@ -414,7 +409,18 @@ void parse_binding(char *ptr, bool dobind)
 	}
 
 	if (dobind) {
-		newsc = strtosc(funcptr);
+		/* If the thing to bind starts with a double quote, it is a string,
+		 * otherwise it is the name of a function. */
+		if (*funcptr == '"') {
+			newsc = nmalloc(sizeof(sc));
+			newsc->func = (functionptrtype)implant;
+			newsc->expansion = mallocstrcpy(NULL, funcptr + 1);
+#ifndef NANO_TINY
+			newsc->toggle = 0;
+#endif
+		} else
+		    newsc = strtosc(funcptr);
+
 		if (newsc == NULL) {
 			rcfile_error(N_("Cannot map name \"%s\" to a function"), funcptr);
 			goto free_things;
@@ -433,20 +439,21 @@ void parse_binding(char *ptr, bool dobind)
 
 		/* Tally up the menus where the function exists. */
 		for (f = allfuncs; f != NULL; f = f->next)
-			if (f->scfunc == newsc->scfunc)
+			if (f->func == newsc->func)
 				mask = mask | f->menus;
 
 #ifndef NANO_TINY
 		/* Handle the special case of the toggles. */
-		if (newsc->scfunc == do_toggle_void)
+		if (newsc->func == do_toggle_void)
 			mask = MMAIN;
 #endif
-
+#ifdef ENABLE_NANORC
+		/* Handle the special case of a key defined as a string. */
+		if (newsc->func == (functionptrtype)implant)
+			mask = MMOST | MHELP;
+#endif
 		/* Now limit the given menu to those where the function exists. */
-		if (is_universal(newsc->scfunc))
-			menu = menu & MMOST;
-		else
-			menu = menu & mask;
+		menu = menu & (is_universal(newsc->func) ? MMOST : mask);
 
 		if (!menu) {
 			rcfile_error(N_("Function '%s' does not exist in menu '%s'"), funcptr, menuptr);
@@ -472,9 +479,9 @@ void parse_binding(char *ptr, bool dobind)
 	if (dobind) {
 #ifndef NANO_TINY
 		/* If this is a toggle, copy its sequence number. */
-		if (newsc->scfunc == do_toggle_void) {
+		if (newsc->func == do_toggle_void) {
 			for (s = sclist; s != NULL; s = s->next)
-				if (s->scfunc == do_toggle_void && s->toggle == newsc->toggle)
+				if (s->func == do_toggle_void && s->toggle == newsc->toggle)
 					newsc->ordinal = s->ordinal;
 		} else
 			newsc->ordinal = 0;
@@ -595,9 +602,11 @@ short color_to_short(const char *colorname, bool *bright)
 		return COLOR_MAGENTA;
 	else if (strcasecmp(colorname, "black") == 0)
 		return COLOR_BLACK;
+	else if (strcasecmp(colorname, "normal") == 0)
+		return -1;
 
 	rcfile_error(N_("Color \"%s\" not understood"), colorname);
-	return -1;
+	return -2;
 }
 
 /* Parse the color string in the line at ptr, and add it to the current
@@ -746,10 +755,13 @@ bool parse_color_names(char *combostr, short *fg, short *bg, bool *bright)
 		*fg = color_to_short(combostr, bright);
 
 		/* If the specified foreground color is bad, ignore the regexes. */
-		if (*fg == -1)
+		if (*fg == -2)
 			return FALSE;
 	} else
 		*fg = -1;
+
+	if (*bg == -2)
+		*bg = -1;
 
 	return TRUE;
 }
@@ -877,8 +889,8 @@ static void check_vitals_mapped(void)
 
 	for  (v = 0; v < VITALS; v++) {
 		for (f = allfuncs; f != NULL; f = f->next) {
-			if (f->scfunc == vitals[v] && f->menus & inmenus[v]) {
-				const sc *s = first_sc_for(inmenus[v], f->scfunc);
+			if (f->func == vitals[v] && f->menus & inmenus[v]) {
+				const sc *s = first_sc_for(inmenus[v], f->func);
 				if (!s) {
 					fprintf(stderr, _("Fatal error: no keys mapped for function "
 										"\"%s\".  Exiting.\n"), f->desc);
@@ -1085,6 +1097,8 @@ void parse_rcfile(FILE *rcstream, bool syntax_only)
 			color_combo[SELECTED_TEXT] = parse_interface_color(option);
 		else if (strcasecmp(rcopts[i].name, "statuscolor") == 0)
 			color_combo[STATUS_BAR] = parse_interface_color(option);
+		else if (strcasecmp(rcopts[i].name, "errorcolor") == 0)
+			color_combo[ERROR_MESSAGE] = parse_interface_color(option);
 		else if (strcasecmp(rcopts[i].name, "keycolor") == 0)
 			color_combo[KEY_COMBO] = parse_interface_color(option);
 		else if (strcasecmp(rcopts[i].name, "functioncolor") == 0)

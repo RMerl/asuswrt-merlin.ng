@@ -1,5 +1,5 @@
 <!-- Creator     : groff version 1.22.3 -->
-<!-- CreationDate: Mon Jan 29 09:41:41 2018 -->
+<!-- CreationDate: Thu Mar 29 10:10:17 2018 -->
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
 "http://www.w3.org/TR/html4/loose.dtd">
 <html>
@@ -100,10 +100,11 @@ mark its start with <b>^6</b>, move the cursor to its end
 cutbuffer. One can also save the marked text to a file with
 <b>^O</b>, or spell check it with <b>^T</b>.</p>
 
-<p style="margin-left:11%; margin-top: 1em">Since
-nano-2.7.0, text can also be selected by holding Shift and
-moving the cursor with the arrow keys. Holding down the Alt
-key too will increase the stride.</p>
+<p style="margin-left:11%; margin-top: 1em">On some
+terminals, text can be selected also by holding down Shift
+while using the arrow keys. Holding down the Alt key too
+will increase the stride. Any cursor movement without Shift
+being held will cancel such a selection.</p>
 
 <p style="margin-left:11%; margin-top: 1em">The two lines
 at the bottom of the screen show some important commands;
@@ -220,9 +221,7 @@ title bar as extra editing space.</p>
 
 <p style="margin-left:22%;">For the 200 most recent files,
 log the last position of the cursor, and place it at that
-position again upon reopening such a file. (The old form of
-this option, <b>&minus;&minus;poslog</b>, is
-deprecated.)</p>
+position again upon reopening such a file.</p>
 
 <p style="margin-left:11%;"><b>&minus;Q
 &quot;</b><i>characters</i><b>&quot;</b>,
@@ -547,7 +546,8 @@ of course, to exit without saving.</p>
 <p style="margin-left:11%; margin-top: 1em">The recording
 and playback of keyboard macros works correctly only on a
 terminal emulator, not on a Linux console (VT), because the
-latter is a deficient terminal.</p>
+latter does not by default distinguish modified from
+unmodified arrow keys.</p>
 
 <p style="margin-left:11%; margin-top: 1em">Please report
 any other bugs that you encounter via: <i><br>

@@ -30,7 +30,7 @@ extern volatile sig_atomic_t the_window_resized;
 #endif
 
 #ifdef __linux__
-extern bool console;
+extern bool on_a_vt;
 #endif
 
 extern bool meta_key;
@@ -267,7 +267,7 @@ void do_uncut_text(void);
 /* Most functions in files.c. */
 void initialize_buffer_text(void);
 void set_modified(void);
-bool open_buffer(const char *filename, bool undoable);
+bool open_buffer(const char *filename, bool new_buffer);
 #ifdef ENABLE_SPELLER
 void replace_buffer(const char *filename);
 #ifndef NANO_TINY
@@ -281,8 +281,7 @@ void switch_to_prev_buffer(void);
 void switch_to_next_buffer(void);
 bool close_buffer(void);
 #endif
-void read_file(FILE *f, int fd, const char *filename, bool undoable,
-				bool checkwritable);
+void read_file(FILE *f, int fd, const char *filename, bool undoable);
 int open_file(const char *filename, bool newfie, bool quiet, FILE **f);
 char *get_next_filename(const char *name, const char *suffix);
 void do_insertfile_void(void);
@@ -386,11 +385,9 @@ void do_prev_word_void(void);
 void do_next_word_void(void);
 void do_home(void);
 void do_end(void);
-void do_up(bool scroll_only);
-void do_down(bool scroll_only);
-void do_up_void(void);
-void do_down_void(void);
-#ifndef NANO_TINY
+void do_up(void);
+void do_down(void);
+#ifdef ENABLE_HELP
 void do_scroll_up(void);
 void do_scroll_down(void);
 #endif
@@ -404,7 +401,7 @@ void unlink_node(filestruct *fileptr);
 void delete_node(filestruct *fileptr);
 filestruct *copy_filestruct(const filestruct *src);
 void free_filestruct(filestruct *src);
-void renumber(filestruct *fileptr);
+void renumber(filestruct *line);
 partition *partition_filestruct(filestruct *top, size_t top_x,
 		filestruct *bot, size_t bot_x);
 void unpartition_filestruct(partition **p);
@@ -413,8 +410,10 @@ void extract_buffer(filestruct **file_top, filestruct **file_bot,
 void ingraft_buffer(filestruct *somebuffer);
 void copy_from_buffer(filestruct *somebuffer);
 openfilestruct *make_new_opennode(void);
+#ifdef ENABLE_MULTIBUFFER
 void unlink_opennode(openfilestruct *fileptr);
 void delete_opennode(openfilestruct *fileptr);
+#endif
 void print_view_warning(void);
 void show_restricted_warning(void);
 #ifndef ENABLE_HELP
@@ -422,7 +421,7 @@ void say_there_is_no_help(void);
 #endif
 void finish(void);
 void die(const char *msg, ...);
-void die_save_file(const char *die_filename, struct stat *die_stat);
+void emergency_save(const char *die_filename, struct stat *die_stat);
 void window_init(void);
 void do_exit(void);
 void close_and_go(void);
@@ -441,6 +440,7 @@ void disable_flow_control(void);
 void enable_flow_control(void);
 void terminal_init(void);
 void unbound_key(int code);
+bool okay_for_view(const sc *shortcut);
 int do_input(bool allow_funcs);
 void do_output(char *output, size_t output_len, bool allow_cntrls);
 
@@ -495,6 +495,7 @@ void go_looking(void);
 ssize_t do_replace_loop(const char *needle, bool whole_word_only,
 		const filestruct *real_current, size_t *real_current_x);
 void do_replace(void);
+void ask_for_replacement(void);
 void goto_line_posx(ssize_t line, size_t pos_x);
 void do_gotolinecolumn(ssize_t line, ssize_t column, bool use_answer,
 		bool interactive);
@@ -619,7 +620,11 @@ void dump_filestruct(const filestruct *inptr);
 void record_macro(void);
 void run_macro(void);
 size_t get_key_buffer_len(void);
+void put_back(int keycode);
 void unget_kbinput(int kbinput, bool metakey);
+#ifdef ENABLE_NANORC
+void implant(const char *string);
+#endif
 int get_kbinput(WINDOW *win, bool showcursor);
 int parse_kbinput(WINDOW *win);
 int arrow_from_abcd(int kbinput);
@@ -656,7 +661,7 @@ bool line_needs_update(const size_t old_column, const size_t new_column);
 int go_back_chunks(int nrows, filestruct **line, size_t *leftedge);
 int go_forward_chunks(int nrows, filestruct **line, size_t *leftedge);
 bool less_than_a_screenful(size_t was_lineno, size_t was_leftedge);
-void edit_scroll(bool direction, int nrows);
+void edit_scroll(bool direction);
 #ifndef NANO_TINY
 size_t get_softwrap_breakpoint(const char *text, size_t leftedge,
 								bool *end_of_line);
@@ -692,7 +697,7 @@ void case_sens_void(void);
 void regexp_void(void);
 void backwards_void(void);
 void flip_replace(void);
-void gototext_void(void);
+void flip_goto(void);
 #ifdef ENABLE_BROWSER
 void to_files_void(void);
 void goto_dir_void(void);

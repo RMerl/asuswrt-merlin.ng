@@ -907,6 +907,7 @@ HAVE_ISNANF = @HAVE_ISNANF@
 HAVE_ISNANL = @HAVE_ISNANL@
 HAVE_ISWBLANK = @HAVE_ISWBLANK@
 HAVE_ISWCNTRL = @HAVE_ISWCNTRL@
+HAVE_LANGINFO_ALTMON = @HAVE_LANGINFO_ALTMON@
 HAVE_LANGINFO_CODESET = @HAVE_LANGINFO_CODESET@
 HAVE_LANGINFO_ERA = @HAVE_LANGINFO_ERA@
 HAVE_LANGINFO_H = @HAVE_LANGINFO_H@
@@ -1541,14 +1542,14 @@ EXTRA_DIST = alloca.c alloca.in.h btowc.c closedir.c dirent-private.h \
 	isnanl-nolibm.h isnanl.c iswblank.c langinfo.in.h cdefs.h \
 	libc-config.h limits.in.h config.charset ref-add.sin \
 	ref-del.sin locale.in.h localeconv.c localtime-buffer.c \
-	localtime-buffer.h lstat.c malloc.c malloca.h malloca.valgrind \
-	math.in.h mbrtowc.c mbsinit.c mbsrtowcs-impl.h \
-	mbsrtowcs-state.c mbsrtowcs.c mbtowc-impl.h mbtowc.c memchr.c \
-	memchr.valgrind mempcpy.c msvc-inval.c msvc-inval.h \
-	msvc-nothrow.c msvc-nothrow.h nl_langinfo.c dirent-private.h \
-	opendir.c pathmax.h printf-frexp.h printf-frexp.c \
-	printf-frexpl.h raise.c dirent-private.h readdir.c regcomp.c \
-	regex.c regex.h regex_internal.c regex_internal.h regexec.c \
+	localtime-buffer.h lstat.c malloc.c malloca.h math.in.h \
+	mbrtowc.c mbsinit.c mbsrtowcs-impl.h mbsrtowcs-state.c \
+	mbsrtowcs.c mbtowc-impl.h mbtowc.c memchr.c memchr.valgrind \
+	mempcpy.c msvc-inval.c msvc-inval.h msvc-nothrow.c \
+	msvc-nothrow.h nl_langinfo.c dirent-private.h opendir.c \
+	pathmax.h printf-frexp.h printf-frexp.c printf-frexpl.h \
+	raise.c dirent-private.h readdir.c regcomp.c regex.c regex.h \
+	regex_internal.c regex_internal.h regexec.c \
 	malloc/scratch_buffer.h scratch_buffer.h sig-handler.h \
 	sigaction.c signal.in.h float+.h signbitd.c signbitf.c \
 	signbitl.c sigprocmask.c _Noreturn.h arg-nonnull.h c++defs.h \
@@ -2373,6 +2374,7 @@ langinfo.h: langinfo.in.h $(top_builddir)/config.status $(CXXDEFS_H) $(WARN_ON_U
 	      -e 's/@''GNULIB_NL_LANGINFO''@/$(GNULIB_NL_LANGINFO)/g' \
 	      -e 's|@''HAVE_LANGINFO_CODESET''@|$(HAVE_LANGINFO_CODESET)|g' \
 	      -e 's|@''HAVE_LANGINFO_T_FMT_AMPM''@|$(HAVE_LANGINFO_T_FMT_AMPM)|g' \
+	      -e 's|@''HAVE_LANGINFO_ALTMON''@|$(HAVE_LANGINFO_ALTMON)|g' \
 	      -e 's|@''HAVE_LANGINFO_ERA''@|$(HAVE_LANGINFO_ERA)|g' \
 	      -e 's|@''HAVE_LANGINFO_YESEXPR''@|$(HAVE_LANGINFO_YESEXPR)|g' \
 	      -e 's|@''HAVE_NL_LANGINFO''@|$(HAVE_NL_LANGINFO)|g' \
@@ -2781,8 +2783,8 @@ signal.h: signal.in.h $(top_builddir)/config.status $(CXXDEFS_H) $(ARG_NONNULL_H
 	      -e 's|@''PRAGMA_SYSTEM_HEADER''@|@PRAGMA_SYSTEM_HEADER@|g' \
 	      -e 's|@''PRAGMA_COLUMNS''@|@PRAGMA_COLUMNS@|g' \
 	      -e 's|@''NEXT_SIGNAL_H''@|$(NEXT_SIGNAL_H)|g' \
-	      -e 's|@''GNULIB_PTHREAD_SIGMASK''@|$(GNULIB_PTHREAD_SIGMASK)|g' \
-	      -e 's|@''GNULIB_RAISE''@|$(GNULIB_RAISE)|g' \
+	      -e 's/@''GNULIB_PTHREAD_SIGMASK''@/$(GNULIB_PTHREAD_SIGMASK)/g' \
+	      -e 's/@''GNULIB_RAISE''@/$(GNULIB_RAISE)/g' \
 	      -e 's/@''GNULIB_SIGNAL_H_SIGPIPE''@/$(GNULIB_SIGNAL_H_SIGPIPE)/g' \
 	      -e 's/@''GNULIB_SIGPROCMASK''@/$(GNULIB_SIGPROCMASK)/g' \
 	      -e 's/@''GNULIB_SIGACTION''@/$(GNULIB_SIGACTION)/g' \
@@ -3214,7 +3216,7 @@ strings.h: strings.in.h $(top_builddir)/config.status $(CXXDEFS_H) $(WARN_ON_USE
 	      -e 's|@''PRAGMA_SYSTEM_HEADER''@|@PRAGMA_SYSTEM_HEADER@|g' \
 	      -e 's|@''PRAGMA_COLUMNS''@|@PRAGMA_COLUMNS@|g' \
 	      -e 's|@''NEXT_STRINGS_H''@|$(NEXT_STRINGS_H)|g' \
-	      -e 's|@''GNULIB_FFS''@|$(GNULIB_FFS)|g' \
+	      -e 's/@''GNULIB_FFS''@/$(GNULIB_FFS)/g' \
 	      -e 's|@''HAVE_FFS''@|$(HAVE_FFS)|g' \
 	      -e 's|@''HAVE_STRCASECMP''@|$(HAVE_STRCASECMP)|g' \
 	      -e 's|@''HAVE_DECL_STRNCASECMP''@|$(HAVE_DECL_STRNCASECMP)|g' \

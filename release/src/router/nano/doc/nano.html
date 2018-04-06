@@ -57,7 +57,7 @@ ul.no-bullet {list-style: none}
 <a name="Top"></a>
 <a name="SEC_Top"></a>
 
-<p>This manual documents the GNU <code>nano</code> editor, version 2.9.3.
+<p>This manual documents the GNU <code>nano</code> editor, version 2.9.5.
 </p>
 <table class="menu" border="0" cellspacing="0">
 <tr><td align="left" valign="top">&bull; <a href="#Introduction" accesskey="1">Introduction</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
@@ -227,7 +227,6 @@ hard-wrapping occurs or when text is justified.
 <dt><samp>--positionlog</samp></dt>
 <dd><p>For the 200 most recent files, log the last position of the cursor,
 and place it at that position again upon reopening such a file.
-(The old form of this option, <samp>--poslog</samp>, is deprecated.)
 </p>
 </dd>
 <dt><samp>-Q &quot;<var>characters</var>&quot;</samp></dt>
@@ -553,11 +552,14 @@ the &rsquo;Copy Text&rsquo; command (default key binding: <kbd>M-6</kbd>).
 
 <p>Text can be selected by first &rsquo;setting the Mark&rsquo; (default key bindings:
 <kbd>^6</kbd> and <kbd>M-A</kbd>) and then moving the cursor to the other end of the portion
-to be selected.  The selected portion of text will be highlighted in
-reverse video (or in bold if you set the boldtext option).
+to be selected.  The selected portion of text will be highlighted.
 This selection can now be cut or copied in its entirety with a single
 <kbd>^K</kbd> or <kbd>M-6</kbd>.  Or the selection can be used to limit the scope of
 a search-and-replace (<kbd>^\</kbd>) or spell-checking session (<kbd>^T</kbd>).
+</p>
+<p>On some terminals, it is also possible to select text by holding down
+<kbd>Shift</kbd> together with the cursor keys.  Such a selection is cancelled
+upon any cursor movement where <kbd>Shift</kbd> isn&rsquo;t held.
 </p>
 <p>Cutting or copying selected text will toggle the mark off automatically.
 If necessary, it can be toggled off manually with another <kbd>^6</kbd> or <kbd>M-A</kbd>.
@@ -630,8 +632,8 @@ cannot be undone any more.  The workaround is, of course, to exit without
 saving.
 </p>
 <p>The recording and playback of keyboard macros works correctly only on a
-terminal emulator, not on a Linux console (VT), because the latter is a
-deficient terminal.
+terminal emulator, not on a Linux console (VT), because the latter does
+not by default distinguish modified from unmodified arrow keys.
 </p>
 <hr>
 <a name="Built_002din-Help"></a>
@@ -830,13 +832,17 @@ closing brackets, can end sentences.  The default value is
 </dd>
 <dt><code>set constantshow</code></dt>
 <dd><p>Constantly display the cursor position on the status bar.
-(The old form of this option, <code>set const</code>, is deprecated.)
 Note that this overrides <samp>quickblank</samp>.
 </p>
 </dd>
 <dt><code>set cutfromcursor</code></dt>
 <dd><p>Use cut-from-cursor-to-end-of-line by default, instead of cutting the whole line.
 (The old form of this option, <code>set cut</code>, is deprecated.)
+</p>
+</dd>
+<dt><code>set errorcolor <var>fgcolor</var>,<var>bgcolor</var></code></dt>
+<dd><p>Use this color combination for the status bar when an error message is displayed.
+See <a href="#set-functioncolor"><code>set functioncolor</code></a> for valid color names.
 </p>
 </dd>
 <dt><code>set fill <var>number</var></code></dt>
@@ -851,7 +857,8 @@ The default value is <tt>-8</tt>.  This option conflicts with
 in the two help lines at the bottom of the screen.
 Valid names for foreground and background color are:
 <code>white</code>, <code>black</code>, <code>blue</code>, <code>green</code>,
-<code>red</code>, <code>cyan</code>, <code>yellow</code>, and <code>magenta</code>.
+<code>red</code>, <code>cyan</code>, <code>yellow</code>, <code>magenta</code>, and <code>normal</code>
+&mdash; where <code>normal</code> means the default foreground or background color.
 The name of the foreground color may be prefixed with <code>bright</code>.
 And either <var>fgcolor</var> or ,<var>bgcolor</var> may be left out.
 </p>
@@ -932,7 +939,6 @@ directory feature is turned off.
 <dt><code>set positionlog</code></dt>
 <dd><p>Save the cursor position of files between editing sessions.
 The cursor position is remembered for the 200 most-recently edited files.
-(The old form of this option, <code>set poslog</code>, is deprecated.)
 </p>
 </dd>
 <dt><code>set preserve</code></dt>
@@ -1195,13 +1201,21 @@ in one of the system-installed files (which normally are not writable).
 <a name="Rebinding-Keys-1"></a>
 <h3 class="section">7.3 Rebinding Keys</h3>
 
-<p>Key bindings can be changed via the following two commands in a
+<p>Key bindings can be changed via the following three commands in a
 nanorc file:
 </p>
 <dl compact="compact">
 <dt><code>bind key function menu</code></dt>
 <dd><p>Rebinds <code>key</code> to <code>function</code> in the context of <code>menu</code>
 (or in all menus where the function exists by using <code>all</code>).
+</p>
+</dd>
+<dt><code>bind key &quot;string&quot; menu</code></dt>
+<dd><p>Makes <code>key</code> produce <code>string</code> in the context of <code>menu</code>
+(or in all menus where the key exists when <code>all</code> is used).
+The <code>string</code> can consist of text or commands or a mix of them.
+(To enter a command into the <code>string</code>, precede its keystroke
+with <kbd>M-V</kbd>.)
 </p>
 </dd>
 <dt><code>unbind key menu</code></dt>
@@ -1265,7 +1279,6 @@ matching a string in the current list in the file browser.
 </dd>
 <dt><code>searchagain</code></dt>
 <dd><p>Repeats the last search command without prompting.
-(The form <code>research</code> is deprecated.)
 </p>
 </dd>
 <dt><code>findprevious</code></dt>
@@ -1311,7 +1324,6 @@ current cursor position.
 </dd>
 <dt><code>curpos</code></dt>
 <dd><p>Shows the current cursor position: the line, column, and character positions.
-(The form <code>cursorpos</code> is deprecated.)
 </p>
 </dd>
 <dt><code>wordcount</code></dt>
@@ -1366,11 +1378,13 @@ in the current buffer.
 </p>
 </dd>
 <dt><code>scrollup</code></dt>
-<dd><p>Scrolls up one line of text from the current position.
+<dd><p>Scrolls the viewport up one row (meaning that the text slides down)
+while keeping the cursor in the same text position, if possible.
 </p>
 </dd>
 <dt><code>scrolldown</code></dt>
-<dd><p>Scrolls down one line of text from the current position.
+<dd><p>Scrolls the viewport down one row (meaning that the text slides up)
+while keeping the cursor in the same text position, if possible.
 </p>
 </dd>
 <dt><code>prevword</code></dt>
@@ -1425,10 +1439,6 @@ in the current buffer.
 <dt><code>gotoline</code></dt>
 <dd><p>Goes to a specific line (and column if specified).  Negative numbers count
 from the end of the file (and end of the line).
-</p>
-</dd>
-<dt><code>gototext</code></dt>
-<dd><p>Switches from targeting a line number to searching for text.
 </p>
 </dd>
 <dt><code>findbracket</code></dt>
@@ -1496,7 +1506,6 @@ as a macro.  When already recording, the recording is stopped.
 </dd>
 <dt><code>regexp</code></dt>
 <dd><p>Toggles whether searching/replacing is based on literal strings or regular expressions.
-(The form <code>regex</code> is deprecated.)
 </p>
 </dd>
 <dt><code>backwards</code></dt>
@@ -1513,7 +1522,11 @@ as a macro.  When already recording, the recording is stopped.
 </dd>
 <dt><code>flipreplace</code></dt>
 <dd><p>Toggles between searching for something and replacing something.
-(The form <code>dontreplace</code> is deprecated.)
+</p>
+</dd>
+<dt><code>flipgoto</code></dt>
+<dd><p>Toggles between searching for text and targeting a line number.
+(The form <code>gototext</code> is deprecated.)
 </p>
 </dd>
 <dt><code>flipexecute</code></dt>
@@ -1523,7 +1536,6 @@ as a macro.  When already recording, the recording is stopped.
 <dt><code>flipnewbuffer</code></dt>
 <dd><p>Toggles between inserting into the current buffer and into a new
 empty buffer.
-(The form <code>newbuffer</code> is deprecated.)
 </p>
 </dd>
 <dt><code>dosformat</code></dt>
@@ -1659,7 +1671,6 @@ or read into a new buffer.
 </dd>
 <dt><code>replacewith</code></dt>
 <dd><p>The &rsquo;replace with&rsquo; menu, which comes up after &rsquo;search to replace&rsquo;.
-(The form <code>replace2</code> is deprecated.)
 </p>
 </dd>
 <dt><code>gotoline</code></dt>

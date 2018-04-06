@@ -1,6 +1,6 @@
 ## Here is an example for Texinfo files.
 
-syntax "texinfo" "\.texi$"
+syntax texinfo "\.texi$"
 header "^\\input texinfo"
 magic "Texinfo source"
 comment "@c "

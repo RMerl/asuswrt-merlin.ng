@@ -6,10 +6,10 @@
 # Yuri Chornoivan <yurchor@ukr.net>, 2014, 2015, 2016, 2017, 2018.
 msgid ""
 msgstr ""
-"Project-Id-Version: nano 2.9.3-pre1\n"
+"Project-Id-Version: nano 2.9.5-pre1\n"
 "Report-Msgid-Bugs-To: nano-devel@gnu.org\n"
-"POT-Creation-Date: 2018-01-29 09:42+0100\n"
-"PO-Revision-Date: 2018-01-24 13:05+0200\n"
+"POT-Creation-Date: 2018-03-29 10:14+0200\n"
+"PO-Revision-Date: 2018-03-23 13:29+0200\n"
 "Last-Translator: Yuri Chornoivan <yurchor@ukr.net>\n"
 "Language-Team: Ukrainian <translation-team-uk@lists.sourceforge.net>\n"
 "Language: uk\n"
@@ -31,9 +31,9 @@ msgstr "Не вдалося відкрити каталог: %s"
 msgid "Go To Directory"
 msgstr "Перейти до каталогу"
 
-#: src/browser.c:233 src/browser.c:691 src/files.c:1080 src/files.c:2094
-#: src/nano.c:1084 src/search.c:156 src/search.c:240 src/search.c:754
-#: src/search.c:811 src/text.c:3050 src/text.c:3244
+#: src/browser.c:233 src/browser.c:695 src/files.c:1074 src/files.c:2088
+#: src/nano.c:1072 src/search.c:137 src/search.c:233 src/search.c:728
+#: src/search.c:780 src/text.c:3031 src/text.c:3225
 msgid "Cancelled"
 msgstr "Скасовано"
 
@@ -48,62 +48,62 @@ msgstr "Не можу вийти за межі %s"
 msgid "Can't move up a directory"
 msgstr "Не можу перейти на каталог вище"
 
-#: src/browser.c:287 src/files.c:971 src/files.c:977 src/files.c:1615
-#: src/files.c:1732 src/files.c:1773 src/files.c:1793 src/files.c:1905
-#: src/history.c:311 src/history.c:407 src/rcfile.c:526 src/rcfile.c:1207
+#: src/browser.c:287 src/files.c:965 src/files.c:971 src/files.c:1609
+#: src/files.c:1726 src/files.c:1767 src/files.c:1787 src/files.c:1899
+#: src/history.c:311 src/history.c:407 src/rcfile.c:533 src/rcfile.c:1221
 #, c-format
 msgid "Error reading %s: %s"
 msgstr "Помилка під час спроби читання %s: %s"
 
-#: src/browser.c:367
+#: src/browser.c:371
 msgid "The working directory has disappeared"
 msgstr "Робочий каталог зник"
 
 #. TRANSLATORS: Try to keep this at most 7 characters.
-#: src/browser.c:562 src/browser.c:569
+#: src/browser.c:566 src/browser.c:573
 msgid "(dir)"
 msgstr "(кат)"
 
 #. TRANSLATORS: Try to keep this at most 12 characters.
-#: src/browser.c:566
+#: src/browser.c:570
 msgid "(parent dir)"
 msgstr "(батьк. кат.)"
 
 #. TRANSLATORS: Try to keep this at most 7 characters.
 #. * If necessary, you can leave out the parentheses.
-#: src/browser.c:596
+#: src/browser.c:600
 msgid "(huge)"
 msgstr "(вел.)"
 
 #. TRANSLATORS: This is the main search prompt.
-#: src/browser.c:680 src/search.c:136
+#: src/browser.c:684 src/search.c:123
 msgid "Search"
 msgstr "Пошук"
 
 # message
-#: src/browser.c:721 src/browser.c:726 src/search.c:310
+#: src/browser.c:725 src/browser.c:730 src/search.c:303
 msgid "Search Wrapped"
 msgstr "Дісталися кінця файла, почали спочатку"
 
-#: src/browser.c:737 src/search.c:442
+#: src/browser.c:741 src/search.c:427
 msgid "This is the only occurrence"
 msgstr "Це єдиний збіг"
 
-#: src/browser.c:782 src/search.c:410
+#: src/browser.c:786 src/search.c:393
 msgid "No current search pattern"
 msgstr "Немає поточного зразка для пошуку"
 
-#: src/color.c:181
+#: src/color.c:183
 #, c-format
 msgid "Unknown syntax name: %s"
 msgstr "Невідома назва синтаксису: %s"
 
-#: src/color.c:237
+#: src/color.c:239
 #, c-format
 msgid "magic_load() failed: %s"
 msgstr "Помилка magic_load(): %s"
 
-#: src/color.c:241
+#: src/color.c:243
 #, c-format
 msgid "magic_file(%s) failed: %s"
 msgstr "Помилка magic_file(%s): %s"
@@ -134,31 +134,31 @@ msgid "Directory '%s' is not writable"
 msgstr "Каталог «%s» непридатний до запису"
 
 #. TRANSLATORS: Keep the next eight messages at most 76 characters.
-#: src/files.c:183
+#: src/files.c:186
 msgid "Couldn't determine my identity for lock file (getpwuid() failed)"
 msgstr "Не вдалося визначити профіль для файла блокування (помилка getpwuid())"
 
-#: src/files.c:192
+#: src/files.c:195
 #, c-format
 msgid "Couldn't determine hostname for lock file: %s"
 msgstr "Не вдалося визначити назву вузла для файла блокування: %s"
 
-#: src/files.c:212 src/files.c:221 src/files.c:259 src/files.c:266
+#: src/files.c:215 src/files.c:224 src/files.c:262 src/files.c:269
 #, c-format
 msgid "Error writing lock file %s: %s"
 msgstr "Помилка під час спроби записати файл блокування %s: %s"
 
-#: src/files.c:288
+#: src/files.c:291
 #, c-format
 msgid "Error deleting lock file %s: %s"
 msgstr "Помилка під час спроби вилучити файл блокування %s: %s"
 
-#: src/files.c:319
+#: src/files.c:322
 #, c-format
 msgid "Error opening lock file %s: %s"
 msgstr "Помилка під час спроби відкрити файл блокування %s: %s"
 
-#: src/files.c:333
+#: src/files.c:336
 #, c-format
 msgid "Error reading lock file %s: Not enough data read"
 msgstr ""
@@ -166,48 +166,48 @@ msgstr ""
 "недостатньо даних"
 
 #. TRANSLATORS: The second %s is the name of the user, the third that of the editor.
-#: src/files.c:352
+#: src/files.c:355
 #, c-format
 msgid "File %s is being edited (by %s with %s, PID %s); continue?"
 msgstr ""
 "Редагування файла %s вже виконується (%s за допомогою %s, PID %s); "
 "продовжити?"
 
-#: src/files.c:428
+#: src/files.c:429
 #, c-format
 msgid "Can't read file from outside of %s"
 msgstr "Не вдалося прочитати файл поза %s"
 
-#: src/files.c:444 src/files.c:961 src/rcfile.c:505
+#: src/files.c:445 src/files.c:955 src/rcfile.c:512
 #, c-format
 msgid "\"%s\" is a directory"
 msgstr "«%s» є каталогом"
 
-#: src/files.c:446
+#: src/files.c:447
 #, c-format
 msgid "\"%s\" is not a normal file"
 msgstr "«%s» не є звичайним файлом"
 
-#: src/files.c:597
+#: src/files.c:594
 msgid "No more open file buffers"
 msgstr "Більше немає відкритих файлових буферів"
 
-#: src/files.c:622
+#: src/files.c:619
 #, c-format
 msgid "Switched to %s"
 msgstr "Перемкнуто до %s"
 
-#: src/files.c:624 src/global.c:1034 src/winio.c:2034
+#: src/files.c:621 src/global.c:1029 src/winio.c:2047
 msgid "New Buffer"
 msgstr "Новий Буфер"
 
-#: src/files.c:892
+#: src/files.c:886
 #, c-format
 msgid "File '%s' is unwritable"
 msgstr "Файл «%s» непридатний до запису"
 
 #. TRANSLATORS: Keep the next four messages at most 78 characters.
-#: src/files.c:896
+#: src/files.c:890
 #, c-format
 msgid "Read %zu line (Converted from DOS and Mac format)"
 msgid_plural "Read %zu lines (Converted from DOS and Mac format)"
@@ -215,7 +215,7 @@ msgstr[0] "Прочитано %zu рядок (перетворено з форм
 msgstr[1] "Прочитано %zu рядки (перетворено з формату DOS та Mac)"
 msgstr[2] "Прочитано %zu рядків (перетворено з формату DOS та Mac)"
 
-#: src/files.c:901
+#: src/files.c:895
 #, c-format
 msgid "Read %zu line (Converted from Mac format)"
 msgid_plural "Read %zu lines (Converted from Mac format)"
@@ -223,7 +223,7 @@ msgstr[0] "Прочитано %zu рядок (перетворено з форм
 msgstr[1] "Прочитано %zu рядки (перетворено з формату Mac)"
 msgstr[2] "Прочитано %zu рядків (перетворено з формату Mac)"
 
-#: src/files.c:906
+#: src/files.c:900
 #, c-format
 msgid "Read %zu line (Converted from DOS format)"
 msgid_plural "Read %zu lines (Converted from DOS format)"
@@ -231,7 +231,7 @@ msgstr[0] "Прочитано %zu рядок (перетворено з форм
 msgstr[1] "Прочитано %zu рядки (перетворено з формату DOS)"
 msgstr[2] "Прочитано %zu рядків (перетворено з формату DOS)"
 
-#: src/files.c:912
+#: src/files.c:906
 #, c-format
 msgid "Read %zu line"
 msgid_plural "Read %zu lines"
@@ -239,89 +239,89 @@ msgstr[0] "Прочитано %zu рядок"
 msgstr[1] "Прочитано %zu рядки"
 msgstr[2] "Прочитано %zu рядків"
 
-#: src/files.c:947
+#: src/files.c:941
 msgid "New File"
 msgstr "Новий файл"
 
-#: src/files.c:952
+#: src/files.c:946
 #, c-format
 msgid "File \"%s\" not found"
 msgstr "Файла «%s» не знайдено"
 
-#: src/files.c:962 src/rcfile.c:506
+#: src/files.c:956 src/rcfile.c:513
 #, c-format
 msgid "\"%s\" is a device file"
 msgstr "«%s» є файлом пристрою"
 
-#: src/files.c:980
+#: src/files.c:974
 msgid "Reading File"
 msgstr "Читаємо файл"
 
 #. TRANSLATORS: The next four messages are prompts.
-#: src/files.c:1046
+#: src/files.c:1040
 msgid "Command to execute in new buffer"
 msgstr "Команда, яку слід виконати у новому буфері"
 
-#: src/files.c:1049
+#: src/files.c:1043
 msgid "Command to execute"
 msgstr "Команда, яку слід виконати"
 
-#: src/files.c:1055
+#: src/files.c:1049
 #, c-format
 msgid "File to insert into new buffer [from %s]"
 msgstr "Файл для вставляння (до нового буфера) [від %s]"
 
-#: src/files.c:1058
+#: src/files.c:1052
 #, c-format
 msgid "File to insert [from %s]"
 msgstr "Файл для вставляння [від %s]"
 
-#: src/files.c:1201
+#: src/files.c:1195
 msgid "Key invalid in non-multibuffer mode"
 msgstr "Клавіша недійсна у не мультибуферному режимі"
 
-#: src/files.c:1414
+#: src/files.c:1408
 msgid "Invalid operating directory\n"
 msgstr "Некоректний робочий каталог\n"
 
-#: src/files.c:1463
+#: src/files.c:1457
 msgid "Failed to write backup file; continue saving? (Say N if unsure.) "
 msgstr ""
 "Не вдалося записати дані до файла резервної копії, продовжити спробу "
 "зберегти дані? (Натисніть N, якщо не певні.) "
 
-#: src/files.c:1480
+#: src/files.c:1474
 msgid "Invalid backup directory\n"
 msgstr "Некоректний резервний каталог\n"
 
-#: src/files.c:1573
+#: src/files.c:1567
 #, c-format
 msgid "Can't write outside of %s"
 msgstr "Не можу записати поза %s"
 
-#: src/files.c:1651 src/files.c:1675 src/files.c:1693 src/files.c:1707
-#: src/files.c:1719 src/files.c:1742
+#: src/files.c:1645 src/files.c:1669 src/files.c:1687 src/files.c:1701
+#: src/files.c:1713 src/files.c:1736
 #, c-format
 msgid "Error writing backup file %s: %s"
 msgstr "Помилка під час спроби записати до файла резервної копії %s: %s"
 
-#: src/files.c:1652 src/nano.c:665
+#: src/files.c:1646 src/nano.c:654
 msgid "Too many backup files?"
 msgstr "Забагато файлів резервних копій?"
 
-#: src/files.c:1782 src/files.c:1804 src/help.c:55 src/help.c:122
-#: src/text.c:2976 src/text.c:2988 src/text.c:3368 src/text.c:3379
+#: src/files.c:1776 src/files.c:1798 src/help.c:55 src/help.c:122
+#: src/text.c:2957 src/text.c:2969 src/text.c:3351 src/text.c:3362
 #, c-format
 msgid "Error writing temp file: %s"
 msgstr "Помилка під час спроби записати до тимчасового файла: %s"
 
-#: src/files.c:1823 src/files.c:1833 src/files.c:1853 src/files.c:1870
-#: src/files.c:1880 src/files.c:1912 src/files.c:1919
+#: src/files.c:1817 src/files.c:1827 src/files.c:1847 src/files.c:1864
+#: src/files.c:1874 src/files.c:1906 src/files.c:1913
 #, c-format
 msgid "Error writing %s: %s"
 msgstr "Помилка під час спроби записати %s: %s"
 
-#: src/files.c:1969
+#: src/files.c:1963
 #, c-format
 msgid "Wrote %zu line"
 msgid_plural "Wrote %zu lines"
@@ -329,68 +329,68 @@ msgstr[0] "Записано %zu рядок"
 msgstr[1] "Записано %zu рядки"
 msgstr[2] "Записано %zu рядків"
 
-#: src/files.c:2054
+#: src/files.c:2048
 msgid " [DOS Format]"
 msgstr " [формат DOS]"
 
-#: src/files.c:2055
+#: src/files.c:2049
 msgid " [Mac Format]"
 msgstr " [формат Mac]"
 
-#: src/files.c:2056
+#: src/files.c:2050
 msgid " [Backup]"
 msgstr " [Резерв]"
 
 #. TRANSLATORS: The next six strings are prompts.
-#: src/files.c:2063
+#: src/files.c:2057
 msgid "Prepend Selection to File"
 msgstr "Дописати позначене до файла на початку"
 
-#: src/files.c:2064
+#: src/files.c:2058
 msgid "Append Selection to File"
 msgstr "Дописати позначене до файла наприкінці"
 
-#: src/files.c:2065
+#: src/files.c:2059
 msgid "Write Selection to File"
 msgstr "Записати позначене до файла"
 
-#: src/files.c:2067
+#: src/files.c:2061
 msgid "File Name to Prepend to"
 msgstr "Назва файла для дописування"
 
-#: src/files.c:2068
+#: src/files.c:2062
 msgid "File Name to Append to"
 msgstr "Назва файла для дописування"
 
-#: src/files.c:2071
+#: src/files.c:2065
 msgid "File Name to Write"
 msgstr "Назва файла для записування"
 
 #. TRANSLATORS: Restricted mode forbids overwriting.
-#: src/files.c:2180
+#: src/files.c:2174
 msgid "File exists -- cannot overwrite"
 msgstr "Файл вже існує - перезапис неможливий"
 
-#: src/files.c:2190
+#: src/files.c:2184
 msgid "Save file under DIFFERENT NAME? "
 msgstr "Зберегти файл з ІНШОЮ НАЗВОЮ? "
 
-#: src/files.c:2198
+#: src/files.c:2192
 #, c-format
 msgid "File \"%s\" exists; OVERWRITE? "
 msgstr "Файл «%s» вже існує, ПЕРЕЗАПИСАТИ? "
 
-#: src/files.c:2225
+#: src/files.c:2219
 msgid "File on disk has changed"
 msgstr "Файл змінено на диску"
 
-#: src/files.c:2227
+#: src/files.c:2221
 msgid "File was modified since you opened it; continue saving? "
 msgstr ""
 "З часу, коли було відкрито файл, до нього було внесено зміни. Продовжити "
 "спроби зберегти дані? "
 
-#: src/files.c:2646
+#: src/files.c:2641
 msgid "(more)"
 msgstr "(далі)"
 
@@ -470,737 +470,735 @@ msgstr "Скасувати поточну функцію"
 msgid "Display this help text"
 msgstr "Показати цю довідку"
 
-#: src/global.c:519
-msgid "Close the current file buffer / Exit from nano"
-msgstr "Закрити буфер поточного файла  / Вийти з nano"
+#: src/global.c:518
+msgid "Close the current buffer / Exit from nano"
+msgstr "Закрити поточний буфер / Вийти з nano"
 
-#: src/global.c:521
-msgid "Exit from nano"
-msgstr "Вихід з nano"
+#: src/global.c:520
+msgid "Write the current buffer (or the marked region) to disk"
+msgstr "Записати поточний буфер (або позначену область) до файла"
 
-#: src/global.c:525
-msgid "Write the current file to disk"
-msgstr "Записати поточний файл на диск"
+#: src/global.c:522
+msgid "Insert another file into current buffer (or into new buffer)"
+msgstr "Вставити інший файл до поточного буфера (або до нового буфера)"
 
-#: src/global.c:527
-msgid "Insert another file into the current one"
-msgstr "Вставити інший файл до поточного"
-
-#: src/global.c:529
+#: src/global.c:524
 msgid "Search forward for a string or a regular expression"
 msgstr "Шукати рядок або формальний вираз далі за текстом"
 
-#: src/global.c:531
+#: src/global.c:526
 msgid "Search backward for a string or a regular expression"
 msgstr "Шукати рядок або формальний вираз у напрямку до початку тексту"
 
-#: src/global.c:533
+#: src/global.c:528
 msgid "Search for a string"
 msgstr "Шукати рядок"
 
-#: src/global.c:534
+#: src/global.c:529
 msgid "Refresh the file list"
 msgstr "Освіжити список файлів"
 
-#: src/global.c:536
+#: src/global.c:531
 msgid "Go to lefthand column"
 msgstr "Перейти до стовпчика ліворуч"
 
-#: src/global.c:537
+#: src/global.c:532
 msgid "Go to righthand column"
 msgstr "Перейти до стовпчика праворуч"
 
-#: src/global.c:538
+#: src/global.c:533
 msgid "Go to first row in this column"
 msgstr "Перейти до першого рядка у цьому стовпчику"
 
-#: src/global.c:539
+#: src/global.c:534
 msgid "Go to last row in this column"
 msgstr "Перейти до останнього рядка у цьому стовпчику"
 
-#: src/global.c:542
+#: src/global.c:537
 msgid "Go one screenful up"
 msgstr "На один екран вгору"
 
-#: src/global.c:543
+#: src/global.c:538
 msgid "Go one screenful down"
 msgstr "На один екран вниз"
 
-#: src/global.c:545
-msgid "Cut the current line and store it in the cutbuffer"
-msgstr "Вирізати поточний рядок та помістити його до \"кишені\""
+#: src/global.c:540
+msgid "Cut current line (or marked region) and store it in cutbuffer"
+msgstr ""
+"Вирізати поточний рядок (або позначену область) і помістити його до «кишені»"
 
-#: src/global.c:547
+#: src/global.c:542
 msgid "Uncut from the cutbuffer into the current line"
 msgstr "Скасувати вирізання та вставити зміст \"кишені\" до поточного рядка"
 
-#: src/global.c:548
+#: src/global.c:543
 msgid "Display the position of the cursor"
 msgstr "Показати розташування курсора"
 
-#: src/global.c:550
+#: src/global.c:545
 msgid "Invoke the spell checker, if available"
 msgstr "Викликати програму пошуку друкарських помилок (якщо є)"
 
-#: src/global.c:552
+#: src/global.c:547
 msgid "Replace a string or a regular expression"
 msgstr "Замінити рядок або формальний вираз"
 
-#: src/global.c:553
+#: src/global.c:548
 msgid "Go to line and column number"
 msgstr "Перейти до рядка і позиції"
 
-#: src/global.c:554
+#: src/global.c:549
 msgid "Repeat the last search"
 msgstr "Повторити останній пошук"
 
-#: src/global.c:556
+#: src/global.c:551
 msgid "Mark text starting from the cursor position"
 msgstr "Позначити текст, починаючи з поточної позиції курсора"
 
-#: src/global.c:558
-msgid "Copy the current line and store it in the cutbuffer"
-msgstr "Скопіювати поточний рядок та зберегти його до \"кишені\""
+#: src/global.c:553
+msgid "Copy current line (or marked region) and store it in cutbuffer"
+msgstr ""
+"Скопіювати поточний рядок (або позначену область) і зберегти його до «кишені»"
 
-#: src/global.c:559
+#: src/global.c:554
 msgid "Indent the current line (or marked lines)"
 msgstr "Додати відступ у поточному рядку (або позначених рядках)"
 
-#: src/global.c:560
+#: src/global.c:555
 msgid "Unindent the current line (or marked lines)"
 msgstr "Вилучити відступ для поточного рядка (або позначених рядків)"
 
-#: src/global.c:561
+#: src/global.c:556
 msgid "Undo the last operation"
 msgstr "Скасувати останню дію"
 
-#: src/global.c:562
+#: src/global.c:557
 msgid "Redo the last undone operation"
 msgstr "Відновити останню скасовану дію"
 
-#: src/global.c:564
+#: src/global.c:559
 msgid "Go back one character"
 msgstr "Назад на один символ"
 
-#: src/global.c:565
+#: src/global.c:560
 msgid "Go forward one character"
 msgstr "Вперед на один символ"
 
-#: src/global.c:566
+#: src/global.c:561
 msgid "Go back one word"
 msgstr "Назад на одне слово"
 
-#: src/global.c:567
+#: src/global.c:562
 msgid "Go forward one word"
 msgstr "Вперед на одне слово"
 
-#: src/global.c:568
+#: src/global.c:563
 msgid "Go to previous line"
 msgstr "Повернутися до попереднього рядка"
 
-#: src/global.c:569
+#: src/global.c:564
 msgid "Go to next line"
 msgstr "Перейти до наступного рядка"
 
-#: src/global.c:570
+#: src/global.c:565
 msgid "Go to beginning of current line"
 msgstr "Перейти до початку рядка"
 
-#: src/global.c:571
+#: src/global.c:566
 msgid "Go to end of current line"
 msgstr "Перейти до кінця рядка"
 
-#: src/global.c:572
+#: src/global.c:567
 msgid "Go to previous block of text"
 msgstr "Повернутися до попереднього блоку тексту"
 
-#: src/global.c:573
+#: src/global.c:568
 msgid "Go to next block of text"
 msgstr "Перейти до наступного блоку тексту"
 
-#: src/global.c:576
+#: src/global.c:571
 msgid "Go to beginning of paragraph; then of previous paragraph"
 msgstr "На початок поточного абзацу; потім наступного абзацу"
 
-#: src/global.c:578
+#: src/global.c:573
 msgid "Go just beyond end of paragraph; then of next paragraph"
 msgstr "У кінець поточного абзацу; потім наступного абзацу"
 
-#: src/global.c:580
+#: src/global.c:575
 msgid "Go to the first line of the file"
 msgstr "Перейти до першого рядка файла"
 
-#: src/global.c:581
+#: src/global.c:576
 msgid "Go to the last line of the file"
 msgstr "Перейти до останнього рядка файла"
 
-#: src/global.c:583
+#: src/global.c:578
 msgid "Go to the matching bracket"
 msgstr "Перейти до відповідної дужки"
 
-#: src/global.c:585
-msgid "Scroll up one line without scrolling the cursor"
+#: src/global.c:580
+msgid "Scroll up one line without moving the cursor textually"
 msgstr "Гортати на один рядок вгору без переміщення курсора"
 
-#: src/global.c:587
-msgid "Scroll down one line without scrolling the cursor"
+#: src/global.c:582
+msgid "Scroll down one line without moving the cursor textually"
 msgstr "Гортати на один рядок вниз без переміщення курсора"
 
-#: src/global.c:590
+#: src/global.c:585
 msgid "Switch to the previous file buffer"
 msgstr "Перемкнутися на попередній файловий буфер"
 
-#: src/global.c:591
+#: src/global.c:586
 msgid "Switch to the next file buffer"
 msgstr "Перемкнутися на наступний файловий буфер"
 
-#: src/global.c:593
+#: src/global.c:588
 msgid "Insert the next keystroke verbatim"
 msgstr "Вставити наступну комбінацію клавіш як є"
 
-#: src/global.c:594
+#: src/global.c:589
 msgid "Insert a tab at the cursor position"
 msgstr "Вставити знак табуляції в місце розташування курсора"
 
-#: src/global.c:595
+#: src/global.c:590
 msgid "Insert a newline at the cursor position"
 msgstr "Вставити новий рядок у місці розташування курсора"
 
-#: src/global.c:596
+#: src/global.c:591
 msgid "Delete the character under the cursor"
 msgstr "Видалити літеру під курсором"
 
-#: src/global.c:598
+#: src/global.c:593
 msgid "Delete the character to the left of the cursor"
 msgstr "Видалити літеру зліва від курсора"
 
-#: src/global.c:601
+#: src/global.c:596
 msgid "Cut backward from cursor to word start"
 msgstr "Вирізати назад від курсора до початку слова"
 
-#: src/global.c:603
+#: src/global.c:598
 msgid "Cut forward from cursor to next word start"
 msgstr "Вирізати вперед від курсора до початку слова"
 
-#: src/global.c:605
+#: src/global.c:600
 msgid "Cut from the cursor position to the end of the file"
 msgstr "Вирізати від позиції курсора до кінця файла"
 
-#: src/global.c:608
+#: src/global.c:603
 msgid "Justify the current paragraph"
 msgstr "Вирівняти поточний абзац"
 
-#: src/global.c:609
+#: src/global.c:604
 msgid "Justify the entire file"
 msgstr "Вирівняти цілий файл"
 
-#: src/global.c:613
+#: src/global.c:608
 msgid "Count the number of words, lines, and characters"
 msgstr "Підрахувати кількість слів, рядків та символів"
 
-#: src/global.c:616
+#: src/global.c:611
 msgid "Refresh (redraw) the current screen"
 msgstr "Перемалювати поточний екран"
 
-#: src/global.c:618
+#: src/global.c:613
 msgid "Suspend the editor (if suspension is enabled)"
 msgstr "Призупинити редактор (якщо увімкнено призупинення)"
 
-#: src/global.c:620
+#: src/global.c:615
 msgid "Try and complete the current word"
 msgstr "Спробувати доповнити поточне слово"
 
-#: src/global.c:624
+#: src/global.c:619
 msgid "Comment/uncomment the current line (or marked lines)"
 msgstr "Додати/Зняти коментування поточного рядка (або позначених рядків)"
 
-#: src/global.c:626
+#: src/global.c:621
 msgid "Save file without prompting"
 msgstr "Зберегти файл без запитань"
 
-#: src/global.c:628
+#: src/global.c:623
 msgid "Search next occurrence backward"
 msgstr "Шукати відповідник у напрямку до початку"
 
-#: src/global.c:629
+#: src/global.c:624
 msgid "Search next occurrence forward"
 msgstr "Шукати відповідник у напрямку до кінця"
 
-#: src/global.c:630
+#: src/global.c:625
 msgid "Start/stop recording a macro"
 msgstr "Почати/Припинити запис макросу"
 
-#: src/global.c:631
+#: src/global.c:626
 msgid "Run the last recorded macro"
 msgstr "Виконати останній записаний макрос"
 
-#: src/global.c:634
+#: src/global.c:629
 msgid "Toggle the case sensitivity of the search"
 msgstr "Увімкнути/вимкнути чутливість пошуку до регістру"
 
-#: src/global.c:636
+#: src/global.c:631
 msgid "Reverse the direction of the search"
 msgstr "Змінити напрямок пошуку на протилежний"
 
-#: src/global.c:638
+#: src/global.c:633
 msgid "Toggle the use of regular expressions"
 msgstr "Увімкнути/вимкнути використання формальних виразів"
 
-#: src/global.c:641
+#: src/global.c:636
 msgid "Recall the previous search/replace string"
 msgstr "Згадати попередній рядок пошуку/заміни"
 
-#: src/global.c:643
+#: src/global.c:638
 msgid "Recall the next search/replace string"
 msgstr "Згадати наступний рядок пошуку/заміни"
 
-#: src/global.c:646
+#: src/global.c:641
 msgid "Toggle the use of DOS format"
 msgstr "Увімкнути/вимкнути використання формату DOS"
 
-#: src/global.c:647
+#: src/global.c:642
 msgid "Toggle the use of Mac format"
 msgstr "Увімкнути/вимкнути використання формату Mac"
 
-#: src/global.c:648
+#: src/global.c:643
 msgid "Toggle appending"
 msgstr "Увімкнути/вимкнути додавання до кінця"
 
-#: src/global.c:649
+#: src/global.c:644
 msgid "Toggle prepending"
 msgstr "Увімкнути/вимкнути додавання до початку"
 
-#: src/global.c:650
+#: src/global.c:645
 msgid "Toggle backing up of the original file"
 msgstr "Увімкнути/вимкнути резервне копіювання початкового файла"
 
-#: src/global.c:651
+#: src/global.c:646
 msgid "Execute external command"
 msgstr "Виконати зовнішню команду"
 
-#: src/global.c:654
+#: src/global.c:649
 msgid "Toggle the use of a new buffer"
 msgstr "Увімкнути/вимкнути використання нового буферу"
 
-#: src/global.c:656
+#: src/global.c:651
 msgid "Close buffer without saving it"
 msgstr "Закрити буфер без його збереження"
 
-#: src/global.c:658
+#: src/global.c:653
 msgid "Go to file browser"
 msgstr "До переглядача файлів"
 
-#: src/global.c:659
+#: src/global.c:654
 msgid "Exit from the file browser"
 msgstr "Вийти з переглядача файлів"
 
-#: src/global.c:660
+#: src/global.c:655
 msgid "Go to the first file in the list"
 msgstr "Перейти до першого файла у списку"
 
-#: src/global.c:661
+#: src/global.c:656
 msgid "Go to the last file in the list"
 msgstr "Перейти до останнього файла у списку"
 
-#: src/global.c:662
+#: src/global.c:657
 msgid "Go to the previous file in the list"
 msgstr "Перейти до попереднього файла у списку"
 
-#: src/global.c:663
+#: src/global.c:658
 msgid "Go to the next file in the list"
 msgstr "Перейти до наступного файла у списку"
 
-#: src/global.c:664
+#: src/global.c:659
 msgid "Go to directory"
 msgstr "До каталогу"
 
-#: src/global.c:667
+#: src/global.c:662
 msgid "Invoke the linter, if available"
 msgstr "Викликати linter, якщо доступний"
 
-#: src/global.c:668
+#: src/global.c:663
 msgid "Go to previous linter msg"
 msgstr "До попереднього пов. linter"
 
-#: src/global.c:669
+#: src/global.c:664
 msgid "Go to next linter msg"
 msgstr "Перейти до наступного повідомлення linter"
 
-#: src/global.c:671
+#: src/global.c:666
 msgid "Invoke formatter, if available"
 msgstr "Викликати formatter, якщо доступний"
 
 #. TRANSLATORS: Try to keep the following strings at most 10 characters.
-#: src/global.c:686
+#: src/global.c:681
 msgid "Get Help"
 msgstr "Довідка"
 
-#: src/global.c:689 src/prompt.c:711
+#: src/global.c:684 src/prompt.c:703
 msgid "Cancel"
 msgstr "Скасувати"
 
-#: src/global.c:702
+#: src/global.c:697
 msgid "Write Out"
 msgstr "Виписати"
 
-#: src/global.c:741
+#: src/global.c:736
 msgid "Go To Dir"
 msgstr "До каталогу"
 
-#: src/global.c:758
+#: src/global.c:753
 msgid "Cut Text"
 msgstr "Вирізати"
 
-#: src/global.c:773
+#: src/global.c:768
 msgid "To Spell"
 msgstr "Правопис"
 
-#: src/global.c:777
+#: src/global.c:772
 msgid "To Linter"
 msgstr "До linter"
 
-#: src/global.c:780
+#: src/global.c:775
 msgid "Formatter"
 msgstr "Formatter"
 
-#: src/global.c:786
+#: src/global.c:781
 msgid "Cur Pos"
 msgstr "Позиція"
 
-#: src/global.c:798
+#: src/global.c:793
 msgid "Undo"
 msgstr "Скасувати"
 
-#: src/global.c:800
+#: src/global.c:795
 msgid "Redo"
 msgstr "Повторити"
 
-#: src/global.c:803
+#: src/global.c:798
 msgid "Mark Text"
 msgstr "Помітити"
 
-#: src/global.c:805
+#: src/global.c:800
 msgid "Copy Text"
 msgstr "Скопіювати текст"
 
-#: src/global.c:809
+#: src/global.c:804
 msgid "Case Sens"
 msgstr "РегЗалеж"
 
-#: src/global.c:811
+#: src/global.c:806
 msgid "Regexp"
 msgstr "ФормВир"
 
-#: src/global.c:813
+#: src/global.c:808
 msgid "Backwards"
 msgstr "Назад"
 
-#: src/global.c:819
+#: src/global.c:814
 msgid "No Replace"
 msgstr "Не Заміщати"
 
-#: src/global.c:831
+#: src/global.c:826
 msgid "To Bracket"
 msgstr "До дужки"
 
-#: src/global.c:837
+#: src/global.c:832
 msgid "Previous"
 msgstr "Назад"
 
-#: src/global.c:839
+#: src/global.c:834
 msgid "Next"
 msgstr "Далі"
 
-#: src/global.c:843 src/global.c:848
+#: src/global.c:838 src/global.c:843
 msgid "Back"
 msgstr "Назад"
 
-#: src/global.c:845 src/global.c:850
+#: src/global.c:840 src/global.c:845
 msgid "Forward"
 msgstr "Вперед"
 
-#: src/global.c:854
+#: src/global.c:849
 msgid "Prev Word"
 msgstr "ПопСлово"
 
-#: src/global.c:856
+#: src/global.c:851
 msgid "Next Word"
 msgstr "НастСлово"
 
-#: src/global.c:859
+#: src/global.c:854
 msgid "Home"
 msgstr "Початок"
 
-#: src/global.c:861
+#: src/global.c:856
 msgid "End"
 msgstr "Кінець"
 
-#: src/global.c:869
+#: src/global.c:864
 msgid "Scroll Up"
 msgstr "Гортати вгору"
 
-#: src/global.c:871
+#: src/global.c:866
 msgid "Scroll Down"
 msgstr "Гортати вниз"
 
-#: src/global.c:875
+#: src/global.c:870
 msgid "Prev Block"
 msgstr "Поп. блок"
 
-#: src/global.c:877
+#: src/global.c:872
 msgid "Next Block"
 msgstr "Наст. блок"
 
-#: src/global.c:880
+#: src/global.c:875
 msgid "Beg of Par"
 msgstr "Поч.абзацу"
 
-#: src/global.c:882
+#: src/global.c:877
 msgid "End of Par"
 msgstr "Кін.абзацу"
 
-#: src/global.c:891
+#: src/global.c:886
 msgid "First Line"
 msgstr "Перший Рядок"
 
-#: src/global.c:893
+#: src/global.c:888
 msgid "Last Line"
 msgstr "Останній Рядок"
 
-#: src/global.c:897
+#: src/global.c:892
 msgid "Prev File"
 msgstr "Поп. файл"
 
-#: src/global.c:899
+#: src/global.c:894
 msgid "Next File"
 msgstr "Наступний файл"
 
-#: src/global.c:915
+#: src/global.c:910
 msgid "Tab"
 msgstr "Tab"
 
-#: src/global.c:917
+#: src/global.c:912
 msgid "Enter"
 msgstr "Enter"
 
-#: src/global.c:920
+#: src/global.c:915
 msgid "Delete"
 msgstr "Delete"
 
-#: src/global.c:922
+#: src/global.c:917
 msgid "Backspace"
 msgstr "Backspace"
 
 #. TRANSLATORS: The next two strings refer to cutting words.
-#: src/global.c:933
+#: src/global.c:928
 msgid "Cut Left"
 msgstr "Вирізати ліворуч"
 
-#: src/global.c:935
+#: src/global.c:930
 msgid "Cut Right"
 msgstr "Вирізати праворуч"
 
-#: src/global.c:937
+#: src/global.c:932
 msgid "CutTillEnd"
 msgstr "ВирДоКінця"
 
-#: src/global.c:947
+#: src/global.c:942
 msgid "Word Count"
 msgstr "Кількість слів"
 
-#: src/global.c:951
+#: src/global.c:946
 msgid "Verbatim"
 msgstr "Буквально"
 
-#: src/global.c:957
+#: src/global.c:952
 msgid "Suspend"
 msgstr "Призупинка -"
 
-#: src/global.c:961
+#: src/global.c:956
 msgid "Indent Text"
 msgstr "Відступ"
 
-#: src/global.c:963
+#: src/global.c:958
 msgid "Unindent Text"
 msgstr "СкасВідст"
 
-#: src/global.c:967
+#: src/global.c:962
 msgid "Comment Lines"
 msgstr "Закоментувати рядки"
 
-#: src/global.c:971
+#: src/global.c:966
 msgid "Complete"
 msgstr "Завершено"
 
-#: src/global.c:975
+#: src/global.c:970
 msgid "Record"
 msgstr "Записати"
 
-#: src/global.c:977
+#: src/global.c:972
 msgid "Run Macro"
 msgstr "Виконати макрос"
 
 #. TRANSLATORS: This starts a backward search.
-#: src/global.c:981
+#: src/global.c:976
 msgid "Where Was"
 msgstr "Де було"
 
-#: src/global.c:984
+#: src/global.c:979
 msgid "Save"
 msgstr "Зберегти"
 
-#: src/global.c:988
+#: src/global.c:983
 msgid "PrevHstory"
 msgstr "ПопЖурнал"
 
-#: src/global.c:990
+#: src/global.c:985
 msgid "NextHstory"
 msgstr "НастЖурнал"
 
-#: src/global.c:999
+#: src/global.c:994
 msgid "Go To Text"
 msgstr "До тексту"
 
-#: src/global.c:1003
+#: src/global.c:998
 msgid "DOS Format"
 msgstr "формат DOS"
 
-#: src/global.c:1005
+#: src/global.c:1000
 msgid "Mac Format"
 msgstr "формат Mac"
 
-#: src/global.c:1013
+#: src/global.c:1008
 msgid "Append"
 msgstr "Додати"
 
-#: src/global.c:1015
+#: src/global.c:1010
 msgid "Prepend"
 msgstr "Додати(0)"
 
-#: src/global.c:1018
+#: src/global.c:1013
 msgid "Backup File"
 msgstr "Зробити резервну копію"
 
-#: src/global.c:1025
+#: src/global.c:1019
 msgid "Execute Command"
 msgstr "Виконати команду"
 
-#: src/global.c:1040
+#: src/global.c:1036
 msgid "To Files"
 msgstr "До Файлів"
 
-#: src/global.c:1048
+#: src/global.c:1044
 msgid "First File"
 msgstr "Перший файл"
 
-#: src/global.c:1050
+#: src/global.c:1046
 msgid "Last File"
 msgstr "Ост. файл"
 
-#: src/global.c:1053
+#: src/global.c:1049
 msgid "Left Column"
 msgstr "Лівий стовпчик"
 
-#: src/global.c:1055
+#: src/global.c:1051
 msgid "Right Column"
 msgstr "Правий стовпчик"
 
-#: src/global.c:1057
+#: src/global.c:1053
 msgid "Top Row"
 msgstr "Перший рядок"
 
-#: src/global.c:1059
+#: src/global.c:1055
 msgid "Bottom Row"
 msgstr "Останній рядок"
 
-#: src/global.c:1064
+#: src/global.c:1060
 msgid "Discard buffer"
 msgstr "Відкинути буфер"
 
 #. TRANSLATORS: Try to keep the next two strings at most 20 characters.
-#: src/global.c:1069
+#: src/global.c:1065
 msgid "Prev Lint Msg"
 msgstr "Поп. пов. lint"
 
-#: src/global.c:1071
+#: src/global.c:1067
 msgid "Next Lint Msg"
 msgstr "Наст. пов. lint"
 
 #. TRANSLATORS: The next eighteen strings are toggle descriptions;
 #. * they are best kept shorter than 40 characters, but may be longer.
-#: src/global.c:1402
+#: src/global.c:1398
 msgid "Help mode"
 msgstr "Режим довідки"
 
-#: src/global.c:1404
+#: src/global.c:1400
 msgid "Constant cursor position display"
 msgstr "Постійно показувати місце розташування курсора"
 
-#: src/global.c:1406
+#: src/global.c:1402
 msgid "Use of one more line for editing"
 msgstr "Використання додаткового рядка для редагування"
 
-#: src/global.c:1408
+#: src/global.c:1404
 msgid "Smooth scrolling"
 msgstr "Плавна прокрутка"
 
-#: src/global.c:1410
+#: src/global.c:1406
 msgid "Soft wrapping of overlong lines"
 msgstr "М’яке перенесення надто довгих рядків"
 
-#: src/global.c:1412
+#: src/global.c:1408
 msgid "Whitespace display"
 msgstr "Показ пробілів"
 
-#: src/global.c:1414
+#: src/global.c:1410
 msgid "Color syntax highlighting"
 msgstr "Підсвічування синтаксису кольором"
 
-#: src/global.c:1416
+#: src/global.c:1412
 msgid "Smart home key"
 msgstr "Розумна клавіша Home"
 
-#: src/global.c:1418
+#: src/global.c:1414
 msgid "Auto indent"
 msgstr "Автовідступ"
 
-#: src/global.c:1420
+#: src/global.c:1416
 msgid "Cut to end"
 msgstr "Вирізати до кінця"
 
-#: src/global.c:1422
+#: src/global.c:1418
 msgid "Hard wrapping of overlong lines"
 msgstr "Жорстке перенесення надзвичайно довгих рядків"
 
-#: src/global.c:1424
+#: src/global.c:1420
 msgid "Conversion of typed tabs to spaces"
 msgstr "Перетворення знаків табуляції на пробіли"
 
-#: src/global.c:1426
+#: src/global.c:1422
 msgid "Backup files"
 msgstr "Резервні копії"
 
-#: src/global.c:1428
+#: src/global.c:1424
 msgid "Reading file into separate buffer"
 msgstr "Читаємо файл до окремого буфера"
 
-#: src/global.c:1430
+#: src/global.c:1426
 msgid "Mouse support"
 msgstr "Підтримка миші"
 
-#: src/global.c:1432
+#: src/global.c:1428
 msgid "No conversion from DOS/Mac format"
 msgstr "Нема перетворювання із DOS/Mac формату"
 
-#: src/global.c:1434
+#: src/global.c:1430
 msgid "Suspension"
 msgstr "Призупинення"
 
-#: src/global.c:1436
+#: src/global.c:1432
 msgid "Line numbering"
 msgstr "Нумерація рядків"
 
-#: src/help.c:302
+#: src/help.c:307
 msgid ""
 "Search Command Help Text\n"
 "\n"
@@ -1222,7 +1220,7 @@ msgstr ""
 "пошуку. Якщо ви натиснете Enter не ввівши жодного тексту, буде здійснено "
 "пошук попереднього шуканого рядка.  "
 
-#: src/help.c:311
+#: src/help.c:316
 msgid ""
 "If you have selected text with the mark and then search to replace, only "
 "matches in the selected text will be replaced.\n"
@@ -1236,7 +1234,7 @@ msgstr ""
 " У режимі пошуку доступні такі функціональні клавіші:\n"
 "\n"
 
-#: src/help.c:317
+#: src/help.c:322
 msgid ""
 "Go To Line Help Text\n"
 "\n"
@@ -1256,7 +1254,7 @@ msgstr ""
 " У режимі До_рядка можна скористатися такими функціональними клавішами:\n"
 "\n"
 
-#: src/help.c:326
+#: src/help.c:331
 msgid ""
 "Insert File Help Text\n"
 "\n"
@@ -1277,7 +1275,7 @@ msgstr ""
 " Попередній рядок пошуку буде показано у дужках після запрошення 'Пошук:'. "
 "Натиснення Enter без редагування тексту продовжить попередній пошук.  "
 
-#: src/help.c:335
+#: src/help.c:340
 msgid ""
 "If you need another blank buffer, do not enter any filename, or type in a "
 "nonexistent filename at the prompt and press Enter.\n"
@@ -1292,7 +1290,7 @@ msgstr ""
 "клавішами:\n"
 "\n"
 
-#: src/help.c:341
+#: src/help.c:346
 msgid ""
 "Write File Help Text\n"
 "\n"
@@ -1321,7 +1319,7 @@ msgstr ""
 "клавішами:\n"
 "\n"
 
-#: src/help.c:355
+#: src/help.c:360
 msgid ""
 "File Browser Help Text\n"
 "\n"
@@ -1347,7 +1345,7 @@ msgstr ""
 "клавішами:\n"
 "\n"
 
-#: src/help.c:368
+#: src/help.c:373
 msgid ""
 "Browser Search Command Help Text\n"
 "\n"
@@ -1370,7 +1368,7 @@ msgstr ""
 "Натиснення Enter без редагування тексту продовжить попередній пошук.\n"
 "\n"
 
-#: src/help.c:377
+#: src/help.c:382
 msgid ""
 " The following function keys are available in Browser Search mode:\n"
 "\n"
@@ -1378,7 +1376,7 @@ msgstr ""
 " В режимі пошуку можна скористатися такими функціональними клавішами:\n"
 "\n"
 
-#: src/help.c:381
+#: src/help.c:386
 msgid ""
 "Browser Go To Directory Help Text\n"
 "\n"
@@ -1401,7 +1399,7 @@ msgstr ""
 "клавішами:\n"
 "\n"
 
-#: src/help.c:394
+#: src/help.c:399
 msgid ""
 "Spell Check Help Text\n"
 "\n"
@@ -1425,7 +1423,7 @@ msgstr ""
 "клавішами:\n"
 "\n"
 
-#: src/help.c:409
+#: src/help.c:414
 msgid ""
 "Execute Command Help Text\n"
 "\n"
@@ -1446,7 +1444,7 @@ msgstr ""
 " Наступні функціональні клавіші доступні у режимі Зовнішня Команда:\n"
 "\n"
 
-#: src/help.c:422
+#: src/help.c:427
 msgid ""
 "Main nano help text\n"
 "\n"
@@ -1466,7 +1464,7 @@ msgstr ""
 "головне вікно редагування, у якому  показано редагований файл. Рядок стану — "
 "3 рядок знизу — містить різні важливі повідомлення.  "
 
-#: src/help.c:432
+#: src/help.c:437
 msgid ""
 "The bottom two lines show the most commonly used shortcuts in the editor.\n"
 "\n"
@@ -1483,7 +1481,7 @@ msgstr ""
 "позначено символом «M», їх можна ввести за допомогою клавіш Alt, Cmd або "
 "Esc, залежно від моделі використаної клавіатури.  "
 
-#: src/help.c:439
+#: src/help.c:444
 msgid ""
 "Also, pressing Esc twice and then typing a three-digit decimal number from "
 "000 to 255 will enter the character with the corresponding value.  The "
@@ -1497,7 +1495,7 @@ msgstr ""
 "Альтернативні комбінації наведено у дужках:\n"
 "\n"
 
-#: src/help.c:471 src/help.c:552
+#: src/help.c:476 src/help.c:557
 msgid "enable/disable"
 msgstr "дозволити/заборонити"
 
@@ -1535,19 +1533,19 @@ msgstr ""
 msgid "Error writing %s: %s\n"
 msgstr "Помилка під час спроби записати %s: %s\n"
 
-#: src/nano.c:534
+#: src/nano.c:536
 msgid "Key is invalid in view mode"
 msgstr "Некоректна клавіша у режимі перегляду"
 
-#: src/nano.c:540
+#: src/nano.c:542
 msgid "This function is disabled in restricted mode"
 msgstr "Цю функцію вимкнено у обмеженому режимі"
 
-#: src/nano.c:548
+#: src/nano.c:550
 msgid "Help is not available"
 msgstr "Довідка недоступна"
 
-#: src/nano.c:659
+#: src/nano.c:648
 #, c-format
 msgid ""
 "\n"
@@ -1556,7 +1554,7 @@ msgstr ""
 "\n"
 "Буфер записано до %s\n"
 
-#: src/nano.c:661
+#: src/nano.c:650
 #, c-format
 msgid ""
 "\n"
@@ -1565,7 +1563,7 @@ msgstr ""
 "\n"
 "Буфер не записано до %s: %s\n"
 
-#: src/nano.c:664
+#: src/nano.c:653
 #, c-format
 msgid ""
 "\n"
@@ -1574,7 +1572,7 @@ msgstr ""
 "\n"
 "Буфер не записано: %s\n"
 
-#: src/nano.c:778
+#: src/nano.c:766
 #, c-format
 msgid ""
 "Usage: nano [OPTIONS] [[+LINE[,COLUMN]] FILE]...\n"
@@ -1585,7 +1583,7 @@ msgstr ""
 
 #. TRANSLATORS: The next two strings are part of the --help output.
 #. * It's best to keep its lines within 80 characters.
-#: src/nano.c:781
+#: src/nano.c:769
 #, c-format
 msgid ""
 "To place the cursor on a specific line of a file, put the line number with\n"
@@ -1594,7 +1592,7 @@ msgstr ""
 "Щоб розташувати курсор у певному рядку файла, вкажіть номер рядка із «+»\n"
 "перед назвою файла. Позицію у рядку можна вказати після коми.\n"
 
-#: src/nano.c:783
+#: src/nano.c:771
 #, c-format
 msgid ""
 "When a filename is '-', nano reads data from standard input.\n"
@@ -1604,273 +1602,273 @@ msgstr ""
 "введення.\n"
 "\n"
 
-#: src/nano.c:784
+#: src/nano.c:772
 #, c-format
 msgid "Option\t\tGNU long option\t\tMeaning\n"
 msgstr "Параметр\t\tДовга форма\t\tПризначення\n"
 
 #. TRANSLATORS: The next forty or so strings are option descriptions
 #. * for the --help output.  Try to keep them at most 40 characters.
-#: src/nano.c:789
+#: src/nano.c:777
 msgid "Enable smart home key"
 msgstr "Увімкнути розумну кнопку Home"
 
-#: src/nano.c:791
+#: src/nano.c:779
 msgid "Save backups of existing files"
 msgstr "Зберігати резервні копії наявних файлів"
 
-#: src/nano.c:792
+#: src/nano.c:780
 msgid "-C <dir>"
 msgstr "-C <кат>"
 
-#: src/nano.c:792
+#: src/nano.c:780
 msgid "--backupdir=<dir>"
 msgstr "--backupdir=<dir>"
 
-#: src/nano.c:793
+#: src/nano.c:781
 msgid "Directory for saving unique backup files"
 msgstr "Каталог для зберігання унікальних резервних копій"
 
-#: src/nano.c:796
+#: src/nano.c:784
 msgid "Use bold instead of reverse video text"
 msgstr "Використовувати жирний шрифт замість звичайного"
 
-#: src/nano.c:798
+#: src/nano.c:786
 msgid "Convert typed tabs to spaces"
 msgstr "Перетворювати табуляції у пробіли"
 
-#: src/nano.c:803
+#: src/nano.c:791
 msgid "Read a file into a new buffer by default"
 msgstr "Типово читати файл до нового буфера"
 
-#: src/nano.c:806
+#: src/nano.c:794
 msgid "Use (vim-style) lock files"
 msgstr "Використовувати файли блокування (як у vim)"
 
-#: src/nano.c:811
+#: src/nano.c:799
 msgid "Log & read search/replace string history"
 msgstr "Вести журнал та читати історію умов пошуку/заміни"
 
-#: src/nano.c:815
+#: src/nano.c:803
 msgid "Don't look at nanorc files"
 msgstr "Не використовувати файли nanorc"
 
-#: src/nano.c:818
+#: src/nano.c:806
 msgid "Fix numeric keypad key confusion problem"
 msgstr "Виправляти проблему малої клавіатури"
 
-#: src/nano.c:820
+#: src/nano.c:808
 msgid "Don't add newlines to the ends of files"
 msgstr "Не додавати порожні рядки у кінці файла"
 
-#: src/nano.c:823
+#: src/nano.c:811
 msgid "Trim tail spaces when hard-wrapping"
 msgstr "Обрізати кінцеві пробіли при жорсткому перенесенні"
 
-#: src/nano.c:827
+#: src/nano.c:815
 msgid "Don't convert files from DOS/Mac format"
 msgstr "Не перетворювати файли з формату DOS/Mac"
 
-#: src/nano.c:829
+#: src/nano.c:817
 msgid "Use one more line for editing"
 msgstr "Використовувати додатковий рядок для редагування"
 
-#: src/nano.c:833
+#: src/nano.c:821
 msgid "Log & read location of cursor position"
 msgstr "Записувати до журналу і читати позицію курсора"
 
-#: src/nano.c:836
+#: src/nano.c:824
 msgid "-Q <str>"
 msgstr "-Q <ряд>"
 
-#: src/nano.c:836
+#: src/nano.c:824
 msgid "--quotestr=<str>"
 msgstr "--quotestr=<ряд>"
 
-#: src/nano.c:836
+#: src/nano.c:824
 msgid "Quoting string"
 msgstr "Рядок цитування"
 
-#: src/nano.c:839
+#: src/nano.c:827
 msgid "Restricted mode"
 msgstr "Обмежений режим"
 
-#: src/nano.c:841
+#: src/nano.c:829
 msgid "Scroll by line instead of half-screen"
 msgstr "Гортати на рядок, а не на пів екрана"
 
-#: src/nano.c:843
+#: src/nano.c:831
 msgid "-T <#cols>"
 msgstr "-T <#число>"
 
-#: src/nano.c:843
+#: src/nano.c:831
 msgid "--tabsize=<#cols>"
 msgstr "--tabsize=<#число>"
 
-#: src/nano.c:844
+#: src/nano.c:832
 msgid "Set width of a tab to #cols columns"
 msgstr "Встановити ширину табуляції у #число позицій"
 
-#: src/nano.c:845
+#: src/nano.c:833
 msgid "Do quick statusbar blanking"
 msgstr "Використовувати швидке очищування рядка стану"
 
-#: src/nano.c:846
+#: src/nano.c:834
 msgid "Print version information and exit"
 msgstr "Показати версію та вийти"
 
-#: src/nano.c:849
+#: src/nano.c:837
 msgid "Detect word boundaries more accurately"
 msgstr "Використовувати більш точне визначення меж слів"
 
-#: src/nano.c:850
+#: src/nano.c:838
 msgid "-X <str>"
 msgstr "-X <ряд>"
 
-#: src/nano.c:850
+#: src/nano.c:838
 msgid "--wordchars=<str>"
 msgstr "--wordchars=<ряд>"
 
-#: src/nano.c:851
+#: src/nano.c:839
 msgid "Which other characters are word parts"
 msgstr "Які інші символи є частинами слів"
 
-#: src/nano.c:855
+#: src/nano.c:843
 msgid "-Y <name>"
 msgstr "-Y <назва>"
 
-#: src/nano.c:855
+#: src/nano.c:843
 msgid "--syntax=<name>"
 msgstr "--syntax=<назва>"
 
-#: src/nano.c:856
+#: src/nano.c:844
 msgid "Syntax definition to use for coloring"
 msgstr "Опис синтаксису, який слід використовувати для розфарбування"
 
-#: src/nano.c:859
+#: src/nano.c:847
 msgid "When soft-wrapping, do it at whitespace"
 msgstr "Розривати рядки на пробілах"
 
-#: src/nano.c:861
+#: src/nano.c:849
 msgid "Constantly show cursor position"
 msgstr "Постійно показувати позицію курсора"
 
-#: src/nano.c:863
+#: src/nano.c:851
 msgid "Fix Backspace/Delete confusion problem"
 msgstr "Виправити проблему Backspace/Delete"
 
-#: src/nano.c:866
+#: src/nano.c:854
 msgid "Show cursor in file browser"
 msgstr "Показувати курсор у переглядачі файлів"
 
-#: src/nano.c:868
+#: src/nano.c:856
 msgid "Show this help text and exit"
 msgstr "Показати текст цієї довідки і завершити роботу"
 
-#: src/nano.c:870
+#: src/nano.c:858
 msgid "Automatically indent new lines"
 msgstr "Автоматично вирівнювати нові рядки"
 
-#: src/nano.c:871
+#: src/nano.c:859
 msgid "Cut from cursor to end of line"
 msgstr "Вирізати від курсора до кінця рядка"
 
-#: src/nano.c:874
+#: src/nano.c:862
 msgid "Show line numbers in front of the text"
 msgstr "Показувати номери рядків перед текстом"
 
-#: src/nano.c:877
+#: src/nano.c:865
 msgid "Enable the use of the mouse"
 msgstr "Дозволити використання миші"
 
-#: src/nano.c:879
+#: src/nano.c:867
 msgid "Do not read the file (only write it)"
 msgstr "Не читати файл (лише записувати до нього)"
 
-#: src/nano.c:881
+#: src/nano.c:869
 msgid "-o <dir>"
 msgstr "-o <кат>"
 
-#: src/nano.c:881
+#: src/nano.c:869
 msgid "--operatingdir=<dir>"
 msgstr "--operatingdir=<кат>"
 
-#: src/nano.c:882
+#: src/nano.c:870
 msgid "Set operating directory"
 msgstr "Встановити робочий каталог"
 
-#: src/nano.c:884
+#: src/nano.c:872
 msgid "Preserve XON (^Q) and XOFF (^S) keys"
 msgstr "Зберегти клавіші XON (^Q) та XOFF (^S)"
 
-#: src/nano.c:886
+#: src/nano.c:874
 msgid "-r <#cols>"
 msgstr "-r <#поз>"
 
-#: src/nano.c:886
+#: src/nano.c:874
 msgid "--fill=<#cols>"
 msgstr "--fill=<#поз>"
 
-#: src/nano.c:887
+#: src/nano.c:875
 msgid "Set hard-wrapping point at column #cols"
 msgstr "Встановити значення позиції жорсткого перенесення #поз"
 
-#: src/nano.c:891
+#: src/nano.c:879
 msgid "-s <prog>"
 msgstr "-s <програма>"
 
-#: src/nano.c:891
+#: src/nano.c:879
 msgid "--speller=<prog>"
 msgstr "--speller=<програма>"
 
-#: src/nano.c:892
+#: src/nano.c:880
 msgid "Enable alternate speller"
 msgstr "Альтернативна програма перевірки правопису"
 
-#: src/nano.c:894
+#: src/nano.c:882
 msgid "Auto save on exit, don't prompt"
 msgstr "Автоматичне збереження при виході, без запитань"
 
-#: src/nano.c:896
+#: src/nano.c:884
 msgid "Save a file by default in Unix format"
 msgstr "Типово зберігати файл у форматі Unix"
 
-#: src/nano.c:898
+#: src/nano.c:886
 msgid "View mode (read-only)"
 msgstr "Режим перегляду (лише читання)"
 
-#: src/nano.c:900
+#: src/nano.c:888
 msgid "Don't hard-wrap long lines"
 msgstr "Не переносити надто довгі рядки жорстко"
 
-#: src/nano.c:902
+#: src/nano.c:890
 msgid "Don't show the two help lines"
 msgstr "Не показувати два рядка довідки внизу"
 
-#: src/nano.c:904
+#: src/nano.c:892
 msgid "Enable suspension"
 msgstr "Дозволити призупинення"
 
-#: src/nano.c:906
+#: src/nano.c:894
 msgid "Enable soft line wrapping"
 msgstr "Увімкнути м’яке перенесення рядків"
 
-#: src/nano.c:918
+#: src/nano.c:906
 #, c-format
 msgid " GNU nano, version %s\n"
 msgstr " GNU nano версії %s\n"
 
-#: src/nano.c:921
+#: src/nano.c:909
 #, c-format
 msgid " (C) 2014-%s the contributors to nano\n"
 msgstr " © Учасники розробки nano, 2014-%s\n"
 
-#: src/nano.c:922
+#: src/nano.c:910
 #, c-format
 msgid " Email: nano@nano-editor.org\tWeb: https://nano-editor.org/"
 msgstr " Ел. пошта: nano@nano-editor.org\tІнтернет: https://nano-editor.org/"
 
-#: src/nano.c:923
+#: src/nano.c:911
 #, c-format
 msgid ""
 "\n"
@@ -1879,92 +1877,92 @@ msgstr ""
 "\n"
 " Зібрано з таким параметрами:"
 
-#: src/nano.c:1069
+#: src/nano.c:1057
 msgid "No file name"
 msgstr "Немає назви файла"
 
-#: src/nano.c:1071
+#: src/nano.c:1059
 msgid "Save modified buffer?  (Answering \"No\" will DISCARD changes.) "
 msgstr "Зберегти зміни у буфері? (Відповідь «Ні» призведе до ВТРАТИ змін.) "
 
-#: src/nano.c:1128
+#: src/nano.c:1116
 #, c-format
 msgid "Reading from stdin, ^C to abort\n"
 msgstr "Читання зі стандартного вводу. ^C для переривання\n"
 
-#: src/nano.c:1155
+#: src/nano.c:1143
 #, c-format
 msgid "Failed to open stdin: %s"
 msgstr "Не вдалося відкрити stdin: %s"
 
-#: src/nano.c:1167
+#: src/nano.c:1155
 msgid "Couldn't reopen stdin from keyboard, sorry\n"
 msgstr "Не вдалося повторно відкрити стандартний ввід з клавіатури\n"
 
-#: src/nano.c:1236
+#: src/nano.c:1224
 msgid "Received SIGHUP or SIGTERM\n"
 msgstr "Прийнято SIGHUP або SIGTERM\n"
 
-#: src/nano.c:1251
+#: src/nano.c:1239
 #, c-format
 msgid "Use \"fg\" to return to nano.\n"
 msgstr "Використовуйте «fg» для повернення у nano\n"
 
-#: src/nano.c:1269
+#: src/nano.c:1257
 msgid "Suspension is not enabled"
 msgstr "Призупинення не увімкнено"
 
-#: src/nano.c:1414
+#: src/nano.c:1402
 msgid "enabled"
 msgstr "дозволено"
 
-#: src/nano.c:1414
+#: src/nano.c:1402
 msgid "disabled"
 msgstr "заборонено"
 
-#: src/nano.c:1551
+#: src/nano.c:1539
 msgid "Unbound key"
 msgstr "Непов’язана комбінація"
 
-#: src/nano.c:1554
+#: src/nano.c:1542
 msgid "Unbindable key: M-["
 msgstr "Непов’язана комбінація: M-["
 
-#: src/nano.c:1556
+#: src/nano.c:1544
 #, c-format
 msgid "Unbound key: M-%c"
 msgstr "Непов’язана комбінація: M-%c"
 
-#: src/nano.c:1558
+#: src/nano.c:1546
 #, c-format
 msgid "Unbound key: ^%c"
 msgstr "Непов’язана комбінація: ^%c"
 
-#: src/nano.c:1560
+#: src/nano.c:1548
 #, c-format
 msgid "Unbound key: %c"
 msgstr "Непов’язана комбінація: %c"
 
-#: src/nano.c:2128 src/rcfile.c:1165
+#: src/nano.c:2143 src/rcfile.c:1179
 #, c-format
 msgid "Requested tab size \"%s\" is invalid"
 msgstr "Запитаний розмір табуляції «%s» не підходить"
 
-#: src/nano.c:2197 src/rcfile.c:1102
+#: src/nano.c:2212 src/rcfile.c:1116
 #, c-format
 msgid "Requested fill size \"%s\" is invalid"
 msgstr "Надіслано запит на некоректний розмір заповнення «%s»"
 
-#: src/nano.c:2253
+#: src/nano.c:2268
 #, c-format
 msgid "Type '%s -h' for a list of available options.\n"
 msgstr "Введіть команду «%s -h», щоб отримати список доступних параметрів.\n"
 
-#: src/nano.c:2570 src/search.c:829
+#: src/nano.c:2581 src/search.c:796
 msgid "Invalid line or column number"
 msgstr "Некоректний номер рядка або позиції"
 
-#: src/nano.c:2617
+#: src/nano.c:2625
 #, c-format
 msgid "Mistakes in '%s'"
 msgstr "Помилки у «%s»"
@@ -1972,57 +1970,57 @@ msgstr "Помилки у «%s»"
 #. TRANSLATORS: For the next three strings, if possible, specify
 #. * the single-byte letters for both your language and English.
 #. * For example, in French: "OoYy", for both "Oui" and "Yes".
-#: src/prompt.c:674
+#: src/prompt.c:666
 msgid "Yy"
 msgstr "YyТт"
 
-#: src/prompt.c:675
+#: src/prompt.c:667
 msgid "Nn"
 msgstr "NnНн"
 
-#: src/prompt.c:676
+#: src/prompt.c:668
 msgid "Aa"
 msgstr "AaВв"
 
-#: src/prompt.c:698
+#: src/prompt.c:690
 msgid "Yes"
 msgstr "Так"
 
-#: src/prompt.c:703
+#: src/prompt.c:695
 msgid "All"
 msgstr "Все"
 
-#: src/prompt.c:708
+#: src/prompt.c:700
 msgid "No"
 msgstr "Ні"
 
-#: src/rcfile.c:149
+#: src/rcfile.c:148
 #, c-format
 msgid "Error in %s on line %zu: "
 msgstr "Помилка в %s на рядку %zu: "
 
-#: src/rcfile.c:200
+#: src/rcfile.c:199
 #, c-format
 msgid "Argument '%s' has an unterminated \""
 msgstr "Аргумент %s має незакриту \""
 
-#: src/rcfile.c:225 src/rcfile.c:649 src/rcfile.c:701 src/rcfile.c:808
+#: src/rcfile.c:224 src/rcfile.c:658 src/rcfile.c:710 src/rcfile.c:820
 msgid "Regex strings must begin and end with a \" character"
 msgstr ""
 "Рядки формальних виразів повинні починатися та закінчуватися лапками (\")"
 
-#: src/rcfile.c:251 src/search.c:47
+#: src/rcfile.c:250 src/search.c:47
 #, c-format
 msgid "Bad regex \"%s\": %s"
 msgstr "Не вірний формальний вираз «%s»: %s"
 
-#: src/rcfile.c:271
+#: src/rcfile.c:269
 msgid "Missing syntax name"
-msgstr "Відсутня назва синтаксису"
+msgstr "Пропущено назву синтаксису"
 
-#: src/rcfile.c:280
-msgid "A syntax name must be quoted"
-msgstr "Назву синтаксису слід вказувати у лапках"
+#: src/rcfile.c:277
+msgid "Unpaired quote in syntax name"
+msgstr "Непарний знак лапок у назві синтаксису"
 
 #: src/rcfile.c:289
 msgid "The \"none\" syntax is reserved"
@@ -2032,112 +2030,112 @@ msgstr "Синтаксис «none» зарезервовано"
 msgid "The \"default\" syntax does not accept extensions"
 msgstr "Синтаксис «default» не може мати розширень"
 
-#: src/rcfile.c:360
+#: src/rcfile.c:355
 msgid "Missing key name"
-msgstr "Відсутня назва клавіші"
+msgstr "Пропущено назву клавіші"
 
-#: src/rcfile.c:369 src/rcfile.c:380
+#: src/rcfile.c:364 src/rcfile.c:375
 msgid "Key name is too short"
 msgstr "Назва клавіші є надто короткою"
 
-#: src/rcfile.c:390
+#: src/rcfile.c:385
 msgid "Key name must begin with \"^\", \"M\", or \"F\""
 msgstr "Назва клавіші має починатися з «^», «M» або «F»"
 
-#: src/rcfile.c:393
+#: src/rcfile.c:388
 #, c-format
 msgid "Key name %s is invalid"
 msgstr "Назва ключа %s є некоректною"
 
-#: src/rcfile.c:402
+#: src/rcfile.c:397
 msgid "Must specify a function to bind the key to"
 msgstr "Для прив’язування клавіші слід вказати функцію"
 
 #. TRANSLATORS: Do not translate the word "all".
-#: src/rcfile.c:412
+#: src/rcfile.c:407
 msgid "Must specify a menu (or \"all\") in which to bind/unbind the key"
 msgstr ""
 "Слід вказати меню (або «all»), до якого слід прив’язати клавішу або "
 "відв’язати її"
 
-#: src/rcfile.c:419
+#: src/rcfile.c:425
 #, c-format
 msgid "Cannot map name \"%s\" to a function"
 msgstr "Не можна пов’язати назву «%s» з функцією"
 
-#: src/rcfile.c:426
+#: src/rcfile.c:432
 #, c-format
 msgid "Cannot map name \"%s\" to a menu"
 msgstr "Неможливо пов’язати назву «%s» з меню"
 
-#: src/rcfile.c:452
+#: src/rcfile.c:459
 #, c-format
 msgid "Function '%s' does not exist in menu '%s'"
 msgstr "У меню «%2$s» немає пункту «%1$s»"
 
-#: src/rcfile.c:461
+#: src/rcfile.c:468
 #, c-format
 msgid "Sorry, keystroke \"%s\" may not be rebound"
 msgstr "Вибачте, призначення «%s» змінювати не можна"
 
-#: src/rcfile.c:561
+#: src/rcfile.c:568
 #, c-format
 msgid "Error expanding %s: %s"
 msgstr "Помилка під час розгортання %s: %s"
 
-#: src/rcfile.c:599
+#: src/rcfile.c:608
 #, c-format
 msgid "Color \"%s\" not understood"
 msgstr "Невідомий колір «%s»"
 
-#: src/rcfile.c:613 src/rcfile.c:780 src/rcfile.c:840
+#: src/rcfile.c:622 src/rcfile.c:792 src/rcfile.c:852
 #, c-format
 msgid "A '%s' command requires a preceding 'syntax' command"
 msgstr ""
 "Використання команди «%s» потребує попереднього використання команди «syntax»"
 
-#: src/rcfile.c:619
+#: src/rcfile.c:628
 msgid "Missing color name"
-msgstr "Відсутня назва кольору"
+msgstr "Пропущено назву кольору"
 
-#: src/rcfile.c:629 src/rcfile.c:792
+#: src/rcfile.c:638 src/rcfile.c:804
 #, c-format
 msgid "Missing regex string after '%s' command"
 msgstr "Не вистачає рядка формального виразу після команди «%s»"
 
-#: src/rcfile.c:660 src/rcfile.c:711
+#: src/rcfile.c:669 src/rcfile.c:720
 msgid "Empty regex string"
 msgstr "Порожній формальний вираз"
 
-#: src/rcfile.c:695
+#: src/rcfile.c:704
 msgid "\"start=\" requires a corresponding \"end=\""
 msgstr "\"start=\" потребує відповідного \"end=\""
 
-#: src/rcfile.c:738
+#: src/rcfile.c:747
 msgid "A background color cannot be bright"
 msgstr "Колір тла не може бути світлим"
 
-#: src/rcfile.c:787
+#: src/rcfile.c:799
 #, c-format
 msgid "The \"default\" syntax does not accept '%s' regexes"
 msgstr "Синтаксис «default» не може використовувати формальні вирази «%s»"
 
-#: src/rcfile.c:845
+#: src/rcfile.c:857
 #, c-format
 msgid "Missing argument after '%s'"
 msgstr "Пропущений аргумент після «%s»"
 
-#: src/rcfile.c:855
+#: src/rcfile.c:867
 #, c-format
 msgid "Argument of '%s' lacks closing \""
 msgstr "Аргумент «%s», не вистачає завершальної \""
 
-#: src/rcfile.c:883
+#: src/rcfile.c:895
 #, c-format
 msgid "Fatal error: no keys mapped for function \"%s\".  Exiting.\n"
 msgstr "Критична помилка: з функцією «%s» не пов’язано клавіш. Виходимо.\n"
 
-#: src/rcfile.c:885
+#: src/rcfile.c:897
 #, c-format
 msgid ""
 "If needed, use nano with the -I option to adjust your nanorc settings.\n"
@@ -2145,58 +2143,58 @@ msgstr ""
 "Якщо потрібно, скористайтеся nano з параметром -I, щоб скоригувати параметри "
 "у nanorc.\n"
 
-#: src/rcfile.c:940
+#: src/rcfile.c:952
 #, c-format
 msgid "Could not find syntax \"%s\" to extend"
 msgstr "Не вдалося знайти синтаксичну конструкцію «%s» для розширення"
 
-#: src/rcfile.c:962 src/rcfile.c:1175
+#: src/rcfile.c:974 src/rcfile.c:1189
 #, c-format
 msgid "Syntax \"%s\" has no color commands"
 msgstr "Синтаксис «%s» не має колірних команд"
 
-#: src/rcfile.c:993
+#: src/rcfile.c:1005
 #, c-format
 msgid "Command \"%s\" not allowed in included file"
 msgstr "Команда «%s» не дозволена у включеному файлі"
 
-#: src/rcfile.c:1008
+#: src/rcfile.c:1020
 #, c-format
 msgid "Command \"%s\" not understood"
 msgstr "Невідома команда «%s»"
 
-#: src/rcfile.c:1020
+#: src/rcfile.c:1032
 msgid "Missing option"
 msgstr "Пропущено параметр"
 
-#: src/rcfile.c:1034
+#: src/rcfile.c:1046
 #, c-format
 msgid "Unknown option \"%s\""
 msgstr "Невідомий параметр «%s»"
 
-#: src/rcfile.c:1047
+#: src/rcfile.c:1059
 #, c-format
 msgid "Cannot unset option \"%s\""
 msgstr "Неможливо скасувати визначення параметра «%s»"
 
-#: src/rcfile.c:1059
+#: src/rcfile.c:1071
 #, c-format
 msgid "Option \"%s\" requires an argument"
 msgstr "Опція «%s» вимагає аргумент"
 
-#: src/rcfile.c:1075
+#: src/rcfile.c:1087
 msgid "Argument is not a valid multibyte string"
 msgstr "Аргумент не є коректним багатобайтовим рядком"
 
-#: src/rcfile.c:1114 src/rcfile.c:1135 src/rcfile.c:1142
+#: src/rcfile.c:1128 src/rcfile.c:1149 src/rcfile.c:1156
 msgid "Non-blank characters required"
 msgstr "Вимагається непорожній символ"
 
-#: src/rcfile.c:1121
+#: src/rcfile.c:1135
 msgid "Two single-column characters required"
 msgstr "Вимагається два одинарних символи"
 
-#: src/rcfile.c:1250
+#: src/rcfile.c:1264
 msgid "I can't find my home directory!  Wah!"
 msgstr "Я не можу знайти свою домівку! Жах!"
 
@@ -2206,44 +2204,44 @@ msgid "\"%.*s%s\" not found"
 msgstr "\"%.*s%s\" не знайдено"
 
 #. TRANSLATORS: The next three modify the search prompt.
-#: src/search.c:138
+#: src/search.c:125
 msgid " [Case Sensitive]"
 msgstr " [РегЗалеж]"
 
-#: src/search.c:139
+#: src/search.c:126
 msgid " [Regexp]"
 msgstr " [ФормВир]"
 
-#: src/search.c:140
+#: src/search.c:127
 msgid " [Backwards]"
 msgstr " [Назад]"
 
 #. TRANSLATORS: The next two modify the search prompt.
-#: src/search.c:143
+#: src/search.c:130
 msgid " (to replace) in selection"
 msgstr " (що змінювати) у позначеному"
 
-#: src/search.c:145
+#: src/search.c:132
 msgid " (to replace)"
 msgstr " (до заміни)"
 
 #. TRANSLATORS: This is shown when searching takes
 #. * more than half a second.
-#: src/search.c:250
+#: src/search.c:243
 msgid "Searching..."
 msgstr "Шукаємо…"
 
 #. TRANSLATORS: This is a prompt.
-#: src/search.c:613
+#: src/search.c:597
 msgid "Replace this instance?"
 msgstr "Замінити цей примірник?"
 
 #. TRANSLATORS: This is a prompt.
-#: src/search.c:743
+#: src/search.c:717
 msgid "Replace with"
 msgstr "Замінити на"
 
-#: src/search.c:775
+#: src/search.c:748
 #, c-format
 msgid "Replaced %zd occurrence"
 msgid_plural "Replaced %zd occurrences"
@@ -2252,15 +2250,15 @@ msgstr[1] "Замінено %zd збіги"
 msgstr[2] "Замінено %zd збігів"
 
 #. TRANSLATORS: This is a prompt.
-#: src/search.c:807
+#: src/search.c:776
 msgid "Enter line number, column number"
 msgstr "Введіть номер рядка, номер ряду"
 
-#: src/search.c:997
+#: src/search.c:964
 msgid "Not a bracket"
 msgstr "Не дужка"
 
-#: src/search.c:1058
+#: src/search.c:1025
 msgid "No matching bracket"
 msgstr "Нема відповідної дужки"
 
@@ -2291,207 +2289,207 @@ msgstr "Буфер скасування дій порожній!"
 
 #. TRANSLATORS: The next twelve strings describe actions
 #. * that are undone or redone.  It are all nouns, not verbs.
-#: src/text.c:705 src/text.c:736 src/text.c:880 src/text.c:923
+#: src/text.c:706 src/text.c:777 src/text.c:879 src/text.c:948
 msgid "text add"
 msgstr "додавання тексту"
 
-#: src/text.c:717 src/text.c:893
-msgid "text delete"
-msgstr "вилучення тексту"
-
-#: src/text.c:740 src/text.c:931
-msgid "line join"
-msgstr "об’єднання рядків"
-
-#: src/text.c:759 src/text.c:947
-msgid "text cut"
-msgstr "обрізка тексту"
-
-#: src/text.c:764 src/text.c:951
-msgid "text uncut"
-msgstr "скасування обрізки тексту"
-
-#: src/text.c:773 src/text.c:902
+#: src/text.c:721 src/text.c:891
 msgid "line break"
 msgstr "розрив рядка"
 
-#: src/text.c:784 src/text.c:970
-msgid "indent"
-msgstr "відступ"
+#: src/text.c:733 src/text.c:904
+msgid "text delete"
+msgstr "вилучення тексту"
 
-#: src/text.c:788 src/text.c:974
-msgid "unindent"
-msgstr "скас.відступ"
+#: src/text.c:743 src/text.c:917
+msgid "line join"
+msgstr "об’єднання рядків"
 
-#: src/text.c:793 src/text.c:979
-msgid "comment"
-msgstr "закоментувати"
+#: src/text.c:762 src/text.c:932
+msgid "text replace"
+msgstr "заміна тексту"
 
-#: src/text.c:797 src/text.c:983
-msgid "uncomment"
-msgstr "розкоментувати"
+#: src/text.c:782 src/text.c:953
+msgid "text cut"
+msgstr "обрізка тексту"
 
-#: src/text.c:801 src/text.c:962
+#: src/text.c:786 src/text.c:957
+msgid "text uncut"
+msgstr "скасування обрізки тексту"
+
+#: src/text.c:790 src/text.c:961
 msgid "text insert"
 msgstr "вставка тексту"
 
-#: src/text.c:817 src/text.c:955
-msgid "text replace"
-msgstr "заміна тексту"
+#: src/text.c:807 src/text.c:969
+msgid "indent"
+msgstr "відступ"
+
+#: src/text.c:811 src/text.c:973
+msgid "unindent"
+msgstr "скас.відступ"
+
+#: src/text.c:816 src/text.c:978
+msgid "comment"
+msgstr "закоментувати"
+
+#: src/text.c:820 src/text.c:982
+msgid "uncomment"
+msgstr "розкоментувати"
 
 #: src/text.c:829
 #, c-format
 msgid "Undid action (%s)"
 msgstr "Скасована дія (%s)"
 
-#: src/text.c:856
+#: src/text.c:854
 msgid "Nothing to re-do!"
 msgstr "Немає чого повторювати!"
 
-#: src/text.c:992
+#: src/text.c:991
 #, c-format
 msgid "Redid action (%s)"
 msgstr "Повторена дія (%s)"
 
-#: src/text.c:1097 src/text.c:2671 src/text.c:3059
+#: src/text.c:1097 src/text.c:2652 src/text.c:3040
 msgid "Could not create pipe"
 msgstr "Не можу створити канал (pipe)"
 
-#: src/text.c:1123 src/text.c:2758 src/text.c:2885 src/text.c:3107
-#: src/text.c:3412
+#: src/text.c:1123 src/text.c:2739 src/text.c:2866 src/text.c:3088
+#: src/text.c:3395
 msgid "Could not fork"
 msgstr "Не можу зробити fork()"
 
-#: src/text.c:2086
+#: src/text.c:2066
 #, c-format
 msgid "Bad quote string %s: %s"
 msgstr "Поганий рядок цитування %s: %s"
 
-#: src/text.c:2443
+#: src/text.c:2425
 msgid "Can now UnJustify!"
 msgstr "Можу зараз же СкасВирівнювання!"
 
-#: src/text.c:2591
+#: src/text.c:2572
 #, c-format
 msgid "Unfindable word: %s"
 msgstr "Непридатне до пошуку слово: %s"
 
-#: src/text.c:2610
+#: src/text.c:2591
 msgid "Edit a replacement"
 msgstr "Редагувати заміну"
 
 #. TRANSLATORS: Shown after fixing misspellings in one word.
-#: src/text.c:2619
+#: src/text.c:2600
 msgid "Next word..."
 msgstr "Наступне слово…"
 
-#: src/text.c:2673
+#: src/text.c:2654
 msgid "Creating misspelled word list, please wait..."
 msgstr "Створюємо перелік орфографічних помилок, зачекайте..."
 
-#: src/text.c:2764 src/text.c:3114
+#: src/text.c:2745 src/text.c:3095
 msgid "Could not get size of pipe buffer"
 msgstr "Не можу отримати розмір буферу каналу"
 
-#: src/text.c:2813
+#: src/text.c:2794
 msgid "Error invoking \"spell\""
 msgstr "Помилка виконання \"spell\""
 
-#: src/text.c:2816
+#: src/text.c:2797
 msgid "Error invoking \"sort -f\""
 msgstr "Помилка виконання \"sort -f\""
 
-#: src/text.c:2819
+#: src/text.c:2800
 msgid "Error invoking \"uniq\""
 msgstr "Помилка виконання \"uniq\""
 
-#: src/text.c:2994
+#: src/text.c:2975
 msgid "Invoking spell checker, please wait"
 msgstr "Викликаємо програму для пошуку друкарських помилок, зачекайте"
 
-#: src/text.c:3008
+#: src/text.c:2989
 #, c-format
 msgid "Spell checking failed: %s"
 msgstr "Перевірка орфографії не вдалася: %s"
 
-#: src/text.c:3010
+#: src/text.c:2991
 #, c-format
 msgid "Spell checking failed: %s: %s"
 msgstr "Не вдалось перевірити орфографію: %s: %s"
 
-#: src/text.c:3013
+#: src/text.c:2994
 msgid "Finished checking spelling"
 msgstr "Перевірку орфографії завершено"
 
-#: src/text.c:3037
+#: src/text.c:3018
 msgid "No linter defined for this type of file!"
 msgstr "Для цього типу файлів не визначено обробника!"
 
-#: src/text.c:3047
+#: src/text.c:3028
 msgid "Save modified buffer before linting?"
 msgstr "Зберегти змінений буфер перед обробкою?"
 
-#: src/text.c:3064
+#: src/text.c:3045
 msgid "Invoking linter, please wait"
 msgstr "Викликаємо linter, зачекайте"
 
-#: src/text.c:3208
+#: src/text.c:3189
 #, c-format
 msgid "Got 0 parsable lines from command: %s"
 msgstr "Від команди отримано 0 придатних рядків: %s"
 
-#: src/text.c:3238
+#: src/text.c:3219
 #, c-format
 msgid "This message is for unopened file %s, open it in a new buffer?"
 msgstr ""
 "Це повідомлення пов’язано із невідкритим файлом %s. Відкрити його у новому "
 "буфері?"
 
-#: src/text.c:3274
+#: src/text.c:3255
 msgid "No more errors in unopened files, cancelling"
 msgstr "У невідкритих файлах немає більше помилок, скасовуємо дію"
 
-#: src/text.c:3319
+#: src/text.c:3302
 msgid "At last message"
 msgstr "На останньому повідомленні"
 
-#: src/text.c:3324
+#: src/text.c:3307
 msgid "At first message"
 msgstr "На першому повідомленні"
 
-#: src/text.c:3361
+#: src/text.c:3344
 msgid "Finished"
 msgstr "Завершено"
 
-#: src/text.c:3385
+#: src/text.c:3368
 msgid "Invoking formatter, please wait"
 msgstr "Викликаємо formatter, зачекайте"
 
-#: src/text.c:3446
+#: src/text.c:3429
 msgid "Finished formatting"
 msgstr "Форматування завершено"
 
-#: src/text.c:3528
+#: src/text.c:3511
 #, c-format
 msgid "%sWords: %zu  Lines: %zd  Chars: %zu"
 msgstr "%sСлів: %zu Рядків: %zd  Символів: %zu"
 
-#: src/text.c:3529
+#: src/text.c:3512
 msgid "In Selection:  "
 msgstr "У позначеному:  "
 
 #. TRANSLATORS: This is displayed when the next keystroke will be
 #. * inserted verbatim.
-#: src/text.c:3542
+#: src/text.c:3525
 msgid "Verbatim Input"
 msgstr "Буквальний ввід"
 
-#: src/text.c:3734
+#: src/text.c:3717
 msgid "No further matches"
 msgstr "Далі немає відповідників"
 
 #. TRANSLATORS: Shown when there are zero possible completions.
-#: src/text.c:3738
+#: src/text.c:3721
 msgid "No matches"
 msgstr "Немає відповідників"
 
@@ -2521,73 +2519,79 @@ msgstr "Забагато помилок від stdin"
 
 #. TRANSLATORS: This refers to a sequence of escape codes
 #. * (from the keyboard) that nano does not recogize.
-#: src/winio.c:1280
+#: src/winio.c:1289
 msgid "Unknown sequence"
 msgstr "Невідома послідовність"
 
 #. TRANSLATORS: This is shown while a six-digit hexadecimal
 #. * Unicode character code (%s) is being typed in.
-#: src/winio.c:1416
+#: src/winio.c:1425
 #, c-format
 msgid "Unicode Input: %s"
 msgstr "Введення Unicode: %s"
 
-#: src/winio.c:2020
+#: src/winio.c:2031
 msgid "DIR:"
 msgstr "Кат.:"
 
-#: src/winio.c:2039 src/winio.c:2043
+#: src/winio.c:2052 src/winio.c:2056
 msgid "Modified"
 msgstr "Змінено"
 
-#: src/winio.c:2041
+#: src/winio.c:2054
 msgid "View"
 msgstr "Вигляд"
 
-#: src/winio.c:2169
+#: src/winio.c:2183
 msgid "Further warnings were suppressed"
 msgstr "Подальші попередження не показано"
 
-#: src/winio.c:3357
+#: src/winio.c:3358
 #, c-format
 msgid "line %zd/%zd (%d%%), col %zu/%zu (%d%%), char %zu/%zu (%d%%)"
 msgstr "рядок %zd/%zd (%d%%), позиція %zu/%zu (%d%%), символ %zu/%zu (%d%%)"
 
-#: src/winio.c:3555
+#: src/winio.c:3556
 msgid "The nano text editor"
 msgstr "Текстовий редактор nano"
 
-#: src/winio.c:3556
+#: src/winio.c:3557
 msgid "version"
 msgstr "версія"
 
-#: src/winio.c:3557
+#: src/winio.c:3558
 msgid "Brought to you by:"
 msgstr "Створено для Вас:"
 
-#: src/winio.c:3558
+#: src/winio.c:3559
 msgid "Special thanks to:"
 msgstr "Особлива подяка:"
 
-#: src/winio.c:3559
+#: src/winio.c:3560
 msgid "The Free Software Foundation"
 msgstr "The Free Software Foundation (Фонд Вільного Програмного забезпечення)"
 
-#: src/winio.c:3560
+#: src/winio.c:3561
 msgid "the many translators and the TP"
 msgstr "багатьом перекладачам та TP"
 
-#: src/winio.c:3561
+#: src/winio.c:3562
 msgid "For ncurses:"
 msgstr "За ncurses:"
 
-#: src/winio.c:3562
+#: src/winio.c:3563
 msgid "and anyone else we forgot..."
 msgstr "та іншим, кого ми забули..."
 
-#: src/winio.c:3563
+#: src/winio.c:3564
 msgid "Thank you for using nano!"
 msgstr "Дякуємо за використання nano!"
+
+#~ msgid "Exit from nano"
+#~ msgstr "Вихід з nano"
+
+#~ msgid "A syntax name must be quoted"
+#~ msgstr "Назву синтаксису слід вказувати у лапках"
 
 #~ msgid ""
 #~ "Color \"%s\" not understood.\n"

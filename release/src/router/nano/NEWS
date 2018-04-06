@@ -1,3 +1,30 @@
+2018.03.29 - GNU nano 2.9.5 "Kiša pada" changes the way the Scroll-Up
+             and Scroll-Down commands work (M-- and M-+): instead of
+             keeping the cursor in the same screen position they now
+             keep the cursor in the same text position (if possible).
+             This version further adds a new color name, "normal",
+             which gives the default foreground or background color,
+             which is useful when you want to undo some overzealous
+             painting by earlier syntax regexes.  Bug fixes include:
+             a segfault when trying to insert a file in restricted
+             mode, the reading in of a new file being "undoable", a
+             slight miswrapping of help texts when --linenumbers was
+             used, and the shell syntax coloring the word "tar" in
+             file names.
+
+2018.03.08 - GNU nano 2.9.4 "Isabel" allows binding a key to a string
+             (any piece of text and/or commands), permits customizing
+             the color of error messages with 'set errorcolor', colors
+             those error messages by default in bright white on red,
+             makes <Enter> at the bottom of the screen scroll just one
+             row when --smooth is used, does not fail when redoing a
+             file insertion, and cancels a Shift-selection when any
+             cursor key is pressed without Shift even when the cursor
+             cannot move.  Further, it treats tabs fully the same as
+             spaces when doing automatic hard-wrapping, allows syntax
+             names to be unquoted, and removes two deprecated options
+             and six deprecated bindable function names.
+
 2018.01.29 - GNU nano 2.9.3 "Córdoba" fixes a segfault with trimblanks
              that could occur when a typed space caused the word after
              it to be pushed to the next line.  It further makes macros
@@ -5,7 +32,7 @@
              adds the options -M and --trimblanks for the command line,
              recognizes key combos with Shift on a few more terminals,
              no longer shows dots in certain prompt texts when visible
-             witespace is turned on, fixes two corner cases when doing
+             whitespace is turned on, fixes two corner cases when doing
              replacements in a marked region, allows to open a named
              pipe again when using --noread, and accurately detects
              a needed color change when a line contains a start match
@@ -179,7 +206,7 @@
              option 'set numbercolor'.  This release furthermore fixes
              some bugs with scrolling in softwrap mode, is more strict
              in the parsing of key rebindings, and marks a new buffer
-             as modified when the output of a command (^R ^X) has been
+             as modified when the output of a command (^R^X) has been
              read into it.  Come and check it out!
 
 2016.09.01 - GNU nano 2.7.0 "Suni" adds a new feature: allowing text to
@@ -513,7 +540,7 @@
              history.  On the features front, nano will now attempt to
              retain the proper ownership and permissions when trying
              to create a .save file due to receiving a signal.  Nano
-             can also now unbind keys from one or more menus via the
+             can now also unbind keys from one or more menus via the
              'unbind' keyword.  Finally, passing --fill or --nowrap on
              the command line will now override any related .nanorc
              entries.  Speak now or forever hold your bugs!
@@ -588,9 +615,9 @@
              This release includes a new check for external
              modifications when saving a file, some code and
              documentation cleanups, and more bug fixes for
-             the new undo code (but we continue to welcome your bug
-             reports via the Savannah bug page at
-             http://savannah.gnu.org/bugs/?func=additem&group=nano.
+             the new undo code (but we continue to welcome
+             your bug reports via the Savannah bug page at
+             http://savannah.gnu.org/bugs/?func=additem&group=nano).
              Come get some.
 
 2008.10.03 - GNU nano 2.1.6 was for new features before it was against
@@ -1215,18 +1242,18 @@
              with it.
 
 2002.01.05 - GNU nano 1.1.5 is out.  The main new feature in this
-             release is the changed behavior of the keypad.  Nano now
-             does the Right Thing and used keypad() by default.  If
-             you wish to use the keypad arrow keys in certain
-             terminals, you may use the -K or --keypad flag to use
+             release is the changed behavior of the keypad.  Nano
+             now does the Right Thing and uses keypad() by default.
+             If you wish to use the keypad arrow keys in certain
+             terminals, you may use the -K or --keypad flag to get
              the old behavior.  Users of other OSes should see better
              handling of their non-keypad keys in this release.
-             Other changes include more Hurd fixes, fixes parsing
-             the .nanorc, display fixes for the color syntax
-             highlighting, gettext stabilization and many translation
-             updates.  This is almost like a stable release, much
-             like in the 0.9.x series when every other release was
-             the most stable one :)  Have fun!
+             Other changes include more Hurd fixes, fixes parsing the
+             .nanorc, display fixes for the color syntax highlighting,
+             gettext stabilization and many translation updates.
+             This is almost like a stable release, much like in the
+             0.9.x series when every other release was the most stable
+             one :)  Have fun!
 
 2001.12.11 - GNU nano 1.1.4 is released.  This release contains
              rudimentary color syntax support (but it's still
@@ -1239,7 +1266,7 @@
 
 2001.10.26 - GNU nano 1.1.3 is released.  As far as new features go,
              the help system is now available for all functions in
-             the editor.  Also, nano will also now print a message on
+             the editor.  Also, nano will now also print a message on
              the status bar when it automatically converts a file
              from Mac or DOS format, and trying to load a file that
              has already been loaded in multibuffer mode will now
@@ -1369,11 +1396,10 @@
              code freeze for nano 1.0.  Don't expect (or request) any
              new features between now and nano 1.0, only bugfixes,
              optimizations and doc/translation updates.  For fixes, a
-             nasty segfault when trying to insert one's home
-             directory (~), some checks for the NumLock key making
-             the keypad go awry, window size sanity checks, many
-             autoconf fixes, and support for the KDE Konsole keypad
-             layout.  Have fun.
+             nasty segfault when trying to insert one's home directory
+             (~), some checks for the NumLock key making the keypad go
+             awry, window size sanity checks, many autoconf fixes, and
+             support for the KDE Konsole keypad layout.  Have fun.
 
 2001.01.07 - Nano 0.9.25 is the "Just one more feature I swear!"
              release.  It includes one new feature that Pico has had
@@ -1384,13 +1410,13 @@
              for crashes when tab completion in certain instances.
              Have fun and Happy New Year!
 
-2000.12.18 - Nano 0.9.24 is released.  This version contains the last of
-             the security fixes for writing files, as well as for a
-             nasty segfault when nano is unable to open a file for
-             reading, among other fixes.  Nano also now cowardly
+2000.12.18 - Nano 0.9.24 is released.  This version contains the last
+             of the security fixes for writing files, as well as for
+             a nasty segfault when nano is unable to open a file for
+             reading, among other fixes.  Nano now also cowardly
              refuses to open device files, to stop silly things like
              trying to open /dev/zero.  New features include being
-             Able to use Meta-Meta-<key> as Control-<key>, better
+             able to use Meta-Meta-<key> as Control-<key>, better
              HURD support, and some new flags have been added for
              Pico compatibility.  Upgrading to this version is highly
              recommended.
@@ -1482,15 +1508,14 @@
              of the curses library used.  Yay.
 
 2000.07.27 - Nano 0.9.14 is officially the "13 is so unlucky it should
-             be skipped as a version number" release.  One typo
-             caused unending problems (calling nano with either -t or
-             -k caused both flags to be used).  The -k code is also
-             now closer in functionality to Pico's -k mode; please
-             note that this code is not finished yet.  Working on
-             this code has made me realize that there is not enough
-             abstraction in the code, and I will be working on that
-             for the next release.  Until then, have fun with this
-             version.
+             be skipped as a version number" release.  One typo caused
+             unending problems (calling nano with either -t or -k
+             caused both flags to be used).  The -k code is now also
+             closer in functionality to Pico's -k mode; please note
+             that this code is not finished yet.  Working on this code
+             has made me realize that there is not enough abstraction
+             in the code, and I will be working on that for the next
+             release.  Until then, have fun with this version.
 
 2000.07.23 - Nano 0.9.13 has a few new bits and bobs, most notably the
              -k option from Pico (cut to end of line).  The majority
@@ -1571,7 +1596,7 @@
              concerned with being on the bleeding edge.
 
 2000.04.25 - Nano 0.9.4 fixes some problems in 0.9.3 with the last
-             line code and related segfaults.  It also now has much
+             line code and related segfaults.  It now also has much
              better handling for 8-bit characters.  The --enable-tiny
              code also produces a smaller executable.
 

@@ -1,6 +1,6 @@
 ## Here is an example for Python.
 
-syntax "python" "\.py$"
+syntax python "\.py$"
 header "^#!.*python[-0-9._]*"
 magic "Python script"
 linter pyflakes

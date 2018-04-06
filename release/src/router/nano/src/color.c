@@ -68,10 +68,13 @@ void set_colorpairs(void)
 			interface_color_pair[i] = COLOR_PAIR(i + 1) | A_BANDAID |
 										(combo->bright ? A_BOLD : A_NORMAL);
 		} else {
-			if (i != FUNCTION_TAG)
-				interface_color_pair[i] = hilite_attribute;
-			else
+			if (i == FUNCTION_TAG)
 				interface_color_pair[i] = A_NORMAL;
+			else if (i == ERROR_MESSAGE) {
+				init_pair(i + 1, COLOR_WHITE, COLOR_RED);
+				interface_color_pair[i] = COLOR_PAIR(i + 1) | A_BOLD | A_BANDAID;
+			} else
+				interface_color_pair[i] = hilite_attribute;
 		}
 
 		free(color_combo[i]);
@@ -87,8 +90,7 @@ void set_colorpairs(void)
 			const colortype *beforenow = sint->color;
 
 			while (beforenow != ink && (beforenow->fg != ink->fg ||
-										beforenow->bg != ink->bg ||
-										beforenow->bright != ink->bright))
+										beforenow->bg != ink->bg))
 				beforenow = beforenow->next;
 
 			if (beforenow != ink)

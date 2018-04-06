@@ -286,6 +286,15 @@ void unget_kbinput(int kbinput, bool metakey)
 		put_back(ESC_CODE);
 }
 
+#ifdef ENABLE_NANORC
+/* Insert the given string into the keyboard buffer. */
+void implant(const char *string)
+{
+	for (int i = strlen(string); i > 0; i--)
+		put_back(string[i - 1]);
+}
+#endif
+
 /* Try to read input_len codes from the keystroke buffer.  If the
  * keystroke buffer is empty and win isn't NULL, try to read in more
  * codes from win and add them to the keystroke buffer before doing
@@ -573,7 +582,7 @@ int parse_kbinput(WINDOW *win)
 	 * Shift/Ctrl/Alt are being held together with them. */
 	unsigned char modifiers = 6;
 
-	if (console && ioctl(0, TIOCLINUX, &modifiers) >= 0) {
+	if (on_a_vt && ioctl(0, TIOCLINUX, &modifiers) >= 0) {
 #ifndef NANO_TINY
 		/* Is Shift being held? */
 		if (modifiers & 0x01) {
@@ -1660,7 +1669,7 @@ int get_mouseinput(int *mouse_y, int *mouse_x, bool allow_shortcuts)
 			for (f = allfuncs; f != NULL; f = f->next) {
 				if ((f->menus & currmenu) == 0)
 					continue;
-				if (first_sc_for(currmenu, f->scfunc) == NULL)
+				if (first_sc_for(currmenu, f->func) == NULL)
 					continue;
 				/* Tick off an actually shown shortcut. */
 				j -= 1;
@@ -1670,7 +1679,7 @@ int get_mouseinput(int *mouse_y, int *mouse_x, bool allow_shortcuts)
 
 			/* And put the corresponding key into the keyboard buffer. */
 			if (f != NULL) {
-				const sc *s = first_sc_for(currmenu, f->scfunc);
+				const sc *s = first_sc_for(currmenu, f->func);
 				unget_kbinput(s->keycode, s->meta);
 			}
 			return 1;
@@ -1964,6 +1973,7 @@ char *display_string(const char *buf, size_t column, size_t span, bool isdata)
 	return converted;
 }
 
+#ifdef ENABLE_MULTIBUFFER
 /* Determine the sequence number of the given buffer in the circular list. */
 int buffer_number(openfilestruct *buffer)
 {
@@ -1976,6 +1986,7 @@ int buffer_number(openfilestruct *buffer)
 
 	return count;
 }
+#endif
 
 /* If path is NULL, we're in normal editing mode, so display the current
  * version of nano, the current filename, and whether the current file
@@ -2021,6 +2032,7 @@ void titlebar(const char *path)
 	else
 #endif
 	if (!inhelp) {
+#ifdef ENABLE_MULTIBUFFER
 		/* If there are/were multiple buffers, show which out of how many. */
 		if (more_than_one) {
 			indicator = charalloc(24);
@@ -2028,6 +2040,7 @@ void titlebar(const char *path)
 										buffer_number(firstfile->prev));
 			upperleft = indicator;
 		} else
+#endif
 			upperleft = BRANDING;
 
 		if (openfile->filename[0] == '\0')
@@ -2131,6 +2144,7 @@ void statusline(message_type importance, const char *msg, ...)
 {
 	va_list ap;
 	static int alerts = 0;
+	int colorpair;
 	char *compound, *message;
 	size_t start_col;
 	bool bracketed;
@@ -2169,7 +2183,9 @@ void statusline(message_type importance, const char *msg, ...)
 			msg = _("Further warnings were suppressed");
 		else if (alerts < 4)
 			beep();
-	}
+		colorpair = interface_color_pair[ERROR_MESSAGE];
+	} else
+		colorpair = interface_color_pair[STATUS_BAR];
 
 	lastmessage = importance;
 
@@ -2186,14 +2202,14 @@ void statusline(message_type importance, const char *msg, ...)
 	bracketed = (start_col > 1);
 
 	wmove(bottomwin, 0, (bracketed ? start_col - 2 : start_col));
-	wattron(bottomwin, interface_color_pair[STATUS_BAR]);
+	wattron(bottomwin, colorpair);
 	if (bracketed)
 		waddstr(bottomwin, "[ ");
 	waddstr(bottomwin, message);
 	free(message);
 	if (bracketed)
 		waddstr(bottomwin, " ]");
-	wattroff(bottomwin, interface_color_pair[STATUS_BAR]);
+	wattroff(bottomwin, colorpair);
 
 	/* Defeat a VTE/Konsole bug, where the cursor can go off-limits. */
 	if (ISSET(CONSTANT_SHOW) && ISSET(NO_HELP))
@@ -2252,7 +2268,7 @@ void bottombars(int menu)
 		if ((f->menus & menu) == 0)
 			continue;
 
-		s = first_sc_for(menu, f->scfunc);
+		s = first_sc_for(menu, f->func);
 		if (s == NULL)
 			continue;
 
@@ -2900,57 +2916,42 @@ bool less_than_a_screenful(size_t was_lineno, size_t was_leftedge)
 		return (openfile->current->lineno - was_lineno < editwinrows);
 }
 
-/* Scroll the edit window in the given direction and the given number of rows,
- * and draw new lines on the blank lines left after the scrolling. */
-void edit_scroll(bool direction, int nrows)
+/* Scroll the edit window one row in the given direction, and
+ * draw the relevant content on the resultant blank row. */
+void edit_scroll(bool direction)
 {
 	filestruct *line;
 	size_t leftedge;
+	int remainder = 0, nrows = 1;
 
-	/* Part 1: nrows is the number of rows we're going to scroll the text of
-	 * the edit window. */
-
-	/* Move the top line of the edit window the requested number of rows up or
-	 * down, and reduce the number of rows with the amount we couldn't move. */
+	/* Move the top line of the edit window one row up or down. */
 	if (direction == BACKWARD)
-		nrows -= go_back_chunks(nrows, &openfile->edittop, &openfile->firstcolumn);
+		remainder = go_back_chunks(1, &openfile->edittop, &openfile->firstcolumn);
 	else
-		nrows -= go_forward_chunks(nrows, &openfile->edittop, &openfile->firstcolumn);
+		remainder = go_forward_chunks(1, &openfile->edittop, &openfile->firstcolumn);
 
-	/* Don't bother scrolling zero rows, nor more than the window can hold. */
-	if (nrows == 0) {
+	if (remainder > 0) {
 #ifndef NANO_TINY
-		statusline(ALERT, "Underscrolling -- please report a bug");
+		statusline(ALERT, "Could not scroll -- please report a bug");
 #endif
 		return;
 	}
-	if (nrows >= editwinrows) {
-#ifndef NANO_TINY
-		if (editwinrows > 1)
-			statusline(ALERT, "Overscrolling -- please report a bug");
-#endif
-		refresh_needed = TRUE;
-		return;
-	}
 
-	/* Scroll the text of the edit window a number of rows up or down. */
+	/* Actually scroll the text of the edit window one row up or down. */
 	scrollok(edit, TRUE);
-	wscrl(edit, (direction == BACKWARD) ? -nrows : nrows);
+	wscrl(edit, (direction == BACKWARD) ? -1 : 1);
 	scrollok(edit, FALSE);
-
-	/* Part 2: nrows is now the number of rows in the scrolled region of the
-	 * edit window that we need to draw. */
 
 	/* If we're not on the first "page" (when not softwrapping), or the mark
 	 * is on, the row next to the scrolled region needs to be redrawn too. */
 	if (line_needs_update(openfile->placewewant, 0) && nrows < editwinrows)
 		nrows++;
 
-	/* If we scrolled backward, start on the first line of the blank region. */
+	/* If we scrolled backward, the top row needs to be redrawn. */
 	line = openfile->edittop;
 	leftedge = openfile->firstcolumn;
 
-	/* If we scrolled forward, move down to the start of the blank region. */
+	/* If we scrolled forward, the bottom row needs to be redrawn. */
 	if (direction == FORWARD)
 		go_forward_chunks(editwinrows - nrows, &line, &leftedge);
 
@@ -2965,8 +2966,8 @@ void edit_scroll(bool direction, int nrows)
 	}
 #endif
 
-	/* Draw new content on the blank rows inside the scrolled region
-	 * (and on the bordering row too when it was deemed necessary). */
+	/* Draw new content on the blank row (and on the bordering row too
+	 * when it was deemed necessary). */
 	while (nrows > 0 && line != NULL) {
 		nrows -= update_line(line, (line == openfile->current) ?
 										openfile->current_x : 0);

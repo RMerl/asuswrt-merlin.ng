@@ -1,6 +1,6 @@
 ## Here is an example for Emacs Lisp.
 
-syntax "elisp" "\.el$"
+syntax elisp "\.el$"
 magic "Lisp/Scheme program"
 comment ";"
 

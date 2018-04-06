@@ -1,7 +1,7 @@
 ## Here is an example for Gentoo ebuilds/eclasses,
 ## and (further down) one for Portage control files.
 
-syntax "ebuild" "\.e(build|class|blit)$"
+syntax ebuild "\.e(build|class|blit)$"
 comment "#"
 
 ## All the standard portage functions:
@@ -48,7 +48,7 @@ color ,green "[[:space:]]+$"
 color ,green " 	"
 
 
-syntax "/etc/portage" "\.(accept_keywords|env|keywords|mask|unmask|use)(/.+)?$"
+syntax /etc/portage "\.(accept_keywords|env|keywords|mask|unmask|use)(/.+)?$"
 comment "#"
 
 ## Base text:

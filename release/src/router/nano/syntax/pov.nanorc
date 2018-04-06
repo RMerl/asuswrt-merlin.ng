@@ -1,6 +1,6 @@
 ## Here is an example for POV-Ray.
 
-syntax "pov" "\.(pov|POV|povray|POVRAY)$"
+syntax pov "\.(pov|POV|povray|POVRAY)$"
 comment "//"
 
 color brightcyan "^[[:space:]]*#[[:space:]]*(declare)"

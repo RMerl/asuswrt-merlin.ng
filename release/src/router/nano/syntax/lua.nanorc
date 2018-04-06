@@ -3,7 +3,7 @@
 ## Original author:  Matthew Wild <mwild1 (at) gmail.com>
 ## License: GPL 3 or later
 
-syntax "lua" "\.lua$"
+syntax lua "\.lua$"
 magic "Lua script"
 comment "--"
 

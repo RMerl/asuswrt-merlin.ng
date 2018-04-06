@@ -1,6 +1,6 @@
 ## Syntax highlighting for Javascript.
 
-syntax "javascript" "\.js$"
+syntax javascript "\.js$"
 comment "//"
 
 # Declarational stuff.

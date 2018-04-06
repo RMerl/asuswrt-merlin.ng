@@ -1,4 +1,4 @@
-# host-cpu-c-abi.m4 serial 8
+# host-cpu-c-abi.m4 serial 9
 dnl Copyright (C) 2002-2018 Free Software Foundation, Inc.
 dnl This file is free software; the Free Software Foundation
 dnl gives unlimited permission to copy and/or distribute it,
@@ -135,7 +135,7 @@ changequote([,])dnl
             echo 'double ddd; void func (double dd) { ddd = dd; }' > conftest.c
             # Look for a reference to the register d0 in the .s file.
             AC_TRY_COMMAND(${CC-cc} $CFLAGS $CPPFLAGS $gl_c_asm_opt conftest.c) >/dev/null 2>&1
-            if LC_ALL=C grep -E 'd0,' conftest.$gl_asmext >/dev/null; then
+            if LC_ALL=C grep 'd0,' conftest.$gl_asmext >/dev/null; then
               gl_cv_host_cpu_c_abi=armhf
             else
               gl_cv_host_cpu_c_abi=arm

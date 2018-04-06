@@ -1,6 +1,6 @@
 ## Here is an example for quoted emails (under e.g. mutt).
 
-syntax "mutt"
+syntax mutt
 
 # Quoted lines.
 color green "^>.*"

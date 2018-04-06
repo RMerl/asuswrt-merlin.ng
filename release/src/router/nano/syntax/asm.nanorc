@@ -1,6 +1,6 @@
 ## Here is an example for assembler.
 
-syntax "asm" "\.(S|s|asm)$"
+syntax asm "\.(S|s|asm)$"
 magic "assembler source"
 comment "//"
 

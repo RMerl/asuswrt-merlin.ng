@@ -1,6 +1,6 @@
 ## Here is a short example for TeX files.
 
-syntax "tex" "\.tex$"
+syntax tex "\.tex$"
 magic "(La)?TeX document"
 linter chktex -v0 -q -I
 comment "%"

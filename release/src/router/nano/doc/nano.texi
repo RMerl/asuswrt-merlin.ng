@@ -8,8 +8,8 @@
 
 @smallbook
 @set EDITION 0.5
-@set VERSION 2.9.3
-@set UPDATED January 2018
+@set VERSION 2.9.5
+@set UPDATED March 2018
 
 @dircategory Editors
 @direntry
@@ -23,7 +23,7 @@
 @titlepage
 @title GNU @command{nano}
 @subtitle a small and friendly text editor
-@subtitle version 2.9.3
+@subtitle version 2.9.5
 
 @author Chris Allegretta
 @page
@@ -63,7 +63,7 @@ e-mail: @email{chrisa@@asty.org}@*
 @node Top
 @top
 
-This manual documents the GNU @command{nano} editor, version 2.9.3.
+This manual documents the GNU @command{nano} editor, version 2.9.5.
 
 @menu
 * Introduction::
@@ -217,7 +217,6 @@ Use the blank line below the title bar as extra editing space.
 @itemx --positionlog
 For the 200 most recent files, log the last position of the cursor,
 and place it at that position again upon reopening such a file.
-(The old form of this option, @option{--poslog}, is deprecated.)
 
 @item -Q "@var{characters}"
 @itemx --quotestr="@var{characters}"
@@ -498,11 +497,14 @@ the 'Copy Text' command (default key binding: @kbd{M-6}).
 
 Text can be selected by first 'setting the Mark' (default key bindings:
 @kbd{^6} and @kbd{M-A}) and then moving the cursor to the other end of the portion
-to be selected.  The selected portion of text will be highlighted in
-reverse video (or in bold if you set the boldtext option).
+to be selected.  The selected portion of text will be highlighted.
 This selection can now be cut or copied in its entirety with a single
 @kbd{^K} or @kbd{M-6}.  Or the selection can be used to limit the scope of
 a search-and-replace (@kbd{^\}) or spell-checking session (@kbd{^T}).
+
+On some terminals, it is also possible to select text by holding down
+@kbd{Shift} together with the cursor keys.  Such a selection is cancelled
+upon any cursor movement where @kbd{Shift} isn't held.
 
 Cutting or copying selected text will toggle the mark off automatically.
 If necessary, it can be toggled off manually with another @kbd{^6} or @kbd{M-A}.
@@ -567,8 +569,8 @@ cannot be undone any more.  The workaround is, of course, to exit without
 saving.
 
 The recording and playback of keyboard macros works correctly only on a
-terminal emulator, not on a Linux console (VT), because the latter is a
-deficient terminal.
+terminal emulator, not on a Linux console (VT), because the latter does
+not by default distinguish modified from unmodified arrow keys.
 
 @node Built-in Help
 @chapter Built-in Help
@@ -731,12 +733,15 @@ Do case-sensitive searches by default.
 
 @item set constantshow
 Constantly display the cursor position on the status bar.
-(The old form of this option, @code{set const}, is deprecated.)
 Note that this overrides @option{quickblank}.
 
 @item set cutfromcursor
 Use cut-from-cursor-to-end-of-line by default, instead of cutting the whole line.
 (The old form of this option, @code{set cut}, is deprecated.)
+
+@item set errorcolor @var{fgcolor},@var{bgcolor}
+Use this color combination for the status bar when an error message is displayed.
+@xref{@code{set functioncolor}} for valid color names.
 
 @item set fill @var{number}
 Hard-wrap lines at column number @var{number}.  If @var{number} is 0 or less,
@@ -750,7 +755,8 @@ Use this color combination for the concise function descriptions
 in the two help lines at the bottom of the screen.
 Valid names for foreground and background color are:
 @code{white}, @code{black}, @code{blue}, @code{green},
-@code{red}, @code{cyan}, @code{yellow}, and @code{magenta}.
+@code{red}, @code{cyan}, @code{yellow}, @code{magenta}, and @code{normal}
+--- where @code{normal} means the default foreground or background color.
 The name of the foreground color may be prefixed with @code{bright}.
 And either @var{fgcolor} or ,@var{bgcolor} may be left out.
 
@@ -815,7 +821,6 @@ directory feature is turned off.
 @item set positionlog
 Save the cursor position of files between editing sessions.
 The cursor position is remembered for the 200 most-recently edited files.
-(The old form of this option, @code{set poslog}, is deprecated.)
 
 @item set preserve
 Preserve the XON and XOFF keys (@kbd{^Q} and @kbd{^S}).
@@ -1037,7 +1042,7 @@ in one of the system-installed files (which normally are not writable).
 @node Rebinding Keys
 @section Rebinding Keys
 
-Key bindings can be changed via the following two commands in a
+Key bindings can be changed via the following three commands in a
 nanorc file:
 
 @table @code
@@ -1045,6 +1050,13 @@ nanorc file:
 @item bind key function menu
 Rebinds @code{key} to @code{function} in the context of @code{menu}
 (or in all menus where the function exists by using @code{all}).
+
+@item bind key "string" menu
+Makes @code{key} produce @code{string} in the context of @code{menu}
+(or in all menus where the key exists when @code{all} is used).
+The @code{string} can consist of text or commands or a mix of them.
+(To enter a command into the @code{string}, precede its keystroke
+with @kbd{M-V}.)
 
 @item unbind key menu
 Unbinds @code{key} from @code{menu}
@@ -1102,7 +1114,6 @@ Starts a backward search for text in the current buffer.
 
 @item searchagain
 Repeats the last search command without prompting.
-(The form @code{research} is deprecated.)
 
 @item findprevious
 As @code{searchagain}, but always in the backward direction.
@@ -1137,7 +1148,6 @@ Cuts all text from the cursor position till the end of the buffer.
 
 @item curpos
 Shows the current cursor position: the line, column, and character positions.
-(The form @code{cursorpos} is deprecated.)
 
 @item wordcount
 Counts the number of words, lines and characters in the current buffer.
@@ -1179,10 +1189,12 @@ Goes one line up (in the editor or browser).
 Goes one line down (in the editor or browser).
 
 @item scrollup
-Scrolls up one line of text from the current position.
+Scrolls the viewport up one row (meaning that the text slides down)
+while keeping the cursor in the same text position, if possible.
 
 @item scrolldown
-Scrolls down one line of text from the current position.
+Scrolls the viewport down one row (meaning that the text slides up)
+while keeping the cursor in the same text position, if possible.
 
 @item prevword
 Moves the cursor to the beginning of the previous word.
@@ -1224,9 +1236,6 @@ Goes to the last line of the file.
 @item gotoline
 Goes to a specific line (and column if specified).  Negative numbers count
 from the end of the file (and end of the line).
-
-@item gototext
-Switches from targeting a line number to searching for text.
 
 @item findbracket
 Moves the cursor to the bracket (brace, parenthesis, etc.) that matches
@@ -1278,7 +1287,6 @@ Toggles case sensitivity in searching (search/replace menus only).
 
 @item regexp
 Toggles whether searching/replacing is based on literal strings or regular expressions.
-(The form @code{regex} is deprecated.)
 
 @item backwards
 Toggles whether searching/replacing goes forward or backward.
@@ -1291,7 +1299,10 @@ Shows the next history entry in the prompt menus (e.g.@: search).
 
 @item flipreplace
 Toggles between searching for something and replacing something.
-(The form @code{dontreplace} is deprecated.)
+
+@item flipgoto
+Toggles between searching for text and targeting a line number.
+(The form @code{gototext} is deprecated.)
 
 @item flipexecute
 Toggles between inserting a file and executing a command.
@@ -1299,7 +1310,6 @@ Toggles between inserting a file and executing a command.
 @item flipnewbuffer
 Toggles between inserting into the current buffer and into a new
 empty buffer.
-(The form @code{newbuffer} is deprecated.)
 
 @item dosformat
 When writing a file, switches to writing a DOS format (CR/LF).
@@ -1405,7 +1415,6 @@ The 'search to replace' menu.
 
 @item replacewith
 The 'replace with' menu, which comes up after 'search to replace'.
-(The form @code{replace2} is deprecated.)
 
 @item gotoline
 The 'goto line (and column)' menu.

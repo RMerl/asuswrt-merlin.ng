@@ -1,6 +1,6 @@
 ## Here is an example for awk.
 
-syntax "awk" "\.awk$"
+syntax awk "\.awk$"
 magic "awk script"
 comment "#"
 

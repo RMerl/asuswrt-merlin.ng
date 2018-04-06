@@ -1,6 +1,6 @@
 ## Here is an example for Go.
 
-syntax "go" "\.go$"
+syntax go "\.go$"
 comment "//"
 
 # Set up a formatter since spelling is probably useless...
@@ -24,9 +24,11 @@ color brightcyan "\<(package|import)\>"
 color brightcyan "//[[:space:]]*\+build[[:space:]]+(([a-zA-Z_0-9]+[[:space:]]*)+,[[:space:]]*)*[a-zA-Z_0-9]+"
 
 # Literals.
-color red "\<0([0-7]*|[xX][0-9a-fA-F]+)\>"
-color red "(\<0+|\B)\.[0-9]+([Ee][+-]?[0-9]+)?i?\>"
-color red "\<[1-9][0-9]*(\.[0-9]*)?([Ee][+-]?[0-9]+)?i?\>"
+color red "\<([1-9][0-9]*|0[0-7]*|0[xX][0-9A-Fa-f]+)\>"
+color red "\<[0-9]+\.[0-9]*([eE][+-]?[0-9]+)?i?\>"
+color red "\<[0-9]+[eE][+-]?[0-9]+i?\>"
+color red "\B\.[0-9]+([eE][+-]?[0-9]+)?i?\>"
+color red "\<[0-9]+i\>"
 
 # Strings and characters; slightly fuzzy.
 color red "\<(true|false|nil|iota|_)\>"

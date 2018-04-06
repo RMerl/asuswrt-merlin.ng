@@ -1,6 +1,6 @@
 ## Here is an example for manpages.
 
-syntax "man" "\.[1-9]x?$"
+syntax man "\.[1-9]x?$"
 magic "troff or preprocessor input"
 comment ".\""
 

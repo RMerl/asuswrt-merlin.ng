@@ -16,7 +16,7 @@
 .\"   Documentation License along with this program.  If not, see
 .\"   <http://www.gnu.org/licenses/>.
 .\"
-.TH NANORC 5 "version 2.9.3" "January 2018"
+.TH NANORC 5 "version 2.9.5" "March 2018"
 
 .SH NAME
 nanorc \- GNU nano's configuration file
@@ -96,12 +96,15 @@ Do case-sensitive searches by default.
 .TP
 .B set constantshow
 Constantly display the cursor position in the status bar.
-(The old form of this option, '\fBset const\fR', is deprecated.)
 This overrides the option \fBquickblank\fR.
 .TP
 .B set cutfromcursor
 Use cut-from-cursor-to-end-of-line by default, instead of cutting the whole line.
 (The old form of this option, '\fBset cut\fR', is deprecated.)
+.TP
+.B set errorcolor \fIfgcolor\fR,\fIbgcolor\fR
+Use this color combination for the status bar when an error message is displayed.
+See \fBset titlecolor\fR for valid color names.
 .TP
 .B set fill \fInumber\fR
 Hard-wrap lines at column number \fInumber\fR.  If \fInumber\fR is 0 or less,
@@ -178,7 +181,6 @@ directory feature is turned off.
 .B set positionlog
 Save the cursor position of files between editing sessions.
 The cursor position is remembered for the 200 most-recently edited files.
-(The old form of this option, '\fBset poslog\fR', is deprecated.)
 .TP
 .B set preserve
 Preserve the XON and XOFF keys (^Q and ^S).
@@ -262,7 +264,9 @@ Save automatically on exit, don't prompt.
 .B set titlecolor \fIfgcolor\fR,\fIbgcolor\fR
 Specify the color combination to use for the title bar.
 Valid names for the foreground and background colors are:
-.BR white ", " black ", " blue ", " green ", " red ", " cyan ", " yellow ",  and " magenta .
+.BR white ", " black ", " blue ", " green ", " red ", "
+.BR cyan ", " yellow ", " magenta ", and " normal
+-- where \fBnormal\fR means the default foreground or background color.
 The name of the foreground color may be prefixed with \fBbright\fR.
 And either "\fIfgcolor\fR" or ",\fIbgcolor\fR" may be left out.
 .TP
@@ -393,16 +397,26 @@ slightly improve a syntax defined in one of the system-installed
 files (which normally are not writable).
 
 .SH REBINDING KEYS
-Key bindings can be changed via the following two commands:
+Key bindings can be changed via the following three commands:
+.RS 3
 .TP
 .BI bind " key function menu"
 Rebinds the key \fIkey\fP to a new function named \fIfunction\fP in the
 context of menu \fImenu\fP (or in all menus where the function exists
 by using \fBall\fP).
 .TP
+.BI bind " key " """" string """" " menu"
+Makes the given \fIkey\fR produce the given \fIstring\fR in the given
+\fImenu\fR (or in all menus where the key exists when \fBall\fR is used).
+The \fIstring\fR can consist of text or commands or a mix of them.
+(To enter a command into the \fIstring\fR, precede its keystroke
+with \fBM-V\fR.)
+
+.TP
 .BI unbind " key menu"
 Unbinds the key \fIkey\fP from the menu named \fImenu\fP (or from all
 menus where it exists by using \fBall\fP).
+.RE
 
 .TP
 The format of \fIkey\fP should be one of:
@@ -453,7 +467,6 @@ Starts a backward search for text in the current buffer.
 .TP
 .B searchagain
 Repeats the last search command without prompting.
-(The form 'research' is deprecated.)
 .TP
 .B findprevious
 As \fBsearchagain\fR, but always in the backward direction.
@@ -488,7 +501,6 @@ Cuts all text from the cursor position till the end of the buffer.
 .TP
 .B curpos
 Shows the current cursor position: the line, column, and character positions.
-(The form 'cursorpos' is deprecated.)
 .TP
 .B wordcount
 Counts the number of words, lines and characters in the current buffer.
@@ -533,10 +545,12 @@ Goes one line up (in the editor or browser).
 Goes one line down (in the editor or browser).
 .TP
 .B scrollup
-Scrolls up one line of text from the current position.
+Scrolls the viewport up one row (meaning that the text slides down)
+while keeping the cursor in the same text position, if possible.
 .TP
 .B scrolldown
-Scrolls down one line of text from the current position.
+Scrolls the viewport down one row (meaning that the text slides up)
+while keeping the cursor in the same text position, if possible.
 .TP
 .B prevword
 Moves the cursor to the beginning of the previous word.
@@ -578,9 +592,6 @@ Goes to the last line of the file.
 .B gotoline
 Goes to a specific line (and column if specified).  Negative numbers count
 from the end of the file (and end of the line).
-.TP
-.B gototext
-Switches from targeting a line number to searching for text.
 .TP
 .B findbracket
 Moves the cursor to the bracket (brace, parenthesis, etc.) that matches
@@ -632,7 +643,6 @@ Toggles case sensitivity in searching (search/replace menus only).
 .TP
 .B regexp
 Toggles whether searching/replacing is based on literal strings or regular expressions.
-(The form 'regex' is deprecated.)
 .TP
 .B backwards
 Toggles whether searching/replacing goes forward or backward.
@@ -645,7 +655,10 @@ Shows the next history entry in the prompt menus (e.g. search).
 .TP
 .B flipreplace
 Toggles between searching for something and replacing something.
-(The form 'dontreplace' is deprecated.)
+.TP
+.B flipgoto
+Toggles between searching for text and targeting a line number.
+(The form 'gototext' is deprecated.)
 .TP
 .B flipexecute
 Toggles between inserting a file and executing a command.
@@ -653,7 +666,6 @@ Toggles between inserting a file and executing a command.
 .B flipnewbuffer
 Toggles between inserting into the current buffer and into a new
 empty buffer.
-(The form 'newbuffer' is deprecated.)
 .TP
 .B dosformat
 When writing a file, switches to writing a DOS format (CR/LF).
@@ -757,7 +769,6 @@ The 'search to replace' menu.
 .TP
 .B replacewith
 The 'replace with' menu, which comes up after 'search to replace'.
-(The form 'replace2' is deprecated.)
 .TP
 .B gotoline
 The 'goto line (and column)' menu.

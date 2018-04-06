@@ -1,7 +1,7 @@
 ## An example of a default syntax.  The default syntax is used for
 ## files that do not match any other syntax.
 
-syntax "default"
+syntax default
 comment "#"
 
 # Comments.

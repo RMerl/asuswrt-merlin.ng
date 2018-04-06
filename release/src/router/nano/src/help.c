@@ -46,7 +46,7 @@ char *tempfilename = NULL;
  * read that file into a new buffer. */
 void wrap_the_help_text(bool redisplaying)
 {
-	int sum = 0;
+	size_t sum = 0;
 	const char *ptr = start_of_body;
 	FILE *tempfile = fopen(tempfilename, "w+b");
 
@@ -75,7 +75,7 @@ void wrap_the_help_text(bool redisplaying)
 	if (redisplaying)
 		close_buffer();
 
-	open_buffer(tempfilename, FALSE);
+	open_buffer(tempfilename, TRUE);
 	remove_magicline();
 
 	prepare_for_display();
@@ -142,10 +142,10 @@ void do_help(void)
 
 	UNSET(WHITESPACE_DISPLAY);
 	UNSET(NOREAD_MODE);
-	SET(MULTIBUFFER);
 
 #ifdef ENABLE_LINENUMBERS
 	UNSET(LINE_NUMBERS);
+	editwincols = COLS;
 	margin = 0;
 #endif
 	tabsize = 8;
@@ -191,12 +191,12 @@ void do_help(void)
 
 		if (func == total_refresh) {
 			total_redraw();
-		} else if (func == do_up_void) {
-			do_up(TRUE);
-		} else if (func == do_down_void) {
+		} else if (func == do_up) {
+			do_scroll_up();
+		} else if (func == do_down) {
 			if (openfile->edittop->lineno + editwinrows - 1 <
 								openfile->filebot->lineno)
-				do_down(TRUE);
+				do_scroll_down();
 		} else if (func == do_page_up) {
 			do_page_up();
 		} else if (func == do_page_down) {
@@ -215,6 +215,10 @@ void do_help(void)
 			do_findprevious();
 		} else if (func == do_findnext) {
 			do_findnext();
+#ifdef ENABLE_NANORC
+		} else if (func == (functionptrtype)implant) {
+			implant(first_sc_for(MHELP, func)->expansion);
+#endif
 		} else if (kbinput == KEY_WINCH) {
 			; /* Nothing to do. */
 #endif
@@ -249,6 +253,7 @@ void do_help(void)
 
 #ifdef ENABLE_LINENUMBERS
 	margin = was_margin;
+	editwincols = COLS - margin;
 #endif
 	tabsize = was_tabsize;
 #ifdef ENABLE_COLOR
@@ -471,7 +476,7 @@ void help_init(void)
 		size_t endis_len = strlen(_("enable/disable"));
 
 		for (s = sclist; s != NULL; s = s->next)
-			if (s->scfunc == do_toggle_void)
+			if (s->func == do_toggle_void)
 				allocsize += strlen(_(flagtostr(s->toggle))) + endis_len + 8;
 	}
 #endif
@@ -504,7 +509,7 @@ void help_init(void)
 			if ((s->menus & currmenu) == 0)
 				continue;
 
-			if (s->scfunc == f->scfunc) {
+			if (s->func == f->func) {
 				scsfound++;
 				/* Make the first column narrower (6) than the second (10),
 				 * but allow it to spill into the second, for "M-Space". */

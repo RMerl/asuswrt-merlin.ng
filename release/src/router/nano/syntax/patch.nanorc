@@ -1,6 +1,6 @@
 ## Here is an example for patch files.
 
-syntax "patch" "\.(patch|diff|debdiff)$"
+syntax patch "\.(patch|diff|debdiff)$"
 magic "diff output"
 # There is no official support for comments in patch files.
 comment ""

@@ -1,6 +1,6 @@
 ## Syntax highlighting for Tcl files.
 
-syntax "tcl" "\.tcl$"
+syntax tcl "\.tcl$"
 magic "Tcl(/Tk)? script"
 comment "#"
 

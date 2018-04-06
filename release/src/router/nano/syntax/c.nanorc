@@ -1,6 +1,6 @@
 ## Here is an example for C/C++.
 
-syntax "c" "\.(c(c|pp|xx|\+\+)?|C)$" "\.(h(h|pp|xx)?|H)$" "\.ii?$"
+syntax c "\.(c(c|pp|xx|\+\+)?|C)$" "\.(h(h|pp|xx)?|H)$" "\.ii?$"
 magic "^(C|C\+\+) (source|program)"
 comment "//"
 

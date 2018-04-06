@@ -5242,6 +5242,15 @@ ej_wl_status_array(int eid, webs_t wp, int argc, char_t **argv, int unit)
 	scb_val_t scb_val;
 	int hr, min, sec;
 	sta_info_t *sta;
+#ifdef RTCONFIG_BCMWL6
+	wl_dfs_status_t *dfs_status;
+	char chanspec_str[CHANSPEC_STR_LEN];
+	uint bitmap;
+	uint channel;
+	uint32 chanspec_arg;
+	int first = 0, last = MAXCHANNEL, minutes;
+#endif
+
 
 	snprintf(prefix, sizeof(prefix), "wl%d_", unit);
 
@@ -5362,6 +5371,99 @@ ej_wl_status_array(int eid, webs_t wp, int argc, char_t **argv, int unit)
 			ret += websWrite(wp, "wificlients24 = [];");
 		return ret;
 	}
+// DFS status
+
+#ifdef RTCONFIG_BCMWL6
+	if (nvram_match(strcat_r(prefix, "reg_mode", tmp), "off")) {
+		ret += websWrite(wp, "var dfs_status=\"\";\nvar dfs_chanarray=[];\n");
+		goto sta_list;
+	}
+
+	memset(buf, 0, sizeof(buf));
+	strcpy(buf, "dfs_status");
+
+	if (wl_ioctl(name, WLC_GET_VAR, buf, sizeof(buf)) < 0) {
+		ret += websWrite(wp, "var dfs_status=\"\";\nvar dfs_chanarray=[];\n");
+		goto sta_list;
+	}
+	dfs_status = (wl_dfs_status_t *) buf;
+	dfs_status->state = dtoh32(dfs_status->state);
+	dfs_status->duration = dtoh32(dfs_status->duration);
+	dfs_status->chanspec_cleared = wl_chspec_from_driver(dfs_status->chanspec_cleared);
+
+	if (dfs_status->state >= WL_DFS_CACSTATES) {
+		ret += websWrite(wp, "var dfs_status=\"Unknown DFS state %d\";\nvar dfs_chanarray=[];\n", dfs_status->state);
+	} else {
+		const char *dfs_cacstate_str[WL_DFS_CACSTATES] = {
+			"Idle",
+			"PRE-ISM Channel Availability Check(CAC)",
+			"In-Service Monitoring(ISM)",
+			"Channel Switching Announcement(CSA)",
+			"POST-ISM Channel Availability Check",
+			"PRE-ISM Ouf Of Channels(OOC)",
+			"POST-ISM Out Of Channels(OOC)"
+		};
+
+		ret += websWrite(wp, "var dfs_statusarray = [\"%s\", \"%dms\", \"",
+			dfs_cacstate_str[dfs_status->state], dfs_status->duration);
+
+		if (dfs_status->chanspec_cleared) {
+			ret += websWrite(wp, "%s (0x%04X)\"];\n",
+				wf_chspec_ntoa(dfs_status->chanspec_cleared, chanspec_str),
+				dfs_status->chanspec_cleared);
+		}
+		else {
+			ret += websWrite(wp, "None\"];\n");
+		}
+	}
+
+	ret += websWrite(wp, "var dfs_chanarray = [");
+
+	for (; first <= last; first++) {
+		channel = first;
+		chanspec_arg = CH20MHZ_CHSPEC(channel);
+
+		strcpy(buf, "per_chan_info");
+		memcpy((char *)(buf + strlen(buf) + 1), (char*)&chanspec_arg, sizeof(chanspec_arg));
+
+		if (wl_ioctl(name, WLC_GET_VAR, buf, sizeof(buf)) < 0)
+			break;
+
+		bitmap = dtoh32(*(uint *)buf);
+		minutes = (bitmap >> 24) & 0xff;
+
+		if (!(bitmap & WL_CHAN_VALID_HW))
+			continue;
+
+		if (!(bitmap & WL_CHAN_VALID_SW))
+			continue;
+
+		ret += websWrite(wp, "[%d, \"", channel);
+
+		if (bitmap & WL_CHAN_BAND_5G)
+			ret += websWrite(wp, "A Band");
+		else
+			ret += websWrite(wp, "B Band");
+
+		if (bitmap & WL_CHAN_RADAR) {
+			ret += websWrite(wp, ", RADAR Sensitive");
+		}
+		if (bitmap & WL_CHAN_RESTRICTED) {
+			ret += websWrite(wp, ", Restricted");
+		}
+		if (bitmap & WL_CHAN_PASSIVE) {
+			ret += websWrite(wp, ", Passive");
+		}
+		if (bitmap & WL_CHAN_INACTIVE) {
+			ret += websWrite(wp, ", Temporarily Out of Service for %d minutes", minutes);
+		}
+		ret += websWrite(wp, "\"],\n");
+	}
+	ret += websWrite(wp, "[]];\n");
+#endif
+
+sta_list:
+
 // Open client array
 	if (unit == 1)
 		ret += websWrite(wp, "wificlients5 = [");

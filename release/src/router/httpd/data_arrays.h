@@ -37,3 +37,5 @@ extern int ej_iptraffic(int eid, webs_t wp, int argc, char **argv);
 extern void iptraffic_conntrack_init();
 extern void ctvbuf(FILE *f);
 #endif
+
+int ej_connlist_array(int eid, webs_t wp, int argc, char **argv);

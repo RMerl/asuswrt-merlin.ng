@@ -1026,3 +1026,42 @@ void ctvbuf(FILE *f) {
 
 #endif
 
+
+int ej_connlist_array(int eid, webs_t wp, int argc, char **argv) {
+	FILE *fp;
+	char line[100];
+	int firstline = 1;
+	char proto[4], address[22], dest[22], state[15];
+	int ret = 0;
+
+	ret += websWrite(wp, "var connarray = [");
+
+	system("/usr/sbin/netstat-nat -r state -xn > /tmp/connect.log 2>&1");
+
+	fp = fopen("/tmp/connect.log", "r");
+	if (fp == NULL) {
+		websWrite(wp, "[]];\n");
+		return ret;
+	}
+
+	while (fgets(line, sizeof(line), fp)) {
+		if (firstline) {
+			firstline = 0;
+			continue;
+		}
+                if (sscanf(line,
+                    "%3s%*[ \t]"
+                    "%21s%*[ \t]"
+		    "%21s%*[ \t]"
+		    "%14s%*[ \t]",
+		    proto, address, dest, state) < 4) continue;
+
+		ret += websWrite(wp, "[\"%s\", \"%s\", \"%s\", \"%s\"],\n",
+		                      proto, address, dest, state);
+	}
+	fclose(fp);
+
+	ret += websWrite(wp, "[]];\n");
+
+	return ret;
+}

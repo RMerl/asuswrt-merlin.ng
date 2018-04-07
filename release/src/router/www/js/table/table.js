@@ -219,8 +219,8 @@ var tableSorter = {
 		else return 1;
 	},
 	"ip_increase" : function(a, b) {
-		var aa = a[tableSorter.indexFlag].split(".");
-		var bb = b[tableSorter.indexFlag].split(".");
+		var aa = a[tableSorter.indexFlag].split(":")[0].split(".");
+		var bb = b[tableSorter.indexFlag].split(":")[0].split(".");
 
 		var resulta = aa[0]*0x1000000 + aa[1]*0x10000 + aa[2]*0x100 + aa[3]*1;
 		var resultb = bb[0]*0x1000000 + bb[1]*0x10000 + bb[2]*0x100 + bb[3]*1;
@@ -228,8 +228,8 @@ var tableSorter = {
 		return parseInt(resulta) - parseInt(resultb);
 	},
 	"ip_decrease" : function(a, b) {
-		var aa = a[tableSorter.indexFlag].split(".");
-		var bb = b[tableSorter.indexFlag].split(".");
+		var aa = a[tableSorter.indexFlag].split(":")[0].split(".");
+		var bb = b[tableSorter.indexFlag].split(":")[0].split(".");
 
 		var resulta = aa[0]*0x1000000 + aa[1]*0x10000 + aa[2]*0x100 + aa[3]*1;
 		var resultb = bb[0]*0x1000000 + bb[1]*0x10000 + bb[2]*0x100 + bb[3]*1;

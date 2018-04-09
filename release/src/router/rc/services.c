@@ -8620,7 +8620,7 @@ stop_usbled(void)
 void start_cron(void)
 {
 	stop_cron();
-	eval("crond");
+	eval("crond", "-l", "9");
 }
 
 

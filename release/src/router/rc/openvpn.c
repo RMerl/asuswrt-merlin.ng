@@ -494,6 +494,33 @@ void start_ovpn_client(int clientNum)
 		return;
 	}
 	vpnlog(VPN_LOG_EXTRA,"Done starting openvpn");
+
+	// watchdog
+	sprintf(buffer, "/etc/openvpn/client%d/vpnc-watchdog%d.sh", clientNum, clientNum);
+	if (fp = fopen(buffer, "w")) {
+		char taskname[20];
+
+		chmod(buffer, S_IRUSR|S_IWUSR|S_IXUSR);
+		fprintf(fp, "#!/bin/sh\n"
+		            "if [ -z $(pidof vpnclient%d) ]\n"
+		            "then\n"
+		            "   service restart_vpnclient%d\n"
+		            "fi\n",
+		            clientNum, clientNum);
+		fclose(fp);
+
+		argv[0] = "cru";
+		argv[1] = "a";
+		sprintf(taskname, "CheckVPNClient%d", clientNum);
+		argv[2] = taskname;
+		sprintf(buffer2, "*/2 * * * * %s", buffer);
+		argv[3] = buffer2;
+		argv[4] = NULL;
+		_eval(argv, NULL, 0, NULL);
+		vpnlog(VPN_LOG_EXTRA,"Done adding cron job");
+	}
+
+
 	vpnlog(VPN_LOG_INFO,"VPN GUI client backend complete.");
 }
 
@@ -510,6 +537,17 @@ void stop_ovpn_client(int clientNum)
 	}
 
 	vpnlog(VPN_LOG_INFO,"Stopping VPN GUI client backend.");
+
+	// Remove cron job
+	vpnlog(VPN_LOG_EXTRA,"Removing cron job");
+	argv[0] = "cru";
+	argv[1] = "d";
+	sprintf(buffer, "CheckVPNClient%d", clientNum);
+	argv[2] = buffer;
+	argv[3] = NULL;
+	_eval(argv, NULL, 0, NULL);
+	vpnlog(VPN_LOG_EXTRA,"Done removing cron job");
+
 
 	// Stop the VPN client
 	vpnlog(VPN_LOG_EXTRA,"Stopping OpenVPN client.");
@@ -1368,6 +1406,31 @@ void start_ovpn_server(int serverNum)
 		nvram_pf_set(prefix, "errno", "0");
 	}
 
+	// watchdog
+	sprintf(buffer, "/etc/openvpn/server%d/vpns-watchdog%d.sh", serverNum, serverNum);
+	if (fp = fopen(buffer, "w")) {
+		char taskname[20];
+
+		chmod(buffer, S_IRUSR|S_IWUSR|S_IXUSR);
+		fprintf(fp, "#!/bin/sh\n"
+		            "if [ -z $(pidof vpnserver%d) ]\n"
+		            "then\n"
+		            "   service restart_vpnserver%d\n"
+		            "fi\n",
+		            serverNum, serverNum);
+		fclose(fp);
+
+		argv[0] = "cru";
+		argv[1] = "a";
+		sprintf(taskname, "CheckVPNServer%d", serverNum);
+		argv[2] = taskname;
+		sprintf(buffer2, "*/2 * * * * %s", buffer);
+		argv[3] = buffer2;
+		argv[4] = NULL;
+		_eval(argv, NULL, 0, NULL);
+		vpnlog(VPN_LOG_EXTRA,"Done adding cron job");
+	}
+
 	vpnlog(VPN_LOG_INFO,"VPN GUI server backend complete.");
 }
 
@@ -1384,6 +1447,16 @@ void stop_ovpn_server(int serverNum)
 	}
 
 	vpnlog(VPN_LOG_INFO,"Stopping VPN GUI server backend.");
+
+	// Remove cron job
+	vpnlog(VPN_LOG_EXTRA,"Removing cron job");
+	argv[0] = "cru";
+	argv[1] = "d";
+	sprintf(buffer, "CheckVPNServer%d", serverNum);
+	argv[2] = buffer;
+	argv[3] = NULL;
+	_eval(argv, NULL, 0, NULL);
+	vpnlog(VPN_LOG_EXTRA,"Done removing cron job");
 
 	// Stop the VPN server
 	vpnlog(VPN_LOG_EXTRA,"Stopping OpenVPN server.");

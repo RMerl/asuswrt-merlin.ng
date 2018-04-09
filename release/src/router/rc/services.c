@@ -1106,7 +1106,9 @@ void gen_apmode_dnsmasq(void)
 	fprintf(fp,"dhcp-range=guest,%s2,%s254,%s,%ds\n",
                                         glan,glan, nvram_safe_get("lan_netmask_rt"), 86400);
 	fprintf(fp,"dhcp-option=lan,3,%s\n",APMODE_BRGUEST_IP);
-	fprintf(fp,"dhcp-option=lan,252,\n");
+	if (nvram_get_int("dhcpd_filter_wpad")) {
+		fprintf(fp,"dhcp-option=lan,252,\n");
+	}
 	fprintf(fp,"dhcp-authoritative\n");
  	fprintf(fp,"listen-address=127.0.0.1,%s\n",nvram_safe_get("lan_ipaddr"));
  	fprintf(fp,"no-dhcp-interface=%s\n",nvram_safe_get("lan_ifname"));
@@ -1511,8 +1513,9 @@ void start_dnsmasq(void)
 		}
 #endif
 		/* Shut up WPAD info requests */
-		fprintf(fp, "dhcp-option=lan,252,\"\\n\"\n");
-
+		if (nvram_get_int("dhcpd_filter_wpad")) {
+			fprintf(fp, "dhcp-option=lan,252,\"\\n\"\n");
+		}
 #if defined(RTCONFIG_TR069) && !defined(RTCONFIG_TR181)
 		if (ether_atoe(get_lan_hwaddr(), hwaddr)) {
 			snprintf(buffer, sizeof(buffer), "%02X%02X%02X", hwaddr[0], hwaddr[1], hwaddr[2]);

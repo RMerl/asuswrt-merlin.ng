@@ -8910,7 +8910,7 @@ void factory_reset(void)
 void handle_notifications(void)
 {
 	char nv[256], nvtmp[32], *cmd[8], *script;
-	char *nvp, *b, *nvptr;
+	char *nvp, *b, *nvptr, *actionstr;
 	int action = 0;
 	int count;
 	int i;
@@ -8949,22 +8949,28 @@ again:
 
 	if(strncmp(cmd[0], "start_", 6)==0) {
 		action |= RC_SERVICE_START;
+		actionstr = "start";
 		script = &cmd[0][6];
 	}
 	else if(strncmp(cmd[0], "stop_", 5)==0) {
 		action |= RC_SERVICE_STOP;
+		actionstr = "stop";
 		script = &cmd[0][5];
 	}
 	else if(strncmp(cmd[0], "restart_", 8)==0) {
 		action |= (RC_SERVICE_START | RC_SERVICE_STOP);
+		actionstr = "restart";
 		script = &cmd[0][8];
 	}
 	else {
 		action = 0;
+		actionstr = "";
 		script = cmd[0];
 	}
 
 	TRACE_PT("running: %d %s\n", action, script);
+
+	run_custom_script_blocking("service-event", actionstr, script);
 
 #ifdef RTCONFIG_USB_MODEM
 	if(!strcmp(script, "simauth")

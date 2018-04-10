@@ -3299,7 +3299,7 @@ start_ddns(void)
 		_eval(argv, NULL, 0, &pid);
 	} else {	// Custom DDNS
 		// Block until it completes and updates the DDNS update results in nvram
-		run_custom_script_blocking("ddns-start", wan_ip);
+		run_custom_script_blocking("ddns-start", wan_ip, NULL);
 		return 0;
 	}
 

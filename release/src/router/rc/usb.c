@@ -1674,7 +1674,7 @@ _dprintf("%s: stop_cloudsync.\n", __func__);
 		stop_usb_swap(mnt->mnt_dir);
 #endif	
 
-	run_custom_script_blocking("unmount", mnt->mnt_dir);
+	run_custom_script_blocking("unmount", mnt->mnt_dir, NULL);
 
 	sync();
 	sleep(1);       // Give some time for buffers to be physically written to disk
@@ -1859,7 +1859,7 @@ int mount_partition(char *dev_name, int host_num, char *dsc_name, char *pt_name,
 
 	find_label_or_uuid(dev_name, the_label, uuid);
 
-	run_custom_script_blocking("pre-mount", dev_name);
+	run_custom_script_blocking("pre-mount", dev_name, NULL);
 
 	if (f_exists("/etc/fstab")) {
 		if (strcmp(type, "swap") == 0) {
@@ -2044,7 +2044,7 @@ _dprintf("usb_path: 4. don't set %s.\n", tmp);
 		if (nvram_get_int("usb_automount"))
 			run_nvscript("script_usbmount", mountpoint, 3);
 
-		run_custom_script_blocking("post-mount", mountpoint);
+		run_custom_script_blocking("post-mount", mountpoint, NULL);
 
 #if defined(RTCONFIG_APP_PREINSTALLED) && defined(RTCONFIG_CLOUDSYNC)
 		char word[PATH_MAX], *next_word;

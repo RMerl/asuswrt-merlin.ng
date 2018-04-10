@@ -70,7 +70,7 @@ void run_custom_script(char *name, char *args)
 	}
 }
 
-void run_custom_script_blocking(char *name, char *args)
+void run_custom_script_blocking(char *name, char *arg1, char *arg2)
 {
 	char script[120];
 
@@ -81,11 +81,11 @@ void run_custom_script_blocking(char *name, char *args)
 			logmessage("custom_script", "Found %s, but custom script execution is disabled!", name);
 			return;
 		}
-		if (args)
-			logmessage("custom_script" ,"Running %s (args: %s)", script, args);
+		if (arg1)
+			logmessage("custom_script" ,"Running %s (args: %s %s)", script, arg1, (arg2 ? arg2 : ""));
 		else
 			logmessage("custom_script" ,"Running %s", script);
-		eval(script, args);
+		eval(script, arg1, arg2);
 	}
 
 }
@@ -95,7 +95,7 @@ void run_postconf(char *name, char *config)
 	char filename[64];
 
 	snprintf(filename, sizeof (filename), "%s.postconf", name);
-	run_custom_script_blocking(filename, config);
+	run_custom_script_blocking(filename, config, NULL);
 }
 
 

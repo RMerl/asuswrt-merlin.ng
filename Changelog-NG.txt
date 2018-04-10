@@ -16,6 +16,12 @@ General changes in the 384/NG branch vs 380.xx:
 384.5 (xx-xxx-2018)
    - NEW: Merged withh GPL 384_20624 (with RT-AC68U binary blobs)
    - NEW: Merged RT-AC86U binary blobs and SDK from 384_20467
+   - NEW: service-event script, executed before any service
+           call is made.  First argument is the event (typically
+           stop, start or restart), second argument is the target
+           (wireless, httpd, etc...).
+           Note that this script will block the execution of
+           the event until it returns, so be careful with it.
    - CHANGED: Updated OpenVPN to 2.4.5.
    - CHANGED: Updated Dropbear to 2018.76.
    - CHANGED: Updated Openssl to 1.0.2o.
@@ -27,14 +33,15 @@ General changes in the 384/NG branch vs 380.xx:
               o Removed "TLS Reneg time" (rarely used, can manually
                 be set as a custom option)
               o Removed "Server Poll" (which didn't work
-                properly), and replaced with a watchdog
-                script, hardcoded to 60 secs frequency.
+                properly), and reimplemented watchdog service,
+                hardcoded to 2 mins frequency.
               o Removed "Push LAN" and "Redirect Gateway",
                 replaced with new Client Access setting
               o Removed Firewall setting (firewall rules are now
                 always created, and the broken External mode
                 was fixed and integrated into the new Client
-                Access setting)
+                Access setting).  You can now use the postconf
+                script to override it.
               o Removed option to respond to DNS queries - enabling
                 the option to Push DNS will also handle it
               o Added new Client Access setting to select between
@@ -45,10 +52,11 @@ General changes in the 384/NG branch vs 380.xx:
    - CHANGED: Revised OpenVPN client options:
               o Reorganized settings into groups
               o Removed "Poll Interval" (which didn't work
-                properly), and replaced with a watchdog
-                script, with a hardcoded frequency of 60 secs.
+                properly), and reimplemented watchdog service,
+                with a hardcoded frequency of 2 mins.
               o Removed Firewall setting (firewall rules are now
-                always created)
+                always created).  You can now use the postconf
+                script to override it.
               o Modified behaviour of Connection Retry.  Instead
                 of taking a value in seconds that only affected
                 resolution failure, it now takes a number of
@@ -61,11 +69,19 @@ General changes in the 384/NG branch vs 380.xx:
               now like on stock Asus firmware).
               That functionality is now provided by the
               Network Tools -> Netstat page.
+   - CHANGED: Re-designed Log -> Connections page into a table
+              with sortable fields.
    - CHANGED: From now on, setting the router to act as a master
               browser or a WINS server will also require you to
               enable sharing.  This will ensure that disks won't
               be accidentally shared when sharing is disabled
               but you had one of these two options enabled.
+   - CHANGED: Moved "Beta firmware" option to the Tools -> Other
+              Settings page
+   - CHANGED: Improved layout of the Firmware Update page
+   - CHANGED: DHCP server no longer sends an empty DHCP
+              option 252 (for WPAD), Windows should now
+              behave correctly without these.
    - FIXED: Some dnsmasq issues related to DNSSEC were fixed,
             including CVE-2017-15107. (backported from
             dnsmasq 2.79 by John Bacho)

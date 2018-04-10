@@ -429,11 +429,6 @@ void start_ovpn_client(int clientNum)
 	}
 	vpnlog(VPN_LOG_EXTRA,"Done writing certs/keys");
 
-	// Run postconf custom script on it if it exists
-	sprintf(buffer, "openvpnclient%d", clientNum);
-	sprintf(buffer2, "/etc/openvpn/client%d/config.ovpn", clientNum);
-	run_postconf(buffer, buffer2);
-
 	// Create firewall rules
 	vpnlog(VPN_LOG_EXTRA,"Creating firewall rules");
 	mkdir("/etc/openvpn/fw", 0700);
@@ -471,6 +466,11 @@ void start_ovpn_client(int clientNum)
 
 	fclose(fp);
 	vpnlog(VPN_LOG_EXTRA,"Done creating firewall rules");
+
+	// Run postconf custom script on it if it exists
+	sprintf(buffer, "openvpnclient%d", clientNum);
+	sprintf(buffer2, "/etc/openvpn/client%d/config.ovpn", clientNum);
+	run_postconf(buffer, buffer2);
 
 	// Run the firewall rules
 	vpnlog(VPN_LOG_EXTRA,"Running firewall rules");
@@ -1331,11 +1331,6 @@ void start_ovpn_server(int serverNum)
 	eval("/usr/bin/unix2dos", buffer);
 	vpnlog(VPN_LOG_EXTRA,"Done writing client config file");
 
-	// Run postconf custom script on it if it exists
-	sprintf(buffer, "openvpnserver%d", serverNum);
-	sprintf(buffer2, "/etc/openvpn/server%d/config.ovpn", serverNum);
-	run_postconf(buffer, buffer2);
-
 	// Create firewall rules
 	vpnlog(VPN_LOG_EXTRA,"Creating firewall rules");
 	mkdir("/etc/openvpn/fw", 0700);
@@ -1375,6 +1370,11 @@ void start_ovpn_server(int serverNum)
 #endif
 	fclose(fp);
 	vpnlog(VPN_LOG_EXTRA,"Done creating firewall rules");
+
+	// Run postconf custom script on it if it exists
+	sprintf(buffer, "openvpnserver%d", serverNum);
+	sprintf(buffer2, "/etc/openvpn/server%d/config.ovpn", serverNum);
+	run_postconf(buffer, buffer2);
 
 	// Run the firewall rules
 	vpnlog(VPN_LOG_EXTRA,"Running firewall rules");

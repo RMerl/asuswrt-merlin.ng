@@ -483,7 +483,7 @@ static int build_temp_rootfs(const char *newroot)
 		"usb-common\\|"			/* usb-common.ko, kernel 3.2 or above */
 #endif
 #endif
-		"nvram_linux\\)";		/* nvram_linux.ko */
+		"nvram_linux\\)'";		/* nvram_linux.ko */
 
 	if (!newroot || *newroot == '\0')
 		newroot = TMP_ROOTFS_MNT_POINT;

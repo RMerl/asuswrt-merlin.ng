@@ -73,6 +73,7 @@ void run_custom_script(char *name, char *args)
 void run_custom_script_blocking(char *name, char *arg1, char *arg2)
 {
 	char script[120];
+	char *cmd[4];
 
 	snprintf(script, sizeof(script), "/jffs/scripts/%s", name);
 
@@ -82,12 +83,16 @@ void run_custom_script_blocking(char *name, char *arg1, char *arg2)
 			return;
 		}
 		if (arg1)
-			logmessage("custom_script" ,"Running %s (args: %s %s)", script, arg1, (arg2 ? arg2 : ""));
+			logmessage("custom_script" ,"Running %s (args: %s %s) - max timeout = 120s", script, arg1, (arg2 ? arg2 : ""));
 		else
-			logmessage("custom_script" ,"Running %s", script);
-		eval(script, arg1, arg2);
-	}
+			logmessage("custom_script" ,"Running %s - max timeout = 120s", script);
 
+		cmd[0] = script;
+		cmd[1] = arg1;
+		cmd[2] = arg2;
+		cmd[3] = NULL;
+		_eval( cmd, NULL, 120, NULL);
+	}
 }
 
 void run_postconf(char *name, char *config)

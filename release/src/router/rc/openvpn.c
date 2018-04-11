@@ -497,7 +497,7 @@ void start_ovpn_client(int clientNum)
 
 	// watchdog
 	sprintf(buffer, "/etc/openvpn/client%d/vpnc-watchdog%d.sh", clientNum, clientNum);
-	if (fp = fopen(buffer, "w")) {
+	if ((fp = fopen(buffer, "w"))) {
 		char taskname[20];
 
 		chmod(buffer, S_IRUSR|S_IWUSR|S_IXUSR);
@@ -1408,7 +1408,7 @@ void start_ovpn_server(int serverNum)
 
 	// watchdog
 	sprintf(buffer, "/etc/openvpn/server%d/vpns-watchdog%d.sh", serverNum, serverNum);
-	if (fp = fopen(buffer, "w")) {
+	if ((fp = fopen(buffer, "w"))) {
 		char taskname[20];
 
 		chmod(buffer, S_IRUSR|S_IWUSR|S_IXUSR);

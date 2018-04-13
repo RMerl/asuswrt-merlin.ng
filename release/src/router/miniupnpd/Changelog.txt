@@ -1,4 +1,7 @@
-$Id: Changelog.txt,v 1.437 2018/03/12 22:45:13 nanard Exp $
+$Id: Changelog.txt,v 1.438 2018/04/06 09:17:45 nanard Exp $
+
+2018/04/06:
+  Add options for netfilter scripts
 
 2018/03/13:
   Use monotonic clock for timeouts, etc.

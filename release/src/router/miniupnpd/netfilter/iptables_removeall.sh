@@ -1,34 +1,46 @@
 #! /bin/sh
-# $Id: iptables_removeall.sh,v 1.5 2011/05/16 12:11:37 nanard Exp $
-IPTABLES="`which iptables`" || exit 1
-IPTABLES="$IPTABLES -w"
-IP="`which ip`" || exit 1
+# $Id: iptables_removeall.sh,v 1.10 2017/04/21 11:16:09 nanard Exp $
 
-#change this parameters :
-#EXTIF=eth0
-EXTIF="`LC_ALL=C $IP -4 route | grep 'default' | sed -e 's/.*dev[[:space:]]*//' -e 's/[[:space:]].*//'`" || exit 1
-EXTIP="`LC_ALL=C $IP -4 addr show $EXTIF | awk '/inet/ { print $2 }' | cut -d "/" -f 1`"
+EXT=1
+. $(dirname "$0")/miniupnpd_functions.sh
 
 #removing the MINIUPNPD chain for nat
-$IPTABLES -t nat -F MINIUPNPD
-#rmeoving the rule to MINIUPNPD
-#$IPTABLES -t nat -D PREROUTING -d $EXTIP -i $EXTIF -j MINIUPNPD
-$IPTABLES -t nat -D PREROUTING -i $EXTIF -j MINIUPNPD
-$IPTABLES -t nat -X MINIUPNPD
+if [ "$NDIRTY" = "${CHAIN}Chain" ]; then
+	$IPTABLES -t nat -F $CHAIN
+	#$IPTABLES -t nat -D PREROUTING -d $EXTIP -i $EXTIF -j $CHAIN
+	$IPTABLES -t nat -D PREROUTING -i $EXTIF -j $CHAIN
+	$IPTABLES -t nat -X $CHAIN
+elif [ "$NDIRTY" = "Chain" ]; then
+	$IPTABLES -t nat -F $CHAIN
+	$IPTABLES -t nat -X $CHAIN
+fi
 
 #removing the MINIUPNPD chain for mangle
-$IPTABLES -t mangle -F MINIUPNPD
-$IPTABLES -t mangle -D PREROUTING -i $EXTIF -j MINIUPNPD
-$IPTABLES -t mangle -X MINIUPNPD
+if [ "$MDIRTY" = "${CHAIN}Chain" ]; then
+	$IPTABLES -t mangle -F $CHAIN
+	$IPTABLES -t mangle -D FORWARD -i $EXTIF -j $CHAIN
+	$IPTABLES -t mangle -X $CHAIN
+elif [ "$MDIRTY" = "Chain" ]; then
+	$IPTABLES -t mangle -F $CHAIN
+	$IPTABLES -t mangle -X $CHAIN
+fi
 
 #removing the MINIUPNPD chain for filter
-$IPTABLES -t filter -F MINIUPNPD
-#adding the rule to MINIUPNPD
-$IPTABLES -t filter -D FORWARD -i $EXTIF ! -o $EXTIF -j MINIUPNPD
-$IPTABLES -t filter -X MINIUPNPD
+if [ "$FDIRTY" = "${CHAIN}Chain" ]; then
+	$IPTABLES -t filter -F $CHAIN
+	$IPTABLES -t filter -D FORWARD -i $EXTIF ! -o $EXTIF -j $CHAIN
+	$IPTABLES -t filter -X $CHAIN
+elif [ "$FDIRTY" = "Chain" ]; then
+	$IPTABLES -t filter -F $CHAIN
+	$IPTABLES -t filter -X $CHAIN
+fi
 
 #removing the MINIUPNPD-POSTROUTING chain for nat
-$IPTABLES -t nat -F MINIUPNPD-POSTROUTING
-#removing the rule to MINIUPNPD-POSTROUTING
-$IPTABLES -t nat -D POSTROUTING -o $EXTIF -j MINIUPNPD-POSTROUTING
-$IPTABLES -t nat -X MINIUPNPD-POSTROUTING
+if [ "$NPDIRTY" = "${CHAIN}-POSTROUTINGChain" ]; then
+	$IPTABLES -t nat -F $CHAIN-POSTROUTING
+	$IPTABLES -t nat -D POSTROUTING -o $EXTIF -j $CHAIN-POSTROUTING
+	$IPTABLES -t nat -X $CHAIN-POSTROUTING
+elif [ "$NPDIRTY" = "Chain" ]; then
+	$IPTABLES -t nat -F $CHAIN-POSTROUTING
+	$IPTABLES -t nat -X $CHAIN-POSTROUTING
+fi

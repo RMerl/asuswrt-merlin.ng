@@ -1002,7 +1002,7 @@ ProcessSSDPData(int s, const char *bufr, int n,
 	{
 		if(lan_addr != NULL)
 		{
-			if(lan_addr->index != (unsigned)source_if)
+			if(lan_addr->index != (unsigned)source_if && lan_addr->index != 0)
 			{
 				syslog(LOG_WARNING, "interface index not matching %u != %d", lan_addr->index, source_if);
 			}

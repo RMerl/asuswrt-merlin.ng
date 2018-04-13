@@ -20,7 +20,7 @@ CFLAGS = -O -g #-DDEBUG
 CFLAGS ?= -Os
 CFLAGS += -fno-strict-aliasing
 CFLAGS += -fno-common
-CPPFLAGS += -D_GNU_SOURCE 
+CPPFLAGS += -D_GNU_SOURCE
 CFLAGS += -Wall
 CFLAGS += -Wextra -Wstrict-prototypes -Wdeclaration-after-statement
 #CFLAGS += -Wno-missing-field-initializers
@@ -96,6 +96,7 @@ clean:
 install:	miniupnpd miniupnpd.8 miniupnpd.conf genuuid \
 	netfilter/iptables_init.sh netfilter/iptables_removeall.sh \
 	netfilter/ip6tables_init.sh netfilter/ip6tables_removeall.sh \
+	netfilter/miniupnpd_functions.sh \
 	linux/miniupnpd.init.d.script
 	$(STRIP) miniupnpd
 	$(INSTALL) -d $(DESTDIR)$(SBININSTALLDIR)
@@ -105,6 +106,7 @@ install:	miniupnpd miniupnpd.8 miniupnpd.conf genuuid \
 	$(INSTALL) netfilter/iptables_removeall.sh $(DESTDIR)$(ETCINSTALLDIR)
 	$(INSTALL) netfilter/ip6tables_init.sh $(DESTDIR)$(ETCINSTALLDIR)
 	$(INSTALL) netfilter/ip6tables_removeall.sh $(DESTDIR)$(ETCINSTALLDIR)
+	$(INSTALL) netfilter/miniupnpd_functions.sh $(DESTDIR)$(ETCINSTALLDIR)
 	$(INSTALL) --mode=0644 -b miniupnpd.conf $(DESTDIR)$(ETCINSTALLDIR)
 	$(INSTALL) -d $(DESTDIR)$(PREFIX)/etc/init.d
 	$(INSTALL) linux/miniupnpd.init.d.script $(DESTDIR)$(PREFIX)/etc/init.d/miniupnpd

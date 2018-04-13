@@ -996,6 +996,11 @@ parselanaddr(struct lan_addr_s * lan_addr, const char * str)
 		        str);
 		return -1;
 	}
+#else
+	else
+	{
+		syslog(LOG_NOTICE, "it is advised to use network interface name instead of %s", str);
+	}
 #endif
 	return 0;
 parselan_error:
@@ -2094,7 +2099,7 @@ main(int argc, char * * argv)
 		}
 		/* Check if we need to send SSDP NOTIFY messages and do it if
 		 * needed */
-		if(gettimeofday(&timeofday, 0) < 0)
+		if(upnp_gettimeofday(&timeofday) < 0)
 		{
 			syslog(LOG_ERR, "gettimeofday(): %m");
 			timeout.tv_sec = v.notify_interval;

@@ -1,31 +1,37 @@
 #! /bin/sh
-# $Id: iptables_init.sh,v 1.5 2011/05/16 12:11:37 nanard Exp $
-IPTABLES="`which iptables`" || exit 1
-IPTABLES="$IPTABLES -w"
-IP="`which ip`" || exit 1
+# $Id: iptables_init_and_clean.sh,v 1.7 2017/04/21 11:16:09 nanard Exp $
+# Improved Miniupnpd iptables init script.
+# Checks for state of filter before doing anything..
 
-#change this parameters :
-#EXTIF=eth0
-EXTIF="`LC_ALL=C $IP -4 route | grep 'default' | sed -e 's/.*dev[[:space:]]*//' -e 's/[[:space:]].*//'`" || exit 1
-EXTIP="`LC_ALL=C $IP -4 addr show $EXTIF | awk '/inet/ { print $2 }' | cut -d "/" -f 1`"
+EXT=1
+. $(dirname "$0")/miniupnpd_functions.sh
 
-echo "External IP = $EXTIP"
+if [ "$NDIRTY" = "${CHAIN}Chain" ]; then
+	echo "Nat table dirty; Cleaning..."
+elif [ "$NDIRTY" = "Chain" ]; then
+	echo "Dirty NAT chain but no reference..? Fixing..."
+	#$IPTABLES -t nat -A PREROUTING -d $EXTIP -i $EXTIF -j $CHAIN
+	$IPTABLES -t nat -A PREROUTING -i $EXTIF -j $CHAIN
+else
+	echo "NAT table clean..initalizing.."
+	$IPTABLES -t nat -N $CHAIN
+	#$IPTABLES -t nat -A PREROUTING -d $EXTIP -i $EXTIF -j $CHAIN
+	$IPTABLES -t nat -A PREROUTING -i $EXTIF -j $CHAIN
+fi
+if [ "$CLEAN" = "yes" ]; then
+	$IPTABLES -t nat -F $CHAIN
+fi
 
-#adding the MINIUPNPD chain for nat
-$IPTABLES -t nat -N MINIUPNPD
-#adding the rule to MINIUPNPD
-#$IPTABLES -t nat -A PREROUTING -d $EXTIP -i $EXTIF -j MINIUPNPD
-$IPTABLES -t nat -A PREROUTING -i $EXTIF -j MINIUPNPD
-
-#adding the MINIUPNPD chain for mangle
-$IPTABLES -t mangle -N MINIUPNPD
-$IPTABLES -t mangle -A PREROUTING -i $EXTIF -j MINIUPNPD
-
-#adding the MINIUPNPD chain for filter
-$IPTABLES -t filter -N MINIUPNPD
-#adding the rule to MINIUPNPD
-$IPTABLES -t filter -A FORWARD -i $EXTIF ! -o $EXTIF -j MINIUPNPD
-
-#adding the MINIUPNPD chain for nat
-$IPTABLES -t nat -N MINIUPNPD-POSTROUTING
-$IPTABLES -t nat -A POSTROUTING -o $EXTIF -j MINIUPNPD-POSTROUTING
+if [ "$FDIRTY" = "${CHAIN}Chain" ]; then
+	echo "Filter table dirty; Cleaning..."
+elif [ "$FDIRTY" = "Chain" ]; then
+	echo "Dirty filter chain but no reference..? Fixing..."
+	$IPTABLES -t filter -A FORWARD -i $EXTIF ! -o $EXTIF -j $CHAIN
+else
+	echo "Filter table clean..initalizing.."
+	$IPTABLES -t filter -N MINIUPNPD
+	$IPTABLES -t filter -A FORWARD -i $EXTIF ! -o $EXTIF -j $CHAIN
+fi
+if [ "$CLEAN" = "yes" ]; then
+	$IPTABLES -t filter -F $CHAIN
+fi

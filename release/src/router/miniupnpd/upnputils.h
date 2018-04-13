@@ -41,6 +41,12 @@ time_t upnp_time(void);
 time_t upnp_get_uptime(void);
 
 /**
+ * get the time for upnp
+ * Similar to a monotonic gettimeofday(tv, NULL)
+ */
+int upnp_gettimeofday(struct timeval * tv);
+
+/**
  * define portability macros
  */
 #if defined(__sun)

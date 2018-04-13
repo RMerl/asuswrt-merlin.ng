@@ -220,3 +220,19 @@ time_t upnp_get_uptime(void)
 #endif
 	return upnp_time() - startup_time;
 }
+
+int upnp_gettimeofday(struct timeval * tv)
+{
+#if defined(CLOCK_MONOTONIC_FAST) || defined(CLOCK_MONOTONIC)
+	struct timespec ts;
+	int ret_code = clock_gettime(UPNP_CLOCKID, &ts);
+	if (ret_code == 0)
+	{
+		tv->tv_sec = ts.tv_sec;
+		tv->tv_usec = ts.tv_nsec / 1000;
+	}
+	return ret_code;
+#else
+	return gettimeofday(tv, NULL);
+#endif
+}

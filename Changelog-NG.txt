@@ -14,18 +14,18 @@ General changes in the 384/NG branch vs 380.xx:
 
 
 384.5 (xx-xxx-2018)
-   - NEW: Merged withh GPL 384_20624 (with RT-AC68U binary blobs)
+   - NEW: Merged withh GPL 384_20648 (with RT-AC68U binary blobs)
    - NEW: Merged RT-AC86U binary blobs and SDK from 384_20467
    - NEW: service-event script, executed before any service
            call is made.  First argument is the event (typically
            stop, start or restart), second argument is the target
            (wireless, httpd, etc...).
            Note that this script will block the execution of
-           the event until it returns, so be careful with it.
+           the event until it returns.
    - CHANGED: Updated OpenVPN to 2.4.5.
    - CHANGED: Updated Dropbear to 2018.76.
    - CHANGED: Updated Openssl to 1.0.2o.
-   - CHANGED: Updated miniupnpd to 20180314 Git snapshot.
+   - CHANGED: Updated miniupnpd to 20180412.
    - CHANGED: Updated nano to 2.9.5.
    - CHANGED: Moved RT-AC86U to the same Busybox version (1.25.1)
               as other models.
@@ -82,6 +82,10 @@ General changes in the 384/NG branch vs 380.xx:
    - CHANGED: DHCP server no longer sends an empty DHCP
               option 252 (for WPAD), Windows should now
               behave correctly without these.
+   - CHANGED: Blocking custom scripts such as service-event
+              and pre-mount will now wait a maximum of 120
+              seconds before resuming normal operations, to
+              prevent accidental lockouts.
    - FIXED: Some dnsmasq issues related to DNSSEC were fixed,
             including CVE-2017-15107. (backported from
             dnsmasq 2.79 by John Bacho)

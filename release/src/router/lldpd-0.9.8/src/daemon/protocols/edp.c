@@ -201,7 +201,7 @@ edp_send(struct lldpd *global,
 
 		if (interfaces_send_helper(global, hardware,
 			(char *)packet, end - packet) == -1) {
-			log_debug("edp", "unable to send packet on real device for %s",
+			log_warn("edp", "unable to send packet on real device for %s",
 			    hardware->h_ifname);
 			free(packet);
 			return ENETDOWN;

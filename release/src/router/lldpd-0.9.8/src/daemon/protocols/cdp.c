@@ -226,7 +226,7 @@ cdp_send(struct lldpd *global,
 
 	if (interfaces_send_helper(global, hardware,
 		(char *)packet, end - packet) == -1) {
-		log_debug("cdp", "unable to send packet on real device for %s",
+		log_warn("cdp", "unable to send packet on real device for %s",
 			   hardware->h_ifname);
 		free(packet);
 		return ENETDOWN;

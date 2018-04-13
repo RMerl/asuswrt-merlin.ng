@@ -250,8 +250,10 @@ sonmp_send(struct lldpd *global,
 				
 	if (interfaces_send_helper(global, hardware,
 		(char *)packet, end - packet) == -1) {
-		log_warn("sonmp", "unable to send packet on real device for %s",
-			   hardware->h_ifname);
+		// >>> Remove by MAX 2018/03/22
+		//log_warn("sonmp", "unable to send packet on real device for %s",
+		//	   hardware->h_ifname);
+		// <<< Remove by MAX 2018/03/22
 		free(packet);
 		return ENETDOWN;
 	}

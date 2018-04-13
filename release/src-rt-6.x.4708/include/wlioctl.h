@@ -59,6 +59,36 @@ typedef struct remote_ioctl {
 #endif
 } rem_ioctl_t;
 #define REMOTE_SIZE	sizeof(rem_ioctl_t)
+
+typedef struct {
+	uint32 num;
+	chanspec_t list[1];
+} chanspec_list_t;
+
+#define DFS_SCAN_S_IDLE				-1
+#define DFS_SCAN_S_RADAR_FREE			0
+#define DFS_SCAN_S_RADAR_FOUND			1
+#define DFS_SCAN_S_INPROGESS			2
+#define DFS_SCAN_S_SCAN_ABORTED			3
+#define DFS_SCAN_S_SCAN_MODESW_INPROGRESS	4
+
+/* DFS Forced param */
+typedef struct wl_dfs_forced_params {
+	chanspec_t chspec;
+	uint16 version;
+	chanspec_list_t chspec_list;
+} wl_dfs_forced_t;
+
+#define DFS_PREFCHANLIST_VER 0x01
+#define WL_CHSPEC_LIST_FIXED_SIZE	OFFSETOF(chanspec_list_t, list)
+/* size of dfs forced param size given n channels are in the list */
+#define WL_DFS_FORCED_PARAMS_SIZE(n) \
+	(sizeof(wl_dfs_forced_t) + (((n) < 1) ? (0) : (((n) - 1)* sizeof(chanspec_t))))
+#define WL_DFS_FORCED_PARAMS_FIXED_SIZE \
+	(WL_CHSPEC_LIST_FIXED_SIZE + OFFSETOF(wl_dfs_forced_t, chspec_list))
+#define WL_DFS_FORCED_PARAMS_MAX_SIZE \
+	WL_DFS_FORCED_PARAMS_FIXED_SIZE + (WL_NUMCHANSPECS * sizeof(chanspec_t))
+
 #ifdef EFI
 #define BCMWL_IOCTL_GUID \
 	{0xB4910A35, 0x88C5, 0x4328, { 0x90, 0x08, 0x9F, 0xB2, 0x00, 0x00, 0x0, 0x0 } }

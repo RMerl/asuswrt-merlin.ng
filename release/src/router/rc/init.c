@@ -2074,7 +2074,24 @@ static void shutdn(int rb)
 
 static void handle_fatalsigs(int sig)
 {
-	_dprintf("fatal sig=%d\n", sig);
+	char *message = NULL;
+
+	switch (sig) {
+		case SIGILL: message = "Illegal instruction"; break;
+		case SIGABRT: message = "Abort"; break;
+		case SIGFPE: message = "Floating exception"; break;
+		case SIGPIPE: message = "Broken pipe"; break;
+		case SIGBUS: message = "Bus error"; break;
+		case SIGSYS: message = "Bad system call"; break;
+		case SIGTRAP: message = "Trace trap"; break;
+		case SIGPWR: message = "Power failure"; break;
+	}
+
+	if (message)
+		dbg("%s\n", message);
+	else
+		dbg("Caught fatal signal %d\n", sig);
+
 	shutdn(-1);
 }
 
@@ -10716,9 +10733,7 @@ dbg("boot/continue fail= %d/%d\n", nvram_get_int("Ate_boot_fail"),nvram_get_int(
 						nvram_set_int("dev_fail_count", dev_fail_count);
 						nvram_commit();
 						dbG("device failed %d times, reboot...\n",dev_fail_count);
-						sleep(1);
-						sync(); sync(); sync();
-						reboot(RB_AUTOBOOT);
+						kill(1, SIGTERM);
 					}
 					else {
 						nvram_set("dev_fail_count", "0");
@@ -10847,8 +10862,7 @@ dbg("boot/continue fail= %d/%d\n", nvram_get_int("Ate_boot_fail"),nvram_get_int(
 						ate_run_in_preconfig();
 					}
 #endif
-					sync(); sync(); sync();
-					reboot(RB_AUTOBOOT);
+					kill(1, SIGTERM);
 				}
 				else {
 					dbG("System boot up success %d times\n", boot_check);

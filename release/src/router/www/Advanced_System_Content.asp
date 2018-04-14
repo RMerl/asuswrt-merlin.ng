@@ -238,6 +238,9 @@ function initial(){
 		document.form.misc_httpsport_x.disabled = true;
 		document.form.misc_httpport_x.disabled = true;
 		document.getElementById("nat_redirect_enable_tr").style.display = "none";
+
+		if ("<% nvram_get("le_enable"); %>" == "1")
+			document.form.le_enable[2].checked = true;
 	}
 	else
 		hideport(document.form.misc_http_x[0].checked);
@@ -970,7 +973,7 @@ function hide_https_crt(){
 
 	showhide("cert_details", (protos != "0" ? 1 : 0));
 
-	if (!letsencrypt_support) {
+	if ((!letsencrypt_support) || (sw_mode != 1)) {
 		showhide("https_crt_san", (protos != "0" ? 1 : 0));
 		showhide("https_crt_gen", (protos != "0" ? 1 : 0));
 		showhide("https_cert", (protos != "0" ? 1 : 0));
@@ -1880,10 +1883,11 @@ function warn_jffs_format(){
 				<tr id="https_cert" style="display:none;">
 					<th>Provide your own certificate</th>
 					<td>
+						<input type="radio" value="2" name="le_enable" <% nvram_match("le_enable", "2", "checked"); %>>Import or Persistent Auto-generated
+						<input type="radio" value="0" name="le_enable" <% nvram_match("le_enable", "0", "checked"); %>>Non-persistent auto-generated
 						<div id="cert_act" style="margin-top: 5px;"><div style="display:table-cell"><input class="button_gen" onclick="open_upload_window();" type="button" value="<#CTL_upload#>"/><img id="loadingicon" style="margin-left:5px;display:none;" src="/images/InternetScan.gif"></div></div>
 					</td>
 				</tr>
-
 				<tr id="cert_details" style="display:none;">
 					<th>Installed Server Certificate</th>
 					<td>

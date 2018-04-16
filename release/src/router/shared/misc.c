@@ -2965,7 +2965,7 @@ int set_crt_parsed(const char *name, char *file_path)
 	}
 #else
 	FILE *fp=fopen(file_path, "r");
-	char buffer[4000] = {0};
+	char buffer[8000] = {0};
 	char buffer2[256] = {0};
 	char *p = buffer;
 

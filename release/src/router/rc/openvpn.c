@@ -61,7 +61,7 @@ void start_ovpn_client(int clientNum)
 	FILE *fp;
 	char iface[6];
 	char buffer[256];
-	char buffer2[4000];
+	char buffer2[8000];
 	char *argv[6];
 	int argc = 0;
 	enum { TLS, SECRET } cryptMode = TLS;
@@ -611,7 +611,7 @@ void start_ovpn_server(int serverNum)
 	FILE *fp, *ccd, *fp_client;;
 	char iface[6];
 	char buffer[256];
-	char buffer2[4000];
+	char buffer2[8000];
 	char *argv[6], *chp, *route;
 	int argc = 0;
 	int c2c = 0;

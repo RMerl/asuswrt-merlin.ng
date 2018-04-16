@@ -1929,7 +1929,7 @@ ej_vpn_client_get_parameter(int eid, webs_t wp, int argc, char_t **argv)
 }
 static int
 ej_vpn_crt_server(int eid, webs_t wp, int argc, char **argv) {
-	char buf[4000];
+	char buf[8000];
 	char file_name[32];
 	int idx = 0;
 
@@ -2049,7 +2049,7 @@ ej_vpn_crt_server(int eid, webs_t wp, int argc, char **argv) {
 }
 static int
 ej_vpn_crt_client(int eid, webs_t wp, int argc, char **argv) {
-	char buf[4000];
+	char buf[8000];
 	char file_name[32];
 	int idx = 0;
 
@@ -2155,9 +2155,8 @@ ej_vpn_crt_client(int eid, webs_t wp, int argc, char **argv) {
 
 //2008.08 magic {
 // Largest POST will be the OpenVPN key page:
-// 2*5 fields + 2*4 fields = 18 fields total
-// Each field can have up to 3500 characters, for a potential
-// total of 63KB.  Going for 64KB to account for additional POST/GET data.
+// 7 fields at up to 8000 bytes each, for 56KB in worst-case scenario
+// Add the other settings, would fit in a 64 KB buffer
 
 static char post_buf[65535] = { 0 };
 static char post_buf_backup[65535] = { 0 };

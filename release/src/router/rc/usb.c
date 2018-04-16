@@ -4956,7 +4956,7 @@ static void diskmon_sighandler(int sig)
 			diskmon_signal = sig;
 			break;
 		case SIGALRM:
-			logmessage("disk_monitor", "Got SIGALRM...");
+			//logmessage("disk_monitor", "Got SIGALRM...");
 			cprintf("disk_monitor: Got SIGALRM...\n");
 			diskmon_signal = sig;
 			break;

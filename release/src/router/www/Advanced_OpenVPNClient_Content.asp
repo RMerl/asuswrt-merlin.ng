@@ -22,6 +22,7 @@
 
 <script type="text/javascript" src="/js/jquery.js"></script>
 <script type="text/javascript" src="/switcherplugin/jquery.iphone-switch.js"></script>
+<script type="text/javascript" src="/js/httpApi.js"></script>
 <style type="text/css">
 .contentM_qis{
 	width:740px;
@@ -945,7 +946,7 @@ function showConnStatus() {
 			setTimeout("getConnStatus()",2000);
 			break;
 		case "2":	// COnnected
-			code = "Connected (Local: "+ localip + " - Public: " + remoteip + ")";
+			code = "Connected (Local: "+ localip + " - Public: " + remoteip + ") <a href='#' style='padding-left:12px;text-decoration:underline;' onclick='refreshVPNIP();'>Refresh</a>";
 			break;
 		case "-1":
 			switch (client_errno) {
@@ -986,6 +987,10 @@ function defaultSettings() {
 	} else {
 		return false;
 	}
+}
+
+function refreshVPNIP() {
+	httpApi.nvramSet({"action_mode": "refresh_vpn_ip"}, function(){setTimeout("getConnStatus()", 2000);});
 }
 
 </script>

@@ -10507,6 +10507,15 @@ wps_finish:
 
 		websRedirect(wp, current_url);
 	}
+	else if (!strcmp(action_mode, "refresh_vpn_ip"))
+	{
+		char tmp[20];
+
+		snprintf(tmp, sizeof (tmp), "vpn_client%d_rip", nvram_get_int("vpn_client_unit"));
+		nvram_unset(tmp);
+
+		websDone(wp, 200);
+	}
 #endif
 #ifdef  __CONFIG_NORTON__
 	/* Trigger an NGA LiveUpdate */

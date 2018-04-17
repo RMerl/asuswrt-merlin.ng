@@ -48,6 +48,8 @@ General changes in the 384/NG branch vs 380.xx:
                 three types of access: LAN only, WAN only (will
                 block access to the LAN, including the router
                 itself) and LAN + WAN.
+              o Keys and certificates can now be up to 7999
+                characters long.
 
    - CHANGED: Revised OpenVPN client options:
               o Reorganized settings into groups
@@ -63,6 +65,10 @@ General changes in the 384/NG branch vs 380.xx:
                 attempts, and affects connection failures.
                 Resolution failures will now retry for an infinite
                 period of time (the default OpenVPN value).
+              o Added "refresh" link which can be clicked to
+                re-query the public IP endpoint of the tunnel
+              o Keys and certificates can now be up to 7999
+                characters long.
 
    - CHANGED: Removed option to resolve names on the
               Log -> Connections page (making that page work

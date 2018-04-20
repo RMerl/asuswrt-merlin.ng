@@ -39,9 +39,9 @@ function initPage()
 	initCommonPage();
 
 	if (isHTTPDWebserver == 1) {
-		urlremotesettings = 'http://'+ window.location.host +'/json.cgi';
-		urlconfigsettings = 'http://'+ window.location.host +'/json.cgi'
-		urlsetconfigsettings = 'http://'+ window.location.host +'/json.cgi';
+		urlremotesettings = '/json.cgi';
+		urlconfigsettings = '/json.cgi'
+		urlsetconfigsettings = '/json.cgi';
 	} else {
 		urlremotesettings = 'http://localhost/remotesettings.php';
 		urlconfigsettings = 'http://localhost/counterdata.php';

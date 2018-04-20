@@ -71,7 +71,7 @@ function drawBarGraph(arr,index){
 	$.ajax({
 		type:"GET",
 		async:false,
-		url:'http://'+ window.location.host +'/json.cgi',		//url:"http://localhost/congession.php",					//	
+		url:'/json.cgi',		//url:"http://localhost/congession.php",					//	
 		data:{Req:arr[index],DutMac:'1235',FreqBand:'2.4'},
 		success:function(result){
 		array = result;		//array = JSON.parse(result);				//
@@ -185,7 +185,7 @@ function drawcongessiongraphfor24frequencyband(arr,indx){
 	var xaxisticks = [];
 	var dataindex = [];
 	var k = 0;
-	$.get('http://'+ window.location.host +'/json.cgi',			//"http://localhost/congession.php",				//
+	$.get('/json.cgi',			//"http://localhost/congession.php",				//
 		{Req:arr[indx], DutMac:'1235',FreqBand:'2.4'},
 		function(result,status){
 		array = result;			//array = JSON.parse(result);						//
@@ -200,7 +200,7 @@ function drawcongessiongraphfor5frequencyband(arr,indx){
 	var xaxisticks = [];
 	var dataindex = [];
 	var k = 0;
-	$.get('http://'+ window.location.host +'/json.cgi',			//"http://localhost/congession.php",			//
+	$.get('/json.cgi',			//"http://localhost/congession.php",			//
 		{Req:arr[indx], DutMac:'1235',FreqBand:'5'},
 		function(result,status){
 		array = result;			//array = JSON.parse(result);				//

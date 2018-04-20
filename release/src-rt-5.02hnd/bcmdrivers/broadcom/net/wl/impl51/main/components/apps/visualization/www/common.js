@@ -19,10 +19,10 @@ var g_UrlCommonGetNVRAM = '' /* Webserver URL to get NVRAM variable */
 function initCommonPage()
 {
 	if (isHTTPDWebserver == 1) {
-		urlremotesettings = 'http://'+ window.location.host +'/json.cgi';
-		urlconfigsettings = 'http://'+ window.location.host +'/json.cgi';
-		gURLBands = 'http://'+ window.location.host +'/json.cgi';
-		g_UrlCommonGetNVRAM = 'http://'+ window.location.host +'/json.cgi';
+		urlremotesettings = '/json.cgi';
+		urlconfigsettings = '/json.cgi';
+		gURLBands = '/json.cgi';
+		g_UrlCommonGetNVRAM = '/json.cgi';
 	} else {
 		urlremotesettings = 'http://localhost/remotesettings.php';
 		urlconfigsettings = 'http://localhost/counterdata.php';

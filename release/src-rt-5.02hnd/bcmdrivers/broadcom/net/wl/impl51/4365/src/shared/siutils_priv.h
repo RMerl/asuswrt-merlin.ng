@@ -21,11 +21,11 @@
 #ifndef	_siutils_priv_h_
 #define	_siutils_priv_h_
 
-#ifdef BCMDBG
+#ifdef BCMDBG_ERR
 #define	SI_ERROR(args)	printf args
 #else
 #define	SI_ERROR(args)
-#endif	/* BCMDBG */
+#endif	/* BCMDBG_ERR */
 
 #ifdef BCMDBG
 #define	SI_MSG(args)	printf args

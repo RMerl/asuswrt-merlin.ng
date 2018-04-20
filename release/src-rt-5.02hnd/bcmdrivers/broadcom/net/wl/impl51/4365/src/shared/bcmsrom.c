@@ -78,7 +78,7 @@
 #endif
 
 
-#if defined(BCMDBG) || defined(WLTEST)
+#if defined(BCMDBG_ERR) || defined(WLTEST)
 #define	BS_ERROR(args)	printf args
 #else
 #define	BS_ERROR(args)

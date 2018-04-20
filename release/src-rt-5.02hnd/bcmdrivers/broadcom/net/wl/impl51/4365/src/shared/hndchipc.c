@@ -31,11 +31,11 @@
 #include <hndcpu.h>
 
 /* debug/trace */
-#ifdef BCMDBG
+#ifdef BCMDBG_ERR
 #define	CC_ERROR(args)	printf args
 #else
 #define	CC_ERROR(args)
-#endif	/* BCMDBG */
+#endif	/* BCMDBG_ERR */
 
 #ifdef BCMDBG
 #define	CC_MSG(args)	printf args

@@ -38,11 +38,11 @@
 #include <dmemc_core.h>
 
 /* debug/trace */
-#ifdef BCMDBG
+#ifdef BCMDBG_ERR
 #define	HNDMIPS_ERROR(args)	printf args
 #else
 #define	HNDMIPS_ERROR(args)
-#endif	/* BCMDBG */
+#endif	/* BCMDBG_ERR */
 
 #ifdef BCMDBG
 #define	HNDMIPS_MSG(args)	printf args

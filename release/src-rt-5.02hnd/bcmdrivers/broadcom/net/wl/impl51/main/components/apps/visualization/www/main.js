@@ -80,9 +80,9 @@ function initPage()
 	hideprogress();
 
 	if (isHTTPDWebserver == 1) {
-		urlremotesettings = window.location.protocol+'//'+ window.location.host +'/json.cgi';
-		urlscanresult = window.location.protocol+'//'+ window.location.host +'/json.cgi';
-		urlconfigsettings = window.location.protocol+'//'+ window.location.host +'/json.cgi';
+		urlremotesettings = 'http://'+ window.location.host +'/json.cgi';
+		urlscanresult = 'http://'+ window.location.host +'/json.cgi';
+		urlconfigsettings = 'http://'+ window.location.host +'/json.cgi';
 	} else {
 		urlremotesettings = 'http://localhost/remotesettings.php';
 		urlscanresult = 'http://localhost/scanresult.php';

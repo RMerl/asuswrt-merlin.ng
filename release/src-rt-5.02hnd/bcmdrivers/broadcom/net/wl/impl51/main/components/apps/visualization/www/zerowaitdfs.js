@@ -32,7 +32,7 @@ var g_zwdRequestNames = {
 function initZWDPage()
 {
 	if (isHTTPDWebserver == 1) {
-		g_urlGetAPStatus = window.localhost.protocol+'//'+ window.location.host +'/json.cgi';
+		g_urlGetAPStatus = 'http://'+ window.location.host +'/json.cgi';
 	} else {
 		g_urlGetAPStatus = 'http://localhost/zerowaitdfs.php';
 	}

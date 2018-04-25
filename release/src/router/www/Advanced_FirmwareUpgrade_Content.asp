@@ -279,7 +279,7 @@ function initial(){
 		} 
 		else{
 			document.getElementById("update_div").style.display = "";
-			document.getElementById("beta_firmware_path_span").style.display = "";
+			//document.getElementById("beta_firmware_path_span").style.display = "";
 			document.getElementById("linkpage_div").style.display = "none";
 			change_firmware_path(document.getElementById("beta_firmware_path").checked==true);
 			if(confirm_show.length > 0 && confirm_show == 1){
@@ -1295,6 +1295,8 @@ function check_AiMesh_fw_version(_fw) {
 					<div id="update_div" style="margin-left:300px;margin-top:-38px;display:none;">
 						<input type="button" id="update" name="update" class="button_gen" onclick="detect_update(document.start_update.firmware_path.value);" value="<#liveupdate#>" />
 					</div>
+					<span id="beta_firmware_path_span" style="display:none;">
+					</span>
 					<div id="linkpage_div" class="button_helplink" style="margin-left:300px;margin-top:-38px;display:none;">
 						<a id="linkpage" target="_blank"><div style="padding-top:5px;"><#liveupdate#></div></a>
 					</div>

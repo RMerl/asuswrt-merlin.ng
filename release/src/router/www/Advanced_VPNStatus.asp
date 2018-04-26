@@ -496,9 +496,6 @@ function refresh_ipsec_data() {
 		url: '/ajax_ipsec.asp',
 		dataType: 'script',
 		timeout: 1500,
-		error: function(xhr){
-			setTimeout("refresh_ipsec_data();",1500);
-		},
 		success: function() {
 			ipsec_connect_status_array = [];
 			for(var i = 0; i < ipsec_connect_status.length; i += 1) {

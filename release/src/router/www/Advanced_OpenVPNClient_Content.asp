@@ -1021,37 +1021,37 @@ function refreshVPNIP() {
 										<tr>
 											<th>Static Key</th>
 											<td>
-												<textarea rows="8" class="textarea_ssh_table" id="edit_vpn_crt_client_static" name="edit_vpn_crt_client_static" cols="65" maxlength="7999"></textarea>
+												<textarea rows="8" class="textarea_ssh_table" spellcheck="false" id="edit_vpn_crt_client_static" name="edit_vpn_crt_client_static" cols="65" maxlength="7999"></textarea>
 											</td>
 										</tr>
 										<tr>
 											<th id="manualCa">Certificate Authority</th>
 											<td>
-												<textarea rows="8" class="textarea_ssh_table" id="edit_vpn_crt_client_ca" name="edit_vpn_crt_client_ca" cols="65" maxlength="7999"></textarea>
+												<textarea rows="8" class="textarea_ssh_table" spellcheck="false" id="edit_vpn_crt_client_ca" name="edit_vpn_crt_client_ca" cols="65" maxlength="7999"></textarea>
 											</td>
 										</tr>
 										<tr>
 											<th id="manualCert">Client Certificate</th>
 											<td>
-												<textarea rows="8" class="textarea_ssh_table" id="edit_vpn_crt_client_crt" name="edit_vpn_crt_client_crt" cols="65" maxlength="7999"></textarea>
+												<textarea rows="8" class="textarea_ssh_table" spellcheck="false" id="edit_vpn_crt_client_crt" name="edit_vpn_crt_client_crt" cols="65" maxlength="7999"></textarea>
 											</td>
 										</tr>
 										<tr>
 											<th id="manualKey">Client Key</th>
 											<td>
-												<textarea rows="8" class="textarea_ssh_table" id="edit_vpn_crt_client_key" name="edit_vpn_crt_client_key" cols="65" maxlength="7999"></textarea>
+												<textarea rows="8" class="textarea_ssh_table" spellcheck="false" id="edit_vpn_crt_client_key" name="edit_vpn_crt_client_key" cols="65" maxlength="7999"></textarea>
 											</td>
 										</tr>
 										<tr>
 											<th id="manualKey">Certificate Revocation List<br><br><i>(Optional)</i></th>
 											<td>
-												<textarea rows="8" class="textarea_ssh_table" id="edit_vpn_crt_client_crl" name="edit_vpn_crt_client_crl" cols="65" maxlength="7999"></textarea>
+												<textarea rows="8" class="textarea_ssh_table" spellcheck="false" id="edit_vpn_crt_client_crl" name="edit_vpn_crt_client_crl" cols="65" maxlength="7999"></textarea>
 											</td>
 										</tr>
 										<tr>
 											<th id="manualKey">Extra Chain Certificates<br><br><i>(Optional)</i></th>
 											<td>
-												<textarea rows="8" class="textarea_ssh_table" id="edit_vpn_crt_client_extra" name="edit_vpn_crt_client_extra" cols="65" maxlength="7999"></textarea>
+												<textarea rows="8" class="textarea_ssh_table" spellcheck="false" id="edit_vpn_crt_client_extra" name="edit_vpn_crt_client_extra" cols="65" maxlength="7999"></textarea>
 											</td>
 										</tr>
 									</table>
@@ -1510,7 +1510,7 @@ function refreshVPNIP() {
 					</thead>
 					<tr>
 						<td>
-							<textarea rows="8" class="textarea_ssh_table" style="width:99%;" id="vpn_client_custom_x" cols="55" maxlength="2047"></textarea>
+							<textarea rows="8" class="textarea_ssh_table" spellcheck="false" style="width:99%;" id="vpn_client_custom_x" cols="55" maxlength="2047"></textarea>
 						</td>
 					</tr>
 					</table>

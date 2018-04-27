@@ -52,7 +52,7 @@ function show_upnp() {
 			code += '<td>' + line[2] + '</td>';
 			code += '<td>' + line[3] + '</td>';
 
-			if (line[4] != 0) {
+			if (0) /*if (line[4] != 0)*/ {
 				expire = line[4] - now;
 
 				Hours = Math.floor((expire / 3600));

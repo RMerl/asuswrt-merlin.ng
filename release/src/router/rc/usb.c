@@ -16,6 +16,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <arpa/inet.h>
+#include <proto/ethernet.h>
 #include <time.h>
 #include <sys/time.h>
 #include <errno.h>
@@ -3363,13 +3364,13 @@ void start_dms(void)
 	char dbdir[100];
 	char *argv[] = { MEDIA_SERVER_APP, "-f", "/etc/"MEDIA_SERVER_APP".conf", "-R", NULL, NULL, NULL };
 	static int once = 1;
-	int i, j;
-	char serial[18];
+	unsigned char ea[ETHER_ADDR_LEN];
+	char serial[18], uuid[37];
 	char *nv, *nvp, *b, *c;
 	char *nv2, *nvp2;
 	unsigned char type = 0;
 	char types[5];
-	int index = 4;
+	int j, index = 4;
 
 	if (getpid() != 1) {
 		notify_rc("start_dms");
@@ -3434,13 +3435,12 @@ void start_dms(void)
 
 			nvram_set("dms_dbcwd", dbdir);
 
-			conv_mac2(get_lan_hwaddr(), serial);
-			if (strlen(serial)) {
-				for (i = 0; i < strlen(serial); i++)
-					serial[i] = tolower(serial[i]);
-			}
-			else
-				strcpy(serial, "554e4b4e4f57"); //default if no hwaddr
+			if (!ether_atoe(get_lan_hwaddr(), ea))
+				f_read("/dev/urandom", ea, sizeof(ea));
+			snprintf(serial, sizeof(serial), "%02x:%02x:%02x:%02x:%02x:%02x",
+				 ea[0], ea[1], ea[2], ea[3], ea[4], ea[5]);
+			snprintf(uuid, sizeof(uuid), "4d696e69-444c-164e-9d41-%02x%02x%02x%02x%02x%02x",
+				 ea[0], ea[1], ea[2], ea[3], ea[4], ea[5]);
 
 			fprintf(f,
 				"network_interface=%s\n"
@@ -3517,13 +3517,10 @@ void start_dms(void)
 
 			fprintf(f,
 				"serial=%s\n"
-				"model_number=%s\n"
-				//add explicit uuid based on mac(serial)
-				//since some recent change has resulted in a changing uuid at boot
-				"uuid=4d696e69-444c-164e-9d41-%s\n",
-				serial,
-				rt_serialno,
-				serial);
+				"uuid=%s\n"
+				"model_number=%s\n",
+				serial, uuid,
+				rt_serialno);
 
 			append_custom_config(MEDIA_SERVER_APP".conf",f);
 

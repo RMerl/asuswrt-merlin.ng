@@ -4337,11 +4337,12 @@ void start_upnp(void)
 {
 	FILE *f;
 	char tmp[100], prefix[sizeof("wanXXXXXXXXXX_")];
-	char et0macaddr[18];
+	unsigned char ea[ETHER_ADDR_LEN];
+	char serial[18], uuid[37];
 	char *proto, *port, *lport, *srcip, *dstip, *desc;
 	char *nv, *nvp, *b;
 	int upnp_enable, upnp_mnp_enable, upnp_port;
-	int unit, i, httpx_port, cnt;
+	int unit, httpx_port, cnt;
 #if defined(RTCONFIG_APP_PREINSTALLED) || defined(RTCONFIG_APP_NETINSTALLED)
 	FILE *ifp = NULL;
 	char tmpstr[80];
@@ -4376,11 +4377,12 @@ void start_upnp(void)
 				if (upnp_port < 0 || upnp_port > 65535)
 					upnp_port = 0;
 
-				strlcpy(et0macaddr, get_lan_hwaddr(), sizeof (et0macaddr));
-
-				if (strlen(et0macaddr))
-					for (i = 0; i < strlen(et0macaddr); i++)
-						et0macaddr[i] = tolower(et0macaddr[i]);;
+				if (!ether_atoe(get_lan_hwaddr(), ea))
+					f_read("/dev/urandom", ea, sizeof(ea));
+				snprintf(serial, sizeof(serial), "%02x:%02x:%02x:%02x:%02x:%02x",
+					 ea[0], ea[1], ea[2], ea[3], ea[4], ea[5]);
+				snprintf(uuid, sizeof(uuid), "3ddcd1d3-2380-45f5-b069-%02x%02x%02x%02x%02x%02x",
+					 ea[0], ea[1], ea[2], ea[3], ea[4], ea[5]);
 
 				fprintf(f,
 					"ext_ifname=%s\n"
@@ -4399,6 +4401,7 @@ void start_upnp(void)
 					"model_description=%s\n"
 					"model_number=%s\n"
 					"serial=%s\n"
+					"uuid=%s\n"
 					"lease_file=%s\n",
 					get_wan_ifname(wan_primary_ifunit()),
 					nvram_safe_get("lan_ifname"),
@@ -4411,7 +4414,7 @@ void start_upnp(void)
 					get_productid(),
 					"ASUS Wireless Router",
 					rt_serialno,
-					nvram_get("serial_no") ? : et0macaddr,
+					nvram_get("serial_no") ? : serial, uuid,
 					"/tmp/upnp.leases");
 
 				if (nvram_get_int("upnp_clean")) {
@@ -4437,10 +4440,6 @@ void start_upnp(void)
 				{
 					fprintf(f, "%s://%s:%d/\n", "http", lanip, nvram_get_int("http_lanport") ? : 80);
 				}
-
-				char uuid[45];
-				f_read_string("/proc/sys/kernel/random/uuid", uuid, sizeof(uuid));
-				fprintf(f, "uuid=%s\n", uuid);
 
 				if (is_nat_enabled() && nvram_match("vts_enable_x", "1")) {
 					nvp = nv = strdup(nvram_safe_get("vts_rulelist"));

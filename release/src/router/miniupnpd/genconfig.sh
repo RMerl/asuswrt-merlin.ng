@@ -356,6 +356,7 @@ case $OS_NAME in
 #		echo "#define ENABLE_IPV6" >> ${CONFIGFILE}
 #		echo "#endif" >> ${CONFIGFILE}
 		echo "#define LIB_UUID" >> ${CONFIGFILE}
+		HAVE_IP_MREQN=1
 		FW=netfilter
 		;;
 	Darwin)

@@ -23,7 +23,7 @@ General changes in the 384/NG branch vs 380.xx:
            (wireless, httpd, etc...).
            Note that this script will block the execution of
            the event until it returns.
-   - CHANGED: Updated OpenVPN to 2.4.5.
+   - CHANGED: Updated OpenVPN to 2.4.6.
    - CHANGED: Updated Dropbear to 2018.76.
    - CHANGED: Updated Openssl to 1.0.2o.
    - CHANGED: Updated miniupnpd to 20180412.

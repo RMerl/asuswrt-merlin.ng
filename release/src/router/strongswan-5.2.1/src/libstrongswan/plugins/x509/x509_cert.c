@@ -2,10 +2,10 @@
  * Copyright (C) 2000 Andreas Hess, Patric Lichtsteiner, Roger Wegmann
  * Copyright (C) 2001 Marco Bertossa, Andreas Schleiss
  * Copyright (C) 2002 Mario Strasser
- * Copyright (C) 2000-2006 Andreas Steffen
+ * Copyright (C) 2000-2017 Andreas Steffen
  * Copyright (C) 2006-2009 Martin Willi
  * Copyright (C) 2008 Tobias Brunner
- * Hochschule fuer Technik Rapperswil
+ * HSR Hochschule fuer Technik Rapperswil
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -769,20 +769,20 @@ static void parse_extendedKeyUsage(chunk_t blob, int level0,
  * ASN.1 definition of crlDistributionPoints
  */
 static const asn1Object_t crlDistributionPointsObjects[] = {
-	{ 0, "crlDistributionPoints",	ASN1_SEQUENCE,		ASN1_LOOP			}, /*  0 */
-	{ 1,   "DistributionPoint",		ASN1_SEQUENCE,		ASN1_NONE			}, /*  1 */
-	{ 2,     "distributionPoint",	ASN1_CONTEXT_C_0,	ASN1_OPT|ASN1_LOOP	}, /*  2 */
-	{ 3,       "fullName",			ASN1_CONTEXT_C_0,	ASN1_OPT|ASN1_OBJ	}, /*  3 */
-	{ 3,       "end choice",		ASN1_EOC,			ASN1_END			}, /*  4 */
-	{ 3,       "nameRelToCRLIssuer",ASN1_CONTEXT_C_1,	ASN1_OPT|ASN1_BODY	}, /*  5 */
-	{ 3,       "end choice",		ASN1_EOC,			ASN1_END			}, /*  6 */
-	{ 2,     "end opt",				ASN1_EOC,			ASN1_END			}, /*  7 */
-	{ 2,     "reasons",				ASN1_CONTEXT_C_1,	ASN1_OPT|ASN1_BODY	}, /*  8 */
-	{ 2,     "end opt",				ASN1_EOC,			ASN1_END			}, /*  9 */
-	{ 2,     "crlIssuer",			ASN1_CONTEXT_C_2,	ASN1_OPT|ASN1_OBJ	}, /* 10 */
-	{ 2,     "end opt",				ASN1_EOC,			ASN1_END			}, /* 11 */
-	{ 0, "end loop",				ASN1_EOC,			ASN1_END			}, /* 12 */
-	{ 0, "exit",					ASN1_EOC,			ASN1_EXIT			}
+	{ 0, "crlDistributionPoints",   ASN1_SEQUENCE,    ASN1_LOOP            }, /*  0 */
+	{ 1,   "DistributionPoint",     ASN1_SEQUENCE,    ASN1_NONE            }, /*  1 */
+	{ 2,     "distributionPoint",   ASN1_CONTEXT_C_0, ASN1_OPT|ASN1_CHOICE }, /*  2 */
+	{ 3,       "fullName",          ASN1_CONTEXT_C_0, ASN1_OPT|ASN1_OBJ    }, /*  3 */
+	{ 3,       "end choice",        ASN1_EOC,         ASN1_END|ASN1_CH     }, /*  4 */
+	{ 3,       "nameRelToCRLIssuer",ASN1_CONTEXT_C_1, ASN1_OPT|ASN1_BODY   }, /*  5 */
+	{ 3,       "end choice",        ASN1_EOC,         ASN1_END|ASN1_CH     }, /*  6 */
+	{ 2,     "end opt/choices",     ASN1_EOC,         ASN1_END|ASN1_CHOICE }, /*  7 */
+	{ 2,     "reasons",             ASN1_CONTEXT_C_1, ASN1_OPT|ASN1_BODY   }, /*  8 */
+	{ 2,     "end opt",             ASN1_EOC,         ASN1_END             }, /*  9 */
+	{ 2,     "crlIssuer",           ASN1_CONTEXT_C_2, ASN1_OPT|ASN1_OBJ    }, /* 10 */
+	{ 2,     "end opt",             ASN1_EOC,         ASN1_END             }, /* 11 */
+	{ 0, "end loop",                ASN1_EOC,         ASN1_END             }, /* 12 */
+	{ 0, "exit",                    ASN1_EOC,         ASN1_EXIT            }
 };
 #define CRL_DIST_POINTS				 1
 #define CRL_DIST_POINTS_FULLNAME	 3
@@ -880,14 +880,13 @@ void x509_parse_crlDistributionPoints(chunk_t blob, int level0,
  * ASN.1 definition of nameConstraints
  */
 static const asn1Object_t nameConstraintsObjects[] = {
-	{ 0, "nameConstraints",			ASN1_SEQUENCE,		ASN1_LOOP			}, /*  0 */
+	{ 0, "nameConstraints",			ASN1_SEQUENCE,		ASN1_NONE			}, /*  0 */
 	{ 1,   "permittedSubtrees",		ASN1_CONTEXT_C_0,	ASN1_OPT|ASN1_LOOP	}, /*  1 */
 	{ 2,     "generalSubtree",		ASN1_SEQUENCE,		ASN1_BODY			}, /*  2 */
 	{ 1,   "end loop",				ASN1_EOC,			ASN1_END			}, /*  3 */
 	{ 1,   "excludedSubtrees",		ASN1_CONTEXT_C_1,	ASN1_OPT|ASN1_LOOP	}, /*  4 */
 	{ 2,     "generalSubtree",		ASN1_SEQUENCE,		ASN1_BODY			}, /*  5 */
 	{ 1,   "end loop",				ASN1_EOC,			ASN1_END			}, /*  6 */
-	{ 0, "end loop",				ASN1_EOC,			ASN1_END			}, /*  7 */
 	{ 0, "exit",					ASN1_EOC,			ASN1_EXIT			}
 };
 #define NAME_CONSTRAINT_PERMITTED 2
@@ -936,25 +935,27 @@ static void parse_nameConstraints(chunk_t blob, int level0,
  * ASN.1 definition of a certificatePolicies extension
  */
 static const asn1Object_t certificatePoliciesObject[] = {
-	{ 0, "certificatePolicies",		ASN1_SEQUENCE,	ASN1_LOOP			}, /*  0 */
-	{ 1,   "policyInformation",		ASN1_SEQUENCE,	ASN1_NONE			}, /*  1 */
-	{ 2,     "policyId",			ASN1_OID,		ASN1_BODY			}, /*  2 */
-	{ 2,     "qualifiers",			ASN1_SEQUENCE,	ASN1_OPT|ASN1_LOOP	}, /*  3 */
-	{ 3,       "qualifierInfo",		ASN1_SEQUENCE,	ASN1_NONE			}, /*  4 */
-	{ 4,         "qualifierId",		ASN1_OID,		ASN1_BODY			}, /*  5 */
-	{ 4,         "cPSuri",			ASN1_IA5STRING,	ASN1_OPT|ASN1_BODY	}, /*  6 */
-	{ 4,         "end choice",		ASN1_EOC,		ASN1_END			}, /*  7 */
-	{ 4,         "userNotice",		ASN1_SEQUENCE,	ASN1_OPT|ASN1_BODY	}, /*  8 */
-	{ 5,           "explicitText",	ASN1_EOC,		ASN1_RAW			}, /*  9 */
-	{ 4,         "end choice",		ASN1_EOC,		ASN1_END			}, /* 10 */
-	{ 2,      "end opt/loop",		ASN1_EOC,		ASN1_END			}, /* 12 */
-	{ 0, "end loop",				ASN1_EOC,		ASN1_END			}, /* 13 */
-	{ 0, "exit",					ASN1_EOC,		ASN1_EXIT			}
+	{ 0, "certificatePolicies",      ASN1_SEQUENCE,  ASN1_LOOP            }, /*  0 */
+	{ 1,   "policyInformation",      ASN1_SEQUENCE,  ASN1_NONE            }, /*  1 */
+	{ 2,     "policyId",             ASN1_OID,       ASN1_BODY            }, /*  2 */
+	{ 2,     "qualifiers",           ASN1_SEQUENCE,  ASN1_OPT|ASN1_LOOP   }, /*  3 */
+	{ 3,       "qualifierInfo",      ASN1_SEQUENCE,  ASN1_NONE            }, /*  4 */
+	{ 4,         "qualifierId",      ASN1_OID,       ASN1_BODY            }, /*  5 */
+	{ 4,         "qualifier",        ASN1_EOC,       ASN1_CHOICE          }, /*  6 */
+	{ 5,           "cPSuri",         ASN1_IA5STRING, ASN1_OPT|ASN1_BODY   }, /*  7 */
+	{ 5,           "end choice",     ASN1_EOC,       ASN1_END|ASN1_CH     }, /*  8 */
+	{ 5,           "userNotice",     ASN1_SEQUENCE,  ASN1_OPT|ASN1_BODY   }, /*  9 */
+	{ 6,             "explicitText", ASN1_EOC,       ASN1_RAW             }, /* 10 */
+	{ 5,           "end choice",     ASN1_EOC,       ASN1_END|ASN1_CH     }, /* 11 */
+	{ 4,         "end choices",      ASN1_EOC,       ASN1_END|ASN1_CHOICE }, /* 12 */
+	{ 2,     "end opt/loop",         ASN1_EOC,       ASN1_END             }, /* 13 */
+	{ 0, "end loop",                 ASN1_EOC,       ASN1_END             }, /* 14 */
+	{ 0, "exit",                     ASN1_EOC,       ASN1_EXIT            }
 };
-#define CERT_POLICY_ID				2
-#define CERT_POLICY_QUALIFIER_ID	5
-#define CERT_POLICY_CPS_URI			6
-#define CERT_POLICY_EXPLICIT_TEXT	9
+#define CERT_POLICY_ID              2
+#define CERT_POLICY_QUALIFIER_ID    5
+#define CERT_POLICY_CPS_URI         7
+#define CERT_POLICY_EXPLICIT_TEXT  10
 
 /**
  * Parse certificatePolicies
@@ -1107,27 +1108,31 @@ static void parse_policyConstraints(chunk_t blob, int level0,
  * ASN.1 definition of ipAddrBlocks according to RFC 3779
  */
 static const asn1Object_t ipAddrBlocksObjects[] = {
-	{ 0, "ipAddrBlocks",			ASN1_SEQUENCE,		ASN1_LOOP			}, /*  0 */
-	{ 1,   "ipAddressFamily",		ASN1_SEQUENCE,		ASN1_NONE			}, /*  1 */
-	{ 2,     "addressFamily",		ASN1_OCTET_STRING,	ASN1_BODY			}, /*  2 */
-	{ 2,     "inherit",				ASN1_NULL,			ASN1_OPT|ASN1_NONE	}, /*  3 */
-	{ 2,     "end choice",			ASN1_EOC,			ASN1_END			}, /*  4 */
-	{ 2,     "addressesOrRanges",	ASN1_SEQUENCE,		ASN1_OPT|ASN1_LOOP	}, /*  5 */
-	{ 3,       "addressPrefix",		ASN1_BIT_STRING,	ASN1_OPT|ASN1_BODY  }, /*  6 */
-	{ 3,       "end choice",		ASN1_EOC,			ASN1_END			}, /*  7 */
-	{ 3,       "addressRange",		ASN1_SEQUENCE,		ASN1_OPT|ASN1_NONE	}, /*  8 */
-	{ 4,         "min",				ASN1_BIT_STRING,	ASN1_BODY			}, /*  9 */
-	{ 4,         "max",				ASN1_BIT_STRING,	ASN1_BODY			}, /* 10 */
-	{ 3,       "end choice",		ASN1_EOC,			ASN1_END			}, /* 11 */
-	{ 2,     "end opt/loop",		ASN1_EOC,			ASN1_END			}, /* 12 */
-	{ 0, "end loop",				ASN1_EOC,			ASN1_END			}, /* 13 */
-	{ 0, "exit",					ASN1_EOC,			ASN1_EXIT			}
+	{ 0, "ipAddrBlocks",            ASN1_SEQUENCE,     ASN1_LOOP            }, /*  0 */
+	{ 1,   "ipAddressFamily",       ASN1_SEQUENCE,     ASN1_NONE            }, /*  1 */
+	{ 2,     "addressFamily",       ASN1_OCTET_STRING, ASN1_BODY            }, /*  2 */
+	{ 2,     "ipAddressChoice",     ASN1_EOC,          ASN1_CHOICE          }, /*  3 */
+	{ 3,       "inherit",           ASN1_NULL,         ASN1_OPT             }, /*  4 */
+	{ 3,       "end choice",        ASN1_EOC,          ASN1_END|ASN1_CH     }, /*  5 */
+	{ 3,       "addressesOrRanges", ASN1_SEQUENCE,     ASN1_OPT|ASN1_LOOP   }, /*  6 */
+	{ 4,         "addressOrRange",  ASN1_EOC,          ASN1_CHOICE          }, /*  7 */
+	{ 5,           "addressPrefix", ASN1_BIT_STRING,   ASN1_OPT|ASN1_BODY   }, /*  8 */
+	{ 5,           "end choice",    ASN1_EOC,          ASN1_END|ASN1_CH     }, /*  9 */
+	{ 5,           "addressRange",  ASN1_SEQUENCE,     ASN1_OPT             }, /* 10 */
+	{ 6,             "min",         ASN1_BIT_STRING,   ASN1_BODY            }, /* 11 */
+	{ 6,             "max",         ASN1_BIT_STRING,   ASN1_BODY            }, /* 12 */
+	{ 5,           "end choice",    ASN1_EOC,          ASN1_END|ASN1_CH     }, /* 13 */
+	{ 4,         "end choices",     ASN1_EOC,          ASN1_END|ASN1_CHOICE }, /* 14 */
+	{ 3,       "end loop/choice",   ASN1_EOC,          ASN1_END|ASN1_CH     }, /* 15 */
+	{ 2,     "end choices",         ASN1_EOC,          ASN1_END|ASN1_CHOICE }, /* 16 */
+	{ 0, "end loop",                ASN1_EOC,          ASN1_END             }, /* 17 */
+	{ 0, "exit",                    ASN1_EOC,          ASN1_EXIT            }
 };
 #define IP_ADDR_BLOCKS_FAMILY       2
-#define IP_ADDR_BLOCKS_INHERIT      3
-#define IP_ADDR_BLOCKS_PREFIX       6
-#define IP_ADDR_BLOCKS_MIN          9
-#define IP_ADDR_BLOCKS_MAX         10
+#define IP_ADDR_BLOCKS_INHERIT      4
+#define IP_ADDR_BLOCKS_PREFIX       8
+#define IP_ADDR_BLOCKS_MIN         11
+#define IP_ADDR_BLOCKS_MAX         12
 
 static bool check_address_object(ts_type_t ts_type, chunk_t object)
 {

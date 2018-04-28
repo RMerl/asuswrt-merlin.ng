@@ -78,11 +78,17 @@ static chunk_t rsaep(private_gmp_rsa_public_key_t *this, chunk_t data)
 	mpz_t m, c;
 	chunk_t encrypted;
 
-	mpz_init(c);
 	mpz_init(m);
-
 	mpz_import(m, data.len, 1, 1, 1, 0, data.ptr);
 
+	if (mpz_cmp_ui(m, 0) <= 0 || mpz_cmp(m, this->n) >= 0)
+	{	/* m must be <= n-1, but 0 is a valid value, doesn't really make sense
+		 * here, though */
+		mpz_clear(m);
+		return chunk_empty;
+	}
+
+	mpz_init(c);
 	mpz_powm(c, m, this->e, this->n);
 
 	encrypted.len = this->k;
@@ -150,7 +156,7 @@ static bool verify_emsa_pkcs1_signature(private_gmp_rsa_public_key_t *this,
 	 */
 
 	/* check magic bytes */
-	if (*(em.ptr) != 0x00 || *(em.ptr+1) != 0x01)
+	if (em.len < 2 || *(em.ptr) != 0x00 || *(em.ptr+1) != 0x01)
 	{
 		goto end;
 	}
@@ -467,7 +473,7 @@ gmp_rsa_public_key_t *gmp_rsa_public_key_load(key_type_t type, va_list args)
 		}
 		break;
 	}
-	if (!e.ptr || !n.ptr)
+	if (!e.len || !n.len || (n.ptr[n.len-1] & 0x01) == 0)
 	{
 		return NULL;
 	}
@@ -498,6 +504,11 @@ gmp_rsa_public_key_t *gmp_rsa_public_key_load(key_type_t type, va_list args)
 
 	this->k = (mpz_sizeinbase(this->n, 2) + 7) / BITS_PER_BYTE;
 
+	if (!mpz_sgn(this->e))
+	{
+		destroy(this);
+		return NULL;
+	}
 	return &this->public;
 }
 

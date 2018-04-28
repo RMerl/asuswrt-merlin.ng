@@ -1,8 +1,7 @@
 /*
  * Copyright (C) 2006 Martin Will
- * Copyright (C) 2000-2008 Andreas Steffen
- *
- * Hochschule fuer Technik Rapperswil
+ * Copyright (C) 2000-2017 Andreas Steffen
+ * HSR Hochschule fuer Technik Rapperswil
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -32,15 +31,17 @@
 /**
  * Definition of ASN.1 flags
  */
-#define ASN1_NONE	0x00
-#define ASN1_DEF	0x01
-#define ASN1_OPT	0x02
-#define ASN1_LOOP	0x04
-#define ASN1_END	0x08
-#define ASN1_OBJ	0x10
-#define ASN1_BODY	0x20
-#define ASN1_RAW	0x40
-#define ASN1_EXIT	0x80
+#define ASN1_NONE    0x0000
+#define ASN1_DEF     0x0001
+#define ASN1_OPT     0x0002
+#define ASN1_LOOP    0x0004
+#define ASN1_CHOICE  0x0008
+#define ASN1_CH      0x0010
+#define ASN1_END     0x0020
+#define ASN1_OBJ     0x0040
+#define ASN1_BODY    0x0080
+#define ASN1_RAW     0x0100
+#define ASN1_EXIT    0x0200
 
 typedef struct asn1Object_t asn1Object_t;
 
@@ -51,7 +52,7 @@ struct asn1Object_t{
 	u_int level;
 	const u_char *name;
 	asn1_t type;
-	u_char flags;
+	uint16_t flags;
 };
 
 typedef struct asn1_parser_t asn1_parser_t;

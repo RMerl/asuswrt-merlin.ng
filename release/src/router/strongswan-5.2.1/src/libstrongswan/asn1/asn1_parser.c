@@ -1,8 +1,7 @@
 /*
  * Copyright (C) 2006 Martin Will
- * Copyright (C) 2000-2008 Andreas Steffen
- *
- * Hochschule fuer Technik Rapperswil
+ * Copyright (C) 2000-2017 Andreas Steffen
+ * HSR Hochschule fuer Technik Rapperswil
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -76,12 +75,18 @@ struct private_asn1_parser_t {
 	 * Current parsing pointer for each level
 	 */
 	chunk_t blobs[ASN1_MAX_LEVEL + 2];
+
+	/**
+	 * Parsing a CHOICE on the current level ?
+	 */
+	bool choice[ASN1_MAX_LEVEL + 2];
+
 };
 
 METHOD(asn1_parser_t, iterate, bool,
 	private_asn1_parser_t *this, int *objectID, chunk_t *object)
 {
-	chunk_t *blob, *blob1;
+	chunk_t *blob, *blob1, blob_ori;
 	u_char *start_ptr;
 	u_int level;
 	asn1Object_t obj;
@@ -97,7 +102,7 @@ METHOD(asn1_parser_t, iterate, bool,
 		return FALSE;
 	}
 
-	if (obj.flags & ASN1_END)  /* end of loop or option found */
+	if (obj.flags & ASN1_END)  /* end of loop or choice or option found */
 	{
 		if (this->loopAddr[obj.level] && this->blobs[obj.level+1].len > 0)
 		{
@@ -106,13 +111,42 @@ METHOD(asn1_parser_t, iterate, bool,
 		}
 		else
 		{
-			this->loopAddr[obj.level] = 0;		 /* exit loop or option*/
+			this->loopAddr[obj.level] = 0;		 /* exit loop */
+
+			if (obj.flags & ASN1_CHOICE) /* end of choices */
+			{
+				if (this->choice[obj.level+1])
+				{
+					DBG1(DBG_ASN, "L%d - %s:  incorrect choice encoding",
+						this->level0 + obj.level, obj.name);
+					this->success = FALSE;
+					goto end;
+				}
+			}
+
+			if (obj.flags & ASN1_CH) /* end of choice */
+			{
+				/* parsed a valid choice */
+				this->choice[obj.level] = FALSE;
+
+				/* advance to end of choices */
+				do
+				{
+					this->line++;
+				}
+				while (!((this->objects[this->line].flags & ASN1_END) &&
+						 (this->objects[this->line].flags & ASN1_CHOICE) &&
+						 (this->objects[this->line].level == obj.level-1)));
+				this->line--;
+			}
+
 			goto end;
 		}
 	}
 
 	level = this->level0 + obj.level;
 	blob = this->blobs + obj.level;
+	blob_ori = *blob;
 	blob1 = blob + 1;
 	start_ptr = blob->ptr;
 
@@ -129,7 +163,6 @@ METHOD(asn1_parser_t, iterate, bool,
 	}
 
 	/* handle ASN.1 options */
-
 	if ((obj.flags & ASN1_OPT)
 			&& (blob->len == 0 || *start_ptr != obj.type))
 	{
@@ -144,7 +177,6 @@ METHOD(asn1_parser_t, iterate, bool,
 	}
 
 	/* an ASN.1 object must possess at least a tag and length field */
-
 	if (blob->len < 2)
 	{
 		DBG1(DBG_ASN, "L%d - %s:  ASN.1 object smaller than 2 octets",
@@ -167,8 +199,16 @@ METHOD(asn1_parser_t, iterate, bool,
 	blob->ptr += blob1->len;
 	blob->len -= blob1->len;
 
-	/* return raw ASN.1 object without prior type checking */
+	/* handle ASN.1 choice without explicit context encoding */
+	if ((obj.flags & ASN1_CHOICE) && obj.type == ASN1_EOC)
+	{
+		DBG2(DBG_ASN, "L%d - %s:", level, obj.name);
+		this->choice[obj.level+1] = TRUE;
+		*blob1 = blob_ori;
+		goto end;
+	}
 
+	/* return raw ASN.1 object without prior type checking */
 	if (obj.flags & ASN1_RAW)
 	{
 		DBG2(DBG_ASN, "L%d - %s:", level, obj.name);
@@ -207,6 +247,18 @@ METHOD(asn1_parser_t, iterate, bool,
 					 (this->objects[this->line].level == obj.level)));
 			goto end;
 		}
+	}
+
+	/* In case of a "CHOICE" start to scan for exactly one valid choice */
+	if (obj.flags & ASN1_CHOICE)
+	{
+		if (blob1->len == 0)
+		{
+			DBG1(DBG_ASN, "L%d - %s:  contains no choice", level, obj.name);
+			this->success = FALSE;
+			goto end;
+		}
+		this->choice[obj.level+1] = TRUE;
 	}
 
 	if (obj.flags & ASN1_OBJ)

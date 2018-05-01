@@ -2238,6 +2238,7 @@ padding-top:1px;
 	border:2px ridge #777;
 	border-style:bevel;
 	font-family: Courier New, Courier, monospace;
+	font-size:13px;
 }
 .textarea_log_table{
 	color: #FFFFFF;

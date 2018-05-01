@@ -796,7 +796,7 @@ function done_validating(action){
 						<th>Check for new beta firmware releases</th>
 						<td>
 							<input type="radio" name="firmware_path" class="input" value="1" <% nvram_match("firmware_path", "1", "checked"); %>><#checkbox_Yes#>
-							<input type="radio" name="firmware_path" class="input" value="0" <% nvram_match("firmware_path", "0", "checked"); %>><#checkbox_No#>
+							<input type="radio" name="firmware_path" class="input" value="0" <% nvram_match("firmware_path", "0", "checked"); %><% nvram_match("firmware_path", "", "checked"); %>><#checkbox_No#>
 						</td>
 					</tr>
 				</table>

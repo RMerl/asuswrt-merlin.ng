@@ -156,10 +156,10 @@ cp release/src/router/lighttpd-1.4.39/prebuild/* $REPO/release/src/router/lightt
 cp release/src/router/nt_center/prebuild/* $REPO/release/src/router/nt_center/prebuild$ARCH$HND/
 cp release/src/router/nt_center/actMail/prebuild/* $REPO/release/src/router/nt_center/actMail/prebuild$ARCH$HND/
 cp release/src/router/nt_center/lib/prebuild/* $REPO/release/src/router/nt_center/lib/prebuild$ARCH$HND/
-cp release/src/router/wb/prebuild/* $REPO/release/src/router/wb/prebuild$ARCH$HND
+cp release/src/router/wb/prebuild/* $REPO/release/src/router/wb/prebuild$ARCH$HND/
 cp release/src/router/webdav_client/prebuild/* $REPO/release/src/router/webdav_client/prebuild$ARCH$HND/
-cp release/src/router/asuswebstorage/prebuild/* $REPO/release/src/router/asuswebstorage/prebuild$ARCH$HND
-
+cp release/src/router/asuswebstorage/prebuild/* $REPO/release/src/router/asuswebstorage/prebuild$ARCH$HND/
+cp release/src/router/libletsencrypt/prebuild/* $REPO/release/src/router/libletsencrypt/prebuild$ARCH$HND/
 
 
 # Model-specific

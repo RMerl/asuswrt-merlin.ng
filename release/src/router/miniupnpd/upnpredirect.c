@@ -109,6 +109,15 @@ lease_file_add(unsigned short eport,
 		return -1;
 	}
 
+	/* convert our time to unix time
+     * if LEASEFILE_USE_REMAINING_TIME is defined, only the remaining time is stored */
+	if (timestamp != 0) {
+		timestamp -= upnp_time();
+#ifndef LEASEFILE_USE_REMAINING_TIME
+		timestamp += time(NULL);
+#endif
+	}
+
 	fprintf(fd, "%s:%hu:%s:%hu:%u:%s\n",
 	        proto_itoa(proto), eport, iaddr, iport,
 	        timestamp, desc);
@@ -135,8 +144,7 @@ lease_file_remove(unsigned short eport, int proto)
 		return -1;
 	}
 
-	strncpy( tmpfilename, lease_file, sizeof(tmpfilename) );
-	strncat( tmpfilename, "XXXXXX", sizeof(tmpfilename) - strlen(tmpfilename));
+	snprintf( tmpfilename, sizeof(tmpfilename), "%sXXXXXX", lease_file);
 
 	fd = fopen( lease_file, "r");
 	if (fd==NULL) {
@@ -190,6 +198,9 @@ int reload_from_lease_file()
 	unsigned int leaseduration;
 	unsigned int timestamp;
 	time_t current_time;
+#ifndef LEASEFILE_USE_REMAINING_TIME
+	time_t current_unix_time;
+#endif
 	char line[128];
 	int r;
 
@@ -204,6 +215,9 @@ int reload_from_lease_file()
 	}
 
 	current_time = upnp_time();
+#ifndef LEASEFILE_USE_REMAINING_TIME
+	current_unix_time = time(NULL);
+#endif
 	while(fgets(line, sizeof(line), fd)) {
 		syslog(LOG_DEBUG, "parsing lease file line '%s'", line);
 		proto = line;
@@ -251,12 +265,18 @@ int reload_from_lease_file()
 			*(p--) = '\0';
 
 		if(timestamp > 0) {
-			if(timestamp <= (unsigned int)current_time) {
+#ifdef LEASEFILE_USE_REMAINING_TIME
+			leaseduration = timestamp;
+			timestamp += current_time;	/* convert to our time */
+#else
+			if(timestamp <= (unsigned int)current_unix_time) {
 				syslog(LOG_NOTICE, "already expired lease in lease file");
 				continue;
 			} else {
-				leaseduration = timestamp - current_time;
+				leaseduration = timestamp - current_unix_time;
+				timestamp = lease_duration + current_time; /* convert to our time */
 			}
+#endif
 		} else {
 			leaseduration = 0;	/* default value */
 		}
@@ -275,6 +295,31 @@ int reload_from_lease_file()
 
 	return 0;
 }
+
+#ifdef LEASEFILE_USE_REMAINING_TIME
+void lease_file_rewrite(void)
+{
+	int index;
+	unsigned short eport, iport;
+	int proto;
+	char iaddr[32];
+	char desc[64];
+	char rhost[40];
+	unsigned int timestamp;
+
+	if (lease_file == NULL) return;
+	remove(lease_file);
+	for(index = 0; ; index++) {
+		if(get_redirect_rule_by_index(index, 0/*ifname*/, &eport, iaddr, sizeof(iaddr),
+		                              &iport, &proto, desc, sizeof(desc),
+		                              rhost, sizeof(rhost), &timestamp,
+		                              0, 0) < 0)
+			break;
+		if(lease_file_add(eport, iaddr, iport, proto, desc, timestamp) < 0)
+			break;
+	}
+}
+#endif
 #endif
 
 /* upnp_redirect()

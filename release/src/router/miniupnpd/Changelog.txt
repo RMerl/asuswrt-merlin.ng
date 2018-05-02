@@ -1,4 +1,10 @@
-$Id: Changelog.txt,v 1.438 2018/04/06 09:17:45 nanard Exp $
+$Id: Changelog.txt,v 1.439 2018/04/12 09:32:22 nanard Exp $
+
+2018/05/02:
+  option to store remaining time in leasefile
+
+2018/04/12:
+  pf: set dst address in rule if use_ext_ip_addr is set
 
 2018/04/06:
   Add options for netfilter scripts

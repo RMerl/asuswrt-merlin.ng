@@ -1,8 +1,8 @@
-/* $Id: obsdrdr.c,v 1.86 2016/02/12 13:11:03 nanard Exp $ */
+/* $Id: obsdrdr.c,v 1.88 2018/04/12 09:27:53 nanard Exp $ */
 /* vim: tabstop=4 shiftwidth=4 noexpandtab
  * MiniUPnP project
  * http://miniupnp.free.fr/ or http://miniupnp.tuxfamily.org/
- * (c) 2006-2016 Thomas Bernard
+ * (c) 2006-2018 Thomas Bernard
  * This software is subject to the conditions detailed
  * in the LICENCE file provided within the distribution */
 
@@ -335,6 +335,11 @@ add_redirect_rule2(const char * ifname,
 		{
 			inet_pton(AF_INET, rhost, &pcr.rule.src.addr.v.a.addr.v4.s_addr);
 			pcr.rule.src.addr.v.a.mask.v4.s_addr = htonl(INADDR_NONE);
+		}
+		if(use_ext_ip_addr && use_ext_ip_addr[0] != '\0')
+		{
+			inet_pton(AF_INET, use_ext_ip_addr, &pcr.rule.dst.addr.v.a.addr.v4.s_addr);
+			pcr.rule.dst.addr.v.a.mask.v4.s_addr = htonl(INADDR_NONE);
 		}
 #ifndef PF_NEWSTYLE
 		pcr.rule.rpool.proxy_port[0] = iport;
@@ -1081,6 +1086,7 @@ void
 list_rules(void)
 {
 	char buf[32];
+	char buf2[32];
 	int i, n;
 	struct pfioc_rule pr;
 #ifndef PF_NEWSTYLE
@@ -1105,11 +1111,12 @@ list_rules(void)
 		pr.nr = i;
 		if(ioctl(dev, DIOCGETRULE, &pr) < 0)
 			perror("DIOCGETRULE");
-		printf(" %s %s %d:%d -> %d:%d  proto %d keep_state=%d action=%d\n",
+		printf(" %s %s %d:%d -> %s %d:%d  proto %d keep_state=%d action=%d\n",
 			pr.rule.ifname,
 			inet_ntop(AF_INET, &pr.rule.src.addr.v.a.addr.v4.s_addr, buf, 32),
 			(int)ntohs(pr.rule.dst.port[0]),
 			(int)ntohs(pr.rule.dst.port[1]),
+			inet_ntop(AF_INET, &pr.rule.dst.addr.v.a.addr.v4.s_addr, buf2, 32),
 #ifndef PF_NEWSTYLE
 			(int)pr.rule.rpool.proxy_port[0],
 			(int)pr.rule.rpool.proxy_port[1],

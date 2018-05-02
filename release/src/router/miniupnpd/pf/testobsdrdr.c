@@ -1,7 +1,7 @@
-/* $Id: testobsdrdr.c,v 1.28 2014/03/06 13:02:47 nanard Exp $ */
+/* $Id: testobsdrdr.c,v 1.30 2018/04/12 09:27:54 nanard Exp $ */
 /* MiniUPnP project
  * http://miniupnp.free.fr/ or http://miniupnp.tuxfamily.org/
- * (c) 2006-2017 Thomas Bernard
+ * (c) 2006-2018 Thomas Bernard
  * This software is subject to the conditions detailed
  * in the LICENCE file provided within the distribution */
 
@@ -19,6 +19,7 @@ int runtime_flags = 0;
 const char * tag = 0;
 const char * anchor_name = "miniupnpd";
 const char * queue = NULL;
+const char * use_ext_ip_addr = "42.42.42.42";
 
 void
 list_rules(void);
@@ -99,6 +100,7 @@ main(int argc, char * * argv)
 	if(add_redirect_rule2("ep0", "8.8.8.8", 12123, "192.168.1.125", 1234,
 	                   IPPROTO_UDP, "test description", 0) < 0)
 		printf("add_redirect_rule2() #3 failed\n");
+	use_ext_ip_addr = NULL;
 	if(add_redirect_rule2("em0", NULL, 12123, "127.1.2.3", 1234,
 	                   IPPROTO_TCP, "test description tcp", 0) < 0)
 		printf("add_redirect_rule2() #4 failed\n");

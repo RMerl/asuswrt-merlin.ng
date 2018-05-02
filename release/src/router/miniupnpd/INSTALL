@@ -185,6 +185,7 @@ or if your linux system use /etc/init.d/
 miniupnpd handles the following signals :
 SIGUSR1: Send public IP address change notification
 SIGUSR2: Handle special actions in Tomato Firmware version
+         Or rewrite the lease_file
 SIGINT:  Close gracefully
 SIGTERM: Close gracefully
 SIGPIPE: Ignore

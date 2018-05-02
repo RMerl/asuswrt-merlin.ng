@@ -357,6 +357,7 @@ case $OS_NAME in
 #		echo "#endif" >> ${CONFIGFILE}
 		echo "#define LIB_UUID" >> ${CONFIGFILE}
 		HAVE_IP_MREQN=1
+		echo "#define LEASEFILE_USE_REMAINING_TIME 1" >> ${CONFIGFILE}
 		FW=netfilter
 		;;
 	Darwin)
@@ -492,6 +493,8 @@ if [ -n "$LEASEFILE" ] ; then
 else
 	echo "/*#define ENABLE_LEASEFILE*/" >> ${CONFIGFILE}
 fi
+echo "/* Uncomment the following line to store remaining time in lease file */" >> ${CONFIGFILE}
+echo "/*#define LEASEFILE_USE_REMAINING_TIME*/" >> ${CONFIGFILE}
 echo "" >> ${CONFIGFILE}
 
 echo "/* Uncomment the following line to enable port in use check */" >> ${CONFIGFILE}

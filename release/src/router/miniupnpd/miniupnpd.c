@@ -112,6 +112,9 @@ int get_udp_dst_port (char *payload);
 /* variables used by signals */
 static volatile sig_atomic_t quitting = 0;
 volatile sig_atomic_t should_send_public_address_change_notif = 0;
+#if !defined(TOMATO) && defined(ENABLE_LEASEFILE) && defined(LEASEFILE_USE_REMAINING_TIME)
+volatile sig_atomic_t should_rewrite_leasefile = 0;
+#endif /* !TOMATO && ENABLE_LEASEFILE && LEASEFILE_USE_REMAINING_TIME */
 
 #ifdef TOMATO
 #if 1
@@ -791,6 +794,16 @@ sigusr1(int sig)
 
 	should_send_public_address_change_notif = 1;
 }
+
+#if !defined(TOMATO) && defined(ENABLE_LEASEFILE) && defined(LEASEFILE_USE_REMAINING_TIME)
+/* Handler for the SIGUSR2 signal to request rewrite of lease_file */
+static void
+sigusr2(int sig)
+{
+	UNUSED(sig);
+	should_rewrite_leasefile = 1;
+}
+#endif /* !TOMATO && ENABLE_LEASEFILE && LEASEFILE_USE_REMAINING_TIME */
 
 /* record the startup time, for returning uptime */
 static void
@@ -1678,6 +1691,13 @@ init(int argc, char * * argv, struct runtime_vars * v)
 	{
 		syslog(LOG_NOTICE, "Failed to set %s handler", "SIGUSR1");
 	}
+#if !defined(TOMATO) && defined(ENABLE_LEASEFILE) && defined(LEASEFILE_USE_REMAINING_TIME)
+	sa.sa_handler = sigusr2;
+	if(sigaction(SIGUSR2, &sa, NULL) < 0)
+	{
+		syslog(LOG_NOTICE, "Failed to set %s handler", "SIGUSR2");
+	}
+#endif /* !TOMATO && ENABLE_LEASEFILE && LEASEFILE_USE_REMAINING_TIME */
 
 	/* initialize random number generator */
 	srandom((unsigned int)time(NULL));
@@ -2071,6 +2091,13 @@ main(int argc, char * * argv)
 			upnp_bootid = time(NULL);
 		}
 #endif
+#if !defined(TOMATO) && defined(ENABLE_LEASEFILE) && defined(LEASEFILE_USE_REMAINING_TIME)
+		if(should_rewrite_leasefile)
+		{
+			lease_file_rewrite();
+			should_rewrite_leasefile = 0;
+		}
+#endif /* !TOMATO && ENABLE_LEASEFILE && LEASEFILE_USE_REMAINING_TIME */
 		/* send public address change notifications if needed */
 		if(should_send_public_address_change_notif)
 		{
@@ -2623,6 +2650,9 @@ shutdown:
 #ifdef TOMATO
 	tomato_save("/etc/upnp/data");
 #endif	/* TOMATO */
+#if defined(ENABLE_LEASEFILE) && defined(LEASEFILE_USE_REMAINING_TIME)
+	lease_file_rewrite();
+#endif /* ENABLE_LEASEFILE && LEASEFILE_USE_REMAINING_TIME */
 	/* close out open sockets */
 	while(upnphttphead.lh_first != NULL)
 	{

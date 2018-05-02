@@ -16,6 +16,7 @@
 #include "../macros.h"
 #include "iptpinhole.h"
 #include "../upnpglobalvars.h"
+#include "../upnputils.h"
 
 #ifdef ENABLE_UPNPPINHOLE
 

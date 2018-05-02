@@ -28,8 +28,6 @@ function initial() {
 
 function show_upnp() {
 	var code, i, line;
-	var now = Math.floor(Date.now() / 1000);
-	var expire;
 	var Hours, Minutes, Seconds;
 
 	code = '<table width="100%" border="1" align="center" cellpadding="4" cellspacing="0" bordercolor="#6b8fa3" class="FormTable_table">';
@@ -52,12 +50,10 @@ function show_upnp() {
 			code += '<td>' + line[2] + '</td>';
 			code += '<td>' + line[3] + '</td>';
 
-			if (0) /*if (line[4] != 0)*/ {
-				expire = line[4] - now;
-
-				Hours = Math.floor((expire / 3600));
-				Minutes = Math.floor(expire % 3600 / 60);
-				Seconds = Math.floor(expire % 60);
+			if (line[4] != 0) {
+				Hours = Math.floor((line[4] / 3600));
+				Minutes = Math.floor(line[4] % 3600 / 60);
+				Seconds = Math.floor(line[4] % 60);
 				code += '<td>' + Hours + "h " + Minutes + "m "+ Seconds + "s" + '</td>';
 			} else {
 				code += '<td>' + 'N/A' + '</td>';

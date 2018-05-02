@@ -203,6 +203,9 @@ ej_get_upnp_array(int eid, webs_t wp, int argc, char_t **argv)
 	int ret=0;
 	char line[256];
 
+	killall("miniupnpd", SIGUSR2);
+        sleep(1);
+
 	ret += websWrite(wp, "var upnparray = [");
 
 	fp = fopen("/tmp/upnp.leases", "r");

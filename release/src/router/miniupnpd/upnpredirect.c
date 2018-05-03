@@ -274,7 +274,7 @@ int reload_from_lease_file()
 				continue;
 			} else {
 				leaseduration = timestamp - current_unix_time;
-				timestamp = lease_duration + current_time; /* convert to our time */
+				timestamp = leaseduration + current_time; /* convert to our time */
 			}
 #endif
 		} else {

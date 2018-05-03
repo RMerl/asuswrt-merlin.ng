@@ -2815,6 +2815,7 @@ iptables-1.4.21-install:
 ifeq ($(RTCONFIG_IPV6),y)
 	cd $(INSTALLDIR)/iptables-1.4.21/usr/sbin && \
 		ln -sf xtables-multi ip6tables-restore && \
+		ln -sf xtables-multi ip6tables-save && \
 		ln -sf xtables-multi ip6tables
 	install -D iptables-1.4.21/libiptc/.libs/libip6tc.so $(INSTALLDIR)/iptables-1.4.21/usr/lib/libip6tc.so
 	cd $(INSTALLDIR)/iptables-1.4.21/usr/lib && \
@@ -2882,6 +2883,7 @@ iptables-1.4.x-install:
 ifeq ($(RTCONFIG_IPV6),y)
 	cd $(INSTALLDIR)/iptables-1.4.x/usr/sbin && \
 		ln -sf xtables-multi ip6tables-restore && \
+		ln -sf xtables-multi ip6tables-save && \
 		ln -sf xtables-multi ip6tables
 	install -D iptables-1.4.x/libiptc/.libs/libip6tc.so $(INSTALLDIR)/iptables-1.4.x/usr/lib/libip6tc.so
 	cd $(INSTALLDIR)/iptables-1.4.x/usr/lib && \

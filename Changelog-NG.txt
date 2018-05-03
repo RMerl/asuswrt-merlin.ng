@@ -23,10 +23,12 @@ General changes in the 384/NG branch vs 380.xx:
            (wireless, httpd, etc...).
            Note that this script will block the execution of
            the event until it returns.
+   - NEW: Added USB HID modules (for use with devices such
+          as UPS)
    - CHANGED: Updated OpenVPN to 2.4.6.
    - CHANGED: Updated Dropbear to 2018.76.
    - CHANGED: Updated Openssl to 1.0.2o.
-   - CHANGED: Updated miniupnpd to 20180412.
+   - CHANGED: Updated miniupnpd to 20180502 snapshot.
    - CHANGED: Updated nano to 2.9.5.
    - CHANGED: Moved RT-AC86U to the same Busybox version (1.25.1)
               as other models.
@@ -101,6 +103,10 @@ General changes in the 384/NG branch vs 380.xx:
    - FIXED: Hardware authentication failure for the RT-AC3100
             and RT-AC5300.
    - FIXED: Minidlna web status page could no longer be enabled.
+   - FIXED: CVE-2017-9022, CVE-2017-9023 and CVE-2017-11185 in
+            Strongswan (odkrys)
+   - FIXED: Various issues with download traffic in Traditional
+            QoS (Cédric Dufour)
 
 
 384.4_2 (24-Mar-2018)

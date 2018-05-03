@@ -281,7 +281,7 @@ function initial(){
 			document.getElementById("update_div").style.display = "";
 			//document.getElementById("beta_firmware_path_span").style.display = "";
 			document.getElementById("linkpage_div").style.display = "none";
-			change_firmware_path(document.getElementById("beta_firmware_path").checked==true);
+			change_firmware_path("<% nvram_get("firmware_path"); %>" == "1");
 			if(confirm_show.length > 0 && confirm_show == 1){
 				do_show_confirm(webs_state_info_beta, confirm_show, current_firmware_path);	//Show beta path result
 			}

@@ -870,6 +870,58 @@ function load_timezones(){
 	select_time_zone();	
 }
 
+var timezone_dst_changes = {
+	"NAST9DST":	[ 3,2,0,2,  11,1,0,2 ],
+	"PST8DST":	[ 3,2,0,2,  11,1,0,2 ],
+	"MST7DST_1":	[ 3,2,0,2,  11,1,0,2 ],
+	"MST7DST_3":	[ 4,1,0,2,  10,5,0,2 ],
+	"CST6DST_3":	[ 4,1,0,2,  10,5,0,2 ],
+	"CST6DST_3_1":	[ 4,1,0,2,  10,5,0,2 ],
+	"UTC6DST":	[ 3,2,0,2,  11,1,0,2 ],
+	"EST5DST":	[ 3,2,0,2,  11,1,0,2 ],
+	"AST4DST":	[ 3,2,0,2,  11,1,0,2 ],
+	"UTC4DST_2":	[ 8,2,0,0,   5,2,0,0 ],
+	"NST3.30DST":	[ 3,2,0,2,  11,1,0,2 ],
+	"EBST3DST_1":	[11,1,0,0,   2,3,0,0 ],
+	"EBST3DST_2":	[ 3,5,6,22, 10,5,6,23],
+	"EUT1DST":	[ 3,5,0,0,  10,5,0,1 ],
+	"GMT0DST_1":	[ 3,5,0,1,  10,5,0,2 ],
+	"GMT0DST_2":	[ 3,5,0,2,  10,5,0,3 ],
+	"UTC-1DST_1":	[ 3,5,0,2,  10,5,0,3 ],
+	"UTC-1DST_1_1":	[ 3,5,0,2,  10,5,0,3 ],
+	"UTC-1DST_1_2":	[ 3,5,0,2,  10,5,0,3 ],
+	"UTC-1DST_2":	[ 3,5,0,2,  10,5,0,3 ],
+	"MET-1DST":	[ 3,5,0,2,  10,5,0,3 ],
+	"MET-1DST_1":	[ 3,5,0,2,  10,5,0,3 ],
+	"MEZ-1DST":	[ 3,5,0,2,  10,5,0,3 ],
+	"MEZ-1DST_1":	[ 3,5,0,2,  10,5,0,3 ],
+	"UTC-2DST":	[ 3,5,0,3,  10,5,0,4 ],
+	"UTC-2DST_3":	[ 3,5,0,3,  10,5,0,4 ],
+	"UTC-2DST_4":	[ 3,5,0,3,  10,5,0,4 ],
+	"UTC-2DST_2":	[ 3,5,0,3,  10,5,0,4 ],
+	"IST-2DST":	[ 3,5,5,2,  10,5,0,2 ],
+	"EET-2DST":	[ 3,5,0,3,  10,5,0,4 ],
+	"UTC-9.30DST":	[10,1,0,2,   4,1,0,3 ],
+	"UTC-10DST_1":	[10,1,0,2,   4,1,0,3 ],
+	"TST-10TDT":	[10,1,0,2,   4,1,0,3 ],
+	"NZST-12DST":	[ 9,5,0,2,   4,1,0,3 ]
+};
+
+function autofill_dst(){
+	if (document.form.time_zone_select.value.search("DST") >= 0 || document.form.time_zone_select.value.search("TDT") >= 0) {
+		if (timezone_dst_changes[document.form.time_zone_select.value]) {
+			document.form.dst_start_m.value = timezone_dst_changes[document.form.time_zone_select.value][0];
+			document.form.dst_start_w.value = timezone_dst_changes[document.form.time_zone_select.value][1];
+			document.form.dst_start_d.value = timezone_dst_changes[document.form.time_zone_select.value][2];
+			document.form.dst_start_h.value = timezone_dst_changes[document.form.time_zone_select.value][3];
+			document.form.dst_end_m.value = timezone_dst_changes[document.form.time_zone_select.value][4];
+			document.form.dst_end_w.value = timezone_dst_changes[document.form.time_zone_select.value][5];
+			document.form.dst_end_d.value = timezone_dst_changes[document.form.time_zone_select.value][6];
+			document.form.dst_end_h.value = timezone_dst_changes[document.form.time_zone_select.value][7];
+		}
+	}
+}
+
 var dst_month = new Array("", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12");
 var dst_week = new Array("", "1st", "2nd", "3rd", "4th", "5th");
 var dst_day = new Array("<#date_Sun_itemdesc#>", "<#date_Mon_itemdesc#>", "<#date_Tue_itemdesc#>", "<#date_Wed_itemdesc#>", "<#date_Thu_itemdesc#>", "<#date_Fri_itemdesc#>", "<#date_Sat_itemdesc#>");
@@ -1640,7 +1692,7 @@ function warn_jffs_format(){
 				<tr>
 					<th><a class="hintstyle"  href="javascript:void(0);" onClick="openHint(11,2)"><#LANHostConfig_x_TimeZone_itemname#></a></th>
 					<td>
-						<select name="time_zone_select" class="input_option" onchange="select_time_zone();"></select>
+						<select name="time_zone_select" class="input_option" onchange="select_time_zone();autofill_dst();"></select>
 						<div>
 							<span id="timezone_hint" style="display:none;"></span>
 						</div>

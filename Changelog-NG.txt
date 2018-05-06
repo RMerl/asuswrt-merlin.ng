@@ -2,7 +2,7 @@ Asuswrt-Merlin 384/NG Changelog
 ===============================
 
 General changes in the 384/NG branch vs 380.xx:
-   - Clear your browser cache after flashing your first 384 build.
+   - Clear your browser cache after upgrading from 380.xx to 384.xx.
    - It's generally recommended to do a factory default reset
      when coming from 380 to 384/NG.
    - HDD spindown settings moved to the System settings page
@@ -25,10 +25,11 @@ General changes in the 384/NG branch vs 380.xx:
            the event until it returns.
    - NEW: Added USB HID modules (for use with devices such
           as UPS)
+   - NEW: Added ip6tables-save command.
    - CHANGED: Updated OpenVPN to 2.4.6.
    - CHANGED: Updated Dropbear to 2018.76.
    - CHANGED: Updated Openssl to 1.0.2o.
-   - CHANGED: Updated miniupnpd to 20180502 snapshot.
+   - CHANGED: Updated miniupnpd to 20180503 snapshot.
    - CHANGED: Updated nano to 2.9.5.
    - CHANGED: Moved RT-AC86U to the same Busybox version (1.25.1)
               as other models.
@@ -82,9 +83,9 @@ General changes in the 384/NG branch vs 380.xx:
               with sortable fields.
    - CHANGED: From now on, setting the router to act as a master
               browser or a WINS server will also require you to
-              enable sharing.  This will ensure that disks won't
-              be accidentally shared when sharing is disabled
-              but you had one of these two options enabled.
+              enable sharing.  This will ensure that users understand
+              that enabling either of these settings requires disk
+              sharing to also be enabled.
    - CHANGED: Moved "Beta firmware" option to the Tools -> Other
               Settings page
    - CHANGED: Improved layout of the Firmware Update page
@@ -95,6 +96,8 @@ General changes in the 384/NG branch vs 380.xx:
               and pre-mount will now wait a maximum of 120
               seconds before resuming normal operations, to
               prevent accidental lockouts.
+   - CHANGED: Autofill start/end time for DST when selecting
+              a timezone (LostFreq)
    - FIXED: Some dnsmasq issues related to DNSSEC were fixed,
             including CVE-2017-15107. (backported from
             dnsmasq 2.79 by John Bacho)

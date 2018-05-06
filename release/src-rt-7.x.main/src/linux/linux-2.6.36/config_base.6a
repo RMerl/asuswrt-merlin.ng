@@ -1203,14 +1203,14 @@ CONFIG_INPUT_EVDEV=m
 # CONFIG_INPUT_MISC is not set
 CONFIG_HID_SUPPORT=y
 CONFIG_HID=m
-# CONFIG_HIDRAW is not set
+CONFIG_HIDRAW=y
 
 #
 # USB Input Devices
 #
 CONFIG_USB_HID=m
 # CONFIG_HID_PID is not set
-# CONFIG_USB_HIDDEV is not set
+CONFIG_USB_HIDDEV=y
 
 #
 # USB HID Boot Protocol drivers

@@ -398,7 +398,7 @@ helpcontent[50] = new Array("",
 				"Wanduck sends DNS queries every few seconds to check for the WAN state.  You can disable this behaviour here.  DO NOT disable those probes if using Dual WAN, especially in failover mode.",
 				"You can redirect your Internet traffic through the tunnel.  Select between \"All\" traffic, or only traffic based on your own rules.  Strict mode will take extra steps to ensure that only routes going through the VPN tunnel get used for your tunnelled clients.",
 				"How to handle DNS servers provided by the VPN server.<br><br>Disabled: do not use them.<br>Relaxed: accept them, but with no particular preference.<br>Strict: use them, but tell dnsmasq to use them first.<br>Exclusive: any clients using the tunnel will only use the servers provided by the VPN server (recommended).",
-				"",
+				"For improved compatibility with Windows, the router sends an WPAD value containing a carriage return on DHCP requests.  This can cause issues with some clients, you can disable that behavior here.",
 				"When using a self-generated certificate, you can specify other hostnames to use in addition to the built-in ones, separated by a space",
 				"Restrict this rule to a specific source IP address",
 				"How should your router handle DNS servers pushed by the remote VPN server.  Disabled = ignore them, Relaxed = just add to list of known DNS,  Strict = add to list, but use all servers in order specified, Exclusive = use only these servers for all queries from clients routed through the tunnel.");

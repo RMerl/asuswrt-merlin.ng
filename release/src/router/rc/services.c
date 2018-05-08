@@ -1106,7 +1106,7 @@ void gen_apmode_dnsmasq(void)
 	fprintf(fp,"dhcp-range=guest,%s2,%s254,%s,%ds\n",
                                         glan,glan, nvram_safe_get("lan_netmask_rt"), 86400);
 	fprintf(fp,"dhcp-option=lan,3,%s\n",APMODE_BRGUEST_IP);
-	if (nvram_get_int("dhcpd_filter_wpad")) {
+	if (nvram_get_int("dhcpd_send_wpad")) {
 		fprintf(fp,"dhcp-option=lan,252,\n");
 	}
 	fprintf(fp,"dhcp-authoritative\n");
@@ -1513,7 +1513,7 @@ void start_dnsmasq(void)
 		}
 #endif
 		/* Shut up WPAD info requests */
-		if (nvram_get_int("dhcpd_filter_wpad")) {
+		if (nvram_get_int("dhcpd_send_wpad")) {
 			fprintf(fp, "dhcp-option=lan,252,\"\\n\"\n");
 		}
 #if defined(RTCONFIG_TR069) && !defined(RTCONFIG_TR181)

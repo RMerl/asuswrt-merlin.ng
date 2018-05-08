@@ -695,8 +695,8 @@ void setup_ct_timeout(int connflag)
 void setup_conntrack(void)
 {
 	unsigned int v[10];
-	char p[32];
-	char buf[70];
+	char p[100];
+	char buf[100];
 	int i;
 
 #ifdef RTCONFIG_CONCURRENTREPEATER

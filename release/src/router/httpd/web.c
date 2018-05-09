@@ -14378,7 +14378,7 @@ login_cgi(webs_t wp, char_t *urlPrefix, char_t *webDir, int arg,
 
 	/* Is this the right user and password? */
 	//if (!authpass_fail && strcmp( nvram_safe_get("http_username"), authinfo ) == 0 && strcmp( nvram_safe_get("http_passwd"), authpass ) == 0)
-	if(!authpass_fail && compare_passwd_in_shadow(authinfo, authpass))
+	if(!authpass_fail && strcmp( nvram_safe_get("http_username"), authinfo ) == 0 && compare_passwd_in_shadow(authinfo, authpass))
 	{
 		if (fromapp_flag == FROM_BROWSER){
 			if(!cur_login_ip_type)

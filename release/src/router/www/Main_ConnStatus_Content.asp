@@ -64,14 +64,24 @@ function show_conns() {
 				},
 				{
 					"title" : "NAT Address",
-					"width" : "35%",
+					"width" : "22%",
 					"sort" : "ip"
 				},
+                                {
+                                        "title" : "NAT Port",
+                                        "width" : "13%",
+                                        "sort" : "num"
+                                },
 				{
-					"title" : "Destination",
-					"width" : "35%",
+					"title" : "Destination IP",
+					"width" : "22%",
 					"sort" : "ip"
 				},
+                                {
+                                        "title" : "Port",
+                                        "width" : "13%",
+                                        "sort" : "num"
+                                },
 				{
 					"title" : "State",
 					"width" : "20%",

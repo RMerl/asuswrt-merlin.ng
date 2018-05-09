@@ -1034,7 +1034,7 @@ int ej_connlist_array(int eid, webs_t wp, int argc, char **argv) {
 	FILE *fp;
 	char line[100];
 	int firstline = 1;
-	char proto[4], address[22], dest[22], state[15];
+	char proto[4], address[16], dest[16], state[15], port1[6], port2[6];
 	int ret = 0;
 
 	ret += websWrite(wp, "var connarray = [");
@@ -1053,14 +1053,16 @@ int ej_connlist_array(int eid, webs_t wp, int argc, char **argv) {
 			continue;
 		}
                 if (sscanf(line,
-                    "%3s%*[ \t]"
-                    "%21s%*[ \t]"
-		    "%21s%*[ \t]"
-		    "%14s%*[ \t]",
-		    proto, address, dest, state) < 4) continue;
+			"%3s%*[ \t]"
+			"%15[0-9.]%*[:]"
+			"%5s%*[ \t]"
+			"%15[0-9.]%*[:]"
+			"%5s%*[ \t]"
+			"%14s%*[ \t]",
+		    proto, address, port1, dest, port2, state) < 6) continue;
 
-		ret += websWrite(wp, "[\"%s\", \"%s\", \"%s\", \"%s\"],\n",
-		                      proto, address, dest, state);
+		ret += websWrite(wp, "[\"%s\", \"%s\", \"%s\", \"%s\", \"%s\", \"%s\"],\n",
+		                      proto, address, port1, dest, port2, state);
 	}
 	fclose(fp);
 

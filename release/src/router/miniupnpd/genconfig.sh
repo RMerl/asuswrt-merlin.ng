@@ -171,7 +171,7 @@ case $OS_NAME in
 		OS_URL=http://www.openbsd.org/
 		V6SOCKETS_ARE_V6ONLY=`sysctl -n net.inet6.ip6.v6only`
 		;;
-	FreeBSD)
+	FreeBSD | GNU/kFreeBSD)
 		VER=`grep '#define __FreeBSD_version' /usr/include/sys/param.h | awk '{print $3}'`
 		if [ $VER -ge 700049 ]; then
 			echo "#define PFRULE_INOUT_COUNTS" >> ${CONFIGFILE}

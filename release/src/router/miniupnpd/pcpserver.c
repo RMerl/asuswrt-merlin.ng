@@ -1637,9 +1637,9 @@ int OpenAndConfPCPv6Socket(void)
 #endif /*ENABLE_IPV6*/
 
 #ifdef ENABLE_IPV6
-static void PCPSendUnsolicitedAnnounce(int * sockets, int n_sockets, int socket6)
+void PCPSendUnsolicitedAnnounce(int * sockets, int n_sockets, int socket6)
 #else /* IPv4 only */
-static void PCPSendUnsolicitedAnnounce(int * sockets, int n_sockets)
+void PCPSendUnsolicitedAnnounce(int * sockets, int n_sockets)
 #endif
 {
 	int i;

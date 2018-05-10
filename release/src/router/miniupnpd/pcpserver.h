@@ -52,6 +52,14 @@ int ProcessIncomingPCPPacket(int s, unsigned char *msg_buff, int len,
  */
 int OpenAndConfPCPv6Socket(void);
 
+/*
+ * Send Unsolicited ANNOUNCE Message
+ */
+#ifdef ENABLE_IPV6
+void PCPSendUnsolicitedAnnounce(int * sockets, int n_sockets, int socket6);
+#else /* IPv4 only */
+void PCPSendUnsolicitedAnnounce(int * sockets, int n_sockets);
+#endif
 
 /*
  * To be called when Public IP address changed (IPv4)

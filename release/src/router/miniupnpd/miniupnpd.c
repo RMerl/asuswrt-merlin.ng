@@ -2081,6 +2081,18 @@ main(int argc, char * * argv)
 	tomato_helper();
 #endif
 
+#ifdef ENABLE_PCP
+	if(GETFLAG(ENABLENATPMPMASK))
+	{
+		/* Send PCP startup announcements */
+#ifdef ENABLE_IPV6
+		PCPSendUnsolicitedAnnounce(snatpmp, addr_count, spcp_v6);
+#else /* IPv4 only */
+		PCPSendUnsolicitedAnnounce(snatpmp, addr_count);
+#endif
+	}
+#endif
+
 	/* main loop */
 	while(!quitting)
 	{

@@ -1,4 +1,6 @@
-$Id: Changelog.txt,v 1.439 2018/04/12 09:32:22 nanard Exp $
+$Id: Changelog.txt,v 1.441 2018/05/08 21:34:18 nanard Exp $
+
+VERSION 2.1 : released on 2018/05/08
 
 2018/05/02:
   option to store remaining time in leasefile

@@ -29,7 +29,7 @@ General changes in the 384/NG branch vs 380.xx:
    - CHANGED: Updated OpenVPN to 2.4.6.
    - CHANGED: Updated Dropbear to 2018.76.
    - CHANGED: Updated Openssl to 1.0.2o.
-   - CHANGED: Updated miniupnpd to 20180503 snapshot.
+   - CHANGED: Updated miniupnpd to version 2.1 (20180508).
    - CHANGED: Updated nano to 2.9.5.
    - CHANGED: Moved RT-AC86U to the same Busybox version (1.25.1)
               as other models.
@@ -75,23 +75,24 @@ General changes in the 384/NG branch vs 380.xx:
                 characters long.
 
    - CHANGED: Removed option to resolve names on the
-              Log -> Connections page (making that page work
-              now like on stock Asus firmware).
-              That functionality is now provided by the
-              Network Tools -> Netstat page.
+              Log -> Connections page.
+              That functionality was added to the
+              Network Tools -> Netstat page instead.
    - CHANGED: Re-designed Log -> Connections page into a table
-              with sortable fields.
+              with sortable fields - click on a column header to
+              sort on that field.
    - CHANGED: From now on, setting the router to act as a master
               browser or a WINS server will also require you to
               enable sharing.  This will ensure that users understand
               that enabling either of these settings requires disk
-              sharing to also be enabled.
+              sharing to also be enabled (which it was already
+              silently doing before).
    - CHANGED: Moved "Beta firmware" option to the Tools -> Other
               Settings page
    - CHANGED: Improved layout of the Firmware Update page
-   - CHANGED: DHCP server no longer sends an empty DHCP
-              option 252 (for WPAD), Windows should now
-              behave correctly without these.
+   - CHANGED: WPAD behaviour (sending a carriage return on
+              DHCP option 252) can now be controlled in the
+              Tweaks section.
    - CHANGED: Blocking custom scripts such as service-event
               and pre-mount will now wait a maximum of 120
               seconds before resuming normal operations, to
@@ -110,6 +111,9 @@ General changes in the 384/NG branch vs 380.xx:
             Strongswan (odkrys)
    - FIXED: Various issues with download traffic in Traditional
             QoS (Cédric Dufour)
+   - FIXED: TCP timeout values couldn't be changed on the
+            Tools -> Other Settings page.
+   - FIXED: Security issue related to webui logging in (Asus bug)
 
 
 384.4_2 (24-Mar-2018)

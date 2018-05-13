@@ -13,7 +13,7 @@ General changes in the 384/NG branch vs 380.xx:
      lists of settings might no longer be possible on 384.xx.
 
 
-384.5 (xx-xxx-2018)
+384.5 (13-May-2018)
    - NEW: Merged withh GPL 384_20648
    - NEW: Merged RT-AC68U, RT-AC5300 binary blobs from 384_20648
    - NEW: Merged RT-AC86U SDK and binary blobs from 384_20648

@@ -640,7 +640,7 @@ static int construct_worker(struct in6_addr *local, int prefix,
     return 0;
   
   for (template = daemon->dhcp6; template; template = template->next)
-    if (!(template->flags & CONTEXT_TEMPLATE))
+    if (!(template->flags & (CONTEXT_TEMPLATE | CONTEXT_CONSTRUCTED)))
       {
 	/* non-template entries, just fill in interface and local addresses */
 	if (prefix <= template->prefix &&

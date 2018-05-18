@@ -1398,54 +1398,33 @@ TRACE_PT("3g begin with %s.\n", wan_ifname);
 		}
 
 #ifdef RTCONFIG_IPV6
-/* TODO: rewrite enabling/disabling IPv6 */
+		/* Enable wired IPv6 interface */
+		int need_linklocal_addr = 0;
 		switch (get_ipv6_service_by_unit(unit)) {
 		case IPV6_NATIVE_DHCP:
 		case IPV6_MANUAL:
 #ifdef RTCONFIG_6RELAYD
 		case IPV6_PASSTHROUGH:
 #endif
-			if (strcmp(wan_proto, "dhcp") != 0 && strcmp(wan_proto, "static") != 0 &&
-			    nvram_match(ipv6_nvname("ipv6_ifdev"), "ppp")) {
-				disable_ipv6(wan_ifname);
-#if !defined(RTCONFIG_BCMARM) && !defined(RTCONFIG_RALINK) && !defined(RTCONFIG_QCA)
-				if (with_ipv6_linklocal_addr(wan_ifname))
-					doSystem("ip -6 addr flush dev %s scope link", wan_ifname);
-#endif
-			} else
-				enable_ipv6(wan_ifname);
-			break;
+			if (!(strcmp(wan_proto, "dhcp") != 0 && strcmp(wan_proto, "static") != 0 &&
+			      nvram_match(ipv6_nvname("ipv6_ifdev"), "ppp"))) {
+			        enable_ipv6(wan_ifname);
+				need_linklocal_addr = 1;
+				break;
+			}
+			/* fall through */
+		default:
+			disable_ipv6(wan_ifname);
 		}
 #endif
+
 		ether_atoe((const char *) nvram_safe_get(strcat_r(prefix, "hwaddr", tmp)), (unsigned char *) eabuf);
 		if ((bcmp(eabuf, ifr.ifr_hwaddr.sa_data, ETHER_ADDR_LEN)))
 		{
 			/* current hardware address is different than user specified */
 			ifconfig(wan_ifname, 0, NULL, NULL);
 		}
-#ifdef RTCONFIG_IPV6
-/* TODO: rewrite syncing MAC with enabled IPv6 */
-#ifdef RTCONFIG_RALINK
-		switch (get_ipv6_service_by_unit(unit)) {
-		case IPV6_NATIVE_DHCP:
-		case IPV6_MANUAL:
-#ifdef RTCONFIG_6RELAYD
-		case IPV6_PASSTHROUGH:
-#endif
-			if (strcmp(wan_proto, "dhcp") != 0 && strcmp(wan_proto, "static") != 0 &&
-			    nvram_match(ipv6_nvname("ipv6_ifdev"), "eth") &&
-			    !with_ipv6_linklocal_addr(wan_ifname)) {
-				ifconfig(wan_ifname, 0, NULL, NULL);
-				break;
-			}
-			/* fall through */
-		default:
-			if (with_ipv6_linklocal_addr(wan_ifname))
-				ifconfig(wan_ifname, 0, NULL, NULL);
-			break;
-		}
-#endif
-#endif
+
 		/* Configure i/f only once, specially for wireless i/f shared by multiple connections */
 		if (ioctl(s, SIOCGIFFLAGS, &ifr)) {
 			close(s);
@@ -1481,6 +1460,14 @@ TRACE_PT("3g begin with %s.\n", wan_ifname);
 			ifconfig(wan_ifname, IFUP, NULL, NULL);
 		}
 		close(s);
+
+#ifdef RTCONFIG_IPV6
+		/* Reset linklocal address if necessary after interface is up */
+		if (need_linklocal_addr && !with_ipv6_linklocal_addr(wan_ifname)) {
+			reset_ipv6_linklocal_addr(wan_ifname, 0);
+			enable_ipv6(wan_ifname);
+		}
+#endif
 
 		/* Set initial QoS mode again now that WAN port is ready. */
 #ifdef CONFIG_BCMWL5

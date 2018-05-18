@@ -410,25 +410,6 @@ int route_del(char *name, int metric, char *dst, char *gateway, char *genmask)
 /* configure loopback interface */
 void config_loopback(void)
 {
-#ifndef HND_ROUTER
-	struct ifreq ifr;
-	int sfd;
-
-	if (!((sfd = socket(AF_INET, SOCK_RAW, IPPROTO_RAW)) < 0))
-	{
-		strcpy(ifr.ifr_name, "lo");
-		if (!ioctl(sfd, SIOCGIFFLAGS, &ifr) && (ifr.ifr_flags & IFF_UP))
-			ifconfig(ifr.ifr_name, 0, NULL, NULL);
-
-		close(sfd);
-	}
-#ifdef RTCONFIG_IPV6
-#ifdef RTCONFIG_BCMARM
-	if (!(ipv6_enabled() && is_routing_enabled()))
-	eval("ip", "-6", "addr", "flush", "dev", "lo", "scope", "host");
-#endif
-#endif
-#endif
 	/* Bring up loopback interface */
 	ifconfig("lo", IFUP, "127.0.0.1", "255.0.0.0");
 

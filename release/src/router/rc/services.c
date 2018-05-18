@@ -1996,13 +1996,14 @@ void stop_ipv6(void)
 	stop_dhcp6c();
 	stop_ipv6_tunnel();
 
-	eval("ip", "-6", "route", "flush", "default");
-	for (i = 1; i < 8; i++) {
-		snprintf(prefix, sizeof(prefix), "%04x::/%d", (0xfe0000 >> i) & 0xffff, i);
-		eval("ip", "-6", "route", "flush", "root", prefix, "table", "main");
-	}
+	eval("ip", "-6", "route", "flush", "::/0");
 	eval("ip", "-6", "addr", "flush", "scope", "global", "dev", lan_ifname);
 	eval("ip", "-6", "addr", "flush", "scope", "global", "dev", wan_ifname);
+	for (i = 1; i < 8; i++) {
+		snprintf(prefix, sizeof(prefix), "%04x::/%d", (0xfe00 << (8 - i)) & 0xffff, i);
+		eval("ip", "-6", "route", "flush", "root", prefix, "dev", lan_ifname, "table", "main");
+		eval("ip", "-6", "route", "flush", "root", prefix, "dev", wan_ifname, "table", "main");
+	}
 	eval("ip", "-6", "neigh", "flush", "dev", lan_ifname);
 }
 #endif

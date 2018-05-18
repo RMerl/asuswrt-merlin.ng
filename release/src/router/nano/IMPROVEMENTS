@@ -2,6 +2,8 @@ Improvements in GNU nano
 ========================
 
 Since 2.9.0:
+  - Option 'set afterends' for making Ctrl+Right stop at word ends.
+  - A crash handler that saves changed buffers in case of a crash.
   - Addition of the color name "normal", meaning the default color.
   - A key can be bound to a string -- any mix of text and commands.
   - Error messages are shown by default in bright white on red.
@@ -34,24 +36,25 @@ Since 2.6.0:
   - The option 'wordchars' for specifying extra word characters.
   - Hi-bit control characters are shown in a more readable manner.
   - The ability to use negative numbers at the Go To Line prompt.
-
-Noteworthy changes since 2.2
-----------------------------
   - The ability to comment/uncomment lines with a single keystroke (M-3).
   - The ability to refresh the file list in the browser (^L).
   - The ability to abort re-searches (^C after an M-W).
   - Better feedback at startup when opening large or multiple files.
+
+Since 2.5.0:
   - The option 'justifytrim' for snipping whitespace from justified lines.
   - The ability to discard a buffer (^O ^Q) when --tempfile is used.
-  - Replacing things in a marked region now takes place in situ, in context,
-    instead of changing the view to only the marked text.
-  - On some terminals Ctrl+Left / Ctrl+Right now work for PrevWord/NextWord.
+  - On most terminals Ctrl+Left / Ctrl+Right now work for PrevWord/NextWord.
   - When in the middle of a word, PrevWord now jumps to the start of this
     word (like Pico does) instead of to the start of the preceding word.
+
+Since 2.4.0:
+  - Replacing things in a marked region now takes place in situ, in context,
+    instead of changing the view to only the marked text.
   - Invalid byte sequences are properly displayed and not mistakenly found.
   - Resizing the window does not exit from help viewer nor file browser.
-  - Improved arrangement of the shortcuts in the two help lines.
-  - Several small bug fixes in the syntax highlighting.
+
+Since 2.3.0:
   - System syntaxes can be improved upon with the 'extendsyntax' command.
   - The ability to delete whole words with 'cutwordleft' and 'cutwordright'.
   - The ability to save a file without prompting for its name ('savefile').

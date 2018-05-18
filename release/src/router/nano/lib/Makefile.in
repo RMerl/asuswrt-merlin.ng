@@ -383,7 +383,6 @@ GETOPT_CDEFS_H = @GETOPT_CDEFS_H@
 GETOPT_H = @GETOPT_H@
 GETTEXT_MACRO_VERSION = @GETTEXT_MACRO_VERSION@
 GLIBC21 = @GLIBC21@
-GLOB_H = @GLOB_H@
 GMSGFMT = @GMSGFMT@
 GMSGFMT_015 = @GMSGFMT_015@
 GNULIB_ACOSF = @GNULIB_ACOSF@
@@ -1145,6 +1144,7 @@ NEXT_AS_FIRST_DIRECTIVE_ERRNO_H = @NEXT_AS_FIRST_DIRECTIVE_ERRNO_H@
 NEXT_AS_FIRST_DIRECTIVE_FCNTL_H = @NEXT_AS_FIRST_DIRECTIVE_FCNTL_H@
 NEXT_AS_FIRST_DIRECTIVE_FLOAT_H = @NEXT_AS_FIRST_DIRECTIVE_FLOAT_H@
 NEXT_AS_FIRST_DIRECTIVE_GETOPT_H = @NEXT_AS_FIRST_DIRECTIVE_GETOPT_H@
+NEXT_AS_FIRST_DIRECTIVE_GLOB_H = @NEXT_AS_FIRST_DIRECTIVE_GLOB_H@
 NEXT_AS_FIRST_DIRECTIVE_LANGINFO_H = @NEXT_AS_FIRST_DIRECTIVE_LANGINFO_H@
 NEXT_AS_FIRST_DIRECTIVE_LIMITS_H = @NEXT_AS_FIRST_DIRECTIVE_LIMITS_H@
 NEXT_AS_FIRST_DIRECTIVE_LOCALE_H = @NEXT_AS_FIRST_DIRECTIVE_LOCALE_H@
@@ -1172,6 +1172,7 @@ NEXT_ERRNO_H = @NEXT_ERRNO_H@
 NEXT_FCNTL_H = @NEXT_FCNTL_H@
 NEXT_FLOAT_H = @NEXT_FLOAT_H@
 NEXT_GETOPT_H = @NEXT_GETOPT_H@
+NEXT_GLOB_H = @NEXT_GLOB_H@
 NEXT_LANGINFO_H = @NEXT_LANGINFO_H@
 NEXT_LIMITS_H = @NEXT_LIMITS_H@
 NEXT_LOCALE_H = @NEXT_LOCALE_H@
@@ -1281,6 +1282,7 @@ REPLACE_GETLINE = @REPLACE_GETLINE@
 REPLACE_GETLOGIN_R = @REPLACE_GETLOGIN_R@
 REPLACE_GETPAGESIZE = @REPLACE_GETPAGESIZE@
 REPLACE_GETTIMEOFDAY = @REPLACE_GETTIMEOFDAY@
+REPLACE_GLOB = @REPLACE_GLOB@
 REPLACE_GMTIME = @REPLACE_GMTIME@
 REPLACE_HUGE_VAL = @REPLACE_HUGE_VAL@
 REPLACE_HYPOT = @REPLACE_HYPOT@
@@ -1567,7 +1569,7 @@ EXTRA_DIST = alloca.c alloca.in.h btowc.c closedir.c dirent-private.h \
 	wcwidth.c xalloc-oversized.h
 BUILT_SOURCES = $(ALLOCA_H) configmake.h ctype.h dirent.h $(ERRNO_H) \
 	fcntl.h $(FLOAT_H) $(FNMATCH_H) $(GETOPT_H) $(GETOPT_CDEFS_H) \
-	$(GLOB_H) langinfo.h $(LIMITS_H) locale.h math.h signal.h \
+	glob.h langinfo.h $(LIMITS_H) locale.h math.h signal.h \
 	$(STDARG_H) $(STDBOOL_H) $(STDDEF_H) $(STDINT_H) stdio.h \
 	stdlib.h string.h strings.h sys/stat.h sys/time.h sys/types.h \
 	sys/wait.h time.h unistd.h $(LIBUNISTRING_UNITYPES_H) \
@@ -2347,18 +2349,20 @@ getopt-cdefs.h: getopt-cdefs.in.h $(top_builddir)/config.status
 	} > $@-t && \
 	mv -f $@-t $@
 
-# We need the following in order to create <glob.h> when the system
-# doesn't have one that works with the given compiler.
-@GL_GENERATE_GLOB_H_TRUE@glob.h: glob.in.h $(top_builddir)/config.status $(CXXDEFS_H) $(WARN_ON_USE_H)
-@GL_GENERATE_GLOB_H_TRUE@	$(AM_V_GEN)rm -f $@-t $@ && \
-@GL_GENERATE_GLOB_H_TRUE@	{ echo '/* DO NOT EDIT! GENERATED AUTOMATICALLY! */'; \
-@GL_GENERATE_GLOB_H_TRUE@	  sed -e '/definitions of _GL_FUNCDECL_RPL/r $(CXXDEFS_H)' \
-@GL_GENERATE_GLOB_H_TRUE@	      -e '/definition of _GL_WARN_ON_USE/r $(WARN_ON_USE_H)' \
-@GL_GENERATE_GLOB_H_TRUE@	      < $(srcdir)/glob.in.h; \
-@GL_GENERATE_GLOB_H_TRUE@	} > $@-t && \
-@GL_GENERATE_GLOB_H_TRUE@	mv -f $@-t $@
-@GL_GENERATE_GLOB_H_FALSE@glob.h: $(top_builddir)/config.status
-@GL_GENERATE_GLOB_H_FALSE@	rm -f $@
+# We need the following in order to create <glob.h>.
+glob.h: glob.in.h $(top_builddir)/config.status $(CXXDEFS_H)
+	$(AM_V_GEN)rm -f $@-t $@ && \
+	{ echo '/* DO NOT EDIT! GENERATED AUTOMATICALLY! */'; \
+	  sed -e 's|@''GUARD_PREFIX''@|GL|g' \
+	      -e 's|@''REPLACE_GLOB''@|$(REPLACE_GLOB)|g' \
+	      -e 's|@''INCLUDE_NEXT''@|$(INCLUDE_NEXT)|g' \
+	      -e 's|@''PRAGMA_SYSTEM_HEADER''@|@PRAGMA_SYSTEM_HEADER@|g' \
+	      -e 's|@''PRAGMA_COLUMNS''@|@PRAGMA_COLUMNS@|g' \
+	      -e 's|@''NEXT_GLOB_H''@|$(NEXT_GLOB_H)|g' \
+	      -e '/definitions of _GL_FUNCDECL_RPL/r $(CXXDEFS_H)' \
+	      < $(srcdir)/glob.in.h; \
+	} > $@-t && \
+	mv -f $@-t $@
 
 # We need the following in order to create an empty placeholder for
 # <langinfo.h> when the system doesn't have one.

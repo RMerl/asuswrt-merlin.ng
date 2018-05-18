@@ -16,7 +16,7 @@
 .\"   Documentation License along with this program.  If not, see
 .\"   <http://www.gnu.org/licenses/>.
 .\"
-.TH NANO 1 "version 2.9.5" "March 2018"
+.TH NANO 1 "version 2.9.7" "May 2018"
 
 .SH NAME
 nano \- Nano's ANOther editor, an enhanced free Pico clone
@@ -250,6 +250,9 @@ Disable the hard-wrapping of long lines.  This option conflicts with
 .BR \-x ", " \-\-nohelp
 Don't show the two help lines at the bottom of the screen.
 .TP
+.BR \-y ", " \-\-afterends
+Make Ctrl+Right stop at word ends instead of beginnings.
+.TP
 .BR \-z ", " \-\-suspend
 Enable the suspend ability.
 .TP
@@ -309,6 +312,10 @@ not by default distinguish modified from unmodified arrow keys.
 Please report any other bugs that you encounter via:
 .br
 \fIhttps://savannah.gnu.org/bugs/?group=nano\fR.
+.sp
+When nano crashes, it will save any modified buffers to emergency .save files.
+If you are able to reproduce the crash and you want to get a backtrace, define
+the environment variable \fBNANO_NOCATCH\fR.
 
 .SH HOMEPAGE
 \fIhttps://nano-editor.org/\fR

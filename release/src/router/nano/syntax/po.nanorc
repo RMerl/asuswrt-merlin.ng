@@ -20,9 +20,9 @@ color red " fuzzy(,|$)"
 color yellow " (no-)?[-[:alpha:]]+-format(,|$)"
 # Format specifiers.
 color brightmagenta "%([1-9]\$)?[a-z]*"
-# Quotes and newlines.
+# Quotes and escaped characters.
 color yellow "\""
-color cyan "\\n"
+color cyan "\\[abcefnrtv"\]"
 # Reminders.
 color brightwhite,yellow "(FIXME|TODO|XXX)"
 # Obsolete strings.

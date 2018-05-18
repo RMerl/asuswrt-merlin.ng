@@ -57,7 +57,7 @@ ul.no-bullet {list-style: none}
 <a name="Top"></a>
 <a name="SEC_Top"></a>
 
-<p>This manual documents the GNU <code>nano</code> editor, version 2.9.5.
+<p>This manual documents the GNU <code>nano</code> editor, version 2.9.7.
 </p>
 <table class="menu" border="0" cellspacing="0">
 <tr><td align="left" valign="top">&bull; <a href="#Introduction" accesskey="1">Introduction</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
@@ -430,6 +430,11 @@ is located at the very bottom of the editor.
 disabled to display the help-system navigation keys.
 </p>
 </dd>
+<dt><samp>-y</samp></dt>
+<dt><samp>--afterends</samp></dt>
+<dd><p>Make Ctrl+Right stop at word ends instead of beginnings.
+</p>
+</dd>
 <dt><samp>-z</samp></dt>
 <dt><samp>--suspend</samp></dt>
 <dd><p>Enable the ability to suspend <code>nano</code> using the system&rsquo;s suspend
@@ -779,6 +784,10 @@ end.  For example, for the <code>brackets</code> option, <tt>&quot;&quot;')&gt;]
 <p>The supported settings in a nanorc file are:
 </p>
 <dl compact="compact">
+<dt><code>set afterends</code></dt>
+<dd><p>Make Ctrl+Right stop at word ends instead of beginnings.
+</p>
+</dd>
 <dt><code>set allow_insecure_backup</code></dt>
 <dd><p>When backing up files, allow the backup to succeed even if its
 permissions can&rsquo;t be (re)set due to special OS considerations.
@@ -1048,6 +1057,7 @@ See <a href="#set-functioncolor"><code>set functioncolor</code></a> for valid co
 <dt><code>set trimblanks</code></dt>
 <dd><p>Remove trailing whitespace from wrapped lines when automatic
 hard-wrapping occurs or when text is justified.
+(The old form of this option, <code>set justifytrim</code>, is deprecated.)
 </p>
 </dd>
 <dt><code>set unix</code></dt>
@@ -1585,8 +1595,9 @@ in the filesystem.
 <dd><p>Toggles the presence of the two-line list of key bindings at the bottom of the screen.
 </p>
 </dd>
-<dt><code>constupdate</code></dt>
+<dt><code>constantshow</code></dt>
 <dd><p>Toggles the constant display of the current line, column, and character positions.
+(The form <code>constupdate</code> is deprecated.)
 </p>
 </dd>
 <dt><code>morespace</code></dt>
@@ -1599,6 +1610,10 @@ in the filesystem.
 </dd>
 <dt><code>softwrap</code></dt>
 <dd><p>Toggles the displaying of overlong lines on multiple screen lines.
+</p>
+</dd>
+<dt><code>linenumbers</code></dt>
+<dd><p>Toggles the display of line numbers in front of the text.
 </p>
 </dd>
 <dt><code>whitespacedisplay</code></dt>
@@ -1617,9 +1632,10 @@ in the filesystem.
 <dd><p>Toggles whether new lines will contain the same amount of whitespace as the preceding line.
 </p>
 </dd>
-<dt><code>cuttoend</code></dt>
+<dt><code>cutfromcursor</code></dt>
 <dd><p>Toggles whether cutting text will cut the whole line or just from the current cursor
 position to the end of the line.
+(The form <code>cuttoend</code> is deprecated.)
 </p>
 </dd>
 <dt><code>nowrap</code></dt>
@@ -1702,7 +1718,7 @@ or read into a new buffer.
 </p>
 </dd>
 <dt><code>browser</code></dt>
-<dd><p>The file browser for inserting or writing a file.
+<dd><p>The file browser, for choosing a file to read from or write to.
 </p>
 </dd>
 <dt><code>whereisfile</code></dt>
@@ -1727,14 +1743,15 @@ it means all menus where the specified <code>key</code> exists.
 <a name="The-File-Browser-1"></a>
 <h2 class="chapter">8 The File Browser</h2>
 
-<p>When reading or writing files, pressing <kbd>^T</kbd> will invoke the file browser.
+<p>When in the Read-File (<kbd>^R</kbd>) or Write-Out menu (<kbd>^O</kbd>),
+pressing <kbd>^T</kbd> will invoke the file browser.
 Here, one can navigate directories in a graphical manner in order to
 find the desired file.
 </p>
-<p>Basic movement in the file browser is accomplished with the arrow keys,
-page up, and page down.  More advanced movement is accomplished by
-searching via <kbd>^W</kbd> (or <kbd>w'</kbd> and changing directories via
-<kbd>^_</kbd> (or <kbd>g</kbd>).  The behavior of the <kbd>Enter</kbd> key (or <kbd>s</kbd>)
+<p>Basic movement in the file browser is accomplished with the arrow and
+other cursor-movement keys.  More targeted movement is accomplished by
+searching, via <kbd>^W</kbd> or <kbd>w'</kbd>, or by changing directory, via
+<kbd>^_</kbd> or <kbd>g</kbd>.  The behavior of the <kbd>Enter</kbd> key (or <kbd>s</kbd>)
 varies by what is currently selected.
 If the currently selected object is a directory, the file browser will
 enter and display the contents of the directory.  If the object is a
@@ -1778,6 +1795,12 @@ again when you later reopen the file.
 <dd><p>The output of the &quot;Display Cursor Position&quot; command (<kbd>^C</kbd>) displays
 not only the current line and character position of the cursor,
 but also (between the two) the current column position.
+</p>
+</dd>
+<dt><code>Hard-Wrapping</code></dt>
+<dd><p>By default, <code>nano</code> hard-wraps lines at screen width minus eight
+columns, whereas Pico does it at screen width minus six columns.  You can
+make <code>nano</code> do the same as Pico by using <samp>--fill=-6</samp>.
 </p>
 </dd>
 <dt><code>Spell Checking</code></dt>

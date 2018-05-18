@@ -325,15 +325,18 @@ const char *strstrwrapper(const char *haystack, const char *needle,
 		else
 			return haystack + regmatches[0].rm_so;
 	}
+
 	if (ISSET(CASE_SENSITIVE)) {
 		if (ISSET(BACKWARDS_SEARCH))
 			return revstrstr(haystack, needle, start);
 		else
 			return strstr(start, needle);
-	} else if (ISSET(BACKWARDS_SEARCH))
-		return mbrevstrcasestr(haystack, needle, start);
+	}
 
-	return mbstrcasestr(start, needle);
+	if (ISSET(BACKWARDS_SEARCH))
+		return mbrevstrcasestr(haystack, needle, start);
+	else
+		return mbstrcasestr(start, needle);
 }
 
 /* This is a wrapper for the perror() function.  The wrapper temporarily

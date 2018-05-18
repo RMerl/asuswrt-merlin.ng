@@ -40,9 +40,6 @@ extern bool focusing;
 
 extern bool as_an_at;
 
-extern int margin;
-extern int editwincols;
-
 extern bool suppress_cursorpos;
 
 extern message_type lastmessage;
@@ -91,10 +88,13 @@ extern char *last_search;
 extern char *present_path;
 
 extern unsigned flags[4];
+
 extern WINDOW *topwin;
 extern WINDOW *edit;
 extern WINDOW *bottomwin;
 extern int editwinrows;
+extern int editwincols;
+extern int margin;
 
 extern filestruct *cutbuffer;
 extern filestruct *cutbottom;
@@ -380,7 +380,7 @@ void do_para_end_void(void);
 void do_prev_block(void);
 void do_next_block(void);
 void do_prev_word(bool allow_punct, bool update_screen);
-bool do_next_word(bool allow_punct, bool update_screen);
+bool do_next_word(bool after_ends, bool allow_punct, bool update_screen);
 void do_prev_word_void(void);
 void do_next_word_void(void);
 void do_home(void);
@@ -426,6 +426,9 @@ void window_init(void);
 void do_exit(void);
 void close_and_go(void);
 RETSIGTYPE handle_hupterm(int signal);
+#ifndef DEBUG
+RETSIGTYPE handle_crash(int signal);
+#endif
 RETSIGTYPE do_suspend(int signal);
 RETSIGTYPE do_continue(int signal);
 #ifndef NANO_TINY
@@ -433,7 +436,6 @@ RETSIGTYPE handle_sigwinch(int signal);
 void regenerate_screen(void);
 void allow_sigwinch(bool allow);
 void do_toggle(int flag);
-void do_toggle_void(void);
 void enable_signals(void);
 #endif
 void disable_flow_control(void);
@@ -471,7 +473,6 @@ int do_yesno_prompt(bool all, const char *msg);
 /* Most functions in rcfile.c. */
 #ifdef ENABLE_NANORC
 #ifdef ENABLE_COLOR
-bool parse_color_names(char *combostr, short *fg, short *bg, bool *bright);
 void grab_and_store(const char *kind, char *ptr, regexlisttype **storage);
 #endif
 void parse_rcfile(FILE *rcstream, bool syntax_only);
@@ -479,18 +480,18 @@ void do_rcfiles(void);
 #endif /* ENABLE_NANORC */
 
 /* Most functions in search.c. */
-void not_found_msg(const char *str);
-void search_replace_abort(void);
+void tidy_up_after_search(void);
 int findnextstr(const char *needle, bool whole_word_only, int modus,
 		size_t *match_len, bool skipone, const filestruct *begin, size_t begin_x);
 void do_search(void);
 void do_search_forward(void);
 void do_search_backward(void);
+void do_research(void);
 #ifndef NANO_TINY
 void do_findprevious(void);
 void do_findnext(void);
 #endif
-void do_research(void);
+void not_found_msg(const char *str);
 void go_looking(void);
 ssize_t do_replace_loop(const char *needle, bool whole_word_only,
 		const filestruct *real_current, size_t *real_current_x);
@@ -522,7 +523,6 @@ void do_unindent(void);
 bool white_string(const char *s);
 #ifdef ENABLE_COMMENT
 void do_comment(void);
-bool comment_line(undo_type action, filestruct *f, const char *comment_seq);
 #endif
 void do_undo(void);
 void do_redo(void);
@@ -692,7 +692,6 @@ void do_credits(void);
 #endif
 
 /* These are just name definitions. */
-void do_cancel(void);
 void case_sens_void(void);
 void regexp_void(void);
 void backwards_void(void);
@@ -703,6 +702,7 @@ void to_files_void(void);
 void goto_dir_void(void);
 #endif
 #ifndef NANO_TINY
+void do_toggle_void(void);
 void dos_format_void(void);
 void mac_format_void(void);
 void append_void(void);
@@ -714,5 +714,6 @@ void flip_execute(void);
 void flip_newbuffer(void);
 #endif
 void discard_buffer(void);
+void do_cancel(void);
 
 #endif /* !PROTO_H */

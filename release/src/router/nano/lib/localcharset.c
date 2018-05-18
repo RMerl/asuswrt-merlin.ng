@@ -262,8 +262,10 @@ get_charset_aliases (void)
 # if defined DARWIN7
       /* To avoid the trouble of installing a file that is shared by many
          GNU packages -- many packaging systems have problems with this --,
-         simply inline the aliases here.  */
-      cp = "ISO8859-1" "\0" "ISO-8859-1" "\0"
+         simply inline the aliases here.
+         For speed, map the most frequent case first.  */
+      cp = "UTF-8" "\0" "UTF-8" "\0"
+           "ISO8859-1" "\0" "ISO-8859-1" "\0"
            "ISO8859-2" "\0" "ISO-8859-2" "\0"
            "ISO8859-4" "\0" "ISO-8859-4" "\0"
            "ISO8859-5" "\0" "ISO-8859-5" "\0"

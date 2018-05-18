@@ -31,14 +31,14 @@
 #ifdef ENABLE_NANORC
 
 #ifndef RCFILE_NAME
+#define HOME_RC_NAME ".nanorc"
 #define RCFILE_NAME "nanorc"
+#else
+#define HOME_RC_NAME RCFILE_NAME
 #endif
 
 static const rcoption rcopts[] = {
 	{"boldtext", BOLD_TEXT},
-#ifdef ENABLE_LINENUMBERS
-	{"linenumbers", LINE_NUMBERS},
-#endif
 #ifdef ENABLE_JUSTIFY
 	{"brackets", 0},
 #endif
@@ -48,6 +48,9 @@ static const rcoption rcopts[] = {
 #endif
 #ifdef ENABLE_HISTORIES
 	{"historylog", HISTORYLOG},
+#endif
+#ifdef ENABLE_LINENUMBERS
+	{"linenumbers", LINE_NUMBERS},
 #endif
 	{"morespace", MORE_SPACE},
 #ifdef ENABLE_MOUSE
@@ -85,6 +88,7 @@ static const rcoption rcopts[] = {
 	{"tempfile", TEMP_FILE},
 	{"view", VIEW_MODE},
 #ifndef NANO_TINY
+	{"afterends", AFTER_ENDS},
 	{"allow_insecure_backup", INSECURE_BACKUP},
 	{"atblanks", AT_BLANKS},
 	{"autoindent", AUTOINDENT},
@@ -92,9 +96,9 @@ static const rcoption rcopts[] = {
 	{"backupdir", 0},
 	{"backwards", BACKWARDS_SEARCH},
 	{"casesensitive", CASE_SENSITIVE},
-	{"cut", CUT_FROM_CURSOR},  /* deprecated form, remove in 2020 */
+	{"cut", CUT_FROM_CURSOR},  /* deprecated form, remove end of 2018 */
 	{"cutfromcursor", CUT_FROM_CURSOR},
-	{"justifytrim", TRIM_BLANKS},  /* deprecated form, remove in 2020 */
+	{"justifytrim", TRIM_BLANKS},  /* deprecated form, remove end of 2018 */
 	{"locking", LOCKING},
 	{"matchbrackets", 0},
 	{"noconvert", NO_CONVERT},
@@ -603,10 +607,38 @@ short color_to_short(const char *colorname, bool *bright)
 	else if (strcasecmp(colorname, "black") == 0)
 		return COLOR_BLACK;
 	else if (strcasecmp(colorname, "normal") == 0)
-		return -1;
+		return USE_THE_DEFAULT;
 
 	rcfile_error(N_("Color \"%s\" not understood"), colorname);
-	return -2;
+	return BAD_COLOR;
+}
+
+/* Parse the color name (or pair of color names) in the given string.
+ * Return FALSE when any color name is invalid; otherwise return TRUE. */
+bool parse_color_names(char *combostr, short *fg, short *bg, bool *bright)
+{
+	char *comma = strchr(combostr, ',');
+
+	if (comma != NULL) {
+		*bg = color_to_short(comma + 1, bright);
+		if (*bright) {
+			rcfile_error(N_("A background color cannot be bright"));
+			return FALSE;
+		}
+		if (*bg == BAD_COLOR)
+			return FALSE;
+		*comma = '\0';
+	} else
+		*bg = USE_THE_DEFAULT;
+
+	if (comma != combostr) {
+		*fg = color_to_short(combostr, bright);
+		if (*fg == BAD_COLOR)
+			return FALSE;
+	} else
+		*fg = USE_THE_DEFAULT;
+
+	return TRUE;
 }
 
 /* Parse the color string in the line at ptr, and add it to the current
@@ -734,36 +766,6 @@ void parse_colors(char *ptr, int rex_flags)
 		newcolor->id = live_syntax->nmultis;
 		live_syntax->nmultis++;
 	}
-}
-
-/* Parse the color name, or pair of color names, in combostr. */
-bool parse_color_names(char *combostr, short *fg, short *bg, bool *bright)
-{
-	char *comma = strchr(combostr, ',');
-
-	if (comma != NULL) {
-		*bg = color_to_short(comma + 1, bright);
-		if (*bright) {
-			rcfile_error(N_("A background color cannot be bright"));
-			return FALSE;
-		}
-		*comma = '\0';
-	} else
-		*bg = -1;
-
-	if (comma != combostr) {
-		*fg = color_to_short(combostr, bright);
-
-		/* If the specified foreground color is bad, ignore the regexes. */
-		if (*fg == -2)
-			return FALSE;
-	} else
-		*fg = -1;
-
-	if (*bg == -2)
-		*bg = -1;
-
-	return TRUE;
 }
 
 /* Parse the argument of an interface color option. */
@@ -1254,7 +1256,7 @@ void do_rcfiles(void)
 
 	/* Now try the to find a nanorc file in the user's home directory
 	 * or in the XDG configuration directories. */
-	if (have_nanorc(homedir, "/." RCFILE_NAME))
+	if (have_nanorc(homedir, "/" HOME_RC_NAME))
 		parse_one_nanorc();
 	else if (have_nanorc(xdgconfdir, "/nano/" RCFILE_NAME))
 		parse_one_nanorc();

@@ -142,6 +142,11 @@
 #define REPLACING 1
 #define INREGION  2
 
+#ifdef ENABLE_COLOR
+#define USE_THE_DEFAULT -1
+#define BAD_COLOR -2
+#endif
+
 /* Enumeration types. */
 typedef enum {
 	NIX_FILE, DOS_FILE, MAC_FILE
@@ -538,7 +543,8 @@ enum
 	SHOW_CURSOR,
 	LINE_NUMBERS,
 	NO_PAUSES,
-	AT_BLANKS
+	AT_BLANKS,
+	AFTER_ENDS
 };
 
 /* Flags for the menus in which a given function should be present. */

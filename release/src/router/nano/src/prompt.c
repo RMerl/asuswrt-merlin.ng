@@ -292,17 +292,28 @@ void do_statusbar_cut_text(void)
 void do_statusbar_next_word(void)
 {
 	bool seen_space = !is_word_mbchar(answer + statusbar_x, FALSE);
+	bool seen_word = !seen_space;
 
-	/* Move forward until we reach the start of a word. */
+	/* Move forward until we reach either the end or the start of a word,
+	 * depending on whether the AFTER_ENDS flag is set or not. */
 	while (answer[statusbar_x] != '\0') {
 		statusbar_x = move_mbright(answer, statusbar_x);
 
-		/* If this is not a word character, then it's a separator; else
-		 * if we've already seen a separator, then it's a word start. */
-		if (!is_word_mbchar(answer + statusbar_x, FALSE))
-			seen_space = TRUE;
-		else if (seen_space)
-			break;
+		if (ISSET(AFTER_ENDS)) {
+			/* If this is a word character, continue; else it's a separator,
+			 * and if we've already seen a word, then it's a word end. */
+			if (is_word_mbchar(answer + statusbar_x, FALSE))
+				seen_word = TRUE;
+			else if (seen_word)
+				break;
+		} else {
+			/* If this is not a word character, then it's a separator; else
+			 * if we've already seen a separator, then it's a word start. */
+			if (!is_word_mbchar(answer + statusbar_x, FALSE))
+				seen_space = TRUE;
+			else if (seen_space)
+				break;
+		}
 	}
 
 	update_the_statusbar();
@@ -659,20 +670,16 @@ int do_prompt(bool allow_tabs, bool allow_files,
 int do_yesno_prompt(bool all, const char *msg)
 {
 	int response = -2, width = 16;
-
-	/* TRANSLATORS: For the next three strings, if possible, specify
-	 * the single-byte letters for both your language and English.
-	 * For example, in French: "OoYy", for both "Oui" and "Yes". */
+	/* TRANSLATORS: For the next three strings, specify the starting letters
+	 * of the translations for "Yes"/"No"/"All".  The first letter of each of
+	 * these strings MUST be a single-byte letter; others may be multi-byte. */
 	const char *yesstr = _("Yy");
 	const char *nostr = _("Nn");
 	const char *allstr = _("Aa");
 
-	/* The above three variables consist of all the single-byte characters
-	 * that are accepted for the corresponding answer.  Of each variable,
-	 * the first character is displayed in the help lines. */
-
 	while (response == -2) {
-		int kbinput;
+		char letter[MAXCHARLEN + 1];
+		int kbinput, index = 0;
 
 		if (!ISSET(NO_HELP)) {
 			char shortstr[MAXCHARLEN + 2];
@@ -689,15 +696,15 @@ int do_yesno_prompt(bool all, const char *msg)
 			wmove(bottomwin, 1, 0);
 			post_one_key(shortstr, _("Yes"), width);
 
+			shortstr[1] = nostr[0];
+			wmove(bottomwin, 2, 0);
+			post_one_key(shortstr, _("No"), width);
+
 			if (all) {
 				shortstr[1] = allstr[0];
 				wmove(bottomwin, 1, width);
 				post_one_key(shortstr, _("All"), width);
 			}
-
-			shortstr[1] = nostr[0];
-			wmove(bottomwin, 2, 0);
-			post_one_key(shortstr, _("No"), width);
 
 			wmove(bottomwin, 2, width);
 			post_one_key("^C", _("Cancel"), width);
@@ -715,12 +722,34 @@ int do_yesno_prompt(bool all, const char *msg)
 		/* When not replacing, show the cursor while waiting for a key. */
 		kbinput = get_kbinput(bottomwin, !all);
 
-		/* See if the pressed key is in the Yes, No, or All strings. */
-		if (strchr(yesstr, kbinput) != NULL)
+#ifdef ENABLE_NLS
+		letter[index++] = (unsigned char)kbinput;
+#ifdef ENABLE_UTF8
+		/* If the received code is a UTF-8 starter byte, get also the
+		 * continuation bytes and assemble them into one letter. */
+		if (using_utf8() && 0xC0 <= kbinput && kbinput <= 0xF7) {
+			int extras = (kbinput / 16) % 4 + (kbinput <= 0xCF ? 1 : 0);
+
+			while (extras <= get_key_buffer_len() && extras-- > 0)
+				letter[index++] = (unsigned char)get_kbinput(bottomwin, !all);
+		}
+#endif
+		letter[index] = '\0';
+
+		/* See if the typed letter is in the Yes, No, or All strings. */
+		if (strstr(yesstr, letter) != NULL)
 			response = 1;
-		else if (strchr(nostr, kbinput) != NULL)
+		else if (strstr(nostr, letter) != NULL)
 			response = 0;
-		else if (all && strchr(allstr, kbinput) != NULL)
+		else if (all && strstr(allstr, letter) != NULL)
+			response = 2;
+		else
+#endif /* ENABLE_NLS */
+		if (strchr("Yy", kbinput) != NULL)
+			response = 1;
+		else if (strchr("Nn", kbinput) != NULL)
+			response = 0;
+		else if (all && strchr("Aa", kbinput) != NULL)
 			response = 2;
 		else if (func_from_key(&kbinput) == do_cancel)
 			response = -1;

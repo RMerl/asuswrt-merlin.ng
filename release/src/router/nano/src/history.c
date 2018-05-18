@@ -227,7 +227,7 @@ char *get_history_completion(filestruct **h, char *s, size_t len)
 	 * match, or len is 0.  Return s. */
 	return (char *)s;
 }
-#endif /* ENSABLE_TABCOMP */
+#endif /* ENABLE_TABCOMP */
 
 void history_error(const char *msg, ...)
 {

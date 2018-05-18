@@ -11,7 +11,7 @@ File: nano.info,  Node: Top,  Next: Introduction,  Up: (dir)
 nano
 ****
 
-This manual documents the GNU ‘nano’ editor, version 2.9.5.
+This manual documents the GNU ‘nano’ editor, version 2.9.7.
 
 * Menu:
 
@@ -327,6 +327,10 @@ File: nano.info,  Node: Command-line Options,  Next: Editor Basics,  Prev: Invok
 
      Note: When accessing the help system, Expert Mode is temporarily
      disabled to display the help-system navigation keys.
+
+‘-y’
+‘--afterends’
+     Make Ctrl+Right stop at word ends instead of beginnings.
 
 ‘-z’
 ‘--suspend’
@@ -645,6 +649,9 @@ File: nano.info,  Node: Settings,  Next: Syntax Highlighting,  Up: Nanorc Files
 
 The supported settings in a nanorc file are:
 
+‘set afterends’
+     Make Ctrl+Right stop at word ends instead of beginnings.
+
 ‘set allow_insecure_backup’
      When backing up files, allow the backup to succeed even if its
      permissions can’t be (re)set due to special OS considerations.  You
@@ -867,7 +874,8 @@ The supported settings in a nanorc file are:
 
 ‘set trimblanks’
      Remove trailing whitespace from wrapped lines when automatic
-     hard-wrapping occurs or when text is justified.
+     hard-wrapping occurs or when text is justified.  (The old form of
+     this option, ‘set justifytrim’, is deprecated.)
 
 ‘set unix’
      Save a file by default in Unix format.  This overrides nano’s
@@ -1302,9 +1310,9 @@ file:
      Toggles the presence of the two-line list of key bindings at the
      bottom of the screen.
 
-‘constupdate’
+‘constantshow’
      Toggles the constant display of the current line, column, and
-     character positions.
+     character positions.  (The form ‘constupdate’ is deprecated.)
 
 ‘morespace’
      Toggles the presence of the blank line that ’separates’ the title
@@ -1315,6 +1323,9 @@ file:
 
 ‘softwrap’
      Toggles the displaying of overlong lines on multiple screen lines.
+
+‘linenumbers’
+     Toggles the display of line numbers in front of the text.
 
 ‘whitespacedisplay’
      Toggles the showing of whitespace.
@@ -1329,9 +1340,10 @@ file:
      Toggles whether new lines will contain the same amount of
      whitespace as the preceding line.
 
-‘cuttoend’
+‘cutfromcursor’
      Toggles whether cutting text will cut the whole line or just from
-     the current cursor position to the end of the line.
+     the current cursor position to the end of the line.  (The form
+     ‘cuttoend’ is deprecated.)
 
 ‘nowrap’
      Toggles whether long lines will be hard-wrapped to the next line.
@@ -1394,7 +1406,7 @@ file:
      The linter menu.
 
 ‘browser’
-     The file browser for inserting or writing a file.
+     The file browser, for choosing a file to read from or write to.
 
 ‘whereisfile’
      The ’search for a file’ menu in the file browser.
@@ -1413,13 +1425,13 @@ File: nano.info,  Node: The File Browser,  Next: Pico Compatibility,  Prev: Nano
 8 The File Browser
 ******************
 
-When reading or writing files, pressing ‘^T’ will invoke the file
-browser.  Here, one can navigate directories in a graphical manner in
-order to find the desired file.
+When in the Read-File (‘^R’) or Write-Out menu (‘^O’), pressing ‘^T’
+will invoke the file browser.  Here, one can navigate directories in a
+graphical manner in order to find the desired file.
 
-   Basic movement in the file browser is accomplished with the arrow
-keys, page up, and page down.  More advanced movement is accomplished by
-searching via ‘^W’ (or ‘w'’ and changing directories via ‘^_’ (or ‘g’).
+   Basic movement in the file browser is accomplished with the arrow and
+other cursor-movement keys.  More targeted movement is accomplished by
+searching, via ‘^W’ or ‘w'’, or by changing directory, via ‘^_’ or ‘g’.
 The behavior of the ‘Enter’ key (or ‘s’) varies by what is currently
 selected.  If the currently selected object is a directory, the file
 browser will enter and display the contents of the directory.  If the
@@ -1461,6 +1473,11 @@ some differences between the editors:
      The output of the "Display Cursor Position" command (‘^C’) displays
      not only the current line and character position of the cursor, but
      also (between the two) the current column position.
+
+‘Hard-Wrapping’
+     By default, ‘nano’ hard-wraps lines at screen width minus eight
+     columns, whereas Pico does it at screen width minus six columns.
+     You can make ‘nano’ do the same as Pico by using ‘--fill=-6’.
 
 ‘Spell Checking’
      In the internal spell checker misspelled words are sorted
@@ -1642,26 +1659,26 @@ Node: Invoking1356
 Node: Command-line Options2402
 Ref: --speller9467
 Ref: Expert Mode10702
-Node: Editor Basics11729
-Node: Entering Text12013
-Node: Commands13002
-Node: The Cutbuffer13799
-Node: The Mark14520
-Node: Screen Layout15454
-Node: Search and Replace16633
-Node: Using the Mouse17368
-Node: Limitations17985
-Node: Built-in Help18541
-Node: Feature Toggles18965
-Node: Nanorc Files21422
-Node: Settings23019
-Ref: set functioncolor25723
-Ref: Whitespace32040
-Node: Syntax Highlighting32596
-Node: Rebinding Keys37587
-Node: The File Browser48782
-Node: Pico Compatibility49642
-Node: Building and Configure Options52939
+Node: Editor Basics11819
+Node: Entering Text12103
+Node: Commands13092
+Node: The Cutbuffer13889
+Node: The Mark14610
+Node: Screen Layout15544
+Node: Search and Replace16723
+Node: Using the Mouse17458
+Node: Limitations18075
+Node: Built-in Help18631
+Node: Feature Toggles19055
+Node: Nanorc Files21512
+Node: Settings23109
+Ref: set functioncolor25896
+Ref: Whitespace32288
+Node: Syntax Highlighting32844
+Node: Rebinding Keys37835
+Node: The File Browser49224
+Node: Pico Compatibility50118
+Node: Building and Configure Options53654
 
 End Tag Table
 

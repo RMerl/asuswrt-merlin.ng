@@ -16,7 +16,7 @@ color green "[{}():;|`$<>!=&\\]" "(\]|\[)"
 color green "-(eq|ne|gt|lt|ge|le|ef|ot|nt)\>"
 
 # Short and long options.
-color brightmagenta "-[A-Za-z]\>" "--[A-Za-z-]+\>"
+color brightmagenta "[[:blank:]]-[A-Za-z]\>" "[[:blank:]]--[A-Za-z-]+\>"
 
 # Common commands.
 color brightblue "\<(awk|cat|cd|ch(grp|mod|own)|cp|cut|echo|env|grep|head|install|ln|make|mkdir|mv|popd|printf|pushd|rm|rmdir|sed|set|sort|tail|tar|touch|umask|unset)\>"

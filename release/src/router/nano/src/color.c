@@ -60,9 +60,9 @@ void set_colorpairs(void)
 		colortype *combo = color_combo[i];
 
 		if (combo != NULL) {
-			if (combo->fg == -1 && !using_defaults)
+			if (combo->fg == USE_THE_DEFAULT && !using_defaults)
 				combo->fg = COLOR_WHITE;
-			if (combo->bg == -1 && !using_defaults)
+			if (combo->bg == USE_THE_DEFAULT && !using_defaults)
 				combo->bg = COLOR_BLACK;
 			init_pair(i + 1, combo->fg, combo->bg);
 			interface_color_pair[i] = COLOR_PAIR(i + 1) | A_BANDAID |
@@ -125,10 +125,10 @@ void color_init(void)
 		foreground = ink->fg;
 		background = ink->bg;
 
-		if (foreground == -1 && !using_defaults)
+		if (foreground == USE_THE_DEFAULT && !using_defaults)
 			foreground = COLOR_WHITE;
 
-		if (background == -1 && !using_defaults)
+		if (background == USE_THE_DEFAULT && !using_defaults)
 			background = COLOR_BLACK;
 
 		init_pair(ink->pairnum, foreground, background);

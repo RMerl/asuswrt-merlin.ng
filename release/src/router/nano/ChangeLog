@@ -1,3 +1,84 @@
+Changes between v2.9.6 and v2.9.7:
+----------------------------------
+
+Benno Schulenberg (21):
+      bindings: add the 'linenumbers' bindable function
+      bindings: rename constupdate to constantshow, cuttoend to cutfromcursor
+      bump version numbers and add a news item for the 2.9.7 release
+      docs: add notes about deprecated options and function names
+      docs: break down some old improvements further per version
+      docs: note a small difference with Pico in the default hard-wrapping
+      docs: say thanks to three recent translators, and re-sort two others
+      docs: slightly improve the description of the file browser in the manual
+      main: clear a spurious error number, to avoid irrelevant messages later
+      prompt: when asking for Yes/No/All, recognize also UTF-8 letters
+      scrolling: only do a scroll when the edit window has more than one row
+      signals: don't trap segfault/abort when envvar NANO_NOCATCH is defined
+      signals: exclude the crash handler from the tiny version
+      startup: suggest using ^D to finish reading from standard input
+      tweaks: improve a couple of comments
+      tweaks: normalize indentation and whitespace after previous changes
+      tweaks: put check for -h and -l options in their alphabetical positions
+      tweaks: put Yes/No/All in a consistent order (for the translators)
+      tweaks: rename two variables, to be more descriptive
+      tweaks: sort an option better, and reschedule a removal
+      tweaks: use symbolic names instead of puzzling TRUE and FALSE
+
+Devin Hussey (1):
+      signals: upon a crash, save changed buffers and reset terminal state
+
+Mark-Weston (1):
+      new feature: an option to make the 'nextword' function stop at word ends
+
+
+Changes between v2.9.5 and v2.9.6:
+----------------------------------
+
+Benno Schulenberg (39):
+      build: do not prefix an alternative rcfilename with a dot
+      build: fix compilation when configured with --disable-help
+      bump version numbers and add a news item for the 2.9.6 release
+      command-execution: do not crash when opening the pipe would fail
+      completion: correctly do a signed comparison, to avoid a segfault
+      files: prevent a hang when a call to sigaction() would fail
+      formatting, linting: redetermine the argument list for every run
+      gnulib: update to its current upstream state
+      memory: use a reallocation to reduce the amount of leakage
+      prompt: recognize Yes/No/All in English when the locale gives no match
+      rcfile: skip color commands where some color name is invalid
+      scrolling: don't redraw entire edit window when cursor goes offscreen
+      search: always go forward by default, also when coming from Goto-Line
+      search: use a better value to mean "nothing was typed"
+      speller: don't add an extra newline when saving the text to a tempfile
+      syntax: po: highlight also other escaped characters, not just \n
+      syntax: sh: colorize options only when they are preceded by whitespace
+      tweaks: adjust the translator hint about Yes/No/All
+      tweaks: correct or improve a couple of comments
+      tweaks: elide a function that is called just once
+      tweaks: fix a typo, remove a blank line, and improve some comments
+      tweaks: frob a couple of comments
+      tweaks: group some more of the empty functions together
+      tweaks: improve some comments, and exit with nonzero status upon error
+      tweaks: improve the ordering of a couple of functions
+      tweaks: invert two conditions and reshuffle, to reduce duplication
+      tweaks: move a function to its proper location
+      tweaks: move a function to its proper location
+      tweaks: rearrange a few if statements more symmetrically
+      tweaks: remove the group handling for undoing/redoing (un)indents
+      tweaks: rename a function, to be more distinct from its caller
+      tweaks: rename a function, to be more fitting and descriptive
+      tweaks: rename a variable, for clarity
+      tweaks: rename a variable, to be a bit more fitting
+      tweaks: rename a variable, to be more clear and to match another
+      tweaks: rename a variable, to match another and to be more visible
+      tweaks: reshuffle two declarations
+      tweaks: set the correct flags just once for each spell-fixing session
+      tweaks: use meaningful names instead of puzzling values
+
+Liu Hao (1):
+      replacing: always clear the backwards flag for ^\, just like for ^W
+
+
 Changes between v2.9.4 and v2.9.5:
 ----------------------------------
 

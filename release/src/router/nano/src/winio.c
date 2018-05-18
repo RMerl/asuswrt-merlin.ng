@@ -363,7 +363,7 @@ int parse_kbinput(WINDOW *win)
 	kbinput = get_input(win, 1);
 
 	if (kbinput == NULL && !waiting_mode)
-		return 0;
+		return ERR;
 
 	while (kbinput == NULL)
 		kbinput = get_input(win, 1);
@@ -1944,7 +1944,7 @@ char *display_string(const char *buf, size_t column, size_t span, bool isdata)
 			continue;
 		}
 
-		/* Represent an invalid sequence with the Replacement Character. */
+		/* Represent an invalid starter byte with the Replacement Character. */
 		converted[index++] = '\xEF';
 		converted[index++] = '\xBF';
 		converted[index++] = '\xBD';
@@ -2159,6 +2159,7 @@ void statusline(message_type importance, const char *msg, ...)
 	/* Curses mode is turned off.  If we use wmove() now, it will muck
 	 * up the terminal settings.  So we just use vfprintf(). */
 	if (isendwin()) {
+		fprintf(stderr, "\n");
 		vfprintf(stderr, msg, ap);
 		va_end(ap);
 		return;

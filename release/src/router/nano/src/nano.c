@@ -551,14 +551,15 @@ void say_there_is_no_help(void)
 }
 #endif
 
-/* Make nano exit gracefully. */
+/* Exit normally: restore the terminal state and save history files. */
 void finish(void)
 {
-	/* Blank the statusbar and (if applicable) the shortcut list,
-	 * and move the cursor to the last line of the screen. */
+	/* Blank the statusbar and (if applicable) the shortcut list. */
 	blank_statusbar();
 	blank_bottombars();
 	wrefresh(bottomwin);
+
+	/* Switch on the cursor and exit from curses mode. */
 	curs_set(1);
 	endwin();
 
@@ -582,7 +583,8 @@ void finish(void)
 	exit(0);
 }
 
-/* Make nano die gracefully. */
+/* Die gracefully -- by restoring the terminal state and saving any buffers
+ * that were modified. */
 void die(const char *msg, ...)
 {
 	va_list ap;
@@ -888,6 +890,9 @@ void usage(void)
 	print_opt("-w", "--nowrap", N_("Don't hard-wrap long lines"));
 #endif
 	print_opt("-x", "--nohelp", N_("Don't show the two help lines"));
+#ifndef NANO_TINY
+	print_opt("-y", "--afterends", N_("Make Ctrl+Right stop at word ends"));
+#endif
 	if (!ISSET(RESTRICTED))
 		print_opt("-z", "--suspend", N_("Enable suspension"));
 #ifndef NANO_TINY
@@ -1087,12 +1092,6 @@ void close_and_go(void)
 		finish();
 }
 
-/* Another placeholder for function mapping. */
-void do_cancel(void)
-{
-	;
-}
-
 /* Make a note that reading from stdin was concluded with ^C. */
 RETSIGTYPE make_a_note(int signal)
 {
@@ -1105,7 +1104,7 @@ bool scoop_stdin(void)
 	struct sigaction oldaction, newaction;
 		/* Original and temporary handlers for SIGINT. */
 	bool setup_failed = FALSE;
-		/* Whether setting up the SIGINT handler failed. */
+		/* Whether setting up the temporary SIGINT handler failed. */
 	FILE *stream;
 	int thetty;
 
@@ -1113,7 +1112,7 @@ bool scoop_stdin(void)
 	endwin();
 	tcsetattr(0, TCSANOW, &oldterm);
 
-	fprintf(stderr, _("Reading from stdin, ^C to abort\n"));
+	fprintf(stderr, _("Reading from standard input; type ^D or ^D^D to finish.\n"));
 
 #ifndef NANO_TINY
 	/* Enable interpretation of the special control keys so that
@@ -1124,12 +1123,12 @@ bool scoop_stdin(void)
 	/* Set things up so that SIGINT will cancel the reading. */
 	if (sigaction(SIGINT, NULL, &newaction) == -1) {
 		setup_failed = TRUE;
-		nperror("sigaction");
+		perror("sigaction");
 	} else {
 		newaction.sa_handler = make_a_note;
 		if (sigaction(SIGINT, &newaction, &oldaction) == -1) {
 			setup_failed = TRUE;
-			nperror("sigaction");
+			perror("sigaction");
 		}
 	}
 
@@ -1148,6 +1147,7 @@ bool scoop_stdin(void)
 	open_buffer("", TRUE);
 	read_file(stream, 0, "stdin", TRUE);
 	openfile->edittop = openfile->fileage;
+	fprintf(stderr, ".\n");
 
 	/* Reconnect the tty as the input source. */
 	thetty = open("/dev/tty", O_RDONLY);
@@ -1162,7 +1162,7 @@ bool scoop_stdin(void)
 
 	/* If it was changed, restore the handler for SIGINT. */
 	if (!setup_failed && sigaction(SIGINT, &oldaction, NULL) == -1)
-		nperror("sigaction");
+		perror("sigaction");
 
 	terminal_init();
 	doupdate();
@@ -1216,6 +1216,18 @@ void signal_init(void)
 		sigaction(SIGTSTP, &act, NULL);
 #endif
 	}
+
+#if !defined(NANO_TINY) && !defined(DEBUG)
+	if (getenv("NANO_NOCATCH") == NULL) {
+		/* Trap SIGSEGV and SIGABRT to save any changed buffers and reset
+		 * the terminal to a usable state.  Reset these handlers to their
+		 * defaults as soon as their signal fires. */
+		act.sa_handler = handle_crash;
+		act.sa_flags |= SA_RESETHAND;
+		sigaction(SIGSEGV, &act, NULL);
+		sigaction(SIGABRT, &act, NULL);
+	}
+#endif
 }
 
 /* Handler for SIGHUP (hangup) and SIGTERM (terminate). */
@@ -1223,6 +1235,14 @@ RETSIGTYPE handle_hupterm(int signal)
 {
 	die(_("Received SIGHUP or SIGTERM\n"));
 }
+
+#if !defined(NANO_TINY) && !defined(DEBUG)
+/* Handler for SIGSEGV (segfault) and SIGABRT (abort). */
+RETSIGTYPE handle_crash(int signal)
+{
+	die(_("Sorry! Nano crashed!  Code: %d.  Please report a bug.\n"), signal);
+}
+#endif
 
 /* Handler for SIGTSTP (suspend). */
 RETSIGTYPE do_suspend(int signal)
@@ -1401,12 +1421,6 @@ void do_toggle(int flag)
 	statusline(HUSH, "%s %s", _(flagtostr(flag)),
 						enabled ? _("enabled") : _("disabled"));
 }
-
-/* Bleh. */
-void do_toggle_void(void)
-{
-	;
-}
 #endif /* !NANO_TINY */
 
 /* Disable extended input and output processing in our terminal
@@ -1499,7 +1513,6 @@ void terminal_init(void)
 
 	if (!newterm_set) {
 #endif
-
 		raw();
 		nonl();
 		noecho();
@@ -1995,6 +2008,7 @@ int main(int argc, char **argv)
 		{"autoindent", 0, NULL, 'i'},
 		{"cutfromcursor", 0, NULL, 'k'},
 		{"unix", 0, NULL, 'u'},
+		{"afterends", 0, NULL, 'y'},
 		{"softwrap", 0, NULL, '$'},
 #endif
 		{NULL, 0, NULL, 0}
@@ -2053,15 +2067,9 @@ int main(int argc, char **argv)
 
 	while ((optchr =
 		getopt_long(argc, argv,
-				"ABC:DEFGHIKLMNOPQ:RST:UVWX:Y:abcdefghijklmno:pqr:s:tuvwxz$",
+				"ABC:DEFGHIKLMNOPQ:RST:UVWX:Y:abcdefghijklmno:pqr:s:tuvwxyz$",
 				long_options, NULL)) != -1) {
 		switch (optchr) {
-			case 'b':
-			case 'e':
-			case 'f':
-			case 'j':
-				/* Pico compatibility flags. */
-				break;
 #ifndef NANO_TINY
 			case 'A':
 				SET(SMART_HOME);
@@ -2178,12 +2186,20 @@ int main(int argc, char **argv)
 			case 'g':
 				SET(SHOW_CURSOR);
 				break;
+			case 'h':
+				usage();
+				exit(0);
 #ifndef NANO_TINY
 			case 'i':
 				SET(AUTOINDENT);
 				break;
 			case 'k':
 				SET(CUT_FROM_CURSOR);
+				break;
+#endif
+#ifdef ENABLE_LINENUMBERS
+			case 'l':
+				SET(LINE_NUMBERS);
 				break;
 #endif
 #ifdef ENABLE_MOUSE
@@ -2248,6 +2264,11 @@ int main(int argc, char **argv)
 			case 'x':
 				SET(NO_HELP);
 				break;
+#ifndef NANO_TINY
+			case 'y':
+				SET(AFTER_ENDS);
+				break;
+#endif
 			case 'z':
 				SET(SUSPEND);
 				break;
@@ -2256,14 +2277,11 @@ int main(int argc, char **argv)
 				SET(SOFTWRAP);
 				break;
 #endif
-#ifdef ENABLE_LINENUMBERS
-			case 'l':
-				SET(LINE_NUMBERS);
+			case 'b':  /* Pico compatibility flags. */
+			case 'e':
+			case 'f':
+			case 'j':
 				break;
-#endif
-			case 'h':
-				usage();
-				exit(0);
 			default:
 				printf(_("Type '%s -h' for a list of available options.\n"), argv[0]);
 				exit(1);
@@ -2662,6 +2680,7 @@ int main(int argc, char **argv)
 		} else
 			edit_refresh();
 
+		errno = 0;
 		focusing = TRUE;
 
 		/* Forget any earlier statusbar x position. */

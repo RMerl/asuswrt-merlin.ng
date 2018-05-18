@@ -209,7 +209,7 @@ void do_cutword(bool backward)
 	if (backward)
 		do_prev_word(ISSET(WORD_BOUNDS), FALSE);
 	else
-		do_next_word(ISSET(WORD_BOUNDS), FALSE);
+		do_next_word(FALSE, ISSET(WORD_BOUNDS), FALSE);
 
 	/* Set the mark at the start of that word. */
 	openfile->mark = openfile->current;
@@ -320,11 +320,11 @@ void do_indent(void)
 
 	add_undo(INDENT);
 
-	/* Go through each of the lines, but skip empty ones. */
+	/* Go through each of the lines, adding an indent to the non-empty ones,
+	 * and recording whatever was added in the undo item. */
 	for (line = top; line != bot->next; line = line->next) {
 		char *real_indent = (line->data[0] == '\0') ? "" : indentation;
 
-		/* Indent a line, add undo data, and save the original indent. */
 		indent_a_line(line, real_indent);
 		update_multiline_undo(line->lineno, real_indent);
 	}
@@ -412,14 +412,14 @@ void do_unindent(void)
 
 	add_undo(UNINDENT);
 
-	/* Go through each of the lines and remove their leading indent. */
+	/* Go through each of the lines, removing their leading indent where
+	 * possible, and saving the removed whitespace in the undo item. */
 	for (line = top; line != bot->next; line = line->next) {
 		size_t indent_len = length_of_white(line->data);
 		char *indentation = mallocstrncpy(NULL, line->data, indent_len + 1);
 
 		indentation[indent_len] = '\0';
 
-		/* Unindent a line, add undo data, and save the original indent. */
 		unindent_a_line(line, indent_len);
 		update_multiline_undo(line->lineno, indentation);
 
@@ -435,27 +435,25 @@ void do_unindent(void)
 void handle_indent_action(undo *u, bool undoing, bool add_indent)
 {
 	undo_group *group = u->grouping;
+	filestruct *line = fsfromline(group->top_line);
+
+	if (group->next != NULL)
+		statusline(ALERT, "Multiple groups -- please report a bug");
 
 	/* When redoing, reposition the cursor and let the indenter adjust it. */
 	if (!undoing)
 		goto_line_posx(u->lineno, u->begin);
 
-	while (group) {
-		filestruct *line = fsfromline(group->top_line);
+	/* For each line in the group, add or remove the individual indent. */
+	while (line && line->lineno <= group->bottom_line) {
+		char *blanks = group->indentations[line->lineno - group->top_line];
 
-		/* For each line in the group, add or remove the individual indent. */
-		while (line && line->lineno <= group->bottom_line) {
-			char *blanks = group->indentations[line->lineno - group->top_line];
+		if (undoing ^ add_indent)
+			indent_a_line(line, blanks);
+		else
+			unindent_a_line(line, strlen(blanks));
 
-			if (undoing ^ add_indent)
-				indent_a_line(line, blanks);
-			else
-				unindent_a_line(line, strlen(blanks));
-
-			line = line->next;
-		}
-
-		group = group->next;
+		line = line->next;
 	}
 
 	/* When undoing, reposition the cursor to the recorded location. */
@@ -476,66 +474,6 @@ bool white_string(const char *s)
 }
 
 #ifdef ENABLE_COMMENT
-/* Comment or uncomment the current line or the marked lines. */
-void do_comment(void)
-{
-	const char *comment_seq = GENERAL_COMMENT_CHARACTER;
-	undo_type action = UNCOMMENT;
-	filestruct *top, *bot, *line;
-	bool empty, all_empty = TRUE;
-
-#ifdef ENABLE_COLOR
-	if (openfile->syntax)
-		comment_seq = openfile->syntax->comment;
-
-	if (*comment_seq == '\0') {
-		statusbar(_("Commenting is not supported for this file type"));
-		return;
-	}
-#endif
-
-	/* Determine which lines to work on. */
-	get_range((const filestruct **)&top, (const filestruct **)&bot);
-
-	/* If only the magic line is selected, don't do anything. */
-	if (top == bot && bot == openfile->filebot && !ISSET(NO_NEWLINES)) {
-		statusbar(_("Cannot comment past end of file"));
-		return;
-	}
-
-	/* Figure out whether to comment or uncomment the selected line or lines. */
-	for (line = top; line != bot->next; line = line->next) {
-		empty = white_string(line->data);
-
-		/* If this line is not blank and not commented, we comment all. */
-		if (!empty && !comment_line(PREFLIGHT, line, comment_seq)) {
-			action = COMMENT;
-			break;
-		}
-		all_empty = all_empty && empty;
-	}
-
-	/* If all selected lines are blank, we comment them. */
-	action = all_empty ? COMMENT : action;
-
-	add_undo(action);
-
-	/* Store the comment sequence used for the operation, because it could
-	 * change when the file name changes; we need to know what it was. */
-	openfile->current_undo->strdata = mallocstrcpy(NULL, comment_seq);
-
-	/* Process the selected line or lines. */
-	for (line = top; line != bot->next; line = line->next) {
-		/* Comment/uncomment a line, and add undo data when line changed. */
-		if (comment_line(action, line, comment_seq))
-			update_multiline_undo(line->lineno, "");
-	}
-
-	set_modified();
-	refresh_needed = TRUE;
-	shift_held = TRUE;
-}
-
 /* Test whether the given line can be uncommented, or add or remove a comment,
  * depending on action.  Return TRUE if the line is uncommentable, or when
  * anything was added or removed; FALSE otherwise. */
@@ -596,6 +534,66 @@ bool comment_line(undo_type action, filestruct *line, const char *comment_seq)
 	}
 
 	return FALSE;
+}
+
+/* Comment or uncomment the current line or the marked lines. */
+void do_comment(void)
+{
+	const char *comment_seq = GENERAL_COMMENT_CHARACTER;
+	undo_type action = UNCOMMENT;
+	filestruct *top, *bot, *line;
+	bool empty, all_empty = TRUE;
+
+#ifdef ENABLE_COLOR
+	if (openfile->syntax)
+		comment_seq = openfile->syntax->comment;
+
+	if (*comment_seq == '\0') {
+		statusbar(_("Commenting is not supported for this file type"));
+		return;
+	}
+#endif
+
+	/* Determine which lines to work on. */
+	get_range((const filestruct **)&top, (const filestruct **)&bot);
+
+	/* If only the magic line is selected, don't do anything. */
+	if (top == bot && bot == openfile->filebot && !ISSET(NO_NEWLINES)) {
+		statusbar(_("Cannot comment past end of file"));
+		return;
+	}
+
+	/* Figure out whether to comment or uncomment the selected line or lines. */
+	for (line = top; line != bot->next; line = line->next) {
+		empty = white_string(line->data);
+
+		/* If this line is not blank and not commented, we comment all. */
+		if (!empty && !comment_line(PREFLIGHT, line, comment_seq)) {
+			action = COMMENT;
+			break;
+		}
+		all_empty = all_empty && empty;
+	}
+
+	/* If all selected lines are blank, we comment them. */
+	action = all_empty ? COMMENT : action;
+
+	add_undo(action);
+
+	/* Store the comment sequence used for the operation, because it could
+	 * change when the file name changes; we need to know what it was. */
+	openfile->current_undo->strdata = mallocstrcpy(NULL, comment_seq);
+
+	/* Comment/uncomment each of the selected lines when possible, and
+	 * store undo data when a line changed. */
+	for (line = top; line != bot->next; line = line->next) {
+		if (comment_line(action, line, comment_seq))
+			update_multiline_undo(line->lineno, "");
+	}
+
+	set_modified();
+	refresh_needed = TRUE;
+	shift_held = TRUE;
 }
 
 /* Perform an undo or redo for a comment or uncomment action. */
@@ -1085,81 +1083,80 @@ RETSIGTYPE cancel_command(int signal)
 bool execute_command(const char *command)
 {
 	int fd[2];
-	FILE *f;
+	FILE *stream;
 	const char *shellenv;
 	struct sigaction oldaction, newaction;
 		/* Original and temporary handlers for SIGINT. */
-	bool sig_failed = FALSE;
-		/* Did sigaction() fail without changing the signal handlers? */
+	bool setup_failed = FALSE;
+		/* Whether setting up the temporary SIGINT handler failed. */
 
-	/* Make our pipes. */
+	/* Create a pipe to read the command's output from. */
 	if (pipe(fd) == -1) {
 		statusbar(_("Could not create pipe"));
 		return FALSE;
 	}
 
-	/* Check $SHELL for the shell to use.  If it isn't set, use /bin/sh.
-	 * Note that $SHELL should contain only a path, with no arguments. */
+	/* Check which shell to use.  If none is specified, use /bin/sh. */
 	shellenv = getenv("SHELL");
 	if (shellenv == NULL)
 		shellenv = (char *) "/bin/sh";
 
-	/* Fork a child. */
+	/* Fork a child process to run the command in. */
 	if ((pid = fork()) == 0) {
+		/* Child: close the unused read end of the pipe. */
 		close(fd[0]);
+
+		/* Connect the write end of the pipe to the process' output streams. */
 		dup2(fd[1], fileno(stdout));
 		dup2(fd[1], fileno(stderr));
 
-		/* If execl() returns at all, there was an error. */
+		/* Run the given command inside the preferred shell. */
 		execl(shellenv, tail(shellenv), "-c", command, NULL);
-		exit(0);
+
+		/* If the exec call returns, there was an error. */
+		exit(1);
 	}
 
-	/* Continue as parent. */
+	/* Parent: close the unused write end of the pipe. */
 	close(fd[1]);
 
 	if (pid == -1) {
-		close(fd[0]);
 		statusbar(_("Could not fork"));
+		close(fd[0]);
 		return FALSE;
 	}
 
-	/* Before we start reading the forked command's output, we set
-	 * things up so that Ctrl-C will cancel the new process. */
-
-	/* Enable interpretation of the special control keys so that we get
+	/* Re-enable interpretation of the special control keys so that we get
 	 * SIGINT when Ctrl-C is pressed. */
 	enable_signals();
 
+	/* Set things up so that Ctrl-C will terminate the forked process. */
 	if (sigaction(SIGINT, NULL, &newaction) == -1) {
-		sig_failed = TRUE;
+		setup_failed = TRUE;
 		nperror("sigaction");
 	} else {
 		newaction.sa_handler = cancel_command;
 		if (sigaction(SIGINT, &newaction, &oldaction) == -1) {
-			sig_failed = TRUE;
+			setup_failed = TRUE;
 			nperror("sigaction");
 		}
 	}
 
-	/* Note that now oldaction is the previous SIGINT signal handler,
-	 * to be restored later. */
-
-	f = fdopen(fd[0], "rb");
-	if (f == NULL)
-		nperror("fdopen");
-
-	read_file(f, 0, "stdin", TRUE);
+	stream = fdopen(fd[0], "rb");
+	if (stream == NULL)
+		statusline(ALERT, _("Failed to open pipe: %s"), strerror(errno));
+	else
+		read_file(stream, 0, "pipe", TRUE);
 
 	if (wait(NULL) == -1)
 		nperror("wait");
 
-	if (!sig_failed && sigaction(SIGINT, &oldaction, NULL) == -1)
+	/* If it was changed, restore the handler for SIGINT. */
+	if (!setup_failed && sigaction(SIGINT, &oldaction, NULL) == -1)
 		nperror("sigaction");
 
-	/* Restore the terminal to its previous state.  In the process,
-	 * disable interpretation of the special control keys so that we can
-	 * use Ctrl-C for other things. */
+	/* Restore the terminal to its desired state, and disable
+	 * interpretation of the special control keys again. */
 	terminal_init();
 
 	return TRUE;
@@ -1335,8 +1332,8 @@ void add_undo(undo_type action)
 }
 
 /* Update a multiline undo item.  This should be called once for each line
- * affected by a multiple-line-altering feature.  The existing indentation
- * is saved separately for each line in the undo item. */
+ * affected by a multiple-line-altering feature.  The indentation that is
+ * added or removed is saved separately for each line in the undo item. */
 void update_multiline_undo(ssize_t lineno, char *indentation)
 {
 	undo *u = openfile->current_undo;
@@ -2506,10 +2503,28 @@ void do_full_justify(void)
 }
 #endif /* ENABLE_JUSTIFY */
 
+#if defined(ENABLE_SPELLER) || defined (ENABLE_COLOR)
+/* Set up an argument list for executing the given command. */
+void construct_argument_list(char ***arguments, char *command, char *filename)
+{
+	char *copy_of_command = mallocstrcpy(NULL, command);
+	char *element = strtok(copy_of_command, " ");
+	int count = 2;
+
+	while (element != NULL) {
+		*arguments = (char **)nrealloc(*arguments, ++count * sizeof(char *));
+		(*arguments)[count - 3] = element;
+		element = strtok(NULL, " ");
+	}
+
+	(*arguments)[count - 2] = filename;
+	(*arguments)[count - 1] = NULL;
+}
+#endif
+
 #ifdef ENABLE_SPELLER
-/* A word is misspelled in the file.  Let the user replace it.  We
- * return FALSE if the user cancels. */
-bool do_int_spell_fix(const char *word)
+/* Let the user edit the misspelled word.  Return FALSE if the user cancels. */
+bool fix_spello(const char *word)
 {
 	char *save_search;
 	size_t firstcolumn_save = openfile->firstcolumn;
@@ -2521,8 +2536,6 @@ bool do_int_spell_fix(const char *word)
 		/* The return value of this function. */
 	bool result;
 		/* The return value of searching for a misspelled word. */
-	unsigned stash[sizeof(flags) / sizeof(flags[0])];
-		/* A storage place for the current flag settings. */
 #ifndef NANO_TINY
 	bool right_side_up = FALSE;
 		/* TRUE if (mark_begin, mark_begin_x) is the top of the mark,
@@ -2530,14 +2543,6 @@ bool do_int_spell_fix(const char *word)
 	filestruct *top, *bot;
 	size_t top_x, bot_x;
 #endif
-
-	/* Save the settings of the global flags. */
-	memcpy(stash, flags, sizeof(flags));
-
-	/* Do the spell checking case sensitive, forward, and without regexes. */
-	SET(CASE_SENSITIVE);
-	UNSET(BACKWARDS_SEARCH);
-	UNSET(USE_REGEXP);
 
 	/* Save the current search string, then set it to the misspelled word. */
 	save_search = last_search;
@@ -2629,9 +2634,6 @@ bool do_int_spell_fix(const char *word)
 	/* Restore the viewport to where it was. */
 	openfile->edittop = edittop_save;
 	openfile->firstcolumn = firstcolumn_save;
-
-	/* Restore the settings of the global flags. */
-	memcpy(flags, stash, sizeof(flags));
 
 	return proceed;
 }
@@ -2760,14 +2762,19 @@ const char *do_int_speller(const char *tempfile_name)
 	*read_buff_ptr = '\0';
 	close(uniq_fd[0]);
 
-	/* Process the spelling errors. */
+	/* Do any replacements case sensitive, forward, and without regexes. */
+	SET(CASE_SENSITIVE);
+	UNSET(BACKWARDS_SEARCH);
+	UNSET(USE_REGEXP);
+
 	read_buff_word = read_buff_ptr = read_buff;
 
+	/* Process each of the misspelled words. */
 	while (*read_buff_ptr != '\0') {
 		if ((*read_buff_ptr == '\r') || (*read_buff_ptr == '\n')) {
 			*read_buff_ptr = '\0';
 			if (read_buff_word != read_buff_ptr) {
-				if (!do_int_spell_fix(read_buff_word)) {
+				if (!fix_spello(read_buff_word)) {
 					read_buff_word = read_buff_ptr;
 					break;
 				}
@@ -2779,10 +2786,10 @@ const char *do_int_speller(const char *tempfile_name)
 
 	/* Special case: the last word doesn't end with '\r' or '\n'. */
 	if (read_buff_word != read_buff_ptr)
-		do_int_spell_fix(read_buff_word);
+		fix_spello(read_buff_word);
 
 	free(read_buff);
-	search_replace_abort();
+	tidy_up_after_search();
 	refresh_needed = TRUE;
 
 	/* Process the end of the three processes. */
@@ -2826,8 +2833,6 @@ const char *do_alt_speller(char *tempfile_name)
 	struct stat spellfileinfo;
 	time_t timestamp;
 	pid_t pid_spell;
-	char *ptr;
-	static int arglen = 3;
 	static char **spellargs = NULL;
 
 	/* Get the timestamp and the size of the temporary file. */
@@ -2841,20 +2846,7 @@ const char *do_alt_speller(char *tempfile_name)
 	/* Exit from curses mode. */
 	endwin();
 
-	/* Set up the argument list to pass to execvp(). */
-	if (spellargs == NULL) {
-		spellargs = (char **)nmalloc(arglen * sizeof(char *));
-
-		spellargs[0] = strtok(alt_speller, " ");
-		while ((ptr = strtok(NULL, " ")) != NULL) {
-			arglen++;
-			spellargs = (char **)nrealloc(spellargs, arglen *
-				sizeof(char *));
-			spellargs[arglen - 3] = ptr;
-		}
-		spellargs[arglen - 1] = NULL;
-	}
-	spellargs[arglen - 2] = tempfile_name;
+	construct_argument_list(&spellargs, alt_speller, tempfile_name);
 
 	/* Fork a child process and run the alternate spell program in it. */
 	if ((pid_spell = fork()) == 0) {
@@ -2944,6 +2936,8 @@ void do_spell(void)
 	bool status;
 	FILE *temp_file;
 	char *temp;
+	unsigned stash[sizeof(flags) / sizeof(flags[0])];
+		/* A storage place for the current flag settings. */
 	const char *spell_msg;
 
 	if (ISSET(RESTRICTED)) {
@@ -2957,6 +2951,12 @@ void do_spell(void)
 		statusline(ALERT, _("Error writing temp file: %s"), strerror(errno));
 		return;
 	}
+
+	/* Save the settings of the global flags. */
+	memcpy(stash, flags, sizeof(flags));
+
+	/* Don't add an extra newline when writing out the (selected) text. */
+	SET(NO_NEWLINES);
 
 #ifndef NANO_TINY
 	if (openfile->mark)
@@ -2979,6 +2979,9 @@ void do_spell(void)
 	unlink(temp);
 	free(temp);
 
+	/* Restore the settings of the global flags. */
+	memcpy(flags, stash, sizeof(flags));
+
 	/* If the spell-checker printed any error messages onscreen, make
 	 * sure that they're cleared off. */
 	total_refresh();
@@ -3000,12 +3003,11 @@ void do_spell(void)
  * termination, and the error string otherwise. */
 void do_linter(void)
 {
-	char *read_buff, *read_buff_ptr, *read_buff_word, *ptr, *lintcopy;
+	char *read_buff, *read_buff_ptr, *read_buff_word;
 	size_t pipe_buff_size, read_buff_size, read_buff_read, bytesread;
 	size_t parsesuccess = 0;
 	int lint_status, lint_fd[2];
 	pid_t pid_lint;
-	static int arglen = 3;
 	static char **lintargs = NULL;
 	lintstruct *lints = NULL, *tmplint = NULL, *curlint = NULL;
 
@@ -3034,7 +3036,6 @@ void do_linter(void)
 			return;
 	}
 
-	lintcopy = mallocstrcpy(NULL, openfile->syntax->linter);
 	/* Create a pipe up front. */
 	if (pipe(lint_fd) == -1) {
 		statusbar(_("Could not create pipe"));
@@ -3044,19 +3045,7 @@ void do_linter(void)
 	blank_bottombars();
 	statusbar(_("Invoking linter, please wait"));
 
-	/* Set up an argument list to pass to execvp(). */
-	if (lintargs == NULL) {
-		lintargs = (char **)nmalloc(arglen * sizeof(char *));
-
-		lintargs[0] = strtok(lintcopy, " ");
-		while ((ptr = strtok(NULL, " ")) != NULL) {
-			arglen++;
-			lintargs = (char **)nrealloc(lintargs, arglen * sizeof(char *));
-			lintargs[arglen - 3] = ptr;
-		}
-		lintargs[arglen - 1] = NULL;
-	}
-	lintargs[arglen - 2] = openfile->filename;
+	construct_argument_list(&lintargs, openfile->syntax->linter, openfile->filename);
 
 	/* Start a new process to run the linter in. */
 	if ((pid_lint = fork()) == 0) {
@@ -3336,9 +3325,8 @@ void do_formatter(void)
 	size_t pww_save = openfile->placewewant;
 	bool was_at_eol = (openfile->current->data[openfile->current_x] == '\0');
 	pid_t pid_format;
-	static int arglen = 3;
 	static char **formatargs = NULL;
-	char *temp, *ptr, *finalstatus = NULL;
+	char *temp, *finalstatus = NULL;
 
 	if (openfile->totsize == 0) {
 		statusbar(_("Finished"));
@@ -3367,19 +3355,7 @@ void do_formatter(void)
 	blank_bottombars();
 	statusbar(_("Invoking formatter, please wait"));
 
-	/* Set up an argument list to pass to execvp(). */
-	if (formatargs == NULL) {
-		formatargs = (char **)nmalloc(arglen * sizeof(char *));
-
-		formatargs[0] = strtok(openfile->syntax->formatter, " ");
-		while ((ptr = strtok(NULL, " ")) != NULL) {
-			arglen++;
-			formatargs = (char **)nrealloc(formatargs, arglen * sizeof(char *));
-			formatargs[arglen - 3] = ptr;
-		}
-		formatargs[arglen - 1] = NULL;
-	}
-	formatargs[arglen - 2] = temp;
+	construct_argument_list(&formatargs, openfile->syntax->formatter, temp);
 
 	/* Start a new process for the formatter. */
 	if ((pid_format = fork()) == 0) {
@@ -3483,7 +3459,7 @@ void do_wordlinechar_count(void)
 	 * count whenever we're on a word just before moving. */
 	while (openfile->current != openfile->filebot ||
 		openfile->current->data[openfile->current_x] != '\0') {
-		if (do_next_word(TRUE, FALSE))
+		if (do_next_word(FALSE, TRUE, FALSE))
 			words++;
 	}
 
@@ -3640,7 +3616,7 @@ void complete_a_word(void)
 				/* The point where we can stop searching for shard. */
 
 		/* Traverse the whole line, looking for shard. */
-		for (i = pletion_x; i < threshold; i++) {
+		for (i = pletion_x; (int)i < threshold; i++) {
 			/* If the first byte doesn't match, run on. */
 			if (pletion_line->data[i] != shard[0])
 				continue;

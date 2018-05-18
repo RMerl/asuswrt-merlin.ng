@@ -28,8 +28,8 @@
 
 static bool came_full_circle = FALSE;
 		/* Have we reached the starting line again while searching? */
-static bool regexp_compiled = FALSE;
-		/* Have we compiled any regular expressions? */
+static bool have_compiled_regexp = FALSE;
+		/* Whether we have compiled a regular expression for the search. */
 
 /* Compile the given regular expression and store it in search_regexp.
  * Return TRUE if the expression is valid, and FALSE otherwise. */
@@ -50,43 +50,23 @@ bool regexp_init(const char *regexp)
 		return FALSE;
 	}
 
-	regexp_compiled = TRUE;
+	have_compiled_regexp = TRUE;
 
 	return TRUE;
 }
 
-/* Decompile the compiled regular expression we used in the last
- * search, if any. */
-void regexp_cleanup(void)
+/* Free a compiled regular expression, if one was compiled; and schedule a
+ * full screen refresh when the mark is on, in case the cursor has moved. */
+void tidy_up_after_search(void)
 {
-	if (regexp_compiled) {
-		regexp_compiled = FALSE;
+	if (have_compiled_regexp) {
 		regfree(&search_regexp);
+		have_compiled_regexp = FALSE;
 	}
-}
-
-/* Report on the status bar that the given string was not found. */
-void not_found_msg(const char *str)
-{
-	char *disp = display_string(str, 0, (COLS / 2) + 1, FALSE);
-	size_t numchars = actual_x(disp, strnlenpt(disp, COLS / 2));
-
-	statusline(HUSH, _("\"%.*s%s\" not found"), numchars, disp,
-				(disp[numchars] == '\0') ? "" : "...");
-	free(disp);
-}
-
-/* Abort the current search or replace.  Clean up by displaying the main
- * shortcut list, updating the screen if the mark was on before, and
- * decompiling the compiled regular expression we used in the last
- * search, if any. */
-void search_replace_abort(void)
-{
 #ifndef NANO_TINY
 	if (openfile->mark)
 		refresh_needed = TRUE;
 #endif
-	regexp_cleanup();
 }
 
 /* Prepare the prompt and ask the user what to search for.  Keep looping
@@ -135,7 +115,7 @@ void search_init(bool replacing, bool keep_the_answer)
 		 * nothing was searched for yet during this session, get out. */
 		if (i == -1 || (i == -2 && *last_search == '\0')) {
 			statusbar(_("Cancelled"));
-			search_replace_abort();
+			tidy_up_after_search();
 			free(thedefault);
 			return;
 		}
@@ -150,21 +130,18 @@ void search_init(bool replacing, bool keep_the_answer)
 #endif
 			}
 
-			free(thedefault);
-
-			/* If doing a regular-expression search, compile the
-			 * search string, and get out when it's invalid. */
-			if (ISSET(USE_REGEXP) && !regexp_init(last_search)) {
-				search_replace_abort();
-				return;
+			/* When not doing a regular-expression search, just search;
+			 * otherwise compile the search string, and only search when
+			 * the expression is valid. */
+			if (!ISSET(USE_REGEXP) || regexp_init(last_search)) {
+				if (replacing)
+					ask_for_replacement();
+				else
+					go_looking();
 			}
 
-			if (replacing)
-				ask_for_replacement();
-			else
-				go_looking();
-
-			search_replace_abort();
+			tidy_up_after_search();
+			free(thedefault);
 			return;
 		}
 
@@ -184,7 +161,7 @@ void search_init(bool replacing, bool keep_the_answer)
 			if (func == flip_goto)
 				do_gotolinecolumn(openfile->current->lineno,
 							openfile->placewewant + 1, TRUE, TRUE);
-			search_replace_abort();
+			tidy_up_after_search();
 			free(thedefault);
 			return;
 		}
@@ -228,7 +205,7 @@ int findnextstr(const char *needle, bool whole_word_only, int modus,
 			lastkbcheck = time(NULL);
 
 			/* Consume all waiting keystrokes until a Cancel. */
-			while (input) {
+			while (input != ERR) {
 				if (func_from_key(&input) == do_cancel) {
 					statusbar(_("Cancelled"));
 					enable_waiting();
@@ -363,22 +340,6 @@ void do_search_backward(void)
 	do_search();
 }
 
-#ifndef NANO_TINY
-/* Search in the backward direction for the next occurrence. */
-void do_findprevious(void)
-{
-	SET(BACKWARDS_SEARCH);
-	do_research();
-}
-
-/* Search in the forward direction for the next occurrence. */
-void do_findnext(void)
-{
-	UNSET(BACKWARDS_SEARCH);
-	do_research();
-}
-#endif /* !NANO_TINY */
-
 /* Search for the last string without prompting. */
 void do_research(void)
 {
@@ -402,7 +363,34 @@ void do_research(void)
 
 	go_looking();
 
-	search_replace_abort();
+	tidy_up_after_search();
+}
+
+#ifndef NANO_TINY
+/* Search in the backward direction for the next occurrence. */
+void do_findprevious(void)
+{
+	SET(BACKWARDS_SEARCH);
+	do_research();
+}
+
+/* Search in the forward direction for the next occurrence. */
+void do_findnext(void)
+{
+	UNSET(BACKWARDS_SEARCH);
+	do_research();
+}
+#endif /* !NANO_TINY */
+
+/* Report on the status bar that the given string was not found. */
+void not_found_msg(const char *str)
+{
+	char *disp = display_string(str, 0, (COLS / 2) + 1, FALSE);
+	size_t numchars = actual_x(disp, strnlenpt(disp, COLS / 2));
+
+	statusline(HUSH, _("\"%.*s%s\" not found"), numchars, disp,
+						(disp[numchars] == '\0') ? "" : "...");
+	free(disp);
 }
 
 /* Search for the global string 'last_search'.  Inform the user when
@@ -702,8 +690,10 @@ void do_replace(void)
 {
 	if (ISSET(VIEW_MODE))
 		print_view_warning();
-	else
+	else {
+		UNSET(BACKWARDS_SEARCH);
 		search_init(TRUE, FALSE);
+	}
 }
 
 /* Ask the user what the already given search string should be replaced with. */
@@ -782,6 +772,7 @@ void do_gotolinecolumn(ssize_t line, ssize_t column, bool use_answer,
 		}
 
 		if (func_from_key(&i) == flip_goto) {
+			UNSET(BACKWARDS_SEARCH);
 			/* Retain what the user typed so far and switch to searching. */
 			search_init(FALSE, TRUE);
 			return;

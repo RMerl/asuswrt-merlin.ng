@@ -1,5 +1,5 @@
 <!-- Creator     : groff version 1.22.3 -->
-<!-- CreationDate: Thu Mar 29 10:10:18 2018 -->
+<!-- CreationDate: Tue May 15 09:08:10 2018 -->
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
 "http://www.w3.org/TR/html4/loose.dtd">
 <html>
@@ -91,7 +91,13 @@ the <b>brackets</b> option,
 
 <p style="margin-left:11%; margin-top: 1em">The supported
 commands and arguments are: <b><br>
-set allow_insecure_backup</b></p>
+set afterends</b></p>
+
+<p style="margin-left:15%;">Make Ctrl+Right stop at word
+ends instead of beginnings.</p>
+
+<p style="margin-left:11%;"><b>set
+allow_insecure_backup</b></p>
 
 <p style="margin-left:15%;">When backing up files, allow
 the backup to succeed even if its permissions can&rsquo;t be
@@ -436,7 +442,8 @@ color. The name of the foreground color may be prefixed with
 
 <p style="margin-left:15%;">Remove trailing whitespace from
 wrapped lines when automatic hard-wrapping occurs or when
-text is justified.</p>
+text is justified. (The old form of this option,
+&rsquo;<b>set justifytrim</b>&rsquo;, is deprecated.)</p>
 
 <p style="margin-left:11%;"><b>set unix</b></p>
 
@@ -1131,10 +1138,11 @@ using the file browser (reading or writing files).</p>
 two-line list of key bindings at the bottom of the
 screen.</p>
 
-<p style="margin-left:15%;"><b>constupdate</b></p>
+<p style="margin-left:15%;"><b>constantshow</b></p>
 
 <p style="margin-left:18%;">Toggles the constant display of
-the current line, column, and character positions.</p>
+the current line, column, and character positions. (The form
+&rsquo;constupdate&rsquo; is deprecated.)</p>
 
 <p style="margin-left:15%;"><b>morespace</b></p>
 
@@ -1151,6 +1159,11 @@ moving around with the arrow keys).</p>
 
 <p style="margin-left:18%;">Toggles the displaying of
 overlong lines on multiple screen lines.</p>
+
+<p style="margin-left:15%;"><b>linenumbers</b></p>
+
+<p style="margin-left:18%;">Toggles the display of line
+numbers in front of the text.</p>
 
 <p style="margin-left:15%;"><b>whitespacedisplay</b></p>
 
@@ -1173,11 +1186,12 @@ Home key.</p>
 contain the same amount of whitespace as the preceding
 line.</p>
 
-<p style="margin-left:15%;"><b>cuttoend</b></p>
+<p style="margin-left:15%;"><b>cutfromcursor</b></p>
 
 <p style="margin-left:18%;">Toggles whether cutting text
 will cut the whole line or just from the current cursor
-position to the end of the line.</p>
+position to the end of the line. (The form
+&rsquo;cuttoend&rsquo; is deprecated.)</p>
 
 <p style="margin-left:15%;"><b>nowrap</b></p>
 

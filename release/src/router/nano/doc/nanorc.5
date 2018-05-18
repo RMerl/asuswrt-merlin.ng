@@ -16,7 +16,7 @@
 .\"   Documentation License along with this program.  If not, see
 .\"   <http://www.gnu.org/licenses/>.
 .\"
-.TH NANORC 5 "version 2.9.5" "March 2018"
+.TH NANORC 5 "version 2.9.7" "May 2018"
 
 .SH NAME
 nanorc \- GNU nano's configuration file
@@ -53,6 +53,9 @@ match \fB"\fP, \fB'\fP, \fB)\fP, \fB>\fP, \fB]\fP, and \fB}\fP.
 The supported commands and arguments are:
 
 .TP 3
+.B set afterends
+Make Ctrl+Right stop at word ends instead of beginnings.
+.TP
 .B set allow_insecure_backup
 When backing up files, allow the backup to succeed even if its permissions
 can't be (re)set due to special OS considerations.  You should
@@ -273,6 +276,7 @@ And either "\fIfgcolor\fR" or ",\fIbgcolor\fR" may be left out.
 .B set trimblanks
 Remove trailing whitespace from wrapped lines when automatic
 hard-wrapping occurs or when text is justified.
+(The old form of this option, '\fBset justifytrim\fR', is deprecated.)
 .TP
 .B set unix
 Save a file by default in Unix format.  This overrides nano's
@@ -703,8 +707,9 @@ Goes to the last file when using the file browser (reading or writing files).
 .B nohelp
 Toggles the presence of the two-line list of key bindings at the bottom of the screen.
 .TP
-.B constupdate
+.B constantshow
 Toggles the constant display of the current line, column, and character positions.
+(The form 'constupdate' is deprecated.)
 .TP
 .B morespace
 Toggles the presence of the blank line that 'separates' the title bar from the file text.
@@ -714,6 +719,9 @@ Toggles smooth scrolling (when moving around with the arrow keys).
 .TP
 .B softwrap
 Toggles the displaying of overlong lines on multiple screen lines.
+.TP
+.B linenumbers
+Toggles the display of line numbers in front of the text.
 .TP
 .B whitespacedisplay
 Toggles the showing of whitespace.
@@ -727,9 +735,10 @@ Toggles the smartness of the Home key.
 .B autoindent
 Toggles whether new lines will contain the same amount of whitespace as the preceding line.
 .TP
-.B cuttoend
+.B cutfromcursor
 Toggles whether cutting text will cut the whole line or just from the current cursor
 position to the end of the line.
+(The form 'cuttoend' is deprecated.)
 .TP
 .B nowrap
 Toggles whether long lines will be hard-wrapped to the next line.

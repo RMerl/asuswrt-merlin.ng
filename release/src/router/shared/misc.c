@@ -1465,8 +1465,7 @@ void reset_ipv6_linklocal_addr(const char *ifname, int flush)
 
 	memset(&ifr, 0, sizeof(ifr));
 	strncpy(ifr.ifr_name, ifname, sizeof(ifr.ifr_name));
-	mac = (ioctl(fd, SIOCGIFHWADDR, &ifr) < 0) ?
-		NULL : ifr.ifr_hwaddr.sa_data;
+	mac = (ioctl(fd, SIOCGIFHWADDR, &ifr) < 0) ? NULL : ifr.ifr_hwaddr.sa_data;
 	close(fd);
 
 	if (mac == NULL)
@@ -1482,8 +1481,10 @@ void reset_ipv6_linklocal_addr(const char *ifname, int flush)
 
 	if (flush)
 		eval("ip", "-6", "addr", "flush", "dev", (char *) ifname);
-	if (inet_ntop(AF_INET6, &addr, buf, sizeof(buf)))
-		eval("ip", "-6", "addr", "add", buf, "dev", (char *) ifname);
+	if (inet_ntop(AF_INET6, &addr, buf, sizeof(buf))) {
+		strlcat(buf, "/64", sizeof(buf));
+		eval("ip", "-6", "addr", "add", buf, "dev", (char *) ifname, "scope", "link");
+	}
 }
 
 int with_ipv6_linklocal_addr(const char *ifname)

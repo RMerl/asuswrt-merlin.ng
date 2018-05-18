@@ -270,6 +270,7 @@ enum {
 #define RTF_REINSTATE   0x0008  /* reinstate route after tmout	*/
 #define RTF_DYNAMIC     0x0010  /* created dyn. (by redirect)	*/
 #define RTF_MODIFIED    0x0020  /* modified dyn. (by redirect)	*/
+#define RTF_REJECT      0x0200  /* Reject route			*/
 #endif
 #ifndef RTF_DEFAULT
 #define	RTF_DEFAULT	0x00010000	/* default - learned via ND	*/

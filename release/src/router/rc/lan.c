@@ -1478,8 +1478,10 @@ void config_ipv6(int enable, int incl_wan)
 
 void start_lan_ipv6(void)
 {
-	char *lan_ifname = strdup(nvram_safe_get("lan_ifname"));
+	char lan_ifname[16];
 	int unit, ipv6_service = 0;
+
+	strlcpy(lan_ifname, nvram_safe_get("lan_ifname"), sizeof(lan_ifname));
 
 	for (unit = WAN_UNIT_FIRST; unit < WAN_UNIT_MAX; ++unit)
 		if (get_ipv6_service_by_unit(unit) != IPV6_DISABLED) {
@@ -1496,7 +1498,9 @@ void start_lan_ipv6(void)
 
 void stop_lan_ipv6(void)
 {
-	char *lan_ifname = strdup(nvram_safe_get("lan_ifname"));
+	char lan_ifname[16];
+
+	strlcpy(lan_ifname, nvram_safe_get("lan_ifname"), sizeof(lan_ifname));
 
 	stop_ipv6();
 	set_intf_ipv6_dad(lan_ifname, 0, 0);

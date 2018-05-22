@@ -20,7 +20,7 @@
 .\" *
 .\" **************************************************************************
 .\"
-.TH CURLOPT_PROXY_CRLFILE 3 "May 31, 2017" "libcurl 7.57.0" "curl_easy_setopt options"
+.TH CURLOPT_PROXY_CRLFILE 3 "April 17, 2018" "libcurl 7.60.0" "curl_easy_setopt options"
 
 .SH NAME
 CURLOPT_PROXY_CRLFILE \- specify a proxy Certificate Revocation List file
@@ -29,7 +29,7 @@ CURLOPT_PROXY_CRLFILE \- specify a proxy Certificate Revocation List file
 
 CURLcode curl_easy_setopt(CURL *handle, CURLOPT_PROXY_CRLFILE, char *file);
 .SH DESCRIPTION
-This option is for connecting to a HTTPS proxy, not a HTTPS server.
+This option is for connecting to an HTTPS proxy, not an HTTPS server.
 
 Pass a char * to a zero terminated string naming a \fIfile\fP with the
 concatenation of CRL (in PEM format) to use in the certificate validation that

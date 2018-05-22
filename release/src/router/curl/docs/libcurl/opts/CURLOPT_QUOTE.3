@@ -20,7 +20,7 @@
 .\" *
 .\" **************************************************************************
 .\"
-.TH CURLOPT_QUOTE 3 "May 05, 2017" "libcurl 7.57.0" "curl_easy_setopt options"
+.TH CURLOPT_QUOTE 3 "April 17, 2018" "libcurl 7.60.0" "curl_easy_setopt options"
 
 .SH NAME
 CURLOPT_QUOTE \- (S)FTP commands to run before transfer
@@ -35,7 +35,7 @@ prior to your request. This will be done before any other commands are issued
 list of 'struct curl_slist' structs properly filled in with text strings. Use
 \fIcurl_slist_append(3)\fP to append strings (commands) to the list, and clear
 the entire list afterwards with \fIcurl_slist_free_all(3)\fP. Disable this
-operation again by setting a NULL to this option. When speaking to a FTP
+operation again by setting a NULL to this option. When speaking to an FTP
 server, prefix the command with an asterisk (*) to make libcurl continue even
 if the command fails as by default libcurl will stop at first failure.
 

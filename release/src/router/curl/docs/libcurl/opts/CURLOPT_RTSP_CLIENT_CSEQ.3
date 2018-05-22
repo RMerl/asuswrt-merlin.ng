@@ -20,7 +20,7 @@
 .\" *
 .\" **************************************************************************
 .\"
-.TH CURLOPT_RTSP_CLIENT_CSEQ 3 "May 31, 2017" "libcurl 7.57.0" "curl_easy_setopt options"
+.TH CURLOPT_RTSP_CLIENT_CSEQ 3 "April 17, 2018" "libcurl 7.60.0" "curl_easy_setopt options"
 
 .SH NAME
 CURLOPT_RTSP_CLIENT_CSEQ \- set the RTSP client CSEQ number
@@ -29,7 +29,7 @@ CURLOPT_RTSP_CLIENT_CSEQ \- set the RTSP client CSEQ number
 
 CURLcode curl_easy_setopt(CURL *handle, CURLOPT_RTSP_CLIENT_CSEQ, long cseq);
 .SH DESCRIPTION
-Pass a long to set the the CSEQ number to issue for the next RTSP
+Pass a long to set the CSEQ number to issue for the next RTSP
 request. Useful if the application is resuming a previously broken
 connection. The CSEQ will increment from this new number henceforth.
 .SH DEFAULT

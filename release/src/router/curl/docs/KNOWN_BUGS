@@ -27,6 +27,7 @@ problems may have been fixed or changed somewhat since this was written!
  2.2 DER in keychain
  2.3 GnuTLS backend skips really long certificate fields
  2.4 DarwinSSL won't import PKCS#12 client certificates without a password
+ 2.5 Client cert handling with Issuer DN differs between backends
 
  3. Email protocols
  3.1 IMAP SEARCH ALL truncated response
@@ -38,6 +39,7 @@ problems may have been fixed or changed somewhat since this was written!
  4.1 -J with %-encoded file nameas
  4.2 -J with -C - fails
  4.3 --retry and transfer timeouts
+ 4.4 --upload-file . hang if delay in STDIN
 
  5. Build and portability issues
  5.1 Windows Borland compiler
@@ -64,6 +66,7 @@ problems may have been fixed or changed somewhat since this was written!
  7.6 FTP with NULs in URL parts
  7.7 FTP and empty path parts in the URL
  7.8 Premature transfer end but healthy control channel
+ 7.9 Passive transfer tries only one IP address
 
  8. TELNET
  8.1 TELNET and time limtiations don't work
@@ -83,6 +86,7 @@ problems may have been fixed or changed somewhat since this was written!
  11.2 error buffer not set if connection to multiple addresses fails
  11.3 c-ares deviates from stock resolver on http://1346569778
  11.4 HTTP test server 'connection-monitor' problems
+ 11.5 Connection information when using TCP Fast Open
 
  12. LDAP and OpenLDAP
  12.1 OpenLDAP hangs after returning results
@@ -90,6 +94,8 @@ problems may have been fixed or changed somewhat since this was written!
  13. TCP/IP
  13.1 --interface for ipv6 binds to unusable IP address
 
+ 14 DICT
+ 14.1 DICT responses show the underlying protocol
 
 ==============================================================================
 
@@ -221,6 +227,13 @@ problems may have been fixed or changed somewhat since this was written!
  function rejects certificates that do not have a password.
  https://github.com/curl/curl/issues/1308
 
+2.5 Client cert handling with Issuer DN differs between backends
+
+ When the specified client certificate doesn't match any of the
+ server-specified DNs, the OpenSSL and GnuTLS backends behave differently.
+ The github discussion may contain a solution.
+
+ See https://github.com/curl/curl/issues/1411
 
 3. Email protocols
 
@@ -280,6 +293,13 @@ problems may have been fixed or changed somewhat since this was written!
  https://curl.haxx.se/mail/lib-2008-01/0080.html and Mandriva bug report
  https://qa.mandriva.com/show_bug.cgi?id=22565
 
+4.4 --upload-file . hangs if delay in STDIN
+
+ "(echo start; sleep 1; echo end) | curl --upload-file . http://mywebsite -vv"
+
+ ... causes a hang when it shouldn't.
+
+ See https://github.com/curl/curl/issues/2051
 
 5. Build and portability issues
 
@@ -472,6 +492,18 @@ problems may have been fixed or changed somewhat since this was written!
  alive even in this situation - but the current code doesn't. Fixing this would
  allow libcurl to reuse FTP connections better.
 
+7.9 Passive transfer tries only one IP address
+
+ When doing FTP operations through a proxy at localhost, the reported spotted
+ that curl only tried to connect once to the proxy, while it had mulitiple
+ addresses and a failed connect on one address should make it try the next.
+
+ After switching to passive mode (EPSV), curl should try all IP addresses for
+ "localhost". Currently it tries ::1, but it should also try 127.0.0.1.
+
+ See https://github.com/curl/curl/issues/1508
+
+
 8. TELNET
 
 8.1 TELNET and time limtiations don't work
@@ -559,6 +591,13 @@ problems may have been fixed or changed somewhat since this was written!
 
  See https://github.com/curl/curl/issues/868
 
+11.5 Connection information when using TCP Fast Open
+
+ CURLINFO_LOCAL_PORT (and possibly a few other) fails when TCP Fast Open is
+ enabled.
+
+ See https://github.com/curl/curl/issues/1332
+
 
 12. LDAP and OpenLDAP
 
@@ -591,3 +630,12 @@ problems may have been fixed or changed somewhat since this was written!
  locally scoped address as that is bound to fail.
 
  https://github.com/curl/curl/issues/686
+
+14. DICT
+
+14.1 DICT responses show the underlying protocol
+
+ When getting a DICT response, the protocol parts of DICT aren't stripped off
+ from the output.
+
+ https://github.com/curl/curl/issues/1809

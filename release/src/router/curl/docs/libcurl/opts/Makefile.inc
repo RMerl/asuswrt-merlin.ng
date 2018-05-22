@@ -14,6 +14,7 @@ man_MANS =                                      \
   CURLINFO_COOKIELIST.3                         \
   CURLINFO_EFFECTIVE_URL.3                      \
   CURLINFO_FILETIME.3                           \
+  CURLINFO_FILETIME_T.3                         \
   CURLINFO_FTP_ENTRY_PATH.3                     \
   CURLINFO_HEADER_SIZE.3                        \
   CURLINFO_HTTPAUTH_AVAIL.3                     \
@@ -111,6 +112,7 @@ man_MANS =                                      \
   CURLOPT_DNS_LOCAL_IP4.3                       \
   CURLOPT_DNS_LOCAL_IP6.3                       \
   CURLOPT_DNS_SERVERS.3                         \
+  CURLOPT_DNS_SHUFFLE_ADDRESSES.3               \
   CURLOPT_DNS_USE_GLOBAL_CACHE.3                \
   CURLOPT_EGDSOCKET.3                           \
   CURLOPT_ERRORBUFFER.3                         \
@@ -135,6 +137,8 @@ man_MANS =                                      \
   CURLOPT_FTP_USE_EPSV.3                        \
   CURLOPT_FTP_USE_PRET.3                        \
   CURLOPT_GSSAPI_DELEGATION.3                   \
+  CURLOPT_HAPPY_EYEBALLS_TIMEOUT_MS.3           \
+  CURLOPT_HAPROXYPROTOCOL.3                     \
   CURLOPT_HEADER.3                              \
   CURLOPT_HEADERDATA.3                          \
   CURLOPT_HEADERFUNCTION.3                      \
@@ -240,6 +244,8 @@ man_MANS =                                      \
   CURLOPT_REFERER.3                             \
   CURLOPT_REQUEST_TARGET.3                      \
   CURLOPT_RESOLVE.3                             \
+  CURLOPT_RESOLVER_START_DATA.3                 \
+  CURLOPT_RESOLVER_START_FUNCTION.3             \
   CURLOPT_RESUME_FROM.3                         \
   CURLOPT_RESUME_FROM_LARGE.3                   \
   CURLOPT_RTSP_CLIENT_CSEQ.3                    \
@@ -301,6 +307,7 @@ man_MANS =                                      \
   CURLOPT_TIMEOUT.3                             \
   CURLOPT_TIMEOUT_MS.3                          \
   CURLOPT_TIMEVALUE.3                           \
+  CURLOPT_TIMEVALUE_LARGE.3                     \
   CURLOPT_TLSAUTH_PASSWORD.3                    \
   CURLOPT_TLSAUTH_TYPE.3                        \
   CURLOPT_TLSAUTH_USERNAME.3                    \

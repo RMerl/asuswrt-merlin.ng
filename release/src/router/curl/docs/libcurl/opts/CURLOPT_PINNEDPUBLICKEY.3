@@ -5,7 +5,7 @@
 .\" *                            | (__| |_| |  _ <| |___
 .\" *                             \___|\___/|_| \_\_____|
 .\" *
-.\" * Copyright (C) 1998 - 2017, Daniel Stenberg, <daniel@haxx.se>, et al.
+.\" * Copyright (C) 1998 - 2018, Daniel Stenberg, <daniel@haxx.se>, et al.
 .\" *
 .\" * This software is licensed as described in the file COPYING, which
 .\" * you should have received as part of this distribution. The terms
@@ -20,7 +20,7 @@
 .\" *
 .\" **************************************************************************
 .\"
-.TH CURLOPT_PINNEDPUBLICKEY 3 "April 17, 2017" "libcurl 7.57.0" "curl_easy_setopt options"
+.TH CURLOPT_PINNEDPUBLICKEY 3 "January 25, 2018" "libcurl 7.60.0" "curl_easy_setopt options"
 
 .SH NAME
 CURLOPT_PINNEDPUBLICKEY \- set pinned public key
@@ -96,7 +96,9 @@ footer:
 .SH AVAILABILITY
 PEM/DER support:
 
-  7.39.0: OpenSSL, GnuTLS and GSKit
+  7.39.0: OpenSSL, GnuTLS
+
+  7.39.0-7.48.0,7.58.1+: GSKit
 
   7.43.0: NSS and wolfSSL/CyaSSL
 
@@ -105,6 +107,8 @@ PEM/DER support:
   7.49.0: PolarSSL
 
   7.54.1: SecureTransport/DarwinSSL on macOS 10.7+/iOS 10+
+
+  7.58.1: SChannel/WinSSL
 
 sha256 support:
 
@@ -115,6 +119,8 @@ sha256 support:
   7.49.0: PolarSSL
 
   7.54.1: SecureTransport/DarwinSSL on macOS 10.7+/iOS 10+
+
+  7.58.1: SChannel/WinSSL Windows XP SP3+
 
 Other SSL backends not supported.
 .SH RETURN VALUE

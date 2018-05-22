@@ -44,11 +44,19 @@ static void my_unlock(CURL *handle, curl_lock_data data, void *useptr)
 int test(char *URL)
 {
   CURL *curl;
-  CURLcode res;
+  CURLcode res = CURLE_OK;
   CURLSH *share;
   int i;
 
+  global_init(CURL_GLOBAL_ALL);
+
   share = curl_share_init();
+  if(!share) {
+    fprintf(stderr, "curl_share_init() failed\n");
+    curl_global_cleanup();
+    return TEST_ERR_MAJOR_BAD;
+  }
+
   curl_share_setopt(share, CURLSHOPT_SHARE, CURL_LOCK_DATA_CONNECT);
   curl_share_setopt(share, CURLSHOPT_LOCKFUNC, my_lock);
   curl_share_setopt(share, CURLSHOPT_UNLOCKFUNC, my_unlock);
@@ -77,5 +85,7 @@ int test(char *URL)
   }
 
   curl_share_cleanup(share);
+  curl_global_cleanup();
+
   return 0;
 }

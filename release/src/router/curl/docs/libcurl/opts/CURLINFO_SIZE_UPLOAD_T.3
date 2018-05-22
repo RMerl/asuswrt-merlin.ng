@@ -20,7 +20,7 @@
 .\" *
 .\" **************************************************************************
 .\"
-.TH CURLINFO_SIZE_UPLOAD_T 3 "June 15, 2017" "libcurl 7.57.0" "curl_easy_getinfo options"
+.TH CURLINFO_SIZE_UPLOAD_T 3 "March 31, 2018" "libcurl 7.60.0" "curl_easy_getinfo options"
 
 .SH NAME
 CURLINFO_SIZE_UPLOAD_T \- get the number of uploaded bytes
@@ -46,7 +46,7 @@ if(curl) {
     curl_off_t ul;
     res = curl_easy_getinfo(curl, CURLINFO_SIZE_UPLOAD_T, &ul);
     if(!res) {
-      printf("Uploaded " CURL_FORMAT_CURL_OFF_T " bytes\\n", ul);
+      printf("Uploaded %" CURL_FORMAT_CURL_OFF_T " bytes\\n", ul);
     }
   }
 }

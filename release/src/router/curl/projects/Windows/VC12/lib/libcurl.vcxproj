@@ -2388,6 +2388,7 @@
     <ClCompile Include="..\..\..\..\lib\content_encoding.c" />
     <ClCompile Include="..\..\..\..\lib\cookie.c" />
     <ClCompile Include="..\..\..\..\lib\curl_addrinfo.c" />
+    <ClCompile Include="..\..\..\..\lib\curl_ctype.c" />
     <ClCompile Include="..\..\..\..\lib\curl_des.c" />
     <ClCompile Include="..\..\..\..\lib\curl_endian.c" />
     <ClCompile Include="..\..\..\..\lib\curl_fnmatch.c" />
@@ -2397,6 +2398,8 @@
     <ClCompile Include="..\..\..\..\lib\curl_multibyte.c" />
     <ClCompile Include="..\..\..\..\lib\curl_ntlm_core.c" />
     <ClCompile Include="..\..\..\..\lib\curl_ntlm_wb.c" />
+    <ClCompile Include="..\..\..\..\lib\curl_path.c" />
+    <ClCompile Include="..\..\..\..\lib\curl_range.c" />
     <ClCompile Include="..\..\..\..\lib\curl_rtmp.c" />
     <ClCompile Include="..\..\..\..\lib\curl_sasl.c" />
     <ClCompile Include="..\..\..\..\lib\curl_sspi.c" />
@@ -2468,6 +2471,7 @@
     <ClCompile Include="..\..\..\..\lib\speedcheck.c" />
     <ClCompile Include="..\..\..\..\lib\splay.c" />
     <ClCompile Include="..\..\..\..\lib\ssh.c" />
+    <ClCompile Include="..\..\..\..\lib\ssh-libssh.c" />
     <ClCompile Include="..\..\..\..\lib\strcase.c" />
     <ClCompile Include="..\..\..\..\lib\strdup.c" />
     <ClCompile Include="..\..\..\..\lib\strerror.c" />
@@ -2506,6 +2510,7 @@
     <ClCompile Include="..\..\..\..\lib\vtls\polarssl.c" />
     <ClCompile Include="..\..\..\..\lib\vtls\polarssl_threadlock.c" />
     <ClCompile Include="..\..\..\..\lib\vtls\schannel.c" />
+    <ClCompile Include="..\..\..\..\lib\vtls\schannel_verify.c" />
     <ClCompile Include="..\..\..\..\lib\vtls\vtls.c" />
   </ItemGroup>
   <ItemGroup>
@@ -2519,6 +2524,7 @@
     <ClInclude Include="..\..\..\..\lib\cookie.h" />
     <ClInclude Include="..\..\..\..\lib\curl_addrinfo.h" />
     <ClInclude Include="..\..\..\..\lib\curl_base64.h" />
+    <ClInclude Include="..\..\..\..\lib\curl_ctype.h" />
     <ClInclude Include="..\..\..\..\lib\curl_des.h" />
     <ClInclude Include="..\..\..\..\lib\curl_endian.h" />
     <ClInclude Include="..\..\..\..\lib\curl_fnmatch.h" />
@@ -2533,7 +2539,9 @@
     <ClInclude Include="..\..\..\..\lib\curl_multibyte.h" />
     <ClInclude Include="..\..\..\..\lib\curl_ntlm_core.h" />
     <ClInclude Include="..\..\..\..\lib\curl_ntlm_wb.h" />
+    <ClInclude Include="..\..\..\..\lib\curl_path.h" />
     <ClInclude Include="..\..\..\..\lib\curl_printf.h" />
+    <ClInclude Include="..\..\..\..\lib\curl_range.h" />
     <ClInclude Include="..\..\..\..\lib\curl_rtmp.h" />
     <ClInclude Include="..\..\..\..\lib\curl_sasl.h" />
     <ClInclude Include="..\..\..\..\lib\curl_sec.h" />

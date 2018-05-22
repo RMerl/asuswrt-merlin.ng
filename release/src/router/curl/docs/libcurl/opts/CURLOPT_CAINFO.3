@@ -20,7 +20,7 @@
 .\" *
 .\" **************************************************************************
 .\"
-.TH CURLOPT_CAINFO 3 "May 27, 2017" "libcurl 7.57.0" "curl_easy_setopt options"
+.TH CURLOPT_CAINFO 3 "March 10, 2017" "libcurl 7.60.0" "curl_easy_setopt options"
 
 .SH NAME
 CURLOPT_CAINFO \- path to Certificate Authority (CA) bundle
@@ -52,6 +52,11 @@ option is supported for backward compatibility with other SSL engines, but it
 should not be set. If the option is not set, then curl will use the
 certificates in the system and user Keychain to verify the peer, which is the
 preferred method of verifying the peer's certificate chain.
+
+(Schannel/WinSSL only) This option is supported for WinSSL in Windows 7 or
+later with libcurl 7.60 or later. This option is supported for backward
+compatibility with other SSL engines; instead it is recommended to use Windows'
+store of root certificates (the default for WinSSL).
 
 The application does not have to keep the string around after setting this
 option.

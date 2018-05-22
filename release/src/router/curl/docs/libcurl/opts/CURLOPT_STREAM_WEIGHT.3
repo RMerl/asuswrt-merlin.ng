@@ -20,7 +20,7 @@
 .\" *
 .\" **************************************************************************
 .\"
-.TH CURLOPT_STREAM_WEIGHT 3 "May 31, 2017" "libcurl 7.57.0" "curl_easy_setopt options"
+.TH CURLOPT_STREAM_WEIGHT 3 "April 17, 2018" "libcurl 7.60.0" "curl_easy_setopt options"
 
 .SH NAME
 CURLOPT_STREAM_WEIGHT \- set numerical stream weight
@@ -37,7 +37,7 @@ sense and is only usable when doing multiple streams over the same
 connections, which thus implies that you use \fICURLMOPT_PIPELINING(3)\fP.
 
 This option can be set during transfer and will then cause the updated weight
-info get sent to the server the next time a HTTP/2 frame is sent to the
+info get sent to the server the next time an HTTP/2 frame is sent to the
 server.
 
 See section 5.3 of RFC 7540 for protocol details:

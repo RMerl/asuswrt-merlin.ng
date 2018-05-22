@@ -20,7 +20,7 @@
 .\" *
 .\" **************************************************************************
 .\"
-.TH CURLOPT_PROXY_SSLCERTTYPE 3 "May 31, 2017" "libcurl 7.57.0" "curl_easy_setopt options"
+.TH CURLOPT_PROXY_SSLCERTTYPE 3 "April 17, 2018" "libcurl 7.60.0" "curl_easy_setopt options"
 
 .SH NAME
 CURLOPT_PROXY_SSLCERTTYPE \- specify type of the proxy client SSL certificate
@@ -30,7 +30,7 @@ CURLOPT_PROXY_SSLCERTTYPE \- specify type of the proxy client SSL certificate
 CURLcode curl_easy_setopt(CURL *handle, CURLOPT_PROXY_SSLCERTTYPE, char *type);
 .SH DESCRIPTION
 Pass a pointer to a zero terminated string as parameter. The string should be
-the format of your client certificate used when connecting to a HTTPS proxy.
+the format of your client certificate used when connecting to an HTTPS proxy.
 
 Supported formats are "PEM" and "DER", except with Secure Transport. OpenSSL
 (versions 0.9.3 and later) and Secure Transport (on iOS 5 or later, or OS X

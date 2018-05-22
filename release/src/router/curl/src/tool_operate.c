@@ -25,12 +25,6 @@
 #  include <fcntl.h>
 #endif
 
-#ifdef HAVE_UTIME_H
-#  include <utime.h>
-#elif defined(HAVE_SYS_UTIME_H)
-#  include <sys/utime.h>
-#endif
-
 #ifdef HAVE_LOCALE_H
 #  include <locale.h>
 #endif
@@ -56,6 +50,7 @@
 #include "tool_dirhie.h"
 #include "tool_doswin.h"
 #include "tool_easysrc.h"
+#include "tool_filetime.h"
 #include "tool_getparam.h"
 #include "tool_helpers.h"
 #include "tool_homedir.h"
@@ -174,79 +169,6 @@ static curl_off_t VmsSpecialSize(const char *name,
 }
 #endif /* __VMS */
 
-#if defined(HAVE_UTIME) || \
-    (defined(WIN32) && (SIZEOF_CURL_OFF_T >= 8))
-static void setfiletime(long filetime, const char *filename,
-                        FILE *error_stream)
-{
-  if(filetime >= 0) {
-/* Windows utime() may attempt to adjust our unix gmt 'filetime' by a daylight
-   saving time offset and since it's GMT that is bad behavior. When we have
-   access to a 64-bit type we can bypass utime and set the times directly. */
-#if defined(WIN32) && (SIZEOF_CURL_OFF_T >= 8)
-    HANDLE hfile;
-
-#if (SIZEOF_LONG >= 8)
-    /* 910670515199 is the maximum unix filetime that can be used as a
-       Windows FILETIME without overflow: 30827-12-31T23:59:59. */
-    if(filetime > CURL_OFF_T_C(910670515199)) {
-      fprintf(error_stream,
-              "Failed to set filetime %ld on outfile: overflow\n",
-              filetime);
-      return;
-    }
-#endif /* SIZEOF_LONG >= 8 */
-
-    hfile = CreateFileA(filename, FILE_WRITE_ATTRIBUTES,
-                        (FILE_SHARE_READ | FILE_SHARE_WRITE |
-                         FILE_SHARE_DELETE),
-                        NULL, OPEN_EXISTING, 0, NULL);
-    if(hfile != INVALID_HANDLE_VALUE) {
-      curl_off_t converted = ((curl_off_t)filetime * 10000000) +
-                             CURL_OFF_T_C(116444736000000000);
-      FILETIME ft;
-      ft.dwLowDateTime = (DWORD)(converted & 0xFFFFFFFF);
-      ft.dwHighDateTime = (DWORD)(converted >> 32);
-      if(!SetFileTime(hfile, NULL, &ft, &ft)) {
-        fprintf(error_stream,
-                "Failed to set filetime %ld on outfile: "
-                "SetFileTime failed: GetLastError %u\n",
-                filetime, GetLastError());
-      }
-      CloseHandle(hfile);
-    }
-    else {
-      fprintf(error_stream,
-              "Failed to set filetime %ld on outfile: "
-              "CreateFile failed: GetLastError %u\n",
-              filetime, GetLastError());
-    }
-
-#elif defined(HAVE_UTIMES)
-    struct timeval times[2];
-    times[0].tv_sec = times[1].tv_sec = filetime;
-    times[0].tv_usec = times[1].tv_usec = 0;
-    if(utimes(filename, times)) {
-      fprintf(error_stream,
-              "Failed to set filetime %ld on outfile: errno %d\n",
-              filetime, errno);
-    }
-
-#elif defined(HAVE_UTIME)
-    struct utimbuf times;
-    times.actime = (time_t)filetime;
-    times.modtime = (time_t)filetime;
-    if(utime(filename, &times)) {
-      fprintf(error_stream,
-              "Failed to set filetime %ld on outfile: errno %d\n",
-              filetime, errno);
-    }
-#endif
-  }
-}
-#endif /* defined(HAVE_UTIME) || \
-          (defined(WIN32) && (SIZEOF_CURL_OFF_T >= 8)) */
-
 #define BUFFER_SIZE (100*1024)
 
 static CURLcode operate_do(struct GlobalConfig *global,
@@ -306,52 +228,76 @@ static CURLcode operate_do(struct GlobalConfig *global,
   if(!config->cacert &&
      !config->capath &&
      !config->insecure_ok) {
-    char *env;
-    env = curlx_getenv("CURL_CA_BUNDLE");
-    if(env) {
-      config->cacert = strdup(env);
-      if(!config->cacert) {
-        curl_free(env);
-        helpf(global->errors, "out of memory\n");
-        result = CURLE_OUT_OF_MEMORY;
-        goto quit_curl;
-      }
+    struct curl_tlssessioninfo *tls_backend_info = NULL;
+
+    /* With the addition of CAINFO support for Schannel, this search could find
+     * a certificate bundle that was previously ignored. To maintain backward
+     * compatibility, only perform this search if not using Schannel.
+     */
+    result = curl_easy_getinfo(config->easy,
+                               CURLINFO_TLS_SSL_PTR,
+                               &tls_backend_info);
+    if(result) {
+      goto quit_curl;
     }
-    else {
-      env = curlx_getenv("SSL_CERT_DIR");
+
+    /* Set the CA cert locations specified in the environment. For Windows if
+     * no environment-specified filename is found then check for CA bundle
+     * default filename curl-ca-bundle.crt in the user's PATH.
+     *
+     * If Schannel (WinSSL) is the selected SSL backend then these locations
+     * are ignored. We allow setting CA location for schannel only when
+     * explicitly specified by the user via CURLOPT_CAINFO / --cacert.
+     */
+    if(tls_backend_info->backend != CURLSSLBACKEND_SCHANNEL) {
+      char *env;
+      env = curlx_getenv("CURL_CA_BUNDLE");
       if(env) {
-        config->capath = strdup(env);
-        if(!config->capath) {
+        config->cacert = strdup(env);
+        if(!config->cacert) {
           curl_free(env);
           helpf(global->errors, "out of memory\n");
           result = CURLE_OUT_OF_MEMORY;
           goto quit_curl;
         }
-        capath_from_env = true;
       }
       else {
-        env = curlx_getenv("SSL_CERT_FILE");
+        env = curlx_getenv("SSL_CERT_DIR");
         if(env) {
-          config->cacert = strdup(env);
-          if(!config->cacert) {
+          config->capath = strdup(env);
+          if(!config->capath) {
             curl_free(env);
             helpf(global->errors, "out of memory\n");
             result = CURLE_OUT_OF_MEMORY;
             goto quit_curl;
           }
+          capath_from_env = true;
+        }
+        else {
+          env = curlx_getenv("SSL_CERT_FILE");
+          if(env) {
+            config->cacert = strdup(env);
+            if(!config->cacert) {
+              curl_free(env);
+              helpf(global->errors, "out of memory\n");
+              result = CURLE_OUT_OF_MEMORY;
+              goto quit_curl;
+            }
+          }
         }
       }
-    }
 
-    if(env)
-      curl_free(env);
+      if(env)
+        curl_free(env);
 #ifdef WIN32
-    else {
-      result = FindWin32CACert(config, "curl-ca-bundle.crt");
-      if(result)
-        goto quit_curl;
-    }
+      else {
+        result = FindWin32CACert(config, tls_backend_info->backend,
+                                 "curl-ca-bundle.crt");
+        if(result)
+          goto quit_curl;
+      }
 #endif
+    }
   }
 
   if(config->postfields) {
@@ -510,8 +456,7 @@ static CURLcode operate_do(struct GlobalConfig *global,
            the number of resources as urlnum. */
         urlnum = count_next_metalink_resource(mlfile);
       }
-      else
-      if(!config->globoff) {
+      else if(!config->globoff) {
         /* Unless explicitly shut off, we expand '{...}' and '[...]'
            expressions and return total number of URLs in pattern set */
         result = glob_url(&urls, urlnode->url, &urlnum,
@@ -710,7 +655,7 @@ static CURLcode operate_do(struct GlobalConfig *global,
            * to be considered with one appended if implied CC
            */
 #ifdef __VMS
-          /* Calculate the real upload site for VMS */
+          /* Calculate the real upload size for VMS */
           infd = -1;
           if(stat(uploadfile, &fileinfo) == 0) {
             fileinfo.st_size = VmsSpecialSize(uploadfile, &fileinfo);
@@ -1232,7 +1177,7 @@ static CURLcode operate_do(struct GlobalConfig *global,
 #endif
 
         my_setopt_enum(curl, CURLOPT_TIMECONDITION, (long)config->timecond);
-        my_setopt(curl, CURLOPT_TIMEVALUE, (long)config->condtime);
+        my_setopt(curl, CURLOPT_TIMEVALUE_LARGE, config->condtime);
         my_setopt_str(curl, CURLOPT_CUSTOMREQUEST, config->customrequest);
         customrequest_helper(config, config->httpreq, config->customrequest);
         my_setopt(curl, CURLOPT_STDERR, global->errors);
@@ -1518,6 +1463,15 @@ static CURLcode operate_do(struct GlobalConfig *global,
         if(config->tftp_no_options)
           my_setopt(curl, CURLOPT_TFTP_NO_OPTIONS, 1L);
 
+        /* new in 7.59.0 */
+        if(config->happy_eyeballs_timeout_ms != CURL_HET_DEFAULT)
+          my_setopt(curl, CURLOPT_HAPPY_EYEBALLS_TIMEOUT_MS,
+                    config->happy_eyeballs_timeout_ms);
+
+        /* new in 7.60.0 */
+        if(config->haproxy_protocol)
+          my_setopt(curl, CURLOPT_HAPROXYPROTOCOL, 1L);
+
         /* initialize retry vars for loop below */
         retry_sleep_default = (config->retry_delay) ?
           config->retry_delay*1000L : RETRY_SLEEP_DEFAULT; /* ms */
@@ -1639,9 +1593,13 @@ static CURLcode operate_do(struct GlobalConfig *global,
               }
             } /* if CURLE_OK */
             else if(result) {
-              curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &response);
+              long protocol;
 
-              if(response/100 == 4)
+              curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &response);
+              curl_easy_getinfo(curl, CURLINFO_PROTOCOL, &protocol);
+
+              if((protocol == CURLPROTO_FTP || protocol == CURLPROTO_FTPS) &&
+                 response / 100 == 4)
                 /*
                  * This is typically when the FTP server only allows a certain
                  * amount of users and we are not one of them.  All 4xx codes
@@ -1841,18 +1799,13 @@ static CURLcode operate_do(struct GlobalConfig *global,
         }
 #endif
 
-#if defined(HAVE_UTIME) || \
-    (defined(WIN32) && (SIZEOF_CURL_OFF_T >= 8))
         /* File time can only be set _after_ the file has been closed */
         if(!result && config->remote_time && outs.s_isreg && outs.filename) {
           /* Ask libcurl if we got a remote file time */
-          long filetime = -1;
-          curl_easy_getinfo(curl, CURLINFO_FILETIME, &filetime);
-          if(filetime >= 0)
-            setfiletime(filetime, outs.filename, config->global->errors);
+          curl_off_t filetime = -1;
+          curl_easy_getinfo(curl, CURLINFO_FILETIME_T, &filetime);
+          setfiletime(filetime, outs.filename, config->global->errors);
         }
-#endif /* defined(HAVE_UTIME) || \
-          (defined(WIN32) && (SIZEOF_CURL_OFF_T >= 8)) */
 
 #ifdef USE_METALINK
         if(!metalink && config->use_metalink && result == CURLE_OK) {
@@ -1904,8 +1857,7 @@ static CURLcode operate_do(struct GlobalConfig *global,
              */
             break;
         }
-        else
-        if(urlnum > 1) {
+        else if(urlnum > 1) {
           /* when url globbing, exit loop upon critical error */
           if(is_fatal_error(result))
             break;
@@ -2051,7 +2003,7 @@ CURLcode operate(struct GlobalConfig *config, int argc, argv_item_t argv[])
         size_t count = 0;
         struct OperationConfig *operation = config->first;
 
-        /* Get the required aguments for each operation */
+        /* Get the required arguments for each operation */
         while(!result && operation) {
           result = get_args(operation, count++);
 

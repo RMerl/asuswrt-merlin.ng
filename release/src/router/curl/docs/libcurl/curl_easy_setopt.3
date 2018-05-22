@@ -5,7 +5,7 @@
 .\" *                            | (__| |_| |  _ <| |___
 .\" *                             \___|\___/|_| \_\_____|
 .\" *
-.\" * Copyright (C) 1998 - 2017, Daniel Stenberg, <daniel@haxx.se>, et al.
+.\" * Copyright (C) 1998 - 2018, Daniel Stenberg, <daniel@haxx.se>, et al.
 .\" *
 .\" * This software is licensed as described in the file COPYING, which
 .\" * you should have received as part of this distribution. The terms
@@ -20,7 +20,7 @@
 .\" *
 .\" **************************************************************************
 .\"
-.TH curl_easy_setopt 3 "September 02, 2017" "libcurl 7.57.0" "libcurl Manual"
+.TH curl_easy_setopt 3 "April 17, 2018" "libcurl 7.60.0" "libcurl Manual"
 
 .SH NAME
 curl_easy_setopt \- set options for a curl easy handle
@@ -140,6 +140,10 @@ Callback for wildcard matching. See \fICURLOPT_FNMATCH_FUNCTION(3)\fP
 Data pointer to pass to the wildcard matching callback. See \fICURLOPT_FNMATCH_DATA(3)\fP
 .IP CURLOPT_SUPPRESS_CONNECT_HEADERS
 Suppress proxy CONNECT response headers from user callbacks. See \fICURLOPT_SUPPRESS_CONNECT_HEADERS(3)\fP
+.IP CURLOPT_RESOLVER_START_FUNCTION
+Callback to be called before a new resolve request is started. See \fICURLOPT_RESOLVER_START_FUNCTION(3)\fP
+.IP CURLOPT_RESOLVER_START_DATA
+Data pointer to pass to resolver start callback. See \fICURLOPT_RESOLVER_START_DATA(3)\fP
 .SH ERROR OPTIONS
 .IP CURLOPT_ERRORBUFFER
 Error message buffer. See \fICURLOPT_ERRORBUFFER(3)\fP
@@ -182,6 +186,8 @@ Socks5 GSSAPI service name. \fICURLOPT_SOCKS5_GSSAPI_SERVICE(3)\fP
 Socks5 GSSAPI NEC mode. See \fICURLOPT_SOCKS5_GSSAPI_NEC(3)\fP
 .IP CURLOPT_PROXY_SERVICE_NAME
 Proxy authentication service name. \fICURLOPT_PROXY_SERVICE_NAME(3)\fP
+.IP CURLOPT_HAPROXYPROTOCOL
+Send an HAProxy PROXY protocol header. See \fICURLOPT_HAPROXYPROTOCOL(3)\fP
 .IP CURLOPT_SERVICE_NAME
 Authentication service name. \fICURLOPT_SERVICE_NAME(3)\fP
 .IP CURLOPT_INTERFACE
@@ -269,9 +275,9 @@ Maximum number of redirects to follow. See \fICURLOPT_MAXREDIRS(3)\fP
 .IP CURLOPT_POSTREDIR
 How to act on redirects after POST. See \fICURLOPT_POSTREDIR(3)\fP
 .IP CURLOPT_PUT
-Issue a HTTP PUT request. See \fICURLOPT_PUT(3)\fP
+Issue an HTTP PUT request. See \fICURLOPT_PUT(3)\fP
 .IP CURLOPT_POST
-Issue a HTTP POST request. See \fICURLOPT_POST(3)\fP
+Issue an HTTP POST request. See \fICURLOPT_POST(3)\fP
 .IP CURLOPT_POSTFIELDS
 Send a POST with this data. See \fICURLOPT_POSTFIELDS(3)\fP
 .IP CURLOPT_POSTFIELDSIZE
@@ -305,7 +311,7 @@ Start a new cookie session. See \fICURLOPT_COOKIESESSION(3)\fP
 .IP CURLOPT_COOKIELIST
 Add or control cookies. See \fICURLOPT_COOKIELIST(3)\fP
 .IP CURLOPT_HTTPGET
-Do a HTTP GET request. See \fICURLOPT_HTTPGET(3)\fP
+Do an HTTP GET request. See \fICURLOPT_HTTPGET(3)\fP
 .IP CURLOPT_REQUEST_TARGET
 Set the request target. \fICURLOPT_REQUEST_TARGET(3)\fP
 .IP CURLOPT_HTTP_VERSION
@@ -422,6 +428,8 @@ Maximum file size to get. See \fICURLOPT_MAXFILESIZE_LARGE(3)\fP
 Make a time conditional request. See \fICURLOPT_TIMECONDITION(3)\fP
 .IP CURLOPT_TIMEVALUE
 Time value for the time conditional request. See \fICURLOPT_TIMEVALUE(3)\fP
+.IP CURLOPT_TIMEVALUE_LARGE
+Time value for the time conditional request. See \fICURLOPT_TIMEVALUE_LARGE(3)\fP
 .SH CONNECTION OPTIONS
 .IP CURLOPT_TIMEOUT
 Timeout for the entire request. See \fICURLOPT_TIMEOUT(3)\fP
@@ -461,8 +469,12 @@ Bind name resolves to this IP4 address. See \fICURLOPT_DNS_LOCAL_IP4(3)\fP
 Bind name resolves to this IP6 address. See \fICURLOPT_DNS_LOCAL_IP6(3)\fP
 .IP CURLOPT_DNS_SERVERS
 Preferred DNS servers. See \fICURLOPT_DNS_SERVERS(3)\fP
+.IP CURLOPT_DNS_SHUFFLE_ADDRESSES
+Shuffle addresses before use. See \fICURLOPT_DNS_SHUFFLE_ADDRESSES(3)\fP
 .IP CURLOPT_ACCEPTTIMEOUT_MS
 Timeout for waiting for the server's connect back to be accepted. See \fICURLOPT_ACCEPTTIMEOUT_MS(3)\fP
+.IP CURLOPT_HAPPY_EYEBALLS_TIMEOUT_MS
+Timeout for happy eyeballs. See \fICURLOPT_HAPPY_EYEBALLS_TIMEOUT_MS(3)\fP
 .SH SSL and SECURITY OPTIONS
 .IP CURLOPT_SSLCERT
 Client cert. See \fICURLOPT_SSLCERT(3)\fP

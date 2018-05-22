@@ -5,7 +5,7 @@
 .\" *                            | (__| |_| |  _ <| |___
 .\" *                             \___|\___/|_| \_\_____|
 .\" *
-.\" * Copyright (C) 1998 - 2017, Daniel Stenberg, <daniel@haxx.se>, et al.
+.\" * Copyright (C) 1998 - 2018, Daniel Stenberg, <daniel@haxx.se>, et al.
 .\" *
 .\" * This software is licensed as described in the file COPYING, which
 .\" * you should have received as part of this distribution. The terms
@@ -19,7 +19,7 @@
 .\" * KIND, either express or implied.
 .\" *
 .\" **************************************************************************
-.TH libcurl-symbols 3 "nov 29, 2017" "libcurl 7.41.0" "libcurl symbols"
+.TH libcurl-symbols 3 "maj 16, 2018" "libcurl 7.41.0" "libcurl symbols"
 .SH NAME
 libcurl-symbols \- libcurl symbol version information
 .SH "libcurl symbols"
@@ -232,6 +232,8 @@ Introduced in 7.17.0
 Introduced in 7.1
 .IP CURLE_RECV_ERROR
 Introduced in 7.10
+.IP CURLE_RECURSIVE_API_CALL
+Introduced in 7.59.0
 .IP CURLE_REMOTE_ACCESS_DENIED
 Introduced in 7.17.0
 .IP CURLE_REMOTE_DISK_FULL
@@ -502,6 +504,8 @@ Introduced in 7.4
 Introduced in 7.9.6
 .IP CURLINFO_FILETIME
 Introduced in 7.5
+.IP CURLINFO_FILETIME_T
+Introduced in 7.59.0
 .IP CURLINFO_FTP_ENTRY_PATH
 Introduced in 7.15.4
 .IP CURLINFO_HEADER_IN
@@ -646,6 +650,10 @@ Introduced in 7.19.6
 Introduced in 7.19.6
 .IP CURLKHTYPE_DSS
 Introduced in 7.19.6
+.IP CURLKHTYPE_ECDSA
+Introduced in 7.58.0
+.IP CURLKHTYPE_ED25519
+Introduced in 7.58.0
 .IP CURLKHTYPE_RSA
 Introduced in 7.19.6
 .IP CURLKHTYPE_RSA1
@@ -704,6 +712,8 @@ Introduced in 7.9.6
 Introduced in 7.9.6
 .IP CURLM_OUT_OF_MEMORY
 Introduced in 7.9.6
+.IP CURLM_RECURSIVE_API_CALL
+Introduced in 7.59.0
 .IP CURLM_UNKNOWN_OPTION
 Introduced in 7.15.4
 .IP CURLOPTTYPE_FUNCTIONPOINT
@@ -803,6 +813,8 @@ Introduced in 7.33.0
 Introduced in 7.33.0
 .IP CURLOPT_DNS_SERVERS
 Introduced in 7.24.0
+.IP CURLOPT_DNS_SHUFFLE_ADDRESSES
+Introduced in 7.60.0
 .IP CURLOPT_DNS_USE_GLOBAL_CACHE
 Introduced in 7.9.3
 Deprecated since 7.11.1
@@ -870,6 +882,10 @@ Introduced in 7.9.2
 Introduced in 7.20.0
 .IP CURLOPT_GSSAPI_DELEGATION
 Introduced in 7.22.0
+.IP CURLOPT_HAPPY_EYEBALLS_TIMEOUT_MS
+Introduced in 7.59.0
+.IP CURLOPT_HAPROXYPROTOCOL
+Introduced in 7.60.0
 .IP CURLOPT_HEADER
 Introduced in 7.1
 .IP CURLOPT_HEADERDATA
@@ -1262,6 +1278,8 @@ Introduced in 7.1
 Introduced in 7.16.2
 .IP CURLOPT_TIMEVALUE
 Introduced in 7.1
+.IP CURLOPT_TIMEVALUE_LARGE
+Introduced in 7.59.0
 .IP CURLOPT_TLSAUTH_PASSWORD
 Introduced in 7.21.4
 .IP CURLOPT_TLSAUTH_TYPE
@@ -1272,6 +1290,10 @@ Introduced in 7.21.4
 Introduced in 7.1.1
 .IP CURLOPT_TRANSFER_ENCODING
 Introduced in 7.21.6
+.IP CURLOPT_RESOLVER_START_FUNCTION
+Introduced in 7.59.0
+.IP CURLOPT_RESOLVER_START_DATA
+Introduced in 7.59.0
 .IP CURLOPT_UNIX_SOCKET_PATH
 Introduced in 7.40.0
 .IP CURLOPT_UNRESTRICTED_AUTH
@@ -1430,6 +1452,8 @@ Introduced in 7.28.0
 Introduced in 7.16.1
 .IP CURLSSH_AUTH_DEFAULT
 Introduced in 7.16.1
+.IP CURLSSH_AUTH_GSSAPI
+Introduced in 7.58.0
 .IP CURLSSH_AUTH_HOST
 Introduced in 7.16.1
 .IP CURLSSH_AUTH_KEYBOARD
@@ -1568,6 +1592,8 @@ Introduced in 7.8
 Introduced in 7.8
 .IP CURL_GLOBAL_WIN32
 Introduced in 7.8.1
+.IP CURL_HET_DEFAULT
+Introduced in 7.59.0
 .IP CURL_HTTPPOST_BUFFER
 Introduced in 7.46.0
 .IP CURL_HTTPPOST_CALLBACK

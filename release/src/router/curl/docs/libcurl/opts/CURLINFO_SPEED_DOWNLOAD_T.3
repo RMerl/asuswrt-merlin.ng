@@ -20,7 +20,7 @@
 .\" *
 .\" **************************************************************************
 .\"
-.TH CURLINFO_SPEED_DOWNLOAD_T 3 "June 15, 2017" "libcurl 7.57.0" "curl_easy_getinfo options"
+.TH CURLINFO_SPEED_DOWNLOAD_T 3 "March 31, 2018" "libcurl 7.60.0" "curl_easy_getinfo options"
 
 .SH NAME
 CURLINFO_SPEED_DOWNLOAD_T \- get download speed
@@ -45,7 +45,7 @@ if(curl) {
     curl_off_t speed;
     res = curl_easy_getinfo(curl, CURLINFO_SPEED_DOWNLOAD_T, &speed);
     if(!res) {
-      printf("Download speed " CURL_FORMAT_CURL_OFF_T " bytes/sec\\n", ul);
+      printf("Download speed %" CURL_FORMAT_CURL_OFF_T " bytes/sec\\n", speed);
     }
   }
 }

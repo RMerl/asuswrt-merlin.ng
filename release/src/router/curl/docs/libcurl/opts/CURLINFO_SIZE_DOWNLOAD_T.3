@@ -20,7 +20,7 @@
 .\" *
 .\" **************************************************************************
 .\"
-.TH CURLINFO_SIZE_DOWNLOAD_T 3 "June 15, 2017" "libcurl 7.57.0" "curl_easy_getinfo options"
+.TH CURLINFO_SIZE_DOWNLOAD_T 3 "March 31, 2018" "libcurl 7.60.0" "curl_easy_getinfo options"
 
 .SH NAME
 CURLINFO_SIZE_DOWNLOAD_T \- get the number of downloaded bytes
@@ -50,7 +50,7 @@ if(curl) {
     curl_off_t dl;
     res = curl_easy_getinfo(curl, CURLINFO_SIZE_DOWNLOAD_T, &dl);
     if(!res) {
-      printf("Downloaded " CURL_FORMAT_CURL_OFF_T " bytes\\n", cl);
+      printf("Downloaded %" CURL_FORMAT_CURL_OFF_T " bytes\\n", dl);
     }
   }
 }

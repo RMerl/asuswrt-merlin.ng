@@ -5,7 +5,7 @@
 .\" *                            | (__| |_| |  _ <| |___
 .\" *                             \___|\___/|_| \_\_____|
 .\" *
-.\" * Copyright (C) 1998 - 2017, Daniel Stenberg, <daniel@haxx.se>, et al.
+.\" * Copyright (C) 1998 - 2018, Daniel Stenberg, <daniel@haxx.se>, et al.
 .\" *
 .\" * This software is licensed as described in the file COPYING, which
 .\" * you should have received as part of this distribution. The terms
@@ -20,7 +20,7 @@
 .\" *
 .\" **************************************************************************
 .\"
-.TH CURLINFO_COOKIELIST 3 "May 06, 2017" "libcurl 7.57.0" "curl_easy_getinfo options"
+.TH CURLINFO_COOKIELIST 3 "March 20, 2018" "libcurl 7.60.0" "curl_easy_getinfo options"
 
 .SH NAME
 CURLINFO_COOKIELIST \- get all known cookies
@@ -57,9 +57,10 @@ if(curl) {
     res = curl_easy_getinfo(curl, CURLINFO_COOKIELIST, &cookies);
     if(!res && cookies) {
       /* a linked list of cookies in cookie file format */
-      while(cookies) {
-        printf("%s", cookies->data);
-        cookies = cookies->next;
+      struct curl_slist *each = cookies;
+      while(each) {
+        printf("%s", each->data);
+        each = each->next;
       }
       /* we must free these cookies when we're done */
       curl_slist_free_all(cookies);

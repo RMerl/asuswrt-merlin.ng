@@ -4081,6 +4081,10 @@
 			Name="Source Files"
 			>
 			<File
+				RelativePath="..\..\..\..\lib\curl_ctype.c"
+			>
+			</File>
+			<File
 				RelativePath="..\..\..\..\lib\nonblock.c"
 			>
 			</File>
@@ -4146,6 +4150,10 @@
 			</File>
 			<File
 				RelativePath="..\..\..\..\src\tool_easysrc.c"
+			>
+			</File>
+			<File
+				RelativePath="..\..\..\..\src\tool_filetime.c"
 			>
 			</File>
 			<File
@@ -4253,6 +4261,10 @@
 			>
 			</File>
 			<File
+				RelativePath="..\..\..\..\lib\curl_ctype.h"
+			>
+			</File>
+			<File
 				RelativePath="..\..\..\..\lib\curl_setup.h"
 			>
 			</File>
@@ -4322,6 +4334,10 @@
 			</File>
 			<File
 				RelativePath="..\..\..\..\src\tool_easysrc.h"
+			>
+			</File>
+			<File
+				RelativePath="..\..\..\..\src\tool_filetime.h"
 			>
 			</File>
 			<File

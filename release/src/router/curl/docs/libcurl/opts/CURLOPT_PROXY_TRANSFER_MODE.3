@@ -20,7 +20,7 @@
 .\" *
 .\" **************************************************************************
 .\"
-.TH CURLOPT_PROXY_TRANSFER_MODE 3 "May 31, 2017" "libcurl 7.57.0" "curl_easy_setopt options"
+.TH CURLOPT_PROXY_TRANSFER_MODE 3 "April 17, 2018" "libcurl 7.60.0" "curl_easy_setopt options"
 
 .SH NAME
 CURLOPT_PROXY_TRANSFER_MODE \- append FTP transfer mode to URL for proxy
@@ -30,7 +30,7 @@ CURLOPT_PROXY_TRANSFER_MODE \- append FTP transfer mode to URL for proxy
 CURLcode curl_easy_setopt(CURL *handle, CURLOPT_PROXY_TRANSFER_MODE, long enabled);
 .SH DESCRIPTION
 Pass a long. If the value is set to 1 (one), it tells libcurl to set the
-transfer mode (binary or ASCII) for FTP transfers done via a HTTP proxy, by
+transfer mode (binary or ASCII) for FTP transfers done via an HTTP proxy, by
 appending ;type=a or ;type=i to the URL. Without this setting, or it being set
 to 0 (zero, the default), \fICURLOPT_TRANSFERTEXT(3)\fP has no effect when
 doing FTP via a proxy. Beware that not all proxies support this feature.

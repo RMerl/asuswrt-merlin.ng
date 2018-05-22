@@ -20,7 +20,7 @@
 .\" *
 .\" **************************************************************************
 .\"
-.TH CURLOPT_UNIX_SOCKET_PATH 3 "December 21, 2016" "libcurl 7.57.0" "curl_easy_setopt options"
+.TH CURLOPT_UNIX_SOCKET_PATH 3 "April 17, 2018" "libcurl 7.60.0" "curl_easy_setopt options"
 
 .SH NAME
 CURLOPT_UNIX_SOCKET_PATH \- set Unix domain socket
@@ -57,7 +57,7 @@ All protocols except for file:// and FTP are supported in theory. HTTP, IMAP,
 POP3 and SMTP should in particular work (including their SSL/TLS variants).
 .SH EXAMPLE
 Given that you have an nginx server running, listening on /tmp/nginx.sock, you
-can request a HTTP resource with:
+can request an HTTP resource with:
 
 .nf
     curl_easy_setopt(curl_handle, CURLOPT_UNIX_SOCKET_PATH, "/tmp/nginx.sock");

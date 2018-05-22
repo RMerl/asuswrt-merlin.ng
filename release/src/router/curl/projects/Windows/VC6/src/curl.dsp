@@ -679,6 +679,10 @@ LINK32=link.exe
 # PROP Default_Filter ""
 # Begin Source File
 
+SOURCE=..\..\..\..\lib\curl_ctype.c
+# End Source File
+# Begin Source File
+
 SOURCE=..\..\..\..\lib\nonblock.c
 # End Source File
 # Begin Source File
@@ -744,6 +748,10 @@ SOURCE=..\..\..\..\src\tool_doswin.c
 # Begin Source File
 
 SOURCE=..\..\..\..\src\tool_easysrc.c
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\..\src\tool_filetime.c
 # End Source File
 # Begin Source File
 
@@ -851,6 +859,10 @@ SOURCE=..\..\..\..\lib\config-win32.h
 # End Source File
 # Begin Source File
 
+SOURCE=..\..\..\..\lib\curl_ctype.h
+# End Source File
+# Begin Source File
+
 SOURCE=..\..\..\..\lib\curl_setup.h
 # End Source File
 # Begin Source File
@@ -920,6 +932,10 @@ SOURCE=..\..\..\..\src\tool_doswin.h
 # Begin Source File
 
 SOURCE=..\..\..\..\src\tool_easysrc.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\..\src\tool_filetime.h
 # End Source File
 # Begin Source File
 

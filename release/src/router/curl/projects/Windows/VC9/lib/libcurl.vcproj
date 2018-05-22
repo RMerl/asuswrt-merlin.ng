@@ -3594,6 +3594,10 @@
 			>
 			</File>
 			<File
+				RelativePath="..\..\..\..\lib\curl_ctype.c"
+			>
+			</File>
+			<File
 				RelativePath="..\..\..\..\lib\curl_des.c"
 			>
 			</File>
@@ -3627,6 +3631,14 @@
 			</File>
 			<File
 				RelativePath="..\..\..\..\lib\curl_ntlm_wb.c"
+			>
+			</File>
+			<File
+				RelativePath="..\..\..\..\lib\curl_path.c"
+			>
+			</File>
+			<File
+				RelativePath="..\..\..\..\lib\curl_range.c"
 			>
 			</File>
 			<File
@@ -3914,6 +3926,10 @@
 			>
 			</File>
 			<File
+				RelativePath="..\..\..\..\lib\ssh-libssh.c"
+			>
+			</File>
+			<File
 				RelativePath="..\..\..\..\lib\strcase.c"
 			>
 			</File>
@@ -4018,6 +4034,10 @@
 			>
 			</File>
 			<File
+				RelativePath="..\..\..\..\lib\curl_ctype.h"
+			>
+			</File>
+			<File
 				RelativePath="..\..\..\..\lib\curl_des.h"
 			>
 			</File>
@@ -4074,7 +4094,15 @@
 			>
 			</File>
 			<File
+				RelativePath="..\..\..\..\lib\curl_path.h"
+			>
+			</File>
+			<File
 				RelativePath="..\..\..\..\lib\curl_printf.h"
+			>
+			</File>
+			<File
+				RelativePath="..\..\..\..\lib\curl_range.h"
 			>
 			</File>
 			<File
@@ -4518,6 +4546,10 @@
 				</File>
 				<File
 					RelativePath="..\..\..\..\lib\vtls\schannel.c"
+				>
+				</File>
+				<File
+					RelativePath="..\..\..\..\lib\vtls\schannel_verify.c"
 				>
 				</File>
 				<File

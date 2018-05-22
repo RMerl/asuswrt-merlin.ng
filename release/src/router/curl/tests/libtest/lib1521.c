@@ -38,7 +38,7 @@ struct data {
 /* Unexpected error.
     CURLE_NOT_BUILT_IN   - means disabled at build
     CURLE_UNKNOWN_OPTION - means no such option (anymore?)
-    CURLE_SSL_ENGINE_NOTFOUND - set unkown ssl engine
+    CURLE_SSL_ENGINE_NOTFOUND - set unknown ssl engine
     CURLE_UNSUPPORTED_PROTOCOL - set bad HTTP version
     CURLE_BAD_FUNCTION_ARGUMENT - unsupported value
    */
@@ -99,6 +99,7 @@ static curl_chunk_end_callback chunk_end_cb;
 static curl_fnmatch_callback fnmatch_cb;
 static curl_closesocket_callback closesocketcb;
 static curl_xferinfo_callback xferinfocb;
+static curl_resolver_start_callback resolver_start_cb;
 
 int test(char *URL)
 {
@@ -2352,6 +2353,64 @@ int test(char *URL)
   res = curl_easy_setopt(curl, CURLOPT_MIMEPOST, NULL);
   if(UNEX(res)) {
     err("MIMEPOST", res, __LINE__); goto test_cleanup; }
+  res = curl_easy_setopt(curl, CURLOPT_TIMEVALUE_LARGE, OFF_NO);
+  if(UNEX(res)) {
+    err("TIMEVALUE_LARGE", res, __LINE__); goto test_cleanup; }
+  res = curl_easy_setopt(curl, CURLOPT_TIMEVALUE_LARGE, OFF_HI);
+  if(UNEX(res)) {
+    err("TIMEVALUE_LARGE", res, __LINE__); goto test_cleanup; }
+  res = curl_easy_setopt(curl, CURLOPT_TIMEVALUE_LARGE, OFF_LO);
+  if(UNEX(res)) {
+    err("TIMEVALUE_LARGE", res, __LINE__); goto test_cleanup; }
+  res = curl_easy_setopt(curl, CURLOPT_HAPPY_EYEBALLS_TIMEOUT_MS, 0L);
+  if(UNEX(res)) {
+    err("HAPPY_EYEBALLS_TIMEOUT_MS", res, __LINE__); goto test_cleanup; }
+  res = curl_easy_setopt(curl, CURLOPT_HAPPY_EYEBALLS_TIMEOUT_MS, 22L);
+  if(UNEX(res)) {
+    err("HAPPY_EYEBALLS_TIMEOUT_MS", res, __LINE__); goto test_cleanup; }
+  res = curl_easy_setopt(curl, CURLOPT_HAPPY_EYEBALLS_TIMEOUT_MS, LO);
+  if(UNEX(res)) {
+    err("HAPPY_EYEBALLS_TIMEOUT_MS", res, __LINE__); goto test_cleanup; }
+  res = curl_easy_setopt(curl, CURLOPT_HAPPY_EYEBALLS_TIMEOUT_MS, HI);
+  if(UNEX(res)) {
+    err("HAPPY_EYEBALLS_TIMEOUT_MS", res, __LINE__); goto test_cleanup; }
+  res = curl_easy_setopt(curl, CURLOPT_RESOLVER_START_FUNCTION,
+                         resolver_start_cb);
+  if(UNEX(res)) {
+    err("RESOLVER_START_FUNCTION", res, __LINE__); goto test_cleanup; }
+  res = curl_easy_setopt(curl, CURLOPT_RESOLVER_START_FUNCTION, NULL);
+  if(UNEX(res)) {
+    err("RESOLVER_START_FUNCTION", res, __LINE__); goto test_cleanup; }
+  res = curl_easy_setopt(curl, CURLOPT_RESOLVER_START_DATA, &object);
+  if(UNEX(res)) {
+    err("RESOLVER_START_DATA", res, __LINE__); goto test_cleanup; }
+  res = curl_easy_setopt(curl, CURLOPT_RESOLVER_START_DATA, NULL);
+  if(UNEX(res)) {
+    err("RESOLVER_START_DATA", res, __LINE__); goto test_cleanup; }
+  res = curl_easy_setopt(curl, CURLOPT_HAPROXYPROTOCOL, 0L);
+  if(UNEX(res)) {
+    err("HAPROXYPROTOCOL", res, __LINE__); goto test_cleanup; }
+  res = curl_easy_setopt(curl, CURLOPT_HAPROXYPROTOCOL, 22L);
+  if(UNEX(res)) {
+    err("HAPROXYPROTOCOL", res, __LINE__); goto test_cleanup; }
+  res = curl_easy_setopt(curl, CURLOPT_HAPROXYPROTOCOL, LO);
+  if(UNEX(res)) {
+    err("HAPROXYPROTOCOL", res, __LINE__); goto test_cleanup; }
+  res = curl_easy_setopt(curl, CURLOPT_HAPROXYPROTOCOL, HI);
+  if(UNEX(res)) {
+    err("HAPROXYPROTOCOL", res, __LINE__); goto test_cleanup; }
+  res = curl_easy_setopt(curl, CURLOPT_DNS_SHUFFLE_ADDRESSES, 0L);
+  if(UNEX(res)) {
+    err("DNS_SHUFFLE_ADDRESSES", res, __LINE__); goto test_cleanup; }
+  res = curl_easy_setopt(curl, CURLOPT_DNS_SHUFFLE_ADDRESSES, 22L);
+  if(UNEX(res)) {
+    err("DNS_SHUFFLE_ADDRESSES", res, __LINE__); goto test_cleanup; }
+  res = curl_easy_setopt(curl, CURLOPT_DNS_SHUFFLE_ADDRESSES, LO);
+  if(UNEX(res)) {
+    err("DNS_SHUFFLE_ADDRESSES", res, __LINE__); goto test_cleanup; }
+  res = curl_easy_setopt(curl, CURLOPT_DNS_SHUFFLE_ADDRESSES, HI);
+  if(UNEX(res)) {
+    err("DNS_SHUFFLE_ADDRESSES", res, __LINE__); goto test_cleanup; }
   res = curl_easy_getinfo(curl, CURLINFO_EFFECTIVE_URL, &charp);
   if(UNEX(res)) {
     geterr("EFFECTIVE_URL", res, __LINE__); goto test_cleanup; }
@@ -2406,6 +2465,9 @@ int test(char *URL)
   res = curl_easy_getinfo(curl, CURLINFO_FILETIME, &val);
   if(UNEX(res)) {
     geterr("FILETIME", res, __LINE__); goto test_cleanup; }
+  res = curl_easy_getinfo(curl, CURLINFO_FILETIME_T, &oval);
+  if(UNEX(res)) {
+    geterr("FILETIME_T", res, __LINE__); goto test_cleanup; }
   res = curl_easy_getinfo(curl, CURLINFO_CONTENT_LENGTH_DOWNLOAD, &dval);
   if(UNEX(res)) {
     geterr("CONTENT_LENGTH_DOWNLOAD", res, __LINE__); goto test_cleanup; }

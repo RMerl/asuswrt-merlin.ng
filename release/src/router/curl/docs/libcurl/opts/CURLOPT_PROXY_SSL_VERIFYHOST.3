@@ -20,7 +20,7 @@
 .\" *
 .\" **************************************************************************
 .\"
-.TH CURLOPT_PROXY_SSL_VERIFYHOST 3 "December 16, 2016" "libcurl 7.57.0" "curl_easy_setopt options"
+.TH CURLOPT_PROXY_SSL_VERIFYHOST 3 "May 02, 2018" "libcurl 7.60.0" "curl_easy_setopt options"
 
 .SH NAME
 CURLOPT_PROXY_SSL_VERIFYHOST \- verify the proxy certificate's name against host
@@ -57,7 +57,7 @@ overridden.
 .SH DEFAULT
 2
 .SH PROTOCOLS
-All protocols when used over a HTTPS proxy.
+All protocols when used over an HTTPS proxy.
 .SH EXAMPLE
 .nf
 CURL *curl = curl_easy_init();
@@ -79,5 +79,5 @@ Returns CURLE_OK if TLS is supported, and CURLE_UNKNOWN_OPTION if not.
 
 If 1 is set as argument, \fICURLE_BAD_FUNCTION_ARGUMENT\fP is returned.
 .SH "SEE ALSO"
-.BR CURLOPT_PROXY_SSL_VERIFYPEER "(3), " CURLOPT_PROXY_CAINFO "(3), ",
-.BR CURLOPT_SSL_VERIFYPEER "(3), " CURLOPT_CAINFO "(3), ",
+.BR CURLOPT_PROXY_SSL_VERIFYPEER "(3), " CURLOPT_PROXY_CAINFO "(3), "
+.BR CURLOPT_SSL_VERIFYPEER "(3), " CURLOPT_CAINFO "(3), "

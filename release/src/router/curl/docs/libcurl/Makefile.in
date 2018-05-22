@@ -21,7 +21,7 @@
 #                            | (__| |_| |  _ <| |___
 #                             \___|\___/|_| \_\_____|
 #
-# Copyright (C) 1998 - 2017, Daniel Stenberg, <daniel@haxx.se>, et al.
+# Copyright (C) 1998 - 2018, Daniel Stenberg, <daniel@haxx.se>, et al.
 #
 # This software is licensed as described in the file COPYING, which
 # you should have received as part of this distribution. The terms
@@ -554,6 +554,7 @@ REQUIRE_LIB_DEPS = @REQUIRE_LIB_DEPS@
 SED = @SED@
 SET_MAKE = @SET_MAKE@
 SHELL = @SHELL@
+SSL_BACKENDS = @SSL_BACKENDS@
 SSL_ENABLED = @SSL_ENABLED@
 SSL_LIBS = @SSL_LIBS@
 STRIP = @STRIP@
@@ -566,6 +567,7 @@ USE_DARWINSSL = @USE_DARWINSSL@
 USE_GNUTLS = @USE_GNUTLS@
 USE_GNUTLS_NETTLE = @USE_GNUTLS_NETTLE@
 USE_LIBRTMP = @USE_LIBRTMP@
+USE_LIBSSH = @USE_LIBSSH@
 USE_LIBSSH2 = @USE_LIBSSH2@
 USE_MBEDTLS = @USE_MBEDTLS@
 USE_NGHTTP2 = @USE_NGHTTP2@
@@ -657,7 +659,8 @@ man_MANS = curl_easy_cleanup.3 curl_easy_getinfo.3 curl_easy_init.3      \
   curl_mime_init.3 curl_mime_free.3 curl_mime_addpart.3 curl_mime_name.3 \
   curl_mime_data.3 curl_mime_data_cb.3 curl_mime_filedata.3              \
   curl_mime_filename.3 curl_mime_subparts.3                              \
-  curl_mime_type.3 curl_mime_headers.3 curl_mime_encoder.3
+  curl_mime_type.3 curl_mime_headers.3 curl_mime_encoder.3 libcurl-env.3 \
+  libcurl-security.3
 
 man_DISTMANS = $(man_MANS:.3=.3.dist)
 HTMLPAGES = $(man_MANS:.3=.html)
@@ -667,7 +670,7 @@ dist_m4macro_DATA = libcurl.m4
 CLEANFILES = $(HTMLPAGES) $(PDFPAGES) $(TESTS) $(man_DISTMANS) \
   libcurl-symbols.3
 
-EXTRA_DIST = $(man_MANS) index.html ABI symbols-in-versions symbols.pl  \
+EXTRA_DIST = $(man_MANS) ABI symbols-in-versions symbols.pl  \
   mksymbolsmanpage.pl CMakeLists.txt
 
 MAN2HTML = roffit --mandir=. $< >$@

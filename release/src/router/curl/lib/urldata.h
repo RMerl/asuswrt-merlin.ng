@@ -7,7 +7,7 @@
  *                            | (__| |_| |  _ <| |___
  *                             \___|\___/|_| \_\_____|
  *
- * Copyright (C) 1998 - 2017, Daniel Stenberg, <daniel@haxx.se>, et al.
+ * Copyright (C) 1998 - 2018, Daniel Stenberg, <daniel@haxx.se>, et al.
  *
  * This software is licensed as described in the file COPYING, which
  * you should have received as part of this distribution. The terms
@@ -85,6 +85,9 @@
 #ifdef HAVE_NETINET_IN_H
 #include <netinet/in.h>
 #endif
+#ifdef HAVE_NETINET_IN6_H
+#include <netinet/in6.h>
+#endif
 
 #include "timeval.h"
 
@@ -94,6 +97,20 @@
 #include "hostip.h"
 #include "hash.h"
 #include "splay.h"
+
+/* return the count of bytes sent, or -1 on error */
+typedef ssize_t (Curl_send)(struct connectdata *conn, /* connection data */
+                            int sockindex,            /* socketindex */
+                            const void *buf,          /* data to write */
+                            size_t len,               /* max amount to write */
+                            CURLcode *err);           /* error to return */
+
+/* return the count of bytes read, or -1 on error */
+typedef ssize_t (Curl_recv)(struct connectdata *conn, /* connection data */
+                            int sockindex,            /* socketindex */
+                            char *buf,                /* store data here */
+                            size_t len,               /* max amount to read */
+                            CURLcode *err);           /* error to return */
 
 #include "mime.h"
 #include "imap.h"
@@ -325,6 +342,7 @@ struct ntlmdata {
   BYTE *output_token;
   BYTE *input_token;
   size_t input_token_len;
+  TCHAR *spn;
 #else
   unsigned int flags;
   unsigned char nonce[8];
@@ -700,20 +718,6 @@ struct Curl_handler {
 #define CONNRESULT_NONE 0                /* No extra information. */
 #define CONNRESULT_DEAD (1<<0)           /* The connection is dead. */
 
-/* return the count of bytes sent, or -1 on error */
-typedef ssize_t (Curl_send)(struct connectdata *conn, /* connection data */
-                            int sockindex,            /* socketindex */
-                            const void *buf,          /* data to write */
-                            size_t len,               /* max amount to write */
-                            CURLcode *err);           /* error to return */
-
-/* return the count of bytes read, or -1 on error */
-typedef ssize_t (Curl_recv)(struct connectdata *conn, /* connection data */
-                            int sockindex,            /* socketindex */
-                            char *buf,                /* store data here */
-                            size_t len,               /* max amount to read */
-                            CURLcode *err);           /* error to return */
-
 #ifdef USE_RECV_BEFORE_SEND_WORKAROUND
 struct postponed_data {
   char *buffer;          /* Temporal store for received data during
@@ -752,6 +756,7 @@ struct http_connect_state {
     TUNNEL_CONNECT, /* CONNECT has been sent off */
     TUNNEL_COMPLETE /* CONNECT response received completely */
   } tunnel_state;
+  bool close_connection;
 };
 
 /*
@@ -775,9 +780,10 @@ struct connectdata {
   void *closesocket_client;
 
   bool inuse; /* This is a marker for the connection cache logic. If this is
-                 TRUE this handle is being used by an easy handle and cannot
-                 be used by any other easy handle without careful
-                 consideration (== only for pipelining). */
+                 TRUE this handle is being used by one or more easy handles
+                 and can only used by any other easy handle without careful
+                 consideration (== only for pipelining/multiplexing) and it
+                 cannot be used by another multi handle! */
 
   /**** Fields set when inited and not modified again */
   long connection_id; /* Contains a unique number to make it easier to
@@ -860,6 +866,9 @@ struct connectdata {
 #endif /* USE_RECV_BEFORE_SEND_WORKAROUND */
   struct ssl_connect_data ssl[2]; /* this is for ssl-stuff */
   struct ssl_connect_data proxy_ssl[2]; /* this is for proxy ssl-stuff */
+#ifdef USE_SSL
+  void *ssl_extra; /* separately allocated backend-specific data */
+#endif
   struct ssl_primary_config ssl_config;
   struct ssl_primary_config proxy_ssl_config;
   bool tls_upgraded;
@@ -887,7 +896,7 @@ struct connectdata {
                                 well be the same we read from.
                                 CURL_SOCKET_BAD disables */
 
-  /** Dynamicly allocated strings, MUST be freed before this **/
+  /** Dynamically allocated strings, MUST be freed before this **/
   /** struct is killed.                                      **/
   struct dynamically_allocated_data {
     char *proxyuserpwd;
@@ -1016,10 +1025,8 @@ struct PureInfo {
   int httpcode;  /* Recent HTTP, FTP, RTSP or SMTP response code */
   int httpproxycode; /* response code from proxy when received separate */
   int httpversion; /* the http version number X.Y = X*10+Y */
-  long filetime; /* If requested, this is might get set. Set to -1 if the time
-                    was unretrievable. We cannot have this of type time_t,
-                    since time_t is unsigned on several platforms such as
-                    OpenVMS. */
+  time_t filetime; /* If requested, this is might get set. Set to -1 if the
+                      time was unretrievable. */
   bool timecond;  /* set to TRUE if the time condition didn't match, which
                      thus made the document NOT get fetched */
   long header_size;  /* size of read header(s) in bytes */
@@ -1160,7 +1167,7 @@ struct Curl_http2_dep {
 };
 
 /*
- * This struct is for holding data that was attemped to get sent to the user's
+ * This struct is for holding data that was attempted to get sent to the user's
  * callback but is held due to pausing. One instance per type (BOTH, HEADER,
  * BODY).
  */
@@ -1219,7 +1226,7 @@ struct UrlState {
   curl_off_t current_speed;  /* the ProgressShow() function sets this,
                                 bytes / second */
   bool this_is_a_follow; /* this is a followed Location: request */
-
+  bool refused_stream; /* this was refused, try again */
   char *first_host; /* host name of the first (not followed) request.
                        if set, this should be the host name that we will
                        sent authorization to, no else. Used to make Location:
@@ -1322,6 +1329,9 @@ struct UrlState {
   struct Curl_easy *stream_depends_on;
   bool stream_depends_e; /* set or don't set the Exclusive bit */
   int stream_weight;
+#ifdef CURLDEBUG
+  bool conncache_lock;
+#endif
 };
 
 
@@ -1407,19 +1417,14 @@ enum dupstring {
   STRING_RTSP_SESSION_ID, /* Session ID to use */
   STRING_RTSP_STREAM_URI, /* Stream URI for this request */
   STRING_RTSP_TRANSPORT,  /* Transport for this session */
-#ifdef USE_LIBSSH2
+#if defined(USE_LIBSSH2) || defined(USE_LIBSSH)
   STRING_SSH_PRIVATE_KEY, /* path to the private key file for auth */
   STRING_SSH_PUBLIC_KEY,  /* path to the public key file for auth */
   STRING_SSH_HOST_PUBLIC_KEY_MD5, /* md5 of host public key in ascii hex */
   STRING_SSH_KNOWNHOSTS,  /* file name of knownhosts file */
 #endif
-#if defined(HAVE_GSSAPI) || defined(USE_WINDOWS_SSPI)
   STRING_PROXY_SERVICE_NAME, /* Proxy service name */
-#endif
-#if !defined(CURL_DISABLE_CRYPTO_AUTH) || defined(USE_KERBEROS5) || \
-  defined(USE_SPNEGO) || defined(HAVE_GSSAPI)
   STRING_SERVICE_NAME,    /* Service name */
-#endif
   STRING_MAIL_FROM,
   STRING_MAIL_AUTH,
 
@@ -1511,6 +1516,7 @@ struct UserDefined {
   long timeout;         /* in milliseconds, 0 means no timeout */
   long connecttimeout;  /* in milliseconds, 0 means no timeout */
   long accepttimeout;   /* in milliseconds, 0 means no timeout */
+  long happy_eyeballs_timeout; /* in milliseconds, 0 is a valid value */
   long server_response_timeout; /* in milliseconds, 0 means no timeout */
   long tftp_blksize;    /* in bytes, 0 means use default */
   bool tftp_no_options; /* do not send TFTP options requests */
@@ -1588,7 +1594,7 @@ struct UserDefined {
   bool http_keep_sending_on_error; /* for HTTP status codes >= 300 */
   bool http_follow_location; /* follow HTTP redirects */
   bool http_transfer_encoding; /* request compressed HTTP transfer-encoding */
-  bool http_disable_hostname_check_before_authentication;
+  bool allow_auth_to_other_hosts;
   bool include_header;   /* include received protocol headers in data output */
   bool http_set_referer; /* is a custom referer used */
   bool http_auto_referer; /* set "correct" referer when following location: */
@@ -1664,13 +1670,21 @@ struct UserDefined {
   bool suppress_connect_headers;  /* suppress proxy CONNECT response headers
                                      from user callbacks */
 
+  bool dns_shuffle_addresses; /* whether to shuffle addresses before use */
+
   struct Curl_easy *stream_depends_on;
   bool stream_depends_e; /* set or don't set the Exclusive bit */
   int stream_weight;
 
+  bool haproxyprotocol; /* whether to send HAProxy PROXY protocol header */
+
   struct Curl_http2_dep *stream_dependents;
 
   bool abstract_unix_socket;
+
+  curl_resolver_start_callback resolver_start; /* optional callback called
+                                                  before resolver start */
+  void *resolver_start_client; /* pointer to pass to resolver start callback */
 };
 
 struct Names {

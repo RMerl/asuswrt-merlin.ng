@@ -1,5 +1,8 @@
 /* lib/curl_config.h.in.  Generated from configure.ac by autoheader.  */
 
+/* to enable curl debug memory tracking */
+#undef CURLDEBUG
+
 /* Location of default ca bundle */
 #undef CURL_CA_BUNDLE
 
@@ -75,8 +78,14 @@
 /* Definition to make a library symbol externally visible. */
 #undef CURL_EXTERN_SYMBOL
 
+/* IP address type in sockaddr */
+#undef CURL_SA_FAMILY_T
+
 /* built with multiple SSL backends */
 #undef CURL_WITH_MULTI_SSL
+
+/* enable debug build options */
+#undef DEBUGBUILD
 
 /* your Entropy Gathering Daemon socket pathname */
 #undef EGD_SOCKET
@@ -413,20 +422,23 @@
 /* Define to 1 if you have the <librtmp/rtmp.h> header file. */
 #undef HAVE_LIBRTMP_RTMP_H
 
+/* Define to 1 if you have the `ssh' library (-lssh). */
+#undef HAVE_LIBSSH
+
 /* Define to 1 if you have the `ssh2' library (-lssh2). */
 #undef HAVE_LIBSSH2
 
 /* Define to 1 if you have the <libssh2.h> header file. */
 #undef HAVE_LIBSSH2_H
 
+/* Define to 1 if you have the <libssh/libssh.h> header file. */
+#undef HAVE_LIBSSH_LIBSSH_H
+
 /* Define to 1 if you have the `ssl' library (-lssl). */
 #undef HAVE_LIBSSL
 
 /* if zlib is available */
 #undef HAVE_LIBZ
-
-/* Define to 1 if you have the <limits.h> header file. */
-#undef HAVE_LIMITS_H
 
 /* Define to 1 if you have the <linux/tcp.h> header file. */
 #undef HAVE_LINUX_TCP_H
@@ -460,6 +472,9 @@
 
 /* Define to 1 if you have the <netdb.h> header file. */
 #undef HAVE_NETDB_H
+
+/* Define to 1 if you have the <netinet/in6.h> header file. */
+#undef HAVE_NETINET_IN6_H
 
 /* Define to 1 if you have the <netinet/in.h> header file. */
 #undef HAVE_NETINET_IN_H
@@ -509,6 +524,9 @@
 
 /* Define to 1 if you have the `pipe' function. */
 #undef HAVE_PIPE
+
+/* if you have the PK11_CreateManagedGenericObject function */
+#undef HAVE_PK11_CREATEMANAGEDGENERICOBJECT
 
 /* Define to 1 if you have a working poll function. */
 #undef HAVE_POLL
@@ -722,6 +740,9 @@
 
 /* Define to 1 if you have the <time.h> header file. */
 #undef HAVE_TIME_H
+
+/* Define this if time_t is unsigned */
+#undef HAVE_TIME_T_UNSIGNED
 
 /* Define to 1 if you have the <unistd.h> header file. */
 #undef HAVE_UNISTD_H
@@ -941,6 +962,9 @@
 
 /* if librtmp is in use */
 #undef USE_LIBRTMP
+
+/* if libSSH is in use */
+#undef USE_LIBSSH
 
 /* if libSSH2 is in use */
 #undef USE_LIBSSH2

@@ -5,7 +5,7 @@
 .\" *                            | (__| |_| |  _ <| |___
 .\" *                             \___|\___/|_| \_\_____|
 .\" *
-.\" * Copyright (C) 1998 - 2016, Daniel Stenberg, <daniel@haxx.se>, et al.
+.\" * Copyright (C) 1998 - 2018, Daniel Stenberg, <daniel@haxx.se>, et al.
 .\" *
 .\" * This software is licensed as described in the file COPYING, which
 .\" * you should have received as part of this distribution. The terms
@@ -20,7 +20,7 @@
 .\" *
 .\" **************************************************************************
 .\"
-.TH CURLOPT_TIMEVALUE 3 "April 03, 2016" "libcurl 7.57.0" "curl_easy_setopt options"
+.TH CURLOPT_TIMEVALUE 3 "January 25, 2018" "libcurl 7.60.0" "curl_easy_setopt options"
 
 .SH NAME
 CURLOPT_TIMEVALUE \- set time value for conditional
@@ -32,6 +32,9 @@ CURLcode curl_easy_setopt(CURL *handle, CURLOPT_TIMEVALUE, long val);
 Pass a long \fIval\fP as parameter. This should be the time counted as seconds
 since 1 Jan 1970, and the time will be used in a condition as specified with
 \fICURLOPT_TIMECONDITION(3)\fP.
+
+On systems with 32 bit 'long' variables, this option cannot set dates beyond
+the year 2038. Consider \fICURLOPT_TIMEVALUE_LARGE(3)\fP instead.
 .SH DEFAULT
 0
 .SH PROTOCOLS

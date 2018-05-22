@@ -20,7 +20,7 @@
 .\" *
 .\" **************************************************************************
 .\"
-.TH CURLOPT_IOCTLFUNCTION 3 "May 31, 2017" "libcurl 7.57.0" "curl_easy_setopt options"
+.TH CURLOPT_IOCTLFUNCTION 3 "April 17, 2018" "libcurl 7.60.0" "curl_easy_setopt options"
 
 .SH NAME
 CURLOPT_IOCTLFUNCTION \- callback for I/O operations
@@ -51,7 +51,7 @@ shown above.
 This callback function gets called by libcurl when something special
 I/O-related needs to be done that the library can't do by itself. For now,
 rewinding the read data stream is the only action it can request. The
-rewinding of the read data stream may be necessary when doing a HTTP PUT or
+rewinding of the read data stream may be necessary when doing an HTTP PUT or
 POST with a multi-pass authentication method.
 
 The callback MUST return \fICURLIOE_UNKNOWNCMD\fP if the input \fIcmd\fP is

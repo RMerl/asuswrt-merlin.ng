@@ -6,7 +6,7 @@
 #                            | (__| |_| |  _ <| |___
 #                             \___|\___/|_| \_\_____|
 #
-# Copyright (C) 1998 - 2017, Daniel Stenberg, <daniel@haxx.se>, et al.
+# Copyright (C) 1998 - 2018, Daniel Stenberg, <daniel@haxx.se>, et al.
 #
 # This software is licensed as described in the file COPYING, which
 # you should have received as part of this distribution. The terms
@@ -235,6 +235,7 @@ my $has_threadedres;# set if built with threaded resolver
 my $has_psl;        # set if libcurl is built with PSL support
 my $has_ldpreload;  # set if curl is built for systems supporting LD_PRELOAD
 my $has_multissl;   # set if curl is build with MultiSSL support
+my $has_manual;     # set if curl is built with built-in manual
 
 # this version is decided by the particular nghttp2 library that is being used
 my $h2cver = "h2c";
@@ -340,6 +341,7 @@ $ENV{'CURL_MEMDEBUG'} = $memdump;
 $ENV{'CURL_ENTROPY'}="12345678";
 $ENV{'CURL_FORCETIME'}=1; # for debug NTLM magic
 $ENV{'HOME'}=$pwd;
+$ENV{'COLUMNS'}=79; # screen width!
 
 sub catch_zap {
     my $signame = shift;
@@ -2771,6 +2773,7 @@ sub checksystem {
             }
            if ($libcurl =~ /winssl/i) {
                $has_winssl=1;
+               $has_sslpinning=1;
                $ssllib="WinSSL";
            }
            elsif ($libcurl =~ /openssl/i) {
@@ -3030,6 +3033,17 @@ sub checksystem {
         die "can't run torture tests since curl was built without ".
             "TrackMemory feature (--enable-curldebug)";
     }
+
+    open(M, "$CURL -M 2>&1|");
+    while(my $s = <M>) {
+        if($s =~ /built-in manual was disabled at build-time/) {
+            $has_manual = 0;
+            last;
+        }
+        $has_manual = 1;
+        last;
+    }
+    close(M);
 
     $has_shared = `sh $CURLCONFIG --built-shared`;
     chomp $has_shared;
@@ -3470,6 +3484,11 @@ sub singletest {
                     next;
                 }
             }
+            elsif($1 eq "manual") {
+                if($has_manual) {
+                    next;
+                }
+            }
             elsif($1 eq "socks") {
                 next;
             }
@@ -3907,7 +3926,8 @@ sub singletest {
 
     if((!$cmdhash{'option'}) || ($cmdhash{'option'} !~ /no-output/)) {
         #We may slap on --output!
-        if (!@validstdout) {
+        if (!@validstdout ||
+                ($cmdhash{'option'} && $cmdhash{'option'} =~ /force-output/)) {
             $out=" --output $CURLOUT ";
         }
     }

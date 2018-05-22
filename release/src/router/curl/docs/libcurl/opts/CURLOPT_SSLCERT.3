@@ -20,7 +20,7 @@
 .\" *
 .\" **************************************************************************
 .\"
-.TH CURLOPT_SSLCERT 3 "May 31, 2017" "libcurl 7.57.0" "curl_easy_setopt options"
+.TH CURLOPT_SSLCERT 3 "April 18, 2018" "libcurl 7.60.0" "curl_easy_setopt options"
 
 .SH NAME
 CURLOPT_SSLCERT \- set SSL client certificate
@@ -38,6 +38,17 @@ With NSS or Secure Transport, this can also be the nickname of the certificate
 you wish to authenticate with as it is named in the security database. If you
 want to use a file from the current directory, please precede it with "./"
 prefix, in order to avoid confusion with a nickname.
+
+(Schannel/WinSSL only) Client certificates must be specified by a path
+expression to a certificate store. (Loading PFX is not supported; you can
+import it to a store first). You can use
+"<store location>\\<store name>\\<thumbprint>" to refer to a certificate
+in the system certificates store, for example,
+"CurrentUser\\MY\\934a7ac6f8a5d579285a74fa61e19f23ddfe8d7a". Thumbprint is
+usually a SHA-1 hex string which you can see in certificate details. Following
+store locations are supported: CurrentUser, LocalMachine, CurrentService,
+Services, CurrentUserGroupPolicy, LocalMachineGroupPolicy,
+LocalMachineEnterprise.
 
 When using a client certificate, you most likely also need to provide a
 private key with \fICURLOPT_SSLKEY(3)\fP.

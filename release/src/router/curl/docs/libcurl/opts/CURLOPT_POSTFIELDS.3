@@ -20,7 +20,7 @@
 .\" *
 .\" **************************************************************************
 .\"
-.TH CURLOPT_POSTFIELDS 3 "July 07, 2017" "libcurl 7.57.0" "curl_easy_setopt options"
+.TH CURLOPT_POSTFIELDS 3 "April 17, 2018" "libcurl 7.60.0" "curl_easy_setopt options"
 
 .SH NAME
 CURLOPT_POSTFIELDS \- specify data to POST to server
@@ -29,7 +29,7 @@ CURLOPT_POSTFIELDS \- specify data to POST to server
 
 CURLcode curl_easy_setopt(CURL *handle, CURLOPT_POSTFIELDS, char *postdata);
 .SH DESCRIPTION
-Pass a char * as parameter, pointing to the full data to send in a HTTP POST
+Pass a char * as parameter, pointing to the full data to send in an HTTP POST
 operation. You must make sure that the data is formatted the way you want the
 server to receive it. libcurl will not convert or encode it for you in any
 way. For example, the web server may assume that this data is url-encoded.

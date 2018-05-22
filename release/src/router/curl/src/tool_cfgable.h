@@ -7,7 +7,7 @@
  *                            | (__| |_| |  _ <| |___
  *                             \___|\___/|_| \_\_____|
  *
- * Copyright (C) 1998 - 2017, Daniel Stenberg, <daniel@haxx.se>, et al.
+ * Copyright (C) 1998 - 2018, Daniel Stenberg, <daniel@haxx.se>, et al.
  *
  * This software is licensed as described in the file COPYING, which
  * you should have received as part of this distribution. The terms
@@ -128,6 +128,7 @@ struct OperationConfig {
   char *crlfile;
   char *proxy_crlfile;
   char *pinnedpubkey;
+  char *proxy_pinnedpubkey;
   char *key;
   char *proxy_key;
   char *key_type;
@@ -168,7 +169,7 @@ struct OperationConfig {
   long proxy_ssl_version;
   long ip_version;
   curl_TimeCond timecond;
-  time_t condtime;
+  curl_off_t condtime;
   struct curl_slist *headers;
   struct curl_slist *proxyheaders;
   curl_mime *mimepost;
@@ -249,6 +250,9 @@ struct OperationConfig {
   curl_error synthetic_error;     /* if non-zero, it overrides any libcurl
                                      error */
   bool ssh_compression;           /* enable/disable SSH compression */
+  long happy_eyeballs_timeout_ms; /* happy eyeballs timeout in milliseconds.
+                                     0 is valid. default: CURL_HET_DEFAULT. */
+  bool haproxy_protocol;          /* whether to send HAProxy PROXY protocol */
   struct GlobalConfig *global;
   struct OperationConfig *prev;
   struct OperationConfig *next;   /* Always last in the struct */

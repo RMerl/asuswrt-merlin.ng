@@ -21,7 +21,7 @@
 #                            | (__| |_| |  _ <| |___
 #                             \___|\___/|_| \_\_____|
 #
-# Copyright (C) 1998 - 2017, Daniel Stenberg, <daniel@haxx.se>, et al.
+# Copyright (C) 1998 - 2018, Daniel Stenberg, <daniel@haxx.se>, et al.
 #
 # This software is licensed as described in the file COPYING, which
 # you should have received as part of this distribution. The terms
@@ -43,7 +43,7 @@
 #                            | (__| |_| |  _ <| |___
 #                             \___|\___/|_| \_\_____|
 #
-# Copyright (C) 1998 - 2017, Daniel Stenberg, <daniel@haxx.se>, et al.
+# Copyright (C) 1998 - 2018, Daniel Stenberg, <daniel@haxx.se>, et al.
 #
 # This software is licensed as described in the file COPYING, which
 # you should have received as part of this distribution. The terms
@@ -161,7 +161,8 @@ check_PROGRAMS = 10-at-a-time$(EXEEXT) anyauthput$(EXEEXT) \
 	http2-serverpush$(EXEEXT) getredirect$(EXEEXT) \
 	ftpuploadfrommem$(EXEEXT) ftpuploadresume$(EXEEXT) \
 	sslbackend$(EXEEXT) postit2-formadd$(EXEEXT) \
-	multi-formadd$(EXEEXT) shared-connection-cache$(EXEEXT)
+	multi-formadd$(EXEEXT) shared-connection-cache$(EXEEXT) \
+	sftpuploadresume$(EXEEXT)
 subdir = docs/examples
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/m4/ax_code_coverage.m4 \
@@ -664,6 +665,13 @@ sftpget_LDADD = $(LDADD)
 @USE_EXPLICIT_LIB_DEPS_FALSE@	$(LIBDIR)/libcurl.la
 @USE_EXPLICIT_LIB_DEPS_TRUE@sftpget_DEPENDENCIES =  \
 @USE_EXPLICIT_LIB_DEPS_TRUE@	$(LIBDIR)/libcurl.la
+sftpuploadresume_SOURCES = sftpuploadresume.c
+sftpuploadresume_OBJECTS = sftpuploadresume.$(OBJEXT)
+sftpuploadresume_LDADD = $(LDADD)
+@USE_EXPLICIT_LIB_DEPS_FALSE@sftpuploadresume_DEPENDENCIES =  \
+@USE_EXPLICIT_LIB_DEPS_FALSE@	$(LIBDIR)/libcurl.la
+@USE_EXPLICIT_LIB_DEPS_TRUE@sftpuploadresume_DEPENDENCIES =  \
+@USE_EXPLICIT_LIB_DEPS_TRUE@	$(LIBDIR)/libcurl.la
 shared_connection_cache_SOURCES = shared-connection-cache.c
 shared_connection_cache_OBJECTS = shared-connection-cache.$(OBJEXT)
 shared_connection_cache_LDADD = $(LDADD)
@@ -805,9 +813,10 @@ SOURCES = 10-at-a-time.c anyauthput.c certinfo.c chkspeed.c \
 	pop3-stat.c pop3-tls.c pop3-top.c pop3-uidl.c post-callback.c \
 	postinmemory.c postit2.c postit2-formadd.c progressfunc.c \
 	resolve.c rtsp.c sendrecv.c sepheaders.c sftpget.c \
-	shared-connection-cache.c simple.c simplepost.c simplessl.c \
-	smtp-expn.c smtp-mail.c smtp-mime.c smtp-multi.c smtp-ssl.c \
-	smtp-tls.c smtp-vrfy.c sslbackend.c url2file.c
+	sftpuploadresume.c shared-connection-cache.c simple.c \
+	simplepost.c simplessl.c smtp-expn.c smtp-mail.c smtp-mime.c \
+	smtp-multi.c smtp-ssl.c smtp-tls.c smtp-vrfy.c sslbackend.c \
+	url2file.c
 DIST_SOURCES = 10-at-a-time.c anyauthput.c certinfo.c chkspeed.c \
 	cookie_interface.c debug.c externalsocket.c fileupload.c \
 	fopen.c ftp-wildcard.c ftpget.c ftpgetinfo.c ftpgetresp.c \
@@ -824,9 +833,10 @@ DIST_SOURCES = 10-at-a-time.c anyauthput.c certinfo.c chkspeed.c \
 	pop3-stat.c pop3-tls.c pop3-top.c pop3-uidl.c post-callback.c \
 	postinmemory.c postit2.c postit2-formadd.c progressfunc.c \
 	resolve.c rtsp.c sendrecv.c sepheaders.c sftpget.c \
-	shared-connection-cache.c simple.c simplepost.c simplessl.c \
-	smtp-expn.c smtp-mail.c smtp-mime.c smtp-multi.c smtp-ssl.c \
-	smtp-tls.c smtp-vrfy.c sslbackend.c url2file.c
+	sftpuploadresume.c shared-connection-cache.c simple.c \
+	simplepost.c simplessl.c smtp-expn.c smtp-mail.c smtp-mime.c \
+	smtp-multi.c smtp-ssl.c smtp-tls.c smtp-vrfy.c sslbackend.c \
+	url2file.c
 am__can_run_installinfo = \
   case $$AM_UPDATE_INFO_DIR in \
     n|no|NO) false;; \
@@ -866,7 +876,9 @@ AWK = @AWK@
 BLANK_AT_MAKETIME = @BLANK_AT_MAKETIME@
 CC = @CC@
 CCDEPMODE = @CCDEPMODE@
-CFLAGS = @CFLAGS@
+
+# This might hold -Werror
+CFLAGS = @CFLAGS@ @CURL_CFLAG_EXTRAS@
 CFLAG_CURL_SYMBOL_HIDING = @CFLAG_CURL_SYMBOL_HIDING@
 CODE_COVERAGE_CFLAGS = @CODE_COVERAGE_CFLAGS@
 CODE_COVERAGE_CPPFLAGS = @CODE_COVERAGE_CPPFLAGS@
@@ -978,6 +990,7 @@ REQUIRE_LIB_DEPS = @REQUIRE_LIB_DEPS@
 SED = @SED@
 SET_MAKE = @SET_MAKE@
 SHELL = @SHELL@
+SSL_BACKENDS = @SSL_BACKENDS@
 SSL_ENABLED = @SSL_ENABLED@
 SSL_LIBS = @SSL_LIBS@
 STRIP = @STRIP@
@@ -990,6 +1003,7 @@ USE_DARWINSSL = @USE_DARWINSSL@
 USE_GNUTLS = @USE_GNUTLS@
 USE_GNUTLS_NETTLE = @USE_GNUTLS_NETTLE@
 USE_LIBRTMP = @USE_LIBRTMP@
+USE_LIBSSH = @USE_LIBSSH@
 USE_LIBSSH2 = @USE_LIBSSH2@
 USE_MBEDTLS = @USE_MBEDTLS@
 USE_NGHTTP2 = @USE_NGHTTP2@
@@ -1080,11 +1094,12 @@ LIBDIR = $(top_builddir)/lib
 
 # These examples require external dependencies that may not be commonly
 # available on POSIX systems, so don't bother attempting to compile them here.
-COMPLICATED_EXAMPLES = curlgtk.c curlx.c htmltitle.cpp cacertinmem.c       \
-  ghiper.c hiperfifo.c htmltidy.c multithread.c          \
-  opensslthreadlock.c sampleconv.c synctime.c threaded-ssl.c evhiperfifo.c \
-  smooth-gtk-thread.c version-check.pl href_extractor.c asiohiper.cpp      \
-  multi-uv.c xmlstream.c usercertinmem.c sessioninfo.c
+COMPLICATED_EXAMPLES = curlgtk.c curlx.c htmltitle.cpp cacertinmem.c	\
+  ghiper.c hiperfifo.c htmltidy.c multithread.c opensslthreadlock.c	\
+  sampleconv.c synctime.c threaded-ssl.c evhiperfifo.c			\
+  smooth-gtk-thread.c version-check.pl href_extractor.c asiohiper.cpp	\
+  multi-uv.c xmlstream.c usercertinmem.c sessioninfo.c			\
+  threaded-shared-conn.c
 
 all: all-am
 
@@ -1402,6 +1417,10 @@ sftpget$(EXEEXT): $(sftpget_OBJECTS) $(sftpget_DEPENDENCIES) $(EXTRA_sftpget_DEP
 	@rm -f sftpget$(EXEEXT)
 	$(AM_V_CCLD)$(LINK) $(sftpget_OBJECTS) $(sftpget_LDADD) $(LIBS)
 
+sftpuploadresume$(EXEEXT): $(sftpuploadresume_OBJECTS) $(sftpuploadresume_DEPENDENCIES) $(EXTRA_sftpuploadresume_DEPENDENCIES) 
+	@rm -f sftpuploadresume$(EXEEXT)
+	$(AM_V_CCLD)$(LINK) $(sftpuploadresume_OBJECTS) $(sftpuploadresume_LDADD) $(LIBS)
+
 shared-connection-cache$(EXEEXT): $(shared_connection_cache_OBJECTS) $(shared_connection_cache_DEPENDENCIES) $(EXTRA_shared_connection_cache_DEPENDENCIES) 
 	@rm -f shared-connection-cache$(EXEEXT)
 	$(AM_V_CCLD)$(LINK) $(shared_connection_cache_OBJECTS) $(shared_connection_cache_LDADD) $(LIBS)
@@ -1528,6 +1547,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sendrecv.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sepheaders.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sftpget.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sftpuploadresume.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/shared-connection-cache.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/simple.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/simplepost.Po@am__quote@

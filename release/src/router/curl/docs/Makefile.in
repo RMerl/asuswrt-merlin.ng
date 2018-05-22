@@ -21,7 +21,7 @@
 #                            | (__| |_| |  _ <| |___
 #                             \___|\___/|_| \_\_____|
 #
-# Copyright (C) 1998 - 2017, Daniel Stenberg, <daniel@haxx.se>, et al.
+# Copyright (C) 1998 - 2018, Daniel Stenberg, <daniel@haxx.se>, et al.
 #
 # This software is licensed as described in the file COPYING, which
 # you should have received as part of this distribution. The terms
@@ -372,6 +372,7 @@ REQUIRE_LIB_DEPS = @REQUIRE_LIB_DEPS@
 SED = @SED@
 SET_MAKE = @SET_MAKE@
 SHELL = @SHELL@
+SSL_BACKENDS = @SSL_BACKENDS@
 SSL_ENABLED = @SSL_ENABLED@
 SSL_LIBS = @SSL_LIBS@
 STRIP = @STRIP@
@@ -384,6 +385,7 @@ USE_DARWINSSL = @USE_DARWINSSL@
 USE_GNUTLS = @USE_GNUTLS@
 USE_GNUTLS_NETTLE = @USE_GNUTLS_NETTLE@
 USE_LIBRTMP = @USE_LIBRTMP@
+USE_LIBSSH = @USE_LIBSSH@
 USE_LIBSSH2 = @USE_LIBSSH2@
 USE_MBEDTLS = @USE_MBEDTLS@
 USE_NGHTTP2 = @USE_NGHTTP2@
@@ -472,7 +474,7 @@ CLEANFILES = $(GENHTMLPAGES) $(PDFPAGES) $(MANDISTPAGES) curl.1
 EXTRA_DIST = MANUAL BUGS CONTRIBUTE.md FAQ FEATURES INTERNALS.md SSLCERTS.md    \
  README.win32 RESOURCES TODO TheArtOfHttpScripting THANKS VERSIONS KNOWN_BUGS   \
  BINDINGS.md HISTORY.md INSTALL INSTALL.md LICENSE-MIXING.md     \
- README.netware MAIL-ETIQUETTE HTTP-COOKIES.md SECURITY.md RELEASE-PROCEDURE    \
+ README.netware MAIL-ETIQUETTE HTTP-COOKIES.md SECURITY-PROCESS.md RELEASE-PROCEDURE    \
  SSL-PROBLEMS.md HTTP2.md ROADMAP.md CODE_OF_CONDUCT.md CODE_STYLE.md           \
  CHECKSRC.md CMakeLists.txt README.md CIPHERS.md INSTALL.cmake README.cmake     \
  $(noinst_man_MANS) HELP-US.md

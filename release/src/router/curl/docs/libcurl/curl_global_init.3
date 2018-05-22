@@ -19,7 +19,7 @@
 .\" * KIND, either express or implied.
 .\" *
 .\" **************************************************************************
-.TH curl_global_init 3 "November 23, 2017" "libcurl 7.57.0" "libcurl Manual"
+.TH curl_global_init 3 "April 17, 2018" "libcurl 7.60.0" "libcurl Manual"
 
 .SH NAME
 curl_global_init - Global libcurl initialisation
@@ -63,14 +63,14 @@ Initialize everything possible. This sets all known bits except
 \fBCURL_GLOBAL_ACK_EINTR\fP.
 
 .IP CURL_GLOBAL_SSL
-(This flag's presence or absense serves no meaning since 7.57.0. The
+(This flag's presence or absence serves no meaning since 7.57.0. The
 description below is for older libcurl versions.)
 
 Initialize SSL.
 
 The implication here is that if this bit is not set, the initialization of the
 SSL layer needs to be done by the application or at least outside of
-libcurl. The exact procedure how to do SSL initializtion depends on the TLS
+libcurl. The exact procedure how to do SSL initialization depends on the TLS
 backend libcurl uses.
 
 Doing TLS based transfers without having the TLS layer initialized may lead to

@@ -5,7 +5,7 @@
  *                            | (__| |_| |  _ <| |___
  *                             \___|\___/|_| \_\_____|
  *
- * Copyright (C) 1998 - 2017, Daniel Stenberg, <daniel@haxx.se>, et al.
+ * Copyright (C) 1998 - 2018, Daniel Stenberg, <daniel@haxx.se>, et al.
  *
  * This software is licensed as described in the file COPYING, which
  * you should have received as part of this distribution. The terms
@@ -61,9 +61,7 @@
 #endif
 
 
-#ifdef HAVE_LIMITS_H
-#  include <limits.h>
-#endif
+#include <limits.h>
 
 #include <curl/curl.h>
 #include "urldata.h"
@@ -1355,12 +1353,8 @@ static void *Curl_gskit_get_internals(struct ssl_connect_data *connssl,
 const struct Curl_ssl Curl_ssl_gskit = {
   { CURLSSLBACKEND_GSKIT, "gskit" }, /* info */
 
-  0, /* have_ca_path */
-  1, /* have_certinfo */
-  0, /* have_pinnedpubkey */
-  0, /* have_ssl_ctx */
-  /* TODO: convert to 1 and fix test #1014 (if need) */
-  0, /* support_https_proxy */
+  SSLSUPP_CERTINFO |
+  SSLSUPP_PINNEDPUBKEY,
 
   sizeof(struct ssl_backend_data),
 

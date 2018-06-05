@@ -13,6 +13,17 @@ General changes in the 384/NG branch vs 380.xx:
      lists of settings might no longer be possible on 384.xx.
 
 
+384.6 (xx-xxx-xxxx)
+   - NEW: Added support for the "-p" option to netstat.
+   - CHANGED: Updated nano to 2.9.7
+   - CHANGED: Updated curl to 7.60.0 (contains security fixes)
+   - CHANGED: Allow selecting text (for copy/paste operations)
+              on AiProtection pages.
+   - FIXED: IPv6-related issues on non-HND platform (theMIROn)
+   - FIXED: Couldn't log on WTFast if accessing the router
+            webui over https.
+
+
 384.5 (13-May-2018)
    - NEW: Merged withh GPL 384_20648
    - NEW: Merged RT-AC68U, RT-AC5300 binary blobs from 384_20648

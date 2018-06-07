@@ -752,7 +752,7 @@ int main (int argc, char **argv)
 	my_syslog(LOG_INFO, _("DNS service limited to local subnets"));
     }
   
-  my_syslog(LOG_INFO, _("compile time options: %s"), compile_opts);
+  my_syslog(LOG_DEBUG, _("compile time options: %s"), compile_opts);
 
   if (chown_warn != 0)
     my_syslog(LOG_WARNING, "chown of PID file %s failed: %s", daemon->runfile, strerror(chown_warn));
@@ -812,7 +812,7 @@ int main (int argc, char **argv)
   if (!option_bool(OPT_NOWILD)) 
     for (if_tmp = daemon->if_names; if_tmp; if_tmp = if_tmp->next)
       if (if_tmp->name && !if_tmp->used)
-	my_syslog(LOG_WARNING, _("warning: interface %s does not currently exist"), if_tmp->name);
+	my_syslog(LOG_DEBUG, _("warning: interface %s does not currently exist"), if_tmp->name);
    
   if (daemon->port != 0 && option_bool(OPT_NO_RESOLV))
     {
@@ -1380,6 +1380,10 @@ static void async_event(int pipe, time_t now)
 	   we leave them logging to the old file. */
 	if (daemon->log_file != NULL)
 	  log_reopen(daemon->log_file);
+#if defined(HAVE_DHCP) && defined(HAVE_LEASEFILE_EXPIRE)
+	if (daemon->dhcp || daemon->dhcp6)
+	  lease_flush_file(now);
+#endif
 	break;
 
       case EVENT_NEWADDR:
@@ -1423,6 +1427,10 @@ static void async_event(int pipe, time_t now)
 	  }
 #endif
 	
+#if defined(HAVE_DHCP) && defined(HAVE_LEASEFILE_EXPIRE)
+	if (daemon->dhcp || daemon->dhcp6)
+	  lease_flush_file(now);
+#endif
 	if (daemon->lease_stream)
 	  fclose(daemon->lease_stream);
 

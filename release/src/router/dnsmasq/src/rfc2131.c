@@ -1,4 +1,4 @@
-/* dnsmasq is Copyright (c) 2000-2017 Simon Kelley
+/* dnsmasq is Copyright (c) 2000-2018 Simon Kelley
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -75,7 +75,7 @@ size_t dhcp_reply(struct dhcp_context *context, char *iface_name, int int_index,
   struct dhcp_vendor *vendor;
   struct dhcp_mac *mac;
   struct dhcp_netid_list *id_list;
-  int clid_len = 0, ignore = 0, do_classes = 0, selecting = 0, pxearch = -1;
+  int clid_len = 0, ignore = 0, do_classes = 0, rapid_commit = 0, selecting = 0, pxearch = -1;
   struct dhcp_packet *mess = (struct dhcp_packet *)daemon->dhcp_packet.iov_base;
   unsigned char *end = (unsigned char *)(mess + 1); 
   unsigned char *real_end = (unsigned char *)(mess + 1); 
@@ -681,7 +681,7 @@ size_t dhcp_reply(struct dhcp_context *context, char *iface_name, int int_index,
       
       *pq = 0;
       
-      if (valid_hostname(daemon->dhcp_buff))
+      if (legal_hostname(daemon->dhcp_buff))
 	offer_hostname = client_hostname = daemon->dhcp_buff;
     }
   else if ((opt = option_find(mess, sz, OPTION_HOSTNAME, 1)))
@@ -695,7 +695,7 @@ size_t dhcp_reply(struct dhcp_context *context, char *iface_name, int int_index,
 	borken_opt = 1;
       else
 	daemon->dhcp_buff[len] = 0;
-      if (valid_hostname(daemon->dhcp_buff))
+      if (legal_hostname(daemon->dhcp_buff))
 	client_hostname = daemon->dhcp_buff;
     }
 
@@ -909,7 +909,7 @@ size_t dhcp_reply(struct dhcp_context *context, char *iface_name, int int_index,
 		  
 		  if (!workaround && boot)
 		    {
-		      /* Provide the bootfile here, for gPXE, and in case we have no menu items
+		      /* Provide the bootfile here, for iPXE, and in case we have no menu items
 			 and set discovery_control = 8 */
 		      if (boot->next_server.s_addr) 
 			mess->siaddr = boot->next_server;
@@ -1073,6 +1073,13 @@ size_t dhcp_reply(struct dhcp_context *context, char *iface_name, int int_index,
 
       log_tags(tagif_netid, ntohl(mess->xid));
       apply_delay(mess->xid, recvtime, tagif_netid);
+
+      if (option_bool(OPT_RAPID_COMMIT) && option_find(mess, sz, OPTION_RAPID_COMMIT, 0))
+	{
+	  rapid_commit = 1;
+	  goto rapid_commit;
+	}
+      
       log_packet("DHCPOFFER" , &mess->yiaddr, emac, emac_len, iface_name, NULL, NULL, mess->xid);
       
       time = calc_time(context, config, option_find(mess, sz, OPTION_LEASE_TIME, 4));
@@ -1085,7 +1092,8 @@ size_t dhcp_reply(struct dhcp_context *context, char *iface_name, int int_index,
 		 netid, subnet_addr, fqdn_flags, borken_opt, pxearch, uuid, vendor_class_len, now, time, fuzz);
       
       return dhcp_packet_size(mess, agent_id, real_end);
-      
+	
+
     case DHCPREQUEST:
       if (ignore || have_config(config, CONFIG_DISABLE))
 	return 0;
@@ -1183,9 +1191,10 @@ size_t dhcp_reply(struct dhcp_context *context, char *iface_name, int int_index,
 	  fuzz = rand16();
 	  mess->yiaddr = mess->ciaddr;
 	}
-      
+
       log_packet("DHCPREQUEST", &mess->yiaddr, emac, emac_len, iface_name, NULL, NULL, mess->xid);
- 
+      
+    rapid_commit:
       if (!message)
 	{
 	  struct dhcp_config *addr_config;
@@ -1256,7 +1265,11 @@ size_t dhcp_reply(struct dhcp_context *context, char *iface_name, int int_index,
 
       if (message)
 	{
-	  log_packet("DHCPNAK", &mess->yiaddr, emac, emac_len, iface_name, NULL, message, mess->xid);
+	  log_packet(rapid_commit ? "NOANSWER" : "DHCPNAK", &mess->yiaddr, emac, emac_len, iface_name, NULL, message, mess->xid);
+
+	  /* rapid commit case: lease allocate failed but don't send DHCPNAK */
+	  if (rapid_commit)
+	    return 0;
 	  
 	  mess->yiaddr.s_addr = 0;
 	  clear_packet(mess, end);
@@ -1414,12 +1427,14 @@ size_t dhcp_reply(struct dhcp_context *context, char *iface_name, int int_index,
 	    override = lease->override;
 
 	  log_packet("DHCPACK", &mess->yiaddr, emac, emac_len, iface_name, hostname, NULL, mess->xid);  
-	  
+
 	  clear_packet(mess, end);
 	  option_put(mess, end, OPTION_MESSAGE_TYPE, 1, DHCPACK);
 	  option_put(mess, end, OPTION_SERVER_IDENTIFIER, INADDRSZ, ntohl(server_id(context, override, fallback).s_addr));
 	  option_put(mess, end, OPTION_LEASE_TIME, 4, time);
-	  do_options(context, mess, end, req_options, hostname, get_domain(mess->yiaddr), 
+	  if (rapid_commit)
+	     option_put(mess, end, OPTION_RAPID_COMMIT, 0, 0);
+	   do_options(context, mess, end, req_options, hostname, get_domain(mess->yiaddr), 
 		     netid, subnet_addr, fqdn_flags, borken_opt, pxearch, uuid, vendor_class_len, now, time, fuzz);
 	}
 
@@ -2284,7 +2299,7 @@ static void do_options(struct dhcp_context *context,
   /* See if we can send the boot stuff as options.
      To do this we need a requested option list, BOOTP
      and very old DHCP clients won't have this, we also 
-     provide an manual option to disable it.
+     provide a manual option to disable it.
      Some PXE ROMs have bugs (surprise!) and need zero-terminated 
      names, so we always send those.  */
   if ((boot = find_boot(tagif)))

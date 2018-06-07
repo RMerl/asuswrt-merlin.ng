@@ -1,4 +1,4 @@
-/* dnsmasq is Copyright (c) 2000-2017 Simon Kelley
+/* dnsmasq is Copyright (c) 2000-2018 Simon Kelley
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -48,6 +48,7 @@ int main (int argc, char **argv)
   long i, max_fd = sysconf(_SC_OPEN_MAX);
   char *baduser = NULL;
   int log_err;
+  int chown_warn = 0;
 #if defined(HAVE_LINUX_NETWORK)
   cap_user_header_t hdr = NULL;
   cap_user_data_t data = NULL;
@@ -119,6 +120,9 @@ int main (int argc, char **argv)
       daemon->namebuff = safe_malloc(MAXDNAME * 2);
       daemon->keyname = safe_malloc(MAXDNAME * 2);
       daemon->workspacename = safe_malloc(MAXDNAME * 2);
+      /* one char flag per possible RR in answer section (may get extended). */
+      daemon->rr_status_sz = 64;
+      daemon->rr_status = safe_malloc(daemon->rr_status_sz);
     }
 #endif
 
@@ -220,9 +224,6 @@ int main (int argc, char **argv)
   if (option_bool(OPT_LOOP_DETECT))
     die(_("loop detection not available: set HAVE_LOOP in src/config.h"), NULL, EC_BADCONF);
 #endif
-
-  if (daemon->max_port != MAX_PORT && daemon->min_port == 0)
-    daemon->min_port = 1024u;
 
   if (daemon->max_port < daemon->min_port)
     die(_("max_port cannot be smaller than min_port"), NULL, EC_BADCONF);
@@ -359,12 +360,22 @@ int main (int argc, char **argv)
     }
 
 #ifdef HAVE_INOTIFY
-  if (daemon->port != 0 || daemon->dhcp || daemon->doing_dhcp6)
+  if ((daemon->port != 0 || daemon->dhcp || daemon->doing_dhcp6)
+      && (!option_bool(OPT_NO_RESOLV) || daemon->dynamic_dirs))
     inotify_dnsmasq_init();
   else
     daemon->inotifyfd = -1;
 #endif
-       
+
+  if (daemon->dump_file)
+#ifdef HAVE_DUMPFILE
+    dump_init();
+  else 
+    daemon->dumpfd = -1;
+#else
+  die(_("Packet dumps not available: set HAVE_DUMP in src/config.h"), NULL, EC_BADCONF);
+#endif
+  
   if (option_bool(OPT_DBUS))
 #ifdef HAVE_DBUS
     {
@@ -387,10 +398,12 @@ int main (int argc, char **argv)
       daemon->scriptuser && 
       (daemon->lease_change_command || daemon->luascript))
     {
-      if ((ent_pw = getpwnam(daemon->scriptuser)))
+      struct passwd *scr_pw;
+      
+      if ((scr_pw = getpwnam(daemon->scriptuser)))
 	{
-	  script_uid = ent_pw->pw_uid;
-	  script_gid = ent_pw->pw_gid;
+	  script_uid = scr_pw->pw_uid;
+	  script_gid = scr_pw->pw_gid;
 	 }
       else
 	baduser = daemon->scriptuser;
@@ -538,9 +551,18 @@ int main (int argc, char **argv)
 	    }
 	  else
 	    {
+	      /* We're still running as root here. Change the ownership of the PID file
+		 to the user we will be running as. Note that this is not to allow
+		 us to delete the file, since that depends on the permissions 
+		 of the directory containing the file. That directory will
+		 need to by owned by the dnsmasq user, and the ownership of the
+		 file has to match, to keep systemd >273 happy. */
+	      if (getuid() == 0 && ent_pw && ent_pw->pw_uid != 0 && fchown(fd, ent_pw->pw_uid, ent_pw->pw_gid) == -1)
+		chown_warn = errno;
+
 	      if (!read_write(fd, (unsigned char *)daemon->namebuff, strlen(daemon->namebuff), 0))
 		err = 1;
-	      else 
+	      else
 		{
 		  while (retry_send(close(fd)));
 		  if (errno != 0)
@@ -718,7 +740,11 @@ int main (int argc, char **argv)
   else 
     {
       if (daemon->cachesize != 0)
-	my_syslog(LOG_INFO, _("started, version %s cachesize %d"), VERSION, daemon->cachesize);
+	{
+	  my_syslog(LOG_INFO, _("started, version %s cachesize %d"), VERSION, daemon->cachesize);
+	  if (daemon->cachesize > 10000)
+	    my_syslog(LOG_WARNING, _("cache size greater than 10000 may cause performance issues, and is unlikely to be useful."));
+	}
       else
 	my_syslog(LOG_INFO, _("started, version %s cache disabled"), VERSION);
 
@@ -726,7 +752,10 @@ int main (int argc, char **argv)
 	my_syslog(LOG_INFO, _("DNS service limited to local subnets"));
     }
   
-  my_syslog(LOG_DEBUG, _("compile time options: %s"), compile_opts);
+  my_syslog(LOG_INFO, _("compile time options: %s"), compile_opts);
+
+  if (chown_warn != 0)
+    my_syslog(LOG_WARNING, "chown of PID file %s failed: %s", daemon->runfile, strerror(chown_warn));
   
 #ifdef HAVE_DBUS
   if (option_bool(OPT_DBUS))
@@ -752,7 +781,10 @@ int main (int argc, char **argv)
 	  _exit(0);
 	}
       
-      my_syslog(LOG_INFO, _("DNSSEC validation enabled"));
+      if (option_bool(OPT_DNSSEC_IGN_NS))
+	my_syslog(LOG_INFO, _("DNSSEC validation enabled but all unsigned answers are trusted"));
+      else
+	my_syslog(LOG_INFO, _("DNSSEC validation enabled"));
       
       daemon->dnssec_no_time_check = option_bool(OPT_DNSSEC_TIME);
       if (option_bool(OPT_DNSSEC_TIME) && !daemon->back_to_the_future)
@@ -780,7 +812,7 @@ int main (int argc, char **argv)
   if (!option_bool(OPT_NOWILD)) 
     for (if_tmp = daemon->if_names; if_tmp; if_tmp = if_tmp->next)
       if (if_tmp->name && !if_tmp->used)
-	my_syslog(LOG_DEBUG, _("warning: interface %s does not currently exist"), if_tmp->name);
+	my_syslog(LOG_WARNING, _("warning: interface %s does not currently exist"), if_tmp->name);
    
   if (daemon->port != 0 && option_bool(OPT_NO_RESOLV))
     {
@@ -1197,31 +1229,40 @@ static void fatal_event(struct event_desc *ev, char *msg)
 
     case EVENT_FORK_ERR:
       die(_("cannot fork into background: %s"), NULL, EC_MISC);
-  
+
+      /* fall through */
     case EVENT_PIPE_ERR:
       die(_("failed to create helper: %s"), NULL, EC_MISC);
-  
+
+      /* fall through */
     case EVENT_CAP_ERR:
       die(_("setting capabilities failed: %s"), NULL, EC_MISC);
 
+      /* fall through */
     case EVENT_USER_ERR:
       die(_("failed to change user-id to %s: %s"), msg, EC_MISC);
 
+      /* fall through */
     case EVENT_GROUP_ERR:
       die(_("failed to change group-id to %s: %s"), msg, EC_MISC);
-      
+
+      /* fall through */
     case EVENT_PIDFILE:
       die(_("failed to open pidfile %s: %s"), msg, EC_FILE);
 
+      /* fall through */
     case EVENT_LOG_ERR:
       die(_("cannot open log %s: %s"), msg, EC_FILE);
-    
+
+      /* fall through */
     case EVENT_LUA_ERR:
       die(_("failed to load Lua script: %s"), msg, EC_MISC);
 
+      /* fall through */
     case EVENT_TFTP_ERR:
       die(_("TFTP directory %s inaccessible: %s"), msg, EC_FILE);
-    
+
+      /* fall through */
     case EVENT_TIME_ERR:
       die(_("cannot create timestamp file %s: %s" ), msg, EC_BADCONF);
     }
@@ -1339,10 +1380,6 @@ static void async_event(int pipe, time_t now)
 	   we leave them logging to the old file. */
 	if (daemon->log_file != NULL)
 	  log_reopen(daemon->log_file);
-#if defined(HAVE_DHCP) && defined(HAVE_LEASEFILE_EXPIRE)
-	if (daemon->dhcp || daemon->dhcp6)
-	  lease_flush_file(now);
-#endif
 	break;
 
       case EVENT_NEWADDR:
@@ -1386,10 +1423,6 @@ static void async_event(int pipe, time_t now)
 	  }
 #endif
 	
-#if defined(HAVE_DHCP) && defined(HAVE_LEASEFILE_EXPIRE)
-	if (daemon->dhcp || daemon->dhcp6)
-	  lease_flush_file(now);
-#endif
 	if (daemon->lease_stream)
 	  fclose(daemon->lease_stream);
 
@@ -1404,6 +1437,11 @@ static void async_event(int pipe, time_t now)
 
 	if (daemon->runfile)
 	  unlink(daemon->runfile);
+
+#ifdef HAVE_DUMPFILE
+	if (daemon->dumpfd != -1)
+	  close(daemon->dumpfd);
+#endif
 	
 	my_syslog(LOG_INFO, _("exiting on receipt of SIGTERM"));
 	flush_log();
@@ -1494,9 +1532,6 @@ void clear_cache_and_reload(time_t now)
       if (option_bool(OPT_ETHERS))
 	dhcp_read_ethers();
       reread_dhcp();
-#ifdef HAVE_INOTIFY
-      set_dynamic_inotify(AH_DHCP_HST | AH_DHCP_OPT, 0, NULL, 0);
-#endif
       dhcp_update_configs(daemon->dhcp_conf);
       lease_update_from_configs(); 
       lease_update_file(now); 

@@ -1,4 +1,4 @@
-/* dnsmasq is Copyright (c) 2000-2017 Simon Kelley
+/* dnsmasq is Copyright (c) 2000-2018 Simon Kelley
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -14,7 +14,7 @@
    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-/* Code to safely remove RRs from an DNS answer */ 
+/* Code to safely remove RRs from a DNS answer */ 
 
 #include "dnsmasq.h"
 
@@ -247,7 +247,7 @@ size_t rrfilter(struct dns_header *header, size_t plen, int mode)
   
   check_rrs(p, header, plen, 1, rrs, rr_found);
 
-  /*  Fouth pass, elide records */
+  /* Fourth pass, elide records */
   for (p = rrs[0], i = 1; i < rr_found; i += 2)
     {
       unsigned char *start = rrs[i];
@@ -270,7 +270,7 @@ u16 *rrfilter_desc(int type)
 {
   /* List of RRtypes which include domains in the data.
      0 -> domain
-     integer -> no of plain bytes
+     integer -> no. of plain bytes
      -1 -> end
 
      zero is not a valid RRtype, so the final entry is returned for

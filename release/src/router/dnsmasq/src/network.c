@@ -1,4 +1,4 @@
-/* dnsmasq is Copyright (c) 2000-2017 Simon Kelley
+/* dnsmasq is Copyright (c) 2000-2018 Simon Kelley
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -1149,10 +1149,7 @@ int random_sock(int family)
       if (fix_fd(fd))
 	while(tries--)
 	  {
-	    unsigned short port = rand16();
-	    
-            if (daemon->min_port != 0 || daemon->max_port != MAX_PORT)
-              port = htons(daemon->min_port + (port % ((unsigned short)ports_avail)));
+	    unsigned short port = htons(daemon->min_port + (rand16() % ((unsigned short)ports_avail)));
 	    
 	    if (family == AF_INET) 
 	      {
@@ -1187,7 +1184,7 @@ int random_sock(int family)
 }
   
 
-int local_bind(int fd, union mysockaddr *addr, char *intname, int is_tcp)
+int local_bind(int fd, union mysockaddr *addr, char *intname, unsigned int ifindex, int is_tcp)
 {
   union mysockaddr addr_copy = *addr;
 
@@ -1204,7 +1201,25 @@ int local_bind(int fd, union mysockaddr *addr, char *intname, int is_tcp)
   
   if (bind(fd, (struct sockaddr *)&addr_copy, sa_len(&addr_copy)) == -1)
     return 0;
-    
+
+  if (!is_tcp && ifindex > 0)
+    {
+#if defined(IP_UNICAST_IF)
+      if (addr_copy.sa.sa_family == AF_INET)
+        {
+          uint32_t ifindex_opt = htonl(ifindex);
+          return setsockopt(fd, IPPROTO_IP, IP_UNICAST_IF, &ifindex_opt, sizeof(ifindex_opt)) == 0;
+        }
+#endif
+#if defined(HAVE_IPV6) && defined (IPV6_UNICAST_IF)
+      if (addr_copy.sa.sa_family == AF_INET6)
+        {
+          uint32_t ifindex_opt = htonl(ifindex);
+          return setsockopt(fd, IPPROTO_IPV6, IPV6_UNICAST_IF, &ifindex_opt, sizeof(ifindex_opt)) == 0;
+        }
+#endif
+    }
+
 #if defined(SO_BINDTODEVICE)
   if (intname[0] != 0 &&
       setsockopt(fd, SOL_SOCKET, SO_BINDTODEVICE, intname, IF_NAMESIZE) == -1)
@@ -1219,7 +1234,8 @@ static struct serverfd *allocate_sfd(union mysockaddr *addr, char *intname)
   struct serverfd *sfd;
   unsigned int ifindex = 0;
   int errsave;
-
+  int opt = 1;
+  
   /* when using random ports, servers which would otherwise use
      the INADDR_ANY/port0 socket have sfd set to NULL */
   if (!daemon->osport && intname[0] == 0)
@@ -1259,10 +1275,11 @@ static struct serverfd *allocate_sfd(union mysockaddr *addr, char *intname)
       free(sfd);
       return NULL;
     }
-  
-  if (!local_bind(sfd->fd, addr, intname, 0) || !fix_fd(sfd->fd))
+
+  if ((addr->sa.sa_family == AF_INET6 && setsockopt(sfd->fd, IPPROTO_IPV6, IPV6_V6ONLY, &opt, sizeof(opt)) == -1) ||
+      !local_bind(sfd->fd, addr, intname, ifindex, 0) || !fix_fd(sfd->fd))
     { 
-      errsave = errno; /* save error from bind. */
+      errsave = errno; /* save error from bind/setsockopt. */
       close(sfd->fd);
       free(sfd);
       errno = errsave;
@@ -1273,6 +1290,7 @@ static struct serverfd *allocate_sfd(union mysockaddr *addr, char *intname)
   sfd->source_addr = *addr;
   sfd->next = daemon->sfds;
   sfd->ifindex = ifindex;
+  sfd->preallocated = 0;
   daemon->sfds = sfd;
 
   return sfd; 
@@ -1283,6 +1301,7 @@ static struct serverfd *allocate_sfd(union mysockaddr *addr, char *intname)
 void pre_allocate_sfds(void)
 {
   struct server *srv;
+  struct serverfd *sfd;
   
   if (daemon->query_port != 0)
     {
@@ -1294,7 +1313,8 @@ void pre_allocate_sfds(void)
 #ifdef HAVE_SOCKADDR_SA_LEN
       addr.in.sin_len = sizeof(struct sockaddr_in);
 #endif
-      allocate_sfd(&addr, "");
+      if ((sfd = allocate_sfd(&addr, "")))
+	sfd->preallocated = 1;
 #ifdef HAVE_IPV6
       memset(&addr, 0, sizeof(addr));
       addr.in6.sin6_family = AF_INET6;
@@ -1303,7 +1323,8 @@ void pre_allocate_sfds(void)
 #ifdef HAVE_SOCKADDR_SA_LEN
       addr.in6.sin6_len = sizeof(struct sockaddr_in6);
 #endif
-      allocate_sfd(&addr, "");
+      if ((sfd = allocate_sfd(&addr, "")))
+	sfd->preallocated = 1;
 #endif
     }
   
@@ -1456,9 +1477,10 @@ void check_servers(void)
   /* interface may be new since startup */
   if (!option_bool(OPT_NOWILD))
     enumerate_interfaces(0);
-  
+
+  /* don't garbage collect pre-allocated sfds. */
   for (sfd = daemon->sfds; sfd; sfd = sfd->next)
-    sfd->used = 0;
+    sfd->used = sfd->preallocated;
 
   for (count = 0, serv = daemon->servers; serv; serv = serv->next)
     {

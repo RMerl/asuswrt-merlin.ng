@@ -9,7 +9,7 @@ A: The high ports that dnsmasq opens are for replies from the upstream
    from port 53 the replies would be _to_ port 53 and get blocked.
 
    This is not a security hole since dnsmasq will only accept replies to that
-   port: queries are  dropped. The replies must be to oustanding queries
+   port: queries are dropped. The replies must be to outstanding queries
    which dnsmasq has forwarded, otherwise they are dropped too.
  
    Addendum: dnsmasq now has the option "query-port" (-Q), which allows
@@ -297,7 +297,7 @@ A: Dnsmasq from v2.63 can operate in one of three different "networking
    by dnsmasq when in --bind-interfaces mode. In wildcard or bind-dynamic
    mode, such interfaces are handled normally.
 
-   A --interface specification for a non-existent interface is a fatal
+   An --interface specification for a non-existent interface is a fatal
    error at start-up when in --bind-interfaces mode, by just generates a
    warning in wildcard or bind-dynamic mode.
 
@@ -320,7 +320,7 @@ A: Yes, new releases of dnsmasq are always announced through
 
 Q: What does the dhcp-authoritative option do? 
 
-A: The DHCP spec says that when a DHCP server recieves a renewal request
+A: The DHCP spec says that when a DHCP server receives a renewal request
    from a client it has no knowledge of, it should just ignore it.
    This is because it's supported to have more than one DHCP server
    on a network, and another DHCP server may be dealing with the client.

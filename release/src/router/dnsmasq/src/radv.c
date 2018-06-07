@@ -1,4 +1,4 @@
-/* dnsmasq is Copyright (c) 2000-2017 Simon Kelley
+/* dnsmasq is Copyright (c) 2000-2018 Simon Kelley
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -407,7 +407,7 @@ static void send_ra_alias(time_t now, int iface, char *iface_name, struct in6_ad
   if (ra_param)
     mtu = ra_param->mtu;
 #ifdef HAVE_LINUX_NETWORK
-  /* Note that IPv6 MTU is not neccessarily the same as the IPv4 MTU
+  /* Note that IPv6 MTU is not necessarily the same as the IPv4 MTU
      available from SIOCGIFMTU */
   if (mtu == 0)
     {

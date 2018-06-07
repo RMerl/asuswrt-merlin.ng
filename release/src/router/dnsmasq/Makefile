@@ -76,7 +76,7 @@ objs = cache.o rfc1035.o util.o option.o forward.o network.o \
        helper.o tftp.o log.o conntrack.o dhcp6.o rfc3315.o \
        dhcp-common.o outpacket.o radv.o slaac.o auth.o ipset.o \
        domain.o dnssec.o blockdata.o tables.o loop.o inotify.o \
-       poll.o rrfilter.o edns0.o arp.o
+       poll.o rrfilter.o edns0.o arp.o crypto.o dump.o
 
 hdrs = dnsmasq.h config.h dhcp-protocol.h dhcp6-protocol.h \
        dns-protocol.h radv-protocol.h ip6addr.h
@@ -100,7 +100,8 @@ clean : mostly_clean
 install : all install-common
 
 install-common :
-	$(INSTALL) -d $(DESTDIR)$(BINDIR) -d $(DESTDIR)$(MANDIR)/man8
+	$(INSTALL) -d $(DESTDIR)$(BINDIR)
+	$(INSTALL) -d $(DESTDIR)$(MANDIR)/man8
 	$(INSTALL) -m 644 $(MAN)/dnsmasq.8 $(DESTDIR)$(MANDIR)/man8 
 	$(INSTALL) -m 755 $(BUILDDIR)/dnsmasq $(DESTDIR)$(BINDIR)
 

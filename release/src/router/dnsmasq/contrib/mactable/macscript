@@ -3,7 +3,7 @@
 STATUS_FILE="/tmp/dnsmasq-ip-mac.status"
 
 # Script for dnsmasq lease-change hook.
-# Maintains the above file with a IP address/MAC address pairs,
+# Maintains the above file with an IP address/MAC address pairs,
 # one lease per line. Works with IPv4 and IPv6 leases, file is
 # atomically updated, so no races for users of the data.
 

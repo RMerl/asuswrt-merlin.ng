@@ -1,3 +1,105 @@
+version 2.80
+	Add support for RFC 4039 DHCP rapid commit. Thanks to Ashram Method
+	for the initial patch and motivation.
+
+	Alter the default for dnssec-check-unsigned. Versions of
+	dnsmasq prior to 2.80 defaulted to not checking unsigned
+	replies, and used --dnssec-check-unsigned to switch
+        this on. Such configurations will continue to work as before,
+        but those which used the default of no checking will need to be
+        altered to explicitly select no checking. The new default is
+        because switching off checking for unsigned replies is
+	inherently dangerous. Not only does it open the possiblity of forged
+        replies, but it allows everything to appear to be working even
+        when the upstream namesevers do not support DNSSEC, and in this
+        case no DNSSEC validation at all is occuring.
+
+        Fix DHCP broken-ness when --no-ping AND --dhcp-sequential-ip
+	are set. Thanks to Daniel Miess for help with this.
+
+	Add a facilty to store DNS packets sent/recieved in a
+	pcap-format file for later debugging. The file location
+	is given by the --dumpfile option, and a bitmap controlling
+	which packets should be dumped is given by the --dumpmask
+	option.
+
+	Handle the case of both standard and constructed dhcp-ranges on the
+	same interface better. We don't now contruct a dhcp-range if there's
+	already one specified. This allows the specified interface to
+	have different parameters and avoids advertising the same
+	prefix twice. Thanks to Luis Marsano for spotting this case.
+
+	Allow zone transfer in authoritative mode if auth-peer is specified,
+	even if auth-sec-servers is not. Thanks to Raphaël Halimi for
+	the suggestion.
+
+
+version 2.79
+	Fix parsing of CNAME arguments, which are confused by extra spaces.
+	Thanks to Diego Aguirre for spotting the bug.
+
+	Where available, use IP_UNICAST_IF or IPV6_UNICAST_IF to bind
+	upstream servers to an interface, rather than SO_BINDTODEVICE.
+	Thanks to Beniamino Galvani for the patch.
+
+	Always return a SERVFAIL answer to DNS queries without the
+	recursion desired bit set, UNLESS acting as an authoritative
+	DNS server. This avoids a potential route to cache snooping.
+
+	Add support for Ed25519 signatures in DNSSEC validation.
+
+	No longer support RSA/MD5 signatures in DNSSEC validation,
+	since these are not secure. This behaviour is mandated in
+	RFC-6944.
+
+	Fix incorrect error exit code from dhcp_release6 utility.
+	Thanks Gaudenz Steinlin for the bug report.
+
+	Use SIGINT (instead of overloading SIGHUP) to turn on DNSSEC
+	time validation when --dnssec-no-timecheck is in use.
+	Note that this is an incompatible change from earlier releases.
+
+	Allow more than one --bridge-interface option to refer to an
+	interface, so that we can use
+	--bridge-interface=int1,alias1
+	--bridge-interface=int1,alias2
+	as an alternative to
+	--bridge-interface=int1,alias1,alias2
+	Thanks to Neil Jerram for work on this.
+
+	Fix for DNSSEC with wildcard-derived NSEC records.
+	It's OK for NSEC records to be expanded from wildcards,
+	but in that case, the proof of non-existence is only valid
+	starting at the wildcard name, *.<domain> NOT the name expanded
+	from the wildcard. Without this check it's possible for an
+	attacker to craft an NSEC which wrongly proves non-existence.
+	Thanks to Ralph Dolmans for finding this, and co-ordinating 
+	the vulnerability tracking and fix release.
+	CVE-2017-15107 applies.
+
+	Remove special handling of A-for-A DNS queries. These
+	are no longer a significant problem in the global DNS.
+	http://cs.northwestern.edu/~ychen/Papers/DNS_ToN15.pdf
+	Thanks to Mattias Hellström for the initial patch.
+
+	Fix failure to delete dynamically created dhcp options
+	from files in -dhcp-optsdir directories. Thanks to
+	Lindgren Fredrik for the bug report.
+
+	Add to --synth-domain the ability to create names using
+	sequential numbers, as well as encodings of IP addresses.
+	For instance,
+	--synth-domain=thekelleys.org.uk,192.168.0.50,192.168.0.70,internal-*
+	creates 21 domain names of the form
+	internal-4.thekelleys.org.uk over the address range given, with
+	internal-0.thekelleys.org.uk being 192.168.0.50 and
+	internal-20.thekelleys.org.uk being 192.168.0.70
+	Thanks to Andy Hawkins for the suggestion.
+
+	Tidy up Crypto code, removing workarounds for ancient
+	versions of libnettle. We now require libnettle 3.
+
+
 version 2.78
         Fix logic of appending ".<layer>" to PXE basename. Thanks to Chris
 	Novakovic for the patch.
@@ -1526,7 +1628,7 @@ version 2.56
 
 	By default, setting an IPv4 address for a domain but not
 	an IPv6 address causes dnsmasq to return
-	an NODATA reply for IPv6 (or vice-versa). So
+	a NODATA reply for IPv6 (or vice-versa). So
 	--address=/google.com/1.2.3.4 stops IPv6 queries for
 	*google.com from being forwarded. Make it possible to
 	override this behaviour by defining the semantics if the
@@ -2032,13 +2134,13 @@ version 2.47
 
 	Support arbitrarily encapsulated DHCP options, suggestion
 	and initial patch from Samium Gromoff. This is useful for
-	(eg) gPXE, which expect all its private options to be
+	(eg) iPXE, which expect all its private options to be
 	encapsulated inside a single option 175. So, eg, 
 
 	dhcp-option = encap:175, 190, "iscsi-client0"
 	dhcp-option = encap:175, 191, "iscsi-client0-secret"
 
-	will provide iSCSI parameters to gPXE.
+	will provide iSCSI parameters to iPXE.
 
 	Enhance --dhcp-match to allow testing of the contents of a
 	client-sent option, as well as its presence. This

@@ -182,7 +182,8 @@ OS: this was the default behaviour in versions prior to 2.43.
 Do not use ports less than that given as source for outbound DNS
 queries. Dnsmasq picks random ports as source for outbound queries:
 when this option is given, the ports used will always to larger
-than that specified. Useful for systems behind firewalls. 
+than that specified. Useful for systems behind firewalls. If not specified,
+defaults to 1024.
 .TP
 .B --max-port=<port>
 Use ports lower than that given as source for outbound DNS queries.
@@ -241,7 +242,7 @@ configuration, indeed
 .B --auth-server
 will override these and provide a different DNS service on the
 specified interface. The <domain> is the "glue record". It should
-resolve in the global DNS to a A and/or AAAA record which points to
+resolve in the global DNS to an A and/or AAAA record which points to
 the address dnsmasq is listening on. When an interface is specified,
 it may be qualified with "/4" or "/6" to specify only the IPv4 or IPv6
 addresses associated with the interface.
@@ -464,7 +465,7 @@ is a synonym for
 .B server
 to make configuration files clearer in this case.
 
-IPv6 addresses may include a %interface scope-id, eg
+IPv6 addresses may include an %interface scope-id, eg
 fe80::202:a412:4512:7bbf%eth0.
 
 The optional string after the @ character tells dnsmasq how to set the source of
@@ -597,7 +598,7 @@ hosts files), from DHCP, from --interface-name or from another
 .B --cname.
 If the target does not satisfy this
 criteria, the whole cname is ignored. The cname must be unique, but it
-is permissable to have more than one cname pointing to the same target. Indeed
+is permissible to have more than one cname pointing to the same target. Indeed
 it's possible to declare multiple cnames to a target in a single line, like so:
 .B --cname=cname1,cname2,target
 
@@ -625,13 +626,16 @@ address by repeating the flag; in that case the first instance is used
 for the reverse address-to-name mapping. Note that a name used in 
 --interface-name may not appear in /etc/hosts.
 .TP
-.B --synth-domain=<domain>,<address range>[,<prefix>]
+.B --synth-domain=<domain>,<address range>[,<prefix>[*]]
 Create artificial A/AAAA and PTR records for an address range. The
-records use the address, with periods (or colons for IPv6) replaced
-with dashes.
+records either seqential numbers or the address, with periods (or colons for IPv6) replaced with dashes.
 
-An example should make this clearer.
-.B --synth-domain=thekelleys.org.uk,192.168.0.0/24,internal-
+An examples should make this clearer. First sequential numbers.
+.B --synth-domain=thekelleys.org.uk,192.168.0.50,192.168.0.70,internal-*
+results in the name internal-0.thekelleys.org.uk. returning 192.168.0.50, internal-1.thekelleys.org.uk returning 192.168.0.51 and so on. (note the *) The same principle applies to IPv6 addresses (where the numbers may be very large). Reverse lookups from address to name behave as expected.
+
+Second, 
+.B --synth-domain=thekelleys.org.uk,192.168.0.0/24,internal- (no *)
 will result in a query for internal-192-168-0-56.thekelleys.org.uk returning
 192.168.0.56 and a reverse query vice versa. The same applies to IPv6,
 but IPv6 addresses may start with '::'
@@ -641,7 +645,14 @@ configured a zero is added in front of the label. ::1 becomes 0--1.
 V4 mapped IPv6 addresses, which have a representation like ::ffff:1.2.3.4 are handled specially, and become like 0--ffff-1-2-3-4
 
 The address range can be of the form
-<ip address>,<ip address> or <ip address>/<netmask>
+<ip address>,<ip address> or <ip address>/<netmask> in both forms of the option.
+.TP
+.B --dumpfile=<path/to/file>
+Specify the location of a pcap-format file which dnsmasq uses to dump copies of network packets for debugging purposes. If the file exists when dnsmasq starts, it is not deleted; new packets are added to the end.
+.TP
+.B --dumpmask=<mask>
+Specify which types of packets should be added to the dumpfile. The argument should be the OR of the bitmasks for each type of packet to be dumped: it can be specified in hex by preceding the number with 0x in  the normal way. Each time a packet is written to the dumpfile, dnsmasq logs the packet sequence and the mask
+representing its type. The current types are: 0x0001 - DNS queries from clients 0x0002 DNS replies to clients 0x0004 - DNS queries to upstream 0x0008 - DNS replies from upstream 0x0010 - queries send upstream for DNSSEC validation 0x0020 - replies to queries for DNSSEC validation 0x0040 - replies to client queries which fail DNSSEC validation 0x0080 replies to queries for DNSSEC validation which fail validation.
 .TP
 .B --add-mac[=base64|text]
 Add the MAC address of the requestor to DNS queries which are
@@ -655,7 +666,7 @@ given for --add-subnet applies to --add-mac too. An alternative encoding of the
 MAC, as base64, is enabled by adding the "base64" parameter and a human-readable encoding of hex-and-colons is enabled by added the "text" parameter.
 .TP
 .B --add-cpe-id=<string>
-Add a arbitrary identifying string to o DNS queries which are
+Add an arbitrary identifying string to o DNS queries which are
 forwarded upstream.
 .TP 
 .B --add-subnet[[=[<IPv4 address>/]<IPv4 prefix length>][,[<IPv6 address>/]<IPv6 prefix length>]]
@@ -681,7 +692,7 @@ will add 1.2.3.0/24 for both IPv4 and IPv6 requestors.
 
 .TP
 .B \-c, --cache-size=<cachesize>
-Set the size of dnsmasq's cache. The default is 150 names. Setting the cache size to zero disables caching.
+Set the size of dnsmasq's cache. The default is 150 names. Setting the cache size to zero disables caching. Note: huge cache size impacts performance.
 .TP
 .B \-N, --no-negcache
 Disable negative caching. Negative caching allows dnsmasq to remember
@@ -708,29 +719,28 @@ permitted to reduce the cache size below the default when DNSSEC is
 enabled. The nameservers upstream of dnsmasq must be DNSSEC-capable,
 ie capable of returning DNSSEC records with data. If they are not,
 then dnsmasq will not be able to determine the trusted status of
-answers. In the default mode, this means that all replies will be
-marked as untrusted. If 
-.B --dnssec-check-unsigned
-is set and the upstream servers don't support DNSSEC, then DNS service will be entirely broken.
+answers and this means that DNS service will be entirely broken.
 .TP
 .B --trust-anchor=[<class>],<domain>,<key-tag>,<algorithm>,<digest-type>,<digest>
 Provide DS records to act a trust anchors for DNSSEC
-validation. Typically these will be the DS record(s) for Zone Signing
-key(s) of the root zone,
+validation. Typically these will be the DS record(s) for Key Signing
+key(s) (KSK) of the root zone,
 but trust anchors for limited domains are also possible. The current
 root-zone trust anchors may be downloaded from https://data.iana.org/root-anchors/root-anchors.xml 
 .TP
-.B --dnssec-check-unsigned
-As a default, dnsmasq does not check that unsigned DNS replies are
-legitimate: they are assumed to be valid and passed on (without the
+.B --dnssec-check-unsigned[=no]
+As a default, dnsmasq checks that unsigned DNS replies are
+legitimate: this entails possible extra queries even for the majority of DNS
+zones which are not, at the moment, signed. If
+.B --dnssec-check-unsigned=no
+appears in the configuration, then such replies they are assumed to be valid and passed on (without the
 "authentic data" bit set, of course). This does not protect against an
 attacker forging unsigned replies for signed DNS zones, but it is
-fast. If this flag is set, dnsmasq will check the zones of unsigned
-replies, to ensure that unsigned replies are allowed in those
-zones. The cost of this is more upstream queries and slower
-performance. See also the warning about upstream servers in the
-section on 
-.B --dnssec
+fast.
+
+Versions of dnsmasq prior to 2.80 defaulted to not checking unsigned replies, and used 
+.B --dnssec-check-unsigned
+to switch this on. Such configurations will continue to work as before, but those which used the default of no checking will need to be altered to explicitly select no checking. The new default is because switching off checking for unsigned replies is inherently dangerous. Not only does it open the possiblity of forged replies, but it allows everything to appear to be working even when the upstream namesevers do not support DNSSEC, and in this case no DNSSEC validation at all is occuring.
 .TP
 .B --dnssec-no-timecheck
 DNSSEC signatures are only valid for specified time windows, and should be rejected outside those windows. This generates an
@@ -739,7 +749,7 @@ time typically requires use of NTP and therefore DNS, but validating DNS require
 removes the time-window checks (but not other DNSSEC validation.) only until the dnsmasq process receives SIGINT. The intention is
 that dnsmasq should be started with this flag when the platform determines that reliable time is not currently available. As soon as 
 reliable time is established, a SIGINT should be sent to dnsmasq, which enables time checking, and purges the cache of DNS records
-which have not been throughly checked.
+which have not been thoroughly checked.
 
 Earlier versions of dnsmasq overloaded SIGHUP (which re-reads much configuration) to also enable time validation.
 
@@ -807,7 +817,11 @@ authoritative zones as dnsmasq.
 Specify the addresses of secondary servers which are allowed to
 initiate zone transfer (AXFR) requests for zones for which dnsmasq is
 authoritative. If this option is not given, then AXFR requests will be
-accepted from any secondary. 
+accepted from any secondary. Specifying
+.B auth-peer
+without
+.B auth-sec-servers
+enables zone transfer but does not advertise the secondary in NS records returned by dnsmasq.
 .TP 
 .B --conntrack
 Read the Linux connection track mark associated with incoming DNS
@@ -1077,7 +1091,7 @@ in a dhcp-optsfile.
 This is equivalent to dhcp-hostsfile, except for the following. The path MUST be a
 directory, and not an individual file. Changed or new files within
 the directory are read automatically, without the need to send SIGHUP.
-If a file is deleted for changed after it has been read by dnsmasq, then the
+If a file is deleted or changed after it has been read by dnsmasq, then the
 host record it contained will remain until dnsmasq receives a SIGHUP, or 
 is restarted; ie host records are only added dynamically.
 .TP
@@ -1319,7 +1333,7 @@ Perform boolean operations on tags. Any tag appearing as set:<tag> is set if
 all the tags which appear as tag:<tag> are set, (or unset when tag:!<tag> is used)
 If no tag:<tag> appears set:<tag> tags are set unconditionally.
 Any number of set: and tag: forms may appear, in any order. 
-Tag-if lines ares executed in order, so if the tag in tag:<tag> is a
+Tag-if lines are executed in order, so if the tag in tag:<tag> is a
 tag set by another
 .B tag-if,
 the line which sets the tag must precede the one which tests it.
@@ -1447,6 +1461,13 @@ to get a lease without a tedious timeout under all circumstances. It also
 allows dnsmasq to rebuild its lease database without each client needing to 
 reacquire a lease, if the database is lost. For DHCPv6 it sets the
 priority in replies to 255 (the maximum) instead of 0 (the minimum).
+.TP
+.B --dhcp-rapid-commit
+Enable DHCPv4 Rapid Commit Option specified in RFC 4039. When enabled, dnsmasq
+will respond to a DHCPDISCOVER message including a Rapid Commit
+option with a DHCPACK including a Rapid Commit option and fully committed
+address and configuration information. Should only be enabled if either the
+server is  the only server for the subnet, or multiple servers are present and they each commit a binding for all clients.
 .TP
 .B --dhcp-alternate-port[=<server port>[,<client port>]]
 (IPv4 only) Change the ports used for DHCP from the default. If this option is
@@ -1695,13 +1716,17 @@ option also forces the leasechange script to be called on changes
 to the client-id and lease length and expiry time.
 .TP
 .B --bridge-interface=<interface>,<alias>[,<alias>]
-Treat DHCP (v4 and v6) request and IPv6 Router Solicit packets
+Treat DHCP (v4 and v6) requests and IPv6 Router Solicit packets
 arriving at any of the <alias> interfaces as if they had arrived at
 <interface>.  This option allows dnsmasq to provide DHCP and RA
 service over unaddressed and unbridged Ethernet interfaces, e.g. on an
 OpenStack compute host where each such interface is a TAP interface to
 a VM, or as in "old style bridging" on BSD platforms.  A trailing '*'
 wildcard can be used in each <alias>.
+
+It is permissible to add more than one alias using more than one --bridge-interface option since 
+--bridge-interface=int1,alias1,alias2 is exactly equivalent to
+--bridge-interface=int1,alias1 --bridge-interface=int1,alias2
 .TP
 .B \-s, --domain=<domain>[,<address range>[,local]]
 Specifies DNS domains for the DHCP server. Domains may be be given 
@@ -1983,7 +2008,7 @@ and
 
  
 .PP
-Dnsmasq is a DNS query forwarder: it it not capable of recursively
+Dnsmasq is a DNS query forwarder: it is not capable of recursively
 answering arbitrary queries starting from the root servers but
 forwards such queries to a fully recursive upstream DNS server which is
 typically provided by an ISP. By default, dnsmasq reads

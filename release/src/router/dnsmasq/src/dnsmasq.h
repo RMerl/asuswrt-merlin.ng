@@ -1,4 +1,4 @@
-/* dnsmasq is Copyright (c) 2000-2017 Simon Kelley
+/* dnsmasq is Copyright (c) 2000-2018 Simon Kelley
  
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -14,7 +14,7 @@
    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#define COPYRIGHT "Copyright (c) 2000-2017 Simon Kelley"
+#define COPYRIGHT "Copyright (c) 2000-2018 Simon Kelley"
 
 /* We do defines that influence behavior of stdio.h, so complain
    if included too early. */
@@ -119,6 +119,9 @@ typedef unsigned long long u64;
 #include <net/if_arp.h>
 #include <netinet/in_systm.h>
 #include <netinet/ip.h>
+#ifdef HAVE_IPV6
+#include <netinet/ip6.h>
+#endif
 #include <netinet/ip_icmp.h>
 #include <sys/uio.h>
 #include <syslog.h>
@@ -140,6 +143,10 @@ extern int capget(cap_user_header_t header, cap_user_data_t data);
 #include <sys/prctl.h>
 #elif defined(HAVE_SOLARIS_NETWORK)
 #include <priv.h>
+#endif
+
+#ifdef HAVE_DNSSEC
+#  include <nettle/nettle-meta.h>
 #endif
 
 /* daemon is function in the C library.... */
@@ -237,7 +244,7 @@ struct event_desc {
 #define OPT_DNSSEC_VALID   45
 #define OPT_DNSSEC_TIME    46
 #define OPT_DNSSEC_DEBUG   47
-#define OPT_DNSSEC_NO_SIGN 48 
+#define OPT_DNSSEC_IGN_NS  48 
 #define OPT_LOCAL_SERVICE  49
 #define OPT_LOOP_DETECT    50
 #define OPT_EXTRALOG       51
@@ -246,7 +253,8 @@ struct event_desc {
 #define OPT_MAC_B64        54
 #define OPT_MAC_HEX        55
 #define OPT_TFTP_APREF_MAC 56
-#define OPT_LAST           57
+#define OPT_RAPID_COMMIT   57
+#define OPT_LAST           58
 
 /* extra flags for my_syslog, we use a couple of facilities since they are known 
    not to occupy the same bits as priorities, no matter how syslog.h is set up. */
@@ -263,7 +271,11 @@ struct all_addr {
     /* for log_query */
     struct {
       unsigned short keytag, algo, digest;
-    } log; 
+    } log;
+    /* for log_query */
+    struct {
+      unsigned int rcode;
+    } rcode;
     /* for cache_insert of DNSKEY, DS */
     struct {
       unsigned short class, type;
@@ -453,6 +465,8 @@ struct crec {
 #define F_NO_RR     (1u<<25)
 #define F_IPSET     (1u<<26)
 #define F_NOEXTRA   (1u<<27)
+#define F_SERVFAIL  (1u<<28)
+#define F_RCODE     (1u<<29)
 
 /* Values of uid in crecs with F_CONFIG bit set. */
 #define SRC_INTERFACE 0
@@ -500,7 +514,7 @@ struct serverfd {
   int fd;
   union mysockaddr source_addr;
   char interface[IF_NAMESIZE+1];
-  unsigned int ifindex, used;
+  unsigned int ifindex, used, preallocated;
   struct serverfd *next;
 };
 
@@ -515,6 +529,7 @@ struct server {
   struct serverfd *sfd; 
   char *domain; /* set if this server only handles a domain. */ 
   int flags, tcpfd, edns_pktsz;
+  time_t pktsz_reduced;
   unsigned int queries, failed_queries;
 #ifdef HAVE_LOOP
   u32 uid;
@@ -585,6 +600,16 @@ struct hostsfile {
 #endif
   unsigned int index; /* matches to cache entries for logging */
 };
+
+/* packet-dump flags */
+#define DUMP_QUERY     0x0001
+#define DUMP_REPLY     0x0002
+#define DUMP_UP_QUERY  0x0004
+#define DUMP_UP_REPLY  0x0008
+#define DUMP_SEC_QUERY 0x0010
+#define DUMP_SEC_REPLY 0x0020
+#define DUMP_BOGUS     0x0040
+#define DUMP_SEC_BOGUS 0x0080
 
 
 /* DNSSEC status values. */
@@ -833,7 +858,7 @@ struct cond_domain {
 #ifdef HAVE_IPV6
   struct in6_addr start6, end6;
 #endif
-  int is6;
+  int is6, indexed;
   struct cond_domain *next;
 }; 
 
@@ -1008,14 +1033,14 @@ extern struct daemon {
   unsigned int duid_enterprise, duid_config_len;
   unsigned char *duid_config;
   char *dbus_name;
+  char *dump_file;
+  int dump_mask;
   unsigned long soa_sn, soa_refresh, soa_retry, soa_expiry;
 #ifdef OPTION6_PREFIX_CLASS 
   struct prefix_class *prefix_classes;
 #endif
 #ifdef HAVE_DNSSEC
   struct ds_config *ds;
-  int dnssec_no_time_check;
-  int back_to_the_future;
   char *timestamp_file;
 #endif
 
@@ -1026,6 +1051,10 @@ extern struct daemon {
 #ifdef HAVE_DNSSEC
   char *keyname; /* MAXDNAME size buffer */
   char *workspacename; /* ditto */
+  char *rr_status; /* flags for individual RRs */
+  int rr_status_sz;
+  int dnssec_no_time_check;
+  int back_to_the_future;
 #endif
   unsigned int local_answer, queries_forwarded, auth_answer;
   struct frec *frec_list;
@@ -1080,6 +1109,10 @@ extern struct daemon {
   char *addrbuff;
   char *addrbuff2; /* only allocated when OPT_EXTRALOG */
 
+#ifdef HAVE_DUMPFILE
+  /* file for packet dumps. */
+  int dumpfd;
+#endif
 } *daemon;
 
 /* cache.c */
@@ -1179,13 +1212,21 @@ size_t filter_rrsigs(struct dns_header *header, size_t plen);
 unsigned char* hash_questions(struct dns_header *header, size_t plen, char *name);
 int setup_timestamp(void);
 
+/* crypto.c */
+const struct nettle_hash *hash_find(char *name);
+int hash_init(const struct nettle_hash *hash, void **ctxp, unsigned char **digestp);
+int verify(struct blockdata *key_data, unsigned int key_len, unsigned char *sig, size_t sig_len,
+	   unsigned char *digest, size_t digest_len, int algo);
+char *ds_digest_name(int digest);
+char *algo_digest_name(int algo);
+char *nsec3_digest_name(int digest);
+
 /* util.c */
 void rand_init(void);
 unsigned short rand16(void);
 u32 rand32(void);
 u64 rand64(void);
 int legal_hostname(char *name);
-int valid_hostname(char *name);
 char *canonicalise(char *in, int *nomem);
 unsigned char *do_rfc1035_name(unsigned char *p, char *sval, char *limit);
 void *safe_malloc(size_t size);
@@ -1256,7 +1297,7 @@ void free_rfd(struct randfd *rfd);
 
 /* network.c */
 int indextoname(int fd, int index, char *name);
-int local_bind(int fd, union mysockaddr *addr, char *intname, int is_tcp);
+int local_bind(int fd, union mysockaddr *addr, char *intname, unsigned int ifindex, int is_tcp);
 int random_sock(int family);
 void pre_allocate_sfds(void);
 int reload_servers(char *fname);
@@ -1313,9 +1354,6 @@ char *host_from_dns(struct in_addr addr);
 
 /* lease.c */
 #ifdef HAVE_DHCP
-#ifdef HAVE_LEASEFILE_EXPIRE
-void lease_flush_file(time_t now);
-#endif
 void lease_update_file(time_t now);
 void lease_update_dns(int force);
 void lease_init(time_t now);
@@ -1569,3 +1607,9 @@ int check_source(struct dns_header *header, size_t plen, unsigned char *pseudohe
 /* arp.c */
 int find_mac(union mysockaddr *addr, unsigned char *mac, int lazy, time_t now);
 int do_arp_script_run(void);
+
+/* dump.c */
+#ifdef HAVE_DUMPFILE
+void dump_init(void);
+void dump_packet(int mask, void *packet, size_t len, union mysockaddr *src, union mysockaddr *dst);
+#endif

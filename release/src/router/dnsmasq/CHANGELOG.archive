@@ -1010,7 +1010,7 @@ release 2.9
 	     but to the address of another interface were ignored
 	     unless the loopback interface was explicitly configured.
 	     2) on OpenBSD failure to configure one interface now
-	     causes a fatal error on startup rather than an huge
+	     causes a fatal error on startup rather than a huge
 	     stream of log messages. Thanks to Erik Jan Tromp for 
 	     finding that bug.
 
@@ -2067,7 +2067,7 @@ version 2.36
 	    kernel. Thanks to Philip Wall for the bug report.
 
 	    Added --dhcp-bridge option, but only to the FreeBSD
-	    build. This fixes an oddity with a a particular bridged
+	    build. This fixes an oddity with a particular bridged
 	    network configuration on FreeBSD. Thanks to Luigi Rizzo
 	    for the patch.
 
@@ -2273,7 +2273,7 @@ version 2.40
 	    this.
 
 	    Use client-id as hash-seed for DHCP address allocation
-	    with Firewire and InfiniBand, as these don't supply an MAC
+	    with Firewire and InfiniBand, as these don't supply a MAC
 	    address. 
 
 	    Tweaked TFTP file-open code to make it behave sensibly
@@ -2433,7 +2433,7 @@ version 2.41
 
 	    Add --dhcp-match flag, to check for arbitrary options in
 	    DHCP messages from clients. This enables use of dnsmasq
-	    with gPXE. Thanks to Rance Hall for the suggestion.
+	    with iPXE. Thanks to Rance Hall for the suggestion.
 
 	    Added --dhcp-broadcast, to force broadcast replies to DHCP
 	    clients which need them but are too dumb or too old to

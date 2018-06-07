@@ -90,7 +90,7 @@
 # server=10.1.2.3@eth1
 
 # and this sets the source (ie local) address used to talk to
-# 10.1.2.3 to 192.168.1.1 port 55 (there must be a interface with that
+# 10.1.2.3 to 192.168.1.1 port 55 (there must be an interface with that
 # IP on the machine, obviously).
 # server=10.1.2.3@192.168.1.1#55
 
@@ -288,7 +288,7 @@
 # Give a fixed IPv6 address and name to client with 
 # DUID 00:01:00:01:16:d2:83:fc:92:d4:19:e2:d8:b2
 # Note the MAC addresses CANNOT be used to identify DHCPv6 clients.
-# Note also the they [] around the IPv6 address are obligatory.
+# Note also that the [] around the IPv6 address are obligatory.
 #dhcp-host=id:00:01:00:01:16:d2:83:fc:92:d4:19:e2:d8:b2, fred, [1234::5] 
 
 # Ignore any clients which are not specified in dhcp-host lines
@@ -354,11 +354,11 @@
 
 # Set option 58 client renewal time (T1). Defaults to half of the
 # lease time if not specified. (RFC2132)
-#dhcp-option=option:T1:1m
+#dhcp-option=option:T1,1m
 
 # Set option 59 rebinding time (T2). Defaults to 7/8 of the
 # lease time if not specified. (RFC2132)
-#dhcp-option=option:T2:2m
+#dhcp-option=option:T2,2m
 
 # Set the NTP time server address to be the same machine as
 # is running dnsmasq
@@ -436,22 +436,22 @@
 #dhcp-option-force=211,30i
 
 # Set the boot filename for netboot/PXE. You will only need
-# this is you want to boot machines over the network and you will need
-# a TFTP server; either dnsmasq's built in TFTP server or an
+# this if you want to boot machines over the network and you will need
+# a TFTP server; either dnsmasq's built-in TFTP server or an
 # external one. (See below for how to enable the TFTP server.)
 #dhcp-boot=pxelinux.0
 
 # The same as above, but use custom tftp-server instead machine running dnsmasq
 #dhcp-boot=pxelinux,server.name,192.168.1.100
 
-# Boot for Etherboot gPXE. The idea is to send two different
-# filenames, the first loads gPXE, and the second tells gPXE what to
-# load. The dhcp-match sets the gpxe tag for requests from gPXE.
-#dhcp-match=set:gpxe,175 # gPXE sends a 175 option.
-#dhcp-boot=tag:!gpxe,undionly.kpxe
-#dhcp-boot=mybootimage
+# Boot for iPXE. The idea is to send two different
+# filenames, the first loads iPXE, and the second tells iPXE what to
+# load. The dhcp-match sets the ipxe tag for requests from iPXE.
+#dhcp-boot=undionly.kpxe
+#dhcp-match=set:ipxe,175 # iPXE sends a 175 option.
+#dhcp-boot=tag:ipxe,http://boot.ipxe.org/demo/boot.php
 
-# Encapsulated options for Etherboot gPXE. All the options are
+# Encapsulated options for iPXE. All the options are
 # encapsulated within option 175
 #dhcp-option=encap:175, 1, 5b         # priority code
 #dhcp-option=encap:175, 176, 1b       # no-proxydhcp
@@ -546,6 +546,14 @@
 # the same option, and this URL provides more information:
 # http://www.isc.org/files/auth.html
 #dhcp-authoritative
+
+# Set the DHCP server to enable DHCPv4 Rapid Commit Option per RFC 4039.
+# In this mode it will respond to a DHCPDISCOVER message including a Rapid Commit
+# option with a DHCPACK including a Rapid Commit option and fully committed address
+# and configuration information. This must only be enabled if either the server is 
+# the only server for the subnet, or multiple servers are present and they each
+# commit a binding for all clients.
+#dhcp-rapid-commit
 
 # Run an executable when a DHCP lease is created or destroyed.
 # The arguments sent to the script are "add" or "del",

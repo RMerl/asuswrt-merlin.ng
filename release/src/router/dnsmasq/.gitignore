@@ -7,9 +7,8 @@ src/.copts_*
 contrib/lease-tools/dhcp_lease_time
 contrib/lease-tools/dhcp_release
 contrib/lease-tools/dhcp_release6
-debian/base/
-debian/daemon/
 debian/files
 debian/substvars
 debian/utils-substvars
-debian/utils/
+debian/trees/
+debian/build/

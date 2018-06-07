@@ -1,4 +1,4 @@
-/* dnsmasq is Copyright (c) 2000-2017 Simon Kelley
+/* dnsmasq is Copyright (c) 2000-2018 Simon Kelley
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -45,6 +45,7 @@ static const struct {
   { 24,  "SIG" },
   { 25,  "KEY" },
   { 28,  "AAAA" },
+  { 29,  "LOC" },
   { 33,  "SRV" },
   { 35,  "NAPTR" },
   { 36,  "KX" },
@@ -57,6 +58,10 @@ static const struct {
   { 47,  "NSEC" },
   { 48,  "DNSKEY" },
   { 50,  "NSEC3" },
+  { 51,  "NSEC3PARAM" },
+  { 52,  "TLSA" },
+  { 53,  "SMIMEA" },
+  { 55,  "HIP" },
   { 249, "TKEY" },
   { 250, "TSIG" },
   { 251, "IXFR" },
@@ -260,11 +265,10 @@ char *cache_get_name(struct crec *crecp)
 
 char *cache_get_cname_target(struct crec *crecp)
 {
-  if ((crecp->flags & F_CONFIG) &&
-      crecp->addr.cname.uid == SRC_INTERFACE)
-    return crecp->addr.cname.target.int_name->name;
+  if (crecp->addr.cname.uid != SRC_INTERFACE)
+    return cache_get_name(crecp->addr.cname.target.cache);
 
-  return cache_get_name(crecp->addr.cname.target.cache);
+  return crecp->addr.cname.target.int_name->name;
 }
 
 
@@ -1594,6 +1598,19 @@ void log_query(unsigned int flags, char *name, struct all_addr *addr, char *arg)
     {
       if (flags & F_KEYTAG)
 	sprintf(daemon->addrbuff, arg, addr->addr.log.keytag, addr->addr.log.algo, addr->addr.log.digest);
+      else if (flags & F_RCODE)
+	{
+	  unsigned int rcode = addr->addr.rcode.rcode;
+
+	   if (rcode == SERVFAIL)
+	     dest = "SERVFAIL";
+	   else if (rcode == REFUSED)
+	     dest = "REFUSED";
+	   else if (rcode == NOTIMP)
+	     dest = "not implemented";
+	   else
+	     sprintf(daemon->addrbuff, "%u", rcode);
+	}
       else
 	{
 #ifdef HAVE_IPV6

@@ -1,4 +1,4 @@
-/* dnsmasq is Copyright (c) 2000-2017 Simon Kelley
+/* dnsmasq is Copyright (c) 2000-2018 Simon Kelley
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -54,6 +54,7 @@
 #define OPTION_SNAME             66
 #define OPTION_FILENAME          67
 #define OPTION_USER_CLASS        77
+#define OPTION_RAPID_COMMIT      80
 #define OPTION_CLIENT_FQDN       81
 #define OPTION_AGENT_ID          82
 #define OPTION_ARCH              93

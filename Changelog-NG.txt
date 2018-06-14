@@ -19,6 +19,10 @@ General changes in the 384/NG branch vs 380.xx:
    - CHANGED: Updated curl to 7.60.0 (contains security fixes)
    - CHANGED: Allow selecting text (for copy/paste operations)
               on AiProtection pages.
+   - CHANGED: Added AES-*-GCM ciphers to the OpenVPN legacy
+              ciphers (so they can be explicitely used without
+              using NCP).
+   - CHANGED: Updated dnsmasq to 2.80test2-17-g51e4eee (theMIROn)
    - FIXED: IPv6-related issues on non-HND platform (theMIROn)
    - FIXED: Couldn't log on WTFast if accessing the router
             webui over https.

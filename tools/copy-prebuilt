@@ -10,7 +10,7 @@
 MODEL=$1
 REPO=/home/merlin/amng
 
-if [ "$MODEL" == "rt-ac88u" ] || [ "$MODEL" == "rt-ac3100" ] || [ "$MODEL" == "rt-ac5300" ]
+if [ "$MODEL" == "RT-AC88U" ] || [ "$MODEL" == "RT-AC3100" ] || [ "$MODEL" == "RT-AC5300" ]
 then
 	SDK="_7114"
 	ARCH="_arm"
@@ -23,7 +23,7 @@ then
 	cp -a release/src/router/Beceem_BCMS250/prebuild/* $REPO/release/src/router/Beceem_BCMS250$ARCH/prebuild/
 	cp -a release/src/router/tuxera/broadcom$ARCH$SDK/* $REPO/release/src/router/tuxera/broadcom$ARCH$SDK/
 
-elif [ "$MODEL" == "rt-ac3200" ]
+elif [ "$MODEL" == "RT-AC3200" ]
 then
 	SDK="_7"
 	ARCH="_arm"
@@ -35,7 +35,7 @@ then
 	cp -a release/src/router/Beceem_BCMS250/prebuild/* $REPO/release/src/router/Beceem_BCMS250$ARCH/prebuild/
 	cp -a release/src/router/tuxera/broadcom$ARCH$SDK/* $REPO/release/src/router/tuxera/broadcom$ARCH$SDK/
 
-elif [ "$MODEL" == "rt-ac56u" ] || [ "$MODEL" == "rt-ac68u" ] || [ "$MODEL" == "rt-ac87u" ]
+elif [ "$MODEL" == "RT-AC56U" ] || [ "$MODEL" == "RT-AC68U" ] || [ "$MODEL" == "RT-AC87U" ]
 then
 	SDK=""
 	ARCH="_arm"
@@ -47,7 +47,7 @@ then
 	cp -a release/src/router/Beceem_BCMS250/prebuild/* $REPO/release/src/router/Beceem_BCMS250$ARCH/prebuild/
 	cp -a release/src/router/tuxera/broadcom$ARCH$SDK/* $REPO/release/src/router/tuxera/broadcom$ARCH$SDK/
 
-elif [ "$MODEL" == "rt-ac86u" ]
+elif [ "$MODEL" == "RT-AC86U" ]
 then
 	SDK="_94908hnd"
 	ARCH="_arm"
@@ -163,12 +163,12 @@ cp release/src/router/libletsencrypt/prebuild/* $REPO/release/src/router/liblets
 
 
 # Model-specific
-if [ "$MODEL" == "rt-ac88u" ]
+if [ "$MODEL" == "RT-AC88U" ]
 then
 	cp release/src/router/rtl_bin/prebuilt/* $REPO/release/src/router/rtl_bin/prebuilt/
 fi
 
-if [ "$MODEL" == "rt-ac3200" ] || [ "$MODEL" == "rt-ac88u" ] || [ "$MODEL" == "RT-AC3100" ] || [ "$MODEL" == "rt-ac5300" ] || [ "$MODEL" == "rt-ac86u" ]
+if [ "$MODEL" == "RT-AC3200" ] || [ "$MODEL" == "RT-AC88U" ] || [ "$MODEL" == "RT-AC3100" ] || [ "$MODEL" == "RT-AC5300" ] || [ "$MODEL" == "RT-AC86U" ]
 then
 	cp release/src/router/bsd/prebuilt/* $REPO/release/src/router/bsd/prebuilt$ARCH$SDK/
 fi

@@ -9,12 +9,12 @@
 <link rel="shortcut icon" href="images/favicon.png">
 <link rel="icon" href="images/favicon.png">
 <title><#Web_Title#> - <#EZQoS#></title>
-<link rel="stylesheet" type="text/css" href="index_style.css"> 
+<link rel="stylesheet" type="text/css" href="index_style.css">
 <link rel="stylesheet" type="text/css" href="form_style.css">
 <link rel="stylesheet" type="text/css" href="usp_style.css">
 <link rel="stylesheet" type="text/css" href="datepicker.css">
 <script type="text/javascript" src="/js/jquery.js"></script>
-<script type="text/javascript" src="/calendar/jquery-ui.js"></script> 
+<script type="text/javascript" src="/calendar/jquery-ui.js"></script>
 <script type="text/javascript" src="/chart.js"></script>
 <script type="text/javascript" src="/state.js"></script>
 <script type="text/javascript" src="/help.js"></script>
@@ -37,13 +37,13 @@
 	padding-bottom:10px;
 }
 
-.triangle{ 
+.triangle{
 	width:0;
 	height:0;
 	font-size:0;
 	border-style:solid;
 	overflow:hidden;
-	position:absolute; 
+	position:absolute;
 	border-width:20px;
 	border-color:transparent #005AB5 #005AB5 transparent;
 	left:372px;
@@ -92,7 +92,7 @@ function initial(){
 	show_menu();
 	register_event();
 	load_time();
-	
+
 	if(document.form.bwdpi_db_enable.value == 1){
 		document.getElementById('statistic_hint').innerHTML = "* <#Traffic_Analyzer_refresh_note#>";
 		document.getElementById('statistic_hint').style.display = "none";
@@ -103,13 +103,13 @@ function initial(){
 			introduce_demo();
 			document.cookie = "demo=1";
 		}
-		
-		document.getElementById('statistic_hint').innerHTML = "* <#Traffic_Analyzer_note#>";	
+
+		document.getElementById('statistic_hint').innerHTML = "* <#Traffic_Analyzer_note#>";
 	}
-	
+
 	get_every_client_data("all", "detail", "24", date_second, date_string);		//get clients and find top 5 clients' traffic last 24 hours
 	setTimeout(function(){
-		get_wan_data("all", "hour", "24", date_second, date_string);	
+		get_wan_data("all", "hour", "24", date_second, date_string);
 	}, 1000);
 }
 
@@ -124,11 +124,11 @@ function load_time(){
 	month = time.getMonth() + 1;
 	year = time.getFullYear();
 	if(month < 10)
-		month = "0" + month.toString(); 
-	
+		month = "0" + month.toString();
+
 	if(date < 10)
 		date = "0" + date.toString();
-		
+
 	date_string = year + "/" + month + "/" + date + "/" + hour;
 	$('#datepicker').val(month + "/" + date + "/" + year);
 }
@@ -167,7 +167,7 @@ function get_client_used_apps_info(client_index, used_data_array, top5_info, typ
 		}
 		else if(period == "daily"){
 			description = "<#traffic_analysis_top5client_daily#>";
-		}	
+		}
 	}
 	else{
 		document.getElementById('top_client_title').innerHTML = "App:";
@@ -181,14 +181,14 @@ function get_client_used_apps_info(client_index, used_data_array, top5_info, typ
 			description = "<#traffic_analysis_top5app_daily#>";
 		}
 	}
-	
+
 	document.getElementById('info_block_title').innerHTML = description;
 	if(top5_info == ""){
 		if(type == "router")
 			document.getElementById('top_client_name').innerHTML = "<#traffic_analysis_noclients#>";
 		else
 			document.getElementById('top_client_name').innerHTML = "<#traffic_analysis_noapps#>";
-			
+
 		document.getElementById('top_client_traffic').innerHTML = "<#traffic_analysis_notraffic#>";
 	}
 	else{
@@ -203,7 +203,7 @@ function get_client_used_apps_info(client_index, used_data_array, top5_info, typ
 				}
 				else{
 					total_traffic = total_clients_array[client_index].tx;
-				}			
+				}
 			}
 			else{
 				document.getElementById('top_client_name').innerHTML = total_apps_array[client_index].name;
@@ -216,7 +216,7 @@ function get_client_used_apps_info(client_index, used_data_array, top5_info, typ
 				else{
 					total_traffic = top5_info[client_index].tx;
 				}
-			}			
+			}
 		}
 		else{
 			document.getElementById('top_client_name').innerHTML = total_clients_array[client_index].name;
@@ -247,14 +247,14 @@ function get_client_used_apps_info(client_index, used_data_array, top5_info, typ
 				app_traffic = used_data_array[i][2];
 			}
 			else{
-				app_traffic = used_data_array[i][1];				
+				app_traffic = used_data_array[i][1];
 			}
-			
-			percent =  parseInt((app_traffic/total_traffic)*100);			
+
+			percent =  parseInt((app_traffic/total_traffic)*100);
 			if(percent < 1)
 				percent = 1;
-				
-			traffic_temp = translate_traffic(app_traffic);		
+
+			traffic_temp = translate_traffic(app_traffic);
 			code += "<tr>";
 			if(type == "router")
 				code += "<td style='padding:5px 0px 0px 20px;font-size:14px;width:100px;cursor:pointer' onClick=\"show_individual_info_block(\'"+used_data_array[i][0]+"\', \'"+ type +"\')\">" + used_data_array[i][0] + "</td>";
@@ -263,12 +263,12 @@ function get_client_used_apps_info(client_index, used_data_array, top5_info, typ
 					code += "<td style='padding:5px 0px 0px 20px;font-size:14px;width:100px;cursor:pointer' onClick=\"show_individual_info_block(\'"+used_data_array[i][0]+"\', \'"+ type +"\')\">" + getClientCurrentName(used_data_array[i][0]) + "</td>";
 				else
 					code += "<td style='padding:5px 0px 0px 20px;font-size:14px;width:100px;cursor:pointer' onClick=\"show_individual_info_block(\'"+used_data_array[i][0]+"\', \'"+ type +"\')\">" + used_data_array[i][0] + "</td>";
-			}	
+			}
 			code += "<td style='width:100px;padding-top:5px;'>";
 			code += "<div style='width:" + percent + "%;height:15px;background-color:#FFFFFF;opacity:0.5;'></div>";
 			code += "</td>";
 			code += "<td style='padding-left:10px;padding-top:5px;'><div style='width:45px;font-size:14px;text-align:right;'>" + traffic_temp[0] + "</div></td>";
-			code += "<td><div style='font-size:14px;padding-top:5px;'> " + traffic_temp[1] + "</div></td>";		
+			code += "<td><div style='font-size:14px;padding-top:5px;'> " + traffic_temp[1] + "</div></td>";
 			code += "</tr>";
 		}
 
@@ -291,7 +291,7 @@ function show_individual_info_block(client_index, type){
 		dura = 7;
 	else
 		dura = 24;
-	
+
 	if(type == "router"){		//get app used by every client
 		get_app_used_by_client_data_individual(client_index, "detail", dura , date_second, date_string);
 	}
@@ -330,76 +330,76 @@ function get_client_info(list_info, type){
 	top5_client_array = [];
 	top5_app_array = [];
 
-	for(i=0;i<list_info.length;i++){		
+	for(i=0;i<list_info.length;i++){
 		if(type == "router"){
 			for(j=0;j<clientList.length;j++){
 				if(all_client_traffic[i][0] == clientList[j]){
 					match_flag = 1;
 					clientList[clientList[j]].totalTx = all_client_traffic[i][1];
 					clientList[clientList[j]].totalRx = all_client_traffic[i][2];
-					break;				
+					break;
 				}
 			}
-	
+
 			if(match_flag == 1){
 				var clientName = getClientCurrentName(all_client_traffic[i][0]);
 				code += "<option value=" + all_client_traffic[i][0] + ">" + clientName + "</option>";
 				if(i<6){
-					top5_client_array[i] = all_client_traffic[i][0];	
+					top5_client_array[i] = all_client_traffic[i][0];
 					top5_client_array[all_client_traffic[i][0]] = {
-					"mac":all_client_traffic[i][0], 
+					"mac":all_client_traffic[i][0],
 					"name":clientName,
-					"tx":all_client_traffic[i][1],				
+					"tx":all_client_traffic[i][1],
 					"rx":all_client_traffic[i][2]};
 				}
 			}
 			else{
 				code += "<option value=" + all_client_traffic[i][0] + ">" + all_client_traffic[i][0] + "</option>";
 				if(i<6){
-					top5_client_array[i] = all_client_traffic[i][0];	
+					top5_client_array[i] = all_client_traffic[i][0];
 					top5_client_array[all_client_traffic[i][0]] = {
-					"mac":all_client_traffic[i][0], 
+					"mac":all_client_traffic[i][0],
 					"name":all_client_traffic[i][0],
-					"tx":all_client_traffic[i][1],				
+					"tx":all_client_traffic[i][1],
 					"rx":all_client_traffic[i][2]};
 				}
 			}
-			
+
 			match_flag = 0;
-			
+
 			total_clients_array[i] = all_client_traffic[i][0];
 			total_clients_array[all_client_traffic[i][0]] = {
-				"mac":all_client_traffic[i][0], 
+				"mac":all_client_traffic[i][0],
 				"name":all_client_traffic[i][0],
-				"tx":all_client_traffic[i][1],				
+				"tx":all_client_traffic[i][1],
 				"rx":all_client_traffic[i][2]
-			};			
+			};
 		}
 		else{
 			code += "<option value=" + all_app_traffic[i][0].replace(/\s/g, '_') + ">" + all_app_traffic[i][0] + "</option>";
 			if(i<6){
 				top5_app_array[i] = all_app_traffic[i][0];
-				top5_app_array[all_app_traffic[i][0]] = { 
+				top5_app_array[all_app_traffic[i][0]] = {
 					"name":all_app_traffic[i][0],
-					"tx":all_app_traffic[i][1],				
+					"tx":all_app_traffic[i][1],
 					"rx":all_app_traffic[i][2]};
 			}
-			
+
 			total_apps_array[i] = all_app_traffic[i][0];
 			total_apps_array[all_app_traffic[i][0]] = {
-				"mac":all_app_traffic[i][0], 
+				"mac":all_app_traffic[i][0],
 				"name":all_app_traffic[i][0],
-				"tx":all_app_traffic[i][1],				
+				"tx":all_app_traffic[i][1],
 				"rx":all_app_traffic[i][2]
-			};	
+			};
 		}
 	}
-	
+
 	if(type == "router")
 		draw_pie_chart(list_info, top5_client_array, type);		//list_info : all_client_traffic
 	else
 		draw_pie_chart(list_info, top5_app_array, type);	//list_info : all_app_traffic
-	
+
 	document.getElementById('client_option').innerHTML = code;
 }
 
@@ -407,7 +407,7 @@ var router_traffic_array = new Array();
 function get_wan_data(client, mode, dura, time, date_string){
 	$.ajax({
 		url: '/getWanTraffic.asp?client=' + client + '&mode=' + mode + '&dura=' + dura + '&date=' + time,
-		dataType: 'script',		
+		dataType: 'script',
 		error: function(xhr){
 			setTimeout("get_wan_data(client, mode, dura, time, date_string);", 1000);
 		},
@@ -422,13 +422,13 @@ var all_client_traffic = new Array();
 function get_every_client_data(client, mode, dura, time, date_string){
 	$.ajax({
 		url: '/getAppTraffic.asp?client=' + client + '&mode=' + mode + '&dura=' + dura + '&date=' + time,
-		dataType: 'script',		
+		dataType: 'script',
 		error: function(xhr){
 			//setTimeout("get_app_data(time);", 1000);
 		},
 		success: function(response){
 			all_client_traffic = array_statistics;
-			
+
 			if(document.getElementById('traffic_option').value == "both"){
 				all_client_traffic.sort(function(a,b){
 					return (b[1] + b[2]) - (a[1] + a[2]);
@@ -444,8 +444,8 @@ function get_every_client_data(client, mode, dura, time, date_string){
 					return 	b[1] - a[1];
 				});
 			}
-			
-			get_client_info(all_client_traffic, "router");		
+
+			get_client_info(all_client_traffic, "router");
 			setTimeout(function(){get_client_used_app_data(top5_client_array[0], "detail", dura , date_second, date_string)}, 3000);
 		}
 	});
@@ -455,13 +455,13 @@ var all_app_traffic = new Array();
 function get_every_app_data(client, mode, dura, time, date_string){
 	$.ajax({
 		url: '/getWanTraffic.asp?client=' + client + '&mode=' + mode + '&dura=' + dura + '&date=' + time,
-		dataType: 'script',		
+		dataType: 'script',
 		error: function(xhr){
 			//setTimeout("get_app_data(time);", 1000);
 		},
 		success: function(response){
 			all_app_traffic = array_statistics;
-			
+
 			if(document.getElementById('traffic_option').value == "both"){
 				all_app_traffic.sort(function(a,b){
 					return (b[1] + b[2]) - (a[1] + a[2]);
@@ -477,7 +477,7 @@ function get_every_app_data(client, mode, dura, time, date_string){
 					return 	b[1] - a[1];
 				});
 			}
-			
+
 			get_client_info(all_app_traffic, "app");
 			setTimeout(function(){get_app_used_by_client_data(top5_app_array[0], "detail", dura , date_second, date_string)}, 3000);
 		}
@@ -487,7 +487,7 @@ function get_every_app_data(client, mode, dura, time, date_string){
 function get_app_data(client, mode, dura, time, date_string){
 	$.ajax({
 		url: '/getAppTraffic.asp?client=' + client + '&mode=' + mode + '&dura=' + dura + '&date=' + time,
-		dataType: 'script',		
+		dataType: 'script',
 		error: function(xhr){
 			//setTimeout("get_app_data(time);", 1000);
 		},
@@ -502,14 +502,14 @@ var client_used_app_array = new Array();
 function get_client_used_app_data(client, mode, dura, time, date_string, type, info_type){
 	$.ajax({
 		url: '/getWanTraffic.asp?client=' + client + '&mode=' + mode + '&dura=' + dura + '&date=' + time,
-		dataType: 'script',		
+		dataType: 'script',
 		error: function(xhr){
 			//setTimeout("get_app_data(time);", 1000);
 
 		},
 		success: function(response){
 			client_used_app_array = array_statistics;
-			
+
 			if(document.getElementById('traffic_option').value == "both"){
 				client_used_app_array.sort(function(a,b){
 					return (b[1] + b[2]) - (a[1] + a[2]);		//decrease
@@ -520,13 +520,13 @@ function get_client_used_app_data(client, mode, dura, time, date_string, type, i
 					return b[2] - a[2];
 				});
 			}
-			else{			
+			else{
 				client_used_app_array.sort(function(a,b){
 					return 	b[1] - a[1];
 				});
 			}
-			
-			
+
+
 			get_client_used_apps_info(client, client_used_app_array, top5_client_array, "router");
 			if(info_type == "client")
 				show_detail_info(client, client_used_app_array, "router");
@@ -543,21 +543,21 @@ function show_detail_info(mac, used_data_array, type){
 		if(clientList[mac] == undefined)
 			code += '<th colspan="4"><#Client_Name#>: '+ mac +'</th>';
 		else
-			code += '<th colspan="4"><#Client_Name#>: '+ getClientCurrentName(mac); +'</th>';	
+			code += '<th colspan="4"><#Client_Name#>: '+ getClientCurrentName(mac); +'</th>';
 	}
 	else{
-		code += '<th colspan="4">App: '+ mac +'</th>';	
+		code += '<th colspan="4">App: '+ mac +'</th>';
 	}
-	
+
 	code += '</tr>';
 	code += '<tr style="font-size:13px;">';
 	if(type == "router"){
-		code += "<th style='width:55%;text-align:left;'><#traffic_analysis_appname#></th>";	
+		code += "<th style='width:55%;text-align:left;'><#traffic_analysis_appname#></th>";
 	}
 	else{
 		code += '<th style="width:55%;text-align:left;"><#Client_Name#></th>';
 	}
-	
+
 	code += '<th style="width:15%;text-align:right;"><#option_upload#></th>';
 	code += '<th style="width:15%;text-align:right;"><#option_download#></th>';
 	code += '<th style="width:15%;text-align:right;"><#Total#></th>';
@@ -565,21 +565,21 @@ function show_detail_info(mac, used_data_array, type){
 	for(i=0;i<used_data_array.length;i++){
 		code += '<tr>';
 		if(type == "router"){
-			code += '<td style="text-align:left;">' + used_data_array[i][0] + '</td>';		
+			code += '<td style="text-align:left;">' + used_data_array[i][0] + '</td>';
 		}
 		else{
-			code += '<td style="text-align:left;">' + getClientCurrentName(used_data_array[i][0]) + '</td>';		
+			code += '<td style="text-align:left;">' + getClientCurrentName(used_data_array[i][0]) + '</td>';
 		}
-			
-		traffic_temp = translate_traffic(used_data_array[i][1]);	
-		code += '<td style="text-align:right;">' + traffic_temp[0] + ' ' + traffic_temp[1] + '</td>';										
+
+		traffic_temp = translate_traffic(used_data_array[i][1]);
+		code += '<td style="text-align:right;">' + traffic_temp[0] + ' ' + traffic_temp[1] + '</td>';
 		traffic_temp = translate_traffic(used_data_array[i][2]);
-		code += '<td style="text-align:right;">' + traffic_temp[0] + ' ' + traffic_temp[1] + '</td>';	
+		code += '<td style="text-align:right;">' + traffic_temp[0] + ' ' + traffic_temp[1] + '</td>';
 		traffic_temp = translate_traffic(used_data_array[i][1] + used_data_array[i][2]);
-		code += '<td style="text-align:right;">' + traffic_temp[0] + ' ' + traffic_temp[1] + '</td>';	
-		code += '</tr>';			
+		code += '<td style="text-align:right;">' + traffic_temp[0] + ' ' + traffic_temp[1] + '</td>';
+		code += '</tr>';
 	}
-	
+
 	code += '</table>';
 	document.getElementById('detail_info_block').innerHTML = code;
 }
@@ -597,7 +597,7 @@ function show_all_info(mac, type){
 			code += "<th colspan='4'><#Client_Name#>: "+ mac +"</th>";
 		else
 			code += "<th colspan='4'><#Client_Name#>: "+ getClientCurrentName(mac) +"</th>";
-		
+
 		code += "</tr>";
 		code += '<tr style="font-size:13px;">';
 		code += "<th style='width:55%;text-align:left;'><#traffic_analysis_appname#></th>";
@@ -605,23 +605,23 @@ function show_all_info(mac, type){
 		code += '<th style="width:15%;text-align:right;"><#option_download#></th>';
 		code += '<th style="width:15%;text-align:right;"><#Total#></th>';
 		code += '</tr>';
-					
-					
+
+
 		for(i=0;i<client_used_app_array.length;i++){
 			code += '<tr>';
 			code += '<td style="text-align:left;">' + client_used_app_array[i][0] + '</td>';
-			traffic_temp = translate_traffic(client_used_app_array[i][1]);	
+			traffic_temp = translate_traffic(client_used_app_array[i][1]);
 			code += '<td style="text-align:right;">' + traffic_temp[0] + ' ' + traffic_temp[1] +'</td>';
-			traffic_temp = translate_traffic(client_used_app_array[i][2]);	
+			traffic_temp = translate_traffic(client_used_app_array[i][2]);
 			code += '<td style="text-align:right;">' + traffic_temp[0] + ' ' + traffic_temp[1] +'</td>';
-			traffic_temp = translate_traffic(client_used_app_array[i][1] + client_used_app_array[i][2]);	
+			traffic_temp = translate_traffic(client_used_app_array[i][1] + client_used_app_array[i][2]);
 			code += '<td style="text-align:right;">' + traffic_temp[0] + ' ' + traffic_temp[1] +'</td>';
 			code += '</tr>';
-		}							
+		}
 	}
 	else{
 		code += "<tr style='font-size:14px;'>";
-		code += "<th colspan='4'><#traffic_analysis_appname#> : "+ mac +"</th>";		
+		code += "<th colspan='4'><#traffic_analysis_appname#> : "+ mac +"</th>";
 		code += "</tr>";
 		code += '<tr style="font-size:13px;">';
 		code += "<th style='width:55%;text-align:left;'><#Client_Name#></th>";
@@ -629,21 +629,21 @@ function show_all_info(mac, type){
 		code += '<th style="width:15%;text-align:right;"><#option_download#></th>';
 		code += '<th style="width:15%;text-align:right;"><#Total#></th>';
 		code += '</tr>';
-					
-					
+
+
 		for(i=0;i<app_used_by_client_array.length;i++){
 			code += '<tr>';
 			if(clientList[app_used_by_client_array[i][0]] == undefined)
 				code += '<td style="text-align:left;">' + app_used_by_client_array[i][0] + '</td>';
 			else
 				code += '<td style="text-align:left;">' + clientList[app_used_by_client_array[i][0]].name + '</td>';
-			
-			
-			traffic_temp = translate_traffic(app_used_by_client_array[i][1]);	
+
+
+			traffic_temp = translate_traffic(app_used_by_client_array[i][1]);
 			code += '<td style="text-align:right;">' + traffic_temp[0] + ' ' + traffic_temp[1] +'</td>';
-			traffic_temp = translate_traffic(app_used_by_client_array[i][2]);	
+			traffic_temp = translate_traffic(app_used_by_client_array[i][2]);
 			code += '<td style="text-align:right;">' + traffic_temp[0] + ' ' + traffic_temp[1] +'</td>';
-			traffic_temp = translate_traffic(app_used_by_client_array[i][1] + app_used_by_client_array[i][2]);	
+			traffic_temp = translate_traffic(app_used_by_client_array[i][1] + app_used_by_client_array[i][2]);
 			code += '<td style="text-align:right;">' + traffic_temp[0] + ' ' + traffic_temp[1] +'</td>';
 			code += '</tr>';
 		}
@@ -654,7 +654,7 @@ function show_all_info(mac, type){
 	code += '<div style="text-align:center;margin-top:10px">';
 	code += '<input name="button" type="button" class="button_gen" onclick="hide_show_all_info()" value="Cancel">';
 	code += '</div>';
-	
+
 	document.getElementById('client_all_info_block').innerHTML = code;
 }
 
@@ -667,7 +667,7 @@ var app_used_by_client_array = new Array();
 function get_app_used_by_client_data(client, mode, dura, time, date_string, type, info_type, type_detail){
 	$.ajax({
 		url: '/getAppTraffic.asp?client=' + client + '&mode=' + mode + '&dura=' + dura + '&date=' + time,
-		dataType: 'script',		
+		dataType: 'script',
 		error: function(xhr){
 			//setTimeout("get_app_data(time);", 1000);
 
@@ -684,14 +684,14 @@ function get_app_used_by_client_data(client, mode, dura, time, date_string, type
 					return b[2] - a[2];
 				});
 			}
-			else{			
+			else{
 				app_used_by_client_array.sort(function(a,b){
 					return 	b[1] - a[1];
 				});
 			}
 
 			get_client_used_apps_info(client, app_used_by_client_array, total_apps_array, "app" , "detail");
-			
+
 			if(info_type == "app")
 				show_detail_info(client, app_used_by_client_array, "app");
 		}
@@ -701,7 +701,7 @@ function get_app_used_by_client_data(client, mode, dura, time, date_string, type
 function get_client_used_app_data_individual(client, mode, dura, time, date_string){
 	$.ajax({
 		url: '/getWanTraffic.asp?client=' + client + '&mode=' + mode + '&dura=' + dura + '&date=' + time,
-		dataType: 'script',		
+		dataType: 'script',
 		error: function(xhr){
 			//setTimeout("get_app_data(time);", 1000);
 
@@ -718,13 +718,13 @@ function get_client_used_app_data_individual(client, mode, dura, time, date_stri
 					return b[2] - a[2];
 				});
 			}
-			else{			
+			else{
 				client_used_app_array.sort(function(a,b){
 					return 	b[1] - a[1];
 				});
 			}
-			
-			
+
+
 			show_all_info(client, "router");
 		}
 	});
@@ -734,7 +734,7 @@ function get_client_used_app_data_individual(client, mode, dura, time, date_stri
 function get_app_used_by_client_data_individual(client, mode, dura, time, date_string){
 	$.ajax({
 		url: '/getAppTraffic.asp?client=' + client + '&mode=' + mode + '&dura=' + dura + '&date=' + time,
-		dataType: 'script',		
+		dataType: 'script',
 		error: function(xhr){
 			//setTimeout("get_app_data(time);", 1000);
 
@@ -751,13 +751,13 @@ function get_app_used_by_client_data_individual(client, mode, dura, time, date_s
 					return b[2] - a[2];
 				});
 			}
-			else{			
+			else{
 				app_used_by_client_array.sort(function(a,b){
 					return 	b[1] - a[1];
 				});
 			}
 
-			
+
 			show_all_info(client, "app");
 		}
 	});
@@ -771,11 +771,11 @@ function register_event(){
 	var duration = 0;
 	var mode = "";
 	var traffic_chart = document.getElementById('traffic_chart').getContext('2d');
-    flow_obj = new Chart(traffic_chart);	
+    flow_obj = new Chart(traffic_chart);
 	var pie= document.getElementById("pie_chart").getContext("2d");
 	pie_obj = new Chart(pie);
 	$( "#datepicker" ).datepicker({
-		onSelect: function(){		
+		onSelect: function(){
 			time = $( "#datepicker" ).datepicker('getDate');
 			date_second = parseInt(time.getTime()/1000);
 			hour = time.getHours();
@@ -783,11 +783,11 @@ function register_event(){
 			month = time.getMonth() + 1;
 			year = time.getFullYear();
 			if(month < 10)
-				month = "0" + month.toString(); 
-	
+				month = "0" + month.toString();
+
 			if(date < 10)
 				date = "0" + date.toString();
-			
+
 			date_string = year + "/" + month + "/" + date + "/" + hour;
 			date_second += 86400; // shift 24 hour to make traffic chart correct
 			if(document.getElementById('duration_option').value == "monthly"){
@@ -800,22 +800,22 @@ function register_event(){
 			}
 			else{
 				duration = 24;
-				mode = "hour";				
+				mode = "hour";
 			}
-			
+
 			get_every_client_data("all", "detail", duration, date_second, date_string);
 			setTimeout(function(){
-				get_wan_data("all", mode, duration, date_second, date_string);	
+				get_wan_data("all", mode, duration, date_second, date_string);
 			}, 1500);
-			
+
 			document.getElementById('router').className = "block_filter_pressed";
 			document.getElementById('apps').className = "block_filter";
 			document.getElementById('graphical_info_block').style.display = "";
 			document.getElementById('detail_info_block').style.display = "none";
-			document.getElementById('top5_info_block').style.backgroundColor = color[0];	
+			document.getElementById('top5_info_block').style.backgroundColor = color[0];
 		}
 	 });
-	 
+
 	 /*for play icon*/
 	$("#introduce_demo").hover(
 		function(){
@@ -826,19 +826,19 @@ function register_event(){
 			$("#play_icon").removeClass("icon_play_active").addClass("icon_play");
 			$(this).css("color", "#FFF");
 		}
-	);	 
+	);
 }
 
 function convertTime(t){
 	JS_timeObj.setTime(t*1000);
-	JS_timeObj2 = JS_timeObj.toString();	
+	JS_timeObj2 = JS_timeObj.toString();
 	JS_timeObj2 = JS_timeObj2.substring(0,3) + ", " +
 	              JS_timeObj2.substring(4,10) + "  " +
 				  parent.checkTime(JS_timeObj.getHours()) + ":" +
 				  parent.checkTime(JS_timeObj.getMinutes()) + ":" +
 				  parent.checkTime(JS_timeObj.getSeconds()) + "  " +
 				  JS_timeObj.getFullYear();
-	
+
 	return JS_timeObj2;
 }
 
@@ -856,7 +856,7 @@ function genClientListOption(){
 			continue;
 
 		var newItem = new Option(clientObj.name, clientObj.mac);
-		document.getElementById("clientListOption").options.add(newItem); 
+		document.getElementById("clientListOption").options.add(newItem);
 	}
 }
 
@@ -879,9 +879,9 @@ function switch_content(obj){
 		duration = 7;
 	}
 	else{
-		duration = 24;			
+		duration = 24;
 	}
-	
+
 	if(obj.id == "router"){
 		get_every_client_data("all", "detail", duration, date_second, date_string);
 		if(period == "monthly"){
@@ -907,7 +907,7 @@ function switch_content(obj){
 			description = "<#traffic_analysis_top5app_daily#>";
 		}
 	}
-	
+
 	document.getElementById('info_block_title').innerHTML = description;
 	document.getElementById('graphical_info_block').style.display = "";
 	document.getElementById('detail_info_block').style.display = "none";
@@ -935,9 +935,9 @@ function switch_date_type(obj){
 		duration = "24";
 		info_date = "<#diskUtility_daily#>";
 	}
-	
+
 	if(document.getElementById('router').className == "block_filter_pressed"){
-		info_type = "Clients";		
+		info_type = "Clients";
 	}
 	else{
 		info_type = "Apps";
@@ -947,7 +947,7 @@ function switch_date_type(obj){
 		get_every_client_data("all", "detail", duration, date_second, date_string);
 	else
 		get_every_app_data("all", "detail", duration, date_second, date_string);
-	
+
 	get_wan_data("all", mode, duration, date_second, date_string);
 	document.getElementById('graphical_info_block').style.display = "block";
 	document.getElementById('detail_info_block').style.display = "none";
@@ -971,8 +971,8 @@ function change_traffic_direction(obj){
 			all_client_traffic.sort(function(a,b){ return b[1] - a[1];});
 			client_used_app_array.sort(function(a,b){ return b[1] - a[1];});
 		}
-		get_client_info(all_client_traffic, "router");		
-	}	
+		get_client_info(all_client_traffic, "router");
+	}
 	else{
 		if(document.getElementById('traffic_option').value == "both"){
 			all_app_traffic.sort(function(a,b){	return (b[1] + b[2]) - (a[1] + a[2]);})
@@ -986,15 +986,15 @@ function change_traffic_direction(obj){
 			all_app_traffic.sort(function(a,b){	return 	b[1] - a[1];});
 			app_used_by_client_array.sort(function(a,b){ return	b[1] - a[1];});
 		}
-			
-		get_client_info(all_app_traffic, "app");	
-	}	
+
+		get_client_info(all_app_traffic, "app");
+	}
 
 	if(document.getElementById("client_option").value == "all"){
 		if(document.getElementById('router').className == "block_filter_pressed")
 			get_client_used_apps_info(top5_client_array[0], client_used_app_array, top5_client_array, "router");
 		else
-			get_client_used_apps_info(top5_app_array[0], app_used_by_client_array, top5_app_array, "app");		
+			get_client_used_apps_info(top5_app_array[0], app_used_by_client_array, top5_app_array, "app");
 	}
 	else{
 		if(document.getElementById('router').className == "block_filter_pressed")
@@ -1002,7 +1002,7 @@ function change_traffic_direction(obj){
 		else
 			get_client_used_apps_info(document.getElementById("client_option").value, app_used_by_client_array, top5_app_array, "app");
 	}
-	
+
 	document.getElementById('top5_info_block').style.backgroundColor = color[0];
 }
 
@@ -1013,7 +1013,7 @@ function change_client(mac){
 
 	if(document.getElementById('duration_option').value == "monthly"){
 		mode = "day";
-		duration = "31";	
+		duration = "31";
 	}
 	else if(document.getElementById('duration_option').value == "weekly"){
 		mode = "day";
@@ -1023,9 +1023,9 @@ function change_client(mac){
 		mode = "hour";
 		duration = "24";
 	}
-	
+
 	if(document.getElementById('router').className == "block_filter_pressed"){
-		info_type = "Clients";		
+		info_type = "Clients";
 	}
 	else{
 		info_type = "Apps";
@@ -1033,15 +1033,15 @@ function change_client(mac){
 
 	if(info_type == "Clients"){
 		get_wan_data(mac, mode, duration, date_second, date_string);
-		if(mac != "all"){	
+		if(mac != "all"){
 			get_client_used_app_data(mac, "detail", duration, date_second, date_string, "router", "client");
 			document.getElementById('graphical_info_block').style.display = "none";
-			document.getElementById('detail_info_block').style.display = "";		
+			document.getElementById('detail_info_block').style.display = "";
 		}
 		else{
 			document.getElementById('graphical_info_block').style.display = "";
 			document.getElementById('detail_info_block').style.display = "none";
-		}		
+		}
 	}
 	else{
 		get_app_data(mac, mode, duration, date_second, date_string);
@@ -1049,13 +1049,13 @@ function change_client(mac){
 			mac = mac.replace(/\_/g," ");
 			get_app_used_by_client_data(mac, "detail", duration , date_second, date_string, "router", "app", "1");
 			document.getElementById('graphical_info_block').style.display = "none";
-			document.getElementById('detail_info_block').style.display = "";		
+			document.getElementById('detail_info_block').style.display = "";
 		}
 		else{
 			document.getElementById('graphical_info_block').style.display = "";
 			document.getElementById('detail_info_block').style.display = "none";
-		}	
-	}	
+		}
+	}
 }
 
 function change_top5_clients(index, type){
@@ -1075,7 +1075,7 @@ function change_top5_clients(index, type){
 		get_client_used_app_data(top5_client_array[index], "detail", duration, date_second, date_string);
 	else
 		get_app_used_by_client_data(top5_app_array[index], "detail", duration , date_second, date_string);
-		
+
 }
 
 var pieOptions = {
@@ -1098,7 +1098,7 @@ var pieData = new Array();
 //var color = ["#878BB6","#4ACAB4","#FF8153","#FFEA88","#FF5151","#DCB5FF"];
  // 紅#b3645b  橙#b98f53 黃#c6b36a 綠#849e75 藍#2b6692 紫#7c637a
 var color = ["#B3645B","#B98F53","#C6B36A","#849E75","#2B6692","#7C637A"];
-function draw_pie_chart(list_info, top5_info, type){	
+function draw_pie_chart(list_info, top5_info, type){
 	var percent = 0;
 	var percent_others = 100;
 	var client_traffic = 0;
@@ -1107,17 +1107,17 @@ function draw_pie_chart(list_info, top5_info, type){
 	var client_traffic_display = new Array();
 	var pieData = [];
 	var code = "";
-	
+
 	for(i=0;i<list_info.length;i++){
 		if(document.getElementById('traffic_option').value == "both"){
-			total_client_traffic += list_info[i][1] + list_info[i][2];	
+			total_client_traffic += list_info[i][1] + list_info[i][2];
 		}
 		else if(document.getElementById('traffic_option').value == "down"){
-			total_client_traffic += list_info[i][2];		
+			total_client_traffic += list_info[i][2];
 		}
 		else{
 			total_client_traffic += list_info[i][1];
-		}	
+		}
 	}
 
 	if(top5_info == ""){
@@ -1129,36 +1129,36 @@ function draw_pie_chart(list_info, top5_info, type){
 			percent: 100,
 			id: "0"
 		}];
-		
-		code = '<div style="width:110px;word-wrap:break-word;padding-left:5px;background-color:#B3645B;margin-right:-10px;border-top-left-radius:10px;border-bottom-left-radius:10px;"><#traffic_analysis_noclients#></div>';		
+
+		code = '<div style="width:110px;word-wrap:break-word;padding-left:5px;background-color:#B3645B;margin-right:-10px;border-top-left-radius:10px;border-bottom-left-radius:10px;"><#traffic_analysis_noclients#></div>';
 	}
 	else{
-		for(i=0;i<top5_info.length && i<6;i++){		
+		for(i=0;i<top5_info.length && i<6;i++){
 			if(document.getElementById('traffic_option').value == "both"){
 				if(i<5){
-					client_traffic = list_info[i][1] + list_info[i][2];	
+					client_traffic = list_info[i][1] + list_info[i][2];
 				}
 				else{
-					client_traffic_others += list_info[i][1] + list_info[i][2];	
+					client_traffic_others += list_info[i][1] + list_info[i][2];
 				}
 			}
-			else if(document.getElementById('traffic_option').value == "down"){				
+			else if(document.getElementById('traffic_option').value == "down"){
 				if(i<5){
 					client_traffic = list_info[i][2];
 				}
-				else{			
-					client_traffic_others += list_info[i][2];	
-				}			
+				else{
+					client_traffic_others += list_info[i][2];
+				}
 			}
 			else{
 				if(i<5){
 					client_traffic = list_info[i][1];
 				}
-				else{			
-					client_traffic_others += list_info[i][1];	
+				else{
+					client_traffic_others += list_info[i][1];
 				}
 			}
-						
+
 			if(i<5){
 				percent = parseInt((client_traffic/total_client_traffic)*100);
 				percent_others -= percent;
@@ -1169,7 +1169,7 @@ function draw_pie_chart(list_info, top5_info, type){
 
 			if(percent < 1)
 				percent = 1;
-				
+
 			client_traffic_display = translate_traffic(client_traffic);
 			if(i==5){
 				var temp = {
@@ -1178,7 +1178,7 @@ function draw_pie_chart(list_info, top5_info, type){
 					value: client_traffic_display[0],
 					unit: client_traffic_display[1],
 					color: color[i],
-					id: top5_info[i]					
+					id: top5_info[i]
 				};
 			}
 			else{
@@ -1202,7 +1202,7 @@ function draw_pie_chart(list_info, top5_info, type){
 		}
 	}
 
-	document.getElementById('top5_client_banner').innerHTML = code;	
+	document.getElementById('top5_client_banner').innerHTML = code;
 	if(pie_flag != undefined)
 		pie_flag.destroy();
 
@@ -1210,7 +1210,7 @@ function draw_pie_chart(list_info, top5_info, type){
 }
 
 
-var flowData = {	
+var flowData = {
 	/*labels : ["January","February","March","April","May","June","July","Augest","Sepmpter","Octuber", "November","December"],
 	datasets : [{
 		fillColor : "rgba(172,194,132,0.4)",
@@ -1229,14 +1229,14 @@ function draw_flow(date, traffic){
 	var traffic_value = new Array();
 	var traffic_value_displayed = new Array();
 	var traffic_unit = new Array();
-	var traffic_temp = new Array();	
+	var traffic_temp = new Array();
 	var hour_temp = date_array[3], date_temp = date_array[2], month_temp = date_array[1], year_temp = date_array[0];
 	router_total_traffic = 0;
-	if(document.getElementById('duration_option').value == "daily"){	
+	if(document.getElementById('duration_option').value == "daily"){
 		for(i=0;i<24;i++){
 			if(traffic[i] == undefined)
 				traffic[i] = [0, 0];
-			
+
 			labels.unshift(hour_temp + " h");
 			if(document.getElementById('traffic_option').value == 'both'){
 				traffic_value.push(traffic[i][0] + traffic[i][1]);
@@ -1244,13 +1244,13 @@ function draw_flow(date, traffic){
 			}
 			else if(document.getElementById('traffic_option').value == 'down'){
 				traffic_value.push(traffic[i][1]);
-				traffic_temp = translate_traffic(traffic[i][1]);			
+				traffic_temp = translate_traffic(traffic[i][1]);
 			}
 			else{
 				traffic_value.push(traffic[i][0]);
-				traffic_temp = translate_traffic(traffic[i][0]);				
+				traffic_temp = translate_traffic(traffic[i][0]);
 			}
-			
+
 			traffic_value_displayed.push(traffic_temp[0]);
 			traffic_unit.push(traffic_temp[1]);
 
@@ -1263,8 +1263,8 @@ function draw_flow(date, traffic){
 					if(month_temp == 0){
 						month_temp = 12;
 						year_temp--;
-					}				
-					
+					}
+
 					if(month_temp == 1 || month_temp == 3 || month_temp == 5 || month_temp == 7 || month_temp == 8 || month_temp == 10 || month_temp == 12){
 						date_temp = 31;
 					}
@@ -1277,17 +1277,17 @@ function draw_flow(date, traffic){
 						}
 					}
 					else{
-						date_temp = 30;		
-					}			
-				}		
-			}		
+						date_temp = 30;
+					}
+				}
+			}
 		}
 	}
 	else if(document.getElementById('duration_option').value == "weekly"){
 		for(i=0;i<7;i++){
 			if(traffic[i] == undefined)
 				traffic[i] = [0, 0];
-				
+
 			labels.unshift(month_temp + "/" + date_temp);
 			if(document.getElementById('traffic_option').value == 'both'){
 				traffic_value.push(traffic[i][0] + traffic[i][1]);
@@ -1295,24 +1295,24 @@ function draw_flow(date, traffic){
 			}
 			else if(document.getElementById('traffic_option').value == 'down'){
 				traffic_value.push(traffic[i][1]);
-				traffic_temp = translate_traffic(traffic[i][1]);			
+				traffic_temp = translate_traffic(traffic[i][1]);
 			}
 			else{
 				traffic_value.push(traffic[i][0]);
-				traffic_temp = translate_traffic(traffic[i][0]);				
+				traffic_temp = translate_traffic(traffic[i][0]);
 			}
-			
+
 			traffic_value_displayed.push(traffic_temp[0]);
 			traffic_unit.push(traffic_temp[1]);
-		
+
 			date_temp--;
 			if(date_temp == 0){
 				month_temp--;
 				if(month_temp == 0){
 					month_temp = 12;
 					year_temp--;
-				}				
-					
+				}
+
 				if(month_temp == 1 || month_temp == 3 || month_temp == 5 || month_temp == 7 || month_temp == 8 || month_temp == 10 || month_temp == 12){
 						date_temp = 31;
 				}
@@ -1325,8 +1325,8 @@ function draw_flow(date, traffic){
 					}
 				}
 				else{
-					date_temp = 30;		
-				}			
+					date_temp = 30;
+				}
 			}
 
 		}
@@ -1336,7 +1336,7 @@ function draw_flow(date, traffic){
 		for(i=0;i<31;i++){
 			if(traffic[i] == undefined)
 				traffic[i] = [0, 0];
-				
+
 			labels.unshift(month_temp + "/" + date_temp);
 			if(document.getElementById('traffic_option').value == 'both'){
 				traffic_value.push(traffic[i][0] + traffic[i][1]);
@@ -1344,24 +1344,24 @@ function draw_flow(date, traffic){
 			}
 			else if(document.getElementById('traffic_option').value == 'down'){
 				traffic_value.push(traffic[i][1]);
-				traffic_temp = translate_traffic(traffic[i][1]);			
+				traffic_temp = translate_traffic(traffic[i][1]);
 			}
 			else{
 				traffic_value.push(traffic[i][0]);
-				traffic_temp = translate_traffic(traffic[i][0]);				
+				traffic_temp = translate_traffic(traffic[i][0]);
 			}
-			
+
 			traffic_value_displayed.push(traffic_temp[0]);
 			traffic_unit.push(traffic_temp[1]);
-		
+
 			date_temp--;
 			if(date_temp == 0){
 				month_temp--;
 				if(month_temp == 0){
 					month_temp = 12;
 					year_temp--;
-				}				
-					
+				}
+
 				if(month_temp == 1 || month_temp == 3 || month_temp == 5 || month_temp == 7 || month_temp == 8 || month_temp == 10 || month_temp == 12){
 						date_temp = 31;
 				}
@@ -1374,12 +1374,12 @@ function draw_flow(date, traffic){
 					}
 				}
 				else{
-					date_temp = 30;		
-				}			
-			}		
+					date_temp = 30;
+				}
+			}
 		}
 	}
-	
+
 	flowData = {
 		labels: labels,
 		datasets:[{
@@ -1389,30 +1389,30 @@ function draw_flow(date, traffic){
 			pointStrokeColor : "#095877",
 			data: traffic_value,
 			displayValue : traffic_value_displayed,
-			unit: traffic_unit		
+			unit: traffic_unit
 		}]
 	};
-	
+
 	if(flow_flag != undefined)
 		flow_flag.destroy();
-	
+
 	flow_obj.Line(flowData)
-	
+
 	for(i=0;i<router_traffic_array.length;i++){
 		if(document.getElementById('traffic_option').value == 'both'){
 				router_total_traffic += router_traffic_array[i][0] + router_traffic_array[i][1];
 			}
-			else if(document.getElementById('traffic_option').value == 'down'){		
+			else if(document.getElementById('traffic_option').value == 'down'){
 				router_total_traffic += router_traffic_array[i][1];
 			}
 			else{
-				router_total_traffic += router_traffic_array[i][0];				
+				router_total_traffic += router_traffic_array[i][0];
 		}
 	}
-	
-	traffic_temp = translate_traffic(router_total_traffic);	
+
+	traffic_temp = translate_traffic(router_total_traffic);
 	document.getElementById('total_traffic_field').innerHTML = traffic_temp[0] + " " + traffic_temp[1];
-	
+
 	if(document.getElementById('duration_option').value == "monthly"){
 		document.getElementById('total_traffic_title').innerHTML = "<#Traffic_Analyzer_monthly#>";
 	}
@@ -1422,7 +1422,7 @@ function draw_flow(date, traffic){
 	else{		//daily
 		document.getElementById('total_traffic_title').innerHTML = "<#Traffic_Analyzer_daily#>";
 	}
-	
+
 	document.getElementById('current_traffic_title').innerHTML = "<#Traffic_Analyzer_current#>";
 	document.getElementById('current_traffic_percent_title').innerHTML = "<#Traffic_Analyzer_usedpercent#>";
 }
@@ -1433,18 +1433,18 @@ function cal_panel_block(obj){
 		winWidth = window.innerWidth;
 	else if ((document.body) && (document.body.clientWidth))
 		winWidth = document.body.clientWidth;
-		
+
 	if (document.documentElement  && document.documentElement.clientHeight && document.documentElement.clientWidth){
 		winWidth = document.documentElement.clientWidth;
 	}
 
-	if(winWidth >1050){	
-		winPadding = (winWidth-1050)/2;	
+	if(winWidth >1050){
+		winPadding = (winWidth-1050)/2;
 		winWidth = 1105;
 		blockmarginLeft= (winWidth*0.2)+winPadding;
 	}
 	else if(winWidth <=1050){
-		blockmarginLeft= (winWidth)*0.2 + document.body.scrollLeft;	
+		blockmarginLeft= (winWidth)*0.2 + document.body.scrollLeft;
 	}
 
 	if(obj == "demo_background")
@@ -1459,18 +1459,18 @@ function cal_agreement_block(){
 		winWidth = window.innerWidth;
 	else if ((document.body) && (document.body.clientWidth))
 		winWidth = document.body.clientWidth;
-		
+
 	if (document.documentElement  && document.documentElement.clientHeight && document.documentElement.clientWidth){
 		winWidth = document.documentElement.clientWidth;
 	}
 
-	if(winWidth >1050){	
-		winPadding = (winWidth-1050)/2;	
+	if(winWidth >1050){
+		winPadding = (winWidth-1050)/2;
 		winWidth = 1105;
 		blockmarginLeft= (winWidth*0.25)+winPadding;
 	}
 	else if(winWidth <=1050){
-		blockmarginLeft= (winWidth)*0.25+document.body.scrollLeft;	
+		blockmarginLeft= (winWidth)*0.25+document.body.scrollLeft;
 
 	}
 
@@ -1492,12 +1492,12 @@ function cancel(){
 	$("#agreement_panel").fadeOut(100);
 	document.getElementById("hiddenMask").style.visibility = "hidden";
 	htmlbodyforIE = parent.document.getElementsByTagName("html");  //this both for IE&FF, use "html" but not "body" because <!DOCTYPE html PUBLIC.......>
-	htmlbodyforIE[0].style.overflow = "scroll";	  //hidden the Y-scrollbar for preventing from user scroll it.	
+	htmlbodyforIE[0].style.overflow = "scroll";	  //hidden the Y-scrollbar for preventing from user scroll it.
 }
 
 function applyRule(){
 	document.form.action_script.value = "restart_wrs;restart_firewall";
-	
+
 	if(reset_wan_to_fo(document.form, document.form.bwdpi_db_enable.value)) {
 		document.form.submit();
 	}
@@ -1572,9 +1572,9 @@ function updateTrafficAnalyzer() {
 		<td valign="top" width="202">
 			<div id="mainMenu"></div>
 			<div id="subMenu"></div>
-		</td>	
+		</td>
 		<td valign="top">
-			<div id="tabMenu" class="submenuBlock"></div>		
+			<div id="tabMenu" class="submenuBlock"></div>
 
 			<div id="demo_background" style="background-color:#3E464A; width:760px;height:96%;position:absolute;z-index:5;opacity:0.9;display:none;display:none">
 				<div style="background:url('images/New_ui/cancel.svg');width:40px;height:40px;z-index:12;position:absolute;top:10px;right:20px;cursor:pointer" onclick="cancel_demo();"></div>
@@ -1583,15 +1583,15 @@ function updateTrafficAnalyzer() {
 
 			<table width="98%" border="0" align="left" cellpadding="0" cellspacing="0">
 				<tr>
-					<td align="left" valign="top">				
-						<table width="760px" border="0" cellpadding="5" cellspacing="0" bordercolor="#6b8fa3"  class="FormTitle" id="FormTitle">		
+					<td align="left" valign="top">
+						<table width="760px" border="0" cellpadding="5" cellspacing="0" bordercolor="#6b8fa3"  class="FormTitle" id="FormTitle">
 							<tr>
 								<td bgcolor="#4D595D" colspan="3" valign="top">
 									<div>&nbsp;</div>
 									<div style="margin-top:-20px;">
 										<table width="100%">
 											<tr>
-												<td class="formfonttitle" align="left">								
+												<td class="formfonttitle" align="left">
 													<div><#Traffic_Analyzer#> - <#Statistic#></div>
 												</td>
 												<td>
@@ -1617,49 +1617,19 @@ function updateTrafficAnalyzer() {
 																						}
 																					};
 
-																			if(document.form.preferred_lang.value == "JP"){
-																				$.get("JP_tm_eula.htm", function(data){
-																					document.getElementById('agreement_panel').innerHTML= data;
-																					adjust_TM_eula_height("agreement_panel");
-																				});
-																			}
-																			else if(document.form.preferred_lang.value == "TW"){
-																				$.get("tm_eula_TC.htm", function(data){
-																					document.getElementById('agreement_panel').innerHTML= data;
-																					adjust_TM_eula_height("agreement_panel");
-																				});
-																			}
-																			else if(document.form.preferred_lang.value == "CN"){
-																				$.get("tm_eula_SC.htm", function(data){
-																					document.getElementById('agreement_panel').innerHTML= data;
-																					adjust_TM_eula_height("agreement_panel");
-																				});
-																			}
-																			else if(document.form.preferred_lang.value == "FR"){
-																				$.get("tm_eula_FR.htm", function(data){
-																					document.getElementById('agreement_panel').innerHTML= data;
-																					adjust_TM_eula_height("agreement_panel");
-																				});
-																			}
-																			else if(document.form.preferred_lang.value == "RU"){
-																				$.get("tm_eula_RU.htm", function(data){
-																					document.getElementById('agreement_panel').innerHTML= data;
-																					adjust_TM_eula_height("agreement_panel");
-																				});
-																			}																			
-																			else{
-																				$.get("tm_eula.htm", function(data){
-																					document.getElementById('agreement_panel').innerHTML= data;
-																					adjust_TM_eula_height("agreement_panel");
-																				});
-																			}	
-																					
+																				  $.get("tm_eula.htm", function(data){
+																				  	document.getElementById('agreement_panel').innerHTML= data;
+                                            var url = "https://www.asus.com/Microsite/networks/Trend_Micro_EULA/" + document.form.preferred_lang.value;
+                                        		$("#eula_url").attr("href",url);
+																				  	adjust_TM_eula_height("agreement_panel");
+																				  });
+
 																					dr_advise();
 																					cal_agreement_block();
 																					$("#agreement_panel").fadeIn(300);
 																					return false;
 																				}
-																					
+
 																					document.form.bwdpi_db_enable.value = 1;
 																					applyRule();
 																			},
@@ -1668,20 +1638,20 @@ function updateTrafficAnalyzer() {
 																				applyRule();
 																			}
 																		);
-																	</script>			
-																</td>														
+																	</script>
+																</td>
 															</tr>
 														</table>
 													</div>
 												</td>
 											</tr>
-										</table>								
+										</table>
 									</div>
 									<div style="margin-left:5px;margin-bottom:10px"><img src="/images/New_ui/export/line_export.png"></div>
 									<div class="formfontdesc"><#Traffic_Analyzer_desc#></div>
 									<div style="margin-left:10px;">
 										<label style="font-size:16px;"><#Statistic_last_date#>:</label>
-										<input class="input_12_table" id="datepicker" value="">	
+										<input class="input_12_table" id="datepicker" value="">
 										<div id="statistic_hint" style="text-align:right;margin-top:-21px;padding-right:15px;color:#FC0;font-size:14px;">* <#Traffic_Analyzer_note#></div>
 									</div>
 									<div style="margin:10px 0 10px 4px;">
@@ -1746,11 +1716,11 @@ function updateTrafficAnalyzer() {
 													<td style="width:25%;text-align:center;font-size:16px;" id="current_traffic_percent_title"></td>
 													<td style="width:25%;text-align:center;font-size:16px;" id="current_traffic_title"></td>
 													<td style="width:25%;text-align:center;font-size:16px;" id="total_traffic_title"></td>
-													<td rowspan="2"; style="width:25%;text-align:center">													
+													<td rowspan="2"; style="width:25%;text-align:center">
 														<select class="input_option" style="background-color#1C2B32;" id="client_option" onChange="change_client(this.value);"></select>
 													</td>
 												</tr>
-												<tr>													
+												<tr>
 													<td style="width:25%;text-align:center;font-size:16px;color:#FC0" id="current_traffic_percent_field"></td>
 													<td style="width:25%;text-align:center;font-size:16px;color:#FC0" id="current_traffic_field"></td>
 													<td style="width:25%;text-align:center;font-size:16px;color:#FC0" id="total_traffic_field"></td>
@@ -1759,8 +1729,8 @@ function updateTrafficAnalyzer() {
 										</div>
 										<canvas id="traffic_chart" width="700px" height="300" style="padding-left:15px;"></canvas>
 									</div>
-									
-									
+
+
 									<div id="graphical_info_block" style="margin-top:10px;margin-right:-20px;">
 										<table style="width:100%">
 											<tr>
@@ -1772,7 +1742,7 @@ function updateTrafficAnalyzer() {
 												</td>
 												<td>
 													<div id="top5_info_block" style="width:310px;min-height:330px;;background-color:#B3645B;border-bottom-right-radius:10px;border-bottom-left-radius:10px;border-top-right-radius:10px;box-shadow: 3px 5px 5px #2E3537;">
-														<table style="width:99%;padding-top:20px">						
+														<table style="width:99%;padding-top:20px">
 															<tr>
 																<th style="font-size:16px;text-align:left;padding-left:10px;width:140px;color:#ADADAD" id="top_client_title"><#ParentalCtrl_username#>:</th>
 																<td style="font-size:14px;" id="top_client_name"></td>
@@ -1784,7 +1754,7 @@ function updateTrafficAnalyzer() {
 															<tr>
 																<th style="font-size:16px;text-align:left;padding-left:10px;width:140px;color:#ADADAD"><#Traffic_Analyzer_TopApps#> :</th>
 																<td></td>
-															</tr>													
+															</tr>
 														</table>
 														<table style="width:99%;border-collapse:collapse;" id="top_client_table"></table>
 													</div>
@@ -1796,18 +1766,18 @@ function updateTrafficAnalyzer() {
 												</td>
 											</td>
 										</table>
-									</div>	
+									</div>
 
 									<div id="detail_info_block" class="analysis_bg" style="border-radius:4px;width:100%;min-height:350px;margin-top:10px;overflow-y:auto;height:370px;display:none"></div>
 								</td>
 							</tr>
 						</table>
-					</td>  
+					</td>
 				</tr>
-				
+
 			</table>
 			<!--===================================End of Main Content===========================================-->
-		</td>		
+		</td>
 	</tr>
 </table>
 <div id="footer"></div>

@@ -1,3 +1,5 @@
+#define _GNU_SOURCE
+
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -13,55 +15,43 @@
 
 void add_rc_support(char *feature)
 {
-	char *rcsupport = nvram_safe_get("rc_support");
-	char *features;
+	char *rcsupport, *features;
 
 	if (!(feature && *feature))
 		return;
 
+	rcsupport = nvram_safe_get("rc_support");
 	if (*rcsupport) {
-		features = malloc(strlen(rcsupport) + strlen(feature) + 2);
-		if (features == NULL) {
+		if (asprintf(&features, "%s %s", rcsupport, feature) < 0 || !features) {
 			_dprintf("add_rc_support fail\n");
 			return;
 		}
-		sprintf(features, "%s %s", rcsupport, feature);
 		nvram_set("rc_support", features);
 		free(features);
 	} else
 		nvram_set("rc_support", feature);
 }
 
-void del_rc_support(char *features)
+void del_rc_support(char *feature)
 {
-	char *tmp = nvram_safe_get("rc_support");
-	char *rcsupport = NULL;
+	char *rcsupport, *features;
+	char word[256], *next;
 
-	if (!(features && *features))
+	if (!(feature && *feature))
 		return;
 
-	rcsupport = malloc(strlen(tmp) + 1);
-
-	if (rcsupport == NULL) {
-		_dprintf("del_rc_support fail\n");
-		return;
-	}
-	memset(rcsupport, 0, strlen(tmp) + 1);
-	strncpy(rcsupport, tmp, strlen(tmp));
-
+	rcsupport = nvram_safe_get("rc_support");
 	if (*rcsupport) {
-		char word[256];
-		char *next;	
-		
-		foreach(word,features,next) {
-			remove_from_list(word, rcsupport, strlen(tmp) + 1);	
+		features = strdup(rcsupport);
+		if (!features) {
+			_dprintf("del_rc_support fail\n");
+			return;
 		}
-		
-		nvram_set("rc_support", rcsupport);
-		free(rcsupport);
-	} 
-	else{
-		_dprintf("del_rc_support fail\n");
+		foreach(word, feature, next)
+			remove_from_list(word, features, strlen(features) + 1);
+		if (strcmp(rcsupport, features) != 0)
+			nvram_set("rc_support", features);
+		free(features);
 	}
 }
 
@@ -1108,6 +1098,11 @@ char *get_default_ssid(int unit, int subunit)
 			sprintf((char *)ssidbase, "Spirit_%02X", mac_binary[5]);
 		else
 #endif
+#ifdef RTAC68U
+		if (is_dpsta_repeater())
+			sprintf((char *)ssidbase, "%s_RP_%02X", SSID_PREFIX, mac_binary[5]);
+		else
+#endif
 			sprintf((char *)ssidbase, "%s_%02X", SSID_PREFIX, mac_binary[5]);
 	} else {
 		macp = get_lan_hwaddr();
@@ -1121,7 +1116,11 @@ char *get_default_ssid(int unit, int subunit)
 	switch (unit) {
 	case WL_2G_BAND:
 #if defined(RTCONFIG_NEWSSID_REV2)
-		if (band_num > 1)
+		if ((band_num > 1)
+#ifdef RTAC68U
+			&& !is_dpsta_repeater()
+#endif
+		)
 #endif
 			strlcat(ssid, "_2G", sizeof(ssid));
 		break;
@@ -1147,7 +1146,11 @@ char *get_default_ssid(int unit, int subunit)
 #endif
 
 	/* Handle guest network SSID. */
-	if (subunit) {
+	if (subunit
+#ifdef RTAC68U
+		&& !is_dpsta_repeater()
+#endif
+	) {
 #if defined(RTCONFIG_SSID_AMAPS)
 		/* RTCONFIG_SSID_AMAPS use the same guest network SSID rule as SINGLE_SSID */
 		snprintf(ssid, sizeof(ssid), "%s_AMAPS_Guest", SSID_PREFIX);

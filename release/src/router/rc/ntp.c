@@ -159,9 +159,20 @@ int ntp_main(int argc, char *argv[])
 	{
 		if (sig_cur == SIGTSTP)
 			;
-		else if (is_router_mode() &&
-			!nvram_match("link_internet", "1") &&
-			!nvram_match("link_internet", "2"))
+		else if (is_router_mode() && !nvram_match("link_internet", "1") && !nvram_match("link_internet", "2"))
+		{
+			alarm(SECONDS_TO_WAIT);
+		}
+		else if ((sw_mode() == SW_MODE_REPEATER
+#if defined(RTCONFIG_BCMWL6) && defined(RTCONFIG_PROXYSTA)
+				|| psr_mode() || mediabridge_mode()
+#elif defined(RTCONFIG_REALTEK)
+				|| mediabridge_mode()
+#endif
+#ifdef RTCONFIG_DPSTA
+				|| dpsta_mode()
+#endif
+			 ) && nvram_get_int("wlc_state") != WLC_STATE_CONNECTED)
 		{
 			alarm(SECONDS_TO_WAIT);
 		}

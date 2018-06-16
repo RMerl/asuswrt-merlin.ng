@@ -2910,7 +2910,13 @@ void btn_check(void)
 		}
 	}
 #elif defined(RTAC3200) || defined(RTCONFIG_BCM_7114) || defined(HND_ROUTER)
-	if (!LED_status &&
+	if (!nvram_get_int("AllLED") && LED_status_first)
+	{
+		LED_status_first = 0;
+		LED_status_changed = 1;
+		LED_status_on = 0;
+	}
+	else if (!LED_status &&
 	    (LED_status != LED_status_old))
 	{
 		LED_status_changed = 1;
@@ -2932,12 +2938,18 @@ void btn_check(void)
 #if defined(RTAC68U)
 		if (((!nvram_match("cpurev", "c0") || nvram_get_int("PA") == 5023) && LED_status == LED_status_on) ||
 		      (nvram_match("cpurev", "c0") && nvram_get_int("PA") != 5023 && LED_status_on))
-#elif defined(RTAC3200) || defined(RTCONFIG_BCM_7114) || defined(HND_ROUTER)
-		if (LED_status_on)
-#endif
 			nvram_set_int("AllLED", 1);
 		else
 			nvram_set_int("AllLED", 0);
+#elif defined(RTAC3200) || defined(RTCONFIG_BCM_7114) || defined(HND_ROUTER)
+		if (!LED_status && (LED_status != LED_status_old)) {
+			if (LED_status_on)
+				nvram_set_int("AllLED", 1);
+			else
+				nvram_set_int("AllLED", 0);
+			nvram_commit();
+		}
+#endif
 #if defined(RTAC68U)
 		if (((!nvram_match("cpurev", "c0") || nvram_get_int("PA") == 5023) && LED_status == LED_status_on) ||
 		      (nvram_match("cpurev", "c0") && nvram_get_int("PA") != 5023 && LED_status_on))
@@ -3257,9 +3269,13 @@ void btn_check(void)
 #endif
 
 #if defined(RTCONFIG_QCA)
+#if defined(RTCONFIG_WIFI_CLONE)
 				if (nvram_match("wps_enrollee", "1"))
 					stop_wps_method();
+#elif defined(RTCONFIG_WPSMULTIBAND)
+				stop_wps_method();
 #endif
+#endif	/* RTCONFIG_QCA */
 #ifdef RTCONFIG_WIFI_CLONE
 				if (nvram_match("wps_e_success", "1")) {
 #if (defined(PLN12) || defined(PLAC56))
@@ -5946,7 +5962,8 @@ static void bt_turn_off_service()
 #ifdef RTCONFIG_AMAS
 void amas_ctl_check()
 {
-	if (nvram_get_int("re_mode") == 1) {
+#ifdef RTCONFIG_DPSTA
+	if (dpsta_mode() && nvram_get_int("re_mode") == 1) {
 		if (!pids("amas_bhctrl"))
 			notify_rc("start_amas_bhctrl");
 		if (!pids("amas_wlcconnect"))
@@ -5954,6 +5971,7 @@ void amas_ctl_check()
 		if (!pids("amas_lanctrl"))
 			notify_rc("start_amas_lanctrl");
 	}
+#endif
 }
 
 void onboarding_check()
@@ -5963,8 +5981,10 @@ void onboarding_check()
 	if (!nvram_match("start_service_ready", "1"))
 		return;
 
-	if (!nvram_match("re_mode", "1"))
+#ifdef RTCONFIG_DPSTA
+	if (!(dpsta_mode() && nvram_get_int("re_mode") == 1))
 		return;
+#endif
 
 	if (strlen(nvram_safe_get("cfg_group")))
 		return;
@@ -5982,8 +6002,11 @@ void onboarding_check()
 void cfgsync_check()
 {
 	if (nvram_match("x_Setting", "1") && 
-		((!pids("cfg_client") && nvram_get_int("re_mode") == 1) || 
-		(!pids("cfg_server") && nvram_get_int("cfg_master") == 1)))
+		(
+#ifdef RTCONFIG_DPSTA
+		(!pids("cfg_client") && dpsta_mode() && nvram_get_int("re_mode") == 1) ||
+#endif
+		(!pids("cfg_server") && (is_router_mode() || access_point_mode()))))
 	{
 		_dprintf("start cfgsync\n");
 		notify_rc("start_cfgsync");
@@ -7160,9 +7183,6 @@ watchdog_main(int argc, char *argv[])
 	for (p = &mfg_btn_table[0]; p->id < BTN_ID_MAX; ++p) {
 		nvram_set(p->nv, "0");
 	}
-
-	if (!pids("ots"))
-		start_ots();
 
 	setenv("TZ", nvram_safe_get("time_zone_x"), 1);
 

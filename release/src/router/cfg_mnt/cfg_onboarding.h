@@ -54,7 +54,7 @@ extern void cm_processOnboardingList(char *msg);
 extern void cm_stopWps();
 extern void cm_stopOnboardingMonitor();
 extern void cm_updateOnboardingListStatus(char *reMac, char *newReMac, int obStatus);
-extern void cm_updateOnboardingSuccess(unsigned char *msg);
+extern int cm_updateOnboardingSuccess(unsigned char *msg);
 extern int cm_checkOnboardingNewReValid(unsigned char *msg);
 extern void cm_initOnboardingStatus();
 extern void cm_updateOnboardingStatus(int obStatus, char *obVsie);

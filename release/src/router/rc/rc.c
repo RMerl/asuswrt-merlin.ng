@@ -731,6 +731,10 @@ static const applets_t applets[] = {
 	{ "ovpnc-route-up",	vpnc_ovpn_route_up_main			},
 #endif
 #endif
+#ifdef RTCONFIG_OPENVPN
+	{ "ovpn-up",			ovpn_up_main				},
+	{ "ovpn-down",			ovpn_down_main			},
+#endif
 #ifdef RTCONFIG_EAPOL
 	{ "wpa_cli",			wpacli_main			},
 #endif
@@ -780,7 +784,6 @@ static const applets_t applets[] = {
 	{ "ddns_updated", 		ddns_updated_main		},
 	{ "ddns_custom_updated",	ddns_custom_updated_main	},
 	{ "radio",			radio_main			},
-	{ "ots",			ots_main			},
 	{ "udhcpc",			udhcpc_wan			},
 	{ "udhcpc_lan",			udhcpc_lan			},
 	{ "zcip",			zcip_wan			},
@@ -1745,8 +1748,7 @@ int main(int argc, char **argv)
 		}
 	}
 	else if (!strcmp(base, "mtd_erase_image_update")) {
-		mtd_erase_image_update();
-		return 0;
+		return mtd_erase_image_update();
 	}
 #else
 	else if (!strcmp(base, "nvram_erase")) {

@@ -7,7 +7,7 @@
 <meta HTTP-EQUIV="Pragma" CONTENT="no-cache">
 <meta HTTP-EQUIV="Expires" CONTENT="-1">
 <title><#Web_Title#> - Home Security</title>
-<link rel="stylesheet" type="text/css" href="index_style.css"> 
+<link rel="stylesheet" type="text/css" href="index_style.css">
 <link rel="stylesheet" type="text/css" href="form_style.css">
 <script type="text/javascript" src="/state.js"></script>
 <script type="text/javascript" src="/popup.js"></script>
@@ -41,7 +41,6 @@
 	background-color:#BEBEBE;
 	color:#000;border-collapse:separate !important;
 	border-radius:10px;
-
 }
 
 .weakness_status th{
@@ -148,7 +147,7 @@ window.onresize = function() {
 	if(document.getElementById("agreement_panel").style.display == "block") {
 		cal_panel_block("agreement_panel", 0.25);
 	}
-} 
+}
 <% get_AiDisk_status(); %>
 var AM_to_cifs = get_share_management_status("cifs");  // Account Management for Network-Neighborhood
 var AM_to_ftp = get_share_management_status("ftp");  // Account Management for FTP
@@ -215,17 +214,17 @@ function transferTimeFormat(time){
 	if(month < 10){
 		month  = "0" + month;
 	}
-	
+
 	var date = t.getDate();
 	if(date < 10){
 		date = "0" + date;
 	}
-	
+
 	var hour = t.getHours();
 	if(hour < 10){
 		hour = "0" + hour;
 	}
-			
+
 	var minute = t.getMinutes();
 	if(minute < 10){
 		minute = "0" + minute;
@@ -238,7 +237,7 @@ function transferTimeFormat(time){
 function getEventData(type, date, event){
 	$.ajax({
 		url: '/getAiProtectionEvent.asp?type=' + type + '&date=' + date + '&event=' + event,
-		dataType: 'script',	
+		dataType: 'script',
 		error: function(xhr) {
 			setTimeout("getEventData(type, date, event);", 1000);
 		},
@@ -248,7 +247,7 @@ function getEventData(type, date, event){
 			var infected_count = event_count.cc_n;
 			$("#mali_count").html(mali_count);
 			$("#vp_count").html(vp_count);
-			$("#infected_count").html(infected_count);			
+			$("#infected_count").html(infected_count);
 		}
 	});
 }
@@ -266,16 +265,16 @@ function applyRule(){
 
 	if(document.form.wrs_cc_t.value == "0"){
 		document.form.wrs_cc_t.value = timestamp.toString().substring(0, 10);
-	}																	
+	}
 
 	if(ctf_disable == 0 && ctf_fa_mode == 2){
 		if(!confirm(Untranslated.ctf_fa_hint)){
 			return false;
-		}	
+		}
 		else{
 			document.form.action_script.value = "reboot";
 			document.form.action_wait.value = "<% nvram_get("reboot_time"); %>";
-		}	
+		}
 	}
 
 	if(reset_wan_to_fo(document.form, document.form.wrs_protect_enable.value)) {
@@ -295,7 +294,7 @@ function applyRule(){
 
 function showWeaknessTable(){
 	cal_panel_block("weakness_div", 0.25);
-	$('#weakness_div').fadeIn();	
+	$('#weakness_div').fadeIn();
 }
 
 function check_weakness(){
@@ -338,10 +337,10 @@ function enable_whole_security(){
     if(!confirm("<#AiProtection_Vulnerability_confirm#>")){
 		return false;
 	}
-	
+
 	var action_script_temp = "";
-	var wan0_upnp_enable = document.form.wan0_upnp_enable.value; 
-	var wan1_upnp_enable = document.form.wan1_upnp_enable.value; 
+	var wan0_upnp_enable = document.form.wan0_upnp_enable.value;
+	var wan1_upnp_enable = document.form.wan1_upnp_enable.value;
 	var wan_access_enable = document.form.misc_http_x.value;
 	var wan_ping_enable = document.form.misc_ping_x.value;
 	var port_trigger_enable = document.form.autofw_enable_x.value;
@@ -359,7 +358,7 @@ function enable_whole_security(){
 	var restart_wireless = 0;
 	var restart_samba = 0;
 	var restart_ftp = 0;
-	
+
 	if(wps_enable == 1){
 		document.form.wps_enable.value = 0;
 		document.form.wps_sta_pin.value = "";
@@ -368,27 +367,27 @@ function enable_whole_security(){
 		restart_wireless = 1;
 		document.form.action_wait.value = "20";
 	}
-	
-	if(wan0_upnp_enable == 1 || wan1_upnp_enable == 1){		
+
+	if(wan0_upnp_enable == 1 || wan1_upnp_enable == 1){
 		document.form.wan0_upnp_enable.value = 0;
 		document.form.wan1_upnp_enable.value = 0;
 		document.form.wan0_upnp_enable.disabled = false;
 		document.form.wan1_upnp_enable.disabled = false;
 		restart_wan = 1;
 	}
-	
+
 	if(wan_access_enable ==1){
 		document.form.misc_http_x.value = 0;
 		document.form.misc_http_x.disabled = false;;
 		restart_time = 1;
 	}
-	
+
 	if(wan_ping_enable == 1){
 		document.form.misc_ping_x.value = 0;
 		document.form.misc_ping_x.disabled = false;
 		restart_firewall = 1;
 	}
-	
+
 	if(document.form.dmz_ip.value != ""){
 		document.form.dmz_ip.value = "";
 		document.form.dmz_ip.disabled = false;
@@ -400,21 +399,21 @@ function enable_whole_security(){
 		document.form.autofw_enable_x.disabled = false;
 		restart_firewall = 1;
 	}
-	
+
 	if(port_forwarding_enable == 1){
 		document.form.vts_enable_x.value = 0;
 		document.form.vts_enable_x.disabled = false;
 		restart_firewall = 1;
 	}
-	
-	if(ftp_account_mode == 1){	
+
+	if(ftp_account_mode == 1){
 		document.form.st_ftp_mode.value = 2;
 		document.form.st_ftp_force_mode.value = 2;
 		document.form.st_ftp_mode.disabled = false;
 		document.form.st_ftp_force_mode.disabled = false;
 		restart_ftp = 1
 	}
-	
+
 	if(samba_account_mode == 1){
 		document.form.st_samba_mode.value = 4;
 		document.form.st_samba_force_mode.value = 4;
@@ -429,7 +428,7 @@ function enable_whole_security(){
 		restart_firewall = 1;
 		restart_wrs = 1;
 	}
-	
+
 	if(wrs_vp_enable == 0){
 		document.form.wrs_vp_enable.value = 1;
 		restart_firewall = 1;
@@ -441,66 +440,66 @@ function enable_whole_security(){
 		restart_firewall = 1;
 		restart_wrs = 1;
 	}
-	
+
 	if(restart_wan == 1){
 		if(action_script_temp == "")
 			action_script_temp += "restart_wan_if";
-		else	
-			action_script_temp += ";restart_wan_if";	
+		else
+			action_script_temp += ";restart_wan_if";
 	}
-	
+
 	if(restart_time == 1){
 		if(action_script_temp == "")
 			action_script_temp =+ "restart_time";
-		else	
-			action_script_temp += ";restart_time";	
+		else
+			action_script_temp += ";restart_time";
 	}
-	
+
 	if(restart_wrs == 1){
 		if(action_script_temp == "")
 			action_script_temp += "restart_wrs";
-		else	
+		else
 			action_script_temp += ";restart_wrs";
 	}
-	
+
 	if(restart_firewall == 1){
 		if(action_script_temp == "")
 			action_script_temp += "restart_firewall";
-		else	
-			action_script_temp += ";restart_firewall";	
+		else
+			action_script_temp += ";restart_firewall";
 	}
-	
+
 	if(restart_wireless == 1){
 		if(action_script_temp == ""){
 			action_script_temp += "restart_wireless";
-		}	
+		}
 		else{
-			action_script_temp += ";restart_wireless";	
-		}	
+			action_script_temp += ";restart_wireless";
+		}
 	}
-	
+
 	if(restart_samba == 1 && restart_ftp == 1){
 		if(action_script_temp == "")
 			action_script_temp += "restart_ftpsamba";
-		else	
+		else
 			action_script_temp += ";restart_ftpsamba";
 	}
 	else{
 		if(restart_samba == 1){
 			if(action_script_temp == "")
 				action_script_temp += "restart_samba";
-			else	
+			else
 				action_script_temp += ";restart_samba";
 		}
-	
+
 		if(restart_ftp == 1){
 			if(action_script_temp == "")
 				action_script_temp += "restart_ftpd";
-			else	
+			else
 				action_script_temp += ";restart_ftpd";
-		}	
+		}
 	}
-	
+
 	document.form.action_script.value = action_script_temp;
 	document.form.submit();
 }
@@ -508,7 +507,7 @@ function check_login_name_password(){
 	if(<% check_acorpw(); %> == 1){
 		danger_count++;
 		document.getElementById('login_password').innerHTML = "<a href='Advanced_System_Content.asp' target='_blank'><#checkbox_No#></a>";
-		document.getElementById('login_password').className = "status_no";	
+		document.getElementById('login_password').className = "status_no";
 		document.getElementById('login_password').onmouseover = function(){overHint(10);}
 		document.getElementById('login_password').onmouseout = function(){nd();}
 	}
@@ -530,7 +529,7 @@ function check_wireless_password(){
 
 	if(nScore >= 0 && nScore < 40){
 		danger_count++;
-		document.getElementById('score').className = "status_no";			
+		document.getElementById('score').className = "status_no";
 	}
 	else if(nScore >= 0 && nScore < 40){
 		risk_count++;
@@ -538,8 +537,8 @@ function check_wireless_password(){
 	}
 	else if(nScore >= 60 && nScore <= 100){
 		safe_count++;
-		document.getElementById('score').className = "status_yes";		
-	}	
+		document.getElementById('score').className = "status_yes";
+	}
 
 	oScore.innerHTML = sComplexity;
 	if(document.getElementById('score').className == "status_no")
@@ -558,7 +557,7 @@ function check_wireless_encryption(){
 	else{
 		danger_count++;
 		document.getElementById('wireless_encryption').innerHTML = "<a href='Advanced_Wireless_Content.asp' target='_blank'><#PASS_score1#></a>";
-		document.getElementById('wireless_encryption').className = "status_no";	
+		document.getElementById('wireless_encryption').className = "status_no";
 		document.getElementById('wireless_encryption').onmouseover = function(){overHint(12);}
 		document.getElementById('wireless_encryption').onmouseout = function(){nd();}
 	}
@@ -574,7 +573,7 @@ function check_WPS(){
 	else{
 		risk_count++;
 		document.getElementById('wps_status').innerHTML = "<a href='Advanced_WWPS_Content.asp' target='_blank'><#checkbox_No#></a>";
-		document.getElementById('wps_status').className = "status_no_risk";	
+		document.getElementById('wps_status').className = "status_no_risk";
 		document.getElementById('wps_status').onmouseover = function(){overHint(25);}
 		document.getElementById('wps_status').onmouseout = function(){nd();}
 	}
@@ -583,7 +582,7 @@ function check_WPS(){
 function check_upnp(){
 	var wan0_upnp_enable = document.form.wan0_upnp_enable.value;
 	var wan1_upnp_enable = document.form.wan1_upnp_enable.value;
-	
+
 	if(dualwan_enabled){
 		if(wan0_upnp_enable == 0 && wan1_upnp_enable == 0){
 			safe_count++;
@@ -611,7 +610,7 @@ function check_upnp(){
 			document.getElementById('upnp_service').onmouseover = function(){overHint(13);}
 			document.getElementById('upnp_service').onmouseout = function(){nd();}
 		}
-	
+
 	}
 }
 
@@ -701,7 +700,7 @@ function check_port_forwarding(){
 
 function check_ftp_anonymous(){
 	var ftp_account_mode = document.form.st_ftp_mode.value;		//1: shared mode, 2: account mode
-	
+
 	if(ftp_account_mode == 1){
 		risk_count++;
 		document.getElementById('ftp_account').innerHTML = "<a href='Advanced_AiDisk_ftp.asp' target='_blank'><#checkbox_No#></a>";
@@ -718,7 +717,7 @@ function check_ftp_anonymous(){
 
 function check_samba_anonymous(){
 	var samba_account_mode = document.form.st_samba_mode.value;		//1: shared mode, 4: account mode
-	
+
 	if(samba_account_mode == 1){
 		risk_count++;
 		document.getElementById('samba_account').innerHTML = "<a href='Advanced_AiDisk_samba.asp' target='_blank'><#checkbox_No#></a>";
@@ -763,7 +762,7 @@ function check_TM_feature(){
 		document.getElementById('vp_service').onmouseover = function(){overHint(22);}
 		document.getElementById('vp_service').onmouseout = function(){nd();}
 	}
-	
+
 	if(wrs_cc_enable == 1 && document.form.wrs_protect_enable.value == 1){
 		safe_count++;
 		document.getElementById('cc_service').innerHTML = "<#checkbox_Yes#>";
@@ -779,42 +778,13 @@ function check_TM_feature(){
 }
 
 function show_tm_eula(){
-	if(document.form.preferred_lang.value == "JP"){
-		$.get("JP_tm_eula.htm", function(data){
-			document.getElementById('agreement_panel').innerHTML= data;
-			adjust_TM_eula_height("agreement_panel");
-		});
-	}
-	else if(document.form.preferred_lang.value == "TW"){
-		$.get("tm_eula_TC.htm", function(data){
-			document.getElementById('agreement_panel').innerHTML= data;
-			adjust_TM_eula_height("agreement_panel");
-		});
-	}
-	else if(document.form.preferred_lang.value == "CN"){
-		$.get("tm_eula_SC.htm", function(data){
-			document.getElementById('agreement_panel').innerHTML= data;
-			adjust_TM_eula_height("agreement_panel");
-		});
-	}
-	else if(document.form.preferred_lang.value == "FR"){
-		$.get("tm_eula_FR.htm", function(data){
-			document.getElementById('agreement_panel').innerHTML= data;
-			adjust_TM_eula_height("agreement_panel");
-		});
-	}
-	else if(document.form.preferred_lang.value == "RU"){
-		$.get("tm_eula_RU.htm", function(data){
-			document.getElementById('agreement_panel').innerHTML= data;
-			adjust_TM_eula_height("agreement_panel");
-		});
-	}																			
-	else{
-		$.get("tm_eula.htm", function(data){
-			document.getElementById('agreement_panel').innerHTML= data;
-			adjust_TM_eula_height("agreement_panel");
-		});
-	}
+	$.get("tm_eula.htm", function(data){
+		document.getElementById('agreement_panel').innerHTML= data;
+		var url = "https://www.asus.com/Microsite/networks/Trend_Micro_EULA/" + document.form.preferred_lang.value;
+		$("#eula_url").attr("href",url);
+		adjust_TM_eula_height("agreement_panel");
+	});
+
 	dr_advise();
 	cal_panel_block("agreement_panel", 0.25);
 	$("#agreement_panel").fadeIn(300);
@@ -856,7 +826,7 @@ function apply_alert_preference(){
 	var address_temp = document.getElementById('mail_address').value;
 	var account_temp = document.getElementById('mail_address').value.split("@");
 	var authpass_temp = document.getElementById('mail_password').value;
-	
+
 	var mail_bit = 0;
 	var server_index = document.getElementById("mail_provider").value;
 
@@ -870,7 +840,7 @@ function apply_alert_preference(){
 		return;
 	}
 
-	if(address_temp.indexOf('@') != -1){	
+	if(address_temp.indexOf('@') != -1){
 		if(account_temp[1] != "gmail.com" && account_temp[1] != "aol.com" && account_temp[1] != "qq.com" && account_temp[1] != "163.com"){
 			alert("Wrong mail domain");
 			document.getElementById('mail_address').focus();
@@ -879,30 +849,30 @@ function apply_alert_preference(){
 
 		if (document.form.PM_MY_EMAIL.value != address_temp)
 			document.form.action_script.value += ";email_conf;send_confirm_mail";
-				
-		document.form.PM_MY_EMAIL.value = address_temp;	
+
+		document.form.PM_MY_EMAIL.value = address_temp;
 	}
 	else{
 		if (document.form.PM_MY_EMAIL.value != address_temp)
 			document.form.action_script.value += ";email_conf;send_confirm_mail";
-			
+
 		document.form.PM_MY_EMAIL.value = account_temp[0] + "@" +smtpList[server_index].smtpDomain;
 	}
-	
+
 	if(document.getElementById("mal_website_item").checked)
 		mail_bit += 1;
-	
+
 	if(document.getElementById("vp_item").checked)
 		mail_bit += 2;
-	
+
 	if(document.getElementById("cc_item").checked)
 		mail_bit += 4;
-	
+
 	document.form.wrs_mail_bit.value = mail_bit;
 	document.form.PM_SMTP_AUTH_USER.value = account_temp[0];
-	document.form.PM_SMTP_AUTH_PASS.value = document.getElementById('mail_password').value;	
-	document.form.PM_SMTP_SERVER.value = smtpList[server_index].smtpServer;	
-	document.form.PM_SMTP_PORT.value = smtpList[server_index].smtpPort;	
+	document.form.PM_SMTP_AUTH_PASS.value = document.getElementById('mail_password').value;
+	document.form.PM_SMTP_SERVER.value = smtpList[server_index].smtpServer;
+	document.form.PM_SMTP_PORT.value = smtpList[server_index].smtpPort;
 	$('#alert_preference').fadeOut(100);
 	document.form.submit();
 }
@@ -911,10 +881,10 @@ function parse_wrs_mail_bit(){
 	var quot = document.form.wrs_mail_bit.value;
 	var mail_bit_array =  new Array();
 	for(i=0;i<3;i++){
-		mail_bit_array[i] = quot%2; 
-		quot = parseInt(quot/2);	
+		mail_bit_array[i] = quot%2;
+		quot = parseInt(quot/2);
 	}
-	
+
 	document.getElementById("mal_website_item").checked =  mail_bit_array[0] == 1 ? true : false;
 	document.getElementById("vp_item").checked =  mail_bit_array[1] == 1 ? true : false;
 	document.getElementById("cc_item").checked =  mail_bit_array[2] == 1 ? true : false;
@@ -955,7 +925,7 @@ function shadeHandle(flag){
 			<td>
 				<div class="weakness_router_status"><#AiProtection_scan#></div>
 			</td>
-		</tr>	
+		</tr>
 		<tr>
 			<td>
 				<div>
@@ -964,43 +934,43 @@ function shadeHandle(flag){
 							<th><#AiProtection_scan_item1#> -</th>
 							<td>
 								<div id="login_password"></div>
-							</td>					
+							</td>
 						</tr>
 						<tr>
 							<th><#AiProtection_scan_item2#> -</th>
 							<td>
 								<div id="score"></div>
-							</td>			
+							</td>
 						</tr>
 						<tr>
 							<th><#AiProtection_scan_item3#> -</th>
 							<td>
 								<div id="wireless_encryption"></div>
-							</td>			
+							</td>
 						</tr>
 						<tr>
 							<th><#WPS_disabled#> -</th>
 							<td>
 								<div id="wps_status"></div>
-							</td>			
+							</td>
 						</tr>
 						<tr>
 							<th><#AiProtection_scan_item4#> -</th>
 							<td>
 								<div id="upnp_service"></div>
-							</td>	
+							</td>
 						</tr>
 						<tr>
 							<th><#AiProtection_scan_item5#> -</th>
 							<td>
 								<div id="access_from_wan"></div>
-							</td>	
+							</td>
 						</tr>
 						<tr>
 							<th><#AiProtection_scan_item6#> -</th>
 							<td>
 								<div id="ping_from_wan"></div>
-							</td>	
+							</td>
 						</tr>
 						<tr>
 							<th><#AiProtection_scan_item7#> -</th>
@@ -1018,42 +988,42 @@ function shadeHandle(flag){
 							<th><#AiProtection_scan_item9#> -</th>
 							<td>
 								<div id="port_forwarding"></div>
-							</td>		
+							</td>
 						</tr>
 						<tr>
 							<th><#AiProtection_scan_item10#> -</th>
 							<td>
 								<div id="ftp_account"></div>
-							</td>		
+							</td>
 						</tr>
 						<tr>
 							<th><#AiProtection_scan_item11#> -</th>
 							<td>
 								<div id="samba_account"></div>
-							</td>		
+							</td>
 						</tr>
 						<tr>
 							<th><#AiProtection_scan_item12#> -</th>
 							<td>
 								<div id="wrs_service"></div>
-							</td>	
+							</td>
 						</tr>
 						<tr>
 							<th><#AiProtection_scan_item13#> -</th>
 							<td>
 								<div id="vp_service"></div>
-							</td>						
+							</td>
 						</tr>
 						<tr>
 							<th><#AiProtection_detection_blocking#> -</th>
 							<td>
 								<div id="cc_service"></div>
-							</td>						
+							</td>
 						</tr>
 					</table>
 				</div>
 			</td>
-		</tr>	
+		</tr>
 		<tr>
 			<td>
 				<table style="margin-top:10px;margin-left:auto;margin-right:auto;">
@@ -1076,8 +1046,8 @@ function shadeHandle(flag){
 	<table style="width:99%">
 		<tr>
 			<th>
-				<div style="font-size:16px;"><#AiProtection_alert_pref#></div>		
-			</th>		
+				<div style="font-size:16px;"><#AiProtection_alert_pref#></div>
+			</th>
 		</tr>
 			<td>
 				<div class="formfontdesc" style="font-style: italic;font-size: 14px;"><#AiProtection_HomeDesc1#></div>
@@ -1090,10 +1060,10 @@ function shadeHandle(flag){
 						<td>
 							<div>
 								<select class="input_option" id="mail_provider">
-									<option value="0">Google</option>							
-									<option value="1">AOL</option>							
-									<option value="2">QQ</option>							
-									<option value="3">163</option>							
+									<option value="0">Google</option>
+									<option value="1">AOL</option>
+									<option value="2">QQ</option>
+									<option value="3">163</option>
 								</select>
 							</div>
 						</td>
@@ -1117,7 +1087,7 @@ function shadeHandle(flag){
 					<tr>
 						<th><#Notification_Item#></th>
 						<td>
-							<div>							
+							<div>
 								<input type="checkbox" class="" id="mal_website_item" value="">
 								<label><#AiProtection_sites_blocking#></label>
 								<input type="checkbox" class="" id="vp_item" value="">
@@ -1136,7 +1106,7 @@ function shadeHandle(flag){
 					<input class="button_gen" type="button" onclick="close_alert_preference();" value="<#CTL_close#>">
 					<input class="button_gen_long" type="button" onclick="apply_alert_preference();" value="<#CTL_apply#>">
 				</div>
-			</td>		
+			</td>
 		</tr>
 	</table>
 </div>
@@ -1181,17 +1151,17 @@ function shadeHandle(flag){
 
 <table class="content" align="center" cellpadding="0" cellspacing="0" >
 	<tr>
-		<td width="17">&nbsp;</td>		
-		<td valign="top" width="202">				
-			<div  id="mainMenu"></div>	
-			<div  id="subMenu"></div>		
-		</td>					
+		<td width="17">&nbsp;</td>
+		<td valign="top" width="202">
+			<div  id="mainMenu"></div>
+			<div  id="subMenu"></div>
+		</td>
 		<td valign="top">
-			<div id="tabMenu" class="submenuBlock"></div>	
-		<!--===================================Beginning of Main Content===========================================-->		
+			<div id="tabMenu" class="submenuBlock"></div>
+		<!--===================================Beginning of Main Content===========================================-->
 			<table width="98%" border="0" align="left" cellpadding="0" cellspacing="0" class="content_bg">
 				<tr>
-					<td valign="top" >		
+					<td valign="top" >
 						<table width="730px" border="0" cellpadding="4" cellspacing="0" class="FormTitle" id="FormTitle">
 							<tbody>
 							<tr>
@@ -1205,7 +1175,7 @@ function shadeHandle(flag){
 												</td>
 											</tr>
 										</table>
-									</div>									
+									</div>
 									<div style="margin-left:5px;margin-top:10px;margin-bottom:10px"><img src="/images/New_ui/export/line_export.png"></div>
 									<div id="PC_desc">
 										<table width="700px" style="margin-left:25px;">
@@ -1233,10 +1203,10 @@ function shadeHandle(flag){
 																	<img id="scenario_img" src="/images/New_ui/Home_Protection_Scenario.png">
 																</div>
 															</td>
-														</tr>												
+														</tr>
 													</table>
 												</td>
-											</tr>									
+											</tr>
 										</table>
 									</div>
 									<div style="margin:10px;">
@@ -1252,7 +1222,7 @@ function shadeHandle(flag){
 																	if(document.form.TM_EULA.value == 0){
 																		show_tm_eula();
 																		return;
-																	}																
+																	}
 
 																	document.form.wrs_protect_enable.value = "1";
 																	shadeHandle("1");
@@ -1264,11 +1234,11 @@ function shadeHandle(flag){
 																	applyRule();
 																}
 															);
-														</script>			
+														</script>
 													</div>
-												</td>			
-											</tr>				
-										</table>										
+												</td>
+											</tr>
+										</table>
 									</div>
 									<!--=====Beginning of Main Content=====-->
 									<div style="margin-top:5px;">
@@ -1300,8 +1270,8 @@ function shadeHandle(flag){
 														<div id="router_scan_count" style="width:50px;height:50px;background-color:#ED1C24;border-radius:50%;margin-left:45px;line-height: 50px;font-size:30px;"></div>
 														<div id="router_scan_state" style="font-size: 16px;padding-top:5px;"></div>
 													</div>
-												</td>												
-											</tr>						
+												</td>
+											</tr>
 											<tr style="height:10px;"></tr>
 											<tr class="block_bg block_line" style="height:120px;">
 												<td style="border-radius:10px 0px 0px 10px;">
@@ -1314,7 +1284,7 @@ function shadeHandle(flag){
 													<div>
 														<div style="font-size:18px;text-shadow:1px 1px 0px black;"><#AiProtection_sites_blocking#></div>
 														<div style="font-style: italic;font-size: 14px;color:#FC0;height:auto;padding-top:5px;"><#AiProtection_sites_block_desc#></div>
-													</div>								
+													</div>
 												</td>
 												 <td width="6px">
 													<div><img src="/images/line.png"></div>
@@ -1367,7 +1337,7 @@ function shadeHandle(flag){
 													<div>
 														<div style="font-size:18px;text-shadow:1px 1px 0px black;"><#AiProtection_two-way_IPS#></div>
 														<div style="font-style: italic;font-size: 14px;color:#FC0;height:auto;padding-top:5px;"><#AiProtection_two-way_IPS_desc#></div>
-													</div>								
+													</div>
 												</td>
 												 <td width="6px">
 													<div><img src="/images/line.png"></div>
@@ -1379,16 +1349,16 @@ function shadeHandle(flag){
 														<div class="iphone_switch_container" style="height:32px; width:74px; position: relative; overflow: hidden">
 															<script type="text/javascript">
 																$('#radio_vp_enable').iphoneSwitch('<% nvram_get("wrs_vp_enable"); %>',
-																	function(){																					
+																	function(){
 																		document.form.wrs_vp_enable.value = 1;
-																		applyRule();																				
+																		applyRule();
 																	},
 																	function(){
 																		document.form.wrs_vp_enable.value = 0;
 																		applyRule();
 																	}
 																);
-															</script>			
+															</script>
 														</div>
 													</div>
 												</td>
@@ -1404,10 +1374,10 @@ function shadeHandle(flag){
 															<div id="vp_time" style="color:#A1A7A8"></div>
 														</div>
 													</div>
-												</td>										
+												</td>
 											</tr>
-											
-											<tr style="height:10px;"></tr>										
+
+											<tr style="height:10px;"></tr>
 											<tr class="block_bg" style="height:120px;">
 												<td style="border-radius:10px 0px 0px 10px;">
 													<div class="AiProtection_03"></div>
@@ -1429,16 +1399,16 @@ function shadeHandle(flag){
 														<div class="iphone_switch_container" style="height:32px; width:74px; position: relative; overflow: hidden">
 															<script type="text/javascript">
 																$('#radio_cc_enable').iphoneSwitch('<% nvram_get("wrs_cc_enable"); %>',
-																	function(){																
-																		document.form.wrs_cc_enable.value = 1;	
-																		applyRule();	
+																	function(){
+																		document.form.wrs_cc_enable.value = 1;
+																		applyRule();
 																	},
 																	function(){
 																		document.form.wrs_cc_enable.value = 0;
 																		applyRule();
 																	}
 																);
-															</script>			
+															</script>
 														</div>
 													</div>
 												</td>
@@ -1466,13 +1436,13 @@ function shadeHandle(flag){
 									<div style="width:135px;height:55px;margin: -10px 0 0 600px;background-image:url('images/New_ui/tm_logo_power.png');"></div>
 								</td>
 							</tr>
-							</tbody>	
+							</tbody>
 						</table>
-					</td>         
+					</td>
 				</tr>
-			</table>				
-		<!--===================================Ending of Main Content===========================================-->		
-		</td>		
+			</table>
+		<!--===================================Ending of Main Content===========================================-->
+		</td>
 		<td width="10" align="center" valign="top">&nbsp;</td>
 	</tr>
 </table>

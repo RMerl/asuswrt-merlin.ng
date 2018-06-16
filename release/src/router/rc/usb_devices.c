@@ -1172,7 +1172,7 @@ int write_3g_conf(FILE *fp, int dno, int aut, const unsigned int vid, const unsi
 			fprintf(fp, "DefaultVendor=0x%04x\n",	0x12d1);
 			fprintf(fp, "DefaultProduct=0x%04x\n",	0x1446);
 			fprintf(fp, "TargetVendor=0x%04x\n",	0x12d1);
-			fprintf(fp, "TargetProduct= \"1001,1406,140b,140c,1412,141b,14ac\"\n");
+			fprintf(fp, "TargetProductList=\"%s\"\n",	"1001,1406,140b,140c,1412,141b,14ac");
 			fprintf(fp, "CheckSuccess=%d\n",	20);
 			fprintf(fp, "MessageContent=%s\n",	"55534243123456780000000000000011062000000100000000000000000000");
 			break;

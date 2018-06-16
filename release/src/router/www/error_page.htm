@@ -264,9 +264,7 @@ var header_info = [<% get_header_info(); %>];
 var location_org = get_protocol() + "//" + header_info[0].host;
 
 function initial(){
-	<% login_state_hook(); %>
-	var LoginIP = login_ip_str();
-	var nowIP = login_ip_str_now();
+	var is_logined = [<% is_logined_hook(); %>][0];
 	var html_code = '';
 	var url_flag = "";
 	var html_code_notlogin = "<ul><li>Please check with your network administrator.</li></ul>";	
@@ -423,7 +421,7 @@ function initial(){
 	else if(casenum == 8){
 		$("#page_title").html("<#web_redirect_case8_title#>");	
 		//showtext($("#failReason1")[0], "<#APSurvey_action_ConnectingStatus0#>");	
-		if(LoginIP != "0.0.0.0" && LoginIP != nowIP){
+		if(!is_logined){
 			html_code = html_code_notlogin;
 			$("#wanLink").hide();
 		}

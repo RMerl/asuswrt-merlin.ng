@@ -290,11 +290,14 @@
 	left: 0;
 	right: 0;
 	bottom: 0;
-	background-size: 70px 60px;
+	width: 60px;
+	height: 60px;
+	background-size: contain;
 	background-position: 50% 50%;
 }
 .amesh_router_image_web.card {
-	background-size: 85px 75px;
+	width: 75px;
+	height: 75px;
 }
 .vertical_line {
 	background: #202424; /* Old browsers */
@@ -716,6 +719,26 @@
 	margin-top: 20px;
 	margin-left: 380px;
 }
+
+.aimesh_illustration_text.lan_to_wan.for_dsl {
+	margin-left: 200px;
+}
+.aimesh_illustration_text.modem.for_dsl {
+	margin-left: 100px;
+}
+.aimesh_illustration_text.router.for_dsl {
+	margin-left: 40px;
+}
+.aimesh_illustration_text.node.for_dsl {
+	margin-left: 320px;
+}
+.aimesh_illustration_text.backhaul_router.for_dsl {
+	margin-left: 35px;
+}
+.aimesh_illustration_text.backhaul_node.for_dsl {
+	margin-left: 300px;
+}
+
 .aimesh_illustration_icon {
 	background-image: url(/images/New_ui/amesh/AiMesh_component.svg);
 	background-repeat: no-repeat;
@@ -786,6 +809,29 @@
 	margin-left: 376px;
 	background-position: -313px -15px;
 }
+
+.aimesh_illustration_icon.router.for_dsl {
+	margin-left: 80px;
+}
+.aimesh_illustration_icon.router_right.for_dsl {
+	margin-left: 300px;
+}
+.aimesh_illustration_icon.ethernet_lan.for_dsl {
+	margin-left: 132px;
+}
+.aimesh_illustration_icon.ethernet_wan.for_dsl {
+	margin-left: 277px;
+}
+.aimesh_illustration_icon.wifi.for_dsl {
+	margin-left: 240px;
+}
+.aimesh_illustration_icon.router_back.for_dsl {
+	margin-left: 80px;
+}
+.aimesh_illustration_icon.router_back_right.for_dsl {
+	margin-left: 300px;
+}
+
 .aimesh_node_close_icon {
 	float: right;
 	background-image: url(/images/button-close.gif);

@@ -167,7 +167,7 @@ function initial(){
 		html = "";
 		html += "<tr style='height:15px;'></tr>";
 		html += "<tr>";
-		html += "<td class='aimesh_node_category_bg' colspan='2'>AiMesh router</td>";/*untranslated*/
+		html += "<td class='aimesh_node_category_bg' colspan='2'><#AiMesh_Router#></td>";
 		html += "</tr>";
 		html += "<tr>";
 		html += "<th>";
@@ -175,9 +175,9 @@ function initial(){
 		html += "</th>";
 		html += "</th>";
 		html += "<td id='amas_" + mac_id + "'>";
-		html += "<div id='current_version'>Current Version : " + FWString + "</div>";/*untranslated*/
+		html += "<div id='current_version'><#ADSL_FW_item1#> : " + FWString + "</div>";
 		html += "<div>";
-		html += "Manual Firmware Update : ";/*untranslated*/
+		html += "<#FW_manual_update#> : ";
 		html += "<span class='aimesh_fw_update_offline' style='margin-left:0px;' onclick='open_AiMesh_router_fw_upgrade();'><#CTL_upload#></span>";
 		html += "</div>";
 		html += "<div id='checkNewFW' class='checkNewFW' style='display:none;'><#ADSL_FW_item3#> : <span class='checkFWReuslt'></span></div>";
@@ -207,7 +207,7 @@ function initial(){
 				html = "";
 				if(!have_node) {
 					html += "<tr>";
-					html += "<td class='aimesh_node_category_bg' colspan='2'>AiMesh node</td>";/*untranslated*/
+					html += "<td class='aimesh_node_category_bg' colspan='2'><#AiMesh_Node#></td>";
 					html += "</tr>";
 				}
 				html += "<tr>";
@@ -217,7 +217,7 @@ function initial(){
 				html += "<#AiMesh_NodeLocation#> : " + alias;
 				html += "</th>";
 				html += "<td id='amas_" + mac_id + "'>";
-				html += "<div id='current_version'>Current Version : " + fwver + "</div>";/*untranslated*/
+				html += "<div id='current_version'><#ADSL_FW_item1#> : " + fwver + "</div>";
 				html += "<div id='manual_firmware_update'>";
 				html += gen_AiMesh_fw_status(check_AiMesh_fw_version(fwver), ip, online);
 				html += "</div>";
@@ -948,7 +948,7 @@ function show_offline_msg(_checkFlag) {
 	var $amesh_hint_offline = $('<div>');
 	$amesh_hint_offline.addClass("amesh_hint_text");
 	$amesh_hint_offline.css("color", "#FC0");
-	$amesh_hint_offline.html("There are offline AiMesh node in your AiMesh system and offline AiMesh node will not able to be updated. (Online AiMesh node could still be updated.)");/*untranslated*/
+	$amesh_hint_offline.html("<#FW_note_AiMesh_offline#>");
 	$offlineHtml.append($amesh_hint_offline);
 
 	var $amesh_hint_text = $('<div>');
@@ -1110,7 +1110,7 @@ function update_AiMesh_fw() {
 					var ip = get_cfg_clientlist[idx].ip;
 					var online = get_cfg_clientlist[idx].online;
 					var mac_id = mac.replace(/:/g, "");
-					$("#amas_" + mac_id + "").children("#current_version").html("Current Version : " + fwver + "");/* untranslated */
+					$("#amas_" + mac_id + "").children("#current_version").html("<#ADSL_FW_item1#> : " + fwver + "");
 					$("#amas_" + mac_id + "").children("#manual_firmware_update").empty();
 					$("#amas_" + mac_id + "").children("#manual_firmware_update").html(gen_AiMesh_fw_status(check_AiMesh_fw_version(fwver), ip, online));
 				}
@@ -1121,7 +1121,7 @@ function update_AiMesh_fw() {
 function gen_AiMesh_fw_status(_manual_status, _node_ip, _online) {
 	var html = "";
 	if(_manual_status) {
-		html += "Manual Firmware Update : ";/*untranslated*/
+		html += "<#FW_manual_update#> : ";
 		if(_online == "0") {
 			html += "<span class='aimesh_fw_update_offline' style='margin-left:0px;' onclick='show_offline_msg(false);'><#Clientlist_OffLine#></span>";
 			amesh_offline_flag = true;
@@ -1131,7 +1131,7 @@ function gen_AiMesh_fw_status(_manual_status, _node_ip, _online) {
 		}
 	}
 	else {
-		html += "<span class='aimesh_fw_update_offline' style='margin-left:0px;text-decoration:none;cursor:none;'>This AiMesh node is not compatible with manual firmware update, please click \"Check\" to do firmware upgrade over the air.</span>";/*untranslated*/
+		html += "<span class='aimesh_fw_update_offline' style='margin-left:0px;text-decoration:none;cursor:none;'><#FW_note_AiMesh_auto#></span>";
 	}
 	return html;
 }
@@ -1315,7 +1315,7 @@ function check_AiMesh_fw_version(_fw) {
 			</tr>			
 		</table>
 		<div class="aimesh_manual_fw_update_hint" style="display:none;">
-			Note : A manual firmware update will only update the selected AiMesh router / node. If you are using the AiMesh system, please make sure you are uploading the correct AiMesh firmware version for the each applicable router / node.<!-- Untranslated -->
+			<#FW_note#> <#FW_note_AiMesh#>
 		</div>
 		
 </form>

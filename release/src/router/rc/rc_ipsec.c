@@ -388,7 +388,7 @@ void ipsec_prof_fill(int prof_idx, char *p_data, ipsec_prof_type_t prof_type)
 void ipsec_prof_fill_ext(int prof_idx, char *p_data, ipsec_prof_type_t prof_type)
 {
 	int i = 1;
-    char *p_end = NULL, *p_tmp = NULL, *ptr=NULL;;
+    char *p_end = NULL;
     p_end = p_data;
 
     /*encryption_p1_ext*/
@@ -1242,14 +1242,42 @@ char* get_ike_esp_bit_convert( char *str, int maxNum, int n, int type)
 	}
 	return str;
 }
+char* get_ike_esp_bit_convert1( char *str, int n1, int n2, int n3)
+{
+	int i,j,k;
+	char tmpStr[SZ_MIN];
+	memset(str, 0, sizeof(str));
+	memset(tmpStr, 0, sizeof(tmpStr));
+	for(i = 0; i < ENCRYPTION_TYPE_MAX_NUM; i++){
+		for(j = 0; j < HASH_TYPE_MAX_NUM; j++){
+			if(n3 !=0){
+				for(k = 0; k < DH_GROUP_MAX_NUM; k++){
+					if(((n1 >> i) & 0x1) && ((n2 >> j) & 0x1) && ((n3 >> k) & 0x1)){
+						sprintf(tmpStr, ",%s-%s-%s", encryp[i], hash[j], dh_group[k]);
+						strcat(str, tmpStr);
+					}
+				}
+			}
+			else{
+				if(((n1 >> i) & 0x1) && ((n2 >> j) & 0x1)){
+					sprintf(tmpStr, ",%s-%s", encryp[i], hash[j]);
+					strcat(str, tmpStr);
+				}
+			}
+		}
+	}
+	return str;
+}
 
 void ipsec_conf_phase1_set(FILE *fp, int prof_idx, ipsec_prof_type_t prof_type)
 {
-	char str[128];
+	char str[1024];
+	memset(str, 0, sizeof(str));
     fprintf(fp, "  ikelifetime=%d\n", prof[prof_type][prof_idx].keylife_p1);
-	fprintf(fp, "  ike=%s", get_ike_esp_bit_convert(str, ENCRYPTION_TYPE_MAX_NUM, prof[prof_type][prof_idx].encryption_p1_ext, FLAG_IKE_ENCRYPT) + 1);
-	fprintf(fp, "%s", get_ike_esp_bit_convert(str, HASH_TYPE_MAX_NUM, prof[prof_type][prof_idx].hash_p1_ext, FLAG_ESP_HASH));
-	fprintf(fp, "%s\n", get_ike_esp_bit_convert(str, DH_GROUP_MAX_NUM, prof[prof_type][prof_idx].dh_group, FLAG_DH_GROUP));
+	fprintf(fp, "  ike=%s!\n", get_ike_esp_bit_convert1(str, prof[prof_type][prof_idx].encryption_p1_ext, prof[prof_type][prof_idx].hash_p1_ext, prof[prof_type][prof_idx].dh_group) + 1);
+	//fprintf(fp, "  ike=%s", get_ike_esp_bit_convert(str, ENCRYPTION_TYPE_MAX_NUM, prof[prof_type][prof_idx].encryption_p1_ext, FLAG_IKE_ENCRYPT) + 1);
+	//fprintf(fp, "%s", get_ike_esp_bit_convert(str, HASH_TYPE_MAX_NUM, prof[prof_type][prof_idx].hash_p1_ext, FLAG_ESP_HASH));
+	//fprintf(fp, "%s\n", get_ike_esp_bit_convert(str, DH_GROUP_MAX_NUM, prof[prof_type][prof_idx].dh_group, FLAG_DH_GROUP));
 
     /*if((ENCRYPTION_TYPE_MAX_NUM != prof[prof_type][prof_idx].encryption_p1) &&
        (HASH_TYPE_MAX_NUM != prof[prof_type][prof_idx].hash_p1)){
@@ -1275,8 +1303,9 @@ void ipsec_conf_phase2_set(FILE *fp, int prof_idx, ipsec_prof_type_t prof_type)
 {
 	char str[128];
     fprintf(fp, "  keylife=%d\n", prof[prof_type][prof_idx].keylife_p2);
-	fprintf(fp, "  esp=%s", get_ike_esp_bit_convert(str, ENCRYPTION_TYPE_MAX_NUM, prof[prof_type][prof_idx].encryption_p2_ext, FLAG_IKE_ENCRYPT) + 1);
-	fprintf(fp, "%s\n", get_ike_esp_bit_convert(str, HASH_TYPE_MAX_NUM, prof[prof_type][prof_idx].hash_p2_ext, FLAG_ESP_HASH));
+	fprintf(fp, "  esp=%s!\n", get_ike_esp_bit_convert1(str, prof[prof_type][prof_idx].encryption_p2_ext, prof[prof_type][prof_idx].hash_p2_ext, 0) + 1);
+	//fprintf(fp, "  esp=%s", get_ike_esp_bit_convert(str, ENCRYPTION_TYPE_MAX_NUM, prof[prof_type][prof_idx].encryption_p2_ext, FLAG_IKE_ENCRYPT) + 1);
+	//fprintf(fp, "%s\n", get_ike_esp_bit_convert(str, HASH_TYPE_MAX_NUM, prof[prof_type][prof_idx].hash_p2_ext, FLAG_ESP_HASH));
 
     /*if((ENCRYPTION_TYPE_MAX_NUM != prof[prof_type][prof_idx].encryption_p2) && 
        (HASH_TYPE_MAX_NUM != prof[prof_type][prof_idx].hash_p2)){
@@ -1388,9 +1417,9 @@ void rc_ipsec_topology_set()
 }
 void rc_ipsec_nvram_convert_check()
 {
-	int i, rc = 0, prof_count = 0;
+	int i, prof_count = 0;
 	char buf[SZ_MIN], buf_ext[SZ_MIN];
-	char *nv=NULL, *nvp=NULL, *b=NULL;
+	char *nvp=NULL, *b=NULL;
 	for(prof_count = PROF_CLI; prof_count < PROF_ALL; prof_count++){
 	    for(i = 1; i <= MAX_PROF_NUM; i++){
 			if(PROF_SVR == prof_count){
@@ -1401,10 +1430,10 @@ void rc_ipsec_nvram_convert_check()
 				sprintf(&buf[0], "ipsec_profile_client_%d", i);
 				sprintf(&buf_ext[0], "ipsec_profile_client_%d_ext", i);
 			}
-			if(NULL != strcmp(nvram_safe_get(&buf[0]), "") && NULL == strcmp(nvram_safe_get(&buf_ext[0]),"")){
-				nv = nvp = strdup(nvram_safe_get(&buf[0]));
+			if(0 != strcmp(nvram_safe_get(&buf[0]), "") && 0 == strcmp(nvram_safe_get(&buf_ext[0]),"")){
+				nvp = strdup(nvram_safe_get(&buf[0]));
 				b = strsep(&nvp, ">");
-				if(NULL == strcmp(b, "4"))
+				if(0 == strcmp(b, "4"))
 					nvram_set(&buf_ext[0], "0>0>0>0>0");	/* none */
 				else
 					nvram_set(&buf_ext[0], "6>6>255>6>6");	/* 3des-aes128-sha1-sha256-modp768-modp1024-modp1536-modp2048-modp3072-modp4096-modp6144-modp8192 */
@@ -1736,7 +1765,7 @@ void rc_ipsec_topology_set_XML()
 					strcat_r(flag_buf," require-cfgmode allow-cfgmode",flag_buf);
 				if(IKE_AGGRESSIVE_MODE == prof[prof_count][i].exchange)
 					strcat_r(flag_buf," aggressive-mode",flag_buf);
-				if(NULL == strcmp(prof[prof_count][i].tun_type,"transport"))
+				if(0 == strcmp(prof[prof_count][i].tun_type,"transport"))
 					strcat_r(flag_buf," transport",flag_buf);
 				
 				if(0 != strlen(flag_buf))
@@ -1794,7 +1823,7 @@ void rc_ipsec_topology_set_XML()
 				
 				if(0 != prof[prof_count][i].keylife_p2)
 					fprintf(fp,"      <life type=\"seconds\">%d</life>\n", prof[prof_count][i].keylife_p2);	
-				if(NULL != strcmp(prof[prof_count][i].remote_gateway, "null"))
+				if(0 != strcmp(prof[prof_count][i].remote_gateway, "null"))
 					fprintf(fp,"        <peer>%s</peer>\n", prof[prof_count][i].remote_gateway);
 				fprintf(fp,"      <local-ip>%s</local-ip>\n", prof[prof_count][i].local_pub_ip);
 				fprintf(fp,"      <ike-versions>%d</ike-versions>\n", prof[prof_count][i].ike);

@@ -959,7 +959,8 @@ a{
 .aimesh_illustration_icon.connect_left {
 	width: 25%;
 	background-size: 700%;
-	animation: connect_left_change 9s steps(1) infinite;
+	/*animation: connect_left_change 9s steps(1) infinite;*/
+	background-position: 60% 70%;
 	position: absolute;
 	float: none;
 	left: 0%;
@@ -983,7 +984,8 @@ a{
 .aimesh_illustration_icon.computer_content {
 	width: 45%;
 	background-size: 480%;
-	animation: computer_content_change 9s steps(1) infinite;
+	/*animation: computer_content_change 9s steps(1) infinite;*/
+	background-position: 99% 98.5%;
 	position: absolute;
 	float: none;
 	left: 25%;

@@ -434,41 +434,23 @@ function Check_multi_range(obj, mini, maxi){
 }
 
 // Viz add 2011.06 Load default qos rule from XML
-var url_link = "/ajax_qos_default.asp";
+var url_link = "/ajax_qos_default.xml";
 function load_QoS_rule(){		
 	free_options(document.form.qos_default_sel);
-	//add_option(document.form.qos_default_sel, "<#Select_menu_default#>", 0, 1);	
 	loadXMLDoc(url_link);		
 }
 
-var xmlhttp;
-function loadXMLDoc(url_link){
-	var ie = window.ActiveXObject;
-	if (ie){		//IE
-		xmlhttp = new ActiveXObject("Microsoft.XMLDOM");
-		xmlhttp.async = false;
-  		if (xmlhttp.readyState==4){
-			xmlhttp.load(url_link);
-			Load_XML2form();
-		}								
-	}else{	// FF Chrome Safari...
-  		xmlhttp=new XMLHttpRequest();
-  		if (xmlhttp.overrideMimeType){
-			xmlhttp.overrideMimeType('text/xml');
-		}			
-		xmlhttp.onreadystatechange = alertContents_qos;	
-		xmlhttp.open("GET",url_link,true);
-		xmlhttp.send();		
-	}					
-}
-
-function alertContents_qos()
-{
-	if (xmlhttp != null && xmlhttp.readyState != null && xmlhttp.readyState == 4){
-		if (xmlhttp.status != null && xmlhttp.status == 200){
-				Load_XML2form();
+function loadXMLDoc(){
+	$.ajax({
+		url: '/ajax_qos_default.xml',
+		dataType: 'xml',	
+		error: function(xhr){
+			setTimeout("loadXMLDoc();", 1000);
+		},
+		success: function(response){
+			Load_XML2form(response);
 		}
-	}
+	});			
 }
 
 // Load XML to Select option & save all info
@@ -479,14 +461,8 @@ var rule_port = new Array();
 var rule_proto = new Array();
 var rule_rate = new Array();
 var rule_prio = new Array();
-function Load_XML2form(){			
-			
-			if (window.ActiveXObject){		//IE			
-				QoS_rules = xmlhttp.getElementsByTagName("qos_rule");
-			}else{	// FF Chrome Safari...
-				QoS_rules = xmlhttp.responseXML.getElementsByTagName("qos_rule");
-			}
-				
+function Load_XML2form(obj){			
+			QoS_rules = obj.getElementsByTagName("qos_rule");	
 			for(i=0;i<QoS_rules.length;i++){
 				Sel_desc=QoS_rules[i].getElementsByTagName("desc");
 				Sel_port=QoS_rules[i].getElementsByTagName("port");
@@ -537,11 +513,6 @@ function change_wizard(obj){
 					document.form.qos_proto_x_0.options[2].selected = 1;
 				else if(rule_proto[j] == "ANY")
 					document.form.qos_proto_x_0.options[3].selected = 1;
-				/*	marked By Viz 2011.12 for "iptables -p"
-				else if(rule_proto[j] == "ICMP")
-					document.form.qos_proto_x_0.options[3].selected = 1;
-				else if(rule_proto[j] == "IGMP")
-					document.form.qos_proto_x_0.options[4].selected = 1;	*/
 				else
 					document.form.qos_proto_x_0.options[0].selected = 1;
 				

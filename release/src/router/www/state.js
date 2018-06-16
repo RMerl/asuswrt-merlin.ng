@@ -451,7 +451,12 @@ function isSupport(_ptn){
 		return (sw_mode == 4) ? false : true;
 	}
 	else if(_ptn == "concurrep"){
-		return (based_modelid.search("RP-") != -1) ? true : false;
+		if(based_modelid == "RT-AC68U" && odmpid == "RP-AC1900"){
+			return true;
+		}
+		else{
+			return (based_modelid.search("RP-") != -1) ? true : false;
+		}
 	}
 	else if(_ptn == "usbPortMax"){
 		var usbX_index = rc_support.indexOf("usbX");
@@ -764,6 +769,8 @@ var realip_support = isSupport("realip");
 var realip_state = "";
 var realip_ip = "";
 var external_ip = 0;
+
+var link_internet = '<% nvram_get("link_internet"); %>';
 
 if(lyra_hide_support){
 	var Android_app_link = "https://play.google.com/store/apps/details?id=com.asus.hive";
@@ -2506,11 +2513,13 @@ var concurrent_pap = false;
 var pap_flag = 0;
 var pap_click_flag = 0;
 if((sw_mode == "2" && wlc_express == "0")|| sw_mode == "4"){
-	if(wlc0_ssid != "" && wlc1_ssid != ""){
+	if(wlc0_ssid != "" && wlc1_ssid != "" && concurrep_support){
 		concurrent_pap = true;
 		pap_flag = 1;
 	}
 }
+var wlifnames = '<% nvram_get("wl_ifnames"); %>'.split(" ");
+var dpsta_band = parseInt('<% nvram_get("dpsta_band"); %>');
 
 function refreshStatus(xhr){
 	if(xhr.responseText.search("Main_Login.asp") !== -1) top.location.href = "/";
@@ -2756,7 +2765,7 @@ function refreshStatus(xhr){
 						this.hint = "<#Standby_str#>";
 						this.className = "_standby";
 					}
-					else{
+					else if(link_internet == "2"){
 						this.hint = "<#Connected#>";
 						this.className = "_connected";
 						this.hasInternet = true;
@@ -2832,6 +2841,23 @@ function refreshStatus(xhr){
 				}
 				document.getElementById("connect_status").className = (NM_connect_status.primary.hasInternet || NM_connect_status.secondary.hasInternet) ? "connectstatuson" : "connectstatusoff";
 				wanConnectStatus = NM_connect_status.primary.hasInternet || NM_connect_status.secondary.hasInternet;
+				if((based_modelid == "GT-AC5300" || based_modelid == "GT-AC9600" || based_modelid == "GT-AX6000") && location.pathname == "/GameDashboard.asp"){
+					var connect_state = NM_connect_status.primary.hint;
+					if(!NM_connect_status.primary.hasInternet){
+						var connect_state = NM_connect_status.primary.hint
+					}
+					else if(NM_connect_status.secondary.hasInternet){
+						var connect_state = NM_connect_status.secondary.hint
+					}
+				
+					$("#wan_state").html(connect_state);
+					if(NM_connect_status.primary.hasInternet || NM_connect_status.secondary.hasInternet){
+						$("#wan_state_icon").addClass("wan_icon_connect");
+					}
+					else{
+						$("#wan_state_icon").addClass("wan_icon_disconnect");
+					}
+				}
 			}
 			else{
 				var NM_connect_status = new NM_connect_obj(link_status, link_sbstatus, link_auxstatus, 0);
@@ -2915,8 +2941,34 @@ function refreshStatus(xhr){
 			}
 
 			if(concurrent_pap){
+				if (_wlc0_state == "wlc0_state=2") {
+					document.getElementById('speed_info_primary').style.display = "";
+					document.getElementById('rssi_info_primary').style.display = "";
+				} else {
+					document.getElementById('speed_info_primary').style.display = "none";
+					document.getElementById('rssi_info_primary').style.display = "none";
+				}
+
+				if (_wlc1_state == "wlc1_state=2") {
+					document.getElementById('speed_info_secondary').style.display = "";
+					document.getElementById('rssi_info_secondary').style.display = "";
+				} else {
+					document.getElementById('speed_info_secondary').style.display = "none";
+					document.getElementById('rssi_info_secondary').style.display = "none";
+				}
+
 				document.getElementById('speed_info_primary').innerHTML = "Link Rate: " + data_rate_info_2g;
-				document.getElementById('speed_info_secondary').innerHTML = "Link Rate: " + data_rate_info_5g;
+				if (!Rawifi_support && !Qcawifi_support && wlifnames.length == 3 && dpsta_band == 2)
+					document.getElementById('speed_info_secondary').innerHTML = "Link Rate: " + data_rate_info_5g_2;
+				else
+					document.getElementById('speed_info_secondary').innerHTML = "Link Rate: " + data_rate_info_5g;
+				if (!Rawifi_support && !Qcawifi_support) {
+					document.getElementById('rssi_info_primary').innerHTML = "RSSI: " + rssi_2g;
+					if (wlifnames.length == 3 && dpsta_band == 2)
+						document.getElementById('rssi_info_secondary').innerHTML = "RSSI: " + rssi_5g_2;
+					else
+						document.getElementById('rssi_info_secondary').innerHTML = "RSSI: " + rssi_5g;
+				}
 				if(_wlc0_state == "wlc0_state=2"){
 					document.getElementById('primary_line').className = "primary_wan_connected";				
 				}
@@ -3019,7 +3071,7 @@ function refreshStatus(xhr){
 	// usb.storage
 	if(usb_support){
 		if(allUsbStatus != allUsbStatusTmp && allUsbStatusTmp != ""){
-			if(current_url==ABS_INDEXPAGE||current_url=="")
+			if(location.pathname == ABS_INDEXPAGE || location.pathname == "/")
 				location.href = ABS_INDEXPAGE;
 		}
 

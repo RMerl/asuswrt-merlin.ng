@@ -55,6 +55,7 @@
 #endif
 
 #include <mtd.h>
+#include <limits.h>
 
 void update_lan_status(int);
 
@@ -1666,4 +1667,15 @@ int mssid_mac_validate(const char *macaddr)
 		return 0;
 	else
 		return 1;
+}
+
+int rand_seed_by_time(void)
+{
+	time_t atime;
+	static unsigned long rand_base = 0;
+
+	time(&atime);
+	srand(((unsigned long)atime + rand_base++) % ULONG_MAX);
+
+	return rand();
 }

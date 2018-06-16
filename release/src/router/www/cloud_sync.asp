@@ -2097,7 +2097,7 @@ function onDropBoxLogin(token, uid){
 									<td>&nbsp;&nbsp;</td>
 									<td>
 										<div style="padding:10px;width:95%;font-style:italic;font-size:14px;word-break:break-all;">
-											<#smart_sync_help#> <a href="http://aicloud-faq.asuscomm.com/aicloud-faq/" style="text-decoration:underline;font-weight:bolder;">http://aicloud-faq.asuscomm.com/aicloud-faq/</a>
+											<#smart_sync_help#> <a href="https://www.asus.com/support/FAQ/1010006/" style="text-decoration:underline;font-weight:bolder;">FAQ</a>
 										</div>
 									</td>
 								</tr>

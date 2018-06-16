@@ -13,6 +13,14 @@
 #define MAC_LEN				6
 #define FWVER_LEN			33
 #define MODEL_NAME_LEN		33
+#define RE_LIST_JSON_FILE	"/tmp/relist.json"
+#define MAX_RELIST_COUNT		10
+enum reListAction {
+	RELIST_ADD,
+	RELIST_DEL,
+	RELIST_UPDATE
+};
+
 typedef struct _CM_CLIENT_TABLE {
 	char alias[CFG_CLIENT_NUM][ALIAS_LEN];
 	unsigned char ipAddr[CFG_CLIENT_NUM][IP_LEN];
@@ -36,6 +44,13 @@ typedef struct _CM_CLIENT_TABLE {
 	int maxLevel;
 	int count;
 } CM_CLIENT_TABLE, *P_CM_CLIENT_TABLE;
+
+extern int cm_checkReListUpdate(char *newReMac, char *sta2gMac, char *sta5gMac);
+extern void cm_updateReList(char *newReMac, char *sta2gMac, char *sta5gMac, int action);
+extern void cm_handleReListUpdate(unsigned char *decodeMsg);
+extern int cm_prepareReListMsg(char *msg, int msgLen);
+extern void cm_generateReList();
+extern void cm_updateReListTimestamp(unsigned char *decodeMsg);
 
 #endif /* __CFG_SLAVELIST_H__ */
 /* End of cfg_slavelist.h */

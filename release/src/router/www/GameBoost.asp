@@ -15,6 +15,7 @@
 <script type="text/javascript" src="/popup.js"></script>
 <script type="text/javascript" src="/help.js"></script>
 <script type="text/javascript" src="/js/jquery.js"></script>
+<script type="text/javascript" src="/form.js"></script>
 <style>
 body{
 	margin: 0;
@@ -96,8 +97,18 @@ function initial(){
 	else{
 		document.getElementById("game_boost_enable").checked = false;
 	}
-	
+
 }
+
+function sign_eula(){
+	if(document.form.TM_EULA.value == 0){
+		show_tm_eula();
+	}
+	else{
+		check_game_boost();
+	}
+}
+
 function check_game_boost(){
 	if(document.getElementById("game_boost_enable").checked){
 		if(!reset_wan_to_fo(document.form, 1)) {
@@ -113,7 +124,7 @@ function check_game_boost(){
 		document.form.qos_enable.value = '0';
 		document.form.bwdpi_app_rulelist.disabled = true;
 	}
-	
+
 	if(ctf_disable == 1){
 		document.form.action_script.value = "restart_qos;restart_firewall";
 	}
@@ -124,20 +135,47 @@ function check_game_boost(){
 		else{
 			if(document.form.qos_type.value == 0)
 				FormActions("start_apply.htm", "apply", "reboot", "<% get_default_reboot_time(); %>");
-			else{				
+			else{
 				document.form.action_script.value = "restart_qos;restart_firewall";
-			}					
+			}
 		}
 	}
-	
+
 	document.form.submit();
+}
+
+function show_tm_eula(){
+	$.get("tm_eula.htm", function(data){
+		document.getElementById('agreement_panel').innerHTML= data;
+		var url = "https://www.asus.com/Microsite/networks/Trend_Micro_EULA/" + document.form.preferred_lang.value;
+		$("#eula_url").attr("href",url);
+		adjust_TM_eula_height("agreement_panel");
+	});
+
+	dr_advise();
+	cal_panel_block("agreement_panel", 0.25);
+	$("#agreement_panel").fadeIn(300);
+}
+
+function eula_confirm(){
+	document.form.TM_EULA.value = 1;
+	document.form.action_wait.value = "15";
+	check_game_boost();
+}
+
+function cancel(){
+	refreshpage();
 }
 </script>
 </head>
 <body onload="initial();" onunload="unload_body();">
 <div id="TopBanner"></div>
 <div id="Loading" class="popup_bg"></div>
-
+<div id="agreement_panel" class="eula_panel_container"></div>
+<div id="hiddenMask" class="popup_bg" style="z-index:999;">
+	<table cellpadding="5" cellspacing="0" id="dr_sweet_advise" class="dr_sweet_advise" align="center"></table>
+	<!--[if lte IE 6.5.]><script>alert("<#ALERT_TO_CHANGE_BROWSER#>");</script><![endif]-->
+</div>
 <iframe name="hidden_frame" id="hidden_frame" width="0" height="0" frameborder="0" scrolling="no"></iframe>
 <form method="post" name="form" action="/start_apply.htm" target="hidden_frame">
 <input type="hidden" name="current_page" value="GameBoost.asp">
@@ -151,11 +189,12 @@ function check_game_boost(){
 <input type="hidden" name="qos_type" value="<% nvram_get("qos_type"); %>">
 <input type="hidden" name="qos_type_ori" value="<% nvram_get("qos_type"); %>">
 <input type="hidden" name="bwdpi_app_rulelist" value="<% nvram_get("bwdpi_app_rulelist"); %>">
+<input type="hidden" name="TM_EULA" value="<% nvram_get("TM_EULA"); %>">
 </form>
 <div>
 	<table class="content" align="center" cellspacing="0" style="margin:auto;">
 		<tr>
-			<td width="17">&nbsp;</td>	
+			<td width="17">&nbsp;</td>
 			<!--=====Beginning of Main Menu=====-->
 			<td valign="top" width="202">
 				<div id="mainMenu"></div>
@@ -173,7 +212,7 @@ function check_game_boost(){
 									<table width="730px">
 										<tr>
 											<td align="left">
-												
+
 												<div style="display:table-cell;background:url('/images/New_ui/game.svg');width:77px;height:77px;"></div>
 												<div class="formfonttitle" style="display:table-cell;font-size:26px;font-weight:bold;color:#EBE8E8;vertical-align:middle"><#Game_Boost#></div>
 											</td>
@@ -181,7 +220,7 @@ function check_game_boost(){
 									</table>
 								</div>
 							</td>
-						</tr> 
+						</tr>
 					<!-- Service table -->
 						<tr>
 							<td valign="top" height="0px">
@@ -190,17 +229,17 @@ function check_game_boost(){
 										<tbody>
 											<tr>
 												<td style="width:200px">
-													<div style="padding: 5px 0;font-size:20px;"><#Game_Boost_internet#></div>													
+													<div style="padding: 5px 0;font-size:20px;"><#Game_Boost_internet#></div>
 												</td>
 												<td colspan="2">
 													<div style="padding: 5px 10px;font-size:20px;color:#FFCC66">WTFast GPN</div>
 												</td>
 											</tr>
 											<tr>
-												<td colspan="3">									
+												<td colspan="3">
 													<div style="width:100%;height:1px;background-color:#D30606"></div>
 												</td>
-											</tr>		
+											</tr>
 											<tr>
 												<td align="center" style="width:85px">
 													<img style="padding-right:10px;;" src="/images/New_ui/GameBoost_WTFast.png" >
@@ -224,10 +263,10 @@ function check_game_boost(){
 												</td>
 											</tr>
 											<tr>
-												<td colspan="3">									
+												<td colspan="3">
 													<div style="width:100%;height:1px;background-color:#D30606"></div>
 												</td>
-											</tr>	
+											</tr>
 											<tr>
 												<td align="center" style="width:85px;">
 													<div style="width:97px;height:71px;background:url('images/New_ui/GameBoost_QoS.png');no-repeat"></div>
@@ -239,7 +278,7 @@ function check_game_boost(){
 												</td>
 												<td>
 													<div class="switch" style="margin:auto;width:100px;height:40px;text-align:center;line-height:40px;font-size:18px">
-														<input id="game_boost_enable" type="checkbox" onclick="check_game_boost();">
+														<input id="game_boost_enable" type="checkbox" onclick="sign_eula();">
 														<div class="container" style="display:table;border-radius:5px;">
 															<div style="display:table-cell;width:50%;">
 																<!--div style="background:url('check.svg') no-repeat;width:40px;height:40px;margin: auto"></div-->
@@ -253,7 +292,7 @@ function check_game_boost(){
 													</div>
 												</td>
 											</tr>
-									
+
 											<tr style="height:50px;"></tr>
 											<tr>
 												<td>
@@ -264,7 +303,7 @@ function check_game_boost(){
 												</td>
 											</tr>
 											<tr>
-												<td colspan="3">									
+												<td colspan="3">
 													<div style="width:100%;height:1px;background-color:#D30606"></div>
 												</td>
 											</tr>
@@ -280,12 +319,12 @@ function check_game_boost(){
 												<td>
 													<div class="btn" style="margin:auto;width:100px;height:40px;text-align:center;line-height:40px;font-size:18px;cursor:pointer;border-radius:5px;" onclick="location.href='AiProtection_HomeProtection.asp';"><#btn_go#></div>
 												</td>
-											</tr>	
+											</tr>
 										</tbody>
-									</table>	
+									</table>
 								</div>
-							</td> 
-						</tr>  
+							</td>
+						</tr>
 					</table>
 				</div>
 		<!--=====End of Main Content=====-->
@@ -298,4 +337,3 @@ function check_game_boost(){
 <div id="footer"></div>
 </body>
 </html>
-

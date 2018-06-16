@@ -294,6 +294,9 @@ int get_wps_er_main(int argc, char *argv[])
 		if (i >= MAX_NR_WL_IF)
 			break;
 		SKIP_ABSENT_BAND_AND_INC_UNIT(i);
+#if defined(RTCONFIG_WIFI_QCN5024_QCN5054)
+		eval("hostapd_cli", "-i", word, "wps_ap_pin", "disable");
+#endif
 		if (!strcmp(word, wps_ifname)) {
 			++i;
 			continue;

@@ -101,7 +101,8 @@ ifeq ($(or $(RTAC68A),$(RT4GAC68U)),y)
 CFLAGS += -DRTAC68U
 endif
 
-OBJS = httpd.o cgi.o ej.o 
+OBJS = $(if $(wildcard httpd.c), httpd.o, prebuild/httpd.o)
+OBJS += cgi.o ej.o 
 OBJS += web.o common.o nvram_f.o 
 OBJS += aspbw.o initial_web_hook.o
 OBJS += apps.o

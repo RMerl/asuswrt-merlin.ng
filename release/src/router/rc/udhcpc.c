@@ -259,10 +259,8 @@ deconfig(int zcip)
 	int end_wan_sbstate = WAN_STOPPED_REASON_DHCP_DECONFIG;
 
 	/* Figure out nvram variable name prefix for this i/f */
-	if (wan_prefix(wan_ifname, prefix) < 0) {
-		logmessage("wan", "[%s] exit [%d]", __FUNCTION__, __LINE__);
+	if (wan_prefix(wan_ifname, prefix) < 0)
 		return -1;
-	}
 	if ((unit < 0) &&
 	    (nvram_match(strcat_r(prefix, "proto", tmp), "l2tp") ||
 	     nvram_match(strcat_r(prefix, "proto", tmp), "pptp"))) {
@@ -283,7 +281,6 @@ deconfig(int zcip)
 		update_wan_state(prefix, WAN_STATE_STOPPED, end_wan_sbstate);
 
 	_dprintf("udhcpc:: %s done\n", __FUNCTION__);
-	logmessage("wan", "[%s] udhcpc done[%d]", __FUNCTION__, __LINE__);
 	return 0;
 }
 
@@ -992,19 +989,21 @@ deconfig_lan(void)
 	//ifconfig(lan_ifname, IFUP, "0.0.0.0", NULL);
 _dprintf("%s: IFUP.\n", __FUNCTION__);
 #ifdef RTCONFIG_DHCP_OVERRIDE
-	if (sw_mode() == SW_MODE_AP
-/* [MUST]: Need to Clarify ...  */
-#ifdef RTCONFIG_REALTEK
-	&& nvram_get_int("wlc_psta") == 0
-#endif
-	)
+	if (access_point_mode())
 		;
 	else
 #endif
 	if (nvram_match("lan_proto", "static"))
 		ifconfig(lan_ifname, IFUP | IFF_ALLMULTI, nvram_safe_get("lan_ipaddr"), nvram_safe_get("lan_netmask"));
-	else
+	else {
+		nvram_set("lan_ipaddr", nvram_default_get("lan_ipaddr"));
+		nvram_set("lan_netmask", nvram_default_get("lan_netmask"));
+		nvram_set("lan_gateway", nvram_default_get("lan_gateway"));
+		nvram_set("lan_lease", nvram_default_get("lan_lease"));
+		nvram_set("lan_dns", nvram_default_get("lan_dns"));
+
 		ifconfig(lan_ifname, IFUP | IFF_ALLMULTI, nvram_default_get("lan_ipaddr"), nvram_default_get("lan_netmask"));
+	}
 
 	expires_lan(lan_ifname, 0);
 
@@ -1029,10 +1028,8 @@ bound_lan(void)
 	char tmp[100];
 	int size;
 #endif
-#if defined(RTCONFIG_AMAS)
 	int lanchange = 0;
 	const char *ipaddr;
-#endif	
 
 
 	if ((value = getenv("ip"))) {
@@ -1040,43 +1037,33 @@ bound_lan(void)
 		if (!nvram_match("lan_ipaddr", trim_r(value))) {
 			stop_httpd();
 			start_httpd();
-#if defined(RTCONFIG_AMAS)
 			lanchange = 1;
-#endif				
 		}
 		nvram_set("lan_ipaddr", trim_r(value));
 	}
 	if ((value = getenv("subnet"))) {
-#if defined(RTCONFIG_AMAS)		
 		if (!nvram_match("lan_netmask", trim_r(value))) {
 			lanchange = 1;
 		}
-#endif			 
 		nvram_set("lan_netmask", trim_r(value));		
 	}
 	if ((value = getenv("router"))) {
-#if defined(RTCONFIG_AMAS)		
 		if (!nvram_match("lan_gateway", trim_r(value))) {
 			lanchange = 1;
 		}
-#endif		
 		nvram_set("lan_gateway", trim_r(value));
 	}
 	if ((value = getenv("lease"))) {
-#if defined(RTCONFIG_AMAS)		
 		if (!nvram_match("lan_lease", trim_r(value))) {
 			lanchange = 1;
 		}
-#endif				
 		nvram_set("lan_lease", trim_r(value));
 		expires_lan(lan_ifname, atoi(value));
 	}
 	if (nvram_get_int("lan_dnsenable_x") && (value = getenv("dns"))) {
-#if defined(RTCONFIG_AMAS)		
 		if (!nvram_match("lan_dns", trim_r(value))) {
 			lanchange = 1;
 		}
-#endif		
 		nvram_set("lan_dns", trim_r(value));
 	}
 
@@ -1100,29 +1087,28 @@ bound_lan(void)
 		free(value);
 	}
 #endif
-	
 
 _dprintf("%s: IFUP.\n", __FUNCTION__);
 
-#if defined(RTCONFIG_AMAS)
 	ipaddr = getifaddr(lan_ifname, AF_INET, 0);
-	if ((nvram_get_int("re_mode") == 1 || sw_mode() == SW_MODE_AP) && nvram_match("lan_ipaddr", ipaddr) && lanchange == 0 && nvram_get_int("lan_state_t") == LAN_STATE_CONNECTED) {
+	if ((sw_mode() == SW_MODE_AP) && nvram_match("lan_ipaddr", ipaddr) && lanchange == 0 && nvram_get_int("lan_state_t") == LAN_STATE_CONNECTED) {
 		return 0;
 	}
-#endif	
 
-#ifdef RTCONFIG_WIRELESSREPEATER
-#ifdef RTCONFIG_REALTEK
-	if ((repeater_mode() || mediabridge_mode())
-#else
-	if (sw_mode() == SW_MODE_REPEATER
+	if ((repeater_mode()
+#ifdef RTCONFIG_DPSTA
+		|| (dpsta_mode() && nvram_get_int("re_mode") == 0)
 #endif
-	&& nvram_get_int("wlc_mode") == 0) {
+#if defined(RTCONFIG_BCMWL6) && defined(RTCONFIG_PROXYSTA)
+		|| psr_mode() || mediabridge_mode()
+#elif defined(RTCONFIG_REALTEK)
+		|| (mediabridge_mode())
+#endif
+	     ) && nvram_get_int("wlc_mode") == 0) {
 		update_lan_state(LAN_STATE_CONNECTED, 0);
 		_dprintf("done\n");
 		return 0;
 	}
-#endif
 
 #ifdef RTCONFIG_DHCP_OVERRIDE
 	if (sw_mode() == SW_MODE_AP && nvram_match("dnsqmode", "2")

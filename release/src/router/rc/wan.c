@@ -2054,7 +2054,7 @@ int update_resolvconf(void)
 
 /* Add DNS from VPN clients, others if non-exclusive */
 #ifdef RTCONFIG_OPENVPN
-	dnsstrict = write_ovpn_resolv(fp_servers);
+	dnsstrict = write_ovpn_resolv(fp, fp_servers);
 	// If dns not set to exclusive
 	if (dnsstrict != 3)
 #endif
@@ -2689,6 +2689,8 @@ wan_up(const char *pwan_ifname)
 #ifdef RTCONFIG_OPENVPN
 		start_ovpn_eas();
 #endif
+		stop_ddns();
+		start_ddns();
 		return;
 	}
 #endif
@@ -3362,6 +3364,12 @@ start_wan(void)
 	fc_init();
 #endif
 
+#ifdef RTCONFIG_USB
+#if defined(RTCONFIG_USB_MODEM) && !defined(RTCONFIG_SOC_IPQ40XX)
+	add_usb_modem_modules();
+#endif
+#endif
+
 #ifdef RTCONFIG_DUALWAN
 	char wans_mode[16];
 
@@ -3677,7 +3685,9 @@ int autodet_main(int argc, char *argv[]){
 	int unit;
 	char prefix[]="wanXXXXXX_", tmp[100];
 	char prefix2[]="autodetXXXXXX_", tmp2[100];
+#if 0
 	char hwaddr_x[32];
+#endif
 	int status;
 
 	nvram_set("autodet_proceeding", "1");//Cherry Cho added for httpd checking in 2016/4/22.
@@ -3747,6 +3757,8 @@ int autodet_main(int argc, char *argv[]){
 
 		nvram_set_int(strcat_r(prefix2, "state", tmp2), AUTODET_STATE_CHECKING);
 
+// remove the Auto MAC clone from the decision on 2018/4/11.
+#if 0
 		dumparptable();
 
 		// backup hwaddr_x
@@ -3755,8 +3767,9 @@ int autodet_main(int argc, char *argv[]){
 
 		int waitsec = nvram_get_int(strcat_r(prefix2, "waitsec", tmp2));
 
+#define DEF_CLONE_WAITSEC 10
 		if(waitsec <= 0)
-			waitsec = 5;
+			waitsec = DEF_CLONE_WAITSEC;
 
 		i = 0;
 		while(i < mac_num && (!is_wan_connect(unit) && !is_ip_conflict(unit))){
@@ -3790,6 +3803,7 @@ int autodet_main(int argc, char *argv[]){
 			nvram_set_int(strcat_r(prefix2, "state", tmp2), AUTODET_STATE_FINISHED_OK);
 		}
 		nvram_commit();
+#endif
 	}
 
 #ifdef RTCONFIG_ALPINE

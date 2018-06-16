@@ -1726,7 +1726,7 @@ void write_ovpn_dnsmasq_config(FILE* f)
 	}
 }
 
-int write_ovpn_resolv(FILE* f)
+int write_ovpn_resolv(FILE* fresolv, FILE* f)
 {
 	DIR *dir;
 	struct dirent *file;

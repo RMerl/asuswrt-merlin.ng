@@ -4522,7 +4522,7 @@ int HEIPV6TB_update_entry(void)
   output(buf);
   snprintf(buf, BUFFER_SIZE, "ip=%s&", (address && *address) ? address : "AUTO");
   output(buf);
-  snprintf(buf, BUFFER_SIZE, "apikey=%s&", user_name);
+  snprintf(buf, BUFFER_SIZE, "user_id=%s&", user_name);
   output(buf);
   snprintf(buf, BUFFER_SIZE, "pass=%s&", auth);
   output(buf);

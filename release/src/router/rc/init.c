@@ -1693,9 +1693,16 @@ misc_defaults(int restore_defaults)
 
 	nvram_unset("wps_reset");
 #if defined(RTCONFIG_LED_BTN) || defined(RTCONFIG_WPS_ALLLED_BTN)
+#if !(defined(RTAC3200) || defined(RTCONFIG_BCM_7114) || defined(HND_ROUTER))
 	nvram_set_int("AllLED", 1);
 #endif
+#endif
 	nvram_unset("reload_svc_radio");
+
+#ifdef RTCONFIG_DPSTA
+	set_dpsta_ifnames();
+#endif
+
 #ifdef RTCONFIG_AMAS
 	nvram_unset("amesh_found_cap");
 	nvram_unset("amesh_led");
@@ -2745,12 +2752,6 @@ int init_nvram(void)
 #ifdef RTCONFIG_GMAC3
 	char *hw_name = "et0";
 #endif
-#ifdef RTCONFIG_DPSTA
-	char word[256], *next;
-	char list[128];
-	int idx;
-	char uif_list[128];	/* for upstream all ifnames */
-#endif
 
 #if defined (CONFIG_BCMWL5) && defined(RTCONFIG_TCODE)
 	refresh_cfe_nvram();
@@ -2883,24 +2884,6 @@ int init_nvram(void)
 #ifdef RTCONFIG_WIRELESSREPEATER
 	if (sw_mode() != SW_MODE_REPEATER)
 		nvram_set("ure_disable", "1");
-#endif
-
-#ifdef RTCONFIG_DPSTA
-	memset(list, 0, sizeof(list));
-	memset(uif_list, 0, sizeof(uif_list));
-
-	if (dpsta_mode()) {
-		idx = 0;
-		foreach (word, nvram_safe_get("wl_ifnames"), next) {
-			if ((num_of_wl_if() == 2) || !idx || idx == nvram_get_int("dpsta_band"))
-				add_to_list(word, list, sizeof(list));
-			add_to_list(word, uif_list, sizeof(uif_list));
-			idx++;
-		}
-	}
-
-	nvram_set("dpsta_ifnames", list);
-	nvram_set("dpsta_all_ifnames", uif_list);
 #endif
 
 	/* initialize this value to check fw upgrade status */
@@ -6466,6 +6449,12 @@ int init_nvram(void)
 			snprintf(ver, sizeof(ver), "%s.%s_%s", nvram_safe_get("firmver"), nvram_safe_get("buildno"), nvram_safe_get("extendno"));
 			nvram_set("innerver", ver);
 		}
+
+		if (nvram_match("dslx_vd1q0", "2")) {
+			nvram_set("dsl8_dot1q", "1");
+			nvram_set("dsl8_vid", "0");
+		}
+
 		break;
 #endif
 
@@ -6677,24 +6666,27 @@ int init_nvram(void)
 		nvram_set("wl1_vifnames", "wl1.1 wl1.2 wl1.3");	
 #if defined(RTCONFIG_AMAS)
 #ifdef RTCONFIG_DPSTA		
-		if (dpsta_mode()) {
+		if (dpsta_mode() && nvram_get_int("re_mode") == 1) {
 			nvram_set("sta_phy_ifnames", "dpsta");
 		}
 #endif
+#if 0
 		else if (dpsr_mode()) {
 			nvram_set("sta_phy_ifnames", "eth1 eth2");
 		}
+#endif
 		else
 		{
 			nvram_set("sta_phy_ifnames", "eth1 eth2");		
 		}
-		
-		if(nvram_get_int("re_mode") == 1) {
+#ifdef RTCONFIG_DPSTA
+		if (dpsta_mode() && nvram_get_int("re_mode") == 1) {
 			nvram_set("lan_ifnames", "vlan1 vlan2 eth1 eth2");
 			nvram_set("eth_ifnames", "vlan2");
 			nvram_set("wait_band", "10");
 			nvram_set("wait_wifi", "15");
 		}
+#endif
 		nvram_set("sta_ifnames", "eth1 eth2");
 #endif
 #ifdef RT4GAC68U
@@ -6885,22 +6877,26 @@ int init_nvram(void)
 
 #if defined(RTCONFIG_AMAS)
 #ifdef RTCONFIG_DPSTA
-		if (dpsta_mode()) {
+		if (dpsta_mode() && nvram_get_int("re_mode") == 1) {
 			nvram_set("sta_phy_ifnames", "dpsta");
 		}
 #endif
+#if 0
 		else if (dpsr_mode()) {
 			nvram_set("sta_phy_ifnames", "eth6 eth7 eth8");
 		}
+#endif
 		else
 		{
 			nvram_set("sta_phy_ifnames", "eth6 eth7 eth8");
 		}
-		if(nvram_get_int("re_mode") == 1) {
+#ifdef RTCONFIG_DPSTA
+		if (dpsta_mode() && nvram_get_int("re_mode") == 1) {
 			nvram_set("eth_ifnames", "eth0");
 			nvram_set("wait_band", "10");
 			nvram_set("wait_wifi", "15");
 		}
+#endif
 		nvram_set("sta_ifnames", "eth6 eth7 eth8");
 		nvram_set("wired_ifnames", "eth1 eth2 eth3 eth4 eth5 bond0");
 #endif 
@@ -7026,22 +7022,26 @@ int init_nvram(void)
 
 #if defined(RTCONFIG_AMAS)
 #ifdef RTCONFIG_DPSTA
-		if (dpsta_mode()) {
+		if (dpsta_mode() && nvram_get_int("re_mode") == 1) {
 			nvram_set("sta_phy_ifnames", "dpsta");
 		}
 #endif
+#if 0
 		else if (dpsr_mode()) {
 			nvram_set("sta_phy_ifnames", "eth5 eth6");
 		}
+#endif
 		else
 		{
 			nvram_set("sta_phy_ifnames", "eth5 eth6");
 		}
-		if(nvram_get_int("re_mode") == 1) {
+#ifdef RTCONFIG_DPSTA
+		if (dpsta_mode() && nvram_get_int("re_mode") == 1) {
 			nvram_set("eth_ifnames", "eth0");
 			nvram_set("wait_band", "10");
 			nvram_set("wait_wifi", "15");
 		}
+#endif
 		nvram_set("sta_ifnames", "eth5 eth6");
 		nvram_set("wired_ifnames", "eth1 eth2 eth3 eth4");
 #endif
@@ -7298,45 +7298,52 @@ int init_nvram(void)
 #if defined(RTCONFIG_AMAS)
 		if(model == MODEL_RTAC5300) {
 #ifdef RTCONFIG_DPSTA
-			if (dpsta_mode()) {
+			if (dpsta_mode() && nvram_get_int("re_mode") == 1) {
 				nvram_set("sta_phy_ifnames", "dpsta");
 			}
 #endif
+#if 0
 			else if (dpsr_mode()) {
 				nvram_set("sta_phy_ifnames", "eth1 eth2 eth3");
 			}
+#endif
 			else
 			{
 				nvram_set("sta_phy_ifnames", "eth1 eth2 eth3");
 			}
-			if(nvram_get_int("re_mode") == 1) {
+#ifdef RTCONFIG_DPSTA
+			if (dpsta_mode() && nvram_get_int("re_mode") == 1) {
 				nvram_set("lan_ifnames", "vlan1 vlan2 eth1 eth2 eth3");
 				nvram_set("eth_ifnames", "vlan2");
 				nvram_set("wait_band", "10");
 				nvram_set("wait_wifi", "15");
 			}
+#endif
 			nvram_set("sta_ifnames", "eth1 eth2 eth3");
-
 		}
 		else {
 #ifdef RTCONFIG_DPSTA
-			if (dpsta_mode()) {
+			if (dpsta_mode() && nvram_get_int("re_mode") == 1) {
 				nvram_set("sta_phy_ifnames", "dpsta");
 			}
 #endif
+#if 0
 			else if (dpsr_mode()) {
 				nvram_set("sta_phy_ifnames", "eth1 eth2");
 			}
+#endif
 			else
 			{
 				nvram_set("sta_phy_ifnames", "eth1 eth2");
 			}
-			if(nvram_get_int("re_mode") == 1) {
+#ifdef RTCONFIG_DPSTA
+			if (dpsta_mode() && nvram_get_int("re_mode") == 1) {
 				nvram_set("lan_ifnames", "vlan1 vlan2 eth1 eth2");
 				nvram_set("eth_ifnames", "vlan2");
 				nvram_set("wait_band", "10");
 				nvram_set("wait_wifi", "15");
 			}
+#endif
 			nvram_set("sta_ifnames", "eth1 eth2");
 		}
 #endif
@@ -8376,6 +8383,10 @@ int init_nvram(void)
 	config_tcode(0);
 	/* Last action for del rc_support */
 	config_tcode(2);
+#endif
+
+#ifdef RTCONFIG_DPSTA
+	set_dpsta_ifnames();
 #endif
 
 #ifdef RTCONFIG_YANDEXDNS
@@ -10071,16 +10082,13 @@ static void sysinit(void)
 
 #ifdef RTCONFIG_GMAC3
 	int gmac3 = 0;
-#ifdef RTCONFIG_BCM_7114
-	if (!nvram_match("stop_gmac3_new", "1")
-#if 0
-		&& !(nvram_get("switch_wantag") && !nvram_match("switch_wantag", "") && !nvram_match("switch_wantag", "none"))
+	if (!nvram_match("stop_gmac3_ran0418", "1")
+#if defined(RTCONFIG_AMAS) && defined(RTCONFIG_DPSTA)
+		&& !(dpsta_mode() && nvram_get_int("re_mode") == 1)
 #endif
 	)
-	gmac3 = 1;
-#else
-	nvram_set("gmac3_enable", "0");
-#endif
+		gmac3 = 1;
+
 	nvram_set_int("gmac3_enable", gmac3 ? 1 : 0);
 	nvram_set_int("bhdr_enable", gmac3 ? 1 : 0);
 #endif
@@ -10364,13 +10372,6 @@ int init_main(int argc, char *argv[])
 	{
 		sysinit();
 
-#ifdef RTCONFIG_USB
-		// let usb host & modem drivers be inserted early.
-		add_usb_host_module();
-#if defined(RTCONFIG_USB_MODEM) && !defined(RTCONFIG_SOC_IPQ40XX)
-		add_usb_modem_modules();
-#endif
-#endif
 #ifdef RTCONFIG_LANTIQ
 		init_others_defer();
 #endif
@@ -10416,6 +10417,15 @@ int init_main(int argc, char *argv[])
 		use_custom_config("fstab", "/etc/fstab");
 		run_postconf("fstab", "/etc/fstab");
 		state = SIGUSR2;	/* START */
+
+#ifdef RTCONFIG_USB
+		// let usb host & modem drivers be inserted early.
+		add_usb_host_module();
+#if defined(RTCONFIG_USB_MODEM) && !defined(RTCONFIG_SOC_IPQ40XX)
+		if (sw_mode() != SW_MODE_ROUTER)
+			add_usb_modem_modules();
+#endif
+#endif
 	}
 
 	for (;;) {

@@ -286,7 +286,7 @@ var httpApi ={
 			});
 		}
 
-		return retData;
+		return retData[hookName];
 	},
 
 	"startAutoDet": function(){
@@ -294,7 +294,7 @@ var httpApi ={
 	},
 
 	"detwanGetRet": function(){
-		var wanInfo = httpApi.nvramGet(["wan0_state_t", "wan0_sbstate_t", "wan0_auxstate_t", "autodet_state", "autodet_auxstate", "wan0_proto", "link_internet"], true);
+		var wanInfo = httpApi.nvramGet(["wan0_state_t", "wan0_sbstate_t", "wan0_auxstate_t", "autodet_state", "autodet_auxstate", "wan0_proto", "link_internet", "x_Setting"], true);
 	
 		var wanTypeList = {
 			"dhcp": "DHCP",
@@ -306,6 +306,7 @@ var httpApi ={
 			"check": "CHECKING",
 			"resetModem": "RESETMODEM",
 			"connected": "CONNECTED",
+			"pppdhcp": "PPPDHCP",
 			"noWan": "NOWAN"
 		}
 
@@ -318,9 +319,11 @@ var httpApi ={
 		};
 
 		var hadPlugged = function(deviceType){
-			var usbDeviceList = httpApi.hookGet("show_usb_path")["show_usb_path"][0] || [];
+			var usbDeviceList = httpApi.hookGet("show_usb_path")[0] || [];
 			return (usbDeviceList.join().search(deviceType) != -1)
 		}
+
+		var iCanUsePPPoE = (wanInfo.autodet_state == "6" || wanInfo.autodet_auxstate == "6")
 
 		if(wanInfo.isError){
 			retData.wanType = wanTypeList.check;
@@ -333,12 +336,12 @@ var httpApi ={
 			wanInfo.wan0_sbstate_t  == "0" &&
 			wanInfo.wan0_auxstate_t == "0"
 		){
-			retData.wanType = wanTypeList.connected;
+			retData.wanType = (iCanUsePPPoE && wanInfo.x_Setting  == "0") ? wanTypeList.pppdhcp : wanTypeList.connected;
 		}
 		else if(wanInfo.autodet_state == ""){
 			retData.wanType = wanTypeList.check;			
 		}
-		else if(wanInfo.autodet_state == "6" || wanInfo.autodet_auxstate == "6"){
+		else if(iCanUsePPPoE){
 			retData.wanType = wanTypeList.pppoe;
 		}
 		else if(hadPlugged("modem")){
@@ -347,11 +350,6 @@ var httpApi ={
 		else if(wanInfo.wan0_auxstate_t == "1"){
 			retData.wanType = wanTypeList.noWan;
 		}
-/*
-		else if(wanInfo.autodet_state == "2"){
-			retData.wanType = wanTypeList.dhcp;
-		}
-*/
 		else if(wanInfo.autodet_state == "3" || wanInfo.autodet_state == "5"){
 			retData.wanType = wanTypeList.resetModem;
 		}
@@ -436,8 +434,7 @@ var httpApi ={
 	},
 
 	"faqURL": function(_Objid, _faqNum, _URL1, _URL2){
-		// https://www.asus.com/tw/support/FAQ/1000906
-		var pLang = httpApi.nvramGet(["preferred_lang"]).preferred_lang;		
+		var pLang = httpApi.nvramGet(["preferred_lang"]).preferred_lang;
 		var faqLang = {
 			EN : "",
 			TW : "/tw",
@@ -467,28 +464,17 @@ var httpApi ={
 		}
 		var temp_URL_lang = _URL1+faqLang[pLang]+_URL2+_faqNum;
 		var temp_URL_global = _URL1+_URL2+_faqNum;
-		//console.log(temp_URL_lang);
+		document.getElementById(_Objid).href = temp_URL_global;
 
-		if (window.location.hostname == "router.asus.com") {
-			$.ajax({
-				url: temp_URL_lang,
-				type: 'GET',
-				timeout: 1500,
-				error: function(response){
-					//console.log(response);
-					document.getElementById(_Objid).href = temp_URL_global;
-				},
-				success: function(response) {	
-					//console.log(response);
-					if(response.search("QAPage") >= 0)
-						document.getElementById(_Objid).href =  temp_URL_lang;
-					else
-						document.getElementById(_Objid).href = temp_URL_global;		
+		$.ajax({
+			url: temp_URL_lang,
+			dataType: "jsonp",
+			statusCode: {
+				200: function(response) {
+					document.getElementById(_Objid).href =  temp_URL_lang;
 				}
-			});
-		} else {
-			document.getElementById(_Objid).href = temp_URL_lang;
-		}
+			}
+		});
 	},
 
 	"nvram_match_x": function(postData, compareData, retData){
@@ -510,5 +496,29 @@ var httpApi ={
 		});
 
 		return retData;
+	},
+
+	"uiFlag": {
+		//the list defined as nvram order, the nvram value define the status.
+		//the value defined as status, you can use 0~9 to define any status that to used.
+		//ex. nvram uiFlag=011, defined as feature1/feature2/feature3..., value defined as disable/enable/enable
+		//"list": { "feature" : 0, "feature1" : 1, "feature2" : 2, ...},
+		"list": {
+			"AiMeshHint" : 0
+		},
+
+		"get": function(_name){
+			var uiFlagValue = httpApi.nvramGet(["uiFlag"], true).uiFlag;
+			return uiFlagValue.charAt(httpApi.uiFlag.list[_name]);
+		},
+
+		"set": function(_name, _value){
+			var replaceValue = function(_oriString, _index, _replacement) {
+				return _oriString.substr(0, _index) + _replacement + _oriString.substr(_index + 1);
+			};
+			var uiFlag_ori = httpApi.nvramGet(["uiFlag"], true).uiFlag;
+			var uiFlag_update = replaceValue(uiFlag_ori, httpApi.uiFlag.list[_name], _value);
+			httpApi.nvramSet({"action_mode": "apply", "uiFlag" : uiFlag_update});
+		}
 	}
 }

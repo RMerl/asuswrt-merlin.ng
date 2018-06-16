@@ -2116,8 +2116,9 @@ function drawClientListBlock(objID) {
 				clientListCode += "</td>";
 
 				clientListCode += "<td style='word-wrap:break-word; word-break:break-all;' width='" + obj_width[2] + "'>";
-				clientListCode += "<div id='div_clientName_"+objID+"_"+j+"' class='viewclientlist_clientName_edit' onclick='editClientName(\""+objID+"_"+j+"\");'>"+clientlist_sort[j].name+"</div>";
-				clientListCode += "<input id='client_name_"+objID+"_"+j+"' type='text' value='"+clientlist_sort[j].name+"' class='input_25_table' maxlength='32' style='width:95%;margin-left:0px;display:none;' onblur='saveClientName(\""+objID+"_"+j+"\", "+clientlist_sort[j].type+", this);'>";
+				var clientNameEnCode = htmlEnDeCode.htmlEncode(decodeURIComponent(clientlist_sort[j].name));
+				clientListCode += "<div id='div_clientName_"+objID+"_"+j+"' class='viewclientlist_clientName_edit' onclick='editClientName(\""+objID+"_"+j+"\");'>"+clientNameEnCode+"</div>";
+				clientListCode += "<input id='client_name_"+objID+"_"+j+"' type='text' value='"+clientNameEnCode+"' class='input_25_table' maxlength='32' style='width:95%;margin-left:0px;display:none;' onblur='saveClientName(\""+objID+"_"+j+"\", "+clientlist_sort[j].type+", this);'>";
 				clientListCode += "</td>";
 				var ipStyle = ('<% nvram_get("sw_mode"); %>' == "1") ? "line-height:16px;text-align:left;padding-left:10px;" : "line-height:16px;text-align:center;";
 				clientListCode += "<td width='" + obj_width[3] + "' style='" + ipStyle + "'>";

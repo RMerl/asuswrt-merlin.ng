@@ -589,13 +589,13 @@ int start_vlan(void)
 #endif
 
 #if defined(HND_ROUTER)
-	if(!nvram_match("switch_wantag", "") && (nvram_get_int("switch_stb_x") > 0 || nvram_match("switch_wantag", "unifi_biz") || nvram_match("switch_wantag", "manual"))) {
+	if(!nvram_match("switch_wantag", "") && (nvram_get_int("switch_stb_x") > 0 || nvram_match("switch_wantag", "unifi_biz") || nvram_match("switch_wantag", "stuff_fibre") || nvram_match("switch_wantag", "manual"))) {
 		char *wan_base_if = "eth0";
 		ifconfig(wan_base_if, IFUP, NULL, NULL);
 		set_wan_tag(wan_base_if);
 	}
 #elif defined(BLUECAVE)
-	if(!nvram_match("switch_wantag", "") && (nvram_get_int("switch_stb_x") > 0 || nvram_match("switch_wantag", "unifi_biz") || nvram_match("switch_wantag", "manual"))) {
+	if(!nvram_match("switch_wantag", "") && (nvram_get_int("switch_stb_x") > 0 || nvram_match("switch_wantag", "unifi_biz") || nvram_match("switch_wantag", "stuff_fibre") || nvram_match("switch_wantag", "manual"))) {
 		char *wan_base_if = "eth1";
 		ifconfig(wan_base_if, IFUP, NULL, NULL);
 		set_wan_tag(wan_base_if);

@@ -172,7 +172,12 @@ start_pppd(int unit)
 			fprintf(fp, "-pap\n");
 		}
 
-		if (nvram_match("dslx_transmode", "atm") && nvram_match("dsl0_proto", "pppoa")) {
+		if (nvram_match("dslx_transmode", "atm")
+			&& nvram_match("dsl0_proto", "pppoa")
+#ifdef RTCONFIG_DUALWAN
+			&& get_dualwan_by_unit(unit) == WANS_DUALWAN_IF_DSL
+#endif
+		) {
 			FILE *fp_dsl_mac;
 			char *dsl_mac = NULL;
 			int timeout = 10; /* wait up to 10 seconds */

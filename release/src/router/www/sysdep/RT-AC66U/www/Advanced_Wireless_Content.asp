@@ -204,23 +204,17 @@ function initial(){
 			temp = cur_control_channel[0] + ", " + cur_control_channel[1];
 			if(wl_info.band5g_2_support)
 				temp += ", " + cur_control_channel[2];
-			
-			document.getElementById("auto_channel").innerHTML = "<#wireless_control_channel#>: " + temp;
 		}
 		else if(smart_connect_flag_t == "2"){		//5 GHz Smart Connect
-			if(wl_unit == "0"){
+			if(wl_unit == "0")
 				temp = cur_control_channel[0];
-				document.getElementById("auto_channel").innerHTML = "<#wireless_control_channel#>: " + temp;
-			}
-			else{
+			else
 				temp = cur_control_channel[1] + ", " + cur_control_channel[2];
-				document.getElementById("auto_channel").innerHTML = "<#wireless_control_channel#>: "+ temp;		
-			}
 		}
-		else{		//smart_connect_flag_t == 0, disable Smart Connect
+		else		//smart_connect_flag_t == 0, disable Smart Connect
 			temp = cur_control_channel[wl_unit];
-			document.getElementById("auto_channel").innerHTML = "<#wireless_control_channel#>: " + temp;
-		}
+
+		document.getElementById("auto_channel").innerHTML = "<#wireless_control_channel#>: " + temp;
 	}
 }
 

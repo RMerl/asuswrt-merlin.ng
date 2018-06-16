@@ -1563,7 +1563,7 @@ int wl_client(int unit, int subunit)
 {
 	char *mode = nvram_safe_get(wl_nvname("mode", unit, subunit));
 
-	return ((strcmp(mode, "sta") == 0) || (strcmp(mode, "wet") == 0));
+	return ((strcmp(mode, "sta") == 0) || (strcmp(mode, "wet") == 0) || (strcmp(mode, "psta") == 0) || (strcmp(mode, "psr") == 0));
 }
 
 int foreach_wif(int include_vifs, void *param,

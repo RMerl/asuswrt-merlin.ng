@@ -330,7 +330,7 @@ function loadData()
 			else
 				t = i;			
  
-			if(t != "LAN" && t != "NotUsed"){ // hide Tabs
+			if(i != "BRIDGE" && t != "NotUsed"){ // hide Tabs
 				/*if(i == "INTERNET")
 					tabs.push(['speed-tab-' + i, t]);
 				else if(i == "INTERNET1")

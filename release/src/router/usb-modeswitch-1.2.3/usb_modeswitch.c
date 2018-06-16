@@ -121,6 +121,7 @@ static struct option long_options[] = {
 	{"device-num",			required_argument, 0, 'g'},
 	{"detach-only",			no_argument, 0, 'd'},
 	{"huawei-mode",			no_argument, 0, 'H'},
+	{"huawei-new-mode",		no_argument, 0, 'J'},
 	{"sierra-mode",			no_argument, 0, 'S'},
 	{"sony-mode",			no_argument, 0, 'O'},
 	{"qisda-mode",			no_argument, 0, 'B'},
@@ -273,7 +274,7 @@ int readArguments(int argc, char **argv)
 
 	while (1)
 	{
-		c = getopt_long (argc, argv, "heWQDndHSOBGTNALRItv:p:V:P:C:m:M:2:3:w:r:c:i:u:a:s:f:b:g:",
+		c = getopt_long (argc, argv, "heWQDndHJSOBGTNALRItv:p:V:P:C:m:M:2:3:w:r:c:i:u:a:s:f:b:g:",
 						long_options, &option_index);
 
 		/* Detect the end of the options. */
@@ -537,10 +538,15 @@ int main(int argc, char **argv)
 
 	/* Some scenarios are exclusive, so check for unwanted combinations */
  	specialMode = DetachStorageOnly + HuaweiMode + SierraMode + SonyMode + QisdaMode + KobilMode
-		+ SequansMode + MobileActionMode + CiscoMode;
+		+ SequansMode + MobileActionMode + CiscoMode + HuaweiNewMode;
 	if ( specialMode > 1 ) {
 		SHOW_PROGRESS(output,"Invalid mode combination. Check your configuration. Aborting.\n\n");
 		exit(1);
+	}
+
+	if (strlen(MessageContent) && specialMode ) {
+		MessageContent[0] = '\0';
+		SHOW_PROGRESS(output,"Warning: ignoring MessageContent. Can't combine with special mode\n");
 	}
 
 	if ( !specialMode && !strlen(MessageContent) && AltSetting == -1 && Configuration == 0 )
@@ -599,22 +605,16 @@ int main(int argc, char **argv)
 		CheckSuccess = 0; /* separate and implied success control */
 		sonySuccess = switchSonyMode();
 	}
-
 	if (HuaweiNewMode) {
 		SHOW_PROGRESS(output,"Using standard Huawei switching message\n");
 		detachDriver();
 		strcpy(MessageContent,"55534243123456780000000000000011062000000101000100000000000000");
 		NeedResponse = 0;
 		switchSendMessage();
-	}
-	
-	if (strlen(MessageContent) && MessageEndpoint) {
-		if (specialMode == 0) {
-			if (InquireDevice != 2)
-				detachDriver();
-			switchSendMessage();
-		} else
-			SHOW_PROGRESS(output,"Warning: ignoring MessageContent. Can't combine with special mode\n");
+	} else if (strlen(MessageContent) && MessageEndpoint) {
+		if (InquireDevice != 2)
+			detachDriver();
+		switchSendMessage();
 	}
 
 	if (Configuration > 0) {
@@ -1837,6 +1837,7 @@ void printHelp()
 	" -r, --response-endpoint NUM   read response from there (optional)\n"
 	" -d, --detach-only             detach the active driver, no further action\n"
 	" -H, --huawei-mode             apply a special procedure\n"
+	" -J, --huawei-new-mode         apply a special procedure\n"
 	" -S, --sierra-mode             apply a special procedure\n"
 	" -O, --sony-mode               apply a special procedure\n"
 	" -G, --gct-mode                apply a special procedure\n"

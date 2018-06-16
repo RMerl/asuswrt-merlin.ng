@@ -255,6 +255,8 @@ extern int ate_run_arpstrom(void);
 extern int setCentralLedLv(int lv);
 #endif
 extern int ate_get_fw_upgrade_state(void);
+extern void set_IpAddr_Lan(const char *);
+extern void get_IpAddr_Lan();
 
 /* tcode_rc.c */
 #ifdef RTCONFIG_TCODE
@@ -611,7 +613,7 @@ extern void setLANLedOff(void);
 extern void hnd_mfg_init();
 extern void hnd_mfg_services();
 #endif
-extern void mtd_erase_image_update();
+extern int mtd_erase_image_update();
 extern int wait_to_forward_state(char *ifname);
 #endif
 #ifdef RTCONFIG_BCMWL6
@@ -622,8 +624,14 @@ extern int wl_control_channel(int unit);
 extern int set_amas_bdl(void);
 extern int unset_amas_bdl(void);
 extern int get_amas_bdl(void);
+#ifdef RTCONFIG_BCMWL6
+extern int no_need_obd(void);
+#endif
 #endif
 extern int ATE_BRCM_FACTORY_MODE(void);
+#ifdef RTCONFIG_DPSTA
+void set_dpsta_ifnames();
+#endif
 #endif
 
 #ifdef RTCONFIG_WIFI_SON
@@ -1080,12 +1088,6 @@ extern int radio_main(int argc, char *argv[]);
 // ntp.c
 extern int ntp_main(int argc, char *argv[]);
 
-// btnsetup.c
-extern int ots_main(int argc, char *argv[]);
-extern void stop_ots(void);
-extern int start_ots(void);
-extern int rand_seed_by_time(void);
-
 // common.c
 extern void killall_tk_period_wait(const char *name, int wait);
 extern void usage_exit(const char *cmd, const char *help) __attribute__ ((noreturn));
@@ -1128,6 +1130,7 @@ extern int mssid_mac_validate(const char *macaddr);
 #ifdef CONFIG_BCMWL5
 extern int setup_dnsmq(int mode);
 #endif
+extern int rand_seed_by_time(void);
 
 // usb.c
 #if defined(RTCONFIG_OPENPLUS_TFAT) \
@@ -1258,6 +1261,10 @@ extern int vpnc_set_dev_policy_rule();
 #endif
 #endif
 
+// ovpn.c
+extern int ovpn_up_main(int argc, char **argv);
+extern int ovpn_down_main(int argc, char **argv);
+
 // openvpn.c
 #ifdef RTCONFIG_OPENVPN
 extern void start_ovpn_client(int clientNum);
@@ -1268,7 +1275,7 @@ extern void start_ovpn_eas(void);
 extern void stop_ovpn_eas(void);
 extern void run_ovpn_fw_script();
 extern void write_ovpn_dnsmasq_config(FILE*);
-extern int write_ovpn_resolv(FILE*);
+extern int write_ovpn_resolv(FILE*, FILE*);
 //static inline void start_ovpn_eas() { }
 //#define write_ovpn_resolv(f) (0)
 extern void create_ovpn_passwd();
@@ -1407,6 +1414,9 @@ extern int start_psta_monitor();
 extern void stop_obd(void);
 extern void start_obd(void);
 #endif
+#endif
+#ifdef RTCONFIG_CFGSYNC
+extern void update_macfilter_relist();
 #endif
 #ifdef RTCONFIG_DHDAP
 extern int start_dhd_monitor(void);
@@ -1654,6 +1664,7 @@ extern void gen_lldpd_if(char *bind_ifnames);
 void set_pre_sysdep_config(int iftype);
 void set_post_sysdep_config(int iftype);
 int get_radar_status(int bssidx);
+int Pty_procedure_check(int unit, int wlif_count);
 #endif
 #endif	/* RTCONFIG_WIRELESSREPEATER */
 

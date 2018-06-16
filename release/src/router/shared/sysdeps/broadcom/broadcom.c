@@ -166,7 +166,8 @@ static bool g_swap = FALSE;
 #define dtoh16(i) (g_swap?bcmswap16(i):(uint16)(i))
 char *get_pap_bssid(int unit)
 {
-	unsigned char bssid[6] = {0};
+	unsigned char bssid[6];
+	unsigned char bssid_null[6] = { 0x0, 0x0, 0x0, 0x0, 0x0, 0x0 };
 	char tmp[128], prefix[] = "wlXXXXXXXXXX_";
 	char *name;
 	static char bssid_str[sizeof("00:00:00:00:00:00XXX")];
@@ -174,14 +175,10 @@ char *get_pap_bssid(int unit)
 	snprintf(prefix, sizeof(prefix), "wl%d_", unit);
 	name = nvram_safe_get(strcat_r(prefix, "ifname", tmp));
 
-	if (wl_ioctl(name, WLC_GET_BSSID, bssid, sizeof(bssid)) == 0) {
-		if ( !(!bssid[0] && !bssid[1] && !bssid[2] && !bssid[3] && !bssid[4] && !bssid[5]) ) {
-			snprintf(bssid_str, sizeof(bssid_str), "%02X:%02X:%02X:%02X:%02X:%02X", 
-				(unsigned char)bssid[0], (unsigned char)bssid[1],
-				(unsigned char)bssid[2], (unsigned char)bssid[3],
-				(unsigned char)bssid[4], (unsigned char)bssid[5]);
-		}
-	}
+	memset(bssid_str, 0, sizeof(bssid_str));
+	if (!wl_ioctl(name, WLC_GET_BSSID, bssid, sizeof(bssid))
+		&& memcmp(bssid, bssid_null, ETHER_ADDR_LEN))
+		ether_etoa((const unsigned char *) &bssid, bssid_str);
 
 	return bssid_str;
 }

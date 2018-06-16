@@ -1225,7 +1225,7 @@ ccp_rejci(f, p, len)
 	if (go->mppc)
 	    try.mppc = 0;
 	if (go->mppe) {
-	    try.mppe = 0;
+	    //try.mppe = 0;
 	    if (go->mppe_40)
 		try.mppe_40 = 0;
 	    if (go->mppe_56)

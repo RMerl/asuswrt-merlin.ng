@@ -239,8 +239,6 @@ var chdom = function(){window.location.href=domainNameUrl};
 })();
 }
 
-<% login_state_hook(); %>
-
 function initial(){
 	var flag = login_info.error_status;
 	if(isIE8 || isIE9){
@@ -268,26 +266,6 @@ function initial(){
 			document.getElementById("logout_field").style.display ="";
 		}
 		else if(flag == 9){
-			var loginUserIp = (function(){
-				return (typeof login_ip_str === "function") ? login_ip_str().replace("0.0.0.0", "") : "";
-			})();
-
-			var getLoginUser = function(){
-				if(loginUserIp === "") return "";
-
-				var dhcpLeaseInfo = [];
-				var hostName = "";
-
-				dhcpLeaseInfo.forEach(function(elem){
-				if(elem[0] === loginUserIp){
-					hostName = " (" + elem[1] + ")";
-					return false;
-					}
-				})
-				return "<div style='margin-top:15px;word-wrap:break-word;word-break:break-all'>* <#login_hint1#> " + loginUserIp + hostName + "</div>";
-			};
-
-			document.getElementById("logined_ip_str").innerHTML = getLoginUser();
 			document.getElementById("login_filed").style.display ="none";
 			document.getElementById("nologin_field").style.display ="";
 		}

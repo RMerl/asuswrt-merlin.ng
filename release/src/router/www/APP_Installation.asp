@@ -935,7 +935,7 @@ function go_modem_page(usb_unit_flag){
 						<ul style="margin-left:10px;">
 							<br>
 							<li>
-								<a id="faq" href="" target="_blank" style="text-decoration:underline;font-size:14px;font-weight:bolder;color:#FFF">Download Master FAQ</a>
+								<a id="faq" href="" target="_blank" style="text-decoration:underline;font-size:14px;font-weight:bolder;color:#FFF"><#DM_title#> FAQ</a>
 							</li>
 							<li style="margin-top:10px;">
 								<a id="faq2" href="" target="_blank" style="text-decoration:underline;font-size:14px;font-weight:bolder;color:#FFF">Download Master Tool FAQ</a>

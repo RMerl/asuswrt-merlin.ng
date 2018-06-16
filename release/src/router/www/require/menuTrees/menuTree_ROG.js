@@ -376,6 +376,10 @@ define(function(){
 					if(wlc_express != 0){
 						retArray.push("menu_Wireless");
 					}
+
+					if(ifttt_support || alexa_support){
+						retArray.push("menu_Alexa_IFTTT");
+					}
 				}
 				else if(isSwMode("ap")){
 					retArray.push("menu_GameBoost");
@@ -391,6 +395,10 @@ define(function(){
 					retArray.push("menu_VPN");
 					retArray.push("menu_VLAN");
 					retArray.push("menu_Firewall");
+
+					if(ifttt_support || alexa_support){
+						retArray.push("menu_Alexa_IFTTT");
+					}
 				}
 				else if(isSwMode("mb")){
 					retArray.push("menu_GameBoost");
@@ -408,6 +416,10 @@ define(function(){
 					retArray.push("menu_VPN");
 					retArray.push("menu_VLAN");
 					retArray.push("menu_Firewall");
+
+					if(ifttt_support || alexa_support){
+						retArray.push("menu_Alexa_IFTTT");
+					}
 				}
 
 				return retArray;

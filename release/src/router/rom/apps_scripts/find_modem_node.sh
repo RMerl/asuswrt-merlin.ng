@@ -246,6 +246,16 @@ _get_gobi_device(){
 	echo "0"
 }
 
+_is_ET128(){
+	ret="0"
+
+	if [ "$modem_vid" == "4817" -a "$modem_pid" == "7433" ]; then
+		ret="1"
+	fi
+
+	echo -n "$ret"
+}
+
 
 act_devs=`_find_act_devs`
 echo "act_devs=$act_devs."
@@ -255,7 +265,15 @@ echo "io_devs=$io_devs."
 
 is_gobi=`_get_gobi_device $modem_vid $modem_pid`
 
-if [ "$modem_type" == "tty" ] && [ "$modem_vid" == "6610" -o "$modem_vid" == "1032" -o "$modem_vid" == "6797" ]; then
+
+et128=`_is_ET128`
+if [ "$et128" == "1" ]; then
+	first_int_dev="ttyACM0"
+	echo "first_int_dev=$first_int_dev."
+
+	first_bulk_dev=""
+	echo "first_bulk_dev=$first_bulk_dev."
+elif [ "$modem_type" == "tty" ] && [ "$modem_vid" == "6610" -o "$modem_vid" == "1032" -o "$modem_vid" == "6797" ]; then
 	# e.q. ZTE MF637U, ROYAL Q110, Bandluxe C120.
 	first_int_dev=`_find_first_int_dev "$io_devs"`
 	echo "first_int_dev=$first_int_dev."

@@ -73,7 +73,7 @@ endif
 ifeq ($(RTCONFIG_AMAS),y)
 COMMON_OBJS += chmgmt.o
 endif
-COMMON_OBJS += encrypt.o cfg_crc.o cfg_udp.o cfg_dencrypt.o cfg_common.o cfg_ipc.o cfg_wevent.o cfg_upgrade.o cfg_clientlist.o cfg_sched.o
+COMMON_OBJS += encrypt.o cfg_crc.o cfg_udp.o cfg_dencrypt.o cfg_common.o cfg_ipc.o cfg_wevent.o cfg_upgrade.o cfg_clientlist.o cfg_sched.o cfg_slavelist.o
 SERVER_OBJS += $(COMMON_OBJS) cfg_mnt.o
 CLIENT_OBJS += $(COMMON_OBJS) cfg_client.o
 REPORTSTATUS_OBJS += cfg_common.o cfg_reportstatus.o

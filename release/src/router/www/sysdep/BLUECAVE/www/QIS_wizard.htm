@@ -53,7 +53,7 @@
 					systemVariable.territoryCode = initNvram.territory_code;
 					systemVariable.rebootTime = initNvram.reboot_time;
 					systemVariable.lanIpaddr = initNvram.lan_ipaddr;
-					systemVariable.forceChangePw = (httpApi.hookGet("check_pw").check_pw == '1') ? true : false;
+					systemVariable.forceChangePw = (httpApi.hookGet("check_pw") == '1') ? true : false;
 
 					handleSysDep();
 
@@ -180,9 +180,7 @@
 						<div class="selectorTopContainer">
 							<div class="selectorContainer">
 								<div class="selectorContainerDiv">
-									<div class="selectBar" onclick="apply.changeOpMode()">
-										Choose operation mode
-									</div>
+									<div class="selectBar" onclick="apply.changeOpMode()"><#OP_Choose#></div>
 									<div class="narrowContainer">
 										<div class="icon_arrow_right" style="width:20px;height:32px;"></div>
 									</div>
@@ -540,6 +538,64 @@
 							<div class="selectorContainer">
 								<div class="selectorContainerDiv">
 									<div class="selectBar" onclick="goTo.autoIP()">
+										<#checkbox_No#>
+									</div>
+									<div class="narrowContainer">
+										<div class="icon_arrow_right" style="width:20px;height:32px;"></div>
+									</div>
+								</div>
+							</div>
+						</div>		
+					</div>
+
+					<div>
+						<!-- Action Button -->
+						<div class="footer_desktop">
+							<div class="desktop_abortBtn" onclick='abort.wanType()'><#CTL_prev#></div>
+						</div>
+						<div class="footer_mobile">
+							<table style="width:100%;" cellpadding="0" cellspacing="0">
+								<tr>
+									<td class="mobileAbort" style="width:100%;" onclick='abort.wanType()'>
+										<div class="mobile_abortBtn"><#CTL_prev#></div>
+									</td>
+								</tr>
+							</table>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<!-- Account prompt for PPPDHCP -->
+		<div id="wanTypePrompt_setting" data-role="page" class="qisBackground">
+			<div class="headerBar"></div>
+			<div class="tableContainer">
+				<div class="desktop_left_field">
+					<div>
+						<div class="titleMain"><#Internet#></div>
+						<div class="titleSub"><#Connectiontype#></div>
+					</div>
+				</div>
+				<div class="table_td">
+					<div class="pageDesc"><#QIS_SmartConn_title1#></div>
+					<div>
+						<div class="selectorTopContainer" id="test">
+							<div class="selectorContainer">
+								<div class="selectorContainerDiv" onclick="goTo.PPPoE()">
+									<div class="selectBar">
+										<#checkbox_Yes#>
+									</div>
+									<div class="narrowContainer">
+										<div class="icon_arrow_right" style="width:20px;height:32px;"></div>
+									</div>
+								</div>
+							</div>
+						</div>
+						<div class="selectorTopContainer">
+							<div class="selectorContainer">
+								<div class="selectorContainerDiv">
+									<div class="selectBar" onclick="goTo.DHCP()">
 										<#checkbox_No#>
 									</div>
 									<div class="narrowContainer">
@@ -1357,7 +1413,7 @@
 					<div class="titleSub"><#WLANConfig11b_RBRList_groupitemdesc#></div>
 				</div>
 				<div class="table_td">
-					<div class="pageDesc">Select the Wi-Fi network you would like to extend.</div>
+					<div class="pageDesc"><#QIS_extend_AP#></div>
 					<div>
 						<div id="apList" class="selectorTopContainer"></div>
 

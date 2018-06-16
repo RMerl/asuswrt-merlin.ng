@@ -58,6 +58,8 @@ int wds_enable(void)
 #endif
 
 #ifdef CONFIG_BCMWL5
+extern int restore_defaults_g;
+
 int
 start_nas(void)
 {
@@ -65,7 +67,11 @@ start_nas(void)
 	pid_t pid;
 
 	stop_nas();
-	return _eval(nas_argv, NULL, 0, &pid);
+
+	if (!restore_defaults_g)
+		return _eval(nas_argv, NULL, 0, &pid);
+
+	return 0;
 }
 
 void
@@ -281,11 +287,12 @@ _dprintf("%s: Start to run...\n", __FUNCTION__);
 			nvram_set_int("wlc_state", WLC_STATE_STOPPED);
 			nvram_set_int("wlc_sbstate", WLC_STOPPED_REASON_NO_SIGNAL);
 		}
+
 		// let ret be two value: connected, disconnected.
-		if (ret != WLC_STATE_CONNECTED)
+		if (ret != WLC_STATE_CONNECTED ||
+			(nvram_match("lan_proto", "dhcp") && nvram_get_int("lan_state_t") != LAN_STATE_CONNECTED))
 			ret = WLC_STATE_CONNECTING;
-		else if (nvram_match("lan_proto", "dhcp") && nvram_get_int("lan_state_t") != LAN_STATE_CONNECTED)
-			ret = WLC_STATE_CONNECTING;
+
 		if(link_setup == 1){
 			if(ret != WLC_STATE_CONNECTED){
 				if(wlc_count < 3){
@@ -315,14 +322,8 @@ _dprintf("Ready to disconnect...%d.\n", wlc_count);
 		}
 
 		if (ret != old_ret) {
-			if (link_setup == 0) {
-				if (ret == WLC_STATE_CONNECTED)
-					link_setup = 1;
-				/*else {
-					sleep(5);
-					continue;
-				}//*/
-			}
+			if (link_setup == 0 && ret == WLC_STATE_CONNECTED)
+				link_setup = 1;
 
 			if (link_setup) {
 				if (ret == WLC_STATE_CONNECTED)
@@ -338,9 +339,6 @@ _dprintf("Ready to disconnect...%d.\n", wlc_count);
 				else
 				{
 					notify_rc_and_wait("restart_wlcmode 0");
-#ifdef CONFIG_BCMWL5
-					notify_rc("restart_wireless");
-#endif
 #if defined(RTCONFIG_CONCURRENTREPEATER) && defined(RTCONFIG_RALINK)
 					nvram_set_int("lan_ready",0);
 #endif

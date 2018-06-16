@@ -25,11 +25,6 @@
 <style>
 </style>
 <script>
-if(!Qcawifi_support)
-{
-	var radio_2 = '<% nvram_get("wl0_radio"); %>';
-	var radio_5 = '<% nvram_get("wl1_radio"); %>';
-}
 <% radio_status(); %>
 
 var wl1_nmode_x = '<% nvram_get("wl1_nmode_x"); %>';
@@ -65,8 +60,7 @@ Object.prototype.getKey = function(value) {
 function initial(){
 	show_menu();	
 
-	if(Qcawifi_support)
-	{
+	if(Qcawifi_support){
 		radio_2 = '<% nvram_get("wl0_radio"); %>';
 		radio_5 = '<% nvram_get("wl1_radio"); %>';
 	}
@@ -396,7 +390,7 @@ function gen_gntable_tr(unit, gn_array, slicesb){
 			}
 
 			if(i == (gn_array_length-1)){
-				htmlcode += '<tfoot><tr><td align="center"><div id="smart_home_'+unit+'" style="font-size: 12px;font-weight:bolder;color:rgb(255, 204, 0);position:absolute;margin:33px 0px 0px -20px;display:none">Default setting by Alexa/IFTTT</div></td></tr></tfoot>';
+				htmlcode += '<tfoot><tr><td align="center"><div id="smart_home_'+unit+'" style="font-size: 12px;font-weight:bolder;color:rgb(255, 204, 0);position:absolute;margin:33px 0px 0px -20px;display:none"><#Guest_Network_AlexaIFTTT_setting#></div></td></tr></tfoot>';
 			}
 			htmlcode += '</table></td>';		
 	}	
@@ -823,6 +817,13 @@ function change_guest_unit(_unit, _subunit){
 	}
 	
 	idx = _subunit - 1;
+	if(gn_array[idx][22] == "1"){
+		document.form.wl_closed[0].checked=true;
+	}
+	else{
+		document.form.wl_closed[1].checked=true;
+	}
+
 	limit_auth_method(_unit);
 	document.form.wl_unit.value = _unit;
 	document.form.wl_subunit.value = _subunit;
@@ -1346,6 +1347,13 @@ function show_bandwidth(flag){
 										<option class="content_input_fd" value="0" <% nvram_match("wl_bss_enabled", "0","selected"); %>><#checkbox_No#></option>
 										<option class="content_input_fd" value="1" <% nvram_match("wl_bss_enabled", "1","selected"); %>><#checkbox_Yes#></option>
 									</select>			
+								</td>
+							</tr>
+							<tr class="captive_portal_control_class">
+								<th><#WLANConfig11b_x_BlockBCSSID_itemname#></th>
+								<td>
+									<input type="radio" value="1" name="wl_closed" class="content_input_fd" ><#checkbox_Yes#>
+									<input type="radio" value="0" name="wl_closed" class="content_input_fd" ><#checkbox_No#>
 								</td>
 							</tr>
 							<tr>

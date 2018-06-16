@@ -7,7 +7,7 @@
 <meta HTTP-EQUIV="Pragma" CONTENT="no-cache">
 <meta HTTP-EQUIV="Expires" CONTENT="-1">
 <title><#Web_Title#> - <#AiProtection_filter#></title>
-<link rel="stylesheet" type="text/css" href="index_style.css"> 
+<link rel="stylesheet" type="text/css" href="index_style.css">
 <link rel="stylesheet" type="text/css" href="form_style.css">
 <link rel="stylesheet" type="text/css" href="device-map/device-map.css">
 <script type="text/javascript" src="state.js"></script>
@@ -51,7 +51,7 @@ window.onresize = function() {
 	if(document.getElementById("agreement_panel").style.display == "block") {
 		cal_panel_block("agreement_panel", 0.25);
 	}
-} 
+}
 
 var apps_filter = "<% nvram_get("wrs_rulelist"); %>".replace(/&#62/g, ">").replace(/&#60/g, "<");
 var wrs_filter = "<% nvram_get("wrs_rulelist"); %>".replace(/&#62/g, ">").replace(/&#60/g, "<");
@@ -61,11 +61,11 @@ var wrs_id_array = [["1,2,3,4,5,6,8", "9,10,14,15,16,25,26", "11"],
 					["24", "51", "53,89", "42", ""],
 					["56,70,71", "57"],
 					["", "69", "23"]];
-				
+
 var apps_id_array = [["22", "", ""],
 					 ["24", "0,6,15", "", "", "21"],
 					 ["3", "1"],
-					 ["8", "4", ""]];					 
+					 ["8", "4", ""]];
 
 var curState = '<% nvram_get("wrs_enable"); %>';
 
@@ -79,16 +79,16 @@ function initial(){
 		showhide("list_table",1);
 	else
 		showhide("list_table",0);
-	
+
 	showDropdownClientList('setClientIP', 'mac', 'all', 'ClientList_Block_PC', 'pull_arrow', 'all');
 }
 
 function pullLANIPList(obj){
 	var element = document.getElementById('ClientList_Block_PC');
 	var isMenuopen = element.offsetWidth > 0 || element.offsetHeight > 0;
-	if(isMenuopen == 0){		
+	if(isMenuopen == 0){
 		obj.src = "/images/arrow-top.gif"
-		element.style.display = 'block';		
+		element.style.display = 'block';
 		document.form.PC_devicename.focus();
 	}
 	else
@@ -110,36 +110,36 @@ function show_subCategory(obj){
 	var sub_category_state = obj.className
 	var sub_category = $(obj).siblings()[1];
 	var category_desc = $(obj).siblings()[2];
-	
-	if(sub_category_state == "closed"){	
+
+	if(sub_category_state == "closed"){
 		sub_category.style.display = "";
 		if(category_desc)
 			category_desc.style.display = "none";
-		
+
 		obj.setAttribute("class", "opened");
 		if(previous_obj != ""){		//Hide another category
 			$(previous_obj).siblings()[1].style.display = "none";
 			if($(previous_obj).siblings()[2])
 				$(previous_obj).siblings()[2].style.display = "";
-			
-			previous_obj.setAttribute("class", "closed");	
+
+			previous_obj.setAttribute("class", "closed");
 		}
 
 		previous_obj = obj;
 	}
-	else{		
+	else{
 		sub_category.style.display = "none";
 		if($(previous_obj).siblings()[2])
 			$(previous_obj).siblings()[2].style.display = "";
-		
-		obj.setAttribute("class", "closed");		
+
+		obj.setAttribute("class", "closed");
 		if($(previous_obj).siblings()[1] = sub_category){			//To handle open, close the same category
 			$(previous_obj).siblings()[1] = "";
-			previous_obj = "";	
+			previous_obj = "";
 		}
 	}
 }
-	
+
 function set_category(obj, flag){
 	var checked_flag = 0;
 
@@ -147,20 +147,20 @@ function set_category(obj, flag){
 		var children_length = $(obj).siblings()[1].children.length;
 		if(obj.checked == true){
 			for(var i=0; i<children_length; i++){
-				$(obj).siblings()[1].children[i].children[1].checked = true;	
+				$(obj).siblings()[1].children[i].children[1].checked = true;
 			}
 		}
 		else{
 			for(var i=0; i<children_length; i++){
-				$(obj).siblings()[1].children[i].children[1].checked = false;	
-			}	
+				$(obj).siblings()[1].children[i].children[1].checked = false;
+			}
 		}
 	}
 	else{
 		var parent_category = $(obj.parentNode.parentNode).siblings()[1];
 		var sibling = $(obj.parentNode).siblings();
 		var sibling_length = $(obj.parentNode).siblings().length;
-		
+
 		if(obj.checked == true){
 			if(parent_category.checked != true)
 				parent_category.checked = true;
@@ -168,33 +168,33 @@ function set_category(obj, flag){
 		else{
 			for(var i=0; i<sibling_length; i++){
 				if(sibling[i].children[1].checked == true){
-					checked_flag = 1;			
+					checked_flag = 1;
 				}
 			}
 
 			if(checked_flag == 0){
-				parent_category.checked =false;		
-			}	
+				parent_category.checked =false;
+			}
 		}
-	}	
+	}
 }
 
 function deleteRow_main(obj){
 	 var item_index = obj.parentNode.parentNode.rowIndex;
 		document.getElementById(obj.parentNode.parentNode.parentNode.parentNode.id).deleteRow(item_index);
-	
+
 	var target_mac = obj.parentNode.parentNode.children[1].title;
 	var apps_filter_row = apps_filter.split("<");
 	var apps_filter_temp = "";
 	for(var i=0;i<apps_filter_row.length;i++){
-		var apps_filter_col = apps_filter_row[i].split(">");	
+		var apps_filter_col = apps_filter_row[i].split(">");
 			if(apps_filter_col[1] != target_mac){
 				if(apps_filter_temp == ""){
-					apps_filter_temp += apps_filter_row[i];			
+					apps_filter_temp += apps_filter_row[i];
 				}
 				else{
-					apps_filter_temp += "<" + apps_filter_row[i];				
-				}			
+					apps_filter_temp += "<" + apps_filter_row[i];
+				}
 			}
 	}
 
@@ -208,7 +208,7 @@ function check_macaddr(obj,flag){ //control hint of input mac address
 		childsel.setAttribute("id","check_mac");
 		childsel.style.color="#FFCC00";
 		obj.parentNode.appendChild(childsel);
-		document.getElementById("check_mac").innerHTML="<#LANHostConfig_ManualDHCPMacaddr_itemdesc#>";		
+		document.getElementById("check_mac").innerHTML="<#LANHostConfig_ManualDHCPMacaddr_itemdesc#>";
 		document.getElementById("check_mac").style.display = "";
 		return false;
 	}else if(flag ==2){
@@ -218,14 +218,14 @@ function check_macaddr(obj,flag){ //control hint of input mac address
 		obj.parentNode.appendChild(childsel);
 		document.getElementById("check_mac").innerHTML="<#IPConnection_x_illegal_mac#>";
 		document.getElementById("check_mac").style.display = "";
-		return false;		
-	}else{	
+		return false;
+	}else{
 		document.getElementById("check_mac") ? document.getElementById("check_mac").style.display="none" : true;
 		return true;
-	}	
+	}
 }
 
-function addRow_main(obj, length){	
+function addRow_main(obj, length){
 	var category_array = $(obj.parentNode).siblings()[2].children;
 	var subCategory_array;
 	var category_checkbox;
@@ -252,14 +252,14 @@ function addRow_main(obj, length){
 	}
 	else if(!check_macaddr(document.form.PC_devicename, check_hwaddr_flag(document.form.PC_devicename))){
 		document.form.PC_devicename.focus();
-		document.form.PC_devicename.select();	
-		return false;	
+		document.form.PC_devicename.select();
+		return false;
 	}
-	
+
 	for(var i=0; i < category_array.length;i++){
-		subCategory_array = category_array[i].children[2].children;	
-		for(var j=0;j<subCategory_array.length;j++){	
-			category_checkbox = category_array[i].children[2].children[j].children[1];	
+		subCategory_array = category_array[i].children[2].children;
+		for(var j=0;j<subCategory_array.length;j++){
+			category_checkbox = category_array[i].children[2].children[j].children[1];
 			if(category_checkbox.checked)
 				blank_category = 1;
 		}
@@ -274,7 +274,7 @@ function addRow_main(obj, length){
 			}
 		}
 	}
-	
+
 	if(blank_category == 0){
 		alert("<#AiProtection_Category_Alert#>");
 		return false;
@@ -282,59 +282,59 @@ function addRow_main(obj, length){
 
 	if(apps_filter == ""){
 		apps_filter += enable_checkbox.checked ? 1:0;
-	}	
+	}
 	else{
 		apps_filter += "<";
 		apps_filter += enable_checkbox.checked ? 1:0;
-	}	
+	}
 
 	apps_filter += ">" + document.form.PC_devicename.value.toUpperCase() + ">";
 
 	/* To check which checkbox is checked*/
 	for(var i=0; i < category_array.length;i++){
 		first_catID = 0;
-		subCategory_array = category_array[i].children[2].children;	
-		for(var j=0;j<subCategory_array.length;j++){	
+		subCategory_array = category_array[i].children[2].children;
+		for(var j=0;j<subCategory_array.length;j++){
 			category_checkbox = category_array[i].children[2].children[j].children[1];
-			if(first_catID == 0){	
+			if(first_catID == 0){
 				apps_filter += category_checkbox.checked ? 1:0;
-				first_catID = 1;				
+				first_catID = 1;
 			}
-			else{	
+			else{
 				apps_filter += ",";
-				apps_filter += category_checkbox.checked ? 1:0;		
+				apps_filter += category_checkbox.checked ? 1:0;
 			}
-			
+
 			if(category_checkbox.checked)
 				blank_category = 1;
 		}
-		
+
 		if(i != category_array.length -1)
 			apps_filter += ">";
 	}
-	
+
 	document.form.PC_devicename.value = "";
-	genMain_table();	
+	genMain_table();
 }
-					 
+
 function genMain_table(){
 	var category_name = ["<#AiProtection_filter_Adult#>", "<#AiProtection_filter_message#>", "<#AiProtection_filter_p2p#>", "<#AiProtection_filter_stream#>"];
 	var sub_category_name = [["<#AiProtection_filter_Adult1#>", "<#AiProtection_filter_Adult2#>", "<#AiProtection_filter_Adult3#>"],
 							 ["<#AiProtection_filter_Adult4#>", "<#AiProtection_filter_Adult5#>", "<#AiProtection_filter_Adult6#>", "<#AiProtection_filter_Adult7#>", "<#AiProtection_filter_Adult8#>"],
 							 ["<#AiProtection_filter_p2p1#>", "<#AiProtection_filter_p2p2#>"],
 							 ["<#AiProtection_filter_stream1#>", "<#AiProtection_filter_stream2#>", "<#AiProtection_filter_stream3#>"]];
-	var category_desc = ["<#AiProtection_filter_Adult_desc#>", 
-						 "<#AiProtection_filter_message_desc#>", 
-						 "<#AiProtection_filter_p2p_desc#>", 
+	var category_desc = ["<#AiProtection_filter_Adult_desc#>",
+						 "<#AiProtection_filter_message_desc#>",
+						 "<#AiProtection_filter_p2p_desc#>",
 						 "<#AiProtection_filter_stream_desc#>"];
 
 	var apps_filter_row = apps_filter.split("<");
-	var code = "";	
+	var code = "";
 	var clientListEventData = [];
 	code += '<table width="100%" border="1" cellspacing="0" cellpadding="4" align="center" class="FormTable_table" id="mainTable_table">';
 	code += '<thead><tr>';
 	code += '<td colspan="5"><#ConnectedClient#>&nbsp;(<#List_limit#>&nbsp;16)</td>';
-	code += '</tr></thead>';	
+	code += '</tr></thead>';
 	code += '<tbody>';
 	code += '<tr>';
 	code += '<th width="5%" height="30px" title="<#select_all#>">';
@@ -344,14 +344,14 @@ function genMain_table(){
 	code += '<th width="40%"><#AiProtection_filter_category#></th>';
 	code += '<th width="10%"><#list_add_delete#></th>';
 	code += '</tr>';
-	code += '<tr id="main_element">';	
+	code += '<tr id="main_element">';
 	code += '<td style="border-bottom:2px solid #000;" title="<#WLANConfig11b_WirelessCtrl_button1name#>/<#btn_disable#>">';
 	code += '<input type="checkbox" checked="">';
 	code += '</td>';
 	code += '<td style="border-bottom:2px solid #000;">';
 	code += '<input type="text" maxlength="17" style="margin-left:10px;float:left;width:255px;" class="input_20_table" name="PC_devicename" onkeypress="return validator.isHWAddr(this,event)" onclick="hideClients_Block();" placeholder="ex: <% nvram_get("lan_hwaddr"); %>" autocorrect="off" autocapitalize="off">';
 	code += '<img id="pull_arrow" height="14px;" src="/images/arrow-down.gif" onclick="pullLANIPList(this);" title="<#select_client#>">';
-	code += '<div id="ClientList_Block_PC" class="clientlist_dropdown" style="margin-top:25px;margin-left:10px;"></div>';	
+	code += '<div id="ClientList_Block_PC" class="clientlist_dropdown" style="margin-top:25px;margin-left:10px;"></div>';
 	code += '</td>';
 	code += '<td style="border-bottom:2px solid #000;text-align:left;">';
 	for(var i=0;i<category_name.length;i++){
@@ -360,14 +360,14 @@ function genMain_table(){
 		code += '<input type="checkbox" onclick="set_category(this, 0);">'+category_name[i];
 		code += '<div style="display:none;font-size:12px;">';
 		for(var j=0;j<sub_category_name[i].length;j++){
-			code += '<div style="margin-left:20px;"><img src="/images/Tree/vert_line_s01.gif"><input type="checkbox" onclick="set_category(this, 1);">' + sub_category_name[i][j] + '</div>';		
+			code += '<div style="margin-left:20px;"><img src="/images/Tree/vert_line_s01.gif"><input type="checkbox" onclick="set_category(this, 1);">' + sub_category_name[i][j] + '</div>';
 		}
-	
+
 		code += '</div>';
 		code += '<div style="margin-left:25px;color:#FC0;font-style:italic;font-size:12px;font-weight:normal;">'+ category_desc[i] +'</div>';
-		code += '</div>';	
+		code += '</div>';
 	}
-	
+
 	code += '</td>';
 	code += '<td style="border-bottom:2px solid #000;"><input class="add_btn" type="button" onclick="addRow_main(this, 16)" value=""></td>';
 	code += '</tr>';
@@ -425,9 +425,9 @@ function genMain_table(){
 			code += '<td title="<#WLANConfig11b_WirelessCtrl_button1name#>/<#btn_disable#>">';
 			if(apps_filter_col[0] == 1)
 				code += '<input type="checkbox" checked>';
-			else	
+			else
 				code += '<input type="checkbox">';
-							
+
 			code += '</td>';
 
 			code +='<td title="' + clientMac + '">';
@@ -460,8 +460,8 @@ function genMain_table(){
 			code += '<div>' + clientMac + '</div>';
 			code += '</td></tr></table>';
 			code +='</td>';
-			
-			code += '<td style="text-align:left;">';	
+
+			code += '<td style="text-align:left;">';
 			for(var i=0;i<category_name.length;i++){
 				var cate_flag_array = new Array(apps_filter_col[i+2]);
 				var cate_flag_array_col = cate_flag_array[0].split(",");
@@ -485,19 +485,19 @@ function genMain_table(){
 						code += '<div style="margin-left:20px;"><img src="/images/Tree/vert_line_s01.gif"><input type="checkbox" onclick="set_category(this, 1);">' + sub_category_name[i][j] + '</div>';
 					}
 				}
-			
+
 				code += '</div>';
 				code += '</div>';
 			}
-			
+
 			code += '</td>';
 			code += '<td><input class="remove_btn" type="button" onclick="deleteRow_main(this);"></td>';
 			code += '</tr>';
 			clientListEventData.push({"mac" : clientMac, "name" : clientName, "ip" : clientIP, "callBack" : "WebProtector"});
 		}
 	}
-	
-	code += '</tbody>';	
+
+	code += '</tbody>';
 	code += '</table>';
 	document.getElementById('mainTable').innerHTML = code;
 	for(var i = 0; i < clientListEventData.length; i += 1) {
@@ -515,7 +515,7 @@ function genMain_table(){
 function edit_table(){
 	var apps_filter_temp = "";
 	var first_element = $('#main_element').siblings();
-	
+
 	for(var k=1;k<first_element.length;k++){
 		var enable_checkbox = first_element[k].children[0].children[0].checked ? 1:0;
 		var target_mac = first_element[k].children[1].title;
@@ -524,15 +524,15 @@ function edit_table(){
 		var category_checkbox;
 		var first_catID = 0;
 		var blank_category = 0;
-		
+
 		if(k == 1)
 			apps_filter_temp += enable_checkbox;
 		else{
 			apps_filter_temp += "<" + enable_checkbox;;
 		}
-		
+
 		apps_filter_temp += ">" + target_mac + ">";
-		
+
 		for(var i=0; i < category_array.length;i++){
 			first_catID = 0;
 			subCategory_array = category_array[i].children[2].children;
@@ -540,62 +540,62 @@ function edit_table(){
 				category_checkbox = category_array[i].children[2].children[j].children[1];
 				if(category_checkbox.checked)
 					blank_category = 1;
-				
-				if(first_catID == 0){	
-					apps_filter_temp += category_checkbox.checked ? 1:0;	
-					first_catID = 1;				
+
+				if(first_catID == 0){
+					apps_filter_temp += category_checkbox.checked ? 1:0;
+					first_catID = 1;
 				}
-				else{	
+				else{
 					apps_filter_temp += ",";
-					apps_filter_temp += category_checkbox.checked ? 1:0;		
+					apps_filter_temp += category_checkbox.checked ? 1:0;
 				}
-			}			
-			
+			}
+
 			if(i != category_array.length -1)
 				apps_filter_temp += ">";
-		}		
-		
+		}
+
 		if(blank_category == 0){
 				alert("<#AiProtection_Category_Alert#>");
 				return false;
 		}
 	}
-	
-	
+
+
 	apps_filter = apps_filter_temp;
 	return true;
 }
 
 var ctf_disable = '<% nvram_get("ctf_disable"); %>';
-var ctf_fa_mode = '<% nvram_get("ctf_fa_mode"); %>';					
+var ctf_fa_mode = '<% nvram_get("ctf_fa_mode"); %>';
 function applyRule(){
 	var apps_filter_row = "";
 	if(document.form.PC_devicename.value != ""){
 		alert("You must press add icon to add a new rule first.");
 		return false;
 	}
-	
+
 	if(apps_filter != ""){
 		if(edit_table())
 			apps_filter_row =  apps_filter.split("<");
-		else	
+		else
 			return false;
-	}	
+	}
 
 	var wrs_rulelist = "";
 	var apps_rulelist = "";
 	for(var i=0;i<apps_filter_row.length;i++){
-		var apps_filter_col =  apps_filter_row[i].split(">");	
+		var apps_filter_col =  apps_filter_row[i].split(">");
 		for(var j=0;j<apps_filter_col.length;j++){
-			if(j == 0){		
+			if(j == 0){
 				if(wrs_rulelist == ""){
 					wrs_rulelist += apps_filter_col[j] + ">";
 					apps_rulelist += apps_filter_col[j] + ">";
-				}	
-				else{	
-					wrs_rulelist += "<" + apps_filter_col[j] + ">";	
-					apps_rulelist += "<" + apps_filter_col[j] + ">";				
-				}	
+				}
+				else{
+					wrs_rulelist += "<" + apps_filter_col[j] + ">";
+					apps_rulelist += "<" + apps_filter_col[j] + ">";
+				}
 			}
 			else if(j == 1){
 				wrs_rulelist += apps_filter_col[j] + ">";
@@ -606,8 +606,8 @@ function applyRule(){
 				var wrs_first_cate = 0;
 				var apps_first_cate = 0;
 				for(var k=0;k<cate_id_array.length;k++){
-					if(cate_id_array[k] == 1){						
-						if(wrs_first_cate == 0){						
+					if(cate_id_array[k] == 1){
+						if(wrs_first_cate == 0){
 							if(wrs_id_array[j-2][k] != ""){
 								wrs_rulelist += wrs_id_array[j-2][k];
 								wrs_first_cate = 1;
@@ -618,8 +618,8 @@ function applyRule(){
 								wrs_rulelist += "," + wrs_id_array[j-2][k];
 							}
 						}
-						
-						if(apps_first_cate == 0){						
+
+						if(apps_first_cate == 0){
 							if(apps_id_array[j-2][k] != ""){
 								apps_rulelist += apps_id_array[j-2][k];
 								apps_first_cate = 1;
@@ -629,16 +629,16 @@ function applyRule(){
 							if(apps_id_array[j-2][k] != ""){
 								apps_rulelist += "," + apps_id_array[j-2][k];
 							}
-						}		
-					}						
+						}
+					}
 				}
-				
+
 				if(j != apps_filter_col.length-1){
 					wrs_rulelist += ">";
 					apps_rulelist += ">";
 				}
 			}
-		}	
+		}
 	}
 
 	document.form.action_script.value = "restart_wrs;restart_firewall";
@@ -647,11 +647,11 @@ function applyRule(){
 	if(ctf_disable == 0 && ctf_fa_mode == 2){
 		if(!confirm(Untranslated.ctf_fa_hint)){
 			return false;
-		}	
+		}
 		else{
 			document.form.action_script.value = "reboot";
 			document.form.action_wait.value = "<% nvram_get("reboot_time"); %>";
-		}	
+		}
 	}
 
 	if(reset_wan_to_fo(document.form, document.form.wrs_enable.value)) {
@@ -667,12 +667,12 @@ function translate_category_id(){
 	var wrs_app_filter_row = "";
 	if(apps_filter != "")
 		apps_filter_row =  apps_filter.split("<");
-	
+
 	if(wrs_filter != "" || wrs_app_filter != ""){
 		wrs_filter_row =  wrs_filter.split("<");
-		wrs_app_filter_row =  wrs_app_filter.split("<");	
+		wrs_app_filter_row =  wrs_app_filter.split("<");
 	}
-	
+
 	var apps_filter_temp = "";
 	var wrs_filter_temp = "";
 	var wrs_app_filter_temp = "";
@@ -689,22 +689,22 @@ function translate_category_id(){
 					apps_filter_temp += "<" + wrs_filter_col[j] + ">";
 			}
 			else if(j == 1){
-				apps_filter_temp += wrs_filter_col[j] + ">";	
+				apps_filter_temp += wrs_filter_col[j] + ">";
 			}
 			else{
-				for(var k=0;k<mapping_array_init[j-2].length;k++){		
+				for(var k=0;k<mapping_array_init[j-2].length;k++){
 					if(wrs_filter_col[j] != "" && wrs_app_filter_col[j] != ""){
 						if(wrs_id_array[j-2][k] != ""){
 							if(wrs_id_array[j-2][k] != "" && (wrs_filter_col[j].indexOf(wrs_id_array[j-2][k]) != -1)){
 								mapping_array_init[j-2][k] = 1;
 							}
 						}
-							
+
 						if(apps_id_array[j-2][k] != ""){
 							if(apps_id_array[j-2][k] != "" && (wrs_app_filter_col[j].indexOf(apps_id_array[j-2][k]) != -1)){
-								mapping_array_init[j-2][k] = 1;	
-							}	
-						}						
+								mapping_array_init[j-2][k] = 1;
+							}
+						}
 					}
 					else if(wrs_filter_col[j] != ""){
 						if(wrs_id_array[j-2][k] != ""  && (wrs_filter_col[j].indexOf(wrs_id_array[j-2][k]) != -1)){
@@ -719,13 +719,13 @@ function translate_category_id(){
 					else{
 						mapping_array_init[j-2][k] = 0;
 					}
-						
+
 					if(k == 0)
-						apps_filter_temp += mapping_array_init[j-2][k];	
+						apps_filter_temp += mapping_array_init[j-2][k];
 					else
-						apps_filter_temp += "," + mapping_array_init[j-2][k];						
-				}	
-	
+						apps_filter_temp += "," + mapping_array_init[j-2][k];
+				}
+
 				if(j != apps_filter_col.length-1 )
 					apps_filter_temp += ">";
 			}
@@ -739,7 +739,7 @@ function translate_category_id(){
 
 function show_inner_tab(){
 	var code = "";
-	if(document.form.current_page.value == "ParentalControl.asp"){		
+	if(document.form.current_page.value == "ParentalControl.asp"){
 		code += '<span class="clicked">Time Limits</span>';
 		code += '<a href="AiProtection_WebProtector.asp">';
 		code += "<span style=\"margin-left:10px\" class=\"click\"><#AiProtection_filter#></span>";
@@ -749,49 +749,20 @@ function show_inner_tab(){
 		code += '<a href="ParentalControl.asp">';
 		code += '<span class="click">Time Limits</span>';
 		code += '</a>';
-		code += "<span style=\"margin-left:10px\" class=\"clicked\"><#AiProtection_filter#></span>";	
+		code += "<span style=\"margin-left:10px\" class=\"clicked\"><#AiProtection_filter#></span>";
 	}
 
 	document.getElementById('switch_menu').innerHTML = code;
 }
 
 function show_tm_eula(){
-	if(document.form.preferred_lang.value == "JP"){
-		$.get("JP_tm_eula.htm", function(data){
-			document.getElementById('agreement_panel').innerHTML= data;
-			adjust_TM_eula_height("agreement_panel");
-		});
-	}
-	else if(document.form.preferred_lang.value == "TW"){
-		$.get("tm_eula_TC.htm", function(data){
-			document.getElementById('agreement_panel').innerHTML= data;
-			adjust_TM_eula_height("agreement_panel");
-		});
-	}
-	else if(document.form.preferred_lang.value == "CN"){
-		$.get("tm_eula_SC.htm", function(data){
-			document.getElementById('agreement_panel').innerHTML= data;
-			adjust_TM_eula_height("agreement_panel");
-		});
-	}
-	else if(document.form.preferred_lang.value == "FR"){
-		$.get("tm_eula_FR.htm", function(data){
-			document.getElementById('agreement_panel').innerHTML= data;
-			adjust_TM_eula_height("agreement_panel");
-		});
-	}
-	else if(document.form.preferred_lang.value == "RU"){
-		$.get("tm_eula_RU.htm", function(data){
-			document.getElementById('agreement_panel').innerHTML= data;
-			adjust_TM_eula_height("agreement_panel");
-		});
-	}																			
-	else{
-		$.get("tm_eula.htm", function(data){
-			document.getElementById('agreement_panel').innerHTML= data;
-			adjust_TM_eula_height("agreement_panel");
-		});
-	}
+  $.get("tm_eula.htm", function(data){
+  	document.getElementById('agreement_panel').innerHTML= data;
+		var url = "https://www.asus.com/Microsite/networks/Trend_Micro_EULA/" + document.form.preferred_lang.value;
+		$("#eula_url").attr("href",url);
+  	adjust_TM_eula_height("agreement_panel");
+  });
+
 	dr_advise();
 	cal_panel_block("agreement_panel", 0.25);
 	$("#agreement_panel").fadeIn(300);
@@ -808,8 +779,8 @@ function cancel(){
 
 function eula_confirm(){
 	document.form.TM_EULA.value = 1;
-	document.form.wrs_enable.value = 1;	
-	document.form.wrs_app_enable.value = 1;	
+	document.form.wrs_enable.value = 1;
+	document.form.wrs_app_enable.value = 1;
 	document.form.action_wait.value = "15";
 	applyRule();
 }
@@ -845,17 +816,17 @@ function eula_confirm(){
 <input type="hidden" name="TM_EULA" value="<% nvram_get("TM_EULA"); %>">
 <table class="content" align="center" cellpadding="0" cellspacing="0" >
 	<tr>
-		<td width="17">&nbsp;</td>		
-		<td valign="top" width="202">				
-			<div  id="mainMenu"></div>	
-			<div  id="subMenu"></div>		
-		</td>						
+		<td width="17">&nbsp;</td>
+		<td valign="top" width="202">
+			<div  id="mainMenu"></div>
+			<div  id="subMenu"></div>
+		</td>
 		<td valign="top">
-		<div id="tabMenu" class="submenuBlock"></div>	
-		<!--===================================Beginning of Main Content===========================================-->		
+		<div id="tabMenu" class="submenuBlock"></div>
+		<!--===================================Beginning of Main Content===========================================-->
 		<table width="98%" border="0" align="left" cellpadding="0" cellspacing="0" >
 			<tr>
-				<td valign="top" >	
+				<td valign="top" >
 					<table width="730px" border="0" cellpadding="4" cellspacing="0" class="FormTitle" id="FormTitle">
 						<tr>
 							<td bgcolor="#4D595D" valign="top">
@@ -920,12 +891,12 @@ function eula_confirm(){
 															if(document.form.TM_EULA.value == 0){
 																show_tm_eula();
 																return;
-															}	
-															
-															document.form.wrs_enable.value = 1;	
+															}
+
+															document.form.wrs_enable.value = 1;
 															document.form.wrs_app_enable.value = 1;
 															showhide("list_table",1);
-															
+
 														},
 														function(){
 															document.form.wrs_enable.value = 0;
@@ -939,13 +910,13 @@ function eula_confirm(){
 															else{
 																curState = 0;
 															}
-																														
+
 														}
 													);
-												</script>			
+												</script>
 											</div>
 										</td>
-									</tr>								
+									</tr>
 									<tr style="display:none;">
 										<th>Enable Block Notification page</th>
 										<td>
@@ -954,36 +925,36 @@ function eula_confirm(){
 												<script type="text/javascript">
 													$('#block_notification_enable').iphoneSwitch('<% nvram_get(""); %>',
 														function(){
-									
+
 														},
 														function(){
-																					
+
 														}
 													);
-												</script>			
+												</script>
 											</div>
-										</td>			
-									</tr>									
-								</table>				
+										</td>
+									</tr>
+								</table>
 								<table id="list_table" width="100%" border="0" align="center" cellpadding="0" cellspacing="0" style="display:none">
 									<tr>
 										<td valign="top" align="center">
-											<div id="mainTable" style="margin-top:10px;"></div> 
+											<div id="mainTable" style="margin-top:10px;"></div>
 											<div id="ctrlBtn" style="text-align:center;margin-top:20px;">
-												<input class="button_gen" type="button" onclick="applyRule();" value="<#CTL_apply#>">											
+												<input class="button_gen" type="button" onclick="applyRule();" value="<#CTL_apply#>">
 												<div style="width:135px;height:55px;position:absolute;bottom:5px;right:5px;background-image:url('images/New_ui/tm_logo_power.png');"></div>
 											</div>
-										</td>	
+										</td>
 									</tr>
 								</table>
 							</td>
 						</tr>
 					</table>
-				</td>         
+				</td>
 			</tr>
-		</table>				
-		<!--===================================Ending of Main Content===========================================-->		
-	</td>		
+		</table>
+		<!--===================================Ending of Main Content===========================================-->
+	</td>
     <td width="10" align="center" valign="top">&nbsp;</td>
 	</tr>
 </table>
@@ -992,4 +963,3 @@ function eula_confirm(){
 </form>
 </body>
 </html>
-

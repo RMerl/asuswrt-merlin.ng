@@ -345,11 +345,18 @@ void add_usb_host_module(void)
 }
 
 #ifdef RTCONFIG_USB_MODEM
-void add_usb_modem_modules(void){
+static int usb_modem_modules_loaded = 0;
+
+void add_usb_modem_modules(void)
+{
+	if (usb_modem_modules_loaded)
+		return;
+	usb_modem_modules_loaded = 1;
 #ifdef RTAC68U
 	if (!hw_usb_cap())
 		return;
 #endif
+
 #if LINUX_KERNEL_VERSION >= KERNEL_VERSION(4,1,0)
 	modprobe("mii"); // for usbnet.
 #endif
@@ -415,6 +422,8 @@ void remove_usb_modem_modules(void)
 #endif
 	modprobe_r("sr_mod");
 	modprobe_r("cdrom");
+
+	usb_modem_modules_loaded = 0;
 }
 
 #ifdef RTCONFIG_INTERNAL_GOBI
@@ -3522,6 +3531,12 @@ void start_dms(void)
 				serial, uuid,
 				rt_serialno);
 
+			nv = nvram_safe_get("dms_sort");
+			if (!*nv || isdigit(*nv))
+				nv = (!*nv || atoi(nv)) ? "+upnp:class,+upnp:originalTrackNumber,+dc:title" : NULL;
+			if (nv)
+				fprintf(f, "force_sort_criteria=%s\n", nv);
+
 			append_custom_config(MEDIA_SERVER_APP".conf",f);
 
 			fclose(f);
@@ -3745,6 +3760,7 @@ stop_mt_daapd()
 // !!TB - webdav
 
 //#ifdef RTCONFIG_WEBDAV
+#if 0
 void write_webdav_permissions()
 {
 	FILE *fp;
@@ -3804,6 +3820,7 @@ void write_webdav_server_pem()
 		eval("gencert.sh", t);
 	}
 }
+#endif
 
 void start_webdav(void)	// added by Vanic
 {
@@ -3851,10 +3868,10 @@ ifdef RTCONFIG_TUNNEL
 	chmod("/tmp/lighttpd/www", 0777);
 
 	/* tmp/lighttpd/permissions */
-	write_webdav_permissions();
+	//write_webdav_permissions();
 
 	/* WebDav SSL support */
-	write_webdav_server_pem();
+	//write_webdav_server_pem();
 	if(f_size(LIGHTTPD_CERTKEY) != f_size(HTTPD_KEY) + f_size(HTTPD_CERT))
 	{
 		char buf[256];

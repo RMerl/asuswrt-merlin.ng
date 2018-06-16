@@ -312,8 +312,8 @@ function bsd_disable(val){
 		document.form.wl2_bsd_steering_policy_x.disabled = false;
 		document.form.wl1_bsd_sta_select_policy_x.disabled = false;
 		document.form.wl2_bsd_sta_select_policy_x.disabled = false;
-		document.form.wl1_bsd_if_select_policy_x.disabled = false;
-		document.form.wl2_bsd_if_select_policy_x.disabled = false;
+		//document.form.wl1_bsd_if_select_policy_x.disabled = false;
+		//document.form.wl2_bsd_if_select_policy_x.disabled = false;
 		document.form.wl1_bsd_if_qualify_policy_x.disabled = false;
 		document.form.wl2_bsd_if_qualify_policy_x.disabled = false;
 		document.form.bsd_bounce_detect_x.disabled = false;
@@ -1303,8 +1303,8 @@ function set_lg_power(power_value,flag,idx){
 <input type="hidden" name="wl2_bsd_steering_policy_x" value="" disabled>
 <input type="hidden" name="wl1_bsd_sta_select_policy_x" value="" disabled>
 <input type="hidden" name="wl2_bsd_sta_select_policy_x" value="" disabled>
-<input type="hidden" name="wl1_bsd_if_select_policy_x" value="" disabled>
-<input type="hidden" name="wl2_bsd_if_select_policy_x" value="" disabled>
+<input type="hidden" name="wl1_bsd_if_select_policy_x" value="<% nvram_get("wl1_bsd_if_select_policy_x"); %>" disabled>
+<input type="hidden" name="wl2_bsd_if_select_policy_x" value="<% nvram_get("wl2_bsd_if_select_policy_x"); %>" disabled>
 <input type="hidden" name="wl1_bsd_if_qualify_policy_x" id="wl1_bsd_if_qualify_policy_x" value="" disabled>
 <input type="hidden" name="wl2_bsd_if_qualify_policy_x" id="wl2_bsd_if_qualify_policy_x" value="" disabled>
 <input type="hidden" name="bsd_bounce_detect_x" value=""  disabled>

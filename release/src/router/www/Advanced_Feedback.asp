@@ -211,7 +211,7 @@ function Reload_pdesc(obj, url){
 		desclist.push(["<#menu5_4_4#>","USB dongle"]);	//15
 		url_group.push(["Modem"]);
 
-		desclist.push(["Download Master","DM"]);
+		desclist.push(["<#DM_title#>","DM"]);
 		url_group.push(["DownloadMaster"]);//false value
 
 		desclist.push(["<#menu5_3_6#>","DDNS"]);
@@ -494,7 +494,7 @@ function init_diag_feature() {
 		}, 1000);
 
 		var dblog_service = parseInt('<% nvram_get("dblog_service"); %>');
-		var dblog_service_mapping = ["", "Wi-Fi", "Download Master", "<#UPnPMediaServer#>", "AiMesh"];/* untranslated */
+		var dblog_service_mapping = ["", "Wi-Fi", "<#DM_title#>", "<#UPnPMediaServer#>", "AiMesh"];/* untranslated */
 		var dblog_service_text = "";
 		for(var i = 1; dblog_service != 0 && i <= 4; i++) {
 			if(dblog_service & 1) {
@@ -659,7 +659,7 @@ function diag_tune_service_option() {
 			if(media_support)
 				$(".dblog_service_item.all").after(gen_service_option(4, "<#UPnPMediaServer#>", "noUSB"));
 			if(!nodm_support)
-				$(".dblog_service_item.all").after(gen_service_option(2, "Download Master", "noUSB"));/*untranslated*/
+				$(".dblog_service_item.all").after(gen_service_option(2, "<#DM_title#>", "noUSB"));/*untranslated*/
 		}
 	}
 

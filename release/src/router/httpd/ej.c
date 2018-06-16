@@ -221,27 +221,17 @@ do_ej(char *path, FILE *stream)
 
 	if (!(fp = fopen(path, "r")))
 		return;
+
 #ifdef TRANSLATE_ON_FLY
 	// Load dictionary file
 
-	// If the router is restored to default, using browser's language setting to display ALL pages
-	if (is_firsttime () && Accept_Language[0] != '\0' && nvram_match("ui_Setting", "0")) {
-		lang = Accept_Language;
-		nvram_set("ui_Setting" , "1");
-	} else {
-		lang = nvram_safe_get("preferred_lang");
-		if (!check_lang_support(lang)) {
-			nvram_set("preferred_lang", "EN");
-			lang = "EN";
-		}
+	lang = nvram_safe_get("preferred_lang");
+	if(!check_lang_support(lang)){
+		lang = nvram_default_get("preferred_lang");
+		nvram_set("preferred_lang", lang);
 	}
-#if 0
-	if(!strncmp(nvram_safe_get("territory_code"), "JP", 2) && strcmp(nvram_safe_get(ATE_FACTORY_MODE_STR()), "1")){
-		nvram_set("preferred_lang", "JP");
-		lang = "JP";	
-	}
-#endif
-	if (load_dictionary (lang, &kw))	{
+
+	if (load_dictionary (lang, &kw)){
 		no_translate = 0;
 	}
 #endif  //defined TRANSLATE_ON_FLY

@@ -234,7 +234,7 @@ endif
 
 OBJS := rc.o init.o interface.o lan.o wireless.o wan.o pppd.o auth.o services.o
 OBJS += firewall.o ppp.o services.o common.o
-OBJS += watchdog.o ntp.o btnsetup.o $(if $(RTCONFIG_MULTIWAN_CFG),qos_multiwan.o,qos.o) udhcpc.o ate.o
+OBJS += watchdog.o ntp.o $(if $(RTCONFIG_MULTIWAN_CFG),qos_multiwan.o,qos.o) udhcpc.o ate.o
 OBJS += format.o
 
 ifeq ($(RTCONFIG_NETOOL),y)
@@ -349,7 +349,7 @@ endif
 ifeq ($(RTCONFIG_OPENVPN),y)
 CFLAGS += -I$(TOP)/libvpn
 LDFLAGS += -L$(TOP)/libvpn -lvpn
-OBJS += openvpn.o
+OBJS += openvpn.o ovpn.o
 endif
 
 ifeq ($(RTCONFIG_IPSEC),y)
@@ -675,7 +675,7 @@ else
 endif
 	@cd $(INSTALLDIR)/sbin && ln -sf rc mtd-unlock
 endif
-	@cd $(INSTALLDIR)/sbin && ln -sf rc ots
+#	@cd $(INSTALLDIR)/sbin && ln -sf rc ots
 	@cd $(INSTALLDIR)/sbin && ln -sf rc watchdog
 	@cd $(INSTALLDIR)/sbin && ln -sf rc wave_monitor
 ifeq ($(RTCONFIG_LANTIQ),y)

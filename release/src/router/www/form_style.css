@@ -3,7 +3,7 @@
 .buttonok a {height:28px; text-decoration: none;}
 .buttonok a:link, .buttonok a:visited {
 	color: #002157;	display: block;
-	background: url(images/button-ok.gif);}	
+	background: url(images/button-ok.gif);}
 .buttonok a:hover,.buttonok a:active {	color:#ffffff;	background:url(images/button-ok.gif) 0 -28px;}
 
 .buttonquit {width:100px; font-family:Verdana; font-size:11px; line-height:20px; text-align:center;  }
@@ -24,7 +24,7 @@
 .top-message a:link, .top-message a:visited{
 	text-decoration:underline;
 }
-	
+
 .top-messagebold {
 	font-family:Verdana;
 	font-size:11px;
@@ -77,7 +77,7 @@
 .FormTitle thead{
 	color:#FFF;
 	font-size:13px;
-	text-align:center;	
+	text-align:center;
 	font-weight:bold;
 	background-color:#4D595D;
 }
@@ -125,7 +125,7 @@
 }
 .FormTable thead th{
 	color: #000000;
-	font-size:12px;	
+	font-size:12px;
 	text-align: center;
 	font-weight:normal;
 	border: 1px solid #222;
@@ -166,7 +166,7 @@
 }
 .FormTable_table th.select_table{
 	width:100px;
-	text-align:center;	
+	text-align:center;
 }
 .FormTable_table td.select_table{
 	width:150px;
@@ -180,7 +180,7 @@
 	background-color:#475a5f;
 	text-align:center;
 	border: 1px solid #222;
-	border-collapse: collapse;	
+	border-collapse: collapse;
 }
 .FormTable_table td span{
 	color:#FFCC00;
@@ -206,12 +206,12 @@
 .FormTable_table thead th{
 	width: 98px;
 	color: #000000;
-	font-size:12px;	
+	font-size:12px;
 	background-color:#1F2D35;
 	text-align: center;
 	font-weight:normal;
 	border: 1px solid #222;
-	border-collapse: collapse;	
+	border-collapse: collapse;
 }
 
 /* for NWM */
@@ -241,7 +241,7 @@
 }
 .FormTable_NWM th.select_table{
 	width:100px;
-	text-align:center;	
+	text-align:center;
 }
 .FormTable_NWM td.select_table{
 	width:150px;
@@ -255,7 +255,7 @@
 	background-color:#475a5f;
 	text-align:center;
 	border: 1px solid #222;
-	border-collapse: collapse;	
+	border-collapse: collapse;
 	height:35px;
 }
 .FormTable_NWM td span{
@@ -277,17 +277,17 @@
 .FormTable_NWM thead th{
 	width: 98px;
 	color: #000000;
-	font-size:12px;	
+	font-size:12px;
 	background-color:#1F2D35;
 	text-align: center;
 	font-weight:normal;
 	border: 1px solid #222;
-	border-collapse: collapse;	
+	border-collapse: collapse;
 }
 
  .table_text{
  	color:#FFFFFF;
-	font-family:Arial, Helvetica, sans-serif; 	
+	font-family:Arial, Helvetica, sans-serif;
 	text-decoration:none;
  }
 /* for Table */
@@ -301,9 +301,9 @@
 .input_option{
 	height:25px;
 	background-color:#576D73;
-	border-top-width:1px; 
-	border-bottom-width:1px; 
-	border-color:#888;	
+	border-top-width:1px;
+	border-bottom-width:1px;
+	border-color:#888;
 	color:#FFFFFF;
 	font-family: Lucida Console;
 	font-size:13px;
@@ -315,8 +315,8 @@
 	height:25px;
 	background-color:#222;
 	*background-color:#FFF;
-	border-top-width:1px; 
-	border-bottom-width:1px; 
+	border-top-width:1px;
+	border-bottom-width:1px;
 	border-color:#888;
 	color:#FFFFFF;
 	*color:#000;
@@ -328,8 +328,8 @@
 	height:25px;
 	/*background-image:url(/images/New_ui/inputbg.png);   Ban by Viz, cuz my Chrome show out white color*/
 	background-color:#576D73;
-	border-top-width:1px; 
-	border-bottom-width:1px; 
+	border-top-width:1px;
+	border-bottom-width:1px;
 	border-color:#888;
 	color:#FFFFFF;
 	margin:8px 10px 0 0;
@@ -362,7 +362,7 @@
 	color:#FFFFFF;
 }
 .input_25_table{
-	margin-left:2px;	
+	margin-left:2px;
 	padding-left:0.4em;
 	height:23px;
 	width:235px;
@@ -482,7 +482,7 @@
 	font-size:12px;
 	/*margin-right:5px;
 	margin-left:5px;*/
- 	padding:0 .70em 0 .70em;  
+ 	padding:0 .70em 0 .70em;
  	width:122px;
  	overflow:visible;
 }
@@ -492,7 +492,7 @@
   width:122px;
 	/*margin-right:5px;
 	margin-left:5px;*/
-  padding:0 .70em 0 .70em;  
+  padding:0 .70em 0 .70em;
   background-position: 7px;
 	cursor:pointer;
 }
@@ -507,7 +507,7 @@
 	height:33px;
 	font-family:Verdana;
 	font-size:12px;
-  padding:0 .70em 0 .70em;  
+  padding:0 .70em 0 .70em;
  	width:122px;
   overflow:visible;
 	cursor:pointer;
@@ -520,7 +520,7 @@
 	background:url(images/New_ui/contentbt_over.png) no-repeat;
 	height:33px;
  	width:122px;
- 	padding:0 .70em 0 .70em;  
+ 	padding:0 .70em 0 .70em;
  	background-position:0px;
 	cursor:pointer;
 	outline: none; /* for Firefox */
@@ -536,9 +536,9 @@
 	height:33px;
 	font-family:Verdana,Bold;
 	font-size:12px;
-  padding:0 .70em 0 .70em;  
+  padding:0 .70em 0 .70em;
  	width:122px;
-  overflow:visible;  
+  overflow:visible;
 	/*cursor:pointer;*/
 	outline: none; /* for Firefox */
  	hlbr:expression(this.onFocus=this.blur()); /* for IE */
@@ -547,8 +547,8 @@
 	background:url(images/New_ui/contentbt_over.png) no-repeat;
 	height:33px;
  	width:122px;
- 	padding:0 .70em 0 .70em;  
- 	background-position:0px; 	
+ 	padding:0 .70em 0 .70em;
+ 	background-position:0px;
 	/*cursor:pointer;*/
 	outline: none; /* for Firefox */
  	hlbr:expression(this.onFocus=this.blur()); /* for IE */
@@ -558,7 +558,7 @@
 	background:url(images/New_ui/contentbt_over.png) no-repeat;
 	height:33px;
  	width:122px;
- 	padding:0 .70em 0 .70em;  
+ 	padding:0 .70em 0 .70em;
  	background-position:0px;
 	cursor:pointer;
 	outline: none; /* for Firefox */
@@ -603,7 +603,7 @@
 	height:34px;
 	font-family:Verdana;
 	font-size:12px;
- 	width:155px; 	
+ 	width:155px;
   overflow:visible;
 	/*cursor:pointer;*/
 	outline: none; /* for Firefox */
@@ -629,7 +629,7 @@
 	background:url(images/New_ui/contentbt_over.png) no-repeat;
 	height:33px;
  	width:155px;
- 	padding:0 .70em 0 .70em;  
+ 	padding:0 .70em 0 .70em;
  	background-position:0px;
 	cursor:pointer;
 }
@@ -643,7 +643,7 @@
 	height:33px;
 	font-family:Verdana;
 	font-size:12px;
-  padding:0 .70em 0 .70em;  
+  padding:0 .70em 0 .70em;
  	width:91px;
   overflow:visible;
 	cursor:pointer;
@@ -655,7 +655,7 @@
 	background:url(images/New_ui/flowbt_over.png) no-repeat;
 	height:33px;
  	width:91px;
- 	padding:0 .70em 0 .70em;  
+ 	padding:0 .70em 0 .70em;
  	background-position:0px;
 	cursor:pointer;
 	outline: none; /* for Firefox */
@@ -669,7 +669,7 @@
 	font-family:Verdana;
 	font-size:12px;
 	margin-right:5px;
-	margin-left:5px;	
+	margin-left:5px;
   padding:0 .70em 0 .70em;
   width:auto;
   overflow:visible;
@@ -680,7 +680,7 @@
 	color:#FFFFFF;
 }
 
-form{ 
+form{
 	margin:0px;
 }
 
@@ -698,7 +698,7 @@ form{
 	text-align:center;
 	line-height:25px;
 }
-	
+
 .short_btn a { height: 31px;	text-decoration: none;	}
 .short_btn a:link, .short_btn a:visited {
 	color: #002157;	display: block;	background: url(../images/button-next.gif);
@@ -712,7 +712,7 @@ form{
 	text-align:center;
 	line-height:25px;
 }
-	
+
 .upnp_btn a { height: 31px;	text-decoration: none;	}
 .upnp_btn a:link, .short_btn a:visited {
 	color: #002157;	display: block;	background: url(../images/button-upnp.gif);
@@ -721,13 +721,13 @@ form{
 
 /*0103 lock*/
 .popTable {
-	border:1px solid #666;	
+	border:1px solid #666;
 }
 .popTable thead td{
 	background-image:url(images/title-bg-2.gif);
 	border-bottom:1px solid #666;
 }
-	
+
 .popTable thead span{
 	font-family:Verdana;
 	font-size:12px;
@@ -825,7 +825,7 @@ form{
 	top:0px;
 	left:0px;
 	margin-top:0px;
-	margin-left:0px;	
+	margin-left:0px;
 	z-index: -1;
 	filter:mask();
 	width:205px;/*must have for any big value*/
@@ -865,7 +865,7 @@ form{
 	height:25px;
 	width:350px;
 	color:#FFFFFF;
-	font-family:Arial, Helvetica, sans-serif;	
+	font-family:Arial, Helvetica, sans-serif;
 	text-align:center;
 	font-size:12px;
 }
@@ -1055,13 +1055,13 @@ a:active {
 p{margin-top:   0;margin-bottom:   0}
 
 /*  Move to index_style.css By Viz , aidisk still use this*/
-.titlebtn {	
+.titlebtn {
       background: transparent url(images/New_ui/btn.png) no-repeat scroll right top;
       color: White;
       display: block;
       float: left;
       height: 34px;
-      padding-right: 10px;      
+      padding-right: 10px;
       margin-right: 10px;
       text-decoration: none;
       text-align:center;
@@ -1100,7 +1100,7 @@ p{margin-top:   0;margin-bottom:   0}
 	text-decoration:none;
 	width:147px;
 	height:33px;
-	line-height:33px;	
+	line-height:33px;
 }
 
 .titledropdownbtn:hover{
@@ -1114,7 +1114,7 @@ font-size:12px;
 }
 .titledown a:link{
 color:#FFFFFF;
-} 
+}
 .titledown:hover{
 color:#FFFFFF;
 }
@@ -1127,14 +1127,14 @@ color:#FFFFFF;
 	font-size:12px;
 	/*text-decoration:underline;*/
 }
-.tab_NW {	
+.tab_NW {
 	font-weight: bolder;
 	background: transparent url(images/New_ui/taba.png) no-repeat scroll right top;
 	color: White;
 	display: block;
 	float: left;
 	height: 28px;
-	padding-right: 8px;      
+	padding-right: 8px;
 	margin-right:2px;
 	text-decoration: none;
 	text-align:center;
@@ -1148,26 +1148,26 @@ color:#FFFFFF;
 	background: transparent url(images/New_ui/tabspan.png) no-repeat;
 	display: block;
 	padding: 5px 4px 5px 12px;
-	line-height: 20px;	  
+	line-height: 20px;
 	font-family: Arial, Helvetica, sans-serif;
 	font-size: 13px;
 }
 .tab_NW:hover{
-	background-position:right -28px;	
-}	
+	background-position:right -28px;
+}
 .tab_NW:hover span{
 	background-position:left -28px;
-} 
+}
 
-.tabclick_NW {	   
+.tabclick_NW {
 	font-weight: bolder;
 	background: transparent url(images/New_ui/tabclicka.png) no-repeat scroll right top;
-	font-family: Verdana;	
+	font-family: Verdana;
     color: White;
     display: block;
     float: left;
     height: 28px;
-    padding-right: 8px;      
+    padding-right: 8px;
     margin-right:2px;
     text-align:center;
     text-decoration: none;
@@ -1179,12 +1179,12 @@ color:#FFFFFF;
 	white-space:nowrap;
 	font-weight: bolder;
 	background: transparent url(images/New_ui/tabclickspan.png) no-repeat;
-	font-family: Arial, Helvetica, sans-serif;	 
+	font-family: Arial, Helvetica, sans-serif;
     display: block;
     padding: 5px 4px 5px 12px;
-    line-height: 20px;	
-	font-size: 13px; 
-}	
+    line-height: 20px;
+	font-size: 13px;
+}
 
 .tab_table {
 	display: table;
@@ -1216,7 +1216,7 @@ color:#FFFFFF;
 .tab_item:hover {
 	background-color: #4F5B5F;
 }
-.tab_item_click {  
+.tab_item_click {
 	background-color: #4F5B5F;
 	border-radius: 6px 6px 0 0;
 	height: 100%;
@@ -1349,7 +1349,7 @@ padding-top:1px;
 }
 .coolerstatuson{
 	background-image:url(images/New_ui/coolerstatus.png);
-	background-repeat:no-repeat;	
+	background-repeat:no-repeat;
 	background-position:2px 2px;
 	height:29px;
 	width:30px;
@@ -1357,7 +1357,7 @@ padding-top:1px;
 }
 .coolerstatusoff{
 	background-image:url(images/New_ui/coolerstatus.png);
-	background-repeat:no-repeat;	
+	background-repeat:no-repeat;
 	background-position:2px -48px;
 	height:29px;
 	width:30px;
@@ -1368,7 +1368,7 @@ padding-top:1px;
 	cursor: pointer;
 }
 
-#bwdpi_status{	
+#bwdpi_status{
 	cursor: pointer;
 }
 
@@ -1376,7 +1376,7 @@ padding-top:1px;
 	height:20px;
 	width:22px;
 	background-image:url(images/New_ui/QoS_quick/game_icon.svg);
-	background-repeat:no-repeat;	
+	background-repeat:no-repeat;
 	background-position:0px 2px;
 }
 
@@ -1400,13 +1400,13 @@ padding-top:1px;
 	height:21px;
 	width:23px;
 	background-image:url(images/New_ui/QoS_quick/customize_icon.svg);
-	background-repeat:no-repeat;	
+	background-repeat:no-repeat;
 	background-position:2px 2px;
 }
 
 .vpnstatuson{
 	background-image:url(images/New_ui/vpnstatus.png);
-	background-repeat:no-repeat;	
+	background-repeat:no-repeat;
 	background-position:2px 2px;
 	height:29px;
 	width:30px;
@@ -1415,7 +1415,7 @@ padding-top:1px;
 }
 .vpnstatusoff{
 	background-image:url(images/New_ui/vpnstatus.png);
-	background-repeat:no-repeat;	
+	background-repeat:no-repeat;
 	background-position:2px -48px;
 	height:29px;
 	width:30px;
@@ -1425,7 +1425,7 @@ padding-top:1px;
 
 .wifihwswstatuson{
 	background-image:url(images/wifi_hw_sw.png);
-	background-repeat:no-repeat;	
+	background-repeat:no-repeat;
 	background-position:2px 2px;
 	height:29px;
 	width:30px;
@@ -1441,7 +1441,7 @@ padding-top:1px;
 }
 .wifihwswstatusoff{
 	background-image:url(images/wifi_hw_sw.png);
-	background-repeat:no-repeat;	
+	background-repeat:no-repeat;
 	background-position:2px -48px;
 	height:29px;
 	width:30px;
@@ -1466,7 +1466,7 @@ padding-top:1px;
 }
 .connectstatuson{
 	background-image:url(images/New_ui/connectstatus.png);
-	background-repeat:no-repeat;	
+	background-repeat:no-repeat;
 	background-position:2px 2px;
 	height:29px;
 	width:30px;
@@ -1474,7 +1474,7 @@ padding-top:1px;
 }
 .connectstatusoff{
 	background-image:url(images/New_ui/connectstatus.png);
-	background-repeat:no-repeat;	
+	background-repeat:no-repeat;
 	background-position:2px -48px;
 	height:30px;
 	width:30px;
@@ -1501,7 +1501,7 @@ padding-top:1px;
 /*Viz add 2013.03 for adsl sync status      start*/
 .linestatusup{
 	background-image:url(images/New_ui/DSLstatus.png);
-	background-repeat:no-repeat;	
+	background-repeat:no-repeat;
 	background-position:2px 0px;
 	height:29px;
 	width:29px;
@@ -1509,7 +1509,7 @@ padding-top:1px;
 }
 .linestatuselse{
 	background-image:url(images/New_ui/DSL_Act.gif);
-	background-repeat:no-repeat;	
+	background-repeat:no-repeat;
 	background-position:3px 2px;
 	height:29px;
 	width:29px;
@@ -1517,7 +1517,7 @@ padding-top:1px;
 }
 .linestatusdown{
 	background-image:url(images/New_ui/DSLstatus.png);
-	background-repeat:no-repeat;	
+	background-repeat:no-repeat;
 	background-position:2px -50px;
 	height:29px;
 	width:29px;
@@ -1527,7 +1527,7 @@ padding-top:1px;
 /*Viz add 2014.10 for adsl diag status      start*/
 .linestatusdiag{
 	background-image:url(images/New_ui/DSL_diag.gif);
-	background-repeat:no-repeat;	
+	background-repeat:no-repeat;
 	background-position:3px 2px;
 	height:29px;
 	width:29px;
@@ -1546,7 +1546,7 @@ padding-top:1px;
 }
 .printstatuson{
 	background-image:url(images/New_ui/printstatus.png);
-	background-repeat:no-repeat;	
+	background-repeat:no-repeat;
 	background-position:2px 2px;
 	height:30px;
 	width:30px;
@@ -1554,7 +1554,7 @@ padding-top:1px;
 }
 .printstatusoff{
 	background-image:url(images/New_ui/printstatus.png);
-	background-repeat:no-repeat;	
+	background-repeat:no-repeat;
 	background-position:2px -48px;
 	height:30px;
 	width:30px;
@@ -1562,7 +1562,7 @@ padding-top:1px;
 }
 .usbstatuson{
 	background-image:url(images/New_ui/usbstatus.png);
-	background-repeat:no-repeat;	
+	background-repeat:no-repeat;
 	background-position:2px 2px;
 	height:30px;
 	width:30px;
@@ -1570,7 +1570,7 @@ padding-top:1px;
 }
 .usbstatusoff{
 	background-image:url(images/New_ui/usbstatus.png);
-	background-repeat:no-repeat;	
+	background-repeat:no-repeat;
 	background-position:2px -48px;
 	height:30px;
 	width:30px;
@@ -1580,7 +1580,7 @@ padding-top:1px;
 	position: absolute;
 	display:inline;
 	background-image:url(images/New_ui/notification.png);
-	background-repeat:no-repeat;	
+	background-repeat:no-repeat;
 	background-position:2px 2px;
 	margin-top:-5px;
 	margin-top:3px \9;	/*IE*/
@@ -1592,7 +1592,7 @@ padding-top:1px;
 	position: absolute;
 	display:none;
 	background-image:url(images/New_ui/notification.png);
-	background-repeat:no-repeat;	
+	background-repeat:no-repeat;
 	background-position:2px -48px;
 	margin-top:-5px;
 	margin-top:3px \9;	/*IE*/
@@ -1604,7 +1604,7 @@ padding-top:1px;
 /* Cherry Cho added for mobile broadband in 2014/8/22.*/
 .simexist{
 	background-image:url(images/mobile/sim_state.png);
-	background-repeat:no-repeat;	
+	background-repeat:no-repeat;
 	background-position:4px -23px;
 	height:29px;
 	width:30px;
@@ -1612,7 +1612,7 @@ padding-top:1px;
 }
 .simnone{
 	background-image:url(images/mobile/sim_state.png);
-	background-repeat:no-repeat;	
+	background-repeat:no-repeat;
 	background-position:4px 3px;
 	height:30px;
 	width:30px;
@@ -1621,7 +1621,7 @@ padding-top:1px;
 
 .simfail{
 	background-image:url(images/mobile/sim_state.png);
-	background-repeat:no-repeat;	
+	background-repeat:no-repeat;
 	background-position:4px -73px;
 	height:30px;
 	width:30px;
@@ -1630,7 +1630,7 @@ padding-top:1px;
 
 .simlock{
 	background-image:url(images/mobile/sim_state.png);
-	background-repeat:no-repeat;	
+	background-repeat:no-repeat;
 	background-position:4px -46px;
 	height:30px;
 	width:30px;
@@ -1638,7 +1638,7 @@ padding-top:1px;
 }
 .simroamingon{
 	background-image:url(images/mobile/roaming.png);
-	background-repeat:no-repeat;	
+	background-repeat:no-repeat;
 	background-position:4px 2px;
 	height:29px;
 	width:30px;
@@ -1646,7 +1646,7 @@ padding-top:1px;
 }
 .simroamingoff{
 	background-image:url(images/mobile/roaming.png);
-	background-repeat:no-repeat;	
+	background-repeat:no-repeat;
 	background-position:4px -50px;
 	height:30px;
 	width:30px;
@@ -1654,7 +1654,7 @@ padding-top:1px;
 }
 .simsignalfull{
 	background-image:url(images/mobile/signal_strength.png);
-	background-repeat:no-repeat;	
+	background-repeat:no-repeat;
 	background-position:3px 2px;
 	height:29px;
 	width:30px;
@@ -1662,7 +1662,7 @@ padding-top:1px;
 }
 .simsignalexcellent{
 	background-image:url(images/mobile/signal_strength.png);
-	background-repeat:no-repeat;	
+	background-repeat:no-repeat;
 	background-position:2px -22px;
 	height:30px;
 	width:30px;
@@ -1670,7 +1670,7 @@ padding-top:1px;
 }
 .simsignalgood{
 	background-image:url(images/mobile/signal_strength.png);
-	background-repeat:no-repeat;	
+	background-repeat:no-repeat;
 	background-position:2px -47px;
 	height:30px;
 	width:30px;
@@ -1678,7 +1678,7 @@ padding-top:1px;
 }
 .simsignalok{
 	background-image:url(images/mobile/signal_strength.png);
-	background-repeat:no-repeat;	
+	background-repeat:no-repeat;
 	background-position:2px -72px;
 	height:30px;
 	width:30px;
@@ -1686,47 +1686,47 @@ padding-top:1px;
 }
 .simsignalmarginal{
 	background-image:url(images/mobile/signal_strength.png);
-	background-repeat:no-repeat;	
+	background-repeat:no-repeat;
 	background-position:2px -97px;
 	height:30px;
-	width:30px;	
+	width:30px;
 	cursor: pointer;
 }
 .simsignalno{
 	background-image:url(images/mobile/signal_strength.png);
-	background-repeat:no-repeat;	
+	background-repeat:no-repeat;
 	background-position:2px -122px;
 	height:30px;
 	width:30px;
 	cursor: pointer;
 }
-.img_wrap{   
-    width:20px;   
-    height:15px;   
-    overflow:hidden;  
-    position:relative;left:0px;top:0px; 
-} 
+.img_wrap{
+    width:20px;
+    height:15px;
+    overflow:hidden;
+    position:relative;left:0px;top:0px;
+}
 .signalsysimg img{
 	position: relative;
 	top: 0px;
 	left: 4px;
-	max-width:15px;	
-	cursor: pointer;	
+	max-width:15px;
+	cursor: pointer;
 }
 
-.img_wrap2{   
-    width:30px;   
-    height:30px;   
-    overflow:hidden;  
-    position:relative;left:2px;top:2px; 
-} 
+.img_wrap2{
+    width:30px;
+    height:30px;
+    overflow:hidden;
+    position:relative;left:2px;top:2px;
+}
 /*--*/
 
 .StatusClickHint_mouseover{
 	cursor: pointer;
 	font-weight: bold;
 	background-color: #3366FF;
-	color: #FFFFFF;	
+	color: #FFFFFF;
 	margin-bottom: 10px;
 }
 .StatusClickHint{
@@ -1790,41 +1790,41 @@ padding-top:1px;
 	background-color:#4d595d;
 }
 
-/* 整體設置*/ 
+/* 整體設置*/
 .navigation {
 	margin-left:790px;
 	*margin-left:45px;
 	margin-top:13px;
 	width:100px;
-	list-style-type:none; 
-	font:12px Arial, Helvetica, sans-serif; 
+	list-style-type:none;
+	font:12px Arial, Helvetica, sans-serif;
 	position:absolute;
-	z-index:80;	
+	z-index:80;
 	}
- 
+
 .navigation li {
 	/*float:left; */
 	width:145px;
 	*width:145px;
 	}
- 
+
 /* 設置選單區塊*/
-.navigation li dl { 
-    margin:0; 
+.navigation li dl {
+    margin:0;
 	padding:0;
-	
-/*	border:solid 2px #666; */	
+
+/*	border:solid 2px #666; */
 /*	background-color:#fff;*/
 
 	}
- 
-.navigation li dt a , .navigation li dd a{ 
+
+.navigation li dt a , .navigation li dd a{
 	display:block;
 	}
- 
- 
+
+
 /* 設置主選單dt */
-.navigation li dt {	
+.navigation li dt {
 	background-image:url('/images/New_ui/dropdown_bt.png');
 	padding-top:8px;
 	padding-right:8px;
@@ -1834,49 +1834,49 @@ padding-top:1px;
 	font-weight: bold;
 	height:24px;
 	overflow:hidden;
-	width:144px;	
+	width:144px;
 	}
- 
+
 .navigation li dt:hover{
 	background-image:url('/images/New_ui/dropdown_btover.png');
 	background-color:transparent;
 }
- 
+
 .navigation li dt a ,.navigation  li dt a:visited {
-	display:block; 
+	display:block;
     color:#fff;
 	}
- 
+
 /* 設置子選單dd */
-.navigation li dd { 
+.navigation li dd {
 	/*margin:0;*/
 	margin-left:3px;
 	/*padding:0;*/
-	color: #fff; 
+	color: #fff;
 	background-color:#333;
 	border-bottom:solid 1px #666;
 	width:145px;
 	}
- 
+
 .navigation li dd.last {
 	border-bottom:0;
-	}	
- 
+	}
+
 .navigation li dd a, .navigation  li dd a:visited {
-	display:block; 
-	color:#fff; 
+	display:block;
+	color:#fff;
 	padding:4px 5px 4px 5px;
     }
- 
- 
+
+
 /*隱藏子選單*/
-.navigation li dd { 
+.navigation li dd {
 	display:none;
 	}
- 
- 
+
+
 /* 滑鼠滑入顯示子選單 */
-.navigation li:hover dd, .navigation li a:hover dd { 
+.navigation li:hover dd, .navigation li a:hover dd {
 	cursor:pointer;
 	display:block;
 }
@@ -1941,14 +1941,14 @@ padding-top:1px;
 /* 控制user account and folder "add", "delete", "modify的圖形偏移"*/
 .createAccountBtn{
 	background-image:url(images/New_ui/advancesetting/UserAdd_ALL.png);
-	background-repeat:no-repeat;	
+	background-repeat:no-repeat;
 	background-position:0px -62px;
 	height:30px;
 	width:31px;
 }
 .createAccountBtn_hover{
 	background-image:url(images/New_ui/advancesetting/UserAdd_ALL.png);
-	background-repeat:no-repeat;	
+	background-repeat:no-repeat;
 	background-position:0px -31px;
 	height:30px;
 	width:31px;
@@ -1956,7 +1956,7 @@ padding-top:1px;
 }
 .createAccountBtn_add{
 	background-image:url(images/New_ui/advancesetting/UserAdd_ALL.png);
-	background-repeat:no-repeat;	
+	background-repeat:no-repeat;
 	background-position:0px 0px;
 	height:30px;
 	width:31px;
@@ -1965,14 +1965,14 @@ padding-top:1px;
 
 .deleteAccountBtn{
 	background-image:url(images/New_ui/advancesetting/UserDel_ALL.png);
-	background-repeat:no-repeat;	
+	background-repeat:no-repeat;
 	background-position:0px -62px;
 	height:30px;
 	width:31px;
 }
 .deleteAccountBtn_hover{
 	background-image:url(images/New_ui/advancesetting/UserDel_ALL.png);
-	background-repeat:no-repeat;	
+	background-repeat:no-repeat;
 	background-position:0px -31px;
 	height:30px;
 	width:31px;
@@ -1980,7 +1980,7 @@ padding-top:1px;
 }
 .deleteAccountBtn_add{
 	background-image:url(images/New_ui/advancesetting/UserDel_ALL.png);
-	background-repeat:no-repeat;	
+	background-repeat:no-repeat;
 	background-position:0px 0px;
 	height:30px;
 	width:31px;
@@ -1989,14 +1989,14 @@ padding-top:1px;
 
 .modifyAccountBtn{
 	background-image:url(images/New_ui/advancesetting/UserMod_ALL.png);
-	background-repeat:no-repeat;	
+	background-repeat:no-repeat;
 	background-position:0px -62px;
 	height:30px;
 	width:31px;
 }
 .modifyAccountBtn_hover{
 	background-image:url(images/New_ui/advancesetting/UserMod_ALL.png);
-	background-repeat:no-repeat;	
+	background-repeat:no-repeat;
 	background-position:0px -31px;
 	height:30px;
 	width:31px;
@@ -2004,7 +2004,7 @@ padding-top:1px;
 }
 .modifyAccountBtn_add{
 	background-image:url(images/New_ui/advancesetting/UserMod_ALL.png);
-	background-repeat:no-repeat;	
+	background-repeat:no-repeat;
 	background-position:0px 0px;
 	height:30px;
 	width:31px;
@@ -2013,14 +2013,14 @@ padding-top:1px;
 
 .createFolderBtn{
 	background-image:url(images/New_ui/advancesetting/FolderAdd_ALL.png);
-	background-repeat:no-repeat;	
+	background-repeat:no-repeat;
 	background-position:0px -62px;
 	height:30px;
 	width:31px;
 }
 .createFolderBtn_hover{
 	background-image:url(images/New_ui/advancesetting/FolderAdd_ALL.png);
-	background-repeat:no-repeat;	
+	background-repeat:no-repeat;
 	background-position:0px -31px;
 	height:30px;
 	width:31px;
@@ -2029,7 +2029,7 @@ padding-top:1px;
 
 .createFolderBtn_add{
 	background-image:url(images/New_ui/advancesetting/FolderAdd_ALL.png);
-	background-repeat:no-repeat;	
+	background-repeat:no-repeat;
 	background-position:0px 0px;
 	height:30px;
 	width:31px;
@@ -2037,7 +2037,7 @@ padding-top:1px;
 }
 .createFolderBtn_add:hover{
 	background-image:url(images/New_ui/advancesetting/FolderAdd_ALL.png);
-	background-repeat:no-repeat;	
+	background-repeat:no-repeat;
 	background-position:0px -31px;
 	height:30px;
 	width:31px;
@@ -2046,14 +2046,14 @@ padding-top:1px;
 
 .deleteFolderBtn{
 	background-image:url(images/New_ui/advancesetting/FolderDel_ALL.png);
-	background-repeat:no-repeat;	
+	background-repeat:no-repeat;
 	background-position:0px -62px;
 	height:30px;
 	width:31px;
 }
 .deleteFolderBtn_hover{
 	background-image:url(images/New_ui/advancesetting/FolderDel_ALL.png);
-	background-repeat:no-repeat;	
+	background-repeat:no-repeat;
 	background-position:0px -31px;
 	height:30px;
 	width:31px;
@@ -2061,7 +2061,7 @@ padding-top:1px;
 }
 .deleteFolderBtn_add{
 	background-image:url(images/New_ui/advancesetting/FolderDel_ALL.png);
-	background-repeat:no-repeat;	
+	background-repeat:no-repeat;
 	background-position:0px 0px;
 	height:30px;
 	width:31px;
@@ -2069,7 +2069,7 @@ padding-top:1px;
 }
 .deleteFolderBtn_add:hover{
 	background-image:url(images/New_ui/advancesetting/FolderDel_ALL.png);
-	background-repeat:no-repeat;	
+	background-repeat:no-repeat;
 	background-position:0px -31px;
 	height:30px;
 	width:31px;
@@ -2078,14 +2078,14 @@ padding-top:1px;
 
 .modifyFolderBtn{
 	background-image:url(images/New_ui/advancesetting/FolderMod_ALL.png);
-	background-repeat:no-repeat;	
+	background-repeat:no-repeat;
 	background-position:0px -62px;
 	height:30px;
 	width:31px;
 }
 .modifyFolderBtn_hover{
 	background-image:url(images/New_ui/advancesetting/FolderMod_ALL.png);
-	background-repeat:no-repeat;	
+	background-repeat:no-repeat;
 	background-position:0px -31px;
 	height:30px;
 	width:31px;
@@ -2093,7 +2093,7 @@ padding-top:1px;
 }
 .modifyFolderBtn_add{
 	background-image:url(images/New_ui/advancesetting/FolderMod_ALL.png);
-	background-repeat:no-repeat;	
+	background-repeat:no-repeat;
 	background-position:0px 0px;
 	height:30px;
 	width:31px;
@@ -2101,7 +2101,7 @@ padding-top:1px;
 }
 .modifyFolderBtn_add:hover{
 	background-image:url(images/New_ui/advancesetting/FolderMod_ALL.png);
-	background-repeat:no-repeat;	
+	background-repeat:no-repeat;
 	background-position:0px -31px;
 	height:30px;
 	width:31px;
@@ -2110,7 +2110,7 @@ padding-top:1px;
 
 .userIcon{
 	background-image:url(images/New_ui/advancesetting/user_icon_ALL.png);
-	background-repeat:no-repeat;	
+	background-repeat:no-repeat;
 	background-position:0px -62px;
 	padding-left:30px;
 	height:30px;
@@ -2122,7 +2122,7 @@ padding-top:1px;
 
 .userIcon:hover{
 	background-image:url(images/New_ui/advancesetting/user_icon_ALL.png);
-	background-repeat:no-repeat;	
+	background-repeat:no-repeat;
 	background-position:0px -31px;
 	padding-left:30px;
 	height:30px;
@@ -2132,9 +2132,9 @@ padding-top:1px;
 	font-size:12px;
 	line-height:25px;
 }
-.userIcon_click{	
+.userIcon_click{
 	background-image:url(images/New_ui/advancesetting/user_icon_ALL.png);
-	background-repeat:no-repeat;	
+	background-repeat:no-repeat;
 	background-position:0px 0px;
 	padding-left:30px;
 	height:30px;
@@ -2273,7 +2273,7 @@ padding-top:1px;
 	color: #93A9B1;
 }
 .pop_div_bg{
-	background-color: #2B373B;	
+	background-color: #2B373B;
 }
 .analysis_bg{
 	background: #2F3E44;
@@ -2306,7 +2306,7 @@ padding-top:1px;
 	display: none;
 	position: absolute;
 	width: 500px;
-	height: 558px;
+	height: 457px;
 	z-index: 2000;
 	border: 3px solid #4D5C63;
 	border-radius: 4px;

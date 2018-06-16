@@ -214,14 +214,11 @@ li{
 </style>	
 <script type="text/javascript">
 var bwdpi_support = ('<% nvram_get("rc_support"); %>'.search('bwdpi') == -1) ? false : true;
-var mac_parameter = '<% get_parameter("mac"); %>'.toUpperCase();
 var casenum = '<% get_parameter("cat_id"); %>';
 var flag = '<% get_parameter("flag"); %>';
 var block_info = '<% bwdpi_redirect_info(); %>';
 if(block_info != "")
 	block_info = JSON.parse(block_info);
-var client_list_array = '<% get_client_detail_info(); %>';
-var custom_name = decodeURIComponent('<% nvram_char_to_ascii("", "custom_clientlist"); %>').replace(/&#62/g, ">").replace(/&#60/g, "<");
 var category_info = [	["Parental Controls", "1", "<#AiProtection_filter_Adult#>", "<#AiProtection_filter_Adult1#>", "<#block_cate_PC1#>"],
 			["Parental Controls", "2", "<#AiProtection_filter_Adult#>", "<#AiProtection_filter_Adult1#>", "<#block_cate_PC2#>"],
 			["Parental Controls", "3", "<#AiProtection_filter_Adult#>", "<#AiProtection_filter_Adult1#>", "<#block_cate_PC3#>"],
@@ -272,8 +269,6 @@ var category_info = [	["Parental Controls", "1", "<#AiProtection_filter_Adult#>"
 		];
 	
 var target_info = {
-	name: "",
-	mac: "",
 	url: "",
 	category_id: "",
 	category_type: "",
@@ -287,35 +282,13 @@ function initial(){
 }
 
 function get_target_info(){
-	var client_list_row = client_list_array.split('<');
-	var custom_name_row = custom_name.split('<');
-	var match_flag = 0;
-	
-	for(i=1;i<custom_name_row.length;i++){
-		var custom_name_col = custom_name_row[i].split('>');
-		if(custom_name_col[1] == block_info[0] || custom_name_col[1] == mac_parameter){
-			target_info.name = custom_name_col[0];	
-			match_flag =1;
-		}
-	}
-
-	if(match_flag == 0){
-		for(i=1;i< client_list_row.length;i++){
-			var client_list_col = client_list_row[i].split('>');
-			if(client_list_col[3] == block_info[0] || client_list_col[3] == mac_parameter){
-				target_info.name = client_list_col[1];
-			}
-		}
-	}
 
 	if(casenum != ""){		//for AiProtection
-		target_info.mac = block_info[0];
 		target_info.url = block_info[1];
 		target_info.category_id = block_info[2];
 		get_category_info();
 	}
 	else{		//for Parental Controls (Time Scheduling)
-		target_info.mac = mac_parameter;
 		target_info.desc = "<#block_TS_desc#>";
 	}
 }
@@ -345,13 +318,7 @@ function show_information(){
 	
 	code = "<ul>";
 	code += "<li><div><span class='desc_info'><#Description#>:</span><br>" + target_info.desc + "</div></li>";
-	code += "<li><div><span class='desc_info'><#LANHostConfig_x_DDNSHostNames_itemname#> (MAC): </span>";
-	if(target_info.name == target_info.mac)
-		code += target_info.name;
-	else	
-		code += target_info.name + " (" + target_info.mac.toUpperCase() + ")";
-		
-	code += "</div></li>";
+
 	if(casenum != "")
 		code += "<li><div><span class='desc_info'>URL: </span>" + target_info.url +"</div></li>";
 	

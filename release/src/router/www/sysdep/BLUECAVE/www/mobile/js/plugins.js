@@ -96,6 +96,49 @@ function getAllWlArray(){
 	return wlArrayRet;
 }
 
+function getPAPList(siteSurveyAPList) {
+	var papList = [];
+	var profile = function(_profile){
+		var getBandWidthName = function(ch){
+			if(ch >= 1 && ch <= 14){
+				return {name: "2.4GHz", unit: 0};
+			}
+			else{
+				if(isSupport("TRIBAND"))
+					return (ch >= 36 && ch <= 64) ? {name: "5GHz-1", unit: 1} : {name: "5GHz-2", unit: 2};
+				else
+					return {name: "5GHz", unit: 1};
+			}
+		}
+
+		if(_profile == null || _profile.length == 0)
+			_profile = ["", "", "", "", "", "", "", "", ""];
+
+		this.band = getBandWidthName(_profile[2]).name;
+		this.unit = getBandWidthName(_profile[2]).unit;
+		this.ssid = htmlEnDeCode.htmlEncode(decodeURIComponent(_profile[1]));
+		this.channel = _profile[2];
+		this.authentication = _profile[3];
+		this.encryption = _profile[4];
+		this.signal = (Math.ceil(_profile[5]/25) == 0) ? 1 : Math.ceil(_profile[5]/25);
+		this.macaddr = _profile[6];
+		this.wlmode = _profile[7];
+		this.state = _profile[8];
+		this.thekey = "";
+		this.thekeyindex = "";
+		this.thekeyauthmode = "";
+	}
+
+	for(var i=0; i<siteSurveyAPList.length; i++){
+		var site = new profile(siteSurveyAPList[i]);
+		if(papList.indexOf(site.macaddr) === -1){
+			papList.push(site.macaddr);
+			papList[site.macaddr] = site;
+		}
+	}
+	return papList;
+}
+
 function checkPasswd($obj){
 	var targetObj = $(this);
 	targetObj.toggleClass("icon_eye_close").toggleClass("icon_eye_open");
@@ -116,7 +159,7 @@ function hasBlank(objArray){
 }
 
 function hadPlugged(deviceType){
-	var usbDeviceList = httpApi.hookGet("show_usb_path")["show_usb_path"][0] || [];
+	var usbDeviceList = httpApi.hookGet("show_usb_path")[0] || [];
 	return (usbDeviceList.join().search(deviceType) != -1)
 }
 
@@ -154,6 +197,46 @@ var Get_Component_Loading = function(){
 
 		return $("<div>").addClass("cssload-bellContainer").append(loadContainer);
 	}
+}
+
+var Get_SiteSurvey_List = function(papList, filterBand) {
+	var siteSurveyContainer = $("<div>");
+	papList.forEach(function(macIndex){
+		var AP = papList[macIndex];
+		if(AP.ssid == "") return true;
+		var unit = AP.unit;
+		if(unit === filterBand) return true;
+
+		var apListContainer = $("<div>").attr({"id" : AP.macaddr}).addClass("apListContainer apProfile");
+		var apListDiv = $("<div>").addClass("apListDiv");
+		apListContainer.append(apListDiv);
+
+		var ap_icon_container = $("<div>").addClass("ap_icon_container");
+		apListDiv.append(ap_icon_container);
+
+		var ap_icon = $("<div>").addClass("icon_wifi_" + (AP.signal + (AP.encryption == "NONE" ? "" : "_lock")) + " ap_icon");
+		ap_icon.appendTo(ap_icon_container);
+
+		var ap_ssid =  $("<div>").addClass("ap_ssid").html(AP.ssid);
+		apListDiv.append(ap_ssid);
+		ap_ssid.hover(function(){
+			$(this).addClass("ap_ssid_hover")
+		}, function(){
+			$(this).removeClass("ap_ssid_hover")
+		})
+
+		var ap_band =  $("<div>").addClass("ap_band").html(AP.band);
+		apListDiv.append(ap_band);
+
+		var ap_narrow_container = $("<div>").addClass("ap_narrow_container");
+		apListDiv.append(ap_narrow_container);
+
+		var ap_narrow = $("<div>").addClass("icon_arrow_right ap_narrow");
+		ap_narrow.appendTo(ap_narrow_container);
+
+		siteSurveyContainer.append(apListContainer);
+	});
+	return siteSurveyContainer;
 }
 
 var Get_Component_btnLoading = function(){
@@ -260,18 +343,18 @@ function handleSysDep(){
 	$(".iptv").toggle(isSupport("IPTV"));
 	$(".defaultSupport").toggle(systemVariable.isDefault);
 	$(".configuredSupport").toggle(!systemVariable.isDefault);
-	$(".forceUpgrade").toggle(isSupport("FORCEUPGRADE"));
+	$(".forceUpgrade").toggle(isSupport("fupgrade"));
 
 	$("#syncSSID").toggle(!isSupport("SMARTCONNECT") && (isSupport("DUALBAND") || isSupport("TRIBAND")));
 	$("#wireless_sync_checkbox").enableCheckBox(!isSupport("SMARTCONNECT") && (isSupport("DUALBAND") || isSupport("TRIBAND")));
 
-	if(systemVariable.forceChangePw && isSupport("AMAS")){
+	if(systemVariable.forceChangePw && isSupport("amas")){
 		systemVariable.forceChangePw = false;
 		systemVariable.forceChangePwInTheEnd = true;
 	}
 
 	if(!isNoWAN) $(".amasNoWAN").remove();
-	if(!isSupport("AMAS")) $(".amasSupport").remove();
+	if(!isSupport("amas")) $(".amasSupport").remove();
 }
 
 function handleModelIcon() {
@@ -343,6 +426,63 @@ function setUpTimeZone(){
 		qisPostData.time_zone = timeZoneObj.time_zone;
 		qisPostData.time_zone_dst = (timeZoneObj.hasDst) ? 1 : 0;
 	});
+}
+
+function setupWLCNvram(apProfileID) {
+	systemVariable.selectedAP = systemVariable.papList[apProfileID];
+	postDataModel.insert(wlcObj);
+
+	qisPostData.wlc_ssid = htmlEnDeCode.htmlDecode(systemVariable.selectedAP.ssid)
+	qisPostData.wlc_band = systemVariable.selectedAP.unit;
+	qisPostData.wlc_ap_mac = systemVariable.selectedAP.macaddr;
+
+	if(systemVariable.selectedAP.encryption == "NONE"){
+		qisPostData.wlc_auth_mode = "open";
+		qisPostData.wlc_crypto = "";
+		qisPostData.wlc_wep = "0";
+	}
+	else{
+		if(systemVariable.selectedAP.encryption == "WEP"){
+			qisPostData.wlc_auth_mode = "open"; // open/shared authentication use the same profile, UI don't know which one to use.
+			qisPostData.wlc_crypto = "";
+		}
+		else if(systemVariable.selectedAP.encryption == "TKIP"){
+			qisPostData.wlc_auth_mode = "psk";
+			qisPostData.wlc_crypto = "tkip";
+			qisPostData.wlc_wep = "0";
+		}
+		else if(systemVariable.selectedAP.authentication == "WPA-WPA2-Personal"){
+			qisPostData.wlc_auth_mode = "pskpsk2";
+			if(systemVariable.selectedAP.encryption == "AES")
+				qisPostData.wlc_crypto = "aes";
+			else
+				qisPostData.wlc_crypto = "tkip+aes";
+			qisPostData.wlc_wep = "0";
+		}
+		else if(systemVariable.selectedAP.authentication == "WPA2-Personal" && systemVariable.selectedAP.encryption == "AES"){
+			qisPostData.wlc_auth_mode = "psk2";
+			qisPostData.wlc_crypto = "aes";
+			qisPostData.wlc_wep = "0";
+		}
+		else if(systemVariable.selectedAP.authentication == "WPA-WPA2-Enterprise"){
+			qisPostData.wlc_auth_mode = "wpawpa2";
+			if(systemVariable.selectedAP.encryption == "AES")
+				qisPostData.wlc_crypto = "aes";
+			else
+				qisPostData.wlc_crypto = "tkip+aes";
+			qisPostData.wlc_wep = "0";
+		}
+		else if(systemVariable.selectedAP.authentication == "WPA2-Enterprise" && systemVariable.selectedAP.encryption == "AES"){
+			qisPostData.wlc_auth_mode = "wpa2";
+			qisPostData.wlc_crypto = "aes";
+			qisPostData.wlc_wep = "0";
+		}
+		else{
+			qisPostData.wlc_auth_mode = "psk2";
+			qisPostData.wlc_crypto = "aes";
+			qisPostData.wlc_wep = "0";
+		}
+	}
 }
 
 function updateSubnet(ipAddr){
@@ -457,16 +597,14 @@ var isPage = function(page){
 }
 
 var isSupport = function(_ptn){
+	var ui_support = httpApi.hookGet("get_ui_support");
 	var matchingResult = false;
+
 	switch(_ptn){
 		case "ForceBWDPI":
 			matchingResult = false;
 			break;
-		case "AMAS":
-			matchingResult = (systemVariable.rcSupport.search("amas") !== -1) ? true : false;
-			break;
 		case "QISBWDPI":
-			// matchingResult = (systemVariable.rcSupport.search("bwdpi") !== -1) ? true : false;
 			matchingResult = false;
 			break;
 		case "DUALBAND":
@@ -481,14 +619,11 @@ var isSupport = function(_ptn){
 		case "IPTV":
 			matchingResult = (isSku("EU") || isSku("SG") || isSku("AA") || isSku("TW")) ? true : false;
 			break;
-		case "FORCEUPGRADE":
-			matchingResult = (systemVariable.rcSupport.search("fupgrade") !== -1) ? true : false;
-			break;
 		case "SMARTCONNECT":
-			matchingResult = (systemVariable.rcSupport.search("smart_connect") !== -1 || systemVariable.rcSupport.search("bandstr") !== -1) ? true : false;
+			matchingResult = (ui_support["smart_connect"] == 1 || ui_support["bandstr"] == 1) ? true : false;
 			break;
 		default:
-			matchingResult = ((systemVariable.rcSupport.search(_ptn) !== -1) || (systemVariable.productid.search(_ptn) !== -1)) ? true : false;
+			matchingResult = ((ui_support[_ptn] == 1) || (systemVariable.productid.search(_ptn) !== -1)) ? true : false;
 			break;
 	}
 
@@ -517,7 +652,7 @@ var isSdk = function(ver){
 
 var isWlUser = (function(){
 	var isWL = true;
-	var clientList = httpApi.hookGet("get_clientlist").get_clientlist;
+	var clientList = httpApi.hookGet("get_clientlist");
 	Object.keys(clientList).forEach(function(key){
 		if(clientList[key].isLogin == 1){
 			isWL = (clientList[key].isWL != 0) ? true : false;

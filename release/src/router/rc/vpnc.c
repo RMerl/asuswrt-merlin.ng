@@ -133,7 +133,6 @@ start_vpnc(void)
 		} else
 		if (nvram_match(strcat_r(prefix, "pptp_options_x", tmp), "+mppe-56")) {
 			fprintf(fp, "nomppe-40\n"
-				    "nomppe-128\n"
 				    "require-mppe\n"
 				    "require-mppe-56\n");
 		} else
@@ -143,9 +142,11 @@ start_vpnc(void)
 				    "require-mppe\n"
 				    "require-mppe-128\n");
 		} else
-		if (nvram_match(strcat_r(prefix, "pptp_options_x", tmp), ""))
+		if (nvram_match(strcat_r(prefix, "pptp_options_x", tmp), "")) {
 			fprintf(fp, "require-mppe-40\n"
-				    	"require-mppe-128\n");
+				    "require-mppe-56\n"
+				    "require-mppe-128\n");
+		}
 	} else {
 		fprintf(fp, "nomppe nomppc\n");
 
@@ -350,6 +351,12 @@ int vpnc_update_resolvconf(void)
 		goto error;
 	}
 #ifdef NORESOLV /* dnsmasq uses no resolv.conf */
+#ifdef RTCONFIG_YANDEXDNS
+	if (yadns_mode != YADNS_DISABLED) {
+		/* keep yandex.dns servers */
+		fp_servers = NULL;
+	} else
+#endif
 	if (!(fp_servers = fopen("/tmp/resolv.dnsmasq", "w+"))) {
 		perror("/tmp/resolv.dnsmasq");
 		fclose(fp);
@@ -371,7 +378,8 @@ int vpnc_update_resolvconf(void)
 
 	fclose(fp);
 #ifdef NORESOLV /* dnsmasq uses no resolv.conf */
-	fclose(fp_servers);
+	if (fp_servers)
+		fclose(fp_servers);
 #endif
 	file_unlock(lock);
 

@@ -223,6 +223,12 @@ int vpnc_update_resolvconf(const int unit)
 		goto error;
 	}
 #ifdef NORESOLV /* dnsmasq uses no resolv.conf */
+#ifdef RTCONFIG_YANDEXDNS
+	if (yadns_mode != YADNS_DISABLED) {
+		/* keep yandex.dns servers */
+		fp_servers = NULL;
+	} else
+#endif
 	if (!(fp_servers = fopen("/tmp/resolv.dnsmasq", "w+"))) {
 		perror("/tmp/resolv.dnsmasq");
 		fclose(fp);
@@ -246,7 +252,8 @@ int vpnc_update_resolvconf(const int unit)
 
 	fclose(fp);
 #ifdef NORESOLV /* dnsmasq uses no resolv.conf */
-	fclose(fp_servers);
+	if (fp_servers)
+		fclose(fp_servers);
 #endif
 	file_unlock(lock);
 
@@ -738,6 +745,9 @@ int vpnc_ovpn_up_main(int argc, char **argv)
 			nvram_set(strlcat_r(prefix, "gateway", tmp, sizeof(tmp)), vpn_gateway);
 		nvram_set(strlcat_r(prefix, "dns", tmp, sizeof(tmp)), "");	//clean dns
 
+		ovpn_up_handler(unit);
+		update_resolvconf();
+
 		//set route table
 		cnt = 0;
 		while(1)
@@ -821,6 +831,7 @@ int vpnc_ovpn_down_main(int argc, char **argv)
 		vpnc_down(ifname);
 
 		/* Add dns servers to resolv.conf */
+		ovpn_down_handler(unit);
 		update_resolvconf();
 
 #ifdef USE_MULTIPATH_ROUTE_TABLE	
@@ -1714,20 +1725,24 @@ start_vpnc_by_unit(const int unit)
 			if (VPNC_PPTP_OPT_MPPC == prof->config.pptp.option) {
 				fprintf(fp, "nomppe nomppc\n");
 			} else
-			if (VPNC_PPTP_OPT_MPPE40== prof->config.pptp.option) {
+			if (VPNC_PPTP_OPT_MPPE40 == prof->config.pptp.option) {
 				fprintf(fp, "require-mppe\n"
 					    "require-mppe-40\n");
 			} else
-			if (VPNC_PPTP_OPT_MPPE56== prof->config.pptp.option) {
+			if (VPNC_PPTP_OPT_MPPE56 == prof->config.pptp.option) {
 				fprintf(fp, "nomppe-40\n"
-					    "nomppe-128\n"
 					    "require-mppe\n"
 					    "require-mppe-56\n");
 			} else
-			if (VPNC_PPTP_OPT_MPPE128== prof->config.pptp.option) {
+			if (VPNC_PPTP_OPT_MPPE128 == prof->config.pptp.option) {
 				fprintf(fp, "nomppe-40\n"
 					    "nomppe-56\n"
 					    "require-mppe\n"
+					    "require-mppe-128\n");
+			} else
+			if (VPNC_PPTP_OPT_AUTO == prof->config.pptp.option) {
+				fprintf(fp, "require-mppe-40\n"
+					    "require-mppe-56\n"
 					    "require-mppe-128\n");
 			}
 		} else {

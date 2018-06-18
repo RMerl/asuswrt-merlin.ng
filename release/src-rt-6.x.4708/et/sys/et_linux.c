@@ -111,21 +111,23 @@
 #error "Packet chaining feature can't work w/o CTF"
 #endif
 #define PKTC_ENAB(et)	((et)->etc->pktc)
+#define PKT_BRC_CHECK(et, evh) \
+	((et)->brc_hot && CTF_HOTBRC_CMP((et)->brc_hot, (evh), (void *)(et)->dev))
 #define PKT_CHAINABLE(et, p, evh, prio, h_sa, h_da, h_prio) \
 	(!ETHER_ISNULLDEST(((struct ethervlan_header *)(evh))->ether_dhost) && \
 	 !eacmp((h_da), ((struct ethervlan_header *)(evh))->ether_dhost) && \
 	 !eacmp((h_sa), ((struct ethervlan_header *)(evh))->ether_shost) && \
-	 (et)->brc_hot && CTF_HOTBRC_CMP((et)->brc_hot, (evh), (void *)(et)->dev) && \
 	 ((h_prio) == (prio)) && !RXH_FLAGS((et)->etc, PKTDATA((et)->osh, (p))) && \
 	 (((struct ethervlan_header *)(evh))->vlan_type == HTON16(ETHER_TYPE_8021Q)) && \
 	 ((((struct ethervlan_header *)(evh))->ether_type == HTON16(ETHER_TYPE_IP)) || \
 	 (((struct ethervlan_header *)(evh))->ether_type == HTON16(ETHER_TYPE_IPV6))))
 #ifdef PLC
+#define PLC_PKT_BRC_CHECK(et, evh) \
+	(et->plc.brc_hot && CTF_HOTBRC_CMP(et->plc.brc_hot, (evh), (void *)et->plc.dev))
 #define PLC_PKT_CHAINABLE(et, p, evh, prio, h_sa, h_da, h_prio) \
 	(!ETHER_ISNULLDEST(((struct ethervlan_header *)(evh))->ether_dhost) && \
 	 !eacmp((h_da), ((struct ethervlan_header *)(evh))->ether_dhost) && \
 	 !eacmp((h_sa), ((struct ethervlan_header *)(evh))->ether_shost) && \
-	 et->plc.brc_hot && CTF_HOTBRC_CMP(et->plc.brc_hot, (evh), (void *)et->plc.dev) && \
 	 ((h_prio) == (prio)) && !RXH_FLAGS((et)->etc, PKTDATA((et)->osh, (p))) && \
 	 (((struct ethervlan_header *)(evh))->vlan_type == HTON16(ETHER_TYPE_8021Q)) && \
 	 ((((struct ethervlan_header *)(evh))->ether_type == HTON16(ETHER_TYPE_IP)) || \
@@ -2562,10 +2564,6 @@ et_rxevent(osl_t *osh, et_info_t *et, struct chops *chops, void *ch, int quota)
 		}
 
 		prio = IP_TOS46(evh + ETHERVLAN_HDR_LEN) >> IPV4_TOS_PREC_SHIFT;
-		if (cd[0].h_da == NULL) {
-			cd[0].h_da = evh; cd[0].h_sa = evh + ETHER_ADDR_LEN;
-			cd[0].h_prio = prio;
-		}
 
 #ifdef USBAP
 		/* Don't chain TCP control packet */
@@ -2587,33 +2585,39 @@ et_rxevent(osl_t *osh, et_info_t *et, struct chops *chops, void *ch, int quota)
 		 * set then stop chaining.
 		 */
 		if (chaining) {
-			for (i = 0; i <= cidx; i++) {
+			chaining = FALSE;
 #ifdef PLC
-				if (et_plc_pkt(et, evh)) {
-					if (PLC_PKT_CHAINABLE(et, p, evh, prio, cd[i].h_sa,
-					                  cd[i].h_da, cd[i].h_prio))
-						break;
-					else if ((i + 1 < PKTCMC) && (cd[i + 1].h_da == NULL)) {
-						cidx++;
-						cd[cidx].h_da = evh;
-						cd[cidx].h_sa = evh + ETHER_ADDR_LEN;
-						cd[cidx].h_prio = prio;
-					}
-				} else
+			if (PLC_PKT_BRC_CHECK(et, evh))
+#else
+			if (PKT_BRC_CHECK(et, evh))
 #endif /* PLC */
-				{
-					if (PKT_CHAINABLE(et, p, evh, prio, cd[i].h_sa,
-					                  cd[i].h_da, cd[i].h_prio))
-						break;
-					else if ((i + 1 < PKTCMC) && (cd[i + 1].h_da == NULL)) {
+			{
+				for (i = 0; i < PKTCMC; i++) {
+					if (cd[i].h_da == NULL) {
+						cd[i].h_da = evh;
+						cd[i].h_sa = evh + ETHER_ADDR_LEN;
+						cd[i].h_prio = prio;
 						cidx++;
-						cd[cidx].h_da = evh;
-						cd[cidx].h_sa = evh + ETHER_ADDR_LEN;
-						cd[cidx].h_prio = prio;
+						break;
+					}
+#ifdef PLC
+					if (et_plc_pkt(et, evh)) {
+						if (PLC_PKT_CHAINABLE(et, p, evh, prio, cd[i].h_sa,
+										  cd[i].h_da, cd[i].h_prio)) {
+							chaining = TRUE;
+							break;
+						}
+					} else
+#endif /* PLC */
+					{
+						if (PKT_CHAINABLE(et, p, evh, prio, cd[i].h_sa,
+										  cd[i].h_da, cd[i].h_prio)) {
+							chaining = TRUE;
+							break;
+						}
 					}
 				}
 			}
-			chaining = (i < PKTCMC);
 		}
 
 		if (chaining && !stop_chain) {
@@ -2709,8 +2713,8 @@ et_rxevent(osl_t *osh, et_info_t *et, struct chops *chops, void *ch, int quota)
 
 #ifdef PKTC
 	/* send up the chain(s) at one fell swoop */
-	ASSERT(cidx < PKTCMC);
-	for (i = 0; i <= cidx; i++) {
+	ASSERT(cidx <= PKTCMC);
+	for (i = 0; i < cidx; i++) {
 		if (cd[i].chead != NULL)
 			et_sendup_chain(et, cd[i].chead);
 	}

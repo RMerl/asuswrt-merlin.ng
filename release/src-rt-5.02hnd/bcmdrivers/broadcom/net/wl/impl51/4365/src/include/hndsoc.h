@@ -86,6 +86,7 @@
 #define	SI_ARM7S_SRAM2		0x80000000	/* ARM7TDMI-S SRAM Region 2 */
 #define	SI_ARMCA7_ROM		0x00000000	/* ARM Cortex-A7 ROM */
 #define	SI_ARMCA7_RAM		0x00200000	/* ARM Cortex-A7 RAM */
+#define	CCI400_S3_SNOOP_CTL	0x18304000	/* ARM Cortex-A7 CCI-400 SNOOP CTL */
 #define	SI_ARM_FLASH1		0xffff0000	/* ARM Flash Region 1 */
 #define	SI_ARM_FLASH1_SZ	0x00010000	/* ARM Size of Flash Region 1 */
 

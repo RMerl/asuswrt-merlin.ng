@@ -751,6 +751,9 @@ FUNC(setup)
 	TRACE(0x43650001)
 	/* Initialize MPU */
 	/* bl	mpu_init */
+	ldr	r0,=CCI400_S3_SNOOP_CTL
+	mov	r1,#0
+	str	r1,[r0]
 	/* Figure out if we have an SB or AI chip */
 	ldr	r0,=SI_ENUM_BASE		/* r0:	core regs SI base address */
 	ldr	r1,[r0,#CC_CHIPID]

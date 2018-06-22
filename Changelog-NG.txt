@@ -14,7 +14,12 @@ General changes in the 384/NG branch vs 380.xx:
 
 
 384.6 (xx-xxx-xxxx)
+   - NEW: Merged with GPL 384_20942 (AC56U and AC87U currently
+          missing)
    - NEW: Added support for the "-p" option to netstat.
+   - NEW: Added setting to enable DNS rebind protection, on the
+          DHCP page.  This works by rejecting upstream server
+          responses that would point at a private IP.
    - CHANGED: Updated nano to 2.9.7
    - CHANGED: Updated curl to 7.60.0 (contains security fixes)
    - CHANGED: Allow selecting text (for copy/paste operations)
@@ -26,6 +31,11 @@ General changes in the 384/NG branch vs 380.xx:
    - FIXED: IPv6-related issues on non-HND platform (theMIROn)
    - FIXED: Couldn't log on WTFast if accessing the router
             webui over https.
+   - REMOVED: WTFast support for RT-AC88U/RT-AC3100/RT-AC5300,
+              as it's incompatible with recent versions of
+              curl (and has been broken for quite some time).
+              Not gonna revert back to a 7 years old curl
+              version just for wtfast.
 
 
 384.5 (13-May-2018)

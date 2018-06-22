@@ -1695,6 +1695,8 @@ void start_dnsmasq(void)
 			fprintf(fp, "dnssec-no-timecheck\n");
 	}
 #endif
+	if (nvram_match("dns_norebind", "1"))
+		fprintf(fp, "stop-dns-rebind\n");
 
 	append_custom_config("dnsmasq.conf",fp);
 	fclose(fp);

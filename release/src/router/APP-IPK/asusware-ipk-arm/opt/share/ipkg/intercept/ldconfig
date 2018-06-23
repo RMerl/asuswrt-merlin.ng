@@ -1,7 +1,0 @@
-#!/bin/sh
-
-if [ ! -f $IPKG_INTERCEPT_DIR/ldconfig ]; then
-  echo "ldconfig" > $IPKG_INTERCEPT_DIR/ldconfig
-  chmod +x $IPKG_INTERCEPT_DIR/ldconfig
-fi
-

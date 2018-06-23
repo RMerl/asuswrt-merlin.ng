@@ -40,33 +40,17 @@ char* g_is_webdav_block = "0";
 #include <sqlite3.h>
 #endif
 
-int do_account_authentication(const char *username, const char *password){
-
+int do_account_authentication(const char *username, const char *password)
+{
 	char *nvram_acc_list;
 	
 #if EMBEDDED_EANBLE
 	//- if file /etc/shadow exist.
-	FILE* fp2;
-	char line[128];
-        int login_success = 0;
-	char* shadow_file = "/etc/shadow"; 
-	if(access(shadow_file, R_OK) == 0){
-	    if((fp2 = fopen(shadow_file, "r")) != NULL){
-		memset(line, 0, sizeof(line));
-                while(fgets(line, 128, fp2) != NULL){
-		    if(strncmp(line, username, strlen(username))==0){
-			login_success = compare_passwd_in_shadow(username, password) ? 1 : 0;
-                        break;
-		    }
-		}
-		
-		fclose(fp2);
-            }
-	} 
-	
-	if(login_success==1){
-	    Cdbg(1, "login success\n");
-	    return 1;
+	if (access("/etc/shadow", R_OK) == 0 &&
+	    strcmp(username, nvram_get_http_username()) == 0 &&
+	    compare_passwd_in_shadow(username, password)) {
+		Cdbg(1, "login success\n");
+		return 1;
 	}
 
 	Cdbg(1, "login fail\n");

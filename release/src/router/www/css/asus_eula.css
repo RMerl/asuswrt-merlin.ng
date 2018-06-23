@@ -1,0 +1,42 @@
+.alert_ASUS_EULA{
+	line-height: 160%;
+	font-size: 12px;
+	font-family: Arial, Verdana, Helvetica, sans-serif;
+	width:480px;
+	height:auto;
+	position:absolute;
+	background: rgba(0,0,0,0.9);
+	z-index:10;
+	margin:250px;
+	border-radius:10px;
+	padding:25px;
+	display: none;
+}
+
+.custom_ol{
+	counter-reset:item;
+	list-style: none;
+	margin-left: -2em;
+}
+
+.custom_ol li:before{
+ content:"(" counter(item) ")";
+ counter-increment:item;
+ margin-right:0.5em;
+}
+
+.custom_ol li{
+ padding-left:1em;
+ text-indent:-2em;
+}
+
+.custom_ol li li{
+	counter-reset:item;
+	list-style: none;
+	text-indent: -1em;
+	margin-left:-3em;
+}
+
+.custom_ol li li:before{
+	content: "-";
+}

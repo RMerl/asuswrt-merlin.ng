@@ -5,8 +5,16 @@ AiMesh_Desc3=Hvis du ikke kan finde nogen AiMesh-forbindelsespunkter i nærheden
 AiMesh_Desc31=1. Ret venligst dit AiMesh-forbindelsespunkt, og prøv igen.
 AiMesh_Desc32=2. Sørg for, at dit AiMesh-forbindelsespunkt er opdateret. (Frmwareversionen skal understøtte AiMesh)
 AiMesh_Desc3_note=Find understøttet firmware
+AiMesh_Intro_Desc=The AiMesh system is composed of ASUS routers. You will set up one router becomes AiMesh router and you can add another AiMesh node to expand your network.
+AiMesh_Router_Desc=Connect your modem to the WAN port on your router using the Ethernet cable.
 AiMesh_setup_node=I want to set this device as AiMesh node
+AiMesh_setup_node_desc1=Press [Next] button to reset this AiMesh node, and then place the AiMesh node stand by near your AiMesh router.
+AiMesh_setup_node_desc2=Re-connect your AiMesh router to your mobile/NB/PC.
 AiMesh_setup_router=I want to set this device as AiMesh router
+AiMesh_connCap_desc=Please re-direct your mobile/NB/PC to your AiMesh router.
+AiMesh_errConn_desc=If you cannot find your AiMesh router near by. Please make sure your current mobile/NB/PC is already connected to your AiMesh router by Ethernet cable or Wi-Fi.
+AiMesh_connCap_wired=If via wired, use Ethernet cable to connect the LAN port of your AiMesh router and current NB/PC/.
+AiMesh_connCap_wifi=If via Wi-Fi, on current mobile/NB/PC, search the network name(SSID) of your AiMesh router, and connect it.
 ADSL_FW_item1=Den nuværende version
 ADSL_FW_item3=Den seneste version
 APSurvey_action_ConnectingStatus0=Parent-AP er muligvis slået fra. Tjek venligst dette igen.
@@ -24,6 +32,44 @@ APSurvey_msg_connected=Du er allerede tilsluttet dette adgangspunkt.
 APSurvey_msg_non_support_Auth=Godkendelsesmetoden understøttes ikke.
 APSurvey_msg_waiting_to_connect=Vent et øjeblik. ZVMODELVZ\'en opretter forbindelse til
 ASUS_Registration=Become an ASUS Member and receive the latest product information. <a style='color:#FC0' target='_blank' href='https://account.asus.com'>Sign Up Now!</a>
+ASUS_Notice=BEMÆRKNING FRA ASUS
+ASUS_privacy_desc=Please note that users are required to agree to share information before using DDNS, Remote Connection (ASUS Router APP、Lyra APP、AiCloud、AiDisk), AiProtection, Traffic analyzer, Apps analyzer, Adaptive QoS, Game Boost/Game IPS and Web history. At any time, users can search for the contents of the terms at this page or stop sharing the information with other parties by choosing <a style="font-weight: bolder;">Withdraw</a>.
+ASUS_eula_desc0=Velkommen til DDNS/Fjernforbindelse (ASUS Router APP/Lyra APP/AiCloud/AiDisk). Læs venligst følgende oplysninger omhyggeligt:
+ASUS_eula_desc1=For at vurdere og forbedre ASUS-produkttjenester og deres stabilitet, baseret på din brug, indsamler ASUS muligvis dine oplysninger via ovenstående funktioner:
+ASUS_eula_desc1_1=Når du begynder at bruge ovenstående funktioner, indsamler ASUS muligvis dine anonyme oplysninger, der ikke kan karakterisere eller identificere dig:
+ASUS_eula_desc1_1_1=Logoplysninger: Logoplysninger, der er knyttet til dit produkt, herunder modelnavn, firmwareversion, internetstatus og en automatisk genereret aktiveringskode (bruges kun på Alexa™/IFTTT™-funktionerne).
+ASUS_eula_desc1_1_12=Logoplysninger: Logoplysninger, der er knyttet til dit produkt, herunder modelnavn, firmwareversion, internetstatus og en automatisk genereret aktiveringskode (bruges kun på Alexa™-funktionerne).
+ASUS_eula_desc1_1_13=Logoplysninger: Logoplysninger, der er knyttet til dit produkt, herunder modelnavn, firmwareversion og internetstatus.
+ASUS_eula_desc1_2_s1=Ved at klikke på [Jeg accepter] nedenfor, anses det for at du giver dit samtykke til at dele følgende produktoplysninger med ASUS.
+ASUS_eula_desc1_2_s2=For at beskytte børns privatliv, indsamler vi ikke følgende oplysninger om børn.
+ASUS_eula_desc1_2_1=Produktoplysninger: Oplysninger, der er knyttet til dit produkt, herunder produktets serienummer, IP-adresse, MAC-adresse og DDNS-navn.
+ASUS_eula_desc1_3=Udover dette deler ASUS muligvis en auto-genereret aktiveringskode til Amazon for ovennævnte formål, for at du kan bruge fjernstyringsfunktionen i Alexa™ via dit produkt.
+ASUS_eula_desc1_4=Besides, in order to enable your remote control function of IFTTT™ via your product, ASUS may share auto-generated activation code to IFTTT™ for the above purposes.Udover dette deler ASUS muligvis en auto-genereret aktiveringskode til IFTTT™ for ovennævnte formål, for at du kan bruge fjernstyringsfunktionen i IFTTT™ via dit produkt.
+ASUS_eula_desc2=ASUS er forpligtet til at beskytte og respektere dit privatliv. Du kan altid gå til Advanced Settings (Avancerede indstillinger) > Administration (Administrering) > Privacy (Fortrolighed) for, at aktivere/deaktivere deling af dine produktoplysninger med ASUS. For flere oplysninger om, hvordan ASUS beskytter dit privatliv, bedes du se <a id="eula_url" style="font-weight: bolder;text-decoration:underline;cursor:pointer;" target="_blank">ASUS' fortrolighedspolitik</a>.
+ASUS_eula_age=Jeg er over 16 år.
+ASUS_eula_age_confirm=Bekræft venligst, at du er over 16 år.
+ASUS_eula_withdraw0_AlexaIFTTT=For DDNS, Alexa™, IFTTT™ og Fjernforbindelse (ASUS Router APP/Lyra APP/AiCloud/AiDisk):
+ASUS_eula_withdraw0_Alexa=For DDNS, Alexa™ og Fjernforbindelse (ASUS Router APP/Lyra APP/AiCloud/AiDisk):
+ASUS_eula_withdraw0=For DDNS og Fjernforbindelse  (ASUS Router APP/Lyra APP/AiCloud/AiDisk):
+ASUS_eula_withdraw_desc1=Bemærk venligst at dine oplysninger, herunder dit produkts modelnavn, firmwareversion, internetstatus, IP-adresse, MAC-adresse og DDNS-navn, indsamles af ASUS via ovenstående funktioner.
+ASUS_eula_withdraw_desc1_2=Hvis du ønsker, at deaktivere delingen af dine oplysninger med ASUS via ovenstående funktioner, bedes du venligst klikke på <span style="font-weight: bold;">[Frameld]</span> nedenfor. Men bemærk venligst at sådanne funktioner muligvis holder op med at virke, hvis du ikke længere ønsker, at dele dine oplysninger med ASUS.
+ASUS_eula_withdraw_desc2=Når du har klikket på <span style="font-weight: bold;">[Frameld]</span>, laves der nogle ændringer, som angivet nedenfor:
+ASUS_eula_withdraw_desc2_1=DDNS-navnet, som du i øjeblikket bruger, gemmes ikke af din router.
+ASUS_eula_withdraw_desc2_2=Du kan stadig bruge ASUS Router APP, Lyra APP, AiCloud, AiDisk på LAN-forbindelsen, men ikke på fjernforbindelsen.
+ASUS_eula_withdraw_desc2_Alexa=Hvis du senere ønsker, at aktivere funktionerne i Alexa™, skal du indtaste en ny aktiveringskode på websiden til Alexa™.
+ASUS_eula_withdraw_desc2_AlexaIFTTT=Hvis du senere ønsker, at aktivere funktionerne i Alexa™ og IFTTT™, skal du indtaste en ny aktiveringskode på websiderne til Alexa™ og IFTTT™.
+ASUS_eula_withdraw_note=Det er ikke muligt, at framelde delingen af dine oplysninger uden en internetforbindelse. Frameld delingen af dine oplysninger, når du er forbundet til internettet.
+ASUS_eula_withdraw_unstable=Det er ikke muligt, at framelde delingen af dine oplysninger, da din internetforbindelse er ustabil. Prøv venligst igen senere.
+TM_eula_desc1=Ved at bruge AiProtection, Traffic Analyzer, Apps Analyzer, Adaptive QoS/Game boost/Game IPS, Webhistorikken, accepterer du <a id="eula_url" style="text-decoration:underline;" target="_blank">slutbrugerlicensaftalen fra Trend Micro</a>.
+TM_eula_desc2=Bemærk venligst at dine oplysninger indsamles af Trend Micro via AiProtection, Traffic Analyzer, Apps analysator, Adaptive QoS og din webhistorik. Du anerkender og accepterer også, at ASUS ikke er ansvarlig for hverken aftalen mellem dig og Trend Micro eller indholdet i tjenesten, der leveres af Trend Micro. Hvis du eventuelt har spørgsmål til, hvordan Trend Micro indsamler, behandler og bruger dine ovenstående oplysninger, bedes du venligst se fortrolighedserklæringen, der udstedes af Trend Micro, eller kontakt Trend Micro for yderligere oplysninger.
+TM_eula_desc3=Hvis du ønsker, at deaktivere delingen af dine oplysninger med Trend Micro via ovenstående funktioner, bedes du venligst gå til:  Router web GUI (routerens webbrugergrænseflade) > Advanced settings (Avancerede indstillinger) > Administration (Administrering) > Privacy (Fortrolighed).
+TM_privacy_policy=<a id="tm_eula_url" style="text-decoration:underline;" target="_blank">TrendMicro Privacy Policy</a>
+TM_data_collection=<a id="tm_disclosure_url" style="text-decoration:underline;" target="_blank">Privacy and Personal Data Collection Disclosure</a>
+TM_eula_withdraw0=For AiProtection, Traffic Analyzer, Apps analyzer, Adaptive QoS/Game boost/Game IPS og din webhistorik:
+TM_eula_withdraw_desc1=Bemærk venligst at dine oplysninger indsamles af Trend Micro via ovenstående funktioner.
+TM_eula_withdraw_desc2=Hvis du ønsker, at deaktivere delingen af dine oplysninger med Trend Micro via følgende funktioner, bedes du venligst klikke på <span style="font-weight: bold;">[Frameld]span> nedenfor. Men bemærk venligst at sådanne funktioner muligvis holder op med at virke, hvis du ikke længere ønsker, at dele dine oplysninger med Trend Micro.
+withdraw_confirm=Er du sikker på, du vil frameld indsamlingen af dine oplysninger?
+withdraw_str=Frameld
 asusddns_inputhint=Indtast navnet
 Auto=Auto
 Auto_Setting_btn=Automatic Setting
@@ -1540,6 +1586,8 @@ feedback_thanks=Tak for din feedback.
 feedback_translation=Din foreslåede oversættelse
 feedback_translation_ts=Translated Suggestion
 feedback_usaul_unavailable=Kan normalt ikke oprette forbindelse
+feedback_eula=Jeg accepterer at give ovenstående oplysninger, modelnavnet, firmwareversionen på ​​min ASUS-router, min browserversion, MAC-adresse, IP-adresse, internetstatus, routersystemoplysninger, tidspunktet jeg sender denne feedbackformular til ASUS for at diagnosticere og forbedre problemerne med min ASUS-router, og for at analysere min brugeroplevelse med henblink på, at udvikle og evaluere nye produkter og tjenester fra ASUS, og jeg accepterer også <a style="font-weight: bolder;text-decoration:underline;cursor:pointer;" href="https://www.asus.com/us/Terms_of_Use_Notice_Privacy_Policy/Privacy_Policy" target="_blank">ASUS' fortrolighedspolitik</a>
+feedback_eula_notice=Før du klikker på "Send", bedes du venligst accepter følgende oplysninger.
 File_content_alert_desc10=Ved at oprette en delt mappe med mere end 12 tegn, kan gøre den usynlig i nogle Windows® versioner \nVil du fortsætte?
 File_content_alert_desc6=Delenavnet må ikke være tomt.
 File_content_alert_desc7=Delenavnet må kun indeholde alfanumeriske karakterer, bindestreg, understegning eller mellemrum.

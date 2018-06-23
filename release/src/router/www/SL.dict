@@ -5,8 +5,16 @@ AiMesh_Desc3=Če ne najdete nobenega vozlišča AiMesh v bližini:
 AiMesh_Desc31=1. Ponastavite svoje vozlišče AiMesh in poskusite znova.
 AiMesh_Desc32=2. Prepričajte se, da je vaše vozlišče AiMesh posodobljeno. (Različica vdelane programske opreme mora podpirati AiMesh)
 AiMesh_Desc3_note=Iskanje podrte vdelane programske opreme
+AiMesh_Intro_Desc=The AiMesh system is composed of ASUS routers. You will set up one router becomes AiMesh router and you can add another AiMesh node to expand your network.
+AiMesh_Router_Desc=Connect your modem to the WAN port on your router using the Ethernet cable.
 AiMesh_setup_node=I want to set this device as AiMesh node
+AiMesh_setup_node_desc1=Press [Next] button to reset this AiMesh node, and then place the AiMesh node stand by near your AiMesh router.
+AiMesh_setup_node_desc2=Re-connect your AiMesh router to your mobile/NB/PC.
 AiMesh_setup_router=I want to set this device as AiMesh router
+AiMesh_connCap_desc=Please re-direct your mobile/NB/PC to your AiMesh router.
+AiMesh_errConn_desc=If you cannot find your AiMesh router near by. Please make sure your current mobile/NB/PC is already connected to your AiMesh router by Ethernet cable or Wi-Fi.
+AiMesh_connCap_wired=If via wired, use Ethernet cable to connect the LAN port of your AiMesh router and current NB/PC/.
+AiMesh_connCap_wifi=If via Wi-Fi, on current mobile/NB/PC, search the network name(SSID) of your AiMesh router, and connect it.
 ADSL_FW_item1=Trenutna različica
 ADSL_FW_item3=Najnovejša različica
 APSurvey_action_ConnectingStatus0=Nadrejena dostopna točka je morda izklopljena. Preverite znova.
@@ -24,6 +32,44 @@ APSurvey_msg_connected=Povezavo s to dostopno točko ste že vzpostavili.
 APSurvey_msg_non_support_Auth=Način preverjanja pristnosti ni podprt.
 APSurvey_msg_waiting_to_connect=Počakajte. Usmerjevalnik ZVMODELVZ vzpostavlja povezavo s/z
 ASUS_Registration=Postanite član podjetja ASUS, da boste prejemali najnovejše informacije o izdelkih. <a style='color:#FC0' target='_blank' href='https://account.asus.com'>Prijavite se zdaj.</a>
+ASUS_Notice=OBVESTILO PODJETJA ASUS
+ASUS_privacy_desc=Please note that users are required to agree to share information before using DDNS, Remote Connection (ASUS Router APP、Lyra APP、AiCloud、AiDisk), AiProtection, Traffic analyzer, Apps analyzer, Adaptive QoS, Game Boost/Game IPS and Web history. At any time, users can search for the contents of the terms at this page or stop sharing the information with other parties by choosing <a style="font-weight: bolder;">Withdraw</a>.
+ASUS_eula_desc0=Vabljeni k uporabi funkcij DDNS/oddaljene povezave (aplikacija usmerjevalnika ASUS/aplikacija Lyra/AiCloud/AiDisk). Prosimo, da pozorno preberete naslednje podatke:
+ASUS_eula_desc1=Da bi lahko na podlagi vaše uporabe ocenili in izboljšali storitve in stabilnost izdelkov ASUS, lahko podjetje ASUS zbira vaše podatke prek zgoraj navedenih funkcij:
+ASUS_eula_desc1_1=Ko začnete uporabljati zgoraj navedene funkcije, lahko podjetje ASUS zbira vaše anonimne podatke, na podlagi katerih vas ni mogoče opredeliti, niti identificirati:
+ASUS_eula_desc1_1_1=Podatki o prijavi: podatki o prijavi, povezani z vašim izdelkom, vključno z imenom modela, različico vdelane programske opreme, stanjem interneta in samodejno ustvarjeno kodo za aktivacijo (nanaša se samo na funkcije Alexa™/IFTTT™).
+ASUS_eula_desc1_1_12=Podatki o prijavi: podatki o prijavi, povezani z vašim izdelkom, vključno z imenom modela, različico vdelane programske opreme, stanjem interneta in samodejno ustvarjeno kodo za aktivacijo (nanaša se samo na funkcije Alexa™).
+ASUS_eula_desc1_1_13=Podatki o prijavi: podatki o prijavi, povezani z vašim izdelkom, vključno z imenom modela, različico vdelane programske opreme in stanjem interneta.
+ASUS_eula_desc1_2_s1=S klikom na »Strinjam se« spodaj, bo veljalo, da se strinjate z delitvijo naslednjih podatkov s podjetjem ASUS.
+ASUS_eula_desc1_2_s2=Da bi zaščitili zasebnost otrok, od njih ne bomo zbirali naslednjih podatkov. 
+ASUS_eula_desc1_2_1=Podatki o izdelkih: podatki, povezani z vašim izdelkom, vključno s serijsko številko izdelka, naslovom IP, naslovom MAC in imenom DDNS.
+ASUS_eula_desc1_3=Poleg tega, da bi vam lahko omogočili funkcijo daljinskega nadzora Alexa™ z vašim izdelkom, lahko podjetje ASUS deli samodejno ustvarjeno kodo za aktivacijo s podjetjem Amazon za zgoraj navedene namene.
+ASUS_eula_desc1_4=Poleg tega, da bi vam lahko omogočili funkcijo daljinskega nadzora IFTTT™ z vašim izdelkom, lahko podjetje ASUS deli samodejno ustvarjeno kodo za aktivacijo s storitvijo IFTTT™ za zgoraj navedene namene.
+ASUS_eula_desc2=Podjetje ASUS je zavezano k varovanju in spoštovanju vaše zasebnosti; Da bi omogočili/onemogočili delitev podatkov o vašem izdelku s podjetjem ASUS, lahko kadar koli obiščete Napredne nastavitve> Skrbništvo > Zasebnost. Če želite izvedeti več o tem, kako podjetje ASUS varuje vašo zasebnost, prosimo, obiščite <a id="eula_url" style="font-weight: bolder;text-decoration:underline;cursor:pointer;" target="_blank">Pravilnik o zasebnosti podjetja ASUS</a>.
+ASUS_eula_age=Sem starejši/-a od 16 let.
+ASUS_eula_age_confirm=Prosimo, potrdite, da ste starejši od 16 let.
+ASUS_eula_withdraw0_AlexaIFTTT=Za funkcije DDNS, Alexa™, IFTTT™ in oddaljena povezava (aplikacija usmerjevalnika ASUS/aplikacija Lyra/AiCloud/AiDisk):
+ASUS_eula_withdraw0_Alexa=Za funkcije DDNS, Alexa™ in oddaljena povezava (aplikacija usmerjevalnika ASUS/aplikacija Lyra/AiCloud/AiDisk):
+ASUS_eula_withdraw0=Za funkcije DDNS in oddaljena povezava(aplikacija usmerjevalnika ASUS/aplikacija Lyra/AiCloud/AiDisk):
+ASUS_eula_withdraw_desc1=Prosimo, upoštevajte, da bo podjetje ASUS prek zgoraj navedenih funkcij zbiralo vaše podatke, vključno z imenom modela izdelka, različico vdelane programske opreme, stanjem interneta, naslovom IP, naslovom MAC in imenom DDNS.
+ASUS_eula_withdraw_desc1_2=Če želite onemogočiti delitev vaših podatkov s podjetjem ASUS prek zgoraj navedenih funkcij, prosimo kliknite <span style="font-weight: bold;">[Odstop]</span> spodaj. Vendar prosimo, upoštevajte, da takšne funkcije/funkcionalnosti morda ne bodo delovale, če prenehate deliti podatke s podjetjem ASUS.
+ASUS_eula_withdraw_desc2=Po kliku <span style="font-weight: bold;">[Odstop]</span> se bodo izvedle nekatere spremembe, ki so navedene spodaj:
+ASUS_eula_withdraw_desc2_1=Ime DDNS, ki ga trenutno uporabljate, se ne bo shranilo v usmerjevalnik.
+ASUS_eula_withdraw_desc2_2=Z uporabo povezave v lokalno omrežje boste lahko uporabljali aplikacijo usmerjevalnika ASUS, aplikacijo Lyra, AiCloud, AiDisk, ki pa jih ne bo mogoče uporabljati v načinu oddaljene povezave.
+ASUS_eula_withdraw_desc2_Alexa=Če nameravate v prihodnosti omogočiti funkcijo Alexa™ morate na spletni strani funkcije Alexa™ navesti novo kodo za aktivacijo.
+ASUS_eula_withdraw_desc2_AlexaIFTTT=Če nameravate v prihodnosti omogočiti funkciji Alexa™ in IFTTT™ morate na spletni strani funkcij Alexa™ in IFTTT™ navesti novo kodo za aktivacijo.
+ASUS_eula_withdraw_note=Če nimate vzpostavljene internetne povezave, ne boste mogli dokončati postopka odstopa. Prosimo, da odstop izvedete, ko bo vzpostavljena internetna povezava.
+ASUS_eula_withdraw_unstable=Ker je stanje interneta nestabilno, ni mogoče dokončati postopka odstopa. Prosimo, poskusite izvesti postopek odstopa pozneje.
+TM_eula_desc1=Z uporabo funkcij AiProtection, Traffic analyzer, Apps analyzer, Adaptive QoS/Game boost/Game IPS, spletna zgodovina se strinjate z <a id="eula_url" style="text-decoration:underline;" target="_blank">Licenčno pogodbo za končnega uporabnika podjetja Trend Micro</a>.
+TM_eula_desc2=Prosimo, upoštevajte, da bo podjetje Trend Micro vaše podatke zbiralo prek funkcij AiProtection, Traffic analyzer, Apps analyzer, Adaptive QoS in spletna zgodovina. Prav tako potrjujete in se strinjate, da podjetje ASUS ni odgovorno niti za pogodbo med vami in podjetjem Trend Micro, niti za vsebino storitve, ki jo nudi podjetje Trend Micro. Če imate kakršna koli vprašanja o tem, kako podjetje Trend Micro zbira, obdeluje in uporablja vaše zgoraj navedene podatke, si, prosimo, oglejte izjavo o zasebnosti podjetja Trend Micro ali se za več informacij obrnite na podjetje Trend Micro, prosimo, oglejte izjavo o zasebnosti podjetja Trend Micro ali se za več informacij obrnite na podjetje Trend Micro.
+TM_eula_desc3=Če želite onemogočiti delitev vaših podatkov s podjetjem Trend Micro prek zgoraj navedenih funkcij, prosimo obiščite:  Router web GUI (Spletni grafični uporabniški vmesnik usmerjevalnika) > Advanced settings (Napredne nastavitve) > Administration (Skrbništvo) > Privacy (Zasebnost).
+TM_privacy_policy=<a id="tm_eula_url" style="text-decoration:underline;" target="_blank">TrendMicro Privacy Policy</a>
+TM_data_collection=<a id="tm_disclosure_url" style="text-decoration:underline;" target="_blank">Privacy and Personal Data Collection Disclosure</a>
+TM_eula_withdraw0=Za funkcije AiProtection, Traffic Analyzer, Apps analyzer, Adaptive QoS/Game boost/Game IPS, spletna zgodovina:
+TM_eula_withdraw_desc1=Prosimo, upoštevajte, da bo podjetje Trend Micro zbiralo vaše podatke prek zgornjih funkcij.
+TM_eula_withdraw_desc2=Če želite onemogočiti delitev vaših podatkov s podjetjem Trend Micro prek naslednjih funkcij, prosimo kliknite <span style="font-weight: bold;">[Odstop]</span> spodaj. Vendar prosimo, upoštevajte, da takšne funkcije/funkcionalnosti morda ne bodo delovale, če prenehate deliti podatke s podjetjem Trend Micro.
+withdraw_confirm=Ali ste prepričani, da želite odstopiti?
+withdraw_str=Odstop
 asusddns_inputhint=Vnesite ime
 Auto=Samodejno
 Auto_Setting_btn=Samodejna nastavitev
@@ -1540,6 +1586,8 @@ feedback_thanks=Zahvaljujemo se vam, da ste si vzeli čas za posredovanje povrat
 feedback_translation=Vaš predlagan prevod
 feedback_translation_ts=Preveden predlog
 feedback_usaul_unavailable=Običajni vedno ni na voljo
+feedback_eula=Strinjam se, da bom nudil/-a zgoraj navedeni podatki, ime modela, različico vdelane programske opreme mojega usmerjevalnika ASUS, različico brskalnika, naslov MAC, naslov IP, stanje interneta, sistemske informacije usmerjevalnika, čas, ko ta obrazec za povratne informacije posredujem podjetju ASUS za diagnosticiranje in odpravljanje težav z mojim usmerjevalnikom ASUS in za analizo uporabniške izkušnje za namene razvoja in ocene novih izdelkov in storitev podjetja ASUS. Prav tako se strinjam s <a style="font-weight: bolder;text-decoration:underline;cursor:pointer;" href="https://www.asus.com/us/Terms_of_Use_Notice_Privacy_Policy/Privacy_Policy" target="_blank">Pravilnikom o zasebnosti podjetja ASUS</a>.
+feedback_eula_notice=Preden kliknete »Pošlji«, se, prosimo, strinjajte z naslednjimi podatki.
 File_content_alert_desc10=Če ustvarite omrežni pogon, ki vsebuje več kot 12 znakov, ta pogon morda ne bo prikazan v nekaterih različica sistema Windows®.\nAli želite nadaljevati?
 File_content_alert_desc6=Polje z imenom omrežnega pogona ne sme biti prazno.
 File_content_alert_desc7=Ime omrežnega pogona lahko vsebuje le alfanumerične znake, vezaj, podčrtaj in presledke.

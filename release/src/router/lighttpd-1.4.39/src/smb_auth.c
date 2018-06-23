@@ -2151,7 +2151,8 @@ int generate_sharelink( server* srv,
 				}
 			}
 			else{
-				if( !file_exist(buffer_file_path->ptr)){
+				struct stat stat_buf;
+    				if (-1 == stat(buffer_file_path->ptr, &stat_buf)) {
 					buffer_free(buffer_real_url);
 					buffer_free(buffer_file_path);
 
@@ -2288,6 +2289,9 @@ int generate_sharelink( server* srv,
 #endif
 	
 	buffer_free(buffer_real_url);
+
+	if(buffer_is_empty(*out))
+		return 0;
 
 	return 1;
 

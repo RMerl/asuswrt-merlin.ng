@@ -812,18 +812,20 @@ void start_ovpn_server(int serverNum)
 	nvi = nvram_pf_get_int(prefix, "port");
 	fprintf(fp, "port %d\n", nvi);
 
-	if(nvram_get_int("ddns_enable_x"))
+
+
+	if (nvram_get_int("ddns_enable_x") && nvram_get_int("ddns_status") && nvram_invmatch("ddns_hostname_x", ""))
 	{
 		if (nvram_match("ddns_server_x","WWW.NAMECHEAP.COM"))
 			fprintf(fp_client, "remote %s.%s %d\n", nvram_safe_get("ddns_hostname_x"), nvram_safe_get("ddns_username_x"), nvi);
 		else
-			fprintf(fp_client, "remote %s %d\n",
-			    (strlen(nvram_safe_get("ddns_hostname_x")) ? nvram_safe_get("ddns_hostname_x") : nvram_safe_get("wan0_ipaddr")),
-			    nvi);
+			fprintf(fp_client, "remote %s %d\n", nvram_safe_get("ddns_hostname_x"), nvram_get_int(buffer));
 	}
-	else
-	{
-		fprintf(fp_client, "remote %s %d\n", nvram_safe_get("wan0_ipaddr"), nvi);
+	else {
+		const char *address = get_wanip();
+		if (inet_addr_(address) == INADDR_ANY)
+			address = "0.0.0.0"; /* error */
+		fprintf(fp_client, "remote %s %d\n", address, nvram_get_int(&buffer[0]));
 	}
 	fprintf(fp_client, "float\n");
 	fprintf(fp, "dev %s\n", iface);
@@ -1785,16 +1787,16 @@ int write_ovpn_resolv(FILE* fresolv, FILE* f)
 
 void create_ovpn_passwd()
 {
+	FILE *fps, *fpp;
 	unsigned char s[512];
-	char *p;
-	char salt[32];
+	char salt[32], *p;
 	char *nv, *nvp, *b;
 	char *username, *passwd;
-	FILE *fp1, *fp2, *fp3;
-	int id = 200;
 #ifdef RTCONFIG_NVRAM_ENCRYPT
 	char dec_passwd[256];
 #endif
+	int gid = 200; /* OpenVPN GID */
+	int uid = 200;
 
 	strcpy(salt, "$1$");
 	f_read("/dev/urandom", s, 6);
@@ -1806,37 +1808,39 @@ void create_ovpn_passwd()
 		++p;
 	}
 
-	fp1=fopen("/etc/shadow.openvpn", "w");
-	fp2=fopen("/etc/passwd.openvpn", "w");
-	fp3=fopen("/etc/group.openvpn", "w");
-	if (fp1 && fp2 && fp3) {
+	fps = fopen("/etc/shadow.openvpn", "w");
+	fpp = fopen("/etc/passwd.openvpn", "w");
+	if (fps == NULL || fpp == NULL)
+		goto error;
 
-		nv = nvp = strdup(nvram_safe_get("vpn_serverx_clientlist"));
+	nv = nvp = strdup(nvram_safe_get("vpn_serverx_clientlist"));
 
-		if(nv) {
-			while ((b = strsep(&nvp, "<")) != NULL) {
-				if((vstrsep(b, ">", &username, &passwd)!=2)) continue;
-				if(strlen(username)==0||strlen(passwd)==0) continue;
-
+	if (nv) {
+		while ((b = strsep(&nvp, "<")) != NULL) {
+			if (vstrsep(b, ">", &username, &passwd) != 2)
+				continue;
+			if (*username == '\0' || *passwd == '\0')
+				continue;
 #ifdef RTCONFIG_NVRAM_ENCRYPT
-				memset(dec_passwd, 0, sizeof(dec_passwd));
-				pw_dec(passwd, dec_passwd);
-				passwd = dec_passwd;
+			memset(dec_passwd, 0, sizeof(dec_passwd));
+			pw_dec(passwd, dec_passwd);
+			passwd = dec_passwd;
 #endif
-				p = crypt(passwd, salt);
-				fprintf(fp1, "%s:%s:0:0:99999:7:0:0:\n", username, p);
-				fprintf(fp2, "%s:x:%d:%d::/dev/null:/dev/null\n", username, id, id);
-				fprintf(fp3, "%s:x:%d:\n", username, id);
-				id++;
-			}
-			free(nv);
+			p = crypt(passwd, salt);
+			fprintf(fps, "%s:%s:0:0:99999:7:0:0:\n", username, p);
+			fprintf(fpp, "%s:x:%d:%d::/dev/null:/dev/null\n", username, uid, gid);
+			uid++;
 		}
+		free(nv);
 	}
-	if (fp1) fclose(fp1);
-	if (fp2) fclose(fp2);
-	if (fp3) fclose(fp3);
+
+error:
+	if (fps)
+		fclose(fps);
+	if (fpp)
+		fclose(fpp);
+
 	chmod("/etc/shadow.openvpn", 0600);
-	chmod("/etc/group.openvpn", 0644);
 	chmod("/etc/passwd.openvpn", 0644);
 }
 

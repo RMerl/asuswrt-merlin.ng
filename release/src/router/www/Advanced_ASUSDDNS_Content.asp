@@ -18,6 +18,7 @@
 <script type="text/javascript" language="JavaScript" src="/validator.js"></script>
 <script type="text/javaScript" src="/js/jquery.js"></script>
 <script type="text/javascript" src="/js/httpApi.js"></script>
+<script language="JavaScript" type="text/javascript" src="/js/asus_eula.js"></script>
 <style type="text/css">
 .contentM_upload{
 	position:absolute;
@@ -70,11 +71,13 @@ var orig_le_enable = '<% nvram_get("le_enable"); %>';
 var le_state = '<% nvram_get("le_state"); %>';
 var httpd_restart = 0;
 
+var ASUS_EULA_str = '<% nvram_get("ASUS_EULA"); %>';
+var ASUS_EULA_time_str = '<% nvram_get("ASUS_EULA_time"); %>';
+
 function init(){
 	show_menu();
-	//	https://www.asus.com/us/support/FAQ/1034294
 	httpApi.faqURL("faq", "1034294", "https://www.asus.com", "/support/FAQ/");
-    ddns_load_body();
+	ddns_load_body();
 	update_ddns_wan_unit_option();
 
 	if(no_phddns){
@@ -87,6 +90,11 @@ function init(){
 	}
 
 	setTimeout("show_warning_message();", 100);
+
+	ASUS_EULA.config(applyRule, refreshpage);
+	if(ddns_enable_x == "1" && ddns_server_x == "WWW.ASUS.COM" && (ASUS_EULA_str == "0" || ASUS_EULA_time_str == "")){
+		ASUS_EULA.check('asus');
+	}
 }
 
 function update_ddns_wan_unit_option(){
@@ -245,16 +253,21 @@ function ddns_load_body(){
 	}
    
     hideLoading();
-    var ddnsHint = getDDNSState(ddns_return_code, ddns_hostname_x_t, ddns_old_name);
 
-    if(ddnsHint != "") {
-        if(ddns_return_code.indexOf('200')!=-1) {
-            document.getElementById("ddns_state").innerHTML=ddnsHint;
-            document.getElementById("ddns_state").display="";
-        } else {
-            alert(ddnsHint);
-        }
-    }
+	if(ddns_enable_x == "1")
+	{
+		var ddnsHint = getDDNSState(ddns_return_code, ddns_hostname_x_t, ddns_old_name);
+
+		if(ddnsHint != "")
+			alert(ddnsHint);
+		if(ddns_return_code.indexOf('200')!=-1 || ddns_return_code.indexOf('220')!=-1 || ddns_return_code == 'register,230'){
+			showhide("wan_ip_hide2", 0);
+			if(ddns_server_x == "WWW.ASUS.COM"){
+				showhide("wan_ip_hide3", 1);
+			}
+		}
+	}
+
     if(ddns_return_code.indexOf('200')!=-1 || ddns_return_code.indexOf('220')!=-1 || ddns_return_code == 'register,230'){
         showhide("wan_ip_hide2", 0);
         if(ddns_server_x == "WWW.ASUS.COM"){
@@ -276,14 +289,28 @@ function get_cert_info(){
 	});
 }
 
-function applyRule(){
-    if(validForm()){
-        if(document.form.ddns_enable_x[0].checked == true && document.form.ddns_server_x.selectedIndex == 0){
-            document.form.ddns_hostname_x.value = document.form.DDNSName.value+".asuscomm.com";   
-        }
+function apply_eula_check(){
+	var do_applyRule = false;
 
-        check_update();
-    }
+	if(document.form.ddns_enable_x[0].checked == true && document.form.ddns_server_x.value == "WWW.ASUS.COM"){
+		do_applyRule = ASUS_EULA.check("asus");
+	}
+	else
+		do_applyRule = true;
+
+	if(do_applyRule)
+		applyRule();
+
+}
+
+function applyRule(){
+	if(validForm()){
+		if(document.form.ddns_enable_x[0].checked == true && document.form.ddns_server_x.selectedIndex == 0){
+			document.form.ddns_hostname_x.value = document.form.DDNSName.value+".asuscomm.com";
+		}
+
+		check_update();
+	}
 }
 
 function validForm(){
@@ -806,7 +833,7 @@ function save_cert_key(){
 			</tr>
 		</table>
 				<div class="apply_gen">
-					<input class="button_gen" onclick="applyRule();" type="button" value="<#CTL_apply#>" />
+					<input class="button_gen" onclick="apply_eula_check();" type="button" value="<#CTL_apply#>" />
 				</div>
 		
 			  </td>

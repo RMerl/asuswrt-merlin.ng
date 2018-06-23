@@ -681,7 +681,10 @@ function validForm(){
 	
 	if(document.form.ipv61_service.value=="other"){
 		if(!ipv6_valid(document.form.ipv61_ipaddr) || 
-				!validator.range(document.form.ipv61_prefix_len_wan, 3, 128) ||
+				!validator.range(document.form.ipv61_prefix_len_wan, 3, 128)){
+				return false;
+		}
+		if(document.form.ipv61_gateway.value != "" &&
 				!ipv6_valid(document.form.ipv61_gateway)){
 				return false;
 		}

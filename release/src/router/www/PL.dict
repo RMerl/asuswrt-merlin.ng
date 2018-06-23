@@ -5,8 +5,16 @@ AiMesh_Desc3=Jeśli nie można znaleźć w pobliżu dostępnych węzłów AiMesh
 AiMesh_Desc31=1. Zresetuj węzeł AiMesh i spróbuj ponownie.
 AiMesh_Desc32=2. Upewnij się, że węzeł AiMesh jest zaktualizowany. (Wersja oprogramowania sprzętowego musi obsługiwać system AiMesh).
 AiMesh_Desc3_note=Znajdź obsługiwane oprogramowanie sprzętowe
+AiMesh_Intro_Desc=The AiMesh system is composed of ASUS routers. You will set up one router becomes AiMesh router and you can add another AiMesh node to expand your network.
+AiMesh_Router_Desc=Connect your modem to the WAN port on your router using the Ethernet cable.
 AiMesh_setup_node=I want to set this device as AiMesh node
+AiMesh_setup_node_desc1=Press [Next] button to reset this AiMesh node, and then place the AiMesh node stand by near your AiMesh router.
+AiMesh_setup_node_desc2=Re-connect your AiMesh router to your mobile/NB/PC.
 AiMesh_setup_router=I want to set this device as AiMesh router
+AiMesh_connCap_desc=Please re-direct your mobile/NB/PC to your AiMesh router.
+AiMesh_errConn_desc=If you cannot find your AiMesh router near by. Please make sure your current mobile/NB/PC is already connected to your AiMesh router by Ethernet cable or Wi-Fi.
+AiMesh_connCap_wired=If via wired, use Ethernet cable to connect the LAN port of your AiMesh router and current NB/PC/.
+AiMesh_connCap_wifi=If via Wi-Fi, on current mobile/NB/PC, search the network name(SSID) of your AiMesh router, and connect it.
 ADSL_FW_item1=Aktualna wersja
 ADSL_FW_item3=Najnowszą wersje
 APSurvey_action_ConnectingStatus0=Może być wyłączony nadrzędny AP. Sprawdź ponownie.
@@ -24,6 +32,44 @@ APSurvey_msg_connected=Wykonane zostało połączenie z tym punktem dostępowym.
 APSurvey_msg_non_support_Auth=Nieobsługiwana metoda uwierzytelniania.
 APSurvey_msg_waiting_to_connect=Zaczekaj, ZVMODELVZ wykonuje połączenie z 
 ASUS_Registration=Become an ASUS Member and receive the latest product information. <a style='color:#FC0' target='_blank' href='https://account.asus.com'>Sign Up Now!</a>
+ASUS_Notice=INFORMACJE FIRMY ASUS
+ASUS_privacy_desc=Please note that users are required to agree to share information before using DDNS, Remote Connection (ASUS Router APP、Lyra APP、AiCloud、AiDisk), AiProtection, Traffic analyzer, Apps analyzer, Adaptive QoS, Game Boost/Game IPS and Web history. At any time, users can search for the contents of the terms at this page or stop sharing the information with other parties by choosing <a style="font-weight: bolder;">Withdraw</a>.
+ASUS_eula_desc0=DDNS/połączenie zdalne (aplikacja ASUS Router/Lyra/ AiCloud/AiDisk) — Zapraszamy! Przeczytaj uważnie poniższe informacje:
+ASUS_eula_desc1=W celu oceny i poprawy usług oraz stabilności produktu firmy ASUS na podstawie informacji o sposobach jego użytkowania firma ASUS może gromadzić informacje użytkownika za pośrednictwem powyższych funkcji:
+ASUS_eula_desc1_1=Po rozpoczęciu korzystania z powyższych funkcji firma ASUS może gromadzić anonimowe informacje użytkownika, które nie umożliwią jego scharakteryzowania ani zidentyfikowania:
+ASUS_eula_desc1_1_1=Informacje dziennika: informacje dziennika związane z produktem, w tym nazwa modelu, wersja oprogramowania sprzętowego, stan połączenia z Internetem oraz generowany automatycznie kod aktywacji (wyłącznie dla funkcji Alexa™/IFTTT™).
+ASUS_eula_desc1_1_12=Informacje dziennika: informacje dziennika związane z produktem, w tym nazwa modelu, wersja oprogramowania sprzętowego, stan połączenia z Internetem oraz generowany automatycznie kod aktywacji (wyłącznie dla funkcji Alexa™).
+ASUS_eula_desc1_1_13=Informacje dziennika: informacje dziennika związane z produktem, w tym nazwa modelu, wersja oprogramowania sprzętowego oraz stan połączenia z Internetem.
+ASUS_eula_desc1_2_s1=Kliknięcie poniższej pozycji [Agree] (Zgadzam się) oznacza zgodę na udostępnianie firmie ASUS poniższych informacji.
+ASUS_eula_desc1_2_s2=W celu ochrony prywatności dziecka nie będziemy gromadzić poniższych informacji o dziecku.
+ASUS_eula_desc1_2_1=Informacje o produkcie: informacje dotyczące produktu, w tym numer seryjny, adres IP, adres MAC i nazwa DDNS.
+ASUS_eula_desc1_3=Ponadto w celu obsługi funkcji zdalnego sterowania Alexa™ za pomocą produktu użytkownika firma ASUS może udostępnić firmie Amazon generowany automatycznie kod aktywacji.
+ASUS_eula_desc1_4=Ponadto w celu obsługi funkcji zdalnego sterowania IFTTT™ za pomocą produktu użytkownika firma ASUS może udostępnić usłudze IFTTT™ generowany automatycznie kod aktywacji.
+ASUS_eula_desc2=Firmie ASUS zależy na ochronie i poszanowaniu prywatności użytkownika; Można przejść kolejno do pozycji Advanced Settings (Ustawienia zaawansowane) > Administration (Administracja) > Privacy (Prywatność) w celu włączenia/wyłączenia stałego udostępniania firmie ASUS informacji o produkcie. Więcej informacji na temat ochrony prywatności użytkowników przez firmę ASUS można znaleźć w dokumencie <a id="eula_url" style="font-weight: bolder;text-decoration:underline;cursor:pointer;" target="_blank">Polityka prywatności firmy ASUS</a>.
+ASUS_eula_age=Mam więcej niż 16 lat.
+ASUS_eula_age_confirm=Potwierdź, że masz więcej niż 16 lat.
+ASUS_eula_withdraw0_AlexaIFTTT=W przypadku DDNS, Alexa™, IFTTT™ i połączenia zdalnego (aplikacja ASUS Router/Lyra/AiCloud/AiDisk):
+ASUS_eula_withdraw0_Alexa=W przypadku DDNS, Alexa™ i połączenia zdalnego (aplikacja ASUS Router/Lyra/AiCloud/AiDisk):
+ASUS_eula_withdraw0=W przypadku DDNS i połączenia zdalnego(aplikacja ASUS Router/Lyra/AiCloud/AiDisk):
+ASUS_eula_withdraw_desc1=Należy pamiętać, że informacje użytkownika, w tym nazwa modelu produktu, wersja oprogramowania sprzętowego, stan połączenia z Internetem, adres IP, adres MAC i nazwa DDNS, będą gromadzone przez firmę ASUS za pośrednictwem powyższych funkcji.
+ASUS_eula_withdraw_desc1_2=Aby wyłączyć udostępnianie informacji użytkownika firmie ASUS za pośrednictwem powyższych funkcji, należy kliknąć pozycję <span style="font-weight: bold;">[Withdraw] (Wycofaj zgodę)</span> poniżej. Należy jednak pamiętać, że po zaprzestaniu udostępniania informacji użytkownika firmie ASUS funkcje te mogą nie działać.
+ASUS_eula_withdraw_desc2=Po kliknięciu pozycji <span style="font-weight: bold;">[Withdraw] (Wycofaj zgodę)</span> wprowadzone zostaną wymienione poniżej zmiany:
+ASUS_eula_withdraw_desc2_1=Używana aktualnie nazwa DDNS nie zostanie zachowana na routerze.
+ASUS_eula_withdraw_desc2_2=Korzystanie z aplikacji ASUS Router, Lyra, AiCloud i AiDisk jest możliwe w ramach połączenia LAN, ale nie w trybie połączenia zdalnego.
+ASUS_eula_withdraw_desc2_Alexa=W celu włączenia funkcji Alexa™ w przyszłości konieczne będzie podanie nowego kodu aktywacji na stronie internetowej Alexa™.
+ASUS_eula_withdraw_desc2_AlexaIFTTT=W celu włączenia funkcji Alexa™ i IFTTT™ w przyszłości konieczne będzie podanie nowego kodu aktywacji na stronie internetowej Alexa™ i IFTTT™.
+ASUS_eula_withdraw_note=Nie można ukończyć procedury wycofania zgody bez połączenia z Internetem. Wycofaj zgodę po nawiązaniu połączenia z Internetem.
+ASUS_eula_withdraw_unstable=Nie można ukończyć procedury wycofania zgody ze względu na niestabilność połączenia z Internetem. Spróbuj ponownie wycofać zgodę później.
+TM_eula_desc1=Korzystanie z funkcji AiProtection, Traffic analyzer (Analizator ruchu), Apps analyzer (Analizator aplikacji), Adaptive QoS (Adaptacyjna funkcja QoS)/Game boost (Przyspieszenie gier)/Game IPS, Web history (Historia stron sieci Web) oznacza zgodę na postanowienia <a id="eula_url" style="text-decoration:underline;" target="_blank"> Umowy licencyjnej użytkownika oprogramowania firmy Trend Micro</a>.
+TM_eula_desc2=Należy pamiętać, że firma Trend Micro będzie gromadzić informacje użytkownika za pośrednictwem funkcji AiProtection, Traffic analyzer (Analizator ruchu), Apps analyzer (Analizator aplikacji), Adaptive QoS (Adaptacyjna funkcja QoS) i Web history (Historia stron sieci Web). Użytkownik przyjmuje ponadto do wiadomości i zgadza się na to, że firma ASUS nie ponosi odpowiedzialności za żadne umowy między użytkownikiem a firmą Trend Micro ani za jakąkolwiek zawartość usługi zapewnianej przez firmę Trend Micro. W razie jakichkolwiek pytań dotyczących sposobów gromadzenia, przetwarzania i wykorzystywania powyższych informacji użytkownika przez firmę Trend Micro, należy zapoznać się z oświadczeniem firmy Trend Micro w sprawie ochrony prywatności lub skontaktować się z firmą Trend Micro w celu uzyskania szczegółowych informacji.
+TM_eula_desc3=Aby wyłączyć udostępnianie informacji użytkownika firmie Trend Micro za pośrednictwem powyższych funkcji, należy przejść kolejno do pozycji:  Interfejs Web GUI routera > Advanced settings (Ustawienia zaawansowane) > Administration (Administracja) > Privacy (Prywatność).
+TM_privacy_policy=<a id="tm_eula_url" style="text-decoration:underline;" target="_blank">TrendMicro Privacy Policy</a>
+TM_data_collection=<a id="tm_disclosure_url" style="text-decoration:underline;" target="_blank">Privacy and Personal Data Collection Disclosure</a>
+TM_eula_withdraw0=W przypadku funkcji AiProtection, Traffic Analyzer (Analizator ruchu), Apps analyzer (Analizator aplikacji), Adaptive QoS (Adaptacyjna funkcja QoS)/Game boost (Przyspieszenie gier)/Game IPS, Web history (Historia stron sieci Web):
+TM_eula_withdraw_desc1=Please noted that your information will be collected by Trend Micro through the above functionsNależy pamiętać, że firma Trend Micro będzie gromadzić informacje użytkownika za pośrednictwem powyższych funkcji.
+TM_eula_withdraw_desc2=Aby wyłączyć udostępnianie informacji użytkownika firmie Trend Micro za pośrednictwem tych funkcji, należy kliknąć pozycję <span style="font-weight: bold;">[Withdraw] (Wycofaj zgodę)</span> poniżej. Należy jednak pamiętać, że po zaprzestaniu udostępniania informacji użytkownika firmie Trend Micro funkcje te mogą nie działać.
+withdraw_confirm=Czy na pewno chcesz wycofać zgodę?
+withdraw_str=Wycofaj zgodę
 asusddns_inputhint=Wpisz imię
 Auto=Automat
 Auto_Setting_btn=Automatic Setting
@@ -1540,6 +1586,8 @@ feedback_thanks=Dziękujemy za poświęcenie czasu na przesłanie swojej opinii.
 feedback_translation=Twoje zalecane tłumaczenie
 feedback_translation_ts=Translated Suggestion
 feedback_usaul_unavailable=Zwykle lub zawsze niedostępna
+feedback_eula=Zgadzam się dołączyć powyższe informacje, nazwę modelu, wersję oprogramowania sprzętowego routera ASUS, wersję przeglądarki, adres MAC, adres IP, stan połączenia z Internetem i informacje o systemie routera do przesyłanego firmie ASUS formularza opinii w celu diagnozy i rozwiązania problemów dotyczących routera ASUS oraz w celu analizy doświadczeń użytkownika pod kątem rozwoju i oceny nowych produktów i usług firmy ASUS, a także akceptuję postanowienia dokumentu <a style="font-weight: bolder;text-decoration:underline;cursor:pointer;" href="https://www.asus.com/us/Terms_of_Use_Notice_Privacy_Policy/Privacy_Policy" target="_blank">Polityka prywatności firmy ASUS</a>.
+feedback_eula_notice=Przed kliknięciem pozycji „Send” (Wyślij) wyraź zgodę na poniższe informacje.
 File_content_alert_desc10=Utworzenie udostępnionego folderu na większą niż 12 znaków może spowodować, że nie będzie widoczna w systemach Windows. Kontynuować?
 File_content_alert_desc6=Nazwa udostępnionego folderu nie może być pusta.
 File_content_alert_desc7=Nazwa udostępnionego folderu może składać się ze znaków alfanumerycznych/myślników/dolnych podkreśleń/spacji.

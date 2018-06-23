@@ -217,6 +217,7 @@ int ip6up_main(int argc, char **argv)
 	char *wan_ifname = safe_getenv("IFNAME");
 	char *wan_linkname = safe_getenv("LINKNAME");
 	char tmp[100], prefix[] = "wanXXXXXXXXXX_";
+	char *value;
 	int unit;
 
 	if (!wan_ifname || strlen(wan_ifname) <= 0)
@@ -231,6 +232,9 @@ int ip6up_main(int argc, char **argv)
 
 	/* share the same interface with pppoe ipv4 connection */
 	nvram_set(strcat_r(prefix, "pppoe_ifname", tmp), wan_ifname);
+
+	if ((value = getenv("LLREMOTE")))
+		nvram_set(ipv6_nvname("ipv6_llremote"), value);
 
 	wan6_up(wan_ifname);
 

@@ -282,7 +282,6 @@ function initial(){
 	inputCtrl(document.form.wl_turbo_qam_brcm_intop, 0);
 	inputCtrl(document.form.wl_txbf, 0);
 	inputCtrl(document.form.wl_itxbf, 0);
-	inputCtrl(document.form.usb_usb3, 0);
 	inputCtrl(document.form.traffic_5g, 0);
 
 	if(wl_unit_value == '1' || wl_unit_value == '2'){ // 5GHz up
@@ -352,20 +351,10 @@ function initial(){
 		inputCtrl(document.form.wl_dtim, 0);
 		inputCtrl(document.form.wl_frameburst, 0);
 		inputCtrl(document.form.wl_wme_apsd, 0);
-		inputCtrl(document.form.usb_usb3, 0);
 		inputCtrl(document.form.wl_atf, 0);
 		inputCtrl(document.form.wl_txbf, 0);
 	}
 	else{ // 2.4GHz
-		var usb_usb3_support = (function(){
-			var usb3_flag = '<% nvram_default_get("usb_usb3"); %>';
-			return (usb3_flag != '') ? true : false;
-		})();
-
-		if(usb_usb3_support && based_modelid != "4G-AC53U"){
-			inputCtrl(document.form.usb_usb3, 1);
-		}
-
 		if(	based_modelid == "RT-AC3200" ||
 			based_modelid == "RT-N18U" ||
 			based_modelid == "RT-AC87U" ||
@@ -433,17 +422,21 @@ function initial(){
 		document.getElementById("DLSCapable").style.display = "none";	
 	}	
 
-	if(document.form.wl_nmode_x.value == "0" || document.form.wl_nmode_x.value == "1"){		//auto , n only		
-		inputCtrl(document.form.wl_frag, 0);
-		document.form.wl_wme.value = "on";
-		inputCtrl(document.form.wl_wme, 0);
-		document.form.wl_wme_no_ack.value = "off";
-		inputCtrl(document.form.wl_wme_no_ack, 0);
-	}
-	else{
+	if(document.form.wl_nmode_x.value == "2"){    //Legacy
+		var wme_array = ["<#Auto#>", "<#WLANConfig11b_WirelessCtrl_button1name#>", "<#WLANConfig11b_WirelessCtrl_buttonname#>"];
+		var wme_value = ["auto", "on", "off"];
 		inputCtrl(document.form.wl_frag, 1);
-		inputCtrl(document.form.wl_wme, 1);
-		inputCtrl(document.form.wl_wme_no_ack, 1);
+		add_options_x2(document.form.wl_wme, wme_array, wme_value, document.form.wl_wme.value);
+		if(document.form.wl_wme.value == "off"){
+			inputCtrl(document.form.wl_wme_no_ack, 0);
+			inputCtrl(document.form.wl_wme_apsd, 0);
+		}
+	}
+	else{  
+		var wme_array = ["<#WLANConfig11b_WirelessCtrl_button1name#>"];
+		var wme_value = ["on"];  
+		add_options_x2(document.form.wl_wme, wme_array, wme_value, "on");
+		inputCtrl(document.form.wl_frag, 0);
 	}	
 		
 	adjust_tx_power();	
@@ -463,13 +456,6 @@ function initial(){
 		document.getElementById("wl_MU_MIMO_field").style.display = "";
 		document.form.wl_mumimo.disabled = false;
 	}
-
-	/*if(lantiq_support && wl_unit_value == '1'){
-		document.getElementById("wl_MU_MIMO_field").style.display = "";
-		document.form.wl_mumimo.disabled = false;
-		document.form.wl1_mumimo.disabled = false;
-		document.form.wl_mumimo.value = document.form.wl1_mumimo.value;	
-	}*/
 
 	if(bcm_mumimo_support){
 		document.getElementById("wl_MU_MIMO_field").style.display = "";
@@ -720,15 +706,6 @@ function applyRule(){
 		else if(sdk_7){
 			document.form.action_wait.value = "5";
 		}
-		
-		if(document.form.usb_usb3.disabled == false && document.form.usb_usb3.value != '<% nvram_get("usb_usb3"); %>'){
-			if(based_modelid == "BLUECAVE"){
-				FormActions("start_apply.htm", "apply", "restart_wireless", "");
-			}
-			else{
-				FormActions("start_apply.htm", "apply", "reboot", "<% get_default_reboot_time(); %>");
-			}
-		}
 
 		if(no_finiwl_support &&  wl_txpower_orig != document.form.wl_txpower.value){
 			FormActions("start_apply.htm", "apply", "reboot", "<% get_default_reboot_time(); %>");
@@ -832,24 +809,19 @@ function disableAdvFn(row){
 }
 
 function enable_wme_check(obj){
-	if(obj.value == "off"){
+	if(obj.value == "off"){    //Disable
 		inputCtrl(document.form.wl_wme_no_ack, 0);
-		if(!Rawifi_support && !Qcawifi_support)
-			inputCtrl(document.form.wl_igs, 0);
-		
 		inputCtrl(document.form.wl_wme_apsd, 0);
+		if(!Rawifi_support && !Qcawifi_support){
+			inputCtrl(document.form.wl_igs, 0);
+		}
 	}
-	else{
-		if(document.form.wl_nmode_x.value == "0" || document.form.wl_nmode_x.value == "1"){	//auto, n only
-			document.form.wl_wme_no_ack.value = "off";
-			inputCtrl(document.form.wl_wme_no_ack, 0);
-		}else		
-			inputCtrl(document.form.wl_wme_no_ack, 1);
-		
-		if(!Rawifi_support && !Qcawifi_support)
+	else{    //Auto, Enable
+		inputCtrl(document.form.wl_wme_no_ack, 1);
+		inputCtrl(document.form.wl_wme_apsd, 1);	
+		if(!Rawifi_support && !Qcawifi_support){
 			inputCtrl(document.form.wl_igs, 1);
-
-		inputCtrl(document.form.wl_wme_apsd, 1);
+		}		
 	}
 }
 
@@ -1716,16 +1688,6 @@ function checkWLReady(){
 							<select name="wl_noisemitigation" class="input_option" onChange="">
 								<option value="0" <% nvram_match("wl_noisemitigation", "0","selected"); %>><#WLANConfig11b_WirelessCtrl_buttonname#></option>
 								<option value="1" <% nvram_match("wl_noisemitigation", "1","selected"); %>><#WLANConfig11b_WirelessCtrl_button1name#></option>
-							</select>
-						</td>
-					</tr>
-
-					<tr class="rept ew">
-						<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(3,29);"><#WLANConfig11b_x_ReduceUSB3#></a></th>
-						<td>
-							<select name="usb_usb3" class="input_option">
-								<option value="1" <% nvram_match("usb_usb3", "1","selected"); %>><#WLANConfig11b_WirelessCtrl_buttonname#></option>
-								<option value="0" <% nvram_match("usb_usb3", "0","selected"); %>><#WLANConfig11b_WirelessCtrl_button1name#></option>
 							</select>
 						</td>
 					</tr>

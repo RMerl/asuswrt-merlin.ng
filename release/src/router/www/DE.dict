@@ -5,8 +5,16 @@ AiMesh_Desc3=Falls Sie keine verfügbaren AiMesh-Netzknoten in der Nähe finden 
 AiMesh_Desc31=1. Setzen Sie bitte Ihren AiMesh-Netzknoten zurück und versuchen Sie es erneut.
 AiMesh_Desc32=2. Stellen Sie sicher, dass Ihr AiMesh-Netzknoten auf dem neuesten Stand ist. (Firmware-Version muss AiMesh unterstützen)
 AiMesh_Desc3_note=Unterstützende Firmware finden
-AiMesh_setup_node=I want to set this device as AiMesh node
-AiMesh_setup_router=I want to set this device as AiMesh router
+AiMesh_Intro_Desc=Das AiMesh-System schaltet mehrere ASUS-Router zusammen. Es kann ein Router als AiMesh Zentrale eingerichtet werden und weitere Asus Router können als AiMesh Knotenpunkte zur Netzwerkerweiterung hinzugefügt werden.
+AiMesh_Router_Desc=Verbinden Sie das Modem über ein Netzwerkkabel mit dem WAN-Port des Routers.
+AiMesh_setup_node=Ich will dieses Gerät als AiMesh Knotenpunkt nutzen
+AiMesh_setup_node_desc1=Drücken Sie die [Weiter] Taste, um diesen AiMesh Knotenpunkt zurückzusetzen. Platzieren Sie dann den AiMesh-Knotenpunkt in der Nähe Ihres AiMesh-Routers.
+AiMesh_setup_node_desc2=Verbinden Sie Ihr AiMesh-Router mit Ihren Handy / NB / PC.
+AiMesh_setup_router=Ich will dieses Gerät als AiMesh Router nutzen
+AiMesh_connCap_desc=Bitte verbinden Sie Ihr Handy / NB / PC mit Ihren AiMesh-Router.
+AiMesh_errConn_desc=Falls Sie Ihren AiMesh Router nicht finden können, stellen Sie bitte sicher, dass Ihr aktuelles Handy / NB / PC mit Ihrem AiMesh-Router über ein Netzwerkkabel oder WLAN verbunden ist.
+AiMesh_connCap_wired=Wenn die Verbindung über ein Netzwerkkabel erfolgt, prüfen Sie bitte, das Kabel zwischen dem LAN-Port Ihres AiMesh-Routers und dem des aktuellen NB / PC steckt.
+AiMesh_connCap_wifi=Wenn die Verbindung per WLAN erfolgen soll, verbinden Sie bitte ihr aktuelles Handy / NB / PC mit dem WLAN-Netz (SSID) Ihres AiMesh-Routers.
 ADSL_FW_item1=Die derzeitige Version
 ADSL_FW_item3=Die neuste Version
 APSurvey_action_ConnectingStatus0=Der Parent-AP ist möglicherweise ausgeschaltet. Bitte überprüfen Sie ihn erneut.
@@ -24,6 +32,44 @@ APSurvey_msg_connected=Sie sind mit diesen AP schon verbunden.
 APSurvey_msg_non_support_Auth=Die Authentisierungsmethode wird nicht unterstützt.
 APSurvey_msg_waiting_to_connect=Bitte warten, der ZVMODELVZ verbindet sich mit
 ASUS_Registration=Become an ASUS Member and receive the latest product information. <a style='color:#FC0' target='_blank' href='https://account.asus.com'>Sign Up Now!</a>
+ASUS_Notice=ASUS NOTICE
+ASUS_privacy_desc=Please note that users are required to agree to share information before using DDNS, Remote Connection (ASUS Router APP、Lyra APP、AiCloud、AiDisk), AiProtection, Traffic analyzer, Apps analyzer, Adaptive QoS, Game Boost/Game IPS and Web history. At any time, users can search for the contents of the terms at this page or stop sharing the information with other parties by choosing <a style="font-weight: bolder;">Withdraw</a>.
+ASUS_eula_desc0=Willkommen bei der Benutzung von DDNS/Remote Connection  (ASUS Router APP/Lyra APP/AiCloud/AiDisk). Bitte lesen Sie die folgenden Ausführungen sorgfältig durch:
+ASUS_eula_desc1=Um ASUS-Produkte und -Dienste sowie die Stabilität basierend auf Ihrer Nutzung zu bewerten und zu verbessern, kann ASUS Ihre Daten über die obigen Funktionen erheben.:
+ASUS_eula_desc1_1=Wenn Sie die obigen Funktionen verwenden, kann ASUS Ihre anonymen Daten erheben, die Sie nicht charakterisieren oder identifizieren können:
+ASUS_eula_desc1_1_1=Protokolldaten: Protokolldaten, die sich auf Ihr Produkt beziehen, einschließlich der Modellbezeichnung, Firmware-Version, des Internetstatus und automatisch generierten Aktivierungscodes (gilt nur für Alexa™/IFTTT™ Funktionen).
+ASUS_eula_desc1_1_12=Protokolldaten: Protokolldaten, die sich auf Ihr Produkt beziehen, einschließlich der Modellbezeichnung, Firmware-Version, des Internetstatus und automatisch generierten Aktivierungscodes (gilt nur für Alexa™ Funktionen).
+ASUS_eula_desc1_1_13=Protokolldaten: Protokolldaten, die sich auf Ihr Produkt beziehen, einschließlich der Modellbezeichnung, Firmware-Version und des Internetstatus.
+ASUS_eula_desc1_2_s1=Indem Sie unten auf [Ich stimme zu] klicken, erklären Sie sich bereit, die folgenden Daten an ASUS weiterzugeben.
+ASUS_eula_desc1_2_s2=Um die Privatsphäre von Kindern zu schützen, erheben wir die nachfolgenden Daten nicht von Kindern.
+ASUS_eula_desc1_2_1=Produktdaten: Daten, die sich auf Ihr Produkt beziehen, einschließlich der Seriennummer, IP-Adresse, MAC-Adresse und des DDNS-Namens
+ASUS_eula_desc1_3=Außerdem kann ASUS zur Aktivierung Ihrer Alexa™ Fernsteuerungsfunktion über Ihr Produkt automatisch generierte Aktivierungscodes zu den genannten Zwecken an Amazon weitergeben.
+ASUS_eula_desc1_4=Außerdem kann ASUS zur Aktivierung Ihrer IFTTT™ Fernsteuerungsfunktion über Ihr Produkt automatisch generierte Aktivierungscodes zu den genannten Zwecken an IFTTT™ weitergeben.
+ASUS_eula_desc2=ASUS ist verpflichtet, die Datenschutzbestimmungen zu beachten und einzuhalten.; Sie können Advanced Settings (Erweiterte Einstellungen) > Administration (Verwaltung) > Privacy (Datenschutz) aufrufen, um die Weitergabe Ihrer Produktdaten an ASUS jederzeit zu aktivieren/deaktivieren. Um mehr darüber zu erfahren, wie ASUS Ihre Daten schützt, lesen Sie bitte die <a id="eula_url" style="font-weight: bolder;text-decoration:underline;cursor:pointer;" target="_blank">ASUS Datenschutzrichtlinien</a>.
+ASUS_eula_age=Ich bin 16 Jahre oder älter.
+ASUS_eula_age_confirm=Bitte bestätigen Sie, dass Sie 16 Jahre oder älter sind.
+ASUS_eula_withdraw0_AlexaIFTTT=Für DDNS, Alexa™, IFTTT™ und Remote Connection (ASUS Router APP/Lyra APP/AiCloud/AiDisk):
+ASUS_eula_withdraw0_Alexa=Für DDNS, Alexa™ und Remote Connection (ASUS Router APP/Lyra APP/AiCloud/AiDisk):
+ASUS_eula_withdraw0=Für DDNS und Remote Connection (ASUS Router APP/Lyra APP/AiCloud/AiDisk):
+ASUS_eula_withdraw_desc1=Bitte beachten Sie, dass Ihre Daten, einschließlich der Modellbezeichnung Ihres Produkts, Firmware-Version, Internetstatus, IP-Adresse, MAC-Adresse und des DDNS-Namens, von ASUS über die obigen Funktionen erfasst werden.
+ASUS_eula_withdraw_desc1_2=Wenn Sie die Weitergabe Ihrer Daten an ASUS über die obigen Funktionen deaktivieren möchten, klicken Sie bitte unten auf <span style="font-weight: bold;">[Withdraw] ([Zurücknehmen])</span>. Bitte beachten Sie jedoch, dass diese Features/Funktionen möglicherweise nicht funktionieren, wenn Sie die Weitergabe Ihrer Daten an ASUS einstellen.
+ASUS_eula_withdraw_desc2=Nachdem Sie auf <span style="font-weight: bold;">[Withdraw] ([Zurücknehmen])</span> geklickt haben, werden einige Änderungen, wie unten aufgeführt, vorgenommen:
+ASUS_eula_withdraw_desc2_1=Der DDNS-Name, den Sie aktuell verwenden, wird nicht in Ihrem Router aufbewahrt werden.
+ASUS_eula_withdraw_desc2_2=Sie sind in der Lage, die ASUS Router APP, Lyra APP, AiCloud, AiDisk in einer LAN-Verbindung, aber nicht im Remote Connection-Modus zu verwenden.
+ASUS_eula_withdraw_desc2_Alexa=Wenn Sie beabsichtigen, in der Zukunft die Funktionen von Alexa™ zu aktivieren, müssen Sie einen neuen Aktivierungscode für die Webseite von Alexa™ zur Verfügung stellen.
+ASUS_eula_withdraw_desc2_AlexaIFTTT=Wenn Sie beabsichtigen, in der Zukunft die Funktionen von Alexa™ und IFTTT™ zu aktivieren, müssen Sie neue Aktivierungscodes für die Webseiten von Alexa™ und IFTTT™ zur Verfügung stellen.
+ASUS_eula_withdraw_note=Sie können den Vorgang des Zurücknehmens ohne Internetverbindung nicht abschließen. Bitte nehmen Sie die Aktivierung zurück, wenn Sie mit dem Internet verbunden sind.
+ASUS_eula_withdraw_unstable=Sie können den Vorgang des Zurücknehmens nicht abschließen, weil die Internetverbindung nicht stabil ist. Bitte nehmen Sie die Aktivierung später noch einmal zurück.
+TM_eula_desc1=Durch die Nutzung von AiProtection, Traffic Analyzer, Apps Analyzer, Adaptive QoS (Quality of Service)/Game Boost/Game IPS und dem Webseitenverlauf stimmen Sie der <a id="eula_url" style="text-decoration:underline;" target="_blank">Endbenutzer-Lizenzvereinbarung von Trend Micro</a> zu.
+TM_eula_desc2=Bitte beachten Sie, dass Ihre Daten von Trend Micro über AiProtection, Traffic Analyzer, Apps Analyzer, Adaptive QoS (Quality of Service) und den Webseitenverlauf erfasst werden. Sie bestätigen und stimmen zu, dass ASUS weder für Vereinbarungen zwischen Ihnen und Trend Micro noch für die zur Verfügung gestellten Inhalte des Dienstes von Trend Micro verantwortlich ist. Wenn Sie Fragen dazu haben, wie Trend Micro Ihre oben genannten Daten erhebt, verarbeitet und verwendet,  lesen Sie bitte die von Trend Micro herausgegebene Datenschutzerklärung oder wenden Sie sich für weitere Informationen direkt an Trend Micro.
+TM_eula_desc3=Wenn Sie die Weitergabe Ihrer Daten an Trend Micro über die obigen Funktionen deaktivieren möchten, rufen Sie bitte Folgendes auf: Router web GUI (Router Web-Benutzeroberfläche) > Advanced settings (Erweiterte Einstellungen) > Administration (Verwaltung) > Privacy (Datenschutz).
+TM_privacy_policy=<a id="tm_eula_url" style="text-decoration:underline;" target="_blank">TrendMicro Privacy Policy</a>
+TM_data_collection=<a id="tm_disclosure_url" style="text-decoration:underline;" target="_blank">Privacy and Personal Data Collection Disclosure</a>
+TM_eula_withdraw0=Für AiProtection, Traffic Analyzer, Apps Analyzer, Adaptive QoS (Quality of Service)/Game Boost/Game IPS und Webseitenverlauf:
+TM_eula_withdraw_desc1=Bitte beachten Sie, dass Ihre Daten von Trend Micro über die obigen Funktionen erfasst werden.
+TM_eula_withdraw_desc2=Wenn Sie die Weitergabe Ihrer Daten an Trend Micro über die folgenden Funktionen deaktivieren möchten, klicken Sie bitte unten auf <span style="font-weight: bold;">[Withdraw] ([Zurücknehmen])</span>. Bitte beachten Sie jedoch, dass diese Features/Funktionen möglicherweise nicht funktionieren, wenn Sie die Weitergabe Ihrer Daten an Trend Micro einstellen.
+withdraw_confirm=Möchten Sie die Aktivierung wirklich zurücknehmen?
+withdraw_str=Zurücknehmen
 asusddns_inputhint=Namen eingeben
 Auto=Automatisch
 Auto_Setting_btn=Automatic Setting
@@ -297,7 +343,7 @@ QIS_chooseAnnex_desc1=Wählen Sie, welchen ANNEXmodus Ihr DSL-Service nutzt. Fal
 QIS_chooseAnnex_desc2=Falls Sie hinsichtlich des zu verwendenden ANNEXmodus unsicher sind, fragen Sie bitte bei Ihrem ISP nach.
 QIS_chooseAnnex_yet=ANNEX-Modus ist nicht ausgewählt.
 QIS_confirm_recommand_encryp=Wir empfehlen Ihnen dringend, dass Sie die drahtlosen Sicherheitseinstellungen zuerst. Wollen Sie fortfahren?
-QIS_desc_1=Please plug in the cable to WAN port. System will detect your network setting automatically.
+QIS_desc_1=Schließen Sie das Netzwerkkabel an den WAN-Port an. Das System erkennt Ihre Netzwerkeinstellungen automatisch.
 QIS_desc_2=Expert mode, offline settings
 QIS_detect_desc1=PPPoE/DSL-Verbindung erkannt.
 QIS_detect_desc2=Setup-Assistent hat erkannt, dass Sie über PPPoE/DSL verbunden sind.
@@ -856,7 +902,7 @@ AiMesh_info_unabled=Ihr AiMesh-Netzknoten <span style='color:#569AC7;'>" + _mode
 AiMesh_info_unabled1=Ein anderer Benutzer versucht, ein AiMesh-System einzurichten. Bitte warten Sie eine Minute und versuchen Sie es dann erneut.
 AiMesh_info_unabled2=Ihr AiMesh-Router und -Netzknoten sollten sich während des Einrichtungsvorgangs innerhalb von 3 Metern voneinander befinden.
 AiMesh_info_unabled4=Die unterstützte AiMesh-Firmware Ihres AiMesh-Netzknotens sollte aktualisiert worden sein.
-AiMesh_Node=AiMesh-Netzknoten
+AiMesh_Node=AiMesh Knotenpunkt
 AiMesh_Node_AddConfirm=Möchten Sie diesen AiMesh-Netzknoten zu Ihrem AiMesh-System hinzufügen?
 AiMesh_Node_AddDescA=Der <span style='color:#569AC7;'>" + _model_name + " (" + _newReMac + ")</span> wurde erfolgreich zu Ihrem AiMesh-System hinzugefügt. Es dauert eine Weile, bis er als verbundenes Gerät in der AiMesh-Routerliste angezeigt wird.
 AiMesh_Node_AddDescB=Stellen Sie Ihren AiMesh-Netzknoten auf:
@@ -1540,6 +1586,8 @@ feedback_thanks=Vielen Dank, dass Sie sich die Zeit genommen haben, Ihr Feedback
 feedback_translation=Ihre vorgeschlagene Übersetzung
 feedback_translation_ts=Translated Suggestion
 feedback_usaul_unavailable=Meistens bis ständig nicht verfügbar
+feedback_eula=Ich willige ein, die oben genannten Angaben, die Modellbezeichnung, Firmware-Version meines ASUS Routers, Browser-Version, MAC-Adresse, IP-Adresse, Internetstatus, Systeminformationen des Routers und die Uhrzeit der Einreichung dieses Feedback-Formulars für ASUS bereitzustellen, um Probleme meines ASUS Routers zu diagnostizieren und zu beheben sowie die Benutzerfreundlichkeit für die Entwicklung und Evaluierung neuer ASUS-Produkte und -Dienstleistungen zu analysieren. Ich stimme weiterhin den <a style="font-weight: bolder;text-decoration:underline;cursor:pointer;" href="https://www.asus.com/us/Terms_of_Use_Notice_Privacy_Policy/Privacy_Policy" target="_blank">ASUS Datenschutzrichtlinien</a>zu.
+feedback_eula_notice=Bevor Sie auf "Senden" klicken, stimmen Sie bitte den folgenden Ausführungen zu.
 File_content_alert_desc10=Beim Erstellen einer Freigabe mit mehr als 12 Zeichen wird diese eventuell unter WindowsR nicht angezeigt.\nMöchten Sie fortfahren?
 File_content_alert_desc6=Freigabename darf nicht leer sein.
 File_content_alert_desc7=Der Freigabename darf nur aus alphanumerischen Zeichen, Bindestrichen, Unterstrichen und Leerzeichen bestehen.

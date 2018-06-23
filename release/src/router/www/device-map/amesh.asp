@@ -40,8 +40,15 @@ var aimesh_node_client_upload_icon = new Array();
 function initial(){
 	if(parent.$('link[rel=stylesheet][href~="/device-map/amesh.css"]').length > 0)
 		parent.$('link[rel=stylesheet][href~="/device-map/amesh.css"]').remove();
-	if(parent.$('link[rel=stylesheet][href~="/device-map/amesh.css"]').length == 0)
-		parent.$('head').append('<link rel="stylesheet" href="/device-map/amesh.css" type="text/css" />');
+
+	var add_css_status = setInterval(add_css, 300);
+	function add_css() {
+		if(parent.$('link[rel=stylesheet][href~="/device-map/amesh.css"]').length > 0)
+			clearInterval(add_css_status);
+		else
+			parent.addNewCSS("/device-map/amesh.css");
+	}
+
 	ajax_onboarding();
 	interval_ajax_onboarding_status = setInterval(ajax_onboarding, 5000);
 
@@ -485,15 +492,24 @@ function connectingDevice(_reMac, _newReMac) {
 	onboarding_flag = true;
 }
 function ajax_get_onboardinglist_status() {
-	var accelerate_count = function() {
+	var accelerate_count = function(_device_id) {
 		if(interval_ajax_get_onboardinglist_status) {
 			clearInterval(interval_ajax_get_onboardinglist_status);
 			interval_ajax_get_onboardinglist_status = false;
 		}
-		interval_ajax_get_onboardinglist_status = setInterval(ajax_get_onboardinglist_status, 100);
-		processCount++;
-		if(processCount >= 100)
-			processCount = 100;
+
+		var process_accumulate_status = setInterval(process_accumulate, 100);
+		function process_accumulate() {
+			if(processCount >= 100) {
+				processCount = 100;
+				clearInterval(process_accumulate_status);
+				ajax_get_onboardinglist_status();
+			}
+			else {
+				processCount++;
+				$('#ready_onBoarding_block').find("#" + _device_id + "").find(".processText").html("" + processCount + " %");
+			}
+		}
 	};
 	$.ajax({
 		url: '/ajax_onboarding.asp',
@@ -521,14 +537,17 @@ function ajax_get_onboardinglist_status() {
 					}
 				}
 				else if(get_onboardingstatus.cfg_obstatus == "1") {//for onboarding abnormal
-					accelerate_count();
-					cfg_obresult = 4;
+					if(processCount < 100) {
+						accelerate_count(device_id);
+						cfg_obresult = 4;
+					}
 				}
 			}
 			else {
 				//for onboarding finish
 				if(get_onboardingstatus.cfg_obstatus == "1" && (get_onboardingstatus.cfg_obresult == "2" || get_onboardingstatus.cfg_obresult == "4" || get_onboardingstatus.cfg_obresult == "5") && get_onboardingstatus.cfg_newre != "") {
-					accelerate_count();
+					if(processCount < 100)
+						accelerate_count(device_id);
 				}
 			}
 

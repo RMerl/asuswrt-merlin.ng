@@ -128,7 +128,7 @@ start_wps_method(void)
 	}
 #endif
 #ifdef RTCONFIG_DPSTA
-	if (is_dpsta(wps_band) || is_dpsr(wps_band))
+	if (is_dpsta(wps_band))
 	snprintf(prefix, sizeof(prefix), "wl%d.1_", wps_band);
 	else
 #endif
@@ -200,13 +200,9 @@ start_wps_method(void)
 #endif
 	nvram_unset("wps_band");
 
-#if defined(HND_ROUTER) && defined(RTCONFIG_PROXYSTA)
-	if (!wps_band && (is_dpsr(wps_band)
-#ifdef RTCONFIG_DPSTA
-		|| is_dpsta(wps_band)
-#endif
-	))
-	eval("wl", "spatial_policy", "0");
+#if defined(HND_ROUTER) && defined(RTCONFIG_PROXYSTA) && defined(RTCONFIG_DPSTA)
+	if (!wps_band && is_dpsta(wps_band))
+		eval("wl", "spatial_policy", "0");
 #endif
 
 	nvram_set("wps_env_buf", buf);
@@ -241,12 +237,8 @@ stop_wps_method(void)
 
 	set_wps_env(buf);
 
-#if defined(HND_ROUTER) && defined(RTCONFIG_PROXYSTA)
-	if (!nvram_get_int("wps_band_x") && (is_dpsr(nvram_get_int("wps_band_x"))
-#ifdef RTCONFIG_DPSTA
-		|| is_dpsta(nvram_get_int("wps_band_x"))
-#endif
-	))
+#if defined(HND_ROUTER) && defined(RTCONFIG_PROXYSTA) && defined(RTCONFIG_DPSTA)
+	if (!nvram_get_int("wps_band_x") && is_dpsta(nvram_get_int("wps_band_x")))
 		eval("wl", "spatial_policy", "1");
 #endif
 
@@ -376,7 +368,7 @@ int is_wps_stopped(void)
 
 	switch (status) {
 		case 0: /* Init */
-			dbg("Init again?\n");
+			dbg("Idle\n");
 			if (nvram_get_int("wps_restart_war") && (now - wps_uptime) < 3)
 			{
 				dbg("Re-send WPS env!!!\n");

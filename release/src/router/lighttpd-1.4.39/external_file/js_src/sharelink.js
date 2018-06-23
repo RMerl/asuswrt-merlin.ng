@@ -176,72 +176,52 @@ function openSelItem(item){
 	var isdir = item.attr("isdir");
 	var isusb = item.attr("isusb");
 	var this_full_url = item.attr("uhref");
-	var this_play_full_url = item.attr("playhref");
+	//var this_play_full_url = item.attr("playhref");
 	var this_file_name = item.attr("title");
 	//alert(this_full_url);
 	var fileExt = getFileExt(loc);
 	
-	if( fileExt=="mp4" ||
-		  fileExt=="m4v" ||
-		  fileExt=="wmv" ||
-		  fileExt=="avi" ||
-		  fileExt=="rmvb"||
-		  fileExt=="rm"  ||
-		  fileExt=="mpg" ||
-		  fileExt=="mpeg"||
-		  fileExt=="mkv" ||
-		  fileExt=="mov" ||
-		  fileExt=="flv" ) {
-		    
-		if( isWinOS() ){
-			if( isBrowser("msie") && 
-				getInternetExplorerVersion() <= 7 ){
-				//- The VLC Plugin doesn't support IE 7 or less
-				alert(m.getString('msg_vlcsupport'));
-			}
-			else{
-				var $modalWindow = $("div#modalWindow");
-					
-				var media_hostName = window.location.host;					
-				if(media_hostName.indexOf(":")!=-1){
-					media_hostName = media_hostName.substring(0, media_hostName.indexOf(":"));
-				}
-				media_hostName = "http://" + media_hostName + ":" + g_storage.get('slhp');
+	if( fileExt=="mp4" ) {
+		
+		if(isBrowser("msie") && getInternetExplorerVersion() <= 8){
+			window.open(loc);
+			return;
+		}
+
+		var $modalWindow = $("div#modalWindow");
+		
+		open_url = '/smb/css/vlc_video.html?v=' + this_full_url;
+		open_url += '&showbutton=1';
 				
-				open_url = '/smb/css/vlc_video.html?v=' + media_hostName + this_full_url;							
-				open_url += '&showbutton=1';
-				
-				//- subtitle
-				var array_srt_files = new Array();				
-				for(var i=0;i<g_file_array.length;i++){
-					var file_ext = getFileExt(g_file_array[i].furl);
-					if(file_ext=="srt"){
-						array_srt_files.push(g_file_array[i].furl);
-					}
-				}
-				
-				if(array_srt_files.length>0){
-					open_url += '&s=';
-					for(var i=0;i<array_srt_files.length;i++){
-						open_url += array_srt_files[i];
-						if(i!=array_srt_files.length-1) open_url += ";";
-					}
-				}
-				array_srt_files=null;
-				
-				//alert(open_url);
-				
-				g_modal_url = open_url;
-				g_modal_window_width = 655;
-				g_modal_window_height = 580;
-				$('#jqmMsg').css("display", "none");
-				$('#jqmTitleText').text(m.getString('title_videoplayer'));
-				if($modalWindow){
-					$modalWindow.jqmShow();
-				}
-				return;
+		//- subtitle
+		var array_srt_files = new Array();				
+		for(var i=0;i<g_file_array.length;i++){
+			var file_ext = getFileExt(g_file_array[i].furl);
+			if(file_ext=="srt"){
+				array_srt_files.push(g_file_array[i].furl);
 			}
 		}
+				
+		if(array_srt_files.length>0){
+			open_url += '&s=';
+			for(var i=0;i<array_srt_files.length;i++){
+				open_url += array_srt_files[i];
+				if(i!=array_srt_files.length-1) open_url += ";";
+			}
+		}
+		array_srt_files=null;
+				
+		//alert(open_url);
+				
+		g_modal_url = open_url;
+		g_modal_window_width = 655;
+		g_modal_window_height = 580;
+		$('#jqmMsg').css("display", "none");
+		$('#jqmTitleText').text(m.getString('title_videoplayer'));
+		if($modalWindow){
+			$modalWindow.jqmShow();
+		}
+		return;
 	}
 	
 	if( fileExt=="mp3" ) {		

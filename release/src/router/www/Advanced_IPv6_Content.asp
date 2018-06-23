@@ -695,7 +695,10 @@ function validForm(){
 	
 	if(document.form.ipv6_service.value=="other"){
 		if(!ipv6_valid(document.form.ipv6_ipaddr) || 
-				!validator.range(document.form.ipv6_prefix_len_wan, 3, 128) ||
+				!validator.range(document.form.ipv6_prefix_len_wan, 3, 128)){
+				return false;
+		}
+		if(document.form.ipv6_gateway.value != "" &&
 				!ipv6_valid(document.form.ipv6_gateway)){
 				return false;
 		}

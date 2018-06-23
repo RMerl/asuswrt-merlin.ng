@@ -2532,10 +2532,6 @@ define RouterOptions
 	if [ "$(AMAS)" = "y" ]; then \
 		sed -i "/RTCONFIG_AMAS/d" $(1); \
 		echo "RTCONFIG_AMAS=y" >>$(1); \
-		if [ "$(LANTIQ)" != "y" ]; then \
-			sed -i "/RTCONFIG_DPSTA/d" $(1); \
-			echo "RTCONFIG_DPSTA=y" >>$(1); \
-		fi; \
 		if [ "$(DISABLE_REPEATER_UI)" = "y" ] ; then \
 			sed -i "/RTCONFIG_DISABLE_REPEATER_UI/d" $(1); \
 			echo "# RTCONFIG_DISABLE_REPEATER_UI is not set" >>$(1); \

@@ -225,6 +225,7 @@ define(function(){
 					{url: "Advanced_SNMP_Content.asp", tabName: "SNMP"},
 					{url: "Advanced_TR069_Content.asp", tabName: "TR-069"},
 					{url: "Advanced_Notification_Content.asp", tabName: "Notification"},
+					{url: "Advanced_Privacy.asp", tabName: "Privacy"},
 					{url: "NULL", tabName: "__INHERIT__"}
 				]
 			},

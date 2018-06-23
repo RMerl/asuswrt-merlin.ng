@@ -733,25 +733,19 @@ void create_passwd(void)
 	chmod("/etc/shadow", 0600);
 
 	sprintf(s,
-			"%s:x:0:0:%s:/root:/bin/sh\n"
+		"%s:x:0:0:%s:/root:/bin/sh\n"
 #ifdef RTCONFIG_SAMBASRV	//!!TB
-			"%s:x:100:100:nas:/dev/null:/dev/null\n"
+		"%s:x:100:100:nas:/dev/null:/dev/null\n"
 #endif	//!!TB
-			"nobody:x:65534:65534:nobody:/dev/null:/dev/null\n"
-#ifdef RTCONFIG_IPSEC
-			"admin:x:0:0:%s:/root:/dev/null\n"
-#endif
+		"nobody:x:65534:65534:nobody:/dev/null:/dev/null\n"
 #ifdef RTCONFIG_TOR
 		"tor:x:65533:65533:tor:/dev/null:/dev/null\n"
 #endif
-			, http_user, http_user
+		, http_user, http_user
 #ifdef RTCONFIG_SAMBASRV	//!!TB
-			, smbd_user
+		, smbd_user
 #endif	//!!TB
-#ifdef RTCONFIG_IPSEC
-			,http_user
-#endif
-			);
+		);
 	f_write_string("/etc/passwd", s, 0, 0644);
 	fappend_file("/etc/passwd", "/etc/passwd.custom");
 	fappend_file("/etc/passwd", "/jffs/configs/passwd.add");
@@ -766,6 +760,9 @@ void create_passwd(void)
 		"root:*:0:\n"
 #ifdef RTCONFIG_SAMBASRV	//!!TB
 		"nas:*:100:\n"
+#endif
+#ifdef RTCONFIG_OPENVPN
+		"openvpn:x:200:\n"	/* OpenVPN GID */
 #endif
 		"nobody:*:65534:\n"
 #ifdef RTCONFIG_TOR
@@ -782,15 +779,15 @@ void create_passwd(void)
 #ifdef RTCONFIG_SAMBASRV	//!!TB
 		"nas:x:100:\n"
 #endif
+#ifdef RTCONFIG_OPENVPN
+		"openvpn:x:200:\n"	/* OpenVPN GID */
+#endif
 		"nobody:x:65534:\n"
 #ifdef RTCONFIG_TOR
 		"tor:x:65533:\n"
 #endif
 		,0 , 0644);
 	fappend_file("/etc/group", "/etc/group.custom");
-#ifdef RTCONFIG_OPENVPN
-	fappend_file("/etc/group", "/etc/group.openvpn");
-#endif
 	fappend_file("/etc/group", "/jffs/configs/group.add");
 	run_postconf("group","/etc/group");
 }
@@ -1943,6 +1940,7 @@ void start_ipv6(void)
 			nvram_set(ipv6_nvname("ipv6_rtr_addr"), "");
 		} else
 			add_ip6_lanaddr();
+		nvram_set(ipv6_nvname("ipv6_llremote"), "");
 		nvram_set(ipv6_nvname("ipv6_get_dns"), "");
 		nvram_set(ipv6_nvname("ipv6_get_domain"), "");
 		break;
@@ -1951,6 +1949,7 @@ void start_ipv6(void)
 		nvram_set(ipv6_nvname("ipv6_prefix"), "");
 		nvram_set(ipv6_nvname("ipv6_prefix_length"), "");
 		nvram_set(ipv6_nvname("ipv6_rtr_addr"), "");
+		nvram_set(ipv6_nvname("ipv6_llremote"), "");
 		nvram_set(ipv6_nvname("ipv6_get_dns"), "");
 		nvram_set(ipv6_nvname("ipv6_get_domain"), "");
 		break;
@@ -1960,6 +1959,7 @@ void start_ipv6(void)
 		nvram_set(ipv6_nvname("ipv6_prefix_length"), nvram_safe_get(ipv6_nvname("ipv6_prefix_length_s")));
 		nvram_set(ipv6_nvname("ipv6_rtr_addr"), nvram_safe_get(ipv6_nvname("ipv6_rtr_addr_s")));
 		add_ip6_lanaddr();
+		nvram_set(ipv6_nvname("ipv6_llremote"), "");
 		break;
 	case IPV6_6IN4:
 		nvram_set(ipv6_nvname("ipv6_prefix"), nvram_safe_get(ipv6_nvname("ipv6_prefix_s")));
@@ -2024,6 +2024,9 @@ int no_need_to_start_wps(void)
 		return 1;
 #else
 	if ((sw_mode() != SW_MODE_ROUTER) &&
+#ifdef RTCONFIG_DPSTA
+                !(dpsta_mode() && nvram_get_int("re_mode") == 0) &&
+#endif
 		(sw_mode() != SW_MODE_AP))
 		return 1;
 #endif
@@ -3410,6 +3413,52 @@ asusddns_reg_domain(int reg)
 	return 0;
 }
 
+int
+asusddns_unregister(void)
+{
+	char wan_ifname[16];
+	char *nserver;
+	int unit;
+
+	unit = wan_primary_ifunit();
+#if defined(RTCONFIG_DUALWAN)
+	if (nvram_match("wans_mode", "lb")) {
+		int ddns_wan_unit = nvram_get_int("ddns_wan_unit");
+
+		if (ddns_wan_unit >= WAN_UNIT_FIRST && ddns_wan_unit < WAN_UNIT_MAX) {
+			unit = ddns_wan_unit;
+		} else {
+			int u = get_first_configured_connected_wan_unit();
+			if (u < WAN_UNIT_FIRST || u >= WAN_UNIT_MAX)
+				return -2;
+
+			unit = u;
+		}
+	}
+#endif
+
+	memset(wan_ifname, sizeof(wan_ifname), 0);
+	snprintf(wan_ifname, sizeof(wan_ifname),  get_wan_ifname(unit));
+	nvram_set("ddns_return_code", "ddns_unregister");
+
+	if (pids("ez-ipupdate"))
+	{
+		killall("ez-ipupdate", SIGINT);
+		sleep(1);
+	}
+
+	nserver = nvram_invmatch("ddns_serverhost_x", "") ?
+		    nvram_safe_get("ddns_serverhost_x") :
+		    "nwsrv-ns1.asus.com";
+_dprintf("%s: do ez-ipupdate to unregister! unit = %d wan_ifname = %s nserver = %s hostname = %s\n", __FUNCTION__, unit, wan_ifname, nserver, nvram_safe_get("ddns_hostname_x"));
+
+	nvram_unset("asusddns_reg_result");
+	eval("ez-ipupdate",
+	     "-S", "dyndns", "-i", wan_ifname, "-h", nvram_safe_get("ddns_hostname_x"),
+	     "-A", "3", "-s", nserver);
+
+	return 0;
+}
 void
 stop_syslogd(void)
 {
@@ -3752,9 +3801,7 @@ start_acsd()
 #endif
 
 #ifdef RTCONFIG_PROXYSTA
-	if (psta_exist()
-		|| dpsr_mode()
-	)
+	if (psta_exist())
 		return 0;
 #endif
 
@@ -11424,6 +11471,10 @@ check_ddr_done:
 	{
 		asusddns_reg_domain(1);
 	}
+	else if(strcmp(script, "asusddns_unregister") == 0)
+	{
+		asusddns_unregister();
+	}
 	else if (strcmp(script, "httpd") == 0)
 	{
 		if(action & RC_SERVICE_STOP) stop_httpd();
@@ -11739,21 +11790,27 @@ check_ddr_done:
 #if defined(RTCONFIG_AMAS) && defined(CONFIG_BCMWL5)
 	else if (strcmp(script, "wps_enr")==0)
 	{
-		if (is_router_mode()) {
-			int unit = nvram_get_int("wps_band_x");
-			char tmp[100], prefix[] = "wlXXXXXXXXXX_";
-			char *ifname;
+		if (is_router_mode()
+#ifdef RTCONFIG_DPSTA
+			|| (dpsta_mode() && nvram_get_int("re_mode") == 0)
+#endif
+		) {
+			if (is_router_mode()) {
+				int unit = nvram_get_int("wps_band_x");
+				char tmp[100], prefix[] = "wlXXXXXXXXXX_";
+				char *ifname;
 
-			snprintf(prefix, sizeof(prefix), "wl%d_", unit);
-			nvram_set(strcat_r(prefix, "mode", tmp), "psta");
-			ifname = nvram_safe_get(strcat_r(prefix, "ifname", tmp));
-			eval("wlconf", ifname, "down");
-			eval("wlconf", ifname, "up");
-			eval("wlconf", ifname, "start");
-			eval("wl", "-i", ifname, "disassoc");
+				snprintf(prefix, sizeof(prefix), "wl%d_", unit);
+				nvram_set(strcat_r(prefix, "mode", tmp), "psta");
+				ifname = nvram_safe_get(strcat_r(prefix, "ifname", tmp));
+				eval("wlconf", ifname, "down");
+				eval("wlconf", ifname, "up");
+				eval("wlconf", ifname, "start");
+				eval("wl", "-i", ifname, "disassoc");
+			}
+
 			start_wps();
 			sleep(1);
-
 			start_wps_enr();
 		}
 	}
@@ -12708,6 +12765,7 @@ stop_wlcconnect(void)
 #ifdef RTCONFIG_AMAS
 void start_amas_wlcconnect(void)
 {
+#ifdef RTCONFIG_SW_HW_AUTH
 #ifndef DISABLE_REPEATER_UI
 	char *amas_wlcconnect_argv[] = {"amas_wlcconnect", NULL};
 	pid_t pid;
@@ -12728,7 +12786,7 @@ void start_amas_wlcconnect(void)
 
 	_eval(amas_wlcconnect_argv, NULL, 0, &pid);
 #endif
-	return;
+#endif /* RTCONFIG_SW_HW_AUTH */
 }
 
 void stop_amas_wlcconnect(void)
@@ -12746,6 +12804,7 @@ void stop_amas_wlcconnect(void)
 
 void start_amas_bhctrl(void)
 {
+#ifdef RTCONFIG_SW_HW_AUTH
 #ifndef DISABLE_REPEATER_UI
 	char *amas_bhctrl_argv[] = {"amas_bhctrl", NULL};
 	pid_t pid;
@@ -12766,7 +12825,7 @@ void start_amas_bhctrl(void)
 
 	_eval(amas_bhctrl_argv, NULL, 0, &pid);
 #endif
-	return;
+#endif /* RTCONFIG_SW_HW_AUTH */
 }
 
 void stop_amas_bhctrl(void)
@@ -12783,6 +12842,7 @@ void stop_amas_bhctrl(void)
 }
 void start_amas_lanctrl(void)
 {
+#ifdef RTCONFIG_SW_HW_AUTH
 	char *amas_lanctrl_argv[] = {"amas_lanctrl", NULL};
 	pid_t pid;
 
@@ -12801,6 +12861,7 @@ void start_amas_lanctrl(void)
 	killall("amas_lanctrl", SIGTERM);
 
 	_eval(amas_lanctrl_argv, NULL, 0, &pid);
+#endif /* RTCONFIG_SW_HW_AUTH */
 }
 
 void stop_amas_lanctrl(void)
@@ -12823,7 +12884,7 @@ void gen_lldpd_if(char *bind_ifnames)
 
 	/* prepare binding interface list */
 #if defined(RTCONFIG_BCMARM) && defined(RTCONFIG_PROXYSTA) && defined(RTCONFIG_DPSTA)
-	if (dpsta_mode()) {
+	if (dpsta_mode() && nvram_get_int("re_mode") == 1) {
 		/* for lan_ifnames */
 		foreach (word, nvram_safe_get("lan_ifnames"), next) {
 
@@ -15392,10 +15453,11 @@ overwrite_fbwifi_ssid(void) {
 #ifdef RTCONFIG_CFGSYNC
 int start_cfgsync(void)
 {
+	int ret = 0;
+#ifdef RTCONFIG_SW_HW_AUTH
 	char *cfg_server_argv[] = {"cfg_server", NULL};
 	char *cfg_client_argv[] = {"cfg_client", NULL};
 	pid_t pid;
-	int ret = 0;
 
 #ifdef RTCONFIG_MASTER_DET
 	if (nvram_match("cfg_master", "1") && (is_router_mode() || access_point_mode()))
@@ -15424,7 +15486,7 @@ int start_cfgsync(void)
 		ret = _eval(cfg_client_argv, NULL, 0, &pid);
 	}
 #endif
-
+#endif	/* RTCONFIG_SW_HW_AUTH */
 	return ret;
 }
 

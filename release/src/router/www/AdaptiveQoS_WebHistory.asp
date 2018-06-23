@@ -371,8 +371,12 @@ function updateWebHistory() {
 
 																			$.get("tm_eula.htm", function(data){
 																				document.getElementById('agreement_panel').innerHTML= data;
-																				var url = "https://www.asus.com/Microsite/networks/Trend_Micro_EULA/" + document.form.preferred_lang.value;
+																				var url = "https://www.asus.com/Microsite/networks/Trend_Micro_EULA/";
 																				$("#eula_url").attr("href",url);
+																				url = "https://www.trendmicro.com/en_us/about/legal/privacy-policy-product.html"
+																				$("#tm_eula_url").attr("href",url);
+																				url = "https://success.trendmicro.com/data-collection-disclosure";
+																				$("#tm_disclosure_url").attr("href",url);
 																				adjust_TM_eula_height("agreement_panel");
 																			});
 

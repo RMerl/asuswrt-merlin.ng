@@ -418,6 +418,75 @@ void config_loopback(void)
 }
 
 #ifdef RTCONFIG_IPV6
+static int ipv6_route_manip(int cmd, const char *name, int metric, const char *dst, const char *gateway, int flags)
+{
+	char addr[INET6_ADDRSTRLEN], *ptr;
+	int s, err = 0;
+	struct in6_rtmsg rt;
+	
+	_dprintf("%s: cmd=%s name=%s addr=%s gateway=%s metric=%d\n",
+		__FUNCTION__, cmd == SIOCADDRT ? "ADD" : "DEL", name, dst, gateway, metric);
+
+	/* Open a raw socket to the kernel */
+	if ((s = socket(AF_INET6, SOCK_DGRAM, 0)) < 0)
+		return errno;
+
+	/* Fill in rtentry */
+	memset(&rt, 0, sizeof(rt));
+	if (dst) {
+		strlcpy(addr, dst, sizeof(addr));
+		ptr = strchr(addr, '/');
+		if (ptr) {
+			*ptr++ = '\0';
+			rt.rtmsg_dst_len = atoi(ptr);
+		} else
+			rt.rtmsg_dst_len = 128;
+		inet_pton(AF_INET6, addr, &rt.rtmsg_dst);
+	}
+	if (gateway)
+		inet_pton(AF_INET6, gateway, &rt.rtmsg_gateway);
+	rt.rtmsg_metric = metric;
+	rt.rtmsg_flags = RTF_UP;
+	if (!IN6_IS_ADDR_UNSPECIFIED(&rt.rtmsg_gateway))
+		rt.rtmsg_flags |= RTF_GATEWAY;
+	if (rt.rtmsg_dst_len == 128)
+		rt.rtmsg_flags |= RTF_HOST;
+	rt.rtmsg_flags |= flags;
+
+	if (name) {
+		rt.rtmsg_ifindex = if_nametoindex(name);
+		if (rt.rtmsg_ifindex == 0) {
+			err = errno;
+			perror(name);
+			goto error;
+		}
+	}
+
+	if (ioctl(s, cmd, &rt) < 0) {
+		err = errno;
+		perror(name);
+	}
+
+error:
+	close(s);
+	return err;
+}
+
+int _ipv6_route_add(const char *name, int metric, const char *dst, const char *gateway, int flags)
+{
+	return ipv6_route_manip(SIOCADDRT, name, metric, dst, gateway, flags);
+}
+
+int ipv6_route_add(const char *name, int metric, const char *dst, const char *gateway)
+{
+	return ipv6_route_manip(SIOCADDRT, name, metric, dst, gateway, 0);
+}
+
+int ipv6_route_del(const char *name, int metric, const char *dst, const char *gateway)
+{
+	return ipv6_route_manip(SIOCDELRT, name, metric, dst, gateway, 0);
+}
+
 int ipv6_mapaddr4(struct in6_addr *addr6, int ip6len, struct in_addr *addr4, int ip4mask)
 {
 	int i = ip6len >> 5;

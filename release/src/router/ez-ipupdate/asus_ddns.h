@@ -38,7 +38,7 @@ extern volatile int client_sockfd;
 
 
 // function decl. (asus_ddns.c)
-extern int asus_reg_domain (void);
+extern int asus_reg_domain (int regType);
 extern int asus_private(void);
 extern int asus_update_entry(void);
 

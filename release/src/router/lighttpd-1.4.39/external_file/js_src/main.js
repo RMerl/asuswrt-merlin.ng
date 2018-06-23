@@ -1225,152 +1225,48 @@ function openSelItem(item){
 	
 	var fileExt = getFileExt(loc);
 	
-	var webdav_mode = g_storage.get('webdav_mode');
+	//- webdav_mode=0-->enable http, webdav_mode=2-->both enable http and https
+	//var webdav_mode = g_storage.get('webdav_mode');
 	
-	if( fileExt=="mp4" ||
-		fileExt=="m4v" ||
-		fileExt=="wmv" ||
-		fileExt=="avi" ||
-		fileExt=="rmvb"||
-		fileExt=="rm" ||
-		fileExt=="mpg" ||
-		fileExt=="mpeg"||
-		fileExt=="mkv" ||
-		fileExt=="mov" ||
-		fileExt=="flv" ) {
-		    
-		//- webdav_mode=0-->enable http, webdav_mode=2-->both enable http and https
-		if( webdav_mode==0 || webdav_mode==2 ){
-				
-			if( fileExt=="mp4" || (isIE() && getInternetExplorerVersion() > 8) ){
-				
-				var $modalWindow = $("div#modalWindow");
-						
-				this_file_name = myencodeURI(this_file_name);		
-				this_url = this_full_url.substring(0, this_full_url.lastIndexOf('/'));
-						
-				var media_hostName = g_storage.get('request_host_url');
-					
-				if(media_hostName.indexOf("://")!=-1){
-				   media_hostName = media_hostName.substr(media_hostName.indexOf("://")+3);	
-				}
-					
-				if(media_hostName.indexOf(":")!=-1){
-					media_hostName = media_hostName.substring(0, media_hostName.indexOf(":"));
-				}
-				media_hostName = "http://" + media_hostName + ":" + g_storage.get("http_port") + "/";
-					
-				g_webdav_client.OPENSTREAMINGPORT("/", 1, function(error, content, statusstring){				
-					if(error==200){							
-						var matadatatitle = item.attr("matadatatitle");
-					
-						g_webdav_client.GSL(this_url, this_url, this_file_name, 0, 0, function(error, content, statusstring){
-							if(error==200){
-								var data = parseXml(statusstring);
-								var srt_share_link = "";
-								var share_link = $(data).find('sharelink').text();
-									
-								var open_url = "";							
-								open_url = '/smb/css/vlc_video.html?v=' + media_hostName + share_link + '&u=' + this_url;
-								open_url += '&t=' + matadatatitle;
-								open_url += '&showbutton=1';
-									
-								g_modal_url = open_url;
-								g_modal_window_width = 655;
-								g_modal_window_height = 580;
-								$('#jqmMsg').css("display", "none");
-								$('#jqmTitleText').text(m.getString('title_videoplayer'));
-								if($modalWindow){
-									$modalWindow.jqmShow();
-								}
-							}
-						});
-					}
-				});
-				
-				return;
-			}
-			
-			/*
-			if( isWinOS() ){
-				if( isIE() && getInternetExplorerVersion() <= 8 ){
-					//- The VLC Plugin doesn't support IE 8 or less
-					alert(m.getString('msg_vlcsupport'));
-					return;
-				}
-				else{
-					var $modalWindow = $("div#modalWindow");
-						
-					this_file_name = myencodeURI(this_file_name);		
-					this_url = this_full_url.substring(0, this_full_url.lastIndexOf('/'));
-						
-					var media_hostName = g_storage.get('request_host_url');
-					
-					if(media_hostName.indexOf("://")!=-1){
-					   media_hostName = media_hostName.substr(media_hostName.indexOf("://")+3);	
-					}
-					
-					if(media_hostName.indexOf(":")!=-1){
-						media_hostName = media_hostName.substring(0, media_hostName.indexOf(":"));
-					}
-					media_hostName = "http://" + media_hostName + ":" + g_storage.get("http_port") + "/";
-					
-					g_webdav_client.OPENSTREAMINGPORT("/", 1, function(error, content, statusstring){				
-						if(error==200){							
-							var matadatatitle = item.attr("matadatatitle");
-					
-							g_webdav_client.GSL(this_url, this_url, this_file_name, 0, 0, function(error, content, statusstring){
-								if(error==200){
-									var data = parseXml(statusstring);
-									var srt_share_link = "";
-									var share_link = $(data).find('sharelink').text();
-									
-									var open_url = "";							
-									open_url = '/smb/css/vlc_video.html?v=' + media_hostName + share_link + '&u=' + this_url;
-									open_url += '&t=' + matadatatitle;
-									open_url += '&showbutton=1';
-									
-									g_modal_url = open_url;
-									g_modal_window_width = 655;
-									g_modal_window_height = 580;
-									$('#jqmMsg').css("display", "none");
-									$('#jqmTitleText').text(m.getString('title_videoplayer'));
-									if($modalWindow){
-										$modalWindow.jqmShow();
-									}
-								}
-							});
-						}
-					});
-					
-					var matadatatitle = item.attr("matadatatitle");
-					
-					g_webdav_client.GSL(this_url, this_url, this_file_name, 0, 0, function(error, content, statusstring){
-						if(error==200){
-							var data = parseXml(statusstring);
-							var srt_share_link = "";
-							var share_link = $(data).find('sharelink').text();
-							var open_url = "";							
-							open_url = '/smb/css/vlc_video.html?v=' + media_hostName + share_link + '&u=' + this_url;
-							open_url += '&t=' + matadatatitle;
-							open_url += '&showbutton=1';
-							
-							g_modal_url = open_url;
-							g_modal_window_width = 655;
-							g_modal_window_height = 580;
-							$('#jqmMsg').css("display", "none");
-							$('#jqmTitleText').text(m.getString('title_videoplayer'));
-							if($modalWindow){
-								$modalWindow.jqmShow();
-							}
-						}
-					});
-					
-					return;
-				}
-			}*/
-		}
+	if( fileExt=="mp4" ) {
 		
+		if(isIE() && getInternetExplorerVersion() <= 8){
+			window.open(loc);
+			return;
+		}
+				
+		var $modalWindow = $("div#modalWindow");
+						
+		this_file_name = myencodeURI(this_file_name);		
+		this_url = this_full_url.substring(0, this_full_url.lastIndexOf('/'));
+						
+		var media_hostName = addPathSlash(g_storage.get('request_host_url'));
+							
+		var matadatatitle = item.attr("matadatatitle");
+						
+		g_webdav_client.GSL(this_url, this_url, this_file_name, 0, 0, function(error, content, statusstring){
+			if(error==200){
+				var data = parseXml(statusstring);
+				var srt_share_link = "";
+				var share_link = $(data).find('sharelink').text();
+									
+				var open_url = "";							
+				open_url = '/smb/css/vlc_video.html?v=' + media_hostName + share_link + '&u=' + this_url;
+				open_url += '&t=' + matadatatitle;
+				open_url += '&showbutton=1';
+									
+				g_modal_url = open_url;
+				g_modal_window_width = 655;
+				g_modal_window_height = 580;
+				$('#jqmMsg').css("display", "none");
+				$('#jqmTitleText').text(m.getString('title_videoplayer'));
+				if($modalWindow){
+					$modalWindow.jqmShow();
+				}
+			}
+		});
+			
+		return;
 	}
 	
 	if( fileExt=="mp3" ) {
@@ -1725,8 +1621,8 @@ $(document).ready(function(){
     			g_storage.set('http_enable', x.find("http_enable").text());
     			g_storage.set('misc_http_enable', x.find("misc_http_enable").text());
     			g_storage.set('misc_http_port', String(x.find("misc_http_port").text()).replace("\n",""));
-    			g_storage.set('misc_https_port', String(x.find("misc_https_port").text()).replace("\n",""));
-    			g_storage.set('lan_http_port', String(x.find("lan_http_port").text()).replace("\n",""));
+				g_storage.set('misc_https_port', String(x.find("misc_https_port").text()).replace("\n",""));
+				g_storage.set('lan_http_port', String(x.find("lan_http_port").text()).replace("\n",""));
     			g_storage.set('lan_https_port', String(x.find("lan_https_port").text()).replace("\n",""));
     			g_storage.set('last_login_info', x.find("last_login_info").text());
     			g_storage.set('ddns_host_name', x.find("ddns_host_name").text());
@@ -2141,8 +2037,8 @@ $(document).ready(function(){
 			var http_enable = parseInt(g_storage.get('http_enable')); //- 0: http, 1: https, 2: both
 			var misc_http_enable = parseInt(g_storage.get('misc_http_enable'));
 	    	var misc_http_port = g_storage.get('misc_http_port');
-	    	var misc_https_port = g_storage.get('misc_https_port');
-	    	var lan_http_port = g_storage.get('lan_http_port');
+			var misc_https_port = g_storage.get('misc_https_port');
+			var lan_http_port = g_storage.get('lan_http_port');
 	    	var lan_https_port = g_storage.get('lan_https_port');
 	    	var location_host = g_storage.get('request_host_url');//window.location.host;
 	    	var misc_protocol = "http";
@@ -2174,9 +2070,9 @@ $(document).ready(function(){
 	  			url = misc_protocol + "://" + location_host.split(":")[0];
 	  			
 	  			if(http_enable==1)
-	  				url += ":" + lan_https_port; 
-	  			else if(lan_http_port)
-	  				url += ":" + lan_http_port; 
+					url += ":" + lan_https_port;
+				else if(lan_http_port)
+	  				url += ":" + lan_http_port; 	
 	  		}
 	  		else{
 	  			url = misc_protocol + "://" + location_host.split(":")[0];

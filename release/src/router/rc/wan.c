@@ -2211,7 +2211,7 @@ void wan6_up(const char *wan_ifname)
 	char addr6[INET6_ADDRSTRLEN + 4];
 	struct in_addr addr4;
 	struct in6_addr addr;
-	char gateway[INET6_ADDRSTRLEN+4];
+	char gateway[INET6_ADDRSTRLEN];
 	int mtu, service = get_ipv6_service();
 
 	if (!wan_ifname || (strlen(wan_ifname) <= 0) ||
@@ -2245,7 +2245,19 @@ void wan6_up(const char *wan_ifname)
 #endif
 	case IPV6_NATIVE_DHCP:
 		start_dhcp6c();
+
+		if (nvram_match(ipv6_nvname("ipv6_ifdev"), "ppp")) {
+			strlcpy(gateway, nvram_safe_get(ipv6_nvname("ipv6_llremote")), sizeof(gateway));
+			if (/* gateway && */ *gateway)
+				_ipv6_route_add(wan_ifname, 0, "::/0", gateway, RTF_DEFAULT | RTF_ADDRCONF);
+		}
+
+		/* propagate ipv6 mtu */
+		mtu = ipv6_getconf(wan_ifname, "mtu");
+		if (mtu)
+			ipv6_sysconf(nvram_safe_get("lan_ifname"), "mtu", mtu);
 		break;
+
 	case IPV6_MANUAL:
 		if (nvram_match(ipv6_nvname("ipv6_ipaddr"), (char*)ipv6_router_address(NULL))) {
 			dbG("WAN IPv6 address is the same as LAN IPv6 address!\n");
@@ -2255,24 +2267,29 @@ void wan6_up(const char *wan_ifname)
 		eval("ip", "-6", "addr", "add", addr6, "dev", (char *)wan_ifname);
 		eval("ip", "-6", "route", "del", "::/0");
 
-		snprintf(gateway, sizeof(gateway), "%s", nvram_safe_get(ipv6_nvname("ipv6_gateway")));
-		if(strlen(gateway) >= 0){
+		strlcpy(gateway, nvram_safe_get(ipv6_nvname("ipv6_gateway")), sizeof(gateway));
+		if (/* gateway && */ *gateway) {
 			eval("ip", "-6", "route", "add", gateway, "dev", (char *)wan_ifname, "metric", "1");
 			eval("ip", "-6", "route", "add", "::/0", "via", gateway, "dev", (char *)wan_ifname, "metric", "1");
-		} else	eval("ip", "-6", "route", "add", "::/0", "dev", (char *)wan_ifname, "metric", "1");
+		} else if (nvram_match(ipv6_nvname("ipv6_ifdev"), "ppp")) {
+			strlcpy(gateway, nvram_safe_get(ipv6_nvname("ipv6_llremote")), sizeof(gateway));
+			if (/* gateway && */ *gateway)
+				_ipv6_route_add(wan_ifname, 0, "::/0", gateway, RTF_DEFAULT | RTF_ADDRCONF);
+		}
 
 		/* propagate ipv6 mtu */
 		mtu = ipv6_getconf(wan_ifname, "mtu");
 		if (mtu)
 			ipv6_sysconf(nvram_safe_get("lan_ifname"), "mtu", mtu);
+
 		/* workaround to update ndp entry for now */
 		char *ping6_argv[] = {"ping6", "-c", "2", "-I", (char *)wan_ifname, "ff02::1", NULL};
 		char *ping6_argv2[] = {"ping6", "-c", "2", gateway, NULL};
 		pid_t pid;
 		_eval(ping6_argv, NULL, 0, &pid);
 		_eval(ping6_argv2, NULL, 0, &pid);
-
 		break;
+
 	case IPV6_6TO4:
 	case IPV6_6IN4:
 	case IPV6_6RD:

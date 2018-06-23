@@ -1,5 +1,6 @@
 var m = new lang();
 var g_storage = new myStorage();
+var g_this_url = "";
 var g_this_video = "";
 var g_this_video_name = "";
 var g_this_video_hash = "";
@@ -388,9 +389,7 @@ function initPlayer(){
 	}
 	
 	var vars = getUrlVars();
-	var this_url = vars["u"];
-	var this_video = vars["v"];
-	var this_subtitle = (vars["s"]==undefined) ? "" : vars["s"];
+	var this_subtitle = (typeof vars["s"]=="undefined") ? "" : vars["s"];
 	
 	//- Build subtitle select ui	
 	if(this_subtitle!=""){
@@ -431,8 +430,8 @@ function initPlayer(){
 		var client = new davlib.DavClient();
 		client.initialize();
 		
-		var open_url = this_url;
-			
+		var open_url = (g_this_url!="") ? g_this_url : g_this_video.substring(0, g_this_video.lastIndexOf("/")+1);
+		
 		client.GETVIDEOSUBTITLE(open_url, g_this_video_name, function(error, statusstring, content){
 			if(error==200){
 				var data = parseXml(content);
@@ -473,7 +472,7 @@ function initPlayer(){
 		});
 	}
 	else if(g_video_player_type=="vlc"){
-		g_play_id = player.playlist.add(this_video);
+		g_play_id = player.playlist.add(g_this_video);
 		
 		if(g_play_id==-1){
     		alert("cannot play at the moment !");
@@ -607,12 +606,13 @@ function createPlayer() {
 	$('button#btnClose').text(m.getString("btn_close"));
 	$('#label_subtitle').text(m.getString("title_subtitle_file") + ": ");
 	
+	var this_url = (typeof vars["u"]=="undefined") ? "" : vars["u"];
 	var this_video = vars["v"];
-	var this_url = vars["u"];
 	var vlc_width = "655px";
 	var vlc_height = "470px";
 	var player_html = "";
-		
+	
+	g_this_url = this_url;
 	g_this_video = this_video;
 	g_this_video_name = this_video.substring(this_video.lastIndexOf("/")+1, this_video.lastIndexOf("."));
 	g_this_video_hash = md5(g_this_video.substr(g_this_video.lastIndexOf("/")+1, g_this_video.length));

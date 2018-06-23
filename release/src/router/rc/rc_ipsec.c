@@ -516,8 +516,13 @@ void rc_ipsec_secrets_init()
 
 void rc_strongswan_conf_set()
 {
-    int rc = 0;
-    FILE *fp = NULL;
+	FILE *fp;
+	char *user;
+	int rc;
+
+	user = nvram_safe_get("http_username");
+	if (*user == '\0')
+		user = "admin";
 
     rc = pre_ipsec_samba_prof_set();
 //DBG(("ipsec_samba#\n"));
@@ -526,6 +531,7 @@ void rc_strongswan_conf_set()
                 "# Refer to the strongswan.conf(5) manpage for details\n#\n"
                 "# Configuration changes should be made in the included files"
                 "\ncharon {\n\n"
+                "  user = %s\n"
                 "  threads = %d\n"
                 "  send_vendor_id = yes\n"
                 "  duplicheck.enable = no\n"
@@ -536,7 +542,9 @@ void rc_strongswan_conf_set()
                 "  filelog {\n      /var/log/strongswan.charon.log {\n"
                 "        time_format = %%b %%e %%T\n        default = %d\n"
                 "        append = no\n        flush_line = yes\n"
-                "     }\n  }\n", nvram_get_int("ipsec_threads_num"), nvram_get_int("ipsec_log_level"));
+                "     }\n  }\n",
+                user,
+                nvram_get_int("ipsec_threads_num"), nvram_get_int("ipsec_log_level"));
     if(0 != rc){
         if(('n' != samba_prof.dns1[0]) && ('\0' != samba_prof.dns1[0])){
             fprintf(fp,"\n  dns1=%s\n", samba_prof.dns1);
@@ -1224,11 +1232,11 @@ void ipsec_conf_remote_set(FILE *fp, int prof_idx, ipsec_prof_type_t prof_type)
     return;
 }
 
-char* get_ike_esp_bit_convert( char *str, int maxNum, int n, int type)
+char* get_ike_esp_bit_convert(char *str, int size, int maxNum, int n, int type)
 {
 	int i;
 	char tmpStr[12];
-	memset(str, 0, sizeof(str));
+	memset(str, 0, size);
 	for(i = 0; i < maxNum; i++){
 		if((n >> i) & 0x1 ){
 			if(type == FLAG_IKE_ENCRYPT)
@@ -1242,11 +1250,11 @@ char* get_ike_esp_bit_convert( char *str, int maxNum, int n, int type)
 	}
 	return str;
 }
-char* get_ike_esp_bit_convert1( char *str, int n1, int n2, int n3)
+char* get_ike_esp_bit_convert1(char *str, int size, int n1, int n2, int n3)
 {
 	int i,j,k;
 	char tmpStr[SZ_MIN];
-	memset(str, 0, sizeof(str));
+	memset(str, 0, size);
 	memset(tmpStr, 0, sizeof(tmpStr));
 	for(i = 0; i < ENCRYPTION_TYPE_MAX_NUM; i++){
 		for(j = 0; j < HASH_TYPE_MAX_NUM; j++){
@@ -1274,10 +1282,10 @@ void ipsec_conf_phase1_set(FILE *fp, int prof_idx, ipsec_prof_type_t prof_type)
 	char str[1024];
 	memset(str, 0, sizeof(str));
     fprintf(fp, "  ikelifetime=%d\n", prof[prof_type][prof_idx].keylife_p1);
-	fprintf(fp, "  ike=%s!\n", get_ike_esp_bit_convert1(str, prof[prof_type][prof_idx].encryption_p1_ext, prof[prof_type][prof_idx].hash_p1_ext, prof[prof_type][prof_idx].dh_group) + 1);
-	//fprintf(fp, "  ike=%s", get_ike_esp_bit_convert(str, ENCRYPTION_TYPE_MAX_NUM, prof[prof_type][prof_idx].encryption_p1_ext, FLAG_IKE_ENCRYPT) + 1);
-	//fprintf(fp, "%s", get_ike_esp_bit_convert(str, HASH_TYPE_MAX_NUM, prof[prof_type][prof_idx].hash_p1_ext, FLAG_ESP_HASH));
-	//fprintf(fp, "%s\n", get_ike_esp_bit_convert(str, DH_GROUP_MAX_NUM, prof[prof_type][prof_idx].dh_group, FLAG_DH_GROUP));
+	fprintf(fp, "  ike=%s!\n", get_ike_esp_bit_convert1(str, sizeof(str), prof[prof_type][prof_idx].encryption_p1_ext, prof[prof_type][prof_idx].hash_p1_ext, prof[prof_type][prof_idx].dh_group) + 1);
+	//fprintf(fp, "  ike=%s", get_ike_esp_bit_convert(str, sizeof(str), ENCRYPTION_TYPE_MAX_NUM, prof[prof_type][prof_idx].encryption_p1_ext, FLAG_IKE_ENCRYPT) + 1);
+	//fprintf(fp, "%s", get_ike_esp_bit_convert(str, sizeof(str), HASH_TYPE_MAX_NUM, prof[prof_type][prof_idx].hash_p1_ext, FLAG_ESP_HASH));
+	//fprintf(fp, "%s\n", get_ike_esp_bit_convert(str, sizeof(str), DH_GROUP_MAX_NUM, prof[prof_type][prof_idx].dh_group, FLAG_DH_GROUP));
 
     /*if((ENCRYPTION_TYPE_MAX_NUM != prof[prof_type][prof_idx].encryption_p1) &&
        (HASH_TYPE_MAX_NUM != prof[prof_type][prof_idx].hash_p1)){
@@ -1303,9 +1311,9 @@ void ipsec_conf_phase2_set(FILE *fp, int prof_idx, ipsec_prof_type_t prof_type)
 {
 	char str[128];
     fprintf(fp, "  keylife=%d\n", prof[prof_type][prof_idx].keylife_p2);
-	fprintf(fp, "  esp=%s!\n", get_ike_esp_bit_convert1(str, prof[prof_type][prof_idx].encryption_p2_ext, prof[prof_type][prof_idx].hash_p2_ext, 0) + 1);
-	//fprintf(fp, "  esp=%s", get_ike_esp_bit_convert(str, ENCRYPTION_TYPE_MAX_NUM, prof[prof_type][prof_idx].encryption_p2_ext, FLAG_IKE_ENCRYPT) + 1);
-	//fprintf(fp, "%s\n", get_ike_esp_bit_convert(str, HASH_TYPE_MAX_NUM, prof[prof_type][prof_idx].hash_p2_ext, FLAG_ESP_HASH));
+	fprintf(fp, "  esp=%s!\n", get_ike_esp_bit_convert1(str, sizeof(str), prof[prof_type][prof_idx].encryption_p2_ext, prof[prof_type][prof_idx].hash_p2_ext, 0) + 1);
+	//fprintf(fp, "  esp=%s", get_ike_esp_bit_convert(str, sizeof(str), ENCRYPTION_TYPE_MAX_NUM, prof[prof_type][prof_idx].encryption_p2_ext, FLAG_IKE_ENCRYPT) + 1);
+	//fprintf(fp, "%s\n", get_ike_esp_bit_convert(str, sizeof(str), HASH_TYPE_MAX_NUM, prof[prof_type][prof_idx].hash_p2_ext, FLAG_ESP_HASH));
 
     /*if((ENCRYPTION_TYPE_MAX_NUM != prof[prof_type][prof_idx].encryption_p2) && 
        (HASH_TYPE_MAX_NUM != prof[prof_type][prof_idx].hash_p2)){

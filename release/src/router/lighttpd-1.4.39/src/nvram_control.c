@@ -1033,7 +1033,7 @@ char* nvram_get_http_username(void)
 	tcapi_get(ACCOUNT, HTTP_USERNAME, http_username);
 	return http_username;
 #else
-	return nvram_get(HTTP_USERNAME);
+	return nvram_get(HTTP_USERNAME) ? : "";
 #endif
 }
 
@@ -1044,7 +1044,7 @@ char* nvram_get_http_passwd(void)
 	tcapi_get(ACCOUNT, HTTP_PASSWD, http_passwd);
 	return http_passwd;
 #else
-	return nvram_get(HTTP_PASSWD);
+	return nvram_get(HTTP_PASSWD) ? : "";
 #endif
 }
 

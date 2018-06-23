@@ -313,6 +313,11 @@ function redirect(){
 }
 
 function applyRule(){
+	if(!document.form.eula_checkbox.checked){
+		alert('<#feedback_eula_notice#>');
+		return false;
+	}
+
 	//WAN connected check
 	if(sw_mode != 3 && document.getElementById("connect_status").className == "connectstatusoff"){
                 alert("<#USB_Application_No_Internet#>");
@@ -883,8 +888,10 @@ function dblog_stop() {
 
 <tr>
 	<td colspan="2">
-		<div><#feedback_optional#></div>
-		<input class="button_gen" style="margin-left: 305px;" name="btn_send" onclick="applyRule()" type="button" value="<#btn_send#>"/>
+		<div>
+			<div style="float: left;"><input type="checkbox" name="eula_checkbox"/></div><div style="margin-left: 20px;"><#feedback_eula#></div>
+		</div>
+		<input class="button_gen" style="margin-left: 305px; margin-top:5px;" name="btn_send" onclick="applyRule()" type="button" value="<#btn_send#>"/>
 	</td>
 </tr>
 
@@ -892,9 +899,6 @@ function dblog_stop() {
 	<td colspan="2">
 		<strong><#FW_note#></strong>
 		<ul>
-			<li><#feedback_note1#></li>
-			<li><#feedback_note2#></li>
-			<li><#feedback_note3#></li>
 			<li><#feedback_note4#></li>
 		</ul>
 	</td>

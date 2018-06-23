@@ -2825,7 +2825,7 @@ int is_dpsta(int unit)
 	char ifname[80], name[80], *next;
 	int idx = 0;
 
-	if (nvram_get_int("wlc_dpsta") == 1) {
+	if (dpsta_mode()) {
 		foreach (ifname, nvram_safe_get("wl_ifnames"), next) {
 			if (idx == unit) break;
 			idx++;
@@ -2840,16 +2840,6 @@ int is_dpsta(int unit)
 	return 0;
 }
 #endif
-
-int is_dpsr(int unit)
-{
-	if (nvram_get_int("wlc_dpsta") == 2) {
-		if ((num_of_wl_if() == 2) || !unit || unit == nvram_get_int("dpsta_band"))
-			return 1;
-	}
-
-	return 0;
-}
 
 int is_psta(int unit)
 {
@@ -2874,11 +2864,10 @@ int is_psr(int unit)
 #ifdef RTCONFIG_DPSTA
 		is_dpsta(unit) ||
 #endif
-		is_dpsr(unit) ||
 #if defined(RTCONFIG_AMAS) && defined(RTCONFIG_DPSTA)
 		dpsta_mode() ||
 #endif
-		((nvram_get_int("wlc_band") == unit) && !dpsr_mode()
+		((nvram_get_int("wlc_band") == unit)
 #ifdef RTCONFIG_DPSTA
 		&& !dpsta_mode()
 #endif
@@ -3771,12 +3760,9 @@ char *if_nametoalias(char *name, char *alias, int alias_len)
 
 			if (!strcmp(ifname, name)) {
 #if defined(CONFIG_BCMWL5) || defined(RTCONFIG_BCMARM)
-				if (nvram_get_int("sw_mode") == SW_MODE_REPEATER
-#ifdef RTCONFIG_PROXYSTA
-					|| dpsr_mode()
-#ifdef RTCONFIG_DPSTA
+				if (repeater_mode()
+#if defined(RTCONFIG_PROXYSTA) && defined(RTCONFIG_DPSTA)
 					|| dpsta_mode()
-#endif
 #endif
 					)
 					snprintf(alias, alias_len, "%s", unit ? (unit == 2 ? "5G1" : "5G") : "2G");

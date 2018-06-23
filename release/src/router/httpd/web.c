@@ -216,9 +216,7 @@ extern int ej_wl_extent_channel(int eid, webs_t wp, int argc, char_t **argv);
 #endif
 extern int ej_get_wlstainfo_list(int eid, webs_t wp, int argc, char_t **argv);
 
-#ifdef RTCONFIG_RALINK
-#elif defined(RTCONFIG_QCA)
-#else
+#if defined(RTCONFIG_REALTEK) || defined(RTCONFIG_WIRELESSWAN)
 extern int ej_SiteSurvey(int eid, webs_t wp, int argc, char_t **argv);
 #endif
 
@@ -1585,7 +1583,9 @@ ej_dump(int eid, webs_t wp, int argc, char_t **argv)
 	else if(!strcmp(file, "fb_fail_content")){
 		sprintf(filename, "/tmp/xdslissuestracking");
 		if(check_if_file_exist(filename)) {
+#if 0
 			eval("sed", "-i", "/PIN Code:/d", filename);
+#endif
 			eval("sed", "-i", "/MAC Address:/d", filename);
 			eval("sed", "-i", "/E-mail:/d", filename);
 			eval("sed", "-i", "/Download Master:/d", filename);
@@ -1624,7 +1624,9 @@ ej_dump(int eid, webs_t wp, int argc, char_t **argv)
 	else if(!strcmp(file, "fb_fail_content")){
 		sprintf(filename, "/tmp/xdslissuestracking");
 		if(check_if_file_exist(filename)) {
+#if 0
 			eval("sed", "-i", "/PIN Code:/d", filename);
+#endif
 #if !defined(RTCONFIG_BCM_7114) && !defined(HND_ROUTER)
 			eval("sed", "-i", "/MAC Address:/d", filename);
 #endif
@@ -6262,6 +6264,8 @@ ej_lan_ipv6_network(int eid, webs_t wp, int argc, char_t **argv)
 	ret += websWrite(wp, "%30s: %s\n", "IPv6 Connection Type", wan_type);
 	ret += websWrite(wp, "%30s: %s\n", "WAN IPv6 Address",
 			 getifaddr(get_wan6face(), AF_INET6, GIF_PREFIXLEN) ? : ((service == IPV6_MANUAL) ? nvram_safe_get(ipv6_nvname("ipv6_ipaddr")) : ""));
+	ret += websWrite(wp, "%30s: %s\n", "WAN IPv6 Link-Local Address",
+			 getifaddr(get_wan6face(), AF_INET6, GIF_LINKLOCAL | GIF_PREFIXLEN) ? : "");
 	ret += websWrite(wp, "%30s: %s\n", "WAN IPv6 Gateway",
 			 ipv6_gateway_address() ? : "");
 #ifdef RTCONFIG_6RELAYD
@@ -6411,18 +6415,22 @@ int inet_raddr6_pton(const char *src, void *dst, void *buf)
 #if 0
 static int ipv6_route_table(webs_t wp)
 {
+	const struct in6_addr lroute = { { { 0xfe,0x80,0,0,0,0,0,0,0,0,0,0,0,0,0,0 } } };
+	const struct in6_addr mroute = { { { 0xff,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0 } } };
 	FILE *fp;
 	char buf[256], *str, *dev, *sflags, *route, fmt[sizeof("%999s")];
 	char sdest[INET6_ADDRSTRLEN], snexthop[INET6_ADDRSTRLEN], ifname[16];
+	char iflist[1024], ifitem[18];
 	struct in6_addr dest, nexthop;
 	int flags, ref, use, metric, prefix;
-	int i, pass, maxlen, routing, ret = 0;
+	int i, pass, maxlen, routing, skip, ret = 0;
 
 	fp = fopen("/proc/net/ipv6_route", "r");
 	if (fp == NULL)
 		return 0;
 
 	pass = maxlen = 0;
+	strcpy(iflist, "");
 	routing = is_routing_enabled();
 again:
 	if (pass) {
@@ -6446,6 +6454,7 @@ again:
 		/* Parse dst, reuse buf */
 		if (inet_raddr6_pton(sdest, &dest, str) < 1)
 			break;
+
 		if (prefix || !IN6_IS_ADDR_UNSPECIFIED(&dest)) {
 			inet_ntop(AF_INET6, &dest, sdest, sizeof(sdest));
 			if (prefix != 128) {
@@ -6465,9 +6474,14 @@ again:
 		i = snprintf(str, buf + sizeof(buf) - str, ((flags & RTF_NONEXTHOP) ||
 			     IN6_IS_ADDR_UNSPECIFIED(&nexthop)) ? "%s" : "%s via %s",
 			     sdest, snexthop);
+		skip = (flags == RTF_UP) &&
+		       ((IN6_ARE_ADDR_EQUAL(&dest, &lroute) && prefix == 64) ||
+			(IN6_ARE_ADDR_EQUAL(&dest, &mroute) && prefix == 8));
 		if (pass == 0) {
 			if (maxlen < i)
 				maxlen = i;
+			if (!skip)
+				snprintf(iflist, sizeof(iflist),"%s;%s;", iflist, ifname);
 			continue;
 		} else
 			str += i + 1;
@@ -6486,6 +6500,11 @@ again:
 			dev = "LAN";
 		else if (routing && strcmp(get_wan6face(), ifname) == 0)
 			dev = "WAN";
+		else if (skip) {
+			snprintf(ifitem, sizeof(ifitem), ";%s;", ifname);
+			if (strstr(iflist, ifitem) == NULL)
+				continue;
+		}
 
 		ret = websWrite(wp, fmt, route);
 		ret += websWrite(wp, "%-9s%-6d %-3d%7d %-4s %s\n",
@@ -10269,11 +10288,25 @@ apply_cgi(webs_t wp, char_t *urlPrefix, char_t *webDir, int arg,
 	{
 		prepare_restore(wp);
 		sys_default();
+
+#ifdef RTCONFIG_LETSENCRYPT
+		if (f_exists(UPLOAD_CERT))
+			unlink(UPLOAD_CERT);
+		if (f_exists(UPLOAD_KEY))
+			unlink(UPLOAD_KEY);
+#endif
 	}
 	else if (!strcmp(action_mode, "restore_erase"))
 	{
 		prepare_restore(wp);
 		sys_default_erase();
+
+#ifdef RTCONFIG_LETSENCRYPT
+		if (f_exists(UPLOAD_CERT))
+			unlink(UPLOAD_CERT);
+		if (f_exists(UPLOAD_KEY))
+			unlink(UPLOAD_KEY);
+#endif
 	}
 	else if (!strcmp(action_mode, "logout")) // but, every one can reset it by this call
 	{
@@ -14275,21 +14308,79 @@ b64_decode( const char* str, unsigned char* space, int size )
     return space_idx;
 }
 
-#if defined(RTCONFIG_AIHOME_TUNNEL)
-static void enable_ASUS_EULA(){
-	if(!nvram_match("ASUS_EULA","1")){
-		nvram_set("ASUS_EULA", "1");
+static void
+do_set_ASUS_EULA_cgi(char *url, FILE *stream)
+{
+	char *ASUS_EULA = websGetVar(wp, "ASUS_EULA", "");
+	time_t now;
+	char timebuf[100];
+
+	_dprintf("[%s(%d)]ASUS_EULA = %s\n", __FUNCTION__, __LINE__, ASUS_EULA);
+
+	if(!strcmp(ASUS_EULA, "0") || !strcmp(ASUS_EULA, "1"))
+	{
+		nvram_set("ASUS_EULA", ASUS_EULA);
+		now = time( (time_t*) 0 );
+		sprintf(timebuf, rfctime(&now));
+		nvram_set("ASUS_EULA_time", timebuf);
+		if(!strcmp(ASUS_EULA, "0")){
+			if(nvram_match("ddns_server_x", "WWW.ASUS.COM")){
+				nvram_set("ddns_enable_x", "0");
+				nvram_set("ddns_server_x", "");
+				nvram_set("ddns_hostname_x", "");
+			}
+
+#if defined(RTCONFIG_IFTTT) || defined(RTCONFIG_ALEXA)
+			nvram_set("ifttt_token", "");
+#endif
+		}
+
 		nvram_commit();
+#if defined(RTCONFIG_AIHOME_TUNNEL)
 		kill_pidfile_s(MASTIFF_PID_PATH, SIGUSR2);
+#endif
 	}
 }
 
 static void
-do_enable_ASUS_EULA_cgi(char *url, FILE *stream)
+do_unreg_ASUSDDNS_cgi(char *url, FILE *stream)
 {
-	enable_ASUS_EULA();
+	_dprintf("[%s(%d)] notify_rc(start_asusddns_unregister)\n", __FUNCTION__, __LINE__);
+	nvram_unset("asusddns_reg_result");
+	notify_rc("stop_ddns;start_asusddns_unregister");
 }
-#endif
+
+static void
+do_set_TM_EULA_cgi(char *url, FILE *stream)
+{
+	char *TM_EULA = websGetVar(wp, "TM_EULA", "");
+	time_t now;
+	char timebuf[100];
+
+	_dprintf("[%s(%d)]TM_EULA = %s\n", __FUNCTION__, __LINE__, TM_EULA);
+
+	if(!strcmp(TM_EULA, "0") || !strcmp(TM_EULA, "1"))
+	{
+		nvram_set("TM_EULA", TM_EULA);
+		now = time( (time_t*) 0 );
+		sprintf(timebuf, rfctime(&now));
+		nvram_set("TM_EULA_time", timebuf);
+
+		if(!strncmp(TM_EULA, "0", 1))
+		{
+			nvram_set("wrs_protect_enable", "0");
+			nvram_set("wrs_enable", "0");
+			nvram_set("wrs_app_enable", "0");
+			nvram_set("apps_analysis", "0");
+			nvram_set("bwdpi_wh_enable", "0");
+			nvram_set("bwdpi_db_enable", "0");
+			if(nvram_match("qos_enable", "1") && nvram_match("qos_type ", "1"))
+				nvram_set("qos_enable", "0");
+			notify_rc("restart_wrs;restart_qos;restart_firewall");
+		}
+		nvram_commit();
+	}
+}
 
 #define RFC1123FMT "%a, %d %b %Y %H:%M:%S GMT"
 static int
@@ -14399,8 +14490,8 @@ login_cgi(webs_t wp, char_t *urlPrefix, char_t *webDir, int arg,
 	}
 
 	/* Is this the right user and password? */
-	//if (!authpass_fail && strcmp( nvram_safe_get("http_username"), authinfo ) == 0 && strcmp( nvram_safe_get("http_passwd"), authpass ) == 0)
-	if(!authpass_fail && strcmp( nvram_safe_get("http_username"), authinfo ) == 0 && compare_passwd_in_shadow(authinfo, authpass))
+	//if (!authpass_fail && nvram_match("http_username", authinfo) && nvram_match("http_passwd", authpass))
+	if (!authpass_fail && nvram_match("http_username", authinfo) && compare_passwd_in_shadow(authinfo, authpass))
 	{
 		if (fromapp_flag == FROM_BROWSER){
 			if(!cur_login_ip_type)
@@ -14414,11 +14505,8 @@ login_cgi(webs_t wp, char_t *urlPrefix, char_t *webDir, int arg,
 				last_login_timestamp_wan = 0;
 			}
 			set_referer_host();
-		}else if(fromapp_flag == FROM_DUTUtil){
-#if defined(RTCONFIG_AIHOME_TUNNEL)
-			enable_ASUS_EULA();
-#endif
 		}
+
 		generate_token(asus_token, sizeof(asus_token));
 		add_asus_token(asus_token);
 
@@ -15127,9 +15215,9 @@ struct mime_handler mime_handlers[] = {
 	{ "appGet.cgi*", "text/html", no_cache_IE7, do_html_post_and_get, do_appGet_cgi, do_auth },
 	{ "upgrade.cgi*", "text/html", no_cache_IE7, do_upgrade_post, do_upgrade_cgi, do_auth},
 	{ "upload.cgi*", "text/html", no_cache_IE7, do_upload_post, do_upload_cgi, do_auth },
-#if defined(RTCONFIG_AIHOME_TUNNEL)
-	{ "enable_ASUS_EULA.cgi*", "text/html", no_cache_IE7, do_html_post_and_get, do_enable_ASUS_EULA_cgi, do_auth },
-#endif
+	{ "set_ASUS_EULA.cgi*", "text/html", no_cache_IE7, do_html_post_and_get, do_set_ASUS_EULA_cgi, do_auth },
+	{ "set_TM_EULA.cgi*", "text/html", no_cache_IE7, do_html_post_and_get, do_set_TM_EULA_cgi, do_auth },
+	{ "unreg_ASUSDDNS.cgi*", "text/html", no_cache_IE7, do_html_post_and_get, do_unreg_ASUSDDNS_cgi, do_auth },
 #ifdef RTCONFIG_HTTPS
 	{ "upload_cert_key.cgi*", "text/html", no_cache_IE7, do_upload_cert_key, do_upload_cert_key_cgi, do_auth },
 #endif
@@ -15442,7 +15530,7 @@ static int notify_rc_for_nas(char *cmd)
 
 int stor_dev_busy(const char *devname)
 {
-	int busy = 0;
+	int busy = 1;
 	FILE *fp = fopen( "/proc/diskstats", "r" );
 	char buf[128];
 	int major, minor;
@@ -15450,31 +15538,32 @@ int stor_dev_busy(const char *devname)
 	unsigned long rio, rmerge, wio, wmerge;
 	unsigned long long rsect, wsect;
 	unsigned int ruse, wuse, running, use, aveq;
-	int count = 2;
+	int count = 3;
 	unsigned int aveq_old = 0;
 
 	if (fp) {
 LOOP_AGAIN:
-		memset(buf,0x00, sizeof(buf));		
+		memset(buf, 0, sizeof(buf));
+		fseek(fp, 0, SEEK_SET);
 		while (fgets(buf, sizeof(buf), fp) != NULL) {
 			if (sscanf(buf, "%4d %7d %s %lu %lu %llu %u %lu %lu %llu %u %u %u %u\n", &major, &minor, name, &rio, &rmerge, &rsect, &ruse, &wio, &wmerge, &wsect, &wuse, &running, &use, &aveq) != 14)
 				break;
 
 			if (!strcmp(devname, name)) {
 				if (running) {
-					busy = 1;
 					break;
 				} else if (--count > 0) {
-					aveq_old = aveq;
+					if (count == 2)
+						aveq_old = aveq;
+					usleep(100 * 1000);
 					goto LOOP_AGAIN;
-				} else if (aveq_old != aveq) {
-					busy = 1;
+				} else if (aveq_old == aveq) {
+					busy = 0;
 					break;
 				}
 			}
 		}
 	
-		if (fp != NULL)
 		fclose(fp);
 	}
 
@@ -22452,14 +22541,9 @@ struct ej_handler ej_handlers[] = {
 	{ "memory_usage", ej_memory_usage},
 	{ "cpu_usage", ej_cpu_usage},
 	{ "cpu_core_num", ej_cpu_core_num},
-#ifdef RTCONFIG_RALINK
-#elif defined(RTCONFIG_QCA)
-#elif defined(RTCONFIG_REALTEK)   /* MUST: Need to clarify how does the RP-AC87's ej_SiteSurvey */
+#if defined(RTCONFIG_REALTEK) || defined(RTCONFIG_WIRELESSWAN)
+	/* MUST: Need to clarify how does the RP-AC87's ej_SiteSurvey */
 	{ "sitesurvey", ej_SiteSurvey},
-#else
-#ifdef RTCONFIG_WIRELESSWAN
-	{ "sitesurvey", ej_SiteSurvey},
-#endif
 #endif
 #if defined(CONFIG_BCMWL5) \
 		|| (defined(RTCONFIG_RALINK) && defined(RTCONFIG_WIRELESSREPEATER)) \

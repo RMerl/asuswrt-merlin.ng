@@ -611,7 +611,7 @@ function gen_vts_ruleTable_Block(_tableID) {
 	html += '<input type="text" maxlength="30" class="input_15_table" name="vts_target_x_' + wan_idx + '" id="vts_target_x_' + wan_idx + '" onKeyPress="return validator.isString(this, event)" autocorrect="off" autocapitalize="off"/>';
 	html += '</td>';
 	html += '<td width="16%">';
-	html += '<input type="text" maxlength="" class="input_12_table" name="vts_port_x_' + wan_idx + '" id="vts_port_x_' + wan_idx + '" onkeypress="return validator.isPortRange(this, event)" autocorrect="off" autocapitalize="off"/>';
+	html += '<input type="text" maxlength="60" class="input_12_table" name="vts_port_x_' + wan_idx + '" id="vts_port_x_' + wan_idx + '" onkeypress="return validator.isPortRange(this, event)" autocorrect="off" autocapitalize="off"/>';
 	html += '</td>';
 	html += '<td width="18%">';
 	html += "<div style='display:inline-flex;'>";

@@ -1222,7 +1222,7 @@ const zoneinfo_t tz_list[] = {
         {"UTC-6.30",    "Asia/Yangon"},		// (GMT+06:30) Yangon
         {"UTC-7",       "Asia/Bangkok"},	// (GMT+07:00) Bangkok, Hanoi, Jakarta
         {"UTC-7_2",     "Asia/Krasnoyarsk"},	// (GMT+07:00) Krasnoyarsk
-        {"CST-8",       "Asia/Shanghai`"},	// (GMT+08:00) Beijing, Hong Kong 
+        {"CST-8",       "Asia/Shanghai"},	// (GMT+08:00) Beijing, Hong Kong 
         {"CST-8_1",     "Asia/Chongqing"},	// (GMT+08:00) Chongqing, Urumqi
         {"SST-8",       "Asia/Kuala_Lumpur"},	// (GMT+08:00) Kuala_Lumpur, Singapore
         {"CCT-8",       "Asia/Taipei"},		// (GMT+08:00) Taipei
@@ -1363,7 +1363,7 @@ void
 setup_timezone(void)
 {
 #ifndef RC_BUILDTIME
-#define RC_BUILDTIME	1487030400	// Feb 14 00:00:00 GMT 2017
+#define RC_BUILDTIME	1525496688	// May  5 05:04:48 GMT 2018
 #endif
 	time_t now;
 	struct tm gm, local;

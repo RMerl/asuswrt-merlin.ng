@@ -619,6 +619,8 @@ add_option (char *p[], int line, int unit)
 			|| streq (p[0], "nobind")
 			|| streq (p[0], "persist-key")
 			|| streq (p[0], "persist-tun")
+			|| streq (p[0], "user")
+			|| streq (p[0], "group")
 		) {
 			;//ignore
 		}

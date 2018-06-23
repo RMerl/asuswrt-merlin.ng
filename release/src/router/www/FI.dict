@@ -5,8 +5,16 @@ AiMesh_Desc3=Jollet löydä läheltä yhtään käytettävissä olevaa AiMesh-no
 AiMesh_Desc31=1. Nollaa AiMesh-noodisi ja yritä uudelleen.
 AiMesh_Desc32=2. Varmista, että AiMesh-noodi on ajan tasalla. (Laiteohjelmistoversion on tuettavat AiMeshiä)
 AiMesh_Desc3_note=Etsi tuettu laiteohjelmisto
+AiMesh_Intro_Desc=The AiMesh system is composed of ASUS routers. You will set up one router becomes AiMesh router and you can add another AiMesh node to expand your network.
+AiMesh_Router_Desc=Connect your modem to the WAN port on your router using the Ethernet cable.
 AiMesh_setup_node=I want to set this device as AiMesh node
+AiMesh_setup_node_desc1=Press [Next] button to reset this AiMesh node, and then place the AiMesh node stand by near your AiMesh router.
+AiMesh_setup_node_desc2=Re-connect your AiMesh router to your mobile/NB/PC.
 AiMesh_setup_router=I want to set this device as AiMesh router
+AiMesh_connCap_desc=Please re-direct your mobile/NB/PC to your AiMesh router.
+AiMesh_errConn_desc=If you cannot find your AiMesh router near by. Please make sure your current mobile/NB/PC is already connected to your AiMesh router by Ethernet cable or Wi-Fi.
+AiMesh_connCap_wired=If via wired, use Ethernet cable to connect the LAN port of your AiMesh router and current NB/PC/.
+AiMesh_connCap_wifi=If via Wi-Fi, on current mobile/NB/PC, search the network name(SSID) of your AiMesh router, and connect it.
 ADSL_FW_item1=Nykyinen versio
 ADSL_FW_item3=Viimeisin versio
 APSurvey_action_ConnectingStatus0=Päätukiasema voi olla pois päältä. Tarkista uudelleen.
@@ -24,6 +32,44 @@ APSurvey_msg_connected=Olet jo muodostanut yhteyden tähän tukiasemaan.
 APSurvey_msg_non_support_Auth=Todennusmenetelmä ei ole tuettu.
 APSurvey_msg_waiting_to_connect=Odota, ZVMODELVZ muodostaa yhteyttä
 ASUS_Registration=Become an ASUS Member and receive the latest product information. <a style='color:#FC0' target='_blank' href='https://account.asus.com'>Sign Up Now!</a>
+ASUS_Notice=ASUS-ILMOITUS
+ASUS_privacy_desc=Please note that users are required to agree to share information before using DDNS, Remote Connection (ASUS Router APP、Lyra APP、AiCloud、AiDisk), AiProtection, Traffic analyzer, Apps analyzer, Adaptive QoS, Game Boost/Game IPS and Web history. At any time, users can search for the contents of the terms at this page or stop sharing the information with other parties by choosing <a style="font-weight: bolder;">Withdraw</a>.
+ASUS_eula_desc0=Tervetuloa käyttämään sovelluksia DDNS/Etäyhteydet (ASUS-reititinsovellus/Lyra-sovellus/AiCloud/AiDisk). Lue seuraavat tiedot huolellisesti:
+ASUS_eula_desc1=ASUS-tuotteiden palveluiden ja vakauden arvioimiseksi ja parantamiseksi ASUS voi kerätä käyttöösi perustuvia tietoja yllä mainittujen toimintojen kautta:
+ASUS_eula_desc1_1=Kun käynnistät yllä mainittujen toimintojen käytön, ASUS voi kerätä sinusta anonyymejä tietoja, joilla ei voi luonnehtia tai yksilöidä sinua:
+ASUS_eula_desc1_1_1=Lokitiedot: tuotteeseesi liittyvät lokitiedot, mukaan lukien mallinimi, laiteohjelmistoversio, internet-tila ja automaattisesti luotu aktivointikoodi (koskee vain Alexa™/IFTTT™-toimintoja).
+ASUS_eula_desc1_1_12=Lokitiedot: tuotteeseesi liittyvät lokitiedot, mukaan lukien mallinimi, laiteohjelmistoversio, internet-tila ja automaattisesti luotu aktivointikoodi (koskee vain Alexa™-toimintoja).
+ASUS_eula_desc1_1_13=Lokitiedot: tuotteeseesi liittyvät lokitiedot, mukaan lukien mallinimi, laiteohjelmistoversio ja internet-tila.
+ASUS_eula_desc1_2_s1=Alla olevan [Hyväksyn]-painikkeen napsautuksen katsotaan merkitsevän, että suostut jakamaan seuraavat tiedot ASUKSEN kanssa.
+ASUS_eula_desc1_2_s2=Lasten yksityisyyden suojaamiseksi me emme kerää seuraavia tietoja lapsista.
+ASUS_eula_desc1_2_1=Tuotetiedot: tuotteeseesi liittyvät tiedot, mukaan lukien tuotteen sarjanumero, IP-osoite, MAC-osoite ja DDNS-nimi.
+ASUS_eula_desc1_3=Sen lisäksi, voidaksesi ottaa Alexa™:n kaukosäädintoiminnon käyttöön tuotteellasi, ASUS voi jakaa automaattisesti luodun aktivointikoodin Amazon-palveluun yllä mainittuja tarkoituksia varten.
+ASUS_eula_desc1_4=Sen lisäksi, voidaksesi ottaa IFTTT™:n kaukosäädintoiminnon käyttöön tuotteellasi, ASUS voi jakaa automaattisesti luodun aktivointikoodin IFTTT™-palveluun yllä mainittuja tarkoituksia varten.
+ASUS_eula_desc2=ASUS on sitoutunut suojaamaan ja kunnioittamaan yksityisyyttäsi. Voit siirtyä kohtaan Advanced Settings (Lisäasetukset) > Administration (Hallinta)> Privacy (Tietosuoja) ottaaksesi milloin tahansa käyttöön / pois käytöstä tuotetietojen jakamisen ASUKSEN kanssa. Saadaksesi lisätietoja, kuinka ASUS suojaa yksityisyyttäsi, siirry kohtaan <a id="eula_url" style="font-weight: bolder;text-decoration:underline;cursor:pointer;" target="_blank">ASUS-tietosuojakäytäntö</a>.
+ASUS_eula_age=Olen yli 16-vuotias.
+ASUS_eula_age_confirm=Vahvista, että ikäsi on yli 16 vuotta.
+ASUS_eula_withdraw0_AlexaIFTTT=Sovelluksa  DDNS, Alexa™/IFTTT™/DDNS ja Etäyhteydet (ASUS-reititinsovellus/Lyra-sovellus/AiCloud/ AiDisk) varten:
+ASUS_eula_withdraw0_Alexa=Sovelluksa  DDNS, Alexa™ ja Etäyhteydet (ASUS-reititinsovellus/Lyra-sovellus/AiCloud/ AiDisk) varten:
+ASUS_eula_withdraw0=Sovelluksa  DDNS ja Etäyhteydet  (ASUS-reititinsovellus/Lyra-sovellus/AiCloud/ AiDisk) varten:
+ASUS_eula_withdraw_desc1=Huomaa, että ASUS kerää tietojasi, mukaan lukien tuotteesi mallinimi, laiteohjelmistoversio, internet-tila, IP-osoite, MAC-osoite ja DDNS-nimi, yllä mainituilla toiminnoilla.
+ASUS_eula_withdraw_desc1_2=Jos haluat ottaa pois käytöstä tietojesi jakamisen yllä mainituilla toiminnoilla ASUKSEN kanssa, napsauta alla olevaa <span style="font-weight: bold;">[Withdraw] (Peruuta) </span> -painiketta. Huomaa kuitenkin, että kyseiset ominaisuudet/toiminnot eivät ehkä toimi, jos lopetat tietojesi jakamisen ASUKSEN kanssa.
+ASUS_eula_withdraw_desc2=Napsautettuasi <span style="font-weight: bold;">[Withdraw>] (Peruuta)</span>, ilmenee joitakin muutoksia, kuten alla on lueteltu:
+ASUS_eula_withdraw_desc2_1=Tällä hetkellä käyttämääsi DDNS-nimeä ei säilytetä reitittimessäsi.
+ASUS_eula_withdraw_desc2_2=Voit käyttää ASUS-reititinsovellusta, Lyra-sovellusta, AiCloudia, AiDiskiä LAN-yhteydellä, mutta et etäyhteystilassa.
+ASUS_eula_withdraw_desc2_Alexa=Jos aiot ottaa tulevaisuudessa käyttöön Alexa™-toiminnot, sinun on annetta uusi aktivointikoodi Alexa™-web-sivuilla.
+ASUS_eula_withdraw_desc2_AlexaIFTTT=Jos aiot ottaa tulevaisuudessa käyttöön Alexa™- ja IFTTT™-toiminnot, sinun on annetta uusi aktivointikoodi Alexa™-ja IFTTT-web-sivuilla.
+ASUS_eula_withdraw_note=Et voi suorittaa loppuun perumistoimintoa ilman internet-yhteyttä. Suorita peruminen, kun internet-yhteys on muodostettu.
+ASUS_eula_withdraw_unstable=Et voi suorittaa loppuun perumistoimintoa, koska internet-tila on epävakaa. Yritä perumista myöhemmin uudelleen.
+TM_eula_desc1=Käyttämällä sovelluksia AiProtection, Traffic analyzer, Apps analyzer, Adaptive QoS/Game boost/Game IPS, Web history, sinä hyväksyt <a id="eula_url" style="text-decoration:underline;" target="_blank">Trend Micro loppukäyttäjän käyttöoikeussopimuksen</a>.
+TM_eula_desc2=Sinä myös hyväksyt ja suostut, että ASUS ei ole vastuussa sinun ja Trend Micro välisestä sopimuksesta eikä mistään Trend Micron tarjoaman palvelun sisällöstä. Sinä myös hyväksyt ja suostut, että ASUS ei ole vastuussa sinun ja Trend Micron välisestä sopimuksesta eikä mistään Trend Micro tarjoaman palvelun sisällöstä. Jos sinulla on kysyttävää, kuinka Trend Micro kerää, käsittelee ja käyttää yllä mainittuja tietoja, katso lisätietoja Trend Micron julkaisemasta tietosuoja-aiheeseen liityvästä ilmoituksesta tai ota yhteyttä Trend Micro.
+TM_eula_desc3=Jos haluat ottaa pois käytöstä tietojesi jakamisen yllä mainituilla toiminnoilla Trend Micron kanssa, siirry kohtaan:  Router web GUI  (Reitittimen graafinen käyttöliittymä) > Advanced settings (Lisäasetukset) > Administration (Hallinta) > Privacy (Tietosuoja).
+TM_privacy_policy=<a id="tm_eula_url" style="text-decoration:underline;" target="_blank">TrendMicro Privacy Policy</a>
+TM_data_collection=<a id="tm_disclosure_url" style="text-decoration:underline;" target="_blank">Privacy and Personal Data Collection Disclosure</a>
+TM_eula_withdraw0=Sovelluksille  AiProtection, Traffic Analyzer, Apps analyzer, Adaptive QoS/Game boost/Game IPS, Web history:
+TM_eula_withdraw_desc1=Huomaa, että tietojasi kerätään yllä mainituille Trend Micro sovelluksilla.
+TM_eula_withdraw_desc2=Jos haluat ottaa pois käytöstä tietojesi jakamisen Trend Micron kanssa seuraavilla toiminnoilla, napsauta  <span style="font-weight: bold;">[Withdraw] (Peruuta) </span>. Huomaa kuitenkin, että tällaiset ominaisuudet/toiminnot eivät ehkä toimi, jos lopetat tietojesi jakamisen Trend Micro kanssa.
+withdraw_confirm=Haluatko varmasti peruuttaa?
+withdraw_str=Peruuta
 asusddns_inputhint=Näppäile nimi
 Auto=Autom
 Auto_Setting_btn=Automatic Setting
@@ -1540,6 +1586,8 @@ feedback_thanks=Kiitos, kun käytit aikaa palautteesi lähettämiseen.
 feedback_translation=Ehdottamasi käännös
 feedback_translation_ts=Translated Suggestion
 feedback_usaul_unavailable=Tavallisesti tai aina ei käytettävissä
+feedback_eula=Minä hyväksyn yllä olevien tietojen tarjoamisen, mallinimen, ASUS-reitittimeni laiteohjelmistoversion, selainversion, MAC-osoitteen, IP-osoitteen, internet-tilan, rietitinjärjestelmätiedot, ajan, jolloin lähettän tämän palautelomakkeen ASUKSELLE ASUS-reitittimeni ongelmien diagnoosia ja parannusta varten, ja käyttäjäkokemuksen analysointia varten uusien ASUS- tuotteiden ja palveluiden kehittämistä ja arviointia varten, ja hyväksyn myös <a style="font-weight: bolder;text-decoration:underline;cursor:pointer;" href="https://www.asus.com/us/Terms_of_Use_Notice_Privacy_Policy/Privacy_Policy" target="_blank">ASUS-tietosuojakäytännön</a>.
+feedback_eula_notice=Ennen kuin you napsautat "Send (Lähetä)", hyväksy seuraavat tiedot.
 File_content_alert_desc10=Yli 12 merkin pituisen jakonimen luominen voi tehdä sen näkymättömäksi Windows®-versiossa.\nHaluatko jatkaa?
 File_content_alert_desc6=Jakonimi ei voi olla tyhjä.
 File_content_alert_desc7=Jakonimi voi sisältää vain aakkosnumeerisia merkkejä/ajatusviivoja/alaviivoja/välilyöntejä.

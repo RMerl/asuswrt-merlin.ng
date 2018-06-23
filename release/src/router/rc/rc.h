@@ -727,6 +727,9 @@ extern int stop_vlan(void);
 extern int config_vlan(void);
 extern void config_loopback(void);
 #ifdef RTCONFIG_IPV6
+extern int _ipv6_route_add(const char *name, int metric, const char *dst, const char *gateway, int flags);
+extern int ipv6_route_add(const char *name, int metric, const char *dst, const char *gateway);
+extern int ipv6_route_del(const char *name, int metric, const char *dst, const char *gateway);
 extern int ipv6_mapaddr4(struct in6_addr *addr6, int ip6len, struct in_addr *addr4, int ip4mask);
 #endif
 
@@ -924,6 +927,7 @@ extern void update_vpnc_state(char *prefix, int state, int reason);
 extern void rc_ipsec_config_init();
 extern void rc_set_ipsec_stack_block_size();
 extern void run_ipsec_firewall_scripts();
+extern void rc_ipsec_nvram_convert_check();
 #endif
 
 // network.c

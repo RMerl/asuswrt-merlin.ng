@@ -52,59 +52,6 @@ function initial(){
 		}	
 	});
 
-	if(document.getElementById("tosLink").style.display == "")
-		update_tosLink_url();
-	if(document.getElementById("tosLink2").style.display == "")
-		update_tosLink2_url();
-}
-var preferLang = parent.document.form.preferred_lang.value.toLowerCase();
-
-function update_tosLink_url(){														
-	if(preferLang == "cn")
-		document.getElementById("tosLink").href = "http://www.asus.com.cn";
-	else if(preferLang == "ms")
-		document.getElementById("tosLink").href = "http://www.asus.com/my";
-	else if(preferLang == "da")
-		document.getElementById("tosLink").href = "http://www.asus.com/dk";
-	else if(preferLang == "sv")
-		document.getElementById("tosLink").href = "http://www.asus.com/se";
-	else if(preferLang == "uk")
-		document.getElementById("tosLink").href = "http://www.asus.com/ua";									
-	else if(preferLang == "tw" || preferLang == "cz" || preferLang == "pl" || preferLang == "ro" ||
-		preferLang == "ru" || preferLang == "de" || preferLang == "fr" || preferLang == "hu" ||
-		preferLang == "tr" || preferLang == "th" || preferLang == "no" || preferLang == "it" ||
-		preferLang == "fi" || preferLang == "br" || preferLang == "jp" || preferLang == "es"
-	){
-		document.getElementById("tosLink").href = "http://www.asus.com/" + preferLang;
-	}
-	else
-		document.getElementById("tosLink").href = "http://www.asus.com/us";
-
-	document.getElementById("tosLink").href += "/Terms_of_Use_Notice_Privacy_Policy/Official-Site";
-}
-
-function update_tosLink2_url(){
-	if(preferLang == "cn")
-		document.getElementById("tosLink2").href = "http://www.asus.com.cn";
-	else if(preferLang == "ms")
-		document.getElementById("tosLink2").href = "http://www.asus.com/my";
-	else if(preferLang == "da")
-		document.getElementById("tosLink2").href = "http://www.asus.com/dk";
-	else if(preferLang == "sv")
-		document.getElementById("tosLink2").href = "http://www.asus.com/se";
-	else if(preferLang == "uk")
-		document.getElementById("tosLink2").href = "http://www.asus.com/ua";
-	else if(preferLang == "tw" || preferLang == "cz" || preferLang == "pl" || preferLang == "ro" ||
-		preferLang == "ru" || preferLang == "de" || preferLang == "fr" || preferLang == "hu" ||
-		preferLang == "tr" || preferLang == "th" || preferLang == "no" || preferLang == "it" ||
-		preferLang == "fi" || preferLang == "br" || preferLang == "jp" || preferLang == "es"
-	){
-		document.getElementById("tosLink2").href = "http://www.asus.com/" + preferLang;
-	}
-	else
-		document.getElementById("tosLink2").href = "http://www.asus.com/us";
-
-	document.getElementById("tosLink2").href += "/Terms_of_Use_Notice_Privacy_Policy/Official-Site";
 }
 
 function show_share_link(){
@@ -143,8 +90,7 @@ function show_share_link(){
 					
 			}else{
 					showtext(document.getElementById("ddnslink1_LAN"), 'LAN FTP address: <a id="ddnslink1_LAN_link" target="_blank" style="text-decoration: underline; font-family:Lucida Console;">ftp://<% nvram_get("lan_ipaddr"); %></a>');
-						
-			}		
+			}
 		}else if(ddns_hostname.length <= 0){
 			showtext(document.getElementById("noWAN_link"), "<#linktoFTP_no_3#>");
 		}else
@@ -157,7 +103,6 @@ function detect_mount_status(){
 
 function go_next_page(){
 	document.redirectForm.action = "/aidisk/Aidisk-2.asp";
-	//document.redirectForm.target = "_self";
 	document.redirectForm.submit();
 }
 </script>
@@ -192,45 +137,33 @@ function go_next_page(){
 	  			<div id="Nodisk_hint" class="alert_string" style="display:none;"><#no_usb_found#></div>
 
 				<div id="AiDiskWelcome_desp">
-			  	<#AiDiskWelcome_desp#>
-			  	<ul>
-			  		<li><#AiDiskWelcome_desp1#></li>
-			  		<li><#AiDiskWelcome_desp2#></li>
+					<#AiDiskWelcome_desp#>
+					<ul>
+						<li><#AiDiskWelcome_desp1#></li>
+						<li><#AiDiskWelcome_desp2#></li>
 						<li><#AiDisk_moreconfig#></li>
-						<li><#NSlookup_help#></li>
-						<li>
-							<a id="tosLink" style="cursor:pointer;font-family:Lucida Console;text-decoration:underline;" target="_blank" href="">
-								<#DDNS_termofservice_Title#>
-							</a>
+					</ul>
+				</div>
+
+				<div id="linkdiskbox" style="display:none;">
+					<span style="margin-left:5px;"><#AiDisk_wizard_text_box_title3#></span><br/>
+					<ul>
+						<li id="noFTP_Hint" style="display:none;">
+							<span><#AiDisk_shareHint#></span>
 						</li>
-		  		</ul>
-		  	</div>
-		  	
-		  	<div id="linkdiskbox" >
-		  			<span style="margin-left:5px;"><#AiDisk_wizard_text_box_title3#></span><br/>
-		  			<ul>
-		  				<li id="noFTP_Hint" style="display:none;">
-		  					<span><#AiDisk_shareHint#></span>
-		  				</li>
-		  				<li> 
-		  					<span id="noWAN_link" style="display:none;"></span>
-		  					<span id="ddnslink1" style="display:none;"></span>
-		  					<span id="ddnslink2" style="display:none;"></span>
-		  				</li>
-		  				<li id="desc_2" style="display:none;margin-top:8px;">
-		  					<span id="ddnslink1_LAN" style="display:none;"></span>
-		  					<span id="ddnslink2_LAN" style="display:none;"></span>
-		  				</li>
-							<li><#AiDisk_moreconfig#></li>
-							<li><#Aidisk_authority_hint#></li>
-							<li><#NSlookup_help#></li>	
-							<li>
-								<a id="tosLink2" style="cursor:pointer;font-family:Lucida Console;text-decoration:underline;" target="_blank" href="">
-									<#DDNS_termofservice_Title#>
-								</a>
-							</li>	
-		  			</ul>
-		  	</div>		
+						<li>
+							<span id="noWAN_link" style="display:none;"></span>
+							<span id="ddnslink1" style="display:none;"></span>
+							<span id="ddnslink2" style="display:none;"></span>
+						</li>
+						<li id="desc_2" style="display:none;margin-top:8px;">
+							<span id="ddnslink1_LAN" style="display:none;"></span>
+							<span id="ddnslink2_LAN" style="display:none;"></span>
+						</li>
+						<li><#AiDisk_moreconfig#></li>
+						<li><#Aidisk_authority_hint#></li>
+					</ul>
+				</div>
 			</div>
 	  </td>
   </tr>
@@ -238,7 +171,7 @@ function go_next_page(){
   <tr>
   	<td align="center" width="740px" height="60px">
 			<div id="gotonext">
-  			<a href="javascript:go_next_page();"><div class="titlebtn" style="margin-left:300px;_margin-left:150px;" align="center"><span id="settingBtn" style="*width:190px;"><#btn_go#></span></div></a>
+				<div class="titlebtn" style="margin-left:300px;_margin-left:150px;" align="center"><span id="settingBtn" style="*width:190px;" onclick="go_next_page();"><#btn_go#></span></div>
 			</div>
   	</td>
   </tr>

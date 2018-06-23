@@ -5,8 +5,16 @@ AiMesh_Desc3=Se você não consegue encontrar nenhum nó AiMesh disponível nas 
 AiMesh_Desc31=1. Redefina seu nó AiMesh e tente novamente.
 AiMesh_Desc32=2. Certifique que nó AiMesh esteja sempre atualizado. (A versão do firmware precisa ter suporte a AiMesh)
 AiMesh_Desc3_note=Encontre firmware com suporte
+AiMesh_Intro_Desc=The AiMesh system is composed of ASUS routers. You will set up one router becomes AiMesh router and you can add another AiMesh node to expand your network.
+AiMesh_Router_Desc=Connect your modem to the WAN port on your router using the Ethernet cable.
 AiMesh_setup_node=I want to set this device as AiMesh node
+AiMesh_setup_node_desc1=Press [Next] button to reset this AiMesh node, and then place the AiMesh node stand by near your AiMesh router.
+AiMesh_setup_node_desc2=Re-connect your AiMesh router to your mobile/NB/PC.
 AiMesh_setup_router=I want to set this device as AiMesh router
+AiMesh_connCap_desc=Please re-direct your mobile/NB/PC to your AiMesh router.
+AiMesh_errConn_desc=If you cannot find your AiMesh router near by. Please make sure your current mobile/NB/PC is already connected to your AiMesh router by Ethernet cable or Wi-Fi.
+AiMesh_connCap_wired=If via wired, use Ethernet cable to connect the LAN port of your AiMesh router and current NB/PC/.
+AiMesh_connCap_wifi=If via Wi-Fi, on current mobile/NB/PC, search the network name(SSID) of your AiMesh router, and connect it.
 ADSL_FW_item1=Versão atual
 ADSL_FW_item3=Versão mais recente
 APSurvey_action_ConnectingStatus0=O Parent-AP pode estar desligado. Por favor, verifique novamente.
@@ -24,6 +32,44 @@ APSurvey_msg_connected=Você já está conectado a este ponto de acesso.
 APSurvey_msg_non_support_Auth=Método de autenticação não é suportado.
 APSurvey_msg_waiting_to_connect=Pror favor aguarde o ZVMODELVZ está conectando-se
 ASUS_Registration=Become an ASUS Member and receive the latest product information. <a style='color:#FC0' target='_blank' href='https://account.asus.com'>Sign Up Now!</a>
+ASUS_Notice=ASUS NOTICE
+ASUS_privacy_desc=Please note that users are required to agree to share information before using DDNS, Remote Connection (ASUS Router APP、Lyra APP、AiCloud、AiDisk), AiProtection, Traffic analyzer, Apps analyzer, Adaptive QoS, Game Boost/Game IPS and Web history. At any time, users can search for the contents of the terms at this page or stop sharing the information with other parties by choosing <a style="font-weight: bolder;">Withdraw</a>.
+ASUS_eula_desc0=Bem-vindo a usar DDNS / Conexão remota (Roteador ASUS APP/Lyra APP/AiCloud/AiDisk). Por favor, leia o seguinte atentamente:
+ASUS_eula_desc1=In order to assess and improve ASUS product services and improve stability, based on your usage, ASUS may collect your information through the above functions:
+ASUS_eula_desc1_1=When you start to use the above functions, ASUS may collect your anonymous information which cannot characterize nor identify you:
+ASUS_eula_desc1_1_1=Informações de registro: informações de registro associadas ao seu produto, incluindo nome do modelo, versão do firmware, status da Internet e código de ativação gerado automaticamente (aplicado somente às funções da Alexa™/IFTTT™).
+ASUS_eula_desc1_1_12=Informações de registro: informações de registro associadas ao seu produto, incluindo nome do modelo, versão do firmware, status da Internet e código de ativação gerado automaticamente (aplicado somente às funções da Alexa™).
+ASUS_eula_desc1_1_13=Informações de log: informações de log associadas ao seu produto, incluindo nome do modelo, versão do firmware e status da Internet.
+ASUS_eula_desc1_2_s1=By clicking [Agree] below, it will be deemed that you consent to share the following information with ASUS.
+ASUS_eula_desc1_2_s2=To protect children’s privacy, we will not collect the following information of children.
+ASUS_eula_desc1_2_1=Product information: information associated with your product, including IP Address, MAC Address, and DDNS name.
+ASUS_eula_desc1_3=Besides, in order to enable your remote control function of Alexa™ via your product, ASUS may share auto-generated activation code to Amazon for the above purposes.
+ASUS_eula_desc1_4=Besides, in order to enable your remote control function of IFTTT™ via your product, ASUS may share auto-generated activation code to IFTTT™ for the above purposes.
+ASUS_eula_desc2=ASUS is committed to protecting and respecting your privacy; you may visit Advanced Settings > Administration > Privacy to enable/disable sharing your product information with ASUS at all times. To know more about how ASUS protects your privacy, please visit <a id="eula_url" style="font-weight: bolder;text-decoration:underline;cursor:pointer;" target="_blank">ASUS Privacy Policy</a>.
+ASUS_eula_age=I am above the age of 16 years.
+ASUS_eula_age_confirm=Please confirm the age is above the age of 16 years.
+ASUS_eula_withdraw0_AlexaIFTTT=For DDNS, Alexa™, IFTTT™, and Remote connection(ASUS Router APP, Lyra APP, AiCloud, AiDisk):
+ASUS_eula_withdraw0_Alexa=For DDNS, Alexa™, and Remote connection(ASUS Router APP, Lyra APP, AiCloud, AiDisk):
+ASUS_eula_withdraw0=For DDNS, and Remote connection(ASUS Router APP, Lyra APP, AiCloud, AiDisk):
+ASUS_eula_withdraw_desc1=Please noted that your information (including your product model name, firmware version, Internet status, IP Address, MAC Address and DDNS name) will be collected by ASUS through the above functions.
+ASUS_eula_withdraw_desc1_2=If you would like to disable sharing your information with ASUS through the above functions, please click <span style="font-weight: bold;">[Withdraw]</span> below. However, please be noted that such features/functions may not be worked if stop sharing your information with ASUS.
+ASUS_eula_withdraw_desc2=After you click <span style="font-weight: bold;">[Withdraw]</span>, there will be some changes as listed below:
+ASUS_eula_withdraw_desc2_1=The DDNS name you are currently using will not be kept (held) in your router.
+ASUS_eula_withdraw_desc2_2=You are able to use ASUS Router APP, Lyra APP, AiCloud, AiDisk under LAN connection, but not under the remote connection mode.
+ASUS_eula_withdraw_desc2_Alexa=In the future, if you intend to enable the functions of Alexa™, you need to provide new activation code to the web page of Alexa™.
+ASUS_eula_withdraw_desc2_AlexaIFTTT=In the future, if you intend to enable the functions of Alexa™ and IFTTT™, you need to provide new activation code to the web page of Alexa™ and IFTTT™.
+ASUS_eula_withdraw_note=Você não pode concluir o procedimento de retirada sem conexão com a Internet. Por favor, se retire quando conectado à Internet.
+ASUS_eula_withdraw_unstable=Você não pode concluir o procedimento de retirada porque o status da Internet é instável. Se retire novamente mais tarde.
+TM_eula_desc1=By using AiProtection, Traffic analyzer, Apps analyzer and Adaptive QoS, you agree to the <a id="eula_url" style="text-decoration:underline;" target="_blank">Trend Micro End User License Agreement.</a>
+TM_eula_desc2=Please be noted that your information will be collected by Trend Micro through AiProtection, Traffic analyzer, Apps analyzer, Adaptive QoS and web history. You also acknowledge and agree that ASUS is not responsible for neither the agreement between you and Trend Micro nor any content of the service provided by Trend Micro. If you may have any inquires about how Trend Micro collects, processes and uses your above information, please refer to the privacy- related statement issued by Trend Micro or contact Trend Micro for more details.
+TM_eula_desc3=If you would like to disable sharing your information with Trend Micro through the above functions, please go to:  Router web GUI > Advanced settings > Administration > Privacy.
+TM_privacy_policy=<a id="tm_eula_url" style="text-decoration:underline;" target="_blank">TrendMicro Privacy Policy</a>
+TM_data_collection=<a id="tm_disclosure_url" style="text-decoration:underline;" target="_blank">Privacy and Personal Data Collection Disclosure</a>
+TM_eula_withdraw0=For AiProtection, Traffic Analyzer, Apps analyzer, Adaptive QoS/Game boost/Game IPS, Web history:
+TM_eula_withdraw_desc1=Please noted that your information will be collected by Trend Micro through the above functions.
+TM_eula_withdraw_desc2=If you would like to disable sharing your information with Trend Micro through the following functions, please click <span style="font-weight: bold;">[Withdraw]</span> below. However, please be noted that such features/functions may not be worked if stop sharing your information with Trend Micro.
+withdraw_confirm=Are you sure you want to withdraw?
+withdraw_str=Withdraw
 asusddns_inputhint=Digite um nome
 Auto=Automático
 Auto_Setting_btn=Automatic Setting
@@ -1540,6 +1586,8 @@ feedback_thanks=Obrigado pelo seu tempo para nos enviar o seu feedback.
 feedback_translation=Sua Tradução Sugerida
 feedback_translation_ts=Translated Suggestion
 feedback_usaul_unavailable=Geralmente ou sempre indisponível
+feedback_eula=I agree to provide the above information, the model name, firmware version of my ASUS router, browser version, MAC address, IP address, Internet status, router system information, the time I submit this Feedback form to ASUS to diagnose and improve problems of my ASUS router, and to analyze user experience for the purpose of development and evaluation of new products and services of ASUS, and also agree to the <a style="font-weight: bolder;text-decoration:underline;cursor:pointer;" href="https://www.asus.com/us/Terms_of_Use_Notice_Privacy_Policy/Privacy_Policy" target="_blank">ASUS Privacy Policy</a>
+feedback_eula_notice=Before you click “send”, please agree to the information.
 File_content_alert_desc10=Criando um compartilhamento com mais de 12 caracteres ele será invisível na versão Windows™.\nVocê deseja continuar ?
 File_content_alert_desc6=O nome do compartilhamento não pode estar em branco.
 File_content_alert_desc7=O nome do compartilhamento deve conter apenas caracteres alfanuméricos, traços, sublinhados e espacos.

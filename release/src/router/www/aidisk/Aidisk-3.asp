@@ -35,6 +35,7 @@ function initial(){
 		document.getElementById("DDNSName").value = "<#asusddns_inputhint#>";
 	}
 	switch_ddns();
+	top.ASUS_EULA.config(go_next_page, function(){});
 }
 
 function switch_ddns(){
@@ -220,12 +221,17 @@ function cleandef(){
 		if(document.form.DDNSName.value == "<#asusddns_inputhint#>")
 				document.form.DDNSName.value = "";	
 }
+
+function apply_eula_check(){
+	if(top.ASUS_EULA.check('asus'))
+		go_next_page();
+}
 </script>
 </head>
 
 <body onload="initial();">
 <iframe name="hidden_frame" id="hidden_frame" src="" width="0" height="0" frameborder="0"></iframe>
-<form method="post" name="form" id="ruleForm" action="/start_apply.htm" target="hidden_frame" onsubmit="return go_next_page();">
+<form method="post" name="form" id="ruleForm" action="/start_apply.htm" target="hidden_frame">
 <input type="hidden" name="current_page" value="">
 <input type="hidden" name="next_page" value="">
 <input type="hidden" name="group_id" value="">
@@ -293,7 +299,7 @@ function cleandef(){
   		<td width="20%">
 			<div class="apply_gen" style="margin-top:30px">	
 				<input type="button" id="prevButton" value="<#CTL_prev#>" onclick="go_pre_page();" class="button_gen">
-				<input type="submit" id="nextButton" value="<#CTL_next#>" class="button_gen">
+				<input type="button" id="nextButton" value="<#CTL_next#>" onclick="apply_eula_check();"class="button_gen">
 				<img id="loadingIcon" style="display:none;margin-top:7px" src="/images/InternetScan.gif"></span>
 			</div>
 		</td>

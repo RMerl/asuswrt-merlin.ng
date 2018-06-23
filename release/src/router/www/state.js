@@ -1728,11 +1728,11 @@ function show_top_status(){
 		document.getElementById("ssidTitle").style.display = "none";
 	}
 
-	var ssid_status_2g =  decodeURIComponent('<% nvram_char_to_ascii("WLANConfig11b", "wl0_ssid"); %>');
-	var ssid_status_5g =  decodeURIComponent('<% nvram_char_to_ascii("WLANConfig11b", "wl1_ssid"); %>');
+	var ssid_status_2g =  htmlEnDeCode.htmlEncode(decodeURIComponent('<% nvram_char_to_ascii("WLANConfig11b", "wl0_ssid"); %>'));
+	var ssid_status_5g =  htmlEnDeCode.htmlEncode(decodeURIComponent('<% nvram_char_to_ascii("WLANConfig11b", "wl1_ssid"); %>'));
 
 	if(wl_info.band5g_2_support){
-		var ssid_status_5g_2 =  decodeURIComponent('<% nvram_char_to_ascii("WLANConfig11b", "wl2_ssid"); %>');
+		var ssid_status_5g_2 =  htmlEnDeCode.htmlEncode(decodeURIComponent('<% nvram_char_to_ascii("WLANConfig11b", "wl2_ssid"); %>'));
 	}
 
 	if(!band2g_support)
@@ -1763,10 +1763,10 @@ function show_top_status(){
 	}
 	else if(sw_mode == 2){
 		if(concurrep_support){
-			ssid_status_2g =  decodeURIComponent('<% nvram_char_to_ascii("WLANConfig11b", "wl0.1_ssid"); %>');
-			ssid_status_5g =  decodeURIComponent('<% nvram_char_to_ascii("WLANConfig11b", "wl1.1_ssid"); %>');
+			ssid_status_2g =  htmlEnDeCode.htmlEncode(decodeURIComponent('<% nvram_char_to_ascii("WLANConfig11b", "wl0.1_ssid"); %>'));
+			ssid_status_5g =  htmlEnDeCode.htmlEncode(decodeURIComponent('<% nvram_char_to_ascii("WLANConfig11b", "wl1.1_ssid"); %>'));
 			if(wl_info.band5g_2_support)
-				ssid_status_5g_2 =  decodeURIComponent('<% nvram_char_to_ascii("WLANConfig11b", "wl2.1_ssid"); %>');
+				ssid_status_5g_2 =  htmlEnDeCode.htmlEncode(decodeURIComponent('<% nvram_char_to_ascii("WLANConfig11b", "wl2.1_ssid"); %>'));
 
 			if(wlc_express == '1'){
 				document.getElementById('elliptic_ssid_2g').style.display = "none";
@@ -1780,14 +1780,14 @@ function show_top_status(){
 			}
 		}	
 		else if('<% nvram_get("wlc_band"); %>' == '0')
-			ssid_status_2g =  decodeURIComponent('<% nvram_char_to_ascii("WLANConfig11b", "wl0.1_ssid"); %>');
+			ssid_status_2g =  htmlEnDeCode.htmlEncode(decodeURIComponent('<% nvram_char_to_ascii("WLANConfig11b", "wl0.1_ssid"); %>'));
 		else if('<% nvram_get("wlc_band"); %>' == '2'){
 			if(wl_info.band5g_2_support){
-				ssid_status_5g_2 =  decodeURIComponent('<% nvram_char_to_ascii("WLANConfig11b", "wl2.1_ssid"); %>');
+				ssid_status_5g_2 =  htmlEnDeCode.htmlEncode(decodeURIComponent('<% nvram_char_to_ascii("WLANConfig11b", "wl2.1_ssid"); %>'));
 			}
 		}
 		else
-			ssid_status_5g =  decodeURIComponent('<% nvram_char_to_ascii("WLANConfig11b", "wl1.1_ssid"); %>');
+			ssid_status_5g =  htmlEnDeCode.htmlEncode(decodeURIComponent('<% nvram_char_to_ascii("WLANConfig11b", "wl1.1_ssid"); %>'));
 
 		document.getElementById('elliptic_ssid_2g').style.textDecoration="none";
 		document.getElementById('elliptic_ssid_2g').style.cursor="auto";
@@ -1799,35 +1799,31 @@ function show_top_status(){
 		}
 	}
 
-	var topbanner_ssid_2g = handle_show_str(ssid_status_2g);
-
-	if(topbanner_ssid_2g.length >18){
+	if(ssid_status_2g.length >18){
 		document.getElementById('elliptic_ssid_2g').innerHTML = extend_display_ssid(ssid_status_2g)+"...";
 	}
 	else{
-		document.getElementById('elliptic_ssid_2g').innerHTML = topbanner_ssid_2g;
+		document.getElementById('elliptic_ssid_2g').innerHTML = ssid_status_2g;
 	}
 
 	if(!lyra_hide_support)
 		document.getElementById('elliptic_ssid_2g').title = "2.4 GHz: \n"+ ssid_status_2g;
 
-	var topbanner_ssid_5g = handle_show_str(ssid_status_5g);
-	if(topbanner_ssid_5g.length >18){
+	if(ssid_status_5g.length >18){
 		document.getElementById('elliptic_ssid_5g').innerHTML = extend_display_ssid(ssid_status_5g)+"...";
 	}
 	else{
-		document.getElementById('elliptic_ssid_5g').innerHTML = topbanner_ssid_5g;
+		document.getElementById('elliptic_ssid_5g').innerHTML = ssid_status_5g;
 	}
 
 	document.getElementById('elliptic_ssid_5g').title = "5 GHz: \n"+ ssid_status_5g;
 
 	if(wl_info.band5g_2_support){
-		var topbanner_ssid_5g_2 = handle_show_str(ssid_status_5g_2);
-		if(topbanner_ssid_5g_2.length >18){
+		if(ssid_status_5g_2.length >18){
 			document.getElementById('elliptic_ssid_5g_2').innerHTML = extend_display_ssid(ssid_status_5g_2)+"...";
 		}
 		else{
-			document.getElementById('elliptic_ssid_5g_2').innerHTML = topbanner_ssid_5g_2;
+			document.getElementById('elliptic_ssid_5g_2').innerHTML = ssid_status_5g_2;
 		}
 		document.getElementById('elliptic_ssid_5g_2').title = "5 GHz-2: \n"+ ssid_status_5g_2;
 	}

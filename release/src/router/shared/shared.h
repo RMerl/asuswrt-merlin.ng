@@ -1697,7 +1697,6 @@ extern int get_wifi_unit(char *wif);
 #ifdef RTCONFIG_DPSTA
 extern int is_dpsta(int unit);
 #endif
-extern int is_dpsr(int unit);
 extern int is_psta(int unit);
 extern int is_psr(int unit);
 extern int psta_exist(void);
@@ -2265,6 +2264,7 @@ enum {
 	CKN_STR4096 = 4096,
 	CKN_STR5500 = 5500,
 	CKN_STR7999 = 7999,
+	CKN_STR8192 = 8192,
 	CKN_STR_MAX = 65535
 };
 

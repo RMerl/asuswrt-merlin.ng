@@ -583,28 +583,21 @@ if [ "$modem_type" == "tty" -o "$modem_type" == "qmi" -o "$modem_type" == "mbim"
 		#	exit 0
 		#fi
 
-		if [ "$modem_user" != "" -o "$modem_pass" != "" ]; then
-			if [ "$modem_authmode" == "3" ]; then
-				flag_auth="--auth-type both"
-			elif [ "$modem_authmode" == "2" ]; then
-				flag_auth="--auth-type chap"
-			elif [ "$modem_authmode" == "1" ]; then
-				flag_auth="--auth-type pap"
-			else
-				flag_auth="--auth-type none"
-			fi
-
-			if [ "$modem_user" != "" ]; then
-				flag_auth="$flag_auth --username $modem_user"
-			fi
-			if [ "$modem_pass" != "" ]; then
-				flag_auth="$flag_auth --password $modem_pass"
-			fi
-
-			echo "$modem_type: set the flag_auth be \"$flag_auth\"."
-
-			echo "uqmi -d $wdm --keep-client-id wds --start-network --apn \"$modem_apn\" \"$flag_auth\" --ip-family $pdp_str"
-			uqmi -d $wdm --keep-client-id wds --start-network --apn "$modem_apn" "$flag_auth" --ip-family $pdp_str
+		if [ -n "$modem_user" -o -n "$modem_pass" ]; then
+			case "$modem_authmode" in
+				1) flag_auth="pap" ;;
+				2) flag_auth="chap" ;;
+				3) flag_auth="both" ;;
+				*) flag_auth="none" ;;
+			esac
+			echo "uqmi -d $wdm --keep-client-id wds --start-network --apn \"$modem_apn\" --ip-family $pdp_str" \
+				${flag_auth:+--auth-type \"$flag_auth\"} \
+				${modem_user:+--username \"$modem_user\"} \
+				${modem_pass:+--password \"$modem_pass\"}
+			uqmi -d $wdm --keep-client-id wds --start-network --apn "$modem_apn" --ip-family $pdp_str \
+				${flag_auth:+--auth-type "$flag_auth"} \
+				${modem_user:+--username "$modem_user"} \
+				${modem_pass:+--password "$modem_pass"}
 		else
 			echo "uqmi -d $wdm --keep-client-id wds --start-network --apn \"$modem_apn\" --ip-family $pdp_str"
 			uqmi -d $wdm --keep-client-id wds --start-network --apn "$modem_apn" --ip-family $pdp_str

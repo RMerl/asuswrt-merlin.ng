@@ -4913,13 +4913,10 @@ int asus_usb_interface(const char *device_name, const char *action)
 		snprintf(buf, sizeof(buf), "%x %x", vid, pid);
 		f_write_string("/sys/bus/usb-serial/drivers/option1/new_id", buf, 0, 0);
 #else
-		//sleep(2);
-		//snprintf(modem_cmd, sizeof(modem_cmd), "vendor=0x%04x", vid);
-		//snprintf(buf, sizeof(buf), "product=0x%04x", pid);
-		//eval("insmod", "option", modem_cmd, buf);
 		usb_dbg("(%s): Runing option with (0x%04x/0x%04x)...\n", device_name, vid, pid);
-		snprintf(modem_cmd, sizeof(modem_cmd), "vendor=0x%04x product=0x%04x", vid, pid);
-		modprobe("option", modem_cmd);
+		snprintf(modem_cmd, sizeof(modem_cmd), "vendor=0x%04x", vid);
+		snprintf(buf, sizeof(buf), "product=0x%04x", pid);
+		modprobe("option", modem_cmd, buf);
 #endif
 		sleep(1);
 	}

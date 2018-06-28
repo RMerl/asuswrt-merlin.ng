@@ -2709,7 +2709,7 @@ int nvram_check(char *name, char *value, struct nvram_tuple *t, char *output)
 	}
 #elif defined(RTCONFIG_HTTPS)
 	else if(!strcmp(name, "PM_SMTP_AUTH_PASS")){
-#if defined(RTAC88U) || defined(RTAC3100) || defined(RTAC5300) || defined(RTAC86U)  // kludge
+#if defined(RTAC88U) || defined(RTAC3100) || defined(RTAC5300) || defined(RTAC86U)  || defined(RTAC68U) // kludge
 		pwenc(value, output, t->len);
 #else
 		pwenc(value, output);

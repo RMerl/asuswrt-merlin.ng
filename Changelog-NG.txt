@@ -14,7 +14,7 @@ General changes in the 384/NG branch vs 380.xx:
 
 
 384.6 (xx-xxx-xxxx)
-   - NEW: Merged with GPL 384_20942 (AC56U and AC87U currently
+   - NEW: Merged with GPL 384_21045/382_50624.  (AC87U currently
           missing)
    - NEW: Added support for the "-p" option to netstat.
    - NEW: Added setting to enable DNS rebind protection, on the
@@ -27,10 +27,12 @@ General changes in the 384/NG branch vs 380.xx:
    - CHANGED: Added AES-*-GCM ciphers to the OpenVPN legacy
               ciphers (so they can be explicitely used without
               using NCP).
-   - CHANGED: Updated dnsmasq to 2.80test2-17-g51e4eee (theMIROn)
-   - FIXED: IPv6-related issues on non-HND platform (theMIROn)
+   - CHANGED: Updated dnsmasq to 2.80test2-17-g51e4eee (themiron)
+   - FIXED: IPv6-related issues on non-HND platform (themiron)
    - FIXED: Couldn't log on WTFast if accessing the router
             webui over https.
+   - FIXED: USB modem support code failing to properly pass
+            parameters to the kernel module (themiron)
    - REMOVED: WTFast support for RT-AC88U/RT-AC3100/RT-AC5300,
               as it's incompatible with recent versions of
               curl (and has been broken for quite some time).

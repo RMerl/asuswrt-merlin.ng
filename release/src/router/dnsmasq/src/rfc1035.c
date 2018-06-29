@@ -1663,7 +1663,9 @@ size_t answer_request(struct dns_header *header, char *limit, size_t qlen,
 		    }
 
 		  /* If the client asked for DNSSEC  don't use cached data. */
-		  if ((crecp->flags & (F_HOSTS | F_DHCP | F_CONFIG)) || !do_bit || !(crecp->flags & F_DNSSECOK))
+		  if ((crecp->flags & (F_HOSTS | F_DHCP | F_CONFIG)) ||
+		      !do_bit ||
+		      (option_bool(OPT_DNSSEC_VALID) && !(crecp->flags & F_DNSSECOK)))
 		    do
 		      { 
 			/* don't answer wildcard queries with data not from /etc/hosts
@@ -1747,7 +1749,7 @@ size_t answer_request(struct dns_header *header, char *limit, size_t qlen,
 	    {
 	      if ((crecp = cache_find_by_name(NULL, name, now, F_CNAME | (dryrun ? F_NO_RR : 0))) &&
 		  (qtype == T_CNAME || (crecp->flags & F_CONFIG)) &&
-		  ((crecp->flags & F_CONFIG) || !do_bit || !(crecp->flags & F_DNSSECOK)))
+		  ((crecp->flags & F_CONFIG) || !do_bit || (option_bool(OPT_DNSSEC_VALID) && !(crecp->flags & F_DNSSECOK))))
 		{
 		  if (!(crecp->flags & F_DNSSECOK))
 		    sec_data = 0;

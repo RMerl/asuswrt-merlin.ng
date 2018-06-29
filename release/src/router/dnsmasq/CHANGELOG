@@ -33,7 +33,12 @@ version 2.80
 	even if auth-sec-servers is not. Thanks to Raphaël Halimi for
 	the suggestion.
 
-
+	Fix bug which sometimes caused dnsmasq to wrongly return answers
+	without DNSSEC RRs to queries with the do-bit set, but only when
+	DNSSEC validation was not enabled.
+	Thanks to Petr Menšík for spotting this.
+	
+	
 version 2.79
 	Fix parsing of CNAME arguments, which are confused by extra spaces.
 	Thanks to Diego Aguirre for spotting the bug.

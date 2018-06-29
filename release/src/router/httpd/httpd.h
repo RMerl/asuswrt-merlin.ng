@@ -339,7 +339,7 @@ extern void add_ifttt_flag(void);
 #ifdef RTCONFIG_HTTPS
 extern int gen_ddns_hostname(char *ddns_hostname);
 extern int check_model_name(void);
-#if !defined(RTAC3200) && !defined(RTAC87U)	// kludge
+#if !defined(RTAC87U)	// kludge
 extern char *pwenc(char *input, char *output, int len);
 #else
 extern char *pwenc(char *input, char *output);

@@ -875,7 +875,7 @@ handle_request(void)
 			break;
 		}
 #ifdef TRANSLATE_ON_FLY
-#if defined(RTAC5300) || defined(RTAC3100) || defined(RTAC86U) || defined(RTAC68U) // kludge
+#if !defined(RTAC3200) && !defined(RTAC88U) && !defined(RTAC87U)	// kludge
 		else if ( strncasecmp( cur, "Accept-Language:", 16) == 0 ) {
 			if(change_preferred_lang()){
 				char *p;
@@ -954,7 +954,7 @@ handle_request(void)
 			}
 			#endif
 		}
-#else // Kludge
+#else // kludge
 		else if ( strncasecmp( cur, "Accept-Language:",16) ==0) {
 			char *p;
 			struct language_table *pLang;
@@ -1613,7 +1613,7 @@ char *config_model_name(char *source, char *find,  char *rep){
  *     <0:	invalid parameter.
  *     >0:	lang can be supported.
  */
-#if !defined (RTAC5300) && !defined (RTAC3100) && !defined (RTAC86U) && !defined (RTAC68U)	// Kludge
+#if defined(RTAC3200) || defined(RTAC88U) || defined(RTAC87U)	// kludge
 int check_lang_support(char *lang)
 {
 	int r = 1;

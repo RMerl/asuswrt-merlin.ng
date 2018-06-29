@@ -2709,7 +2709,7 @@ int nvram_check(char *name, char *value, struct nvram_tuple *t, char *output)
 	}
 #elif defined(RTCONFIG_HTTPS)
 	else if(!strcmp(name, "PM_SMTP_AUTH_PASS")){
-#if defined(RTAC88U) || defined(RTAC3100) || defined(RTAC5300) || defined(RTAC86U)  || defined(RTAC68U) // kludge
+#if !defined(RTAC3200) && !defined(RTAC87U)	// kludge
 		pwenc(value, output, t->len);
 #else
 		pwenc(value, output);
@@ -11630,7 +11630,7 @@ do_upgrade_post(char *url, FILE *stream, int len, char *boundary)
 #endif
 
 #ifdef CONFIG_BCMWL5
-#if defined(RTAC68U) || defined(RTAC88U) || defined(RTAC3100) || defined(RTAC5300) || defined(RTAC86U)	// kludge
+#if !defined(RTAC3200) && !defined(RTAC87U) && !defined(RTAC56U)	// kludge
 	if (fw_check() != 0)
 		goto err;
 #endif

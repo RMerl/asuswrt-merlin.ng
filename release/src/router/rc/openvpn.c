@@ -812,20 +812,18 @@ void start_ovpn_server(int serverNum)
 	nvi = nvram_pf_get_int(prefix, "port");
 	fprintf(fp, "port %d\n", nvi);
 
-
-
 	if (nvram_get_int("ddns_enable_x") && nvram_get_int("ddns_status") && nvram_invmatch("ddns_hostname_x", ""))
 	{
 		if (nvram_match("ddns_server_x","WWW.NAMECHEAP.COM"))
 			fprintf(fp_client, "remote %s.%s %d\n", nvram_safe_get("ddns_hostname_x"), nvram_safe_get("ddns_username_x"), nvi);
 		else
-			fprintf(fp_client, "remote %s %d\n", nvram_safe_get("ddns_hostname_x"), nvram_get_int(buffer));
+			fprintf(fp_client, "remote %s %d\n", nvram_safe_get("ddns_hostname_x"), nvi);
 	}
 	else {
 		const char *address = get_wanip();
 		if (inet_addr_(address) == INADDR_ANY)
 			address = "0.0.0.0"; /* error */
-		fprintf(fp_client, "remote %s %d\n", address, nvram_get_int(&buffer[0]));
+		fprintf(fp_client, "remote %s %d\n", address, nvi);
 	}
 	fprintf(fp_client, "float\n");
 	fprintf(fp, "dev %s\n", iface);

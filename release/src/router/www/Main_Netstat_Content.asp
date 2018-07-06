@@ -20,7 +20,7 @@
 <script language="JavaScript" type="text/javascript" src="/client_function.js"></script>
 <script>
 option_netstat = new Array("<#sockets_all#>","<#sockets_TCP#>","<#sockets_UDP#>","<#sockets_RAW#>","<#sockets_UNIX#>","<#sockets_listening#>","<#Display_routingtable#>");
-optval_netstat = new Array("-a","-t","-u","-w","-x","-l","-r");
+optval_netstat = new Array("-pa","-pt","-pu","-pw","-px","-pl","-r");
 option_netstat_nat = new Array("<#Netstatnat_option1#>", "<#Netstatnat_option2#>", "<#Netstatnat_option3#>");
 optval_netstat_nat = new Array("-L","-s","-S");
 
@@ -248,13 +248,13 @@ function validForm(){
 											<th width="20%"><#NetworkTools_option#></th>
 											<td>
 												<select id="NetOption" class="input_option" name="NetOption" onChange="append_value(this);">
-													<option value="-a"><#sockets_all#></option>
-													<option value="-ta"><#sockets_TCP#></option>
-													<option value="-ua"><#sockets_UDP#></option>
-													<option value="-w"><#sockets_RAW#></option>
-													<option value="-xa"><#sockets_UNIX#></option>
-													<option value="-l"><#sockets_listening#></option>
-													<option value="-r"><#Display_routingtable#></option>
+													<option value="-pa"><#sockets_all#></option>
+													<option value="-pta"><#sockets_TCP#></option>
+													<option value="-pua"><#sockets_UDP#></option>
+													<option value="-pw"><#sockets_RAW#></option>
+													<option value="-pxa"><#sockets_UNIX#></option>
+													<option value="-pl"><#sockets_listening#></option>
+													<option value="-pr"><#Display_routingtable#></option>
  												</select>	
 											</td>			
 										</tr>

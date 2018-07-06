@@ -1607,7 +1607,7 @@ function update_digest() {
 											<tr id="ncp_ciphers">
 												<th>Negotiable ciphers</th>
 												<td>
-													<input type="text" maxlength="255" class="input_32_table" name="vpn_server_ncp_ciphers" value="<% nvram_get("vpn_server_ncp_ciphers"); %>" >
+													<input type="text" maxlength="255" class="input_32_table" name="vpn_server_ncp_ciphers" value="<% nvram_get("vpn_server_ncp_ciphers"); %>" autocorrect="off" autocapitalize="off" spellcheck="false">
 												</td>
 											</tr>
 											<tr id="server_cipher">

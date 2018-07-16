@@ -11,11 +11,8 @@ It is not meant to replace existing projects such as Tomato or DD-WRT, but rathe
 for people who prefer the original firmware featureset.
 
 This is the new development branch, originally based on Asus's 
-3.0.0.4.382_xxxx firmware release.  Not all models are supported yet by this new version, 
-please refer to the original 380.xx release for previous model support.  For the time 
-being, both the legacy 380.xx and new gen 382.xx/384.xx versions will be developped 
-in parallel, until most models have been migrated to the new code base.
-
+3.0.0.4.382_xxxx firmware release.  Development of the 380.xx 
+legacy branch has been dropped.
 
 Please consult the Wiki for an up-to-date list of supported models:
 

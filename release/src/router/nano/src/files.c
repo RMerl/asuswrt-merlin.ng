@@ -2,7 +2,7 @@
  *   files.c  --  This file is part of GNU nano.                          *
  *                                                                        *
  *   Copyright (C) 1999-2011, 2013-2018 Free Software Foundation, Inc.    *
- *   Copyright (C) 2015-2017 Benno Schulenberg                            *
+ *   Copyright (C) 2015-2018 Benno Schulenberg                            *
  *                                                                        *
  *   GNU nano is free software: you can redistribute it and/or modify     *
  *   it under the terms of the GNU General Public License as published    *
@@ -1110,6 +1110,24 @@ void do_insertfile(void)
 				i = 0;
 			}
 #endif
+#ifndef NANO_TINY
+			if (func == flip_pipe) {
+				/* Remove or add the pipe character at the answer's head. */
+				if (answer[0] == '|') {
+					charmove(answer, answer + 1, strlen(answer) + 1);
+					if (statusbar_x > 0)
+						statusbar_x--;
+				} else {
+					answer = charealloc(answer, strlen(answer) + 2);
+					charmove(answer + 1, answer, strlen(answer) + 1);
+					answer[0] = '|';
+					statusbar_x++;
+				}
+
+				given = mallocstrcpy(given, answer);
+				continue;
+			}
+#endif
 			/* If we don't have a file yet, go back to the prompt. */
 			if (i != 0 && (!ISSET(MULTIBUFFER) || i != -2))
 				continue;
@@ -1915,16 +1933,16 @@ bool write_file(const char *name, FILE *f_open, bool tmp,
 		goto cleanup_and_exit;
 	}
 
-	if (method == OVERWRITE && !tmp) {
-		/* If we must set the filename, and it changed, adjust things. */
-		if (fullbuffer && strcmp(openfile->filename, realname) != 0) {
+	/* When having written an entire buffer, update some administrivia. */
+	if (fullbuffer && method == OVERWRITE && !tmp) {
+		/* If the filename was changed, check if this means a new syntax. */
+		if (strcmp(openfile->filename, realname) != 0) {
 #ifdef ENABLE_COLOR
 			const char *oldname, *newname;
 
 			oldname = openfile->syntax ? openfile->syntax->name : "";
 #endif
 			openfile->filename = mallocstrcpy(openfile->filename, realname);
-
 #ifdef ENABLE_COLOR
 			/* See if the applicable syntax has changed. */
 			color_update();
@@ -1941,29 +1959,27 @@ bool write_file(const char *name, FILE *f_open, bool tmp,
 					line->multidata = NULL;
 					line = line->next;
 				}
+
 				precalc_multicolorinfo();
 				refresh_needed = TRUE;
 			}
 #endif
 		}
-
-		if (fullbuffer) {
 #ifndef NANO_TINY
-			/* Get or update the stat info to reflect the current state. */
-			stat_with_alloc(realname, &openfile->current_stat);
+		/* Get or update the stat info to reflect the current state. */
+		stat_with_alloc(realname, &openfile->current_stat);
 
-			/* Record at which point in the undo stack the file was saved. */
-			openfile->last_saved = openfile->current_undo;
-			openfile->last_action = OTHER;
+		/* Record at which point in the undo stack the file was saved. */
+		openfile->last_saved = openfile->current_undo;
+		openfile->last_action = OTHER;
 #endif
-			openfile->modified = FALSE;
-			titlebar(NULL);
-		}
-
-		statusline(HUSH, P_("Wrote %zu line", "Wrote %zu lines",
-						lineswritten), lineswritten);
+		openfile->modified = FALSE;
+		titlebar(NULL);
 	}
 
+	if (!tmp)
+		statusline(HUSH, P_("Wrote %zu line", "Wrote %zu lines",
+								lineswritten), lineswritten);
 	retval = TRUE;
 
   cleanup_and_exit:

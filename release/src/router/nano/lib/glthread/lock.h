@@ -149,18 +149,14 @@ extern int glthread_in_use (void);
 #  endif
 
 #  if !PTHREAD_IN_USE_DETECTION_HARD
-    /* On most platforms, pthread_cancel or pthread_kill can be used to
-       determine whether libpthread is in use.
-       On newer versions of FreeBSD, however, this is no longer possible,
-       because pthread_cancel and pthread_kill got added to libc.  Therefore
-       use pthread_create to test whether libpthread is in use.  */
-#   if defined __FreeBSD__ || defined __DragonFly__ /* FreeBSD */
-#    pragma weak pthread_create
-#    define pthread_in_use() (pthread_create != NULL)
-#   else /* glibc, NetBSD, OpenBSD, IRIX, OSF/1, Solaris */
-#    pragma weak pthread_cancel
-#    define pthread_in_use() (pthread_cancel != NULL)
-#   endif
+    /* Considering all platforms with USE_POSIX_THREADS_WEAK, only few symbols
+       can be used to determine whether libpthread is in use.  These are:
+         pthread_mutexattr_gettype
+         pthread_rwlockattr_destroy
+         pthread_rwlockattr_init
+     */
+#   pragma weak pthread_mutexattr_gettype
+#   define pthread_in_use() (pthread_mutexattr_gettype != NULL)
 #  endif
 
 # else

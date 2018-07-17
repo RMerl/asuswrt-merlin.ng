@@ -1,6 +1,6 @@
 ## Syntax highlighting for RPM spec files.
 
-syntax spec "\.(spec$|spec\.*)"
+syntax spec "\.spec(\.[^/]+)?$"
 comment "#"
 
 # Main tags.

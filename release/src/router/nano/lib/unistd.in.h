@@ -61,7 +61,7 @@
 /* But avoid namespace pollution on glibc systems.  */
 #if (!(defined SEEK_CUR && defined SEEK_END && defined SEEK_SET) \
      || ((@GNULIB_UNLINK@ || defined GNULIB_POSIXCHECK) \
-         && ((defined _WIN32 || defined __WIN32__) && ! defined __CYGWIN__)) \
+         && (defined _WIN32 && ! defined __CYGWIN__)) \
      || ((@GNULIB_SYMLINKAT@ || defined GNULIB_POSIXCHECK) \
          && defined __CYGWIN__)) \
     && ! defined __GLIBC__
@@ -94,13 +94,13 @@
    lseek(), read(), unlink(), write() in <io.h>.  */
 #if ((@GNULIB_CHDIR@ || @GNULIB_GETCWD@ || @GNULIB_RMDIR@ \
       || defined GNULIB_POSIXCHECK) \
-     && ((defined _WIN32 || defined __WIN32__) && ! defined __CYGWIN__))
+     && (defined _WIN32 && ! defined __CYGWIN__))
 # include <io.h>     /* mingw32, mingw64 */
 # include <direct.h> /* mingw64, MSVC 9 */
 #elif (@GNULIB_CLOSE@ || @GNULIB_DUP@ || @GNULIB_DUP2@ || @GNULIB_ISATTY@ \
        || @GNULIB_LSEEK@ || @GNULIB_READ@ || @GNULIB_UNLINK@ || @GNULIB_WRITE@ \
        || defined GNULIB_POSIXCHECK) \
-      && ((defined _WIN32 || defined __WIN32__) && ! defined __CYGWIN__)
+      && (defined _WIN32 && ! defined __CYGWIN__)
 # include <io.h>
 #endif
 
@@ -1489,7 +1489,7 @@ _GL_FUNCDECL_RPL (truncate, int, (const char *filename, off_t length)
                                  _GL_ARG_NONNULL ((1)));
 _GL_CXXALIAS_RPL (truncate, int, (const char *filename, off_t length));
 # else
-#  if !@HAVE_TRUNCATE@
+#  if !@HAVE_DECL_TRUNCATE@
 _GL_FUNCDECL_SYS (truncate, int, (const char *filename, off_t length)
                                  _GL_ARG_NONNULL ((1)));
 #  endif

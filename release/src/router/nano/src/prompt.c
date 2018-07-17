@@ -2,7 +2,7 @@
  *   prompt.c  --  This file is part of GNU nano.                         *
  *                                                                        *
  *   Copyright (C) 1999-2011, 2013-2018 Free Software Foundation, Inc.    *
- *   Copyright (C) 2016 Benno Schulenberg                                 *
+ *   Copyright (C) 2016, 2018 Benno Schulenberg                           *
  *                                                                        *
  *   GNU nano is free software: you can redistribute it and/or modify     *
  *   it under the terms of the GNU General Public License as published    *
@@ -25,8 +25,6 @@
 
 static char *prompt = NULL;
 		/* The prompt string used for statusbar questions. */
-static size_t statusbar_x = HIGHEST_POSITIVE;
-		/* The cursor position in answer. */
 
 #ifdef ENABLE_MOUSE
 /* Handle a mouse click on the statusbar prompt or the shortcut list. */
@@ -678,8 +676,11 @@ int do_yesno_prompt(bool all, const char *msg)
 	const char *allstr = _("Aa");
 
 	while (response == -2) {
+#ifdef ENABLE_NLS
 		char letter[MAXCHARLEN + 1];
-		int kbinput, index = 0;
+		int index = 0;
+#endif
+		int kbinput;
 
 		if (!ISSET(NO_HELP)) {
 			char shortstr[MAXCHARLEN + 2];

@@ -178,7 +178,7 @@ typedef enum {
 #ifdef ENABLE_COMMENT
 	COMMENT, UNCOMMENT, PREFLIGHT,
 #endif
-	CUT, CUT_TO_EOF, PASTE, INSERT, OTHER
+	CUT, CUT_TO_EOF, PASTE, INSERT, COUPLE_BEGIN, COUPLE_END, OTHER
 } undo_type;
 
 /* Structure types. */

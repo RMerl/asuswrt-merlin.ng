@@ -1,5 +1,5 @@
 <!-- Creator     : groff version 1.22.3 -->
-<!-- CreationDate: Tue May 15 09:08:09 2018 -->
+<!-- CreationDate: Sat Jun  2 10:23:00 2018 -->
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
 "http://www.w3.org/TR/html4/loose.dtd">
 <html>
@@ -194,8 +194,8 @@ won&rsquo;t work properly with this option enabled.</p>
 <p style="margin-left:11%;"><b>&minus;L</b>,
 <b>&minus;&minus;nonewlines</b></p>
 
-<p style="margin-left:22%;">Don&rsquo;t add newlines to the
-ends of files.</p>
+<p style="margin-left:22%;">Don&rsquo;t automatically add a
+newline when a file does not end with one.</p>
 
 <p style="margin-left:11%;"><b>&minus;M</b>,
 <b>&minus;&minus;trimblanks</b></p>
@@ -224,15 +224,14 @@ log the last position of the cursor, and place it at that
 position again upon reopening such a file.</p>
 
 <p style="margin-left:11%;"><b>&minus;Q
-&quot;</b><i>characters</i><b>&quot;</b>,
-<b>&minus;&minus;quotestr=&quot;</b><i>characters</i><b>&quot;</b></p>
+&quot;</b><i>regex</i><b>&quot;</b>,
+<b>&minus;&minus;quotestr=&quot;</b><i>regex</i><b>&quot;</b></p>
 
-<p style="margin-left:22%;">Set the quoting string for
-justifying. The default is
-<b>&quot;^([&nbsp;\t]*[#:&gt;\|}])+&quot;</b> if extended
-regular expression support is available, or
-<b>&quot;&gt;&nbsp;&quot;</b> otherwise. Note that <b>\t</b>
-stands for a Tab.</p>
+<p style="margin-left:22%;">Set the regular expression for
+matching the quoting part of a line. This is used when
+justifying. The default value is
+<b>&quot;^([&nbsp;\t]*([#:&gt;|}]|//))+&quot;</b>. Note that
+<b>\t</b> stands for an actual Tab.</p>
 
 <p style="margin-left:11%;"><b>&minus;R</b>,
 <b>&minus;&minus;restricted</b></p>
@@ -338,9 +337,10 @@ command-line options and exit.</p>
 <p style="margin-left:11%;"><b>&minus;i</b>,
 <b>&minus;&minus;autoindent</b></p>
 
-<p style="margin-left:22%;">Indent new lines to the
-previous line&rsquo;s indentation. Useful when editing
-source code.</p>
+<p style="margin-left:22%;">Automatically indent a newly
+created line to the same number of tabs and/or spaces as the
+previous line (or as the next line if the previous line is
+the beginning of a paragraph).</p>
 
 <p style="margin-left:11%;"><b>&minus;k</b>,
 <b>&minus;&minus;cutfromcursor</b></p>

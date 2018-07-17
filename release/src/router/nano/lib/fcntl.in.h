@@ -68,7 +68,7 @@
 
 /* Native Windows platforms declare open(), creat() in <io.h>.  */
 #if (@GNULIB_OPEN@ || defined GNULIB_POSIXCHECK) \
-    && ((defined _WIN32 || defined __WIN32__) && ! defined __CYGWIN__)
+    && (defined _WIN32 && ! defined __CYGWIN__)
 # include <io.h>
 #endif
 

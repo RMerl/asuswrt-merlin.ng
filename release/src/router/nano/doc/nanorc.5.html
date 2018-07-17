@@ -1,5 +1,5 @@
 <!-- Creator     : groff version 1.22.3 -->
-<!-- CreationDate: Tue May 15 09:08:10 2018 -->
+<!-- CreationDate: Sat Jun  2 10:23:01 2018 -->
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
 "http://www.w3.org/TR/html4/loose.dtd">
 <html>
@@ -112,7 +112,10 @@ spaces) instead of always at the edge of the screen.</p>
 
 <p style="margin-left:11%;"><b>set autoindent</b></p>
 
-<p style="margin-left:15%;">Use auto-indentation.</p>
+<p style="margin-left:15%;">Automatically indent a newly
+created line to the same number of tabs and/or spaces as the
+previous line (or as the next line if the previous line is
+the beginning of a paragraph).</p>
 
 <p style="margin-left:11%;"><b>set backup</b></p>
 
@@ -151,8 +154,8 @@ overridden by setting the options <b>titlecolor</b>,
 <p style="margin-left:15%;">Set the characters treated as
 closing brackets when justifying paragraphs. This may not
 include blank characters. Only closing punctuation (see
-<b>punct</b>), optionally followed by the specified closing
-brackets, can end sentences. The default value is
+<b>set punct</b>), optionally followed by the specified
+closing brackets, can end sentences. The default value is
 &quot;<b>&quot;&rsquo;)&gt;]}</b>&quot;.</p>
 
 <p style="margin-left:11%;"><b>set casesensitive</b></p>
@@ -263,8 +266,8 @@ help lines at the bottom of the screen.</p>
 
 <p style="margin-left:11%;"><b>set nonewlines</b></p>
 
-<p style="margin-left:15%;">Don&rsquo;t automatically add a
-newline to the ends of files.</p>
+<p style="margin-left:15%;">When a file does not end with a
+newline, don&rsquo;t automatically add one.</p>
 
 <p style="margin-left:11%;"><b>set nopauses</b></p>
 
@@ -327,16 +330,13 @@ of 25. The option <b>constantshow</b> overrides this.</p>
 ignored.</p>
 
 <p style="margin-left:11%;"><b>set quotestr</b>
-<i>string</i></p>
+<i>regex</i></p>
 
 <p style="margin-left:15%;">The email-quote string, used to
 justify email-quoted paragraphs. This is an extended regular
-expression if your system supports them, otherwise a literal
-string. The default value is
-&quot;<b>^([&nbsp;\t]*[#:&gt;\|}])+</b>&quot; if you have
-extended regular expression support, and
-&quot;<b>&gt;&nbsp;</b>&quot; otherwise. Note that
-&rsquo;\t&rsquo; stands for a literal Tab character.</p>
+expression. The default value is
+&quot;<b>^([&nbsp;\t]*([#:&gt;|}]|//))+</b>&quot;. Note that
+<b>\t</b> stands for an actual Tab character.</p>
 
 <p style="margin-left:11%;"><b>set rebinddelete</b></p>
 
@@ -390,11 +390,11 @@ default.</p>
 easier viewing of very long lines.</p>
 
 <p style="margin-left:11%;"><b>set speller</b>
-<i>spellprog</i></p>
+<i>program</i></p>
 
-<p style="margin-left:15%;">Use spelling checker
-<i>spellprog</i> instead of the built-in one, which calls
-<i>spell</i>.</p>
+<p style="margin-left:15%;">Use the given <i>program</i> to
+do spell checking and correcting, instead of the built-in
+corrector that calls <b>spell</b>.</p>
 
 <p style="margin-left:11%;"><b>set statuscolor</b>
 <i>fgcolor</i>,<i>bgcolor</i></p>
@@ -495,8 +495,8 @@ good fit for a small editor like <b>nano</b>.</p>
 <p style="margin-left:11%; margin-top: 1em">For each kind
 of file a separate syntax can be defined via the following
 commands: <b><br>
-syntax</b> &quot;<i>name</i>&quot;
-[&quot;<i>fileregex</i>&quot; ...]</p>
+syntax</b> <i>name</i>
+[<b>&quot;</b><i>fileregex</i><b>&quot;</b> ...]</p>
 
 <p style="margin-left:22%;">Start the definition of a
 syntax with this <i>name</i>. All subsequent <b>color</b>
@@ -512,22 +512,22 @@ explicitly activated by using the <b>-Y</b> or
 the <i>name</i>.</p>
 
 <p style="margin-left:22%; margin-top: 1em">The syntax
-&quot;<b>default</b>&quot; is special: it takes no
-<i>fileregex</i>, and applies to files that don&rsquo;t
-match any syntax&rsquo;s regexes. The syntax
-&quot;<b>none</b>&quot; is reserved; specifying it on the
-command line is the same as not having a syntax at all.</p>
+<b>default</b> is special: it takes no <i>fileregex</i>, and
+applies to files that don&rsquo;t match any syntax&rsquo;s
+regexes. The syntax <b>none</b> is reserved; specifying it
+on the command line is the same as not having a syntax at
+all.</p>
 
-<p style="margin-left:11%;"><b>header</b>
-&quot;<i>regex</i>&quot; <b>...</b></p>
+<p style="margin-left:11%;"><b>header
+&quot;</b><i>regex</i><b>&quot;</b> ...</p>
 
 <p style="margin-left:22%;">If from all defined syntaxes no
 <i>fileregex</i> matched, then compare this <i>regex</i> (or
 regexes) against the first line of the current file, to
 determine whether this syntax should be used for it.</p>
 
-<p style="margin-left:11%;"><b>magic</b>
-&quot;<i>regex</i>&quot; <b>...</b></p>
+<p style="margin-left:11%;"><b>magic
+&quot;</b><i>regex</i><b>&quot;</b> ...</p>
 
 <p style="margin-left:22%;">If no <i>fileregex</i> matched
 and no <b>header</b> regex matched either, then compare this
@@ -541,21 +541,21 @@ on the system and will be silently ignored otherwise.)</p>
 [<i>arg</i> ...]</p>
 
 <p style="margin-left:22%;">Use the given <i>program</i> to
-run a syntax check on the current file. (This overrides the
-speller function.)</p>
+run a syntax check on the current buffer. (This overrides
+the speller function.)</p>
 
 <p style="margin-left:11%;"><b>formatter</b> <i>program</i>
 [<i>arg</i> ...]</p>
 
 <p style="margin-left:22%;">Use the given <i>program</i> to
-automatically reformat text -- useful in a programming
-language like Go. (This overrides the speller and linter
-functions.)</p>
+automatically reformat the text in the current buffer --
+useful in a programming language like Go. (This overrides
+the speller and linter functions.)</p>
 
-<p style="margin-left:11%;"><b>comment</b>
-&quot;<i>string</i>&quot;</p>
+<p style="margin-left:11%;"><b>comment
+&quot;</b><i>string</i><b>&quot;</b></p>
 
-<p style="margin-left:22%;">Use the given string for
+<p style="margin-left:22%;">Use the given <i>string</i> for
 commenting and uncommenting lines. If the string contains a
 vertical bar or pipe character (<b>|</b>), this designates
 bracket-style comments; for example,
@@ -569,8 +569,8 @@ is disabled; for example, &quot;&quot; for JSON. The default
 value is &quot;<b>#</b>&quot;.</p>
 
 <p style="margin-left:11%;"><b>color</b>
-<i>fgcolor</i>,<i>bgcolor</i> &quot;<i>regex</i>&quot;
-...</p>
+<i>fgcolor</i><b>,</b><i>bgcolor</i>
+<b>&quot;</b><i>regex</i><b>&quot;</b> ...</p>
 
 <p style="margin-left:22%;">Display all pieces of text that
 match the extended regular expression <i>regex</i> with
@@ -584,16 +584,16 @@ transparency, not specifying a <i>bgcolor</i> tells
 <b>nano</b> to attempt to use a transparent background.</p>
 
 <p style="margin-left:11%;"><b>icolor</b>
-<i>fgcolor</i>,<i>bgcolor</i> &quot;<i>regex</i>&quot;
-...</p>
+<i>fgcolor</i><b>,</b><i>bgcolor</i>
+<b>&quot;</b><i>regex</i><b>&quot;</b> ...</p>
 
 <p style="margin-left:22%;">Same as above, except that the
 matching is case insensitive.</p>
 
 <p style="margin-left:11%;"><b>color</b>
-<i>fgcolor</i>,<i>bgcolor</i>
-<b>start=</b>&quot;<i>fromrx</i>&quot;
-<b>end=</b>&quot;<i>torx</i>&quot;</p>
+<i>fgcolor</i><b>,</b><i>bgcolor</i>
+<b>start=&quot;</b><i>fromrx</i><b>&quot;
+end=&quot;</b><i>torx</i><b>&quot;</b></p>
 
 <p style="margin-left:22%;">Display all pieces of text
 whose start matches extended regular expression
@@ -606,15 +606,15 @@ of <i>torx</i> will be colored. This allows syntax
 highlighting to span multiple lines.</p>
 
 <p style="margin-left:11%;"><b>icolor</b>
-<i>fgcolor</i>,<i>bgcolor</i>
-<b>start=</b>&quot;<i>fromrx</i>&quot;
-<b>end=</b>&quot;<i>torx</i>&quot;</p>
+<i>fgcolor</i><b>,</b><i>bgcolor</i>
+<b>start=&quot;</b><i>fromrx</i><b>&quot;
+end=&quot;</b><i>torx</i><b>&quot;</b></p>
 
 <p style="margin-left:22%;">Same as above, except that the
 matching is case insensitive.</p>
 
-<p style="margin-left:11%;"><b>include</b>
-&quot;<i>syntaxfile</i>&quot;</p>
+<p style="margin-left:11%;"><b>include
+&quot;</b><i>syntaxfile</i><b>&quot;</b></p>
 
 <p style="margin-left:22%;">Read in self-contained color
 syntaxes from <i>syntaxfile</i>. Note that <i>syntaxfile</i>
@@ -822,8 +822,8 @@ lines and characters in the current buffer.</p>
 <p style="margin-left:15%;"><b>speller</b></p>
 
 <p style="margin-left:18%;">Invokes a spell-checking
-program (or a linting program, if the current syntax
-highlighting defines one).</p>
+program (or linting program, or formatter program, if the
+active syntax defines such a thing).</p>
 
 <p style="margin-left:15%;"><b>linter</b></p>
 
@@ -833,7 +833,11 @@ highlighting defines one).</p>
 <p style="margin-left:15%;"><b>justify</b></p>
 
 <p style="margin-left:18%;">Justifies the current
-paragraph.</p>
+paragraph. A paragraph is a group of contiguous lines that,
+apart from possibly the first line, all have the same
+indentation. The beginning of a paragraph is detected by
+either this lone line with a differing indentation or by a
+preceding blank line.</p>
 
 <p style="margin-left:15%;"><b>fulljustify</b></p>
 
@@ -1073,6 +1077,12 @@ text and targeting a line number. (The form
 <p style="margin-left:18%;">Toggles between inserting a
 file and executing a command.</p>
 
+<p style="margin-left:15%;"><b>flippipe</b></p>
+
+<p style="margin-left:18%;">When executing a command,
+toggles whether the current buffer (or marked region) is
+piped to the command.</p>
+
 <p style="margin-left:15%;"><b>flipnewbuffer</b></p>
 
 <p style="margin-left:18%;">Toggles between inserting into
@@ -1182,9 +1192,10 @@ Home key.</p>
 
 <p style="margin-left:15%;"><b>autoindent</b></p>
 
-<p style="margin-left:18%;">Toggles whether new lines will
-contain the same amount of whitespace as the preceding
-line.</p>
+<p style="margin-left:18%;">Toggles whether a newly created
+line will contain the same amount of leading whitespace as
+the preceding line -- or as the next line if the preceding
+line is the beginning of a paragraph.</p>
 
 <p style="margin-left:15%;"><b>cutfromcursor</b></p>
 

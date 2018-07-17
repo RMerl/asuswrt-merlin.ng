@@ -124,6 +124,7 @@ extern char *quoteerr;
 extern char *word_chars;
 
 extern char *answer;
+extern size_t statusbar_x;
 
 extern ssize_t tabsize;
 
@@ -441,6 +442,9 @@ void enable_signals(void);
 void disable_flow_control(void);
 void enable_flow_control(void);
 void terminal_init(void);
+#ifdef ENABLE_LINENUMBERS
+void confirm_margin(void);
+#endif
 void unbound_key(int code);
 bool okay_for_view(const sc *shortcut);
 int do_input(bool allow_funcs);
@@ -547,7 +551,7 @@ size_t indent_length(const char *line);
 #endif
 #ifdef ENABLE_JUSTIFY
 void justify_format(filestruct *paragraph, size_t skip);
-bool begpar(const filestruct *const foo);
+bool begpar(const filestruct *const foo, int depth);
 bool inpar(const filestruct *const foo);
 void do_justify(bool full_justify);
 void do_justify_void(void);
@@ -709,6 +713,7 @@ void append_void(void);
 void prepend_void(void);
 void backup_file_void(void);
 void flip_execute(void);
+void flip_pipe(void);
 #endif
 #ifdef ENABLE_MULTIBUFFER
 void flip_newbuffer(void);

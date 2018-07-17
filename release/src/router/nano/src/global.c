@@ -2,7 +2,7 @@
  *   global.c  --  This file is part of GNU nano.                         *
  *                                                                        *
  *   Copyright (C) 1999-2011, 2013-2018 Free Software Foundation, Inc.    *
- *   Copyright (C) 2014-2017 Benno Schulenberg                            *
+ *   Copyright (C) 2014-2018 Benno Schulenberg                            *
  *                                                                        *
  *   GNU nano is free software: you can redistribute it and/or modify     *
  *   it under the terms of the GNU General Public License as published    *
@@ -152,6 +152,8 @@ char *word_chars = NULL;
 
 char *answer = NULL;
 		/* The answer string used by the statusbar prompt. */
+size_t statusbar_x = HIGHEST_POSITIVE;
+		/* The cursor position in answer. */
 
 ssize_t tabsize = -1;
 		/* The width of a tab in spaces.  The default is set in main(). */
@@ -309,6 +311,9 @@ void backup_file_void(void)
 {
 }
 void flip_execute(void)
+{
+}
+void flip_pipe(void)
 {
 }
 #endif
@@ -650,6 +655,8 @@ void shortcut_init(void)
 	const char *prepend_gist = N_("Toggle prepending");
 	const char *backup_gist = N_("Toggle backing up of the original file");
 	const char *execute_gist = N_("Execute external command");
+	const char *pipe_gist =
+		N_("Pipe the current buffer (or marked region) to the command");
 #endif
 #ifdef ENABLE_MULTIBUFFER
 	const char *newbuffer_gist = N_("Toggle the use of a new buffer");
@@ -1034,7 +1041,11 @@ void shortcut_init(void)
 		add_to_funcs(flip_newbuffer, MINSERTFILE|MEXTCMD,
 			N_("New Buffer"), WITHORSANS(newbuffer_gist), TOGETHER, NOVIEW);
 #endif
-
+#ifndef NANO_TINY
+	if (!ISSET(RESTRICTED))
+		add_to_funcs(flip_pipe, MEXTCMD,
+			N_("Pipe Text"), WITHORSANS(pipe_gist), TOGETHER, NOVIEW);
+#endif
 #ifdef ENABLE_BROWSER
 	/* The file browser is only available when not in restricted mode. */
 	if (!ISSET(RESTRICTED))
@@ -1329,8 +1340,12 @@ void shortcut_init(void)
 #endif
 #ifdef ENABLE_MULTIBUFFER
 	/* Only when not in restricted mode, allow multiple buffers. */
-	if (!ISSET(RESTRICTED))
+	if (!ISSET(RESTRICTED)) {
 		add_to_sclist(MINSERTFILE|MEXTCMD, "M-F", 0, flip_newbuffer, 0);
+#ifndef NANO_TINY
+		add_to_sclist(MEXTCMD, "M-\\", 0, flip_pipe, 0);
+#endif
+	}
 #endif
 #ifdef ENABLE_BROWSER
 	/* Only when not in restricted mode, allow entering the file browser. */
@@ -1638,6 +1653,8 @@ sc *strtosc(const char *input)
 		s->func = backup_file_void;
 	else if (!strcasecmp(input, "flipexecute"))
 		s->func = flip_execute;
+	else if (!strcasecmp(input, "flippipe"))
+		s->func = flip_pipe;
 #endif
 #ifdef ENABLE_MULTIBUFFER
 	else if (!strcasecmp(input, "flipnewbuffer"))

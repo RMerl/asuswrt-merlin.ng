@@ -2,6 +2,8 @@ Improvements in GNU nano
 ========================
 
 Since 2.9.0:
+  - The ability to filter text through an external command.
+  - Better detection of paragraphs, allowing a less indented beginning.
   - Option 'set afterends' for making Ctrl+Right stop at word ends.
   - A crash handler that saves changed buffers in case of a crash.
   - Addition of the color name "normal", meaning the default color.

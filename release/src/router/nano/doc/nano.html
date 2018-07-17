@@ -57,7 +57,7 @@ ul.no-bullet {list-style: none}
 <a name="Top"></a>
 <a name="SEC_Top"></a>
 
-<p>This manual documents the GNU <code>nano</code> editor, version 2.9.7.
+<p>This manual documents the GNU <code>nano</code> editor, version 2.9.8.
 </p>
 <table class="menu" border="0" cellspacing="0">
 <tr><td align="left" valign="top">&bull; <a href="#Introduction" accesskey="1">Introduction</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
@@ -204,7 +204,7 @@ won&rsquo;t work properly with this option enabled.
 </dd>
 <dt><samp>-L</samp></dt>
 <dt><samp>--nonewlines</samp></dt>
-<dd><p>Don&rsquo;t add newlines to the ends of files.
+<dd><p>Don&rsquo;t automatically add a newline when a file does not end with one.
 </p>
 </dd>
 <dt><samp>-M</samp></dt>
@@ -229,11 +229,10 @@ hard-wrapping occurs or when text is justified.
 and place it at that position again upon reopening such a file.
 </p>
 </dd>
-<dt><samp>-Q &quot;<var>characters</var>&quot;</samp></dt>
-<dt><samp>--quotestr=&quot;<var>characters</var>&quot;</samp></dt>
-<dd><p>Set the quoting string for justifying.  The default value is
-<tt>&quot;^([ \t]*[|&gt;:}#])+&quot;</tt> if extended regular expression support
-is available, and <tt>&quot;&gt; &quot;</tt> otherwise.
+<dt><samp>-Q &quot;<var>regex</var>&quot;</samp></dt>
+<dt><samp>--quotestr=&quot;<var>regex</var>&quot;</samp></dt>
+<dd><p>Set the regular expression for matching the quoting part of a line, used
+when justifying.  The default value is <tt>&quot;^([&nbsp;<!-- /@w -->\t]*([#:&gt;|}]|//))+&quot;</tt>.
 Note that <code>\t</code> stands for a literal Tab character.
 </p>
 </dd>
@@ -324,8 +323,9 @@ highlighted item.  Useful for braille users.
 </dd>
 <dt><samp>-i</samp></dt>
 <dt><samp>--autoindent</samp></dt>
-<dd><p>Automatically indent new lines to the same number of spaces and tabs as
-the previous line.
+<dd><p>Automatically indent a newly created line to the same number of tabs
+and/or spaces as the previous line (or as the next line if the previous
+line is the beginning of a paragraph).
 </p>
 </dd>
 <dt><samp>-k</samp></dt>
@@ -388,7 +388,7 @@ The default value is <tt>-8</tt>.  This option conflicts with <samp>-w</samp>
 <dt><samp>--speller=<var>program</var></samp></dt>
 <dd><p>Use the given program to do spell checking and correcting.  By default,
 <code>nano</code> uses the command specified in the <code>SPELL</code> environment
-variable for this.  If <code>SPELL</code> is not set, and <samp>--speller</samp> is
+variable.  If <code>SPELL</code> is not set, and <samp>--speller</samp> is
 not specified either, then <code>nano</code> uses its own interactive spell
 corrector, which requires the GNU <code>spell</code> program to be installed.
 </p>
@@ -662,76 +662,76 @@ invoked via Meta-key sequences (see <a href="#Commands">Commands</a> for more in
 The following global toggles are available:
 </p>
 <dl compact="compact">
-<dt><code>Backup Files toggle</code></dt>
+<dt><code>Backup Files</code></dt>
 <dd><p><kbd>Meta-B</kbd> toggles the <samp>-B</samp> (<samp>--backup</samp>) command-line option.
 </p>
 </dd>
-<dt><code>Constant Cursor Position Display toggle</code></dt>
+<dt><code>Constant Cursor Position Display</code></dt>
 <dd><p><kbd>Meta-C</kbd> toggles the <samp>-c</samp> (<samp>--constantshow</samp>) command-line option.
 </p>
 </dd>
-<dt><code>Multiple File Buffers toggle</code></dt>
+<dt><code>Multiple File Buffers</code></dt>
 <dd><p><kbd>Meta-F</kbd> toggles the <samp>-F</samp> (<samp>--multibuffer</samp>) command-line option.
 </p>
 </dd>
-<dt><code>Smart Home Key toggle</code></dt>
+<dt><code>Smart Home Key</code></dt>
 <dd><p><kbd>Meta-H</kbd> toggles the <samp>-A</samp> (<samp>--smarthome</samp>) command-line option.
 </p>
 </dd>
-<dt><code>Auto Indent toggle</code></dt>
+<dt><code>Auto Indent</code></dt>
 <dd><p><kbd>Meta-I</kbd> toggles the <samp>-i</samp> (<samp>--autoindent</samp>) command-line option.
 </p>
 </dd>
-<dt><code>Cut From Cursor To End-of-Line toggle</code></dt>
+<dt><code>Cut From Cursor To End-of-Line</code></dt>
 <dd><p><kbd>Meta-K</kbd> toggles the <samp>-k</samp> (<samp>--cutfromcursor</samp>) command-line option.
 </p>
 </dd>
-<dt><code>Long-Line Wrapping toggle</code></dt>
+<dt><code>Long-Line Wrapping</code></dt>
 <dd><p><kbd>Meta-L</kbd> toggles the <samp>-w</samp> (<samp>--nowrap</samp>) command-line option.
 </p>
 </dd>
-<dt><code>Mouse Support toggle</code></dt>
+<dt><code>Mouse Support</code></dt>
 <dd><p><kbd>Meta-M</kbd> toggles the <samp>-m</samp> (<samp>--mouse</samp>) command-line option.
 </p>
 </dd>
-<dt><code>No Conversion From DOS/Mac Format toggle</code></dt>
+<dt><code>No Conversion From DOS/Mac Format</code></dt>
 <dd><p><kbd>Meta-N</kbd> toggles the <samp>-N</samp> (<samp>--noconvert</samp>) command-line option.
 </p>
 </dd>
-<dt><code>More Space For Editing toggle</code></dt>
+<dt><code>More Space For Editing</code></dt>
 <dd><p><kbd>Meta-O</kbd> toggles the <samp>-O</samp> (<samp>--morespace</samp>) command-line option.
 </p>
 </dd>
-<dt><code>Whitespace Display toggle</code></dt>
-<dd><p><kbd>Meta-P</kbd> toggles the whitespace-display mode (see <a href="#Whitespace">Whitespace</a>).
+<dt><code>Whitespace Display</code></dt>
+<dd><p><kbd>Meta-P</kbd> toggles the displaying of whitespace (see <a href="#Whitespace">Whitespace</a>).
 </p>
 </dd>
-<dt><code>Tabs To Spaces toggle</code></dt>
+<dt><code>Tabs To Spaces</code></dt>
 <dd><p><kbd>Meta-Q</kbd> toggles the <samp>-E</samp> (<samp>--tabstospaces</samp>) command-line option.
 </p>
 </dd>
-<dt><code>Smooth Scrolling toggle</code></dt>
+<dt><code>Smooth Scrolling</code></dt>
 <dd><p><kbd>Meta-S</kbd> toggles the <samp>-S</samp> (<samp>--smooth</samp>) command-line option.
 </p>
 </dd>
-<dt><code>Expert/No Help toggle</code></dt>
+<dt><code>Expert/No Help</code></dt>
 <dd><p><kbd>Meta-X</kbd> toggles the <samp>-x</samp> (<samp>--nohelp</samp>) command-line option.
 </p>
 </dd>
-<dt><code>Color Syntax Highlighting toggle</code></dt>
+<dt><code>Color Syntax Highlighting</code></dt>
 <dd><p><kbd>Meta-Y</kbd> toggles color syntax highlighting (if your nanorc defines syntaxes
 &mdash; see <a href="#Syntax-Highlighting">Syntax Highlighting</a>).
 </p>
 </dd>
-<dt><code>Suspension toggle</code></dt>
+<dt><code>Suspension</code></dt>
 <dd><p><kbd>Meta-Z</kbd> toggles the <samp>-z</samp> (<samp>--suspend</samp>) command-line option.
 </p>
 </dd>
-<dt><code>Line Numbers toggle</code></dt>
+<dt><code>Line Numbers</code></dt>
 <dd><p><kbd>Meta-#</kbd> toggles the <samp>-l</samp> (<samp>--linenumbers</samp>) command-line option.
 </p>
 </dd>
-<dt><code>Soft Wrapping toggle</code></dt>
+<dt><code>Soft Wrapping</code></dt>
 <dd><p><kbd>Meta-$</kbd> toggles the <samp>-$</samp> (<samp>--softwrap</samp>) command-line option.
 </p>
 </dd>
@@ -800,7 +800,9 @@ You should NOT enable this option unless you are sure you need it.
 </p>
 </dd>
 <dt><code>set autoindent</code></dt>
-<dd><p>Use auto-indentation.
+<dd><p>Automatically indent a newly created line to the same number of tabs
+and/or spaces as the previous line (or as the next line if the previous
+line is the beginning of a paragraph).
 </p>
 </dd>
 <dt><code>set backup</code></dt>
@@ -832,7 +834,7 @@ setting the options <code>titlecolor</code>, <code>statuscolor</code>, <code>key
 paragraphs.  This may not include blank characters.  Only closing
 punctuation (see <code>set punct</code>), optionally followed by the specified
 closing brackets, can end sentences.  The default value is
-<tt>&quot;')&gt;]}&quot;</tt>.
+<tt>&quot;&quot;')&gt;]}&quot;</tt>.
 </p>
 </dd>
 <dt><code>set casesensitive</code></dt>
@@ -919,13 +921,13 @@ cursor, set the mark (with a double click), or execute shortcuts.
 <dd><p>Don&rsquo;t display the help lists at the bottom of the screen.
 </p>
 </dd>
+<dt><code>set nonewlines</code></dt>
+<dd><p>When a file does not end with a newline, don&rsquo;t automatically add one.
+</p>
+</dd>
 <dt><code>set nopauses</code></dt>
 <dd><p>Don&rsquo;t pause between warnings at startup.  This means that only
 the last one will be visible (when there are multiple ones).
-</p>
-</dd>
-<dt><code>set nonewlines</code></dt>
-<dd><p>Don&rsquo;t add newlines to the ends of files.
 </p>
 </dd>
 <dt><code>set nowrap</code></dt>
@@ -971,12 +973,10 @@ keystroke instead of 25.  Note that <samp>constantshow</samp> overrides this.
 <dd><p>Obsolete option.  Recognized but ignored.
 </p>
 </dd>
-<dt><code>set quotestr &quot;<var>string</var>&quot;</code></dt>
+<dt><code>set quotestr &quot;<var>regex</var>&quot;</code></dt>
 <dd><p>The email-quote string, used to justify email-quoted paragraphs.  This
-is an extended regular expression if your system supports them,
-otherwise a literal string.  The default value is
-<tt>&quot;^([ \\t]*[#:&gt;\\|}])+&quot;</tt> if you have extended regular expression
-support, and <tt>&quot;&gt; &quot;</tt> otherwise.
+is an extended regular expression.  The default value is
+<tt>&quot;^([&nbsp;<!-- /@w -->\t]*([#:&gt;|}]|//))+&quot;</tt>.
 Note that <code>\t</code> stands for a literal Tab character.
 </p>
 </dd>
@@ -1105,7 +1105,7 @@ good fit for a small editor like <code>nano</code>.
 via the following commands in a nanorc file:
 </p>
 <dl compact="compact">
-<dt><code>syntax &quot;<var>name</var>&quot; [&quot;<var>fileregex</var>&quot; &hellip;]</code></dt>
+<dt><code>syntax <var>name</var> [&quot;<var>fileregex</var>&quot; &hellip;]</code></dt>
 <dd><p>Start the definition of a syntax with this <var>name</var>.
 All subsequent <code>color</code> and other such commands
 will be added to this syntax, until a new <code>syntax</code>
@@ -1139,13 +1139,13 @@ on the system and will be silently ignored otherwise.)
 </p>
 </dd>
 <dt><code>linter <var>program</var> [<var>arg</var> &hellip;]</code></dt>
-<dd><p>Use the given <var>program</var> to do a syntax check on the current file.
+<dd><p>Use the given <var>program</var> to do a syntax check on the current buffer.
 (This overrides the speller function.)
 </p>
 </dd>
 <dt><code>formatter <var>program</var> [<var>arg</var> &hellip;]</code></dt>
-<dd><p>Use the given <var>program</var> to automatically reformat text &mdash;
-useful for a programming language like Go.
+<dd><p>Use the given <var>program</var> to automatically reformat the text in
+the current buffer &mdash; useful for a programming language like Go.
 (This overrides the speller and linter functions.)
 </p>
 </dd>
@@ -1341,12 +1341,15 @@ current cursor position.
 </p>
 </dd>
 <dt><code>speller</code></dt>
-<dd><p>Invokes a spell-checking program (or a linting program, if the current
-syntax highlighting defines one).
+<dd><p>Invokes a spell-checking program (or linting program, or formatter program,
+if the active syntax defines such a thing).
 </p>
 </dd>
 <dt><code>justify</code></dt>
-<dd><p>Justifies the current paragraph.
+<dd><p>Justifies the current paragraph.  A paragraph is a group of contiguous lines
+that, apart from possibly the first line, all have the same indentation.  The
+beginning of a paragraph is detected by either this lone line with a differing
+indentation or by a preceding blank line.
 </p>
 </dd>
 <dt><code>fulljustify</code></dt>
@@ -1543,6 +1546,11 @@ as a macro.  When already recording, the recording is stopped.
 <dd><p>Toggles between inserting a file and executing a command.
 </p>
 </dd>
+<dt><code>flippipe</code></dt>
+<dd><p>When executing a command, toggles whether the current buffer (or marked
+region) is piped to the command.
+</p>
+</dd>
 <dt><code>flipnewbuffer</code></dt>
 <dd><p>Toggles between inserting into the current buffer and into a new
 empty buffer.
@@ -1629,7 +1637,9 @@ in the filesystem.
 </p>
 </dd>
 <dt><code>autoindent</code></dt>
-<dd><p>Toggles whether new lines will contain the same amount of whitespace as the preceding line.
+<dd><p>Toggles whether a newly created line will contain the same amount of leading
+whitespace as the preceding line &mdash; or as the next line if the preceding line
+is the beginning of a paragraph.
 </p>
 </dd>
 <dt><code>cutfromcursor</code></dt>
@@ -1750,7 +1760,7 @@ find the desired file.
 </p>
 <p>Basic movement in the file browser is accomplished with the arrow and
 other cursor-movement keys.  More targeted movement is accomplished by
-searching, via <kbd>^W</kbd> or <kbd>w'</kbd>, or by changing directory, via
+searching, via <kbd>^W</kbd> or <kbd>w</kbd>, or by changing directory, via
 <kbd>^_</kbd> or <kbd>g</kbd>.  The behavior of the <kbd>Enter</kbd> key (or <kbd>s</kbd>)
 varies by what is currently selected.
 If the currently selected object is a directory, the file browser will

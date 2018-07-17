@@ -1,4 +1,4 @@
-# malloc.m4 serial 16
+# malloc.m4 serial 17
 dnl Copyright (C) 2007, 2009-2018 Free Software Foundation, Inc.
 dnl This file is free software; the Free Software Foundation
 dnl gives unlimited permission to copy and/or distribute it,
@@ -91,7 +91,7 @@ AC_DEFUN([gl_CHECK_MALLOC_POSIX],
       AC_COMPILE_IFELSE(
         [AC_LANG_PROGRAM(
            [[]],
-           [[#if (defined _WIN32 || defined __WIN32__) && ! defined __CYGWIN__
+           [[#if defined _WIN32 && ! defined __CYGWIN__
              choke me
              #endif
             ]])],

@@ -98,6 +98,7 @@ am__make_keepgoing = (target_option=k; $(am__make_running_with_option))
 pkgdatadir = $(datadir)/@PACKAGE@
 pkgincludedir = $(includedir)/@PACKAGE@
 pkglibdir = $(libdir)/@PACKAGE@
+pkglibexecdir = $(libexecdir)/@PACKAGE@
 am__cd = CDPATH="$${ZSH_VERSION+.}$(PATH_SEPARATOR)" && cd
 install_sh_DATA = $(install_sh) -c -m 644
 install_sh_PROGRAM = $(install_sh) -c
@@ -123,12 +124,12 @@ am__aclocal_m4_deps = $(top_srcdir)/m4/00gnulib.m4 \
 	$(top_srcdir)/m4/ax_check_compile_flag.m4 \
 	$(top_srcdir)/m4/btowc.m4 $(top_srcdir)/m4/builtin-expect.m4 \
 	$(top_srcdir)/m4/clock_time.m4 $(top_srcdir)/m4/closedir.m4 \
-	$(top_srcdir)/m4/codeset.m4 $(top_srcdir)/m4/configmake.m4 \
-	$(top_srcdir)/m4/ctype.m4 $(top_srcdir)/m4/d-type.m4 \
-	$(top_srcdir)/m4/dirent_h.m4 $(top_srcdir)/m4/dirfd.m4 \
-	$(top_srcdir)/m4/eealloc.m4 $(top_srcdir)/m4/errno_h.m4 \
-	$(top_srcdir)/m4/exponentd.m4 $(top_srcdir)/m4/exponentf.m4 \
-	$(top_srcdir)/m4/exponentl.m4 $(top_srcdir)/m4/extensions.m4 \
+	$(top_srcdir)/m4/codeset.m4 $(top_srcdir)/m4/ctype.m4 \
+	$(top_srcdir)/m4/d-type.m4 $(top_srcdir)/m4/dirent_h.m4 \
+	$(top_srcdir)/m4/dirfd.m4 $(top_srcdir)/m4/eealloc.m4 \
+	$(top_srcdir)/m4/errno_h.m4 $(top_srcdir)/m4/exponentd.m4 \
+	$(top_srcdir)/m4/exponentf.m4 $(top_srcdir)/m4/exponentl.m4 \
+	$(top_srcdir)/m4/extensions.m4 \
 	$(top_srcdir)/m4/extern-inline.m4 $(top_srcdir)/m4/fcntl-o.m4 \
 	$(top_srcdir)/m4/fcntl_h.m4 $(top_srcdir)/m4/flexmember.m4 \
 	$(top_srcdir)/m4/float_h.m4 $(top_srcdir)/m4/fnmatch.m4 \
@@ -216,8 +217,8 @@ am__v_AR_1 =
 libgnu_a_AR = $(AR) $(ARFLAGS)
 am__DEPENDENCIES_1 =
 am__libgnu_a_SOURCES_DIST = gettext.h gettime.c hard-locale.c \
-	localcharset.h localcharset.c glthread/lock.h glthread/lock.c \
-	malloca.c math.c printf-frexp.c printf-frexpl.c \
+	localcharset.c glthread/lock.h glthread/lock.c malloca.c \
+	math.c printf-frexp.c printf-frexpl.c \
 	malloc/scratch_buffer_grow.c \
 	malloc/scratch_buffer_grow_preserve.c \
 	malloc/scratch_buffer_set_array_size.c sig-handler.c \
@@ -338,7 +339,6 @@ am__relativize = \
     dir1=`echo "$$dir1" | sed -e "$$sed_rest"`; \
   done; \
   reldir="$$dir2"
-pkglibexecdir = @pkglibexecdir@
 ACLOCAL = @ACLOCAL@
 ALLOCA = @ALLOCA@
 ALLOCA_H = @ALLOCA_H@
@@ -841,6 +841,7 @@ HAVE_DECL_STRSIGNAL = @HAVE_DECL_STRSIGNAL@
 HAVE_DECL_STRTOK_R = @HAVE_DECL_STRTOK_R@
 HAVE_DECL_TANL = @HAVE_DECL_TANL@
 HAVE_DECL_TRUNC = @HAVE_DECL_TRUNC@
+HAVE_DECL_TRUNCATE = @HAVE_DECL_TRUNCATE@
 HAVE_DECL_TRUNCF = @HAVE_DECL_TRUNCF@
 HAVE_DECL_TRUNCL = @HAVE_DECL_TRUNCL@
 HAVE_DECL_TTYNAME_R = @HAVE_DECL_TTYNAME_R@
@@ -1034,7 +1035,6 @@ HAVE_TANHF = @HAVE_TANHF@
 HAVE_TANL = @HAVE_TANL@
 HAVE_TIMEGM = @HAVE_TIMEGM@
 HAVE_TIMEZONE_T = @HAVE_TIMEZONE_T@
-HAVE_TRUNCATE = @HAVE_TRUNCATE@
 HAVE_TYPE_VOLATILE_SIG_ATOMIC_T = @HAVE_TYPE_VOLATILE_SIG_ATOMIC_T@
 HAVE_TZSET = @HAVE_TZSET@
 HAVE_UNISTD_H = @HAVE_UNISTD_H@
@@ -1505,7 +1505,6 @@ infodir = @infodir@
 install_sh = @install_sh@
 libdir = @libdir@
 libexecdir = @libexecdir@
-lispdir = @lispdir@
 localedir = @localedir@
 localstatedir = @localstatedir@
 mandir = @mandir@
@@ -1515,7 +1514,6 @@ pdfdir = @pdfdir@
 prefix = @prefix@
 program_transform_name = @program_transform_name@
 psdir = @psdir@
-runstatedir = @runstatedir@
 sbindir = @sbindir@
 sharedstatedir = @sharedstatedir@
 srcdir = @srcdir@
@@ -1542,39 +1540,38 @@ EXTRA_DIST = alloca.c alloca.in.h btowc.c closedir.c dirent-private.h \
 	isblank.c float+.h isnan.c isnand-nolibm.h isnand.c float+.h \
 	isnan.c isnanf-nolibm.h isnanf.c float+.h isnan.c \
 	isnanl-nolibm.h isnanl.c iswblank.c langinfo.in.h cdefs.h \
-	libc-config.h limits.in.h config.charset ref-add.sin \
-	ref-del.sin locale.in.h localeconv.c localtime-buffer.c \
-	localtime-buffer.h lstat.c malloc.c malloca.h math.in.h \
-	mbrtowc.c mbsinit.c mbsrtowcs-impl.h mbsrtowcs-state.c \
-	mbsrtowcs.c mbtowc-impl.h mbtowc.c memchr.c memchr.valgrind \
-	mempcpy.c msvc-inval.c msvc-inval.h msvc-nothrow.c \
-	msvc-nothrow.h nl_langinfo.c dirent-private.h opendir.c \
-	pathmax.h printf-frexp.h printf-frexp.c printf-frexpl.h \
-	raise.c dirent-private.h readdir.c regcomp.c regex.c regex.h \
-	regex_internal.c regex_internal.h regexec.c \
-	malloc/scratch_buffer.h scratch_buffer.h sig-handler.h \
-	sigaction.c signal.in.h float+.h signbitd.c signbitf.c \
-	signbitl.c sigprocmask.c _Noreturn.h arg-nonnull.h c++defs.h \
-	warn-on-use.h snprintf.c stat-w32.c stat-w32.h stat.c \
-	stat-time.h stdarg.in.h stdbool.in.h stddef.in.h stdint.in.h \
-	stdio.in.h stdlib.in.h strcasecmp.c strncasecmp.c \
-	str-two-way.h strcasestr.c streq.h string.in.h strings.in.h \
-	strnlen.c sys_stat.in.h sys_time.in.h sys_types.in.h \
-	sys_wait.in.h $(top_srcdir)/./config.rpath time.in.h \
-	timespec.h unistd.in.h unitypes.in.h localcharset.h \
+	libc-config.h limits.in.h localcharset.h locale.in.h \
+	localeconv.c localtime-buffer.c localtime-buffer.h lstat.c \
+	malloc.c malloca.h math.in.h mbrtowc.c mbsinit.c \
+	mbsrtowcs-impl.h mbsrtowcs-state.c mbsrtowcs.c mbtowc-impl.h \
+	mbtowc.c memchr.c memchr.valgrind mempcpy.c msvc-inval.c \
+	msvc-inval.h msvc-nothrow.c msvc-nothrow.h nl_langinfo.c \
+	dirent-private.h opendir.c pathmax.h printf-frexp.h \
+	printf-frexp.c printf-frexpl.h raise.c dirent-private.h \
+	readdir.c regcomp.c regex.c regex.h regex_internal.c \
+	regex_internal.h regexec.c malloc/scratch_buffer.h \
+	scratch_buffer.h sig-handler.h sigaction.c signal.in.h \
+	float+.h signbitd.c signbitf.c signbitl.c sigprocmask.c \
+	_Noreturn.h arg-nonnull.h c++defs.h warn-on-use.h snprintf.c \
+	stat-w32.c stat-w32.h stat.c stat-time.h stdarg.in.h \
+	stdbool.in.h stddef.in.h stdint.in.h stdio.in.h stdlib.in.h \
+	strcasecmp.c strncasecmp.c str-two-way.h strcasestr.c streq.h \
+	string.in.h strings.in.h strnlen.c sys_stat.in.h sys_time.in.h \
+	sys_types.in.h sys_wait.in.h $(top_srcdir)/./config.rpath \
+	time.in.h timespec.h unistd.in.h unitypes.in.h localcharset.h \
 	uniwidth.in.h uniwidth/cjk.h utime.c utime.in.h utimens.h \
 	asnprintf.c float+.h printf-args.c printf-args.h \
 	printf-parse.c printf-parse.h vasnprintf.c vasnprintf.h \
 	verify.h vsnprintf.c wchar.in.h wcrtomb.c wctype.in.h \
 	wcwidth.c xalloc-oversized.h
-BUILT_SOURCES = $(ALLOCA_H) configmake.h ctype.h dirent.h $(ERRNO_H) \
-	fcntl.h $(FLOAT_H) $(FNMATCH_H) $(GETOPT_H) $(GETOPT_CDEFS_H) \
-	glob.h langinfo.h $(LIMITS_H) locale.h math.h signal.h \
-	$(STDARG_H) $(STDBOOL_H) $(STDDEF_H) $(STDINT_H) stdio.h \
-	stdlib.h string.h strings.h sys/stat.h sys/time.h sys/types.h \
-	sys/wait.h time.h unistd.h $(LIBUNISTRING_UNITYPES_H) \
-	$(LIBUNISTRING_UNIWIDTH_H) $(UTIME_H) wchar.h wctype.h
-SUFFIXES = .sed .sin
+BUILT_SOURCES = $(ALLOCA_H) ctype.h dirent.h $(ERRNO_H) fcntl.h \
+	$(FLOAT_H) $(FNMATCH_H) $(GETOPT_H) $(GETOPT_CDEFS_H) glob.h \
+	langinfo.h $(LIMITS_H) locale.h math.h signal.h $(STDARG_H) \
+	$(STDBOOL_H) $(STDDEF_H) $(STDINT_H) stdio.h stdlib.h string.h \
+	strings.h sys/stat.h sys/time.h sys/types.h sys/wait.h time.h \
+	unistd.h $(LIBUNISTRING_UNITYPES_H) $(LIBUNISTRING_UNIWIDTH_H) \
+	$(UTIME_H) wchar.h wctype.h
+SUFFIXES = 
 MOSTLYCLEANFILES = core *.stackdump alloca.h alloca.h-t ctype.h \
 	ctype.h-t dirent.h dirent.h-t errno.h errno.h-t fcntl.h \
 	fcntl.h-t float.h float.h-t fnmatch.h fnmatch.h-t getopt.h \
@@ -1589,17 +1586,15 @@ MOSTLYCLEANFILES = core *.stackdump alloca.h alloca.h-t ctype.h \
 	unitypes.h-t uniwidth.h uniwidth.h-t utime.h utime.h-t wchar.h \
 	wchar.h-t wctype.h wctype.h-t
 MOSTLYCLEANDIRS = sys sys
-CLEANFILES = configmake.h configmake.h-t charset.alias ref-add.sed \
-	ref-del.sed
+CLEANFILES = 
 DISTCLEANFILES = 
 MAINTAINERCLEANFILES = 
 # No GNU Make output.
 AM_CPPFLAGS = 
 AM_CFLAGS = 
-libgnu_a_SOURCES = gettext.h gettime.c hard-locale.c localcharset.h \
-	localcharset.c glthread/lock.h glthread/lock.c malloca.c \
-	math.c printf-frexp.c printf-frexpl.c \
-	malloc/scratch_buffer_grow.c \
+libgnu_a_SOURCES = gettext.h gettime.c hard-locale.c localcharset.c \
+	glthread/lock.h glthread/lock.c malloca.c math.c \
+	printf-frexp.c printf-frexpl.c malloc/scratch_buffer_grow.c \
 	malloc/scratch_buffer_grow_preserve.c \
 	malloc/scratch_buffer_set_array_size.c sig-handler.c \
 	size_max.h stat-time.c strnlen1.h strnlen1.c \
@@ -1627,8 +1622,6 @@ EXTRA_libgnu_a_SOURCES = alloca.c btowc.c closedir.c dirfd.c float.c \
 # Do not rely on a 'configure'-time test for this, since the expression
 # might appear in an installed header, which is used by some other compiler.
 HAVE_INCLUDE_NEXT = (__GNUC__ || 60000000 <= __DECC_VER)
-charset_alias = $(DESTDIR)$(libdir)/charset.alias
-charset_tmp = $(DESTDIR)$(libdir)/charset.tmp
 
 # Because this Makefile snippet defines a variable used by other
 # gnulib Makefile snippets, it must be present in all makefiles that
@@ -1653,7 +1646,7 @@ all: $(BUILT_SOURCES)
 	$(MAKE) $(AM_MAKEFLAGS) all-recursive
 
 .SUFFIXES:
-.SUFFIXES: .sed .sin .c .o .obj
+.SUFFIXES: .c .o .obj
 $(srcdir)/Makefile.in:  $(srcdir)/Makefile.am  $(am__configure_deps)
 	@for dep in $?; do \
 	  case '$(am__configure_deps)' in \
@@ -2005,7 +1998,7 @@ distdir: $(DISTFILES)
 check-am: all-am
 check: $(BUILT_SOURCES)
 	$(MAKE) $(AM_MAKEFLAGS) check-recursive
-all-am: Makefile $(LIBRARIES) $(LTLIBRARIES) $(HEADERS) all-local
+all-am: Makefile $(LIBRARIES) $(LTLIBRARIES) $(HEADERS)
 installdirs: installdirs-recursive
 installdirs-am:
 install: $(BUILT_SOURCES)
@@ -2079,7 +2072,7 @@ install-dvi: install-dvi-recursive
 
 install-dvi-am:
 
-install-exec-am: install-exec-local
+install-exec-am:
 
 install-html: install-html-recursive
 
@@ -2119,25 +2112,24 @@ ps: ps-recursive
 
 ps-am:
 
-uninstall-am: uninstall-local
+uninstall-am:
 
 .MAKE: $(am__recursive_targets) all check install install-am \
 	install-strip
 
-.PHONY: $(am__recursive_targets) CTAGS GTAGS TAGS all all-am all-local \
-	check check-am clean clean-generic clean-noinstLIBRARIES \
+.PHONY: $(am__recursive_targets) CTAGS GTAGS TAGS all all-am check \
+	check-am clean clean-generic clean-noinstLIBRARIES \
 	clean-noinstLTLIBRARIES cscopelist-am ctags ctags-am distclean \
 	distclean-compile distclean-generic distclean-tags distdir dvi \
 	dvi-am html html-am info info-am install install-am \
 	install-data install-data-am install-dvi install-dvi-am \
-	install-exec install-exec-am install-exec-local install-html \
-	install-html-am install-info install-info-am install-man \
-	install-pdf install-pdf-am install-ps install-ps-am \
-	install-strip installcheck installcheck-am installdirs \
-	installdirs-am maintainer-clean maintainer-clean-generic \
-	mostlyclean mostlyclean-compile mostlyclean-generic \
-	mostlyclean-local pdf pdf-am ps ps-am tags tags-am uninstall \
-	uninstall-am uninstall-local
+	install-exec install-exec-am install-html install-html-am \
+	install-info install-info-am install-man install-pdf \
+	install-pdf-am install-ps install-ps-am install-strip \
+	installcheck installcheck-am installdirs installdirs-am \
+	maintainer-clean maintainer-clean-generic mostlyclean \
+	mostlyclean-compile mostlyclean-generic mostlyclean-local pdf \
+	pdf-am ps ps-am tags tags-am uninstall uninstall-am
 
 .PRECIOUS: Makefile
 
@@ -2152,44 +2144,6 @@ uninstall-am: uninstall-local
 @GL_GENERATE_ALLOCA_H_TRUE@	mv -f $@-t $@
 @GL_GENERATE_ALLOCA_H_FALSE@alloca.h: $(top_builddir)/config.status
 @GL_GENERATE_ALLOCA_H_FALSE@	rm -f $@
-
-# Listed in the same order as the GNU makefile conventions, and
-# provided by autoconf 2.59c+ or 2.70.
-# The Automake-defined pkg* macros are appended, in the order
-# listed in the Automake 1.10a+ documentation.
-configmake.h: Makefile
-	$(AM_V_GEN)rm -f $@-t && \
-	{ echo '/* DO NOT EDIT! GENERATED AUTOMATICALLY! */'; \
-	  echo '#define PREFIX "$(prefix)"'; \
-	  echo '#define EXEC_PREFIX "$(exec_prefix)"'; \
-	  echo '#define BINDIR "$(bindir)"'; \
-	  echo '#define SBINDIR "$(sbindir)"'; \
-	  echo '#define LIBEXECDIR "$(libexecdir)"'; \
-	  echo '#define DATAROOTDIR "$(datarootdir)"'; \
-	  echo '#define DATADIR "$(datadir)"'; \
-	  echo '#define SYSCONFDIR "$(sysconfdir)"'; \
-	  echo '#define SHAREDSTATEDIR "$(sharedstatedir)"'; \
-	  echo '#define LOCALSTATEDIR "$(localstatedir)"'; \
-	  echo '#define RUNSTATEDIR "$(runstatedir)"'; \
-	  echo '#define INCLUDEDIR "$(includedir)"'; \
-	  echo '#define OLDINCLUDEDIR "$(oldincludedir)"'; \
-	  echo '#define DOCDIR "$(docdir)"'; \
-	  echo '#define INFODIR "$(infodir)"'; \
-	  echo '#define HTMLDIR "$(htmldir)"'; \
-	  echo '#define DVIDIR "$(dvidir)"'; \
-	  echo '#define PDFDIR "$(pdfdir)"'; \
-	  echo '#define PSDIR "$(psdir)"'; \
-	  echo '#define LIBDIR "$(libdir)"'; \
-	  echo '#define LISPDIR "$(lispdir)"'; \
-	  echo '#define LOCALEDIR "$(localedir)"'; \
-	  echo '#define MANDIR "$(mandir)"'; \
-	  echo '#define MANEXT "$(manext)"'; \
-	  echo '#define PKGDATADIR "$(pkgdatadir)"'; \
-	  echo '#define PKGINCLUDEDIR "$(pkgincludedir)"'; \
-	  echo '#define PKGLIBDIR "$(pkglibdir)"'; \
-	  echo '#define PKGLIBEXECDIR "$(pkglibexecdir)"'; \
-	} | sed '/""/d' > $@-t && \
-	mv -f $@-t $@
 
 # We need the following in order to create <ctype.h> when the system
 # doesn't have one that works with the given compiler.
@@ -2404,65 +2358,6 @@ langinfo.h: langinfo.in.h $(top_builddir)/config.status $(CXXDEFS_H) $(WARN_ON_U
 @GL_GENERATE_LIMITS_H_TRUE@	mv $@-t $@
 @GL_GENERATE_LIMITS_H_FALSE@limits.h: $(top_builddir)/config.status
 @GL_GENERATE_LIMITS_H_FALSE@	rm -f $@
-
-# We need the following in order to install a simple file in $(libdir)
-# which is shared with other installed packages. We use a list of referencing
-# packages so that "make uninstall" will remove the file if and only if it
-# is not used by another installed package.
-# On systems with glibc-2.1 or newer, the file is redundant, therefore we
-# avoid installing it.
-
-all-local: charset.alias ref-add.sed ref-del.sed
-install-exec-local: install-exec-localcharset
-install-exec-localcharset: all-local
-	if test $(GLIBC21) = no; then \
-	  case '$(host_os)' in \
-	    darwin[56]*) \
-	      need_charset_alias=true ;; \
-	    darwin* | cygwin* | mingw* | pw32* | cegcc*) \
-	      need_charset_alias=false ;; \
-	    *) \
-	      need_charset_alias=true ;; \
-	  esac ; \
-	else \
-	  need_charset_alias=false ; \
-	fi ; \
-	if $$need_charset_alias; then \
-	  $(mkinstalldirs) $(DESTDIR)$(libdir) ; \
-	fi ; \
-	if test -f $(charset_alias); then \
-	  sed -f ref-add.sed $(charset_alias) > $(charset_tmp) ; \
-	  $(INSTALL_DATA) $(charset_tmp) $(charset_alias) ; \
-	  rm -f $(charset_tmp) ; \
-	else \
-	  if $$need_charset_alias; then \
-	    sed -f ref-add.sed charset.alias > $(charset_tmp) ; \
-	    $(INSTALL_DATA) $(charset_tmp) $(charset_alias) ; \
-	    rm -f $(charset_tmp) ; \
-	  fi ; \
-	fi
-
-uninstall-local: uninstall-localcharset
-uninstall-localcharset: all-local
-	if test -f $(charset_alias); then \
-	  sed -f ref-del.sed $(charset_alias) > $(charset_tmp); \
-	  if grep '^# Packages using this file: $$' $(charset_tmp) \
-	      > /dev/null; then \
-	    rm -f $(charset_alias); \
-	  else \
-	    $(INSTALL_DATA) $(charset_tmp) $(charset_alias); \
-	  fi; \
-	  rm -f $(charset_tmp); \
-	fi
-
-charset.alias: config.charset
-	$(AM_V_GEN)rm -f t-$@ $@ && \
-	$(SHELL) $(srcdir)/config.charset '$(host)' > t-$@ && \
-	mv t-$@ $@
-.sin.sed:
-	$(AM_V_GEN)rm -f t-$@ $@ && \
-	sed -e '/^#/d' -e 's/@''PACKAGE''@/$(PACKAGE)/g' $< > t-$@ && \
-	mv t-$@ $@
 
 # We need the following in order to create <locale.h> when the system
 # doesn't have one that provides all definitions.
@@ -3482,7 +3377,6 @@ unistd.h: unistd.in.h $(top_builddir)/config.status $(CXXDEFS_H) $(ARG_NONNULL_H
 	      -e 's|@''HAVE_SLEEP''@|$(HAVE_SLEEP)|g' \
 	      -e 's|@''HAVE_SYMLINK''@|$(HAVE_SYMLINK)|g' \
 	      -e 's|@''HAVE_SYMLINKAT''@|$(HAVE_SYMLINKAT)|g' \
-	      -e 's|@''HAVE_TRUNCATE''@|$(HAVE_TRUNCATE)|g' \
 	      -e 's|@''HAVE_UNLINKAT''@|$(HAVE_UNLINKAT)|g' \
 	      -e 's|@''HAVE_USLEEP''@|$(HAVE_USLEEP)|g' \
 	      -e 's|@''HAVE_DECL_ENVIRON''@|$(HAVE_DECL_ENVIRON)|g' \
@@ -3494,6 +3388,7 @@ unistd.h: unistd.in.h $(top_builddir)/config.status $(CXXDEFS_H) $(ARG_NONNULL_H
 	      -e 's|@''HAVE_DECL_GETPAGESIZE''@|$(HAVE_DECL_GETPAGESIZE)|g' \
 	      -e 's|@''HAVE_DECL_GETUSERSHELL''@|$(HAVE_DECL_GETUSERSHELL)|g' \
 	      -e 's|@''HAVE_DECL_SETHOSTNAME''@|$(HAVE_DECL_SETHOSTNAME)|g' \
+	      -e 's|@''HAVE_DECL_TRUNCATE''@|$(HAVE_DECL_TRUNCATE)|g' \
 	      -e 's|@''HAVE_DECL_TTYNAME_R''@|$(HAVE_DECL_TTYNAME_R)|g' \
 	      -e 's|@''HAVE_OS_H''@|$(HAVE_OS_H)|g' \
 	      -e 's|@''HAVE_SYS_PARAM_H''@|$(HAVE_SYS_PARAM_H)|g' \

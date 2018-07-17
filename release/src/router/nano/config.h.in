@@ -2416,6 +2416,13 @@
 # define _GL_ATTRIBUTE_CONST /* empty */
 #endif
 
+/* The __malloc__ attribute was added in gcc 3.  */
+#if 3 <= __GNUC__
+# define _GL_ATTRIBUTE_MALLOC __attribute__ ((__malloc__))
+#else
+# define _GL_ATTRIBUTE_MALLOC /* empty */
+#endif
+
 
 /* Define as a macro for copying va_list variables. */
 #undef va_copy

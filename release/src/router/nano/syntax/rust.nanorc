@@ -4,7 +4,7 @@
 
 ## NOTE: Rules are applied in order: later rules re-colorize matching text.
 
-syntax rust "\.rs"
+syntax rust "\.(rlib|rs)$"
 comment "//"
 
 # Function definitions

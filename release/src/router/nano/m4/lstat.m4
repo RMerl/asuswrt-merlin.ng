@@ -1,4 +1,4 @@
-# serial 31
+# serial 32
 
 # Copyright (C) 1997-2001, 2003-2018 Free Software Foundation, Inc.
 #
@@ -53,6 +53,9 @@ AC_DEFUN([gl_FUNC_LSTAT_FOLLOWS_SLASHED_SYMLINK],
        [gl_cv_func_lstat_dereferences_slashed_symlink=yes],
        [gl_cv_func_lstat_dereferences_slashed_symlink=no],
        [case "$host_os" in
+          linux-* | linux)
+            # Guess yes on Linux systems.
+            gl_cv_func_lstat_dereferences_slashed_symlink="guessing yes" ;;
           *-gnu* | gnu*)
             # Guess yes on glibc systems.
             gl_cv_func_lstat_dereferences_slashed_symlink="guessing yes" ;;

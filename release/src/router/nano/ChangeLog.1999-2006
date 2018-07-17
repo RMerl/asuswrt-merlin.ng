@@ -8278,7 +8278,7 @@ nano 0.7.6 - 2000.01.15
 	having a newline at the end doesn't get read, bugfix in do_replace
 	with replace all, more/better comments. (Robert Siemborski)
 0.7.2	Our first patch accepted into the source! configure fixes
-	and optimizations (Erik Anderson).  Added missing stdarg.h to winio.c.
+	and optimizations (Erik Andersen).  Added missing stdarg.h to winio.c.
 	Bug fix in update_line for editing long lines. Fixed arguments
 	being put into the filename when none is specified. Preliminary
 	+line command argument function.

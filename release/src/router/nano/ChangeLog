@@ -1,3 +1,88 @@
+Changes between v2.9.7 and v2.9.8:
+----------------------------------
+
+Benno Schulenberg (64):
+      build: fix compilation failure when configured with --enable-tiny
+      build: fix compilation when configured with --disable-justify
+      build: fix compilation when configured with --disable-multibuffer
+      build: fix compilation with --enable-{tiny,help,multibuffer}
+      bump version numbers and add a news item for the 2.9.8 release
+      copyright: update the years for significantly changed files
+      credits: sort the names roughly according to amount of influence
+      docs: add a missing double quote in the default brackets string
+      docs: describe what constitutes a paragraph
+      docs: improve description of 'speller' and related bindable functions
+      docs: improve the description of --nonewlines, and properly sort it
+      docs: improve the description of the --autoindent option
+      docs: make quotes around regexes bold, as they are part of the command
+      docs: mark the filtering of text through an external command as done
+      docs: register Marco as the author of the filtering feature
+      docs: remove mention of the quotestr for when regex support is lacking
+      docs: remove quotes around the name of a syntax -- they are not needed
+      docs: thank Kamil for his bug fixes, and update an email address
+      docs, usage: make it clear that the argument of --quotestr is a regex
+      files: give feedback during writeout also when prepending or appending
+      filtering: pair the cut and the insert, so they can be undone together
+      gnulib: update to its current upstream state
+      justification: find the beginning of a paragraph in a better way
+      justification: limit the amount of recursion to prevent a stack overflow
+      justification: recognize indented paragraphs also without --autoindent
+      justification: when leading whitespace exceeds fill width, wrap anyway
+      linter: don't try to access absent stat info, as that gives a crash
+      linter: make sure that the margin is updated before displaying a buffer
+      linter: make sure the shortcuts bar will redrawn when exiting early
+      main: add "/" to the quoting regex, to allow justifying //-comments
+      main: interpret only a double slash (//) as quoting, not a single one
+      rcfile: don't crash when a bind to a string lacks the closing quote
+      startup: provide a hint for people unfamiliar with the ^char convention
+      syntaxes: condense and/or correct some extension regexes
+      syntax: makefile: color all keywords that GNU make recognizes
+      tweaks: adjust a translator hint
+      tweaks: avoid an unused-variable warning with --enable-tiny
+      tweaks: avoid a warning with --enable-{tiny,help,multibuffer}
+      tweaks: condense a comment, and elide an unneeded 'if'
+      tweaks: condense some repetitious comments, and check before assigning
+      tweaks: condense two statements into one, and elide a 'break'
+      tweaks: elide a function that is called just once
+      tweaks: elide another function that is called just once
+      tweaks: exclude an unneeded 'if' from the single-buffer version
+      tweaks: frob a couple of comments
+      tweaks: frob some comments, and rename two parameters to make sense
+      tweaks: give some continuation lines a more obvious indentation
+      tweaks: improve a couple of comments, and reshuffle a group of lines
+      tweaks: make better use of an existing variable
+      tweaks: make better use of an intermediate variable
+      tweaks: reduce the abundance of the word 'toggle' in the Info manual
+      tweaks: remove a superfluous assignment -- the lead length never changes
+      tweaks: remove two superfluous checks, after making one of them so
+      tweaks: rename a function, for more aptness and extra contrast
+      tweaks: rename a variable, for contrast, and improve two comments
+      tweaks: rename a variable, to give it some meaning
+      tweaks: rename two variables, to better fit their tasks
+      tweaks: reshuffle a condition, and adjust a comment and some indentation
+      tweaks: reshuffle a couple of assignments
+      tweaks: simplify the determining of the prefix for justified lines
+      tweaks: stop decreasing both the iterator and the limit of a loop
+      tweaks: use a more meaningful variable name, and avoid a distant 'else'
+      wrapping: use "smart" autoindenting only when hard-wrapping is enabled
+      wrapping: when autoindenting, use indentation of next line as example
+
+Brand Huntsman (1):
+      tweaks: avoid two unused variable warnings when NLS is disabled
+
+Cristian Caloghera (1):
+      syntax: makefile: recognize also an all-lowercase makefile name
+
+David Lawrence Ramsey (3):
+      bindings: add the "flippipe" bindable function
+      tweaks: avoid an unused variable warning with --enable-tiny
+      tweaks: fix some grammar plus a typo in the comments
+
+Marco Diego Aurélio Mesquita (2):
+      linter: check all open buffers, instead of just the next one
+      new feature: allow piping (selected) text to an external command
+
+
 Changes between v2.9.6 and v2.9.7:
 ----------------------------------
 

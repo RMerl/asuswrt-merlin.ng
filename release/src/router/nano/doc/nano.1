@@ -16,7 +16,7 @@
 .\"   Documentation License along with this program.  If not, see
 .\"   <http://www.gnu.org/licenses/>.
 .\"
-.TH NANO 1 "version 2.9.7" "May 2018"
+.TH NANO 1 "version 2.9.8" "June 2018"
 
 .SH NAME
 nano \- Nano's ANOther editor, an enhanced free Pico clone
@@ -106,7 +106,7 @@ should only need to use this option if they don't, as mouse support
 won't work properly with this option enabled.
 .TP
 .BR \-L ", " \-\-nonewlines
-Don't add newlines to the ends of files.
+Don't automatically add a newline when a file does not end with one.
 .TP
 .BR \-M ", " \-\-trimblanks
 Snip trailing whitespace from the wrapped line when automatic
@@ -122,11 +122,11 @@ Use the blank line below the title bar as extra editing space.
 For the 200 most recent files, log the last position of the cursor,
 and place it at that position again upon reopening such a file.
 .TP
-.BR "\-Q ""\fIcharacters\fB""" ", " "\-\-quotestr=""" \fIcharacters """
-Set the quoting string for justifying.  The default is
-\fB"^([\ \\t]*[#:>\\|}])+"\fP if extended regular expression support is
-available, or \fB">\ "\fP otherwise.  Note that \fB\\t\fP stands for a
-Tab.
+.BR "\-Q ""\fIregex\fB""" ", " "\-\-quotestr=""" \fIregex """
+Set the regular expression for matching the quoting part of a line.
+This is used when justifying.
+The default value is \fB"^([\ \\t]*([#:>|}]|//))+"\fP.
+Note that \fB\\t\fP stands for an actual Tab.
 .TP
 .BR \-R ", " \-\-restricted
 Restricted mode: don't read or write to any file not specified on the
@@ -187,8 +187,9 @@ highlighted item.  Useful for braille users.
 Show a summary of the available command-line options and exit.
 .TP
 .BR \-i ", " \-\-autoindent
-Indent new lines to the previous line's indentation.  Useful when
-editing source code.
+Automatically indent a newly created line to the same number of tabs
+and/or spaces as the previous line (or as the next line if the previous
+line is the beginning of a paragraph).
 .TP
 .BR \-k ", " \-\-cutfromcursor
 Make the 'Cut Text' command (normally \fB^K\fR) cut from the current cursor

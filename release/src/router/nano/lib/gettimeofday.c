@@ -24,7 +24,7 @@
 
 #include <time.h>
 
-#if (defined _WIN32 || defined __WIN32__) && ! defined __CYGWIN__
+#if defined _WIN32 && ! defined __CYGWIN__
 # define WINDOWS_NATIVE
 # include <windows.h>
 #endif

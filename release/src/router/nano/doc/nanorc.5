@@ -16,7 +16,7 @@
 .\"   Documentation License along with this program.  If not, see
 .\"   <http://www.gnu.org/licenses/>.
 .\"
-.TH NANORC 5 "version 2.9.7" "May 2018"
+.TH NANORC 5 "version 2.9.8" "June 2018"
 
 .SH NAME
 nanorc \- GNU nano's configuration file
@@ -66,7 +66,9 @@ When soft line wrapping is enabled, make it wrap lines at blank characters
 (tabs and spaces) instead of always at the edge of the screen.
 .TP
 .B set autoindent
-Use auto-indentation.
+Automatically indent a newly created line to the same number of tabs
+and/or spaces as the previous line (or as the next line if the previous
+line is the beginning of a paragraph).
 .TP
 .B set backup
 When saving a file, create a backup file by adding a tilde (\fB~\fP) to
@@ -91,7 +93,7 @@ setting the options \fBtitlecolor\fP, \fBstatuscolor\fP, \fBkeycolor\fP,
 .B set brackets "\fIstring\fP"
 Set the characters treated as closing brackets when justifying
 paragraphs.  This may not include blank characters.  Only closing
-punctuation (see \fBpunct\fP), optionally followed by the specified
+punctuation (see \fBset punct\fP), optionally followed by the specified
 closing brackets, can end sentences.  The default value is "\fB"')>]}\fP".
 .TP
 .B set casesensitive
@@ -161,7 +163,7 @@ Don't convert files from DOS/Mac format.
 Don't display the two help lines at the bottom of the screen.
 .TP
 .B set nonewlines
-Don't automatically add a newline to the ends of files.
+When a file does not end with a newline, don't automatically add one.
 .TP
 .B set nopauses
 Don't pause between warnings at startup.  This means that only
@@ -201,12 +203,10 @@ keystroke instead of 25.  The option \fBconstantshow\fR overrides this.
 .B set quiet
 Obsolete option.  Recognized but ignored.
 .TP
-.B set quotestr "\fIstring\fP"
+.B set quotestr "\fIregex\fP"
 The email-quote string, used to justify email-quoted paragraphs.  This
-is an extended regular expression if your system supports them,
-otherwise a literal string.  The default value is
-"\fB^([\ \\t]*[#:>\\|}])+\fP" if you have extended regular expression
-support, and "\fB>\ \fP" otherwise.  Note that '\\t' stands for a literal
+is an extended regular expression.  The default value is
+"\fB^([\ \\t]*([#:>|}]|//))+\fP".  Note that \fB\\t\fR stands for an actual
 Tab character.
 .TP
 .B set rebinddelete
@@ -243,9 +243,9 @@ Use smooth scrolling by default.
 .B set softwrap
 Enable soft line wrapping for easier viewing of very long lines.
 .TP
-.B set speller "\fIspellprog\fP"
-Use spelling checker \fIspellprog\fP instead of the built-in one, which
-calls \fIspell\fP.
+.B set speller "\fIprogram\fP"
+Use the given \fIprogram\fR to do spell checking and correcting,
+instead of the built-in corrector that calls \fBspell\fR.
 .TP
 .B set statuscolor \fIfgcolor\fR,\fIbgcolor\fR
 Specify the color combination to use for the status bar.
@@ -311,7 +311,7 @@ good fit for a small editor like \fBnano\fR.
 For each kind of file a separate syntax can be defined
 via the following commands:
 .TP
-.BR syntax " ""\fIname\fR"" [""\fIfileregex\fR"" ...]"
+.BI syntax " name \fR[" """" fileregex """ " \fR...]
 Start the definition of a syntax with this \fIname\fR.
 All subsequent \fBcolor\fR and other such commands
 will be added to this syntax, until a new \fBsyntax\fR
@@ -323,17 +323,17 @@ expression \fIfileregex\fR.  Or the syntax can be explicitly
 activated by using the \fB-Y\fR or \fB\-\-syntax\fR
 command-line option followed by the \fIname\fR.
 
-The syntax "\fBdefault\fP" is special: it takes no \fIfileregex\fR,
+The syntax \fBdefault\fP is special: it takes no \fIfileregex\fR,
 and applies to files that don't match any syntax's regexes.
-The syntax "\fBnone\fP" is reserved; specifying it on the command line
+The syntax \fBnone\fP is reserved; specifying it on the command line
 is the same as not having a syntax at all.
 .TP
-.BR header " ""\fIregex\fR"" " ...
+.BI "header """ regex """ \fR...
 If from all defined syntaxes no \fIfileregex\fR matched, then compare
 this \fIregex\fR (or regexes) against the first line of the current file,
 to determine whether this syntax should be used for it.
 .TP
-.BR magic " ""\fIregex\fR"" " ...
+.BI "magic """ regex """ \fR...
 If no \fIfileregex\fR matched and no \fBheader\fR regex matched
 either, then compare this \fIregex\fR (or regexes) against the
 result of querying the \fBmagic\fP database about the current
@@ -342,16 +342,16 @@ file, to determine whether this syntax should be used for it.
 system and will be silently ignored otherwise.)
 .TP
 .BI linter " program " \fR[ "arg " \fR...]
-Use the given \fIprogram\fR to run a syntax check on the current file.
+Use the given \fIprogram\fR to run a syntax check on the current buffer.
 (This overrides the speller function.)
 .TP
 .BI formatter " program " \fR[ "arg " \fR...]
-Use the given \fIprogram\fR to automatically reformat text --
-useful in a programming language like Go.
+Use the given \fIprogram\fR to automatically reformat the text in
+the current buffer -- useful in a programming language like Go.
 (This overrides the speller and linter functions.)
 .TP
-.BR comment " ""\fIstring\fR"""
-Use the given string for commenting and uncommenting lines.
+.BI "comment """ string """
+Use the given \fIstring\fR for commenting and uncommenting lines.
 If the string contains a vertical bar or pipe character (\fB|\fR),
 this designates bracket-style comments; for example, "\fB/*|*/\fR" for
 CSS files.  The characters before the pipe are prepended to the line and the
@@ -361,7 +361,7 @@ for Python files.  If empty double quotes are specified, the comment/uncomment
 function is disabled; for example, "" for JSON.
 The default value is "\fB#\fP".
 .TP
-.B color \fIfgcolor\fR,\fIbgcolor\fR """\fIregex\fR""" ...
+.BI "color " fgcolor , bgcolor " """ regex """ " \fR...
 Display all pieces of text that match
 the extended regular expression \fIregex\fP with foreground color
 \fIfgcolor\fP and background color \fIbgcolor\fP, at least one of which
@@ -372,10 +372,10 @@ foreground.  If your terminal supports transparency, not specifying a
 \fIbgcolor\fP tells \fBnano\fP to attempt to use a transparent
 background.
 .TP
-.B icolor \fIfgcolor\fR,\fIbgcolor\fR """\fIregex\fR""" ...
+.BI "icolor " fgcolor , bgcolor " """ regex """ " \fR...
 Same as above, except that the matching is case insensitive.
 .TP
-.BR color " \fIfgcolor\fR,\fIbgcolor\fR " start= """\fIfromrx\fR"" " end= """\fItorx\fR""
+.BI "color " fgcolor , bgcolor " start=""" fromrx """ end=""" torx """
 Display all pieces of text whose start matches extended regular expression
 \fIfromrx\fP and whose end matches extended regular expression \fItorx\fP with
 foreground color \fIfgcolor\fP and background color \fIbgcolor\fP,
@@ -384,10 +384,10 @@ initial instance of \fIfromrx\fP, all text until the first instance of
 \fItorx\fP will be colored.  This allows syntax highlighting to span
 multiple lines.
 .TP
-.BR icolor " \fIfgcolor\fR,\fIbgcolor\fR " start= """\fIfromrx\fR"" " end= """\fItorx\fR""
+.BI "icolor " fgcolor , bgcolor " start=""" fromrx """ end=""" torx """
 Same as above, except that the matching is case insensitive.
 .TP
-.BR include " ""\fIsyntaxfile\fR"""
+.BI "include """ syntaxfile """
 Read in self-contained color syntaxes from \fIsyntaxfile\fP.  Note that
 \fIsyntaxfile\fP may contain only the above commands, from \fBsyntax\fP
 to \fBicolor\fP.
@@ -510,14 +510,17 @@ Shows the current cursor position: the line, column, and character positions.
 Counts the number of words, lines and characters in the current buffer.
 .TP
 .B speller
-Invokes a spell-checking program (or a linting program, if the current
-syntax highlighting defines one).
+Invokes a spell-checking program (or linting program, or formatter program,
+if the active syntax defines such a thing).
 .TP
 .B linter
 A synonym of \fBspeller\fR (for when the speller has not been configured).
 .TP
 .B justify
-Justifies the current paragraph.
+Justifies the current paragraph.  A paragraph is a group of contiguous lines
+that, apart from possibly the first line, all have the same indentation.  The
+beginning of a paragraph is detected by either this lone line with a differing
+indentation or by a preceding blank line.
 .TP
 .B fulljustify
 Justifies the entire current buffer.
@@ -667,6 +670,10 @@ Toggles between searching for text and targeting a line number.
 .B flipexecute
 Toggles between inserting a file and executing a command.
 .TP
+.B flippipe
+When executing a command, toggles whether the current buffer (or marked
+region) is piped to the command.
+.TP
 .B flipnewbuffer
 Toggles between inserting into the current buffer and into a new
 empty buffer.
@@ -733,7 +740,9 @@ Toggles syntax highlighting.
 Toggles the smartness of the Home key.
 .TP
 .B autoindent
-Toggles whether new lines will contain the same amount of whitespace as the preceding line.
+Toggles whether a newly created line will contain the same amount of leading
+whitespace as the preceding line -- or as the next line if the preceding line
+is the beginning of a paragraph.
 .TP
 .B cutfromcursor
 Toggles whether cutting text will cut the whole line or just from the current cursor

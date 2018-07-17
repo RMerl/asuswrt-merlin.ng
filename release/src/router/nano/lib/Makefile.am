@@ -110,51 +110,6 @@ EXTRA_libgnu_a_SOURCES += closedir.c
 
 ## end   gnulib module closedir
 
-## begin gnulib module configmake
-
-# Listed in the same order as the GNU makefile conventions, and
-# provided by autoconf 2.59c+ or 2.70.
-# The Automake-defined pkg* macros are appended, in the order
-# listed in the Automake 1.10a+ documentation.
-configmake.h: Makefile
-	$(AM_V_GEN)rm -f $@-t && \
-	{ echo '/* DO NOT EDIT! GENERATED AUTOMATICALLY! */'; \
-	  echo '#define PREFIX "$(prefix)"'; \
-	  echo '#define EXEC_PREFIX "$(exec_prefix)"'; \
-	  echo '#define BINDIR "$(bindir)"'; \
-	  echo '#define SBINDIR "$(sbindir)"'; \
-	  echo '#define LIBEXECDIR "$(libexecdir)"'; \
-	  echo '#define DATAROOTDIR "$(datarootdir)"'; \
-	  echo '#define DATADIR "$(datadir)"'; \
-	  echo '#define SYSCONFDIR "$(sysconfdir)"'; \
-	  echo '#define SHAREDSTATEDIR "$(sharedstatedir)"'; \
-	  echo '#define LOCALSTATEDIR "$(localstatedir)"'; \
-	  echo '#define RUNSTATEDIR "$(runstatedir)"'; \
-	  echo '#define INCLUDEDIR "$(includedir)"'; \
-	  echo '#define OLDINCLUDEDIR "$(oldincludedir)"'; \
-	  echo '#define DOCDIR "$(docdir)"'; \
-	  echo '#define INFODIR "$(infodir)"'; \
-	  echo '#define HTMLDIR "$(htmldir)"'; \
-	  echo '#define DVIDIR "$(dvidir)"'; \
-	  echo '#define PDFDIR "$(pdfdir)"'; \
-	  echo '#define PSDIR "$(psdir)"'; \
-	  echo '#define LIBDIR "$(libdir)"'; \
-	  echo '#define LISPDIR "$(lispdir)"'; \
-	  echo '#define LOCALEDIR "$(localedir)"'; \
-	  echo '#define MANDIR "$(mandir)"'; \
-	  echo '#define MANEXT "$(manext)"'; \
-	  echo '#define PKGDATADIR "$(pkgdatadir)"'; \
-	  echo '#define PKGINCLUDEDIR "$(pkgincludedir)"'; \
-	  echo '#define PKGLIBDIR "$(pkglibdir)"'; \
-	  echo '#define PKGLIBEXECDIR "$(pkglibexecdir)"'; \
-	} | sed '/""/d' > $@-t && \
-	mv -f $@-t $@
-
-BUILT_SOURCES += configmake.h
-CLEANFILES += configmake.h configmake.h-t
-
-## end   gnulib module configmake
-
 ## begin gnulib module ctype
 
 BUILT_SOURCES += ctype.h
@@ -677,75 +632,9 @@ EXTRA_DIST += limits.in.h
 
 ## begin gnulib module localcharset
 
-libgnu_a_SOURCES += localcharset.h localcharset.c
+libgnu_a_SOURCES += localcharset.c
 
-# We need the following in order to install a simple file in $(libdir)
-# which is shared with other installed packages. We use a list of referencing
-# packages so that "make uninstall" will remove the file if and only if it
-# is not used by another installed package.
-# On systems with glibc-2.1 or newer, the file is redundant, therefore we
-# avoid installing it.
-
-all-local: charset.alias ref-add.sed ref-del.sed
-
-charset_alias = $(DESTDIR)$(libdir)/charset.alias
-charset_tmp = $(DESTDIR)$(libdir)/charset.tmp
-install-exec-local: install-exec-localcharset
-install-exec-localcharset: all-local
-	if test $(GLIBC21) = no; then \
-	  case '$(host_os)' in \
-	    darwin[56]*) \
-	      need_charset_alias=true ;; \
-	    darwin* | cygwin* | mingw* | pw32* | cegcc*) \
-	      need_charset_alias=false ;; \
-	    *) \
-	      need_charset_alias=true ;; \
-	  esac ; \
-	else \
-	  need_charset_alias=false ; \
-	fi ; \
-	if $$need_charset_alias; then \
-	  $(mkinstalldirs) $(DESTDIR)$(libdir) ; \
-	fi ; \
-	if test -f $(charset_alias); then \
-	  sed -f ref-add.sed $(charset_alias) > $(charset_tmp) ; \
-	  $(INSTALL_DATA) $(charset_tmp) $(charset_alias) ; \
-	  rm -f $(charset_tmp) ; \
-	else \
-	  if $$need_charset_alias; then \
-	    sed -f ref-add.sed charset.alias > $(charset_tmp) ; \
-	    $(INSTALL_DATA) $(charset_tmp) $(charset_alias) ; \
-	    rm -f $(charset_tmp) ; \
-	  fi ; \
-	fi
-
-uninstall-local: uninstall-localcharset
-uninstall-localcharset: all-local
-	if test -f $(charset_alias); then \
-	  sed -f ref-del.sed $(charset_alias) > $(charset_tmp); \
-	  if grep '^# Packages using this file: $$' $(charset_tmp) \
-	      > /dev/null; then \
-	    rm -f $(charset_alias); \
-	  else \
-	    $(INSTALL_DATA) $(charset_tmp) $(charset_alias); \
-	  fi; \
-	  rm -f $(charset_tmp); \
-	fi
-
-charset.alias: config.charset
-	$(AM_V_GEN)rm -f t-$@ $@ && \
-	$(SHELL) $(srcdir)/config.charset '$(host)' > t-$@ && \
-	mv t-$@ $@
-
-SUFFIXES += .sed .sin
-.sin.sed:
-	$(AM_V_GEN)rm -f t-$@ $@ && \
-	sed -e '/^#/d' -e 's/@''PACKAGE''@/$(PACKAGE)/g' $< > t-$@ && \
-	mv t-$@ $@
-
-CLEANFILES += charset.alias ref-add.sed ref-del.sed
-
-EXTRA_DIST += config.charset ref-add.sin ref-del.sin
+EXTRA_DIST += localcharset.h
 
 ## end   gnulib module localcharset
 
@@ -2295,7 +2184,6 @@ unistd.h: unistd.in.h $(top_builddir)/config.status $(CXXDEFS_H) $(ARG_NONNULL_H
 	      -e 's|@''HAVE_SLEEP''@|$(HAVE_SLEEP)|g' \
 	      -e 's|@''HAVE_SYMLINK''@|$(HAVE_SYMLINK)|g' \
 	      -e 's|@''HAVE_SYMLINKAT''@|$(HAVE_SYMLINKAT)|g' \
-	      -e 's|@''HAVE_TRUNCATE''@|$(HAVE_TRUNCATE)|g' \
 	      -e 's|@''HAVE_UNLINKAT''@|$(HAVE_UNLINKAT)|g' \
 	      -e 's|@''HAVE_USLEEP''@|$(HAVE_USLEEP)|g' \
 	      -e 's|@''HAVE_DECL_ENVIRON''@|$(HAVE_DECL_ENVIRON)|g' \
@@ -2307,6 +2195,7 @@ unistd.h: unistd.in.h $(top_builddir)/config.status $(CXXDEFS_H) $(ARG_NONNULL_H
 	      -e 's|@''HAVE_DECL_GETPAGESIZE''@|$(HAVE_DECL_GETPAGESIZE)|g' \
 	      -e 's|@''HAVE_DECL_GETUSERSHELL''@|$(HAVE_DECL_GETUSERSHELL)|g' \
 	      -e 's|@''HAVE_DECL_SETHOSTNAME''@|$(HAVE_DECL_SETHOSTNAME)|g' \
+	      -e 's|@''HAVE_DECL_TRUNCATE''@|$(HAVE_DECL_TRUNCATE)|g' \
 	      -e 's|@''HAVE_DECL_TTYNAME_R''@|$(HAVE_DECL_TTYNAME_R)|g' \
 	      -e 's|@''HAVE_OS_H''@|$(HAVE_OS_H)|g' \
 	      -e 's|@''HAVE_SYS_PARAM_H''@|$(HAVE_SYS_PARAM_H)|g' \

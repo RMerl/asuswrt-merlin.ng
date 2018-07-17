@@ -11,7 +11,7 @@ File: nano.info,  Node: Top,  Next: Introduction,  Up: (dir)
 nano
 ****
 
-This manual documents the GNU ‘nano’ editor, version 2.9.7.
+This manual documents the GNU ‘nano’ editor, version 2.9.8.
 
 * Menu:
 
@@ -133,7 +133,8 @@ File: nano.info,  Node: Command-line Options,  Next: Editor Basics,  Prev: Invok
 
 ‘-L’
 ‘--nonewlines’
-     Don’t add newlines to the ends of files.
+     Don’t automatically add a newline when a file does not end with
+     one.
 
 ‘-M’
 ‘--trimblanks’
@@ -153,11 +154,11 @@ File: nano.info,  Node: Command-line Options,  Next: Editor Basics,  Prev: Invok
      For the 200 most recent files, log the last position of the cursor,
      and place it at that position again upon reopening such a file.
 
-‘-Q "CHARACTERS"’
-‘--quotestr="CHARACTERS"’
-     Set the quoting string for justifying.  The default value is "^([
-     \t]*[|>:}#])+" if extended regular expression support is available,
-     and "> " otherwise.  Note that ‘\t’ stands for a literal Tab
+‘-Q "REGEX"’
+‘--quotestr="REGEX"’
+     Set the regular expression for matching the quoting part of a line,
+     used when justifying.  The default value is
+     "^([ \t]*([#:>|}]|//))+".  Note that ‘\t’ stands for a literal Tab
      character.
 
 ‘-R’
@@ -234,8 +235,9 @@ File: nano.info,  Node: Command-line Options,  Next: Editor Basics,  Prev: Invok
 
 ‘-i’
 ‘--autoindent’
-     Automatically indent new lines to the same number of spaces and
-     tabs as the previous line.
+     Automatically indent a newly created line to the same number of
+     tabs and/or spaces as the previous line (or as the next line if the
+     previous line is the beginning of a paragraph).
 
 ‘-k’
 ‘--cutfromcursor’
@@ -291,10 +293,9 @@ File: nano.info,  Node: Command-line Options,  Next: Editor Basics,  Prev: Invok
 ‘--speller=PROGRAM’
      Use the given program to do spell checking and correcting.  By
      default, ‘nano’ uses the command specified in the ‘SPELL’
-     environment variable for this.  If ‘SPELL’ is not set, and
-     ‘--speller’ is not specified either, then ‘nano’ uses its own
-     interactive spell corrector, which requires the GNU ‘spell’ program
-     to be installed.
+     environment variable.  If ‘SPELL’ is not set, and ‘--speller’ is
+     not specified either, then ‘nano’ uses its own interactive spell
+     corrector, which requires the GNU ‘spell’ program to be installed.
 
 ‘-t’
 ‘--tempfile’
@@ -550,59 +551,59 @@ which would normally be specified via command-line options.  They are
 invoked via Meta-key sequences (*note Commands:: for more info).  The
 following global toggles are available:
 
-‘Backup Files toggle’
+‘Backup Files’
      ‘Meta-B’ toggles the ‘-B’ (‘--backup’) command-line option.
 
-‘Constant Cursor Position Display toggle’
+‘Constant Cursor Position Display’
      ‘Meta-C’ toggles the ‘-c’ (‘--constantshow’) command-line option.
 
-‘Multiple File Buffers toggle’
+‘Multiple File Buffers’
      ‘Meta-F’ toggles the ‘-F’ (‘--multibuffer’) command-line option.
 
-‘Smart Home Key toggle’
+‘Smart Home Key’
      ‘Meta-H’ toggles the ‘-A’ (‘--smarthome’) command-line option.
 
-‘Auto Indent toggle’
+‘Auto Indent’
      ‘Meta-I’ toggles the ‘-i’ (‘--autoindent’) command-line option.
 
-‘Cut From Cursor To End-of-Line toggle’
+‘Cut From Cursor To End-of-Line’
      ‘Meta-K’ toggles the ‘-k’ (‘--cutfromcursor’) command-line option.
 
-‘Long-Line Wrapping toggle’
+‘Long-Line Wrapping’
      ‘Meta-L’ toggles the ‘-w’ (‘--nowrap’) command-line option.
 
-‘Mouse Support toggle’
+‘Mouse Support’
      ‘Meta-M’ toggles the ‘-m’ (‘--mouse’) command-line option.
 
-‘No Conversion From DOS/Mac Format toggle’
+‘No Conversion From DOS/Mac Format’
      ‘Meta-N’ toggles the ‘-N’ (‘--noconvert’) command-line option.
 
-‘More Space For Editing toggle’
+‘More Space For Editing’
      ‘Meta-O’ toggles the ‘-O’ (‘--morespace’) command-line option.
 
-‘Whitespace Display toggle’
-     ‘Meta-P’ toggles the whitespace-display mode (*note Whitespace::).
+‘Whitespace Display’
+     ‘Meta-P’ toggles the displaying of whitespace (*note Whitespace::).
 
-‘Tabs To Spaces toggle’
+‘Tabs To Spaces’
      ‘Meta-Q’ toggles the ‘-E’ (‘--tabstospaces’) command-line option.
 
-‘Smooth Scrolling toggle’
+‘Smooth Scrolling’
      ‘Meta-S’ toggles the ‘-S’ (‘--smooth’) command-line option.
 
-‘Expert/No Help toggle’
+‘Expert/No Help’
      ‘Meta-X’ toggles the ‘-x’ (‘--nohelp’) command-line option.
 
-‘Color Syntax Highlighting toggle’
+‘Color Syntax Highlighting’
      ‘Meta-Y’ toggles color syntax highlighting (if your nanorc defines
      syntaxes — *note Syntax Highlighting::).
 
-‘Suspension toggle’
+‘Suspension’
      ‘Meta-Z’ toggles the ‘-z’ (‘--suspend’) command-line option.
 
-‘Line Numbers toggle’
+‘Line Numbers’
      ‘Meta-#’ toggles the ‘-l’ (‘--linenumbers’) command-line option.
 
-‘Soft Wrapping toggle’
+‘Soft Wrapping’
      ‘Meta-$’ toggles the ‘-$’ (‘--softwrap’) command-line option.
 
 
@@ -663,7 +664,9 @@ The supported settings in a nanorc file are:
      screen.
 
 ‘set autoindent’
-     Use auto-indentation.
+     Automatically indent a newly created line to the same number of
+     tabs and/or spaces as the previous line (or as the next line if the
+     previous line is the beginning of a paragraph).
 
 ‘set backup’
      When saving a file, back up the previous version of it, using the
@@ -690,7 +693,8 @@ The supported settings in a nanorc file are:
      Set the characters treated as closing brackets when justifying
      paragraphs.  This may not include blank characters.  Only closing
      punctuation (see ‘set punct’), optionally followed by the specified
-     closing brackets, can end sentences.  The default value is "')>]}".
+     closing brackets, can end sentences.  The default value is
+     ""')>]}".
 
 ‘set casesensitive’
      Do case-sensitive searches by default.
@@ -761,12 +765,13 @@ The supported settings in a nanorc file are:
 ‘set nohelp’
      Don’t display the help lists at the bottom of the screen.
 
+‘set nonewlines’
+     When a file does not end with a newline, don’t automatically add
+     one.
+
 ‘set nopauses’
      Don’t pause between warnings at startup.  This means that only the
      last one will be visible (when there are multiple ones).
-
-‘set nonewlines’
-     Don’t add newlines to the ends of files.
 
 ‘set nowrap’
      Don’t hard-wrap text at all.  This option conflicts with ‘fill’;
@@ -805,12 +810,10 @@ The supported settings in a nanorc file are:
 ‘set quiet’
      Obsolete option.  Recognized but ignored.
 
-‘set quotestr "STRING"’
+‘set quotestr "REGEX"’
      The email-quote string, used to justify email-quoted paragraphs.
-     This is an extended regular expression if your system supports
-     them, otherwise a literal string.  The default value is "^([
-     \\t]*[#:>\\|}])+" if you have extended regular expression support,
-     and "> " otherwise.  Note that ‘\t’ stands for a literal Tab
+     This is an extended regular expression.  The default value is
+     "^([ \t]*([#:>|}]|//))+".  Note that ‘\t’ stands for a literal Tab
      character.
 
 ‘set rebinddelete’
@@ -914,7 +917,7 @@ easy to make, so they are a good fit for a small editor like ‘nano’.
    A separate syntax can be defined for each kind of file via the
 following commands in a nanorc file:
 
-‘syntax "NAME" ["FILEREGEX" ...]’
+‘syntax NAME ["FILEREGEX" ...]’
      Start the definition of a syntax with this NAME.  All subsequent
      ‘color’ and other such commands will be added to this syntax, until
      a new ‘syntax’ command is encountered.
@@ -943,13 +946,13 @@ following commands in a nanorc file:
      otherwise.)
 
 ‘linter PROGRAM [ARG ...]’
-     Use the given PROGRAM to do a syntax check on the current file.
+     Use the given PROGRAM to do a syntax check on the current buffer.
      (This overrides the speller function.)
 
 ‘formatter PROGRAM [ARG ...]’
-     Use the given PROGRAM to automatically reformat text — useful for a
-     programming language like Go.  (This overrides the speller and
-     linter functions.)
+     Use the given PROGRAM to automatically reformat the text in the
+     current buffer — useful for a programming language like Go.  (This
+     overrides the speller and linter functions.)
 
 ‘comment "STRING"’
      Use the given string for commenting and uncommenting lines.  If the
@@ -1109,11 +1112,15 @@ file:
      buffer.
 
 ‘speller’
-     Invokes a spell-checking program (or a linting program, if the
-     current syntax highlighting defines one).
+     Invokes a spell-checking program (or linting program, or formatter
+     program, if the active syntax defines such a thing).
 
 ‘justify’
-     Justifies the current paragraph.
+     Justifies the current paragraph.  A paragraph is a group of
+     contiguous lines that, apart from possibly the first line, all have
+     the same indentation.  The beginning of a paragraph is detected by
+     either this lone line with a differing indentation or by a
+     preceding blank line.
 
 ‘fulljustify’
      Justifies the entire current buffer.
@@ -1266,6 +1273,10 @@ file:
 ‘flipexecute’
      Toggles between inserting a file and executing a command.
 
+‘flippipe’
+     When executing a command, toggles whether the current buffer (or
+     marked region) is piped to the command.
+
 ‘flipnewbuffer’
      Toggles between inserting into the current buffer and into a new
      empty buffer.
@@ -1337,8 +1348,9 @@ file:
      Toggles the smartness of the Home key.
 
 ‘autoindent’
-     Toggles whether new lines will contain the same amount of
-     whitespace as the preceding line.
+     Toggles whether a newly created line will contain the same amount
+     of leading whitespace as the preceding line — or as the next line
+     if the preceding line is the beginning of a paragraph.
 
 ‘cutfromcursor’
      Toggles whether cutting text will cut the whole line or just from
@@ -1431,7 +1443,7 @@ graphical manner in order to find the desired file.
 
    Basic movement in the file browser is accomplished with the arrow and
 other cursor-movement keys.  More targeted movement is accomplished by
-searching, via ‘^W’ or ‘w'’, or by changing directory, via ‘^_’ or ‘g’.
+searching, via ‘^W’ or ‘w’, or by changing directory, via ‘^_’ or ‘g’.
 The behavior of the ‘Enter’ key (or ‘s’) varies by what is currently
 selected.  If the currently selected object is a directory, the file
 browser will enter and display the contents of the directory.  If the
@@ -1657,28 +1669,28 @@ Node: Top199
 Node: Introduction556
 Node: Invoking1356
 Node: Command-line Options2402
-Ref: --speller9467
-Ref: Expert Mode10702
-Node: Editor Basics11819
-Node: Entering Text12103
-Node: Commands13092
-Node: The Cutbuffer13889
-Node: The Mark14610
-Node: Screen Layout15544
-Node: Search and Replace16723
-Node: Using the Mouse17458
-Node: Limitations18075
-Node: Built-in Help18631
-Node: Feature Toggles19055
-Node: Nanorc Files21512
-Node: Settings23109
-Ref: set functioncolor25896
-Ref: Whitespace32288
-Node: Syntax Highlighting32844
-Node: Rebinding Keys37835
-Node: The File Browser49224
-Node: Pico Compatibility50118
-Node: Building and Configure Options53654
+Ref: --speller9568
+Ref: Expert Mode10789
+Node: Editor Basics11906
+Node: Entering Text12190
+Node: Commands13179
+Node: The Cutbuffer13976
+Node: The Mark14697
+Node: Screen Layout15631
+Node: Search and Replace16810
+Node: Using the Mouse17545
+Node: Limitations18162
+Node: Built-in Help18718
+Node: Feature Toggles19142
+Node: Nanorc Files21474
+Node: Settings23071
+Ref: set functioncolor26032
+Ref: Whitespace32324
+Node: Syntax Highlighting32880
+Node: Rebinding Keys37897
+Node: The File Browser49797
+Node: Pico Compatibility50690
+Node: Building and Configure Options54226
 
 End Tag Table
 

@@ -8,9 +8,6 @@ Somewhat urgent:
 - Allow color syntaxes to apply to more than just color, so that we can
   e.g. specify a different alternate spell checker depending on which
   file type we have open.
-- Allow piping marked text to an external command and replacing it with
-  the command's output -- that is: generalize the spell-check flow.
-  See also https://savannah.gnu.org/bugs/?28993.
 
 Vague musings:
 - Add support for right-to-left text (RTL), through FriBidi?
@@ -21,8 +18,10 @@ Vague musings:
   brackets inside comments?
 
 For version 2.9:
-- Make undo/redo work also for indenting. [DONE]
+- Allow piping (marked) text to an external command and replacing it with
+  the command's output.  That is: implement filtering. [DONE]
 - Allow to record and replay a macro: a stored series of keystrokes. [DONE]
+- Make undo/redo work also for indenting. [DONE]
 
 For version 2.8:
 - Allow text searches in the help viewer. [DONE]

@@ -5,6 +5,11 @@ nano editor.  Please see the ChangeLog for specific changes by author.
 Chris Allegretta <chrisa@asty.org>
 	* Original program author and long-time maintainer.
 
+Benno Schulenberg <bensberg@telfort.nl>
+	* An array of small bug fixes, the cut-word and block-jump
+	  routines, text selection by holding Shift, macro recording
+	  and replay, plus some key bindings.  Current maintainer.
+
 David Lawrence Ramsey <pooka109@gmail.com>
 	* Former stable series maintainer.  Multiple buffer support,
 	  operating dir (-o) option, bug fixes for display routines,
@@ -60,7 +65,5 @@ Sumedh Pendurkar <sumedh.pendurkar@gmail.com>
 Rishabh Dave <rishabhddave@gmail.com>
 	* Searchable help.
 
-Benno Schulenberg <bensberg@justemail.net>
-	* An array of small bug fixes, the cut-word and block-jump
-	  routines, text selection by holding Shift, and some extra
-	  key bindings.  Current maintainer.
+Marco Diego Aurélio Mesquita <marcodiegomesquita@gmail.com>
+	* Filtering text through an external command.

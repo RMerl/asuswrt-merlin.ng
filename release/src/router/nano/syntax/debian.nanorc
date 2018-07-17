@@ -1,6 +1,6 @@
 ## Here is an example for apt's sources.list.
 
-syntax sources.list "sources\.list(~|\.old|\.save)?$" "sources\.list\.d/.*\.list(~|\.old|\.save)?$"
+syntax sources.list "sources\.list(\.d/.*\.list)?(~|\.old|\.save)?$"
 comment "#"
 
 # Coloring the deb lines, working from tail to head.  First the

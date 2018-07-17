@@ -2,7 +2,7 @@
  *   move.c  --  This file is part of GNU nano.                           *
  *                                                                        *
  *   Copyright (C) 1999-2011, 2013-2018 Free Software Foundation, Inc.    *
- *   Copyright (C) 2014-2017 Benno Schulenberg                            *
+ *   Copyright (C) 2014-2018 Benno Schulenberg                            *
  *                                                                        *
  *   GNU nano is free software: you can redistribute it and/or modify     *
  *   it under the terms of the GNU General Public License as published    *
@@ -179,7 +179,7 @@ void do_para_begin(bool update_screen)
 	if (openfile->current != openfile->fileage)
 		openfile->current = openfile->current->prev;
 
-	while (!begpar(openfile->current))
+	while (!begpar(openfile->current, 0))
 		openfile->current = openfile->current->prev;
 
 	openfile->current_x = 0;
@@ -204,7 +204,7 @@ void do_para_end(bool update_screen)
 
 	while (openfile->current != openfile->filebot &&
 				inpar(openfile->current->next) &&
-				!begpar(openfile->current->next)) {
+				!begpar(openfile->current->next, 0)) {
 		openfile->current = openfile->current->next;
 	}
 
@@ -324,7 +324,9 @@ bool do_next_word(bool after_ends, bool allow_punct, bool update_screen)
 	bool started_on_word = is_word_mbchar(openfile->current->data +
 								openfile->current_x, allow_punct);
 	bool seen_space = !started_on_word;
+#ifndef NANO_TINY
 	bool seen_word = started_on_word;
+#endif
 
 	/* Move forward until we reach the start of a word. */
 	while (TRUE) {

@@ -20,9 +20,8 @@
 #ifndef _DOSNAME_H
 #define _DOSNAME_H
 
-#if (defined _WIN32 || defined __WIN32__ ||     \
-     defined __MSDOS__ || defined __CYGWIN__ || \
-     defined __EMX__ || defined __DJGPP__)
+#if (defined _WIN32 || defined __CYGWIN__ \
+     || defined __EMX__ || defined __MSDOS__ || defined __DJGPP__)
    /* This internal macro assumes ASCII, but all hosts that support drive
       letters use ASCII.  */
 # define _IS_DRIVE_LETTER(C) (((unsigned int) (C) | ('a' - 'A')) - 'a'  \

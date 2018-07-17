@@ -30,7 +30,7 @@
 
 
 /* On native Windows platforms, many macros are not defined.  */
-# if (defined _WIN32 || defined __WIN32__) && ! defined __CYGWIN__
+# if defined _WIN32 && ! defined __CYGWIN__
 
 /* These are the same values as defined by MSVC 10, for interoperability.  */
 
@@ -248,7 +248,7 @@
        interoperability.  */
 #   define EOWNERDEAD      58
 #   define ENOTRECOVERABLE 59
-#  elif (defined _WIN32 || defined __WIN32__) && ! defined __CYGWIN__
+#  elif defined _WIN32 && ! defined __CYGWIN__
     /* We have a conflict here: pthreads-win32 defines these values
        differently than MSVC 10.  It's hairy to decide which one to use.  */
 #   if defined __MINGW32__ && !defined USE_WINDOWS_THREADS

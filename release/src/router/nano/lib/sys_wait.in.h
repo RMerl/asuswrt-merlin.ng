@@ -23,7 +23,7 @@
 @PRAGMA_COLUMNS@
 
 /* The include_next requires a split double-inclusion guard.  */
-#if !((defined _WIN32 || defined __WIN32__) && ! defined __CYGWIN__)
+#if !(defined _WIN32 && ! defined __CYGWIN__)
 # @INCLUDE_NEXT@ @NEXT_SYS_WAIT_H@
 #endif
 
@@ -39,7 +39,7 @@
 /* The definition of _GL_WARN_ON_USE is copied here.  */
 
 
-#if !((defined _WIN32 || defined __WIN32__) && ! defined __CYGWIN__)
+#if !(defined _WIN32 && ! defined __CYGWIN__)
 /* Unix API.  */
 
 /* The following macros apply to an argument x, that is a status of a process,
@@ -111,7 +111,7 @@
 /* Declarations of functions.  */
 
 #if @GNULIB_WAITPID@
-# if (defined _WIN32 || defined __WIN32__) && ! defined __CYGWIN__
+# if defined _WIN32 && ! defined __CYGWIN__
 _GL_FUNCDECL_SYS (waitpid, pid_t, (pid_t pid, int *statusp, int options));
 # endif
 _GL_CXXALIAS_SYS (waitpid, pid_t, (pid_t pid, int *statusp, int options));

@@ -3,7 +3,7 @@
  *                                                                        *
  *   Copyright (C) 2001-2011, 2013-2018 Free Software Foundation, Inc.    *
  *   Copyright (C) 2014 Mike Frysinger                                    *
- *   Copyright (C) 2014-2017 Benno Schulenberg                            *
+ *   Copyright (C) 2014-2018 Benno Schulenberg                            *
  *                                                                        *
  *   GNU nano is free software: you can redistribute it and/or modify     *
  *   it under the terms of the GNU General Public License as published    *
@@ -400,7 +400,8 @@ void parse_binding(char *ptr, bool dobind)
 		if (funcptr[0] == '\0') {
 			rcfile_error(N_("Must specify a function to bind the key to"));
 			goto free_things;
-		}
+		} else if (ptr == NULL)
+			goto free_things;
 	}
 
 	menuptr = ptr;
@@ -510,7 +511,7 @@ bool is_good_file(char *file)
 	if (access(file, R_OK) != 0)
 		return FALSE;
 
-	/* If the thing exists, it may not be a directory nor a device. */
+	/* If the thing exists, it may be neither a directory nor a device. */
 	if (stat(file, &rcinfo) != -1 && (S_ISDIR(rcinfo.st_mode) ||
 				S_ISCHR(rcinfo.st_mode) || S_ISBLK(rcinfo.st_mode))) {
 		rcfile_error(S_ISDIR(rcinfo.st_mode) ? _("\"%s\" is a directory") :
@@ -1146,19 +1147,17 @@ void parse_rcfile(FILE *rcstream, bool syntax_only)
 #endif
 #ifdef ENABLE_JUSTIFY
 		if (strcasecmp(rcopts[i].name, "punct") == 0) {
-			punct = option;
-			if (has_blank_mbchars(punct)) {
+			if (has_blank_mbchars(option)) {
 				rcfile_error(N_("Non-blank characters required"));
-				free(punct);
-				punct = NULL;
-			}
+				free(option);
+			} else
+				punct = option;
 		} else if (strcasecmp(rcopts[i].name, "brackets") == 0) {
-			brackets = option;
-			if (has_blank_mbchars(brackets)) {
+			if (has_blank_mbchars(option)) {
 				rcfile_error(N_("Non-blank characters required"));
-				free(brackets);
-				brackets = NULL;
-			}
+				free(option);
+			} else
+				brackets = option;
 		} else if (strcasecmp(rcopts[i].name, "quotestr") == 0)
 			quotestr = option;
 		else

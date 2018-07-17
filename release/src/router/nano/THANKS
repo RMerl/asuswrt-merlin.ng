@@ -87,6 +87,7 @@ Other stuff:
 ===========
 Ben Armstrong <synrg@sanctuary.nslug.ns.ca>    Negative -r value idea, code
 Thomas Dickey <dickey@herndon4.his.com>        Curses help and advice
+Kamil Dudka <kdudka@redhat.com>                Several small bug fixes
 Sven Guckes <guckes@math.fu-berlin.de>         Advice and advocacy
 Thijs Kinkhorst <thijs@kinkhorst.com>          rnano.1 manpage
 Jim Knoble <jmknoble@pobox.com>                Pico compat for browser

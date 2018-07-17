@@ -39,8 +39,7 @@
    GNU Emacs, which arranges for this in some other way and which
    defines WIN32_LEAN_AND_MEAN itself.  */
 
-#if ((defined _WIN32 || defined __WIN32__) \
-     && ! defined __CYGWIN__ && ! defined EMACS_CONFIGURATION)
+#if defined _WIN32 && ! defined __CYGWIN__ && ! defined EMACS_CONFIGURATION
 # define USE_SETFILETIME
 # define WIN32_LEAN_AND_MEAN
 # include <windows.h>

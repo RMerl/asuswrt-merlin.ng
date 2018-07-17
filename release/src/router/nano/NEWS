@@ -1,3 +1,12 @@
+2018.06.02 - GNU nano 2.9.8 "Espresso" brings the ability to filter the
+             buffer (or the marked region) through an external command
+             (^R^X and prefix the command with the pipe symbol, "|"), is
+             better at detecting and maintaining paragraphs, is able to
+             justify //-style comments, fixes a crash when the binding
+             of a key to a string lacks a closing quote, gives feedback
+             about the number of lines written also when prepending or
+             appending, and fixes a couple of bugs with the linter.
+
 2018.05.15 - GNU nano 2.9.7 "Hvide Sande" adds the option '--afterends'
              for making Ctrl+Right (the nextword function) stop at word
              ends instead of beginnings, accepts multibyte letters for

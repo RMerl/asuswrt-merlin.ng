@@ -8,8 +8,8 @@
 
 @smallbook
 @set EDITION 0.5
-@set VERSION 2.9.7
-@set UPDATED May 2018
+@set VERSION 2.9.8
+@set UPDATED June 2018
 
 @dircategory Editors
 @direntry
@@ -23,7 +23,7 @@
 @titlepage
 @title GNU @command{nano}
 @subtitle a small and friendly text editor
-@subtitle version 2.9.7
+@subtitle version 2.9.8
 
 @author Chris Allegretta
 @page
@@ -63,7 +63,7 @@ e-mail: @email{chrisa@@asty.org}@*
 @node Top
 @top
 
-This manual documents the GNU @command{nano} editor, version 2.9.7.
+This manual documents the GNU @command{nano} editor, version 2.9.8.
 
 @menu
 * Introduction::
@@ -198,7 +198,7 @@ won't work properly with this option enabled.
 
 @item -L
 @itemx --nonewlines
-Don't add newlines to the ends of files.
+Don't automatically add a newline when a file does not end with one.
 
 @item -M
 @itemx --trimblanks
@@ -218,11 +218,10 @@ Use the blank line below the title bar as extra editing space.
 For the 200 most recent files, log the last position of the cursor,
 and place it at that position again upon reopening such a file.
 
-@item -Q "@var{characters}"
-@itemx --quotestr="@var{characters}"
-Set the quoting string for justifying.  The default value is
-@t{"^([ \t]*[|>:@}#])+"} if extended regular expression support
-is available, and @t{"> "} otherwise.
+@item -Q "@var{regex}"
+@itemx --quotestr="@var{regex}"
+Set the regular expression for matching the quoting part of a line, used
+when justifying.  The default value is @t{"^([@w{ }\t]*([#:>|@}]|//))+"}.
 Note that @code{\t} stands for a literal Tab character.
 
 @item -R
@@ -299,8 +298,9 @@ Show a summary of command-line options and exit.
 
 @item -i
 @itemx --autoindent
-Automatically indent new lines to the same number of spaces and tabs as
-the previous line.
+Automatically indent a newly created line to the same number of tabs
+and/or spaces as the previous line (or as the next line if the previous
+line is the beginning of a paragraph).
 
 @item -k
 @itemx --cutfromcursor
@@ -355,7 +355,7 @@ The default value is @t{-8}.  This option conflicts with @option{-w}
 @itemx --speller=@var{program}
 Use the given program to do spell checking and correcting.  By default,
 @command{nano} uses the command specified in the @env{SPELL} environment
-variable for this.  If @env{SPELL} is not set, and @option{--speller} is
+variable.  If @env{SPELL} is not set, and @option{--speller} is
 not specified either, then @command{nano} uses its own interactive spell
 corrector, which requires the GNU @command{spell} program to be installed.
 
@@ -595,59 +595,59 @@ The following global toggles are available:
 
 @table @code
 
-@item Backup Files toggle
+@item Backup Files
 @kbd{Meta-B} toggles the @option{-B} (@option{--backup}) command-line option.
 
-@item Constant Cursor Position Display toggle
+@item Constant Cursor Position Display
 @kbd{Meta-C} toggles the @option{-c} (@option{--constantshow}) command-line option.
 
-@item Multiple File Buffers toggle
+@item Multiple File Buffers
 @kbd{Meta-F} toggles the @option{-F} (@option{--multibuffer}) command-line option.
 
-@item Smart Home Key toggle
+@item Smart Home Key
 @kbd{Meta-H} toggles the @option{-A} (@option{--smarthome}) command-line option.
 
-@item Auto Indent toggle
+@item Auto Indent
 @kbd{Meta-I} toggles the @option{-i} (@option{--autoindent}) command-line option.
 
-@item Cut From Cursor To End-of-Line toggle
+@item Cut From Cursor To End-of-Line
 @kbd{Meta-K} toggles the @option{-k} (@option{--cutfromcursor}) command-line option.
 
-@item Long-Line Wrapping toggle
+@item Long-Line Wrapping
 @kbd{Meta-L} toggles the @option{-w} (@option{--nowrap}) command-line option.
 
-@item Mouse Support toggle
+@item Mouse Support
 @kbd{Meta-M} toggles the @option{-m} (@option{--mouse}) command-line option.
 
-@item No Conversion From DOS/Mac Format toggle
+@item No Conversion From DOS/Mac Format
 @kbd{Meta-N} toggles the @option{-N} (@option{--noconvert}) command-line option.
 
-@item More Space For Editing toggle
+@item More Space For Editing
 @kbd{Meta-O} toggles the @option{-O} (@option{--morespace}) command-line option.
 
-@item Whitespace Display toggle
-@kbd{Meta-P} toggles the whitespace-display mode (@pxref{Whitespace}).
+@item Whitespace Display
+@kbd{Meta-P} toggles the displaying of whitespace (@pxref{Whitespace}).
 
-@item Tabs To Spaces toggle
+@item Tabs To Spaces
 @kbd{Meta-Q} toggles the @option{-E} (@option{--tabstospaces}) command-line option.
 
-@item Smooth Scrolling toggle
+@item Smooth Scrolling
 @kbd{Meta-S} toggles the @option{-S} (@option{--smooth}) command-line option.
 
-@item Expert/No Help toggle
+@item Expert/No Help
 @kbd{Meta-X} toggles the @option{-x} (@option{--nohelp}) command-line option.
 
-@item Color Syntax Highlighting toggle
+@item Color Syntax Highlighting
 @kbd{Meta-Y} toggles color syntax highlighting (if your nanorc defines syntaxes
 --- @pxref{Syntax Highlighting}).
 
-@item Suspension toggle
+@item Suspension
 @kbd{Meta-Z} toggles the @option{-z} (@option{--suspend}) command-line option.
 
-@item Line Numbers toggle
+@item Line Numbers
 @kbd{Meta-#} toggles the @option{-l} (@option{--linenumbers}) command-line option.
 
-@item Soft Wrapping toggle
+@item Soft Wrapping
 @kbd{Meta-$} toggles the @option{-$} (@option{--softwrap}) command-line option.
 
 @end table
@@ -706,7 +706,9 @@ When soft line wrapping is enabled, make it wrap lines at blank characters
 (tabs and spaces) instead of always at the edge of the screen.
 
 @item set autoindent
-Use auto-indentation.
+Automatically indent a newly created line to the same number of tabs
+and/or spaces as the previous line (or as the next line if the previous
+line is the beginning of a paragraph).
 
 @item set backup
 When saving a file, back up the previous version of it, using the current
@@ -733,7 +735,7 @@ Set the characters treated as closing brackets when justifying
 paragraphs.  This may not include blank characters.  Only closing
 punctuation (see @code{set punct}), optionally followed by the specified
 closing brackets, can end sentences.  The default value is
-@t{"')>]@}"}.
+@t{""')>]@}"}.
 
 @item set casesensitive
 Do case-sensitive searches by default.
@@ -804,12 +806,12 @@ Don't convert files from DOS/Mac format.
 @item set nohelp
 Don't display the help lists at the bottom of the screen.
 
+@item set nonewlines
+When a file does not end with a newline, don't automatically add one.
+
 @item set nopauses
 Don't pause between warnings at startup.  This means that only
 the last one will be visible (when there are multiple ones).
-
-@item set nonewlines
-Don't add newlines to the ends of files.
 
 @item set nowrap
 Don't hard-wrap text at all.  This option conflicts with
@@ -846,12 +848,10 @@ keystroke instead of 25.  Note that @option{constantshow} overrides this.
 @item set quiet
 Obsolete option.  Recognized but ignored.
 
-@item set quotestr "@var{string}"
+@item set quotestr "@var{regex}"
 The email-quote string, used to justify email-quoted paragraphs.  This
-is an extended regular expression if your system supports them,
-otherwise a literal string.  The default value is
-@t{"^([ \\t]*[#:>\\|@}])+"} if you have extended regular expression
-support, and @t{"> "} otherwise.
+is an extended regular expression.  The default value is
+@t{"^([@w{ }\t]*([#:>|@}]|//))+"}.
 Note that @code{\t} stands for a literal Tab character.
 
 @item set rebinddelete
@@ -958,7 +958,7 @@ via the following commands in a nanorc file:
 
 @table @code
 
-@item syntax "@var{name}" ["@var{fileregex}" @dots{}]
+@item syntax @var{name} ["@var{fileregex}" @dots{}]
 Start the definition of a syntax with this @var{name}.
 All subsequent @code{color} and other such commands
 will be added to this syntax, until a new @code{syntax}
@@ -989,12 +989,12 @@ file, to determine whether this syntax should be used for it.
 on the system and will be silently ignored otherwise.)
 
 @item linter @var{program} [@var{arg} @dots{}]
-Use the given @var{program} to do a syntax check on the current file.
+Use the given @var{program} to do a syntax check on the current buffer.
 (This overrides the speller function.)
 
 @item formatter @var{program} [@var{arg} @dots{}]
-Use the given @var{program} to automatically reformat text ---
-useful for a programming language like Go.
+Use the given @var{program} to automatically reformat the text in
+the current buffer --- useful for a programming language like Go.
 (This overrides the speller and linter functions.)
 
 @item comment "@var{string}"
@@ -1161,11 +1161,14 @@ Shows the current cursor position: the line, column, and character positions.
 Counts the number of words, lines and characters in the current buffer.
 
 @item speller
-Invokes a spell-checking program (or a linting program, if the current
-syntax highlighting defines one).
+Invokes a spell-checking program (or linting program, or formatter program,
+if the active syntax defines such a thing).
 
 @item justify
-Justifies the current paragraph.
+Justifies the current paragraph.  A paragraph is a group of contiguous lines
+that, apart from possibly the first line, all have the same indentation.  The
+beginning of a paragraph is detected by either this lone line with a differing
+indentation or by a preceding blank line.
 
 @item fulljustify
 Justifies the entire current buffer.
@@ -1315,6 +1318,10 @@ Toggles between searching for text and targeting a line number.
 @item flipexecute
 Toggles between inserting a file and executing a command.
 
+@item flippipe
+When executing a command, toggles whether the current buffer (or marked
+region) is piped to the command.
+
 @item flipnewbuffer
 Toggles between inserting into the current buffer and into a new
 empty buffer.
@@ -1381,7 +1388,9 @@ Toggles syntax highlighting.
 Toggles the smartness of the Home key.
 
 @item autoindent
-Toggles whether new lines will contain the same amount of whitespace as the preceding line.
+Toggles whether a newly created line will contain the same amount of leading
+whitespace as the preceding line --- or as the next line if the preceding line
+is the beginning of a paragraph.
 
 @item cutfromcursor
 Toggles whether cutting text will cut the whole line or just from the current cursor
@@ -1477,7 +1486,7 @@ find the desired file.
 
 Basic movement in the file browser is accomplished with the arrow and
 other cursor-movement keys.  More targeted movement is accomplished by
-searching, via @kbd{^W} or @kbd{w'}, or by changing directory, via
+searching, via @kbd{^W} or @kbd{w}, or by changing directory, via
 @kbd{^_} or @kbd{g}.  The behavior of the @kbd{Enter} key (or @kbd{s})
 varies by what is currently selected.
 If the currently selected object is a directory, the file browser will

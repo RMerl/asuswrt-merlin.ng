@@ -19,10 +19,13 @@
 #endif
 @PRAGMA_COLUMNS@
 
-#ifdef _GL_ALREADY_INCLUDING_LOCALE_H
+#if (defined _WIN32 && !defined __CYGWIN__ && defined __need_locale_t) \
+    || defined _GL_ALREADY_INCLUDING_LOCALE_H
 
-/* Special invocation conventions to handle Solaris header files
-   (through Solaris 10) when combined with gettext's libintl.h.  */
+/* Special invocation convention:
+   - Inside mingw header files,
+   - To handle Solaris header files (through Solaris 10) when combined
+     with gettext's libintl.h.  */
 
 #@INCLUDE_NEXT@ @NEXT_LOCALE_H@
 
@@ -212,5 +215,5 @@ _GL_WARN_ON_USE (duplocale, "duplocale is buggy on some glibc systems - "
 #endif
 
 #endif /* _@GUARD_PREFIX@_LOCALE_H */
-#endif /* ! _GL_ALREADY_INCLUDING_LOCALE_H */
 #endif /* _@GUARD_PREFIX@_LOCALE_H */
+#endif /* !(__need_locale_t || _GL_ALREADY_INCLUDING_LOCALE_H) */

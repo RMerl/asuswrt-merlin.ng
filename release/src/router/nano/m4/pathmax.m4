@@ -1,4 +1,4 @@
-# pathmax.m4 serial 10
+# pathmax.m4 serial 11
 dnl Copyright (C) 2002-2003, 2005-2006, 2009-2018 Free Software Foundation,
 dnl Inc.
 dnl This file is free software; the Free Software Foundation
@@ -29,7 +29,7 @@ AC_DEFUN([gl_PATHMAX_SNIPPET], [[
 # undef PATH_MAX
 # define PATH_MAX 1024
 #endif
-#if (defined _WIN32 || defined __WIN32__) && ! defined __CYGWIN__
+#if defined _WIN32 && ! defined __CYGWIN__
 # undef PATH_MAX
 # define PATH_MAX 260
 #endif

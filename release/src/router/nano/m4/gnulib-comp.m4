@@ -51,7 +51,6 @@ AC_DEFUN([gl_EARLY],
   # Code from module c99:
   # Code from module clock-time:
   # Code from module closedir:
-  # Code from module configmake:
   # Code from module ctype:
   # Code from module d-type:
   # Code from module dirent:
@@ -215,7 +214,6 @@ AC_DEFUN([gl_INIT],
     AC_LIBOBJ([closedir])
   fi
   gl_DIRENT_MODULE_INDICATOR([closedir])
-  gl_CONFIGMAKE_PREP
   gl_CTYPE_H
   gl_CHECK_TYPE_STRUCT_DIRENT_D_TYPE
   gl_DIRENT_H
@@ -351,7 +349,8 @@ AC_DEFUN([gl_INIT],
   gl___INLINE
   gl_LIMITS_H
   gl_LOCALCHARSET
-  LOCALCHARSET_TESTS_ENVIRONMENT="CHARSETALIASDIR=\"\$(abs_top_builddir)/$gl_source_base\""
+  dnl For backward compatibility. Some packages still use this.
+  LOCALCHARSET_TESTS_ENVIRONMENT=
   AC_SUBST([LOCALCHARSET_TESTS_ENVIRONMENT])
   gl_LOCALE_H
   gl_FUNC_LOCALECONV
@@ -713,7 +712,6 @@ AC_DEFUN([gl_FILE_LIST], [
   lib/c++defs.h
   lib/cdefs.h
   lib/closedir.c
-  lib/config.charset
   lib/ctype.in.h
   lib/dirent-private.h
   lib/dirent.in.h
@@ -817,8 +815,6 @@ AC_DEFUN([gl_FILE_LIST], [
   lib/printf-parse.h
   lib/raise.c
   lib/readdir.c
-  lib/ref-add.sin
-  lib/ref-del.sin
   lib/regcomp.c
   lib/regex.c
   lib/regex.h
@@ -897,7 +893,6 @@ AC_DEFUN([gl_FILE_LIST], [
   m4/clock_time.m4
   m4/closedir.m4
   m4/codeset.m4
-  m4/configmake.m4
   m4/ctype.m4
   m4/d-type.m4
   m4/dirent_h.m4

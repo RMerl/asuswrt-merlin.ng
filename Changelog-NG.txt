@@ -14,13 +14,14 @@ General changes in the 384/NG branch vs 380.xx:
 
 
 384.6 (xx-xxx-xxxx)
-   - NEW: Merged with GPL 384_21045/382_50624.  (AC87U currently
-          missing)
+   - NOTE: The RT-AC87U is not supported in this release, as
+           Asus hasn't released any updated code for that model.
+   - NEW: Merged with GPL 384_21045/382_50624.
    - NEW: Added support for the "-p" option to netstat.
    - NEW: Added setting to enable DNS rebind protection, on the
           DHCP page.  This works by rejecting upstream server
           responses that would point at a private IP.
-   - CHANGED: Updated nano to 2.9.7
+   - CHANGED: Updated nano to 2.9.8
    - CHANGED: Updated curl to 7.60.0 (contains security fixes)
    - CHANGED: Allow selecting text (for copy/paste operations)
               on AiProtection pages.
@@ -28,6 +29,15 @@ General changes in the 384/NG branch vs 380.xx:
               ciphers (so they can be explicitely used without
               using NCP).
    - CHANGED: Updated dnsmasq to 2.80test2-17-g51e4eee (themiron)
+   - CHANGED: Since dnsmasq 2.80, dnsmasq now ensures that unsigned
+              DNS replies received with DNSSEC enabled are legitimate.
+              If your upstream DNS doesn't support DNSSEC, this means
+              all replies from signed zones will be considered
+              invalid.  Make sure you only enable DNSSEC if your
+              upstream DNS servers do support it.  This behaviour is
+              a bit slower, but far more secure than the old default.
+   - CHANGED: Network Tools -> Netstat output also report program/PID
+   - CHANGED: Updated CA bundle to June 20th version.
    - FIXED: IPv6-related issues on non-HND platform (themiron)
    - FIXED: Couldn't log on WTFast if accessing the router
             webui over https.

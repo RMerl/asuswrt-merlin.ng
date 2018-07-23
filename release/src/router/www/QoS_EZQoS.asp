@@ -1624,7 +1624,7 @@ function change_scheduler(value){
 											<td colspan="2">
 												<select name="qos_overhead_preset" class="input_option" onchange="set_overhead(this);">
 												</select>
-												<input type="text" maxlength="4" class="input_6_table" name="qos_overhead" id="qos_overhead" onKeyPress="return validator.isNumber(this,event);" onblur="validate_number_range(this, -127, 128)" value="<% nvram_get("qos_overhead"); %>" style="margin-left:20px;">
+												<input type="text" maxlength="4" class="input_6_table" name="qos_overhead" id="qos_overhead" onKeyPress="return validator.isNumber(this,event);" onblur="validator.numberRange(this, -127, 128);" value="<% nvram_get("qos_overhead"); %>" style="margin-left:20px;">
 												<input type="checkbox" name="qos_atm_x" id="qos_atm_x" <% nvram_match("qos_atm", "1", "checked"); %>>ATM</input>
 											</td>
 										</tr>

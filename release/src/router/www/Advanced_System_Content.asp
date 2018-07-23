@@ -1861,7 +1861,7 @@ function warn_jffs_format(){
 				<tr id="sshd_port_tr">
 					<th><#Port_SSH#></th>
 					<td>
-						<input type="text" class="input_6_table" maxlength="5" name="sshd_port" onKeyPress="return validator.isNumber(this,event);" onblur="validate_number_range(this, 1, 65535)" value='<% nvram_get("sshd_port"); %>' autocorrect="off" autocapitalize="off">
+						<input type="text" class="input_6_table" maxlength="5" name="sshd_port" onKeyPress="return validator.isNumber(this,event);" onblur="validator.numberRange(this, 1, 65535);" value='<% nvram_get("sshd_port"); %>' autocorrect="off" autocapitalize="off">
 					</td>
 				</tr>
 				<tr id="sshd_password_tr">

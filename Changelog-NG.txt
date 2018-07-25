@@ -13,7 +13,7 @@ General changes in the 384/NG branch vs 380.xx:
      lists of settings might no longer be possible on 384.xx.
 
 
-384.6 (xx-xxx-xxxx)
+384.6 (25-July-2018)
    - NOTE: The RT-AC87U is not supported in this release, as
            Asus hasn't released any updated code for that model.
    - NEW: Merged with GPL 384_21045/382_50624.

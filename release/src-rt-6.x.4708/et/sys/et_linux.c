@@ -2598,7 +2598,6 @@ et_rxevent(osl_t *osh, et_info_t *et, struct chops *chops, void *ch, int quota)
 						cd[i].h_sa = evh + ETHER_ADDR_LEN;
 						cd[i].h_prio = prio;
 						cidx++;
-						break;
 					}
 #ifdef PLC
 					if (et_plc_pkt(et, evh)) {

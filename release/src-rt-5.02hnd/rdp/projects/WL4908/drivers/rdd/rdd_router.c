@@ -636,7 +636,7 @@ static inline int f_rdd_nat_cache_lkp_entry_alloc ( uint32_t                  ha
     bdmf_ip_t                 nat_cache_lkp_entry_dst_ip;
     RDD_NAT_CACHE_TABLE_DTS   *nat_cache_table_ptr = (RDD_NAT_CACHE_TABLE_DTS *)NatCacheTableBase;
 
-    for ( tries = 0; tries < (RDD_NAT_CACHE_LOOKUP_DEPTH_SIZE/2); tries++ )
+    for ( tries = 0; tries < RDD_NAT_CACHE_LOOKUP_DEPTH_SIZE; tries++ )
     {
         nat_cache_entry_index = hash_index + tries;
 
@@ -688,14 +688,12 @@ int rdd_connection_entry_add ( rdd_ip_flow_t  *add_connection,
     RDD_CONTEXT_CONTINUATION_TABLE_DTS *context_cont_table_ptr;
     RDD_CONTEXT_CONTINUATION_ENTRY_DTS *context_cont_entry_ptr;
     uint8_t                      entry_bytes[ RDD_NAT_CACHE_LKP_ENTRY_SIZE ];
-    uint32_t                     hash_index, tries;
+    uint32_t                     hash_index, tries = 0;
     uint32_t                     nat_cache_entry_index;
     uint32_t                     flow_entry_index;
     uint32_t                     ipv6_src_ip_crc;
     uint32_t                     ipv6_dst_ip_crc;
     int       bdmf_error;
-    uint32_t                     bucket_overflow_counter;
-    uint32_t                     entry_overflow;
     unsigned long                flags;
     int                          create_dup_key=0; /*NAT Cache errata workaround*/
 
@@ -745,8 +743,6 @@ int rdd_connection_entry_add ( rdd_ip_flow_t  *add_connection,
 
     rdd_connection_hash_function(&hash_index, entry_bytes);
 
-    entry_overflow = 0;
-
     bdmf_error = f_rdd_nat_cache_lkp_entry_alloc ( hash_index, add_connection->lookup_entry, ipv6_src_ip_crc, ipv6_dst_ip_crc, &tries );
 
     if ( bdmf_error != BDMF_ERR_OK )
@@ -755,41 +751,10 @@ int rdd_connection_entry_add ( rdd_ip_flow_t  *add_connection,
         return ( bdmf_error );
     }
 
-    if ( tries == (RDD_NAT_CACHE_LOOKUP_DEPTH_SIZE/2) )
+    if ( tries == RDD_NAT_CACHE_LOOKUP_DEPTH_SIZE )
     {
-        hash_index = ( hash_index + (RDD_NAT_CACHE_LOOKUP_DEPTH_SIZE/2) ) & ( RDD_NAT_CACHE_TABLE_SIZE - 1 );
-
-        bdmf_error = f_rdd_nat_cache_lkp_entry_alloc ( hash_index, add_connection->lookup_entry, ipv6_src_ip_crc, ipv6_dst_ip_crc, &tries );
-
-        if ( bdmf_error != BDMF_ERR_OK )
-        {
-            bdmf_fastlock_unlock_irq ( &int_lock_irq, flags );
-            return ( bdmf_error );
-        }
-
-        if ( tries == (RDD_NAT_CACHE_LOOKUP_DEPTH_SIZE/2) )
-        {
-            bdmf_fastlock_unlock_irq ( &int_lock_irq, flags );
-            return BDMF_ERR_IGNORE;
-        }
-
-        entry_overflow = 1;
-
-        /*  increment bucket_overflow_counter in the last entry of the previous bucket */
-        if ( hash_index == 0 )
-        {
-            nat_cache_entry_index = RDD_NAT_CACHE_TABLE_SIZE - 1;
-        }
-        else
-        {
-            nat_cache_entry_index = hash_index - 1;
-        }
-
-        nat_cache_lkp_entry_ptr = &( nat_cache_table_ptr->entry[ nat_cache_entry_index ] );
-
-        RDD_NAT_CACHE_LKP_ENTRY_BUCKET_OVERFLOW_COUNTER_READ ( bucket_overflow_counter, nat_cache_lkp_entry_ptr );
-        bucket_overflow_counter++;
-        RDD_NAT_CACHE_LKP_ENTRY_BUCKET_OVERFLOW_COUNTER_WRITE ( bucket_overflow_counter, nat_cache_lkp_entry_ptr );
+        bdmf_fastlock_unlock_irq ( &int_lock_irq, flags );
+        return BDMF_ERR_IGNORE;
     }
 
     /*Wrap index at 64K - Part of NAT Cache workaround below*/
@@ -854,12 +819,6 @@ int rdd_connection_entry_add ( rdd_ip_flow_t  *add_connection,
     context_cont_entry_ptr = &(context_cont_table_ptr->entry[ nat_cache_entry_index ] );
     RDD_CONTEXT_CONTINUATION_ENTRY_FLOW_INDEX_WRITE ( flow_entry_index, context_cont_entry_ptr );
 
-    if ( entry_overflow == 1 )
-    {
-        /* set entry_overflow in the context of the entry */
-        RDD_CONTEXT_CONTINUATION_ENTRY_OVERFLOW_WRITE ( 1, context_cont_entry_ptr );
-    }
-
 #if defined(CC_RDD_ROUTER_DEBUG)
     {
         __debug("%s, %u: connection_table_index %u\n", __FUNCTION__, __LINE__, context_cont_entry_ptr->connection_table_index);
@@ -888,7 +847,7 @@ static int f_rdd_nat_cache_lkp_entry_lookup ( uint32_t                  hash_ind
     bdmf_ip_t                 nat_cache_lkp_entry_dst_ip;
     RDD_NAT_CACHE_TABLE_DTS   *nat_cache_table_ptr = (RDD_NAT_CACHE_TABLE_DTS *)NatCacheTableBase;
 
-    for ( tries = 0; tries < (RDD_NAT_CACHE_LOOKUP_DEPTH_SIZE/2); tries++ )
+    for ( tries = 0; tries < RDD_NAT_CACHE_LOOKUP_DEPTH_SIZE; tries++ )
     {
         nat_cache_entry_index = hash_index + tries;
 
@@ -935,9 +894,6 @@ int rdd_connection_entry_delete ( bdmf_index  flow_entry_index )
     uint32_t                     context_cont_flow_index;
     uint32_t                     entry_index = RDD_NATC_CONTEXT_TABLE_SIZE;
     uint32_t                     context_entry_connection_table_index;
-    uint32_t                     entry_overflow;
-    uint32_t                     nat_cache_entry_index;
-    uint32_t                     bucket_overflow_counter;
     unsigned long                flags;
     bdmf_error_t rc = BDMF_ERR_OK;
 
@@ -974,36 +930,15 @@ int rdd_connection_entry_delete ( bdmf_index  flow_entry_index )
 
     if ( nat_cache_lkp_entry_valid && ( flow_entry_index == context_cont_flow_index ) )
     {
-        RDD_CONTEXT_CONTINUATION_ENTRY_OVERFLOW_READ ( entry_overflow, context_cont_entry_ptr );
-
-        if ( entry_overflow == 1 )
-        {
-            /* decrement bucket_overflow_counter in the last entry of the previous bucket */
-            if ( context_entry_connection_table_index < (RDD_NAT_CACHE_LOOKUP_DEPTH_SIZE/2) )
-            {
-                nat_cache_entry_index = RDD_NAT_CACHE_TABLE_SIZE - 1;
-            }
-            else
-            {
-                nat_cache_entry_index = context_entry_connection_table_index - ( context_entry_connection_table_index % (RDD_NAT_CACHE_LOOKUP_DEPTH_SIZE/2) ) - 1;
-            }
-    
-            nat_cache_lkp_entry_ptr = &( nat_cache_table_ptr->entry[ nat_cache_entry_index ] );
-    
-            RDD_NAT_CACHE_LKP_ENTRY_BUCKET_OVERFLOW_COUNTER_READ ( bucket_overflow_counter, nat_cache_lkp_entry_ptr );
-            bucket_overflow_counter--;
-            RDD_NAT_CACHE_LKP_ENTRY_BUCKET_OVERFLOW_COUNTER_WRITE ( bucket_overflow_counter, nat_cache_lkp_entry_ptr );
-
-            nat_cache_lkp_entry_ptr = &( nat_cache_table_ptr->entry[ context_entry_connection_table_index ] );
-        }
-
         memcpy(&nat_cache_lookup_entry, nat_cache_lkp_entry_ptr, sizeof(RDD_NAT_CACHE_LKP_ENTRY_DTS));
 
         memset(nat_cache_lkp_entry_ptr, 0, sizeof(RDD_NAT_CACHE_LKP_ENTRY_DTS));
 
-        f_rdd_free_context_entry ( entry_index );
-
 #if !defined(FIRMWARE_INIT)
+
+        /* wait for the entry to be updated in DDR before deleting it from internal NAT cache memory */
+        wmb();
+
         /* look for the entry in the NAT cache internal memory if its there delete it */
         rc = rdd_nat_cache_submit_command(natc_lookup, (uint32_t *)&nat_cache_lookup_entry, NULL, NULL);
 
@@ -1012,6 +947,8 @@ int rdd_connection_entry_delete ( bdmf_index  flow_entry_index )
         else
             rc = BDMF_ERR_OK;
 #endif
+
+        f_rdd_free_context_entry ( entry_index );
 
         if (rc == BDMF_ERR_OK)
         {
@@ -1037,7 +974,7 @@ int rdd_connection_entry_search ( rdd_ip_flow_t  *get_connection,
     RDD_CONTEXT_CONTINUATION_TABLE_DTS *context_cont_table_ptr = ( RDD_CONTEXT_CONTINUATION_TABLE_DTS * )ContextContTableBase;
     RDD_CONTEXT_CONTINUATION_ENTRY_DTS *context_cont_entry_ptr;
     uint8_t                   entry_bytes[ RDD_NAT_CACHE_LKP_ENTRY_SIZE ];
-    uint32_t                  hash_index, tries;
+    uint32_t                  hash_index, tries = 0;
     uint32_t                  nat_cache_entry_index;
     uint16_t                  flow_entry_index;
     uint32_t                  ipv6_src_ip_crc;
@@ -1090,17 +1027,10 @@ int rdd_connection_entry_search ( rdd_ip_flow_t  *get_connection,
 
     f_rdd_nat_cache_lkp_entry_lookup ( hash_index, get_connection->lookup_entry, ipv6_src_ip_crc, ipv6_dst_ip_crc, &tries );
 
-    if ( tries == (RDD_NAT_CACHE_LOOKUP_DEPTH_SIZE/2) )
+    if ( tries == RDD_NAT_CACHE_LOOKUP_DEPTH_SIZE )
     {
-        hash_index = ( hash_index + (RDD_NAT_CACHE_LOOKUP_DEPTH_SIZE/2) ) & ( RDD_NAT_CACHE_TABLE_SIZE - 1 );
-
-        f_rdd_nat_cache_lkp_entry_lookup ( hash_index, get_connection->lookup_entry, ipv6_src_ip_crc, ipv6_dst_ip_crc, &tries );
-
-        if ( tries == (RDD_NAT_CACHE_LOOKUP_DEPTH_SIZE/2) )
-        {
-            bdmf_fastlock_unlock_irq ( &int_lock_irq, flags );
-            return BDMF_ERR_NOENT;
-        }
+        bdmf_fastlock_unlock_irq ( &int_lock_irq, flags );
+        return BDMF_ERR_NOENT;
     }
 
     nat_cache_entry_index = hash_index + tries;
@@ -1176,7 +1106,6 @@ int rdd_context_entry_get ( bdmf_index                  flow_entry_index,
     int                          continuation_flag;
     RDD_NAT_CACHE_LKP_ENTRY_DTS  *nat_cache_lkp_entry_ptr, nat_cache_lookup_entry;
     uint32_t                     connection_table_index;
-    uint32_t                     overflow;
     uint32_t                     entry_index = RDD_NATC_CONTEXT_TABLE_SIZE;
 
     if ((g_free_flow_entries[flow_entry_index] & RDD_FLOW_ENTRY_VALID) == RDD_FLOW_ENTRY_VALID)
@@ -1206,7 +1135,6 @@ int rdd_context_entry_get ( bdmf_index                  flow_entry_index,
     RDD_FC_NATC_UCAST_FLOW_CONTEXT_ENTRY_MULTICAST_FLAG_READ( multicast_flag, context_entry_ptr );
     RDD_CONTEXT_CONTINUATION_ENTRY_CONNECTION_DIRECTION_READ ( connection_direction, context_cont_entry_ptr );
     RDD_CONTEXT_CONTINUATION_ENTRY_CONNECTION_TABLE_INDEX_READ ( connection_table_index, context_cont_entry_ptr );
-    RDD_CONTEXT_CONTINUATION_ENTRY_OVERFLOW_READ ( overflow, context_cont_entry_ptr );
 
     nat_cache_lkp_entry_ptr = &( nat_cache_table_ptr->entry[ connection_table_index ] );
     RDD_NAT_CACHE_LKP_ENTRY_VALID_READ ( valid, nat_cache_lkp_entry_ptr );
@@ -1293,7 +1221,6 @@ int rdd_context_entry_get ( bdmf_index                  flow_entry_index,
 
             	context_entry->fc_ucast_flow_context_entry.connection_direction = connection_direction;
                 context_entry->fc_ucast_flow_context_entry.connection_table_index = connection_table_index;
-                context_entry->fc_ucast_flow_context_entry.overflow = overflow;
 
                 RDD_FC_NATC_UCAST_FLOW_CONTEXT_ENTRY_CONTEXT_CONTINUATION_FLAG_READ ( continuation_flag, context_entry_ptr );
                 if (continuation_flag)
@@ -1363,7 +1290,6 @@ int rdd_context_entry_get ( bdmf_index                  flow_entry_index,
 
             context_entry->fc_mcast_flow_context_entry.connection_direction = connection_direction;
             context_entry->fc_mcast_flow_context_entry.connection_table_index = connection_table_index;
-            context_entry->fc_mcast_flow_context_entry.overflow = overflow;
 
             RDD_CONTEXT_CONTINUATION_ENTRY_VALID_READ (context_entry->fc_mcast_flow_context_entry.valid, context_cont_entry_ptr );
 
@@ -1544,7 +1470,7 @@ int rdd_clear_connection_table ( void )
 
         if ( nat_cache_lkp_entry_ptr->valid )
         {
-            f_rdd_free_context_entry ( nat_cache_lkp_entry_ptr->context_index );
+            f_rdd_free_context_entry ( entry_index );
         }
 
         memcpy(&nat_cache_lookup_entry, nat_cache_lkp_entry_ptr, sizeof(RDD_NAT_CACHE_LKP_ENTRY_DTS));
@@ -2074,7 +2000,7 @@ static inline int rdd_fc_mcast_nat_cache_lkp_entry_lookup ( uint32_t            
                   ipv6_src_ip_crc, ipv6_dst_ip_crc);
     }
 
-    for ( tries = 0; tries < (RDD_NAT_CACHE_LOOKUP_DEPTH_SIZE/2); tries++ )
+    for ( tries = 0; tries < RDD_NAT_CACHE_LOOKUP_DEPTH_SIZE; tries++ )
     {
         nat_cache_entry_index = hash_index + tries;
         nat_cache_lkp_entry_ptr = (RDD_FC_MCAST_CONNECTION_ENTRY_DTS *) &( nat_cache_table_ptr->entry[ nat_cache_entry_index ] );
@@ -2114,7 +2040,7 @@ int rdd_fc_mcast_connection_entry_search ( rdd_ip_flow_t  *get_connection,
     RDD_CONTEXT_CONTINUATION_ENTRY_DTS *context_cont_entry_ptr;
     RDD_FC_MCAST_CONNECTION_ENTRY_DTS  *nat_cache_lkp_entry_ptr;
     uint8_t                   entry_bytes[ RDD_NAT_CACHE_LKP_ENTRY_SIZE ];
-    uint32_t                  crc_init_value, crc_result, hash_index, tries;
+    uint32_t                  crc_init_value, crc_result, hash_index, tries = 0;
     uint32_t                  nat_cache_entry_index, context_entry_index;
     uint16_t                  flow_entry_index;
     uint32_t                  ipv6_src_ip_crc;
@@ -2211,17 +2137,11 @@ int rdd_fc_mcast_connection_entry_search ( rdd_ip_flow_t  *get_connection,
     hash_index &= 0x7fff;
 
     rdd_fc_mcast_nat_cache_lkp_entry_lookup ( hash_index, mcast_lookup_entry, ipv6_src_ip_crc, ipv6_dst_ip_crc, &tries );
-    if ( tries == (RDD_NAT_CACHE_LOOKUP_DEPTH_SIZE/2) )
+    if ( tries == RDD_NAT_CACHE_LOOKUP_DEPTH_SIZE )
     {
-        hash_index = ( hash_index + (RDD_NAT_CACHE_LOOKUP_DEPTH_SIZE/2) ) & ( RDD_NAT_CACHE_TABLE_SIZE - 1 );
-
-        rdd_fc_mcast_nat_cache_lkp_entry_lookup ( hash_index, mcast_lookup_entry, ipv6_src_ip_crc, ipv6_dst_ip_crc, &tries );
-        if ( tries == (RDD_NAT_CACHE_LOOKUP_DEPTH_SIZE/2) )
-        {
-            __debug_mcast("%s, %u: search failed\n", __FUNCTION__, __LINE__); 
-            bdmf_fastlock_unlock ( &int_lock );
-            return BDMF_ERR_NOENT;
-        }
+        __debug_mcast("%s, %u: search failed\n", __FUNCTION__, __LINE__); 
+        bdmf_fastlock_unlock ( &int_lock );
+        return BDMF_ERR_NOENT;
     }
 
     nat_cache_entry_index = hash_index + tries;
@@ -2440,7 +2360,7 @@ static inline int rdd_fc_mcast_nat_cache_lkp_entry_alloc ( uint32_t             
     uint32_t                           nat_cache_lkp_entry_valid;
     RDD_NAT_CACHE_TABLE_DTS           *nat_cache_table_ptr = (RDD_NAT_CACHE_TABLE_DTS *)NatCacheTableBase;
 
-    for ( tries = 0; tries < (RDD_NAT_CACHE_LOOKUP_DEPTH_SIZE/2); tries++ )
+    for ( tries = 0; tries < RDD_NAT_CACHE_LOOKUP_DEPTH_SIZE; tries++ )
     {
         nat_cache_entry_index = hash_index + tries;
         nat_cache_lkp_entry_ptr = (RDD_FC_MCAST_CONNECTION_ENTRY_DTS *) &( nat_cache_table_ptr->entry[ nat_cache_entry_index ] );
@@ -2677,14 +2597,12 @@ int rdd_fc_mcast_connection_entry_add ( rdd_ip_flow_t  *add_connection )
     RDD_CONTEXT_CONTINUATION_TABLE_DTS *context_cont_table_ptr = ( RDD_CONTEXT_CONTINUATION_TABLE_DTS * )ContextContTableBase;
     RDD_CONTEXT_CONTINUATION_ENTRY_DTS *context_cont_entry_ptr;
     uint8_t                      entry_bytes[ RDD_NAT_CACHE_LKP_ENTRY_SIZE ];
-    uint32_t                     crc_init_value, crc_result, hash_index, tries, saved_hash_index;
+    uint32_t                     crc_init_value, crc_result, hash_index, saved_hash_index, tries = 0;
     uint32_t                     nat_cache_entry_index, master_nat_cache_entry_index, flow_entry_index;
     uint32_t                     ipv6_src_ip_crc;
     uint32_t                     ipv6_dst_ip_crc;
     uint32_t                     ip_sa;
     int                          bdmf_error = BDMF_ERR_OK;
-    uint32_t                     bucket_overflow_counter;
-    uint32_t                     entry_overflow;
     uint16_t                     connection2_entry_index;
     uint16_t                     vlan_head_index, new_vlan_head_index;
     uint32_t                     nat_cache_lkp_entry_exists = 0;
@@ -2763,14 +2681,11 @@ int rdd_fc_mcast_connection_entry_add ( rdd_ip_flow_t  *add_connection )
         entry_bytes[ 15 ] = ( ipv6_dst_ip_crc >> 0 ) & 0xFF;
     }
 
-    entry_overflow = 0;
     crc_init_value = mcast_lookup_entry->num_vlan_tags;
 
     /* calculate the CRC on the connection entry: num_vlang_tags + MCAST IPDA */
     crc_result = crcbitbybit ( &entry_bytes[ 12 ], 4, 0, crc_init_value, RDD_CRC_TYPE_32 );
-
     hash_index = crc_result & ( RDD_NAT_CACHE_TABLE_SIZE / (RDD_NAT_CACHE_LOOKUP_DEPTH_SIZE/2) - 1 );
-
     hash_index = hash_index * (RDD_NAT_CACHE_LOOKUP_DEPTH_SIZE/2);
 
     /* TBD. Remove restriction that forces hash range between 0 - 32K.
@@ -2782,32 +2697,17 @@ int rdd_fc_mcast_connection_entry_add ( rdd_ip_flow_t  *add_connection )
     saved_hash_index = hash_index;
     rdd_fc_mcast_nat_cache_lkp_entry_lookup ( hash_index, mcast_lookup_entry, ipv6_src_ip_crc, ipv6_dst_ip_crc, &tries );
 
-    if ( tries == (RDD_NAT_CACHE_LOOKUP_DEPTH_SIZE/2) )
-    {
-        hash_index = ( hash_index + (RDD_NAT_CACHE_LOOKUP_DEPTH_SIZE/2) ) & ( RDD_NAT_CACHE_TABLE_SIZE - 1 );
-
-        rdd_fc_mcast_nat_cache_lkp_entry_lookup ( hash_index, mcast_lookup_entry, ipv6_src_ip_crc, ipv6_dst_ip_crc, &tries );
-    }
-
     /* search failed so the mcast connection entry does not exist, need to alloc new entry */
-    if ( tries == (RDD_NAT_CACHE_LOOKUP_DEPTH_SIZE/2) )
+    if ( tries == RDD_NAT_CACHE_LOOKUP_DEPTH_SIZE )
     {
         hash_index = saved_hash_index;
 
         bdmf_error = rdd_fc_mcast_nat_cache_lkp_entry_alloc ( hash_index, &tries);
-        if ( tries == (RDD_NAT_CACHE_LOOKUP_DEPTH_SIZE/2) )
+        if ( tries == RDD_NAT_CACHE_LOOKUP_DEPTH_SIZE )
         {
-            hash_index = ( hash_index + (RDD_NAT_CACHE_LOOKUP_DEPTH_SIZE/2) ) & ( RDD_NAT_CACHE_TABLE_SIZE - 1 );
-
-            bdmf_error = rdd_fc_mcast_nat_cache_lkp_entry_alloc ( hash_index, &tries );
-            if ( tries == (RDD_NAT_CACHE_LOOKUP_DEPTH_SIZE/2) )
-            {
-                __debug_mcast("%s, %u: Error!!!: all possible entries for the connection are used up\n", __FUNCTION__, __LINE__);
-                bdmf_fastlock_unlock ( &int_lock );
-                return BDMF_ERR_IGNORE;
-            }
-            else 
-                entry_overflow = 1;
+            __debug_mcast("%s, %u: Error!!!: all possible entries for the connection are used up\n", __FUNCTION__, __LINE__);
+            bdmf_fastlock_unlock ( &int_lock );
+            return BDMF_ERR_IGNORE;
         }
         __debug_mcast("%s, %u: allocated NEW connection entry\n", __FUNCTION__, __LINE__);
     }
@@ -2825,26 +2725,6 @@ int rdd_fc_mcast_connection_entry_add ( rdd_ip_flow_t  *add_connection )
         __debug_mcast("%s, %u: Error!!!: out of space in mcast vlan table\n", __FUNCTION__, __LINE__);
         bdmf_fastlock_unlock ( &int_lock );
         return BDMF_ERR_NORES;
-    }
-
-    if ( entry_overflow == 1 )
-    {
-        /*  increment bucket_overflow_counter in the last entry of the previous bucket */
-        if ( hash_index == 0 )
-        {
-            nat_cache_entry_index = RDD_NAT_CACHE_TABLE_SIZE - 1;
-        }
-        else
-        {
-            nat_cache_entry_index = hash_index - 1;
-        }
-
-        nat_cache_lkp_entry_ptr = (RDD_FC_MCAST_CONNECTION_ENTRY_DTS *) &( nat_cache_table_ptr->entry[ nat_cache_entry_index ] );
-
-        RDD_FC_MCAST_CONNECTION_ENTRY_BUCKET_OVERFLOW_COUNTER_READ ( bucket_overflow_counter, nat_cache_lkp_entry_ptr );
-        bucket_overflow_counter++;
-        RDD_FC_MCAST_CONNECTION_ENTRY_BUCKET_OVERFLOW_COUNTER_WRITE ( bucket_overflow_counter, nat_cache_lkp_entry_ptr );
-        __debug_mcast("%s, %u: overflow entry bucket_overflow_counter entry=%u\n", __FUNCTION__, __LINE__, bucket_overflow_counter);
     }
 
     nat_cache_entry_index = hash_index + tries;
@@ -2868,40 +2748,11 @@ int rdd_fc_mcast_connection_entry_add ( rdd_ip_flow_t  *add_connection )
         hash_index = hash_index * (RDD_NAT_CACHE_LOOKUP_DEPTH_SIZE/2);
 
         bdmf_error = rdd_fc_mcast_nat_cache_lkp_entry_alloc ( hash_index, &tries);
-        if ( tries == (RDD_NAT_CACHE_LOOKUP_DEPTH_SIZE/2) )
+        if ( tries == RDD_NAT_CACHE_LOOKUP_DEPTH_SIZE )
         {
-            hash_index = ( hash_index + (RDD_NAT_CACHE_LOOKUP_DEPTH_SIZE/2) ) & ( RDD_NAT_CACHE_TABLE_SIZE - 1 );
-
-            bdmf_error = rdd_fc_mcast_nat_cache_lkp_entry_alloc ( hash_index, &tries );
-            if ( tries == (RDD_NAT_CACHE_LOOKUP_DEPTH_SIZE/2) )
-            {
-                __debug_mcast("%s, %u: Error!!!: all possible entries for the connection are used up\n", __FUNCTION__, __LINE__);
-                bdmf_fastlock_unlock ( &int_lock );
-                return BDMF_ERR_NORES;
-            }
-            else 
-                entry_overflow = 1;
-        }
-        __debug_mcast("%s, %u: allocated NEW connection entry\n", __FUNCTION__, __LINE__);
-
-        if ( entry_overflow == 1 )
-        {
-            /*  increment bucket_overflow_counter in the last entry of the previous bucket */
-            if ( hash_index == 0 )
-            {
-                nat_cache_entry_index = RDD_NAT_CACHE_TABLE_SIZE - 1;
-            }
-            else
-            {
-                nat_cache_entry_index = hash_index - 1;
-            }
-    
-            nat_cache_lkp_entry_ptr = (RDD_FC_MCAST_CONNECTION_ENTRY_DTS *) &( nat_cache_table_ptr->entry[ nat_cache_entry_index ] );
-    
-            RDD_FC_MCAST_CONNECTION_ENTRY_BUCKET_OVERFLOW_COUNTER_READ ( bucket_overflow_counter, nat_cache_lkp_entry_ptr );
-            bucket_overflow_counter++;
-            RDD_FC_MCAST_CONNECTION_ENTRY_BUCKET_OVERFLOW_COUNTER_WRITE ( bucket_overflow_counter, nat_cache_lkp_entry_ptr );
-            __debug_mcast("%s, %u: overflow entry bucket_overflow_counter entry=%u\n", __FUNCTION__, __LINE__, bucket_overflow_counter);
+            __debug_mcast("%s, %u: Error!!!: all possible entries for the connection are used up\n", __FUNCTION__, __LINE__);
+            bdmf_fastlock_unlock ( &int_lock );
+            return BDMF_ERR_NORES;
         }
 
         nat_cache_entry_index = hash_index + tries;
@@ -2937,22 +2788,6 @@ int rdd_fc_mcast_connection_entry_add ( rdd_ip_flow_t  *add_connection )
             __FUNCTION__, __LINE__, nat_cache_entry_index, context_entry_ptr, 
             context_entry_ptr->fc_mcast_flow_context_entry.connection_table_index );
 #endif
-
-    if ( entry_overflow == 1 )
-    {
-        /* set entry_overflow in the context of the entry */
-#if defined(CC_RDD_ROUTER_DEBUG)
-        context_entry_ptr = &(context_table_ptr->entry[ nat_cache_entry_index ] );
-#endif
-        context_cont_entry_ptr = &(context_cont_table_ptr->entry[ nat_cache_entry_index ] );
-
-        RDD_CONTEXT_CONTINUATION_ENTRY_OVERFLOW_WRITE ( 1, context_cont_entry_ptr );
-
-#if defined(CC_RDD_ROUTER_DEBUG)
-        __debug_mcast("%s, %u: connection_table_index %u\n", __FUNCTION__, __LINE__, 
-                context_entry_ptr->fc_mcast_flow_context_entry.connection_table_index);
-#endif
-    }
 
     if (nat_cache_lkp_entry_exists == 0)
     {   /*Primary entry*/
@@ -3108,10 +2943,8 @@ int rdd_fc_mcast_connection_entry_delete ( bdmf_index flow_entry_index )
     RDD_CONTEXT_CONTINUATION_ENTRY_DTS *context_cont_entry_ptr;
     uint32_t                     nat_cache_lkp_entry_valid;
     uint32_t                     mcast_connection2_entry_context_table_index;
-    uint32_t                     entry_overflow;
     uint32_t                     master_nat_cache_entry_index;
     uint32_t                     nat_cache_entry_index;
-    uint32_t                     bucket_overflow_counter;
     uint32_t                     context_entry_index = 0xffffffff;
     RDD_FC_MCAST_CONNECTION2_ENTRY_DTS  *mcast_connection2_entry_ptr;
     uint16_t                     connection2_entry_index;
@@ -3188,33 +3021,6 @@ int rdd_fc_mcast_connection_entry_delete ( bdmf_index flow_entry_index )
             RDD_FC_MCAST_CONNECTION_ENTRY_VLAN_HEAD_INDEX_WRITE( new_vlan_head_index, nat_cache_lkp_entry_ptr );
         }
 
-        /* last mcast vlan entry of connection is deleted, so we can delete context and connection entries */
-        RDD_CONTEXT_CONTINUATION_ENTRY_OVERFLOW_READ ( entry_overflow, context_cont_entry_ptr );
-
-        if ( entry_overflow == 1 )
-        {
-            /* decrement bucket_overflow_counter in the last entry of the previous bucket */
-            if ( nat_cache_entry_index < (RDD_NAT_CACHE_LOOKUP_DEPTH_SIZE/2) )
-            {
-                nat_cache_entry_index = RDD_NAT_CACHE_TABLE_SIZE - 1;
-            }
-            else
-            {
-                nat_cache_entry_index = nat_cache_entry_index - 
-                    ( nat_cache_entry_index % (RDD_NAT_CACHE_LOOKUP_DEPTH_SIZE/2) ) - 1;
-            }
-        
-            nat_cache_lkp_entry_ptr = (RDD_FC_MCAST_CONNECTION_ENTRY_DTS *) &( nat_cache_table_ptr->entry[ nat_cache_entry_index ] );
-    
-            RDD_FC_MCAST_CONNECTION_ENTRY_BUCKET_OVERFLOW_COUNTER_READ ( bucket_overflow_counter, nat_cache_lkp_entry_ptr );
-            bucket_overflow_counter--;
-            RDD_FC_MCAST_CONNECTION_ENTRY_BUCKET_OVERFLOW_COUNTER_WRITE ( bucket_overflow_counter, nat_cache_lkp_entry_ptr );
-
-            nat_cache_entry_index = context_entry_index; /*Restore*/
-            nat_cache_lkp_entry_ptr = (RDD_FC_MCAST_CONNECTION_ENTRY_DTS *) 
-                &( nat_cache_table_ptr->entry[ nat_cache_entry_index ] );
-        }
-
         memset(nat_cache_lkp_entry_ptr, 0, sizeof(RDD_NAT_CACHE_LKP_ENTRY_DTS));
 
         if (new_vlan_head_index == RDD_FC_MCAST_CONNECTION2_NEXT_INVALID )
@@ -3239,5 +3045,6 @@ int rdd_fc_mcast_connection_entry_delete ( bdmf_index flow_entry_index )
     bdmf_fastlock_unlock ( &int_lock );
     return BDMF_ERR_OK;
 }
+
 
 

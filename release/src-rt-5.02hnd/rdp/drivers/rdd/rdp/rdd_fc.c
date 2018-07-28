@@ -70,7 +70,6 @@ void rdd_fc_context_init(void)
         rdd_context_entry_free(i);
 }
 
-
 void rdd_fc_context_entry_read(rdd_fc_context_t *ctx, RDD_FLOW_CACHE_CONTEXT_ENTRY_DTS *entry)
 {
     uint8_t wifi_ssid;

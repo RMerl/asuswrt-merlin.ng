@@ -6194,16 +6194,8 @@ void dump_RDD_NAT_CACHE_LKP_ENTRY(bdmf_session_handle session, unsigned char *p)
 	bdmf_session_print(session, "\tvalid                    = 0x%08x", (unsigned int)r);
 	bdmf_session_print(session, "\n");
 
-	FIELD_MREAD_16((uint8_t *)p, 0, 15, r);
-	bdmf_session_print(session, "\tcontext_index            = 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	FIELD_MREAD_8((uint8_t *)p + 2, 5, 3, r);
-	bdmf_session_print(session, "\tbucket_overflow_counter  = 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	FIELD_MREAD_8((uint8_t *)p + 2, 4, 1, r);
-	bdmf_session_print(session, "\toverflow                 = 0x%08x", (unsigned int)r);
+	FIELD_MREAD_32((uint8_t *)p, 12, 19, r);
+	bdmf_session_print(session, "\treserved                 = 0x%08x", (unsigned int)r);
 	bdmf_session_print(session, "\n");
 
 	FIELD_MREAD_8((uint8_t *)p + 2, 0, 4, r);
@@ -6450,7 +6442,7 @@ void dump_RDD_CONTEXT_CONTINUATION_ENTRY(bdmf_session_handle session, unsigned c
 	bdmf_session_print(session, "\n");
 
 	FIELD_MREAD_8((uint8_t *)p, 6, 1, r);
-	bdmf_session_print(session, "\toverflow                 = 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\treserved1                = 0x%08x", (unsigned int)r);
 	bdmf_session_print(session, "\n");
 
 	FIELD_MREAD_8((uint8_t *)p, 5, 1, r);
@@ -6458,7 +6450,7 @@ void dump_RDD_CONTEXT_CONTINUATION_ENTRY(bdmf_session_handle session, unsigned c
 	bdmf_session_print(session, "\n");
 
 	FIELD_MREAD_16((uint8_t *)p, 0, 13, r);
-	bdmf_session_print(session, "\treserved1                = 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\treserved2                = 0x%08x", (unsigned int)r);
 	bdmf_session_print(session, "\n");
 
 	MREAD_16((uint8_t *)p + 2, r);
@@ -6466,7 +6458,7 @@ void dump_RDD_CONTEXT_CONTINUATION_ENTRY(bdmf_session_handle session, unsigned c
 	bdmf_session_print(session, "\n");
 
 	FIELD_MREAD_32((uint8_t *)p + 4, 15, 17, r);
-	bdmf_session_print(session, "\treserved2                = 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\treserved3                = 0x%08x", (unsigned int)r);
 	bdmf_session_print(session, "\n");
 
 	FIELD_MREAD_16((uint8_t *)p + 6, 0, 15, r);

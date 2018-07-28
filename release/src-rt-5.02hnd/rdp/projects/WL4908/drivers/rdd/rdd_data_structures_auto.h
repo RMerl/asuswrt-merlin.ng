@@ -10070,71 +10070,55 @@ __PACKING_ATTRIBUTE_STRUCT_END__ RDD_FC_MCAST_FLOW_CONTEXT_ENTRY_DTS;
 typedef struct
 {
 #ifndef FIRMWARE_LITTLE_ENDIAN
-	uint32_t	valid                  	:1	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-	uint32_t	context_index          	:15	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-	uint32_t	bucket_overflow_counter	:3	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-	uint32_t	overflow               	:1	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-	uint32_t	key_extend             	:4	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-	uint32_t	protocol               	:8	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-	uint32_t	src_port               	:16	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-	uint32_t	dst_port               	:16	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-	uint32_t	src_ip                 	:32	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-	uint32_t	dst_ip                 	:32	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	valid     	:1	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	reserved  	:19	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	key_extend	:4	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	protocol  	:8	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	src_port  	:16	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	dst_port  	:16	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	src_ip    	:32	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	dst_ip    	:32	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
 #else
-	uint32_t	protocol               	:8	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-	uint32_t	key_extend             	:4	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-	uint32_t	overflow               	:1	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-	uint32_t	bucket_overflow_counter	:3	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-	uint32_t	context_index          	:15	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-	uint32_t	valid                  	:1	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-	uint32_t	dst_port               	:16	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-	uint32_t	src_port               	:16	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-	uint32_t	src_ip                 	:32	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-	uint32_t	dst_ip                 	:32	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	protocol  	:8	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	key_extend	:4	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	reserved  	:19	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	valid     	:1	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	dst_port  	:16	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	src_port  	:16	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	src_ip    	:32	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	dst_ip    	:32	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
 #endif
 }
 __PACKING_ATTRIBUTE_STRUCT_END__ RDD_NAT_CACHE_LKP_ENTRY_DTS;
 
-#define RDD_NAT_CACHE_LKP_ENTRY_VALID_READ_G(r, g, addr, idx)                      GROUP_FIELD_MREAD_8(g, (uint8_t *)(addr + idx*sizeof(RDD_NAT_CACHE_LKP_ENTRY_DTS)), 7, 1, r)
-#define RDD_NAT_CACHE_LKP_ENTRY_VALID_WRITE_G(v, g, addr, idx)                     GROUP_FIELD_MWRITE_8(g, (uint8_t *)(addr + idx*sizeof(RDD_NAT_CACHE_LKP_ENTRY_DTS)), 7, 1, v)
-#define RDD_NAT_CACHE_LKP_ENTRY_VALID_READ(r, p)                                   FIELD_MREAD_8((uint8_t *)p, 7, 1, r)
-#define RDD_NAT_CACHE_LKP_ENTRY_VALID_WRITE(v, p)                                  FIELD_MWRITE_8((uint8_t *)p, 7, 1, v)
-#define RDD_NAT_CACHE_LKP_ENTRY_CONTEXT_INDEX_READ_G(r, g, addr, idx)              GROUP_FIELD_MREAD_16(g, (uint8_t *)(addr + idx*sizeof(RDD_NAT_CACHE_LKP_ENTRY_DTS)), 0, 15, r)
-#define RDD_NAT_CACHE_LKP_ENTRY_CONTEXT_INDEX_WRITE_G(v, g, addr, idx)             GROUP_FIELD_MWRITE_16(g, (uint8_t *)(addr + idx*sizeof(RDD_NAT_CACHE_LKP_ENTRY_DTS)), 0, 15, v)
-#define RDD_NAT_CACHE_LKP_ENTRY_CONTEXT_INDEX_READ(r, p)                           FIELD_MREAD_16((uint8_t *)p, 0, 15, r)
-#define RDD_NAT_CACHE_LKP_ENTRY_CONTEXT_INDEX_WRITE(v, p)                          FIELD_MWRITE_16((uint8_t *)p, 0, 15, v)
-#define RDD_NAT_CACHE_LKP_ENTRY_BUCKET_OVERFLOW_COUNTER_READ_G(r, g, addr, idx)    GROUP_FIELD_MREAD_8(g, (uint8_t *)(addr + idx*sizeof(RDD_NAT_CACHE_LKP_ENTRY_DTS)) + 2, 5, 3, r)
-#define RDD_NAT_CACHE_LKP_ENTRY_BUCKET_OVERFLOW_COUNTER_WRITE_G(v, g, addr, idx)   GROUP_FIELD_MWRITE_8(g, (uint8_t *)(addr + idx*sizeof(RDD_NAT_CACHE_LKP_ENTRY_DTS)) + 2, 5, 3, v)
-#define RDD_NAT_CACHE_LKP_ENTRY_BUCKET_OVERFLOW_COUNTER_READ(r, p)                 FIELD_MREAD_8((uint8_t *)p + 2, 5, 3, r)
-#define RDD_NAT_CACHE_LKP_ENTRY_BUCKET_OVERFLOW_COUNTER_WRITE(v, p)                FIELD_MWRITE_8((uint8_t *)p + 2, 5, 3, v)
-#define RDD_NAT_CACHE_LKP_ENTRY_OVERFLOW_READ_G(r, g, addr, idx)                   GROUP_FIELD_MREAD_8(g, (uint8_t *)(addr + idx*sizeof(RDD_NAT_CACHE_LKP_ENTRY_DTS)) + 2, 4, 1, r)
-#define RDD_NAT_CACHE_LKP_ENTRY_OVERFLOW_WRITE_G(v, g, addr, idx)                  GROUP_FIELD_MWRITE_8(g, (uint8_t *)(addr + idx*sizeof(RDD_NAT_CACHE_LKP_ENTRY_DTS)) + 2, 4, 1, v)
-#define RDD_NAT_CACHE_LKP_ENTRY_OVERFLOW_READ(r, p)                                FIELD_MREAD_8((uint8_t *)p + 2, 4, 1, r)
-#define RDD_NAT_CACHE_LKP_ENTRY_OVERFLOW_WRITE(v, p)                               FIELD_MWRITE_8((uint8_t *)p + 2, 4, 1, v)
-#define RDD_NAT_CACHE_LKP_ENTRY_KEY_EXTEND_READ_G(r, g, addr, idx)                 GROUP_FIELD_MREAD_8(g, (uint8_t *)(addr + idx*sizeof(RDD_NAT_CACHE_LKP_ENTRY_DTS)) + 2, 0, 4, r)
-#define RDD_NAT_CACHE_LKP_ENTRY_KEY_EXTEND_WRITE_G(v, g, addr, idx)                GROUP_FIELD_MWRITE_8(g, (uint8_t *)(addr + idx*sizeof(RDD_NAT_CACHE_LKP_ENTRY_DTS)) + 2, 0, 4, v)
-#define RDD_NAT_CACHE_LKP_ENTRY_KEY_EXTEND_READ(r, p)                              FIELD_MREAD_8((uint8_t *)p + 2, 0, 4, r)
-#define RDD_NAT_CACHE_LKP_ENTRY_KEY_EXTEND_WRITE(v, p)                             FIELD_MWRITE_8((uint8_t *)p + 2, 0, 4, v)
-#define RDD_NAT_CACHE_LKP_ENTRY_PROTOCOL_READ_G(r, g, addr, idx)                   GROUP_MREAD_8(g, (uint8_t *)(addr + idx*sizeof(RDD_NAT_CACHE_LKP_ENTRY_DTS)) + 3, r)
-#define RDD_NAT_CACHE_LKP_ENTRY_PROTOCOL_WRITE_G(v, g, addr, idx)                  GROUP_MWRITE_8(g, (uint8_t *)(addr + idx*sizeof(RDD_NAT_CACHE_LKP_ENTRY_DTS)) + 3, v)
-#define RDD_NAT_CACHE_LKP_ENTRY_PROTOCOL_READ(r, p)                                MREAD_8((uint8_t *)p + 3, r)
-#define RDD_NAT_CACHE_LKP_ENTRY_PROTOCOL_WRITE(v, p)                               MWRITE_8((uint8_t *)p + 3, v)
-#define RDD_NAT_CACHE_LKP_ENTRY_SRC_PORT_READ_G(r, g, addr, idx)                   GROUP_MREAD_16(g, (uint8_t *)(addr + idx*sizeof(RDD_NAT_CACHE_LKP_ENTRY_DTS)) + 4, r)
-#define RDD_NAT_CACHE_LKP_ENTRY_SRC_PORT_WRITE_G(v, g, addr, idx)                  GROUP_MWRITE_16(g, (uint8_t *)(addr + idx*sizeof(RDD_NAT_CACHE_LKP_ENTRY_DTS)) + 4, v)
-#define RDD_NAT_CACHE_LKP_ENTRY_SRC_PORT_READ(r, p)                                MREAD_16((uint8_t *)p + 4, r)
-#define RDD_NAT_CACHE_LKP_ENTRY_SRC_PORT_WRITE(v, p)                               MWRITE_16((uint8_t *)p + 4, v)
-#define RDD_NAT_CACHE_LKP_ENTRY_DST_PORT_READ_G(r, g, addr, idx)                   GROUP_MREAD_16(g, (uint8_t *)(addr + idx*sizeof(RDD_NAT_CACHE_LKP_ENTRY_DTS)) + 6, r)
-#define RDD_NAT_CACHE_LKP_ENTRY_DST_PORT_WRITE_G(v, g, addr, idx)                  GROUP_MWRITE_16(g, (uint8_t *)(addr + idx*sizeof(RDD_NAT_CACHE_LKP_ENTRY_DTS)) + 6, v)
-#define RDD_NAT_CACHE_LKP_ENTRY_DST_PORT_READ(r, p)                                MREAD_16((uint8_t *)p + 6, r)
-#define RDD_NAT_CACHE_LKP_ENTRY_DST_PORT_WRITE(v, p)                               MWRITE_16((uint8_t *)p + 6, v)
-#define RDD_NAT_CACHE_LKP_ENTRY_SRC_IP_READ_G(r, g, addr, idx)                     GROUP_MREAD_32(g, (uint8_t *)(addr + idx*sizeof(RDD_NAT_CACHE_LKP_ENTRY_DTS)) + 8, r)
-#define RDD_NAT_CACHE_LKP_ENTRY_SRC_IP_WRITE_G(v, g, addr, idx)                    GROUP_MWRITE_32(g, (uint8_t *)(addr + idx*sizeof(RDD_NAT_CACHE_LKP_ENTRY_DTS)) + 8, v)
-#define RDD_NAT_CACHE_LKP_ENTRY_SRC_IP_READ(r, p)                                  MREAD_32((uint8_t *)p + 8, r)
-#define RDD_NAT_CACHE_LKP_ENTRY_SRC_IP_WRITE(v, p)                                 MWRITE_32((uint8_t *)p + 8, v)
-#define RDD_NAT_CACHE_LKP_ENTRY_DST_IP_READ_G(r, g, addr, idx)                     GROUP_MREAD_32(g, (uint8_t *)(addr + idx*sizeof(RDD_NAT_CACHE_LKP_ENTRY_DTS)) + 12, r)
-#define RDD_NAT_CACHE_LKP_ENTRY_DST_IP_WRITE_G(v, g, addr, idx)                    GROUP_MWRITE_32(g, (uint8_t *)(addr + idx*sizeof(RDD_NAT_CACHE_LKP_ENTRY_DTS)) + 12, v)
-#define RDD_NAT_CACHE_LKP_ENTRY_DST_IP_READ(r, p)                                  MREAD_32((uint8_t *)p + 12, r)
-#define RDD_NAT_CACHE_LKP_ENTRY_DST_IP_WRITE(v, p)                                 MWRITE_32((uint8_t *)p + 12, v)
+#define RDD_NAT_CACHE_LKP_ENTRY_VALID_READ_G(r, g, addr, idx)         GROUP_FIELD_MREAD_8(g, (uint8_t *)(addr + idx*sizeof(RDD_NAT_CACHE_LKP_ENTRY_DTS)), 7, 1, r)
+#define RDD_NAT_CACHE_LKP_ENTRY_VALID_WRITE_G(v, g, addr, idx)        GROUP_FIELD_MWRITE_8(g, (uint8_t *)(addr + idx*sizeof(RDD_NAT_CACHE_LKP_ENTRY_DTS)), 7, 1, v)
+#define RDD_NAT_CACHE_LKP_ENTRY_VALID_READ(r, p)                      FIELD_MREAD_8((uint8_t *)p, 7, 1, r)
+#define RDD_NAT_CACHE_LKP_ENTRY_VALID_WRITE(v, p)                     FIELD_MWRITE_8((uint8_t *)p, 7, 1, v)
+#define RDD_NAT_CACHE_LKP_ENTRY_KEY_EXTEND_READ_G(r, g, addr, idx)    GROUP_FIELD_MREAD_8(g, (uint8_t *)(addr + idx*sizeof(RDD_NAT_CACHE_LKP_ENTRY_DTS)) + 2, 0, 4, r)
+#define RDD_NAT_CACHE_LKP_ENTRY_KEY_EXTEND_WRITE_G(v, g, addr, idx)   GROUP_FIELD_MWRITE_8(g, (uint8_t *)(addr + idx*sizeof(RDD_NAT_CACHE_LKP_ENTRY_DTS)) + 2, 0, 4, v)
+#define RDD_NAT_CACHE_LKP_ENTRY_KEY_EXTEND_READ(r, p)                 FIELD_MREAD_8((uint8_t *)p + 2, 0, 4, r)
+#define RDD_NAT_CACHE_LKP_ENTRY_KEY_EXTEND_WRITE(v, p)                FIELD_MWRITE_8((uint8_t *)p + 2, 0, 4, v)
+#define RDD_NAT_CACHE_LKP_ENTRY_PROTOCOL_READ_G(r, g, addr, idx)      GROUP_MREAD_8(g, (uint8_t *)(addr + idx*sizeof(RDD_NAT_CACHE_LKP_ENTRY_DTS)) + 3, r)
+#define RDD_NAT_CACHE_LKP_ENTRY_PROTOCOL_WRITE_G(v, g, addr, idx)     GROUP_MWRITE_8(g, (uint8_t *)(addr + idx*sizeof(RDD_NAT_CACHE_LKP_ENTRY_DTS)) + 3, v)
+#define RDD_NAT_CACHE_LKP_ENTRY_PROTOCOL_READ(r, p)                   MREAD_8((uint8_t *)p + 3, r)
+#define RDD_NAT_CACHE_LKP_ENTRY_PROTOCOL_WRITE(v, p)                  MWRITE_8((uint8_t *)p + 3, v)
+#define RDD_NAT_CACHE_LKP_ENTRY_SRC_PORT_READ_G(r, g, addr, idx)      GROUP_MREAD_16(g, (uint8_t *)(addr + idx*sizeof(RDD_NAT_CACHE_LKP_ENTRY_DTS)) + 4, r)
+#define RDD_NAT_CACHE_LKP_ENTRY_SRC_PORT_WRITE_G(v, g, addr, idx)     GROUP_MWRITE_16(g, (uint8_t *)(addr + idx*sizeof(RDD_NAT_CACHE_LKP_ENTRY_DTS)) + 4, v)
+#define RDD_NAT_CACHE_LKP_ENTRY_SRC_PORT_READ(r, p)                   MREAD_16((uint8_t *)p + 4, r)
+#define RDD_NAT_CACHE_LKP_ENTRY_SRC_PORT_WRITE(v, p)                  MWRITE_16((uint8_t *)p + 4, v)
+#define RDD_NAT_CACHE_LKP_ENTRY_DST_PORT_READ_G(r, g, addr, idx)      GROUP_MREAD_16(g, (uint8_t *)(addr + idx*sizeof(RDD_NAT_CACHE_LKP_ENTRY_DTS)) + 6, r)
+#define RDD_NAT_CACHE_LKP_ENTRY_DST_PORT_WRITE_G(v, g, addr, idx)     GROUP_MWRITE_16(g, (uint8_t *)(addr + idx*sizeof(RDD_NAT_CACHE_LKP_ENTRY_DTS)) + 6, v)
+#define RDD_NAT_CACHE_LKP_ENTRY_DST_PORT_READ(r, p)                   MREAD_16((uint8_t *)p + 6, r)
+#define RDD_NAT_CACHE_LKP_ENTRY_DST_PORT_WRITE(v, p)                  MWRITE_16((uint8_t *)p + 6, v)
+#define RDD_NAT_CACHE_LKP_ENTRY_SRC_IP_READ_G(r, g, addr, idx)        GROUP_MREAD_32(g, (uint8_t *)(addr + idx*sizeof(RDD_NAT_CACHE_LKP_ENTRY_DTS)) + 8, r)
+#define RDD_NAT_CACHE_LKP_ENTRY_SRC_IP_WRITE_G(v, g, addr, idx)       GROUP_MWRITE_32(g, (uint8_t *)(addr + idx*sizeof(RDD_NAT_CACHE_LKP_ENTRY_DTS)) + 8, v)
+#define RDD_NAT_CACHE_LKP_ENTRY_SRC_IP_READ(r, p)                     MREAD_32((uint8_t *)p + 8, r)
+#define RDD_NAT_CACHE_LKP_ENTRY_SRC_IP_WRITE(v, p)                    MWRITE_32((uint8_t *)p + 8, v)
+#define RDD_NAT_CACHE_LKP_ENTRY_DST_IP_READ_G(r, g, addr, idx)        GROUP_MREAD_32(g, (uint8_t *)(addr + idx*sizeof(RDD_NAT_CACHE_LKP_ENTRY_DTS)) + 12, r)
+#define RDD_NAT_CACHE_LKP_ENTRY_DST_IP_WRITE_G(v, g, addr, idx)       GROUP_MWRITE_32(g, (uint8_t *)(addr + idx*sizeof(RDD_NAT_CACHE_LKP_ENTRY_DTS)) + 12, v)
+#define RDD_NAT_CACHE_LKP_ENTRY_DST_IP_READ(r, p)                     MREAD_32((uint8_t *)p + 12, r)
+#define RDD_NAT_CACHE_LKP_ENTRY_DST_IP_WRITE(v, p)                    MWRITE_32((uint8_t *)p + 12, v)
 
 #define RDD_NAT_CACHE_TABLE_SIZE     65536
 typedef struct
@@ -10429,21 +10413,21 @@ typedef struct
 {
 #ifndef FIRMWARE_LITTLE_ENDIAN
 	uint32_t	valid                                                               	:1	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-	uint32_t	overflow                                                            	:1	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	reserved1                                                           	:1	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
 	uint32_t	connection_direction                                                	:1	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-	uint32_t	reserved1                                                           	:13	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	reserved2                                                           	:13	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
 	uint32_t	connection_table_index                                              	:16	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-	uint32_t	reserved2                                                           	:17	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	reserved3                                                           	:17	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
 	uint32_t	flow_index                                                          	:15	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
 	uint8_t	command_list[RDD_CONTEXT_CONTINUATION_ENTRY_COMMAND_LIST_NUMBER];
 #else
 	uint32_t	connection_table_index                                              	:16	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-	uint32_t	reserved1                                                           	:13	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	reserved2                                                           	:13	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
 	uint32_t	connection_direction                                                	:1	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-	uint32_t	overflow                                                            	:1	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	reserved1                                                           	:1	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
 	uint32_t	valid                                                               	:1	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
 	uint32_t	flow_index                                                          	:15	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-	uint32_t	reserved2                                                           	:17	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	reserved3                                                           	:17	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
 	uint8_t	command_list[RDD_CONTEXT_CONTINUATION_ENTRY_COMMAND_LIST_NUMBER];
 #endif
 }
@@ -10453,10 +10437,6 @@ __PACKING_ATTRIBUTE_STRUCT_END__ RDD_CONTEXT_CONTINUATION_ENTRY_DTS;
 #define RDD_CONTEXT_CONTINUATION_ENTRY_VALID_WRITE_G(v, g, addr, idx)                    GROUP_FIELD_MWRITE_8(g, (uint8_t *)(addr + idx*sizeof(RDD_CONTEXT_CONTINUATION_ENTRY_DTS)), 7, 1, v)
 #define RDD_CONTEXT_CONTINUATION_ENTRY_VALID_READ(r, p)                                  FIELD_MREAD_8((uint8_t *)p, 7, 1, r)
 #define RDD_CONTEXT_CONTINUATION_ENTRY_VALID_WRITE(v, p)                                 FIELD_MWRITE_8((uint8_t *)p, 7, 1, v)
-#define RDD_CONTEXT_CONTINUATION_ENTRY_OVERFLOW_READ_G(r, g, addr, idx)                  GROUP_FIELD_MREAD_8(g, (uint8_t *)(addr + idx*sizeof(RDD_CONTEXT_CONTINUATION_ENTRY_DTS)), 6, 1, r)
-#define RDD_CONTEXT_CONTINUATION_ENTRY_OVERFLOW_WRITE_G(v, g, addr, idx)                 GROUP_FIELD_MWRITE_8(g, (uint8_t *)(addr + idx*sizeof(RDD_CONTEXT_CONTINUATION_ENTRY_DTS)), 6, 1, v)
-#define RDD_CONTEXT_CONTINUATION_ENTRY_OVERFLOW_READ(r, p)                               FIELD_MREAD_8((uint8_t *)p, 6, 1, r)
-#define RDD_CONTEXT_CONTINUATION_ENTRY_OVERFLOW_WRITE(v, p)                              FIELD_MWRITE_8((uint8_t *)p, 6, 1, v)
 #define RDD_CONTEXT_CONTINUATION_ENTRY_CONNECTION_DIRECTION_READ_G(r, g, addr, idx)      GROUP_FIELD_MREAD_8(g, (uint8_t *)(addr + idx*sizeof(RDD_CONTEXT_CONTINUATION_ENTRY_DTS)), 5, 1, r)
 #define RDD_CONTEXT_CONTINUATION_ENTRY_CONNECTION_DIRECTION_WRITE_G(v, g, addr, idx)     GROUP_FIELD_MWRITE_8(g, (uint8_t *)(addr + idx*sizeof(RDD_CONTEXT_CONTINUATION_ENTRY_DTS)), 5, 1, v)
 #define RDD_CONTEXT_CONTINUATION_ENTRY_CONNECTION_DIRECTION_READ(r, p)                   FIELD_MREAD_8((uint8_t *)p, 5, 1, r)

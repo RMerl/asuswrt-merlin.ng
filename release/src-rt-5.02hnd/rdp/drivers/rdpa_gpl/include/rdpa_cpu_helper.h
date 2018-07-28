@@ -458,7 +458,7 @@ inline void rdpa_cpu_ring_rest_desc(volatile void *__restrict__ raw_desc, void *
 {
     volatile CPU_RX_DESCRIPTOR *p_desc = (volatile CPU_RX_DESCRIPTOR *)raw_desc;
 
-    p_desc->word2 = swap4bytes(VIRT_TO_PHYS(data)) & 0x7fffffff;
+    p_desc->word2 = swap4bytes(((VIRT_TO_PHYS(data)) & 0x7fffffff));
 }
 
 /** Check if there is a valid packet in descriptor

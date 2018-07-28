@@ -32,44 +32,44 @@ APSurvey_msg_connected=Již jste připojeni k tomuto přístupovému bodu.
 APSurvey_msg_non_support_Auth=Metoda ověření není podporována.
 APSurvey_msg_waiting_to_connect=Počkejte prosím, ZVMODELVZ se připojuje k
 ASUS_Registration=Become an ASUS Member and receive the latest product information. <a style='color:#FC0' target='_blank' href='https://account.asus.com'>Sign Up Now!</a>
-ASUS_Notice=ASUS NOTICE
+ASUS_Notice=UPOZORNĚNÍ ASUS
 ASUS_privacy_desc=Please note that users are required to agree to share information before using DDNS, Remote Connection (ASUS Router APP、Lyra APP、AiCloud、AiDisk), AiProtection, Traffic analyzer, Apps analyzer, Adaptive QoS, Game Boost/Game IPS and Web history. At any time, users can search for the contents of the terms at this page or stop sharing the information with other parties by choosing <a style="font-weight: bolder;">Withdraw</a>.
 ASUS_eula_desc0=Vítejte u DDNS/ vzdáleného připojení (ASUS Router APP/Lyra APP/AiCloud/AiDisk). Pečlivě si přečtěte následující pokyny:
-ASUS_eula_desc1=In order to assess and improve ASUS product services and improve stability, based on your usage, ASUS may collect your information through the above functions:
-ASUS_eula_desc1_1=When you start to use the above functions, ASUS may collect your anonymous information which cannot characterize nor identify you:
+ASUS_eula_desc1=Aby bylo možné mít přístup a zlepšovat produktové služby ASUS a stabilitu, ASUS může na základě vašeho používání shromažďovat vaše údaje přes výše uvedené funkce:
+ASUS_eula_desc1_1=Když začnete používat výše uvedené funkce, ASUS může shromažďovat vaše anonymní informace, jejich prostřednictvím vás nelze charakterizovat ani identifikovat:
 ASUS_eula_desc1_1_1=Protokolované informace: protokolované informace spojené s vaším produktem, včetně názvu modelu, verze firmwaru, stavu internetu a automaticky generovaného aktivačního kódu (pouze u funkcí Alexa™/IFTTT™).
 ASUS_eula_desc1_1_12=Protokolované informace: protokolované informace spojené s vaším produktem, včetně názvu modelu, verze firmwaru, stavu internetu a automaticky generovaného aktivačního kódu (pouze u funkcí Alexa™).
 ASUS_eula_desc1_1_13=Protokolované informace: protokolované informace spojené s vaším produktem, včetně názvu modelu, verze firmwaru a stavu internetu.
-ASUS_eula_desc1_2_s1=By clicking [Agree] below, it will be deemed that you consent to share the following information with ASUS.
-ASUS_eula_desc1_2_s2=To protect children’s privacy, we will not collect the following information of children.
-ASUS_eula_desc1_2_1=Product information: information associated with your product, including IP Address, MAC Address, and DDNS name.
-ASUS_eula_desc1_3=Besides, in order to enable your remote control function of Alexa™ via your product, ASUS may share auto-generated activation code to Amazon for the above purposes.
-ASUS_eula_desc1_4=Besides, in order to enable your remote control function of IFTTT™ via your product, ASUS may share auto-generated activation code to IFTTT™ for the above purposes.
-ASUS_eula_desc2=ASUS is committed to protecting and respecting your privacy; you may visit Advanced Settings > Administration > Privacy to enable/disable sharing your product information with ASUS at all times. To know more about how ASUS protects your privacy, please visit <a id="eula_url" style="font-weight: bolder;text-decoration:underline;cursor:pointer;" target="_blank">ASUS Privacy Policy</a>.
-ASUS_eula_age=I am above the age of 16 years.
-ASUS_eula_age_confirm=Please confirm the age is above the age of 16 years.
-ASUS_eula_withdraw0_AlexaIFTTT=For DDNS, Alexa™, IFTTT™, and Remote connection(ASUS Router APP, Lyra APP, AiCloud, AiDisk):
-ASUS_eula_withdraw0_Alexa=For DDNS, Alexa™, and Remote connection(ASUS Router APP, Lyra APP, AiCloud, AiDisk):
-ASUS_eula_withdraw0=For DDNS, and Remote connection(ASUS Router APP, Lyra APP, AiCloud, AiDisk):
-ASUS_eula_withdraw_desc1=Please noted that your information (including your product model name, firmware version, Internet status, IP Address, MAC Address and DDNS name) will be collected by ASUS through the above functions.
-ASUS_eula_withdraw_desc1_2=If you would like to disable sharing your information with ASUS through the above functions, please click <span style="font-weight: bold;">[Withdraw]</span> below. However, please be noted that such features/functions may not be worked if stop sharing your information with ASUS.
-ASUS_eula_withdraw_desc2=After you click <span style="font-weight: bold;">[Withdraw]</span>, there will be some changes as listed below:
-ASUS_eula_withdraw_desc2_1=The DDNS name you are currently using will not be kept (held) in your router.
-ASUS_eula_withdraw_desc2_2=You are able to use ASUS Router APP, Lyra APP, AiCloud, AiDisk under LAN connection, but not under the remote connection mode.
-ASUS_eula_withdraw_desc2_Alexa=In the future, if you intend to enable the functions of Alexa™, you need to provide new activation code to the web page of Alexa™.
-ASUS_eula_withdraw_desc2_AlexaIFTTT=In the future, if you intend to enable the functions of Alexa™ and IFTTT™, you need to provide new activation code to the web page of Alexa™ and IFTTT™.
+ASUS_eula_desc1_2_s1=Kliknutím na [Souhlasí s tím] níže dáváte souhlas se sdílením následujících informací společnosti ASUS.
+ASUS_eula_desc1_2_s2=Na ochranu soukromí dětí nebudeme shromažďovat následující údaje o dětech.
+ASUS_eula_desc1_2_1=Informace o produktu: informace spojené s vaším produktem, včetně sériového čísla produktu, IP adresy, adresy MAC a názvu DDNS.
+ASUS_eula_desc1_3=Navíc pro zajištění vaší vzdáleně ovládané funkce Alexa™ přes váš produkt ASUS může sdílet automaticky generovaný aktivační kód s Amazon pro výše uvedené účely.
+ASUS_eula_desc1_4=Navíc pro zajištění vaší vzdáleně ovládané funkce IFTTT™ přes váš produkt ASUS může sdílet automaticky generovaný aktivační kód s IFTTT™ pro výše uvedené účely.
+ASUS_eula_desc2=Společnost ASUS se zavazuje chránit a respektovat vaše soukromí. Můžete kdykoli navštívit Advancend Settings (Pokročilá nastavení) > Administration (Správa) > Privacy (Soukromí) pro zapnutí/vypnutí sdílení informací o vašem produktu se společností ASUS. Pro podrobnosti o tom, jak společnost ASUS chrání vaše soukromí prosím navštivte <a id="eula_url" style="font-weight: bolder;text-decoration:underline;cursor:pointer;" target="_blank">Zásady ochrany soukromí ASUS</a>.
+ASUS_eula_age=Jsem starší 16 let.
+ASUS_eula_age_confirm=Prosím potvrďte, že jste starší 16 let.
+ASUS_eula_withdraw0_AlexaIFTTT=Pro DDNS, Alexa™, IFTTT™ a vzdálené připojení (ASUS Router APP/Lyra APP/AiCloud/AiDisk):
+ASUS_eula_withdraw0_Alexa=Pro DDNS, Alexa™ a vzdálené připojení (ASUS Router APP/Lyra APP/AiCloud/AiDisk):
+ASUS_eula_withdraw0=Pro DDNS a vzdálené připojení (ASUS Router APP/Lyra APP/AiCloud/AiDisk):
+ASUS_eula_withdraw_desc1=Upozorňujeme vás, že vaše informace, včetně názvu modelu vašeho produktu, verze firmwaru, stavu internetu, IP adresy, adresy MAC a názvu DDNS, budou shromažďovány společností ASUS přes výše uvedené funkce.
+ASUS_eula_withdraw_desc1_2=Chcete-li zakázat sdílení vašich informací se společností ASUS přes výše uvedené funkce, klikněte prosím na <span style="font-weight: bold;">[[Odvolat]</span> níže. Nicméně vás upozorňujeme, že pokud zastavíte sdílení vašich informací se společností ASUS, tyto funkce nemusí fungovat.
+ASUS_eula_withdraw_desc2=Po kliknutí na <span style="font-weight: bold;">[(Odvolat]</span> dojde k některým níže uvedeným změnám:
+ASUS_eula_withdraw_desc2_1=Název DDNS, který momentálně používáte, nebude uchováván na vašem směrovači.
+ASUS_eula_withdraw_desc2_2=Pokud jste schopni používat ASUS Router APP, Lyra APP, AiCloud, AiDisk s připojením LAN, ale nikoli v režimu vzdáleného připojení.
+ASUS_eula_withdraw_desc2_Alexa=Pokud budete chtít v budoucnu povolit funkce Alexa™, budete muset poskytnout nový aktivační kód webové stránce Alexa™.
+ASUS_eula_withdraw_desc2_AlexaIFTTT=Pokud budete chtít v budoucnu povolit funkce Alexa™ a IFTTT™, budete muset poskytnout nový aktivační kód webové stránce Alexa™ a  IFTTT™.
 ASUS_eula_withdraw_note=Proces odvolání nelze dokončit bez připojení k internetu. Odvolání prosím proveďte, když jste připojeni k internetu.
 ASUS_eula_withdraw_unstable=Proces odvolání nemůžete dokončit, protože stav internetu je nestabilní. Zkuste to prosím později.
-TM_eula_desc1=By using AiProtection, Traffic analyzer, Apps analyzer and Adaptive QoS, you agree to the <a id="eula_url" style="text-decoration:underline;" target="_blank">Trend Micro End User License Agreement.</a>
-TM_eula_desc2=Please be noted that your information will be collected by Trend Micro through AiProtection, Traffic analyzer, Apps analyzer, Adaptive QoS and web history. You also acknowledge and agree that ASUS is not responsible for neither the agreement between you and Trend Micro nor any content of the service provided by Trend Micro. If you may have any inquires about how Trend Micro collects, processes and uses your above information, please refer to the privacy- related statement issued by Trend Micro or contact Trend Micro for more details.
-TM_eula_desc3=If you would like to disable sharing your information with Trend Micro through the above functions, please go to:  Router web GUI > Advanced settings > Administration > Privacy.
+TM_eula_desc1=Použitím AiProtection, Traffic Analyzer, Apps Analyzer, Adaptive QoS/Game boost/Game IPS webové historie souhlasíte s <a id="eula_url" style="text-decoration:underline;" target="_blank">Licenční smlouvou společnosti Trend Micro s koncovým uživatelem</a>.
+TM_eula_desc2=Upozorňujeme, že vaše údaje budou shromažďovány Trend Micro přes AiProtection, Traffic Analyzer, Apps Analyzer, Adaptive QoS a webovou historii. Také berete na vědomí a souhlasíte s tím, že společnost ASUS není zodpovědná za smlouvu mezi vámi a společností Trend Micro ani za žádný obsah služby poskytované společností Trend Micro. Máte-li nějaké dotazy ohledně toho, jak společnost Trend Micro shromažďuje, zpracovává a používá výše uvedené informace, přečtěte si prosím prohlášení ohledně soukromí vydané společností Trend Micro nebo kontaktujte společnost Trend Micro pro více informací.
+TM_eula_desc3=Chcete-li zakázat sdílení vašich údajů se společností Trend Micro přes výše uvedené funkce přejděte prosím na:  Router web GUI (Web GUI směrovače) > Advanced settings (Pokročilá nastavení) > Administration (Správa) > Privacy (Soukromí).
 TM_privacy_policy=<a id="tm_eula_url" style="text-decoration:underline;" target="_blank">TrendMicro Privacy Policy</a>
 TM_data_collection=<a id="tm_disclosure_url" style="text-decoration:underline;" target="_blank">Privacy and Personal Data Collection Disclosure</a>
-TM_eula_withdraw0=For AiProtection, Traffic Analyzer, Apps analyzer, Adaptive QoS/Game boost/Game IPS, Web history:
-TM_eula_withdraw_desc1=Please noted that your information will be collected by Trend Micro through the above functions.
-TM_eula_withdraw_desc2=If you would like to disable sharing your information with Trend Micro through the following functions, please click <span style="font-weight: bold;">[Withdraw]</span> below. However, please be noted that such features/functions may not be worked if stop sharing your information with Trend Micro.
-withdraw_confirm=Are you sure you want to withdraw?
-withdraw_str=Withdraw
+TM_eula_withdraw0=Pro AiProtection, Traffic Analyzer, Apps Analyzer, Adaptive QoS/Game boost/Game IPS, webovou historii:
+TM_eula_withdraw_desc1=Upozorňujeme vás, že vaše informace budou shromažďovány společností Trend Micro přes výše uvedené funkce.
+TM_eula_withdraw_desc2=Chcete-li zakázat sdílení vašich informací se společností Trend Micro přes následující funkce, klikněte prosím na <span style="font-weight: bold;">[(Odvolat]</span> níže. Nicméně vás upozorňujeme, že pokud zastavíte sdílení vašich informací se společností Trend Micro, tyto funkce nemusí fungovat.
+withdraw_confirm=Určitě chcete odvolat?
+withdraw_str=Odvolat
 asusddns_inputhint=Klíč v názvu
 Auto=Automaticky
 Auto_Setting_btn=Automatic Setting
@@ -1586,8 +1586,8 @@ feedback_thanks=Děkujeme vám za čas, který jste věnovali vašemu hodnocení
 feedback_translation=Váš návrh překladu
 feedback_translation_ts=Translated Suggestion
 feedback_usaul_unavailable=Obvykle téměř nedostupné
-feedback_eula=I agree to provide the above information, the model name, firmware version of my ASUS router, browser version, MAC address, IP address, Internet status, router system information, the time I submit this Feedback form to ASUS to diagnose and improve problems of my ASUS router, and to analyze user experience for the purpose of development and evaluation of new products and services of ASUS, and also agree to the <a style="font-weight: bolder;text-decoration:underline;cursor:pointer;" href="https://www.asus.com/us/Terms_of_Use_Notice_Privacy_Policy/Privacy_Policy" target="_blank">ASUS Privacy Policy</a>
-feedback_eula_notice=Before you click “send”, please agree to the information.
+feedback_eula=Souhlasím s poskytnutím výše uvedených informací, názvu modelu, verze firmwaru mého směrovače ASUS, verze prohlížeče, adresy MAC, IP adres, stavu internetu, informací o systému směrovače podáním tohoto formuláře pro zpětnou vazbu ASUS pro diagnostiku a řešení problémů s mým směrovačem ASUS a pro analýzu uživatelské zkušenosti pro účely vývoje a hodnocení nových produktů a služeb ASUS, a také souhlasím se <a style="font-weight: bolder;text-decoration:underline;cursor:pointer;" href="https://www.asus.com/us/Terms_of_Use_Notice_Privacy_Policy/Privacy_Policy" target="_blank">Zásadami ochrany soukromí ASUS</a>.
+feedback_eula_notice=Než kliknete na [Odeslat], musíte souhlasit s následujícími informacemi.
 File_content_alert_desc10=Vytvoření sdíleného obsahu s více než 12 znaky může mít za následek, že tento obsah nebude viditelný v některých verzích Windows®. \Opravdu chcete pokračovat?
 File_content_alert_desc6=Název sdíleného obsahu nesmí být prázdný.
 File_content_alert_desc7=Název sdíleného obsahu může obsahovat pouze alfanumerické znaky, pomlčku, podtržítko nebo mezeru.

@@ -64,6 +64,7 @@
   <wan>rssi_2g=<% wl_rssi_2g(); %></wan>
   <wan>rssi_5g=<% wl_rssi_5g(); %></wan>
   <wan>rssi_5g_2=<% wl_rssi_5g_2(); %></wan>
+  <wan>link_internet=<% nvram_get("link_internet"); %></wan>
   <diag>diag_dblog_enable=<% nvram_get("dblog_enable"); %></diag>
   <diag>diag_dblog_remaining=<% nvram_get("dblog_remaining"); %></diag>
 </devicemap>

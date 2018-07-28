@@ -1276,14 +1276,15 @@ int test_and_get_free_char_network(int t_class, char *ip_cidr_str, uint32_t excl
  * Return first/lowest configured and connected WAN unit.
  * @return:	WAN_UNIT_FIRST ~ WAN_UNIT_MAX
  */
-enum wan_unit_e get_first_configured_connected_wan_unit(void)
+enum wan_unit_e get_first_connected_public_wan_unit(void)
 {
 	int i, wan_unit = WAN_UNIT_MAX;
+	int wan_public = 0;
+	char wan_ip[sizeof("wanx_ipaddr")];
 	char prefix[sizeof("wanXXXXXX_")], link[sizeof("link_wanXXXXXX")];
 
 	for (i = WAN_UNIT_FIRST; i < WAN_UNIT_MAX; ++i) {
-		if (get_dualwan_by_unit(i) == WANS_DUALWAN_IF_NONE ||
-		    !is_wan_connect(i))
+		if (get_dualwan_by_unit(i) == WANS_DUALWAN_IF_NONE || !is_wan_connect(i))
 			continue;
 
 		/* If the WAN unit is configured as static IP, check link status too. */
@@ -1293,15 +1294,22 @@ enum wan_unit_e get_first_configured_connected_wan_unit(void)
 				strlcpy(link, "link_wan", sizeof(link));
 			else
 				snprintf(link, sizeof(link), "link_wan%d", i);
+
 			if (!nvram_get_int(link))
 				continue;
 		}
 
+		snprintf(wan_ip, sizeof(wan_ip), "wan%d_ipaddr", i);
+		wan_public = is_private_subnet(nvram_safe_get(wan_ip));
+		if(wan_public) // wan_public = 0 is public IP, wan_public = 1, 2, 3 is private IP.
+			continue;
 		wan_unit = i;
 		break;
 	}
-
-	return wan_unit;
+	if(WAN_UNIT_MAX == i)
+		return WAN_UNIT_NONE;
+	else
+		return wan_unit;
 }
 
 #ifdef RTCONFIG_IPV6

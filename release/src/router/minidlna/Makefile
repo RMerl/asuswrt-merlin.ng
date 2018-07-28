@@ -71,6 +71,10 @@ endif
 RM = rm -f
 INSTALL = install
 
+ifeq ($(RTCONFIG_BCMARM),y)
+CFLAGS += -I$(SRCBASE)/shared/bcmwifi/include -DTYPEDEF_FLOAT_T
+endif
+
 ifneq ($(MSIPK),y)
 CFLAGS += -I$(TOP)/shared
 

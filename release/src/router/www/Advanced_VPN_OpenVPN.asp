@@ -183,13 +183,12 @@ function initial(){
 	//set FAQ URL
 	//	https://www.asus.com/support/FAQ/1004469
 	httpApi.faqURL("faq_windows", "1004469", "https://www.asus.com", "/support/FAQ/");
-
-	//	https://www.asus.com/support/FAQ/1033575
-	//httpApi.faqURL("faq_macOS", "1033575", "https://www.asus.com", "/support/FAQ/");
-	//	https://www.asus.com/support/FAQ/1033574
-	//httpApi.faqURL("faq_iPhone", "1033574", "https://www.asus.com", "/support/FAQ/");
-	//	https://www.asus.com/support/FAQ/1033572
-	//httpApi.faqURL("faq_android", "1033572", "https://www.asus.com", "/support/FAQ/");	
+	//	https://www.asus.com/support/FAQ/1004472
+	httpApi.faqURL("faq_macOS", "1004472", "https://www.asus.com", "/support/FAQ/");
+	//	https://www.asus.com/support/FAQ/1004471
+	httpApi.faqURL("faq_iPhone", "1004471", "https://www.asus.com", "/support/FAQ/");
+	//	https://www.asus.com/support/FAQ/1004466
+	httpApi.faqURL("faq_android", "1004466", "https://www.asus.com", "/support/FAQ/");
 
 	var custom2 = document.form.vpn_server_custom2.value;
 	if (isSupport("hnd")) {

@@ -32,44 +32,44 @@ APSurvey_msg_connected=このAPに接続済みです。
 APSurvey_msg_non_support_Auth=要求された認証方法はサポートされていません。
 APSurvey_msg_waiting_to_connect=お待ちください。ZVMODELVZ は接続試行中です：
 ASUS_Registration=Become an ASUS Member and receive the latest product information. <a style='color:#FC0' target='_blank' href='https://account.asus.com'>Sign Up Now!</a>
-ASUS_Notice=ASUS NOTICE
+ASUS_Notice=ASUSからのお知らせ
 ASUS_privacy_desc=Please note that users are required to agree to share information before using DDNS, Remote Connection (ASUS Router APP、Lyra APP、AiCloud、AiDisk), AiProtection, Traffic analyzer, Apps analyzer, Adaptive QoS, Game Boost/Game IPS and Web history. At any time, users can search for the contents of the terms at this page or stop sharing the information with other parties by choosing <a style="font-weight: bolder;">Withdraw</a>.
 ASUS_eula_desc0=DDNS /リモート接続（ASUS Router APP/Lyra APP/AiCloud/およびAiDisk）をご利用いただきありがとうございます。下記の利用規約をよくお読みいただき、同意の上、ご利用いただくようお願いします。
-ASUS_eula_desc1=In order to assess and improve ASUS product services and improve stability, based on your usage, ASUS may collect your information through the above functions:
-ASUS_eula_desc1_1=When you start to use the above functions, ASUS may collect your anonymous information which cannot characterize nor identify you:
+ASUS_eula_desc1=ASUSでは、製品の適切なサービス、評価、改善のため、上記機能の利用者の使用状況に基づく情報を分析する場合があります。
+ASUS_eula_desc1_1=上記機能の利用後、ASUSでは匿名情報を収集する場合があります。匿名情報の収集によって利用者の特定や識別することはありません。
 ASUS_eula_desc1_1_1=ログ情報：モデル名、ファームウェアのバージョン、インターネットの状態、自動生成されたアクティベーションコードなど、製品に関連するログ情報（Alexa™/ IFTTT™の機能にのみ適用されます）
 ASUS_eula_desc1_1_12=ログ情報：モデル名、ファームウェアのバージョン、インターネットの状態、自動生成されたアクティベーションコードなど、製品に関連するログ情報（Alexa™の機能にのみ適用されます）
 ASUS_eula_desc1_1_13=ログ情報：モデル名、ファームウェアのバージョン、インターネットの状態など、製品に関連するログ情報
-ASUS_eula_desc1_2_s1=By clicking [Agree] below, it will be deemed that you consent to share the following information with ASUS.
-ASUS_eula_desc1_2_s2=To protect children’s privacy, we will not collect the following information of children.
-ASUS_eula_desc1_2_1=Product information: information associated with your product, including IP Address, MAC Address, and DDNS name.
-ASUS_eula_desc1_3=Besides, in order to enable your remote control function of Alexa™ via your product, ASUS may share auto-generated activation code to Amazon for the above purposes.
-ASUS_eula_desc1_4=Besides, in order to enable your remote control function of IFTTT™ via your product, ASUS may share auto-generated activation code to IFTTT™ for the above purposes.
-ASUS_eula_desc2=ASUS is committed to protecting and respecting your privacy; you may visit Advanced Settings > Administration > Privacy to enable/disable sharing your product information with ASUS at all times. To know more about how ASUS protects your privacy, please visit <a id="eula_url" style="font-weight: bolder;text-decoration:underline;cursor:pointer;" target="_blank">ASUS Privacy Policy</a>.
-ASUS_eula_age=I am above the age of 16 years.
-ASUS_eula_age_confirm=Please confirm the age is above the age of 16 years.
-ASUS_eula_withdraw0_AlexaIFTTT=For DDNS, Alexa™, IFTTT™, and Remote connection(ASUS Router APP, Lyra APP, AiCloud, AiDisk):
-ASUS_eula_withdraw0_Alexa=For DDNS, Alexa™, and Remote connection(ASUS Router APP, Lyra APP, AiCloud, AiDisk):
-ASUS_eula_withdraw0=For DDNS, and Remote connection(ASUS Router APP, Lyra APP, AiCloud, AiDisk):
-ASUS_eula_withdraw_desc1=Please noted that your information (including your product model name, firmware version, Internet status, IP Address, MAC Address and DDNS name) will be collected by ASUS through the above functions.
-ASUS_eula_withdraw_desc1_2=If you would like to disable sharing your information with ASUS through the above functions, please click <span style="font-weight: bold;">[Withdraw]</span> below. However, please be noted that such features/functions may not be worked if stop sharing your information with ASUS.
-ASUS_eula_withdraw_desc2=After you click <span style="font-weight: bold;">[Withdraw]</span>, there will be some changes as listed below:
-ASUS_eula_withdraw_desc2_1=The DDNS name you are currently using will not be kept (held) in your router.
-ASUS_eula_withdraw_desc2_2=You are able to use ASUS Router APP, Lyra APP, AiCloud, AiDisk under LAN connection, but not under the remote connection mode.
-ASUS_eula_withdraw_desc2_Alexa=In the future, if you intend to enable the functions of Alexa™, you need to provide new activation code to the web page of Alexa™.
-ASUS_eula_withdraw_desc2_AlexaIFTTT=In the future, if you intend to enable the functions of Alexa™ and IFTTT™, you need to provide new activation code to the web page of Alexa™ and IFTTT™.
+ASUS_eula_desc1_2_s1=「同意する」をクリックすると、下記のASUS利用規約に同意するものとします。
+ASUS_eula_desc1_2_s2=子供のプライバシーを保護のため、以下の子供に関する情報の収集は行いません。
+ASUS_eula_desc1_2_1=製品情報：製品のシリアル番号、IPアドレス、MACアドレス、DDNS名など、製品に関連する情報。
+ASUS_eula_desc1_3=ASUSでは、お客様の製品からAlexa™のリモートコントロール機能を有効にするにあたり、自動生成されたアクティベーションコードをAmazonへ共有する必要がある場合があります。
+ASUS_eula_desc1_4=ASUSでは、お客様の製品からIFTTT™のリモートコントロール機能を有効にするにあたり、自動生成されたアクティベーションコードをIFTTT™へ共有する必要がある場合があります。
+ASUS_eula_desc2=ASUSでは、お客様のプライバシー情報の保護を順守し、適切な取り扱いに取り組んでいます。「詳細設定」→「管理」→「プライバシー」から、常にASUS製品情報の共有設定を有効/無効にすることができます。ASUSのプライバシー保護に関する詳細内容については、<a id="eula_url" style="font-weight: bolder;text-decoration:underline;cursor:pointer;" target="_blank">ASUSの個人情報保護方針</a>をご覧ください。
+ASUS_eula_age=私は16歳以上です。
+ASUS_eula_age_confirm=年齢が16歳以上であることをご確認ください。
+ASUS_eula_withdraw0_AlexaIFTTT=DDNS、Alexa™、IFTTT™、リモート接続（ASUS Router APP/Lyra APP/AiCloud/AiDisk）:
+ASUS_eula_withdraw0_Alexa=DDNS、Alexa™、リモート接続（ASUS Router APP/Lyra APP/AiCloud/AiDisk）:
+ASUS_eula_withdraw0=DDNS、リモート接続（ASUS Router APP/Lyra APP/AiCloud/AiDisk）:
+ASUS_eula_withdraw_desc1=製品モデル名、ファームウェアのバージョン、インターネットの状態、IPアドレス、MACアドレス、DDNS名を含むお客様情報は上記機能を通じ、ASUSにより収集されます。
+ASUS_eula_withdraw_desc1_2=上記機能の使用によるASUSとの情報共有を希望しない場合は、下記の<span style="font-weight: bold;">「共有しない」</span>をクリックしてください。ASUSとの情報共有を無効にすることによって、それらの機能が正常に動作しない場合があります。
+ASUS_eula_withdraw_desc2=<span style="font-weight: bold;">「共有しない」</span>をクリックすると、以下の変更が行われます。
+ASUS_eula_withdraw_desc2_1=現在使用しているDDNS名はルーターに保存されません。
+ASUS_eula_withdraw_desc2_2=LAN接続下ではASUS Router APP、Lyra APP、AiCloud、AiDiskを使用できますが、リモート接続モードでは使用できません。
+ASUS_eula_withdraw_desc2_Alexa=今後、Alexa™の機能を有効にする場合は、Alexa™のWebページで新しいアクティベーションコードを提供する必要があります。
+ASUS_eula_withdraw_desc2_AlexaIFTTT=今後、Alexa™およびIFTTT™の機能を有効にする場合は、Alexa™およびIFTTT™のWebページで新しいアクティベーションコードを提供する必要があります。
 ASUS_eula_withdraw_note=インターネットへ接続できないため、「共有しない」に変更できません。インターネットに接続し、「共有しない」を実行してください。
 ASUS_eula_withdraw_unstable=インターネット接続が不安定のため、「共有しない」に変更できません。しばらくしてから、もう一度実行してください。
-TM_eula_desc1=By using AiProtection, Traffic analyzer, Apps analyzer and Adaptive QoS, you agree to the <a id="eula_url" style="text-decoration:underline;" target="_blank">Trend Micro End User License Agreement.</a>
-TM_eula_desc2=Please be noted that your information will be collected by Trend Micro through AiProtection, Traffic analyzer, Apps analyzer, Adaptive QoS and web history. You also acknowledge and agree that ASUS is not responsible for neither the agreement between you and Trend Micro nor any content of the service provided by Trend Micro. If you may have any inquires about how Trend Micro collects, processes and uses your above information, please refer to the privacy- related statement issued by Trend Micro or contact Trend Micro for more details.
-TM_eula_desc3=If you would like to disable sharing your information with Trend Micro through the above functions, please go to:  Router web GUI > Advanced settings > Administration > Privacy.
+TM_eula_desc1=AiProtection、トラフィックアナライザー、アプリアナライザー、Adaptive QoS、ゲームブースト、ゲームIPS、Web履歴の使用により、<a id="eula_url" style="text-decoration:underline;" target="_blank">Trend Microの使用許諾契約</a>に同意したものとします。
+TM_eula_desc2=お客様の情報は、AiProtection、アプリアナライザー、アプリアプリアナライザー、Adaptive QoS 、Web履歴を通じ、Trend Micro で収集されます。お客様とTrend Microにおける契約、Trend Micro が提供するサービスの内容について、ASUSでは一切の責任を負わないものとし、それに同意するものとします。Trend Microによる情報収集、処理、使用に関するお客様からのお問い合わせについては、Trend Microによるプライバシー保護に関する規約をご参照いただくか、Trend Micro に直接お問い合わせください。
+TM_eula_desc3=上記の機能を使用したTrend Micro との情報共有を無効にしたい場合は、ルーターWeb GUIから「詳細設定」→「管理」→「プライバシー」で設定を変更してください。
 TM_privacy_policy=<a id="tm_eula_url" style="text-decoration:underline;" target="_blank">TrendMicro Privacy Policy</a>
 TM_data_collection=<a id="tm_disclosure_url" style="text-decoration:underline;" target="_blank">Privacy and Personal Data Collection Disclosure</a>
-TM_eula_withdraw0=For AiProtection, Traffic Analyzer, Apps analyzer, Adaptive QoS/Game boost/Game IPS, Web history:
-TM_eula_withdraw_desc1=Please noted that your information will be collected by Trend Micro through the above functions.
-TM_eula_withdraw_desc2=If you would like to disable sharing your information with Trend Micro through the following functions, please click <span style="font-weight: bold;">[Withdraw]</span> below. However, please be noted that such features/functions may not be worked if stop sharing your information with Trend Micro.
-withdraw_confirm=Are you sure you want to withdraw?
-withdraw_str=Withdraw
+TM_eula_withdraw0=AiProtection、トラフィックアナライザー、アプリアナライザー、適応型QoS、ゲームブースト、ゲームIPS、Web履歴:
+TM_eula_withdraw_desc1=お客様情報は上記機能によってTrend Micro で収集されます。
+TM_eula_withdraw_desc2=以下機能の使用によるTrend Micro との情報共有を希望しない場合は、下記の<span style="font-weight: bold;">「共有しない」</span> をクリックしてください。 Trend Microとの情報共有を無効にすることによって、それらの機能が正常に動作しない場合があります。
+withdraw_confirm=「共有しない」に変更しますか？
+withdraw_str=共有しない
 asusddns_inputhint=名前を入力します。
 Auto=自動
 Auto_Setting_btn=自動設定
@@ -1586,8 +1586,8 @@ feedback_thanks=貴重なフィードバックをお送りいただき、誠に�
 feedback_translation=表記 / 翻訳 の編集を提案
 feedback_translation_ts=表記 / 翻訳の編集を提案
 feedback_usaul_unavailable=利用できない場合が多い
-feedback_eula=I agree to provide the above information, the model name, firmware version of my ASUS router, browser version, MAC address, IP address, Internet status, router system information, the time I submit this Feedback form to ASUS to diagnose and improve problems of my ASUS router, and to analyze user experience for the purpose of development and evaluation of new products and services of ASUS, and also agree to the <a style="font-weight: bolder;text-decoration:underline;cursor:pointer;" href="https://www.asus.com/us/Terms_of_Use_Notice_Privacy_Policy/Privacy_Policy" target="_blank">ASUS Privacy Policy</a>
-feedback_eula_notice=Before you click “send”, please agree to the information.
+feedback_eula=利用者がフィードバックフォームを通じてご提供いただく、上記の情報、モデル名、ASUSルーターのファームウェアバージョン、ブラウザーのバージョン、MACアドレス、IPアドレス、インターネットの状態、ルーターのシステム情報は、ASUSルーターの問題の診断と改善、ASUSの新製品およびサービスの開発と評価、および利用者の使用状況分析のための利用にご同意いただくものとし、また、<a style="font-weight: bolder;text-decoration:underline;cursor:pointer;" href="https://www.asus.com/us/Terms_of_Use_Notice_Privacy_Policy/Privacy_Policy" target="_blank">ASUSの個人情報保護方針</a>にも同意するものとします。
+feedback_eula_notice=以下の利用規約をご覧いただき、ご同意の上、「送信」をクリックしてください。
 File_content_alert_desc10=文字以上で名前を作成すると、特定の Windows® バージョンで表示されなくなる場合があります。続行しますか?
 File_content_alert_desc6=共有名は必ず入力してください。
 File_content_alert_desc7=共有名はアルファベット/ダッシュ/アンダースコア/スペースのみで作成します。

@@ -5037,9 +5037,12 @@ void regular_ddns_check(void)
 		if (ddns_wan_unit >= WAN_UNIT_FIRST && ddns_wan_unit < WAN_UNIT_MAX) {
 			wan_unit = ddns_wan_unit;
 		} else {
-			int u = get_first_configured_connected_wan_unit();
+			int u = get_first_connected_public_wan_unit();
 			if (u < WAN_UNIT_FIRST || u >= WAN_UNIT_MAX)
+			{
+				logmessage("DDNS", "[%s] dual WAN load balance DDNS cannot succeed to work, because none of wan is public IP.", __FUNCTION__);
 				return;
+			}
 
 			wan_unit = u;
 		}
@@ -5092,9 +5095,12 @@ void ddns_check(void)
 		if (ddns_wan_unit >= WAN_UNIT_FIRST && ddns_wan_unit < WAN_UNIT_MAX) {
 			wan_unit = ddns_wan_unit;
 		} else {
-			int u = get_first_configured_connected_wan_unit();
+			int u = get_first_connected_public_wan_unit();
 			if (u < WAN_UNIT_FIRST || u >= WAN_UNIT_MAX)
+			{
+				logmessage("DDNS", "[%s] dual WAN load balance DDNS cannot succeed to work, because none of wan is public IP.", __FUNCTION__);
 				return;
+			}
 
 			wan_unit = u;
 		}

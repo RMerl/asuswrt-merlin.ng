@@ -32,44 +32,44 @@ APSurvey_msg_connected=Anda sudah bersambung kepada titik akses ini.
 APSurvey_msg_non_support_Auth=Kaedah pengesahan tidak disokong.
 APSurvey_msg_waiting_to_connect=Sila tunggu, ZVMODELVZ sedang menyambung kepada
 ASUS_Registration=Become an ASUS Member and receive the latest product information. <a style='color:#FC0' target='_blank' href='https://account.asus.com'>Sign Up Now!</a>
-ASUS_Notice=ASUS NOTICE
+ASUS_Notice=NOTIS ASUS
 ASUS_privacy_desc=Please note that users are required to agree to share information before using DDNS, Remote Connection (ASUS Router APP、Lyra APP、AiCloud、AiDisk), AiProtection, Traffic analyzer, Apps analyzer, Adaptive QoS, Game Boost/Game IPS and Web history. At any time, users can search for the contents of the terms at this page or stop sharing the information with other parties by choosing <a style="font-weight: bolder;">Withdraw</a>.
 ASUS_eula_desc0=Selamat datang untuk menggunakan sambungan DDNS/ Jauh  (APLIKASI Penghala ASUS/APLIKASI Lyra/AiCloud/AiDisk). Sila baca maklumat berikut dengan teliti:
-ASUS_eula_desc1=In order to assess and improve ASUS product services and improve stability, based on your usage, ASUS may collect your information through the above functions:
-ASUS_eula_desc1_1=When you start to use the above functions, ASUS may collect your anonymous information which cannot characterize nor identify you:
+ASUS_eula_desc1=Untuk menilai dan meningkatkan perkhidmatan dan kestabilan produk ASUS, berdasarkan penggunaan anda, ASUS mungkin mengumpulkan maklumat anda menerusi fungsi di atas:
+ASUS_eula_desc1_1=Apabila anda mula menggunakan fungsi di atas, ASUS mungkin mengumpulkan maklumat tanpa nama anda yang tidak boleh menggambarkan ciri mahupun mengenal pasti anda:
 ASUS_eula_desc1_1_1=Maklumat log: maklumat log yang berkaitan dengan produk anda, termasuk nama model, versi perisian tegar, status Internet dan kod pengaktifan yang dijana secara automatik (hanya terpakai pada fungsi Alexa™/IFTTT™).
 ASUS_eula_desc1_1_12=Maklumat log: maklumat log yang berkaitan dengan produk anda, termasuk nama model, versi perisian tegar, status Internet dan kod pengaktifan yang dijana secara automatik (hanya terpakai pada fungsi Alexa™).
 ASUS_eula_desc1_1_13=Maklumat log: maklumat log yang berkaitan dengan produk anda, termasuk nama model, versi perisian tegar dan status Internet.
-ASUS_eula_desc1_2_s1=By clicking [Agree] below, it will be deemed that you consent to share the following information with ASUS.
-ASUS_eula_desc1_2_s2=To protect children’s privacy, we will not collect the following information of children.
-ASUS_eula_desc1_2_1=Product information: information associated with your product, including IP Address, MAC Address, and DDNS name.
-ASUS_eula_desc1_3=Besides, in order to enable your remote control function of Alexa™ via your product, ASUS may share auto-generated activation code to Amazon for the above purposes.
-ASUS_eula_desc1_4=Besides, in order to enable your remote control function of IFTTT™ via your product, ASUS may share auto-generated activation code to IFTTT™ for the above purposes.
-ASUS_eula_desc2=ASUS is committed to protecting and respecting your privacy; you may visit Advanced Settings > Administration > Privacy to enable/disable sharing your product information with ASUS at all times. To know more about how ASUS protects your privacy, please visit <a id="eula_url" style="font-weight: bolder;text-decoration:underline;cursor:pointer;" target="_blank">ASUS Privacy Policy</a>.
-ASUS_eula_age=I am above the age of 16 years.
-ASUS_eula_age_confirm=Please confirm the age is above the age of 16 years.
-ASUS_eula_withdraw0_AlexaIFTTT=For DDNS, Alexa™, IFTTT™, and Remote connection(ASUS Router APP, Lyra APP, AiCloud, AiDisk):
-ASUS_eula_withdraw0_Alexa=For DDNS, Alexa™, and Remote connection(ASUS Router APP, Lyra APP, AiCloud, AiDisk):
-ASUS_eula_withdraw0=For DDNS, and Remote connection(ASUS Router APP, Lyra APP, AiCloud, AiDisk):
-ASUS_eula_withdraw_desc1=Please noted that your information (including your product model name, firmware version, Internet status, IP Address, MAC Address and DDNS name) will be collected by ASUS through the above functions.
-ASUS_eula_withdraw_desc1_2=If you would like to disable sharing your information with ASUS through the above functions, please click <span style="font-weight: bold;">[Withdraw]</span> below. However, please be noted that such features/functions may not be worked if stop sharing your information with ASUS.
-ASUS_eula_withdraw_desc2=After you click <span style="font-weight: bold;">[Withdraw]</span>, there will be some changes as listed below:
-ASUS_eula_withdraw_desc2_1=The DDNS name you are currently using will not be kept (held) in your router.
-ASUS_eula_withdraw_desc2_2=You are able to use ASUS Router APP, Lyra APP, AiCloud, AiDisk under LAN connection, but not under the remote connection mode.
-ASUS_eula_withdraw_desc2_Alexa=In the future, if you intend to enable the functions of Alexa™, you need to provide new activation code to the web page of Alexa™.
-ASUS_eula_withdraw_desc2_AlexaIFTTT=In the future, if you intend to enable the functions of Alexa™ and IFTTT™, you need to provide new activation code to the web page of Alexa™ and IFTTT™.
+ASUS_eula_desc1_2_s1=Dengan mengklik [Saya bersetuju] di bawah, ia akan dianggap bahawa anda bersetuju untuk berkongsi maklumat berikut dengan ASUS.
+ASUS_eula_desc1_2_s2=Untuk melindungi privasi kanak-kanak, kami tidak akan mengumpul maklumat kanak-kanak berikut.
+ASUS_eula_desc1_2_1=Maklumat produk: maklumat yang berkaitan dengan produk anda, termasuk nombor siri produk, Alamat IP, Alamat MAC dan nama DDNS.
+ASUS_eula_desc1_3=Selain itu, ASUS mungkin berkongsi kod pengaktifan yang dijana secara automatik dengan Amazon bagi tujuan di atas untuk mendayakan fungsi kawalan jauh Alexa™ anda melalui produk anda.
+ASUS_eula_desc1_4=Selain itu, ASUS mungkin berkongsi kod pengaktifan yang dijana secara automatik dengan IFTTT™ bagi tujuan di atas untuk mendayakan fungsi kawalan jauh IFTTT™ anda melalui produk anda.
+ASUS_eula_desc2=ASUS komited untuk melindungi dan menghormati privasi anda. Anda boleh melawat Tetapan Lanjutan > Pentadbiran > Privasi untuk mendayakan/menyahdayakan perkongsian maklumat produk anda dengan ASUS sepanjang masa. Untuk mengetahui lebih lanjut tentang cara ASUS melindungi privasi anda, sila lawati <a id="eula_url" style="font-weight: bolder;text-decoration:underline;cursor:pointer;" target="_blank">Dasar Privasi ASUS</a>.
+ASUS_eula_age=Saya berumur lebih 16 tahun.
+ASUS_eula_age_confirm=Sila sahkan umur anda lebih 16 tahun.
+ASUS_eula_withdraw0_AlexaIFTTT=Untuk sambungan DDNS, Alexa™, IFTTT™ dan Jauh (APLIKASI Penghala ASUS/APLIKASI Lyra/AiCloud/AiDisk):
+ASUS_eula_withdraw0_Alexa=Untuk sambungan DDNS, Alexa™ dan Jauh (APLIKASI Penghala ASUS/APLIKASI Lyra/AiCloud/AiDisk):
+ASUS_eula_withdraw0=Untuk sambungan DDNS dan Jauh (APLIKASI Penghala ASUS/APLIKASI Lyra/AiCloud/AiDisk):
+ASUS_eula_withdraw_desc1=Sila ambil perhatian bahawa maklumat anda, termasuk nama model produk anda, versi perisian tegar, status Internet, Alamat IP, Alamat MAC dan nama DDNS, akan dikumpulkan oleh ASUS menerusi fungsi di atas.
+ASUS_eula_withdraw_desc1_2=Jika anda mahu menyahdayakan perkongsian maklumat anda dengan ASUS menerusi fungsi di atas, sila klik <span style="font-weight: bold;">[Tarik Balik]</span> di bawah. Walau bagaimanapun, sila ambil perhatian bahawa ciri/fungsi tersebut mungkin tidak berfungsi jika anda berhenti berkongsi maklumat anda dengan ASUS.
+ASUS_eula_withdraw_desc2=Selepas anda mengklik <span style="font-weight: bold;">[Tarik Balik]</span>, akan terdapat beberapa perubahan seperti yang disenaraikan di bawah:
+ASUS_eula_withdraw_desc2_1=Nama DDNS yang sedang anda guna tidak akan disimpan dalam penghala anda.
+ASUS_eula_withdraw_desc2_2=Anda dapat menggunakan APLIKASI Penghala ASUS, APLIKASI Lyra, AiCloud, AiDisk di bawah sambungan LAN, tetapi bukan di bawah mod sambungan jauh.
+ASUS_eula_withdraw_desc2_Alexa=Pada masa hadapan, jika anda bercadang untuk mendayakan fungsi Alexa™, anda perlu menyediakan kod pengaktifan baharu ke halaman web Alexa™.
+ASUS_eula_withdraw_desc2_AlexaIFTTT=Pada masa hadapan, jika anda bercadang untuk mendayakan fungsi Alexa™ dan IFTTT™, anda perlu menyediakan kod pengaktifan baharu ke halaman web Alexa™ dan IFTTT™.
 ASUS_eula_withdraw_note=Anda tidak dapat melengkapkan prosedur tarik balik tanpa sambungan Internet. Sila tarik balik apabila bersambung dengan Internet.
 ASUS_eula_withdraw_unstable=Anda tidak dapat melengkapkan prosedur tarik balik kerana status Internet tidak stabil. Sila tarik balik sekali lagi kemudian.
-TM_eula_desc1=By using AiProtection, Traffic analyzer, Apps analyzer and Adaptive QoS, you agree to the <a id="eula_url" style="text-decoration:underline;" target="_blank">Trend Micro End User License Agreement.</a>
-TM_eula_desc2=Please be noted that your information will be collected by Trend Micro through AiProtection, Traffic analyzer, Apps analyzer, Adaptive QoS and web history. You also acknowledge and agree that ASUS is not responsible for neither the agreement between you and Trend Micro nor any content of the service provided by Trend Micro. If you may have any inquires about how Trend Micro collects, processes and uses your above information, please refer to the privacy- related statement issued by Trend Micro or contact Trend Micro for more details.
-TM_eula_desc3=If you would like to disable sharing your information with Trend Micro through the above functions, please go to:  Router web GUI > Advanced settings > Administration > Privacy.
+TM_eula_desc1=Dengan menggunakan AiProtection, Penganalisis trafik, Penganalisis aplikasi, QoS Mudah Suai/Rangsangan permainan/IPS Permainan, Sejarah web, anda bersetuju dengan<a id="eula_url" style="text-decoration:underline;" target="_blank">Perjanjian Lesen Pengguna Akhir Trend Micro</a>.
+TM_eula_desc2=Sila ambil perhatian bahawa maklumat anda akan dikumpulkan oleh Trend Micro menerusi AiProtection, Penganalisis trafik, Penganalisis aplikasi, QoS Mudah Suai dan sejarah web. Anda juga mengakui dan bersetuju bahawa ASUS tidak bertanggungjawab sama ada atas perjanjian antara anda dan Trend Micro mahupun sebarang kandungan perkhidmatan yang disediakan oleh Trend Micro. Jika anda mempunyai sebarang pertanyaan tentang cara Trend Micro mengumpul, memproses dan menggunakan maklumat anda di atas, sila rujuk pernyataan berkaitan privasi yang dikeluarkan oleh Trend Micro atau hubungi Trend Micro untuk butiran lanjut.
+TM_eula_desc3=Jika anda mahu menyahdayakan maklumat anda dengan Trend Micro menerusi fungsi di atas, sila pergi ke:  GUI web penghala > Tetapan lanjutan > Pentadbiran > Privasi.
 TM_privacy_policy=<a id="tm_eula_url" style="text-decoration:underline;" target="_blank">TrendMicro Privacy Policy</a>
 TM_data_collection=<a id="tm_disclosure_url" style="text-decoration:underline;" target="_blank">Privacy and Personal Data Collection Disclosure</a>
-TM_eula_withdraw0=For AiProtection, Traffic Analyzer, Apps analyzer, Adaptive QoS/Game boost/Game IPS, Web history:
-TM_eula_withdraw_desc1=Please noted that your information will be collected by Trend Micro through the above functions.
-TM_eula_withdraw_desc2=If you would like to disable sharing your information with Trend Micro through the following functions, please click <span style="font-weight: bold;">[Withdraw]</span> below. However, please be noted that such features/functions may not be worked if stop sharing your information with Trend Micro.
-withdraw_confirm=Are you sure you want to withdraw?
-withdraw_str=Withdraw
+TM_eula_withdraw0=Untuk AiProtection, Penganalisis Trafik, Penganalisis aplikasi, QoS Mudah Suai/Rangsangan permainan/IPS permainan, Sejarah web:
+TM_eula_withdraw_desc1=Sila ambil perhatian bahawa maklumat anda akan dikumpulkan oleh Trend Micro menerusi fungsi di atas.
+TM_eula_withdraw_desc2=Jika anda mahu menyahdayakan perkongsian maklumat anda dengan Trend Micro menerusi fungsi berikut, sila klik <span style="font-weight: bold;">[Tarik Balik]</span>di bawah. Walau bagaimanapun, sila ambil perhatian bahawa ciri/fungsi tersebut mungkin tidak berfungsi jika anda berhenti berkongsi maklumat anda dengan Trend Micro.
+withdraw_confirm=Adakah anda pasti mahu menarik balik?
+withdraw_str=Tarik Balik
 asusddns_inputhint=Masukkan nama
 Auto=Auto
 Auto_Setting_btn=Automatic Setting
@@ -1586,8 +1586,8 @@ feedback_thanks=Terima kasih kerana meluangkan masa untuk menyerahkan maklum bal
 feedback_translation=Terjemahan Yang Anda Cadangkan
 feedback_translation_ts=Translated Suggestion
 feedback_usaul_unavailable=Biasanya kepada sentiasa tidak tersedia
-feedback_eula=I agree to provide the above information, the model name, firmware version of my ASUS router, browser version, MAC address, IP address, Internet status, router system information, the time I submit this Feedback form to ASUS to diagnose and improve problems of my ASUS router, and to analyze user experience for the purpose of development and evaluation of new products and services of ASUS, and also agree to the <a style="font-weight: bolder;text-decoration:underline;cursor:pointer;" href="https://www.asus.com/us/Terms_of_Use_Notice_Privacy_Policy/Privacy_Policy" target="_blank">ASUS Privacy Policy</a>
-feedback_eula_notice=Before you click “send”, please agree to the information.
+feedback_eula=Saya bersetuju untuk memberikan maklumat di atas, nama model, versi perisian tegar bagi penghala ASUS saya, versi pelayar, alamat MAC, alamat IP, status Internet, maklumat sistem penghala, semasa saya menyerahkan borang Maklum Balas ini kepada ASUS untuk mendiagnosis dan membaiki masalah penghala ASUS saya dan untuk menganalisis pengalaman pengguna bagi tujuan pembangunan dan penilaian produk dan perkhidmatan ASUS yang baharu, dan juga bersetuju dengan <a style="font-weight: bolder;text-decoration:underline;cursor:pointer;" href="https://www.asus.com/us/Terms_of_Use_Notice_Privacy_Policy/Privacy_Policy" target="_blank">Dasar Privasi ASUS</a>.
+feedback_eula_notice=Sebelum anda mengklik [Hantar], sila bersetuju dengan maklumat berikut.
 File_content_alert_desc10=Membuat perkongsian dengan lebih daripada 12 aksara mungkin membuatkannya tidak dapat dilihat dalam beberapa versi WindowsR.\nAdakah anda mahu teruskan?
 File_content_alert_desc6=Nama perkongsian tidak boleh kosong.
 File_content_alert_desc7=Nama perkongsian hanya boleh mengandungi aksara abjad angka/sengkang/garis bawah/ruang.

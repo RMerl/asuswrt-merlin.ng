@@ -14,6 +14,10 @@
 #include <rtstate.h>
 #include <stdarg.h>
 
+#ifdef RTCONFIG_BCMWL6
+#include "bcmwifi_channels.h"
+#endif
+
 #ifdef RTCONFIG_REALTEK
 #include "realtek_common.h"
 #include <time.h>
@@ -1575,6 +1579,11 @@ extern int hnd_ethswctl(ecmd_t act, unsigned int val, int len, int wr, unsigned 
 extern uint32_t set_ex53134_ctrl(uint32_t portmask, int ctrl);
 #endif
 extern int fw_check(void);
+extern int with_non_dfs_chspec(char *wif);
+extern chanspec_t select_band1_chspec_with_same_bw(char *wif, chanspec_t chanspec);
+extern chanspec_t select_band4_chspec_with_same_bw(char *wif, chanspec_t chanspec);
+extern chanspec_t select_chspec_with_band_bw(char *wif, int band, int bw, chanspec_t chanspec);
+extern void wl_reset_ssid(char *wif);
 #endif
 #ifdef RTCONFIG_AMAS
 //extern char *get_pap_bssid(int unit);
@@ -1672,7 +1681,7 @@ extern int illegal_ipv4_address(char *addr);
 extern int illegal_ipv4_netmask(char *netmask);
 extern int test_and_get_free_uint_network(int t_class, uint32_t *exp_ip, uint32_t exp_cidr, uint32_t excl);
 extern int test_and_get_free_char_network(int t_class, char *ip_cidr_str, uint32_t excl);
-extern enum wan_unit_e get_first_configured_connected_wan_unit(void);
+extern enum wan_unit_e get_first_connected_public_wan_unit(void);
 #ifdef RTCONFIG_IPV6
 extern const char *get_wan6face(void);
 extern const char *ipv6_address(const char *ipaddr6);

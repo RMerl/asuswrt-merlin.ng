@@ -88,6 +88,10 @@ CFLAGS += -DPTHREAD_STACK_SIZE=0x51200
 LDFLAGS += -L$(TOP)/wlcsm -lwlcsm -lgcc_s
 endif
 
+ifeq ($(RTCONFIG_BCMARM),y)
+CFLAGS += -I$(SRCBASE)/shared/bcmwifi/include -DTYPEDEF_FLOAT_T
+endif
+
 ifeq ($(RTCONFIG_SW_HW_AUTH),y)
 CFLAGS += -I$(SW_HW_AUTH_DIR) -DSW_HW_AUTH
 endif

@@ -750,18 +750,29 @@ void start_usb(int orig)
 			if(nvram_get_int("usb_fs_hfs")){
 #ifdef RTCONFIG_TUXERA_HFS
 #if defined(RTCONFIG_OPENPLUSTUXERA_HFS)
-				if(nvram_match("usb_hfs_mod", "tuxera"))
+				if(nvram_invmatch("usb_hfs_mod", "tuxera")){
+					modprobe("hfs");
+					modprobe("hfsplus");
+				}
+				else
 #endif
 				modprobe("thfsplus");
 #elif defined(RTCONFIG_PARAGON_HFS)
 #if defined(RTCONFIG_OPENPLUSPARAGON_HFS)
-				if(nvram_match("usb_hfs_mod", "paragon"))
+				if(nvram_invmatch("usb_hfs_mod", "paragon")){
+					modprobe("hfs");
+					modprobe("hfsplus");
+				}
+				else
 #endif
 #ifdef RTCONFIG_UFSD_DEBUG
 				modprobe("ufsd_debug");
 #else
 				modprobe("ufsd");
 #endif
+#else
+				modprobe("hfs");
+				modprobe("hfsplus");
 #endif
 			}
 #endif

@@ -142,10 +142,10 @@ function initial(){
 		get_cfg_clientlist = get_cfg_clientlist_ori[0];
 		$("#fw_version_tr").empty();
 		var html = "";
-		html += "<tr>";
+		html += "<tr id='update_div' style='display:none;'>";
 		html += "<th>Check Update</th>";/* untranslated */
 		html += "<td>";
-		html += '<div id="update_div" style="display:none;">';
+		html += '<div>';
 		html += '<input type="button" id="update" name="update" class="button_gen" onclick="show_offline_msg(true);" value="<#liveupdate#>" />';
 		html += '<span id="beta_firmware_path_span" style="display:none;">';
 		html += '<input type="checkbox" name="beta_firmware_path" id="beta_firmware_path" onclick="change_firmware_path(this.checked==true);"  <% nvram_match("firmware_path", "1", "checked"); %>><#get_beta#></input>';
@@ -265,6 +265,7 @@ function initial(){
 	if(no_update_support){
 		document.getElementById("update_div").style.display = "none";
 		document.getElementById("beta_firmware_path_span").style.display = "none";
+		document.getElementById("fw_tr").style.display = "none";
 		document.getElementById("linkpage_div").style.display = "none";
 	}
 	else{
@@ -273,6 +274,7 @@ function initial(){
 			document.getElementById("beta_firmware_path_span").style.display = "none";
 			document.getElementById("linkpage_div").style.display = "";
 			document.getElementById("linkpage").style.display = "";
+			document.getElementById("fw_tr").style.display = "none";
 			document.getElementById("fw_check_link").style.display = "none";
 			helplink = download_url;
 			document.getElementById("linkpage").href = helplink;
@@ -1237,7 +1239,7 @@ function check_AiMesh_fw_version(_fw) {
 
 		<table width="100%" border="1" align="center" cellpadding="4" cellspacing="0" bordercolor="#6b8fa3" class="FormTable">
 			<thead>
-				<tr>
+				<tr id="fw_tr">
 					<td colspan="2"><#FW_item2#></td>	
 				</tr>	
 			</thead>	

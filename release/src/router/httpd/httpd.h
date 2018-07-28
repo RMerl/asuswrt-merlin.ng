@@ -257,6 +257,8 @@ extern int check_lang_support(char *lang);
 extern int load_dictionary (char *lang, pkw_t pkw);
 extern void release_dictionary (pkw_t pkw);
 extern char* search_desc (pkw_t pkw, char *name);
+extern int change_preferred_lang();
+extern int get_lang_num();
 //extern char Accept_Language[16];
 #else
 static inline int check_lang_support(char *lang) { return 1; }
@@ -387,6 +389,6 @@ extern void page_default_redirect(int fromapp_flag, char* url);
 extern int wave_app_flag;
 extern int wave_handle_app_flag(char *name, int wave_app_flag);
 #endif
-extern int get_lang_num();
+extern int auto_set_lang;
 
 #endif /* _httpd_h_ */

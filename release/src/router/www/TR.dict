@@ -32,44 +32,44 @@ APSurvey_msg_connected=Bu erişim noktasına zaten bağlısınız.
 APSurvey_msg_non_support_Auth=Kimlik doğrulama yöntemi desteklenmiyor.
 APSurvey_msg_waiting_to_connect=Lütfen bekleyin, ZVMODELVZ bağlanıyor
 ASUS_Registration=Become an ASUS Member and receive the latest product information. <a style='color:#FC0' target='_blank' href='https://account.asus.com'>Sign Up Now!</a>
-ASUS_Notice=ASUS NOTICE
+ASUS_Notice=ASUS BİLDİRİMİ
 ASUS_privacy_desc=Please note that users are required to agree to share information before using DDNS, Remote Connection (ASUS Router APP、Lyra APP、AiCloud、AiDisk), AiProtection, Traffic analyzer, Apps analyzer, Adaptive QoS, Game Boost/Game IPS and Web history. At any time, users can search for the contents of the terms at this page or stop sharing the information with other parties by choosing <a style="font-weight: bolder;">Withdraw</a>.
 ASUS_eula_desc0=DDNS/ Uzak bağlantı(ASUS Yönlendirici Uygulaması/Lyra Uygulaması/ AiCloud/AiDisk) kullanımına hoş geldiniz. Lütfen aşağıdaki bilgileri dikkatlice okuyun:
-ASUS_eula_desc1=In order to assess and improve ASUS product services and improve stability, based on your usage, ASUS may collect your information through the above functions:
-ASUS_eula_desc1_1=When you start to use the above functions, ASUS may collect your anonymous information which cannot characterize nor identify you:
+ASUS_eula_desc1=ASUS, kullanımınız temelinde ASUS ürün hizmetlerini ve kararlılığı değerlendirmek ve iyileştirmek için yukarıdaki işlevler aracılığıyla bilgilerinizi toplayabilir.
+ASUS_eula_desc1_1=Yukarıdaki işlevleri kullanmaya başladığınızda, ASUS, sizi tanımlayamayan veya kimliğinizi belirleyemeyen adsız bilgilerinizi toplayabilir.
 ASUS_eula_desc1_1_1=Günlük bilgileri: Ürününüze ilişkin, model adını, aygıt yazılımı sürümünü, Internet durumunu ve otomatik oluşturulan etkinleştirme kodunu da içeren (yalnızca Alexa™/IFTTT™ işlevleri için geçerlidir) günlük bilgileri.
 ASUS_eula_desc1_1_12=Günlük bilgileri: Ürününüze ilişkin, model adını, aygıt yazılımı sürümünü, Internet durumunu ve otomatik oluşturulan etkinleştirme kodunu da içeren (yalnızca Alexa™ işlevleri için geçerlidir) günlük bilgileri.
 ASUS_eula_desc1_1_13=Günlük bilgileri: Ürününüze ilişkin, model adını, aygıt yazılımı sürümünü ve Internet durumunu da içeren günlük bilgileri.
-ASUS_eula_desc1_2_s1=By clicking [Agree] below, it will be deemed that you consent to share the following information with ASUS.
-ASUS_eula_desc1_2_s2=To protect children’s privacy, we will not collect the following information of children.
-ASUS_eula_desc1_2_1=Product information: information associated with your product, including IP Address, MAC Address, and DDNS name.
-ASUS_eula_desc1_3=Besides, in order to enable your remote control function of Alexa™ via your product, ASUS may share auto-generated activation code to Amazon for the above purposes.
-ASUS_eula_desc1_4=Besides, in order to enable your remote control function of IFTTT™ via your product, ASUS may share auto-generated activation code to IFTTT™ for the above purposes.
-ASUS_eula_desc2=ASUS is committed to protecting and respecting your privacy; you may visit Advanced Settings > Administration > Privacy to enable/disable sharing your product information with ASUS at all times. To know more about how ASUS protects your privacy, please visit <a id="eula_url" style="font-weight: bolder;text-decoration:underline;cursor:pointer;" target="_blank">ASUS Privacy Policy</a>.
-ASUS_eula_age=I am above the age of 16 years.
-ASUS_eula_age_confirm=Please confirm the age is above the age of 16 years.
-ASUS_eula_withdraw0_AlexaIFTTT=For DDNS, Alexa™, IFTTT™, and Remote connection(ASUS Router APP, Lyra APP, AiCloud, AiDisk):
-ASUS_eula_withdraw0_Alexa=For DDNS, Alexa™, and Remote connection(ASUS Router APP, Lyra APP, AiCloud, AiDisk):
-ASUS_eula_withdraw0=For DDNS, and Remote connection(ASUS Router APP, Lyra APP, AiCloud, AiDisk):
-ASUS_eula_withdraw_desc1=Please noted that your information (including your product model name, firmware version, Internet status, IP Address, MAC Address and DDNS name) will be collected by ASUS through the above functions.
-ASUS_eula_withdraw_desc1_2=If you would like to disable sharing your information with ASUS through the above functions, please click <span style="font-weight: bold;">[Withdraw]</span> below. However, please be noted that such features/functions may not be worked if stop sharing your information with ASUS.
-ASUS_eula_withdraw_desc2=After you click <span style="font-weight: bold;">[Withdraw]</span>, there will be some changes as listed below:
-ASUS_eula_withdraw_desc2_1=The DDNS name you are currently using will not be kept (held) in your router.
-ASUS_eula_withdraw_desc2_2=You are able to use ASUS Router APP, Lyra APP, AiCloud, AiDisk under LAN connection, but not under the remote connection mode.
-ASUS_eula_withdraw_desc2_Alexa=In the future, if you intend to enable the functions of Alexa™, you need to provide new activation code to the web page of Alexa™.
-ASUS_eula_withdraw_desc2_AlexaIFTTT=In the future, if you intend to enable the functions of Alexa™ and IFTTT™, you need to provide new activation code to the web page of Alexa™ and IFTTT™.
+ASUS_eula_desc1_2_s1=Aşağıdaki [Kabul ediyorum] düğmesine tıkladığınızda, aşağıdaki bilgileri ASUS ile paylaşmayı kabul ettiğiniz varsayılacaktır.
+ASUS_eula_desc1_2_s2=Çocukların gizliliğini korumak için çocuklarla ilgili aşağıdaki bilgileri toplamayacağız.
+ASUS_eula_desc1_2_1=Ürün bilgileri: Ürününüze ilişkin, ürün seri numarasını, IP Adresini, MAC Adresini ve DDNS adını da içeren bilgiler.
+ASUS_eula_desc1_3=Bunun yanı sıra, ASUS, ürününüz aracılığıyla Alexa™ uzaktan kumanda işlevinizi etkinleştirmek için, otomatik oluşturulan etkinleştirme kodunu yukarıdaki amaçlara yönelik olarak Amazon ile paylaşabilir.
+ASUS_eula_desc1_4=Bunun yanı sıra, ASUS, ürününüz aracılığıyla IFTTT™ uzaktan kumanda işlevinizi etkinleştirmek için, otomatik oluşturulan etkinleştirme kodunu yukarıdaki amaçlara yönelik olarak IFTTT™ ile paylaşabilir.
+ASUS_eula_desc2=ASUS, gizliliğinizi korumaya ve gizliliğinize saygı göstermeye kendini adar. Ürün bilgilerinizi ASUS ile paylaşmayı istediğiniz zaman etkinleştirmek/devre dışı bırakmak için Advanced Settings (Gelişmiş Ayarlar) > Administration (Yönetim) > Privacy (Gizlilik) kısmını ziyaret edebilirsiniz. ASUS\'un gizliliğinizi nasıl koruduğu konusunda daha fazla bilgi almak için lütfen <a id="eula_url" style="font-weight: bolder;text-decoration:underline;cursor:pointer;" target="_blank">ASUS Gizlilik İlkesi</a> kısmını ziyaret edin.
+ASUS_eula_age=16 yaşından büyüğüm.
+ASUS_eula_age_confirm=Lütfen 16 yaşından büyük olduğunuzu onaylayın.
+ASUS_eula_withdraw0_AlexaIFTTT=DDNS, Alexa™, IFTTT™ ve Uzak bağlantı (ASUS Yönlendirici Uygulaması/Lyra Uygulaması/AiCloud/AiDisk) için:
+ASUS_eula_withdraw0_Alexa=DDNS, Alexa™ ve Uzak bağlantı (ASUS Yönlendirici Uygulaması/Lyra Uygulaması/AiCloud/AiDisk) için:
+ASUS_eula_withdraw0=DDNS ve Uzak bağlantı (ASUS Yönlendirici Uygulaması/Lyra Uygulaması/AiCloud/AiDisk) için:
+ASUS_eula_withdraw_desc1=Lütfen ürününüzün model adını, aygıt yazılımı sürümünü, Internet durumunu, IP Adresini, MAC Adresini ve DDNS adını da içeren bilgilerinizin ASUS tarafından yukarıdaki işlevler aracılığıyla toplanacağını unutmayın.
+ASUS_eula_withdraw_desc1_2=Bilgilerinizi yukarıdaki işlevler aracılığıyla ASUS ile paylaşmayı devre dışı bırakmak isterseniz lütfen aşağıdaki <span style="font-weight: bold;">[(Vazgeç]</span> öğesine tıklayın. Ancak, bilgilerinizi ASUS ile paylaşmaya son verirseniz bu tür özelliklerin/işlevlerin çalışmayabileceğini lütfen unutmayın.
+ASUS_eula_withdraw_desc2=<span style="font-weight: bold;">[(Vazgeç]</span> öğesine tıklamanızdan sonra aşağıda listelendiği gibi bazı değişiklikler olacaktır:
+ASUS_eula_withdraw_desc2_1=Kullanmakta olduğunuz DDNS adı yönlendiricinizde tutulmayacaktır.
+ASUS_eula_withdraw_desc2_2=ASUS Yönlendirici Uygulamasını, Lyra Uygulamasını, AiCloud'ı, AiDisk'i uzak bağlantı modu altında değil LAN bağlantısı altında kullanabilirsiniz.
+ASUS_eula_withdraw_desc2_Alexa=İleride Alexa™ işlevlerini etkinleştirmek istediğinizde, Alexa™ web sayfasına yeni etkinleştirme kodu sağlamanız gerekecektir.
+ASUS_eula_withdraw_desc2_AlexaIFTTT=İleride Alexa™ ve IFTTT™ işlevlerini etkinleştirmek istediğinizde, Alexa™ ve  IFTTT™ web sayfasına yeni etkinleştirme kodu sağlamanız gerekecektir.
 ASUS_eula_withdraw_note=Vazgeçme prosedürünü Internet bağlantısı olmadan tamamlayamazsınız. Lütfen Internet'e bağlandığınızda vazgeçin.
 ASUS_eula_withdraw_unstable=Internet durumu kararsız olduğundan vazgeçme prosedürünü tamamlayamıyorsunuz. Lütfen daha sonra tekrar vazgeçin.
-TM_eula_desc1=By using AiProtection, Traffic analyzer, Apps analyzer and Adaptive QoS, you agree to the <a id="eula_url" style="text-decoration:underline;" target="_blank">Trend Micro End User License Agreement.</a>
-TM_eula_desc2=Please be noted that your information will be collected by Trend Micro through AiProtection, Traffic analyzer, Apps analyzer, Adaptive QoS and web history. You also acknowledge and agree that ASUS is not responsible for neither the agreement between you and Trend Micro nor any content of the service provided by Trend Micro. If you may have any inquires about how Trend Micro collects, processes and uses your above information, please refer to the privacy- related statement issued by Trend Micro or contact Trend Micro for more details.
-TM_eula_desc3=If you would like to disable sharing your information with Trend Micro through the above functions, please go to:  Router web GUI > Advanced settings > Administration > Privacy.
+TM_eula_desc1=AiProtection, Trafik çözümleyici, Uygulama çözümleyici, Uyarlanabilir QoS/Oyun güçlendirme/Oyun IPS, Web geçmişi kullanarak <a id="eula_url" style="text-decoration:underline;" target="_blank">Trend Micro Son Kullanıcı Lisans Anlaşması</a> koşullarını kabul edersiniz.
+TM_eula_desc2=Lütfen bilgilerinizin Trend Micro tarafından AiProtection, Trafik çözümleyici, Uygulama çözümleyici, Uyarlanabilir QoS ve web geçmişi aracılığıyla toplanacağını unutmayın. ASUS\'un Trend Micro ile aranızdaki anlaşmadan veya Trend Micro tarafından sağlanan hizmetin herhangi bir içeriğinden sorumlu olmadığını da onaylar ve kabul edersiniz. ITrend Micro\'nun yukarıdaki bilgilerinizi toplama, işleme ve kullanma yöntemleri konusunda sorularınız olursa, lütfen daha fazla ayrıntı için, Trend Micro tarafından yayımlanan gizlilikle ilgili bildirime başvurun veya Trend Micro ile iletişime geçin.
+TM_eula_desc3=Bilgilerinizi yukarıdaki işlevler aracılığıyla Trend Micro ile paylaşmayı devre dışı bırakmak isterseniz lütfen şu kısma gidin:  Router web GUI (Yönlendirici web grafiksel kullanıcı arayüzü) > Advanced settings (Gelişmiş ayarlar) > Administration (Yönetim) > Privacy (Gizlilik).
 TM_privacy_policy=<a id="tm_eula_url" style="text-decoration:underline;" target="_blank">TrendMicro Privacy Policy</a>
 TM_data_collection=<a id="tm_disclosure_url" style="text-decoration:underline;" target="_blank">Privacy and Personal Data Collection Disclosure</a>
-TM_eula_withdraw0=For AiProtection, Traffic Analyzer, Apps analyzer, Adaptive QoS/Game boost/Game IPS, Web history:
-TM_eula_withdraw_desc1=Please noted that your information will be collected by Trend Micro through the above functions.
-TM_eula_withdraw_desc2=If you would like to disable sharing your information with Trend Micro through the following functions, please click <span style="font-weight: bold;">[Withdraw]</span> below. However, please be noted that such features/functions may not be worked if stop sharing your information with Trend Micro.
-withdraw_confirm=Are you sure you want to withdraw?
-withdraw_str=Withdraw
+TM_eula_withdraw0=AiProtection, Trafik çözümleyici, Uygulama çözümleyici, Uyarlanabilir QoS/Oyun güçlendirme/Oyun IPS, Web geçmişi için:
+TM_eula_withdraw_desc1=Lütfen bilgilerinizin Trend Micro tarafından yukarıdaki işlevler aracılığıyla toplanacağını unutmayın.
+TM_eula_withdraw_desc2=Bilgilerinizi aşağıdaki işlevler aracılığıyla Trend Micro ile paylaşmayı devre dışı bırakmak isterseniz lütfen aşağıdaki <span style="font-weight: bold;">[(Vazgeç]</span> öğesine tıklayın. Ancak, bilgilerinizi Trend Micro ile paylaşmaya son verirseniz bu tür özelliklerin/işlevlerin çalışmayabileceğini lütfen unutmayın.
+withdraw_confirm=Vazgeçmek istediğinizden emin misiniz?
+withdraw_str=Vazgeç
 asusddns_inputhint=Adı girin
 Auto=Otomatik
 Auto_Setting_btn=Automatic Setting
@@ -1586,8 +1586,8 @@ feedback_thanks=Geri bildiriminizi göndermeye zaman ayırdığınız için teş
 feedback_translation=Önerdiğiniz Çeviri
 feedback_translation_ts=Translated Suggestion
 feedback_usaul_unavailable=Genellikle ya da hiçbir zaman mevcut değil
-feedback_eula=I agree to provide the above information, the model name, firmware version of my ASUS router, browser version, MAC address, IP address, Internet status, router system information, the time I submit this Feedback form to ASUS to diagnose and improve problems of my ASUS router, and to analyze user experience for the purpose of development and evaluation of new products and services of ASUS, and also agree to the <a style="font-weight: bolder;text-decoration:underline;cursor:pointer;" href="https://www.asus.com/us/Terms_of_Use_Notice_Privacy_Policy/Privacy_Policy" target="_blank">ASUS Privacy Policy</a>
-feedback_eula_notice=Before you click “send”, please agree to the information.
+feedback_eula=ASUS yönlendiricimdeki sorunlar konusunda tanı ve iyileştirme gerçekleştirilmesi, ASUS'un yeni ürünlerinin ve hizmetlerinin geliştirilmesine ve değerlendirilmesine yönelik olarak kullanıcı deneyiminin çözümlenmesi için, yukarıdaki bilgileri, model adını, ASUS yönlendiricimin aygıt yazılımı sürümünü, tarayıcı sürümünü, MAC adresini, IP adresini, Internet durumunu, yönlendirici sistem bilgilerini, bu Geri Bildirim formunu gönderme zamanımı ASUS'a sağlamayı ve <a style="font-weight: bolder;text-decoration:underline;cursor:pointer;" href="https://www.asus.com/us/Terms_of_Use_Notice_Privacy_Policy/Privacy_Policy" target="_blank">ASUS Gizlilik İlkesi</a> koşullarını kabul ederim.
+feedback_eula_notice=[Gönder] düğmesine tıklamadan önce lütfen aşağıdaki bilgileri kabul edin.
 File_content_alert_desc10=Paylaşım 12'den fazla karakterle oluşturulduğunda bazı Windows® sürümlerinde görünmeyebilir.\nDevam etmek istiyor musunuz?
 File_content_alert_desc6=Paylaşım adı boş bırakılamaz.
 File_content_alert_desc7=Paylaşım adında yalnızca alfasayısal/kısa çizgi/alt çizgi/boşluk karakterleri bulunabilir.

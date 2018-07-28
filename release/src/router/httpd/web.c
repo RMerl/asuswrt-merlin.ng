@@ -3256,12 +3256,23 @@ static int validate_apply(webs_t wp, json_object *root) {
 					unlink(HTTPD_KEY);
 				}
 #endif
-#if defined(RTCONFIG_NOTIFICATION_CENTER) && (defined(RTCONFIG_IFTTT) || defined(RTCONFIG_ALEXA)) && defined(RTCONFIG_AIHOME_TUNNEL)
+#if defined(RTCONFIG_AIHOME_TUNNEL)
 				if(!strcmp(name, "ddns_enable_x") || !strcmp(name, "ddns_hostname_x") || !strcmp(name, "misc_http_x") || !strcmp(name, "misc_httpsport_x")){
+#if defined(RTCONFIG_NOTIFICATION_CENTER) && (defined(RTCONFIG_IFTTT) || defined(RTCONFIG_ALEXA))
 					IFTTT_DEBUG("[HTTPD] nvram=%s is change and notice mastiff update\n", name);
+#endif
 					kill_pidfile_s(MASTIFF_PID_PATH, SIGUSR1);
 				}
 #endif
+
+				if(!strncmp(name, "TM_EULA", 1) && !strncmp(value, "1", 1)){
+					time_t now;
+					char timebuf[100];
+
+					now = time( (time_t*) 0 );
+					sprintf(timebuf, rfctime(&now));
+					nvram_set("TM_EULA_time", timebuf);
+				}
 			}
 		}
 	}
@@ -14302,7 +14313,10 @@ b64_decode( const char* str, unsigned char* space, int size )
 static void
 do_set_ASUS_EULA_cgi(char *url, FILE *stream)
 {
-	char *ASUS_EULA = websGetVar(wp, "ASUS_EULA", "");
+	struct json_object *root=NULL;
+	do_json_decode(&root);
+
+	char *ASUS_EULA = safe_get_cgi_json("ASUS_EULA", root);
 	time_t now;
 	char timebuf[100];
 
@@ -14331,6 +14345,7 @@ do_set_ASUS_EULA_cgi(char *url, FILE *stream)
 		kill_pidfile_s(MASTIFF_PID_PATH, SIGUSR2);
 #endif
 	}
+	json_object_put(root);
 }
 
 static void
@@ -14344,7 +14359,10 @@ do_unreg_ASUSDDNS_cgi(char *url, FILE *stream)
 static void
 do_set_TM_EULA_cgi(char *url, FILE *stream)
 {
-	char *TM_EULA = websGetVar(wp, "TM_EULA", "");
+	struct json_object *root=NULL;
+	do_json_decode(&root);
+
+	char *TM_EULA = safe_get_cgi_json("TM_EULA", root);
 	time_t now;
 	char timebuf[100];
 
@@ -14365,12 +14383,13 @@ do_set_TM_EULA_cgi(char *url, FILE *stream)
 			nvram_set("apps_analysis", "0");
 			nvram_set("bwdpi_wh_enable", "0");
 			nvram_set("bwdpi_db_enable", "0");
-			if(nvram_match("qos_enable", "1") && nvram_match("qos_type ", "1"))
+			if(nvram_match("qos_enable", "1") && nvram_match("qos_type", "1"))
 				nvram_set("qos_enable", "0");
 			notify_rc("restart_wrs;restart_qos;restart_firewall");
 		}
 		nvram_commit();
 	}
+	json_object_put(root);
 }
 
 #define RFC1123FMT "%a, %d %b %Y %H:%M:%S GMT"
@@ -14933,8 +14952,10 @@ do_enable_remote_control_cgi(char *url, FILE *stream)
 		rc_httpd = 1;
 	}
 
+#if defined(RTCONFIG_AIHOME_TUNNEL)
 #if defined(RTCONFIG_NOTIFICATION_CENTER) && (defined(RTCONFIG_IFTTT) || defined(RTCONFIG_ALEXA))
 	IFTTT_DEBUG("[HTTPD] do_enable_remote_control_cgi: notice mastiff update\n");
+#endif
 	kill_pidfile_s(MASTIFF_PID_PATH, SIGUSR1);
 #endif
 

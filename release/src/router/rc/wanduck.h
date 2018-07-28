@@ -183,6 +183,7 @@ int sim_lock = 0;
 
 int scan_interval;
 int wandog_enable, wandog_maxfail;
+int dnsprobe_enable;
 int max_disconn_count[WAN_UNIT_MAX];
 int max_wait_time[WAN_UNIT_MAX];
 int max_fb_count;

@@ -35,41 +35,41 @@ ASUS_Registration=加入華碩會員，華碩將不定時提供您最新的產�
 ASUS_Notice=華碩提醒您
 ASUS_privacy_desc=當使用Alexa™、 IFTTT™、 DDNS、遠端連線(ASUS Router APP、Lyra APP、AiCloud、AiDisk) 、AiProtection、Traffic analyzer、Apps analyzer、Adaptive QoS、Game Boost/Game IPS、Web history功能前，需先簽屬同意資料傳送之協定。您可以隨時在此頁面查詢您所同意過的條款內容，與關閉傳送資料。
 ASUS_eula_desc0=歡迎使用 DDNS/遠端連線功能（ASUS Router APP/Lyra APP/AiCloud/AiDisk）。敬請您詳細閱讀以下條款：
-ASUS_eula_desc1=為了提升華碩產品的服務與使用穩定度，華碩將透過本功能蒐集以下資料：
-ASUS_eula_desc1_1=當您開始使用本功能，華碩將可能會透過本功能蒐集下述無法辨識您個人的資料：
+ASUS_eula_desc1=為評估並提升華碩產品的服務與穩定性，華碩將透過本功能蒐集以下資料：
+ASUS_eula_desc1_1=當您開始啟用上述功能時，華碩將會透過該功能蒐集下述無法辨識您個人身份的資料：
 ASUS_eula_desc1_1_1=紀錄資料：您產品的紀錄資料，包括您的產品型號、韌體版本、網際網路狀態、產品自動生成的啟用代碼（僅適用於 Alexa™ 與 IFTTT™ 功能）。
 ASUS_eula_desc1_1_12=紀錄資料：您產品的紀錄資料，包括您的產品型號、韌體版本、網際網路狀態、產品自動生成的啟用代碼（僅適用於 Alexa™功能）。
 ASUS_eula_desc1_1_13=紀錄資料：您產品的紀錄資料，包括您的產品型號、韌體版本、網際網路狀態。
-ASUS_eula_desc1_2_s1=當您點選以下[同意]按鍵，將視為您同意我們透過本功能蒐集您所同意的下述資料。
+ASUS_eula_desc1_2_s1=當您點選下面的「同意」按鍵，將視為您同意我們透過本功能蒐集下述資料。
 ASUS_eula_desc1_2_s2=為了保障未成年人的隱私權益，我們不會蒐集未成年人的以下資料：
-ASUS_eula_desc1_2_1=產品資料: 與您的產品相關連之產品識別資料，包括您的產品序號、產品的網際網路協定位址(IP Address)、MAC 位址、動態網域名稱(DDNS)。
-ASUS_eula_desc1_3=此外，當你啟用Alexa™功能時，為了使您能夠透過Alexa™功能遠端控制您的產品，華碩將在此目的範圍內，分享您的產品自動產生的啟用代碼給Amazon。
-ASUS_eula_desc1_4=當你啟用IFTTT™功能時，為了使您能夠透過IFTTT™功能遠端控制您的產品，華碩將在此目的範圍內，分享您的產品自動產生的啟用代碼IFTTT™。
-ASUS_eula_desc2=華碩十分尊重您的個人隱私和權益，您可以透過以下方式來開啟或關閉傳送產品資料至華碩：網頁管理介面 > 進階設定 > 系統管理 > 隱私權；進一步了解華碩如何保護您的隱私，亦建議您造訪<a id="eula_url" style="font-weight: bolder;text-decoration:underline;cursor:pointer;" target="_blank">華碩隱私權政策</a>。
+ASUS_eula_desc1_2_1=產品資料: 與您的產品相關連之產品識別資料，包括您的產品序號、產品的網際網路協定位址（IP Address）、MAC 位址以及動態網域名稱（DDNS）。
+ASUS_eula_desc1_3=此外，當你啟用 Alexa™ 功能時，為了使您能夠透過 Alexa™ 功能遠端控制您的產品，華碩將與 Amazon 分享您產品自動生成的啟用代碼。
+ASUS_eula_desc1_4=當你啟用 IFTTT™ 功能時，為了使您能夠透過 IFTTT™ 功能遠端控制您的產品，華碩將在此目的範圍內，與 IFTTT™ 分享您產品自動生成的啟用代碼。
+ASUS_eula_desc2=華碩致力於保護並十分尊重您的個人隱私和權益，您可以透過以下方式隨時開啟或關閉與華碩共享您的產品資料 : 進階設定 > 系統管理 > 隱私權。若想進一步了解華碩如何保護您的隱私，亦建議您造訪<a id="eula_url" style="font-weight: bolder;text-decoration:underline;cursor:pointer;" target="_blank">華碩隱私權保護政策</a>。
 ASUS_eula_age=我已滿16歲。
-ASUS_eula_age_confirm=請確認已滿16歲。
-ASUS_eula_withdraw0_AlexaIFTTT=使用DDNS、Alexa™、IFTTTTM與遠端連線(ASUS Router APP, Lyra APP, AiCloud, AiDisk)功能：
-ASUS_eula_withdraw0_Alexa=使用DDNS、Alexa™、與遠端連線(ASUS Router APP, Lyra APP, AiCloud, AiDisk)功能：
-ASUS_eula_withdraw0=使用DDNS與遠端連線(ASUS Router APP, Lyra APP, AiCloud, AiDisk)功能：
-ASUS_eula_withdraw_desc1=ASUS將透過以上功能蒐集以下資訊:包括您的產品型號、韌體版本、網際網路狀態、IP位址、MAC位址與DDNS名稱。
-ASUS_eula_withdraw_desc1_2=如果您不想透過以上功能分享資訊給ASUS，請點選下方<span style="font-weight: bold;">[關閉傳送資料]</span>選項。但是請注意：一旦您停止與ASUS間的資訊分享，上述功能將會停止使用。
-ASUS_eula_withdraw_desc2=當您點選<span style="font-weight: bold;">[關閉傳送資料]</span>後，將會有以下影響:
-ASUS_eula_withdraw_desc2_1=你所使用的DDNS名稱將不會被保留。
-ASUS_eula_withdraw_desc2_2=ASUS Router APP, Lyra APP, AiCloud, AiDisk可以在區域網路內被使用，但是無法遠端連線使用
-ASUS_eula_withdraw_desc2_Alexa=如果要再重新使用Alexa™功能，需要提供新的啟用代碼到Alexa™網頁。
-ASUS_eula_withdraw_desc2_AlexaIFTTT=如果要再重新使用Alexa™與IFTTT™功能，需要提供新的啟用代碼到Alexa™與IFTTT™網頁。
+ASUS_eula_age_confirm=請確認您已滿 16 歲。
+ASUS_eula_withdraw0_AlexaIFTTT=使用 DDNS、Alexa™、IFTTTTM 與遠端連線功能 （ASUS Router APP/Lyra APP/AiCloud/ AiDisk）：
+ASUS_eula_withdraw0_Alexa=使用 DDNS、Alexa™ 與遠端連線功能（ASUS Router APP/Lyra APP/AiCloud/AiDisk）：
+ASUS_eula_withdraw0=使用 DDNS 與遠端連線功能（ASUS Router APP、Lyra APP、AiCloud、AiDisk）：
+ASUS_eula_withdraw_desc1=華碩將透過以上功能蒐集下列資訊：您的產品型號、韌體版本、網際網路狀態、IP 位址、MAC 位址與 DDNS 名稱。
+ASUS_eula_withdraw_desc1_2=如果您不想透過以上功能與華碩分享資訊，請點選下方<span style="font-weight: bold;">[關閉傳送資料]</span>選項。請注意，一旦您停止與華碩間的資訊分享，上述功能將被停用。
+ASUS_eula_withdraw_desc2=當您點選<span style="font-weight: bold;">[關閉資料傳送]</span>後，將會有以下影響:
+ASUS_eula_withdraw_desc2_1=你所使用的 DDNS 名稱將不會被保留。
+ASUS_eula_withdraw_desc2_2=您可以在區域網路內使用 ASUS Router APP、Lyra APP、AiCloud 與 AiDisk，但是無法在遠端連線下使用。
+ASUS_eula_withdraw_desc2_Alexa=若要重新使用 Alexa™ 功能，需至 Alexa™ 網頁輸入新的啟用代碼。
+ASUS_eula_withdraw_desc2_AlexaIFTTT=若要重新使用 Alexa™ 與 IFTTT™ 功能，需至 Alexa™ 與 IFTTT™ 網頁輸入新的啟用代碼。
 ASUS_eula_withdraw_note=無法連線至網際網路並完成設定，請在連線至網際網路的狀態下點選「關閉資料傳送」。
 ASUS_eula_withdraw_unstable=網際網路狀態不穩定，無法完成設定。請稍後再試。
-TM_eula_desc1=使用AiProtection智慧安全防護, 流量分析, 應用程式分析, 頻寬管理Adaptive QoS/Game boost/Game IPS, 網頁瀏覽歷史功能，請先同意<a id="eula_url" style="text-decoration:underline;" target="_blank">Trend Micro使用者授權協定。</a>
-TM_eula_desc2=請留意AiProtection智慧安全防護, 流量分析, 應用程式分析, 頻寬管理Adaptive QoS/Game boost/Game IPS, 網頁瀏覽歷史功能蒐集您的資料。您了解也同意ASUS將不負責您與Trend Micro之間的協議或者是Trend Micro所提供的服務內容。如果您對Trend Micro蒐集資料的方法、過程亦或是如何使用您的資料有疑慮，請參閱Trend Micro所發佈之隱私權相關聲明，或者請聯絡Trend Micro以提供更多細節。
-TM_eula_desc3=如果您不想透過以上功能分享資訊給Trend Micro，請透過此路徑更改設定：路由器網頁管理介面 > 進階設定 > 系統管理 > 隱私權
+TM_eula_desc1=使用 AiProtection 智慧安全防護、流量分析、應用程式分析、頻寬管理 Adaptive QoS/Game boost/Game IPS 以及網頁瀏覽歷史功能前，請先同意<a id="eula_url" style="text-decoration:underline;" target="_blank">Trend Micro 使用者授權協定</a>。
+TM_eula_desc2=請注意，AiProtection 智慧安全防護、流量分析、應用程式分析、頻寬管理 Adaptive QoS/Game boost/Game IPS 以及網頁瀏覽歷史功能將會蒐集您的資料。您了解並同意華碩對於您與 Trend Micro 之間的協議或者是 Trend Micro 所提供的服務內容不承擔任何責任。如果您對 Trend Micro 蒐集資料的方法、過程亦或是如何使用您的資料存在疑慮，請參閱 Trend Micro 所發佈之隱私權相關聲明，或者請聯絡 Trend Micro 以獲得更多細節。
+TM_eula_desc3=如果您不想透過以上功能與 Trend Micro 分享資訊，請透過此路徑更改設定：路由器網頁管理介面 > 進階設定 > 系統管理 > 隱私權。
 TM_privacy_policy=<a id="tm_eula_url" style="text-decoration:underline;" target="_blank">TrendMicro隱私權條款</a>
 TM_data_collection=<a id="tm_disclosure_url" style="text-decoration:underline;" target="_blank">TrendMicro隱私與個人資料收集</a>
-TM_eula_withdraw0=使用AiProtection, Traffic Analyzer, Apps analyzer, Adaptive QoS/Game boost/Game IPS, Web history功能：
-TM_eula_withdraw_desc1=Trend Micro將透過以上功能蒐集您的資訊。
-TM_eula_withdraw_desc2=如果您不想透過以上功能分享資訊給Trend Micro，請點選下面<span style="font-weight: bold;">[關閉傳送您的資料至Trend Micro]</span>選項。但是請注意：一旦您停止與Trend Micro間的資訊分享，上述功能將會停止使用。
-withdraw_confirm=請確認是否要關閉
-withdraw_str=關閉傳送資料
+TM_eula_withdraw0=使用 AiProtection 智慧安全防護、流量分析、應用程式分析、頻寬管理 Adaptive QoS/Game boost/Game IPS 以及網頁瀏覽歷史功能：
+TM_eula_withdraw_desc1=請注意，Trend Micro 將透過以上功能蒐集您的資訊。
+TM_eula_withdraw_desc2=如果您不想透過以上功能與 Trend Micro 分享資訊，請點選下方<span style="font-weight: bold;">[關閉資料傳送]</span>選項。請注意，一旦您停止與 Trend Micro 間的資訊分享，上述功能將被停用。
+withdraw_confirm=請確認是否關閉？
+withdraw_str=關閉資料傳送
 asusddns_inputhint=請輸入名稱
 Auto=自動
 Auto_Setting_btn=自動設定
@@ -1586,8 +1586,8 @@ feedback_thanks=感謝您抽出時間來提交回饋。
 feedback_translation=您建議的翻譯
 feedback_translation_ts=翻譯建議
 feedback_usaul_unavailable=經常無法使用
-feedback_eula=我同意提供以上資訊、我的華碩路由器的型號、韌體版本、瀏覽器版本、MAC位址、IP地址、網際網路狀態、路由器系統資訊、我提交此表單的時間給華碩，以用於診斷及改善您的路由器的問題，並提供我們做為使用者經驗調查及分析之用，以開發、評估華碩的新服務及新功能，並同意<a style="font-weight: bolder;text-decoration:underline;cursor:pointer;" href="https://www.asus.com/tw/Terms_of_Use_Notice_Privacy_Policy/Privacy_Policy" target="_blank">華碩隱私權保護政策</a>
-feedback_eula_notice=請勾選同意資訊後再送出
+feedback_eula=我同意提供以上資訊、我的華碩路由器型號、韌體版本、瀏覽器版本、MAC 位址、IP 位址、網際網路狀態、路由器系統資訊以及我向華碩提交此表單的時間，以用於診斷及改善路由器問題、調查及分析使用者體驗，從而開發並評估華碩的新服務與新功能，並同意華碩「<a style="font-weight: bolder;text-decoration:underline;cursor:pointer;" href="https://www.asus.com/tw/Terms_of_Use_Notice_Privacy_Policy/Privacy_Policy" target="_blank">隱私權保護政策</a>」。
+feedback_eula_notice=請先同意以下條款，再點選「送出」。
 File_content_alert_desc10=新資料夾名稱超過12字，有些作業系統可能無法相容!\n要繼續操作嗎?
 File_content_alert_desc6=資料夾名稱不能空白!
 File_content_alert_desc7=資料夾名稱只能包含英文字母、數字、破折號、底線，名稱中能有空白!

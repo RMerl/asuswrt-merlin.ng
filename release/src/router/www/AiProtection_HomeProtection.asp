@@ -134,6 +134,9 @@
 	display: none;
 	border-radius: 10px;
 }
+.shadow_m{
+	margin-top: -9px;
+}
 </style>
 <script>
 if(usb_support) addNewScript("/disk_functions.js");
@@ -1318,11 +1321,11 @@ function shadeHandle(flag){
 												</td>
 												<td style="width:20%;border-radius:0px 10px 10px 0px;cursor:pointer;">
 													<div style="position:relative" onclick="location.href='AiProtection_MaliciousSitesBlocking.asp'">
-														<div id="mals_count_shade" class="shadow"></div>
+														<div id="mals_count_shade" class="shadow shadow_m"></div>
 														<div style="text-align:center;">
 															<div id="mali_count" style="width:45px;height:45px;margin:0 auto;line-height: 45px;font-size:38px;color:#FC0;text-shadow:1px 1px 0px black"></div>
 															<div style="font-size: 16px;"><#AiProtection_scan_rHits#></div>
-															<div id="mali_time" style="color:#A1A7A8"></div>
+															<div id="mali_time" style="height:25px;color:#A1A7A8"></div>
 														</div>
 													</div>
 
@@ -1371,11 +1374,11 @@ function shadeHandle(flag){
 												</td>
 												<td style="width:20%;border-radius:0px 10px 10px 0px;cursor:pointer;">
 													<div style="position:relative" onclick="location.href='AiProtection_IntrusionPreventionSystem.asp'">
-														<div id="vp_count_shade" class="shadow"></div>
+														<div id="vp_count_shade" class="shadow shadow_m"></div>
 														<div style="text-align:center;">
 															<div id="vp_count" style="width:45px;height:45px;margin:0 auto;line-height: 45px;font-size:38px;color:#FC0;text-shadow:1px 1px 0px black"></div>
 															<div style="font-size: 16px;"><#AiProtection_scan_rHits#></div>
-															<div id="vp_time" style="color:#A1A7A8"></div>
+															<div id="vp_time" style="height:25px;color:#A1A7A8"></div>
 														</div>
 													</div>
 												</td>
@@ -1421,11 +1424,11 @@ function shadeHandle(flag){
 												</td>
 												<td style="width:20%;border-radius:0px 10px 10px 0px;cursor:pointer;">
 													<div style="position:relative" onclick="location.href='AiProtection_InfectedDevicePreventBlock.asp'">
-														<div id="infected_count_shade" class="shadow"></div>
+														<div id="infected_count_shade" class="shadow shadow_m"></div>
 														<div style="text-align:center;">
 															<div id="infected_count" style="width:45px;height:45px;margin:0 auto;line-height: 45px;font-size:38px;color:#FC0;text-shadow:1px 1px 0px black"></div>
 															<div style="font-size: 16px;"><#AiProtection_scan_rHits#></div>
-															<div id="infected_time" style="color:#A1A7A8"></div>
+															<div id="infected_time" style="height:25px;color:#A1A7A8"></div>
 														</div>
 													</div>
 												</td>

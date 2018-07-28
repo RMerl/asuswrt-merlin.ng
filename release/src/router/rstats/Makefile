@@ -12,6 +12,7 @@ CFLAGS += -DRA_ESW
 endif
 
 ifeq ($(RTCONFIG_BCMARM),y)
+CFLAGS += -I$(SRCBASE)/shared/bcmwifi/include -DTYPEDEF_FLOAT_T
 CFLAGS += -I$(SRCBASE)/common/include
 endif
 

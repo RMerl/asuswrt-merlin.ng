@@ -301,7 +301,7 @@ int is_wps_stopped(void)
 	char tmp[100];
 
 #ifdef RTCONFIG_AMAS
-	if (is_router_mode() && !nvram_get_int("w_Setting") && nvram_match("amesh_led", "1"))
+	if (is_router_mode() && !nvram_get_int("obd_Setting") && nvram_match("amesh_led", "1"))
 		return 0;
 #endif
 

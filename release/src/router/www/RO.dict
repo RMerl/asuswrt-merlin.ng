@@ -32,44 +32,44 @@ APSurvey_msg_connected=Sunteţi deja conectat la acest punct de acces.
 APSurvey_msg_non_support_Auth=Metoda de autentificare nu este acceptată.
 APSurvey_msg_waiting_to_connect=Aşteptaţi, dispozitivul ZVMODELVZ se conectează la
 ASUS_Registration=Become an ASUS Member and receive the latest product information. <a style='color:#FC0' target='_blank' href='https://account.asus.com'>Sign Up Now!</a>
-ASUS_Notice=ASUS NOTICE
+ASUS_Notice=NOTIFICARE DE LA ASUS
 ASUS_privacy_desc=Please note that users are required to agree to share information before using DDNS, Remote Connection (ASUS Router APP、Lyra APP、AiCloud、AiDisk), AiProtection, Traffic analyzer, Apps analyzer, Adaptive QoS, Game Boost/Game IPS and Web history. At any time, users can search for the contents of the terms at this page or stop sharing the information with other parties by choosing <a style="font-weight: bolder;">Withdraw</a>.
 ASUS_eula_desc0=Bun venit la utilizarea DDNS/Conexiunea la distanță(aplicația ASUS Router/aplicația Lyra/AiCloud/AiDisk). Citiţi cu atenţie următoarele informații:
-ASUS_eula_desc1=In order to assess and improve ASUS product services and improve stability, based on your usage, ASUS may collect your information through the above functions:
-ASUS_eula_desc1_1=When you start to use the above functions, ASUS may collect your anonymous information which cannot characterize nor identify you:
+ASUS_eula_desc1=Pentru a evalua și a îmbunătăți serviciile și stabilitatea produselor ASUS, pe baza utilizării dvs., ASUS vă poate colecta informațiile prin intermediul funcțiilor de mai sus:
+ASUS_eula_desc1_1=Când începeți să utilizați funcțiile de mai sus, ASUS vă poate colecta informațiile anonime, care nu vă pot caracteriza sau identifica:
 ASUS_eula_desc1_1_1=Informații despre jurnal: informații despre jurnal asociate produsului dvs., inclusiv numele modelului, versiunea firmware, starea internetului și codul de activare generat automat (aplicat doar funcțiilor Alexa™/IFTTT™).
 ASUS_eula_desc1_1_12=Informații despre jurnal: informații despre jurnal asociate produsului dvs., inclusiv numele modelului, versiunea firmware, starea internetului și codul de activare generat automat (aplicat doar funcțiilor Alexa™).
 ASUS_eula_desc1_1_13=Informații despre jurnal: informații despre jurnal asociate produsului dvs., inclusiv numele modelului, versiunea firmware și starea internetului.
-ASUS_eula_desc1_2_s1=By clicking [Agree] below, it will be deemed that you consent to share the following information with ASUS.
-ASUS_eula_desc1_2_s2=To protect children’s privacy, we will not collect the following information of children.
-ASUS_eula_desc1_2_1=Product information: information associated with your product, including IP Address, MAC Address, and DDNS name.
-ASUS_eula_desc1_3=Besides, in order to enable your remote control function of Alexa™ via your product, ASUS may share auto-generated activation code to Amazon for the above purposes.
-ASUS_eula_desc1_4=Besides, in order to enable your remote control function of IFTTT™ via your product, ASUS may share auto-generated activation code to IFTTT™ for the above purposes.
-ASUS_eula_desc2=ASUS is committed to protecting and respecting your privacy; you may visit Advanced Settings > Administration > Privacy to enable/disable sharing your product information with ASUS at all times. To know more about how ASUS protects your privacy, please visit <a id="eula_url" style="font-weight: bolder;text-decoration:underline;cursor:pointer;" target="_blank">ASUS Privacy Policy</a>.
-ASUS_eula_age=I am above the age of 16 years.
-ASUS_eula_age_confirm=Please confirm the age is above the age of 16 years.
-ASUS_eula_withdraw0_AlexaIFTTT=For DDNS, Alexa™, IFTTT™, and Remote connection(ASUS Router APP, Lyra APP, AiCloud, AiDisk):
-ASUS_eula_withdraw0_Alexa=For DDNS, Alexa™, and Remote connection(ASUS Router APP, Lyra APP, AiCloud, AiDisk):
-ASUS_eula_withdraw0=For DDNS, and Remote connection(ASUS Router APP, Lyra APP, AiCloud, AiDisk):
-ASUS_eula_withdraw_desc1=Please noted that your information (including your product model name, firmware version, Internet status, IP Address, MAC Address and DDNS name) will be collected by ASUS through the above functions.
-ASUS_eula_withdraw_desc1_2=If you would like to disable sharing your information with ASUS through the above functions, please click <span style="font-weight: bold;">[Withdraw]</span> below. However, please be noted that such features/functions may not be worked if stop sharing your information with ASUS.
-ASUS_eula_withdraw_desc2=After you click <span style="font-weight: bold;">[Withdraw]</span>, there will be some changes as listed below:
-ASUS_eula_withdraw_desc2_1=The DDNS name you are currently using will not be kept (held) in your router.
-ASUS_eula_withdraw_desc2_2=You are able to use ASUS Router APP, Lyra APP, AiCloud, AiDisk under LAN connection, but not under the remote connection mode.
-ASUS_eula_withdraw_desc2_Alexa=In the future, if you intend to enable the functions of Alexa™, you need to provide new activation code to the web page of Alexa™.
-ASUS_eula_withdraw_desc2_AlexaIFTTT=In the future, if you intend to enable the functions of Alexa™ and IFTTT™, you need to provide new activation code to the web page of Alexa™ and IFTTT™.
+ASUS_eula_desc1_2_s1=Făcând clic pe [Sunt de acord] de mai jos, se va considera că sunteți de acord să trimiteți următoarele informații la ASUS.
+ASUS_eula_desc1_2_s2=Pentru a proteja confidențialitatea copiilor, nu vom colecta următoarele informații despre copii.
+ASUS_eula_desc1_2_1=Informații despre produs: informații legate de produsul dvs., inclusiv numărul de serie al produsului, adresa IP, adresa MAC și numele DDNS.
+ASUS_eula_desc1_3=În plus, pentru a activa funcția de control de la distanță a Alexa™ prin intermediul produsului dvs., ASUS poate trimite codul de activare generat automat la Amazon pentru scopurile de mai sus.
+ASUS_eula_desc1_4=În plus, pentru a activa funcția de control la distanță a IFTTT ™ prin intermediul produsului dvs., ASUS poate distribui codul de activare generat automat la IFTTT™ pentru scopurile de mai sus.
+ASUS_eula_desc2=ASUS se angajează să vă protejeze și respecte confidențialitatea. Puteți vizita Setări avansate > Administrare> Confidențialitate pentru a activa/dezactiva în orice moment trimiterea informațiilor despre produs la ASUS. Pentru a afla mai multe despre modul în care ASUS vă protejează confidențialitatea, vizitați <a id="eula_url" style="font-weight: bolder;text-decoration:underline;cursor:pointer;" target="_blank">Politica de confidențialitate ASUS</a>.
+ASUS_eula_age=Am peste 16 ani.
+ASUS_eula_age_confirm=Confirmați că vârsta dvs. este mai mare de 16 ani.
+ASUS_eula_withdraw0_AlexaIFTTT=Pentru DDNS, Alexa™, IFTTT™ și Conexiune la distanță (aplicație ASUS Router/aplicație Lyra/AiCloud/AiDisk):
+ASUS_eula_withdraw0_Alexa=Pentru DDNS, Alexa™ și Conexiune la distanță (aplicație ASUS Router/aplicație Lyra/AiCloud/AiDisk):
+ASUS_eula_withdraw0=Pentru DDNS și Conexiunea la distanță  (aplicație ASUS Router/aplicație Lyra/AiCloud/AiDisk):
+ASUS_eula_withdraw_desc1=Vă rugăm să rețineți că informațiile dvs., inclusiv numele modelului de produs, versiunea firmware, starea internetului, adresa IP, adresa MAC și numele DDNS, vor fi colectate de ASUS prin intermediul funcțiilor de mai sus.
+ASUS_eula_withdraw_desc1_2=Daca doriți să dezactivați partajarea informațiilor cu ASUS prin intermediul funcțiilor de mai sus, faceți clic pe <span style="font-weight: bold;">[<Retragere]</span> de mai jos. În orice caz, vă rugăm să rețineți că astfel de caracteristici/funcții ar putea să nu funcționeze dacă nu mai trimiteți informațiile la ASUS.
+ASUS_eula_withdraw_desc2=După ce faceți clic pe <span style="font-weight: bold;">[<Retragere]</span>, vor apărea câteva modificări, după cum urmează:
+ASUS_eula_withdraw_desc2_1=Numele DDNS pe care îl utilizați în prezent nu va fi păstrat în routerul dvs.
+ASUS_eula_withdraw_desc2_2=Aveți posibilitatea să utilizați aplicația ASUS Router, aplicație Lyra, AiCloud, AiDisk prin conexiune LAN, dar nu în modul de conectare la distanță.
+ASUS_eula_withdraw_desc2_Alexa=În viitor, dacă intenționați să activați funcțiile Alexa™, trebuie să furnizați un nou cod de activare pe pagina web a Alexa™.
+ASUS_eula_withdraw_desc2_AlexaIFTTT=În viitor, dacă intenționați să activați funcțiile Alexa™ și IFTTT™, trebuie să furnizați un nou cod de activare pe pagina web a Alexa™ și IFTTT™.
 ASUS_eula_withdraw_note=Nu puteți finaliza procedura de retragere fără conexiune la internet. Vă rugăm să vă retrageți consimțământul atunci când sunteți conectat la internet.
 ASUS_eula_withdraw_unstable=Nu puteți finaliza procedura de retragere a consimțământului deoarece starea internetului este instabilă. Reîncercați mai târziu.
-TM_eula_desc1=By using AiProtection, Traffic analyzer, Apps analyzer and Adaptive QoS, you agree to the <a id="eula_url" style="text-decoration:underline;" target="_blank">Trend Micro End User License Agreement.</a>
-TM_eula_desc2=Please be noted that your information will be collected by Trend Micro through AiProtection, Traffic analyzer, Apps analyzer, Adaptive QoS and web history. You also acknowledge and agree that ASUS is not responsible for neither the agreement between you and Trend Micro nor any content of the service provided by Trend Micro. If you may have any inquires about how Trend Micro collects, processes and uses your above information, please refer to the privacy- related statement issued by Trend Micro or contact Trend Micro for more details.
-TM_eula_desc3=If you would like to disable sharing your information with Trend Micro through the above functions, please go to:  Router web GUI > Advanced settings > Administration > Privacy.
+TM_eula_desc1=Prin utilizarea lui AiProtection, a Traffic analyzer (Analizor de trafic), a Apps analyzer (Analizor de aplicații), Adaptive QoS (Adaptiv QoS)/Game boost (Accelerare jocuri)/Game IPS (IPS jocuri), Istoricul web, sunteți de acord cu <a id="eula_url" style="text-decoration:underline;" target="_blank">Acordul de licență pentru utilizatorul final Trend Micro</a>.
+TM_eula_desc2=Vă rugăm să rețineți că informațiile dvs. vor fi colectate de Trend Micro prin AiProtection, Traffic Analyzer (Analizor de trafic), Apps analyzer (Analizor de trafic), Adaptive QoS (Adaptiv QoS) și istoric web. De asemenea, recunoașteți și sunteți de acord că ASUS nu este responsabil nici pentru acordul dintre dvs. și Trend Micro și nici pentru conținutul serviciului oferit de Trend Micro. Dacă aveți întrebări despre modul în care Trend Micro colectează, procesează și utilizează informațiile de mai sus, consultați declarația referitoare la confidențialitate emisă de Trend Micro sau contactați Trend Micro pentru mai multe detalii.
+TM_eula_desc3=Daca doriți să dezactivați partajarea informațiilor cu Trend Micro prin intermediul funcțiilor de mai sus, accesați:  Router web GUI (GUI web router) > Advanced settings (Setări avansate) > Administration (Administrare) > Privacy (Confidențialitate).
 TM_privacy_policy=<a id="tm_eula_url" style="text-decoration:underline;" target="_blank">TrendMicro Privacy Policy</a>
 TM_data_collection=<a id="tm_disclosure_url" style="text-decoration:underline;" target="_blank">Privacy and Personal Data Collection Disclosure</a>
-TM_eula_withdraw0=For AiProtection, Traffic Analyzer, Apps analyzer, Adaptive QoS/Game boost/Game IPS, Web history:
-TM_eula_withdraw_desc1=Please noted that your information will be collected by Trend Micro through the above functions.
-TM_eula_withdraw_desc2=If you would like to disable sharing your information with Trend Micro through the following functions, please click <span style="font-weight: bold;">[Withdraw]</span> below. However, please be noted that such features/functions may not be worked if stop sharing your information with Trend Micro.
-withdraw_confirm=Are you sure you want to withdraw?
-withdraw_str=Withdraw
+TM_eula_withdraw0=Analizor de trafic, Analizator aplicații, QoS adaptiv/ Accelerare jocuri/ IPS jocuri, Istoric web:
+TM_eula_withdraw_desc1=Vă rugăm să rețineți că informațiile dvs. vor fi colectate de Trend Micro prin intermediul funcțiilor de mai sus.
+TM_eula_withdraw_desc2=Daca doriți să dezactivați trimiterea informațiilor cu Trend Micro prin funcțiile următoare, faceți clic pe <span style="font-weight: bold;">[Retragere]</span> de mai jos. În orice caz, vă rugăm să rețineți că astfel de caracteristici/funcții ar putea să nu funcționeze dacă mai trimiteți informațiile la Trend Micro.
+withdraw_confirm=Sigur doriţi să retrageți consimțământul?
+withdraw_str=Retragere
 asusddns_inputhint=Introduceţi numele
 Auto=Automat
 Auto_Setting_btn=Automatic Setting
@@ -1586,8 +1586,8 @@ feedback_thanks=Vămulţumim pentru timpul acordat trimiterii feedbackului.
 feedback_translation=Traducerea dvs. recomandată
 feedback_translation_ts=Translated Suggestion
 feedback_usaul_unavailable=Mereu indisponibil(ă)
-feedback_eula=I agree to provide the above information, the model name, firmware version of my ASUS router, browser version, MAC address, IP address, Internet status, router system information, the time I submit this Feedback form to ASUS to diagnose and improve problems of my ASUS router, and to analyze user experience for the purpose of development and evaluation of new products and services of ASUS, and also agree to the <a style="font-weight: bolder;text-decoration:underline;cursor:pointer;" href="https://www.asus.com/us/Terms_of_Use_Notice_Privacy_Policy/Privacy_Policy" target="_blank">ASUS Privacy Policy</a>
-feedback_eula_notice=Before you click “send”, please agree to the information.
+feedback_eula=Sunt de acord să furnizez informațiile de mai sus, numele modelului, versiunea firmware a routerului ASUS, versiunea browserului, adresa MAC, adresa IP, starea internetului, informații despre sistemul routerului, ora la care trimit acest formular de Feedback la ASUS pentru a diagnostica și îmbunătăți problemele routerului meu ASUS și pentru a analiza experiența utilizatorului în scopul dezvoltării și evaluării de produse și servicii noi ale ASUS și, de asemenea, de a fi de acord cu <a style="font-weight: bolder;text-decoration:underline;cursor:pointer;" href="https://www.asus.com/us/Terms_of_Use_Notice_Privacy_Policy/Privacy_Policy" target="_blank">Politica de confidențialitate ASUS</a>.
+feedback_eula_notice=Înainte de a da clic pe "Trimitere", vă rugăm să fiți de acord cu următoarele informații.
 File_content_alert_desc10=Crearea unui conţinut partajat care conţine peste 12 caractere poate face ca respectivul conţinut partajat să fie invizibil în unele versiuni Windows(R).\nDoriţi să continuaţi?
 File_content_alert_desc6=Câmpul pentru numele conţinutului partajat nu poate rămâne necompletat.
 File_content_alert_desc7=Numele conţinutului partajat poate conţine numai caractere alfanumerice/linii/caractere de subliniere/spaţii.

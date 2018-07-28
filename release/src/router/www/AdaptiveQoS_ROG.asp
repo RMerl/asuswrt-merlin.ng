@@ -374,7 +374,7 @@ function debugMessage(msg){
 }
 </script>
 </head>
-<body onload="initial();" onunload="unload_body();" onSelectStart="event.returnValue=false">
+<body onload="initial();" onunload="unload_body();">
 <div id="TopBanner"></div>
 <div id="Loading" class="popup_bg"></div>
 <iframe name="hidden_frame" id="hidden_frame" width="0" height="0" frameborder="0"></iframe>

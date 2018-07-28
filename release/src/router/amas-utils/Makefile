@@ -4,6 +4,9 @@ NVRAM_DIR	= $(TOP)/nvram$(BCMEX)$(EX7)
 JSON_C_DIR	= $(TOP)/json-c
 SHARED_DIR	= $(TOP)/shared
 CFLAGS		= -I$(OPENSSL_DIR)/include -I$(SHARED_DIR) -I$(NVRAM_DIR) -I$(JSON_C_DIR) -I$(SRCBASE)/include -DUSE_GET_TLV_SUPPORT_MAC
+ifeq ($(RTCONFIG_BCMARM),y)
+CFLAGS		+= -I$(SRCBASE)/shared/bcmwifi/include -DTYPEDEF_FLOAT_T
+endif
 LDFLAGS		= -L$(OPENSSL_DIR) -L$(NVRAM_DIR) -L$(SHARED_DIR) -L$(JSON_C_DIR)/.libs
 LIBS		= -ljson-c -lcrypto -lnvram -lshared
 

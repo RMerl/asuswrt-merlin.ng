@@ -25,6 +25,7 @@ LDFLAGS_SO += -lgcc_s
 endif
 LDFLAGS += $(LDFLAGS_SO) -L. -ldisk
 ifeq ($(RTCONFIG_BCMARM),y)
+CFLAGS += -I$(SRCBASE)/shared/bcmwifi/include -DTYPEDEF_FLOAT_T
 CFLAGS += -I$(SRCBASE)/common/include
 LDFLAGS += -lgcc_s
 endif

@@ -11,6 +11,7 @@ sqlite_inc=$sqlite_dir
 sqlite_lib=$sqlite_dir/.libs
 user=`echo $HOME`								### /home/XXXXX
 echo $cur_dir
+echo $SRCBASE
 
 PCRE_VER=8.31
 
@@ -34,6 +35,10 @@ if [ -n "$PMS" ]; then
 	LDFLAGS+=" -L$router_dir/sqlCipher/.libs -lsqlcipher -L$router_dir/PMS_DBapis -lpms_sql"
 fi
 
+BCMARM=`cat ../.config |grep "RTCONFIG_BCMARM=y"`
+if [ -n "$BCMARM" ]; then
+	CFLAGS+=" -I$srcbase_dir/shared/bcmwifi/include"
+fi
 
 ####	Set compiler variable ####
 export CFLAGS="$CFLAGS"

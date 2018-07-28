@@ -3761,7 +3761,7 @@ static int radio_join(int idx, int unit, int subunit, void *param)
 			else {
 #ifdef CONFIG_BCMWL5
 				if (!strlen(nvram_safe_get(wl_nvname("ssid", unit, subunit)))
-					|| nvram_match("x_Setting", "0") || nvram_match("w_Setting", "0")) {
+					|| nvram_match("x_Setting", "0")) {
 					eval("wl", "-i", ifname, "disassoc");
 					break;
 				} else if (!strcmp(nvram_safe_get(wl_nvname("mode", unit, subunit)), "wet")) {
@@ -5943,9 +5943,17 @@ void start_lan_wlport(void)
 		snprintf(wlvif, sizeof(wlvif), "wl%d.1", unit);
 		snprintf(prefix, sizeof(prefix), "wl%d_", unit);
 
-		if (is_ure(unit) || is_psr(unit))
+		if (is_ure(unit)
+#if defined(RTCONFIG_BCMWL6) && defined(RTCONFIG_PROXYSTA)
+			|| is_psr(unit)
+#endif
+		)
 			eval("wl", "-i", wlvif, "bss", "up");
-		else if (!is_psta(unit) && nvram_match(strcat_r(prefix, "radio", tmp), "1"))
+		else if (nvram_match(strcat_r(prefix, "radio", tmp), "1")
+#if defined(RTCONFIG_BCMWL6) && defined(RTCONFIG_PROXYSTA)
+			&& !is_psta(unit)
+#endif
+		)
 			set_radio(1, unit, 0);
 	}
 #else
@@ -6006,9 +6014,17 @@ void stop_lan_wlport(void)
 		snprintf(wlvif, sizeof(wlvif), "wl%d.1", unit);
 		snprintf(prefix, sizeof(prefix), "wl%d_", unit);
 
-		if (is_ure(unit) || is_psr(unit))
+		if (is_ure(unit)
+#if defined(RTCONFIG_BCMWL6) && defined(RTCONFIG_PROXYSTA)
+			|| is_psr(unit)
+#endif
+		)
 			eval("wl", "-i", wlvif, "bss", "down");
-		else if (!is_psta(unit) && nvram_match(strcat_r(prefix, "radio", tmp), "1"))
+		else if (nvram_match(strcat_r(prefix, "radio", tmp), "1")
+#if defined(RTCONFIG_BCMWL6) && defined(RTCONFIG_PROXYSTA)
+			&& !is_psta(unit)
+#endif
+		)
 			set_radio(0, unit, 0);
 	}
 #else

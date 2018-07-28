@@ -12,6 +12,7 @@ ifeq ($(HND_ROUTER),y)
 LDFLAGS_SO += -lpthread -lgcc_s
 endif
 ifeq ($(RTCONFIG_BCMARM),y)
+CFLAGS += -I$(SRCBASE)/shared/bcmwifi/include -DTYPEDEF_FLOAT_T
 CFLAGS += -I$(SRCBASE)/common/include
 LDFLAGS += -lpthread -lgcc_s
 endif

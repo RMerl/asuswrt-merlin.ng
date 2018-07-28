@@ -645,7 +645,7 @@ var port2_device = isSupport("port2_device");
 var hdspindown_support = isSupport("hdspindown");
 if ("<% nvram_get("amas_force"); %>" == "1") {
 	var amesh_support = uiSupport("amas");
-	var cfg_sync_support = isSupport("cfg_sync");
+	var cfg_sync_support = uiSupport("cfg_sync");
 } else {
 	var amesh_support = false;
 	var cfg_sync_support = false;
@@ -2561,6 +2561,7 @@ function refreshStatus(xhr){
 	rssi_2g = wanStatus[29].firstChild.nodeValue.replace("rssi_2g=", "");
 	rssi_5g = wanStatus[30].firstChild.nodeValue.replace("rssi_5g=", "");
 	rssi_5g_2 = wanStatus[31].firstChild.nodeValue.replace("rssi_5g_2=", "");
+	link_internet = wanStatus[32].firstChild.nodeValue.replace("link_internet=", "");
 
 	var vpnStatus = devicemapXML[0].getElementsByTagName("vpn");
 	vpnc_proto = vpnStatus[0].firstChild.nodeValue.replace("vpnc_proto=", "");

@@ -3201,7 +3201,7 @@ void generate_wl_para(char *ifname, int unit, int subunit)
 
 	// convert wlc_xxx to wlX_ according to wlc_band == unit
 	if (is_ure(unit)) {
-		if (nvram_match("x_Setting", "0") || nvram_match("w_Setting", "0") || !strlen(nvram_safe_get("wlc_ssid"))) {
+		if (nvram_match("x_Setting", "0") || !strlen(nvram_safe_get("wlc_ssid"))) {
 			if (subunit == -1)
 				dbg("Skip wlc profile applying\n");
 		}
@@ -3247,7 +3247,7 @@ void generate_wl_para(char *ifname, int unit, int subunit)
 #endif
 		snprintf(prefix2, sizeof(prefix2), "wlc%d_", unit ? 1 : 0);
 
-		if (nvram_match("x_Setting", "0") || nvram_match("w_Setting", "0") ||
+		if (nvram_match("x_Setting", "0") ||
 #ifdef RTCONFIG_DPSTA
 			(is_dpsta(unit) && nvram_get_int("re_mode") == 0 && !strlen(nvram_safe_get(strcat_r(prefix2, "ssid", tmp)))) ||
 #ifdef RTCONFIG_AMAS
@@ -3261,7 +3261,7 @@ void generate_wl_para(char *ifname, int unit, int subunit)
 				!strlen(nvram_safe_get("wlc_ssid")))) {
 			if (subunit == -1) {
 				dbg("Skip wlc profile applying\n");
-				if (!nvram_match("x_Setting", "0") && !nvram_match("w_Setting", "0"))
+				if (!nvram_match("x_Setting", "0"))
 					nvram_set(strcat_r(prefix, "ssid", tmp), "");
 			}
 		}

@@ -3029,6 +3029,10 @@ if [ "$(TUNEK)" != "n" ]; then \
 		echo "# CONFIG_FAT_FS is not set" >>$(1); \
 		sed -i "/CONFIG_VFAT_FS/d" $(1); \
 		echo "# CONFIG_VFAT_FS is not set" >>$(1); \
+		sed -i "/CONFIG_HFS_FS/d" $(1); \
+		echo "# CONFIG_HFS_FS is not set" >>$(1); \
+		sed -i "/CONFIG_HFSPLUS_FS/d" $(1); \
+		echo "# CONFIG_HFSPLUS_FS is not set" >>$(1); \
 		sed -i "/CONFIG_REISERFS_FS/d" $(1); \
 		echo "# CONFIG_REISERFS_FS is not set" >>$(1); \
 		sed -i "/CONFIG_JFFS2_FS/d" $(1); \
@@ -3073,6 +3077,10 @@ if [ "$(TUNEK)" != "n" ]; then \
 		echo "# CONFIG_FAT_FS is not set" >>$(1); \
 		sed -i "/CONFIG_VFAT_FS/d" $(1); \
 		echo "# CONFIG_VFAT_FS is not set" >>$(1); \
+		sed -i "/CONFIG_HFS_FS/d" $(1); \
+		echo "# CONFIG_HFS_FS is not set" >>$(1); \
+		sed -i "/CONFIG_HFSPLUS_FS/d" $(1); \
+		echo "# CONFIG_HFSPLUS_FS is not set" >>$(1); \
 		sed -i "/CONFIG_REISERFS_FS/d" $(1); \
 		echo "# CONFIG_REISERFS_FS is not set" >>$(1); \
 		sed -i "/CONFIG_JFFS2_FS/d" $(1); \
@@ -3286,6 +3294,8 @@ fi; \
 		echo "# CONFIG_MSDOS_PARTITION is not set" >>$(1); \
 		sed -i "/CONFIG_EFI_PARTITION/d" $(1); \
 		echo "# CONFIG_EFI_PARTITION is not set" >>$(1); \
+		sed -i "/CONFIG_MAC_PARTITION/d" $(1); \
+		echo "# CONFIG_MAC_PARTITION is not set" >>$(1); \
 	else \
 		if [ "$(PRINTER)" != "y" ]; then \
 			sed -i "/CONFIG_USB_PRINTER/d" $(1); \
@@ -3629,13 +3639,11 @@ fi; \
 		sed -i "/CONFIG_VFAT_FS/d" $(1); \
 		echo "# CONFIG_VFAT_FS is not set" >>$(1); \
 	fi; \
-	if [ "$(HFS)" = "open" ]; then \
+	if [ "$(HFS)" = "paragon" ] || [ "$(HFS)" = "tuxera" ]; then \
 		sed -i "/CONFIG_HFS_FS/d" $(1); \
-		echo "CONFIG_HFS_FS=y" >>$(1); \
+		echo "# CONFIG_HFS_FS is not set" >>$(1); \
 		sed -i "/CONFIG_HFSPLUS_FS/d" $(1); \
-		echo "CONFIG_HFSPLUS_FS=y" >>$(1); \
-		sed -i "/CONFIG_MAC_PARTITION/d" $(1); \
-		echo "CONFIG_MAC_PARTITION=y" >>$(1); \
+		echo "# CONFIG_HFSPLUS_FS is not set" >>$(1); \
 	fi; \
 	if [ "$(BLINK_LED)" = "y" ]; then \
 		sed -i "/CONFIG_USB_BUS_STATS/d" $(1); \

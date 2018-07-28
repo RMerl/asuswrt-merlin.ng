@@ -108,6 +108,7 @@ endif
 
 #end of Yau add
 ifeq ($(RTCONFIG_BCMARM),y)
+CFLAGS += -I$(SRCBASE)/shared/bcmwifi/include -DTYPEDEF_FLOAT_T
 LDFLAGS += -lgcc_s
 endif
 

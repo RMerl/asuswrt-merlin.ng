@@ -32,44 +32,44 @@ APSurvey_msg_connected=Már kapcsolódott ehhez az AP-hoz.
 APSurvey_msg_non_support_Auth=A hitelesítési módszer nem támogatott.
 APSurvey_msg_waiting_to_connect=Várjon. A ZVMODELVZ a következőhöz csatlakozik
 ASUS_Registration=Become an ASUS Member and receive the latest product information. <a style='color:#FC0' target='_blank' href='https://account.asus.com'>Sign Up Now!</a>
-ASUS_Notice=ASUS NOTICE
+ASUS_Notice=AZ ASUS KÖZLEMÉNYE
 ASUS_privacy_desc=Please note that users are required to agree to share information before using DDNS, Remote Connection (ASUS Router APP、Lyra APP、AiCloud、AiDisk), AiProtection, Traffic analyzer, Apps analyzer, Adaptive QoS, Game Boost/Game IPS and Web history. At any time, users can search for the contents of the terms at this page or stop sharing the information with other parties by choosing <a style="font-weight: bolder;">Withdraw</a>.
 ASUS_eula_desc0=Üdvözli Önt a DDNS/ távoli csatlakozás (ASUS Router alkalmazás/Lyra alkalmazás/AiCloud/AiDisk)! Kérjük, olvassa el figyelmesen az alábbi információkat:
-ASUS_eula_desc1=In order to assess and improve ASUS product services and improve stability, based on your usage, ASUS may collect your information through the above functions:
-ASUS_eula_desc1_1=When you start to use the above functions, ASUS may collect your anonymous information which cannot characterize nor identify you:
+ASUS_eula_desc1=Az ASUS termékek által nyújtott szolgáltatások és stabilitás kiértékelése és fejlesztése érdekében előfordulhat, hogy az ASUS információkat gyűjt a fenti funkciókon keresztül az Ön használati szokásai alapján.:
+ASUS_eula_desc1_1=Amikor elkezdi használni a fenti funkciókat, az ASUS név nélküli információkat gyűjthet, amelyek semmilyen formában nem azonosítják az Ön személyét (kilétét).:
 ASUS_eula_desc1_1_1=Naplózási információk: ezek a termékhez kapcsolódó naplózási információkat tartalmazzák, többek között a modell nevét, a firmware verziószámát, az internet állapotát és az automatikusan generált aktiválási kódot (kizárólag az Alexa™/IFTTT™ funkciók esetében).
 ASUS_eula_desc1_1_12=Naplózási információk: ezek a termékhez kapcsolódó naplózási információkat tartalmazzák, többek között a modell nevét, a firmware verziószámát, az internet állapotát és az automatikusan generált aktiválási kódot (kizárólag az Alexa™ funkciók esetében).
 ASUS_eula_desc1_1_13=Naplózási információk: ezek a termékhez kapcsolódó naplózási információkat tartalmazzák, többek között a modell nevét, a firmware verziószámát és az internet állapotát.
-ASUS_eula_desc1_2_s1=By clicking [Agree] below, it will be deemed that you consent to share the following information with ASUS.
-ASUS_eula_desc1_2_s2=To protect children’s privacy, we will not collect the following information of children.
-ASUS_eula_desc1_2_1=Product information: information associated with your product, including IP Address, MAC Address, and DDNS name.
-ASUS_eula_desc1_3=Besides, in order to enable your remote control function of Alexa™ via your product, ASUS may share auto-generated activation code to Amazon for the above purposes.
-ASUS_eula_desc1_4=Besides, in order to enable your remote control function of IFTTT™ via your product, ASUS may share auto-generated activation code to IFTTT™ for the above purposes.
-ASUS_eula_desc2=ASUS is committed to protecting and respecting your privacy; you may visit Advanced Settings > Administration > Privacy to enable/disable sharing your product information with ASUS at all times. To know more about how ASUS protects your privacy, please visit <a id="eula_url" style="font-weight: bolder;text-decoration:underline;cursor:pointer;" target="_blank">ASUS Privacy Policy</a>.
-ASUS_eula_age=I am above the age of 16 years.
-ASUS_eula_age_confirm=Please confirm the age is above the age of 16 years.
-ASUS_eula_withdraw0_AlexaIFTTT=For DDNS, Alexa™, IFTTT™, and Remote connection(ASUS Router APP, Lyra APP, AiCloud, AiDisk):
-ASUS_eula_withdraw0_Alexa=For DDNS, Alexa™, and Remote connection(ASUS Router APP, Lyra APP, AiCloud, AiDisk):
-ASUS_eula_withdraw0=For DDNS, and Remote connection(ASUS Router APP, Lyra APP, AiCloud, AiDisk):
-ASUS_eula_withdraw_desc1=Please noted that your information (including your product model name, firmware version, Internet status, IP Address, MAC Address and DDNS name) will be collected by ASUS through the above functions.
-ASUS_eula_withdraw_desc1_2=If you would like to disable sharing your information with ASUS through the above functions, please click <span style="font-weight: bold;">[Withdraw]</span> below. However, please be noted that such features/functions may not be worked if stop sharing your information with ASUS.
-ASUS_eula_withdraw_desc2=After you click <span style="font-weight: bold;">[Withdraw]</span>, there will be some changes as listed below:
-ASUS_eula_withdraw_desc2_1=The DDNS name you are currently using will not be kept (held) in your router.
-ASUS_eula_withdraw_desc2_2=You are able to use ASUS Router APP, Lyra APP, AiCloud, AiDisk under LAN connection, but not under the remote connection mode.
-ASUS_eula_withdraw_desc2_Alexa=In the future, if you intend to enable the functions of Alexa™, you need to provide new activation code to the web page of Alexa™.
-ASUS_eula_withdraw_desc2_AlexaIFTTT=In the future, if you intend to enable the functions of Alexa™ and IFTTT™, you need to provide new activation code to the web page of Alexa™ and IFTTT™.
+ASUS_eula_desc1_2_s1=Az alábbi [Elfogadom] gombra kattintva Ön beleegyezik abba, hogy megosztja az alábbi információkat az ASUS vállalattal.
+ASUS_eula_desc1_2_s2=A gyermekek adatainak védelme érdekében a gyermekekre vonatkozó alábbi információkat nem gyűjtjük.
+ASUS_eula_desc1_2_1=Termékkel kapcsolatos információk: ezek a termékhez kapcsolódó információkat tartalmazzák, többek között a termék sorozatszámát, IP-címét, MAC-címét és DDNS-nevét.
+ASUS_eula_desc1_3=Ezenkívül ha az Alexa™ távoli vezérlési funkcióját engedélyezni szeretné a terméken keresztül, akkor az ASUS megoszthatja az automatikusan generált aktiválási kódot az Amazonnal az említett célokra.
+ASUS_eula_desc1_4=Ezenkívül ha az IFTTT™ távoli vezérlési funkcióját engedélyezni szeretné a terméken keresztül, akkor az ASUS megoszthatja az automatikusan generált aktiválási kódot az IFTTT™-vel az említett célokra.
+ASUS_eula_desc2=Az ASUS mindent megtesz a személyes adatok védelme és tiszteletben tartása érdekében. Bármikor igény szerint megnyithatja az Advanced Settings (Speciális beállítások) > Administration (Adminisztrálás) > Privacy (Adatvédelem) menüpontot, és engedélyezheti vagy letilthatja a termékkel kapcsolatos információk megosztását az ASUS vállalattal. Ha további részleteket szeretne megtudni arról, hogy az ASUS hogyan gondoskodik az adatok védelméről, tekintse meg az <a id="eula_url" style="font-weight: bolder;text-decoration:underline;cursor:pointer;" target="_blank">ASUS adatvédelmi nyilatkozatát</a>.
+ASUS_eula_age=Már elmúltam 16 éves.
+ASUS_eula_age_confirm=Kérjük, erősítse meg, hogy már elmúlt 16 éves.
+ASUS_eula_withdraw0_AlexaIFTTT=A DDNS, Alexa™, IFTTT™ és távoli csatlakozás (ASUS Router alkalmazás/Lyra alkalmazás/AiCloud/AiDisk) esetében:
+ASUS_eula_withdraw0_Alexa=A DDNS, Alexa™ és távoli csatlakozás (ASUS Router alkalmazás/Lyra alkalmazás/AiCloud/AiDisk) esetében:
+ASUS_eula_withdraw0=A DDNS és távoli csatlakozás (ASUS Router alkalmazás/Lyra alkalmazás/AiCloud/AiDisk) esetében:
+ASUS_eula_withdraw_desc1=Kérjük, vegye figyelembe, hogy az ASUS a fenti funkciókon keresztül gyűjti az információkat, többek között a termék típusának nevét, a firmware verziószámát, az internet állapotát, az IP-címet, a MAC-címet és a DDNS-nevet.
+ASUS_eula_withdraw_desc1_2=Ha azt szeretné, hogy az információk ne legyenek megosztva az ASUS vállalattal a fenti funkciókon keresztül, kattintson az alábbi <span style="font-weight: bold;">[Visszavonás]</span> lehetőségre. Azt mindenképpen vegye figyelembe, hogy ha nem osztja meg az információkat az ASUS vállalattal, akkor elképzelhető, hogy ezek a szolgáltatások és funkciók nem fognak működni.
+ASUS_eula_withdraw_desc2=Miután a <span style="font-weight: bold;">[<Visszavonás]</span> lehetőségre kattintott, az alábbi módosításokra kerül sor.:
+ASUS_eula_withdraw_desc2_1=Az aktuálisan használt DDNS-név nem lesz megőrizve a routeren.
+ASUS_eula_withdraw_desc2_2=Az ASUS Router alkalmazás, a Lyra alkalmazás, az AiCloud és az AiDisk LAN-kapcsolaton keresztül használható, távoli csatlakozási módban viszont nem lehet őket használni.
+ASUS_eula_withdraw_desc2_Alexa=Ha a későbbiekben engedélyezni szeretné az Alexa™ funkcióit, meg kell adnia egy új aktiválási kódot az Alexa™ weboldalán.
+ASUS_eula_withdraw_desc2_AlexaIFTTT=Ha a későbbiekben engedélyezni szeretné az Alexa™ és az IFTTT™ funkcióit, meg kell adnia egy új aktiválási kódot az Alexa™ és az IFTTT™ weboldalán.
 ASUS_eula_withdraw_note=Internetkapcsolat nélkül nem lehet elvégezni a visszavonási folyamatot. Kérjük, hogy a visszavonást akkor végezze el, amikor csatlakozik az internethez.
 ASUS_eula_withdraw_unstable=Jelenleg nem lehet elvégezni a visszavonási folyamatot, mivel az internetkapcsolat instabil. Kérjük, próbálja újra a visszavonást később.
-TM_eula_desc1=By using AiProtection, Traffic analyzer, Apps analyzer and Adaptive QoS, you agree to the <a id="eula_url" style="text-decoration:underline;" target="_blank">Trend Micro End User License Agreement.</a>
-TM_eula_desc2=Please be noted that your information will be collected by Trend Micro through AiProtection, Traffic analyzer, Apps analyzer, Adaptive QoS and web history. You also acknowledge and agree that ASUS is not responsible for neither the agreement between you and Trend Micro nor any content of the service provided by Trend Micro. If you may have any inquires about how Trend Micro collects, processes and uses your above information, please refer to the privacy- related statement issued by Trend Micro or contact Trend Micro for more details.
-TM_eula_desc3=If you would like to disable sharing your information with Trend Micro through the above functions, please go to:  Router web GUI > Advanced settings > Administration > Privacy.
+TM_eula_desc1=Az AiProtection, a forgalomelemző, az alkalmazáselemző, az Adaptive QoS/Game boost/Game IPS és a webes előzmények használatával Ön elfogadja a <a id="eula_url" style="text-decoration:underline;" target="_blank">Trend Micro végfelhasználói licencszerződését</a>.
+TM_eula_desc2=Kérjük, vegye figyelembe, hogy a Trend Micro gyűjti az információkat az AiProtection, a forgalomelemző, az alkalmazáselemző, az Adaptive QoS szolgáltatáson és a webes előzményeken keresztül. Ön azt is elismeri és elfogadja, hogy az ASUS nem felelős az Ön és a Trend Micro között létrejött megállapodásért, illetve a Trend Micro által biztosított szolgáltatás tartalmáért. Amennyiben kérdései vannak arról, hogy a Trend Micro hogyan gyűjti, hogyan dolgozza fel és hogyan használja a fenti információkat, tekintse meg a Trend Micro által kiadott adatvédelmi nyilatkozatot, vagy kérjen bővebb tájékoztatást a Trend Micro vállalattól.
+TM_eula_desc3=Ha azt szeretné, hogy az információk ne legyenek megosztva a Trend Micro vállalattal a fenti funkciókon keresztül, nyissa meg a következő menüpontot:  Router web GUI (Router webes felhasználói felülete) > Advanced settings (Speciális beállítások) > Administration (Adminisztrálás) > Privacy (Adatvédelem).
 TM_privacy_policy=<a id="tm_eula_url" style="text-decoration:underline;" target="_blank">TrendMicro Privacy Policy</a>
 TM_data_collection=<a id="tm_disclosure_url" style="text-decoration:underline;" target="_blank">Privacy and Personal Data Collection Disclosure</a>
-TM_eula_withdraw0=For AiProtection, Traffic Analyzer, Apps analyzer, Adaptive QoS/Game boost/Game IPS, Web history:
-TM_eula_withdraw_desc1=Please noted that your information will be collected by Trend Micro through the above functions.
-TM_eula_withdraw_desc2=If you would like to disable sharing your information with Trend Micro through the following functions, please click <span style="font-weight: bold;">[Withdraw]</span> below. However, please be noted that such features/functions may not be worked if stop sharing your information with Trend Micro.
-withdraw_confirm=Are you sure you want to withdraw?
-withdraw_str=Withdraw
+TM_eula_withdraw0=Az AiProtection, a forgalomelemző, az alkalmazáselemző, az Adaptive QoS/Game boost/Game IPS és a webes előzmények esetében:
+TM_eula_withdraw_desc1=Kérjük, vegye figyelembe, hogy a Trend Micro gyűjti az információkat a fenti funkciókon keresztül.
+TM_eula_withdraw_desc2=Ha azt szeretné, hogy az információk ne legyenek megosztva a Trend Micro vállalattal az alábbi funkciókon keresztül, kattintson az alábbi <span style="font-weight: bold;">[<Visszavonás]</span> lehetőségre. Azt mindenképpen vegye figyelembe, hogy ha nem osztja meg az információkat a Trend Micro vállalattal, akkor elképzelhető, hogy ezek a szolgáltatások és funkciók nem fognak működni.
+withdraw_confirm=Biztosan vissza szeretné vonni az információk megosztását?
+withdraw_str=Visszavonás
 asusddns_inputhint=Gépelje be a nevet
 Auto=Auto
 Auto_Setting_btn=Automatic Setting
@@ -1586,8 +1586,8 @@ feedback_thanks=Köszönjük, hogy időt szánt a visszajelzésre és elküldte 
 feedback_translation=Javasolt fordítás
 feedback_translation_ts=Translated Suggestion
 feedback_usaul_unavailable=Sohasem érhető el
-feedback_eula=I agree to provide the above information, the model name, firmware version of my ASUS router, browser version, MAC address, IP address, Internet status, router system information, the time I submit this Feedback form to ASUS to diagnose and improve problems of my ASUS router, and to analyze user experience for the purpose of development and evaluation of new products and services of ASUS, and also agree to the <a style="font-weight: bolder;text-decoration:underline;cursor:pointer;" href="https://www.asus.com/us/Terms_of_Use_Notice_Privacy_Policy/Privacy_Policy" target="_blank">ASUS Privacy Policy</a>
-feedback_eula_notice=Before you click “send”, please agree to the information.
+feedback_eula=Beleegyezem abba, hogy meg kell adnom a fenti információkat, a modell nevét, az ASUS routerhez tartozó firmware verziószámát, a böngésző verzióját, a MAC-címet, az IP-címet, az internet állapotát, a router rendszerével kapcsolatos információkat, illetve a visszajelzési űrlap elküldésének idejét az ASUS routeremmel kapcsolatos problémák diagnosztizálása és javítása céljából, továbbá ahhoz, hogy a felhasználói élményt az ASUS új termékeinek és szolgáltatásainak fejlesztése és kiértékelése érdekében elemezni lehessen, ezenkívül az <a style="font-weight: bolder;text-decoration:underline;cursor:pointer;" href="https://www.asus.com/us/Terms_of_Use_Notice_Privacy_Policy/Privacy_Policy" target="_blank">ASUS adatvédelmi nyilatkozatát is elfogadom</a>.
+feedback_eula_notice=Mielőtt a „Send” (Küldés) gombra kattint, fogadja el az alábbi információkat.
 File_content_alert_desc10=Előfordulhat, hogy a több mint 12 karaktert tartalmazó megosztás létrehozása láthatatlanná teszi egyes Windows(R) verziókban.\nBiztosan folytatni akarja?
 File_content_alert_desc6=A megosztás neve mező nem maradhat üresen.
 File_content_alert_desc7=A megosztás neve csak alfanumerikus/kötőjel/aláhúzás/szóköz karaktert tartalmazhat.

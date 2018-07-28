@@ -1,13 +1,18 @@
+.eula_container{
+    margin: auto;
+    width: 50%;
+}
+
 .alert_ASUS_EULA{
 	line-height: 160%;
-	font-size: 12px;
+	font-size: 14px;
 	font-family: Arial, Verdana, Helvetica, sans-serif;
-	width:480px;
 	height:auto;
 	position:absolute;
 	background: rgba(0,0,0,0.9);
 	z-index:10;
-	margin:250px;
+	width: 50%;
+	margin-top:150px;
 	border-radius:10px;
 	padding:25px;
 	display: none;

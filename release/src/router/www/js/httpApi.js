@@ -9,6 +9,40 @@ var asyncData = {
 }
 
 var httpApi ={
+	"hookGetAsync": function(q){
+		if(!q.success || !q.hook) return false;
+
+		var queryString = q.hook.split("-")[0] + "(" + (q.hook.split("-")[1] || "") + ")";
+
+		$.ajax({
+			url: '/appGet.cgi?hook=' + queryString,
+			dataType: 'json',
+			error: q.error,
+			success: function(res){
+				q.success(res[q.hook]);
+			}
+		});
+	},
+
+	"nvramGetAsync": function(q){
+		if(!q.success || !q.data) return false;
+
+		var __nvramget = function(_nvrams){
+			return _nvrams.map(function(elem){return "nvram_char_to_ascii(" + elem + "," + elem + ")";}).join("%3B");
+		};
+
+		$.ajax({
+			url: '/appGet.cgi?hook=' + __nvramget(q.data),
+			dataType: 'json',
+			error: q.error,
+			success: function(encNvram){
+				var decNvram = {};
+				for (var nvram in encNvram){decNvram[nvram] = decodeURIComponent(encNvram[nvram]);}
+				q.success(decNvram);
+			}
+		});
+	},
+
 	"nvramGet": function(objItems, forceUpdate){
 		var queryArray = [];
 		var retData = {};

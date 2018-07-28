@@ -14,7 +14,7 @@ echo $cur_dir
 PCRE_VER=8.31
 
 ####	Set compiler variable ####
-export CFLAGS="-I$cur_dir/../pcre-$PCRE_VER -I$uclib_inc -I$srcbase_dir/include -I$cur_dir/../sqlite -I$cur_dir/../curl-7.21.7/include -I$router_dir/nvram${BCMEX}${EX7} -I$router_dir/shared -I$router_dir/libdisk -I$router_dir/libpasswd -DHAVE_OPENSSL_SSL_H=1 -DHAVE_LIBSSL=1 -DEMBEDDED_EANBLE=1"
+export CFLAGS="-I$cur_dir/../pcre-$PCRE_VER -I$uclib_inc -I$srcbase_dir/include -I$srcbase_dir/shared/bcmwifi/include -I$cur_dir/../sqlite -I$cur_dir/../curl-7.21.7/include -I$router_dir/nvram${BCMEX}${EX7} -I$router_dir/shared -I$router_dir/libdisk -I$router_dir/libpasswd -DHAVE_OPENSSL_SSL_H=1 -DHAVE_LIBSSL=1 -DEMBEDDED_EANBLE=1"
 export LIBS="-L$uclib -L$router_dir/shared -lshared -L$router_dir/nvram${BCMEX}${EX7} -lnvram -L$router_dir/wlcsm -lwlcsm -L$router_dir/libdisk -ldisk -L$router_dir/libpasswd -lpasswd -lpthread  -L$router_dir/openssl -lcrypto -lssl -L$router_dir/curl-7.21.7/lib/.libs -lcurl -L$router_dir/libxml2/.libs -lxml2 -lpthread -dl"
 export LDFLAGS="-L$uclib -ldl -L$cur_dir/../pcre-$PCRE_VER/.libs -lpcre -L$cur_dir/../libxml2/.libs -lxml2 -lm -L$router_dir/openssl -L$cur_dir/../curl-7.21.7/lib/.libs"
 export XML_CFLAGS="-I$cur_dir/../libxml2/include"

@@ -7,6 +7,9 @@ CFLAGS += $(EXTRA_FLAG)
 endif
 
 CFLAGS += -I$(TOP)/shared -I$(SRCBASE)/include
+ifeq ($(RTCONFIG_BCMARM),y)
+CFLAGS += -I$(SRCBASE)/shared/bcmwifi/include -DTYPEDEF_FLOAT_T
+endif
 LDFLAGS = -L$(TOP)/shared -lshared -L$(TOP)/nvram${BCMEX}${EX7} ${EXTRA_NV_LDFLAGS} -lnvram
 INSTALL = install
 

@@ -5,6 +5,7 @@ CFLAGS += -Wall -O
 
 ifeq ($(RTCONFIG_BCMARM),y)
 CFLAGS += $(EXTRA_FLAG)
+CFLAGS += -I$(SRCBASE)/shared/bcmwifi/include -DTYPEDEF_FLOAT_T
 endif
 
 CFLAGS += -DASUS

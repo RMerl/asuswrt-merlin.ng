@@ -5,7 +5,6 @@ var agree_eula_callback = function(){};
 var disagree_eula_callback = function(){};
 
 var ASUS_EULA = {
-
 	"config": function(set_callback, disagree_callback){
 		agree_eula_callback = set_callback;
 		disagree_eula_callback = disagree_callback;
@@ -16,29 +15,6 @@ var ASUS_EULA = {
 		agree_eula_callback = function(){};
 		disagree_eula_callback = function(){};
 
-	},
-
-	"cal_panel_block": function(obj){
-		var blockmarginLeft;
-		if (window.innerWidth)
-			winWidth = window.innerWidth;
-		else if ((document.body) && (document.body.clientWidth))
-			winWidth = document.body.clientWidth;
-
-		if (document.documentElement  && document.documentElement.clientHeight && document.documentElement.clientWidth){
-			winWidth = document.documentElement.clientWidth;
-		}
-
-		if(winWidth >1050){
-			winPadding = (winWidth-1050)/2;
-			winWidth = 1105;
-			blockmarginLeft= (winWidth*0.2)+winPadding;
-		}
-		else if(winWidth <=1050){
-			blockmarginLeft= (winWidth)*0.2 + document.body.scrollLeft;
-		}
-
-		document.getElementById(obj).style.marginLeft = (blockmarginLeft+100)+"px";
 	},
 
 	"setting": function(eula_type){
@@ -168,24 +144,29 @@ var ASUS_EULA = {
 		var text_str = "";
 
 		eula_div.id = eula_type.toUpperCase() + "_EULA_DIV";
+		eula_div.className = "eula_container";
 
 		var node = document.body;
 		node.insertBefore(eula_div, node.childNodes[0]);
 
 		switch(eula_type){
 			case "asus":
-				lang_str =  (preferred_lang == "EN")? "" : (preferred_lang.toLowerCase() + '/');
+				lang_str =  (preferred_lang == "EN" || preferred_lang == "SL")? "" : (preferred_lang.toLowerCase() + '/');
 				alert_div_id = "alert_"+eula_type.toUpperCase() + "_EULA";
 
 				if(preferred_lang == "CN")
-					url = "https://www.asus.com.cn/Terms_of_Use_Notice_Privacy_Policy/Privacy_Policy";
+					url = "https://www.asus.com.cn/Terms_of_Use_Notice_Privacy_Policy/Privacy_Policy/";
 				else{
 					if(preferred_lang == "SV")
 						lang_str = "se/";
 					else if(preferred_lang == "UK")
 						lang_str = "ua-ua/";
+					else if(preferred_lang == "MS")
+						lang_str = "my/";
+					else if(preferred_lang == "DA")
+						lang_str = "dk/";
 
-					url = "https://www.asus.com/" + lang_str +"Terms_of_Use_Notice_Privacy_Policy/Privacy_Policy";
+					url = "https://www.asus.com/" + lang_str +"Terms_of_Use_Notice_Privacy_Policy/Privacy_Policy/";
 				}
 
 				ASUS_EULA_code+='<div id="' + alert_div_id + '" class="alert_ASUS_EULA" style="text-align: left;">';
@@ -196,7 +177,12 @@ var ASUS_EULA = {
 				ASUS_EULA_code+=			'<ol class="custom_ol">';
 				ASUS_EULA_code+=				'<li><#ASUS_eula_desc1_1#>';
 				ASUS_EULA_code+=					'<ol>';
-				ASUS_EULA_code+=						'<li id="asus_eula_desc1_1_1"><#ASUS_eula_desc1_1_1#></li>';
+				if(alexa_support && ifttt_support)
+					ASUS_EULA_code+=					'<li id="asus_eula_desc1_1_1"><#ASUS_eula_desc1_1_1#></li>';
+				else if(alexa_support && !ifttt_support)
+					ASUS_EULA_code+=					'<li id="asus_eula_desc1_1_1"><#ASUS_eula_desc1_1_12#></li>';
+				else// !alexa_support && !ifttt_support
+					ASUS_EULA_code+=					'<li id="asus_eula_desc1_1_1"><#ASUS_eula_desc1_1_13#></li>';
 				ASUS_EULA_code+=					'</ol>';
 				ASUS_EULA_code+=				'</li>';
 				ASUS_EULA_code+=				"<li><#ASUS_eula_desc1_2_s1#>&nbsp;<#ASUS_eula_desc1_2_s2#>";
@@ -204,8 +190,10 @@ var ASUS_EULA = {
 				ASUS_EULA_code+=						'<li><#ASUS_eula_desc1_2_1#></li>'
 				ASUS_EULA_code+=					'</ol>';
 				ASUS_EULA_code+=				'</li>';
-				ASUS_EULA_code+=				'<li><#ASUS_eula_desc1_3#></li>';
-				ASUS_EULA_code+=				'<li><#ASUS_eula_desc1_4#></li>';
+				if(alexa_support)
+					ASUS_EULA_code+=			'<li><#ASUS_eula_desc1_3#></li>';
+				if(ifttt_support)
+					ASUS_EULA_code+=			'<li><#ASUS_eula_desc1_4#></li>';
 				ASUS_EULA_code+=			'</ol>';
 				ASUS_EULA_code+=		'</li>';
 				ASUS_EULA_code+=		'<li><#ASUS_eula_desc2#></li>';
@@ -250,29 +238,24 @@ var ASUS_EULA = {
 		document.getElementById(eula_div.id).innerHTML = ASUS_EULA_code;
 		$("#eula_url").attr("href",url);
 		$("#agree_btn").attr("value", "<#CTL_Agree#>");//For FR
-		if(ifttt_support){
-			fn_array.splice(0, 0, "IFTTT™");
-		}
-		if(alexa_support){
-			fn_array.splice(0, 0, "Alexa™");
-		}
 
 		if(eula_type == "asus"){
 			var fn_array = ["DDNS"];
 			var fn_str = "";
 			var text_str = "";
 
+			if(ifttt_support){
+				fn_array.splice(0, 0, "IFTTT™");
+			}
+			if(alexa_support){
+				fn_array.splice(0, 0, "Alexa™");
+			}
+
 			fn_str = fn_array.join('/ ');
 			text_str = document.getElementById("asus_eula_desc").innerHTML.replace('DDNS', fn_str);
 			document.getElementById("asus_eula_desc").innerHTML = text_str;
 		}
 
-		if(alexa_support && !ifttt_support)
-			document.getElementById("asus_eula_desc1_1_1").innerHTML = "<#ASUS_eula_desc1_1_12#>";
-		else if(!alexa_support && !ifttt_support)
-			document.getElementById("asus_eula_desc1_1_1").innerHTML = "<#ASUS_eula_desc1_1_13#>";
-
-		ASUS_EULA.cal_panel_block(alert_div_id);
 		$(alert_query_id).fadeIn(1000);
 	}
 }

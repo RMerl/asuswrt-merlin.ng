@@ -78,10 +78,10 @@ function initial(){
 		document.getElementById("tm_eula").style.display = "none";
 	}
 
-	if(eula_status.ASUS_EULA == "0" && eula_status.TM_EULA == "0")
-		$("#privacy_desc").css('display', 'block');
-	else
+	if(eula_status.ASUS_EULA == "1" || eula_status.TM_EULA == "1")
 		$("#privacy_desc").css('display', 'none');
+	else
+		$("#privacy_desc").css('display', 'block');
 
 	setTimeout(update_link_status, 1000);
 }

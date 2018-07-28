@@ -19,6 +19,10 @@ CFLAGS += -I$(HND_SRC)/userspace/public/include -I$(HND_SRC)/userspace/public/in
 LDFLAGS += -L$(TOP)/wlcsm -lwlcsm -L$(TOP)/bcm_flashutil -lbcm_flashutil -L$(TOP)/bcm_util -lbcm_crc -L$(TOP)/bcm_boardctl -lbcm_boardctl
 endif
 
+ifeq ($(RTCONFIG_BCMARM),y)
+CFLAGS += -I$(SRCBASE)/shared/bcmwifi/include -DTYPEDEF_FLOAT_T
+endif
+
 ifeq ($(RTCONFIG_PERMISSION_MANAGEMENT),y)
 CFLAGS += -I$(TOP)/sqlCipher
 CFLAGS += -I$(TOP)/PMS_DBapis

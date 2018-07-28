@@ -51,7 +51,7 @@
 #endif
 
 #ifdef RTCONFIG_HW_DUALWAN
-int init_dualwan(int argc, char *argv[])
+void init_dualwan(int argc, char *argv[])
 {
 	int unit = 0;
 	int caps;

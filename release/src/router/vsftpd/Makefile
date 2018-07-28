@@ -27,6 +27,7 @@ endif
 CFLAGS  += 	-I$(SRCBASE)/include -I$(TOP)/shared -I$(TOP)/libdisk
 LDFLAGS  +=	-L$(TOP)/nvram${BCMEX}$(EX7) -lnvram -L$(TOP)/shared -lshared -L$(TOP)/libdisk -ldisk
 ifeq ($(RTCONFIG_BCMARM),y)
+CFLAGS += -I$(SRCBASE)/shared/bcmwifi/include -DTYPEDEF_FLOAT_T
 CFLAGS += -I$(SRCBASE)/common/include
 LDFLAGS += -lgcc_s
 endif

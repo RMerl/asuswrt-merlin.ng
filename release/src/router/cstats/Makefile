@@ -3,6 +3,12 @@ include ../common.mak
 CFLAGS += -Wall -Os $(EXTRACFLAGS)
 CFLAGS += -I. -I$(TOP)/shared -I$(SRCBASE)/include -idirafter$(LINUXDIR)/include
 #CFLAGS += -ffunction-sections -fdata-sections
+
+ifeq ($(RTCONFIG_BCMARM),y)
+CFLAGS += -I$(SRCBASE)/shared/bcmwifi/include -DTYPEDEF_FLOAT_T
+CFLAGS += -I$(SRCBASE)/common/include
+endif
+
 LDFLAGS	= -L$(TOP)/nvram${BCMEX}${EX7} -lnvram -L$(TOP)/shared -lshared $(LIBS)
 
 ifeq ($(HND_ROUTER),y)

@@ -2229,7 +2229,9 @@ static int one_opt(int option, char *arg, char *errstr, char *gen_err, int comma
 		      char *star;
 		      new->next = daemon->synth_domains;
 		      daemon->synth_domains = new;
-		      if ((star = strrchr(new->prefix, '*')) && *(star+1) == 0)
+		      if (new->prefix &&
+			  (star = strrchr(new->prefix, '*'))
+			  && *(star+1) == 0)
 			{
 			  *star = 0;
 			  new->indexed = 1;

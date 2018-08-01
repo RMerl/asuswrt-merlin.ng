@@ -468,8 +468,12 @@ struct crec {
 #define F_SERVFAIL  (1u<<28)
 #define F_RCODE     (1u<<29)
 
+#define UID_NONE      0
 /* Values of uid in crecs with F_CONFIG bit set. */
-#define SRC_INTERFACE 0
+/* cname to uid SRC_INTERFACE are to interface names,
+   so use UID_NONE for that to eliminate clashes with
+   any other uid */
+#define SRC_INTERFACE UID_NONE
 #define SRC_CONFIG    1
 #define SRC_HOSTS     2
 #define SRC_AH        3
@@ -1117,6 +1121,7 @@ extern struct daemon {
 
 /* cache.c */
 void cache_init(void);
+void next_uid(struct crec *crecp);
 void log_query(unsigned int flags, char *name, struct all_addr *addr, char *arg); 
 char *record_source(unsigned int index);
 char *querystr(char *desc, unsigned short type);

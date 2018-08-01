@@ -1110,6 +1110,7 @@ static int dhcp6_no_relay(struct state *state, int msg_type, void *inbuff, size_
 		    put_opt6_short(DHCP6NOTONLINK);
 		    put_opt6_string(_("confirm failed"));
 		    end_opt6(o1);
+		    log6_quiet(state, "DHCPREPLY", req_addr, _("confirm failed"));
 		    return 1;
 		  }
 

@@ -788,6 +788,7 @@ int extract_addresses(struct dns_header *header, size_t qlen, char *name, time_t
 			  newc->addr.cname.uid = 1; 
 			  if (cpp)
 			    {
+			      next_uid(newc);
 			      cpp->addr.cname.target.cache = newc;
 			      cpp->addr.cname.uid = newc->uid;
 			    }
@@ -844,6 +845,7 @@ int extract_addresses(struct dns_header *header, size_t qlen, char *name, time_t
 		      newc = cache_insert(name, &addr, now, attl, flags | F_FORWARD | secflag);
 		      if (newc && cpp)
 			{
+			  next_uid(newc);
 			  cpp->addr.cname.target.cache = newc;
 			  cpp->addr.cname.uid = newc->uid;
 			}
@@ -870,6 +872,7 @@ int extract_addresses(struct dns_header *header, size_t qlen, char *name, time_t
 		  newc = cache_insert(name, NULL, now, ttl ? ttl : cttl, F_FORWARD | F_NEG | flags | (secure ? F_DNSSECOK : 0));	
 		  if (newc && cpp)
 		    {
+		      next_uid(newc);
 		      cpp->addr.cname.target.cache = newc;
 		      cpp->addr.cname.uid = newc->uid;
 		    }

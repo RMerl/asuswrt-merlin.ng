@@ -37,6 +37,10 @@ version 2.80
 	without DNSSEC RRs to queries with the do-bit set, but only when
 	DNSSEC validation was not enabled.
 	Thanks to Petr Menšík for spotting this.
+
+	Fix missing fatal errors with some malformed options
+	(server, local, address, rebind-domain-ok, ipset, alias).
+	Thanks to Eugene Lozovoy for spotting the problem.
 	
 	
 version 2.79

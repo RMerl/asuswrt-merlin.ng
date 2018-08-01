@@ -77,17 +77,20 @@ static void cache_link(struct crec *crecp);
 static void rehash(int size);
 static void cache_hash(struct crec *crecp);
 
-static unsigned int next_uid(void)
+void next_uid(struct crec *crecp)
 {
   static unsigned int uid = 0;
 
-  uid++;
+  if (crecp->uid == UID_NONE)
+    {
+      uid++;
   
-  /* uid == 0 used to indicate CNAME to interface name. */
-  if (uid == SRC_INTERFACE)
-    uid++;
-  
-  return uid;
+      /* uid == 0 used to indicate CNAME to interface name. */
+      if (uid == UID_NONE)
+	uid++;
+      
+      crecp->uid = uid;
+    }
 }
 
 void cache_init(void)
@@ -105,7 +108,7 @@ void cache_init(void)
 	{
 	  cache_link(crecp);
 	  crecp->flags = 0;
-	  crecp->uid = next_uid();
+	  crecp->uid = UID_NONE;
 	}
     }
   
@@ -204,7 +207,7 @@ static void cache_free(struct crec *crecp)
 {
   crecp->flags &= ~F_FORWARD;
   crecp->flags &= ~F_REVERSE;
-  crecp->uid = next_uid(); /* invalidate CNAMES pointing to this. */
+  crecp->uid = UID_NONE; /* invalidate CNAMES pointing to this. */
 
   if (cache_tail)
     cache_tail->next = crecp;
@@ -322,7 +325,8 @@ static int is_expired(time_t now, struct crec *crecp)
   return 1;
 }
 
-static struct crec *cache_scan_free(char *name, struct all_addr *addr, time_t now, unsigned short flags)
+static struct crec *cache_scan_free(char *name, struct all_addr *addr, time_t now, unsigned short flags,
+				    struct crec **target_crec, unsigned int *target_uid)
 {
   /* Scan and remove old entries.
      If (flags & F_FORWARD) then remove any forward entries for name and any expired
@@ -335,7 +339,10 @@ static struct crec *cache_scan_free(char *name, struct all_addr *addr, time_t no
      to a cache entry if the name exists in the cache as a HOSTS or DHCP entry (these are never deleted)
 
      We take advantage of the fact that hash chains have stuff in the order <reverse>,<other>,<immortal>
-     so that when we hit an entry which isn't reverse and is immortal, we're done. */
+     so that when we hit an entry which isn't reverse and is immortal, we're done. 
+
+     If we free a crec which is a CNAME target, return the entry and uid in target_crec and target_uid.
+     This entry will get re-used with the same name, to preserve CNAMEs. */
  
   struct crec *crecp, **up;
   
@@ -343,17 +350,6 @@ static struct crec *cache_scan_free(char *name, struct all_addr *addr, time_t no
     {
       for (up = hash_bucket(name), crecp = *up; crecp; crecp = crecp->hash_next)
 	{
-	  if (is_expired(now, crecp) || is_outdated_cname_pointer(crecp))
-	    { 
-	      *up = crecp->hash_next;
-	      if (!(crecp->flags & (F_HOSTS | F_DHCP | F_CONFIG)))
-		{
-		  cache_unlink(crecp);
-		  cache_free(crecp);
-		}
-	      continue;
-	    } 
-	
 	  if ((crecp->flags & F_FORWARD) && hostname_isequal(cache_get_name(crecp), name))
 	    {
 	      /* Don't delete DNSSEC in favour of a CNAME, they can co-exist */
@@ -363,6 +359,16 @@ static struct crec *cache_scan_free(char *name, struct all_addr *addr, time_t no
 		  if (crecp->flags & (F_HOSTS | F_DHCP | F_CONFIG))
 		    return crecp;
 		  *up = crecp->hash_next;
+		  /* If this record is for the name we're inserting and is the target
+		     of a CNAME record. Make the new record for the same name, in the same
+		     crec, with the same uid to avoid breaking the existing CNAME. */
+		  if (crecp->uid != UID_NONE)
+		    {
+		      if (target_crec)
+			*target_crec = crecp;
+		      if (target_uid)
+			*target_uid = crecp->uid;
+		    }
 		  cache_unlink(crecp);
 		  cache_free(crecp);
 		  continue;
@@ -381,6 +387,18 @@ static struct crec *cache_scan_free(char *name, struct all_addr *addr, time_t no
 		}
 #endif
 	    }
+
+	  if (is_expired(now, crecp) || is_outdated_cname_pointer(crecp))
+	    { 
+	      *up = crecp->hash_next;
+	      if (!(crecp->flags & (F_HOSTS | F_DHCP | F_CONFIG)))
+		{
+		  cache_unlink(crecp);
+		  cache_free(crecp);
+		}
+	      continue;
+	    } 
+	  
 	  up = &crecp->hash_next;
 	}
     }
@@ -447,11 +465,12 @@ void cache_start_insert(void)
 struct crec *cache_insert(char *name, struct all_addr *addr, 
 			  time_t now,  unsigned long ttl, unsigned short flags)
 {
-  struct crec *new;
+  struct crec *new, *target_crec = NULL;
   union bigname *big_name = NULL;
   int freed_all = flags & F_REVERSE;
   int free_avail = 0;
-
+  unsigned int target_uid;
+  
   /* Don't log DNSSEC records here, done elsewhere */
   if (flags & (F_IPV4 | F_IPV6 | F_CNAME))
     {
@@ -469,7 +488,7 @@ struct crec *cache_insert(char *name, struct all_addr *addr,
   
   /* First remove any expired entries and entries for the name/address we
      are currently inserting. */
-  if ((new = cache_scan_free(name, addr, now, flags)))
+  if ((new = cache_scan_free(name, addr, now, flags, &target_crec, &target_uid)))
     {
       /* We're trying to insert a record over one from 
 	 /etc/hosts or DHCP, or other config. If the 
@@ -493,81 +512,89 @@ struct crec *cache_insert(char *name, struct all_addr *addr,
     }
   
   /* Now get a cache entry from the end of the LRU list */
-  while (1) {
-    if (!(new = cache_tail)) /* no entries left - cache is too small, bail */
-      {
-	insert_error = 1;
-	return NULL;
-      }
-    
-    /* End of LRU list is still in use: if we didn't scan all the hash
-       chains for expired entries do that now. If we already tried that
-       then it's time to start spilling things. */
-    
-    if (new->flags & (F_FORWARD | F_REVERSE))
-      { 
-	/* If free_avail set, we believe that an entry has been freed.
-	   Bugs have been known to make this not true, resulting in
-	   a tight loop here. If that happens, abandon the
-	   insert. Once in this state, all inserts will probably fail. */
-	if (free_avail)
-	  {
-	    static int warned = 0;
-	    if (!warned)
-	      {
-		my_syslog(LOG_ERR, _("Internal error in cache."));
-		warned = 1;
-	      }
-	    insert_error = 1;
-	    return NULL;
-	  }
-		
-	if (freed_all)
-	  {
-	    struct all_addr free_addr = new->addr.addr;;
+  if (!target_crec)
+    while (1) {
+      if (!(new = cache_tail)) /* no entries left - cache is too small, bail */
+	{
+	  insert_error = 1;
+	  return NULL;
+	}
+      
+      /* Free entry at end of LRU list, use it. */
+      if (!(new->flags & (F_FORWARD | F_REVERSE)))
+	break;
 
+      /* End of LRU list is still in use: if we didn't scan all the hash
+	 chains for expired entries do that now. If we already tried that
+	 then it's time to start spilling things. */
+      
+      /* If free_avail set, we believe that an entry has been freed.
+	 Bugs have been known to make this not true, resulting in
+	 a tight loop here. If that happens, abandon the
+	 insert. Once in this state, all inserts will probably fail. */
+      if (free_avail)
+	{
+	  static int warned = 0;
+	  if (!warned)
+	    {
+	      my_syslog(LOG_ERR, _("Internal error in cache."));
+	      warned = 1;
+	    }
+	  insert_error = 1;
+	  return NULL;
+	}
+      
+      if (freed_all)
+	{
+	  struct all_addr free_addr = new->addr.addr;;
+	  
 #ifdef HAVE_DNSSEC
-	    /* For DNSSEC records, addr holds class. */
-	    if (new->flags & (F_DS | F_DNSKEY))
-	      free_addr.addr.dnssec.class = new->uid;
+	  /* For DNSSEC records, addr holds class. */
+	  if (new->flags & (F_DS | F_DNSKEY))
+	    free_addr.addr.dnssec.class = new->uid;
 #endif
-	    
-	    free_avail = 1; /* Must be free space now. */
-	    cache_scan_free(cache_get_name(new), &free_addr, now, new->flags);
-	    cache_live_freed++;
-	  }
-	else
-	  {
-	    cache_scan_free(NULL, NULL, now, 0);
-	    freed_all = 1;
-	  }
-	continue;
-      }
- 
-    /* Check if we need to and can allocate extra memory for a long name.
-       If that fails, give up now, always succeed for DNSSEC records. */
-    if (name && (strlen(name) > SMALLDNAME-1))
-      {
-	if (big_free)
-	  { 
-	    big_name = big_free;
-	    big_free = big_free->next;
-	  }
-	else if ((bignames_left == 0 && !(flags & (F_DS | F_DNSKEY))) ||
-		 !(big_name = (union bigname *)whine_malloc(sizeof(union bigname))))
-	  {
-	    insert_error = 1;
-	    return NULL;
-	  }
-	else if (bignames_left != 0)
-	  bignames_left--;
-	
-      }
+	  
+	  free_avail = 1; /* Must be free space now. */
+	  cache_scan_free(cache_get_name(new), &free_addr, now, new->flags, NULL, NULL);
+	  cache_live_freed++;
+	}
+      else
+	{
+	  cache_scan_free(NULL, NULL, now, 0, NULL, NULL);
+	  freed_all = 1;
+	}
+    }
+      
+  /* Check if we need to and can allocate extra memory for a long name.
+     If that fails, give up now, always succeed for DNSSEC records. */
+  if (name && (strlen(name) > SMALLDNAME-1))
+    {
+      if (big_free)
+	{ 
+	  big_name = big_free;
+	  big_free = big_free->next;
+	}
+      else if ((bignames_left == 0 && !(flags & (F_DS | F_DNSKEY))) ||
+	       !(big_name = (union bigname *)whine_malloc(sizeof(union bigname))))
+	{
+	  insert_error = 1;
+	  return NULL;
+	}
+      else if (bignames_left != 0)
+	bignames_left--;
+      
+    }
 
-    /* Got the rest: finally grab entry. */
-    cache_unlink(new);
-    break;
-  }
+  /* If we freed a cache entry for our name which was a CNAME target, use that.
+     and preserve the uid, so that existing CNAMES are not broken. */
+  if (target_crec)
+    {
+      new = target_crec;
+      new->uid = target_uid;
+    }
+  
+  /* Got the rest: finally grab entry. */
+  cache_unlink(new);
   
   new->flags = flags;
   if (big_name)
@@ -787,8 +814,9 @@ static void add_hosts_cname(struct crec *target)
 	crec->ttd = a->ttl;
 	crec->name.namep = a->alias;
 	crec->addr.cname.target.cache = target;
+	next_uid(target);
 	crec->addr.cname.uid = target->uid;
-	crec->uid = next_uid();
+	crec->uid = UID_NONE;
 	cache_hash(crec);
 	add_hosts_cname(crec); /* handle chains */
       }
@@ -1071,7 +1099,7 @@ void cache_reload(void)
 	  cache->name.namep = a->alias;
 	  cache->addr.cname.target.int_name = intr;
 	  cache->addr.cname.uid = SRC_INTERFACE;
-	  cache->uid = next_uid();
+	  cache->uid = UID_NONE;
 	  cache_hash(cache);
 	  add_hosts_cname(cache); /* handle chains */
 	}
@@ -1201,8 +1229,9 @@ static void add_dhcp_cname(struct crec *target, time_t ttd)
 	      aliasc->ttd = ttd;
 	    aliasc->name.namep = a->alias;
 	    aliasc->addr.cname.target.cache = target;
+	    next_uid(target);
 	    aliasc->addr.cname.uid = target->uid;
-	    aliasc->uid = next_uid();
+	    aliasc->uid = UID_NONE;
 	    cache_hash(aliasc);
 	    add_dhcp_cname(aliasc, ttd);
 	  }
@@ -1243,7 +1272,7 @@ void cache_add_dhcp_entry(char *host_name, int prot,
 	}
       else if (!(crec->flags & F_DHCP))
 	{
-	  cache_scan_free(host_name, NULL, 0, crec->flags & (flags | F_CNAME | F_FORWARD));
+	  cache_scan_free(host_name, NULL, 0, crec->flags & (flags | F_CNAME | F_FORWARD), NULL, NULL);
 	  /* scan_free deletes all addresses associated with name */
 	  break;
 	}
@@ -1270,7 +1299,7 @@ void cache_add_dhcp_entry(char *host_name, int prot,
       if (crec->flags & F_NEG)
 	{
 	  flags |= F_REVERSE;
-	  cache_scan_free(NULL, (struct all_addr *)host_address, 0, flags);
+	  cache_scan_free(NULL, (struct all_addr *)host_address, 0, flags, NULL, NULL);
 	}
     }
   else
@@ -1290,7 +1319,7 @@ void cache_add_dhcp_entry(char *host_name, int prot,
 	crec->ttd = ttd;
       crec->addr.addr = *host_address;
       crec->name.namep = host_name;
-      crec->uid = next_uid();
+      crec->uid = UID_NONE;
       cache_hash(crec);
 
       add_dhcp_cname(crec, ttd);

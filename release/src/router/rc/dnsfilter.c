@@ -60,7 +60,7 @@ int get_dns_filter(int proto, int mode, char **server)
 		{"", ""},		/* 8: Custom1 - not supported yet */
 		{"", ""},		/* 9: Custom2 - not supported yet */
 		{"", ""},		/* 10: Custom3 - not supported yet */
-		{nvram_safe_get("dhcp_dns1_x"), ""},		/* 11: Router */
+		{"", ""},		/* 11: Router  - semi-supported, refer dnsfilter_setup_dnsmasq() */
 		{"", ""}		/* 12: Comodo Secure DNS */
         };
 #endif
@@ -219,6 +219,11 @@ void dnsfilter_setup_dnsmasq(FILE *fp) {
 		if (dnsmode == defmode)
 			continue;
 		count = get_dns_filter(AF_INET6, dnsmode, server);
+		if (count == 0 && dnsmode == 11) {
+			/* Workaround dynamic router address */
+			server[0] = "::";
+			count = 1;
+		}
 		if (count == 0)
 			continue;
 		fprintf(fp, "dhcp-option=dnsf%u,option6:23,[%s]", dnsmode, server[0]);

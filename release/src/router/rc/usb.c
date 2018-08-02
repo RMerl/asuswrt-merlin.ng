@@ -1200,6 +1200,10 @@ int mount_r(char *mnt_dev, char *mnt_dir, char *_type)
 			/* not a mountable partition */
 			flags = 0;
 		}
+		else if (!strcmp(type, "unknown")) {
+			/* Usually should be EFI, and not a mountable partition */
+			flags = 0;
+		}
 		else if(!strncmp(type, "ext", 3)){
 			sprintf(options, "user_xattr");
 

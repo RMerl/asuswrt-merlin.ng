@@ -246,9 +246,9 @@ static int forward_query(int udpfd, union mysockaddr *udpaddr,
   unsigned int crc = questions_crc(header, plen, daemon->namebuff);
   void *hash = &crc;
 #endif
- unsigned int gotname = extract_request(header, plen, daemon->namebuff, NULL);
-
- (void)do_bit;
+  unsigned int gotname = extract_request(header, plen, daemon->namebuff, NULL);
+  unsigned char *oph = find_pseudoheader(header, plen, NULL, NULL, NULL, NULL);
+  (void)do_bit;
 
   /* may be no servers available. */
   if (forward || (hash && (forward = lookup_frec_by_sender(ntohs(header->id), udpaddr, hash))))
@@ -399,7 +399,6 @@ static int forward_query(int udpfd, union mysockaddr *udpaddr,
       struct server *firstsentto = start;
       int subnet, forwarded = 0;
       size_t edns0_len;
-      unsigned char *oph = find_pseudoheader(header, plen, NULL, NULL, NULL, NULL);
       unsigned char *pheader;
       
       /* If a query is retried, use the log_id for the retry when logging the answer. */
@@ -554,6 +553,8 @@ static int forward_query(int udpfd, union mysockaddr *udpaddr,
   if (udpfd != -1)
     {
       plen = setup_reply(header, plen, addrp, flags, daemon->local_ttl);
+      if (oph)
+	plen = add_pseudoheader(header, plen, ((unsigned char *) header) + PACKETSZ, daemon->edns_pktsz, 0, NULL, 0, do_bit, 0);
       send_from(udpfd, option_bool(OPT_NOWILD) || option_bool(OPT_CLEVERBIND), (char *)header, plen, udpaddr, dst_addr, dst_iface);
     }
 
@@ -2104,7 +2105,11 @@ unsigned char *tcp_request(int confd, time_t now,
 	
 	      /* In case of local answer or no connections made. */
 	      if (m == 0)
-		m = setup_reply(header, (unsigned int)size, addrp, flags, daemon->local_ttl);
+		{
+		  m = setup_reply(header, (unsigned int)size, addrp, flags, daemon->local_ttl);
+		  if (have_pseudoheader)
+		    m = add_pseudoheader(header, m, ((unsigned char *) header) + 65536, daemon->edns_pktsz, 0, NULL, 0, do_bit, 0);
+		}
 	    }
 	}
 	  

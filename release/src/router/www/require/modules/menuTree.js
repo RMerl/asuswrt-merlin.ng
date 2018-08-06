@@ -64,7 +64,6 @@ define(function(){
 					{url: "AiProtection_InfectedDevicePreventBlock.asp", tabName: "<#AiProtection_detection_blocking#>"},
 					{url: "AiProtection_WebProtector.asp", tabName: "<#Parental_Control#>"},
 					{url: "ParentalControl.asp", tabName: "__INHERIT__"},
-					{url: "DNSFilter.asp", tabName: "DNSFilter"},
 					{url: "AiProtection_AdBlock.asp", tabName: "Ad Blocking"},
 					{url: "AiProtection_Key_Guard.asp", tabName: "Key Guard"},
 					{url: "NULL", tabName: "__INHERIT__"}
@@ -175,6 +174,7 @@ define(function(){
 				index: "menu_LAN",
 				tab: [
 					{url: "Advanced_LAN_Content.asp", tabName: "<#menu5_2_1#>"},
+					{url: "DNSFilter.asp", tabName: "DNSFilter"},
 					{url: "Advanced_DHCP_Content.asp", tabName: "<#menu5_2_2#>"},
 					{url: "Advanced_MultiSubnet_Content.asp", tabName: "<#menu5_2_2#>"},
 					{url: "Advanced_GWStaticRoute_Content.asp", tabName: "<#menu5_2_3#>"},

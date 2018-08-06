@@ -13,6 +13,17 @@ General changes in the 384/NG branch vs 380.xx:
      lists of settings might no longer be possible on 384.xx.
 
 
+384.7 (xx-xxx-xxxx)
+  - NEW: Merged with GPL 384_21152.
+  - NEW: Display DFS channel info on Wireless Log page.
+  - CHANGED: Updated dnsmasq to v2.80test3 (themiron).
+  - CHANGED: Moved DNSFilter to the LAN section, to make it clear
+             that it's unrelated to Trend Micro's engine.
+  - FIXED: Invalid dnsmasq config when setting DNSFilter to Router
+           mode and having IPv6 enabled (themiron).
+
+
+
 384.6 (25-July-2018)
    - NOTE: The RT-AC87U is not supported in this release, as
            Asus hasn't released any updated code for that model.

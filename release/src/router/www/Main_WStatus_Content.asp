@@ -40,6 +40,7 @@ var timedEvent = 0;
 function initial(){
 	show_menu();
 	refreshRate = getRefresh();
+	showhide("dfs_toggle", dfs_chanarray.length > 1 ? "1" : "0");
 	get_wlclient_list();
 
 	if (bcm_mumimo_support) {
@@ -53,7 +54,7 @@ function redraw(){
 	if (dataarray24.length == 0) {
 		document.getElementById('wifi24headerblock').innerHTML='<span class="wifiheader" style="font-size: 125%;">Wireless 2.4 GHz is disabled.</span>';
 	} else {
-		display_header(dataarray24, 'Wireless 2.4 GHz', document.getElementById('wifi24headerblock'));
+		display_header(dataarray24, 'Wireless 2.4 GHz', document.getElementById('wifi24headerblock'), false);
 		display_clients(wificlients24, document.getElementById('wifi24block'));
 	}
 
@@ -62,20 +63,20 @@ function redraw(){
 			if (dataarray5.length == 0) {
 				document.getElementById('wifi5headerblock').innerHTML='<span class="wifiheader" style="font-size: 125%;">Wireless 5 GHz-1 is disabled.</span>';
 			} else {
-				display_header(dataarray5, 'Wireless 5 GHz-1', document.getElementById('wifi5headerblock'));                                               
+				display_header(dataarray5, 'Wireless 5 GHz-1', document.getElementById('wifi5headerblock'), true);
 				display_clients(wificlients5, document.getElementById('wifi5block'));
 			}
 			if (dataarray52.length == 0) {
 				document.getElementById('wifi52headerblock').innerHTML='<span class="wifiheader" style="font-size: 125%;">Wireless 5 GHz-2 is disabled.</span>';
 			} else {
-				display_header(dataarray52, 'Wireless 5 GHz-2', document.getElementById('wifi52headerblock'));
+				display_header(dataarray52, 'Wireless 5 GHz-2', document.getElementById('wifi52headerblock'), false);
 				display_clients(wificlients52, document.getElementById('wifi52block'));
 			}
 		} else {
 			if (dataarray5.length == 0) {
 				document.getElementById('wifi5headerblock').innerHTML='<span class="wifiheader" style="font-size: 125%;">Wireless 5 GHz is disabled.</span>';
 			} else {
-				display_header(dataarray5, 'Wireless 5 GHz', document.getElementById('wifi5headerblock'));
+				display_header(dataarray5, 'Wireless 5 GHz', document.getElementById('wifi5headerblock'), true);
 				display_clients(wificlients5, document.getElementById('wifi5block'));
 			}
 		}
@@ -128,8 +129,9 @@ function display_clients(clientsarray, obj) {
 }
 
 
-function display_header(dataarray, title, obj) {
+function display_header(dataarray, title, obj, show_dfs) {
 	var code;
+	var channel, i;
 
 	code = '<table width="100%" style="border: none;">';
 	code += '<thead><tr><span class="wifiheader" style="font-size: 125%;">' + title +'</span></tr></thead>';
@@ -142,8 +144,25 @@ function display_header(dataarray, title, obj) {
 	if (dataarray[3] != 0)
 		code += '<td><span class="wifiheader">Noise: </span>' + dataarray[3] + ' dBm</td>';
 
-	code += '<td><span class="wifiheader">Channel: </span>'+ dataarray[4] + '</td> <td><span class="wifiheader">BSSID: </span>' + dataarray[5] +'</td></tr></table>';
+	code += '<td><span class="wifiheader">Channel: </span>'+ dataarray[4] + '</td> <td><span class="wifiheader">BSSID: </span>' + dataarray[5] +'</td></tr>';
 
+	if (show_dfs && dfs_chanarray.length > 1) {
+                code += '<tr><td colspan="2"><span class="wifiheader">DFS State: </span>' + dfs_statusarray[0] + '</td>';
+                code += '<td><span class="wifiheader">Time elapsed: </span>' + dfs_statusarray[1] + '</td>';
+                code += '<td><span class="wifiheader">Channel cleared for radar: </span>' + dfs_statusarray[2] + '</td></tr>';
+
+		state = getRadioValue(document.form.show_dfs) == "1" ? "" : "display: none;";
+		code += '</table><table id="dfstable" width="100%" style="border: none;'+state+'">';
+
+		code += '<tr><td><span class="wifiheader"><b>Channel States</b></td></tr>';
+
+		for (i = 0; i < dfs_chanarray.length-1; ++i) {
+			channel = dfs_chanarray[i];
+			code += '<tr><td><span class="wifiheader">Channel ' + channel[0] + '</span> ' + channel[1] + '</td></tr>';
+		}
+	}
+
+	code += '</table>';
 	obj.innerHTML = code;
 }
 
@@ -241,6 +260,14 @@ function setRefresh(obj) {
 												</select>
 											</td>
 										</tr>
+										<tr id="dfs_toggle" style="display:none;">
+											<th>Display DFS channel details</th>
+											<td>
+												<input type="radio" name="show_dfs" class="input" value="1" onclick="showhide('dfstable',1);"><#checkbox_Yes#>
+												<input type="radio" name="show_dfs" class="input" checked value="0" onclick="showhide('dfstable',0);"><#checkbox_No#>
+											</td>
+										</tr>
+
 									</table>
 									<br>
 									<div id="wifi24headerblock"></div>

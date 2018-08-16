@@ -1693,6 +1693,10 @@ void start_dnsmasq(void)
 		/* If NTP isn't set yet, wait until rc's ntp signals us to start validating time */
 		if (!nvram_get_int("ntp_ready"))
 			fprintf(fp, "dnssec-no-timecheck\n");
+
+		if (nvram_match("dnssec_check_unsigned_x", "0"))
+			fprintf(fp, "dnssec-check-unsigned=no\n");
+
 	}
 #endif
 	if (nvram_match("dns_norebind", "1"))

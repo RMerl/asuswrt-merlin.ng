@@ -383,7 +383,7 @@ helpcontent[50] = new Array("",
 				"By default miniupnpd runs in secure mode, which prevents a client to forward a port to another IP than its own.",
 				"Some IPv6-enabled Comcast customers are getting flooded by Neighbour Solicitation traffic.  This option allows you to filter out this unwanted traffic.",
 				"Tell dnsmasq that hostname lookups within the router's local domain should be forwarded to the upstream DNS configured on your WAN interface.<br>Useful if your upstream DNS is, for example, a Windows server.",
-				"Ensures that DNS lookups haven't been hijacked by a malicious third party when querying a DNSSEC-enabled domain.<br>Make sure your WAN/ISP DNS are DNSSEC-compatible.",
+				"Ensures that DNS lookups haven't been hijacked by a malicious third party when querying a DNSSEC-enabled domain.<br>Make sure your WAN/ISP DNS are DNSSEC-compatible, otherwise DNS lookups will always fail.",
 				"Some ISPs like Sky (UK) require a clientid to be provided for customer authentication.",
 				"Some ISPs like SFR (FR) require a vendor class ID to be provided for identification purposes.",
 				"Enabling this will protect your LAN against DNS rebind attacks, however it will prevent upstream DNS servers from resolving queries to any non-routable IP (for example, 192.168.1.1).",
@@ -401,6 +401,7 @@ helpcontent[50] = new Array("",
 				"For improved compatibility with Windows, the router sends an WPAD value containing a carriage return on DHCP requests.  This can cause issues with some clients, you can disable that behavior here.",
 				"When using a self-generated certificate, you can specify other hostnames to use in addition to the built-in ones, separated by a space",
 				"Restrict this rule to a specific source IP address",
-				"How should your router handle DNS servers pushed by the remote VPN server.  Disabled = ignore them, Relaxed = just add to list of known DNS,  Strict = add to list, but use all servers in order specified, Exclusive = use only these servers for all queries from clients routed through the tunnel.");
-// Last: 50,24
+				"How should your router handle DNS servers pushed by the remote VPN server.  Disabled = ignore them, Relaxed = just add to list of known DNS,  Strict = add to list, but use all servers in order specified, Exclusive = use only these servers for all queries from clients routed through the tunnel.",
+				"When an unsigned reply is received, check that this zone really doesn't use DNSSEC.  Disabling this will speed up lookups, but it also means someone can forge a reply in a signed zone by simply not signing the reply, bypassing any security benefit normally provided by DNSSEC.");
+// Last: 50,25
 

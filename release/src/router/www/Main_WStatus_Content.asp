@@ -86,6 +86,8 @@ function redraw(){
 
 function display_clients(clientsarray, obj) {
 	var code, i, client, overlib_str;
+	var mac, ipaddr, hostname;
+	var nmapentry;
 
 	code = '<table width="100%" border="1" align="center" cellpadding="4" cellspacing="0" bordercolor="#6b8fa3" class="FormTable">';
 	code += '<thead><tr>';
@@ -101,16 +103,35 @@ function display_clients(clientsarray, obj) {
 			code += '<tr>';
 
 			// Mac
-			overlib_str = "<p><#MAC_Address#>:</p>" + client[0];
-			code += '<td><span style="margin-top:-15px; color: white;" class="link" onclick="oui_query_full_vendor(\'' + client[0] +'\');overlib_str_tmp=\''+ overlib_str +'\';return overlib(\''+ overlib_str +'\');" onmouseout="nd();" style="cursor:pointer; text-decoration:underline;">'+ client[0] +'</span>';
+			mac = client[0];
+			overlib_str = "<p><#MAC_Address#>:</p>" + mac;
+			code += '<td><span style="margin-top:-15px; color: white;" class="link" onclick="oui_query_full_vendor(\'' + mac +'\');overlib_str_tmp=\''+ overlib_str +'\';return overlib(\''+ overlib_str +'\');" onmouseout="nd();" style="cursor:pointer; text-decoration:underline;">'+ mac +'</span>';
 
-			if (client[2].length > 24) {		// Name
-				code +='<br><span style="margin-top:-15px; color: cyan;" title="' + client[2] + '">'+ client[2].substring(0,20) +'...</span></td>';
-			} else {
-				code +='<br><span style="margin-top:-15px; color: cyan;">'+ htmlEnDeCode.htmlEncode(client[2]) +'</span></td>';
+			if (typeof clientList[mac] === "undefined")
+				nmapentry = false;
+			else
+				nmapentry = true;
+
+			hostname = client[2];	// Name
+			if (nmapentry && hostname == "<unknown>") {
+				if (clientList[mac].nickName != "")
+					hostname = clientList[mac].nickName;
+				else if (clientList[mac].name != "")
+					hostname = clientList[mac].name;
 			}
 
-			code += '<td style="vertical-align: top;">' + htmlEnDeCode.htmlEncode(client[1]);	// IPv4
+			if (hostname.length > 24) {		// Name
+				code +='<br><span style="margin-top:-15px; color: cyan;" title="' + hostname + '">'+ hostname.substring(0,20) +'...</span></td>';
+			} else {
+				code +='<br><span style="margin-top:-15px; color: cyan;">'+ htmlEnDeCode.htmlEncode(hostname) +'</span></td>';
+			}
+
+			ipaddr = client[1];
+			if (nmapentry && ipaddr == "<unknown>") {
+				if (clientList[mac].ip != "")
+					ipaddr = clientList[mac].ip;
+			}
+			code += '<td style="vertical-align: top;">' + htmlEnDeCode.htmlEncode(ipaddr);	// IPv4
 			code += '<br><span style="margin-top:-15px; color: cyan;">'+ client[3] +'</span></td>';	// IPv6
 
 

@@ -234,7 +234,7 @@ function show_etherstate(){
 				overlib_str = "<p><#MAC_Address#>:</p>" + devicemac;
 
 				if (clientList[devicemac])
-					hostname = (clientList[devicemac].nickName == "") ? clientList[devicemac].hostname : clientList[devicemac].nickName;
+					hostname = (clientList[devicemac].nickName == "") ? clientList[devicemac].name : clientList[devicemac].nickName;
 
 				if ((typeof hostname !== 'undefined') && (hostname != "")) {
 					devicename = '<span class="ClientName" onclick="oui_query_full_vendor(\'' + devicemac +'\');;overlib_str_tmp=\''+ overlib_str +'\';return overlib(\''+ overlib_str +'\');" onmouseout="nd();" style="cursor:pointer; text-decoration:underline;">'+ hostname +'</span>';

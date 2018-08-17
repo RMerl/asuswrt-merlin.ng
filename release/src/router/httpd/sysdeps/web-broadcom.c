@@ -5796,9 +5796,9 @@ sta_list:
 			}
 		}
 	}
-	ret += websWrite(wp, "\"-1\"];");
 	/* error/exit */
 exit:
+	ret += websWrite(wp, "\"-1\"];");
 	if (auth) free(auth);
 	if (arplist) free(arplist);
 	if (leaselist) free(leaselist);

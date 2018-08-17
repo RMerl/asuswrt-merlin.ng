@@ -16,9 +16,15 @@ General changes in the 384/NG branch vs 380.xx:
 384.7 (xx-xxx-xxxx)
   - NEW: Merged with GPL 384_21152.
   - NEW: Display DFS channel info on Wireless Log page.
+  - NEW: Added option to disable checks on unsigned DNSSEC replies.
+         Disabling these will speed up lookups, but it will also
+         remove part of the security benefits of DNSSEC.
   - CHANGED: Updated dnsmasq to v2.80test3 (themiron).
   - CHANGED: Moved DNSFilter to the LAN section, to make it clear
              that it's unrelated to Trend Micro's engine.
+  - CHANGED: Report hostname and IP on Wireless Log page if the
+             info is missing from dnsmasq but available from
+             networkmap.
   - FIXED: Invalid dnsmasq config when setting DNSFilter to Router
            mode and having IPv6 enabled (themiron).
 

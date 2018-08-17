@@ -15,7 +15,7 @@
  * MA 02111-1307 USA
  *
  *
- * Copyright 2014-2017 Eric Sauvageau.
+ * Copyright 2014-2018 Eric Sauvageau.
  *
  */
 

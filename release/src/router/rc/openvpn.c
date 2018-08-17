@@ -1,7 +1,7 @@
 /*
 
 	Copyright (C) 2008-2010 Keith Moyer, tomatovpn@keithmoyer.com
-	Portions Copyright (C) 2012-2017 Eric Sauvageau
+	Portions Copyright (C) 2012-2018 Eric Sauvageau
 
 	No part of this file may be used without permission.
 

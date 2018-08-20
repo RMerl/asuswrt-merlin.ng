@@ -303,7 +303,11 @@ void show_ap_properties(const qcsapi_unsigned_int index, const qcsapi_ap_propert
 		strcpy(ssid, "");
 	else{	
 		memset(ssid, 0, sizeof(ssid));
+#if defined(RTCONFIG_UTF8_SSID)
+		char_to_ascii_with_utf8(ssid, params->ap_name_SSID);
+#else
 		char_to_ascii(ssid, params->ap_name_SSID);
+#endif
 	}
 
 	// security and authentication : check wpa_mask and psk_mask
@@ -772,7 +776,6 @@ int get_tx_power_qtn(void)
 	return 23;
 }
 
-typedef uint16 chanspec_t;
 extern uint8 wf_chspec_ctlchan(chanspec_t chspec);
 extern chanspec_t wf_chspec_aton(const char *a);
 
@@ -1039,10 +1042,6 @@ int gen_rpc_qcsapi_ip(void)
 		fclose(fp_qcsapi_conf);
 		logmessage("qcsapi", "write qcsapi conf ok");
 	}
-
-#if 0
-	do_ping_detect(); /* refer wanduck.c */
-#endif
 }
 
 #if defined(RTCONFIG_JFFS2ND_BACKUP)

@@ -819,7 +819,7 @@ struct dhcp_lease *lease6_allocate(struct in6_addr *addrp, int lease_type)
 
   if (lease)
     {
-      lease->addr6 = *addrp;
+      memcpy(&lease->addr6, addrp, IN6ADDRSZ);
       lease->flags |= lease_type;
       lease->iaid = 0;
     }

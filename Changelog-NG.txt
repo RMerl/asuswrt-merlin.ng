@@ -15,6 +15,7 @@ General changes in the 384/NG branch vs 380.xx:
 
 384.7 (xx-xxx-xxxx)
   - NEW: Merged with GPL 384_21152.
+  - NEW: Merged RT-AC87U binary blobs + SDK from 382_50702.
   - NEW: Display DFS channel info on Wireless Log page.
   - NEW: Added option to disable checks on unsigned DNSSEC replies.
          Disabling these will speed up lookups, but it will also
@@ -27,7 +28,8 @@ General changes in the 384/NG branch vs 380.xx:
              networkmap.
   - FIXED: Invalid dnsmasq config when setting DNSFilter to Router
            mode and having IPv6 enabled (themiron).
-
+  - FIXED: dnsmasq crashing on RT-AC86U with IPv6 Stateful mode
+           (themiron)
 
 
 384.6 (25-July-2018)

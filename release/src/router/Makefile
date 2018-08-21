@@ -6923,6 +6923,10 @@ libnfnetlink: libnfnetlink/stamp-h1
 	@$(SEP)
 	$(MAKE) -C libnfnetlink
 
+libnfnetlink-clean:
+	-@$(MAKE) -C libnfnetlink distclean
+	@rm -f libnfnetlink/stamp-h1
+
 libnfnetlink-install:
 	install -D libnfnetlink/src/.libs/libnfnetlink.so.0.2.0 $(INSTALLDIR)/libnfnetlink/usr/lib/libnfnetlink.so.0.2.0
 	$(STRIP) -s $(INSTALLDIR)/libnfnetlink/usr/lib/libnfnetlink.so.0.2.0

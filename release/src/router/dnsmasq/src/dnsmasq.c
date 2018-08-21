@@ -824,7 +824,7 @@ int main (int argc, char **argv)
       if (daemon->resolv_files && !daemon->resolv_files->is_default)
 	my_syslog(LOG_WARNING, _("warning: ignoring resolv-file flag because no-resolv is set"));
       daemon->resolv_files = NULL;
-      if (!daemon->servers)
+      if (!daemon->servers && !daemon->servers_file)
 	my_syslog(LOG_WARNING, _("warning: no upstream servers configured"));
     } 
 

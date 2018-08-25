@@ -53,6 +53,7 @@ top?=$(CURDIR)
 
 dbus_cflags =   `echo $(COPTS) | $(top)/bld/pkg-wrapper HAVE_DBUS $(PKG_CONFIG) --cflags dbus-1` 
 dbus_libs =     `echo $(COPTS) | $(top)/bld/pkg-wrapper HAVE_DBUS $(PKG_CONFIG) --libs dbus-1` 
+ubus_libs =     `echo $(COPTS) | $(top)/bld/pkg-wrapper HAVE_UBUS $(PKG_CONFIG) --copy -lubox -lubus`
 idn_cflags =    `echo $(COPTS) | $(top)/bld/pkg-wrapper HAVE_IDN $(PKG_CONFIG) --cflags libidn` 
 idn_libs =      `echo $(COPTS) | $(top)/bld/pkg-wrapper HAVE_IDN $(PKG_CONFIG) --libs libidn` 
 idn2_cflags =   `echo $(COPTS) | $(top)/bld/pkg-wrapper HAVE_LIBIDN2 $(PKG_CONFIG) --cflags libidn2`
@@ -76,16 +77,16 @@ objs = cache.o rfc1035.o util.o option.o forward.o network.o \
        helper.o tftp.o log.o conntrack.o dhcp6.o rfc3315.o \
        dhcp-common.o outpacket.o radv.o slaac.o auth.o ipset.o \
        domain.o dnssec.o blockdata.o tables.o loop.o inotify.o \
-       poll.o rrfilter.o edns0.o arp.o crypto.o dump.o
+       poll.o rrfilter.o edns0.o arp.o crypto.o dump.o ubus.o metrics.o
 
 hdrs = dnsmasq.h config.h dhcp-protocol.h dhcp6-protocol.h \
-       dns-protocol.h radv-protocol.h ip6addr.h
+       dns-protocol.h radv-protocol.h ip6addr.h metrics.h
 
 all : $(BUILDDIR)
 	@cd $(BUILDDIR) && $(MAKE) \
  top="$(top)" \
  build_cflags="$(version) $(dbus_cflags) $(idn2_cflags) $(idn_cflags) $(ct_cflags) $(lua_cflags) $(nettle_cflags)" \
- build_libs="$(dbus_libs) $(idn2_libs) $(idn_libs) $(ct_libs) $(lua_libs) $(sunos_libs) $(nettle_libs) $(gmp_libs)" \
+ build_libs="$(dbus_libs) $(idn2_libs) $(idn_libs) $(ct_libs) $(lua_libs) $(sunos_libs) $(nettle_libs) $(gmp_libs) $(ubus_libs)" \
  -f $(top)/Makefile dnsmasq 
 
 mostly_clean :

@@ -103,7 +103,7 @@ size_t answer_auth(struct dns_header *header, char *limit, size_t qlen, time_t n
 {
   char *name = daemon->namebuff;
   unsigned char *p, *ansp;
-  int qtype, qclass;
+  int qtype, qclass, rc;
   int nameoffset, axfroffset = 0;
   int q, anscount = 0, authcount = 0;
   struct crec *crecp;
@@ -283,11 +283,11 @@ size_t answer_auth(struct dns_header *header, char *limit, size_t qlen, time_t n
 	}
 
       for (rec = daemon->mxnames; rec; rec = rec->next)
-	if (!rec->issrv && hostname_isequal(name, rec->name))
+	if (!rec->issrv && (rc = hostname_issubdomain(name, rec->name)))
 	  {
 	    nxdomain = 0;
 	         
-	    if (qtype == T_MX)
+	    if (rc == 2 && qtype == T_MX)
 	      {
 		found = 1;
 		log_query(F_CONFIG | F_RRNAME, name, NULL, "<MX>"); 
@@ -298,11 +298,11 @@ size_t answer_auth(struct dns_header *header, char *limit, size_t qlen, time_t n
 	  }
       
       for (move = NULL, up = &daemon->mxnames, rec = daemon->mxnames; rec; rec = rec->next)
-	if (rec->issrv && hostname_isequal(name, rec->name))
+	if (rec->issrv && (rc = hostname_issubdomain(name, rec->name)))
 	  {
 	    nxdomain = 0;
 	    
-	    if (qtype == T_SRV)
+	    if (rc == 2 && qtype == T_SRV)
 	      {
 		found = 1;
 		log_query(F_CONFIG | F_RRNAME, name, NULL, "<SRV>"); 
@@ -333,13 +333,13 @@ size_t answer_auth(struct dns_header *header, char *limit, size_t qlen, time_t n
 	}
 
       for (txt = daemon->rr; txt; txt = txt->next)
-	if (hostname_isequal(name, txt->name))
+	if ((rc = hostname_issubdomain(name, txt->name)))
 	  {
 	    nxdomain = 0;
-	    if (txt->class == qtype)
+	    if (rc == 2 && txt->class == qtype)
 	      {
 		found = 1;
-		log_query(F_CONFIG | F_RRNAME, name, NULL, "<RR>"); 
+		log_query(F_CONFIG | F_RRNAME, name, NULL, querystr(NULL, txt->class)); 
 		if (add_resource_record(header, limit, &trunc, nameoffset, &ansp, daemon->auth_ttl,
 					NULL, txt->class, C_IN, "t", txt->len, txt->txt))
 		  anscount++;
@@ -347,10 +347,10 @@ size_t answer_auth(struct dns_header *header, char *limit, size_t qlen, time_t n
 	  }
       
       for (txt = daemon->txt; txt; txt = txt->next)
-	if (txt->class == C_IN && hostname_isequal(name, txt->name))
+	if (txt->class == C_IN && (rc = hostname_issubdomain(name, txt->name)))
 	  {
 	    nxdomain = 0;
-	    if (qtype == T_TXT)
+	    if (rc == 2 && qtype == T_TXT)
 	      {
 		found = 1;
 		log_query(F_CONFIG | F_RRNAME, name, NULL, "<TXT>"); 
@@ -361,10 +361,10 @@ size_t answer_auth(struct dns_header *header, char *limit, size_t qlen, time_t n
 	  }
 
        for (na = daemon->naptr; na; na = na->next)
-	 if (hostname_isequal(name, na->name))
+	 if ((rc = hostname_issubdomain(name, na->name)))
 	   {
 	     nxdomain = 0;
-	     if (qtype == T_NAPTR)
+	     if (rc == 2 && qtype == T_NAPTR)
 	       {
 		 found = 1;
 		 log_query(F_CONFIG | F_RRNAME, name, NULL, "<NAPTR>");
@@ -384,13 +384,13 @@ size_t answer_auth(struct dns_header *header, char *limit, size_t qlen, time_t n
 #endif
        
        for (intr = daemon->int_names; intr; intr = intr->next)
-	 if (hostname_isequal(name, intr->name))
+	 if ((rc = hostname_issubdomain(name, intr->name)))
 	   {
 	     struct addrlist *addrlist;
 	     
 	     nxdomain = 0;
 	     
-	     if (flag)
+	     if (rc == 2 && flag)
 	       for (addrlist = intr->addr; addrlist; addrlist = addrlist->next)  
 		 if (((addrlist->flags & ADDRLIST_IPV6)  ? T_AAAA : T_A) == qtype &&
 		     (local_query || filter_zone(zone, flag, &addrlist->addr)))
@@ -567,6 +567,8 @@ size_t answer_auth(struct dns_header *header, char *limit, size_t qlen, time_t n
 	      
 	      goto cname_restart;
 	    }
+	  else if (cache_find_non_terminal(name, now))
+	    nxdomain = 0;
 
 	  log_query(flag | F_NEG | (nxdomain ? F_NXDOMAIN : 0) | F_FORWARD | F_AUTH, name, NULL, NULL);
 	}

@@ -57,6 +57,7 @@
 
 #include "config.h"
 #include "ip6addr.h"
+#include "metrics.h"
 
 typedef unsigned char u8;
 typedef unsigned short u16;
@@ -254,7 +255,8 @@ struct event_desc {
 #define OPT_MAC_HEX        55
 #define OPT_TFTP_APREF_MAC 56
 #define OPT_RAPID_COMMIT   57
-#define OPT_LAST           58
+#define OPT_UBUS           58
+#define OPT_LAST           59
 
 /* extra flags for my_syslog, we use a couple of facilities since they are known 
    not to occupy the same bits as priorities, no matter how syslog.h is set up. */
@@ -820,6 +822,13 @@ struct dhcp_boot {
   struct dhcp_boot *next;
 };
 
+struct dhcp_match_name {
+  char *name;
+  int wildcard;
+  struct dhcp_netid *netid;
+  struct dhcp_match_name *next;
+};
+
 struct pxe_service {
   unsigned short CSA, type; 
   char *menu, *basename, *sname;
@@ -1012,6 +1021,7 @@ extern struct daemon {
   struct ra_interface *ra_interfaces;
   struct dhcp_config *dhcp_conf;
   struct dhcp_opt *dhcp_opts, *dhcp_match, *dhcp_opts6, *dhcp_match6;
+  struct dhcp_match_name *dhcp_name_match;
   struct dhcp_vendor *dhcp_vendors;
   struct dhcp_mac *dhcp_macs;
   struct dhcp_boot *boot_config;
@@ -1040,6 +1050,7 @@ extern struct daemon {
   char *dump_file;
   int dump_mask;
   unsigned long soa_sn, soa_refresh, soa_retry, soa_expiry;
+  u32 metrics[__METRIC_MAX];
 #ifdef OPTION6_PREFIX_CLASS 
   struct prefix_class *prefix_classes;
 #endif
@@ -1060,7 +1071,6 @@ extern struct daemon {
   int dnssec_no_time_check;
   int back_to_the_future;
 #endif
-  unsigned int local_answer, queries_forwarded, auth_answer;
   struct frec *frec_list;
   struct serverfd *sfds;
   struct irec *interfaces;
@@ -1125,6 +1135,7 @@ void next_uid(struct crec *crecp);
 void log_query(unsigned int flags, char *name, struct all_addr *addr, char *arg); 
 char *record_source(unsigned int index);
 char *querystr(char *desc, unsigned short type);
+int cache_find_non_terminal(char *name, time_t now);
 struct crec *cache_find_by_addr(struct crec *crecp,
 				struct all_addr *addr, time_t now, 
 				unsigned int prot);
@@ -1241,6 +1252,7 @@ void *whine_malloc(size_t size);
 int sa_len(union mysockaddr *addr);
 int sockaddr_isequal(union mysockaddr *s1, union mysockaddr *s2);
 int hostname_isequal(const char *a, const char *b);
+int hostname_issubdomain(char *a, char *b);
 time_t dnsmasq_time(void);
 int netmask_length(struct in_addr mask);
 int is_same_net(struct in_addr a, struct in_addr b, struct in_addr mask);
@@ -1447,6 +1459,13 @@ void set_dbus_listeners(void);
 #  ifdef HAVE_DHCP
 void emit_dbus_signal(int action, struct dhcp_lease *lease, char *hostname);
 #  endif
+#endif
+
+/* ubus.c */
+#ifdef HAVE_UBUS
+void set_ubus_listeners(void);
+void check_ubus_listeners(void);
+void ubus_event_bcast(const char *type, const char *mac, const char *ip, const char *name, const char *interface);
 #endif
 
 /* ipset.c */

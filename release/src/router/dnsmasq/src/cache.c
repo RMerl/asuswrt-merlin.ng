@@ -21,9 +21,11 @@ static struct crec *cache_head = NULL, *cache_tail = NULL, **hash_table = NULL;
 static struct crec *dhcp_spare = NULL;
 #endif
 static struct crec *new_chain = NULL;
-static int cache_inserted = 0, cache_live_freed = 0, insert_error;
+static int insert_error;
 static union bigname *big_free = NULL;
 static int bignames_left, hash_size;
+
+static void make_non_terminals(struct crec *source);
 
 /* type->string mapping: this is also used by the name-hash function as a mixing table. */
 static const struct {
@@ -68,7 +70,8 @@ static const struct {
   { 252, "AXFR" },
   { 253, "MAILB" },
   { 254, "MAILA" },
-  { 255, "ANY" }
+  { 255, "ANY" },
+  { 257, "CAA" }
 };
 
 static void cache_free(struct crec *crecp);
@@ -556,7 +559,7 @@ struct crec *cache_insert(char *name, struct all_addr *addr,
 	  
 	  free_avail = 1; /* Must be free space now. */
 	  cache_scan_free(cache_get_name(new), &free_addr, now, new->flags, NULL, NULL);
-	  cache_live_freed++;
+	  daemon->metrics[METRIC_DNS_CACHE_LIVE_FREED]++;
 	}
       else
 	{
@@ -641,11 +644,25 @@ void cache_end_insert(void)
 	{
 	  cache_hash(new_chain);
 	  cache_link(new_chain);
-	  cache_inserted++;
+	  daemon->metrics[METRIC_DNS_CACHE_INSERTED]++;
 	}
       new_chain = tmp;
     }
   new_chain = NULL;
+}
+
+int cache_find_non_terminal(char *name, time_t now)
+{
+  struct crec *crecp;
+
+  for (crecp = *hash_bucket(name); crecp; crecp = crecp->hash_next)
+    if (!is_outdated_cname_pointer(crecp) &&
+	!is_expired(now, crecp) &&
+	(crecp->flags & F_FORWARD) &&
+	hostname_isequal(name, cache_get_name(crecp)))
+      return 1;
+
+  return 0;
 }
 
 struct crec *cache_find_by_name(struct crec *crecp, char *name, time_t now, unsigned int prot)
@@ -818,6 +835,8 @@ static void add_hosts_cname(struct crec *target)
 	crec->addr.cname.uid = target->uid;
 	crec->uid = UID_NONE;
 	cache_hash(crec);
+	make_non_terminals(crec);
+	
 	add_hosts_cname(crec); /* handle chains */
       }
 }
@@ -889,6 +908,7 @@ static void add_hosts_entry(struct crec *cache, struct all_addr *addr, int addrl
   cache->uid = index;
   memcpy(&cache->addr.addr, addr, addrlen);  
   cache_hash(cache);
+  make_non_terminals(cache);
   
   /* don't need to do alias stuff for second and subsequent addresses. */
   if (!nameexists)
@@ -1059,7 +1079,8 @@ void cache_reload(void)
   struct ds_config *ds;
 #endif
 
-  cache_inserted = cache_live_freed = 0;
+  daemon->metrics[METRIC_DNS_CACHE_INSERTED] = 0;
+  daemon->metrics[METRIC_DNS_CACHE_LIVE_FREED] = 0;
   
   for (i=0; i<hash_size; i++)
     for (cache = hash_table[i], up = &hash_table[i]; cache; cache = tmp)
@@ -1101,6 +1122,7 @@ void cache_reload(void)
 	  cache->addr.cname.uid = SRC_INTERFACE;
 	  cache->uid = UID_NONE;
 	  cache_hash(cache);
+	  make_non_terminals(cache);
 	  add_hosts_cname(cache); /* handle chains */
 	}
 
@@ -1118,6 +1140,7 @@ void cache_reload(void)
 	cache->addr.ds.digest = ds->digest_type;
 	cache->uid = ds->class;
 	cache_hash(cache);
+	make_non_terminals(cache);
       }
 #endif
   
@@ -1233,6 +1256,7 @@ static void add_dhcp_cname(struct crec *target, time_t ttd)
 	    aliasc->addr.cname.uid = target->uid;
 	    aliasc->uid = UID_NONE;
 	    cache_hash(aliasc);
+	    make_non_terminals(aliasc);
 	    add_dhcp_cname(aliasc, ttd);
 	  }
       }
@@ -1321,11 +1345,103 @@ void cache_add_dhcp_entry(char *host_name, int prot,
       crec->name.namep = host_name;
       crec->uid = UID_NONE;
       cache_hash(crec);
+      make_non_terminals(crec);
 
       add_dhcp_cname(crec, ttd);
     }
 }
 #endif
+
+/* Called when we put a local or DHCP name into the cache.
+   Creates empty cache entries for subnames (ie,
+   for three.two.one, for two.one and one), without
+   F_IPV4 or F_IPV6 or F_CNAME set. These convert
+   NXDOMAIN answers to NoData ones. */
+static void make_non_terminals(struct crec *source)
+{
+  char *name = cache_get_name(source);
+  struct crec* crecp, *tmp, **up;
+  int type = F_HOSTS | F_CONFIG;
+#ifdef HAVE_DHCP
+  if (source->flags & F_DHCP)
+    type = F_DHCP;
+#endif
+  
+  /* First delete any empty entries for our new real name. Note that
+     we only delete empty entries deriving from DHCP for a new DHCP-derived
+     entry and vice-versa for HOSTS and CONFIG. This ensures that 
+     non-terminals from DHCP go when we reload DHCP and 
+     for HOSTS/CONFIG when we re-read. */
+  for (up = hash_bucket(name), crecp = *up; crecp; crecp = tmp)
+    {
+      tmp = crecp->hash_next;
+
+      if (!is_outdated_cname_pointer(crecp) &&
+	  (crecp->flags & F_FORWARD) &&
+	  (crecp->flags & type) &&
+	  !(crecp->flags & (F_IPV4 | F_IPV6 | F_CNAME | F_DNSKEY | F_DS)) && 
+	  hostname_isequal(name, cache_get_name(crecp)))
+	{
+	  *up = crecp->hash_next;
+#ifdef HAVE_DHCP
+	  if (type & F_DHCP)
+	    {
+	      crecp->next = dhcp_spare;
+	      dhcp_spare = crecp;
+	    }
+	  else
+#endif
+	    free(crecp);
+	  break;
+	}
+      else
+	 up = &crecp->hash_next;
+    }
+     
+  while ((name = strchr(name, '.')))
+    {
+      name++;
+
+      /* Look for one existing, don't need another */
+      for (crecp = *hash_bucket(name); crecp; crecp = crecp->hash_next)
+	if (!is_outdated_cname_pointer(crecp) &&
+	    (crecp->flags & F_FORWARD) &&
+	    (crecp->flags & type) &&
+	    hostname_isequal(name, cache_get_name(crecp)))
+	  break;
+      
+      if (crecp)
+	{
+	  /* If the new name expires later, transfer that time to
+	     empty non-terminal entry. */
+	  if (!(crecp->flags & F_IMMORTAL))
+	    {
+	      if (source->flags & F_IMMORTAL)
+		crecp->flags |= F_IMMORTAL;
+	      else if (difftime(crecp->ttd, source->ttd) < 0)
+		crecp->ttd = source->ttd;
+	    }
+	  continue;
+	}
+      
+#ifdef HAVE_DHCP
+      if ((source->flags & F_DHCP) && dhcp_spare)
+	{
+	  crecp = dhcp_spare;
+	  dhcp_spare = dhcp_spare->next;
+	}
+      else
+#endif
+	crecp = whine_malloc(sizeof(struct crec));
+
+      *crecp = *source;
+      crecp->flags &= ~(F_IPV4 | F_IPV6 | F_CNAME | F_DNSKEY | F_DS | F_REVERSE);
+      crecp->flags |= F_NAMEP;
+      crecp->name.namep = name;
+
+      cache_hash(crecp);
+    }
+}
 
 #ifndef NO_ID
 int cache_make_stat(struct txt_record *t)
@@ -1348,24 +1464,24 @@ int cache_make_stat(struct txt_record *t)
       break;
 
     case TXT_STAT_INSERTS:
-      sprintf(buff+1, "%d", cache_inserted);
+      sprintf(buff+1, "%d", daemon->metrics[METRIC_DNS_CACHE_INSERTED]);
       break;
 
     case TXT_STAT_EVICTIONS:
-      sprintf(buff+1, "%d", cache_live_freed);
+      sprintf(buff+1, "%d", daemon->metrics[METRIC_DNS_CACHE_LIVE_FREED]);
       break;
 
     case TXT_STAT_MISSES:
-      sprintf(buff+1, "%u", daemon->queries_forwarded);
+      sprintf(buff+1, "%u", daemon->metrics[METRIC_DNS_QUERIES_FORWARDED]);
       break;
 
     case TXT_STAT_HITS:
-      sprintf(buff+1, "%u", daemon->local_answer);
+      sprintf(buff+1, "%u", daemon->metrics[METRIC_DNS_LOCAL_ANSWERED]);
       break;
 
 #ifdef HAVE_AUTH
     case TXT_STAT_AUTH:
-      sprintf(buff+1, "%u", daemon->auth_answer);
+      sprintf(buff+1, "%u", daemon->metrics[METRIC_DNS_AUTH_ANSWERED]);
       break;
 #endif
 
@@ -1442,15 +1558,14 @@ static char *sanitise(char *name)
 void dump_cache(time_t now)
 {
   struct server *serv, *serv1;
-  char *t = "";
 
   my_syslog(LOG_INFO, _("time %lu"), (unsigned long)now);
   my_syslog(LOG_INFO, _("cache size %d, %d/%d cache insertions re-used unexpired cache entries."), 
-	    daemon->cachesize, cache_live_freed, cache_inserted);
+	    daemon->cachesize, daemon->metrics[METRIC_DNS_CACHE_LIVE_FREED], daemon->metrics[METRIC_DNS_CACHE_INSERTED]);
   my_syslog(LOG_INFO, _("queries forwarded %u, queries answered locally %u"), 
-	    daemon->queries_forwarded, daemon->local_answer);
+	    daemon->metrics[METRIC_DNS_QUERIES_FORWARDED], daemon->metrics[METRIC_DNS_LOCAL_ANSWERED]);
 #ifdef HAVE_AUTH
-  my_syslog(LOG_INFO, _("queries for authoritative zones %u"), daemon->auth_answer);
+  my_syslog(LOG_INFO, _("queries for authoritative zones %u"), daemon->metrics[METRIC_DNS_AUTH_ANSWERED]);
 #endif
 #ifdef HAVE_DNSSEC
   blockdata_report();
@@ -1488,6 +1603,7 @@ void dump_cache(time_t now)
       for (i=0; i<hash_size; i++)
 	for (cache = hash_table[i]; cache; cache = cache->hash_next)
 	  {
+	    char *t = " ";
 	    char *a = daemon->addrbuff, *p = daemon->namebuff, *n = cache_get_name(cache);
 	    *a = 0;
 	    if (strlen(n) == 0 && !(cache->flags & F_REVERSE))
@@ -1588,9 +1704,13 @@ char *querystr(char *desc, unsigned short type)
 	break;
       }
 
-  len += 3; /* braces, terminator */
-  len += strlen(desc);
-
+  if (desc)
+    {
+       len += 2; /* braces */
+       len += strlen(desc);
+    }
+  len++; /* terminator */
+  
   if (!buff || bufflen < len)
     {
       if (buff)
@@ -1604,12 +1724,22 @@ char *querystr(char *desc, unsigned short type)
 
   if (buff)
     {
-      if (types)
-	sprintf(buff, "%s[%s]", desc, types);
+      if (desc)
+	{
+	  if (types)
+	    sprintf(buff, "%s[%s]", desc, types);
+	  else
+	    sprintf(buff, "%s[type=%d]", desc, type);
+	}
       else
-	sprintf(buff, "%s[type=%d]", desc, type);
+	{
+	  if (types)
+	    sprintf(buff, "<%s>", types);
+	  else
+	    sprintf(buff, "type=%d", type);
+	}
     }
-
+  
   return buff ? buff : "";
 }
 

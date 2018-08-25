@@ -216,7 +216,7 @@ int main (int argc, char **argv)
 #endif
 
 #ifndef HAVE_AUTH
-  if (daemon->authserver)
+  if (daemon->authserver || daemon->auth_zones)
     die(_("authoritative DNS not available: set HAVE_AUTH in src/config.h"), NULL, EC_BADCONF);
 #endif
 
@@ -225,13 +225,18 @@ int main (int argc, char **argv)
     die(_("loop detection not available: set HAVE_LOOP in src/config.h"), NULL, EC_BADCONF);
 #endif
 
+#ifndef HAVE_UBUS
+  if (option_bool(OPT_UBUS))
+    die(_("Ubus not available: set HAVE_UBUS in src/config.h"), NULL, EC_BADCONF);
+#endif
+  
   if (daemon->max_port < daemon->min_port)
     die(_("max_port cannot be smaller than min_port"), NULL, EC_BADCONF);
 
   now = dnsmasq_time();
 
   /* Create a serial at startup if not configured. */
-  if (daemon->authinterface && daemon->soa_sn == 0)
+  if (daemon->auth_zones && daemon->soa_sn == 0)
 #ifdef HAVE_BROKEN_RTC
     die(_("zone serial must be configured in --auth-soa"), NULL, EC_BADCONF);
 #else
@@ -947,8 +952,13 @@ int main (int argc, char **argv)
 
 #ifdef HAVE_DBUS
       set_dbus_listeners();
-#endif	
-  
+#endif
+
+#ifdef HAVE_UBUS
+      if (option_bool(OPT_UBUS))
+	  set_ubus_listeners();
+#endif
+	  
 #ifdef HAVE_DHCP
       if (daemon->dhcp || daemon->relay4)
 	{
@@ -1078,7 +1088,12 @@ int main (int argc, char **argv)
 	}
       check_dbus_listeners();
 #endif
-      
+
+#ifdef HAVE_UBUS
+      if (option_bool(OPT_UBUS))
+        check_ubus_listeners();
+#endif
+
       check_dns_listeners(now);
 
 #ifdef HAVE_TFTP

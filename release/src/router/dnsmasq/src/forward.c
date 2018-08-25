@@ -1554,7 +1554,7 @@ void receive_query(struct listener *listen, time_t now)
 	{
 	  send_from(listen->fd, option_bool(OPT_NOWILD) || option_bool(OPT_CLEVERBIND),
 		    (char *)header, m, &source_addr, &dst_addr, if_index);
-	  daemon->auth_answer++;
+	  daemon->metrics[METRIC_DNS_AUTH_ANSWERED]++;
 	}
     }
   else
@@ -1572,13 +1572,13 @@ void receive_query(struct listener *listen, time_t now)
 	{
 	  send_from(listen->fd, option_bool(OPT_NOWILD) || option_bool(OPT_CLEVERBIND),
 		    (char *)header, m, &source_addr, &dst_addr, if_index);
-	  daemon->local_answer++;
+	  daemon->metrics[METRIC_DNS_LOCAL_ANSWERED]++;
 	}
       else if (forward_query(listen->fd, &source_addr, &dst_addr, if_index,
 			     header, (size_t)n, now, NULL, ad_reqd, do_bit))
-	daemon->queries_forwarded++;
+	daemon->metrics[METRIC_DNS_QUERIES_FORWARDED]++;
       else
-	daemon->local_answer++;
+	daemon->metrics[METRIC_DNS_LOCAL_ANSWERED]++;
     }
 }
 

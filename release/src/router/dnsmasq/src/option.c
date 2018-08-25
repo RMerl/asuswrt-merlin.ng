@@ -163,6 +163,9 @@ struct myoption {
 #define LOPT_RAPID_COMMIT  351
 #define LOPT_DUMPFILE      352
 #define LOPT_DUMPMASK      353
+#define LOPT_UBUS          354
+#define LOPT_NAME_MATCH    355
+#define LOPT_CAA           356
  
 #ifdef HAVE_GETOPT_LONG
 static const struct option opts[] =  
@@ -231,8 +234,10 @@ static const struct myoption opts[] =
     { "srv-host", 1, 0, 'W' },
     { "localise-queries", 0, 0, 'y' },
     { "txt-record", 1, 0, 'Y' },
+    { "caa-record", 1, 0 , LOPT_CAA },
     { "dns-rr", 1, 0, LOPT_RR },
     { "enable-dbus", 2, 0, '1' },
+    { "enable-ubus", 0, 0, LOPT_UBUS },
     { "bootp-dynamic", 2, 0, '3' },
     { "dhcp-mac", 1, 0, '4' },
     { "no-ping", 0, 0, '5' },
@@ -271,7 +276,8 @@ static const struct myoption opts[] =
     { "stop-dns-rebind", 0, 0, LOPT_REBIND },
     { "rebind-domain-ok", 1, 0, LOPT_NO_REBIND },
     { "all-servers", 0, 0, LOPT_NOLAST }, 
-    { "dhcp-match", 1, 0, LOPT_MATCH }, 
+    { "dhcp-match", 1, 0, LOPT_MATCH },
+    { "dhcp-name-match", 1, 0, LOPT_NAME_MATCH },
     { "dhcp-broadcast", 2, 0, LOPT_BROADCAST },
     { "neg-ttl", 1, 0, LOPT_NEGTTL },
     { "max-ttl", 1, 0, LOPT_MAXTTL },
@@ -420,6 +426,7 @@ static struct {
   { 'z', OPT_NOWILD, NULL, gettext_noop("Bind only to interfaces in use."), NULL },
   { 'Z', OPT_ETHERS, NULL, gettext_noop("Read DHCP static host information from %s."), ETHERSFILE },
   { '1', ARG_ONE, "[=<busname>]", gettext_noop("Enable the DBus interface for setting upstream servers, etc."), NULL },
+  { LOPT_UBUS, OPT_UBUS, NULL, gettext_noop("Enable the UBus interface."), NULL },
   { '2', ARG_DUP, "<interface>", gettext_noop("Do not provide DHCP on this interface, only provide DNS."), NULL },
   { '3', ARG_DUP, "[=tag:<tag>]...", gettext_noop("Enable dynamic address allocation for bootp."), NULL },
   { '4', ARG_DUP, "set:<tag>,<mac address>", gettext_noop("Map MAC address (with wildcards) to option set."), NULL },
@@ -453,6 +460,7 @@ static struct {
   { LOPT_NO_REBIND, ARG_DUP, "/<domain>/", gettext_noop("Inhibit DNS-rebind protection on this domain."), NULL },
   { LOPT_NOLAST, OPT_ALL_SERVERS, NULL, gettext_noop("Always perform DNS queries to all servers."), NULL },
   { LOPT_MATCH, ARG_DUP, "set:<tag>,<optspec>", gettext_noop("Set tag if client includes matching option in request."), NULL },
+  { LOPT_NAME_MATCH, ARG_DUP, "set:<tag>,<string>[*]", gettext_noop("Set tag if client provides given name."), NULL },
   { LOPT_ALTPORT, ARG_ONE, "[=<ports>]", gettext_noop("Use alternative ports for DHCP."), NULL },
   { LOPT_NAPTR, ARG_DUP, "<name>,<naptr>", gettext_noop("Specify NAPTR DNS record."), NULL },
   { LOPT_MINPORT, ARG_ONE, "<port>", gettext_noop("Specify lowest port available for DNS query transmission."), NULL },
@@ -475,6 +483,7 @@ static struct {
   { LOPT_RA, OPT_RA, NULL, gettext_noop("Send router-advertisements for interfaces doing DHCPv6"), NULL },
   { LOPT_DUID, ARG_ONE, "<enterprise>,<duid>", gettext_noop("Specify DUID_EN-type DHCPv6 server DUID"), NULL },
   { LOPT_HOST_REC, ARG_DUP, "<name>,<address>[,<ttl>]", gettext_noop("Specify host (A/AAAA and PTR) records"), NULL },
+  { LOPT_CAA, ARG_DUP, "<name>,<flags>,<tag>,<value>", gettext_noop("Specify certification authority authorization record"), NULL },  
   { LOPT_RR, ARG_DUP, "<name>,<RR-number>,[<data>]", gettext_noop("Specify arbitrary DNS resource record"), NULL },
   { LOPT_CLVERBIND, OPT_CLEVERBIND, NULL, gettext_noop("Bind to interfaces in use - check for new interfaces"), NULL },
   { LOPT_AUTHSERV, ARG_ONE, "<NS>,<interface>", gettext_noop("Export local names to global DNS"), NULL },
@@ -1746,7 +1755,7 @@ static int one_opt(int option, char *arg, char *errstr, char *gen_err, int comma
 #endif
 	}
       break;
-      
+
     case 'x': /* --pid-file */
       daemon->runfile = opt_string_alloc(arg);
       break;
@@ -1892,8 +1901,6 @@ static int one_opt(int option, char *arg, char *errstr, char *gen_err, int comma
 	break;
       }
       
-
-#ifdef HAVE_AUTH
     case LOPT_AUTHSERV: /* --auth-server */
       if (!(comma = split(arg)))
 	ret_err(gen_err);
@@ -2068,7 +2075,6 @@ static int one_opt(int option, char *arg, char *errstr, char *gen_err, int comma
 	}
 
       break;
-#endif
 
     case 's':         /* --domain */
     case LOPT_SYNTH:  /* --synth-domain */
@@ -3286,7 +3292,33 @@ static int one_opt(int option, char *arg, char *errstr, char *gen_err, int comma
 			    option == LOPT_FORCE ? DHOPT_FORCE : 
 			    (option == LOPT_MATCH ? DHOPT_MATCH :
 			     (option == LOPT_OPTS ? DHOPT_BANK : 0)));
-     
+
+    case LOPT_NAME_MATCH: /* --dhcp-name-match */
+      {
+	struct dhcp_match_name *new = opt_malloc(sizeof(struct dhcp_match_name));
+	struct dhcp_netid *id = opt_malloc(sizeof(struct dhcp_netid));
+	ssize_t len;
+	
+	if (!(comma = split(arg)) || (len = strlen(comma)) == 0)
+	  ret_err(gen_err);
+
+	new->wildcard = 0;
+	new->netid = id;
+	id->net = opt_string_alloc(set_prefix(arg));
+
+	if (comma[len-1] == '*')
+	  {
+	    comma[len-1] = 0;
+	    new->wildcard = 1;
+	  }
+	new->name = opt_string_alloc(comma);
+
+	new->next = daemon->dhcp_name_match;
+	daemon->dhcp_name_match = new;
+
+	break;
+      }
+      
     case 'M': /* --dhcp-boot */
       {
 	struct dhcp_netid *id = NULL;
@@ -3973,7 +4005,7 @@ err:
 	
 	if (data)
 	  {
-	    new->txt=opt_malloc(len);
+	    new->txt = opt_malloc(len);
 	    new->len = len;
 	    memcpy(new->txt, data, len);
 	  }
@@ -3981,6 +4013,37 @@ err:
 	break;
       }
 
+    case LOPT_CAA: /* --caa-record */
+      {
+       	struct txt_record *new;
+	char *tag, *value;
+	int flags;
+	
+	comma = split(arg);
+	tag = split(comma);
+	value = split(tag);
+	
+	new = opt_malloc(sizeof(struct txt_record));
+	new->next = daemon->rr;
+	daemon->rr = new;
+
+	if (!atoi_check(comma, &flags) || !tag || !value || !(new->name = canonicalise_opt(arg)))
+	  ret_err(_("bad CAA record"));
+	
+	unhide_metas(tag);
+	unhide_metas(value);
+
+	new->len = strlen(tag) + strlen(value) + 2;
+	new->txt = opt_malloc(new->len);
+	new->txt[0] = flags;
+	new->txt[1] = strlen(tag);
+	memcpy(&new->txt[2], tag, strlen(tag));
+	memcpy(&new->txt[2 + strlen(tag)], value, strlen(value));
+	new->class = T_CAA;
+	
+	break;
+      }
+	
     case 'Y':  /* --txt-record */
       {
 	struct txt_record *new;
@@ -4338,7 +4401,7 @@ static void read_file(char *file, FILE *f, int hard_opt)
       if (errmess)
 	strcpy(daemon->namebuff, errmess);
 	  
-      if (errmess || !one_opt(option, arg, buff, _("error"), 0, hard_opt == LOPT_REV_SERV))
+      if (errmess || !one_opt(option, arg, daemon->namebuff, _("error"), 0, hard_opt == LOPT_REV_SERV))
 	{
 	  sprintf(daemon->namebuff + strlen(daemon->namebuff), _(" at line %d of %s"), lineno, file);
 	  if (hard_opt != 0)

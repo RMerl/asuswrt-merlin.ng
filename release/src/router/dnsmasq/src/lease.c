@@ -589,7 +589,9 @@ void lease_prune(struct dhcp_lease *target, time_t now)
 	  file_dirty = 1;
 	  if (lease->hostname)
 	    dns_dirty = 1;
-	  
+
+	  daemon->metrics[lease->addr.s_addr ? METRIC_LEASES_PRUNED_4 : METRIC_LEASES_PRUNED_6]++;
+
  	  *up = lease->next; /* unlink */
 	  
 	  /* Put on old_leases list 'till we
@@ -807,7 +809,10 @@ struct dhcp_lease *lease4_allocate(struct in_addr addr)
 {
   struct dhcp_lease *lease = lease_allocate();
   if (lease)
-    lease->addr = addr;
+    {
+      lease->addr = addr;
+      daemon->metrics[METRIC_LEASES_ALLOCATED_4]++;
+    }
   
   return lease;
 }
@@ -819,9 +824,11 @@ struct dhcp_lease *lease6_allocate(struct in6_addr *addrp, int lease_type)
 
   if (lease)
     {
-      memcpy(&lease->addr6, addrp, IN6ADDRSZ);
+      lease->addr6 = *addrp;
       lease->flags |= lease_type;
       lease->iaid = 0;
+
+      daemon->metrics[METRIC_LEASES_ALLOCATED_6]++;
     }
 
   return lease;

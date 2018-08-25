@@ -100,6 +100,9 @@ HAVE_DBUS
    support some methods to allow (re)configuration of the upstream DNS 
    servers via DBus.
 
+HAVE_UBUS
+   define this if you want to link against libubus
+
 HAVE_IDN
    define this if you want international domain name 2003 support.
    

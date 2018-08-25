@@ -49,6 +49,10 @@ version 2.80
 	DNS configuration which confused systemd-resolvd. Thanks to
 	Steve Dodd for characterising the problem.
 
+	Add --dhcp-name-match config option. 
+
+	Add --caa-record config option.
+	
 
 version 2.79
 	Fix parsing of CNAME arguments, which are confused by extra spaces.

@@ -76,6 +76,7 @@
 #define T_AXFR          252
 #define T_MAILB		253	
 #define T_ANY		255
+#define T_CAA           257
 
 #define EDNS0_OPTION_MAC            65001 /* dyndns.org temporary assignment */
 #define EDNS0_OPTION_CLIENT_SUBNET  8     /* IANA */

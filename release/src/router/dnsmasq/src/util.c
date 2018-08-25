@@ -390,6 +390,44 @@ int hostname_isequal(const char *a, const char *b)
   return 1;
 }
 
+/* is b equal to or a subdomain of a return 2 for equal, 1 for subdomain */
+int hostname_issubdomain(char *a, char *b)
+{
+  char *ap, *bp;
+  unsigned int c1, c2;
+  
+  /* move to the end */
+  for (ap = a; *ap; ap++); 
+  for (bp = b; *bp; bp++);
+
+  /* a shorter than b or a empty. */
+  if ((bp - b) < (ap - a) || ap == a)
+    return 0;
+
+  do
+    {
+      c1 = (unsigned char) *(--ap);
+      c2 = (unsigned char) *(--bp);
+  
+       if (c1 >= 'A' && c1 <= 'Z')
+	 c1 += 'a' - 'A';
+       if (c2 >= 'A' && c2 <= 'Z')
+	 c2 += 'a' - 'A';
+
+       if (c1 != c2)
+	 return 0;
+    } while (ap != a);
+
+  if (bp == b)
+    return 2;
+
+  if (*(--bp) == '.')
+    return 1;
+
+  return 0;
+}
+ 
+  
 time_t dnsmasq_time(void)
 {
 #ifdef HAVE_BROKEN_RTC

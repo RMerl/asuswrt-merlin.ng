@@ -366,6 +366,11 @@ been built with DBus support. If the service name is given, dnsmasq
 provides service at that name, rather than the default which is 
 .B uk.org.thekelleys.dnsmasq
 .TP 
+.B --enable-ubus
+Enable dnsmasq UBus interface. It sends notifications via UBus on
+DHCPACK and DHCPRELEASE events. Furthermore it offers metrics.
+Requires that dnsmasq has been built with UBus support.
+.TP
 .B \-o, --strict-order
 By default, dnsmasq will send queries to any of the upstream servers
 it knows about and tries to favour servers that are known to
@@ -587,6 +592,9 @@ Return a PTR DNS record.
 .TP
 .B --naptr-record=<name>,<order>,<preference>,<flags>,<service>,<regexp>[,<replacement>]
 Return an NAPTR DNS record, as specified in RFC3403.
+.TP
+.B --caa-record=<name>,<flags>,<tag>,<value>
+Return a CAA DNS record, as specified in RFC6844.
 .TP
 .B --cname=<cname>,[<cname>,]<target>[,<TTL>]
 Return a CNAME record which indicates that <cname> is really
@@ -1323,6 +1331,9 @@ details.)  If the value is a string, substring matching is used.
 The special form with vi-encap:<enterprise number> matches against
 vendor-identifying vendor classes for the specified enterprise. Please
 see RFC 3925 for more details of these rare and interesting beasts.
+.TP
+.B --dhcp-name-match=set:<tag>,<name>[*]
+Set the tag if the given name is supplied by a dhcp client. There may be a single trailing wildcard *, which has the usual meaning. Combined with dhcp-ignore or dhcp-ignore-names this gives the ability to ignore certain clients by name, or disallow certain hostnames from being claimed by a client.
 .TP
 .B --tag-if=set:<tag>[,set:<tag>[,tag:<tag>[,tag:<tag>]]]
 Perform boolean operations on tags. Any tag appearing as set:<tag> is set if
@@ -2254,8 +2265,8 @@ secondary servers for reverse lookups.
 When dnsmasq is configured to act as an authoritative server, the
 following data is used to populate the authoritative zone.
 .PP
-.B --mx-host, --srv-host, --dns-rr, --txt-record, --naptr-record
-, as long as the record names are in the authoritative domain.
+.B --mx-host, --srv-host, --dns-rr, --txt-record, --naptr-record, --caa-record,
+as long as the record names are in the authoritative domain.
 .PP
 .B --cname
 as long as the record name is in  the authoritative domain. If the

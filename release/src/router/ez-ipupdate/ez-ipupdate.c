@@ -783,7 +783,9 @@ void print_usage( void )
   fprintf(stdout, "  -F, --pidfile <file>\t\tuse <file> as a pid file\n");
   fprintf(stdout, "  -g, --request-uri <uri>\tURI to send updates to\n");
   fprintf(stdout, "  -h, --host <host>\t\tstring to send as host parameter\n");
+#ifdef HAVE_SSL
   fprintf(stdout, "  -l, --ssl [<0|1>]\t\tenable or disable ssl\n");
+#endif
   fprintf(stdout, "  -i, --interface <iface>\twhich interface to use\n");
   fprintf(stdout, "  -L, --cloak_title <host>\tsome stupid thing for DHS only\n");
   fprintf(stdout, "  -m, --mx <mail exchange>\tstring to send as your mail exchange\n");
@@ -1401,7 +1403,9 @@ void parse_args( int argc, char **argv )
       {"foreground",      no_argument,            0, 'f'},
       {"pid-file",        required_argument,      0, 'F'},
       {"host",            required_argument,      0, 'h'},
+#ifdef HAVE_SSL
       {"ssl",             optional_argument,      0, 'l'},
+#endif
       {"interface",       required_argument,      0, 'i'},
       {"cloak_title",     required_argument,      0, 'L'},
       {"mx",              required_argument,      0, 'm'},

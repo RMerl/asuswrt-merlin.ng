@@ -1,7 +1,5 @@
 # Makefile for `wget' utility
-# Copyright (C) 1995, 1996, 1997, 1998, 1999, 2000, 2001, 2002, 2003,
-# 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2015 Free Software
-# Foundation, Inc.
+# Copyright (C) 1995-2011, 2015, 2018 Free Software Foundation, Inc.
 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -144,11 +142,13 @@ EXTRA_DIST = FTPServer.pm FTPTest.pm HTTPServer.pm HTTPTest.pm \
              certs valgrind-suppressions valgrind-suppressions-ssl
 
 check_PROGRAMS = unit-tests
-unit_tests_SOURCES =
+unit_tests_SOURCES = unit-tests.c unit-tests.h
 LDADD = ../src/libunittest.a ../lib/libgnu.a $(GETADDRINFO_LIB) $(HOSTENT_LIB)\
  $(INET_NTOP_LIB) $(LIBSOCKET) $(LIB_CLOCK_GETTIME) $(LIB_CRYPTO)\
  $(LIB_NANOSLEEP) $(LIB_POSIX_SPAWN) $(LIB_SELECT) $(LIBICONV) $(LIBINTL)\
  $(LIBTHREAD) $(LIBUNISTRING) $(SERVENT_LIB)
+AM_CPPFLAGS = -I$(top_builddir)/lib -I$(top_srcdir)/lib \
+ -I$(top_srcdir)/src -DLOCALEDIR=\"$(localedir)\"
 
 
 CLEANFILES = *~ *.bak core core.[0-9]*

@@ -1,5 +1,5 @@
-# float_h.m4 serial 9
-dnl Copyright (C) 2007, 2009-2017 Free Software Foundation, Inc.
+# float_h.m4 serial 12
+dnl Copyright (C) 2007, 2009-2018 Free Software Foundation, Inc.
 dnl This file is free software; the Free Software Foundation
 dnl gives unlimited permission to copy and/or distribute it,
 dnl with or without modifications, as long as this notice is preserved.
@@ -14,7 +14,7 @@ AC_DEFUN([gl_FLOAT_H],
     aix* | beos* | openbsd* | mirbsd* | irix*)
       FLOAT_H=float.h
       ;;
-    freebsd*)
+    freebsd* | dragonfly*)
       case "$host_cpu" in
 changequote(,)dnl
         i[34567]86 )
@@ -24,10 +24,14 @@ changequote([,])dnl
         x86_64 )
           # On x86_64 systems, the C compiler may still be generating
           # 32-bit code.
-          AC_EGREP_CPP([yes],
-            [#if defined __LP64__ || defined __x86_64__ || defined __amd64__
-             yes
-             #endif],
+          AC_COMPILE_IFELSE(
+            [AC_LANG_SOURCE(
+               [[#if defined __LP64__ || defined __x86_64__ || defined __amd64__
+                  int ok;
+                 #else
+                  error fail
+                 #endif
+               ]])],
             [],
             [FLOAT_H=float.h])
           ;;
@@ -42,7 +46,7 @@ changequote([,])dnl
       ;;
   esac
   case "$host_os" in
-    aix* | freebsd* | linux*)
+    aix* | freebsd* | dragonfly* | linux*)
       if test -n "$FLOAT_H"; then
         REPLACE_FLOAT_LDBL=1
       fi
@@ -69,14 +73,20 @@ int main ()
         [gl_cv_func_itold_works=no],
         [case "$host" in
            sparc*-*-linux*)
-             AC_EGREP_CPP([yes],
-               [#if defined __LP64__ || defined __arch64__
-                yes
-                #endif],
+             AC_COMPILE_IFELSE(
+               [AC_LANG_SOURCE(
+                 [[#if defined __LP64__ || defined __arch64__
+                    int ok;
+                   #else
+                    error fail
+                   #endif
+                 ]])],
                [gl_cv_func_itold_works="guessing no"],
                [gl_cv_func_itold_works="guessing yes"])
              ;;
-           *) gl_cv_func_itold_works="guessing yes" ;;
+                   # Guess yes on native Windows.
+           mingw*) gl_cv_func_itold_works="guessing yes" ;;
+           *)      gl_cv_func_itold_works="guessing yes" ;;
          esac
         ])
     ])

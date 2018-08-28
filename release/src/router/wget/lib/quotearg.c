@@ -1,6 +1,6 @@
 /* quotearg.c - quote arguments for output
 
-   Copyright (C) 1998-2002, 2004-2017 Free Software Foundation, Inc.
+   Copyright (C) 1998-2002, 2004-2018 Free Software Foundation, Inc.
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -13,7 +13,7 @@
    GNU General Public License for more details.
 
    You should have received a copy of the GNU General Public License
-   along with this program.  If not, see <http://www.gnu.org/licenses/>.  */
+   along with this program.  If not, see <https://www.gnu.org/licenses/>.  */
 
 /* Written by Paul Eggert <eggert@twinsun.com> */
 
@@ -53,6 +53,14 @@
 #endif
 
 #define INT_BITS (sizeof (int) * CHAR_BIT)
+
+#ifndef FALLTHROUGH
+# if __GNUC__ < 7
+#  define FALLTHROUGH ((void) 0)
+# else
+#  define FALLTHROUGH __attribute__ ((__fallthrough__))
+# endif
+#endif
 
 struct quoting_options
 {
@@ -310,7 +318,7 @@ quotearg_buffer_restyled (char *buffer, size_t buffersize,
     case c_maybe_quoting_style:
       quoting_style = c_quoting_style;
       elide_outer_quotes = true;
-      /* Fall through.  */
+      FALLTHROUGH;
     case c_quoting_style:
       if (!elide_outer_quotes)
         STORE ('"');
@@ -349,7 +357,7 @@ quotearg_buffer_restyled (char *buffer, size_t buffersize,
                for your locale.
 
                If you don't know what to put here, please see
-               <http://en.wikipedia.org/wiki/Quotation_marks_in_other_languages>
+               <https://en.wikipedia.org/wiki/Quotation_marks_in_other_languages>
                and use glyphs suitable for your language.  */
             left_quote = gettext_quote (N_("`"), quoting_style);
             right_quote = gettext_quote (N_("'"), quoting_style);
@@ -365,14 +373,14 @@ quotearg_buffer_restyled (char *buffer, size_t buffersize,
 
     case shell_escape_quoting_style:
       backslash_escapes = true;
-      /* Fall through.  */
+      FALLTHROUGH;
     case shell_quoting_style:
       elide_outer_quotes = true;
-      /* Fall through.  */
+      FALLTHROUGH;
     case shell_escape_always_quoting_style:
       if (!elide_outer_quotes)
         backslash_escapes = true;
-      /* Fall through.  */
+      FALLTHROUGH;
     case shell_always_quoting_style:
       quoting_style = shell_always_quoting_style;
       if (!elide_outer_quotes)
@@ -505,7 +513,7 @@ quotearg_buffer_restyled (char *buffer, size_t buffersize,
           if (quoting_style == shell_always_quoting_style
               && elide_outer_quotes)
             goto force_outer_quoting_style;
-          /* Fall through.  */
+          /* fall through */
         c_escape:
           if (backslash_escapes)
             {
@@ -517,14 +525,14 @@ quotearg_buffer_restyled (char *buffer, size_t buffersize,
         case '{': case '}': /* sometimes special if isolated */
           if (! (argsize == SIZE_MAX ? arg[1] == '\0' : argsize == 1))
             break;
-          /* Fall through.  */
+          FALLTHROUGH;
         case '#': case '~':
           if (i != 0)
             break;
-          /* Fall through.  */
+          FALLTHROUGH;
         case ' ':
           c_and_shell_quote_compat = true;
-          /* Fall through.  */
+          FALLTHROUGH;
         case '!': /* special in bash */
         case '"': case '$': case '&':
         case '(': case ')': case '*': case ';':
@@ -879,8 +887,9 @@ quotearg_n_options (int n, char const *arg, size_t argsize,
   if (nslots <= n)
     {
       bool preallocated = (sv == &slotvec0);
+      int nmax = MIN (INT_MAX, MIN (PTRDIFF_MAX, SIZE_MAX) / sizeof *sv) - 1;
 
-      if (MIN (INT_MAX, MIN (PTRDIFF_MAX, SIZE_MAX) / sizeof *sv) <= n)
+      if (nmax < n)
         xalloc_die ();
 
       slotvec = sv = xrealloc (preallocated ? NULL : sv, (n + 1) * sizeof *sv);
@@ -1071,3 +1080,10 @@ quote (char const *arg)
 {
   return quote_n (0, arg);
 }
+
+/*
+ * Hey Emacs!
+ * Local Variables:
+ * coding: utf-8
+ * End:
+ */

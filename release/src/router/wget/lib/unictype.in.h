@@ -1,5 +1,5 @@
 /* Unicode character classification and properties.
-   Copyright (C) 2002, 2005-2017 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2005-2018 Free Software Foundation, Inc.
 
    This program is free software: you can redistribute it and/or modify it
    under the terms of the GNU General Public License as published
@@ -12,7 +12,7 @@
    General Public License for more details.
 
    You should have received a copy of the GNU General Public License
-   along with this program.  If not, see <http://www.gnu.org/licenses/>.  */
+   along with this program.  If not, see <https://www.gnu.org/licenses/>.  */
 
 #ifndef _UNICTYPE_H
 #define _UNICTYPE_H
@@ -551,7 +551,10 @@ enum
   UC_JOINING_GROUP_MANICHAEAN_FIVE,       /* Manichaean_Five */
   UC_JOINING_GROUP_MANICHAEAN_TEN,        /* Manichaean_Ten */
   UC_JOINING_GROUP_MANICHAEAN_TWENTY,     /* Manichaean_Twenty */
-  UC_JOINING_GROUP_MANICHAEAN_HUNDRED     /* Manichaean_Hundred */
+  UC_JOINING_GROUP_MANICHAEAN_HUNDRED,    /* Manichaean_Hundred */
+  UC_JOINING_GROUP_AFRICAN_FEH,           /* African_Feh */
+  UC_JOINING_GROUP_AFRICAN_QAF,           /* African_Qaf */
+  UC_JOINING_GROUP_AFRICAN_NOON           /* African_Noon */
 };
 
 /* Return the name of a joining group.  */

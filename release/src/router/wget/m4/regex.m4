@@ -1,6 +1,6 @@
-# serial 66
+# serial 67
 
-# Copyright (C) 1996-2001, 2003-2017 Free Software Foundation, Inc.
+# Copyright (C) 1996-2001, 2003-2018 Free Software Foundation, Inc.
 #
 # This file is free software; the Free Software Foundation
 # gives unlimited permission to copy and/or distribute it,
@@ -13,6 +13,7 @@ AC_PREREQ([2.50])
 
 AC_DEFUN([gl_REGEX],
 [
+  AC_REQUIRE([AC_CANONICAL_HOST]) dnl for cross-compiles
   AC_ARG_WITH([included-regex],
     [AS_HELP_STRING([--without-included-regex],
                     [don't compile regex; this is the default on systems
@@ -75,7 +76,7 @@ AC_DEFUN([gl_REGEX],
             if (setlocale (LC_ALL, "en_US.UTF-8"))
               {
                 {
-                  /* http://sourceware.org/ml/libc-hacker/2006-09/msg00008.html
+                  /* https://sourceware.org/ml/libc-hacker/2006-09/msg00008.html
                      This test needs valgrind to catch the bug on Debian
                      GNU/Linux 3.1 x86, but it might catch the bug better
                      on other platforms and it shouldn't hurt to try the
@@ -99,7 +100,7 @@ AC_DEFUN([gl_REGEX],
                 {
                   /* This test is from glibc bug 15078.
                      The test case is from Andreas Schwab in
-                     <http://www.sourceware.org/ml/libc-alpha/2013-01/msg00967.html>.
+                     <https://sourceware.org/ml/libc-alpha/2013-01/msg00967.html>.
                      */
                   static char const pat[] = "[^x]x";
                   static char const data[] =
@@ -197,7 +198,7 @@ AC_DEFUN([gl_REGEX],
               result |= 16;
 
             /* Catch a bug reported by Vin Shelton in
-               http://lists.gnu.org/archive/html/bug-coreutils/2007-06/msg00089.html
+               https://lists.gnu.org/r/bug-coreutils/2007-06/msg00089.html
                */
             re_set_syntax (RE_SYNTAX_POSIX_BASIC
                            & ~RE_CONTEXT_INVALID_DUP
@@ -226,13 +227,19 @@ AC_DEFUN([gl_REGEX],
 
             return result;
           ]])],
-       [gl_cv_func_re_compile_pattern_working=yes],
-       [gl_cv_func_re_compile_pattern_working=no],
-       dnl When crosscompiling, assume it is not working.
-       [gl_cv_func_re_compile_pattern_working=no])])
-    case $gl_cv_func_re_compile_pattern_working in #(
-    yes) ac_use_included_regex=no;; #(
-    no) ac_use_included_regex=yes;;
+        [gl_cv_func_re_compile_pattern_working=yes],
+        [gl_cv_func_re_compile_pattern_working=no],
+        [case "$host_os" in
+                   # Guess no on native Windows.
+           mingw*) gl_cv_func_re_compile_pattern_working="guessing no" ;;
+                   # Otherwise, assume it is not working.
+           *)      gl_cv_func_re_compile_pattern_working="guessing no" ;;
+         esac
+        ])
+      ])
+    case "$gl_cv_func_re_compile_pattern_working" in #(
+      *yes) ac_use_included_regex=no;; #(
+      *no) ac_use_included_regex=yes;;
     esac
     ;;
   *) AC_MSG_ERROR([Invalid value for --with-included-regex: $with_included_regex])

@@ -1,6 +1,6 @@
 /* DO NOT EDIT! GENERATED AUTOMATICALLY! */
 /* Casing Properties of Unicode characters.  */
-/* Generated automatically by gen-uni-tables.c for Unicode 8.0.0.  */
+/* Generated automatically by gen-uni-tables.c for Unicode 9.0.0.  */
 #define header_0 16
 #define header_2 9
 #define header_3 127
@@ -11,7 +11,7 @@ struct
     int header[1];
     int level1[2];
     short level2[2 << 7];
-    /*unsigned*/ int level3[20 << 4];
+    /*unsigned*/ int level3[21 << 4];
   }
 u_casing_property_cased =
 {
@@ -265,11 +265,11 @@ u_casing_property_cased =
        -1,
        -1,
        -1,
-       -1,
-       -1,
-       -1,
-       -1,
         3 +   256 * sizeof (short) / sizeof (int) +   304,
+       -1,
+       -1,
+       -1,
+        3 +   256 * sizeof (short) / sizeof (int) +   320,
        -1,
        -1,
        -1,
@@ -300,7 +300,7 @@ u_casing_property_cased =
     0x00000000, 0x00000000, 0x00000000, 0x00000000,
     0x00000000, 0xFFFFFFFF, 0xFFFFFFFF, 0x3F3FFFFF,
     0x00000000, 0x00000000, 0x00000000, 0x00000000,
-    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x000001FF, 0x00000000, 0x00000000, 0x00000000,
     0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF,
     0xFFFFFFFF, 0xFFFFFFFF, 0x00000000, 0x00000000,
     0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF,
@@ -322,7 +322,7 @@ u_casing_property_cased =
     0x00000000, 0x00000000, 0xFFFFFFFF, 0x00003FFF,
     0x3FFFFFFF, 0x00000000, 0x00000000, 0x00000000,
     0x00000000, 0xFFFFFFFC, 0xFFFFFFFF, 0xFFFFFFFF,
-    0xFFFF78FF, 0x00FF3FFF, 0x00000000, 0x07000000,
+    0xFFFF78FF, 0x00FF7FFF, 0x00000000, 0x07000000,
     0x00000000, 0x00000000, 0x00000000, 0x00000000,
     0x00000000, 0x00000000, 0x00000000, 0x00000000,
     0x00000000, 0xFFFF0000, 0xF7FFFFFF, 0xFFFF003F,
@@ -336,7 +336,7 @@ u_casing_property_cased =
     0x00000000, 0x07FFFFFE, 0x07FFFFFE, 0x00000000,
     0x00000000, 0x00000000, 0x00000000, 0x00000000,
     0xFFFFFFFF, 0xFFFFFFFF, 0x0000FFFF, 0x00000000,
-    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0xFFFF0000, 0xFF0FFFFF, 0x0FFFFFFF,
     0x00000000, 0x00000000, 0x00000000, 0x00000000,
     0x00000000, 0x00000000, 0x00000000, 0x00000000,
     0x00000000, 0x00000000, 0x00000000, 0x00000000,
@@ -355,6 +355,10 @@ u_casing_property_cased =
     0xFFFFFFFF, 0xFFFFFF3F, 0xF7FFFFFD, 0xF7FFFFFF,
     0xFFDFFFFF, 0xFFDFFFFF, 0xFFFF7FFF, 0xFFFF7FFF,
     0xFFFFFDFF, 0xFFFFFDFF, 0x00000FF7, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0xFFFFFFFF, 0xFFFFFFFF, 0x0000000F, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
     0x00000000, 0x00000000, 0x00000000, 0x00000000,
     0x00000000, 0x00000000, 0x00000000, 0x00000000,
     0x00000000, 0xFFFF0000, 0xFFFF03FF, 0xFFFF03FF,

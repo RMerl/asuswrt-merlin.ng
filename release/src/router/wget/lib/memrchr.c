@@ -1,6 +1,6 @@
 /* memrchr -- find the last occurrence of a byte in a memory block
 
-   Copyright (C) 1991, 1993, 1996-1997, 1999-2000, 2003-2017 Free Software
+   Copyright (C) 1991, 1993, 1996-1997, 1999-2000, 2003-2018 Free Software
    Foundation, Inc.
 
    Based on strlen implementation by Torbjorn Granlund (tege@sics.se),
@@ -20,7 +20,7 @@
    GNU General Public License for more details.
 
    You should have received a copy of the GNU General Public License
-   along with this program.  If not, see <http://www.gnu.org/licenses/>.  */
+   along with this program.  If not, see <https://www.gnu.org/licenses/>.  */
 
 #if defined _LIBC
 # include <memcopy.h>

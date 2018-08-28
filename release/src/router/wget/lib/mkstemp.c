@@ -1,4 +1,4 @@
-/* Copyright (C) 1998-1999, 2001, 2005-2007, 2009-2017 Free Software
+/* Copyright (C) 1998-1999, 2001, 2005-2007, 2009-2018 Free Software
    Foundation, Inc.
    This file is derived from the one in the GNU C Library.
 
@@ -13,7 +13,7 @@
    GNU General Public License for more details.
 
    You should have received a copy of the GNU General Public License
-   along with this program.  If not, see <http://www.gnu.org/licenses/>.  */
+   along with this program.  If not, see <https://www.gnu.org/licenses/>.  */
 
 #if !_LIBC
 # include <config.h>

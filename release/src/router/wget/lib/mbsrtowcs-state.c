@@ -1,5 +1,5 @@
 /* Convert string to wide string.
-   Copyright (C) 2008-2017 Free Software Foundation, Inc.
+   Copyright (C) 2008-2018 Free Software Foundation, Inc.
    Written by Bruno Haible <bruno@clisp.org>, 2008.
 
    This program is free software: you can redistribute it and/or modify
@@ -13,7 +13,7 @@
    GNU General Public License for more details.
 
    You should have received a copy of the GNU General Public License
-   along with this program.  If not, see <http://www.gnu.org/licenses/>.  */
+   along with this program.  If not, see <https://www.gnu.org/licenses/>.  */
 
 #include <config.h>
 
@@ -23,7 +23,7 @@
 mbstate_t _gl_mbsrtowcs_state
 /* The state must initially be in the "initial state"; so, zero-initialize it.
    On most systems, putting it into BSS is sufficient.  Not so on Mac OS X 10.3,
-   see <http://lists.gnu.org/archive/html/bug-gnulib/2009-01/msg00329.html>.
+   see <https://lists.gnu.org/r/bug-gnulib/2009-01/msg00329.html>.
    When it needs an initializer, use 0 or {0} as initializer? 0 only works
    when mbstate_t is a scalar type (such as when gnulib defines it, or on
    AIX, IRIX, mingw). {0} works as an initializer in all cases: for a struct

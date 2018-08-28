@@ -1,5 +1,5 @@
 /* Declarations for css.lex
-   Copyright (C) 2006, 2009, 2010, 2011, 2015 Free Software Foundation,
+   Copyright (C) 2006, 2009-2011, 2015, 2018 Free Software Foundation,
    Inc.
 
 This file is part of GNU Wget.
@@ -32,36 +32,34 @@ as that of the covered work.  */
 #define CSS_TOKENS_H
 
 enum {
-  CSSEOF,
-  S,
-  CDO,
-  CDC,
-  INCLUDES,
-  DASHMATCH,
-  LBRACE,
-  PLUS,
-  GREATER,
-  COMMA,
-  STRING,
-  INVALID,
-  IDENT,
-  HASH,
-  IMPORT_SYM,
-  PAGE_SYM,
-  MEDIA_SYM,
-  CHARSET_SYM,
-  IMPORTANT_SYM,
-  EMS,
-  EXS,
-  LENGTH,
-  ANGLE,
-  TIME,
-  FREQ,
-  DIMENSION,
-  PERCENTAGE,
-  NUMBER,
-  URI,
-  FUNCTION
+  CSSEOF = 0,
+  S = 1,
+  CDO = 2,
+  CDC = 3,
+  INCLUDES = 4,
+  DASHMATCH = 5,
+  STRING = 6,
+  BAD_STRING = 7,
+  IDENT = 8,
+  HASH = 9,
+  IMPORT_SYM = 10,
+  PAGE_SYM = 11,
+  MEDIA_SYM = 12,
+  CHARSET_SYM = 13,
+  IMPORTANT_SYM = 14,
+  EMS = 15,
+  EXS = 16,
+  LENGTH = 17,
+  ANGLE = 18,
+  TIME = 19,
+  FREQ = 20,
+  DIMENSION = 21,
+  PERCENTAGE = 22,
+  NUMBER = 23,
+  URI = 24,
+  BAD_URI = 25,
+  FUNCTION = 26,
+  COMMENT = 27
 };
 
 #endif /* CSS_TOKENS_H */

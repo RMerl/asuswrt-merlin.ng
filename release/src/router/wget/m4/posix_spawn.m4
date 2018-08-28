@@ -1,5 +1,5 @@
-# posix_spawn.m4 serial 11
-dnl Copyright (C) 2008-2017 Free Software Foundation, Inc.
+# posix_spawn.m4 serial 14
+dnl Copyright (C) 2008-2018 Free Software Foundation, Inc.
 dnl This file is free software; the Free Software Foundation
 dnl gives unlimited permission to copy and/or distribute it,
 dnl with or without modifications, as long as this notice is preserved.
@@ -224,7 +224,7 @@ main ()
          [if test -s conftest$ac_exeext \
              && ./conftest$ac_exeext > conftest.out \
              && echo 'This should be seen only once.' > conftest.ok \
-             && cmp conftest.out conftest.ok > /dev/null; then
+             && cmp conftest.out conftest.ok >/dev/null 2>&1; then
             gl_cv_func_posix_spawn_works=yes
           else
             gl_cv_func_posix_spawn_works=no
@@ -410,7 +410,7 @@ AC_DEFUN([gl_FUNC_POSIX_SPAWN_FILE_ACTIONS_ADDCLOSE],
   if test $REPLACE_POSIX_SPAWN = 1; then
     REPLACE_POSIX_SPAWN_FILE_ACTIONS_ADDCLOSE=1
   else
-    dnl On Solaris 11 2011-11, posix_spawn_file_actions_addclose succeeds even
+    dnl On Solaris 11.0, posix_spawn_file_actions_addclose succeeds even
     dnl if the fd argument is out of range.
     AC_CACHE_CHECK([whether posix_spawn_file_actions_addclose works],
       [gl_cv_func_posix_spawn_file_actions_addclose_works],
@@ -430,8 +430,10 @@ int main ()
          [gl_cv_func_posix_spawn_file_actions_addclose_works=no],
          [# Guess no on Solaris, yes otherwise.
           case "$host_os" in
-            solaris*) gl_cv_func_posix_spawn_file_actions_addclose_works="guessing no";;
-            *)        gl_cv_func_posix_spawn_file_actions_addclose_works="guessing yes";;
+            solaris*) gl_cv_func_posix_spawn_file_actions_addclose_works="guessing no" ;;
+                      # Guess no on native Windows.
+            mingw*)   gl_cv_func_posix_spawn_file_actions_addclose_works="guessing no" ;;
+            *)        gl_cv_func_posix_spawn_file_actions_addclose_works="guessing yes" ;;
           esac
          ])
       ])
@@ -451,7 +453,7 @@ AC_DEFUN([gl_FUNC_POSIX_SPAWN_FILE_ACTIONS_ADDDUP2],
   if test $REPLACE_POSIX_SPAWN = 1; then
     REPLACE_POSIX_SPAWN_FILE_ACTIONS_ADDDUP2=1
   else
-    dnl On Solaris 11 2011-11, posix_spawn_file_actions_adddup2 succeeds even
+    dnl On Solaris 11.0, posix_spawn_file_actions_adddup2 succeeds even
     dnl if the fd argument is out of range.
     AC_CACHE_CHECK([whether posix_spawn_file_actions_adddup2 works],
       [gl_cv_func_posix_spawn_file_actions_adddup2_works],
@@ -472,6 +474,8 @@ int main ()
          [# Guess no on Solaris, yes otherwise.
           case "$host_os" in
             solaris*) gl_cv_func_posix_spawn_file_actions_adddup2_works="guessing no";;
+                      # Guess no on native Windows.
+            mingw*)   gl_cv_func_posix_spawn_file_actions_adddup2_works="guessing no" ;;
             *)        gl_cv_func_posix_spawn_file_actions_adddup2_works="guessing yes";;
           esac
          ])
@@ -492,7 +496,7 @@ AC_DEFUN([gl_FUNC_POSIX_SPAWN_FILE_ACTIONS_ADDOPEN],
   if test $REPLACE_POSIX_SPAWN = 1; then
     REPLACE_POSIX_SPAWN_FILE_ACTIONS_ADDOPEN=1
   else
-    dnl On Solaris 11 2011-11, posix_spawn_file_actions_addopen succeeds even
+    dnl On Solaris 11.0, posix_spawn_file_actions_addopen succeeds even
     dnl if the fd argument is out of range.
     AC_CACHE_CHECK([whether posix_spawn_file_actions_addopen works],
       [gl_cv_func_posix_spawn_file_actions_addopen_works],
@@ -515,6 +519,8 @@ int main ()
          [# Guess no on Solaris, yes otherwise.
           case "$host_os" in
             solaris*) gl_cv_func_posix_spawn_file_actions_addopen_works="guessing no";;
+                      # Guess no on native Windows.
+            mingw*)   gl_cv_func_posix_spawn_file_actions_addopen_works="guessing no" ;;
             *)        gl_cv_func_posix_spawn_file_actions_addopen_works="guessing yes";;
           esac
          ])

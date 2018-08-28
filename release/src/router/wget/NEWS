@@ -1,9 +1,51 @@
 GNU Wget NEWS -- history of user-visible changes.
 
-Copyright (C) 1997-2017 Free Software Foundation, Inc.
+Copyright (C) 1997-2018 Free Software Foundation, Inc.
 See the end for copying conditions.
 
 Please send GNU Wget bug reports to <bug-wget@gnu.org>.
+
+* Changes in Wget 1.19.5
+
+* Fix cookie injection (CVE-2018-0494)
+
+* Enable TLS1.3 with recent OpenSSL environment
+
+* New option --ciphers to set GnuTLS / OpenSSL ciphers directly
+
+* Updated CSS grammar to CSS 2.2
+
+* Fixed several memleaks found by OSS-Fuzz
+
+* Fixed several buffer overflows found by OSS-Fuzz
+
+* Fixed several integer overflows found by OSS-Fuzz
+
+* Several minor bug fixes
+
+
+* Changes in Wget 1.19.4
+
+* A major bug that caused GZip'ed pages to never be decompressed has been fixed
+
+* Support for Content-Encoding and Transfer-Encoding have been marked as
+  experimental and disabled by default
+
+
+* Changes in Wget 1.19.3
+
+* Prevent erroneous decompression of .gz and .tgz files with broken servers
+
+* Added support for HTTP 308 Permanent Redirect response
+
+* Fix a segfault in some cases where the Content-Type header is not sent
+
+* Support OpenSSL 1.1 builds without using deprecated features
+
+* Fix netrc file detection on Windows
+
+* Several minor bug fixes
+
 
 * Changes in Wget 1.19.2
 

@@ -1,7 +1,6 @@
 /* Reading/parsing the initialization file.
-   Copyright (C) 1996, 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004,
-   2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2014, 2015 Free
-   Software Foundation, Inc.
+   Copyright (C) 1996-2012, 2014-2015, 2018 Free Software Foundation,
+   Inc.
 
 This file is part of GNU Wget.
 
@@ -70,10 +69,11 @@ as that of the covered work.  */
 #include "warc.h"               /* for warc_close */
 #include "spider.h"             /* for spider_cleanup */
 #include "html-url.h"           /* for cleanup_html_url */
+#include "ptimer.h"             /* for ptimer_destroy */
 #include "c-strcase.h"
 
 #ifdef TESTING
-#include "test.h"
+#include "../tests/unit-tests.h"
 #endif
 
 
@@ -164,6 +164,9 @@ static const struct {
   { "checkcertificate", &opt.check_cert,        cmd_check_cert },
 #endif
   { "chooseconfig",     &opt.choose_config,     cmd_file },
+#ifdef HAVE_SSL
+  { "ciphers",          &opt.tls_ciphers_string, cmd_string },
+#endif
 #ifdef HAVE_LIBZ
   { "compression",      &opt.compression,       cmd_spec_compression },
 #endif
@@ -452,7 +455,7 @@ defaults (void)
 #endif
 
 #ifdef HAVE_LIBZ
-  opt.compression = compression_auto;
+  opt.compression = compression_none;
 #endif
 
   /* The default for file name restriction defaults to the OS type. */
@@ -593,26 +596,25 @@ wgetrc_env_file_name (void)
 char *
 wgetrc_user_file_name (void)
 {
-  char *home;
   char *file = NULL;
   /* If that failed, try $HOME/.wgetrc (or equivalent).  */
 
 #ifdef __VMS
   file = "SYS$LOGIN:.wgetrc";
 #else /* def __VMS */
-  home = home_dir ();
-  if (home)
-    file = aprintf ("%s/.wgetrc", home);
-  xfree (home);
+  if (opt.homedir)
+    file = aprintf ("%s/.wgetrc", opt.homedir);
 #endif /* def __VMS [else] */
 
   if (!file)
     return NULL;
+#ifndef FUZZING
   if (!file_exists_p (file, NULL))
     {
       xfree (file);
       return NULL;
     }
+#endif
   return file;
 }
 
@@ -729,10 +731,10 @@ run_wgetrc (const char *file, file_stats_t *flstats)
 
 /* Initialize the defaults and run the system wgetrc and user's own
    wgetrc.  */
-void
+int
 initialize (void)
 {
-  char *file, *env_sysrc;
+  char *env_sysrc;
   file_stats_t flstats;
   bool ok = true;
 
@@ -751,7 +753,7 @@ initialize (void)
 Parsing system wgetrc file (env SYSTEM_WGETRC) failed.  Please check\n\
 '%s',\n\
 or specify a different file using --config.\n"), env_sysrc);
-          exit (WGET_EXIT_PARSE_ERROR);
+          return WGET_EXIT_PARSE_ERROR;
         }
     }
   /* Otherwise, if SYSTEM_WGETRC is defined, use it.  */
@@ -766,33 +768,36 @@ or specify a different file using --config.\n"), env_sysrc);
 Parsing system wgetrc file failed.  Please check\n\
 '%s',\n\
 or specify a different file using --config.\n"), SYSTEM_WGETRC);
-      exit (WGET_EXIT_PARSE_ERROR);
+      return WGET_EXIT_PARSE_ERROR;
     }
 #endif
   /* Override it with your own, if one exists.  */
-  file = wgetrc_file_name ();
-  if (!file)
-    return;
+  opt.wgetrcfile = wgetrc_file_name ();
+  if (!opt.wgetrcfile)
+    return 0;
   /* #### We should canonicalize `file' and SYSTEM_WGETRC with
      something like realpath() before comparing them with `strcmp'  */
 #ifdef SYSTEM_WGETRC
-  if (!strcmp (file, SYSTEM_WGETRC))
+  if (!strcmp (opt.wgetrcfile, SYSTEM_WGETRC))
     {
       fprintf (stderr, _("\
 %s: Warning: Both system and user wgetrc point to %s.\n"),
-               exec_name, quote (file));
+               exec_name, quote (opt.wgetrcfile));
     }
   else
 #endif
-	if (file_exists_p (file, &flstats))
-        ok &= run_wgetrc (file, &flstats);
+#ifndef FUZZING
+    if (file_exists_p (opt.wgetrcfile, &flstats))
+#endif
+      ok &= run_wgetrc (opt.wgetrcfile, &flstats);
+
+  xfree (opt.wgetrcfile);
 
   /* If there were errors processing either `.wgetrc', abort. */
   if (!ok)
-    exit (WGET_EXIT_PARSE_ERROR);
+    return WGET_EXIT_PARSE_ERROR;
 
-  xfree (file);
-  return;
+  return 0;
 }
 
 /* Remove dashes and underscores from S, modifying S in the
@@ -905,7 +910,6 @@ setval_internal_tilde (int comind, const char *com, const char *val)
 {
   bool ret;
   int homelen;
-  char *home;
   char **pstring;
   ret = setval_internal (comind, com, val);
 
@@ -915,17 +919,20 @@ setval_internal_tilde (int comind, const char *com, const char *val)
       && ret && (*val == '~' && ISSEP (val[1])))
     {
       pstring = commands[comind].place;
-      home = home_dir ();
-      if (home)
+      if (opt.homedir)
         {
+          char *home = xstrdup(opt.homedir);
           homelen = strlen (home);
           while (homelen && ISSEP (home[homelen - 1]))
                  home[--homelen] = '\0';
+
+          xfree (*pstring);
 
           /* Skip the leading "~/". */
           for (++val; ISSEP (*val); val++)
             ;
           *pstring = concat_strings (home, "/", val, (char *)0);
+          xfree (home);
         }
     }
   return ret;
@@ -987,7 +994,6 @@ struct decode_item {
   int code;
 };
 static bool decode_string (const char *, const struct decode_item *, int, int *);
-static bool simple_atoi (const char *, const char *, int *);
 static bool simple_atof (const char *, const char *, double *);
 
 #define CMP1(p, c0) (c_tolower((p)[0]) == (c0) && (p)[1] == '\0')
@@ -1082,13 +1088,16 @@ cmd_check_cert (const char *com, const char *val, void *place)
 static bool
 cmd_number (const char *com, const char *val, void *place)
 {
-  if (!simple_atoi (val, val + strlen (val), place)
-      || *(int *) place < 0)
+  long l = strtol(val, NULL, 10);
+
+  if (((l == LONG_MIN || l == LONG_MAX) && errno == ERANGE)
+      || l < 0 || l > INT_MAX)
     {
       fprintf (stderr, _("%s: %s: Invalid number %s.\n"),
                exec_name, com, quote (val));
       return false;
     }
+  *(int *) place = (int) l;
   return true;
 }
 
@@ -1338,7 +1347,9 @@ static bool
 cmd_bytes_sum (const char *com, const char *val, void *place)
 {
   double byte_value;
-  if (!parse_bytes_helper (val, &byte_value))
+
+  if (!parse_bytes_helper (val, &byte_value)
+      || byte_value < LONG_MIN || byte_value > LONG_MAX)
     {
       fprintf (stderr, _("%s: %s: Invalid byte value %s\n"),
                exec_name, com, quote (val));
@@ -1428,7 +1439,7 @@ cmd_use_askpass (const char *com _GL_UNUSED, const char *val, void *place)
   if (!(env && *env))
     {
       fprintf (stderr, _("use-askpass requires a string or either environment variable WGET_ASKPASS or SSH_ASKPASS to be set.\n"));
-      exit (WGET_EXIT_GENERIC_ERROR);
+      return false;
     }
 
   return cmd_string (com, env, place);
@@ -1545,7 +1556,7 @@ cmd_spec_htmlify (const char *com, const char *val, void *place_ignored _GL_UNUS
 static bool
 cmd_spec_mirror (const char *com, const char *val, void *place_ignored _GL_UNUSED)
 {
-  int mirror;
+  bool mirror;
 
   if (!cmd_boolean (com, val, &mirror))
     return false;
@@ -1712,6 +1723,7 @@ cmd_spec_secure_protocol (const char *com, const char *val, void *place)
     { "tlsv1", secure_protocol_tlsv1 },
     { "tlsv1_1", secure_protocol_tlsv1_1 },
     { "tlsv1_2", secure_protocol_tlsv1_2 },
+    { "tlsv1_3", secure_protocol_tlsv1_3 },
     { "pfs", secure_protocol_pfs },
   };
   int ok = decode_string (val, choices, countof (choices), place);
@@ -1784,54 +1796,6 @@ cmd_spec_verbose (const char *com, const char *val, void *place_ignored _GL_UNUS
 }
 
 /* Miscellaneous useful routines.  */
-
-/* A very simple atoi clone, more useful than atoi because it works on
-   delimited strings, and has error reportage.  Returns true on success,
-   false on failure.  If successful, stores result to *DEST.  */
-
-static bool
-simple_atoi (const char *beg, const char *end, int *dest)
-{
-  int result = 0;
-  bool negative = false;
-  const char *p = beg;
-
-  while (p < end && c_isspace (*p))
-    ++p;
-  if (p < end && (*p == '-' || *p == '+'))
-    {
-      negative = (*p == '-');
-      ++p;
-    }
-  if (p == end)
-    return false;
-
-  /* Read negative numbers in a separate loop because the most
-     negative integer cannot be represented as a positive number.  */
-
-  if (!negative)
-    for (; p < end && c_isdigit (*p); p++)
-      {
-        int next = (10 * result) + (*p - '0');
-        if (next < result)
-          return false;         /* overflow */
-        result = next;
-      }
-  else
-    for (; p < end && c_isdigit (*p); p++)
-      {
-        int next = (10 * result) - (*p - '0');
-        if (next > result)
-          return false;         /* underflow */
-        result = next;
-      }
-
-  if (p != end)
-    return false;
-
-  *dest = result;
-  return true;
-}
 
 /* Trivial atof, with error reporting.  Handles "<digits>[.<digits>]",
    doesn't handle exponential notation.  Returns true on success,
@@ -1925,11 +1889,17 @@ decode_string (const char *val, const struct decode_item *items, int itemcount,
   return false;
 }
 
+extern struct ptimer *timer;
+extern int cleaned_up;
+
 /* Free the memory allocated by global variables.  */
 void
 cleanup (void)
 {
   /* Free external resources, close files, etc. */
+
+  if (cleaned_up++)
+    return; /* cleanup() must not be called twice */
 
   /* Close WARC file. */
   if (opt.warc_filename != 0)
@@ -1937,9 +1907,13 @@ cleanup (void)
 
   log_close ();
 
-  if (output_stream)
-    if (fclose (output_stream) == EOF)
-      inform_exit_status (CLOSEFAILED);
+  if (output_stream && output_stream != stderr)
+    {
+      FILE *fp = output_stream;
+      output_stream = NULL;
+      if (fclose (fp) == EOF)
+        inform_exit_status (CLOSEFAILED);
+    }
 
   /* No need to check for error because Wget flushes its output (and
      checks for errors) after any data arrives.  */
@@ -1947,12 +1921,12 @@ cleanup (void)
   /* We're exiting anyway so there's no real need to call free()
      hundreds of times.  Skipping the frees will make Wget exit
      faster.
-
+   *
      However, when detecting leaks, it's crucial to free() everything
      because then you can find the real leaks, i.e. the allocated
      memory which grows with the size of the program.  */
 
-#ifdef DEBUG_MALLOC
+#if defined DEBUG_MALLOC || defined TESTING
   convert_cleanup ();
   res_cleanup ();
   http_cleanup ();
@@ -1971,24 +1945,43 @@ cleanup (void)
   xfree (opt.preferred_location);
 #endif
   xfree (opt.output_document);
+  xfree (opt.default_page);
+  if (opt.regex_type == regex_type_posix)
+    {
+      if (opt.acceptregex)
+        regfree (opt.acceptregex);
+      if (opt.rejectregex)
+        regfree (opt.rejectregex);
+    }
+  xfree (opt.acceptregex);
+  xfree (opt.rejectregex);
+  xfree (opt.acceptregex_s);
+  xfree (opt.rejectregex_s);
   free_vec (opt.accepts);
   free_vec (opt.rejects);
   free_vec ((char **)opt.excludes);
   free_vec ((char **)opt.includes);
   free_vec (opt.domains);
+  free_vec (opt.exclude_domains);
   free_vec (opt.follow_tags);
   free_vec (opt.ignore_tags);
   xfree (opt.progress_type);
+  xfree (opt.warc_filename);
+  xfree (opt.warc_tempdir);
+  xfree (opt.warc_cdx_dedup_filename);
   xfree (opt.ftp_user);
   xfree (opt.ftp_passwd);
   xfree (opt.ftp_proxy);
   xfree (opt.https_proxy);
   xfree (opt.http_proxy);
   free_vec (opt.no_proxy);
+  xfree (opt.proxy_user);
+  xfree (opt.proxy_passwd);
   xfree (opt.useragent);
   xfree (opt.referer);
   xfree (opt.http_user);
   xfree (opt.http_passwd);
+  xfree (opt.dot_style);
   free_vec (opt.user_headers);
   free_vec (opt.warc_user_headers);
 # ifdef HAVE_SSL
@@ -1997,6 +1990,7 @@ cleanup (void)
   xfree (opt.ca_directory);
   xfree (opt.ca_cert);
   xfree (opt.crl_file);
+  xfree (opt.pinnedpubkey);
   xfree (opt.random_file);
   xfree (opt.egd_file);
 # endif
@@ -2015,6 +2009,16 @@ cleanup (void)
   xfree (opt.use_askpass);
   xfree (opt.retry_on_http_error);
 
+  xfree (opt.encoding_remote);
+  xfree (opt.locale);
+  xfree (opt.hsts_file);
+
+  xfree (opt.wgetrcfile);
+  xfree (opt.homedir);
+  xfree (exec_name);
+  xfree (program_argstring);
+  ptimer_destroy (timer); timer = NULL;
+
 #ifdef HAVE_LIBCARES
 #include <ares.h>
   {
@@ -2027,7 +2031,9 @@ cleanup (void)
   }
 #endif
 
-#endif /* DEBUG_MALLOC */
+  quotearg_free ();
+
+#endif /* DEBUG_MALLOC || TESTING */
 }
 
 /* Unit testing routines.  */

@@ -42,12 +42,12 @@ $ENV{'HOSTALIASES'} = "$srcdir/certs/wgethosts";
 my $addr = gethostbyname($testhostname);
 unless ($addr)
 {
-    warn "Failed to resolve $addr, using $srcdir/certs/wgethosts\n";
+    warn "Failed to resolve $testhostname, using $srcdir/certs/wgethosts\n";
     exit 77;
 }
 unless (inet_ntoa($addr) =~ "127.0.0.1")
 {
-    warn "Failed to resolve $$addr, using $srcdir/certs/wgethosts\n";
+    warn "Unexpected IP for localhost: ".inet_ntoa($addr)."\n";
     exit 77;
 }
 

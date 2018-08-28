@@ -1,7 +1,6 @@
 /* Basic FTP routines.
-   Copyright (C) 1996, 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004,
-   2005, 2006, 2007, 2008, 2009, 2010, 2011, 2014, 2015 Free Software
-   Foundation, Inc.
+   Copyright (C) 1996-2011, 2014-2015, 2018 Free Software Foundation,
+   Inc.
 
 This file is part of GNU Wget.
 
@@ -58,7 +57,7 @@ as that of the covered work.  */
 uerr_t
 ftp_response (int fd, char **ret_line)
 {
-  while (1)
+  for (;;)
     {
       char *p;
       char *line = fd_read_line (fd);
@@ -66,12 +65,9 @@ ftp_response (int fd, char **ret_line)
         return FTPRERR;
 
       /* Strip trailing CRLF before printing the line, so that
-         quotting doesn't include bogus \012 and \015. */
-      p = strchr (line, '\0');
-      if (p > line && p[-1] == '\n')
-        *--p = '\0';
-      if (p > line && p[-1] == '\r')
-        *--p = '\0';
+         quoting doesn't include bogus \012 and \015. */
+      if ((p = strpbrk(line , "\r\n")))
+        *p = 0;
 
       if (opt.server_response)
         logprintf (LOG_NOTQUIET, "%s\n",

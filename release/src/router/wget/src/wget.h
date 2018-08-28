@@ -1,7 +1,5 @@
 /* Miscellaneous declarations.
-   Copyright (C) 1996, 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004,
-   2005, 2006, 2007, 2008, 2009, 2010, 2011, 2015 Free Software
-   Foundation, Inc.
+   Copyright (C) 1996-2011, 2015, 2018 Free Software Foundation, Inc.
 
 This file is part of GNU Wget.
 
@@ -394,5 +392,21 @@ typedef enum
 # ifndef __VMS
 #  define UNIQ_SEP '.'
 # endif /* ndef __VMS */
+
+#if defined FUZZING && defined TESTING
+/* Rename fopen so we can have our own version in fuzz/main.c to
+   not create random files. */
+#  define fopen(fp, mode) fopen_wget(fp, mode)
+#  define exit(status) exit_wget(status)
+
+/* In run_wgetrc() we call fopen_wgetrc() instead of fopen, so we can catch
+   the call in our fuzzers. */
+FILE *fopen_wget(const char *pathname, const char *mode);
+FILE *fopen_wgetrc(const char *pathname, const char *mode);
+void exit_wget(int status);
+#else
+/* When not fuzzing, we want to call fopen() instead of fopen_wgetrc() */
+#  define fopen_wgetrc(fp, mode) fopen(fp, mode)
+#endif /* FUZZING && TESTING */
 
 #endif /* WGET_H */

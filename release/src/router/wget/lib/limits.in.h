@@ -1,6 +1,6 @@
 /* A GNU-like <limits.h>.
 
-   Copyright 2016-2017 Free Software Foundation, Inc.
+   Copyright 2016-2018 Free Software Foundation, Inc.
 
    This program is free software; you can redistribute it and/or
    modify it under the terms of the GNU General Public License
@@ -13,7 +13,7 @@
    GNU General Public License for more details.
 
    You should have received a copy of the GNU General Public License
-   along with this program; if not, see <http://www.gnu.org/licenses/>.  */
+   along with this program; if not, see <https://www.gnu.org/licenses/>.  */
 
 #ifndef _@GUARD_PREFIX@_LIMITS_H
 
@@ -27,6 +27,17 @@
 
 #ifndef _@GUARD_PREFIX@_LIMITS_H
 #define _@GUARD_PREFIX@_LIMITS_H
+
+/* For HP-UX 11.31.  */
+#if defined LONG_LONG_MIN && !defined LLONG_MIN
+# define LLONG_MIN LONG_LONG_MIN
+#endif
+#if defined LONG_LONG_MAX && !defined LLONG_MAX
+# define LLONG_MAX LONG_LONG_MAX
+#endif
+#if defined ULONG_LONG_MAX && !defined ULLONG_MAX
+# define ULLONG_MAX ULONG_LONG_MAX
+#endif
 
 /* The number of usable bits in an unsigned or signed integer type
    with minimum value MIN and maximum value MAX, as an int expression

@@ -1,5 +1,5 @@
-# ftello.m4 serial 11
-dnl Copyright (C) 2007-2017 Free Software Foundation, Inc.
+# ftello.m4 serial 13
+dnl Copyright (C) 2007-2018 Free Software Foundation, Inc.
 dnl This file is free software; the Free Software Foundation
 dnl gives unlimited permission to copy and/or distribute it,
 dnl with or without modifications, as long as this notice is preserved.
@@ -53,6 +53,8 @@ changequote(,)dnl
           case "$host_os" in
                       # Guess no on Solaris.
             solaris*) gl_cv_func_ftello_works="guessing no" ;;
+                      # Guess yes on native Windows.
+            mingw*)   gl_cv_func_ftello_works="guessing yes" ;;
                       # Guess yes otherwise.
             *)        gl_cv_func_ftello_works="guessing yes" ;;
           esac
@@ -73,7 +75,7 @@ main (void)
   if (fp == NULL)
     return 70;
   if (fwrite ("foogarsh", 1, 8, fp) < 8)
-    return 71;
+    { fclose (fp); return 71; }
   if (fclose (fp))
     return 72;
 
@@ -84,19 +86,19 @@ main (void)
   if (fp == NULL)
     return 73;
   if (fseek (fp, -1, SEEK_END))
-    return 74;
+    { fclose (fp); return 74; }
   if (!(getc (fp) == 'h'))
-    return 1;
+    { fclose (fp); return 1; }
   if (!(getc (fp) == EOF))
-    return 2;
+    { fclose (fp); return 2; }
   if (!(ftell (fp) == 8))
-    return 3;
+    { fclose (fp); return 3; }
   if (!(ftell (fp) == 8))
-    return 4;
+    { fclose (fp); return 4; }
   if (!(putc ('!', fp) == '!'))
-    return 5;
+    { fclose (fp); return 5; }
   if (!(ftell (fp) == 9))
-    return 6;
+    { fclose (fp); return 6; }
   if (!(fclose (fp) == 0))
     return 7;
   fp = fopen (TESTFILE, "r");
@@ -105,9 +107,9 @@ main (void)
   {
     char buf[10];
     if (!(fread (buf, 1, 10, fp) == 9))
-      return 10;
+      { fclose (fp); return 10; }
     if (!(memcmp (buf, "foogarsh!", 9) == 0))
-      return 11;
+      { fclose (fp); return 11; }
   }
   if (!(fclose (fp) == 0))
     return 12;

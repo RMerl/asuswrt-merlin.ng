@@ -1,6 +1,6 @@
 /* A GNU-like <signal.h>.
 
-   Copyright (C) 2006-2017 Free Software Foundation, Inc.
+   Copyright (C) 2006-2018 Free Software Foundation, Inc.
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -13,7 +13,7 @@
    GNU General Public License for more details.
 
    You should have received a copy of the GNU General Public License
-   along with this program.  If not, see <http://www.gnu.org/licenses/>.  */
+   along with this program.  If not, see <https://www.gnu.org/licenses/>.  */
 
 #if __GNUC__ >= 3
 @PRAGMA_SYSTEM_HEADER@
@@ -137,7 +137,7 @@ _GL_FUNCDECL_RPL (pthread_sigmask, int,
 _GL_CXXALIAS_RPL (pthread_sigmask, int,
                   (int how, const sigset_t *new_mask, sigset_t *old_mask));
 # else
-#  if !@HAVE_PTHREAD_SIGMASK@
+#  if !(@HAVE_PTHREAD_SIGMASK@ || defined pthread_sigmask)
 _GL_FUNCDECL_SYS (pthread_sigmask, int,
                   (int how, const sigset_t *new_mask, sigset_t *old_mask));
 #  endif
@@ -200,7 +200,7 @@ typedef int verify_NSIG_constraint[NSIG <= 32 ? 1 : -1];
 /* When also using extern inline, suppress the use of static inline in
    standard headers of problematic Apple configurations, as Libc at
    least through Libc-825.26 (2013-04-09) mishandles it; see, e.g.,
-   <http://lists.gnu.org/archive/html/bug-gnulib/2012-12/msg00023.html>.
+   <https://lists.gnu.org/r/bug-gnulib/2012-12/msg00023.html>.
    Perhaps Apple will fix this some day.  */
 #if (defined _GL_EXTERN_INLINE_IN_USE && defined __APPLE__ \
      && (defined __i386__ || defined __x86_64__))

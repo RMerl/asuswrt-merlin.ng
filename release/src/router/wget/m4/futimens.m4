@@ -1,7 +1,7 @@
 # serial 7
 # See if we need to provide futimens replacement.
 
-dnl Copyright (C) 2009-2017 Free Software Foundation, Inc.
+dnl Copyright (C) 2009-2018 Free Software Foundation, Inc.
 dnl This file is free software; the Free Software Foundation
 dnl gives unlimited permission to copy and/or distribute it,
 dnl with or without modifications, as long as this notice is preserved.
@@ -23,10 +23,14 @@ AC_DEFUN([gl_FUNC_FUTIMENS],
 #include <sys/stat.h>
 #include <unistd.h>
 #include <errno.h>
-]], [[struct timespec ts[2] = { { 1, UTIME_OMIT }, { 1, UTIME_NOW } };
+]], [[struct timespec ts[2];
       int fd = creat ("conftest.file", 0600);
       struct stat st;
       if (fd < 0) return 1;
+      ts[0].tv_sec = 1;
+      ts[0].tv_nsec = UTIME_OMIT;
+      ts[1].tv_sec = 1;
+      ts[1].tv_nsec = UTIME_NOW;
       errno = 0;
       if (futimens (AT_FDCWD, NULL) == 0) return 2;
       if (errno != EBADF) return 3;

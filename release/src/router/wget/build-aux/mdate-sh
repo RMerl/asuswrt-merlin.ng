@@ -1,9 +1,9 @@
 #!/bin/sh
 # Get modification time of a file or directory and pretty-print it.
 
-scriptversion=2016-01-11.22; # UTC
+scriptversion=2017-09-22.02; # UTC
 
-# Copyright (C) 1995-2017 Free Software Foundation, Inc.
+# Copyright (C) 1995-2018 Free Software Foundation, Inc.
 # written by Ulrich Drepper <drepper@gnu.ai.mit.edu>, June 1995
 #
 # This program is free software; you can redistribute it and/or modify
@@ -17,7 +17,7 @@ scriptversion=2016-01-11.22; # UTC
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 # As a special exception to the GNU General Public License, if you
 # distribute this file as part of a program that contains a
@@ -73,6 +73,10 @@ LC_ALL=C
 export LC_ALL
 LC_TIME=C
 export LC_TIME
+
+# Use UTC to get reproducible result.
+TZ=UTC0
+export TZ
 
 # GNU ls changes its time format in response to the TIME_STYLE
 # variable.  Since we cannot assume 'unset' works, revert this

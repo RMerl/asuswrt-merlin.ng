@@ -4,13 +4,13 @@ eval '(exit $?0)' && eval 'exec perl -wST "$0" "$@"'
 # Detect instances of "if (p) free (p);".
 # Likewise "if (p != 0)", "if (0 != p)", or with NULL; and with braces.
 
-my $VERSION = '2016-08-01 17:47'; # UTC
+my $VERSION = '2017-09-13 06:45'; # UTC
 # The definition above must lie within the first 8 lines in order
 # for the Emacs time-stamp write hook (at end) to update it.
 # If you change this file with Emacs, please let the write hook
 # do its job.  Otherwise, update this string manually.
 
-# Copyright (C) 2008-2017 Free Software Foundation, Inc.
+# Copyright (C) 2008-2018 Free Software Foundation, Inc.
 
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -23,7 +23,7 @@ my $VERSION = '2016-08-01 17:47'; # UTC
 # GNU General Public License for more details.
 
 # You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 # Written by Jim Meyering
 
@@ -33,7 +33,7 @@ use Getopt::Long;
 
 (my $ME = $0) =~ s|.*/||;
 
-# use File::Coda; # http://meyering.net/code/Coda/
+# use File::Coda; # https://meyering.net/code/Coda/
 END {
   defined fileno STDOUT or return;
   close STDOUT and return;

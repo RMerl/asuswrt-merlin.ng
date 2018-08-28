@@ -1,6 +1,6 @@
 /* Hash table declarations.
-   Copyright (C) 2000, 2007, 2008, 2009, 2010, 2011, 2015 Free Software
-   Foundation, Inc.
+   Copyright (C) 2000, 2007-2011, 2015, 2018 Free Software Foundation,
+   Inc.
 
 This file is part of GNU Wget.
 

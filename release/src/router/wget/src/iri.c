@@ -1,6 +1,5 @@
 /* IRI related functions.
-   Copyright (C) 2008, 2009, 2010, 2011, 2015 Free Software Foundation,
-   Inc.
+   Copyright (C) 2008-2011, 2015, 2018 Free Software Foundation, Inc.
 
 This file is part of GNU Wget.
 
@@ -96,9 +95,9 @@ find_locale (void)
 	const char *encoding = nl_langinfo(CODESET);
 
 	if (!encoding || !*encoding)
-		return "ASCII";
+		return xstrdup("ASCII");
 
-   return encoding;
+   return xstrdup(encoding);
 }
 
 /* Basic check of an encoding name. */

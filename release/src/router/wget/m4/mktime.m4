@@ -1,5 +1,5 @@
-# serial 27
-dnl Copyright (C) 2002-2003, 2005-2007, 2009-2017 Free Software Foundation,
+# serial 30
+dnl Copyright (C) 2002-2003, 2005-2007, 2009-2018 Free Software Foundation,
 dnl Inc.
 dnl This file is free software; the Free Software Foundation
 dnl gives unlimited permission to copy and/or distribute it,
@@ -21,10 +21,11 @@ AC_DEFUN([gl_TIME_T_IS_SIGNED],
   fi
 ])
 
-AC_DEFUN([gl_FUNC_MKTIME],
+dnl Test whether mktime works. Set gl_cv_func_working_mktime.
+AC_DEFUN([gl_FUNC_MKTIME_WORKS],
 [
-  AC_REQUIRE([gl_HEADER_TIME_H_DEFAULTS])
   AC_REQUIRE([gl_TIME_T_IS_SIGNED])
+  AC_REQUIRE([AC_CANONICAL_HOST]) dnl for cross-compiles
 
   dnl We don't use AC_FUNC_MKTIME any more, because it is no longer maintained
   dnl in Autoconf and because it invokes AC_LIBOBJ.
@@ -52,6 +53,10 @@ AC_DEFUN([gl_FUNC_MKTIME],
 
 #if HAVE_DECL_ALARM
 # include <signal.h>
+#endif
+
+#ifndef TIME_T_IS_SIGNED
+# define TIME_T_IS_SIGNED 0
 #endif
 
 /* Work around redefinition to rpl_putenv by other config tests.  */
@@ -239,29 +244,55 @@ main ()
 }]])],
        [gl_cv_func_working_mktime=yes],
        [gl_cv_func_working_mktime=no],
-       [gl_cv_func_working_mktime=no])
+       [case "$host_os" in
+                  # Guess no on native Windows.
+          mingw*) gl_cv_func_working_mktime="guessing no" ;;
+          *)      gl_cv_func_working_mktime="guessing no" ;;
+        esac
+       ])
     ])
-
-  if test $gl_cv_func_working_mktime = no; then
-    REPLACE_MKTIME=1
-  else
-    REPLACE_MKTIME=0
-  fi
 ])
 
-AC_DEFUN([gl_FUNC_MKTIME_INTERNAL], [
-  AC_REQUIRE([gl_FUNC_MKTIME])
-  if test $REPLACE_MKTIME = 0; then
-    dnl BeOS has __mktime_internal in libc, but other platforms don't.
-    AC_CHECK_FUNC([__mktime_internal],
-      [AC_DEFINE([mktime_internal], [__mktime_internal],
-         [Define to the real name of the mktime_internal function.])
-      ],
-      [dnl mktime works but it doesn't export __mktime_internal,
-       dnl so we need to substitute our own mktime implementation.
-       REPLACE_MKTIME=1
-      ])
+dnl Main macro of module 'mktime'.
+AC_DEFUN([gl_FUNC_MKTIME],
+[
+  AC_REQUIRE([gl_HEADER_TIME_H_DEFAULTS])
+  AC_REQUIRE([AC_CANONICAL_HOST])
+  AC_REQUIRE([gl_FUNC_MKTIME_WORKS])
+
+  REPLACE_MKTIME=0
+  if test "$gl_cv_func_working_mktime" != yes; then
+    REPLACE_MKTIME=1
+    AC_DEFINE([NEED_MKTIME_WORKING], [1],
+      [Define if the compilation of mktime.c should define 'mktime'
+       with the algorithmic workarounds.])
   fi
+  case "$host_os" in
+    mingw*)
+      REPLACE_MKTIME=1
+      AC_DEFINE([NEED_MKTIME_WINDOWS], [1],
+        [Define if the compilation of mktime.c should define 'mktime'
+         with the native Windows TZ workaround.])
+      ;;
+  esac
+])
+
+dnl Main macro of module 'mktime-internal'.
+AC_DEFUN([gl_FUNC_MKTIME_INTERNAL], [
+  AC_REQUIRE([gl_FUNC_MKTIME_WORKS])
+
+  WANT_MKTIME_INTERNAL=0
+  dnl BeOS has __mktime_internal in libc, but other platforms don't.
+  AC_CHECK_FUNC([__mktime_internal],
+    [AC_DEFINE([mktime_internal], [__mktime_internal],
+       [Define to the real name of the mktime_internal function.])
+    ],
+    [dnl mktime works but it doesn't export __mktime_internal,
+     dnl so we need to substitute our own mktime implementation.
+     WANT_MKTIME_INTERNAL=1
+     AC_DEFINE([NEED_MKTIME_INTERNAL], [1],
+       [Define if the compilation of mktime.c should define 'mktime_internal'.])
+    ])
 ])
 
 # Prerequisites of lib/mktime.c.

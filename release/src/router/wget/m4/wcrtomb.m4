@@ -1,5 +1,5 @@
-# wcrtomb.m4 serial 11
-dnl Copyright (C) 2008-2017 Free Software Foundation, Inc.
+# wcrtomb.m4 serial 12
+dnl Copyright (C) 2008-2018 Free Software Foundation, Inc.
 dnl This file is free software; the Free Software Foundation
 dnl gives unlimited permission to copy and/or distribute it,
 dnl with or without modifications, as long as this notice is preserved.
@@ -51,6 +51,8 @@ changequote(,)dnl
           case "$host_os" in
                                      # Guess no on AIX 4, OSF/1 and Solaris.
             aix4* | osf* | solaris*) gl_cv_func_wcrtomb_retval="guessing no" ;;
+                                     # Guess yes on native Windows.
+            mingw*)                  gl_cv_func_wcrtomb_retval="guessing yes" ;;
                                      # Guess yes otherwise.
             *)                       gl_cv_func_wcrtomb_retval="guessing yes" ;;
           esac

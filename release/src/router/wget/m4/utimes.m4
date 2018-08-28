@@ -1,7 +1,7 @@
 # Detect some bugs in glibc's implementation of utimes.
-# serial 4
+# serial 5
 
-dnl Copyright (C) 2003-2005, 2009-2017 Free Software Foundation, Inc.
+dnl Copyright (C) 2003-2005, 2009-2018 Free Software Foundation, Inc.
 dnl This file is free software; the Free Software Foundation
 dnl gives unlimited permission to copy and/or distribute it,
 dnl with or without modifications, as long as this notice is preserved.
@@ -20,10 +20,10 @@ dnl with or without modifications, as long as this notice is preserved.
 
 AC_DEFUN([gl_FUNC_UTIMES],
 [
+  AC_REQUIRE([AC_CANONICAL_HOST]) dnl for cross-compiles
   AC_CACHE_CHECK([whether the utimes function works],
                  [gl_cv_func_working_utimes],
-  [
-  AC_RUN_IFELSE([AC_LANG_SOURCE([[
+    [AC_RUN_IFELSE([AC_LANG_SOURCE([[
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
@@ -142,9 +142,17 @@ main ()
   ]])],
        [gl_cv_func_working_utimes=yes],
        [gl_cv_func_working_utimes=no],
-       [gl_cv_func_working_utimes=no])])
+       [case "$host_os" in
+                  # Guess no on native Windows.
+          mingw*) gl_cv_func_working_utimes="guessing no" ;;
+          *)      gl_cv_func_working_utimes="guessing no" ;;
+        esac
+       ])
+    ])
 
-  if test $gl_cv_func_working_utimes = yes; then
-    AC_DEFINE([HAVE_WORKING_UTIMES], [1], [Define if utimes works properly.])
-  fi
+  case "$gl_cv_func_working_utimes" in
+    *yes)
+      AC_DEFINE([HAVE_WORKING_UTIMES], [1], [Define if utimes works properly.])
+      ;;
+  esac
 ])

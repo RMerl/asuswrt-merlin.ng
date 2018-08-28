@@ -1,7 +1,5 @@
 /* URL handling.
-   Copyright (C) 1996, 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004,
-   2005, 2006, 2007, 2008, 2009, 2010, 2011, 2015 Free Software
-   Foundation, Inc.
+   Copyright (C) 1996-2011, 2015, 2018 Free Software Foundation, Inc.
 
 This file is part of GNU Wget.
 
@@ -53,7 +51,7 @@ as that of the covered work.  */
 #endif /* def __VMS */
 
 #ifdef TESTING
-#include "test.h"
+#include "../tests/unit-tests.h"
 #endif
 
 enum {
@@ -1553,13 +1551,13 @@ append_uri_pathel (const char *b, const char *e, bool escaped,
 static char *
 convert_fname (char *fname)
 {
-  char *converted_fname = fname;
+  char *converted_fname;
   const char *from_encoding = opt.encoding_remote;
   const char *to_encoding = opt.locale;
   iconv_t cd;
   size_t len, done, inlen, outlen;
   char *s;
-  const char *orig_fname = fname;
+  const char *orig_fname;
 
   /* Defaults for remote and local encodings.  */
   if (!from_encoding)
@@ -1569,62 +1567,64 @@ convert_fname (char *fname)
 
   cd = iconv_open (to_encoding, from_encoding);
   if (cd == (iconv_t) (-1))
-    logprintf (LOG_VERBOSE, _ ("Conversion from %s to %s isn't supported\n"),
-               quote (from_encoding), quote (to_encoding));
-  else
     {
-      inlen = strlen (fname);
-      len = outlen = inlen * 2;
-      converted_fname = s = xmalloc (outlen + 1);
-      done = 0;
-
-      for (;;)
-        {
-          errno = 0;
-          if (iconv (cd, (ICONV_CONST char **) &fname, &inlen, &s, &outlen) == 0
-              && iconv (cd, NULL, NULL, &s, &outlen) == 0)
-            {
-              *(converted_fname + len - outlen - done) = '\0';
-              iconv_close (cd);
-              DEBUGP (("Converted file name '%s' (%s) -> '%s' (%s)\n",
-                       orig_fname, from_encoding, converted_fname, to_encoding));
-              xfree (orig_fname);
-              return converted_fname;
-            }
-
-          /* Incomplete or invalid multibyte sequence */
-          if (errno == EINVAL || errno == EILSEQ || errno == 0)
-            {
-              if (errno)
-                logprintf (LOG_VERBOSE,
-                           _ ("Incomplete or invalid multibyte sequence encountered\n"));
-              else
-                logprintf (LOG_VERBOSE,
-                           _ ("Unconvertable multibyte sequence encountered\n"));
-              xfree (converted_fname);
-              converted_fname = (char *) orig_fname;
-              break;
-            }
-          else if (errno == E2BIG) /* Output buffer full */
-            {
-              done = len;
-              len = outlen = done + inlen * 2;
-              converted_fname = xrealloc (converted_fname, outlen + 1);
-              s = converted_fname + done;
-            }
-          else /* Weird, we got an unspecified error */
-            {
-              logprintf (LOG_VERBOSE, _ ("Unhandled errno %d\n"), errno);
-              xfree (converted_fname);
-              converted_fname = (char *) orig_fname;
-              break;
-            }
-        }
-      DEBUGP (("Failed to convert file name '%s' (%s) -> '?' (%s)\n",
-               orig_fname, from_encoding, to_encoding));
+      logprintf (LOG_VERBOSE, _ ("Conversion from %s to %s isn't supported\n"),
+                 quote (from_encoding), quote (to_encoding));
+      return fname;
     }
 
-    iconv_close(cd);
+  orig_fname = fname;
+  inlen = strlen (fname);
+  len = outlen = inlen * 2;
+  converted_fname = s = xmalloc (outlen + 1);
+  done = 0;
+
+  for (;;)
+    {
+      errno = 0;
+      if (iconv (cd, (ICONV_CONST char **) &fname, &inlen, &s, &outlen) == 0
+          && iconv (cd, NULL, NULL, &s, &outlen) == 0)
+        {
+          *(converted_fname + len - outlen - done) = '\0';
+          iconv_close (cd);
+          DEBUGP (("Converted file name '%s' (%s) -> '%s' (%s)\n",
+                   orig_fname, from_encoding, converted_fname, to_encoding));
+          xfree (orig_fname);
+          return converted_fname;
+        }
+
+      /* Incomplete or invalid multibyte sequence */
+      if (errno == EINVAL || errno == EILSEQ || errno == 0)
+        {
+          if (errno)
+            logprintf (LOG_VERBOSE,
+                       _ ("Incomplete or invalid multibyte sequence encountered\n"));
+          else
+            logprintf (LOG_VERBOSE,
+                       _ ("Unconvertable multibyte sequence encountered\n"));
+          xfree (converted_fname);
+          converted_fname = (char *) orig_fname;
+          break;
+        }
+      else if (errno == E2BIG) /* Output buffer full */
+        {
+          done = len;
+          len = outlen = done + inlen * 2;
+          converted_fname = xrealloc (converted_fname, outlen + 1);
+          s = converted_fname + done;
+        }
+      else /* Weird, we got an unspecified error */
+        {
+          logprintf (LOG_VERBOSE, _ ("Unhandled errno %d\n"), errno);
+          xfree (converted_fname);
+          converted_fname = (char *) orig_fname;
+          break;
+        }
+    }
+  DEBUGP (("Failed to convert file name '%s' (%s) -> '?' (%s)\n",
+           orig_fname, from_encoding, to_encoding));
+
+  iconv_close (cd);
 
   return converted_fname;
 }
@@ -1708,35 +1708,43 @@ url_file_name (const struct url *u, char *replaced_filename)
   /* If "dirstruct" is turned on (typically the case with -r), add
      the host and port (unless those have been turned off) and
      directory structure.  */
+  /* All safe remote chars are unescaped and stored in temp_fnres,
+     then converted to local and appended to fnres.
+     Internationalized URL/IDN will produce punycode to lookup IP from DNS:
+     https://en.wikipedia.org/wiki/URL
+     https://en.wikipedia.org/wiki/Internationalized_domain_name
+     Non-ASCII code chars in the path:
+     https://en.wikipedia.org/wiki/List_of_Unicode_characters
+     https://en.wikipedia.org/wiki/List_of_writing_systems */
   if (opt.dirstruct)
     {
       if (opt.protocol_directories)
         {
-          if (fnres.tail)
-            append_char ('/', &fnres);
-          append_string (supported_schemes[u->scheme].name, &fnres);
+          if (temp_fnres.tail)
+            append_char ('/', &temp_fnres);
+          append_string (supported_schemes[u->scheme].name, &temp_fnres);
         }
       if (opt.add_hostdir)
         {
-          if (fnres.tail)
-            append_char ('/', &fnres);
+          if (temp_fnres.tail)
+            append_char ('/', &temp_fnres);
           if (0 != strcmp (u->host, ".."))
-            append_string (u->host, &fnres);
+            append_string (u->host, &temp_fnres);
           else
             /* Host name can come from the network; malicious DNS may
                allow ".." to be resolved, causing us to write to
                "../<file>".  Defang such host names.  */
-            append_string ("%2E%2E", &fnres);
+            append_string ("%2E%2E", &temp_fnres);
           if (u->port != scheme_default_port (u->scheme))
             {
               char portstr[24];
               number_to_string (portstr, u->port);
-              append_char (FN_PORT_SEP, &fnres);
-              append_string (portstr, &fnres);
+              append_char (FN_PORT_SEP, &temp_fnres);
+              append_string (portstr, &temp_fnres);
             }
         }
 
-      append_dir_structure (u, &fnres);
+      append_dir_structure (u, &temp_fnres);
     }
 
   if (!replaced_filename)
@@ -1750,9 +1758,6 @@ url_file_name (const struct url *u, char *replaced_filename)
         fname_len_check = concat_strings (u_file, FN_QUERY_SEP_STR, u->query, NULL);
       else
         fname_len_check = strdupdelim (u_file, u_file + strlen (u_file));
-
-      /* convert before concat with local path */
-      fname_len_check = convert_fname (fname_len_check);
     }
   else
     {
@@ -1760,11 +1765,22 @@ url_file_name (const struct url *u, char *replaced_filename)
       fname_len_check = strdupdelim (u_file, u_file + strlen (u_file));
     }
 
+  if (temp_fnres.tail)
+    append_char ('/', &temp_fnres);
+
   append_uri_pathel (fname_len_check,
-    fname_len_check + strlen (fname_len_check), false, &temp_fnres);
+    fname_len_check + strlen (fname_len_check), true, &temp_fnres);
 
   /* Zero-terminate the temporary file name. */
   append_char ('\0', &temp_fnres);
+
+  /* convert all remote chars before length check and appending to local path */
+  fname = convert_fname (temp_fnres.base);
+  temp_fnres.base = NULL;
+  temp_fnres.size = 0;
+  temp_fnres.tail = 0;
+  append_string (fname, &temp_fnres);
+  xfree (fname);
 
   /* Check that the length of the file name is acceptable. */
 #ifdef WINDOWS

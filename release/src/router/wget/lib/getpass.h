@@ -1,5 +1,5 @@
 /* getpass.h -- Read a password of arbitrary length from /dev/tty or stdin.
-   Copyright (C) 2004, 2009-2017 Free Software Foundation, Inc.
+   Copyright (C) 2004, 2009-2018 Free Software Foundation, Inc.
    Contributed by Simon Josefsson <jas@extundo.com>, 2004.
 
    This program is free software; you can redistribute it and/or modify
@@ -13,7 +13,7 @@
    GNU General Public License for more details.
 
    You should have received a copy of the GNU General Public License
-   along with this program; if not, see <http://www.gnu.org/licenses/>.  */
+   along with this program; if not, see <https://www.gnu.org/licenses/>.  */
 
 #ifndef GETPASS_H
 # define GETPASS_H

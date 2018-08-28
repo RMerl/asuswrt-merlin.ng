@@ -1,5 +1,5 @@
-# locale-ja.m4 serial 12
-dnl Copyright (C) 2003, 2005-2017 Free Software Foundation, Inc.
+# locale-ja.m4 serial 13
+dnl Copyright (C) 2003, 2005-2018 Free Software Foundation, Inc.
 dnl This file is free software; the Free Software Foundation
 dnl gives unlimited permission to copy and/or distribute it,
 dnl with or without modifications, as long as this notice is preserved.
@@ -25,9 +25,14 @@ struct tm t;
 char buf[16];
 int main ()
 {
-  const char *p;
+  /* On BeOS and Haiku, locales are not implemented in libc.  Rather, libintl
+     imitates locale dependent behaviour by looking at the environment
+     variables, and all locales use the UTF-8 encoding.  */
+#if defined __BEOS__ || defined __HAIKU__
+  return 1;
+#else
   /* Check whether the given locale name is recognized by the system.  */
-#if (defined _WIN32 || defined __WIN32__) && !defined __CYGWIN__
+# if (defined _WIN32 || defined __WIN32__) && !defined __CYGWIN__
   /* On native Windows, setlocale(category, "") looks at the system settings,
      not at the environment variables.  Also, when an encoding suffix such
      as ".65001" or ".54936" is specified, it succeeds but sets the LC_CTYPE
@@ -35,9 +40,9 @@ int main ()
   if (setlocale (LC_ALL, getenv ("LC_ALL")) == NULL
       || strcmp (setlocale (LC_CTYPE, NULL), "C") == 0)
     return 1;
-#else
+# else
   if (setlocale (LC_ALL, "") == NULL) return 1;
-#endif
+# endif
   /* Check whether nl_langinfo(CODESET) is nonempty and not "ASCII" or "646".
      On Mac OS X 10.3.5 (Darwin 7.5) in the fr_FR locale, nl_langinfo(CODESET)
      is empty, and the behaviour of Tcl 8.4 in this locale is not useful.
@@ -46,32 +51,36 @@ int main ()
      some unit tests fail.
      On MirBSD 10, when an unsupported locale is specified, setlocale()
      succeeds but then nl_langinfo(CODESET) is "UTF-8".  */
-#if HAVE_LANGINFO_CODESET
+# if HAVE_LANGINFO_CODESET
   {
     const char *cs = nl_langinfo (CODESET);
     if (cs[0] == '\0' || strcmp (cs, "ASCII") == 0 || strcmp (cs, "646") == 0
         || strcmp (cs, "UTF-8") == 0)
       return 1;
   }
-#endif
-#ifdef __CYGWIN__
+# endif
+# ifdef __CYGWIN__
   /* On Cygwin, avoid locale names without encoding suffix, because the
      locale_charset() function relies on the encoding suffix.  Note that
      LC_ALL is set on the command line.  */
   if (strchr (getenv ("LC_ALL"), '.') == NULL) return 1;
-#endif
+# endif
   /* Check whether MB_CUR_MAX is > 1.  This excludes the dysfunctional locales
      on Cygwin 1.5.x.  */
   if (MB_CUR_MAX == 1)
     return 1;
   /* Check whether in a month name, no byte in the range 0x80..0x9F occurs.
      This excludes the UTF-8 encoding (except on MirBSD).  */
-  t.tm_year = 1975 - 1900; t.tm_mon = 2 - 1; t.tm_mday = 4;
-  if (strftime (buf, sizeof (buf), "%B", &t) < 2) return 1;
-  for (p = buf; *p != '\0'; p++)
-    if ((unsigned char) *p >= 0x80 && (unsigned char) *p < 0xa0)
-      return 1;
+  {
+    const char *p;
+    t.tm_year = 1975 - 1900; t.tm_mon = 2 - 1; t.tm_mday = 4;
+    if (strftime (buf, sizeof (buf), "%B", &t) < 2) return 1;
+    for (p = buf; *p != '\0'; p++)
+      if ((unsigned char) *p >= 0x80 && (unsigned char) *p < 0xa0)
+        return 1;
+  }
   return 0;
+#endif
 }
 changequote([,])dnl
       ])])

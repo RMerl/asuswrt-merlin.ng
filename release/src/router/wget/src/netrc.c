@@ -1,6 +1,6 @@
 /* Read and parse the .netrc file to get hosts, accounts, and passwords.
-   Copyright (C) 1996, 2007, 2008, 2009, 2010, 2011, 2015 Free Software
-   Foundation, Inc.
+   Copyright (C) 1996, 2007-2011, 2015, 2018 Free Software Foundation,
+   Inc.
 
 This file is part of GNU Wget.
 
@@ -42,16 +42,33 @@ as that of the covered work.  */
 #include "netrc.h"
 #include "init.h"
 
-#define NETRC_FILE_NAME ".netrc"
+#ifdef WINDOWS
+#  define NETRC_FILE_NAME "_netrc"
+#else
+#  define NETRC_FILE_NAME ".netrc"
+#endif
 
-static acc_t *netrc_list;
+typedef struct _acc_t
+{
+  char *host;           /* NULL if this is the default machine
+                           entry.  */
+  char *acc;
+  char *passwd;         /* NULL if there is no password.  */
+  struct _acc_t *next;
+} acc_t;
 
 static acc_t *parse_netrc (const char *);
+static acc_t *parse_netrc_fp (const char *, FILE *);
+static void free_netrc(acc_t *);
+
+static acc_t *netrc_list;
+static int processed_netrc;
 
 void
 netrc_cleanup(void)
 {
   free_netrc (netrc_list);
+  processed_netrc = 0;
 }
 
 /* Return the correct user and password, given the host, user (as
@@ -62,10 +79,9 @@ netrc_cleanup(void)
    You will typically turn it off for HTTP.  */
 void
 search_netrc (const char *host, const char **acc, const char **passwd,
-              int slack_default)
+              int slack_default, FILE *fp_netrc)
 {
   acc_t *l;
-  static int processed_netrc;
 
   if (!opt.netrc)
     return;
@@ -87,20 +103,18 @@ search_netrc (const char *host, const char **acc, const char **passwd,
 
 #else /* def __VMS */
 
-      char *home = home_dir ();
-
       netrc_list = NULL;
       processed_netrc = 1;
-      if (home)
+
+      if (fp_netrc)
+        netrc_list = parse_netrc_fp (".netrc", fp_netrc);
+      else if (opt.homedir)
         {
-          int err;
           struct stat buf;
-          char *path = (char *)alloca (strlen (home) + 1
+          char *path = (char *)alloca (strlen (opt.homedir) + 1
                                        + strlen (NETRC_FILE_NAME) + 1);
-          sprintf (path, "%s/%s", home, NETRC_FILE_NAME);
-          xfree (home);
-          err = stat (path, &buf);
-          if (err == 0)
+          sprintf (path, "%s/%s", opt.homedir, NETRC_FILE_NAME);
+          if (stat (path, &buf) == 0)
             netrc_list = parse_netrc (path);
         }
 
@@ -223,13 +237,12 @@ shift_left(char *string)
 
 /* Parse a .netrc file (as described in the ftp(1) manual page).  */
 static acc_t *
-parse_netrc (const char *path)
+parse_netrc_fp (const char *path, FILE *fp)
 {
-  FILE *fp;
   char *line = NULL, *p, *tok;
-  const char *premature_token;
-  acc_t *current, *retval;
-  int ln, qmark;
+  const char *premature_token = NULL;
+  acc_t *current = NULL, *retval = NULL;
+  int ln = 0, qmark;
   size_t bufsize = 0;
 
   /* The latest token we've seen in the file.  */
@@ -237,20 +250,6 @@ parse_netrc (const char *path)
   {
     tok_nothing, tok_account, tok_login, tok_macdef, tok_machine, tok_password, tok_port, tok_force
   } last_token = tok_nothing;
-
-  current = retval = NULL;
-
-  fp = fopen (path, "r");
-  if (!fp)
-    {
-      fprintf (stderr, _("%s: Cannot read %s (%s).\n"), exec_name,
-               path, strerror (errno));
-      return retval;
-    }
-
-  /* Initialize the file data.  */
-  ln = 0;
-  premature_token = NULL;
 
   /* While there are lines in the file...  */
   while (getline (&line, &bufsize, fp) > 0)
@@ -314,7 +313,10 @@ parse_netrc (const char *path)
             {
             case tok_login:
               if (current)
-                current->acc = xstrdup (tok);
+                {
+                  xfree (current->acc);
+                  current->acc = xstrdup (tok);
+                }
               else
                 premature_token = "login";
               break;
@@ -327,7 +329,10 @@ parse_netrc (const char *path)
 
             case tok_password:
               if (current)
-                current->passwd = xstrdup (tok);
+                {
+                  xfree (current->passwd);
+                  current->passwd = xstrdup (tok);
+                }
               else
                 premature_token = "password";
               break;
@@ -411,7 +416,6 @@ parse_netrc (const char *path)
     }
 
   xfree (line);
-  fclose (fp);
 
   /* Finalize the last machine entry we found.  */
   maybe_add_to_list (&current, &retval);
@@ -436,9 +440,28 @@ parse_netrc (const char *path)
   return retval;
 }
 
+static acc_t *
+parse_netrc (const char *path)
+{
+  FILE *fp;
+  acc_t *acc;
+
+  fp = fopen (path, "r");
+  if (!fp)
+    {
+      fprintf (stderr, _("%s: Cannot read %s (%s).\n"), exec_name,
+               path, strerror (errno));
+      return NULL;
+    }
+
+  acc = parse_netrc_fp (path, fp);
+  fclose(fp);
+
+  return acc;
+}
 
 /* Free a netrc list.  */
-void
+static void
 free_netrc(acc_t *l)
 {
   acc_t *t;
@@ -457,6 +480,9 @@ free_netrc(acc_t *l)
 #ifdef STANDALONE
 #include <sys/types.h>
 #include <sys/stat.h>
+#include "exits.h"
+
+const char *program_argstring = NULL; /* Needed by warc.c */
 
 int
 main (int argc, char **argv)

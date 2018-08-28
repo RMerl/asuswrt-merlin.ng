@@ -7,21 +7,14 @@ Primary List
 The primary mailinglist for discussion, bug-reports, or questions about
 GNU Wget is at <bug-wget@gnu.org>. To subscribe, send an email to
 <bug-wget-join@gnu.org>, or visit
-`http://lists.gnu.org/mailman/listinfo/bug-wget'.
+`https://lists.gnu.org/mailman/listinfo/bug-wget'.
 
    You do not need to subscribe to send a message to the list; however,
 please note that unsubscribed messages are moderated, and may take a
 while before they hit the list--*usually around a day*.  If you want
 your message to show up immediately, please subscribe to the list
 before posting. Archives for the list may be found at
-`http://lists.gnu.org/pipermail/bug-wget/'.
-
-   An NNTP/Usenettish gateway is also available via Gmane
-(http://gmane.org/about.php). You can see the Gmane archives at
-`http://news.gmane.org/gmane.comp.web.wget.general'. Note that the
-Gmane archives conveniently include messages from both the current
-list, and the previous one. Messages also show up in the Gmane archives
-sooner than they do at `lists.gnu.org'.
+`https://lists.gnu.org/pipermail/bug-wget/'.
 
 Obsolete Lists
 --------------
@@ -31,10 +24,7 @@ discussion list, and another list, <wget-patches@sunsite.dk> was used
 for submitting and discussing patches to GNU Wget.
 
    Messages from <wget@sunsite.dk> are archived at
-     `http://www.mail-archive.com/wget%40sunsite.dk/' and at
-
-     `http://news.gmane.org/gmane.comp.web.wget.general' (which also
-     continues to archive the current list, <bug-wget@gnu.org>).
+     `https://www.mail-archive.com/wget%40sunsite.dk/' and at
 
    Messages from <wget-patches@sunsite.dk> are archived at
-     `http://news.gmane.org/gmane.comp.web.wget.patches'.
+     `https://news.gmane.org/gmane.comp.web.wget.patches'.

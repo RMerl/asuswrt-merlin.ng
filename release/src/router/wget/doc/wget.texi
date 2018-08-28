@@ -31,9 +31,8 @@ This file documents the GNU Wget utility for downloading network
 data.
 
 @c man begin COPYRIGHT
-Copyright @copyright{} 1996, 1997, 1998, 1999, 2000, 2001, 2002, 2003,
-2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2015 Free Software
-Foundation, Inc.
+Copyright @copyright{} 1996-2011, 2015, 2018 Free Software Foundation,
+Inc.
 
 @iftex
 Permission is granted to make and distribute verbatim copies of
@@ -1544,10 +1543,13 @@ If @samp{auto} or @samp{gzip} are specified, Wget asks the server to
 compress the file using the gzip compression format. If the server
 compresses the file and responds with the @code{Content-Encoding}
 header field set appropriately, the file will be decompressed
-automatically. This is the default.
+automatically.
 
 If @samp{none} is specified, wget will not ask the server to compress
-the file and will not decompress any server responses.
+the file and will not decompress any server responses. This is the default.
+
+Compression support is currently experimental. In case it is turned on,
+please report any bugs to @code{bug-wget@@gnu.org}.
 
 @cindex redirect
 @item --max-redirect=@var{number}
@@ -1783,19 +1785,28 @@ and @samp{PFS}.  If @samp{auto} is used, the SSL library is given the
 liberty of choosing the appropriate protocol automatically, which is
 achieved by sending a TLSv1 greeting. This is the default.
 
-Specifying @samp{SSLv2}, @samp{SSLv3}, @samp{TLSv1}, @samp{TLSv1_1} or
-@samp{TLSv1_2} forces the use of the corresponding protocol.  This is
-useful when talking to old and buggy SSL server implementations that
-make it hard for the underlying SSL library to choose the correct
-protocol version.  Fortunately, such servers are quite rare.
+Specifying @samp{SSLv2}, @samp{SSLv3}, @samp{TLSv1}, @samp{TLSv1_1},
+@samp{TLSv1_2} or @samp{TLSv1_3} forces the use of the corresponding
+protocol.  This is useful when talking to old and buggy SSL server
+implementations that make it hard for the underlying SSL library to choose
+the correct protocol version.  Fortunately, such servers are quite rare.
 
 Specifying @samp{PFS} enforces the use of the so-called Perfect Forward
 Security cipher suites. In short, PFS adds security by creating a one-time
 key for each SSL connection. It has a bit more CPU impact on client and server.
-We use known to be secure ciphers (e.g. no MD4) and the TLS protocol.
+We use known to be secure ciphers (e.g. no MD4) and the TLS protocol. This mode
+also explicitly excludes non-PFS key exchange methods, such as RSA.
 
 @item --https-only
 When in recursive mode, only HTTPS links are followed.
+
+@item --ciphers
+Set the cipher list string. Typically this string sets the
+cipher suites and other SSL/TLS options that the user wish should be used, in a
+set order of preference (GnuTLS calls it 'priority string'). This string
+will be fed verbatim to the SSL/TLS engine (OpenSSL or GnuTLS) and hence
+its format and syntax is dependant on that. Wget will not process or manipulate it
+in any way. Refer to the OpenSSL or GnuTLS documentation for more information.
 
 @cindex SSL certificate, check
 @item --no-check-certificate
@@ -4131,7 +4142,11 @@ via IRC at @code{irc.freenode.org}, @code{#wget}. Come check it out!
 
 @c man begin BUGS
 You are welcome to submit bug reports via the GNU Wget bug tracker (see
-@url{https://savannah.gnu.org/bugs/?func=additem&group=wget}).
+@url{https://savannah.gnu.org/bugs/?func=additem&group=wget}) or to our
+mailing list @email{bug-wget@@gnu.org}.
+
+Visit @url{https://lists.gnu.org/mailman/listinfo/bug-wget} to
+get more info (how to subscribe, list archives, ...).
 
 Before actually submitting a bug report, please try to follow a few
 simple guidelines.

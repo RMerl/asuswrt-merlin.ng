@@ -1,6 +1,6 @@
 /* timespec -- System time interface
 
-   Copyright (C) 2000, 2002, 2004-2005, 2007, 2009-2017 Free Software
+   Copyright (C) 2000, 2002, 2004-2005, 2007, 2009-2018 Free Software
    Foundation, Inc.
 
    This program is free software: you can redistribute it and/or modify
@@ -14,7 +14,7 @@
    GNU General Public License for more details.
 
    You should have received a copy of the GNU General Public License
-   along with this program.  If not, see <http://www.gnu.org/licenses/>.  */
+   along with this program.  If not, see <https://www.gnu.org/licenses/>.  */
 
 #if ! defined TIMESPEC_H
 # define TIMESPEC_H
@@ -28,6 +28,12 @@ _GL_INLINE_HEADER_BEGIN
 #ifndef _GL_TIMESPEC_INLINE
 # define _GL_TIMESPEC_INLINE _GL_INLINE
 #endif
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+#include "verify.h"
 
 /* Resolution of timespec timestamps (in units per second), and log
    base 10 of the resolution.  */
@@ -63,23 +69,29 @@ make_timespec (time_t s, long int ns)
    any platform of interest to the GNU project, since all such
    platforms have 32-bit int or wider.
 
-   Replacing "(int) (a.tv_nsec - b.tv_nsec)" with something like
+   Replacing "a.tv_nsec - b.tv_nsec" with something like
    "a.tv_nsec < b.tv_nsec ? -1 : a.tv_nsec > b.tv_nsec" would cause
    this function to work in some cases where the above assumption is
    violated, but not in all cases (e.g., a.tv_sec==1, a.tv_nsec==-2,
    b.tv_sec==0, b.tv_nsec==999999999) and is arguably not worth the
    extra instructions.  Using a subtraction has the advantage of
    detecting some invalid cases on platforms that detect integer
-   overflow.
-
-   The (int) cast avoids a gcc -Wconversion warning.  */
+   overflow.  */
 
 _GL_TIMESPEC_INLINE int _GL_ATTRIBUTE_PURE
 timespec_cmp (struct timespec a, struct timespec b)
 {
-  return (a.tv_sec < b.tv_sec ? -1
-          : a.tv_sec > b.tv_sec ? 1
-          : (int) (a.tv_nsec - b.tv_nsec));
+  if (a.tv_sec < b.tv_sec)
+    return -1;
+  if (a.tv_sec > b.tv_sec)
+    return 1;
+
+  /* Pacify gcc -Wstrict-overflow (bleeding-edge circa 2017-10-02).  See:
+     http://lists.gnu.org/r/bug-gnulib/2017-10/msg00006.html  */
+  assume (-1 <= a.tv_nsec && a.tv_nsec <= 2 * TIMESPEC_RESOLUTION);
+  assume (-1 <= b.tv_nsec && b.tv_nsec <= 2 * TIMESPEC_RESOLUTION);
+
+  return a.tv_nsec - b.tv_nsec;
 }
 
 /* Return -1, 0, 1, depending on the sign of A.  A.tv_nsec must be
@@ -106,6 +118,10 @@ timespectod (struct timespec a)
 
 void gettime (struct timespec *);
 int settime (struct timespec const *);
+
+#ifdef __cplusplus
+}
+#endif
 
 _GL_INLINE_HEADER_END
 

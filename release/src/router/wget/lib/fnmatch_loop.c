@@ -1,4 +1,4 @@
-/* Copyright (C) 1991-1993, 1996-2006, 2009-2017 Free Software Foundation, Inc.
+/* Copyright (C) 1991-1993, 1996-2006, 2009-2018 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
 
    This program is free software; you can redistribute it and/or modify
@@ -12,7 +12,7 @@
    GNU General Public License for more details.
 
    You should have received a copy of the GNU General Public License
-   along with this program; if not, see <http://www.gnu.org/licenses/>.  */
+   along with this program; if not, see <https://www.gnu.org/licenses/>.  */
 
 /* Match STRING against the file name pattern PATTERN, returning zero if
    it matches, nonzero if not.  */
@@ -960,7 +960,7 @@ FCT (const CHAR *pattern, const CHAR *string, const CHAR *string_end,
               new_no_leading_period = true;
               break;
             }
-          /* FALLTHROUGH */
+          FALLTHROUGH;
         default:
         normal_match:
           if (n == string_end || c != FOLD ((UCHAR) *n))
@@ -1114,8 +1114,7 @@ EXT (INT opt, const CHAR *pattern, const CHAR *string, const CHAR *string_end,
     case L_('*'):
       if (FCT (p, string, string_end, no_leading_period, flags) == 0)
         return 0;
-      /* FALLTHROUGH */
-
+      FALLTHROUGH;
     case L_('+'):
       do
         {
@@ -1151,8 +1150,7 @@ EXT (INT opt, const CHAR *pattern, const CHAR *string, const CHAR *string_end,
     case L_('?'):
       if (FCT (p, string, string_end, no_leading_period, flags) == 0)
         return 0;
-      /* FALLTHROUGH */
-
+      FALLTHROUGH;
     case L_('@'):
       do
         /* I cannot believe it but 'strcat' is actually acceptable

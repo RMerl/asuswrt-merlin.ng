@@ -1,5 +1,5 @@
 /* Simple case mapping for Unicode characters.
-   Copyright (C) 2002, 2006, 2009-2017 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2006, 2009-2018 Free Software Foundation, Inc.
    Written by Bruno Haible <bruno@clisp.org>, 2009.
 
    This program is free software: you can redistribute it and/or modify it
@@ -13,7 +13,7 @@
    General Public License for more details.
 
    You should have received a copy of the GNU General Public License
-   along with this program.  If not, see <http://www.gnu.org/licenses/>.  */
+   along with this program.  If not, see <https://www.gnu.org/licenses/>.  */
 
 ucs4_t
 FUNC (ucs4_t uc)

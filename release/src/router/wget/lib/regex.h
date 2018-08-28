@@ -1,6 +1,6 @@
 /* Definitions for data structures and routines for the regular
    expression library.
-   Copyright (C) 1985, 1989-1993, 1995-1998, 2000-2003, 2005-2017 Free Software
+   Copyright (C) 1985, 1989-1993, 1995-1998, 2000-2003, 2005-2018 Free Software
    Foundation, Inc.
    This file is part of the GNU C Library.
 
@@ -16,7 +16,7 @@
 
    You should have received a copy of the GNU General Public
    License along with the GNU C Library; if not, see
-   <http://www.gnu.org/licenses/>.  */
+   <https://www.gnu.org/licenses/>.  */
 
 #ifndef _REGEX_H
 #define _REGEX_H 1

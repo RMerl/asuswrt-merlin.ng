@@ -1,5 +1,5 @@
 /* Convert a 'struct tm' to a time_t value.
-   Copyright (C) 1993-2017 Free Software Foundation, Inc.
+   Copyright (C) 1993-2018 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
    Contributed by Paul Eggert <eggert@twinsun.com>.
 
@@ -15,13 +15,26 @@
 
    You should have received a copy of the GNU General Public
    License along with the GNU C Library; if not, see
-   <http://www.gnu.org/licenses/>.  */
+   <https://www.gnu.org/licenses/>.  */
 
 /* Define this to 1 to have a standalone program to test this implementation of
    mktime.  */
 #ifndef DEBUG_MKTIME
 # define DEBUG_MKTIME 0
 #endif
+
+/* The following macros influence what gets defined when this file is compiled:
+
+   Macro/expression            Which gnulib module    This compilation unit
+                                                      should define
+
+   NEED_MKTIME_WORKING         mktime                 rpl_mktime
+   || NEED_MKTIME_WINDOWS
+
+   NEED_MKTIME_INTERNAL        mktime-internal        mktime_internal
+
+   DEBUG_MKTIME                (defined manually)     my_mktime, main
+ */
 
 #if !defined _LIBC && !DEBUG_MKTIME
 # include <config.h>
@@ -50,6 +63,13 @@
 # undef mktime
 # define mktime my_mktime
 #endif
+
+#if NEED_MKTIME_WINDOWS /* on native Windows */
+# include <stdlib.h>
+# include <string.h>
+#endif
+
+#if NEED_MKTIME_WORKING || NEED_MKTIME_INTERNAL || DEBUG_MKTIME
 
 /* A signed type that can represent an integer number of years
    multiplied by three times the number of seconds in a year.  It is
@@ -458,24 +478,64 @@ __mktime_internal (struct tm *tp,
   return t;
 }
 
+#endif /* NEED_MKTIME_WORKING || NEED_MKTIME_INTERNAL || DEBUG_MKTIME */
 
+#if NEED_MKTIME_WORKING || NEED_MKTIME_WINDOWS || DEBUG_MKTIME
+
+# if NEED_MKTIME_WORKING || DEBUG_MKTIME
 static mktime_offset_t localtime_offset;
+# endif
 
 /* Convert *TP to a time_t value.  */
 time_t
 mktime (struct tm *tp)
 {
-#ifdef _LIBC
+# if NEED_MKTIME_WINDOWS
+  /* Rectify the value of the environment variable TZ.
+     There are four possible kinds of such values:
+       - Traditional US time zone names, e.g. "PST8PDT".  Syntax: see
+         <https://msdn.microsoft.com/en-us/library/90s5c885.aspx>
+       - Time zone names based on geography, that contain one or more
+         slashes, e.g. "Europe/Moscow".
+       - Time zone names based on geography, without slashes, e.g.
+         "Singapore".
+       - Time zone names that contain explicit DST rules.  Syntax: see
+         <http://pubs.opengroup.org/onlinepubs/9699919799/basedefs/V1_chap08.html#tag_08_03>
+     The Microsoft CRT understands only the first kind.  It produces incorrect
+     results if the value of TZ is of the other kinds.
+     But in a Cygwin environment, /etc/profile.d/tzset.sh sets TZ to a value
+     of the second kind for most geographies, or of the first kind in a few
+     other geographies.  If it is of the second kind, neutralize it.  For the
+     Microsoft CRT, an absent or empty TZ means the time zone that the user
+     has set in the Windows Control Panel.
+     If the value of TZ is of the third or fourth kind -- Cygwin programs
+     understand these syntaxes as well --, it does not matter whether we
+     neutralize it or not, since these values occur only when a Cygwin user
+     has set TZ explicitly; this case is 1. rare and 2. under the user's
+     responsibility.  */
+  const char *tz = getenv ("TZ");
+  if (tz != NULL && strchr (tz, '/') != NULL)
+    _putenv ("TZ=");
+# endif
+
+# if NEED_MKTIME_WORKING || DEBUG_MKTIME
+#  ifdef _LIBC
   /* POSIX.1 8.1.1 requires that whenever mktime() is called, the
      time zone names contained in the external variable 'tzname' shall
      be set as if the tzset() function had been called.  */
   __tzset ();
-#elif HAVE_TZSET
+#  elif HAVE_TZSET
   tzset ();
-#endif
+#  endif
 
   return __mktime_internal (tp, __localtime_r, &localtime_offset);
+# else
+#  undef mktime
+  return mktime (tp);
+# endif
 }
+
+#endif /* NEED_MKTIME_WORKING || NEED_MKTIME_WINDOWS || DEBUG_MKTIME */
 
 #ifdef weak_alias
 weak_alias (mktime, timelocal)

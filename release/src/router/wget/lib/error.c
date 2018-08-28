@@ -1,5 +1,5 @@
 /* Error handler for noninteractive utilities
-   Copyright (C) 1990-1998, 2000-2007, 2009-2017 Free Software Foundation, Inc.
+   Copyright (C) 1990-1998, 2000-2007, 2009-2018 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
 
    This program is free software: you can redistribute it and/or modify
@@ -13,7 +13,7 @@
    GNU General Public License for more details.
 
    You should have received a copy of the GNU General Public License
-   along with this program.  If not, see <http://www.gnu.org/licenses/>.  */
+   along with this program.  If not, see <https://www.gnu.org/licenses/>.  */
 
 /* Written by David MacKenzie <djm@gnu.ai.mit.edu>.  */
 
@@ -98,28 +98,32 @@ extern void __error_at_line (int status, int errnum, const char *file_name,
 #  define WIN32_LEAN_AND_MEAN
 #  include <windows.h>
 /* Get _get_osfhandle.  */
-#  include "msvc-nothrow.h"
+#  if GNULIB_MSVC_NOTHROW
+#   include "msvc-nothrow.h"
+#  else
+#   include <io.h>
+#  endif
 # endif
 
 /* The gnulib override of fcntl is not needed in this file.  */
 # undef fcntl
 
-# if !HAVE_DECL_STRERROR_R
+# if !(GNULIB_STRERROR_R_POSIX || HAVE_DECL_STRERROR_R)
 #  ifndef HAVE_DECL_STRERROR_R
 "this configure-time declaration test was not run"
 #  endif
 #  if STRERROR_R_CHAR_P
-char *strerror_r ();
+char *strerror_r (int errnum, char *buf, size_t buflen);
 #  else
-int strerror_r ();
+int strerror_r (int errnum, char *buf, size_t buflen);
 #  endif
 # endif
 
 #define program_name getprogname ()
 
-# if HAVE_STRERROR_R || defined strerror_r
+# if GNULIB_STRERROR_R_POSIX || HAVE_STRERROR_R || defined strerror_r
 #  define __strerror_r strerror_r
-# endif /* HAVE_STRERROR_R || defined strerror_r */
+# endif /* GNULIB_STRERROR_R_POSIX || HAVE_STRERROR_R || defined strerror_r */
 #endif  /* not _LIBC */
 
 #if !_LIBC
@@ -172,9 +176,9 @@ print_errno_message (int errnum)
 {
   char const *s;
 
-#if defined HAVE_STRERROR_R || _LIBC
+#if _LIBC || GNULIB_STRERROR_R_POSIX || defined HAVE_STRERROR_R
   char errbuf[1024];
-# if _LIBC || STRERROR_R_CHAR_P
+# if _LIBC || (!GNULIB_STRERROR_R_POSIX && STRERROR_R_CHAR_P)
   s = __strerror_r (errnum, errbuf, sizeof errbuf);
 # else
   if (__strerror_r (errnum, errbuf, sizeof errbuf) == 0)
@@ -268,7 +272,6 @@ error_tail (int status, int errnum, const char *message, va_list args)
   else
 #endif
     vfprintf (stderr, message, args);
-  va_end (args);
 
   ++error_message_count;
   if (errnum)
@@ -318,6 +321,7 @@ error (int status, int errnum, const char *message, ...)
 
   va_start (args, message);
   error_tail (status, errnum, message, args);
+  va_end (args);
 
 #ifdef _LIBC
   _IO_funlockfile (stderr);
@@ -388,6 +392,7 @@ error_at_line (int status, int errnum, const char *file_name,
 
   va_start (args, message);
   error_tail (status, errnum, message, args);
+  va_end (args);
 
 #ifdef _LIBC
   _IO_funlockfile (stderr);

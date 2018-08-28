@@ -1,6 +1,6 @@
 /* A correct <float.h>.
 
-   Copyright (C) 2007-2017 Free Software Foundation, Inc.
+   Copyright (C) 2007-2018 Free Software Foundation, Inc.
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -13,7 +13,7 @@
    GNU General Public License for more details.
 
    You should have received a copy of the GNU General Public License
-   along with this program.  If not, see <http://www.gnu.org/licenses/>.  */
+   along with this program.  If not, see <https://www.gnu.org/licenses/>.  */
 
 #ifndef _@GUARD_PREFIX@_FLOAT_H
 
@@ -62,8 +62,8 @@
 
 /* On FreeBSD/x86 6.4, the 'long double' type really has only 53 bits of
    precision in the compiler but 64 bits of precision at runtime.  See
-   <http://lists.gnu.org/archive/html/bug-gnulib/2008-07/msg00063.html>.  */
-#if defined __i386__ && defined __FreeBSD__
+   <https://lists.gnu.org/r/bug-gnulib/2008-07/msg00063.html>.  */
+#if defined __i386__ && (defined __FreeBSD__ || defined __DragonFly__)
 /* Number of mantissa units, in base FLT_RADIX.  */
 # undef LDBL_MANT_DIG
 # define LDBL_MANT_DIG   64
@@ -81,7 +81,7 @@
 # define LDBL_MAX_EXP    16384
 /* Minimum positive normalized number.  */
 # undef LDBL_MIN
-# define LDBL_MIN        3.3621031431120935E-4932L /* = 0x1p-16382L */
+# define LDBL_MIN        3.362103143112093506262677817321752E-4932L /* = 0x1p-16382L */
 /* Maximum representable finite number.  */
 # undef LDBL_MAX
 /* LDBL_MAX is represented as { 0xFFFFFFFF, 0xFFFFFFFF, 32766 }.

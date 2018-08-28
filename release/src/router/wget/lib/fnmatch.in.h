@@ -1,4 +1,4 @@
-/* Copyright (C) 1991-1993, 1996-1999, 2001-2003, 2005, 2007, 2009-2017 Free
+/* Copyright (C) 1991-1993, 1996-1999, 2001-2003, 2005, 2007, 2009-2018 Free
    Software Foundation, Inc.
 
    This file is part of the GNU C Library.
@@ -14,7 +14,7 @@
    GNU General Public License for more details.
 
    You should have received a copy of the GNU General Public License
-   along with this program; if not, see <http://www.gnu.org/licenses/>.  */
+   along with this program; if not, see <https://www.gnu.org/licenses/>.  */
 
 #ifndef _FNMATCH_H
 #define _FNMATCH_H      1

@@ -1,3 +1,630 @@
+2018-05-06  Tim Rühsen  <tim.ruehsen@gmx.de>
+
+	Update NEWS file for new release
+
+2018-05-06  Tim Rühsen  <tim.ruehsen@gmx.de>
+
+	Fix cookie injection (CVE-2018-0494)
+	* src/http.c (resp_new): Replace \r\n by space in continuation lines
+
+	Fixes #53763
+	 "Malicious website can write arbitrary cookie entries to cookie jar"
+
+	HTTP header parsing left the \r\n from continuation line intact.
+	The Set-Cookie code didn't check and could be tricked to write
+	\r\n into the cookie jar, allowing a server to generate cookies at will.
+
+2018-05-06  Tim Rühsen  <tim.ruehsen@gmx.de>
+
+	* tests/Test-https-weboftrust.px: Skip test, needs cert regen
+
+	Fix make syntax-check
+	* cfg.mk: Add fuzzer reproducers to exception list
+	* po/POTFILES.in: Add src/spider.c
+
+	Fix HTTPS tests
+	* tests/Test-https-badcerts.px: Fix test return value
+	* tests/Test-https-crl.px: Likewise
+	* README: How to create certs with GnuTLS's certtool
+	* tests/certs/revokedcrl.pem: Recreated revocation
+	* tests/certs/server.crt: Recreated server cert with no expiry
+	* tests/certs/test-ca-cert.pem: Recreated CA cert with no expiry
+
+	* src/init.c: Bring new --ciphers into right order in options array
+
+2018-05-05  Ander Juaristi  <a@juaristi.eus>
+
+	* doc/wget.texi: Add description for --ciphers
+
+2018-05-05  Ander Juarist  <a@juaristi.eus>
+
+	OpenSSL: Better seeding of PRNG
+	 * src/openssl.c (init_prng): keep gathering entropy even though we
+	                              already have enough
+	   (ssl_connect_with_timeout_callback): reseed PRNG again just before
+	                                        the handshake
+
+	Reported-by: Jeffrey Walton <noloader@gmail.com>
+
+2018-05-05  Ander Juaristi  <a@juaristi.eus>
+
+	Enhance SSL/TLS security
+	This commit hardens SSL/TLS a bit more in the following ways:
+
+	 * Explicitly exclude NULL authentication and the 'MEDIUM' cipher list
+	   category. Ciphers in the 'HIGH' level are only considered - this
+	   includes all symmetric ciphers with key lengths larger than 128 bits,
+	   and some ('modern') 128-bit ciphers, such as AES in GCM mode.
+	 * Allow RSA key exchange by default, but exclude it when
+	   Perfect Forward Secrecy is desired (with --secure-protocol=PFS).
+	 * Introduce new option --ciphers to set the cipher list that the SSL/TLS
+	   engine will favor. This string is fed directly to the underlying TLS
+	   library (GnuTLS or OpenSSL) without further processing, and hence its
+	   format and syntax are directly dependent on the specific library.
+
+	Reported-by: Jeffrey Walton <noloader@gmail.com>
+
+2018-04-28  Tim Rühsen  <tim.ruehsen@gmx.de>
+
+	* src/netrc.c (parse_netrc_fp): Fix two memleaks
+
+	Add new fuzzer for the .netrc parser
+	* fuzz/wget_netrc_fuzzer.c: New fuzzer
+	* fuzz/wget_netrc_fuzzer.dict: Fuzzer dictionary
+	* fuzz/wget_netrc_fuzzer.in: Initial corpora
+	* src/ftp.c (getftp): Amend call to search_netrc()
+	* src/http.c (initialize_request): Likewise
+	* src/netrc.c: Cleanup, prepare code for fuzzing
+	* src/netrc.h: Cleanup
+
+2018-04-27  Tim Rühsen  <tim.ruehsen@gmx.de>
+
+	* src/utils.c (match_tail): Fix unsigned integer overflow
+
+	Add new fuzzer for the Set-Cookie parser
+	* fuzz/Makefile.am: Add wget_cookie_fuzzer
+	* fuzz/wget_cookie_fuzzer.c: New fuzzer
+	* fuzz/wget_cookie_fuzzer.dict: Fuzzers dictionary
+	* fuzz/wget_cookie_fuzzer.in: Initial corpora
+
+2018-04-26  Tim Rühsen  <tim.ruehsen@gmx.de>
+
+	Fix buffer overflow in CSS parser
+	* src/css-url.c (get_uri_string): Check input length
+	* fuzz/wget_css_fuzzer.repro/buffer-overflow-6600180399865856:
+	  Add reproducer corpus
+
+	Fixes OSS-Fuzz issue #8033.
+	This is a long standing bug affecting all versions <= 1.19.4.
+
+2018-04-26  Tim Rühsen  <tim.ruehsen@gmx.de>
+
+	Fix buffer overflow in CSS parser
+	* src/css-url.c (get_urls_css): Check input string length
+	* fuzz/wget_css_fuzzer.repro/negative-size-param-5724866467594240:
+	  Add reproducer corpus
+
+	Fixes OSS-Fuzz issue #8032.
+	This is a long standing bug affecting all versions <= 1.19.4.
+
+2018-04-26  Tim Rühsen  <tim.ruehsen@gmx.de>
+
+	Exclude fuzz corpora from tarball
+	* fuzz/Makefile.am: Do not include corpora in tarball
+	* fuzz/main.c: SKIP if corpora directory isn't found (make check)
+
+	The fuzz corpora are thousands of files, not needed for a standard build
+	from a distribution tarball. The reproducers of former issues are being
+	included for regression testing.
+
+2018-04-26  Tim Rühsen  <tim.ruehsen@gmx.de>
+
+	* tests/Makefile.am: Add -I/src to AM_CPPFLAGS
+
+2018-04-26  Tim Rühsen  <tim.ruehsen@gmx.de>
+
+	Add CSS slowness reproducer (fixed)
+	* fuzz/wget_css_fuzzer.repro/slowness-6275836549267456: New file
+
+	This file created an extreme CPU usage with the old CSS parser.
+
+2018-04-26  Tim Rühsen  <tim.ruehsen@gmx.de>
+
+	Update CSS grammar from 1.x to 2.2
+	* src/css-tokens.h: Add enums and fixate values
+	* src/css.l: Include config.h,
+	  ignore several compiler warnings,
+	  update the grammar to CSS 2.2
+
+	Fixes OSS-Fuzz issue #8010 (slowness issue).
+	This is a long standing bug affecting all versions <= 1.19.4.
+
+	Some crafted CSS input was extremely slow / CPU wasting, so it could
+	be used as a DOS attack against website scanning.
+
+	The code/grammar changes were backported from Wget2.x.
+
+2018-04-25  Tim Rühsen  <tim.ruehsen@gmx.de>
+
+	* src/res.c (add_path): Fix memleak (parsing robots.txt)
+	Fixes OSS-Fuzz issue #8005.
+	This is a long standing bug affecting all versions <= 1.19.4.
+
+	* src/ftp-ls.c (ftp_parse_winnt_ls): Fix integer overflow
+	Fixes OSS-Fuzz issue #7999.
+	This is a long standing bug affecting all versions <= 1.19.4.
+
+2018-04-24  Tim Rühsen  <tim.ruehsen@gmx.de>
+
+	Add new fuzzer for the URL parser
+	* fuzz/Makefile.am: Add wget_url_fuzzer
+	* fuzz/wget_url_fuzzer.c: New fuzzer
+	* fuzz/wget_url_fuzzer.in: Initial corpora
+
+	Add new fuzzer for robots.txt parsing
+	* fuzz/Makefile.am: Add wget_robots_fuzzer
+	* fuzz/wget_robots_fuzzer.c: New fuzzer
+	* fuzz/wget_robots_fuzzer.in: Initial corpora
+
+	* fuzz/README.md: Add CFLAGS for undefined sanitizer
+
+	* src/ftp-ls.c (ftp_parse_winnt_ls): Fix integer overflow
+
+	* src/ftp-ls.c (ftp_parse_vms_ls): Fix integer overflow by left shift
+
+	* src/ftp-ls.c (ftp_parse_unix_ls): Fix integer overflow in date parsing
+
+2018-04-22  Tim Rühsen  <tim.ruehsen@gmx.de>
+
+	* src/ftp-ls.c (ftp_parse_winnt_ls): Fix heap-buffer-overflow
+	Fixes OSS-Fuzz issue #7931.
+	This is a long standing bug affecting all versions <= 1.19.4.
+
+	* src/ftp-ls.c (ftp_parse_winnt_ls): Fix heap-buffer-overflow
+	Fixes OSS-Fuzz issue #7930.
+	This is a long standing bug affecting all versions <= 1.19.4.
+
+	* fuzz/wget_ftpls_fuzzer.in: Update corpora
+
+2018-04-21  Tim Rühsen  <tim.ruehsen@gmx.de>
+
+	* src/ftp-ls.c (eat_carets): Fix heap-buffer-overflow
+
+	* src/ftp-ls.c (ftp_parse_winnt_ls): Fix memleak
+
+	* src/ftp-ls.c (ftp_parse_vms_ls): Fix heap-buffer-overflow
+
+	* src/ftp-ls.c (ftp_parse_vms_ls): Fix heap-buffer-overflow
+
+	* src/ftp-ls.c (ftp_parse_vms_ls): Fix memleak
+
+	Add new fuzzer for the FTP listing parsers
+	* fuzz/Makefile.am: Add wget_ftpls_fuzzer
+	* fuzz/wget_ftpls_fuzzer.c: New fuzzer
+	* fuzz/wget_ftpls_fuzzer.dict: Fuzzer dictionary
+	* fuzz/wget_ftpls_fuzzer.in/starter: Starting corpus
+	* src/ftp-ls.c: Parsing function take FILE * as argument,
+	  new function ftp_parse_ls_fp()
+	* src/ftp.c: Remove static from freefileinfo()
+	* src/ftp.h: Add ftp_parse_ls_fp() and freefileinfo()
+
+	* fuzz/run-clang.sh: Remove -detect_leaks=0 from fuzzer command line
+
+	* src/main.c (main): Fix memleak for fuzzing/testing
+
+	* src/init.c: Fix fuzzing in case ~/.wgetrc doesn't exist
+
+2018-04-20  Tim Rühsen  <tim.ruehsen@gmx.de>
+
+	Fix fuzzer build for C++
+	* fuzz/wget_css_fuzzer.c: Include wget.h outside 'extern "C"',
+	  undef fopen_wgetrc directly after wget.h
+	* fuzz/wget_html_fuzzer.c: Likewise
+
+	* fuzz/Makefile.am: Add -I/lib to oss-fuzz builds
+
+	Add new HTML parser fuzzer
+	* fuzz/Makefile.am: Add wget_html_fuzzer
+	* fuzz/wget_html_fuzzer.c: New fuzzer
+	* fuzz/wget_html_fuzzer.dict: HTML dictionary for fuzzing
+	* fuzz/wget_html_fuzzer.in: Initial corpora
+	* src/html-url.c: Add new function get_urls_html_fm()
+	* src/html-url.h: Add ne function get_urls_html_fm()
+	* src/wget.h: Fix define for fopen_wgetrc()
+
+	* fuzz/wget_css_fuzzer.c: Fix build
+
+	* fuzz/wget_css_fuzzer.in/*: Update fuzzer corpora
+
+	* src/css-url.c (get_uri_string): Fix buffer overflow (read)
+
+	* src/iri.h: Fix C++ compile error
+
+2018-04-19  Tim Rühsen  <tim.ruehsen@gmx.de>
+
+	* src/http.c: Download and scan CSS files in spider mode
+
+	* src/css-url.c (get_urls_css): Call yylex_destroy() to reset CSS scanner
+
+	Add new fuzzer wget_css_fuzzer.c
+	* fuzz/Makefile.am: Add wget_css_fuzzer.c
+	* fuzz/wget_css_fuzzer.c: New fuzzer
+
+2018-04-18  Tim Rühsen  <tim.ruehsen@gmx.de>
+
+	* src/html-url.h: Include needed header files
+
+	* wget_options_fuzzer.in/*: Update fuzzer corpora
+
+	* fuzz/README.md: Add CXXFLAGS and more configure options
+
+	Fix oss-fuzz issue with exit()
+	* src/wget.h: Define exit() as exit_wget()
+	* fuzz/wget_options_fuzzer.c: Implement exit_wget() and cleanup
+
+2018-04-17  Tim Rühsen  <tim.ruehsen@gmx.de>
+
+	* fuzz/wget_options_fuzzer.c: Declare fopen_* as C functions
+
+	Fix fopen/stdin issues with fuzzing
+	* fuzz/wget_options_fuzzer.c: Add fopen_wget() and fopen_wgetrc()
+	* src/utils.c: Use fopen_wgetrc() for config files,
+	  don't read from stdin when fuzzing
+	* src/wget.h: Define fopen as fopen_wget when fuzzing,
+	  define fopen_wgetrc as fopen when not fuzzing
+
+	* configure.ac: AC_DEFINE FUZZING if --enable-fuzzing was given
+
+	* fuzz/wget_options_fuzzer.c: Write fuzzer crash reports
+
+	* src/log.c: Don't check_redirect_output() when fuzzing
+
+	* src/main.c (promt_for_password): Avoid getpass() when fuzzing
+
+	Fix double fclose() with -d while fuzzing
+	* src/ftp.c (ftp_loop_internal): Set warc_tmp to NULL after ffclose()
+	* src/init.c (cleanup): Set output_stream to NULL after fclose()
+	* src/log.c (log_close): Set global stream vars to NULL after closing
+	* src/recur.c (retrieve_tree): Set rejectedlog to NULL after closing
+	* src/warc.c (warc_close): Set stream vars to NULL after closing
+
+	* src/main.c (main): Don't background if TESTING
+
+	* src/init.c (initialize): Return error, don't exit()
+
+2018-04-16  Tim Rühsen  <tim.ruehsen@gmx.de>
+
+	* src/init.c (cmd_use_askpass): Return false on error
+
+	* src/utils.c (compile_posix_regex): Hard-code string to regcomp
+	regcomp() may be too cpu + memory intensive for fuzzing.
+	See https://sourceware.org/glibc/wiki/Security%20Exceptions
+
+	Fix 2 more memleaks
+	* src/init.c (initialize): Use global var for wgetrc filename
+	* src/iri.c (find_locale): Return strdup'ed locale string
+	* src/options.h (struct options): Add wgetrcfile
+
+	* src/init.c (cleanup): Set output_stream to NULL after closing
+
+	Fix homedir memory leaks
+	* src/hsts.c: Use opt.homedir
+	* src/init.c: Likewise
+	* src/main.c: Likewise
+	* src/netrc.c: Likewise
+	* src/options.h (struct options): Add homedir
+
+	* src/main.c (main): Free opt.encoding_remote properly
+
+	* src/host.c (wait_ares): Free ptimer
+
+	* src/init.c (cleanup): Free regex objects properly
+
+	* src/init.c (cleanup): Never call cleanup() twice
+
+	* src/init.c (cmd_bytes_sum): Fix integer over- and underflow
+
+	* src/main.c (save_hsts): Free hsts_store after closing
+
+	Use strtol() instead of selfmade function
+	* src/init.c (cmd_number): Use strtol() instead of selfmade function
+	* bootstrap.conf: Add strtol gnulib module
+
+	* src/hsts.c (hsts_hash_func): Allow integer overflow
+
+	* init.c (cmd_spec_mirror): Fix uninitialzed stack variable
+
+	* src/init.c (cleanup): Free more variables
+
+	* wget_options_fuzzer.in: Add corpora directory
+
+	* fuzz/wget_options_fuzzer.c: Suppress error messages from wget
+
+	* src/utils.c (fopen_stat): Early return to allow fuzzing/fmemopen
+
+	* src/init.c (initialize): Free mem before exit()
+
+	Add OSS-Fuzz infrastruture
+	* Makefile.am: Add fuzz/ to SUBDIRS
+	* cfg.mk: Fix 'make syntax-check'
+	* configure.ac: Add --enable-fuzzing
+	* fuzz/Makefile.am: New file
+	* fuzz/README.md: New file
+	* fuzz/fuzzer.h: New file
+	* fuzz/get_all_corpora: New file
+	* fuzz/get_ossfuzz_corpora: New file
+	* fuzz/glob_crash.c: New file
+	* fuzz/main.c: New file
+	* fuzz/run-afl.sh: New file
+	* fuzz/run-clang.sh: New file
+	* fuzz/view-coverage.sh: New file
+	* fuzz/wget_options_fuzzer.c: New file
+	* fuzz/wget_options_fuzzer.dict: New file
+	* src/init.c (cleanup): Free more resources
+	* src/main.c (init_switches): Initialize only once,
+	  (print_usage): Don't print if TESTING is defined
+	* src/utils.h: Include wget.h
+
+2018-04-05  Tim Rühsen  <tim.ruehsen@gmx.de>
+
+	Move unit-test code to tests/
+	* src/Makefile.am: Remove test.c and test.h
+	* src/test.c: Rename to tests/unit-tests.c
+	* src/test.h: Rename to tests/unit-tests.h
+	* tests/Makefile.am: Add unit-tests.c and unit-tests.h
+	* src/hsts.c: Amend #include
+	* src/http.c: Likewise
+	* src/init.c: Likewise
+	* src/metalink.c: Likewise
+	* src/res.c: Likewise
+	* src/url.c: Likewise
+	* src/utils.c: Likewise
+
+	* src/main.c: Rename main() -> main_wget() for unit tests
+
+2018-03-14  Tim Rühsen  <tim.ruehsen@gmx.de>
+
+	Fix some issues found by 'infer'
+
+2018-03-08  Tim Rühsen  <tim.ruehsen@gmx.de>
+
+	* src/openssl.c: Fix build for OpenSSL 1.1.0 without TLS1_3_VERSION
+
+	Add docs for --secure-protocol=TLSv1_3
+	* doc/wget.texi: Likewise
+
+2018-03-08  Loganaden Velvindron  <logan@hackers.mu>  (tiny change)
+
+	Add TLS1.3 support for OpenSSL build
+	* src/init.c: Add 'tlsv1_3 for --secure-protocol
+	* src/openssl.c (ssl_init): Enable TLS1.3 if possible
+	* src/options.h: Add secure_protocol_tlsv1_3
+	* doc/wget.texi: Add description of TLSv1_3
+
+2018-03-07  Tim Rühsen  <tim.ruehsen@gmx.de>
+
+	* src/main.c: Add help text for --retry-on-http-error
+	Reported-by: Giovanni Tirloni
+
+2018-03-01  Tim Rühsen  <tim.ruehsen@gmx.de>
+
+	* src/url.c (convert_fname): Fix invalid free on iconv_open() failure
+	Reported-by: Volkmar Klatt
+
+2018-02-21  Tim Rühsen  <tim.ruehsen@gmx.de>
+
+	* src/mswindows.c: Fix prototype of fork_to_background()
+	Reported-by: Gisle Vanem
+
+2018-02-09  Tim Rühsen  <tim.ruehsen@gmx.de>
+
+	Fix warning to not print binary IP address
+	* tests/Test-https-badcerts.px: Likewise
+	* tests/Test-https-clientcert.px: Likewise
+	* tests/Test-https-crl.px: Likewise
+	* tests/Test-https-pfs.px: Likewise
+	* tests/Test-https-selfsigned.px: Likewise
+	* tests/Test-https-tlsv1.px: Likewise
+	* tests/Test-https-tlsv1x.px: Likewise
+	* tests/Test-https-weboftrust.px: Likewise
+
+	Use gnulib's utime()
+	* bootstrap.conf: Add modules utime and utime-h
+	* src/utils.c (touch): Remove own code for gnulib's utime()
+
+2018-02-09  Tim Rühsen  <tim.ruehsen@gmx.de>
+
+	Fix logging in background mode
+	* ../src/main.c: Re-init logfile if changed for background mode
+	* ../src/utils.c: fork_to_background() returns whether logfile changed
+	* ../src/utils.h: Set return type bool for fork_to_background()
+
+	Fixes: #53020
+	Reported-by: Noël Köthe
+
+2018-02-09  Tim Rühsen  <tim.ruehsen@gmx.de>
+
+	* src/http.c: Fix two typos in comments
+
+2018-01-31  Tim Rühsen  <tim.ruehsen@gmx.de>
+
+	* testenv/conf/expected_files.py: Ignore pubring.gpg
+	Reported-by: Arkadiusz Miśkiewicz
+
+	* bootstrap.conf: Replace gnulib module gettext by gettext-h
+
+2018-01-22  Tim Rühsen  <tim.ruehsen@gmx.de>
+
+	Mention list and bugtracker for --help and in man page
+	* doc/wget.texi: Mention list and bugtracker in man page
+	* src/main.c: Mention list and bugtracker for --help
+
+2018-01-21  Darshit Shah  <darnir@gnu.org>
+
+	* contrib/make-release: Add another release script
+
+	Update NEWS file for new release
+
+	Fix typo in documentation
+
+2018-01-21  Darshit Shah  <darnir@gnu.org>
+
+	Switch off compression by default
+	Gzip compression has a number of bugs which need to be ironed out before
+	we can support it by default. Some of these stem from a misunderstanding
+	of the HTTP spec, but a lot of them are also due to many web servers not
+	being compliant with RFC 7231.
+
+	With this commit, I am marking GZip compression support as experimental
+	in GNU Wget pending further investigation and the addition of tests.
+
+	* src/init.c (defaults): Switch of compression support by default
+	* docs/wget.texi: State that compression is experimental
+
+2018-01-21  Darshit Shah  <darnir@gnu.org>
+
+	Pull gnulib module forward
+
+	Revert "* src/init.c (defaults): Set compression_none as the default compression"
+	This reverts commit 8283ac08467016283277578b96533febb8ce1adb.
+
+	* src/init.c (defaults): Set compression_none as the default compression
+
+2018-01-20  Reiji  <gey3dr@gmail.com>
+
+	* src/http.c (gethttp): Fix bug that prevented all files from being decompressed
+
+2018-01-19  Tim Rühsen  <tim.ruehsen@gmx.de>
+
+	* src/host.c (sufmatch): Fix to domain matching
+
+2018-01-17  Gisle Vanem  <gvanem@yahoo.no>
+
+	* src/netrc.c: Fix Standalone compilation of netrc file
+
+2018-01-14  Darshit Shah  <darnir@gnu.org>
+
+	* NEWS: Update NEWS file for new release
+
+	* bootstrap: Use the faster gnulib-tool.py script if possible
+
+	Sync the bootstrap script from gnulib
+
+	Update Copyright years
+
+	Replace HTTP urls with HTTPS where valid
+
+	Update gnulib
+
+	* src/netrc.c: Search for the correct netrc file on Windows
+
+2018-01-10  Tim Rühsen  <tim.ruehsen@gmx.de>
+
+	* src/http.c: Exclude *.gz and *.tgz from decompression
+
+2017-12-31  Tim Rühsen  <tim.ruehsen@gmx.de>
+
+	* src/utils.c (wg_pin_peer_pubkey): Fix format warning
+
+2017-12-31  Peter Wu  <peter@lekensteyn.nl>
+
+	Avoid redirecting output to file when tcgetpgrp fails
+	* src/log.c (check_redirect_output): tcgetpgrp can return -1 (ENOTTY),
+	be sure to check whether a valid controlling terminal exists before
+	redirecting.
+
+	Fixes: #51181
+
+2017-12-11  Darshit Shah  <darnir@gnu.org>
+
+	Add new test for 416 responses
+	* testenv/server/http/http_server.py: If there are multiple requests in
+	which the requested range is unsatisfiable, then send a body in the in
+	the 2nd response onwards
+	* testenv/Test-416.py: New test to check how Wget handles 416 responses
+
+2017-12-08  Darshit Shah  <darnir@gnu.org>
+
+	Don't assume a 416 response has no body
+	* http.c(gethttp): In case of a 416 response, try to drain the socket of
+	any bytes before reusing the connection
+
+	Reported-By: Iru Cai <mytbk920423@gmail.com>
+
+2017-11-26  Tim Rühsen  <tim.ruehsen@gmx.de>
+
+	Support building with OpenSSL 1.1 w/o deprecated features
+	* src/openssl.c (ssl_init): Fix code for the subject's issue
+
+	Reported-by: Matthew Thode
+
+2017-11-25  Tim Rühsen  <tim.ruehsen@gmx.de>
+
+	Avoid link conversion after 304 Not Modified
+	* src/http.c (gethttp): Handle 304 before setting document content type
+
+	Fixes: #52404
+	Reported-by: Ben Fuchs
+
+2017-11-16  YX Hao  <lifenjoiner@163.com>
+
+	Fix printing mutibyte chars as unprintable chars on Windows
+	* src/log.c (get_warc_log_fp): Fix return value to stderr
+	* src/main.c (main): Init logging as soon as possible,
+	  fix locale/charset on Windows
+
+2017-11-16  Tim Rühsen  <tim.ruehsen@gmx.de>
+
+	* tests/Test-https-weboftrust.px: Fix/add sslport
+
+2017-11-15  YX Hao  <lifenjoiner@163.com>
+
+	Convert remote path to local encoding
+	* src/url.c (url_file_name): Convert remote path to local encoding
+
+2017-11-10  Tim Rühsen  <tim.ruehsen@gmx.de>
+
+	Do not use must-revalidate in Cache-Control header
+	As the bug report states, 'must-revalidate' is a request directive.
+
+	Fixes #52379
+
+2017-11-06  Darshit Shah  <darnir@gnu.org>
+
+	Fix Segfault due to derefencing null ptr
+	* src/http.c(gethttp): When Encoding is gzip, ensure that the
+	Content-Type Header was actually seen. Without this, the "type" variable
+	is null causing a Segfault.
+
+	Reported-By: Noël Köthe <noel@debian.org>
+
+2017-11-03  Tim Rühsen  <tim.ruehsen@gmx.de>
+
+	* src/http.c: Fix H_REDIRECTED
+
+	* src/http.c: Add support for HTTP status code 308
+
+2017-10-30  Tim Rühsen  <tim.ruehsen@gmx.de>
+
+	Fix uninitialized value messages in tests
+	* tests/Test-https-*.px: Use correct variable in error message
+
+	Reported-by: Jeffrey Walton
+
+2017-10-30  Tim Rühsen  <tim.ruehsen@gmx.de>
+
+	Ignore dirmngr.conf, gpg.conf in test directories
+	* testenv/conf/expected_files.py: Ignore dirmngr.conf, gpg.conf
+
+	Libgpgme creates certain files if $HOME doesn't contain the .gnupg directory.
+	These files disturb some metalink tests if we don't ignore them.
+
+	Reported-by: Arkadiusz Miśkiewicz <arekm@maven.pl>
+
+2017-10-27  Tim Rühsen  <tim.ruehsen@gmx.de>
+
+	* contrib/release: Cleanup, use lzip instead of xz
+
 2017-10-26  Tim Rühsen  <tim.ruehsen@gmx.de>
 
 	Fix heap overflow in HTTP protocol handling (CVE-2017-13090)

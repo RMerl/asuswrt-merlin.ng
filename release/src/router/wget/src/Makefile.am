@@ -1,7 +1,5 @@
 # Makefile for `wget' utility
-# Copyright (C) 1995, 1996, 1997, 1998, 1999, 2000, 2001, 2002, 2003,
-# 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2015 Free Software
-# Foundation, Inc.
+# Copyright (C) 1995-2011, 2015, 2018 Free Software Foundation, Inc.
 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -103,7 +101,7 @@ distclean-local:
 	rm -f css.c css_.c
 
 check_LIBRARIES = libunittest.a
-libunittest_a_SOURCES = $(wget_SOURCES) test.c build_info.c test.h
+libunittest_a_SOURCES = $(wget_SOURCES) build_info.c
 nodist_libunittest_a_SOURCES = version.c
 libunittest_a_CPPFLAGS = -DTESTING "-I$(top_builddir)/lib" "-I$(top_srcdir)/lib"
 libunittest_a_LIBADD = $(LIBOBJS)

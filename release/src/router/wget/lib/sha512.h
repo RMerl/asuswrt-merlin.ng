@@ -1,6 +1,6 @@
 /* Declarations of functions and data types used for SHA512 and SHA384 sum
    library functions.
-   Copyright (C) 2005-2006, 2008-2017 Free Software Foundation, Inc.
+   Copyright (C) 2005-2006, 2008-2018 Free Software Foundation, Inc.
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -13,7 +13,7 @@
    GNU General Public License for more details.
 
    You should have received a copy of the GNU General Public License
-   along with this program.  If not, see <http://www.gnu.org/licenses/>.  */
+   along with this program.  If not, see <https://www.gnu.org/licenses/>.  */
 
 #ifndef SHA512_H
 # define SHA512_H 1
@@ -44,8 +44,8 @@ struct sha512_ctx
   u64 state[8];
 
   u64 total[2];
-  size_t buflen;
-  u64 buffer[32];
+  size_t buflen;  /* ≥ 0, ≤ 256 */
+  u64 buffer[32]; /* 256 bytes; the first buflen bytes are in use */
 };
 
 /* Initialize structure containing state of computation. */
@@ -104,3 +104,10 @@ extern int sha384_stream (FILE *stream, void *resblock);
 # endif
 
 #endif
+
+/*
+ * Hey Emacs!
+ * Local Variables:
+ * coding: utf-8
+ * End:
+ */

@@ -1,5 +1,5 @@
 /* A GNU-like <sched.h>.
-   Copyright (C) 2008-2017 Free Software Foundation, Inc.
+   Copyright (C) 2008-2018 Free Software Foundation, Inc.
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -12,7 +12,7 @@
    GNU General Public License for more details.
 
    You should have received a copy of the GNU General Public License
-   along with this program.  If not, see <http://www.gnu.org/licenses/>.  */
+   along with this program.  If not, see <https://www.gnu.org/licenses/>.  */
 
 #ifndef _@GUARD_PREFIX@_SCHED_H
 
@@ -34,15 +34,18 @@
 
 /* Get pid_t.
    This is needed on glibc 2.11 (see
-   glibc bug <http://sourceware.org/bugzilla/show_bug.cgi?id=13198>)
+   glibc bug <https://sourceware.org/bugzilla/show_bug.cgi?id=13198>)
    and Mac OS X 10.5.  */
 #include <sys/types.h>
 
 #ifdef __KLIBC__
-
-/* On OS/2 kLIBC, struct sched_param is in spawn.h */
+/* On OS/2 kLIBC, struct sched_param is in spawn.h.  */
 # include <spawn.h>
+#endif
 
+#ifdef __VMS
+/* On OpenVMS, struct sched_param is in <pthread.h>.  */
+# include <pthread.h>
 #endif
 
 #if !@HAVE_STRUCT_SCHED_PARAM@

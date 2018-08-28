@@ -1,5 +1,5 @@
 /* Case-insensitive searching in a string in C locale.
-   Copyright (C) 2005, 2009-2017 Free Software Foundation, Inc.
+   Copyright (C) 2005, 2009-2018 Free Software Foundation, Inc.
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -12,7 +12,7 @@
    GNU General Public License for more details.
 
    You should have received a copy of the GNU General Public License
-   along with this program.  If not, see <http://www.gnu.org/licenses/>.  */
+   along with this program.  If not, see <https://www.gnu.org/licenses/>.  */
 
 #ifndef C_STRCASESTR_H
 #define C_STRCASESTR_H

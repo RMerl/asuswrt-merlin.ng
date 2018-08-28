@@ -1,6 +1,6 @@
 /* mktime variant that also uses an offset guess
 
-   Copyright 2016-2017 Free Software Foundation, Inc.
+   Copyright 2016-2018 Free Software Foundation, Inc.
 
    This program is free software; you can redistribute it and/or
    modify it under the terms of the GNU General Public
@@ -14,7 +14,7 @@
 
    You should have received a copy of the GNU General Public
    License along with this program; if not, see
-   <http://www.gnu.org/licenses/>.  */
+   <https://www.gnu.org/licenses/>.  */
 
 #include <time.h>
 

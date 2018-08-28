@@ -1,5 +1,5 @@
 /* Declarations for html-url.c.
-   Copyright (C) 1995, 1996, 1997, 2009, 2010, 2011, 2015 Free Software
+   Copyright (C) 1995-1997, 2009-2011, 2015, 2018 Free Software
    Foundation, Inc.
 
 This file is part of GNU Wget.
@@ -31,6 +31,11 @@ as that of the covered work.  */
 #ifndef HTML_URL_H
 #define HTML_URL_H
 
+#include <stdbool.h>
+#include "utils.h"
+#include "convert.h"
+#include "iri.h"
+
 struct map_context {
   char *text;                   /* HTML text. */
   char *base;                   /* Base URI of the document, possibly
@@ -45,6 +50,7 @@ struct map_context {
 
 struct urlpos *get_urls_file (const char *);
 struct urlpos *get_urls_html (const char *, const char *, bool *, struct iri *);
+struct urlpos *get_urls_html_fm (const char *, const struct file_memory *, const char *, bool *, struct iri *);
 struct urlpos *append_url (const char *, int, int, struct map_context *);
 void free_urlpos (struct urlpos *);
 void cleanup_html_url (void);

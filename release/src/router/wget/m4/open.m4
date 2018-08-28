@@ -1,5 +1,5 @@
-# open.m4 serial 14
-dnl Copyright (C) 2007-2017 Free Software Foundation, Inc.
+# open.m4 serial 15
+dnl Copyright (C) 2007-2018 Free Software Foundation, Inc.
 dnl This file is free software; the Free Software Foundation
 dnl gives unlimited permission to copy and/or distribute it,
 dnl with or without modifications, as long as this notice is preserved.
@@ -7,6 +7,7 @@ dnl with or without modifications, as long as this notice is preserved.
 AC_DEFUN([gl_FUNC_OPEN],
 [
   AC_REQUIRE([AC_CANONICAL_HOST])
+  AC_REQUIRE([gl_PREPROC_O_CLOEXEC])
   case "$host_os" in
     mingw* | pw*)
       REPLACE_OPEN=1
@@ -15,6 +16,9 @@ AC_DEFUN([gl_FUNC_OPEN],
       dnl open("foo/") should not create a file when the file name has a
       dnl trailing slash.  FreeBSD only has the problem on symlinks.
       AC_CHECK_FUNCS_ONCE([lstat])
+      if test "$gl_cv_macro_O_CLOEXEC" != yes; then
+        REPLACE_OPEN=1
+      fi
       AC_CACHE_CHECK([whether open recognizes a trailing slash],
         [gl_cv_func_open_slash],
         [# Assume that if we have lstat, we can also check symlinks.

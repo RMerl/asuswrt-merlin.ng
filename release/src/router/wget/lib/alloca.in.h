@@ -1,6 +1,6 @@
 /* Memory allocation on the stack.
 
-   Copyright (C) 1995, 1999, 2001-2004, 2006-2017 Free Software Foundation,
+   Copyright (C) 1995, 1999, 2001-2004, 2006-2018 Free Software Foundation,
    Inc.
 
    This program is free software; you can redistribute it and/or modify it
@@ -15,7 +15,7 @@
 
    You should have received a copy of the GNU General Public
    License along with this program; if not, see
-   <http://www.gnu.org/licenses/>.
+   <https://www.gnu.org/licenses/>.
   */
 
 /* Avoid using the symbol _ALLOCA_H here, as Bison assumes _ALLOCA_H

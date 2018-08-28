@@ -1,7 +1,5 @@
 /* Collect URLs from HTML source.
-   Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,
-   2007, 2008, 2009, 2010, 2011, 2012, 2015 Free Software Foundation,
-   Inc.
+   Copyright (C) 1998-2012, 2015, 2018 Free Software Foundation, Inc.
 
 This file is part of GNU Wget.
 
@@ -798,21 +796,12 @@ collect_tags_mapper (struct taginfo *tag, void *arg)
    <base href=...> and does the right thing.  */
 
 struct urlpos *
-get_urls_html (const char *file, const char *url, bool *meta_disallow_follow,
-               struct iri *iri)
+get_urls_html_fm (const char *file, const struct file_memory *fm,
+                    const char *url, bool *meta_disallow_follow,
+                    struct iri *iri)
 {
-  struct file_memory *fm;
   struct map_context ctx;
   int flags;
-
-  /* Load the file. */
-  fm = wget_read_file (file);
-  if (!fm)
-    {
-      logprintf (LOG_NOTQUIET, "%s: %s\n", file, strerror (errno));
-      return NULL;
-    }
-  DEBUGP (("Loaded %s (size %s).\n", file, number_to_static_string (fm->length)));
 
   ctx.text = fm->content;
   ctx.head = NULL;
@@ -852,8 +841,27 @@ get_urls_html (const char *file, const char *url, bool *meta_disallow_follow,
     *meta_disallow_follow = ctx.nofollow;
 
   xfree (ctx.base);
-  wget_read_file_free (fm);
   return ctx.head;
+}
+
+struct urlpos *
+get_urls_html (const char *file, const char *url, bool *meta_disallow_follow,
+                 struct iri *iri)
+{
+  struct urlpos *urls;
+  struct file_memory *fm;
+
+  fm = wget_read_file (file);
+  if (!fm)
+    {
+      logprintf (LOG_NOTQUIET, "%s: %s\n", file, strerror (errno));
+      return NULL;
+    }
+  DEBUGP (("Loaded %s (size %s).\n", file, number_to_static_string (fm->length)));
+
+  urls = get_urls_html_fm (file, fm, url, meta_disallow_follow, iri);
+  wget_read_file_free (fm);
+  return urls;
 }
 
 /* This doesn't really have anything to do with HTML, but it's similar

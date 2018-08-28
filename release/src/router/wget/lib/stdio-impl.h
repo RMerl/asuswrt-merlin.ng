@@ -1,5 +1,5 @@
 /* Implementation details of FILE streams.
-   Copyright (C) 2007-2008, 2010-2017 Free Software Foundation, Inc.
+   Copyright (C) 2007-2008, 2010-2018 Free Software Foundation, Inc.
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -12,7 +12,7 @@
    GNU General Public License for more details.
 
    You should have received a copy of the GNU General Public License
-   along with this program.  If not, see <http://www.gnu.org/licenses/>.  */
+   along with this program.  If not, see <https://www.gnu.org/licenses/>.  */
 
 /* Many stdio implementations have the same logic and therefore can share
    the same implementation of stdio extension API, except that some fields
@@ -32,7 +32,7 @@
   /* FreeBSD, NetBSD, OpenBSD, DragonFly, Mac OS X, Cygwin, Minix 3, Android */
 
 # if defined __DragonFly__          /* DragonFly */
-  /* See <http://www.dragonflybsd.org/cvsweb/src/lib/libc/stdio/priv_stdio.h?rev=HEAD&content-type=text/x-cvsweb-markup>.  */
+  /* See <https://gitweb.dragonflybsd.org/dragonfly.git/blob_plain/HEAD:/lib/libc/stdio/priv_stdio.h>.  */
 #  define fp_ ((struct { struct __FILE_public pub; \
                          struct { unsigned char *_base; int _size; } _bf; \
                          void *cookie; \
@@ -49,7 +49,7 @@
                          fpos_t _offset; \
                          /* More fields, not relevant here.  */ \
                        } *) fp)
-  /* See <http://www.dragonflybsd.org/cvsweb/src/include/stdio.h?rev=HEAD&content-type=text/x-cvsweb-markup>.  */
+  /* See <https://gitweb.dragonflybsd.org/dragonfly.git/blob_plain/HEAD:/include/stdio.h>.  */
 #  define _p pub._p
 #  define _flags pub._flags
 #  define _r pub._r
@@ -60,7 +60,7 @@
 
 # if (defined __NetBSD__ && __NetBSD_Version__ >= 105270000) || defined __OpenBSD__ || defined __minix || defined __ANDROID__ /* NetBSD >= 1.5ZA, OpenBSD, Minix 3, Android */
   /* See <http://cvsweb.netbsd.org/bsdweb.cgi/src/lib/libc/stdio/fileext.h?rev=HEAD&content-type=text/x-cvsweb-markup>
-     and <http://www.openbsd.org/cgi-bin/cvsweb/src/lib/libc/stdio/fileext.h?rev=HEAD&content-type=text/x-cvsweb-markup> */
+     and <https://cvsweb.openbsd.org/cgi-bin/cvsweb/src/lib/libc/stdio/fileext.h?rev=HEAD&content-type=text/x-cvsweb-markup> */
   struct __sfileext
     {
       struct  __sbuf _ub; /* ungetc buffer */
@@ -81,7 +81,7 @@
 #ifdef __TANDEM                     /* NonStop Kernel */
 # ifndef _IOERR
 /* These values were determined by the program 'stdioext-flags' at
-   <http://lists.gnu.org/archive/html/bug-gnulib/2010-12/msg00165.html>.  */
+   <https://lists.gnu.org/r/bug-gnulib/2010-12/msg00165.html>.  */
 #  define _IOERR   0x40
 #  define _IOREAD  0x80
 #  define _IOWRT    0x4
@@ -99,6 +99,8 @@
                          int _file; \
                          unsigned int _flag; \
                        } *) fp)
+# elif defined __VMS                /* OpenVMS */
+#  define fp_ ((struct _iobuf *) fp)
 # else
 #  define fp_ fp
 # endif
@@ -130,7 +132,7 @@ struct _gl_real_FILE
 # define fp_ ((struct _gl_real_FILE *) fp)
 
 /* These values were determined by a program similar to the one at
-   <http://lists.gnu.org/archive/html/bug-gnulib/2010-12/msg00165.html>.  */
+   <https://lists.gnu.org/r/bug-gnulib/2010-12/msg00165.html>.  */
 # define _IOREAD   0x1
 # define _IOWRT    0x2
 # define _IORW     0x4

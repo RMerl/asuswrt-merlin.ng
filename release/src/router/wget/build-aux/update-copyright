@@ -3,9 +3,9 @@ eval '(exit $?0)' && eval 'exec perl -wS -0777 -pi "$0" "$@"'
     if 0;
 # Update an FSF copyright year list to include the current year.
 
-my $VERSION = '2016-01-12.23:13'; # UTC
+my $VERSION = '2018-01-04.14:48'; # UTC
 
-# Copyright (C) 2009-2017 Free Software Foundation, Inc.
+# Copyright (C) 2009-2018 Free Software Foundation, Inc.
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -18,7 +18,7 @@ my $VERSION = '2016-01-12.23:13'; # UTC
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 # Written by Jim Meyering and Joel E. Denny
 
@@ -81,6 +81,7 @@ my $VERSION = '2016-01-12.23:13'; # UTC
 #        B. (c)
 #        C. @copyright{}
 #        D. &copy;
+#        E. ©
 #
 #   4. The "Copyright" appears at the beginning of a line, except that it
 #      may be prefixed by any sequence (e.g., a comment) of no more than
@@ -124,7 +125,7 @@ use strict;
 use warnings;
 
 my $copyright_re = 'Copyright';
-my $circle_c_re = '(?:\([cC]\)|@copyright\{}|\\\\\(co|&copy;)';
+my $circle_c_re = '(?:\([cC]\)|@copyright\{}|\\\\\(co|&copy;|©)';
 my $holder = $ENV{UPDATE_COPYRIGHT_HOLDER};
 $holder ||= 'Free Software Foundation, Inc.';
 my $prefix_max = 5;
@@ -263,7 +264,9 @@ else
     print STDERR "$ARGV: warning: copyright statement not found\n";
   }
 
+# Hey Emacs!
 # Local variables:
+# coding: utf-8
 # mode: perl
 # indent-tabs-mode: nil
 # eval: (add-hook 'write-file-hooks 'time-stamp)

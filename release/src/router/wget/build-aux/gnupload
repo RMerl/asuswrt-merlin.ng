@@ -1,9 +1,9 @@
 #!/bin/sh
 # Sign files and upload them.
 
-scriptversion=2016-01-11.22; # UTC
+scriptversion=2017-09-13.06; # UTC
 
-# Copyright (C) 2004-2017 Free Software Foundation, Inc.
+# Copyright (C) 2004-2018 Free Software Foundation, Inc.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -16,7 +16,7 @@ scriptversion=2016-01-11.22; # UTC
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 # Originally written by Alexandre Duret-Lutz <adl@gnu.org>.
 # The master copy of this file is maintained in the gnulib Git repository.
@@ -78,7 +78,7 @@ in the current working directory, its contents are prepended to the
 actual command line options.  Use this to keep your defaults.  Comments
 (#) and empty lines in $conffile are allowed.
 
-<http://www.gnu.org/prep/maintain/html_node/Automated-FTP-Uploads.html>
+<https://www.gnu.org/prep/maintain/html_node/Automated-FTP-Uploads.html>
 gives some further background.
 
 Examples:
@@ -108,7 +108,7 @@ Examples:
 gnupload executes a program ncftpput to do the transfers; if you don't
 happen to have an ncftp package installed, the ncftpput-ftp script in
 the build-aux/ directory of the gnulib package
-(http://savannah.gnu.org/projects/gnulib) may serve as a replacement.
+(https://savannah.gnu.org/projects/gnulib) may serve as a replacement.
 
 Send patches and bug reports to <bug-gnulib@gnu.org>."
 

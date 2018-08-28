@@ -1,5 +1,5 @@
 /* Extended regular expression matching and search library.
-   Copyright (C) 2002-2017 Free Software Foundation, Inc.
+   Copyright (C) 2002-2018 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
    Contributed by Isamu Hasegawa <isamu@yamato.ibm.com>.
 
@@ -15,19 +15,19 @@
 
    You should have received a copy of the GNU General Public
    License along with the GNU C Library; if not, see
-   <http://www.gnu.org/licenses/>.  */
+   <https://www.gnu.org/licenses/>.  */
 
 static void re_string_construct_common (const char *str, Idx len,
 					re_string_t *pstr,
 					RE_TRANSLATE_TYPE trans, bool icase,
-					const re_dfa_t *dfa) internal_function;
+					const re_dfa_t *dfa);
 static re_dfastate_t *create_ci_newstate (const re_dfa_t *dfa,
 					  const re_node_set *nodes,
-					  re_hashval_t hash) internal_function;
+					  re_hashval_t hash);
 static re_dfastate_t *create_cd_newstate (const re_dfa_t *dfa,
 					  const re_node_set *nodes,
 					  unsigned int context,
-					  re_hashval_t hash) internal_function;
+					  re_hashval_t hash);
 
 /* Functions for string operation.  */
 
@@ -35,7 +35,7 @@ static re_dfastate_t *create_cd_newstate (const re_dfa_t *dfa,
    re_string_reconstruct before using the object.  */
 
 static reg_errcode_t
-internal_function __attribute_warn_unused_result__
+__attribute_warn_unused_result__
 re_string_allocate (re_string_t *pstr, const char *str, Idx len, Idx init_len,
 		    RE_TRANSLATE_TYPE trans, bool icase, const re_dfa_t *dfa)
 {
@@ -63,7 +63,7 @@ re_string_allocate (re_string_t *pstr, const char *str, Idx len, Idx init_len,
 /* This function allocate the buffers, and initialize them.  */
 
 static reg_errcode_t
-internal_function __attribute_warn_unused_result__
+__attribute_warn_unused_result__
 re_string_construct (re_string_t *pstr, const char *str, Idx len,
 		     RE_TRANSLATE_TYPE trans, bool icase, const re_dfa_t *dfa)
 {
@@ -126,7 +126,7 @@ re_string_construct (re_string_t *pstr, const char *str, Idx len,
 /* Helper functions for re_string_allocate, and re_string_construct.  */
 
 static reg_errcode_t
-internal_function __attribute_warn_unused_result__
+__attribute_warn_unused_result__
 re_string_realloc_buffers (re_string_t *pstr, Idx new_buf_len)
 {
 #ifdef RE_ENABLE_I18N
@@ -166,7 +166,6 @@ re_string_realloc_buffers (re_string_t *pstr, Idx new_buf_len)
 
 
 static void
-internal_function
 re_string_construct_common (const char *str, Idx len, re_string_t *pstr,
 			    RE_TRANSLATE_TYPE trans, bool icase,
 			    const re_dfa_t *dfa)
@@ -198,7 +197,6 @@ re_string_construct_common (const char *str, Idx len, re_string_t *pstr,
    built and starts from PSTR->VALID_LEN.  */
 
 static void
-internal_function
 build_wcs_buffer (re_string_t *pstr)
 {
 #ifdef _LIBC
@@ -267,7 +265,7 @@ build_wcs_buffer (re_string_t *pstr)
    but for REG_ICASE.  */
 
 static reg_errcode_t
-internal_function __attribute_warn_unused_result__
+__attribute_warn_unused_result__
 build_wcs_upper_buffer (re_string_t *pstr)
 {
   mbstate_t prev_st;
@@ -484,7 +482,6 @@ build_wcs_upper_buffer (re_string_t *pstr)
    Return the index.  */
 
 static Idx
-internal_function
 re_string_skip_chars (re_string_t *pstr, Idx new_raw_idx, wint_t *last_wc)
 {
   mbstate_t prev_st;
@@ -525,7 +522,6 @@ re_string_skip_chars (re_string_t *pstr, Idx new_raw_idx, wint_t *last_wc)
    This function is used in case of REG_ICASE.  */
 
 static void
-internal_function
 build_upper_buffer (re_string_t *pstr)
 {
   Idx char_idx, end_idx;
@@ -545,7 +541,6 @@ build_upper_buffer (re_string_t *pstr)
 /* Apply TRANS to the buffer in PSTR.  */
 
 static void
-internal_function
 re_string_translate_buffer (re_string_t *pstr)
 {
   Idx buf_idx, end_idx;
@@ -566,7 +561,7 @@ re_string_translate_buffer (re_string_t *pstr)
    convert to upper case in case of REG_ICASE, apply translation.  */
 
 static reg_errcode_t
-internal_function __attribute_warn_unused_result__
+__attribute_warn_unused_result__
 re_string_reconstruct (re_string_t *pstr, Idx idx, int eflags)
 {
   Idx offset;
@@ -829,7 +824,7 @@ re_string_reconstruct (re_string_t *pstr, Idx idx, int eflags)
 }
 
 static unsigned char
-internal_function __attribute__ ((pure))
+__attribute__ ((pure))
 re_string_peek_byte_case (const re_string_t *pstr, Idx idx)
 {
   int ch;
@@ -866,7 +861,6 @@ re_string_peek_byte_case (const re_string_t *pstr, Idx idx)
 }
 
 static unsigned char
-internal_function
 re_string_fetch_byte_case (re_string_t *pstr)
 {
   if (BE (!pstr->mbs_allocated, 1))
@@ -904,7 +898,6 @@ re_string_fetch_byte_case (re_string_t *pstr)
 }
 
 static void
-internal_function
 re_string_destruct (re_string_t *pstr)
 {
 #ifdef RE_ENABLE_I18N
@@ -918,7 +911,6 @@ re_string_destruct (re_string_t *pstr)
 /* Return the context at IDX in INPUT.  */
 
 static unsigned int
-internal_function
 re_string_context_at (const re_string_t *input, Idx idx, int eflags)
 {
   int c;
@@ -963,7 +955,7 @@ re_string_context_at (const re_string_t *input, Idx idx, int eflags)
 /* Functions for set operation.  */
 
 static reg_errcode_t
-internal_function __attribute_warn_unused_result__
+__attribute_warn_unused_result__
 re_node_set_alloc (re_node_set *set, Idx size)
 {
   set->alloc = size;
@@ -975,7 +967,7 @@ re_node_set_alloc (re_node_set *set, Idx size)
 }
 
 static reg_errcode_t
-internal_function __attribute_warn_unused_result__
+__attribute_warn_unused_result__
 re_node_set_init_1 (re_node_set *set, Idx elem)
 {
   set->alloc = 1;
@@ -991,7 +983,7 @@ re_node_set_init_1 (re_node_set *set, Idx elem)
 }
 
 static reg_errcode_t
-internal_function __attribute_warn_unused_result__
+__attribute_warn_unused_result__
 re_node_set_init_2 (re_node_set *set, Idx elem1, Idx elem2)
 {
   set->alloc = 2;
@@ -1021,7 +1013,7 @@ re_node_set_init_2 (re_node_set *set, Idx elem1, Idx elem2)
 }
 
 static reg_errcode_t
-internal_function __attribute_warn_unused_result__
+__attribute_warn_unused_result__
 re_node_set_init_copy (re_node_set *dest, const re_node_set *src)
 {
   dest->nelem = src->nelem;
@@ -1046,7 +1038,7 @@ re_node_set_init_copy (re_node_set *dest, const re_node_set *src)
    Note: We assume dest->elems is NULL, when dest->alloc is 0.  */
 
 static reg_errcode_t
-internal_function __attribute_warn_unused_result__
+__attribute_warn_unused_result__
 re_node_set_add_intersect (re_node_set *dest, const re_node_set *src1,
 			   const re_node_set *src2)
 {
@@ -1137,7 +1129,7 @@ re_node_set_add_intersect (re_node_set *dest, const re_node_set *src1,
    DEST. Return value indicate the error code or REG_NOERROR if succeeded.  */
 
 static reg_errcode_t
-internal_function __attribute_warn_unused_result__
+__attribute_warn_unused_result__
 re_node_set_init_union (re_node_set *dest, const re_node_set *src1,
 			const re_node_set *src2)
 {
@@ -1190,7 +1182,7 @@ re_node_set_init_union (re_node_set *dest, const re_node_set *src1,
    DEST. Return value indicate the error code or REG_NOERROR if succeeded.  */
 
 static reg_errcode_t
-internal_function __attribute_warn_unused_result__
+__attribute_warn_unused_result__
 re_node_set_merge (re_node_set *dest, const re_node_set *src)
 {
   Idx is, id, sbase, delta;
@@ -1273,7 +1265,7 @@ re_node_set_merge (re_node_set *dest, const re_node_set *src)
    Return true if successful.  */
 
 static bool
-internal_function __attribute_warn_unused_result__
+__attribute_warn_unused_result__
 re_node_set_insert (re_node_set *set, Idx elem)
 {
   Idx idx;
@@ -1325,7 +1317,7 @@ re_node_set_insert (re_node_set *set, Idx elem)
    Return true if successful.  */
 
 static bool
-internal_function __attribute_warn_unused_result__
+__attribute_warn_unused_result__
 re_node_set_insert_last (re_node_set *set, Idx elem)
 {
   /* Realloc if we need.  */
@@ -1348,7 +1340,7 @@ re_node_set_insert_last (re_node_set *set, Idx elem)
    Return true if SET1 and SET2 are equivalent.  */
 
 static bool
-internal_function __attribute__ ((pure))
+__attribute__ ((pure))
 re_node_set_compare (const re_node_set *set1, const re_node_set *set2)
 {
   Idx i;
@@ -1363,7 +1355,7 @@ re_node_set_compare (const re_node_set *set1, const re_node_set *set2)
 /* Return (idx + 1) if SET contains the element ELEM, return 0 otherwise.  */
 
 static Idx
-internal_function __attribute__ ((pure))
+__attribute__ ((pure))
 re_node_set_contains (const re_node_set *set, Idx elem)
 {
   __re_size_t idx, right, mid;
@@ -1385,7 +1377,6 @@ re_node_set_contains (const re_node_set *set, Idx elem)
 }
 
 static void
-internal_function
 re_node_set_remove_at (re_node_set *set, Idx idx)
 {
   if (idx < 0 || idx >= set->nelem)
@@ -1400,7 +1391,6 @@ re_node_set_remove_at (re_node_set *set, Idx idx)
    Or return -1 if an error occurred.  */
 
 static Idx
-internal_function
 re_dfa_add_node (re_dfa_t *dfa, re_token_t token)
 {
   if (BE (dfa->nodes_len >= dfa->nodes_alloc, 0))
@@ -1454,7 +1444,6 @@ re_dfa_add_node (re_dfa_t *dfa, re_token_t token)
 }
 
 static re_hashval_t
-internal_function
 calc_state_hash (const re_node_set *nodes, unsigned int context)
 {
   re_hashval_t hash = nodes->nelem + context;
@@ -1474,7 +1463,7 @@ calc_state_hash (const re_node_set *nodes, unsigned int context)
 	   optimization.  */
 
 static re_dfastate_t *
-internal_function __attribute_warn_unused_result__
+__attribute_warn_unused_result__
 re_acquire_state (reg_errcode_t *err, const re_dfa_t *dfa,
 		  const re_node_set *nodes)
 {
@@ -1522,7 +1511,7 @@ re_acquire_state (reg_errcode_t *err, const re_dfa_t *dfa,
 	   optimization.  */
 
 static re_dfastate_t *
-internal_function __attribute_warn_unused_result__
+__attribute_warn_unused_result__
 re_acquire_state_context (reg_errcode_t *err, const re_dfa_t *dfa,
 			  const re_node_set *nodes, unsigned int context)
 {
@@ -1618,7 +1607,7 @@ free_state (re_dfastate_t *state)
    Return the new state if succeeded, otherwise return NULL.  */
 
 static re_dfastate_t *
-internal_function __attribute_warn_unused_result__
+__attribute_warn_unused_result__
 create_ci_newstate (const re_dfa_t *dfa, const re_node_set *nodes,
 		    re_hashval_t hash)
 {
@@ -1668,7 +1657,7 @@ create_ci_newstate (const re_dfa_t *dfa, const re_node_set *nodes,
    Return the new state if succeeded, otherwise return NULL.  */
 
 static re_dfastate_t *
-internal_function __attribute_warn_unused_result__
+__attribute_warn_unused_result__
 create_cd_newstate (const re_dfa_t *dfa, const re_node_set *nodes,
 		    unsigned int context, re_hashval_t hash)
 {

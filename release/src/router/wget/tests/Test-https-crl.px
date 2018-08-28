@@ -42,12 +42,12 @@ $ENV{'HOSTALIASES'} = "$srcdir/certs/wgethosts";
 my $addr = gethostbyname($testhostname);
 unless ($addr)
 {
-    warn "Failed to resolve $addr, using $srcdir/certs/wgethosts\n";
+    warn "Failed to resolve $testhostname, using $srcdir/certs/wgethosts\n";
     exit 77;
 }
 unless (inet_ntoa($addr) =~ "127.0.0.1")
 {
-    warn "Failed to resolve $$addr, using $srcdir/certs/wgethosts\n";
+    warn "Unexpected IP for localhost: ".inet_ntoa($addr)."\n";
     exit 77;
 }
 
@@ -55,8 +55,8 @@ my $cacrt      = "$srcdir/certs/test-ca-cert.pem";
 my $cakey      = "$srcdir/certs/test-ca-key.pem";
 
 # Use a revoked certificate
-my $servercrt  = "$srcdir/certs/revoked.crt";
-my $serverkey  = "$srcdir/certs/revoked.key";
+my $servercrt  = "$srcdir/certs/server.crt";
+my $serverkey  = "$srcdir/certs/server.key";
 
 my $servercheck =`(openssl x509 -noout -modulus -in $servercrt | openssl md5 ;
                    openssl rsa  -noout -modulus -in $serverkey | openssl md5) |
@@ -119,18 +119,9 @@ my $retryssl = SSLTest->new(cmdline  => $cmdline,
                            input     => \%urls,
                            errcode   => $expected_error_code,
                            existing  => \%existing_files,
-                           output    => \%expected_downloaded_files,
                            certfile  => $servercrt,
                            keyfile   => $serverkey,
                            lhostname => $testhostname,
                            sslport   => $port);
-if ($retryssl->run() == 0)
-{
-  exit -1;
-}
-else
-{
-  print "Test successful.\n";
-  exit 0;
-}
+exit $retryssl->run();
 # vim: et ts=4 sw=4

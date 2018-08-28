@@ -1,6 +1,6 @@
 /* Declarations for netrc.c
-   Copyright (C) 1996, 1996, 1997, 2007, 2008, 2009, 2010, 2011, 2015
-   Free Software Foundation, Inc.
+   Copyright (C) 1996, 1996-1997, 2007-2011, 2015, 2018 Free Software
+   Foundation, Inc.
 
 This file is part of GNU Wget.
 
@@ -31,17 +31,9 @@ as that of the covered work.  */
 #ifndef NETRC_H
 #define NETRC_H
 
-typedef struct _acc_t
-{
-  char *host;           /* NULL if this is the default machine
-                           entry.  */
-  char *acc;
-  char *passwd;         /* NULL if there is no password.  */
-  struct _acc_t *next;
-} acc_t;
+#include <stdio.h>
 
-void search_netrc (const char *, const char **, const char **, int);
-void free_netrc (acc_t *l);
+void search_netrc (const char *, const char **, const char **, int, FILE *);
 void netrc_cleanup(void);
 
 #endif /* NETRC_H */

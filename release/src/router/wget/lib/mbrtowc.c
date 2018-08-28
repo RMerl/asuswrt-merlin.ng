@@ -1,5 +1,5 @@
 /* Convert multibyte character to wide character.
-   Copyright (C) 1999-2002, 2005-2017 Free Software Foundation, Inc.
+   Copyright (C) 1999-2002, 2005-2018 Free Software Foundation, Inc.
    Written by Bruno Haible <bruno@clisp.org>, 2008.
 
    This program is free software: you can redistribute it and/or modify
@@ -13,7 +13,7 @@
    GNU General Public License for more details.
 
    You should have received a copy of the GNU General Public License
-   along with this program.  If not, see <http://www.gnu.org/licenses/>.  */
+   along with this program.  If not, see <https://www.gnu.org/licenses/>.  */
 
 #include <config.h>
 
@@ -35,6 +35,13 @@
 # include "streq.h"
 # include "verify.h"
 
+#ifndef FALLTHROUGH
+# if __GNUC__ < 7
+#  define FALLTHROUGH ((void) 0)
+# else
+#  define FALLTHROUGH __attribute__ ((__fallthrough__))
+# endif
+#endif
 
 verify (sizeof (mbstate_t) >= 4);
 
@@ -74,10 +81,10 @@ mbrtowc (wchar_t *pwc, const char *s, size_t n, mbstate_t *ps)
         break;
       case 3:
         buf[2] = pstate[3];
-        /*FALLTHROUGH*/
+        FALLTHROUGH;
       case 2:
         buf[1] = pstate[2];
-        /*FALLTHROUGH*/
+        FALLTHROUGH;
       case 1:
         buf[0] = pstate[1];
         p = buf;
@@ -98,7 +105,7 @@ mbrtowc (wchar_t *pwc, const char *s, size_t n, mbstate_t *ps)
     /* Here m > 0.  */
 
 # if __GLIBC__ || defined __UCLIBC__
-    /* Work around bug <http://sourceware.org/bugzilla/show_bug.cgi?id=9674> */
+    /* Work around bug <https://sourceware.org/bugzilla/show_bug.cgi?id=9674> */
     mbtowc (NULL, NULL, 0);
 # endif
     {

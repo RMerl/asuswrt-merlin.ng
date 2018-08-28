@@ -1,7 +1,7 @@
                                                           -*- text -*-
 GNU Wget
 ========
-                  Current Web home: http://www.gnu.org/software/wget/
+                  Current Web home: https://www.gnu.org/software/wget/
 
 GNU Wget is a free utility for non-interactive download of files from
 the Web.  It supports HTTP, HTTPS, and FTP protocols, as well as
@@ -50,10 +50,10 @@ resides at <ftp://ftp.gnu.org/pub/gnu/wget/>.
 Please report bugs in Wget to <bug-wget@gnu.org>.
 
 See the file `MAILING-LIST' for information about Wget mailing lists.
-Wget's home page is at <http://www.gnu.org/software/wget/>.
+Wget's home page is at <https://www.gnu.org/software/wget/>.
 
 If you would like to contribute code for Wget, please read
-http://wget.addictivecode.org/PatchGuidelines.
+https://wget.addictivecode.org/PatchGuidelines.
 
 Wget was originally written and mainained by Hrvoje Niksic.  Please see
 the file AUTHORS for a list of major contributors, and the ChangeLogs

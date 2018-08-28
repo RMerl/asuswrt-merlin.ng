@@ -1,5 +1,5 @@
 /* Metalink module.
-   Copyright (C) 2015 Free Software Foundation, Inc.
+   Copyright (C) 2015, 2018 Free Software Foundation, Inc.
 
 This file is part of GNU Wget.
 
@@ -53,7 +53,7 @@ as that of the covered work.  */
 #endif
 
 #ifdef TESTING
-#include "test.h"
+#include "../tests/unit-tests.h"
 #endif
 
 /* Loop through all files in metalink structure and retrieve them.
@@ -99,8 +99,8 @@ retrieve_from_metalink (const metalink_t* metalink)
       metalink_resource_t **mres_ptr;
       char *planname = NULL;
       char *trsrname = NULL;
-      char *filename = NULL;
-      char *basename = NULL;
+      char *filename;
+      char *basename;
       char *safename = NULL;
       char *destname = NULL;
       bool size_ok = false;
@@ -709,8 +709,7 @@ retrieve_from_metalink (const metalink_t* metalink)
                   gpgme_data_t gpgsigdata, gpgdata;
                   gpgme_verify_result_t gpgres;
                   gpgme_signature_t gpgsig;
-                  gpgme_protocol_t gpgprot = GPGME_PROTOCOL_UNKNOWN;
-                  int fd = -1;
+                  int fd;
 
                   /* Initialize the library - as name suggests.  */
                   gpgme_check_version (NULL);
@@ -751,16 +750,15 @@ retrieve_from_metalink (const metalink_t* metalink)
                            msig->signature));
 
                   /* Check signature type.  */
-                  if (!strcmp (msig->mediatype, "application/pgp-signature"))
-                    gpgprot = GPGME_PROTOCOL_OpenPGP;
-                  else /* Unsupported signature type.  */
+                  if (strcmp (msig->mediatype, "application/pgp-signature"))
                     {
+                      /* Unsupported signature type.  */
                       gpgme_release (gpgctx);
                       gpgme_data_release (gpgdata);
                       goto gpg_skip_verification;
                     }
 
-                  gpgerr = gpgme_set_protocol (gpgctx, gpgprot);
+                  gpgerr = gpgme_set_protocol (gpgctx, GPGME_PROTOCOL_OpenPGP);
                   if (gpgerr != GPG_ERR_NO_ERROR)
                     {
                       logprintf (LOG_NOTQUIET,

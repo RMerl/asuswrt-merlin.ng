@@ -1,7 +1,6 @@
 /* File Transfer Protocol support.
-   Copyright (C) 1996, 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004,
-   2005, 2006, 2007, 2008, 2009, 2010, 2011, 2014, 2015 Free Software
-   Foundation, Inc.
+   Copyright (C) 1996-2011, 2014-2015, 2018 Free Software Foundation,
+   Inc.
 
 This file is part of GNU Wget.
 
@@ -385,7 +384,7 @@ getftp (struct url *u, struct url *original_url,
 
   /* Check for ~/.netrc if none of the above match */
   if (opt.netrc && (!user || !passwd))
-    search_netrc (u->host, (const char **) &user, (const char **) &passwd, 1);
+    search_netrc (u->host, (const char **) &user, (const char **) &passwd, 1, NULL);
 
   if (!user) user = "anonymous";
   if (!passwd) passwd = "-wget@";
@@ -1983,7 +1982,10 @@ ftp_loop_internal (struct url *u, struct url *original_url, struct fileinfo *f,
 #endif
           /* Fatal errors, give up.  */
           if (warc_tmp != NULL)
+            {
               fclose (warc_tmp);
+              warc_tmp = NULL;
+            }
           return err;
         case CONSOCKERR: case CONERROR: case FTPSRVERR: case FTPRERR:
         case WRITEFAILED: case FTPUNKNOWNTYPE: case FTPSYSERR:
@@ -2111,7 +2113,10 @@ Removing file due to --delete-after in ftp_loop_internal():\n"));
         *local_file = xstrdup (locf);
 
       if (warc_tmp != NULL)
-        fclose (warc_tmp);
+        {
+          fclose (warc_tmp);
+          warc_tmp = NULL;
+        }
 
       return RETROK;
     } while (!opt.ntry || (count < opt.ntry));
@@ -2180,7 +2185,6 @@ static uerr_t ftp_retrieve_dirs (struct url *, struct url *,
                                  struct fileinfo *, ccon *);
 static uerr_t ftp_retrieve_glob (struct url *, struct url *, ccon *, int);
 static struct fileinfo *delelement (struct fileinfo *, struct fileinfo **);
-static void freefileinfo (struct fileinfo *f);
 
 /* Retrieve a list of files given in struct fileinfo linked list.  If
    a file is a symbolic link, do not retrieve it, but rather try to
@@ -2823,7 +2827,7 @@ delelement (struct fileinfo *f, struct fileinfo **start)
 }
 
 /* Free the fileinfo linked list of files.  */
-static void
+void
 freefileinfo (struct fileinfo *f)
 {
   while (f)

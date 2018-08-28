@@ -1,6 +1,6 @@
 /* A substitute for ISO C99 <wctype.h>, for platforms that lack it.
 
-   Copyright (C) 2006-2017 Free Software Foundation, Inc.
+   Copyright (C) 2006-2018 Free Software Foundation, Inc.
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -13,7 +13,7 @@
    GNU General Public License for more details.
 
    You should have received a copy of the GNU General Public License
-   along with this program; if not, see <http://www.gnu.org/licenses/>.  */
+   along with this program; if not, see <https://www.gnu.org/licenses/>.  */
 
 /* Written by Bruno Haible and Paul Eggert.  */
 
@@ -56,11 +56,13 @@
 # include <wchar.h>
 #endif
 
-/* mingw has declarations of towupper and towlower in <ctype.h> as
-   well <wctype.h>.  Include <ctype.h> in advance to avoid rpl_ prefix
-   being added to the declarations.  */
-#ifdef __MINGW32__
+/* Native Windows (mingw, MSVC) have declarations of towupper, towlower, and
+   isw* functions in <ctype.h>, <wchar.h> as well as in <wctype.h>.  Include
+   <ctype.h>, <wchar.h> in advance to avoid rpl_ prefix being added to the
+   declarations.  */
+#if (defined _WIN32 || defined __WIN32__) && ! defined __CYGWIN__
 # include <ctype.h>
+# include <wchar.h>
 #endif
 
 /* Include the original <wctype.h> if it exists.
@@ -105,12 +107,16 @@ _GL_INLINE_HEADER_BEGIN
 #  define WEOF -1
 # endif
 #else
-/* mingw and MSVC define wint_t as 'unsigned short' in <crtdefs.h>.
-   This is too small: ISO C 99 section 7.24.1.(2) says that wint_t must be
-   "unchanged by default argument promotions".  Override it.  */
+/* mingw and MSVC define wint_t as 'unsigned short' in <crtdefs.h> or
+   <stddef.h>.  This is too small: ISO C 99 section 7.24.1.(2) says that
+   wint_t must be "unchanged by default argument promotions".  Override it.  */
 # if @GNULIB_OVERRIDES_WINT_T@
 #  if !GNULIB_defined_wint_t
-#   include <crtdefs.h>
+#   if @HAVE_CRTDEFS_H@
+#    include <crtdefs.h>
+#   else
+#    include <stddef.h>
+#   endif
 typedef unsigned int rpl_wint_t;
 #   undef wint_t
 #   define wint_t rpl_wint_t

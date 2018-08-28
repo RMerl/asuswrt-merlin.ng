@@ -1,6 +1,6 @@
 /* Support for Robot Exclusion Standard (RES).
-   Copyright (C) 2001, 2006, 2007, 2008, 2009, 2010, 2011, 2015 Free
-   Software Foundation, Inc.
+   Copyright (C) 2001, 2006-2011, 2015, 2018 Free Software Foundation,
+   Inc.
 
 This file is part of Wget.
 
@@ -84,7 +84,7 @@ as that of the covered work.  */
 #include "c-strcase.h"
 
 #ifdef TESTING
-#include "test.h"
+#include "../tests/unit-tests.h"
 #endif
 
 struct path_info {
@@ -170,6 +170,8 @@ prune_non_exact (struct robot_specs *specs)
   for (i = 0, j = 0; i < specs->count; i++)
     if (specs->paths[i].user_agent_exact_p)
       newpaths[j++] = specs->paths[i];
+	 else
+		 xfree (specs->paths[i].path);
   assert (j == cnt);
   xfree (specs->paths);
   specs->paths = newpaths;

@@ -1,5 +1,5 @@
 /* getdelim.c --- Implementation of replacement getdelim function.
-   Copyright (C) 1994, 1996-1998, 2001, 2003, 2005-2017 Free Software
+   Copyright (C) 1994, 1996-1998, 2001, 2003, 2005-2018 Free Software
    Foundation, Inc.
 
    This program is free software; you can redistribute it and/or
@@ -13,7 +13,7 @@
    General Public License for more details.
 
    You should have received a copy of the GNU General Public License
-   along with this program; if not, see <http://www.gnu.org/licenses/>.  */
+   along with this program; if not, see <https://www.gnu.org/licenses/>.  */
 
 /* Ported from glibc by Simon Josefsson. */
 
@@ -52,7 +52,7 @@ alloc_failed (void)
 {
 #if (defined _WIN32 || defined __WIN32__) && ! defined __CYGWIN__
   /* Avoid errno problem without using the realloc module; see:
-     http://lists.gnu.org/archive/html/bug-gnulib/2016-08/msg00025.html  */
+     https://lists.gnu.org/r/bug-gnulib/2016-08/msg00025.html  */
   errno = ENOMEM;
 #endif
 }

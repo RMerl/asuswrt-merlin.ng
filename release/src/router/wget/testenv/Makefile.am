@@ -1,5 +1,5 @@
 # Makefile for `wget' utility
-# Copyright (C) 2013, 2015 Free Software Foundation, Inc.
+# Copyright (C) 2013, 2015, 2018 Free Software Foundation, Inc.
 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -73,6 +73,7 @@ endif
 
 if HAVE_PYTHON3
   TESTS = Test-504.py                               \
+    Test-416.py                                     \
     Test-auth-basic-fail.py                         \
     Test-auth-basic.py                              \
     Test-auth-basic-netrc.py                        \

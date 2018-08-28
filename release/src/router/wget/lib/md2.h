@@ -1,6 +1,6 @@
 /* Declarations of functions and data types used for MD2 sum
    library functions.
-   Copyright (C) 2000-2001, 2003, 2005, 2008-2017 Free Software Foundation,
+   Copyright (C) 2000-2001, 2003, 2005, 2008-2018 Free Software Foundation,
    Inc.
 
    This program is free software; you can redistribute it and/or modify it
@@ -14,7 +14,7 @@
    GNU General Public License for more details.
 
    You should have received a copy of the GNU General Public License
-   along with this program; if not, see <http://www.gnu.org/licenses/>.  */
+   along with this program; if not, see <https://www.gnu.org/licenses/>.  */
 
 #ifndef MD2_H
 # define MD2_H 1

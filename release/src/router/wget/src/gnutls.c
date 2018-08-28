@@ -1,6 +1,5 @@
 /* SSL support via GnuTLS library.
-   Copyright (C) 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2015
-   Free Software Foundation, Inc.
+   Copyright (C) 2005-2012, 2015, 2018 Free Software Foundation, Inc.
 
 This file is part of GNU Wget.
 
@@ -536,35 +535,10 @@ _sni_hostname(const char *hostname)
   return sni_hostname;
 }
 
-bool
-ssl_connect_wget (int fd, const char *hostname, int *continue_session)
+static int
+set_prio_default (gnutls_session_t session)
 {
-  struct wgnutls_transport_context *ctx;
-  gnutls_session_t session;
-  int err;
-
-  gnutls_init (&session, GNUTLS_CLIENT);
-
-  /* We set the server name but only if it's not an IP address. */
-  if (! is_valid_ip_address (hostname))
-    {
-      /* GnuTLS 3.4.x (x<=10) disrespects the length parameter, we have to construct a new string */
-      /* see https://gitlab.com/gnutls/gnutls/issues/78 */
-      const char *sni_hostname = _sni_hostname(hostname);
-
-      gnutls_server_name_set (session, GNUTLS_NAME_DNS, sni_hostname, strlen(sni_hostname));
-      xfree(sni_hostname);
-    }
-
-  gnutls_credentials_set (session, GNUTLS_CRD_CERTIFICATE, credentials);
-#ifndef FD_TO_SOCKET
-# define FD_TO_SOCKET(X) (X)
-#endif
-#ifdef HAVE_INTPTR_T
-  gnutls_transport_set_ptr (session, (gnutls_transport_ptr_t) (intptr_t) FD_TO_SOCKET (fd));
-#else
-  gnutls_transport_set_ptr (session, (gnutls_transport_ptr_t) FD_TO_SOCKET (fd));
-#endif
+  int err = -1;
 
 #if HAVE_GNUTLS_PRIORITY_SET_DIRECT
   switch (opt.secure_protocol)
@@ -642,6 +616,53 @@ ssl_connect_wget (int fd, const char *hostname, int *continue_session)
       abort ();
     }
 #endif
+
+  return err;
+}
+
+bool
+ssl_connect_wget (int fd, const char *hostname, int *continue_session)
+{
+  struct wgnutls_transport_context *ctx;
+  gnutls_session_t session;
+  int err;
+
+  gnutls_init (&session, GNUTLS_CLIENT);
+
+  /* We set the server name but only if it's not an IP address. */
+  if (! is_valid_ip_address (hostname))
+    {
+      /* GnuTLS 3.4.x (x<=10) disrespects the length parameter, we have to construct a new string */
+      /* see https://gitlab.com/gnutls/gnutls/issues/78 */
+      const char *sni_hostname = _sni_hostname(hostname);
+
+      gnutls_server_name_set (session, GNUTLS_NAME_DNS, sni_hostname, strlen(sni_hostname));
+      xfree(sni_hostname);
+    }
+
+  gnutls_credentials_set (session, GNUTLS_CRD_CERTIFICATE, credentials);
+#ifndef FD_TO_SOCKET
+# define FD_TO_SOCKET(X) (X)
+#endif
+#ifdef HAVE_INTPTR_T
+  gnutls_transport_set_ptr (session, (gnutls_transport_ptr_t) (intptr_t) FD_TO_SOCKET (fd));
+#else
+  gnutls_transport_set_ptr (session, (gnutls_transport_ptr_t) FD_TO_SOCKET (fd));
+#endif
+
+  if (!opt.tls_ciphers_string)
+    {
+      err = set_prio_default (session);
+    }
+  else
+    {
+#if HAVE_GNUTLS_PRIORITY_SET_DIRECT
+      err = gnutls_priority_set_direct (session, opt.tls_ciphers_string, NULL);
+#else
+      logprintf (LOG_NOTQUIET, _("GnuTLS: Cannot set prio string directly. Falling back to default priority.\n"));
+      err = gnutls_set_default_priority ();
+#endif
+    }
 
   if (err < 0)
     {

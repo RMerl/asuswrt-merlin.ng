@@ -1,5 +1,5 @@
-# fseeko.m4 serial 17
-dnl Copyright (C) 2007-2017 Free Software Foundation, Inc.
+# fseeko.m4 serial 18
+dnl Copyright (C) 2007-2018 Free Software Foundation, Inc.
 dnl This file is free software; the Free Software Foundation
 dnl gives unlimited permission to copy and/or distribute it,
 dnl with or without modifications, as long as this notice is preserved.
@@ -37,9 +37,10 @@ AC_DEFUN([gl_FUNC_FSEEKO],
     fi
     m4_ifdef([gl_FUNC_FFLUSH_STDIN], [
       gl_FUNC_FFLUSH_STDIN
-      if test $gl_cv_func_fflush_stdin != yes; then
-        REPLACE_FSEEKO=1
-      fi
+      case "$gl_cv_func_fflush_stdin" in
+        *yes) ;;
+        *) REPLACE_FSEEKO=1 ;;
+      esac
     ])
   fi
 ])

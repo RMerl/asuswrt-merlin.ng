@@ -1,5 +1,5 @@
 /* Utility functions for writing WARC files.
-   Copyright (C) 2011, 2012, 2015 Free Software Foundation, Inc.
+   Copyright (C) 2011-2012, 2015, 2018 Free Software Foundation, Inc.
 
 This file is part of GNU Wget.
 
@@ -1240,9 +1240,15 @@ warc_close (void)
       warc_write_metadata ();
       *warc_current_warcinfo_uuid_str = 0;
       fclose (warc_current_file);
+      warc_current_file = NULL;
     }
+
   if (warc_current_cdx_file != NULL)
-    fclose (warc_current_cdx_file);
+    {
+      fclose (warc_current_cdx_file);
+      warc_current_cdx_file = NULL;
+    }
+
   if (warc_log_fp != NULL)
     {
       fclose (warc_log_fp);

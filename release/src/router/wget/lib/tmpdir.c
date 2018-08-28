@@ -1,4 +1,4 @@
-/* Copyright (C) 1999, 2001-2002, 2006, 2009-2017 Free Software Foundation,
+/* Copyright (C) 1999, 2001-2002, 2006, 2009-2018 Free Software Foundation,
    Inc.
    This file is part of the GNU C Library.
 
@@ -13,7 +13,7 @@
    GNU General Public License for more details.
 
    You should have received a copy of the GNU General Public License
-   along with this program.  If not, see <http://www.gnu.org/licenses/>.  */
+   along with this program.  If not, see <https://www.gnu.org/licenses/>.  */
 
 /* Extracted from sysdeps/posix/tempname.c.  */
 

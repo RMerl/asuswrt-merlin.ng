@@ -1,6 +1,5 @@
 /* SSL support via OpenSSL library.
-   Copyright (C) 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008,
-   2009, 2010, 2011, 2012, 2015 Free Software Foundation, Inc.
+   Copyright (C) 2000-2012, 2015, 2018 Free Software Foundation, Inc.
    Originally contributed by Christian Fraenkel.
 
 This file is part of GNU Wget.
@@ -68,10 +67,6 @@ init_prng (void)
   char namebuf[256];
   const char *random_file;
 
-  if (RAND_status ())
-    /* The PRNG has been seeded; no further action is necessary. */
-    return;
-
   /* Seed from a file specified by the user.  This will be the file
      specified with --random-file, $RANDFILE, if set, or ~/.rnd, if it
      exists.  */
@@ -89,17 +84,11 @@ init_prng (void)
        curl) from random file. */
     RAND_load_file (random_file, 16384);
 
-  if (RAND_status ())
-    return;
-
 #ifdef HAVE_RAND_EGD
   /* Get random data from EGD if opt.egd_file was used.  */
   if (opt.egd_file && *opt.egd_file)
     RAND_egd (opt.egd_file);
 #endif
-
-  if (RAND_status ())
-    return;
 
 #ifdef WINDOWS
   /* Under Windows, we can try to seed the PRNG using screen content.
@@ -174,11 +163,17 @@ ssl_init (void)
 {
   SSL_METHOD const *meth;
   long ssl_options = 0;
+  char *ciphers_string = NULL;
+#if !defined(LIBRESSL_VERSION_NUMBER) && (OPENSSL_VERSION_NUMBER >= 0x10100000L)
+  int ssl_proto_version = 0;
+#endif
 
 #if OPENSSL_VERSION_NUMBER >= 0x00907000
   if (ssl_true_initialized == 0)
     {
+#if OPENSSL_API_COMPAT < 0x10100000L
       OPENSSL_config (NULL);
+#endif
       ssl_true_initialized = 1;
     }
 #endif
@@ -202,8 +197,12 @@ ssl_init (void)
   CONF_modules_load_file(NULL, NULL,
       CONF_MFLAGS_DEFAULT_SECTION|CONF_MFLAGS_IGNORE_MISSING_FILE);
 #endif
+#if OPENSSL_API_COMPAT >= 0x10100000L
+  OPENSSL_init_ssl(0, NULL);
+#else
   SSL_library_init ();
   SSL_load_error_strings ();
+#endif
 #if OPENSSL_VERSION_NUMBER < 0x10100000L
   SSLeay_add_all_algorithms ();
   SSLeay_add_ssl_algorithms ();
@@ -229,16 +228,41 @@ ssl_init (void)
       ssl_options |= SSL_OP_NO_SSLv2 | SSL_OP_NO_SSLv3;
       break;
     case secure_protocol_tlsv1:
+#if !defined(LIBRESSL_VERSION_NUMBER) && (OPENSSL_VERSION_NUMBER >= 0x10100000L)
+      meth = TLS_client_method();
+      ssl_proto_version = TLS1_VERSION;
+#else
       meth = TLSv1_client_method ();
+#endif
       break;
 
 #if OPENSSL_VERSION_NUMBER >= 0x10001000
     case secure_protocol_tlsv1_1:
+#if !defined(LIBRESSL_VERSION_NUMBER) && (OPENSSL_VERSION_NUMBER >= 0x10100000L)
+      meth = TLS_client_method();
+      ssl_proto_version = TLS1_1_VERSION;
+#else
       meth = TLSv1_1_client_method ();
+#endif
       break;
 
     case secure_protocol_tlsv1_2:
+#if !defined(LIBRESSL_VERSION_NUMBER) && (OPENSSL_VERSION_NUMBER >= 0x10100000L)
+      meth = TLS_client_method();
+      ssl_proto_version = TLS1_2_VERSION;
+#else
       meth = TLSv1_2_client_method ();
+#endif
+      break;
+
+    case secure_protocol_tlsv1_3:
+#if !defined(LIBRESSL_VERSION_NUMBER) && (OPENSSL_VERSION_NUMBER >= 0x10100000L) && defined TLS1_3_VERSION
+      meth = TLS_client_method();
+      ssl_proto_version = TLS1_3_VERSION;
+#else
+      logprintf (LOG_NOTQUIET, _("Your OpenSSL version is too old to support TLS 1.3\n"));
+      goto error;
+#endif
       break;
 #else
     case secure_protocol_tlsv1_1:
@@ -248,6 +272,7 @@ ssl_init (void)
     case secure_protocol_tlsv1_2:
       logprintf (LOG_NOTQUIET, _("Your OpenSSL version is too old to support TLSv1.2\n"));
       goto error;
+
 #endif
 
     default:
@@ -265,11 +290,35 @@ ssl_init (void)
   if (ssl_options)
     SSL_CTX_set_options (ssl_ctx, ssl_options);
 
+#if !defined(LIBRESSL_VERSION_NUMBER) && (OPENSSL_VERSION_NUMBER >= 0x10100000L)
+  if (ssl_proto_version)
+    SSL_CTX_set_min_proto_version(ssl_ctx, ssl_proto_version);
+#endif
+
   /* OpenSSL ciphers: https://www.openssl.org/docs/apps/ciphers.html
-   * Since we want a good protection, we also use HIGH (that excludes MD4 ciphers and some more)
+   *
+   * Rules:
+   *  1. --ciphers overrides everything
+   *  2. We allow RSA key exchange by default (secure_protocol_auto)
+   *  3. We disallow RSA key exchange if PFS was requested (secure_protocol_pfs)
    */
-  if (opt.secure_protocol == secure_protocol_pfs)
-    SSL_CTX_set_cipher_list (ssl_ctx, "HIGH:MEDIUM:!RC4:!SRP:!PSK:!RSA:!aNULL@STRENGTH");
+  if (!opt.tls_ciphers_string)
+    {
+      if (opt.secure_protocol == secure_protocol_auto)
+	      ciphers_string = "HIGH:!aNULL:!RC4:!MD5:!SRP:!PSK";
+      else if (opt.secure_protocol == secure_protocol_pfs)
+	      ciphers_string = "HIGH:!aNULL:!RC4:!MD5:!SRP:!PSK:!kRSA";
+    }
+  else
+    {
+      ciphers_string = opt.tls_ciphers_string;
+    }
+
+  if (ciphers_string && !SSL_CTX_set_cipher_list(ssl_ctx, ciphers_string))
+    {
+      logprintf(LOG_NOTQUIET, _("OpenSSL: Invalid cipher list: %s\n"), ciphers_string);
+      goto error;
+    }
 
   SSL_CTX_set_default_verify_paths (ssl_ctx);
   SSL_CTX_load_verify_locations (ssl_ctx, opt.ca_cert, opt.ca_directory);
@@ -578,6 +627,15 @@ ssl_connect_wget (int fd, const char *hostname, int *continue_session)
   if (!SSL_set_fd (conn, FD_TO_SOCKET (fd)))
     goto error;
   SSL_set_connect_state (conn);
+
+  /* Re-seed the PRNG before the SSL handshake */
+  init_prng ();
+  if (RAND_status () != 1)
+    {
+      logprintf(LOG_NOTQUIET,
+		_("WARNING: Could not seed PRNG. Consider using --random-file.\n"));
+      goto error;
+    }
 
   scwt_ctx.ssl = conn;
   if (run_with_timeout(opt.read_timeout, ssl_connect_with_timeout_callback,

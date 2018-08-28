@@ -41,6 +41,10 @@
 #include "md5.h"
 #include "sha1.h"
 
+#ifdef BCMARM
+#include "ifaddrs.c"
+#endif
+
 /* Conversation with the checkip server */
 #define DYNDNS_CHECKIP_HTTP_REQUEST  					\
 	"GET %s HTTP/1.0\r\n"						\

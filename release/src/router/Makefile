@@ -5388,11 +5388,10 @@ curl-7.21.7/Makefile: curl/configure
 	@cd curl && $(CONFIGURE) CC=$(CC) \
 		CFLAGS="-Os -Wall -ffunction-sections -fdata-sections" \
 		--prefix=/usr --bindir=/usr/sbin --libdir=/usr/lib \
-		--enable-http --with-ssl=$(TOP)/openssl/ssl \
+		--enable-http --with-ssl=$(TOP)/openssl \
 		$(if $(RTCONFIG_IPV6),--enable-ipv6) \
 		--disable-gopher --disable-dict --disable-telnet \
 		--disable-proxy --disable-manual --disable-libcurl-option \
-		CPPFLAGS='-I$(TOP)/openssl/include' \
 		LDFLAGS='$(LDFLAGS) -L$(TOP)/openssl' LIBS='-lcrypto -lssl -ldl' \
 		--with-ca-bundle=/etc/ssl/certs/ca-certificates.crt
 

@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>3. Introducing lists</title><link rel="stylesheet" type="text/css" href="tutorial.css" /><meta name="generator" content="DocBook XSL Stylesheets V1.79.1" /><link rel="home" href="index.html" title="libConfuse tutorial" /><link rel="up" href="index.html" title="libConfuse tutorial" /><link rel="prev" href="ar01s02.html" title="2. Other types of options" /><link rel="next" href="ar01s04.html" title="4. Using sections" /></head><body><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">3. Introducing lists</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="ar01s02.html">Prev</a> </td><th width="60%" align="center"> </th><td width="20%" align="right"> <a accesskey="n" href="ar01s04.html">Next</a></td></tr></table><hr /></div><div class="sect1"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="idm45830329201568"></a>3. Introducing lists</h2></div></div></div><p>
+            That was easy. Now let's extend the program a bit so we can greet more than one
+            "target". We'd like to be able to specify a list of targets to greet.
+        </p><p>
+            The list versions of the initialization macros are named
+            <code class="function">CFG_STR_LIST()</code>,
+            <code class="function">CFG_INT_LIST()</code>,
+            <code class="function">CFG_BOOL_LIST()</code> and
+            <code class="function">CFG_FLOAT_LIST()</code>. They take the same
+            parameters as the non-list versions, except the default value must
+            be a string surrounded by curly braces.
+        </p><p>
+            The modified program is shown below:
+        </p><a id="listing4"></a><pre class="programlisting">
+1	#include &lt;stdio.h&gt;
+2	#include &lt;confuse.h&gt;
+3	
+4	int main(void)
+5	{
+6	    cfg_opt_t opts[] =
+7	    {
+8	        CFG_STR_LIST("targets", "{World}", CFGF_NONE),
+9	        CFG_INT("repeat", 1, CFGF_NONE),
+10	        CFG_END()
+11	    };
+12	    cfg_t *cfg;
+13	    int repeat;
+14	    int i;
+15	
+16	    cfg = cfg_init(opts, CFGF_NONE);
+17	    if(cfg_parse(cfg, "hello.conf") == CFG_PARSE_ERROR)
+18	        return 1;
+19	
+20	    repeat = cfg_getint(cfg, "repeat");
+21	    while(repeat--)
+22	    {
+23	        printf("Hello");
+24	        for(i = 0; i &lt; cfg_size(cfg, "targets"); i++)
+25	            printf(", %s", cfg_getnstr(cfg, "targets", i));
+26	        printf("!\n");
+27	    }
+28	
+29	    cfg_free(cfg);
+30	    return 0;
+31	}
+32	
+</pre><p>
+            Three things are a bit different here. First, the macro to
+            initialize the "targets" option is
+            <code class="function">CFG_STR_LIST()</code>. This tells libConfuse that
+            "targets" is a list of strings. Second, the default value in the
+            second parameter is surrounded by curly braces. This is needed to
+            indicate to libConfuse where the list of values ends.
+        </p><p>
+            The third change is in the printing of the greeting. First we print
+            the "Hello" string. Then we loop through all values found for the
+            "targets" option. The number of values is retrieved with the
+            <code class="function">cfg_size()</code> function. The string values are
+            then retrieved with <code class="function">cfg_getnstr()</code>, which is an
+            indexed version of <code class="function">cfg_getstr()</code>. In fact,
+            <code class="function">cfg_getstr()</code> is equivalent to
+            <code class="function">cfg_getnstr()</code> with an index of zero.
+        </p><p>
+            In the configuration file hello.conf, we can now specify a list of targets to
+            greet:
+        </p><pre class="programlisting">
+# this is the configuration file for the hello program
+
+targets = {"Life", "Universe", "Everything"}
+repeat = 1
+        </pre><p>
+            The output of the hello program, run with the above configuration file, is:
+            "Hello, Life, Universe, Everything!"
+        </p><p>
+            Again, if no targets were configured, the greeting would have been the standard
+            "Hello, World!".
+        </p></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ar01s02.html">Prev</a> </td><td width="20%" align="center"> </td><td width="40%" align="right"> <a accesskey="n" href="ar01s04.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">2. Other types of options </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> 4. Using sections</td></tr></table></div></body></html>

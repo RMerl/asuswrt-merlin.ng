@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>libConfuse tutorial</title><link rel="stylesheet" type="text/css" href="tutorial.css" /><meta name="generator" content="DocBook XSL Stylesheets V1.79.1" /><link rel="home" href="index.html" title="libConfuse tutorial" /><link rel="next" href="ar01s02.html" title="2. Other types of options" /></head><body><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">libConfuse tutorial</th></tr><tr><td width="20%" align="left"> </td><th width="60%" align="center"> </th><td width="20%" align="right"> <a accesskey="n" href="ar01s02.html">Next</a></td></tr></table><hr /></div><div class="article"><div class="titlepage"><div><div><h2 class="title"><a id="idm45830325301600"></a>libConfuse tutorial</h2></div><div><div class="author"><h3 class="author"><span class="firstname">Martin</span> <span class="surname">Hedenfalk</span></h3></div></div></div><hr /></div><div class="toc"><p><strong>Table of Contents</strong></p><dl class="toc"><dt><span class="sect1"><a href="index.html#idm45830325297024">1. Introducing libConfuse in an existing program</a></span></dt><dd><dl><dt><span class="sect2"><a href="index.html#idm45830328863472">1.1. Environment variables in values</a></span></dt></dl></dd><dt><span class="sect1"><a href="ar01s02.html">2. Other types of options</a></span></dt><dt><span class="sect1"><a href="ar01s03.html">3. Introducing lists</a></span></dt><dt><span class="sect1"><a href="ar01s04.html">4. Using sections</a></span></dt><dt><span class="sect1"><a href="ar01s05.html">5. Parsing from internal buffers</a></span></dt><dt><span class="sect1"><a href="ar01s06.html">6. Validating callback functions</a></span></dt><dd><dl><dt><span class="sect2"><a href="ar01s06.html#idm45830324469088">6.1. Installing the callback</a></span></dt></dl></dd><dt><span class="sect1"><a href="ar01s07.html">7. Value parsing callback</a></span></dt><dt><span class="sect1"><a href="ar01s08.html">8. Functions</a></span></dt><dd><dl><dt><span class="sect2"><a href="ar01s08.html#idm45830324472736">8.1. Predefined functions</a></span></dt></dl></dd><dt><span class="sect1"><a href="ar01s09.html">9. Saving configuration files</a></span></dt><dd><dl><dt><span class="sect2"><a href="ar01s09.html#idm45830324459088">9.1. Altering the printing of certain options</a></span></dt></dl></dd></dl></div><div class="sect1"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="idm45830325297024"></a>1. Introducing libConfuse in an existing program</h2></div></div></div><p>Consider this simple program:</p><a id="listing1"></a><pre class="programlisting">
+1	#include &lt;stdio.h&gt;
+2	
+3	int main(void)
+4	{
+5	    printf("Hello, World!\n");
+6	    return 0;
+7	}
+8	
+</pre><p>
+            Simple enough, but we want to extend the program so we can greet
+            others. Maybe we don't want to greet the whole world, just our
+            neighbour. We use libConfuse to let the user decide whom to greet.
+        </p><a id="listing2"></a><pre class="programlisting">
+1	#include &lt;stdio.h&gt;
+2	#include &lt;confuse.h&gt;
+3	
+4	int main(void)
+5	{
+6	    cfg_opt_t opts[] =
+7	    {
+8	        CFG_STR("target", "World", CFGF_NONE),
+9	        CFG_END()
+10	    };
+11	    cfg_t *cfg;
+12	
+13	    cfg = cfg_init(opts, CFGF_NONE);
+14	    if(cfg_parse(cfg, "hello.conf") == CFG_PARSE_ERROR)
+15	        return 1;
+16	
+17	    printf("Hello, %s!\n", cfg_getstr(cfg, "target"));
+18	
+19	    cfg_free(cfg);
+20	    return 0;
+21	}
+22	
+</pre><p>
+            All programs using libConfuse must first include the
+            <code class="filename">confuse.h</code> header file.  This is done on line
+            2.
+        </p><p>
+            On line 6 - 10, the options that should be recognized are defined in an
+            array of cfg_opt_t structs. This is passed to the
+            <code class="function">cfg_init</code> function on line 13. The resulting
+            <span class="structname">cfg_t</span> context is used by
+            <code class="function">cfg_parse()</code>, which reads the configuration file
+            "hello.conf". When reading the configuration file, only options defined in
+            the array of options passed to <code class="function">cfg_init()</code> are
+            recognized.
+        </p><p>
+            The friendly greeting is now replaced with a parameter read from the
+            configuration file. The value of the <code class="varname">target</code> option is retrieved with
+            <code class="function">cfg_getstr(cfg, "target")</code>.
+        </p><p>
+            Lets take a look at the configuration file hello.conf:
+        </p><pre class="programlisting">
+# this is the configuration file for the hello program
+
+target = "Neighbour"
+        </pre><p>
+            Here, the target option is set to the string value "Neighbour".
+            What if the configuration file was empty or didn't exist? Then the
+            default value for the <code class="varname">target</code> option would be
+            used. When we initialized our options, the second parameter to the
+            <code class="function">CFG_STR()</code> macro specified the default value.
+            Thus, if no <code class="varname">target</code> option was specified in the
+            configuration file, the hello program would have printed the
+            standard greeting "Hello, World".
+        </p><div class="sect2"><div class="titlepage"><div><div><h3 class="title"><a id="idm45830328863472"></a>1.1. Environment variables in values</h3></div></div></div><p>
+                What else can we do in the configuration file? We can set the value to an
+                environment variable:
+            </p><pre class="programlisting">
+target = ${USER}
+            </pre><p>
+                This results in the hello program greeting the user who runs it. On some
+                systems, the USER variable might not be available, so we want to specify a
+                default value in those cases:
+            </p><pre class="programlisting">
+target = ${USER:-User}
+            </pre><p>
+                Now, if the USER environment variable is unset, the string "User" will be
+                used instead.
+            </p></div></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"> </td><td width="20%" align="center"> </td><td width="40%" align="right"> <a accesskey="n" href="ar01s02.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top"> </td><td width="20%" align="center"> </td><td width="40%" align="right" valign="top"> 2. Other types of options</td></tr></table></div></body></html>

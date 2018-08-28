@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>6. Validating callback functions</title><link rel="stylesheet" type="text/css" href="tutorial.css" /><meta name="generator" content="DocBook XSL Stylesheets V1.79.1" /><link rel="home" href="index.html" title="libConfuse tutorial" /><link rel="up" href="index.html" title="libConfuse tutorial" /><link rel="prev" href="ar01s05.html" title="5. Parsing from internal buffers" /><link rel="next" href="ar01s07.html" title="7. Value parsing callback" /></head><body><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">6. Validating callback functions</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="ar01s05.html">Prev</a> </td><th width="60%" align="center"> </th><td width="20%" align="right"> <a accesskey="n" href="ar01s07.html">Next</a></td></tr></table><hr /></div><div class="sect1"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="idm45830324507456"></a>6. Validating callback functions</h2></div></div></div><p>
+            Remember the problem about a negative or too large "repeat" value
+            in <a class="xref" href="ar01s02.html#negative-repeat-problem">Section 2, “Other types of options”</a>?  The code that prints
+            the greeting has those lines:
+        </p><pre class="programlisting">
+...
+repeat = cfg_getint(cfg_greet, "repeat");
+while(repeat--)
+...
+        </pre><p>
+            The repeat variable is defined as an int, a signed integer. If the user
+            specified a negative repeat value in the configuration file, this code
+            would continue to decrease the repeat variable until it eventually
+            underflowed.
+        </p><p>
+            We'll fix this by not allowing a negative value in the configuration
+            file. Of course we could first just check if the value is negative
+            and then abort, using <code class="function">cfg_getint()</code> and a test.
+            But we will use a validating callback function instead. This way
+            <code class="function">cfg_parse()</code> will return an error directly when
+            parsing the file, additionally indicating on which line the error
+            is.
+        </p><p>
+            A validating callback function is defined as:
+        </p><pre class="programlisting">
+typedef int (*cfg_validate_callback_t)(cfg_t *cfg, cfg_opt_t *opt);
+        </pre><p>
+            This function takes two arguments: the section and the option. It
+            should return 0 on success (ie, the value validated ok). All other
+            values indicates an error, and the parsing is aborted. The callback
+            function should notify the error itself, for example by calling
+            <code class="function">cfg_error()</code>.
+        </p><p>
+            Here is the code for the callback function:
+        </p><a id="listing7"></a><pre class="programlisting">
+1	int validate_unsigned_int(cfg_t *cfg, cfg_opt_t *opt)
+2	{
+3	    int value = cfg_opt_getnint(opt, cfg_opt_size(opt) - 1);
+4	    if(value &lt; 0)
+5	    {
+6	        cfg_error(cfg, "integer option '%s' must be positive in section '%s'",
+7	                opt-&gt;name, cfg-&gt;name);
+8	        return -1;
+9	    }
+10	    return 0;
+11	}
+12	
+</pre><p>
+            Only the last value is validated, because libConfuse will call this
+            function once for every value corresponding to the option. Since
+            the "repeat" option is not a list, we could instead have used
+            <code class="function">cfg_opt_getint(opt)</code> to retrieve the only
+            value. However, if we later want to use this callback to validate
+            an integer list, it is already lists-aware.
+        </p><div class="sect2"><div class="titlepage"><div><div><h3 class="title"><a id="idm45830324469088"></a>6.1. Installing the callback</h3></div></div></div><p>
+                The validating callback is installed with
+                <code class="function">cfg_set_validate_func()</code>. It is called with
+                a string specifying which option is affected, and a pointer to
+                the callback function. To specify an option in a subsection,
+                the section and the option must be separated with a vertical
+                bar ("|").
+            </p><p>
+                We're now also looking at the return code from
+                <code class="function">cfg_parse()</code> to verify that the parsing was
+                successful. The complete program is now:
+            </p><a id="listing8"></a><pre class="programlisting">
+1	#include &lt;stdio.h&gt;
+2	#include &lt;confuse.h&gt;
+3	
+4	int validate_unsigned_int(cfg_t *cfg, cfg_opt_t *opt)
+5	{
+6	    int value = cfg_opt_getnint(opt, cfg_opt_size(opt) - 1);
+7	    if(value &lt; 0)
+8	    {
+9	        cfg_error(cfg, "integer option '%s' must be positive in section '%s'",
+10	                opt-&gt;name, cfg-&gt;name);
+11	        return -1;
+12	    }
+13	    return 0;
+14	}
+15	
+16	int main(void)
+17	{
+18	    cfg_opt_t greet_opts[] =
+19	    {
+20	        CFG_STR_LIST("targets", "{World}", CFGF_NONE),
+21	        CFG_INT("repeat", 1, CFGF_NONE),
+22	        CFG_END()
+23	    };
+24	    cfg_opt_t opts[] =
+25	    {
+26	        CFG_SEC("greeting", greet_opts, CFGF_TITLE | CFGF_MULTI),
+27	        CFG_END()
+28	    };
+29	    cfg_t *cfg, *cfg_greet;
+30	    int repeat;
+31	    int i, j;
+32	
+33	    cfg = cfg_init(opts, CFGF_NONE);
+34	    cfg_set_validate_func(cfg, "greeting|repeat", validate_unsigned_int);
+35	    if(cfg_parse(cfg, "hello.conf") == CFG_PARSE_ERROR)
+36	        return 1;
+37	
+38	    for(j = 0; j &lt; cfg_size(cfg, "greeting"); j++)
+39	    {
+40	        cfg_greet = cfg_getnsec(cfg, "greeting", j);
+41	
+42	        repeat = cfg_getint(cfg_greet, "repeat");
+43	        while(repeat--)
+44	        {
+45	            printf("%s", cfg_title(cfg_greet));
+46	            for(i = 0; i &lt; cfg_size(cfg_greet, "targets"); i++)
+47	                printf(", %s", cfg_getnstr(cfg_greet, "targets", i));
+48	            printf("!\n");
+49	        }
+50	    }
+51	
+52	    cfg_free(cfg);
+53	    return 0;
+54	}
+55	
+</pre></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ar01s05.html">Prev</a> </td><td width="20%" align="center"> </td><td width="40%" align="right"> <a accesskey="n" href="ar01s07.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">5. Parsing from internal buffers </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> 7. Value parsing callback</td></tr></table></div></body></html>

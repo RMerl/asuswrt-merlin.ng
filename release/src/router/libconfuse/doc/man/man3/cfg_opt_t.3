@@ -1,0 +1,84 @@
+.TH "cfg_opt_t" 3 "Sat Jun 3 2017" "Version 3.2" "confuse" \" -*- nroff -*-
+.ad l
+.nh
+.SH NAME
+cfg_opt_t \- Data structure holding information about an option\&.  
+
+.SH SYNOPSIS
+.br
+.PP
+.PP
+\fC#include <confuse\&.h>\fP
+.SS "Data Fields"
+
+.in +1c
+.ti -1c
+.RI "const char * \fBname\fP"
+.br
+.RI "\fIThe name of the option\&. \fP"
+.ti -1c
+.RI "char * \fBcomment\fP"
+.br
+.RI "\fIOptional comment/annotation\&. \fP"
+.ti -1c
+.RI "\fBcfg_type_t\fP \fBtype\fP"
+.br
+.RI "\fIType of option\&. \fP"
+.ti -1c
+.RI "unsigned int \fBnvalues\fP"
+.br
+.RI "\fINumber of values parsed\&. \fP"
+.ti -1c
+.RI "\fBcfg_value_t\fP ** \fBvalues\fP"
+.br
+.RI "\fIArray of found values\&. \fP"
+.ti -1c
+.RI "cfg_flag_t \fBflags\fP"
+.br
+.RI "\fIFlags\&. \fP"
+.ti -1c
+.RI "\fBcfg_opt_t\fP * \fBsubopts\fP"
+.br
+.RI "\fISuboptions (only applies to sections) \fP"
+.ti -1c
+.RI "\fBcfg_defvalue_t\fP \fBdef\fP"
+.br
+.RI "\fIDefault value\&. \fP"
+.ti -1c
+.RI "\fBcfg_func_t\fP \fBfunc\fP"
+.br
+.RI "\fIFunction callback for CFGT_FUNC options\&. \fP"
+.ti -1c
+.RI "\fBcfg_simple_t\fP \fBsimple_value\fP"
+.br
+.RI "\fIPointer to user-specified variable to store simple values (created with the CFG_SIMPLE_* initializers) \fP"
+.ti -1c
+.RI "\fBcfg_callback_t\fP \fBparsecb\fP"
+.br
+.RI "\fIValue parsing callback function\&. \fP"
+.ti -1c
+.RI "\fBcfg_validate_callback_t\fP \fBvalidcb\fP"
+.br
+.RI "\fIValue validating parsing callback function\&. \fP"
+.ti -1c
+.RI "\fBcfg_validate_callback2_t\fP \fBvalidcb2\fP"
+.br
+.RI "\fIValue validating set callback function\&. \fP"
+.ti -1c
+.RI "\fBcfg_print_func_t\fP \fBpf\fP"
+.br
+.RI "\fIprint callback function \fP"
+.in -1c
+.SH "Detailed Description"
+.PP 
+Data structure holding information about an option\&. 
+
+The value(s) are stored as an array of fundamental values (strings, numbers, etc)\&. 
+.PP
+\fBExamples: \fP
+.in +1c
+\fBftpconf\&.c\fP, \fBreread\&.c\fP, and \fBsimple\&.c\fP\&.
+
+.SH "Author"
+.PP 
+Generated automatically by Doxygen for confuse from the source code\&.

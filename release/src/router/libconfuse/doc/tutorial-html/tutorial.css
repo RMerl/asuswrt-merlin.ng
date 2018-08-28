@@ -1,0 +1,64 @@
+body {
+ padding: 1em;
+ margin: 1em;
+}
+
+body p {
+ margin-left: 1em;
+ margin-right: 1em;
+ text-align: justify;
+}
+
+p.copyright
+{
+ margin-left: 0em;
+}
+
+h1, h2 {
+ /*letter-spacing: 0.15em;*/
+ border-bottom: 1px solid black;
+}
+
+hr { display: none; }
+
+a[href] {
+ background: transparent;
+ color: #04D;
+ text-decoration: none;
+}
+
+a[href]:hover { text-decoration: underline; }
+
+pre.programlisting
+{
+    margin-left: 1em;
+    margin-right: 1em;
+    border: 1px solid #DDDDDD;
+    background: #F4F4F4;
+    padding: 1em;
+}
+
+/*.copyright {
+ color: #777;
+ background: transparent;
+ font-size: x-small;
+ margin-left: 1em;
+ margin-right: 1em;
+ text-align: right;
+ border-top: 1px solid black;
+}*/
+
+a img { border: 0px; }
+
+div.sflogo {
+ text-align: right;
+ padding-left: 1em;
+}
+
+hr { clear: both; }
+
+.warn {
+ color: red;
+ background: transparent;
+}
+

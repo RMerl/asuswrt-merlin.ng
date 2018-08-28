@@ -1,0 +1,462 @@
+<?xml version="1.0" standalone="no"?>
+<!DOCTYPE article PUBLIC "-//OASIS//DTD DocBook XML V4.2//EN"
+"http://www.oasis-open.org/docbook/xml/4.2/docbookx.dtd"
+[
+<!ENTITY listing1 SYSTEM "listing1.xml">
+<!ENTITY listing2 SYSTEM "listing2.xml">
+<!ENTITY listing3 SYSTEM "listing3.xml">
+<!ENTITY listing4 SYSTEM "listing4.xml">
+<!ENTITY listing5 SYSTEM "listing5.xml">
+<!ENTITY listing6 SYSTEM "listing6.xml">
+<!ENTITY listing7 SYSTEM "listing7.xml">
+<!ENTITY listing8 SYSTEM "listing8.xml">
+]>
+<article>
+    <articleinfo>
+        <title>libConfuse tutorial</title>
+        <author><firstname>Martin</firstname> <surname>Hedenfalk</surname></author>
+    </articleinfo>
+    <sect1>
+        <title>Introducing libConfuse in an existing program</title>
+        <para>Consider this simple program:</para>
+        &listing1;
+        <para>
+            Simple enough, but we want to extend the program so we can greet
+            others. Maybe we don't want to greet the whole world, just our
+            neighbour. We use libConfuse to let the user decide whom to greet.
+        </para>
+        &listing2;
+        <para>
+            All programs using libConfuse must first include the
+            <filename>confuse.h</filename> header file.  This is done on line
+            2.
+        </para>
+        <para>
+            On line 6 - 10, the options that should be recognized are defined in an
+            array of cfg_opt_t structs. This is passed to the
+            <function>cfg_init</function> function on line 13. The resulting
+            <structname>cfg_t</structname> context is used by
+            <function>cfg_parse()</function>, which reads the configuration file
+            "hello.conf". When reading the configuration file, only options defined in
+            the array of options passed to <function>cfg_init()</function> are
+            recognized.
+        </para>
+        <para>
+            The friendly greeting is now replaced with a parameter read from the
+            configuration file. The value of the <varname>target</varname> option is retrieved with
+            <function>cfg_getstr(cfg, "target")</function>.
+        </para>
+        <para>
+            Lets take a look at the configuration file hello.conf:
+        </para>
+
+        <programlisting>
+# this is the configuration file for the hello program
+
+target = "Neighbour"
+        </programlisting>
+        <para>
+            Here, the target option is set to the string value "Neighbour".
+            What if the configuration file was empty or didn't exist? Then the
+            default value for the <varname>target</varname> option would be
+            used. When we initialized our options, the second parameter to the
+            <function>CFG_STR()</function> macro specified the default value.
+            Thus, if no <varname>target</varname> option was specified in the
+            configuration file, the hello program would have printed the
+            standard greeting "Hello, World".
+        </para>
+
+        <sect2>
+            <title>Environment variables in values</title>
+
+            <para>
+                What else can we do in the configuration file? We can set the value to an
+                environment variable:
+            </para>
+            <programlisting>
+target = ${USER}
+            </programlisting>
+            <para>
+                This results in the hello program greeting the user who runs it. On some
+                systems, the USER variable might not be available, so we want to specify a
+                default value in those cases:
+            </para>
+            <programlisting>
+target = ${USER:-User}
+            </programlisting>
+            <para>
+                Now, if the USER environment variable is unset, the string "User" will be
+                used instead.
+            </para>
+        </sect2>
+    </sect1>
+    <sect1>
+        <title>Other types of options</title>
+
+        <para>
+            Of course, not only strings can be specified in the configuration file.
+            libConfuse can parse strings, integers, booleans and floating point values.
+            These are the fundamental values, and they are all also available as lists.
+            We'll talk more about lists in the next chapter.
+        </para>
+        <para>
+            The macros used to initialize a string, integer, boolean and a
+            float is, respectively, <function>CFG_STR()</function>,
+            <function>CFG_INT()</function>, <function>CFG_BOOL()</function>,
+            <function>CFG_FLOAT()</function> and
+            <function>CFG_PTR()</function>. All macros take three parameters:
+            the name of the option, a default value and flags. To retrieve the
+            values, use <function>cfg_getstr()</function>,
+            <function>cfg_getint()</function>,
+            <function>cfg_getbool()</function>,
+            <function>cfg_getfloat()</function> or
+            <function>cfg_getptr()</function>, respectively.
+        </para>
+        <para>
+            Let's introduce an integer option that tells us how many times to print the
+            greeting:
+        </para>
+        &listing3;
+        <para>
+            Here we have used the <function>CFG_INT()</function> macro to
+            initialize an integer option named "repeat". The default value is 1
+            as in the standard greeting. The value is retrieved with
+            <function>cfg_getint()</function>.
+        </para>
+        <para id="negative-repeat-problem">
+            But, wait a moment, what if the user specified a negative value for
+            "repeat"?  Or a too large positive value? libConfuse can handle
+            that with a so-called validating callback. We'll come back to this
+            problem later on, but we will first take a look at lists.
+        </para>
+    </sect1>
+
+    <sect1>
+        <title>Introducing lists</title>
+
+        <para>
+            That was easy. Now let's extend the program a bit so we can greet more than one
+            "target". We'd like to be able to specify a list of targets to greet.
+        </para>
+        <para>
+            The list versions of the initialization macros are named
+            <function>CFG_STR_LIST()</function>,
+            <function>CFG_INT_LIST()</function>,
+            <function>CFG_BOOL_LIST()</function> and
+            <function>CFG_FLOAT_LIST()</function>. They take the same
+            parameters as the non-list versions, except the default value must
+            be a string surrounded by curly braces.
+        </para>
+        <para>
+            The modified program is shown below:
+        </para>
+        &listing4;
+        <para>
+            Three things are a bit different here. First, the macro to
+            initialize the "targets" option is
+            <function>CFG_STR_LIST()</function>. This tells libConfuse that
+            "targets" is a list of strings. Second, the default value in the
+            second parameter is surrounded by curly braces. This is needed to
+            indicate to libConfuse where the list of values ends.
+        </para>
+        <para>
+            The third change is in the printing of the greeting. First we print
+            the "Hello" string. Then we loop through all values found for the
+            "targets" option. The number of values is retrieved with the
+            <function>cfg_size()</function> function. The string values are
+            then retrieved with <function>cfg_getnstr()</function>, which is an
+            indexed version of <function>cfg_getstr()</function>. In fact,
+            <function>cfg_getstr()</function> is equivalent to
+            <function>cfg_getnstr()</function> with an index of zero.
+        </para>
+        <para>
+            In the configuration file hello.conf, we can now specify a list of targets to
+            greet:
+        </para>
+        <programlisting>
+# this is the configuration file for the hello program
+
+targets = {"Life", "Universe", "Everything"}
+repeat = 1
+        </programlisting>
+        <para>
+            The output of the hello program, run with the above configuration file, is:
+            "Hello, Life, Universe, Everything!"
+        </para>
+        <para>
+            Again, if no targets were configured, the greeting would have been the standard
+            "Hello, World!".
+        </para>
+
+    </sect1>
+    <sect1>
+        <title>Using sections</title>
+
+        <para>
+            So far, we have only use a flat configuration file. libConfuse can also handle
+            sections to build a hierarchy of options. Sections can be used to group options
+            in logical blocks, and those blocks can (optionally) be specified multiple
+            times.
+        </para>
+        <para>
+            Sections are initialized with the <function>CFG_SEC()</function> macro. It also takes three
+            parameters: the name of the option, an array of options allowed in the section
+            and flags.
+        </para>
+        <para>
+            We'll extend the, now rather complex, hello program so we can do other kinds of
+            greetings, not just "Hello". Each greeting will have its own settings for
+            targets and repeat.
+        </para>
+        &listing5;
+        <para>
+            We have renamed the option array from "opts" to "greet_opts", and introduced a
+            new "opts" array that only has one option: a "greeting" section.
+            The second parameter of the <function>CFG_SEC()</function> macro
+            points to the old greeting options "targets" and "repeat".
+        </para>
+        <para>
+            We have also used a couple of flags to alter the behaviour of the
+            section: CFGF_TITLE means that a greeting section should have a
+            title and the CFGF_MULTI flag tells libConfuse that this section
+            may be specified multiple times in the configuration file. The
+            title of a section is retrieved with the
+            <function>cfg_title()</function> function.
+        </para>
+        <para>
+            The outmost loop (with index j) now loops through all given
+            sections in the configuration file. We retrieve a section with a
+            <function>cfg_getnsec()</function> call. The value returned is a
+            pointer to a cfg_t struct, the same type as returned by
+            <function>cfg_init()</function>. Thus we can use the ordinary value
+            retrieval functions <function>cfg_getstr()</function>,
+            <function>cfg_getint()</function> and so on to retrieve values of
+            options inside the section.
+        </para>
+        <para>
+            Ok, so how does the configuration file look like for this setup?
+        </para>
+        <programlisting>
+# this is the configuration file for the hello program
+
+greeting Hello
+{
+    targets = {"Life", "Universe", "Everything"}
+    repeat = 1
+}
+
+greeting Bye
+{
+    targets = {Adams}
+    repeat = 1
+}
+        </programlisting>
+        <para>
+            The program will loop through the sections in the order specified
+            in the configuration file. First it will find the "Hello" section.
+            It prints the title of the section, "Hello", retrieved with
+            <function>cfg_title()</function>. Then the targets are printed just
+            as in the previous examples, but this time the values are retrieved
+            from the cfg_greet section. Next, the section titled "Bye" is
+            found, and the values are retrieved from that section.
+        </para>
+        <para>
+            When run, the program produces the following:
+        </para>
+        <programlisting>
+$ ./listing5
+Hello, Life, Universe, Everything!
+Bye, Adams!
+$ 
+        </programlisting>
+
+    </sect1>
+    <sect1>
+        <title>Parsing from internal buffers</title>
+        <para>
+            So far, we have only parsed configuration data from files.
+            libConfuse can also parse buffers, or in-memory character
+            strings. We will use this to fix a problem in the previous code.
+        </para>
+        <para>
+            The problem is that without a configuration file, the hello program
+            will not print anything. We want it to at least print the standard
+            greeting "Hello, World!" if no configuration file is available.
+        </para>
+        <para>
+            We can't have a default value for a section that can be specified
+            multiple times (ie, a section with the CFGF_MULTI flag set).
+            Instead we will parse a default configuration string if no section
+            has been parsed:
+        </para>
+        &listing6;
+        <para>
+            Only the changes from the previous code is shown here. We check if
+            the size of the "greeting" section is zero (ie, no section has been
+            defined). In that case we call <function>cfg_parse_buf()</function>
+            to parse a default in-memory string "greeting Hello {}". This
+            string defines a greeting section with title Hello, but without any
+            sub-options. This way we rely on the default values of the
+            (sub-)options "targets" and "repeat".
+        </para>
+        <para>
+            When this program is run, it issues the well-known standard greeting
+            "Hello, World!" if no configuration file is present.
+        </para>
+    </sect1>
+
+    <sect1>
+        <title>Validating callback functions</title>
+        <para>
+            Remember the problem about a negative or too large "repeat" value
+            in <xref linkend="negative-repeat-problem"/>?  The code that prints
+            the greeting has those lines:
+        </para>
+        <programlisting>
+...
+repeat = cfg_getint(cfg_greet, "repeat");
+while(repeat--)
+...
+        </programlisting>
+        <para>
+            The repeat variable is defined as an int, a signed integer. If the user
+            specified a negative repeat value in the configuration file, this code
+            would continue to decrease the repeat variable until it eventually
+            underflowed.
+        </para>
+        <para>
+            We'll fix this by not allowing a negative value in the configuration
+            file. Of course we could first just check if the value is negative
+            and then abort, using <function>cfg_getint()</function> and a test.
+            But we will use a validating callback function instead. This way
+            <function>cfg_parse()</function> will return an error directly when
+            parsing the file, additionally indicating on which line the error
+            is.
+        </para>
+        <para>
+            A validating callback function is defined as:
+        </para>
+        <programlisting>
+typedef int (*cfg_validate_callback_t)(cfg_t *cfg, cfg_opt_t *opt);
+        </programlisting>
+        <para>
+            This function takes two arguments: the section and the option. It
+            should return 0 on success (ie, the value validated ok). All other
+            values indicates an error, and the parsing is aborted. The callback
+            function should notify the error itself, for example by calling
+            <function>cfg_error()</function>.
+        </para>
+        <para>
+            Here is the code for the callback function:
+        </para>
+        &listing7;
+        <para>
+            Only the last value is validated, because libConfuse will call this
+            function once for every value corresponding to the option. Since
+            the "repeat" option is not a list, we could instead have used
+            <function>cfg_opt_getint(opt)</function> to retrieve the only
+            value. However, if we later want to use this callback to validate
+            an integer list, it is already lists-aware.
+        </para>
+
+        <sect2>
+            <title>Installing the callback</title>
+            <para>
+                The validating callback is installed with
+                <function>cfg_set_validate_func()</function>. It is called with
+                a string specifying which option is affected, and a pointer to
+                the callback function. To specify an option in a subsection,
+                the section and the option must be separated with a vertical
+                bar ("|").
+            </para>
+            <para>
+                We're now also looking at the return code from
+                <function>cfg_parse()</function> to verify that the parsing was
+                successful. The complete program is now:
+            </para>
+            &listing8;
+        </sect2>
+    </sect1>
+
+    <sect1>
+        <title>Value parsing callback</title>
+        <para>
+            A value parsing callback is another kind of callback function
+            available in libConfuse. This function is used to map a string into
+            some other other value. One example is to extend a boolean option
+            to accept the values "yes", "no" and "ask" (or perhaps "true",
+            "false" and "maybe"). Those values should be mapped to the integers
+            1, 2 and 3.
+        </para>
+        <programlisting>
+typedef int (*cfg_callback_t)(cfg_t *cfg, cfg_opt_t *opt,
+                              const char *value, void *result);
+        </programlisting>
+        <para>
+            
+        </para>
+    </sect1>
+
+    <sect1>
+        <title>Functions</title>
+        <para>
+            libConfuse supports functions to parse options that does not fit
+            well in the general syntax. Functions can be called with a variable
+            number of arguments. No data from the function or any arguments are
+            stored by libConfuse after the function has run. It is up to the caller
+            to process and/or save the data.
+        </para>
+        <para>
+            A function is defined with a <function>CFG_FUNC</function> macro.
+            It takes two arguments: the name of the function and a function
+            callback. The callback is defined as:
+        </para>
+        <programlisting>
+typedef int (*cfg_func_t)(cfg_t *cfg, cfg_opt_t *opt,
+                          int argc, const char **argv);
+        </programlisting>
+        <para>
+        </para>
+
+        <sect2>
+            <title>Predefined functions</title>
+            <para>
+                Currently there is only one pre-defined function:
+                <function>cfg_include()</function>. This function includes
+                another configuration file. Configuration data is immediately
+                read from the included file, and is returned to the position
+                right after the include() statement upon end of file.
+            </para>
+            <para>
+                To use this function, include a <function>CFG_FUNC()</function>
+                entry in your options:
+            </para>
+            <programlisting>
+cfg_opt_t opts[] = {
+    CFG_FUNC("include", cfg_include),
+    CFG_END()
+};
+            </programlisting>
+            <para>
+                In the configuration file, it is used in the following way:
+            </para>
+            <programlisting>
+include("included.conf")
+            </programlisting>
+        </sect2>
+    </sect1>
+
+    <sect1>
+        <title>Saving configuration files</title>
+        <para>
+        </para>
+
+        <sect2>
+            <title>Altering the printing of certain options</title>
+            <para>
+            </para>
+        </sect2>
+    </sect1>
+
+</article>
+

@@ -6820,6 +6820,23 @@ libical-2.0.0-install:
 		ln -sf libicalvcal.so.2.0.0 libicalvcal.so.2.0 &&\
 		ln -sf libicalvcal.so.2.0.0 libicalvcal.so.2
 
+libconfuse/Makefile:
+	cd libconfuse && $(CONFIGURE) \
+		CFLAGS="$(EXTRACFLAGS) -Os -I$(STAGEDIR)/usr/include -ffunction-sections -fdata-sections -fPIC -I$(TOP)/libiconv-1.14/include" \
+		LDFLAGS="$(LDFLAGS) -ffunction-sections -fdata-sections -Wl,--gc-sections -L$(TOP)/libiconv-1.14/lib/.libs -liconv" \
+		--prefix=/usr \
+		--without-libiconv-prefix --without-libintl-prefix --disable-examples --disable-nls
+
+libconfuse: libconfuse/Makefile
+	@$(SEP)
+	$(MAKE) -C $@
+
+libconfuse-clean:
+	@$(SEP)
+	$(MAKE) -C libconfuse distclean
+	rm libconfuse/Makefile
+
+
 ncurses-6.0/Makefile: ncurses-6.0/configure
 	cd ncurses-6.0 && $(CONFIGURE) \
 		CFLAGS="$(EXTRACFLAGS) -Os -I$(STAGEDIR)/usr/include -ffunction-sections -fdata-sections -fPIC" \

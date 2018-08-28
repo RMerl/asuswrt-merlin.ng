@@ -1,0 +1,156 @@
+# French translations for libcfg package
+# Traductions françaises pour le paquetage libConfuse.
+# Copyright (C) 2002-2003 Martin Hedenfalk
+# This file is distributed under the same license as the libConfuse package.
+# Martin Hedenfalk <martin@bzero.se>, 2002.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: libconfuse 2.6\n"
+"Report-Msgid-Bugs-To: https://github.com/martinh/libconfuse/issues\n"
+"POT-Creation-Date: 2017-06-03 22:22+0200\n"
+"PO-Revision-Date: 2003-01-26 14:10+0100\n"
+"Last-Translator: Matthieu Sion <matt@flandrescartouches.com>\n"
+"Language-Team: None <martin@bzero.se>\n"
+"Language: fr\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=ISO-8859-1\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#: src/confuse.c:194 src/confuse.c:215 src/confuse.c:2049
+#, c-format
+msgid "no such option '%s'"
+msgstr "il n'y a pas d'option '%s'"
+
+#: src/confuse.c:555
+#, c-format
+msgid "duplicate option '%s' not allowed"
+msgstr ""
+
+#: src/confuse.c:722
+#, c-format
+msgid "found duplicate title '%s'"
+msgstr ""
+
+#: src/confuse.c:749
+#, c-format
+msgid "invalid integer value for option '%s'"
+msgstr "valeur entière non valide pour l'option '%s'"
+
+#: src/confuse.c:753
+#, c-format
+msgid "integer value for option '%s' is out of range"
+msgstr "valeur entière de l'option '%s' en dehors des limites"
+
+#: src/confuse.c:771
+#, c-format
+msgid "invalid floating point value for option '%s'"
+msgstr ""
+"la valeur de l'option '%s' est un nombre à virgule flottante non valide"
+
+#: src/confuse.c:775
+#, c-format
+msgid "floating point value for option '%s' is out of range"
+msgstr ""
+"la valeur de l'option '%s' est un nombre à virgule flottante en dehors des "
+"limites"
+
+#: src/confuse.c:858
+#, c-format
+msgid "invalid boolean value for option '%s'"
+msgstr "valeur booléenne incorrecte pour l'option '%s'"
+
+#: src/confuse.c:1035
+#, c-format
+msgid "dropping deprecated configuration option '%s'"
+msgstr ""
+
+#: src/confuse.c:1038
+#, c-format
+msgid "found deprecated option '%s', please update configuration file."
+msgstr ""
+
+#: src/confuse.c:1069
+msgid "premature end of file"
+msgstr "fin de fichier prématurée"
+
+#: src/confuse.c:1090
+msgid "unexpected closing brace"
+msgstr "accolade fermante inattendue"
+
+#: src/confuse.c:1111 src/confuse.c:1179 src/confuse.c:1204 src/confuse.c:1227
+#: src/confuse.c:1342 src/confuse.c:1386
+#, c-format
+msgid "unexpected token '%s'"
+msgstr "mot inattendu '%s'"
+
+#: src/confuse.c:1143
+#, c-format
+msgid "attempt to append to non-list option '%s'"
+msgstr "tentative d'ajout à une option qui n'est pas une liste ('%s')"
+
+#: src/confuse.c:1156
+#, c-format
+msgid "missing equal sign after option '%s'"
+msgstr "signe égal manquant après l'option '%s'"
+
+#: src/confuse.c:1234
+#, c-format
+msgid "missing opening brace for section '%s'"
+msgstr "accolade ouvrante manquante à la section '%s'"
+
+#: src/confuse.c:1261
+#, c-format
+msgid "missing title for section '%s'"
+msgstr "titre manquant à la section '%s'"
+
+#: src/confuse.c:1273
+#, c-format
+msgid "missing parenthesis for function '%s'"
+msgstr "parenthèses manquantes à la fonction '%s'"
+
+#: src/confuse.c:1295 src/confuse.c:1308
+#, c-format
+msgid "syntax error in call of function '%s'"
+msgstr "erreur de syntaxe dans l'appel de la fonction '%s'"
+
+#: src/confuse.c:1402
+#, c-format
+msgid "Internal error in cfg_parse_internal(), unknown state %d"
+msgstr ""
+
+#: src/confuse.c:1766
+msgid "wrong number of arguments to cfg_include()"
+msgstr "nombre d'arguments incorrect à cfg_include()"
+
+#: src/lexer.l:166
+#, c-format
+msgid "invalid octal number '%s'"
+msgstr "nombre octal invalide '%s'"
+
+#: src/lexer.l:172
+#, c-format
+msgid "bad escape sequence '%s'"
+msgstr "mauvaise séquence d'échappement '%s'"
+
+#: src/lexer.l:244
+msgid "unterminated string constant"
+msgstr "chaîne constante non terminée"
+
+#: src/lexer.l:315
+msgid "includes nested too deeply"
+msgstr "inclusion de fichier à un niveau trop bas"
+
+#: src/lexer.l:327
+#, c-format
+msgid "%s: Not found in search path"
+msgstr ""
+
+#: src/lexer.l:336
+#, c-format
+msgid "%s: Failed tilde expand"
+msgstr ""
+
+#~ msgid "missing opening brace for option '%s'"
+#~ msgstr "accolade ouvrante manquante pour l'option '%s'"

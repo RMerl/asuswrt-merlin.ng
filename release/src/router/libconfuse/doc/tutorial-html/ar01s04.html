@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>4. Using sections</title><link rel="stylesheet" type="text/css" href="tutorial.css" /><meta name="generator" content="DocBook XSL Stylesheets V1.79.1" /><link rel="home" href="index.html" title="libConfuse tutorial" /><link rel="up" href="index.html" title="libConfuse tutorial" /><link rel="prev" href="ar01s03.html" title="3. Introducing lists" /><link rel="next" href="ar01s05.html" title="5. Parsing from internal buffers" /></head><body><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">4. Using sections</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="ar01s03.html">Prev</a> </td><th width="60%" align="center"> </th><td width="20%" align="right"> <a accesskey="n" href="ar01s05.html">Next</a></td></tr></table><hr /></div><div class="sect1"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="idm45830329114528"></a>4. Using sections</h2></div></div></div><p>
+            So far, we have only use a flat configuration file. libConfuse can also handle
+            sections to build a hierarchy of options. Sections can be used to group options
+            in logical blocks, and those blocks can (optionally) be specified multiple
+            times.
+        </p><p>
+            Sections are initialized with the <code class="function">CFG_SEC()</code> macro. It also takes three
+            parameters: the name of the option, an array of options allowed in the section
+            and flags.
+        </p><p>
+            We'll extend the, now rather complex, hello program so we can do other kinds of
+            greetings, not just "Hello". Each greeting will have its own settings for
+            targets and repeat.
+        </p><a id="listing5"></a><pre class="programlisting">
+1	#include &lt;stdio.h&gt;
+2	#include &lt;confuse.h&gt;
+3	
+4	int main(void)
+5	{
+6	    cfg_opt_t greet_opts[] =
+7	    {
+8	        CFG_STR_LIST("targets", "{World}", CFGF_NONE),
+9	        CFG_INT("repeat", 1, CFGF_NONE),
+10	        CFG_END()
+11	    };
+12	    cfg_opt_t opts[] =
+13	    {
+14	        CFG_SEC("greeting", greet_opts, CFGF_TITLE | CFGF_MULTI),
+15	        CFG_END()
+16	    };
+17	    cfg_t *cfg, *cfg_greet;
+18	    int repeat;
+19	    int i, j;
+20	
+21	    cfg = cfg_init(opts, CFGF_NONE);
+22	    if(cfg_parse(cfg, "hello.conf") == CFG_PARSE_ERROR)
+23	        return 1;
+24	
+25	    for(j = 0; j &lt; cfg_size(cfg, "greeting"); j++)
+26	    {
+27	        cfg_greet = cfg_getnsec(cfg, "greeting", j);
+28	
+29	        repeat = cfg_getint(cfg_greet, "repeat");
+30	        while(repeat--)
+31	        {
+32	            printf("%s", cfg_title(cfg_greet));
+33	            for(i = 0; i &lt; cfg_size(cfg_greet, "targets"); i++)
+34	                printf(", %s", cfg_getnstr(cfg_greet, "targets", i));
+35	            printf("!\n");
+36	        }
+37	    }
+38	
+39	    cfg_free(cfg);
+40	    return 0;
+41	}
+42	
+</pre><p>
+            We have renamed the option array from "opts" to "greet_opts", and introduced a
+            new "opts" array that only has one option: a "greeting" section.
+            The second parameter of the <code class="function">CFG_SEC()</code> macro
+            points to the old greeting options "targets" and "repeat".
+        </p><p>
+            We have also used a couple of flags to alter the behaviour of the
+            section: CFGF_TITLE means that a greeting section should have a
+            title and the CFGF_MULTI flag tells libConfuse that this section
+            may be specified multiple times in the configuration file. The
+            title of a section is retrieved with the
+            <code class="function">cfg_title()</code> function.
+        </p><p>
+            The outmost loop (with index j) now loops through all given
+            sections in the configuration file. We retrieve a section with a
+            <code class="function">cfg_getnsec()</code> call. The value returned is a
+            pointer to a cfg_t struct, the same type as returned by
+            <code class="function">cfg_init()</code>. Thus we can use the ordinary value
+            retrieval functions <code class="function">cfg_getstr()</code>,
+            <code class="function">cfg_getint()</code> and so on to retrieve values of
+            options inside the section.
+        </p><p>
+            Ok, so how does the configuration file look like for this setup?
+        </p><pre class="programlisting">
+# this is the configuration file for the hello program
+
+greeting Hello
+{
+    targets = {"Life", "Universe", "Everything"}
+    repeat = 1
+}
+
+greeting Bye
+{
+    targets = {Adams}
+    repeat = 1
+}
+        </pre><p>
+            The program will loop through the sections in the order specified
+            in the configuration file. First it will find the "Hello" section.
+            It prints the title of the section, "Hello", retrieved with
+            <code class="function">cfg_title()</code>. Then the targets are printed just
+            as in the previous examples, but this time the values are retrieved
+            from the cfg_greet section. Next, the section titled "Bye" is
+            found, and the values are retrieved from that section.
+        </p><p>
+            When run, the program produces the following:
+        </p><pre class="programlisting">
+$ ./listing5
+Hello, Life, Universe, Everything!
+Bye, Adams!
+$ 
+        </pre></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ar01s03.html">Prev</a> </td><td width="20%" align="center"> </td><td width="40%" align="right"> <a accesskey="n" href="ar01s05.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">3. Introducing lists </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> 5. Parsing from internal buffers</td></tr></table></div></body></html>

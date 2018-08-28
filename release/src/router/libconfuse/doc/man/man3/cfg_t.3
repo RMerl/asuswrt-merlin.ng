@@ -1,0 +1,72 @@
+.TH "cfg_t" 3 "Sat Jun 3 2017" "Version 3.2" "confuse" \" -*- nroff -*-
+.ad l
+.nh
+.SH NAME
+cfg_t \- Data structure holding information about a 'section'\&.  
+
+.SH SYNOPSIS
+.br
+.PP
+.PP
+\fC#include <confuse\&.h>\fP
+.SS "Data Fields"
+
+.in +1c
+.ti -1c
+.RI "cfg_flag_t \fBflags\fP"
+.br
+.RI "\fIAny flags passed to \fBcfg_init()\fP \fP"
+.ti -1c
+.RI "char * \fBname\fP"
+.br
+.RI "\fIThe name of this section, the root section returned from \fBcfg_init()\fP is always named 'root'\&. \fP"
+.ti -1c
+.RI "char * \fBcomment\fP"
+.br
+.RI "\fIOptional annotation/comment\&. \fP"
+.ti -1c
+.RI "\fBcfg_opt_t\fP * \fBopts\fP"
+.br
+.RI "\fIArray of options\&. \fP"
+.ti -1c
+.RI "char * \fBtitle\fP"
+.br
+.RI "\fIOptional title for this section, only set if CFGF_TITLE flag is set\&. \fP"
+.ti -1c
+.RI "char * \fBfilename\fP"
+.br
+.RI "\fIName of the file being parsed\&. \fP"
+.ti -1c
+.RI "int \fBline\fP"
+.br
+.RI "\fILine number in the config file\&. \fP"
+.ti -1c
+.RI "\fBcfg_errfunc_t\fP \fBerrfunc\fP"
+.br
+.RI "\fIThis function (if set with cfg_set_error_function) is called for any error message\&. \fP"
+.ti -1c
+.RI "cfg_searchpath_t * \fBpath\fP"
+.br
+.RI "\fILinked list of directories to search\&. \fP"
+.in -1c
+.SH "Detailed Description"
+.PP 
+Data structure holding information about a 'section'\&. 
+
+Sections can be nested\&. A section has a list of options (strings, numbers, booleans or other sections) grouped together\&. 
+.PP
+\fBExamples: \fP
+.in +1c
+\fBftpconf\&.c\fP, \fBreread\&.c\fP, and \fBsimple\&.c\fP\&.
+.SH "Field Documentation"
+.PP 
+.SS "\fBcfg_errfunc_t\fP cfg_t::errfunc"
+
+.PP
+This function (if set with cfg_set_error_function) is called for any error message\&. 
+.PP
+Referenced by cfg_addtsec(), cfg_error(), cfg_init(), cfg_set_error_function(), and cfg_setopt()\&.
+
+.SH "Author"
+.PP 
+Generated automatically by Doxygen for confuse from the source code\&.

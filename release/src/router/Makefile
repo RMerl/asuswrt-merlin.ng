@@ -1234,6 +1234,8 @@ obj-$(RTCONFIG_OPENVPN) += ministun
 obj-$(RTCONFIG_DNSSEC) += nettle
 obj-$(RTCONFIG_SAMBA36X) += libiconv-1.14
 obj-$(RTCONFIG_TELENET) += lanauth
+obj-y += inadyn
+obj-y += libconfuse
 
 ifneq ($(HND_ROUTER),y)
 obj-y += cstats
@@ -6827,9 +6829,17 @@ libconfuse/Makefile:
 		--prefix=/usr \
 		--without-libiconv-prefix --without-libintl-prefix --disable-examples --disable-nls
 
-libconfuse: libconfuse/Makefile
+libconfuse: libiconv-1.14 libconfuse/Makefile
 	@$(SEP)
 	$(MAKE) -C $@
+
+libconfuse-install:
+	install -D libconfuse/src/.libs/libconfuse.so.1.1.0 $(INSTALLDIR)/libconfuse/usr/lib/libconfuse.so.1.1.0
+	cd $(INSTALLDIR)/libconfuse/usr/lib && \
+		ln -sf libconfuse.so.1.1.0 libconfuse.so.1 &&\
+		ln -sf libconfuse.so.1.1.0 libconfuse.so
+	$(STRIP) $(INSTALLDIR)/libconfuse/usr/lib/*.so.*
+
 
 libconfuse-clean:
 	@$(SEP)
@@ -6849,6 +6859,10 @@ inadyn/Makefile:
 inadyn: libconfuse inadyn/Makefile
 	@$(SEP)
 	$(MAKE) -C $@
+
+inadyn-install:
+	install -D inadyn/src/inadyn $(INSTALLDIR)/inadyn/usr/sbin/inadyn
+	$(STRIP) $(INSTALLDIR)/inadyn/usr/sbin/inadyn
 
 inadyn-clean:
 	@$(SEP)

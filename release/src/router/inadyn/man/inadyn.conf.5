@@ -1,0 +1,516 @@
+.\"  -*- nroff -*-
+.\"
+.\" Process this file with
+.\" groff -man -Tascii foo.1
+.\"
+.\" Copyright 2005, by Shaul Karl.
+.\" Copyright 2010-2017, by Joachim Nilsson.
+.\"
+.\" You may modify and distribute this document for any purpose, as
+.\" long as this copyright notice remains intact.
+.\"
+.Dd June 28, 2017
+.Dt INADYN 5 SMM
+.Os
+.Sh NAME
+.Nm inadyn.conf
+.Nd inadyn DDNS client configuration file
+.Sh SYNOPSIS
+.Nm /etc/inadyn.conf
+.Sh DESCRIPTION
+.Nm inadyn
+is configured using a simple configuration file.  The
+.Dq #\&
+character marks start of a comment to end of line.  The \\ character can
+be used as an escape character.
+.Pp
+.Bl -tag -width TERM
+.It Cm verify-address = <true | false>
+By default
+.Nm inadyn
+verifies both IPv4 and IPv6 addresses, making sure the address is a
+valid Internet address.  Invalid addresses are, e.g., link local,
+loopback, multicast and known experimental addresses.  For more
+information, see RFC3330.
+.Pp
+IP address validation can be disabled by setting this option to
+.Cm false .
+.It Cm fake-address = <true | false>
+When using SIGUSR1, to do a forced update, this option can be used to
+fake an address update with a
+.Dq random
+address in the 203.0.113.0/24 range, example address range from RFC5737,
+before updating with the actual IP address.  This is completely outside
+spec., but can be useful for people who very rarely, if ever, get an IP
+address change.  Because some DDNS service providers will not register
+even a forced update if the IP is the same.  As a result the user could
+be deregistered as an inactive user.
+.It Cm allow-ipv6 = <true | false>
+.Nm Inadyn
+can get an IPv6 address from an interface, or with an external checkip
+script.  This option controls if IPv6 addresses should be allowed or
+discarded.  By default this option is
+.Ar false ,
+i.e. IPv6 addresses are discarded.
+.It Cm iface = IFNAME
+Use network interface
+.Nm IFNAME
+as source of IP address changes instead of querying an external server.
+With this option is enabled, the external IP check is disabled and
+.Nm inadyn
+will send DDNS updates using the IP address of the
+.Nm IFNAME
+network interface to
+.Em all
+DDNS providers listed in the configuration file.  This can be useful to
+register LAN IP addresses, or, when connected directly to a public IP
+address, to speed up the IP check if the DDNS provider's check-ip
+servers are slow to respond.
+.Pp
+This option can also be given as a command line option to
+.Xr inadyn 8 ,
+both serve a purpose, use whichever one works for you.
+.It Cm iterations = <NUM | 0>
+Set the number of DNS updates. The default is
+.Ar 0 ,
+which means infinity.
+.It Cm period = SEC
+How often the IP is checked, in seconds. Default: apxrox. 1 minute. Max:
+10 days.
+.It Cm forced-update = SEC
+How often the IP should be updated even if it is not changed. The time
+should be given in seconds.  Default is equal to 30 days.
+.It Cm secure-ssl = < true | false >
+If the HTTPS certificate validation fails for a provider
+.Nm inadyn
+aborts the DDNS update before sending any credentials.  When this
+setting is disabled, i.e.
+.Ar false ,
+then
+.Nm inadyn
+will only issue a warning.  By default this setting is enabled, because
+security matters.
+.It Cm ca-trust-file = FILE
+By default
+.Nm inadyn
+uses the built-in path to the system's trusted CA certificates, both
+GnuTLS and Open/LibreSSL support this.  As a fall-back, in case the
+API's to load CA certificates from the built-in path fails,
+.Nm inadyn
+also supports common default paths to Debian and RedHat CA bundles.
+.Pp
+This setting overrides the built-in paths and fallback locations and
+provides a way to specify the path to a trusted set of CA certificates,
+in PEM format, bundled into one file.
+.It Cm user-agent = STRING
+Specify the User-Agent string to send to the DDNS provider on checkip
+and update requests.  Some providers require this field to be set to a
+specific string, some may be OK with "Mozilla/4.0".  The default is to
+send "inadyn/VERSION SUPPORTURL", where VERSION is the current
+.Nm inadyn
+version, and SUPPORTURL is the upstream support URL.
+.Pp
+This can also be set on a per-provider basis, see below custom and
+provider section description.
+.It Cm custom some@identifier {}
+The
+.Cm custom{}
+and
+.Cm provider{}
+sections are very similar, except that the custom section allows
+customizing the DDNS update server details.  For more details, see the
+description for
+.Cm provider{} ,
+below.
+.It Cm provider email@ddns-service.tld[:ID] {}
+The
+.Cm custom{}
+and
+.Cm provider{}
+sections are very similar, except that the custom section allows
+customizing the DDNS update server details.  See below list for
+supported DDNS providers and their
+.Cm email@ddns-service.tld
+identifiers.
+.Pp
+To support multiple users of the same DDNS provider, append
+.Pa [:ID]
+to the provider name.  The
+.Pa ID
+can be any free form string or number as long as the combination is
+unique.
+.Pp
+Common settings in custom{} and provider{} sections are:
+.Pp
+.Bl -tag -width TERM
+.It Cm ssl = <true | false>
+Use HTTPS, both when checking for IP changes and updating the DNS
+record.  Default is to use HTTPS (true).
+.It Cm username = USERNAME.
+The username, if applicable.  This might be referred to as hash by some providers.
+.It Cm password = PASSWORD
+The password, if applicable.
+.It Cm checkip-server = checkip.example.com[:port]
+Server to use for periodic IP address changes,
+.Pa port
+defaults to
+.Ar 80 .
+.Pp
+.Pa Note:
+This is an optional setting for
+.Cm provider{}
+sections, which always have a default
+.Cm checkip-server
+and
+.Cm checkip-path
+defined.  For custom DDNS setups however it is required.  When set in a
+.Cm provider{}
+section it overrides the provider's default
+.Cm checkip-server .
+.It Cm checkip-path = "/some/checkip/url"
+Optional server path for check IP server, defaults to "/".
+.It Cm checkip-ssl = <true | false>
+This setting usually follows the
+.Cm ssl
+setting, but can be used to disable HTTPS for the IP address check.
+This might be needed for some providers that only support HTTPS for the
+DNS record update.
+.Pp
+However, when a custom
+.Cm checkip-server
+is defined for a provider, this setting does
+.Em not
+follow the
+.Cm ssl
+setting.  Default is to use HTTPS (true).
+.It Cm checkip-command = "/path/to/shell/command [optional args]"
+Shell command, or script, for IP address update checking.  The command
+must output a text with the IP address to its standard output.  The
+following environment variables are set:
+.Bl -tag -width TERM
+.It INADYN_PROVIDER
+contains the DDNS provider's full name in form
+.Cm email@ddns-service.tld
+.It INADYN_USER
+contains user's name
+.El
+.Pp
+.Pa Example:
+.Bd -unfilled -offset indent
+checkip-command = "/sbin/ifconfig eth0 | grep 'inet addr'"
+.Ed
+.Pp
+.Nm Inadyn
+will use the first occurrence in the command's output that looks like an
+address.  Both IPv4 and IPv6 addresses are supported.
+.It Cm hostname = HOSTNAME
+.It Cm hostname = { "HOSTNAME1.name.tld", "HOSTNAME2.name.tld" }
+Your hostname alias.  To list multiple names, use the second form.
+.It Cm user-agent = STRING
+Same as the global setting, but only for this provider.  If omitted it
+defaults to the global setting, which if unset uses the default
+.Nm inadyn
+user agent string.  For more information, see above.
+.It Cm wildcard = true
+Enable domain name wildcarding of your domain name, for DDNS providers
+that support this, e.g. easydns.com and loopia.com.  This means that
+anything typed before your hostname, e.g. www. or ftp., is also updated
+when your IP changes.  Default: disabled.  For
+.Nm inadyn
+< 1.96.3 wildcarding was enabled by default.
+.El
+.It Cm provider [email@]ddns-service[.tld] {}
+Either a unique substring matching the provider, or or one of the exact
+matches to the following unique provider names:
+.Pp
+.Bl -tag -width TERM -compact
+.It Cm default@dyndns.org
+Connect to
+.Aq http://www.dyndns.org ,
+this is the default.
+.It Cm default@freedns.afraid.org
+.Aq https://freedns.afraid.org
+.It Cm default@zoneedit.com
+.Aq https://zoneedit.com
+.It Cm default@no-ip.com
+.Aq http://www.no-ip.com
+.It Cm default@easydns.com
+.Aq http://www.easydns.com
+.It Cm default@tzo.com
+.Aq http://www.tzo.com
+.It Cm dyndns@3322.org
+.Aq http://www.3322.org
+.It Cm default@dnsomatic.com
+.Aq https://www.dnsomatic.com
+.It Cm dyndns@he.net
+.Aq http://dns.he.net
+.It Cm default@tunnelbroker.net
+IPv6
+.Aq https://www.tunnelbroker.net
+by Hurricane Electric.
+.It Cm default@dynsip.org
+.Aq http://www.dynsip.org
+.It Cm default@sitelutions.com
+.Aq http://www.sitelutions.com
+.It Cm default@dnsexit.com
+.Aq http://www.dnsexit.com
+.It Cm default@changeip.com
+.Aq http://www.changeip.com
+.It Cm default@zerigo.com
+.Aq http://www.zerigo.com
+.It Cm default@dhis.org
+.Aq http://www.dhis.org
+.It Cm ipv4@nsupdate.info
+.Aq https://nsupdate.info
+.It Cm default@duckdns.org
+.Aq https://duckdns.org
+.It Cm default@loopia.com
+.Aq https://www.loopia.com
+.It Cm default@domains.google.com
+.Aq https://domains.google.com
+.It Cm default@ovh.com
+.Aq https://www.ovh.com
+.It Cm default@dtdns.com
+.Aq https://www.dtdns.com
+.It Cm default@gira.de
+.Aq http://giradns.com
+.It Cm default@duiadns.net
+.Aq https://www.duiadns.net
+.It Cm default@ddnss.de
+.Aq https://ddnss.de
+.It Cm default@dynv6.com
+.Aq http://dynv6.com
+.It Cm default@ipv4.dynv6.com
+.Aq http://ipv4.dynv6.com
+.It Cm default@spdyn.de
+.Aq https://spdyn.de
+.It Cm default@strato.com
+.Aq https://www.strato.com
+.It Cm default@freemyip.com
+.Aq https://freemyip.com
+.It Cm default@cloudxns.net
+.Aq https://www.cloudxns.net
+.It Cm default@dnspod.cn
+.Aq https://www.dnspod.cn
+.El
+.It Cm custom some@identifier {}
+Specific to the custom provider section are the following settings:
+.Pp
+.Bl -tag -width TERM
+.It Cm ddns-server = update.example.com
+DDNS server name, not the full URL.
+.It Cm ddns-path   = "/update?domain="
+DDNS server path.  By default the hostname is appended to the path,
+unless
+.Cm append-myip=true
+is set.  Alternatively,
+.Xr printf 3
+like format specifiers may be used for
+a fully customizable HTTP GET update request.  The following format
+specifiers are currently supported:
+.Pp
+.Bl -tag -width TERM -compact
+.It Cm %u
+username
+.It Cm %p
+password, if HTTP basic auth is not used
+.It Cm %h
+hostname
+.It Cm %i
+IP address
+.El
+.Pp
+With the following example:
+.Bd -unfilled -offset indent
+username  = myuser
+password  = mypass
+ddns-path = "/update?user=%u&password=%p&domain=%h&myip=%i"
+hostname  = YOURDOMAIN.TLD
+.Ed
+.Pp
+the resulting update URL would be expanded to
+.Bd -unfilled -offset indent
+/update?user=myuser&password=mypass&domain=YOURDOMAIN.TLD&myip=1.2.3.4
+.Ed
+.Pp
+However, the password is usually never sent in clear text in the HTTP
+GET URL.  Most DDNS providers instead rely on HTTP basic auth., which
+.Nm inadyn
+always relays to the server in the HTTP header of update requests.
+.Nm
+v2.1 and later defaults to HTTPS to protect your credentials, but some
+providers still do not support HTTPS.
+.It Cm append-myip = true
+Append your current IP to the the DDNS server update path.  By default
+this setting is false and the hostname is appended.  Unless the
+.Cm ddns-path
+is given with format specifiers, in which case this setting is unused.
+.El
+.El
+.Sh EXAMPLES
+Worth noting below is how two different user accounts can use the same
+DDNS provider, No-IP.com, by using the concept of instances ':N'.
+.Bd -unfilled -offset indent
+period         = 300
+
+# Dyn.com
+provider dyndns.org {
+    username   = account1
+    password   = secret1
+    hostname   = { "my.example.com", "other.example.org" }
+}
+
+# FreeDNS. Remember the username must be in lower case
+# and password (max 16 chars) is case sensitive.
+provider freedns {
+    username   = lower-case-username
+    password   = case-sensitive-pwd
+    hostname   = some.example.com
+}
+
+# No-IP.com #1
+provider no-ip.com:1 {
+    checkip-server = "dynamic.zoneedit.com"
+    checkip-path   = "/checkip.html"
+    checkip-ssl    = false
+    username       = account21
+    password       = secret21
+    hostname       = example.no-ip.com
+}
+
+# No-IP.com #2
+provider no-ip.com:2 {
+    username   = account22
+    password   = secret22
+    hostname   = another.no-ip.com
+}
+
+# Loopia
+provider loopia.com {
+    wildcard   = true
+    username   = account3
+    password   = secret3
+    hostname   = example.com
+}
+
+# ddnss.de
+provider ddnss.de {
+    username   = your_username
+    password   = your_password
+    hostname   = your_host.ddnss.de
+}
+
+# spdyn.de
+provider spdyn.de {
+    username   = your_username
+    password   = your_password
+    hostname   = your_host.spdyn.de
+}
+
+# www.strato.com
+provider strato.com {
+    username   = your_username
+    password   = your_password
+    hostname   = example.com
+}
+
+# dynv6.com
+provider dynv6.com {
+    username   = your_token
+    password   = not_used
+    hostname   = your_host.dynv6.net
+}
+
+# IPv6 account at https://tunnelbroker.net
+provider tunnelbroker.net {
+    username   = xyzzy
+    password   = update-key-in-advanced-tab
+    hostname   = tunnel-id
+}
+
+# www.freemyip.com
+provider freemyip.com {
+    password = your_token
+    hostname = your_hostname.freemyip.com
+}
+
+# www.cloudxns.net
+provider cloudxns.net {
+    username = your_api_key
+    password = your_secret_key
+    hostname = yourhost.example.com
+}
+
+# www.dnspod.cn
+provider dnspod.cn {
+    username = your_api_id
+    password = your_api_token
+    hostname = yourhost.example.com
+}
+
+# Generic example for twoDNS.de
+custom twoDNS.de {
+    username       = account4
+    password       = secret4
+    checkip-server = checkip.two-dns.de
+    checkip-path   = /
+    checkip-ssl    = false
+    ddns-server    = update.twodns.de
+    ddns-path      = "/update?hostname="
+    hostname       = example.dd-dns.de
+}
+.Ed
+.Pp
+As of Inadyn 1.99.14 the generic plugin can also be used with providers
+that require the client's IP in the update request, which for example
+.Aq http://dyn.com
+requires:
+.Bd -unfilled -offset indent
+# This emulates dyndns.org
+custom dyn.com {
+    username     = DYNUSERNAME
+    password     = DYNPASSWORD
+    ddns-server  = members.dyndns.org
+    ddns-path    = "/nic/update?hostname=YOURHOST.dyndns.org&myip="
+    append-myip  = true
+    hostname     = YOURHOST
+}
+.Ed
+.Pp
+Notice the use of
+.Nm append-myip
+which differs from above previous examples.  Without this option set the
+default (backwards compatible) behavior is to append the hostname.
+.Pp
+An alternative, and perhaps more intuitive approach introduced in Inadyn
+v2.0, is to use the
+.Xr printf 3
+like format specifiers mentioned previously.  The same example look like
+this:
+.Bd -unfilled -offset indent
+# This emulates dyndns.org
+custom dyn.com {
+    ssl          = false
+    username     = DYNUSERNAME
+    password     = DYNPASSWORD
+    ddns-server  = members.dyndns.org
+    ddns-path    = "/nic/update?hostname=%h.dyndns.org&myip=%i"
+    hostname     = YOURHOST
+}
+.Ed
+.Sh "SEE ALSO"
+.Xr inadyn 8
+.Pp
+The
+.Nm inadyn
+home page is
+.Aq http://github.com/troglobit/inadyn
+.Sh AUTHORS
+This manual page was initially written for the
+.Em Debian GNU/Linux
+system by
+.An -nosplit
+.An Shaul Karl Aq mailto:shaul@debian.org .
+Currently maintained by
+.An -nosplit
+.An Joachim Nilsson Aq mailto:troglobit@gmail.com .

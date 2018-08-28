@@ -6836,6 +6836,24 @@ libconfuse-clean:
 	$(MAKE) -C libconfuse distclean
 	rm libconfuse/Makefile
 
+inadyn/Makefile:
+	cd inadyn && $(CONFIGURE) \
+		confuse_CFLAGS="-I$(TOP)/libconfuse/src" \
+		confuse_LIBS="-L$(TOP)/libconfuse/src/.libs -lconfuse" \
+		OpenSSL_CFLAGS="-I$(TOP)/openssl" \
+		OpenSSL_LIBS="-L$(TOP)/openssl -lcrypto" \
+		CFLAGS="$(EXTRACFLAGS) -Os -I$(STAGEDIR)/usr/include -ffunction-sections -fdata-sections -fPIC" \
+		LDFLAGS="$(LDFLAGS) -ffunction-sections -fdata-sections -Wl,--gc-sections" \
+		--prefix=/usr -enable-openssl
+
+inadyn: libconfuse inadyn/Makefile
+	@$(SEP)
+	$(MAKE) -C $@
+
+inadyn-clean:
+	@$(SEP)
+	$(MAKE) -C inadyn clean
+	rm inadyn/Makefile
 
 ncurses-6.0/Makefile: ncurses-6.0/configure
 	cd ncurses-6.0 && $(CONFIGURE) \

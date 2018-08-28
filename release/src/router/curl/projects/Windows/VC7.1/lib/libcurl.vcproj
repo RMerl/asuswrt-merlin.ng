@@ -1481,6 +1481,9 @@
 				RelativePath="..\..\..\..\lib\progress.c">
 			</File>
 			<File
+				RelativePath="..\..\..\..\lib\psl.c">
+			</File>
+			<File
 				RelativePath="..\..\..\..\lib\rand.c">
 			</File>
 			<File
@@ -1807,6 +1810,9 @@
 			</File>
 			<File
 				RelativePath="..\..\..\..\lib\progress.h">
+			</File>
+			<File
+				RelativePath="..\..\..\..\lib\psl.h">
 			</File>
 			<File
 				RelativePath="..\..\..\..\lib\rand.h">

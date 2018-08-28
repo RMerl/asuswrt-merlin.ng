@@ -120,7 +120,7 @@ UNITTEST_START
 
   for(i = 0; i < testnum; ++i, curl_easy_reset(easy)) {
     int j;
-    int addressnum = sizeof tests[i].address / sizeof *tests[i].address;
+    int addressnum = sizeof(tests[i].address) / sizeof(*tests[i].address);
     struct Curl_addrinfo *addr;
     struct Curl_dns_entry *dns;
     struct curl_slist *list;
@@ -195,6 +195,14 @@ UNITTEST_START
         fprintf(stderr, "%s:%d tests[%d] failed. the retrieved port "
                 "for tests[%d].address[%d] is %ld but tests[%d].port is %d.\n",
                 __FILE__, __LINE__, i, i, j, port, i, tests[i].port);
+        problem = true;
+        break;
+      }
+
+      if(dns->timestamp != 0) {
+        fprintf(stderr, "%s:%d tests[%d] failed. the timestamp is not zero. "
+                "for tests[%d].address[%d\n",
+                __FILE__, __LINE__, i, i, j);
         problem = true;
         break;
       }

@@ -310,6 +310,31 @@ static CURLcode http_output_basic(struct connectdata *conn, bool proxy)
   return result;
 }
 
+/*
+ * http_output_bearer() sets up an Authorization: header
+ * for HTTP Bearer authentication.
+ *
+ * Returns CURLcode.
+ */
+static CURLcode http_output_bearer(struct connectdata *conn)
+{
+  char **userp;
+  CURLcode result = CURLE_OK;
+
+  userp = &conn->allocptr.userpwd;
+  free(*userp);
+  *userp = aprintf("Authorization: Bearer %s\r\n",
+                   conn->oauth_bearer);
+
+  if(!*userp) {
+    result = CURLE_OUT_OF_MEMORY;
+    goto fail;
+  }
+
+  fail:
+  return result;
+}
+
 /* pickoneauth() selects the most favourable authentication method from the
  * ones available and the ones we want.
  *
@@ -326,6 +351,8 @@ static bool pickoneauth(struct auth *pick)
      of preference in case of the existence of multiple accepted types. */
   if(avail & CURLAUTH_NEGOTIATE)
     pick->picked = CURLAUTH_NEGOTIATE;
+  else if(avail & CURLAUTH_BEARER)
+    pick->picked = CURLAUTH_BEARER;
   else if(avail & CURLAUTH_DIGEST)
     pick->picked = CURLAUTH_DIGEST;
   else if(avail & CURLAUTH_NTLM)
@@ -628,6 +655,20 @@ output_auth_headers(struct connectdata *conn,
        functions work that way */
     authstatus->done = TRUE;
   }
+  if(authstatus->picked == CURLAUTH_BEARER) {
+    /* Bearer */
+    if((!proxy && conn->oauth_bearer &&
+        !Curl_checkheaders(conn, "Authorization:"))) {
+      auth = "Bearer";
+      result = http_output_bearer(conn);
+      if(result)
+        return result;
+    }
+
+    /* NOTE: this function should set 'done' TRUE, as the other auth
+       functions work that way */
+    authstatus->done = TRUE;
+  }
 
   if(auth) {
     infof(data, "%s auth using %s with user '%s'\n",
@@ -674,7 +715,7 @@ Curl_http_output_auth(struct connectdata *conn,
   authproxy = &data->state.authproxy;
 
   if((conn->bits.httpproxy && conn->bits.proxy_user_passwd) ||
-     conn->bits.user_passwd)
+     conn->bits.user_passwd || conn->oauth_bearer)
     /* continue please */;
   else {
     authhost->done = TRUE;
@@ -883,6 +924,18 @@ CURLcode Curl_http_input_auth(struct connectdata *conn, bool proxy,
               data->state.authproblem = TRUE;
             }
           }
+          else
+            if(checkprefix("Bearer", auth)) {
+              *availp |= CURLAUTH_BEARER;
+              authp->avail |= CURLAUTH_BEARER;
+              if(authp->picked == CURLAUTH_BEARER) {
+                /* We asked for Bearer authentication but got a 40X back
+                  anyway, which basically means our token isn't valid. */
+                authp->avail = CURLAUTH_NONE;
+                infof(data, "Authentication problem. Ignoring this.\n");
+                data->state.authproblem = TRUE;
+              }
+            }
 
     /* there may be multiple methods on one line, so keep reading */
     while(*auth && *auth != ',') /* read up to the next comma */
@@ -1128,12 +1181,12 @@ CURLcode Curl_add_buffer_send(Curl_send_buffer *in,
 
     if(conn->data->set.verbose) {
       /* this data _may_ contain binary stuff */
-      Curl_debug(conn->data, CURLINFO_HEADER_OUT, ptr, headlen, conn);
+      Curl_debug(conn->data, CURLINFO_HEADER_OUT, ptr, headlen);
       if(bodylen) {
         /* there was body data sent beyond the initial header part, pass that
            on to the debug callback too */
         Curl_debug(conn->data, CURLINFO_DATA_OUT,
-                   ptr + headlen, bodylen, conn);
+                   ptr + headlen, bodylen);
       }
     }
 
@@ -1223,7 +1276,6 @@ CURLcode Curl_add_bufferf(Curl_send_buffer *in, const char *fmt, ...)
 CURLcode Curl_add_buffer(Curl_send_buffer *in, const void *inptr, size_t size)
 {
   char *new_rb;
-  size_t new_size;
 
   if(~size < in->size_used) {
     /* If resulting used size of send buffer would wrap size_t, cleanup
@@ -1236,10 +1288,10 @@ CURLcode Curl_add_buffer(Curl_send_buffer *in, const void *inptr, size_t size)
 
   if(!in->buffer ||
      ((in->size_used + size) > (in->size_max - 1))) {
-
     /* If current buffer size isn't enough to hold the result, use a
        buffer size that doubles the required size. If this new size
        would wrap size_t, then just use the largest possible one */
+    size_t new_size;
 
     if((size > (size_t)-1 / 2) || (in->size_used > (size_t)-1 / 2) ||
        (~(size * 2) < (in->size_used * 2)))
@@ -1406,7 +1458,7 @@ static CURLcode add_haproxy_protocol_header(struct connectdata *conn)
   }
 
   snprintf(proxy_header,
-           sizeof proxy_header,
+           sizeof(proxy_header),
            "PROXY %s %s %s %li %li\r\n",
            tcp_version,
            conn->data->info.conn_local_ip,
@@ -1574,7 +1626,6 @@ static CURLcode expect100(struct Curl_easy *data,
                           Curl_send_buffer *req_buffer)
 {
   CURLcode result = CURLE_OK;
-  const char *ptr;
   data->state.expect100header = FALSE; /* default to false unless it is set
                                           to TRUE below */
   if(use_http_1_1plus(data, conn) &&
@@ -1582,7 +1633,7 @@ static CURLcode expect100(struct Curl_easy *data,
     /* if not doing HTTP 1.0 or version 2, or disabled explicitly, we add an
        Expect: 100-continue to the headers which actually speeds up post
        operations (as there is one packet coming back from the web server) */
-    ptr = Curl_checkheaders(conn, "Expect");
+    const char *ptr = Curl_checkheaders(conn, "Expect");
     if(ptr) {
       data->state.expect100header =
         Curl_compareheader(ptr, "Expect:", "100-continue");
@@ -1819,7 +1870,6 @@ CURLcode Curl_http(struct connectdata *conn, bool *done)
   const char *httpstring;
   Curl_send_buffer *req_buffer;
   curl_off_t postsize = 0; /* curl_off_t to handle large file sizes */
-  int seekerr = CURL_SEEKFUNC_CANTSEEK;
 
   /* Always consider the DO phase done after this function call, even if there
      may be parts of the request that is not yet sent, since we can deal with
@@ -2088,7 +2138,6 @@ CURLcode Curl_http(struct connectdata *conn, bool *done)
     else {
       /* If the host begins with '[', we start searching for the port after
          the bracket has been closed */
-      int startsearch = 0;
       if(*cookiehost == '[') {
         char *closingbracket;
         /* since the 'cookiehost' is an allocated memory area that will be
@@ -2099,6 +2148,7 @@ CURLcode Curl_http(struct connectdata *conn, bool *done)
           *closingbracket = 0;
       }
       else {
+        int startsearch = 0;
         char *colon = strchr(cookiehost + startsearch, ':');
         if(colon)
           *colon = 0; /* The host must not include an embedded port number */
@@ -2244,6 +2294,7 @@ CURLcode Curl_http(struct connectdata *conn, bool *done)
 
       /* Now, let's read off the proper amount of bytes from the
          input. */
+      int seekerr = CURL_SEEKFUNC_CANTSEEK;
       if(conn->seek_func) {
         Curl_set_in_callback(data, true);
         seekerr = conn->seek_func(conn->seek_client, data->state.resume_from,
@@ -2939,7 +2990,7 @@ static CURLcode header_append(struct Curl_easy *data,
     /* The reason to have a max limit for this is to avoid the risk of a bad
        server feeding libcurl with a never-ending header that will cause
        reallocs infinitely */
-    failf(data, "Rejected %zd bytes header (max is %d)!", newsize,
+    failf(data, "Rejected %zu bytes header (max is %d)!", newsize,
           CURL_MAX_HTTP_HEADER);
     return CURLE_OUT_OF_MEMORY;
   }
@@ -3354,7 +3405,7 @@ CURLcode Curl_http_readwrite_headers(struct Curl_easy *data,
 
         if(data->set.verbose)
           Curl_debug(data, CURLINFO_HEADER_IN,
-                     k->str_start, headerlen, conn);
+                     k->str_start, headerlen);
         break;          /* exit header line loop */
       }
 
@@ -3487,21 +3538,18 @@ CURLcode Curl_http_readwrite_headers(struct Curl_easy *data,
          * depending on how authentication is working.  Other codes
          * are definitely errors, so give up here.
          */
-        if(data->set.http_fail_on_error && (k->httpcode >= 400) &&
+        if(data->state.resume_from && data->set.httpreq == HTTPREQ_GET &&
+             k->httpcode == 416) {
+          /* "Requested Range Not Satisfiable", just proceed and
+             pretend this is no error */
+          k->ignorebody = TRUE; /* Avoid appending error msg to good data. */
+        }
+        else if(data->set.http_fail_on_error && (k->httpcode >= 400) &&
            ((k->httpcode != 401) || !conn->bits.user_passwd) &&
            ((k->httpcode != 407) || !conn->bits.proxy_user_passwd) ) {
-
-          if(data->state.resume_from &&
-             (data->set.httpreq == HTTPREQ_GET) &&
-             (k->httpcode == 416)) {
-            /* "Requested Range Not Satisfiable", just proceed and
-               pretend this is no error */
-          }
-          else {
-            /* serious error, go home! */
-            print_http_error(data);
-            return CURLE_HTTP_RETURNED_ERROR;
-          }
+          /* serious error, go home! */
+          print_http_error(data);
+          return CURLE_HTTP_RETURNED_ERROR;
         }
 
         if(conn->httpversion == 10) {
@@ -3812,8 +3860,7 @@ CURLcode Curl_http_readwrite_headers(struct Curl_easy *data,
       writetype |= CLIENTWRITE_BODY;
 
     if(data->set.verbose)
-      Curl_debug(data, CURLINFO_HEADER_IN,
-                 k->p, (size_t)k->hbuflen, conn);
+      Curl_debug(data, CURLINFO_HEADER_IN, k->p, (size_t)k->hbuflen);
 
     result = Curl_client_write(conn, writetype, k->p, k->hbuflen);
     if(result)

@@ -114,6 +114,7 @@ host_triplet = @host@
 subdir = docs/cmdline-opts
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/m4/ax_code_coverage.m4 \
+	$(top_srcdir)/m4/ax_compile_check_sizeof.m4 \
 	$(top_srcdir)/m4/curl-compilers.m4 \
 	$(top_srcdir)/m4/curl-confopts.m4 \
 	$(top_srcdir)/m4/curl-functions.m4 \
@@ -166,6 +167,7 @@ ACLOCAL = @ACLOCAL@
 AMTAR = @AMTAR@
 AM_DEFAULT_VERBOSITY = @AM_DEFAULT_VERBOSITY@
 AR = @AR@
+AR_FLAGS = @AR_FLAGS@
 AS = @AS@
 AUTOCONF = @AUTOCONF@
 AUTOHEADER = @AUTOHEADER@
@@ -414,7 +416,8 @@ DPAGES = abstract-unix-socket.d anyauth.d append.d basic.d cacert.d capath.d cer
   tlsauthtype.d tlspassword.d tlsuser.d tlsv1.0.d tlsv1.1.d tlsv1.2.d   \
   tlsv1.3.d tlsv1.d trace-ascii.d trace.d trace-time.d tr-encoding.d    \
   unix-socket.d upload-file.d url.d use-ascii.d user-agent.d user.d     \
-  verbose.d version.d write-out.d xattr.d request-target.d
+  verbose.d version.d write-out.d xattr.d request-target.d              \
+  styled-output.d tls13-ciphers.d proxy-tls13-ciphers.d
 
 OTHERPAGES = page-footer page-header
 EXTRA_DIST = $(DPAGES) MANPAGE.md gen.pl $(OTHERPAGES) CMakeLists.txt

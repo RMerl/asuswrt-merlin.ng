@@ -103,6 +103,7 @@ bin_PROGRAMS = curl$(EXEEXT)
 subdir = src
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/m4/ax_code_coverage.m4 \
+	$(top_srcdir)/m4/ax_compile_check_sizeof.m4 \
 	$(top_srcdir)/m4/curl-compilers.m4 \
 	$(top_srcdir)/m4/curl-confopts.m4 \
 	$(top_srcdir)/m4/curl-functions.m4 \
@@ -336,6 +337,7 @@ ACLOCAL = @ACLOCAL@
 AMTAR = @AMTAR@
 AM_DEFAULT_VERBOSITY = @AM_DEFAULT_VERBOSITY@
 AR = @AR@
+AR_FLAGS = @AR_FLAGS@
 AS = @AS@
 AUTOCONF = @AUTOCONF@
 AUTOHEADER = @AUTOHEADER@
@@ -550,7 +552,7 @@ top_srcdir = @top_srcdir@
 #                            | (__| |_| |  _ <| |___
 #                             \___|\___/|_| \_\_____|
 #
-# Copyright (C) 1998 - 2017, Daniel Stenberg, <daniel@haxx.se>, et al.
+# Copyright (C) 1998 - 2018, Daniel Stenberg, <daniel@haxx.se>, et al.
 #
 # This software is licensed as described in the file COPYING, which
 # you should have received as part of this distribution. The terms
@@ -702,7 +704,7 @@ curl_CPPFLAGS = $(AM_CPPFLAGS) $(LIBMETALINK_CPPFLAGS)
 @BUILD_UNITTESTS_TRUE@libcurltool_la_LDFLAGS = -static $(LINKFLAGS)
 @BUILD_UNITTESTS_TRUE@libcurltool_la_SOURCES = $(curl_SOURCES)
 CLEANFILES = tool_hugehelp.c
-EXTRA_DIST = mkhelp.pl makefile.dj Makefile.b32		\
+EXTRA_DIST = mkhelp.pl makefile.dj                      		\
  Makefile.m32 macos/curl.mcp.xml.sit.hqx macos/MACINSTALL.TXT		\
  macos/src/curl_GUSIConfig.cpp macos/src/macos_main.cpp makefile.amiga	\
  curl.rc Makefile.netware Makefile.inc Makefile.Watcom CMakeLists.txt

@@ -82,6 +82,7 @@ static const struct LongShort aliases[]= {
   {"*d", "ciphers",                  ARG_STRING},
   {"*D", "dns-interface",            ARG_STRING},
   {"*e", "disable-epsv",             ARG_BOOL},
+  {"*f", "disallow-username-in-url", ARG_BOOL},
   {"*E", "epsv",                     ARG_BOOL},
          /* 'epsv' made like this to make --no-epsv and --epsv to work
              although --disable-epsv is the documented option */
@@ -201,6 +202,8 @@ static const struct LongShort aliases[]= {
   {"11",  "tlsv1.1",                 ARG_NONE},
   {"12",  "tlsv1.2",                 ARG_NONE},
   {"13",  "tlsv1.3",                 ARG_NONE},
+  {"1A", "tls13-ciphers",            ARG_STRING},
+  {"1B", "proxy-tls13-ciphers",      ARG_STRING},
   {"2",  "sslv2",                    ARG_NONE},
   {"3",  "sslv3",                    ARG_NONE},
   {"4",  "ipv4",                     ARG_NONE},
@@ -260,6 +263,7 @@ static const struct LongShort aliases[]= {
   {"EB", "socks5-gssapi",            ARG_BOOL},
   {"f",  "fail",                     ARG_BOOL},
   {"fa", "fail-early",               ARG_BOOL},
+  {"fb", "styled-output",            ARG_BOOL},
   {"F",  "form",                     ARG_STRING},
   {"Fs", "form-string",              ARG_STRING},
   {"g",  "globoff",                  ARG_BOOL},
@@ -502,8 +506,7 @@ ParameterError getparameter(const char *flag, /* f or -long-flag */
 
   *usedarg = FALSE; /* default is that we don't use the arg */
 
-  if(('-' != flag[0]) ||
-     (('-' == flag[0]) && ('-' == flag[1]))) {
+  if(('-' != flag[0]) || ('-' == flag[1])) {
     /* this should be a long name */
     const char *word = ('-' == flag[0]) ? flag + 2 : flag;
     size_t fnam = strlen(word);
@@ -600,6 +603,7 @@ ParameterError getparameter(const char *flag, /* f or -long-flag */
         break;
       case 'B': /* OAuth 2.0 bearer token */
         GetStr(&config->oauth_bearer, nextarg);
+        config->authtype |= CURLAUTH_BEARER;
         break;
       case 'c': /* connect-timeout */
         err = str2udouble(&config->connecttimeout, nextarg,
@@ -616,6 +620,9 @@ ParameterError getparameter(const char *flag, /* f or -long-flag */
         break;
       case 'e': /* --disable-epsv */
         config->disable_epsv = toggle;
+        break;
+      case 'f': /* --disallow-username-in-url */
+        config->disallow_username_in_url = toggle;
         break;
       case 'E': /* --epsv */
         config->disable_epsv = (!toggle)?TRUE:FALSE;
@@ -1175,6 +1182,12 @@ ParameterError getparameter(const char *flag, /* f or -long-flag */
         /* TLS version 1.3 */
         config->ssl_version = CURL_SSLVERSION_TLSv1_3;
         break;
+      case 'A': /* --tls13-ciphers */
+        GetStr(&config->cipher13_list, nextarg);
+        break;
+      case 'B': /* --proxy-tls13-ciphers */
+        GetStr(&config->proxy_cipher13_list, nextarg);
+        break;
       }
       break;
     case '2':
@@ -1643,8 +1656,10 @@ ParameterError getparameter(const char *flag, /* f or -long-flag */
       case 'a': /* --fail-early */
         global->fail_early = toggle;
         break;
-      default:
-        /* fail hard on errors  */
+      case 'b': /* --styled-output */
+        global->styled_output = toggle;
+        break;
+      default: /* --fail (hard on errors)  */
         config->failonerror = toggle;
       }
       break;
@@ -1722,24 +1737,22 @@ ParameterError getparameter(const char *flag, /* f or -long-flag */
       }
       break;
     case 'i':
-      config->include_headers = toggle; /* include the headers as well in the
-                                           general output stream */
+      config->show_headers = toggle; /* show the headers as well in the
+                                        general output stream */
       break;
     case 'j':
       config->cookiesession = toggle;
       break;
-    case 'I':
-      /*
-       * no_body will imply include_headers later on
-       */
+    case 'I': /* --head */
       config->no_body = toggle;
+      config->show_headers = toggle;
       if(SetHTTPrequest(config,
                         (config->no_body)?HTTPREQ_HEAD:HTTPREQ_GET,
                         &config->httpreq))
         return PARAM_BAD_USE;
       break;
     case 'J': /* --remote-header-name */
-      if(config->include_headers) {
+      if(config->show_headers) {
         warnf(global,
               "--include and --remote-header-name cannot be combined.\n");
         return PARAM_BAD_USE;
@@ -2141,7 +2154,6 @@ ParameterError parse_args(struct GlobalConfig *config, int argc,
     orig_opt = argv[i];
 
     if(stillflags && ('-' == argv[i][0])) {
-      char *nextarg;
       bool passarg;
       char *flag = argv[i];
 
@@ -2150,7 +2162,7 @@ ParameterError parse_args(struct GlobalConfig *config, int argc,
            following (URL) argument to start with -. */
         stillflags = FALSE;
       else {
-        nextarg = (i < (argc - 1)) ? argv[i + 1] : NULL;
+        char *nextarg = (i < (argc - 1)) ? argv[i + 1] : NULL;
 
         result = getparameter(flag, nextarg, &passarg, config, operation);
         if(result == PARAM_NEXT_OPERATION) {

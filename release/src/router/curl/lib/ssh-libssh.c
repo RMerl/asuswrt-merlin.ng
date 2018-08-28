@@ -204,11 +204,21 @@ static CURLcode sftp_error_to_CURLE(int err)
   return CURLE_SSH;
 }
 
+#ifndef DEBUGBUILD
+#define state(x,y) mystate(x,y)
+#else
+#define state(x,y) mystate(x,y, __LINE__)
+#endif
+
 /*
  * SSH State machine related code
  */
 /* This is the ONLY way to change SSH state! */
-static void state(struct connectdata *conn, sshstate nowstate)
+static void mystate(struct connectdata *conn, sshstate nowstate
+#ifdef DEBUGBUILD
+                    , int lineno
+#endif
+  )
 {
   struct ssh_conn *sshc = &conn->proto.sshc;
 #if defined(DEBUGBUILD) && !defined(CURL_DISABLE_VERBOSE_STRINGS)
@@ -278,8 +288,9 @@ static void state(struct connectdata *conn, sshstate nowstate)
 
 
   if(sshc->state != nowstate) {
-    infof(conn->data, "SSH %p state change from %s to %s\n",
-          (void *) sshc, names[sshc->state], names[nowstate]);
+    infof(conn->data, "SSH %p state change from %s to %s (line %d)\n",
+          (void *) sshc, names[sshc->state], names[nowstate],
+          lineno);
   }
 #endif
 
@@ -418,7 +429,7 @@ cleanup:
 }
 
 #define MOVE_TO_ERROR_STATE(_r) { \
-  state(conn, SSH_SESSION_FREE); \
+  state(conn, SSH_SESSION_DISCONNECT); \
   sshc->actualcode = _r; \
   rc = SSH_ERROR; \
   break; \
@@ -1306,7 +1317,7 @@ static CURLcode myssh_statemach_act(struct connectdata *conn, bool *block)
           if(data->set.verbose) {
             Curl_debug(data, CURLINFO_DATA_OUT,
                        (char *)sshc->readdir_filename,
-                       sshc->readdir_len, conn);
+                       sshc->readdir_len);
           }
         }
         else {
@@ -1423,7 +1434,7 @@ static CURLcode myssh_statemach_act(struct connectdata *conn, bool *block)
         /* output debug output if that is requested */
         if(data->set.verbose) {
           Curl_debug(data, CURLINFO_DATA_OUT, sshc->readdir_line,
-                     sshc->readdir_currLen, conn);
+                     sshc->readdir_currLen);
         }
         data->req.bytecount += sshc->readdir_currLen;
       }
@@ -2500,8 +2511,8 @@ static void sftp_quote(struct connectdata *conn)
       return;
     }
     if(data->set.verbose) {
-      Curl_debug(data, CURLINFO_HEADER_OUT, (char *) "PWD\n", 4, conn);
-      Curl_debug(data, CURLINFO_HEADER_IN, tmp, strlen(tmp), conn);
+      Curl_debug(data, CURLINFO_HEADER_OUT, (char *) "PWD\n", 4);
+      Curl_debug(data, CURLINFO_HEADER_IN, tmp, strlen(tmp));
     }
     /* this sends an FTP-like "header" to the header callback so that the
        current directory can be read very similar to how it is read when

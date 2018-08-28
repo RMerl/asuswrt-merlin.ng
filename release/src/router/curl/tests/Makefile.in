@@ -21,7 +21,7 @@
 #                            | (__| |_| |  _ <| |___
 #                             \___|\___/|_| \_\_____|
 #
-# Copyright (C) 1998 - 2017, Daniel Stenberg, <daniel@haxx.se>, et al.
+# Copyright (C) 1998 - 2018, Daniel Stenberg, <daniel@haxx.se>, et al.
 #
 # This software is licensed as described in the file COPYING, which
 # you should have received as part of this distribution. The terms
@@ -112,6 +112,7 @@ host_triplet = @host@
 subdir = tests
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/m4/ax_code_coverage.m4 \
+	$(top_srcdir)/m4/ax_compile_check_sizeof.m4 \
 	$(top_srcdir)/m4/curl-compilers.m4 \
 	$(top_srcdir)/m4/curl-confopts.m4 \
 	$(top_srcdir)/m4/curl-functions.m4 \
@@ -221,6 +222,7 @@ ACLOCAL = @ACLOCAL@
 AMTAR = @AMTAR@
 AM_DEFAULT_VERBOSITY = @AM_DEFAULT_VERBOSITY@
 AR = @AR@
+AR_FLAGS = @AR_FLAGS@
 AS = @AS@
 AUTOCONF = @AUTOCONF@
 AUTOHEADER = @AUTOHEADER@
@@ -463,7 +465,7 @@ MAN2HTML = roffit $< >$@
 @CROSSCOMPILING_FALSE@TEST_E = -a -e
 
 # !flaky means that it'll skip all tests using the flaky keyword
-@CROSSCOMPILING_FALSE@TEST_NF = -a -p -r !flaky
+@CROSSCOMPILING_FALSE@TEST_NF = -a -p !flaky
 all: all-recursive
 
 .SUFFIXES:

@@ -163,7 +163,6 @@ static CURLcode inflate_stream(struct connectdata *conn,
   z_stream *z = &zp->z;         /* zlib state structure */
   uInt nread = z->avail_in;
   Bytef *orig_in = z->next_in;
-  int status;                   /* zlib status */
   bool done = FALSE;
   CURLcode result = CURLE_OK;   /* Curl_client_write status */
   char *decomp;                 /* Put the decompressed data here. */
@@ -184,13 +183,20 @@ static CURLcode inflate_stream(struct connectdata *conn,
   /* because the buffer size is fixed, iteratively decompress and transfer to
      the client via downstream_write function. */
   while(!done) {
+    int status;                   /* zlib status */
     done = TRUE;
 
     /* (re)set buffer for decompressed output for every iteration */
     z->next_out = (Bytef *) decomp;
     z->avail_out = DSIZ;
 
+#ifdef Z_BLOCK
+    /* Z_BLOCK is only available in zlib ver. >= 1.2.0.5 */
     status = inflate(z, Z_BLOCK);
+#else
+    /* fallback for zlib ver. < 1.2.0.5 */
+    status = inflate(z, Z_SYNC_FLUSH);
+#endif
 
     /* Flush output data if some. */
     if(z->avail_out != DSIZ) {
@@ -755,7 +761,6 @@ char *Curl_all_content_encodings(void)
   const content_encoding * const *cep;
   const content_encoding *ce;
   char *ace;
-  char *p;
 
   for(cep = encodings; *cep; cep++) {
     ce = *cep;
@@ -768,7 +773,7 @@ char *Curl_all_content_encodings(void)
 
   ace = malloc(len);
   if(ace) {
-    p = ace;
+    char *p = ace;
     for(cep = encodings; *cep; cep++) {
       ce = *cep;
       if(!strcasecompare(ce->name, CONTENT_ENCODING_DEFAULT)) {
@@ -915,10 +920,9 @@ void Curl_unencode_cleanup(struct connectdata *conn)
 static const content_encoding *find_encoding(const char *name, size_t len)
 {
   const content_encoding * const *cep;
-  const content_encoding *ce;
 
   for(cep = encodings; *cep; cep++) {
-    ce = *cep;
+    const content_encoding *ce = *cep;
     if((strncasecompare(name, ce->name, len) && !ce->name[len]) ||
        (ce->alias && strncasecompare(name, ce->alias, len) && !ce->alias[len]))
       return ce;

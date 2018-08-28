@@ -84,12 +84,9 @@ Example set of cookies:
 
 #if !defined(CURL_DISABLE_HTTP) && !defined(CURL_DISABLE_COOKIES)
 
-#ifdef USE_LIBPSL
-# include <libpsl.h>
-#endif
-
 #include "urldata.h"
 #include "cookie.h"
+#include "psl.h"
 #include "strtok.h"
 #include "sendf.h"
 #include "slist.h"
@@ -379,13 +376,13 @@ static void strstore(char **str, const char *newstr)
  */
 static void remove_expired(struct CookieInfo *cookies)
 {
-  struct Cookie *co, *nx, *pv;
+  struct Cookie *co, *nx;
   curl_off_t now = (curl_off_t)time(NULL);
   unsigned int i;
 
   for(i = 0; i < COOKIE_HASH_SIZE; i++) {
+    struct Cookie *pv = NULL;
     co = cookies->cookies[i];
-    pv = NULL;
     while(co) {
       nx = co->next;
       if(co->expires && co->expires < now) {
@@ -404,6 +401,12 @@ static void remove_expired(struct CookieInfo *cookies)
       co = nx;
     }
   }
+}
+
+/* Make sure domain contains a dot or is localhost. */
+static bool bad_domain(const char *domain)
+{
+  return !strchr(domain, '.') && !strcasecompare(domain, "localhost");
 }
 
 /****************************************************************************
@@ -441,10 +444,6 @@ Curl_cookie_add(struct Curl_easy *data,
   bool replace_old = FALSE;
   bool badcookie = FALSE; /* cookies are good by default. mmmmm yummy */
   size_t myhash;
-
-#ifdef USE_LIBPSL
-  const psl_ctx_t *psl;
-#endif
 
 #ifdef CURL_DISABLE_VERBOSE_STRINGS
   (void)data;
@@ -497,7 +496,7 @@ Curl_cookie_add(struct Curl_easy *data,
              name + contents. Chrome and Firefox support 4095 or 4096 bytes
              combo. */
           freecookie(co);
-          infof(data, "oversized cookie dropped, name/val %d + %d bytes\n",
+          infof(data, "oversized cookie dropped, name/val %zu + %zu bytes\n",
                 nlen, len);
           return NULL;
         }
@@ -585,13 +584,8 @@ Curl_cookie_add(struct Curl_easy *data,
            * TLD or otherwise "protected" suffix. To reduce risk, we require a
            * dot OR the exact host name being "localhost".
            */
-          {
-            const char *dotp;
-            /* check for more dots */
-            dotp = strchr(whatptr, '.');
-            if(!dotp && !strcasecompare("localhost", whatptr))
-              domain = ":";
-          }
+          if(bad_domain(whatptr))
+            domain = ":";
 #endif
 
           is_ip = isip(domain ? domain : whatptr);
@@ -890,14 +884,21 @@ Curl_cookie_add(struct Curl_easy *data,
     remove_expired(c);
 
 #ifdef USE_LIBPSL
-  /* Check if the domain is a Public Suffix and if yes, ignore the cookie.
-     This needs a libpsl compiled with builtin data. */
+  /* Check if the domain is a Public Suffix and if yes, ignore the cookie. */
   if(domain && co->domain && !isip(co->domain)) {
-    psl = psl_builtin();
-    if(psl && !psl_is_cookie_domain_acceptable(psl, domain, co->domain)) {
-      infof(data,
-            "cookie '%s' dropped, domain '%s' must not set cookies for '%s'\n",
-            co->name, domain, co->domain);
+    const psl_ctx_t *psl = Curl_psl_use(data);
+    int acceptable;
+
+    if(psl) {
+      acceptable = psl_is_cookie_domain_acceptable(psl, domain, co->domain);
+      Curl_psl_release(data);
+    }
+    else
+      acceptable = !bad_domain(domain);
+
+    if(!acceptable) {
+      infof(data, "cookie '%s' dropped, domain '%s' must not "
+                  "set cookies for '%s'\n", co->name, domain, co->domain);
       freecookie(co);
       return NULL;
     }
@@ -1384,9 +1385,8 @@ void Curl_cookie_clearsess(struct CookieInfo *cookies)
  ****************************************************************************/
 void Curl_cookie_cleanup(struct CookieInfo *c)
 {
-  unsigned int i;
-
   if(c) {
+    unsigned int i;
     free(c->filename);
     for(i = 0; i < COOKIE_HASH_SIZE; i++)
       Curl_cookie_freelist(c->cookies[i]);

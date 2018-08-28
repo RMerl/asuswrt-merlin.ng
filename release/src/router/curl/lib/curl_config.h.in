@@ -96,21 +96,6 @@
 /* Define to the type of arg 2 for gethostname. */
 #undef GETHOSTNAME_TYPE_ARG2
 
-/* Define to the type qualifier of arg 1 for getnameinfo. */
-#undef GETNAMEINFO_QUAL_ARG1
-
-/* Define to the type of arg 1 for getnameinfo. */
-#undef GETNAMEINFO_TYPE_ARG1
-
-/* Define to the type of arg 2 for getnameinfo. */
-#undef GETNAMEINFO_TYPE_ARG2
-
-/* Define to the type of args 4 and 6 for getnameinfo. */
-#undef GETNAMEINFO_TYPE_ARG46
-
-/* Define to the type of arg 7 for getnameinfo. */
-#undef GETNAMEINFO_TYPE_ARG7
-
 /* Specifies the number of arguments to getservbyport_r */
 #undef GETSERVBYPORT_R_ARGS
 
@@ -177,14 +162,18 @@
 /* Define to 1 if you have the <cyassl/options.h> header file. */
 #undef HAVE_CYASSL_OPTIONS_H
 
+/* Define to 1 if you have the declaration of `getpwuid_r', and to 0 if you
+   don't. */
+#undef HAVE_DECL_GETPWUID_R
+
+/* "Set if getpwuid_r() declaration is missing" */
+#undef HAVE_DECL_GETPWUID_R_MISSING
+
 /* Define to 1 if you have the <dlfcn.h> header file. */
 #undef HAVE_DLFCN_H
 
 /* Define to 1 if you have the `ENGINE_cleanup' function. */
 #undef HAVE_ENGINE_CLEANUP
-
-/* Define to 1 if you have the `ENGINE_load_builtin_engines' function. */
-#undef HAVE_ENGINE_LOAD_BUILTIN_ENGINES
 
 /* Define to 1 if you have the <errno.h> header file. */
 #undef HAVE_ERRNO_H
@@ -203,6 +192,9 @@
 
 /* Define to 1 if you have the fdopen function. */
 #undef HAVE_FDOPEN
+
+/* Define to 1 if you have the `fnmatch' function. */
+#undef HAVE_FNMATCH
 
 /* Define to 1 if you have the freeaddrinfo function. */
 #undef HAVE_FREEADDRINFO
@@ -269,9 +261,6 @@
 
 /* Define to 1 if you have a working getifaddrs function. */
 #undef HAVE_GETIFADDRS
-
-/* Define to 1 if you have the getnameinfo function. */
-#undef HAVE_GETNAMEINFO
 
 /* Define to 1 if you have the `getpass_r' function. */
 #undef HAVE_GETPASS_R
@@ -488,18 +477,12 @@
 /* Define to 1 if you have the <nghttp2/nghttp2.h> header file. */
 #undef HAVE_NGHTTP2_NGHTTP2_H
 
-/* Define to 1 if NI_WITHSCOPEID exists and works. */
-#undef HAVE_NI_WITHSCOPEID
-
 /* if you have an old MIT Kerberos version, lacking GSS_C_NT_HOSTBASED_SERVICE
    */
 #undef HAVE_OLD_GSSMIT
 
 /* Define to 1 if you have the <openssl/crypto.h> header file. */
 #undef HAVE_OPENSSL_CRYPTO_H
-
-/* Define to 1 if you have the <openssl/engine.h> header file. */
-#undef HAVE_OPENSSL_ENGINE_H
 
 /* Define to 1 if you have the <openssl/err.h> header file. */
 #undef HAVE_OPENSSL_ERR_H
@@ -906,28 +889,28 @@
 /* Define to the function return type for send. */
 #undef SEND_TYPE_RETV
 
-/* The size of `curl_off_t', as computed by sizeof. */
+/* The number of bytes in type curl_off_t */
 #undef SIZEOF_CURL_OFF_T
 
-/* The size of `int', as computed by sizeof. */
+/* The number of bytes in type int */
 #undef SIZEOF_INT
 
-/* The size of `long', as computed by sizeof. */
+/* The number of bytes in type long */
 #undef SIZEOF_LONG
 
-/* The size of `long long', as computed by sizeof. */
+/* The number of bytes in type long long */
 #undef SIZEOF_LONG_LONG
 
-/* The size of `off_t', as computed by sizeof. */
+/* The number of bytes in type off_t */
 #undef SIZEOF_OFF_T
 
-/* The size of `short', as computed by sizeof. */
+/* The number of bytes in type short */
 #undef SIZEOF_SHORT
 
-/* The size of `size_t', as computed by sizeof. */
+/* The number of bytes in type size_t */
 #undef SIZEOF_SIZE_T
 
-/* The size of `time_t', as computed by sizeof. */
+/* The number of bytes in type time_t */
 #undef SIZEOF_TIME_T
 
 /* Define to 1 if you have the ANSI C header files. */

@@ -188,7 +188,8 @@ AC_CANONICAL_HOST
 dnl Get system canonical name
 AC_DEFINE_UNQUOTED(OS, "${host}", [cpu-machine-OS])
 
-dnl Checks for programs.
+# Silence warning: ar: 'u' modifier ignored since 'D' is the default
+AC_SUBST(AR_FLAGS, [cr])
 
 dnl This defines _ALL_SOURCE for AIX
 CURL_CHECK_AIX_ALL_SOURCE
@@ -1591,9 +1592,11 @@ if test -z "$ssl_backends" -o "x$OPT_SSL" != xno &&
     dnl specify PKG_CONFIG_LIBDIR we're only looking where
     dnl the user told us to look
     OPENSSL_PCDIR="$OPT_SSL/lib/pkgconfig"
-    AC_MSG_NOTICE([PKG_CONFIG_LIBDIR will be set to "$OPENSSL_PCDIR"])
     if test -f "$OPENSSL_PCDIR/openssl.pc"; then
+      AC_MSG_NOTICE([PKG_CONFIG_LIBDIR will be set to "$OPENSSL_PCDIR"])
       PKGTEST="yes"
+    elif test ! -f "$PREFIX_OPENSSL/include/openssl/ssl.h"; then
+      AC_MSG_ERROR([$PREFIX_OPENSSL is a bad --with-ssl prefix!])
     fi
 
     dnl in case pkg-config comes up empty, use what we got
@@ -1654,7 +1657,7 @@ if test -z "$ssl_backends" -o "x$OPT_SSL" != xno &&
 
        dnl still no, but what about with -ldl?
        AC_MSG_CHECKING([OpenSSL linking with -ldl])
-       LIBS="$LIBS -ldl"
+       LIBS="$CLEANLIBS -lcrypto -ldl"
        AC_TRY_LINK(
        [
          #include <openssl/err.h>
@@ -1668,10 +1671,10 @@ if test -z "$ssl_backends" -o "x$OPT_SSL" != xno &&
        ],
        [
          AC_MSG_RESULT(no)
-         dnl ok, so what about bouth -ldl and -lpthread?
+         dnl ok, so what about both -ldl and -lpthread?
 
          AC_MSG_CHECKING([OpenSSL linking with -ldl and -lpthread])
-         LIBS="$LIBS -lpthread"
+         LIBS="$CLEANLIBS -lcrypto -ldl -lpthread"
          AC_TRY_LINK(
          [
            #include <openssl/err.h>
@@ -1753,14 +1756,6 @@ if test -z "$ssl_backends" -o "x$OPT_SSL" != xno &&
   fi
 
   if test X"$OPENSSL_ENABLED" = X"1"; then
-    dnl If the ENGINE library seems to be around, check for the OpenSSL engine
-    dnl stuff, it is kind of "separated" from the main SSL check
-    AC_CHECK_FUNC(ENGINE_init,
-              [
-                AC_CHECK_HEADERS(openssl/engine.h)
-                AC_CHECK_FUNCS( ENGINE_load_builtin_engines )
-              ])
-
     dnl These can only exist if OpenSSL exists
     dnl Older versions of Cyassl (some time before 2.9.4) don't have
     dnl SSL_get_shutdown (but this check won't actually detect it there
@@ -2348,7 +2343,7 @@ if test -z "$ssl_backends" -o "x$OPT_CYASSL" != xno; then
       check_for_ca_bundle=1
 
       dnl cyassl/ctaocrypt/types.h needs SIZEOF_LONG_LONG defined!
-      AC_CHECK_SIZEOF(long long)
+      AX_COMPILE_CHECK_SIZEOF(long long)
 
       dnl Versions since at least 2.6.0 may have options.h
       AC_CHECK_HEADERS(cyassl/options.h)
@@ -2766,7 +2761,7 @@ if test X"$OPT_LIBSSH2" != Xno; then
     CURL_CHECK_PKGCONFIG(libssh2)
 
     if test "$PKGCONFIG" != "no" ; then
-      LIB_SSH2=`$PKGCONFIG --libs-only-l libssh2`
+      LIB_SSH2=`$PKGCONFIG --libs libssh2`
       LD_SSH2=`$PKGCONFIG --libs-only-L libssh2`
       CPP_SSH2=`$PKGCONFIG --cflags-only-I libssh2`
       version=`$PKGCONFIG --modversion libssh2`
@@ -3449,16 +3444,16 @@ AC_HEADER_TIME
 CURL_CHECK_STRUCT_TIMEVAL
 CURL_VERIFY_RUNTIMELIBS
 
-AC_CHECK_SIZEOF(size_t)
-AC_CHECK_SIZEOF(long)
-AC_CHECK_SIZEOF(int)
-AC_CHECK_SIZEOF(short)
-AC_CHECK_SIZEOF(time_t)
-AC_CHECK_SIZEOF(off_t)
+AX_COMPILE_CHECK_SIZEOF(size_t)
+AX_COMPILE_CHECK_SIZEOF(long)
+AX_COMPILE_CHECK_SIZEOF(int)
+AX_COMPILE_CHECK_SIZEOF(short)
+AX_COMPILE_CHECK_SIZEOF(time_t)
+AX_COMPILE_CHECK_SIZEOF(off_t)
 
 o=$CPPFLAGS
 CPPFLAGS="-I$srcdir/include $CPPFLAGS"
-AC_CHECK_SIZEOF(curl_off_t, unused , [
+AX_COMPILE_CHECK_SIZEOF(curl_off_t, [
 #include <curl/system.h>
 ])
 CPPFLAGS=$o
@@ -3615,7 +3610,13 @@ case $host in
     ;;
 esac
 
-AC_CHECK_FUNCS([geteuid \
+AC_CHECK_DECLS([getpwuid_r], [], [AC_DEFINE(HAVE_DECL_GETPWUID_R_MISSING, 1, "Set if getpwuid_r() declaration is missing")],
+        [[#include <pwd.h>
+          #include <sys/types.h>]])
+
+
+AC_CHECK_FUNCS([fnmatch \
+  geteuid \
   getpass_r \
   getppid \
   getpwuid \
@@ -3652,17 +3653,12 @@ AC_CHECK_FUNCS([geteuid \
   fi
 ])
 
-dnl Check if the getnameinfo function is available
-dnl and get the types of five of its arguments.
-CURL_CHECK_FUNC_GETNAMEINFO
-
 if test "$ipv6" = "yes"; then
   if test "$curl_cv_func_getaddrinfo" = "yes"; then
     AC_DEFINE(ENABLE_IPV6, 1, [Define if you want to enable IPv6 support])
     IPV6_ENABLED=1
     AC_SUBST(IPV6_ENABLED)
   fi
-  CURL_CHECK_NI_WITHSCOPEID
 fi
 
 CURL_CHECK_NONBLOCKING_SOCKET

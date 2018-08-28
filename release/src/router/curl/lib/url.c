@@ -757,7 +757,7 @@ CURLcode Curl_disconnect(struct connectdata *conn, bool dead_connection)
    */
   if(!conn->bits.close &&
      (conn->send_pipe.size + conn->recv_pipe.size)) {
-    DEBUGF(infof(data, "Curl_disconnect, usecounter: %d\n",
+    DEBUGF(infof(data, "Curl_disconnect, usecounter: %zu\n",
                  conn->send_pipe.size + conn->recv_pipe.size));
     return CURLE_OK;
   }
@@ -965,6 +965,7 @@ static bool extract_if_dead(struct connectdata *conn,
        use */
     bool dead;
 
+    conn->data = data;
     if(conn->handler->connection_check) {
       /* The protocol has a special method for checking the state of the
          connection. Use it to check if the connection is dead. */
@@ -979,7 +980,6 @@ static bool extract_if_dead(struct connectdata *conn,
     }
 
     if(dead) {
-      conn->data = data;
       infof(data, "Connection %ld seems to be dead!\n", conn->connection_id);
       Curl_conncache_remove_conn(conn, FALSE);
       return TRUE;
@@ -1465,6 +1465,7 @@ ConnectionExists(struct Curl_easy *data,
   if(chosen) {
     /* mark it as used before releasing the lock */
     chosen->inuse = TRUE;
+    chosen->data = data; /* own it! */
     Curl_conncache_unlock(needle);
     *usethis = chosen;
     return TRUE; /* yes, we found one to use! */
@@ -1554,7 +1555,11 @@ int Curl_protocol_getsock(struct connectdata *conn,
 {
   if(conn->handler->proto_getsock)
     return conn->handler->proto_getsock(conn, socks, numsocks);
-  return GETSOCK_BLANK;
+  /* Backup getsock logic. Since there is a live socket in use, we must wait
+     for it or it will be removed from watching when the multi_socket API is
+     used. */
+  socks[0] = conn->sock[FIRSTSOCKET];
+  return GETSOCK_READSOCK(0) | GETSOCK_WRITESOCK(0);
 }
 
 int Curl_doing_getsock(struct connectdata *conn,
@@ -1999,7 +2004,6 @@ static CURLcode parseurlandfillconn(struct Curl_easy *data,
   char *fragment;
   char *path = data->state.path;
   char *query;
-  int i;
   int rc;
   const char *protop = "";
   CURLcode result;
@@ -2051,6 +2055,7 @@ static CURLcode parseurlandfillconn(struct Curl_easy *data,
     ; /* do nothing */
   }
   else { /* check for a scheme */
+    int i;
     for(i = 0; i < 16 && data->change.url[i]; ++i) {
       if(data->change.url[i] == '/')
         break;
@@ -2203,7 +2208,7 @@ static CURLcode parseurlandfillconn(struct Curl_easy *data,
       size_t s = strlen(slashbuf);
       protop = protobuf;
       if(s != 2) {
-        infof(data, "Unwillingly accepted illegal URL using %d slash%s!\n",
+        infof(data, "Unwillingly accepted illegal URL using %zu slash%s!\n",
               s, s>1?"es":"");
 
         if(data->change.url_alloc)
@@ -2449,7 +2454,7 @@ static CURLcode setup_range(struct Curl_easy *data)
       free(s->range);
 
     if(s->resume_from)
-      s->range = aprintf("%" CURL_FORMAT_CURL_OFF_TU "-", s->resume_from);
+      s->range = aprintf("%" CURL_FORMAT_CURL_OFF_T "-", s->resume_from);
     else
       s->range = strdup(data->set.str[STRING_SET_RANGE]);
 
@@ -2539,14 +2544,13 @@ static bool check_noproxy(const char *name, const char *no_proxy)
    *   not be proxied, or an asterisk to override
    *   all proxy variables)
    */
-  size_t tok_start;
-  size_t tok_end;
-  const char *separator = ", ";
-  size_t no_proxy_len;
-  size_t namelen;
-  char *endptr;
-
   if(no_proxy && no_proxy[0]) {
+    size_t tok_start;
+    size_t tok_end;
+    const char *separator = ", ";
+    size_t no_proxy_len;
+    size_t namelen;
+    char *endptr;
     if(strcasecompare("*", no_proxy)) {
       return TRUE;
     }
@@ -3165,6 +3169,13 @@ static CURLcode parse_url_login(struct Curl_easy *data,
 
   if(userp) {
     char *newname;
+
+    if(data->set.disallow_username_in_url) {
+      failf(data, "Option DISALLOW_USERNAME_IN_URL is set "
+                  "and url contains username.");
+      result = CURLE_LOGIN_DENIED;
+      goto out;
+    }
 
     /* We have a user in the URL */
     conn->bits.userpwd_in_url = TRUE;
@@ -4297,7 +4308,9 @@ static CURLcode create_conn(struct Curl_easy *data,
       conn->data = data;
       conn->bits.tcpconnect[FIRSTSOCKET] = TRUE; /* we are "connected */
 
-      Curl_conncache_add_conn(data->state.conn_cache, conn);
+      result = Curl_conncache_add_conn(data->state.conn_cache, conn);
+      if(result)
+        goto out;
 
       /*
        * Setup whatever necessary for a resumed transfer
@@ -4474,7 +4487,7 @@ static CURLcode create_conn(struct Curl_easy *data,
           (void)Curl_disconnect(conn_candidate, /* dead_connection */ FALSE);
         }
         else {
-          infof(data, "No more connections allowed to host: %d\n",
+          infof(data, "No more connections allowed to host: %zu\n",
                 max_host_connections);
           connections_available = FALSE;
         }
@@ -4520,7 +4533,9 @@ static CURLcode create_conn(struct Curl_easy *data,
        * This is a brand new connection, so let's store it in the connection
        * cache of ours!
        */
-      Curl_conncache_add_conn(data->state.conn_cache, conn);
+      result = Curl_conncache_add_conn(data->state.conn_cache, conn);
+      if(result)
+        goto out;
     }
 
 #if defined(USE_NTLM)
@@ -4701,16 +4716,18 @@ CURLcode Curl_init_do(struct Curl_easy *data, struct connectdata *conn)
 {
   struct SingleRequest *k = &data->req;
 
-  conn->bits.do_more = FALSE; /* by default there's no curl_do_more() to
-                                 use */
+  if(conn) {
+    conn->bits.do_more = FALSE; /* by default there's no curl_do_more() to
+                                   use */
+    /* if the protocol used doesn't support wildcards, switch it off */
+    if(data->state.wildcardmatch &&
+       !(conn->handler->flags & PROTOPT_WILDCARD))
+      data->state.wildcardmatch = FALSE;
+  }
 
   data->state.done = FALSE; /* *_done() is not called yet */
   data->state.expect100header = FALSE;
 
-  /* if the protocol used doesn't support wildcards, switch it off */
-  if(data->state.wildcardmatch &&
-     !(conn->handler->flags & PROTOPT_WILDCARD))
-    data->state.wildcardmatch = FALSE;
 
   if(data->set.opt_no_body)
     /* in HTTP lingo, no body means using the HEAD request... */

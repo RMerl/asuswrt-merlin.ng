@@ -166,6 +166,7 @@ check_PROGRAMS = 10-at-a-time$(EXEEXT) anyauthput$(EXEEXT) \
 subdir = docs/examples
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/m4/ax_code_coverage.m4 \
+	$(top_srcdir)/m4/ax_compile_check_sizeof.m4 \
 	$(top_srcdir)/m4/curl-compilers.m4 \
 	$(top_srcdir)/m4/curl-confopts.m4 \
 	$(top_srcdir)/m4/curl-functions.m4 \
@@ -868,6 +869,7 @@ ACLOCAL = @ACLOCAL@
 AMTAR = @AMTAR@
 AM_DEFAULT_VERBOSITY = @AM_DEFAULT_VERBOSITY@
 AR = @AR@
+AR_FLAGS = @AR_FLAGS@
 AS = @AS@
 AUTOCONF = @AUTOCONF@
 AUTOHEADER = @AUTOHEADER@
@@ -1099,7 +1101,7 @@ COMPLICATED_EXAMPLES = curlgtk.c curlx.c htmltitle.cpp cacertinmem.c	\
   sampleconv.c synctime.c threaded-ssl.c evhiperfifo.c			\
   smooth-gtk-thread.c version-check.pl href_extractor.c asiohiper.cpp	\
   multi-uv.c xmlstream.c usercertinmem.c sessioninfo.c			\
-  threaded-shared-conn.c
+  threaded-shared-conn.c crawler.c
 
 all: all-am
 

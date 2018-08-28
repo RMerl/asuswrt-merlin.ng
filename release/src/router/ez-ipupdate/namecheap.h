@@ -5,7 +5,7 @@
 #define NC_DEFAULT_PORT "80"
 #define NC_REQUEST "/update"
 
-extern const char *NC_fields_used[];
+extern char *NC_fields_used[];
 
 extern int NC_update_entry(void);
 extern int NC_check_info(void);

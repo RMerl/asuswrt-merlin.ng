@@ -5,6 +5,7 @@
 #include <unistd.h>
 #include <stdio.h>
 #include <string.h>
+#include <malloc.h>
 #include "namecheap.h"
 
 /* @See: http://www.namecheap.com/support/knowledgebase/article.aspx/29/11/how-to-use-the-browser-to-dynamically-update-hosts-ip */
@@ -54,14 +55,18 @@ extern char password[128];
 extern char *address;
 extern char *request;
 extern char *host;
+#ifdef HAVE_SSL
+extern int ssl;
+#endif
 extern char *interface;
 extern int options;
 extern char update_entry_buf[BUFFER_SIZE + 1];
 extern volatile int client_sockfd;
+extern volatile FILE * volatile client_sockfp;
 extern struct service_t *service;
 
 extern void warn_fields(char **okay_fields);
-extern int do_connect(int *sock, char *host, char *port);
+extern int do_connect( FILE **fd, char *host, char *port, int ssl );
 extern void show_message(char *fmt, ...);
 extern void output(void *buf);
 extern int read_input(char *buf, int len);
@@ -70,7 +75,7 @@ extern int option_handler(int id, char *optarg);
 /* END from ez-ipupdate.c
  ********************/
 
-const char *NC_fields_used[] = { "server", "user", "host", "address", NULL };
+char *NC_fields_used[] = { "server", "user", "host", "address", NULL };
 
 int NC_check_info(void)
 {
@@ -107,7 +112,7 @@ int NC_update_entry(void)
 
     buf[BUFFER_SIZE] = '\0';
 
-    if (do_connect((int*)&client_sockfd, server, port))
+    if(do_connect((FILE **)&client_sockfp, server, port, ssl) != 0)
     {
         if (!(options & OPT_QUIET))
         {
@@ -147,7 +152,7 @@ int NC_update_entry(void)
         bp += bytes;
         btot += bytes;
     }
-    close(client_sockfd);
+    fclose((FILE *)client_sockfp);
     buf[btot] = '\0';
 
     if (sscanf(buf, " HTTP/1.%*c %3d", &ret) != 1)

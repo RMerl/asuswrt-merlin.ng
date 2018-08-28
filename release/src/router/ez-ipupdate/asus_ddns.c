@@ -262,7 +262,7 @@ int asus_reg_domain (int regType)
 	int retval = REGISTERES_OK;
 
 	buf[BUFFER_SIZE] = '\0';
-	if (do_connect((int *) &client_sockfd, server, port) != 0) {
+	if (do_connect((FILE **)&client_sockfp, server, port, ssl) != 0) {
 		PRINT ("error connecting to %s:%s\n", server, port);
 		show_message("error connecting to %s:%s\n", server, port);
 		nvram_set ("ddns_return_code", "connect_fail");
@@ -315,7 +315,7 @@ int asus_reg_domain (int regType)
 		bp += bytes;
 		btot += bytes;
 	}
-	close(client_sockfd);
+	fclose((FILE *)client_sockfp);
 	buf[btot] = '\0';
 	//show_message("Asus Reg domain:: return: %s\n", buf);
 	if(btot) { // TODO: according to server response, parsing code have to rewrite
@@ -439,7 +439,7 @@ int asus_update_entry(void)
 
 	buf[BUFFER_SIZE] = '\0';
 
-	if (do_connect((int *) &client_sockfd, server, port) != 0) {
+	if (do_connect((FILE **)&client_sockfp, server, port, ssl) != 0) {
 		show_message("error connecting to %s:%s\n", server, port);
 		nvram_set ("ddns_return_code", "connect_fail");
 		nvram_set ("ddns_return_code_chk", "connect_fail");
@@ -484,7 +484,7 @@ int asus_update_entry(void)
                 bp += bytes;
                 btot += bytes;
         }
-        close(client_sockfd);
+        fclose((FILE *)client_sockfp);
         buf[btot] = '\0';
         show_message("Asus update entry:: return: %s\n", buf);
         if(btot) { // TODO: according to server response, parsing code have to rewrite

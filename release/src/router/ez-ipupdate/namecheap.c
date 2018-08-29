@@ -2,6 +2,12 @@
 #  include <config.h>
 #endif
 
+#ifdef HAVE_SSL
+#define HTTP_DEFAULT_PORT "443"
+#else
+#define HTTP_DEFAULT_PORT "80"
+#endif
+
 #include <unistd.h>
 #include <stdio.h>
 #include <string.h>

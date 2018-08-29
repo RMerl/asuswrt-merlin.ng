@@ -43,12 +43,18 @@
 #define SEND_EMAIL_CMD "mail"
 #endif
 
+#ifdef HAVE_SSL
+#define HTTP_DEFAULT_PORT "443"
+#else
+#define HTTP_DEFAULT_PORT "80"
+#endif
+
 #define EZIP_DEFAULT_SERVER "www.EZ-IP.Net"
 #define EZIP_DEFAULT_PORT "80"
 #define EZIP_REQUEST "/members/update/"
 
 #define NOIP_DEFAULT_SERVER "dynupdate.no-ip.com"
-#define NOIP_DEFAULT_PORT "80"
+#define NOIP_DEFAULT_PORT HTTP_DEFAULT_PORT
 #define NOIP_REQUEST "/nic/update"
 
 #define PGPOW_DEFAULT_SERVER "www.penguinpowered.com"
@@ -62,11 +68,11 @@
 #define DHS_SUCKY_TIMEOUT 5 //60
 
 #define DNSOMATIC_DEFAULT_SERVER "updates.dnsomatic.com"
-#define DNSOMATIC_DEFAULT_PORT "80"
+#define DNSOMATIC_DEFAULT_PORT HTTP_DEFAULT_PORT
 #define DNSOMATIC_REQUEST "/nic/update"
 
 #define DYNDNS_DEFAULT_SERVER "members.dyndns.org"
-#define DYNDNS_DEFAULT_PORT "80"
+#define DYNDNS_DEFAULT_PORT HTTP_DEFAULT_PORT
 #define DYNDNS_REQUEST "/nic/update"
 #define DYNDNS_STAT_REQUEST "/nic/update"
 #define DYNDNS_MAX_INTERVAL (25*24*3600)
@@ -89,11 +95,11 @@
 #define GNUDIP_REQUEST "0"
 
 #define EASYDNS_DEFAULT_SERVER "members.easydns.com"
-#define EASYDNS_DEFAULT_PORT "80"
+#define EASYDNS_DEFAULT_PORT HTTP_DEFAULT_PORT
 #define EASYDNS_REQUEST "/dyn/ez-ipupdate.php"
 
 #define EASYDNS_PARTNER_DEFAULT_SERVER "api.easydns.com"
-#define EASYDNS_PARTNER_DEFAULT_PORT "80"
+#define EASYDNS_PARTNER_DEFAULT_PORT HTTP_DEFAULT_PORT
 #define EASYDNS_PARTNER_REQUEST "/dyn/ez-ipupdate.php"
 
 #define JUSTL_DEFAULT_SERVER "www.justlinux.com"
@@ -110,16 +116,16 @@
 #define HN_REQUEST "/vanity/update"
 
 #define ZONEEDIT_DEFAULT_SERVER "dynamic.zoneedit.com"
-#define ZONEEDIT_DEFAULT_PORT "80"
+#define ZONEEDIT_DEFAULT_PORT HTTP_DEFAULT_PORT
 #define ZONEEDIT_REQUEST "/auth/dynamic.html"
 
 #define HEIPV6TB_DEFAULT_SERVER "ipv4.tunnelbroker.net"
-#define HEIPV6TB_DEFAULT_PORT "80"
+#define HEIPV6TB_DEFAULT_PORT HTTP_DEFAULT_PORT
 #define HEIPV6TB_REQUEST "/ipv4_end.php"
 
 //Andy Chiu, 2015/04/02, add for SelfHost.de
 #define SELFHOST_DEFAULT_SERVER	"carol.selfhost.de"
-#define SELFHOST_DEFAULT_PORT	"80"
+#define SELFHOST_DEFAULT_PORT	HTTP_DEFAULT_PORT
 #define SELFHOST_REQUEST	"/nic/update"
 
 #define DEFAULT_TIMEOUT 15 //120

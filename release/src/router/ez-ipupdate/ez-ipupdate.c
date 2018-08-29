@@ -1442,9 +1442,9 @@ void parse_args( int argc, char **argv )
 
 //2007.03.14 Yau add
 #ifdef ASUS_DDNS
-  while((opt=xgetopt(argc, argv, "A:a:b:c:dDe:fF:h:i:L:m:M:N:o:p:P:qr:R:s:S:t:T:U:u:wHVCZ", long_options, NULL)) != -1)
+  while((opt=xgetopt(argc, argv, "A:a:b:c:dDe:fF:h:l::i:L:m:M:N:o:p:P:qr:R:s:S:t:T:U:u:wHVCZ", long_options, NULL)) != -1)
 #else   // !ASUS_DDNS
-  while((opt=xgetopt(argc, argv, "a:b:c:dDe:fF:h:i:L:m:M:N:o:p:P:qr:R:s:S:t:T:U:u:wHVCZ", long_options, NULL)) != -1)
+  while((opt=xgetopt(argc, argv, "a:b:c:dDe:fF:h:l::i:L:m:M:N:o:p:P:qr:R:s:S:t:T:U:u:wHVCZ", long_options, NULL)) != -1)
 #endif  // ASUS_DDNS
   {
     switch (opt)

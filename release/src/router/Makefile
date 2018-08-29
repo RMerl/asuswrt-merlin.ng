@@ -6852,11 +6852,11 @@ inadyn/Makefile:
 		confuse_LIBS="-L$(TOP)/libconfuse/src/.libs -lconfuse" \
 		OpenSSL_CFLAGS="-I$(TOP)/openssl" \
 		OpenSSL_LIBS="-L$(TOP)/openssl -lcrypto" \
-		CFLAGS="$(EXTRACFLAGS) -Os -I$(STAGEDIR)/usr/include -ffunction-sections -fdata-sections -fPIC" \
-		LDFLAGS="$(LDFLAGS) -ffunction-sections -fdata-sections -Wl,--gc-sections" \
+		CFLAGS="$(EXTRACFLAGS) -Os -I$(TOP)/shared -I$(SRCBASE)/include -I$(SRCBASE)/shared/bcmwifi/include -DTYPEDEF_FLOAT_T -I$(STAGEDIR)/usr/include -ffunction-sections -fdata-sections -fPIC" \
+		LDFLAGS="$(LDFLAGS) $(shell if [[ "$(HND_ROUTER)" = "y" ]] ; then echo "-L$(TOP)/wlcsm -lwlcsm"; else echo ""; fi) -L$(TOP)/nvram$(BCMEX)$(EX7) -lnvram -L$(TOP)/shared -lshared -ffunction-sections -fdata-sections -Wl,--gc-sections" \
 		--prefix=/usr -enable-openssl
 
-inadyn: libconfuse inadyn/Makefile
+inadyn: shared nvram${BCMEX}$(EX7) libconfuse inadyn/Makefile
 	@$(SEP)
 	$(MAKE) -C $@
 

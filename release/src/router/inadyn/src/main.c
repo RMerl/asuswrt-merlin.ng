@@ -32,6 +32,10 @@
 #include "error.h"
 #include "ssl.h"
 
+/* Asuswrt */
+#include <bcmnvram.h>
+#include "shared.h"
+
 int    once = 0;
 int    ignore_errors = 0;
 int    startup_delay = DDNS_DEFAULT_STARTUP_SLEEP;
@@ -471,6 +475,25 @@ leave:
 
 	if (rc)
 		logit(LOG_ERR, "Error code %d: %s", rc, error_str(rc));
+
+	switch (rc) {
+		case RC_OK:
+			nvram_set("ddns_return_code", "200");
+			nvram_set("ddns_return_code_chk", "200");
+			break;
+		case RC_TCP_CONNECT_FAILED:
+		case RC_HTTPS_FAILED_CONNECT:
+			nvram_set ("ddns_return_code", "Time-out");
+			nvram_set ("ddns_return_code_chk", "Time-out");
+			break;
+		case RC_DDNS_RSP_NOTOK:
+			nvram_set("ddns_return_code", "Update failed");
+			nvram_set("ddns_return_code_chk", "Update failed");
+			break;
+		default:
+			nvram_set("ddns_return_code", "Unknown error");
+			nvram_set("ddns_return_code_chk", "Unknown error");
+	}
 
 	return rc;
 }

@@ -61,9 +61,7 @@ extern char password[128];
 extern char *address;
 extern char *request;
 extern char *host;
-#ifdef HAVE_SSL
 extern int ssl;
-#endif
 extern char *interface;
 extern int options;
 extern char update_entry_buf[BUFFER_SIZE + 1];

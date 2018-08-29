@@ -296,9 +296,7 @@ int wildcard = 0;
 char *mx = NULL;
 char *url = NULL;
 char *host = NULL;
-#ifdef HAVE_SSL
 int ssl = -1;
-#endif
 char *cloak_title = NULL;
 char *interface = NULL;
 int ntrys = 1;

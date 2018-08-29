@@ -20,9 +20,7 @@ extern int wildcard;
 extern char *mx;
 extern char *url;
 extern char *host;
-#ifdef HAVE_SSL
 extern int ssl;
-#endif
 extern char *cloak_title;
 extern char *interface;
 extern int ntrys;

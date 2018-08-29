@@ -5060,8 +5060,10 @@ void regular_ddns_check(void)
 
 	//_dprintf("WAN IP change!\n");
 	nvram_set("ddns_update_by_wdog", "1");
-	if (wan_unit != last_unit)
+	if (wan_unit != last_unit) {
 		unlink("/tmp/ddns.cache");
+		system("rm -f /tmp/inadyn/cache/*"); /* */
+	}
 	logmessage("watchdog", "Hostname/IP mapping error! Restart ddns.");
 	if (last_unit != wan_unit)
 		r = notify_rc("restart_ddns");
@@ -5118,6 +5120,8 @@ void ddns_check(void)
 			return;
 		if (pids("phddns"))		//phddns is running!
 			return;
+		if (pids("inadyn"))
+			return;
 	}
 
 	if (nvram_match("ddns_regular_check", "1")&& !nvram_match("ddns_server_x", "WWW.ASUS.COM")) {
@@ -5151,8 +5155,10 @@ void ddns_check(void)
 		return;
 
 	nvram_set("ddns_update_by_wdog", "1");
-	if (wan_unit != last_unit)
+	if (wan_unit != last_unit) {
 		unlink("/tmp/ddns.cache");
+		system("rm -f /tmp/inadyn/cache/*"); /* */
+	}
 	logmessage("watchdog", "start ddns.");
 	if (last_unit != wan_unit)
 		r = notify_rc("restart_ddns");

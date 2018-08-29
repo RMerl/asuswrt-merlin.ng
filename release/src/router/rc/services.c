@@ -157,6 +157,7 @@ static const struct itimerval zombie_tv = { {0,0}, {307, 0} };
 static const char dmhosts[] = "/etc/hosts.dnsmasq";
 static const char dmresolv[] = "/tmp/resolv.conf";
 static const char dmservers[] = "/tmp/resolv.dnsmasq";
+#define INADYNCONF "/etc/inadyn.conf"
 
 #ifdef RTCONFIG_TOAD
 static void start_toads(void);
@@ -3115,11 +3116,12 @@ start_ddns(void)
 	char *user;
 	char *passwd;
 	char *host;
-	char *service;
+	char *service, *loglevel;
 	char usrstr[32 + 32 + sizeof(":")];
 	int wild = nvram_get_int("ddns_wildcard_x");
 	int unit, asus_ddns = 0;
 	char tmp[32], prefix[] = "wanXXXXXXXXXX_";
+	char getwancmd[40];
 	time_t now;
 	pid_t pid;
 
@@ -3156,93 +3158,77 @@ start_ddns(void)
 		return -1;
 	}
 
-#if 0 //Move the ddns check mechanism to UI
-	if(!nvram_match("ddns_update_by_wdog", "1")) {
-		if ((inet_addr(wan_ip) == inet_addr(nvram_safe_get("ddns_ipaddr"))) &&
-		    (strcmp(nvram_safe_get("ddns_server_x"), nvram_safe_get("ddns_server_x_old")) == 0) &&
-		    (strcmp(nvram_safe_get("ddns_hostname_x"), nvram_safe_get("ddns_hostname_old")) == 0) &&
-		    (nvram_match("ddns_updated", "1"))) {
-			nvram_set("ddns_return_code", "no_change");
-			logmessage("ddns", "IP address, server and hostname have not changed since the last update.");
-			_dprintf("IP address, server and hostname have not changed since the last update.");
-			return -1;
-		}
-
-		// TODO : Check /tmp/ddns.cache to see current IP in DDNS
-		// update when,
-		// 	1. if ipaddr!= ipaddr in cache
-		//
-		// update
-		// * nvram ddns_cache, the same with /tmp/ddns.cache
-
-		if (	(!nvram_match("ddns_server_x_old", "") &&
-			strcmp(nvram_safe_get("ddns_server_x"), nvram_safe_get("ddns_server_x_old"))) ||
-			(!nvram_match("ddns_hostname_x_old", "") &&
-			strcmp(nvram_safe_get("ddns_hostname_x"), nvram_safe_get("ddns_hostname_x_old")))
-		) {
-			logmessage("ddns", "clear ddns cache file for server/hostname change");
-			unlink("/tmp/ddns.cache");
-		}
-		else if (!(fp = fopen("/tmp/ddns.cache", "r")) && (ddns_cache = nvram_get("ddns_cache"))) {
-			if ((fp = fopen("/tmp/ddns.cache", "w+"))) {
-				fprintf(fp, "%s", ddns_cache);
-				fclose(fp);
-			}
-		}
-	}
-	else
-		nvram_unset("ddns_update_by_wdog");
-#endif
-
 	server = nvram_safe_get("ddns_server_x");
 	user = nvram_safe_get("ddns_username_x");
 	passwd = nvram_safe_get("ddns_passwd_x");
 	host = nvram_safe_get("ddns_hostname_x");
 	unlink("/tmp/ddns.cache");
+	system("rm -f /tmp/inadyn/cache/*"); /* */
 
-	if (strcmp(server, "WWW.DYNDNS.ORG")==0)
-		service = "dyndns";
-	else if (strcmp(server, "WWW.DYNDNS.ORG(CUSTOM)")==0)
-		service = "dyndns-custom";
-	else if (strcmp(server, "WWW.DYNDNS.ORG(STATIC)")==0)
-		service = "dyndns-static";
-	else if (strcmp(server, "WWW.TZO.COM")==0)
-		service = "tzo";
-	else if (strcmp(server, "WWW.ZONEEDIT.COM")==0)
-		service = "zoneedit";
+	if (strcmp(server, "WWW.DYNDNS.ORG")==0) {
+		service = "default@dyndns.org";
+		asus_ddns = 10;
+	}
+	else if (strcmp(server, "WWW.DYNDNS.ORG(CUSTOM)")==0) {
+		service = "default@dyndns.org";
+		asus_ddns = 10;
+	}
+	else if (strcmp(server, "WWW.DYNDNS.ORG(STATIC)")==0) {
+		service = "default@dyndns.org";
+		asus_ddns = 10;
+	}
+	else if (strcmp(server, "WWW.TZO.COM")==0) {
+		service = "default@tzo.com";
+		asus_ddns = 10;
+	}
+	else if (strcmp(server, "WWW.ZONEEDIT.COM")==0) {
+		service = "default@zoneedit.com";
+		asus_ddns = 10;
+	}
 	else if (strcmp(server, "WWW.JUSTLINUX.COM")==0)
 		service = "justlinux";
-	else if (strcmp(server, "WWW.EASYDNS.COM")==0)
-		service = "easydns";
-	else if (strcmp(server, "WWW.DNSOMATIC.COM")==0)
-		service = "dnsomatic";
+	else if (strcmp(server, "WWW.EASYDNS.COM")==0) {
+		service = "default@easydns.com";
+		asus_ddns = 10;
+	}
+	else if (strcmp(server, "WWW.DNSOMATIC.COM")==0) {
+		service = "default@dnsomatic.com";
+		asus_ddns = 10;
+	}
 	else if (strcmp(server, "WWW.TUNNELBROKER.NET")==0) {
-		service = "heipv6tb";
+		service = "default@tunnelbroker.net";
 		eval("iptables", "-t", "filter", "-D", "INPUT", "-p", "icmp", "-s", "66.220.2.74", "-j", "ACCEPT");
 		eval("iptables", "-t", "filter", "-I", "INPUT", "1", "-p", "icmp", "-s", "66.220.2.74", "-j", "ACCEPT");
 		nvram_set("ddns_tunbkrnet", "1");
+		asus_ddns = 10;
 	}
-	else if (strcmp(server, "WWW.NO-IP.COM")==0)
-		service = "noip";
-	else if (strcmp(server, "WWW.NAMECHEAP.COM")==0)
+	else if (strcmp(server, "WWW.NO-IP.COM")==0) {
+		service = "default@no-ip.com";
+		asus_ddns = 10;
+	}
+	else if (strcmp(server, "WWW.NAMECHEAP.COM")==0) {
 		service = "namecheap";
+		asus_ddns = 11;
+	}
         else if (strcmp(server, "CUSTOM")==0)
                 service = "";
-	else if (strcmp(server, "WWW.SELFHOST.DE") == 0)
+	else if (strcmp(server, "WWW.SELFHOST.DE") == 0) {
 		service = "selfhost";
+		asus_ddns = 12;
+	}
 	else if (strcmp(server, "WWW.ASUS.COM")==0) {
 		service = "dyndns", asus_ddns = 1;
 	}
-	else if (strcmp(server, "DOMAINS.GOOGLE.COM") == 0)
-		service = "dyndns", asus_ddns=3;
+	else if (strcmp(server, "DOMAINS.GOOGLE.COM") == 0) {
+		service = "default@domains.google.com";
+		asus_ddns=10;
+	}
 	else if (strcmp(server, "WWW.ORAY.COM")==0) {
 		service = "peanuthull", asus_ddns = 2;
 	} else {
 		logmessage("start_ddns", "Error ddns server name: %s\n", server);
 		return 0;
 	}
-
-	snprintf(usrstr, sizeof(usrstr), "%s:%s", user, passwd);
 
 	/* Show WAN unit used by ddns client to console and syslog. */
 	_dprintf("start_ddns update %s %s, wan_unit %d\n", server, service, unit);
@@ -3256,6 +3242,10 @@ start_ddns(void)
 	}
 	if (pids("phddns")) {
 		killall("phddns", SIGINT);
+		sleep(1);
+	}
+	if (pids("inadyn")) {
+		killall("inadyn", SIGINT);
 		sleep(1);
 	}
 
@@ -3296,7 +3286,61 @@ start_ddns(void)
 				"-h", host, "-A", "2", "-s", nserver,
 				"-e", "/sbin/ddns_updated", "-b", "/tmp/ddns.cache", NULL };
 		_eval(argv, NULL, 0, &pid);
-	} else if (*service) {
+	}
+	else if (asus_ddns >= 10) {	// Inadyn
+		if( (fp = fopen(INADYNCONF, "w"))) {
+			chmod(INADYNCONF, 0600);
+			fprintf(fp, "ca-trust-file = /etc/ssl/certs/ca-certificates.crt\n");
+
+			if (asus_ddns == 11) {
+				fprintf(fp, "custom namecheap {\n");
+				fprintf(fp, "ddns-server = dynamicdns.park-your-domain.com\n");
+				// We store the domain.tld in the username nvram
+				fprintf(fp, "ddns-path = \"/update?domain=%%u&password=%%p&host=\"\n");
+				fprintf(fp, "hostname = %s\n", host);
+			} else if (asus_ddns == 12) {
+				fprintf(fp, "custom selfhost {\n");
+				fprintf(fp, "ddns-server = carol.selfhost.de\n");
+				fprintf(fp, "ddns-path =\"/update?username=%%u&password=%%p&myip=%%i&hostname=1\"\n");
+			} else {
+				fprintf(fp, "provider %s {\n", service);
+				fprintf(fp, "hostname = %s\n", host);
+			}
+			fprintf(fp, "username = %s\n", user);
+			fprintf(fp, "password = %s\n", passwd);
+			if (wild)
+				fprintf(fp, "wildcard = true\n");
+			fprintf(fp, "}\n");
+
+			append_custom_config("inadyn.conf", fp);
+
+			fclose(fp);
+
+			use_custom_config("inadyn.conf",INADYNCONF);
+			run_postconf("inadyn",INADYNCONF);
+
+			if((time_fp=fopen("/tmp/ddns.cache","w"))) {
+				fprintf(time_fp,"%ld,%s",time(&now),wan_ip);
+				fclose(time_fp);
+			}
+
+			if (nvram_get_int("ddns_debug") == 1)
+				loglevel = "debug";
+			else
+				loglevel = "notice";
+
+			snprintf(getwancmd, sizeof(getwancmd), "nvram get %sipaddr", prefix);
+			char *argv[] = { "/usr/sbin/inadyn", "-1",
+			                 "-c", getwancmd,
+			                 "-e", "/sbin/ddns_updated",
+			                 "-f", "/etc/inadyn.conf",
+			                 "--cache-dir=/tmp/inadyn.cache",
+			                 "-l", loglevel,
+			                 NULL };
+			_eval(argv, NULL, 0, &pid);
+		}
+	} else if (*service) {	// Legacy ez-ipupdate
+		snprintf(usrstr, sizeof(usrstr), "%s:%s", user, passwd);
 		char *argv[] = { "ez-ipupdate", "-S", service, "-i", wan_ifname, "-h", host,
 		     "-u", usrstr, wild ? "-w" : "", "-e", "/sbin/ddns_updated",
 		     "-b", "/tmp/ddns.cache", NULL };
@@ -3318,6 +3362,8 @@ stop_ddns(void)
 		killall("ez-ipupdate", SIGINT);
 	if (pids("phddns"))
 		killall("phddns", SIGINT);
+	if (pids("inadyn"))
+		killall("inadyn", SIGINT);
 	if (nvram_match("ddns_tunbkrnet", "1")) {
 		eval("iptables-restore", "/tmp/filter_rules");
 		nvram_unset("ddns_tunbkrnet");
@@ -3326,6 +3372,13 @@ stop_ddns(void)
 	update_ovpn_profie_remote();
 #endif
 }
+
+void
+get_ddns_cache(char *filename, int len)
+{
+	snprintf(filename, len, "/tmp/inadyn.cache/%s.cache", nvram_safe_get("ddns_hostname_x"));
+}
+
 
 int
 asusddns_reg_domain(int reg)
@@ -3395,6 +3448,7 @@ asusddns_reg_domain(int reg)
 	) {
 		logmessage("asusddns", "clear ddns cache file for server/hostname change");
 		unlink("/tmp/ddns.cache");
+		system("rm -f /tmp/inadyn/cache/*"); /* */
 	}
 	else if (!(fp = fopen("/tmp/ddns.cache", "r")) && (ddns_cache = nvram_get("ddns_cache"))) {
 		if ((fp = fopen("/tmp/ddns.cache", "w+"))) {

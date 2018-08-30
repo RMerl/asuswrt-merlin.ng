@@ -32,9 +32,10 @@
 #include "error.h"
 #include "ssl.h"
 
-/* Asuswrt */
+#ifdef ASUSWRT
 #include <bcmnvram.h>
 #include "shared.h"
+#endif
 
 int    once = 0;
 int    ignore_errors = 0;
@@ -476,6 +477,7 @@ leave:
 	if (rc)
 		logit(LOG_ERR, "Error code %d: %s", rc, error_str(rc));
 
+#ifdef ASUSWRT
 	switch (rc) {
 		case RC_OK:
 			nvram_set("ddns_return_code", "200");
@@ -494,6 +496,7 @@ leave:
 			nvram_set("ddns_return_code", "Unknown error");
 			nvram_set("ddns_return_code_chk", "Unknown error");
 	}
+#endif
 
 	return rc;
 }

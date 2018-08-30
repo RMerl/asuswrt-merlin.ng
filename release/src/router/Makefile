@@ -6826,7 +6826,7 @@ libconfuse/Makefile:
 	cd libconfuse && $(CONFIGURE) \
 		CFLAGS="$(EXTRACFLAGS) -Os -I$(STAGEDIR)/usr/include -ffunction-sections -fdata-sections -fPIC -I$(TOP)/libiconv-1.14/include" \
 		LDFLAGS="$(LDFLAGS) -ffunction-sections -fdata-sections -Wl,--gc-sections -L$(TOP)/libiconv-1.14/lib/.libs -liconv" \
-		--prefix=/usr \
+		--prefix=/usr --disable-shared \
 		--without-libiconv-prefix --without-libintl-prefix --disable-examples --disable-nls
 
 libconfuse: libiconv-1.14 libconfuse/Makefile
@@ -6834,11 +6834,13 @@ libconfuse: libiconv-1.14 libconfuse/Makefile
 	$(MAKE) -C $@
 
 libconfuse-install:
-	install -D libconfuse/src/.libs/libconfuse.so.1.1.0 $(INSTALLDIR)/libconfuse/usr/lib/libconfuse.so.1.1.0
-	cd $(INSTALLDIR)/libconfuse/usr/lib && \
-		ln -sf libconfuse.so.1.1.0 libconfuse.so.1 &&\
-		ln -sf libconfuse.so.1.1.0 libconfuse.so
-	$(STRIP) $(INSTALLDIR)/libconfuse/usr/lib/*.so.*
+	@$(SEP)
+# Do nothing
+#	install -D libconfuse/src/.libs/libconfuse.so.1.1.0 $(INSTALLDIR)/libconfuse/usr/lib/libconfuse.so.1.1.0
+#	cd $(INSTALLDIR)/libconfuse/usr/lib && \
+#		ln -sf libconfuse.so.1.1.0 libconfuse.so.1 &&\
+#		ln -sf libconfuse.so.1.1.0 libconfuse.so
+#	$(STRIP) $(INSTALLDIR)/libconfuse/usr/lib/*.so.*
 
 
 libconfuse-clean:

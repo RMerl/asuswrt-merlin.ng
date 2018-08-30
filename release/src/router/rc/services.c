@@ -3310,8 +3310,8 @@ start_ddns(void)
 			                 NULL, NULL,		/* get ip */
 			                 NULL };
 
-			if (asus_ddns != 13) {
-				snprintf(getwancmd, sizeof(getwancmd), "nvram get %sipaddr", prefix);
+			if (asus_ddns != 1) {
+				snprintf(getwancmd, sizeof(getwancmd), "/bin/nvram get %sipaddr", prefix);
 				argv[9] = "-c";
 				argv[10] = getwancmd;
 			}

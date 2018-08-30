@@ -3279,6 +3279,9 @@ start_ddns(void)
 			fprintf(fp, "username = %s\n", user);
 			fprintf(fp, "password = %s\n", passwd);
 
+			if (nvram_get_int("ddns_ipcheck") == 0)	// Internal (local)
+				fprintf(fp, "checkip-command = \"/bin/nvram get %sipaddr\"\n", prefix);
+
 			if (wild)
 				fprintf(fp, "wildcard = true\n");
 
@@ -3307,14 +3310,7 @@ start_ddns(void)
 			                 "-f", "/etc/inadyn.conf",
 			                 "--cache-dir=/tmp/inadyn.cache",
 			                 "-l", loglevel,
-			                 NULL, NULL,		/* get ip */
 			                 NULL };
-
-			if (asus_ddns != 1) {
-				snprintf(getwancmd, sizeof(getwancmd), "/bin/nvram get %sipaddr", prefix);
-				argv[9] = "-c";
-				argv[10] = getwancmd;
-			}
 
 			_eval(argv, NULL, 0, &pid);
 		}

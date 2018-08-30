@@ -402,6 +402,7 @@ helpcontent[50] = new Array("",
 				"When using a self-generated certificate, you can specify other hostnames to use in addition to the built-in ones, separated by a space",
 				"Restrict this rule to a specific source IP address",
 				"How should your router handle DNS servers pushed by the remote VPN server.  Disabled = ignore them, Relaxed = just add to list of known DNS,  Strict = add to list, but use all servers in order specified, Exclusive = use only these servers for all queries from clients routed through the tunnel.",
-				"When an unsigned reply is received, check that this zone really doesn't use DNSSEC.  Disabling this will speed up lookups, but it also means someone can forge a reply in a signed zone by simply not signing the reply, bypassing any security benefit normally provided by DNSSEC.");
-// Last: 50,25
+				"When an unsigned reply is received, check that this zone really doesn't use DNSSEC.  Disabling this will speed up lookups, but it also means someone can forge a reply in a signed zone by simply not signing the reply, bypassing any security benefit normally provided by DNSSEC.",
+				"Internal: use the IP configured on your router's WAN.  External: query a remote service to use your public IP.  The latter will work through double NAT, but might not work properly when using a VPN tunnel or with some DDNS providers.");
+// Last: 50,26
 

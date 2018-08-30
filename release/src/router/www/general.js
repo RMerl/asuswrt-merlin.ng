@@ -447,6 +447,7 @@ function change_common_radio(o, s, v, r){
 
 			change_ddns_setting(document.form.ddns_server_x.value);
 			inputCtrl(document.form.ddns_refresh_x, 1);
+			showhide("ddns_ipcheck_tr", 1);
 		}else{
 			if(document.form.ddns_server_x.value == "WWW.ASUS.COM"){
 				document.form.DDNSName.parentNode.parentNode.parentNode.style.display = "none";
@@ -466,7 +467,7 @@ function change_common_radio(o, s, v, r){
 			showhide("check_ddns_field", 0);
 			inputCtrl(document.form.ddns_regular_period, 0);
 			inputCtrl(document.form.ddns_refresh_x, 0);
-			
+			showhide("ddns_ipcheck_tr", 0);
 //			if(letsencrypt_support)
 //				show_cert_settings(0);
 		}	

@@ -5112,12 +5112,10 @@ void ddns_check(void)
 	if (!nvram_match("wans_mode", "lb") && !is_wan_connect(wan_unit))
 		return;
 
-	/* Check existence of ez-ipupdate/phddns
+	/* Check existence of inadyn/phddns
 	 * if and only if last WAN unit is equal to new WAN unit.
 	 */
 	if (last_unit == wan_unit) {
-		if (pids("ez-ipupdate"))	//ez-ipupdate is running!
-			return;
 		if (pids("phddns"))		//phddns is running!
 			return;
 		if (pids("inadyn"))
@@ -5146,7 +5144,7 @@ void ddns_check(void)
 				return;
 		}
 		else{ //non asusddns service
-			if ( !strcmp(nvram_safe_get("ddns_return_code_chk"),"auth_fail") )
+			if ( !strcmp(nvram_safe_get("ddns_return_code_chk"),"Update failed") )
 				return;
 		}
 	}

@@ -157,6 +157,7 @@ static const struct itimerval zombie_tv = { {0,0}, {307, 0} };
 static const char dmhosts[] = "/etc/hosts.dnsmasq";
 static const char dmresolv[] = "/tmp/resolv.conf";
 static const char dmservers[] = "/tmp/resolv.dnsmasq";
+
 #define INADYNCONF "/etc/inadyn.conf"
 
 #ifdef RTCONFIG_TOAD
@@ -3117,7 +3118,6 @@ start_ddns(void)
 	char *passwd;
 	char *host;
 	char *service, *loglevel;
-	char usrstr[32 + 32 + sizeof(":")];
 	int wild = nvram_get_int("ddns_wildcard_x");
 	int unit, asus_ddns = 0;
 	char tmp[32], prefix[] = "wanXXXXXXXXXX_";
@@ -3165,47 +3165,30 @@ start_ddns(void)
 	unlink("/tmp/ddns.cache");
 	system("rm -f /tmp/inadyn/cache/*"); /* */
 
-	if (strcmp(server, "WWW.DYNDNS.ORG")==0) {
+	if (strcmp(server, "WWW.DYNDNS.ORG")==0)
 		service = "default@dyndns.org";
-		asus_ddns = 10;
-	}
-	else if (strcmp(server, "WWW.DYNDNS.ORG(CUSTOM)")==0) {
+	else if (strcmp(server, "WWW.DYNDNS.ORG(CUSTOM)")==0)
 		service = "default@dyndns.org";
-		asus_ddns = 10;
-	}
-	else if (strcmp(server, "WWW.DYNDNS.ORG(STATIC)")==0) {
+	else if (strcmp(server, "WWW.DYNDNS.ORG(STATIC)")==0)
 		service = "default@dyndns.org";
-		asus_ddns = 10;
-	}
-	else if (strcmp(server, "WWW.TZO.COM")==0) {
+	else if (strcmp(server, "WWW.TZO.COM")==0)
 		service = "default@tzo.com";
-		asus_ddns = 10;
-	}
-	else if (strcmp(server, "WWW.ZONEEDIT.COM")==0) {
+	else if (strcmp(server, "WWW.ZONEEDIT.COM")==0)
 		service = "default@zoneedit.com";
-		asus_ddns = 10;
-	}
 	else if (strcmp(server, "WWW.JUSTLINUX.COM")==0)
 		service = "justlinux";
-	else if (strcmp(server, "WWW.EASYDNS.COM")==0) {
+	else if (strcmp(server, "WWW.EASYDNS.COM")==0)
 		service = "default@easydns.com";
-		asus_ddns = 10;
-	}
-	else if (strcmp(server, "WWW.DNSOMATIC.COM")==0) {
+	else if (strcmp(server, "WWW.DNSOMATIC.COM")==0)
 		service = "default@dnsomatic.com";
-		asus_ddns = 10;
-	}
 	else if (strcmp(server, "WWW.TUNNELBROKER.NET")==0) {
 		service = "default@tunnelbroker.net";
 		eval("iptables", "-t", "filter", "-D", "INPUT", "-p", "icmp", "-s", "66.220.2.74", "-j", "ACCEPT");
 		eval("iptables", "-t", "filter", "-I", "INPUT", "1", "-p", "icmp", "-s", "66.220.2.74", "-j", "ACCEPT");
 		nvram_set("ddns_tunbkrnet", "1");
-		asus_ddns = 10;
 	}
-	else if (strcmp(server, "WWW.NO-IP.COM")==0) {
+	else if (strcmp(server, "WWW.NO-IP.COM")==0)
 		service = "default@no-ip.com";
-		asus_ddns = 10;
-	}
 	else if (strcmp(server, "WWW.NAMECHEAP.COM")==0) {
 		service = "namecheap";
 		asus_ddns = 11;
@@ -3217,14 +3200,16 @@ start_ddns(void)
 		asus_ddns = 12;
 	}
 	else if (strcmp(server, "WWW.ASUS.COM")==0) {
-		service = "dyndns", asus_ddns = 1;
+		service = "update@asus.com";
+		asus_ddns = 1;
+		user = get_lan_hwaddr();
+		passwd = nvram_safe_get("secret_code");
 	}
-	else if (strcmp(server, "DOMAINS.GOOGLE.COM") == 0) {
+	else if (strcmp(server, "DOMAINS.GOOGLE.COM") == 0)
 		service = "default@domains.google.com";
-		asus_ddns=10;
-	}
 	else if (strcmp(server, "WWW.ORAY.COM")==0) {
-		service = "peanuthull", asus_ddns = 2;
+		service = "peanuthull";
+		asus_ddns = 2;
 	} else {
 		logmessage("start_ddns", "Error ddns server name: %s\n", server);
 		return 0;
@@ -3236,10 +3221,6 @@ start_ddns(void)
 
 	nvram_set("ddns_return_code", "ddns_query");
 
-	if (pids("ez-ipupdate")) {
-		killall("ez-ipupdate", SIGINT);
-		sleep(1);
-	}
 	if (pids("phddns")) {
 		killall("phddns", SIGINT);
 		sleep(1);
@@ -3256,16 +3237,7 @@ start_ddns(void)
 
 	_dprintf("asus_ddns : %d\n",asus_ddns);
 
-	if(3 == asus_ddns)
-	{
-		if((time_fp=fopen("/tmp/ddns.cache","w")))
-		{
-			fprintf(time_fp,"%ld,%s",time(&now),wan_ip);
-			fclose(time_fp);
-		}
-		eval("GoogleDNS_Update.sh", user, passwd, host, wan_ip);
-	}
-	else if (asus_ddns == 2) { //Peanuthull DDNS
+	if (asus_ddns == 2) { //Peanuthull DDNS
 		if( (fp = fopen("/etc/phddns.conf", "w")) != NULL ) {
 			fprintf(fp, "[settings]\n");
 			fprintf(fp, "szHost = phddns60.oray.net\n");
@@ -3278,16 +3250,7 @@ start_ddns(void)
 			eval("phddns", "-c", "/etc/phddns.conf", "-d");
 		}
 	}
-	else if (asus_ddns == 1) {
-		char *nserver = nvram_invmatch("ddns_serverhost_x", "") ?
-			nvram_safe_get("ddns_serverhost_x") :
-			"nwsrv-ns1.asus.com";
-		char *argv[] = { "ez-ipupdate", "-S", service, "-i", wan_ifname,
-				"-h", host, "-A", "2", "-s", nserver,
-				"-e", "/sbin/ddns_updated", "-b", "/tmp/ddns.cache", NULL };
-		_eval(argv, NULL, 0, &pid);
-	}
-	else if (asus_ddns >= 10) {	// Inadyn
+	else if (*service) {	// Inadyn
 		if( (fp = fopen(INADYNCONF, "w"))) {
 			chmod(INADYNCONF, 0600);
 			fprintf(fp, "ca-trust-file = /etc/ssl/certs/ca-certificates.crt\n");
@@ -3302,14 +3265,23 @@ start_ddns(void)
 				fprintf(fp, "custom selfhost {\n");
 				fprintf(fp, "ddns-server = carol.selfhost.de\n");
 				fprintf(fp, "ddns-path =\"/update?username=%%u&password=%%p&myip=%%i&hostname=1\"\n");
+			} else if (asus_ddns == 1) {
+//				char *nserver = nvram_invmatch("ddns_serverhost_x", "") ?
+//				nvram_safe_get("ddns_serverhost_x") :
+//					"nwsrv-ns1.asus.com";
+				fprintf(fp, "provider update@asus.com {\n");
+				fprintf(fp, "hostname = %s\n", host);
 			} else {
 				fprintf(fp, "provider %s {\n", service);
 				fprintf(fp, "hostname = %s\n", host);
 			}
+
 			fprintf(fp, "username = %s\n", user);
 			fprintf(fp, "password = %s\n", passwd);
+
 			if (wild)
 				fprintf(fp, "wildcard = true\n");
+
 			fprintf(fp, "}\n");
 
 			append_custom_config("inadyn.conf", fp);
@@ -3331,20 +3303,21 @@ start_ddns(void)
 
 			snprintf(getwancmd, sizeof(getwancmd), "nvram get %sipaddr", prefix);
 			char *argv[] = { "/usr/sbin/inadyn", "-1",
-			                 "-c", getwancmd,
 			                 "-e", "/sbin/ddns_updated",
 			                 "-f", "/etc/inadyn.conf",
 			                 "--cache-dir=/tmp/inadyn.cache",
 			                 "-l", loglevel,
+			                 NULL, NULL,		/* get ip */
 			                 NULL };
+
+			if (asus_ddns != 13) {
+				snprintf(getwancmd, sizeof(getwancmd), "nvram get %sipaddr", prefix);
+				argv[9] = "-c";
+				argv[10] = getwancmd;
+			}
+
 			_eval(argv, NULL, 0, &pid);
 		}
-	} else if (*service) {	// Legacy ez-ipupdate
-		snprintf(usrstr, sizeof(usrstr), "%s:%s", user, passwd);
-		char *argv[] = { "ez-ipupdate", "-S", service, "-i", wan_ifname, "-h", host,
-		     "-u", usrstr, wild ? "-w" : "", "-e", "/sbin/ddns_updated",
-		     "-b", "/tmp/ddns.cache", NULL };
-		_eval(argv, NULL, 0, &pid);
 	} else {	// Custom DDNS
 		// Block until it completes and updates the DDNS update results in nvram
 		run_custom_script_blocking("ddns-start", wan_ip, NULL);
@@ -3358,8 +3331,6 @@ start_ddns(void)
 void
 stop_ddns(void)
 {
-	if (pids("ez-ipupdate"))
-		killall("ez-ipupdate", SIGINT);
 	if (pids("phddns"))
 		killall("phddns", SIGINT);
 	if (pids("inadyn"))
@@ -3383,12 +3354,16 @@ get_ddns_cache(char *filename, int len)
 int
 asusddns_reg_domain(int reg)
 {
-	FILE *fp;
-	char *wan_ip, *wan_ifname;
+	FILE *fp, *time_fp;
+	char *wan_ip;
+	//char *wan_ifname;
 	char *ddns_cache;
-	char *nserver;
+	//char *nserver;
 	int unit;
 	char tmp[32], prefix[] = "wanXXXXXXXXXX_";
+	char *loglevel;
+	time_t now;
+	pid_t pid;
 
 	if (!is_routing_enabled()) {
 		_dprintf("return -1\n");
@@ -3422,7 +3397,7 @@ asusddns_reg_domain(int reg)
 	snprintf(prefix, sizeof(prefix), "wan%d_", unit);
 
 	wan_ip = nvram_safe_get(strcat_r(prefix, "ipaddr", tmp));
-	wan_ifname = get_wan_ifname(unit);
+//	wan_ifname = get_wan_ifname(unit);
 
 	if (!wan_ip || strcmp(wan_ip, "") == 0 || !inet_addr(wan_ip)) {
 		logmessage("asusddns", "WAN IP is empty.");
@@ -3459,20 +3434,45 @@ asusddns_reg_domain(int reg)
 
 	nvram_set("ddns_return_code", "ddns_query");
 
-	if (pids("ez-ipupdate"))
+	if (pids("inadyn"))
 	{
-		killall("ez-ipupdate", SIGINT);
+		killall("inadyn", SIGINT);
 		sleep(1);
 	}
 
+/*
 	nserver = nvram_invmatch("ddns_serverhost_x", "") ?
 		    nvram_safe_get("ddns_serverhost_x") :
 		    "nwsrv-ns1.asus.com";
+*/
+	if( (fp = fopen(INADYNCONF, "w"))) {
+		chmod(INADYNCONF, 0600);
+		fprintf(fp, "ca-trust-file = /etc/ssl/certs/ca-certificates.crt\n");
+		fprintf(fp, "provider register@asus.com {\n");
+		fprintf(fp, "hostname = %s\n", nvram_safe_get("ddns_hostname_x"));
+		fprintf(fp, "username = %s\n", get_lan_hwaddr());
+		fprintf(fp, "password = %s\n", nvram_safe_get("secret_code"));
+		fprintf(fp, "}\n");
+		fclose(fp);
 
-	eval("ez-ipupdate",
-	     "-S", "dyndns", "-i", wan_ifname, "-h", nvram_safe_get("ddns_hostname_x"),
-	     "-A", "1", "-s", nserver,
-	     "-e", "/sbin/ddns_updated", "-b", "/tmp/ddns.cache");
+		if((time_fp=fopen("/tmp/ddns.cache","w"))) {
+			fprintf(time_fp,"%ld,%s",time(&now),wan_ip);
+			fclose(time_fp);
+		}
+
+		if (nvram_get_int("ddns_debug") == 1)
+			loglevel = "debug";
+		else
+			loglevel = "notice";
+
+		char *argv[] = { "/usr/sbin/inadyn", "-1",
+				"-e", "/sbin/ddns_updated",
+				"-f", "/etc/inadyn.conf",
+				"--cache-dir=/tmp/inadyn.cache",
+				"-l", loglevel,
+			NULL };
+		_eval(argv, NULL, 0, &pid);
+	}
 
 	return 0;
 }
@@ -3483,6 +3483,11 @@ asusddns_unregister(void)
 	char wan_ifname[16];
 	char *nserver;
 	int unit;
+	FILE *fp;
+//	FILE *time_fp;
+	char *loglevel;
+//	time_t now;
+	pid_t pid;
 
 	unit = wan_primary_ifunit();
 #if defined(RTCONFIG_DUALWAN)
@@ -3504,25 +3509,54 @@ asusddns_unregister(void)
 	}
 #endif
 
-	memset(wan_ifname, sizeof(wan_ifname), 0);
 	snprintf(wan_ifname, sizeof(wan_ifname),  get_wan_ifname(unit));
 	nvram_set("ddns_return_code", "ddns_unregister");
 
-	if (pids("ez-ipupdate"))
+	if (pids("inadyn"))
 	{
-		killall("ez-ipupdate", SIGINT);
+		killall("inadyn", SIGINT);
 		sleep(1);
 	}
 
 	nserver = nvram_invmatch("ddns_serverhost_x", "") ?
 		    nvram_safe_get("ddns_serverhost_x") :
 		    "nwsrv-ns1.asus.com";
-_dprintf("%s: do ez-ipupdate to unregister! unit = %d wan_ifname = %s nserver = %s hostname = %s\n", __FUNCTION__, unit, wan_ifname, nserver, nvram_safe_get("ddns_hostname_x"));
+_dprintf("%s: do inadyn to unregister! unit = %d wan_ifname = %s nserver = %s hostname = %s\n", __FUNCTION__, unit, wan_ifname, nserver, nvram_safe_get("ddns_hostname_x"));
+
+	if( (fp = fopen(INADYNCONF, "w"))) {
+		chmod(INADYNCONF, 0600);
+		fprintf(fp, "ca-trust-file = /etc/ssl/certs/ca-certificates.crt\n");
+		fprintf(fp, "provider unregister@asus.com {\n");
+		fprintf(fp, "hostname = %s\n", nvram_safe_get("ddns_hostname_x"));
+		fprintf(fp, "username = %s\n", get_lan_hwaddr());
+		fprintf(fp, "password = %s\n", nvram_safe_get("secret_code"));
+		fprintf(fp, "}\n");
+		fclose(fp);
+
+/*
+		if((time_fp=fopen("/tmp/ddns.cache","w"))) {
+			fprintf(time_fp,"%ld,%s",time(&now),wan_ip);
+			fclose(time_fp);
+		}
+*/
+/* Determine if we should set or clear it, ensure watchdog is happy */
+		unlink("/tmp/ddns.cache");
+
+		if (nvram_get_int("ddns_debug") == 1)
+			loglevel = "debug";
+		else
+			loglevel = "notice";
+
+		char *argv[] = { "/usr/sbin/inadyn", "-1",
+				"-e", "/sbin/ddns_updated",
+				"-f", "/etc/inadyn.conf",
+				"--cache-dir=/tmp/inadyn.cache",
+				"-l", loglevel,
+			NULL };
+		_eval(argv, NULL, 0, &pid);
+	}
 
 	nvram_unset("asusddns_reg_result");
-	eval("ez-ipupdate",
-	     "-S", "dyndns", "-i", wan_ifname, "-h", nvram_safe_get("ddns_hostname_x"),
-	     "-A", "3", "-s", nserver);
 
 	return 0;
 }

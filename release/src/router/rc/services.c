@@ -3282,8 +3282,11 @@ start_ddns(void)
 			fprintf(fp, "password = %s\n", passwd);
 
 			if (nvram_get_int("ddns_ipcheck") == 0)	// Internal (local)
+#ifdef HND_ROUTER
 				fprintf(fp, "checkip-command = \"/bin/nvram get %sipaddr\"\n", prefix);
-
+#else
+				fprintf(fp, "checkip-command = \"/usr/sbin/nvram get %sipaddr\"\n", prefix);
+#endif
 			if (wild)
 				fprintf(fp, "wildcard = true\n");
 

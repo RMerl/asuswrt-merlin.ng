@@ -3195,6 +3195,8 @@ start_ddns(void)
 	}
         else if (strcmp(server, "CUSTOM")==0)
                 service = "";
+	else if (strcmp(server, "FREEDNS.AFRAID.ORG") == 0)
+		service = "default@freedns.afraid.org";
 	else if (strcmp(server, "WWW.SELFHOST.DE") == 0) {
 		service = "selfhost";
 		asus_ddns = 12;

@@ -569,23 +569,23 @@ function openLink(s){
 		if (document.form.ddns_server_x.value.indexOf("WWW.DYNDNS.ORG")!=-1)
 			tourl = "https://account.dyn.com/services/zones/svc/add.html?_add_dns=c&trial=standarddns";
 		else if (document.form.ddns_server_x.value == 'WWW.ZONEEDIT.COM')
-			tourl = "http://www.zoneedit.com/";
+			tourl = "https://www.zoneedit.com/";
 		else if (document.form.ddns_server_x.value == 'WWW.SELFHOST.DE')
-			tourl = "http://WWW.SELFHOST.DE";
+			tourl = "https://WWW.SELFHOST.DE";
 		else if (document.form.ddns_server_x.value == 'WWW.DNSOMATIC.COM')
-			tourl = "http://dnsomatic.com/create/";
+			tourl = "https://dnsomatic.com/create/";
 		else if (document.form.ddns_server_x.value == 'WWW.TUNNELBROKER.NET')
-			tourl = "http://www.tunnelbroker.net/register.php";
+			tourl = "https://www.tunnelbroker.net/register.php";
 		else if (document.form.ddns_server_x.value == 'WWW.ASUS.COM')
 			tourl = "";
 		else if (document.form.ddns_server_x.value == 'WWW.NO-IP.COM')
-			tourl = "http://www.no-ip.com/newUser.php";
+			tourl = "https://www.no-ip.com/newUser.php";
 		else if (document.form.ddns_server_x.value == 'WWW.NAMECHEAP.COM')
 			tourl = "https://www.namecheap.com";
 		else if (document.form.ddns_server_x.value == "FREEDNS.AFRAID.ORG")
 			tourl = "https://freedns.afraid.org/";
 		else if (document.form.ddns_server_x.value == 'WWW.ORAY.COM')
-			tourl = "http://www.oray.com/";
+			tourl = "https://www.oray.com/";
 		else if (document.form.ddns_server_x.value == 'DOMAINS.GOOGLE.COM')
 			tourl = "https://domains.google/";
 		else	tourl = "";

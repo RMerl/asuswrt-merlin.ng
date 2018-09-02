@@ -28,7 +28,9 @@
 
 #include <ctype.h>
 
+#ifdef ASUSWRT
 #include <bcmnvram.h>
+#endif
 #include <stdio.h>
 #include <fcntl.h>
 
@@ -184,6 +186,7 @@ static int request_reg(ddns_t *ctx, ddns_info_t *info, ddns_alias_t *alias)
 
 	request(ctx, info, alias);
 
+#ifdef ASUSWRT
 #ifdef ASUS_LE
 	char acme_arg[90];
 	int f, n, i;
@@ -205,6 +208,7 @@ static int request_reg(ddns_t *ctx, ddns_info_t *info, ddns_alias_t *alias)
 		}
 	}
 #endif
+#endif
 
 	memset(buf, 0, sizeof(buf));
 	if(TransferMacAddr(nvram_safe_get("ddns_transfer"), buf)) {
@@ -217,7 +221,7 @@ static int request_reg(ddns_t *ctx, ddns_info_t *info, ddns_alias_t *alias)
 			ASUSDDNS_IP_HTTP_REQUEST,
 			info->server_url,
 			alias->name,
-#ifdef ASUS_LE
+#if defined(ASUSWRT) && defined(ASUS_LE)
 			acme_arg,
 #else
 			"",
@@ -302,15 +306,21 @@ static int response_update(http_trans_t *trans, ddns_info_t *info, ddns_alias_t 
 			return RC_OK;
 		case 203:		/* update failed */
 			logit(LOG_WARNING, "Domain already in use, suggested domain '%s'", domain);
+#ifdef ASUSWRT
 			nvram_set("ddns_suggest_name", domain);
+#endif
 			return RC_DDNS_RSP_NOTOK;
 		case 230:
 			logit(LOG_WARNING, "New domaine update success, old domain '%s'", domain);
+#ifdef ASUSWRT
 			nvram_set ("ddns_old_name", domain);
+#endif
 			return RC_DDNS_RSP_NOTOK;
 		case 233:		/* update failed */
 			logit(LOG_WARNING, "Domain already in use, current domain '%s'", domain);
+#ifdef ASUSWRT
 			nvram_set("ddns_old_name", domain);
+#endif
 			return RC_DDNS_RSP_NOTOK;
 		case 297:               /* invalid hostname */
 			logit(LOG_WARNING, "Invalid hostname");
@@ -350,10 +360,12 @@ static int response_register(http_trans_t *trans, ddns_info_t *info, ddns_alias_
 		return RC_DDNS_RSP_RETRY_LATER;
 	}
 
+#ifdef ASUSWRT
 	if (!strncmp(alias->name, "unregister", 10)) {
 		snprintf(ret_buf, sizeof(ret_buf), "unregister,%d", trans->status);
 		nvram_set("asusddns_reg_result", ret_buf);
 	}
+#endif
 
 	switch (trans->status) {
 	case 200:		/* registration success */
@@ -361,15 +373,21 @@ static int response_register(http_trans_t *trans, ddns_info_t *info, ddns_alias_
 		return RC_OK;
 	case 203:		/* registration failed */
 		logit(LOG_WARNING, "Domain already in use, suggested domain '%s'", domain);
+#ifdef ASUSWRT
 		nvram_set("ddns_suggest_name", domain);
+#endif
 		return RC_DDNS_RSP_NOTOK;
 	case 230:		/* registration new domain success */
 		logit(LOG_WARNING, "Registration success, previous domain '%s'", domain);
+#ifdef ASUSWRT
 		nvram_set("ddns_old_name", domain);
+#endif
 		return RC_OK;
 	case 233:		/* registration failed */
 		logit(LOG_WARNING, "Domain already in use, current domain '%s'", domain);
+#ifdef ASUSWRT
 		nvram_set("ddns_old_name", domain);
+#endif
 		return RC_DDNS_RSP_NOTOK;
 	case 297:		/* invalid hostname */
 		logit(LOG_WARNING, "Invalid hostname");

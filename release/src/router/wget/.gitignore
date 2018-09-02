@@ -4,7 +4,6 @@ config.log
 config.status
 doc/*
 doc
-lib/
 md5/
 po/
 src/.deps/

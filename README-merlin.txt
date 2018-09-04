@@ -103,7 +103,7 @@ Networking:
    - fq_codel queue discipline for QoS (ARM-based models only)
    - Full cone NAT support (RT-AC86U only)
    - Detailed wireless troubleshooting information (RT-AC86U only)
-   - Modern DDNS client, with HTTPS support
+   - Modern DDNS client (inadyn), with HTTPS support
 
 
 Web interface:

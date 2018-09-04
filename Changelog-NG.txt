@@ -18,12 +18,13 @@ General changes in the 384/NG branch vs 380.xx:
           Asus hasn't released any updated code for these models.
   - NEW: Merged with GPL 384_21152.
   - NEW: Merged RT-AC87U binary blobs + SDK from 382_50702.
-  - NEW: Replaced old ez-ipupdate DDNS client with inadyn.  A plugin
-         was developed to fully support Asus's DDNS service.
-         Inadyn supports a number of other services, however these
-         have to be manually configured through a ddns-start script,
-         inadyn.conf.add, or inadyn.postconf.
-  - NEW: Added support for freedns.afraid.org DDNS service.
+  - NEW: Replaced old ez-ipupdate DDNS client with inadyn.
+         A plugin was developed to fully support Asus's DDNS
+         service.
+         Custom services can now be configured through ddns-start
+         (note that ez-ipupdate is now longer included in the
+         firmware), inadyn.conf.add, or inadyn.postconf.
+  - NEW: Added support for freedns.afraid.org DDNS service to webui.
   - NEW: Display DFS channel info on Wireless Log page.
   - NEW: Added option to disable checks on unsigned DNSSEC replies.
          Disabling these will speed up lookups, but it will also
@@ -35,6 +36,8 @@ General changes in the 384/NG branch vs 380.xx:
   - CHANGED: Updated openssl to 1.0.2p.
   - CHANGED: Updated dnsmasq to v2.80test4 (themiron).
   - CHANGED: All DDNS services now use HTTPS.
+  - CHANGED: Replaced Google Domains DDNS script with inadyn's own
+             plugin.
   - CHANGED: Moved DNSFilter to the LAN section, to make it clear
              that it's unrelated to Trend Micro's engine.
   - CHANGED: Report hostname and IP on Wireless Log page if the

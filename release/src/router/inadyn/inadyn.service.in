@@ -1,0 +1,15 @@
+[Unit]
+Description=Internet Dynamic DNS Client
+Documentation=man:inadyn
+Documentation=man:inadyn.conf
+Documentation=https://github.com/troglobit/inadyn
+ConditionPathExists=@SYSCONFDIR@/inadyn.conf
+After=network-online.target
+Requires=network-online.target
+
+[Service]
+Type=simple
+ExecStart=@SBINDIR@/inadyn -n -s
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,13 @@
+prefix=@prefix@
+exec_prefix=@exec_prefix@
+libdir=@libdir@
+includedir=@includedir@
+
+
+Name: @PACKAGE@
+Version: @VERSION@
+Description: configuration file parser library
+Requires: 
+Libs: -L${libdir} -lconfuse @LTLIBINTL@
+Cflags: -I${includedir}
+

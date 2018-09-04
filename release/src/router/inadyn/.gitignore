@@ -1,0 +1,8 @@
+*.o
+.deps
+Makefile
+libtool
+plugins/.dirstamp
+include/config.h
+src/inadyn
+inadyn.service

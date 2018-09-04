@@ -1,0 +1,365 @@
+.\"  -*- nroff -*-
+.\"
+.\" Process this file with
+.\" groff -man -Tascii foo.1
+.\"
+.\" Copyright (C) 2004       Shaul Karl.
+.\" Copyright (C) 2010-2017  Joachim Nilsson.
+.\"
+.\" You may modify and distribute this document for any purpose, as
+.\" long as this copyright notice remains intact.
+.\"
+.Dd June 28, 2017
+.Dt INADYN 8 SMM
+.Os
+.Sh NAME
+.Nm inadyn
+.Nd Internet Automated Dynamic DNS Client
+.Sh SYNOPSIS
+.Nm inadyn
+.Op Fl 1, -once
+.Op Fl -cache-dir=PATH
+.Op Fl c, -cmd=/path/to/cmd
+.Op Fl C, -continue-on-error
+.Op Fl e, -exec=/path/to/cmd
+.Op Fl f, -config=FILE
+.Op Fl h, -help
+.Op Fl i, -iface=IFNAME
+.Op Fl I, -ident=NAME
+.Op Fl l, -loglevel=LEVEL
+.Op Fl n, -foreground
+.Op Fl P, -pidfile=FILE
+.Op Fl p, -drop-privs=USER Ns Op : Ns Ar GROUP
+.Op Fl s, -syslog
+.Op Fl t, -startup-delay=SEC
+.Op Fl v, -version
+.Sh DESCRIPTION
+.Nm ,
+or In-a-Dyn, periodically checks your actual Internet accessible IP for
+changes.  When it changes
+.Nm
+updates your name server record(s) automatically.
+.Pp
+Common DDNS service providers supported by
+.Nm
+are listed below.  Some of these services are free of charge for
+non-commercial use, others take a small fee, but also provide more
+domain names to choose from.
+.Pp
+.Nm
+defaults to HTTPS for all providers, some may however not support this
+so try disabling SSL for your provider in case of problems.  Providers
+known to support SSL updates are listed below with
+.Sy https :
+.Pp
+.Bl -bullet -compact
+.It
+.Aq http://www.dyndns.org
+a.k.a.
+.Aq http://dyn.com
+.It
+.Aq https://freedns.afraid.org
+.It
+.Aq https://zoneedit.com
+.It
+.Aq http://www.no-ip.com
+.It
+.Aq http://www.easydns.com
+.It
+.Aq http://www.tzo.com
+.It
+.Aq http://www.3322.org
+.It
+.Aq https://www.dnsomatic.com
+.It
+.Aq http://www.tunnelbroker.net
+.It
+.Aq http://dns.he.net
+.It
+.Aq http://www.dynsip.org
+.It
+.Aq http://www.sitelutions.com
+.It
+.Aq http://www.dnsexit.com
+.It
+.Aq http://www.changeip.com
+.It
+.Aq http://www.zerigo.com
+.It
+.Aq http://www.dhis.org
+.It
+.Aq https://nsupdate.info
+.It
+.Aq https://duckdns.org
+.It
+.Aq https://www.loopia.com
+.It
+.Aq https://www.namecheap.com
+.It
+.Aq https://domains.google.com
+.It
+.Aq https://www.ovh.com
+.It
+.Aq https://www.dtdns.com
+.It
+.Aq http://giradns.com
+.It
+.Aq https://www.duiadns.net
+.It
+.Aq https://ddnss.de
+.It
+.Aq http://dynv6.com
+.It
+.Aq http://ipv4.dynv6.com
+.It
+.Aq https://spdyn.de
+.It
+.Aq https://www.strato.com
+.It
+.Aq https://freemyip.com
+.It
+.Aq https://www.cloudxns.net
+.It
+.Aq https://www.dnspod.cn
+.El
+.Pp
+DDNS providers not listed here, like
+.Aq http://twoDNS.de ,
+can often be configured using the generic DDNS provider plugin.  See
+.Xr inadyn.conf 5
+for example configurations.
+.Sh OPTIONS
+Earlier versions of
+.Nm
+supported more command line options, from v2.0
+.Nm
+has been greatly simplified.  See
+.Xr inadyn.conf 5
+for details of the
+.Pa /etc/inadyn.conf
+configuration file format.
+.Pp
+.Bl -tag -width Ds
+.It Fl 1, -once
+Force one update and quit
+.It Fl -cache-dir=PATH
+Set directory for persistent cache files, defaults to
+.Pa /var/cache/inadyn
+.Pp
+The cache files are used to keep track of which addresses have been
+successfully sent to their respective DDNS provider and when.  The
+latter 'when' is important to prevent
+.Nm
+from banning you for excessive updates.
+.Pp
+When restarting
+.Nm
+or rebooting your server, or embedded device,
+.Nm
+reads the cache files to seed its internal data structures with the last
+sent IP address and when the update was performed.  It is therefore very
+important to both have a cache file and for it to have the correct time
+stamp.  The absence of a cache file will currently cause a forced
+update.
+.Pp
+On an embedded device with no RTC, or no battery backed RTC, it is
+strongly recommended to pair this setting with the
+.Fl -startup-delay=SEC
+command line option.
+.It Fl c, -cmd=/path/to/cmd Op optional args
+Full path to command, or script, to run to check for IP address change.
+This is the same as the configuration file option
+.Ar checkip-command
+but will apply to
+.Sy all
+providers.  This command line option is only provided for convenience, it
+is recommended to instead use the configuration file.  For more details,
+see the
+.Xr inadyn.conf 5
+man page.  You will need to quote the complete command if any arguments,
+or pipe, is given.
+.It Fl -continue-on-error
+Ignore errors from DDNS provider and try again later.  This command line
+option tells
+.Nm
+to not exit on errors from a DDNS provider and instead try again later.
+Please do not use this, it usually indicates that we are sending a
+malformed request, e.g. wrong username, password or DNS alias for the
+given account.  Continuing could possibly lock you out of your account!
+.It Fl e, -exec=/path/to/cmd Op optional args
+Full path to command, or script, to run after a successful DDNS update.
+The following environment variables are set: INADYN_IP, INADYN_HOSTNAME.
+The first environment variable contains the new IP address, the second
+the host name alias.  The
+.Nm cmd
+is called for each listed host name that is successfully updated.  If
+.Nm
+is started with the
+.Fl i Ar IFNAME
+command line option, the INADYN_IFACE environment variable is also set.
+You will need to quote the complete command if any arguments, or pipe,
+is given.
+.It Fl f, -config Ar FILE
+Use
+.Ar FILE
+for configuration. By default
+.Pa /etc/inadyn.conf ,
+is used.  See
+.Xr inadyn.conf 5
+for examples.
+.It Fl h, -help
+Show summary of command line options and exit
+.It Fl i, -iface Ar IFNAME
+Check IP of IFNAME instead of querying an external server.  With this
+command line option the external IP check is disabled and
+.Nm
+will report the IP address of
+.Ar IFNAME
+to all DDNS providers listed in the configuration file.  This can be
+useful to register LAN IP addresses, or, when connected directly to a
+public IP address, to speed up the IP check if the DDNS provider's
+check-ip servers are slow to respond.
+.Pp
+This option can also be given as a configuration option in
+.Xr inadyn.conf 5 ,
+both serve a purpose, use whichever one works for you.
+.It Fl I, Fl -ident=NAME
+Specify program identity (name) to be used for PID file and syslog
+messages.  Useful with multiple instances of
+.Nm ,
+or to simply replace the
+.Nm
+name with something more generic, e.g. "DDNS", without renaming the
+binary.  Note, this option only changes the base name of the PID file,
+not the location, which is system specific.  Usually
+.Pa /var/run/inadyn.pid
+or
+.Pa /run/inadyn.pid .
+.It Fl l, -loglevel Ar LEVEL
+Set log level: none, err, info,
+.Ar notice ,
+debug.  The default is
+.Ar notice ,
+but you might want to set this to
+.Fl l Ar warning .
+.It Fl n, -foreground
+Run in foreground, default is to daemonize and continue in the
+background.  This option is usually required when running under process
+supervisors like systemd and Finit.  Remember to also give the
+.Fl s
+option to get log messages to the syslog.
+.It Fl p, -drop-privs=USER Ns Op : Ns Ar GROUP
+Drop root privileges after initial setup to the given user and group.
+.It Fl P, -pidfile=FILE
+Set PID file name and location, defaults to
+.Pa /run/inadyn.pid ,
+derived from
+.Fl -ident=NAME ,
+which is strongly recommended to change over this option.  However, some
+users want to keep application runtime files in separate directories,
+usually in combination with
+.Fl -drop-privs ,
+for such cases this is the option to use.
+.It Fl s, -syslog
+Use
+.Xr syslog 3
+for log messages, warnings and error conditions.  This is the default
+when running in the background.  When running in the foreground, see
+.Fl n ,
+log messages are printed to stdout.
+.It Fl t, -startup-delay Ar SEC
+Initial startup delay.  Default is 0 seconds.  Any signal can be used to
+abort the startup delay early, but SIGUSR2 is the recommended to use.
+See
+.Sx SIGNALS
+below for full details of how
+.Nm
+responds to signals.
+.Pp
+Intended to allow time for embedded devices without a battery backed
+real time clock to set their clock via NTP at bootup.  This is so that
+the time since the last update can be calculated correctly from the
+.Nm
+cache file and the
+.Cm forced-update=SEC
+setting honored across reboots, avoiding unnecessary IP address updates.
+.It Fl v, -version
+Show program version and exit.
+.El
+.Sh OUTPUT
+.Nm
+prints a message when the IP is updated.  If no update is needed then by
+default it prints a single
+.Dq .\&
+character, unless
+.Fl -loglevel
+is set to
+.Ar none .
+Therefore, unless
+.Fl -loglevel
+is set to
+.Ar none ,
+the log will contain lots of dots.  When the connection goes down
+.Nm
+may print some harmless error messages which should be followed by
+.Dq OK
+messages after the Internet connection is restored.
+.Sh SIGNALS
+.Nm
+responds to the following signals:
+.Pp
+.Bl -tag -width TERM -compact
+.It HUP
+Reload the
+.Nm .conf 
+file, standard UNIX behavior
+.It TERM
+Tell
+.Nm
+to exit gracefully
+.It INT
+Same as TERM
+.It USR1
+Force update now, even if the IP address has not changed.  Works in
+tandem with
+.Fl -fake-address
+.It USR2
+Check IP address change now. Useful when a new DHCP/PPPoE lease or new
+gateway is received.  Please note that
+.Nm
+does not track such events by itself.  You need an external monitor for
+that
+.El
+.Pp
+For convenience in sending signals,
+.Nm
+writes its process ID to
+.Pa /var/run/inadyn.pid
+.Sh FILES
+.Bl -tag -width /var/cache/inadyn/freedns.afraid.org.cache -compact
+.It Pa /etc/inadyn.conf
+.It Pa /run/inadyn.pid
+.It Pa /var/cache/inadyn/dyndns.org.cache
+.It Pa /var/cache/inadyn/freedns.afraid.org.cache
+.It Pa ... one .cache file per DDNS provider
+.El
+.Sh SEE ALSO
+.Xr inadyn.conf 5
+.Pp
+The
+.Nm
+home page is at GitHub:
+.Aq https://github.com/troglobit/inadyn
+.Sh AUTHORS
+.Nm
+was originally written by Narcis Ilisei
+.Aq mailto:inarcis2002@hotpop.com
+and Steve Horbachuk.  Current patch monkey is Joachim Nilsson
+.Aq mailto:troglobit@gmail.com
+with a lot of help from Andrey Tikhomirov and Mike Fleetwood.
+.Pp
+This manual page was originally written for the
+.Em Debian GNU/Linux
+project by Shaul Karl
+.Aq mailto:shaul@debian.org ,
+but is now maintained by Joachim Nilsson.

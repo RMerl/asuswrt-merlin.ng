@@ -9780,6 +9780,7 @@ static void sysinit(void)
 		"/tmp/etc/rc.d",
 #endif
 		"/tmp/var/tmp",
+		"/tmp/inadyn.cache",
 		NULL
 	};
 	umask(0);

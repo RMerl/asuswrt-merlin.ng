@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>5. Parsing from internal buffers</title><link rel="stylesheet" type="text/css" href="tutorial.css" /><meta name="generator" content="DocBook XSL Stylesheets V1.79.1" /><link rel="home" href="index.html" title="libConfuse tutorial" /><link rel="up" href="index.html" title="libConfuse tutorial" /><link rel="prev" href="ar01s04.html" title="4. Using sections" /><link rel="next" href="ar01s06.html" title="6. Validating callback functions" /></head><body><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">5. Parsing from internal buffers</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="ar01s04.html">Prev</a> </td><th width="60%" align="center"> </th><td width="20%" align="right"> <a accesskey="n" href="ar01s06.html">Next</a></td></tr></table><hr /></div><div class="sect1"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="idm45830324513744"></a>5. Parsing from internal buffers</h2></div></div></div><p>
+            So far, we have only parsed configuration data from files.
+            libConfuse can also parse buffers, or in-memory character
+            strings. We will use this to fix a problem in the previous code.
+        </p><p>
+            The problem is that without a configuration file, the hello program
+            will not print anything. We want it to at least print the standard
+            greeting "Hello, World!" if no configuration file is available.
+        </p><p>
+            We can't have a default value for a section that can be specified
+            multiple times (ie, a section with the CFGF_MULTI flag set).
+            Instead we will parse a default configuration string if no section
+            has been parsed:
+        </p><a id="listing6"></a><pre class="programlisting">
+1	#include &lt;stdio.h&gt;
+2	#include &lt;confuse.h&gt;
+3	
+4	int main(void)
+5	{
+6	    /* ... setup options ... */
+7	
+8	    cfg = cfg_init(opts, CFGF_NONE);
+9	    cfg_parse(cfg, "hello.conf");
+10	
+11	    if(cfg_size(cfg, "greeting") == 0)
+12	    {
+13	        cfg_parse_buf(cfg, "greeting Hello {}");
+14	    }
+15	
+16	    /* ... print the greetings ... */
+17	}
+</pre><p>
+            Only the changes from the previous code is shown here. We check if
+            the size of the "greeting" section is zero (ie, no section has been
+            defined). In that case we call <code class="function">cfg_parse_buf()</code>
+            to parse a default in-memory string "greeting Hello {}". This
+            string defines a greeting section with title Hello, but without any
+            sub-options. This way we rely on the default values of the
+            (sub-)options "targets" and "repeat".
+        </p><p>
+            When this program is run, it issues the well-known standard greeting
+            "Hello, World!" if no configuration file is present.
+        </p></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ar01s04.html">Prev</a> </td><td width="20%" align="center"> </td><td width="40%" align="right"> <a accesskey="n" href="ar01s06.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">4. Using sections </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> 6. Validating callback functions</td></tr></table></div></body></html>

@@ -1167,7 +1167,7 @@ obj-y += networkmap
 ifneq ($(BUILD_NAME), $(filter $(BUILD_NAME), AC2900))
 obj-y += infosvr
 endif
-obj-y += ez-ipupdate
+#obj-y += ez-ipupdate
 ifneq ($(or $(RTN56U),$(DSLN55U)),y)
 obj-y += phddns
 endif
@@ -1234,6 +1234,8 @@ obj-$(RTCONFIG_OPENVPN) += ministun
 obj-$(RTCONFIG_DNSSEC) += nettle
 obj-$(RTCONFIG_SAMBA36X) += libiconv-1.14
 obj-$(RTCONFIG_TELENET) += lanauth
+obj-y += inadyn
+obj-y += libconfuse
 
 ifneq ($(HND_ROUTER),y)
 obj-y += cstats
@@ -6821,6 +6823,55 @@ libical-2.0.0-install:
 		ln -sf libicalss.so.2.0.0 libicalss.so.2 &&\
 		ln -sf libicalvcal.so.2.0.0 libicalvcal.so.2.0 &&\
 		ln -sf libicalvcal.so.2.0.0 libicalvcal.so.2
+
+libconfuse/Makefile:
+	cd libconfuse && $(CONFIGURE) \
+		CFLAGS="$(EXTRACFLAGS) -Os -I$(STAGEDIR)/usr/include -ffunction-sections -fdata-sections -fPIC -I$(TOP)/libiconv-1.14/include" \
+		LDFLAGS="$(LDFLAGS) -ffunction-sections -fdata-sections -Wl,--gc-sections -L$(TOP)/libiconv-1.14/lib/.libs -liconv" \
+		--prefix=/usr --disable-shared \
+		--without-libiconv-prefix --without-libintl-prefix --disable-examples --disable-nls
+
+libconfuse: libiconv-1.14 libconfuse/Makefile
+	@$(SEP)
+	$(MAKE) -C $@
+
+libconfuse-install:
+	@$(SEP)
+# Do nothing
+#	install -D libconfuse/src/.libs/libconfuse.so.1.1.0 $(INSTALLDIR)/libconfuse/usr/lib/libconfuse.so.1.1.0
+#	cd $(INSTALLDIR)/libconfuse/usr/lib && \
+#		ln -sf libconfuse.so.1.1.0 libconfuse.so.1 &&\
+#		ln -sf libconfuse.so.1.1.0 libconfuse.so
+#	$(STRIP) $(INSTALLDIR)/libconfuse/usr/lib/*.so.*
+
+
+libconfuse-clean:
+	@$(SEP)
+	$(MAKE) -C libconfuse distclean
+	rm libconfuse/Makefile
+
+inadyn/Makefile:
+	cd inadyn && $(CONFIGURE) \
+		confuse_CFLAGS="-I$(TOP)/libconfuse/src" \
+		confuse_LIBS="-L$(TOP)/libconfuse/src/.libs -lconfuse" \
+		OpenSSL_CFLAGS="-I$(TOP)/openssl" \
+		OpenSSL_LIBS="-L$(TOP)/openssl -lcrypto" \
+		CFLAGS="$(EXTRACFLAGS) -Os -I$(TOP)/shared -I$(SRCBASE)/include -I$(SRCBASE)/shared/bcmwifi/include -DTYPEDEF_FLOAT_T -I$(STAGEDIR)/usr/include -ffunction-sections -fdata-sections -fPIC -DASUSWRT $(if $(RTCONFIG_LETSENCRYPT),-DASUS_LE,)" \
+		LDFLAGS="$(LDFLAGS) $(shell if [[ "$(HND_ROUTER)" = "y" ]] ; then echo "-L$(TOP)/wlcsm -lwlcsm"; else echo ""; fi) -L$(TOP)/nvram$(BCMEX)$(EX7) -lnvram -L$(TOP)/shared -lshared -ffunction-sections -fdata-sections -Wl,--gc-sections" \
+		--prefix=/usr -enable-openssl
+
+inadyn: shared nvram${BCMEX}$(EX7) libconfuse inadyn/Makefile
+	@$(SEP)
+	$(MAKE) -C $@
+
+inadyn-install:
+	install -D inadyn/src/inadyn $(INSTALLDIR)/inadyn/usr/sbin/inadyn
+	$(STRIP) $(INSTALLDIR)/inadyn/usr/sbin/inadyn
+
+inadyn-clean:
+	@$(SEP)
+	$(MAKE) -C inadyn clean
+	rm inadyn/Makefile
 
 ncurses-6.0/Makefile: ncurses-6.0/configure
 	cd ncurses-6.0 && $(CONFIGURE) \

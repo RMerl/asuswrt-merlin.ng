@@ -224,6 +224,7 @@ function ddns_load_body(){
                 document.getElementById("ddns_hostname_x").value = "<#asusddns_inputhint#>";
         }
 	inputCtrl(document.form.ddns_refresh_x, 1);
+	showhide("ddns_ipcheck_tr", 1);
 
         change_ddns_setting(document.form.ddns_server_x.value);
 
@@ -244,6 +245,7 @@ function ddns_load_body(){
         document.form.ddns_wildcard_x[1].disabled= 1;
 	inputCtrl(document.form.ddns_refresh_x, 0);
         showhide("wildcard_field",0);
+	showhide("ddns_ipcheck_tr", 0);
     }
 
 	if(letsencrypt_support){
@@ -688,6 +690,15 @@ function save_cert_key(){
 				</select>
 				</td>
 			</tr>
+			<tr id="ddns_ipcheck_tr">
+				<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(50,26);">Method to retrieve WAN IP</a></th>
+                                <td>
+				<select name="ddns_ipcheck" class="input_option">
+					<option class="content_input_fd" value="0" <% nvram_match("ddns_ipcheck", "0","selected"); %>>Internal</option>
+					<option class="content_input_fd" value="1" <% nvram_match("ddns_ipcheck", "1","selected"); %>>External</option>
+				</select>
+				</td>
+			</tr>
 			<tr>
 				<th><#LANHostConfig_x_DDNSServer_itemname#></th>
 				<td>
@@ -704,6 +715,7 @@ function save_cert_key(){
 						<option value="WWW.NO-IP.COM" <% nvram_match("ddns_server_x", "WWW.NO-IP.COM","selected"); %>>WWW.NO-IP.COM</option>
 						<option value="WWW.ORAY.COM" <% nvram_match("ddns_server_x", "WWW.ORAY.COM","selected"); %>>WWW.ORAY.COM(花生壳)</option>
 						<option value="WWW.NAMECHEAP.COM" <% nvram_match("ddns_server_x", "WWW.NAMECHEAP.COM","selected"); %>>WWW.NAMECHEAP.COM</option>
+						<option value="FREEDNS.AFRAID.ORG" <% nvram_match("ddns_server_x", "FREEDNS.AFRAID.ORG","selected"); %>>FREEDNS.AFRAID.ORG</option>
 						<option value="CUSTOM" <% nvram_match("ddns_server_x", "CUSTOM","selected");  %>>Custom</option>
 					</select>
 				<a id="link" href="javascript:openLink('x_DDNSServer')" style=" margin-left:5px; text-decoration: underline;"><#LANHostConfig_x_DDNSServer_linkname#></a>

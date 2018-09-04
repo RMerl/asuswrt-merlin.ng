@@ -1,0 +1,12 @@
+Makefile
+.deps
+.libs
+*.la
+*.lo
+*.o
+config.h
+*.pc
+Makefile.in
+POTFILES
+libtool
+

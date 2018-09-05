@@ -11,6 +11,7 @@
  *   - nsupdate.info
  *   - Google Domains
  *   - SPDYN
+ *   - Dynu
  *
  * Copyright (C) 2003-2004  Narcis Ilisei <inarcis2002@hotpop.com>
  * Copyright (C) 2006       Steve Horbachuk
@@ -202,6 +203,19 @@ static ddns_system_t googledomains = {
 	.server_url   = "/nic/update"
 };
 
+static ddns_system_t dynu = {
+	.name         = "default@dynu.com",
+
+	.request      = (req_fn_t)request,
+	.response     = (rsp_fn_t)response,
+
+	.checkip_name = "checkip.dynu.com",
+	.checkip_url  = "/",
+
+	.server_name  = "api.dynu.com",
+	.server_url   = "/nic/update"
+};
+
 static int request(ddns_t *ctx, ddns_info_t *info, ddns_alias_t *alias)
 {
 	return common_request(ctx, info, alias);
@@ -225,6 +239,7 @@ PLUGIN_INIT(plugin_init)
 	plugin_register(&nsupdate_info_ipv4);
 	plugin_register(&loopia);
 	plugin_register(&googledomains);
+	plugin_register(&dynu);
 }
 
 PLUGIN_EXIT(plugin_exit)
@@ -240,6 +255,7 @@ PLUGIN_EXIT(plugin_exit)
 	plugin_unregister(&nsupdate_info_ipv4);
 	plugin_unregister(&loopia);
 	plugin_unregister(&googledomains);
+	plugin_unregister(&dynu);
 }
 
 /**

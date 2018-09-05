@@ -25,6 +25,9 @@ General changes in the 384/NG branch vs 380.xx:
          (note that ez-ipupdate is now longer included in the
          firmware), inadyn.conf.add, or inadyn.postconf.
   - NEW: Added support for freedns.afraid.org DDNS service to webui.
+  - NEW: Added option to retrieve WAN IP from either the local
+         interface (like before) or through a remote server
+         (which works through double NAT).
   - NEW: Display DFS channel info on Wireless Log page.
   - NEW: Added option to disable checks on unsigned DNSSEC replies.
          Disabling these will speed up lookups, but it will also

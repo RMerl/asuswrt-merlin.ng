@@ -71,10 +71,10 @@ int log_level(char *arg)
 
 void vlogit(int prio, const char *fmt, va_list args)
 {
-	if (level == INTERNAL_NOPRI)
-		return;
-
-	vsyslog(prio, fmt, args);
+	if (enabled && level != INTERNAL_NOPRI)
+		vsyslog(prio, fmt, args);
+	else if (prio <= level)
+		vfprintf(stderr, fmt, args), fprintf(stderr, "\n");
 }
 
 void logit(int prio, const char *fmt, ...)
@@ -82,10 +82,7 @@ void logit(int prio, const char *fmt, ...)
 	va_list args;
 
 	va_start(args, fmt);
-	if (enabled)
-		vlogit(prio, fmt, args);
-	else if (prio <= level)
-		vfprintf(stderr, fmt, args), fprintf(stderr, "\n");
+	vlogit(prio, fmt, args);
 	va_end(args);
 }
 

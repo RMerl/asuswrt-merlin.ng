@@ -26,6 +26,8 @@
 #include <grp.h>		/* getgrnam() */
 #include <unistd.h>
 #include <confuse.h>
+#include <sys/stat.h>		/* mkdir() */
+
 
 #include "log.h"
 #include "ddns.h"
@@ -203,10 +205,33 @@ static int compose_paths(void)
 
 		cache_dir = malloc(len);
 		if (!cache_dir) {
+		nomem:
 			logit(LOG_ERR, "Failed allocating memory, exiting.");
 			return RC_OUT_OF_MEMORY;
 		}
 		snprintf(cache_dir, len, "%s/cache/%s", LOCALSTATEDIR, ident);
+
+		if (access(cache_dir, W_OK)) {
+			char *home;
+
+			home = getenv("HOME");
+			if (!home) {
+				logit(LOG_ERR, "Cannot create fallback cache dir: %s", strerror(errno));
+				return 0;
+			}
+
+			/* Fallback cache dir: $HOME + "/.cache/" + "inadyn" */
+			len = strlen(home) + strlen(ident) + 10;
+			cache_dir = realloc(cache_dir, len);
+			if (!cache_dir)
+				goto nomem;
+
+			snprintf(cache_dir, len, "%s/.cache/%s", home, ident);
+			if (mkdir(cache_dir, 0755) && EEXIST != errno) {
+				snprintf(cache_dir, len, "%s/.%s", home, ident);
+				mkdir(cache_dir, 0755);
+			}
+		}
 	}
 
 	return 0;
@@ -237,7 +262,7 @@ static int usage(int code)
 		" -I, --ident=NAME               Identity for config file, PID file, cache dir,\n"
 		"                                and syslog messages.  Defaults to: %s\n"
 		" -l, --loglevel=LEVEL           Set log level: none, err, info, notice*, debug\n"
-		" -n, --foreground               Run in foreground, useful when run from finit\n"
+		" -n, --foreground               Run in foreground with logging to stdout/stderr\n"
 		" -p, --drop-privs=USER[:GROUP]  Drop privileges after start to USER:GROUP\n"
 		" -P, --pidfile=FILE             File to store process ID for signaling %s\n"
 		"                                Default uses ident NAME: %s\n"

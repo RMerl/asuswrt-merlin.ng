@@ -121,6 +121,8 @@ a.k.a.
 .Aq https://www.cloudxns.net
 .It
 .Aq https://www.dnspod.cn
+.It
+.Aq https://www.dynu.com
 .El
 .Pp
 DDNS providers not listed here, like
@@ -245,9 +247,11 @@ but you might want to set this to
 .It Fl n, -foreground
 Run in foreground, default is to daemonize and continue in the
 background.  This option is usually required when running under process
-supervisors like systemd and Finit.  Remember to also give the
+supervisors like systemd and Finit, but is also useful when running from
+the terminal, when debugging a config or at initial set up.  Remember to
+also give the
 .Fl s
-option to get log messages to the syslog.
+option if you still want to redirect log messages to the syslog.
 .It Fl p, -drop-privs=USER Ns Op : Ns Ar GROUP
 Drop root privileges after initial setup to the given user and group.
 .It Fl P, -pidfile=FILE
@@ -362,4 +366,4 @@ This manual page was originally written for the
 .Em Debian GNU/Linux
 project by Shaul Karl
 .Aq mailto:shaul@debian.org ,
-but is now maintained by Joachim Nilsson.
+and is currently maintained by Joachim Nilsson.

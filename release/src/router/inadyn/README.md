@@ -83,6 +83,7 @@ examples.
 * <https://www.strato.com>
 * <https://www.cloudxns.net>
 * <https://www.dnspod.cn>
+* <https://www.dynu.com>
 
 In-A-Dyn defaults to HTTPS, but not all providers may support this, so
 try disabling SSL for the update (`ssl = false`) or the checkip phase
@@ -307,9 +308,9 @@ single `ddns-response = Cool` -- if your provider does give any response
 then use `ddns-response = ""`.
 
 If your DDNS provider does not provide you with a `checkip-server`, you
-can use other free services, like http://ipify.com
+can use other free services, like http://ipify.org
 
-    checkip-server = api.ipify.com
+    checkip-server = api.ipify.org
 
 or even use a script or command:
 
@@ -336,7 +337,9 @@ for them, in their required versions, using the `pkg-config` tool:
 
 They are available from most UNIX distributions as pre-built packages.
 Make sure to install the `-dev` or `-devel` package of the distribution
-packages when building Inadyn.
+packages when building Inadyn.  On Debian/Ubuntu (derivatives):
+
+    $ sudo apt install gnutls-dev libconfuse-dev
 
 When building with HTTPS (SSL/TLS) support, make sure to also install
 the `ca-certificates` package on your system, otherwise Inadyn will not

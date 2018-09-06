@@ -44,7 +44,7 @@
 #endif
 
 #ifdef HAVE_SSL
-#define HTTP_DEFAULT_PORT "443"
+#define HTTP_DEFAULT_PORT NULL
 #else
 #define HTTP_DEFAULT_PORT "80"
 #endif
@@ -1703,7 +1703,7 @@ int do_connect( FILE **fp, char *host, char *port, int ssl )
 #ifdef HAVE_SSL
   if(ssl > 0 || (ssl < 0 && address.sin_port == htons(443)))
   {
-    *fp = ssl_client_fopen(sock);
+    *fp = ssl_client_fopen_name(sock, host);
   }
   else
 #endif
@@ -4882,6 +4882,12 @@ show_message("ez-ipupdate: starting...\n");
   }
   if(port == NULL)
   {
+#ifdef HAVE_SSL
+    if (service->default_port == NULL)
+    {
+      service->default_port = ssl ? "443" : "80";
+    }
+#endif
     port = strdup(service->default_port);
   }
 

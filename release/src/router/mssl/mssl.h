@@ -11,6 +11,7 @@
 
 extern FILE *ssl_server_fopen(int sd);
 extern FILE *ssl_client_fopen(int sd);
+extern FILE *ssl_client_fopen_name(int sd, const char *name);
 extern int mssl_init(char *cert, char *priv);
 
 #endif

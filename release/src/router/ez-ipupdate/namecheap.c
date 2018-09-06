@@ -3,7 +3,7 @@
 #endif
 
 #ifdef HAVE_SSL
-#define HTTP_DEFAULT_PORT "443"
+#define HTTP_DEFAULT_PORT NULL
 #else
 #define HTTP_DEFAULT_PORT "80"
 #endif

@@ -44,7 +44,7 @@
 #endif
 
 #ifdef HAVE_SSL
-#define HTTP_DEFAULT_PORT "443"
+#define HTTP_DEFAULT_PORT NULL
 #else
 #define HTTP_DEFAULT_PORT "80"
 #endif
@@ -4882,6 +4882,12 @@ show_message("ez-ipupdate: starting...\n");
   }
   if(port == NULL)
   {
+#ifdef HAVE_SSL
+    if (service->default_port == NULL)
+    {
+      service->default_port = ssl ? "443" : "80";
+    }
+#endif
     port = strdup(service->default_port);
   }
 

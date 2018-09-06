@@ -19,6 +19,9 @@
 #include <stdarg.h>
 #include <stdint.h>
 #include <errno.h>
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <netdb.h>
 
 #include <openssl/ssl.h>
 #include <openssl/err.h>
@@ -153,7 +156,7 @@ static const cookie_io_functions_t mssl = {
 	mssl_read, mssl_write, mssl_seek, mssl_close
 };
 
-static FILE *_ssl_fopen(int sd, int client)
+static FILE *_ssl_fopen(int sd, int client, const char *name)
 {
 	int r = 0;
 	mssl_cookie_t *kuki;
@@ -180,6 +183,22 @@ static FILE *_ssl_fopen(int sd, int client)
 	if (!client) {
 		// Enforce server cipher order
 		SSL_set_options(kuki->ssl, SSL_OP_CIPHER_SERVER_PREFERENCE);
+	}
+	else
+	{
+		// Setup SNI
+#if OPENSSL_VERSION_NUMBER >= 0x0090806fL && !defined(OPENSSL_NO_TLSEXT)
+		if (name && *name) {
+			struct addrinfo *res, hint = { .ai_flags = AI_NUMERICHOST };
+			if (getaddrinfo(name, NULL, &hint, &res) == 0)
+				freeaddrinfo(res);
+			else if (SSL_set_tlsext_host_name(kuki->ssl, name) != 1) {
+				_dprintf("%s: SSL_set_tlsext_host_name failed\n", __FUNCTION__);
+				mssl_print_err(kuki->ssl);
+				goto ERROR;
+			}
+		}
+#endif
 	}
 
 	// Bind the socket to SSL structure
@@ -220,13 +239,19 @@ ERROR:
 FILE *ssl_server_fopen(int sd)
 {
 	_dprintf("%s()\n", __FUNCTION__);
-	return _ssl_fopen(sd, 0);
+	return _ssl_fopen(sd, 0, NULL);
 }
 
 FILE *ssl_client_fopen(int sd)
 {
 	_dprintf("%s()\n", __FUNCTION__);
-	return _ssl_fopen(sd, 1);
+	return _ssl_fopen(sd, 1, NULL);
+}
+
+FILE *ssl_client_fopen_name(int sd, const char *name)
+{
+	_dprintf("%s()\n", __FUNCTION__);
+	return _ssl_fopen(sd, 1, name);
 }
 
 int mssl_init(char *cert, char *priv)

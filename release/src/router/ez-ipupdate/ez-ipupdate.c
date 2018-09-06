@@ -1703,7 +1703,7 @@ int do_connect( FILE **fp, char *host, char *port, int ssl )
 #ifdef HAVE_SSL
   if(ssl > 0 || (ssl < 0 && address.sin_port == htons(443)))
   {
-    *fp = ssl_client_fopen(sock);
+    *fp = ssl_client_fopen_name(sock, host);
   }
   else
 #endif

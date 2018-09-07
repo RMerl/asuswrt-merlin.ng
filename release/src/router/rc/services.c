@@ -3121,7 +3121,6 @@ start_ddns(void)
 	int wild = nvram_get_int("ddns_wildcard_x");
 	int unit, asus_ddns = 0;
 	char tmp[32], prefix[] = "wanXXXXXXXXXX_";
-	char getwancmd[40];
 	time_t now;
 	pid_t pid;
 
@@ -3309,7 +3308,6 @@ start_ddns(void)
 			else
 				loglevel = "notice";
 
-			snprintf(getwancmd, sizeof(getwancmd), "nvram get %sipaddr", prefix);
 			char *argv[] = { "/usr/sbin/inadyn", "-1",
 			                 "-e", "/sbin/ddns_updated",
 			                 "-f", "/etc/inadyn.conf",

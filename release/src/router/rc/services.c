@@ -3120,7 +3120,7 @@ start_ddns(void)
 	char *service, *loglevel;
 	int wild = nvram_get_int("ddns_wildcard_x");
 	int unit, asus_ddns = 0;
-	char tmp[32], prefix[] = "wanXXXXXXXXXX_";
+	char tmp[512], prefix[] = "wanXXXXXXXXXX_";
 	time_t now;
 	pid_t pid;
 
@@ -3277,8 +3277,10 @@ start_ddns(void)
 				fprintf(fp, "hostname = %s\n", host);
 			}
 
-			fprintf(fp, "username = %s\n", user);
-			fprintf(fp, "password = %s\n", passwd);
+			str_escape_quotes(tmp, user, sizeof(tmp));
+			fprintf(fp, "username = \"%s\"\n", tmp);
+			str_escape_quotes(tmp, passwd, sizeof(tmp));
+			fprintf(fp, "password = \"%s\"\n", tmp);
 
 			if (nvram_get_int("ddns_ipcheck") == 0)	// Internal (local)
 #ifdef HND_ROUTER

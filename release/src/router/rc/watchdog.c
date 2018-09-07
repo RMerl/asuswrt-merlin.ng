@@ -5023,6 +5023,9 @@ void regular_ddns_check(void)
 	struct in_addr ip_addr;
 	struct hostent *hostinfo;
 
+	if (nvram_get_int("ddns_ipcheck") != 0)	// Not relying on local wan0_ipaddr content
+		return;
+
 	//_dprintf("regular_ddns_check...\n");
 
 	hostinfo = gethostbyname(nvram_get("ddns_hostname_x"));

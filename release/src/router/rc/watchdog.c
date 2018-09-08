@@ -5065,7 +5065,6 @@ void regular_ddns_check(void)
 	nvram_set("ddns_update_by_wdog", "1");
 	if (wan_unit != last_unit) {
 		unlink("/tmp/ddns.cache");
-		system("rm -f /tmp/inadyn/cache/*"); /* */
 	}
 	logmessage("watchdog", "Hostname/IP mapping error! Restart ddns.");
 	if (last_unit != wan_unit)
@@ -5158,8 +5157,8 @@ void ddns_check(void)
 	nvram_set("ddns_update_by_wdog", "1");
 	if (wan_unit != last_unit) {
 		unlink("/tmp/ddns.cache");
-		system("rm -f /tmp/inadyn/cache/*"); /* */
 	}
+	system("rm -f /tmp/inadyn.cache/*"); /* */
 	logmessage("watchdog", "start ddns.");
 	if (last_unit != wan_unit)
 		r = notify_rc("restart_ddns");

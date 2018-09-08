@@ -3162,7 +3162,6 @@ start_ddns(void)
 	passwd = nvram_safe_get("ddns_passwd_x");
 	host = nvram_safe_get("ddns_hostname_x");
 	unlink("/tmp/ddns.cache");
-	system("rm -f /tmp/inadyn/cache/*"); /* */
 
 	if (strcmp(server, "WWW.DYNDNS.ORG")==0)
 		service = "default@dyndns.org";
@@ -3341,6 +3340,9 @@ stop_ddns(void)
 		eval("iptables-restore", "/tmp/filter_rules");
 		nvram_unset("ddns_tunbkrnet");
 	}
+
+	system("rm -f /tmp/inadyn.cache/*"); /* */
+
 #ifdef RTCONFIG_OPENVPN
 	update_ovpn_profie_remote();
 #endif
@@ -3425,7 +3427,7 @@ asusddns_reg_domain(int reg)
 	) {
 		logmessage("asusddns", "clear ddns cache file for server/hostname change");
 		unlink("/tmp/ddns.cache");
-		system("rm -f /tmp/inadyn/cache/*"); /* */
+		system("rm -f /tmp/inadyn.cache/*"); /* */
 	}
 	else if (!(fp = fopen("/tmp/ddns.cache", "r")) && (ddns_cache = nvram_get("ddns_cache"))) {
 		if ((fp = fopen("/tmp/ddns.cache", "w+"))) {

@@ -1402,9 +1402,9 @@ function update_digest() {
 											<br />
 											<ol>
 												<li><a id="faq_windows" href="https://www.asus.com/support/FAQ/1004469/" target="_blank" style="text-decoration:underline;">Windows</a></li>
-												<!-- li><a id="faq_macOS" href="https://www.asus.com/support/FAQ/1004472/" target="_blank" style="text-decoration:underline;">Mac OS</a></li -->
-												<!-- li><a id="faq_iPhone" href="https://www.asus.com/support/FAQ/1004471/" target="_blank" style="text-decoration:underline;">iPhone/iPad</a></li -->
-												<!-- li><a id="faq_android" href="https://www.asus.com/support/FAQ/1004466/" target="_blank" style="text-decoration:underline;">Android</a></li -->
+												<li><a id="faq_macOS" href="https://www.asus.com/support/FAQ/1004472/" target="_blank" style="text-decoration:underline;">Mac OS</a></li>
+												<li><a id="faq_iPhone" href="https://www.asus.com/support/FAQ/1004471/" target="_blank" style="text-decoration:underline;">iPhone/iPad</a></li>
+												<li><a id="faq_android" href="https://www.asus.com/support/FAQ/1004466/" target="_blank" style="text-decoration:underline;">Android</a></li>
 											<ol>
 										</div>
 

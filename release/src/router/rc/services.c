@@ -3255,6 +3255,7 @@ start_ddns(void)
 		if( (fp = fopen(INADYNCONF, "w"))) {
 			chmod(INADYNCONF, 0600);
 			fprintf(fp, "ca-trust-file = /etc/ssl/certs/ca-certificates.crt\n");
+			fprintf(fp, "iterations = 1\n");
 
 			if (asus_ddns == 11) {
 				fprintf(fp, "custom namecheap {\n");
@@ -3310,7 +3311,7 @@ start_ddns(void)
 			else
 				loglevel = "notice";
 
-			char *argv[] = { "/usr/sbin/inadyn", "-1",
+			char *argv[] = { "/usr/sbin/inadyn",
 			                 "-e", "/sbin/ddns_updated",
 			                 "-f", "/etc/inadyn.conf",
 			                 "--cache-dir=/tmp/inadyn.cache",

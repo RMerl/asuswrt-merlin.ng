@@ -5075,8 +5075,6 @@ void regular_ddns_check(void)
 	if (!r)
 		nvram_set_int("ddns_last_wan_unit", wan_unit);
 
-
-	return;
 }
 
 void ddns_check(void)
@@ -5089,8 +5087,8 @@ void ddns_check(void)
 #endif
 
 	//_dprintf("ddns_check... %d\n", ddns_check_count);
-	if (!nvram_match("ddns_enable_x", "1"))
-		return;
+//	if (!nvram_match("ddns_enable_x", "1"))
+//		return;
 
 #if defined(RTCONFIG_DUALWAN)
 	if (nvram_match("wans_mode", "lb")) {
@@ -5168,7 +5166,6 @@ void ddns_check(void)
 	if (!r)
 		nvram_set_int("ddns_last_wan_unit", wan_unit);
 
-	return;
 }
 
 void networkmap_check()
@@ -7037,7 +7034,7 @@ wdp:
 		nvram_set("ddns_updated", "0");
 	}
 
-	ddns_check();
+	if (nvram_match("ddns_enable_x", "1")) ddns_check();
 	networkmap_check();
 	httpd_check();
 	dnsmasq_check();

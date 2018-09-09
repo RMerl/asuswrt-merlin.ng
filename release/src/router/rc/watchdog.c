@@ -5015,9 +5015,9 @@ void regular_ddns_check(void)
 {
 #ifdef RPAC68U
 /* The workaround solution avoiding watchdog segfault on RP-AC68U. */
-	int r, wan_unit = rtk_wan_primary_ifunit(), last_unit = nvram_get_int("ddns_last_wan_unit");
+	int r, wan_unit = rtk_wan_primary_ifunit();
 #else
-	int r, wan_unit = wan_primary_ifunit(), last_unit = nvram_get_int("ddns_last_wan_unit");
+	int r, wan_unit = wan_primary_ifunit();
 #endif
 	char prefix[sizeof("wanX_YYY")];
 	struct in_addr ip_addr;
@@ -5060,23 +5060,12 @@ void regular_ddns_check(void)
 		if (nvram_pf_match(prefix, "ipaddr", inet_ntoa(ip_addr)))
 			return;
 
-		logmessage("watchdog", "Hostname/IP mapping error! Restart ddns.");
+		logmessage("watchdog", "DDNS hostname does not match current IP - launching DDNS update");
 	}
 
-	//_dprintf("WAN IP change!\n");
 	nvram_set("ddns_update_by_wdog", "1");
-	if (wan_unit != last_unit) {
-		unlink("/tmp/ddns.cache");
-	}
 
-	if (last_unit != wan_unit)
-		r = notify_rc("restart_ddns");
-	else
-		r = notify_rc("start_ddns");
-
-	if (!r)
-		nvram_set_int("ddns_last_wan_unit", wan_unit);
-
+	notify_rc("start_ddns");
 }
 
 void ddns_check(void)
@@ -5089,8 +5078,10 @@ void ddns_check(void)
 #endif
 
 	//_dprintf("ddns_check... %d\n", ddns_check_count);
-//	if (!nvram_match("ddns_enable_x", "1"))
-//		return;
+
+	// First time called (i.e. after boot)
+	if (last_unit == -1)
+		last_unit = wan_unit;
 
 #if defined(RTCONFIG_DUALWAN)
 	if (nvram_match("wans_mode", "lb")) {
@@ -5124,7 +5115,7 @@ void ddns_check(void)
 			return;
 	}
 
-	if (nvram_match("ddns_regular_check", "1")&& !nvram_match("ddns_server_x", "WWW.ASUS.COM")) {
+	if (nvram_match("ddns_regular_check", "1")/*&& !nvram_match("ddns_server_x", "WWW.ASUS.COM")*/) {
 		int period = nvram_get_int("ddns_regular_period");
 		if (period < 30) period = 60;
 		if (ddns_check_count >= (period*2)) {
@@ -5135,7 +5126,7 @@ void ddns_check(void)
 		ddns_check_count++;
 	}
 
-	if (wan_unit == last_unit && nvram_match("ddns_updated", "1")) //already updated success
+	if ((wan_unit == last_unit) && nvram_match("ddns_updated", "1")) //already updated success
 		return;
 
 	if (wan_unit == last_unit) {

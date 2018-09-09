@@ -3312,6 +3312,7 @@ start_ddns(void)
 
 			char *argv[] = { "/usr/sbin/inadyn",
 			                 "-e", "/sbin/ddns_updated",
+					"--exec-nochg", "/sbin/ddns_updated",
 			                 "--cache-dir=/tmp/inadyn.cache",
 			                 "-l", loglevel,
 			                 NULL };

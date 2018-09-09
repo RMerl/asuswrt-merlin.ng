@@ -186,6 +186,9 @@ extern char *use_iface;		/* Command line option */
 extern char *user_agent;
 extern char *script_cmd;
 extern char *script_exec;
+#ifdef ASUSWRT
+extern char *script_nochg_exec;
+#endif
 extern char *pidfile_name;
 extern char *generic_responses[];
 extern uid_t uid;

@@ -652,8 +652,13 @@ static int update_alias_table(ddns_t *ctx)
 		for (i = 0; i < info->alias_count; i++) {
 			ddns_alias_t *alias = &info->alias[i];
 
-			if (!alias->update_required)
+			if (!alias->update_required) {
+#ifdef ASUSWRT
+				if (script_nochg_exec)
+					os_shell_execute(script_nochg_exec, alias->address, alias->name);
+#endif
 				continue;
+			}
 
 			TRY(send_update(ctx, info, alias, &anychange));
 

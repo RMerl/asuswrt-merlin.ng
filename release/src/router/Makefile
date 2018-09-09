@@ -3917,7 +3917,7 @@ lldpd-0.9.8/Makefile:
 	CFLAGS="-g -O2 -I$(STAGEDIR)/usr/include" \
 	LDFLAGS="-L$(TOP)/lldpd-0.9.8/lib -lm -L$(STAGEDIR)/usr/lib -ljansson $(if $(RTCONFIG_AMAS),-L$(TOP)/json-c/.libs,)" \
 	--with-privsep-user=nobody --with-privsep-group=root --with-privsep-path=/var/run/lldpd \
-	$(if $(HND_ROUTER),,--enable-oldies) \
+	$(if $(RTCONFIG_HND_ROUTER),,--enable-oldies) \
 	$(if $(RTCONFIG_AMAS),--with-json=yes,)
 
 lldpd-0.9.8-install: lldpd-0.9.8

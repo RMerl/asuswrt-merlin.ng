@@ -5023,9 +5023,6 @@ void regular_ddns_check(void)
 	struct in_addr ip_addr;
 	struct hostent *hostinfo;
 
-	if (nvram_get_int("ddns_ipcheck") != 0)	// Not relying on local wan0_ipaddr content
-		return;
-
 	//_dprintf("regular_ddns_check...\n");
 
 	hostinfo = gethostbyname(nvram_get("ddns_hostname_x"));
@@ -5055,18 +5052,23 @@ void regular_ddns_check(void)
 	if (!nvram_match("wans_mode", "lb") && !is_wan_connect(wan_unit))
 		return;
 
-	snprintf(prefix, sizeof(prefix), "wan%d_", wan_unit);
-	ip_addr.s_addr = *(unsigned long *)hostinfo -> h_addr_list[0];
-	//_dprintf("%s ?= %s\n", nvram_pf_get(prefix, "ipaddr"), inet_ntoa(ip_addr));
-	if (nvram_pf_match(prefix, "ipaddr", inet_ntoa(ip_addr)))
-		return;
+	// Only check nvram IP for internal IP check mode
+	if (nvram_get_int("ddns_ipcheck") == 0) {
+		snprintf(prefix, sizeof(prefix), "wan%d_", wan_unit);
+		ip_addr.s_addr = *(unsigned long *)hostinfo -> h_addr_list[0];
+		//_dprintf("%s ?= %s\n", nvram_pf_get(prefix, "ipaddr"), inet_ntoa(ip_addr));
+		if (nvram_pf_match(prefix, "ipaddr", inet_ntoa(ip_addr)))
+			return;
+
+		logmessage("watchdog", "Hostname/IP mapping error! Restart ddns.");
+	}
 
 	//_dprintf("WAN IP change!\n");
 	nvram_set("ddns_update_by_wdog", "1");
 	if (wan_unit != last_unit) {
 		unlink("/tmp/ddns.cache");
 	}
-	logmessage("watchdog", "Hostname/IP mapping error! Restart ddns.");
+
 	if (last_unit != wan_unit)
 		r = notify_rc("restart_ddns");
 	else

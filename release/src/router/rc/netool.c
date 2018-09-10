@@ -871,7 +871,7 @@ int netool_main (int argc, char *argv[])
 			process_task();
 		}
 #endif
-		usleep(1000);
+		pause();
 	}
 	
 	/* Free memory */

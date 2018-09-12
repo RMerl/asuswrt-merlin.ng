@@ -20,7 +20,7 @@
 .\" *
 .\" **************************************************************************
 .\"
-.TH CURLOPT_URL 3 "April 30, 2018" "libcurl 7.61.0" "curl_easy_setopt options"
+.TH CURLOPT_URL 3 "July 24, 2018" "libcurl 7.61.1" "curl_easy_setopt options"
 
 .SH NAME
 CURLOPT_URL \- provide the URL to use in the request
@@ -285,6 +285,7 @@ and get cut off by libcurl if provided literally. You will instead have to
 escape it by providing it as backslash and its ASCII value in hexadecimal:
 "\\23".
 
+.RS 0
 The application does not have to keep the string around after setting this
 option.
 .SH ENCODING

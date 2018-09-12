@@ -20,7 +20,7 @@
 .\" *
 .\" **************************************************************************
 .\"
-.TH CURLOPT_READDATA 3 "May 01, 2016" "libcurl 7.61.0" "curl_easy_setopt options"
+.TH CURLOPT_READDATA 3 "August 11, 2018" "libcurl 7.61.1" "curl_easy_setopt options"
 
 .SH NAME
 CURLOPT_READDATA \- custom pointer passed to the read callback
@@ -36,8 +36,9 @@ input in the 4th argument to the callback.
 If you don't specify a read callback but instead rely on the default internal
 read function, this data must be a valid readable FILE * (cast to 'void *').
 
-If you're using libcurl as a win32 DLL, you MUST use a
-\fICURLOPT_READFUNCTION(3)\fP if you set this option.
+If you're using libcurl as a win32 DLL, you \fBMUST\fP use a
+\fICURLOPT_READFUNCTION(3)\fP if you set this option or you will experience
+crashes.
 .SH DEFAULT
 By default, this is a FILE * to stdin.
 .SH PROTOCOLS

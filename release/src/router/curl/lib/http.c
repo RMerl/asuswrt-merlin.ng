@@ -158,18 +158,20 @@ CURLcode Curl_http_setup_conn(struct connectdata *conn)
   /* allocate the HTTP-specific struct for the Curl_easy, only to survive
      during this request */
   struct HTTP *http;
-  DEBUGASSERT(conn->data->req.protop == NULL);
+  struct Curl_easy *data = conn->data;
+  DEBUGASSERT(data->req.protop == NULL);
 
   http = calloc(1, sizeof(struct HTTP));
   if(!http)
     return CURLE_OUT_OF_MEMORY;
 
   Curl_mime_initpart(&http->form, conn->data);
-  conn->data->req.protop = http;
+  data->req.protop = http;
 
-  Curl_http2_setup_conn(conn);
-  Curl_http2_setup_req(conn->data);
-
+  if(!CONN_INUSE(conn))
+    /* if not alredy multi-using, setup connection details */
+    Curl_http2_setup_conn(conn);
+  Curl_http2_setup_req(data);
   return CURLE_OK;
 }
 
@@ -340,11 +342,11 @@ static CURLcode http_output_bearer(struct connectdata *conn)
  *
  * return TRUE if one was picked
  */
-static bool pickoneauth(struct auth *pick)
+static bool pickoneauth(struct auth *pick, unsigned long mask)
 {
   bool picked;
   /* only deal with authentication we want */
-  unsigned long avail = pick->avail & pick->want;
+  unsigned long avail = pick->avail & pick->want & mask;
   picked = TRUE;
 
   /* The order of these checks is highly relevant, as this will be the order
@@ -506,6 +508,10 @@ CURLcode Curl_http_auth_act(struct connectdata *conn)
   bool pickhost = FALSE;
   bool pickproxy = FALSE;
   CURLcode result = CURLE_OK;
+  unsigned long authmask = ~0ul;
+
+  if(!conn->oauth_bearer)
+    authmask &= (unsigned long)~CURLAUTH_BEARER;
 
   if(100 <= data->req.httpcode && 199 >= data->req.httpcode)
     /* this is a transient response code, ignore */
@@ -514,17 +520,18 @@ CURLcode Curl_http_auth_act(struct connectdata *conn)
   if(data->state.authproblem)
     return data->set.http_fail_on_error?CURLE_HTTP_RETURNED_ERROR:CURLE_OK;
 
-  if(conn->bits.user_passwd &&
+  if((conn->bits.user_passwd || conn->oauth_bearer) &&
      ((data->req.httpcode == 401) ||
       (conn->bits.authneg && data->req.httpcode < 300))) {
-    pickhost = pickoneauth(&data->state.authhost);
+    pickhost = pickoneauth(&data->state.authhost, authmask);
     if(!pickhost)
       data->state.authproblem = TRUE;
   }
   if(conn->bits.proxy_user_passwd &&
      ((data->req.httpcode == 407) ||
       (conn->bits.authneg && data->req.httpcode < 300))) {
-    pickproxy = pickoneauth(&data->state.authproxy);
+    pickproxy = pickoneauth(&data->state.authproxy,
+                            authmask & ~CURLAUTH_BEARER);
     if(!pickproxy)
       data->state.authproblem = TRUE;
   }
@@ -1116,7 +1123,8 @@ CURLcode Curl_add_buffer_send(Curl_send_buffer *in,
   CURLcode result;
   char *ptr;
   size_t size;
-  struct HTTP *http = conn->data->req.protop;
+  struct Curl_easy *data = conn->data;
+  struct HTTP *http = data->req.protop;
   size_t sendsize;
   curl_socket_t sockfd;
   size_t headersize;
@@ -1136,7 +1144,7 @@ CURLcode Curl_add_buffer_send(Curl_send_buffer *in,
 
   DEBUGASSERT(size > included_body_bytes);
 
-  result = Curl_convert_to_network(conn->data, ptr, headersize);
+  result = Curl_convert_to_network(data, ptr, headersize);
   /* Curl_convert_to_network calls failf if unsuccessful */
   if(result) {
     /* conversion failed, free memory and return to the caller */
@@ -1161,8 +1169,14 @@ CURLcode Curl_add_buffer_send(Curl_send_buffer *in,
        must copy the data to the uploadbuffer first, since that is the buffer
        we will be using if this send is retried later.
     */
-    memcpy(conn->data->state.uploadbuffer, ptr, sendsize);
-    ptr = conn->data->state.uploadbuffer;
+    result = Curl_get_upload_buffer(data);
+    if(result) {
+      /* malloc failed, free memory and return to the caller */
+      Curl_add_buffer_free(in);
+      return result;
+    }
+    memcpy(data->state.ulbuf, ptr, sendsize);
+    ptr = data->state.ulbuf;
   }
   else
     sendsize = size;
@@ -1179,13 +1193,13 @@ CURLcode Curl_add_buffer_send(Curl_send_buffer *in,
     size_t headlen = (size_t)amount>headersize ? headersize : (size_t)amount;
     size_t bodylen = amount - headlen;
 
-    if(conn->data->set.verbose) {
+    if(data->set.verbose) {
       /* this data _may_ contain binary stuff */
-      Curl_debug(conn->data, CURLINFO_HEADER_OUT, ptr, headlen);
+      Curl_debug(data, CURLINFO_HEADER_OUT, ptr, headlen);
       if(bodylen) {
         /* there was body data sent beyond the initial header part, pass that
            on to the debug callback too */
-        Curl_debug(conn->data, CURLINFO_DATA_OUT,
+        Curl_debug(data, CURLINFO_DATA_OUT,
                    ptr + headlen, bodylen);
       }
     }
@@ -1210,14 +1224,14 @@ CURLcode Curl_add_buffer_send(Curl_send_buffer *in,
         ptr = in->buffer + amount;
 
         /* backup the currently set pointers */
-        http->backup.fread_func = conn->data->state.fread_func;
-        http->backup.fread_in = conn->data->state.in;
+        http->backup.fread_func = data->state.fread_func;
+        http->backup.fread_in = data->state.in;
         http->backup.postdata = http->postdata;
         http->backup.postsize = http->postsize;
 
         /* set the new pointers for the request-sending */
-        conn->data->state.fread_func = (curl_read_callback)readmoredata;
-        conn->data->state.in = (void *)conn;
+        data->state.fread_func = (curl_read_callback)readmoredata;
+        data->state.in = (void *)conn;
         http->postdata = ptr;
         http->postsize = (curl_off_t)size;
 
@@ -1913,6 +1927,7 @@ CURLcode Curl_http(struct connectdata *conn, bool *done)
   }
 
   http = data->req.protop;
+  DEBUGASSERT(http);
 
   if(!data->state.this_is_a_follow) {
     /* Free to avoid leaking memory on multiple requests*/
@@ -2879,6 +2894,8 @@ CURLcode Curl_http(struct connectdata *conn, bool *done)
       data->req.exp100 = EXP100_SEND_DATA; /* already sent */
       Curl_expire_done(data, EXPIRE_100_TIMEOUT);
     }
+    else
+      data->req.writebytecount = http->writebytecount;
   }
 
   if((conn->httpversion == 20) && data->req.upload_chunky)
@@ -2889,17 +2906,32 @@ CURLcode Curl_http(struct connectdata *conn, bool *done)
   return result;
 }
 
+typedef enum {
+  STATUS_UNKNOWN, /* not enough data to tell yet */
+  STATUS_DONE, /* a status line was read */
+  STATUS_BAD /* not a status line */
+} statusline;
+
+
+/* Check a string for a prefix. Check no more than 'len' bytes */
+static bool checkprefixmax(const char *prefix, const char *buffer, size_t len)
+{
+  size_t ch = CURLMIN(strlen(prefix), len);
+  return curl_strnequal(prefix, buffer, ch);
+}
+
 /*
  * checkhttpprefix()
  *
  * Returns TRUE if member of the list matches prefix of string
  */
-static bool
+static statusline
 checkhttpprefix(struct Curl_easy *data,
-                const char *s)
+                const char *s, size_t len)
 {
   struct curl_slist *head = data->set.http200aliases;
-  bool rc = FALSE;
+  statusline rc = STATUS_BAD;
+  statusline onmatch = len >= 5? STATUS_DONE : STATUS_UNKNOWN;
 #ifdef CURL_DOES_CONVERSIONS
   /* convert from the network encoding using a scratch area */
   char *scratch = strdup(s);
@@ -2916,15 +2948,15 @@ checkhttpprefix(struct Curl_easy *data,
 #endif /* CURL_DOES_CONVERSIONS */
 
   while(head) {
-    if(checkprefix(head->data, s)) {
-      rc = TRUE;
+    if(checkprefixmax(head->data, s, len)) {
+      rc = onmatch;
       break;
     }
     head = head->next;
   }
 
-  if(!rc && (checkprefix("HTTP/", s)))
-    rc = TRUE;
+  if((rc != STATUS_DONE) && (checkprefixmax("HTTP/", s, len)))
+    rc = onmatch;
 
 #ifdef CURL_DOES_CONVERSIONS
   free(scratch);
@@ -2933,11 +2965,12 @@ checkhttpprefix(struct Curl_easy *data,
 }
 
 #ifndef CURL_DISABLE_RTSP
-static bool
+static statusline
 checkrtspprefix(struct Curl_easy *data,
-                const char *s)
+                const char *s, size_t len)
 {
-  bool result = FALSE;
+  statusline result = STATUS_BAD;
+  statusline onmatch = len >= 5? STATUS_DONE : STATUS_UNKNOWN;
 
 #ifdef CURL_DOES_CONVERSIONS
   /* convert from the network encoding using a scratch area */
@@ -2950,30 +2983,31 @@ checkrtspprefix(struct Curl_easy *data,
     /* Curl_convert_from_network calls failf if unsuccessful */
     result = FALSE; /* can't return CURLE_foobar so return FALSE */
   }
-  else
-    result = checkprefix("RTSP/", scratch)? TRUE: FALSE;
+  else if(checkprefixmax("RTSP/", scratch, len))
+    result = onmatch;
   free(scratch);
 #else
   (void)data; /* unused */
-  result = checkprefix("RTSP/", s)? TRUE: FALSE;
+  if(checkprefixmax("RTSP/", s, len))
+    result = onmatch;
 #endif /* CURL_DOES_CONVERSIONS */
 
   return result;
 }
 #endif /* CURL_DISABLE_RTSP */
 
-static bool
+static statusline
 checkprotoprefix(struct Curl_easy *data, struct connectdata *conn,
-                 const char *s)
+                 const char *s, size_t len)
 {
 #ifndef CURL_DISABLE_RTSP
   if(conn->handler->protocol & CURLPROTO_RTSP)
-    return checkrtspprefix(data, s);
+    return checkrtspprefix(data, s, len);
 #else
   (void)conn;
 #endif /* CURL_DISABLE_RTSP */
 
-  return checkhttpprefix(data, s);
+  return checkhttpprefix(data, s, len);
 }
 
 /*
@@ -3087,12 +3121,15 @@ CURLcode Curl_http_readwrite_headers(struct Curl_easy *data,
       if(result)
         return result;
 
-      if(!k->headerline && (k->hbuflen>5)) {
-        /* make a first check that this looks like a protocol header */
-        if(!checkprotoprefix(data, conn, data->state.headerbuff)) {
+      if(!k->headerline) {
+        /* check if this looks like a protocol header */
+        statusline st = checkprotoprefix(data, conn, data->state.headerbuff,
+                                         k->hbuflen);
+        if(st == STATUS_BAD) {
           /* this is not the beginning of a protocol first header line */
           k->header = FALSE;
           k->badheader = HEADER_ALLBAD;
+          streamclose(conn, "bad HTTP: No end-of-message indicator");
           break;
         }
       }
@@ -3121,8 +3158,10 @@ CURLcode Curl_http_readwrite_headers(struct Curl_easy *data,
 
     if(!k->headerline) {
       /* the first read header */
-      if((k->hbuflen>5) &&
-         !checkprotoprefix(data, conn, data->state.headerbuff)) {
+      statusline st = checkprotoprefix(data, conn, data->state.headerbuff,
+                                       k->hbuflen);
+      if(st == STATUS_BAD) {
+        streamclose(conn, "bad HTTP: No end-of-message indicator");
         /* this is not the beginning of a protocol first header line */
         k->header = FALSE;
         if(*nread)
@@ -3491,7 +3530,7 @@ CURLcode Curl_http_readwrite_headers(struct Curl_easy *data,
              compare header line against list of aliases
           */
           if(!nc) {
-            if(checkhttpprefix(data, k->p)) {
+            if(checkhttpprefix(data, k->p, k->hbuflen) == STATUS_DONE) {
               nc = 1;
               k->httpcode = 200;
               conn->httpversion = 10;

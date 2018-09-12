@@ -61,6 +61,13 @@ AC_SUBST(CONFIGURE_OPTIONS)
 CURL_CFLAG_EXTRAS=""
 if test X"$want_werror" = Xyes; then
   CURL_CFLAG_EXTRAS="-Werror"
+  if test "$compiler_id" = "GNU_C"; then
+    dnl enable -pedantic-errors for GCC 5 and later,
+    dnl as before that it was the same as -Werror=pedantic
+    if test "$compiler_num" -ge "500"; then
+      CURL_CFLAG_EXTRAS="$CURL_CFLAG_EXTRAS -pedantic-errors"
+    fi
+  fi
 fi
 AC_SUBST(CURL_CFLAG_EXTRAS)
 
@@ -1650,7 +1657,10 @@ if test -z "$ssl_backends" -o "x$OPT_SSL" != xno &&
      LIBS="-lcrypto $LIBS"
      ],[
      LDFLAGS="$CLEANLDFLAGS -L$LIB_OPENSSL"
-     CPPFLAGS="$CLEANCPPFLAGS -I$PREFIX_OPENSSL/include/openssl -I$PREFIX_OPENSSL/include"
+     if test "$PKGCONFIG" = "no" ; then
+       # only set this if pkg-config wasn't used
+       CPPFLAGS="$CLEANCPPFLAGS -I$PREFIX_OPENSSL/include/openssl -I$PREFIX_OPENSSL/include"
+     fi
      AC_CHECK_LIB(crypto, HMAC_Init_ex,[
        HAVECRYPTO="yes"
        LIBS="-lcrypto $LIBS"], [

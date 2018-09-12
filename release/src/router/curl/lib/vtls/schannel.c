@@ -285,7 +285,15 @@ get_alg_id_by_name(char *name)
 #ifdef CALG_HMAC
   CIPHEROPTION(CALG_HMAC);
 #endif
+#if !defined(__W32API_MAJOR_VERSION) || \
+    !defined(__W32API_MINOR_VERSION) || \
+    defined(__MINGW64_VERSION_MAJOR) || \
+    (__W32API_MAJOR_VERSION > 5)     || \
+    ((__W32API_MAJOR_VERSION == 5) && (__W32API_MINOR_VERSION > 0))
+  /* CALG_TLS1PRF has a syntax error in MinGW's w32api up to version 5.0,
+     see https://osdn.net/projects/mingw/ticket/38391 */
   CIPHEROPTION(CALG_TLS1PRF);
+#endif
 #ifdef CALG_HASH_REPLACE_OWF
   CIPHEROPTION(CALG_HASH_REPLACE_OWF);
 #endif
@@ -594,12 +602,15 @@ schannel_connect_step1(struct connectdata *conn, int sockindex)
         return result;
       }
 
-      cert_store = CertOpenStore(CURL_CERT_STORE_PROV_SYSTEM, 0,
-                                 (HCRYPTPROV)NULL,
-                                 cert_store_name, cert_store_path);
+      cert_store =
+        CertOpenStore(CURL_CERT_STORE_PROV_SYSTEM, 0,
+                      (HCRYPTPROV)NULL,
+                      CERT_STORE_OPEN_EXISTING_FLAG | cert_store_name,
+                      cert_store_path);
       if(!cert_store) {
-        failf(data, "schannel: Failed to open cert store %s %s",
-              cert_store_name, cert_store_path);
+        failf(data, "schannel: Failed to open cert store %x %s, "
+              "last error is %x",
+              cert_store_name, cert_store_path, GetLastError());
         Curl_unicodefree(cert_path);
         return CURLE_SSL_CONNECT_ERROR;
       }

@@ -8,10 +8,10 @@
 # Benno Schulenberg <vertaling@coevern.nl>, 2015, 2016, 2017, 2018.
 msgid ""
 msgstr ""
-"Project-Id-Version: nano 2.9.8-pre1\n"
+"Project-Id-Version: nano 3.0-pre1\n"
 "Report-Msgid-Bugs-To: nano-devel@gnu.org\n"
-"POT-Creation-Date: 2018-06-02 10:23+0200\n"
-"PO-Revision-Date: 2018-05-29 19:41+0200\n"
+"POT-Creation-Date: 2018-09-09 11:48+0200\n"
+"PO-Revision-Date: 2018-09-05 19:50+0200\n"
 "Last-Translator: Benno Schulenberg <vertaling@coevern.nl>\n"
 "Language-Team: Esperanto <translation-team-eo@lists.sourceforge.net>\n"
 "Language: eo\n"
@@ -27,82 +27,86 @@ msgid "Cannot open directory: %s"
 msgstr "Ne eblas malfermi dosierujon: %s"
 
 #. TRANSLATORS: This is a prompt.
-#: src/browser.c:230
+#: src/browser.c:228
 msgid "Go To Directory"
 msgstr "Iri dosierujon"
 
-#: src/browser.c:233 src/browser.c:693 src/files.c:1074 src/files.c:2104
-#: src/nano.c:1073 src/search.c:117 src/search.c:210 src/search.c:718
-#: src/search.c:770 src/text.c:3050 src/text.c:3232
+#: src/browser.c:231 src/browser.c:691 src/files.c:1131 src/files.c:2159
+#: src/nano.c:1078 src/search.c:116 src/search.c:209 src/search.c:715
+#: src/search.c:767 src/text.c:3052 src/text.c:3234
 msgid "Cancelled"
 msgstr "Rezignita"
 
 #. TRANSLATORS: This refers to the confining effect of the
 #. * option --operatingdir, not of --restricted.
-#: src/browser.c:250 src/browser.c:281
+#: src/browser.c:248 src/browser.c:279
 #, c-format
 msgid "Can't go outside of %s"
 msgstr "Ne eblas iri ekstere de %s"
 
-#: src/browser.c:272
+#: src/browser.c:270
 msgid "Can't move up a directory"
 msgstr "Ne eblas iri al supra dosierujo"
 
-#: src/browser.c:287 src/files.c:965 src/files.c:971 src/files.c:1627
-#: src/files.c:1744 src/files.c:1785 src/files.c:1805 src/files.c:1917
-#: src/history.c:311 src/history.c:407 src/rcfile.c:538 src/rcfile.c:1222
+#: src/browser.c:285 src/files.c:1012 src/files.c:1018 src/files.c:1677
+#: src/files.c:1794 src/files.c:1836 src/files.c:1856 src/files.c:1970
+#: src/history.c:311 src/history.c:407 src/rcfile.c:528 src/rcfile.c:1206
 #, c-format
 msgid "Error reading %s: %s"
 msgstr "Eraro dum legado de %s: %s"
 
-#: src/browser.c:371
+#: src/browser.c:369
 msgid "The working directory has disappeared"
 msgstr "La labordosierujo malaperis"
 
 #. TRANSLATORS: Try to keep this at most 7 characters.
-#: src/browser.c:566 src/browser.c:573
+#: src/browser.c:562 src/browser.c:569
 msgid "(dir)"
 msgstr "(ujo)"
 
 #. TRANSLATORS: Try to keep this at most 12 characters.
-#: src/browser.c:570
+#: src/browser.c:566
 msgid "(parent dir)"
 msgstr "(patra ujo)"
 
 #. TRANSLATORS: Try to keep this at most 7 characters.
 #. * If necessary, you can leave out the parentheses.
-#: src/browser.c:600
+#: src/browser.c:596
 msgid "(huge)"
 msgstr "(ega)"
 
 #. TRANSLATORS: This is the main search prompt.
-#: src/browser.c:684 src/search.c:103
+#: src/browser.c:681 src/search.c:103
 msgid "Search"
 msgstr "Serĉi"
 
-#: src/browser.c:723 src/browser.c:728 src/search.c:280
+#: src/browser.c:682 src/search.c:107
+msgid " [Backwards]"
+msgstr " [malantaŭen]"
+
+#: src/browser.c:721 src/browser.c:726 src/search.c:279
 msgid "Search Wrapped"
 msgstr "Serĉado ĉirkaŭiris"
 
-#: src/browser.c:739 src/search.c:415
+#: src/browser.c:737 src/search.c:412
 msgid "This is the only occurrence"
 msgstr "Ĉi tiu estas la ununura aperaĵo"
 
-#: src/browser.c:784 src/search.c:354
+#: src/browser.c:783 src/search.c:353
 msgid "No current search pattern"
 msgstr "Mankas ankoraŭ serĉendaĵo"
 
-#: src/color.c:183
+#: src/color.c:182
 #, c-format
 msgid "Unknown syntax name: %s"
 msgstr "Nekonata sintakso: %s"
 
-#: src/color.c:239
+#: src/color.c:238
 #, c-format
 msgid "magic_load() failed: %s"
 msgstr "magic_load() fiaskis: %s"
 
-#: src/color.c:243
+#: src/color.c:242
 #, c-format
 msgid "magic_file(%s) failed: %s"
 msgstr "magic_file(%s) fiaskis: %s"
@@ -174,7 +178,7 @@ msgstr "Dosiero %s jam redaktiĝas (%s, %s, PID %s); ĉu daŭrigi? "
 msgid "Can't read file from outside of %s"
 msgstr "Ne eblas legi dosieron el ekstere de %s"
 
-#: src/files.c:445 src/files.c:955 src/rcfile.c:517
+#: src/files.c:445 src/files.c:1002 src/rcfile.c:507
 #, c-format
 msgid "\"%s\" is a directory"
 msgstr "'%s' estas dosierujo"
@@ -184,1010 +188,1028 @@ msgstr "'%s' estas dosierujo"
 msgid "\"%s\" is not a normal file"
 msgstr "'%s' ne estas normala dosiero"
 
-#: src/files.c:594
-msgid "No more open file buffers"
-msgstr "Ne ekzistas pliaj malfermaj bufroj"
+#: src/files.c:526 src/files.c:548 src/files.c:572 src/files.c:590
+msgid "spelling correction"
+msgstr "literuma korekto"
 
-#: src/files.c:619
+#. TRANSLATORS: first %s is file name, second %s is file format.
+#: src/files.c:623
 #, c-format
-msgid "Switched to %s"
-msgstr "Ŝaltita al %s"
+msgid "%s -- %zu line (%s)"
+msgid_plural "%s -- %zu lines (%s)"
+msgstr[0] "%s -- %zu linio (%s)"
+msgstr[1] "%s -- %zu linioj (%s)"
 
-#: src/files.c:621 src/global.c:1042 src/winio.c:2047
+#: src/files.c:625 src/files.c:631 src/global.c:1016 src/winio.c:2072
 msgid "New Buffer"
 msgstr "Nova bufro"
 
-#: src/files.c:886
+#: src/files.c:626
+msgid "DOS"
+msgstr "DOS"
+
+#: src/files.c:626
+msgid "Mac"
+msgstr "Mac"
+
+#: src/files.c:629
+#, c-format
+msgid "%s -- %zu line"
+msgid_plural "%s -- %zu lines"
+msgstr[0] "%s -- %zu linio"
+msgstr[1] "%s -- %zu linioj"
+
+#: src/files.c:640
+msgid "No more open file buffers"
+msgstr "Ne ekzistas pliaj malfermaj bufroj"
+
+#: src/files.c:933
 #, c-format
 msgid "File '%s' is unwritable"
 msgstr "Dosiero '%s' ne skribeblas"
 
 #. TRANSLATORS: Keep the next four messages at most 78 characters.
-#: src/files.c:890
+#: src/files.c:937
 #, c-format
 msgid "Read %zu line (Converted from DOS and Mac format)"
 msgid_plural "Read %zu lines (Converted from DOS and Mac format)"
 msgstr[0] "Legiĝis %zu linio (konvertita el DOS- kaj Mac-aranĝo)"
 msgstr[1] "Legiĝis %zu linioj (konvertitaj el DOS- kaj Mac-aranĝo)"
 
-#: src/files.c:895
+#: src/files.c:942
 #, c-format
 msgid "Read %zu line (Converted from Mac format)"
 msgid_plural "Read %zu lines (Converted from Mac format)"
 msgstr[0] "Legiĝis %zu linio (konvertita el Mac-aranĝo)"
 msgstr[1] "Legiĝis %zu linioj (konvertitaj el Mac-aranĝo)"
 
-#: src/files.c:900
+#: src/files.c:947
 #, c-format
 msgid "Read %zu line (Converted from DOS format)"
 msgid_plural "Read %zu lines (Converted from DOS format)"
 msgstr[0] "Legiĝis %zu linio (konvertita el DOS-aranĝo)"
 msgstr[1] "Legiĝis %zu linioj (konvertitaj el DOS-aranĝo)"
 
-#: src/files.c:906
+#: src/files.c:953
 #, c-format
 msgid "Read %zu line"
 msgid_plural "Read %zu lines"
 msgstr[0] "Legiĝis %zu linio"
 msgstr[1] "Legiĝis %zu linioj"
 
-#: src/files.c:941
+#: src/files.c:988
 msgid "New File"
 msgstr "Nova dosiero"
 
-#: src/files.c:946
+#: src/files.c:993
 #, c-format
 msgid "File \"%s\" not found"
 msgstr "Dosiero '%s' ne trovatas"
 
-#: src/files.c:956 src/rcfile.c:518
+#: src/files.c:1003 src/rcfile.c:508
 #, c-format
 msgid "\"%s\" is a device file"
 msgstr "'%s' estas aparato"
 
-#: src/files.c:974
+#: src/files.c:1021
 msgid "Reading File"
 msgstr "Legado de dosiero"
 
-#. TRANSLATORS: The next four messages are prompts.
-#: src/files.c:1040
+#. TRANSLATORS: The next six messages are prompts.
+#: src/files.c:1087
 msgid "Command to execute in new buffer"
 msgstr "Rulenda komando en nova bufro"
 
-#: src/files.c:1043
+#: src/files.c:1090
 msgid "Command to execute"
 msgstr "Rulenda komando"
 
-#: src/files.c:1049
+#: src/files.c:1098
 #, c-format
-msgid "File to insert into new buffer [from %s]"
-msgstr "Enmetenda dosiero en nova bufro [el %s]"
+msgid "File to read unconverted into new buffer [from %s]"
+msgstr "Dosiero por malfermi en nova bufro (sen konverti) [el %s]"
 
-#: src/files.c:1052
+#: src/files.c:1101
+#, c-format
+msgid "File to read into new buffer [from %s]"
+msgstr "Dosiero por malfermi en nova bufro [el %s]"
+
+#: src/files.c:1106
+#, c-format
+msgid "File to insert unconverted [from %s]"
+msgstr "Enmetenda dosiero (sen konverti) [el %s]"
+
+#: src/files.c:1109
 #, c-format
 msgid "File to insert [from %s]"
 msgstr "Enmetenda dosiero [el %s]"
 
-#: src/files.c:1213
+#: src/files.c:1263
 msgid "Key invalid in non-multibuffer mode"
 msgstr "Klavo nur validas en multbufra moduso"
 
-#: src/files.c:1426
+#: src/files.c:1476
 msgid "Invalid operating directory\n"
 msgstr "Malvalida uzenda dosierujo\n"
 
-#: src/files.c:1475
+#: src/files.c:1525
 msgid "Failed to write backup file; continue saving? (Say N if unsure.) "
 msgstr "Malsukcesis skribi savkopion; ĉu tamen konservi?  (N se vi dubas) "
 
-#: src/files.c:1492
+#: src/files.c:1542
 msgid "Invalid backup directory\n"
 msgstr "Malvalida savkopia dosierujo\n"
 
-#: src/files.c:1585
+#: src/files.c:1635
 #, c-format
 msgid "Can't write outside of %s"
 msgstr "Ne eblas skribi ekstere de %s"
 
-#: src/files.c:1663 src/files.c:1687 src/files.c:1705 src/files.c:1719
-#: src/files.c:1731 src/files.c:1754
+#: src/files.c:1713 src/files.c:1737 src/files.c:1755 src/files.c:1769
+#: src/files.c:1781 src/files.c:1804
 #, c-format
 msgid "Error writing backup file %s: %s"
 msgstr "Eraro dum skribado de savkopio %s: %s"
 
-#: src/files.c:1664 src/nano.c:656
+#: src/files.c:1714 src/nano.c:666
 msgid "Too many backup files?"
 msgstr "Ĉu troaj savkopioj?"
 
-#: src/files.c:1794 src/files.c:1816 src/help.c:55 src/help.c:122
-#: src/text.c:2968 src/text.c:2986 src/text.c:3359 src/text.c:3370
+#: src/files.c:1845 src/files.c:1867 src/help.c:55 src/help.c:122
+#: src/text.c:2970 src/text.c:2988
 #, c-format
 msgid "Error writing temp file: %s"
 msgstr "Eraro dum skribado de portempa dosiero: %s"
 
-#: src/files.c:1835 src/files.c:1845 src/files.c:1865 src/files.c:1882
-#: src/files.c:1892 src/files.c:1924 src/files.c:1931
+#: src/files.c:1887 src/files.c:1897 src/files.c:1917 src/files.c:1934
+#: src/files.c:1944 src/files.c:1977 src/files.c:1986
 #, c-format
 msgid "Error writing %s: %s"
 msgstr "Eraro dum skribado de %s: %s"
 
-#: src/files.c:1981
+#: src/files.c:2036
 #, c-format
 msgid "Wrote %zu line"
 msgid_plural "Wrote %zu lines"
 msgstr[0] "Skribiĝis %zu linio"
 msgstr[1] "Skribiĝis %zu linioj"
 
-#: src/files.c:2064
+#: src/files.c:2119
 msgid " [DOS Format]"
 msgstr " [DOS-aranĝo]"
 
-#: src/files.c:2065
+#: src/files.c:2120
 msgid " [Mac Format]"
 msgstr " [Mac-aranĝo]"
 
-#: src/files.c:2066
+#: src/files.c:2121
 msgid " [Backup]"
 msgstr " [savkopii]"
 
 #. TRANSLATORS: The next six strings are prompts.
-#: src/files.c:2073
+#: src/files.c:2128
 msgid "Prepend Selection to File"
 msgstr "Antaŭglui markaĵon al dosiero"
 
-#: src/files.c:2074
+#: src/files.c:2129
 msgid "Append Selection to File"
 msgstr "Postglui markaĵon al dosiero"
 
-#: src/files.c:2075
+#: src/files.c:2130
 msgid "Write Selection to File"
 msgstr "Konservi markaĵon en dosiero"
 
-#: src/files.c:2077
+#: src/files.c:2132
 msgid "File Name to Prepend to"
 msgstr "Nomo de dosiero al kiu antaŭglui"
 
-#: src/files.c:2078
+#: src/files.c:2133
 msgid "File Name to Append to"
 msgstr "Nomo de dosiero al kiu postglui"
 
-#: src/files.c:2081
+#: src/files.c:2136
 msgid "File Name to Write"
 msgstr "Nomo de skribota dosiero"
 
+#. TRANSLATORS: Concisely say the screen is too small.
+#: src/files.c:2219
+msgid "Too tiny"
+msgstr "Tro eta"
+
 #. TRANSLATORS: Restricted mode forbids overwriting.
-#: src/files.c:2190
+#: src/files.c:2249
 msgid "File exists -- cannot overwrite"
 msgstr "Dosiero jam ekzistas -- ne eblas surskribi ĝin"
 
-#: src/files.c:2200
+#: src/files.c:2259
 msgid "Save file under DIFFERENT NAME? "
 msgstr "Ĉu konservi ALINOME? "
 
-#: src/files.c:2208
+#: src/files.c:2267
 #, c-format
 msgid "File \"%s\" exists; OVERWRITE? "
 msgstr "Dosiero '%s' jam ekzistas; ĉu ANSTATAŬIGI? "
 
-#: src/files.c:2235
+#: src/files.c:2294
 msgid "File on disk has changed"
 msgstr "Dosiero sur disko modifiĝis"
 
-#: src/files.c:2237
+#: src/files.c:2296
 msgid "File was modified since you opened it; continue saving? "
 msgstr "Dosiero modifiĝis post malfermo; ĉu tamen surskribi ĝin? "
 
-#: src/files.c:2657
+#: src/files.c:2716
 msgid "(more)"
 msgstr "(plu)"
 
-#. TRANSLATORS: Try to keep the next fifteen strings at most 10 characters.
-#: src/global.c:495
+#. TRANSLATORS: Try to keep the next four strings at most 10 characters.
+#: src/global.c:507
 msgid "Exit"
 msgstr "Fini"
 
-#: src/global.c:496
+#: src/global.c:508
 msgid "Close"
 msgstr "Fermi"
 
-#: src/global.c:497
+#: src/global.c:509
 msgid "Uncut Text"
 msgstr "Alglui"
 
-#: src/global.c:499
+#: src/global.c:511
 msgid "Unjustify"
 msgstr "Malrektigi"
 
-#: src/global.c:505
-msgid "Read File"
-msgstr "Enmeti"
-
-#: src/global.c:506
-msgid "Where Is"
-msgstr "Serĉi"
-
-#: src/global.c:507
-msgid "Replace"
-msgstr "Anstataŭigi"
-
-#: src/global.c:508
-msgid "Go To Line"
-msgstr "Iri linion"
-
-#: src/global.c:509
-msgid "Prev Line"
-msgstr "Linio supren"
-
-#: src/global.c:510
-msgid "Next Line"
-msgstr "Linio suben"
-
-#: src/global.c:511
-msgid "Prev Page"
-msgstr "Paĝo supren"
-
-#: src/global.c:512
-msgid "Next Page"
-msgstr "Paĝo suben"
-
-#: src/global.c:514
-msgid "Justify"
-msgstr "Rektigi"
-
-#: src/global.c:515
-msgid "FullJstify"
-msgstr "Rektigi ĉion"
-
-#: src/global.c:517
-msgid "Refresh"
-msgstr "Remontri"
-
-#. TRANSLATORS: Try to keep this string at most 12 characters.
-#: src/global.c:519
-msgid "WhereIs Next"
-msgstr "Serĉi sekvan"
-
 #. TRANSLATORS: The next long series of strings are shortcut descriptions;
 #. * they are best kept shorter than 56 characters, but may be longer.
-#: src/global.c:524
+#: src/global.c:520
 msgid "Cancel the current function"
 msgstr "Rezigni la nunan operacion"
 
-#: src/global.c:525
+#: src/global.c:521
 msgid "Display this help text"
 msgstr "Montri ĉi tiun helptekston"
 
-#: src/global.c:527
+#: src/global.c:523
 msgid "Close the current buffer / Exit from nano"
 msgstr "Fermi la nunan bufron / Eliri el 'nano'"
 
-#: src/global.c:529
+#: src/global.c:525
 msgid "Write the current buffer (or the marked region) to disk"
 msgstr "Konservi la nunan bufron (aŭ markitan regionon) sur disko"
 
-#: src/global.c:531
+#: src/global.c:527
 msgid "Insert another file into current buffer (or into new buffer)"
 msgstr "Enmeti alian dosieron en la nuna bufro (aŭ en nova bufro)"
 
-#: src/global.c:533
+#: src/global.c:529
 msgid "Search forward for a string or a regular expression"
 msgstr "Antaŭen serĉi signoĉenon aŭ regulesprimon"
 
-#: src/global.c:535
+#: src/global.c:531
 msgid "Search backward for a string or a regular expression"
 msgstr "Malantaŭen serĉi signoĉenon aŭ regulesprimon"
 
-#: src/global.c:537
-msgid "Search for a string"
-msgstr "Serĉi parton de dosiernomo"
+#: src/global.c:533
+msgid "Search forward for a string"
+msgstr "Serĉi antaŭen parton de dosiernomo"
 
-#: src/global.c:538
+#: src/global.c:534
+msgid "Search backward for a string"
+msgstr "Serĉi malantaŭen parton de dosiernomo"
+
+#: src/global.c:535
 msgid "Refresh the file list"
 msgstr "Aktualigi dosierliston"
 
-#: src/global.c:540
+#: src/global.c:537
 msgid "Go to lefthand column"
 msgstr "Iri al plej liva kolumno"
 
-#: src/global.c:541
+#: src/global.c:538
 msgid "Go to righthand column"
 msgstr "Iri al plej dekstra kolumno"
 
-#: src/global.c:542
+#: src/global.c:539
 msgid "Go to first row in this column"
 msgstr "Iri al unua vico en ĉi tiu kolumno"
 
-#: src/global.c:543
+#: src/global.c:540
 msgid "Go to last row in this column"
 msgstr "Iri al lasta vico en ĉi tiu kolumno"
 
-#: src/global.c:546
+#: src/global.c:543
 msgid "Go one screenful up"
 msgstr "Iri unu paĝo supren"
 
-#: src/global.c:547
+#: src/global.c:544
 msgid "Go one screenful down"
 msgstr "Iri unu paĝo suben"
 
-#: src/global.c:549
+#: src/global.c:546
 msgid "Cut current line (or marked region) and store it in cutbuffer"
 msgstr "Eltondi linion (aŭ markitan regionon) kaj gardi ĝin en tondujo"
 
-#: src/global.c:551
+#: src/global.c:548
 msgid "Uncut from the cutbuffer into the current line"
 msgstr "Glui tekstaĵon el la tondujo en la nuna linio"
 
-#: src/global.c:552
+#: src/global.c:549
 msgid "Display the position of the cursor"
 msgstr "Montri la pozicion de la kursoro"
 
-#: src/global.c:554
+#: src/global.c:551
 msgid "Invoke the spell checker, if available"
 msgstr "Ruli literumilon (se disponeblas)"
 
-#: src/global.c:556
+#: src/global.c:553
 msgid "Replace a string or a regular expression"
 msgstr "Anstataŭigi signoĉenon aŭ regulesprimon"
 
-#: src/global.c:557
+#: src/global.c:554
 msgid "Go to line and column number"
 msgstr "Iri al lininumero (kaj kolumnnumero)"
 
-#: src/global.c:558
-msgid "Repeat the last search"
-msgstr "Ripeti lastan serĉon"
-
-#: src/global.c:560
+#: src/global.c:556
 msgid "Mark text starting from the cursor position"
 msgstr "Marki tekston ekde la kursora pozicio"
 
-#: src/global.c:562
+#: src/global.c:558
 msgid "Copy current line (or marked region) and store it in cutbuffer"
 msgstr "Kopii linion (aŭ markitan regionon) kaj gardi ĝin en tondujo"
 
-#: src/global.c:563
+#: src/global.c:559
 msgid "Indent the current line (or marked lines)"
 msgstr "Deŝovi enen la nunan linion (aŭ markitajn liniojn)"
 
-#: src/global.c:564
+#: src/global.c:560
 msgid "Unindent the current line (or marked lines)"
 msgstr "Deŝovi eksteren la nunan linion (aŭ markitajn liniojn)"
 
-#: src/global.c:565
+#: src/global.c:561
 msgid "Undo the last operation"
 msgstr "Malfari la lastan agon"
 
-#: src/global.c:566
+#: src/global.c:562
 msgid "Redo the last undone operation"
 msgstr "Refari la lastan malfaratan agon"
 
-#: src/global.c:568
+#: src/global.c:564
 msgid "Go back one character"
 msgstr "Iri unu signon malantaŭen"
 
-#: src/global.c:569
+#: src/global.c:565
 msgid "Go forward one character"
 msgstr "Iri unu signon antaŭen"
 
-#: src/global.c:570
+#: src/global.c:566
 msgid "Go back one word"
 msgstr "Iri unu vorton malantaŭen"
 
-#: src/global.c:571
+#: src/global.c:567
 msgid "Go forward one word"
 msgstr "Iri unu vorton antaŭen"
 
-#: src/global.c:572
+#: src/global.c:568
 msgid "Go to previous line"
 msgstr "Iri al la supra linio"
 
-#: src/global.c:573
+#: src/global.c:569
 msgid "Go to next line"
 msgstr "Iri al la suba linio"
 
-#: src/global.c:574
+#: src/global.c:570
 msgid "Go to beginning of current line"
 msgstr "Iri al la komenco de la nuna linio"
 
-#: src/global.c:575
+#: src/global.c:571
 msgid "Go to end of current line"
 msgstr "Iri al la fino de la nuna linio"
 
-#: src/global.c:576
+#: src/global.c:572
 msgid "Go to previous block of text"
 msgstr "Iri al antaŭa tekstbloko"
 
-#: src/global.c:577
+#: src/global.c:573
 msgid "Go to next block of text"
 msgstr "Iri al posta tekstbloko"
 
-#: src/global.c:580
+#: src/global.c:576
 msgid "Go to beginning of paragraph; then of previous paragraph"
 msgstr "Iri al komenco de alineo; poste al ĝi de antaŭa alineo"
 
-#: src/global.c:582
+#: src/global.c:578
 msgid "Go just beyond end of paragraph; then of next paragraph"
 msgstr "Iri al postfino de alineo; poste al ĝi de posta alineo"
 
-#: src/global.c:584
+#: src/global.c:580
 msgid "Go to the first line of the file"
 msgstr "Iri al la unua linio de la dosiero"
 
-#: src/global.c:585
+#: src/global.c:581
 msgid "Go to the last line of the file"
 msgstr "Iri al la lasta linio de la dosiero"
 
-#: src/global.c:587
+#: src/global.c:583
 msgid "Go to the matching bracket"
 msgstr "Iri al para krampo"
 
-#: src/global.c:591
+#: src/global.c:587
 msgid "Scroll up one line without moving the cursor textually"
 msgstr "Rulumi unu linion supren sen movi la kursoron tekste"
 
-#: src/global.c:593
+#: src/global.c:589
 msgid "Scroll down one line without moving the cursor textually"
 msgstr "Rulumi unu linion suben sen movi la kursoron tekste"
 
-#: src/global.c:596
+#: src/global.c:592
 msgid "Switch to the previous file buffer"
 msgstr "Ŝalti al malsekva dosierbufro"
 
-#: src/global.c:597
+#: src/global.c:593
 msgid "Switch to the next file buffer"
 msgstr "Ŝalti al sekva dosierbufro"
 
-#: src/global.c:599
+#: src/global.c:595
 msgid "Insert the next keystroke verbatim"
 msgstr "Enmeti la tujsekvan klavon tielkiel"
 
-#: src/global.c:600
+#: src/global.c:596
 msgid "Insert a tab at the cursor position"
 msgstr "Enmeti tabon je la kursora pozicio"
 
-#: src/global.c:601
+#: src/global.c:597
 msgid "Insert a newline at the cursor position"
 msgstr "Enmeti novlinion je la kursora pozicio"
 
-#: src/global.c:602
+#: src/global.c:598
 msgid "Delete the character under the cursor"
 msgstr "Forigi la signon sub la kursoro"
 
-#: src/global.c:604
+#: src/global.c:600
 msgid "Delete the character to the left of the cursor"
 msgstr "Forigi la signon maldekstran de la kursoro"
 
-#: src/global.c:607
+#: src/global.c:603
 msgid "Cut backward from cursor to word start"
 msgstr "Forigi ekde de la kursoro ĝis antaŭa vortkomenco"
 
-#: src/global.c:609
+#: src/global.c:605
 msgid "Cut forward from cursor to next word start"
 msgstr "Forigi ekde de la kursoro ĝis posta vortkomenco"
 
-#: src/global.c:611
+#: src/global.c:607
 msgid "Cut from the cursor position to the end of the file"
 msgstr "Forigi ĉion ekde de la kursoro ĝis la dosierfino"
 
-#: src/global.c:614
+#: src/global.c:610
 msgid "Justify the current paragraph"
 msgstr "Rektigi la nunan alineon"
 
-#: src/global.c:615
+#: src/global.c:611
 msgid "Justify the entire file"
 msgstr "Rektigi la tutan dosieron"
 
-#: src/global.c:619
+#: src/global.c:615
 msgid "Count the number of words, lines, and characters"
 msgstr "Nombri la vortojn, liniojn, kaj signojn"
 
-#: src/global.c:622
+#: src/global.c:618
 msgid "Refresh (redraw) the current screen"
 msgstr "Aktualigi (redesegni) la nunan ekranon"
 
-#: src/global.c:624
+#: src/global.c:620
 msgid "Suspend the editor (if suspension is enabled)"
 msgstr "Paŭzigi la redaktilon (se paŭzigebleco enŝaltitas)"
 
-#: src/global.c:626
+#: src/global.c:622
 msgid "Try and complete the current word"
 msgstr "Provi kompletigi la nunan vortpecon"
 
-#: src/global.c:630
+#: src/global.c:626
 msgid "Comment/uncomment the current line (or marked lines)"
 msgstr "(Mal)komentigi la nunan linion (aŭ markitajn liniojn)"
 
-#: src/global.c:632
+#: src/global.c:628
 msgid "Save file without prompting"
 msgstr "Konservi dosieron sen demandi"
 
-#: src/global.c:634
+#: src/global.c:629
 msgid "Search next occurrence backward"
 msgstr "Serĉi sekvan okazon malantaŭen"
 
-#: src/global.c:635
+#: src/global.c:630
 msgid "Search next occurrence forward"
 msgstr "Serĉi sekvan okazon antaŭen"
 
-#: src/global.c:636
+#: src/global.c:632
 msgid "Start/stop recording a macro"
 msgstr "Komenci/fini registron de makroo"
 
-#: src/global.c:637
+#: src/global.c:633
 msgid "Run the last recorded macro"
 msgstr "Ruli laste registritan makroon"
 
-#: src/global.c:640
+#: src/global.c:636
 msgid "Toggle the case sensitivity of the search"
 msgstr "Ŝalti la usklecdistingon de serĉo"
 
-#: src/global.c:642
+#: src/global.c:638
 msgid "Reverse the direction of the search"
 msgstr "Mali la direkton de serĉo"
 
-#: src/global.c:644
+#: src/global.c:640
 msgid "Toggle the use of regular expressions"
 msgstr "Ŝalti la uzon de regulesprimoj"
 
-#: src/global.c:647
+#: src/global.c:643
 msgid "Recall the previous search/replace string"
 msgstr "Repreni la antaŭan serĉitan signoĉenon"
 
-#: src/global.c:649
+#: src/global.c:645
 msgid "Recall the next search/replace string"
 msgstr "Repreni la postan serĉitan signoĉenon"
 
-#: src/global.c:652
+#: src/global.c:648
 msgid "Toggle the use of DOS format"
 msgstr "Ŝalti la uzon de DOS-aranĝo"
 
-#: src/global.c:653
+#: src/global.c:649
 msgid "Toggle the use of Mac format"
 msgstr "Ŝalti la uzon de Mac-aranĝo"
 
-#: src/global.c:654
+#: src/global.c:650
 msgid "Toggle appending"
 msgstr "Ŝalti postgluon"
 
-#: src/global.c:655
+#: src/global.c:651
 msgid "Toggle prepending"
 msgstr "Ŝalti antaŭgluon"
 
-#: src/global.c:656
+#: src/global.c:652
 msgid "Toggle backing up of the original file"
 msgstr "Ŝalti fari savkopion de redaktota dosiero"
 
-#: src/global.c:657
+#: src/global.c:653
 msgid "Execute external command"
 msgstr "Ruli eksteran komandon"
 
-#: src/global.c:659
+#: src/global.c:655
 msgid "Pipe the current buffer (or marked region) to the command"
 msgstr "Dukti la nunan bufron (aŭ markitan regionon) al la komando"
 
-#: src/global.c:662
+#: src/global.c:656
+msgid "Do not convert from DOS/Mac format"
+msgstr "Ŝalti konverton el DOS-/Mac-aranĝo"
+
+#: src/global.c:659
 msgid "Toggle the use of a new buffer"
 msgstr "Ŝalti la uzon de nova bufro"
 
-#: src/global.c:664
+#: src/global.c:661
 msgid "Close buffer without saving it"
 msgstr "Fermi bufron sen konservi ĝin"
 
-#: src/global.c:666
+#: src/global.c:663
 msgid "Go to file browser"
 msgstr "Iri al dosieresplorilo"
 
-#: src/global.c:667
+#: src/global.c:664
 msgid "Exit from the file browser"
 msgstr "Eliri el dosieresplorilo"
 
-#: src/global.c:668
+#: src/global.c:665
 msgid "Go to the first file in the list"
 msgstr "Iri al la unua dosiero en la listo"
 
-#: src/global.c:669
+#: src/global.c:666
 msgid "Go to the last file in the list"
 msgstr "Iri al la lasta dosiero en la listo"
 
-#: src/global.c:670
+#: src/global.c:667
 msgid "Go to the previous file in the list"
 msgstr "Iri al la malsekva dosiero en la listo"
 
-#: src/global.c:671
+#: src/global.c:668
 msgid "Go to the next file in the list"
 msgstr "Iri al la sekva dosiero en la listo"
 
-#: src/global.c:672
+#: src/global.c:669
 msgid "Go to directory"
 msgstr "Iri al indikota dosierujo"
 
-#: src/global.c:675
+#: src/global.c:672
 msgid "Invoke the linter, if available"
 msgstr "Ruli sintaks-kontrolilon (se disponeblas)"
 
-#: src/global.c:676
+#: src/global.c:673
 msgid "Go to previous linter msg"
 msgstr "Iri al la antaŭa mesaĝo de la kontrolilo"
 
-#: src/global.c:677
+#: src/global.c:674
 msgid "Go to next linter msg"
 msgstr "Iri al la sekva mesaĝo de la kontrolilo"
 
-#: src/global.c:679
-msgid "Invoke formatter, if available"
-msgstr "Ruli aranĝilon (se disponeblas)"
-
-#. TRANSLATORS: Try to keep the following strings at most 10 characters.
-#: src/global.c:694
+#. TRANSLATORS: Try to keep the next ninety strings or so at most 10
+#. * characters.  Some strings may be longer -- run nano and see.
+#: src/global.c:689
 msgid "Get Help"
 msgstr "Helpo"
 
-#: src/global.c:697 src/prompt.c:711
+#: src/global.c:692 src/prompt.c:706
 msgid "Cancel"
 msgstr "Rezigni"
 
-#: src/global.c:710
+#: src/global.c:705
 msgid "Write Out"
 msgstr "Konservi"
 
-#: src/global.c:749
+#: src/global.c:715 src/global.c:1031
+msgid "Read File"
+msgstr "Enmeti"
+
+#: src/global.c:726 src/global.c:762
+msgid "Justify"
+msgstr "Rektigi"
+
+#: src/global.c:733 src/global.c:748 src/global.c:949
+msgid "Refresh"
+msgstr "Remontri"
+
+#: src/global.c:738 src/global.c:830
+msgid "Where Is"
+msgstr "Serĉi"
+
+#: src/global.c:741 src/global.c:806
+msgid "Replace"
+msgstr "Anstataŭigi"
+
+#: src/global.c:745
 msgid "Go To Dir"
 msgstr "Iri dosierujon"
 
-#: src/global.c:766
+#: src/global.c:752
 msgid "Cut Text"
 msgstr "Eltondi"
 
-#: src/global.c:781
+#: src/global.c:767
 msgid "To Spell"
 msgstr "Literumo"
 
-#: src/global.c:785
+#: src/global.c:771
 msgid "To Linter"
 msgstr "Trakombi"
 
-#: src/global.c:788
-msgid "Formatter"
-msgstr "Aranĝilo"
-
-#: src/global.c:794
+#: src/global.c:776
 msgid "Cur Pos"
 msgstr "Pozicio"
 
-#: src/global.c:806
+#: src/global.c:783 src/global.c:816 src/global.c:906 src/global.c:986
+msgid "Go To Line"
+msgstr "Iri linion"
+
+#: src/global.c:788
 msgid "Undo"
 msgstr "Malfari"
 
-#: src/global.c:808
+#: src/global.c:790
 msgid "Redo"
 msgstr "Refari"
 
-#: src/global.c:811
+#: src/global.c:793
 msgid "Mark Text"
 msgstr "Markŝalto"
 
-#: src/global.c:813
+#: src/global.c:795
 msgid "Copy Text"
 msgstr "Kopii tekston"
 
-#: src/global.c:817
+#: src/global.c:799
 msgid "Case Sens"
 msgstr "Usklece"
 
-#: src/global.c:819
+#: src/global.c:801
 msgid "Regexp"
 msgstr "Regulesprime"
 
-#: src/global.c:821
+#: src/global.c:803
 msgid "Backwards"
 msgstr "Malantaŭen"
 
-#: src/global.c:827
+#: src/global.c:809
 msgid "No Replace"
 msgstr "Ne anstataŭigi"
 
-#: src/global.c:839
+#: src/global.c:813 src/global.c:937
+msgid "FullJstify"
+msgstr "Rektigi ĉion"
+
+#: src/global.c:821
 msgid "To Bracket"
 msgstr "Al krampo"
 
-#: src/global.c:845
+#: src/global.c:825 src/global.c:975
+msgid "Save"
+msgstr "Konservi nun"
+
+#. TRANSLATORS: This starts a backward search.
+#: src/global.c:832 src/global.c:836
+msgid "Where Was"
+msgstr "Serĉi"
+
+#: src/global.c:838
 msgid "Previous"
 msgstr "Antaŭan okazon"
 
-#: src/global.c:847
+#: src/global.c:840
 msgid "Next"
 msgstr "Sekvan okazon"
 
-#: src/global.c:851 src/global.c:856
+#. TRANSLATORS: This means move the cursor one character back.
+#: src/global.c:844 src/global.c:849
 msgid "Back"
 msgstr "Malantaŭen"
 
-#: src/global.c:853 src/global.c:858
+#: src/global.c:846 src/global.c:851
 msgid "Forward"
 msgstr "Antaŭen"
 
-#: src/global.c:862
+#: src/global.c:855
 msgid "Prev Word"
 msgstr "Antaŭa vorto"
 
-#: src/global.c:864
+#: src/global.c:857
 msgid "Next Word"
 msgstr "Posta vorto"
 
-#: src/global.c:867
+#: src/global.c:860
 msgid "Home"
 msgstr "Linikomencen"
 
-#: src/global.c:869
+#: src/global.c:862
 msgid "End"
 msgstr "Linifinen"
 
-#: src/global.c:877
+#: src/global.c:865
+msgid "Prev Line"
+msgstr "Linio supren"
+
+#: src/global.c:867
+msgid "Next Line"
+msgstr "Linio suben"
+
+#: src/global.c:870
 msgid "Scroll Up"
 msgstr "Rulumi supren"
 
-#: src/global.c:879
+#: src/global.c:872
 msgid "Scroll Down"
 msgstr "Rulumi suben"
 
-#: src/global.c:883
+#: src/global.c:876
 msgid "Prev Block"
 msgstr "Antaŭa bloko"
 
-#: src/global.c:885
+#: src/global.c:878
 msgid "Next Block"
 msgstr "Posta bloko"
 
-#: src/global.c:888
+#: src/global.c:881
 msgid "Beg of Par"
 msgstr "Alineo-eken"
 
-#: src/global.c:890
+#: src/global.c:883
 msgid "End of Par"
 msgstr "Alineo-finen"
 
-#: src/global.c:899
+#: src/global.c:887 src/global.c:1041 src/global.c:1043
+msgid "Prev Page"
+msgstr "Paĝo supren"
+
+#: src/global.c:889
+msgid "Next Page"
+msgstr "Paĝo suben"
+
+#: src/global.c:892
 msgid "First Line"
 msgstr "Unua linio"
 
-#: src/global.c:901
+#: src/global.c:894
 msgid "Last Line"
 msgstr "Lasta linio"
 
-#: src/global.c:905
+#: src/global.c:898
 msgid "Prev File"
 msgstr "Malsekvan"
 
-#: src/global.c:907
+#: src/global.c:900
 msgid "Next File"
 msgstr "Sekvan"
 
-#: src/global.c:923
+#: src/global.c:910
 msgid "Tab"
 msgstr "«Tabo»"
 
-#: src/global.c:925
+#: src/global.c:912
 msgid "Enter"
 msgstr "«Enigo»"
 
-#: src/global.c:928
+#: src/global.c:915
 msgid "Delete"
 msgstr "«Forigo»"
 
-#: src/global.c:930
+#: src/global.c:917
 msgid "Backspace"
 msgstr "«Retropaŝo»"
 
 #. TRANSLATORS: The next two strings refer to cutting words.
-#: src/global.c:941
+#: src/global.c:928
 msgid "Cut Left"
 msgstr "Vorttondi liven"
 
-#: src/global.c:943
+#: src/global.c:930
 msgid "Cut Right"
 msgstr "Vorttondi dekstren"
 
-#: src/global.c:945
+#: src/global.c:932
 msgid "CutTillEnd"
 msgstr "Tondi reston"
 
-#: src/global.c:955
+#: src/global.c:942
 msgid "Word Count"
 msgstr "Nombri vortojn"
 
-#: src/global.c:959
+#: src/global.c:946
 msgid "Verbatim"
 msgstr "Konforme"
 
-#: src/global.c:965
+#: src/global.c:952
 msgid "Suspend"
 msgstr "Paŭzigi"
 
-#: src/global.c:969
-msgid "Indent Text"
-msgstr "Deŝovi enen"
+#: src/global.c:956
+msgid "Indent"
+msgstr "Endeŝovi"
 
-#: src/global.c:971
-msgid "Unindent Text"
-msgstr "Deŝovi eksteren"
+#: src/global.c:958
+msgid "Unindent"
+msgstr "Eldeŝovi"
 
-#: src/global.c:975
+#: src/global.c:962
 msgid "Comment Lines"
 msgstr "Komentigi"
 
-#: src/global.c:979
+#: src/global.c:966
 msgid "Complete"
 msgstr "Kompletigi"
 
-#: src/global.c:983
+#: src/global.c:970
 msgid "Record"
 msgstr "Registri"
 
-#: src/global.c:985
+#: src/global.c:972
 msgid "Run Macro"
 msgstr "Ruli makroon"
 
-#. TRANSLATORS: This starts a backward search.
-#: src/global.c:989
-msgid "Where Was"
-msgstr "Serĉi"
-
-#: src/global.c:992
-msgid "Save"
-msgstr "Konservi nun"
-
-#: src/global.c:996
+#: src/global.c:979
 msgid "PrevHstory"
 msgstr "Pli olda"
 
-#: src/global.c:998
+#: src/global.c:981
 msgid "NextHstory"
 msgstr "Malpli olda"
 
-#: src/global.c:1007
+#: src/global.c:990
 msgid "Go To Text"
 msgstr "Serĉi"
 
-#: src/global.c:1011
+#: src/global.c:994
 msgid "DOS Format"
 msgstr "DOS-aranĝo"
 
-#: src/global.c:1013
+#: src/global.c:996
 msgid "Mac Format"
 msgstr "Mac-aranĝo"
 
-#: src/global.c:1021
+#: src/global.c:1004
 msgid "Append"
 msgstr "Postglui"
 
-#: src/global.c:1023
+#: src/global.c:1006
 msgid "Prepend"
 msgstr "Antaŭglui"
 
-#: src/global.c:1026
+#: src/global.c:1009
 msgid "Backup File"
 msgstr "Savkopii"
 
-#: src/global.c:1032
+#: src/global.c:1020
+msgid "No Conversion"
+msgstr "Ne konverti"
+
+#: src/global.c:1025
 msgid "Execute Command"
 msgstr "Ruli komandon"
 
-#: src/global.c:1047
+#: src/global.c:1028
 msgid "Pipe Text"
 msgstr "Dukti tekston"
 
-#: src/global.c:1053
+#: src/global.c:1038
 msgid "To Files"
 msgstr "Dosierlisto"
 
-#: src/global.c:1061
+#: src/global.c:1046
 msgid "First File"
 msgstr "Unua dosiero"
 
-#: src/global.c:1063
+#: src/global.c:1048
 msgid "Last File"
 msgstr "Lasta dosiero"
 
-#: src/global.c:1066
+#: src/global.c:1051
 msgid "Left Column"
 msgstr "Liven"
 
-#: src/global.c:1068
+#: src/global.c:1053
 msgid "Right Column"
 msgstr "Dekstren"
 
-#: src/global.c:1070
+#: src/global.c:1055
 msgid "Top Row"
 msgstr "Pinten"
 
-#: src/global.c:1072
+#: src/global.c:1057
 msgid "Bottom Row"
 msgstr "Funden"
 
-#: src/global.c:1077
+#: src/global.c:1062
 msgid "Discard buffer"
 msgstr "Forĵeti"
 
 #. TRANSLATORS: Try to keep the next two strings at most 20 characters.
-#: src/global.c:1082
+#: src/global.c:1067
 msgid "Prev Lint Msg"
 msgstr "Antaŭa mesaĝo"
 
-#: src/global.c:1084
+#: src/global.c:1069
 msgid "Next Lint Msg"
 msgstr "Sekva mesaĝo"
 
-#. TRANSLATORS: The next eighteen strings are toggle descriptions;
+#. TRANSLATORS: The next fourteen strings are toggle descriptions;
 #. * they are best kept shorter than 40 characters, but may be longer.
-#: src/global.c:1418
+#: src/global.c:1390
 msgid "Help mode"
 msgstr "Helpaj linioj"
 
-#: src/global.c:1420
+#: src/global.c:1392
 msgid "Constant cursor position display"
 msgstr "Daŭra montro de kursora pozicio"
 
-#: src/global.c:1422
-msgid "Use of one more line for editing"
-msgstr "Uzi unu plian linion por redakti"
-
-#: src/global.c:1424
+#: src/global.c:1394
 msgid "Smooth scrolling"
 msgstr "Rulumi linie"
 
-#: src/global.c:1426
+#: src/global.c:1396
 msgid "Soft wrapping of overlong lines"
 msgstr "Ĉirkaŭfluigo de tro longaj linioj"
 
-#: src/global.c:1428
+#: src/global.c:1398
 msgid "Whitespace display"
 msgstr "Montri blankspacojn"
 
-#: src/global.c:1430
+#: src/global.c:1400
 msgid "Color syntax highlighting"
 msgstr "Kolore montri sintakson"
 
-#: src/global.c:1432
+#: src/global.c:1402
 msgid "Smart home key"
 msgstr "Inteligenta klavo «Komencen»"
 
-#: src/global.c:1434
+#: src/global.c:1404
 msgid "Auto indent"
 msgstr "Aŭtomate deŝovi"
 
-#: src/global.c:1436
+#: src/global.c:1406
 msgid "Cut to end"
 msgstr "Tondi ekde kursoro ĝis linifino"
 
-#: src/global.c:1438
+#: src/global.c:1408
 msgid "Hard wrapping of overlong lines"
 msgstr "Faldi longajn liniojn (enmeti linifinon)"
 
-#: src/global.c:1440
+#: src/global.c:1410
 msgid "Conversion of typed tabs to spaces"
 msgstr "Konverti tajpatajn tabojn al spacoj"
 
-#: src/global.c:1442
-msgid "Backup files"
-msgstr "Fari savkopion de redaktota dosiero"
-
-#: src/global.c:1444
-msgid "Reading file into separate buffer"
-msgstr "Enmeti en nova bufro"
-
-#: src/global.c:1446
+#: src/global.c:1412
 msgid "Mouse support"
 msgstr "Subteno de muso"
 
-#: src/global.c:1448
-msgid "No conversion from DOS/Mac format"
-msgstr "Ne konverti el DOS-/Mac-aranĝo"
-
-#: src/global.c:1450
+#: src/global.c:1414
 msgid "Suspension"
 msgstr "Paŭzigebleco"
 
-#: src/global.c:1452
+#: src/global.c:1416
 msgid "Line numbering"
 msgstr "Lininumeroj"
 
@@ -1414,22 +1436,35 @@ msgid ""
 "Execute Command Help Text\n"
 "\n"
 " This mode allows you to insert the output of a command run by the shell "
-"into the current buffer (or a new buffer in multiple file buffer mode).  If "
-"you need another blank buffer, do not enter any command.\n"
-"\n"
-" The following function keys are available in Execute Command mode:\n"
-"\n"
+"into the current buffer (or into a new buffer).  If the command is preceded "
+"by '|' (the pipe symbol), the current contents of the buffer (or marked "
+"region) will be piped to the command.  "
 msgstr ""
 "===  Ruli komandon  ===\n"
 "\n"
 " Ĉi tiu moduso permesas enmeti eligon de ŝela komando en la nuna dosierbufro "
-"(aŭ en nova bufro en multbufra moduso).  Se vi bezonas novan, vakan bufron, "
-"ne enigu komandon.\n"
+"(aŭ en nova bufro).  Se la komanda antaŭiĝas de '|' (dukta simbolo), la "
+"nunaj enhavoj de bufro (aŭ markita regiono) alkondukas kiel enigo al la "
+"komando.  "
+
+#: src/help.c:420
+msgid ""
+"If you just need another blank buffer, do not enter any command.\n"
 "\n"
+msgstr ""
+"Se vi nur bezonas novan, vakan bufron, elektu 'Nova bufro' kaj ne enigu "
+"komandon.\n"
+"\n"
+
+#: src/help.c:422
+msgid ""
+" The following function keys are available in Execute Command mode:\n"
+"\n"
+msgstr ""
 " La subaj klavkomandoj disponeblas dum «Ruli komandon»:\n"
 "\n"
 
-#: src/help.c:427
+#: src/help.c:428
 msgid ""
 "Main nano help text\n"
 "\n"
@@ -1449,7 +1484,7 @@ msgstr ""
 "redaktatan dosieron.  La tria linio ekde la fundo estas la stata linio, kiu "
 "montras gravajn mesaĝojn.  "
 
-#: src/help.c:437
+#: src/help.c:438
 msgid ""
 "The bottom two lines show the most commonly used shortcuts in the editor.\n"
 "\n"
@@ -1465,7 +1500,7 @@ msgstr ""
 "'Esc'.  Kombinoj kun Meta-klavo montriĝas per 'M-' -- eblas enigi ilin "
 "premtenante klavon 'Alt' aŭ 'Cmd', aŭ premante antaŭe unufoje klavon 'Esc'.  "
 
-#: src/help.c:444
+#: src/help.c:445
 msgid ""
 "Also, pressing Esc twice and then typing a three-digit decimal number from "
 "000 to 255 will enter the character with the corresponding value.  The "
@@ -1480,7 +1515,7 @@ msgstr ""
 "alternativaj kombinoj montriĝas inter krampoj:\n"
 "\n"
 
-#: src/help.c:476 src/help.c:557
+#: src/help.c:477 src/help.c:558
 msgid "enable/disable"
 msgstr " (ŝalto)"
 
@@ -1518,19 +1553,19 @@ msgstr ""
 msgid "Error writing %s: %s\n"
 msgstr "Eraro dum skribado de %s: %s\n"
 
-#: src/nano.c:536
+#: src/nano.c:543
 msgid "Key is invalid in view mode"
 msgstr "Klavo ne validas en rigarda reĝimo"
 
-#: src/nano.c:542
+#: src/nano.c:549
 msgid "This function is disabled in restricted mode"
 msgstr "Ĉi tiu funkcio malebligatas dum limigita reĝimo"
 
-#: src/nano.c:550
+#: src/nano.c:557
 msgid "Help is not available"
 msgstr "Helpo ne haveblas"
 
-#: src/nano.c:650
+#: src/nano.c:660
 #, c-format
 msgid ""
 "\n"
@@ -1539,7 +1574,7 @@ msgstr ""
 "\n"
 "Bufro skribiĝis al %s\n"
 
-#: src/nano.c:652
+#: src/nano.c:662
 #, c-format
 msgid ""
 "\n"
@@ -1548,7 +1583,7 @@ msgstr ""
 "\n"
 "Bufro ne skribiĝis al %s: %s\n"
 
-#: src/nano.c:655
+#: src/nano.c:665
 #, c-format
 msgid ""
 "\n"
@@ -1557,7 +1592,7 @@ msgstr ""
 "\n"
 "Bufro ne skribiĝis: %s\n"
 
-#: src/nano.c:764
+#: src/nano.c:773
 #, c-format
 msgid ""
 "Usage: nano [OPTIONS] [[+LINE[,COLUMN]] FILE]...\n"
@@ -1568,7 +1603,7 @@ msgstr ""
 
 #. TRANSLATORS: The next two strings are part of the --help output.
 #. * It's best to keep its lines within 80 characters.
-#: src/nano.c:767
+#: src/nano.c:776
 #, c-format
 msgid ""
 "To place the cursor on a specific line of a file, put the line number with\n"
@@ -1577,7 +1612,7 @@ msgstr ""
 "Por meti kursoron en iu linio de la dosiero, specifu la lininumeron kun '+'\n"
 "antaŭ la dosiernomo.  Eblas aldoni kolumnnumeron post komo.\n"
 
-#: src/nano.c:769
+#: src/nano.c:778
 #, c-format
 msgid ""
 "When a filename is '-', nano reads data from standard input.\n"
@@ -1586,277 +1621,277 @@ msgstr ""
 "Kiam dosiernomo estas '-', nano legas datumojn el ĉefenigujo.\n"
 "\n"
 
-#: src/nano.c:770
+#: src/nano.c:779
 #, c-format
 msgid "Option\t\tGNU long option\t\tMeaning\n"
 msgstr "Opcio\t\tLonga GNU-a opcio\t  Signifo\n"
 
 #. TRANSLATORS: The next forty or so strings are option descriptions
 #. * for the --help output.  Try to keep them at most 40 characters.
-#: src/nano.c:774
+#: src/nano.c:783
 msgid "Enable smart home key"
 msgstr "estigi klavon «Komencen» inteligenta"
 
-#: src/nano.c:776
+#: src/nano.c:785
 msgid "Save backups of existing files"
 msgstr "fari savkopion de ekzistanta dosiero"
 
-#: src/nano.c:777
+#: src/nano.c:786
 msgid "-C <dir>"
 msgstr "-C <ujo>"
 
-#: src/nano.c:777
+#: src/nano.c:786
 msgid "--backupdir=<dir>"
 msgstr "--backupdir=<ujo>"
 
-#: src/nano.c:778
+#: src/nano.c:787
 msgid "Directory for saving unique backup files"
 msgstr "fari unikajn savkopiojn, konservi ĉi tie"
 
-#: src/nano.c:781
+#: src/nano.c:790
 msgid "Use bold instead of reverse video text"
 msgstr "uzi grasan anstataŭ negativan tekston"
 
-#: src/nano.c:783
+#: src/nano.c:792
 msgid "Convert typed tabs to spaces"
 msgstr "konverti tajpatajn tabojn al spacoj"
 
-#: src/nano.c:788
+#: src/nano.c:797
 msgid "Read a file into a new buffer by default"
 msgstr "enmeti dosieron defaŭlte en nova bufro"
 
-#: src/nano.c:791
+#: src/nano.c:800
 msgid "Use (vim-style) lock files"
 msgstr "uzi riglajn dosierojn (kiel je 'vim')"
 
-#: src/nano.c:796
+#: src/nano.c:805
 msgid "Log & read search/replace string history"
 msgstr "memori historion de serĉitaj signoĉenoj"
 
-#: src/nano.c:800
+#: src/nano.c:809
 msgid "Don't look at nanorc files"
 msgstr "ignori 'nanorc'-dosierojn"
 
-#: src/nano.c:803
+#: src/nano.c:812
 msgid "Fix numeric keypad key confusion problem"
 msgstr "fliki konfuzon je cifera klavareto"
 
-#: src/nano.c:805
+#: src/nano.c:814
 msgid "Don't add newlines to the ends of files"
 msgstr "ne aldoni novlinion al fino de dosiero"
 
-#: src/nano.c:808
+#: src/nano.c:817
 msgid "Trim tail spaces when hard-wrapping"
 msgstr "fortranĉi finspacojn je linifaldo"
 
-#: src/nano.c:812
+#: src/nano.c:821
 msgid "Don't convert files from DOS/Mac format"
 msgstr "ne konverti el DOS-/Mac-aranĝo"
 
-#: src/nano.c:814
+#: src/nano.c:823
 msgid "Use one more line for editing"
 msgstr "uzi unu plian linion por redakti"
 
-#: src/nano.c:818
+#: src/nano.c:827
 msgid "Log & read location of cursor position"
 msgstr "konservi kaj restaŭri kursoran pozicion"
 
-#: src/nano.c:821
+#: src/nano.c:830
 msgid "-Q <regex>"
 msgstr "-Q <esprimo>"
 
-#: src/nano.c:821
+#: src/nano.c:830
 msgid "--quotestr=<regex>"
 msgstr "--quotestr=<esprimo>"
 
-#: src/nano.c:822
+#: src/nano.c:831
 msgid "Regular expression to match quoting"
 msgstr "regulesprimo kiu kongruas kun citado"
 
-#: src/nano.c:825
+#: src/nano.c:834
 msgid "Restricted mode"
 msgstr "limigi aliron al dosiersistemo"
 
-#: src/nano.c:827
+#: src/nano.c:836
 msgid "Scroll by line instead of half-screen"
 msgstr "rulumi po linio anstataŭ po duon-ekrano"
 
-#: src/nano.c:829
+#: src/nano.c:838
 msgid "-T <#cols>"
 msgstr "-T <nombro>"
 
-#: src/nano.c:829
+#: src/nano.c:838
 msgid "--tabsize=<#cols>"
 msgstr "--tabsize=<nombro>"
 
-#: src/nano.c:830
+#: src/nano.c:839
 msgid "Set width of a tab to #cols columns"
 msgstr "uzenda larĝo de tabo"
 
-#: src/nano.c:831
+#: src/nano.c:840
 msgid "Do quick statusbar blanking"
 msgstr "viŝi statlinio tuj post sekva klavtuŝo"
 
-#: src/nano.c:832
+#: src/nano.c:841
 msgid "Print version information and exit"
 msgstr "montri programversion kaj fini"
 
-#: src/nano.c:835
+#: src/nano.c:844
 msgid "Detect word boundaries more accurately"
 msgstr "detekti vortlimojn pli akurate"
 
-#: src/nano.c:836
+#: src/nano.c:845
 msgid "-X <str>"
 msgstr "-X <ĉeno>"
 
-#: src/nano.c:836
+#: src/nano.c:845
 msgid "--wordchars=<str>"
 msgstr "--wordchars=<ĉeno>"
 
-#: src/nano.c:837
+#: src/nano.c:846
 msgid "Which other characters are word parts"
 msgstr "kiuj aliaj signoj formas vortojn"
 
-#: src/nano.c:841
+#: src/nano.c:850
 msgid "-Y <name>"
 msgstr "-Y <nomo>"
 
-#: src/nano.c:841
+#: src/nano.c:850
 msgid "--syntax=<name>"
 msgstr "--syntax=<nomo>"
 
-#: src/nano.c:842
+#: src/nano.c:851
 msgid "Syntax definition to use for coloring"
 msgstr "uzenda sintaksdifino por kolorigi"
 
-#: src/nano.c:845
+#: src/nano.c:854
 msgid "When soft-wrapping, do it at whitespace"
 msgstr "dum ĉirkaŭfluigo, fendi je blankspacoj"
 
-#: src/nano.c:847
+#: src/nano.c:856
 msgid "Constantly show cursor position"
 msgstr "daŭre montri kursoran pozicion"
 
-#: src/nano.c:849
+#: src/nano.c:858
 msgid "Fix Backspace/Delete confusion problem"
 msgstr "fliki konfuzon pri «Retropaŝo»/«Forigo»"
 
-#: src/nano.c:852
+#: src/nano.c:861
 msgid "Show cursor in file browser"
 msgstr "montri kursoron en dosieresplorilo"
 
-#: src/nano.c:854
+#: src/nano.c:863
 msgid "Show this help text and exit"
 msgstr "montri ĉi tiun helptekston kaj fini"
 
-#: src/nano.c:856
+#: src/nano.c:865
 msgid "Automatically indent new lines"
 msgstr "aŭtomate deŝovi novajn liniojn"
 
-#: src/nano.c:857
+#: src/nano.c:866
 msgid "Cut from cursor to end of line"
 msgstr "forigi ekde de la kursoro ĝis linifino"
 
-#: src/nano.c:860
+#: src/nano.c:869
 msgid "Show line numbers in front of the text"
 msgstr "montri lininumerojn antaŭ la teksto"
 
-#: src/nano.c:863
+#: src/nano.c:872
 msgid "Enable the use of the mouse"
 msgstr "ebligi uzon de muso"
 
-#: src/nano.c:865
+#: src/nano.c:874
 msgid "Do not read the file (only write it)"
 msgstr "ne legi dosieron (nur skribi ĝin)"
 
-#: src/nano.c:867
+#: src/nano.c:876
 msgid "-o <dir>"
 msgstr "-o <ujo>"
 
-#: src/nano.c:867
+#: src/nano.c:876
 msgid "--operatingdir=<dir>"
 msgstr "--operatingdir=<ujo>"
 
-#: src/nano.c:868
+#: src/nano.c:877
 msgid "Set operating directory"
 msgstr "uzenda kuranta dosierujo"
 
-#: src/nano.c:870
+#: src/nano.c:879
 msgid "Preserve XON (^Q) and XOFF (^S) keys"
 msgstr "ebligi klavojn ^Q (XON) kaj ^S (XOFF)"
 
-#: src/nano.c:872
+#: src/nano.c:881
 msgid "-r <#cols>"
 msgstr "-r <nombro>"
 
-#: src/nano.c:872
+#: src/nano.c:881
 msgid "--fill=<#cols>"
 msgstr "--fill=<nombro>"
 
-#: src/nano.c:873
+#: src/nano.c:882
 msgid "Set hard-wrapping point at column #cols"
 msgstr "uzenda larĝo por faldi kaj rektigi"
 
-#: src/nano.c:877
+#: src/nano.c:886
 msgid "-s <prog>"
 msgstr "-s <programo>"
 
-#: src/nano.c:877
+#: src/nano.c:886
 msgid "--speller=<prog>"
 msgstr "--speller=<programo>"
 
-#: src/nano.c:878
+#: src/nano.c:887
 msgid "Enable alternate speller"
 msgstr "uzenda alternativa literumilo"
 
-#: src/nano.c:880
+#: src/nano.c:889
 msgid "Auto save on exit, don't prompt"
 msgstr "aŭtomate konservi je fino, sen demandi"
 
-#: src/nano.c:882
+#: src/nano.c:891
 msgid "Save a file by default in Unix format"
 msgstr "konservi dosieron defaŭlte Unix-aranĝe"
 
-#: src/nano.c:884
+#: src/nano.c:893
 msgid "View mode (read-only)"
 msgstr "rigarda reĝimo (ne eblas redakti)"
 
-#: src/nano.c:886
+#: src/nano.c:895
 msgid "Don't hard-wrap long lines"
 msgstr "ne faldi longajn liniojn"
 
-#: src/nano.c:888
+#: src/nano.c:897
 msgid "Don't show the two help lines"
 msgstr "ne montri la du helpajn liniojn"
 
-#: src/nano.c:890
+#: src/nano.c:899
 msgid "Make Ctrl+Right stop at word ends"
 msgstr "igi Stir+Dekstren halti post vortfinoj"
 
-#: src/nano.c:893
+#: src/nano.c:902
 msgid "Enable suspension"
 msgstr "ebligi paŭzigon"
 
-#: src/nano.c:895
+#: src/nano.c:904
 msgid "Enable soft line wrapping"
 msgstr "ĉirkaŭfluigi longajn liniojn"
 
-#: src/nano.c:907
+#: src/nano.c:916
 #, c-format
 msgid " GNU nano, version %s\n"
 msgstr " GNU nano, versio %s\n"
 
-#: src/nano.c:910
+#: src/nano.c:919
 #, c-format
 msgid " (C) 2014-%s the contributors to nano\n"
 msgstr " (C) 2014-%s la kontribuantoj al nano\n"
 
-#: src/nano.c:911
+#: src/nano.c:920
 #, c-format
 msgid " Email: nano@nano-editor.org\tWeb: https://nano-editor.org/"
 msgstr " Retpoŝto: <nano@nano-editor.org>    TTT: https://nano-editor.org/"
 
-#: src/nano.c:912
+#: src/nano.c:921
 #, c-format
 msgid ""
 "\n"
@@ -1865,333 +1900,333 @@ msgstr ""
 "\n"
 " Kompilaj opcioj:"
 
-#: src/nano.c:1058
+#: src/nano.c:1067
 msgid "No file name"
 msgstr "Vaka dosiernomo"
 
-#: src/nano.c:1060
+#: src/nano.c:1069
 msgid "Save modified buffer?  (Answering \"No\" will DISCARD changes.) "
 msgstr "Ĉu konservi modifitan bufron?  ('N' DETRUOS ŝanĝojn) "
 
-#: src/nano.c:1111
+#: src/nano.c:1116
 #, c-format
 msgid "Reading from standard input; type ^D or ^D^D to finish.\n"
 msgstr "Legado el ĉefenigujo; tajpu ^D aŭ ^D^D por fini.\n"
 
-#: src/nano.c:1138
+#: src/nano.c:1143
 #, c-format
 msgid "Failed to open stdin: %s"
 msgstr "Malsukcesis malfermi ĉefenigujon: %s"
 
-#: src/nano.c:1151
+#: src/nano.c:1156
 msgid "Couldn't reopen stdin from keyboard, sorry\n"
 msgstr "Maleblas remalfermi klavaron kiel ĉefenigujon\n"
 
-#: src/nano.c:1232
+#: src/nano.c:1237
 msgid "Received SIGHUP or SIGTERM\n"
 msgstr "Ricevitas SIGHUP aŭ SIGTERM\n"
 
-#: src/nano.c:1239
+#: src/nano.c:1244
 #, c-format
 msgid "Sorry! Nano crashed!  Code: %d.  Please report a bug.\n"
 msgstr "Pardonu! Nano kraŝis!  Kodo: %d.  Bonvolu raporti mison.\n"
 
-#: src/nano.c:1255
+#: src/nano.c:1260
 #, c-format
 msgid "Use \"fg\" to return to nano.\n"
 msgstr "Uzu 'fg' por reveni al 'nano'.\n"
 
-#: src/nano.c:1273
+#: src/nano.c:1278
 msgid "Suspension is not enabled"
 msgstr "Paŭzigebleco ne enŝaltitas"
 
-#: src/nano.c:1418
+#: src/nano.c:1422
 msgid "enabled"
 msgstr "(enŝaltitas)"
 
-#: src/nano.c:1418
+#: src/nano.c:1422
 msgid "disabled"
 msgstr "(malŝaltitas)"
 
-#: src/nano.c:1572
+#: src/nano.c:1576
 msgid "Unbound key"
 msgstr "Neligita klavo"
 
-#: src/nano.c:1575
+#: src/nano.c:1579
 msgid "Unbindable key: M-["
 msgstr "Neligebla klavo: M-["
 
-#: src/nano.c:1577
+#: src/nano.c:1581
 #, c-format
 msgid "Unbound key: M-%c"
 msgstr "Neligita klavo: M-%c"
 
-#: src/nano.c:1579
+#: src/nano.c:1583
 #, c-format
 msgid "Unbound key: ^%c"
 msgstr "Neligita klavo: ^%c"
 
-#: src/nano.c:1581
+#: src/nano.c:1585
 #, c-format
 msgid "Unbound key: %c"
 msgstr "Neligita klavo: %c"
 
-#: src/nano.c:2171 src/rcfile.c:1180
+#: src/nano.c:2174 src/rcfile.c:1167
 #, c-format
 msgid "Requested tab size \"%s\" is invalid"
 msgstr "Petata tablarĝo '%s' ne validas"
 
-#: src/nano.c:2248 src/rcfile.c:1119
+#: src/nano.c:2251 src/rcfile.c:1106
 #, c-format
 msgid "Requested fill size \"%s\" is invalid"
 msgstr "Petata faldlarĝo '%s' ne validas"
 
-#: src/nano.c:2306
+#: src/nano.c:2309
 #, c-format
 msgid "Type '%s -h' for a list of available options.\n"
 msgstr "Tajpu '%s -h' por vidi liston de eblaj opcioj.\n"
 
-#: src/nano.c:2616 src/search.c:787
+#: src/nano.c:2621 src/search.c:784
 msgid "Invalid line or column number"
 msgstr "Ne validas numero de linio aŭ kolumno"
 
-#: src/nano.c:2660
+#: src/nano.c:2669
 #, c-format
 msgid "Mistakes in '%s'"
 msgstr "Eraroj en '%s'"
 
-#: src/nano.c:2665
+#: src/nano.c:2675
 msgid "Welcome to nano.  For basic help, type Ctrl+G."
 msgstr "Bonvenon al nano.  Por baza helpo, tajpu Stir+G."
 
 #. TRANSLATORS: For the next three strings, specify the starting letters
 #. * of the translations for "Yes"/"No"/"All".  The first letter of each of
 #. * these strings MUST be a single-byte letter; others may be multi-byte.
-#: src/prompt.c:674
+#: src/prompt.c:667
 msgid "Yy"
 msgstr "Jj"
 
-#: src/prompt.c:675
+#: src/prompt.c:668
 msgid "Nn"
 msgstr "Nn"
 
 # La unua litero ne povas esti plurbitoka, tial senĉapela.
 # Inkluzivas "Tt" (Tute) ĉar tiuj uziĝis antaŭe.
-#: src/prompt.c:676
+#: src/prompt.c:669
 msgid "Aa"
 msgstr "CcĈĉTt"
 
-#: src/prompt.c:698
+#: src/prompt.c:693
 msgid "Yes"
 msgstr "Jes"
 
-#: src/prompt.c:702
+#: src/prompt.c:697
 msgid "No"
 msgstr "Ne"
 
-#: src/prompt.c:707
+#: src/prompt.c:702
 msgid "All"
 msgstr "Ĉiujn"
 
-#: src/rcfile.c:152
+#: src/rcfile.c:151
 #, c-format
 msgid "Error in %s on line %zu: "
 msgstr "Eraro en %s en linio %zu: "
 
-#: src/rcfile.c:203
+#: src/rcfile.c:202
 #, c-format
 msgid "Argument '%s' has an unterminated \""
 msgstr "Argumento '%s' havas senparan citilon \""
 
-#: src/rcfile.c:228 src/rcfile.c:691 src/rcfile.c:743 src/rcfile.c:823
+#: src/rcfile.c:227 src/rcfile.c:683 src/rcfile.c:735 src/rcfile.c:815
 msgid "Regex strings must begin and end with a \" character"
 msgstr "Regulesprimaj signoĉenoj devas komenci kaj fini kun citilo \""
 
-#: src/rcfile.c:254 src/search.c:47
+#: src/rcfile.c:253 src/search.c:47
 #, c-format
 msgid "Bad regex \"%s\": %s"
 msgstr "Malbonas regulesprimo \"%s\": %s"
 
-#: src/rcfile.c:273
+#: src/rcfile.c:272
 msgid "Missing syntax name"
 msgstr "Mankas nomo de sintakso"
 
-#: src/rcfile.c:281
+#: src/rcfile.c:280
 msgid "Unpaired quote in syntax name"
 msgstr "Senpara citilo en nomo de sintakso"
 
-#: src/rcfile.c:293
+#: src/rcfile.c:292
 msgid "The \"none\" syntax is reserved"
 msgstr "Sintakso 'none' estas rezervita"
 
-#: src/rcfile.c:324
+#: src/rcfile.c:318
 msgid "The \"default\" syntax does not accept extensions"
 msgstr "Sintakso 'default' ne permesas finaĵojn"
 
-#: src/rcfile.c:359
+#: src/rcfile.c:349
 msgid "Missing key name"
 msgstr "Mankas nomo de klavo"
 
-#: src/rcfile.c:368 src/rcfile.c:379
+#: src/rcfile.c:358 src/rcfile.c:369
 msgid "Key name is too short"
 msgstr "Klavnomo tro mallongas"
 
-#: src/rcfile.c:389
+#: src/rcfile.c:379
 msgid "Key name must begin with \"^\", \"M\", or \"F\""
 msgstr "Klavnomo devas komenci kun '^', 'M', aŭ 'F'"
 
-#: src/rcfile.c:392
+#: src/rcfile.c:382
 #, c-format
 msgid "Key name %s is invalid"
 msgstr "Klavnomo '%s' ne validas"
 
-#: src/rcfile.c:401
+#: src/rcfile.c:391
 msgid "Must specify a function to bind the key to"
 msgstr "Mankas funkcio al kiu ligi klavon"
 
 #. TRANSLATORS: Do not translate the word "all".
-#: src/rcfile.c:412
+#: src/rcfile.c:402
 msgid "Must specify a menu (or \"all\") in which to bind/unbind the key"
 msgstr "Mankas menuo (aŭ 'all') en kiu ligi/malligi la klavon"
 
-#: src/rcfile.c:430
+#: src/rcfile.c:420
 #, c-format
 msgid "Cannot map name \"%s\" to a function"
 msgstr "Ĉeno '%s' ne estas nomo de funkcio"
 
-#: src/rcfile.c:437
+#: src/rcfile.c:427
 #, c-format
 msgid "Cannot map name \"%s\" to a menu"
 msgstr "Ĉeno '%s' ne estas nomo de menuo"
 
-#: src/rcfile.c:464
+#: src/rcfile.c:454
 #, c-format
 msgid "Function '%s' does not exist in menu '%s'"
 msgstr "Funkcio '%s' ne ekzistas en menuo '%s'"
 
-#: src/rcfile.c:473
+#: src/rcfile.c:463
 #, c-format
 msgid "Sorry, keystroke \"%s\" may not be rebound"
 msgstr "Ne eblas religi klavĉenon '%s'"
 
-#: src/rcfile.c:573
+#: src/rcfile.c:559
 #, c-format
 msgid "Error expanding %s: %s"
 msgstr "Eraro dum malvolvo de %s: %s"
 
-#: src/rcfile.c:613
+#: src/rcfile.c:599
 #, c-format
 msgid "Color \"%s\" not understood"
 msgstr "Koloro '%s' ne estas komprenata"
 
-#: src/rcfile.c:626
+#: src/rcfile.c:615
 msgid "A background color cannot be bright"
 msgstr "Fona koloro ne povas esti hela"
 
-#: src/rcfile.c:655 src/rcfile.c:795 src/rcfile.c:855
+#: src/rcfile.c:647 src/rcfile.c:787 src/rcfile.c:847
 #, c-format
 msgid "A '%s' command requires a preceding 'syntax' command"
 msgstr "Komando '%s' bezonas antaŭan komandon 'syntax'"
 
-#: src/rcfile.c:661
+#: src/rcfile.c:653
 msgid "Missing color name"
 msgstr "Mankas nomo de koloro"
 
-#: src/rcfile.c:671 src/rcfile.c:807
+#: src/rcfile.c:663 src/rcfile.c:799
 #, c-format
 msgid "Missing regex string after '%s' command"
 msgstr "Mankas regulesprima signoĉeno post komando '%s'"
 
-#: src/rcfile.c:702 src/rcfile.c:753
+#: src/rcfile.c:694 src/rcfile.c:745
 msgid "Empty regex string"
 msgstr "Vaka regulesprima signoĉeno"
 
-#: src/rcfile.c:737
+#: src/rcfile.c:729
 msgid "\"start=\" requires a corresponding \"end=\""
 msgstr "'start=' bezonas paran 'end='"
 
-#: src/rcfile.c:802
+#: src/rcfile.c:794
 #, c-format
 msgid "The \"default\" syntax does not accept '%s' regexes"
 msgstr "Sintakso 'default' ne permesas '%s'-aĵon"
 
-#: src/rcfile.c:860
+#: src/rcfile.c:852
 #, c-format
 msgid "Missing argument after '%s'"
 msgstr "Mankas argumento post '%s'"
 
-#: src/rcfile.c:870
+#: src/rcfile.c:862
 #, c-format
 msgid "Argument of '%s' lacks closing \""
 msgstr "Argumento '%s' mankas finan citilon"
 
-#: src/rcfile.c:898
+#: src/rcfile.c:890
 #, c-format
-msgid "Fatal error: no keys mapped for function \"%s\".  Exiting.\n"
-msgstr "Neignorebla eraro: neniu klavo ligita al funkcio '%s'.  Eliro.\n"
+msgid "No key is bound to function '%s' in menu '%s'.  Exiting.\n"
+msgstr "Neniu klavo estas ligita al funkcio '%s' en menuo '%s'.  Eliro.\n"
 
-#: src/rcfile.c:900
+#: src/rcfile.c:893 src/rcfile.c:1256
 #, c-format
 msgid ""
 "If needed, use nano with the -I option to adjust your nanorc settings.\n"
 msgstr "Se necesas, uzu 'nano -I' por ĝustigi la agordojn en 'nanorc'.\n"
 
-#: src/rcfile.c:955
+#: src/rcfile.c:948
 #, c-format
 msgid "Could not find syntax \"%s\" to extend"
 msgstr "Ne troviĝas sintakso '%s' por pliampleksigi"
 
-#: src/rcfile.c:977 src/rcfile.c:1190
+#: src/rcfile.c:970 src/rcfile.c:1177
 #, c-format
 msgid "Syntax \"%s\" has no color commands"
 msgstr "Sintakso '%s' ne havas kolorajn komandojn"
 
-#: src/rcfile.c:1008
+#: src/rcfile.c:1000
 #, c-format
 msgid "Command \"%s\" not allowed in included file"
 msgstr "Komando '%s' ne permesatas en inkluda dosiero"
 
-#: src/rcfile.c:1023
+#: src/rcfile.c:1015
 #, c-format
 msgid "Command \"%s\" not understood"
 msgstr "Komando '%s' ne estas komprenata"
 
-#: src/rcfile.c:1035
+#: src/rcfile.c:1027
 msgid "Missing option"
 msgstr "Mankas opcio"
 
-#: src/rcfile.c:1049
+#: src/rcfile.c:1041
 #, c-format
 msgid "Unknown option \"%s\""
 msgstr "Nekonata opcio '%s'"
 
-#: src/rcfile.c:1062
+#: src/rcfile.c:1050
 #, c-format
 msgid "Cannot unset option \"%s\""
 msgstr "Ne eblas malŝalti opcion '%s'"
 
-#: src/rcfile.c:1074
+#: src/rcfile.c:1062
 #, c-format
 msgid "Option \"%s\" requires an argument"
 msgstr "Opcio '%s' bezonas argumenton"
 
-#: src/rcfile.c:1090
+#: src/rcfile.c:1077
 msgid "Argument is not a valid multibyte string"
 msgstr "Opcia argumento ne estas valida plurbitoka signoĉeno"
 
-#: src/rcfile.c:1131 src/rcfile.c:1151 src/rcfile.c:1157
+#: src/rcfile.c:1118 src/rcfile.c:1138 src/rcfile.c:1144
 msgid "Non-blank characters required"
 msgstr "Neblankaj signoj bezonatas"
 
-#: src/rcfile.c:1138
+#: src/rcfile.c:1125
 msgid "Two single-column characters required"
 msgstr "Du unukolumnaj signoj bezonatas"
 
-#: src/rcfile.c:1265
+#: src/rcfile.c:1248
 msgid "I can't find my home directory!  Wah!"
 msgstr "Malsukcesis trovi hejman dosierujon.  Ve!"
 
-#. TRANSLATORS: The next three modify the search prompt.
+#. TRANSLATORS: The next four modify the search prompt.
 #: src/search.c:105
 msgid " [Case Sensitive]"
 msgstr " [usklecdistinge]"
@@ -2200,41 +2235,36 @@ msgstr " [usklecdistinge]"
 msgid " [Regexp]"
 msgstr " [regulesprime]"
 
-#: src/search.c:107
-msgid " [Backwards]"
-msgstr " [malantaŭen]"
-
-#. TRANSLATORS: The next two modify the search prompt.
-#: src/search.c:110
+#: src/search.c:109
 msgid " (to replace) in selection"
 msgstr " (por anstataŭigi) en markaĵo"
 
-#: src/search.c:112
+#: src/search.c:111
 msgid " (to replace)"
 msgstr " (por anstataŭigi)"
 
 #. TRANSLATORS: This is shown when searching takes
 #. * more than half a second.
-#: src/search.c:220
+#: src/search.c:219
 msgid "Searching..."
 msgstr "Serĉante..."
 
-#: src/search.c:391
+#: src/search.c:388
 #, c-format
 msgid "\"%.*s%s\" not found"
 msgstr "'%.*s%s' ne trovatas"
 
 #. TRANSLATORS: This is a prompt.
-#: src/search.c:585
+#: src/search.c:582
 msgid "Replace this instance?"
 msgstr "Anstataŭigi ĉi tiun aperaĵon?"
 
 #. TRANSLATORS: This is a prompt.
-#: src/search.c:707
+#: src/search.c:704
 msgid "Replace with"
 msgstr "Anstataŭigi per"
 
-#: src/search.c:738
+#: src/search.c:735
 #, c-format
 msgid "Replaced %zd occurrence"
 msgid_plural "Replaced %zd occurrences"
@@ -2242,261 +2272,252 @@ msgstr[0] "Anstataŭiĝis %zd aperaĵo"
 msgstr[1] "Anstataŭiĝis %zd aperaĵoj"
 
 #. TRANSLATORS: This is a prompt.
-#: src/search.c:766
+#: src/search.c:763
 msgid "Enter line number, column number"
 msgstr "Enigu lininumeron, kolumnnumeron"
 
-#: src/search.c:955
+#: src/search.c:952
 msgid "Not a bracket"
 msgstr "Ne estas krampo"
 
-#: src/search.c:1016
+#: src/search.c:1013
 msgid "No matching bracket"
 msgstr "Ne ekzistas para krampo"
 
-#: src/text.c:64
+#: src/text.c:63
 msgid "Mark Set"
 msgstr "Markado enŝaltitas"
 
-#: src/text.c:68
+#: src/text.c:67
 msgid "Mark Unset"
 msgstr "Malŝaltitas"
 
-#: src/text.c:78
+#: src/text.c:77
 #, c-format
 msgid "Error invoking \"%s\""
 msgstr "Eraro dum lanĉo de '%s'"
 
-#: src/text.c:553
+#: src/text.c:568
 msgid "Commenting is not supported for this file type"
 msgstr "Komentigi ne eblas en ĉi tiu dosiertipo"
 
-#: src/text.c:563
+#: src/text.c:578
 msgid "Cannot comment past end of file"
 msgstr "Ne eblas komentigi post fino de dosiero"
 
-#: src/text.c:686
+#: src/text.c:701
 msgid "Nothing in undo buffer!"
 msgstr "Nenio por malfari!"
 
 # La originaloj estas sennecese multvortecaj.
 #. TRANSLATORS: The next thirteen strings describe actions
 #. * that are undone or redone.  They are all nouns, not verbs.
-#: src/text.c:705 src/text.c:776 src/text.c:887 src/text.c:956
+#: src/text.c:716 src/text.c:786 src/text.c:894 src/text.c:962
 msgid "text add"
 msgstr "aldono"
 
-#: src/text.c:720 src/text.c:899
+#: src/text.c:731 src/text.c:906
 msgid "line break"
 msgstr "linifaldo"
 
-#: src/text.c:732 src/text.c:912
+#: src/text.c:743 src/text.c:919
 msgid "text delete"
 msgstr "forigo"
 
-#: src/text.c:742 src/text.c:925
+#: src/text.c:753 src/text.c:932
 msgid "line join"
 msgstr "linikunigo"
 
-#: src/text.c:761 src/text.c:940
+#: src/text.c:772 src/text.c:947
 msgid "text replace"
 msgstr "anstataŭigo"
 
-#: src/text.c:781 src/text.c:961
+#: src/text.c:791 src/text.c:967
 msgid "text cut"
 msgstr "eltondo"
 
-#: src/text.c:785 src/text.c:965
+#: src/text.c:795 src/text.c:971
 msgid "text uncut"
 msgstr "algluo"
 
-#: src/text.c:789 src/text.c:969
+#: src/text.c:799 src/text.c:975
 msgid "text insert"
 msgstr "enmeto"
 
-#: src/text.c:805 src/text.c:982
-msgid "filtering"
-msgstr "filtrado"
-
-#: src/text.c:815 src/text.c:986
+#: src/text.c:826 src/text.c:993
 msgid "indent"
 msgstr "endeŝovo"
 
-#: src/text.c:819 src/text.c:990
+#: src/text.c:830 src/text.c:997
 msgid "unindent"
 msgstr "eldeŝovo"
 
-#: src/text.c:824 src/text.c:995
+#: src/text.c:835 src/text.c:1002
 msgid "comment"
 msgstr "komentigo"
 
-#: src/text.c:828 src/text.c:999
+#: src/text.c:839 src/text.c:1006
 msgid "uncomment"
 msgstr "malkomentigo"
 
 # La originalo estas sennecese multvorteca.
-#: src/text.c:837
+#: src/text.c:848
 #, c-format
 msgid "Undid action (%s)"
 msgstr "Malfariĝis %s"
 
-#: src/text.c:862
+#: src/text.c:873
 msgid "Nothing to re-do!"
 msgstr "Nenio por refari!"
 
 # La originalo estas sennecese multvorteca.
-#: src/text.c:1008
+#: src/text.c:1015
 #, c-format
 msgid "Redid action (%s)"
 msgstr "Refariĝis %s"
 
-#: src/text.c:1143 src/text.c:2671 src/text.c:3058
+#: src/text.c:1148 src/text.c:2677 src/text.c:3060
 msgid "Could not create pipe"
 msgstr "Malsukcesis krei dukton"
 
-#: src/text.c:1179 src/text.c:2758 src/text.c:2875 src/text.c:3095
-#: src/text.c:3391
+#: src/text.c:1184 src/text.c:2766 src/text.c:2882 src/text.c:3097
 msgid "Could not fork"
 msgstr "Malsukcesis krei novan procezon"
 
-#: src/text.c:1243
+#: src/text.c:1203 src/text.c:1255
+msgid "filtering"
+msgstr "filtrado"
+
+#: src/text.c:1249
 #, c-format
 msgid "Failed to open pipe: %s"
 msgstr "Malsukcesis malfermi dukton: %s"
 
-#: src/text.c:2129
+#: src/text.c:2135
 #, c-format
 msgid "Bad quote string %s: %s"
 msgstr "Signoĉeno de citiloj %s ne validas: %s"
 
-#: src/text.c:2439
+#: src/text.c:2445
 msgid "Can now UnJustify!"
 msgstr "Nun eblas malrektigi!"
 
-#: src/text.c:2594
+#: src/text.c:2600
 #, c-format
 msgid "Unfindable word: %s"
 msgstr "Netrovebla vorto: %s"
 
-#: src/text.c:2613
+#: src/text.c:2619
 msgid "Edit a replacement"
 msgstr "Redaktu anstataŭigon"
 
 #. TRANSLATORS: Shown after fixing misspellings in one word.
-#: src/text.c:2622
+#: src/text.c:2628
 msgid "Next word..."
 msgstr "Sekva vorto..."
 
-#: src/text.c:2673
+#: src/text.c:2679
 msgid "Creating misspelled word list, please wait..."
 msgstr "Kreado de listo de misliterumataj vortoj; bonvolu atendi..."
 
-#: src/text.c:2764 src/text.c:3102
+#: src/text.c:2772 src/text.c:3104
 msgid "Could not get size of pipe buffer"
 msgstr "Ne eblas eltrovi grandon de dukta bufro"
 
-#: src/text.c:2818
+#: src/text.c:2826
 msgid "Error invoking \"spell\""
 msgstr "Eraro dum lanĉo de 'spell'"
 
-#: src/text.c:2821
+#: src/text.c:2829
 msgid "Error invoking \"sort -f\""
 msgstr "Eraro dum lanĉo de 'sort -f'"
 
-#: src/text.c:2824
+#: src/text.c:2832
 msgid "Error invoking \"uniq\""
 msgstr "Eraro dum lanĉo de 'uniq'"
 
-#: src/text.c:2992
+#: src/text.c:2994
 msgid "Invoking spell checker, please wait"
 msgstr "Ekruliĝas literumilo; bonvolu atendi..."
 
-#: src/text.c:3009
+#: src/text.c:3011
 #, c-format
 msgid "Spell checking failed: %s"
 msgstr "Literuma kontrolo malsukcesis: %s"
 
-#: src/text.c:3011
+#: src/text.c:3013
 #, c-format
 msgid "Spell checking failed: %s: %s"
 msgstr "Literuma kontrolo malsukcesis: %s: %s"
 
-#: src/text.c:3014
+#: src/text.c:3016
 msgid "Finished checking spelling"
 msgstr "Finiĝis literuma kontrolo"
 
-#: src/text.c:3037
+#: src/text.c:3039
 msgid "No linter defined for this type of file!"
 msgstr "Ne definiĝis sintaks-kontrolilo por ĉi tiu tipo de dosiero"
 
-#: src/text.c:3047
+#: src/text.c:3049
 msgid "Save modified buffer before linting?"
 msgstr "Ĉu konservi modifitan bufron antaŭ la kontrolo? "
 
-#: src/text.c:3064
+#: src/text.c:3066
 msgid "Invoking linter, please wait"
 msgstr "Ekruliĝas sintaks-kontrolilo; bonvolu atendi..."
 
-#: src/text.c:3196
+#: src/text.c:3198
 #, c-format
 msgid "Got 0 parsable lines from command: %s"
 msgstr "Riceviĝis nul analizeblaj linioj de la komando «%s»"
 
-#: src/text.c:3226
+#: src/text.c:3228
 #, c-format
 msgid "This message is for unopened file %s, open it in a new buffer?"
 msgstr ""
 "Ĉi tiu mesaĝo estas por malferma dosiero %s; ĉu malfermi ĝin en nova bufro? "
 
-#: src/text.c:3262
+#: src/text.c:3266
 msgid "No more errors in unopened files, cancelling"
 msgstr "Ne estas pliaj eraroj en malfermitaj dosieroj; rezigno"
 
 # La sekvaj mesaĝoj komencas en traduko per minusklo,
 # ĉar ili estas komandlinia helpteksto, kaj tiel normalas.
-#: src/text.c:3311
+#: src/text.c:3313
 msgid "At last message"
 msgstr "Ĉi tiu estas la lasta mesaĝo"
 
 # La sekvaj mesaĝoj komencas en traduko per minusklo,
 # ĉar ili estas komandlinia helpteksto, kaj tiel normalas.
-#: src/text.c:3316
+#: src/text.c:3318
 msgid "At first message"
 msgstr "Ĉi tiu estas la unua mesaĝo"
 
-#: src/text.c:3352
-msgid "Finished"
-msgstr "Pretas"
-
-#: src/text.c:3376
-msgid "Invoking formatter, please wait"
-msgstr "Ekruliĝas aranĝilo; bonvolu atendi..."
-
-#: src/text.c:3425
-msgid "Finished formatting"
-msgstr "Pretas la aranĝado"
-
-#: src/text.c:3507
+#: src/text.c:3396
 #, c-format
 msgid "%sWords: %zu  Lines: %zd  Chars: %zu"
 msgstr "%s%zu vortoj  ◆  %zd linioj  ◆  %zu literoj"
 
-#: src/text.c:3508
+#: src/text.c:3397
 msgid "In Selection:  "
 msgstr "En markaĵo:  "
 
 #. TRANSLATORS: This is displayed when the next keystroke will be
 #. * inserted verbatim.
-#: src/text.c:3521
+#: src/text.c:3410
 msgid "Verbatim Input"
 msgstr "Konforma enigo"
 
-#: src/text.c:3713
+#: src/text.c:3511
+msgid "No word fragment"
+msgstr "Mankas vortpeco"
+
+#: src/text.c:3603
 msgid "No further matches"
 msgstr "Malestas pliaj kongruoj"
 
 #. TRANSLATORS: Shown when there are zero possible completions.
-#: src/text.c:3717
+#: src/text.c:3607
 msgid "No matches"
 msgstr "Nenio kongruas"
 
@@ -2526,73 +2547,118 @@ msgstr "Tro da eraroj el ĉefenigujo"
 
 #. TRANSLATORS: This refers to a sequence of escape codes
 #. * (from the keyboard) that nano does not recogize.
-#: src/winio.c:1289
+#: src/winio.c:1314
 msgid "Unknown sequence"
 msgstr "Nekonata klavkodo"
 
 #. TRANSLATORS: This is shown while a six-digit hexadecimal
 #. * Unicode character code (%s) is being typed in.
-#: src/winio.c:1425
+#: src/winio.c:1450
 #, c-format
 msgid "Unicode Input: %s"
 msgstr "Enigo de Unikodo: %s"
 
-#: src/winio.c:2031
+#: src/winio.c:2056
 msgid "DIR:"
 msgstr "DOSIERUJO:"
 
-#: src/winio.c:2052 src/winio.c:2056
+#: src/winio.c:2077 src/winio.c:2081
 msgid "Modified"
 msgstr "Ŝanĝita"
 
-#: src/winio.c:2054
+#: src/winio.c:2079
 msgid "View"
 msgstr "Nur rigardi"
 
-#: src/winio.c:2184
+#: src/winio.c:2208
 msgid "Further warnings were suppressed"
 msgstr "Pluaj avertoj subpremiĝis"
 
-#: src/winio.c:3359
+#: src/winio.c:3382
 #, c-format
 msgid "line %zd/%zd (%d%%), col %zu/%zu (%d%%), char %zu/%zu (%d%%)"
 msgstr "linio %zd/%zd (%d%%) ◆ kolumno %zu/%zu (%d%%) ◆ litero %zu/%zu (%d%%)"
 
-#: src/winio.c:3557
+#: src/winio.c:3580
 msgid "The nano text editor"
 msgstr "La tekstredaktilo 'nano'"
 
-#: src/winio.c:3558
+#: src/winio.c:3581
 msgid "version"
 msgstr "versio"
 
-#: src/winio.c:3559
+#: src/winio.c:3582
 msgid "Brought to you by:"
 msgstr "Prezentita al vi per:"
 
-#: src/winio.c:3560
+#: src/winio.c:3583
 msgid "Special thanks to:"
 msgstr "Specialan dankon al:"
 
-#: src/winio.c:3561
+#: src/winio.c:3584
 msgid "The Free Software Foundation"
 msgstr "la “Free Software Foundation”"
 
-#: src/winio.c:3562
+#: src/winio.c:3585
 msgid "the many translators and the TP"
 msgstr "la multaj tradukantoj kaj la TP"
 
-#: src/winio.c:3563
+#: src/winio.c:3586
 msgid "For ncurses:"
 msgstr "por 'ncurses':"
 
-#: src/winio.c:3564
+#: src/winio.c:3587
 msgid "and anyone else we forgot..."
 msgstr "kaj iuj ajn kiujn ni forgesis..."
 
-#: src/winio.c:3565
+#: src/winio.c:3588
 msgid "Thank you for using nano!"
 msgstr "Dankon pro via uzo de 'nano'!"
+
+#~ msgid "Switched to %s"
+#~ msgstr "Ŝaltita al %s"
+
+#~ msgid "WhereIs Next"
+#~ msgstr "Serĉi sekvan"
+
+#~ msgid "Repeat the last search"
+#~ msgstr "Ripeti lastan serĉon"
+
+#~ msgid "Invoke formatter, if available"
+#~ msgstr "Ruli aranĝilon (se disponeblas)"
+
+#~ msgid "Formatter"
+#~ msgstr "Aranĝilo"
+
+#~ msgid "Indent Text"
+#~ msgstr "Deŝovi enen"
+
+#~ msgid "Unindent Text"
+#~ msgstr "Deŝovi eksteren"
+
+#~ msgid "Use of one more line for editing"
+#~ msgstr "Uzi unu plian linion por redakti"
+
+#~ msgid "Backup files"
+#~ msgstr "Fari savkopion de redaktota dosiero"
+
+#~ msgid "Reading file into separate buffer"
+#~ msgstr "Enmeti en nova bufro"
+
+#~ msgid "No conversion from DOS/Mac format"
+#~ msgstr "Ne konverti el DOS-/Mac-aranĝo"
+
+#~ msgid "Fatal error: no keys mapped for function \"%s\".  Exiting.\n"
+#~ msgstr "Neignorebla eraro: neniu klavo ligita al funkcio '%s'.  Eliro.\n"
+
+#~ msgid "Finished"
+#~ msgstr "Pretas"
+
+#~ msgid "Invoking formatter, please wait"
+#~ msgstr "Ekruliĝas aranĝilo; bonvolu atendi..."
+
+#~ msgid "Finished formatting"
+#~ msgstr "Pretas la aranĝado"
 
 #~ msgid "Reading from stdin, ^C to abort\n"
 #~ msgstr "Legado el ĉefenigujo; ^C por ĉesigi\n"

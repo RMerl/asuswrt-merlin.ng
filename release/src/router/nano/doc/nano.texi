@@ -8,8 +8,8 @@
 
 @smallbook
 @set EDITION 0.5
-@set VERSION 2.9.8
-@set UPDATED June 2018
+@set VERSION 3.0
+@set UPDATED September 2018
 
 @dircategory Editors
 @direntry
@@ -23,7 +23,7 @@
 @titlepage
 @title GNU @command{nano}
 @subtitle a small and friendly text editor
-@subtitle version 2.9.8
+@subtitle version 3.0
 
 @author Chris Allegretta
 @page
@@ -63,7 +63,7 @@ e-mail: @email{chrisa@@asty.org}@*
 @node Top
 @top
 
-This manual documents the GNU @command{nano} editor, version 2.9.8.
+This manual documents the GNU @command{nano} editor, version 3.0.
 
 @menu
 * Introduction::
@@ -506,8 +506,9 @@ This selection can now be cut or copied in its entirety with a single
 @kbd{^K} or @kbd{M-6}.  Or the selection can be used to limit the scope of
 a search-and-replace (@kbd{^\}) or spell-checking session (@kbd{^T}).
 
-On some terminals, it is also possible to select text by holding down
-@kbd{Shift} together with the cursor keys.  Such a selection is cancelled
+On some terminals, text can be selected also by holding down @kbd{Shift}
+while using the cursor keys.  Holding down the @kbd{Ctrl} or @kbd{Alt}
+key too will increase the stride.  Such a selection is cancelled
 upon any cursor movement where @kbd{Shift} isn't held.
 
 Cutting or copying selected text will toggle the mark off automatically.
@@ -595,14 +596,8 @@ The following global toggles are available:
 
 @table @code
 
-@item Backup Files
-@kbd{Meta-B} toggles the @option{-B} (@option{--backup}) command-line option.
-
 @item Constant Cursor Position Display
 @kbd{Meta-C} toggles the @option{-c} (@option{--constantshow}) command-line option.
-
-@item Multiple File Buffers
-@kbd{Meta-F} toggles the @option{-F} (@option{--multibuffer}) command-line option.
 
 @item Smart Home Key
 @kbd{Meta-H} toggles the @option{-A} (@option{--smarthome}) command-line option.
@@ -619,17 +614,11 @@ The following global toggles are available:
 @item Mouse Support
 @kbd{Meta-M} toggles the @option{-m} (@option{--mouse}) command-line option.
 
-@item No Conversion From DOS/Mac Format
-@kbd{Meta-N} toggles the @option{-N} (@option{--noconvert}) command-line option.
-
-@item More Space For Editing
-@kbd{Meta-O} toggles the @option{-O} (@option{--morespace}) command-line option.
+@item Tabs To Spaces
+@kbd{Meta-O} toggles the @option{-E} (@option{--tabstospaces}) command-line option.
 
 @item Whitespace Display
 @kbd{Meta-P} toggles the displaying of whitespace (@pxref{Whitespace}).
-
-@item Tabs To Spaces
-@kbd{Meta-Q} toggles the @option{-E} (@option{--tabstospaces}) command-line option.
 
 @item Smooth Scrolling
 @kbd{Meta-S} toggles the @option{-S} (@option{--smooth}) command-line option.
@@ -719,10 +708,6 @@ Make and keep not just one backup file, but make and keep a uniquely
 numbered one every time a file is saved --- when backups are enabled
 with @code{set backup} or @option{--backup} or @option{-B}.
 The uniquely numbered files are stored in the specified directory.
-
-@item set backwards
-Obsolete option.  Recognized but ignored.  @code{^Q} is available to
-start a backward search.
 
 @item set boldtext
 Use bold instead of reverse video for the title bar, status bar, key combos,
@@ -992,11 +977,6 @@ on the system and will be silently ignored otherwise.)
 Use the given @var{program} to do a syntax check on the current buffer.
 (This overrides the speller function.)
 
-@item formatter @var{program} [@var{arg} @dots{}]
-Use the given @var{program} to automatically reformat the text in
-the current buffer --- useful for a programming language like Go.
-(This overrides the speller and linter functions.)
-
 @item comment "@var{string}"
 Use the given string for commenting and uncommenting lines.
 If the string contains a vertical bar or pipe character (@t{|}),
@@ -1012,8 +992,11 @@ The default value is @t{"#"}.
 Display all pieces of text that match the
 extended regular expression "regex" with foreground color "fgcolor" and
 background color "bgcolor", at least one of which must be specified.
-Valid colors for foreground and background are: white, black, red,
-blue, green, yellow, magenta, and cyan.  You may use the prefix "bright"
+Valid names for foreground and background color are:
+@code{white}, @code{black}, @code{blue}, @code{green},
+@code{red}, @code{cyan}, @code{yellow}, @code{magenta}, and @code{normal}
+--- where @code{normal} means the default foreground or background color.
+You may use the prefix @code{bright}
 to get a stronger color highlight for the foreground.  If your
 terminal supports transparency, not specifying a "bgcolor" tells @command{nano}
 to attempt to use a transparent background.
@@ -1040,12 +1023,27 @@ to @code{icolor}.
 @item extendsyntax @var{name} @var{command} [@var{arg} @dots{}]
 Extend the syntax previously defined as "@var{name}" with another @var{command}.
 This allows you to add a new @code{color}, @code{icolor}, @code{header},
-@code{magic}, @code{comment}, @code{linter}, or @code{formatter} command
-to an already
+@code{magic}, @code{comment}, or @code{linter} command to an already
 defined syntax --- useful when you want to slightly improve a syntax defined
 in one of the system-installed files (which normally are not writable).
 
 @end table
+
+Note: the @code{formatter} command has been removed.  It was superseded by
+a more general mechanism: the filtering of buffer or marked text through
+an external command.  Such filtering is done by typing @code{^R^X} and then
+preceding your formatter command with the pipe symbol (@code{|}).  It has
+the added advantage that the operation can be undone.
+
+If you use such a formatting command regularly, you could assign the relevant
+series of keystrokes to a single key in your nanorc:
+
+@example
+   bind  M-F  "^R^X|yourformatcommand^M"  main
+@end example
+
+(Note that the @key{^R}, @key{^X}, and @key{^M} are each a single, literal
+control character.  You can enter them by preceding each with @key{M-V}.)
 
 @node Rebinding Keys
 @section Rebinding Keys
@@ -1077,16 +1075,20 @@ The format of @code{key} should be one of:
 
 @itemize @w{}
 @item
-@code{^}@  followed by an ASCII character or the word "Space".
+@code{^}@  followed by a Latin letter, by one of several ASCII characters
+(@@, ], \, ^, or _), or by the word "Space".
 Example: @code{^C}.
 
 @item
-@code{M-}@  followed by a ASCII character or the word "Space".
+@code{M-}@  followed by any ASCII character except [, or by the word "Space".
 Example: @code{M-C}.
 
 @item
 @code{F}@  followed by a numeric value from 1 to 16.
 Example: @code{F10}.
+
+@item
+the word "Ins" or the word "Del".
 @end itemize
 
 @sp 1
@@ -1118,16 +1120,14 @@ Starts a forward search for text in the current buffer --- or for filenames
 matching a string in the current list in the file browser.
 
 @item wherewas
-Starts a backward search for text in the current buffer.
-
-@item searchagain
-Repeats the last search command without prompting.
+Starts a backward search for text in the current buffer --- or for filenames
+matching a string in the current list in the file browser.
 
 @item findprevious
-As @code{searchagain}, but always in the backward direction.
+Searches the next occurrence in the backward direction.
 
 @item findnext
-As @code{searchagain}, but always in the forward direction.
+Searches the next occurrence in the forward direction.
 
 @item replace
 Interactively replaces text within the current buffer.
@@ -1135,24 +1135,31 @@ Interactively replaces text within the current buffer.
 @item cut
 Cuts and stores the current line (or the marked region).
 
-@item copytext
+@item copy
 Copies the current line (or the marked region) without deleting it.
+(The old form 'copytext' is deprecated.)
 
-@item uncut
-Copies the currently stored text into the current buffer at the
+@item paste
+Pastes the currently stored text into the current buffer at the
 current cursor position.
-
-@item mark
-Sets the mark at the current position, to start selecting text.
+(The old form 'uncut' is deprecated.)
 
 @item cutwordleft
 Cuts from the cursor position to the beginning of the preceding word.
+(This function is not bound by default.  If your terminal produces
+@code{^H} for <Ctrl+Backspace>, you can make <Ctrl+Backspace> delete
+the word to the left of the cursor by rebinding ^H to this function.)
 
 @item cutwordright
 Cuts from the cursor position to the beginning of the next word.
+(This function is bound by default to <Ctrl+Delete>.)
 
 @item cutrestoffile
 Cuts all text from the cursor position till the end of the buffer.
+
+@item mark
+Sets the mark at the current position, to start selecting text.
+Or, when it is set, unsets the mark.
 
 @item curpos
 Shows the current cursor position: the line, column, and character positions.
@@ -1161,7 +1168,7 @@ Shows the current cursor position: the line, column, and character positions.
 Counts the number of words, lines and characters in the current buffer.
 
 @item speller
-Invokes a spell-checking program (or linting program, or formatter program,
+Invokes a spell-checking program (or linting program,
 if the active syntax defines such a thing).
 
 @item justify
@@ -1294,19 +1301,20 @@ Suspends the editor (if the suspending function is enabled, see the
 "suspendenable" entry below).
 
 @item casesens
-Toggles case sensitivity in searching (search/replace menus only).
+Toggles whether searching/replacing ignores or respects the case of
+the given characters.
 
 @item regexp
-Toggles whether searching/replacing is based on literal strings or regular expressions.
+Toggles whether searching/replacing uses literal strings or regular expressions.
 
 @item backwards
 Toggles whether searching/replacing goes forward or backward.
 
 @item prevhistory
-Shows the previous history entry in the prompt menus (e.g.@: search).
+Retrieves the previous (older) entry at a prompt.
 
 @item nexthistory
-Shows the next history entry in the prompt menus (e.g.@: search).
+Retrieves the next (newer) entry at a prompt.
 
 @item flipreplace
 Toggles between searching for something and replacing something.
@@ -1325,6 +1333,10 @@ region) is piped to the command.
 @item flipnewbuffer
 Toggles between inserting into the current buffer and into a new
 empty buffer.
+
+@item flipconvert
+When reading in a file, toggles between converting and not converting
+it from DOS/Mac format.  Converting is the default.
 
 @item dosformat
 When writing a file, switches to writing a DOS format (CR/LF).
@@ -1366,9 +1378,6 @@ Toggles the presence of the two-line list of key bindings at the bottom of the s
 Toggles the constant display of the current line, column, and character positions.
 (The form @code{constupdate} is deprecated.)
 
-@item morespace
-Toggles the presence of the blank line that 'separates' the title bar from the file text.
-
 @item smoothscroll
 Toggles smooth scrolling (when moving around with the arrow keys).
 
@@ -1403,18 +1412,8 @@ Toggles whether long lines will be hard-wrapped to the next line.
 @item tabstospaces
 Toggles whether typed tabs will be converted to spaces.
 
-@item backupfile
-Toggles whether a backup will be made of the file to be edited.
-
-@item multibuffer
-Toggles whether a file is inserted into the current buffer
-or read into a new buffer.
-
 @item mouse
 Toggles mouse support.
-
-@item noconvert
-Toggles automatic conversion of files from DOS/Mac format.
 
 @item suspendenable
 Toggles whether the suspend shortcut (normally @kbd{^Z}) will suspend the editor.
@@ -1437,6 +1436,9 @@ The 'search to replace' menu.
 
 @item replacewith
 The 'replace with' menu, which comes up after 'search to replace'.
+
+@item yesno
+The 'yesno' menu, where the Yes/No/All/Cancel question is asked.
 
 @item gotoline
 The 'goto line (and column)' menu.

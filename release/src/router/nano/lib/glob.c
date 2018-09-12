@@ -15,6 +15,16 @@
    License along with the GNU C Library; if not, see
    <https://www.gnu.org/licenses/>.  */
 
+#ifndef _LIBC
+
+/* Don't use __attribute__ __nonnull__ in this compilation unit.  Otherwise gcc
+   optimizes away the pattern == NULL test below.  */
+# define _GL_ARG_NONNULL(params)
+
+# include <config.h>
+
+#endif
+
 #include <glob.h>
 
 #include <errno.h>

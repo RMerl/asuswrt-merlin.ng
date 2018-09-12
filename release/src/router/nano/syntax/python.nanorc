@@ -1,7 +1,7 @@
 ## Here is an example for Python.
 
 syntax python "\.py$"
-header "^#!.*python[-0-9._]*"
+header "^#!.*python"
 magic "Python script"
 linter pyflakes
 comment "#"
@@ -14,6 +14,9 @@ color brightcyan "\<(def|del|elif|else|except|exec|finally|for|from)\>"
 color brightcyan "\<(global|if|import|in|is|lambda|nonlocal|not|or)\>"
 color brightcyan "\<(pass|print|raise|return|try|while|with|yield)\>"
 
+# Special values.
+color brightmagenta "\<(False|None|True)\>"
+
 # Single-quoted strings.
 color brightgreen "'([^'\]|\\.)+'"
 color brightgreen ""([^"\]|\\.)+""
@@ -22,9 +25,6 @@ color brightred "(^|[[:blank:]])#.*$"
 # Triple-quoted strings.
 color brightgreen    start="'''([^'),]|$)" end="(^|[^(\])'''"
 color brightgreen start="\"\"\"([^"),]|$)" end="(^|[^(\])\"\"\""
-
-# Special values.
-color brightmagenta "\<(False|None|True)\>"
 
 # Reminders.
 color brightwhite,yellow "(FIXME|TODO|XXX)"

@@ -28,6 +28,16 @@ static re_dfastate_t *create_cd_newstate (const re_dfa_t *dfa,
 					  const re_node_set *nodes,
 					  unsigned int context,
 					  re_hashval_t hash);
+static reg_errcode_t re_string_realloc_buffers (re_string_t *pstr,
+						Idx new_buf_len);
+#ifdef RE_ENABLE_I18N
+static void build_wcs_buffer (re_string_t *pstr);
+static reg_errcode_t build_wcs_upper_buffer (re_string_t *pstr);
+#endif /* RE_ENABLE_I18N */
+static void build_upper_buffer (re_string_t *pstr);
+static void re_string_translate_buffer (re_string_t *pstr);
+static unsigned int re_string_context_at (const re_string_t *input, Idx idx,
+					  int eflags) __attribute__ ((pure));
 
 /* Functions for string operation.  */
 
@@ -307,7 +317,7 @@ build_wcs_upper_buffer (re_string_t *pstr)
 	  mbclen = __mbrtowc (&wc,
 			      ((const char *) pstr->raw_mbs + pstr->raw_mbs_idx
 			       + byte_idx), remain_len, &pstr->cur_state);
-	  if (BE (mbclen < (size_t) -2, 1))
+	  if (BE (0 < mbclen && mbclen < (size_t) -2, 1))
 	    {
 	      wchar_t wcu = __towupper (wc);
 	      if (wcu != wc)
@@ -376,14 +386,14 @@ build_wcs_upper_buffer (re_string_t *pstr)
 	else
 	  p = (const char *) pstr->raw_mbs + pstr->raw_mbs_idx + src_idx;
 	mbclen = __mbrtowc (&wc, p, remain_len, &pstr->cur_state);
-	if (BE (mbclen < (size_t) -2, 1))
+	if (BE (0 < mbclen && mbclen < (size_t) -2, 1))
 	  {
 	    wchar_t wcu = __towupper (wc);
 	    if (wcu != wc)
 	      {
 		size_t mbcdlen;
 
-		mbcdlen = wcrtomb ((char *) buf, wcu, &prev_st);
+		mbcdlen = __wcrtomb ((char *) buf, wcu, &prev_st);
 		if (BE (mbclen == mbcdlen, 1))
 		  memcpy (pstr->mbs + byte_idx, buf, mbclen);
 		else if (mbcdlen != (size_t) -1)

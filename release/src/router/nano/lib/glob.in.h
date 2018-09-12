@@ -25,7 +25,7 @@
 @PRAGMA_COLUMNS@
 
 /* The include_next requires a split double-inclusion guard.  */
-#if !@REPLACE_GLOB@
+#if @HAVE_GLOB_H@ && !@REPLACE_GLOB@
 # @INCLUDE_NEXT@ @NEXT_GLOB_H@
 #endif
 
@@ -33,6 +33,10 @@
 #define _@GUARD_PREFIX@_GLOB_H
 
 /* The definitions of _GL_FUNCDECL_RPL etc. are copied here.  */
+
+/* The definition of _GL_ARG_NONNULL is copied here.  */
+
+/* The definition of _GL_WARN_ON_USE is copied here.  */
 
 /* GCC 2.95 and later have "__restrict"; C99 compilers have
    "restrict", and "configure" may have defined "restrict".
@@ -58,7 +62,7 @@ typedef int (*_gl_glob_errfunc_fn) (const char *, int);
 #endif
 
 
-#if @REPLACE_GLOB@
+#if !@HAVE_GLOB_H@ || @REPLACE_GLOB@
 
 
 /* Preparations for including the standard GNU C Library header.  */
@@ -76,9 +80,17 @@ typedef int (*_gl_glob_errfunc_fn) (const char *, int);
 #  define __USE_GNU    1
 # endif
 
-# define glob rpl_glob
-# define globfree rpl_globfree
-# define glob_pattern_p rpl_glob_pattern_p
+# if @REPLACE_GLOB@
+#  if !(defined __cplusplus && defined GNULIB_NAMESPACE)
+#   define glob rpl_glob
+#   define globfree rpl_globfree
+#  endif
+# endif
+# if @REPLACE_GLOB_PATTERN_P@
+#  if !(defined __cplusplus && defined GNULIB_NAMESPACE)
+#   define glob_pattern_p rpl_glob_pattern_p
+#  endif
+# endif
 # define __glob_pattern_p glob_pattern_p
 
 # define __GLOB_GNULIB 1
@@ -88,32 +100,81 @@ typedef int (*_gl_glob_errfunc_fn) (const char *, int);
 # include "glob-libc.h"
 
 
-# if defined __cplusplus && defined GNULIB_NAMESPACE
-#  undef glob
-#  undef globfree
-#  undef glob_pattern_p
+#endif
+
+
+#if @GNULIB_GLOB@
+# if @REPLACE_GLOB@
+_GL_FUNCDECL_RPL (glob, int, (const char *_Restrict_ __pattern, int __flags,
+                              _gl_glob_errfunc_fn __errfunc,
+                              glob_t *_Restrict_ __pglob)
+                              _GL_ARG_NONNULL ((1)));
 _GL_CXXALIAS_RPL (glob, int, (const char *_Restrict_ __pattern, int __flags,
                               _gl_glob_errfunc_fn __errfunc,
                               glob_t *_Restrict_ __pglob));
-_GL_CXXALIAS_RPL (globfree, void, (glob_t *__pglob));
-_GL_CXXALIAS_RPL (glob_pattern_p, int, (const char *__pattern, int __quote));
-# endif
-
-#else
-
+# else
+#  if !@HAVE_GLOB@
+_GL_FUNCDECL_SYS (glob, int, (const char *_Restrict_ __pattern, int __flags,
+                              _gl_glob_errfunc_fn __errfunc,
+                              glob_t *_Restrict_ __pglob)
+                              _GL_ARG_NONNULL ((1)));
+#  endif
 _GL_CXXALIAS_SYS (glob, int, (const char *_Restrict_ __pattern, int __flags,
                               _gl_glob_errfunc_fn __errfunc,
                               glob_t *_Restrict_ __pglob));
-_GL_CXXALIAS_SYS (globfree, void, (glob_t *__pglob));
-_GL_CXXALIAS_SYS (glob_pattern_p, int, (const char *__pattern, int __quote));
-
-#endif
-
-#if 0  /* The C function name is rpl_glob in some cases, not glob.  */
+# endif
 _GL_CXXALIASWARN (glob);
-_GL_CXXALIASWARN (globfree);
-_GL_CXXALIASWARN (glob_pattern_p);
+#elif defined GNULIB_POSIXCHECK
+# undef glob
+# if HAVE_RAW_DECL_GLOB
+_GL_WARN_ON_USE (glob,
+                 "glob is unportable - "
+                 "use gnulib module glob for portability");
+# endif
 #endif
+
+#if @GNULIB_GLOB@
+# if @REPLACE_GLOB@
+_GL_FUNCDECL_RPL (globfree, void, (glob_t *__pglob) _GL_ARG_NONNULL ((1)));
+_GL_CXXALIAS_RPL (globfree, void, (glob_t *__pglob));
+# else
+#  if !@HAVE_GLOB@
+_GL_FUNCDECL_SYS (globfree, void, (glob_t *__pglob) _GL_ARG_NONNULL ((1)));
+#  endif
+_GL_CXXALIAS_SYS (globfree, void, (glob_t *__pglob));
+# endif
+_GL_CXXALIASWARN (globfree);
+#elif defined GNULIB_POSIXCHECK
+# undef globfree
+# if HAVE_RAW_DECL_GLOBFREE
+_GL_WARN_ON_USE (globfree,
+                 "globfree is unportable - "
+                 "use gnulib module glob for portability");
+# endif
+#endif
+
+#if @GNULIB_GLOB@
+# if @REPLACE_GLOB_PATTERN_P@
+_GL_FUNCDECL_RPL (glob_pattern_p, int, (const char *__pattern, int __quote)
+                                       _GL_ARG_NONNULL ((1)));
+_GL_CXXALIAS_RPL (glob_pattern_p, int, (const char *__pattern, int __quote));
+# else
+#  if !@HAVE_GLOB_PATTERN_P@
+_GL_FUNCDECL_SYS (glob_pattern_p, int, (const char *__pattern, int __quote)
+                                       _GL_ARG_NONNULL ((1)));
+#  endif
+_GL_CXXALIAS_SYS (glob_pattern_p, int, (const char *__pattern, int __quote));
+# endif
+_GL_CXXALIASWARN (glob_pattern_p);
+#elif defined GNULIB_POSIXCHECK
+# undef glob_pattern_p
+# if HAVE_RAW_DECL_GLOB_PATTERN_P
+_GL_WARN_ON_USE (glob_pattern_p,
+                 "glob_pattern_p is unportable - "
+                 "use gnulib module glob for portability");
+# endif
+#endif
+
 
 #endif /* _@GUARD_PREFIX@_GLOB_H */
 #endif /* _@GUARD_PREFIX@_GLOB_H */

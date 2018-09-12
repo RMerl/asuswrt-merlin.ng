@@ -465,11 +465,18 @@ void ingraft_buffer(filestruct *somebuffer)
 	}
 #endif
 
+#ifdef DEBUG
+#include <time.h>
+	clock_t start = clock();
+#endif
 	/* Add the number of characters in the copied text to the file size. */
 	openfile->totsize += get_totsize(openfile->fileage, openfile->filebot);
+#ifdef DEBUG
+	statusline(ALERT, "Took: %.2f", (double)(clock() - start) / CLOCKS_PER_SEC);
+#endif
 
 	/* If we pasted onto the first line of the edit window, the corresponding
-	 * struct has been freed, so... point at the start of the copied text. */
+	 * record has been freed, so... point at the start of the copied text. */
 	if (edittop_inside)
 		openfile->edittop = openfile->fileage;
 
@@ -559,6 +566,13 @@ void finish(void)
 	blank_bottombars();
 	wrefresh(bottomwin);
 
+#ifndef NANO_TINY
+	/* Deallocate the two or three subwindows. */
+	if (topwin != NULL)
+		delwin(topwin);
+	delwin(edit);
+	delwin(bottomwin);
+#endif
 	/* Switch on the cursor and exit from curses mode. */
 	curs_set(1);
 	endwin();
@@ -573,10 +587,6 @@ void finish(void)
 	if (ISSET(POS_HISTORY)) {
 		update_poshistory(openfile->filename, openfile->current->lineno, xplustabs() + 1);
 	}
-#endif
-
-#ifdef DEBUG
-	thanks_for_all_the_fish();
 #endif
 
 	/* Get out. */
@@ -711,7 +721,6 @@ void window_init(void)
 
 #ifdef ENABLED_WRAPORJUSTIFY
 	/* Set up the wrapping point, accounting for screen width when negative. */
-	fill = wrap_at;
 	if (fill <= 0)
 		fill += COLS;
 	if (fill < 0)
@@ -1061,10 +1070,6 @@ void do_exit(void)
 						"(Answering \"No\" will DISCARD changes.) "));
 	}
 
-#ifdef DEBUG
-	dump_filestruct(openfile->fileage);
-#endif
-
 	/* If the user chose not to save, or if the user chose to save and
 	 * the save succeeded, we're ready to exit. */
 	if (i == 0 || (i == 1 && do_writeout(TRUE, TRUE) > 0))
@@ -1386,7 +1391,6 @@ void do_toggle(int flag)
 			mouse_init();
 			break;
 #endif
-		case MORE_SPACE:
 		case NO_HELP:
 			window_init();
 			focusing = FALSE;
@@ -1577,7 +1581,7 @@ void unbound_key(int code)
 			statusline(ALERT, _("Unbound key: M-%c"), toupper(code));
 	} else if (code < 0x20)
 		statusline(ALERT, _("Unbound key: ^%c"), code + 0x40);
-	else if (currmenu != MHELP)
+	else
 		statusline(ALERT, _("Unbound key: %c"), code);
 }
 
@@ -1759,7 +1763,6 @@ int do_input(bool allow_funcs)
 		if (shortcut->func == do_cut_text_void
 #ifndef NANO_TINY
 				|| shortcut->func == do_copy_text
-				|| shortcut->func == do_cut_till_eof
 #endif
 				)
 			retain_cuts = TRUE;
@@ -2244,7 +2247,7 @@ int main(int argc, char **argv)
 #endif
 #ifdef ENABLED_WRAPORJUSTIFY
 			case 'r':
-				if (!parse_num(optarg, &wrap_at)) {
+				if (!parse_num(optarg, &fill)) {
 					fprintf(stderr, _("Requested fill size \"%s\" is invalid"), optarg);
 					fprintf(stderr, "\n");
 					exit(1);
@@ -2332,7 +2335,7 @@ int main(int argc, char **argv)
 		char *operating_dir_cpy = operating_dir;
 #endif
 #ifdef ENABLED_WRAPORJUSTIFY
-		ssize_t wrap_at_cpy = wrap_at;
+		ssize_t fill_cpy = fill;
 #endif
 #ifndef NANO_TINY
 		char *backup_dir_cpy = backup_dir;
@@ -2380,7 +2383,7 @@ int main(int argc, char **argv)
 #endif
 #ifdef ENABLED_WRAPORJUSTIFY
 		if (fill_used)
-			wrap_at = wrap_at_cpy;
+			fill = fill_cpy;
 #endif
 #ifndef NANO_TINY
 		if (backup_dir_cpy != NULL) {
@@ -2576,6 +2579,8 @@ int main(int argc, char **argv)
 	/* Ask for the codes for Control+Home/End. */
 	controlhome = get_keycode("kHOM5", CONTROL_HOME);
 	controlend = get_keycode("kEND5", CONTROL_END);
+	controldelete = get_keycode("kDC5", CONTROL_DELETE);
+	controlshiftdelete = get_keycode("kDC6", KEY_BACKSPACE);
 #ifndef NANO_TINY
 	/* Ask for the codes for Shift+Control+Left/Right/Up/Down. */
 	shiftcontrolleft = get_keycode("kLFT6", SHIFT_CONTROL_LEFT);
@@ -2646,8 +2651,11 @@ int main(int argc, char **argv)
 		UNSET(VIEW_MODE);
 	}
 #ifdef ENABLE_MULTIBUFFER
-	else
+	else {
 		openfile = openfile->next;
+		if (more_than_one)
+			mention_name_and_linecount();
+	}
 #endif
 
 #ifdef DEBUG
@@ -2656,8 +2664,10 @@ int main(int argc, char **argv)
 
 	prepare_for_display();
 
+#ifdef ENABLE_NANORC
 	if (rcfile_with_errors != NULL)
 		statusline(ALERT, _("Mistakes in '%s'"), rcfile_with_errors);
+#endif
 
 #ifdef ENABLE_HELP
 	if (*openfile->filename == '\0' && openfile->totsize == 0 &&
@@ -2690,8 +2700,8 @@ int main(int argc, char **argv)
 		errno = 0;
 		focusing = TRUE;
 
-		/* Forget any earlier statusbar x position. */
-		reinit_statusbar_x();
+		/* Forget any earlier cursor position at the prompt. */
+		put_cursor_at_end_of_answer();
 
 		/* Read in and interpret keystrokes. */
 		do_input(TRUE);

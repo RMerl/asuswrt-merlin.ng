@@ -17,7 +17,7 @@
    <https://www.gnu.org/licenses/>.  */
 
 #ifndef _LIBC
-# include <config.h>
+# include <libc-config.h>
 #endif
 
 #include <glob.h>

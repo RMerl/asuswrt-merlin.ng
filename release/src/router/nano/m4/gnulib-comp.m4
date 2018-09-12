@@ -64,6 +64,7 @@ AC_DEFUN([gl_EARLY],
   # Code from module flexmember:
   # Code from module float:
   # Code from module fnmatch:
+  # Code from module fnmatch-h:
   # Code from module fpieee:
   AC_REQUIRE([gl_FP_IEEE])
   # Code from module fpucw:
@@ -80,6 +81,7 @@ AC_DEFUN([gl_EARLY],
   # Code from module gettime:
   # Code from module gettimeofday:
   # Code from module glob:
+  # Code from module glob-h:
   # Code from module hard-locale:
   # Code from module havelib:
   # Code from module host-cpu-c-abi:
@@ -236,10 +238,12 @@ AC_DEFUN([gl_INIT],
     AC_LIBOBJ([itold])
   fi
   gl_FUNC_FNMATCH_POSIX
-  if test -n "$FNMATCH_H"; then
+  if test $HAVE_FNMATCH = 0 || test $REPLACE_FNMATCH = 1; then
     AC_LIBOBJ([fnmatch])
     gl_PREREQ_FNMATCH
   fi
+  gl_FNMATCH_MODULE_INDICATOR([fnmatch])
+  gl_FNMATCH_H
   gl_FUNC_FREXP_NO_LIBM
   if test $gl_func_frexp_no_libm != yes; then
     AC_LIBOBJ([frexp])
@@ -307,13 +311,16 @@ AC_DEFUN([gl_INIT],
   fi
   gl_SYS_TIME_MODULE_INDICATOR([gettimeofday])
   gl_GLOB
-  if test $REPLACE_GLOB = 1; then
+  if test $HAVE_GLOB = 0 || test $REPLACE_GLOB = 1; then
     AC_LIBOBJ([glob])
-    AC_LIBOBJ([glob_pattern_p])
     AC_LIBOBJ([globfree])
     gl_PREREQ_GLOB
   fi
-  gl_HARD_LOCALE
+  if test $HAVE_GLOB_PATTERN_P = 0 || test $REPLACE_GLOB_PATTERN_P = 1; then
+    AC_LIBOBJ([glob_pattern_p])
+  fi
+  gl_GLOB_MODULE_INDICATOR([glob])
+  gl_GLOB_H
   AC_REQUIRE([gl_HOST_CPU_C_ABI])
   gl_FUNC_ISBLANK
   if test $HAVE_ISBLANK = 0; then
@@ -559,6 +566,7 @@ AC_DEFUN([gl_INIT],
   gl_FUNC_WCWIDTH
   if test $HAVE_WCWIDTH = 0 || test $REPLACE_WCWIDTH = 1; then
     AC_LIBOBJ([wcwidth])
+    gl_PREREQ_WCWIDTH
   fi
   gl_WCHAR_MODULE_INDICATOR([wcwidth])
   gl_XSIZE
@@ -909,6 +917,7 @@ AC_DEFUN([gl_FILE_LIST], [
   m4/flexmember.m4
   m4/float_h.m4
   m4/fnmatch.m4
+  m4/fnmatch_h.m4
   m4/fpieee.m4
   m4/frexp.m4
   m4/frexpl.m4
@@ -923,8 +932,8 @@ AC_DEFUN([gl_FILE_LIST], [
   m4/gettimeofday.m4
   m4/glibc21.m4
   m4/glob.m4
+  m4/glob_h.m4
   m4/gnulib-common.m4
-  m4/hard-locale.m4
   m4/host-cpu-c-abi.m4
   m4/include_next.m4
   m4/intmax_t.m4

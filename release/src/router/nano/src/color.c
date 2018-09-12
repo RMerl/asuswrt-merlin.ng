@@ -66,7 +66,7 @@ void set_colorpairs(void)
 				combo->bg = COLOR_BLACK;
 			init_pair(i + 1, combo->fg, combo->bg);
 			interface_color_pair[i] = COLOR_PAIR(i + 1) | A_BANDAID |
-										(combo->bright ? A_BOLD : A_NORMAL);
+										combo->attributes;
 		} else {
 			if (i == FUNCTION_TAG)
 				interface_color_pair[i] = A_NORMAL;
@@ -98,8 +98,7 @@ void set_colorpairs(void)
 			else
 				ink->pairnum = new_number++;
 
-			ink->attributes = COLOR_PAIR(ink->pairnum) | A_BANDAID |
-								(ink->bright ? A_BOLD : A_NORMAL);
+			ink->attributes |= COLOR_PAIR(ink->pairnum) | A_BANDAID;
 		}
 	}
 }

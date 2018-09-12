@@ -166,15 +166,13 @@ char *do_browser(char *path)
 			say_there_is_no_help();
 #endif
 		} else if (func == do_search_forward) {
-			do_filesearch();
-		} else if (func == do_research) {
-			do_fileresearch(FORWARD);
-#ifndef NANO_TINY
+			do_filesearch(FORWARD);
+		} else if (func == do_search_backward) {
+			do_filesearch(BACKWARD);
 		} else if (func == do_findprevious) {
 			do_fileresearch(BACKWARD);
 		} else if (func == do_findnext) {
 			do_fileresearch(FORWARD);
-#endif
 		} else if (func == do_left) {
 			if (selected > 0)
 				selected--;
@@ -488,11 +486,9 @@ functionptrtype parse_browser_input(int *kbinput)
 			case '/':
 				return do_search_forward;
 			case 'N':
-#ifndef NANO_TINY
 				return do_findprevious;
-#endif
 			case 'n':
-				return do_research;
+				return do_findnext;
 		}
 	}
 	return func_from_key(kbinput);
@@ -659,10 +655,11 @@ void browser_select_dirname(const char *needle)
 	}
 }
 
-/* Prepare the prompt and ask the user what to search for.  Return -2
+/* Prepare the prompt and ask the user what to search for.  If forwards is
+ * TRUE, search forward in the list; otherwise, search backward.  Return -2
  * for a blank answer, -1 for Cancel, 0 when we have a string, and a
  * positive value when some function was run. */
-int filesearch_init(void)
+int filesearch_init(bool forwards)
 {
 	char *thedefault;
 	int response;
@@ -681,7 +678,8 @@ int filesearch_init(void)
 
 	/* Now ask what to search for. */
 	response = do_prompt(FALSE, FALSE, MWHEREISFILE, NULL, &search_history,
-						browser_refresh, "%s%s", _("Search"), thedefault);
+						browser_refresh, "%s%s%s", _("Search"),
+						!forwards ? _(" [Backwards]") : "", thedefault);
 	free(thedefault);
 
 	/* If only Enter was pressed but we have a previous string, it's okay. */
@@ -754,11 +752,12 @@ void findfile(const char *needle, bool forwards)
 	selected = looking_at;
 }
 
-/* Search for a filename. */
-void do_filesearch(void)
+/* Search for a filename.  If forwards is TRUE, search forward in the list;
+ * otherwise, search backward.*/
+void do_filesearch(bool forwards)
 {
 	/* If the user cancelled or jumped to first or last file, don't search. */
-	if (filesearch_init() != 0)
+	if (filesearch_init(forwards) != 0)
 		return;
 
 	/* If answer is now "", copy last_search into answer. */
@@ -773,7 +772,7 @@ void do_filesearch(void)
 		update_history(&search_history, answer);
 #endif
 
-	findfile(answer, TRUE);
+	findfile(answer, forwards);
 }
 
 /* Search again without prompting for the last given search string,

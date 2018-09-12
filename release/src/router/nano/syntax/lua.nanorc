@@ -5,12 +5,15 @@
 
 syntax lua "\.lua$"
 magic "Lua script"
+linter "luacheck --no-color"
 comment "--"
 
 color brightwhite "\[\[.*\]\]"
 
 # Operators
-color brightyellow ":|\*|/|%|\+|-|\^|>|>=|<|<=|~=|=|\.\.|\<(not|and|or)\>"
+color brightyellow ":|\*|/|%|\+|-|\^|>|>=|<|<=|~=|=|\.\.|#|\<(not|and|or)\>"
+# Don't partially color ... as an operator
+color normal "\.\.\."
 
 # Statements
 color brightblue "\<(do|end|while|repeat|until|if|elseif|then|else|for|in|function|local|return|break)\>"
@@ -49,9 +52,9 @@ color brightmagenta "\(|\)|\[|\]|\{|\}"
 # Shebang
 color brightcyan "^#!.*"
 
+# Strings
+color red ""(\\.|[^"\])*"|'(\\.|[^'\])*'"
+
 # Simple comments and multiline comments
 color green "--.*"
 color green start="--\[\[" end="\]\]"
-
-# Strings
-color red ""(\\.|[^"\])*"|'(\\.|[^'\])*'"

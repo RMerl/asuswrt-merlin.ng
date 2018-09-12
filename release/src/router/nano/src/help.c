@@ -161,7 +161,6 @@ void do_help(void)
 	didfind = 0;
 
 	bottombars(MHELP);
-	wnoutrefresh(bottomwin);
 
 	/* Extract the title from the head of the help text. */
 	length = break_line(help_text, MAX_BUF_SIZE, TRUE);
@@ -206,11 +205,11 @@ void do_help(void)
 		} else if (func == to_last_line) {
 			to_last_line();
 		} else if (func == do_search_forward) {
-			do_search();
+			do_search_forward();
 			bottombars(MHELP);
-		} else if (func == do_research) {
-			do_research();
-#ifndef NANO_TINY
+		} else if (func == do_search_backward) {
+			do_search_backward();
+			bottombars(MHELP);
 		} else if (func == do_findprevious) {
 			do_findprevious();
 		} else if (func == do_findnext) {
@@ -219,6 +218,7 @@ void do_help(void)
 		} else if (func == (functionptrtype)implant) {
 			implant(first_sc_for(MHELP, func)->expansion);
 #endif
+#ifndef NANO_TINY
 		} else if (kbinput == KEY_WINCH) {
 			; /* Nothing to do. */
 #endif
@@ -414,12 +414,13 @@ void help_init(void)
 		htx[0] = N_("Execute Command Help Text\n\n "
 				"This mode allows you to insert the output of a "
 				"command run by the shell into the current buffer (or "
-				"a new buffer in multiple file buffer mode).  If you "
-				"need another blank buffer, do not enter any "
-				"command.\n\n The following function keys are "
+				"into a new buffer).  If the command is preceded by '|' "
+				"(the pipe symbol), the current contents of the buffer "
+				"(or marked region) will be piped to the command.  ");
+		htx[1] = N_("If you just need another blank buffer, do not enter any "
+				"command.\n\n");
+		htx[2] = N_(" The following function keys are "
 				"available in Execute Command mode:\n\n");
-		htx[1] = NULL;
-		htx[2] = NULL;
 	}
 #endif /* !NANO_TINY */
 	else {
@@ -582,11 +583,9 @@ functionptrtype parse_help_input(int *kbinput)
 			case '/':
 				return do_search_forward;
 			case 'N':
-#ifndef NANO_TINY
 				return do_findprevious;
-#endif
 			case 'n':
-				return do_research;
+				return do_findnext;
 			case 'E':
 			case 'e':
 			case 'Q':

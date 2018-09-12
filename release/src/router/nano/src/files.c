@@ -512,6 +512,7 @@ void replace_buffer(const char *filename)
 {
 	FILE *f;
 	int descriptor;
+	filestruct *was_cutbuffer = cutbuffer;
 
 	/* Open the file quietly. */
 	descriptor = open_file(filename, FALSE, TRUE, &f);
@@ -520,29 +521,44 @@ void replace_buffer(const char *filename)
 	if (descriptor < 0)
 		return;
 
-	/* Reinitialize the text of the current buffer. */
-	free_filestruct(openfile->fileage);
-	initialize_buffer_text();
+#ifndef NANO_TINY
+	add_undo(COUPLE_BEGIN);
+	openfile->undotop->strdata = mallocstrcpy(NULL, _("spelling correction"));
+#endif
+
+	/* Throw away the text of the file. */
+	cutbuffer = NULL;
+	openfile->current = openfile->fileage;
+	openfile->current_x = 0;
+#ifndef NANO_TINY
+	add_undo(CUT_TO_EOF);
+#endif
+	do_cut_text(FALSE, FALSE, TRUE);
+#ifndef NANO_TINY
+	update_undo(CUT_TO_EOF);
+#endif
+	free_filestruct(cutbuffer);
+	cutbuffer = was_cutbuffer;
 
 	/* Insert the processed file into its place. */
-	read_file(f, descriptor, filename, FALSE);
+	read_file(f, descriptor, filename, TRUE);
 
-	/* Put current at a place that is certain to exist. */
-	openfile->current = openfile->fileage;
+#ifndef NANO_TINY
+	add_undo(COUPLE_END);
+	openfile->undotop->strdata = mallocstrcpy(NULL, _("spelling correction"));
+#endif
 }
 
 #ifndef NANO_TINY
 /* Open the specified file, and if that succeeds, blow away the text of
- * the current buffer at the given coordinates and read the file
+ * the current buffer covered by the mark and read the file
  * contents into its place. */
-void replace_marked_buffer(const char *filename, filestruct *top, size_t top_x,
-		filestruct *bot, size_t bot_x)
+void replace_marked_buffer(const char *filename)
 {
 	FILE *f;
 	int descriptor;
 	bool old_no_newlines = ISSET(NO_NEWLINES);
-	filestruct *trash_top = NULL;
-	filestruct *trash_bot = NULL;
+	filestruct *was_cutbuffer = cutbuffer;
 
 	descriptor = open_file(filename, FALSE, TRUE, &f);
 
@@ -552,15 +568,26 @@ void replace_marked_buffer(const char *filename, filestruct *top, size_t top_x,
 	/* Don't add a magicline when replacing text in the buffer. */
 	SET(NO_NEWLINES);
 
-	/* Throw away the text under the mark, and insert the processed file
-	 * where the marked text was. */
-	extract_buffer(&trash_top, &trash_bot, top, top_x, bot, bot_x);
-	free_filestruct(trash_top);
-	read_file(f, descriptor, filename, FALSE);
+	add_undo(COUPLE_BEGIN);
+	openfile->undotop->strdata = mallocstrcpy(NULL, _("spelling correction"));
+
+	/* Throw away the text under the mark. */
+	cutbuffer = NULL;
+	add_undo(CUT);
+	do_cut_text(FALSE, TRUE, FALSE);
+	update_undo(CUT);
+	free_filestruct(cutbuffer);
+	cutbuffer = was_cutbuffer;
+
+	/* Insert the processed file where the marked text was. */
+	read_file(f, descriptor, filename, TRUE);
 
 	/* Restore the magicline behavior now that we're done fiddling. */
 	if (!old_no_newlines)
 		UNSET(NO_NEWLINES);
+
+	add_undo(COUPLE_END);
+	openfile->undotop->strdata = mallocstrcpy(NULL, _("spelling correction"));
 }
 #endif /* !NANO_TINY */
 #endif /* ENABLE_SPELLER */
@@ -585,12 +612,31 @@ void prepare_for_display(void)
 }
 
 #ifdef ENABLE_MULTIBUFFER
+/* Show name of current buffer and its number of lines on the status bar. */
+void mention_name_and_linecount(void)
+{
+	size_t count = openfile->filebot->lineno -
+						(openfile->filebot->data[0] == '\0' ? 1 : 0);
+#ifndef NANO_TINY
+	if (openfile->fmt != NIX_FILE)
+		/* TRANSLATORS: first %s is file name, second %s is file format. */
+		statusline(HUSH, P_("%s -- %zu line (%s)", "%s -- %zu lines (%s)", count),
+						openfile->filename[0] == '\0' ?
+						_("New Buffer") : tail(openfile->filename), count,
+						openfile->fmt == DOS_FILE ? _("DOS") : _("Mac"));
+	else
+#endif
+		statusline(HUSH, P_("%s -- %zu line", "%s -- %zu lines", count),
+						openfile->filename[0] == '\0' ?
+						_("New Buffer") : tail(openfile->filename), count);
+}
+
 /* Switch to a neighbouring file buffer; to the next if to_next is TRUE;
  * otherwise, to the previous one. */
 void switch_to_adjacent_buffer(bool to_next)
 {
 	/* If only one file buffer is open, say so and get out. */
-	if (openfile == openfile->next && !inhelp) {
+	if (openfile == openfile->next) {
 		statusbar(_("No more open file buffers"));
 		return;
 	}
@@ -615,14 +661,8 @@ void switch_to_adjacent_buffer(bool to_next)
 	/* Ensure that the main loop will redraw the help lines. */
 	currmenu = MMOST;
 
-	/* Indicate the switch on the statusbar. */
-	statusline(HUSH, _("Switched to %s"),
-						((openfile->filename[0] == '\0') ?
-						_("New Buffer") : openfile->filename));
-
-#ifdef DEBUG
-	dump_filestruct(openfile->current);
-#endif
+	/* Indicate on the status bar where we switched to. */
+	mention_name_and_linecount();
 }
 
 /* Switch to the previous entry in the list of open files. */
@@ -760,8 +800,12 @@ void read_file(FILE *f, int fd, const char *filename, bool undoable)
 	topline = make_new_node(NULL);
 	bottomline = topline;
 
+	/* Lock the file before starting to read it, to avoid the overhead
+	 * of locking it for each single byte that we read from it. */
+	flockfile(f);
+
 	/* Read the entire file into the new buffer. */
-	while ((input_int = getc(f)) != EOF) {
+	while ((input_int = getc_unlocked(f)) != EOF) {
 		input = (char)input_int;
 
 		/* If it's a *nix file ("\n") or a DOS file ("\r\n"), and file
@@ -827,6 +871,9 @@ void read_file(FILE *f, int fd, const char *filename, bool undoable)
 			buf[len++] = input;
 #endif
 	}
+
+	/* We are done with the file, unlock it. */
+	funlockfile(f);
 
 	/* Perhaps this could use some better handling. */
 	if (ferror(f))
@@ -1036,7 +1083,7 @@ void do_insertfile(void)
 		if (execute) {
 #ifdef ENABLE_MULTIBUFFER
 			if (ISSET(MULTIBUFFER))
-				/* TRANSLATORS: The next four messages are prompts. */
+				/* TRANSLATORS: The next six messages are prompts. */
 				msg = _("Command to execute in new buffer");
 			else
 #endif
@@ -1046,10 +1093,20 @@ void do_insertfile(void)
 		{
 #ifdef ENABLE_MULTIBUFFER
 			if (ISSET(MULTIBUFFER))
-				msg = _("File to insert into new buffer [from %s]");
+#ifndef NANO_TINY
+				if ISSET(NO_CONVERT)
+					msg = _("File to read unconverted into new buffer [from %s]");
+				else
+#endif
+					msg = _("File to read into new buffer [from %s]");
 			else
 #endif
-				msg = _("File to insert [from %s]");
+#ifndef NANO_TINY
+				if ISSET(NO_CONVERT)
+					msg = _("File to insert unconverted [from %s]");
+				else
+#endif
+					msg = _("File to insert [from %s]");
 		}
 
 		present_path = mallocstrcpy(present_path, "./");
@@ -1092,6 +1149,10 @@ void do_insertfile(void)
 			}
 #endif
 #ifndef NANO_TINY
+			if (func == flip_convert) {
+				TOGGLE(NO_CONVERT);
+				continue;
+			}
 			if (func == flip_execute) {
 				execute = !execute;
 				continue;
@@ -1112,18 +1173,7 @@ void do_insertfile(void)
 #endif
 #ifndef NANO_TINY
 			if (func == flip_pipe) {
-				/* Remove or add the pipe character at the answer's head. */
-				if (answer[0] == '|') {
-					charmove(answer, answer + 1, strlen(answer) + 1);
-					if (statusbar_x > 0)
-						statusbar_x--;
-				} else {
-					answer = charealloc(answer, strlen(answer) + 2);
-					charmove(answer + 1, answer, strlen(answer) + 1);
-					answer[0] = '|';
-					statusbar_x++;
-				}
-
+				add_or_remove_pipe_symbol_from_answer();
 				given = mallocstrcpy(given, answer);
 				continue;
 			}
@@ -1773,6 +1823,7 @@ bool write_file(const char *name, FILE *f_open, bool tmp,
 			umask(original_umask);
 	}
 
+#ifndef NANO_TINY
 	/* If we're prepending, copy the file to a temp file. */
 	if (method == PREPEND) {
 		int fd_source;
@@ -1819,6 +1870,7 @@ bool write_file(const char *name, FILE *f_open, bool tmp,
 			goto cleanup_and_exit;
 		}
 	}
+#endif /* !NANO_TINY */
 
 	if (f_open == NULL) {
 		/* Now open the file in place.  Use O_EXCL if tmp is TRUE.  This
@@ -1900,6 +1952,7 @@ bool write_file(const char *name, FILE *f_open, bool tmp,
 		lineswritten++;
 	}
 
+#ifndef NANO_TINY
 	/* If we're prepending, open the temp file, and append it to f. */
 	if (method == PREPEND) {
 		int fd_source;
@@ -1927,7 +1980,9 @@ bool write_file(const char *name, FILE *f_open, bool tmp,
 		}
 
 		unlink(tempname);
-	} else if (fclose(f) != 0) {
+	} else
+#endif
+	if (fclose(f) != 0) {
 		statusline(ALERT, _("Error writing %s: %s"), realname,
 						strerror(errno));
 		goto cleanup_and_exit;
@@ -2156,8 +2211,12 @@ int do_writeout(bool exiting, bool withprompt)
 		 * egg.  Display the credits. */
 		if (!did_credits && exiting && !ISSET(TEMP_FILE) &&
 								strcasecmp(answer, "zzy") == 0) {
-			do_credits();
-			did_credits = TRUE;
+			if (LINES > 5 && COLS > 31) {
+				do_credits();
+				did_credits = TRUE;
+			} else
+				/* TRANSLATORS: Concisely say the screen is too small. */
+				statusbar(_("Too tiny"));
 			break;
 		}
 #endif

@@ -2650,10 +2650,6 @@ parse_dup_op (bin_tree_t *elem, re_string_t *regexp, re_dfa_t *dfa,
   if (BE (tree == NULL, 0))
     goto parse_dup_op_espace;
 
-/* From gnulib's "intprops.h":
-   True if the arithmetic type T is signed.  */
-#define TYPE_SIGNED(t) (! ((t) 0 < (t) -1))
-
   /* This loop is actually executed only when end != -1,
      to rewrite <re>{0,n} as (<re>(<re>...<re>?)?)?...  We have
      already created the start+1-th copy.  */
@@ -2688,15 +2684,14 @@ parse_dup_op (bin_tree_t *elem, re_string_t *regexp, re_dfa_t *dfa,
 
 # ifdef RE_ENABLE_I18N
 /* Convert the byte B to the corresponding wide character.  In a
-   unibyte locale, treat B as itself if it is an encoding error.
-   In a multibyte locale, return WEOF if B is an encoding error.  */
+   unibyte locale, treat B as itself.  In a multibyte locale, return
+   WEOF if B is an encoding error.  */
 static wint_t
 parse_byte (unsigned char b, re_charset_t *mbcset)
 {
-  wint_t wc = __btowc (b);
-  return wc == WEOF && !mbcset ? b : wc;
+  return mbcset == NULL ? b : __btowc (b);
 }
-#endif
+# endif
 
   /* Local function for parse_bracket_exp only used in case of NOT _LIBC.
      Build the range expression which starts from START_ELEM, and ends
@@ -3535,18 +3530,10 @@ build_equiv_class (bitset_t sbcset, const unsigned char *name)
 	    continue;
 	  /* Compare only if the length matches and the collation rule
 	     index is the same.  */
-	  if (len == weights[idx2 & 0xffffff] && (idx1 >> 24) == (idx2 >> 24))
-	    {
-	      int cnt = 0;
-
-	      while (cnt <= len &&
-		     weights[(idx1 & 0xffffff) + 1 + cnt]
-		     == weights[(idx2 & 0xffffff) + 1 + cnt])
-		++cnt;
-
-	      if (cnt > len)
-		bitset_set (sbcset, ch);
-	    }
+	  if (len == weights[idx2 & 0xffffff] && (idx1 >> 24) == (idx2 >> 24)
+	      && memcmp (weights + (idx1 & 0xffffff) + 1,
+			 weights + (idx2 & 0xffffff) + 1, len) == 0)
+	    bitset_set (sbcset, ch);
 	}
       /* Check whether the array has enough space.  */
       if (BE (*equiv_class_alloc == mbcset->nequiv_classes, 0))
@@ -3806,9 +3793,9 @@ free_charset (re_charset_t *cset)
 # ifdef _LIBC
   re_free (cset->coll_syms);
   re_free (cset->equiv_classes);
+# endif
   re_free (cset->range_starts);
   re_free (cset->range_ends);
-# endif
   re_free (cset->char_classes);
   re_free (cset);
 }

@@ -16,7 +16,7 @@
 .\"   Documentation License along with this program.  If not, see
 .\"   <http://www.gnu.org/licenses/>.
 .\"
-.TH NANORC 5 "version 2.9.8" "June 2018"
+.TH NANORC 5 "version 3.0" "September 2018"
 
 .SH NAME
 nanorc \- GNU nano's configuration file
@@ -79,10 +79,6 @@ Make and keep not just one backup file, but make and keep a uniquely
 numbered one every time a file is saved -- when backups are enabled
 with \fBset backup\fR or \fB\-\-backup\fR or \fB\-B\fR.
 The uniquely numbered files are stored in the specified \fIdirectory\fR.
-.TP
-.B set backwards
-Obsolete option.  Recognized but ignored.  \fB^Q\fR is available to
-start a backward search.
 .TP
 .B set boldtext
 Use bold instead of reverse video for the title bar, status bar, key combos,
@@ -345,11 +341,6 @@ system and will be silently ignored otherwise.)
 Use the given \fIprogram\fR to run a syntax check on the current buffer.
 (This overrides the speller function.)
 .TP
-.BI formatter " program " \fR[ "arg " \fR...]
-Use the given \fIprogram\fR to automatically reformat the text in
-the current buffer -- useful in a programming language like Go.
-(This overrides the speller and linter functions.)
-.TP
 .BI "comment """ string """
 Use the given \fIstring\fR for commenting and uncommenting lines.
 If the string contains a vertical bar or pipe character (\fB|\fR),
@@ -365,9 +356,11 @@ The default value is "\fB#\fP".
 Display all pieces of text that match
 the extended regular expression \fIregex\fP with foreground color
 \fIfgcolor\fP and background color \fIbgcolor\fP, at least one of which
-must be specified.  Valid colors for foreground and background
-are: white, black, red, blue, green, yellow, magenta, and cyan.  You may
-use the prefix "bright" to get a stronger color highlight for the
+must be specified.  Valid names for foreground and background colors are:
+.BR white ", " black ", " blue ", " green ", " red ", "
+.BR cyan ", " yellow ", " magenta ", and " normal
+-- where \fBnormal\fR means the default foreground or background color.
+You may use the prefix \fBbright\fR to get a stronger color highlight for the
 foreground.  If your terminal supports transparency, not specifying a
 \fIbgcolor\fP tells \fBnano\fP to attempt to use a transparent
 background.
@@ -395,10 +388,27 @@ to \fBicolor\fP.
 .BI extendsyntax " name command " \fR[ "arg " \fR...]
 Extend the syntax previously defined as \fIname\fR with another
 \fIcommand\fR.  This allows adding a new \fBcolor\fP, \fBicolor\fP,
-\fBheader\fP, \fBmagic\fP, \fBcomment\fP, \fBlinter\fP, or \fBformatter\fP
+\fBheader\fP, \fBmagic\fP, \fBcomment\fP, or \fBlinter\fP
 command to an already defined syntax -- useful when you want to
 slightly improve a syntax defined in one of the system-installed
 files (which normally are not writable).
+
+.P
+Note: the \fBformatter\fR command has been removed.  It was superseded by
+a more general mechanism: the filtering of buffer or marked text through
+an external command.  Such filtering is done by typing \fB^R^X\fR and then
+preceding your formatter command with the pipe symbol (\fB|\fR).  It has
+the added advantage that the operation can be undone.
+.PP
+If you use such a formatting command regularly, you could assign the relevant
+series of keystrokes to a single key in your nanorc:
+.PP
+.RS
+.B "bind  M\-F  \(dq^R^X|yourformatcommand^M\(dq  main"
+.RE
+.PP
+(Note that the \fB^R\fR, \fB^X\fR, and \fB^M\fR are each a single, literal
+control character.  You can enter them by preceding each with \fBM-V\fR.)
 
 .SH REBINDING KEYS
 Key bindings can be changed via the following three commands:
@@ -427,16 +437,19 @@ The format of \fIkey\fP should be one of:
 .RS 3
 .TP 3
 .B ^
-followed by an alpha character or the word "Space".
-Example: ^C
+followed by a Latin letter, by one of several ASCII characters
+(@, ], \\, ^, or _), or by the word "Space".
+Example: ^C.
 .TP
 .B M-
-followed by a printable character or the word "Space".
-Example: M-C
+followed by any ASCII character except [, or by the word "Space".
+Example: M-C.
 .TP
 .B F
 followed by a numeric value from 1 to 16.
-Example: F10
+Example: F10.
+.TP
+the word "Ins" or the word "Del".
 .RE
 
 .TP
@@ -467,16 +480,14 @@ Starts a forward search for text in the current buffer -- or for filenames
 matching a string in the current list in the file browser.
 .TP
 .B wherewas
-Starts a backward search for text in the current buffer.
-.TP
-.B searchagain
-Repeats the last search command without prompting.
+Starts a backward search for text in the current buffer -- or for filenames
+matching a string in the current list in the file browser.
 .TP
 .B findprevious
-As \fBsearchagain\fR, but always in the backward direction.
+Searches the next occurrence in the backward direction.
 .TP
 .B findnext
-As \fBsearchagain\fR, but always in the forward direction.
+Searches the next occurrence in the forward direction.
 .TP
 .B replace
 Interactively replaces text within the current buffer.
@@ -484,24 +495,31 @@ Interactively replaces text within the current buffer.
 .B cut
 Cuts and stores the current line (or the marked region).
 .TP
-.B copytext
+.B copy
 Copies the current line (or the marked region) without deleting it.
+(The old form 'copytext' is deprecated.)
 .TP
-.B uncut
-Copies the currently stored text into the current buffer at the
+.B paste
+Pastes the currently stored text into the current buffer at the
 current cursor position.
-.TP
-.B mark
-Sets the mark at the current position, to start selecting text.
+(The old form 'uncut' is deprecated.)
 .TP
 .B cutwordleft
 Cuts from the cursor position to the beginning of the preceding word.
+(This function is not bound by default.  If your terminal produces
+\fB^H\fR for <Ctrl+Backspace>, you can make <Ctrl+Backspace> delete
+the word to the left of the cursor by rebinding ^H to this function.)
 .TP
 .B cutwordright
 Cuts from the cursor position to the beginning of the next word.
+(This function is bound by default to <Ctrl+Delete>.)
 .TP
 .B cutrestoffile
 Cuts all text from the cursor position till the end of the buffer.
+.TP
+.B mark
+Sets the mark at the current position, to start selecting text.
+Or, when it is set, unsets the mark.
 .TP
 .B curpos
 Shows the current cursor position: the line, column, and character positions.
@@ -510,7 +528,7 @@ Shows the current cursor position: the line, column, and character positions.
 Counts the number of words, lines and characters in the current buffer.
 .TP
 .B speller
-Invokes a spell-checking program (or linting program, or formatter program,
+Invokes a spell-checking program (or linting program,
 if the active syntax defines such a thing).
 .TP
 .B linter
@@ -646,19 +664,20 @@ Suspends the editor (if the suspending function is enabled, see the
 "suspendenable" entry below).
 .TP
 .B casesens
-Toggles case sensitivity in searching (search/replace menus only).
+Toggles whether searching/replacing ignores or respects the case of
+the given characters.
 .TP
 .B regexp
-Toggles whether searching/replacing is based on literal strings or regular expressions.
+Toggles whether searching/replacing uses literal strings or regular expressions.
 .TP
 .B backwards
 Toggles whether searching/replacing goes forward or backward.
 .TP
 .B prevhistory
-Shows the previous history entry in the prompt menus (e.g. search).
+Retrieves the previous (older) entry at a prompt.
 .TP
 .B nexthistory
-Shows the next history entry in the prompt menus (e.g. search).
+Retrieves the next (newer) entry at a prompt.
 .TP
 .B flipreplace
 Toggles between searching for something and replacing something.
@@ -677,6 +696,10 @@ region) is piped to the command.
 .B flipnewbuffer
 Toggles between inserting into the current buffer and into a new
 empty buffer.
+.TP
+.B flipconvert
+When reading in a file, toggles between converting and not converting
+it from DOS/Mac format.  Converting is the default.
 .TP
 .B dosformat
 When writing a file, switches to writing a DOS format (CR/LF).
@@ -718,9 +741,6 @@ Toggles the presence of the two-line list of key bindings at the bottom of the s
 Toggles the constant display of the current line, column, and character positions.
 (The form 'constupdate' is deprecated.)
 .TP
-.B morespace
-Toggles the presence of the blank line that 'separates' the title bar from the file text.
-.TP
 .B smoothscroll
 Toggles smooth scrolling (when moving around with the arrow keys).
 .TP
@@ -755,18 +775,8 @@ Toggles whether long lines will be hard-wrapped to the next line.
 .B tabstospaces
 Toggles whether typed tabs will be converted to spaces.
 .TP
-.B backupfile
-Toggles whether a backup will be made of the file being edited.
-.TP
-.B multibuffer
-Toggles whether a file is inserted into the current buffer
-or read into a new buffer.
-.TP
 .B mouse
 Toggles mouse support.
-.TP
-.B noconvert
-Toggles automatic conversion of files from DOS/Mac format.
 .TP
 .B suspendenable
 Toggles whether the suspend sequence (normally ^Z) will suspend the editor window.
@@ -787,6 +797,9 @@ The 'search to replace' menu.
 .TP
 .B replacewith
 The 'replace with' menu, which comes up after 'search to replace'.
+.TP
+.B yesno
+The 'yesno' menu, where the Yes/No/All/Cancel question is asked.
 .TP
 .B gotoline
 The 'goto line (and column)' menu.

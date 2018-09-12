@@ -385,7 +385,7 @@ int parse_kbinput(WINDOW *win)
 		if (escapes > 3)
 			escapes = 1;
 		/* Take note when an Esc arrived by itself. */
-		solitary = (escapes == 1 && key_buffer_len == 0);
+		solitary = (key_buffer_len == 0);
 		return ERR;
 	}
 
@@ -476,12 +476,13 @@ int parse_kbinput(WINDOW *win)
 					}
 				} else {
 					if (digit_count == 0)
-						/* Two escapes followed by a non-decimal
-						 * digit (or a decimal digit that would
-						 * create a byte sequence greater than 2XX)
-						 * and there aren't any other codes waiting:
-						 * control character sequence mode. */
-						retval = get_control_kbinput(keycode);
+						/* Two escapes followed by a non-digit: meta key
+						 * or control character sequence mode. */
+						if (!solitary) {
+							meta_key = TRUE;
+							retval = keycode;
+						} else
+							retval = get_control_kbinput(keycode);
 					else {
 						/* An invalid digit in the middle of a byte
 						 * sequence: reset the byte sequence counter
@@ -505,11 +506,13 @@ int parse_kbinput(WINDOW *win)
 			}
 			break;
 		case 3:
-			if (key_buffer_len == 0)
+			if (key_buffer_len == 0) {
+				if (!solitary)
+					meta_key = TRUE;
 				/* Three escapes followed by a non-escape, and no
 				 * other codes are waiting: normal input mode. */
 				retval = keycode;
-			else
+			} else
 				/* Three escapes followed by a non-escape, and more
 				 * codes are waiting: combined control character and
 				 * escape sequence mode.  First interpret the escape
@@ -535,7 +538,11 @@ int parse_kbinput(WINDOW *win)
 		return CONTROL_HOME;
 	else if (retval == controlend)
 		return CONTROL_END;
+	else if (retval == controldelete)
+		return CONTROL_DELETE;
 #ifndef NANO_TINY
+	else if (retval == controlshiftdelete)
+		return the_code_for(do_cut_prev_word, KEY_BACKSPACE);
 	else if (retval == shiftcontrolleft) {
 		shift_held = TRUE;
 		return CONTROL_LEFT;
@@ -606,6 +613,8 @@ int parse_kbinput(WINDOW *win)
 				return CONTROL_HOME;
 			else if (retval == KEY_END)
 				return CONTROL_END;
+			else if (retval == KEY_DC)
+				return CONTROL_DELETE;
 		}
 #ifndef NANO_TINY
 		/* Are both Shift and Alt being held? */
@@ -698,6 +707,7 @@ int parse_kbinput(WINDOW *win)
 			return KEY_NPAGE;
 #ifdef KEY_SDC  /* Slang doesn't support KEY_SDC. */
 		case KEY_SDC:
+				return KEY_BACKSPACE;
 #endif
 		case DEL_CODE:
 			if (ISSET(REBIND_DELETE))
@@ -1077,11 +1087,26 @@ int convert_sequence(const int *seq, size_t length, int *consumed)
 							/* Esc [ 2 ~ == Insert on VT220/VT320/
 							 * Linux console/xterm/Terminal. */
 							return KEY_IC;
+						else if (length > 4 && seq[2] == ';' && seq[4] == '~')
+							/* Esc [ 2 ; x ~ == modified Insert on xterm. */
+							*consumed = 5;
 						break;
 					case '3': /* Esc [ 3 ~ == Delete on VT220/VT320/
 							   * Linux console/xterm/Terminal. */
 						if (length > 2 && seq[2] == '~')
 							return KEY_DC;
+						if (length > 4 && seq[2] == ';' && seq[4] == '~') {
+							/* Esc [ 3 ; x ~ == modified Delete on xterm. */
+							*consumed = 5;
+							if (seq[3] == '5')
+								/* Esc [ 3 ; 5 ~ == Ctrl-Delete on xterm. */
+								return CONTROL_DELETE;
+						}
+						if (length > 2 && seq[2] == '^') {
+							/* Esc [ 3 ^ == Ctrl-Delete on urxvt. */
+							*consumed = 3;
+							return CONTROL_DELETE;
+						}
 						break;
 					case '4': /* Esc [ 4 ~ == End on VT220/VT320/
 							   * Linux console/xterm. */
@@ -1093,26 +1118,26 @@ int convert_sequence(const int *seq, size_t length, int *consumed)
 							   * Esc [ 5 ^ == PageUp on Eterm. */
 						if (length > 2 && (seq[2] == '~' || seq[2] == '^'))
 							return KEY_PPAGE;
-#ifndef NANO_TINY
-						else if (length > 4 && seq[2] == ';' &&
-									seq[3] == '2' && seq[4] == '~') {
+						else if (length > 4 && seq[2] == ';' && seq[4] == '~') {
 							*consumed = 5;
-							return shiftaltup;
-						}
+#ifndef NANO_TINY
+							if (seq[3] == '2')
+								return shiftaltup;
 #endif
+						}
 						break;
 					case '6': /* Esc [ 6 ~ == PageDown on VT220/VT320/
 							   * Linux console/xterm/Terminal;
 							   * Esc [ 6 ^ == PageDown on Eterm. */
 						if (length > 2 && (seq[2] == '~' || seq[2] == '^'))
 							return KEY_NPAGE;
-#ifndef NANO_TINY
-						else if (length > 4 && seq[2] == ';' &&
-									seq[3] == '2' && seq[4] == '~') {
+						else if (length > 4 && seq[2] == ';' && seq[4] == '~') {
 							*consumed = 5;
-							return shiftaltdown;
-						}
+#ifndef NANO_TINY
+							if (seq[3] == '2')
+								return shiftaltdown;
 #endif
+						}
 						break;
 					case '7': /* Esc [ 7 ~ == Home on Eterm/rxvt;
 							   * Esc [ 7 $ == Shift-Home on Eterm/rxvt;
@@ -2132,8 +2157,7 @@ void statusbar(const char *msg)
  * message can be noticed and read. */
 void warn_and_shortly_pause(const char *msg)
 {
-	statusbar(msg);
-	beep();
+	statusline(ALERT, msg);
 	napms(1800);
 }
 
@@ -2154,6 +2178,11 @@ void statusline(message_type importance, const char *msg, ...)
 	UNSET(WHITESPACE_DISPLAY);
 #endif
 
+	/* Ignore a message with an importance that is lower than the last one. */
+	if ((lastmessage == ALERT && importance != ALERT) ||
+				(lastmessage == MILD && importance == HUSH))
+		return;
+
 	va_start(ap, msg);
 
 	/* Curses mode is turned off.  If we use wmove() now, it will muck
@@ -2164,11 +2193,6 @@ void statusline(message_type importance, const char *msg, ...)
 		va_end(ap);
 		return;
 	}
-
-	/* If there already was an alert message, ignore lesser ones. */
-	if ((lastmessage == ALERT && importance != ALERT) ||
-				(lastmessage == MILD && importance == HUSH))
-		return;
 
 	/* If the ALERT status has been reset, reset the counter. */
 	if (lastmessage == HUSH)
@@ -3312,11 +3336,10 @@ void total_refresh(void)
 void display_main_list(void)
 {
 #if defined(ENABLE_COLOR) && defined(ENABLE_SPELLER)
-	if (openfile->syntax &&
-				(openfile->syntax->formatter || openfile->syntax->linter))
-		set_lint_or_format_shortcuts();
+	if (openfile->syntax && openfile->syntax->linter)
+		set_linter_shortcut();
 	else
-		set_spell_shortcuts();
+		set_speller_shortcut();
 #endif
 
 	bottombars(MMAIN);

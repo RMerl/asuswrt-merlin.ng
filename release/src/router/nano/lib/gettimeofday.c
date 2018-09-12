@@ -33,6 +33,10 @@
 
 #ifdef WINDOWS_NATIVE
 
+/* Avoid warnings from gcc -Wcast-function-type.  */
+# define GetProcAddress \
+   (void *) GetProcAddress
+
 /* GetSystemTimePreciseAsFileTime was introduced only in Windows 8.  */
 typedef void (WINAPI * GetSystemTimePreciseAsFileTimeFuncType) (FILETIME *lpTime);
 static GetSystemTimePreciseAsFileTimeFuncType GetSystemTimePreciseAsFileTimeFunc = NULL;
@@ -45,7 +49,7 @@ initialize (void)
   if (kernel32 != NULL)
     {
       GetSystemTimePreciseAsFileTimeFunc =
-	(GetSystemTimePreciseAsFileTimeFuncType) GetProcAddress (kernel32, "GetSystemTimePreciseAsFileTime");
+        (GetSystemTimePreciseAsFileTimeFuncType) GetProcAddress (kernel32, "GetSystemTimePreciseAsFileTime");
     }
   initialized = TRUE;
 }

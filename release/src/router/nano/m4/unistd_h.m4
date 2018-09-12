@@ -1,4 +1,4 @@
-# unistd_h.m4 serial 73
+# unistd_h.m4 serial 74
 dnl Copyright (C) 2006-2018 Free Software Foundation, Inc.
 dnl This file is free software; the Free Software Foundation
 dnl gives unlimited permission to copy and/or distribute it,
@@ -43,7 +43,7 @@ AC_DEFUN([gl_UNISTD_H],
 #endif
     ]], [chdir chown dup dup2 dup3 environ euidaccess faccessat fchdir fchownat
     fdatasync fsync ftruncate getcwd getdomainname getdtablesize getgroups
-    gethostname getlogin getlogin_r getpagesize
+    gethostname getlogin getlogin_r getpagesize getpass
     getusershell setusershell endusershell
     group_member isatty lchown link linkat lseek pipe pipe2 pread pwrite
     readlink readlinkat rmdir sethostname sleep symlink symlinkat
@@ -83,6 +83,7 @@ AC_DEFUN([gl_UNISTD_H_DEFAULTS],
   GNULIB_GETLOGIN=0;             AC_SUBST([GNULIB_GETLOGIN])
   GNULIB_GETLOGIN_R=0;           AC_SUBST([GNULIB_GETLOGIN_R])
   GNULIB_GETPAGESIZE=0;          AC_SUBST([GNULIB_GETPAGESIZE])
+  GNULIB_GETPASS=0;              AC_SUBST([GNULIB_GETPASS])
   GNULIB_GETUSERSHELL=0;         AC_SUBST([GNULIB_GETUSERSHELL])
   GNULIB_GROUP_MEMBER=0;         AC_SUBST([GNULIB_GROUP_MEMBER])
   GNULIB_ISATTY=0;               AC_SUBST([GNULIB_ISATTY])
@@ -126,6 +127,7 @@ AC_DEFUN([gl_UNISTD_H_DEFAULTS],
   HAVE_GETHOSTNAME=1;     AC_SUBST([HAVE_GETHOSTNAME])
   HAVE_GETLOGIN=1;        AC_SUBST([HAVE_GETLOGIN])
   HAVE_GETPAGESIZE=1;     AC_SUBST([HAVE_GETPAGESIZE])
+  HAVE_GETPASS=1;         AC_SUBST([HAVE_GETPASS])
   HAVE_GROUP_MEMBER=1;    AC_SUBST([HAVE_GROUP_MEMBER])
   HAVE_LCHOWN=1;          AC_SUBST([HAVE_LCHOWN])
   HAVE_LINK=1;            AC_SUBST([HAVE_LINK])
@@ -168,6 +170,7 @@ AC_DEFUN([gl_UNISTD_H_DEFAULTS],
   REPLACE_GETLOGIN_R=0;   AC_SUBST([REPLACE_GETLOGIN_R])
   REPLACE_GETGROUPS=0;    AC_SUBST([REPLACE_GETGROUPS])
   REPLACE_GETPAGESIZE=0;  AC_SUBST([REPLACE_GETPAGESIZE])
+  REPLACE_GETPASS=0;      AC_SUBST([REPLACE_GETPASS])
   REPLACE_ISATTY=0;       AC_SUBST([REPLACE_ISATTY])
   REPLACE_LCHOWN=0;       AC_SUBST([REPLACE_LCHOWN])
   REPLACE_LINK=0;         AC_SUBST([REPLACE_LINK])

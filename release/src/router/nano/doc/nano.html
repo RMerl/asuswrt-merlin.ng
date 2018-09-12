@@ -57,7 +57,7 @@ ul.no-bullet {list-style: none}
 <a name="Top"></a>
 <a name="SEC_Top"></a>
 
-<p>This manual documents the GNU <code>nano</code> editor, version 2.9.8.
+<p>This manual documents the GNU <code>nano</code> editor, version 3.0.
 </p>
 <table class="menu" border="0" cellspacing="0">
 <tr><td align="left" valign="top">&bull; <a href="#Introduction" accesskey="1">Introduction</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
@@ -562,8 +562,9 @@ This selection can now be cut or copied in its entirety with a single
 <kbd>^K</kbd> or <kbd>M-6</kbd>.  Or the selection can be used to limit the scope of
 a search-and-replace (<kbd>^\</kbd>) or spell-checking session (<kbd>^T</kbd>).
 </p>
-<p>On some terminals, it is also possible to select text by holding down
-<kbd>Shift</kbd> together with the cursor keys.  Such a selection is cancelled
+<p>On some terminals, text can be selected also by holding down <kbd>Shift</kbd>
+while using the cursor keys.  Holding down the <kbd>Ctrl</kbd> or <kbd>Alt</kbd>
+key too will increase the stride.  Such a selection is cancelled
 upon any cursor movement where <kbd>Shift</kbd> isn&rsquo;t held.
 </p>
 <p>Cutting or copying selected text will toggle the mark off automatically.
@@ -662,16 +663,8 @@ invoked via Meta-key sequences (see <a href="#Commands">Commands</a> for more in
 The following global toggles are available:
 </p>
 <dl compact="compact">
-<dt><code>Backup Files</code></dt>
-<dd><p><kbd>Meta-B</kbd> toggles the <samp>-B</samp> (<samp>--backup</samp>) command-line option.
-</p>
-</dd>
 <dt><code>Constant Cursor Position Display</code></dt>
 <dd><p><kbd>Meta-C</kbd> toggles the <samp>-c</samp> (<samp>--constantshow</samp>) command-line option.
-</p>
-</dd>
-<dt><code>Multiple File Buffers</code></dt>
-<dd><p><kbd>Meta-F</kbd> toggles the <samp>-F</samp> (<samp>--multibuffer</samp>) command-line option.
 </p>
 </dd>
 <dt><code>Smart Home Key</code></dt>
@@ -694,20 +687,12 @@ The following global toggles are available:
 <dd><p><kbd>Meta-M</kbd> toggles the <samp>-m</samp> (<samp>--mouse</samp>) command-line option.
 </p>
 </dd>
-<dt><code>No Conversion From DOS/Mac Format</code></dt>
-<dd><p><kbd>Meta-N</kbd> toggles the <samp>-N</samp> (<samp>--noconvert</samp>) command-line option.
-</p>
-</dd>
-<dt><code>More Space For Editing</code></dt>
-<dd><p><kbd>Meta-O</kbd> toggles the <samp>-O</samp> (<samp>--morespace</samp>) command-line option.
+<dt><code>Tabs To Spaces</code></dt>
+<dd><p><kbd>Meta-O</kbd> toggles the <samp>-E</samp> (<samp>--tabstospaces</samp>) command-line option.
 </p>
 </dd>
 <dt><code>Whitespace Display</code></dt>
 <dd><p><kbd>Meta-P</kbd> toggles the displaying of whitespace (see <a href="#Whitespace">Whitespace</a>).
-</p>
-</dd>
-<dt><code>Tabs To Spaces</code></dt>
-<dd><p><kbd>Meta-Q</kbd> toggles the <samp>-E</samp> (<samp>--tabstospaces</samp>) command-line option.
 </p>
 </dd>
 <dt><code>Smooth Scrolling</code></dt>
@@ -815,11 +800,6 @@ filename suffixed with a tilde (<code>~</code>).
 numbered one every time a file is saved &mdash; when backups are enabled
 with <code>set backup</code> or <samp>--backup</samp> or <samp>-B</samp>.
 The uniquely numbered files are stored in the specified directory.
-</p>
-</dd>
-<dt><code>set backwards</code></dt>
-<dd><p>Obsolete option.  Recognized but ignored.  <code>^Q</code> is available to
-start a backward search.
 </p>
 </dd>
 <dt><code>set boldtext</code></dt>
@@ -1143,12 +1123,6 @@ on the system and will be silently ignored otherwise.)
 (This overrides the speller function.)
 </p>
 </dd>
-<dt><code>formatter <var>program</var> [<var>arg</var> &hellip;]</code></dt>
-<dd><p>Use the given <var>program</var> to automatically reformat the text in
-the current buffer &mdash; useful for a programming language like Go.
-(This overrides the speller and linter functions.)
-</p>
-</dd>
 <dt><code>comment &quot;<var>string</var>&quot;</code></dt>
 <dd><p>Use the given string for commenting and uncommenting lines.
 If the string contains a vertical bar or pipe character (<tt>|</tt>),
@@ -1165,8 +1139,11 @@ The default value is <tt>&quot;#&quot;</tt>.
 <dd><p>Display all pieces of text that match the
 extended regular expression &quot;regex&quot; with foreground color &quot;fgcolor&quot; and
 background color &quot;bgcolor&quot;, at least one of which must be specified.
-Valid colors for foreground and background are: white, black, red,
-blue, green, yellow, magenta, and cyan.  You may use the prefix &quot;bright&quot;
+Valid names for foreground and background color are:
+<code>white</code>, <code>black</code>, <code>blue</code>, <code>green</code>,
+<code>red</code>, <code>cyan</code>, <code>yellow</code>, <code>magenta</code>, and <code>normal</code>
+&mdash; where <code>normal</code> means the default foreground or background color.
+You may use the prefix <code>bright</code>
 to get a stronger color highlight for the foreground.  If your
 terminal supports transparency, not specifying a &quot;bgcolor&quot; tells <code>nano</code>
 to attempt to use a transparent background.
@@ -1198,14 +1175,29 @@ to <code>icolor</code>.
 <dt><code>extendsyntax <var>name</var> <var>command</var> [<var>arg</var> &hellip;]</code></dt>
 <dd><p>Extend the syntax previously defined as &quot;<var>name</var>&quot; with another <var>command</var>.
 This allows you to add a new <code>color</code>, <code>icolor</code>, <code>header</code>,
-<code>magic</code>, <code>comment</code>, <code>linter</code>, or <code>formatter</code> command
-to an already
+<code>magic</code>, <code>comment</code>, or <code>linter</code> command to an already
 defined syntax &mdash; useful when you want to slightly improve a syntax defined
 in one of the system-installed files (which normally are not writable).
 </p>
 </dd>
 </dl>
 
+<p>Note: the <code>formatter</code> command has been removed.  It was superseded by
+a more general mechanism: the filtering of buffer or marked text through
+an external command.  Such filtering is done by typing <code>^R^X</code> and then
+preceding your formatter command with the pipe symbol (<code>|</code>).  It has
+the added advantage that the operation can be undone.
+</p>
+<p>If you use such a formatting command regularly, you could assign the relevant
+series of keystrokes to a single key in your nanorc:
+</p>
+<div class="example">
+<pre class="example">   bind  M-F  &quot;^R^X|yourformatcommand^M&quot;  main
+</pre></div>
+
+<p>(Note that the <tt class="key">^R</tt>, <tt class="key">^X</tt>, and <tt class="key">^M</tt> are each a single, literal
+control character.  You can enter them by preceding each with <tt class="key">M-V</tt>.)
+</p>
 <hr>
 <a name="Rebinding-Keys"></a>
 <a name="Rebinding-Keys-1"></a>
@@ -1239,14 +1231,17 @@ with <kbd>M-V</kbd>.)
 <p>The format of <code>key</code> should be one of:
 </p>
 <ul class="no-bullet">
-<li><!-- /@w --> <code>^</code>&nbsp; followed by an ASCII character or the word &quot;Space&quot;.
+<li><!-- /@w --> <code>^</code>&nbsp; followed by a Latin letter, by one of several ASCII characters
+(@, ], \, ^, or _), or by the word &quot;Space&quot;.
 Example: <code>^C</code>.
 
-</li><li><!-- /@w --> <code>M-</code>&nbsp; followed by a ASCII character or the word &quot;Space&quot;.
+</li><li><!-- /@w --> <code>M-</code>&nbsp; followed by any ASCII character except [, or by the word &quot;Space&quot;.
 Example: <code>M-C</code>.
 
 </li><li><!-- /@w --> <code>F</code>&nbsp; followed by a numeric value from 1 to 16.
 Example: <code>F10</code>.
+
+</li><li><!-- /@w --> the word &quot;Ins&quot; or the word &quot;Del&quot;.
 </li></ul>
 
 <br>
@@ -1284,19 +1279,16 @@ matching a string in the current list in the file browser.
 </p>
 </dd>
 <dt><code>wherewas</code></dt>
-<dd><p>Starts a backward search for text in the current buffer.
-</p>
-</dd>
-<dt><code>searchagain</code></dt>
-<dd><p>Repeats the last search command without prompting.
+<dd><p>Starts a backward search for text in the current buffer &mdash; or for filenames
+matching a string in the current list in the file browser.
 </p>
 </dd>
 <dt><code>findprevious</code></dt>
-<dd><p>As <code>searchagain</code>, but always in the backward direction.
+<dd><p>Searches the next occurrence in the backward direction.
 </p>
 </dd>
 <dt><code>findnext</code></dt>
-<dd><p>As <code>searchagain</code>, but always in the forward direction.
+<dd><p>Searches the next occurrence in the forward direction.
 </p>
 </dd>
 <dt><code>replace</code></dt>
@@ -1307,29 +1299,36 @@ matching a string in the current list in the file browser.
 <dd><p>Cuts and stores the current line (or the marked region).
 </p>
 </dd>
-<dt><code>copytext</code></dt>
+<dt><code>copy</code></dt>
 <dd><p>Copies the current line (or the marked region) without deleting it.
+(The old form &rsquo;copytext&rsquo; is deprecated.)
 </p>
 </dd>
-<dt><code>uncut</code></dt>
-<dd><p>Copies the currently stored text into the current buffer at the
+<dt><code>paste</code></dt>
+<dd><p>Pastes the currently stored text into the current buffer at the
 current cursor position.
-</p>
-</dd>
-<dt><code>mark</code></dt>
-<dd><p>Sets the mark at the current position, to start selecting text.
+(The old form &rsquo;uncut&rsquo; is deprecated.)
 </p>
 </dd>
 <dt><code>cutwordleft</code></dt>
 <dd><p>Cuts from the cursor position to the beginning of the preceding word.
+(This function is not bound by default.  If your terminal produces
+<code>^H</code> for &lt;Ctrl+Backspace&gt;, you can make &lt;Ctrl+Backspace&gt; delete
+the word to the left of the cursor by rebinding ^H to this function.)
 </p>
 </dd>
 <dt><code>cutwordright</code></dt>
 <dd><p>Cuts from the cursor position to the beginning of the next word.
+(This function is bound by default to &lt;Ctrl+Delete&gt;.)
 </p>
 </dd>
 <dt><code>cutrestoffile</code></dt>
 <dd><p>Cuts all text from the cursor position till the end of the buffer.
+</p>
+</dd>
+<dt><code>mark</code></dt>
+<dd><p>Sets the mark at the current position, to start selecting text.
+Or, when it is set, unsets the mark.
 </p>
 </dd>
 <dt><code>curpos</code></dt>
@@ -1341,7 +1340,7 @@ current cursor position.
 </p>
 </dd>
 <dt><code>speller</code></dt>
-<dd><p>Invokes a spell-checking program (or linting program, or formatter program,
+<dd><p>Invokes a spell-checking program (or linting program,
 if the active syntax defines such a thing).
 </p>
 </dd>
@@ -1514,11 +1513,12 @@ as a macro.  When already recording, the recording is stopped.
 </p>
 </dd>
 <dt><code>casesens</code></dt>
-<dd><p>Toggles case sensitivity in searching (search/replace menus only).
+<dd><p>Toggles whether searching/replacing ignores or respects the case of
+the given characters.
 </p>
 </dd>
 <dt><code>regexp</code></dt>
-<dd><p>Toggles whether searching/replacing is based on literal strings or regular expressions.
+<dd><p>Toggles whether searching/replacing uses literal strings or regular expressions.
 </p>
 </dd>
 <dt><code>backwards</code></dt>
@@ -1526,11 +1526,11 @@ as a macro.  When already recording, the recording is stopped.
 </p>
 </dd>
 <dt><code>prevhistory</code></dt>
-<dd><p>Shows the previous history entry in the prompt menus (e.g. search).
+<dd><p>Retrieves the previous (older) entry at a prompt.
 </p>
 </dd>
 <dt><code>nexthistory</code></dt>
-<dd><p>Shows the next history entry in the prompt menus (e.g. search).
+<dd><p>Retrieves the next (newer) entry at a prompt.
 </p>
 </dd>
 <dt><code>flipreplace</code></dt>
@@ -1554,6 +1554,11 @@ region) is piped to the command.
 <dt><code>flipnewbuffer</code></dt>
 <dd><p>Toggles between inserting into the current buffer and into a new
 empty buffer.
+</p>
+</dd>
+<dt><code>flipconvert</code></dt>
+<dd><p>When reading in a file, toggles between converting and not converting
+it from DOS/Mac format.  Converting is the default.
 </p>
 </dd>
 <dt><code>dosformat</code></dt>
@@ -1608,10 +1613,6 @@ in the filesystem.
 (The form <code>constupdate</code> is deprecated.)
 </p>
 </dd>
-<dt><code>morespace</code></dt>
-<dd><p>Toggles the presence of the blank line that &rsquo;separates&rsquo; the title bar from the file text.
-</p>
-</dd>
 <dt><code>smoothscroll</code></dt>
 <dd><p>Toggles smooth scrolling (when moving around with the arrow keys).
 </p>
@@ -1656,21 +1657,8 @@ position to the end of the line.
 <dd><p>Toggles whether typed tabs will be converted to spaces.
 </p>
 </dd>
-<dt><code>backupfile</code></dt>
-<dd><p>Toggles whether a backup will be made of the file to be edited.
-</p>
-</dd>
-<dt><code>multibuffer</code></dt>
-<dd><p>Toggles whether a file is inserted into the current buffer
-or read into a new buffer.
-</p>
-</dd>
 <dt><code>mouse</code></dt>
 <dd><p>Toggles mouse support.
-</p>
-</dd>
-<dt><code>noconvert</code></dt>
-<dd><p>Toggles automatic conversion of files from DOS/Mac format.
 </p>
 </dd>
 <dt><code>suspendenable</code></dt>
@@ -1697,6 +1685,10 @@ or read into a new buffer.
 </dd>
 <dt><code>replacewith</code></dt>
 <dd><p>The &rsquo;replace with&rsquo; menu, which comes up after &rsquo;search to replace&rsquo;.
+</p>
+</dd>
+<dt><code>yesno</code></dt>
+<dd><p>The &rsquo;yesno&rsquo; menu, where the Yes/No/All/Cancel question is asked.
 </p>
 </dd>
 <dt><code>gotoline</code></dt>

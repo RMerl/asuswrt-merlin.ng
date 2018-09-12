@@ -16,7 +16,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see http://www.gnu.org/licenses/.
 
-AC_INIT([GNU nano], [2.9.8], [nano-devel@gnu.org], [nano])
+AC_INIT([GNU nano], [3.0], [nano-devel@gnu.org], [nano])
 AC_CONFIG_SRCDIR([src/nano.c])
 AC_CANONICAL_HOST
 AM_INIT_AUTOMAKE([1.14])
@@ -761,6 +761,14 @@ else
 	from_git=no
 fi
 AM_CONDITIONAL(BUILDING_FROM_GIT, test x$from_git = xyes)
+
+if test x$from_git = xyes; then
+	if test "$ac_cv_path_MSGFMT" = ":"; then
+		AC_MSG_ERROR([
+*** The msgfmt program is missing. ***
+*** The gettext package needs to be installed when building from git. ***])
+	fi
+fi
 
 AC_CONFIG_FILES([
 Makefile

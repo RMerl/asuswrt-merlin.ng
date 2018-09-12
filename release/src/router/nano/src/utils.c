@@ -590,21 +590,3 @@ size_t get_totsize(const filestruct *begin, const filestruct *end)
 
 	return totsize;
 }
-
-#ifdef DEBUG
-/* Dump the given buffer to stderr. */
-void dump_filestruct(const filestruct *inptr)
-{
-	if (inptr == openfile->fileage)
-		fprintf(stderr, "Dumping file buffer to stderr...\n");
-	else if (inptr == cutbuffer)
-		fprintf(stderr, "Dumping cutbuffer to stderr...\n");
-	else
-		fprintf(stderr, "Dumping a buffer to stderr...\n");
-
-	while (inptr != NULL) {
-		fprintf(stderr, "(%zd) %s\n", inptr->lineno, inptr->data);
-		inptr = inptr->next;
-	}
-}
-#endif /* DEBUG */

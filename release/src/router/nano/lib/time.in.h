@@ -212,7 +212,7 @@ _GL_CXXALIASWARN (gmtime_r);
 #    define localtime rpl_localtime
 #   endif
 _GL_FUNCDECL_RPL (localtime, struct tm *, (time_t const *__timer)
-		                          _GL_ARG_NONNULL ((1)));
+                                          _GL_ARG_NONNULL ((1)));
 _GL_CXXALIAS_RPL (localtime, struct tm *, (time_t const *__timer));
 #  else
 _GL_CXXALIAS_SYS (localtime, struct tm *, (time_t const *__timer));

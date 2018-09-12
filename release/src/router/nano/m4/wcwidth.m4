@@ -1,4 +1,4 @@
-# wcwidth.m4 serial 26
+# wcwidth.m4 serial 27
 dnl Copyright (C) 2006-2018 Free Software Foundation, Inc.
 dnl This file is free software; the Free Software Foundation
 dnl gives unlimited permission to copy and/or distribute it,
@@ -114,4 +114,10 @@ changequote([,])dnl
   fi
   dnl We don't substitute HAVE_WCWIDTH. We assume that if the system does not
   dnl have the wcwidth function, then it does not declare it.
+])
+
+# Prerequisites of lib/wcwidth.c.
+AC_DEFUN([gl_PREREQ_WCWIDTH], [
+  AC_REQUIRE([AC_C_INLINE])
+  :
 ])

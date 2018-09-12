@@ -188,8 +188,6 @@ typedef struct colortype {
 		/* This syntax's foreground color. */
 	short bg;
 		/* This syntax's background color. */
-	bool bright;
-		/* Is this color A_BOLD? */
 	int pairnum;
 		/* The color pair number used for this foreground color and
 		 * background color. */
@@ -229,8 +227,6 @@ typedef struct syntaxtype {
 		/* The list of libmagic results that this syntax applies to. */
 	char *linter;
 		/* The command with which to lint this type of file. */
-	char *formatter;
-		/* The formatting command (for programming languages mainly). */
 #ifdef ENABLE_COMMENT
 	char *comment;
 		/* The line comment prefix (and postfix) for this type of file. */
@@ -585,6 +581,7 @@ enum
 #define CONTROL_DOWN 0x404
 #define CONTROL_HOME 0x405
 #define CONTROL_END 0x406
+#define CONTROL_DELETE 0x407
 #define SHIFT_CONTROL_LEFT 0x411
 #define SHIFT_CONTROL_RIGHT 0x412
 #define SHIFT_CONTROL_UP 0x413
@@ -622,7 +619,6 @@ enum
 #define WAS_FINAL_BACKSPACE   (1<<1)
 #define WAS_WHOLE_LINE        (1<<2)
 #define WAS_FINAL_LINE        (1<<3)
-/* The flags for the mark need to be the highest. */
 #define MARK_WAS_SET          (1<<4)
 #define WAS_MARKED_FORWARD    (1<<5)
 #endif /* !NANO_TINY */
@@ -630,9 +626,8 @@ enum
 /* The maximum number of entries displayed in the main shortcut list. */
 #define MAIN_VISIBLE (((COLS + 40) / 20) * 2)
 
-/* The default number of characters from the end of the line where
- * wrapping occurs. */
-#define CHARS_FROM_EOL 8
+/* The default number of columns from end of line where wrapping occurs. */
+#define COLUMNS_FROM_EOL 8
 
 /* The default width of a tab in spaces. */
 #define WIDTH_OF_TAB 8

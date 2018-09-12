@@ -25,6 +25,8 @@
 
 static char *prompt = NULL;
 		/* The prompt string used for statusbar questions. */
+static size_t typing_x = HIGHEST_POSITIVE;
+		/* The cursor position in answer. */
 
 #ifdef ENABLE_MOUSE
 /* Handle a mouse click on the statusbar prompt or the shortcut list. */
@@ -38,12 +40,10 @@ int do_statusbar_mouse(void)
 		size_t start_col = strlenpt(prompt) + 2;
 
 		/* Move to where the click occurred. */
-		if (click_row == 0 && click_col >= start_col) {
-			statusbar_x = actual_x(answer,
+		if (click_row == 0 && click_col >= start_col)
+			typing_x = actual_x(answer,
 							get_statusbar_page_start(start_col, start_col +
-							statusbar_xplustabs()) + click_col - start_col);
-			update_the_statusbar();
-		}
+							strnlenpt(answer, typing_x)) + click_col - start_col);
 	}
 
 	return retval;
@@ -208,69 +208,59 @@ void do_statusbar_output(int *the_input, size_t input_len,
 
 		/* Insert the typed character into the existing answer string. */
 		answer = charealloc(answer, strlen(answer) + char_len + 1);
-		charmove(answer + statusbar_x + char_len, answer + statusbar_x,
-								strlen(answer) - statusbar_x + 1);
-		strncpy(answer + statusbar_x, onechar, char_len);
+		charmove(answer + typing_x + char_len, answer + typing_x,
+								strlen(answer) - typing_x + 1);
+		strncpy(answer + typing_x, onechar, char_len);
 
-		statusbar_x += char_len;
+		typing_x += char_len;
 	}
 
 	free(output);
-
-	update_the_statusbar();
 }
 
 /* Move to the beginning of the answer. */
 void do_statusbar_home(void)
 {
-	statusbar_x = 0;
-	update_the_statusbar();
+	typing_x = 0;
 }
 
 /* Move to the end of the answer. */
 void do_statusbar_end(void)
 {
-	statusbar_x = strlen(answer);
-	update_the_statusbar();
+	typing_x = strlen(answer);
 }
 
 /* Move left one character. */
 void do_statusbar_left(void)
 {
-	if (statusbar_x > 0) {
-		statusbar_x = move_mbleft(answer, statusbar_x);
-		update_the_statusbar();
-	}
+	if (typing_x > 0)
+		typing_x = move_mbleft(answer, typing_x);
 }
 
 /* Move right one character. */
 void do_statusbar_right(void)
 {
-	if (answer[statusbar_x] != '\0') {
-		statusbar_x = move_mbright(answer, statusbar_x);
-		update_the_statusbar();
+	if (answer[typing_x] != '\0')
+		typing_x = move_mbright(answer, typing_x);
+}
+
+/* Delete one character. */
+void do_statusbar_delete(void)
+{
+	if (answer[typing_x] != '\0') {
+		int char_len = parse_mbchar(answer + typing_x, NULL, NULL);
+
+		charmove(answer + typing_x, answer + typing_x + char_len,
+						strlen(answer) - typing_x - char_len + 1);
 	}
 }
 
 /* Backspace over one character. */
 void do_statusbar_backspace(void)
 {
-	if (statusbar_x > 0) {
-		statusbar_x = move_mbleft(answer, statusbar_x);
+	if (typing_x > 0) {
+		typing_x = move_mbleft(answer, typing_x);
 		do_statusbar_delete();
-	}
-}
-
-/* Delete one character. */
-void do_statusbar_delete(void)
-{
-	if (answer[statusbar_x] != '\0') {
-		int char_len = parse_mbchar(answer + statusbar_x, NULL, NULL);
-
-		charmove(answer + statusbar_x, answer + statusbar_x + char_len,
-						strlen(answer) - statusbar_x - char_len + 1);
-
-		update_the_statusbar();
 	}
 }
 
@@ -278,43 +268,39 @@ void do_statusbar_delete(void)
 void do_statusbar_cut_text(void)
 {
 	if (!ISSET(CUT_FROM_CURSOR))
-		statusbar_x = 0;
+		typing_x = 0;
 
-	answer[statusbar_x] = '\0';
-
-	update_the_statusbar();
+	answer[typing_x] = '\0';
 }
 
 #ifndef NANO_TINY
 /* Move to the next word in the answer. */
 void do_statusbar_next_word(void)
 {
-	bool seen_space = !is_word_mbchar(answer + statusbar_x, FALSE);
+	bool seen_space = !is_word_mbchar(answer + typing_x, FALSE);
 	bool seen_word = !seen_space;
 
 	/* Move forward until we reach either the end or the start of a word,
 	 * depending on whether the AFTER_ENDS flag is set or not. */
-	while (answer[statusbar_x] != '\0') {
-		statusbar_x = move_mbright(answer, statusbar_x);
+	while (answer[typing_x] != '\0') {
+		typing_x = move_mbright(answer, typing_x);
 
 		if (ISSET(AFTER_ENDS)) {
 			/* If this is a word character, continue; else it's a separator,
 			 * and if we've already seen a word, then it's a word end. */
-			if (is_word_mbchar(answer + statusbar_x, FALSE))
+			if (is_word_mbchar(answer + typing_x, FALSE))
 				seen_word = TRUE;
 			else if (seen_word)
 				break;
 		} else {
 			/* If this is not a word character, then it's a separator; else
 			 * if we've already seen a separator, then it's a word start. */
-			if (!is_word_mbchar(answer + statusbar_x, FALSE))
+			if (!is_word_mbchar(answer + typing_x, FALSE))
 				seen_space = TRUE;
 			else if (seen_space)
 				break;
 		}
 	}
-
-	update_the_statusbar();
 }
 
 /* Move to the previous word in the answer. */
@@ -323,10 +309,10 @@ void do_statusbar_prev_word(void)
 	bool seen_a_word = FALSE, step_forward = FALSE;
 
 	/* Move backward until we pass over the start of a word. */
-	while (statusbar_x != 0) {
-		statusbar_x = move_mbleft(answer, statusbar_x);
+	while (typing_x != 0) {
+		typing_x = move_mbleft(answer, typing_x);
 
-		if (is_word_mbchar(answer + statusbar_x, FALSE))
+		if (is_word_mbchar(answer + typing_x, FALSE))
 			seen_a_word = TRUE;
 		else if (seen_a_word) {
 			/* This is space now: we've overshot the start of the word. */
@@ -337,9 +323,7 @@ void do_statusbar_prev_word(void)
 
 	if (step_forward)
 		/* Move one character forward again to sit on the start of the word. */
-		statusbar_x = move_mbright(answer, statusbar_x);
-
-	update_the_statusbar();
+		typing_x = move_mbright(answer, typing_x);
 }
 #endif /* !NANO_TINY */
 
@@ -356,12 +340,6 @@ void do_statusbar_verbatim_input(void)
 	free(kbinput);
 }
 
-/* Return the zero-based column position of the cursor in the answer. */
-size_t statusbar_xplustabs(void)
-{
-	return strnlenpt(answer, statusbar_x);
-}
-
 /* Paste the first line of the cutbuffer into the current answer. */
 void do_statusbar_uncut_text(void)
 {
@@ -370,13 +348,13 @@ void do_statusbar_uncut_text(void)
 
 	/* Concatenate: the current answer before the cursor, the first line
 	 * of the cutbuffer, plus the rest of the current answer. */
-	strncpy(fusion, answer, statusbar_x);
-	strncpy(fusion + statusbar_x, cutbuffer->data, pastelen);
-	strcpy(fusion + statusbar_x + pastelen, answer + statusbar_x);
+	strncpy(fusion, answer, typing_x);
+	strncpy(fusion + typing_x, cutbuffer->data, pastelen);
+	strcpy(fusion + typing_x + pastelen, answer + typing_x);
 
 	free(answer);
 	answer = fusion;
-	statusbar_x += pastelen;
+	typing_x += pastelen;
 }
 
 /* Return the column number of the first character of the answer that is
@@ -394,19 +372,19 @@ size_t get_statusbar_page_start(size_t base, size_t column)
 }
 
 /* Reinitialize the cursor position in the answer. */
-void reinit_statusbar_x(void)
+void put_cursor_at_end_of_answer(void)
 {
-	statusbar_x = HIGHEST_POSITIVE;
+	typing_x = HIGHEST_POSITIVE;
 }
 
 /* Redraw the promptbar and place the cursor at the right spot. */
-void update_the_statusbar(void)
+void draw_the_promptbar(void)
 {
 	size_t base = strlenpt(prompt) + 2;
 	size_t the_page, end_page, column;
 	char *expanded;
 
-	the_page = get_statusbar_page_start(base, base + strnlenpt(answer, statusbar_x));
+	the_page = get_statusbar_page_start(base, base + strnlenpt(answer, typing_x));
 	end_page = get_statusbar_page_start(base, base + strlenpt(answer) - 1);
 
 	/* Color the promptbar over its full width. */
@@ -429,11 +407,28 @@ void update_the_statusbar(void)
 	wmove(bottomwin, 0, 0);
 	wrefresh(bottomwin);
 
-	/* Place the cursor at statusbar_x in the answer. */
-	column = base + statusbar_xplustabs();
+	/* Place the cursor at the right spot. */
+	column = base + strnlenpt(answer, typing_x);
 	wmove(bottomwin, 0, column - get_statusbar_page_start(base, column));
 	wnoutrefresh(bottomwin);
 }
+
+#ifndef NANO_TINY
+/* Remove or add the pipe character at the answer's head. */
+void add_or_remove_pipe_symbol_from_answer(void)
+{
+	if (answer[0] == '|') {
+		charmove(answer, answer + 1, strlen(answer) + 1);
+		if (typing_x > 0)
+			typing_x--;
+	} else {
+		answer = charealloc(answer, strlen(answer) + 2);
+		charmove(answer + 1, answer, strlen(answer) + 1);
+		answer[0] = '|';
+		typing_x++;
+	}
+}
+#endif
 
 /* Get a string of input at the statusbar prompt. */
 functionptrtype acquire_an_answer(int *actual, bool allow_tabs,
@@ -462,12 +457,12 @@ functionptrtype acquire_an_answer(int *actual, bool allow_tabs,
 #endif
 #endif /* ENABLE_HISTORIES */
 
-	if (statusbar_x > strlen(answer))
-		statusbar_x = strlen(answer);
-
-	update_the_statusbar();
+	if (typing_x > strlen(answer))
+		typing_x = strlen(answer);
 
 	while (TRUE) {
+		draw_the_promptbar();
+
 		kbinput = do_statusbar_input(&finished);
 
 #ifndef NANO_TINY
@@ -500,12 +495,12 @@ functionptrtype acquire_an_answer(int *actual, bool allow_tabs,
 				if (complete_len > 0) {
 					answer = get_history_completion(history_list,
 										answer, complete_len);
-					statusbar_x = strlen(answer);
+					typing_x = strlen(answer);
 				}
 			} else
 #endif
 			if (allow_tabs)
-				answer = input_tab(answer, allow_files, &statusbar_x,
+				answer = input_tab(answer, allow_files, &typing_x,
 										&tabbed, refresh_func, listed);
 		} else
 #endif /* ENABLE_TABCOMP */
@@ -521,7 +516,7 @@ functionptrtype acquire_an_answer(int *actual, bool allow_tabs,
 				 * answer.  If there is no older search, don't do anything. */
 				if ((history = get_history_older(history_list)) != NULL) {
 					answer = mallocstrcpy(answer, history);
-					statusbar_x = strlen(answer);
+					typing_x = strlen(answer);
 				}
 
 				/* This key has a shortcut-list entry when it's used to
@@ -536,7 +531,7 @@ functionptrtype acquire_an_answer(int *actual, bool allow_tabs,
 				 * answer.  If there is no newer search, don't do anything. */
 				if ((history = get_history_newer(history_list)) != NULL) {
 					answer = mallocstrcpy(answer, history);
-					statusbar_x = strlen(answer);
+					typing_x = strlen(answer);
 				}
 
 				/* If, after scrolling down, we're at the bottom of the
@@ -545,7 +540,7 @@ functionptrtype acquire_an_answer(int *actual, bool allow_tabs,
 				if ((*history_list)->next == NULL &&
 						*answer == '\0' && magichistory != NULL) {
 					answer = mallocstrcpy(answer, magichistory);
-					statusbar_x = strlen(answer);
+					typing_x = strlen(answer);
 				}
 
 				/* This key has a shortcut-list entry when it's used to
@@ -569,8 +564,6 @@ functionptrtype acquire_an_answer(int *actual, bool allow_tabs,
 		 * we're finished after running or trying to run the function. */
 		if (finished)
 			break;
-
-		update_the_statusbar();
 
 #if defined(ENABLE_HISTORIES) && defined(ENABLE_TABCOMP)
 		last_kbinput = kbinput;
@@ -610,7 +603,7 @@ int do_prompt(bool allow_tabs, bool allow_files,
 	functionptrtype func = NULL;
 	bool listed = FALSE;
 	/* Save a possible current statusbar x position and prompt. */
-	size_t was_statusbar_x = statusbar_x;
+	size_t was_typing_x = typing_x;
 	char *saved_prompt = prompt;
 
 	bottombars(menu);
@@ -641,7 +634,7 @@ int do_prompt(bool allow_tabs, bool allow_files,
 	/* If we're done with this prompt, restore the x position to what
 	 * it was at a possible previous prompt. */
 	if (func == do_cancel || func == do_enter)
-		statusbar_x = was_statusbar_x;
+		typing_x = was_typing_x;
 
 	/* If we left the prompt via Cancel or Enter, set the return value
 	 * properly. */
@@ -685,6 +678,8 @@ int do_yesno_prompt(bool all, const char *msg)
 		if (!ISSET(NO_HELP)) {
 			char shortstr[MAXCHARLEN + 2];
 				/* Temporary string for (translated) " Y", " N" and " A". */
+			const sc *cancelshortcut = first_sc_for(MYESNO, do_cancel);
+				/* The keystroke that is bound to the Cancel function. */
 
 			if (COLS < 32)
 				width = COLS / 2;
@@ -708,7 +703,7 @@ int do_yesno_prompt(bool all, const char *msg)
 			}
 
 			wmove(bottomwin, 2, width);
-			post_one_key("^C", _("Cancel"), width);
+			post_one_key(cancelshortcut->keystr, _("Cancel"), width);
 		}
 
 		/* Color the statusbar over its full width and display the question. */
@@ -758,7 +753,7 @@ int do_yesno_prompt(bool all, const char *msg)
 		else if (kbinput == KEY_MOUSE) {
 			int mouse_x, mouse_y;
 			/* We can click on the Yes/No/All shortcuts to select an answer. */
-			if (get_mouseinput(&mouse_x, &mouse_y, FALSE) == 0 &&
+			if (get_mouseinput(&mouse_y, &mouse_x, FALSE) == 0 &&
 						wmouse_trafo(bottomwin, &mouse_y, &mouse_x, FALSE) &&
 						mouse_x < (width * 2) && mouse_y > 0) {
 				int x = mouse_x / width;

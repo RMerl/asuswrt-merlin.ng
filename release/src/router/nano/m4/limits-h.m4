@@ -29,3 +29,11 @@ AC_DEFUN_ONCE([gl_LIMITS_H],
   AC_SUBST([LIMITS_H])
   AM_CONDITIONAL([GL_GENERATE_LIMITS_H], [test -n "$LIMITS_H"])
 ])
+
+dnl Unconditionally enables the replacement of <limits.h>.
+AC_DEFUN([gl_REPLACE_LIMITS_H],
+[
+  AC_REQUIRE([gl_LIMITS_H])
+  LIMITS_H='limits.h'
+  AM_CONDITIONAL([GL_GENERATE_LIMITS_H], [test -n "$LIMITS_H"])
+])

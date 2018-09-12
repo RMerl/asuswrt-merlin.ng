@@ -1,6 +1,10 @@
 Improvements in GNU nano
 ========================
 
+Since 3.0:
+  - <Ctrl+Delete> wipes next word and <Shift+Ctrl+Delete> preceding word.
+  - An external spell check can be undone.
+
 Since 2.9.0:
   - The ability to filter text through an external command.
   - Better detection of paragraphs, allowing a less indented beginning.

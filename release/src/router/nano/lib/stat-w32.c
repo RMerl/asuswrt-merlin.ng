@@ -38,6 +38,10 @@
 #include "pathmax.h"
 #include "verify.h"
 
+/* Avoid warnings from gcc -Wcast-function-type.  */
+#define GetProcAddress \
+  (void *) GetProcAddress
+
 #if _GL_WINDOWS_STAT_INODES == 2
 /* GetFileInformationByHandleEx was introduced only in Windows Vista.  */
 typedef DWORD (WINAPI * GetFileInformationByHandleExFuncType) (HANDLE hFile,

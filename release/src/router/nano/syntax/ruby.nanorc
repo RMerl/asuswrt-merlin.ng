@@ -1,7 +1,7 @@
 ## Here is an example for Ruby.
 
 syntax ruby "\.rb$"
-header "^#!.*ruby[-0-9._]*"
+header "^#!.*ruby"
 magic "Ruby script"
 linter ruby -w -c
 comment "#"

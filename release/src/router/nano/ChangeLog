@@ -1,3 +1,154 @@
+Changes between v2.9.8 and v3.0:
+--------------------------------
+
+Benno Schulenberg (113):
+      bindings: bind M-Q to 'findprevious' by default, and M-W to 'findnext'
+      bindings: hard-bind <Ctrl+Shift+Delete> to 'cutwordleft'
+      bindings: make ^Q and M-Q available also in the help viewer
+      bindings: move the noconvert toggle from the main to the insert menu
+      bindings: reassign the M-| keystroke to 'cutwordleft' by default
+      bindings: remove backup and new-buffer toggles (M-B, M-F) from main menu
+      bindings: remove the More-Space toggle entirely
+      bindings: remove the 'searchagain' function entirely
+      bindings: rename two bindable functions: copytext to copy, uncut to paste
+      bindings: unassign the M-? keystroke, to free it up for future use
+      build: add the release script to the repository
+      build: fix compilation again when configured with --enable-tiny
+      build: fix compilation when configured with --enable-tiny
+      build: verify that 'msgfmt' is available when building from git
+      bump version numbers and add a news item for the 3.0 release
+      chars: make the UTF-8 case ever so slightly faster by eliding an 'if'
+      chars: speed up the counting of string length for the plain ASCII case
+      chars: speed up the parsing of a character for the plain ASCII case
+      completion: when the cursor is not after a word fragment, say so
+      cut: concentrate the logic for clearing the cutbuffer mostly in one place
+      cutting: when deleting whole words, don't join lines unexpectedly
+      debug: add some code to time the performance of get_totsize()
+      docs: improve a comment about rebinding <Backspace>
+      docs: mention that also Ctrl increases the stride when selecting text
+      docs: mention that "normal" can be used to give things the default color
+      docs: mention that the 'formatter' command has been superseded
+      docs: reshuffle a bindable function to a slightly better position
+      docs: say that 'cutwordright' is now bound to <Ctrl+Delete> by default
+      docs: slightly reword the description of four bindable functions
+      docs: the 'noconvert' bindable function was renamed to 'flipconvert'
+      dropping a feature: remove the ability to use the 'formatter' command
+      easter: show the crawl only when there is room enough for the lines
+      files: add the file format on the status bar when switching buffers
+      filtering: wait for the data-sending process to terminate too
+      gnulib: update to its current upstream state
+      help: for ^R^X, mention that the buffer can be piped to the command
+      help: move "Search Again" away from "Find Next" and "Find Previous"
+      input: consume the whole escape sequence for modified PgUp and PgDn keys
+      input: fully consume modified PgUp and PgDn keys also in the tiny version
+      input: ignore any <Escape>s before a valid command keystroke
+      input: stop <Alt+Insert> from entering "3~" into the buffer
+      input: stop a modified Delete key from entering stuff into the buffer
+      mouse: put the row/column arguments in the proper order  [coverity scan]
+      prompt: concentrate manipulations of 'statusbar_x' into a single file
+      prompt: remove redundant redrawings of the prompt bar
+      rcfile: allow to rebind the Cancel function in the yesno menu
+      rcfile, docs: no longer recognize nor mention 'set backwards'
+      rcfile: do not accept rebinding F0 nor function keys above F16
+      rcfile: ensure that in the yesno menu Cancel is bound to some keystroke
+      rcfile: explicitly check for disallowed keywords in included files
+      rcfile: reject things like "M-Del" and "^{" as invalid key names
+      rcfile: when a vital function is not mapped, mention in which menu
+      search: include 'findprevious' and 'findnext' in the tiny version
+      signals: don't call a print routine in a signal handler
+      speller: do not replace the text when the temporary file did not change
+      startup: don't overwrite rcfile error messages on a Linux console
+      startup: show the correct number of lines when opening multiple files
+      syntax: awk: recognize any {g,m,n,}awk script also by its shebang line
+      syntax: default: colorize also two-digit and capitalized nano versions
+      syntaxes: remove all traces of the 'formatter' command
+      syntax: nanorc: recognize 'yesno' as a valid menu to bind/unbind keys in
+      syntax: nanorc: show ^@ as validly rebindable, but not any ^digit
+      syntax: python: avoid coloring the three special values inside strings
+      text: add auto-whitespace to the file size after creating the undo item
+      tweaks: adjust indentation after the previous change
+      tweaks: adjust one more translator hint, for removed toggles
+      tweaks: adjust some translator hints for past changes, and add two more
+      tweaks: adjust two comments, to be more accurate and general
+      tweaks: avoid dereferencing a pointer when it is NULL  [coverity scan]
+      tweaks: close a temp file only when descriptor is valid  [coverity scan]
+      tweaks: correct a comment, rewrap a line, and drop some debugging stuff
+      tweaks: delete some old debugging code that no longer seems useful
+      tweaks: don't bother having debug code that deallocates all memory
+      tweaks: don't call va_start() without calling va_end()  [coverity scan]
+      tweaks: drop a condition that has been made redundant two commits ago
+      tweaks: drop some old debugging code
+      tweaks: elide a bunch of unneeded constant strings
+      tweaks: elide a function that is used just once
+      tweaks: elide another function that is used just once
+      tweaks: elide an unneeded/duplicate variable
+      tweaks: elide a one-line function -- no, a half-line function
+      tweaks: elide a subfunction that is used just once
+      tweaks: exclude a global flagging variable when it is not needed
+      tweaks: exclude the file-prepending code from the tiny version
+      tweaks: fix a pasting error from a month ago
+      tweaks: implement the name-to-menu function in another manner
+      tweaks: improve a couple of comments in the sample nanorc
+      tweaks: improve a translator hint and some other comments
+      tweaks: move a call to where it will be executed  [coverity scan]
+      tweaks: normalize the indentation after the previous change
+      tweaks: properly escape "\" in a man page and "@" in a texi document
+      tweaks: recognize escape sequences of modified Ins/Del more precisely
+      tweaks: reduce the counting of characters to just the needed function
+      tweaks: remove a redundant "struct" word, and replace it in comments
+      tweaks: remove a superfluous condition and a redundant refresh
+      tweaks: remove redundant braces and conditions after the previous change
+      tweaks: remove some braces that are now superfluous
+      tweaks: remove some ineffectual parts from header-line regexes
+      tweaks: remove the superfluous calls that reset the mbtowc() state
+      tweaks: remove two needless words, and split up a changed text further
+      tweaks: remove two superfluous assignments
+      tweaks: rename a constant, to match what it actually means
+      tweaks: rename a function and place its call better
+      tweaks: rename a function to better match its counterpart
+      tweaks: rename a function, to better state what it does
+      tweaks: rename a variable and a function, for more clarity
+      tweaks: rename a variable, to better match its task
+      tweaks: reshuffle some lines, in order to elide one
+      tweaks: reshuffle the order of the bindings, for help-line esthetics
+      tweaks: show "Space" and "Bsp" in the help text of the browser
+      tweaks: slightly improve error message when vital function is unmapped
+      tweaks: use a shorter message, because when the screen is small...
+      undo: differentiate between general filtering and spell checking
+
+Brand Huntsman (4):
+      input: give feedback for all unbound keys also in the help viewer
+      statusbar: elevate three messages to an ALERT, to make them more visible
+      tweaks: correct four spaces of indentation to a tab, in two places
+      tweaks: remove the 'bright' field from the colortype struct
+
+David Lawrence Ramsey (13):
+      bindings: make "n" work again in file browser and help viewer
+      bindings: make ^Q start a backward search also in the file browser
+      docs: mention that "Ins" and "Del" are valid rebindable keys
+      justify: verify being in a paragraph before trying to find its beginning
+      speller: hook up a full alternative spellcheck to the undo system
+      speller: hook up a marked-text alternative spellcheck to the undo system
+      speller: make replace_buffer() use the cutting functions directly
+      speller: make replace_marked_buffer() use the cutting functions directly
+      undo: actually enable undoing/redoing an alternative spellcheck
+      undo: always initialize the 'newsize' element in the undo struct
+      undo: position the cursor properly when undoing/redoing magicline cuts
+      undo: restore the cursor position when a cut and paste are paired
+      undo: store the correct cursor position after a paired cut+insert
+
+Devin Hussey (2):
+      files: speed up reading by using getc_unlocked() instead of getc()
+      syntax: sh: recognize more file extensions and header lines
+
+Marco Diego Aurélio Mesquita (1):
+      input: erase the next word when Ctrl is held while pressing Delete
+
+Mark-Weston (2):
+      build: fix compilation when CC=tcc
+      syntax: lua: do not color strings inside comments, and add a linter
+
+
 Changes between v2.9.7 and v2.9.8:
 ----------------------------------
 

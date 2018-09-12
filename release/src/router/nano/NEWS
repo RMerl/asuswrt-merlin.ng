@@ -1,3 +1,26 @@
+2018.09.09 - GNU nano 3.0 "Water Flowing Underground" speeds up the
+             reading of a file by seventy percent, roughly doubles the
+             speed of handling ASCII text, changes the way words at line
+             boundaries are deleted, makes <Ctrl+Delete> wipe the next
+             word and <Ctrl+Shift+Delete> the preceding word, binds M-Q
+             to 'findprevious' by default (the Tabs-to-Spaces toggle is
+             placed on M-O, and the More-Space toggle is fully removed),
+             makes an external spell check undoable, shows the correct
+             number of lines on the status bar when opening multiple
+             files, removes the 'formatter' command, removes the
+             'searchagain' bindable function (M-W is now bound to
+             'findnext' by default), moves the No-Convert toggle to the
+             Insert menu, removes the Backup and New-Buffer toggles from
+             the main menu (they remain in the Write-Out and Insert
+             menus, respectively), is more precise in what it accepts as
+             a rebindable key name, ignores any presses of <Esc> before
+             a valid command keystroke, recognizes some more escape
+             sequences for modified editing-pad keys, does not hide
+             rcfile error messages on a Linux console, renames the
+             bindable functions 'copytext' to 'copy' and 'uncut' to
+             'paste', and avoids a possible hang during a Full-Justify.
+
+
 2018.06.02 - GNU nano 2.9.8 "Espresso" brings the ability to filter the
              buffer (or the marked region) through an external command
              (^R^X and prefix the command with the pipe symbol, "|"), is

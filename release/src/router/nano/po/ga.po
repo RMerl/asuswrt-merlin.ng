@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: nano 2.9.4-pre1\n"
 "Report-Msgid-Bugs-To: nano-devel@gnu.org\n"
-"POT-Creation-Date: 2018-06-02 10:23+0200\n"
+"POT-Creation-Date: 2018-09-09 11:48+0200\n"
 "PO-Revision-Date: 2018-03-04 05:44-0600\n"
 "Last-Translator: Kevin Scannell <kscanne@gmail.com>\n"
 "Language-Team: Irish <gaeilge-gnulinux@lists.sourceforge.net>\n"
@@ -24,83 +24,87 @@ msgid "Cannot open directory: %s"
 msgstr "Ní féidir an chomhadlann a oscailt: %s"
 
 #. TRANSLATORS: This is a prompt.
-#: src/browser.c:230
+#: src/browser.c:228
 msgid "Go To Directory"
 msgstr "Téigh go Comhadlann"
 
-#: src/browser.c:233 src/browser.c:693 src/files.c:1074 src/files.c:2104
-#: src/nano.c:1073 src/search.c:117 src/search.c:210 src/search.c:718
-#: src/search.c:770 src/text.c:3050 src/text.c:3232
+#: src/browser.c:231 src/browser.c:691 src/files.c:1131 src/files.c:2159
+#: src/nano.c:1078 src/search.c:116 src/search.c:209 src/search.c:715
+#: src/search.c:767 src/text.c:3052 src/text.c:3234
 msgid "Cancelled"
 msgstr "Cealaithe"
 
 #. TRANSLATORS: This refers to the confining effect of the
 #. * option --operatingdir, not of --restricted.
-#: src/browser.c:250 src/browser.c:281
+#: src/browser.c:248 src/browser.c:279
 #, c-format
 msgid "Can't go outside of %s"
 msgstr "Ní féidir dul amach as %s"
 
-#: src/browser.c:272
+#: src/browser.c:270
 msgid "Can't move up a directory"
 msgstr "Ní féidir dul go dtí an chomhadlann thuas"
 
-#: src/browser.c:287 src/files.c:965 src/files.c:971 src/files.c:1627
-#: src/files.c:1744 src/files.c:1785 src/files.c:1805 src/files.c:1917
-#: src/history.c:311 src/history.c:407 src/rcfile.c:538 src/rcfile.c:1222
+#: src/browser.c:285 src/files.c:1012 src/files.c:1018 src/files.c:1677
+#: src/files.c:1794 src/files.c:1836 src/files.c:1856 src/files.c:1970
+#: src/history.c:311 src/history.c:407 src/rcfile.c:528 src/rcfile.c:1206
 #, c-format
 msgid "Error reading %s: %s"
 msgstr "Earráid agus %s á léamh: %s"
 
-#: src/browser.c:371
+#: src/browser.c:369
 msgid "The working directory has disappeared"
 msgstr "Níl an chomhadlann oibre ann a thuilleadh"
 
 # max 7 with parens on 80 col screen --kps
 #. TRANSLATORS: Try to keep this at most 7 characters.
-#: src/browser.c:566 src/browser.c:573
+#: src/browser.c:562 src/browser.c:569
 msgid "(dir)"
 msgstr "cmhdlnn"
 
 #. TRANSLATORS: Try to keep this at most 12 characters.
-#: src/browser.c:570
+#: src/browser.c:566
 msgid "(parent dir)"
 msgstr "téigh suas"
 
 #. TRANSLATORS: Try to keep this at most 7 characters.
 #. * If necessary, you can leave out the parentheses.
-#: src/browser.c:600
+#: src/browser.c:596
 msgid "(huge)"
 msgstr "(mór)"
 
 #. TRANSLATORS: This is the main search prompt.
-#: src/browser.c:684 src/search.c:103
+#: src/browser.c:681 src/search.c:103
 msgid "Search"
 msgstr "Cuardaigh"
 
-#: src/browser.c:723 src/browser.c:728 src/search.c:280
+#: src/browser.c:682 src/search.c:107
+msgid " [Backwards]"
+msgstr " [Siar]"
+
+#: src/browser.c:721 src/browser.c:726 src/search.c:279
 msgid "Search Wrapped"
 msgstr "Thimfhill an Cuardach"
 
-#: src/browser.c:739 src/search.c:415
+#: src/browser.c:737 src/search.c:412
 msgid "This is the only occurrence"
 msgstr "Seo é an toradh amháin atá ann"
 
-#: src/browser.c:784 src/search.c:354
+#: src/browser.c:783 src/search.c:353
 msgid "No current search pattern"
 msgstr "Níl patrún cuardaigh ann faoi láthair"
 
-#: src/color.c:183
+#: src/color.c:182
 #, c-format
 msgid "Unknown syntax name: %s"
 msgstr "Ainm comhréire anaithnid: %s"
 
-#: src/color.c:239
+#: src/color.c:238
 #, c-format
 msgid "magic_load() failed: %s"
 msgstr "Theip ar magic_load(): %s"
 
-#: src/color.c:243
+#: src/color.c:242
 #, c-format
 msgid "magic_file(%s) failed: %s"
 msgstr "Theip ar magic_file(%s): %s"
@@ -172,7 +176,7 @@ msgstr "Comhad %s á chur in eagar (ag %s le %s, PID %s); téigh ar aghaidh?"
 msgid "Can't read file from outside of %s"
 msgstr "Ní féidir comhad a léamh ó thaobh amuigh de %s"
 
-#: src/files.c:445 src/files.c:955 src/rcfile.c:517
+#: src/files.c:445 src/files.c:1002 src/rcfile.c:507
 #, c-format
 msgid "\"%s\" is a directory"
 msgstr "Is comhadlann é \"%s\""
@@ -182,26 +186,55 @@ msgstr "Is comhadlann é \"%s\""
 msgid "\"%s\" is not a normal file"
 msgstr "Ní gnáthchomhad é \"%s\""
 
-#: src/files.c:594
-msgid "No more open file buffers"
-msgstr "Níl aon mhaoláin oscailte fágtha"
+#: src/files.c:526 src/files.c:548 src/files.c:572 src/files.c:590
+#, fuzzy
+msgid "spelling correction"
+msgstr "Rogha ar iarraidh"
 
-#: src/files.c:619
+#. TRANSLATORS: first %s is file name, second %s is file format.
+#: src/files.c:623
 #, c-format
-msgid "Switched to %s"
-msgstr "Athraithe go %s"
+msgid "%s -- %zu line (%s)"
+msgid_plural "%s -- %zu lines (%s)"
+msgstr[0] ""
+msgstr[1] ""
+msgstr[2] ""
+msgstr[3] ""
+msgstr[4] ""
 
-#: src/files.c:621 src/global.c:1042 src/winio.c:2047
+#: src/files.c:625 src/files.c:631 src/global.c:1016 src/winio.c:2072
 msgid "New Buffer"
 msgstr "Maolán Nua"
 
-#: src/files.c:886
+#: src/files.c:626
+msgid "DOS"
+msgstr ""
+
+#: src/files.c:626
+msgid "Mac"
+msgstr ""
+
+#: src/files.c:629
+#, fuzzy, c-format
+msgid "%s -- %zu line"
+msgid_plural "%s -- %zu lines"
+msgstr[0] "Léadh %zu líne"
+msgstr[1] "Léadh %zu líne"
+msgstr[2] "Léadh %zu líne"
+msgstr[3] "Léadh %zu líne"
+msgstr[4] "Léadh %zu líne"
+
+#: src/files.c:640
+msgid "No more open file buffers"
+msgstr "Níl aon mhaoláin oscailte fágtha"
+
+#: src/files.c:933
 #, c-format
 msgid "File '%s' is unwritable"
 msgstr "Ní féidir comhad '%s' a scríobh"
 
 #. TRANSLATORS: Keep the next four messages at most 78 characters.
-#: src/files.c:890
+#: src/files.c:937
 #, c-format
 msgid "Read %zu line (Converted from DOS and Mac format)"
 msgid_plural "Read %zu lines (Converted from DOS and Mac format)"
@@ -211,7 +244,7 @@ msgstr[2] "Léadh %zu líne (tiontaithe ó fhormáid DOS/Mac)"
 msgstr[3] "Léadh %zu líne (tiontaithe ó fhormáid DOS/Mac)"
 msgstr[4] "Léadh %zu líne (tiontaithe ó fhormáid DOS/Mac)"
 
-#: src/files.c:895
+#: src/files.c:942
 #, c-format
 msgid "Read %zu line (Converted from Mac format)"
 msgid_plural "Read %zu lines (Converted from Mac format)"
@@ -221,7 +254,7 @@ msgstr[2] "Léadh %zu líne (tiontaithe ó fhormáid Mac)"
 msgstr[3] "Léadh %zu líne (tiontaithe ó fhormáid Mac)"
 msgstr[4] "Léadh %zu líne (tiontaithe ó fhormáid Mac)"
 
-#: src/files.c:900
+#: src/files.c:947
 #, c-format
 msgid "Read %zu line (Converted from DOS format)"
 msgid_plural "Read %zu lines (Converted from DOS format)"
@@ -231,7 +264,7 @@ msgstr[2] "Léadh %zu líne (tiontaithe ó fhormáid DOS)"
 msgstr[3] "Léadh %zu líne (tiontaithe ó fhormáid DOS)"
 msgstr[4] "Léadh %zu líne (tiontaithe ó fhormáid DOS)"
 
-#: src/files.c:906
+#: src/files.c:953
 #, c-format
 msgid "Read %zu line"
 msgid_plural "Read %zu lines"
@@ -241,89 +274,99 @@ msgstr[2] "Léadh %zu líne"
 msgstr[3] "Léadh %zu líne"
 msgstr[4] "Léadh %zu líne"
 
-#: src/files.c:941
+#: src/files.c:988
 msgid "New File"
 msgstr "Comhad Nua"
 
-#: src/files.c:946
+#: src/files.c:993
 #, c-format
 msgid "File \"%s\" not found"
 msgstr "Comhad \"%s\" gan aimsiú"
 
-#: src/files.c:956 src/rcfile.c:518
+#: src/files.c:1003 src/rcfile.c:508
 #, c-format
 msgid "\"%s\" is a device file"
 msgstr "Is comhad gléis é \"%s\""
 
-#: src/files.c:974
+#: src/files.c:1021
 msgid "Reading File"
 msgstr "Comhad á Léamh"
 
-#. TRANSLATORS: The next four messages are prompts.
-#: src/files.c:1040
+#. TRANSLATORS: The next six messages are prompts.
+#: src/files.c:1087
 msgid "Command to execute in new buffer"
 msgstr "Ordú le rith i maolán nua"
 
-#: src/files.c:1043
+#: src/files.c:1090
 msgid "Command to execute"
 msgstr "Ordú le rith"
 
-#: src/files.c:1049
-#, c-format
-msgid "File to insert into new buffer [from %s]"
+#: src/files.c:1098
+#, fuzzy, c-format
+msgid "File to read unconverted into new buffer [from %s]"
 msgstr "Comhad le hionsá i maolán nua [ó %s]"
 
-#: src/files.c:1052
+#: src/files.c:1101
+#, fuzzy, c-format
+msgid "File to read into new buffer [from %s]"
+msgstr "Comhad le hionsá i maolán nua [ó %s]"
+
+#: src/files.c:1106
+#, fuzzy, c-format
+msgid "File to insert unconverted [from %s]"
+msgstr "Comhad le hionsá [ó %s]"
+
+#: src/files.c:1109
 #, c-format
 msgid "File to insert [from %s]"
 msgstr "Comhad le hionsá [ó %s]"
 
-#: src/files.c:1213
+#: src/files.c:1263
 msgid "Key invalid in non-multibuffer mode"
 msgstr "Eochair neamhcheadaithe mura bhfuiltear i mód ilmhaoláin"
 
-#: src/files.c:1426
+#: src/files.c:1476
 msgid "Invalid operating directory\n"
 msgstr "Comhadlann oibre neamhbhailí\n"
 
-#: src/files.c:1475
+#: src/files.c:1525
 msgid "Failed to write backup file; continue saving? (Say N if unsure.) "
 msgstr ""
 "Níorbh fhéidir cúltaca a scríobh; sábháil mar sin féin? (N mura bhfuil tú "
 "cinnte)"
 
-#: src/files.c:1492
+#: src/files.c:1542
 msgid "Invalid backup directory\n"
 msgstr "Comhadlann chúltaca neamhbhailí\n"
 
-#: src/files.c:1585
+#: src/files.c:1635
 #, c-format
 msgid "Can't write outside of %s"
 msgstr "Ní féidir scríobh lasmuigh de %s"
 
-#: src/files.c:1663 src/files.c:1687 src/files.c:1705 src/files.c:1719
-#: src/files.c:1731 src/files.c:1754
+#: src/files.c:1713 src/files.c:1737 src/files.c:1755 src/files.c:1769
+#: src/files.c:1781 src/files.c:1804
 #, c-format
 msgid "Error writing backup file %s: %s"
 msgstr "Earráid agus comhad cúltaca %s á scríobh: %s"
 
-#: src/files.c:1664 src/nano.c:656
+#: src/files.c:1714 src/nano.c:666
 msgid "Too many backup files?"
 msgstr "An iomarca comhad cúltaca?"
 
-#: src/files.c:1794 src/files.c:1816 src/help.c:55 src/help.c:122
-#: src/text.c:2968 src/text.c:2986 src/text.c:3359 src/text.c:3370
+#: src/files.c:1845 src/files.c:1867 src/help.c:55 src/help.c:122
+#: src/text.c:2970 src/text.c:2988
 #, c-format
 msgid "Error writing temp file: %s"
 msgstr "Earráid agus comhad sealadach á scríobh: %s"
 
-#: src/files.c:1835 src/files.c:1845 src/files.c:1865 src/files.c:1882
-#: src/files.c:1892 src/files.c:1924 src/files.c:1931
+#: src/files.c:1887 src/files.c:1897 src/files.c:1917 src/files.c:1934
+#: src/files.c:1944 src/files.c:1977 src/files.c:1986
 #, c-format
 msgid "Error writing %s: %s"
 msgstr "Earráid agus %s á scríobh: %s"
 
-#: src/files.c:1981
+#: src/files.c:2036
 #, c-format
 msgid "Wrote %zu line"
 msgid_plural "Wrote %zu lines"
@@ -333,888 +376,880 @@ msgstr[2] "Scríobhadh %zu líne"
 msgstr[3] "Scríobhadh %zu líne"
 msgstr[4] "Scríobhadh %zu líne"
 
-#: src/files.c:2064
+#: src/files.c:2119
 msgid " [DOS Format]"
 msgstr " [Formáid DOS]"
 
-#: src/files.c:2065
+#: src/files.c:2120
 msgid " [Mac Format]"
 msgstr " [Formáid Mac]"
 
-#: src/files.c:2066
+#: src/files.c:2121
 msgid " [Backup]"
 msgstr " [Cúltaca]"
 
 #. TRANSLATORS: The next six strings are prompts.
-#: src/files.c:2073
+#: src/files.c:2128
 msgid "Prepend Selection to File"
 msgstr "Réamhcheangail an Roghnúchán le Comhad"
 
-#: src/files.c:2074
+#: src/files.c:2129
 msgid "Append Selection to File"
 msgstr "Iarcheangail an Roghnúchán le Comhad"
 
-#: src/files.c:2075
+#: src/files.c:2130
 msgid "Write Selection to File"
 msgstr "Scríobh an Roghnúchán i gComhad"
 
-#: src/files.c:2077
+#: src/files.c:2132
 msgid "File Name to Prepend to"
 msgstr "Comhad ar mian leat Réamhcheangal leis"
 
-#: src/files.c:2078
+#: src/files.c:2133
 msgid "File Name to Append to"
 msgstr "Comhad ar mian leat Iarcheangal leis"
 
-#: src/files.c:2081
+#: src/files.c:2136
 msgid "File Name to Write"
 msgstr "Ainm Comhaid le Scríobh"
 
+#. TRANSLATORS: Concisely say the screen is too small.
+#: src/files.c:2219
+msgid "Too tiny"
+msgstr ""
+
 #. TRANSLATORS: Restricted mode forbids overwriting.
-#: src/files.c:2190
+#: src/files.c:2249
 msgid "File exists -- cannot overwrite"
 msgstr "Tá an comhad ann - ní féidir forscríobh"
 
-#: src/files.c:2200
+#: src/files.c:2259
 msgid "Save file under DIFFERENT NAME? "
 msgstr "Sábháil an comhad le hAINM DIFRIÚIL? "
 
-#: src/files.c:2208
+#: src/files.c:2267
 #, c-format
 msgid "File \"%s\" exists; OVERWRITE? "
 msgstr "Tá comhad \"%s\" ann; FORSCRÍOBH? "
 
-#: src/files.c:2235
+#: src/files.c:2294
 msgid "File on disk has changed"
 msgstr "Athraíodh an comhad ar an diosca"
 
-#: src/files.c:2237
+#: src/files.c:2296
 msgid "File was modified since you opened it; continue saving? "
 msgstr "Athraíodh an comhad ón am a d'oscail tú é; sábháil é mar sin féin? "
 
-#: src/files.c:2657
+#: src/files.c:2716
 msgid "(more)"
 msgstr "(tuilleadh)"
 
-#. TRANSLATORS: Try to keep the next fifteen strings at most 10 characters.
-#: src/global.c:495
+#. TRANSLATORS: Try to keep the next four strings at most 10 characters.
+#: src/global.c:507
 msgid "Exit"
 msgstr "Scoir"
 
 # next batch are main menu - should be 9 characters at most
 # 10 characters fit, but with no space before next option
 # I'm assuming an 80 column terminal here
-#: src/global.c:496
+#: src/global.c:508
 msgid "Close"
 msgstr "Dún"
 
-#: src/global.c:497
+#: src/global.c:509
 msgid "Uncut Text"
 msgstr "Díghearr Téacs"
 
-#: src/global.c:499
+#: src/global.c:511
 msgid "Unjustify"
 msgstr "DíComhfhdú"
 
-#: src/global.c:505
-msgid "Read File"
-msgstr "Léigh"
-
-#: src/global.c:506
-msgid "Where Is"
-msgstr "Cuardach"
-
-#: src/global.c:507
-msgid "Replace"
-msgstr "Ionadaigh"
-
-#: src/global.c:508
-msgid "Go To Line"
-msgstr "Téigh Go Líne"
-
-#: src/global.c:509
-msgid "Prev Line"
-msgstr "An Líne Roimhe Seo"
-
-#: src/global.c:510
-msgid "Next Line"
-msgstr "An Chéad Líne Eile"
-
-# main menu - keep short?
-#: src/global.c:511
-msgid "Prev Page"
-msgstr "Ar Ais"
-
-# main menu - keep short?
-#: src/global.c:512
-msgid "Next Page"
-msgstr "Ar Aghaidh"
-
-#: src/global.c:514
-msgid "Justify"
-msgstr "Comhfhadú"
-
-#: src/global.c:515
-msgid "FullJstify"
-msgstr "LánComhfhadú"
-
-#: src/global.c:517
-msgid "Refresh"
-msgstr "Athnuaigh"
-
-#. TRANSLATORS: Try to keep this string at most 12 characters.
-#: src/global.c:519
-msgid "WhereIs Next"
-msgstr "Cuardaigh Arís"
-
 #. TRANSLATORS: The next long series of strings are shortcut descriptions;
 #. * they are best kept shorter than 56 characters, but may be longer.
-#: src/global.c:524
+#: src/global.c:520
 msgid "Cancel the current function"
 msgstr "Cealaigh an fheidhm reatha"
 
-#: src/global.c:525
+#: src/global.c:521
 msgid "Display this help text"
 msgstr "Taispeáin an chabhair seo"
 
-#: src/global.c:527
+#: src/global.c:523
 msgid "Close the current buffer / Exit from nano"
 msgstr "Dún an maolán reatha / Scoir nano"
 
-#: src/global.c:529
+#: src/global.c:525
 msgid "Write the current buffer (or the marked region) to disk"
 msgstr "Scríobh an comhad reatha (nó an réigiún marcáilte) ar an diosca"
 
-#: src/global.c:531
+#: src/global.c:527
 msgid "Insert another file into current buffer (or into new buffer)"
 msgstr "Ionsáigh comhad eile isteach sa maolán reatha (nó i maolán nua)"
 
-#: src/global.c:533
+#: src/global.c:529
 msgid "Search forward for a string or a regular expression"
 msgstr "Cuardach ar aghaidh ar theaghrán nó slonn ionadaíochta"
 
-#: src/global.c:535
+#: src/global.c:531
 msgid "Search backward for a string or a regular expression"
 msgstr "Cuardach ar gcúl ar theaghrán nó slonn ionadaíochta"
 
-#: src/global.c:537
-msgid "Search for a string"
+#: src/global.c:533
+#, fuzzy
+msgid "Search forward for a string"
 msgstr "Cuardach ar theaghrán"
 
-#: src/global.c:538
+#: src/global.c:534
+#, fuzzy
+msgid "Search backward for a string"
+msgstr "Cuardach ar theaghrán"
+
+#: src/global.c:535
 msgid "Refresh the file list"
 msgstr "Athnuaigh an liosta comhad"
 
-#: src/global.c:540
+#: src/global.c:537
 msgid "Go to lefthand column"
 msgstr "Téigh go dtí an colún ar chlé"
 
-#: src/global.c:541
+#: src/global.c:538
 msgid "Go to righthand column"
 msgstr "Téigh go dtí an colún ar dheis"
 
-#: src/global.c:542
+#: src/global.c:539
 msgid "Go to first row in this column"
 msgstr "Téigh go dtí an chéad ró sa gcolún seo"
 
-#: src/global.c:543
+#: src/global.c:540
 msgid "Go to last row in this column"
 msgstr "Téigh go dtí an ró deireanach sa gcolún seo"
 
-#: src/global.c:546
+#: src/global.c:543
 msgid "Go one screenful up"
 msgstr "Téigh suas scáileán amháin"
 
-#: src/global.c:547
+#: src/global.c:544
 msgid "Go one screenful down"
 msgstr "Téigh síos scáileán amháin"
 
-#: src/global.c:549
+#: src/global.c:546
 msgid "Cut current line (or marked region) and store it in cutbuffer"
 msgstr ""
 "Gearr an líne reatha (nó réigiún marcáilte) agus cuir sa mhaolán gearrtha é"
 
-#: src/global.c:551
+#: src/global.c:548
 msgid "Uncut from the cutbuffer into the current line"
 msgstr "Greamaigh ón mhaolán gearrtha isteach sa líne reatha"
 
-#: src/global.c:552
+#: src/global.c:549
 msgid "Display the position of the cursor"
 msgstr "Taispeáin ionad an chúrsóra"
 
-#: src/global.c:554
+#: src/global.c:551
 msgid "Invoke the spell checker, if available"
 msgstr "Rith an litreoir, má tá ceann ar fáil"
 
-#: src/global.c:556
+#: src/global.c:553
 msgid "Replace a string or a regular expression"
 msgstr "Ionadaigh teaghrán nó slonn ionadaíochta"
 
-#: src/global.c:557
+#: src/global.c:554
 msgid "Go to line and column number"
 msgstr "Téigh go dtí an líne agus an colún sonraithe"
 
-#: src/global.c:558
-msgid "Repeat the last search"
-msgstr "An cuardach céanna arís"
-
-#: src/global.c:560
+#: src/global.c:556
 msgid "Mark text starting from the cursor position"
 msgstr "Marcáil téacs ag tosú ag an gcúrsóir"
 
-#: src/global.c:562
+#: src/global.c:558
 msgid "Copy current line (or marked region) and store it in cutbuffer"
 msgstr ""
 "Cóipeáil an líne reatha (nó réigiún marcáilte) agus cuir sa mhaolán gearrtha "
 "é"
 
-#: src/global.c:563
+#: src/global.c:559
 msgid "Indent the current line (or marked lines)"
 msgstr "Eangaigh an líne reatha (nó na línte marcáilte)"
 
-#: src/global.c:564
+#: src/global.c:560
 msgid "Unindent the current line (or marked lines)"
 msgstr "Dí-eangaigh an líne reatha (nó na línte marcáilte)"
 
-#: src/global.c:565
+#: src/global.c:561
 msgid "Undo the last operation"
 msgstr "Cealaigh an oibríocht is déanaí"
 
-#: src/global.c:566
+#: src/global.c:562
 msgid "Redo the last undone operation"
 msgstr "Athdhéan an oibríocht is déanaí a cealaíodh"
 
-#: src/global.c:568
+#: src/global.c:564
 msgid "Go back one character"
 msgstr "Carachtar amháin siar"
 
-#: src/global.c:569
+#: src/global.c:565
 msgid "Go forward one character"
 msgstr "Ar aghaidh carachtar amháin"
 
-#: src/global.c:570
+#: src/global.c:566
 msgid "Go back one word"
 msgstr "Téigh siar focal amháin"
 
-#: src/global.c:571
+#: src/global.c:567
 msgid "Go forward one word"
 msgstr "Téigh ar aghaidh focal amháin"
 
-#: src/global.c:572
+#: src/global.c:568
 msgid "Go to previous line"
 msgstr "Téigh go dtí an líne roimhe seo"
 
-#: src/global.c:573
+#: src/global.c:569
 msgid "Go to next line"
 msgstr "Téigh go dtí an chéad líne eile"
 
-#: src/global.c:574
+#: src/global.c:570
 msgid "Go to beginning of current line"
 msgstr "Téigh go tús na líne reatha"
 
-#: src/global.c:575
+#: src/global.c:571
 msgid "Go to end of current line"
 msgstr "Téigh go deireadh na líne reatha"
 
-#: src/global.c:576
+#: src/global.c:572
 msgid "Go to previous block of text"
 msgstr "Téigh go dtí an bloc téacs roimhe seo"
 
-#: src/global.c:577
+#: src/global.c:573
 msgid "Go to next block of text"
 msgstr "Téigh go dtí an chéad bhloc téacs eile"
 
-#: src/global.c:580
+#: src/global.c:576
 msgid "Go to beginning of paragraph; then of previous paragraph"
 msgstr "Téigh go tús an ailt reatha; ansin an ceann roimhe sin"
 
-#: src/global.c:582
+#: src/global.c:578
 msgid "Go just beyond end of paragraph; then of next paragraph"
 msgstr "Téigh thar deireadh an ailt reatha; ansin an t-alt tar éis sin"
 
-#: src/global.c:584
+#: src/global.c:580
 msgid "Go to the first line of the file"
 msgstr "Téigh go dtí an chéad líne sa chomhad"
 
-#: src/global.c:585
+#: src/global.c:581
 msgid "Go to the last line of the file"
 msgstr "Téigh go dtí an líne dheiridh sa chomhad"
 
-#: src/global.c:587
+#: src/global.c:583
 msgid "Go to the matching bracket"
 msgstr "Téigh go dtí an lúibín a mheaitseálann"
 
-#: src/global.c:591
+#: src/global.c:587
 #, fuzzy
 msgid "Scroll up one line without moving the cursor textually"
 msgstr "Scrollaigh suas líne amháin, ach ná scrollaigh an cúrsóir"
 
-#: src/global.c:593
+#: src/global.c:589
 #, fuzzy
 msgid "Scroll down one line without moving the cursor textually"
 msgstr "Scrollaigh síos líne amháin, ach ná scrollaigh an cúrsóir"
 
-#: src/global.c:596
+#: src/global.c:592
 msgid "Switch to the previous file buffer"
 msgstr "Athraigh go dtí an maolán roimhe seo"
 
-#: src/global.c:597
+#: src/global.c:593
 msgid "Switch to the next file buffer"
 msgstr "Athraigh go dtí an chéad mhaolán eile"
 
-#: src/global.c:599
+#: src/global.c:595
 msgid "Insert the next keystroke verbatim"
 msgstr "Ionsáigh an chéad charachtar eile go litriúil"
 
-#: src/global.c:600
+#: src/global.c:596
 msgid "Insert a tab at the cursor position"
 msgstr "Ionsáigh táb ag an gcúrsóir"
 
-#: src/global.c:601
+#: src/global.c:597
 msgid "Insert a newline at the cursor position"
 msgstr "Ionsáigh líne nua ag an gcúrsóir"
 
-#: src/global.c:602
+#: src/global.c:598
 msgid "Delete the character under the cursor"
 msgstr "Scrios an carachtar faoin chúrsóir"
 
-#: src/global.c:604
+#: src/global.c:600
 msgid "Delete the character to the left of the cursor"
 msgstr "Scrios an carachtar ar an taobh clé den chúrsóir"
 
-#: src/global.c:607
+#: src/global.c:603
 msgid "Cut backward from cursor to word start"
 msgstr "Gearr ar gcúl ón chúrsóir go dtí tús an fhocail"
 
-#: src/global.c:609
+#: src/global.c:605
 msgid "Cut forward from cursor to next word start"
 msgstr "Gearr ar aghaidh ón chúrsóir go dtí tús an chéad fhocail eile"
 
-#: src/global.c:611
+#: src/global.c:607
 msgid "Cut from the cursor position to the end of the file"
 msgstr "Gearr ón chúrsóir go dtí deireadh an chomhaid"
 
-#: src/global.c:614
+#: src/global.c:610
 msgid "Justify the current paragraph"
 msgstr "Comhfhadaigh an t-alt reatha"
 
-#: src/global.c:615
+#: src/global.c:611
 msgid "Justify the entire file"
 msgstr "Comhfhadaigh an comhad iomlán"
 
-#: src/global.c:619
+#: src/global.c:615
 msgid "Count the number of words, lines, and characters"
 msgstr "Áirigh líon na bhfocal, líon na línte, agus líon na gcarachtar"
 
-#: src/global.c:622
+#: src/global.c:618
 msgid "Refresh (redraw) the current screen"
 msgstr "Athnuaigh (ataispeáin) an scáileán reatha"
 
-#: src/global.c:624
+#: src/global.c:620
 msgid "Suspend the editor (if suspension is enabled)"
 msgstr "Cuir an t-eagarthóir ar fionraí (más féidir)"
 
-#: src/global.c:626
+#: src/global.c:622
 msgid "Try and complete the current word"
 msgstr "Déan iarracht an focal reatha a chríochnú"
 
-#: src/global.c:630
+#: src/global.c:626
 msgid "Comment/uncomment the current line (or marked lines)"
 msgstr "Athraigh stádas nóta tráchta den líne reatha (nó na línte marcáilte)"
 
-#: src/global.c:632
+#: src/global.c:628
 msgid "Save file without prompting"
 msgstr "Sábháil an comhad gan deimhniú"
 
-#: src/global.c:634
+#: src/global.c:629
 msgid "Search next occurrence backward"
 msgstr "An chéad toradh eile ar gcúl"
 
-#: src/global.c:635
+#: src/global.c:630
 msgid "Search next occurrence forward"
 msgstr "An chéad toradh eile ar aghaidh"
 
-#: src/global.c:636
+#: src/global.c:632
 msgid "Start/stop recording a macro"
 msgstr "Tosaigh/stop macra a thaifeadadh"
 
-#: src/global.c:637
+#: src/global.c:633
 msgid "Run the last recorded macro"
 msgstr "Rith an macra taifeadta is déanaí"
 
-#: src/global.c:640
+#: src/global.c:636
 msgid "Toggle the case sensitivity of the search"
 msgstr "Scoránaigh cásíogaireacht"
 
-#: src/global.c:642
+#: src/global.c:638
 msgid "Reverse the direction of the search"
 msgstr "Scoránaigh treo an chuardaigh"
 
-#: src/global.c:644
+#: src/global.c:640
 msgid "Toggle the use of regular expressions"
 msgstr "Scoránaigh úsáid slonn ionadaíochta"
 
-#: src/global.c:647
+#: src/global.c:643
 msgid "Recall the previous search/replace string"
 msgstr "Athghair an teaghrán cuardaigh roimhe seo"
 
-#: src/global.c:649
+#: src/global.c:645
 msgid "Recall the next search/replace string"
 msgstr "Athghair an chéad teaghrán cuardaigh eile"
 
-#: src/global.c:652
+#: src/global.c:648
 msgid "Toggle the use of DOS format"
 msgstr "Scoránaigh úsáid d'fhormáid DOS"
 
-#: src/global.c:653
+#: src/global.c:649
 msgid "Toggle the use of Mac format"
 msgstr "Scoránaigh úsáid d'fhormáid Mac"
 
-#: src/global.c:654
+#: src/global.c:650
 msgid "Toggle appending"
 msgstr "Scoránaigh iarcheangal"
 
-#: src/global.c:655
+#: src/global.c:651
 msgid "Toggle prepending"
 msgstr "Scoránaigh réamhcheangal"
 
-#: src/global.c:656
+#: src/global.c:652
 msgid "Toggle backing up of the original file"
 msgstr "Scoránaigh cúltacaí"
 
-#: src/global.c:657
+#: src/global.c:653
 msgid "Execute external command"
 msgstr "Rith ordú seachtrach"
 
-#: src/global.c:659
+#: src/global.c:655
 #, fuzzy
 msgid "Pipe the current buffer (or marked region) to the command"
 msgstr "Scríobh an comhad reatha (nó an réigiún marcáilte) ar an diosca"
 
-#: src/global.c:662
+#: src/global.c:656
+#, fuzzy
+msgid "Do not convert from DOS/Mac format"
+msgstr "Ná tiontaigh comhaid ó fhormáid Dos/Mac"
+
+#: src/global.c:659
 msgid "Toggle the use of a new buffer"
 msgstr "Scoránaigh úsáid mhaoláin nua"
 
-#: src/global.c:664
+#: src/global.c:661
 msgid "Close buffer without saving it"
 msgstr "Dún an maolán gan sábháil"
 
-#: src/global.c:666
+#: src/global.c:663
 msgid "Go to file browser"
 msgstr "Oscail brabhsálaí na gcomhad"
 
-#: src/global.c:667
+#: src/global.c:664
 msgid "Exit from the file browser"
 msgstr "Scoir brabhsálaí na gcomhad"
 
-#: src/global.c:668
+#: src/global.c:665
 msgid "Go to the first file in the list"
 msgstr "Téigh go dtí an chéad chomhad sa liosta"
 
-#: src/global.c:669
+#: src/global.c:666
 msgid "Go to the last file in the list"
 msgstr "Téigh go dtí an comhad deiridh sa liosta"
 
-#: src/global.c:670
+#: src/global.c:667
 msgid "Go to the previous file in the list"
 msgstr "Téigh go dtí an comhad roimhe seo sa liosta"
 
-#: src/global.c:671
+#: src/global.c:668
 msgid "Go to the next file in the list"
 msgstr "Téigh go dtí an chéad chomhad eile sa liosta"
 
-#: src/global.c:672
+#: src/global.c:669
 msgid "Go to directory"
 msgstr "Téigh go comhadlann"
 
-#: src/global.c:675
+#: src/global.c:672
 msgid "Invoke the linter, if available"
 msgstr "Rith glantóir cóid (lint), má tá ceann ar fáil"
 
-#: src/global.c:676
+#: src/global.c:673
 msgid "Go to previous linter msg"
 msgstr "An tcht roimhe seo ó lint"
 
-#: src/global.c:677
+#: src/global.c:674
 msgid "Go to next linter msg"
 msgstr "An chéad tcht eile ó lint"
 
-#: src/global.c:679
-msgid "Invoke formatter, if available"
-msgstr "Rith formáiditheoir, má tá ceann ar fáil"
-
-#. TRANSLATORS: Try to keep the following strings at most 10 characters.
-#: src/global.c:694
+#. TRANSLATORS: Try to keep the next ninety strings or so at most 10
+#. * characters.  Some strings may be longer -- run nano and see.
+#: src/global.c:689
 msgid "Get Help"
 msgstr "Cabhair"
 
-#: src/global.c:697 src/prompt.c:711
+#: src/global.c:692 src/prompt.c:706
 msgid "Cancel"
 msgstr "Cealaigh"
 
-#: src/global.c:710
+#: src/global.c:705
 msgid "Write Out"
 msgstr "Scríobh"
 
-#: src/global.c:749
+#: src/global.c:715 src/global.c:1031
+msgid "Read File"
+msgstr "Léigh"
+
+#: src/global.c:726 src/global.c:762
+msgid "Justify"
+msgstr "Comhfhadú"
+
+#: src/global.c:733 src/global.c:748 src/global.c:949
+msgid "Refresh"
+msgstr "Athnuaigh"
+
+#: src/global.c:738 src/global.c:830
+msgid "Where Is"
+msgstr "Cuardach"
+
+#: src/global.c:741 src/global.c:806
+msgid "Replace"
+msgstr "Ionadaigh"
+
+#: src/global.c:745
 msgid "Go To Dir"
 msgstr "OsclComdln"
 
-#: src/global.c:766
+#: src/global.c:752
 msgid "Cut Text"
 msgstr "Gearr"
 
-#: src/global.c:781
+#: src/global.c:767
 msgid "To Spell"
 msgstr "Litreoir"
 
-#: src/global.c:785
+#: src/global.c:771
 msgid "To Linter"
 msgstr "Glantóir"
 
-#: src/global.c:788
-msgid "Formatter"
-msgstr "Formáidiú"
-
-#: src/global.c:794
+#: src/global.c:776
 msgid "Cur Pos"
 msgstr "Cúrsóir"
 
-#: src/global.c:806
+#: src/global.c:783 src/global.c:816 src/global.c:906 src/global.c:986
+msgid "Go To Line"
+msgstr "Téigh Go Líne"
+
+#: src/global.c:788
 msgid "Undo"
 msgstr "Cealaigh"
 
-#: src/global.c:808
+#: src/global.c:790
 msgid "Redo"
 msgstr "Athdhéan"
 
-#: src/global.c:811
+#: src/global.c:793
 msgid "Mark Text"
 msgstr "MarcáilTcs"
 
-#: src/global.c:813
+#: src/global.c:795
 msgid "Copy Text"
 msgstr "CóipTéacs"
 
-#: src/global.c:817
+#: src/global.c:799
 msgid "Case Sens"
 msgstr "Cásíogair"
 
-#: src/global.c:819
+#: src/global.c:801
 msgid "Regexp"
 msgstr "Slonn"
 
-#: src/global.c:821
+#: src/global.c:803
 msgid "Backwards"
 msgstr "Siar"
 
-#: src/global.c:827
+#: src/global.c:809
 msgid "No Replace"
 msgstr "Gan Ionadú"
 
-#: src/global.c:839
+#: src/global.c:813 src/global.c:937
+msgid "FullJstify"
+msgstr "LánComhfhadú"
+
+#: src/global.c:821
 msgid "To Bracket"
 msgstr "Go Lúibín"
 
-#: src/global.c:845
+#: src/global.c:825 src/global.c:975
+msgid "Save"
+msgstr "Sábháil"
+
+#. TRANSLATORS: This starts a backward search.
+#: src/global.c:832 src/global.c:836
+msgid "Where Was"
+msgstr "LorgArgCúl"
+
+#: src/global.c:838
 msgid "Previous"
 msgstr "Roimhe Seo"
 
-#: src/global.c:847
+#: src/global.c:840
 msgid "Next"
 msgstr "Ar Aghaidh"
 
-#: src/global.c:851 src/global.c:856
+#. TRANSLATORS: This means move the cursor one character back.
+#: src/global.c:844 src/global.c:849
 msgid "Back"
 msgstr "Siar"
 
-#: src/global.c:853 src/global.c:858
+#: src/global.c:846 src/global.c:851
 msgid "Forward"
 msgstr "Ar Aghaidh"
 
-#: src/global.c:862
+#: src/global.c:855
 msgid "Prev Word"
 msgstr "FocalRmh"
 
-#: src/global.c:864
+#: src/global.c:857
 msgid "Next Word"
 msgstr "FocalArA"
 
-#: src/global.c:867
+#: src/global.c:860
 msgid "Home"
 msgstr "Baile"
 
-#: src/global.c:869
+#: src/global.c:862
 msgid "End"
 msgstr "Deireadh"
 
-#: src/global.c:877
+#: src/global.c:865
+msgid "Prev Line"
+msgstr "An Líne Roimhe Seo"
+
+#: src/global.c:867
+msgid "Next Line"
+msgstr "An Chéad Líne Eile"
+
+#: src/global.c:870
 msgid "Scroll Up"
 msgstr "ScrollSuas"
 
-#: src/global.c:879
+#: src/global.c:872
 msgid "Scroll Down"
 msgstr "ScrollSíos"
 
-#: src/global.c:883
+#: src/global.c:876
 msgid "Prev Block"
 msgstr "BlocRmhSeo"
 
-#: src/global.c:885
+#: src/global.c:878
 msgid "Next Block"
 msgstr "BlocArAgh"
 
-#: src/global.c:888
+#: src/global.c:881
 msgid "Beg of Par"
 msgstr "BarrAnAilt"
 
-#: src/global.c:890
+#: src/global.c:883
 msgid "End of Par"
 msgstr "DeirAnAilt"
 
-#: src/global.c:899
+# main menu - keep short?
+#: src/global.c:887 src/global.c:1041 src/global.c:1043
+msgid "Prev Page"
+msgstr "Ar Ais"
+
+# main menu - keep short?
+#: src/global.c:889
+msgid "Next Page"
+msgstr "Ar Aghaidh"
+
+#: src/global.c:892
 msgid "First Line"
 msgstr "Chéad Líne"
 
-#: src/global.c:901
+#: src/global.c:894
 msgid "Last Line"
 msgstr "LíneDheir"
 
-#: src/global.c:905
+#: src/global.c:898
 msgid "Prev File"
 msgstr "ComhadRmh"
 
-#: src/global.c:907
+#: src/global.c:900
 msgid "Next File"
 msgstr "ComhadArA"
 
-#: src/global.c:923
+#: src/global.c:910
 msgid "Tab"
 msgstr "Táb"
 
-#: src/global.c:925
+#: src/global.c:912
 msgid "Enter"
 msgstr "Iontráil"
 
-#: src/global.c:928
+#: src/global.c:915
 msgid "Delete"
 msgstr "Scrios"
 
-#: src/global.c:930
+#: src/global.c:917
 msgid "Backspace"
 msgstr "Cúlspás"
 
 #. TRANSLATORS: The next two strings refer to cutting words.
-#: src/global.c:941
+#: src/global.c:928
 msgid "Cut Left"
 msgstr "GearrArClé"
 
-#: src/global.c:943
+#: src/global.c:930
 msgid "Cut Right"
 msgstr "GrrArDheis"
 
-#: src/global.c:945
+#: src/global.c:932
 msgid "CutTillEnd"
 msgstr "GearrGoBun"
 
-#: src/global.c:955
+#: src/global.c:942
 msgid "Word Count"
 msgstr "LíonFocal"
 
-#: src/global.c:959
+#: src/global.c:946
 msgid "Verbatim"
 msgstr "Litriúil"
 
-#: src/global.c:965
+#: src/global.c:952
 msgid "Suspend"
 msgstr "ArFionraí"
 
-#: src/global.c:969
-msgid "Indent Text"
-msgstr "EangúTéacs"
+#: src/global.c:956
+#, fuzzy
+msgid "Indent"
+msgstr "eangú"
 
-#: src/global.c:971
-msgid "Unindent Text"
-msgstr "DíeangúTcs"
+#: src/global.c:958
+#, fuzzy
+msgid "Unindent"
+msgstr "dí-eangú"
 
-#: src/global.c:975
+#: src/global.c:962
 msgid "Comment Lines"
 msgstr "NótaíTrcht"
 
-#: src/global.c:979
+#: src/global.c:966
 msgid "Complete"
 msgstr "Críochnaigh"
 
-#: src/global.c:983
+#: src/global.c:970
 msgid "Record"
 msgstr "Taifead"
 
-#: src/global.c:985
+#: src/global.c:972
 msgid "Run Macro"
 msgstr "Rith Macra"
 
-#. TRANSLATORS: This starts a backward search.
-#: src/global.c:989
-msgid "Where Was"
-msgstr "LorgArgCúl"
-
-#: src/global.c:992
-msgid "Save"
-msgstr "Sábháil"
-
-#: src/global.c:996
+#: src/global.c:979
 msgid "PrevHstory"
 msgstr "StairArAis"
 
-#: src/global.c:998
+#: src/global.c:981
 msgid "NextHstory"
 msgstr "StairArAgh"
 
-#: src/global.c:1007
+#: src/global.c:990
 msgid "Go To Text"
 msgstr "TéighTéacs"
 
-#: src/global.c:1011
+#: src/global.c:994
 msgid "DOS Format"
 msgstr "FormáidDOS"
 
-#: src/global.c:1013
+#: src/global.c:996
 msgid "Mac Format"
 msgstr "FormáidMac"
 
-#: src/global.c:1021
+#: src/global.c:1004
 msgid "Append"
 msgstr "Iarcheangal"
 
-#: src/global.c:1023
+#: src/global.c:1006
 msgid "Prepend"
 msgstr "Réamhcheangl"
 
-#: src/global.c:1026
+#: src/global.c:1009
 msgid "Backup File"
 msgstr "Cúltaca"
 
-#: src/global.c:1032
+#: src/global.c:1020
+#, fuzzy
+msgid "No Conversion"
+msgstr "leagan"
+
+#: src/global.c:1025
 msgid "Execute Command"
 msgstr "Rith Ordú"
 
-#: src/global.c:1047
+#: src/global.c:1028
 #, fuzzy
 msgid "Pipe Text"
 msgstr "CóipTéacs"
 
-#: src/global.c:1053
+#: src/global.c:1038
 msgid "To Files"
 msgstr "Go Comhaid"
 
-#: src/global.c:1061
+#: src/global.c:1046
 msgid "First File"
 msgstr "ChéadChmhd"
 
-#: src/global.c:1063
+#: src/global.c:1048
 msgid "Last File"
 msgstr "ComhadDeir"
 
-#: src/global.c:1066
+#: src/global.c:1051
 msgid "Left Column"
 msgstr "ColArChlé"
 
-#: src/global.c:1068
+#: src/global.c:1053
 msgid "Right Column"
 msgstr "ColArDheis"
 
-#: src/global.c:1070
+#: src/global.c:1055
 msgid "Top Row"
 msgstr "AnChéadRó"
 
-#: src/global.c:1072
+#: src/global.c:1057
 msgid "Bottom Row"
 msgstr "RóDeiridh"
 
-#: src/global.c:1077
+#: src/global.c:1062
 msgid "Discard buffer"
 msgstr "ScrsMaoln"
 
 #. TRANSLATORS: Try to keep the next two strings at most 20 characters.
-#: src/global.c:1082
+#: src/global.c:1067
 msgid "Prev Lint Msg"
 msgstr "Tcht Lint Roimhe Seo"
 
-#: src/global.c:1084
+#: src/global.c:1069
 msgid "Next Lint Msg"
 msgstr "Chéad Tcht Lint Eile"
 
-#. TRANSLATORS: The next eighteen strings are toggle descriptions;
+#. TRANSLATORS: The next fourteen strings are toggle descriptions;
 #. * they are best kept shorter than 40 characters, but may be longer.
-#: src/global.c:1418
+#: src/global.c:1390
 msgid "Help mode"
 msgstr "Mód cabhrach"
 
-#: src/global.c:1420
+#: src/global.c:1392
 msgid "Constant cursor position display"
 msgstr "Taispeáin ionad an chúrsóra i gcónaí"
 
-#: src/global.c:1422
-msgid "Use of one more line for editing"
-msgstr "Úsáid líne amháin eile le haghaidh eagarthóireachta"
-
-#: src/global.c:1424
+#: src/global.c:1394
 msgid "Smooth scrolling"
 msgstr "Mínscrollú"
 
-#: src/global.c:1426
+#: src/global.c:1396
 msgid "Soft wrapping of overlong lines"
 msgstr "Timfhilleadh bog de línte fada"
 
-#: src/global.c:1428
+#: src/global.c:1398
 msgid "Whitespace display"
 msgstr "Taispeáint spáis bháin"
 
-#: src/global.c:1430
+#: src/global.c:1400
 msgid "Color syntax highlighting"
 msgstr "Aibhsiú comhréire le dathanna"
 
-#: src/global.c:1432
+#: src/global.c:1402
 msgid "Smart home key"
 msgstr "Eochair bhaile chliste"
 
-#: src/global.c:1434
+#: src/global.c:1404
 msgid "Auto indent"
 msgstr "Uath-eangú"
 
-#: src/global.c:1436
+#: src/global.c:1406
 msgid "Cut to end"
 msgstr "Gearr go dtí an deireadh"
 
-#: src/global.c:1438
+#: src/global.c:1408
 msgid "Hard wrapping of overlong lines"
 msgstr "Timfhilleadh crua de línte fada"
 
-#: src/global.c:1440
+#: src/global.c:1410
 msgid "Conversion of typed tabs to spaces"
 msgstr "Tiontaigh táib chlóscríofa go spásanna"
 
-#: src/global.c:1442
-msgid "Backup files"
-msgstr "Comhaid chúltaca"
-
-#: src/global.c:1444
-msgid "Reading file into separate buffer"
-msgstr "Comhad á léamh i maolán ar leith"
-
-#: src/global.c:1446
+#: src/global.c:1412
 msgid "Mouse support"
 msgstr "Tacaíocht luiche"
 
-#: src/global.c:1448
-msgid "No conversion from DOS/Mac format"
-msgstr "Ná tiontaigh ó fhormáid DOS/Mac"
-
-#: src/global.c:1450
+#: src/global.c:1414
 msgid "Suspension"
 msgstr "Cur ar Fionraí"
 
-#: src/global.c:1452
+#: src/global.c:1416
 msgid "Line numbering"
 msgstr "Uimhriú línte"
 
@@ -1442,15 +1477,14 @@ msgstr ""
 "\n"
 
 #: src/help.c:414
+#, fuzzy
 msgid ""
 "Execute Command Help Text\n"
 "\n"
 " This mode allows you to insert the output of a command run by the shell "
-"into the current buffer (or a new buffer in multiple file buffer mode).  If "
-"you need another blank buffer, do not enter any command.\n"
-"\n"
-" The following function keys are available in Execute Command mode:\n"
-"\n"
+"into the current buffer (or into a new buffer).  If the command is preceded "
+"by '|' (the pipe symbol), the current contents of the buffer (or marked "
+"region) will be piped to the command.  "
 msgstr ""
 "Cabhair: Rith Ordú\n"
 "\n"
@@ -1461,7 +1495,23 @@ msgstr ""
 " Tá na heochracha feidhme seo a leanas ar fáil sa mhód \"Rith Ordú\":\n"
 "\n"
 
-#: src/help.c:427
+#: src/help.c:420
+msgid ""
+"If you just need another blank buffer, do not enter any command.\n"
+"\n"
+msgstr ""
+
+#: src/help.c:422
+#, fuzzy
+msgid ""
+" The following function keys are available in Execute Command mode:\n"
+"\n"
+msgstr ""
+" Tá na heochracha feidhme seo a leanas ar fáil sa mhód \"Cuardach Brabhsálaí"
+"\":\n"
+"\n"
+
+#: src/help.c:428
 msgid ""
 "Main nano help text\n"
 "\n"
@@ -1482,7 +1532,7 @@ msgstr ""
 "an comhad atá in eagar.  Taispeántar teachtaireachtaí tábhachtacha ar an "
 "líne stádais, an tríú líne ó bhun an scáileáin.  "
 
-#: src/help.c:437
+#: src/help.c:438
 msgid ""
 "The bottom two lines show the most commonly used shortcuts in the editor.\n"
 "\n"
@@ -1499,7 +1549,7 @@ msgstr ""
 "leis an tsiombail Meta (M-), agus is féidir iad féin a chur isteach le ceann "
 "de Esc, Alt, nó Meta, ag brath ar shocruithe do mhéarchlár.  "
 
-#: src/help.c:444
+#: src/help.c:445
 msgid ""
 "Also, pressing Esc twice and then typing a three-digit decimal number from "
 "000 to 255 will enter the character with the corresponding value.  The "
@@ -1513,7 +1563,7 @@ msgstr ""
 "eagarthóra.  Taispeántar eochracha malartacha idir lúibíní:\n"
 "\n"
 
-#: src/help.c:476 src/help.c:557
+#: src/help.c:477 src/help.c:558
 msgid "enable/disable"
 msgstr "(cumasú/díchumasú)"
 
@@ -1551,19 +1601,19 @@ msgstr ""
 msgid "Error writing %s: %s\n"
 msgstr "Earráid agus %s á scríobh: %s\n"
 
-#: src/nano.c:536
+#: src/nano.c:543
 msgid "Key is invalid in view mode"
 msgstr "Eochair neamhcheadaithe sa mhód amhairc"
 
-#: src/nano.c:542
+#: src/nano.c:549
 msgid "This function is disabled in restricted mode"
 msgstr "Níl an fheidhm seo ar fáil sa mhód teoranta"
 
-#: src/nano.c:550
+#: src/nano.c:557
 msgid "Help is not available"
 msgstr "Níl cabhair ar fáil"
 
-#: src/nano.c:650
+#: src/nano.c:660
 #, c-format
 msgid ""
 "\n"
@@ -1572,7 +1622,7 @@ msgstr ""
 "\n"
 "Scríobhadh an maolán i %s\n"
 
-#: src/nano.c:652
+#: src/nano.c:662
 #, c-format
 msgid ""
 "\n"
@@ -1581,7 +1631,7 @@ msgstr ""
 "\n"
 "Níor scríobhadh an maolán i %s: %s\n"
 
-#: src/nano.c:655
+#: src/nano.c:665
 #, c-format
 msgid ""
 "\n"
@@ -1590,7 +1640,7 @@ msgstr ""
 "\n"
 "Níor scríobhadh an maolán: %s\n"
 
-#: src/nano.c:764
+#: src/nano.c:773
 #, c-format
 msgid ""
 "Usage: nano [OPTIONS] [[+LINE[,COLUMN]] FILE]...\n"
@@ -1601,7 +1651,7 @@ msgstr ""
 
 #. TRANSLATORS: The next two strings are part of the --help output.
 #. * It's best to keep its lines within 80 characters.
-#: src/nano.c:767
+#: src/nano.c:776
 #, c-format
 msgid ""
 "To place the cursor on a specific line of a file, put the line number with\n"
@@ -1611,7 +1661,7 @@ msgstr ""
 "'+' roimh ainm an chomhaid. Is féidir uimhir an cholúin a chur tar éis "
 "camóg.\n"
 
-#: src/nano.c:769
+#: src/nano.c:778
 #, c-format
 msgid ""
 "When a filename is '-', nano reads data from standard input.\n"
@@ -1620,280 +1670,280 @@ msgstr ""
 "Má thugtar '-' mar ainm comhaid, léann nano sonraí ón ionchur caighdeánach.\n"
 "\n"
 
-#: src/nano.c:770
+#: src/nano.c:779
 #, c-format
 msgid "Option\t\tGNU long option\t\tMeaning\n"
 msgstr "Rogha\t\tRogha fhada GNU\t\tMíniú\n"
 
 #. TRANSLATORS: The next forty or so strings are option descriptions
 #. * for the --help output.  Try to keep them at most 40 characters.
-#: src/nano.c:774
+#: src/nano.c:783
 msgid "Enable smart home key"
 msgstr "Cumasaigh eochair bhaile chliste"
 
-#: src/nano.c:776
+#: src/nano.c:785
 msgid "Save backups of existing files"
 msgstr "Sábháil cúltacaí de chomhaid atá ann cheana"
 
-#: src/nano.c:777
+#: src/nano.c:786
 msgid "-C <dir>"
 msgstr "-C <comhadlann>"
 
-#: src/nano.c:777
+#: src/nano.c:786
 msgid "--backupdir=<dir>"
 msgstr "--backupdir=<comhadlann>"
 
-#: src/nano.c:778
+#: src/nano.c:787
 msgid "Directory for saving unique backup files"
 msgstr "Comhadlann a sábhálfar comhaid uathúla chúltaca inti"
 
-#: src/nano.c:781
+#: src/nano.c:790
 msgid "Use bold instead of reverse video text"
 msgstr "Úsáid cló trom in ionad téacs aisiompaithe"
 
-#: src/nano.c:783
+#: src/nano.c:792
 msgid "Convert typed tabs to spaces"
 msgstr "Tiontaigh táib chlóscríofa go spásanna"
 
-#: src/nano.c:788
+#: src/nano.c:797
 msgid "Read a file into a new buffer by default"
 msgstr "Léigh comhad i maolán nua de réir réamhshocraithe"
 
-#: src/nano.c:791
+#: src/nano.c:800
 msgid "Use (vim-style) lock files"
 msgstr "Úsáid comhaid ghlasála (ar nós vim)"
 
-#: src/nano.c:796
+#: src/nano.c:805
 msgid "Log & read search/replace string history"
 msgstr "Logáil agus léigh stair na dteaghrán cuardaigh"
 
-#: src/nano.c:800
+#: src/nano.c:809
 msgid "Don't look at nanorc files"
 msgstr "Ná húsáid comhaid nanorc"
 
-#: src/nano.c:803
+#: src/nano.c:812
 msgid "Fix numeric keypad key confusion problem"
 msgstr "Deisigh mearbhall maidir leis an eochaircheap uimhriúil"
 
-#: src/nano.c:805
+#: src/nano.c:814
 msgid "Don't add newlines to the ends of files"
 msgstr "Ná cuir carachtair líne nua ag deireadh comhad"
 
-#: src/nano.c:808
+#: src/nano.c:817
 msgid "Trim tail spaces when hard-wrapping"
 msgstr ""
 "Scrios spásanna ó dheireadh na líne agus timfhilleadh crua á chur i bhfeidhm"
 
-#: src/nano.c:812
+#: src/nano.c:821
 msgid "Don't convert files from DOS/Mac format"
 msgstr "Ná tiontaigh comhaid ó fhormáid Dos/Mac"
 
-#: src/nano.c:814
+#: src/nano.c:823
 msgid "Use one more line for editing"
 msgstr "Úsáid líne amháin eile le haghaidh eagarthóireachta"
 
-#: src/nano.c:818
+#: src/nano.c:827
 msgid "Log & read location of cursor position"
 msgstr "Lógáil agus léigh ionadaithe an chúrsóra"
 
-#: src/nano.c:821
+#: src/nano.c:830
 #, fuzzy
 msgid "-Q <regex>"
 msgstr "-Q <teaghrán>"
 
-#: src/nano.c:821
+#: src/nano.c:830
 #, fuzzy
 msgid "--quotestr=<regex>"
 msgstr "--quotestr=<teaghrán>"
 
-#: src/nano.c:822
+#: src/nano.c:831
 msgid "Regular expression to match quoting"
 msgstr ""
 
-#: src/nano.c:825
+#: src/nano.c:834
 msgid "Restricted mode"
 msgstr "Mód teoranta"
 
-#: src/nano.c:827
+#: src/nano.c:836
 msgid "Scroll by line instead of half-screen"
 msgstr "Scrollaigh de réir línte in ionad leathscáileáin"
 
-#: src/nano.c:829
+#: src/nano.c:838
 msgid "-T <#cols>"
 msgstr "-T <#colúin>"
 
-#: src/nano.c:829
+#: src/nano.c:838
 msgid "--tabsize=<#cols>"
 msgstr "--tabsize=<#colúin>"
 
-#: src/nano.c:830
+#: src/nano.c:839
 msgid "Set width of a tab to #cols columns"
 msgstr "Socraigh leithead de tháib a bheith #colúin"
 
-#: src/nano.c:831
+#: src/nano.c:840
 msgid "Do quick statusbar blanking"
 msgstr "Bánaigh an barra stádais go gasta"
 
-#: src/nano.c:832
+#: src/nano.c:841
 msgid "Print version information and exit"
 msgstr "Taispeáin eolas faoin leagan agus scoir"
 
-#: src/nano.c:835
+#: src/nano.c:844
 msgid "Detect word boundaries more accurately"
 msgstr "Braith teorainneacha idir focail i slí níos cruinne"
 
-#: src/nano.c:836
+#: src/nano.c:845
 msgid "-X <str>"
 msgstr "-X <teaghrán>"
 
-#: src/nano.c:836
+#: src/nano.c:845
 msgid "--wordchars=<str>"
 msgstr "--wordchars=<teaghrán>"
 
-#: src/nano.c:837
+#: src/nano.c:846
 msgid "Which other characters are word parts"
 msgstr "Carachtair eile mar chuid d'fhocail"
 
-#: src/nano.c:841
+#: src/nano.c:850
 msgid "-Y <name>"
 msgstr "-Y <ainm>"
 
-#: src/nano.c:841
+#: src/nano.c:850
 msgid "--syntax=<name>"
 msgstr "--syntax=<ainm>"
 
-#: src/nano.c:842
+#: src/nano.c:851
 msgid "Syntax definition to use for coloring"
 msgstr "Sainmhíniú na comhréire le haghaidh dathaithe"
 
-#: src/nano.c:845
+#: src/nano.c:854
 msgid "When soft-wrapping, do it at whitespace"
 msgstr "Déan timfhilleadh bog ag spás bán"
 
-#: src/nano.c:847
+#: src/nano.c:856
 msgid "Constantly show cursor position"
 msgstr "Taispeáin ionad an chúrsóra i gcónaí"
 
-#: src/nano.c:849
+#: src/nano.c:858
 msgid "Fix Backspace/Delete confusion problem"
 msgstr "Deisigh mearbhall idir na heochracha \"Backspace\" agus \"Delete\""
 
-#: src/nano.c:852
+#: src/nano.c:861
 msgid "Show cursor in file browser"
 msgstr "Taispeáin an cúrsóir i mbrabhsálaí comhad"
 
-#: src/nano.c:854
+#: src/nano.c:863
 msgid "Show this help text and exit"
 msgstr "Taispeáin an chabhair seo agus scoir"
 
-#: src/nano.c:856
+#: src/nano.c:865
 msgid "Automatically indent new lines"
 msgstr "Eangaigh línte nua go huathoibríoch"
 
-#: src/nano.c:857
+#: src/nano.c:866
 msgid "Cut from cursor to end of line"
 msgstr "Gearr ón chúrsóir go deireadh na líne"
 
-#: src/nano.c:860
+#: src/nano.c:869
 msgid "Show line numbers in front of the text"
 msgstr "Taispeáin uimhreacha línte"
 
-#: src/nano.c:863
+#: src/nano.c:872
 msgid "Enable the use of the mouse"
 msgstr "Cumasaigh úsáid na luiche"
 
-#: src/nano.c:865
+#: src/nano.c:874
 msgid "Do not read the file (only write it)"
 msgstr "Ná léigh an comhad (scríobh amháin)"
 
-#: src/nano.c:867
+#: src/nano.c:876
 msgid "-o <dir>"
 msgstr "-o <comhadlann>"
 
-#: src/nano.c:867
+#: src/nano.c:876
 msgid "--operatingdir=<dir>"
 msgstr "--operatingdir=<comhadlann>"
 
-#: src/nano.c:868
+#: src/nano.c:877
 msgid "Set operating directory"
 msgstr "Socraigh an chomhadlann oibre"
 
-#: src/nano.c:870
+#: src/nano.c:879
 msgid "Preserve XON (^Q) and XOFF (^S) keys"
 msgstr "Caomhnaigh eochracha XON (^Q) agus XOFF (^S)"
 
-#: src/nano.c:872
+#: src/nano.c:881
 msgid "-r <#cols>"
 msgstr "-r <#colúin>"
 
-#: src/nano.c:872
+#: src/nano.c:881
 msgid "--fill=<#cols>"
 msgstr "--fill=<#colúin>"
 
-#: src/nano.c:873
+#: src/nano.c:882
 msgid "Set hard-wrapping point at column #cols"
 msgstr "Socraigh timfhilleadh crua ag colún #colúin"
 
-#: src/nano.c:877
+#: src/nano.c:886
 msgid "-s <prog>"
 msgstr "-s <clár>"
 
-#: src/nano.c:877
+#: src/nano.c:886
 msgid "--speller=<prog>"
 msgstr "--speller=<clár>"
 
-#: src/nano.c:878
+#: src/nano.c:887
 msgid "Enable alternate speller"
 msgstr "Cumasaigh litreoir malartach"
 
-#: src/nano.c:880
+#: src/nano.c:889
 msgid "Auto save on exit, don't prompt"
 msgstr "Sábháil go huathoibríoch ag am scortha; ná fiafraigh díom"
 
-#: src/nano.c:882
+#: src/nano.c:891
 msgid "Save a file by default in Unix format"
 msgstr "Sábháil comhaid i bhformáid Unix de réir réamhshocraithe"
 
-#: src/nano.c:884
+#: src/nano.c:893
 msgid "View mode (read-only)"
 msgstr "Mód amhairc (inléite amháin)"
 
-#: src/nano.c:886
+#: src/nano.c:895
 msgid "Don't hard-wrap long lines"
 msgstr "Ná déan timfhilleadh ar línte fada"
 
-#: src/nano.c:888
+#: src/nano.c:897
 msgid "Don't show the two help lines"
 msgstr "Ná taispeáin an dá líne chabhrach"
 
-#: src/nano.c:890
+#: src/nano.c:899
 msgid "Make Ctrl+Right stop at word ends"
 msgstr ""
 
-#: src/nano.c:893
+#: src/nano.c:902
 msgid "Enable suspension"
 msgstr "Ceadaigh cur ar fionraí"
 
-#: src/nano.c:895
+#: src/nano.c:904
 msgid "Enable soft line wrapping"
 msgstr "Cumasaigh timfhilleadh bog"
 
-#: src/nano.c:907
+#: src/nano.c:916
 #, c-format
 msgid " GNU nano, version %s\n"
 msgstr " GNU nano, leagan %s\n"
 
-#: src/nano.c:910
+#: src/nano.c:919
 #, c-format
 msgid " (C) 2014-%s the contributors to nano\n"
 msgstr " © 2014-%s rannpháirtithe nano\n"
 
-#: src/nano.c:911
+#: src/nano.c:920
 #, c-format
 msgid " Email: nano@nano-editor.org\tWeb: https://nano-editor.org/"
 msgstr " R-phost: nano@nano-editor.org\tGréasán: https://nano-editor.org/"
 
-#: src/nano.c:912
+#: src/nano.c:921
 #, c-format
 msgid ""
 "\n"
@@ -1902,336 +1952,335 @@ msgstr ""
 "\n"
 " Roghanna tiomsaithe:"
 
-#: src/nano.c:1058
+#: src/nano.c:1067
 msgid "No file name"
 msgstr "Gan ainm comhaid"
 
-#: src/nano.c:1060
+#: src/nano.c:1069
 msgid "Save modified buffer?  (Answering \"No\" will DISCARD changes.) "
 msgstr "Sábháil athruithe? (\"No\" = ní sábhálfar athruithe.)"
 
-#: src/nano.c:1111
+#: src/nano.c:1116
 #, c-format
 msgid "Reading from standard input; type ^D or ^D^D to finish.\n"
 msgstr ""
 
-#: src/nano.c:1138
+#: src/nano.c:1143
 #, c-format
 msgid "Failed to open stdin: %s"
 msgstr "Níorbh fhéidir stdin a oscailt: %s"
 
-#: src/nano.c:1151
+#: src/nano.c:1156
 msgid "Couldn't reopen stdin from keyboard, sorry\n"
 msgstr "Níorbh fhéidir stdin a athoscailt ón mhéarchlár\n"
 
-#: src/nano.c:1232
+#: src/nano.c:1237
 msgid "Received SIGHUP or SIGTERM\n"
 msgstr "Fuarthas SIGHUP nó SIGTERM\n"
 
-#: src/nano.c:1239
+#: src/nano.c:1244
 #, c-format
 msgid "Sorry! Nano crashed!  Code: %d.  Please report a bug.\n"
 msgstr ""
 
-#: src/nano.c:1255
+#: src/nano.c:1260
 #, c-format
 msgid "Use \"fg\" to return to nano.\n"
 msgstr "Úsáid \"fg\" chun filleadh ar nano.\n"
 
-#: src/nano.c:1273
+#: src/nano.c:1278
 msgid "Suspension is not enabled"
 msgstr "Ní cheadaítear cur ar fionraí"
 
-#: src/nano.c:1418
+#: src/nano.c:1422
 msgid "enabled"
 msgstr "cumasaithe"
 
-#: src/nano.c:1418
+#: src/nano.c:1422
 msgid "disabled"
 msgstr "díchumasaithe"
 
-#: src/nano.c:1572
+#: src/nano.c:1576
 msgid "Unbound key"
 msgstr "Eochair neamhcheangailte"
 
-#: src/nano.c:1575
+#: src/nano.c:1579
 msgid "Unbindable key: M-["
 msgstr "Eochair nach féidir a cheangal: M-["
 
-#: src/nano.c:1577
+#: src/nano.c:1581
 #, c-format
 msgid "Unbound key: M-%c"
 msgstr "Eochair gan cheangal: M-%c"
 
-#: src/nano.c:1579
+#: src/nano.c:1583
 #, c-format
 msgid "Unbound key: ^%c"
 msgstr "Eochair gan cheangal: ^%c"
 
-#: src/nano.c:1581
+#: src/nano.c:1585
 #, c-format
 msgid "Unbound key: %c"
 msgstr "Eochair gan cheangal: %c"
 
-#: src/nano.c:2171 src/rcfile.c:1180
+#: src/nano.c:2174 src/rcfile.c:1167
 #, c-format
 msgid "Requested tab size \"%s\" is invalid"
 msgstr "Iarradh méid táib neamhbhailí \"%s\""
 
-#: src/nano.c:2248 src/rcfile.c:1119
+#: src/nano.c:2251 src/rcfile.c:1106
 #, c-format
 msgid "Requested fill size \"%s\" is invalid"
 msgstr "Iarradh méid líonta neamhbhailí \"%s\""
 
-#: src/nano.c:2306
+#: src/nano.c:2309
 #, c-format
 msgid "Type '%s -h' for a list of available options.\n"
 msgstr "Úsáid '%s -h' chun liosta na roghanna a fháil.\n"
 
-#: src/nano.c:2616 src/search.c:787
+#: src/nano.c:2621 src/search.c:784
 msgid "Invalid line or column number"
 msgstr "Uimhir líne nó uimhir cholúin neamhbhailí"
 
-#: src/nano.c:2660
+#: src/nano.c:2669
 #, c-format
 msgid "Mistakes in '%s'"
 msgstr "Botúin i '%s'"
 
-#: src/nano.c:2665
+#: src/nano.c:2675
 msgid "Welcome to nano.  For basic help, type Ctrl+G."
 msgstr ""
 
 #. TRANSLATORS: For the next three strings, specify the starting letters
 #. * of the translations for "Yes"/"No"/"All".  The first letter of each of
 #. * these strings MUST be a single-byte letter; others may be multi-byte.
-#: src/prompt.c:674
+#: src/prompt.c:667
 msgid "Yy"
 msgstr "Ss"
 
-#: src/prompt.c:675
+#: src/prompt.c:668
 msgid "Nn"
 msgstr "Nn"
 
-#: src/prompt.c:676
+#: src/prompt.c:669
 msgid "Aa"
 msgstr "Uu"
 
-#: src/prompt.c:698
+#: src/prompt.c:693
 msgid "Yes"
 msgstr "Sábháil"
 
-#: src/prompt.c:702
+#: src/prompt.c:697
 msgid "No"
 msgstr "Ná Sábháil"
 
-#: src/prompt.c:707
+#: src/prompt.c:702
 msgid "All"
 msgstr "Uile"
 
-#: src/rcfile.c:152
+#: src/rcfile.c:151
 #, c-format
 msgid "Error in %s on line %zu: "
 msgstr "Earráid i %s ar líne %zu: "
 
-#: src/rcfile.c:203
+#: src/rcfile.c:202
 #, c-format
 msgid "Argument '%s' has an unterminated \""
 msgstr "Tá \" gan chríoch in argóint '%s'"
 
-#: src/rcfile.c:228 src/rcfile.c:691 src/rcfile.c:743 src/rcfile.c:823
+#: src/rcfile.c:227 src/rcfile.c:683 src/rcfile.c:735 src/rcfile.c:815
 msgid "Regex strings must begin and end with a \" character"
 msgstr ""
 "Ní mór carachtar \" a bheith ag tús agus ag deireadh sloinn ionadaíochta"
 
-#: src/rcfile.c:254 src/search.c:47
+#: src/rcfile.c:253 src/search.c:47
 #, c-format
 msgid "Bad regex \"%s\": %s"
 msgstr "Slonn ionadaíochta neamhbhailí \"%s\": %s"
 
-#: src/rcfile.c:273
+#: src/rcfile.c:272
 msgid "Missing syntax name"
 msgstr "Ainm comhréire ar iarraidh"
 
-#: src/rcfile.c:281
+#: src/rcfile.c:280
 msgid "Unpaired quote in syntax name"
 msgstr "Comhartha athfhriotail corr in ainm comhréire"
 
-#: src/rcfile.c:293
+#: src/rcfile.c:292
 msgid "The \"none\" syntax is reserved"
 msgstr "Comhréir \"none\" in áirithe"
 
-#: src/rcfile.c:324
+#: src/rcfile.c:318
 msgid "The \"default\" syntax does not accept extensions"
 msgstr "Ní cheadaítear eisínteachtaí leis an gcomhréir \"default\""
 
-#: src/rcfile.c:359
+#: src/rcfile.c:349
 msgid "Missing key name"
 msgstr "Ainm eochrach ar iarraidh"
 
-#: src/rcfile.c:368 src/rcfile.c:379
+#: src/rcfile.c:358 src/rcfile.c:369
 msgid "Key name is too short"
 msgstr "Ainm eochrach róghearr"
 
-#: src/rcfile.c:389
+#: src/rcfile.c:379
 msgid "Key name must begin with \"^\", \"M\", or \"F\""
 msgstr "Ní mór \"^\", \"M\", nó \"F\" a bheith ag tús ainm na heochrach"
 
-#: src/rcfile.c:392
+#: src/rcfile.c:382
 #, c-format
 msgid "Key name %s is invalid"
 msgstr "Ainm eochrach neamhbhailí %s"
 
-#: src/rcfile.c:401
+#: src/rcfile.c:391
 msgid "Must specify a function to bind the key to"
 msgstr "Ní mór duit feidhm a gceanglófar an eochair léi a thabhairt"
 
 #. TRANSLATORS: Do not translate the word "all".
-#: src/rcfile.c:412
+#: src/rcfile.c:402
 msgid "Must specify a menu (or \"all\") in which to bind/unbind the key"
 msgstr ""
 "Caithfidh tú roghchlár (nó \"all\") a shonrú ina gceanglófar an eochair"
 
-#: src/rcfile.c:430
+#: src/rcfile.c:420
 #, c-format
 msgid "Cannot map name \"%s\" to a function"
 msgstr "Níorbh fhéidir ainm \"%s\" a mhapáil go feidhm"
 
-#: src/rcfile.c:437
+#: src/rcfile.c:427
 #, c-format
 msgid "Cannot map name \"%s\" to a menu"
 msgstr "Níorbh fhéidir ainm \"%s\" a mhapáil go roghchlár"
 
-#: src/rcfile.c:464
+#: src/rcfile.c:454
 #, c-format
 msgid "Function '%s' does not exist in menu '%s'"
 msgstr "Níl feidhm '%s' ann i roghchlár '%s'"
 
-#: src/rcfile.c:473
+#: src/rcfile.c:463
 #, c-format
 msgid "Sorry, keystroke \"%s\" may not be rebound"
 msgstr "Ár leithscéal, ní féidir eochair \"%s\" a athcheangal"
 
-#: src/rcfile.c:573
+#: src/rcfile.c:559
 #, c-format
 msgid "Error expanding %s: %s"
 msgstr "Earráid agus %s á leathnú: %s"
 
-#: src/rcfile.c:613
+#: src/rcfile.c:599
 #, c-format
 msgid "Color \"%s\" not understood"
 msgstr "Níor tuigeadh dath \"%s\""
 
-#: src/rcfile.c:626
+#: src/rcfile.c:615
 msgid "A background color cannot be bright"
 msgstr "Ní cheadaítear dath cúlra geal"
 
-#: src/rcfile.c:655 src/rcfile.c:795 src/rcfile.c:855
+#: src/rcfile.c:647 src/rcfile.c:787 src/rcfile.c:847
 #, c-format
 msgid "A '%s' command requires a preceding 'syntax' command"
 msgstr "Is gá ordú 'syntax' a chur roimh ordú '%s'"
 
-#: src/rcfile.c:661
+#: src/rcfile.c:653
 msgid "Missing color name"
 msgstr "Ainm datha ar iarraidh"
 
-#: src/rcfile.c:671 src/rcfile.c:807
+#: src/rcfile.c:663 src/rcfile.c:799
 #, c-format
 msgid "Missing regex string after '%s' command"
 msgstr "Slonn ionadaíochta ar iarraidh tar éis ordú '%s'"
 
-#: src/rcfile.c:702 src/rcfile.c:753
+#: src/rcfile.c:694 src/rcfile.c:745
 msgid "Empty regex string"
 msgstr "Slonn ionadaíochta folamh"
 
-#: src/rcfile.c:737
+#: src/rcfile.c:729
 msgid "\"start=\" requires a corresponding \"end=\""
 msgstr "Tá gá le \"end=\" in éineacht le gach \"start=\""
 
-#: src/rcfile.c:802
+#: src/rcfile.c:794
 #, c-format
 msgid "The \"default\" syntax does not accept '%s' regexes"
 msgstr ""
 "Ní féidir sloinn ionadaíochta '%s' a úsáid leis an gcomhréir \"default\""
 
-#: src/rcfile.c:860
+#: src/rcfile.c:852
 #, c-format
 msgid "Missing argument after '%s'"
 msgstr "Argóint ar iarraidh tar éis '%s'"
 
-#: src/rcfile.c:870
+#: src/rcfile.c:862
 #, c-format
 msgid "Argument of '%s' lacks closing \""
 msgstr "Tá \" ar iarraidh ag deireadh argóint '%s'"
 
-#: src/rcfile.c:898
+#: src/rcfile.c:890
 #, c-format
-msgid "Fatal error: no keys mapped for function \"%s\".  Exiting.\n"
+msgid "No key is bound to function '%s' in menu '%s'.  Exiting.\n"
 msgstr ""
-"Earráid mharfach: níl aon eochracha mapáilte le feidhm \"%s\". Ag scor.\n"
 
-#: src/rcfile.c:900
+#: src/rcfile.c:893 src/rcfile.c:1256
 #, c-format
 msgid ""
 "If needed, use nano with the -I option to adjust your nanorc settings.\n"
 msgstr ""
 "Más gá, úsáid nano leis an rogha -I chun do chuid socruithe nanorc a athrú.\n"
 
-#: src/rcfile.c:955
+#: src/rcfile.c:948
 #, c-format
 msgid "Could not find syntax \"%s\" to extend"
 msgstr "Níor aimsíodh comhréir \"%s\" lena leathnú"
 
-#: src/rcfile.c:977 src/rcfile.c:1190
+#: src/rcfile.c:970 src/rcfile.c:1177
 #, c-format
 msgid "Syntax \"%s\" has no color commands"
 msgstr "Níl orduithe datha ag an gcomhréir \"%s\""
 
-#: src/rcfile.c:1008
+#: src/rcfile.c:1000
 #, c-format
 msgid "Command \"%s\" not allowed in included file"
 msgstr "Ní cheadaítear ordú \"%s\" i gcomhad iniata"
 
-#: src/rcfile.c:1023
+#: src/rcfile.c:1015
 #, c-format
 msgid "Command \"%s\" not understood"
 msgstr "Níor tuigeadh ordú \"%s\""
 
-#: src/rcfile.c:1035
+#: src/rcfile.c:1027
 msgid "Missing option"
 msgstr "Rogha ar iarraidh"
 
-#: src/rcfile.c:1049
+#: src/rcfile.c:1041
 #, c-format
 msgid "Unknown option \"%s\""
 msgstr "Rogha anaithnid \"%s\""
 
-#: src/rcfile.c:1062
+#: src/rcfile.c:1050
 #, c-format
 msgid "Cannot unset option \"%s\""
 msgstr "Ní féidir rogha \"%s\" a dhíchumasú"
 
-#: src/rcfile.c:1074
+#: src/rcfile.c:1062
 #, c-format
 msgid "Option \"%s\" requires an argument"
 msgstr "Caithfidh tú argóint a thabhairt le rogha \"%s\""
 
-#: src/rcfile.c:1090
+#: src/rcfile.c:1077
 msgid "Argument is not a valid multibyte string"
 msgstr "Níl an argóint ina teaghrán bailí ilbheart"
 
-#: src/rcfile.c:1131 src/rcfile.c:1151 src/rcfile.c:1157
+#: src/rcfile.c:1118 src/rcfile.c:1138 src/rcfile.c:1144
 msgid "Non-blank characters required"
 msgstr "Carachtair neamhbhána de dhíth"
 
-#: src/rcfile.c:1138
+#: src/rcfile.c:1125
 msgid "Two single-column characters required"
 msgstr "Dhá charachtar aoncholúin de dhíth"
 
-#: src/rcfile.c:1265
+#: src/rcfile.c:1248
 msgid "I can't find my home directory!  Wah!"
 msgstr "Ní féidir mo chomhadlann bhaile a aimsiú!  Ochón!"
 
-#. TRANSLATORS: The next three modify the search prompt.
+#. TRANSLATORS: The next four modify the search prompt.
 #: src/search.c:105
 msgid " [Case Sensitive]"
 msgstr " [Cásíogair]"
@@ -2240,41 +2289,36 @@ msgstr " [Cásíogair]"
 msgid " [Regexp]"
 msgstr " [Slonn]"
 
-#: src/search.c:107
-msgid " [Backwards]"
-msgstr " [Siar]"
-
-#. TRANSLATORS: The next two modify the search prompt.
-#: src/search.c:110
+#: src/search.c:109
 msgid " (to replace) in selection"
 msgstr " (le cur in ionad) i roghnúchán"
 
-#: src/search.c:112
+#: src/search.c:111
 msgid " (to replace)"
 msgstr " (le cur in ionad)"
 
 #. TRANSLATORS: This is shown when searching takes
 #. * more than half a second.
-#: src/search.c:220
+#: src/search.c:219
 msgid "Searching..."
 msgstr "Ag Cuardach..."
 
-#: src/search.c:391
+#: src/search.c:388
 #, c-format
 msgid "\"%.*s%s\" not found"
 msgstr "\"%.*s%s\" gan aimsiú"
 
 #. TRANSLATORS: This is a prompt.
-#: src/search.c:585
+#: src/search.c:582
 msgid "Replace this instance?"
 msgstr "Ionadaigh an ceann seo?"
 
 #. TRANSLATORS: This is a prompt.
-#: src/search.c:707
+#: src/search.c:704
 msgid "Replace with"
 msgstr "Ionadaigh le"
 
-#: src/search.c:738
+#: src/search.c:735
 #, c-format
 msgid "Replaced %zd occurrence"
 msgid_plural "Replaced %zd occurrences"
@@ -2285,255 +2329,246 @@ msgstr[3] "Cuireadh teaghrán nua ina ionad %zd n-uaire"
 msgstr[4] "Cuireadh teaghrán nua ina ionad %zd uair"
 
 #. TRANSLATORS: This is a prompt.
-#: src/search.c:766
+#: src/search.c:763
 msgid "Enter line number, column number"
 msgstr "Cuir isteach uimhir na líne agus uimhir an cholúin"
 
-#: src/search.c:955
+#: src/search.c:952
 msgid "Not a bracket"
 msgstr "Ní lúibín é"
 
-#: src/search.c:1016
+#: src/search.c:1013
 msgid "No matching bracket"
 msgstr "Níl lúibín comhoiriúnach ann"
 
-#: src/text.c:64
+#: src/text.c:63
 msgid "Mark Set"
 msgstr "Socraíodh Marc"
 
-#: src/text.c:68
+#: src/text.c:67
 msgid "Mark Unset"
 msgstr "Díshocraíodh Marc"
 
-#: src/text.c:78
+#: src/text.c:77
 #, c-format
 msgid "Error invoking \"%s\""
 msgstr "Earráid agus \"%s\" á thosú"
 
-#: src/text.c:553
+#: src/text.c:568
 msgid "Commenting is not supported for this file type"
 msgstr "Ní féidir nótaí tráchta a dhéanamh le comhad den chineál seo"
 
-#: src/text.c:563
+#: src/text.c:578
 msgid "Cannot comment past end of file"
 msgstr "Ní féidir nóta tráchta a dhéanamh thar deireadh an chomhaid"
 
-#: src/text.c:686
+#: src/text.c:701
 msgid "Nothing in undo buffer!"
 msgstr "Níl faic le cealú!"
 
 #. TRANSLATORS: The next thirteen strings describe actions
 #. * that are undone or redone.  They are all nouns, not verbs.
-#: src/text.c:705 src/text.c:776 src/text.c:887 src/text.c:956
+#: src/text.c:716 src/text.c:786 src/text.c:894 src/text.c:962
 msgid "text add"
 msgstr "téacs a chur leis"
 
-#: src/text.c:720 src/text.c:899
+#: src/text.c:731 src/text.c:906
 msgid "line break"
 msgstr "briseadh líne"
 
-#: src/text.c:732 src/text.c:912
+#: src/text.c:743 src/text.c:919
 msgid "text delete"
 msgstr "téacs a scriosadh"
 
-#: src/text.c:742 src/text.c:925
+#: src/text.c:753 src/text.c:932
 msgid "line join"
 msgstr "líne a cheangal"
 
-#: src/text.c:761 src/text.c:940
+#: src/text.c:772 src/text.c:947
 msgid "text replace"
 msgstr "téacs a ionadú"
 
-#: src/text.c:781 src/text.c:961
+#: src/text.c:791 src/text.c:967
 msgid "text cut"
 msgstr "téacs a ghearradh"
 
-#: src/text.c:785 src/text.c:965
+#: src/text.c:795 src/text.c:971
 msgid "text uncut"
 msgstr "téacs a dhíghearradh"
 
-#: src/text.c:789 src/text.c:969
+#: src/text.c:799 src/text.c:975
 msgid "text insert"
 msgstr "téacs a ionsá"
 
-#: src/text.c:805 src/text.c:982
-msgid "filtering"
-msgstr ""
-
-#: src/text.c:815 src/text.c:986
+#: src/text.c:826 src/text.c:993
 msgid "indent"
 msgstr "eangú"
 
-#: src/text.c:819 src/text.c:990
+#: src/text.c:830 src/text.c:997
 msgid "unindent"
 msgstr "dí-eangú"
 
-#: src/text.c:824 src/text.c:995
+#: src/text.c:835 src/text.c:1002
 msgid "comment"
 msgstr "nóta tráchta"
 
-#: src/text.c:828 src/text.c:999
+#: src/text.c:839 src/text.c:1006
 msgid "uncomment"
 msgstr "cealú nóta tráchta"
 
-#: src/text.c:837
+#: src/text.c:848
 #, c-format
 msgid "Undid action (%s)"
 msgstr "Cealaíodh gníomh (%s)"
 
-#: src/text.c:862
+#: src/text.c:873
 msgid "Nothing to re-do!"
 msgstr "Níl faic le hathdhéanamh!"
 
-#: src/text.c:1008
+#: src/text.c:1015
 #, c-format
 msgid "Redid action (%s)"
 msgstr "Athrinneadh gníomh (%s)"
 
-#: src/text.c:1143 src/text.c:2671 src/text.c:3058
+#: src/text.c:1148 src/text.c:2677 src/text.c:3060
 msgid "Could not create pipe"
 msgstr "Níorbh fhéidir píopa a chruthú"
 
-#: src/text.c:1179 src/text.c:2758 src/text.c:2875 src/text.c:3095
-#: src/text.c:3391
+#: src/text.c:1184 src/text.c:2766 src/text.c:2882 src/text.c:3097
 msgid "Could not fork"
 msgstr "Níorbh fhéidir forc a dhéanamh"
 
-#: src/text.c:1243
+#: src/text.c:1203 src/text.c:1255
+msgid "filtering"
+msgstr ""
+
+#: src/text.c:1249
 #, fuzzy, c-format
 msgid "Failed to open pipe: %s"
 msgstr "Níorbh fhéidir stdin a oscailt: %s"
 
-#: src/text.c:2129
+#: src/text.c:2135
 #, c-format
 msgid "Bad quote string %s: %s"
 msgstr "Drochtheaghrán athfhriotail %s: %s"
 
-#: src/text.c:2439
+#: src/text.c:2445
 msgid "Can now UnJustify!"
 msgstr "Is féidir Dí-Chomhfhadú anois!"
 
-#: src/text.c:2594
+#: src/text.c:2600
 #, c-format
 msgid "Unfindable word: %s"
 msgstr "Focal nach féidir aimsiú: %s"
 
-#: src/text.c:2613
+#: src/text.c:2619
 msgid "Edit a replacement"
 msgstr "Cuir ionadaí in eagar"
 
 #. TRANSLATORS: Shown after fixing misspellings in one word.
-#: src/text.c:2622
+#: src/text.c:2628
 msgid "Next word..."
 msgstr "An chéad fhocal eile..."
 
-#: src/text.c:2673
+#: src/text.c:2679
 msgid "Creating misspelled word list, please wait..."
 msgstr "Liosta focal mílitrithe á chruthú; fan go fóill, le do thoil..."
 
-#: src/text.c:2764 src/text.c:3102
+#: src/text.c:2772 src/text.c:3104
 msgid "Could not get size of pipe buffer"
 msgstr "Níl aon fháil ar mhéid an mhaoláin píopa"
 
-#: src/text.c:2818
+#: src/text.c:2826
 msgid "Error invoking \"spell\""
 msgstr "Earráid agus \"spell\" á thosú"
 
-#: src/text.c:2821
+#: src/text.c:2829
 msgid "Error invoking \"sort -f\""
 msgstr "Earráid agus \"sort -f\" á thosú"
 
-#: src/text.c:2824
+#: src/text.c:2832
 msgid "Error invoking \"uniq\""
 msgstr "Earráid agus \"uniq\" á thosú"
 
-#: src/text.c:2992
+#: src/text.c:2994
 msgid "Invoking spell checker, please wait"
 msgstr "Litreoir á thosú, fan nóiméad"
 
-#: src/text.c:3009
+#: src/text.c:3011
 #, c-format
 msgid "Spell checking failed: %s"
 msgstr "Theip ar an litreoir: %s"
 
-#: src/text.c:3011
+#: src/text.c:3013
 #, c-format
 msgid "Spell checking failed: %s: %s"
 msgstr "Theip ar an litreoir: %s: %s"
 
-#: src/text.c:3014
+#: src/text.c:3016
 msgid "Finished checking spelling"
 msgstr "Chríochnaigh an litreoir"
 
-#: src/text.c:3037
+#: src/text.c:3039
 msgid "No linter defined for this type of file!"
 msgstr "Níl aon ghlantóir ar fáil don chineál comhaid seo!"
 
-#: src/text.c:3047
+#: src/text.c:3049
 msgid "Save modified buffer before linting?"
 msgstr "An bhfuil fonn ort an maolán athraithe a shábháil roimh ghlanadh?"
 
-#: src/text.c:3064
+#: src/text.c:3066
 msgid "Invoking linter, please wait"
 msgstr "Glantóir cóid á thosú, fan nóiméad"
 
-#: src/text.c:3196
+#: src/text.c:3198
 #, c-format
 msgid "Got 0 parsable lines from command: %s"
 msgstr "Fuarthas 0 líne inpharsáilte ón ordú: %s"
 
-#: src/text.c:3226
+#: src/text.c:3228
 #, c-format
 msgid "This message is for unopened file %s, open it in a new buffer?"
 msgstr ""
 "Baineann an teachtaireacht seo le comhad %s gan oscailte; oscail i maolán "
 "nua é?"
 
-#: src/text.c:3262
+#: src/text.c:3266
 msgid "No more errors in unopened files, cancelling"
 msgstr "Níl aon earráid eile i gcomhaid neamhoscailte; á chealú"
 
-#: src/text.c:3311
+#: src/text.c:3313
 msgid "At last message"
 msgstr "Ag an teachtaireacht dheireanach"
 
-#: src/text.c:3316
+#: src/text.c:3318
 msgid "At first message"
 msgstr "Ag an chéad teachtaireacht"
 
-#: src/text.c:3352
-msgid "Finished"
-msgstr "Críochnaithe"
-
-#: src/text.c:3376
-msgid "Invoking formatter, please wait"
-msgstr "Formáiditheoir á thosú, fan nóiméad"
-
-#: src/text.c:3425
-msgid "Finished formatting"
-msgstr "Formáidiú críochnaithe"
-
-#: src/text.c:3507
+#: src/text.c:3396
 #, c-format
 msgid "%sWords: %zu  Lines: %zd  Chars: %zu"
 msgstr "%sFocail: %zu  Línte: %zd  Carachtair: %zu"
 
-#: src/text.c:3508
+#: src/text.c:3397
 msgid "In Selection:  "
 msgstr "Sa Roghnúchán:  "
 
 #. TRANSLATORS: This is displayed when the next keystroke will be
 #. * inserted verbatim.
-#: src/text.c:3521
+#: src/text.c:3410
 msgid "Verbatim Input"
 msgstr "Ionchur Litriúil"
 
-#: src/text.c:3713
+#: src/text.c:3511
+msgid "No word fragment"
+msgstr ""
+
+#: src/text.c:3603
 msgid "No further matches"
 msgstr "Níl tuilleadh torthaí ann"
 
 #. TRANSLATORS: Shown when there are zero possible completions.
-#: src/text.c:3717
+#: src/text.c:3607
 msgid "No matches"
 msgstr "Gan torthaí"
 
@@ -2563,79 +2598,125 @@ msgstr "An iomarca earráidí ó stdin"
 
 #. TRANSLATORS: This refers to a sequence of escape codes
 #. * (from the keyboard) that nano does not recogize.
-#: src/winio.c:1289
+#: src/winio.c:1314
 msgid "Unknown sequence"
 msgstr "Seicheamh anaithnid"
 
 #. TRANSLATORS: This is shown while a six-digit hexadecimal
 #. * Unicode character code (%s) is being typed in.
-#: src/winio.c:1425
+#: src/winio.c:1450
 #, c-format
 msgid "Unicode Input: %s"
 msgstr "Ionchur Unicode: %s"
 
-#: src/winio.c:2031
+#: src/winio.c:2056
 msgid "DIR:"
 msgstr "COMHADLANN:"
 
-#: src/winio.c:2052 src/winio.c:2056
+#: src/winio.c:2077 src/winio.c:2081
 msgid "Modified"
 msgstr "Athraithe"
 
-#: src/winio.c:2054
+#: src/winio.c:2079
 msgid "View"
 msgstr "Amharc"
 
-#: src/winio.c:2184
+#: src/winio.c:2208
 msgid "Further warnings were suppressed"
 msgstr "Tuilleadh rabhadh nár taispeánadh"
 
-#: src/winio.c:3359
+#: src/winio.c:3382
 #, c-format
 msgid "line %zd/%zd (%d%%), col %zu/%zu (%d%%), char %zu/%zu (%d%%)"
 msgstr "líne %zd/%zd (%d%%), colún %zu/%zu (%d%%), carachtar %zu/%zu (%d%%)"
 
-#: src/winio.c:3557
+#: src/winio.c:3580
 msgid "The nano text editor"
 msgstr "Eagarthóir téacs nano"
 
-#: src/winio.c:3558
+#: src/winio.c:3581
 msgid "version"
 msgstr "leagan"
 
-#: src/winio.c:3559
+#: src/winio.c:3582
 msgid "Brought to you by:"
 msgstr "Scríofa ag:"
 
-#: src/winio.c:3560
+#: src/winio.c:3583
 msgid "Special thanks to:"
 msgstr "Táimid fíorbhuíoch de:"
 
-#: src/winio.c:3561
+#: src/winio.c:3584
 msgid "The Free Software Foundation"
 msgstr "The Free Software Foundation"
 
-#: src/winio.c:3562
+#: src/winio.c:3585
 msgid "the many translators and the TP"
 msgstr "na haistritheoirí go léir agus Tionscadal Aistriúcháin GNU"
 
-#: src/winio.c:3563
+#: src/winio.c:3586
 msgid "For ncurses:"
 msgstr "As ncurses:"
 
-#: src/winio.c:3564
+#: src/winio.c:3587
 msgid "and anyone else we forgot..."
 msgstr "agus de gach duine eile a ndearnamar dearmad orthu..."
 
-#: src/winio.c:3565
+#: src/winio.c:3588
 msgid "Thank you for using nano!"
 msgstr "Go raibh maith agat as úsáid nano!"
+
+#~ msgid "Switched to %s"
+#~ msgstr "Athraithe go %s"
+
+#~ msgid "WhereIs Next"
+#~ msgstr "Cuardaigh Arís"
+
+#~ msgid "Repeat the last search"
+#~ msgstr "An cuardach céanna arís"
+
+#~ msgid "Invoke formatter, if available"
+#~ msgstr "Rith formáiditheoir, má tá ceann ar fáil"
+
+#~ msgid "Formatter"
+#~ msgstr "Formáidiú"
+
+#~ msgid "Indent Text"
+#~ msgstr "EangúTéacs"
+
+#~ msgid "Unindent Text"
+#~ msgstr "DíeangúTcs"
+
+#~ msgid "Use of one more line for editing"
+#~ msgstr "Úsáid líne amháin eile le haghaidh eagarthóireachta"
+
+#~ msgid "Backup files"
+#~ msgstr "Comhaid chúltaca"
+
+#~ msgid "Reading file into separate buffer"
+#~ msgstr "Comhad á léamh i maolán ar leith"
+
+#~ msgid "No conversion from DOS/Mac format"
+#~ msgstr "Ná tiontaigh ó fhormáid DOS/Mac"
 
 #~ msgid "Quoting string"
 #~ msgstr "Teaghrán athfhriotail"
 
 #~ msgid "Reading from stdin, ^C to abort\n"
 #~ msgstr "Ag léamh ó stdin, ^C le scor\n"
+
+#~ msgid "Fatal error: no keys mapped for function \"%s\".  Exiting.\n"
+#~ msgstr ""
+#~ "Earráid mharfach: níl aon eochracha mapáilte le feidhm \"%s\". Ag scor.\n"
+
+#~ msgid "Finished"
+#~ msgstr "Críochnaithe"
+
+#~ msgid "Invoking formatter, please wait"
+#~ msgstr "Formáiditheoir á thosú, fan nóiméad"
+
+#~ msgid "Finished formatting"
+#~ msgstr "Formáidiú críochnaithe"
 
 #~ msgid "Exit from nano"
 #~ msgstr "Scoir nano"

@@ -11,7 +11,7 @@ File: nano.info,  Node: Top,  Next: Introduction,  Up: (dir)
 nano
 ****
 
-This manual documents the GNU ‘nano’ editor, version 2.9.8.
+This manual documents the GNU ‘nano’ editor, version 3.0.
 
 * Menu:
 
@@ -446,9 +446,10 @@ highlighted.  This selection can now be cut or copied in its entirety
 with a single ‘^K’ or ‘M-6’.  Or the selection can be used to limit the
 scope of a search-and-replace (‘^\’) or spell-checking session (‘^T’).
 
-   On some terminals, it is also possible to select text by holding down
-‘Shift’ together with the cursor keys.  Such a selection is cancelled
-upon any cursor movement where ‘Shift’ isn’t held.
+   On some terminals, text can be selected also by holding down ‘Shift’
+while using the cursor keys.  Holding down the ‘Ctrl’ or ‘Alt’ key too
+will increase the stride.  Such a selection is cancelled upon any cursor
+movement where ‘Shift’ isn’t held.
 
    Cutting or copying selected text will toggle the mark off
 automatically.  If necessary, it can be toggled off manually with
@@ -551,14 +552,8 @@ which would normally be specified via command-line options.  They are
 invoked via Meta-key sequences (*note Commands:: for more info).  The
 following global toggles are available:
 
-‘Backup Files’
-     ‘Meta-B’ toggles the ‘-B’ (‘--backup’) command-line option.
-
 ‘Constant Cursor Position Display’
      ‘Meta-C’ toggles the ‘-c’ (‘--constantshow’) command-line option.
-
-‘Multiple File Buffers’
-     ‘Meta-F’ toggles the ‘-F’ (‘--multibuffer’) command-line option.
 
 ‘Smart Home Key’
      ‘Meta-H’ toggles the ‘-A’ (‘--smarthome’) command-line option.
@@ -575,17 +570,11 @@ following global toggles are available:
 ‘Mouse Support’
      ‘Meta-M’ toggles the ‘-m’ (‘--mouse’) command-line option.
 
-‘No Conversion From DOS/Mac Format’
-     ‘Meta-N’ toggles the ‘-N’ (‘--noconvert’) command-line option.
-
-‘More Space For Editing’
-     ‘Meta-O’ toggles the ‘-O’ (‘--morespace’) command-line option.
+‘Tabs To Spaces’
+     ‘Meta-O’ toggles the ‘-E’ (‘--tabstospaces’) command-line option.
 
 ‘Whitespace Display’
      ‘Meta-P’ toggles the displaying of whitespace (*note Whitespace::).
-
-‘Tabs To Spaces’
-     ‘Meta-Q’ toggles the ‘-E’ (‘--tabstospaces’) command-line option.
 
 ‘Smooth Scrolling’
      ‘Meta-S’ toggles the ‘-S’ (‘--smooth’) command-line option.
@@ -677,10 +666,6 @@ The supported settings in a nanorc file are:
      uniquely numbered one every time a file is saved — when backups are
      enabled with ‘set backup’ or ‘--backup’ or ‘-B’.  The uniquely
      numbered files are stored in the specified directory.
-
-‘set backwards’
-     Obsolete option.  Recognized but ignored.  ‘^Q’ is available to
-     start a backward search.
 
 ‘set boldtext’
      Use bold instead of reverse video for the title bar, status bar,
@@ -949,11 +934,6 @@ following commands in a nanorc file:
      Use the given PROGRAM to do a syntax check on the current buffer.
      (This overrides the speller function.)
 
-‘formatter PROGRAM [ARG ...]’
-     Use the given PROGRAM to automatically reformat the text in the
-     current buffer — useful for a programming language like Go.  (This
-     overrides the speller and linter functions.)
-
 ‘comment "STRING"’
      Use the given string for commenting and uncommenting lines.  If the
      string contains a vertical bar or pipe character (|), this
@@ -969,11 +949,13 @@ following commands in a nanorc file:
      Display all pieces of text that match the extended regular
      expression "regex" with foreground color "fgcolor" and background
      color "bgcolor", at least one of which must be specified.  Valid
-     colors for foreground and background are: white, black, red, blue,
-     green, yellow, magenta, and cyan.  You may use the prefix "bright"
-     to get a stronger color highlight for the foreground.  If your
-     terminal supports transparency, not specifying a "bgcolor" tells
-     ‘nano’ to attempt to use a transparent background.
+     names for foreground and background color are: ‘white’, ‘black’,
+     ‘blue’, ‘green’, ‘red’, ‘cyan’, ‘yellow’, ‘magenta’, and ‘normal’ —
+     where ‘normal’ means the default foreground or background color.
+     You may use the prefix ‘bright’ to get a stronger color highlight
+     for the foreground.  If your terminal supports transparency, not
+     specifying a "bgcolor" tells ‘nano’ to attempt to use a transparent
+     background.
 
 ‘icolor FGCOLOR,BGCOLOR "REGEX" ...’
      Same as above, except that the matching is case insensitive.
@@ -998,10 +980,24 @@ following commands in a nanorc file:
 ‘extendsyntax NAME COMMAND [ARG ...]’
      Extend the syntax previously defined as "NAME" with another
      COMMAND.  This allows you to add a new ‘color’, ‘icolor’, ‘header’,
-     ‘magic’, ‘comment’, ‘linter’, or ‘formatter’ command to an already
-     defined syntax — useful when you want to slightly improve a syntax
-     defined in one of the system-installed files (which normally are
-     not writable).
+     ‘magic’, ‘comment’, or ‘linter’ command to an already defined
+     syntax — useful when you want to slightly improve a syntax defined
+     in one of the system-installed files (which normally are not
+     writable).
+
+   Note: the ‘formatter’ command has been removed.  It was superseded by
+a more general mechanism: the filtering of buffer or marked text through
+an external command.  Such filtering is done by typing ‘^R^X’ and then
+preceding your formatter command with the pipe symbol (‘|’).  It has the
+added advantage that the operation can be undone.
+
+   If you use such a formatting command regularly, you could assign the
+relevant series of keystrokes to a single key in your nanorc:
+
+        bind  M-F  "^R^X|yourformatcommand^M"  main
+
+   (Note that the <^R>, <^X>, and <^M> are each a single, literal
+control character.  You can enter them by preceding each with <M-V>.)
 
 
 File: nano.info,  Node: Rebinding Keys,  Prev: Syntax Highlighting,  Up: Nanorc Files
@@ -1029,13 +1025,15 @@ file:
 
    The format of ‘key’ should be one of:
 
-     ‘^’  followed by an ASCII character or the word "Space".  Example:
-     ‘^C’.
+     ‘^’  followed by a Latin letter, by one of several ASCII characters
+     (@, ], \, ^, or _), or by the word "Space".  Example: ‘^C’.
 
-     ‘M-’  followed by a ASCII character or the word "Space".  Example:
-     ‘M-C’.
+     ‘M-’  followed by any ASCII character except [, or by the word
+     "Space".  Example: ‘M-C’.
 
      ‘F’  followed by a numeric value from 1 to 16.  Example: ‘F10’.
+
+     the word "Ins" or the word "Del".
 
 
    Valid names for the ‘function’ to be bound are:
@@ -1066,16 +1064,15 @@ file:
      browser.
 
 ‘wherewas’
-     Starts a backward search for text in the current buffer.
-
-‘searchagain’
-     Repeats the last search command without prompting.
+     Starts a backward search for text in the current buffer — or for
+     filenames matching a string in the current list in the file
+     browser.
 
 ‘findprevious’
-     As ‘searchagain’, but always in the backward direction.
+     Searches the next occurrence in the backward direction.
 
 ‘findnext’
-     As ‘searchagain’, but always in the forward direction.
+     Searches the next occurrence in the forward direction.
 
 ‘replace’
      Interactively replaces text within the current buffer.
@@ -1083,25 +1080,31 @@ file:
 ‘cut’
      Cuts and stores the current line (or the marked region).
 
-‘copytext’
+‘copy’
      Copies the current line (or the marked region) without deleting it.
+     (The old form ’copytext’ is deprecated.)
 
-‘uncut’
-     Copies the currently stored text into the current buffer at the
-     current cursor position.
-
-‘mark’
-     Sets the mark at the current position, to start selecting text.
+‘paste’
+     Pastes the currently stored text into the current buffer at the
+     current cursor position.  (The old form ’uncut’ is deprecated.)
 
 ‘cutwordleft’
      Cuts from the cursor position to the beginning of the preceding
-     word.
+     word.  (This function is not bound by default.  If your terminal
+     produces ‘^H’ for <Ctrl+Backspace>, you can make <Ctrl+Backspace>
+     delete the word to the left of the cursor by rebinding ^H to this
+     function.)
 
 ‘cutwordright’
      Cuts from the cursor position to the beginning of the next word.
+     (This function is bound by default to <Ctrl+Delete>.)
 
 ‘cutrestoffile’
      Cuts all text from the cursor position till the end of the buffer.
+
+‘mark’
+     Sets the mark at the current position, to start selecting text.
+     Or, when it is set, unsets the mark.
 
 ‘curpos’
      Shows the current cursor position: the line, column, and character
@@ -1112,8 +1115,8 @@ file:
      buffer.
 
 ‘speller’
-     Invokes a spell-checking program (or linting program, or formatter
-     program, if the active syntax defines such a thing).
+     Invokes a spell-checking program (or linting program, if the active
+     syntax defines such a thing).
 
 ‘justify’
      Justifies the current paragraph.  A paragraph is a group of
@@ -1248,20 +1251,21 @@ file:
      "suspendenable" entry below).
 
 ‘casesens’
-     Toggles case sensitivity in searching (search/replace menus only).
+     Toggles whether searching/replacing ignores or respects the case of
+     the given characters.
 
 ‘regexp’
-     Toggles whether searching/replacing is based on literal strings or
-     regular expressions.
+     Toggles whether searching/replacing uses literal strings or regular
+     expressions.
 
 ‘backwards’
      Toggles whether searching/replacing goes forward or backward.
 
 ‘prevhistory’
-     Shows the previous history entry in the prompt menus (e.g. search).
+     Retrieves the previous (older) entry at a prompt.
 
 ‘nexthistory’
-     Shows the next history entry in the prompt menus (e.g. search).
+     Retrieves the next (newer) entry at a prompt.
 
 ‘flipreplace’
      Toggles between searching for something and replacing something.
@@ -1280,6 +1284,10 @@ file:
 ‘flipnewbuffer’
      Toggles between inserting into the current buffer and into a new
      empty buffer.
+
+‘flipconvert’
+     When reading in a file, toggles between converting and not
+     converting it from DOS/Mac format.  Converting is the default.
 
 ‘dosformat’
      When writing a file, switches to writing a DOS format (CR/LF).
@@ -1325,10 +1333,6 @@ file:
      Toggles the constant display of the current line, column, and
      character positions.  (The form ‘constupdate’ is deprecated.)
 
-‘morespace’
-     Toggles the presence of the blank line that ’separates’ the title
-     bar from the file text.
-
 ‘smoothscroll’
      Toggles smooth scrolling (when moving around with the arrow keys).
 
@@ -1363,18 +1367,8 @@ file:
 ‘tabstospaces’
      Toggles whether typed tabs will be converted to spaces.
 
-‘backupfile’
-     Toggles whether a backup will be made of the file to be edited.
-
-‘multibuffer’
-     Toggles whether a file is inserted into the current buffer or read
-     into a new buffer.
-
 ‘mouse’
      Toggles mouse support.
-
-‘noconvert’
-     Toggles automatic conversion of files from DOS/Mac format.
 
 ‘suspendenable’
      Toggles whether the suspend shortcut (normally ‘^Z’) will suspend
@@ -1394,6 +1388,9 @@ file:
 
 ‘replacewith’
      The ’replace with’ menu, which comes up after ’search to replace’.
+
+‘yesno’
+     The ’yesno’ menu, where the Yes/No/All/Cancel question is asked.
 
 ‘gotoline’
      The ’goto line (and column)’ menu.
@@ -1666,31 +1663,31 @@ familiar with compiling programs with autoconf support:
 
 Tag Table:
 Node: Top199
-Node: Introduction556
-Node: Invoking1356
-Node: Command-line Options2402
-Ref: --speller9568
-Ref: Expert Mode10789
-Node: Editor Basics11906
-Node: Entering Text12190
-Node: Commands13179
-Node: The Cutbuffer13976
-Node: The Mark14697
-Node: Screen Layout15631
-Node: Search and Replace16810
-Node: Using the Mouse17545
-Node: Limitations18162
-Node: Built-in Help18718
-Node: Feature Toggles19142
-Node: Nanorc Files21474
-Node: Settings23071
-Ref: set functioncolor26032
-Ref: Whitespace32324
-Node: Syntax Highlighting32880
-Node: Rebinding Keys37897
-Node: The File Browser49797
-Node: Pico Compatibility50690
-Node: Building and Configure Options54226
+Node: Introduction554
+Node: Invoking1354
+Node: Command-line Options2400
+Ref: --speller9566
+Ref: Expert Mode10787
+Node: Editor Basics11904
+Node: Entering Text12188
+Node: Commands13177
+Node: The Cutbuffer13974
+Node: The Mark14695
+Node: Screen Layout15694
+Node: Search and Replace16873
+Node: Using the Mouse17608
+Node: Limitations18225
+Node: Built-in Help18781
+Node: Feature Toggles19205
+Node: Nanorc Files21098
+Node: Settings22695
+Ref: set functioncolor25532
+Ref: Whitespace31824
+Node: Syntax Highlighting32380
+Node: Rebinding Keys37982
+Node: The File Browser50206
+Node: Pico Compatibility51099
+Node: Building and Configure Options54635
 
 End Tag Table
 

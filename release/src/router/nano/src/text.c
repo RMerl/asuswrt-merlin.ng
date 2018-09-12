@@ -32,9 +32,8 @@
 #include <sys/wait.h>
 
 #ifndef NANO_TINY
-static pid_t pid = -1;
-		/* The PID of the forked process in execute_command(), for use
-		 * with the cancel_command() signal handler. */
+static pid_t pid_of_command = -1;
+		/* The PID of the forked process -- needed when wanting to abort it. */
 #endif
 #ifdef ENABLE_WRAPPING
 static bool prepend_wrap = FALSE;
@@ -206,11 +205,27 @@ void do_cutword(bool backward)
 	cutbuffer = NULL;
 	cutbottom = NULL;
 
-	/* Move the cursor to a word start, to the left or to the right. */
-	if (backward)
+	/* Move the cursor to a word start, to the left or to the right.
+	 * If that word is on another line and the cursor was not already
+	 * on the edge of the original line, then put the cursor on that
+	 * edge instead, so that lines will not be joined unexpectedly. */
+	if (backward) {
 		do_prev_word(ISSET(WORD_BOUNDS), FALSE);
-	else
+		if (openfile->current != is_current) {
+			if (is_current_x > 0) {
+				openfile->current = is_current;
+				openfile->current_x = 0;
+			} else
+				openfile->current_x = strlen(openfile->current->data);
+		}
+	} else {
 		do_next_word(FALSE, ISSET(WORD_BOUNDS), FALSE);
+		if (openfile->current != is_current &&
+							is_current->data[is_current_x] != '\0') {
+			openfile->current = is_current;
+			openfile->current_x = strlen(is_current->data);
+		}
+	}
 
 	/* Set the mark at the start of that word. */
 	openfile->mark = openfile->current;
@@ -633,15 +648,15 @@ void handle_comment_action(undo *u, bool undoing, bool add_comment)
 /* Undo a cut, or redo an uncut. */
 void undo_cut(undo *u)
 {
-	/* If we cut the magicline, we may as well not crash. :/ */
-	if (!u->cutbuffer)
-		return;
-
 	/* Get to where we need to uncut from. */
 	if (u->xflags == WAS_WHOLE_LINE)
 		goto_line_posx(u->mark_begin_lineno, 0);
 	else
 		goto_line_posx(u->mark_begin_lineno, u->mark_begin_x);
+
+	/* If nothing was actually cut, positioning the cursor was enough. */
+	if (!u->cutbuffer)
+		return;
 
 	copy_from_buffer(u->cutbuffer);
 
@@ -654,19 +669,19 @@ void redo_cut(undo *u)
 {
 	filestruct *oldcutbuffer = cutbuffer, *oldcutbottom = cutbottom;
 
-	/* If we cut the magicline, we may as well not crash. :/ */
+	goto_line_posx(u->lineno, u->begin);
+
+	/* If nothing was actually cut, positioning the cursor was enough. */
 	if (!u->cutbuffer)
 		return;
 
 	cutbuffer = NULL;
 	cutbottom = NULL;
 
-	goto_line_posx(u->lineno, u->begin);
-
 	openfile->mark = fsfromline(u->mark_begin_lineno);
 	openfile->mark_x = (u->xflags == WAS_WHOLE_LINE) ? 0 : u->mark_begin_x;
 
-	do_cut_text(FALSE, FALSE);
+	do_cut_text(FALSE, TRUE, FALSE);
 
 	free_filestruct(cutbuffer);
 	cutbuffer = oldcutbuffer;
@@ -692,10 +707,6 @@ void do_undo(void)
 		if (f == NULL)
 			return;
 	}
-
-#ifdef DEBUG
-	fprintf(stderr, "  >> Undoing a type %d...\n", u->type);
-#endif
 
 	openfile->current_x = u->begin;
 	switch (u->type) {
@@ -768,7 +779,6 @@ void do_undo(void)
 	case SPLIT_END:
 		goto_line_posx(u->lineno, u->begin);
 		openfile->current_undo = openfile->current_undo->next;
-		openfile->last_action = OTHER;
 		while (openfile->current_undo->type != SPLIT_BEGIN)
 			do_undo();
 		u = openfile->current_undo;
@@ -802,7 +812,8 @@ void do_undo(void)
 		cutbottom = oldcutbottom;
 		break;
 	case COUPLE_BEGIN:
-		undidmsg = _("filtering");
+		undidmsg = u->strdata;
+		goto_line_posx(u->lineno, u->begin);
 		break;
 	case COUPLE_END:
 		openfile->current_undo = openfile->current_undo->next;
@@ -867,7 +878,7 @@ void do_redo(void)
 	while (u != NULL && u->next != openfile->current_undo)
 		u = u->next;
 
-	if (u->next != openfile->current_undo) {
+	if (u == NULL) {
 		statusline(ALERT, "Bad undo stack -- please report a bug");
 		return;
 	}
@@ -877,10 +888,6 @@ void do_redo(void)
 		if (f == NULL)
 			return;
 	}
-
-#ifdef DEBUG
-	fprintf(stderr, "  >> Redoing a type %d...\n", u->type);
-#endif
 
 	switch (u->type) {
 	case ADD:
@@ -947,7 +954,6 @@ void do_redo(void)
 	case SPLIT_BEGIN:
 		goto_line_posx(u->lineno, u->begin);
 		openfile->current_undo = u;
-		openfile->last_action = OTHER;
 		while (openfile->current_undo->type != SPLIT_END)
 			do_redo();
 		u = openfile->current_undo;
@@ -979,7 +985,8 @@ void do_redo(void)
 		do_redo();
 		return;
 	case COUPLE_END:
-		redidmsg = _("filtering");
+		redidmsg = u->strdata;
+		goto_line_posx(u->lineno, u->begin);
 		break;
 	case INDENT:
 		handle_indent_action(u, FALSE, TRUE);
@@ -1060,8 +1067,6 @@ void do_enter(void)
 		/* If there were only blanks before the cursor, trim them. */
 		if (allblanks)
 			openfile->current_x = 0;
-		else
-			openfile->totsize += extra;
 	}
 #endif
 
@@ -1091,6 +1096,8 @@ void do_enter(void)
 	set_modified();
 
 #ifndef NANO_TINY
+	if (ISSET(AUTOINDENT) && !allblanks)
+		openfile->totsize += extra;
 	update_undo(ENTER);
 #endif
 
@@ -1099,12 +1106,10 @@ void do_enter(void)
 }
 
 #ifndef NANO_TINY
-/* Send a SIGKILL (unconditional kill) to the forked process in
- * execute_command(). */
-RETSIGTYPE cancel_command(int signal)
+/* Send an unconditional kill signal to the running external command. */
+RETSIGTYPE cancel_the_command(int signal)
 {
-	if (kill(pid, SIGKILL) == -1)
-		nperror("kill");
+	kill(pid_of_command, SIGKILL);
 }
 
 /* Send the text that starts at the given line to file descriptor fd. */
@@ -1150,7 +1155,7 @@ bool execute_command(const char *command)
 		shellenv = (char *) "/bin/sh";
 
 	/* Fork a child process to run the command in. */
-	if ((pid = fork()) == 0) {
+	if ((pid_of_command = fork()) == 0) {
 		/* Child: close the unused read end of the output pipe. */
 		close(from_fd[0]);
 
@@ -1175,7 +1180,7 @@ bool execute_command(const char *command)
 	/* Parent: close the unused write end of the pipe. */
 	close(from_fd[1]);
 
-	if (pid == -1) {
+	if (pid_of_command == -1) {
 		statusbar(_("Could not fork"));
 		close(from_fd[0]);
 		return FALSE;
@@ -1190,17 +1195,18 @@ bool execute_command(const char *command)
 		if (ISSET(MULTIBUFFER)) {
 			switch_to_prev_buffer();
 			if (openfile->mark)
-				do_cut_text(TRUE, FALSE);
+				do_cut_text(TRUE, TRUE, FALSE);
 		} else
 #endif
 		{
 			add_undo(COUPLE_BEGIN);
+			openfile->undotop->strdata = mallocstrcpy(NULL, _("filtering"));
 			if (openfile->mark == NULL) {
 				openfile->current = openfile->fileage;
 				openfile->current_x = 0;
 			}
 			add_undo(CUT);
-			do_cut_text(FALSE, openfile->mark == NULL);
+			do_cut_text(FALSE, openfile->mark, openfile->mark == NULL);
 			update_undo(CUT);
 		}
 
@@ -1231,7 +1237,7 @@ bool execute_command(const char *command)
 		setup_failed = TRUE;
 		nperror("sigaction");
 	} else {
-		newaction.sa_handler = cancel_command;
+		newaction.sa_handler = cancel_the_command;
 		if (sigaction(SIGINT, &newaction, &oldaction) == -1) {
 			setup_failed = TRUE;
 			nperror("sigaction");
@@ -1244,10 +1250,15 @@ bool execute_command(const char *command)
 	else
 		read_file(stream, 0, "pipe", TRUE);
 
-	if (should_pipe && !ISSET(MULTIBUFFER))
+	if (should_pipe && !ISSET(MULTIBUFFER)) {
 		add_undo(COUPLE_END);
+		openfile->undotop->strdata = mallocstrcpy(NULL, _("filtering"));
+	}
 
+	/* Wait for the external command (and possibly data sender) to terminate. */
 	if (wait(NULL) == -1)
+		nperror("wait");
+	if (should_pipe && (wait(NULL) == -1))
 		nperror("wait");
 
 	/* If it was changed, restore the handler for SIGINT. */
@@ -1296,25 +1307,21 @@ void discard_until(const undo *thisitem, openfilestruct *thefile, bool keep)
 		thefile->last_saved = (undo *)0xbeeb;
 }
 
-/* Add a new undo struct of the given type to the top of the current pile. */
+/* Add a new undo item of the given type to the top of the current pile. */
 void add_undo(undo_type action)
 {
 	undo *u = openfile->current_undo;
 		/* The thing we did previously. */
 
-	/* When doing contiguous adds or contiguous cuts -- which means: with
-	 * no cursor movement in between -- don't add a new undo item. */
-	if (u && u->mark_begin_lineno == openfile->current->lineno && action == openfile->last_action &&
-		((action == ADD && u->type == ADD && u->mark_begin_x == openfile->current_x) ||
-		(action == CUT && u->type == CUT && u->xflags < MARK_WAS_SET && keeping_cutbuffer())))
+	/* When doing contiguous adds or cuts, don't add a new undo item. */
+	if (u != NULL && action == openfile->last_action && action == u->type &&
+					openfile->current->lineno == u->mark_begin_lineno &&
+					((action == ADD && u->mark_begin_x == openfile->current_x) ||
+					(action == CUT && keeping_cutbuffer())))
 		return;
 
 	/* Blow away newer undo items if we add somewhere in the middle. */
 	discard_until(u, openfile, TRUE);
-
-#ifdef DEBUG
-	fprintf(stderr, "  >> Adding an undo... action = %d\n", action);
-#endif
 
 	/* Allocate and initialize a new undo item. */
 	u = (undo *) nmalloc(sizeof(undo));
@@ -1327,6 +1334,7 @@ void add_undo(undo_type action)
 	u->mark_begin_lineno = openfile->current->lineno;
 	u->mark_begin_x = openfile->current_x;
 	u->wassize = openfile->totsize;
+	u->newsize = openfile->totsize;
 	u->xflags = 0;
 	u->grouping = NULL;
 
@@ -1395,10 +1403,8 @@ void add_undo(undo_type action)
 		break;
 #endif
 	case CUT_TO_EOF:
-		cutbuffer_reset();
 		break;
 	case CUT:
-		cutbuffer_reset();
 		if (openfile->mark) {
 			u->mark_begin_lineno = openfile->mark->lineno;
 			u->mark_begin_x = openfile->mark_x;
@@ -1475,14 +1481,11 @@ void update_undo(undo_type action)
 	char *char_buf;
 	int char_len;
 
-#ifdef DEBUG
-fprintf(stderr, "  >> Updating an undo... action = %d\n", action);
-#endif
-
 	/* If the action is different or the position changed, don't update the
 	 * current record but add a new one instead. */
 	if (action != openfile->last_action ||
 				(action != ENTER && action != CUT && action != INSERT &&
+				action != COUPLE_END &&
 				openfile->current->lineno != openfile->current_undo->lineno)) {
 		add_undo(action);
 		return;
@@ -1577,7 +1580,10 @@ fprintf(stderr, "  >> Updating an undo... action = %d\n", action);
 		u->mark_begin_lineno = openfile->current->lineno;
 		u->mark_begin_x = openfile->current_x;
 	case COUPLE_BEGIN:
+		break;
 	case COUPLE_END:
+		u->lineno = openfile->current->lineno;
+		u->begin = openfile->current_x;
 		break;
 	default:
 		statusline(ALERT, "Wrong undo update type -- please report a bug");
@@ -2158,9 +2164,9 @@ bool find_paragraph(size_t *const quote, size_t *const par)
 		}
 	}
 
-	/* If the current line isn't the first line of the paragraph, move
+	/* If the current line is in a paragraph and isn't its first line, move
 	 * back to the first line of the paragraph. */
-	if (!begpar(openfile->current, 0))
+	if (inpar(openfile->current) && !begpar(openfile->current, 0))
 		do_para_begin(FALSE);
 
 	/* Now current is the first line of the paragraph.  Set quote_len to
@@ -2681,8 +2687,10 @@ const char *do_int_speller(const char *tempfile_name)
 		if ((tempfile_fd = open(tempfile_name, O_RDONLY)) == -1)
 			goto close_pipes_and_exit;
 
-		if (dup2(tempfile_fd, STDIN_FILENO) != STDIN_FILENO)
+		if (dup2(tempfile_fd, STDIN_FILENO) != STDIN_FILENO) {
+			close(tempfile_fd);
 			goto close_pipes_and_exit;
+		}
 
 		close(tempfile_fd);
 
@@ -2828,7 +2836,6 @@ const char *do_int_speller(const char *tempfile_name)
 
   close_pipes_and_exit:
 	/* Don't leak any handles. */
-	close(tempfile_fd);
 	close(spell_fd[0]);
 	close(spell_fd[1]);
 	close(sort_fd[0]);
@@ -2891,51 +2898,46 @@ const char *do_alt_speller(char *tempfile_name)
 	if (!WIFEXITED(alt_spell_status) || WEXITSTATUS(alt_spell_status) != 0)
 		return invocation_error(alt_speller);
 
-#ifndef NANO_TINY
-	/* Replace the marked text (or the entire text) of the current buffer
-	 * with the spell-checked text. */
-	if (openfile->mark) {
-		filestruct *top, *bot;
-		size_t top_x, bot_x;
-		bool right_side_up;
-		ssize_t was_mark_lineno = openfile->mark->lineno;
-
-		mark_order((const filestruct **)&top, &top_x,
-						(const filestruct **)&bot, &bot_x, &right_side_up);
-		openfile->mark = NULL;
-
-		replace_marked_buffer(tempfile_name, top, top_x, bot, bot_x);
-
-		/* Adjust the end point of the marked region for any change in
-		 * length of the region's last line. */
-		if (right_side_up)
-			current_x_save = openfile->current_x;
-		else
-			openfile->mark_x = openfile->current_x;
-
-		/* Restore the mark. */
-		openfile->mark = fsfromline(was_mark_lineno);
-	} else
-#endif
-		replace_buffer(tempfile_name);
-
-	/* Go back to the old position. */
-	goto_line_posx(lineno_save, current_x_save);
-	if (was_at_eol || openfile->current_x > strlen(openfile->current->data))
-		openfile->current_x = strlen(openfile->current->data);
-	openfile->placewewant = pww_save;
-	adjust_viewport(STATIONARY);
-
-	/* Stat the temporary file again, and mark the buffer as modified only
-	 * if this file was changed since it was written. */
+	/* Stat the temporary file again. */
 	stat(tempfile_name, &spellfileinfo);
+
+	/* Use the spell-checked file only when it changed. */
 	if (spellfileinfo.st_mtime != timestamp) {
-		set_modified();
 #ifndef NANO_TINY
-		/* Flush the undo stack, to avoid making a mess when the user
-		 * tries to undo things in spell-corrected lines. */
-		discard_until(NULL, openfile, FALSE);
+		/* Replace the marked text (or entire text) with the corrected text. */
+		if (openfile->mark) {
+			filestruct *top, *bot;
+			size_t top_x, bot_x;
+			bool right_side_up;
+			ssize_t was_mark_lineno = openfile->mark->lineno;
+
+			mark_order((const filestruct **)&top, &top_x,
+							(const filestruct **)&bot, &bot_x, &right_side_up);
+
+			replace_marked_buffer(tempfile_name);
+
+			/* Adjust the end point of the marked region for any change in
+			 * length of the region's last line. */
+			if (right_side_up)
+				current_x_save = openfile->current_x;
+			else
+				openfile->mark_x = openfile->current_x;
+
+			/* Restore the mark. */
+			openfile->mark = fsfromline(was_mark_lineno);
+		} else
 #endif
+			replace_buffer(tempfile_name);
+
+		/* Go back to the old position. */
+		goto_line_posx(lineno_save, current_x_save);
+		if (was_at_eol || openfile->current_x > strlen(openfile->current->data))
+			openfile->current_x = strlen(openfile->current->data);
+#ifndef NANO_TINY
+		update_undo(COUPLE_END);
+#endif
+		openfile->placewewant = pww_save;
+		adjust_viewport(STATIONARY);
 	}
 
 #ifndef NANO_TINY
@@ -3258,6 +3260,8 @@ void do_linter(void)
 						}
 					}
 
+					free(dontwantfile);
+
 					if (restlint == NULL) {
 						statusbar(_("No more errors in unopened files, cancelling"));
 						napms(2400);
@@ -3266,8 +3270,6 @@ void do_linter(void)
 						curlint = restlint;
 						continue;
 					}
-
-					free(dontwantfile);
 #ifdef ENABLE_MULTIBUFFER
 				}
 			}
@@ -3330,119 +3332,6 @@ void do_linter(void)
 		free(tmplint);
 	}
 }
-
-#ifdef ENABLE_SPELLER
-/* Run a formatter for the current syntax.  This expects the formatter
- * to be non-interactive and operate on a file in-place, which we'll
- * pass it on the command line. */
-void do_formatter(void)
-{
-	bool status;
-	FILE *temp_file;
-	int format_status;
-	ssize_t lineno_save = openfile->current->lineno;
-	size_t current_x_save = openfile->current_x;
-	size_t pww_save = openfile->placewewant;
-	bool was_at_eol = (openfile->current->data[openfile->current_x] == '\0');
-	pid_t pid_format;
-	static char **formatargs = NULL;
-	char *temp, *finalstatus = NULL;
-
-	if (openfile->totsize == 0) {
-		statusbar(_("Finished"));
-		return;
-	}
-
-	temp = safe_tempfile(&temp_file);
-
-	if (temp == NULL) {
-		statusline(ALERT, _("Error writing temp file: %s"), strerror(errno));
-		return;
-	}
-
-#ifndef NANO_TINY
-	/* We're not supporting partial formatting, oi vey. */
-	openfile->mark = NULL;
-#endif
-	status = write_file(temp, temp_file, TRUE, OVERWRITE, TRUE);
-
-	if (!status) {
-		statusline(ALERT, _("Error writing temp file: %s"), strerror(errno));
-		free(temp);
-		return;
-	}
-
-	blank_bottombars();
-	statusbar(_("Invoking formatter, please wait"));
-
-	construct_argument_list(&formatargs, openfile->syntax->formatter, temp);
-
-	/* Start a new process for the formatter. */
-	if ((pid_format = fork()) == 0) {
-		/* Start the formatting program; we are using $PATH. */
-		execvp(formatargs[0], formatargs);
-
-		/* Should not be reached, if the formatter is found! */
-		exit(1);
-	}
-
-	/* If we couldn't fork, get out. */
-	if (pid_format < 0) {
-		statusbar(_("Could not fork"));
-		unlink(temp);
-		free(temp);
-		return;
-	}
-
-#ifndef NANO_TINY
-	/* Block SIGWINCHes so the formatter doesn't get any. */
-	allow_sigwinch(FALSE);
-#endif
-
-	/* Wait for the formatter to finish. */
-	wait(&format_status);
-
-	if (!WIFEXITED(format_status) || WEXITSTATUS(format_status) != 0)
-		finalstatus = invocation_error(openfile->syntax->formatter);
-	else {
-		/* Replace the text of the current buffer with the formatted text. */
-		replace_buffer(temp);
-
-		/* Restore the cursor position. */
-		goto_line_posx(lineno_save, current_x_save);
-		if (was_at_eol || openfile->current_x > strlen(openfile->current->data))
-			openfile->current_x = strlen(openfile->current->data);
-		openfile->placewewant = pww_save;
-		adjust_viewport(STATIONARY);
-
-		set_modified();
-
-#ifndef NANO_TINY
-		/* Flush the undo stack, to avoid a mess or crash when
-		 * the user tries to undo things in reformatted lines. */
-		discard_until(NULL, openfile, FALSE);
-#endif
-		finalstatus = _("Finished formatting");
-	}
-
-	unlink(temp);
-	free(temp);
-
-#ifndef NANO_TINY
-	/* Unblock SIGWINCHes again. */
-	allow_sigwinch(TRUE);
-#endif
-
-	statusbar(finalstatus);
-
-	/* If there were error messages, allow the user some time to read them. */
-	if (WIFEXITED(format_status) && WEXITSTATUS(format_status) == 2)
-		sleep(4);
-
-	/* If there were any messages, clear them off. */
-	total_refresh();
-}
-#endif /* ENABLE_SPELLER */
 #endif /* ENABLE_COLOR */
 
 #ifndef NANO_TINY
@@ -3619,6 +3508,7 @@ void complete_a_word(void)
 
 	/* If there is no word fragment before the cursor, do nothing. */
 	if (start_of_shard == openfile->current_x) {
+		statusbar(_("No word fragment"));
 		pletion_line = NULL;
 		return;
 	}

@@ -92,27 +92,27 @@ _GL_END_NAMESPACE
    classification macros with an argument of real-floating (that is,
    one of float, double, or long double).  */
 #define _GL_WARN_REAL_FLOATING_DECL(func) \
-_GL_MATH_INLINE int                                                 \
-rpl_ ## func ## f (float f)                                         \
-{                                                                   \
-  return func (f);                                                  \
-}                                                                   \
-_GL_MATH_INLINE int                                                 \
-rpl_ ## func ## d (double d)                                        \
-{                                                                   \
-  return func (d);                                                  \
-}                                                                   \
-_GL_MATH_INLINE int                                                 \
-rpl_ ## func ## l (long double l)                                   \
-{                                                                   \
-  return func (l);                                                  \
-}                                                                   \
-_GL_WARN_ON_USE (rpl_ ## func ## f, #func " is unportable - "       \
-                 "use gnulib module " #func " for portability");    \
-_GL_WARN_ON_USE (rpl_ ## func ## d, #func " is unportable - "       \
-                 "use gnulib module " #func " for portability");    \
-_GL_WARN_ON_USE (rpl_ ## func ## l, #func " is unportable - "       \
-                 "use gnulib module " #func " for portability")
+_GL_MATH_INLINE int                                                       \
+_GL_WARN_ON_USE_ATTRIBUTE (#func " is unportable - "                      \
+                           "use gnulib module " #func " for portability") \
+rpl_ ## func ## f (float f)                                               \
+{                                                                         \
+  return func (f);                                                        \
+}                                                                         \
+_GL_MATH_INLINE int                                                       \
+_GL_WARN_ON_USE_ATTRIBUTE (#func " is unportable - "                      \
+                           "use gnulib module " #func " for portability") \
+rpl_ ## func ## d (double d)                                              \
+{                                                                         \
+  return func (d);                                                        \
+}                                                                         \
+_GL_MATH_INLINE int                                                       \
+_GL_WARN_ON_USE_ATTRIBUTE (#func " is unportable - "                      \
+                           "use gnulib module " #func " for portability") \
+rpl_ ## func ## l (long double l)                                         \
+{                                                                         \
+  return func (l);                                                        \
+}
 #define _GL_WARN_REAL_FLOATING_IMPL(func, value) \
   (sizeof (value) == sizeof (float) ? rpl_ ## func ## f (value)     \
    : sizeof (value) == sizeof (double) ? rpl_ ## func ## d (value)  \

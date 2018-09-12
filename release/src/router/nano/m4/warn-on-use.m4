@@ -1,4 +1,4 @@
-# warn-on-use.m4 serial 5
+# warn-on-use.m4 serial 6
 dnl Copyright (C) 2010-2018 Free Software Foundation, Inc.
 dnl This file is free software; the Free Software Foundation
 dnl gives unlimited permission to copy and/or distribute it,
@@ -6,6 +6,8 @@ dnl with or without modifications, as long as this notice is preserved.
 
 # gl_WARN_ON_USE_PREPARE(INCLUDES, NAMES)
 # ---------------------------------------
+# If the module 'posixcheck' is in use:
+#
 # For each whitespace-separated element in the list of NAMES, define
 # HAVE_RAW_DECL_name if the function has a declaration among INCLUDES
 # even after being undefined as a macro.
@@ -23,25 +25,27 @@ dnl with or without modifications, as long as this notice is preserved.
 # needing gl_WARN_ON_USE_PREPARE.
 AC_DEFUN([gl_WARN_ON_USE_PREPARE],
 [
-  m4_foreach_w([gl_decl], [$2],
-    [AH_TEMPLATE([HAVE_RAW_DECL_]AS_TR_CPP(m4_defn([gl_decl])),
-      [Define to 1 if ]m4_defn([gl_decl])[ is declared even after
-       undefining macros.])])dnl
+  m4_ifdef([gl_POSIXCHECK],
+    [m4_foreach_w([gl_decl], [$2],
+       [AH_TEMPLATE([HAVE_RAW_DECL_]AS_TR_CPP(m4_defn([gl_decl])),
+         [Define to 1 if ]m4_defn([gl_decl])[ is declared even after
+          undefining macros.])])dnl
 dnl FIXME: gl_Symbol must be used unquoted until we can assume
 dnl autoconf 2.64 or newer.
-  for gl_func in m4_flatten([$2]); do
-    AS_VAR_PUSHDEF([gl_Symbol], [gl_cv_have_raw_decl_$gl_func])dnl
-    AC_CACHE_CHECK([whether $gl_func is declared without a macro],
-      gl_Symbol,
-      [AC_COMPILE_IFELSE([AC_LANG_PROGRAM([$1],
+     for gl_func in m4_flatten([$2]); do
+       AS_VAR_PUSHDEF([gl_Symbol], [gl_cv_have_raw_decl_$gl_func])dnl
+       AC_CACHE_CHECK([whether $gl_func is declared without a macro],
+         gl_Symbol,
+         [AC_COMPILE_IFELSE([AC_LANG_PROGRAM([$1],
 [@%:@undef $gl_func
   (void) $gl_func;])],
-        [AS_VAR_SET(gl_Symbol, [yes])], [AS_VAR_SET(gl_Symbol, [no])])])
-    AS_VAR_IF(gl_Symbol, [yes],
-      [AC_DEFINE_UNQUOTED(AS_TR_CPP([HAVE_RAW_DECL_$gl_func]), [1])
-       dnl shortcut - if the raw declaration exists, then set a cache
-       dnl variable to allow skipping any later AC_CHECK_DECL efforts
-       eval ac_cv_have_decl_$gl_func=yes])
-    AS_VAR_POPDEF([gl_Symbol])dnl
-  done
+           [AS_VAR_SET(gl_Symbol, [yes])], [AS_VAR_SET(gl_Symbol, [no])])])
+       AS_VAR_IF(gl_Symbol, [yes],
+         [AC_DEFINE_UNQUOTED(AS_TR_CPP([HAVE_RAW_DECL_$gl_func]), [1])
+          dnl shortcut - if the raw declaration exists, then set a cache
+          dnl variable to allow skipping any later AC_CHECK_DECL efforts
+          eval ac_cv_have_decl_$gl_func=yes])
+       AS_VAR_POPDEF([gl_Symbol])dnl
+     done
+    ])
 ])

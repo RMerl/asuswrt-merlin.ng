@@ -3878,30 +3878,27 @@ check_node_accept_bytes (const re_dfa_t *dfa, Idx node_idx,
 	      indirect = (const int32_t *)
 		_NL_CURRENT (LC_COLLATE, _NL_COLLATE_INDIRECTMB);
 	      int32_t idx = findidx (table, indirect, extra, &cp, elem_len);
+	      int32_t rule = idx >> 24;
+	      idx &= 0xffffff;
 	      if (idx > 0)
-		for (i = 0; i < cset->nequiv_classes; ++i)
-		  {
-		    int32_t equiv_class_idx = cset->equiv_classes[i];
-		    size_t weight_len = weights[idx & 0xffffff];
-		    if (weight_len == weights[equiv_class_idx & 0xffffff]
-			&& (idx >> 24) == (equiv_class_idx >> 24))
-		      {
-			Idx cnt = 0;
-
-			idx &= 0xffffff;
-			equiv_class_idx &= 0xffffff;
-
-			while (cnt <= weight_len
-			       && (weights[equiv_class_idx + 1 + cnt]
-				   == weights[idx + 1 + cnt]))
-			  ++cnt;
-			if (cnt > weight_len)
-			  {
-			    match_len = elem_len;
-			    goto check_node_accept_bytes_match;
-			  }
-		      }
-		  }
+		{
+		  size_t weight_len = weights[idx];
+		  for (i = 0; i < cset->nequiv_classes; ++i)
+		    {
+		      int32_t equiv_class_idx = cset->equiv_classes[i];
+		      int32_t equiv_class_rule = equiv_class_idx >> 24;
+		      equiv_class_idx &= 0xffffff;
+		      if (weights[equiv_class_idx] == weight_len
+			  && equiv_class_rule == rule
+			  && memcmp (weights + idx + 1,
+				     weights + equiv_class_idx + 1,
+				     weight_len) == 0)
+			{
+			  match_len = elem_len;
+			  goto check_node_accept_bytes_match;
+			}
+		    }
+		}
 	    }
 	}
       else

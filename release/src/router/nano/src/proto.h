@@ -61,6 +61,8 @@ extern int controlup;
 extern int controldown;
 extern int controlhome;
 extern int controlend;
+extern int controldelete;
+extern int controlshiftdelete;
 #ifndef NANO_TINY
 extern int shiftcontrolleft;
 extern int shiftcontrolright;
@@ -80,7 +82,6 @@ extern int shiftaltdown;
 
 #ifdef ENABLED_WRAPORJUSTIFY
 extern ssize_t fill;
-extern ssize_t wrap_at;
 #endif
 
 extern char *last_search;
@@ -124,7 +125,6 @@ extern char *quoteerr;
 extern char *word_chars;
 
 extern char *answer;
-extern size_t statusbar_x;
 
 extern ssize_t tabsize;
 
@@ -179,7 +179,9 @@ extern int interface_color_pair[NUMBER_OF_ELEMENTS];
 
 extern char *homedir;
 extern char *statedir;
+#ifdef ENABLE_NANORC
 extern char *rcfile_with_errors;
+#endif
 
 typedef void (*functionptrtype)(void);
 
@@ -190,7 +192,7 @@ void read_the_list(const char *path, DIR *dir);
 functionptrtype parse_browser_input(int *kbinput);
 void browser_refresh(void);
 void browser_select_dirname(const char *needle);
-void do_filesearch(void);
+void do_filesearch(bool forwards);
 void do_fileresearch(bool forwards);
 void to_first_file(void);
 void to_last_file(void);
@@ -222,7 +224,6 @@ char *mbstrcasestr(const char *haystack, const char *needle);
 char *revstrstr(const char *haystack, const char *needle, const char *index);
 char *mbrevstrcasestr(const char *haystack, const char *needle, const char *index);
 size_t mbstrlen(const char *s);
-size_t mbstrnlen(const char *s, size_t maxlen);
 #if !defined(NANO_TINY) || defined(ENABLE_JUSTIFY)
 char *mbstrchr(const char *s, const char *c);
 #endif
@@ -236,9 +237,6 @@ bool has_blank_mbchars(const char *s);
 #endif
 #ifdef ENABLE_UTF8
 bool is_valid_unicode(wchar_t wc);
-#endif
-#ifdef ENABLE_NANORC
-bool is_valid_mbstring(const char *s);
 #endif
 
 /* Most functions in color.c. */
@@ -257,7 +255,7 @@ bool keeping_cutbuffer(void);
 #ifndef NANO_TINY
 void cut_marked(bool *right_side_up);
 #endif
-void do_cut_text(bool copy_text, bool cut_till_eof);
+void do_cut_text(bool copy_text, bool marked, bool cut_till_eof);
 void do_cut_text_void(void);
 #ifndef NANO_TINY
 void do_copy_text(void);
@@ -272,12 +270,12 @@ bool open_buffer(const char *filename, bool new_buffer);
 #ifdef ENABLE_SPELLER
 void replace_buffer(const char *filename);
 #ifndef NANO_TINY
-void replace_marked_buffer(const char *filename, filestruct *top, size_t top_x,
-		filestruct *bot, size_t bot_x);
+void replace_marked_buffer(const char *filename);
 #endif
 #endif
 void prepare_for_display(void);
 #ifdef ENABLE_MULTIBUFFER
+void mention_name_and_linecount(void);
 void switch_to_prev_buffer(void);
 void switch_to_next_buffer(void);
 bool close_buffer(void);
@@ -326,15 +324,15 @@ void assign_keyinfo(sc *s, const char *keystring, const int keycode);
 void print_sclist(void);
 void shortcut_init(void);
 #ifdef ENABLE_COLOR
-void set_lint_or_format_shortcuts(void);
-void set_spell_shortcuts(void);
+void set_linter_shortcut(void);
+void set_speller_shortcut(void);
 #endif
 const subnfunc *sctofunc(const sc *s);
 const char *flagtostr(int flag);
+#ifdef ENABLE_NANORC
 sc *strtosc(const char *input);
-int strtomenu(const char *input);
-#ifdef DEBUG
-void thanks_for_all_the_fish(void);
+int name_to_menu(const char *name);
+char *menu_to_name(int menu);
 #endif
 
 /* All functions in help.c. */
@@ -465,10 +463,9 @@ void do_statusbar_prev_word(void);
 void do_statusbar_next_word(void);
 #endif
 void do_statusbar_verbatim_input(void);
-size_t statusbar_xplustabs(void);
 size_t get_statusbar_page_start(size_t start_col, size_t column);
-void reinit_statusbar_x(void);
-void update_the_statusbar(void);
+void put_cursor_at_end_of_answer(void);
+void add_or_remove_pipe_symbol_from_answer(void);
 int do_prompt(bool allow_tabs, bool allow_files,
 		int menu, const char *curranswer, filestruct **history_list,
 		void (*refresh_func)(void), const char *msg, ...);
@@ -490,11 +487,8 @@ int findnextstr(const char *needle, bool whole_word_only, int modus,
 void do_search(void);
 void do_search_forward(void);
 void do_search_backward(void);
-void do_research(void);
-#ifndef NANO_TINY
 void do_findprevious(void);
 void do_findnext(void);
-#endif
 void not_found_msg(const char *str);
 void go_looking(void);
 ssize_t do_replace_loop(const char *needle, bool whole_word_only,
@@ -562,7 +556,6 @@ void do_spell(void);
 #endif
 #ifdef ENABLE_COLOR
 void do_linter(void);
-void do_formatter(void);
 #endif
 #ifndef NANO_TINY
 void do_wordlinechar_count(void);
@@ -615,9 +608,6 @@ void get_range(const filestruct **top, const filestruct **bot);
 size_t get_totsize(const filestruct *begin, const filestruct *end);
 #ifndef NANO_TINY
 filestruct *fsfromline(ssize_t lineno);
-#endif
-#ifdef DEBUG
-void dump_filestruct(const filestruct *inptr);
 #endif
 
 /* Most functions in winio.c. */
@@ -714,6 +704,7 @@ void prepend_void(void);
 void backup_file_void(void);
 void flip_execute(void);
 void flip_pipe(void);
+void flip_convert(void);
 #endif
 #ifdef ENABLE_MULTIBUFFER
 void flip_newbuffer(void);

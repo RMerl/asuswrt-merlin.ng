@@ -33,7 +33,8 @@
 #include <config.h>
 
 /* On glibc this includes <features.h> and <sys/cdefs.h> and #defines
-   _FEATURES_H, __WORDSIZE, and __set_errno.  On other platforms this
+   _FEATURES_H, __WORDSIZE, and __set_errno.  On FreeBSD 11 it
+   includes <sys/cdefs.h> which defines __nonnull.  Elsewhere it
    is harmless.  */
 #include <errno.h>
 
@@ -118,6 +119,7 @@
 #undef __attribute_format_strfmon__
 #undef __attribute_malloc__
 #undef __attribute_noinline__
+#undef __attribute_nonstring__
 #undef __attribute_pure__
 #undef __attribute_used__
 #undef __attribute_warn_unused_result__
@@ -136,7 +138,6 @@
 #undef __glibc_macro_warning1
 #undef __glibc_unlikely
 #undef __inline
-#undef __nonnull
 #undef __ptr_t
 #undef __restrict
 #undef __restrict_arr
@@ -155,17 +156,6 @@
 #  define __inline inline
 # else
 #  define __inline
-# endif
-#endif
-
-/* <cdefs.h> __restrict is too pessimistic for non-GCC.  GCC 2.95 and
-   later have "__restrict", and C99 compilers have "restrict".  */
-#undef __restrict
-#if !__GNUC_PREREQ (2, 95)
-# if 199901L <= __STDC_VERSION__
-#  define __restrict restrict
-# else
-#  define __restrict
 # endif
 #endif
 

@@ -1,9 +1,7 @@
 ## Sample initialization file for GNU nano.
 ##
-## Please note that you must have configured nano with --enable-nanorc
-## for this file to be read!  Also note that this file should not be in
-## DOS or Mac format, and that characters specially interpreted by the
-## shell should not be escaped here.
+## This file should not be in DOS or Mac format, and characters
+## specially interpreted by the shell should not be escaped here.
 ##
 ## To make sure an option is disabled, use "unset <option>".
 ##
@@ -53,9 +51,9 @@
 # set cutfromcursor
 ## (The old form, 'cut', is deprecated.)
 
-## Set the line length for wrapping text and justifying paragraphs.
-## If the value is 0 or less, the wrapping point will be the screen
-## width less this number.
+## Enable hard-wrapping and set the target width, both for automatic
+## line wrapping and for justifying paragraphs.  If the value is 0 or
+## less, the wrapping point will be the screen width minus this number.
 # set fill -8
 
 ## Remember the used search/replace strings for the next session.
@@ -100,7 +98,7 @@
 ## last one will be readable (when there are multiple ones).
 # set nopauses
 
-## Don't wrap text at all.
+## Do not automatically hard-wrap text.
 # set nowrap
 
 ## Set operating directory.  nano will not read or write files outside
@@ -149,7 +147,7 @@
 ## beginning of the line.
 # set smarthome
 
-## Use smooth scrolling as the default.
+## Use line-by-line scrolling instead of chunk-by-chunk.
 # set smooth
 
 ## Enable soft line wrapping (AKA full-line display).
@@ -233,9 +231,9 @@
 ## "color" will do case-sensitive matches, while "icolor" will do
 ## case-insensitive matches.
 ##
-## Valid colors: white, black, red, blue, green, yellow, magenta, cyan.
-## For foreground colors, you may use the prefix "bright" to get a
-## stronger highlight.
+## Valid color names ares: white, black, normal, red, blue, green,
+## yellow, magenta, cyan.  For foreground colors, you may use the
+## prefix "bright" to get a stronger highlight.
 ##
 ## To use multi-line regexes, use the start="regex" end="regex"
 ## [start="regex" end="regex"...] format.
@@ -255,18 +253,23 @@
 ## ".nanorc" extension) should be the same as the "short description"
 ## name inside that file.  These names are kept fairly short to make
 ## them easier to remember and faster to type using nano's -Y option.
-##
+
 ## To include all existing syntax definitions, you can do:
 # include "@PKGDATADIR@/*.nanorc"
 
 
 ## Key bindings.
 ## See nanorc(5) (section REBINDING KEYS) for more details on this.
-##
-## The following two functions are not bound to any key by default.
-## You may wish to choose other keys than the ones suggested here.
-# bind M-B cutwordleft main
-# bind M-N cutwordright main
 
-## Set this if your Backspace key sends Del most of the time.
+## If your Backspace key behaves as Delete (when ssh'ing in from another
+## machine, for example), set this to make it behave as Backspace again:
 # bind Del backspace all
+
+## The <Ctrl+Delete> keystroke deletes the word to the right of the cursor.
+## On some terminals the <Ctrl+Backspace> keystroke produces ^H, which is
+## the ASCII character for backspace, so it is bound by default to the
+## backspace function.  The <Backspace> key itself produces a different
+## keycode, which is hard-bound to the backspace function.  So, if you
+## normally use <Backspace> for backspacing and not ^H, you can make
+## <Ctrl+Backspace> delete the word to the left of the cursor with:
+# bind ^H cutwordleft main

@@ -621,7 +621,6 @@ void start_ovpn_server(int serverNum)
 	int nvi, ip[4], nm[4];
 	int pid;
 	int taskset_ret;
-	char fpath[128];
 	int valid = 0;
 	int userauth = 0, useronly = 0;
 	int i, len;
@@ -1078,8 +1077,8 @@ void start_ovpn_server(int serverNum)
 		     !ovpn_key_exists(OVPN_TYPE_SERVER, serverNum, OVPN_SERVER_CERT))
 		{
 
-			sprintf(fpath, "/tmp/genvpncert.sh");
-			fp = fopen(fpath, "w");
+			sprintf(buffer, "/tmp/genvpncert.sh");
+			fp = fopen(buffer, "w");
 			if(fp) {
 				fprintf(fp, "#!/bin/sh\n");
 				//fprintf(fp, ". /rom/easy-rsa/vars\n");
@@ -1106,29 +1105,29 @@ void start_ovpn_server(int serverNum)
 				fprintf(fp, "/rom/easy-rsa/pkitool client\n");
 
 				fclose(fp);
-				chmod(fpath, 0700);
-				eval(fpath);
-				unlink(fpath);
+				chmod(buffer, 0700);
+				eval(buffer);
+				unlink(buffer);
 			}
 
 			//set certification and key to nvram
-			sprintf(fpath, "/etc/openvpn/server%d/ca.key", serverNum);
-			set_ovpn_key(OVPN_TYPE_SERVER, serverNum, OVPN_SERVER_CA_KEY, NULL, fpath);
+			sprintf(buffer, "/etc/openvpn/server%d/ca.key", serverNum);
+			set_ovpn_key(OVPN_TYPE_SERVER, serverNum, OVPN_SERVER_CA_KEY, NULL, buffer);
 
-			sprintf(fpath, "/etc/openvpn/server%d/ca.crt", serverNum);
-			set_ovpn_key(OVPN_TYPE_SERVER, serverNum, OVPN_SERVER_CA, NULL, fpath);
+			sprintf(buffer, "/etc/openvpn/server%d/ca.crt", serverNum);
+			set_ovpn_key(OVPN_TYPE_SERVER, serverNum, OVPN_SERVER_CA, NULL, buffer);
 
-			sprintf(fpath, "/etc/openvpn/server%d/server.key", serverNum);
-			set_ovpn_key(OVPN_TYPE_SERVER, serverNum, OVPN_SERVER_KEY, NULL, fpath);
+			sprintf(buffer, "/etc/openvpn/server%d/server.key", serverNum);
+			set_ovpn_key(OVPN_TYPE_SERVER, serverNum, OVPN_SERVER_KEY, NULL, buffer);
 
-			sprintf(fpath, "/etc/openvpn/server%d/server.crt", serverNum);
-			set_ovpn_key(OVPN_TYPE_SERVER, serverNum, OVPN_SERVER_CERT, NULL, fpath);
+			sprintf(buffer, "/etc/openvpn/server%d/server.crt", serverNum);
+			set_ovpn_key(OVPN_TYPE_SERVER, serverNum, OVPN_SERVER_CERT, NULL, buffer);
 
-			sprintf(fpath, "/etc/openvpn/server%d/client.key", serverNum);
-			set_ovpn_key(OVPN_TYPE_SERVER, serverNum, OVPN_SERVER_CLIENT_KEY, NULL, fpath);
+			sprintf(buffer, "/etc/openvpn/server%d/client.key", serverNum);
+			set_ovpn_key(OVPN_TYPE_SERVER, serverNum, OVPN_SERVER_CLIENT_KEY, NULL, buffer);
 
-			sprintf(fpath, "/etc/openvpn/server%d/client.crt", serverNum);
-			set_ovpn_key(OVPN_TYPE_SERVER, serverNum, OVPN_SERVER_CLIENT_CERT, NULL, fpath);
+			sprintf(buffer, "/etc/openvpn/server%d/client.crt", serverNum);
+			set_ovpn_key(OVPN_TYPE_SERVER, serverNum, OVPN_SERVER_CLIENT_CERT, NULL, buffer);
 		}
 		else {
 				sprintf(buffer, "/etc/openvpn/server%d/ca.key", serverNum);
@@ -1293,10 +1292,10 @@ void start_ovpn_server(int serverNum)
 		}
 		else
 		{	//generate openvpn static key
-			sprintf(fpath, "/etc/openvpn/server%d/static.key", serverNum);
-			eval("openvpn", "--genkey", "--secret", fpath);
+			sprintf(buffer, "/etc/openvpn/server%d/static.key", serverNum);
+			eval("openvpn", "--genkey", "--secret", buffer);
 			sleep(2);
-			set_ovpn_key(OVPN_TYPE_SERVER, serverNum, OVPN_SERVER_STATIC, NULL, fpath);
+			set_ovpn_key(OVPN_TYPE_SERVER, serverNum, OVPN_SERVER_STATIC, NULL, buffer);
 		}
 
 		if(cryptMode == TLS)

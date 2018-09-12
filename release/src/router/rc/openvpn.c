@@ -20,6 +20,11 @@
 #include <openvpn_control.h>
 #include <openssl/ssl.h>
 
+#include <openssl/bio.h>
+#include <openssl/pem.h>
+#include <openssl/x509.h>
+#include <openssl/x509_vfy.h>
+
 // Line number as text string
 #define __LINE_T__ __LINE_T_(__LINE__)
 #define __LINE_T_(x) __LINE_T(x)
@@ -1202,28 +1207,47 @@ void start_ovpn_server(int serverNum)
 		// Only do this if we do not have both userauth and useronly enabled at the same time
 		if ( !(userauth && useronly) )
 		{
+			BIO              *certbio = NULL;
+			X509                *cert = NULL;
+			X509_STORE         *store = NULL;
+			X509_STORE_CTX  *vrfy_ctx = NULL;
+
 			/*
 			   See if stored client cert was signed with our stored CA.  If not, it means
 			   the CA was changed by the user and the current client crt/key no longer match,
 			   so we should not insert them in the exported client ovp file.
 			*/
-			fp = fopen("/tmp/test.crt", "w");
-			fprintf(fp, "%s", get_ovpn_key(OVPN_TYPE_SERVER, serverNum, OVPN_SERVER_CLIENT_CERT, buffer2, sizeof(buffer2)));
-			fclose(fp);
 
-			sprintf(buffer, "/usr/sbin/openssl verify -CAfile /etc/openvpn/server%d/ca.crt /tmp/test.crt > /tmp/output.txt", serverNum);
-			system(buffer);
-			f_read_string("/tmp/output.txt", buffer, 64);
-	                unlink("/tmp/test.crt");
+			valid = 0;
+			OpenSSL_add_all_algorithms();
 
-			if (!strncmp(buffer,"/tmp/test.crt: OK",17))
-				valid = 1;
+			get_ovpn_key(OVPN_TYPE_SERVER, serverNum, OVPN_SERVER_CLIENT_CERT, buffer2, sizeof(buffer2));
+
+			if ((certbio = BIO_new(BIO_s_mem())) ) {
+				if ((store = X509_STORE_new())) {
+					if ((vrfy_ctx = X509_STORE_CTX_new())) {
+						BIO_puts(certbio, buffer2);
+						if ( (cert = PEM_read_bio_X509(certbio, NULL, 0, NULL))) {	// client cert
+							sprintf(buffer, "/etc/openvpn/server%d/ca.crt", serverNum);
+							if (X509_STORE_load_locations(store, buffer, NULL) == 1) {	// CA cert
+								X509_STORE_CTX_init(vrfy_ctx, store, cert, NULL);
+								valid = X509_verify_cert(vrfy_ctx);
+							}
+							X509_free(cert);
+						}
+						X509_STORE_CTX_free(vrfy_ctx);
+					}
+					X509_STORE_free(store);
+				}
+				BIO_free_all(certbio);
+			}
+			EVP_cleanup();
+			//logmessage("openvpn", "Valid crt = %d", valid);
 
 			fprintf(fp_client, "<cert>\n");
-			if ((valid == 1) && ovpn_key_exists(OVPN_TYPE_SERVER, serverNum, OVPN_SERVER_CLIENT_CERT)) {
-				fprintf(fp_client, "%s", get_ovpn_key(OVPN_TYPE_SERVER, serverNum, OVPN_SERVER_CLIENT_CERT, buffer2, sizeof(buffer2)));
-				len = strlen(buffer2);
-				if ((len) && (buffer2[len-1] != '\n'))
+			if (valid == 1) {
+				fprintf(fp_client, "%s", buffer2);
+				if (buffer2[strlen(buffer2)-1] != '\n')
 					fprintf(fp_client, "\n");       // Append newline if missing
 			} else {
 				fprintf(fp_client, "    paste client certificate data here\n");

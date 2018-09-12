@@ -18,6 +18,7 @@
 
 #include <openvpn_config.h>
 #include <openvpn_control.h>
+#include <openssl/ssl.h>
 
 // Line number as text string
 #define __LINE_T__ __LINE_T_(__LINE__)
@@ -625,6 +626,7 @@ void start_ovpn_server(int serverNum)
 	int userauth = 0, useronly = 0;
 	int i, len;
 	char prefix[16];
+	DH *dhparams = NULL;
 
 	snprintf(prefix, sizeof (prefix), "vpn_server%d_", serverNum);
 
@@ -1241,36 +1243,40 @@ void start_ovpn_server(int serverNum)
 			fprintf(fp_client, "</key>\n");
 		}
 
+		// DH
+		sprintf(buffer, "/etc/openvpn/server%d/dh.pem", serverNum);
 		valid = 0;
 
 		if ( ovpn_key_exists(OVPN_TYPE_SERVER, serverNum, OVPN_SERVER_DH))
 		{
-			sprintf(buffer, "/etc/openvpn/server%d/dh.pem", serverNum);
 			fp = fopen(buffer, "w");
 			chmod(buffer, S_IRUSR|S_IWUSR);
 			fprintf(fp, "%s", get_ovpn_key(OVPN_TYPE_SERVER, serverNum, OVPN_SERVER_DH, buffer2, sizeof(buffer2)));
 			fclose(fp);
-			valid = 1;	// Tentative state
+
 			if (strncmp(buffer2, "none", 4))	// If not set to "none" then validate it
 			{
-				// Validate DH strength
-				sprintf(buffer, "/usr/sbin/openssl dhparam -in /etc/openvpn/server%d/dh.pem -text | grep \"DH Parameters:\" > /tmp/output.txt", serverNum);
-				system(buffer);
-				if (f_read_string("/tmp/output.txt", buffer, 64) > 0) {
-					if (sscanf(strstr(buffer,"DH Parameters"),"DH Parameters: (%d bit)", &i)) {
-						if (i < 1024) {
-							logmessage("openvpn","WARNING: DH for server %d is too weak (%d bit, must be at least 1024 bit). Using a pre-generated 2048-bit PEM.", serverNum, i);
-							valid = 0;      // Not valid after all, must regenerate
-						}
+				fp = fopen(buffer, "r");
+				if (fp) {
+					dhparams = PEM_read_DHparams(fp, NULL, 0, NULL);
+					if (dhparams) {
+						valid = BN_num_bits(dhparams->p);
+						//logmessage("openssl", "DH size: %d", valid);
+						OPENSSL_free(dhparams);
 					}
+					fclose(fp);
 				}
+				if ((valid != 0) && (valid < 1024)) {
+					logmessage("openvpn","WARNING: DH for server %d is too weak (%d bit, must be at least 1024 bit). Using a pre-generated 2048-bit PEM.", serverNum, i);
+				}
+			} else {
+				valid = 1024;
 			}
 		}
-		if (valid == 0)
+		if (valid < 1024)
 		{	// Provide a 2048-bit PEM, from RFC 3526.
-			sprintf(fpath, "/etc/openvpn/server%d/dh.pem", serverNum);
-			eval("cp", "/etc/ssl/certs/dh2048.pem", fpath);
-			set_ovpn_key(OVPN_TYPE_SERVER, serverNum, OVPN_SERVER_DH, NULL, fpath);
+			eval("cp", "/etc/ssl/certs/dh2048.pem", buffer);
+			set_ovpn_key(OVPN_TYPE_SERVER, serverNum, OVPN_SERVER_DH, NULL, buffer);
 		}
 	}
 

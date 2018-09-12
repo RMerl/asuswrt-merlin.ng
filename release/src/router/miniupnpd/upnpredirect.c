@@ -1,4 +1,4 @@
-/* $Id: upnpredirect.c,v 1.93 2018/03/12 22:41:53 nanard Exp $ */
+/* $Id: upnpredirect.c,v 1.95 2018/07/06 12:05:48 nanard Exp $ */
 /* vim: tabstop=4 shiftwidth=4 noexpandtab
  * MiniUPnP project
  * http://miniupnp.free.fr/ or https://miniupnp.tuxfamily.org/
@@ -440,6 +440,8 @@ upnp_redirect_internal(const char * rhost, unsigned short eport,
 {
 	/*syslog(LOG_INFO, "redirecting port %hu to %s:%hu protocol %s for: %s",
 		eport, iaddr, iport, protocol, desc);			*/
+	if(disable_port_forwarding)
+		return -1;
 	if(add_redirect_rule2(ext_if_name, rhost, eport, iaddr, iport, proto,
 	                      desc, timestamp) < 0) {
 		return -1;
@@ -779,4 +781,3 @@ write_ruleset_details(int s)
 	}
 }
 #endif
-

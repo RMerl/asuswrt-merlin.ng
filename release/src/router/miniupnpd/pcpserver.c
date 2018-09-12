@@ -1434,7 +1434,7 @@ static int processPCPRequest(void * req, int req_size, pcp_info_t *pcp_msg_info)
 }
 
 
-static void createPCPResponse(unsigned char *response, pcp_info_t *pcp_msg_info)
+static void createPCPResponse(unsigned char *response, const pcp_info_t *pcp_msg_info)
 {
 	response[2] = 0;	/* reserved */
 	memset(response + 12, 0, 12);	/* reserved */
@@ -1445,7 +1445,7 @@ static void createPCPResponse(unsigned char *response, pcp_info_t *pcp_msg_info)
 		response[0] = pcp_msg_info->version;
 	}
 
-	response[1] |= 0x80;	/* r_opcode */
+	response[1] = pcp_msg_info->opcode | 0x80;	/* r_opcode */
 	response[3] = pcp_msg_info->result_code;
 	if(epoch_origin == 0) {
 		epoch_origin = startup_time;

@@ -42,6 +42,7 @@ BASEOBJS = miniupnpd.o upnphttp.o upnpdescgen.o upnpsoap.o \
            upnpredirect.o getifaddr.o daemonize.o upnpglobalvars.o \
            options.o upnppermissions.o minissdp.o natpmp.o pcpserver.o \
            upnpevents.o upnputils.o getconnstatus.o \
+           upnpstun.o \
            upnppinhole.o pcplearndscp.o asyncsendto.o
 
 LNXOBJS = linux/getifstats.o linux/ifacewatcher.o linux/getroute.o
@@ -73,6 +74,13 @@ LDLIBS += $(shell $(PKG_CONFIG) --static --libs-only-l libnetfilter_conntrack)
 endif # ($(TEST),1)
 
 LDLIBS += $(shell $(PKG_CONFIG) --static --libs-only-l libssl)
+
+TEST := $(shell $(PKG_CONFIG) --exists uuid && echo 1)
+ifeq ($(TEST),1)
+LDLIBS += $(shell $(PKG_CONFIG) --static --libs-only-l uuid)
+else
+$(info please install uuid-dev package / libuuid)
+endif # ($(TEST),1)
 
 TESTUPNPDESCGENOBJS = testupnpdescgen.o upnpdescgen.o
 
@@ -229,3 +237,4 @@ testgetroute.o: config.h miniupnpdtypes.h
 testasyncsendto.o: miniupnpdtypes.h config.h upnputils.h asyncsendto.h
 testportinuse.o: macros.h config.h portinuse.h
 miniupnpdctl.o: macros.h
+upnpstun.o: config.h upnpstun.h netfilter/iptcrdr.h

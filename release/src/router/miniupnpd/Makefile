@@ -101,6 +101,7 @@ STDOBJS = miniupnpd.o upnphttp.o upnpdescgen.o upnpsoap.o \
           upnpredirect.o getifaddr.o daemonize.o upnpglobalvars.o \
           options.o upnppermissions.o minissdp.o natpmp.o pcpserver.o \
           upnpevents.o upnputils.o getconnstatus.o \
+          upnpstun.o \
           upnppinhole.o asyncsendto.o portinuse.o
 BSDOBJS = bsd/getifstats.o bsd/ifacewatcher.o bsd/getroute.o
 SUNOSOBJS = solaris/getifstats.o bsd/ifacewatcher.o bsd/getroute.o

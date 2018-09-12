@@ -66,25 +66,25 @@ extern rule_t **peer_cache;
 extern rule_t **redirect_cache;
 
 int
-nft_send_request(struct nft_rule * rule, uint16_t cmd);
-struct nft_rule *
+nft_send_request(struct nftnl_rule * rule, uint16_t cmd);
+struct nftnl_rule *
 rule_set_dnat(uint8_t family, const char * ifname, uint8_t proto,
 	      in_addr_t rhost, unsigned short eport,
 	      in_addr_t ihost, uint32_t iport,
 	      const char *descr,
 	      const char *handle);
-struct nft_rule *
+struct nftnl_rule *
 rule_set_snat(uint8_t family, uint8_t proto,
 	      in_addr_t rhost, unsigned short rport,
 	      in_addr_t ehost, unsigned short eport,
 	      in_addr_t ihost, unsigned short iport,
 	      const char *descr,
 	      const char *handle);
-struct nft_rule *
+struct nftnl_rule *
 rule_set_filter(uint8_t family, const char * ifname, uint8_t proto,
 		in_addr_t rhost, in_addr_t iaddr, unsigned short eport,
 		unsigned short iport, const char * descr, const char *handle);
-struct nft_rule *
+struct nftnl_rule *
 rule_del_handle(rule_t *r);
 void
 reflesh_nft_cache(uint32_t family);

@@ -1,7 +1,8 @@
-/* $Id: getifaddr.h,v 1.8 2013/03/23 10:46:54 nanard Exp $ */
-/* MiniUPnP project
+/* $Id: getifaddr.h,v 1.11 2018/07/06 11:47:29 nanard Exp $ */
+/* vim: tabstop=4 shiftwidth=4 noexpandtab
+ * MiniUPnP project
  * http://miniupnp.free.fr/ or http://miniupnp.tuxfamily.org/
- * (c) 2006-2013 Thomas Bernard
+ * (c) 2006-2018 Thomas Bernard
  * This software is subject to the conditions detailed
  * in the LICENCE file provided within the distribution */
 
@@ -28,5 +29,8 @@ int
 find_ipv6_addr(const char * ifname,
                char * dst, int n);
 
-#endif
+/* check if address is in private / reserved block (e.g. local area network) */
+int
+addr_is_reserved(struct in_addr * addr);
 
+#endif

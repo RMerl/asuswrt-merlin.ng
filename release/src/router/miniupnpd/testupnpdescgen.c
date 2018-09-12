@@ -1,5 +1,6 @@
-/* $Id: testupnpdescgen.c,v 1.34 2017/05/27 07:47:57 nanard Exp $ */
-/* MiniUPnP project
+/* $Id: testupnpdescgen.c,v 1.36 2018/07/06 12:05:48 nanard Exp $ */
+/* vim: tabstop=4 shiftwidth=4 noexpandtab
+ * MiniUPnP project
  * http://miniupnp.free.fr/ or http://miniupnp.tuxfamily.org/
  * (c) 2006-2018 Thomas Bernard
  * This software is subject to the conditions detailed
@@ -51,6 +52,12 @@ int getifaddr(const char * ifname, char * buf, int len, struct in_addr * addr, s
 	UNUSED(addr);
 	UNUSED(mask);
 	strncpy(buf, "1.2.3.4", len);
+	return 0;
+}
+
+int addr_is_reserved(struct in_addr * addr)
+{
+	UNUSED(addr);
 	return 0;
 }
 

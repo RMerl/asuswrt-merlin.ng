@@ -45,6 +45,16 @@
 #define d_printf(x)
 #endif
 
+/* list to keep timestamps for port mappings having a lease duration */
+struct timestamp_entry {
+	struct timestamp_entry * next;
+	unsigned int timestamp;
+	unsigned short eport;
+	short protocol;
+};
+
+static struct timestamp_entry * timestamp_list = NULL;
+
 /* dummy init and shutdown functions */
 int init_redirect(void)
 {
@@ -56,6 +66,57 @@ void shutdown_redirect(void)
 	return;
 }
 
+static unsigned int
+get_timestamp(unsigned short eport, int proto)
+{
+	struct timestamp_entry * e;
+	e = timestamp_list;
+	while(e) {
+		if(e->eport == eport && e->protocol == (short)proto)
+			return e->timestamp;
+		e = e->next;
+	}
+	return 0;
+}
+
+static void
+remove_timestamp_entry(unsigned short eport, int proto)
+{
+	struct timestamp_entry * e;
+	struct timestamp_entry * * p;
+	p = &timestamp_list;
+	e = *p;
+	while(e) {
+		if(e->eport == eport && e->protocol == (short)proto) {
+			/* remove the entry */
+			*p = e->next;
+			free(e);
+			return;
+		}
+		p = &(e->next);
+		e = *p;
+	}
+}
+
+static void
+add_timestamp_entry(unsigned short eport, int proto, unsigned timestamp)
+{
+	struct timestamp_entry * tmp;
+	tmp = malloc(sizeof(struct timestamp_entry));
+	if(tmp)
+	{
+		tmp->next = timestamp_list;
+		tmp->timestamp = timestamp;
+		tmp->eport = eport;
+		tmp->protocol = (short)proto;
+		timestamp_list = tmp;
+	}
+	else
+	{
+		syslog(LOG_ERR, "add_timestamp_entry() malloc(%lu) error",
+		       sizeof(struct timestamp_entry));
+	}
+}
 
 int
 add_redirect_rule2(const char * ifname,
@@ -63,7 +124,7 @@ add_redirect_rule2(const char * ifname,
 		   const char * iaddr, unsigned short iport, int proto,
 		   const char * desc, unsigned int timestamp)
 {
-	struct nft_rule *r;
+	struct nftnl_rule *r;
 	UNUSED(rhost);
 	UNUSED(timestamp);
         d_printf(("add redirect rule2(%s, %s, %u, %s, %u, %d, %s)!\n",
@@ -87,7 +148,7 @@ add_peer_redirect_rule2(const char * ifname,
 			const char * iaddr, unsigned short iport, int proto,
 			const char * desc, unsigned int timestamp)
 {
-	struct nft_rule *r;
+	struct nftnl_rule *r;
 	UNUSED(ifname); UNUSED(timestamp);
 
         d_printf(("add peer redirect rule2()!\n"));
@@ -111,7 +172,7 @@ add_filter_rule2(const char * ifname,
 		 unsigned short eport, unsigned short iport,
 		 int proto, const char * desc)
 {
-	struct nft_rule *r = NULL;
+	struct nftnl_rule *r = NULL;
 	in_addr_t rhost_addr = 0;
 
 	d_printf(("add_filter_rule2(%s, %s, %s, %d, %d, %d, %s)\n",
@@ -143,6 +204,26 @@ add_peer_dscp_rule2(const char * ifname,
 	return 0;
 }
 
+int
+delete_filter_rule(const char * ifname, unsigned short port, int proto)
+{
+	rule_t *p;
+	struct nftnl_rule *r;
+	UNUSED(ifname);
+
+	reflesh_nft_cache(NFPROTO_IPV4);
+	LIST_FOREACH(p, &head, entry) {
+		if (p->eport == port && p->proto == proto && p->type == RULE_FILTER) {
+			r = rule_del_handle(p);
+			/* Todo: send bulk request */
+			nft_send_request(r, NFT_MSG_DELRULE);
+			break;
+		}
+	}
+
+	return 0;
+}
+
 /*
  * Clear all rules corresponding eport/proto
  */
@@ -150,7 +231,7 @@ int
 delete_redirect_and_filter_rules(unsigned short eport, int proto)
 {
 	rule_t *p;
-	struct nft_rule *r = NULL;
+	struct nftnl_rule *r = NULL;
         in_addr_t iaddr = 0;
         uint16_t iport = 0;
         extern void print_rule(rule_t *r) ;
@@ -327,6 +408,10 @@ get_redirect_rule_by_index(int index,
 				strncpy(desc, r->desc, desclen);
 			}
 
+			if (timestamp != NULL) {
+				*timestamp = get_timestamp(*eport, *proto);
+			}
+
 			/* 
 			 * TODO: Implement counter in case of add {nat,filter}
 			 */
@@ -375,6 +460,10 @@ get_nat_redirect_rule(const char * nat_chain_name, const char * ifname,
 				strncpy(desc, p->desc, desclen);
 			}
 			*iport = p->iport;
+
+			if(timestamp != NULL)
+				*timestamp = get_timestamp(eport, proto);
+
 			return 0;
 		}
 	}
@@ -429,6 +518,46 @@ get_portmappings_in_range(unsigned short startport, unsigned short endport,
 		}
 	}
 	return array;
+}
+
+int
+update_portmapping_desc_timestamp(const char * ifname,
+                   unsigned short eport, int proto,
+                   const char * desc, unsigned int timestamp)
+{
+	UNUSED(ifname);
+	UNUSED(desc);
+	remove_timestamp_entry(eport, proto);
+	add_timestamp_entry(eport, proto, timestamp);
+	return 0;
+}
+
+int
+update_portmapping(const char * ifname, unsigned short eport, int proto,
+                   unsigned short iport, const char * desc,
+                   unsigned int timestamp)
+{
+	char iaddr[4];
+	char iaddr_str[16];
+	char rhost[32];
+	int r;
+
+	if (get_redirect_rule(NULL, eport, proto, iaddr, 0, NULL, NULL, 0, rhost, 0, NULL, 0, 0) < 0)
+		return -1;
+
+	r = delete_redirect_and_filter_rules(eport, proto);
+	if (r < 0)
+		return -1;
+
+	inet_ntop(AF_INET, &iaddr, iaddr_str, sizeof(iaddr_str));
+
+	if(add_redirect_rule2(ifname, rhost, eport, iaddr_str, iport, proto,
+						  desc, timestamp) < 0)
+		return -1;
+	if(add_filter_rule2(ifname, rhost, iaddr_str, eport, iport, proto, desc) < 0)
+		return -1;
+
+	return 0;
 }
 
 /* for debug */

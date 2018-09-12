@@ -1,8 +1,8 @@
-/* $Id: upnpglobalvars.c,v 1.41 2017/05/27 07:47:57 nanard Exp $ */
+/* $Id: upnpglobalvars.c,v 1.43 2018/07/06 12:05:48 nanard Exp $ */
 /* vim: tabstop=4 shiftwidth=4 noexpandtab
  * MiniUPnP project
  * http://miniupnp.free.fr/ or http://miniupnp.tuxfamily.org/
- * (c) 2006-2017 Thomas Bernard
+ * (c) 2006-2018 Thomas Bernard
  * This software is subject to the conditions detailed
  * in the LICENCE file provided within the distribution */
 
@@ -16,6 +16,10 @@
 /* network interface for internet */
 const char * ext_if_name = 0;
 
+/* stun host/port configuration */
+const char * ext_stun_host = 0;
+uint16_t ext_stun_port = 0;
+
 /* file to store leases */
 #ifdef ENABLE_LEASEFILE
 const char* lease_file = 0;
@@ -24,6 +28,10 @@ const char* lease_file = 0;
 /* forced ip address to use for this interface
  * when NULL, getifaddr() is used */
 const char * use_ext_ip_addr = 0;
+
+/* disallow all port forwarding requests when
+ * we are behind restrictive nat */
+int disable_port_forwarding = 0;
 
 unsigned long downstream_bitrate = 0;
 unsigned long upstream_bitrate = 0;
@@ -167,4 +175,3 @@ unsigned int upnp_configid = 1337; /* CONFIGID.UPNP.ORG */
 #ifdef RANDOMIZE_URLS
 char random_url[RANDOM_URL_MAX_LEN] = "random";
 #endif /* RANDOMIZE_URLS */
-

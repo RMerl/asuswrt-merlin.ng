@@ -94,6 +94,7 @@ error:
 static void FillPublicAddressResponse(unsigned char * resp, in_addr_t senderaddr)
 {
 #ifndef MULTIPLE_EXTERNAL_IP
+	struct in_addr addr;
 	char tmp[16];
 	UNUSED(senderaddr);
 
@@ -103,10 +104,13 @@ static void FillPublicAddressResponse(unsigned char * resp, in_addr_t senderaddr
 		if(!ext_if_name || ext_if_name[0]=='\0') {
 			resp[3] = 3;	/* Network Failure (e.g. NAT box itself
 			                 * has not obtained a DHCP lease) */
-		} else if(getifaddr(ext_if_name, tmp, INET_ADDRSTRLEN, NULL, NULL) < 0) {
+		} else if(getifaddr(ext_if_name, tmp, INET_ADDRSTRLEN, &addr, NULL) < 0) {
 			syslog(LOG_ERR, "Failed to get IP for interface %s", ext_if_name);
 			resp[3] = 3;	/* Network Failure (e.g. NAT box itself
 			                 * has not obtained a DHCP lease) */
+		} else if (addr_is_reserved(&addr)) {
+			resp[3] = 3;	/* Network Failure, box has not obtained
+			                   public IP address */
 		} else {
 			inet_pton(AF_INET, tmp, resp+8); /* ok */
 		}

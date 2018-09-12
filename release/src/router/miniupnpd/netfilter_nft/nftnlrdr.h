@@ -37,6 +37,9 @@ int
 delete_redirect_and_filter_rules(unsigned short eport, int proto);
 
 int
+delete_filter_rule(const char * ifname, unsigned short port, int proto);
+
+int
 add_peer_dscp_rule2(const char * ifname,
 		    const char * rhost, unsigned short rport,
 		    unsigned char dscp,

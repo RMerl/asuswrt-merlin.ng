@@ -1,7 +1,8 @@
 /* $Id: getifaddr.c,v 1.19 2013/12/13 14:28:40 nanard Exp $ */
-/* MiniUPnP project
- * http://miniupnp.free.fr/ or http://miniupnp.tuxfamily.org/
- * (c) 2006-2014 Thomas Bernard
+/* vim: tabstop=4 shiftwidth=4 noexpandtab
+ * MiniUPnP project
+ * http://miniupnp.free.fr/ or https://miniupnp.tuxfamily.org/
+ * (c) 2006-2018 Thomas Bernard
  * This software is subject to the conditions detailed
  * in the LICENCE file provided within the distribution */
 
@@ -262,3 +263,43 @@ find_ipv6_addr(const char * ifname,
 }
 #endif
 
+/* List of IP address blocks which are private / reserved and therefore not suitable for public external IP addresses */
+/* If interface has IP address from one of this block, then it is either behind NAT or port forwarding is impossible */
+#define IP(a, b, c, d) (((a) << 24) + ((b) << 16) + ((c) << 8) + (d))
+#define MSK(m) (32-(m))
+static const struct { uint32_t address; uint32_t rmask; } reserved[] = {
+	{ IP(  0,   0,   0, 0), MSK( 8) }, /* RFC1122 "This host on this network" */
+	{ IP( 10,   0,   0, 0), MSK( 8) }, /* RFC1918 Private-Use */
+	{ IP(100,  64,   0, 0), MSK(10) }, /* RFC6598 Shared Address Space */
+	{ IP(127,   0,   0, 0), MSK( 8) }, /* RFC1122 Loopback */
+	{ IP(169, 254,   0, 0), MSK(16) }, /* RFC3927 Link-Local */
+	{ IP(172,  16,   0, 0), MSK(12) }, /* RFC1918 Private-Use */
+	{ IP(192,   0,   0, 0), MSK(24) }, /* RFC6890 IETF Protocol Assignments */
+	{ IP(192,   0,   2, 0), MSK(24) }, /* RFC5737 Documentation (TEST-NET-1) */
+	{ IP(192,  31, 196, 0), MSK(24) }, /* RFC7535 AS112-v4 */
+	{ IP(192,  52, 193, 0), MSK(24) }, /* RFC7450 AMT */
+	{ IP(192,  88,  99, 0), MSK(24) }, /* RFC7526 6to4 Relay Anycast */
+	{ IP(192, 168,   0, 0), MSK(16) }, /* RFC1918 Private-Use */
+	{ IP(192, 175,  48, 0), MSK(16) }, /* RFC7534 Direct Delegation AS112 Service */
+	{ IP(198,  18,   0, 0), MSK(15) }, /* RFC2544 Benchmarking */
+	{ IP(198,  51, 100, 0), MSK(24) }, /* RFC5737 Documentation (TEST-NET-2) */
+	{ IP(203,   0, 113, 0), MSK(24) }, /* RFC5737 Documentation (TEST-NET-3) */
+	{ IP(224,   0,   0, 0), MSK( 4) }, /* RFC1112 Multicast */
+	{ IP(240,   0,   0, 0), MSK( 4) }, /* RFC1112 Reserved for Future Use + RFC919 Limited Broadcast */
+};
+#undef IP
+#undef MSK
+
+int
+addr_is_reserved(struct in_addr * addr)
+{
+	uint32_t address = ntohl(addr->s_addr);
+	size_t i;
+
+	for (i = 0; i < sizeof(reserved)/sizeof(reserved[0]); ++i) {
+		if ((address >> reserved[i].rmask) == (reserved[i].address >> reserved[i].rmask))
+			return 1;
+	}
+
+	return 0;
+}

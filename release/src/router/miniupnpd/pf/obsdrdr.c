@@ -1,4 +1,4 @@
-/* $Id: obsdrdr.c,v 1.88 2018/04/12 09:27:53 nanard Exp $ */
+/* $Id: obsdrdr.c,v 1.90 2018/07/06 12:00:10 nanard Exp $ */
 /* vim: tabstop=4 shiftwidth=4 noexpandtab
  * MiniUPnP project
  * http://miniupnp.free.fr/ or http://miniupnp.tuxfamily.org/
@@ -790,7 +790,7 @@ syslog(LOG_DEBUG, "%2d port=%hu proto=%d addr=%8x",
 #endif
 		if( (iport == ntohs(pr.rule.dst.port[0]))
 		  && (pr.rule.proto == proto) &&
-		   (iaddr == pr.rule.dst.addr.v.a.addr.v4.s_addr)
+		   (iaddr == 0 || iaddr == pr.rule.dst.addr.v.a.addr.v4.s_addr)
 		  )
 		{
 			pr.action = PF_CHANGE_GET_TICKET;
@@ -812,6 +812,12 @@ syslog(LOG_DEBUG, "%2d port=%hu proto=%d addr=%8x",
 error:
 	return -1;
 #endif
+}
+
+int
+delete_filter_rule(const char * ifname, unsigned short port, int proto)
+{
+	return priv_delete_filter_rule(ifname, port, proto, 0);
 }
 
 int

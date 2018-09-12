@@ -1,5 +1,5 @@
 #! /bin/sh
-# $Id: miniupnpd_functions.sh,v 1.1 2018/02/24 12:15:19 nanard Exp $
+# $Id: miniupnpd_functions.sh,v 1.2 2018/05/29 10:25:44 nanard Exp $
 
 IP=$(which ip) || {
 	echo "Can't find ip" >&2
@@ -18,6 +18,7 @@ else
 	}
 	IP="$IP -6"
 fi
+IPTABLES="$IPTABLES -w"
 
 CHAIN=MINIUPNPD
 CLEAN=

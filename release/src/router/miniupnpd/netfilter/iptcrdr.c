@@ -1,7 +1,8 @@
-/* $Id: iptcrdr.c,v 1.59 2016/03/08 09:23:52 nanard Exp $ */
-/* MiniUPnP project
+/* $Id: iptcrdr.c,v 1.60 2018/07/06 12:00:09 nanard Exp $ */
+/* vim: tabstop=4 shiftwidth=4 noexpandtab
+ * MiniUPnP project
  * http://miniupnp.free.fr/ or http://miniupnp.tuxfamily.org/
- * (c) 2006-2016 Thomas Bernard
+ * (c) 2006-2018 Thomas Bernard
  * This software is subject to the conditions detailed
  * in the LICENCE file provided within the distribution */
 #include <stdio.h>
@@ -611,6 +612,69 @@ delete_rule_and_commit(unsigned int index, IPTC_HANDLE h,
 		syslog(LOG_ERR, "%s() : iptc_commit(): %s\n",
 	    	   logcaller, iptc_strerror(errno));
 		r = -1;
+	}
+	if(h)
+#ifdef IPTABLES_143
+		iptc_free(h);
+#else
+		iptc_free(&h);
+#endif
+	return r;
+}
+
+/* delete_filter_rule()
+ */
+int
+delete_filter_rule(const char * ifname, unsigned short port, int proto)
+{
+	int r = -1;
+	unsigned index = 0;
+	unsigned i = 0;
+	IPTC_HANDLE h;
+	const struct ipt_entry * e;
+	const struct ipt_entry_match *match;
+	UNUSED(ifname);
+
+	if((h = iptc_init("filter")))
+	{
+		i = 0;
+		/* we must find the right index for the filter rule */
+#ifdef IPTABLES_143
+		for(e = iptc_first_rule(miniupnpd_forward_chain, h);
+		    e;
+			e = iptc_next_rule(e, h), i++)
+#else
+		for(e = iptc_first_rule(miniupnpd_forward_chain, &h);
+		    e;
+			e = iptc_next_rule(e, &h), i++)
+#endif
+		{
+			if(proto==e->ip.proto)
+			{
+				match = (const struct ipt_entry_match *)&e->elems;
+				/*syslog(LOG_DEBUG, "filter rule #%u: %s %s",
+				       i, match->u.user.name, inet_ntoa(e->ip.dst));*/
+				if(0 == strncmp(match->u.user.name, "tcp", IPT_FUNCTION_MAXNAMELEN))
+				{
+					const struct ipt_tcp * info;
+					info = (const struct ipt_tcp *)match->data;
+					if(port != info->dpts[0])
+						continue;
+				}
+				else
+				{
+					const struct ipt_udp * info;
+					info = (const struct ipt_udp *)match->data;
+					if(port != info->dpts[0])
+						continue;
+				}
+				index = i;
+				/*syslog(LOG_INFO, "Trying to delete filter rule at index %u", index);*/
+				r = delete_rule_and_commit(index, h, miniupnpd_forward_chain, "delete_filter_rule");
+				h = NULL;
+				break;
+			}
+		}
 	}
 	if(h)
 #ifdef IPTABLES_143

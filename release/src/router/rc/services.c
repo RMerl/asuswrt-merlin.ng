@@ -3266,6 +3266,7 @@ start_ddns(void)
 				fprintf(fp, "custom selfhost {\n");
 				fprintf(fp, "ddns-server = carol.selfhost.de\n");
 				fprintf(fp, "ddns-path =\"/update?username=%%u&password=%%p&myip=%%i&hostname=1\"\n");
+				fprintf(fp, "hostname = %s\n", host);
 			} else if (asus_ddns == 1) {
 //				char *nserver = nvram_invmatch("ddns_serverhost_x", "") ?
 //				nvram_safe_get("ddns_serverhost_x") :

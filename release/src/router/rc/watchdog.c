@@ -5015,9 +5015,9 @@ void regular_ddns_check(void)
 {
 #ifdef RPAC68U
 /* The workaround solution avoiding watchdog segfault on RP-AC68U. */
-	int r, wan_unit = rtk_wan_primary_ifunit();
+	int wan_unit = rtk_wan_primary_ifunit();
 #else
-	int r, wan_unit = wan_primary_ifunit();
+	int wan_unit = wan_primary_ifunit();
 #endif
 	char prefix[sizeof("wanX_YYY")];
 	struct in_addr ip_addr;

@@ -22,22 +22,24 @@ General changes in the 384/NG branch vs 380.xx:
          A plugin was developed to fully support Asus's DDNS
          service.
          Custom services can now be configured through ddns-start
-         (note that ez-ipupdate is now longer included in the
-         firmware), inadyn.conf.add, or inadyn.postconf.
+         inadyn.conf.add, or inadyn.postconf.  See the inadyn
+         documentation as many custom services can be defined
+         for it.
   - NEW: Added support for freedns.afraid.org DDNS service to webui.
   - NEW: Added option to retrieve WAN IP from either the local
          interface (like before) or through a remote server
-         (which works through double NAT).
+         (which works through double NAT) for DDNS.
   - NEW: Display DFS channel info on Wireless Log page.
   - NEW: Added option to disable checks on unsigned DNSSEC replies.
          Disabling these will speed up lookups, but it will also
          remove part of the security benefits of DNSSEC, so it
          should not be used unless you have a very specific reason
          to do so.
-  - CHANGED: Updated curl to 7.61.0.
+  - CHANGED: Updated curl to 7.61.1.
   - CHANGED: Updated wget to 1.19.5.
   - CHANGED: Updated openssl to 1.0.2p.
   - CHANGED: Updated dnsmasq to v2.80test4 (themiron).
+  - CHANGED: Updated nano to 3.0 + backported fixes from upstream.
   - CHANGED: All DDNS services now use HTTPS.
   - CHANGED: Replaced Google Domains DDNS script with inadyn's own
              plugin.
@@ -50,6 +52,7 @@ General changes in the 384/NG branch vs 380.xx:
            mode and having IPv6 enabled (themiron).
   - FIXED: dnsmasq crashing on RT-AC86U with IPv6 Stateful mode
            (themiron)
+  - REMOVED: Ez-ipupdate DDNS client (replaced with inadyn)
 
 
 384.6 (25-July-2018)

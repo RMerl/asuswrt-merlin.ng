@@ -709,11 +709,6 @@ int parse_kbinput(WINDOW *win)
 		case KEY_SDC:
 				return KEY_BACKSPACE;
 #endif
-		case DEL_CODE:
-			if (ISSET(REBIND_DELETE))
-				return the_code_for(do_delete, KEY_DC);
-			else
-				return KEY_BACKSPACE;
 #ifdef KEY_SIC  /* Slang doesn't support KEY_SIC. */
 		case KEY_SIC:
 			return the_code_for(do_insertfile_void, KEY_IC);
@@ -1096,17 +1091,20 @@ int convert_sequence(const int *seq, size_t length, int *consumed)
 						if (length > 2 && seq[2] == '~')
 							return KEY_DC;
 						if (length > 4 && seq[2] == ';' && seq[4] == '~') {
-							/* Esc [ 3 ; x ~ == modified Delete on xterm. */
 							*consumed = 5;
 							if (seq[3] == '5')
 								/* Esc [ 3 ; 5 ~ == Ctrl-Delete on xterm. */
 								return CONTROL_DELETE;
+							if (seq[3] == '6')
+								/* Esc [ 3 ; 6 ~ == Ctrl-Shift-Delete on xterm. */
+								return controlshiftdelete;
 						}
-						if (length > 2 && seq[2] == '^') {
+						if (length > 2 && seq[2] == '^')
 							/* Esc [ 3 ^ == Ctrl-Delete on urxvt. */
-							*consumed = 3;
 							return CONTROL_DELETE;
-						}
+						if (length > 2 && seq[2] == '@')
+							/* Esc [ 3 @ == Ctrl-Shift-Delete on urxvt. */
+							return controlshiftdelete;
 						break;
 					case '4': /* Esc [ 4 ~ == End on VT220/VT320/
 							   * Linux console/xterm. */
@@ -1316,6 +1314,7 @@ int parse_escape_sequence(WINDOW *win, int kbinput)
 		lastmessage = HUSH;
 		if (currmenu == MMAIN) {
 			place_the_cursor();
+			wnoutrefresh(edit);  /* Needed for correct placement on NetBSD. */
 			curs_set(1);
 		}
 	}
@@ -1761,7 +1760,8 @@ const sc *get_shortcut(int *kbinput)
 #endif
 
 	/* Plain characters cannot be shortcuts, so just skip those. */
-	if (!meta_key && (*kbinput & 0x7F) >= 0x20 && *kbinput <= 0xFF)
+	if (!meta_key && ((*kbinput >= 0x20 && *kbinput < 0x7F) ||
+						(*kbinput >= 0xA0 && *kbinput <= 0xFF)))
 		return NULL;
 
 	for (s = sclist; s != NULL; s = s->next) {

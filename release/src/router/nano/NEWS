@@ -1,3 +1,9 @@
+2018.09.18 - GNU nano 3.1 "Je faisais des bonds comme ça!" fixes a
+             misbinding of ^H on some terminals and some systems,
+             does not leave stray stuff after the prompt upon exit
+             when having suspended nano while using --constantshow,
+             and does not allow to toggle to Replace in view mode.
+
 2018.09.09 - GNU nano 3.0 "Water Flowing Underground" speeds up the
              reading of a file by seventy percent, roughly doubles the
              speed of handling ASCII text, changes the way words at line

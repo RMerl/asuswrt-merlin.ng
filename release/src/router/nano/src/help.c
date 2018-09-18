@@ -499,28 +499,20 @@ void help_init(void)
 
 	/* Now add our shortcut info. */
 	for (f = allfuncs; f != NULL; f = f->next) {
-		int scsfound = 0;
+		int tally = 0;
 
 		if ((f->menus & currmenu) == 0)
 			continue;
 
 		/* Let's simply show the first two shortcuts from the list. */
 		for (s = sclist; s != NULL; s = s->next) {
-
-			if ((s->menus & currmenu) == 0)
-				continue;
-
-			if (s->func == f->func) {
-				scsfound++;
+			if ((s->menus & currmenu) && s->func == f->func) {
 				/* Make the first column narrower (6) than the second (10),
 				 * but allow it to spill into the second, for "M-Space". */
-				if (scsfound == 1) {
+				if (++tally == 1) {
 					sprintf(ptr, "%s               ", s->keystr);
 					/* Unicode arrows take three bytes instead of one. */
-					if (strstr(s->keystr, "\xE2") != NULL)
-						ptr += 8;
-					else
-						ptr += 6;
+					ptr += (strstr(s->keystr, "\xE2") != NULL ? 8 : 6);
 				} else {
 					ptr += sprintf(ptr, "(%s)\t", s->keystr);
 					break;
@@ -528,9 +520,9 @@ void help_init(void)
 			}
 		}
 
-		if (scsfound == 0)
+		if (tally == 0)
 			ptr += sprintf(ptr, "\t\t");
-		else if (scsfound == 1)
+		else if (tally == 1)
 			ptr += 10;
 
 		/* The shortcut's help text. */

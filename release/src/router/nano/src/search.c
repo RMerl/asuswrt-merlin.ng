@@ -155,6 +155,12 @@ void search_init(bool replacing, bool keep_the_answer)
 		} else if (func == regexp_void) {
 			TOGGLE(USE_REGEXP);
 		} else if (func == flip_replace) {
+			if (ISSET(VIEW_MODE)) {
+				print_view_warning();
+				tidy_up_after_search();
+				free(thedefault);
+				return;
+			}
 			replacing = !replacing;
 		} else {
 			if (func == flip_goto)

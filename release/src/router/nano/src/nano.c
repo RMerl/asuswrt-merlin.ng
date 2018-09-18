@@ -1263,6 +1263,9 @@ RETSIGTYPE do_suspend(int signal)
 	/* Restore the old terminal settings. */
 	tcsetattr(0, TCSANOW, &oldterm);
 
+	/* The suspend keystroke must not elicit cursor-position display. */
+	suppress_cursorpos=TRUE;
+
 #ifdef SIGSTOP
 	/* Do what mutt does: send ourselves a SIGSTOP. */
 	kill(0, SIGSTOP);
@@ -1753,7 +1756,8 @@ int do_input(bool allow_funcs)
 	if (shortcut == NULL)
 		pletion_line = NULL;
 	else {
-		if (ISSET(VIEW_MODE) && !okay_for_view(shortcut)) {
+		if (ISSET(VIEW_MODE) && shortcut->func != do_toggle_void &&
+								!okay_for_view(shortcut)) {
 			print_view_warning();
 			return ERR;
 		}

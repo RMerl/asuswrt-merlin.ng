@@ -13,7 +13,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: nano-3.0-pre1\n"
 "Report-Msgid-Bugs-To: nano-devel@gnu.org\n"
-"POT-Creation-Date: 2018-09-09 11:48+0200\n"
+"POT-Creation-Date: 2018-09-18 19:36+0200\n"
 "PO-Revision-Date: 2018-09-05 18:09+0200\n"
 "Last-Translator: Benno Schulenberg <vertaling@coevern.nl>\n"
 "Language-Team: Dutch <vertaling@vrijschrift.org>\n"
@@ -35,8 +35,8 @@ msgid "Go To Directory"
 msgstr "Naar map"
 
 #: src/browser.c:231 src/browser.c:691 src/files.c:1131 src/files.c:2159
-#: src/nano.c:1078 src/search.c:116 src/search.c:209 src/search.c:715
-#: src/search.c:767 src/text.c:3052 src/text.c:3234
+#: src/nano.c:1078 src/search.c:116 src/search.c:215 src/search.c:721
+#: src/search.c:773 src/text.c:3052 src/text.c:3234
 msgid "Cancelled"
 msgstr "Geannuleerd"
 
@@ -87,15 +87,15 @@ msgstr "Zoeken"
 msgid " [Backwards]"
 msgstr " [Achterwaarts]"
 
-#: src/browser.c:721 src/browser.c:726 src/search.c:279
+#: src/browser.c:721 src/browser.c:726 src/search.c:285
 msgid "Search Wrapped"
 msgstr "Rondgelopen"
 
-#: src/browser.c:737 src/search.c:412
+#: src/browser.c:737 src/search.c:418
 msgid "This is the only occurrence"
 msgstr "Dit is de enige overeenkomst"
 
-#: src/browser.c:783 src/search.c:353
+#: src/browser.c:783 src/search.c:359
 msgid "No current search pattern"
 msgstr "Nog geen zoekpatroon bekend"
 
@@ -203,7 +203,7 @@ msgid_plural "%s -- %zu lines (%s)"
 msgstr[0] "%s -- %zu regel (%s)"
 msgstr[1] "%s -- %zu regels (%s)"
 
-#: src/files.c:625 src/files.c:631 src/global.c:1016 src/winio.c:2072
+#: src/files.c:625 src/files.c:631 src/global.c:1020 src/winio.c:2072
 msgid "New Buffer"
 msgstr "Nieuwe buffer"
 
@@ -426,796 +426,796 @@ msgid "(more)"
 msgstr "(meer)"
 
 #. TRANSLATORS: Try to keep the next four strings at most 10 characters.
-#: src/global.c:507
+#: src/global.c:511
 msgid "Exit"
 msgstr "Afsluiten"
 
-#: src/global.c:508
+#: src/global.c:512
 msgid "Close"
 msgstr "Sluiten"
 
-#: src/global.c:509
+#: src/global.c:513
 msgid "Uncut Text"
 msgstr "Plakken"
 
-#: src/global.c:511
+#: src/global.c:515
 msgid "Unjustify"
 msgstr "onUitvullen"
 
 #. TRANSLATORS: The next long series of strings are shortcut descriptions;
 #. * they are best kept shorter than 56 characters, but may be longer.
-#: src/global.c:520
+#: src/global.c:524
 msgid "Cancel the current function"
 msgstr "huidige functie annuleren"
 
-#: src/global.c:521
+#: src/global.c:525
 msgid "Display this help text"
 msgstr "dit hulpscherm tonen"
 
-#: src/global.c:523
+#: src/global.c:527
 msgid "Close the current buffer / Exit from nano"
 msgstr "huidige buffer sluiten / nano afsluiten"
 
-#: src/global.c:525
+#: src/global.c:529
 msgid "Write the current buffer (or the marked region) to disk"
 msgstr "huidige buffer (of gemarkeerde regio) op schijf opslaan"
 
-#: src/global.c:527
+#: src/global.c:531
 msgid "Insert another file into current buffer (or into new buffer)"
 msgstr "een bestand in huidig buffer (of in nieuw buffer) invoegen"
 
-#: src/global.c:529
+#: src/global.c:533
 msgid "Search forward for a string or a regular expression"
 msgstr "voorwaarts zoeken naar tekst of reguliere expressie"
 
-#: src/global.c:531
+#: src/global.c:535
 msgid "Search backward for a string or a regular expression"
 msgstr "achterwaarts zoeken naar tekst of reguliere expressie"
 
-#: src/global.c:533
+#: src/global.c:537
 msgid "Search forward for a string"
 msgstr "deel van naam voorwaarts zoeken"
 
-#: src/global.c:534
+#: src/global.c:538
 msgid "Search backward for a string"
 msgstr "deel van naam achterwaarts zoeken"
 
-#: src/global.c:535
+#: src/global.c:539
 msgid "Refresh the file list"
 msgstr "de bestandenlijst verversen"
 
-#: src/global.c:537
+#: src/global.c:541
 msgid "Go to lefthand column"
 msgstr "naar de linkerkolom gaan"
 
-#: src/global.c:538
+#: src/global.c:542
 msgid "Go to righthand column"
 msgstr "naar de rechterkolom gaan"
 
-#: src/global.c:539
+#: src/global.c:543
 msgid "Go to first row in this column"
 msgstr "naar bovenste rij in deze kolom gaan"
 
-#: src/global.c:540
+#: src/global.c:544
 msgid "Go to last row in this column"
 msgstr "naar onderste rij in deze kolom gaan"
 
-#: src/global.c:543
+#: src/global.c:547
 msgid "Go one screenful up"
 msgstr "een schermvol terugscrollen"
 
-#: src/global.c:544
+#: src/global.c:548
 msgid "Go one screenful down"
 msgstr "een schermvol verderscrollen"
 
 # Het woord "huidige" is weggelaten, anders wordt de tekst te lang.
 # Ook zonder dat woord is het door de context duidelijk genoeg dat
 # het alleen om de huidige regel kan gaan.
-#: src/global.c:546
+#: src/global.c:550
 msgid "Cut current line (or marked region) and store it in cutbuffer"
 msgstr "regel (of gemarkeerde regio) knippen en bewaren in knipbuffer"
 
-#: src/global.c:548
+#: src/global.c:552
 msgid "Uncut from the cutbuffer into the current line"
 msgstr "plakken vanuit knipbuffer naar de huidige regel"
 
-#: src/global.c:549
+#: src/global.c:553
 msgid "Display the position of the cursor"
 msgstr "huidige cursorpositie tonen"
 
-#: src/global.c:551
+#: src/global.c:555
 msgid "Invoke the spell checker, if available"
 msgstr "spellingscontrole aanroepen (indien beschikbaar)"
 
-#: src/global.c:553
+#: src/global.c:557
 msgid "Replace a string or a regular expression"
 msgstr "tekst vervangen (of een reguliere expressie)"
 
-#: src/global.c:554
+#: src/global.c:558
 msgid "Go to line and column number"
 msgstr "naar op te geven regelnummer (en kolomnummer) gaan"
 
-#: src/global.c:556
+#: src/global.c:560
 msgid "Mark text starting from the cursor position"
 msgstr "tekst markeren vanaf huidige cursorpositie"
 
-#: src/global.c:558
+#: src/global.c:562
 msgid "Copy current line (or marked region) and store it in cutbuffer"
 msgstr "huidige regel (of gemarkeerde regio) kopiëren naar knipbuffer"
 
-#: src/global.c:559
+#: src/global.c:563
 msgid "Indent the current line (or marked lines)"
 msgstr "huidige regel (of gemarkeerde regels) laten inspringen"
 
-#: src/global.c:560
+#: src/global.c:564
 msgid "Unindent the current line (or marked lines)"
 msgstr "huidige regel (of gemarkeerde regels) laten terugspringen"
 
-#: src/global.c:561
+#: src/global.c:565
 msgid "Undo the last operation"
 msgstr "de laatste bewerking ongedaan maken"
 
-#: src/global.c:562
+#: src/global.c:566
 msgid "Redo the last undone operation"
 msgstr "de laatst ongedaangemaakte bewerking herdoen"
 
-#: src/global.c:564
+#: src/global.c:568
 msgid "Go back one character"
 msgstr "één teken achteruit"
 
-#: src/global.c:565
+#: src/global.c:569
 msgid "Go forward one character"
 msgstr "één teken vooruit"
 
-#: src/global.c:566
+#: src/global.c:570
 msgid "Go back one word"
 msgstr "één woord achteruit"
 
-#: src/global.c:567
+#: src/global.c:571
 msgid "Go forward one word"
 msgstr "één woord vooruit"
 
-#: src/global.c:568
+#: src/global.c:572
 msgid "Go to previous line"
 msgstr "naar de voorgaande regel"
 
-#: src/global.c:569
+#: src/global.c:573
 msgid "Go to next line"
 msgstr "naar de volgende regel"
 
-#: src/global.c:570
+#: src/global.c:574
 msgid "Go to beginning of current line"
 msgstr "naar het begin van de huidige regel"
 
-#: src/global.c:571
+#: src/global.c:575
 msgid "Go to end of current line"
 msgstr "naar het eind van de huidige regel"
 
-#: src/global.c:572
+#: src/global.c:576
 msgid "Go to previous block of text"
 msgstr "naar voorgaand tekstblok"
 
-#: src/global.c:573
+#: src/global.c:577
 msgid "Go to next block of text"
 msgstr "naar volgend tekstblok"
 
-#: src/global.c:576
+#: src/global.c:580
 msgid "Go to beginning of paragraph; then of previous paragraph"
 msgstr "naar het begin van huidige alinea; daarna naar vorige"
 
-#: src/global.c:578
+#: src/global.c:582
 msgid "Go just beyond end of paragraph; then of next paragraph"
 msgstr "naar het eind van huidige alinea; daarna naar volgende"
 
-#: src/global.c:580
+#: src/global.c:584
 msgid "Go to the first line of the file"
 msgstr "naar de eerste regel (top) van het bestand"
 
-#: src/global.c:581
+#: src/global.c:585
 msgid "Go to the last line of the file"
 msgstr "naar de laatste regel (eind) van het bestand"
 
-#: src/global.c:583
+#: src/global.c:587
 msgid "Go to the matching bracket"
 msgstr "naar bijbehorend haakje gaan"
 
-#: src/global.c:587
+#: src/global.c:591
 msgid "Scroll up one line without moving the cursor textually"
 msgstr "één regel terugscrollen (cursor niet verplaatsen in tekst)"
 
-#: src/global.c:589
+#: src/global.c:593
 msgid "Scroll down one line without moving the cursor textually"
 msgstr "één regel vooruitscrollen (cursor niet verplaatsen in tekst)"
 
-#: src/global.c:592
+#: src/global.c:596
 msgid "Switch to the previous file buffer"
 msgstr "overschakelen naar voorgaande bestandsbuffer"
 
-#: src/global.c:593
+#: src/global.c:597
 msgid "Switch to the next file buffer"
 msgstr "overschakelen naar volgende bestandsbuffer"
 
-#: src/global.c:595
+#: src/global.c:599
 msgid "Insert the next keystroke verbatim"
 msgstr "eerstvolgende toetsaanslag verbatim invoegen"
 
-#: src/global.c:596
+#: src/global.c:600
 msgid "Insert a tab at the cursor position"
 msgstr "een tab invoegen op de cursorpositie"
 
-#: src/global.c:597
+#: src/global.c:601
 msgid "Insert a newline at the cursor position"
 msgstr "een regeleinde invoegen op de cursorpositie"
 
-#: src/global.c:598
+#: src/global.c:602
 msgid "Delete the character under the cursor"
 msgstr "het teken onder de cursor verwijderen"
 
-#: src/global.c:600
+#: src/global.c:604
 msgid "Delete the character to the left of the cursor"
 msgstr "het teken links van de cursor verwijderen"
 
-#: src/global.c:603
+#: src/global.c:607
 msgid "Cut backward from cursor to word start"
 msgstr "achterwaarts verwijderen tot begin van woord"
 
-#: src/global.c:605
+#: src/global.c:609
 msgid "Cut forward from cursor to next word start"
 msgstr "voorwaarts verwijderen tot begin van volgend woord"
 
-#: src/global.c:607
+#: src/global.c:611
 msgid "Cut from the cursor position to the end of the file"
 msgstr "de hele rest van het bestand knippen (vanaf de cursor)"
 
-#: src/global.c:610
+#: src/global.c:614
 msgid "Justify the current paragraph"
 msgstr "huidige alinea uitvullen"
 
-#: src/global.c:611
+#: src/global.c:615
 msgid "Justify the entire file"
 msgstr "het gehele bestand uitvullen"
 
-#: src/global.c:615
+#: src/global.c:619
 msgid "Count the number of words, lines, and characters"
 msgstr "aantal woorden, regels en tekens in het bestand tellen"
 
-#: src/global.c:618
+#: src/global.c:622
 msgid "Refresh (redraw) the current screen"
 msgstr "het scherm verversen (opnieuw tekenen)"
 
-#: src/global.c:620
+#: src/global.c:624
 msgid "Suspend the editor (if suspension is enabled)"
 msgstr "de editor laten pauzeren (indien pauzering is ingeschakeld)"
 
-#: src/global.c:622
+#: src/global.c:626
 msgid "Try and complete the current word"
 msgstr "proberen het huidige woord te vervolledigen"
 
-#: src/global.c:626
+#: src/global.c:630
 msgid "Comment/uncomment the current line (or marked lines)"
 msgstr "commentaartekens invoegen/verwijderen (op gemarkeerde regels)"
 
-#: src/global.c:628
+#: src/global.c:632
 msgid "Save file without prompting"
 msgstr "bestand opslaan zonder te vragen"
 
-#: src/global.c:629
+#: src/global.c:633
 msgid "Search next occurrence backward"
 msgstr "volgende voorkomen achterwaarts zoeken"
 
-#: src/global.c:630
+#: src/global.c:634
 msgid "Search next occurrence forward"
 msgstr "volgende voorkomen voorwaarts zoeken"
 
-#: src/global.c:632
+#: src/global.c:636
 msgid "Start/stop recording a macro"
 msgstr "opname van macro starten/stoppen"
 
-#: src/global.c:633
+#: src/global.c:637
 msgid "Run the last recorded macro"
 msgstr "de laatst opgenomen macro afspelen"
 
-#: src/global.c:636
+#: src/global.c:640
 msgid "Toggle the case sensitivity of the search"
 msgstr "hoofdlettergevoeligheid aan-/uitzetten"
 
-#: src/global.c:638
+#: src/global.c:642
 msgid "Reverse the direction of the search"
 msgstr "de zoekrichting omdraaien"
 
-#: src/global.c:640
+#: src/global.c:644
 msgid "Toggle the use of regular expressions"
 msgstr "gebruik van reguliere expressies aan-/uitzetten"
 
-#: src/global.c:643
+#: src/global.c:647
 msgid "Recall the previous search/replace string"
 msgstr "eerdere zoek-/vervangtekst oproepen"
 
-#: src/global.c:645
+#: src/global.c:649
 msgid "Recall the next search/replace string"
 msgstr "latere zoek-/vervangtekst oproepen"
 
-#: src/global.c:648
+#: src/global.c:652
 msgid "Toggle the use of DOS format"
 msgstr "DOS-indeling aan-/uitzetten"
 
-#: src/global.c:649
+#: src/global.c:653
 msgid "Toggle the use of Mac format"
 msgstr "Mac-indeling aan-/uitzetten"
 
-#: src/global.c:650
+#: src/global.c:654
 msgid "Toggle appending"
 msgstr "achteraantoevoegen aan-/uitzetten"
 
-#: src/global.c:651
+#: src/global.c:655
 msgid "Toggle prepending"
 msgstr "vooraantoevoegen aan-/uitzetten"
 
-#: src/global.c:652
+#: src/global.c:656
 msgid "Toggle backing up of the original file"
 msgstr "maken van reservekopieën aan-/uitzetten"
 
-#: src/global.c:653
+#: src/global.c:657
 msgid "Execute external command"
 msgstr "externe opdracht uitvoeren"
 
-#: src/global.c:655
+#: src/global.c:659
 msgid "Pipe the current buffer (or marked region) to the command"
 msgstr "buffer (of gemarkeerde regio) naar het commando sluizen"
 
-#: src/global.c:656
+#: src/global.c:660
 msgid "Do not convert from DOS/Mac format"
 msgstr "omzetten uit DOS/Mac-opmaak aan-/uitzetten"
 
-#: src/global.c:659
+#: src/global.c:663
 msgid "Toggle the use of a new buffer"
 msgstr "gebruik van een nieuwe buffer aan-/uitzetten"
 
-#: src/global.c:661
+#: src/global.c:665
 msgid "Close buffer without saving it"
 msgstr "buffer sluiten zonder op te slaan"
 
-#: src/global.c:663
+#: src/global.c:667
 msgid "Go to file browser"
 msgstr "bestandenlijst oproepen"
 
-#: src/global.c:664
+#: src/global.c:668
 msgid "Exit from the file browser"
 msgstr "bestandenlijst verlaten"
 
-#: src/global.c:665
+#: src/global.c:669
 msgid "Go to the first file in the list"
 msgstr "naar het eerste bestand in de lijst gaan"
 
-#: src/global.c:666
+#: src/global.c:670
 msgid "Go to the last file in the list"
 msgstr "naar het laatste bestand in de lijst gaan"
 
-#: src/global.c:667
+#: src/global.c:671
 msgid "Go to the previous file in the list"
 msgstr "naar het vorige bestand in de lijst gaan"
 
-#: src/global.c:668
+#: src/global.c:672
 msgid "Go to the next file in the list"
 msgstr "naar het volgende bestand in de lijst gaan"
 
-#: src/global.c:669
+#: src/global.c:673
 msgid "Go to directory"
 msgstr "naar een op te geven map gaan"
 
-#: src/global.c:672
+#: src/global.c:676
 msgid "Invoke the linter, if available"
 msgstr "een linter aanroepen (syntaxcontrole, indien beschikbaar)"
 
-#: src/global.c:673
+#: src/global.c:677
 msgid "Go to previous linter msg"
 msgstr "naar de voorgaande lintermelding springen"
 
-#: src/global.c:674
+#: src/global.c:678
 msgid "Go to next linter msg"
 msgstr "naar de volgende lintermelding springen"
 
 #. TRANSLATORS: Try to keep the next ninety strings or so at most 10
 #. * characters.  Some strings may be longer -- run nano and see.
-#: src/global.c:689
+#: src/global.c:693
 msgid "Get Help"
 msgstr "Hulp"
 
-#: src/global.c:692 src/prompt.c:706
+#: src/global.c:696 src/prompt.c:706
 msgid "Cancel"
 msgstr "Annuleren"
 
-#: src/global.c:705
+#: src/global.c:709
 msgid "Write Out"
 msgstr "Opslaan"
 
-#: src/global.c:715 src/global.c:1031
+#: src/global.c:719 src/global.c:1035
 msgid "Read File"
 msgstr "Inlezen"
 
-#: src/global.c:726 src/global.c:762
+#: src/global.c:730 src/global.c:766
 msgid "Justify"
 msgstr "Uitvullen"
 
-#: src/global.c:733 src/global.c:748 src/global.c:949
+#: src/global.c:737 src/global.c:752 src/global.c:953
 msgid "Refresh"
 msgstr "Verversen"
 
-#: src/global.c:738 src/global.c:830
+#: src/global.c:742 src/global.c:834
 msgid "Where Is"
 msgstr "Zoeken"
 
-#: src/global.c:741 src/global.c:806
+#: src/global.c:745 src/global.c:810
 msgid "Replace"
 msgstr "Vervangen"
 
-#: src/global.c:745
+#: src/global.c:749
 msgid "Go To Dir"
 msgstr "Naar map"
 
-#: src/global.c:752
+#: src/global.c:756
 msgid "Cut Text"
 msgstr "Knippen"
 
-#: src/global.c:767
+#: src/global.c:771
 msgid "To Spell"
 msgstr "Spelling"
 
-#: src/global.c:771
+#: src/global.c:775
 msgid "To Linter"
 msgstr "Linter"
 
-#: src/global.c:776
+#: src/global.c:780
 msgid "Cur Pos"
 msgstr "Positie"
 
-#: src/global.c:783 src/global.c:816 src/global.c:906 src/global.c:986
+#: src/global.c:787 src/global.c:820 src/global.c:910 src/global.c:990
 msgid "Go To Line"
 msgstr "Naar regel"
 
-#: src/global.c:788
+#: src/global.c:792
 msgid "Undo"
 msgstr "Ongedaan maken"
 
-#: src/global.c:790
+#: src/global.c:794
 msgid "Redo"
 msgstr "Herdoen"
 
-#: src/global.c:793
+#: src/global.c:797
 msgid "Mark Text"
 msgstr "Markeren"
 
-#: src/global.c:795
+#: src/global.c:799
 msgid "Copy Text"
 msgstr "Kopiëren"
 
-#: src/global.c:799
+#: src/global.c:803
 msgid "Case Sens"
 msgstr "Hfdlgevoelig"
 
-#: src/global.c:801
+#: src/global.c:805
 msgid "Regexp"
 msgstr "Reg.exp."
 
-#: src/global.c:803
+#: src/global.c:807
 msgid "Backwards"
 msgstr "Achterwaarts"
 
-#: src/global.c:809
+#: src/global.c:813
 msgid "No Replace"
 msgstr "Zoeken"
 
-#: src/global.c:813 src/global.c:937
+#: src/global.c:817 src/global.c:941
 msgid "FullJstify"
 msgstr "VolUitvullen"
 
-#: src/global.c:821
+#: src/global.c:825
 msgid "To Bracket"
 msgstr "Naar haakje"
 
-#: src/global.c:825 src/global.c:975
+#: src/global.c:829 src/global.c:979
 msgid "Save"
 msgstr "Opslaan"
 
 #. TRANSLATORS: This starts a backward search.
-#: src/global.c:832 src/global.c:836
+#: src/global.c:836 src/global.c:840
 msgid "Where Was"
 msgstr "Terugzoeken"
 
-#: src/global.c:838
+#: src/global.c:842
 msgid "Previous"
 msgstr "Voorgaande"
 
-#: src/global.c:840
+#: src/global.c:844
 msgid "Next"
 msgstr "Volgende"
 
 #. TRANSLATORS: This means move the cursor one character back.
-#: src/global.c:844 src/global.c:849
+#: src/global.c:848 src/global.c:853
 msgid "Back"
 msgstr "Terug"
 
-#: src/global.c:846 src/global.c:851
+#: src/global.c:850 src/global.c:855
 msgid "Forward"
 msgstr "Vooruit"
 
-#: src/global.c:855
+#: src/global.c:859
 msgid "Prev Word"
 msgstr "Woord terug"
 
-#: src/global.c:857
+#: src/global.c:861
 msgid "Next Word"
 msgstr "Woord verder"
 
-#: src/global.c:860
+#: src/global.c:864
 msgid "Home"
 msgstr "Begin"
 
-#: src/global.c:862
+#: src/global.c:866
 msgid "End"
 msgstr "Eind"
 
-#: src/global.c:865
+#: src/global.c:869
 msgid "Prev Line"
 msgstr "Regel terug"
 
-#: src/global.c:867
+#: src/global.c:871
 msgid "Next Line"
 msgstr "Regel verder"
 
-#: src/global.c:870
+#: src/global.c:874
 msgid "Scroll Up"
 msgstr "Omhoog scrollen"
 
-#: src/global.c:872
+#: src/global.c:876
 msgid "Scroll Down"
 msgstr "Omlaag scrollen"
 
-#: src/global.c:876
+#: src/global.c:880
 msgid "Prev Block"
 msgstr "Blok terug"
 
-#: src/global.c:878
+#: src/global.c:882
 msgid "Next Block"
 msgstr "Blok verder"
 
-#: src/global.c:881
+#: src/global.c:885
 msgid "Beg of Par"
 msgstr "Beg.v.alinea"
 
-#: src/global.c:883
+#: src/global.c:887
 msgid "End of Par"
 msgstr "Eind v.alinea"
 
-#: src/global.c:887 src/global.c:1041 src/global.c:1043
+#: src/global.c:891 src/global.c:1045 src/global.c:1047
 msgid "Prev Page"
 msgstr "Blad terug"
 
-#: src/global.c:889
+#: src/global.c:893
 msgid "Next Page"
 msgstr "Blad verder"
 
-#: src/global.c:892
+#: src/global.c:896
 msgid "First Line"
 msgstr "Naar top"
 
-#: src/global.c:894
+#: src/global.c:898
 msgid "Last Line"
 msgstr "Naar eind"
 
-#: src/global.c:898
+#: src/global.c:902
 msgid "Prev File"
 msgstr "Vorig bestand"
 
-#: src/global.c:900
+#: src/global.c:904
 msgid "Next File"
 msgstr "Volgend bestand"
 
-#: src/global.c:910
+#: src/global.c:914
 msgid "Tab"
 msgstr "Tab"
 
-#: src/global.c:912
+#: src/global.c:916
 msgid "Enter"
 msgstr "Enter"
 
-#: src/global.c:915
+#: src/global.c:919
 msgid "Delete"
 msgstr "Delete"
 
-#: src/global.c:917
+#: src/global.c:921
 msgid "Backspace"
 msgstr "Backspace"
 
 #. TRANSLATORS: The next two strings refer to cutting words.
-#: src/global.c:928
+#: src/global.c:932
 msgid "Cut Left"
 msgstr "Wis links"
 
-#: src/global.c:930
+#: src/global.c:934
 msgid "Cut Right"
 msgstr "Wis rechts"
 
-#: src/global.c:932
+#: src/global.c:936
 msgid "CutTillEnd"
 msgstr "RestKnippen"
 
-#: src/global.c:942
+#: src/global.c:946
 msgid "Word Count"
 msgstr "Woordentelling"
 
-#: src/global.c:946
+#: src/global.c:950
 msgid "Verbatim"
 msgstr "Verbatim"
 
-#: src/global.c:952
+#: src/global.c:956
 msgid "Suspend"
 msgstr "Pauzeren"
 
-#: src/global.c:956
+#: src/global.c:960
 msgid "Indent"
 msgstr "Inspringen"
 
-#: src/global.c:958
+#: src/global.c:962
 msgid "Unindent"
 msgstr "Terugspringen"
 
-#: src/global.c:962
+#: src/global.c:966
 msgid "Comment Lines"
 msgstr "Commentariseren"
 
-#: src/global.c:966
+#: src/global.c:970
 msgid "Complete"
 msgstr "Completeren"
 
-#: src/global.c:970
+#: src/global.c:974
 msgid "Record"
 msgstr "Opnemen"
 
-#: src/global.c:972
+#: src/global.c:976
 msgid "Run Macro"
 msgstr "Afspelen"
 
-#: src/global.c:979
+#: src/global.c:983
 msgid "PrevHstory"
 msgstr "Eerdere"
 
-#: src/global.c:981
+#: src/global.c:985
 msgid "NextHstory"
 msgstr "Latere"
 
-#: src/global.c:990
+#: src/global.c:994
 msgid "Go To Text"
 msgstr "Zoeken"
 
-#: src/global.c:994
+#: src/global.c:998
 msgid "DOS Format"
 msgstr "DOS-indeling"
 
-#: src/global.c:996
+#: src/global.c:1000
 msgid "Mac Format"
 msgstr "Mac-indeling"
 
-#: src/global.c:1004
+#: src/global.c:1008
 msgid "Append"
 msgstr "Achtertoevoegen"
 
-#: src/global.c:1006
+#: src/global.c:1010
 msgid "Prepend"
 msgstr "Voortoevoegen"
 
-#: src/global.c:1009
+#: src/global.c:1013
 msgid "Backup File"
 msgstr "Reservekopie"
 
-#: src/global.c:1020
+#: src/global.c:1024
 msgid "No Conversion"
 msgstr "Geen omzetting"
 
-#: src/global.c:1025
+#: src/global.c:1029
 msgid "Execute Command"
 msgstr "Opdracht uitvoeren"
 
-#: src/global.c:1028
+#: src/global.c:1032
 msgid "Pipe Text"
 msgstr "Doorsluizen"
 
-#: src/global.c:1038
+#: src/global.c:1042
 msgid "To Files"
 msgstr "Bestandenlijst"
 
-#: src/global.c:1046
+#: src/global.c:1050
 msgid "First File"
 msgstr "Naar top"
 
-#: src/global.c:1048
+#: src/global.c:1052
 msgid "Last File"
 msgstr "Naar eind"
 
-#: src/global.c:1051
+#: src/global.c:1055
 msgid "Left Column"
 msgstr "Linkerkolom"
 
-#: src/global.c:1053
+#: src/global.c:1057
 msgid "Right Column"
 msgstr "Rechterkolom"
 
-#: src/global.c:1055
+#: src/global.c:1059
 msgid "Top Row"
 msgstr "Bovenste"
 
-#: src/global.c:1057
+#: src/global.c:1061
 msgid "Bottom Row"
 msgstr "Onderste"
 
-#: src/global.c:1062
+#: src/global.c:1066
 msgid "Discard buffer"
 msgstr "Verwerpen"
 
 #. TRANSLATORS: Try to keep the next two strings at most 20 characters.
-#: src/global.c:1067
+#: src/global.c:1071
 msgid "Prev Lint Msg"
 msgstr "Vorig Lintbericht"
 
-#: src/global.c:1069
+#: src/global.c:1073
 msgid "Next Lint Msg"
 msgstr "Volgend Lintbericht"
 
 #. TRANSLATORS: The next fourteen strings are toggle descriptions;
 #. * they are best kept shorter than 40 characters, but may be longer.
-#: src/global.c:1390
+#: src/global.c:1399
 msgid "Help mode"
 msgstr "Hulpregels"
 
-#: src/global.c:1392
+#: src/global.c:1401
 msgid "Constant cursor position display"
 msgstr "Voortdurende cursorpositieweergave"
 
-#: src/global.c:1394
+#: src/global.c:1403
 msgid "Smooth scrolling"
 msgstr "Per regel scrollen"
 
-#: src/global.c:1396
+#: src/global.c:1405
 msgid "Soft wrapping of overlong lines"
 msgstr "Zachte terugloop van te lange regels"
 
-#: src/global.c:1398
+#: src/global.c:1407
 msgid "Whitespace display"
 msgstr "Weergave van witruimte"
 
-#: src/global.c:1400
+#: src/global.c:1409
 msgid "Color syntax highlighting"
 msgstr "Syntaxaanduiding met kleuren"
 
-#: src/global.c:1402
+#: src/global.c:1411
 msgid "Smart home key"
 msgstr "Slimme Home-toets"
 
-#: src/global.c:1404
+#: src/global.c:1413
 msgid "Auto indent"
 msgstr "Automatisch inspringen"
 
-#: src/global.c:1406
+#: src/global.c:1415
 msgid "Cut to end"
 msgstr "Knippen vanaf cursor tot regeleinde"
 
-#: src/global.c:1408
+#: src/global.c:1417
 msgid "Hard wrapping of overlong lines"
 msgstr "Afbreking van lange regels"
 
-#: src/global.c:1410
+#: src/global.c:1419
 msgid "Conversion of typed tabs to spaces"
 msgstr "Omzetting van getypte tabs naar spaties"
 
-#: src/global.c:1412
+#: src/global.c:1421
 msgid "Mouse support"
 msgstr "Muisondersteuning"
 
-#: src/global.c:1414
+#: src/global.c:1423
 msgid "Suspension"
 msgstr "Proces-pauzering"
 
-#: src/global.c:1416
+#: src/global.c:1425
 msgid "Line numbering"
 msgstr "Regelnummers"
 
@@ -1530,7 +1530,7 @@ msgstr ""
 "(alternatieve toetscombinaties staan tussen haakjes):\n"
 "\n"
 
-#: src/help.c:477 src/help.c:558
+#: src/help.c:477 src/help.c:550
 msgid "enable/disable"
 msgstr "aan-/uitzetten"
 
@@ -1954,66 +1954,66 @@ msgstr "Sorry! Nano is gecrasht!  Code: %d.  Deze fout graag rapporteren.\n"
 msgid "Use \"fg\" to return to nano.\n"
 msgstr "Gebruik 'fg' om terug te keren naar nano.\n"
 
-#: src/nano.c:1278
+#: src/nano.c:1281
 msgid "Suspension is not enabled"
 msgstr "Pauzering is niet ingeschakeld"
 
-#: src/nano.c:1422
+#: src/nano.c:1425
 msgid "enabled"
 msgstr " (aangezet)"
 
-#: src/nano.c:1422
+#: src/nano.c:1425
 msgid "disabled"
 msgstr "is uitgezet"
 
-#: src/nano.c:1576
+#: src/nano.c:1579
 msgid "Unbound key"
 msgstr "Ongebonden toets"
 
-#: src/nano.c:1579
+#: src/nano.c:1582
 msgid "Unbindable key: M-["
 msgstr "Onbindbare toets: M-["
 
-#: src/nano.c:1581
+#: src/nano.c:1584
 #, c-format
 msgid "Unbound key: M-%c"
 msgstr "Ongebonden toets: M-%c"
 
-#: src/nano.c:1583
+#: src/nano.c:1586
 #, c-format
 msgid "Unbound key: ^%c"
 msgstr "Ongebonden toets: ^%c"
 
-#: src/nano.c:1585
+#: src/nano.c:1588
 #, c-format
 msgid "Unbound key: %c"
 msgstr "Ongebonden toets: %c"
 
-#: src/nano.c:2174 src/rcfile.c:1167
+#: src/nano.c:2178 src/rcfile.c:1167
 #, c-format
 msgid "Requested tab size \"%s\" is invalid"
 msgstr "Gevraagde tabgrootte '%s' is ongeldig"
 
-#: src/nano.c:2251 src/rcfile.c:1106
+#: src/nano.c:2255 src/rcfile.c:1106
 #, c-format
 msgid "Requested fill size \"%s\" is invalid"
 msgstr "Gevraagde uitvulbreedte '%s' is ongeldig"
 
-#: src/nano.c:2309
+#: src/nano.c:2313
 #, c-format
 msgid "Type '%s -h' for a list of available options.\n"
 msgstr "Typ '%s -h' voor een lijst van beschikbare opties.\n"
 
-#: src/nano.c:2621 src/search.c:784
+#: src/nano.c:2625 src/search.c:790
 msgid "Invalid line or column number"
 msgstr "Ongeldig regel- of kolomnummer"
 
-#: src/nano.c:2669
+#: src/nano.c:2673
 #, c-format
 msgid "Mistakes in '%s'"
 msgstr "Fouten in '%s'"
 
-#: src/nano.c:2675
+#: src/nano.c:2679
 msgid "Welcome to nano.  For basic help, type Ctrl+G."
 msgstr "Welkom bij nano.  Voor basishulp, typ Ctrl+G."
 
@@ -2263,26 +2263,26 @@ msgstr " (om te vervangen)"
 
 #. TRANSLATORS: This is shown when searching takes
 #. * more than half a second.
-#: src/search.c:219
+#: src/search.c:225
 msgid "Searching..."
 msgstr "Zoeken..."
 
-#: src/search.c:388
+#: src/search.c:394
 #, c-format
 msgid "\"%.*s%s\" not found"
 msgstr "'%.*s%s' niet gevonden"
 
 #. TRANSLATORS: This is a prompt.
-#: src/search.c:582
+#: src/search.c:588
 msgid "Replace this instance?"
 msgstr "Deze overeenkomst vervangen?"
 
 #. TRANSLATORS: This is a prompt.
-#: src/search.c:704
+#: src/search.c:710
 msgid "Replace with"
 msgstr "Vervangen door"
 
-#: src/search.c:735
+#: src/search.c:741
 #, c-format
 msgid "Replaced %zd occurrence"
 msgid_plural "Replaced %zd occurrences"
@@ -2290,15 +2290,15 @@ msgstr[0] "%zd overeenkomst vervangen"
 msgstr[1] "%zd overeenkomsten vervangen"
 
 #. TRANSLATORS: This is a prompt.
-#: src/search.c:763
+#: src/search.c:769
 msgid "Enter line number, column number"
 msgstr "Geef regelnummer, kolomnummer"
 
-#: src/search.c:952
+#: src/search.c:958
 msgid "Not a bracket"
 msgstr "Is geen haakje"
 
-#: src/search.c:1013
+#: src/search.c:1019
 msgid "No matching bracket"
 msgstr "Geen overeenkomend haakje"
 
@@ -2557,13 +2557,13 @@ msgstr "Te veel fouten vanaf standaardinvoer"
 
 #. TRANSLATORS: This refers to a sequence of escape codes
 #. * (from the keyboard) that nano does not recogize.
-#: src/winio.c:1314
+#: src/winio.c:1312
 msgid "Unknown sequence"
 msgstr "Onbekende toetscode"
 
 #. TRANSLATORS: This is shown while a six-digit hexadecimal
 #. * Unicode character code (%s) is being typed in.
-#: src/winio.c:1450
+#: src/winio.c:1449
 #, c-format
 msgid "Unicode Input: %s"
 msgstr "Invoer van Unicode: %s"

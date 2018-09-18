@@ -462,6 +462,10 @@ int keycode_from_string(const char *keystring)
 	if (keystring[0] == '^') {
 		if (strcasecmp(keystring, "^Space") == 0)
 			return 0;
+#if defined(__FreeBSD__) || defined(__NetBSD__) || defined(__APPLE__)
+		if (strcasecmp(keystring, "^H") == 0)
+			return KEY_BACKSPACE;
+#endif
 		if (keystring[1] <= '_' && strlen(keystring) == 2)
 			return keystring[1] - 64;
 		else
@@ -1076,6 +1080,11 @@ void shortcut_init(void)
 	add_to_sclist(MMOST, "Bsp", KEY_BACKSPACE, do_backspace, 0);
 	add_to_sclist(MMOST, "^D", 0, do_delete, 0);
 	add_to_sclist(MMOST, "Del", 0, do_delete, 0);
+	/* Make ASCII DEL do a delete when requested, otherwise a backspace. */
+	if (ISSET(REBIND_DELETE))
+		add_to_sclist(MMOST, "Del", DEL_CODE, do_delete, 0);
+	else
+		add_to_sclist(MMOST, "Bsp", DEL_CODE, do_backspace, 0);
 	add_to_sclist(MMOST, "^I", 0, do_tab, 0);
 	add_to_sclist(MMOST, "Tab", TAB_CODE, do_tab, 0);
 	add_to_sclist(MMOST & ~MFINDINHELP, "^G", 0, do_help_void, 0);

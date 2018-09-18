@@ -1,3 +1,24 @@
+Changes between v3.0 and v3.1:
+------------------------------
+
+Benno Schulenberg (13):
+      bindings: bind ASCII DEL during startup instead of repeatedly at runtime
+      bindings: make ^H rebindable also on NetBSD, FreeBSD and macOS
+      bindings: when Ctrl+Shift+Delete has no keycode, don't use KEY_BSP
+      bump version numbers and add a news item for the 3.1 release
+      input: keep the cursor in edit window after message, also on NetBSD
+      input: recognize the sequences for Ctrl+Shift+Delete on xterm and urxvt
+      main: allow toggling all editor features when in view mode
+      suspension: don't try to show the cursor position when going to sleep
+      syntax: sh: let the header regex match also busybox shell scripts
+      tweaks: condense a bit of code
+      tweaks: remove a superfluous comment and a redundant assignment
+      tweaks: rename a variable to be special and distinct
+      tweaks: sharpen an optimization, to allow DEL to be a shortcut
+
+Liu Hao (1):
+      search: disallow switching to the Replace prompt when in view mode
+
 Changes between v2.9.8 and v3.0:
 --------------------------------
 

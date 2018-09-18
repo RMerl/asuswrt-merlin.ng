@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: nano 1.9.99pre0\n"
 "Report-Msgid-Bugs-To: nano-devel@gnu.org\n"
-"POT-Creation-Date: 2018-09-09 11:48+0200\n"
+"POT-Creation-Date: 2018-09-18 19:36+0200\n"
 "PO-Revision-Date: 2006-09-25 19:59+0200\n"
 "Last-Translator: Mikel Olasagasti <hey_neken@mundurat.net>\n"
 "Language-Team: Basque <translation-team-eu@lists.sourceforge.net>\n"
@@ -30,8 +30,8 @@ msgid "Go To Directory"
 msgstr "Joan direktorio honetara"
 
 #: src/browser.c:231 src/browser.c:691 src/files.c:1131 src/files.c:2159
-#: src/nano.c:1078 src/search.c:116 src/search.c:209 src/search.c:715
-#: src/search.c:767 src/text.c:3052 src/text.c:3234
+#: src/nano.c:1078 src/search.c:116 src/search.c:215 src/search.c:721
+#: src/search.c:773 src/text.c:3052 src/text.c:3234
 msgid "Cancelled"
 msgstr "Bertan behera utzita"
 
@@ -82,15 +82,15 @@ msgstr "Bilatu"
 msgid " [Backwards]"
 msgstr "[Atzeruntza]"
 
-#: src/browser.c:721 src/browser.c:726 src/search.c:279
+#: src/browser.c:721 src/browser.c:726 src/search.c:285
 msgid "Search Wrapped"
 msgstr "Bilaketa berriz hasia"
 
-#: src/browser.c:737 src/search.c:412
+#: src/browser.c:737 src/search.c:418
 msgid "This is the only occurrence"
 msgstr "Hau da kointzidentzia bakarra"
 
-#: src/browser.c:783 src/search.c:353
+#: src/browser.c:783 src/search.c:359
 msgid "No current search pattern"
 msgstr "Ez dago bilatzeko eredurik"
 
@@ -197,7 +197,7 @@ msgid_plural "%s -- %zu lines (%s)"
 msgstr[0] ""
 msgstr[1] ""
 
-#: src/files.c:625 src/files.c:631 src/global.c:1016 src/winio.c:2072
+#: src/files.c:625 src/files.c:631 src/global.c:1020 src/winio.c:2072
 msgid "New Buffer"
 msgstr "Bufer berria"
 
@@ -425,869 +425,869 @@ msgid "(more)"
 msgstr "(gehiago)"
 
 #. TRANSLATORS: Try to keep the next four strings at most 10 characters.
-#: src/global.c:507
+#: src/global.c:511
 msgid "Exit"
 msgstr "Irten"
 
-#: src/global.c:508
+#: src/global.c:512
 msgid "Close"
 msgstr "Itxi"
 
-#: src/global.c:509
+#: src/global.c:513
 #, fuzzy
 msgid "Uncut Text"
 msgstr "Ezmoztu testua"
 
-#: src/global.c:511
+#: src/global.c:515
 #, fuzzy
 msgid "Unjustify"
 msgstr "Justifikazioa ezeztatu"
 
 #. TRANSLATORS: The next long series of strings are shortcut descriptions;
 #. * they are best kept shorter than 56 characters, but may be longer.
-#: src/global.c:520
+#: src/global.c:524
 msgid "Cancel the current function"
 msgstr "Uneko funtzioa bertan behera utzi"
 
-#: src/global.c:521
+#: src/global.c:525
 msgid "Display this help text"
 msgstr "Erakutsi laguntza testu hau"
 
-#: src/global.c:523
+#: src/global.c:527
 #, fuzzy
 msgid "Close the current buffer / Exit from nano"
 msgstr "Unean kargatutako fitxategi bufferra itxi/Nanotik irten"
 
-#: src/global.c:525
+#: src/global.c:529
 #, fuzzy
 msgid "Write the current buffer (or the marked region) to disk"
 msgstr "Uneko artxiboa diskoan idatzi"
 
-#: src/global.c:527
+#: src/global.c:531
 #, fuzzy
 msgid "Insert another file into current buffer (or into new buffer)"
 msgstr "Uneko lerroan beste lerro bat txertatu"
 
-#: src/global.c:529
+#: src/global.c:533
 #, fuzzy
 msgid "Search forward for a string or a regular expression"
 msgstr "Bilatu kate bat edo expresio erregular bat"
 
-#: src/global.c:531
+#: src/global.c:535
 #, fuzzy
 msgid "Search backward for a string or a regular expression"
 msgstr "Bilatu kate bat edo expresio erregular bat"
 
-#: src/global.c:533
+#: src/global.c:537
 #, fuzzy
 msgid "Search forward for a string"
 msgstr "Bilatu kate bat edo expresio erregular bat"
 
-#: src/global.c:534
+#: src/global.c:538
 #, fuzzy
 msgid "Search backward for a string"
 msgstr "Atzerantza bilatu"
 
-#: src/global.c:535
+#: src/global.c:539
 msgid "Refresh the file list"
 msgstr ""
 
-#: src/global.c:537
+#: src/global.c:541
 #, fuzzy
 msgid "Go to lefthand column"
 msgstr "Joan espezifikatutako lerro eta zutabera"
 
-#: src/global.c:538
+#: src/global.c:542
 #, fuzzy
 msgid "Go to righthand column"
 msgstr "Joan espezifikatutako lerro eta zutabera"
 
-#: src/global.c:539
+#: src/global.c:543
 #, fuzzy
 msgid "Go to first row in this column"
 msgstr "Joan zerrendako lehen fitxategira"
 
-#: src/global.c:540
+#: src/global.c:544
 #, fuzzy
 msgid "Go to last row in this column"
 msgstr "Joan zerrendako azken fitxategira"
 
-#: src/global.c:543
+#: src/global.c:547
 msgid "Go one screenful up"
 msgstr ""
 
-#: src/global.c:544
+#: src/global.c:548
 msgid "Go one screenful down"
 msgstr ""
 
-#: src/global.c:546
+#: src/global.c:550
 #, fuzzy
 msgid "Cut current line (or marked region) and store it in cutbuffer"
 msgstr "Uneko lerroa moztu eta cutbufferean gorde"
 
-#: src/global.c:548
+#: src/global.c:552
 msgid "Uncut from the cutbuffer into the current line"
 msgstr "Cutbufferekoa uneko lerroan txertatu"
 
-#: src/global.c:549
+#: src/global.c:553
 msgid "Display the position of the cursor"
 msgstr "Kurtsorearen posisioa erakutsi"
 
-#: src/global.c:551
+#: src/global.c:555
 msgid "Invoke the spell checker, if available"
 msgstr "Deitu zuzentzaileari, eskuragarri badago"
 
-#: src/global.c:553
+#: src/global.c:557
 msgid "Replace a string or a regular expression"
 msgstr "Ordezkatu kate bat edo expresio erregular bat"
 
-#: src/global.c:554
+#: src/global.c:558
 msgid "Go to line and column number"
 msgstr "Joan espezifikatutako lerro eta zutabera"
 
-#: src/global.c:556
+#: src/global.c:560
 #, fuzzy
 msgid "Mark text starting from the cursor position"
 msgstr "Markatu testua kurtsorearen uneko posizioan"
 
-#: src/global.c:558
+#: src/global.c:562
 #, fuzzy
 msgid "Copy current line (or marked region) and store it in cutbuffer"
 msgstr "Uneko lerroa kopiatu eta cutbufferean gorde"
 
-#: src/global.c:559
+#: src/global.c:563
 #, fuzzy
 msgid "Indent the current line (or marked lines)"
 msgstr "Koskatu uneko lerroa"
 
-#: src/global.c:560
+#: src/global.c:564
 #, fuzzy
 msgid "Unindent the current line (or marked lines)"
 msgstr "Koska kendu uneko lerroari"
 
-#: src/global.c:561
+#: src/global.c:565
 msgid "Undo the last operation"
 msgstr ""
 
-#: src/global.c:562
+#: src/global.c:566
 msgid "Redo the last undone operation"
 msgstr ""
 
-#: src/global.c:564
+#: src/global.c:568
 #, fuzzy
 msgid "Go back one character"
 msgstr "Karaktere bat atzeruntz mugitu"
 
-#: src/global.c:565
+#: src/global.c:569
 #, fuzzy
 msgid "Go forward one character"
 msgstr "Karaktere bat aurreruntz mugitu"
 
-#: src/global.c:566
+#: src/global.c:570
 #, fuzzy
 msgid "Go back one word"
 msgstr "Mugitu hitz bat atzeruntz"
 
-#: src/global.c:567
+#: src/global.c:571
 #, fuzzy
 msgid "Go forward one word"
 msgstr "Mugitu hitz bat atzera"
 
-#: src/global.c:568
+#: src/global.c:572
 #, fuzzy
 msgid "Go to previous line"
 msgstr "Aurreko lerrora mugitu"
 
-#: src/global.c:569
+#: src/global.c:573
 #, fuzzy
 msgid "Go to next line"
 msgstr "Mugitu hurrengo lerrora"
 
-#: src/global.c:570
+#: src/global.c:574
 #, fuzzy
 msgid "Go to beginning of current line"
 msgstr "Uneko lerroaren hasierara mugitu"
 
-#: src/global.c:571
+#: src/global.c:575
 #, fuzzy
 msgid "Go to end of current line"
 msgstr "Uneko lerroaren bukaerara mugitu"
 
-#: src/global.c:572
+#: src/global.c:576
 #, fuzzy
 msgid "Go to previous block of text"
 msgstr "Aurreko lerrora mugitu"
 
-#: src/global.c:573
+#: src/global.c:577
 msgid "Go to next block of text"
 msgstr ""
 
-#: src/global.c:576
+#: src/global.c:580
 #, fuzzy
 msgid "Go to beginning of paragraph; then of previous paragraph"
 msgstr "Mugitu uneko parrafoaren hasierara"
 
-#: src/global.c:578
+#: src/global.c:582
 #, fuzzy
 msgid "Go just beyond end of paragraph; then of next paragraph"
 msgstr "Mugitu uneko parrafoaren amaierara"
 
-#: src/global.c:580
+#: src/global.c:584
 #, fuzzy
 msgid "Go to the first line of the file"
 msgstr "Mugitu fitxategiaren lehen lerrora"
 
-#: src/global.c:581
+#: src/global.c:585
 #, fuzzy
 msgid "Go to the last line of the file"
 msgstr "Mugitu fitxategiaren azken lerrora"
 
-#: src/global.c:583
+#: src/global.c:587
 #, fuzzy
 msgid "Go to the matching bracket"
 msgstr "Ez dago giltz egokirik"
 
-#: src/global.c:587
+#: src/global.c:591
 #, fuzzy
 msgid "Scroll up one line without moving the cursor textually"
 msgstr "Korritu gora lerro bat kurtsorea korritu gabe"
 
-#: src/global.c:589
+#: src/global.c:593
 #, fuzzy
 msgid "Scroll down one line without moving the cursor textually"
 msgstr "Korritu behera lerro bat kurtsorea korritu gabe"
 
-#: src/global.c:592
+#: src/global.c:596
 msgid "Switch to the previous file buffer"
 msgstr "Aldatu aurreko fitxategi buffer-era"
 
-#: src/global.c:593
+#: src/global.c:597
 msgid "Switch to the next file buffer"
 msgstr "Aldatu hurrengo fitxategi buffer-era"
 
-#: src/global.c:595
+#: src/global.c:599
 msgid "Insert the next keystroke verbatim"
 msgstr "Hurrengo tekla-sakatzea literalki sartu"
 
-#: src/global.c:596
+#: src/global.c:600
 msgid "Insert a tab at the cursor position"
 msgstr "Txertatu tabuladore karaktere bat kurtsorearen posizioan"
 
-#: src/global.c:597
+#: src/global.c:601
 #, fuzzy
 msgid "Insert a newline at the cursor position"
 msgstr "Orga-itzulera bat kurtsorearen posizioan txertatu"
 
-#: src/global.c:598
+#: src/global.c:602
 msgid "Delete the character under the cursor"
 msgstr "Kurtsorearen azpiko karaterea ezabatu"
 
-#: src/global.c:600
+#: src/global.c:604
 msgid "Delete the character to the left of the cursor"
 msgstr "Kurtsorearen ezkerraldeko karaterea ezabatu"
 
-#: src/global.c:603
+#: src/global.c:607
 #, fuzzy
 msgid "Cut backward from cursor to word start"
 msgstr "Moztu kurtsoretik lerro amaierara"
 
-#: src/global.c:605
+#: src/global.c:609
 #, fuzzy
 msgid "Cut forward from cursor to next word start"
 msgstr "Moztu kurtsoretik lerro amaierara"
 
-#: src/global.c:607
+#: src/global.c:611
 msgid "Cut from the cursor position to the end of the file"
 msgstr "Moztu kurtsoretik posiziotik lerro amaierara arte"
 
-#: src/global.c:610
+#: src/global.c:614
 msgid "Justify the current paragraph"
 msgstr "Uneko parrafoa justifikatu"
 
-#: src/global.c:611
+#: src/global.c:615
 msgid "Justify the entire file"
 msgstr "Justifikatu lerro osoa"
 
-#: src/global.c:615
+#: src/global.c:619
 msgid "Count the number of words, lines, and characters"
 msgstr "Zenbatu hitz, lerro eta karaktere kopurua"
 
-#: src/global.c:618
+#: src/global.c:622
 msgid "Refresh (redraw) the current screen"
 msgstr "Freskatu uneko pantaila"
 
-#: src/global.c:620
+#: src/global.c:624
 msgid "Suspend the editor (if suspension is enabled)"
 msgstr ""
 
-#: src/global.c:622
+#: src/global.c:626
 #, fuzzy
 msgid "Try and complete the current word"
 msgstr "Koskatu uneko lerroa"
 
-#: src/global.c:626
+#: src/global.c:630
 msgid "Comment/uncomment the current line (or marked lines)"
 msgstr ""
 
-#: src/global.c:628
+#: src/global.c:632
 msgid "Save file without prompting"
 msgstr ""
 
-#: src/global.c:629
+#: src/global.c:633
 #, fuzzy
 msgid "Search next occurrence backward"
 msgstr "Atzerantza bilatu"
 
-#: src/global.c:630
+#: src/global.c:634
 msgid "Search next occurrence forward"
 msgstr ""
 
-#: src/global.c:632
+#: src/global.c:636
 msgid "Start/stop recording a macro"
 msgstr ""
 
-#: src/global.c:633
+#: src/global.c:637
 msgid "Run the last recorded macro"
 msgstr ""
 
-#: src/global.c:636
+#: src/global.c:640
 #, fuzzy
 msgid "Toggle the case sensitivity of the search"
 msgstr "Mayuskula/minuskulaz egindako bilaketa"
 
-#: src/global.c:638
+#: src/global.c:642
 #, fuzzy
 msgid "Reverse the direction of the search"
 msgstr "kurtsorearen posisioa erakutsi"
 
-#: src/global.c:640
+#: src/global.c:644
 #, fuzzy
 msgid "Toggle the use of regular expressions"
 msgstr "Expresio erregularrak erabili"
 
-#: src/global.c:643
+#: src/global.c:647
 #, fuzzy
 msgid "Recall the previous search/replace string"
 msgstr "Editatu aurreko bilaketa/aldaketa kateak"
 
-#: src/global.c:645
+#: src/global.c:649
 #, fuzzy
 msgid "Recall the next search/replace string"
 msgstr "Editatu aurreko bilaketa/aldaketa kateak"
 
-#: src/global.c:648
+#: src/global.c:652
 #, fuzzy
 msgid "Toggle the use of DOS format"
 msgstr "Dos formatoan fitxategia idazten"
 
-#: src/global.c:649
+#: src/global.c:653
 #, fuzzy
 msgid "Toggle the use of Mac format"
 msgstr "Idatzi fitxategia Mac formatuan"
 
-#: src/global.c:650
+#: src/global.c:654
 #, fuzzy
 msgid "Toggle appending"
 msgstr "Auto-doitu lerro luzeak"
 
-#: src/global.c:651
-msgid "Toggle prepending"
-msgstr ""
-
-#: src/global.c:652
-#, fuzzy
-msgid "Toggle backing up of the original file"
-msgstr "Gorde existitzen diren fitxategien babeskopiak"
-
-#: src/global.c:653
-msgid "Execute external command"
-msgstr "Exekutatu kanpo-komandoa"
-
 #: src/global.c:655
-msgid "Pipe the current buffer (or marked region) to the command"
+msgid "Toggle prepending"
 msgstr ""
 
 #: src/global.c:656
 #, fuzzy
+msgid "Toggle backing up of the original file"
+msgstr "Gorde existitzen diren fitxategien babeskopiak"
+
+#: src/global.c:657
+msgid "Execute external command"
+msgstr "Exekutatu kanpo-komandoa"
+
+#: src/global.c:659
+msgid "Pipe the current buffer (or marked region) to the command"
+msgstr ""
+
+#: src/global.c:660
+#, fuzzy
 msgid "Do not convert from DOS/Mac format"
 msgstr "Ez bihurtu DOS/Mac formatuko fitxategiak"
 
-#: src/global.c:659
+#: src/global.c:663
 #, fuzzy
 msgid "Toggle the use of a new buffer"
 msgstr "Ezin izan da hodi buffer-aren tamainua lortu"
 
-#: src/global.c:661
+#: src/global.c:665
 msgid "Close buffer without saving it"
 msgstr ""
 
-#: src/global.c:663
+#: src/global.c:667
 msgid "Go to file browser"
 msgstr "Fitxategi nabigatzailera joan"
 
-#: src/global.c:664
+#: src/global.c:668
 msgid "Exit from the file browser"
 msgstr "Irten fitxategi nabigatzailetik"
 
-#: src/global.c:665
+#: src/global.c:669
 msgid "Go to the first file in the list"
 msgstr "Joan zerrendako lehen fitxategira"
 
-#: src/global.c:666
+#: src/global.c:670
 msgid "Go to the last file in the list"
 msgstr "Joan zerrendako azken fitxategira"
 
-#: src/global.c:667
+#: src/global.c:671
 #, fuzzy
 msgid "Go to the previous file in the list"
 msgstr "Joan zerrendako lehen fitxategira"
 
-#: src/global.c:668
+#: src/global.c:672
 #, fuzzy
 msgid "Go to the next file in the list"
 msgstr "Joan zerrendako azken fitxategira"
 
-#: src/global.c:669
+#: src/global.c:673
 msgid "Go to directory"
 msgstr "Joan direktorio honetara"
 
-#: src/global.c:672
+#: src/global.c:676
 #, fuzzy
 msgid "Invoke the linter, if available"
 msgstr "Deitu zuzentzaileari, eskuragarri badago"
 
-#: src/global.c:673
+#: src/global.c:677
 #, fuzzy
 msgid "Go to previous linter msg"
 msgstr "Aurreko lerrora mugitu"
 
-#: src/global.c:674
+#: src/global.c:678
 #, fuzzy
 msgid "Go to next linter msg"
 msgstr "Mugitu hurrengo lerrora"
 
 #. TRANSLATORS: Try to keep the next ninety strings or so at most 10
 #. * characters.  Some strings may be longer -- run nano and see.
-#: src/global.c:689
+#: src/global.c:693
 msgid "Get Help"
 msgstr "Laguntza begiratu"
 
-#: src/global.c:692 src/prompt.c:706
+#: src/global.c:696 src/prompt.c:706
 msgid "Cancel"
 msgstr "Bertan behera utzi"
 
-#: src/global.c:705
+#: src/global.c:709
 #, fuzzy
 msgid "Write Out"
 msgstr "Gorde"
 
-#: src/global.c:715 src/global.c:1031
+#: src/global.c:719 src/global.c:1035
 msgid "Read File"
 msgstr "Artxiboa irakurri"
 
-#: src/global.c:726 src/global.c:762
+#: src/global.c:730 src/global.c:766
 msgid "Justify"
 msgstr "Justifikatu"
 
-#: src/global.c:733 src/global.c:748 src/global.c:949
+#: src/global.c:737 src/global.c:752 src/global.c:953
 msgid "Refresh"
 msgstr "Freskatu"
 
-#: src/global.c:738 src/global.c:830
+#: src/global.c:742 src/global.c:834
 msgid "Where Is"
 msgstr "Bilatu"
 
-#: src/global.c:741 src/global.c:806
+#: src/global.c:745 src/global.c:810
 msgid "Replace"
 msgstr "Ordezkatu"
 
-#: src/global.c:745
+#: src/global.c:749
 msgid "Go To Dir"
 msgstr "Joan direktorio honetara"
 
-#: src/global.c:752
+#: src/global.c:756
 msgid "Cut Text"
 msgstr "Textua moztu"
 
-#: src/global.c:767
+#: src/global.c:771
 msgid "To Spell"
 msgstr "Ortografia"
 
-#: src/global.c:771
+#: src/global.c:775
 #, fuzzy
 msgid "To Linter"
 msgstr "Joan lerro hontara"
 
-#: src/global.c:776
+#: src/global.c:780
 msgid "Cur Pos"
 msgstr "Uneko posizioa"
 
-#: src/global.c:783 src/global.c:816 src/global.c:906 src/global.c:986
+#: src/global.c:787 src/global.c:820 src/global.c:910 src/global.c:990
 msgid "Go To Line"
 msgstr "Joan lerro hontara"
 
-#: src/global.c:788
+#: src/global.c:792
 msgid "Undo"
 msgstr ""
 
-#: src/global.c:790
+#: src/global.c:794
 msgid "Redo"
 msgstr ""
 
-#: src/global.c:793
+#: src/global.c:797
 msgid "Mark Text"
 msgstr "Textua markatu"
 
-#: src/global.c:795
+#: src/global.c:799
 msgid "Copy Text"
 msgstr "Kopiatu testua"
 
-#: src/global.c:799
+#: src/global.c:803
 msgid "Case Sens"
 msgstr "May/Min"
 
-#: src/global.c:801
+#: src/global.c:805
 msgid "Regexp"
 msgstr "Regexp"
 
-#: src/global.c:803
+#: src/global.c:807
 msgid "Backwards"
 msgstr "Atzeruntza"
 
-#: src/global.c:809
+#: src/global.c:813
 msgid "No Replace"
 msgstr "Ez ordezkatu"
 
-#: src/global.c:813 src/global.c:937
+#: src/global.c:817 src/global.c:941
 msgid "FullJstify"
 msgstr "Justifikatu"
 
-#: src/global.c:821
+#: src/global.c:825
 #, fuzzy
 msgid "To Bracket"
 msgstr "Ez da hori giltza"
 
-#: src/global.c:825 src/global.c:975
+#: src/global.c:829 src/global.c:979
 msgid "Save"
 msgstr ""
 
 #. TRANSLATORS: This starts a backward search.
-#: src/global.c:832 src/global.c:836
+#: src/global.c:836 src/global.c:840
 #, fuzzy
 msgid "Where Was"
 msgstr "Bilatu"
 
-#: src/global.c:838
+#: src/global.c:842
 #, fuzzy
 msgid "Previous"
 msgstr "Aurreko fitxategia"
 
-#: src/global.c:840
+#: src/global.c:844
 #, fuzzy
 msgid "Next"
 msgstr "Hurrengo orrialdea"
 
 #. TRANSLATORS: This means move the cursor one character back.
-#: src/global.c:844 src/global.c:849
+#: src/global.c:848 src/global.c:853
 msgid "Back"
 msgstr "Atzean"
 
-#: src/global.c:846 src/global.c:851
+#: src/global.c:850 src/global.c:855
 msgid "Forward"
 msgstr "Aurrean"
 
-#: src/global.c:855
+#: src/global.c:859
 msgid "Prev Word"
 msgstr "Aurreko hitza"
 
-#: src/global.c:857
+#: src/global.c:861
 msgid "Next Word"
 msgstr "Hurrengo hitza"
 
-#: src/global.c:860
+#: src/global.c:864
 msgid "Home"
 msgstr "Etxea"
 
-#: src/global.c:862
+#: src/global.c:866
 msgid "End"
 msgstr "Bukaera"
 
-#: src/global.c:865
+#: src/global.c:869
 msgid "Prev Line"
 msgstr "Aurreko lerroa"
 
-#: src/global.c:867
+#: src/global.c:871
 msgid "Next Line"
 msgstr "Hurrengo lerroa"
 
-#: src/global.c:870
+#: src/global.c:874
 msgid "Scroll Up"
 msgstr "Korritu gora"
 
-#: src/global.c:872
+#: src/global.c:876
 msgid "Scroll Down"
 msgstr "Korritu behera"
 
-#: src/global.c:876
+#: src/global.c:880
 #, fuzzy
 msgid "Prev Block"
 msgstr "Aurreko hitza"
 
-#: src/global.c:878
+#: src/global.c:882
 #, fuzzy
 msgid "Next Block"
 msgstr "Hurrengo hitza"
 
-#: src/global.c:881
+#: src/global.c:885
 msgid "Beg of Par"
 msgstr "Par hasi"
 
-#: src/global.c:883
+#: src/global.c:887
 msgid "End of Par"
 msgstr "Par amai"
 
-#: src/global.c:887 src/global.c:1041 src/global.c:1043
+#: src/global.c:891 src/global.c:1045 src/global.c:1047
 msgid "Prev Page"
 msgstr "Aurreko orrialdea"
 
-#: src/global.c:889
+#: src/global.c:893
 msgid "Next Page"
 msgstr "Hurrengo orrialdea"
 
-#: src/global.c:892
+#: src/global.c:896
 msgid "First Line"
 msgstr "Lehen lerroa"
 
-#: src/global.c:894
+#: src/global.c:898
 msgid "Last Line"
 msgstr "Azken lerroa"
 
-#: src/global.c:898
+#: src/global.c:902
 #, fuzzy
 msgid "Prev File"
 msgstr "Aurreko fitxategia"
 
-#: src/global.c:900
+#: src/global.c:904
 msgid "Next File"
 msgstr "Hurrengo fitxategia"
 
-#: src/global.c:910
+#: src/global.c:914
 msgid "Tab"
 msgstr "Tab"
 
-#: src/global.c:912
+#: src/global.c:916
 msgid "Enter"
 msgstr "Sartu"
 
-#: src/global.c:915
+#: src/global.c:919
 msgid "Delete"
 msgstr "Ezabatu"
 
-#: src/global.c:917
+#: src/global.c:921
 msgid "Backspace"
 msgstr "Atzera tekla"
 
 #. TRANSLATORS: The next two strings refer to cutting words.
-#: src/global.c:928
+#: src/global.c:932
 #, fuzzy
 msgid "Cut Left"
 msgstr "Textua moztu"
 
-#: src/global.c:930
+#: src/global.c:934
 msgid "Cut Right"
 msgstr ""
 
-#: src/global.c:932
+#: src/global.c:936
 msgid "CutTillEnd"
 msgstr "MoztuAmaieraraArte"
 
-#: src/global.c:942
+#: src/global.c:946
 msgid "Word Count"
 msgstr "Hitz kopurua"
 
-#: src/global.c:946
+#: src/global.c:950
 #, fuzzy
 msgid "Verbatim"
 msgstr "Sarrera literala"
 
-#: src/global.c:952
+#: src/global.c:956
 #, fuzzy
 msgid "Suspend"
 msgstr "Eseki"
 
-#: src/global.c:956
+#: src/global.c:960
 #, fuzzy
 msgid "Indent"
 msgstr "Koskatu testua"
 
-#: src/global.c:958
+#: src/global.c:962
 #, fuzzy
 msgid "Unindent"
 msgstr "Ez koskatu testua"
 
-#: src/global.c:962
+#: src/global.c:966
 #, fuzzy
 msgid "Comment Lines"
 msgstr "Hurrengo lerroa"
 
-#: src/global.c:966
+#: src/global.c:970
 msgid "Complete"
 msgstr ""
 
-#: src/global.c:970
+#: src/global.c:974
 msgid "Record"
 msgstr ""
 
-#: src/global.c:972
+#: src/global.c:976
 msgid "Run Macro"
 msgstr ""
 
-#: src/global.c:979
+#: src/global.c:983
 msgid "PrevHstory"
 msgstr "Aurreko historikoa"
 
-#: src/global.c:981
+#: src/global.c:985
 msgid "NextHstory"
 msgstr "Hurrengo historikoa"
 
-#: src/global.c:990
+#: src/global.c:994
 msgid "Go To Text"
 msgstr "Joan testu hontara"
 
-#: src/global.c:994
+#: src/global.c:998
 msgid "DOS Format"
 msgstr "DOS formatua"
 
-#: src/global.c:996
+#: src/global.c:1000
 msgid "Mac Format"
 msgstr "Mac formatua"
 
-#: src/global.c:1004
+#: src/global.c:1008
 msgid "Append"
 msgstr "Gehitu"
 
-#: src/global.c:1006
+#: src/global.c:1010
 msgid "Prepend"
 msgstr "Gehitu"
 
-#: src/global.c:1009
+#: src/global.c:1013
 msgid "Backup File"
 msgstr "Babeskopia fitxategia"
 
-#: src/global.c:1020
+#: src/global.c:1024
 #, fuzzy
 msgid "No Conversion"
 msgstr "bertsioa"
 
-#: src/global.c:1025
+#: src/global.c:1029
 msgid "Execute Command"
 msgstr "Exekutatu komandoa"
 
-#: src/global.c:1028
+#: src/global.c:1032
 #, fuzzy
 msgid "Pipe Text"
 msgstr "Kopiatu testua"
 
-#: src/global.c:1038
+#: src/global.c:1042
 msgid "To Files"
 msgstr "Fitxategietara"
 
-#: src/global.c:1046
+#: src/global.c:1050
 msgid "First File"
 msgstr "Lehen fitxategia"
 
-#: src/global.c:1048
+#: src/global.c:1052
 msgid "Last File"
 msgstr "Azken Fitxategia"
 
-#: src/global.c:1051
+#: src/global.c:1055
 msgid "Left Column"
 msgstr ""
 
-#: src/global.c:1053
+#: src/global.c:1057
 msgid "Right Column"
 msgstr ""
 
-#: src/global.c:1055
+#: src/global.c:1059
 msgid "Top Row"
 msgstr ""
 
-#: src/global.c:1057
+#: src/global.c:1061
 msgid "Bottom Row"
 msgstr ""
 
-#: src/global.c:1062
+#: src/global.c:1066
 msgid "Discard buffer"
 msgstr ""
 
 #. TRANSLATORS: Try to keep the next two strings at most 20 characters.
-#: src/global.c:1067
+#: src/global.c:1071
 #, fuzzy
 msgid "Prev Lint Msg"
 msgstr "Aurreko lerroa"
 
-#: src/global.c:1069
+#: src/global.c:1073
 #, fuzzy
 msgid "Next Lint Msg"
 msgstr "Hurrengo lerroa"
 
 #. TRANSLATORS: The next fourteen strings are toggle descriptions;
 #. * they are best kept shorter than 40 characters, but may be longer.
-#: src/global.c:1390
+#: src/global.c:1399
 msgid "Help mode"
 msgstr "Laguntza modua"
 
-#: src/global.c:1392
+#: src/global.c:1401
 msgid "Constant cursor position display"
 msgstr "Kurtzorearen posizioa bistaratu beti"
 
-#: src/global.c:1394
+#: src/global.c:1403
 msgid "Smooth scrolling"
 msgstr "Korritze leuna"
 
-#: src/global.c:1396
+#: src/global.c:1405
 #, fuzzy
 msgid "Soft wrapping of overlong lines"
 msgstr "Ez doitu lerro luzeak"
 
-#: src/global.c:1398
+#: src/global.c:1407
 msgid "Whitespace display"
 msgstr "Erakutsi txuriguneak"
 
-#: src/global.c:1400
+#: src/global.c:1409
 msgid "Color syntax highlighting"
 msgstr "Kolore sintaxi nabarmentzea"
 
-#: src/global.c:1402
+#: src/global.c:1411
 msgid "Smart home key"
 msgstr "'Smart home' tekla"
 
-#: src/global.c:1404
+#: src/global.c:1413
 msgid "Auto indent"
 msgstr "Auto indentatu"
 
-#: src/global.c:1406
+#: src/global.c:1415
 msgid "Cut to end"
 msgstr "Lerroaren bukaeraraino ebaki"
 
-#: src/global.c:1408
+#: src/global.c:1417
 #, fuzzy
 msgid "Hard wrapping of overlong lines"
 msgstr "Ez doitu lerro luzeak"
 
-#: src/global.c:1410
+#: src/global.c:1419
 msgid "Conversion of typed tabs to spaces"
 msgstr "Bihurtu idatzitako tabulazioak zuriuneetara"
 
-#: src/global.c:1412
+#: src/global.c:1421
 msgid "Mouse support"
 msgstr "Xagu euskarria"
 
-#: src/global.c:1414
+#: src/global.c:1423
 msgid "Suspension"
 msgstr "Eseki"
 
-#: src/global.c:1416
+#: src/global.c:1425
 msgid "Line numbering"
 msgstr ""
 
@@ -1595,7 +1595,7 @@ msgstr ""
 "parentesi artean erakusten dira:\n"
 "\n"
 
-#: src/help.c:477 src/help.c:558
+#: src/help.c:477 src/help.c:550
 msgid "enable/disable"
 msgstr "gaitu/ezgaitu"
 
@@ -2022,67 +2022,67 @@ msgstr ""
 msgid "Use \"fg\" to return to nano.\n"
 msgstr "Erabili \"fg\" nano-ra itzultzeko.\n"
 
-#: src/nano.c:1278
+#: src/nano.c:1281
 msgid "Suspension is not enabled"
 msgstr ""
 
-#: src/nano.c:1422
+#: src/nano.c:1425
 msgid "enabled"
 msgstr "gaitua"
 
-#: src/nano.c:1422
+#: src/nano.c:1425
 msgid "disabled"
 msgstr "ez gaitua"
 
-#: src/nano.c:1576
+#: src/nano.c:1579
 msgid "Unbound key"
 msgstr ""
 
-#: src/nano.c:1579
+#: src/nano.c:1582
 msgid "Unbindable key: M-["
 msgstr ""
 
-#: src/nano.c:1581
+#: src/nano.c:1584
 #, c-format
 msgid "Unbound key: M-%c"
 msgstr ""
 
-#: src/nano.c:1583
+#: src/nano.c:1586
 #, c-format
 msgid "Unbound key: ^%c"
 msgstr ""
 
-#: src/nano.c:1585
+#: src/nano.c:1588
 #, c-format
 msgid "Unbound key: %c"
 msgstr ""
 
-#: src/nano.c:2174 src/rcfile.c:1167
+#: src/nano.c:2178 src/rcfile.c:1167
 #, c-format
 msgid "Requested tab size \"%s\" is invalid"
 msgstr "Eskatutako \"%s\" tab tamainua baliogabea da"
 
-#: src/nano.c:2251 src/rcfile.c:1106
+#: src/nano.c:2255 src/rcfile.c:1106
 #, c-format
 msgid "Requested fill size \"%s\" is invalid"
 msgstr "Eskatutako \"%s\" betetze tamainua baliogabea da"
 
-#: src/nano.c:2309
+#: src/nano.c:2313
 #, c-format
 msgid "Type '%s -h' for a list of available options.\n"
 msgstr ""
 
-#: src/nano.c:2621 src/search.c:784
+#: src/nano.c:2625 src/search.c:790
 #, fuzzy
 msgid "Invalid line or column number"
 msgstr "Lerroaren zenbakia, zutabe zenbakia sartu"
 
-#: src/nano.c:2669
+#: src/nano.c:2673
 #, c-format
 msgid "Mistakes in '%s'"
 msgstr ""
 
-#: src/nano.c:2675
+#: src/nano.c:2679
 msgid "Welcome to nano.  For basic help, type Ctrl+G."
 msgstr ""
 
@@ -2337,27 +2337,27 @@ msgstr "(aldatzeko)"
 
 #. TRANSLATORS: This is shown when searching takes
 #. * more than half a second.
-#: src/search.c:219
+#: src/search.c:225
 #, fuzzy
 msgid "Searching..."
 msgstr "Bilatu"
 
-#: src/search.c:388
+#: src/search.c:394
 #, c-format
 msgid "\"%.*s%s\" not found"
 msgstr "\"%.*s%s\" ez da aurkitu"
 
 #. TRANSLATORS: This is a prompt.
-#: src/search.c:582
+#: src/search.c:588
 msgid "Replace this instance?"
 msgstr "Instantsia hau aldatu?"
 
 #. TRANSLATORS: This is a prompt.
-#: src/search.c:704
+#: src/search.c:710
 msgid "Replace with"
 msgstr "Aldatu honekin"
 
-#: src/search.c:735
+#: src/search.c:741
 #, fuzzy, c-format
 msgid "Replaced %zd occurrence"
 msgid_plural "Replaced %zd occurrences"
@@ -2365,15 +2365,15 @@ msgstr[0] "%lu kointzidentzia aldatuta"
 msgstr[1] "%lu kointzidentzia aldatuta"
 
 #. TRANSLATORS: This is a prompt.
-#: src/search.c:763
+#: src/search.c:769
 msgid "Enter line number, column number"
 msgstr "Lerroaren zenbakia, zutabe zenbakia sartu"
 
-#: src/search.c:952
+#: src/search.c:958
 msgid "Not a bracket"
 msgstr "Ez da hori giltza"
 
-#: src/search.c:1013
+#: src/search.c:1019
 msgid "No matching bracket"
 msgstr "Ez dago giltz egokirik"
 
@@ -2643,13 +2643,13 @@ msgstr ""
 
 #. TRANSLATORS: This refers to a sequence of escape codes
 #. * (from the keyboard) that nano does not recogize.
-#: src/winio.c:1314
+#: src/winio.c:1312
 msgid "Unknown sequence"
 msgstr ""
 
 #. TRANSLATORS: This is shown while a six-digit hexadecimal
 #. * Unicode character code (%s) is being typed in.
-#: src/winio.c:1450
+#: src/winio.c:1449
 #, fuzzy, c-format
 msgid "Unicode Input: %s"
 msgstr "Unicode sarrera"

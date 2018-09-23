@@ -330,10 +330,8 @@ function parseStatus(text, block, ipaddress, ripaddress){
 			code += '</tr>';
 		}
 		code += '</table><br>';
+		document.getElementById(block).innerHTML += code;
 	}
-
-	document.getElementById(block).innerHTML += code;
-
 
 /*** Routes ***/
 
@@ -358,10 +356,8 @@ function parseStatus(text, block, ipaddress, ripaddress){
 			code += '</tr>';
 		}
 		code += '</table><br>';
+		document.getElementById(block).innerHTML += code;
 	}
-
-	document.getElementById(block).innerHTML += code;
-
 
 	// Reset it, since we don't know which block we'll show next
 	code = "";

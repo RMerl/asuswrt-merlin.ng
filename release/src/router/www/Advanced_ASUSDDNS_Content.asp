@@ -758,7 +758,7 @@ function save_cert_key(){
 				</td>
 			</tr>
 			<tr style="display:none;">
-				<th>Forced refresh interval (in days)</th>
+				<th>Forced update interval (in days)</th>
 				<td>
 					<input type="text" maxlength="3" name="ddns_refresh_x" class="input_3_table" value="<% nvram_get("ddns_refresh_x"); %>" onKeyPress="return validator.isNumber(this,event)">
 				</td>

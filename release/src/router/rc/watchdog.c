@@ -7020,14 +7020,18 @@ wdp:
 #endif
 #endif
 
-	/* Force a DDNS update every "x" days - default is 21 days */
-	period = nvram_get_int("ddns_refresh_x");
-	if ((period) && (++ddns_update_timer >= (DAY_PERIOD * period))) {
-		ddns_update_timer = 0;
-		nvram_set("ddns_updated", "0");
+	if (nvram_match("ddns_enable_x", "1")) {
+		/* Force a DDNS update every "x" days - default is 21 days */
+		period = nvram_get_int("ddns_refresh_x");
+		if ((period) && (++ddns_update_timer >= (DAY_PERIOD * period))) {
+			ddns_update_timer = 0;
+			logmessage("watchdog", "Forced DDNS update (after %d days)", period);
+			notify_rc("restart_ddns");
+		} else {
+			ddns_check();
+		}
 	}
 
-	if (nvram_match("ddns_enable_x", "1")) ddns_check();
 	networkmap_check();
 	httpd_check();
 	dnsmasq_check();

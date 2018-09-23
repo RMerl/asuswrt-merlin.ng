@@ -5150,6 +5150,9 @@ void ddns_check(void)
 		unlink("/tmp/ddns.cache");
 	}
 	system("rm -f /tmp/inadyn.cache/*"); /* */
+
+	ddns_update_timer = 0;	// Reset forced update timer
+
 	logmessage("watchdog", "start ddns.");
 	if (last_unit != wan_unit)
 		r = notify_rc("restart_ddns");

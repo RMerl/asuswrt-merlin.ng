@@ -14,16 +14,17 @@ General changes in the 384/NG branch vs 380.xx:
 
 
 384.7 (xx-xxx-xxxx)
-  - NOTE: The RT-AC3200 and RT-AC56U are not supported by this release,
-          Asus hasn't released any updated code for these models.
+  - NOTE: The RT-AC3200 and RT-AC56U are not supported by this
+          release, Asus hasn't released any updated code for these
+          models.
   - NEW: Merged with GPL 384_21152.
   - NEW: Merged RT-AC87U binary blobs + SDK from 382_50702.
   - NEW: Replaced old ez-ipupdate DDNS client with inadyn.
          A plugin was developed to fully support Asus's DDNS
          service.
-         Custom services can now be configured through ddns-start
-         inadyn.conf.add, or inadyn.postconf.  See the inadyn
-         documentation as many custom services can be defined
+         Custom services can now be configured through ddns-start,
+         inadyn.conf, inadyn.conf.add or inadyn.postconf.  See the
+         inadyn documentation as many custom services can be defined
          for it.
   - NEW: Added support for freedns.afraid.org DDNS service to webui.
   - NEW: Added option to retrieve WAN IP from either the local
@@ -39,7 +40,7 @@ General changes in the 384/NG branch vs 380.xx:
   - CHANGED: Updated wget to 1.19.5.
   - CHANGED: Updated openssl to 1.0.2p.
   - CHANGED: Updated dnsmasq to v2.80test4 (themiron).
-  - CHANGED: Updated nano to 3.0 + backported fixes from upstream.
+  - CHANGED: Updated nano to 3.1
   - CHANGED: All DDNS services now use HTTPS.
   - CHANGED: Replaced Google Domains DDNS script with inadyn's own
              plugin.
@@ -51,8 +52,14 @@ General changes in the 384/NG branch vs 380.xx:
   - FIXED: Invalid dnsmasq config when setting DNSFilter to Router
            mode and having IPv6 enabled (themiron).
   - FIXED: dnsmasq crashing on RT-AC86U with IPv6 Stateful mode
-           (themiron)
-  - REMOVED: Ez-ipupdate DDNS client (replaced with inadyn)
+           (themiron).
+  - FIXED: client table would be shown twice on the VPN Status
+           page if the only connections to an OVPN server
+           were invalid clients (like a port scanner)
+  - FIXED: DDNS forced updates after "x" days wouldn't be
+           fired.
+  - REMOVED: Ez-ipupdate DDNS client (replaced with inadyn).
+             Update your scripts if you were relying on it.
 
 
 384.6 (25-July-2018)

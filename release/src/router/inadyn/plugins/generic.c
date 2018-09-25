@@ -39,7 +39,7 @@
 	"Authorization: Basic %s\r\n"					\
 	"User-Agent: %s\r\n\r\n"
 
-char *generic_responses[] = { "OK", "good", "true", "updated", NULL };
+char *generic_responses[] = { "OK", "good", "true", "updated", "nochg", NULL };
 
 static int request  (ddns_t       *ctx,   ddns_info_t *info, ddns_alias_t *alias);
 static int response (http_trans_t *trans, ddns_info_t *info, ddns_alias_t *alias);

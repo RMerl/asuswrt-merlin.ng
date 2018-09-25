@@ -3315,7 +3315,6 @@ start_ddns(void)
 			char *argv[] = { "/usr/sbin/inadyn",
 			                 "-e", "/sbin/ddns_updated",
 					"--exec-nochg", "/sbin/ddns_updated",
-			                 "--cache-dir=/tmp/inadyn.cache",
 			                 "-l", loglevel,
 			                 NULL };
 
@@ -3473,7 +3472,6 @@ asusddns_reg_domain(int reg)
 
 		char *argv[] = { "/usr/sbin/inadyn", "-1",
 				"-e", "/sbin/ddns_updated",
-				"--cache-dir=/tmp/inadyn.cache",
 				"-l", loglevel,
 			NULL };
 		_eval(argv, NULL, 0, &pid);
@@ -3554,7 +3552,6 @@ _dprintf("%s: do inadyn to unregister! unit = %d wan_ifname = %s nserver = %s ho
 
 		char *argv[] = { "/usr/sbin/inadyn", "-1",
 				"-e", "/sbin/ddns_updated",
-				"--cache-dir=/tmp/inadyn.cache",
 				"-l", loglevel,
 			NULL };
 		_eval(argv, NULL, 0, &pid);

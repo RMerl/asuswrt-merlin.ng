@@ -202,7 +202,12 @@ static int compose_paths(void)
 
 	/* Default cache dir: "/var" + "/cache/" + "inadyn" */
 	if (!cache_dir) {
+
+#ifdef ASUSWRT
+		size_t len = strlen("/tmp/inadyn.cache") + 1;
+#else
 		size_t len = strlen(LOCALSTATEDIR) + strlen(ident) + 8;
+#endif
 
 		cache_dir = malloc(len);
 		if (!cache_dir) {
@@ -210,7 +215,11 @@ static int compose_paths(void)
 			logit(LOG_ERR, "Failed allocating memory, exiting.");
 			return RC_OUT_OF_MEMORY;
 		}
+#ifdef ASUSWRT
+		strcpy(cache_dir, "/tmp/inadyn.cache");
+#else
 		snprintf(cache_dir, len, "%s/cache/%s", LOCALSTATEDIR, ident);
+#endif
 
 		if (access(cache_dir, W_OK)) {
 			char *home;

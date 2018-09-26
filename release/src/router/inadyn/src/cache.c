@@ -85,7 +85,8 @@ static void read_one(ddns_alias_t *alias, int nonslookup)
 	cache_file(alias->name, path, sizeof(path));
 	fp = fopen(path, "r");
 	if (!fp) {
-		if (nonslookup)
+		/* Exception for dnsomatic's special global hostname */
+		if (nonslookup || !strcmp(alias->address, "all.dnsomatic.com"))
 			return;
 
 		/* Try a DNS lookup of our last known IP#. */

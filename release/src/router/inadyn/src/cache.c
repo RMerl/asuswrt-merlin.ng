@@ -147,7 +147,7 @@ int read_cache_file(ddns_t *ctx)
 		int nonslookup;
 
 		/* Exception for tunnelbroker.net - no name to lookup */
-		nonslookup = !strcmp(info->system->name, "ipv6tb@he.net");
+		nonslookup = (!strcmp(info->system->name, "ipv6tb@he.net") | !strcmp(info->system->name, "default@tunnelbroker.net"));
 // XXX: TODO better plugin identifiction here
 		for (j = 0; j < info->alias_count; j++)
 			read_one(&info->alias[j], nonslookup);

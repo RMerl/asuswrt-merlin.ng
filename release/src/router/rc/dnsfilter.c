@@ -32,7 +32,7 @@ int get_dns_filter(int proto, int mode, char **server);
 int get_dns_filter(int proto, int mode, char **server)
 {
 	int count = 0;
-	char *server_table[13][2] = {
+	char *server_table[][2] = {
 		{ "", "" },			/* 0: Unfiltered */
 		{ "208.67.222.222", "" },	/* 1: OpenDNS */
 		{ "", "" },	/* 2: Discontinued Norton Connect Safe */
@@ -45,7 +45,8 @@ int get_dns_filter(int proto, int mode, char **server)
 		{ nvram_safe_get("dnsfilter_custom2"), "" },		/* 9: Custom2 */
 		{ nvram_safe_get("dnsfilter_custom3"), "" },		/* 10: Custom3 */
 		{ nvram_safe_get("dhcp_dns1_x"), "" },			/* 11: Router */
-		{ "8.26.56.26", "" }		/* 12: Comodo Secure DNS */
+		{ "8.26.56.26", "" },		/* 12: Comodo Secure DNS */
+		{ "9.9.9.9", "" }		/* 13: Quad9 */
         };
 #ifdef RTCONFIG_IPV6
 	char *server6_table[][2] = {
@@ -61,7 +62,8 @@ int get_dns_filter(int proto, int mode, char **server)
 		{"", ""},		/* 9: Custom2 - not supported yet */
 		{"", ""},		/* 10: Custom3 - not supported yet */
 		{"", ""},		/* 11: Router  - semi-supported, refer dnsfilter_setup_dnsmasq() */
-		{"", ""}		/* 12: Comodo Secure DNS */
+		{"", ""},		/* 12: Comodo Secure DNS */
+		{"2620:fe::fe", "2620:fe::9"}	/* 13: Quad9 */
         };
 #endif
 

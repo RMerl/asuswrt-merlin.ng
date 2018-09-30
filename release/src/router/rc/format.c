@@ -20,6 +20,12 @@ void adjust_merlin_config(void)
 	char varname_ori[32], varname_ori2[32], varname_new[32];
 	int rgw, plan;
 #endif
+#ifdef RTCONFIG_DNSFILTER
+        char *nv, *nvp, *rule;
+        char *name, *mac, *mode, *newstr;
+        char tmp[32];
+	int globalmode;
+#endif
 
 #ifdef RTCONFIG_OPENVPN
 	if(!nvram_is_empty("vpn_server_clientlist")) {
@@ -110,6 +116,47 @@ void adjust_merlin_config(void)
 	   f_size("/jffs/signature/rule.trf") < 50000)
 		unlink("/jffs/signature/rule.trf");
 #endif
+
+/* Remove discontinued DNSFilter services */
+#ifdef RTCONFIG_DNSFILTER
+	globalmode = nvram_get_int("dnsfilter_mode");
+	if (globalmode == 2 || globalmode == 3 || globalmode == 4)
+		nvram_set("dnsfilter_mode", "7");
+
+#ifdef HND_ROUTER
+	nv = nvp = malloc(255 * 6 + 1);
+	if (nv) nvram_split_get("dnsfilter_rulelist", nv, 255 * 6 + 1, 5);
+#else
+	nv = nvp = strdup(nvram_safe_get("dnsfilter_rulelist"));
+#endif
+	newstr = malloc(strlen(nv) + 1);
+
+	if (newstr) {
+		newstr[0] = '\0';
+
+		while (nv && (rule = strsep(&nvp, "<")) != NULL) {
+			if (vstrsep(rule, ">", &name, &mac, &mode) != 3)
+				continue;
+			if (!*mac || !*mode )
+				continue;
+
+			if (mode[0] == '2' || mode[0] == '3' || mode[0] == '4')  mode[0] = '7';
+
+			snprintf(tmp, sizeof(tmp), "<%s>%s>%s", name, mac, mode);
+			strcat(newstr, tmp);
+		}
+
+#ifdef HND_ROUTER
+		nvram_split_set("dnsfilter_rulelist", newstr, 255 * 6 + 1, 5);
+#else
+		nvram_set("dnsfilter_rulelist", newstr);
+#endif
+		free(newstr);
+	}
+	free(nv);
+#endif
+
+
 }
 
 void adjust_url_urlelist(void)

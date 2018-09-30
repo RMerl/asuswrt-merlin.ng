@@ -41,9 +41,6 @@ var modes_array = [[ "0", "No Filtering" ],
 		  [ "11", "Router" ],
 		  [ "1",  "OpenDNS Home" ],
 		  [ "7",  "OpenDNS Family" ],
-		  [ "2",  "Norton Safe" ],
-		  [ "3",  "Norton Family" ],
-		  [ "4",  "Norton Children" ],
 		  [ "5",  "Yandex Safe" ],
 		  [ "6",  "Yandex Family" ],
 		  [ "12", "Comodo Secure DNS" ],
@@ -389,12 +386,10 @@ function showhide_settings(state) {
 							<ul>
 								<li><a target="_blank" style="font-weight: bolder; cursor:pointer;text-decoration: underline;" href="http://www.opendns.com/home-internet-security/">OpenDNS</a>
 								<ul><li>Home = Regular OpenDNS server (manually configurable through their portal)
-								<li>Family = Family Shield (pre-configured to block adult content)</ul>
-								<li><a target="_blank" style="font-weight: bolder; cursor:pointer;text-decoration: underline;" href="https://dns.norton.com/">Norton Connect Safe</a> (for home usage only)
-								<ul><li>Safe = Malicious content<li>Family = Malicious + Sexual content<li>Children = Malicious + Sexual + Mature content</ul>
+								    <li>Family = Family Shield (pre-configured to block adult content)</ul>
 								<li><a target="_blank" style="font-weight: bolder; cursor:pointer;text-decoration: underline;" href="http://dns.yandex.com"><#YandexDNS#></a>
 								<ul><li>Safe = Malicious content<li>Family = Malicious + Sexual content</ul>
-								<li><a target="_blank" style="font-weight: bolder; cursor:pointer;text-decoration: underline;" href="http://www.comodo.com/secure-dns/">Comodo Secure DNS</a>
+								    <li><a target="_blank" style="font-weight: bolder; cursor:pointer;text-decoration: underline;" href="http://www.comodo.com/secure-dns/">Comodo Secure DNS</a>
 								<ul><li>Protects against malicious content</ul>
 							</ul>
 							<br>"No Filtering" will disable/bypass the filter, and "Router" will force clients to use the DNS provided

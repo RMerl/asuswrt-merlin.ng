@@ -35,9 +35,9 @@ int get_dns_filter(int proto, int mode, char **server)
 	char *server_table[13][2] = {
 		{ "", "" },			/* 0: Unfiltered */
 		{ "208.67.222.222", "" },	/* 1: OpenDNS */
-		{ "199.85.126.10", "" },	/* 2: Norton Connect Safe A (Security) */
-		{ "199.85.126.20", "" },	/* 3: Norton Connect Safe B (Security + Adult) */
-		{ "199.85.126.30", "" },	/* 4: Norton Connect Safe C (Sec. + Adult + Violence */
+		{ "", "" },	/* 2: Discontinued Norton Connect Safe */
+		{ "", "" },	/* 3: Discontinued Norton Connect Safe */
+		{ "", "" },	/* 4: Discontinued Norton Connect Safe */
 		{ "77.88.8.88", "" },		/* 5: Secure Mode safe.dns.yandex.ru */
 		{ "77.88.8.7", "" },		/* 6: Family Mode family.dns.yandex.ru */
 		{ "208.67.222.123", "" },	/* 7: OpenDNS Family Shield */
@@ -51,9 +51,9 @@ int get_dns_filter(int proto, int mode, char **server)
 	char *server6_table[][2] = {
 		{"", ""},		/* 0: Unfiltered */
 		{"", ""},		/* 1: OpenDNS */
-		{"", ""},		/* 2: Norton Connect Safe A (Security) */
-		{"", ""},		/* 3: Norton Connect Safe B (Security + Adult) */
-		{"", ""},		/* 4: Norton Connect Safe C (Sec. + Adult + Violence */
+		{"", ""},		/* 2: Discontinued Norton Connect Safe */
+		{"", ""},		/* 3: Discontinued Norton Connect Safe */
+		{"", ""},		/* 4: Discontinued Norton Connect Safe */
 		{"2a02:6b8::feed:bad","2a02:6b8:0:1::feed:bad"},		/* 5: Secure Mode safe.dns.yandex.ru */
 		{"2a02:6b8::feed:a11","2a02:6b8:0:1::feed:a11"},		/* 6: Family Mode family.dns.yandex.ru */
 		{"", ""},		/* 7: OpenDNS Family Shield */

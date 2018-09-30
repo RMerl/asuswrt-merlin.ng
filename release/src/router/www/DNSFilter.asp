@@ -168,9 +168,9 @@ function show_dnsfilter_list(){
 					}
 				}
 			}
-			code += '</td><td id="client_info_'+i+'" style="width:60%;border:0px;">';
+			code += '</td><td id="client_info_'+i+'" style="width:65%;text-align:left;border:0;">';
 			code += '<div>' + clientName + '</div>';
-			code += '<div style="font-weight:bold;cursor:pointer;text-decoration:underline;font-family:Lucida Console;" onclick="document.form.destIP.value=this.innerHTML;">' + clientMac + '</div>';
+			code += '<div>' + clientMac + '</div>';
 			code += '</td></tr></table>';
 			code += '</td>';
 

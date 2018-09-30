@@ -1704,6 +1704,10 @@ void start_dnsmasq(void)
 	if (nvram_match("dns_norebind", "1"))
 		fprintf(fp, "stop-dns-rebind\n");
 
+	/* Protect against VU#598349 */
+	fprintf(fp,"dhcp-name-match=set:wpad-ignore,wpad\n"
+		   "dhcp-ignore-names=tag:wpad-ignore\n");
+
 	append_custom_config("dnsmasq.conf",fp);
 	fclose(fp);
 

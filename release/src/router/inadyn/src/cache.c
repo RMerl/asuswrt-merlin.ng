@@ -86,7 +86,7 @@ static void read_one(ddns_alias_t *alias, int nonslookup)
 	fp = fopen(path, "r");
 	if (!fp) {
 		/* Exception for dnsomatic's special global hostname */
-		if (nonslookup || !strcmp(alias->name, "all.dnsomatic.com"))
+		if (nonslookup || !strncmp(alias->name, "all.dnsomatic.com", sizeof(alias->name)))
 			return;
 
 		/* Try a DNS lookup of our last known IP#. */
@@ -144,10 +144,22 @@ int read_cache_file(ddns_t *ctx)
 
 	info = conf_info_iterator(1);
 	while (info) {
-		int nonslookup;
+		/* XXX: Possibly move this exception to each plugin */
+		const char *except[] = {
+			"ipv6tb@he.net",
+			"default@tunnelbroker.net"
+		};
+		const char *name = info->system->name;
+		int i, nonslookup = 0;
 
-		/* Exception for tunnelbroker.net - no name to lookup */
-		nonslookup = (!strcmp(info->system->name, "ipv6tb@he.net") | !strcmp(info->system->name, "default@tunnelbroker.net"));
+		/* Exceptions -- no name to lookup */
+		for (i = 0; i < NELEMS(except); i++) {
+			if (!strncmp(name, except[i], sizeof(name))) {
+				nonslookup = 1;
+				break;
+			}
+		}
+
 // XXX: TODO better plugin identifiction here
 		for (j = 0; j < info->alias_count; j++)
 			read_one(&info->alias[j], nonslookup);

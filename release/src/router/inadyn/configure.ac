@@ -1,5 +1,5 @@
 AC_PREREQ(2.61)
-AC_INIT(In-a-dyn, 2.4, https://github.com/troglobit/inadyn/issues, inadyn, http://troglobit.com/inadyn.html)
+AC_INIT(In-a-dyn, 2.5, https://github.com/troglobit/inadyn/issues, inadyn, http://troglobit.com/inadyn.html)
 AM_INIT_AUTOMAKE([1.11 foreign dist-xz])
 AM_SILENT_RULES([yes])
 
@@ -15,7 +15,7 @@ AC_ARG_ENABLE(ssl,
 )
 
 AC_ARG_ENABLE(openssl,
-        [AS_HELP_STRING([--enable-openssl], [Use OpenSSL for HTTPS, default: GnuTLS])],
+        [AS_HELP_STRING([--enable-openssl], [Use OpenSSL/LibreSSL for HTTPS, default: GnuTLS])],
         [ac_enable_openssl="$enableval"],
         [ac_enable_openssl="no"]
 )
@@ -87,24 +87,24 @@ AC_CHECK_LIB([confuse], [cfg_init], [],
 AC_CHECK_HEADERS([confuse.h], [],
              AC_MSG_ERROR([*** Cannot find required header files!]))
 
-# If HTTPS is enabled we check for either OpenSSL or GnuTLS libs+headers
+# If HTTPS is enabled we check for either OpenSSL/LibreSSL or GnuTLS libs+headers
 if test "x$ac_enable_ssl" = "xyes"; then
    if test "x$ac_enable_openssl" = "xyes"; then
       PKG_CHECK_MODULES([OpenSSL], [openssl])
       LDFLAGS="$LDFLAGS $OpenSSL_LIBS"
       CPPFLAGS="$CPPFLAGS $OpenSSL_CFLAGS"
       AC_CHECK_LIB([crypto], [EVP_EncryptInit], [],
-                          AC_MSG_ERROR([*** Crypto library (OpenSSL) not found!]))
+                          AC_MSG_ERROR([*** Crypto library (OpenSSL/LibreSSL) not found!]))
       AC_CHECK_LIB([ssl], [SSL_library_init], [],
                           AC_CHECK_LIB([ssl], [OPENSSL_init_ssl], [],
-                                              AC_MSG_ERROR([*** SSL library (OpenSSL) not found!])))
+                                              AC_MSG_ERROR([*** SSL library (OpenSSL/LibreSSL) not found!])))
       AC_CHECK_HEADERS([openssl/crypto.h openssl/x509.h openssl/pem.h openssl/ssl.h \
                         openssl/tls1.h openssl/err.h], [],
 			AC_MSG_ERROR([*** Cannot find required header files!]),
 			[
 			#include <openssl/conf.h>
 			])
-      AC_DEFINE([CONFIG_OPENSSL], [], [Enable HTTPS support using OpenSSL library])
+      AC_DEFINE([CONFIG_OPENSSL], [], [Enable HTTPS support using OpenSSL/LibreSSL library])
    else
       PKG_CHECK_MODULES([GnuTLS], [gnutls >= 3.0])
       LDFLAGS="$LDFLAGS $GnuTLS_LIBS"
@@ -117,6 +117,25 @@ if test "x$ac_enable_ssl" = "xyes"; then
    fi
    AC_DEFINE([ENABLE_SSL], [], [Enable HTTPS support])
 fi
+
+
+# By default we rely on the built-in locations of Open/LibreSSL and GnuTLS,
+# on error we fall back to these two locations
+# For more excellent information on the topic, see this blog post
+#   https://www.happyassassin.net/2015/01/12/a-note-about-ssltls-trusted-certificate-stores-and-platforms/
+CAFILE1="/etc/ssl/certs/ca-certificates.crt"
+CAFILE2="/etc/pki/tls/certs/ca-bundle.trust.crt"
+
+# Add OS-specific flags
+case "$host_os" in
+darwin*)
+   LDFLAGS="$LDFLAGS -lresolv"
+   CAFILE2="/usr/local/etc/openssl/cert.pem"   # where Homebrew's libressl places it
+   ;;
+esac
+
+AC_DEFINE_UNQUOTED([CAFILE1], "$CAFILE1", [First fallback location for Open/LibreSSL and GnuTLS trust db])
+AC_DEFINE_UNQUOTED([CAFILE2], "$CAFILE2", [Second location for Open/LibreSSL and GnuTLS trust db])
 
 AM_CONDITIONAL([ENABLE_SSL], test "x$ac_enable_ssl" = "xyes")
 AM_CONDITIONAL([ENABLE_OPENSSL], test "x$ac_enable_openssl" = "xyes")

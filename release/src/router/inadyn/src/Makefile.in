@@ -150,8 +150,8 @@ am_inadyn_OBJECTS = inadyn-main.$(OBJEXT) inadyn-ddns.$(OBJEXT) \
 	../plugins/inadyn-tzo.$(OBJEXT) \
 	../plugins/inadyn-zoneedit.$(OBJEXT) \
 	../plugins/inadyn-zerigo.$(OBJEXT) \
-	../plugins/inadyn-asuscomm.$(OBJEXT) \
-	../plugins/inadyn-dnspod.$(OBJEXT)
+	../plugins/inadyn-dnspod.$(OBJEXT) \
+	../plugins/inadyn-asuscomm.$(OBJEXT)
 inadyn_OBJECTS = $(am_inadyn_OBJECTS)
 am__DEPENDENCIES_1 =
 LIBOBJDIR = ../lib/
@@ -372,8 +372,9 @@ inadyn_SOURCES = main.c ddns.c cache.c error.c conf.c os.c http.c \
 	../plugins/easydns.c ../plugins/freedns.c \
 	../plugins/freemyip.c ../plugins/generic.c \
 	../plugins/giradns.c ../plugins/sitelutions.c \
-	../plugins/tunnelbroker.c ../plugins/tzo.c ../plugins/asuscomm.c \
-	../plugins/zoneedit.c ../plugins/zerigo.c ../plugins/dnspod.c
+	../plugins/tunnelbroker.c ../plugins/tzo.c \
+	../plugins/zoneedit.c ../plugins/zerigo.c ../plugins/dnspod.c \
+	../plugins/asuscomm.c
 inadyn_CFLAGS = $(confuse_CFLAGS) $(OpenSSL_CFLAGS) $(GnuTLS_CFLAGS)
 inadyn_LDADD = $(confuse_LIBS) $(OpenSSL_LIBS) $(GnuTLS_LIBS) $(LIBS) \
 	$(LIBOBJS)
@@ -512,7 +513,7 @@ clean-sbinPROGRAMS:
 ../plugins/inadyn-dnspod.$(OBJEXT): ../plugins/$(am__dirstamp) \
 	../plugins/$(DEPDIR)/$(am__dirstamp)
 ../plugins/inadyn-asuscomm.$(OBJEXT): ../plugins/$(am__dirstamp) \
-        ../plugins/$(DEPDIR)/$(am__dirstamp)
+	../plugins/$(DEPDIR)/$(am__dirstamp)
 
 inadyn$(EXEEXT): $(inadyn_OBJECTS) $(inadyn_DEPENDENCIES) $(EXTRA_inadyn_DEPENDENCIES) 
 	@rm -f inadyn$(EXEEXT)
@@ -530,6 +531,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@../lib/$(DEPDIR)/strlcpy.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@../lib/$(DEPDIR)/strtonum.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@../lib/$(DEPDIR)/utimensat.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@../plugins/$(DEPDIR)/inadyn-asuscomm.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@../plugins/$(DEPDIR)/inadyn-changeip.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@../plugins/$(DEPDIR)/inadyn-cloudxns.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@../plugins/$(DEPDIR)/inadyn-common.Po@am__quote@
@@ -551,7 +553,6 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@../plugins/$(DEPDIR)/inadyn-sitelutions.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@../plugins/$(DEPDIR)/inadyn-tunnelbroker.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@../plugins/$(DEPDIR)/inadyn-tzo.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@../plugins/$(DEPDIR)/inadyn-asuscomm.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@../plugins/$(DEPDIR)/inadyn-zerigo.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@../plugins/$(DEPDIR)/inadyn-zoneedit.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/inadyn-base64.Po@am__quote@
@@ -1099,20 +1100,6 @@ inadyn-gnutls.obj: gnutls.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(inadyn_CFLAGS) $(CFLAGS) -c -o ../plugins/inadyn-tzo.obj `if test -f '../plugins/tzo.c'; then $(CYGPATH_W) '../plugins/tzo.c'; else $(CYGPATH_W) '$(srcdir)/../plugins/tzo.c'; fi`
 
-../plugins/inadyn-asuscomm.o: ../plugins/asuscomm.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(inadyn_CFLAGS) $(CFLAGS) -MT ../plugins/inadyn-asuscomm.o -MD -MP -MF ../plugins/$(DEPDIR)/inadyn-asuscomm.Tpo -c -o ../plugins/inadyn-asuscomm.o `test -f '../plugins/asuscomm.c' || echo '$(srcdir)/'`../plugins/asuscomm.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) ../plugins/$(DEPDIR)/inadyn-asuscomm.Tpo ../plugins/$(DEPDIR)/inadyn-asuscomm.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='../plugins/asuscomm.c' object='../plugins/inadyn-asuscomm.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(inadyn_CFLAGS) $(CFLAGS) -c -o ../plugins/inadyn-asuscomm.o `test -f '../plugins/asuscomm.c' || echo '$(srcdir)/'`../plugins/asuscomm.c
-
-../plugins/inadyn-asuscomm.obj: ../plugins/asuscomm.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(inadyn_CFLAGS) $(CFLAGS) -MT ../plugins/inadyn-asuscomm.obj -MD -MP -MF ../plugins/$(DEPDIR)/inadyn-asuscomm.Tpo -c -o ../plugins/inadyn-asuscomm.obj `if test -f '../plugins/asuscomm.c'; then $(CYGPATH_W) '../plugins/asuscomm.c'; else $(CYGPATH_W) '$(srcdir)/../plugins/asuscomm.c'; fi`
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) ../plugins/$(DEPDIR)/inadyn-asuscomm.Tpo ../plugins/$(DEPDIR)/inadyn-asuscomm.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='../plugins/asuscomm.c' object='../plugins/inadyn-asuscomm.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(inadyn_CFLAGS) $(CFLAGS) -c -o ../plugins/inadyn-asuscomm.obj `if test -f '../plugins/asuscomm.c'; then $(CYGPATH_W) '../plugins/asuscomm.c'; else $(CYGPATH_W) '$(srcdir)/../plugins/asuscomm.c'; fi`
-
 ../plugins/inadyn-zoneedit.o: ../plugins/zoneedit.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(inadyn_CFLAGS) $(CFLAGS) -MT ../plugins/inadyn-zoneedit.o -MD -MP -MF ../plugins/$(DEPDIR)/inadyn-zoneedit.Tpo -c -o ../plugins/inadyn-zoneedit.o `test -f '../plugins/zoneedit.c' || echo '$(srcdir)/'`../plugins/zoneedit.c
 @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) ../plugins/$(DEPDIR)/inadyn-zoneedit.Tpo ../plugins/$(DEPDIR)/inadyn-zoneedit.Po
@@ -1154,6 +1141,20 @@ inadyn-gnutls.obj: gnutls.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='../plugins/dnspod.c' object='../plugins/inadyn-dnspod.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(inadyn_CFLAGS) $(CFLAGS) -c -o ../plugins/inadyn-dnspod.obj `if test -f '../plugins/dnspod.c'; then $(CYGPATH_W) '../plugins/dnspod.c'; else $(CYGPATH_W) '$(srcdir)/../plugins/dnspod.c'; fi`
+
+../plugins/inadyn-asuscomm.o: ../plugins/asuscomm.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(inadyn_CFLAGS) $(CFLAGS) -MT ../plugins/inadyn-asuscomm.o -MD -MP -MF ../plugins/$(DEPDIR)/inadyn-asuscomm.Tpo -c -o ../plugins/inadyn-asuscomm.o `test -f '../plugins/asuscomm.c' || echo '$(srcdir)/'`../plugins/asuscomm.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) ../plugins/$(DEPDIR)/inadyn-asuscomm.Tpo ../plugins/$(DEPDIR)/inadyn-asuscomm.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='../plugins/asuscomm.c' object='../plugins/inadyn-asuscomm.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(inadyn_CFLAGS) $(CFLAGS) -c -o ../plugins/inadyn-asuscomm.o `test -f '../plugins/asuscomm.c' || echo '$(srcdir)/'`../plugins/asuscomm.c
+
+../plugins/inadyn-asuscomm.obj: ../plugins/asuscomm.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(inadyn_CFLAGS) $(CFLAGS) -MT ../plugins/inadyn-asuscomm.obj -MD -MP -MF ../plugins/$(DEPDIR)/inadyn-asuscomm.Tpo -c -o ../plugins/inadyn-asuscomm.obj `if test -f '../plugins/asuscomm.c'; then $(CYGPATH_W) '../plugins/asuscomm.c'; else $(CYGPATH_W) '$(srcdir)/../plugins/asuscomm.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) ../plugins/$(DEPDIR)/inadyn-asuscomm.Tpo ../plugins/$(DEPDIR)/inadyn-asuscomm.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='../plugins/asuscomm.c' object='../plugins/inadyn-asuscomm.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(inadyn_CFLAGS) $(CFLAGS) -c -o ../plugins/inadyn-asuscomm.obj `if test -f '../plugins/asuscomm.c'; then $(CYGPATH_W) '../plugins/asuscomm.c'; else $(CYGPATH_W) '$(srcdir)/../plugins/asuscomm.c'; fi`
 
 mostlyclean-libtool:
 	-rm -f *.lo

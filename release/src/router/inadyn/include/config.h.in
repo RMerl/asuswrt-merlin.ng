@@ -1,9 +1,15 @@
 /* include/config.h.in.  Generated from configure.ac by autoheader.  */
 
+/* First fallback location for Open/LibreSSL and GnuTLS trust db */
+#undef CAFILE1
+
+/* Second location for Open/LibreSSL and GnuTLS trust db */
+#undef CAFILE2
+
 /* Enable HTTPS support using GnuTLS library */
 #undef CONFIG_GNUTLS
 
-/* Enable HTTPS support using OpenSSL library */
+/* Enable HTTPS support using OpenSSL/LibreSSL library */
 #undef CONFIG_OPENSSL
 
 /* Enable developer-only simulation mode */

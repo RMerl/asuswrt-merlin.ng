@@ -106,11 +106,31 @@ done:
 	return 0;
 }
 
+static int ssl_error_cb(const char *str, size_t len, void *data)
+{
+	size_t sz;
+	char buf[512];
+
+	memset(buf, 0, sizeof(buf));
+	sz = len < sizeof(buf) ? len : sizeof(buf) - 1;
+	memcpy(buf, str, sz);
+
+	logit(LOG_ERR, "OpenSSL error: %s", buf);
+
+	return 0;
+}
+
+static void ssl_check_error(void)
+{
+	ERR_print_errors_cb(ssl_error_cb, NULL);
+}
+
 int ssl_open(http_t *client, char *msg)
 {
-	char buf[256];
 	const char *sn;
+	char buf[512];
 	X509 *cert;
+	int rc;
 
 	if (!client->ssl_enabled)
 		return tcp_init(&client->tcp, msg);
@@ -143,8 +163,11 @@ int ssl_open(http_t *client, char *msg)
 		return RC_HTTPS_SNI_ERROR;
 
 	SSL_set_fd(client->ssl, client->tcp.socket);
-	if (-1 == SSL_connect(client->ssl))
+	rc = SSL_connect(client->ssl);
+	if (rc < 0) {
+		ssl_check_error();
 		return RC_HTTPS_FAILED_CONNECT;
+	}
 
 	logit(LOG_INFO, "SSL connection using %s", SSL_get_cipher(client->ssl));
 
@@ -168,12 +191,18 @@ int ssl_open(http_t *client, char *msg)
 int ssl_close(http_t *client)
 {
 	if (client->ssl_enabled) {
-		/* SSL/TLS close_notify */
-		SSL_shutdown(client->ssl);
+		if (client->ssl) {
+			/* SSL/TLS close_notify */
+			SSL_shutdown(client->ssl);
 
-		/* Clean up. */
-		SSL_free(client->ssl);
-		SSL_CTX_free(client->ssl_ctx);
+			/* Clean up. */
+			SSL_free(client->ssl);
+			client->ssl = NULL;
+		}
+		if (client->ssl_ctx) {
+			SSL_CTX_free(client->ssl_ctx);
+			client->ssl_ctx = NULL;
+		}
 	}
 
 	return tcp_exit(&client->tcp);
@@ -181,15 +210,16 @@ int ssl_close(http_t *client)
 
 int ssl_send(http_t *client, const char *buf, int len)
 {
-	int err;
+	int rc;
 
 	if (!client->ssl_enabled)
 		return tcp_send(&client->tcp, buf, len);
 
-	err = SSL_write(client->ssl, buf, len);
-	if (err <= 0)
-		/* XXX: TODO add SSL_get_error() to figure out why */
+	rc = SSL_write(client->ssl, buf, len);
+	if (rc <= 0) {
+		ssl_check_error();
 		return RC_HTTPS_SEND_ERROR;
+	}
 
 	logit(LOG_DEBUG, "Successfully sent HTTPS request!");
 
@@ -198,21 +228,26 @@ int ssl_send(http_t *client, const char *buf, int len)
 
 int ssl_recv(http_t *client, char *buf, int buf_len, int *recv_len)
 {
-	int len, err;
+	int len, rc;
 
+	*recv_len = 0;
 	if (!client->ssl_enabled)
 		return tcp_recv(&client->tcp, buf, buf_len, recv_len);
 
 	/* Read HTTP header */
-	len = err = SSL_read(client->ssl, buf, buf_len);
-	if (err <= 0)
-		/* XXX: TODO add SSL_get_error() to figure out why */
+	len = rc = SSL_read(client->ssl, buf, buf_len);
+	if (rc <= 0) {
+		ssl_check_error();
 		return RC_HTTPS_RECV_ERROR;
+	}
+	*recv_len += len;
 
 	/* Read HTTP body */
-	*recv_len = SSL_read(client->ssl, &buf[len], buf_len - len);
-	if (*recv_len <= 0)
-		*recv_len = 0;
+	len = rc = SSL_read(client->ssl, &buf[len], buf_len - len);
+	if (rc <= 0) {
+		ssl_check_error();
+		len = 0;
+	}
 	*recv_len += len;
 	logit(LOG_DEBUG, "Successfully received HTTPS response (%d bytes)!", *recv_len);
 

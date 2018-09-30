@@ -3,6 +3,26 @@ Change Log
 
 All notable changes to the project are documented in this file.
 
+
+[v2.5][] - 2018-09-30
+---------------------
+
+### Changes
+- macOS changes by Jo Rhett:
+  - Add linking with `-lresolv`
+  - Use Homebrew's CA trust store
+  - Update REDAME with install help
+- Add support for selfhost.de DDNS
+
+### Fixes
+- Fix #211: Only show DDNS server response on successful transaction
+- Fix #211: Improved error handling in OpenSSL back-end
+- Fix #214: Add `nochg` to list of good responses for custom providers
+- Fixes by Erich Sauvageau:
+  - Fix #216: Add DNS lookup exception for `all.dnsomatic.com`
+  - Fix #219: Add DNS lookup exception for `default@tunnelbrooker.net`
+
+
 [v2.4][] - 2018-08-18
 ---------------------
 

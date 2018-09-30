@@ -190,7 +190,7 @@ CTAGS = ctags
 CSCOPE = cscope
 DIST_SUBDIRS = $(SUBDIRS)
 am__DIST_COMMON = $(srcdir)/Makefile.in $(srcdir)/inadyn.service.in \
-	AUTHORS COPYING ar-lib compile config.guess config.sub depcomp \
+	AUTHORS COPYING ar-lib compile config.guess config.sub \
 	install-sh ltmain.sh missing
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
 distdir = $(PACKAGE)-$(VERSION)
@@ -369,7 +369,6 @@ doc_DATA = README.md COPYING ChangeLog.md
 EXTRA_DIST = README.md ChangeLog.md CONTRIBUTING.md
 DISTCLEANFILES = *~ DEADJOE semantic.cache *.gdb *.elf core core.* *.d
 @HAVE_SYSTEMD_TRUE@systemd_DATA = inadyn.service
-GPG = gpg
 MD5 = md5sum
 all: all-recursive
 
@@ -885,11 +884,6 @@ uninstall-am: uninstall-docDATA uninstall-systemdDATA
 
 .PRECIOUS: Makefile
 
-gpg-dist:
-	@for file in $(DIST_ARCHIVES); do 	\
-		$(GPG) -ba --yes $$file && 	\
-		mv $$file.asc ../;		\
-	done
 md5-dist:
 	@for file in $(DIST_ARCHIVES); do	\
 		$(MD5) $$file > ../$$file.md5;	\
@@ -916,7 +910,7 @@ release-hook:
 package build-deb:
 	@dpkg-buildpackage -uc -us -B
 
-release: release-hook distcheck package md5-dist gpg-dist
+release: release-hook distcheck package md5-dist
 	@mv $(DIST_ARCHIVES) ../
 	@echo
 	@echo "Resulting release files:"

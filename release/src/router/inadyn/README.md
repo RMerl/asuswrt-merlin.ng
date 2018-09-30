@@ -84,6 +84,7 @@ examples.
 * <https://www.cloudxns.net>
 * <https://www.dnspod.cn>
 * <https://www.dynu.com>
+* <https://www.selfhost.de>
 
 In-A-Dyn defaults to HTTPS, but not all providers may support this, so
 try disabling SSL for the update (`ssl = false`) or the checkip phase
@@ -329,6 +330,20 @@ last example above.
 Build & Install
 ---------------
 
+### Homebrew (macOS)
+
+To run the latest stable version on macOS, type:
+
+    brew install inadyn
+
+To run the latest version from the master branch, install the git tap instead:
+
+    brew install --HEAD troglobit/inadyn/inadyn
+
+Either of these will install all dependencies.
+
+### Building from Source
+
 In-A-Dyn requires a few libraries to build.  The build system searches
 for them, in their required versions, using the `pkg-config` tool:
 
@@ -363,8 +378,9 @@ You may want to remove the `--prefix=/usr` option.
 
 By default inadyn tries to build with GnuTLS for HTTPS support.  GnuTLS
 is the recommended SSL library to use on UNIX distributions which do not
-provide OpenSSL as a system library.  However, when OpenSSL is available
-as a system library, for example in many embedded systems:
+provide OpenSSL/LibreSSL as a system library.  However, when OpenSSL or
+LibreSSL is available as a system library, for example in many embedded
+systems:
 
     ./configure --enable-openssl
 

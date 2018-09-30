@@ -10,14 +10,6 @@ if HAVE_SYSTEMD
 systemd_DATA    = inadyn.service
 endif
 
-## Generate detached signature file (ascii-armored), like OpenVPN does
-GPG = gpg
-gpg-dist:
-	@for file in $(DIST_ARCHIVES); do 	\
-		$(GPG) -ba --yes $$file && 	\
-		mv $$file.asc ../;		\
-	done
-
 ## Generate MD5 checksum file
 MD5 = md5sum
 md5-dist:
@@ -49,7 +41,7 @@ package build-deb:
 
 ## Target to run when building a release
 ## distcheck <-- does not work atm., wrong search path for source/header files
-release: release-hook distcheck package md5-dist gpg-dist
+release: release-hook distcheck package md5-dist
 	@mv $(DIST_ARCHIVES) ../
 	@echo
 	@echo "Resulting release files:"

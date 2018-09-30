@@ -159,7 +159,8 @@ static int server_transaction(ddns_t *ctx, ddns_info_t *provider)
 		rc = RC_DDNS_INVALID_CHECKIP_RSP;
 
 	http_exit(client);
-	logit(LOG_DEBUG, "Checked my IP, return code: %d", rc);
+	logit(LOG_DEBUG, "Server response: %s", trans->rsp);
+	logit(LOG_DEBUG, "Checked my IP, return code %d: %s", rc, error_str(rc));
 
 	return rc;
 }
@@ -578,13 +579,14 @@ static int send_update(ddns_t *ctx, ddns_info_t *info, ddns_alias_t *alias, int 
 	logit(LOG_DEBUG, "Sending alias table update to DDNS server: %s", ctx->request_buf);
 
 	rc = http_transaction(client, &trans);
-	logit(LOG_DEBUG, "DDNS server response: %s", trans.rsp);
-
 	if (rc) {
 		/* Update failed, force update again in ctx->cmd_check_period seconds */
+		logit(LOG_WARNING, "HTTP(S) Transaction failed, error %d: %s", rc, error_str(rc));
+		logit(LOG_INFO, "Update failed, forced update/retry in %d sec ...", ctx->cmd_check_period);
 		ctx->force_addr_update = 1;
 		goto exit;
 	}
+	logit(LOG_DEBUG, "DDNS server response: %s", trans.rsp);
 
 	rc = info->system->response(&trans, info, alias);
 	if (rc) {

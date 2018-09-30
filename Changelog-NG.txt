@@ -36,6 +36,7 @@ General changes in the 384/NG branch vs 380.xx:
          remove part of the security benefits of DNSSEC, so it
          should not be used unless you have a very specific reason
          to do so.
+  - NEW: Added Quad9 to DNSFilter supported services.
   - CHANGED: Updated curl to 7.61.1.
   - CHANGED: Updated wget to 1.19.5.
   - CHANGED: Updated openssl to 1.0.2p.
@@ -58,8 +59,15 @@ General changes in the 384/NG branch vs 380.xx:
            were invalid clients (like a port scanner)
   - FIXED: DDNS forced updates after "x" days wouldn't be
            fired.
+  - FIXED: CERT VU#598349 vulnerability (DHCP client could
+           claim the special "wpad" hostname)
   - REMOVED: Ez-ipupdate DDNS client (replaced with inadyn).
              Update your scripts if you were relying on it.
+  - REMOVED: Norton Safe DNSFilter services (being discontinued
+             by Norton in November).  Configured clients will
+             be automatically migrated to OpenDNS Family - make
+             sure to edit your DNSFIlter settings if you desire
+             to use a different service.
 
 
 384.6 (25-July-2018)

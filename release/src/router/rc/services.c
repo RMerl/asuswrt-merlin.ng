@@ -3195,10 +3195,8 @@ start_ddns(void)
                 service = "";
 	else if (strcmp(server, "FREEDNS.AFRAID.ORG") == 0)
 		service = "default@freedns.afraid.org";
-	else if (strcmp(server, "WWW.SELFHOST.DE") == 0) {
-		service = "selfhost";
-		asus_ddns = 12;
-	}
+	else if (strcmp(server, "WWW.SELFHOST.DE") == 0)
+		service = "default@selfhost.de";
 	else if (strcmp(server, "WWW.ASUS.COM")==0) {
 		service = "update@asus.com";
 		asus_ddns = 1;
@@ -3261,12 +3259,6 @@ start_ddns(void)
 				fprintf(fp, "ddns-server = dynamicdns.park-your-domain.com\n");
 				// We store the domain.tld in the username nvram
 				fprintf(fp, "ddns-path = \"/update?domain=%%u&password=%%p&host=\"\n");
-				fprintf(fp, "hostname = %s\n", host);
-			} else if (asus_ddns == 12) {
-				fprintf(fp, "custom selfhost {\n");
-				fprintf(fp, "ddns-server = carol.selfhost.de\n");
-//				fprintf(fp, "ddns-path = \"/update?username=%%u&password=%%p&myip=%%i&hostname=1\"\n");
-				fprintf(fp, "ddns-path = \"/nic/update?hostname=%%h&myip=%%i\"\n");
 				fprintf(fp, "hostname = %s\n", host);
 			} else if (asus_ddns == 1) {
 //				char *nserver = nvram_invmatch("ddns_serverhost_x", "") ?

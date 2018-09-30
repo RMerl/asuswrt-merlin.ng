@@ -3189,7 +3189,7 @@ start_ddns(void)
 		service = "default@no-ip.com";
 	else if (strcmp(server, "WWW.NAMECHEAP.COM")==0) {
 		service = "namecheap";
-		asus_ddns = 11;
+		asus_ddns = 10;
 	}
         else if (strcmp(server, "CUSTOM")==0)
                 service = "";
@@ -3199,7 +3199,6 @@ start_ddns(void)
 		service = "default@selfhost.de";
 	else if (strcmp(server, "WWW.ASUS.COM")==0) {
 		service = "update@asus.com";
-		asus_ddns = 1;
 		user = get_lan_hwaddr();
 		passwd = nvram_safe_get("secret_code");
 	}
@@ -3233,7 +3232,7 @@ start_ddns(void)
 	nvram_unset("ddns_status");
 	nvram_unset("ddns_updated");
 
-	_dprintf("asus_ddns : %d\n",asus_ddns);
+//	_dprintf("asus_ddns : %d\n",asus_ddns);
 
 	if (asus_ddns == 2) { //Peanuthull DDNS
 		if( (fp = fopen("/etc/phddns.conf", "w")) != NULL ) {
@@ -3254,23 +3253,16 @@ start_ddns(void)
 			fprintf(fp, "ca-trust-file = /etc/ssl/certs/ca-certificates.crt\n");
 			fprintf(fp, "iterations = 1\n");
 
-			if (asus_ddns == 11) {
+			if (asus_ddns == 10) {
 				fprintf(fp, "custom namecheap {\n");
 				fprintf(fp, "ddns-server = dynamicdns.park-your-domain.com\n");
 				// We store the domain.tld in the username nvram
 				fprintf(fp, "ddns-path = \"/update?domain=%%u&password=%%p&host=\"\n");
-				fprintf(fp, "hostname = %s\n", host);
-			} else if (asus_ddns == 1) {
-//				char *nserver = nvram_invmatch("ddns_serverhost_x", "") ?
-//				nvram_safe_get("ddns_serverhost_x") :
-//					"nwsrv-ns1.asus.com";
-				fprintf(fp, "provider update@asus.com {\n");
-				fprintf(fp, "hostname = %s\n", host);
 			} else {
 				fprintf(fp, "provider %s {\n", service);
-				fprintf(fp, "hostname = %s\n", host);
 			}
 
+			fprintf(fp, "hostname = %s\n", host);
 			str_escape_quotes(tmp, user, sizeof(tmp));
 			fprintf(fp, "username = \"%s\"\n", tmp);
 			str_escape_quotes(tmp, passwd, sizeof(tmp));

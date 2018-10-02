@@ -1,31 +1,24 @@
 Asuswrt-Merlin 384/NG Changelog
 ===============================
 
-General changes in the 384/NG branch vs 380.xx:
-   - Clear your browser cache after upgrading from 380.xx to 384.xx.
-   - It's generally recommended to do a factory default reset
-     when coming from 380 to 384/NG.
-   - HDD spindown settings moved to the System settings page
-   - SSL certificate management moved to the DDNS page for models
-     that support Let's Encrypt
-   - Nvram settings now have maximum lengths enforced, to protect
-     against buffer overruns.  This means that some very long
-     lists of settings might no longer be possible on 384.xx.
-
-
 384.7 (xx-xxx-xxxx)
   - NOTE: The RT-AC3200 and RT-AC56U are not supported by this
-          release, Asus hasn't released any updated code for these
-          models.
+          release, Asus hasn't released any updated code yes for
+          these models.
+
+  - NOTE: Important changes to DDNS, please read below.
+
+  - NOTE: Important changes to DNSFilter, please read below.
+
   - NEW: Merged with GPL 384_21152.
   - NEW: Merged RT-AC87U binary blobs + SDK from 382_50702.
-  - NEW: Replaced old ez-ipupdate DDNS client with inadyn.
+  - NEW: Replaced old ez-ipupdate DDNS client with In-a-Dyn.
          A plugin was developed to fully support Asus's DDNS
          service.
          Custom services can now be configured through ddns-start,
          inadyn.conf, inadyn.conf.add or inadyn.postconf.  See the
-         inadyn documentation as many custom services can be defined
-         for it.
+         In-a-Dyn documentation as many custom services can be
+         defined for it.
   - NEW: Added support for freedns.afraid.org DDNS service to webui.
   - NEW: Added option to retrieve WAN IP from either the local
          interface (like before) or through a remote server
@@ -41,9 +34,9 @@ General changes in the 384/NG branch vs 380.xx:
   - CHANGED: Updated wget to 1.19.5.
   - CHANGED: Updated openssl to 1.0.2p.
   - CHANGED: Updated dnsmasq to v2.80test4 (themiron).
-  - CHANGED: Updated nano to 3.1
+  - CHANGED: Updated nano to 3.1.
   - CHANGED: All DDNS services now use HTTPS.
-  - CHANGED: Replaced Google Domains DDNS script with inadyn's own
+  - CHANGED: Replaced Google Domains DDNS script with In-a-Dyn's own
              plugin.
   - CHANGED: Moved DNSFilter to the LAN section, to make it clear
              that it's unrelated to Trend Micro's engine.
@@ -58,13 +51,13 @@ General changes in the 384/NG branch vs 380.xx:
            page if the only connections to an OVPN server
            were invalid clients (like a port scanner)
   - FIXED: DDNS forced updates after "x" days wouldn't be
-           fired.
+           initiated.
   - FIXED: CERT VU#598349 vulnerability (DHCP client could
            claim the special "wpad" hostname)
-  - REMOVED: Ez-ipupdate DDNS client (replaced with inadyn).
+  - REMOVED: Ez-ipupdate DDNS client (replaced with In-a-Dyn).
              Update your scripts if you were relying on it.
   - REMOVED: Norton Safe DNSFilter services (being discontinued
-             by Norton in November).  Configured clients will
+             by Symantec in November).  Configured clients will
              be automatically migrated to OpenDNS Family - make
              sure to edit your DNSFIlter settings if you desire
              to use a different service.

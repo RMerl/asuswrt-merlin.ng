@@ -39,6 +39,7 @@ Devices supported on the new generation/current branch (382.xx and newer):
  * RT-AC3100
  * RT-AC5300
  * RT-AC86U
+ * RT-AC2900 (use the RT-AC86U firmware)
 
 No longer supported:
  * RT-N16
@@ -103,7 +104,7 @@ Networking:
    - fq_codel queue discipline for QoS (ARM-based models only)
    - Full cone NAT support (RT-AC86U only)
    - Detailed wireless troubleshooting information (RT-AC86U only)
-   - Modern DDNS client (inadyn), with HTTPS support
+   - Modern DDNS client (In-a-Dyn), with HTTPS support
 
 
 Web interface:

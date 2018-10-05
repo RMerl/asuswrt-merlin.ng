@@ -672,7 +672,7 @@ void start_ovpn_server(int serverNum)
 	// Build interface name
 	snprintf(iface, sizeof (iface), "%s%d", buffer, serverNum+SERVER_IF_START);
 
-	if(is_intf_up(iface) && ifType == TAP) {
+	if(is_intf_up(iface) > 0 && ifType == TAP) {
 		eval("brctl", "delif", nvram_safe_get("lan_ifname"), iface);
 	}
 

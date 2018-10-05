@@ -1870,6 +1870,93 @@ int rtk_getStaInfo(char *interface,char *macAddr,WLAN_STA_INFO_Tp pRtk_sta_info)
 		
 	return 0;
 }
+
+int getMonitorStaRssi(char *interface, char *buff, int len)
+{
+	int skfd = 0;
+	struct iwreq wrq;
+
+	skfd = socket(AF_INET, SOCK_DGRAM, 0);
+	if (skfd == -1)
+		return -1;
+
+	/* Get wireless name */
+	if ( iw_get_ext(skfd, interface, SIOCGIWNAME, &wrq) < 0) {
+		/* If no wireless name : no wireless extensions */
+		close( skfd );
+		return -1;
+	}
+
+	wrq.u.data.pointer = (void *)buff;
+	wrq.u.data.length = len;
+
+	if (iw_get_ext(skfd, interface, SIOCGIWRTLMONITORSTARSSI, &wrq) < 0) {
+		close( skfd );
+		return -1;
+	}
+
+	close( skfd );
+	return 0;
+}
+
+int getAclInfo(char *interface, WLAN_ACL_INFO_Tp pRtk_acl_info)
+{
+	int skfd = 0;
+	struct iwreq wrq;
+
+	skfd = socket(AF_INET, SOCK_DGRAM, 0);
+	if (skfd == -1)
+		return -1;
+
+	/* Get wireless name */
+	if ( iw_get_ext(skfd, interface, SIOCGIWNAME, &wrq) < 0) {
+		/* If no wireless name : no wireless extensions */
+		close( skfd );
+		return -1;
+	}
+
+	wrq.u.data.pointer = (caddr_t)pRtk_acl_info;
+	wrq.u.data.length = sizeof(WLAN_ACL_INFO_T);
+	memset(pRtk_acl_info, 0, sizeof(WLAN_ACL_INFO_T));
+
+	if (iw_get_ext(skfd, interface, SIOCGIWRTLACLINFO, &wrq) < 0) {
+		close( skfd );
+		return -1;
+	}
+
+	close( skfd );
+	return 0;
+}
+
+int getAclList(char *interface, WLAN_ACL_CLIENT_LIST_Tp pRtk_acl_client_list)
+{
+	int skfd = 0;
+	struct iwreq wrq;
+
+	skfd = socket(AF_INET, SOCK_DGRAM, 0);
+	if (skfd == -1)
+		return -1;
+
+	/* Get wireless name */
+	if ( iw_get_ext(skfd, interface, SIOCGIWNAME, &wrq) < 0) {
+		/* If no wireless name : no wireless extensions */
+		close( skfd );
+		return -1;
+	}
+
+	wrq.u.data.pointer = (caddr_t)pRtk_acl_client_list;
+	wrq.u.data.length = sizeof(WLAN_ACL_CLIENT_LIST_T);
+	memset(pRtk_acl_client_list, 0, sizeof(WLAN_ACL_CLIENT_LIST_T));
+
+	if (iw_get_ext(skfd, interface, SIOCGIWRTLACLCLIENTLIST, &wrq) < 0) {
+		close( skfd );
+		return -1;
+	}
+
+	close( skfd );
+	return 0;
+}
+
 void set_11ac_txrate(WLAN_STA_INFO_Tp pInfo,char* txrate)
 {
 	char channelWidth=0;//20M 0,40M 1,80M 2
@@ -2298,10 +2385,59 @@ wl_ioctl(char *name, int cmd, void *buf, int len)
 			rtk_printf("%s:%d retv=%d\n",__FUNCTION__,__LINE__,*retv);
 			break;
 		}
+		case WLC_GET_MACLIST:
+		{
+			int i=0;
+			struct maclist *maclist = buf;
+			WLAN_ACL_CLIENT_LIST_T acl_client_list;
+			WLAN_ACL_CLIENT_LIST_Tp p_acl_client_list = &acl_client_list;
+			memset(p_acl_client_list, 0, sizeof(WLAN_ACL_CLIENT_LIST_T));
+
+			if (getAclList(name, p_acl_client_list) < 0) {
+				rtk_printf("%s getAclList fail!\n", name);
+			}
+			maclist->count = p_acl_client_list->count;
+			for (i=0; i<p_acl_client_list->count; i++) {
+				rtk_printf("%s:%d MAC: %02x %02x %02x %02x %02x %02x\n", __FUNCTION__, __LINE__
+					p_acl_client_list->macAddr[i][0],
+					p_acl_client_list->macAddr[i][1],
+					p_acl_client_list->macAddr[i][2],
+					p_acl_client_list->macAddr[i][3],
+					p_acl_client_list->macAddr[i][4],
+					p_acl_client_list->macAddr[i][5]);
+				memcpy(&(maclist->ea[i]), p_acl_client_list->macAddr[i], MAC_ADDR_LEN);
+			}
+			break;
+		}
+		case WLC_GET_MACMODE:
+		{
+			WLAN_ACL_INFO_T acl_info;
+			WLAN_ACL_INFO_Tp p_acl_info = &acl_info;
+			memset(p_acl_info, 0, sizeof(WLAN_ACL_INFO_T));
+
+			if (getAclInfo(name, p_acl_info) < 0)
+			{
+				rtk_printf("%s getAclInfo fail!\n", name);
+				return -1;
+			}
+			*((int *)buf) = acl_info.mode;
+			break;
+		}
+		case WLC_SET_MACMODE:
+			break;
 		case WLC_GET_RADIO:
 			break;
 		case WLC_GET_SSID:
 			break;
+		case WLC_GET_MONITOR_STA_RSSI:
+		{
+			if (getMonitorStaRssi(name, buff, len) < 0)
+			{
+				rtk_printf("%s getMonitorStaRssi fail!\n", name);
+				return -1;
+			}
+			break;
+		}
 		default:
 			rtk_printf("invalid command!cmd=%d\n",cmd);
 			return -1;
@@ -2419,21 +2555,3 @@ char *get_wififname(int band)
 	}
 	return (char*) wif[band];
 }
-
-#ifdef RTCONFIG_AMAS
-void add_beacon_vsie(char *hexdata)
-{
-}
-
-void del_beacon_vsie(char *hexdata)
-{
-}
-
-void add_obd_probe_req_vsie(char *hexdata)
-{
-}
-
-void del_obd_probe_req_vsie(char *hexdata)
-{
-}
-#endif /* RTCONFIG_AMAS */

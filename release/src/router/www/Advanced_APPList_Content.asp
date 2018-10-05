@@ -100,7 +100,7 @@ function show_apps(){
 			<td bgcolor="#4D595D" valign="top">
 				<div>&nbsp;</div>
 				<div class="formfonttitle">Plugin - IPKG List</div>
-	      <div style="margin-left:5px;margin-top:10px;margin-bottom:10px"><img src="/images/New_ui/export/line_export.png"></div>
+	      <div style="margin:10px 0 10px 5px;" class="splitLine"></div>
 	      <div class="formfontdesc">Check out a list of available packages,</div>
 			 	<div id="apps_table"></div>				
 			</td>

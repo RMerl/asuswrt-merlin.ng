@@ -32,15 +32,15 @@ function goHspdaWizard(){
     <td style="padding:5px 10px 0px 15px;">
     	<p class="formfonttitle_nwm"><#Modelname#>:</p>
     	<p style="padding-left:10px; margin-top:3px; background-color:#444f53; line-height:20px; color:#FFFFFF;" id="disk_model_name"></p>
-      <img style="margin-top:5px;" src="/images/New_ui/networkmap/linetwo2.png">
+      <div style="margin-top:5px;" class="line_horizontal"></div>
     </td>
   </tr>
 
   <tr>
     <td height="50" style="padding:10px 15px 0px 15px;">
     	<p class="formfonttitle_nwm" style="float:left;width:138px;"><#GO_HSDPA_SETTING#></p>
-    	<input type="button" name="btn_Hspda" class="button_gen" onclick="goHspdaWizard();" value="<#btn_go#>" >
-      <img style="margin-top:5px;" src="/images/New_ui/networkmap/linetwo2.png">
+    	<input type="button" name="btn_Hspda" class="button_gen" onclick="goHspdaWizard();" value="<#btn_go#>">
+      <div style="margin-top:5px;" class="line_horizontal"></div>
     </td>
   </tr>
 </table>

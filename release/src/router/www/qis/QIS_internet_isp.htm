@@ -29,7 +29,6 @@ function QKISP_load_body(){
 	else{
 		parent.set_step("t2");
 		hideLinkTag();
-		flash_button();
 		show_next_button();	
 		document.getElementById("nextButton").focus();
 	}
@@ -213,13 +212,12 @@ function submitenter(myfield,e)
 					<td align="left">
 						<div class="description_down"><#QIS_auto_ip_conn_Setup#></div>
 					</td>
-					<!--td align="right">
-						<img onclick="parent.gotoIndex();" style="cursor:pointer;" align="right" title="Go to Home" src="/images/backtohome.png" onMouseOver="this.src='/images/backtohomeclick.png'" onMouseOut="this.src='/images/backtohome.png'">
-					</td-->
 				</tr>
 			</table>
 		</div>
-		<div style="margin:5px;" id="splitLine"><img style="width: 720px; *width: 710px; height: 2px;" src="/images/New_ui/export/line_export.png"></div>
+		<div style="margin:5px;" id="splitLine">
+			<div style="width: 720px; *width: 710px; height: 2px;" class="splitLine"></div>
+		</div>
 
 <table id="tblsetting_1" class="QISform" width="400" border=0 align="center" cellpadding="5" cellspacing="0">
 	<tr>
@@ -240,7 +238,7 @@ function submitenter(myfield,e)
 	  <td class="QISformtd">
 		<input type="text" name="wan_hwaddr_x" tabindex="2" onkeypress="return validator.isHWAddr(this,event);" class="input_20_table" maxlength="17" value="" autocorrect="off" autocapitalize="off"/>
 		&nbsp&nbsp&nbsp
-		<input type="button" class="button_gen_long" tabindex="3" onclick="showMAC();" value="<#BOP_isp_MACclone#>">		
+		<input type="button" class="button_gen" tabindex="3" onclick="showMAC();" value="<#BOP_isp_MACclone#>">		
 	  </td>
 	</tr>
 </table>

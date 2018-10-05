@@ -146,7 +146,7 @@ function initial(){
 				"value" : "1"
 			},
 			"label" : {
-				"text" : (amesh_support) ? "Wireless router mode / AiMesh Router mode (Default)"/* untranslated string */ : "<#OP_GW_item#>"
+				"text" : (amesh_support) ? "<#AiMesh_GW_item#>" : "<#OP_GW_item#>"
 			},
 			"mode" : "1",
 			"express" : "0"
@@ -161,7 +161,7 @@ function initial(){
 				"value" : "3"
 			},
 			"label" : {
-				"text" : (amesh_support) ? "Access Point(AP) mode / AiMesh Router in AP mode"/* untranslated string */ : "<#OP_AP_item#>"
+				"text" : (amesh_support) ? "<#AiMesh_AP_item#>" : "<#OP_AP_item#>"
 			},
 			"mode" : "3",
 			"express" : "0"
@@ -191,7 +191,7 @@ function initial(){
 				"value" : "2"
 			},
 			"label" : {
-				"text" : "Express Way 2.4 GHz" /* untranslated string */
+				"text" : "<#OP_RE2G_item#>"
 			},
 			"mode" : "2",
 			"express" : "1"
@@ -206,7 +206,7 @@ function initial(){
 				"value" : "2"
 			},
 			"label" : {
-				"text" : "Express Way 5 GHz" /* untranslated string */
+				"text" : "<#OP_RE5G_item#>"
 			},
 			"mode" : "2",
 			"express" : "2"
@@ -253,8 +253,10 @@ function initial(){
 		$("#operation_mode_bg").append(gen_operation_mode(operation_array["rp_express_5g"], sw_mode_orig));
 		$("#operation_mode_bg").append("<br>");
 		$("#operation_mode_bg").append(gen_operation_mode(operation_array["mbMode"], sw_mode_orig));
-		$("#operation_mode_bg").append("<br>");
-		$("#operation_mode_bg").append(gen_operation_mode(operation_array["AiMeshMode"], sw_mode_orig));
+		if(ameshNode_support) {
+			$("#operation_mode_bg").append("<br>");
+			$("#operation_mode_bg").append(gen_operation_mode(operation_array["AiMeshMode"], sw_mode_orig));
+		}
         
 	}
 	else {
@@ -269,22 +271,21 @@ function initial(){
 		$("#operation_mode_bg").append(gen_operation_mode(operation_array["mbMode"], sw_mode_orig));
 	}
 	setScenerion(sw_mode_orig, document.form.wlc_express.value);
-	Senario_shift();
 
 	if(downsize_4m_support || downsize_8m_support)
 		document.getElementById("Senario").style.display = "none";
 
 	document.getElementById("rp_express_2g").style.display = "none";
 	document.getElementById("rp_express_5g").style.display = "none";
-	if(productid.indexOf("RP") != -1){
+	if(uiSupport("noRouter")){
 		document.getElementById("routerMode").style.display = "none";
 		document.getElementById("sw_mode1_radio").disabled = true;
-		
-		if(band5g_support){
-			document.getElementById("rp_express_2g").style.display = "";
-			document.getElementById("rp_express_5g").style.display = "";
-		}
 	}
+
+	if(uiSupport("rp_express_2g"))
+		document.getElementById("rp_express_2g").style.display = "";
+	if(uiSupport("rp_express_5g"))
+		document.getElementById("rp_express_5g").style.display = "";
 
 	if(!repeater_support){
 		document.getElementById("repeaterMode").style.display = "none";
@@ -295,13 +296,6 @@ function initial(){
 		document.getElementById("mbMode").style.display = "none";
 		document.getElementById("sw_mode4_radio").disabled = true;
 	}
-}
-
-function Senario_shift(){
-	var isIE = navigator.userAgent.search("MSIE") > -1; 
-	if(isIE)
-		document.getElementById("Senario").style.width = "700px";
-		document.getElementById("Senario").style.marginLeft = "5px";
 }
 
 function restore_wl_config(prefix){
@@ -400,6 +394,11 @@ function saveMode(){
 		document.form.lan_gateway.value = document.form.lan_ipaddr_rt.value;
 		document.form.wlc_psta.value = 0;
 		document.form.wlc_psta.disabled = false;
+
+		if(amesh_support) {
+			document.form.cfg_master.disabled = false;
+			document.form.cfg_master.value = 1;
+		}
 
 		if(sw_mode_orig == '2' || sw_mode_orig == '4'){
 			inputCtrl(document.form.wl0_ssid,1);	
@@ -578,26 +577,29 @@ Media Bridge:        sw_mode: 3, wlc_express: 0, wlc_psta: 1
 function setScenerion(mode, express){
 	if(mode == '2'){
 		document.form.sw_mode.value = 2;
-		if(odmpid == "RT-AC66U_B1" || odmpid == "RT-AC1750_B1" || odmpid == "RT-N66U_C1" || odmpid == "RT-AC1900U" || odmpid == "RP-AC1900" || odmpid == "RT-AC67U")
-			$("#Senario").css({"height": "", "background": "url(/images/RT-AC66U_V2/re.jpg) center no-repeat", "margin-bottom": "30px"});
+		var url = "/images/New_ui/re.jpg";
+		var height = "";
+		if(odmpid == "RT-AC66U_B1" || odmpid == "RT-AC1750_B1" || odmpid == "RT-N66U_C1" || odmpid == "RT-AC1900U" || odmpid == "RT-AC67U")
+			url = "/images/RT-AC66U_V2/re.jpg";
+		else if(odmpid == "RP-AC1900") {
+			url = "/images/RP-AC1900/re.jpg";
+			height = "180px";
+		}
 		else if(based_modelid == "RP-AC53" && tcode == "UK/01")
-			$("#Senario").css({"height": "", "background": "url(/images/New_ui/re_UK.jpg) center no-repeat", "margin-bottom": "30px"});
-		else
-			$("#Senario").css({"height": "", "background": "url(/images/New_ui/re.jpg) center no-repeat", "margin-bottom": "30px"});
-		
+			url = "/images/New_ui/re_UK.jpg";
+		$("#Senario").css({"height": height, "background": "url(" + url + ") center no-repeat", "margin": "auto", "margin-bottom": "30px"});
+
 		clearTimeout(id_WANunplungHint);
 		$("#Unplug-hint").css("display", "none");
 		if(express == 1){	//Express Way 2.4 GHz
 			$("#sw_mode2_0_radio").prop('checked', true);
 			document.form.wlc_express.value = 1;
-			//untranslated string
-			$("#mode_desc").html("In Express Way-2.4GHz mode, <#Web_Title2#> wireless connect to an existing 2.4 GHz WiFi channel and extend the wireless coverage by 5 GHz WiFi channel only.<br/><span style=\"color:#FC0\"><#deviceDiscorvy2#></span>");
+			$("#mode_desc").html("<#OP_RE2G_desc#><br/><span style=\"color:#FC0\"><#deviceDiscorvy2#></span>");
 		}
 		else if(express == 2){	//Express Way 5 GHz
 			$("#sw_mode2_1_radio").prop('checked', true);
 			document.form.wlc_express.value = 2;
-			//untranslated string
-			$("#mode_desc").html("In Express Way-5GHz mode, <#Web_Title2#> wireless connect to an existing 5 GHz WiFi channel and extend the wireless coverage by 2.4 GHz WiFi channel only. (Your router must support 5GHz WiFi channel.)<br/><span style=\"color:#FC0\"><#deviceDiscorvy2#></span>");
+			$("#mode_desc").html("<#OP_RE5G_desc#><br/><span style=\"color:#FC0\"><#deviceDiscorvy2#></span>");
 		}	
 		else{		// Repeater
 			$("#sw_mode2_radio").prop('checked', true);
@@ -608,22 +610,28 @@ function setScenerion(mode, express){
 	else if(mode == '3'){		// AP mode
 		document.form.sw_mode.value = 3;
 		document.form.wlc_express.value = 0;
-		if(odmpid == "RT-AC66U_B1" || odmpid == "RT-AC1750_B1" || odmpid == "RT-N66U_C1" || odmpid == "RT-AC1900U" || odmpid == "RP-AC1900" || odmpid == "RT-AC67U")
-			$("#Senario").css({"height": "", "background": "url(/images/RT-AC66U_V2/ap.jpg) center no-repeat", "margin-bottom": "30px"});
+		var url = "/images/New_ui/ap.jpg";
+		var height = "";
+		if(odmpid == "RT-AC66U_B1" || odmpid == "RT-AC1750_B1" || odmpid == "RT-N66U_C1" || odmpid == "RT-AC1900U" || odmpid == "RT-AC67U")
+			url = "/images/RT-AC66U_V2/ap.jpg";
+		else if(odmpid == "RP-AC1900") {
+			url = "/images/RP-AC1900/ap.jpg";
+			height = "180px";
+		}
 		else if(based_modelid == "RP-AC53" && tcode == "UK/01")
-			$("#Senario").css({"height": "", "background": "url(/images/New_ui/ap_UK.jpg) center no-repeat", "margin-bottom": "30px"});
-		else
-			$("#Senario").css({"height": "", "background": "url(/images/New_ui/ap.jpg) center no-repeat", "margin-bottom": "30px"});
+			url = "/images/New_ui/ap_UK.jpg";
+
+		$("#Senario").css({"height": height, "background": "url(" + url + ") center no-repeat", "margin": "auto", "margin-bottom": "30px"});
 		/*if(findasus_support){
 			$("#mode_desc").html("<#OP_AP_desc#><br/><span style=\"color:#FC0\"><#OP_AP_hint#></span>");
 		}else{*/
 			var desc = "";
 			if(amesh_support) {
-				desc += "AiMesh Router in AP mode which connects to a wireless router through an Ethernet cable to extend the wireless signal coverage to other network clients. In this mode, the firewall, IP sharing, and NAT functions are disabled by default.";/* untranslated */
+				desc += "<#AiMesh_AP_desc#>";
 				desc += "<br>";
-				desc += "You can add AiMesh node to form an AiMesh WiFi system to provide extreme WiFi coverage."/* untranslated */
+				desc += "<#AiMesh_Node_Add#>";
 				desc += "<br>";
-				desc += "<span style=\"color:#FC0\">AiMesh Router in AP mode, the DHCP-assigned IP address changes. Install and use the <a href=\"http://dlcdnet.asus.com/pub/ASUS/LiveUpdate/Release/Wireless/Discovery.zip\" target=\"_blank\" style=\"font-family:Lucida Console;text-decoration:underline;color:#FC0;\">Device Discovery Utility</a> in order to detect the wireless router's IP address.</span>";
+				desc += "<span style=\"color:#FC0\"><#AiMesh_deviceDiscorvy3#></span>";
 			}
 			else
 				desc = "<#OP_AP_desc#><br/><span style=\"color:#FC0\"><#deviceDiscorvy3#></span>";
@@ -644,13 +652,15 @@ function setScenerion(mode, express){
 			pstaDesc += "<br><#OP_MB_desc6#>";
 			pstaDesc += "<br/><span style=\"color:#FC0\"><#deviceDiscorvy4#></span>";
 
-		if(odmpid == "RT-AC66U_B1" || odmpid == "RT-AC1750_B1" || odmpid == "RT-N66U_C1" || odmpid == "RT-AC1900U" || odmpid == "RP-AC1900" || odmpid == "RT-AC67U")
-			$("#Senario").css({"height": "300px", "background": "url(/images/RT-AC66U_V2/mb.jpg) center no-repeat", "margin-bottom": "-40px"});
+		var url = "/images/New_ui/mb.jpg";
+		var height = "250px";
+		if(odmpid == "RT-AC66U_B1" || odmpid == "RT-AC1750_B1" || odmpid == "RT-N66U_C1" || odmpid == "RT-AC1900U" || odmpid == "RT-AC67U")
+			url = "/images/RT-AC66U_V2/mb.jpg";
+		else if(odmpid == "RP-AC1900")
+			url = "/images/RP-AC1900/mb.jpg";
 		else if(based_modelid == "RP-AC53" && tcode == "UK/01")
-			$("#Senario").css({"height": "", "background": "url(/images/New_ui/mb_UK.jpg) center no-repeat", "margin-bottom": "30px"});
-		else
-			$("#Senario").css({"height": "300px", "background": "url(/images/New_ui/mb.jpg) center no-repeat", "margin-bottom": "-40px"});
-
+			url = "/images/New_ui/mb_UK.jpg";
+		$("#Senario").css({"height": height, "background": "url(" + url + ") center no-repeat", "margin": "auto", "margin-bottom": "0px"});
 		if(!band5g_11ac_support || no_vht_support){			
 			pstaDesc = replaceAll(pstaDesc, " 802\.11ac","");
 			pstaDesc = replaceAll(pstaDesc, " 802\.11AC","");
@@ -662,12 +672,12 @@ function setScenerion(mode, express){
 	}
 	else if(mode == '5') {
 		document.form.sw_mode.value = 5;
-		$("#Senario").css({"height": "400px", "background": "url(/images/New_ui/amesh/house_final_dea.png) center no-repeat", "margin-bottom": "30px", "margin-left": "30px"});
-		var desc = "You can set this router to be an AiMesh node to extend existing AiMesh router WiFi coverage.";/* untranslated */
+		$("#Senario").css({"height": "400px", "background": "url(/images/New_ui/amesh/house_final_dea.png) center no-repeat", "margin": "auto", "margin-bottom": "30px"});
+		var desc = "<#AiMesh_Node_desc#>";
 		desc += "<br>";
-		desc += "1. By factory reset, this router will be available to be joined to existing AiMesh network.";/* untranslated */
+		desc += "1. <#AiMesh_Node_desc1#>";
 		desc += "<br>";
-		desc += "2. Please go to the AiMesh setting page of your existing router to add AiMesh node.";/* untranslated */
+		desc += "2. <#AiMesh_Node_desc2#>";
 		$("#mode_desc").html(desc);
 		$("input[name=sw_mode_radio][value=5]").prop('checked', true);
 	}
@@ -675,15 +685,15 @@ function setScenerion(mode, express){
 		document.form.sw_mode.value = 1;
 		document.form.wlc_express.value = 0;
 		
-		if(odmpid == "RT-AC66U_B1" || odmpid == "RT-AC1750_B1" || odmpid == "RT-N66U_C1" || odmpid == "RT-AC1900U" || odmpid == "RP-AC1900" || odmpid == "RT-AC67U")
-			$("#Senario").css({"height": "", "background": "url(/images/RT-AC66U_V2/rt.jpg) center no-repeat", "margin-bottom": "30px"});
+		if(odmpid == "RT-AC66U_B1" || odmpid == "RT-AC1750_B1" || odmpid == "RT-N66U_C1" || odmpid == "RT-AC1900U" || odmpid == "RT-AC67U")
+			$("#Senario").css({"height": "", "background": "url(/images/RT-AC66U_V2/rt.jpg) center no-repeat", "margin": "auto", "margin-bottom": "30px"});
 		else
-			$("#Senario").css({"height": "", "background": "url(/images/New_ui/rt.jpg) center no-repeat", "margin-bottom": "30px"});
+			$("#Senario").css({"height": "", "background": "url(/images/New_ui/rt.jpg) center no-repeat", "margin": "auto", "margin-bottom": "30px"});
 		var desc = "";
 		if(amesh_support) {
-			desc += "AiMesh Router mode is a traditional mode with AiMesh functionality, which connects to the Internet via PPPoE, DHCP, PPTP, L2TP, or Static IP and shares the wireless network to LAN clients or devices. In this mode, NAT, firewall, and DHCP server are enabled by default. UPnP and Dynamic DNS are supported for SOHO and home users. Select this mode if you are a first-time user or you are not currently using any wired/wireless routers.";/* untranslated */
+			desc += "<#AiMesh_GW_desc#>";
 			desc += "<br>";
-			desc += "You can add AiMesh node to form an AiMesh WiFi system to provide extreme WiFi coverage."/* untranslated */
+			desc += "<#AiMesh_Node_Add#>";
 		}
 		else
 			desc = "<#OP_GW_desc#>";
@@ -806,6 +816,8 @@ function change_smart_con(v){
 <!-- AC66U's repeater mode -->
 <input type="hidden" name="wlc_psta" value="<% nvram_get("wlc_psta"); %>" disabled>
 <input type="hidden" name="wlc_express" value="<% nvram_get("wlc_express"); %>" disabled>
+<!-- AiMesh -->
+<input type="hidden" name="cfg_master" value="<% nvram_get("cfg_master"); %>" disabled>
 
 <!-- Input SSID and Password block for switching Repeater to Router mode -->
 <div id="routerSSID" class="contentM_qis">
@@ -837,7 +849,7 @@ function change_smart_con(v){
 			<div class="QISGeneralFont" align="left"><#qis_wireless_setting#></div>
 		</tr>
 		<tr>
-			<div style="margin:5px;*margin-left:-5px;"><img style="width: 640px; *width: 640px; height: 2px;" src="/images/New_ui/export/line_export.png"></div>
+			<div style="width: 640px; *width: 640px; height: 2px;margin:5px;*margin-left:-5px;" class="splitLine"></div>
 		</tr>
 		<tr>
 			<th width="180" id="wl0_desc_name">2.4GHz - <#Security#></th>
@@ -930,7 +942,7 @@ function change_smart_con(v){
 							<td>
 								<div>&nbsp;</div>
 								<div class="formfonttitle"><#menu5_6#> - <#menu5_6_1_title#></div>
-								<div style="margin-left:5px;margin-top:10px;margin-bottom:10px"><img src="/images/New_ui/export/line_export.png"></div>
+								<div style="margin:10px 0 10px 5px;" class="splitLine"></div>
 								<div class="formfontdesc"><#OP_desc1#></div>
 							</td>
 						</tr>

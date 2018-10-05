@@ -11,7 +11,7 @@
 <title><#Web_Title#> - <#menu5_6_3#></title>
 <link rel="stylesheet" type="text/css" href="index_style.css">
 <link rel="stylesheet" type="text/css" href="form_style.css">
-<link rel="stylesheet" type="text/css" href="css/confirm_block.css"></script>
+<link rel="stylesheet" type="text/css" href="css/confirm_block.css">
 <style>
 .FormTable{
  	margin-top:10px;	
@@ -33,8 +33,11 @@
 	width: 83%;
 }
 #proceeding_img{
- 	height:21px;
-	background:#C0D1D3 url(/images/proceeding_img.gif);
+	height:21px;
+	background: #D7E8F4;
+	background: -webkit-linear-gradient(#F2F7EB 0%, #E4E6EE 49%, #C8D3Db 50%, #BACEDA 51%, #D7E8F4 100%);
+	background: -o-linear-gradient(#F2F7EB 0%, #E4E6EE 49%, #C8D3Db 50%, #BACEDA 51%, #D7E8F4 100%);
+	background: linear-gradient(#F2F7EB 0%, #E4E6EE 49%, #C8D3Db 50%, #BACEDA 51%, #D7E8F4 100%);
 }
 
 .button_helplink{
@@ -42,8 +45,13 @@
 	text-shadow: 1px 1px 0px black;
 	text-align: center;
 	vertical-align: middle;
-	background: transparent url(/images/New_ui/contentbt_normal.png) no-repeat scroll center top;
-	_background: transparent url(/images/New_ui/contentbt_normal_ie6.png) no-repeat scroll center top;
+	background: #121C1E;
+	background: -webkit-linear-gradient(#233438 0%, #0F1011 100%);
+	background: -o-linear-gradient(#233438 0%, #0F1011 100%);
+	background: linear-gradient(#233438 0%, #0F1011 100%);
+	-webkit-border-radius: 8px;
+	-moz-border-radius: 8px;
+	border-radius: 8px;
 	border:0;
 	color: #FFFFFF;
 	height:33px;
@@ -58,12 +66,15 @@
 }
 .button_helplink:hover{
 	font-weight: bolder;
-	background:url(/images/New_ui/contentbt_over.png) no-repeat scroll center top;
+	background: #085F96;
+	background: -webkit-linear-gradient(#09639C 0%, #003047 100%);
+	background: -o-linear-gradient(#09639C 0%, #003047 100%);
+	background: linear-gradient(#09639C 0%, #003047 100%);
 	height:33px;
- 	width:122px;
+	width:122px;
 	cursor:pointer;
 	outline: none; /* for Firefox */
- 	hlbr:expression(this.onFocus=this.blur()); /* for IE */
+	hlbr:expression(this.onFocus=this.blur()); /* for IE */
 }
 </style>
 
@@ -86,6 +97,8 @@ var webs_state_update = '<% nvram_get("webs_state_update"); %>';
 var webs_state_upgrade = '<% nvram_get("webs_state_upgrade"); %>';
 var webs_state_error = '<% nvram_get("webs_state_error"); %>';
 var webs_state_info = '<% nvram_get("webs_state_info"); %>';
+var webs_state_REQinfo = '<% nvram_get("webs_state_REQinfo"); %>';
+var webs_state_flag = '<% nvram_get("webs_state_flag"); %>'
 var webs_state_info_beta = '<% nvram_get("webs_state_info_beta"); %>';
 
 var confirm_show = '<% get_parameter("confirm_show"); %>';
@@ -143,7 +156,7 @@ function initial(){
 		$("#fw_version_tr").empty();
 		var html = "";
 		html += "<tr id='update_div' style='display:none;'>";
-		html += "<th>Check Update</th>";/* untranslated */
+		html += "<th><#AiMesh_Check_Update#></th>";
 		html += "<td>";
 		html += '<div>';
 		html += '<input type="button" id="update" name="update" class="button_gen" onclick="show_offline_msg(true);" value="<#liveupdate#>" />';
@@ -749,21 +762,20 @@ function sig_check_status(){
     		},
     	success: function(){
 			$("#sig_status").show();
-			if(sig_state_flag == 0){		// no need upgrade
+			if(sig_state_flag == 0 && sig_state_error == 0 && sig_state_update == 1){               // no need upgrade
 				$("#sig_status").html("Signature is up to date");	/* Untranslated */
 				document.getElementById("sig_update_scan").style.display = "none";
 				document.getElementById("sig_check").disabled = false;
 			}
-			else if(sig_state_flag == 1){
+			else{
 				if(sig_state_error != 0){		// update error
 					$("#sig_status").html("Signature update failed");	/* Untranslated */
-					document.getElementById("sig_update_scan").style.display = "none";
 					document.getElementById("sig_check").disabled = false;
+					document.getElementById("sig_update_scan").style.display = "none";
 				}
 				else{
-					if(sig_state_upgrade == 1){		//update complete						
+					if(sig_state_flag == 1 && sig_state_update == 0 && sig_state_upgrade == 1){             //update complete
 						update_sig_ver();
-						document.getElementById("sig_check").disabled = false;
 					}
 					else{		//updating
 						$("#sig_status").html("Signature is updating");	/* Untranslated */
@@ -777,24 +789,20 @@ function sig_check_status(){
 
 function update_sig_ver(){
 	$.ajax({
-    	url: '/detect_firmware.asp',
-    	dataType: 'script',
+	url: '/detect_firmware.asp',
+	dataType: 'script',
 		timeout: 3000,
-    	error:	function(xhr){
-    		setTimeout('update_sig_ver();', 1000);
-    	},
-    	success: function(){
-    		if(sig_ver_ori == sig_ver){    			
-    			setTimeout('update_sig_ver();', 1000);
-    		}	
-    		else{
-    			document.getElementById("sig_update_date").innerHTML = "";
-    			document.getElementById("sig_update_scan").style.display = "none";
-    			$("#sig_status").html("Signature update completely");	/* Untranslated */
-    			$("#sig_ver_word").html(sig_ver);
-    		}			
-  		}
-  	});
+	error:	function(xhr){
+		setTimeout('update_sig_ver();', 1000);
+	},
+	success: function(){
+		document.getElementById("sig_update_date").innerHTML = "";
+		document.getElementById("sig_update_scan").style.display = "none";
+		document.getElementById("sig_check").disabled = false;
+		$("#sig_status").html("Signature update completely");   /* Untranslated */
+		$("#sig_ver_word").html(sig_ver);
+		}
+	});
 }
 
 function check_Timefield_checkbox(){	// To check Date checkbox checked or not and control Time field disabled or not
@@ -1226,7 +1234,7 @@ function check_AiMesh_fw_version(_fw) {
 		  <td bgcolor="#4D595D" valign="top"  >
 		  <div>&nbsp;</div>
 		  <div class="formfonttitle"><#menu5_6#> - <#menu5_6_3#></div>
-		  <div style="margin-left:5px;margin-top:10px;margin-bottom:10px"><img src="/images/New_ui/export/line_export.png"></div>
+		  <div style="margin:10px 0 10px 5px;" class="splitLine"></div>
 		  <div class="formfontdesc"><strong><#FW_note#></strong>
 				<ol>
 					<li><#FW_n0#></li>

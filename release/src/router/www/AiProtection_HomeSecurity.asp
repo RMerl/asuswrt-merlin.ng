@@ -27,6 +27,8 @@ function initial(){
 		document.getElementById("keyGuard_field_h").style.display = "";
 		document.getElementById("keyGuard_field").style.display = "";
 	}
+	if(yadns_support)
+		$("#item_yandex").css("display", "list-item");
 }
 
 </script>
@@ -73,7 +75,7 @@ function initial(){
 							</td>
 						</tr> 
 						<tr>
-							<td class="line_export"><img src="images/New_ui/export/line_export.png" /></td>
+							<td><div class="splitLine"></div></td>
 						</tr>
 						<tr>
 							<td>
@@ -114,7 +116,8 @@ function initial(){
 													</div>
 													<div class="app_desc" style="height:60px;">
 														<li id="item_time_scheduling"><#Time_Scheduling#></li>
-														<li id="item_filter"><#AiProtection_filter#></li>											
+														<li id="item_filter"><#AiProtection_filter#></li>
+														<li id="item_yandex" style="display:none;"><#YandexDNS#></li>
 													</div>
 												</td>
 											</tr>

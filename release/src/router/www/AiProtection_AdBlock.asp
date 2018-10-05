@@ -111,7 +111,7 @@ function register_event(){
 										</tr>
 									</table>
 								</div>
-								<div style="margin:0px 0px 10px 5px;"><img src="/images/New_ui/export/line_export.png"></div>
+								<div style="margin:0px 0px 10px 5px;" class="splitLine"></div>
 								<div>
 									<table width="700px" style="margin-left:25px;">
 										<tr>

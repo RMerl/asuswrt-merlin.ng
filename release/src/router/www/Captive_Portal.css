@@ -351,7 +351,8 @@
 	right: -15px;
 }
 .wl_input_disabled {
-	background-image: url("/images/New_ui/inputbg_disable.png");
+	background: #C3C3C3;
+	border: 1px solid #FFF;
 }
 .splash_image_size_content {
 	margin-right: 50px;

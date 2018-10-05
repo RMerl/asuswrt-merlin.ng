@@ -1554,7 +1554,7 @@ static int ej_wl_channel_list(int eid, webs_t wp, int argc, char_t **argv, int u
 	int i, retval = 0;
 	int channels[MAXCHANNEL+1];
 	wl_uint32_list_t *list = (wl_uint32_list_t *) channels;
-	char tmp[256], tmp1[256], tmp2[256], prefix[] = "wlXXXXXXXXXX_";
+	char tmp[256], tmp1[256], tmp1_t[256], tmp2[256], tmp2_t[256], prefix[] = "wlXXXXXXXXXX_";
 	char *name;
 	uint ch;
 	char word[256], *next;
@@ -1587,11 +1587,13 @@ static int ej_wl_channel_list(int eid, webs_t wp, int argc, char_t **argv, int u
 			}
 			else if (i == (count - 1))
 			{
-				sprintf(tmp1,  "%s \"%s\"]", tmp1, word);
+				sprintf(tmp1_t,  "%s \"%s\"]", tmp1, word);
+				strlcpy(tmp1, tmp1_t, sizeof(tmp1));
 			}
 			else
 			{
-				sprintf(tmp1,  "%s \"%s\",", tmp1, word);
+				sprintf(tmp1_t,  "%s \"%s\",", tmp1, word);
+				strlcpy(tmp1, tmp1_t, sizeof(tmp1));
 			}
 
 			i++;
@@ -1624,13 +1626,17 @@ static int ej_wl_channel_list(int eid, webs_t wp, int argc, char_t **argv, int u
 		}
 		else if (i == (dtoh32(list->count) - 1))
 		{
-			sprintf(tmp1,  "%s \"%d\"]", tmp1, ch);
-			sprintf(tmp2,  "%s %d", tmp2, ch);
+			sprintf(tmp1_t,  "%s \"%d\"]", tmp1, ch);
+			strlcpy(tmp1, tmp1_t, sizeof(tmp1));
+			sprintf(tmp2_t,  "%s %d", tmp2, ch);
+			strlcpy(tmp2, tmp2_t, sizeof(tmp2));
 		}
 		else
 		{
-			sprintf(tmp1,  "%s \"%d\",", tmp1, ch);
-			sprintf(tmp2,  "%s %d", tmp2, ch);
+			sprintf(tmp1_t,  "%s \"%d\",", tmp1, ch);
+			strlcpy(tmp1, tmp1_t, sizeof(tmp1));
+			sprintf(tmp2_t,  "%s %d", tmp2, ch);
+			strlcpy(tmp2, tmp2_t, sizeof(tmp2));
 		}
 
 		if (strlen(tmp2))
@@ -1667,7 +1673,7 @@ static int ej_wl_rssi(int eid, webs_t wp, int argc, char_t **argv, int unit)
 	int unit_max = 0;
 	char rssi_buf[32];
 
-	struct maclist *mac_list;
+	struct maclist *mac_list=NULL;
 	int mac_list_size;
 	scb_val_t scb_val;
 
@@ -2160,7 +2166,7 @@ ej_nat_table(int eid, webs_t wp, int argc, char_t **argv)
 	int needlen = 0, listlen, i
 	netconf_nat_t *nat_list = 0;
 	netconf_nat_t **plist, *cur;
-	char line[256], tstr[32];
+	char line[256], line_t[256], tstr[32];
 #endif
 	ret += websWrite(wp, "Destination     Proto.  Port Range  Redirect to\n");
 
@@ -2193,27 +2199,39 @@ ej_nat_table(int eid, webs_t wp, int argc, char_t **argv)
 						sprintf(line, "%-15s", inet_ntoa(nat_list[i].match.dst.ipaddr));
 					}
 
-
-					if (ntohs(nat_list[i].match.dst.ports[0])==0)
-						sprintf(line, "%s %-7s", line, "ALL");
-					else if (nat_list[i].match.ipproto==IPPROTO_TCP)
-						sprintf(line, "%s %-7s", line, "TCP");
-					else sprintf(line, "%s %-7s", line, "UDP");
+					if (ntohs(nat_list[i].match.dst.ports[0])==0){
+						sprintf(line_t, "%s %-7s", line, "ALL");
+						strlcpy(line, line_t, sizeof(line));
+					}
+					else if (nat_list[i].match.ipproto==IPPROTO_TCP){
+						sprintf(line_t, "%s %-7s", line, "TCP");
+						strlcpy(line, line_t, sizeof(line));
+					}
+					else{
+						sprintf(line_t, "%s %-7s", line, "UDP");
+						strlcpy(line, line_t, sizeof(line));
+					}
 
 					if (nat_list[i].match.dst.ports[0] == nat_list[i].match.dst.ports[1])
 					{
-						if (ntohs(nat_list[i].match.dst.ports[0])==0)
-						sprintf(line, "%s %-11s", line, "ALL");
-						else
-						sprintf(line, "%s %-11d", line, ntohs(nat_list[i].match.dst.ports[0]));
+						if (ntohs(nat_list[i].match.dst.ports[0])==0){
+							sprintf(line_t, "%s %-11s", line, "ALL");
+							strlcpy(line, line_t, sizeof(line));
+						}
+						else{
+							sprintf(line_t, "%s %-11d", line, ntohs(nat_list[i].match.dst.ports[0]));
+							strlcpy(line, line_t, sizeof(line));
+						}
 					}
 					else 
 					{
 						sprintf(tstr, "%d:%d", ntohs(nat_list[i].match.dst.ports[0]),
 						ntohs(nat_list[i].match.dst.ports[1]));
-						sprintf(line, "%s %-11s", line, tstr);
+						sprintf(line_t, "%s %-11s", line, tstr);
+						strlcpy(line, line_t, sizeof(line));
 					}
-					sprintf(line, "%s %s\n", line, inet_ntoa(nat_list[i].ipaddr));
+					sprintf(line_t, "%s %s\n", line, inet_ntoa(nat_list[i].ipaddr));
+					strlcpy(line, line_t, sizeof(line));
 					ret += websWrite(wp, line);
 				}
 				}

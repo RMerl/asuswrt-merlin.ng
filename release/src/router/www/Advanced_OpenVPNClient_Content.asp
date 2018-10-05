@@ -1010,7 +1010,7 @@ function refreshVPNIP() {
 					<p><#vpn_openvpn_KC_Edit1#> <span style="color:#FFCC00;">----- BEGIN xxx ----- </span>/<span style="color:#FFCC00;"> ----- END xxx -----</span> <#vpn_openvpn_KC_Edit2#>
 					<p>Limit: 7999 characters per field
 				</div>
-				<div style="margin:5px;*margin-left:-5px;"><img style="width: 730px; height: 2px;" src="/images/New_ui/export/line_export.png"></div>
+				<div style="margin:5px;*margin-left:-5px;width: 730px; height: 2px;" class="splitLine"></div>
 			</tr>			
 			<!--===================================Beginning of tls Content===========================================-->
 
@@ -1156,7 +1156,7 @@ function refreshVPNIP() {
                 <div>&nbsp;</div>
                 <div class="formfonttitle">OpenVPN Client Settings</div>
 		<div id="divSwitchMenu" style="margin-top:-40px;float:right;"></div>
-                <div style="margin-left:5px;margin-top:10px;margin-bottom:10px"><img src="/images/New_ui/export/line_export.png"></div>
+		<div style="margin:10px 0 10px 5px;" class="splitLine"></div>
 		<div class="formfontdesc">
                         <p>Before starting the service make sure you properly configure it, including
                            the required keys,<br>otherwise you will be unable to turn it on.

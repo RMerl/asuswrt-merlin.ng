@@ -45,5 +45,17 @@
 #define CFG_ACTION_SCRIPT	"action_script"
 #define CFG_STR_CURRENT_CHANNEL	"cur_channel"
 #define CFG_STR_CONFIG		"config"
-
+#define CFG_STR_SOURCE		"source"
+#define CFG_STR_OB_PATH	"ob_path"
+#define CFG_STR_OB_KEY		"ob_key"
+#define CFG_STR_OB_GROUP		"ob_group"
+#define CFG_STR_ETHER_LIST	"ether_list"
+#define CFG_STR_SMART_CONNECT	"cfg_smart_connect"
+#define CFG_STR_TERRITORY_CODE 	"cfg_territory_code"
+#define CFG_STR_CAPABILITY 	"capability"
+#define CFG_STR_CHANSPEC 	"chanspec"
+#define CFG_STR_BANDWIDTH	"bandwidth"
+#define CFG_STR_2G 	"2G"
+#define CFG_STR_5G 	"5G"
+#define CFG_STR_5G1 	"5G1"
 #endif /* __CFG_STRING_H__ */

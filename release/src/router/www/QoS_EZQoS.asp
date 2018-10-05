@@ -25,6 +25,7 @@
 <script type="text/javascript" src="/form.js"></script>
 <script type="text/javascript" src="client_function.js"></script>
 <script type="text/javascript" src="/js/httpApi.js"></script>
+<script language="JavaScript" type="text/javascript" src="/js/asus_eula.js"></script>
 <style>
 .QISform_wireless{
 	width:600px;
@@ -280,7 +281,7 @@ var overhead_presets = [["0", "0", ""],
 			["1", "32", "PPPoE VC/Mux"],
 			["1", "40", "PPPoE LLC/Snap"]];
 
-if(based_modelid == "RT-AC68A"){	//MODELDEP : Spec special fine tune
+if(based_modelid == "RT-AC68A" || based_modelid == "MAP-AC1750"){	//MODELDEP : Spec special fine tune
 	bwdpi_support = false;
 }
 
@@ -658,7 +659,9 @@ function submitQoS(){
 	if(validForm()){
 
 		if(document.form.qos_enable.value == 1 && document.form.qos_type.value == 1 && document.form.TM_EULA.value == 0){
-			show_tm_eula();
+			ASUS_EULA
+				.config(eula_confirm, cancel)
+				.show("tm")
 		}
 		else{
 			document.form.qos_atm.value = (document.form.qos_atm_x.checked ? 1 : 0);
@@ -674,7 +677,12 @@ function submitQoS(){
 					if(document.form.qos_type.value == 0 && !lantiq_support){
 						FormActions("start_apply.htm", "apply", "reboot", "<% get_default_reboot_time(); %>");
 					}
-					else{				
+					else{
+						if(document.form.qos_type.value == 0 && lantiq_support){
+							var hwnatPrompt = "NAT traffic will be processed by CPU if traditional QoS is enabled. Are you sure want to enable?";
+							if(!confirm(hwnatPrompt)) return false;
+						}
+
 						document.form.action_script.value = "restart_qos;restart_firewall";
 					}
 				}
@@ -1313,23 +1321,6 @@ function check_field(){
 	}
 }
 
-function show_tm_eula(){
-	$.get("tm_eula.htm", function(data){
-		document.getElementById('agreement_panel').innerHTML= data;
-		var url = "https://www.asus.com/Microsite/networks/Trend_Micro_EULA/";
-		$("#eula_url").attr("href",url);
-		url = "https://www.trendmicro.com/en_us/about/legal/privacy-policy-product.html"
-		$("#tm_eula_url").attr("href",url);
-		url = "https://success.trendmicro.com/data-collection-disclosure";
-		$("#tm_disclosure_url").attr("href",url);
-		adjust_TM_eula_height("agreement_panel");
-	});
-
-	dr_advise();
-	cal_panel_block("agreement_panel", 0.25);
-	$("#agreement_panel").fadeIn(300);
-}
-
 function eula_confirm(){
 	document.form.TM_EULA.value = 1;
 	submitQoS();
@@ -1381,7 +1372,6 @@ function change_scheduler(value){
 <body onload="initial();" id="body_id" onunload="unload_body();" onClick="">
 <div id="TopBanner"></div>
 <div id="Loading" class="popup_bg"></div>
-<div id="agreement_panel" class="eula_panel_container"></div>
 <div id="hiddenMask" class="popup_bg" style="z-index:999;">
 	<table cellpadding="5" cellspacing="0" id="dr_sweet_advise" class="dr_sweet_advise" align="center"></table>
 	<!--[if lte IE 6.5.]><script>alert("<#ALERT_TO_CHANGE_BROWSER#>");</script><![endif]-->
@@ -1420,7 +1410,7 @@ function change_scheduler(value){
 						<div style="margin-left:30px; margin-top:10px;">
 							<div class="formfontdesc" style="line-height:20px;font-size:14px;"><#Adaptive_QoS_desc#></div>
 						</div>
-						<div style="margin:5px;*margin-left:-5px;"><img style="width: 730px; height: 2px;" src="/images/New_ui/export/line_export.png"></div>
+						<div style="margin:5px;*margin-left:-5px;width: 730px; height: 2px;" class="splitLine"></div>
 					</tr>
 					<tr>
 						<td valign="top">
@@ -1506,7 +1496,9 @@ function change_scheduler(value){
 								</td>
 							</tr>
 							<tr>
-								<td height="5" bgcolor="#4D595D" valign="top"><img src="images/New_ui/export/line_export.png" /></td>
+								<td height="5" bgcolor="#4D595D" valign="top">
+									<div class="splitLine"></div>
+								</td>
 							</tr>
 							<tr>
 								<td height="30" align="left" valign="top" bgcolor="#4D595D">

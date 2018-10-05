@@ -547,13 +547,9 @@ static int find_vlan_slot(int vid, unsigned int *vawd1)
  *     -1:	no vlan entry available
  *     -2:	invalid parameter
  */
-#if defined(RTCONFIG_RALINK_MT7620)
-int mt7620_vlan_set(int idx, int vid, char *portmap, int stag)
-#elif defined(RTCONFIG_RALINK_MT7621)
-int mt7621_vlan_set(int idx, int vid, char *portmap, int stag)
-#endif
+int mt762x_vlan_set(int idx, int vid, char *portmap, int stag, int untag)
 {
-	unsigned int i, mbr, value, vawd1;
+	unsigned int i, mbr, value, value2, vawd1;
 #if defined(RTCONFIG_RALINK_MT7621)
 	idx++;
 	if (idx <= 0) { //auto
@@ -595,17 +591,45 @@ int mt7621_vlan_set(int idx, int vid, char *portmap, int stag)
 	value |= (1 << 27);		//COPY_PRI
 	value |= ((stag & 0xfff) << 4);	//S_TAG
 	value |= 1;			//VALID
+
+	value2 = 0;
+	if (untag >= 0) {
+		value |= (1 << 28);	//VTAG_EN
+		for (i = 0; i < 8; i++) {
+			if ((mbr & (1 << i)) == 0)
+				continue;
+			if (untag & (1 << i))
+				value2 |= 0x0 << (i * 2); //Untag
+			else
+				value2 |= 0x2 << (i * 2); //Tag
+		}
+	}
+
 #if defined(RTCONFIG_RALINK_MT7620)	
 	mt7620_reg_write(REG_ESW_VLAN_VAWD1, value);
+	mt7620_reg_write(REG_ESW_VLAN_VAWD2, value2);
 	value = (0x80001000 + idx); //w_vid_cmd
 #elif defined(RTCONFIG_RALINK_MT7621)	
 	mt7621_reg_write(REG_ESW_VLAN_VAWD1, value);
+	mt7621_reg_write(REG_ESW_VLAN_VAWD2, value2);
 	value = (0x80001000 + vid); //w_vid_cmd
 #endif	
 	write_VTCR(value);
 
 	return 0;
 }
+
+#if defined(RTCONFIG_RALINK_MT7620)
+int mt7620_vlan_set(int idx, int vid, char *portmap, int stag)
+{
+	return mt762x_vlan_set(idx, vid, portmap, stag, -1);
+}
+#elif defined(RTCONFIG_RALINK_MT7621)
+int mt7621_vlan_set(int idx, int vid, char *portmap, int stag)
+{
+	return mt762x_vlan_set(idx, vid, portmap, stag, -1);
+}
+#endif
 
 /**
  * Disable a VLAN by vid and restore VID to initial value.
@@ -1365,7 +1389,7 @@ static void create_Vlan(int bitmask)
 	int prio = nvram_get_int("vlan_prio") & 0x7;
 	int mbr = bitmask & 0xffff;
 	int untag = (bitmask >> 16) & 0xffff;
-	int i, mask;
+	int i, mask, untagmap;
 
 	if (switch_init() < 0)
 		return;
@@ -1374,12 +1398,15 @@ static void create_Vlan(int bitmask)
 	value = (0x1 << 16) | (prio << 13) | vid;
 
 	strlcpy(portmap, "00000000", sizeof(portmap)); // init
+	untagmap = 0;
 	//convert port mapping
 	//for MT7621, port 5 is the part of wan-ports
 	for(i = 0; i < (NR_WANLAN_PORT+1); i++) {
 		mask = (1 << i);
 		if (mbr & mask)
 			portmap[ switch_port_mapping[i] ]='1';
+		if (untag & mask)
+			untagmap |= 1 << switch_port_mapping[i];
 	}
 
 	for(i = 0; i < 4; i++) //LAN port only
@@ -1412,7 +1439,7 @@ static void create_Vlan(int bitmask)
 		mt7620_reg_write((REG_ESW_PORT_PCR_P0 + 0x100*WAN_PORT), 0x20ff0003); //Egress VLAN Tag Attribution=tagged
 		mt7620_reg_write((REG_ESW_PORT_PCR_P0 + 0x100*CPU_PORT), 0x20ff0003); //port6(CPU), Egress VLAN Tag Attribution=tagged
 		mt7620_reg_write((REG_ESW_PORT_PVC_P0 + 0x100*WAN_PORT), 0x81000000); //user port, admit all frames
-		mt7620_vlan_set(-1, vid, portmap, vid);
+		mt762x_vlan_set(-1, vid, portmap, vid, untagmap ? : -1);
 #elif defined(RTCONFIG_RALINK_MT7621)
 		portmap[P5_PORT]='1';
 		mt7621_reg_write((REG_ESW_PORT_PCR_P0 + 0x100*WAN_PORT), 0x20ff0003); //Egress VLAN Tag Attribution=tagged
@@ -1420,7 +1447,9 @@ static void create_Vlan(int bitmask)
 		mt7621_reg_write((REG_ESW_PORT_PCR_P0 + 0x100*CPU_PORT), 0x20ff0003); //port6(GE1), Egress VLAN Tag Attribution=tagged
 		mt7621_reg_write((REG_ESW_PORT_PVC_P0 + 0x100*WAN_PORT), 0x81000000); //user port, admit all frames
 		mt7621_reg_write((REG_ESW_PORT_PVC_P0 + 0x100*P5_PORT), 0x81000000);  //user port, admit all frames
-		mt7621_vlan_set(-1, vid, portmap, vid);
+		if (untagmap & (1 << WAN_PORT))
+			untagmap |= (1 << P5_PORT);
+		mt762x_vlan_set(-1, vid, portmap, vid, untagmap ? : -1);
 #endif
 	}
 	else {	//IPTV, VoIP port

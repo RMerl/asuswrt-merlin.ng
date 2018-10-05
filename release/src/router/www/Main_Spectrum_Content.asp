@@ -115,7 +115,7 @@ function refresh_signals(){
 								  <td bgcolor="#4D595D" height="100px">
 									  <div>&nbsp;</div>
 									  <div class="formfonttitle"><#Menu_TrafficManager#> - <#Spectrum_title#></div>
-									  <div style="margin-left:5px;margin-top:10px;margin-bottom:10px"><img src="/images/New_ui/export/line_export.png"></div>
+									  <div style="margin:10px 0 10px 5px;" class="splitLine"></div>
 									  <div class="formfontdesc"><#Spectrum_desc#></div>
 										<span id="signals_update" style="margin-left:5px;margin-top:10px;color:#FFCC00;display:none;"></span>
 									</td>

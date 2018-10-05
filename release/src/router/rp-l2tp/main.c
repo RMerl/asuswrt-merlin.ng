@@ -24,6 +24,11 @@ static char const RCSID[] =
 #include <fcntl.h>
 #include <stdlib.h>
 #include <syslog.h>
+#include <errno.h>
+#include <sys/time.h>
+#include <sys/resource.h>
+
+int Priority;
 
 static void
 usage(int argc, char *argv[], int exitcode)
@@ -193,6 +198,14 @@ main(int argc, char *argv[])
 
     Event_HandleSignal(es, SIGINT, sighandler);
     Event_HandleSignal(es, SIGTERM, sighandler);
+
+    /* Set high priority for hello packets */
+    errno = 0;
+    Priority = getpriority(PRIO_PROCESS, 0);
+    if (Priority < 0 && errno != 0)
+	Priority = 0;
+    if (setpriority(PRIO_PROCESS, 0, -20) < 0)
+	l2tp_set_errmsg("Could not set high priority");
 
     while(1) {
 	i = Event_HandleEvent(es);

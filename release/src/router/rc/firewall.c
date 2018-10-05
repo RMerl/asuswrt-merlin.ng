@@ -722,9 +722,17 @@ no_match:
 
 char *str2time(char *str, char *buf, int buf_size, int flag){
 	if(START_TIME == flag)
+#ifndef IPTABLES_LEGACY
 		snprintf(buf, buf_size, "%c%c:%c%c:00", *(str), *(str+1), *(str+2), *(str+3));
+#else
+		snprintf(buf, buf_size, "%c%c:%c%c", *(str), *(str+1), *(str+2), *(str+3));
+#endif
 	else if(STOP_TIME == flag)
+#ifndef IPTABLES_LEGACY
 		snprintf(buf, buf_size, "%c%c:%c%c:59", *(str), *(str+1), *(str+2), *(str+3));
+#else
+		snprintf(buf, buf_size, "%c%c:%c%c", *(str), *(str+1), *(str+2), *(str+3));
+#endif
 	return (buf);
 }
 
@@ -3492,7 +3500,7 @@ TRACE_PT("writing Parental Control\n");
 		fprintf(fp, "-A FORWARD -p udp -d 224.0.0.0/4 -j ACCEPT\n");
 
 	/* Clamp TCP MSS to PMTU of WAN interface before accepting RELATED packets */
-	if (
+	if (nvram_get_int("jumbo_frame_enable") ||
 #if defined(RTCONFIG_PPTPD) || defined(RTCONFIG_ACCEL_PPTPD)
 	    nvram_get_int("pptpd_enable") ||
 #endif
@@ -3513,7 +3521,7 @@ TRACE_PT("writing Parental Control\n");
 #ifdef RTCONFIG_6RELAYD
 	case IPV6_PASSTHROUGH:
 #endif
-		if (
+		if (!nvram_get_int("jumbo_frame_enable") &&
 #if defined(RTCONFIG_USB_MODEM)
 		    dualwan_unit__nonusbif(unit) &&
 #endif
@@ -4567,11 +4575,14 @@ TRACE_PT("writing Parental Control\n");
 	if (nvram_get_int("mr_enable_x"))
 		fprintf(fp, "-A FORWARD -p udp -d 224.0.0.0/4 -j ACCEPT\n");
 
+	/* Clamp TCP MSS to PMTU of WAN interface before accepting RELATED packets */
+	if (nvram_get_int("jumbo_frame_enable"))
+		goto clamp_mss;
+
 #if defined(RTCONFIG_PPTPD) || defined(RTCONFIG_ACCEL_PPTPD)
 	if (nvram_get_int("pptpd_enable"))
 		goto clamp_mss;
 #endif
-	/* Clamp TCP MSS to PMTU of WAN interface before accepting RELATED packets */
 	for (unit = WAN_UNIT_FIRST; unit < wan_max_unit; unit++) {
 		if (!is_wan_connect(unit))
 			continue;
@@ -4585,9 +4596,7 @@ TRACE_PT("writing Parental Control\n");
 		    strcmp(wan_proto, "pppoe") == 0 ||
 		    strcmp(wan_proto, "pptp") == 0 ||
 		    strcmp(wan_proto, "l2tp") == 0) {
-#if defined(RTCONFIG_PPTPD) || defined(RTCONFIG_ACCEL_PPTPD)
 		clamp_mss:
-#endif
 			fprintf(fp, "-A FORWARD -p tcp -m tcp --tcp-flags SYN,RST SYN -j TCPMSS --clamp-mss-to-pmtu\n");
 			if (*macaccept)
 				fprintf(fp, "-A %s -p tcp -m tcp --tcp-flags SYN,RST SYN -j TCPMSS --clamp-mss-to-pmtu\n", macaccept);
@@ -4601,7 +4610,7 @@ TRACE_PT("writing Parental Control\n");
 #ifdef RTCONFIG_6RELAYD
 	case IPV6_PASSTHROUGH:
 #endif
-		if (
+		if (!nvram_get_int("jumbo_frame_enable") &&
 #if defined(RTCONFIG_USB_MODEM)
 		    dualwan_unit__nonusbif(wan_primary_ifunit_ipv6()) &&
 #endif

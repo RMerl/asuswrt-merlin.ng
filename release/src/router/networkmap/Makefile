@@ -48,7 +48,7 @@ LDFLAGS += -L$(TOP)/libqcsapi_client_10g -lqcsapi_client
 endif
 
 ifeq ($(RTCONFIG_LANTIQ),y)
-LDFLAGS += -L$(TOP)/fapi_wlan_common-1.0.0.1 -lfapiwlancommon -ldl -L$(TOP)/libhelper-1.4.0.2 -lhelper -L$(TOP)/libfapi-0.1 -lfapi
+LDFLAGS += -L$(TOP)/fapi_wlan_common-05.04.00.131 -lfapiwlancommon -ldl -L$(TOP)/libhelper-1.4.0.2 -lhelper -L$(TOP)/libfapi-0.1 -lfapi
 endif
 
 ifeq ($(RTCONFIG_BWDPI),y)
@@ -92,6 +92,11 @@ CFLAGS += -I$(TOP)/openssl/include/openssl
 LDFLAGS += -L$(TOP)/openssl -lcrypto -lssl
 LDFLAGS += -L $(TOP)/sqlCipher/.libs -lsqlcipher
 LDFLAGS += -L$(TOP)/PMS_DBapis -lpms_sql
+endif
+
+ifeq ($(RTCONFIG_CFGSYNC),y)
+CFLAGS += -I$(TOP)/cfg_mnt
+LIBS += -L$(TOP)/cfg_mnt -lcfgmnt
 endif
 
 include $(SRCBASE)/.config

@@ -1423,7 +1423,7 @@ void rc_ipsec_topology_set()
     }
     return;
 }
-void rc_ipsec_nvram_convert_check()
+void rc_ipsec_nvram_convert_check(void)
 {
 	int i, prof_count = 0;
 	char buf[SZ_MIN], buf_ext[SZ_MIN];
@@ -1450,7 +1450,7 @@ void rc_ipsec_nvram_convert_check()
 		}
 	}
 }
-void rc_ipsec_config_init()
+void rc_ipsec_config_init(void)
 {
     memset((ipsec_samba_t *)&samba_prof, 0, sizeof(ipsec_samba_t));
     memset((ipsec_prof_t *)&prof[0][0], 0, sizeof(ipsec_prof_t) * MAX_PROF_NUM);
@@ -1475,7 +1475,7 @@ void rc_ipsec_config_init()
     //rc_ipsec_ca_import();
     return;
 }
-void rc_set_ipsec_stack_block_size()
+void rc_set_ipsec_stack_block_size(void)
 {
 	char command[64];
 	if(NULL != nvram_safe_get("ipsec_stack_block_size")){
@@ -1510,7 +1510,7 @@ void get_bitmap_scan(int *cur_bitmap_en)
 	}
 	return;
 }
-void run_ipsec_firewall_scripts()
+void run_ipsec_firewall_scripts(void)
 {
 	char *argv[3];
 	argv[0] = "/bin/sh";

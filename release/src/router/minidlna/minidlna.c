@@ -1124,6 +1124,10 @@ retry:
 #define PATH_ICON_ALT_PNG_LRG	"/rom/dlna/icon_alt_lrg.png"
 #define PATH_ICON_ALT_JPEG_SM	"/rom/dlna/icon_alt_sm.jpg"
 #define PATH_ICON_ALT_JPEG_LRG	"/rom/dlna/icon_alt_lrg.jpg"
+#define PATH_ICON_ALT2_PNG_SM	"/rom/dlna/icon_alt2_sm.png"
+#define PATH_ICON_ALT2_PNG_LRG	"/rom/dlna/icon_alt2_lrg.png"
+#define PATH_ICON_ALT2_JPEG_SM	"/rom/dlna/icon_alt2_sm.jpg"
+#define PATH_ICON_ALT2_JPEG_LRG	"/rom/dlna/icon_alt2_lrg.jpg"
 #endif
 unsigned char buf_png_sm[65536];
 unsigned char buf_png_lrg[65536];
@@ -1147,6 +1151,7 @@ init_icon(const char *iconfile)
 	if (strcmp(iconfile, PATH_ICON_PNG_SM) == 0
 #ifdef RTAC68U
 		|| strcmp(iconfile, PATH_ICON_ALT_PNG_SM) == 0
+		|| strcmp(iconfile, PATH_ICON_ALT2_PNG_SM) == 0
 #endif
 	)
 	{
@@ -1156,6 +1161,7 @@ init_icon(const char *iconfile)
 	else if (strcmp(iconfile, PATH_ICON_PNG_LRG) == 0
 #ifdef RTAC68U
 		|| strcmp(iconfile, PATH_ICON_ALT_PNG_LRG) == 0
+		|| strcmp(iconfile, PATH_ICON_ALT2_PNG_LRG) == 0
 #endif
 	)
 	{
@@ -1165,6 +1171,7 @@ init_icon(const char *iconfile)
 	else if (strcmp(iconfile, PATH_ICON_JPEG_SM) == 0
 #ifdef RTAC68U
 		|| strcmp(iconfile, PATH_ICON_ALT_JPEG_SM) == 0
+		|| strcmp(iconfile, PATH_ICON_ALT2_JPEG_SM) == 0
 #endif
 	)
 	{
@@ -1174,6 +1181,7 @@ init_icon(const char *iconfile)
 	else if (strcmp(iconfile, PATH_ICON_JPEG_LRG) == 0
 #ifdef RTAC68U
 		|| strcmp(iconfile, PATH_ICON_ALT_JPEG_LRG) == 0
+		|| strcmp(iconfile, PATH_ICON_ALT2_JPEG_LRG) == 0
 #endif
 	)
 	{
@@ -1280,7 +1288,12 @@ main(int argc, char **argv)
 #else
 #if (!defined(RTN66U) && !defined(RTN56U))
 #ifdef RTAC68U
-	if (is_ac66u_v2_series()) {
+	if (is_dpsta_repeater()) {
+		init_icon(PATH_ICON_ALT2_PNG_SM);
+		init_icon(PATH_ICON_ALT2_PNG_LRG);
+		init_icon(PATH_ICON_ALT2_JPEG_SM);
+		init_icon(PATH_ICON_ALT2_JPEG_LRG);
+	} else if (is_ac66u_v2_series()) {
 		init_icon(PATH_ICON_ALT_PNG_SM);
 		init_icon(PATH_ICON_ALT_PNG_LRG);
 		init_icon(PATH_ICON_ALT_JPEG_SM);

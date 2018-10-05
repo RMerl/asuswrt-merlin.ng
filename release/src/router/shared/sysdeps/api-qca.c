@@ -1478,6 +1478,177 @@ int get_wlsubnet(int band, const char *ifname)
 	return -1;
 }
 
+#define PROC_NET_WIRELESS  "/proc/net/wireless"
+#define strip_new_line(s) ({					\
+	char *end = (s) + strlen(s) -1;				\
+	while((end >= (s)) && (*end == '\n' || *end == '\r'))	\
+		*end-- = '\0';					\
+	s;							\
+})
+
+#define skip_space(s) {						\
+	while(*s == ' ')					\
+		s++;						\
+}
+
+
+int get_wl_status_ioctl(const char *ifname, int *status, int *quality, int *signal, int *noise, unsigned int *update)
+{
+	iwstats stats;
+	struct iwreq wrq;
+
+	if(ifname == NULL || ifname[0] == '\0' || status == NULL)
+		return -1;
+
+	*status = 0;
+	if(update)
+		*update = 0;
+
+	memset(&stats, 0, sizeof(stats));
+	wrq.u.data.pointer = (caddr_t) &stats;
+	wrq.u.data.length = sizeof(struct iw_statistics);
+	wrq.u.data.flags = 1;					/* Clear updated flag */
+	if(wl_ioctl(ifname, SIOCGIWSTATS, &wrq) < 0)
+		return -2;
+
+	*status = stats.status;
+	if(quality) {
+		if(stats.qual.updated & IW_QUAL_QUAL_INVALID)
+			*quality = 0;
+		else
+			*quality = stats.qual.qual;
+		if(update)
+			*update |= (stats.qual.updated & 1);
+	}
+
+	if(signal) {
+		if(stats.qual.updated & IW_QUAL_LEVEL_INVALID)
+			*signal = 0;
+		else if(stats.qual.updated & IW_QUAL_RCPI) {
+			double    rcpivalue = (stats.qual.level / 2.0) - 110.0;
+			*signal = (int) rcpivalue;
+		}
+		else {
+			*signal = stats.qual.level;
+			if(*signal >= 64)
+				*signal -= 0x100;	/* convert from unsigned to signed */
+		}
+		if(update)
+			*update |= (stats.qual.updated & 2);
+	}
+
+	if(noise) {
+		if(stats.qual.updated & IW_QUAL_NOISE_INVALID)
+			*noise = 0;
+		else if(stats.qual.updated & IW_QUAL_RCPI) {
+			double    rcpivalue = (stats.qual.level / 2.0) - 110.0;
+			*noise = (int) rcpivalue;
+		}
+		else {
+			*noise = stats.qual.noise;
+			if(*noise >= 64)
+				*noise -= 0x100;	/* convert from unsigned to signed */
+		}
+		if(update)
+			*update |= (stats.qual.updated & 4);
+	}
+
+	return *status;
+}
+
+int get_wl_status_proc(const char *ifname, int *status, int *quality, int *signal, int *noise, unsigned int *update)
+{
+	char line[512];
+	FILE *fp;
+	int size;
+	char *p1, *p2;
+	int value;
+	int len;
+
+	if(ifname == NULL || ifname[0] == '\0' || status == NULL)
+		return -1;
+
+	*status = 0;
+
+	if((fp = fopen(PROC_NET_WIRELESS, "r")) == NULL)
+		return -2;
+
+	len = strlen(ifname);
+	size = sizeof(line)-1;
+	line[size] = '\0';
+	if(update)
+		*update = 0;
+
+	while(fgets(line, size, fp)) {
+		p1 = line;
+
+		strip_new_line(p1);
+		skip_space(p1);
+
+		if(strncmp(p1, ifname, len) != 0 || p1[len] != ':')
+			continue;
+
+		p1 = p1 + len + 1;		// point to the next char of ':'
+		skip_space(p1);
+		*status = strtoul(p1, &p2, 16);
+
+		/* Quality */
+		p1 = p2;
+		skip_space(p1);
+		value = strtoul(p1, &p2, 0);
+		if(quality) {
+			*quality = value;
+			if(update && *p2 == '.') {
+				p2++;
+				*update |= 1;
+			}
+		}
+
+		/* Signal level */
+		p1 = p2;
+		skip_space(p1);
+		value = strtoul(p1, &p2, 0);
+		if(signal) {
+			*signal = value;
+			if(update && *p2 == '.') {
+				p2++;
+				*update |= 2;
+			}
+		}
+
+		/* Noise level */
+		p1 = p2;
+		skip_space(p1);
+		value = strtoul(p1, &p2, 0);
+		if(noise) {
+			*noise = value;
+			if(update && *p2 == '.') {
+				p2++;
+				*update |= 4;
+			}
+		}
+
+		break;
+	}
+	fclose(fp);
+	return *status;
+}
+
+int get_wl_status(const char *ifname, int *status, int *quality, int *signal, int *noise, unsigned int *update)
+{
+	int ret;
+	if((ret = get_wl_status_ioctl(ifname, status, quality, signal, noise, update)) >= 0)
+		return ret;
+
+	cprintf("get_wl_status_ioctl() failed ret(%d)\n", ret);
+	if((ret = get_wl_status_proc(ifname, status, quality, signal, noise, update)) >= 0)
+		return ret;
+
+	cprintf("get_wl_status_proc() failed ret(%d)\n", ret);
+	return ret;
+}
+
+
 int get_ap_mac(const char *ifname, struct iwreq *pwrq)
 {
 	return wl_ioctl(ifname, SIOCGIWAP, pwrq);
@@ -1554,20 +1725,27 @@ int get_channel(const char *ifname)
 	return get_ch(freq);
 }
 
-#ifdef RTCONFIG_AMAS
-void add_beacon_vsie(char *hexdata)
+#if defined(RTAC58U)
+extern char *readfile(char *fname,int *fsize);
+/* check if /proc/nvram have same mid string
+ * @return:
+ * 	0:	not found
+ * 	1:	matched
+ */
+int check_mid(char *mid)
 {
+	char *buf, *pt;
+	int fsize, ret=0;
+	buf = readfile("/proc/nvram", &fsize);
+	if (!buf) return ret;
+	pt = strstr(buf, "MID : ");
+	if (pt) {
+		int len = strlen(mid);
+		pt += 6; // len of "MID : "
+		if ((memcmp(pt, mid, len)==0) && (*(pt+len) ==  '\n'))
+			ret = 1;
+	}
+	free(buf);
+	return ret;
 }
-
-void del_beacon_vsie(char *hexdata)
-{
-}
-
-void add_obd_probe_req_vsie(char *hexdata)
-{
-}
-
-void del_obd_probe_req_vsie(char *hexdata)
-{
-}
-#endif /* RTCONFIG_AMAS */
+#endif

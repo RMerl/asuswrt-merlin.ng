@@ -132,7 +132,7 @@ function showMethod(flag1, flag2){
 		</td>
   </tr> 
   <tr>
-  	<td class="line_export"><img src="images/New_ui/export/line_export.png" /></td>
+  	<td><div class="splitLine"></div></td>
   </tr>
   <tr>
    	<td><div class="formfontdesc"><#Network_Printer_desc#></div></td> 

@@ -552,7 +552,7 @@ function applyRule()
 								<td bgcolor="#4D595D" valign="top">
 									<div>&nbsp;</div>
 									<div class="formfonttitle">VLAN</div>
-									<div style="margin-left:5px;margin-top:10px;margin-bottom:10px"><img src="/images/New_ui/export/line_export.png"></div>
+									<div style="margin:10px 0 10px 5px;" class="splitLine"></div>
 									<div class="formfontdesc">VLAN function allow you segment your network. A port-based VLAN is a group of ports on a Gigabit Ethernet
 Switch that form a logical Ethernet segment. Each port of a port-based VLAN can belong to only one VLAN at a
 time. You also can only assign SSID to a subnet to create a VLAN segment. If you want to modify subnet

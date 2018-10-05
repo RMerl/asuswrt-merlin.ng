@@ -21,6 +21,7 @@
 <script type="text/javascript" src="/js/jquery.js"></script>
 <script type="text/javascript" src="/switcherplugin/jquery.iphone-switch.js"></script>
 <script type="text/javascript" src="/form.js"></script>
+<script type="text/javascript" src="js/oauth.js"></script>
 <style type="text/css">
 /* folder tree */
 .mask_bg{
@@ -204,6 +205,11 @@ function initial(){
 			setTimeout("showInvitation(getflag);", 300);
 		}
 	}
+	$("#authBtn").click(
+		function() {
+			oauth.dropbox(onDropBoxLogin);
+		}
+	);
 }
 
 // Invitation
@@ -226,7 +232,7 @@ function showInvitation(){
 		
 		htmlCode += "<tr height='40px'><td width='30%'><#sync_router_localfolder#></td><td>";
 		htmlCode += "<input type='text' id='PATH_rs' class='input_20_table' style='margin-left:0px;height:23px;' name='cloud_dir' value='' onclick=''/>";
-		htmlCode += "<input name='button' type='button' class='button_gen_short' style='margin-left:5px;' onclick='get_disk_tree(1);document.getElementById(\"folderTree_panel\").style.marginLeft+=30;' value='<#Cloudsync_browser_folder#>'/>";
+		htmlCode += "<input name='button' type='button' class='button_gen' style='margin-left:5px;' onclick='get_disk_tree(1);document.getElementById(\"folderTree_panel\").style.marginLeft+=30;' value='<#Cloudsync_browser_folder#>'/>";
 		htmlCode += "</td></tr>";
 		
 		if(decode_array[3] != ""){
@@ -1702,83 +1708,11 @@ function refresh_captcha(){
 	}
 }
 
-//- Login dropbox
-function dropbox_login(){
-	var base64Encode = function(input) {
-		var keyStr = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=";
-		var output = "";
-		var chr1, chr2, chr3, enc1, enc2, enc3, enc4;
-		var i = 0;
-		var utf8_encode = function(string) {
-			string = string.replace(/\r\n/g,"\n");
-			var utftext = "";
-			for (var n = 0; n < string.length; n++) {
-				var c = string.charCodeAt(n);
-				if (c < 128) {
-					utftext += String.fromCharCode(c);
-				}
-				else if((c > 127) && (c < 2048)) {
-					utftext += String.fromCharCode((c >> 6) | 192);
-					utftext += String.fromCharCode((c & 63) | 128);
-				}
-				else {
-					utftext += String.fromCharCode((c >> 12) | 224);
-					utftext += String.fromCharCode(((c >> 6) & 63) | 128);
-					utftext += String.fromCharCode((c & 63) | 128);
-				}
-			}
-			return utftext;
-		};
-		input = utf8_encode(input);
-		while (i < input.length) {
-			chr1 = input.charCodeAt(i++);
-			chr2 = input.charCodeAt(i++);
-			chr3 = input.charCodeAt(i++);
-			enc1 = chr1 >> 2;
-			enc2 = ((chr1 & 3) << 4) | (chr2 >> 4);
-			enc3 = ((chr2 & 15) << 2) | (chr3 >> 6);
-			enc4 = chr3 & 63;
-			if (isNaN(chr2)) {
-				enc3 = enc4 = 64;
-			}
-			else if (isNaN(chr3)) {
-				enc4 = 64;
-			}
-			output = output + 
-			keyStr.charAt(enc1) + keyStr.charAt(enc2) + 
-			keyStr.charAt(enc3) + keyStr.charAt(enc4);
-		}
-		return output;
-	};
-	var b = window.location.href.indexOf("/",window.location.protocol.length+2);
-	var app_key = "qah4ku73k3qmigj";
-	var redirect_url = "https://oauth.asus.com/aicloud/dropbox.html";			
-	var callback_url = window.location.href.slice(0,b) + "/dropbox_callback.htm,onDropBoxLogin"; 
-
-	//workaround for encode issue, if the original string is not a multiple of 6, the base64 encode result will display = at the end
-	//Then Dropbox will encode the url twice, the char = will become %3D, and callback oauth.asus.com will cause url not correct.
-	//So need add not use char at callback_url for a multiple of 6
-	var remainder = callback_url.length % 6;
-	if(remainder != 0) {
-		var not_use = "";
-		for(var i = remainder; i < 6; i += 1) {
-			not_use += ",";
-		}
-		callback_url += not_use; 
-	}
-	var url = "https://www.dropbox.com/oauth2/authorize?response_type=token&client_id=" + app_key;
-	url += "&redirect_uri=" + encodeURIComponent(redirect_url);
-	url += "&state=base64_" + base64Encode(callback_url);
-	url += "&force_reapprove=true&force_reauthentication=true";
-			
-	window.open(url,"mywindow","menubar=1,resizable=0,width=630,height=550");
-}
-
 //- Login success callback function
-function onDropBoxLogin(token, uid){
-	if(token.search("error") == -1){
-		document.form.cloud_username.value = uid;
-		document.form.cloud_password.value = token;
+function onDropBoxLogin(_parm){
+	if(_parm.token.search("error") == -1){
+		document.form.cloud_username.value = _parm.uid;
+		document.form.cloud_password.value = _parm.token;
 		document.getElementById("applyBtn").style.display = "";
 		document.getElementById("authBtn").style.display = "none";
 		document.getElementById("authHint").style.display = "";
@@ -1941,7 +1875,7 @@ function onDropBoxLogin(token, uid){
 							</th>			
 							<td>
 							  <input type="text"  class="input_32_table" style="height: 23px;" id="usbclient_sharefolder" name="usbclient_sharefolder" value="" autocorrect="off" autocapitalize="off">
-							  <input name="button" type="button" class="button_gen_short" onclick="get_disk_tree(0);" value="<#Cloudsync_browser_folder#>"/>
+							  <input name="button" type="button" class="button_gen" onclick="get_disk_tree(0);" value="<#Cloudsync_browser_folder#>"/>
 								<div id="noUSB0" style="color:#FC0;display:none;margin-left: 3px;"><#no_usb_found#></div>
 							</td>
 						</tr>	
@@ -1999,7 +1933,7 @@ function onDropBoxLogin(token, uid){
 								</th>
 								<td>
 									<input type="text" id="PATH" class="input_32_table" style="height: 23px;" name="cloud_dir" value="" onclick="" autocomplete="off" autocorrect="off" autocapitalize="off"/>
-		  						<input name="button" type="button" class="button_gen_short" onclick="get_disk_tree(1);" value="<#Cloudsync_browser_folder#>"/>
+		  						<input name="button" type="button" class="button_gen" onclick="get_disk_tree(1);" value="<#Cloudsync_browser_folder#>"/>
 									<div id="noUSB" style="color:#FC0;display:none;margin-left: 3px;"><#no_usb_found#></div>
 								</td>
 						  </tr>
@@ -2041,9 +1975,9 @@ function onDropBoxLogin(token, uid){
 						</table>
 							<div class="apply_gen pop_div_bg" style="margin-top:20px;margin-bottom:10px;display:none;" id="applyDiv">
 	  					<input name="button" type="button" class="button_gen" onclick="showAddTable();" value="<#CTL_Cancel#>"/>
-	  					<input id="applyBtn" name="button" type="button" class="button_gen" onclick="applyRule()" value="<#CTL_apply#>"/>
-	  					<input id="authBtn" name="button" type="button" class="button_gen" onclick="dropbox_login()" value="Authenticate"/>
-	  					<span id="authHint" style="color:#FC0;display:none">Authenticated!</span>
+						<input id="applyBtn" name="button" type="button" class="button_gen" onclick="applyRule()" value="<#CTL_apply#>"/>
+						<input id="authBtn" name="button" type="button" class="button_gen" value="Authenticate"/>
+						<span id="authHint" style="color:#FC0;display:none">Authenticated!</span>
 	  				</div>
 </div>
 <table border="0" align="center" cellpadding="0" cellspacing="0" class="content">
@@ -2068,8 +2002,7 @@ function onDropBoxLogin(token, uid){
 
 						<div>&nbsp;</div>
 						<div class="formfonttitle">AiCloud 2.0 - <#smart_sync#></div>
-						<div style="margin-left:5px;margin-top:10px;margin-bottom:10px"><img src="/images/New_ui/export/line_export.png"></div>
-
+						<div style="margin:10px 0 10px 5px;" class="splitLine"></div>
 						<div>
 							<table width="700px" style="margin-left:25px;">
 								<tr>
@@ -2113,7 +2046,7 @@ function onDropBoxLogin(token, uid){
 
     					<tr>
       					<th width="10%"><#Provider#></th>
-    					<th width="25%"><#HSDPAConfig_Username_itemname#></a></th>
+    					<th width="25%"><#Username#></a></th>
       					<th width="10%"><#Cloudsync_Rule#></a></th>
       					<th width="30%"><#FolderName#></th>
       					<th width="15%"><#PPPConnection_x_WANLink_itemname#></th>
@@ -2147,7 +2080,7 @@ function onDropBoxLogin(token, uid){
 						</table>
 
 	  				<div class="apply_gen" id="creatBtn" style="margin-top:30px;display:none;">
-							<input name="applybutton" id="applybutton" type="button" class="button_gen_long" onclick="showAddTable(9);" value="<#AddAccountTitle#>" style="word-wrap:break-word;word-break:normal;">
+							<input name="applybutton" id="applybutton" type="button" class="button_gen" onclick="showAddTable(9);" value="<#AddAccountTitle#>" style="word-wrap:break-word;word-break:normal;">
 							<img id="update_scan" style="display:none;" src="images/InternetScan.gif" />
 	  				</div>
 

@@ -521,8 +521,8 @@ function check_gn_if_status(_subunit, _gn_array) {
 		4. <#Facebook_WiFi_disclaim4#>
 	</div>
 	<div style="background-image:url(images/Tree/bg_02.png);background-repeat:no-repeat;height:90px;">
-		<input class="button_gen_long" type="button" style="margin-left:20%;margin-top:18px;" onclick="agreement_cancel();" value="<#CTL_Disagree#>">
-		<input class="button_gen_long" type="button"  onclick="agreement_confirm();" value="<#CTL_Agree#>">
+		<input class="button_gen" type="button" style="margin-left:20%;margin-top:18px;" onclick="agreement_cancel();" value="<#CTL_Disagree#>">
+		<input class="button_gen" type="button"  onclick="agreement_confirm();" value="<#CTL_Agree#>">
 	</div>
 </div>
 <div id="hiddenMask" class="popup_bg" style="z-index:999;">

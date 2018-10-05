@@ -34,6 +34,7 @@
 #define ENC_XOR     (0x74)
 #define DATA_WORDS_LEN (120)
 #define ENC_WORDS_LEN  (384)
+#define ASUSRT_STACKSIZE        0x200000
 
 extern int doSystem(char *fmt, ...);
 
@@ -99,7 +100,7 @@ extern int _cpu_eval(int *ppid, char *cmds[]);
  */
 extern int kill_pidfile(char *pidfile);
 extern int kill_pidfile_s(char *pidfile, int sig);
-extern int kill_pidfile_s_rm(char *pidfile, int sig);
+extern int kill_pidfile_s_rm(char *pidfile, int sig, int rm);
 
 /*
  * fread() with automatic retry on syscall interrupt
@@ -390,5 +391,6 @@ extern char *ether_etoa2(const unsigned char *e, char *a);
 extern char *ATE_FACTORY_MODE_STR();
 extern char *ATE_UPGRADE_MODE_STR();
 extern int hex2str(unsigned char *hex, char *str, int hex_len);
+extern void reset_stacksize(int new_stacksize);
 
 #endif /* _shutils_h_ */

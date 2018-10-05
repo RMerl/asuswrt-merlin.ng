@@ -1331,7 +1331,7 @@ function set_lg_power(power_value,flag,idx){
 		  <td bgcolor="#4D595D" valign="top">
 		  <div>&nbsp;</div>
 		  <div class="formfonttitle"><#menu5_1#> - <#smart_connect_rule#></div>
-     	  <div style="margin-left:5px;margin-top:10px;margin-bottom:10px"><img src="/images/New_ui/export/line_export.png"></div>
+     	 <div style="margin:10px 0 10px 5px;" class="splitLine"></div>
       	  <div class="formfontdesc"><#smart_connect_hint#></div>
 		  <div style="text-align:right;margin-top:-36px;padding-bottom:3px;"><input type="button" class="button_gen" value="<#View_List#>" onClick="pop_clientlist_listview(true)"></div>
 		  <div id="bsd_steering_div"></div>

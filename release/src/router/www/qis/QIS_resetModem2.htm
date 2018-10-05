@@ -66,13 +66,12 @@ function submitenter(myfield,e)
 							<td align="left">
 								<div class="description_down"><#QIS_modem2_desc1#></div>
 							</td>
-							<!--td align="right">
-								<img onclick="parent.gotoIndex();" style="cursor:pointer;" align="right" title="Go to Home" src="/images/backtohome.png" onMouseOver="this.src='/images/backtohomeclick.png'" onMouseOut="this.src='/images/backtohome.png'">
-							</td-->
 						</tr>
 					</table>
 				</div>
-				<div style="margin:5px;" id="splitLine"><img style="width: 720px; *width: 710px; height: 2px;" src="/images/New_ui/export/line_export.png"></div>
+				<div style="margin:5px;" id="splitLine">
+					<div style="width: 720px; *width: 710px; height: 2px;" class="splitLine"></div>
+				</div>
 		</div>
 		<p class="QISGeneralFont"><#QIS_modem2_desc2#></p>
 		<p class="QISGeneralFont"><#QIS_modem2_desc3#></p>
@@ -87,7 +86,7 @@ function submitenter(myfield,e)
 		<br/>	
 		<div class="apply_gen">
 			<div id="fresharea">
-				<input type="button" id="go_detect" class="button_gen_long" onclick="gotoPage('/qis/QIS_verify_detect.htm', 'resetModem', 0);" value="<#QKSet_detect_freshbtn#>">
+				<input type="button" id="go_detect" class="button_gen" onclick="gotoPage('/qis/QIS_verify_detect.htm', 'resetModem', 0);" value="<#QKSet_detect_freshbtn#>">
 			</div>
 		</div>
 

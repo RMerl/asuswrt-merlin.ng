@@ -122,6 +122,8 @@ typedef struct {
     unsigned n_entries_per_entry_group_max;
 #endif
     int drop_root;
+    char *user;
+    char *group;
     int set_rlimits;
 #ifdef ENABLE_CHROOT
     int use_chroot;
@@ -773,6 +775,12 @@ static int load_config_file(DaemonConfig *c) {
 
                     c->n_entries_per_entry_group_max = k;
 #endif
+                } else if (strcasecmp(p->key, "user") == 0) {
+                    avahi_free(c->user);
+                    c->user = avahi_strdup(p->value);
+                } else if (strcasecmp(p->key, "group") == 0) {
+                    avahi_free(c->group);
+                    c->group = avahi_strdup(p->value);
                 } else {
                     avahi_log_error("Invalid configuration key \"%s\" in group \"%s\"\n", p->key, g->name);
                     goto finish;
@@ -1355,32 +1363,31 @@ finish:
 static int drop_root(void) {
     struct passwd *pw;
     struct group * gr;
+    const char *user, *group;
     int r;
-    
-    
+
 //Edison modify username 20131023
-    char dut_user[128];
-    memset(dut_user, 0, 128);
-
+    //user = config.user ? : AVAHI_USER;
 #ifdef MS_IPK
-    strncpy(dut_user,http_username, 128);
+    user = config.user ? config.user : http_username;
 #else    
-    strncpy(dut_user, nvram_safe_get("http_username"), 128);
+    user = config.user ? config.user : nvram_safe_get("http_username");
 #endif
+    group = config.group ? config.group : AVAHI_GROUP;
 
-    if (!(pw = getpwnam(dut_user))) {
-	avahi_log_error( "Failed to find user '%s'.",dut_user);
+    if (!(pw = getpwnam(user))) {
+        avahi_log_error( "Failed to find user '%s'.", user);
         return -1;
     }
 
-    if (!(gr = getgrnam(AVAHI_GROUP))) {
-        avahi_log_error( "Failed to find group '"AVAHI_GROUP"'.");
+    if (!(gr = getgrnam(group))) {
+        avahi_log_error( "Failed to find group '%s'.", group);
         return -1;
     }
 
-    avahi_log_info("Found user '%s' (UID %lu) and group '"AVAHI_GROUP"' (GID %lu).",dut_user ,(unsigned long) pw->pw_uid, (unsigned long) gr->gr_gid);
+    avahi_log_info("Found user '%s' (UID %lu) and group '%s' (GID %lu).", user, (unsigned long) pw->pw_uid, group, (unsigned long) gr->gr_gid);
 
-    if (initgroups(dut_user, gr->gr_gid) != 0) {
+    if (initgroups(user, gr->gr_gid) != 0) {
         avahi_log_error("Failed to change group list: %s", strerror(errno));
         return -1;
     }
@@ -1437,25 +1444,25 @@ static int make_runtime_dir(void) {
     struct passwd *pw;
     struct group * gr;
     struct stat st;
+    const char *user, *group;
 
 //Edison modify username 20131023
-    char dut_user[128];
-    memset(dut_user, 0, 128);
-
+    //user = config.user ? config.user : AVAHI_USER;
 #ifdef MS_IPK
-    strncpy(dut_user, http_username, 128);
+    user = config.user ? config.user : http_username;
 #else    
-    strncpy(dut_user, nvram_safe_get("http_username"), 128);
+    user = config.user ? config.user : nvram_safe_get("http_username");
 #endif
+    group = config.group ? config.group : AVAHI_GROUP;
 
-    if (!(pw = getpwnam(dut_user))) {
-	avahi_log_error( "Failed to find user '%s'.",dut_user);
-        return -1;
+    if (!(pw = getpwnam(user))) {
+        avahi_log_error( "Failed to find user '%s'.", user);
+        goto fail;
     }
 
-    if (!(gr = getgrnam(AVAHI_GROUP))) {
-        avahi_log_error( "Failed to find group '"AVAHI_GROUP"'.");
-        return -1;
+    if (!(gr = getgrnam(group))) {
+        avahi_log_error( "Failed to find group '%s'.", group);
+        goto fail;
     }
 
     u = umask(0000);
@@ -1583,6 +1590,8 @@ int main(int argc, char *argv[]) {
 #endif
 
     config.drop_root = 1;
+    config.user = NULL;
+    config.group = NULL;
     config.set_rlimits = 1;
 #ifdef ENABLE_CHROOT
     config.use_chroot = 1;
@@ -1753,6 +1762,8 @@ finish:
 
     avahi_server_config_free(&config.server_config);
     avahi_free(config.config_file);
+    avahi_free(config.user);
+    avahi_free(config.group);
     avahi_strfreev(config.publish_dns_servers);
     avahi_strfreev(resolv_conf_name_servers);
     avahi_strfreev(resolv_conf_search_domains);

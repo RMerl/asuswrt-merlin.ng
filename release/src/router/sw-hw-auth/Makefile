@@ -19,8 +19,8 @@ TARGET_MODEL = $(subst -,,$(subst +,P,$(BUILD_NAME)))
 endif
 CFLAGS  += -D$(TARGET_MODEL)
 
-TARGET_LIBS = -lssl -lcrypto -ldl -lm
-AUTHLIB_LIBS = -lssl -lcrypto -ldl -lm
+TARGET_LIBS = -L$(TOP)/openssl -lssl -lcrypto -ldl -lm
+AUTHLIB_LIBS = -L$(TOP)/openssl -lssl -lcrypto -ldl -lm
 
 LDFLAGS = -L.
 LDFLAGS += -L$(TOP)/nvram$(BCMEX)${EX7} ${EXTRA_NV_LDFLAGS} -lnvram
@@ -34,6 +34,7 @@ endif
 
 OBJS = sw_auth.o hw_auth.o
 
+# $(TARGET) and $(TOOL) is for debug only, don't enable it
 all :
 
 $(AUTHLIB): $(OBJS)

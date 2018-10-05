@@ -38,6 +38,7 @@
 int 
 start_wps_method(void)
 {
+	int w_setting = 1;
 	if(getpid()!=1) {
 		notify_rc("start_wps_method");
 		return 0;
@@ -46,9 +47,15 @@ start_wps_method(void)
 #ifdef RTCONFIG_WPS_ENROLLEE
 	if (nvram_match("wps_enrollee", "1"))
 		start_wsc_enrollee();
-	else
+	else 
 #endif
+	{
+		// To avoid WPS is unconfigured state
+		nvram_set_int("w_Setting", 1);
+		nvram_commit();
+		trigger_wave_monitor(__func__, __LINE__, WAVE_ACTION_SET_WPS2G_CONFIGURED);
 		start_wsc();
+	}
 
 	return 0;
 }
@@ -72,6 +79,151 @@ stop_wps_method(void)
 	return 0;
 }
 
+#if defined(RTCONFIG_AMAS)
+void amas_save_wifi_para()
+{
+	char buf[512];
+	FILE *fp;
+	int len, i;
+	char *pt1, *pt2;
+	char tmp[128], tmp2[128], prefix[] = "wlcXXXXXXXXX_", prefix2[] = "wlXXXXXXXXX_", word[256], *next, ifnames[128];
+
+	i = 0;
+	strcpy(ifnames, nvram_safe_get("wl_ifnames"));
+	foreach(word, ifnames, next) {
+		sprintf(buf, "/opt/lantiq/wave/confs/wpa_supplicant_%s.conf", get_staifname(0));
+		snprintf(prefix, sizeof(prefix), "wlc%d_", i);
+		fp = fopen(buf, "r");
+		if (fp) {
+			memset(buf, 0, sizeof(buf));
+			len = fread(buf, 1, sizeof(buf), fp);
+			pclose(fp);
+			if (len > 1) {
+				buf[len-1] = '\0';
+				//PSK
+				pt1 = strstr(buf, "psk=\"");
+				if (pt1) {	//WPA2-PSK
+					pt2 = pt1 + strlen("psk=\"");
+					pt1 = strstr(pt2, "\"");
+					if (pt1) {
+						*pt1 = '\0';
+						chomp(pt2);
+						nvram_set(strcat_r(prefix, "wpa_psk", tmp), pt2);
+					}
+				}
+				else {		//OPEN
+					nvram_set(strcat_r(prefix, "auth_mode", tmp), "open");
+					nvram_set(strcat_r(prefix, "wep", tmp), "0");
+				}
+			}
+		}
+
+		sprintf(buf, "wpa_cli -i%s status", get_staifname(0));
+		fp = popen(buf, "r");
+		if (fp) {
+			memset(buf, 0, sizeof(buf));
+			len = fread(buf, 1, sizeof(buf), fp);
+			pclose(fp);
+			if (len > 1) {
+				buf[len-1] = '\0';
+				// ap_mac
+				pt1 = strstr(buf, "bssid=");
+				if (pt1) {
+					pt2 = pt1 + strlen("bssid=");
+					pt1 = strstr(pt2, "freq=");
+					if (pt1) {
+						*pt1 = '\0';
+						chomp(pt2);
+						//nvram_set(strcat_r(prefix, "ap_mac", tmp), pt2);
+					}
+				}
+
+				// ssid
+				pt2 = pt1 + 1;
+				pt1 = strstr(pt2, "ssid=");
+				if (pt1) {
+					pt2 = pt1 + strlen("ssid=");
+					pt1 = strstr(pt2, "id=");
+					if (pt1) {
+						*pt1 = '\0';
+						chomp(pt2);
+						nvram_set(strcat_r(prefix, "ssid", tmp), pt2);
+					}
+				}
+
+				// auth_mode and crypto
+				pt2 = pt1 + 1;
+				pt1 = strstr(pt2, "key_mgmt=");
+				if (pt1) {
+					pt2 = pt1 + strlen("key_mgmt=");
+					pt1 = strstr(pt2, "wpa_state=");
+					if (pt1) {
+						*pt1 = '\0';
+						chomp(pt2);
+						if (strstr(pt2, "WPA-")) {
+							nvram_set(strcat_r(prefix, "auth_mode", tmp), "psk");
+							nvram_set(strcat_r(prefix, "crypto", tmp), "aes+tkip");
+						} else if (strstr(pt2, "NONE")) {
+							nvram_set(strcat_r(prefix, "auth_mode", tmp), "open");
+							nvram_set(strcat_r(prefix, "wep", tmp), "0");
+						} else{
+							nvram_set(strcat_r(prefix, "auth_mode", tmp), "psk2");
+							nvram_set(strcat_r(prefix, "crypto", tmp), "aes");
+						}
+					}
+				}
+			}
+		}
+		++i;
+	}
+
+	i = 0;
+	foreach(word, ifnames, next) {
+		snprintf(prefix, sizeof(prefix), "wlc%d_", i);
+
+		//wlx
+		snprintf(prefix2, sizeof(prefix2), "wl%d_", i);
+		{
+			nvram_set(strcat_r(prefix2, "ssid", tmp), nvram_safe_get(strcat_r(prefix, "ssid", tmp2)));
+			nvram_set(strcat_r(prefix2, "auth_mode_x", tmp), nvram_safe_get(strcat_r(prefix, "auth_mode", tmp2)));
+			nvram_set(strcat_r(prefix2, "wep_x", tmp), nvram_safe_get(strcat_r(prefix, "wep", tmp2)));
+			if (nvram_get_int(strcat_r(prefix, "wep", tmp))) {
+				nvram_set(strcat_r(prefix2, "key", tmp), nvram_safe_get(strcat_r(prefix, "key", tmp2)));
+				nvram_set(strcat_r(prefix2, "key1", tmp), nvram_safe_get(strcat_r(prefix, "wep_key", tmp2)));
+				nvram_set(strcat_r(prefix2, "key2", tmp), nvram_safe_get(strcat_r(prefix, "wep_key", tmp2)));
+				nvram_set(strcat_r(prefix2, "key3", tmp), nvram_safe_get(strcat_r(prefix, "wep_key", tmp2)));
+				nvram_set(strcat_r(prefix2, "key4", tmp), nvram_safe_get(strcat_r(prefix, "wep_key", tmp2)));
+			}
+			nvram_set(strcat_r(prefix2, "crypto", tmp), nvram_safe_get(strcat_r(prefix, "crypto", tmp2)));
+			nvram_set(strcat_r(prefix2, "wpa_psk", tmp), nvram_safe_get(strcat_r(prefix, "wpa_psk", tmp2)));
+		}
+
+#if 0
+		//wlx.1
+		snprintf(prefix2, sizeof(prefix2), "wl%d.1_", i);
+		{
+			nvram_set(strcat_r(prefix2, "ssid", tmp), nvram_safe_get(strcat_r(prefix, "ssid", tmp2)));
+			nvram_set(strcat_r(prefix2, "auth_mode_x", tmp), nvram_safe_get(strcat_r(prefix, "auth_mode", tmp2)));
+			nvram_set(strcat_r(prefix2, "wep_x", tmp), nvram_safe_get(strcat_r(prefix, "wep", tmp2)));
+			if (nvram_get_int(strcat_r(prefix, "wep", tmp))) {
+				nvram_set(strcat_r(prefix2, "key", tmp), nvram_safe_get(strcat_r(prefix, "key", tmp2)));
+				nvram_set(strcat_r(prefix2, "key1", tmp), nvram_safe_get(strcat_r(prefix, "wep_key", tmp2)));
+				nvram_set(strcat_r(prefix2, "key2", tmp), nvram_safe_get(strcat_r(prefix, "wep_key", tmp2)));
+				nvram_set(strcat_r(prefix2, "key3", tmp), nvram_safe_get(strcat_r(prefix, "wep_key", tmp2)));
+				nvram_set(strcat_r(prefix2, "key4", tmp), nvram_safe_get(strcat_r(prefix, "wep_key", tmp2)));
+			}
+			nvram_set(strcat_r(prefix2, "crypto", tmp), nvram_safe_get(strcat_r(prefix, "crypto", tmp2)));
+			nvram_set(strcat_r(prefix2, "wpa_psk", tmp), nvram_safe_get(strcat_r(prefix, "wpa_psk", tmp2)));
+		}
+#endif
+		++i;
+	}
+
+
+	nvram_set("obd_Setting", "1");
+}
+#endif
+
 int is_wps_stopped(void){
 	int i, ret = 1;
 	char status[16], tmp[128], prefix[] = "wlXXXXXXXXXX_", word[256], *next, ifnames[128];
@@ -94,13 +246,17 @@ int is_wps_stopped(void){
 		}
 
 #ifdef RTCONFIG_WPS_ENROLLEE
-		if(nvram_match("wps_enrollee", "1"))
+		if(nvram_match("wps_enrollee", "1")) {
 			strcpy(status, getWscStatus_enrollee(i));
+			dbG("band %d(%s) wps status: %s\n", i, get_staifname(i), status);
+		}
 		else
 #endif
+		{
 			getWscStatusStr(wl_wave_unit(i), status, sizeof(status));
+			dbG("band %d(%s) wps status: %s\n", i, get_wififname(i), status);
+		}
 
-		dbG("band %d(wlan%d) wps status: %s\n", i, wl_wave_unit(i), status);
 		if(!strcmp(status, "Success")
 #ifdef RTCONFIG_WPS_ENROLLEE
 				|| !strcmp(status, "COMPLETED")
@@ -110,11 +266,14 @@ int is_wps_stopped(void){
 #if defined(RTCONFIG_WPS_LED) || defined(BLUECAVE)
 			nvram_set("wps_success", "1");
 #endif
-#if (defined(RTCONFIG_WPS_ENROLLEE) && defined(RTCONFIG_WIFI_CLONE))
+#if (defined(RTCONFIG_WPS_ENROLLEE))
 			if(nvram_match("wps_enrollee", "1")){
 				nvram_set("wps_e_success", "1");
-#if (defined(PLN12) || defined(PLAC56))
-				set_wifiled(4);
+#if defined(RTCONFIG_AMAS)
+				amas_save_wifi_para();
+#endif
+#if defined(RTCONFIG_WIFI_CLONE)
+				wifi_clone(unit);
 #endif
 			}
 #endif
@@ -122,12 +281,15 @@ int is_wps_stopped(void){
 		}
 		else if(!strcmp(status, "Failed")
 				|| !strcmp(status, "Timeout")
+				|| !strcmp(status, "Overlap")
 #ifdef RTCONFIG_WPS_ENROLLEE
 				|| !strcmp(status, "INACTIVE")
 #endif
 				){
 			dbG("\nWPS %s\n", status);
 			ret = 1;
+			if (!strcmp(status, "Overlap"))
+				stop_wps_method();
 		}
 		else
 			ret = 0;
@@ -139,6 +301,16 @@ int is_wps_stopped(void){
 	}
 
 	return ret;
+}
+
+int is_wps_success(void)
+{
+#ifdef RTCONFIG_WPS_ENROLLEE
+	if(nvram_match("wps_enrollee", "1"))
+		return nvram_get_int("wps_e_success");
+	else
+#endif
+		return nvram_get_int("wps_success");
 }
 
 int __need_to_start_wps_band(char *prefix){
@@ -190,6 +362,8 @@ int set_wps_enable(int unit){
 		return 0;
 	}
 
+	set_wps_idle(unit);
+
 	if(enable != 0 && enable != 1)
 		enable = 0;
 
@@ -218,6 +392,7 @@ int write_wps_config(int configured){
 
 	fprintf(fp, "Object_0=Device.WiFi.Radio.X_LANTIQ_COM_Vendor.WPS\n");
 	fprintf(fp, "ConfigState_0=%s\n", (configured == 1)?"Configured":"Unconfigured");
+	fprintf(fp, "Status_0=Idle\n");
 	if(configured == 0)
 		fprintf(fp, "WPSAction_0=ResetWPS\n");
 
@@ -226,6 +401,31 @@ int write_wps_config(int configured){
 	return 0;
 }
 
+int set_wps_idle(int unit)
+{
+	char cmd[256];
+	FILE *fp = fopen(WPS_CONFIG_FILE, "w+");
+
+	if(!fp){
+		_dprintf("[%s][%d]: cannot open the WPS config file.\n",
+			__func__, __LINE__);
+		return -1;
+	}
+	fprintf(fp, "Object_0=Device.WiFi.Radio.X_LANTIQ_COM_Vendor.WPS\n");
+	fprintf(fp, "Status_0=Idle\n");
+	fclose(fp);
+
+	_dprintf("[%s][%d]: set_wps_idle:[%d]\n",
+			__func__, __LINE__, unit);
+
+	snprintf(cmd, sizeof(cmd),
+		"/usr/sbin/fapi_wlan_cli setWpsTR181 -i%d -f%s",
+		wl_wave_unit(unit), WPS_CONFIG_FILE);
+
+	system(cmd);
+
+	return 0;
+}
 int set_wps_config(int unit, int configured){
 	int retVal;
 #ifdef NOT_SHELL_FAPI
@@ -240,6 +440,7 @@ int set_wps_config(int unit, int configured){
 
 	_dprintf("%s(%d): configured=%d.\n", __func__, unit, configured);
 
+#if 0  // Don't check wether change occur. Always set WPS as configured.
 #ifdef NOT_SHELL_FAPI
 	retVal = wlan_getWpsConfigurationState(wl_wave_unit(unit), buf);
 	_dprintf("%s(%d): buf=%s.\n", __func__, unit, buf);
@@ -278,10 +479,12 @@ int set_wps_config(int unit, int configured){
 		pclose(fp);
 	}
 #endif
+#endif
 
 	write_wps_config(configured);
 
 #ifdef NOT_SHELL_FAPI
+	dbObjPtr = HELP_CREATE_OBJ(SOPT_OBJVALUE);
 	if((retVal = wlanLoadFromDB(WPS_CONFIG_FILE, "", dbObjPtr)) != UGW_SUCCESS){
 		_dprintf("%s(%d): wlanLoadFromDB return with error\n", __func__, unit);
 		HELP_DELETE_OBJ(dbObjPtr, SOPT_OBJVALUE, FREE_OBJLIST);
@@ -296,7 +499,7 @@ int set_wps_config(int unit, int configured){
 
 	HELP_DELETE_OBJ(dbObjPtr, SOPT_OBJVALUE, FREE_OBJLIST);
 #else
-	snprintf(cmd, sizeof(cmd), "/usr/sbin/fapi_wlan_cli setWps -i%d -f%s", wl_wave_unit(unit), WPS_CONFIG_FILE);
+	snprintf(cmd, sizeof(cmd), "/usr/sbin/fapi_wlan_cli setWpsTR181 -i%d -f%s", wl_wave_unit(unit), WPS_CONFIG_FILE);
 	system(cmd);
 #endif
 
@@ -337,6 +540,16 @@ void wps_oob(void){
 
 	nvram_commit();
 }
+/*
+  wps_pin <BSS_name> <uuid> <pin> [timeout] [addr] = add WPS Enrollee PIN
+  wps_check_pin <PIN> = verify PIN checksum
+  wps_pbc <BSS_name> = indicate button pushed to initiate PBC
+  wps_cancel <BSS_name> = cancel the pending WPS operation
+  wps_ap_pin <BSS_name> <cmd> [params..] = enable/disable AP PIN
+  wps_config <BSS_name> <SSID> <auth> <encr> <key> = configure AP
+  wps_get_status <BSS_name> = show current WPS status
+
+*/
 
 void start_wsc(void){
 	char *wps_sta_pin = nvram_safe_get("wps_sta_pin");
@@ -357,8 +570,11 @@ void start_wsc(void){
 #ifdef NOT_SHELL_FAPI
 	wlan_cancelWps(wl_wave_unit(wps_band));
 #else
-	snprintf(cmd, sizeof(cmd), "/usr/sbin/fapi_wlan_cli cancelWps -i%d", wl_wave_unit(wps_band));
+	//snprintf(cmd, sizeof(cmd), "/usr/sbin/fapi_wlan_cli cancelWps -i%d", wl_wave_unit(wps_band));
+	snprintf(cmd, sizeof(cmd), "hostapd_cli -i%s wps_cancel %s", get_wififname(wps_band), get_wififname(wps_band));
+	_dprintf("%s\n", cmd);
 	system(cmd);
+	sleep(1);
 #endif
 
 	if(strlen(wps_sta_pin) && strcmp(wps_sta_pin, "00000000")
@@ -367,7 +583,9 @@ void start_wsc(void){
 #ifdef NOT_SHELL_FAPI
 		wlan_setWpsEnrolleePin(wl_wave_unit(wps_band), wps_sta_pin);
 #else
-		snprintf(cmd, sizeof(cmd), "/usr/sbin/fapi_wlan_cli setWpsEnrolleePin -i%d -p%s", wl_wave_unit(wps_band), wps_sta_pin);
+		//snprintf(cmd, sizeof(cmd), "/usr/sbin/fapi_wlan_cli setWpsEnrolleePin -i%d -p%s", wl_wave_unit(wps_band), wps_sta_pin);
+		snprintf(cmd, sizeof(cmd), "hostapd_cli -i%s wps_pin %s any %s", get_wififname(wps_band), get_wififname(wps_band), wps_sta_pin);
+		_dprintf("%s\n", cmd);
 		system(cmd);
 #endif
 	}
@@ -376,7 +594,9 @@ void start_wsc(void){
 #ifdef NOT_SHELL_FAPI
 		wlan_setWpsPbcTrigger(wl_wave_unit(wps_band));
 #else
-		snprintf(cmd, sizeof(cmd), "/usr/sbin/fapi_wlan_cli setWpsPbcTrigger -i%d", wl_wave_unit(wps_band));
+		//snprintf(cmd, sizeof(cmd), "/usr/sbin/fapi_wlan_cli setWpsPbcTrigger -i%d", wl_wave_unit(wps_band));
+		snprintf(cmd, sizeof(cmd), "hostapd_cli -i%s wps_pbc %s", get_wififname(wps_band), get_wififname(wps_band));
+		_dprintf("%s\n", cmd);
 		system(cmd);
 #endif
 	}
@@ -397,38 +617,71 @@ void stop_wsc(){
 #ifdef NOT_SHELL_FAPI
 	wlan_cancelWps(wl_wave_unit(wps_band));
 #else
-	snprintf(cmd, sizeof(cmd), "/usr/sbin/fapi_wlan_cli cancelWps -i%d", wl_wave_unit(wps_band));
+	//snprintf(cmd, sizeof(cmd), "/usr/sbin/fapi_wlan_cli cancelWps -i%d", wl_wave_unit(wps_band));
+	snprintf(cmd, sizeof(cmd), "hostapd_cli -i%s wps_cancel %s", get_wififname(wps_band), get_wififname(wps_band));
+	_dprintf("%s\n", cmd);
 	system(cmd);
 #endif
 }
 
-int getWscStatusStr(int unit, char *buf, int buf_size){
-#ifdef NOT_SHELL_FAPI
-	int retVal = wlan_getWpsStatus(wl_wave_unit(unit), buf);
-#else
+int getWscStatusStr(int unit, char *ret_buf, int buf_size){
+	char buf[512] = {0};
 	FILE *fp;
-	char cmd[256];
-	char *pt1, *pt2, *pt3;
-	int retVal = 0;
+	int len;
+	char *pt1,*pt2,*pt3;
 
-	snprintf(cmd, sizeof(cmd), "/usr/sbin/fapi_wlan_cli getWpsStatus -i%d", wl_wave_unit(unit));
-	fp = popen(cmd, "r");
-	if(fp){
-		memset(cmd, 0, sizeof(cmd));
-		while(fgets(cmd, sizeof(cmd), fp)){
-			pt1 = strstr(cmd, "wlan_getWpsStatus: Status= '");
-			if(pt1){
-				pt2 = pt1+strlen("wlan_getWpsStatus: Status= '");
-				pt3 = strchr(pt2, '\'');
-				pt3[0] = '\0';
+	snprintf(buf, sizeof(buf), "hostapd_cli -i%s wps_get_status %s", get_wififname(unit), get_wififname(unit));
+	fp = popen(buf, "r");
+	if (fp) {
+		memset(buf, 0, sizeof(buf));
+		len = fread(buf, 1, sizeof(buf), fp);
+		pclose(fp);
+		if (len > 1) {
+			buf[len-1] = '\0';
+			pt1 = strstr(buf, "PBC Status: ");
+			pt3 = strstr(buf, "Last WPS result: ");
 
-				snprintf(buf, buf_size, "%s", pt2);
-				break;
+			if (pt1) {
+				pt2 = pt1 + strlen("PBC Status: ");
+				pt1 = strstr(pt2, "Last WPS result: ");
+				if (pt1) {
+					*pt1 = '\0';
+					chomp(pt2);
+				}
+				
+				if (!strcmp(pt2, "Disabled")){
+					// Check Last WPS result
+					if (pt3) {
+						pt2 = pt3 + strlen("Last WPS result: ");
+						pt1 = strstr(pt2, "Peer Address: ");
+						if (pt1) {
+							*pt1 = '\0';
+							chomp(pt2);
+						}
+						if (!strcmp(pt2, "Success")) {
+							strncpy(ret_buf,"Success",buf_size);
+							return 1;
+						}
+					}
+					strncpy(ret_buf,"Disabled",buf_size);
+					return 0;
+				}
+				else if (!strcmp(pt2, "Active") )
+				{
+					strncpy(ret_buf,"In Progress",buf_size);
+					return 0;
+				}
+				else if (!strcmp(pt2, "Timed-out"))
+				{
+					strncpy(ret_buf,"Timeout",buf_size);
+					return 0;
+				}
+				else
+				{
+					strncpy(ret_buf,pt2,buf_size);
+					return 0;					
+				}
 			}
 		}
-		pclose(fp);
 	}
-#endif
-
-	return retVal;
 }

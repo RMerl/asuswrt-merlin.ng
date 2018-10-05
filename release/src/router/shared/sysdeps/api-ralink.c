@@ -812,21 +812,3 @@ char *get_wlxy_ifname(int x, int y, char *buf)
 
 	return buf;
 }
-
-#ifdef RTCONFIG_AMAS
-void add_beacon_vsie(char *hexdata)
-{
-}
-
-void del_beacon_vsie(char *hexdata)
-{
-}
-
-void add_obd_probe_req_vsie(char *hexdata)
-{
-}
-
-void del_obd_probe_req_vsie(char *hexdata)
-{
-}
-#endif /* RTCONFIG_AMAS */

@@ -152,7 +152,7 @@ function cal_panel_block(){
 					<p>Only paste the content of the <span style="color:#FFCC00;">----- BEGIN xxx ----- </span>/<span style="color:#FFCC00;"> ----- END xxx -----</span> block (including those two lines).
 					<p>Limit: 2999 characters per field
 				</div>
-				<div style="margin:5px;*margin-left:-5px;"><img style="width: 730px; height: 2px;" src="/images/New_ui/export/line_export.png"></div>
+				<div style="margin:5px;*margin-left:-5px;width: 730px; height: 2px;" class="splitLine"></div>
 			</tr>			
 			<!--===================================Beginning of tls Content===========================================-->
         	<tr>
@@ -243,9 +243,7 @@ function cal_panel_block(){
 		  <td bgcolor="#4D595D" valign="top"  >
 		  <div>&nbsp;</div>
 		  <div class="formfonttitle"><#menu5_6#> - TR-069</div>
-		  <div style="margin-left:5px;margin-top:10px;margin-bottom:10px"><img src="/images/New_ui/export/line_export.png"></div>
-		  <!--<div class="formfontdesc"><#FirewallConfig_display2_sectiondesc#></div>-->
-
+			<div style="margin:10px 0 10px 5px;" class="splitLine"></div>
 			<table width="100%" border="1" align="center" cellpadding="4" cellspacing="0" bordercolor="#6b8fa3" class="FormTable">
 				<thead>
 					<tr>

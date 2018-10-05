@@ -1278,7 +1278,7 @@ function show_bandwidth(flag){
 					<td bgcolor="#4D595D" valign="top" id="table_height"  >
 						<div>&nbsp;</div>
 						<div class="formfonttitle"><#Guest_Network#></div>
-						<div style="margin-left:5px;margin-top:10px;margin-bottom:10px"><img src="/images/New_ui/export/line_export.png"></div>
+						<div style="margin:10px 0 10px 5px;" class="splitLine"></div>
 						<div>
 							<table width="650px" style="margin:25px;">
 								<tr>
@@ -1311,7 +1311,7 @@ function show_bandwidth(flag){
 										</span>
 									</td>
 									<td width="30%" style="text-align:center;">
-										<input name="button" type="button" class="button_gen_short" onclick="location.href='/Guest_network_fbwifi.asp'" value="<#btn_go#>"/>
+										<input name="button" type="button" class="button_gen" onclick="location.href='/Guest_network_fbwifi.asp'" value="<#btn_go#>"/>
 									</td>
 								</tr>
 							</table>

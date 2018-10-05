@@ -1012,10 +1012,10 @@ function handle_value(){
 					<div style="display:table;width:100%;">
 						<div style="display:table-cell;font-size:14px;font-weight:bolder;text-shadow:1px 1px 0px #000;padding:10px;width:85%"><#Traffic_Analyzer#> - Traffic Limiter</div>
 						<div style="display:table-cell">
-							<input class="button_gen_long" type="button" onclick="show_alert_preference();" value="Notification">
+							<input class="button_gen" type="button" onclick="show_alert_preference();" value="Notification">
 						</div>
 					</div>
-						<div><img src="images/New_ui/export/line_export.png" /></div>
+						<div class="splitLine"></div>
 						<div style="line-height:20px;font-size:14px;padding:10px;color:#DBDBDB">
 							Traffic Limiter allows you to monitor your networking traffic and set limited monthly traffic usage. You can receive notification if traffic reach alert traffic and limit you access to Internet while it get max.
 							<div>*Carrier data accounting may differ from your device</div>
@@ -1221,7 +1221,7 @@ function handle_value(){
 			<td>
 				<div style="text-align:center;margin-top:20px;">
 					<input class="button_gen" type="button" onclick="close_alert_preference();" value="<#CTL_close#>">
-					<input class="button_gen_long" type="button" onclick="apply_alert_preference();" value="<#CTL_apply#>">
+					<input class="button_gen" type="button" onclick="apply_alert_preference();" value="<#CTL_apply#>">
 				</div>
 			</td>		
 		</tr>

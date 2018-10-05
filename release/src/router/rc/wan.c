@@ -922,7 +922,7 @@ int check_wan_if(int unit)
 		else
 			new_vid = 4;
 		dbG("cur_vid=%d, new_vid=%d\n", cur_ewan_vid, new_vid);
-		
+
 		if(new_vid != cur_ewan_vid)
 		{
 			//update port info
@@ -949,7 +949,7 @@ int check_wan_if(int unit)
 			snprintf(new_vif, sizeof(new_vif), "vlan%d", new_vid);
 
 			dbG("cur_vif=%s, new_vif=%s\n", cur_vif, new_vif);
-			
+
 			char word[256], *next, tmp[256];
 
 			//replace old vlan interface by new vlan interface
@@ -989,7 +989,7 @@ int check_wan_if(int unit)
 				}
 			}
 
-			//remove old vlan		
+			//remove old vlan
 			eval("ifconfig", cur_vif, "down");
 			eval("vconfig", "rem", cur_vif);
 
@@ -1489,7 +1489,7 @@ TRACE_PT("3g begin with %s.\n", wan_ifname);
 
 		update_wan_state(prefix, WAN_STATE_CONNECTING, 0);
 
-		/*  
+		/*
 		 * Configure PPPoE connection. The PPPoE client will run
 		 * ip-up/ip-down scripts upon link's connect/disconnect.
 		 */
@@ -1688,6 +1688,14 @@ TRACE_PT("3g begin with %s.\n", wan_ifname);
 		 */
 		else if (strcmp(wan_proto, "dhcp") == 0)
 		{
+#if defined(RTCONFIG_AMAS) && defined(RTCONFIG_ETHOBD)
+			if (nvram_get_int("x_Setting") == 0) {
+				if(strcmp(wan_ifname, nvram_safe_get("eth_ifnames"))) {
+					dbG("ifup:%s\n", nvram_safe_get("eth_ifnames"));
+					ifconfig(nvram_safe_get("eth_ifnames"), IFUP, NULL, NULL);
+				}
+			}
+#endif
 			/* Bring up WAN interface */
 			dbG("ifup:%s\n", wan_ifname);
 			ifconfig(wan_ifname, IFUP, NULL, NULL);
@@ -1751,7 +1759,7 @@ TRACE_PT("3g begin with %s.\n", wan_ifname);
 			}
 #endif
 			restart_coovachilli_if_conflicts(nvram_pf_get(prefix, "ipaddr"), nvram_pf_get(prefix, "netmask"));
-			
+
 			/* Assign static IP address to i/f */
 			ifconfig(wan_ifname, IFUP,
 					nvram_safe_get(strcat_r(prefix, "ipaddr", tmp)),
@@ -2537,9 +2545,7 @@ wan_up(const char *pwan_ifname)
 			start_igmpproxy(wan_ifname);
 
 #ifdef RTCONFIG_LANTIQ
-		snprintf(ppa_cmd, sizeof(ppa_cmd), "ppacmd delwan -i %s", wan_ifname);
-		_dprintf("[%s][%d] %s\n", __func__, __LINE__, ppa_cmd);
-		system(ppa_cmd);
+		disable_ppa_wan(wan_ifname);
 #endif
 		_dprintf("%s_x(%s): done.\n", __FUNCTION__, wan_ifname);
 
@@ -2827,16 +2833,11 @@ wan_up(const char *pwan_ifname)
 	}
 
 #ifdef RTCONFIG_LANTIQ
-	snprintf(ppa_cmd, sizeof(ppa_cmd), "ppacmd delwan -i %s", wan_ifname);
-	_dprintf("[%s][%d] %s\n", __func__, __LINE__, ppa_cmd);
-	system(ppa_cmd);
+	disable_ppa_wan(wan_ifname);
 
 	if(ppa_support(wan_unit) == 1){
 		sleep(1);
-
-		snprintf(ppa_cmd, sizeof(ppa_cmd), "ppacmd addwan -i %s", wan_ifname);
-		_dprintf("[%s][%d] %s\n", __func__, __LINE__, ppa_cmd);
-		system(ppa_cmd);
+		enable_ppa_wan(wan_ifname);
 	}
 #endif
 
@@ -2983,7 +2984,7 @@ wan_down(char *wan_ifname)
 	}
 #endif
 #ifdef RTCONFIG_LANTIQ
-	eval("ppacmd", "delwan", "-i", wan_ifname);
+	disable_ppa_wan(wan_ifname);
 #endif
 }
 
@@ -3152,6 +3153,9 @@ found_default_route(int wan_unit)
 	char *wanif;
 
 	if(wan_unit != wan_primary_ifunit())
+		return 1;
+
+	if(dualwan_unit__usbif(wan_unit) && nvram_get_int("modem_pdp") == 2)
 		return 1;
 
 	n = 0;
@@ -3694,7 +3698,7 @@ int autodet_plc_main(int argc, char *argv[]){
 	nvram_set_int("autodet_plc_state" , cnt);
 
 	return 0;
-}	
+}
 #endif
 
 int autodet_main(int argc, char *argv[]){
@@ -3790,7 +3794,7 @@ int autodet_main(int argc, char *argv[]){
 
 		i = 0;
 		while(i < mac_num && (!is_wan_connect(unit) && !is_ip_conflict(unit))){
-			if(!(nvram_match("wl0_country_code", "SG")) && 
+			if(!(nvram_match("wl0_country_code", "SG")) &&
 			   strncmp(nvram_safe_get("territory_code"), "SG", 2) != 0){ // Singpore do not auto clone
 				_dprintf("try clone %s\n", mac_clone[i]);
 				nvram_set(strcat_r(prefix, "hwaddr_x", tmp), mac_clone[i]);

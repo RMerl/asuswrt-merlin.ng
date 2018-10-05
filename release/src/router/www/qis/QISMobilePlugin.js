@@ -32,7 +32,7 @@ function genErrorHint(){
 		htmlCode += '<div id="descTltle"><table width="100%"><tr><td align="left">';
 		htmlCode += '<div class="description_down"><#qis_finish_title1#></div></td><td align="right"></td></tr></table></div>';
 		htmlCode += '<div style="margin:5px;" id="splitLine">';
-		htmlCode += '<img style="width: 720px; *width: 710px; height: 2px;" src="/images/New_ui/export/line_export.png"></div>';
+		htmlCode += '<div style="width: 720px; *width: 710px; height: 2px;" class="splitLine"></div></div>';
 		if(sw_mode_submit == "4"){
 				htmlCode += "<br><br><br><p style='font-size:20px;line-height: 25px;color:#FC0;' class='QISGeneralFont'>* <#OP_MB_desc7#> <#OP_MB_desc6#>";
 				htmlCode += "<br><br>* <#OP_MB_desc8#>";

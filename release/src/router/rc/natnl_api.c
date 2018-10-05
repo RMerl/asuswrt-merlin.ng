@@ -3,13 +3,13 @@
 #ifdef RTCONFIG_TUNNEL
 static int is_mesh_re_mode()
 {
-#if defined(MAPAC1300) || defined(MAPAC2200) || defined(VZWAC1300) || defined(MAPAC1750) // Lyra
-	return !nvram_get_int("cfg_master");
-#elif defined(RTCONFIG_AMAS) && defined(RTCONFIG_DPSTA)	// aimesh
-	return (dpsta_mode() && nvram_get_int("re_mode") == 1);
-#else
-	return 0;
+	int re_mode = 0;
+#if defined(RTCONFIG_AMAS) // aimesh
+	re_mode |= nvram_get_int("re_mode");
+#elif defined(MAPAC1300) || defined(MAPAC2200) || defined(VZWAC1300) || defined(MAPAC1750) // Lyra
+	re_mode |= !nvram_get_int("cfg_master");
 #endif
+	return re_mode;
 }
 
 void start_aae()

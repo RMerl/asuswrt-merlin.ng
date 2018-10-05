@@ -104,7 +104,7 @@ int separate_tc_fw_from_trx(char* trxpath)
 	char TrxHdrBuf[512];
 	char buf[4096];
 	unsigned int* pTrxSize;
-	unsigned int TrxSize;
+	unsigned int TrxSize=0;
 	unsigned int filelen;
 	unsigned int TcFwSize;	
 	int RetVal = 0;

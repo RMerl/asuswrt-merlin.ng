@@ -183,6 +183,11 @@ var _AU2_support = false;
 if(country_array.indexOf("NZ") != -1){
 	country_selection_list[7][1] = "New Zealand";
 	country_selection_list.splice(8,1);
+
+	if(in_territory_code("CX")){
+		country_array[country_array.indexOf("NZ")] = "CX";
+		country_selection_list[7][0] = "CX";
+	}
 }
 
 if(country_array.indexOf("AU") != -1){
@@ -205,6 +210,12 @@ for(i=0;i<country_selection_list.length;i++){
 		code: index,
 		name: country_selection_list[i][1]
 	}
+}
+var cfg_ui_region_disable = 0;
+if(location_list_support && amesh_support) {
+	cfg_ui_region_disable = parseInt('<% nvram_get("cfg_ui_region_disable"); %>');
+	if(isNaN(cfg_ui_region_disable))
+		cfg_ui_region_disable = 0;
 }
 
 function initial(){
@@ -260,7 +271,6 @@ function initial(){
 		inputCtrl(document.form.wl_ampdu_mpdu, 0);
 		inputCtrl(document.form.wl_ack_ratio, 0);
 	}else if(Qcawifi_support){
-		// FIXME
 		inputCtrl(document.form.wl_ampdu_mpdu, 0);
 		inputCtrl(document.form.wl_ack_ratio, 0);
 	}else{
@@ -337,8 +347,8 @@ function initial(){
 			document.getElementById("wl_plcphdr_field").style.display = "none";
 		}
 
-		if(based_modelid == "RT-AC85U" || based_modelid == "RT-AC65U"){
-			document.getElementById('wl_txbf_desc').innerHTML = "<#WLANConfig11b_x_ExpBeam#>";
+		if(based_modelid == "RT-AC66U" || based_modelid == "RT-AC85U" || based_modelid == "RT-AC65U"){
+			document.getElementById('wl_txbf_desc').innerHTML = "<#WLANConfig11b_x_acBeam#>";
 			inputCtrl(document.form.wl_txbf, 1);
 		}
 	}
@@ -422,6 +432,7 @@ function initial(){
 		document.getElementById("DLSCapable").style.display = "none";	
 	}	
 
+
 	if(document.form.wl_nmode_x.value == "2"){    //Legacy
 		var wme_array = ["<#Auto#>", "<#WLANConfig11b_WirelessCtrl_button1name#>", "<#WLANConfig11b_WirelessCtrl_buttonname#>"];
 		var wme_value = ["auto", "on", "off"];
@@ -437,7 +448,7 @@ function initial(){
 		var wme_value = ["on"];  
 		add_options_x2(document.form.wl_wme, wme_array, wme_value, "on");
 		inputCtrl(document.form.wl_frag, 0);
-	}	
+	}
 		
 	adjust_tx_power();	
 	if(svc_ready == "0")
@@ -446,7 +457,6 @@ function initial(){
 	corrected_timezone();		
 	if(based_modelid == "RT-AC87U" && wl_unit_value == '1'){	//for RT-AC87U 5 GHz Advanced setting
 		document.getElementById("wl_mrate_select").style.display = "none";
-		//document.getElementById("wl_plcphdr_field").style.display = "none";
 		document.getElementById("ampdu_rts_tr").style.display = "none";
 		document.getElementById("rts_threshold").style.display = "none";
 		document.getElementById("wl_frameburst_field").style.display = "none";
@@ -519,7 +529,7 @@ function initial(){
 		inputCtrl(document.form.wl_btc_mode, 0);
 	
 	/*location_code Setting*/		
-	if(location_list_support){
+	if(location_list_support && !cfg_ui_region_disable){
 		generate_country_selection();
 		document.getElementById('region_tr').style.display = "";
 	}
@@ -578,18 +588,18 @@ function generate_country_selection(){
 		var index = country_array[i];
 		if(index == "NZ")
 			index = "AU";
+		var country = country_selection_array[index];
+		var name = country ? country.name : '<#WLANConfig11b_x_Region#> ' + index;
 
 		if(tcode == index){
 			matched = true;
-			code += '<option value='+ index +'>'+ country_selection_array[index].name +'(Default)</option>';
+			name += ' (<#Setting_factorydefault_value#>)';
 		}
-		else{
-			code += '<option value='+ index +'>'+ country_selection_array[index].name +'</option>';
-		}
+		code += '<option value='+ index +'>'+ name +'</option>';
 	}
 
 	if(!matched){
-		code += '<option value='+ tcode +' >Default</option>';
+		code += '<option value='+ tcode +' ><#Setting_factorydefault_value#></option>';
 	}
 
 	code += '</select>';
@@ -676,8 +686,11 @@ function changeRSSI(_switch){
 	}
 	else{
 		document.getElementById("rssiDbm").style.display = "";
+		var default_value = "-70";
+		if(amesh_support && wl_unit_value == "0")
+			default_value = "-55";
 		if(wl_user_rssi_onload == 0)
-			document.form.wl_user_rssi.value = "-70";
+			document.form.wl_user_rssi.value = default_value;
 		else
 			document.form.wl_user_rssi.value = wl_user_rssi_onload;
 	}
@@ -716,7 +729,7 @@ function applyRule(){
 				document.form.acs_dfs.value = "0";
 		}
 		
-		if(location_list_support){
+		if(location_list_support && !cfg_ui_region_disable){
 			if((orig_region.length > 0 && orig_region != document.form.location_code.value)
 			|| (orig_region == "" && document.form.location_code.value != tcode)){
 				if(amesh_support && (isSwMode("rt") || isSwMode("ap"))) {
@@ -1450,7 +1463,7 @@ function checkWLReady(){
 		  		<td bgcolor="#4D595D" valign="top"  >
 		  			<div>&nbsp;</div>
 		  			<div class="formfonttitle"><#menu5_1#> - <#menu5_1_6#></div>
-		  			<div style="margin-left:5px;margin-top:10px;margin-bottom:10px"><img src="/images/New_ui/export/line_export.png"></div>
+		  			<div style="margin:10px 0 10px 5px;" class="splitLine"></div>
 		 				<div id="titl_desc" class="formfontdesc"><#WLANConfig11b_display5_sectiondesc#></div>
 		 				<div id="lantiq_ready" style="display:none;color:#FC0;margin-left:5px;font-size:13px;">Wireless is setting...</div>
 		 				<div id="svc_hint_div" style="display:none;margin-left:5px;"><span onClick="location.href='Advanced_System_Content.asp?af=ntp_server0'" style="color:#FFCC00;text-decoration:underline;cursor:pointer;"><#General_x_SystemTime_syncNTP#></span></div>

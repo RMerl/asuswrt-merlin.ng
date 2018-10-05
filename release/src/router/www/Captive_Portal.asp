@@ -487,8 +487,8 @@ function gen_splash_page() {
 		code += "<div class='splash_image_hint'><#FreeWiFi_RecommendResolution#>: 1152 x 864 px or above</div>";/*untranslated*/
 		if(isSupportFileReader() && isSupportCanvas()) {
 			code += "<div class='splash_preview'>";
-			code += "<input class='button_gen' onclick='splash_upload_image();' type='button' value='<#btn_Background#>'/>";
-			code += "<input class='button_gen' onclick='preview_splash_page();' type='button' value='<#btn_Preview#>'/>";
+			code += "<input class='button_gen' onclick='splash_upload_image();' type='button' value='<#btn_Background#>' style='margin: 0 5px'/>";
+			code += "<input class='button_gen' onclick='preview_splash_page();' type='button' value='<#btn_Preview#>' style='margin: 0 5px'/>";
 			code += "</div>";
 			code += "<input type='file' name='splash_upload_file' id='splash_upload_file' class='splash_upload_file' onchange='previewSplashImage(this);'/>";
 		}
@@ -1878,7 +1878,7 @@ function check_gn_if_status(_subunit, _gn_array) {
 								<td bgcolor="#4D595D" valign="top">
 									<div>&nbsp;</div>
 									<div class="formfonttitle"><#Guest_Network#> - Free Wi-Fi<!--untranslated--></div>
-									<div style="margin-left:5px;margin-top:10px;margin-bottom:10px"><img src="/images/New_ui/export/line_export.png"></div>
+									<div style="margin:10px 0 10px 5px;" class="splitLine"></div>
 									<div class="cp_page_intro_icon"></div>
 									<div style='float:left;width:80%;'>
 									<div class="cp_page_intro_txt" style="color:#FC0;"><#FreeWiFi_desc1#></div>
@@ -1904,7 +1904,7 @@ function check_gn_if_status(_subunit, _gn_array) {
 									</script>
 									</div>
 									<div style="clear:both;"></div>
-									<div style="margin-left:5px;margin-top:10px;margin-bottom:10px"><img src="/images/New_ui/export/line_export.png"></div>
+									<div style="margin:10px 0 10px 5px;" class="splitLine"></div>
 									<div id="captive_portal_content" class="captive_portal_content"></div>
 									<div class='apply_content'>
 										<input id='apply_button' class='button_gen' onclick='apply();' type='button' value=''/>

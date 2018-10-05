@@ -64,15 +64,16 @@ endif # CONFIG_VISUALIZATION
 	rm -rf `find $(INSTALLDIR) -name "*.bak"`
 
 ifeq ($(RTCONFIG_AMAS),y)
+ifneq ($(RTCONFIG_DSL),y)
 	cp $(TOP)/www/sysdep/BLUECAVE/www/Advanced_Wireless_Survey.asp $(INSTALLDIR)/www/Advanced_Wireless_Survey.asp
 	cp $(TOP)/www/sysdep/BLUECAVE/www/QIS_wizard.htm $(INSTALLDIR)/www/QIS_wizard.htm
 	cp $(TOP)/www/sysdep/BLUECAVE/www/mobile $(INSTALLDIR)/www/mobile -rf
 	cp $(TOP)/www/sysdep/BLUECAVE/www/require/modules/modem.js $(INSTALLDIR)/www/require/modules/ -rf
-	cp $(TOP)/www/sysdep/downsizeImages/mobile.customize.black $(INSTALLDIR)/www/mobile.customize -rf
 	rm -rf $(INSTALLDIR)/www/images/qis
 	rm -rf $(INSTALLDIR)/www/qis
 	rm -rf $(INSTALLDIR)/www/qis_m
 	rm -rf $(INSTALLDIR)/www/QIS_wizard_m.htm
+endif
 endif
 
 	chmod -x `find $(INSTALLDIR)/www/ -name "*.asp"`
@@ -149,17 +150,9 @@ ifeq ($(RTCONFIG_4M_SFP),y)
 	rm -rf $(INSTALLDIR)/www/tmhist.js
 	rm -rf $(INSTALLDIR)/www/tmmenu.css
 	rm -rf $(INSTALLDIR)/www/tmmenu.js
-	rm -rf $(INSTALLDIR)/www/images/qis/android*
-	rm -rf $(INSTALLDIR)/www/images/qis/iOS*
-	rm -rf $(INSTALLDIR)/www/images/qis/mac.jpg
-	rm -rf $(INSTALLDIR)/www/images/qis/osx_network_icon.jpg
 #	rm -rf $(INSTALLDIR)/www/images/qis/router_login.jpg
 	rm -rf $(INSTALLDIR)/www/images/qis/security_key.png
 	rm -rf $(INSTALLDIR)/www/images/qis/select_wireless.jpg
-	rm -rf $(INSTALLDIR)/www/images/qis/win7.jpg
-	rm -rf $(INSTALLDIR)/www/images/qis/win7_network_icon1.jpg
-	rm -rf $(INSTALLDIR)/www/images/qis/win7_network_icon2.jpg
-	rm -rf $(INSTALLDIR)/www/images/qis/winxp.jpg
 #	rm -rf $(INSTALLDIR)/www/Advanced_WANPort_Content.asp
 #	rm -rf $(INSTALLDIR)/www/mediaserver.asp
 	rm -rf $(INSTALLDIR)/www/ajax_dms_status.asp
@@ -185,8 +178,6 @@ ifeq ($(RTCONFIG_4M_SFP),y)
 	rm -rf $(INSTALLDIR)/www/images/backtohome.png
 	rm -rf $(INSTALLDIR)/www/images/backtohomeclick.png
 	rm -rf $(INSTALLDIR)/www/images/wifi_hw_sw.png
-	rm -rf $(INSTALLDIR)/www/images/qis/security_key.png
-	rm -rf $(INSTALLDIR)/www/images/qis/select_wireless.jpg
 	rm -rf $(INSTALLDIR)/www/images/New_ui/networkmap/vender-listover.png
 	rm -rf $(INSTALLDIR)/www/images/New_ui/Bandwidth_Limiter.png
 	cd $(INSTALLDIR)/www/images/New_ui/networkmap && ln -sf vender-list.png vender-listover.png && cd $(TOP)/www
@@ -224,7 +215,6 @@ ifeq ($(RTCONFIG_DSL),y)
 	rm -rf $(INSTALLDIR)/www/images/New_ui/re.jpg
 	rm -rf $(INSTALLDIR)/www/Advanced_OperationMode_Content.asp
 else
-	rm -rf $(INSTALLDIR)/www/images/New_ui/export/line_export_notif.png
 	rm -rf $(INSTALLDIR)/www/Main_Spectrum_Content.asp
 	rm -rf $(INSTALLDIR)/www/SNR.svg
 	rm -rf $(INSTALLDIR)/www/BPC.svg
@@ -256,12 +246,6 @@ ifneq ($(RTCONFIG_CLOUDSYNC),y)
 endif
 endif
 endif
-endif
-endif
-
-ifneq ($(or $(RTCONFIG_BWDPI),$(RTCONFIG_BWDPI_DEP)),y)
-ifneq ($(RTCONFIG_CLOUDSYNC),y)
-	rm -rf $(INSTALLDIR)/www/images/line.png
 endif
 endif
 
@@ -432,7 +416,6 @@ endif
 	rm -rf $(INSTALLDIR)/www/images/New_ui/tm_logo.png
 	rm -rf $(INSTALLDIR)/www/images/New_ui/tm_logo_power.png
 	rm -rf $(INSTALLDIR)/www/images/New_ui/tm_logo_1.png
-	rm -rf $(INSTALLDIR)/www/images/New_ui/sample_35.png
 	rm -rf $(INSTALLDIR)/www/images/New_ui/app_icons
 ifneq ($(RTCONFIG_ROG),y)
 	rm -rf $(INSTALLDIR)/www/images/New_ui/indicator.png
@@ -453,7 +436,6 @@ endif
 
 ifneq ($(RTCONFIG_DROPBOXCLIENT),y)
 	rm -rf $(INSTALLDIR)/www/images/cloudsync/dropbox.png
-	rm -rf $(INSTALLDIR)/www/dropbox_callback.htm
 endif
 
 ifneq ($(RTCONFIG_FTPCLIENT),y)
@@ -524,7 +506,10 @@ endif
 ifneq ($(BUILD_NAME),$(filter $(BUILD_NAME), MAP-AC1300 MAP-AC2200 VZW-AC1300 MAP-AC1750))
 	rm -rf $(INSTALLDIR)/www/images/New_ui/asus_hive_block_internet_web.png
 endif
-
+ifneq ($(BUILD_NAME),$(filter $(BUILD_NAME), MAP-AC1300 MAP-AC2200 MAP-AC1750))
+	rm -rf $(INSTALLDIR)/www/images/qis/trio_io.png
+	rm -rf $(INSTALLDIR)/www/images/qis/lyra_io.png
+endif
 
 ifneq ($(RTCONFIG_DISK_MONITOR), y)
 	rm -rf $(INSTALLDIR)/www/device-map/disk_utility.asp
@@ -548,8 +533,6 @@ ifneq ($(RTCONFIG_WTFAST), y)
 	rm -rf $(INSTALLDIR)/www/images/GameBoost_WTFast.png
 	rm -rf $(INSTALLDIR)/www/images/New_ui/game.svg
 	rm -rf $(INSTALLDIR)/www/images/New_ui/mainimage_img_Game.png
-	rm -rf $(INSTALLDIR)/www/images/New_ui/pattern3_05.png
-	rm -rf $(INSTALLDIR)/www/images/New_ui/pattern3_10.png
 	rm -rf $(INSTALLDIR)/www/images/New_ui/add.svg
 	rm -rf $(INSTALLDIR)/www/images/New_ui/add_hover.svg
 ifneq ($(RTCONFIG_BWDPI)$(RTCONFIG_BWDPI_DEP),y)
@@ -628,6 +611,8 @@ ifneq ($(RTCONFIG_PORT_BASED_VLAN), y)
 endif
 ifneq ($(RTCONFIG_TAGGED_BASED_VLAN), y)
 	rm -rf $(INSTALLDIR)/www/Advanced_TagBasedVLAN_Content.asp
+	rm -rf $(INSTALLDIR)/www/js/subnet_rule.js
+	rm -rf $(INSTALLDIR)/www/images/New_ui/pvid.png
 endif
 ifneq ($(RTCONFIG_FBWIFI), y)
 	rm -rf $(INSTALLDIR)/www/Guest_network_fbwifi.asp
@@ -678,6 +663,7 @@ endif
 ifneq ($(BUILD_NAME),$(filter $(BUILD_NAME), BRT-AC828))
 	rm -rf $(INSTALLDIR)/www/images/New_ui/networkmap/M2.png
 	rm -rf $(INSTALLDIR)/www/images/New_ui/networkmap/M2_default.png
+	rm -rf $(INSTALLDIR)/www/images/New_ui/networkmap/icon_Guset_bg.png
 endif
 
 ifeq ($(BUILD_NAME),BLUECAVE)
@@ -709,6 +695,7 @@ ifneq ($(RTCONFIG_AMAS), y)
 	rm -rf $(INSTALLDIR)/www/chcap.json
 	rm -rf $(INSTALLDIR)/www/message.htm
 	rm -rf $(INSTALLDIR)/www/AiMesh_Node_FirmwareUpgrade.asp
+	rm -rf $(INSTALLDIR)/www/Advanced_Roaming_Block_Content.asp
 endif
 
 ifeq ($(RTCONFIG_TCPDUMP),y)

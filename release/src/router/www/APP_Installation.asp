@@ -896,7 +896,7 @@ function go_modem_page(usb_unit_flag){
 		</td>
   </tr> 
   <tr>
-  	<td class="line_export"><img src="images/New_ui/export/line_export.png" /></td>
+  	<td><div class="splitLine"></div></td>
   </tr>
   <tr>
 		<td>
@@ -927,7 +927,7 @@ function go_modem_page(usb_unit_flag){
 					</tr>		
 				</table>
 			<br/>
-			<div><img src="images/New_ui/export/line_export.png" /></div>
+			<div class="splitLine"></div>
 			<table class="" cellspacing="0" cellpadding="0">
 				<tbody>
 					<tr valign="top">

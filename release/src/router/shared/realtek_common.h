@@ -16,6 +16,9 @@
 #define SIOCGIWRTLGETBSSINFO		0x8B37	// get currnet bss info
 #define SIOCGIWRTLGETWDSINFO		0x8B38
 #define SIOCGMISCDATA	0x8B48	// get misc data
+#define SIOCGIWRTLACLINFO   0x8BF7
+#define SIOCGIWRTLACLCLIENTLIST   0x8BF8
+#define SIOCGIWRTLMONITORSTARSSI 0x8BFA
 
 /* flag of sta info */
 #define STA_INFO_FLAG_AUTH_OPEN     	0x01
@@ -117,7 +120,17 @@ typedef struct wlan_sta_info {
 	unsigned char 	resv[5];
 } WLAN_STA_INFO_T, *WLAN_STA_INFO_Tp;
 
+/* WLAN acl info structure */
+typedef struct wlan_acl_info
+{
+    int mode;
+} WLAN_ACL_INFO_T, *WLAN_ACL_INFO_Tp;
 
-
+/* WLAN acl client list structure */
+typedef struct wlan_acl_client_list
+{
+    int count;
+    unsigned char macAddr[128][MAC_ADDR_LEN];
+} WLAN_ACL_CLIENT_LIST_T, *WLAN_ACL_CLIENT_LIST_Tp;
 
 #endif

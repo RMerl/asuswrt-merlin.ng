@@ -434,7 +434,7 @@ function ipv6_valid(obj, cidr){
 								<td bgcolor="#4D595D" valign="top">
 									<div>&nbsp;</div>
 									<div class="formfonttitle"><#menu5_5#></div>
-									<div style="margin-left:5px;margin-top:10px;margin-bottom:10px"><img src="/images/New_ui/export/line_export.png"></div>
+									<div style="margin:10px 0 10px 5px;" class="splitLine"></div>
 									<div class="formfontdesc" style="font-size:14px;font-weight:bold;margin-top:10px;"><#menu5_1_1#></div>
 									<div class="formfontdesc"><#FirewallConfig_display2_sectiondesc#></div>
 									<div class="formfontdesc" style="margin-top:-10px;">

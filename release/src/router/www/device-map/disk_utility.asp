@@ -30,8 +30,9 @@ a:active {
 	margin-top:5px;
 	height:30px;
 	width:97%;
-	background:url(/images/quotabar_bg_progress.gif);
-	background-repeat: repeat-x;
+	background: #596E74;
+	border-top: 1px solid #929EA1;
+	border-bottom: 1px solid #929eA1;
 }
 .font_style{
 	font-family:Verdana,Arial,Helvetica,sans-serif;
@@ -487,12 +488,11 @@ function reset_force_stop(){
 			<div id="updateProgress_bg">
 				<div>
 					<span id="progress_bar_no" style="position:absolute;margin-left:130px;margin-top:7px;" ></span>
-					<img id="updateProgress" src="/images/quotabar.gif" height="30px;" style="width:0%">
-					
+					<div id="updateProgress" class="quotabar" style="width:0%;height:30px;"></div>
 				</div>
 			</div>
 		</div>
-		<img style="margin-top:5px;margin-left:9px; *margin-top:-10px; width:283px;" src="/images/New_ui/networkmap/linetwo2.png">
+		<div style="margin-top:5px;*margin-top:-10px;width:283px;" class="line_horizontal"></div>
 		<div class="font_style" style="margin-left:10px;margin-bottom:5px;margin-top:10px;"><#diskUtility_detailInfo#></div>
 		<div >
 			<table border="0" width="98%" align="center" height="100px;"><tr>
@@ -514,7 +514,7 @@ function reset_force_stop(){
   <tr>
     <td class="list_bg">
 		<div class="font_style" style="margin-left:12px;margin-top:10px;"><#diskUtility_schedule#></div>
-		<img style="margin-top:5px;margin-left:10px; *margin-top:-5px;" src="/images/New_ui/networkmap/linetwo2.png">
+		<div style="margin-top:5px;*margin-top:-5px;width:283px;" class="line_horizontal"></div>	
 			<div style="margin-left:10px;">
 				<table>
 					<tr class="font_style">
@@ -613,7 +613,7 @@ function reset_force_stop(){
 					</tr>
 				</table>
 			</div>
-				<img style="margin-top:5px;margin-left:10px; *margin-top:-10px;" src="/images/New_ui/networkmap/linetwo2.png">
+				<div style="margin-top:5px;*margin-top:-5px;width:283px;" class="line_horizontal"></div>
 				<div id="schedule_desc">
 					<div  class="font_style" style="margin-top:5px;margin-left:13px;margin-right:10px;" >
 						<#diskUtility_dchedule_hint#> 

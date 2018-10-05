@@ -1091,7 +1091,7 @@ bound_lan(void)
 _dprintf("%s: IFUP.\n", __FUNCTION__);
 
 	ipaddr = getifaddr(lan_ifname, AF_INET, 0);
-	if ((sw_mode() == SW_MODE_AP) && nvram_match("lan_ipaddr", ipaddr) && lanchange == 0 && nvram_get_int("lan_state_t") == LAN_STATE_CONNECTED) {
+	if (ipaddr != NULL && (sw_mode() == SW_MODE_AP) && nvram_match("lan_ipaddr", ipaddr) && lanchange == 0 && nvram_get_int("lan_state_t") == LAN_STATE_CONNECTED) {
 		return 0;
 	}
 
@@ -1395,6 +1395,11 @@ start_dhcp6c(void)
 	char duid_arg[sizeof(duid)*2+1];
 	char prefix_arg[sizeof("128:xxxxxxxx")];
 	int service, i;
+
+	if (getpid() != 1) {
+		notify_rc("start_dhcp6c");
+		return 0;
+	}
 
 	/* Check if enabled */
 	service = get_ipv6_service();

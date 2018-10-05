@@ -1,6 +1,6 @@
 struct nvram_config {
-        char *name;
-        char *rev;
+	char *name;
+	char *rev;
 };
 
 struct nvram_config timezones_conf[] = {

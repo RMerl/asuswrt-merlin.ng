@@ -1,0 +1,75 @@
+﻿<html>
+<head>
+<script>
+var domainName = (function() {
+	var header_info = [<% get_header_info(); %>][0];
+	var ROUTERHOSTNAME = '<% nvram_get("local_domain"); %>';
+	return ((header_info.host.split(":").length==2)?"https":"http")+"://"+header_info.host.replace(header_info.host.split(":")[0], ROUTERHOSTNAME);
+})();
+
+//register window.postMessage listener from oauth.js
+var eventMethod = window.addEventListener ? "addEventListener" : "attachEvent";
+var eventer = window[eventMethod];
+var messageEvent = eventMethod == "attachEvent" ? "onmessage" : "message";
+eventer(messageEvent, function(e) {
+	if (e.origin !== domainName)
+		return;
+
+	var key = e.message ? "message" : "data";
+	var data = e[key];
+	window.close();
+}, false);
+
+var interval_checkPostMessage_status;
+var count = 0;
+function checkPostMessage(_param, _callback) {
+	//send value to oauth.js
+	window.opener.postMessage(_param, "*");
+	count++;
+	if(count >= 3) {
+		if(interval_checkPostMessage_status) {
+			clearInterval(interval_checkPostMessage_status);
+			interval_checkPostMessage_status = false;
+		}
+		//if window.postMessage not support, use window.opener call function
+		window.opener[_callback](_param);
+		window.close();
+	}
+}
+
+function getUrlVars(){
+	var vars = [], hash;
+	var hashes = window.location.href.slice(window.location.href.indexOf('?') + 1).split('&');
+	for(var i = 0; i < hashes.length; i++){
+		hash = hashes[i].split('=');
+		vars.push(hash[0]);
+		vars[hash[0]] = hash[1];
+	}
+	return vars;
+}
+
+function loadHandler(){
+	var vars = getUrlVars();
+	var callback = vars["callback"];
+	var action = vars["action"];
+	var param = {};
+	if(action && callback) {
+		switch(action) {
+			case "set_dropbox_token" :
+				param.token = vars["token"];
+				param.uid = vars["uid"];
+				break;
+			case "set_google_code" :
+				param.code = vars["code"];
+				break;
+		}
+	}
+	checkPostMessage(param, callback);
+	interval_checkPostMessage_status = setInterval( function() { checkPostMessage(param, callback); }, 500 );
+}
+</script>
+</head>
+<body onLoad="loadHandler()">
+	Waiting...
+</body>
+</html>

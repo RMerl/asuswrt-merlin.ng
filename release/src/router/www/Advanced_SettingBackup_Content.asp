@@ -44,7 +44,7 @@ function restoreRule(_flag){
 			alert_string = "<#Setting_factorydefault_hint1#>";
 			break;
 		case "initialize" :
-			alert_string = "All current settings and data log for each functions will be erased. Router will restore to initial factory setting.\n";/* untranslated */
+			alert_string = "<#Setting_initialize_hint1#>";
 			break;
 	}
 
@@ -81,20 +81,20 @@ function saveSetting(mode){
 		flag = document.getElementById("transfer_ddns").checked ? 1 : 0;
 	}
 
-	//location.href='Settings_'+productid+'_' + mode + '.CFG?path=' + flag + '&mode=' + mode;
 	location.href='Settings_'+productid+'.CFG?path=' + flag;
 }
 
 function uploadSetting(){
-  var file_obj = document.form.file;
+	var file_obj = document.form.file;
+	var file_obj_name = file_obj.value.toUpperCase();
 	
-	if(file_obj.value == ""){
+	if(file_obj_name == ""){
 		alert("<#JS_fieldblank#>");
 		file_obj.focus();
 	}
-	else if(file_obj.value.length < 6 ||
-					file_obj.value.lastIndexOf(".CFG")  < 0 || 
-					file_obj.value.lastIndexOf(".CFG") != (file_obj.value.length)-4){		
+	else if(file_obj_name.length < 6 ||
+					file_obj_name.lastIndexOf(".CFG")  < 0 || 
+					file_obj_name.lastIndexOf(".CFG") != (file_obj_name.length)-4){		
 		alert("<#Setting_upload_hint#>");
 		file_obj.focus();
 	}
@@ -233,9 +233,8 @@ function detect_httpd(){
 			  						<td bgcolor="#4D595D" valign="top">
 				  						<div>&nbsp;</div>
 				  						<div class="formfonttitle"><#menu5_6#> - <#menu5_6_4#></div>
-										<div style="margin-left:5px;margin-top:10px;margin-bottom:10px"><img src="/images/New_ui/export/line_export.png"></div>
+										<div style="margin:10px 0 10px 5px;" class="splitLine"></div>
 										<div class="formfontdesc"><#Setting_save_upload_desc#></div>
-
 										<table width="100%" border="1" align="center" cellpadding="6" cellspacing="0" bordercolor="#6b8fa3"  class="FormTable">
 										<thead>
 										<tr>

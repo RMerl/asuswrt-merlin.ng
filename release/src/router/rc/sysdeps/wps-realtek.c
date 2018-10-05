@@ -472,6 +472,11 @@ int is_wps_stopped(void)
 	return 0;
 }
 
+int is_wps_success(void)
+{
+	return 0; // TODO need to finish this.
+}
+
 void
 restart_wps_monitor(void)
 {

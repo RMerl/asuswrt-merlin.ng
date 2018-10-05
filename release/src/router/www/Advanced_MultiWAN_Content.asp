@@ -566,7 +566,7 @@ function showMAC(){
 		<tr>
 			<td align="left">
 			<span id="con_settings_title" class="formfonttitle">Connection Settings</span>
-			<div style="width:630px; height:15px;overflow:hidden;position:relative;left:0px;top:5px;"><img src="/images/New_ui/export/line_export.png"></div>
+			<div style="width:630px; height:2px;overflow:hidden;position:relative;left:0px;top:5px;" class="splitLine"></div>
 			<div></div>
 			</td>
 		</tr>
@@ -683,7 +683,7 @@ function showMAC(){
 					    </select></td>
 				</tr>
             	<tr>
-             	 	<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(7,4);"><#PPPConnection_UserName_itemname#></a></th>
+             	 	<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(7,4);"><#Username#></a></th>
               		<td><input type="text" maxlength="64" class="input_32_table" name="wan_pppoe_username_now" value="" onkeypress="return validator.isString(this, event)"></td>
             	</tr>
             	<tr id="tr_pppoe_password">
@@ -763,7 +763,7 @@ function showMAC(){
 			      	<th ><a class="hintstyle" href="javascript:void(0);" onClick="openHint(7,16);"><#PPPConnection_x_MacAddressForISP_itemname#></a></th>
 					<td>
 						<input type="text" name="wan_hwaddr_x_now" class="input_20_table" maxlength="17" value="" onKeyPress="return validator.isHWAddr(this,event)" autocorrect="off" autocapitalize="off">
-						<input type="button" class="button_gen_long" onclick="showMAC();" value="<#BOP_isp_MACclone#>">
+						<input type="button" class="button_gen" onclick="showMAC();" value="<#BOP_isp_MACclone#>">
 					</td>
 			    </tr>
 				<tr>
@@ -817,7 +817,7 @@ function showMAC(){
 						<td bgcolor="#4D595D" valign="top"  >
 							<div>&nbsp;</div>
 							<div class="formfonttitle"><#menu5_3#> - <#menu5_3_1#></div>
-							<div style="margin-left:5px;margin-top:10px;margin-bottom:10px"><img src="/images/New_ui/export/line_export.png"></div>
+							<div style="margin:10px 0 10px 5px;" class="splitLine"></div>
 							<table width="98%" border="1" align="center" cellpadding="4" cellspacing="0" class="FormTable_table" id="vlan_list_table" style="margin-top:30px;">
 								<thead>
 					   				<tr>

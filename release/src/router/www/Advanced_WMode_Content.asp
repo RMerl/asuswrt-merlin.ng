@@ -224,17 +224,13 @@ function applyRule(){
 		inputRCtrl2(document.form.wl_wdsapply_x, 1);
 	}
 	
-	if(document.form.wl_mode_x.value == "1"){
-		document.form.wl_wdsapply_x.value = "1";
-	}
-		
 	if(wl6_support){
 		document.form.action_wait.value = 8;
 	}
 	else{
 		document.form.action_wait.value = 3;
 	}
-		
+
 	showLoading();	
 	document.form.submit();
 }
@@ -433,7 +429,7 @@ function checkWLReady(){
 								<td bgcolor="#4D595D" valign="top">
 									<div>&nbsp;</div>
 									<div class="formfonttitle"><#menu5_1#> - <#menu5_1_3#></div>
-									<div style="margin-left:5px;margin-top:10px;margin-bottom:10px"><img src="/images/New_ui/export/line_export.png"></div>
+									<div style="margin:10px 0 10px 5px;" class="splitLine"></div>
 									<div class="formfontdesc"><#WLANConfig11b_display1_sectiondesc#></div>
 									<div class="formfontdesc" style="color:#FFCC00;"><#ADSL_FW_note#><#WLANConfig11b_display2_sectiondesc#></div>
 									<div class="formfontdesc"><#WLANConfig11b_display3_sectiondesc#>

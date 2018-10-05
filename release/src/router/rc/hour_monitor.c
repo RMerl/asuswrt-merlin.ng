@@ -18,9 +18,13 @@ static int hm_alarm_status = 0;
 void hm_traffic_analyzer_save()
 {
 	char info[32];
+	long int size;
 
-	// check file size is over 30MB or not
-	long int size = 30 * 1024; // 30MB
+#if defined(RTCONFIG_LANTIQ)
+	size = 2 * 1024;	// 2MB
+#else
+	size = 30 * 1024;	// 30MB
+#endif
 	snprintf(info, sizeof(info), "%ld", size);
 	eval("TrafficAnalyzer", "-d", info);
 

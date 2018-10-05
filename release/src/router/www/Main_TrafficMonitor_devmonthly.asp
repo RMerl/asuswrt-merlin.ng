@@ -638,7 +638,7 @@ function draw_chart(){
 							</tr>
 
 							<tr>
-								<td height="5"><img src="images/New_ui/export/line_export.png" /></td>
+								<td height="5"><div class="splitLine"></div></td>
 							</tr>
 							<tr>
 								<td bgcolor="#4D595D">

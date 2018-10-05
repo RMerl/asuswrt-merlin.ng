@@ -8,7 +8,7 @@
 <meta HTTP-EQUIV="Expires" CONTENT="-1">
 <link rel="shortcut icon" href="images/favicon.png">
 <link rel="icon" href="images/favicon.png">
-<title><#Web_Title#> - Privacy</title>
+<title><#Web_Title#> - <#menu_privacy#></title>
 <link rel="stylesheet" type="text/css" href="index_style.css">
 <link rel="stylesheet" type="text/css" href="form_style.css">
 <script language="JavaScript" type="text/javascript" src="/state.js"></script>
@@ -201,8 +201,8 @@ function withdraw_eula(eula_type){
 							<tr>
 								<td bgcolor="#4D595D" valign="top">
 									<div>&nbsp;</div>
-									<div id="formfonttitle" class="formfonttitle"><#menu5_6#> - ASUS NOTICE( for privacy)</div>
-									<div style="margin:10px 0 10px 5px;"><img src="/images/New_ui/export/line_export.png"></div>
+									<div id="formfonttitle" class="formfonttitle"><#menu5_6#> - <#ASUS_Notice_Privacy#></div>
+									<div style="margin:10px 0 10px 5px;" class="splitLine"></div>
 									<div id="privacy_desc" style="font-size:14px; margin: 20px 10px auto 10px; display:none;"><#ASUS_privacy_desc#></div>
 									<div id="asus_eula" class="eula_withdraw" style="display:none;">
 										<div class="eula_withdraw_title" id="asus_eula_title"><#ASUS_eula_withdraw0_AlexaIFTTT#></div>

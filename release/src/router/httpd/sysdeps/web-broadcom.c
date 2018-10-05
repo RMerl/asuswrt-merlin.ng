@@ -2657,8 +2657,10 @@ int wl_wps_info(int eid, webs_t wp, int argc, char_t **argv, int unit)
 #ifdef RTCONFIG_QTN
 	int ret;
 	qcsapi_SSID ssid;
+#if 0
 	string_64 key_passphrase;
-//	char wps_pin[16];
+	char wps_pin[16];
+#endif
 #endif
 
 

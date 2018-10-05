@@ -8,7 +8,7 @@
 <meta HTTP-EQUIV="Expires" CONTENT="-1">
 <link rel="shortcut icon" href="images/favicon.png">
 <link rel="icon" href="images/favicon.png">
-<title><#Web_Title#> - Wi-Fi Proxy</title>
+<title><#Web_Title#> - <#WiFi_Proxy_item#></title>
 <link rel="stylesheet" type="text/css" href="index_style.css">
 <link rel="stylesheet" type="text/css" href="form_style.css">
 <link rel="stylesheet" type="text/css" href="other.css">
@@ -89,9 +89,9 @@ function applyRule(){
 			<tr>
 			  <td bgcolor="#4D595D" valign="top" height="360px">
 				<div>&nbsp;</div>
-				<div class="formfonttitle"><#menu5_1#> - Wi-Fi Proxy</div>
-				<div style="margin-left:5px;margin-top:10px;margin-bottom:10px"><img src="/images/New_ui/export/line_export.png"></div>
-				<div class="formfontdesc">Enable this feature in Repeater mode to successfully extend certain hotspot (public Wi-Fi) network.</div>
+				<div class="formfonttitle"><#menu5_1#> - <#WiFi_Proxy_item#></div>
+				<div style="margin:10px 0 10px 5px;" class="splitLine"></div>
+				<div class="formfontdesc"><#WiFi_Proxy_desc#></div>
 
 				<table width="100%" border="1" align="center" cellpadding="4" cellspacing="0" bordercolor="#6b8fa3"  class="FormTable">
 
@@ -106,7 +106,7 @@ function applyRule(){
 					</tr>
 
 					<tr>
-						<th><a>Enable Wi-Fi Proxy?</a></th>
+						<th><a><#WiFi_Proxy_enable#></a></th>
 						<td>
 							<input type="radio" name="wifipxy_enable_2" class="input" value="1" onclick="enable_wifipxy('1')" <% nvram_match("wlc0_wifipxy", "1", "checked"); %>><#checkbox_Yes#>
 							<input type="radio" name="wifipxy_enable_2" class="input" value="0" onclick="enable_wifipxy('0')" <% nvram_match("wlc0_wifipxy", "0", "checked"); %>><#checkbox_No#>

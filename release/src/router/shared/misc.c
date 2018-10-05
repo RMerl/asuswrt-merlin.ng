@@ -541,7 +541,7 @@ static inline uint32_t get_netmask(int cidr)
  */
 static int test_one_class(const struct ip_mask_s *pt, const struct ip_mask_s *pk_tbl, uint32_t *exp_ip, uint32_t exp_cidr)
 {
-	int i, c, found, s_cidr = 30, max_cidr;
+	int i, c, found, s_cidr = 30, max_cidr, ccnt = 0;
 	uint32_t start_net, s, next_s, d, delta, class_mask, m, mask, new_ip = 0;
 	const struct ip_mask_s *p;
 
@@ -595,8 +595,10 @@ static int test_one_class(const struct ip_mask_s *pt, const struct ip_mask_s *pk
 				if ((s & m) == (p->ip & m)) {
 					if (p->cidr < max_cidr)
 						max_cidr = p->cidr;
-					dbg("\t%08x/%d conflicts, max_cidr %d.\n", p->ip, p->cidr, max_cidr);
-					logmessage("", "\t%08x/%d conflicts, max_cidr %d.\n", p->ip, p->cidr, max_cidr);
+					if (++ccnt < 10) {
+						dbg("\t%08x/%d conflicts, max_cidr %d.\n", p->ip, p->cidr, max_cidr);
+						logmessage("", "\t%08x/%d conflicts, max_cidr %d.\n", p->ip, p->cidr, max_cidr);
+					}
 					c++;
 				}
 			}
@@ -756,37 +758,6 @@ static int fill_char_ip_mask_to_ip_mask_s(unsigned int *nr, struct ip_mask_s **p
 
 	(*p)->ip = ((ip[0] & 0xFF) << 24) | ((ip[1] & 0xFF) << 16) |
 	        ((ip[2] & 0xFF) << 8) | (ip[3] & 0xFF);
-	(*p)->cidr = cidr;
-	(*nr)--;
-	(*p)++;
-
-	return 0;
-}
-
-/**
- * Append an unsigned integer format IP/mask to an ip_mask_s structure to an array,
- * if IPv4 address and netmask is valid and array is not full.
- * @nr:		Number of available items in an array specified by @p.
- * @p:		Pointer to an ip_mask_s pointer.
- * @ip:		IPv4 address
- * @cidr:	IPv4 netmask in X.X.X.X or CIDR format.
- * @return:
- * 	0:	OK
- *     -1:	Invalid parameter.
- *     -2:	Out of array space.
- */
-static int fill_uint_to_ip_mask_s(unsigned int *nr, struct ip_mask_s **p, unsigned int ip, unsigned int cidr)
-{
-	if (!nr || !p || !*p || !ip || !cidr || cidr > 32) {
-		dbg("%s: invalid parameter. nr %p p %p ip %x cidr %d\n", __func__, nr, p, ip, cidr);
-		return -1;
-	}
-	if (*nr <= 0) {
-		dbg("%s: Out of array. (ip/cidr 0x%x/%d)\n", __func__, ip, cidr);
-		return -2;
-	}
-
-	(*p)->ip = ip;
 	(*p)->cidr = cidr;
 	(*nr)--;
 	(*p)++;
@@ -980,8 +951,9 @@ static int get_known_networks(unsigned int nr, struct ip_mask_s *tbl, uint32_t e
 
 	/* Exclude network used by USB modem. */
 	if (!(excl & EXCLUDE_NET_USB_MODEM)) {
-		fill_uint_to_ip_mask_s(&nr, &p, IP2UINT(192,168,0,0), 24);
-		fill_uint_to_ip_mask_s(&nr, &p, IP2UINT(192,168,100,0), 24);
+		/* FIXME: Exclude 192.168.0.x and 192.168.100.x if and only if
+		 * USB modem that need one of these networks is connected to DUT.
+		 */
 	}
 
 	/* Exclude LAN */
@@ -1143,7 +1115,7 @@ int test_and_get_free_uint_network(int t_class, uint32_t *exp_ip, uint32_t exp_c
 
 	/* TODO: Get known networks of another features. */
 	nr = ARRAY_SIZE(known_network_tbl);
-	memset(known_network_tbl, 0, nr);
+	memset(known_network_tbl, 0, sizeof(known_network_tbl));
 	get_known_networks(--nr, known_network_tbl, excl);   /* leave last elements */
 
 	for (i = 0, kn = &known_network_tbl[0];
@@ -1870,13 +1842,24 @@ int is_intf_up(const char* ifname)
 	if (!((sfd = socket(AF_INET, SOCK_RAW, IPPROTO_RAW)) < 0))
 	{
 		strcpy(ifr.ifr_name, ifname);
-		if (!ioctl(sfd, SIOCGIFFLAGS, &ifr) && (ifr.ifr_flags & IFF_UP))
-			ret = 1;
+		if (ioctl(sfd, SIOCGIFFLAGS, &ifr))
+			ret = -1;			/* interface not exist */
+		else if((ifr.ifr_flags & IFF_UP))
+			ret = 1;			/* interface exist and up */
 
 		close(sfd);
 	}
 
 	return ret;
+}
+
+int aimesh_re_mode(void)
+{
+#ifdef RTCONFIG_LANTIQ
+	return (sw_mode() == SW_MODE_AP && nvram_get_int("wlc_psta") == 2);
+#else
+	return 0;
+#endif
 }
 
 char *wl_nvprefix(char *prefix, int prefix_size, int unit, int subunit)
@@ -1885,6 +1868,8 @@ char *wl_nvprefix(char *prefix, int prefix_size, int unit, int subunit)
 		strcpy(prefix, "wl_");
 #ifdef RTCONFIG_LANTIQ
 	else if(client_mode() && unit == nvram_get_int("wlc_band"))
+		snprintf(prefix, prefix_size, "wl%d.%d_", unit, 1);
+	else if(aimesh_re_mode())
 		snprintf(prefix, prefix_size, "wl%d.%d_", unit, 1);
 #endif
 	else if(subunit > 0)
@@ -2041,24 +2026,18 @@ char *nvram_get_r(const char *name, char *buf, size_t buflen)
  */
 char *nvram_pf_get(char *prefix, const char *name)
 {
+	char tmp[128], *t = tmp, *v;
 	size_t size;
-	char tmp[128], *t = tmp, *v = NULL;
 
 	if (!prefix || !name || *name == '\0')
 		return NULL;
 
-	if (!isprint(*prefix) || !isprint(*name)) {
-		dbg("%s: Invalid prefix 0x%x [%s] or name 0x%x [%s]?\n",
-			__func__, *prefix, prefix, *name, name);
-		return NULL;
-	}
-
 	size = strlen(prefix) + strlen(name) + 1;
-	if (size > sizeof(tmp))
+	if (size > sizeof(tmp)) {
 		t = malloc(size);
-
-	if (!t)
-		return NULL;
+		if (!t)
+			return NULL;
+	}
 
 	v = nvram_get(strcat_r(prefix, name, tmp));
 
@@ -2077,24 +2056,19 @@ char *nvram_pf_get(char *prefix, const char *name)
  */
 int nvram_pf_set(char *prefix, const char *name, const char *value)
 {
-	int r = 0;
-	size_t size;
 	char tmp[128], *t = tmp;
+	size_t size;
+	int r;
 
 	if (!prefix || !name || *name == '\0')
-		return -1;
-
-	if (!isprint(*prefix) || !isprint(*name)) {
-		dbg("%s: Invalid prefix 0x%x or name 0x%x?\n", __func__, *prefix, *name);
-		return -2;
-	}
+		return -EINVAL;
 
 	size = strlen(prefix) + strlen(name) + 1;
-	if (size > sizeof(tmp))
+	if (size > sizeof(tmp)) {
 		t = malloc(size);
-
-	if (!t)
-		return -3;
+		if (!t)
+			return -ENOMEM;
+	}
 
 	r = nvram_set(strcat_r(prefix, name, tmp), value);
 
@@ -2849,6 +2823,16 @@ int is_dpsta(int unit)
 }
 #endif
 
+int is_dpsr(int unit)
+{
+	if (dpsr_mode()) {
+		if ((num_of_wl_if() == 2) || !unit || unit == nvram_get_int("dpsta_band"))
+			return 1;
+	}
+
+	return 0;
+}
+
 int is_psta(int unit)
 {
 	if (unit < 0) return 0;
@@ -2869,13 +2853,14 @@ int is_psr(int unit)
 	if ((sw_mode() == SW_MODE_AP) &&
 		(nvram_get_int("wlc_psta") == 2) &&
 		(
+		is_dpsr(unit) ||
 #ifdef RTCONFIG_DPSTA
 		is_dpsta(unit) ||
-#endif
-#if defined(RTCONFIG_AMAS) && defined(RTCONFIG_DPSTA)
+#ifdef RTCONFIG_AMAS
 		dpsta_mode() ||
 #endif
-		((nvram_get_int("wlc_band") == unit)
+#endif
+		((nvram_get_int("wlc_band") == unit) && !dpsr_mode()
 #ifdef RTCONFIG_DPSTA
 		&& !dpsta_mode()
 #endif
@@ -3769,6 +3754,7 @@ char *if_nametoalias(char *name, char *alias, int alias_len)
 			if (!strcmp(ifname, name)) {
 #if defined(CONFIG_BCMWL5) || defined(RTCONFIG_BCMARM)
 				if (repeater_mode()
+					|| dpsr_mode()
 #if defined(RTCONFIG_PROXYSTA) && defined(RTCONFIG_DPSTA)
 					|| dpsta_mode()
 #endif
@@ -3789,6 +3775,36 @@ char *if_nametoalias(char *name, char *alias, int alias_len)
 	}
 
 	return alias;
+}
+
+int check_re_in_macfilter(int unit, char *mac)
+{
+	char tmp[128], prefix[] = "wlXXXXXXXXXX_";
+	char *nv, *nvp, *b;
+	int exist = 0;
+
+#ifdef RTCONFIG_AMAS
+	if (nvram_get_int("re_mode") == 1)
+		snprintf(prefix, sizeof(prefix), "wl%d.1_", unit);
+	else
+#endif
+		snprintf(prefix, sizeof(prefix), "wl%d_", unit);
+
+	nv = nvp = strdup(nvram_safe_get(strcat_r(prefix, "maclist_x", tmp)));
+	if (nv) {
+		while ((b = strsep(&nvp, "<")) != NULL) {
+			if (strlen(b) == 0) continue;
+
+			if (strcmp(mac, b) == 0) {
+				dbg("mac (%s) exists in maclist_x (%s)\n", mac, prefix);
+				exist = 1;
+				break;
+			}
+		}
+		free(nv);
+	}
+
+	return exist;
 }
 #endif /* RTCONFIG_CFGSYNC */
 
@@ -3828,9 +3844,9 @@ int get_bonding_status()
 	if(fp != NULL)
 	{
 		while(fgets(line, sizeof(line), fp) != NULL){
-			memset(line, 0, sizeof(line));
 			if((lp = strstr(line, STR_PARTNER_MAC)) != NULL) {
 				mp = lp + strlen(STR_PARTNER_MAC);
+				mp[17] = 0;
 				break;
 			}
 		}
@@ -3907,10 +3923,32 @@ int ppa_support(int wan_unit)
 	if(strcmp(wan_proto, "l2tp") == 0) ret = 0;
 	if(strcmp(nvram_safe_get(strcat_r(prefix, "hwaddr_x", tmp)), "")) ret = 0;
 
-	if(ret == 0) nvram_set_int("ppa_running", 0);
-	else nvram_set_int("ppa_running", 1);
-
 	return ret;
+}
+
+int disable_ppa_wan(char *wan_ifname)
+{
+	char ppa_cmd[255] = {0};
+
+	if(client_mode() || aimesh_re_mode()){
+		system("ppacmd setppefp -f 1");
+	}else{
+		system("ppacmd setppefp -f 0");
+	}
+	snprintf(ppa_cmd, sizeof(ppa_cmd), "ppacmd delwan -i %s", wan_ifname);
+	_dprintf("[%s][%d] %s\n", __func__, __LINE__, ppa_cmd);
+	system(ppa_cmd);
+	nvram_set("ctf_disable", "1");
+}
+
+int enable_ppa_wan(char *wan_ifname)
+{
+	char ppa_cmd[255] = {0};
+	snprintf(ppa_cmd, sizeof(ppa_cmd), "ppacmd addwan -i %s", wan_ifname);
+	_dprintf("[%s][%d] %s\n", __func__, __LINE__, ppa_cmd);
+	system(ppa_cmd);
+	system("ppacmd setppefp -f 1");
+	nvram_set("ctf_disable", "0");
 }
 #endif
 
@@ -3951,4 +3989,50 @@ int IPTV_ports_cnt(void)
 	else
 		cnt = 2;
 	return cnt;
+}
+
+/*
+ * Validate a mac address
+ * @mac:	pointer to mac address.
+ * 	1:	Legal mac address
+ *  	0:	illegal mac address
+ */
+int isValidMacAddress(const char* mac) {
+	int i=0, s=0;
+
+	while (*mac) {
+		if (isxdigit(*mac))
+			i++;
+		else if (*mac == ':' || *mac == '-') {
+			if (i == 0 || i / 2 - 1 != s)
+				break;
+			++s;
+		}
+		else
+			s = -1;
+		++mac;
+	}
+	return (i == 12 && (s == 5 || s == 0));
+}
+
+/*
+ * Validate a option input
+ * @option:	pointer to  a option.
+    @range:	unsigned int range.
+ * 	1:	Legal input
+ *  	0:	illegal input
+ */
+int isValidEnableOption(const char *option, int range) {
+
+	int n=0;
+
+	if(!option || strlen(option)!=1)
+		return 0;
+
+	n = safe_atoi(option);
+
+	if(n >= 0 && n <=range)
+		return 1;
+	else
+		return 0;
 }

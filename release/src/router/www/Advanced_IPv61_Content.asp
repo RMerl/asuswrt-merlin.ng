@@ -624,14 +624,12 @@ function GetIPv6_split(obj){
 	var return_prefix = "";
 	if(Split_1_IPv6.length >1){
 		if(Split_1_IPv6[0].substring(0,Split_1_IPv6_pos).split(":").length >4){	//get ipv6_prefix by Split_2_IPv6[0]~[3]
-			db(Split_1_IPv6[0].substring(0,Split_1_IPv6_pos).split(":").length);
 			for(i=0;i<4;i++){
 				return_prefix += Split_2_IPv6[i];
 				if(i<3)
 					return_prefix += ":";
 			}
 		}else{
-			db(Split_1_IPv6[0]);
 			return_prefix = Split_1_IPv6[0];
 		}		
 	}else if(Split_2_IPv6.length > 1){
@@ -998,7 +996,7 @@ function genWANSoption(){
 			<td bgcolor="#4D595D" valign="top">
 				<div>&nbsp;</div>
 				<div class="formfonttitle">IPv6</div>
-	      <div style="margin-left:5px;margin-top:10px;margin-bottom:10px"><img src="/images/New_ui/export/line_export.png"></div>
+	      		<div style="margin:10px 0 10px 5px;" class="splitLine"></div>
 	      <div class="formfontdesc"><#LANHostConfig_display6_sectiondesc#></div>
 				<div class="formfontdesc" style="margin-top:-10px;">
 					<a id="faq" href="" target="_blank" style="font-family:Lucida Console;text-decoration:underline;">IPv6 FAQ</a>

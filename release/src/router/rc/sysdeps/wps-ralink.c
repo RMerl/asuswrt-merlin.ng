@@ -210,3 +210,8 @@ int is_wps_stopped(void)
 	return ret;
 	// TODO: handle enrollee
 }
+
+int is_wps_success(void)
+{
+	return 0; // TODO need to finish this.
+}

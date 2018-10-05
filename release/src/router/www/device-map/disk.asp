@@ -40,8 +40,6 @@ var diskOrder = parent.getSelectedDiskOrder();
 var apps_array = <% apps_info("asus"); %>;
 
 function initial(){
-	flash_button();
-
 	if(!parent.media_support)
 		document.getElementById("mediaserver_hyperlink").style.display = "none";
 	
@@ -56,7 +54,7 @@ function initial(){
 	if((based_modelid == "DSL-AC68U" || based_modelid == "RT-AC3200" || based_modelid == "RT-AC87U" || based_modelid == "RT-AC68U" || based_modelid == "RT-AC68A" || based_modelid == "RT-AC56S" || based_modelid == "RT-AC56U" || based_modelid == "RT-AC55U" || based_modelid == "RT-AC55UHP" || based_modelid == "RT-N18U" || based_modelid == "RT-AC88U" || based_modelid == "RT-AC86U" || based_modelid == "AC2900" || based_modelid == "RT-AC3100" || based_modelid == "RT-AC5300" || based_modelid == "RP-AC68U" || based_modelid == "RT-AC58U" || based_modelid == "RT-AC82U" || based_modelid == "MAP-AC3000" || based_modelid == "RT-AC85U" || based_modelid == "RT-AC65U"|| based_modelid == "4G-AC68U" || based_modelid == "BLUECAVE") && parent.currentUsbPort == 0){
 		document.getElementById('reduce_usb3_table').style.display = "";
 	}
-	else if((based_modelid == "RT-AC88Q" || based_modelid == "RT-AD7200" || based_modelid == "RT-N65U" || based_modelid == "GT-AC5300" || based_modelid == "GT-AC9600" || based_modelid == "BRT-AC828") && (parent.currentUsbPort == 0 || parent.currentUsbPort == 1)){
+	else if((based_modelid == "RT-AC88Q" || based_modelid == "RT-AD7200" || based_modelid == "RT-N65U" || based_modelid == "GT-AC5300" || based_modelid == "RT-AX88U" || based_modelid == "RT-AX95U" || based_modelid == "BRT-AC828") && (parent.currentUsbPort == 0 || parent.currentUsbPort == 1)){
 		document.getElementById('reduce_usb3_table').style.display = "";
 	}
 
@@ -147,7 +145,7 @@ function switchUSBType(){
     <td style="padding:5px 10px 0px 15px;">
     	<p class="formfonttitle_nwm"><#Modelname#>:</p>
 			<p class="tab_info_bg" style="padding-left:10px; margin-top:3px;line-height:20px; color:#FFFFFF;" id="disk_model_name"></p>
-      <img style="margin-top:5px;" src="/images/New_ui/networkmap/linetwo2.png">
+    	<div style="margin-top:5px;" class="line_horizontal"></div>
     </td>
   </tr>
 </table>
@@ -157,7 +155,7 @@ function switchUSBType(){
     <td style="padding:5px 10px 0px 15px;">
     	<p class="formfonttitle_nwm"><#Availablespace#>:</p>
     	<p class="tab_info_bg" style="padding-left:10px; margin-top:3px;line-height:20px; color:#FFFFFF;" id="disk_avail_size"></p>
-      <img style="margin-top:5px;" src="/images/New_ui/networkmap/linetwo2.png">
+    	<div style="margin-top:5px;" class="line_horizontal"></div>
     </td>
   </tr>
 
@@ -165,7 +163,7 @@ function switchUSBType(){
     <td style="padding:5px 10px 0px 15px;">
     	<p class="formfonttitle_nwm"><#Totalspace#>:</p>
     	<p class="tab_info_bg" style="padding-left:10px; margin-top:3px;line-height:20px; color:#FFFFFF;" id="disk_total_size"></p>
-      <img style="margin-top:5px;" src="/images/New_ui/networkmap/linetwo2.png">
+		<div style="margin-top:5px;" class="line_horizontal"></div>
     </td>
   </tr>
 
@@ -173,7 +171,7 @@ function switchUSBType(){
     <td style="padding:10px 15px 0px 15px;;">
     	<p class="formfonttitle_nwm" style="float:left;width:138px;"><#UPnPMediaServer#>:</p>
       <input type="button" class="button_gen" onclick="goUPnP();" value="<#btn_go#>" >
-    	<img style="margin-top:5px;" src="/images/New_ui/networkmap/linetwo2.png">
+		<div style="margin-top:5px;" class="line_horizontal"></div>
     </td>
   </tr>
 
@@ -181,7 +179,7 @@ function switchUSBType(){
     <td height="50" style="padding:10px 15px 0px 15px;">
     	<p class="formfonttitle_nwm" style="float:left;width:138px;"><#AiDiskWizard#>:</p>
     	<input type="button" class="button_gen" onclick="gotoAidisk();" value="<#btn_go#>" >
-      <img style="margin-top:5px;" src="/images/New_ui/networkmap/linetwo2.png">
+    	<div style="margin-top:5px;" class="line_horizontal"></div>
     </td>
   </tr>
 
@@ -189,7 +187,7 @@ function switchUSBType(){
     <td height="50" style="padding:10px 15px 0px 15px;">
     	<p class="formfonttitle_nwm" style="float:left;width:138px;">Download Master</p>
     	<input type="button" class="button_gen" onclick="gotoDM();" value="<#btn_go#>" >
-      <img style="margin-top:5px;" src="/images/New_ui/networkmap/linetwo2.png">
+		<div style="margin-top:5px;" class="line_horizontal"></div>
     </td>
   </tr>
 </table>
@@ -200,7 +198,7 @@ function switchUSBType(){
     	<p class="formfonttitle_nwm" style="float:left;width:138px; "><#Safelyremovedisk_title#>:</p>
     	<input id="show_remove_button" class="button_gen" type="button" class="button" onclick="remove_disk_call();" value="<#btn_remove#>">
     	<div id="show_removed_string" style="display:none;"><#Safelyremovedisk#></div>
-		 <img style="margin-top:5px;" src="/images/New_ui/networkmap/linetwo2.png">
+    	<div style="margin-top:5px;" class="line_horizontal"></div>
     </td>
   </tr>
 </table>
@@ -217,7 +215,6 @@ function switchUSBType(){
 				<input type="hidden" name="action_script" value="reboot">
 				<input type="hidden" name="action_wait" value="<% get_default_reboot_time(); %>">
 				<input type="hidden" name="preferred_lang" id="preferred_lang" value="<% nvram_get("preferred_lang"); %>">
-			
 				<div align="center" class="left" style="width:120px; float:left; cursor:pointer;margin-top:-7px;" id="reduce_usb3_enable">
 					<select class="input_option" name="usb_usb3" >
 						<option value="0" <% nvram_match("usb_usb3", "0", "selected"); %>>USB 2.0</option>
@@ -229,6 +226,7 @@ function switchUSBType(){
 	</tr>
 	<tr>
 		<td>
+			<div style="margin-top:5px;" class="line_horizontal"></div>
 			<div class="apply_gen">
 				<input class="button_gen" onclick="switchUSBType();" type="button" value="Apply">
 			</div>

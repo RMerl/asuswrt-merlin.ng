@@ -13,6 +13,7 @@
 #define MAC_LEN				6
 #define FWVER_LEN			33
 #define MODEL_NAME_LEN		33
+#define TERRITORY_CODE_LEN	33
 #define RE_LIST_JSON_FILE	"/tmp/relist.json"
 #define MAX_RELIST_COUNT		10
 enum reListAction {
@@ -40,6 +41,7 @@ typedef struct _CM_CLIENT_TABLE {
 	char fwVer[CFG_CLIENT_NUM][FWVER_LEN];
 	char newFwVer[CFG_CLIENT_NUM][FWVER_LEN];
 	char modelName[CFG_CLIENT_NUM][MODEL_NAME_LEN];
+	char territoryCode[CFG_CLIENT_NUM][TERRITORY_CODE_LEN];
 	int activePath[CFG_CLIENT_NUM];
 	int maxLevel;
 	int count;
@@ -51,6 +53,7 @@ extern void cm_handleReListUpdate(unsigned char *decodeMsg);
 extern int cm_prepareReListMsg(char *msg, int msgLen);
 extern void cm_generateReList();
 extern void cm_updateReListTimestamp(unsigned char *decodeMsg);
+extern int cm_isSlaveOnline(time_t startTime);
 
 #endif /* __CFG_SLAVELIST_H__ */
 /* End of cfg_slavelist.h */

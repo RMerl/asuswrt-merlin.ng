@@ -25,7 +25,7 @@
 /* DEBUG FUNCTION */
 #define BWDPI_DBG(fmt,args...) \
 	if(f_exists(BWDPI_DEBUG) > 0) { \
-		dbg("[BWDPI][%s:(%d)]"fmt, __FUNCTION__, __LINE__, ##args); \
+		printf("[BWDPI][%s:(%d)]"fmt, __FUNCTION__, __LINE__, ##args); \
 	}
 
 #define BWSIG_DBG(fmt,args...) \

@@ -1,0 +1,11 @@
+language: c
+compiler:
+  - gcc
+  - clang
+# Change this to your needs
+script: ./bootstrap.sh && make -j3
+before_install:
+  - sudo apt-get update -qq
+  - sudo apt-get build-dep avahi avahi-sharp
+  - sudo apt-get install python-gi-dev gir1.2-gtk-3.0
+  - sudo apt-get install mono-mcs

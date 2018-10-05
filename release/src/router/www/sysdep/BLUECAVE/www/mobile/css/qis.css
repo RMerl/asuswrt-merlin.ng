@@ -1,4 +1,13 @@
-﻿option{
+﻿body{
+	background:url('./qis_background_downsize.png') repeat;
+	background-color: #111 !important;
+/*
+	background:url('./bg.png') no-repeat;
+	background-attachment: fixed;
+	background-size: cover;
+*/
+}
+option{
 	background-color: #000;
 	color: #CCC;
 }
@@ -10,6 +19,7 @@ a.ui-btn{
 }
 a{
 	cursor: pointer;
+	color: #007AFF !important;
 }
 .icon_menu{
 	width:17px;
@@ -255,19 +265,10 @@ a{
 	padding-right:110px;	
 }
 .qisBackgroundIndex{
-/*
-	background:url('../../mobile.customize/qis_background.png') #000 no-repeat;
-	background-size: cover;
-*/
-	background:url('../../mobile.customize/qis_background_downsize.png') #111;
-	background-repeat: repeat
+	background: #0000;
 }
 .qisBackground{
-/*
-	background:url('../../mobile.customize/qis_background.png') #000 repeat-x;
-*/
-	background:url('../../mobile.customize/qis_background_downsize.png') #111;
-	background-repeat: repeat
+	background: #0000;
 }
 .selectorTopContainer{
 	margin-left: 35px;
@@ -314,10 +315,20 @@ a{
 	margin: auto;
 	border-radius: 50%;
 	line-height: 400px;
+	position: relative;
 }
-.productIconContainer > div > img{
-	width: 80%;
-	vertical-align: middle;
+.productIconContainer > div > div{
+	background-repeat: no-repeat;
+	background-position: 50% 50%;
+	background-size: contain;
+	width: 300px;
+	height: 300px;
+	margin: auto;
+	top: 0px;
+	right: 0px;
+	left: 0px;
+	bottom: 0px;
+	position: absolute;
 }
 .model_image{
 	height:450px;
@@ -375,6 +386,12 @@ a{
 }
 .hint{
 	color: #F00;
+	margin-top: -25px;
+	font-size: 1.4em;
+	font-style: italic;
+}
+.hint_yellow{
+	color: #FC0;
 	margin-top: -25px;
 	font-size: 1.4em;
 	font-style: italic;
@@ -518,6 +535,10 @@ a{
 	display: table-row;
 	font-family: HelveticaNeueW10-45Ligh,Helvetica,Arial;
 	font-size:2em;
+}
+.selectorContainerDiv:hover, .selectBar > label:hover, .labelInput:hover{
+	color: #007AFF;
+	font-weight: bolder;
 }
 .narrowContainer{
 	display: table-cell;
@@ -861,10 +882,10 @@ a{
 			display: none;
 		}
 		.qisBackgroundIndex{
-			background:url('../../mobile.customize/qis_background_downsize.png') #111;
+			background:url('./qis_background_downsize.png') #111;
 		}
 		.qisBackground{
-			background:url('../../mobile.customize/qis_background_downsize.png') #111;
+			background:url('./qis_background_downsize.png') #111;
 		}
 		.tableContainerIndex{ 
 			transform: scale(0.7, 0.7);
@@ -1131,4 +1152,8 @@ a{
 			height: 155px;
 		}
 	}
+}
+.textClick {
+	text-decoration: underline;
+	cursor: pointer;
 }

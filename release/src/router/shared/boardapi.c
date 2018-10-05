@@ -885,6 +885,10 @@ int wanport_status(int wan_unit)
 #if defined(RTCONFIG_RALINK) || defined(RTCONFIG_QCA) || defined(RTCONFIG_REALTEK)
 	return rtkswitch_wanPort_phyStatus(wan_unit);
 #elif defined(RTCONFIG_ALPINE) || defined(RTCONFIG_LANTIQ)
+#ifdef RTCONFIG_AMAS
+	if(sw_mode() == SW_MODE_AP && nvram_get_int("re_mode") == 1)
+		return get_amas_eth_phy_status(wan_unit);
+#endif	
 	return get_phy_status(wan_unit);
 #else // Broadcom
 	char word[100], *next;

@@ -242,7 +242,7 @@ function getWANStatus(){
 				   setTimeout('redirect_page("wireless");', 1000);
 				}
 			}			
-			else if(autodet_state == 4 && parent.hadPlugged("modem")){ // ethernet did not plug
+			else if(autodet_state == 4 && parent.hadModem){ // ethernet did not plug
 				if(based_modelid == "4G-AC53U" || based_modelid == "4G-AC55U" || based_modelid == "4G-AC68U"){
 					if(sim_state == 1){
 						if(modem_autoapn == "1"){
@@ -318,7 +318,7 @@ function getWANStatus(){
 				}
 			}	
 			else if(autodet_state == "2" && wanauxstate != "1"){
-				if(parent.hadPlugged("modem")){
+				if(parent.hadModem){
 					redirect_page("modem");
 				}	
 				else{

@@ -85,7 +85,9 @@ function goWireless(){
 
 <div class="QISmain" id="QISmain">
 	<div class="formfonttitle" style="padding:0 0 0 10;" id="FailReason"><#qis_fail_desc7#></div>
-	<div style="margin-left:5px;margin-top:10px;margin-bottom:10px" id="splitLine"><img style="width: 700px; height: 2px;" src="/images/New_ui/export/line_export.png"></div>
+	<div style="margin-left:5px;margin-top:10px;margin-bottom:10px" id="splitLine">
+		<div style="width: 720px; *width: 710px; height: 2px;" class="splitLine"></div>
+	</div>
 	<br/>
 	
 	<div id="ConnFail" style="display:none;">
@@ -95,8 +97,8 @@ function goWireless(){
 	
 		<div class="apply_gen" style="margin-top:30px;">
 			<div style="text-align:center">
-				<input type="button" id="nextButton" value="<#QIS_type_title#>" onclick="redirect_page('internet_type');" class="button_gen_long" style="white-space:normal;">
-				<input type="button" id="nextButton" value="<#QKSet_wireless_webtitle#>" onclick="goWireless();" class="button_gen_long" style="white-space:normal;">
+				<input type="button" id="nextButton" value="<#QIS_type_title#>" onclick="redirect_page('internet_type');" class="button_gen" style="white-space:normal;">
+				<input type="button" id="nextButton" value="<#QKSet_wireless_webtitle#>" onclick="goWireless();" class="button_gen" style="white-space:normal;">
 			</div>
 		</div>
 	</div>
@@ -108,8 +110,8 @@ function goWireless(){
 		
 	
 		<div class="apply_gen" style="margin-top:30px">
-			<input type="button" id="nextButton" value="<#QIS_type_title#>" onclick="redirect_page('internet_type');" class="button_gen_long" >
-			<input type="button" id="nextButton" value="<#QKSet_wireless_webtitle#>" onclick="goWireless();" class="button_gen_long">
+			<input type="button" id="nextButton" value="<#QIS_type_title#>" onclick="redirect_page('internet_type');" class="button_gen" >
+			<input type="button" id="nextButton" value="<#QKSet_wireless_webtitle#>" onclick="goWireless();" class="button_gen">
 		</div>
 	</div>
 	
@@ -122,7 +124,7 @@ function goWireless(){
 			</tr>
 	
 			<tr>
-		  <th width="180"><span><#PPPConnection_UserName_itemname#></span></th>
+		  <th width="180"><span><#Username#></span></th>
 		  <td class="QISformtd"><span><% nvram_get("wan_pppoe_username"); %></span></td>
 			</tr>
 		
@@ -151,8 +153,8 @@ function goWireless(){
 		<p class='QISGeneralFont'><#qis_fail_desc3#></p>
 	
 		<div class="apply_gen" style="margin-top:30px">
-			<input type="button" id="nextButton" value="<#QIS_type_title#>" onclick="redirect_page('internet_type');" class="button_gen_long" >
-			<input type="button" id="nextButton" value="<#QKSet_wireless_webtitle#>" onclick="goWireless();" class="button_gen_long">
+			<input type="button" id="nextButton" value="<#QIS_type_title#>" onclick="redirect_page('internet_type');" class="button_gen" >
+			<input type="button" id="nextButton" value="<#QKSet_wireless_webtitle#>" onclick="goWireless();" class="button_gen">
 		</div>
 	</div>
 </div>

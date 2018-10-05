@@ -1,0 +1,12 @@
+2018-07-03  gettextize  <bug-gnu-gettext@gnu.org>
+
+	* gettext.m4: New file, from gettext-0.19.8.
+	* iconv.m4: New file, from gettext-0.19.8.
+	* lib-ld.m4: New file, from gettext-0.19.8.
+	* lib-link.m4: New file, from gettext-0.19.8.
+	* lib-prefix.m4: New file, from gettext-0.19.8.
+	* nls.m4: New file, from gettext-0.19.8.
+	* po.m4: New file, from gettext-0.19.8.
+	* progtest.m4: New file, from gettext-0.19.8.
+	* Makefile.am (EXTRA_DIST): Add the new files.
+

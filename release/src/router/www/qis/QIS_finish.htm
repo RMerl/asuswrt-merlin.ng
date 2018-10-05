@@ -275,6 +275,9 @@ function doLiveUpdate(_do){
 
 function showCancel(){
 	document.getElementById("newFWCancel").style.display = "";
+	if(parent.new_FW_type==2){
+		document.getElementById("newFWCancelDesc").innerHTML = "<#exist_new_force#>";
+	}
  	document.getElementById("newFWDetected").style.display = "none";
 }
 
@@ -455,6 +458,10 @@ function checkIsNewFirmware(){
 
 		document.getElementById("QISmain").style.display = "none";
 		document.getElementById("liveUpdate_div").style.display = "";
+		if(parent.new_FW_type==2){
+			document.getElementById("liveUpdate_div_leftbutton").value = "<#CTL_UpgradeNight#>";
+			document.getElementById("liveUpdate_div_rightbutton").value = "<#CTL_UpgradeNow#>";
+		}
 
 		//force_upgrade_support : rc_support with "fupgrade"
 		if(!parent.is_CN && parent.force_upgrade_support){
@@ -1381,6 +1388,10 @@ function QKfinish_load_body(){
 		if(parent.new_FW){
 			document.getElementById("mainDiv_finish").style.display = "none";
 			document.getElementById("liveUpdate_div").style.display = "";
+			if(parent.new_FW_type==2){
+				document.getElementById("liveUpdate_div_leftbutton").value = "<#CTL_UpgradeNight#>";
+				document.getElementById("liveUpdate_div_rightbutton").value = "<#CTL_UpgradeNow#>";
+			}
 			document.getElementById("liveUpdateTitle").style.display = "none";
 			$("#currentFW")[0].innerHTML = parent.exist_firmver + "_" + parent.current_buildno + "_" + parent.current_extendno;
 			$("#latestFW")[0].innerHTML = "" 
@@ -1399,6 +1410,10 @@ function QKfinish_load_body(){
 	else{
 		parent.set_step("t3");
 		parent.document.getElementById("LoadingBar").style.visibility = 'hidden';
+		if(parent.gobi_support){
+			document.getElementById("timeObject").style.display = "none";
+			document.getElementById('svc_hint_div').style.display = "none";
+		}
 	}
 
 	if(!isWLclient() && !parent.sysReboot) setTimeout(function(){
@@ -1448,13 +1463,13 @@ var startQuery = function(){
 				<td align="left">
 					<div class="description_down"><#qis_finish_title1#></div>
 				</td>
-				<td align="right">
-					<!--img onclick="parent.gotoIndex();" style="cursor:pointer;" align="right" title="Go to Home" src="/images/backtohome.png" onMouseOver="this.src='/images/backtohomeclick.png'" onMouseOut="this.src='/images/backtohome.png'"-->
-				</td>
+				<td align="right"></td>
 			</tr>
 		</table>
 	</div>
-	<div style="margin:5px;" id="splitLine"><img style="width: 720px; *width: 710px; height: 2px;" src="/images/New_ui/export/line_export.png"></div>
+	<div style="margin:5px;" id="splitLine">
+		<div style="width: 720px; *width: 710px; height: 2px;" class="splitLine"></div>
+	</div>
 
 <p id="timeObject" class="QISGeneralFont"><#General_x_SystemTime_itemname#>: <span id="system_time" size="40" class="devicepin" style="font-size:12px;"></span>&nbsp&nbsp<span id="change_tz" style="font-family:Lucida Console;"></span>&nbsp<span id="dstzone" style="display:none;"></span></p>
 <div id="svc_hint_div" style="margin-left:70px;display:none;"><span style="color:#FFCC00;"><#General_x_SystemTime_syncNTP#></span></div>
@@ -1659,7 +1674,7 @@ var startQuery = function(){
 	<div class="itemTitle"><#menu5_2#></div>
 	<fieldset>
 		<div class="row">
-			<label><#LAN IP#></label>
+			<label><#LAN_IP#></label>
 			<div id="lanip_m"></div>
 		</div>
 		<div class="row_end">
@@ -1684,7 +1699,9 @@ var startQuery = function(){
 </div>
 
 <div id="AreaHint" style="margin-top:10px; margin-left:5px;">
-	<div><img style="width: 720px; *width: 710px; height: 2px;" src="/images/New_ui/export/line_export.png"></div>
+	<div>
+		<div style="width: 720px; *width: 710px; height: 2px;" class="splitLine"></div>
+	</div>
 	<div id="main_manual" style="padding-left:20px;margin-top:10px">
 		<span><#ASUS_Registration#></span>
 	</div>	
@@ -1704,7 +1721,9 @@ var startQuery = function(){
 				</tr>
 			</table>
 		</div>
-		<div style="margin:5px;"><img style="width: 720px; *width: 710px; height: 2px;" src="/images/New_ui/export/line_export.png"></div>
+		<div style="margin:5px;">
+			<div style="width: 720px; *width: 710px; height: 2px;" class="splitLine"></div>
+		</div>
 		<br>
 		<br>
 	</div>
@@ -1724,8 +1743,8 @@ var startQuery = function(){
 		<br>
 		<br>
 		<div class="apply_gen" style="margin-top:5px">
-			<input type="button" value="<#CTL_Cancel#>" onclick="showCancel();" class="button_gen">
-			<input type="button" value="<#checkbox_Yes#>" onclick="doLiveUpdate(true);" class="button_gen">
+			<input type="button" id="liveUpdate_div_leftbutton" value="<#CTL_Cancel#>" onclick="showCancel();" class="button_gen">
+			<input type="button" id="liveUpdate_div_rightbutton" value="<#checkbox_Yes#>" onclick="doLiveUpdate(true);" class="button_gen">
 		</div>
 	</div>
 		
@@ -1755,12 +1774,13 @@ var startQuery = function(){
 						margin-top:5px;
 						width:90%;
 						height:30px;
-						background:url(/images/quotabar_bg_progress.gif);
-						background-repeat: repeat-x;
+						background: #596E74;
+						border-top: 1px solid #929EA1;
+						border-bottom: 1px solid #929eA1;
 					}
 				</style>
 				<span id="progress_bar_no" style="display:none;position:absolute;margin-left:285px;margin-top:7px;*margin-left:290px">0%</span>
-				<img id="updateProgress" src="/images/quotabar.gif" style="width:0%" height="30px">
+				<div id="updateProgress" class="quotabar" style="width:0%;height:30px;"></div>
 			</div>
 		</div>
 		<br>
@@ -1805,7 +1825,9 @@ var startQuery = function(){
 				</tr>
 			</table>
 		</div>
-		<div style="margin:5px;"><img style="width: 720px; *width: 710px; height: 2px;" src="/images/New_ui/export/line_export.png"></div>
+		<div style="margin:5px;">
+			<div style="width: 720px; *width: 710px; height: 2px;" class="splitLine"></div>
+		</div>
 		<br>
 		<br>
 	</div>

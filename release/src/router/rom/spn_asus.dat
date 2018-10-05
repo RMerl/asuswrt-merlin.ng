@@ -124,11 +124,12 @@
 24421,Saunalahti,*99#,,,internet.saunalahti,Saunalahti Internet
 24491,Sonera,*99#,,,internet,Sonera Internet
 24601,Omnitel Lituania GPRS,*99***1#,omni,omni,omnitel,Omnitel HTTP
-24602,Bite GSM Lituania GPRS,*99***1#,,,internet,Bite Internet
+24602,Bite Lithuania,*99***1#,,,internet,Bite Lithuania
 24603,Tele2 Lituania GPRS,*99***1#,wap,wap,internet.tele2.lt,PILDYK Internet(Prepaid)
 24701,LMT INTERNET,*99#,,,internet.lmt.lv,LMT INTERNET
 24702,LV TELE2 Internet,*99#,wap,wap,mobileinternet.tele2.lv,LV TELE2 Internet
 24703,Bite GPRS,*99#,,,internet,Bite GPRS
+24705,Bite Latvia,*99#,,,internet,Bite Latvia
 24801,EMT Internet,*99#,,,internet.emt.ee,EMT Internet
 24802,Elisa Corporate Estonia UMTS GPRS,,,,internet,Elisa
 24803,Tele2 Internet,*99#,,,Internet.tele2.ee,Tele2 Internet

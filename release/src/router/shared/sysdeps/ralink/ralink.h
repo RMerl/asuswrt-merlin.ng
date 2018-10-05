@@ -410,6 +410,7 @@ typedef enum _RT_802_11_PHY_MODE {
 #define OFFSET_FAIL_BOOT_LOG	0x4ffd0	//bit operation for max 100
 #define OFFSET_FAIL_DEV_LOG	0x4ffe0	//bit operation for max 100
 #define OFFSET_SERIAL_NUMBER	0x4fff0
+#define OFFSET_IPADDR_LAN	0x4ff30 // force LAN IP for ATE use
 
 #define OFFSET_POWER_5G_TX0_36_x6	0x40096
 #define OFFSET_POWER_5G_TX1_36_x6	0x400CA

@@ -222,7 +222,7 @@ config RTCONFIG_IPSEC_CLIENT
 	bool "IPsec Support"
 	depends on RTCONFIG_IPSEC
 	default n
-	
+
 # !!TB
 config RTCONFIG_IPV6
 	bool "IPv6 Support"
@@ -421,7 +421,7 @@ config RTCONFIG_MEDIA_SERVER
 	bool "Media Server (MiniDLNA)"
 	depends on RTCONFIG_USB
 	default n
-	
+
 config RTCONFIG_MEDIASERVER_LIMIT
 	bool "Small memory optimization on Media Server"
 	depends on RTCONFIG_MEDIA_SERVER
@@ -1425,7 +1425,7 @@ config RTCONFIG_REBOOT_SCHEDULE
 config RTCONFIG_IPSEC
 	bool "IPSEC support"
 	default n
-	
+
 config RTCONFIG_CAPTIVE_PORTAL
 	bool "Captive Portal support"
 	default n
@@ -1561,6 +1561,10 @@ config RTCONFIG_RTK_NAND
 
 config RTCONFIG_DEFLAN50
 	bool "Let the default LAN subnet be 192.168.50.1"
+	default n
+
+config RTCONFIG_ALL_DEF_LAN50
+	bool "Let the default LAN subnet be 192.168.50.1 in all sku."
 	default n
 
 config RTCONFIG_VPN_FUSION
@@ -1727,11 +1731,11 @@ config RTCONFIG_AMAS
 config RTCONFIG_NO_SELECT_CHANNEL
 	bool "Auto Channel Selection (no select) for MTK."
 	default n
-	
+
 config RTCONFIG_USB_SWAP
 	bool "Enable SWAP, if enable USB function."
 	default n
-		
+
 config RTCONFIG_SW_DEVLED
 	bool "software led control."
 	default n
@@ -1774,4 +1778,8 @@ config RTCONFIG_SW_HW_AUTH
 
 config RTCONFIG_LIBASUSLOG
 	bool "asuslog library for debug"
+	default n
+
+config RTCONFIG_ETHOBD
+	bool "ethernet onboarding for Aimash."
 	default n

@@ -20,7 +20,8 @@
     top: 0;
 	z-index:100;
 	display: none;
-	background-image: url('/images/New_ui/mask.png');
+	background: #424D52;
+	opacity: .94;
 }
 
 

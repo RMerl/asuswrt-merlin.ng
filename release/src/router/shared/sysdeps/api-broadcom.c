@@ -1276,7 +1276,15 @@ char *get_wan_hwaddr(void)
 
 char *get_wlifname(int unit, int subunit, int subunit_x, char *buf)
 {
-	sprintf(buf, "wl%d.%d", unit, subunit);
+	char wifnv[12];
+
+	if (!subunit)
+	{
+		snprintf(wifnv, sizeof(wifnv), "wl%d_ifname", unit);
+		sprintf(buf, nvram_safe_get(wifnv));
+	}
+	else
+		sprintf(buf, "wl%d.%d", unit, subunit);
 
 	return buf;
 }
@@ -1300,55 +1308,3 @@ char *get_wlxy_ifname(int x, int y, char *buf)
 #endif
 	return get_wlifname(x, y, y, buf);
 }
-
-#ifdef RTCONFIG_AMAS
-void add_obd_probe_req_vsie(char *hexdata)
-{
-	char cmd[300] = {0};
-	//Bit 0 - Beacons, Bit 1 - Probe Rsp, Bit 2 - Assoc/Reassoc Rsp
-	//Bit 3 - Auth Rsp, Bit 4 - Probe Req, Bit 5 - Assoc/Reassoc Req
-	int pktflag = 0x10;
-	int len = 0;
-	char tmp[128], prefix[] = "wlXXXXXXXXXX_";
-	char *ifname = NULL;
-
-	len = 3 + strlen(hexdata)/2;	/* 3 is oui's len */
-
-	if (is_router_mode() || access_point_mode())
-		snprintf(prefix, sizeof(prefix), "wl0_");
-	else
-		snprintf(prefix, sizeof(prefix), "wl0.1_");
-
-	ifname = nvram_safe_get(strcat_r(prefix, "ifname", tmp));
-
-	if (ifname && strlen(ifname)) {
-		snprintf(cmd, sizeof(cmd), "wl -i %s add_ie %d %d %02X:%02X:%02X %s",
-			ifname, pktflag, len, OUI_ASUS[0], OUI_ASUS[1], OUI_ASUS[2], hexdata);
-		system(cmd);
-	}
-}
-
-void del_obd_probe_req_vsie(char *hexdata)
-{
-	char cmd[300] = {0};
-	int pktflag = 0x10;
-	int len = 0;
-	char tmp[128], prefix[] = "wlXXXXXXXXXX_";
-	char *ifname = NULL;
-
-	len = 3 + strlen(hexdata)/2;	/* 3 is oui's len */
-
-	if (is_router_mode() || access_point_mode())
-		snprintf(prefix, sizeof(prefix), "wl0_");
-	else
-		snprintf(prefix, sizeof(prefix), "wl0.1_");
-
-	ifname = nvram_safe_get(strcat_r(prefix, "ifname", tmp));
-
-	if (ifname && strlen(ifname)) {
-		snprintf(cmd, sizeof(cmd), "wl -i %s del_ie %d %d %02X:%02X:%02X %s",
-			ifname, pktflag, len, OUI_ASUS[0], OUI_ASUS[1], OUI_ASUS[2], hexdata);
-		system(cmd);
-	}
-}
-#endif	/* RTCONFIG_AMAS */

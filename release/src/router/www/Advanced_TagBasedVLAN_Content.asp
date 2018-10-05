@@ -19,6 +19,7 @@
 <script type="text/javaScript" src="js/jquery.js"></script>
 <script type="text/javascript" src="switcherplugin/jquery.iphone-switch.js"></script>
 <script type="text/javascript" src="validator.js"></script>
+<script type="text/javascript" src="js/subnet_rule.js"></script>
 <style>
 .contentM_connection{
 	position:absolute;
@@ -100,8 +101,7 @@ var lan_num = 8;
 var selected_row = 0;
 var vlan_enable_array = [];
 var vlan_used_vid_array = [];
-var subnet_rulelist = decodeURIComponent("<% nvram_char_to_ascii("","subnet_rulelist"); %>");
-var subnet_rulelist_row = subnet_rulelist.split('<');
+var subnet_array = [];
 var old_tGatewayIP = "";
 var lan1_pvid_array = [];
 var lan2_pvid_array = [];
@@ -114,6 +114,7 @@ var lan8_pvid_array = [];
 var default_lanip = '<% nvram_get("lan_ipaddr"); %>';
 var default_gateway_ip = ('<% nvram_get("dhcp_gateway_x"); %>' == "")? default_lanip:'<% nvram_get("dhcp_gateway_x"); %>';
 var default_netmaks = '<% nvram_get("lan_netmask"); %>';
+var default_subnet = default_gateway_ip + "/" + netmask_to_bits(default_netmaks);
 var vlan1_wl_array = [];
 var vlan_pvid_list_array = decodeURIComponent('<% nvram_char_to_ascii("","vlan_pvid_list"); %>').split('>');
 var switch_stb_x = '<% nvram_get("switch_stb_x"); %>';
@@ -137,15 +138,19 @@ var orig_lan_trunk_type = '<% nvram_get("lan_trunk_type"); %>';
 
 function initial(){
 	show_menu();
+	parse_LanToLanRoute_to_object();
 	parse_vlan_if_list();
 	show_vlan_rulelist();
 	show_pvid_list();
+	document.getElementById("default_subnet_desc").innerHTML = default_subnet +" (<#Setting_factorydefault_value#>)";
 }
 
 function applyRule(){
 	if(check_duplicate_subnet()){
 		document.form.vlan_rulelist.value = vlan_rulelist;
 		document.form.subnet_rulelist.value = subnet_rulelist;
+		save_LanToLanRoute();
+		document.form.subnet_rulelist_ext.value = subnet_rulelist_ext;
 		set_pvid_list();
 		showLoading();
 		document.form.submit();
@@ -185,11 +190,12 @@ function check_duplicate_subnet(){
 }
 
 function showSettingTable(show, edit){
+	var cur_subnet = "";
+
 	if(show == 0){
 		$("#VlanSettings_table").fadeOut(300);
 		document.form.vlan_id.value = "";
 		document.form.vlan_prio.value = "";
-		document.form.subnet_list.selectedIndex = 0;
 		bind_interface_array.length = 0;
 	}
 	else{
@@ -221,8 +227,17 @@ function showSettingTable(show, edit){
 			}
 		}
 
+		if($("#default_subnet_desc").css("display") != 'none')
+			cur_subnet = default_subnet;
+		else
+			cur_subnet = document.form.subnet_list.value;
+
 		show_binding_list();
 		show_inf_list();
+
+		get_LanToLanRoute(cur_subnet);
+		generate_LanToLanRoute_options();
+		show_LanToLanRoute_list();
 
 		change_interface_type(document.form.interface_list);
 		$("#VlanSettings_table").fadeIn(300);
@@ -291,9 +306,9 @@ function change_interface_type(obj){
 	}
 }
 
-function set_port_type(interface_text, port_type){
+function set_port_type(interface_value, port_type){
 	for(var i = 0; i < Interface_Text_Value.length; i++){
-		if(decodeURIComponent(Interface_Text_Value[i].if_text) == interface_text)
+		if(Interface_Text_Value[i].value == interface_value)
 			Interface_Text_Value[i].type = port_type;
 	}
 }
@@ -342,7 +357,7 @@ function update_vlan1_rule(){
 
 function add_BindingInf(){
 	var interface_select = document.form.interface_list;
-	set_port_type(interface_select.options[interface_select.selectedIndex].text, document.form.port_type.value);
+	set_port_type(interface_select.options[interface_select.selectedIndex].value, document.form.port_type.value);
 	Do_addRow_Group();
 }
 
@@ -352,7 +367,7 @@ function Do_addRow_Group(){
 	var interface_value = document.form.interface_list.options[document.form.interface_list.selectedIndex].value;
 	var inf_element = { "text": interface_text,
 					    "value": interface_value,
-					    "type": document.form.port_type[document.form.port_type.selectedIndex].text };
+					    "type": document.form.port_type[document.form.port_type.selectedIndex].value };
 	bind_interface_array.push(inf_element);
 	interface_select.remove(interface_select.selectedIndex);
 	if(interface_select.length == 0)
@@ -389,7 +404,7 @@ function add_infoption_bytext(interface_text){
 function del_BindingInf(r){
 	var index = r.parentNode.parentNode.rowIndex;
 	var binding_inf_table = document.getElementById('binding_inf_table');
-	var del_interface_text = binding_inf_table.rows[index].cells[0].innerHTML;
+	var del_interface_text = htmlEnDeCode.htmlDecode(binding_inf_table.rows[index].cells[0].innerHTML);
 	var del_interface_value = inf_text_to_value(del_interface_text);
 
 	//Add wireless interfaces back to all_interfaces_array and vlan1_wl_array
@@ -402,9 +417,9 @@ function del_BindingInf(r){
 	binding_inf_table.deleteRow(index);
   	bind_interface_array.length = 0;
 	for(var k = 0; k < binding_inf_table.rows.length; k++){
-		var inf_element = {"text": binding_inf_table.rows[k].cells[0].innerHTML,
-						   "value": inf_text_to_value(binding_inf_table.rows[k].cells[0].innerHTML),
-						   "type": binding_inf_table.rows[k].cells[1].innerHTML};
+		var inf_element = {"text": htmlEnDeCode.htmlDecode(binding_inf_table.rows[k].cells[0].innerHTML),
+						   "value": inf_text_to_value(htmlEnDeCode.htmlDecode(binding_inf_table.rows[k].cells[0].innerHTML)),
+						   "type": find_portType_value(htmlEnDeCode.htmlDecode(binding_inf_table.rows[k].cells[1].innerHTML))};
 		bind_interface_array.push(inf_element);
 	}
 
@@ -425,7 +440,7 @@ function show_binding_list(){
 			code +='<tr id="row'+key+'">';
 			var wid=[40, 40];
 			code +='<td width="'+wid[0]+'%">'+ htmlEnDeCode.htmlEncode(bind_interface_array[key].text) +'</td>';
-			code +='<td width="'+wid[1]+'%">'+ htmlEnDeCode.htmlEncode(bind_interface_array[key].type) +'</td>';
+			code +='<td width="'+wid[1]+'%">'+ htmlEnDeCode.htmlEncode(find_portType_text(bind_interface_array[key].type)) +'</td>';
 			if(selected_row == 0 && bind_interface_array[key].value.substr(0, 2) == "wl")
 				code +='<td width="20%"></td>';
 			else
@@ -490,7 +505,7 @@ function add_vlan_rule(){
 			for(var j = 0; j < bind_interface_array.length; j++){
 				if(decodeURIComponent(Interface_Text_Value[i].if_text) == bind_interface_array[j].text){
 					tmp_value = tmp_value | (1 << i);
-					if(bind_interface_array[j].type == "Untagged")//untagged
+					if(bind_interface_array[j].type == PortType_Value.Untagged)//untagged
 						tmp_value = tmp_value | (1 << (i+8));
 					break;
 				}
@@ -505,7 +520,7 @@ function add_vlan_rule(){
 			for(var j = 0; j < bind_interface_array.length; j++){
 				if(decodeURIComponent(Interface_Text_Value[i].if_text) == bind_interface_array[j].text){
 					tmp_value = tmp_value | (1 << lan_index);
-					if(bind_interface_array[j].type == "Untagged")//untagged
+					if(bind_interface_array[j].type == PortType_Value.Untagged)//untagged
 						tmp_value = tmp_value | (1 << (lan_index+16));
 					break;
 				}
@@ -542,6 +557,11 @@ function add_vlan_rule(){
 		vlan_rule = "<1>" + document.form.vlan_id.value + ">" + document.form.vlan_prio.value + ">" + 
 					wan_value_str + ">" + lan_value_str + ">" + wireless_value_str_2g + ">" + wireless_value_str_5g + ">" + document.form.subnet_list.value+">1>0";
 		vlan_rulelist = vlan_rulelist + vlan_rule;
+
+		if($("#default_subnet_desc").css("display") != 'none')
+			update_LanToLanRoute_array(default_subnet);
+		else
+			update_LanToLanRoute_array(document.form.subnet_list.value);
 
 		showSettingTable(0);
 		show_vlan_rulelist();
@@ -701,7 +721,7 @@ function show_vlan_rulelist(){
 					if( j == 1)//VID
 						vlan_used_vid_array.push(vlan_rulelist_col[1]);
 					if(j == 7 && vlan_rulelist_col[7] == "default"){//subnet
-						code +='<td style="width:'+wid[j]+'%">' + "<#Setting_factorydefault_value#>" + '</td>';
+						code +='<td style="width:'+wid[j]+'%">' + default_subnet + " (<#Setting_factorydefault_value#>)" + '</td>';
 					}
 					else
 						code +='<td style="width:'+wid[j]+'%">'+ vlan_rulelist_col[j] +'</td>';
@@ -806,7 +826,7 @@ function edit_vlanrule(r){
 	if(binding_list != "" && vlan_rulelist_table.rows[selected_row].cells[4].innerHTML != "")
 		binding_list += "<br>"
 
-	binding_list += vlan_rulelist_table.rows[selected_row].cells[4].innerHTML;
+	binding_list += htmlEnDeCode.htmlDecode(vlan_rulelist_table.rows[selected_row].cells[4].innerHTML);
 	var binding_list_array = binding_list.split("<br>");
 	for(var i = 0; i < binding_list_array.length; i++){
 		if(binding_list_array[i].indexOf("<span") != -1){
@@ -834,19 +854,19 @@ function edit_vlanrule(r){
 					value = 1; //always untagged
 				}
 				if( value == 1)
-					Interface_Text_Value[k].type = "01"
+					Interface_Text_Value[k].type = PortType_Value.Untagged;
 				else if ( value == 0)
-					Interface_Text_Value[k].type = "10"
+					Interface_Text_Value[k].type = PortType_Value.Tagged;
 
 				var inf_element = {"text": decodeURIComponent(Interface_Text_Value[k].if_text),
 								   "value": Interface_Text_Value[k].value,
-								   "type": (value == 1)? "Untagged": "Tagged"};
+								   "type": Interface_Text_Value[k].type};
 				bind_interface_array.push(inf_element);
 			}
 		}
 	}
 
-	if(vlan_rulelist_table.rows[selected_row].cells[5].innerHTML == "<#Setting_factorydefault_value#>"){//Default VLAN
+	if(vlan_rulelist_table.rows[selected_row].cells[5].innerHTML.indexOf(default_subnet) != -1){//Default VLAN
 		document.getElementById("vlan_id").style.display = "none";
 		document.getElementById("default_vlan_id").style.display = "";
 		document.getElementById("default_vlan_id").innerHTML = vlan_rulelist_table.rows[selected_row].cells[1].innerHTML;
@@ -864,6 +884,7 @@ function edit_vlanrule(r){
 		document.getElementById("subnet_sel").style.display = "";
 		document.getElementById("default_subnet_desc").style.display = "none";
 	}
+
 	showSettingTable(1, 1);
 }
 
@@ -871,6 +892,13 @@ function find_portType_text(value){
 	for(var i = 0; i < PortType_Text_Value.length; i++){
 		if(PortType_Text_Value[i].value == value)
 			return PortType_Text_Value[i].type_text;
+	}
+}
+
+function find_portType_value(text){
+	for(var i = 0; i < PortType_Text_Value.length; i++){
+		if(PortType_Text_Value[i].type_text == text)
+			return PortType_Text_Value[i].value;
 	}
 }
 
@@ -895,7 +923,7 @@ function change_vlan_rule(){
 						wired_interface += ", ";
 					wired_interface += htmlEncode_decodeURI(Interface_Text_Value[i].if_text);
 					tmp_value = tmp_value | (1 << i);
-					if(bind_interface_array[j].type == "Untagged")//untagged
+					if(bind_interface_array[j].type == PortType_Value.Untagged)//untagged
 						tmp_value = tmp_value | (1 << (i+8));
 					break;
 				}
@@ -914,7 +942,7 @@ function change_vlan_rule(){
 						wired_interface += ", ";
 					wired_interface += htmlEncode_decodeURI(Interface_Text_Value[i].if_text);
 					tmp_value = tmp_value | (1 << lan_index);
-					if(bind_interface_array[j].type == "Untagged")//untagged
+					if(bind_interface_array[j].type == PortType_Value.Untagged)//untagged
 						tmp_value = tmp_value | (1 << (lan_index+16));
 					break;
 				}
@@ -966,6 +994,12 @@ function change_vlan_rule(){
 		}
 		vlan_rulelist_row[selected_row + 1] = vlan_rulelist_col.join(">");
 		vlan_rulelist = vlan_rulelist_row.join("<");
+
+		if($("#default_subnet_desc").css("display") != 'none')
+			update_LanToLanRoute_array(default_subnet);
+		else
+			update_LanToLanRoute_array(document.form.subnet_list.value);
+
 		showSettingTable(0);
 		show_vlan_rulelist();
 	}
@@ -982,39 +1016,25 @@ function enable_vlan_rule(index, enable){
 	vlan_rulelist = vlan_rulelist_row.join('<');
 }
 
-function netmask_to_bits(netmask){
-	var netmaskArray = netmask.split(".");
-	var val = 0;
-	var bit_number = 0;
-
-	for(var i = 0; i < netmaskArray.length; i++){
-		val = parseInt(netmaskArray[i], 10);
-		for( var j = 0; j < 8; j++){
-			if( (val >> j) & 1 )
-				bit_number++;
-		}
-	}
-
-	return bit_number;
-}
-
 function generate_sunbet_options(select){
 	select.length = 0;
-	for(var i = 2; i < subnet_rulelist_row.length; i++){
+	subnet_array = [];
+
+	for(var i = 1; i < subnet_rulelist_row.length; i++){
 		var subnet_rulelist_col = subnet_rulelist_row[i].split('>');
 		var option = document.createElement("option");
 		var option_text = "";
+		var subnet = "";
 
-		if(i == 1){
-			option.text = "<#Setting_factorydefault_value#>";
-			option.value = "default";
-		}
-		else{
+		subnet = subnet_rulelist_col[0] + '/' + netmask_to_bits(subnet_rulelist_col[1]);
+		subnet_array.push(subnet);
+
+		if(i > 1){
 			option_text = subnet_rulelist_col[0] + '/' + netmask_to_bits(subnet_rulelist_col[1]);
 			option.value = option_text;
 			option.text = option_text;
+			select.add(option);
 		}
-		select.add(option);
 	}
 
 	if(select.length < 7){
@@ -1326,6 +1346,8 @@ function handleSubnetRulelist() {
 				subnet_rulelist += subnet_rulelist_col[9];
 				subnet_rulelist += ">";
 				subnet_rulelist += subnet_rulelist_col[10];
+				subnet_rulelist += ">";
+				subnet_rulelist += subnet_rulelist_col[11];
 			}
 			else if(i > 1 && subnet_rulelist_col[0] == getwayIP) {
 				subnet_rulelist += "<";
@@ -1350,6 +1372,8 @@ function handleSubnetRulelist() {
 				subnet_rulelist += subnet_rulelist_col[9];
 				subnet_rulelist += ">";
 				subnet_rulelist += subnet_rulelist_col[10];
+				subnet_rulelist += ">";
+				subnet_rulelist += subnet_rulelist_col[11];
 			}
 			else {
 				subnet_rulelist += "<";
@@ -1382,18 +1406,20 @@ function update_subnet_rulelist(){
 
 function saveSubnetSettings(){
 	if(validSubnetForm()){
+		var gateway_netmask = document.form.tGatewayIP.value + "/" + netmask_to_bits(document.form.tSubnetMask.value);
+
 		handleSubnetRulelist();
 		update_subnet_rulelist();
+		parse_LanToLanRoute_to_object();
+		get_LanToLanRoute(gateway_netmask);
+		generate_LanToLanRoute_options();
+		show_LanToLanRoute_list();
 		hide_subnet_edit();
 		generate_sunbet_options(document.form.subnet_list);
 		for(var i = 0; i < document.form.subnet_list.length; i++){
-			var gateway_netmask = document.form.tGatewayIP.value + "/" + netmask_to_bits(document.form.tSubnetMask.value);
 			if(document.form.subnet_list.options[i].value == gateway_netmask)
 				document.form.subnet_list.selectedIndex = i;
 		}
-
-		//document.save_form.subnet_rulelist.value = subnet_rulelist;
-		//document.save_form.submit();
 	}
 }
 
@@ -1612,6 +1638,109 @@ function set_pvid_list(){
 		lan4_pvid + ">" + lan5_pvid + ">" + lan6_pvid + ">" + lan7_pvid + ">" + lan8_pvid;
 }
 
+function isCurrentRoute(subnet){
+	for(var i = 0; i < cur_LanToLanRoute.length; i++){
+		if(subnet == cur_LanToLanRoute[i]){
+			return 1;
+		}
+	}
+
+	return 0;
+}
+
+function isDupOption(select, value){
+	for(var i = 0; i < select.length; i++){
+		if(select.options[i].value == value)
+			return 1;
+	}
+
+	return 0;
+}
+
+function generate_LanToLanRoute_options(){
+	var select = document.getElementById("other_subnet_select");
+	var vid = document.form.vlan_id.value;
+
+	select.length = 0;
+	for(var i = 0; i < subnet_array.length; i++){
+		var other_subnet =  document.createElement("option");;
+		var subnet =  subnet_array[i];
+
+		if(!isCurrentRoute(subnet) && !isDupOption(select, subnet)){
+			if( ($("#default_subnet_desc").css("display") != 'none' && subnet == default_subnet) ||
+				($("#subnet_sel").css("display") != 'none' && subnet == document.form.subnet_list.value) )
+				continue;
+			else{
+				if(subnet == default_subnet){
+					other_subnet.text = default_subnet + " (<#Setting_factorydefault_value#>)";
+				}
+				else{
+					other_subnet.text = subnet;
+				}
+				other_subnet.value = subnet;
+			}
+
+			select.add(other_subnet);
+		}
+	}
+
+	if(select.length == 0)
+		document.getElementById("addSubnet_tr").style.display = "none";
+	else
+		document.getElementById("addSubnet_tr").style.display = "";
+}
+
+function show_LanToLanRoute_list(){
+	var code = "";
+
+	code +='<table width="97%" cellspacing="0" cellpadding="4" align="center" class="list_table" id="LanToLanRoute_list">';
+
+	if(cur_LanToLanRoute.length == 0)
+		code +="<tr><td style='color:#FFCC00;' colspan='3'>There is no LAN-to-LAN route.</td>";
+	else{
+		Object.keys(cur_LanToLanRoute).forEach(function(key){
+			code +='<tr id="row'+key+'">';
+			if(htmlEnDeCode.htmlEncode(cur_LanToLanRoute[key]) == default_subnet)
+				code +='<td width="80%">'+ default_subnet + " (<#Setting_factorydefault_value#>)" +' </td>';
+			else
+				code +='<td width="80%">'+ htmlEnDeCode.htmlEncode(cur_LanToLanRoute[key]) +'</td>';
+			code +='<td width="20%"><input class="remove_btn" onclick="del_LanToLanRoute(this);" value=""/></td>';
+			code += '</tr>';
+		});
+	}
+	code +='</table>';
+	document.getElementById('lanToLanRoute_Block').innerHTML = code;
+}
+
+function add_LanToLanRoute(){
+	var select = document.getElementById("other_subnet_select");
+
+	cur_LanToLanRoute.push(document.form.other_subnet_select.value);
+	show_LanToLanRoute_list();
+	select.options.remove(select.selectedIndex);
+	if(select.length == 0)
+		document.getElementById("addSubnet_tr").style.display = "none";
+}
+
+function del_LanToLanRoute(r){
+	var select = document.getElementById("other_subnet_select");
+	var index = r.parentNode.parentNode.rowIndex;
+	var LanToLanRoute_table = document.getElementById("LanToLanRoute_list");
+	var del_route = htmlEnDeCode.htmlDecode(LanToLanRoute_table.rows[index].cells[0].innerHTML);
+
+	if(del_route.indexOf(default_subnet) != -1)
+		del_route = default_subnet;
+
+	for(var i = 0; i < cur_LanToLanRoute.length; i++){
+		if(del_route == cur_LanToLanRoute[i]){
+			cur_LanToLanRoute.splice(i, 1);
+			break;
+		}
+	}
+
+	LanToLanRoute_table.deleteRow(index);
+	generate_LanToLanRoute_options();
+}
 </script>
 </head>
 
@@ -1652,6 +1781,7 @@ function set_pvid_list(){
 <input type="hidden" name="vlan_rulelist" value="">
 <input type="hidden" name="vlan_pvid_list" value="">
 <input type="hidden" name="subnet_rulelist" value='<% nvram_get("subnet_rulelist"); %>'>
+<input type="hidden" name="subnet_rulelist_ext" value='<% nvram_get("subnet_rulelist_ext"); %>'>
 <input type="hidden" name="lan_trunk_type" value='<% nvram_get("lan_trunk_type"); %>' disabled>
 <input type="hidden" name="lan_trunk_0" value='<% nvram_get("lan_trunk_0"); %>' disabled>
 <input type="hidden" name="lan_trunk_1" value='<% nvram_get("lan_trunk_1"); %>' disabled>
@@ -1661,7 +1791,7 @@ function set_pvid_list(){
 		<tr>
 			<td align="left">
 			<span class="formfonttitle"><#TBVLAN_EditSubnetProfile#></span>
-			<div style="width:630px; height:15px;overflow:hidden;position:relative;top:5px;"><img src="images/New_ui/export/line_export.png"></div>
+			<div style="width:630px; height:2px;overflow:hidden;position:relative;top:5px;" class="splitLine"></div>
 			<div style="margin-left:5px;"><#TBVLAN_Subnet_desc#></div>
 			</td>
 		</tr>
@@ -1749,14 +1879,36 @@ function set_pvid_list(){
 		<tr>
 			<th><#Subnet#></th>
 			<td id="subnet_sel" align="left">
-				<select id="subnet_list" class="input_option" name="subnet_list">
+				<select id="subnet_list" class="input_option" name="subnet_list" onchange="get_LanToLanRoute(this.value);generate_LanToLanRoute_options();show_LanToLanRoute_list();">
 				</select>
 				<input id="subnet_btn" class="edit_btn" onclick="show_subnet_edit()" value=""/>
 			</td>
-			<td id="default_subnet_desc" style="display:none;"><#Setting_factorydefault_value#></td>
+			<td id="default_subnet_desc" style="word-break: keep-all;display:none;"><#Setting_factorydefault_value#></td>
 		</tr>
 	</table>
- 	<table width="97%" border="1" align="center" cellpadding="4" cellspacing="0" bordercolor="#6b8fa3" class="FormTable_table" style="margin-top:10px;">
+<div id="LanToLanRoute_Support">
+	<div id="LanToLanRoute_div">
+	<table width="97%" border="1" align="center" cellpadding="4" cellspacing="0" bordercolor="#6b8fa3" class="FormTable_table" style="margin-top:10px;">
+		<thead>
+			<tr>
+				<td colspan="3">LAN-to-LAN route</td>
+			</tr>
+		</thead>
+		<tr>
+		<th width="80%">Other Subnet</th>
+		<th width="20%"><#list_add_delete#></th>
+		</tr>
+		<tr id="addSubnet_tr">
+			<td>
+				<select id="other_subnet_select" class="input_option" name="other_subnet_select"></select>
+			</td>
+			<td><input type="button" class="add_btn" onClick="add_LanToLanRoute();" name="add_route_btn" value=""></td>
+		</tr>
+	</table>
+	<div id="lanToLanRoute_Block"></div>
+	</div>
+</div>
+	<table width="97%" border="1" align="center" cellpadding="4" cellspacing="0" bordercolor="#6b8fa3" class="FormTable_table" style="margin-top:10px;">
 		<thead>
 			<tr>
 				<td colspan="3" id="binding_inf_head"><#TBVLAN_BindingInf#></td>
@@ -1805,7 +1957,7 @@ function set_pvid_list(){
 						<td bgcolor="#4D595D" valign="top"  >
 							<div>&nbsp;</div>
 							<div class="formfonttitle">VLAN - <#TBVLAN_Title#></div>
-							<div style="margin-left:5px;margin-top:10px;margin-bottom:10px"><img src="/images/New_ui/export/line_export.png"></div>
+							<div style="margin:10px 0 10px 5px;" class="splitLine"></div>
 							<div class="formfontdesc"><#VLAN_desc#></div>
 							<table width="98%" border="1" align="center" cellpadding="4" cellspacing="0" bordercolor="#6b8fa3"  class="FormTable" style="margin-top:20px;">
 							<thead>

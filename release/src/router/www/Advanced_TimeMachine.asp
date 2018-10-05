@@ -247,7 +247,7 @@ function applyRule(){
 						</tr>
 					</table>
 				</div>
-				<div style="margin:5px;"><img src="/images/New_ui/export/line_export.png"></div>
+				<div style="margin:5px;" class="splitLine"></div>
 				<div class="formfontdesc" style="line-height:20px;font-style:italic;font-size: 14px;">
 					<table>
 						<tr>

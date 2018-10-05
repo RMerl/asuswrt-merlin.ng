@@ -42,17 +42,6 @@ function set_re_status(){
 		document.getElementById("remoteIP_tr").style.display = "none";
 	}
 }
-
-function sbtnOver(o){
-	o.style.color = "#FFFFFF";		
-	o.style.background = "url(/images/sbtn.gif) #FFCC66";
-	o.style.cursor = "pointer";
-}
-
-function sbtnOut(o){
-	o.style.color = "#000000";
-	o.style.background = "url(/images/sbtn0.gif) #FFCC66";
-}
 </script>
 </head>
 
@@ -68,7 +57,7 @@ function sbtnOut(o){
   </tr>
   <tr>
     <th><#AP_survey#></th>
-    <td><input type="button" class="sbtn" value="<#btn_go#>" onclick="javascript:parent.location.href='../survey.htm';" onmouseover="sbtnOver(this);" onmouseout="sbtnOut(this);"></td>
+    <td><input type="button" class="button_gen" value="<#btn_go#>" onclick="javascript:parent.location.href='../survey.htm';"></td>
   </tr>   
 </table>
 </body>

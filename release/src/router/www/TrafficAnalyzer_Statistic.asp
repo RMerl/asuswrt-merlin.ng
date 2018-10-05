@@ -23,6 +23,7 @@
 <script type="text/javascript" src="/switcherplugin/jquery.iphone-switch.js"></script>
 <script type="text/javascript" src="/popup.js"></script>
 <script type="text/javascript" src="/js/httpApi.js"></script>
+<script language="JavaScript" type="text/javascript" src="/js/asus_eula.js"></script>
 <style>
 #holder {
     height: 330px;
@@ -206,6 +207,10 @@ function get_client_used_apps_info(client_index, used_data_array, top5_info, typ
 				}
 			}
 			else{
+				if(client_index == undefined){
+					client_index = "0";
+				}
+				
 				document.getElementById('top_client_name').innerHTML = total_apps_array[client_index].name;
 				if(document.getElementById('traffic_option').value == "both"){
 					total_traffic = total_apps_array[client_index].rx + total_apps_array[client_index].tx;
@@ -1453,35 +1458,9 @@ function cal_panel_block(obj){
 		document.getElementById(obj).style.marginLeft = blockmarginLeft+"px";
 }
 
-function cal_agreement_block(){
-	var blockmarginLeft;
-	if (window.innerWidth)
-		winWidth = window.innerWidth;
-	else if ((document.body) && (document.body.clientWidth))
-		winWidth = document.body.clientWidth;
-
-	if (document.documentElement  && document.documentElement.clientHeight && document.documentElement.clientWidth){
-		winWidth = document.documentElement.clientWidth;
-	}
-
-	if(winWidth >1050){
-		winPadding = (winWidth-1050)/2;
-		winWidth = 1105;
-		blockmarginLeft= (winWidth*0.25)+winPadding;
-	}
-	else if(winWidth <=1050){
-		blockmarginLeft= (winWidth)*0.25+document.body.scrollLeft;
-
-	}
-
-	document.getElementById("agreement_panel").style.marginLeft = blockmarginLeft+"px";
-}
-
 function eula_confirm(){
 	document.form.TM_EULA.value = 1;
 	document.form.bwdpi_db_enable.value = 1;
-	$("#agreement_panel").fadeOut(100);
-	document.getElementById("hiddenMask").style.visibility = "hidden";
 	document.form.action_wait.value = "15";
 	applyRule();
 }
@@ -1489,10 +1468,6 @@ function eula_confirm(){
 function cancel(){
 	curState = 0;
 	$('#iphone_switch').animate({backgroundPosition: -37}, "slow", function() {});
-	$("#agreement_panel").fadeOut(100);
-	document.getElementById("hiddenMask").style.visibility = "hidden";
-	htmlbodyforIE = parent.document.getElementsByTagName("html");  //this both for IE&FF, use "html" but not "body" because <!DOCTYPE html PUBLIC.......>
-	htmlbodyforIE[0].style.overflow = "scroll";	  //hidden the Y-scrollbar for preventing from user scroll it.
 }
 
 function applyRule(){
@@ -1604,38 +1579,12 @@ function updateTrafficAnalyzer() {
 																	<script type="text/javascript">
 																		$('#traffic_analysis_enable').iphoneSwitch('<% nvram_get("bwdpi_db_enable"); %>',
 																			function(){
-																				if(document.form.TM_EULA.value == 0){
-																					var adjust_TM_eula_height = function(_objID) {
-																						var scrollTop = window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop || 0;
-																						document.getElementById(_objID).style.top = (scrollTop + 10) + "px";
-																						var visiable_height = document.documentElement.clientHeight;
-																						var tm_eula_container_height = parseInt(document.getElementById(_objID).offsetHeight);
-																						var tm_eula_visiable_height = visiable_height - tm_eula_container_height;
-																						if(tm_eula_visiable_height < 0) {
-																							var tm_eula_content_height = parseInt(document.getElementById("tm_eula_content").style.height);
-																							document.getElementById("tm_eula_content").style.height = (tm_eula_content_height - Math.abs(tm_eula_visiable_height) - 20) + "px"; //content height - overflow height - margin top and margin bottom
-																						}
-																					};
-
-																				  $.get("tm_eula.htm", function(data){
-																					document.getElementById('agreement_panel').innerHTML= data;
-																						var url = "https://www.asus.com/Microsite/networks/Trend_Micro_EULA/";
-																						$("#eula_url").attr("href",url);
-																						url = "https://www.trendmicro.com/en_us/about/legal/privacy-policy-product.html"
-																						$("#tm_eula_url").attr("href",url);
-																						url = "https://success.trendmicro.com/data-collection-disclosure";
-																						$("#tm_disclosure_url").attr("href",url);
-																						adjust_TM_eula_height("agreement_panel");
-																					});
-
-																					dr_advise();
-																					cal_agreement_block();
-																					$("#agreement_panel").fadeIn(300);
-																					return false;
-																				}
-
+																				ASUS_EULA.config(eula_confirm, cancel);
+																				
+																				if(ASUS_EULA.check("tm")){
 																					document.form.bwdpi_db_enable.value = 1;
 																					applyRule();
+																				}
 																			},
 																			function(){
 																				document.form.bwdpi_db_enable.value = 0;
@@ -1651,7 +1600,7 @@ function updateTrafficAnalyzer() {
 											</tr>
 										</table>
 									</div>
-									<div style="margin-left:5px;margin-bottom:10px"><img src="/images/New_ui/export/line_export.png"></div>
+									<div style="margin:0 0 10px 5px;" class="splitLine"></div>
 									<div class="formfontdesc"><#Traffic_Analyzer_desc#></div>
 									<div style="margin-left:10px;">
 										<label style="font-size:16px;"><#Statistic_last_date#>:</label>

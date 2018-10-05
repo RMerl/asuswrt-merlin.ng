@@ -71,7 +71,10 @@
 
 #apn_proceeding_img{
  	height:21px;
-	background:#C0D1D3 url(/images/proceeding_img.gif);
+	background: #D7E8F4;
+	background: -webkit-linear-gradient(#F2F7EB 0%, #E4E6EE 49%, #C8D3Db 50%, #BACEDA 51%, #D7E8F4 100%);
+	background: -o-linear-gradient(#F2F7EB 0%, #E4E6EE 49%, #C8D3Db 50%, #BACEDA 51%, #D7E8F4 100%);
+	background: linear-gradient(#F2F7EB 0%, #E4E6EE 49%, #C8D3Db 50%, #BACEDA 51%, #D7E8F4 100%);
 }
 
 </style>
@@ -145,6 +148,7 @@ var current_buildno = "";
 var current_extendno = "";
 var liveUpdateFinish = false;
 var new_FW = false;
+var new_FW_type = 0;
 var retry = 0;
 var isStatic = false;
 var staticIP = false;
@@ -166,7 +170,22 @@ else
 	var dual_ewan = false;
 
 var cur_wan_unit = 0;
+var hadModem = function(){return hadPlugged("modem")};
 
+var iptv_profiles = [<% get_iptvSettings();%>][0];
+var isp_profiles = iptv_profiles.isp_profiles;
+var original_switch_wantag = '<% nvram_get("switch_wantag"); %>';
+var original_switch_wan0tagid = '<%nvram_get("switch_wan0tagid"); %>';
+var original_switch_wan0prio  = '<%nvram_get("switch_wan0prio"); %>';
+var original_switch_wan1tagid = '<%nvram_get("switch_wan1tagid"); %>';
+var original_switch_wan1prio  = '<%nvram_get("switch_wan1prio"); %>';
+var original_switch_wan2tagid = '<%nvram_get("switch_wan2tagid"); %>';
+var original_switch_wan2prio  = '<%nvram_get("switch_wan2prio"); %>';
+var orig_mr_enable = '<% nvram_get("mr_enable_x"); %>';
+var orig_emf_enable = '<% nvram_get("emf_enable"); %>';
+var orig_wan_vpndhcp = '<% nvram_get("wan_vpndhcp"); %>';
+var orig_quagga_enable = '<% nvram_get("quagga_enable"); %>';
+var orig_ttl_inc_enable = '<% nvram_get("ttl_inc_enable"); %>';
 
 var htmlEnDeCode = (function() {
 	var charToEntityRegex,
@@ -255,7 +274,8 @@ function detect_firmware(){
 			}
 			else{
 				if(webs_state_error == 0){
-					if(isNewFW(webs_state_info, current_firmware_path, current_firmware_path) && exist_firmver[0] != 9){
+					new_FW_type = webs_state_flag;
+					if(webs_state_flag==1 || webs_state_flag==2){	// && exist_firmver[0] != 9
 						new_FW = true;
 					}
 				}
@@ -673,6 +693,41 @@ function detect_httpd(){
   		}
   	});
 }
+
+function create_ISP_select(select){
+	var text = "";
+	var selected = false;
+
+	if(isp_profiles.length > 0){
+		select.length = 0;
+		for(var i = 0; i < isp_profiles.length; i++){
+			text = isp_profiles[i].profile_name;
+			selected = false;
+
+			if(text == "none")
+				text = "<#wl_securitylevel_0#>";
+			else if(text == "manual")
+				text = "<#Manual_Setting_btn#>";
+
+			if(isp_profiles[i].switch_wantag == original_switch_wantag)
+				selected = true;
+
+			var option = new Option(text, isp_profiles[i].switch_wantag, false, selected);
+			select.options.add(option);
+		}
+	}
+
+	if(select.selectedIndex < 0)
+		select.selectedIndex = 0;
+}
+
+function get_isp_settings(isp){
+	for(var i = 0; i < isp_profiles.length; i++){
+		if( isp == isp_profiles[i].switch_wantag ){
+			return isp_profiles[i];
+		}
+	}
+}
 </script>
 </head>
 
@@ -888,16 +943,19 @@ function detect_httpd(){
 	<input type="hidden" name="lan_netmask_rt" value="<% nvram_get("lan_netmask_rt"); %>">
 	<!-- unifi -->
 	<input type="hidden" name="switch_wantag" value="<% nvram_get("switch_wantag"); %>">
-	<input type="hidden" name="switch_wan0tagid" value="<% nvram_get("switch_wan0tagid"); %>">
-	<input type="hidden" name="switch_wan0prio" value="<% nvram_get("switch_wan0prio"); %>">
-	<input type="hidden" name="switch_wan1tagid" value="<% nvram_get("switch_wan1tagid"); %>">
-	<input type="hidden" name="switch_wan1prio" value="<% nvram_get("switch_wan1prio"); %>">
-	<input type="hidden" name="switch_wan2tagid" value="<% nvram_get("switch_wan2tagid"); %>">
-	<input type="hidden" name="switch_wan2prio" value="<% nvram_get("switch_wan2prio"); %>">
-	<input type="hidden" name="switch_stb_x" value="<% nvram_get("switch_stb_x"); %>">
-	<input type="hidden" name="mr_enable_x" value="<% nvram_get("mr_enable_x"); %>">
-	<input type="hidden" name="emf_enable" value="<% nvram_get("emf_enable"); %>">
-	<input type="hidden" name="ttl_inc_enable" value="<% nvram_get("ttl_inc_enable"); %>">
+	<input type="hidden" name="switch_wan0tagid" value='<% nvram_get("switch_wan0tagid"); %>'>
+	<input type="hidden" name="switch_wan0prio" value='<% nvram_get("switch_wan0prio"); %>'>
+	<input type="hidden" name="switch_wan1tagid" value='<% nvram_get("switch_wan1tagid"); %>'>
+	<input type="hidden" name="switch_wan1prio" value='<% nvram_get("switch_wan1prio"); %>'>
+	<input type="hidden" name="switch_wan2tagid" value='<% nvram_get("switch_wan2tagid"); %>'>
+	<input type="hidden" name="switch_wan2prio" value='<% nvram_get("switch_wan2prio"); %>'>
+	<input type="hidden" name="switch_stb_x" value='<% nvram_get("switch_stb_x"); %>'>
+	<input type="hidden" name="mr_enable_x" value='<% nvram_get("mr_enable_x"); %>'>
+	<input type="hidden" name="emf_enable" value='<% nvram_get("emf_enable"); %>'>
+	<input type="hidden" name="ttl_inc_enable" value='<% nvram_get("ttl_inc_enable"); %>'>
+	<input type="hidden" name="wan_vpndhcp" value='<% nvram_get("wan_vpndhcp"); %>'>
+	<input type="hidden" name="quagga_enable" value='<% nvram_get("quagga_enable"); %>'>
+	<input type="hidden" name="mr_altnet_x" value='<% nvram_get("mr_altnet_x"); %>'>
 	<!-- wireless client -->
 	<input type="hidden" name="wlc_band" value="<% nvram_get("wlc_band"); %>">
 	<input type="hidden" name="wlc_ssid" value="<% nvram_char_to_ascii("", "wlc_ssid"); %>">

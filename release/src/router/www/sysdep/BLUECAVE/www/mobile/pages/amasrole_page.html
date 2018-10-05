@@ -27,36 +27,40 @@
 		</div>
 	</div>
 	<div class="table_td">
-		<div class="pageDesc">
-			<div class="descSteps"><#AiMesh_Router#></div>
-			<div><#AiMesh_Router_Desc#></div>
-		</div>
-		<div>
-			<div class="selectorTopContainer">
-				<div class="selectorContainer">
-					<div class="selectorContainerDiv">
-						<div class="selectBar" onclick="goTo.asRouter()"><#AiMesh_setup_router#></div>
-						<div class="narrowContainer">
-							<div class="icon_arrow_right" style="width:20px;height:32px;"></div>
+		<div id="AiMesh_router" style="display:none;">
+			<div class="pageDesc">
+				<div class="descSteps"><#AiMesh_Router#></div>
+				<div><#AiMesh_Router_Desc#></div>
+			</div>
+			<div>
+				<div class="selectorTopContainer">
+					<div class="selectorContainer">
+						<div class="selectorContainerDiv">
+							<div class="selectBar" onclick="goTo.asRouter()"><#AiMesh_setup_router#></div>
+							<div class="narrowContainer">
+								<div class="icon_arrow_right" style="width:20px;height:32px;"></div>
+							</div>
 						</div>
 					</div>
 				</div>
 			</div>
+
+			<div style="height: 50px"></div>
 		</div>
 
-		<div style="height: 50px"></div>
-
-		<div class="pageDesc">
-			<div class="descSteps"><#AiMesh_Node#></div>
-			<div><#AiMesh_Intro_Desc#></div>
-		</div>
-		<div>
-			<div class="selectorTopContainer">
-				<div class="selectorContainer">
-					<div class="selectorContainerDiv">
-						<div class="selectBar" onclick="goTo.asNode()"><#AiMesh_setup_node#></div>
-						<div class="narrowContainer">
-							<div class="icon_arrow_right" style="width:20px;height:32px;"></div>
+		<div id="AiMesh_node" style="display:none;">
+			<div class="pageDesc">
+				<div class="descSteps"><#AiMesh_Node#></div>
+				<div><#AiMesh_Intro_Desc#></div>
+			</div>
+			<div>
+				<div class="selectorTopContainer">
+					<div class="selectorContainer">
+						<div class="selectorContainerDiv">
+							<div class="selectBar" onclick="goTo.asNode()"><#AiMesh_setup_node#></div>
+							<div class="narrowContainer">
+								<div class="icon_arrow_right" style="width:20px;height:32px;"></div>
+							</div>
 						</div>
 					</div>
 				</div>

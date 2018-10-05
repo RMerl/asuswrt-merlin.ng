@@ -42,7 +42,21 @@
 
 static char server[32];
 static int sig_cur = -1;
+static int server_idx = 0;
 
+#if 1 // try simultaneously
+#define DEFAULT_NTP_SERVER "pool.ntp.org"
+static char* server_list[] = {
+	DEFAULT_NTP_SERVER,
+	"0.pool.ntp.org",
+	"1.pool.ntp.org",
+	"2.pool.ntp.org",
+	"3.pool.ntp.org",
+	"time.google.com",
+	"time.nist.gov",
+	NULL
+};
+#endif
 
 static void ntp_service()
 {
@@ -159,7 +173,9 @@ int ntp_main(int argc, char *argv[])
 	{
 		if (sig_cur == SIGTSTP)
 			;
-		else if (is_router_mode() && !nvram_match("link_internet", "1") && !nvram_match("link_internet", "2"))
+		else if (is_router_mode() &&
+			!nvram_match("link_internet", "1") &&
+			!nvram_match("link_internet", "2"))
 		{
 			alarm(SECONDS_TO_WAIT);
 		}
@@ -188,6 +204,28 @@ int ntp_main(int argc, char *argv[])
 			if (nvram_match("ntp_ready", "0") || nvram_match("ntp_debug", "1") ||
 				!strstr(nvram_safe_get("time_zone_x"), "DST"))
 				logmessage("ntp", "start NTP update");
+
+#if 1 // try simultaneously
+			if(strcmp(server, DEFAULT_NTP_SERVER)) //customer setting
+			{
+				_eval(args, NULL, 0, &pid);
+
+				strlcpy(server, DEFAULT_NTP_SERVER, sizeof(server));
+			}
+			else
+			{
+				server_idx = 0;
+				while(server_list[server_idx])
+				{
+					strlcpy(server, server_list[server_idx], sizeof(server));
+					_eval(args, NULL, 0, &pid);
+					server_idx++;
+				}
+
+				strlcpy(server, nvram_safe_get("ntp_server0"), sizeof(server));
+			}
+			sleep(SECONDS_TO_WAIT);
+#else
 			_eval(args, NULL, 0, &pid);
 			sleep(SECONDS_TO_WAIT);
 
@@ -198,6 +236,7 @@ int ntp_main(int argc, char *argv[])
 			else
 				strlcpy(server, "", sizeof(server));
 			args[2] = server;
+#endif
 
 			set_alarm();
 		}

@@ -1,7 +1,6 @@
 ﻿.splitLine{
-	background-image: url('/images/New_ui/export/line_export.png');
-	background-repeat: no-repeat;
-	height: 3px;
+	background: #CEC1C7;
+	height: 2px;
 	width: 100%;
 }
 .appIcons{

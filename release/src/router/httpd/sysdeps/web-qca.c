@@ -445,7 +445,7 @@ static unsigned int getAPChannelbyIface(const char *ifname)
 	char buf[8192];
 	FILE *fp;
 	int len, i = 0;
-	char *pt1, *pt2, ch_mhz[5];
+	char *pt1, *pt2, ch_mhz[5], ch_mhz_t[5];
 
 	if (!ifname || *ifname == '\0') {
 		dbg("%S: got invalid ifname %p\n", __func__, ifname);
@@ -472,10 +472,13 @@ static unsigned int getAPChannelbyIface(const char *ifname)
 						if (i < len) {
 							if (pt2[i] == '.')
 								continue;
-							snprintf(ch_mhz, sizeof(ch_mhz), "%s%c", ch_mhz, pt2[i]);
+							snprintf(ch_mhz_t, sizeof(ch_mhz), "%s%c", ch_mhz, pt2[i]);
+							strlcpy(ch_mhz, ch_mhz_t, sizeof(ch_mhz));
 						}
-						else
-							snprintf(ch_mhz, sizeof(ch_mhz), "%s0", ch_mhz);
+						else{
+							snprintf(ch_mhz_t, sizeof(ch_mhz), "%s0", ch_mhz);
+							strlcpy(ch_mhz, ch_mhz_t, sizeof(ch_mhz));
+						}
 					}
 					//dbg("Frequency:%s MHz\n", ch_mhz);
 					return ieee80211_mhz2ieee((unsigned int)safe_atoi(ch_mhz));
@@ -1081,16 +1084,21 @@ void
 convert_mac_string(char *mac)
 {
 	int i;
-	char mac_str[18];
+	char mac_str[18], mac_str_t[18];
 	memset(mac_str,0,sizeof(mac_str));
 
 	for(i=0;i<strlen(mac);i++)
-        {
-                if(*(mac+i)>0x60 && *(mac+i)<0x67) 
-                       snprintf(mac_str, sizeof(mac_str), "%s%c",mac_str,*(mac+i)-0x20);
-                else
-                       snprintf(mac_str, sizeof(mac_str), "%s%c",mac_str,*(mac+i));
-        }
+	{
+		if(*(mac+i)>0x60 && *(mac+i)<0x67){
+			snprintf(mac_str_t, sizeof(mac_str), "%s%c",mac_str,*(mac+i)-0x20);
+			strlcpy(mac_str, mac_str_t, sizeof(mac_str));
+		}
+		else{
+			snprintf(mac_str_t, sizeof(mac_str), "%s%c",mac_str,*(mac+i));
+			strlcpy(mac_str, mac_str_t, sizeof(mac_str));
+		}
+
+	}
 	strlcpy(mac, mac_str, strlen(mac_str) + 1);
 }
 
@@ -2055,7 +2063,7 @@ static int wl_scan(int eid, webs_t wp, int argc, char_t **argv, int unit)
 	}
 
 	retval += websWrite(wp, "]");
-	fclose(fp);
+	pclose(fp);
 	return 0;
 }   
 

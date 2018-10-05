@@ -103,7 +103,7 @@ EXTENDNO1=$(shell git log --pretty=oneline asuswrt_$(KERNEL_VER).$(FS_VER).$(SER
 #ifneq ($(EXTENDTYPE),)
 #EXSTRING="-$(EXTENDTYPE)"
 #else
-#EXSTRING=""
+#EXSTRING=
 #endif
 #export EXTENDNO := $(shell expr $(EXTENDNO1) + $(RC_EXT_NO))-g$(shell git log --pretty=format:'%h' -n 1|sed -e "s,\([0-9a-z]\{7\}\)[0-9a-z]*,\1,")$(EXSTRING)
 #endif
@@ -249,21 +249,23 @@ $(if $(CONFIG_UBOOT_CONFIG_LTQ_IMAGE_EXTRA_CHECKS), \
 )
 endef
 
+LANTIQ_LINUX_DIR=linux/linux-3.10.104
+
 define build_bluecave_image
-	mips-openwrt-linux-uclibc-objcopy -O binary -R .reginfo -R .notes -R .note -R .comment -R .mdebug -R .note.gnu.build-id -S linux/linux-3.10.104/vmlinux ./vmlinux
-	mips-openwrt-linux-uclibc-objcopy -R .reginfo -R .notes -R .note -R .comment -R .mdebug -R .note.gnu.build-id -S linux/linux-3.10.104/vmlinux ./vmlinux.elf
-	cp -fpR linux/linux-3.10.104/vmlinux ./vmlinux.debug
+	mips-openwrt-linux-uclibc-objcopy -O binary -R .reginfo -R .notes -R .note -R .comment -R .mdebug -R .note.gnu.build-id -S $(LANTIQ_LINUX_DIR)/vmlinux ./vmlinux
+	mips-openwrt-linux-uclibc-objcopy -R .reginfo -R .notes -R .note -R .comment -R .mdebug -R .note.gnu.build-id -S $(LANTIQ_LINUX_DIR)/vmlinux ./vmlinux.elf
+	cp -fpR $(LANTIQ_LINUX_DIR)/vmlinux ./vmlinux.debug
 	cp ./vmlinux ./vmlinux-easy350_anywan_router_800m
 	tools/dtc -O dtb -o ./easy350_anywan_router_800m.dtb ./proprietary/dts/easy350_anywan_router_800m.dts
 	tools/host/bin/patch-dtb ./vmlinux-easy350_anywan_router_800m ./easy350_anywan_router_800m.dtb 32768
 	tools/host/bin/lzma e ./vmlinux-easy350_anywan_router_800m ./vmlinux-easy350_anywan_router_800m.lzma
 	mv ./vmlinux-easy350_anywan_router_800m.lzma ./vmlinux.lzma
-	tools/u-boot-2010.06/tools/mkimage -A mips -O linux -T kernel -a 0x80002000 -C lzma -e 0x80002000 -n 'MIPS OpenWrt Linux-3.10.104' -d ./vmlinux.lzma ./uImage
+	tools/u-boot-2010.06/tools/mkimage -A mips -O linux -T kernel -a 0x80002000 -C lzma -e 0x80002000 -n 'MIPS OpenWrt $(LANTIQ_LINUX_DIR)' -d ./vmlinux.lzma ./uImage
 	len2=`wc -c ./vmlinux.lzma | awk '{ printf $$1 }'` ; \
 	echo "Raymond: $$len2"
 	len=`wc -c ./vmlinux.lzma | awk '{ printf $$1 }'`; pad=`expr  131072 - $$len %  131072`; pad=`expr $$pad %  131072`; pad=`expr $$pad -  64`; [ $$pad -lt 0 ] && pad=0; echo pad is $$pad; echo len is $$len; cat ./vmlinux.lzma > ./vmlinux.lzma.padded; dd if=/dev/zero of=./vmlinux.lzma.padded bs=1 count=$$pad seek=$$len
-	load_addr=0x$(shell grep -w _text linux/linux-3.10.104/System.map 2>/dev/null| awk '{ printf "%s", $$1 }'); \
-	entry_addr=0x$(shell grep -w kernel_entry linux/linux-3.10.104/System.map 2>/dev/null| awk '{ printf "%s", $$1 }'); \
+	load_addr=0x$(shell grep -w _text $(LANTIQ_LINUX_DIR)/System.map 2>/dev/null| awk '{ printf "%s", $$1 }'); \
+	entry_addr=0x$(shell grep -w kernel_entry $(LANTIQ_LINUX_DIR)/System.map 2>/dev/null| awk '{ printf "%s", $$1 }'); \
 	tools/u-boot-2010.06/tools/mkimage -A mips -O linux -T kernel \
 		-a $(s_load_addr) -C $(compression_type) -e $(s_entry_addr) \
 	-n '$(image_header)' $(call bluecave_mkimage_extra_checks) \
@@ -390,9 +392,17 @@ endif
 	@echo '#define RT_BUILD_NAME "$(BUILD_NAME)"' >> router/shared/version.h
 	@echo '#define RT_BUILD_INFO "$(BUILD_TIME) $(BUILD_USER)@$(BUILD_INFO)"' >> router/shared/version.h
 	@echo '#endif' >> router/shared/version.h
+ifneq ($(NVRAM_ENCRYPT),$(filter $(NVRAM_ENCRYPT),n))
+	@echo '#ifdef RTCONFIG_NVRAM_ENCRYPT' >> router/shared/version.h
+ifeq ($(NVRAM_ENCRYPT),y)
+	@echo '#define ENC_SP_EXTENDNO "39937"' >> router/shared/version.h
+else
+	@echo '#define ENC_SP_EXTENDNO "$(NVRAM_ENCRYPT)"' >> router/shared/version.h
+endif
+	@echo '#endif' >> router/shared/version.h
+endif
 	@echo '$(BUILD_NAME) $(SERIALNO)-$(EXTENDNO)$(BUILDREV) $(BUILD_TIME)' > router/shared/version
 	@echo 'EXTENDNO=$(EXTENDNO)$(BUILDREV)' > router/extendno.conf
-
 
 rt_ver_ntools:
 	-@rm -f ntools/version
@@ -740,13 +750,13 @@ export_config:
 kernel_patch:
 ifeq ($(CONFIG_LANTIQ),y)
 	cd proprietary; rm -rf ltq_eip97_1.2.25; tar zxf ltq_eip97_1.2.25.tar.gz
-	cd proprietary; rm -rf ${SRCBASE}/router/rom_lantiq/; tar zxf rom_lantiq_05.04.00.61.7_AE.tgz -C ${SRCBASE}/router/ ; mv ${SRCBASE}/router/rom_lantiq_05.04.00.61.7_AE ${SRCBASE}/router/rom_lantiq/
+	cd proprietary; rm -rf ${SRCBASE}/router/rom_lantiq/; tar zxf rom_lantiq_05.04.00.131.tgz -C ${SRCBASE}/router/ ; mv ${SRCBASE}/router/rom_lantiq_05.04.00.131 ${SRCBASE}/router/rom_lantiq/
 	cp patches/iptables-1.4.21/extensions/* ${SRCBASE}/router/iptables-1.4.21/extensions/
 	# rm -f ${SRCBASE}/router/rom_lantiq/opt/lantiq/wave/images/cal_wlan0.bin
 	# rm -f ${SRCBASE}/router/rom_lantiq/opt/lantiq/wave/images/cal_wlan1.bin
 	# rm -f proprietary/rom_lantiq/opt/lantiq/wave/images/cal_wlan0.bin
 	# rm -f proprietary/rom_lantiq/opt/lantiq/wave/images/cal_wlan1.bin
-	cd proprietary; cp -rf rom_lantiq_05.04.00.61.7_AE_patch/* ${SRCBASE}/router/rom_lantiq/
+	cd proprietary; cp -rf rom_lantiq_05.04.00.131_patch/* ${SRCBASE}/router/rom_lantiq/
 	# cp -f proprietary/linux-3.10.104/firmware/lantiq/phy11g_ip_BE.bin linux/linux-3.10.104/firmware/lantiq/phy11g_ip_BE.bin
 endif
 
@@ -862,7 +872,7 @@ cleankernel:
 	$(MAKE) distclean || true; \
 	cp -p save-config .config || true
 
-kernel:	
+kernel:
 	$(MAKE) -C router kernel
 	@[ ! -e $(KERNEL_BINARY) ] || ls -l $(KERNEL_BINARY)
 
@@ -1341,6 +1351,9 @@ define RouterOptions
 	if [ "$(SYSSTATE)" = "y" ]; then \
 		sed -i "/RTCONFIG_SYSSTATE/d" $(1); \
 		echo "RTCONFIG_SYSSTATE=y" >>$(1); \
+	else \
+		sed -i "/RTCONFIG_SYSSTATE/d" $(1); \
+		echo "# RTCONFIG_SYSSTATE is not set" >>$(1); \
 	fi; \
 	if [ "$(USER_LOW_RSSI)" = "y" ]; then \
 		sed -i "/RTCONFIG_USER_LOW_RSSI/d" $(1); \
@@ -1369,10 +1382,10 @@ define RouterOptions
 			sed -i "/RTCONFIG_EXT4FS/d" $(1); \
 			echo "RTCONFIG_EXT4FS=y" >>$(1); \
 		fi; \
-		if [ "$(TFAT)" != "" ]; then \
+		if [ "$(TFAT)" = "y" ] || [ "$(findstring open, $(TFAT))" = "open" ]; then \
 			sed -i "/RTCONFIG_TFAT/d" $(1); \
 			echo "RTCONFIG_TFAT=y" >>$(1); \
-			if [ "$(findstring open, $(TFAT))" = "open" ]; then \
+			if [ "$(TFAT)" != "y" ]; then \
 				sed -i "/RTCONFIG_OPENPLUS_TFAT/d" $(1); \
 				echo "RTCONFIG_OPENPLUS_TFAT=y" >>$(1); \
 			fi; \
@@ -2420,6 +2433,18 @@ define RouterOptions
 	if [ "$(LAN50)" = "y" ]; then \
 		sed -i "/RTCONFIG_DEFLAN50/d" $(1); \
 		echo "RTCONFIG_DEFLAN50=y" >>$(1); \
+		sed -i "/RTCONFIG_ALL_DEF_LAN50/d" $(1); \
+		echo "# RTCONFIG_ALL_DEF_LAN50 is not set" >>$(1); \
+	elif [ "$(LAN50)" = "all" ] ; then \
+		sed -i "/RTCONFIG_DEFLAN50/d" $(1); \
+		echo "# RTCONFIG_DEFLAN50 is not set" >>$(1); \
+		sed -i "/RTCONFIG_ALL_DEF_LAN50/d" $(1); \
+		echo "RTCONFIG_ALL_DEF_LAN50=y" >>$(1); \
+	else \
+		sed -i "/RTCONFIG_DEFLAN50/d" $(1); \
+		echo "# RTCONFIG_DEFLAN50 is not set" >>$(1); \
+		sed -i "/RTCONFIG_ALL_DEF_LAN50/d" $(1); \
+		echo "# RTCONFIG_ALL_DEF_LAN50 is not set" >>$(1); \
 	fi; \
 	if [ "$(PERMISSION_MANAGEMENT)" = "y" ]; then \
 		sed -i "/RTCONFIG_PERMISSION_MANAGEMENT/d" $(1); \
@@ -2542,8 +2567,22 @@ define RouterOptions
 		echo "RTCONFIG_MASTER_DET=y" >>$(1); \
 		sed -i "/RTCONFIG_ADV_RAST/d" $(1); \
 		echo "RTCONFIG_ADV_RAST=y" >>$(1); \
-		sed -i "/RTCONFIG_WLCEVENTD/d" $(1); \
-		echo "RTCONFIG_WLCEVENTD=y" >>$(1); \
+		if [ "$(LANTIQ)" = "y" ]; then \
+			sed -i "/RTCONFIG_HAPDEVENT/d" $(1); \
+			echo "RTCONFIG_HAPDEVENT=y" >>$(1); \
+			sed -i "/RTCONFIG_WPS_ENROLLEE/d" $(1); \
+			echo "RTCONFIG_WPS_ENROLLEE=y" >>$(1); \
+		elif [ "$(QCA)" = "y" ]; then \
+			sed -i "/RTCONFIG_HAPDEVENT/d" $(1); \
+			echo "RTCONFIG_HAPDEVENT=y" >>$(1); \
+			sed -i "/RTCONFIG_WPS_ENROLLEE/d" $(1); \
+			echo "RTCONFIG_WPS_ENROLLEE=y" >>$(1); \
+		else \
+			sed -i "/RTCONFIG_WLCEVENTD/d" $(1); \
+			echo "RTCONFIG_WLCEVENTD=y" >>$(1); \
+			sed -i "/RTCONFIG_DPSTA/d" $(1); \
+			echo "RTCONFIG_DPSTA=y" >>$(1); \
+		fi; \
 		sed -i "/RTCONFIG_LIBASUSLOG/d" $(1); \
 		echo "RTCONFIG_LIBASUSLOG=y" >>$(1); \
 	fi; \
@@ -2566,7 +2605,7 @@ define RouterOptions
 		sed -i "/RTCONFIG_LYRA_HIDE/d" $(1); \
 		echo "RTCONFIG_LYRA_HIDE=y" >>$(1); \
 	fi; \
-	if [ "$(NVRAM_ENCRYPT)" = "y" ]; then \
+	if [ "$(NVRAM_ENCRYPT)" != "n" ] && [ "$(NVRAM_ENCRYPT)" != "" ]; then \
 		sed -i "/RTCONFIG_NVRAM_ENCRYPT/d" $(1); \
 		echo "RTCONFIG_NVRAM_ENCRYPT=y" >>$(1); \
 	fi; \
@@ -2597,6 +2636,10 @@ define RouterOptions
 	if [ "$(PORT2_DEVICE)" = "y" ]; then \
 		sed -i "/RTCONFIG_PORT2_DEVICE/d" $(1); \
 		echo "RTCONFIG_PORT2_DEVICE=y" >>$(1); \
+	fi; \
+	if [ "$(ETHOBD)" = "y" ]; then \
+		sed -i "/RTCONFIG_ETHOBD/d" $(1); \
+		echo "RTCONFIG_ETHOBD=y" >>$(1); \
 	fi; \
 	)
 	$(call platformRouterOptions, $(1))
@@ -3522,10 +3565,10 @@ fi; \
 	fi; \
 	sed -i "/CONFIG_JFFS_NVRAM/d" $(1); \
 	if [ "$(JFFS_NVRAM)" = "y" ]; then \
-                echo "CONFIG_JFFS_NVRAM=y" >>$(1); \
+		echo "CONFIG_JFFS_NVRAM=y" >>$(1); \
 	else \
 		echo "# CONFIG_JFFS_NVRAM is not set" >>$(1); \
-        fi; \
+	fi; \
 	sed -i "/CONFIG_RTAC3200/d" $(1); \
 	if [ "$(BUILD_NAME)" = "RT-AC3200" ]; then \
 		echo "CONFIG_RTAC3200=y" >>$(1); \
@@ -3543,6 +3586,12 @@ fi; \
 		echo "CONFIG_RTAC88U=y" >>$(1); \
 	else \
 		echo "# CONFIG_RTAC88U is not set" >>$(1); \
+	fi; \
+	sed -i "/CONFIG_RTN53/d" $(1); \
+	if [ "$(BUILD_NAME)" = "RT-N53" ]; then \
+		echo "CONFIG_RTN53=y" >>$(1); \
+	else \
+		echo "# CONFIG_RTN53 is not set" >>$(1); \
 	fi; \
 	if [ "$(GMAC3)" = "y" ]; then \
 		sed -i "/CONFIG_BCM_GMAC3/d" $(1); \

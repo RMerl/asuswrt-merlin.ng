@@ -26,7 +26,6 @@ var original_switch_wantag = '<% nvram_get("switch_wantag"); %>';
 
 function QKInternet_load_body(){
 	parent.document.title = "<#Web_Title#> - <#QKSet_ISP_head#>";
-
 	if(parent.ISMOBILE){
 		parent.set_step("internet_type");
 		hideObjs();
@@ -103,8 +102,6 @@ function QKInternet_load_body(){
 	else{
 		parent.set_step("t2");		
 		hideLinkTag();
-		flash_button();
-
 		if(now_flag.length <= 0)
 			showtext(document.getElementById("page_title"), "<#QKSet_ISP_desc#>");
 		else if(DHCPClient == "1")
@@ -508,48 +505,6 @@ function valid_IP(obj_name, obj_flag){
 		}
 }
 
-// test if WAN IP & Gateway & DNS IP is a valid IP
-// DNS IP allows to input nothing
-function valid_IP(obj_name, obj_flag){
-		// A : 1.0.0.0~126.255.255.255
-		// B : 127.0.0.0~127.255.255.255 (forbidden)
-		// C : 128.0.0.0~255.255.255.254
-		var A_class_start = inet_network("1.0.0.0");
-		var A_class_end = inet_network("126.255.255.255");
-		var B_class_start = inet_network("127.0.0.0");
-		var B_class_end = inet_network("127.255.255.255");
-		var C_class_start = inet_network("128.0.0.0");
-		var C_class_end = inet_network("255.255.255.255");
-		
-		var ip_obj = obj_name;
-		var ip_num = inet_network(ip_obj.value);
-
-		if(obj_flag == "DNS" && ip_num == -1){ //DNS allows to input nothing
-			return true;
-		}
-		
-		if(obj_flag == "GW" && ip_num == -1){ //GW allows to input nothing
-			return true;
-		}
-		
-		if(ip_num > A_class_start && ip_num < A_class_end)
-			return true;
-		else if(ip_num > B_class_start && ip_num < B_class_end){
-			alert(ip_obj.value+" <#JS_validip#>");
-			ip_obj.focus();
-			ip_obj.select();
-			return false;
-		}
-		else if(ip_num > C_class_start && ip_num < C_class_end)
-			return true;
-		else{
-			alert(ip_obj.value+" <#JS_validip#>");
-			ip_obj.focus();
-			ip_obj.select();
-			return false;
-		}
-}
-
 function validate_ip(){
 	if(document.form.wan_dhcpenable_x != null && document.form.wan_dhcpenable_x[0].checked){
 		if(!valid_IP(document.form.wan_ipaddr_x, "")) return false;  //WAN IP
@@ -712,67 +667,99 @@ function submitForm(){
 
 	remove_red_field();
 	if(validForm() == true){
+		if(parent.flag_manual == 1){
+			document.form.action_wait.value = 0;
+		}
+		else{
 			simple_showLoading();
-			document.form.wan_dhcpenable_x[0].disabled = 0;
-			document.form.wan_dhcpenable_x[1].disabled = 0;
-			document.form.wan_ipaddr_x.disabled = 0;
-			document.form.wan_netmask_x.disabled = 0;
-			document.form.wan_gateway_x.disabled = 0;
-			document.form.wan_dhcpenable_x.disabled = 0;
-			document.form.wan_dhcpenable_x.disabled = 0;
-			document.form.wan_dnsenable_x[0].disabled = 0;
-			document.form.wan_dnsenable_x[1].disabled = 0;
-			if((now_flag != "auto_way_static" && now_flag != "auto_way")
-					&& (document.form.wan_proto.value == "pptp" || document.form.wan_proto.value == "l2tp")){
-					document.form.wan_heartbeat_x.disabled = 0;
-			}
-			else
-					document.form.wan_heartbeat_x.disabled = 1;
+		}
 
-			// uinfi
-			document.form.switch_wantag.value = parent.document.QKform.switch_wantag.value;
+		document.form.wan_dhcpenable_x[0].disabled = 0;
+		document.form.wan_dhcpenable_x[1].disabled = 0;
+		document.form.wan_ipaddr_x.disabled = 0;
+		document.form.wan_netmask_x.disabled = 0;
+		document.form.wan_gateway_x.disabled = 0;
+		document.form.wan_dhcpenable_x.disabled = 0;
+		document.form.wan_dhcpenable_x.disabled = 0;
+		document.form.wan_dnsenable_x[0].disabled = 0;
+		document.form.wan_dnsenable_x[1].disabled = 0;
+		if((now_flag != "auto_way_static" && now_flag != "auto_way")
+				&& (document.form.wan_proto.value == "pptp" || document.form.wan_proto.value == "l2tp")){
+				document.form.wan_heartbeat_x.disabled = 0;
+		}
+		else
+				document.form.wan_heartbeat_x.disabled = 1;
+
+		// uinfi
+		document.form.switch_wantag.value = parent.document.QKform.switch_wantag.value;
+		document.form.emf_enable.value = parent.document.QKform.emf_enable.value;
+		document.form.ttl_inc_enable.value = parent.document.QKform.ttl_inc_enable.value;
+		document.form.wan_vpndhcp.value = parent.document.QKform.wan_vpndhcp.value;
+		document.form.quagga_enable.value = parent.document.QKform.quagga_enable.value;
+		document.form.mr_altnet_x.value = parent.document.QKform.mr_altnet_x.value;
+		if(document.form.switch_wantag.value == "manual"){
+			document.form.switch_wan0tagid.disabled = false;
+			document.form.switch_wan0prio.disabled = false;
+			document.form.switch_wan1tagid.disabled = false;
+			document.form.switch_wan1prio.disabled = false;
+			document.form.switch_wan2tagid.disabled = false;
+			document.form.switch_wan2prio.disabled = false;
 			document.form.switch_wan0tagid.value = parent.document.QKform.switch_wan0tagid.value;
 			document.form.switch_wan0prio.value = parent.document.QKform.switch_wan0prio.value;
 			document.form.switch_wan1tagid.value = parent.document.QKform.switch_wan1tagid.value;
 			document.form.switch_wan1prio.value = parent.document.QKform.switch_wan1prio.value;
 			document.form.switch_wan2tagid.value = parent.document.QKform.switch_wan2tagid.value;
 			document.form.switch_wan2prio.value = parent.document.QKform.switch_wan2prio.value;
+		}
+		else{
+			document.form.switch_wan0tagid.disabled = true;
+			document.form.switch_wan0prio.disabled = true;
+			document.form.switch_wan1tagid.disabled = true;
+			document.form.switch_wan1prio.disabled = true;
+			document.form.switch_wan2tagid.disabled = true;
+			document.form.switch_wan2prio.disabled = true;
+		}
+
+		if(document.form.switch_wantag.value == "manual" || document.form.switch_wantag.value == "none"){
+			document.form.switch_stb_x.disabled = false;
 			document.form.switch_stb_x.value = parent.document.QKform.switch_stb_x.value;
-			document.form.mr_enable_x.value = parent.document.QKform.mr_enable_x.value;
-			document.form.emf_enable.value = parent.document.QKform.emf_enable.value;
-			document.form.ttl_inc_enable.value = parent.document.QKform.ttl_inc_enable.value;
-			document.form.flag.value = "verify_detect";
-  			if(original_switch_wantag != document.form.switch_wantag.value){
-				/*
-				document.form.action_script.value	= "reboot";
-				document.form.flag.value = "verify_detect_reboot";
-				document.form.action_wait.value	= "<% get_default_reboot_time(); %>";
-				document.getElementById("loadHint").style.display = "";
-				document.getElementById("nextButton").style.display = "none";
-				document.getElementById("prevButton").style.display = "none";*/
-				var reboot_time = eval("<% get_default_reboot_time(); %> + 10");
-				document.form.action_script.value = "saveNvram";
-				document.form.action_wait.value = "0";
-				parent.sysReboot = true;
-			
-				if(reboot_time > parent.rebootTime)
-					parent.rebootTime = reboot_time;
+		}
+		else
+			document.form.switch_stb_x.disabled = true;
 
+		document.form.flag.value = "static";
+			if(original_switch_wantag != document.form.switch_wantag.value){
+			var reboot_time = eval("<% get_default_reboot_time(); %> + 10");
+			document.form.action_script.value = "saveNvram";
+			document.form.action_wait.value = "0";
+			parent.sysReboot = true;
 
-			}
+			if(reboot_time > parent.rebootTime)
+				parent.rebootTime = reboot_time;
+		}
 
-			document.getElementById("x_Setting").disabled = false;
-			document.form.x_Setting.value = '<% nvram_get("x_Setting"); %>';
-			document.form.sw_mode.value = 1;
-			document.form.action = "/start_apply.htm";
-			if(parent.flag_manual) document.form.flag.value = "manual";
+		document.getElementById("x_Setting").disabled = false;
+		document.form.x_Setting.value = '<% nvram_get("x_Setting"); %>';
+		document.form.sw_mode.value = 1;
+		document.form.action = "/start_apply.htm";
+		if(parent.flag_manual)
+			document.form.flag.value = "manual";
 
-			document.form.submit();
-			if(original_switch_wantag != document.form.switch_wantag.value)
-				setTimeout(function(){
-					location.href = "/qis/QIS_wireless.htm";
-				}, 500);
-			return true;
+		if(parent.pppoe_failed_flag)
+			document.form.flag.value = "pppoe_retry";
+
+		document.form.submit();
+
+		if(parent.pppoe_failed_flag)
+			setTimeout(function(){
+				location.href = "/qis/QIS_finish.htm";
+			}, 500);
+		else
+			setTimeout(function(){
+				location.href = "/qis/QIS_wireless.htm";
+			}, 500);
+
+		return true;
 	}
 	else
 			return false;
@@ -900,16 +887,19 @@ function displayDNSCtrl(){
 <input type="hidden" name="sw_mode" value="">
 <!-- unifi -->
 <input type="hidden" name="switch_wantag" value="">
-<input type="hidden" name="switch_wan0tagid" value="">
-<input type="hidden" name="switch_wan0prio" value="">
-<input type="hidden" name="switch_wan1tagid" value="">
-<input type="hidden" name="switch_wan1prio" value="">
-<input type="hidden" name="switch_wan2tagid" value="">
-<input type="hidden" name="switch_wan2prio" value="">
-<input type="hidden" name="switch_stb_x" value="">
-<input type="hidden" name="mr_enable_x" value="">
-<input type="hidden" name="emf_enable" value="">
-<input type="hidden" name="ttl_inc_enable" value="">
+<input type="hidden" name="switch_wan0tagid" value="" disabled>
+<input type="hidden" name="switch_wan0prio" value="" disabled>
+<input type="hidden" name="switch_wan1tagid" value="" disabled>
+<input type="hidden" name="switch_wan1prio" value="" disabled>
+<input type="hidden" name="switch_wan2tagid" value="" disabled>
+<input type="hidden" name="switch_wan2prio" value="" disabled>
+<input type="hidden" name="switch_stb_x" value="" disabled>
+<input type="hidden" name="mr_enable_x" value='<% nvram_get("mr_enable_x"); %>'>
+<input type="hidden" name="emf_enable" value='<% nvram_get("emf_enable"); %>'>
+<input type="hidden" name="ttl_inc_enable" value='<% nvram_get("ttl_inc_enable"); %>'>
+<input type="hidden" name="wan_vpndhcp" value='<% nvram_get("wan_vpndhcp"); %>'>
+<input type="hidden" name="quagga_enable" value='<% nvram_get("quagga_enable"); %>'>
+<input type="hidden" name="mr_altnet_x" value='<% nvram_get("mr_altnet_x"); %>'>
 <div class="QISmain" id="QISmain">
 		<div>
 			<table width="730px">
@@ -917,13 +907,37 @@ function displayDNSCtrl(){
 					<td align="left">
 						<div class="description_down" id="page_title"></div>
 					</td>
-					<!--td align="right">
-						<img style="cursor:pointer;" onclick="parent.gotoIndex();" align="right" title="Go to Home" src="/images/backtohome.png" onMouseOver="this.src='/images/backtohomeclick.png'" onMouseOut="this.src='/images/backtohome.png'">
-					</td-->
 				</tr>
 			</table>
 		</div>
-		<div style="margin:5px;"><img style="width: 720px; *width: 710px; height: 2px;" src="/images/New_ui/export/line_export.png"></div>
+		<div style="margin:5px;width: 720px; *width: 710px; height: 2px;" class="splitLine"></div>
+
+<div id="showserver" style="width:730px; display:none">
+  <fieldset id="ifVPNfield">
+	<table id="heartbeat_server" class="QISform" width="400" border=0 align="center" cellpadding="5" cellspacing="0" style="display:none;">
+		<tr>
+			<th width="190">
+				<span onmouseout="return nd();" onclick="overlib('<#BOP_isp_heart_desc2#>');" style="cursor:help;"><#BOP_isp_heart_item#><img align="right" style="cursor:pointer;margin-top:-14px\9;" src="/images/New_ui/helpicon.png"></span>
+			</th>
+			<td class="QISformtd">	<!-- ASUS 2009.12 for maxlen -->
+				<input type="text" name="wan_heartbeat_x" value="" tabindex="10" size="36" maxlength="64" title="<#BOP_isp_heart_item#>" class="input_32_table" disabled autocorrect="off" autocapitalize="off">
+			</td>
+		</tr>
+	</table>
+	<table id="vpn_enable_block" class="QISform" width="400" border=0 align="center" cellpadding="5" cellspacing="0" style="display:none;">
+		<tr>
+			<th width="190">
+				<span onmouseout="return nd();" onclick="overlib('<#BOP_isp_heart_desc2#>');" style="cursor:help;"><#QIS_if_vpn_existed#><img align="right" style="cursor:pointer;margin-top:-14px\9;" src="/images/New_ui/helpicon.png"></span>
+			</th>
+			<td class="QISformtd">
+				<!-- wan_heartbeat_x -->
+				<input type="radio" name="vpn_enable" value="1" tabindex="11" onclick="show_next_button();" class="input"><#checkbox_Yes#>
+				<input type="radio" name="vpn_enable" value="0" tabindex="12" onclick="show_next_button();" class="input"><#checkbox_No#>
+			</td>
+		</tr>
+	</table>
+	</fieldset>
+</div>
 <div id="showip" style="display:none">
 <fieldset>
 <legend>
@@ -1049,36 +1063,7 @@ function displayDNSCtrl(){
 	
   </table>
   </fieldset>
-	</div>
-
-<div id="showserver" style="width:730px; display:none">
-  <fieldset id="ifVPNfield">
-	<table id="heartbeat_server" class="QISform" width="400" border=0 align="center" cellpadding="5" cellspacing="0" style="display:none;">
-		<tr>
-			<th width="190">
-				<span onmouseout="return nd();" onclick="overlib('<#BOP_isp_heart_desc2#>');" style="cursor:help;"><#BOP_isp_heart_item#><img align="right" style="cursor:pointer;margin-top:-14px\9;" src="/images/New_ui/helpicon.png"></span>
-			</th>
-			<td class="QISformtd">	<!-- ASUS 2009.12 for maxlen -->
-				<input type="text" name="wan_heartbeat_x" value="" tabindex="10" size="36" maxlength="64" title="<#BOP_isp_heart_item#>" class="input_32_table" disabled autocorrect="off" autocapitalize="off">
-			</td>
-		</tr>
-	</table>
-	<table id="vpn_enable_block" class="QISform" width="400" border=0 align="center" cellpadding="5" cellspacing="0" style="display:none;">
-		<tr>
-			<th width="190">
-				<span onmouseout="return nd();" onclick="overlib('<#BOP_isp_heart_desc2#>');" style="cursor:help;"><#QIS_if_vpn_existed#><img align="right" style="cursor:pointer;margin-top:-14px\9;" src="/images/New_ui/helpicon.png"></span>
-			</th>
-			<td class="QISformtd">
-				<!-- wan_heartbeat_x -->
-				<input type="radio" name="vpn_enable" value="1" tabindex="11" onclick="show_next_button();" class="input"><#checkbox_Yes#>
-				<input type="radio" name="vpn_enable" value="0" tabindex="12" onclick="show_next_button();" class="input"><#checkbox_No#>
-			</td>
-		</tr>
-	</table>
-	</fieldset>
-</div>
-
-<div id="showhwaddr" style="width:730px; display:none;">
+	</div><div id="showhwaddr" style="width:730px; display:none;">
 	<fieldset id="ifVPNfield">
 	<table id="heartbeat_server" class="QISform" width="400" border=0 align="center" cellpadding="5" cellspacing="0">
 		<tr>
@@ -1087,7 +1072,7 @@ function displayDNSCtrl(){
 			</th>
 			<td class="QISformtd">
 				<input type="text" name="wan_hwaddr_x" tabindex="13" onkeypress="return validator.isHWAddr(this,event);" style="height:25px;" class="input_20_table" size="36" maxlength="17" value="" autocorrect="off" autocapitalize="off">
-				<input type="button" class="button_gen_long" tabindex="14" onclick="showMAC();" value="<#BOP_isp_MACclone#>">
+				<input type="button" class="button_gen" tabindex="14" onclick="showMAC();" value="<#BOP_isp_MACclone#>">
 			</td>
 		</tr>
 	</table>
@@ -1107,7 +1092,7 @@ function displayDNSCtrl(){
 		<fieldset>
 			<div id="dhcp_info_radio_m">
 				<div class="row">
-					<label>Automatic</label>
+					<label><#Auto#></label>
 					<div id="toggleWANIP" class="toggle" onclick="displayLANIPCtrl();" toggled="true">
 						<span class="thumb"></span>
 						<span class="toggleOn"><#checkbox_Yes#></span>
@@ -1138,7 +1123,7 @@ function displayDNSCtrl(){
 		<span class="itemTitle" id="dns_info_title_m"><#IPConnection_x_DNSServerEnable_itemname#></span>
 		<fieldset>
 			<div class="row" id="dns_info_radio_m">
-				<label>Automatic</label>
+				<label><#Auto#></label>
 				<div id="toggleDNS" class="toggle" onclick="displayDNSCtrl();" toggled="true">
 					<span class="thumb"></span>
 					<span class="toggleOn"><#checkbox_Yes#></span>

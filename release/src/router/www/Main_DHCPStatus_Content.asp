@@ -146,7 +146,7 @@ function show_leases() {
 									<td valign="top">
 										<div>&nbsp;</div>
 										<div class="formfonttitle"><#System_Log#> - <#menu5_7_3#></div>
-										<div style="margin-lease:5px;margin-top:10px;margin-bottom:10px"><img src="/images/New_ui/export/line_export.png"></div>
+										<div style="margin:10px 0 10px 5px;" class="splitLine"></div>
 										<div class="formfontdesc"><#DHCPlease_title#></div>
 
                                                                                 <div style="margin-top:8px">

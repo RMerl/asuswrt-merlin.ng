@@ -18,14 +18,6 @@
 
 char host_name[33];
 
-static void toLowerCase(char *str) {
-	char *p;
-
-	for(p = str; *p != '\0'; p++)
-		if(*p >= 'A' && *p <='Z') *p += 32;
-}
-
-
 /*
 	search_mnt will help to find the hostname from networkmap database
 	input  : mac (Lower or Upper)

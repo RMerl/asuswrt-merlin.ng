@@ -228,7 +228,7 @@ void do_f(char *path, webs_t wp)
 {
 	FILE *f;
 	char buf[1024];
-	int ret;
+	int ret=0;
 
 //printf("do_f: %s\n", path);
 	if ((f = fopen(path, "r")) != NULL) {

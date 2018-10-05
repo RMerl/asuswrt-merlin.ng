@@ -1139,7 +1139,7 @@ function checkDDNSReturnCode(){
 
 						<div>&nbsp;</div>
 						<div class="formfonttitle">AiCloud 2.0 - <#Server_Sync#></div>
-						<div style="margin-left:5px;margin-top:10px;margin-bottom:10px;"><img src="/images/New_ui/export/line_export.png"></div>
+						<div style="margin:10px 0 10px 5px;" class="splitLine"></div>
 						<div id="title_desc_block" style="display:none;">
 							<table width="700px" style="margin-left:25px;">
 								<tr>
@@ -1197,7 +1197,7 @@ function checkDDNSReturnCode(){
 										</th>
 										<td>
 											<input type="text" id="PATH" class="input_25_table" style="height: 25px;" name="cloud_dir" value="" autocorrect="off" autocapitalize="off">
-											<input name="button" type="button" class="button_gen_short" onclick="get_disk_tree();" value="<#Cloudsync_browser_folder#>"/>
+											<input name="button" type="button" class="button_gen" onclick="get_disk_tree();" value="<#Cloudsync_browser_folder#>"/>
 											<div id="noUSB" style="color:#FC0;display:none;margin-left:3px;font-size:12px;line-height:140%;"><#no_usb_found#></div>
 										</td>
 									</tr>

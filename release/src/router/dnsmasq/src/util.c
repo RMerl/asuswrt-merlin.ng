@@ -316,7 +316,18 @@ void *safe_malloc(size_t size)
     die(_("could not get memory"), NULL, EC_NOMEM);
       
   return ret;
-}    
+}
+
+/* Ensure limited size string is always terminated.
+ * Can be replaced by (void)strlcpy() on some platforms */
+void safe_strncpy(char *dest, const char *src, size_t size)
+{
+  if (size != 0)
+    {
+      dest[size-1] = '\0';
+      strncpy(dest, src, size-1);
+    }
+}
 
 void safe_pipe(int *fd, int read_noblock)
 {

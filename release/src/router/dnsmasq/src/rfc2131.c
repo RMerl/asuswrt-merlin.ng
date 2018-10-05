@@ -949,7 +949,7 @@ size_t dhcp_reply(struct dhcp_context *context, char *iface_name, int int_index,
 			mess->siaddr = a_record_from_hosts(boot->tftp_sname, now);
 		      
 		      if (boot->file)
-			strncpy((char *)mess->file, boot->file, sizeof(mess->file)-1);
+			safe_strncpy((char *)mess->file, boot->file, sizeof(mess->file));
 		    }
 		  
 		  option_put(mess, end, OPTION_MESSAGE_TYPE, 1, 
@@ -2360,7 +2360,7 @@ static void do_options(struct dhcp_context *context,
 	      in_list(req_options, OPTION_SNAME))
 	    option_put_string(mess, end, OPTION_SNAME, boot->sname, 1);
 	  else
-	    strncpy((char *)mess->sname, boot->sname, sizeof(mess->sname)-1);
+	    safe_strncpy((char *)mess->sname, boot->sname, sizeof(mess->sname));
 	}
       
       if (boot->file)
@@ -2370,7 +2370,7 @@ static void do_options(struct dhcp_context *context,
 	      in_list(req_options, OPTION_FILENAME))
 	    option_put_string(mess, end, OPTION_FILENAME, boot->file, 1);
 	  else
-	    strncpy((char *)mess->file, boot->file, sizeof(mess->file)-1);
+	    safe_strncpy((char *)mess->file, boot->file, sizeof(mess->file));
 	}
       
       if (boot->next_server.s_addr) 
@@ -2387,14 +2387,14 @@ static void do_options(struct dhcp_context *context,
       if ((!req_options || !in_list(req_options, OPTION_FILENAME)) &&
 	  (opt = option_find2(OPTION_FILENAME)) && !(opt->flags & DHOPT_FORCE))
 	{
-	  strncpy((char *)mess->file, (char *)opt->val, sizeof(mess->file)-1);
+	  safe_strncpy((char *)mess->file, (char *)opt->val, sizeof(mess->file));
 	  done_file = 1;
 	}
       
       if ((!req_options || !in_list(req_options, OPTION_SNAME)) &&
 	  (opt = option_find2(OPTION_SNAME)) && !(opt->flags & DHOPT_FORCE))
 	{
-	  strncpy((char *)mess->sname, (char *)opt->val, sizeof(mess->sname)-1);
+	  safe_strncpy((char *)mess->sname, (char *)opt->val, sizeof(mess->sname));
 	  done_server = 1;
 	}
       

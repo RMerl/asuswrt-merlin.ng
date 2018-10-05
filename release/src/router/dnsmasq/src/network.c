@@ -29,7 +29,7 @@ int indextoname(int fd, int index, char *name)
   if (ioctl(fd, SIOCGIFNAME, &ifr) == -1)
     return 0;
 
-  strncpy(name, ifr.ifr_name, IF_NAMESIZE);
+  safe_strncpy(name, ifr.ifr_name, IF_NAMESIZE);
 
   return 1;
 }
@@ -82,12 +82,12 @@ int indextoname(int fd, int index, char *name)
   for (i = lifc.lifc_len / sizeof(struct lifreq); i; i--, lifrp++) 
     {
       struct lifreq lifr;
-      strncpy(lifr.lifr_name, lifrp->lifr_name, IF_NAMESIZE);
+      safe_strncpy(lifr.lifr_name, lifrp->lifr_name, IF_NAMESIZE);
       if (ioctl(fd, SIOCGLIFINDEX, &lifr) < 0) 
 	return 0;
       
       if (lifr.lifr_index == index) {
-	strncpy(name, lifr.lifr_name, IF_NAMESIZE);
+	safe_strncpy(name, lifr.lifr_name, IF_NAMESIZE);
 	return 1;
       }
     }
@@ -188,7 +188,7 @@ int loopback_exception(int fd, int family, struct all_addr *addr, char *name)
   struct ifreq ifr;
   struct irec *iface;
 
-  strncpy(ifr.ifr_name, name, IF_NAMESIZE);
+  safe_strncpy(ifr.ifr_name, name, IF_NAMESIZE);
   if (ioctl(fd, SIOCGIFFLAGS, &ifr) != -1 &&
       ifr.ifr_flags & IFF_LOOPBACK)
     {
@@ -1286,7 +1286,7 @@ static struct serverfd *allocate_sfd(union mysockaddr *addr, char *intname)
       return NULL;
     }
 
-  strcpy(sfd->interface, intname); 
+  safe_strncpy(sfd->interface, intname, sizeof(sfd->interface)); 
   sfd->source_addr = *addr;
   sfd->next = daemon->sfds;
   sfd->ifindex = ifindex;
@@ -1458,7 +1458,7 @@ void add_update_server(int flags,
 	serv->flags |= SERV_HAS_DOMAIN;
       
       if (interface)
-	strcpy(serv->interface, interface);      
+	safe_strncpy(serv->interface, interface, sizeof(serv->interface));
       if (addr)
 	serv->addr = *addr;
       if (source_addr)

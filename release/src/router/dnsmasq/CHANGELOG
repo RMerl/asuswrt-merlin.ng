@@ -52,8 +52,19 @@ version 2.80
 	Add --dhcp-name-match config option. 
 
 	Add --caa-record config option.
-	
 
+	Implement --address=/example.com/# as (more efficient) syntactic
+	sugar for --address=/example.com/0.0.0.0 and
+	--address=/example.com/::
+	Returning null addresses is a useful technique for ad-blocking.
+	Thanks to Peter Russell for the suggestion.
+	
+	Change anti cache-snooping behaviour with queries with the
+	recursion-desired bit unset. Instead to returning SERVFAIL, we
+	now always forward, and never answer from the cache. This
+	allows "dig +trace" command to work. 
+	
+	
 version 2.79
 	Fix parsing of CNAME arguments, which are confused by extra spaces.
 	Thanks to Diego Aguirre for spotting the bug.

@@ -232,7 +232,7 @@ void dhcp_packet(time_t now, int pxe_fd)
   
 #ifdef HAVE_LINUX_NETWORK
   /* ARP fiddling uses original interface even if we pretend to use a different one. */
-  strncpy(arp_req.arp_dev, ifr.ifr_name, 16);
+  safe_strncpy(arp_req.arp_dev, ifr.ifr_name, sizeof(arp_req.arp_dev));
 #endif 
 
   /* If the interface on which the DHCP request was received is an
@@ -255,7 +255,7 @@ void dhcp_packet(time_t now, int pxe_fd)
 	      }
 	    else 
 	      {
-		strncpy(ifr.ifr_name,  bridge->iface, IF_NAMESIZE);
+		safe_strncpy(ifr.ifr_name,  bridge->iface, sizeof(ifr.ifr_name));
 		break;
 	      }
 	  }
@@ -279,7 +279,7 @@ void dhcp_packet(time_t now, int pxe_fd)
       is_relay_reply = 1; 
       iov.iov_len = sz;
 #ifdef HAVE_LINUX_NETWORK
-      strncpy(arp_req.arp_dev, ifr.ifr_name, 16);
+      safe_strncpy(arp_req.arp_dev, ifr.ifr_name, sizeof(arp_req.arp_dev));
 #endif 
     }
   else
@@ -988,8 +988,7 @@ char *host_from_dns(struct in_addr addr)
       if (!legal_hostname(hostname))
 	return NULL;
       
-      strncpy(daemon->dhcp_buff, hostname, 256);
-      daemon->dhcp_buff[255] = 0;
+      safe_strncpy(daemon->dhcp_buff, hostname, 256);
       strip_hostname(daemon->dhcp_buff);
 
       return daemon->dhcp_buff;

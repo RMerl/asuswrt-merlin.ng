@@ -42,6 +42,12 @@
 #  define __EXTENSIONS__
 #endif
 
+#if (defined(__GNUC__) && __GNUC__ >= 3) || defined(__clang__)
+#define ATTRIBUTE_NORETURN __attribute__ ((noreturn))
+#else
+#define ATTRIBUTE_NORETURN
+#endif
+
 /* get these before config.h  for IPv6 stuff... */
 #include <sys/types.h> 
 #include <sys/socket.h>
@@ -435,6 +441,9 @@ struct crec {
     char *namep;
   } name;
 };
+
+#define SIZEOF_BARE_CREC (sizeof(struct crec) - SMALLDNAME)
+#define SIZEOF_POINTER_CREC (sizeof(struct crec) + sizeof(char *) - SMALLDNAME)
 
 #define F_IMMORTAL  (1u<<0)
 #define F_NAMEP     (1u<<1)
@@ -1247,6 +1256,7 @@ int valid_hostname(char *name);
 char *canonicalise(char *in, int *nomem);
 unsigned char *do_rfc1035_name(unsigned char *p, char *sval, char *limit);
 void *safe_malloc(size_t size);
+void safe_strncpy(char *dest, const char *src, size_t size);
 void safe_pipe(int *fd, int read_noblock);
 void *whine_malloc(size_t size);
 int sa_len(union mysockaddr *addr);
@@ -1276,7 +1286,7 @@ int wildcard_match(const char* wildcard, const char* match);
 int wildcard_matchn(const char* wildcard, const char* match, int num);
 
 /* log.c */
-void die(char *message, char *arg1, int exit_code);
+void die(char *message, char *arg1, int exit_code) ATTRIBUTE_NORETURN;
 int log_start(struct passwd *ent_pw, int errfd);
 int log_reopen(char *log_file);
 

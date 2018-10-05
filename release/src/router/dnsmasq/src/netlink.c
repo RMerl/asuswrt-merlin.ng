@@ -149,10 +149,10 @@ int iface_enumerate(int family, void *parm, int (*callback)())
     struct rtgenmsg g; 
   } req;
 
+  memset(&req, 0, sizeof(req));
+  memset(&addr, 0, sizeof(addr));
+
   addr.nl_family = AF_NETLINK;
-  addr.nl_pad = 0;
-  addr.nl_groups = 0;
-  addr.nl_pid = 0; /* address to kernel */
  
  again: 
   if (family == AF_UNSPEC)

@@ -169,7 +169,7 @@ int iface_enumerate(int family, void *parm, int (*callback)())
 	      struct in6_ifreq ifr6;
 
 	      memset(&ifr6, 0, sizeof(ifr6));
-	      strncpy(ifr6.ifr_name, addrs->ifa_name, sizeof(ifr6.ifr_name));
+	      safe_strncpy(ifr6.ifr_name, addrs->ifa_name, sizeof(ifr6.ifr_name));
 	      
 	      ifr6.ifr_addr = *((struct sockaddr_in6 *) addrs->ifa_addr);
 	      if (fd != -1 && ioctl(fd, SIOCGIFAFLAG_IN6, &ifr6) != -1)

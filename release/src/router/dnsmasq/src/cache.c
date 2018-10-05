@@ -825,7 +825,7 @@ static void add_hosts_cname(struct crec *target)
   for (a = daemon->cnames; a; a = a->next)
     if (a->alias[1] != '*' &&
 	hostname_isequal(cache_get_name(target), a->target) &&
-	(crec = whine_malloc(sizeof(struct crec))))
+	(crec = whine_malloc(SIZEOF_POINTER_CREC)))
       {
 	crec->flags = F_FORWARD | F_IMMORTAL | F_NAMEP | F_CONFIG | F_CNAME;
 	crec->ttd = a->ttl;
@@ -1029,8 +1029,7 @@ int read_hostsfile(char *filename, unsigned int index, int cache_size, struct cr
 	    {
 	      /* If set, add a version of the name with a default domain appended */
 	      if (option_bool(OPT_EXPAND) && domain_suffix && !fqdn && 
-		  (cache = whine_malloc(sizeof(struct crec) + 
-					strlen(canon)+2+strlen(domain_suffix)-SMALLDNAME)))
+		  (cache = whine_malloc(SIZEOF_BARE_CREC + strlen(canon) + 2 + strlen(domain_suffix))))
 		{
 		  strcpy(cache->name.sname, canon);
 		  strcat(cache->name.sname, ".");
@@ -1040,7 +1039,7 @@ int read_hostsfile(char *filename, unsigned int index, int cache_size, struct cr
 		  add_hosts_entry(cache, &addr, addrlen, index, rhash, hashsz);
 		  name_count++;
 		}
-	      if ((cache = whine_malloc(sizeof(struct crec) + strlen(canon)+1-SMALLDNAME)))
+	      if ((cache = whine_malloc(SIZEOF_BARE_CREC + strlen(canon) + 1)))
 		{
 		  strcpy(cache->name.sname, canon);
 		  cache->flags = flags;
@@ -1113,7 +1112,7 @@ void cache_reload(void)
     for (intr = daemon->int_names; intr; intr = intr->next)
       if (a->alias[1] != '*' &&
 	  hostname_isequal(a->target, intr->name) &&
-	  ((cache = whine_malloc(sizeof(struct crec)))))
+	  ((cache = whine_malloc(SIZEOF_POINTER_CREC))))
 	{
 	  cache->flags = F_FORWARD | F_NAMEP | F_CNAME | F_IMMORTAL | F_CONFIG;
 	  cache->ttd = a->ttl;
@@ -1128,7 +1127,7 @@ void cache_reload(void)
 
 #ifdef HAVE_DNSSEC
   for (ds = daemon->ds; ds; ds = ds->next)
-    if ((cache = whine_malloc(sizeof(struct crec))) &&
+    if ((cache = whine_malloc(SIZEOF_POINTER_CREC)) &&
 	(cache->addr.ds.keydata = blockdata_alloc(ds->digest, ds->digestlen)))
       {
 	cache->flags = F_FORWARD | F_IMMORTAL | F_DS | F_CONFIG | F_NAMEP;
@@ -1155,7 +1154,7 @@ void cache_reload(void)
     for (nl = hr->names; nl; nl = nl->next)
       {
 	if (hr->addr.s_addr != 0 &&
-	    (cache = whine_malloc(sizeof(struct crec))))
+	    (cache = whine_malloc(SIZEOF_POINTER_CREC)))
 	  {
 	    cache->name.namep = nl->name;
 	    cache->ttd = hr->ttl;
@@ -1164,7 +1163,7 @@ void cache_reload(void)
 	  }
 #ifdef HAVE_IPV6
 	if (!IN6_IS_ADDR_UNSPECIFIED(&hr->addr6) &&
-	    (cache = whine_malloc(sizeof(struct crec))))
+	    (cache = whine_malloc(SIZEOF_POINTER_CREC)))
 	  {
 	    cache->name.namep = nl->name;
 	    cache->ttd = hr->ttl;
@@ -1241,7 +1240,7 @@ static void add_dhcp_cname(struct crec *target, time_t ttd)
 	if ((aliasc = dhcp_spare))
 	  dhcp_spare = dhcp_spare->next;
 	else /* need new one */
-	  aliasc = whine_malloc(sizeof(struct crec));
+	  aliasc = whine_malloc(SIZEOF_POINTER_CREC);
 	
 	if (aliasc)
 	  {
@@ -1332,7 +1331,7 @@ void cache_add_dhcp_entry(char *host_name, int prot,
   if ((crec = dhcp_spare))
     dhcp_spare = dhcp_spare->next;
   else /* need new one */
-    crec = whine_malloc(sizeof(struct crec));
+    crec = whine_malloc(SIZEOF_POINTER_CREC);
   
   if (crec) /* malloc may fail */
     {
@@ -1360,7 +1359,7 @@ void cache_add_dhcp_entry(char *host_name, int prot,
 static void make_non_terminals(struct crec *source)
 {
   char *name = cache_get_name(source);
-  struct crec* crecp, *tmp, **up;
+  struct crec *crecp, *tmp, **up;
   int type = F_HOSTS | F_CONFIG;
 #ifdef HAVE_DHCP
   if (source->flags & F_DHCP)
@@ -1432,14 +1431,16 @@ static void make_non_terminals(struct crec *source)
 	}
       else
 #endif
-	crecp = whine_malloc(sizeof(struct crec));
+	crecp = whine_malloc(SIZEOF_POINTER_CREC);
 
-      *crecp = *source;
-      crecp->flags &= ~(F_IPV4 | F_IPV6 | F_CNAME | F_DNSKEY | F_DS | F_REVERSE);
-      crecp->flags |= F_NAMEP;
-      crecp->name.namep = name;
-
-      cache_hash(crecp);
+      if (crecp)
+	{
+	  crecp->flags = (source->flags | F_NAMEP) & ~(F_IPV4 | F_IPV6 | F_CNAME | F_DNSKEY | F_DS | F_REVERSE);
+	  crecp->ttd = source->ttd;
+	  crecp->name.namep = name;
+	  
+	  cache_hash(crecp);
+	}
     }
 }
 

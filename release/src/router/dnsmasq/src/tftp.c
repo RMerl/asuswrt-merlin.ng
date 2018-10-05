@@ -234,7 +234,7 @@ void tftp_request(struct listener *listen, time_t now)
 #endif
 	}
 
-      strncpy(ifr.ifr_name, name, IF_NAMESIZE);
+      safe_strncpy(ifr.ifr_name, name, IF_NAMESIZE);
       if (ioctl(listen->tftpfd, SIOCGIFMTU, &ifr) != -1)
 	{
 	  mtu = ifr.ifr_mtu;  

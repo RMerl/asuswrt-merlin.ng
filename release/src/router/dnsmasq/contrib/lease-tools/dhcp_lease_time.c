@@ -83,7 +83,7 @@ static unsigned char *option_find1(unsigned char *p, unsigned char *end, int opt
           if (p >= end - 2)
             return NULL; /* malformed packet */
           opt_len = option_len(p);
-          if (p >= end - (2 + opt_len))
+          if (end - p >= (2 + opt_len))
             return NULL; /* malformed packet */
           if (*p == opt && opt_len >= minsize)
             return p;

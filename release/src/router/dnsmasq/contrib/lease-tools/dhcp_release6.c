@@ -376,9 +376,12 @@ int send_release_packet(const char* iface, struct dhcp6_packet* packet)
             sleep(1);
             continue;
 	  }
+
+        close(sock);
         return result;
       }
-    
+
+    close(sock);
     fprintf(stderr, "Response timed out\n");
     return -1;   
 }

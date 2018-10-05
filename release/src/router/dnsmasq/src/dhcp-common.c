@@ -485,8 +485,11 @@ char *whichdevice(void)
  
 void  bindtodevice(char *device, int fd)
 {
+  size_t len = strlen(device)+1;
+  if (len > IFNAMSIZ)
+    len = IFNAMSIZ;
   /* only allowed by root. */
-  if (setsockopt(fd, SOL_SOCKET, SO_BINDTODEVICE, device, IFNAMSIZ) == -1 &&
+  if (setsockopt(fd, SOL_SOCKET, SO_BINDTODEVICE, device, len) == -1 &&
       errno != EPERM)
     die(_("failed to set SO_BINDTODEVICE on DHCP socket: %s"), NULL, EC_BADNET);
 }

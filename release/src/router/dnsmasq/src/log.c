@@ -232,7 +232,7 @@ static void log_write(void)
 	      logaddr.sun_len = sizeof(logaddr) - sizeof(logaddr.sun_path) + strlen(_PATH_LOG) + 1; 
 #endif
 	      logaddr.sun_family = AF_UNIX;
-	      strncpy(logaddr.sun_path, _PATH_LOG, sizeof(logaddr.sun_path));
+	      safe_strncpy(logaddr.sun_path, _PATH_LOG, sizeof(logaddr.sun_path));
 	      
 	      /* Got connection back? try again. */
 	      if (connect(log_fd, (struct sockaddr *)&logaddr, sizeof(logaddr)) != -1)

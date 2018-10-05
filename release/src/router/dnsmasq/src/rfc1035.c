@@ -956,22 +956,26 @@ size_t setup_reply(struct dns_header *header, size_t qlen,
       log_query(F_CONFIG | F_RCODE, "error", &a, NULL);
       SET_RCODE(header, SERVFAIL);
     }
-  else if (flags == F_IPV4)
-    { /* we know the address */
-      SET_RCODE(header, NOERROR);
-      header->ancount = htons(1);
-      header->hb3 |= HB3_AA;
-      add_resource_record(header, NULL, NULL, sizeof(struct dns_header), &p, ttl, NULL, T_A, C_IN, "4", addrp);
-    }
-#ifdef HAVE_IPV6
-  else if (flags == F_IPV6)
+  else if (flags & ( F_IPV4 | F_IPV6))
     {
-      SET_RCODE(header, NOERROR);
-      header->ancount = htons(1);
-      header->hb3 |= HB3_AA;
-      add_resource_record(header, NULL, NULL, sizeof(struct dns_header), &p, ttl, NULL, T_AAAA, C_IN, "6", addrp);
-    }
+      if (flags & F_IPV4)
+	{ /* we know the address */
+	  SET_RCODE(header, NOERROR);
+	  header->ancount = htons(1);
+	  header->hb3 |= HB3_AA;
+	  add_resource_record(header, NULL, NULL, sizeof(struct dns_header), &p, ttl, NULL, T_A, C_IN, "4", addrp);
+	}
+      
+#ifdef HAVE_IPV6
+      if (flags & F_IPV6)
+	{
+	  SET_RCODE(header, NOERROR);
+	  header->ancount = htons(ntohs(header->ancount) + 1);
+	  header->hb3 |= HB3_AA;
+	  add_resource_record(header, NULL, NULL, sizeof(struct dns_header), &p, ttl, NULL, T_AAAA, C_IN, "6", addrp);
+	}
 #endif
+    }
   else /* nowhere to forward to */
     {
       struct all_addr a;
@@ -1289,16 +1293,14 @@ size_t answer_request(struct dns_header *header, char *limit, size_t qlen,
   struct mx_srv_record *rec;
   size_t len;
 
-  if (ntohs(header->ancount) != 0 ||
+  /* never answer queries with RD unset, to avoid cache snooping. */
+  if (!(header->hb3 & HB3_RD) ||
+      ntohs(header->ancount) != 0 ||
       ntohs(header->nscount) != 0 ||
       ntohs(header->qdcount) == 0 || 
       OPCODE(header) != QUERY )
     return 0;
 
-  /* always servfail queries with RD unset, to avoid cache snooping. */
-  if (!(header->hb3 & HB3_RD))
-    return setup_reply(header, qlen, NULL, F_SERVFAIL, 0);
-  
   /* Don't return AD set if checking disabled. */
   if (header->hb4 & HB4_CD)
     sec_data = 0;

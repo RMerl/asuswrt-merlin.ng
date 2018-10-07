@@ -1,6 +1,12 @@
 Asuswrt-Merlin 384/NG Changelog
 ===============================
 
+384.8 (xx-xxx-xxxx)
+  - NEW: Merged with GPL 384_32797 (RT-AC86U binary blobs)
+  - NEW: Merged binary blobs from 384_32738 for
+         AC68/AC88/AC3100/AC5300.
+
+
 384.7 (7-Oct-2018)
   - NOTE: The RT-AC3200 and RT-AC56U are not supported by this
           release, Asus hasn't released any updated code yet for

@@ -509,7 +509,6 @@ function showInputfield2(s, v){
 			showInputfield2('ipv6_autoconf_type', '1');
 		}
 	}else if(s=='ipv6_autoconf_type'){
-		
 		if(document.form.ipv6_dhcp_pd[0].checked == true)
 			document.getElementById("ipv6_prefix_span").innerHTML = GetIPv6_split(document.getElementById('ipv6_ipaddr_span').innerHTML)+"::";
 		else
@@ -528,7 +527,6 @@ function showInputfield2(s, v){
 						
 			document.form.ipv6_prefix_span_for_start.value = IPv6_rtr_addr_split;
 			document.form.ipv6_prefix_span_for_end.value = IPv6_rtr_addr_split;
-			
 			
 			if(ipv6_dhcp_start_orig != "" && ipv6_dhcp_end_orig != ""){
 				document.form.ipv6_dhcp_start_start.value = ipv6_dhcp_start_orig.split("::")[1];
@@ -631,21 +629,18 @@ function ipv6_valid(obj){
 }
 
 function GetIPv6_split(obj){
-	
 	var Split_1_IPv6 = obj.split("::");
 	var Split_1_IPv6_pos = obj.search("::");
 	var Split_2_IPv6 = obj.split(":");
 	var return_prefix = "";
 	if(Split_1_IPv6.length >1){
 		if(Split_1_IPv6[0].substring(0,Split_1_IPv6_pos).split(":").length >4){	//get ipv6_prefix by Split_2_IPv6[0]~[3]
-			db(Split_1_IPv6[0].substring(0,Split_1_IPv6_pos).split(":").length);
 			for(i=0;i<4;i++){
 				return_prefix += Split_2_IPv6[i];
 				if(i<3)
 					return_prefix += ":";
 			}
 		}else{
-			db(Split_1_IPv6[0]);
 			return_prefix = Split_1_IPv6[0];
 		}		
 	}else if(Split_2_IPv6.length > 1){
@@ -1010,7 +1005,7 @@ function genWANSoption(){
 			<td bgcolor="#4D595D" valign="top">
 				<div>&nbsp;</div>
 				<div class="formfonttitle">IPv6</div>
-	      <div style="margin-left:5px;margin-top:10px;margin-bottom:10px"><img src="/images/New_ui/export/line_export.png"></div>
+	     		<div style="margin:10px 0 10px 5px;" class="splitLine"></div>
 	      <div class="formfontdesc"><#LANHostConfig_display6_sectiondesc#></div>
 				<div class="formfontdesc" style="margin-top:-10px;">
 					<a id="faq" href="" target="_blank" style="font-family:Lucida Console;text-decoration:underline;">IPv6 FAQ</a>

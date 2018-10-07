@@ -1,0 +1,35 @@
+-- Supported --
+
+DNSServiceRefSockFD
+DNSServiceProcessResult
+DNSServiceRefDeallocate
+DNSServiceEnumerateDomains
+DNSServiceRegister
+DNSServiceBrowse
+DNSServiceResolve
+DNSServiceConstructFullName
+
+TXTRecordCreate
+TXTRecordDeallocate
+TXTRecordSetValue
+TXTRecordRemoveValue
+TXTRecordGetLength
+TXTRecordGetBytesPtr
+TXTRecordContainsKey
+TXTRecordGetValuePtr
+TXTRecordGetCount
+TXTRecordGetItemAtIndex
+
+-- Unsupported but Relevant --
+
+DNSServiceRegisterRecord
+DNSServiceQueryRecord
+DNSServiceReconfirmRecord
+DNSServiceCreateConnection
+DNSServiceAddRecord
+DNSServiceUpdateRecord
+DNSServiceRemoveRecord
+
+-- Unsupported and Irrelevant --
+
+DNSServiceSetDefaultDomainForUser

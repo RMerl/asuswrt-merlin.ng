@@ -282,7 +282,7 @@ function switchPage(page){
 						</td>
         			</tr>
         			<tr>
-          				<td height="5"><img src="images/New_ui/export/line_export.png" /></td>
+          				<td height="5"><div class="splitLine"></div></td>
         			</tr>
         			<tr>
 						<td height="30" align="left" valign="middle" >
@@ -372,7 +372,7 @@ function switchPage(page){
 
 						<div id='bwm-controls'>
 							<tr>
-								<th width='50%'><#Traffic_Avg#></th>
+								<th width='50%'></th>
 								<td>
 									<a href='javascript:switchAvg(1)' id='avg1'>Off</a>,
 									<a href='javascript:switchAvg(2)' id='avg2'>2x</a>,
@@ -382,23 +382,23 @@ function switchPage(page){
 								</td>
 							</tr>
 							<tr>
-								<th><#Traffic_Max#></th>
+								<th></th>
 								<td>
 									<a href='javascript:switchScale(0)' id='scale0'>Uniform</a>,
 									<a href='javascript:switchScale(1)' id='scale1'>Per IF</a>
 								</td>
 							</tr>
 							<tr>
-								<th><#Traffic_SvgDisp#></th>
+								<th></th>
 								<td>
 									<a href='javascript:switchDraw(0)' id='draw0'>Solid</a>,
 									<a href='javascript:switchDraw(1)' id='draw1'>Line</a>
 								</td>
 							</tr>
 							<tr>
-								<th><#Traffic_Color#></th>
+								<th></th>
 								<td>
-									<a href='javascript:switchColor()' id='drawcolor'>-</a><a href='javascript:switchColor(1)' id='drawrev'><#Traffic_Reverse#></a>
+									<a href='javascript:switchColor()' id='drawcolor'>-</a><a href='javascript:switchColor(1)' id='drawrev'></a>
 								</td>
 							</tr>
 						</div>

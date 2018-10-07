@@ -26,6 +26,8 @@ else ifeq ($(BUILD_NAME),RT-AC68U))
 	install icon.large.rtac68u.ico $(INSTALLDIR)/usr/sbin/lltd/icon.large.ico
 	install icon.rtac66u_v2.ico $(INSTALLDIR)/usr/sbin/lltd/icon_alt.ico
 	install icon.large.rtac66u_v2.ico $(INSTALLDIR)/usr/sbin/lltd/icon_alt.large.ico
+	install icon.rpac1900.ico $(INSTALLDIR)/usr/sbin/lltd/icon_alt2.ico
+	install icon.large.rpac1900.ico $(INSTALLDIR)/usr/sbin/lltd/icon_alt2.large.ico
 else ifeq ($(BUILD_NAME),$(filter $(BUILD_NAME),RT-AC68A 4G-AC68U))
 	install icon.rtac68u.ico $(INSTALLDIR)/usr/sbin/icon.ico
 	install icon.large.rtac68u.ico $(INSTALLDIR)/usr/sbin/icon.large.ico

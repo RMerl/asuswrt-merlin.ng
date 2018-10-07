@@ -92,7 +92,6 @@ function QKWireless_load_body(){
 		parent.set_step("t3");
 		document.getElementById("theFieldset").style.display = "none";
 		hideLinkTag();
-		flash_button();
 		show_prev_button();
 		
 		if(is_KR_sku){	// MODELDEP by Territory_code
@@ -1416,13 +1415,12 @@ function detect_LANStatus(_flag){
 							<td align="left">
 								<div class="description_down"><#QKSet_wireless_webtitle#></div>
 							</td>
-							<!--td align="right">
-								<img id="HomeImg" onclick="gotoIndex_wireless();" style="cursor:pointer;" align="right" title="Go to Home" src="/images/backtohome.png" onMouseOver="this.src='/images/backtohomeclick.png'" onMouseOut="this.src='/images/backtohome.png'">
-							</td-->
 						</tr>
 					</table>
 				</div>
-				<div style="margin:5px;" id="splitLine"><img style="width: 720px; *width: 710px; height: 2px;" src="/images/New_ui/export/line_export.png"></div>
+				<div style="margin:5px;" id="splitLine">
+					<div style="width: 720px; *width: 710px; height: 2px;" class="splitLine"></div>
+				</div>
 		</div>
 
 <div style="display:none;" id="field_mobile">

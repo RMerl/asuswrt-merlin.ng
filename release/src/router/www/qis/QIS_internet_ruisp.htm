@@ -209,13 +209,12 @@ function applyRule(){
 					<td align="left">
 						<div class="description_down" id="page_title">Russia ISP setting</div>
 					</td>
-					<!--td align="right">
-						<img style="cursor:pointer;" onclick="parent.gotoIndex();" align="right" title="Go to Home" src="/images/backtohome.png" onMouseOver="this.src='/images/backtohomeclick.png'" onMouseOut="this.src='/images/backtohome.png'">
-					</td-->
 				</tr>
 			</table>
 		</div>
-		<div style="margin:5px;" id="splitLine"><img style="width: 720px; *width: 710px; height: 2px;" src="/images/New_ui/export/line_export.png"></div>
+		<div style="margin:5px;" id="splitLine">
+			<div style="width: 720px; *width: 710px; height: 2px;" class="splitLine"></div>
+		</div>
 
 <p class="QISGeneralFont"><#QIS_type_desc1#></p>
 <br>
@@ -284,7 +283,7 @@ function applyRule(){
 </tr>
 
 <tr id="showlogin" style="display:none">
-  <th><#PPPConnection_UserName_itemname#>:</th>
+  <th><#Username#>:</th>
   <td>
 		<input name="wan_pppoe_username" type="text" tabindex="9" class="input_32_table" style="height: 25px;" autocomplete="off" autocorrect="off" autocapitalize="off"/>
   </td>

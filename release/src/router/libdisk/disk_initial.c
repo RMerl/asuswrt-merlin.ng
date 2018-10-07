@@ -45,7 +45,7 @@ extern disk_info_t *read_disk_data(){
 	}
 	follow_info = partition_info;
 
-	memset(device_name, 0, 16);
+	memset(device_name, 0, sizeof(device_name));
 	while(get_line_from_buffer(follow_info, line, 64) != NULL){
 		follow_info += strlen(line);
 
@@ -206,8 +206,7 @@ extern disk_info_t *create_disk(const char *device_name, disk_info_t **new_disk_
 				free_disk_data(&follow_disk_info);
 				return NULL;
 			}
-			memset(port, 0, 8);
-			strncpy(port, port_path, 8);
+			snprintf(port, sizeof(port), "%s", port_path);
 
 			follow_disk_info->port = port;
 		}
@@ -249,7 +248,7 @@ extern disk_info_t *create_disk(const char *device_name, disk_info_t **new_disk_
 		}
 
 		// get USB's tag
-		memset(buf, 0, 64);
+		memset(buf, 0, sizeof(buf));
 		len = 0;
 		ptr = buf;
 		if(vendor != NULL){
@@ -384,13 +383,12 @@ extern int get_disk_major_minor(const char *disk_name, u32 *major, u32 *minor){
 	if(disk_name == NULL || !is_disk_name(disk_name))
 		return 0;
 
-	memset(target_file, 0, 128);
-	sprintf(target_file, "%s/%s/dev", SYS_BLOCK, disk_name);
+	snprintf(target_file, sizeof(target_file), "%s/%s/dev", SYS_BLOCK, disk_name);
 	if((fp = fopen(target_file, "r")) == NULL)
 		return 0;
 
-	memset(buf, 0, 8);
-	ptr = fgets(buf, 8, fp);
+	memset(buf, 0, sizeof(buf));
+	ptr = fgets(buf, sizeof(buf), fp);
 	fclose(fp);
 	if(ptr == NULL)
 		return 0;
@@ -417,13 +415,12 @@ extern int get_disk_size(const char *disk_name, u64 *size_in_kilobytes){
 	if(disk_name == NULL || !is_disk_name(disk_name))
 		return 0;
 
-	memset(target_file, 0, 128);
-	sprintf(target_file, "%s/%s/size", SYS_BLOCK, disk_name);
+	snprintf(target_file, sizeof(target_file), "%s/%s/size", SYS_BLOCK, disk_name);
 	if((fp = fopen(target_file, "r")) == NULL)
 		return 0;
 
-	memset(buf, 0, 16);
-	ptr = fgets(buf, 16, fp);
+	memset(buf, 0, sizeof(buf));
+	ptr = fgets(buf, sizeof(buf), fp);
 	fclose(fp);
 	if(ptr == NULL)
 		return 0;
@@ -445,8 +442,7 @@ extern char *get_disk_vendor(const char *disk_name, char *buf, const int buf_siz
 	if(disk_name == NULL || !is_disk_name(disk_name))
 		return NULL;
 
-	memset(target_file, 0, 128);
-	sprintf(target_file, "%s/%s/device/vendor", SYS_BLOCK, disk_name);
+	snprintf(target_file, sizeof(target_file), "%s/%s/device/vendor", SYS_BLOCK, disk_name);
 	if((fp = fopen(target_file, "r")) == NULL)
 		return NULL;
 
@@ -473,8 +469,7 @@ extern char *get_disk_model(const char *disk_name, char *buf, const int buf_size
 	if(disk_name == NULL || !is_disk_name(disk_name))
 		return NULL;
 
-	memset(target_file, 0, 128);
-	sprintf(target_file, "%s/%s/device/model", SYS_BLOCK, disk_name);
+	snprintf(target_file, sizeof(target_file), "%s/%s/device/model", SYS_BLOCK, disk_name);
 	if((fp = fopen(target_file, "r")) == NULL)
 		return NULL;
 
@@ -520,16 +515,14 @@ extern int get_disk_partitionnumber(const char *string, u32 *partition_number, u
 #endif
 	}
 	else if(mounted_number != NULL && mount_info != NULL){
-		memset(target, 0, 8);
-		sprintf(target, "%s ", string);
+		snprintf(target, sizeof(target), "%s ", string);
 		if(strstr(mount_info, target) != NULL)
 			++(*mounted_number);
 	}
-	memset(disk_name, 0, 8);
+	memset(disk_name, 0, sizeof(disk_name));
 	strncpy(disk_name, string, len);
 
-	memset(target_path, 0, 128);
-	sprintf(target_path, "%s/%s", SYS_BLOCK, disk_name);
+	snprintf(target_path, sizeof(target_path), "%s/%s", SYS_BLOCK, disk_name);
 	if((dp = opendir(target_path)) == NULL){
 		if(mount_info != NULL)
 			free(mount_info);
@@ -547,8 +540,7 @@ extern int get_disk_partitionnumber(const char *string, u32 *partition_number, u
 			if(mounted_number == NULL || mount_info == NULL)
 				continue;
 
-			memset(target, 0, 8);
-			sprintf(target, "%s ", file->d_name);
+			snprintf(target, sizeof(target), "%s ", file->d_name);
 			if(strstr(mount_info, target) != NULL)
 				++(*mounted_number);
 		}
@@ -599,7 +591,7 @@ int find_partition_label(const char *dev_name, char *label){
 
 	if (label) *label = 0;
 
-	memset(usb_port, 0, 32);
+	memset(usb_port, 0, sizeof(usb_port));
 	if (get_usb_port_by_device(dev_name, usb_port, sizeof(usb_port)) == NULL)
 		return 0;
 
@@ -805,13 +797,12 @@ extern int get_partition_size(const char *partition_name, u64 *size_in_kilobytes
 	strncpy(disk_name, partition_name, 3);
 	disk_name[3] = 0;
 
-	memset(target_file, 0, 128);
-	sprintf(target_file, "%s/%s/%s/size", SYS_BLOCK, disk_name, partition_name);
+	snprintf(target_file, sizeof(target_file), "%s/%s/%s/size", SYS_BLOCK, disk_name, partition_name);
 	if((fp = fopen(target_file, "r")) == NULL)
 		return 0;
 
-	memset(buf, 0, 16);
-	ptr = fgets(buf, 16, fp);
+	memset(buf, 0, sizeof(buf));
+	ptr = fgets(buf, sizeof(buf), fp);
 	fclose(fp);
 	if(ptr == NULL)
 		return 0;
@@ -843,8 +834,7 @@ extern int read_mount_data(const char *device_name
 		return 0;
 	}
 
-	memset(target, 0, 8);
-	sprintf(target, "%s ", device_name);
+	snprintf(target, sizeof(target), "%s ", device_name);
 
 	if((start = strstr(mount_info, target)) == NULL){
 		//usb_dbg("disk_initial:: %s: Failed to execute strstr()!\n", device_name);
@@ -873,11 +863,8 @@ extern int read_mount_data(const char *device_name
 	if(!strcmp(type, "ufsd")){
 		char full_dev[16];
 
-		memset(full_dev, 0, 16);
-		sprintf(full_dev, "/dev/%s", device_name);
-
-		memset(type, 0, type_len);
-		strcpy(type, detect_fs_type(full_dev));
+		snprintf(full_dev, sizeof(full_dev), "/dev/%s", device_name);
+		snprintf(type, type_len, "%s", detect_fs_type(full_dev));
 	}
 
 	right[2] = 0;

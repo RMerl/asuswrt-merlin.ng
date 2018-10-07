@@ -9,21 +9,6 @@ var asyncData = {
 }
 
 var httpApi ={
-	"hookGetAsync": function(q){
-		if(!q.success || !q.hook) return false;
-
-		var queryString = q.hook.split("-")[0] + "(" + (q.hook.split("-")[1] || "") + ")";
-
-		$.ajax({
-			url: '/appGet.cgi?hook=' + queryString,
-			dataType: 'json',
-			error: q.error,
-			success: function(res){
-				q.success(res[q.hook]);
-			}
-		});
-	},
-
 	"nvramGetAsync": function(q){
 		if(!q.success || !q.data) return false;
 
@@ -37,8 +22,23 @@ var httpApi ={
 			error: q.error,
 			success: function(encNvram){
 				var decNvram = {};
-				for (var nvram in encNvram){decNvram[nvram] = decodeURIComponent(encNvram[nvram]);}
+				for (var name in encNvram){decNvram[name] = decodeURIComponent(encNvram[name]);}
 				q.success(decNvram);
+			}
+		});
+	},
+
+	"hookGetAsync": function(q){
+		if(!q.success || !q.data) return false;
+
+		var queryString = q.data.split("-")[0] + "(" + (q.data.split("-")[1] || "") + ")";
+
+		$.ajax({
+			url: '/appGet.cgi?hook=' + queryString,
+			dataType: 'json',
+			error: q.error,
+			success: function(res){
+				q.success(res[q.data]);
 			}
 		});
 	},
@@ -332,7 +332,7 @@ var httpApi ={
 	
 		var wanTypeList = {
 			"dhcp": "DHCP",
-			"static": "Static",
+			"static": "STATIC",
 			"pppoe": "PPPoE",
 			"l2tp": "L2TP",
 			"pptp": "PPTP",
@@ -401,6 +401,9 @@ var httpApi ={
 			else{
 				retData.wanType = wanTypeList.noWan;
 			}
+		}
+		else if(wanInfo.autodet_state == "2"){
+			retData.wanType = wanTypeList.dhcp;
 		}
 		else{
 			retData.wanType = wanTypeList.check;
@@ -532,11 +535,32 @@ var httpApi ={
 		return retData;
 	},
 
+	"enableEula": function(_eulaType, enable, callback){
+		var eulaType = _eulaType.toUpperCase()
+
+		$.ajax({
+			url: '/set_' + eulaType + '_EULA.cgi?' + eulaType + '_EULA=' + enable,
+			error: function(){},
+			success: callback
+		});
+	},
+
+	"unregisterAsusDDNS": function(callback){
+		$.ajax({
+			url: '/unreg_ASUSDDNS.cgi',
+			error: function(){},
+			success: callback
+		});
+	},
+
 	"uiFlag": {
-		//the list defined as nvram order, the nvram value define the status.
-		//the value defined as status, you can use 0~9 to define any status that to used.
-		//ex. nvram uiFlag=011, defined as feature1/feature2/feature3..., value defined as disable/enable/enable
-		//"list": { "feature" : 0, "feature1" : 1, "feature2" : 2, ...},
+	/*
+		the list defined as nvram order, the nvram value define the status.
+		the value defined as status, you can use 0~9 to define any status that to used.
+		ex. nvram uiFlag=011, defined as feature1/feature2/feature3..., value defined as disable/enable/enable
+		"list": { "feature" : 0, "feature1" : 1, "feature2" : 2, ...},
+	*/
+
 		"list": {
 			"AiMeshHint" : 0
 		},
@@ -554,5 +578,56 @@ var httpApi ={
 			var uiFlag_update = replaceValue(uiFlag_ori, httpApi.uiFlag.list[_name], _value);
 			httpApi.nvramSet({"action_mode": "apply", "uiFlag" : uiFlag_update});
 		}
+	},
+
+	"update_wlanlog": function(){
+		$.get("/update_wlanlog.cgi");
+	},
+
+	"getPAPStatus": function(_band){
+		var papStatus = "";
+		var get_ssid = function(_band){
+			var ssid = "";
+			if(_band == undefined)
+				ssid = decodeURIComponent(httpApi.nvramCharToAscii(["wlc_ssid"], true).wlc_ssid);
+			else
+				ssid = decodeURIComponent(httpApi.nvramCharToAscii(["wlc" + _band + "_ssid"], true)["wlc" + _band + "_ssid"]);
+
+			ssid = ssid.replace(/\</g, "&lt;").replace(/\>/g, "&gt;");
+			return ssid;
+		};
+		var dpsta_rep = (httpApi.nvramGet(["wlc_dpsta"]).wlc_dpsta == "") ? false : true;
+		if(dpsta_rep){
+			var wlc_state = "0";
+			if(_band == undefined)
+				wlc_state = httpApi.nvramGet(["wlc_state"]).wlc_state;
+			else
+				wlc_state = httpApi.nvramGet(["wlc" + _band + "_state"])["wlc" + _band + "_state"];
+			switch(wlc_state){
+				case "0":
+					papStatus = "<#Disconnected#>";
+					break;
+				case "1":
+					papStatus = "<#APSurvey_action_ConnectingStatus1#>";
+					break;
+				case "2":
+					papStatus = get_ssid(_band);
+					break;
+				default:
+					papStatus = "<#Disconnected#>";
+					break;
+			}
+		}
+		else{
+			var wlc_psta_state = httpApi.hookGet("wlc_psta_state", true);
+			if(wlc_psta_state.wlc_state == "1" && wlc_psta_state.wlc_state_auth == "0")
+				papStatus = get_ssid(_band);
+			else if(wlc_psta_state.wlc_state == "2" && wlc_psta_state.wlc_state_auth == "1")
+				papStatus = "<#APSurvey_action_ConnectingStatus1#>";
+			else
+				papStatus = "<#Disconnected#>";
+
+		}
+		return papStatus;
 	}
 }

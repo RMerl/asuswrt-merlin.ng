@@ -207,6 +207,7 @@ typedef struct l2tp_settings_t {
 } l2tp_settings;
 
 extern l2tp_settings Settings;
+extern int Priority;
 
 /* Bit definitions */
 #define TYPE_BIT         0x80

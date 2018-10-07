@@ -103,7 +103,6 @@ int char_to_ascii_safe_with_utf8(const char *output, const char *input, int outs
 	char *src = (char *)input;
 	char *dst = (char *)output;
 	char *end = (char *)output + outsize - 1;
-	char *escape = "[]"; // shouldn't be more?
 
 	if (src == NULL || dst == NULL || outsize <= 0)
 		return 0;
@@ -112,11 +111,6 @@ int char_to_ascii_safe_with_utf8(const char *output, const char *input, int outs
 		if ((*src >='0' && *src <='9') ||
 		    (*src >='A' && *src <='Z') ||
 		    (*src >='a' && *src <='z')) {
-			*dst++ = *src;
-		} else if (strchr(escape, *src)) {
-			if (dst + 2 > end)
-				break;
-			*dst++ = '\\';
 			*dst++ = *src;
 		} else {
 			if (dst + 3 > end)
@@ -199,7 +193,6 @@ int char_to_ascii_safe(const char *output, const char *input, int outsize)
 	char *src = (char *)input;
 	char *dst = (char *)output;
 	char *end = (char *)output + outsize - 1;
-	char *escape = "[]"; // shouldn't be more?
 
 	if (src == NULL || dst == NULL || outsize <= 0)
 		return 0;
@@ -208,11 +201,6 @@ int char_to_ascii_safe(const char *output, const char *input, int outsize)
 		if ((*src >='0' && *src <='9') ||
 		    (*src >='A' && *src <='Z') ||
 		    (*src >='a' && *src <='z')) {
-			*dst++ = *src;
-		} else if (strchr(escape, *src)) {
-			if (dst + 2 > end)
-				break;
-			*dst++ = '\\';
 			*dst++ = *src;
 		} else {
 			if (dst + 3 > end)
@@ -377,4 +365,18 @@ void trim_space(char *str)
 		else
 			break;
 	}
+}
+
+void toLowerCase(char *str) {
+	char *p;
+
+	for(p = str; *p != '\0'; p++)
+		if(*p >= 'A' && *p <='Z') *p += 32;
+}
+
+void toUpperCase(char *str) {
+	char *p;
+
+	for(p = str; *p != '\0'; p++)
+		if(*p >= 'a' && *p <='z') *p -= 32;
 }

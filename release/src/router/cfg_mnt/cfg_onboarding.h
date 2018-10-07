@@ -6,9 +6,9 @@
 #define ONBOARDING_STATUS_PATH	"/tmp/obstatus"
 #define ONBOARDING_VSIE_PATH	"/tmp/obvsie"
 #define WPS_CHECK_TIME		5
-#define WPS_TIMEOUT		180		// 3 minutes
+#define WPS_TIMEOUT		240		// 3 minutes
 #define ONBOARDING_CHECK_TIME		5
-#define ONBOARDING_DEF_TIMEOUT	300
+#define ONBOARDING_DEF_TIMEOUT	600
 #define ONBOARDING_AVAILABLE_CHECK_TIME		5
 #define ONBOARDING_SELECTION_CHECK_TIME		1
 #define ONBOARDING_AVAILABLE_TIMEOUT		120	// 2 minutes
@@ -61,6 +61,10 @@ extern void cm_updateOnboardingStatus(int obStatus, char *obVsie);
 extern int cm_obtainOnboardingStatusFromFile();
 extern void cm_updateOnboardingVsie(int obStatus);
 extern void cm_updateOnboardingResult(int obResult, char *newReMac);
+extern int cm_selectOnboardingPath(char *newReMac);
+extern int cm_getOnboardingPath();
+extern void cm_setOnboardingPath(int obPath);
+extern void cm_processEthOnboardingStatus(unsigned char *data);
 
 #endif /* __CFG_ONBOARDING_H__ */
 /* End of cfg_onboarding.h */

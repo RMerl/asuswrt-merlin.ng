@@ -219,9 +219,8 @@ function check_bonding_policy(obj){
 				  					<td bgcolor="#4D595D" valign="top">
 				  						<div>&nbsp;</div>
 				  						<div class="formfonttitle"><#menu5_2#> - <#Switch_itemname#></div>
-		      							<div style="margin-left:5px;margin-top:10px;margin-bottom:10px"><img src="/images/New_ui/export/line_export.png"></div>
+		      							<div style="margin:10px 0 10px 5px;" class="splitLine"></div>
 										<div class="formfontdesc"><#SwitchCtrl_desc#></div>
-
 										<table width="100%" border="1" align="center" cellpadding="4" cellspacing="0" bordercolor="#6b8fa3"  class="FormTable">
 											<tr>
 												<th><#jumbo_frame#></th>
@@ -237,8 +236,8 @@ function check_bonding_policy(obj){
 		      									<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(29,2);"><#NAT_Acceleration#></a></th>
 												<td>
 													<select name="ctf_disable_force" class="input_option">
-														<option class="content_input_fd" value="1" <% nvram_match("ctf_disable", "1","selected"); %>><#WLANConfig11b_WirelessCtrl_buttonname#></option>
-														<option class="content_input_fd" value="0" <% nvram_match("ctf_disable", "0","selected"); %>><#Auto#></option>
+														<option class="content_input_fd" value="1" <% nvram_match("ctf_disable_force", "1","selected"); %>><#WLANConfig11b_WirelessCtrl_buttonname#></option>
+														<option class="content_input_fd" value="0" <% nvram_match("ctf_disable_force", "0","selected"); %>><#Auto#></option>
 													</select>
 													&nbsp
 													<span id="ctfLevelDesc"></span>

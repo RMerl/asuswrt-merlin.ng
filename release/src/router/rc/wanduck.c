@@ -772,6 +772,9 @@ int do_dns_detect(int wan_unit)
 	int timeout, size, ret, status, pipefd[2];
 	int debug = nvram_get_int("dns_probe_debug");
 
+	if(dualwan_unit__usbif(wan_unit) && nvram_get_int("modem_pdp") == 2)
+		return 1;
+
 	snprintf(host, sizeof(host), "%s", nvram_safe_get("dns_probe_host"));
 	snprintf(content, sizeof(content), "%s", nvram_safe_get("dns_probe_content"));
 	if (debug)

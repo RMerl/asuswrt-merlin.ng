@@ -33,14 +33,18 @@
 
 				// setup systemVariables
 				setTimeout(function(){
-					var initNvram = httpApi.nvramGet(["wan0_proto", "wan0_dnsenable_x", "sw_mode", "wlc_psta", "wl_ifnames", "wl_version", "productid", "rc_support", "x_Setting", "preferred_lang", "territory_code", "reboot_time", "lan_ipaddr"]);
+					var initNvram = httpApi.nvramGet(["wan0_proto", "wan0_dnsenable_x", "sw_mode", "wlc_psta", "wl_ifnames", "wl_version", "productid", "rc_support", "x_Setting", "preferred_lang", "territory_code", "reboot_time", "lan_ipaddr", "wlc_dpsta"]);
 
+					systemVariable.historyPage = [];
 					systemVariable.originWanType = initNvram.wan0_proto;
 					systemVariable.wanDnsenable = initNvram.wan0_dnsenable_x;
 					systemVariable.originOpMode = (function(){
-						if(initNvram.sw_mode == "2" && (initNvram.wlc_psta == "0" || initNvram.wlc_psta == "")) return "RP";
-						else if(initNvram.sw_mode == "3" && initNvram.wlc_psta == "0") return "AP";
-						else if(initNvram.sw_mode == "2" && initNvram.wlc_psta == "1") return "MB";
+						if(initNvram.sw_mode == "2" && (initNvram.wlc_psta == "0" || initNvram.wlc_psta == "") && (initNvram.wlc_dpsta == "0" || initNvram.wlc_dpsta == "")) return "RP";
+						else if(initNvram.sw_mode == "3" && initNvram.wlc_psta == "2" && (initNvram.wlc_dpsta == "0" || initNvram.wlc_dpsta == "")) return "RP";
+						else if(initNvram.sw_mode == "3" && initNvram.wlc_psta == "2" && initNvram.wlc_dpsta == "1") return "RP";
+						else if(initNvram.sw_mode == "3" && initNvram.wlc_psta == "0" && (initNvram.wlc_dpsta == "0" || initNvram.wlc_dpsta == "")) return "AP";
+						else if(initNvram.sw_mode == "2" && initNvram.wlc_psta == "1" && (initNvram.wlc_dpsta == "0" || initNvram.wlc_dpsta == "")) return "MB";
+						else if(initNvram.sw_mode == "3" && initNvram.wlc_psta == "1" && (initNvram.wlc_dpsta == "0" || initNvram.wlc_dpsta == "")) return "MB";
 						else return "RT";
 					})();
 					systemVariable.opMode = systemVariable.originOpMode;
@@ -56,8 +60,17 @@
 					systemVariable.forceChangePw = (httpApi.hookGet("check_pw") == '1') ? true : false;
 
 					handleSysDep();
+					var getJsonFromUrl =  (function(){
+						var query = location.search.substr(1);
+						var result = {};
+						query.split("&").forEach(function(part) {
+							var item = part.split("=");
+							result[item[0]] = decodeURIComponent(item[1]);
+						});
+						return result;
+					})();
 
-					switch(location.href.split("flag=")[1] || ""){
+					switch(getJsonFromUrl["flag"] || ""){
 						case "sitesurvey_rep":
 							goTo.rpMode();
 						break;
@@ -121,7 +134,7 @@
 				<div class="pageDesc" style="display:none"></div>
 
 				<div class="productIconContainer">
-					<div><img id="ModelPid_img" src=""></div>
+					<div><div id="ModelPid_img"></div></div>
 				</div>
 
 				<div style="text-align:center;margin:50px 0">
@@ -133,7 +146,7 @@
 				</div-->
 	
 				<div style="margin:auto;width:600px;text-align:center;">
-					<a href="#"  class="advSetting" onclick="goTo.advSetting()"><#Manual_Setting_btn#></a>
+					<a href="#"  class="advSetting" onclick="goTo.advSetting()"><#menu5#></a>
 				</div>
 		
 				<div class="tos tosSupport">
@@ -236,7 +249,7 @@
 				<div class="desktop_left_field">
 					<div>
 						<div class="titleMain"><#CTL_login#></div>
-						<div class="titleSub"><#HSDPAConfig_Username_itemname#> / <#PPPConnection_Password_itemname#></div>
+						<div class="titleSub"><#Username#> / <#PPPConnection_Password_itemname#></div>
 						<div class="titleSub"><#Settings#></div>
 					</div>
 				</div>
@@ -396,7 +409,7 @@
 					<div class="pageDesc"><#OP_desc1#></div>
 					<div>
 						<div class="selectorTopContainer">
-							<div class="selectorContainer">
+							<div class="selectorContainer routerSupport">
 								<div class="selectorContainerDiv">
 									<div class="selectBar" onclick="goTo.rtMode()">
 										<#OP_GW_item#>
@@ -789,7 +802,7 @@
 					<div id="pppoe_field">
 						<div>
 							<div class="inputTitleContainer">
-								<div class="inputTitle"><#HSDPAConfig_Username_itemname#></div>
+								<div class="inputTitle"><#Username#></div>
 							</div>
 							<div class="inputContainer">
 								<input id="wan_pppoe_username" type="text" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" maxlength="64" class="textInput pppInput" data-role="none" value="" data-clear-btn="true" />
@@ -1067,7 +1080,7 @@
 							</div>
 							<div class="iptv_pppoe_setting">
 								<div class="inputTitleContainer">
-									<div class="inputTitle"><#HSDPAConfig_Username_itemname#></div>
+									<div class="inputTitle"><#Username#></div>
 								</div>
 								<div class="inputContainer">
 									<input id="iptv_pppoe_username" type="text" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" maxlength="64" class="textInput" data-role="none" value="" data-clear-btn="true" />
@@ -1190,7 +1203,7 @@
 							</div>
 							<div>
 								<div class="inputTitleContainer">
-									<div class="inputTitle"><#HSDPAConfig_Username_itemname#></div>
+									<div class="inputTitle"><#Username#></div>
 								</div>
 								<div class="inputContainer">
 									<input id="modem_user" class="textInput" data-role="none" type="text" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" />
@@ -1413,22 +1426,37 @@
 					<div class="titleSub"><#WLANConfig11b_RBRList_groupitemdesc#></div>
 				</div>
 				<div class="table_td">
+					<div class="pageDesc">Searching for WiFi network nearby...</div><!-- untranslated -->
+					<div id="siteSurveyLoading" class="selectorTopContainer"></div>
+				</div>
+			</div>
+		</div>
+
+		<!-- PAP List Page -->
+		<div id="papList_page" data-role="page" class="qisBackground">
+			<div class="headerBar"></div>
+			<div class="tableContainer">
+				<div class="desktop_left_field">
+					<div class="titleMain"><#Internet#></div>
+					<div class="titleSub"><#WLANConfig11b_RBRList_groupitemdesc#></div>
+				</div>
+				<div class="table_td">
 					<div class="pageDesc"><#QIS_extend_AP#></div>
 					<div>
 						<div id="apList" class="selectorTopContainer"></div>
 
 						<!-- Action Button -->
 						<div class="footer_desktop">
-							<div class="desktop_abortBtn" onclick='abort.siteSurvey()'><#CTL_prev#></div>
-							<div class="desktop_applyBtn" onclick="goTo.wlcKey();"><#Manual_Setting_btn#></div>
+							<div class="desktop_abortBtn" onclick='abort.papList()'><#CTL_prev#></div>
+							<div class="desktop_applyBtn" onclick="goTo.wlcManual();"><#Manual_Setting_btn#></div>
 						</div>
 						<div class="footer_mobile">
 							<table style="width:100%;" cellpadding="0" cellspacing="0">
 								<tr>
-									<td class="mobileAbort" style="width:50%;" onclick='abort.siteSurvey()'>
+									<td class="mobileAbort" style="width:50%;" onclick='abort.papList()'>
 										<div class="mobile_abortBtn"><#CTL_prev#></div>
 									</td>
-									<td class="mobileApply" onclick="goTo.wlcKey();">
+									<td class="mobileApply" onclick="goTo.wlcManual();">
 										<div class="mobile_applyBtn"><#Manual_Setting_btn#></div>
 									</td>
 								</tr>
@@ -1476,7 +1504,51 @@
 							<div class="inputContainer">
 								<select id="wlc_auth_mode_manual" class="optionInput">
 									<option value="open">Open System</option>
+									<option value="shared">Shared Key</option>
+									<option value="psk">WPA-Personal</option>
 									<option value="psk2" selected>WPA2-Personal</option>
+								</select>
+								<div class="inputTitle hint_yellow" id="manual_pap_setup-nmode_hint">
+									<#WLANConfig11n_automode_limition_hint#>
+								</div>
+							</div>
+						</div>
+
+						<div class="manual_pap_setup" id="manual_pap_setup-crypto">
+							<div class="inputTitleContainer">
+								<div class="inputTitle"><#WLANConfig11b_WPAType_itemname#></div>
+							</div>
+							<div class="inputContainer">
+								<select id="wlc_crypto_manual" class="optionInput">
+									<option value="aes">AES</option>
+									<option value="tkip">TKIP</option>
+								</select>
+							</div>
+						</div>
+
+						<div class="manual_pap_setup" id="manual_pap_setup-wep">
+							<div class="inputTitleContainer">
+								<div class="inputTitle"><#WLANConfig11b_WEPType_itemname#></div>
+							</div>
+							<div class="inputContainer">
+								<select id="wlc_wep_manual" class="optionInput">
+									<option value="0"><#wl_securitylevel_0#></option>
+									<option value="1">WEP-64bits</option>
+									<option value="2">WEP-128bits</option>
+								</select>
+							</div>
+						</div>
+
+						<div class="manual_pap_setup" id="manual_pap_setup-key-index">
+							<div class="inputTitleContainer">
+								<div class="inputTitle"><#WLANConfig11b_WEPDefaultKey_itemname#></div>
+							</div>
+							<div class="inputContainer">
+								<select id="wlc_key_index_manual" class="optionInput">
+									<option value="1">1</option>
+									<option value="2">2</option>
+									<option value="3">3</option>
+									<option value="4">4</option>
 								</select>
 							</div>
 						</div>
@@ -1567,7 +1639,7 @@
 				</div>
 				<div class="table_td">
 					<div class="pageDesc"><#exist_new#></div>
-					<div class="pageDesc forceUpgrade"><#FIRM_fupgrade_desc#></div>
+					<!--div class="pageDesc forceUpgrade"><#FIRM_fupgrade_desc#></div-->
 					<div>
 						<div>
 							<div class="inputTitleContainer">
@@ -1581,17 +1653,17 @@
 
 					<!-- Action Button -->
 					<div class="footer_desktop">
-						<div class="desktop_abortBtn" onclick='abort.update();'><#CTL_Cancel#></div>
-						<div class="desktop_applyBtn" onclick="apply.update();"><#CTL_Agree#></div>
+						<div class="desktop_abortBtn" id="desktop_abortBtn_update" onclick='abort.update();'><#CTL_Cancel#></div>
+						<div class="desktop_applyBtn" id="desktop_applyBtn_update" onclick="apply.update();"><#CTL_Agree#></div>
 					</div>
 					<div class="footer_mobile">
 						<table style="width:100%;" cellpadding="0" cellspacing="0">
 							<tr>
 								<td class="mobileAbort" style="width:50%" onclick='abort.update();'>
-									<div class="mobile_abortBtn"><#CTL_Cancel#></div>
+									<div class="mobile_abortBtn" id="mobile_abortBtn_update"><#CTL_Cancel#></div>
 								</td>
 								<td class="mobileApply" onclick="apply.update();">
-									<div class="mobile_applyBtn"><#CTL_Agree#></div>
+									<div class="mobile_applyBtn" id="mobile_applyBtn_update"><#CTL_Agree#></div>
 								</td>
 							</tr>
 						</table>
@@ -1695,7 +1767,7 @@
 					<div class="pageDesc"><#QKSet_finish_desc#></div> <!-- #Congratulations# &nbsp; -->
 					<div class="pageDesc">
 						<div class="descSteps">Step 1</div>
-						<div><#DrSurf_sweet_advise1#></div>
+						<div id="stepText1"><#DrSurf_sweet_advise1#></div>
 					</div>
 
 					<div>
@@ -1704,7 +1776,7 @@
 
 					<div class="pageDesc">
 						<div class="descSteps">Step 2</div>
-						<div><#qis_summary_description_step2#></div>
+						<div id="stepText2"><#qis_summary_description_step2#></div>
 					</div>
 						
 					<div id="finishButton" style="display:none">
@@ -1795,5 +1867,105 @@
 
 		<!-- ASUS Terms of Use -->
 		<div id="asustos_page" data-role="page" class="qisBackground"></div>
+
+		<!-- AiMesh Site Survey option-->
+		<div id="amas_option_page" data-role="page" class="qisBackground aimeshPages">
+			<div class="headerBar"></div>
+			<div class="tableContainer">
+				<div class="desktop_left_field">
+					<div class="titleMain"><#Internet#></div>
+					<div class="titleSub">WiFi network list</div><!-- untranslated -->
+				</div>
+				<div class="table_td">
+					<div class="pageDesc">We found there are some router nearby :</div><!-- untranslated -->
+
+					<div class="selectorTopContainer">
+						<div class="selectorContainer">
+							<div class="selectorContainerDiv">
+								<div id="connectAiMesh" class="selectBar">
+									Connect to AiMesh WiFi network<!-- untranslated -->
+								</div>
+								<div class="narrowContainer">
+									<div class="icon_arrow_right" style="width:20px;height:32px;"></div>
+								</div>
+							</div>
+						</div>
+						<div class="selectorContainer">
+							<div class="selectorContainerDiv">
+								<div id="connectOther" class="selectBar">
+									Connect to other WiFi network<!-- untranslated -->
+								</div>
+								<div class="narrowContainer">
+									<div class="icon_arrow_right" style="width:20px;height:32px;"></div>
+								</div>
+							</div>
+						</div>
+					</div>
+
+					<!-- Action Button -->
+					<div class="footer_desktop">
+						<div class="desktop_abortBtn" onclick='abort.siteSurvey()'><#CTL_prev#></div>
+					</div>
+					<div class="footer_mobile">
+						<table style="width:100%;" cellpadding="0" cellspacing="0">
+							<tr>
+								<td class="mobileAbort" style="width:50%;" onclick='abort.siteSurvey()'>
+									<div class="mobile_abortBtn"><#CTL_prev#></div>
+								</td>
+							</tr>
+						</table>
+					</div>
+
+				</div>
+			</div>
+		</div>
+
+		<!-- Yandex DNS -->
+		<div id="yadns_page" data-role="page" class="qisBackground yadnsSupport">
+			<div class="headerBar"></div>
+			<div class="tableContainer">
+				<div class="desktop_left_field">
+					<div class="titleMain"><#Internet#></div>
+					<div class="titleSub"><#YandexDNS#></div>
+				</div>
+				<div class="table_td">
+					<div class="pageDesc"><#YandexDNS_desc1#></div>
+					<div class="pageDesc"><#YandexDNS_qis_lua#></div>
+					<div class="selectorTopContainer">
+						<div class="selectorContainer routerSupport">
+							<div class="selectorContainerDiv">
+								<div class="selectBar" onclick="apply.yadnsEnable();">
+									<#checkbox_Yes#>
+								</div>
+								<div class="narrowContainer">
+									<div class="icon_arrow_right" style="width:20px;height:32px;"></div>
+								</div>
+							</div>
+						</div>
+						<div class="selectorContainer routerSupport">
+							<div class="selectorContainerDiv">
+								<div class="selectBar" onclick="apply.yadnsSafe();">
+									<#checkbox_Yes#>. <#YandexDNS_qis_default#>
+								</div>
+								<div class="narrowContainer">
+									<div class="icon_arrow_right" style="width:20px;height:32px;"></div>
+								</div>
+							</div>
+						</div>
+						<div class="selectorContainer repeaterSupport">
+							<div class="selectorContainerDiv">
+								<div class="selectBar" onclick="apply.yadnsDisable();">
+									<#checkbox_No#>
+								</div>
+								<div class="narrowContainer">
+									<div class="icon_arrow_right" style="width:20px;height:32px;"></div>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+
 	</body>
 </html>

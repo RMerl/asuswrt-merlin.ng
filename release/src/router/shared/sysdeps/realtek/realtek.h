@@ -1052,7 +1052,7 @@ static const reg_domain_t reg_domain[] = {
 	{ "SG", DOMAIN_SG,   DOMAIN_SG,   0  },
 	{ "CN", DOMAIN_CN,   DOMAIN_CN,   0  },
 	{ "KR", DOMAIN_KR,   DOMAIN_KR,   0  },
-	{ "JP", DOMAIN_MKK,  DOMAIN_MKK,  0  },
+	{ "JP", DOMAIN_MKK,  DOMAIN_MKK,  3  },
 	{ "AU", DOMAIN_AU,   DOMAIN_AU,   4  },
 };
 

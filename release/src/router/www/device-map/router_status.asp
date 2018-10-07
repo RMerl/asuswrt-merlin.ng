@@ -23,11 +23,6 @@
 	margin-bottom:5px;
 }
 
-.line_image{
-	margin:5px 0px 0px 10px; 
-	*margin-top:-10px;
-}
-
 .ram_table{
 	height:30px;
 	text-align:center;
@@ -168,7 +163,29 @@ function initial(){
 
 	detect_CPU_RAM();
 	get_ethernet_ports();
-	set_NM_height();
+
+	var table_height = document.getElementById("rt_table").clientHeight;
+	if(table_height != "0" || table_height != "")
+		set_NM_height(table_height);
+	else {
+		document.body.style.overflow = "hidden";
+		var errorCount = 0;
+		var readyStateCheckInterval = setInterval(function() {
+			table_height = document.getElementById("rt_table").clientHeight;
+			if (table_height != "0" || table_height != "") {
+				clearInterval(readyStateCheckInterval);
+				set_NM_height(table_height);
+			}
+			else {
+				if(errorCount > 5) {
+					clearInterval(readyStateCheckInterval);
+					table_height = parent.document.getElementById("NM_table").style.height;
+					set_NM_height(table_height);
+				}
+				errorCount++;
+			}
+		}, 10);
+	}
 }
 
 function tabclickhandler(wl_unit){
@@ -411,11 +428,11 @@ function get_ethernet_ports() {
 				container: "tableContainer",
 				header: [ 
 					{
-						"title" : "Port", /*untranslated*/
+						"title" : "<#Status_Ports#>",
 						"width" : "50%"
 					},
 					{
-						"title" : "Link State", /*untranslated*/
+						"title" : "<#Status_Str#>",
 						"width" : "50%"
 					}
 				]
@@ -483,8 +500,8 @@ function get_ethernet_ports() {
 		<table width="96%" border="1" align="center" cellpadding="4" cellspacing="0" class="table1px" id="cpu" style="margin: 0px 8px;">
 			<tr>
 				<td >
-					<div class="title">CPU</div>
-					<img class="line_image" src="/images/New_ui/networkmap/linetwo2.png">
+					<div class="title"><#Status_CPU#></div>
+					<div style="margin-top: 5px;*margin-top:-70px;" class="line_horizontal"></div>
 				</td>
 			</tr >
 			<tr>
@@ -542,21 +559,21 @@ function get_ethernet_ports() {
 			<table width="96%" border="1" align="center" cellpadding="4" cellspacing="0" class="table1px" style="margin: 0px 8px;">	
 			<tr>
 				<td colspan="3">		
-					<div class="title">RAM</div>
-					<img class="line_image" src="/images/New_ui/networkmap/linetwo2.png">
+					<div class="title"><#Status_RAM#></div>
+					<div style="margin-top: 5px;*margin-top:-70px;" class="line_horizontal"></div>
 				</td>
 			</tr>
 			<tr class="ram_table">
 				<td>
-					<div>Used</div>	  			
+					<div><#Status_Used#></div>	  			
 					<div id="ram_used_info"></div>	
 				</td>
 				<td>
-					<div>Free</div>
+					<div><#Status_Free#></div>
 					<div id="ram_free_info"></div>	  			
 				</td>
 				<td>
-					<div>Total</div>	  			
+					<div><#Status_Total#></div>	  			
 					<div id="ram_total_info"></div>	  			
 				</td>
 			</tr>  
@@ -629,8 +646,8 @@ function get_ethernet_ports() {
 				</tr>
 				<tr>
 					<td>
-						<div class="title">Ethernet Ports<!--untranslated--></div>
-						<img class="line_image" src="/images/New_ui/networkmap/linetwo2.png">
+						<div class="title"><#Status_Ethernet_Ports#></div>
+						<div style="margin-top: 5px;*margin-top:-70px;" class="line_horizontal"></div>
 					</td>
 				</tr>
 				<tr>

@@ -572,6 +572,7 @@ obj-$(RTCONFIG_SOC_IPQ8064) += taskset
 # IPQ4019 ILQ 1.1
 #obj-$(RTCONFIG_SOC_IPQ40XX) += qca-nss-drv.ipq40xx
 #obj-$(RTCONFIG_SOC_IPQ40XX) += qca-nss-gmac.ipq40xx
+obj-$(RTCONFIG_SOC_IPQ40XX) += qca-edma.ipq40xx
 obj-$(RTCONFIG_SOC_IPQ40XX) += qca-wifi.ipq40xx
 obj-$(RTCONFIG_SOC_IPQ40XX) += qca-wifi-fw.ipq40xx
 obj-$(RTCONFIG_PCIE_QCA9984) += qca-wifi-fw.qca9984
@@ -678,6 +679,7 @@ else
 IPTABLES := iptables
 IPTC_LIBDIR := $(TOP)/$(IPTABLES)
 IPTC_LIBS := -liptc
+CFLAGS += -DIPTABLES_LEGACY
 obj-y += iptables
 obj-y += iproute2
 endif
@@ -730,6 +732,7 @@ ifneq ($(HND_ROUTER),y)
 obj-y += etc
 endif
 # obj-y += vlan # use Busybox vconfig
+#obj-y += utils
 obj-y += ntpclient
 
 ifeq ($(RTCONFIG_REALTEK),y)
@@ -768,14 +771,14 @@ else ifeq ($(RTCONFIG_LANTIQ),y)
 obj-$(RTCONFIG_BT_CONN) += btconfig
 # obj-y += ppacmd
 obj-y += libhelper-1.4.0.2
-obj-y += fapi_wlan_common-1.0.0.1
-#obj-y += libnl-bf
-#obj-y += openssl
-#obj-y += hostapd-2.6
+obj-y += fapi_wlan_common-05.04.00.131
+obj-y += libnl-bf
+obj-y += openssl
+obj-y += hostapd-2.6
 obj-y += libfapi-0.1
 obj-y += taskset
 else
-obj-y += utils$(BCMEX)$(EX7) utils
+obj-y += utils$(BCMEX)$(EX7)
 obj-$(RTCONFIG_EMF) += emf$(BCMEX)$(EX7)
 obj-$(RTCONFIG_EMF) += igs$(BCMEX)$(EX7)
 obj-y += wlconf$(BCMEX)$(EX7)
@@ -1045,6 +1048,7 @@ obj-$(RTCONFIG_TUNNEL) += asusnatnl
 ifeq ($(RTCONFIG_AMAS),y)
 #amas-utils
 obj-y += amas-utils
+
 endif
 #For timemachine
 obj-$(RTCONFIG_TIMEMACHINE) += openssl
@@ -1055,7 +1059,7 @@ obj-$(RTCONFIG_TIMEMACHINE) += netatalk-3.0.5
 ifeq ($(or $(RTCONFIG_TIMEMACHINE),$(RTCONFIG_MDNS)),y)
 obj-y += libdaemon
 obj-y += expat-2.0.1
-obj-y += avahi-0.6.31
+obj-y += avahi
 else
 ifeq ($(or $(RTCONFIG_MEDIA_SERVER),$(RTCONFIG_BWDPI)),y)
 obj-y += mDNSResponder
@@ -1818,10 +1822,12 @@ endif
 
 ifeq ($(RTCONFIG_QCA),y)
 	#FIXME
-ifeq ($(MAPAC1300)$(MAPAC2200)$(VZWAC1300),y)
+ifeq ($(MAPAC1300)$(MAPAC2200)$(VZWAC1300)$(MAPAC3000),y)
 	cd $(TARGETDIR)/usr/lib && \
 		ln -sf ../../lib/ld-uClibc.so.0 ld-uClibc.so.1 && \
 		ln -sf ../../lib/libc.so.0 libc.so.1 && \
+		ln -sf ../../lib/libm.so.0 libm.so.1 && \
+		ln -sf ../../lib/libnsl.so.0 libnsl.so.1 && \
 		ln -sf ../../lib/libdl.so.0 libdl.so.1 && \
 		ln -sf ../../lib/libpthread.so.0 libpthread.so.1
 endif
@@ -1957,7 +1963,7 @@ endif
 	$(if $(RTCONFIG_L7),@cp -f,@mv) $(TARGETDIR)/lib/modules/*/kernel/net/ipv4/netfilter/ipt_layer7.*o $(PLATFORMDIR)/extras/ || true
 	$(if $(RTCONFIG_L7),@cp -f,@mv) $(TARGETDIR)/lib/modules/*/kernel/net/netfilter/xt_layer7.*o $(PLATFORMDIR)/extras/ || true
 
-ifeq ($(RTCONFIG_JFFS2ND_BACKUP),y)
+ifneq (,$(filter y,$(RTCONFIG_JFFS2ND_BACKUP) $(RTCONFIG_TMOBILE)))
 	@mkdir -p $(TARGETDIR)/asus_jffs
 endif
 	@mkdir -p $(PLATFORMDIR)/extras/apps
@@ -1990,6 +1996,7 @@ ifeq ($(RTCONFIG_ROMATECCODEFIX),y)
 endif
 ifeq ($(RTCONFIG_LANTIQ),y)
 	cp -R rom_lantiq/opt/ $(TARGETDIR)/rom/opt/
+	cd $(TARGETDIR)/rom/opt/lantiq/; tar zcf wave.tgz wave; rm -rf wave; ln -sf /tmp/lantiq_wave ./wave
 	cp rom_lantiq/etc/wave_components.ver $(TARGETDIR)/rom/opt/lantiq/etc/
 	cp rom_lantiq/etc/rc.d/config.sh $(TARGETDIR)/rom/opt/lantiq/etc/rc.d/
 	cp rom_lantiq/etc/preinit.d/load_gphy_firmware_preinit.sh $(TARGETDIR)/sbin/
@@ -1997,8 +2004,13 @@ ifeq ($(RTCONFIG_LANTIQ),y)
 	install -D rom_lantiq/opt/lantiq/bin/dutserver $(TARGETDIR)/bin/
 	# install -D rom_lantiq/bin/wave_wlan_dut_drvctrl.sh $(TARGETDIR)/bin/
 	# install -D rom_lantiq/bin/wave_wlan_dut_file_saver.sh $(TARGETDIR)/bin/
-	install -D rom_lantiq/opt/lantiq/bin/hostapd $(TARGETDIR)/bin/
-	install -D rom_lantiq/opt/lantiq/bin/hostapd_cli $(TARGETDIR)/bin/
+	# install -D rom_lantiq/opt/lantiq/bin/hostapd $(TARGETDIR)/bin/
+	# install -D rom_lantiq/opt/lantiq/bin/hostapd_cli $(TARGETDIR)/bin/
+	# Dean : use hostapd-2.6
+	install -D hostapd-2.6/hostapd/hostapd $(TARGETDIR)/rom/opt/lantiq/bin/
+	install -D hostapd-2.6/hostapd/hostapd_cli $(TARGETDIR)/rom/opt/lantiq/bin/
+	install -D hostapd-2.6/wpa_supplicant/wpa_supplicant $(TARGETDIR)/rom/opt/lantiq/bin/
+	install -D hostapd-2.6/wpa_supplicant/wpa_cli $(TARGETDIR)/rom/opt/lantiq/bin/
 	install -D rom_lantiq/opt/lantiq/bin/hostapd.eap_user $(TARGETDIR)/bin/
 	install -D rom_lantiq/usr/bin/unlzma $(TARGETDIR)/usr/bin/
 	install -D rom_lantiq/opt/lantiq/usr/sbin/qosd $(TARGETDIR)/usr/sbin/
@@ -2007,7 +2019,7 @@ ifeq ($(RTCONFIG_LANTIQ),y)
 	cd $(TARGETDIR)/usr/sbin && ln -sf qos_cli ./ifcfg
 	cd $(TARGETDIR)/usr/sbin && ln -sf qos_cli ./qcfg
 	cd $(TARGETDIR)/usr/sbin && ln -sf qos_cli ./classcfg
-	cp $(SRCBASE)/proprietary/sdk_7.2.1.21_05.04.00.61.7_AE/usr/lib/libncurses.so.5.9 $(TARGETDIR)/usr/lib/libncurses.so.5.9
+	cp $(SRCBASE)/proprietary/sdk_7.2.4.4_05.04.00.131/usr/lib/libncurses.so.5.9 $(TARGETDIR)/usr/lib/libncurses.so.5.9
 	cd $(TARGETDIR)/usr/lib && ln -sf libncurses.so.5.9 ./libncurses.so.5
 	# install -D rom_lantiq/opt/lantiq/lib/modules/3.10.104/directconnect_datapath.ko $(TARGETDIR)/lib/modules/3.10.104/
 	cd $(TARGETDIR)/lib/modules/3.10.104/; ln -sf ../../../rom/opt/lantiq/lib/modules/3.10.104/directconnect_datapath.ko ./directconnect_datapath.ko
@@ -2016,6 +2028,7 @@ ifeq ($(RTCONFIG_LANTIQ),y)
 	cd $(TARGETDIR)/lib/modules/3.10.104/; ln -sf ../../../rom/opt/lantiq/lib/modules/3.10.104/ltq_pmcu.ko ./ltq_pmcu.ko
 	cd $(TARGETDIR)/lib/modules/3.10.104/; ln -sf ../../../rom/opt/lantiq/lib/modules/3.10.104/ltq_temp.ko ./ltq_temp.ko
 	cd $(TARGETDIR)/lib/modules/3.10.104/; ln -sf ../../../rom/opt/lantiq/lib/modules/3.10.104/dc_mode0-xrx500.ko ./dc_mode0-xrx500.ko
+	mkdir -p $(TARGETDIR)/lib/firmware/
 	install -D rom_lantiq/lib/firmware/mpe_fw_be.img $(TARGETDIR)/lib/firmware/
 	install -D rom_lantiq/lib/firmware/ppe_fw.bin $(TARGETDIR)/lib/firmware/
 	install -D rom_lantiq/usr/sbin/upgrade $(TARGETDIR)/usr/sbin/
@@ -2034,6 +2047,10 @@ ifeq ($(RTCONFIG_LANTIQ),y)
 	install -D rom_lantiq/usr/sbin/iw $(TARGETDIR)/usr/sbin/
 	install -D rom_lantiq/lib/librt-0.9.33.2.so $(TARGETDIR)/lib/
 	install -D rom_lantiq/lib/librt.so.0 $(TARGETDIR)/lib/
+ifeq ($(RTCONFIG_AMAS),y)
+	install -D rom_lantiq/lib/libssp.so $(TARGETDIR)/lib/
+	install -D rom_lantiq/lib/libssp.so.0 $(TARGETDIR)/lib/
+endif
 	install -D rom_lantiq/usr/lib/libnl-tiny.so $(TARGETDIR)/usr/lib/
 	install -D rom_lantiq/lib/librpc.so $(TARGETDIR)/lib/
 	install -D rom_lantiq/usr/bin/switch_cli $(TARGETDIR)/usr/bin/
@@ -2557,7 +2574,7 @@ wb-install:
 
 push_log: wb
 
-rc: shared nvram$(BCMEX)$(EX7) libbcmcrypto libdisk $(if $(RTCONFIG_FBWIFI),fb_wifi) $(if $(RTCONFIG_QTN),libqcsapi_client) $(if $(CONFIG_LIBBCM),libbcm) $(if $(RTCONFIG_BWDPI),bwdpi_source) $(if $(RTCONFIG_USB_SMS_MODEM),smspdu) $(if $(RTCONFIG_HND_ROUTER),bcm_flashutil bcm_util bcm_boardctl) $(if $(RTCONFIG_OPENVPN),libvpn) $(if $(RTCONFIG_LANTIQ),libfapi-0.1) $(if $(RTCONFIG_CFGSYNC), $(CFGSYNC_PKG) $(if $(RTCONFIG_AMAS), amas-utils) $(if $(RTCONFIG_LANTIQ),hostapd-2.6))
+rc: shared nvram$(BCMEX)$(EX7) libbcmcrypto libdisk $(if $(RTCONFIG_FBWIFI),fb_wifi) $(if $(RTCONFIG_QTN),libqcsapi_client) $(if $(CONFIG_LIBBCM),libbcm) $(if $(RTCONFIG_BWDPI),bwdpi_source) $(if $(RTCONFIG_USB_SMS_MODEM),smspdu) $(if $(RTCONFIG_HND_ROUTER),bcm_flashutil bcm_util bcm_boardctl) $(if $(RTCONFIG_OPENVPN),libvpn) $(if $(RTCONFIG_LANTIQ),libfapi-0.1) $(if $(RTCONFIG_CFGSYNC), $(CFGSYNC_PKG) $(if $(RTCONFIG_AMAS), amas-utils) $(if $(RTCONFIG_LANTIQ),hostapd-2.6)) json-c
 	@$(SEP)
 # Dig into our collection of prebuilt objects based on model
 	@-rm -f rc/prebuild/*.o || true
@@ -3224,11 +3241,6 @@ lsof-install:
 lsof-clean:
 	( cd lsof ; ./Configure -clean )
 	@rm -f lsof/Makefile
-
-ifneq ($(BCMEX),)	
-utils utils-install:
-	@$(SEP)
-endif
 
 mtd-utils: e2fsprogs lzo zlib
 ifeq ($(ALPINE)$(LANTIQ),y)
@@ -3914,8 +3926,9 @@ lldpd-0.9.8: $(if $(RTCONFIG_AMAS),json-c,) jansson-2.7 lldpd-0.9.8/Makefile
 lldpd-0.9.8/Makefile:
 	cd lldpd-0.9.8 && autoreconf -i -f && \
 	$(CONFIGURE) --prefix= --bindir=/usr/sbin --libdir=/usr/lib \
+	$(if $(RTCONFIG_QCA),--disable-hardening,) \
 	CFLAGS="-g -O2 -I$(STAGEDIR)/usr/include" \
-	LDFLAGS="-L$(TOP)/lldpd-0.9.8/lib -lm -L$(STAGEDIR)/usr/lib -ljansson $(if $(RTCONFIG_AMAS),-L$(TOP)/json-c/.libs,)" \
+	LDFLAGS="-L$(TOP)/lldpd-0.9.8/lib -lm -L$(STAGEDIR)/usr/lib -ljansson $(if $(RTCONFIG_AMAS),-L$(TOP)/json-c/.libs,) -ldl" \
 	--with-privsep-user=nobody --with-privsep-group=root --with-privsep-path=/var/run/lldpd \
 	$(if $(RTCONFIG_HND_ROUTER),,--enable-oldies) \
 	$(if $(RTCONFIG_AMAS),--with-json=yes,)
@@ -5721,6 +5734,47 @@ expat-2.0.1-clean:
 	-@$(MAKE) -C expat-2.0.1 clean
 	@rm -f expat-2.0.1/stamp-h1
 
+avahi: expat-2.0.1 libdaemon avahi/Makefile
+	@$(SEP)
+	@$(MAKE) -j 8 -C $@
+
+avahi/Makefile: avahi/configure
+	cd avahi && $(CONFIGURE) \
+		LDFLAGS="$(LDFLAGS) -L$(STAGEDIR)/usr/lib -ldl -lpthread $(EXTRA_LDFLAGS)" \
+		CFLAGS="-Os $(CFLAGS) -I$(STAGEDIR)/usr/include" \
+		--prefix=/usr --sysconfdir=/tmp localstatedir=/var --with-distro=none \
+		--disable-nls --disable-glib --disable-gobject \
+		--enable-introspection=no \
+		--disable-qt3 --disable-qt4 --disable-gtk --disable-gtk3 \
+		--disable-dbus \
+		--disable-gdbm \
+		--disable-python --disable-pygtk --disable-python-dbus \
+		--disable-mono --disable-monodoc \
+		--disable-autoipd \
+		--disable-doxygen-doc --disable-manpages --disable-xmltoman \
+		--with-xml=expat \
+		--with-avahi-user="admin" --with-avahi-group="root" \
+		--disable-dependency-tracking \
+		--disable-stack-protector \
+		avahi_runtime_dir=/var/run \
+		servicedir=/tmp/avahi/services \
+		LIBDAEMON_LIBS="-L$(STAGEDIR)/usr/lib -ldaemon" \
+		LIBDAEMON_CFLAGS="-I$(STAGEDIR)/usr/include"
+
+avahi-install: avahi
+	install -D avahi/avahi-daemon/.libs/avahi-daemon $(INSTALLDIR)/avahi/usr/sbin/avahi-daemon
+	install -D avahi/avahi-common/.libs/libavahi-common.so.3.5.3 $(INSTALLDIR)/avahi/usr/lib/libavahi-common.so.3.5.3
+	install -D avahi/avahi-core/.libs/libavahi-core.so.7.0.2 $(INSTALLDIR)/avahi/usr/lib/libavahi-core.so.7.0.2
+	$(STRIP) $(INSTALLDIR)/avahi/usr/sbin/avahi-daemon
+	$(STRIP) $(INSTALLDIR)/avahi/usr/lib/libavahi-common.so.3.5.3
+	$(STRIP) $(INSTALLDIR)/avahi/usr/lib/libavahi-core.so.7.0.2
+	cd $(INSTALLDIR)/avahi/usr/lib && ln -sf libavahi-common.so.3.5.3 libavahi-common.so.3
+	cd $(INSTALLDIR)/avahi/usr/lib && ln -sf libavahi-core.so.7.0.2 libavahi-core.so.7
+
+avahi-clean:
+	[ ! -f avahi/Makefile ] || $(MAKE) -C avahi distclean
+	@rm -f avahi/Makefile
+
 #avahi-0.6.31
 avahi-0.6.31: shared nvram$(BCMEX)$(EX7) expat-2.0.1 libdaemon avahi-0.6.31/Makefile
 	@$(SEP)
@@ -5875,7 +5929,7 @@ coovachilli-configure:
 	cd coovachilli && autoreconf -fi && \
 	$(CONFIGURE) CC=$(CC) --prefix="" --exec_prefix=/usr --enable-shared=no --with-openssl --enable-multilan --with-ipv6 \
 	CFLAGS="$(EXTRACFLAGS) -g -Os -pipe -funit-at-a-time -Drpl_malloc=malloc -I$(SRCBASE) -I$(SRCBASE)/include -I. -I$(TOP)/shared $(if $(RTCONFIG_BCMARM),-I$(SRCBASE)/shared/bcmwifi/include) -I$(SRCBASE)/router/openssl/include" \
-	LDFLAGS="-lgcc_s -L$(TOP)/nvram${BCMEX} -L$(TOP)/shared -lshared -lpthread -L$(SRCBASE)/router/openssl" \
+	LDFLAGS="-lgcc_s -L$(TOP)/nvram${BCMEX} -L$(TOP)/shared -lshared -lcrypt -lpthread -L$(SRCBASE)/router/openssl" \
 	LIBS="-lnvram -lcrypto -lssl"
 
 coovachilli-install:coovachilli
@@ -6281,7 +6335,7 @@ iwinfo-stage:
 qca-backports: qca-nss30-drv
 	$(MAKE) -C $@ && $(MAKE) $@-stage
 
-cfg_mnt : libevent-2.0.21 $(if $(RTCONFIG_AMAS), amas-utils)
+cfg_mnt : libevent-2.0.21 $(if $(RTCONFIG_AMAS), amas-utils) $(if $(RTCONFIG_LANTIQ),libfapi-0.1)
 
 qca-wifi-assoc-eventd: $(if $(RTCONFIG_CFGSYNC),cfg_mnt)
 
@@ -6368,6 +6422,7 @@ qca-hostap-collard.10.4: qca-wifi.collard-10.4 libnl-bf openssl
 qca-hostap: qca-wifi
 	$(MAKE) -C $@
 
+.PHONY: qca-hostap.ipq40xx qca-nss-drv.ipq40xx qca-nss-gmac.ipq40xx qca-rfs.ipq40xx qca-ssdk.ipq40xx qca-ssdk-shell.ipq40xx
 qca-hostap.ipq40xx: qca-wifi.ipq40xx libnl-bf openssl
 	$(MAKE) -C $@ && $(MAKE) $@-stage
 
@@ -6588,20 +6643,20 @@ libhelper-1.4.0.2-install:
 	mkdir -p $(TARGETDIR)/usr/lib
 	install -D libhelper-1.4.0.2/libhelper.so $(TARGETDIR)/usr/lib/
 
-libfapi-0.1: fapi_wlan_common-1.0.0.1
+libfapi-0.1: fapi_wlan_common-05.04.00.131
 	cd libfapi-0.1; make clean; make
 
 libfapi-0.1-install:
 	cd libfapi-0.1; make clean; make
 	install -D libfapi-0.1/libfapi.so $(TARGETDIR)/usr/lib/
 
-fapi_wlan_common-1.0.0.1: libhelper-1.4.0.2
-	cd fapi_wlan_common-1.0.0.1; make clean; make
+fapi_wlan_common-05.04.00.131: readline-6.2 libhelper-1.4.0.2
+	cd fapi_wlan_common-05.04.00.131; make clean; make
 
-fapi_wlan_common-1.0.0.1-install:
+fapi_wlan_common-05.04.00.131-install:
 	mkdir -p $(TARGETDIR)/usr/lib
-	install -D fapi_wlan_common-1.0.0.1/libfapiwlancommon.so $(TARGETDIR)/usr/lib/
-	install -D fapi_wlan_common-1.0.0.1/ipkg-lantiq/fapi_wlan_common/usr/lib/fapi_wlan_beerock_cli $(TARGETDIR)/usr/lib/
+	install -D fapi_wlan_common-05.04.00.131/libfapiwlancommon.so $(TARGETDIR)/usr/lib/
+	install -D fapi_wlan_common-05.04.00.131/fapi_wlan_beerock_cli $(TARGETDIR)/usr/lib/
 
 hostapd-2.6: libnl-bf openssl
 	cd hostapd-2.6/hostapd;	make clean; make hostapd; make hostapd_cli
@@ -6611,8 +6666,8 @@ hostapd-2.6-install:
 	mkdir -p $(TARGETDIR)/bin
 	install -D hostapd-2.6/hostapd/hostapd $(TARGETDIR)/bin/
 	install -D hostapd-2.6/hostapd/hostapd_cli $(TARGETDIR)/bin/
-#	install -D hostapd-2.6/wpa_supplicant/wpa_supplicant $(TARGETDIR)/bin/
-#	install -D hostapd-2.6/wpa_supplicant/wpa_cli $(TARGETDIR)/bin/
+	install -D hostapd-2.6/wpa_supplicant/wpa_supplicant $(TARGETDIR)/bin/
+	install -D hostapd-2.6/wpa_supplicant/wpa_cli $(TARGETDIR)/bin/
 
 hostapd-2.6-clean:
 	cd hostapd-2.6/hostapd;	make clean
@@ -6749,7 +6804,11 @@ jansson-2.7-clean:
 	[ ! -f jansson-2.7/Makefile ] || $(MAKE) -C jansson-2.7 clean
 	@rm -f jansson-2.7/Makefile
 
-qca-whc-lbd.ipq40xx: jansson-2.7
+qca-whc-lbd.ipq40xx: jansson-2.7 qca-libhyficommon.ipq40xx qca-wifi.ipq40xx kernel_header
+	[ -f $@/compile ] || $(MAKE) -C $@ && $(MAKE) -C $@ stage
+
+qca-whc-lbd.ipq40xx-install: qca-whc-lbd.ipq40xx/compile
+	$(MAKE) -C qca-whc-lbd.ipq40xx install
 
 libffi-3.0.11/Makefile: libffi-3.0.11/configure
 	cd libffi-3.0.11 && $(CONFIGURE) --prefix=$(STAGEDIR)/usr/local
@@ -7257,6 +7316,19 @@ mastiff-clean:
 	cd aaews && make clean
 	echo $(INSTALLDIR)
 
+lantiq_cmd:
+	cd lantiq_cmd && \
+	CC=$(CC) CXX=$(CXX) AR=$(AR) RANLIB=$(RANLIB) LD=$(LD) CFLAGS="-Os -Wall $(EXTRACFLAGS)" \
+	make router
+
+lantiq_cmd-install:
+	install -D lantiq_cmd/lantiq_cmd $(INSTALLDIR)/lantiq_cmd/usr/sbin/lantiq_cmd
+	$(STRIP) -s $(INSTALLDIR)/lantiq_cmd/usr/sbin/lantiq_cmd
+
+lantiq_cmd-clean:
+	cd lantiq_cmd && make clean
+
+
 #aaews: wb
 
 #wb: shared nvram curl-7.21.7 openssl libxml2 asusnatnl
@@ -7709,10 +7781,6 @@ mmc-utils:
 	$(MAKE) -C mmc-utils
 
 .PHONY : mmc-utils
-
-objy:
-	@echo EX7= $(EX7)
-	@echo objy=$(obj-y)
 
 mtd:
 	$(MAKE) -C mtd

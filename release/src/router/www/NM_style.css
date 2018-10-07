@@ -20,12 +20,6 @@
 	height:36px;	
 	width:320px;
 	margin-left:45px;
-	-webkit-border-top-left-radius: 10px;
-	-webkit-border-top-right-radius: 10px;
-	-moz-border-radius-topleft: 10px;
-	-moz-border-radius-topright: 10px;
-	border-top-left-radius: 10px;
-	border-top-right-radius: 10px;
 	-moz-box-shadow: 5px 5px 10px #333;
 	-webkit-box-shadow: 5px 5px 10px #333;
 	box-shadow: 5px 5px 10px #333;
@@ -57,8 +51,9 @@
 #diskquota{
 	width:100px;
 	height:13px;
-	/*border:1px solid #999;*/
-	background:url(images/quotabar_bg.gif);
+	background: #596E74;
+	border-top: 1px solid #929EA1;
+	border-bottom: 1px solid #929eA1;
 }
 
 #iconRemote{ background:url(images/map-iconRemote.gif) no-repeat;	width:87px;	height:77px; cursor:pointer; display:none}
@@ -301,18 +296,9 @@
 
 .NM_radius_left{
 	width:157px;
-	-webkit-border-top-left-radius: 10px;
-	-webkit-border-bottom-left-radius: 10px;
-	-moz-border-radius-topleft: 10px;
-	-moz-border-radius-bottomleft: 10px;
-	border-top-left-radius: 10px;
-	border-bottom-left-radius: 10px;
-	
 	-moz-box-shadow: 12px 5px 10px #333;
 	-webkit-box-shadow: 12px 5px 10px #333;
 	box-shadow: 12px 5px 10px #333;
-	/*filter: alpha(opacity=98);
-	opacity: .98;*/
 	behavior: url(/PIE.htc);
 	position:relative;
 	-webkit-border-radius: 10px 0 0 10px;
@@ -322,18 +308,9 @@
 .NM_radius_right{
 	width:175px;
 	cursor:pointer;
-	-webkit-border-top-right-radius: 10px;
-	-webkit-border-bottom-right-radius: 10px;
-	-moz-border-radius-topright: 10px;
-	-moz-border-radius-bottomright: 10px;
-	border-top-right-radius: 10px;
-	border-bottom-right-radius: 10px;
-	
 	-moz-box-shadow: 10px 5px 10px #333;
 	-webkit-box-shadow: 10px 5px 10px #333;
 	box-shadow: 10px 5px 10px #333;
-	/*filter: alpha(opacity=98);
-	opacity: .98;*/
 	behavior: url(/PIE.htc);
 	position:relative;
 	-webkit-border-radius: 0 10px 10px 0;
@@ -341,18 +318,9 @@
 	border-radius: 0 10px 10px 0;
 }
 .NM_radius_top{
-	-webkit-border-top-left-radius: 10px;
-	-webkit-border-top-right-radius: 10px;
-	-moz-border-radius-topleft: 10px;
-	-moz-border-radius-topright: 10px;
-	border-top-left-radius: 10px;
-	border-top-right-radius: 10px;
-	
 	-moz-box-shadow: 3px 10px 10px #333;
 	-webkit-box-shadow: 3px 10px 10px #333;
 	box-shadow: 3px 10px 10px #333;
-	/*filter: alpha(opacity=98);
-	opacity: .98;*/
 	behavior: url(/PIE.htc);
 	position:relative;
 	-webkit-border-radius: 10px 10px 0 0;
@@ -364,12 +332,6 @@
 	width: 320px;
 	height: 760px;
 	background-color:#2A3539;
-	-webkit-border-bottom-right-radius: 10px;
-	-webkit-border-bottom-left-radius: 10px;
-	-moz-border-radius-bottomright: 10px;
-	-moz-border-radius-bottomleft: 10px;
-	border-bottom-right-radius: 10px;
-	border-bottom-left-radius: 10px;
 	-moz-box-shadow: 3px 8px 10px #333;
 	-webkit-box-shadow: 3px 8px 10px #333;
 	box-shadow: 3px 8px 10px #333;
@@ -380,12 +342,6 @@
 	border-radius: 0 0 10px 10px;
 }
 .NM_radius_bottom{
-	-webkit-border-bottom-right-radius: 10px;
-	-webkit-border-bottom-left-radius: 10px;
-	-moz-border-radius-bottomright: 10px;
-	-moz-border-radius-bottomleft: 10px;
-	border-bottom-right-radius: 10px;
-	border-bottom-left-radius: 10px;
 	behavior: url(/PIE.htc);
 	position:relative;
 	-webkit-border-radius: 0 0 10px 10px;
@@ -395,15 +351,12 @@
 .NM_radius{
 	-webkit-border-radius: 10px;
 	-moz-border-radius: 10px;
-	border-radius: 10px;
-	
+	border-radius: 10px;	
 	-moz-box-shadow: 12px 5px 10px #333;
 	-webkit-box-shadow: 12px 5px 10px #333;
-	box-shadow: 12px 5px 10px #333;
-	
+	box-shadow: 12px 5px 10px #333;	
 	behavior: url(/PIE.htc);
 	position:relative;
-	border-radius: 10px 10px 10px 10px;
 }
 
 .style1 {
@@ -420,9 +373,8 @@
 	padding-top:15px;
 	position:relative;
 	width:740px;
-	background-color:#606E73;
+	background-color:#7B888D;
 	border-width:0;
-	background: url(/images/wall0.gif) repeat;
 	-webkit-border-radius: 5px;
 	-moz-border-radius: 5px;
 	border-radius: 5px;

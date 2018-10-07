@@ -315,7 +315,7 @@
 												<div>&nbsp;</div>
 												<div class="formfonttitle">
 												Game Radar</div>
-												<div style="margin-left:5px;margin-top:10px;margin-bottom:10px"><img src="/images/New_ui/export/line_export.png"></div>
+												<div style="margin:10px 0 10px 5px;" class="splitLine"></div>
 												<div class="formfontdesc"></div>
 
 												<div style="margin-left:10px">

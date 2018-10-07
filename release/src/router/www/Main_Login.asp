@@ -455,9 +455,9 @@ function checkTime(i){
 		<div id="login_filed">
 			<div class="p1 title_gap"><#Sign_in_title#></div>
 
-			<div id="name_title_ie" style="display:none;margin:20px 0 -10px 78px;" class="p1 title_gap"><#HSDPAConfig_Username_itemname#></div>
+			<div id="name_title_ie" style="display:none;margin:20px 0 -10px 78px;" class="p1 title_gap"><#Username#></div>
 			<div class="title_gap">
-				<input type="text" id="login_username" name="login_username" tabindex="1" class="form_input" maxlength="20" autocapitalize="off" autocomplete="off" placeholder="<#HSDPAConfig_Username_itemname#>">
+				<input type="text" id="login_username" name="login_username" tabindex="1" class="form_input" maxlength="20" autocapitalize="off" autocomplete="off" placeholder="<#Username#>">
 			</div>
 			<div id="password_title_ie" style="display:none;margin:20px 0 -20px 78px;" class="p1 title_gap"><#HSDPAConfig_Password_itemname#></div>
 			<div class="password_gap">

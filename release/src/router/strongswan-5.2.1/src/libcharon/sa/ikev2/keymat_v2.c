@@ -284,8 +284,8 @@ METHOD(keymat_v2_t, derive_ike_keys, bool,
 	chunk_t nonce_i, chunk_t nonce_r, ike_sa_id_t *id,
 	pseudo_random_function_t rekey_function, chunk_t rekey_skd)
 {
-	chunk_t skeyseed, key, secret, full_nonce, fixed_nonce, prf_plus_seed;
-	chunk_t spi_i, spi_r;
+	chunk_t skeyseed = chunk_empty, key, secret, full_nonce, fixed_nonce;
+	chunk_t prf_plus_seed, spi_i, spi_r;
 	prf_plus_t *prf_plus = NULL;
 	u_int16_t alg, key_size, int_alg;
 	prf_t *rekey_prf = NULL;

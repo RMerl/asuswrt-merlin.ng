@@ -835,7 +835,7 @@ function select_usb_device(obj){
 				</tr>
 			</table>
 		</div>
-		<div style="margin:5px;" id="splitLine"><img style="width: 720px; *width: 710px; height: 2px;" src="/images/New_ui/export/line_export.png"></div>
+		<div style="margin:5px;" id="splitLine"><div style="width: 720px; *width: 710px; height: 2px;" class="splitLine"></div></div>
 	</div>
 
 	<table id="tblsetting_1" class="QISform" border=0 align="center" cellpadding="5" cellspacing="0">
@@ -934,7 +934,7 @@ function select_usb_device(obj){
 		</tr>
                           
 		<tr>
-			<th><a class="hintstyle"  href="javascript:void(0);" onClick="openHint(21,11);"><#HSDPAConfig_Username_itemname#></a></th>
+			<th><a class="hintstyle"  href="javascript:void(0);" onClick="openHint(21,11);"><#Username#></a></th>
 			<td>
 			<input id="modem_user" name="modem_user" tabindex="9" class="input_20_table" type="text" value="<% nvram_get("modem_user"); %>" autocomplete="off" autocorrect="off" autocapitalize="off"/>
 			</td>
@@ -1003,8 +1003,8 @@ function select_usb_device(obj){
 		</p>
 	</div>
 	<div class="apply_gen" id="resetField" style="margin-top:30px">
-		<input type="button" value="<#CTL_Reset_OOB#>" onclick="reset3G();" class="button_gen_long" >
-		<input type="button" value="<#QKSet_wireless_webtitle#>" onclick="goWireless();" class="button_gen_long">
+		<input type="button" value="<#CTL_Reset_OOB#>" onclick="reset3G();" class="button_gen" >
+		<input type="button" value="<#QKSet_wireless_webtitle#>" onclick="goWireless();" class="button_gen">
 	</div>
 
 	<fieldset class="theFieldset" id="theFieldset" style="display:none;margin-top:10px">

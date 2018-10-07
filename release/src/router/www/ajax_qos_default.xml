@@ -28,8 +28,8 @@
 <qos_rule><desc>Cabal SEA(UDP)</desc><port>6800:6899</port><proto>UDP</proto><rate></rate><prio>Highest</prio></qos_rule>
 <qos_rule><desc>Counter Strike 1.6(TCP)</desc><port>27030:27039</port><proto>TCP</proto><rate></rate><prio>Highest</prio></qos_rule>
 <qos_rule><desc>Counter Strike 1.6(UDP)</desc><port>1200,27000:27015</port><proto>UDP</proto><rate></rate><prio>Highest</prio></qos_rule>
-<qos_rule><desc>Counter Strike –Source(TCP)</desc><port>27014:27050</port><proto>TCP</proto><rate></rate><prio>Highest</prio></qos_rule>
-<qos_rule><desc>Counter Strike –Source(UDP)</desc><port>1200,3478,4379:4380,27000:27030</port><proto>UDP</proto><rate></rate><prio>Highest</prio></qos_rule>
+<qos_rule><desc>Counter Strike - Source(TCP)</desc><port>27014:27050</port><proto>TCP</proto><rate></rate><prio>Highest</prio></qos_rule>
+<qos_rule><desc>Counter Strike - Source(UDP)</desc><port>1200,3478,4379:4380,27000:27030</port><proto>UDP</proto><rate></rate><prio>Highest</prio></qos_rule>
 <qos_rule><desc>Diablo 3</desc><port>1119,6881~6999</port><proto>TCP/UDP</proto><rate></rate><prio>Highest</prio></qos_rule>
 <qos_rule><desc>Dragon Nest(TCP)</desc><port>14300,14400:14406,14500:14600</port><proto>TCP</proto><rate></rate><prio>Highest</prio></qos_rule>
 <qos_rule><desc>Dragon Nest(UDP)</desc><port>15100:15200</port><proto>UDP</proto><rate></rate><prio>Highest</prio></qos_rule>

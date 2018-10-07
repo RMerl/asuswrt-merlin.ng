@@ -560,7 +560,7 @@ function refresh_ipsec_data() {
                 <td valign="top">
                 <div>&nbsp;</div>
                 <div class="formfonttitle">VPN - Status</div>
-                <div style="margin-left:5px;margin-top:10px;margin-bottom:10px"><img src="/images/New_ui/export/line_export.png"></div>
+		<div style="margin:10px 0 10px 5px;" class="splitLine"></div>
 				<table width="100%" style="margin-bottom:20px;" border="1" align="center" cellpadding="4" cellspacing="0" bordercolor="#6b8fa3" id="pptpserver" class="FormTable">
 					<thead>
 						<tr>

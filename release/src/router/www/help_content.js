@@ -363,7 +363,9 @@ helpcontent[32] = new Array("",
 							"The Network Address of a subnet to generate an internal route to a specific client. This specific client should own this subnet.",/*untranslated*/
 							"The Network Mask of a subnet to generate an internal route to a specific client. This specific client should own this subnet.",/*untranslated*/
 							" If you would like other clients to be able to this specific client's subnet, choose Yes and Enable \"Allow Client <-> Client\".",/*untranslated*/
-							"The message digest algorithm which is used to authenticate packets with HMAC. HMAC usually adds 16 or 20 bytes per packet."/*untranslated*/
+							"The message digest algorithm which is used to authenticate packets with HMAC. HMAC usually adds 16 or 20 bytes per packet.",/*untranslated*/
+							"When you would restore or replace router, you can keep original certification of OpenVPN server via \"Export Current Certification\".",/*untranslated*/
+							"You can shift original certification of OpenVPN server from your other one or the old ASUS router, rather than create a new one and ask all clients to setup OpenVPN profile again."/*untranslated*/
 							);
 
 //IPSec

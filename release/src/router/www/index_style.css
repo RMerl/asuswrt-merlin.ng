@@ -576,40 +576,6 @@ body {
 
 
 /* ============ new ui =============*/
-.titlebtn {	
-      background: transparent url(images/New_ui/btn.png) no-repeat scroll right top;
-      color: White;
-      display: block;
-      float: left;
-      height: 34px;
-      padding-right: 10px;      
-      margin-right: 10px;
-      text-decoration: none;
-	  width:136px;
-    }
-.titlebtn span {
-      background: transparent url(images/New_ui/btnspan.png) no-repeat;
-      display: block;
-      padding: 5px 1px 5px 11px;
-      line-height: 24px;
-			font-weight: bold;
-    }
-	
-	
-.titlebtn:hover {
-      background-position: right -34px;
-    }
-.titlebtn:hover span {
-      background-position: left -34px;
-    }
-.titlebtn:active {
-      background-position: right -68px;
-	  outline: none;
-    }
-.titlebtn:active span {
-      background-position: left -68px;
-}
-
 .titledropdownbtn {
 	background-image:url(images/dropdown_bt.png);
 	font-size:12px;
@@ -704,8 +670,9 @@ width:122px;
 	line-height:23px \9;	/*IE*/
 	font-size:12px;
 	font-family: Lucida Console;
-	background-image:url(/images/New_ui/bottom_text.png);
-	border-width:0;
+	background: #090909;
+	border: 1px solid #474747;
+	border-radius: 15px;
 	color:#FFFFFF;
 }
 .bottom_help_FAQ_icon{
@@ -799,7 +766,8 @@ width:122px;
 }
 .menu_Split{
 	background-color: #4E5659;
-	height: 30px;
+	height: auto;
+	min-height: 30px;
 	width: 185px;
 	margin-top: 10px;
 	border: 1px solid #6B7071;

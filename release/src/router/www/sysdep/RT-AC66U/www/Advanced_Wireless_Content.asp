@@ -170,26 +170,16 @@ function initial(){
 		}
 	}
 
-	if(smart_connect_support && (isSwMode("rt") || isSwMode("ap"))){
-		var flag = '<% get_parameter("flag"); %>';		
-		var smart_connect_flag_t;
-
-		if(based_modelid == "RT-AC5300" || based_modelid == "GT-AC5300")
-			inputCtrl(document.form.smart_connect_t, 1);
+	if(smart_connect_support && (isSwMode("rt") || isSwMode("ap"))){	//get select before and control setting
+		var flag = '<% get_parameter("flag"); %>';
+		var smart_connect_flag_t = (flag=='')?document.form.smart_connect_x.value:flag;
 
 		document.getElementById("smartcon_enable_field").style.display = "";
 
-		if(flag == '')
-			smart_connect_flag_t = '<% nvram_get("smart_connect_x"); %>';
-		else
-			smart_connect_flag_t = flag;	
+		if(wl_info.band2g_support && wl_info.band5g_support && wl_info.band5g_2_support)
+			inputCtrl(document.form.smart_connect_t, 1);
 
-		document.form.smart_connect_x.value = smart_connect_flag_t;
-		if(smart_connect_flag_t == 0)
-			document.form.smart_connect_t.value = 1;
-		else    
-			document.form.smart_connect_t.value = smart_connect_flag_t;
-
+		document.form.smart_connect_t.value = (smart_connect_flag_t == 0)?1:smart_connect_flag_t;
 		enableSmartCon(smart_connect_flag_t);
 	}
 	if(history.pushState != undefined) history.pushState("", document.title, window.location.pathname);
@@ -442,10 +432,6 @@ function applyRule(){
 			}
 		}
 
-               if(smart_connect_support && document.form.smart_connect_x.value != 0 
-			&& (based_modelid == "RT-AC5300" || based_modelid == "GT-AC5300") && (isSwMode("rt") || isSwMode("ap")))
-                       document.form.smart_connect_x.value = document.form.smart_connect_t.value;
-
 		showLoading();
 		if(based_modelid == "RT-AC87U" && wl_unit == "1")
 			stopFlag = '0';
@@ -498,12 +484,6 @@ function applyRule(){
 					document.form.acs_dfs.value = "0";
 				}		
 			}
-			else{
-				if(dfs_channel.indexOf(document.form.wl_channel.value) != -1){
-					document.form.wl1_dfs.value = "1";
-					document.form.acs_dfs.value = "1";
-				}
-			}
 
 			if(wl1_dfs != document.form.wl1_dfs.value){
 				document.form.action_script.value = "reboot";
@@ -516,8 +496,12 @@ function applyRule(){
 				document.form.wl1_80211h.value = "1";	
 		}
 
-		if(smart_connect_support && document.form.smart_connect_x.value == '1' && (isSwMode("rt") || isSwMode("ap")))
-			document.form.wl_unit.value = 0;
+		if(smart_connect_support && (isSwMode("rt") || isSwMode("ap")) && document.form.smart_connect_x.value != 0){ //apply smart connect setting
+				document.form.smart_connect_x.value = document.form.smart_connect_t.value;
+				if(document.form.smart_connect_x.value == '1')
+					document.form.wl_unit.value = 0;
+		}
+
 
 		if (based_modelid == "RT-AC87U" && wl_unit == "1")
 			detect_qtn_ready();
@@ -596,12 +580,9 @@ function _change_wl_unit(val){
 	if(sw_mode == 2 || sw_mode == 4)
 		document.form.wl_subunit.value = (val == '<% nvram_get("wlc_band"); %>') ? 1 : -1;
 	
-	if(smart_connect_support && (isSwMode("rt") || isSwMode("ap"))){
-		if(document.form.smart_connect_x.value != 0)
-  			document.form.smart_connect_x.value = document.form.smart_connect_t.value;
-		var smart_connect_flag = document.form.smart_connect_x.value;
-		document.form.current_page.value = "Advanced_Wireless_Content.asp?flag=" + smart_connect_flag;
-	}	
+	if(smart_connect_support && (isSwMode("rt") || isSwMode("ap")))
+		document.form.current_page.value = "Advanced_Wireless_Content.asp?flag=" + document.form.smart_connect_x.value;
+
 	change_wl_unit();
 }
 
@@ -765,36 +746,22 @@ function enableSmartCon(val){
 	var value = new Array();
 	var desc = new Array();
 
-	if(based_modelid=="RT-AC5300" || based_modelid=="GT-AC5300"){
+	if(wl_info.band2g_support && wl_info.band5g_support && wl_info.band5g_2_support){
 		desc = ["Tri-Band Smart Connect (2.4GHz, 5GHz-1 and 5GHz-2)", "5GHz Smart Connect (5GHz-1 and 5GHz-2)"];
 		value = ["1", "2"];
-		add_options_x2(document.form.smart_connect_t, desc, value, val);
 	}
-	else if(based_modelid =="RT-AC3200"){
-		desc = ["Tri-Band Smart Connect (2.4GHz, 5GHz-1 and 5GHz-2)"];
-		value = ["1"];
-		add_options_x2(document.form.smart_connect_t, desc, value, val);	
-	}
-	else if(based_modelid == "RT-AC88U" || based_modelid == "RT-AC86U" || based_modelid == "AC2900" || based_modelid == "RT-AC3100"){
+	else if(wl_info.band2g_support && wl_info.band5g_support){
 		desc = ["Dual-Band Smart Connect (2.4GHz and 5GHz)"];
 		value = ["1"];
-		add_options_x2(document.form.smart_connect_t, desc, value, val);		
 	}
+	add_options_x2(document.form.smart_connect_t, desc, value, val);
 	
-	if(based_modelid=="RT-AC5300" || 
-		based_modelid=="GT-AC5300" || 
-		based_modelid=="RT-AC3200" || 
-		based_modelid=="RT-AC88U" ||
-		based_modelid == "RT-AC86U" ||
-		based_modelid == "AC2900" ||
-		based_modelid=="RT-AC3100"){
-		if(val == 0){
-			document.getElementById("smart_connect_field").style.display = "none";
-			document.getElementById("smartcon_rule_link").style.display = "none";
-		}else if(val > 0){
-			document.getElementById("smart_connect_field").style.display = "";
-			document.getElementById("smartcon_rule_link").style.display = "table-cell";
-		}
+	if(val == 0){
+		document.getElementById("smart_connect_field").style.display = "none";
+		document.getElementById("smartcon_rule_link").style.display = "none";
+	}else if(val > 0){
+		document.getElementById("smart_connect_field").style.display = "";
+		document.getElementById("smartcon_rule_link").style.display = "table-cell";
 	}
 
 	if(val == 0 || (val == 2 && wl_unit == 0)){
@@ -823,7 +790,7 @@ function enableSmartCon(val){
 		regen_auto_option(document.form.wl_nctrlsb);			
 	}
 	
-	if(based_modelid=="RT-AC5300" || based_modelid=="GT-AC5300" || based_modelid=="RT-AC3200")
+	if(wl_info.band2g_support && wl_info.band5g_support && wl_info.band5g_2_support)
 		_change_smart_connect(val);
 }
 
@@ -942,7 +909,7 @@ function regen_auto_option(obj){
 		  <td bgcolor="#4D595D" valign="top">
 		  <div>&nbsp;</div>
 		  <div class="formfonttitle"><#menu5_1#> - <#menu5_1_1#></div>
-      <div style="margin-left:5px;margin-top:10px;margin-bottom:10px"><img src="/images/New_ui/export/line_export.png"></div>
+      <div style="margin: 10px 0 10px 5px" class="splitLine"></div>
       <div class="formfontdesc"><#adv_wl_desc#></div>
 		
 			<table width="99%" border="1" align="center" cellpadding="4" cellspacing="0" id="WLgeneral" class="FormTable">
@@ -960,24 +927,14 @@ function regen_auto_option(obj){
 						<div class="clear"></div>					
 						<script type="text/javascript">
 								var flag = '<% get_parameter("flag"); %>';
-								var smart_connect_flag_t;
-
-							if(flag == '')
-								smart_connect_flag_t = '<% nvram_get("smart_connect_x"); %>';
-							else
-								smart_connect_flag_t = flag;
+								var smart_connect_flag_t = (flag=='')?document.form.smart_connect_x.value:flag;
 
 								$('#radio_smartcon_enable').iphoneSwitch( smart_connect_flag_t > 0, 
 								 function() {
-									if(based_modelid != "RT-AC5300" && based_modelid != "GT-AC5300" && based_modelid !="RT-AC3200" && based_modelid != "RT-AC88U" && based_modelid != "RT-AC86U" && based_modelid != "AC2900" && based_modelid != "RT-AC3100")
-										enableSmartCon(1);
-									else{
 										if(document.form.smart_connect_t.value)
 											enableSmartCon(document.form.smart_connect_t.value);
 										else
 											enableSmartCon(smart_connect_flag_t);
-
-									}
 								 },
 								 function() {
 									enableSmartCon(0);

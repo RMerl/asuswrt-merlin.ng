@@ -675,7 +675,9 @@ static void config_qca8337_LANWANPartition(int type)
 			_dprintf("%s: Unknown WANSCAP %x\n", __func__, wanscap_wanlan);
 		}
 	}
+#if !defined(RPAC51) 
 	eval("swconfig", "dev", MII_IFNAME, "set", "enable_vlan", "1"); // enable vlan
+#endif
 	eval("swconfig", "dev", MII_IFNAME, "set", "apply"); // apply changes
 }
 

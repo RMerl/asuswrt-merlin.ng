@@ -21,6 +21,8 @@
 <script><% wanlink(); %>
 
 var origin_lan_ip = '<% nvram_get("lan_ipaddr"); %>';
+var origin_lan_mask = '<% nvram_get("lan_netmask"); %>';
+
 if(pptpd_support){	
 	var pptpd_clients = '<% nvram_get("pptpd_clients"); %>';
 	var pptpd_clients_subnet = pptpd_clients.split(".")[0]+"."
@@ -30,6 +32,12 @@ if(pptpd_support){
 	var pptpd_clients_end_ip = parseInt(pptpd_clients.split("-")[1]);
 }
 
+if(tagged_based_vlan){
+	var jsFile = document.createElement("script");
+	jsFile.setAttribute("type","text/javascript");
+	jsFile.setAttribute("src", "js/subnet_rule.js");
+	document.getElementsByTagName("head")[0].appendChild(jsFile);
+}
 
 function initial(){
 	show_menu();
@@ -51,13 +59,30 @@ function initial(){
 	else{
 		display_lan_dns(<% nvram_get("lan_dnsenable_x"); %>);
 		change_ip_setting('<% nvram_get("lan_proto"); %>');
-	}	
+	}
+
+	if(tagged_based_vlan){
+		var subnet_netmask = origin_lan_ip + '/' + netmask_to_bits(origin_lan_mask);
+
+		parse_LanToLanRoute_to_object();
+		get_LanToLanRoute(subnet_netmask);
+	}
 }
 
 function applyRule(){
 	if(validForm()){
 		if(based_modelid == "MAP-AC1300" || based_modelid == "MAP-AC2200" || based_modelid == "VZW-AC1300" || based_modelid == "MAP-AC1750")
 			alert("By applying new LAN settings, please reboot all Lyras connected to main Lyra manually.");
+
+		if(tagged_based_vlan){
+			var subnet_netmask = document.form.lan_ipaddr.value + '/' + netmask_to_bits(document.form.lan_netmask.value);
+
+			update_LanToLanRoute_array(subnet_netmask)
+			save_LanToLanRoute();
+			document.form.subnet_rulelist_ext.disabled = false;
+			document.form.subnet_rulelist_ext.value = subnet_rulelist_ext;
+		}
+
 		showLoading();
 		document.form.submit();
 	}
@@ -350,6 +375,7 @@ function check_vpn(){		//true: lAN ip & VPN client ip conflict
 <input type="hidden" name="lan_dnsenable_x" value="<% nvram_get("lan_dnsenable_x"); %>">
 <input type="hidden" name="lan_ipaddr_rt" value="<% nvram_get("lan_ipaddr_rt"); %>">
 <input type="hidden" name="lan_netmask_rt" value="<% nvram_get("lan_netmask_rt"); %>">
+<input type="hidden" name="subnet_rulelist_ext" value='<% nvram_get("subnet_rulelist_ext"); %>' disabled>
 
 <table class="content" align="center" cellpadding="0" cellspacing="0">
   <tr>
@@ -373,7 +399,7 @@ function check_vpn(){		//true: lAN ip & VPN client ip conflict
 		  <td bgcolor="#4D595D" valign="top">
 		  <div>&nbsp;</div>
 		  <div class="formfonttitle"><#menu5_2#> - <#menu5_2_1#></div>
-      <div style="margin-left:5px;margin-top:10px;margin-bottom:10px"><img src="/images/New_ui/export/line_export.png"></div>
+		  <div style="margin:10px 0 10px 5px;" class="splitLine"></div>
       <div class="formfontdesc"><#LANHostConfig_display1_sectiondesc#></div>
       <div id="VPN_conflict" class="formfontdesc" style="color:#FFCC00;display:none;"><#LANHostConfig_display1_sectiondesc2#></div>
 		  

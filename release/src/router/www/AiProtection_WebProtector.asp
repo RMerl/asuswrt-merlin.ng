@@ -20,6 +20,7 @@
 <script type="text/javascript" src="switcherplugin/jquery.iphone-switch.js"></script>
 <script type="text/javascript" src="client_function.js"></script>
 <script type="text/javascript" src="/js/httpApi.js"></script>
+<script language="JavaScript" type="text/javascript" src="/js/asus_eula.js"></script>
 <style>
 #switch_menu{
 	text-align:right
@@ -47,12 +48,6 @@
 }
 </style>
 <script>
-window.onresize = function() {
-	if(document.getElementById("agreement_panel").style.display == "block") {
-		cal_panel_block("agreement_panel", 0.25);
-	}
-}
-
 var apps_filter = "<% nvram_get("wrs_rulelist"); %>".replace(/&#62/g, ">").replace(/&#60/g, "<");
 var wrs_filter = "<% nvram_get("wrs_rulelist"); %>".replace(/&#62/g, ">").replace(/&#60/g, "<");
 var wrs_app_filter = "<% nvram_get("wrs_app_rulelist"); %>".replace(/&#62/g, ">").replace(/&#60/g, "<");
@@ -755,30 +750,9 @@ function show_inner_tab(){
 	document.getElementById('switch_menu').innerHTML = code;
 }
 
-function show_tm_eula(){
-  $.get("tm_eula.htm", function(data){
-  	document.getElementById('agreement_panel').innerHTML= data;
-		var url = "https://www.asus.com/Microsite/networks/Trend_Micro_EULA/";
-		$("#eula_url").attr("href",url);
-		url = "https://www.trendmicro.com/en_us/about/legal/privacy-policy-product.html"
-		$("#tm_eula_url").attr("href",url);
-		url = "https://success.trendmicro.com/data-collection-disclosure";
-		$("#tm_disclosure_url").attr("href",url);
-		adjust_TM_eula_height("agreement_panel");
-  });
-
-	dr_advise();
-	cal_panel_block("agreement_panel", 0.25);
-	$("#agreement_panel").fadeIn(300);
-}
-
 function cancel(){
-	$("#agreement_panel").fadeOut(100);
 	$('#iphone_switch').animate({backgroundPosition: -37}, "slow", function() {});
 	curState = 0;
-	document.getElementById("hiddenMask").style.visibility = "hidden";
-	htmlbodyforIE = parent.document.getElementsByTagName("html");  //this both for IE&FF, use "html" but not "body" because <!DOCTYPE html PUBLIC.......>
-	htmlbodyforIE[0].style.overflow = "scroll";	  //hidden the Y-scrollbar for preventing from user scroll it.
 }
 
 function eula_confirm(){
@@ -795,7 +769,6 @@ function eula_confirm(){
 <body onload="initial();" onunload="unload_body();">
 <div id="TopBanner"></div>
 <div id="Loading" class="popup_bg"></div>
-<div id="agreement_panel" class="eula_panel_container"></div>
 <div id="hiddenMask" class="popup_bg" style="z-index:999;">
 	<table cellpadding="5" cellspacing="0" id="dr_sweet_advise" class="dr_sweet_advise" align="center"></table>
 	<!--[if lte IE 6.5]><script>alert("<#ALERT_TO_CHANGE_BROWSER#>");</script><![endif]-->
@@ -857,7 +830,7 @@ function eula_confirm(){
 										</tr>
 									</table>
 								</div>
-								<div style="margin:0px 0px 10px 5px;"><img src="/images/New_ui/export/line_export.png"></div>
+								<div style="margin:0px 0px 10px 5px;" class="splitLine"></div>
 								<div id="PC_desc">
 									<table width="700px" style="margin-left:25px;">
 										<tr>
@@ -892,15 +865,13 @@ function eula_confirm(){
 													$('#radio_web_restrict_enable').iphoneSwitch('<% nvram_get("wrs_enable"); %>',
 														function(){
 															curState = 1;
-															if(document.form.TM_EULA.value == 0){
-																show_tm_eula();
-																return;
+															ASUS_EULA.config(eula_confirm, cancel);
+
+															if(ASUS_EULA.check("tm")){
+																document.form.wrs_enable.value = 1;
+																document.form.wrs_app_enable.value = 1;
+																showhide("list_table",1);
 															}
-
-															document.form.wrs_enable.value = 1;
-															document.form.wrs_app_enable.value = 1;
-															showhide("list_table",1);
-
 														},
 														function(){
 															document.form.wrs_enable.value = 0;

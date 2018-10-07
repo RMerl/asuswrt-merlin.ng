@@ -66,6 +66,31 @@ define(function(){
 					{url: "ParentalControl.asp", tabName: "__INHERIT__"},
 					{url: "AiProtection_AdBlock.asp", tabName: "Ad Blocking"},
 					{url: "AiProtection_Key_Guard.asp", tabName: "Key Guard"},
+					{url: "YandexDNS.asp", tabName: "<#YandexDNS#>"},
+					{url: "NULL", tabName: "__INHERIT__"}
+				] 
+			},
+			{		//for without bwdpi model, RT-N66U_C1
+				menuName: "<#Menu_TrafficManager#>",
+				index: "menu_QoS", 
+				tab: [
+					{url: "QoS_EZQoS.asp", tabName: "<#menu5_3_2#>"},
+					{url: "Main_TrafficMonitor_realtime.asp", tabName: "<#traffic_monitor#>"},
+					{url: "Main_TrafficMonitor_last24.asp", tabName: "__INHERIT__"},
+					{url: "Main_TrafficMonitor_daily.asp", tabName: "__INHERIT__"},
+					{url: "AdaptiveQoS_ROG.asp", tabName: "<table style='margin-top:-7px;'><tr><td><img src='/images/ROG_Logo.png' style='border:0px;width:32px;'></td><td>ROG First</td></tr></table>"}, 
+					{url: "Main_Spectrum_Content.asp", tabName: "<#Spectrum_title#>"},
+					{url: "AdaptiveQoS_TrafficLimiter.asp", tabName: "Traffic Limiter"},
+					{url: "Advanced_QOSUserPrio_Content.asp", tabName: "__INHERIT__"},
+					{url: "Advanced_QOSUserRules_Content.asp", tabName: "__INHERIT__"},
+				] 
+			},
+			{		//for without bwdpi model, RT-N66U_C1
+				menuName: "<#Parental_Control#>",
+				index: "menu_ParentalControl", 
+				tab: [
+					{url: "ParentalControl.asp", tabName: "<#Parental_Control#>"},
+					{url: "YandexDNS.asp", tabName: "<#YandexDNS#>"},
 					{url: "NULL", tabName: "__INHERIT__"}
 				] 
 			},
@@ -164,7 +189,8 @@ define(function(){
 					{url: "Advanced_ACL_Content.asp", tabName: "<#menu5_1_4#>"},
 					{url: "Advanced_WSecurity_Content.asp", tabName: "<#menu5_1_5#>"},
 					{url: "Advanced_WAdvanced_Content.asp", tabName: "<#menu5_1_6#>"},
-					{url: "Advanced_WProxy_Content.asp", tabName: "Wi-Fi Proxy"},
+					{url: "Advanced_WProxy_Content.asp", tabName: "<#WiFi_Proxy_item#>"},
+					{url: "Advanced_Roaming_Block_Content.asp", tabName: "Roaming Block List"},/* untranslated */
 					{url: "Advanced_Wireless_Survey.asp", tabName: "Site Survey"},
 					{url: "NULL", tabName: "__INHERIT__"}
 				] 
@@ -240,7 +266,7 @@ define(function(){
 					{url: "Advanced_BasicFirewall_Content.asp", tabName: "<#menu5_1_1#>"},
 					{url: "Advanced_URLFilter_Content.asp", tabName: "<#menu5_5_2#>"},
 					{url: "Advanced_KeywordFilter_Content.asp", tabName: "<#menu5_5_5#>"},
-					{url: "Advanced_Firewall_Content.asp", tabName: "<#menu5_5_4#>"},			
+					{url: "Advanced_Firewall_Content.asp", tabName: "<#menu5_5_4#>"},		
 					{url: "NULL", tabName: "__INHERIT__"}
 				]
 			},
@@ -258,6 +284,7 @@ define(function(){
 					{url: "Advanced_SNMP_Content.asp", tabName: "SNMP"},
 					{url: "Advanced_TR069_Content.asp", tabName: "TR-069"},
 					{url: "Advanced_Notification_Content.asp", tabName: "Notification"},
+					{url: "Advanced_Privacy.asp", tabName: "<#menu_privacy#>"},
 					{url: "NULL", tabName: "__INHERIT__"}
 				]
 			},
@@ -315,6 +342,10 @@ define(function(){
 					retArray.push("menu_TrafficAnalyzer");
 					retArray.push("menu_BandwidthMonitor");
 				}
+				else{
+					retArray.push("menu_ParentalControl");
+					retArray.push("menu_QoS");
+				}
 
 				if(!usb_support){
 					retArray.push("menu_APP");
@@ -361,6 +392,8 @@ define(function(){
 					retArray.push("menu_VPN");
 					retArray.push("menu_VLAN");
 					retArray.push("menu_Firewall");
+					retArray.push("menu_ParentalControl");
+					retArray.push("menu_QoS");
 
 					if(userRSSI_support){
 						retArray.push("menu_Wireless");
@@ -385,6 +418,8 @@ define(function(){
 					retArray.push("menu_VPN");
 					retArray.push("menu_VLAN");
 					retArray.push("menu_Firewall");
+					retArray.push("menu_ParentalControl");
+					retArray.push("menu_QoS");
 
 					if(ifttt_support || alexa_support){
 						retArray.push("menu_Alexa_IFTTT");
@@ -403,6 +438,8 @@ define(function(){
 					retArray.push("menu_VPN");
 					retArray.push("menu_VLAN");
 					retArray.push("menu_Firewall");
+					retArray.push("menu_ParentalControl");
+					retArray.push("menu_QoS");
 
 					if(ifttt_support || alexa_support){
 						retArray.push("menu_Alexa_IFTTT");
@@ -606,6 +643,12 @@ define(function(){
 //					retArray.push("Advanced_PerformanceTuning_Content.asp");
 //				}
 
+				if(!rrsut_support)
+					retArray.push("cloud_router_sync.asp");
+
+				if(!amesh_support)
+					retArray.push("Advanced_Roaming_Block_Content.asp");
+
 				/* Operation Mode */
 				if(isSwMode("re")){
 					retArray.push("GameBoost.asp");
@@ -658,7 +701,7 @@ define(function(){
 					retArray.push("Advanced_DHCP_Content.asp");
 					retArray.push("Advanced_MultiSubnet_Content.asp");
 					retArray.push("Advanced_GWStaticRoute_Content.asp");
-					retArray.push("Advanced_IPTV_Content.asp");								
+					retArray.push("Advanced_IPTV_Content.asp");
 					retArray.push("Advanced_SwitchCtrl_Content.asp");
 					retArray.push("Main_DHCPStatus_Content.asp");
 					retArray.push("Main_IPV6Status_Content.asp");
@@ -667,6 +710,9 @@ define(function(){
 					retArray.push("Main_ConnStatus_Content.asp");
 					retArray.push("Advanced_Smart_Connect.asp");
 				}
+
+				if(amesh_support && (!isSwMode("rt") && !isSwMode("ap")))
+					retArray.push("Advanced_Roaming_Block_Content.asp");
 
 				/* System Status Changed */
 				// --
@@ -683,13 +729,6 @@ define(function(){
 					retArray.push("Advanced_IPTV_Content.asp");
 				}
 
-				if(based_modelid === '4G-AC55U' || based_modelid === '4G-AC68U'){
-					retArray.push("Advanced_Modem_Content.asp");
-				}
-				else{
-					retArray.push("Advanced_MobileBroadband_Content.asp");
-				}
-
 				if(lyra_hide_support){
 					retArray.push("AiProtection_HomeSecurity.asp");
 					retArray.push("AiProtection_WebProtector.asp");
@@ -697,11 +736,19 @@ define(function(){
 					retArray.push("Advanced_OperationMode_Content.asp");
 					retArray.push("QoS_EZQoS.asp");
 					retArray.push("AdaptiveQoS_WebHistory.asp");
+					retArray.push("Advanced_DHCP_Content.asp");
 				}
 
 				return retArray;
 			}
 		}
+	}
+
+	if(odmpid == "RT-N66U_C1"){
+		menuTree.list.splice(7,2);
+	}
+	else{
+		menuTree.list.splice(5,2);
 	}
 
 	return menuTree;

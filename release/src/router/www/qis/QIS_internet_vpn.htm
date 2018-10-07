@@ -15,15 +15,10 @@
 var now_flag = '<% get_parameter("flag"); %>';
 
 function initial(){
-//	load_alttxt_enviroment();
 	parent.document.title = "<#Web_Title#> - <#QKSet_account_webtitle#>";
 	parent.set_step("t2");
-
 	hideLinkTag();
-	flash_button();
-	
 	get_value_from_parent();
-	
 	show_prev_button();
 	document.getElementById("wan_heartbeat_x").focus();
 } 
@@ -116,13 +111,10 @@ function focus_radio(obj){
 					<td align="left">
 						<div class="description_down"><#QIS_internet_vpn_title#></div>
 					</td>
-					<!--td align="right">
-						<img onclick="parent.gotoIndex();" style="cursor:pointer;" align="right" title="Go to Home" src="/images/backtohome.png" onMouseOver="this.src='/images/backtohomeclick.png'" onMouseOut="this.src='/images/backtohome.png'">
-					</td-->
 				</tr>
 			</table>
 		</div>
-		<div style="margin:5px;" id="splitLine"><img style="width: 720px; *width: 710px; height: 2px;" src="/images/New_ui/export/line_export.png"></div>
+		<div style="margin:5px;" id="splitLine"><div style="width: 720px; *width: 710px; height: 2px;" class="splitLine"></div></div>
 </div>
 <fieldset>
 <legend>

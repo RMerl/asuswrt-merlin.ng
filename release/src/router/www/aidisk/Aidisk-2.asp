@@ -252,7 +252,7 @@ function checkPasswdValid(obj){
     
     <tr>
     	<td>
-    		<div style="margin-top:30px;"><img src="/images/New_ui/export/line_export.png" /></div>
+    		<div style="margin:30px 0 10px 5px;" class="splitLine"></div>
     	</td>
     </tr>     
     

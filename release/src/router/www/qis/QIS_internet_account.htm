@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>                                     
 <head>     
@@ -6,19 +6,61 @@
 <meta HTTP-EQUIV="Pragma" CONTENT="no-cache">
 <meta HTTP-EQUIV="Expires" CONTENT="-1">
 <link rel="stylesheet" type="text/css" href="/form_style.css">
-<script type="text/javascript" src="/qis/QISMobilePlugin.js"></script>
-<script type="text/javascript" src="/help.js"></script>
-<script type="text/JavaScript" src="/state.js"></script>
-<script type="text/javascript" src="/general.js"></script>
-<script type="text/javascript" src="/alttxt.js"></script>
-<script type="text/javascript" src="/validator.js"></script>
+<script language="JavaScript" type="text/javascript" src="/js/jquery.js"></script>
+<script type="text/javascript" src="QISMobilePlugin.js"></script>
+<script type="text/javascript" src="../help.js"></script>
+<script type="text/JavaScript" src="../state.js"></script>
+<script type="text/javascript" src="../general.js"></script>
+<script type="text/javascript" src="../alttxt.js"></script>
+<script type="text/javascript" src="../validator.js"></script>
+<style>
+.image_field{
+	height:250px;
+	background:url('../images/New_ui/new_qis/ISP-card.png') no-repeat;
+	background-size:90%;
+	background-position: 50% 25%;
+}
+
+.iptvTable{
+	width:360px;
+	margin-left:-7px;
+}
+
+.iptvTable th{
+	text-align:right;
+	width:160px;
+	color:#6CF;
+}
+
+.iptvTable td{
+	text-align:left;
+}
+
+.iptvSplitLine{
+	width: 350px;
+	*width: 340px;
+	margin: 5px 5px 5px 10px;
+}
+</style>
 <script>
+var wanstate = -1;
+var wansbstate = -1;
+var wanauxstate = -1;
 <% login_state_hook(); %>
 var now_flag = '<% get_parameter("flag"); %>';
 <% wan_get_parameter(); %>
-var is_TW_sku = (ttc.search("TW") == -1) ? false : true;
+
+var isSku = function(country){
+	var ttc = '<% nvram_get("territory_code"); %>';
+	return (ttc.search(country) == -1) ? false : true;
+}
+//var iptv_port_settings_orig = '<%nvram_get("iptv_port_settings"); %>' == ""? "12": '<%nvram_get("iptv_port_settings"); %>';
+
+var iptv_support = (isSku("CN") || isSku("US") || isSku("CA"))? false:true;
 
 function QKaccount_load_body(){
+	document.getElementById("vpn_client_desc").onmouseover = function(){overHint(50);}
+	document.getElementById("vpn_client_desc").onmouseout = function(){nd();}
 	parent.document.title = "<#Web_Title#> - <#QKSet_account_webtitle#>";
 	if(parent.ISMOBILE){
 		parent.set_step("internet_type");
@@ -29,17 +71,93 @@ function QKaccount_load_body(){
 	else{
 		parent.set_step("t2");
 		hideLinkTag();
-		flash_button();
-		document.getElementById("descritpion_tail1").innerHTML = "<#qis_pppoe_desc2#>";
-		if(is_TW_sku)		
-			document.getElementById("isp_TW_desc").style.display = "";
+
+		if(!iptv_support){
+			document.getElementById("vpn_field").style.display = "none";
+			document.getElementById("specialISP_tr").style.display = "none";
+		}
+		else{
+			document.getElementById("specialISP_tr").style.display = "";
+			if(isSku("TW")){
+				document.getElementById("isp_TW_desc").style.display = "";
+				document.getElementById("mac_clone_field").style.display = "none";
+				document.getElementById("mac_clone_field_1").style.display = "none";
+				document.getElementById("vpn_field").style.display = "none";
+				document.getElementById("specialisp_desc").innerHTML = "Hinet MOD";
+				document.getElementById("select_profile").style.display = "none";
+			}
+		}
+
+		if(parent.flag_manual == 1){
+			document.getElementById("vpn_field").style.display = "";
+			if(iptv_support)
+				document.getElementById("specialISP_tr").style.display = "";
+		}
+
 		if(now_flag != "auto_way_pppoe")
-			show_prev_button();					
-		document.getElementById("nextButton").focus();
+			show_prev_button();
 	}
 
 	get_value_from_parent();
-} 
+	if(document.form.wan_proto.value == "pptp" || document.form.wan_proto.value == "l2tp"){
+		document.getElementById('vpn_client_check').checked = true;
+		document.form.vpn_option.value = document.form.wan_proto.value;
+	}
+	else
+		document.getElementById('vpn_client_check').checked = false;
+
+	enable_vpn_client(document.form.vpn_client_check);
+
+	if(parent.pppoe_failed_flag){
+		document.getElementById("pppoe_fail_desc").style.display = "";
+	}
+
+	if(parent.original_switch_wantag != "none" && iptv_support){
+		document.form.specialisp.checked = true;
+		enable_ISP_special();
+	}
+	else
+		document.form.specialisp.checked = false;
+
+	parent.create_ISP_select(document.form.switch_wantag);
+	if(parent.based_modelid == "GT-AC5300" || parent.based_modelid == "GT-AC9600")
+		document.getElementById("right_panel").style.background = "rgba(207,10,44,.5)";
+}
+
+var retryCounter = 0;
+function check_pppoe_state(){
+	$.ajax({
+		url: '/result_of_get_changed_status_QIS.asp',
+		dataType: 'script',
+		error: function(xhr){
+			check_pppoe_state();
+		},
+		success: function(response){
+			setTimeout("check_pppoe_state();", 1000);
+
+			if(wanstate  == 2 && wansbstate == 0 && wanauxstate == 0){
+				parent.pppoe_failed_flag = false;
+				location.href = "/qis/QIS_finish.htm";
+			}
+			if(wanstate  == 4 && wansbstate == 2 && wanauxstate == 0){
+				parent.pppoe_failed_flag = true;
+				document.getElementById("loadingIcon").style.display = "none";
+				document.getElementById("pppoe_fail_desc").style.display = "";
+			}
+			else{
+				if(retryCounter > 5){
+					parent.pppoe_failed_flag = false;
+					location.href = "/qis/QIS_finish.htm";
+				}
+				else{
+					retryCounter++;
+					document.getElementById("loadingIcon").style.display = "";
+					document.getElementById("pppoe_fail_desc").style.display = "none";
+				}
+			}
+		}
+	});
+}
 
 function get_value_from_parent(){
 	if(now_flag == "auto_way")
@@ -49,13 +167,11 @@ function get_value_from_parent(){
 		document.form.wan_proto.value = "pppoe";
 	else
 		document.form.wan_proto.value = parent.document.QKform.wan_proto.value;
-	
+
 	document.form.wan_hwaddr_x.value = parent.document.QKform.wan_hwaddr_x.value;
 	document.form.wan_pppoe_username.value = parent.document.QKform.wan_pppoe_username.value;
 	document.form.wan_pppoe_passwd.value = parent.document.QKform.wan_pppoe_passwd.value;
-	
-	
-	
+
 	document.form.wan_ipaddr_x.value = parent.document.QKform.wan_ipaddr_x.value;
 	document.form.wan_netmask_x.value = parent.document.QKform.wan_netmask_x.value;
 	document.form.wan_gateway_x.value = parent.document.QKform.wan_gateway_x.value;
@@ -64,7 +180,7 @@ function get_value_from_parent(){
 	document.form.wan_dns2_x.value = parent.document.QKform.wan_dns2_x.value;
 	
 	document.form.wan_heartbeat_x.value = parent.document.QKform.wan_heartbeat_x.value;
-	
+
 	if(now_flag == "auto_way"){
 		document.form.wan_dhcpenable_x.value = parent.document.QKform.wan_dhcpenable_x.value;
 		document.form.wan_dnsenable_x.value = parent.document.QKform.wan_dnsenable_x.value;
@@ -80,6 +196,31 @@ function show_prev_button(){
 		document.getElementById("prevButton").value = '<#menu5#>';
 		
 		document.form.prev_page.value = "/Advanced_WAN_Content.asp";
+	}
+}
+
+function update_QKForm()
+{
+	parent.document.QKform.wan_hwaddr_x.value = document.form.wan_hwaddr_x.value;
+	parent.document.QKform.wan_pppoe_username.value = document.form.wan_pppoe_username.value;
+	parent.document.QKform.wan_pppoe_passwd.value = document.form.wan_pppoe_passwd.value;
+	parent.document.QKform.wan_proto.value = document.form.wan_proto.value;
+
+	parent.document.QKform.switch_wantag.value = document.form.switch_wantag.value;
+	parent.document.QKform.switch_stb_x.value = document.form.switch_stb_x.value;
+	parent.document.QKform.mr_enable_x.value = document.form.mr_enable_x.value;
+	parent.document.QKform.emf_enable.value = document.form.emf_enable.value;
+	parent.document.QKform.ttl_inc_enable.value = document.form.ttl_inc_enable.value;
+	parent.document.QKform.wan_vpndhcp.value = document.form.wan_vpndhcp.value;
+	parent.document.QKform.quagga_enable.value = document.form.quagga_enable.value;
+	parent.document.QKform.mr_altnet_x.value = document.form.mr_altnet_x.value;
+	if(document.form.switch_wantag.value == "manual"){
+		parent.document.QKform.switch_wan0tagid.value = document.form.switch_wan0tagid.value;
+		parent.document.QKform.switch_wan0prio.value = document.form.switch_wan0prio.value;
+		parent.document.QKform.switch_wan1tagid.value = document.form.switch_wan1tagid.value;
+		parent.document.QKform.switch_wan1prio.value = document.form.switch_wan1prio.value;
+		parent.document.QKform.switch_wan2tagid.value = document.form.switch_wan2tagid.value;
+		parent.document.QKform.switch_wan2prio.value = document.form.switch_wan2prio.value;
 	}
 }
 
@@ -116,9 +257,15 @@ function submitForm(o, s){
 		document.form.wan_hwaddr_x.focus();
 		return false;
 	}
-	
+
+	if(!document.form.specialisp.checked){
+		document.form.switch_wantag.value = "none";
+		document.form.switch_stb_x.disabled = false;
+		document.form.switch_stb_x.value = "0";
+	}
+
+	update_QKForm();
 	if(now_flag == "auto_way"){
-		//parent.showLoading();
 		simple_showLoading();
 		
 		document.form.wan_ipaddr_x.disabled = false;
@@ -135,36 +282,20 @@ function submitForm(o, s){
 		if(parent.flag_manual)
 			document.form.flag.value = "manual";
 		else
-			document.form.flag.value = "verify_detect";
+			document.form.flag.value = "pppoe";
 
-		document.form.next_page.value = "/QIS_wizard.htm";	
+		document.form.next_page.value = "/QIS_wireless.htm";
 		document.form.submit();
 	}
 	else if(document.form.wan_proto.value == 'pppoe' || document.form.wan_proto.value == ''){
-		//parent.showLoading();
-		simple_showLoading();
+		if(parent.flag_manual == 1){
+			document.form.action_wait.value = "0";
+		}
+		else{
+			document.form.action_wait.value = "0";
+		}
 
-		// uinfi
-		var original_switch_wantag = '<% nvram_get("switch_wantag"); %>';
-		document.form.switch_wantag.value = parent.document.QKform.switch_wantag.value;
-		document.form.switch_wan0tagid.value = parent.document.QKform.switch_wan0tagid.value;
-		document.form.switch_wan0prio.value = parent.document.QKform.switch_wan0prio.value;
-		document.form.switch_wan1tagid.value = parent.document.QKform.switch_wan1tagid.value;
-		document.form.switch_wan1prio.value = parent.document.QKform.switch_wan1prio.value;
-		document.form.switch_wan2tagid.value = parent.document.QKform.switch_wan2tagid.value;
-		document.form.switch_wan2prio.value = parent.document.QKform.switch_wan2prio.value;
-		document.form.switch_stb_x.value = parent.document.QKform.switch_stb_x.value;
-		document.form.mr_enable_x.value = parent.document.QKform.mr_enable_x.value;
-		document.form.emf_enable.value = parent.document.QKform.emf_enable.value;
-		document.form.ttl_inc_enable.value = parent.document.QKform.ttl_inc_enable.value;
-		if(original_switch_wantag != document.form.switch_wantag.value){
-			/*
-			document.form.action_script.value	= "reboot";
-			document.form.action_wait.value	= eval("<% get_default_reboot_time(); %> + 10");
-			document.getElementById("loadHint").style.display = "";
-			document.getElementById("nextButton").style.display = "none";
-			document.getElementById("prevButton").style.display = "none";
-			*/
+		if(parent.original_switch_wantag != document.form.switch_wantag.value){
 			var reboot_time = eval("<% get_default_reboot_time(); %> + 10");
 			document.form.action_script.value = "saveNvram";
 			document.form.action_wait.value = "0";
@@ -178,26 +309,29 @@ function submitForm(o, s){
 		document.form.x_Setting.value = '<% nvram_get("x_Setting"); %>';
 		document.form.sw_mode.value = parent.document.QKform.sw_mode.value;
 
-		if(parent.flag_manual)
+		if(parent.flag_manual){
 			document.form.flag.value = "manual";
-		else
-			document.form.flag.value = "verify_detect";
+			document.form.next_page.value = "/QIS_wireless.htm";
+		}
+		else{
+			if(parent.pppoe_failed_flag){
+				document.form.flag.value = "pppoe_retry";
+				check_pppoe_state();
+			}
+			else{
+				document.form.flag.value = "pppoe";
+				document.form.next_page.value = "/QIS_wireless.htm";
+			}
+		}
 
-		document.form.next_page.value = "/QIS_wizard.htm";
 		document.form.submit();
-		if(original_switch_wantag != document.form.switch_wantag.value)
+		if(parent.original_switch_wantag != document.form.switch_wantag.value)
 			setTimeout(function(){
 				location.href = "/qis/QIS_wireless.htm";
 			}, 500);
 	}
 	else if(document.form.wan_proto.value == 'pptp'|| document.form.wan_proto.value == 'l2tp'){
-		document.form.next_page.value = "QIS_internet_ip.htm";
-		
-		parent.document.QKform.wan_hwaddr_x.value = document.form.wan_hwaddr_x.value;
-		parent.document.QKform.wan_pppoe_username.value = document.form.wan_pppoe_username.value;
-		parent.document.QKform.wan_pppoe_passwd.value = document.form.wan_pppoe_passwd.value;
-		
-		location.href = document.form.next_page.value;
+		location.href = "QIS_internet_ip.htm";
 		return false;	//do not submit form
 	}
 	else{
@@ -230,13 +364,17 @@ function pass_checked(obj){
 }
 
 function showMAC(){
-	var tempMAC = "";
-	document.form.wan_hwaddr_x.value = login_mac_str();
-	document.form.wan_hwaddr_x.focus();
+	var macToggle = document.form.macToggle.checked;
+	if(macToggle){
+		document.form.wan_hwaddr_x.value = login_mac_str();
+		document.form.wan_hwaddr_x.focus();
+	}
+	else{
+		document.form.wan_hwaddr_x.value = "";
+	}
 }
 
 function showMAC_m(){
-	var tempMAC = "";
 	if(document.getElementById("toggleDNS").getAttribute("toggled") == "true"){	
 		document.form.wan_hwaddr_x_m.value = login_mac_str();
 		document.form.wan_hwaddr_x.value = login_mac_str();
@@ -267,6 +405,207 @@ function check_macaddr(obj,flag){ //control hint of input mac address
 	}
 }
 
+function enable_vpn_client(obj){
+	if(obj.checked){
+		document.form.vpn_option.style.display = "";
+		document.form.vpn_option.disabled = "";
+		document.form.wan_proto.value = document.form.vpn_option.value;
+	}
+	else{
+		document.form.vpn_option.style.display = "none";
+		document.form.vpn_option.disabled = "disabled";
+		document.form.wan_proto.value = "pppoe";
+	}
+}
+
+function change_vpn_type(obj){
+	document.form.wan_proto.value = obj.value;
+}
+
+function ISP_Profile_Selection(isp){
+	var isp_settings = parent.get_isp_settings(isp);
+
+	if(isp_settings.voip_port != "" || isp_settings.iptv_port != "" || isp_settings.bridge_port != "")
+		document.getElementById("port_line").style.display = "";
+	else
+		document.getElementById("port_line").style.display = "none";
+
+	if(isp == "manual"){
+		set_manual_items();
+	}
+	else{
+		document.getElementById("wan_internet_x").style.display = "none";
+		document.getElementById("wan_iptv_port4_x").style.display = "none";
+		document.getElementById("wan_voip_port3_x").style.display = "none";
+
+		if(isp == "none")
+			document.form.switch_stb_x.disabled = false;
+		else
+			document.form.switch_stb_x.disabled = true;
+
+		document.form.switch_wan0tagid.disabled = true;
+		document.form.switch_wan0prio.disabled = true;
+		document.form.switch_wan1tagid.disabled = true;
+		document.form.switch_wan1prio.disabled = true;
+		document.form.switch_wan2tagid.disabled = true;
+		document.form.switch_wan2prio.disabled = true;
+		if(isp_settings.voip_port != "")
+			document.getElementById("wan_voip_x").style.display = "";
+		else
+			document.getElementById("wan_voip_x").style.display = "none";
+
+		if(isp_settings.voip_port != ""){
+			document.getElementById("voip_port").innerHTML = isp_settings.voip_port;
+			document.getElementById("voip_port").style.display = "";
+		}
+
+		if(isp_settings.iptv_port != "")
+			document.getElementById("wan_iptv_x").style.display = "";
+		else
+			document.getElementById("wan_iptv_x").style.display = "none";
+
+		if(isp_settings.iptv_port != ""){
+			document.getElementById("iptv_port").innerHTML = isp_settings.iptv_port;
+			document.getElementById("iptv_port").style.display = "";
+		}
+
+		if(isp_settings.bridge_port != ""){
+			document.getElementById("wan_bridge_x").style.display = "";
+			document.getElementById("bridge_port").innerHTML = isp_settings.bridge_port;
+		}
+		else
+			document.getElementById("wan_bridge_x").style.display = "none";
+	}
+
+	if(isp_settings.iptv_config == "1")
+		document.getElementById("iptv_configuration").style.display = "";
+	else
+		document.getElementById("iptv_configuration").style.display = "none";
+
+	/* Special Applications */
+	if(isp_settings.mr_enable_x != ""){
+		document.form.mr_enable_x.value = isp_settings.mr_enable_x;
+	}
+	else{
+		document.form.mr_enable_x.value = parent.orig_mr_enable;
+	}
+
+	if(isp_settings.emf_enable != ""){
+		document.form.emf_enable.value = isp_settings.emf_enable;
+	}
+	else{
+		document.form.emf_enable.value = parent.orig_emf_enable;
+	}
+
+	if(isp_settings.wan_vpndhcp != ""){
+		document.form.wan_vpndhcp.value = isp_settings.wan_vpndhcp;
+	}
+	else{
+		document.form.wan_vpndhcp.value = parent.orig_wan_vpndhcp;
+	}
+
+	if(isp_settings.quagga_enable != ""){
+		document.form.quagga_enable.value = isp_settings.quagga_enable;
+	}
+	else{
+		document.form.quagga_enable.value = parent.orig_quagga_enable;
+	}
+
+	document.form.mr_altnet_x.value = isp_settings.mr_altnet_x;
+
+	if(isp_settings.ttl_inc_enable != ""){
+		document.form.ttl_inc_enable.value = isp_settings.ttl_inc_enable;
+	}
+	else{
+		document.form.ttl_inc_enable.value = parent.orig_ttl_inc_enable;
+	}
+	/*--*/
+}
+
+function set_manual_items(){
+	var stb_port_list = parent.iptv_profiles.stb_x_options;
+	var manual_settings = parent.get_isp_settings("manual");
+	var port_name = "";
+
+	document.getElementById("wan_iptv_x").style.display = "none";
+	document.getElementById("wan_voip_x").style.display = "none";
+	document.getElementById("wan_bridge_x").style.display = "none";
+	document.getElementById("wan_internet_x").style.display = "";
+	document.form.switch_wan0tagid.disabled = false;
+	document.form.switch_wan0prio.disabled = false;
+	document.form.switch_wan1tagid.disabled = false;
+	document.form.switch_wan1prio.disabled = false;
+	document.form.switch_wan2tagid.disabled = false;
+	document.form.switch_wan2prio.disabled = false;
+
+	if(parent.original_switch_wantag == "manual"){
+		document.form.switch_wan0tagid.value = parent.original_switch_wan0tagid;
+		document.form.switch_wan0prio.value = parent.original_switch_wan0prio;
+		document.form.switch_wan1tagid.value = parent.original_switch_wan1tagid;
+		document.form.switch_wan1prio.value = parent.original_switch_wan1prio;
+		document.form.switch_wan2tagid.value = parent.original_switch_wan2tagid;
+		document.form.switch_wan2prio.value = parent.original_switch_wan2prio;
+	}
+	else{
+		document.form.switch_wan0tagid.value = "";
+		document.form.switch_wan0prio.value = "0";
+		document.form.switch_wan1tagid.value = "";
+		document.form.switch_wan1prio.value = "0";
+		document.form.switch_wan2tagid.value = "";
+		document.form.switch_wan2prio.value = "0";
+	}
+
+	if(manual_settings.iptv_port != ""){
+		port_name = "LAN Port " + manual_settings.iptv_port.substr(3);
+		document.getElementById("wan_iptv_port4_x").style.display = "";
+		document.getElementById("iptv_port4").innerHTML = "IPTV (" + port_name + "):";
+	}
+
+	if(manual_settings.voip_port != ""){
+		port_name = "LAN Port " + manual_settings.voip_port.substr(3);
+		document.getElementById("wan_voip_port3_x").style.display = "";
+		document.getElementById("voip_port3").innerHTML = "VoIP (" + port_name + "):";
+	}
+}
+
+function enable_ISP_special(){
+	if(document.form.specialisp.checked){
+		if(isSku("TW")){
+			ISP_Profile_Selection("hinet");
+			document.getElementById("profile_setting").style.display = "";
+		}
+		else
+			ISP_Profile_Selection(parent.original_switch_wantag);
+
+		document.getElementById('image_field').style.display = "none";
+		document.getElementById("isp_card_desc").style.display = "none";
+		document.getElementById('special_ISP_field').style.display = "";
+		document.getElementById('isp_TW_desc').style.display = "none";
+	}
+	else{
+		document.getElementById('image_field').style.display = "";
+		document.getElementById("isp_card_desc").style.display = "";
+		document.getElementById('special_ISP_field').style.display = "none";
+		document.getElementById('isp_TW_desc').style.display = "";
+	}
+}
+
+function change_auth(auth_mode){
+	if(auth_mode == "8021x-md5"){
+		document.getElementById("tr_pppoe_username").style.display = "";
+		document.getElementById("tr_pppoe_password").style.display = "";
+	}
+	else{
+		document.getElementById("tr_pppoe_username").style.display = "none";
+		document.getElementById("tr_pppoe_password").style.display = "none";
+	}
+}
+
+/* password item show or not */
+function pass_checked_iptv(obj){
+	switchType(obj, document.form.show_pass_iptv.checked, true);
+}
+
 </script>                                          
 </head>   
 
@@ -284,6 +623,7 @@ function check_macaddr(obj,flag){ //control hint of input mac address
 <input type="hidden" name="preferred_lang" value="<% nvram_get("preferred_lang"); %>">
 <input type="hidden" name="wan_proto" value="">
 
+
 <input type="hidden" name="wan_dhcpenable_x" value="1">
 <input type="hidden" name="wan_ipaddr_x" value="" disabled>
 <input type="hidden" name="wan_netmask_x" value="" disabled>
@@ -295,95 +635,233 @@ function check_macaddr(obj,flag){ //control hint of input mac address
 <input type="hidden" name="wan_unit" value="0">
 <input type="hidden" name="x_Setting" id="x_Setting" value="" disabled>
 <input type="hidden" name="sw_mode" value="">
-<!-- unifi -->
-<input type="hidden" name="switch_wantag" value="<% nvram_get("switch_wantag"); %>">
-<input type="hidden" name="switch_wan0tagid" value="<% nvram_get("switch_wan0tagid"); %>">
-<input type="hidden" name="switch_wan0prio" value="<% nvram_get("switch_wan0prio"); %>">
-<input type="hidden" name="switch_wan1tagid" value="<% nvram_get("switch_wan1tagid"); %>">
-<input type="hidden" name="switch_wan1prio" value="<% nvram_get("switch_wan1prio"); %>">
-<input type="hidden" name="switch_wan2tagid" value="<% nvram_get("switch_wan2tagid"); %>">
-<input type="hidden" name="switch_wan2prio" value="<% nvram_get("switch_wan2prio"); %>">
-<input type="hidden" name="switch_stb_x" value="<% nvram_get("switch_stb_x"); %>">
-<input type="hidden" name="mr_enable_x" value="<% nvram_get("mr_enable_x"); %>">
-<input type="hidden" name="emf_enable" value="<% nvram_get("emf_enable"); %>">
-<input type="hidden" name="ttl_inc_enable" value="<% nvram_get("ttl_inc_enable"); %>">
+<input type="hidden" name="switch_stb_x" value='<% nvram_get("switch_stb_x"); %>' disabled>
+<input type="hidden" name="mr_enable_x" value='<% nvram_get("mr_enable_x"); %>'>
+<input type="hidden" name="emf_enable" value='<% nvram_get("emf_enable"); %>'>
+<input type="hidden" name="ttl_inc_enable" value='<% nvram_get("ttl_inc_enable"); %>'>
+<input type="hidden" name="wan_vpndhcp" value='<% nvram_get("wan_vpndhcp"); %>'>
+<input type="hidden" name="quagga_enable" value='<% nvram_get("quagga_enable"); %>'>
+<input type="hidden" name="mr_altnet_x" value='<% nvram_get("mr_altnet_x"); %>'>
+<input type="hidden" name="wan10_proto" value='<% nvram_get("wan10_proto"); %>'>
+<input type="hidden" name="wan11_proto" value='<% nvram_get("wan11_proto"); %>'>
 
 <div class="QISmain" id="QISmain">
-		<div>
-			<table width="100%">
-				<tr>
-					<td align="left">
-						<div class="description_down"><#PPPConnection_UserName_sectionname#></div>
-					</td>
-					<!--td align="right">
-						<img onclick="parent.gotoIndex();" style="cursor:pointer;" align="right" title="Go to Home" src="/images/backtohome.png" onMouseOver="this.src='/images/backtohomeclick.png'" onMouseOut="this.src='/images/backtohome.png'">
-					</td-->
-				</tr>
-			</table>
+	<div>
+		<table width="100%">
+			<tr>
+				<td align="left">
+					<div class="description_down"><#PPPConnection_UserName_sectionname#></div>
+				</td>
+			</tr>
+		</table>
+	</div>
+	<div style="margin:5px;" id="splitLine"><div style="width: 720px; *width: 710px; height: 2px;" class="splitLine"></div></div>
+</div>
+<br/>
+<div>
+	<table>
+		<tr>
+		<td style="width:380px;">
+		<div style="font-size:14px;margin:0 0 10px 10px;"><#QIS_username_password#></div>
+		<div id="pppoe_fail_desc" style="font-size:14px;margin:0 0 10px 10px;color:#FC0;display:none"><#QKSet_Internet_Setup_fail_reason2#></div>
+		<table id="tblsetting_1" class="QISform" style="width:380px;" border="0" align="center" cellpadding="5" cellspacing="0">
+		<tr>
+			<th width="180"><span onmouseout="return nd();" onclick="openHint(7, 27);" style="cursor:help;"><#Username#><img align="right" style="cursor:pointer;margin-top:-14px\9;" src="../images/New_ui/helpicon.png"></span></th>
+			<td class="QISformtd">
+				<input type="text" name="wan_pppoe_username" maxlength="64" value="" tabindex="1" onkeypress="return validator.isString(this, event);" class="input_18_table" size="36" autocapitalization="off" autocomplete="off"/>
+			</td>
+		</tr>
+
+		<tr>
+			<th width="180"><span onmouseout="return nd();" onclick="openHint(7, 27);" style="cursor:help;"><#PPPConnection_Password_itemname#><img align="right" style="cursor:pointer;margin-top:-14px\9;" src="../images/New_ui/helpicon.png"></span></th>
+			<td class="QISformtd">
+			<input type="password" id="wan_pppoe_passwd" name="wan_pppoe_passwd" maxlength="64" value="" tabindex="2" onkeypress="return validator.isString(this, event);" class="input_18_table" size="36" autocomplete="off" autocorrect="off" autocapitalize="off"/>	  
+			</td>
+		</tr>
+		<tr>
+			<th></th>
+			<td>
+				<input type="checkbox" name="show_pass_1" onclick="pass_checked(document.form.wan_pppoe_passwd);"><#QIS_show_pass#>
+			</td>
+		</tr>
+		<br>
+
+		<tr id="mac_clone_field" style="display:none">
+			<th width="185">
+				<span onmouseout="return nd();" onclick="overlib('<#PPPConnection_x_MacAddressForISP_itemdesc#>', FIXX, 270, FIXY, 30);" style="cursor:help;">
+					<#BOP_isp_mac_item#><img align="right" style="cursor:pointer;margin-top:-14px\9;" src="/images/New_ui/helpicon.png">
+				</span>
+			</th>
+			<td class="QISformtd">
+				<input type="text" name="wan_hwaddr_x" tabindex="2" onkeypress="return validator.isHWAddr(this,event);" class="input_18_table" maxlength="17" value="" autocorrect="off" autocapitalize="off"/>
+				<br>
+			</td>
+		</tr>
+		<tr id="mac_clone_field_1" style="display:none">
+			<th></th>
+			<td>
+				<input type="checkbox" name="macToggle" onclick="showMAC();"><#BOP_isp_MACclone#>
+			</td>
+		</tr>
+		<tr id="vpn_field">
+			<th colspan="2">
+				<input id="vpn_client_check" type="checkbox" onclick="enable_vpn_client(this)">
+				<span id="vpn_client_desc" style="cursor:pointer;"><#QIS_vpn_enable#><span>
+				<select class="input_option" name="vpn_option" style="display:none;margin-left:5px" onChange="change_vpn_type(this)" disabled>
+					<option value="pptp">PPTP</option>
+					<option value="l2tp">L2TP</option>
+				</select>
+			</th>
+		</tr>
+		<tr id="specialISP_tr"  style="display:none;">
+			<th colspan="2">
+				<input type="checkbox" id="specialisp" name="specialisp" onclick="enable_ISP_special();">
+				<span id="specialisp_desc" class="QISGeneralFont" style="margin-left:0px;font-style:normal;color:#6CF;font-size:14px;font-weight:bolder;"><#PPPConnection_x_HostNameForISP_sectionname#></span>
+			</th>
+		</tr>
+
+		<tr>
+			<td colspan=2>
+				<div class="apply_gen" style="margin-top:10px">
+					<input type="button" id="prevButton" value="<#CTL_prev#>" tabindex="4" onclick="gotoprev(document.form);" class="button_gen" align="center">
+					<input type="submit" id="nextButton" value="<#CTL_next#>" tabindex="3" class="button_gen" align="center">
+					<span id="loadHint" style="display:none"><#SAVE_note#></span>
+					<img id="loadingIcon" style="display:none;" src="../images/InternetScan.gif"></span>
+				</div>
+			</td>
+		</tr>
+	</table>
+	</td>
+
+	<td id="right_panel" style="width:365px;height:400px;background:#444F52;border-radius:10px;">
+		<div id="image_field" class="image_field" ></div>
+		<div id="isp_card_desc" style="padding:0 15px 15px 20px;line-height:15px;"><#QIS_SmartConn_ISPDesc2#></div>
+		<div id="isp_TW_desc" style="padding:0 15px 15px 20px;line-height:15px;display:none;"><#QIS_SmartConn_ISPDesc_TW#></div>
+		<div id="special_ISP_field" style="margin-top:-100px;display:none;">
+			<div style="line-height:25px;height:250px;">
+				<div id="select_profile">
+					<table class="iptvTable">
+					<tr>
+						<th><#Select_ISPfile#>:</th>
+						<td><select id="switch_wantag" name="switch_wantag" class="input_option" onChange="ISP_Profile_Selection(this.value)">
+						</select></td>
+					</tr>
+					</table>
+				</div>
+
+				<div id="profile_setting" style="display:none;">
+					<table class="iptvTable">
+						<tr>
+							<th><#Select_ISPfile#>:</th>
+							<td>Hinet MOD</td>
+						</tr>
+					</table>
+				</div>
+
+				<table class="iptvTable">
+					<tr id="port_line"><td colspan="2"><div class="iptvSplitLine splitLine"></div></td></tr>
+					<tr id="wan_voip_x" style="display:none;">
+						<th><span id="voip_title">VoIP Port: </span></th>
+						<td id="voip_port">LAN3</td>
+					</tr>
+					</div>
+					<tr id="wan_iptv_x" style="display:none;">
+						<th><span id="iptv_title">IPTV STB Port: </span></th>
+						<td id="iptv_port">LAN4</td>
+					</tr>
+					<tr id="wan_bridge_x" style="display:none;">
+						<th width="30%">Bridge Port: </th>
+						<td><span id="bridge_port">LAN4</span></td>
+					</tr>
+					<tr id="wan_internet_x">
+						<th><#Internet#>:</th>
+						<td>
+							VID:<input type="text" name="switch_wan0tagid" class="input_6_table" maxlength="4" value='<% nvram_get( "switch_wan0tagid"); %>' autocorrect="off" autocapitalize="off" disabled>
+							&nbsp;PRIO:<input type="text" name="switch_wan0prio" class="input_6_table" maxlength="1" value='<% nvram_get( "switch_wan0prio"); %>' autocorrect="off" autocapitalize="off" disabled>
+						</td>
+					</tr>
+					<tr id="wan_iptv_port4_x">
+						<th id="iptv_port4">IPTV (LAN port 4):</th>
+						<td>
+							VID:<input type="text" name="switch_wan1tagid" class="input_6_table" maxlength="4" value='<% nvram_get( "switch_wan1tagid"); %>' autocorrect="off" autocapitalize="off" disabled>
+							&nbsp;PRIO:<input type="text" name="switch_wan1prio" class="input_6_table" maxlength="1" value='<% nvram_get( "switch_wan1prio"); %>' autocorrect="off" autocapitalize="off" disabled>
+						</td>
+					</tr>
+					<tr id="wan_voip_port3_x">
+						<th id="voip_port3">VoIP (LAN port 3):</th>
+						<td>
+							VID:<input type="text" name="switch_wan2tagid" class="input_6_table" maxlength="4" value='<% nvram_get( "switch_wan2tagid"); %>' autocorrect="off" autocapitalize="off" disabled>
+							&nbsp;PRIO:<input type="text" name="switch_wan2prio" class="input_6_table" maxlength="1" value='<% nvram_get( "switch_wan2prio"); %>' autocorrect="off" autocapitalize="off" disabled>
+						</td>
+					</tr>
+				</table>
+
+				<table id="iptv_configuration" class="iptvTable">
+					<tr ><td colspan="2"><div class="iptvSplitLine splitLine"></div></td></tr>
+					<tr>
+						<th>IPTV Connection</th>
+					</tr>
+					<tr>
+						<th><#Layer3Forwarding_x_ConnectionType_itemname#>: </th>
+						<td><#BOP_ctype_title5#></td>
+					</tr>
+					<tr>
+						<th><#IPConnection_ExternalIPAddress_itemname#>: </th>
+						<td><input type="text" name="wan10_ipaddr_x" maxlength="15" class="input_15_table" value="<% nvram_get("wan10_ipaddr_x"); %>" onKeyPress="return validator.isIPAddr(this, event);" autocorrect="off" autocapitalize="off"></td>					
+					</tr>
+					<tr>
+						<th><#IPConnection_x_ExternalSubnetMask_itemname#>: </th>
+						<td><input type="text" name="wan10_netmask_x" maxlength="15" class="input_15_table" value="<% nvram_get("wan10_netmask_x"); %>" onKeyPress="return validator.isIPAddr(this, event);" autocorrect="off" autocapitalize="off"></td>					
+					</tr>
+					<tr>
+						<th><#IPConnection_x_ExternalGateway_itemname#>: </th>
+						<td><input type="text" name="wan10_gateway_x" maxlength="15" class="input_15_table" value="<% nvram_get("wan10_gateway_x"); %>" onKeyPress="return validator.isIPAddr(this, event);" autocorrect="off" autocapitalize="off"></td>					
+					</tr>
+					<tr>
+						<th><#IPConnection_x_DNSServer1_itemname#>: </th>
+						<td><input type="text" name="wan10_dns1_x" maxlength="15" class="input_15_table" value="<% nvram_get("wan10_dns1_x"); %>" onKeyPress="return validator.isIPAddr(this, event);" autocorrect="off" autocapitalize="off"></td>					
+					</tr>
+					<tr>
+						<th><#IPConnection_x_DNSServer2_itemname#>: </th>
+						<td><input type="text" name="wan10_dns2_x" maxlength="15" class="input_15_table" value="<% nvram_get("wan10_dns2_x"); %>" onKeyPress="return validator.isIPAddr(this, event);" autocorrect="off" autocapitalize="off"></td>
+					</tr>
+					<tr>
+						<th style="color:#6CF;"><#PPPConnection_Authentication_itemname#>: </th>
+						<td style="text-align:left;">
+							<select style="margin-left:2px;" class="input_option" name="wan10_auth_x" onChange="change_auth(this.value);">
+								<option value="" <% nvram_match("wan10_auth_x", "", "selected"); %>><#wl_securitylevel_0#></option>
+								<option value="8021x-md5" <% nvram_match("wan10_auth_x", "8021x-md5", "selected"); %>>802.1x MD5</option>
+							</select>
+						</td>
+					</tr>
+					<tr id="tr_pppoe_username" style="display:none;">
+					<th style="color:#6CF;"><#Username#>: </th>
+						<td style="text-align:left;"><input type="text" maxlength="64" class="input_15_table" name="wan10_pppoe_username" value="<% nvram_get("wan10_pppoe_username"); %>" onkeypress="return validator.isString(this, event)"></td>
+					</tr>
+					<tr id="tr_pppoe_password" style="display:none;">
+						<th style="color:#6CF;"><div style="margin-top:-25px;"><#PPPConnection_Password_itemname#>: </div></th>
+						<td style="text-align:left;"><input type="password" autocapitalization="off" maxlength="64" class="input_15_table" id="wan10_pppoe_passwd" name="wan10_pppoe_passwd" value="<% nvram_get("wan10_pppoe_passwd"); %>">
+						<div style="margin-top:1px;"><input type="checkbox" name="show_pass_iptv" onclick="pass_checked_iptv(document.form.wan10_pppoe_passwd);"><#QIS_show_pass#></div>
+						</td>
+					</tr>
+				</table>
+			</div>
 		</div>
-		<div style="margin:5px;" id="splitLine"><img style="width: 720px; *width: 710px; height: 2px;" src="/images/New_ui/export/line_export.png"></div>
-<br/>
-<br/>
-<table id="tblsetting_1" class="QISform" width="400" border=0 align="center" cellpadding="5" cellspacing="0">
-  <tr>
-	<th width="180"><span onmouseout="return nd();" onclick="openHint(7, 27);" style="cursor:help;"><#HSDPAConfig_Username_itemname#><img align="right" style="cursor:pointer;margin-top:-14px\9;" src="/images/New_ui/helpicon.png"></span></th>
-	<td class="QISformtd">
-	  <input type="text" name="wan_pppoe_username" maxlength="64" value="" tabindex="1" onkeypress="return validator.isString(this, event);" class="input_32_table" size="36" autocomplete="off" autocorrect="off" autocapitalize="off"/>
 	</td>
-  </tr>
-
-  <tr>
-	<th width="180"><span onmouseout="return nd();" onclick="openHint(7, 27);" style="cursor:help;"><#PPPConnection_Password_itemname#><img align="right" style="cursor:pointer;margin-top:-14px\9;" src="/images/New_ui/helpicon.png"></span></th>
-	<td class="QISformtd">
-	  <input type="password" id="wan_pppoe_passwd" name="wan_pppoe_passwd" maxlength="64" value="" tabindex="2" onkeypress="return validator.isString(this, event);" class="input_32_table" size="36" autocomplete="off" autocorrect="off" autocapitalize="off"/>	  
-	</td>
-  </tr>
-	<tr>
-		<th></th>
-		<td>
-			<input type="checkbox" name="show_pass_1" onclick="pass_checked(document.form.wan_pppoe_passwd);"><#QIS_show_pass#>
-		</td>
 	</tr>
-	<tr>
-	  <th width="185">
-			<span onmouseout="return nd();" onclick="overlib('<#PPPConnection_x_MacAddressForISP_itemdesc#>', FIXX, 270, FIXY, 30);" style="cursor:help;">
-				<#BOP_isp_mac_item#><img align="right" style="cursor:pointer;margin-top:-14px\9;" src="/images/New_ui/helpicon.png">
-			</span>
-		</th>
-	  <td class="QISformtd">
-		<input type="text" name="wan_hwaddr_x" tabindex="2" onkeypress="return validator.isHWAddr(this,event);" class="input_20_table" maxlength="17" value="" autocorrect="off" autocapitalize="off"/>
-		&nbsp&nbsp&nbsp
-		<input type="button" class="button_gen_long" tabindex="3" onclick="showMAC();" value="<#BOP_isp_MACclone#>">		
-	  </td>
-	</tr>
-  <tr><td colspan=2>&nbsp;</td></tr>
-  <tr>
-  	<td colspan=2 class="QISformtd">
-	  	<div id="descritpion_tail1"></div>
-	  	<div id="isp_TW_desc" style="padding:10px 0px 10px 0px;line-height:15px;display:none;"><#QIS_SmartConn_ISPDesc_TW#></div>
-		</td>
-  </tr>
-</table>
-
-<div class="apply_gen" style="margin-top:30px">
-  <input type="button" id="prevButton" value="<#CTL_prev#>" tabindex="4" onclick="gotoprev(document.form);" class="button_gen" align="center">
-  <input type="submit" id="nextButton" value="<#CTL_next#>" tabindex="3" class="button_gen" align="center">
-	<span id="loadHint" style="display:none"><#SAVE_note#></span>
-	<img id="loadingIcon" style="display:none;" src="/images/InternetScan.gif"></span>
+	</table>
 </div>
-</div>
-
 <div id="QISmain_m" style="display:none;">
 	<div class="itemTitle"><#qis_pppoe_desc1#></div>
 	<fieldset>
 		<div id="DNSDiv">
 			<div class="row">
-				<label><#HSDPAConfig_Username_itemname#></label>
+				<label><#Username#></label>
 				<input type="text" name="wan_pppoe_username_m" placeholder="" maxlength="64" value="" autocomplete="off" autocorrect="off" autocapitalize="off"/>
 			</div>
 			<div class="row">
 				<label><#PPPConnection_Password_itemname#></label>
-				<input name="wan_pppoe_passwd_m" type="text" placeholder="" maxlength="64" autocomplete="off" autocorrect="off" autocapitalize="off">
+				<input name="wan_pppoe_passwd_m" type="text" placeholder="" maxlength="64" autocapitalization="off" autocomplete="off">
 			</div>
 			<div class="row">
 				<label><#BOP_isp_MACclone#></label>
@@ -395,8 +873,8 @@ function check_macaddr(obj,flag){ //control hint of input mac address
 			</div>
 
 			<div class="row_end">
-				<label><#MAC_Address#>:</label>
-				<input name="wan_hwaddr_x_m" type="text" placeholder="" onkeypress="return validator.isHWAddr(this,event);" maxlength="17" autocorrect="off" autocapitalize="off">
+				<label><#BOP_isp_mac_item#></label>
+				<input name="wan_hwaddr_x_m" type="text" placeholder="" onkeypress="return validator.isHWAddr(this,event);" autocapitalization="off" maxlength="17">
 			</div>
 		</div>
 	</fieldset>

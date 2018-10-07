@@ -5,6 +5,7 @@ wget_options="-q -t 2 -T $wget_timeout --no-check-certificate"
 
 nvram set sig_state_upgrade=0 # INITIALIZING
 nvram set sig_state_error=0
+nvram set sig_state_update=0
 
 model=`nvram get productid`
 
@@ -62,6 +63,7 @@ else
 
 	if [ "$rsasign_check_ret" == "1" ]; then
 		echo "---- sig check OK ----" >> /tmp/sig_upgrade.log
+		nvram set sig_update_t=`date +%s`   #set timestamp for download signature and restart_wrs
 		if [ -f /jffs/signature/rule.trf ];then
 			echo "---- sig rule mv /tmp to /jffs/signature ----"
 			echo "---- sig rule mv /tmp to /jffs/signature ----" >> /tmp/sig_upgrade.log
@@ -84,7 +86,6 @@ else
 			echo "Do restart_wrs"
 			echo "Do restart_wrs" >> /tmp/sig_upgrade.log
 			rc rc_service restart_wrs
-			nvram set sig_update_t=`date +%s`	#set timestamp for download signature and restart_wrs
 		else
 			echo "do nothing..." >> /tmp/sig_upgrade.log
 		fi

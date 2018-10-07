@@ -259,6 +259,11 @@ static int rctest_main(int argc, char *argv[])
 	else if (strcmp(argv[1], "rc_service")==0) {
 		notify_rc(argv[2]);
 	}
+#if defined(RTCONFIG_HTTPS) && defined(RTCONFIG_PUSH_EMAIL)
+	else if (strcmp(argv[1], "sendmail")==0) {
+		start_DSLsendmail();
+	}
+#endif
 #ifdef RTCONFIG_BCM_7114
 	else if (strcmp(argv[1], "spect")==0) {
 		start_dfs();
@@ -420,7 +425,7 @@ static int rctest_main(int argc, char *argv[])
 			else stop_psta_monitor();
 		}
 #endif
-#if defined(RTCONFIG_AMAS) && (defined(RTCONFIG_BCMWL6) || defined(RTCONFIG_LANTIQ))
+#if defined(RTCONFIG_AMAS) && (defined(RTCONFIG_BCMWL6) || defined(RTCONFIG_LANTIQ) || defined(RTCONFIG_QCA))
 		else if (strcmp(argv[1], "obd") == 0) {
 			if (on) start_obd();
 			else stop_obd();
@@ -766,8 +771,12 @@ static const applets_t applets[] = {
 #if defined(RTCONFIG_BCMWL6) && defined(RTCONFIG_PROXYSTA)
 	{ "psta_monitor",		psta_monitor_main		},
 #endif
-#if defined(RTCONFIG_AMAS) && (defined(RTCONFIG_BCMWL6) || defined(RTCONFIG_LANTIQ)) && !defined(RTCONFIG_DISABLE_REPEATER_UI)
-	{ "obd",			obd_main			},
+#if defined(RTCONFIG_AMAS) && (defined(RTCONFIG_BCMWL6) || defined(RTCONFIG_LANTIQ) || defined(RTCONFIG_QCA)) && !defined(RTCONFIG_DISABLE_REPEATER_UI)
+	{ "obd",			obd_main					},
+#endif
+#if defined(RTCONFIG_AMAS) && defined(RTCONFIG_ETHOBD)
+	{ "obd_eth",		obdeth_main					},
+	{ "obd_monitor",	obd_monitor_main			},
 #endif
 #ifdef RTCONFIG_IPERF
 	{ "monitor",			monitor_main			},
@@ -1068,7 +1077,7 @@ int main(int argc, char **argv)
 			}
                         else if (argv[1] && (!strcmp(argv[1], "3")))
                                 start_eth(3);
-			
+
 			nvram_set("eth_detect_proc","0");
 			nvram_set_int("prelink_pap_status", -1); // trigger LED to change
                 }
@@ -1085,7 +1094,7 @@ int main(int argc, char **argv)
 				nvram_set("eth_detect_proc","0");
 			}
 			nvram_set_int("prelink_pap_status", -1); // trigger LED to change
-		}	
+		}
                 else
         		printf("Error command.\n");
                 return 0;
@@ -1102,7 +1111,7 @@ int main(int argc, char **argv)
                 return 0;
        }
 #endif
-       if(!strcmp(base, "wifimon_check")){	
+       if(!strcmp(base, "wifimon_check")){
 		int default_sec=0;
                 if (nvram_get_int("sw_mode")==SW_MODE_AP && !nvram_match("cfg_master", "1")) {
 			if(argv[1] && strlen(argv[1]))
@@ -1708,11 +1717,11 @@ int main(int argc, char **argv)
 	else if (!strcmp(base, "amas_bhctrl")) {
 		return amas_bhctrl_main();
 	}
-#endif	
+#endif
 	else if (!strcmp(base, "amas_lanctrl")) {
 		return amas_lanctrl_main();
 	}
-#endif	
+#endif
 #ifdef CONFIG_BCMWL5
 	else if (!strcmp(base, "setup_dnsmq")) {
 		if (argc != 2)

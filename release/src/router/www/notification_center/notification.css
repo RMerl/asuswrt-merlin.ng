@@ -518,13 +518,9 @@ div.noti_change_page span.noti_begin_end_page{
 }
 
 #notiDiv_table5{
-	behavior: url(/PIE.htc);
-	-webkit-border-bottom-right-radius: 8px;
-	-webkit-border-bottom-left-radius: 8px;
-	-moz-border-radius-bottomright: 8px;
-	-moz-border-radius-bottomleft: 8px;
-	border-radius: 8px 8px 8px 8px ;
-	/*margin:3px 0px 0px 3px ;*/
+	-webkit-border-radius: 8px ;
+	-moz-border-radius: 8px ;
+	border-radius: 8px ;
 	behavior: url(/PIE.htc);
 	background-color: #3A4042;
 }

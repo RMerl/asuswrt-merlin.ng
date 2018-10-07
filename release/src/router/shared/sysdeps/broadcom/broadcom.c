@@ -164,18 +164,17 @@ static bool g_swap = FALSE;
 #define htod32(i) (g_swap?bcmswap32(i):(uint32)(i))
 #define dtoh32(i) (g_swap?bcmswap32(i):(uint32)(i))
 #define dtoh16(i) (g_swap?bcmswap16(i):(uint16)(i))
-char *get_pap_bssid(int unit)
+char *get_pap_bssid(int unit, char bssid_str[])
 {
 	unsigned char bssid[6];
 	unsigned char bssid_null[6] = { 0x0, 0x0, 0x0, 0x0, 0x0, 0x0 };
 	char tmp[128], prefix[] = "wlXXXXXXXXXX_";
 	char *name;
-	static char bssid_str[sizeof("00:00:00:00:00:00XXX")];
 
 	snprintf(prefix, sizeof(prefix), "wl%d_", unit);
 	name = nvram_safe_get(strcat_r(prefix, "ifname", tmp));
 
-	memset(bssid_str, 0, sizeof(bssid_str));
+	memset(bssid_str, 0, 18);
 	if (!wl_ioctl(name, WLC_GET_BSSID, bssid, sizeof(bssid))
 		&& memcmp(bssid, bssid_null, ETHER_ADDR_LEN))
 		ether_etoa((const unsigned char *) &bssid, bssid_str);
@@ -340,7 +339,121 @@ void del_beacon_vsie(char *hexdata)
 }
 #endif
 
+#ifdef RTCONFIG_CFGSYNC
+void update_macfilter_relist()
+{
+	char maclist_buf[4096] = {0};
+	struct maclist *maclist = NULL;
+	char tmp[128], prefix[] = "wlXXXXXXXXXX_";
+	char word[256], *next;
+	int unit = 0;
+	char *wlif_name = NULL;
+	struct ether_addr *ea;
+	unsigned char sta_ea[6] = {0};
+	int ret = 0;
+	char *nv, *nvp, *b;
+	char *reMac, *mac2g, *mac5g, *timestamp;
+	char stamac2g[18] = {0};
+	char stamac5g[18] = {0};
 
+	if (nvram_get("cfg_relist"))
+	{
+#ifdef RTCONFIG_AMAS
+		if (nvram_get_int("re_mode") == 1) {
+			nv = nvp = strdup(nvram_safe_get("cfg_relist"));
+			if (nv) {
+				while ((b = strsep(&nvp, "<")) != NULL) {
+					if ((vstrsep(b, ">", &reMac, &mac2g, &mac5g, &timestamp) != 4))
+						continue;
 
+					if (strcmp(reMac, get_lan_hwaddr()) == 0) {
+						snprintf(stamac2g, sizeof(stamac2g), "%s", mac2g);
+						dbg("dut 2g sta (%s)\n", stamac2g);
+						snprintf(stamac5g, sizeof(stamac5g), "%s", mac5g);
+						dbg("dut 5g sta (%s)\n", stamac5g);
+						break;
+					}
+				}
+				free(nv);
+			}
+		}
+#endif
 
+		foreach (word, nvram_safe_get("wl_ifnames"), next) {
+			SKIP_ABSENT_BAND_AND_INC_UNIT(unit);
 
+#ifdef RTCONFIG_AMAS
+			if (nvram_get_int("re_mode") == 1)
+				snprintf(prefix, sizeof(prefix), "wl%d.1_", unit);
+			else
+#endif
+				snprintf(prefix, sizeof(prefix), "wl%d_", unit);
+
+			wlif_name = nvram_safe_get(strcat_r(prefix, "ifname", tmp));
+			maclist = (struct maclist *)maclist_buf;
+			memset(maclist_buf, 0, sizeof(maclist_buf));
+			ea = &(maclist->ea[0]);
+
+			if (nvram_match(strcat_r(prefix, "macmode", tmp), "allow")) {
+				nv = nvp = strdup(nvram_safe_get(strcat_r(prefix, "maclist_x", tmp)));
+				if (nv) {
+					while ((b = strsep(&nvp, "<")) != NULL) {
+						if (strlen(b) == 0) continue;
+
+#ifdef RTCONFIG_AMAS
+						if (nvram_get_int("re_mode") == 1) {
+							if (strcmp(b, stamac2g) == 0 ||
+								strcmp(b, stamac5g) == 0)
+								continue;
+						}
+#endif
+						dbg("maclist sta (%s) in %s\n", b, wlif_name);
+						ether_atoe(b, sta_ea);
+						memcpy(ea, sta_ea, sizeof(struct ether_addr));
+						maclist->count++;
+						ea++;
+					}
+					free(nv);
+				}
+
+				nv = nvp = strdup(nvram_safe_get("cfg_relist"));
+				if (nv) {
+					while ((b = strsep(&nvp, "<")) != NULL) {
+						if ((vstrsep(b, ">", &reMac, &mac2g, &mac5g, &timestamp) != 4))
+							continue;
+
+						if (strcmp(reMac, get_lan_hwaddr()) == 0)
+							continue;
+
+						if (unit == 0) {
+							if (check_re_in_macfilter(unit, mac2g))
+								continue;
+							dbg("relist sta (%s) in %s\n", mac2g, wlif_name);
+							ether_atoe(mac2g, sta_ea);
+						}
+						else
+						{
+							if (check_re_in_macfilter(unit, mac5g))
+								continue;
+							dbg("relist sta (%s) in %s\n", mac5g, wlif_name);
+							ether_atoe(mac5g, sta_ea);
+						}
+						memcpy(ea, sta_ea, sizeof(struct ether_addr));
+						maclist->count++;
+						ea++;
+					}
+					free(nv);
+				}
+
+				dbg("maclist count[%d]\n", maclist->count);
+
+				ret = wl_ioctl(wlif_name, WLC_SET_MACLIST, maclist, sizeof(maclist_buf));
+				if (ret < 0)
+					dbg("[%s] set maclist failed\n", wlif_name);
+			}
+
+			unit++;
+		}
+	}
+}
+#endif

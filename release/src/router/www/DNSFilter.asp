@@ -369,7 +369,7 @@ function showhide_settings(state) {
 		<td bgcolor="#4D595D" valign="top">
 		<div>&nbsp;</div>
 		<div class="formfonttitle">DNS-based Filtering</div>
-		<div style="margin-left:5px;margin-top:10px;margin-bottom:10px"><img src="/images/New_ui/export/line_export.png"></div>
+		<div style="margin:10px 0 10px 5px;" class="splitLine"></div>
 
 		<div id="dnsfilter_desc" style="margin-bottom:10px;">
 			<table width="700px" style="margin-left:25px;">

@@ -775,7 +775,7 @@ function change_apn_mode(){
 						</tr>
 					</table>
 				</div>
-				<div style="margin:5px;"><img src="/images/New_ui/export/line_export.png"></div>
+				<div style="margin:5px;" class="splitLine"></div>
 	      		<div class="formfontdesc"><#HSDPAConfig_hsdpa_enable_hint1#></div>
 					<table  width="100%" border="1" align="center" cellpadding="4" cellspacing="0" bordercolor="#6b8fa3" class="FormTable" id="WANscap">
 						<thead>
@@ -787,10 +787,6 @@ function change_apn_mode(){
 							<th><#wan_type#></th>
 							<td align="left">
 								<select class="input_option" name="wan_unit" onchange="change_wan_unit(this);"></select>
-								<!--select id="dsltmp_transmode" name="dsltmp_transmode" class="input_option" style="margin-left:7px;" onChange="change_dsl_transmode(this);">
-									<option value="atm" <% nvram_match("dsltmp_transmode", "atm", "selected"); %>>ADSL WAN (ATM)</option>
-									<option value="ptm" <% nvram_match("dsltmp_transmode", "ptm", "selected"); %>>VDSL WAN (PTM)</option>
-								</select-->
 							</td>
 						</tr>
 					</table>
@@ -906,14 +902,14 @@ function change_apn_mode(){
 					</tr>
 
 					<tr>
-						<th><a class="hintstyle"  href="javascript:void(0);" onClick="openHint(21,11);"><#HSDPAConfig_Username_itemname#></a></th>
+						<th><a class="hintstyle"  href="javascript:void(0);" onClick="openHint(21,11);"><#Username#></a></th>
 						<td>
 						<input id="modem_user" name="modem_user" class="input_20_table" maxlength="32" type="text" value="<% nvram_get("modem_user"); %>" autocorrect="off" autocapitalize="off"/>
 						</td>
 					</tr>
 
           			<tr id="modem_user_div_tr" style="display:none;">
-						<th><#HSDPAConfig_Username_itemname#></th>
+						<th><#Username#></th>
 	            		<td>
 							<div id="modem_user_div" style="color:#FFFFFF; margin-left:1px;"></div>
 						</td>

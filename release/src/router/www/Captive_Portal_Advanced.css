@@ -959,7 +959,8 @@
 	border-color: transparent #00B0FF;
 }
 .wl_input_disabled {
-	background-image: url("/images/New_ui/inputbg_disable.png");
+	background: #C3C3C3;
+	border: 1px solid #FFF;
 }
 .hint_msg {
 	color: #FFCC00;

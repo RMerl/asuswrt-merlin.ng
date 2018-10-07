@@ -1,0 +1,80 @@
+﻿	<div style="background:#232E32;height:40px;border-top-left-radius: 4px;border-top-right-radius: 4px;">
+		<div style="font: 16px bolder monospace;padding: 12px 0 0 10px;"><#ASUS_Notice#></div>
+	</div>
+	<div id="asus_eula_content" style="background:#293438;border-top:1px solid #3B474B;border-bottom: 1px solid #3B474B;overflow-y: auto;padding:15px 12px 0 12px;">
+		<div id="asus_eula_desc"><#ASUS_eula_desc0#></div>
+		<div>
+			<ol style="margin-left: -15px;">
+				<li><#ASUS_eula_desc1#>
+					<ol class="custom_ol">
+						<li><#ASUS_eula_desc1_1#>
+							<ol>
+								<li id="asus_eula_desc1_1_1"><#ASUS_eula_desc1_1_1#></li>
+							</ol>
+						</li>
+						<li><#ASUS_eula_desc1_2_s1#>&nbsp;<#ASUS_eula_desc1_2_s2#>
+							<ol>
+								<li><#ASUS_eula_desc1_2_1#></li>
+							</ol>
+						</li>
+						<li id = "alexa_desc"><#ASUS_eula_desc1_3#></li>
+						<li id = "ifttt_desc"><#ASUS_eula_desc1_4#></li>
+					</ol>
+				</li>
+				<li><#ASUS_eula_desc2#></li>
+			</ol>
+		</div>
+
+		<div style="height: 40px">
+			<input type="checkbox" id="ASUS_EULA_enable" value="0"><span id="ageHint"><#ASUS_eula_age#></span>
+		</div>
+	</div>
+
+	<div style="text-align: center;background:#232E32;height:60px;border-bottom-left-radius: 4px;border-bottom-right-radius: 4px;">
+		<input id="cancelBtn" class="button_gen" type="button" style="margin-top:15px;" value="<#CTL_Disagree#>">
+		<input id="applyBtn" class="button_gen" type="button" value="<#CTL_Agree#>">
+	</div>
+
+	<script>
+		$("#asus_eula_content").html($("#asus_eula_content").html().replace(/\\'/g, "'"))
+
+		var fn_array = ["DDNS"];
+		if(ifttt_support){fn_array.push("IFTTT™");}
+		if(alexa_support){fn_array.push("Alexa™");}
+		$("#asus_eula_desc").html($("#asus_eula_desc").html().replace('DDNS', fn_array.join("/")));
+
+		if(alexa_support && !ifttt_support){
+			$("#asus_eula_desc1_1_1").html("<#ASUS_eula_desc1_1_12#>");
+			$("#ifttt_desc").css("display", "none");
+		}
+		else if(!alexa_support && !ifttt_support){
+			$("#asus_eula_desc1_1_1").html("<#ASUS_eula_desc1_1_13#>");
+			$("#alexa_desc").css("display", "none");
+			$("#ifttt_desc").css("display", "none");
+		}
+
+		httpApi.nvramGetAsync({
+			data: ["preferred_lang"],
+			success: function(resp){
+				var preferredLang = resp.preferred_lang;
+				lang_str = (preferredLang == "EN" || preferredLang == "SL") ? "" : (preferredLang.toLowerCase() + '/');
+
+				if(preferredLang == "CN")
+					url = "https://www.asus.com.cn/Terms_of_Use_Notice_Privacy_Policy/Privacy_Policy";
+				else{
+					if(preferredLang == "SV")
+						lang_str = "se/";
+					else if(preferredLang == "UK")
+						lang_str = "ua-ua/";
+					else if(preferredLang == "MS")
+						lang_str = "my/";
+					else if(preferredLang == "DA")
+						lang_str = "dk/";
+
+					url = "https://www.asus.com/" + lang_str +"Terms_of_Use_Notice_Privacy_Policy/Privacy_Policy";
+				}
+
+				$("#eula_url").attr("href", url);
+			}
+		})
+	</script>

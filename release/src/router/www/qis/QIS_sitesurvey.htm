@@ -593,7 +593,7 @@ var bindEvent = {
 			var unEncrypt = '<td style="border:0px;"><span style="color:#FFCC00;"><#APSurvey_msg_connect_open_wlan#></span></td>';
 			var unSupport = "<td style=\"border:0px;\"><span style=\"color:#FFCC00;\"><#APSurvey_msg_non_support_Auth#></span></td>";
 			var networkKey = '<td style="border:0px;"><span style="color:#FFFFFF;"><#Network_key#>:</span><input type="password" id="thekey_tmp" class="input_25_table" style="padding-left:3px;margin-left:5px;width:200px;" autocomplete="off" autocorrect="off" autocapitalize="off"><input type="checkbox" onclick="pass_checked(this, document.getElementById(\'thekey_tmp\'));"><span style="color:#FFF"><#QIS_show_pass#></span></td>';
-			var connectBtn = '<td style="border:0px;text-align:right"><input style="margin-left:10px;" id="connect_btn" type="button" value="<#CTL_Add_enrollee#>" onclick="btnAction.saveWlcVar('+ bindEvent.idx +', false)" class="button_gen_long"></td></tr>';
+			var connectBtn = '<td style="border:0px;text-align:right"><input style="margin-left:10px;" id="connect_btn" type="button" value="<#CTL_Add_enrollee#>" onclick="btnAction.saveWlcVar('+ bindEvent.idx +', false)" class="button_gen"></td></tr>';
 			var wep_auth = "<tr><td style=\"border:0px;\"><span style=\"margin-left:5px;color:#FFFFFF;\"><#WLANConfig11b_AuthenticationMethod_itemname#></span><select id=\"thekey_wep_method_tmp\" class=\"input_option\" style=\"margin-left:5px;\"><option value=\"open\" selected>open</option><option value=\"shared\">shared</option></select>";
 			var wepkeyIndex = '<span style="margin-left:5px;color:#FFFFFF;"><#WLANConfig11b_WEPDefaultKey_itemname#></span><select id="thekey_index_tmp" class="input_option" style="margin-left:5px;"><option value="1" selected>1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option></select></td></tr>';
 			var endOfRow = '</table></td></tr>';
@@ -981,13 +981,12 @@ function QKInternet_load_body(){
 					<td align="left">
 						<div class="description_down"><#APSurvey_main_title#></div>
 					</td>
-					<!--td align="right">
-						<img onclick="parent.location.href = '/'" style="cursor:pointer;" align="right" title="Go to Home" src="/images/backtohome.png" onMouseOver="this.src='/images/backtohomeclick.png'" onMouseOut="this.src='/images/backtohome.png'">
-					</td-->
 				</tr>
 			</table>
 		</div>
-		<div style="margin:5px;"><img style="width: 720px; *width: 710px; height: 2px;" src="/images/New_ui/export/line_export.png"></div>
+		<div style="margin:5px;">
+			<div style="width: 720px; *width: 710px; height: 2px;" class="splitLine"></div>
+		</div>
 	</div>
 
 	<!-- P-AP list -->
@@ -1138,10 +1137,10 @@ function QKInternet_load_body(){
 	<!-- buttons -->
 	<div class="apply_gen" style="margin-top:10px">
 		<input id="btnPre" type="button" value="<#CTL_Cancel#>" onclick='btnAction.goPreStage();' class="button_gen" >
-		<input id="btnSubmit" type="button" value="<#CTL_Add_enrollee#>" onclick="btnAction.submitForm();" class="button_gen_long" >
-		<input id="btnManual" type="button" value="<#Manual_Setting_btn#>" onclick="btnAction.manual();" class="button_gen_long">
-		<input id="btnRescan" type="button" value="<#QIS_rescan#>" onclick="btnAction.curState='Rescanning';btnAction.rescan();" class="button_gen_long">
-		<input id="btnNext" type="button" value="<#CTL_Add_enrollee#>" onclick="btnAction.saveWlcVar(-1)" class="button_gen_long">
+		<input id="btnSubmit" type="button" value="<#CTL_Add_enrollee#>" onclick="btnAction.submitForm();" class="button_gen" >
+		<input id="btnManual" type="button" value="<#Manual_Setting_btn#>" onclick="btnAction.manual();" class="button_gen">
+		<input id="btnRescan" type="button" value="<#QIS_rescan#>" onclick="btnAction.curState='Rescanning';btnAction.rescan();" class="button_gen">
+		<input id="btnNext" type="button" value="<#CTL_Add_enrollee#>" onclick="btnAction.saveWlcVar(-1)" class="button_gen">
 		<img id="loadingIcon" style="display:none;" src="/images/InternetScan.gif">
 	</div> 
 </div> 

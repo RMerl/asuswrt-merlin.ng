@@ -58,6 +58,7 @@ define(function(){
 				index: "menu_ParentalControl",
 				tab: [
 					{url: "ParentalControl.asp", tabName: "<#Parental_Control#>"},
+					{url: "YandexDNS.asp", tabName: "<#YandexDNS#>"},
 					{url: "NULL", tabName: "__INHERIT__"}
 				]
 			},
@@ -119,7 +120,8 @@ define(function(){
 					{url: "Advanced_WMode_Content.asp", tabName: "WDS"},
 					{url: "Advanced_ACL_Content.asp", tabName: "<#menu5_1_4#>"},
 					{url: "Advanced_WAdvanced_Content.asp", tabName: "<#menu5_1_6#>"},
-					{url: "Advanced_WProxy_Content.asp", tabName: "Wi-Fi Proxy"},
+					{url: "Advanced_WProxy_Content.asp", tabName: "<#WiFi_Proxy_item#>"},
+					{url: "Advanced_Roaming_Block_Content.asp", tabName: "Roaming Block List"},/* untranslated */
 					{url: "NULL", tabName: "__INHERIT__"}
 				] 
 			},
@@ -514,6 +516,9 @@ define(function(){
 				if(!rrsut_support)
 					retArray.push("cloud_router_sync.asp");
 
+				if(!amesh_support)
+					retArray.push("Advanced_Roaming_Block_Content.asp");
+
 				/* Operation Mode */
 				if(isSwMode("re")){
 					retArray.push("GameBoost.asp");
@@ -575,6 +580,9 @@ define(function(){
 					retArray.push("Main_ConnStatus_Content.asp");
 					retArray.push("Advanced_Smart_Connect.asp");
 				}
+
+				if(amesh_support && (!isSwMode("rt") && !isSwMode("ap")))
+					retArray.push("Advanced_Roaming_Block_Content.asp");
 
 				/* System Status Changed */
 				// --

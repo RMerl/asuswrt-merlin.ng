@@ -46,7 +46,11 @@ endif
 
 ifeq ($(RTCONFIG_LANTIQ),y)
 CFLAGS += -I./sysdeps/lantiq -I$(TOP)/wireless_tools/ -DWE_NOLIBM
+CFLAGS += -I$(TOP)/shared/sysdeps/lantiq -I$(TOP)/wireless_tools -I$(TOP)/fapi_wlan_common-1.0.0.1/include -I$(TOP)/libhelper-1.4.0.2/include -DPACKAGE_ID=\"fapi_wlan_common\" -DLOGGING_ID="fapi_wlan_common"
+CFLAGS += -I$(TOP)/wlc_nt
 endif
+
+
 
 ifeq ($(RTCONFIG_BCMWL6),y)
 CFLAGS += -I$(SRCBASE)/shared/bcmwifi/include
@@ -112,6 +116,7 @@ OBJS += bwdpi_utils.o
 OBJS += mac_name_tab.o
 OBJS += stun.o
 OBJS += scripts.o
+OBJS += timer_utils.o
 ifeq ($(RTCONFIG_TRAFFIC_LIMITER),y)
 OBJS += tld_utils.o
 endif
@@ -178,7 +183,7 @@ CFLAGS += -I$(LINUXDIR)/drivers/char/rtl8370mb
 OBJS += rtl8370mb.o mdio.o
 endif
 else ifeq ($(RTCONFIG_LANTIQ),y)
-OBJS += flash_mtd.o api-lantiq.o lantiq.o
+OBJS += flash_mtd.o
 else
 # Broadcom
 OBJS += wl.o wl_linux.o
@@ -302,7 +307,9 @@ else ifeq ($(RTCONFIG_ALPINE),y)
 OBJS += private.o
 vpath %.c sysdeps sysdeps/alpine
 else ifeq ($(RTCONFIG_LANTIQ),y)
-OBJS += private.o
+OBJS	+= $(if $(wildcard sysdeps/api-lantiq.c),api-lantiq.o,prebuild/api-lantiq.o)
+OBJS	+= $(if $(wildcard sysdeps/lantiq/lantiq.c),lantiq.o,prebuild/lantiq.o)
+OBJS	+= $(if $(wildcard sysdeps/lantiq/private.c),private.o,prebuild/private.o)
 vpath %.c sysdeps/lantiq
 else ifeq ($(RTCONFIG_QTN),y)
 vpath %.c sysdeps sysdeps/broadcom sysdeps/qtn $(SRCBASE)/shared/ $(SRCBASE)/shared/bcmwifi/src $(WLAN_StdSrcDirsA) $(WLAN_ComponentSrcDirs) $(TOP)/libqcsapi_client/qcsapi_rpc_common/client  $(TOP)/libqcsapi_client/qcsapi_rpc_common/common

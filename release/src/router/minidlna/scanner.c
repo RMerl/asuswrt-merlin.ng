@@ -1246,6 +1246,7 @@ start_rescan(void)
 		monitor_insert_directory(0, esc_name, path);
 		free(esc_name);
 	}
+
 	remove_scantag();
 	fill_playlists();
 

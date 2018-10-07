@@ -150,13 +150,18 @@ int is_wps_stopped(void)
 //			lp55xx_leds_proc(LP55XX_ALL_LEDS_OFF, LP55XX_WPS_SUCCESS);
 //			usleep(3990 * 1000); // flashing 4 times is about 3990 ms
 #endif
-#if (defined(RTCONFIG_WPS_ENROLLEE) && defined(RTCONFIG_WIFI_CLONE))
+#if (defined(RTCONFIG_WPS_ENROLLEE))
 			if (nvram_match("wps_enrollee", "1")) {
 				nvram_set("wps_e_success", "1");
 #if (defined(PLN12) || defined(PLAC56))
 				set_wifiled(4);
 #endif
+#if defined(RTCONFIG_AMAS)
+				amas_save_wifi_para();
+#endif	/* RTCONFIG_AMAS */
+#if defined(RTCONFIG_WIFI_CLONE)
 				wifi_clone(i);
+#endif
 			}
 #endif
 			ret = 1;
@@ -179,6 +184,15 @@ int is_wps_stopped(void)
 	}
 
 	return ret;
+}
+
+int is_wps_success(void)
+{
+#if (defined(RTCONFIG_WPS_ENROLLEE))
+	if (nvram_match("wps_enrollee", "1"))
+		return nvram_get_int("wps_e_success");
+#endif
+	return nvram_get_int("wps_success");
 }
 
 /*

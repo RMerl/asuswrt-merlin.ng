@@ -2398,7 +2398,7 @@ function gen_account_settings() {
 	code += "</tr>";
 	code += "</thead>";
 	code += "<tr>";
-	code += "<th><#HSDPAConfig_Username_itemname#></th>";
+	code += "<th><#Username#></th>";
 	code += "<th><#HSDPAConfig_Password_itemname#></th>";
 	code += "<th><#list_add_delete#></th>";
 	code += "</tr>";
@@ -4986,14 +4986,14 @@ function remove_hint_msg() {
 								<td bgcolor="#4D595D" valign="top">
 									<div>&nbsp;</div>
 									<div class="formfonttitle"><#Guest_Network#> - <#Captive_Portal#></div>
-									<div style="margin-left:5px;margin-top:10px;margin-bottom:10px"><img src="/images/New_ui/export/line_export.png"></div>
+									<div style="margin:10px 0 10px 5px;" class="splitLine"></div>
 									<div class="captive_portal_adv_intro_icon"></div>
 									<div style='float:left;width:80%;'>
 									<div class="captive_portal_adv_intro_txt" style="color:#FC0;"><#Captive_Portal_desc1#></div>
 									<div class="captive_portal_adv_intro_txt"><#Captive_Portal_desc2#></div>
 									</div>
 									<div style="clear:both;"></div>
-									<div style="margin-left:5px;margin-top:10px;margin-bottom:10px"><img src="/images/New_ui/export/line_export.png"></div>
+									<div style="margin:10px 0 10px 5px;" class="splitLine"></div>
 									<table width="100%" border="1" align="center" cellpadding="4" cellspacing="0" bordercolor="#6b8fa3"  class="FormTable">
 										<thead>
 										<tr>

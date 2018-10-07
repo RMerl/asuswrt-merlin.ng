@@ -146,7 +146,7 @@ function reset_diag_state(){
 <td bgcolor="#4D595D" valign="top">
 <div>&nbsp;</div>
 		  <div class="formfonttitle"><#menu5_6#> - <#menu_feedback#></div>
-<div style="margin-left:5px;margin-top:10px;margin-bottom:10px"><img src="/images/New_ui/export/line_export.png"></div>
+<div style="margin:10px 0 10px 5px;" class="splitLine"></div>
 
 <div id="fb_success_dsl_0" style="display:none;">
 	<br>
@@ -174,6 +174,7 @@ function reset_diag_state(){
 	<br>
 	<#feedback_fail1#> : ( <a href="mailto:router_feedback@asus.com?Subject=<%nvram_get("productid");%>" target="_top" style="color:#FFCC00;">router_feedback@asus.com </a>) <#feedback_fail2#>
 	<br>
+	OR you can try to <a href="Advanced_Feedback.asp?provider=google&reload=1" target="_self" style="text-decoration:underline;color:#FFCC00;">bind your Google account</a> to send feedback mail.
 </div>
 
 <div id="fb_fail_textarea" style="display:none;">

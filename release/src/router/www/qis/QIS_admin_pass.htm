@@ -322,24 +322,34 @@ function submitForm(){
 		if(based_modelid == "4G-AC55U" || based_modelid == "4G-AC68U")
 			document.form.action = "/qis/QIS_detect.htm";
 		else{
-			if(link_internet == "2" || wan0_realip_state == "2" || wan1_realip_state == "2"){
-				document.form.action = "/qis/QIS_wireless.htm";
-			}
-			else{
-				if(autodet_state == "6" || autodet_auxstate == "6"){
+			if(autodet_state == "6" || autodet_auxstate == "6"){
+				if((wanstate  == 2 && wansbstate == 0 && wanauxstate == 0) && (link_internet == "2" || wan0_realip_state == "2" || wan1_realip_state == "2")){
+					if(parent.isFirst)
+						document.form.action = "/qis/QIS_internet_type.htm";
+					else
+						document.form.action = "/qis/QIS_wireless.htm";
+				}
+				else{
+					parent.changeSubnet = false;
 					parent.document.QKform.wan_proto.value = "pppoe";
 					document.form.action = "/qis/QIS_internet_account.htm";
 				}
-				else if(wanstate == 4 && wansbstate == 4 && wanauxstate == 0){
-					parent.changeSubnet = true;
-					document.form.action = "/qis/QIS_wireless.htm";
-				}
-				else{
-					document.form.action = "/qis/QIS_internet_type.htm";
-				}
+			}
+			else if(wanstate  == 2 && wansbstate == 0 && wanauxstate == 0){
+				document.form.action = "/qis/QIS_wireless.htm";
+			}
+			else if(wanstate == 4 && wansbstate == 4 && wanauxstate == 0){
+				parent.changeSubnet = true;
+				document.form.action = "/qis/QIS_wireless.htm";
+			}
+			else if(wanstate == 4 && wansbstate == 3 && wanauxstate == 0 && autodet_state == "3"){
+				document.form.action = "/qis/QIS_resetModem.htm";
+			}
+			else{
+				document.form.action = "/qis/QIS_internet_type.htm";
 			}
 		}
-	}	
+	}
 	else
 		document.form.action = "/qis/QIS_lanip.htm";
 
@@ -347,15 +357,16 @@ function submitForm(){
 }
 
 function uploadSetting(){
-  var file_obj = document.form.file;
+	var file_obj = document.form.file;
+	var file_obj_name = file_obj.value.toUpperCase();
 
-        if(file_obj.value == ""){
+        if(file_obj_name == ""){
                 alert("<#JS_fieldblank#>");
                 file_obj.focus();
         }
-        else if(file_obj.value.length < 6 ||
-                                        file_obj.value.lastIndexOf(".CFG")  < 0 ||
-                                        file_obj.value.lastIndexOf(".CFG") != (file_obj.value.length)-4){
+        else if(file_obj_name.length < 6 ||
+					file_obj_name.lastIndexOf(".CFG")  < 0 ||
+					file_obj_name.lastIndexOf(".CFG") != (file_obj_name.length)-4){
                 alert("<#Setting_upload_hint#>");
                 file_obj.focus();
         }
@@ -463,7 +474,9 @@ function paste_password(){
 				</tr>
 			</table>
 		</div>
-		<div style="margin:5px;" id="splitLine"><img style="width: 720px; *width: 710px; height: 2px;" src="/images/New_ui/export/line_export.png"></div>
+		<div style="margin:5px;" id="splitLine">
+			<div style="width: 720px; *width: 710px; height: 2px;" class="splitLine"></div>
+		</div>
 <br/>
 
 <div style="margin-top:-10px;margin-left:30px;" id="mainDiv">

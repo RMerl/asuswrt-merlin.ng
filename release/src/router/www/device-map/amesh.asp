@@ -37,6 +37,9 @@ var aimesh_node_client_list = new Array();
 var aimesh_node_client_list_colspan = 4;
 var aimesh_node_client_info_width = (top.isIE8) ? ["", "40%", "40%", "20%"] : ["15", "40%", "30%", "15%"];
 var aimesh_node_client_upload_icon = new Array();
+var aimesh_select_new_re_mac = "";
+var AUTOLOGOUT_MAX_MINUTE_ORI = 0;
+var restore_autologout = false;
 function initial(){
 	if(parent.$('link[rel=stylesheet][href~="/device-map/amesh.css"]').length > 0)
 		parent.$('link[rel=stylesheet][href~="/device-map/amesh.css"]').remove();
@@ -101,6 +104,11 @@ function ajax_onboarding() {
 				$("#searchReadyOnBoarding").css("display", "none");
 				$("#amesh_loadingIcon").css("display", "none");
 				search_result_fail = false;
+				if(!restore_autologout) {
+					AUTOLOGOUT_MAX_MINUTE_ORI = parent.AUTOLOGOUT_MAX_MINUTE;
+					parent.AUTOLOGOUT_MAX_MINUTE = 0;
+					restore_autologout = true;
+				}
 			}
 			else {
 				if(get_onboardingstatus.cfg_obstatus == "2") {
@@ -108,10 +116,21 @@ function ajax_onboarding() {
 					$("#amesh_loadingIcon").css("display", "");
 					if(search_result_fail == "init")
 						search_result_fail = true;
+					if(!restore_autologout) {
+						AUTOLOGOUT_MAX_MINUTE_ORI = parent.AUTOLOGOUT_MAX_MINUTE;
+						parent.AUTOLOGOUT_MAX_MINUTE = 0;
+						restore_autologout = true;
+					}
 				}
 				else {
 					$("#searchReadyOnBoarding").css("display", "");
 					$("#amesh_loadingIcon").css("display", "none");
+					aimesh_select_new_re_mac = "";
+					if(restore_autologout) {
+						parent.AUTOLOGOUT_MAX_MINUTE = AUTOLOGOUT_MAX_MINUTE_ORI;
+						restore_autologout = false;
+						AUTOLOGOUT_MAX_MINUTE_ORI = 0;
+					}
 				}
 			}
 			/* Update ready_onBoarding_block end */
@@ -258,6 +277,7 @@ function gen_ready_onboardinglist(_onboardingList) {
 			var model_name = newReMacArray[newReMac].model_name;
 			var rssi = newReMacArray[newReMac].rssi;
 			var onboarding_device_id = newReMac.replace(/:/g, "");
+			var source = newReMacArray[newReMac].source;
 			if($('#ready_onBoarding_block').find('#' + onboarding_device_id + '').length == 0) {
 				if(checkCloudIconCount[model_name] == undefined)
 					checkCloudIconCount[model_name] = false;
@@ -288,12 +308,15 @@ function gen_ready_onboardinglist(_onboardingList) {
 						code += model_name;
 						code += "</div>";
 						code += "<div class='horizontal_line'></div>";
-						code += "<div style='position:relative;'>";
+						code += "<div style='position:relative;height:20px;'>";
 							code += "<div class='amesh_router_info_text'>";
 							code += newReMac;
 							code += "</div>";
 							code += "<div class='amesh_interface_icon'>";
-							code += "<div class='radioIcon radio_" + convRSSI(rssi) + "'></div>";
+							if(source == 2)
+								code += "<div class='radioIcon radio_wired'></div>";
+							else
+								code += "<div class='radioIcon radio_" + convRSSI(rssi) + "'></div>";
 							code += '</div>';
 						code += "</div>";
 					code += "</div>";
@@ -304,7 +327,7 @@ function gen_ready_onboardinglist(_onboardingList) {
 				$('#ready_onBoarding_block').find('#' + onboarding_device_id + '').find('.amesh_rotate').unbind('click');
 				$('#ready_onBoarding_block').find('#' + onboarding_device_id + '').find('.amesh_rotate').click(
 					function() {
-						show_connect_msg(reMac, newReMac, model_name, rssi);
+						show_connect_msg(reMac, newReMac, model_name, rssi, source);
 					}
 				);
 
@@ -319,11 +342,15 @@ function gen_ready_onboardinglist(_onboardingList) {
 				$('#ready_onBoarding_block').find('#' + onboarding_device_id + '').find('.amesh_rotate').unbind('click');
 				$('#ready_onBoarding_block').find('#' + onboarding_device_id + '').find('.amesh_rotate').click(
 					function() {
-						show_connect_msg(reMac, newReMac, model_name, rssi);
+						show_connect_msg(reMac, newReMac, model_name, rssi, source);
 					}
 				);
-
-				$('#ready_onBoarding_block').find('#' + onboarding_device_id + '').children().find('.radioIcon').removeClass().addClass('radioIcon radio_' + convRSSI(rssi) + '');
+				if(newReMac != aimesh_select_new_re_mac){
+					if(source == 2)
+						$('#ready_onBoarding_block').find('#' + onboarding_device_id + '').children().find('.radioIcon').removeClass().addClass('radioIcon radio_wired');
+					else
+						$('#ready_onBoarding_block').find('#' + onboarding_device_id + '').children().find('.radioIcon').removeClass().addClass('radioIcon radio_' + convRSSI(rssi) + '');
+				}
 				$('#ready_onBoarding_block').find('#' + onboarding_device_id + '').children().find('.amesh_router_info_text.model_name').html(model_name);
 
 				if(isNaN(parseInt(router_icon_array[model_name])))
@@ -689,13 +716,14 @@ function scenario() {
 	parent.cal_panel_block("amesh_scenario", 0.2);
 	parent.adjust_panel_block_top("amesh_scenario", 170);
 }
-function show_connect_msg(_reMac, _newReMac, _model_name, _rssi) {
+function show_connect_msg(_reMac, _newReMac, _model_name, _rssi, _ob_path) {
+	aimesh_select_new_re_mac = _newReMac;
 	$.ajax({
 		url: '/ajax_onboarding.asp',
 		dataType: 'script',
 		error: function(xhr) {
 			setTimeout(function(){
-				show_connect_msg(_reMac, _newReMac, _model_name, _rssi);
+				show_connect_msg(_reMac, _newReMac, _model_name, _rssi, _ob_path);
 			}, 3000);
 		},
 		success: function() {
@@ -779,6 +807,8 @@ function show_connect_msg(_reMac, _newReMac, _model_name, _rssi) {
 				$amesh_cancel.click(
 					function() {
 						initial_amesh_obj();
+						aimesh_select_new_re_mac = "";
+						document.onboardingLED_form.ob_path.disabled = true;
 						document.onboardingLED_form.new_re_mac.disabled = true;
 						document.onboardingLED_form.submit();
 					}
@@ -803,6 +833,8 @@ function show_connect_msg(_reMac, _newReMac, _model_name, _rssi) {
 				$amesh_ok.click(
 					function() {
 						initial_amesh_obj();
+						aimesh_select_new_re_mac = "";
+						document.onboardingLED_form.ob_path.disabled = true;
 						document.onboardingLED_form.new_re_mac.disabled = true;
 						document.onboardingLED_form.submit();
 					}
@@ -832,6 +864,8 @@ function show_connect_msg(_reMac, _newReMac, _model_name, _rssi) {
 
 				document.onboardingLED_form.new_re_mac.disabled = false;
 				document.onboardingLED_form.new_re_mac.value = _newReMac;
+				document.onboardingLED_form.ob_path.disabled = false;
+				document.onboardingLED_form.ob_path.value = _ob_path;
 				document.onboardingLED_form.submit();
 			}
 		}
@@ -974,13 +1008,19 @@ function show_search_fail_result() {
 	var result_text = "";
 	result_text = "<#AiMesh_FindNode_Not#>";
 	result_text += "<br>";
-	result_text += "a. <#AiMesh_FindNode_Not_advA#>";
-	result_text += "<div style='margin-left: 20px;'>1. <#AiMesh_FindNode_Not_advA1#></div>";
-	result_text += "<div style='margin-left: 20px;'>2. <#AiMesh_FindNode_Not_advA2#></div>";
-	result_text += "<div style='margin-left: 20px;'>3. <#AiMesh_FindNode_Not_advA3#></div>";
-	result_text += "<div style='margin-left: 20px;'>4. <#AiMesh_FindNode_Not_advA4#></div>";
-	if(!dsl_support){
-		result_text += "b. <#AiMesh_FindNode_Not_advB#>";
+	if(ameshRouter_support && ameshNode_support)
+		result_text += "a. ";
+	if(ameshRouter_support) {
+		result_text += "<#AiMesh_FindNode_Not_advA#>";
+		result_text += "<div style='margin-left: 20px;'>1. <#AiMesh_FindNode_Not_advA1#></div>";
+		result_text += "<div style='margin-left: 20px;'>2. <#AiMesh_FindNode_Not_advA2#></div>";
+		result_text += "<div style='margin-left: 20px;'>3. <#AiMesh_FindNode_Not_advA3#></div>";
+		result_text += "<div style='margin-left: 20px;'>4. <#AiMesh_FindNode_Not_advA4#></div>";
+	}
+	if(ameshRouter_support && ameshNode_support)
+		result_text += "b. ";
+	if(ameshNode_support){
+		result_text += "<#AiMesh_FindNode_Not_advB#>";
 		result_text += "<div style='margin-left: 20px;'>1. <#AiMesh_FindNode_Not_advB1#></div>";
 		result_text += "<div style='margin-left: 20px;'>2. <#AiMesh_FindNode_Not_advB2#></div>";
 		result_text += "<div style='margin-left: 20px;'>3. <#AiMesh_FindNode_Not_advB3#></div>";
@@ -1269,9 +1309,9 @@ function popAMeshClientListEditTable(event) {
 	code += "<div style='float:left;width:30%;height:92px;position:relative;'>";
 	code += "<div class='amesh_router_icon_bg card'>";
 	if(checkCloudIconCount[node_info.model_name])
-	code += "<div class='amesh_router_image_web card'></div>";
+		code += "<div class='amesh_router_image_web card'></div>";
 	else
-	code += "<div class='amesh_router_icon card'></div>";
+		code += "<div class='amesh_router_icon card'></div>";
 	code += "</div>";
 	code += "</div>";
 	code += "<div style='float:left;width:65%;margin-top:17px;'>";
@@ -1321,6 +1361,17 @@ function popAMeshClientListEditTable(event) {
 	code += "<div class='aimesh_node_setting_info_content'><span id='aimesh_node_fw_version' class='text_hyperlink'></span></div>";
 	code += "<div class='clear_both'></div>";
 	code += "</div>";
+
+	if(node_info.model_name == "BLUE_CAVE") {
+		code += "<div style='margin-top:10px;'>";
+		code += "<div class='aimesh_node_setting_info_title'>LED Brightness</div>";/* untranslated */
+		code += "<div class='aimesh_node_setting_info_content'>";
+		code += "<div id='led_slider' class='led_slider'></div>";
+		code += "<div id='led_text'></div>";
+		code += "</div>";
+		code += "<div class='clear_both'></div>";
+		code += "</div>";
+	}
 	code += "</div>";
 
 	code += "<div class='clientList_line aimesh_node_line_bg'></div>";
@@ -1466,7 +1517,7 @@ function popAMeshClientListEditTable(event) {
 				data.cfg_alias = $popupBgHtml.find("#aimesh_node_location_input").val();
 				var title_name = "AiMesh node in " + $popupBgHtml.find("#aimesh_node_location_input").val();
 				$popupBgHtml.find("#aimesh_node_title_name").html(title_name);
-				set_AiMesh_node_config(data, node_info.mac)
+				set_AiMesh_node_config(data, node_info.mac);
 			}
 		}
 	);
@@ -1480,7 +1531,7 @@ function popAMeshClientListEditTable(event) {
 			function() {
 				var data = new Object();
 				data.amas_ethernet = $popupBgHtml.find("#aimesh_node_connection_priority").val();
-				set_AiMesh_node_config(data, node_info.mac)
+				set_AiMesh_node_config(data, node_info.mac);
 		});
 	}
 	$popupBgHtml.find("#aimesh_node_fw_version").click(
@@ -1518,6 +1569,45 @@ function popAMeshClientListEditTable(event) {
 			re_sort_AiMesh_node_client("rssi", "num", "client_interface");
 		}
 	);
+	if(node_info.model_name == "BLUE_CAVE"){
+		var central_led_bc_ledLv = 3;
+		if("config" in node_info) {
+			if("central_led" in node_info.config) {
+				if("bc_ledLv" in node_info.config.central_led)
+					central_led_bc_ledLv = parseInt(node_info.config.central_led.bc_ledLv);
+			}
+		}
+		parent.$("script[src='/calendar/jquery-ui.js']").remove();
+		$("script[src='../calendar/jquery-ui.js']").remove();
+		$('<script>')
+			.attr('type', 'text/javascript')
+			.attr('src', '../calendar/jquery-ui.js')
+			.appendTo('head')
+			.attr('src', '/calendar/jquery-ui.js')
+			.appendTo(parent.$('head'))
+			.load(function() {
+				var color_table = ["#c6dafc", "#7baaf7", "#4285f4", "#3367d6"];
+				var led_table = ["Off", "Low", "Medium", "Highest"];
+				$popupBgHtml.find("#led_text").html(led_table[central_led_bc_ledLv]);
+				parent.$("#edit_amesh_client_block").find( "#led_slider" ).slider({
+					orientation: "horizontal",
+					range: "min",
+					min: 1,
+					max: 4,
+					value: (central_led_bc_ledLv + 1),
+					slide: function(event, ui) {
+						$popupBgHtml.find("#led_text").html(led_table[ui.value-1]);
+						$popupBgHtml.find("#led_slider .ui-slider-range").css("background-color", color_table[ui.value-1]);
+						$popupBgHtml.find("#led_slider .ui-slider-handle").css("border-color", color_table[ui.value-1]);
+					},
+					stop: function(event, ui) {
+						var data = new Object();
+						data.bc_ledLv = (ui.value - 1);
+						set_AiMesh_node_config(data, node_info.mac);
+					}
+				});
+			});
+	}
 	/* set event end */
 
 	parent.$("#edit_amesh_client_block").fadeIn(300);
@@ -1936,7 +2026,7 @@ function get_aimesh_node_client_list(_wired_client, _wl_client, _all_client) {
 }
 function handle_cloud_icon_model_name(_modelName) {
 	var transformName = _modelName;
-	if(transformName == "RT-AC66U_B1" || transformName == "RT-AC1750_B1" || transformName == "RT-N66U_C1" || transformName == "RT-AC1900U" || transformName == "RP-AC1900" || transformName == "RT-AC67U")
+	if(transformName == "RT-AC66U_B1" || transformName == "RT-AC1750_B1" || transformName == "RT-N66U_C1" || transformName == "RT-AC1900U" || transformName == "RT-AC67U")
 		transformName = "RT-AC66U_V2";
 	else if(transformName == "BLUE_CAVE")
 		transformName = "BLUECAVE";
@@ -1973,6 +2063,7 @@ function handle_cloud_icon_model_name(_modelName) {
 <input type="hidden" name="current_page" value="device-map/amesh.asp">
 <input type="hidden" name="next_page" value="device-map/amesh.asp">
 <input type="hidden" name="new_re_mac" value=''>
+<input type="hidden" name="ob_path" value=''>
 </form>
 <iframe name="wpsFrame" id="wpsFrame" src="" width="0" height="0" frameborder="0" scrolling="no"></iframe>
 <form method="post" name="wps_form" id="wps_form" action="/start_apply.htm" target="wpsFrame">

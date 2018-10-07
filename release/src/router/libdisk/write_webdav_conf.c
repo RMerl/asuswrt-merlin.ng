@@ -102,8 +102,7 @@ char *port_get(char *name)
         //char tmp_name[256]="/tmp/aicloud_nvram_check.sh";
         char *cmd_name;
         cmd_name=(char *)malloc(sizeof(char)*(strlen(tmp_name)+strlen(name)+2));
-        memset(cmd_name,0,sizeof(cmd_name));
-        sprintf(cmd_name,"%s %s",tmp_name,name);
+        snprintf(cmd_name, sizeof(cmd_name), "%s %s", tmp_name, name);
         system(cmd_name);
         free(cmd_name);
 
@@ -141,8 +140,7 @@ int webdav_match(char *name,int id)
         //char tmp_name[256]="/tmp/aicloud_nvram_check.sh";
         char *cmd_name;
         cmd_name=(char *)malloc(sizeof(char)*(strlen(tmp_name)+strlen(name)+2));
-        memset(cmd_name,0,sizeof(cmd_name));
-        sprintf(cmd_name,"%s %s",tmp_name,name);
+        snprintf(cmd_name, sizeof(cmd_name), "%s %s", tmp_name, name);
         system(cmd_name);
         free(cmd_name);
 

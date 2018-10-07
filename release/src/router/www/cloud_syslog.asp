@@ -57,7 +57,7 @@ function initial(){
 							  <td bgcolor="#4D595D" valign="top">
 								<div>&nbsp;</div>
 								<div class="formfonttitle">AiCloud 2.0 - <#Log#></div>
-								<div style="margin-left:5px;margin-top:10px;margin-bottom:10px"><img src="/images/New_ui/export/line_export.png"></div>
+								<div style="margin:10px 0 10px 5px;" class="splitLine"></div>
 								<div class="formfontdesc" style="font-style: italic;font-size: 14px;"><#AiCloud_Log_desc#></div>
 
 								<table width="100%" style="border-collapse:collapse;">

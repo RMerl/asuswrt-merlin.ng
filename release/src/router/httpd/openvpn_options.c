@@ -734,8 +734,8 @@ void parse_openvpn_status(int unit){
 					fprintf(fpo, "NoUsername\n");
 			}
 		}
-		fclose(fpi);
-		fclose(fpo);
+		if(fpi) fclose(fpi);
+		if(fpo) fclose(fpo);
 	}
 }
 

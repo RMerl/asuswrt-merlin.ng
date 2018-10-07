@@ -21,6 +21,7 @@ else{
 
 var webs_state_info = '<% nvram_get("webs_state_info"); %>';
 var webs_state_info_beta = '<% nvram_get("webs_state_info_beta"); %>';
+var webs_state_flag = '<% nvram_get("webs_state_flag"); %>';
 
 var st_ftp_mode = '<% nvram_get("st_ftp_mode"); %>';
 var st_ftp_force_mode = '<% nvram_get("st_ftp_force_mode"); %>';
@@ -58,10 +59,12 @@ if(dsl_support){
 	if(notif_hint_array[0] != ""){ 
 		notif_msg = "<ol style=\"margin-left:-20px;*margin-left:20px;\">";
 		for(var i=0; i<notif_hint_array.length; i++){
-			if(i==0)
+			if(i==0){
 				notif_msg += "<li>"+notif_hint_array[i];
-			else
-				notif_msg += "<div><img src=\"/images/New_ui/export/line_export_notif.png\" style=\"margin-top:2px;margin-bottom:2px;margin-left:-20px;*margin-left:-20px;\"></div><li>"+notif_hint_array[i];
+			}
+			else{
+				notif_msg += "<div style=\"width:240px;margin: 2px 0 2px -20px;*margin-left:-20px;\" class=\"splitLine\"></div><li>" + notif_hint_array[i];
+			}
 		}
 		notif_msg += "</ol>";
     	}	
@@ -125,6 +128,9 @@ var notification = {
 
 			for(i=0; i<notification.array.length; i++){
 				if(notification.array[i] != null && notification.array[i] != "off"){
+					if(i == 3 && notification.array[2] != null && notification.array[2] != "off")//filter 5G when 2G have notification
+						continue;
+
 						txt += '<tr><td><table id="notiDiv_table3" width="100%" border="0" cellpadding="0" cellspacing="0" bgcolor="#232629">';
 		  			txt += '<tr><td><table id="notiDiv_table5" border="0" cellpadding="5" cellspacing="0" bgcolor="#232629" width="100%">';
 		  			txt += '<tr><td valign="TOP" width="100%"><div style="white-space:pre-wrap;font-size:13px;color:white;cursor:text">' + notification.desc[i] + '</div>';
@@ -232,12 +238,7 @@ var notification = {
 				notification.upgrade = 0;
 		}
 		else {
-			if(current_firmware_path==1)
-				var latest_state_info = webs_state_info_beta;
-			else
-				var latest_state_info = webs_state_info;
-
-			if(isNewFW(latest_state_info,current_firmware_path,current_firmware_path)){	//case2
+			if(webs_state_flag == 1 || webs_state_flag == 2){
 				notification.array[1] = 'noti_upgrade';
 				notification.upgrade = 1;
 				notification.desc[1] = '<#ASUSGATE_note2#>';
@@ -328,10 +329,13 @@ var notification = {
 		//experiencing DSL issue experience_fb=0: notif, 1:no display again.
 		if(experience_fb == 0){		//case7
 				notification.array[7] = 'noti_experience_FB';
+				notification.array[18] = 'noti_experience_FB_cancel';
 				notification.experience_FB = 1;
 				notification.desc[7] = Untranslated.ASUSGATE_note7;
 				notification.action_desc[7] = Untranslated.ASUSGATE_act_feedback;
 				notification.clickCallBack[7] = "setTimeout('document.noti_experience_Feedback.submit();', 1);setTimeout('notification.redirectFeedback()', 1000);";
+				notification.action_desc[18] = '<#CTL_Cancel#>';
+				notification.clickCallBack[18] = "setTimeout('document.noti_experience_Feedback.submit();', 1);setTimeout('notification.redirectRefresh()', 1000);";
 		}else
 				notification.experience_FB = 0;
 

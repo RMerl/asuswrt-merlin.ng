@@ -86,7 +86,13 @@
 .confirm_button_gen_long_left{
 	font-weight: bolder;
 	text-shadow: 1px 1px 0px black;
-  background: transparent url(../images/New_ui/logout_bt.png) no-repeat scroll center top;
+	background: #121C1E;
+	background: -webkit-linear-gradient(#233438 0%, #0F1011 100%);
+	background: -o-linear-gradient(#233438 0%, #0F1011 100%);
+	background: linear-gradient(#233438 0%, #0F1011 100%);
+	-webkit-border-radius: 8px;
+	-moz-border-radius: 8px;
+	border-radius: 8px;
   border:0;
   color: #FFFFFF;
   width:155px;
@@ -103,7 +109,10 @@
  	white-space:normal;
 }
 .confirm_button_gen_long_left:hover	/*, .button:active*/{
-  background: transparent url(../images/New_ui/logout_btover.png) no-repeat scroll center top;
+	background: #085F96;
+	background: -webkit-linear-gradient(#09639C 0%, #003047 100%);
+	background: -o-linear-gradient(#09639C 0%, #003047 100%);
+	background: linear-gradient(#09639C 0%, #003047 100%);
   border:0;
   color: #FFFFFF;
 	height:34px;
@@ -120,7 +129,13 @@
 .confirm_button_gen_long_right{
 	font-weight: bolder;
 	text-shadow: 1px 1px 0px black;
-  background: transparent url(../images/New_ui/logout_bt.png) no-repeat scroll center top;
+	background: #121C1E;
+	background: -webkit-linear-gradient(#233438 0%, #0F1011 100%);
+	background: -o-linear-gradient(#233438 0%, #0F1011 100%);
+	background: linear-gradient(#233438 0%, #0F1011 100%);
+	-webkit-border-radius: 8px;
+	-moz-border-radius: 8px;
+	border-radius: 8px;
   border:0;
   color: #FFFFFF;
   width:155px;
@@ -137,7 +152,10 @@
  	white-space:normal;
 }
 .confirm_button_gen_long_right:hover	/*, .button:active*/{
-  background: transparent url(../images/New_ui/logout_btover.png) no-repeat scroll center top;
+	background: #085F96;
+	background: -webkit-linear-gradient(#09639C 0%, #003047 100%);
+	background: -o-linear-gradient(#09639C 0%, #003047 100%);
+	background: linear-gradient(#09639C 0%, #003047 100%);
   border:0;
   color: #FFFFFF;
 	height:34px;

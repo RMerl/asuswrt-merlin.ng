@@ -72,13 +72,12 @@ function submitenter(myfield,e)
 							<td align="left">
 								<div class="description_down"><#QIS_modem_desc1#></div>
 							</td>
-							<!--td align="right">
-								<img onclick="parent.gotoIndex();" style="cursor:pointer;" align="right" title="Go to Home" src="/images/backtohome.png" onMouseOver="this.src='/images/backtohomeclick.png'" onMouseOut="this.src='/images/backtohome.png'">
-							</td-->
 						</tr>
 					</table>
 				</div>
-				<div style="margin:5px;" id="splitLine"><img style="width: 720px; *width: 710px; height: 2px;" src="/images/New_ui/export/line_export.png"></div>
+				<div style="margin:5px;" id="splitLine">
+					<div style="width: 720px; *width: 710px; height: 2px;" class="splitLine"></div>
+				</div>
 		</div>
 		<p class="QISGeneralFont"><#QIS_modem_desc2#></p>
 		<p class="QISGeneralFont"><#QIS_modem_desc3#></p>
@@ -95,7 +94,7 @@ function submitenter(myfield,e)
 
 		<div class='apply_gen'>
 			<div id="fresharea">
-				<input type="button" id="nextButton" value="<#Connectiontype#>" onclick="redirect_page('internet_type');" class="button_gen_long">
+				<input type="button" id="nextButton" value="<#Connectiontype#>" onclick="redirect_page('internet_type');" class="button_gen">
 				<input type="button" id="button1" class="button_gen" onclick="gotoPage('/qis/QIS_resetModem2.htm', now_flag, 0);" value="<#CTL_next#>">
 			</div>
 		</div>

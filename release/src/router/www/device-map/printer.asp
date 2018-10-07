@@ -71,7 +71,7 @@ function cleanTask(){
 		<td style="padding:5px 10px 5px 15px;">
 			<p class="formfonttitle_nwm"><#PrinterStatus_x_PrinterModel_itemname#></p>
 			<p style="padding-left:10px; margin-top:3px; background-color:#444f53; line-height:20px;" id="printerModel"></p>
-			<img style="margin-top:5px;" src="/images/New_ui/networkmap/linetwo2.png">
+			<div style="margin-top:5px;" class="line_horizontal"></div>
 		</td>
 	</tr>  
 
@@ -79,7 +79,7 @@ function cleanTask(){
 		<td style="padding:5px 10px 5px 15px;">
 			<p class="formfonttitle_nwm"><#Printing_status#></p>
 			<p style="padding-left:10px; margin-top:3px; background-color:#444f53; line-height:20px;" id="printerStatus"></p>
-			<img style="margin-top:5px;" src="/images/New_ui/networkmap/linetwo2.png">
+			<div style="margin-top:5px;" class="line_horizontal"></div>
 		</td>
 	</tr>  
 
@@ -88,7 +88,7 @@ function cleanTask(){
 			<p class="formfonttitle_nwm" id="monoP" style="width:138px;"><#Printing_button_item#></p>
 			<input id="monoBtn" type="button" class="button_gen" value="<#WLANConfig11b_WirelessCtrl_button1name#>" onclick="cleanTask();">
 			<p id="monoDesc" style="padding-left:10px; margin-top:3px; background-color:#444f53; line-height:20px;"><% nvram_get("mfp_ip_monopoly"); %></p>
-			<img style="margin-top:5px;" src="/images/New_ui/networkmap/linetwo2.png">
+			<div style="margin-top:5px;" class="line_horizontal"></div>
 		</td>
 	</tr>  
 </table>

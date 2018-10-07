@@ -497,7 +497,7 @@ function calculatorIPPoolRange() {
 								<td bgcolor="#4D595D" valign="top">
 									<div>&nbsp;</div>
 									<div class="formfonttitle">DHCP setting</div>
-									<div style="margin-left:5px;margin-top:10px;margin-bottom:10px"><img src="/images/New_ui/export/line_export.png"></div>
+									<div style="margin:10px 0 10px 5px;" class="splitLine"></div>
 									<div class="formfontdesc">Select the LAN you want to setup and fill out gateway information for IP assignment if you enable DHCP server.</div>
 									<table id="tbVLANGroup" width="100%" border="1" align="center" cellpadding="4" cellspacing="0" class="FormTable">
 									<thead>

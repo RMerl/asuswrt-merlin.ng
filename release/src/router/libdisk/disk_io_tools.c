@@ -44,8 +44,7 @@ extern int mkdir_if_none(const char *path){
 	char cmd[PATH_MAX];
 
 	if(!(dp = opendir(path))){
-		memset(cmd, 0, PATH_MAX);
-		sprintf(cmd, "mkdir -m 0777 -p '%s'", (char *)path);
+		snprintf(cmd, sizeof(cmd), "mkdir -m 0777 -p '%s'", (char *)path);
 		system(cmd);
 		return 1;
 	}

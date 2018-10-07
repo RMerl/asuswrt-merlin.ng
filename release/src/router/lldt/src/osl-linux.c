@@ -697,6 +697,7 @@ get_ssid(void *data)
         return FALSE;
     }
     req.u.essid.pointer = (void*)malloc(sizeof(uint8_t)*32);
+    req.u.data.length = 32;
     ret = ioctl(rqfd, SIOCGIWESSID, &req);
     close(rqfd);    
     if ((ret != 0) || (req.u.essid.pointer == NULL))

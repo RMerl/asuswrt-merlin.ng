@@ -12,7 +12,6 @@
 	var upgrade_fw_status = '<% nvram_get("upgrade_fw_status"); %>';
 	parent.cancel_dr_advise();
 	parent.document.form.update.disabled = true;
-	parent.document.form.beta_firmware_path.disabled = true;
 	parent.document.form.file.disabled = true;
 	parent.document.form.upload.disabled = true;
 	if(upgrade_fw_status == 6){

@@ -2,7 +2,8 @@ var qisPostData = {};
 
 var opModeObj = {
 	"sw_mode": "",
-	"wlc_psta": ""
+	"wlc_psta": "",
+	"wlc_dpsta": ""
 }
 
 var generalObj = {
@@ -110,7 +111,41 @@ var wlcObj = {
 	"wlc_key": "",
 	"wlc_ap_mac": ""
 }
-
+var wlcMultiObj = {
+	"0" : {
+		"wlc0_band": "",
+		"wlc0_ssid": "",
+		"wlc0_auth_mode": "",
+		"wlc0_crypto": "",
+		"wlc0_wpa_psk": "",
+		"wlc0_wep": "",
+		"wlc0_wep_key": "",
+		"wlc0_key": "",
+		"wlc0_ap_mac": ""
+	},
+	"1" : {
+		"wlc1_band": "",
+		"wlc1_ssid": "",
+		"wlc1_auth_mode": "",
+		"wlc1_crypto": "",
+		"wlc1_wpa_psk": "",
+		"wlc1_wep": "",
+		"wlc1_wep_key": "",
+		"wlc1_key": "",
+		"wlc1_ap_mac": ""
+	},
+	"2" : {
+		"wlc2_band": "",
+		"wlc2_ssid": "",
+		"wlc2_auth_mode": "",
+		"wlc2_crypto": "",
+		"wlc2_wpa_psk": "",
+		"wlc2_wep": "",
+		"wlc2_wep_key": "",
+		"wlc2_key": "",
+		"wlc2_ap_mac": ""
+	}
+}
 var yandexObj = {
 	"yadns_enable_x": "",
 	"yadns_mode": ""	
@@ -181,9 +216,10 @@ var systemVariable = {
 		"wanType": "",
 		"isIPConflict": false,
 	},
-	"isNewFw": false,
+	"isNewFw": 0,
 	"newFwVersion": "",
 	"papList": [],
+	"papListAiMesh": [],
 	"selectedAP": {},
 	"opMode": "",
 	"originOpMode": "",
@@ -195,7 +231,11 @@ var systemVariable = {
 	"default_http_passwd": "admin",
 	"forceChangePw": false,
 	"forceChangePwInTheEnd": false,
-	"rebootTime": ""
+	"rebootTime": "",
+	"multiPAP" : {
+		"wlcOrder": [],
+		"wlcStatus": {}
+	}
 }
 
 var aimeshObj = {

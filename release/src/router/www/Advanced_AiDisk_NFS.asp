@@ -659,7 +659,7 @@ function check_dir_path(){
 										</tr>
 									</table>
 								</div>
-								<div style="margin:5px;"><img src="/images/New_ui/export/line_export.png"></div>
+								<div style="margin:10px 0 10px 5px;" class="splitLine"></div>
 								<div class="formfontdesc">Export directories from plugged USB disks over NFS.</div>
 
 								<table class="FormTable" width="100%" cellspacing="1">

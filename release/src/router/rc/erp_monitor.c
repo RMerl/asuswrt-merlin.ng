@@ -635,11 +635,47 @@ int erp_monitor_main(int argc, char **argv)
 	FILE *fp;
 	sigset_t sigs_to_catch;
 
+	/*
+		support list for BRCM only
+		RT-AC5300 / RT-AC3100 / RT-AC5300
+		RT-AC3200
+		RT-AC68U / RT-AC87U / DSL-AC68U
+		RT-AC66U / RT-N66U
+	*/
+	int model = get_model();
+	if (model != MODEL_RTAC88U
+		&& model != MODEL_RTAC3100
+		&& model != MODEL_RTAC5300
+		&& model != MODEL_RTAC3200
+		&& model != MODEL_RTAC68U
+		&& model != MODEL_RTAC87U
+		&& model != MODEL_DSLAC68U
+		&& model != MODEL_RTAC66U
+		&& model != MODEL_RTN66U
+		&& model != MODEL_GTAC5300)
+	{
+		logmessage("ERP", "The model isn't under support list!\n");
+		return -1;
+	}
+
+	/* tcode support in EE / WE / UK / EU */
+	char *tcode = nvram_safe_get("territory_code");
+	if (strstr(tcode, "EE") == NULL && strstr(tcode, "WE") == NULL
+		&& strstr(tcode, "UK") == NULL && strstr(tcode, "EU") == NULL)
+	{
+		logmessage("ERP", "The model isn't under EU SKU!\n");
+		return -2;
+	}
+
 	/* write pid */
 	if ((fp = fopen("/var/run/erp_monitor.pid", "w")) != NULL)
 	{
 		fprintf(fp, "%d", getpid());
 		fclose(fp);
+	}
+	else {
+		logmessage("ERP", "Fail to create erp_monitor.pid\n");
+		return -3;
 	}
 
 	/* set the signal handler */

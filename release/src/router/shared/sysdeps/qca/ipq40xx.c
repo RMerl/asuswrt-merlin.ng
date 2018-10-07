@@ -1550,3 +1550,177 @@ void usage(char *cmd)
 	exit(0);
 }
 #endif
+
+#if defined(RTCONFIG_AMAS)
+void add_beacon_vsie(char *hexdata)
+{
+	// 0: Beacon
+	// 1: ProbeRequest
+	// 2: ProbeResponse
+	// 3: AuthenticationRequest
+	// 4: AuthenticationRespnse
+	// 5: AssocationRequest
+	// 6: AssociationResponse
+	// 7: ReassociationRequest
+	// 8: ReassociationResponse
+	char cmd[300];
+	int pktflag = 0x0;
+	int len = 0;
+	char *ifname = NULL;
+
+	len = 3 + strlen(hexdata)/2;	/* 3 is oui's len */
+
+	ifname = get_wififname(0); // TODO: Should we get the band from nvram?
+	
+	//_dprintf("%s: wl0_ifname=%s\n", __func__, ifname);
+
+	if (ifname && strlen(ifname)) {
+		snprintf(cmd, sizeof(cmd), "hostapd_cli set_vsie -i%s %d DD%02X%02X%02X%02X%s", 
+			ifname, pktflag, (uint8_t)len, (uint8_t)OUI_ASUS[0],  (uint8_t)OUI_ASUS[1],  (uint8_t)OUI_ASUS[2], hexdata);
+		_dprintf("%s: cmd=%s\n", __func__, cmd);
+		system(cmd);
+	}
+}
+void del_beacon_vsie(char *hexdata)
+{
+	// 0: Beacon
+	// 1: ProbeRequest
+	// 2: ProbeResponse
+	// 3: AuthenticationRequest
+	// 4: AuthenticationRespnse
+	// 5: AssocationRequest
+	// 6: AssociationResponse
+	// 7: ReassociationRequest
+	// 8: ReassociationResponse
+	char cmd[300] = {0};
+	int pktflag = 0x0;
+	int len = 0;
+	char *ifname = NULL;
+
+	len = 3 + strlen(hexdata)/2;	/* 3 is oui's len */
+
+	ifname = get_wififname(0); // TODO: Should we get the band from nvram?
+
+	//_dprintf("%s: wl0_ifname=%s\n", __func__, ifname);
+
+	if (ifname && strlen(ifname)) {
+		snprintf(cmd, sizeof(cmd), "hostapd_cli del_vsie -i%s %d DD%02X%02X%02X%02X%s",
+			ifname, pktflag, (uint8_t)len,  (uint8_t)OUI_ASUS[0],  (uint8_t)OUI_ASUS[1],  (uint8_t)OUI_ASUS[2], hexdata);
+		_dprintf("%s: cmd=%s\n", __func__, cmd);
+		system(cmd);
+	}
+}
+
+void set_wpa_cli_cmd(int band, const char *cmd)
+{
+	char ctrl_sk[32];
+	char *sta;
+
+	if(band < 0 || band >= MAX_NR_WL_IF || cmd == NULL || cmd[0] == '\0')
+		return;
+
+	sta = get_staifname(band);
+	snprintf(ctrl_sk, sizeof(ctrl_sk), "/var/run/wpa_supplicant-%s", sta);
+	eval("wpa_cli", "-p", ctrl_sk, "-i", sta, cmd);
+}
+
+/* 
+ * int get_psta_status(int unit)
+ *
+ * return value
+ * 	0: init
+ * 	1:
+ * 	2: connect and auth
+ * 	3: stop
+ */
+int get_psta_status(int unit)
+{
+	unsigned int ret;
+	const char *sta;
+	int pid;
+	pid = getpid();
+
+	sta = get_staifname(unit);
+	ret = chk_assoc(sta);
+	if(ret < 0) return WLC_STATE_STOPPED;
+	if(ret > 0) return WLC_STATE_CONNECTED;
+	return ret;
+}
+
+void Pty_stop_wlc_connect(int band)
+{
+	set_wpa_cli_cmd(band, "disconnect");
+}
+
+void Pty_start_wlc_connect(int band)
+{
+	set_wpa_cli_cmd(band, "reconnect");
+}
+
+/*
+ * int Pty_get_upstream_rssi(int band)
+ *
+ * return value
+ * 	a rssi value which is a native value. The lower the smaller signal.
+ *
+ * 	-91: RSSI_NO_SIGNAL
+ */
+int Pty_get_upstream_rssi(int band)
+{
+	char *sta;
+	int status, quality, signal, noise, update;
+	int ret;
+
+	if(band < 0 || band > MAX_NR_WL_IF)
+		return 0;
+
+	sta = get_staifname(band);
+	extern int get_wl_status(const char *ifname, int *status, int *quality, int *signal, int *noise, unsigned int *update);
+	ret = get_wl_status(sta, &status, &quality, &signal, &noise, &update);
+	if(ret > 0 && status)
+		return signal;
+
+	return 0;
+}
+int get_wlan_service_status(int bssidx, int vifidx)
+{
+
+	return 0;
+}
+void set_wlan_service_status(int bssidx, int vifidx, int enabled)
+{
+
+}
+void set_pre_sysdep_config(int iftype)
+{
+
+}
+void set_post_sysdep_config(int iftype)
+{
+
+}
+int get_radar_status(int bssidx)
+{
+	return 0;
+}
+int Pty_procedure_check(int unit, int wlif_count)
+{
+	return 0;
+}
+char *get_pap_bssid(int unit, char bssid_str[])
+{
+	struct iwreq wrq;
+	char *sta;
+	int ret;
+	unsigned char *mac;
+
+	*bssid_str = '\0';
+	sta = get_staifname(unit);
+	if((ret = get_ap_mac(sta, &wrq)) >= 0) {
+		mac = wrq.u.ap_addr.sa_data;
+		snprintf(bssid_str, 18, "%02x:%02x:%02x:%02x:%02x:%02x", mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]);
+	}
+	return bssid_str;
+}
+#endif
+

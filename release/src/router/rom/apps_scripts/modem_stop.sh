@@ -17,6 +17,7 @@ modem_reg_time=`nvram get modem_reg_time`
 wandog_interval=`nvram get wandog_interval`
 modem_step_orig=`nvram get modem_step_orig`
 atcmd=`nvram get modem_atcmd`
+act_sim=`nvram get usb_modem_act_sim`
 
 usb_gobi2=`nvram get usb_gobi2`
 kernel_version=`uname -r`
@@ -117,12 +118,14 @@ if [ "$modem_type" == "gobi" ]; then
 			killall gobi_api
 		fi
 
-		wait_time1=`expr $wandog_interval + $wandog_interval`
-		wait_time=`expr $wait_time1 + $modem_reg_time`
-		nvram set freeze_duck=$wait_time
-		/usr/sbin/modem_at.sh '+COPS=2' "$modem_reg_time"
-		if [ -z "$atcmd" ] || [ "$atcmd" != "1" ]; then
-			/usr/sbin/modem_at.sh '' # clean the output of +COPS=2.
+		if [ "$act_sim" -ge "1" ]; then
+			wait_time1=`expr $wandog_interval + $wandog_interval`
+			wait_time=`expr $wait_time1 + $modem_reg_time`
+			nvram set freeze_duck=$wait_time
+			/usr/sbin/modem_at.sh '+COPS=2' "$modem_reg_time"
+			if [ -z "$atcmd" ] || [ "$atcmd" != "1" ]; then
+				/usr/sbin/modem_at.sh '' # clean the output of +COPS=2.
+			fi
 		fi
 	fi
 elif [ "$modem_type" == "qmi" ]; then

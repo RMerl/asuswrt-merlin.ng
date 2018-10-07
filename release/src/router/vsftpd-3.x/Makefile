@@ -48,6 +48,9 @@ endif
 
 ifeq ($(RTCONFIG_AMAS),y)
 LDFLAGS += -L$(TOP)/json-c/.libs -ljson-c
+ifeq ($(RTCONFIG_QCA),y)
+LDFLAGS += -lm
+endif
 endif
 
 ifeq ($(RTCONFIG_PERMISSION_MANAGEMENT),y)

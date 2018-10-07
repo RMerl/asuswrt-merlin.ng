@@ -19,8 +19,9 @@ start_wpa_supplicant(int unit, int restart)
 {
 	FILE *fp;
 	char tmp[100], prefix[sizeof("wanXXXXXXXXXX_")];
-	char options[sizeof("/etc/wpa_supplicantXXXXXXXXXX.conf")];
-	char pidfile[sizeof("/var/run/wpa_supplicantXXXXXXXXXX.pid")];
+	char options[sizeof("/etc/wpa_supplicant-wanXXXXXXXXXX.conf")];
+	char control[sizeof("/var/run/wpa_supplicant-wanXXXXXXXXXX")];
+	char pidfile[sizeof("/var/run/wpa_supplicant-wanXXXXXXXXXX.pid")];
 	char *wpa_argv[] = {"/usr/sbin/wpa_supplicant",
 		"-B", "-W",
 		"-i", NULL,	/* interface */
@@ -32,13 +33,16 @@ start_wpa_supplicant(int unit, int restart)
 	char *cli_argv[] = {"/usr/sbin/wpa_cli",
 		"-B",
 		"-i", NULL,	/* interface */
+		"-p", control,
 		"-a", "/tmp/wpa_cli",
-		NULL};
+		NULL
+	};
 	int ret;
 
 	snprintf(prefix, sizeof(prefix), "wan%d_", unit);
-	snprintf(options, sizeof(options), "/etc/wpa_supplicant%d.conf", unit);
-	snprintf(pidfile, sizeof(pidfile), "/var/run/wpa_supplicant%d.pid", unit);
+	snprintf(options, sizeof(options), "/etc/wpa_supplicant-wan%d.conf", unit);
+	snprintf(control, sizeof(control), "/var/run/wpa_supplicant-wan%d", unit);
+	snprintf(pidfile, sizeof(pidfile), "/var/run/wpa_supplicant-wan%d.pid", unit);
 
 	if (restart && kill_pidfile_s(pidfile, 0) == 0)
 		return kill_pidfile_s(pidfile, SIGUSR2);
@@ -61,7 +65,7 @@ start_wpa_supplicant(int unit, int restart)
 		return -1;
 	}
 	fprintf(fp,
-		"ctrl_interface=/var/run/wpa_supplicant\n"
+		"ctrl_interface=%s\n"
 		"ap_scan=0\n"
 		"fast_reauth=1\n"
 		"network={\n"
@@ -70,6 +74,7 @@ start_wpa_supplicant(int unit, int restart)
 		"	password=\"%s\"\n"
 		"	eapol_flags=0\n"
 		"}\n",
+		control,
 		nvram_safe_get(strcat_r(prefix, "pppoe_username", tmp)),
 		nvram_safe_get(strcat_r(prefix, "pppoe_passwd", tmp)));
 	fclose(fp);
@@ -85,9 +90,9 @@ start_wpa_supplicant(int unit, int restart)
 static int
 stop_wpa_supplicant(int unit)
 {
-	char pidfile[sizeof("/var/run/wpa_supplicantXXXXXXXXXX.pid")];
+	char pidfile[sizeof("/var/run/wpa_supplicant-wanXXXXXXXXXX.pid")];
 
-	snprintf(pidfile, sizeof(pidfile), "/var/run/wpa_supplicant%d.pid", unit);
+	snprintf(pidfile, sizeof(pidfile), "/var/run/wpa_supplicant-wan%d.pid", unit);
 	kill_pidfile_tk(pidfile);
 
 	/* It dies automagicaly after the supplicant is gone,

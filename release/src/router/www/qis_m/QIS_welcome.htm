@@ -172,7 +172,7 @@ function detect_if_wan_plug(flag){
 					else
 						submitForm(1);
 				}	
-				else if(parent.hadPlugged("modem")){
+				else if(parent.hadModem){
 					submitForm("modem");
 				}	
 				else if(flag == null){
@@ -278,15 +278,16 @@ function submitenter(myfield,e){
 }
 
 function uploadSetting(){
-  var file_obj = document.form.file;
+	var file_obj = document.form.file;
+	var file_obj_name = file_obj.value.toUpperCase();
 	
-	if(file_obj.value == ""){
+	if(file_obj_name == ""){
 		alert("<#JS_fieldblank#>");
 		file_obj.focus();
 	}
-	else if(file_obj.value.length < 6 ||
-					file_obj.value.lastIndexOf(".CFG")  < 0 || 
-					file_obj.value.lastIndexOf(".CFG") != (file_obj.value.length)-4){		
+	else if(file_obj_name.length < 6 ||
+				file_obj_name.lastIndexOf(".CFG")  < 0 || 
+				file_obj_name.lastIndexOf(".CFG") != (file_obj_name.length)-4){
 		alert("<#Setting_upload_hint#>");
 		file_obj.focus();
 	}
@@ -458,42 +459,5 @@ function uploadSetting(){
 		<div id="producticon_desktop"><img id="ModelPid_img_desktop"></div>
 	</div>
 </div>		
-	<!--table  border=0 align="center" cellpadding="2" cellspacing="0">
-
-		<tr>
-			<td>
-				<table style="margin-left:20px;" width="98%" border=0 align="center" cellpadding="5" cellspacing="0">
-					<tr>
-						<td colspan="3" align="left">
-							<input class="button_gen" type="button" value="<#Manual_Setting_btn#>" onclick="submitForm(0);" style="margin-left:30px;">
-						</td>
-					</tr>
-				</table>
-			</td>	
-		</tr>	
-		<tr>
-			<td>
-				<div id="AreaHint" style="margin-top:25px;">
-					<div><img style="width: 720px; *width: 710px; height: 2px;" src="/images/New_ui/export/line_export.png"></div>
-					<div id="main_manual" style="padding-left:20px;margin-top:10px">
-						<span><#QKset_skip_setup#> </span>
-						<span><#QKset_setup_manual_1#> <#OP_AP_item#></span>
-						<span id="repeater_title" style="display:none">/ <#OP_RE_item#></span>
-						<span id="mediaBridge_title" style="display:none">/ Media Bridge</span>
-						<span id="wisp_title" style="display:none">/ WISP</span>
-						<span>. </span>
-						<span><#QKset_restore_0#></span>
-					</div>	
-					<div id="lte_manual" style="padding-left:20px;margin-top:10px;display:none">
-						<span><#QKset_setup_manual_0#> </span>
-						<span><#QKset_restore_1#></span>
-					</div>
-					<div style="height:30px;display:none">
-						<input id="upload_setting_profile" type="file" name="file" class="input" style="color:#FFCC00;" onchange="uploadSetting();">
-					</div>
-				</div>
-			</td>
-		</tr>	
-	</table-->
 </form>
 </body> 

@@ -634,6 +634,11 @@ static bool on_accept(private_stroke_socket_t *this, stream_t *stream)
 		}
 		return FALSE;
 	}
+	if (len < offsetof(stroke_msg_t, buffer))
+	{
+		DBG1(DBG_CFG, "invalid stroke message length %d", len);
+		return FALSE;
+	}
 
 	/* read message (we need an additional byte to terminate the buffer) */
 	msg = malloc(len + 1);

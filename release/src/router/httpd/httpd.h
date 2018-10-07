@@ -32,6 +32,18 @@
 #endif
 #include <rtconfig.h>
 
+/* DEBUG DEFINE */
+#define HTTPD_DEBUG             "/tmp/HTTPD_DEBUG"
+
+/* DEBUG FUNCTION */
+
+#define HTTPD_DBG(fmt,args...) \
+        if(f_exists(HTTPD_DEBUG) > 0) { \
+                char info[1024]; \
+                snprintf(info, sizeof(info), "echo \"[HTTPD][%s:(%d)]"fmt"\" >> /tmp/HTTPD_DEBUG.log", __FUNCTION__, __LINE__, ##args); \
+                system(info); \
+        }
+
 /* Basic authorization userid and passwd limit */
 #define AUTH_MAX 64
 
@@ -68,6 +80,53 @@ struct AiMesh_whitelist {
 	char *mime_type;
 };
 extern struct AiMesh_whitelist AiMesh_whitelists[];
+#endif
+
+struct stb_port {
+        char *value;
+        char *name;
+};
+
+struct model_stb_port {
+        int model;
+        char *odmpid;
+        struct stb_port port_list[8];
+};
+
+struct iptv_profile {
+        char *profile_name;
+
+        /* for layout*/
+        char *iptv_port;
+        char *voip_port;
+        char *bridge_port;
+        char *iptv_config;
+        char *voip_config;
+
+        /* vlan settings */
+        char *switch_wantag;
+        char *switch_stb_x;
+        char *switch_wan0tagid;
+        char *switch_wan0prio;
+        char *switch_wan1tagid;
+        char *switch_wan1prio;
+        char *switch_wan2tagid;
+        char *switch_wan2prio;
+
+        /* special applications */
+        char *mr_enable_x;
+        char *emf_enable;
+        char *wan_vpndhcp;
+        char *quagga_enable;
+        char *mr_altnet_x;
+        char *ttl_inc_enable;
+};
+
+#ifdef RTCONFIG_ODMPID
+struct REPLACE_ODMPID_S {
+        char *org_name;
+        char *replace_name;
+};
 #endif
 
 #define MIME_EXCEPTION_NOAUTH_ALL 	1<<0
@@ -184,8 +243,8 @@ extern struct language_table language_tables[];
 //2008.10 magic}
 typedef struct kw_s     {
         int len, tlen;                                          // actually / total
-        unsigned char **idx;
-        unsigned char *buf;
+        char **idx;
+        char *buf;
 } kw_t, *pkw_t;
 
 #define INC_ITEM        128
@@ -257,7 +316,7 @@ extern int check_lang_support(char *lang);
 extern int load_dictionary (char *lang, pkw_t pkw);
 extern void release_dictionary (pkw_t pkw);
 extern char* search_desc (pkw_t pkw, char *name);
-extern int change_preferred_lang();
+extern int change_preferred_lang(int finish);
 extern int get_lang_num();
 //extern char Accept_Language[16];
 #else
@@ -385,6 +444,4 @@ extern void page_default_redirect(int fromapp_flag, char* url);
 extern int wave_app_flag;
 extern int wave_handle_app_flag(char *name, int wave_app_flag);
 #endif
-extern int auto_set_lang;
-
 #endif /* _httpd_h_ */

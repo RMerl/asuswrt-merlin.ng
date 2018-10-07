@@ -65,13 +65,9 @@
 	color:white;
 	position:relative;
 	*margin-top:-1px;
-	-webkit-border-bottom-right-radius: 3px;
-	-webkit-border-bottom-left-radius: 3px;
-	-moz-border-radius-bottomright: 3px;
-	-moz-border-radius-bottomleft: 3px;
-	border-bottom-right-radius: 3px;
-	border-bottom-left-radius: 3px;
 	behavior: url(/PIE.htc);
+	-webkit-border-radius: 0 0 3px 3px;
+	-moz-border-radius: 0 0 3px 3px;
 	border-radius: 0 0 3px 3px;
 }
 .FormTitle thead{
@@ -326,7 +322,6 @@
 .input_option_left{
 	float: right;
 	height:25px;
-	/*background-image:url(/images/New_ui/inputbg.png);   Ban by Viz, cuz my Chrome show out white color*/
 	background-color:#576D73;
 	border-top-width:1px;
 	border-bottom-width:1px;
@@ -345,8 +340,8 @@
 	line-height:23px \9;	/*IE*/
 	font-size:12px;
 	font-family: Lucida Console;
-	background-image:url(images/New_ui/inputbg.png);
-	border-width:0;
+	background: #596E74;
+	border: 1px solid #929EA1;
 	color:#FFFFFF;
 }
 .input_30_table{
@@ -357,8 +352,8 @@
 	line-height:23px \9;	/*IE*/
 	font-size:12px;
 	font-family: Lucida Console;
-	background-image:url(images/New_ui/inputbg.png);
-	border-width:0;
+	background: #596E74;
+	border: 1px solid #929EA1;
 	color:#FFFFFF;
 }
 .input_25_table{
@@ -369,8 +364,8 @@
 	line-height:23px \9;	/*IE*/
 	font-size:12px;
 	font-family: Lucida Console;
-	background-image:url(images/New_ui/inputbg.png);
-	border-width:0;
+	background: #596E74;
+	border: 1px solid #929EA1;
 	color:#FFFFFF;
 }
 .input_22_table{
@@ -381,8 +376,8 @@
 	line-height:23px \9;	/*IE*/
 	font-size:12px;
 	font-family: Lucida Console;
-	background-image:url(images/New_ui/inputbg.png);
-	border-width:0;
+	background: #596E74;
+	border: 1px solid #929EA1;
 	color:#FFFFFF;
 }
 .input_20_table{
@@ -393,8 +388,8 @@
 	line-height:23px \9;	/*IE*/
 	font-size:12px;
 	font-family: Lucida Console;
-	background-image:url(images/New_ui/inputbg.png);
-	border-width:0;
+	background: #596E74;
+	border: 1px solid #929EA1;
 	color:#FFFFFF;
 }
 .input_18_table{
@@ -405,8 +400,8 @@
 	line-height:23px \9;	/*IE*/
 	font-size:12px;
 	font-family: Lucida Console;
-	background-image:url(images/New_ui/inputbg.png);
-	border-width:0;
+	background: #596E74;
+	border: 1px solid #929EA1;
 	color:#FFFFFF;
 }
 .input_15_table{
@@ -417,8 +412,8 @@
 	line-height:23px \9;	/*IE*/
 	font-size:12px;
 	font-family: Lucida Console;
-	background-image:url(images/New_ui/inputbg.png);
-	border-width:0;
+	background: #596E74;
+	border: 1px solid #929EA1;
 	color:#FFFFFF;
 }
 .input_12_table{
@@ -429,8 +424,8 @@
 	line-height:23px \9;	/*IE*/
 	font-size:12px;
 	font-family: Lucida Console;
-	background-image:url(images/New_ui/inputbg.png);
-	border-width:0;
+	background: #596E74;
+	border: 1px solid #929EA1;
 	color:#FFFFFF;
 }
 .input_6_table{
@@ -441,8 +436,8 @@
 	line-height:23px \9;	/*IE*/
 	font-size:12px;
 	font-family: Lucida Console;
-	background-image:url(images/New_ui/inputbg.png);
-	border-width:0;
+	background: #596E74;
+	border: 1px solid #929EA1;
 	color:#FFFFFF;
 }
 .input_3_table{
@@ -453,8 +448,8 @@
 	line-height:23px \9;	/*IE*/
 	font-size:12px;
 	font-family: Lucida Console;
-	background-image:url(images/New_ui/inputbg.png);
-	border-width:0;
+	background: #596E74;
+	border: 1px solid #929EA1;
 	color:#FFFFFF;
 }
 .input_macaddr_table{
@@ -465,97 +460,78 @@
 	line-height:23px \9;	/*IE*/
 	font-size:12px;
 	font-family: Lucida Console;
-	background-image:url(images/New_ui/inputbg.png);
-	border-width:0;
+	background: #596E74;
+	border: 1px solid #929EA1;
 	color:#FFFFFF;
-}
-
-/*	Viz add	start */
-.titledownbutton{
-	text-shadow: 1px 1px 0px black;
-	font-weight: bolder;
- 	background: transparent url(images/New_ui/contentbt_normal.png) no-repeat scroll center top;
- 	border:0;
- 	color: #FFFFFF;
-	height:34px;
-	font-family:Verdana;
-	font-size:12px;
-	/*margin-right:5px;
-	margin-left:5px;*/
- 	padding:0 .70em 0 .70em;
- 	width:122px;
- 	overflow:visible;
-}
-.titledownbutton:hover		/*, .button:active*/{
-	background:url(images/New_ui/contentbt_over.png) no-repeat;
-	height:34px;
-  width:122px;
-	/*margin-right:5px;
-	margin-left:5px;*/
-  padding:0 .70em 0 .70em;
-  background-position: 7px;
-	cursor:pointer;
 }
 
 .button_gen{
 	font-weight: bolder;
 	text-shadow: 1px 1px 0px black;
-  background: transparent url(images/New_ui/contentbt_normal.png) no-repeat scroll center top;
-  _background: transparent url(images/New_ui/contentbt_normal_ie6.png) no-repeat scroll center top;
+	background: #121C1E;
+	background: -webkit-linear-gradient(#233438 0%, #0F1011 100%);
+	background: -o-linear-gradient(#233438 0%, #0F1011 100%);
+	background: linear-gradient(#233438 0%, #0F1011 100%);
+	border-radius: 8px;
   border:0;
   color: #FFFFFF;
 	height:33px;
 	font-family:Verdana;
 	font-size:12px;
   padding:0 .70em 0 .70em;
- 	width:122px;
+  	width: auto;
+ 	min-width: 122px;
   overflow:visible;
 	cursor:pointer;
 	outline: none; /* for Firefox */
  	hlbr:expression(this.onFocus=this.blur()); /* for IE */
  	white-space:normal;
+ 	word-break: break-all;
 }
 .button_gen:hover{
-	font-weight: bolder;
-	background:url(images/New_ui/contentbt_over.png) no-repeat;
-	height:33px;
- 	width:122px;
- 	padding:0 .70em 0 .70em;
- 	background-position:0px;
-	cursor:pointer;
-	outline: none; /* for Firefox */
+	background: #085F96;
+	background: -webkit-linear-gradient(#09639C 0%, #003047 100%);
+	background: -o-linear-gradient(#09639C 0%, #003047 100%);
+	background: linear-gradient(#09639C 0%, #003047 100%);
  	hlbr:expression(this.onFocus=this.blur()); /* for IE */
 }
 .button_gen_dis{
 	font-weight: bolder;
 	text-shadow: 1px 1px 0px black;
-  background: transparent url(images/New_ui/contentbt_normal.png) no-repeat scroll center top;
-  _background: transparent url(images/New_ui/contentbt_normal_ie6.png) no-repeat scroll center top;
+	background: #121C1E;
+	background: -webkit-linear-gradient(#233438 0%, #0F1011 100%);
+	background: -o-linear-gradient(#233438 0%, #0F1011 100%);
+	background: linear-gradient(#233438 0%, #0F1011 100%);
+	border-radius: 8px;
   border:0;
   color: #333333;
 	height:33px;
 	font-family:Verdana,Bold;
 	font-size:12px;
   padding:0 .70em 0 .70em;
- 	width:122px;
+    width: auto;
+ 	min-width:122px;
   overflow:visible;
 	/*cursor:pointer;*/
 	outline: none; /* for Firefox */
  	hlbr:expression(this.onFocus=this.blur()); /* for IE */
+ 	white-space:normal;
+ 	word-break: break-all;
 }
 .button_gen_dis:hover{
-	background:url(images/New_ui/contentbt_over.png) no-repeat;
-	height:33px;
- 	width:122px;
- 	padding:0 .70em 0 .70em;
- 	background-position:0px;
-	/*cursor:pointer;*/
-	outline: none; /* for Firefox */
+	background: #085F96;
+	background: -webkit-linear-gradient(#09639C 0%, #003047 100%);
+	background: -o-linear-gradient(#09639C 0%, #003047 100%);
+	background: linear-gradient(#09639C 0%, #003047 100%);
  	hlbr:expression(this.onFocus=this.blur()); /* for IE */
 }
 .button_gen_touch{
   color: #FFFFFF;
-	background:url(images/New_ui/contentbt_over.png) no-repeat;
+	background: #085F96;
+	background: -webkit-linear-gradient(#09639C 0%, #003047 100%);
+	background: -o-linear-gradient(#09639C 0%, #003047 100%);
+	background: linear-gradient(#09639C 0%, #003047 100%);
+	border-radius: 8px;
 	height:33px;
  	width:122px;
  	padding:0 .70em 0 .70em;
@@ -564,122 +540,6 @@
 	outline: none; /* for Firefox */
  	hlbr:expression(this.onFocus=this.blur()); /* for IE */
 }
-.button_gen_long{
-	font-weight: bolder;
-	text-shadow: 1px 1px 0px black;
-  background: transparent url(images/New_ui/logout_bt.png) no-repeat scroll center top;
-  border:0;
-  color: #FFFFFF;
-	height:34px;
-	font-family:Verdana;
-	font-size:12px;
- 	width:155px;
-  overflow:visible;
-	cursor:pointer;
-	outline: none; /* for Firefox */
- 	hlbr:expression(this.onFocus=this.blur()); /* for IE */
- 	white-space:normal;
-}
-.button_gen_long:hover	/*, .button:active*/{
-  background: transparent url(images/New_ui/logout_btover.png) no-repeat scroll center top;
-  border:0;
-  color: #FFFFFF;
-	height:34px;
-	font-family:Verdana;
-	font-size:12px;
- 	width:155px;
-  overflow:visible;
-	cursor:pointer;
-	outline: none; /* for Firefox */
- 	hlbr:expression(this.onFocus=this.blur()); /* for IE */
- 	white-space:normal;
-}
-.button_gen_long_dis{
-	font-weight: bolder;
-	text-shadow: 1px 1px 0px black;
-  background: transparent url(images/New_ui/logout_bt.png) no-repeat scroll center top;
-  border:0;
-  color: #333333;
-	height:34px;
-	font-family:Verdana;
-	font-size:12px;
- 	width:155px;
-  overflow:visible;
-	/*cursor:pointer;*/
-	outline: none; /* for Firefox */
- 	hlbr:expression(this.onFocus=this.blur()); /* for IE */
- 	white-space:normal;
-}
-.button_gen_long_dis:hover	/*, .button:active*/{
-  background: transparent url(images/New_ui/logout_btover.png) no-repeat scroll center top;
-  border:0;
-  color: #333333;
-	height:34px;
-	font-family:Verdana;
-	font-size:12px;
- 	width:155px;
-  overflow:visible;
-	/*cursor:pointer;*/
-	outline: none; /* for Firefox */
- 	hlbr:expression(this.onFocus=this.blur()); /* for IE */
- 	white-space:normal;
-}
-.button_gen_long_touch{
-  color: #FFFFFF;
-	background:url(images/New_ui/contentbt_over.png) no-repeat;
-	height:33px;
- 	width:155px;
- 	padding:0 .70em 0 .70em;
- 	background-position:0px;
-	cursor:pointer;
-}
-
-.button_gen_short{
-	font-weight: bolder;
-	text-shadow: 1px 1px 0px black;
-  background: transparent url(images/New_ui/flowbt_normal.png) no-repeat scroll center top;
-  border:0;
-  color: #FFFFFF;
-	height:33px;
-	font-family:Verdana;
-	font-size:12px;
-  padding:0 .70em 0 .70em;
- 	width:91px;
-  overflow:visible;
-	cursor:pointer;
-	outline: none; /* for Firefox */
- 	hlbr:expression(this.onFocus=this.blur()); /* for IE */
-}
-.button_gen_short:hover{
-	font-weight: bolder;
-	background:url(images/New_ui/flowbt_over.png) no-repeat;
-	height:33px;
- 	width:91px;
- 	padding:0 .70em 0 .70em;
- 	background-position:0px;
-	cursor:pointer;
-	outline: none; /* for Firefox */
- 	hlbr:expression(this.onFocus=this.blur()); /* for IE */
-}
-
-.sbtn{  /*Lock 1206 modified*/
-	border: 1px outset #333;
-	background:url(images/sbtn0.gif) #FFCC66;
-	height:20px;
-	font-family:Verdana;
-	font-size:12px;
-	margin-right:5px;
-	margin-left:5px;
-  padding:0 .70em 0 .70em;
-  width:auto;
-  overflow:visible;
-	cursor:pointer;
-}
-.sbtn:hover{
-	background:url(images/sbtn.gif) #FFCC66;
-	color:#FFFFFF;
-}
-
 form{
 	margin:0px;
 }
@@ -920,7 +780,6 @@ form{
 	font-family:Arial, Helvetica, sans-serif;
 	border: 2px inset #F4F4F4;
 	background-color:#4D595D;
-	/*background-image:url(/images/New_ui/inputbg.png);*/
 	width:130px;
 	display: inline-block;
 }
@@ -1056,42 +915,38 @@ p{margin-top:   0;margin-bottom:   0}
 
 /*  Move to index_style.css By Viz , aidisk still use this*/
 .titlebtn {
-      background: transparent url(images/New_ui/btn.png) no-repeat scroll right top;
-      color: White;
-      display: block;
-      float: left;
-      height: 34px;
-      padding-right: 10px;
-      margin-right: 10px;
-      text-decoration: none;
-      text-align:center;
-      width: auto;
+	background: #121C1E;
+	background: -webkit-linear-gradient(#233438 0%, #0F1011 100%);
+	background: -o-linear-gradient(#233438 0%, #0F1011 100%);
+	background: linear-gradient(#233438 0%, #0F1011 100%);
+	border-radius: 8px;
+	color: #fff;
+	display: block;
+	float: left;
+	height: 34px;
+	padding-right: 10px;
+	margin-right: 10px;
+	text-decoration: none;
+	text-align:center;
+	width: auto;
       /**width: expression(document.body.clientWidth < 136? "136px" : "auto");*/
-			min-width:136px;
-			white-space:nowrap;
-			cursor: pointer;
-    }
+	min-width:136px;
+	white-space:nowrap;
+	cursor: pointer;
+}
 .titlebtn span {
-      background: transparent url(images/New_ui/btnspan.png) no-repeat;
-      display: block;
-      padding: 5px 1px 5px 11px;
-      height: 24px;
-      line-height: 22px;
-			font-weight: bold;
-    }
+	display: block;
+	padding: 5px 1px 5px 11px;
+	height: 24px;
+	line-height: 22px;
+	font-weight: bold;
+}
 .titlebtn:hover {
-      background-position: right -34px;
-    }
-.titlebtn:hover span {
-      background-position: left -34px;
-    }
-.titlebtn:active {
-      background-position: right -68px;
-	  outline: none;
-    }
-.titlebtn:active span {
-      background-position: left -68px;
-	}
+	background: #085F96;
+	background: -webkit-linear-gradient(#09639C 0%, #003047 100%);
+	background: -o-linear-gradient(#09639C 0%, #003047 100%);
+	background: linear-gradient(#09639C 0%, #003047 100%);
+ }
 
 .titledropdownbtn {
 	background-image:url(images/New_ui/dropdown_bt.png);
@@ -1125,12 +980,10 @@ color:#FFFFFF;
 	margin-left:2px;
 	color:#FFFFFF;
 	font-size:12px;
-	/*text-decoration:underline;*/
 }
 .tab_NW {
 	font-weight: bolder;
-	background: transparent url(images/New_ui/taba.png) no-repeat scroll right top;
-	color: White;
+	color: #FFF;
 	display: block;
 	float: left;
 	height: 28px;
@@ -1139,29 +992,31 @@ color:#FFFFFF;
 	text-decoration: none;
 	text-align:center;
 	max-width:240px;
+	background: #333E42;
+	border-radius: 5px 5px 0 0;
 }
 .tab_NW span {
 	cursor:pointer;
 	font-weight: bolder;
 	white-space:nowrap;
 	font-weight: bolder;
-	background: transparent url(images/New_ui/tabspan.png) no-repeat;
 	display: block;
-	padding: 5px 4px 5px 12px;
+	padding: 5px 5px 0 12px;
 	line-height: 20px;
 	font-family: Arial, Helvetica, sans-serif;
 	font-size: 13px;
+	background: #333E42;
+	border-radius: 5px 5px 0 0;
 }
 .tab_NW:hover{
-	background-position:right -28px;
+	background: #4F5B5F;
 }
 .tab_NW:hover span{
-	background-position:left -28px;
+	background: #4F5B5F;
 }
 
 .tabclick_NW {
 	font-weight: bolder;
-	background: transparent url(images/New_ui/tabclicka.png) no-repeat scroll right top;
 	font-family: Verdana;
     color: White;
     display: block;
@@ -1172,18 +1027,21 @@ color:#FFFFFF;
     text-align:center;
     text-decoration: none;
 	max-width:240px;
+	background: #4F5B5F;
+	border-radius: 5px 5px 0 0;
 }
 .tabclick_NW span {
 	cursor:pointer;
 	font-weight: bolder;
 	white-space:nowrap;
 	font-weight: bolder;
-	background: transparent url(images/New_ui/tabclickspan.png) no-repeat;
 	font-family: Arial, Helvetica, sans-serif;
     display: block;
-    padding: 5px 4px 5px 12px;
+    padding: 5px 5px 0 12px;
     line-height: 20px;
 	font-size: 13px;
+	background: #4F5B5F;
+	border-radius: 5px 5px 0 0;
 }
 
 .tab_table {
@@ -1229,46 +1087,6 @@ color:#FFFFFF;
 	vertical-align: middle;
 	display: table-cell;
 	padding: 3px;
-}
-
-.flowfont{
-font:Arial, Helvetica, sans-serif;
-color:#FFFFFF;
-font-size:12px;
-}
-
-
-.flowfontbt{
-font:Arial, Helvetica, sans-serif;
-background-image:url(images/New_ui/flowbt_normal.png);
-color:#FFFFFF;
-font-size:12px;
-}
-.flowfontbt:link{
-font:Arial, Helvetica, sans-serif;
-background-image:url(images/New_ui/flowbt_normal.png);
-color:#FFFFFF;
-font-size:12px;
-}
-.flowfontbt:hover{
-background-image:url(images/New_ui/flowbt_over.png);
-}
-
-.fromdropdownbt{
-font:Arial, Helvetica, sans-serif;
-background-image:url(images/New_ui/networkmap/formdropdown.png);
-color:#FFFFFF;
-font-size:12px;
-}
-.fromdropdownbt:link{
-font:Arial, Helvetica, sans-serif;
-background-image:url(images/New_ui/networkmap/formdropdown.png);
-color:#FFFFFF;
-font-size:12px;
-}
-.fromdropdownbt:hover{
-background-image:url(images/New_ui/networkmap/formdropdown_over.png);
-
 }
 
 .formfont{
@@ -1320,33 +1138,6 @@ padding-top:1px;
 	text-decoration:underline;
 }
 
-.input_2{
-	height:23px;
-	width:104px;
-	background-image:url(images/New_ui/inputbg_2.png);
-	border:0px;
-}
-
-.contentbt{
-	font-weight: bolder;
-	text-shadow: 1px 1px 0px black;
-	font:Arial, Helvetica, sans-serif;
-	background-image:url(images/New_ui/contentbt_normal.png);
-	color:#FFFFFF;
-	font-size:12px;
-}
-.contentbt:link{
-	font-weight: bolder;
-	text-shadow: 1px 1px 0px black;
-	font:Arial, Helvetica, sans-serif;
-	background-image:url(images/New_ui/contentbt_normal.png);
-	color:#FFFFFF;
-	font-size:12px;
-}
-.contentbt:hover{
-	background-image:url(images/New_ui/contentbt_over.png);
-	cursor: pointer;
-}
 .coolerstatuson{
 	background-image:url(images/New_ui/coolerstatus.png);
 	background-repeat:no-repeat;
@@ -1775,12 +1566,9 @@ padding-top:1px;
 	border-radius: 5px;
 }
 #overDiv_table5{
-	-webkit-border-bottom-right-radius: 5px;
-	-webkit-border-bottom-left-radius: 5px;
-	-moz-border-radius-bottomright: 5px;
-	-moz-border-radius-bottomleft: 5px;
-	border-bottom-right-radius: 5px;
-	border-bottom-left-radius: 5px;
+	-webkit-border-radius: 0 0 5px 5px;
+	-moz-border-radius: 0 0 5px 5px;
+	border-radius: 0 0 5px 5px;
 }
 
 .aidisk1_table{
@@ -2144,11 +1932,9 @@ padding-top:1px;
 	line-height:25px;
 }
 .single_wan_connected{
-	background-image:url(images/New_ui/networkmap/line_dualwan.png);
-	background-repeat:no-repeat;
-	background-position:0px -5px;
+	background: #32393B;
 	height:35px;
-	width:20px;
+	width:4px;
 }
 .single_wan_disconnected{
 	background-image:url(images/New_ui/networkmap/line_dualwan_disconnected.png);
@@ -2165,12 +1951,10 @@ padding-top:1px;
 	width:20px;
 }
 .primary_wan_connected{
-	background-image:url(images/New_ui/networkmap/line_dualwan.png);
-	background-repeat:no-repeat;
-	background-position:0px -5px;
+	background: #32393B;
 	margin-left:68px;
 	height:35px;
-	width:20px;
+	width:4px;
 }
 .primary_wan_disconnected{
 	background-image:url(images/New_ui/networkmap/line_dualwan_disconnected.png);
@@ -2197,13 +1981,11 @@ padding-top:1px;
 	width:20px;
 }
 .secondary_wan_connected{
-	background-image:url(images/New_ui/networkmap/line_dualwan.png);
-	background-repeat:no-repeat;
-	background-position:0px -5px;
+	background: #32393B;
 	margin-left:105px;
 	*margin-left:103px;
 	height:35px;
-	width:20px;
+	width:4px;
 }
 .secondary_wan_disconnected{
 	background-image:url(images/New_ui/networkmap/line_dualwan_disconnected.png);
@@ -2303,11 +2085,11 @@ padding-top:1px;
 	background: #475A5F;
 }
 .eula_panel_container{
+	margin-left: 25%;
 	display: none;
 	position: absolute;
-	width: 500px;
-	height: 457px;
-	z-index: 2000;
+	width: 50%;
+	z-index: 10000;
 	border: 3px solid #4D5C63;
 	border-radius: 4px;
 }
@@ -2315,4 +2097,40 @@ padding-top:1px;
 #bottom_border{
 	border-bottom:5px #2A3539 solid;
 	padding:5px 10px 5px 10px;
+}
+.line_vertical{
+	width: 3px;
+	height: 102px;
+	background: #354248;
+}
+#oauth_google_btn{
+	background: transparent url(images/New_ui/btn_google_signin_dark_normal_web.png) no-repeat scroll center top;
+	position: relative;
+	top: 10px;
+	width: 133px;
+	height: 26px;
+}
+.quotabar{
+	background: #8DB6D8;
+	background: -webkit-linear-gradient(#8DB6D8 0%, #7FACD3 49%, #6C9AC7 50%, #6998C5 51%, #6998C5 100%);
+	background: -o-linear-gradient(#8DB6D8 0%, #7FACD3 49%, #6C9AC7 50%, #6998C5 51%, #6998C5 100%);
+	background: linear-gradient(#8DB6D8 0%, #7FACD3 49%, #6C9AC7 50%, #6998C5 51%, #6998C5 100%);
+}
+.line_horizontal{
+	width: 270px;
+	height: 2px;
+	margin: 0 auto;
+	background: #32393B;
+	background: -webkit-linear-gradient(#32393B 0%, #32393B 20%, #667881 80%, #667881 100%);
+	background: -o-linear-gradient(#32393B 0%, #32393B 20%, #667881 80%, #667881 100%);
+	background: linear-gradient(#32393B 0%, #32393B 20%, #667881 80%,#667881 100%);
+}
+.splitLine{
+	background: #32393B;
+	background: -webkit-linear-gradient(#32393B 0%, #32393B 20%, #667881 80%, #667881 100%);
+	background: -o-linear-gradient(#32393B 0%, #32393B 20%, #667881 80%, #667881 100%);
+	background: linear-gradient(#32393B 0%, #32393B 20%, #667881 80%,#667881 100%);
+	height: 2px;
+	width: 740px;
+	margin: 1px 0;
 }

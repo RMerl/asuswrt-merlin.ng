@@ -113,29 +113,6 @@
 #proceeding_img_text1{
 	position:absolute; z-index:101; font-size:11px; color:#000000; margin-left:175px; line-height:15px;
 }
-#proceeding_img1{
- 	height:14px;
-	background:#011846 url(/images/quotabar.gif);
-}
-
-.button_gen_dis{
-	font-weight: bolder;
-	text-shadow: 1px 1px 0px black;
-  background: transparent url(/images/New_ui/contentbt_normal.png) no-repeat scroll center top;
-  _background: transparent url(/images/New_ui/contentbt_normal_ie6.png) no-repeat scroll center top;
-  border:0;
-  color: #333333;
-	height:33px;
-	font-family:Verdana,Bold;
-	font-size:12px;
-  padding:0 .70em 0 .70em;  
- 	width:122px;
-  overflow:visible;  
-	/*cursor:pointer;*/
-	outline: none; /* for Firefox */
- 	hlbr:expression(this.onFocus=this.blur()); /* for IE */
-}
-
 </style>
 <script language="JavaScript" type="text/javascript" src="/js/jquery.js"></script>
 <script>
@@ -498,7 +475,7 @@ function networkmap_update(){
 													<div id="connHint" style="margin:8px auto; width:85%;"><span style="font-weight:bolder;" id="stassid">Web Assistant is now searching for ASUS networking devices, please wait... </span></div>
 													<div class="Bar_container1">
 														<span id="proceeding_img_text1" style="display:none;"></span>
-														<div id="proceeding_img1"></div>
+														<div id="proceeding_img1" class="quotabar" style="height:14px;"></div>
 													</div>
 												</td>
 											</tr>

@@ -1688,7 +1688,7 @@ int asus_ate_command(const char *command, const char *value, const char *value2)
 			puts("ATE_ERROR_INCORRECT_PARAMETER");
 			return EINVAL;
 		}
-		getPSK();
+		puts(value);
 		return 0;
 	}
 	else if (!strcmp(command, "Get_PSK")) {
@@ -1731,6 +1731,7 @@ int asus_ate_command(const char *command, const char *value, const char *value2)
 	}
 #endif
 #ifdef RTCONFIG_DEFAULT_AP_MODE
+#if defined(RTCONFIG_QCA) || defined(RTCONFIG_ALPINE) || defined(RTCONFIG_LANTIQ)
 	else if (!strcmp(command, "Set_ForceDisableDHCP")) {
 		FWrite("1", OFFSET_FORCE_DISABLE_DHCP, 1);
 		puts("1");
@@ -1747,6 +1748,7 @@ int asus_ate_command(const char *command, const char *value, const char *value2)
 		}
 		return 0;
 	}
+#endif
 #endif
 #ifdef RTCONFIG_AMAS
 	else if (!strcmp(command, "Set_AB")) {
@@ -2015,6 +2017,19 @@ int asus_ate_command(const char *command, const char *value, const char *value2)
 	else if (!strcmp(command, "Get_IpAddr_Lan")) {
 		get_IpAddr_Lan();
 	}
+	else if (!strcmp(command, "Get_Default")) {
+		char *p = NULL;
+
+		if (value == NULL)
+			return 0;
+
+		if (!(p = nvram_default_get(value)))
+			puts("NULL");
+		else
+			puts(p);
+
+		return 0;
+	}
 	else
 	{
 		puts("ATE_UNSUPPORT");
@@ -2059,8 +2074,10 @@ int ate_dev_status(void)
 
 		if(wl_band == 1)
 			len = snprintf(p, remain, ",2G=%c", result);
-		else
+		else if(wl_band == 2)
 			len = snprintf(p, remain, ",5G=%c", result);
+		else
+			len = snprintf(p, remain, ",5G2=%c", result);
 
 		p += len;
 		remain -= len;

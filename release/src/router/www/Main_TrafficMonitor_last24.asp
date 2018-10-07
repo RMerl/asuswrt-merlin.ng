@@ -304,7 +304,7 @@ function Zoom(func){
 						</td>
         			</tr>
         			<tr>
-          				<td height="5"><img src="images/New_ui/export/line_export.png" /></td>
+          				<td height="5"><div class="splitLine"></div></td>
         			</tr>
         			<tr>
           				<td height="30" align="left" valign="middle" >
@@ -388,7 +388,7 @@ function Zoom(func){
 		    				</thead>
 							<div id='bwm-controls'>
 								<tr>
-									<th width='50%'><#Traffic_Hours#>:&nbsp;</th>
+									<th width='50%'>:&nbsp;</th>
 									<td>
 										<a href='javascript:switchHours(4);' id='hr4'>4</a>,
 										<a href='javascript:switchHours(6);' id='hr6'>6</a>,
@@ -398,7 +398,7 @@ function Zoom(func){
 									</td>
 								</tr>
 								<tr>
-									<th><#Traffic_Avg#>:&nbsp;</th>
+									<th>:&nbsp;</th>
 									<td>
 										<a href='javascript:switchAvg(1)' id='avg1'>Off</a>,
 										<a href='javascript:switchAvg(2)' id='avg2'>2x</a>,
@@ -408,23 +408,23 @@ function Zoom(func){
 									</td>
 								</tr>
 								<tr>
-									<th><#Traffic_Max#>:&nbsp;</th>
+									<th>:&nbsp; </th>
 									<td>
 										<a href='javascript:switchScale(0)' id='scale0'>Uniform</a>,
 										<a href='javascript:switchScale(1)' id='scale1'>Per IF</a>
 									</td>
 								</tr>
 								<tr>
-									<th><#Traffic_SvgDisp#>:&nbsp;</th>
+									<th>:&nbsp; </th>
 									<td>
 										<a href='javascript:switchDraw(0)' id='draw0'>Solid</a>,
 										<a href='javascript:switchDraw(1)' id='draw1'>Line</a>
 									</td>
 								</tr>
 								<tr>
-									<th><#Traffic_Color#>:&nbsp; </th>
+									<th>:&nbsp; </th>
 									<td>
-										<a href='javascript:switchColor()' id='drawcolor'> </a><small><a href='javascript:switchColor(1)' id='drawrev'><#Traffic_Reverse#></a></small>
+										<a href='javascript:switchColor()' id='drawcolor'> </a><small><a href='javascript:switchColor(1)' id='drawrev'></a></small>
 									</td>
 								</tr>
 							</div>

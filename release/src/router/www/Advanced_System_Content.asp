@@ -472,8 +472,6 @@ function applyRule(){
 			updateDateTime();
 		}
 
-		var action_script_tmp = "";
-
 		if(hdspindown_support) {
 			var excluded = "";
 			if (document.form.usb_idle_exclude_a.checked)
@@ -500,17 +498,25 @@ function applyRule(){
 			action_script_tmp += "restart_usb_idle;";
 		}
 
-		action_script_tmp += "restart_time;";
+		showLoading();
+
+		var action_script_tmp = "restart_time;restart_upnp;";
+
 		if(restart_httpd_flag)
 			action_script_tmp += "restart_httpd;";
-		action_script_tmp += "restart_upnp;";
+
 		if(restart_firewall_flag)
 			action_script_tmp += "restart_firewall;";
+
 		if(pwrsave_support)
 			action_script_tmp += "pwrsave;";
-		document.form.action_script.value = action_script_tmp;
 
-		showLoading();
+		if(needReboot){
+			action_script_tmp = "reboot";
+			document.form.action_wait.value = httpApi.hookGet("get_default_reboot_time");
+		}
+
+		document.form.action_script.value = action_script_tmp;
 		document.form.submit();
 	}
 }
@@ -1585,7 +1591,7 @@ function warn_jffs_format(){
 		<td bgcolor="#4D595D" valign="top">
 			<div>&nbsp;</div>
 			<div class="formfonttitle"><#menu5_6#> - <#menu5_6_2#></div>
-			<div style="margin-left:5px;margin-top:10px;margin-bottom:10px"><img src="/images/New_ui/export/line_export.png"></div>
+			<div style="margin:10px 0 10px 5px;" class="splitLine"></div>
 			<div class="formfontdesc"><#System_title#></div>
 
 			<table width="100%" border="1" align="center" cellpadding="4" cellspacing="0" bordercolor="#6b8fa3"  class="FormTable">
@@ -1640,6 +1646,32 @@ function warn_jffs_format(){
 					<td>
 						<input type="radio" name="jffs2_scripts" value="1" <% nvram_match("jffs2_scripts", "1", "checked"); %>><#checkbox_Yes#>
 						<input type="radio" name="jffs2_scripts" value="0" <% nvram_match("jffs2_scripts", "0", "checked"); %>><#checkbox_No#>
+					</td>
+				</tr>
+				<tr id="reduce_usb3_tr" style="display:none">
+					<th width="40%"><a class="hintstyle" href="javascript:void(0);" onclick="openHint(3, 29)">USB Mode</a></th>
+					<td>
+						<select class="input_option" name="usb_usb3" onchange="enableUsbMode(this.value);">
+							<option value="0" <% nvram_match("usb_usb3", "0", "selected"); %>>USB 2.0</option>
+							<option value="1" <% nvram_match("usb_usb3", "1", "selected"); %>>USB 3.0</option>
+						</select>
+						<script>
+							var needReboot = false;
+
+							if( based_modelid == "DSL-AC68U" || based_modelid == "RT-AC3200" || based_modelid == "RT-AC87U" || based_modelid == "RT-AC68U" || based_modelid == "RT-AC68A" || based_modelid == "RT-AC56S" || based_modelid == "RT-AC56U" || based_modelid == "RT-AC55U" || based_modelid == "RT-AC55UHP" || based_modelid == "RT-N18U" || based_modelid == "RT-AC88U" || based_modelid == "RT-AC86U" || based_modelid == "AC2900" || based_modelid == "RT-AC3100" || based_modelid == "RT-AC5300" || based_modelid == "RP-AC68U" || based_modelid == "RT-AC58U" || based_modelid == "RT-AC82U" || based_modelid == "MAP-AC3000" || based_modelid == "RT-AC85U" || based_modelid == "RT-AC65U" || based_modelid == "4G-AC68U" || based_modelid == "BLUECAVE" || based_modelid == "RT-AC88Q" || based_modelid == "RT-AD7200" || based_modelid == "RT-N65U" || based_modelid == "GT-AC5300" || based_modelid == "RT-AX88U" || based_modelid == "RT-AX95U" || based_modelid == "BRT-AC828"
+							){
+								$("#reduce_usb3_tr").show();
+							}
+
+							function enableUsbMode(v){
+								httpApi.nvramGetAsync({
+									data: ["usb_usb3"],
+									success: function(nvram){
+										needReboot = (nvram.usb_usb3 != v);
+									}
+								})
+							}
+						</script>
 					</td>
 				</tr>
 			</table>

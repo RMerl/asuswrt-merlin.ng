@@ -9,6 +9,9 @@ const char *rt_extendno = RT_EXTENDNO;
 const char *rt_buildname = RT_BUILD_NAME;
 const char *rt_buildinfo = RT_BUILD_INFO;
 const char *rt_swpjverno = RT_SWPJVERNO;
+#ifdef RTCONFIG_NVRAM_ENCRYPT
+const char *enc_sp_extendno = ENC_SP_EXTENDNO;
+#endif
 
 void set_basic_fw_name(void){
 	nvram_set("buildno", rt_serialno);
@@ -19,5 +22,8 @@ void set_basic_fw_name(void){
 	nvram_set("extendno", rt_extendno);
 	nvram_set("buildinfo", rt_buildinfo);
 	nvram_set("swpjverno", rt_swpjverno);
+#ifdef RTCONFIG_NVRAM_ENCRYPT
+	nvram_set("enc_sp_extendno", enc_sp_extendno);
+#endif
 }
 

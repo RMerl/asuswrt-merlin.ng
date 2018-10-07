@@ -123,7 +123,7 @@ var realip_state = "";
 var StatusList = {
 	"NoInetrnet": "Internet is disconnected. Please check your WAN connection for remote control",
 	"SvrFail": "Server connection failed",
-	"StepAccount": "Please follow steps to pair your account",
+	"StepAccount": "<#Alexa_Status_Account#>",
 	"EnableRemoteCtrl": "<#Alexa_Register1#>",
 	"Success": "IFTTT account is registered"
 }
@@ -249,6 +249,7 @@ function detcet_aae_state(){
 }
 
 function get_activation_code(){
+	close_alert('alert_pin');
 	ASUS_EULA.config(get_activation_code, function(){});
 	if(ASUS_EULA.check("asus")){
 		detcet_aae_state();
@@ -424,18 +425,17 @@ function show_account_state(){
 									<div>&nbsp;</div>
 									<div id="formfonttitle" class="formfonttitle">Alexa & IFTTT - IFTTT</div>
 									<div id="divSwitchMenu" style="margin-top:-40px;float:right;"><div style="width:110px;height:30px;float:left;border-top-left-radius:8px;border-bottom-left-radius:8px;" class="block_filter"><a href="Advanced_Smart_Home_Alexa.asp"><div class="block_filter_name">Amazon Alexa</div></a></div><div style="width:110px;height:30px;float:left;border-top-right-radius:8px;border-bottom-right-radius:8px;" class="block_filter_pressed"><div class="tab_font_color" style="text-align:center;padding-top:5px;font-size:14px">IFTTT</div></div></div>
-									<div style="margin-left:5px;margin-top:10px;margin-bottom:10px"><img src="/images/New_ui/export/line_export.png"></div>
-
+									<div style="margin:10px 0 10px 5px;" class="splitLine"></div>
 									<div class="div_table">
 											<div class="div_tr">
 												<div class="div_td div_desc" style="width:55%">
 													<div style="font-weight:bolder;font-size:16px;padding:25px 40px"><#IFTTT_Desc#></div>
 													<div style="padding:0px 40px;font-family:Arial, Helvetica, sans-serif;font-size:13px;">
 														<span><#IFTTT_Example0#></span>
-														<p style="font-size:13px;padding-top: 20px;padding-left: 20px;font-style:italic;">“If closes to dinner time or bedtime, then turn off wifi”</p>
-														<p style="font-size:13px;padding-left: 20px;font-style:italic;">“If my daughter comes home, then send me and email, text, or phone call”</p>
-														<p style="font-size:13px;padding-left: 20px;font-style:italic;">“If my wife comes home, then play my favorite song”</p>
-														<p style="font-size:13px;padding-left: 20px;font-style:italic;">“If I am playing a game, then boost the game speed”</p>
+														<p style="font-size:13px;padding-top: 20px;padding-left: 20px;font-style:italic;">“<#IFTTT_Example1#>”</p>
+														<p style="font-size:13px;padding-left: 20px;font-style:italic;">“<#IFTTT_Example2#>”</p>
+														<p style="font-size:13px;padding-left: 20px;font-style:italic;">“<#IFTTT_Example3#>”</p>
+														<p style="font-size:13px;padding-left: 20px;font-style:italic;">“<#IFTTT_Example4#>”</p>
 														<a style="font-size:13px;padding-top: 2px;padding-left: 20px;font-style:italic;text-decoration: underline;cursor:pointer;" href="https://ifttt.com/asusrouter" target="_blank"><#IFTTT_more_applets#></a>
 													</div>
 													<div style="text-align:center;padding-top:60px;font-family:Arial, Helvetica, sans-serif;font-style:italic;font-weight:lighter;font-size:18px;"><#IFTTT_start0#></div>
@@ -477,7 +477,7 @@ function show_account_state(){
 																		<div class="step_3"></div>
 																	</div>
 																	<div class="div_td" style="font-size:16px;padding:5px 0px 0px 10px;">
-																		<div><span style="color:#FFCC00;text-decoration:underline;cursor:pointer;" onclick="get_activation_code();">Get Activation Code</span> ,Paste activation code to link IFTTT account and your ASUS Router</div>
+																		<div><span style="color:#FFCC00;text-decoration:underline;cursor:pointer;" onclick="get_activation_code();"><#Get_Activation_Code#></span> ,<#Link_IFTTT_and_Router#></div>
 																	</div>
 																</div>
 																<div style="font-weight:bolder;font-size:20px;color:#c0c0c0;padding-top:57px;padding-left:15px;"><#IFTTT_and#></div>

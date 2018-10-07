@@ -21,6 +21,7 @@
 <script type="text/javascript" src="/client_function.js"></script>
 <script type="text/javascript" src="/switcherplugin/jquery.iphone-switch.js"></script>
 <script type="text/javascript" src="/js/httpApi.js"></script>
+<script language="JavaScript" type="text/javascript" src="/js/asus_eula.js"></script>
 <style>
 .transition_style{
 	-webkit-transition: all 0.2s ease-in-out;
@@ -30,11 +31,6 @@
 }
 </style>
 <script>
-window.onresize = function() {
-	if(document.getElementById("agreement_panel").style.display == "block") {
-		cal_panel_block("agreement_panel", 0.25);
-	}
-}
 function initial(){
 	show_menu();
 	if(document.form.bwdpi_wh_enable.value == 1){
@@ -256,23 +252,14 @@ function change_page(flag, target){
 function eula_confirm(){
 	document.form.TM_EULA.value = 1;
 	document.form.bwdpi_wh_enable.value = 1;
-	if(reset_wan_to_fo(document.form, document.form.bwdpi_wh_enable.value)) {
-		document.form.action_wait.value = "15";
-		document.form.submit();
-	}
-	else {
-		cancel();
-	}
+	document.form.action_wait.value = "15";
+	document.form.submit();
 }
 
 function cancel(){
 	curState = 0;
 	document.form.bwdpi_wh_enable.value = 1;
 	$('#iphone_switch').animate({backgroundPosition: -37}, "slow", function() {});
-	$("#agreement_panel").fadeOut(100);
-	document.getElementById("hiddenMask").style.visibility = "hidden";
-	htmlbodyforIE = parent.document.getElementsByTagName("html");  //this both for IE&FF, use "html" but not "body" because <!DOCTYPE html PUBLIC.......>
-	htmlbodyforIE[0].style.overflow = "scroll";	  //hidden the Y-scrollbar for preventing from user scroll it.
 }
 function cal_panel_block(obj){
 	var blockmarginLeft;
@@ -309,7 +296,6 @@ function updateWebHistory() {
 <body onload="initial();" onunload="unload_body();">
 <div id="TopBanner"></div>
 <div id="Loading" class="popup_bg"></div>
-<div id="agreement_panel" class="eula_panel_container"></div>
 <div id="hiddenMask" class="popup_bg" style="z-index:999;">
 	<table cellpadding="5" cellspacing="0" id="dr_sweet_advise" class="dr_sweet_advise" align="center"></table>
 	<!--[if lte IE 6.5]><iframe class="hackiframe"></iframe><![endif]-->
@@ -344,7 +330,7 @@ function updateWebHistory() {
 								<td bgcolor="#4D595D" colspan="3" valign="top">
 									<div>&nbsp;</div>
 									<div id="content_title" class="formfonttitle"><#menu5_3_2#> - <#Adaptive_History#></div>
-									<div style="margin-left:5px;margin-top:10px;margin-bottom:10px"><img src="/images/New_ui/export/line_export.png"></div>
+									<div style="margin:10px 0 10px 5px;" class="splitLine"></div>
 									<div class="formfontdesc">
 										<#Adaptive_History_desc#>
 									</div>
@@ -356,48 +342,18 @@ function updateWebHistory() {
 															<script type="text/javascript">
 																$('#bwdpi_wh_enable').iphoneSwitch('<% nvram_get("bwdpi_wh_enable"); %>',
 																	function(){
-																		if(document.form.TM_EULA.value == 0){
-																			var adjust_TM_eula_height = function(_objID) {
-																				var scrollTop = window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop || 0;
-																				document.getElementById(_objID).style.top = (scrollTop + 10) + "px";
-																				var visiable_height = document.documentElement.clientHeight;
-																				var tm_eula_container_height = parseInt(document.getElementById(_objID).offsetHeight);
-																				var tm_eula_visiable_height = visiable_height - tm_eula_container_height;
-																				if(tm_eula_visiable_height < 0) {
-																					var tm_eula_content_height = parseInt(document.getElementById("tm_eula_content").style.height);
-																					document.getElementById("tm_eula_content").style.height = (tm_eula_content_height - Math.abs(tm_eula_visiable_height) - 20) + "px"; //content height - overflow height - margin top and margin bottom
-																				}
-																			};
+																		if(reset_wan_to_fo(document.form, document.form.bwdpi_wh_enable.value)) {
+																			ASUS_EULA.config(eula_confirm, cancel);
 
-																			$.get("tm_eula.htm", function(data){
-																				document.getElementById('agreement_panel').innerHTML= data;
-																				var url = "https://www.asus.com/Microsite/networks/Trend_Micro_EULA/";
-																				$("#eula_url").attr("href",url);
-																				url = "https://www.trendmicro.com/en_us/about/legal/privacy-policy-product.html"
-																				$("#tm_eula_url").attr("href",url);
-																				url = "https://success.trendmicro.com/data-collection-disclosure";
-																				$("#tm_disclosure_url").attr("href",url);
-																				adjust_TM_eula_height("agreement_panel");
-																			});
+																			if(ASUS_EULA.check("tm")){
+																				var t = new Date();
+																				var timestamp = t.getTime().toString().substring(0,10);
 
-																			dr_advise();
-																			cal_panel_block("agreement_panel", 0.25);
-																			$("#agreement_panel").fadeIn(300);
-																			return false;
-																		}
-																			var t = new Date();
-																			var timestamp = t.getTime().toString().substring(0,10);
-
-																			document.form.bwdpi_wh_stamp.value = timestamp;
-																			document.form.bwdpi_wh_enable.value = 1;
-																			if(reset_wan_to_fo(document.form, document.form.bwdpi_wh_enable.value)) {
+																				document.form.bwdpi_wh_stamp.value = timestamp;
+																				document.form.bwdpi_wh_enable.value = 1;
 																				document.form.submit();
 																			}
-																			else {
-																				curState = 0;
-																				document.form.bwdpi_wh_enable.value = 0;
-																				$('#bwdpi_wh_enable').find('.iphone_switch').animate({backgroundPosition: -37}, "slow");
-																			}
+																		}
 																	},
 																	function(){
 																		document.form.bwdpi_wh_enable.value = 0;
@@ -421,8 +377,8 @@ function updateWebHistory() {
 											<table style="width:100%" id="log_table"></table>
 										</div>
 										<div class="apply_gen">
-											<input class="button_gen_long" onClick="httpApi.cleanLog('web_history', updateWebHistory);" type="button" value="<#CTL_clear#>" >
-											<input class="button_gen_long" onClick="getWebHistory(document.form.clientList.value)" type="button" value="<#CTL_refresh#>">
+											<input class="button_gen" onClick="httpApi.cleanLog('web_history', updateWebHistory);" type="button" value="<#CTL_clear#>" >
+											<input class="button_gen" onClick="getWebHistory(document.form.clientList.value)" type="button" value="<#CTL_refresh#>">
 										</div>
 									</div>
 								</td>

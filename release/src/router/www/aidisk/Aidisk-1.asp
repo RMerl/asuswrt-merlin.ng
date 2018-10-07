@@ -127,7 +127,7 @@ function go_next_page(){
    
   <tr>
   	<td height="20">
-  		<img src="/images/New_ui/export/line_export.png" />
+  		<div style="margin:10px 0 10px 5px" class="splitLine"></div>
   	</td>
   </tr>
 

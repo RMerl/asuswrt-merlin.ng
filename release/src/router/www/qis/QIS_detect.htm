@@ -351,7 +351,7 @@ function getWANStatus(){
 				   setTimeout('redirect_page("wireless");', 1000);
 				}
 			}			
-			else if(autodet_state == 4 && parent.hadPlugged("modem")){ // ethernet did not plug
+			else if(autodet_state == 4 && parent.hadModem()){ // ethernet did not plug
 				if(based_modelid == "4G-AC53U" || based_modelid == "4G-AC55U" || based_modelid == "4G-AC68U"){
 					if(sim_state == 1){
 						if(modem_autoapn == "1"){
@@ -427,7 +427,7 @@ function getWANStatus(){
 				}
 			}	
 			else if(autodet_state == "2" && wanauxstate != "1"){
-				if(parent.hadPlugged("modem")){
+				if(parent.hadModem()){
 					redirect_page("modem");
 				}	
 				else{
@@ -444,8 +444,12 @@ function getWANStatus(){
 					document.getElementById("pppoe_detected").style.display = "";
 				}
 			}*/
-			else
+			else if(wanstate == 4 && wansbstate == 3 && wanauxstate == 0 && autodet_state == "3"){
+				redirect_page("QIS_resetModem");
+			}
+			else{
 				redirect_page("internet_type");
+			}
 		}
 	});
 }
@@ -559,13 +563,13 @@ function getSimAuth(){
 				<td align="left">
 					<div class="description_down"><#QKSet_detect_desc1#></div>
 				</td>
-				<td align="right">
-					<!--img onclick="parent.gotoIndex();" style="cursor:pointer;" align="right" title="Go to Home" src="/images/backtohome.png" onMouseOver="this.src='/images/backtohomeclick.png'" onMouseOut="this.src='/images/backtohome.png'"-->
-				</td>
+				<td align="right"></td>
 			</tr>
 		</table>
 	</div>
-	<div style="margin:5px;" id="splitLine"><img style="width: 720px; *width: 710px; height: 2px;" src="/images/New_ui/export/line_export.png"></div>
+	<div style="margin:5px;" id="splitLine">
+		<div style="width: 720px; *width: 710px; height: 2px;" class="splitLine"></div>
+	</div>
 
 	<div id="pppoe_detected" style="display:none">
 		<p class="QISGeneralFont" style="font-size:20px;font-weight:bolder;LINE-HEIGHT: 25px;"><#QIS_detect_desc1#></p>
@@ -573,7 +577,7 @@ function getSimAuth(){
 		<p class="QISGeneralFont" style="LINE-HEIGHT:25px;"><#QIS_detect_desc3#></p>
 		<p class="QISGeneralFont" style="LINE-HEIGHT:25px;"><#QIS_detect_desc4#></p>
 		<div class="apply_gen" style="margin-top:30px">
-			<input type="button" value="<#QIS_type_title#>" onclick="redirect_page('internet_type');" class="button_gen_long" >
+			<input type="button" value="<#QIS_type_title#>" onclick="redirect_page('internet_type');" class="button_gen" >
 			<input type="button" value="<#CTL_next#>" onclick="GoToPPPoESetting();" class="button_gen" >
 		</div>
 	</div>

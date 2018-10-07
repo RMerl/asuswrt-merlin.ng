@@ -24,7 +24,19 @@
 
 static void wps_pbc(int sig)
 {
-	start_wps_pbc(0);
+#ifdef CONFIG_BCMWL5
+	int unit = nvram_get_int("wps_band_x");
+	char tmp[100], prefix[] = "wlXXXXXXXXXX_";
+
+	snprintf(prefix, sizeof(prefix), "wl%d_", unit);
+	if (!nvram_match(strcat_r(prefix, "mode", tmp), "ap"))
+	{
+		nvram_set_int("wps_enr_hw", 1);
+		notify_rc("start_wps_enr");
+	}
+	else
+#endif
+		start_wps_pbc(0);
 }
 
 static void wpsaide_exit(int sig)

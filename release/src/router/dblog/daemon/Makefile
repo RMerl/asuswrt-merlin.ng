@@ -19,7 +19,7 @@ ifeq ($(RTCONFIG_QTN),y)
 LDFLAGS += -L$(TOP)/libqcsapi_client -lqcsapi_client
 endif
 
-OBJS = dblog.o dblog_syslog.o dblog_wifi.o dblog_dm.o dblog_ms.o dblog_amas.o respipc.o
+OBJS = dblog.o dblog_syslog.o dblog_wifi.o dblog_dm.o dblog_ms.o dblog_amas.o dblog_hyd.o respipc.o
 
 ifneq ($(wildcard ./prebuild$(BCMEX)$(EXHND)),)
 all:

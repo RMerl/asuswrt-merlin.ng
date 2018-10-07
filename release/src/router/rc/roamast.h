@@ -188,6 +188,7 @@ typedef struct rast_sta_info {
 #ifdef RTCONFIG_ADV_RAST
 typedef struct rast_maclist {
         time_t timestamp;
+	uint8 mesh_node;
         struct ether_addr addr;
         struct rast_maclist *next;
 }rast_maclist_t;
@@ -210,6 +211,7 @@ typedef struct rast_bss_info {
         rast_maclist_t *maclist[MAX_SUBIF_NUM];
         struct maclist *static_maclist[MAX_SUBIF_NUM];
         int static_macmode[MAX_SUBIF_NUM];
+	int static_cli_enable;
         rast_maclist_t *static_client;
 	char tmp_static_client_path[32];
 #endif
@@ -269,11 +271,6 @@ extern int sched_getaffinity (__pid_t __pid, size_t __cpusetsize,
 
 extern int Set_RAST_CPU(void);
 
-/* MAC list modes from src-rt/include/wlioctl.h (BCM platform's header) */
-#define WLC_MACMODE_DISABLED    0       /* MAC list disabled */
-#define WLC_MACMODE_DENY        2      /* Deny specified (i.e. allow unspecified) */
-#define WLC_MACMODE_ALLOW       1      /* Allow specified (i.e. deny unspecified) */
-
 /* For ioctls that take a list of MAC addresses from src-rt/include/wlioctl.h (BCM platform's header) */
 
 struct maclist {
@@ -303,3 +300,9 @@ extern void rast_retrieve_bs_data(int bssidx, int vifidx);
 extern void get_stainfo(int bssidx, int vifidx);
 #endif
 
+#ifndef CONFIG_BCMWL5
+/* MAC list modes from src-rt/include/wlioctl.h (BCM platform's header) */
+#define WLC_MACMODE_DISABLED    0       /* MAC list disabled */
+#define WLC_MACMODE_ALLOW       1      /* Allow specified (i.e. deny unspecified) */
+#define WLC_MACMODE_DENY        2      /* Deny specified (i.e. allow unspecified) */
+#endif

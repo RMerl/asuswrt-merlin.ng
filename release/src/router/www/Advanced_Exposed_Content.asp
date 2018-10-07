@@ -174,7 +174,7 @@ function dmz_on_off(){
 									<div class="formfonttitle">
 										<#menu5_3#> - <#menu5_3_5#>
 									</div>
-									<div style="margin-left:5px;margin-top:10px;margin-bottom:10px"><img src="/images/New_ui/export/line_export.png"></div>
+									<div style="margin:10px 0 10px 5px;" class="splitLine"></div>
 									<div class="formfontdesc">
 										<#IPConnection_ExposedIP_sectiondesc#>
 										<br/>

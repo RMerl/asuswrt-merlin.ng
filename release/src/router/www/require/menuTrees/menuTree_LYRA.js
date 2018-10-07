@@ -1,5 +1,9 @@
 ﻿/* menuTree_bwdpi_traffic_analyzer.js */
 define(function(){
+	if(based_modelid == "MAP-AC1750"){	//MODELDEP : Spec special fine tune
+		bwdpi_support = true;
+	}
+
 	var menuTree = {
 		list: [
 			/*
@@ -66,6 +70,7 @@ define(function(){
 					{url: "ParentalControl.asp", tabName: "__INHERIT__"},
 					{url: "AiProtection_AdBlock.asp", tabName: "Ad Blocking"},
 					{url: "AiProtection_Key_Guard.asp", tabName: "Key Guard"},
+					{url: "YandexDNS.asp", tabName: "<#YandexDNS#>"},
 					{url: "NULL", tabName: "__INHERIT__"}
 				] 
 			},
@@ -88,6 +93,7 @@ define(function(){
 				menuName: "<#Menu_TrafficManager#>",
 				index: "menu_QoS", 
 				tab: [
+					{url: "QoS_EZQoS.asp", tabName: "<#menu5_3_2#>"},
 					{url: "Main_TrafficMonitor_realtime.asp", tabName: "<#traffic_monitor#>"},
 					{url: "Main_TrafficMonitor_last24.asp", tabName: "__INHERIT__"},
 					{url: "Main_TrafficMonitor_daily.asp", tabName: "__INHERIT__"},
@@ -149,7 +155,8 @@ define(function(){
 					{url: "Advanced_ACL_Content.asp", tabName: "<#menu5_1_4#>"},
 					{url: "Advanced_WSecurity_Content.asp", tabName: "<#menu5_1_5#>"},
 					{url: "Advanced_WAdvanced_Content.asp", tabName: "<#menu5_1_6#>"},
-					{url: "Advanced_WProxy_Content.asp", tabName: "Wi-Fi Proxy"},
+					{url: "Advanced_WProxy_Content.asp", tabName: "<#WiFi_Proxy_item#>"},
+					{url: "Advanced_Roaming_Block_Content.asp", tabName: "Roaming Block List"},/* untranslated */
 					{url: "NULL", tabName: "__INHERIT__"}
 				] 
 			},
@@ -239,7 +246,7 @@ define(function(){
 					{url: "Advanced_SNMP_Content.asp", tabName: "SNMP"},
 					{url: "Advanced_TR069_Content.asp", tabName: "TR-069"},
 					{url: "Advanced_Notification_Content.asp", tabName: "Notification"},
-					{url: "Advanced_Privacy.asp", tabName: "Privacy"},
+					{url: "Advanced_Privacy.asp", tabName: "<#menu_privacy#>"},
 					{url: "NULL", tabName: "__INHERIT__"}
 				]
 			},
@@ -596,6 +603,9 @@ define(function(){
 				if(!rrsut_support)
 					retArray.push("cloud_router_sync.asp");
 
+				if(!amesh_support)
+					retArray.push("Advanced_Roaming_Block_Content.asp");
+
 				/* Operation Mode */
 				if(isSwMode("re")){
 					retArray.push("GameBoost.asp");
@@ -658,6 +668,9 @@ define(function(){
 					retArray.push("Advanced_Smart_Connect.asp");
 				}
 
+				if(amesh_support && (!isSwMode("rt") && !isSwMode("ap")))
+					retArray.push("Advanced_Roaming_Block_Content.asp");
+
 				/* System Status Changed */
 				// --
 
@@ -678,10 +691,12 @@ define(function(){
 					retArray.push("AiProtection_WebProtector.asp");
 					retArray.push("ParentalControl.asp");
 					retArray.push("Advanced_OperationMode_Content.asp");
-					retArray.push("QoS_EZQoS.asp");
 					retArray.push("AdaptiveQoS_WebHistory.asp");
 					if(based_modelid == "MAP-AC1750"){
 						retArray.push("AiProtection_IntrusionPreventionSystem.asp");
+					}
+					else{
+						retArray.push("QoS_EZQoS.asp");
 					}
 				}
 

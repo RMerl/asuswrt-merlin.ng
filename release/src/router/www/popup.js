@@ -201,17 +201,6 @@ function hideLoading(flag){
 	htmlbodyforIE[0].style.overflow = "";	  //hidden the Y-scrollbar for preventing from user scroll it.
 }             
 
-function simpleSSID(obj){
-	var SSID = document.loginform.wl_ssid.value;
-	
-	if(SSID.length < 16)
-		showtext(obj, SSID);
-	else{
-		obj.title = SSID;
-		showtext(obj, SSID.substring(0, 16)+"...");
-	}
-}
-
 function dr_advise(){
 	disableCheckChangedStatus();
 	

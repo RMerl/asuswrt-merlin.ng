@@ -263,7 +263,7 @@ function switchPage(page){
 						
 						
 		  			<tr>
-          				<td height="5"><img src="images/New_ui/export/line_export.png" /></td>
+          				<td height="5"><div class="splitLine"></div></td>
         			</tr>
 					<tr>
 						<td style="font-style: italic;font-size: 14px;">

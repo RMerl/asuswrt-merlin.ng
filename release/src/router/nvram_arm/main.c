@@ -119,6 +119,7 @@ static int export_mode(char* mode, char* buf_ap, char* buf)
 	return 0;
 }
 
+#ifdef RTCONFIG_NVRAM_ENCRYPT
 static int nvram_dec_all(char* buf_ap, char* buf)
 {
 	struct nvram_tuple *t;
@@ -126,7 +127,7 @@ static int nvram_dec_all(char* buf_ap, char* buf)
 	char *ptr, *item, *value;
 	char name[128], nv[128];
 	int len;
-	char output[1024];
+	char output[NVRAM_ENC_MAXLEN];
 	memset(output, 0, sizeof(output));
 
 
@@ -164,6 +165,7 @@ static int nvram_dec_all(char* buf_ap, char* buf)
 
 	return 0;
 }
+#endif
 
 /*******************************************************************
 * NAME: _secure_romfile

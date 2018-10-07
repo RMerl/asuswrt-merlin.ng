@@ -28,17 +28,9 @@
 	padding-top:20px; 
 	margin-top:-17px; 
 	position:relative;
-	align:left;
-	-webkit-border-top-right-radius: 05px;
-	-webkit-border-bottom-right-radius: 5px;
-	-webkit-border-bottom-left-radius: 5px;
-	-moz-border-radius-topright: 05px;
-	-moz-border-radius-bottomright: 5px;
-	-moz-border-radius-bottomleft: 5px;
-	border-top-right-radius: 5px;
-	border-top-left-radius: 5px;
-	border-bottom-right-radius: 5px;
-	border-bottom-left-radius: 5px;
+	-webkit-border-radius: 0 0 3px 3px;
+	-moz-border-radius: 0 0 3px 3px;
+	border-radius: 0 0 3px 3px;
 }
 .line_export{
 	height:20px;
@@ -869,8 +861,7 @@ function set_dms_dir(obj){
 						</tr>
 					</table>
 				</div>
-				<div style="margin:5px;"><img src="/images/New_ui/export/line_export.png"></div>
-
+				<div style="margin:10px 0 10px 5px;" class="splitLine"></div>
 			<div id="upnp_desc_id" class="formfontdesc"><#upnp_Desc#></div>
 		</td>
   </tr>  

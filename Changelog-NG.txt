@@ -1,9 +1,9 @@
 Asuswrt-Merlin 384/NG Changelog
 ===============================
 
-384.7 (xx-xxx-xxxx)
+384.7 (7-Oct-2018)
   - NOTE: The RT-AC3200 and RT-AC56U are not supported by this
-          release, Asus hasn't released any updated code yes for
+          release, Asus hasn't released any updated code yet for
           these models.
 
   - NOTE: Important changes to DDNS, please read below.
@@ -33,7 +33,7 @@ Asuswrt-Merlin 384/NG Changelog
   - CHANGED: Updated curl to 7.61.1.
   - CHANGED: Updated wget to 1.19.5.
   - CHANGED: Updated openssl to 1.0.2p.
-  - CHANGED: Updated dnsmasq to v2.80test4 (themiron).
+  - CHANGED: Updated dnsmasq to v2.80test8 (themiron).
   - CHANGED: Updated nano to 3.1.
   - CHANGED: All DDNS services now use HTTPS.
   - CHANGED: Replaced Google Domains DDNS script with In-a-Dyn's own

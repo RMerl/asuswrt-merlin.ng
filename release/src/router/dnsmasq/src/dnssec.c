@@ -2026,19 +2026,11 @@ int dnskey_keytag(int alg, int flags, unsigned char *key, int keylen)
 }
 
 size_t dnssec_generate_query(struct dns_header *header, unsigned char *end, char *name, int class, 
-			     int type, union mysockaddr *addr, int edns_pktsz)
+			     int type, int edns_pktsz)
 {
   unsigned char *p;
-  char *types = querystr("dnssec-query", type);
   size_t ret;
 
-  if (addr->sa.sa_family == AF_INET) 
-    log_query(F_NOEXTRA | F_DNSSEC | F_IPV4, name, (struct all_addr *)&addr->in.sin_addr, types);
-#ifdef HAVE_IPV6
-  else
-    log_query(F_NOEXTRA | F_DNSSEC | F_IPV6, name, (struct all_addr *)&addr->in6.sin6_addr, types);
-#endif
-  
   header->qdcount = htons(1);
   header->ancount = htons(0);
   header->nscount = htons(0);

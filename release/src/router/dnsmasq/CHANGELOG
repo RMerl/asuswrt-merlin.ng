@@ -64,6 +64,10 @@ version 2.80
 	now always forward, and never answer from the cache. This
 	allows "dig +trace" command to work. 
 	
+	Include in the example config file a formulation which
+	stops DHCP clients from claiming the DNS name "wpad".
+	This is a fix for the CERT Vulnerability VU#598349.
+
 	
 version 2.79
 	Fix parsing of CNAME arguments, which are confused by extra spaces.

@@ -672,3 +672,8 @@
 
 # Include all files in a directory which end in .conf
 #conf-dir=/etc/dnsmasq.d/,*.conf
+
+# If a DHCP client claims that its name is "wpad", ignore that.
+# This fixes a security hole. see CERT Vulnerability VU#598349
+#dhcp-name-match=set:wpad-ignore,wpad
+#dhcp-ignore-names=tag:wpad-ignore

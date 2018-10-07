@@ -1903,44 +1903,42 @@ static int one_opt(int option, char *arg, char *errstr, char *gen_err, int comma
       
 #ifdef HAVE_AUTH
     case LOPT_AUTHSERV: /* --auth-server */
-      if (!(comma = split(arg)))
-	ret_err(gen_err);
+      comma = split(arg);
       
       daemon->authserver = opt_string_alloc(arg);
-      arg = comma;
-      do {
-	struct iname *new = opt_malloc(sizeof(struct iname));
-	comma = split(arg);
-	new->name = NULL;
-	unhide_metas(arg);
-	if (inet_pton(AF_INET, arg, &new->addr.in.sin_addr) > 0)
-	  new->addr.sa.sa_family = AF_INET;
+      
+      while ((arg = comma))
+	{
+	  struct iname *new = opt_malloc(sizeof(struct iname));
+	  comma = split(arg);
+	  new->name = NULL;
+	  unhide_metas(arg);
+	  if (inet_pton(AF_INET, arg, &new->addr.in.sin_addr) > 0)
+	    new->addr.sa.sa_family = AF_INET;
 #ifdef HAVE_IPV6
-	else if (inet_pton(AF_INET6, arg, &new->addr.in6.sin6_addr) > 0)
-	  new->addr.sa.sa_family = AF_INET6;
+	  else if (inet_pton(AF_INET6, arg, &new->addr.in6.sin6_addr) > 0)
+	    new->addr.sa.sa_family = AF_INET6;
 #endif
-	else
-	  {
-	    char *fam = split_chr(arg, '/');
-	    new->name = opt_string_alloc(arg);
-	    new->addr.sa.sa_family = 0;
-	    if (fam)
-	      {
-		if (strcmp(fam, "4") == 0)
-		  new->addr.sa.sa_family = AF_INET;
+	  else
+	    {
+	      char *fam = split_chr(arg, '/');
+	      new->name = opt_string_alloc(arg);
+	      new->addr.sa.sa_family = 0;
+	      if (fam)
+		{
+		  if (strcmp(fam, "4") == 0)
+		    new->addr.sa.sa_family = AF_INET;
 #ifdef HAVE_IPV6
-		else if (strcmp(fam, "6") == 0)
-		  new->addr.sa.sa_family = AF_INET6;
+		  else if (strcmp(fam, "6") == 0)
+		    new->addr.sa.sa_family = AF_INET6;
 #endif
-		else
-		  ret_err(gen_err);
-	      } 
-	  }
-	new->next = daemon->authinterface;
-	daemon->authinterface = new;
-	
-	arg = comma;
-      } while (arg);
+		  else
+		    ret_err(gen_err);
+		} 
+	    }
+	  new->next = daemon->authinterface;
+	  daemon->authinterface = new;
+	};
             
       break;
 

@@ -216,7 +216,7 @@ int main (int argc, char **argv)
 #endif
 
 #ifndef HAVE_AUTH
-  if (daemon->authserver || daemon->auth_zones)
+  if (daemon->auth_zones)
     die(_("authoritative DNS not available: set HAVE_AUTH in src/config.h"), NULL, EC_BADCONF);
 #endif
 
@@ -235,13 +235,20 @@ int main (int argc, char **argv)
 
   now = dnsmasq_time();
 
-  /* Create a serial at startup if not configured. */
-  if (daemon->auth_zones && daemon->soa_sn == 0)
+  if (daemon->auth_zones)
+    {
+      if (!daemon->authserver)
+	die(_("--auth-server required when an auth zone is defined."), NULL, EC_BADCONF);
+
+      /* Create a serial at startup if not configured. */
 #ifdef HAVE_BROKEN_RTC
-    die(_("zone serial must be configured in --auth-soa"), NULL, EC_BADCONF);
+      if (daemon->soa_sn == 0)
+	die(_("zone serial must be configured in --auth-soa"), NULL, EC_BADCONF);
 #else
-  daemon->soa_sn = now;
+      if (daemon->soa_sn == 0)
+	daemon->soa_sn = now;
 #endif
+    }
   
 #ifdef HAVE_DHCP6
   if (daemon->dhcp6)

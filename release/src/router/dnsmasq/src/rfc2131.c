@@ -700,39 +700,9 @@ size_t dhcp_reply(struct dhcp_context *context, char *iface_name, int int_index,
 	client_hostname = daemon->dhcp_buff;
     }
 
-  if (client_hostname)
-    {
-      struct dhcp_match_name *m;
-      size_t nl = strlen(client_hostname); 
-      
-      if (option_bool(OPT_LOG_OPTS))
-	my_syslog(MS_DHCP | LOG_INFO, _("%u client provides name: %s"), ntohl(mess->xid), client_hostname);
+  if (client_hostname && option_bool(OPT_LOG_OPTS))
+    my_syslog(MS_DHCP | LOG_INFO, _("%u client provides name: %s"), ntohl(mess->xid), client_hostname);
 
-
-      for (m = daemon->dhcp_name_match; m; m = m->next)
-	{
-	  size_t ml = strlen(m->name);
-	  char save = 0;
-	  
-	  if (nl < ml)
-	    continue;
-	  if (nl > ml)
-	    {
-	      save = client_hostname[ml];
-	      client_hostname[ml] = 0;
-	    }
-
-	  if (hostname_isequal(client_hostname, m->name) &&
-	      (save == 0 || m->wildcard))
-	    {
-	      m->netid->next = netid;
-	      netid = m->netid;
-	    }
-
-	  if (save != 0)
-	    client_hostname[ml] = save;
-	}
-    }
   
   if (have_config(config, CONFIG_NAME))
     {
@@ -745,11 +715,15 @@ size_t dhcp_reply(struct dhcp_context *context, char *iface_name, int int_index,
     }
   else if (client_hostname)
     {
+      struct dhcp_match_name *m;
+      size_t nl;
+
       domain = strip_hostname(client_hostname);
       
-      if (strlen(client_hostname) != 0)
+      if ((nl = strlen(client_hostname)) != 0)
 	{
 	  hostname = client_hostname;
+	  
 	  if (!config)
 	    {
 	      /* Search again now we have a hostname. 
@@ -766,6 +740,30 @@ size_t dhcp_reply(struct dhcp_context *context, char *iface_name, int int_index,
 		  known_id.next = netid;
 		  netid = &known_id;
 		}
+	    }
+
+	  for (m = daemon->dhcp_name_match; m; m = m->next)
+	    {
+	      size_t ml = strlen(m->name);
+	      char save = 0;
+	      
+	      if (nl < ml)
+		continue;
+	      if (nl > ml)
+		{
+		  save = client_hostname[ml];
+		  client_hostname[ml] = 0;
+		}
+	      
+	      if (hostname_isequal(client_hostname, m->name) &&
+		  (save == 0 || m->wildcard))
+		{
+		  m->netid->next = netid;
+		  netid = m->netid;
+	    }
+	      
+	      if (save != 0)
+		client_hostname[ml] = save;
 	    }
 	}
     }

@@ -231,7 +231,7 @@ options always override the others. The comments about interface labels for
 .B --listen-address
 apply here.
 .TP
-.B --auth-server=<domain>,<interface>|<ip-address>
+.B --auth-server=<domain>,[<interface>|<ip-address>...]
 Enable DNS authoritative mode for queries arriving at an interface or address. Note that the interface or address
 need not be mentioned in 
 .B --interface
@@ -244,7 +244,7 @@ specified interface. The <domain> is the "glue record". It should
 resolve in the global DNS to an A and/or AAAA record which points to
 the address dnsmasq is listening on. When an interface is specified,
 it may be qualified with "/4" or "/6" to specify only the IPv4 or IPv6
-addresses associated with the interface.
+addresses associated with the interface. Since any defined authoritative zones are also available as part of the normal recusive DNS service supplied by dnsmasq, it can make sense to have an --auth-server declaration with no interfaces or address, but simply specifying the glue record. 
 .TP
 .B --local-service
 Accept DNS queries only from hosts whose address is on a local subnet,
@@ -827,7 +827,8 @@ authoritative zones as dnsmasq.
 .B --auth-peer=<ip-address>[,<ip-address>[,<ip-address>...]]
 Specify the addresses of secondary servers which are allowed to
 initiate zone transfer (AXFR) requests for zones for which dnsmasq is
-authoritative. If this option is not given, then AXFR requests will be
+authoritative. If this option is not given but --auth-sec-servers is,
+then AXFR requests will be
 accepted from any secondary. Specifying
 .B --auth-peer
 without

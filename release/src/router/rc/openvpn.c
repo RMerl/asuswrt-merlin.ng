@@ -77,6 +77,7 @@ void start_ovpn_client(int clientNum)
 	long int nvl;
 	int pid;
 	int userauth, useronly;
+	char cpulist[2];
 	int taskset_ret;
 	int i;
 	char prefix[16];
@@ -489,7 +490,13 @@ void start_ovpn_client(int clientNum)
         // Start the VPN client
 	sprintf(buffer, "/etc/openvpn/vpnclient%d", clientNum);
 	sprintf(buffer2, "/etc/openvpn/client%d", clientNum);
-	taskset_ret = cpu_eval(NULL, (clientNum % 2 == 0 ? CPU0 : CPU1), buffer, "--cd", buffer2, "--config", "config.ovpn");
+
+	// Spread clients on cpu 1,0 or 1,2,3,0 (in that order)
+	i = sysconf(_SC_NPROCESSORS_CONF) - 1;
+	if (i < 0) i = 0;
+	snprintf(cpulist, sizeof(cpulist), "%d", (clientNum & i));
+
+	taskset_ret = cpu_eval(NULL, cpulist, buffer, "--cd", buffer2, "--config", "config.ovpn");
 
 	vpnlog(VPN_LOG_INFO,"Starting OpenVPN client %d", clientNum);
 
@@ -625,6 +632,7 @@ void start_ovpn_server(int serverNum)
 	enum { TLS, SECRET } cryptMode = TLS;
 	int nvi, ip[4], nm[4];
 	int pid;
+	char cpulist[2];
 	int taskset_ret;
 	int valid = 0;
 	int userauth = 0, useronly = 0;
@@ -867,7 +875,7 @@ void start_ovpn_server(int serverNum)
 	strlcpy(buffer, nvram_pf_safe_get(prefix, "comp"), sizeof (buffer));
 	if (strcmp(buffer, "-1")) {
                 if (!strcmp(buffer, "lz4") || !strcmp(buffer, "lz4-v2")) {
-			fprintf(fp, "compress %s\n", bnuffer);
+			fprintf(fp, "compress %s\n", buffer);
 			fprintf(fp_client, "compress %s\n", buffer);
 		} else if (!strcmp(buffer, "yes")) {
 			fprintf(fp, "compress lzo\n");
@@ -1417,7 +1425,12 @@ void start_ovpn_server(int serverNum)
 	sprintf(buffer, "/etc/openvpn/vpnserver%d", serverNum);
 	sprintf(buffer2, "/etc/openvpn/server%d", serverNum);
 
-	taskset_ret = cpu_eval(NULL, (serverNum == 1 ? CPU1 : CPU0), buffer, "--cd", buffer2, "--config", "config.ovpn");
+	// Spread servers on cpu 1,0 or 1,2 (in that order)
+	i = sysconf(_SC_NPROCESSORS_CONF) - 1;
+	if (i < 0) i = 0;
+	snprintf(cpulist, sizeof(cpulist), "%d", (serverNum & i));
+
+	taskset_ret = cpu_eval(NULL, cpulist, buffer, "--cd", buffer2, "--config", "config.ovpn");
 
 	vpnlog(VPN_LOG_INFO,"Starting OpenVPN server %d", serverNum);
 	if (taskset_ret)

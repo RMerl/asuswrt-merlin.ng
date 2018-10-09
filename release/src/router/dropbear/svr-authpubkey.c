@@ -79,7 +79,7 @@ static int checkfileperm(char * filename);
 
 /* process a pubkey auth request, sending success or failure message as
  * appropriate */
-void svr_auth_pubkey() {
+void svr_auth_pubkey(int valid_user) {
 
 	unsigned char testkey; /* whether we're just checking if a key is usable */
 	char* algo = NULL; /* pubkey algo */
@@ -101,6 +101,15 @@ void svr_auth_pubkey() {
 	algo = buf_getstring(ses.payload, &algolen);
 	keybloblen = buf_getint(ses.payload);
 	keyblob = buf_getptr(ses.payload, keybloblen);
+
+	if (!valid_user) {
+		/* Return failure once we have read the contents of the packet
+		required to validate a public key. 
+		Avoids blind user enumeration though it isn't possible to prevent
+		testing for user existence if the public key is known */
+		send_msg_userauth_failure(0, 0);
+		goto out;
+	}
 
 	/* check if the key is valid */
 	if (checkpubkey(algo, algolen, keyblob, keybloblen) == DROPBEAR_FAILURE) {

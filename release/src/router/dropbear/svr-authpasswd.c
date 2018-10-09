@@ -48,21 +48,13 @@ static int constant_time_strcmp(const char* a, const char* b) {
 
 /* Process a password auth request, sending success or failure messages as
  * appropriate */
-void svr_auth_password() {
+void svr_auth_password(int valid_user) {
 	
 	char * passwdcrypt = NULL; /* the crypt from /etc/passwd or /etc/shadow */
 	char * testcrypt = NULL; /* crypt generated from the user's password sent */
-	char * password;
+	char * password = NULL;
 	unsigned int passwordlen;
-
 	unsigned int changepw;
-
-	passwdcrypt = ses.authstate.pw_passwd;
-
-#ifdef DEBUG_HACKCRYPT
-	/* debugging crypt for non-root testing with shadows */
-	passwdcrypt = DEBUG_HACKCRYPT;
-#endif
 
 	/* check if client wants to change password */
 	changepw = buf_getbool(ses.payload);
@@ -73,11 +65,20 @@ void svr_auth_password() {
 	}
 
 	password = buf_getstring(ses.payload, &passwordlen);
-
-	/* the first bytes of passwdcrypt are the salt */
-	testcrypt = crypt(password, passwdcrypt);
+	if (valid_user) {
+		/* the first bytes of passwdcrypt are the salt */
+		passwdcrypt = ses.authstate.pw_passwd;
+		testcrypt = crypt(password, passwdcrypt);
+	}
 	m_burn(password, passwordlen);
 	m_free(password);
+
+	/* After we have got the payload contents we can exit if the username
+	is invalid. Invalid users have already been logged. */
+	if (!valid_user) {
+		send_msg_userauth_failure(0, 1);
+		return;
+	}
 
 	if (testcrypt == NULL) {
 		/* crypt() with an invalid salt like "!!" */

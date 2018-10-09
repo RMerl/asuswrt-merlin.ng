@@ -5438,6 +5438,7 @@ net-snmp-5.7.2/stamp-h1:
 		--with-sys-location=Unknown --with-logfile=/var/log/snmpd.log \
 		--with-persistent-directory=/var/net-snmp --with-sys-contact=root@localhost \
 		--enable-static=no --with-mib-modules="\
+		agent/extend, \
 		host/hr_device,\
 		host/hr_disk,\
 		host/hr_filesys,\

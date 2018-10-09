@@ -236,8 +236,8 @@ void start_ovpn_client(int clientNum)
 
 	strlcpy(buffer2, nvram_pf_safe_get(prefix, "comp"), sizeof (buffer2));
 	if (strcmp(buffer2, "-1")) {
-		if (!strcmp(buffer2, "lz4")) {
-			fprintf(fp, "compress lz4\n");
+		if (!strcmp(buffer2, "lz4") || !strcmp(buffer2, "lz4-v2")) {
+			fprintf(fp, "compress %s\n", buffer2);
 		} else if (!strcmp(buffer2, "yes")) {
 			fprintf(fp, "compress lzo\n");
 		} else if (!strcmp(buffer2, "adaptive")) {
@@ -866,9 +866,9 @@ void start_ovpn_server(int serverNum)
 	//compression
 	strlcpy(buffer, nvram_pf_safe_get(prefix, "comp"), sizeof (buffer));
 	if (strcmp(buffer, "-1")) {
-		if (!strcmp(buffer, "lz4")) {
-			fprintf(fp, "compress lz4\n");
-			fprintf(fp_client, "compress lz4\n");
+                if (!strcmp(buffer, "lz4") || !strcmp(buffer, "lz4-v2")) {
+			fprintf(fp, "compress %s\n", bnuffer);
+			fprintf(fp_client, "compress %s\n", buffer);
 		} else if (!strcmp(buffer, "yes")) {
 			fprintf(fp, "compress lzo\n");
 			fprintf(fp_client, "comp-lzo yes\n");

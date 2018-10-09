@@ -914,7 +914,7 @@ function update_visibility(){
 
 /* Warn if exported ovpn requires OpenVPN 2.4.0 */
 	showhide("ncp_24_warn", (ncp > 0));
-	showhide("comp_24_warn", (comp == "lz4"));
+	showhide("comp_24_warn", (comp == "lz4") || (comp == "lz4-v2"));
 	showhide("tlscrypt_24_warn", (hmac == 3));
 }
 
@@ -1681,6 +1681,7 @@ function callback_upload_cert(_flag) {
 														<option value="yes" <% nvram_match("vpn_server_comp","yes","selected"); %> >LZO</option>
 														<option value="adaptive" <% nvram_match("vpn_server_comp","adaptive","selected"); %> > LZO Adaptive</option>
 														<option value="lz4" <% nvram_match("vpn_server_comp","lz4","selected"); %> >LZ4</option>
+														<option value="lz4-v2" <% nvram_match("vpn_server_comp","lz4-v2","selected"); %> >LZ4-V2</option>
 													</select>
 													<span id="comp_24_warn"><br>The exported client ovpn file will require OpenVPN 2.4.0 or newer.</span>
 												</td>

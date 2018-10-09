@@ -46,7 +46,10 @@ int get_dns_filter(int proto, int mode, char **server)
 		{ nvram_safe_get("dnsfilter_custom3"), "" },		/* 10: Custom3 */
 		{ nvram_safe_get("dhcp_dns1_x"), "" },			/* 11: Router */
 		{ "8.26.56.26", "" },		/* 12: Comodo Secure DNS */
-		{ "9.9.9.9", "" }		/* 13: Quad9 */
+		{ "9.9.9.9", "" },		/* 13: Quad9 */
+		{ "185.228.168.9", "" },	/* 14: CleanBrowsing Security */
+		{ "185.228.168.10", "" },	/* 15: CleanBrowsing Adult */
+		{ "185.228.168.168", "" }	/* 16: CleanBrowsing Family */
         };
 #ifdef RTCONFIG_IPV6
 	char *server6_table[][2] = {
@@ -63,7 +66,10 @@ int get_dns_filter(int proto, int mode, char **server)
 		{"", ""},		/* 10: Custom3 - not supported yet */
 		{"", ""},		/* 11: Router  - semi-supported, refer dnsfilter_setup_dnsmasq() */
 		{"", ""},		/* 12: Comodo Secure DNS */
-		{"2620:fe::fe", "2620:fe::9"}	/* 13: Quad9 */
+		{"2620:fe::fe", "2620:fe::9"},	/* 13: Quad9 */
+		{"2a0d:2a00:1::2", "2a0d:2a00:2::2"},	/* 14: CleanBrowsing Security */
+		{"2a0d:2a00:1::1", "2a0d:2a00:2::1"},	/* 15: CleanBrowsing Adult */
+		{"2a0d:2a00:1::", "2a0d:2a00:2::"}	/* 16: CleanBrowsing Family */
         };
 #endif
 

@@ -157,16 +157,12 @@ int ej_show_sysinfo(int eid, webs_t wp, int argc, char_t ** argv)
 						strcpy(model, "Cortex B53 ARMv8");
 					else
 						sprintf(model, "Implementer: %s, Part: %s, Variant: %s, Arch: %s",impl, part, variant, arch);
-					tmp = buffer;	// reset pointer
 				}
 
-				while ( (tmp = strstr(tmp,"processor")) != NULL ) {
-					tmp++;
-					count++;
-				}
+				count = sysconf(_SC_NPROCESSORS_CONF);
 				if (count > 1) {
-					tmp = nvram_get("cpurev");
-					if ((tmp) && (*tmp))
+					tmp = nvram_safe_get("cpurev");
+					if (*tmp)
 						sprintf(result, "%s&nbsp;&nbsp;-&nbsp;&nbsp; Rev. %s (Cores: %d)", model, tmp, count);
 					else
 						sprintf(result, "%s&nbsp;&nbsp; (Cores: %d)", model, count);

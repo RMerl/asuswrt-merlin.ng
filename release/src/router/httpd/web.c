@@ -12522,25 +12522,28 @@ do_server_ovpn_file(char *url, FILE *stream)
 	char cmd[1024];
 	memset(cmd, 0, sizeof(cmd));
 	if (check_if_dir_exist(JFFS_OPENVPN)) {
-		int i;
+		int i, unit;
+		char filename[32];
 		char file_path[128];
 		snprintf(cmd, sizeof(cmd), "tar czf %s -C %s", OPENVPN_EXPORT_FILE, JFFS_OPENVPN);
 		char *lists[] = {
-			"vpn_crt_server1_ca",
-			"vpn_crt_server1_ca_key",
-			"vpn_crt_server1_client_crt",
-			"vpn_crt_server1_client_key",
-			"vpn_crt_server1_crt",
-			"vpn_crt_server1_dh",
-			"vpn_crt_server1_key",
+			"ca",
+			"ca_key",
+			"client_crt",
+			"client_key",
+			"crt",
+			"dh",
+			"key",
 			NULL
 		};
+		unit = nvram_get_int("vpn_server_unit");
 		for (i = 0; i < ARRAY_SIZE(lists) && lists[i] != NULL; ++i) {
 			memset(file_path, 0, sizeof(file_path));
-			snprintf(file_path, sizeof(file_path), "%s%s", JFFS_OPENVPN, lists[i]);
+			snprintf(filename, sizeof(filename), "vpn_crt_server%d_%s", unit, lists[i]);
+			snprintf(file_path, sizeof(file_path), "%s%s", JFFS_OPENVPN, filename);
 			if(check_if_file_exist(file_path)) {
 				strlcat(cmd, " ", sizeof(cmd));
-				strlcat(cmd, lists[i], sizeof(cmd));
+				strlcat(cmd, filename, sizeof(cmd));
 			}
 		}
 		system(cmd);
@@ -12641,30 +12644,32 @@ do_upload_server_ovpn_cert_cgi(char *url, FILE *stream)
 		memset(cmd, 0, sizeof(cmd));
 		if (check_if_dir_exist(OPENVPN_UPLOAD_FLODER)) {
 			if(check_if_file_exist(OPENVPN_UPLOAD_FILE)) {
-				int i;
+				int i, unit;
 				char file_path[128];
 				char *lists[] = {
-					"vpn_crt_server1_ca",
-					"vpn_crt_server1_ca_key",
-					"vpn_crt_server1_client_crt",
-					"vpn_crt_server1_client_key",
-					"vpn_crt_server1_crt",
-					"vpn_crt_server1_dh",
-					"vpn_crt_server1_key",
+					"ca",
+					"ca_key",
+					"client_crt",
+					"client_key",
+					"crt",
+					"dh",
+					"key",
 					NULL
 				};
 				snprintf(cmd, sizeof(cmd), "tar -xzf %s -C %s", OPENVPN_UPLOAD_FILE, OPENVPN_UPLOAD_FLODER);
 				system(cmd);
 
+				unit = nvram_get_int("vpn_server_unit");
 				for (i = 0; i < ARRAY_SIZE(lists) && lists[i] != NULL; ++i) {
 					memset(file_path, 0, sizeof(file_path));
-					snprintf(file_path, sizeof(file_path), "%s/%s", OPENVPN_UPLOAD_FLODER, lists[i]);
+					snprintf(file_path, sizeof(file_path), "%s/vpn_crt_server%d_%s", OPENVPN_UPLOAD_FLODER, unit, lists[i]);
 					if(check_if_file_exist(file_path)) {
 						eval("mv", "-f", file_path, JFFS_OPENVPN);
 					}
 				}
 				websWrite(stream, "<script>parent.callback_upload_cert(1);</script>\n");
-				notify_rc("restart_openvpnd");
+				snprintf(cmd, sizeof(cmd), "restart_vpnserver%d", unit);
+				notify_rc(cmd);
 				notify_rc("restart_chpass");
 			}
 			else {

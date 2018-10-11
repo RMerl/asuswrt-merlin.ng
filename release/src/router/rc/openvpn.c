@@ -508,6 +508,7 @@ void start_ovpn_client(int clientNum)
 	}
 	vpnlog(VPN_LOG_EXTRA,"Done starting openvpn");
 
+#if 0
 	// watchdog
 	sprintf(buffer, "/etc/openvpn/client%d/vpnc-watchdog%d.sh", clientNum, clientNum);
 	if ((fp = fopen(buffer, "w"))) {
@@ -532,7 +533,7 @@ void start_ovpn_client(int clientNum)
 		_eval(argv, NULL, 0, NULL);
 		vpnlog(VPN_LOG_EXTRA,"Done adding cron job");
 	}
-
+#endif
 
 	vpnlog(VPN_LOG_INFO,"VPN GUI client backend complete.");
 }
@@ -551,6 +552,7 @@ void stop_ovpn_client(int clientNum)
 
 	vpnlog(VPN_LOG_INFO,"Stopping VPN GUI client backend.");
 
+#if 0
 	// Remove cron job
 	vpnlog(VPN_LOG_EXTRA,"Removing cron job");
 	argv[0] = "cru";
@@ -560,7 +562,7 @@ void stop_ovpn_client(int clientNum)
 	argv[3] = NULL;
 	_eval(argv, NULL, 0, NULL);
 	vpnlog(VPN_LOG_EXTRA,"Done removing cron job");
-
+#endif
 
 	// Stop the VPN client
 	vpnlog(VPN_LOG_EXTRA,"Stopping OpenVPN client.");

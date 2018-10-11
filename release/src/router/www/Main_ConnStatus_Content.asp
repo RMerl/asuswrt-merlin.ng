@@ -138,7 +138,7 @@ function show_conns() {
 									<td valign="top">
 										<div>&nbsp;</div>
 										<div class="formfonttitle"><#System_Log#> - <#System_act_connections#></div>
-										<<div style="margin:10px 0 10px 5px;" class="splitLine"></div>
+										<div style="margin:10px 0 10px 5px;" class="splitLine"></div>
 										<div class="formfontdesc"><#System_log_connections#></div>
 
                                                                                 <div style="margin-top:8px">

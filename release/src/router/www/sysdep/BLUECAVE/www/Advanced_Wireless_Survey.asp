@@ -16,6 +16,9 @@
 p{
 	font-weight: bolder;
 }
+a{
+	color: #FFFFFF !important;
+}
 </style>
 <script language="JavaScript" type="text/javascript" src="/state.js"></script>
 <script language="JavaScript" type="text/javascript" src="/general.js"></script>

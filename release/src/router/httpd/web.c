@@ -12534,6 +12534,8 @@ do_server_ovpn_file(char *url, FILE *stream)
 			"crt",
 			"dh",
 			"key",
+			"crl",
+			"extra",
 			NULL
 		};
 		unit = nvram_get_int("vpn_server_unit");
@@ -12654,6 +12656,8 @@ do_upload_server_ovpn_cert_cgi(char *url, FILE *stream)
 					"crt",
 					"dh",
 					"key",
+					"crl",
+					"extra",
 					NULL
 				};
 				snprintf(cmd, sizeof(cmd), "tar -xzf %s -C %s", OPENVPN_UPLOAD_FILE, OPENVPN_UPLOAD_FLODER);

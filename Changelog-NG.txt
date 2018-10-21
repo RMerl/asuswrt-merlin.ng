@@ -1,6 +1,12 @@
 Asuswrt-Merlin 384/NG Changelog
 ===============================
 
+384.7_2 (21-Oct-2018)
+  - FIXED: Namecheap DDNS service not working
+  - FIXED: CVE-2018-15599 security issue in Dropbear
+  - FIXED: Potential buffer overrun in httpd
+
+
 384.7 (7-Oct-2018)
   - NOTE: The RT-AC3200 and RT-AC56U are not supported by this
           release, Asus hasn't released any updated code yet for

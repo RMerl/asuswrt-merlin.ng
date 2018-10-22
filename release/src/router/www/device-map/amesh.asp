@@ -251,6 +251,7 @@ function ajax_onboarding() {
 							var rssi = newReMacArray[newReMac].rssi;
 							var device_info = model_name + "<br>" + newReMac;
 							parent.$("#amesh_connect_msg").find(".amesh_hint_text.amesh_device_info").html(device_info);
+							parent.$("#amesh_connect_msg").find(".amesh_hint_text.amesh_device_info").css("display", "");
 							parent.$("#amesh_connect_msg").find(".wait_search").css("display", "none");
 							if(parseInt(rssi) < parseInt(get_onboardingstatus.cfg_wifi_quality)) {
 								parent.$("#amesh_connect_msg").find(".quality_ok").css("display", "none");
@@ -260,6 +261,7 @@ function ajax_onboarding() {
 								parent.$("#amesh_connect_msg").find(".quality_ok").css("display", "");
 								parent.$("#amesh_connect_msg").find(".quality_weak").css("display", "none");
 							}
+							parent.$("#amesh_connect_msg").find(".amesh_hint_text.amesh_hint_title").html("<#AiMesh_Node_AddConfirm#>");
 						}
 					});
 				});
@@ -767,6 +769,10 @@ function show_connect_msg(_reMac, _newReMac, _model_name, _rssi, _ob_path) {
 				parent.adjust_panel_block_top("amesh_connect_msg", 170);
 			}
 			else {
+				var nodeNotReady = false;
+				if(_reMac == "" && _model_name == "New Node" && _rssi == "-1" && Session.get("AiMesh_id") != "")
+					nodeNotReady = true;
+
 				var $connectHtml = $('<div>');
 				$connectHtml.attr({"id" : "amesh_connect_msg"});
 				$connectHtml.addClass("amesh_popup_bg");
@@ -780,14 +786,19 @@ function show_connect_msg(_reMac, _newReMac, _model_name, _rssi, _ob_path) {
 				$connectHtml.append($clearHtml);
 
 				var $amesh_hint_text = $('<div>');
-				$amesh_hint_text.addClass("amesh_hint_text");
-				$amesh_hint_text.html("<#AiMesh_Node_AddConfirm#>");
+				$amesh_hint_text.addClass("amesh_hint_text amesh_hint_title");
+				var hint_text = "<#AiMesh_Node_AddConfirm#>";
+				if(nodeNotReady)
+					hint_text = "<#AiMesh_Node_WaitReady#>";
+				$amesh_hint_text.html(hint_text);
 				$connectHtml.append($amesh_hint_text);
 
 				var $amesh_device_info = $('<div>');
 				$amesh_device_info.addClass("amesh_hint_text amesh_device_info");
 				var device_info = _model_name + "<br>" + _newReMac;
 				$amesh_device_info.html(device_info);
+				if(nodeNotReady)
+					$amesh_device_info.css("display", "none");
 				$connectHtml.append($amesh_device_info);
 
 				var $amesh_quality_text = $('<div>');
@@ -799,8 +810,14 @@ function show_connect_msg(_reMac, _newReMac, _model_name, _rssi, _ob_path) {
 				$amesh_action_bg.addClass("amesh_action_bg");
 				$connectHtml.append($amesh_action_bg);
 
+				var $amesh_wait_search_text = $('<div>');
+				$amesh_wait_search_text.addClass("amesh_hint_text amesh_quality_text wait_search");
+				$amesh_wait_search_text.css("display", "none");
+				$amesh_wait_search_text.html("<#AiMesh_info_waiting#>");/* _newReMac is here in string tag */
+				$amesh_action_bg.append($amesh_wait_search_text);
+
 				var $amesh_cancel = $('<input/>');
-				$amesh_cancel.addClass("button_gen quality_ok");
+				$amesh_cancel.addClass("button_gen quality_ok cancel");
 				$amesh_cancel.css("margin-right", "5px");
 				$amesh_cancel.attr({"type" : "button", "value" : "<#CTL_Cancel#>"});
 				$amesh_action_bg.append($amesh_cancel);
@@ -847,26 +864,22 @@ function show_connect_msg(_reMac, _newReMac, _model_name, _rssi, _ob_path) {
 					$connectHtml.find(".quality_weak").css("display", "none");
 				}
 
-				var $amesh_wait_search_text = $('<div>');
-				$amesh_wait_search_text.addClass("amesh_hint_text amesh_quality_text wait_search");
-				$amesh_wait_search_text.css("display", "none");
-				$amesh_wait_search_text.html("<#AiMesh_info_waiting#>");/* _newReMac is here in string tag */
-				$amesh_action_bg.append($amesh_wait_search_text);
-
-				if(_reMac == "" && _model_name == "New Node" && _rssi == "-1" && Session.get("AiMesh_id") != "") {
+				if(nodeNotReady) {
 					$amesh_action_bg.find(".button_gen").css("display", "none");
+					$amesh_action_bg.find(".button_gen.cancel").css("display", "");
 					$amesh_action_bg.find(".amesh_hint_text.amesh_quality_text.wait_search").css("display", "");
+				}
+				else {
+					document.onboardingLED_form.new_re_mac.disabled = false;
+					document.onboardingLED_form.new_re_mac.value = _newReMac;
+					document.onboardingLED_form.ob_path.disabled = false;
+					document.onboardingLED_form.ob_path.value = _ob_path;
+					document.onboardingLED_form.submit();
 				}
 
 				parent.$("#amesh_connect_msg").fadeIn(300);
 				parent.cal_panel_block("amesh_connect_msg", 0.2);
 				parent.adjust_panel_block_top("amesh_connect_msg", 170);
-
-				document.onboardingLED_form.new_re_mac.disabled = false;
-				document.onboardingLED_form.new_re_mac.value = _newReMac;
-				document.onboardingLED_form.ob_path.disabled = false;
-				document.onboardingLED_form.ob_path.value = _ob_path;
-				document.onboardingLED_form.submit();
 			}
 		}
 	});	

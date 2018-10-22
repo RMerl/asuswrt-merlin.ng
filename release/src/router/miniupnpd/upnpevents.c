@@ -109,10 +109,20 @@ newSubscriber(const char * eventurl, const char * callback, int callbacklen)
 	else if(strcmp(eventurl, DP_EVENTURL)==0)
 		tmp->service = EDP;
 #endif
+#ifdef ENABLE_AURASYNC
+	else if(strcmp(eventurl, AS_EVENTURL)==0 && GETFLAG(ENABLEAURASYNCMASK))
+		tmp->service = EAS;
+#endif
 	else {
 		free(tmp);
 		return NULL;
 	}
+#ifdef ENABLE_AURASYNC
+	if (aura_standalone && (tmp->service != EAS)) {
+		free(tmp);
+		return NULL;
+	}
+#endif
 	memcpy(tmp->callback, callback, callbacklen);
 	tmp->callback[callbacklen] = '\0';
 #if defined(LIB_UUID)
@@ -436,6 +446,11 @@ static void upnp_event_prepare(struct upnp_event_notify * obj)
 #ifdef ENABLE_DP_SERVICE
 	case EDP:
 		xml = getVarsDP(&l);
+		break;
+#endif
+#ifdef ENABLE_AURASYNC
+	case EAS:
+		xml = getVarsAS(&l);
 		break;
 #endif
 	default:

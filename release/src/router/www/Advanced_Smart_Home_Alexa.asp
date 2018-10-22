@@ -122,7 +122,7 @@ var flag = '<% get_parameter("flag"); %>';
 var realip_state = "";
 
 var StatusList = {
-	"NoInetrnet": "Internet is disconnected. Please check your WAN connection for remote control",
+	"NoInetrnet": "<#Alexa_Status_Disconnect#>",
 	"SvrFail": "Server connection failed",
 	"StepAccount": "<#Alexa_Status_Account#>",
 	"EnableRemoteCtrl": "<#Alexa_Register1#>",
@@ -148,7 +148,7 @@ var AccLinkStatus = {
 function initial(){
 	show_menu();
 	//	https://www.asus.com/us/support/FAQ/1033393
-	httpApi.faqURL("faq", "1033393", "https://www.asus.com", "/support/FAQ/");
+	httpApi.faqURL("1033393", function(url){document.getElementById("faq").href=url;});
 
 	if(!ifttt_support){
 		document.getElementById("divSwitchMenu").style.display = "none";
@@ -245,7 +245,6 @@ function detcet_aae_state(){
 }
 
 function get_activation_code(){
-	close_alert('alert_pin');
 	ASUS_EULA.config(get_activation_code, function(){});
 	if(ASUS_EULA.check("asus"))
 		gen_new_pincode();

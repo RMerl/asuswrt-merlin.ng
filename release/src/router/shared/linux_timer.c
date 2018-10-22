@@ -1,10 +1,10 @@
 /*
- * Copyright (C) 2012, Broadcom Corporation. All Rights Reserved.
- * 
+ * Copyright (C) 2018, Broadcom. All Rights Reserved.
+ *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
  * copyright notice and this permission notice appear in all copies.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
  * WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
  * MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY
@@ -13,9 +13,12 @@
  * OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
+ *
+ * <<Broadcom-WL-IPTag/Open:>>
+ *
  * Low resolution timer interface linux specific implementation.
  *
- * $Id: linux_timer.c 342502 2012-07-03 03:08:12Z $
+ * $Id: linux_timer.c 738255 2017-12-27 22:36:47Z $
  */
 
 /*
@@ -25,20 +28,18 @@
 #define TIMER_DEBUG	1 /* Turn on the debug */
 #else
 #define TIMER_DEBUG	0 /* Turn off the debug */
-#endif
+#endif // endif
 #if TIMER_DEBUG
 #define TIMERDBG(fmt, args...) printf("%s: " fmt "\n", __FUNCTION__ , ## args)
 #else
 #define TIMERDBG(fmt, args...)
-#endif
-
+#endif // endif
 
 /*
  * POSIX timer support for Linux. Taken from linux_timer.c in upnp
  */
 
 #define __USE_GNU
-
 
 #include <stdlib.h>	    // for malloc, free, etc.
 #include <string.h>	    // for memset, strncasecmp, etc.
@@ -47,6 +48,9 @@
 #include <stdio.h>	    // for printf, etc.
 #include <sys/time.h>
 #include <time.h>
+#include <inttypes.h>
+
+#include <typedefs.h>
 
 /* define TIMER_PROFILE to enable code which guages how accurate the timer functions are.
  * For each expiring timer the code will print the expected time interval and the actual time
@@ -93,14 +97,14 @@ static void TIMEVAL_TO_TIMESPEC(const struct timeval *tv, struct timespec *ts)
 	(tv)->tv_sec = (ts)->tv_sec;                                    \
 	(tv)->tv_usec = (ts)->tv_nsec / 1000;                           \
 }
-#endif
+#endif // endif
 
 #ifndef TIMEVAL_TO_TIMESPEC
 # define TIMEVAL_TO_TIMESPEC(tv, ts) {                                   \
 	(ts)->tv_sec = (tv)->tv_sec;                                    \
 	(ts)->tv_nsec = (tv)->tv_usec * 1000;                           \
 }
-#endif
+#endif // endif
 #endif	/* !BCMQT */
 
 #define ROUNDUP(x, y) ((((x)+(y)-1)/(y))*(y))
@@ -121,13 +125,13 @@ struct event {
     struct timeval it_interval;
     struct timeval it_value;
     event_callback_t func;
-    int arg;
+    uintptr_t arg;
     unsigned short flags;
     struct event *next;
 #ifdef TIMER_PROFILE
     uint expected_ms;
     uclock_t start;
-#endif
+#endif // endif
 };
 
 void timer_cancel(timer_t timerid);
@@ -138,7 +142,7 @@ static void print_event_queue();
 static void check_timer();
 #if THIS_FINDS_USE
 static int count_queue(struct event *);
-#endif
+#endif // endif
 static int timer_change_settime(timer_t timer_id, const struct itimerspec *timer_spec);
 void block_timer();
 void unblock_timer();
@@ -155,7 +159,6 @@ uclock_t uclock()
 	gettimeofday(&tv, NULL);
 	return ((tv.tv_sec * US_PER_SEC) + tv.tv_usec);
 }
-
 
 void init_event_queue(int n)
 {
@@ -194,13 +197,11 @@ int clock_gettime(
 	struct timeval tv;
 	int n;
 
-
 	n = gettimeofday(&tv, NULL);
 	TIMEVAL_TO_TIMESPEC(&tv, tp);
 
 	return n;
 }
-
 
 int timer_create(
 	clockid_t         clock_id, /* clock ID (always CLOCK_REALTIME) */
@@ -265,7 +266,7 @@ int timer_connect
 (
 	timer_t     timerid, /* timer ID */
 	void (*routine)(timer_t, int), /* user routine */
-	int         arg      /* user argument */
+	uintptr_t         arg      /* user argument */
 )
 {
 	struct event *event = (struct event *) timerid;
@@ -322,11 +323,10 @@ int timer_settime
 	event->expected_ms = (event->it_value.tv_sec * MS_PER_SEC) + (event->it_value.tv_usec /
 	                                                              US_PER_MS);
 	event->start = uclock();
-#endif
+#endif // endif
 	if (event->next) {
 		TIMERDBG("calling timer_settime with a timer that is already on the queue.");
 	}
-
 
 	/* We always want to make sure that the event at the head of the
 	 * queue has a timeout greater than the itimer granularity.
@@ -432,7 +432,6 @@ static void check_timer()
 	}
 }
 
-
 static void check_event_queue()
 {
 	struct timeval sum;
@@ -445,7 +444,7 @@ static void check_event_queue()
 	for (p = event_freelist; p; p = p->next)
 	nfree++;
 	printf("%d free events\n", nfree);
-#endif
+#endif // endif
 
 	timerclear(&sum);
 	for (event = event_queue; event; event = event->next) {
@@ -470,7 +469,7 @@ static int count_queue(struct event *event_queue)
 		i++;
 	return i;
 }
-#endif
+#endif // endif
 
 static void print_event_queue()
 {
@@ -501,7 +500,7 @@ static void alarm_handler(int i)
 	uint junk;
 	uclock_t end;
 	uint actual;
-#endif
+#endif // endif
 
 	block_timer();
 
@@ -526,7 +525,7 @@ static void alarm_handler(int i)
 			junk = end;
 		TIMERDBG("expected %d ms actual %d ms", event->expected_ms,
 		         ((end-event->start)/((uclock_t)UCLOCKS_PER_SEC/1000)));
-#endif
+#endif // endif
 
 		/* call the event callback function */
 		(*(event->func))((timer_t) event, (int)event->arg);
@@ -544,7 +543,7 @@ static void alarm_handler(int i)
 				event->expected_ms = (event->it_value.tv_sec * MS_PER_SEC) +
 				        (event->it_value.tv_usec / US_PER_MS);
 				event->start = uclock();
-#endif
+#endif // endif
 				timerroundup(&event->it_value, g_granularity);
 
 				/* Now, march down the list, decrementing the new timer by the */
@@ -646,7 +645,6 @@ void timer_cancel_all()
 		event->next = NULL;
 	}
 }
-
 
 void timer_cancel(timer_t timerid)
 {
@@ -752,8 +750,10 @@ int bcm_timer_module_init(int timer_entries, bcm_timer_module_id *module_id)
 * Cleanup internal resources used by this timer module. It deletes all
 * pending timer entries from the backend timer system as well.
 */
+/* ARGSUSED */
 int bcm_timer_module_cleanup(bcm_timer_module_id module_id)
 {
+	UNUSED_PARAMETER(module_id);
 	module_id = 0;
 	return 0;
 }
@@ -768,9 +768,10 @@ int bcm_timer_module_enable(bcm_timer_module_id module_id, int enable)
 	return 0;
 }
 
+/* ARGSUSED */
 int bcm_timer_create(bcm_timer_module_id module_id, bcm_timer_id *timer_id)
 {
-	module_id = 0;
+	UNUSED_PARAMETER(module_id);
 	return timer_create(CLOCK_REALTIME, NULL, (timer_t *)timer_id);
 }
 
@@ -789,7 +790,7 @@ int bcm_timer_settime(bcm_timer_id timer_id, const struct itimerspec *timer_spec
 	return timer_settime((timer_t)timer_id, 0, timer_spec, NULL);
 }
 
-int bcm_timer_connect(bcm_timer_id timer_id, bcm_timer_cb func, int data)
+int bcm_timer_connect(bcm_timer_id timer_id, bcm_timer_cb func, uintptr_t data)
 {
 	return timer_connect((timer_t)timer_id, (void *)func, data);
 }

@@ -3,7 +3,7 @@ include ../version.mak
 #RTSRCBASE=../../..
 PJBASE=../pjproject-1.12
 RTSHAREDBASE=$(TOP)/shared
-RTNVARMBASE=$(TOP)/nvram$(BCMEX)$(EX7)
+RTNVARMBASE=$(TOP_PLATFORM)/nvram$(BCMEX)$(EX7)
 UMEMBASE=../umem-1.0.1
 UDTBASE=../udt
 LIB_UDT=udt

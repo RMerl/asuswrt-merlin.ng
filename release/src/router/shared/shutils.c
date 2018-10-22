@@ -423,7 +423,11 @@ int _cpu_eval(int *ppid, char *cmds[])
 #if defined (SMP) || defined(RTCONFIG_ALPINE) || defined(RTCONFIG_LANTIQ)
         cpucmd[ncmds++]="taskset";
         cpucmd[ncmds++]="-c";
-        if(!strcmp(cmds[n], CPU0) || !strcmp(cmds[n], CPU1)) {
+        if(!strcmp(cmds[n], CPU0) || !strcmp(cmds[n], CPU1)
+#if defined(GTAC5300) || defined(RTCONFIG_HND_ROUTER_AX)
+			|| !strcmp(cmds[n], CPU2) || !strcmp(cmds[n], CPU3)
+#endif
+			) {
                 cpucmd[ncmds++]=cmds[n++];
         } else
 #if defined(RTCONFIG_ALPINE) || defined(RTCONFIG_LANTIQ)
@@ -432,7 +436,11 @@ int _cpu_eval(int *ppid, char *cmds[])
                 cpucmd[ncmds++]=CPU0;
 #endif
 #else
-        if(strcmp(cmds[n], CPU0) && strcmp(cmds[n], CPU1))
+        if(strcmp(cmds[n], CPU0) && strcmp(cmds[n], CPU1)
+#if defined(GTAC5300) || defined(RTCONFIG_HND_ROUTER_AX)
+			&& strcmp(cmds[n], CPU2) && strcmp(cmds[n], CPU3)
+#endif
+			)
                 cpucmd[ncmds++]=cmds[n++];
         else
                 n++;
@@ -573,6 +581,45 @@ get_pid_by_name(char *name)
 	return pid;
 }
 
+pid_t
+get_pid_by_thrd_name(char *name)
+{
+        pid_t           pid = -1;
+        DIR             *dir;
+        struct dirent   *next;
+        int cmp = 0;
+        if ((dir = opendir("/proc")) == NULL) {
+                perror("Cannot open /proc");
+                return -1;
+        }
+
+        while ((next = readdir(dir)) != NULL) {
+                FILE *fp;
+                char filename[256];
+                char buffer[256];
+
+                /* If it isn't a number, we don't want it */
+                if (!isdigit(*next->d_name))
+                        continue;
+                sprintf(filename, "/proc/%s/comm", next->d_name);
+                fp = fopen(filename, "r");
+                if (!fp) {
+                        continue;
+                }
+                buffer[0] = '\0';
+                fgets(buffer, 256, fp);
+                fclose(fp);
+
+                if (!(cmp = strncmp(name, buffer, strlen(name)))) {
+                        pid = strtol(next->d_name, NULL, 0);
+                        break;
+                }
+        }
+
+        closedir(dir);
+        return pid;
+}
+
 /*
  * Convert Ethernet address string representation to binary data
  * @param	a	string in xx:xx:xx:xx:xx:xx notation
@@ -620,7 +667,7 @@ char *ether_etoa2(const unsigned char *e, char *a)
 	return a;
 }
 
-#ifdef GTAC5300
+#if defined(GTAC5300) || defined(RTAX88U)
 static int dbg_noisy = -1;
 #endif
 
@@ -637,7 +684,7 @@ void cprintf(const char *format, ...)
 #if defined(DEBUG_NOISY) && !defined(HND_ROUTER)
 	{
 #else
-#ifdef GTAC5300
+#if defined(GTAC5300) || defined(RTAX88U)
 	if(dbg_noisy == -1)
 		dbg_noisy = nvram_get_int("debug_cprintf");
 

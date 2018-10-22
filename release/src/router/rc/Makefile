@@ -13,7 +13,7 @@ ifneq ($(HND_ROUTER),y)
 CFLAGS += -idirafter$(LINUXDIR)/include
 endif
 ifeq ($(RTCONFIG_DPSTA),y)
-CFLAGS += -I$(TOP)/dpsta
+CFLAGS += -I$(TOP_PLATFORM)/dpsta
 endif
 CFLAGS += -ffunction-sections -fdata-sections
 CFLAGS += -DDLM -DASUS_DDNS -DASUS_EXT -DBTN_SETUP -DWEB_REDIRECT -DNORESOLV
@@ -66,13 +66,18 @@ endif
 include $(SRCBASE)/.config
 
 ifeq ($(RTCONFIG_REALTEK),y)
-LDFLAGS = -L$(TOP)/nvram${BCMEX} -lnvram -L$(TOP)/shared -lshared -lcrypt -ldl
+LDFLAGS = -L$(TOP_PLATFORM)/nvram${BCMEX} -lnvram -L$(TOP)/shared -lshared -lcrypt -ldl
 else
-LDFLAGS = -L$(TOP)/nvram${BCMEX}${EX7} -lnvram -L$(TOP)/shared -lshared -lcrypt -L$(TOP)/libbcmcrypto -lbcmcrypto -ldl
+LDFLAGS = -L$(TOP_PLATFORM)/nvram${BCMEX}${EX7} -lnvram -L$(TOP)/shared -lshared -lcrypt -L$(TOP)/libbcmcrypto -lbcmcrypto -ldl
 endif
 ifeq ($(HND_ROUTER),y)
 CFLAGS += -I$(HND_SRC)/userspace/public/include -I$(HND_SRC)/userspace/public/include/linux -I$(HND_SRC)/userspace/private/include
-LDFLAGS += -L$(TOP)/wlcsm -lwlcsm -L$(TOP)/bcm_flashutil -lbcm_flashutil -L$(TOP)/bcm_util -lbcm_crc -L$(TOP)/bcm_boardctl -lbcm_boardctl
+LDFLAGS += -L$(TOP_PLATFORM)/wlcsm -lwlcsm -L$(TOP_PLATFORM)/bcm_flashutil -lbcm_flashutil -L$(TOP_PLATFORM)/bcm_util -lbcm_crc -L$(TOP_PLATFORM)/bcm_boardctl -lbcm_boardctl
+endif
+ifeq ($(HND_ROUTER_AX),y)
+CFLAGS += -DWL11AC_80P80 -DWL11AC_160 -DBCMDONGLEHOST
+CFLAGS += -I$(SRCBASE)/../components/proto/include -I$(SRCBASE)/../components/wlioctl/include -I$(SRCBASE)/../components/math/include
+CFLAGS += -I$(SRCBASE)/wl -I$(SRCBASE)/wl/sys -I$(SRCBASE)/../components/apps/wps/brcm_apps/include/
 endif
 
 ifeq ($(RTCONFIG_BCMARM),y)
@@ -197,7 +202,7 @@ ifeq ($(or $(RTAC68A),$(RT4GAC68U)),y)
 CFLAGS += -DRTAC68U
 endif
 
-ifeq ($(or $(RTAC85U)),y)
+ifeq ($(or $(RTAC85U),$(RTAC85P)),y)
 TARGET_MODEL = $(subst -,,$(subst +,P,$(BUILD_NAME)))
 CFLAGS += -D$(TARGET_MODEL)
 endif
@@ -299,10 +304,9 @@ ifeq ($(RTCONFIG_AMAS),y)
 OBJS += obd-alpine.o
 endif
 else ifeq ($(RTCONFIG_LANTIQ),y)
-OBJS += init-lantiq.o lantiq.o ate-lantiq.o lantiq-wave.o
-OBJS += $(if $(wildcard sysdeps/wps-lantiq.c),wps-lantiq.o,prebuild/wps-lantiq.o)
+OBJS += init-lantiq.o wps-lantiq.o lantiq.o ate-lantiq.o lantiq-wave.o
 ifeq ($(RTCONFIG_AMAS),y)
-OBJS += $(if $(wildcard sysdeps/lantiq/obd-lantiq.c),obd-lantiq.o,prebuild/obd-lantiq.o)
+OBJS += obd-lantiq.o
 endif
 endif
 
@@ -402,11 +406,7 @@ endif
 endif
 ifeq ($(or $(RTCONFIG_BCMWL6),$(RTCONFIG_LANTIQ),$(RTCONFIG_QCA)),y)
 ifeq ($(RTCONFIG_PROXYSTA),y)
-ifeq ($(RTCONFIG_LANTIQ),y)
-OBJS += $(if $(wildcard psta_monitor.c),psta_monitor.o,prebuild/psta_monitor.o)
-else
 OBJS += psta_monitor.o
-endif
 endif
 ifeq ($(RTCONFIG_AMAS),y)
 ifneq ($(RTCONFIG_DISABLE_REPEATER_UI),y)
@@ -1102,6 +1102,10 @@ ifneq ($(wildcard ./prebuild/ate-broadcom.o),)
 ate-broadcom.o:
 	@-cp -f ./prebuild/ate-broadcom.o .
 endif
+ifneq ($(wildcard ./prebuild/init-broadcom.o),)
+init-broadcom.o:
+	@-cp -f ./prebuild/init-broadcom.o .
+endif
 ifneq ($(wildcard ./prebuild/ate.o),)
 ate.o:
 	@-cp -f ./prebuild/ate.o .
@@ -1294,7 +1298,7 @@ ifneq ($(wildcard ./prebuild/roamast-broadcom.o),)
 roamast-broadcom.o:
 	@-cp -f ./prebuild/roamast-broadcom.o .
 endif
-ifneq ($(wildcard ./prebuild/roamast-lantiq.o),)
+ifneq ($(wildcard ./prebuild/roamast-latiq.o),)
 roamast-lantiq.o:
 	@-cp -f ./prebuild/roamast-lantiq.o .
 endif

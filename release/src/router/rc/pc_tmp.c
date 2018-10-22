@@ -198,7 +198,7 @@ int pc_tmp_main(int argc, char *argv[]){
 		print_pc_list(pc_list);
 	}
 	else if(argc == 2 && !strcmp(argv[1], "count")){
-		_dprintf("%d\n", count_pc_rules(pc_list));
+		_dprintf("%d\n", count_pc_rules(pc_list, 1));
 	}
 	else if((argc == 2 && !strcmp(argv[1], "enabled"))
 			|| (argc == 3 && !strcmp(argv[1], "enabled") && (!strcmp(argv[2], "0") || !strcmp(argv[2], "1")))){

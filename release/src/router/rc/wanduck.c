@@ -505,6 +505,9 @@ void enable_wan_led()
 			case MODEL_RTAC88U:
 			case MODEL_RTAC86U:
 			case MODEL_RTAC3100:
+			case MODEL_RTAX88U:
+			case MODEL_GTAX11000:
+			case MODEL_RTAX92U:
 #ifndef HND_ROUTER
 				eval("et", "-i", "eth0", "robowr", "0", "0x18", "0x01ff");
 				eval("et", "-i", "eth0", "robowr", "0", "0x1a", "0");
@@ -549,12 +552,17 @@ static void wan_led_control(int sig) {
 #endif
 #endif
 #if defined(RTAC68U) ||  defined(RTAC87U) || defined(RTAC3200) || defined(RTCONFIG_BCM_7114) || defined(HND_ROUTER) || defined(DSL_AC68U)
+#if !defined(RTAX92U)
 	if(nvram_match("AllLED", "1")
 		&& !nvram_get_int("led_disable")
+#endif
 #ifdef RTAC68U
 		&& is_ac66u_v2_series()
 #endif
-	) {
+#if !defined(RTAX92U)
+	) 
+#endif
+	{
 #if defined(RTAC68U) ||  defined(RTAC87U) || defined(RTAC3200) || defined(RTCONFIG_BCM_7114) || defined(HND_ROUTER)
 		if (rule_setup) {
 			led_control(LED_WAN, LED_ON);
@@ -771,9 +779,6 @@ int do_dns_detect(int wan_unit)
 	char word[64], *next, host[PATH_MAX], content[PATH_MAX];
 	int timeout, size, ret, status, pipefd[2];
 	int debug = nvram_get_int("dns_probe_debug");
-
-	if(dualwan_unit__usbif(wan_unit) && nvram_get_int("modem_pdp") == 2)
-		return 1;
 
 	snprintf(host, sizeof(host), "%s", nvram_safe_get("dns_probe_host"));
 	snprintf(content, sizeof(content), "%s", nvram_safe_get("dns_probe_content"));
@@ -3113,7 +3118,6 @@ _dprintf("wanduck(%d)(first detect start): state %d, state_old %d, changed %d, w
                                                 eval("ebtables", "-t", "broute", "-I", "BROUTING","-i",nvram_safe_get("wl0.1_ifname"),"-j","ACCEPT");
                                         }
                                 }
-
 #endif
 				redirect_nat_setting();
 				eval("iptables-restore", NAT_RULES);
@@ -3169,11 +3173,16 @@ _dprintf("wanduck(%d)(first detect start): state %d, state_old %d, changed %d, w
 #elif defined(DSL_N55U) || defined(DSL_N55U_B)
 		led_control(LED_WAN, LED_ON);
 #elif defined(RTAC68U) || defined(RTAC87U) || defined(RTAC3200) || defined(RTCONFIG_BCM_7114) || defined(HND_ROUTER)
+#if !defined(RTAX92U)
 		if(nvram_match("AllLED", "1")
+#endif
 #ifdef RTAC68U
 				&& is_ac66u_v2_series()
 #endif
-				){
+#if !defined(RTAX92U)
+				)
+#endif
+		{
 			led_control(LED_WAN, LED_OFF);
 			enable_wan_led();
 		}
@@ -4152,7 +4161,6 @@ _dprintf("nat_rule: stop_nat_rules 6.\n");
                                                 	eval("ebtables", "-t", "broute", "-I", "BROUTING","-i",nvram_safe_get("wl0.1_ifname"),"-j","ACCEPT");
                                         	}
                                 	}
-
 #endif
 
 
@@ -4203,7 +4211,6 @@ _dprintf("nat_rule: start_nat_rules 6.\n");
                                                 eval("ebtables", "-t", "broute", "-I", "BROUTING","-i",nvram_safe_get("wl0.1_ifname"),"-j","ACCEPT");
                                         }
                                 }
-
 #endif
 				redirect_nat_setting();
 				eval("iptables-restore", NAT_RULES);
@@ -4250,8 +4257,11 @@ _dprintf("nat_rule: start_nat_rules 6.\n");
 #endif // RTCONFIG_DUALWAN
 					){
 						logmessage("DualWAN", "skip single wan wan_led_control - WANRED off\n");
+#if !defined(RTAX92U)
+
 						if(nvram_match("AllLED", "1")
 						   && !nvram_get_int("led_disable"))
+#endif
 						{
 							led_control(LED_WAN, LED_ON);
 							disable_wan_led();
@@ -4316,8 +4326,10 @@ _dprintf("nat_rule: start_nat_rules 6.\n");
 		else if(conn_changed_state[current_wan_unit] == D2C || conn_changed_state[current_wan_unit] == CONNED){
 			if(rule_setup && !isFirstUse){
 #if defined(RTCONFIG_WPS_ALLLED_BTN)
+#if !defined(RTAX92U)
 				if(nvram_match("AllLED", "1")
 				   && !nvram_get_int("led_disable"))
+#endif
 					led_control(LED_WAN, LED_ON);
 				else
 					led_control(LED_WAN, LED_OFF);
@@ -4329,7 +4341,10 @@ _dprintf("nat_rule: start_nat_rules 6.\n");
 #ifdef RTAC68U
 						&& is_ac66u_v2_series()
 #endif
-						){
+#if !defined(RTAX92U)
+						)
+#endif
+				{
 					led_control(LED_WAN, LED_OFF);
 					enable_wan_led();
 				}

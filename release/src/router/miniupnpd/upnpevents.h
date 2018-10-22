@@ -25,6 +25,9 @@ enum subscriber_service_enum {
 #ifdef ENABLE_DP_SERVICE
  EDP,
 #endif
+#ifdef ENABLE_AURASYNC
+ EAS,
+#endif
 };
 
 void

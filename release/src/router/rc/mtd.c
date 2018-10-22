@@ -1138,6 +1138,15 @@ bca_sys_upgrade(const char *path)
 		goto fail;
 	}
 
+#if defined(IMGIF_API_VERSION)
+	/* query flash device information */
+	if (imgif_get_flash_info(&flash_info) < 0) {
+		_dprintf("*** Error(pid:%d): %s@%d Failed to get flash info. Aborting\n",
+			getpid(), __FUNCTION__, __LINE__);
+		ret = EIO;
+	goto fail;
+	}
+#else
 	/* query flash device information */
 	if (imgif_get_flash_info(imgifHandle, &flash_info) < 0) {
 		_dprintf("*** Error(pid:%d): %s@%d Failed to get flash info. Aborting\n",
@@ -1145,6 +1154,7 @@ bca_sys_upgrade(const char *path)
 		ret = EIO;
 		goto fail;
 	}
+#endif
 
 	/* evaluate image size */
 	if (((imgsz + CMS_IMAGE_OVERHEAD) > flash_info.flashSize) ||

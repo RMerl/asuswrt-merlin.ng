@@ -2922,7 +2922,7 @@ int set_usb_common_nvram(const char *action, const char *device_name, const char
 	unsigned int val;
 
 	usb_dbg("%s: %s %s %s %s.\n", __func__, action, device_name, usb_node, known_type);
-
+	
 	if(get_path_by_node(usb_node, port_path, 8) == NULL){
 		usb_dbg("(%s): Fail to get usb path.\n", usb_node);
 		return 0;
@@ -2933,7 +2933,11 @@ int set_usb_common_nvram(const char *action, const char *device_name, const char
 			snprintf(prefix, sizeof(prefix), "usb_path%s", port_path);
 			snprintf(been_type, sizeof(been_type), "%s", nvram_safe_get(prefix));
 
+#ifdef RTCONFIG_HND_ROUTER_AX
+			if(strlen(nvram_safe_get(prefix)) > 0)
+#else
 			if(strcmp(been_type, "storage") || strlen(nvram_safe_get(strcat_r(prefix, "_speed", tmp))) <= 0)
+#endif
 				nvram_unset(prefix);
 			if(strlen(nvram_safe_get(strcat_r(prefix, "_vid", tmp))) > 0)
 				nvram_unset(tmp);

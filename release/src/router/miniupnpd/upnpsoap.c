@@ -33,6 +33,9 @@
 #include "getconnstatus.h"
 #include "upnpurns.h"
 #include "upnputils.h"
+#ifdef ENABLE_AURASYNC
+#include <aura_rgb.h>
+#endif
 
 /* utility function */
 static int is_numeric(const char * s)
@@ -2172,6 +2175,126 @@ GetAssignedRoles(struct upnphttp * h, const char * action, const char * ns)
 }
 #endif
 
+#ifdef ENABLE_AURASYNC
+static int aa_test=0;
+static void
+Get_AURA_State(struct upnphttp * h, const char * action)
+{
+	static const char resp[] =
+		"<u:%sResponse "
+		"xmlns:u=\"%s\">"
+		"<NewGroup>%d</NewGroup>"
+		"<NewRed>%u</NewRed>"
+		"<NewGreen>%u</NewGreen>"
+		"<NewBlue>%u</NewBlue>"
+		"<NewMode>%u</NewMode>"
+		"<NewDirection>%u</NewDirection>"
+		"<NewSpeed>%d</NewSpeed>"
+		"<NewMSupportH>%u</NewMSupportH>"
+		"<NewMSupportL>%u</NewMSupportL>"
+		"</u:%sResponse>";
+
+	struct NameValueParserData data;
+	char *err_msg = "Invalid Args";
+	char *tmp_str;
+	int group_id;
+	RGB_LED_STATUS_T status;
+
+	char body[1024];
+	int bodylen;
+
+	ParseNameValue(h->req_buf + h->req_contentoff, h->req_contentlen, &data);
+	tmp_str = GetValueFromNameValueList(&data, "NewGroup");
+
+	if ( !tmp_str )
+		goto Err2;
+
+	group_id = atoi(tmp_str);
+	if ((group_id < AS_GROUP_MIN) || (group_id > AS_GROUP_MAX))
+		goto Err1;
+
+	memset(&status, 0, sizeof(RGB_LED_STATUS_T));
+	if (aura_rgb_led(AURA_SW_REQ, &status, group_id, 0) < 0) {
+		err_msg = "action fail!";
+		goto Err1;
+	}
+
+	bodylen = snprintf(body, sizeof(body), resp, action, SERVICE_TYPE_ASIPC,
+				group_id, status.red, status.green, status.blue, status.mode, status.direction, status.speed,
+				status.mode_support_h, status.mode_support_l,
+				action);
+	ClearNameValueList(&data);
+	BuildSendAndCloseSoapResp(h, body, bodylen);
+	return;
+
+Err1:
+	ClearNameValueList(&data);
+Err2:
+	SoapError(h, 402, err_msg);
+	return;
+}
+
+static void
+Set_AURA_State(struct upnphttp * h, const char * action)
+{
+	static const char resp[] =
+		"<u:%sResponse "
+		"xmlns:u=\"%s\">"
+		"</u:%sResponse>";
+
+	struct NameValueParserData data;
+	char *err_msg = "Invalid Args";
+	char *group_str, *red_str, *green_str, *blue_str, *mode_str, *direction_str, *speed_str;
+	int group;
+	RGB_LED_STATUS_T status;
+
+	char body[512];
+	int bodylen;
+
+	ParseNameValue(h->req_buf + h->req_contentoff, h->req_contentlen, &data);
+	group_str = GetValueFromNameValueList(&data, "NewGroup");
+	red_str = GetValueFromNameValueList(&data, "NewRed");
+	green_str = GetValueFromNameValueList(&data, "NewGreen");
+	blue_str = GetValueFromNameValueList(&data, "NewBlue");
+	mode_str = GetValueFromNameValueList(&data, "NewMode");
+	direction_str = GetValueFromNameValueList(&data, "NewDirection");
+	speed_str = GetValueFromNameValueList(&data, "NewSpeed");
+
+	if ( !group_str || !red_str || !green_str || !blue_str || !mode_str || !direction_str || !speed_str )
+		goto Err;
+
+	group = atoi(group_str);
+
+	memset(&status, 0, sizeof(RGB_LED_STATUS_T));
+	status.red = atoi(red_str);
+	status.green = atoi(green_str);
+	status.blue = atoi(blue_str);
+	status.mode = atoi(mode_str);
+	status.speed = atoi(speed_str);
+	status.direction = atoi(direction_str);
+
+	syslog(LOG_NOTICE, "%s: AS_State group:%d, RGB:[%u,%u,%u], mode:%u, speed:%d, dir:%u", action, group,
+				status.red, status.green, status.blue, status.mode, status.speed, status.direction);
+
+	if (aura_rgb_led(ROUTER_AURA_SET, &status, group, 1) < 0) {
+		err_msg = "action fail!";
+		goto Err;
+	}
+
+	bodylen = snprintf(body, sizeof(body), resp,
+	              action, SERVICE_TYPE_ASIPC, action);
+
+	ClearNameValueList(&data);
+	BuildSendAndCloseSoapResp(h, body, bodylen);
+	return;
+
+Err:
+	ClearNameValueList(&data);
+	SoapError(h, 402, err_msg);
+	return;
+}
+#endif
+
 /* Windows XP as client send the following requests :
  * GetConnectionTypeInfo
  * GetNATRSIPStatus
@@ -2234,6 +2357,10 @@ soapMethods[] =
 	{ "SendSetupMessage", SendSetupMessage},	/* Required */
 	{ "GetSupportedProtocols", GetSupportedProtocols},	/* Required */
 	{ "GetAssignedRoles", GetAssignedRoles},	/* Required */
+#endif
+#ifdef ENABLE_AURASYNC
+	{ "GetState", Get_AURA_State},
+	{ "SetState", Set_AURA_State},
 #endif
 	{ 0, 0 }
 };

@@ -457,6 +457,9 @@ static int add_qos_rules(char *pcWANIF)
 		case MODEL_RTAC3100:
 		case MODEL_GTAC5300:
 		case MODEL_RTAC86U:
+		case MODEL_RTAX88U:
+		case MODEL_GTAX11000:
+		case MODEL_RTAX92U:
 		case MODEL_RTAC1200G:
 		case MODEL_RTAC1200GP:
 #if defined(RTCONFIG_LANTIQ)

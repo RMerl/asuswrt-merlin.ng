@@ -51,7 +51,7 @@ const char *avahi_strerror(int error) {
 
         N_("Access denied"),
         N_("Invalid operation"),
-        N_("An unexpected D-Bus error occured"),
+        N_("An unexpected D-Bus error occurred"),
         N_("Daemon connection failed"),
         N_("Memory exhausted"),
         N_("The object passed in was not valid"),

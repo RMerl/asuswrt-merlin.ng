@@ -1417,6 +1417,7 @@ function QKfinish_load_body(){
 	}
 
 	if(!isWLclient() && !parent.sysReboot) setTimeout(function(){
+		if(parent.isFirst) parent.restartWireless = true;
 		restartService();
 	}, 1000);
 }

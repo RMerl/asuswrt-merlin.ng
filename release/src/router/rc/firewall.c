@@ -1695,7 +1695,7 @@ void nat_setting(char *wan_if, char *wan_ip, char *wanx_if, char *wanx_ip, char 
 	int pc_count;
 
 	get_all_pc_list(&pc_list);
-	pc_count = count_pc_rules(pc_list);
+	pc_count = count_pc_rules(pc_list, 1);
 	free_pc_list(&pc_list);
 
 	if(nvram_get_int("MULTIFILTER_ALL") != 0 && pc_count > 0){
@@ -1826,8 +1826,10 @@ void nat_setting(char *wan_if, char *wan_ip, char *wanx_if, char *wanx_ip, char 
 			fprintf(fp, "-A POSTROUTING %s -o %s -s %s -d %s -j MASQUERADE\n", p, lan_if, lan_class, lan_class);
 
 #ifdef RTCONFIG_WIFI_SON
-		ip2class(g_lan_ip, nvram_safe_get("lan_netmask"), g_lan_class);
-		fprintf(fp, "-A POSTROUTING %s -o %s -s %s -d %s -j MASQUERADE\n", p, BR_GUEST, g_lan_class, g_lan_class);
+		if (sw_mode() != SW_MODE_REPEATER) {
+			ip2class(g_lan_ip, nvram_safe_get("lan_netmask"), g_lan_class);
+			fprintf(fp, "-A POSTROUTING %s -o %s -s %s -d %s -j MASQUERADE\n", p, BR_GUEST, g_lan_class, g_lan_class);
+		}
 #endif
 	}
 
@@ -2072,7 +2074,7 @@ void nat_setting2(char *lan_if, char *lan_ip, char *logaccept, char *logdrop)	//
 	int pc_count;
 
 	get_all_pc_list(&pc_list);
-	pc_count = count_pc_rules(pc_list);
+	pc_count = count_pc_rules(pc_list, 1);
 	free_pc_list(&pc_list);
 
 	if(nvram_get_int("MULTIFILTER_ALL") != 0 && pc_count > 0){
@@ -2250,8 +2252,10 @@ void nat_setting2(char *lan_if, char *lan_ip, char *logaccept, char *logdrop)	//
 		fprintf(fp, "-A POSTROUTING %s -o %s -s %s -d %s -j MASQUERADE\n", p, lan_if, lan_class, lan_class);
 
 #ifdef RTCONFIG_WIFI_SON
-		ip2class(g_lan_ip, nvram_safe_get("lan_netmask"), g_lan_class);
-		fprintf(fp, "-A POSTROUTING %s -o %s -s %s -d %s -j MASQUERADE\n", p, BR_GUEST, g_lan_class, g_lan_class);
+		if (sw_mode() != SW_MODE_REPEATER) {
+			ip2class(g_lan_ip, nvram_safe_get("lan_netmask"), g_lan_class);
+			fprintf(fp, "-A POSTROUTING %s -o %s -s %s -d %s -j MASQUERADE\n", p, BR_GUEST, g_lan_class, g_lan_class);
+		}
 #endif
 	}
 #ifdef RTCONFIG_FBWIFI
@@ -2664,7 +2668,8 @@ start_default_filter(int lanunit)
 #endif
 
 #ifdef RTCONFIG_WIFI_SON
-	fprintf(fp, "-A INPUT -i %s -m state --state NEW -j ACCEPT\n", "br+");
+	if (sw_mode() != SW_MODE_REPEATER)
+		fprintf(fp, "-A INPUT -i %s -m state --state NEW -j ACCEPT\n", "br+");
 #else
 	fprintf(fp, "-A INPUT -i %s -m state --state NEW -j ACCEPT\n", lan_if);
 #endif
@@ -2683,8 +2688,10 @@ start_default_filter(int lanunit)
 	fprintf(fp, "-A FORWARD -i %s -o %s -j ACCEPT\n", "lo", "lo");
 
 #ifdef RTCONFIG_WIFI_SON
-	fprintf(fp, "-A FORWARD -i %s -o %s -j DROP\n", lan_if, BR_GUEST);
-	fprintf(fp, "-A FORWARD -i %s -o %s -j DROP\n", BR_GUEST, lan_if);
+	if (sw_mode() != SW_MODE_REPEATER) {
+		fprintf(fp, "-A FORWARD -i %s -o %s -j DROP\n", lan_if, BR_GUEST);
+		fprintf(fp, "-A FORWARD -i %s -o %s -j DROP\n", BR_GUEST, lan_if);
+	}
 #endif
 
 	fprintf(fp, "-A logaccept -m state --state NEW -j LOG --log-prefix \"ACCEPT \" "
@@ -2743,6 +2750,8 @@ void set_cap_apmode_filter(void)
 	char lan_class[32];
 
 	if((fp = fopen(cap_rules, "w")) == NULL)
+		return;
+	if (sw_mode() == SW_MODE_REPEATER)
 		return;
 
 	ip2class(nvram_safe_get("lan_ipaddr"), nvram_safe_get("lan_netmask"), lan_class);
@@ -3146,15 +3155,19 @@ filter_setting(char *wan_if, char *wan_ip, char *lan_if, char *lan_ip, char *log
 	int pc_count;
 
 	get_all_pc_tmp_list(&pc_list);
-	pc_count = count_pc_rules(pc_list);
+	pc_count = count_pc_rules(pc_list, 1);
+	 pc_count += count_pc_rules(pc_list, 2);
 
 	if(pc_count > 0){
 TRACE_PT("writing temporary Parental Control\n");
+		config_pause_block_string(pc_list, fp, logaccept, logdrop, 2);
 		config_daytime_string(pc_list, fp, logaccept, logdrop, 1);
 
 #ifdef RTCONFIG_IPV6
-		if (ipv6_enabled())
+		if (ipv6_enabled()){
+			config_pause_block_string(pc_list, fp_ipv6, logaccept, logdrop, 2);
 			config_daytime_string(pc_list, fp_ipv6, logaccept, logdrop, 1);
+		}
 #endif
 
 		strcpy(macaccept, "PControls");
@@ -3162,15 +3175,19 @@ TRACE_PT("writing temporary Parental Control\n");
 	free_pc_list(&pc_list);
 
 	get_all_pc_list(&pc_list);
-	pc_count = count_pc_rules(pc_list);
+	pc_count = count_pc_rules(pc_list, 1);
+	pc_count += count_pc_rules(pc_list, 2);
 
 	if(nvram_get_int("MULTIFILTER_ALL") != 0 && pc_count > 0){
 TRACE_PT("writing Parental Control\n");
+		config_pause_block_string(pc_list, fp, logaccept, logdrop, 0);
 		config_daytime_string(pc_list, fp, logaccept, logdrop, 0);
 
 #ifdef RTCONFIG_IPV6
-		if (ipv6_enabled())
+		if (ipv6_enabled()){
+			config_pause_block_string(pc_list, fp_ipv6, logaccept, logdrop, 0);
 			config_daytime_string(pc_list, fp_ipv6, logaccept, logdrop, 0);
+		}
 #endif
 
 		strcpy(macaccept, "PControls");
@@ -3269,11 +3286,13 @@ TRACE_PT("writing Parental Control\n");
 		}
 #endif
 #ifdef RTCONFIG_WIFI_SON
-		fprintf(fp, "-A INPUT -i %s -d %s -j DROP\n", BR_GUEST, lan_class);
-		fprintf(fp, "-A INPUT -i %s -m state --state NEW -j %s\n", "br+", "ACCEPT");
-#else
-		fprintf(fp, "-A INPUT -i %s -m state --state NEW -j %s\n", lan_if, "ACCEPT");
+		if (sw_mode() != SW_MODE_REPEATER) {
+			fprintf(fp, "-A INPUT -i %s -d %s -j DROP\n", BR_GUEST, lan_class);
+			fprintf(fp, "-A INPUT -i %s -m state --state NEW -j %s\n", "br+", "ACCEPT");
+		}
+		else
 #endif
+		fprintf(fp, "-A INPUT -i %s -m state --state NEW -j %s\n", lan_if, "ACCEPT");
 #if defined(RTCONFIG_PPTPD) || defined(RTCONFIG_ACCEL_PPTPD)
 		if (nvram_get_int("pptpd_enable"))
 			fprintf(fp, "-A INPUT -i %s -m state --state NEW -j %s\n", "pptp+", "ACCEPT");
@@ -3567,10 +3586,12 @@ TRACE_PT("writing Parental Control\n");
 #endif
 
 #ifdef RTCONFIG_WIFI_SON
-	fprintf(fp, "-A FORWARD -o %s ! -i %s -j %s\n", wan_if, "br+", "other2wan");
-#else
-	fprintf(fp, "-A FORWARD -o %s ! -i %s -j %s\n", wan_if, lan_if, "other2wan");
+	if (sw_mode() != SW_MODE_REPEATER) {
+		fprintf(fp, "-A FORWARD -o %s ! -i %s -j %s\n", wan_if, "br+", "other2wan");
+	}
+	else
 #endif
+	fprintf(fp, "-A FORWARD -o %s ! -i %s -j %s\n", wan_if, lan_if, "other2wan");
 #ifdef RTCONFIG_IPV6
 	if (ipv6_enabled() && *wan6face) {
 		if (nvram_match("ipv6_fw_enable", "1")) {
@@ -3589,12 +3610,15 @@ TRACE_PT("writing Parental Control\n");
 			&& dualwan_unit__nonusbif(unit)
 #endif
 			)
+	{
 #ifdef RTCONFIG_WIFI_SON
-		fprintf(fp, "-A FORWARD -o %s ! -i %s -j %s\n", wanx_if, "br+", "other2wan");
-#else
-		fprintf(fp, "-A FORWARD -o %s ! -i %s -j %s\n", wanx_if, lan_if, "other2wan");
+		if (sw_mode() != SW_MODE_REPEATER) {
+			fprintf(fp, "-A FORWARD -o %s ! -i %s -j %s\n", wanx_if, "br+", "other2wan");
+		}
+		else
 #endif
-
+			fprintf(fp, "-A FORWARD -o %s ! -i %s -j %s\n", wanx_if, lan_if, "other2wan");
+	}
 	fprintf(fp, "-A other2wan -i tun+ -j RETURN\n");	// Let OVPN traffic through
 	fprintf(fp, "-A other2wan -j %s\n", logdrop);		// Drop other foreign traffic
 
@@ -3626,8 +3650,10 @@ TRACE_PT("writing Parental Control\n");
 	fprintf(fp_ipv6, "-A FORWARD -i %s -o %s -j %s\n", lan_if, lan_if, logaccept);
 #endif
 #ifdef RTCONFIG_WIFI_SON
-	fprintf(fp, "-A FORWARD -i %s -o %s -j DROP\n", lan_if, BR_GUEST);
-	fprintf(fp, "-A FORWARD -i %s -o %s -j DROP\n", BR_GUEST, lan_if);
+	if (sw_mode() != SW_MODE_REPEATER) {
+		fprintf(fp, "-A FORWARD -i %s -o %s -j DROP\n", lan_if, BR_GUEST);
+		fprintf(fp, "-A FORWARD -i %s -o %s -j DROP\n", BR_GUEST, lan_if);
+	}
 #endif
 
 #ifdef RTCONFIG_IPV6
@@ -4249,15 +4275,19 @@ filter_setting2(char *lan_if, char *lan_ip, char *logaccept, char *logdrop)
 	int pc_count;
 
 	get_all_pc_tmp_list(&pc_list);
-	pc_count = count_pc_rules(pc_list);
+	pc_count = count_pc_rules(pc_list, 1);
+	 pc_count += count_pc_rules(pc_list, 2);
 
 	if(pc_count > 0){
 TRACE_PT("writing temporary Parental Control\n");
+		config_pause_block_string(pc_list, fp, logaccept, logdrop, 2);
 		config_daytime_string(pc_list, fp, logaccept, logdrop, 1);
 
 #ifdef RTCONFIG_IPV6
-		if (ipv6_enabled())
+		if (ipv6_enabled()){
+			config_pause_block_string(pc_list, fp_ipv6, logaccept, logdrop, 2);
 			config_daytime_string(pc_list, fp_ipv6, logaccept, logdrop, 1);
+		}
 #endif
 
 		strcpy(macaccept, "PControls");
@@ -4265,15 +4295,18 @@ TRACE_PT("writing temporary Parental Control\n");
 	free_pc_list(&pc_list);
 
 	get_all_pc_list(&pc_list);
-	pc_count = count_pc_rules(pc_list);
+	pc_count = count_pc_rules(pc_list, 1);
 
 	if(nvram_get_int("MULTIFILTER_ALL") != 0 && pc_count > 0){
 TRACE_PT("writing Parental Control\n");
+		config_pause_block_string(pc_list, fp, logaccept, logdrop, 0);
 		config_daytime_string(pc_list, fp, logaccept, logdrop, 0);
 
 #ifdef RTCONFIG_IPV6
-		if (ipv6_enabled())
+		if (ipv6_enabled()){
+			config_pause_block_string(pc_list, fp_ipv6, logaccept, logdrop, 0);
 			config_daytime_string(pc_list, fp_ipv6, logaccept, logdrop, 0);
+		}
 #endif
 
 		strcpy(macaccept, "PControls");

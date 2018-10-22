@@ -30,7 +30,7 @@
 #define AVAHI_DNS_PACKET_SIZE_MAX (AVAHI_DNS_PACKET_HEADER_SIZE + 256 + 2 + 2 + 4 + 2 + AVAHI_DNS_RDATA_MAX)
 
 typedef struct AvahiDnsPacket {
-    size_t size, rindex, max_size;
+    size_t size, rindex, max_size, res_size;
     AvahiHashmap *name_table; /* for name compression */
     uint8_t *data;
 } AvahiDnsPacket;
@@ -78,6 +78,8 @@ int avahi_dns_packet_skip(AvahiDnsPacket *p, size_t length);
 
 int avahi_dns_packet_is_empty(AvahiDnsPacket *p);
 size_t avahi_dns_packet_space(AvahiDnsPacket *p);
+size_t avahi_dns_packet_reserve_size(AvahiDnsPacket *p, size_t res_size);
+size_t avahi_dns_packet_reserved_space(AvahiDnsPacket *p);
 
 /* LLMNR Functions */
 AvahiDnsPacket* avahi_llmnr_packet_new_query(unsigned mtu);

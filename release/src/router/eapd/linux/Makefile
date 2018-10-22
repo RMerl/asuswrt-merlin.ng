@@ -17,7 +17,7 @@ ifneq ($(LINUXDIR),)
 CFLAGS += -Dlinux
 endif
 
-LDFLAGS += -L$(TOP)/nvram -L$(INSTALLDIR)/nvram/usr/lib -lnvram
+LDFLAGS += -L$(TOP_PLATFORM)/nvram -L$(INSTALLDIR)/nvram/usr/lib -lnvram
 LDFLAGS += -L$(TOP)/shared -L$(INSTALLDIR)/shared/usr/lib -lshared
 LDFLAGS += $(EXTRA_LDFLAGS)
 

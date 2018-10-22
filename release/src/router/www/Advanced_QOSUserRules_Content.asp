@@ -41,7 +41,7 @@ function key_event(evt){
 function initial(){
 	show_menu();
 	//	https://www.asus.com/support/FAQ/1010951/
-	httpApi.faqURL("faq", "1010951", "https://www.asus.com", "/support/FAQ/");
+	httpApi.faqURL("1010951", function(url){document.getElementById("faq").href=url;});
 	if(bwdpi_support){
 		document.getElementById('content_title').innerHTML = "<#menu5_3_2#> - <#EzQoS_type_traditional#>";
 	}

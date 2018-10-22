@@ -1396,11 +1396,6 @@ start_dhcp6c(void)
 	char prefix_arg[sizeof("128:xxxxxxxx")];
 	int service, i;
 
-	if (getpid() != 1) {
-		notify_rc("start_dhcp6c");
-		return 0;
-	}
-
 	/* Check if enabled */
 	service = get_ipv6_service();
 	if (

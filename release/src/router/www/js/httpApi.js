@@ -218,9 +218,7 @@ var httpApi ={
 			url: '/applyapp.cgi',
 			dataType: 'json',
 			data: postData,
-			error: function(response){
-				if(handler) handler.call(response);
-			},
+			error: function(){},
 			success: function(response){
 				if(handler) handler.call(response);
 			}
@@ -470,8 +468,9 @@ var httpApi ={
 		}
 	},
 
-	"faqURL": function(_Objid, _faqNum, _URL1, _URL2){
+	"faqURL": function(_faqNum, handler){
 		var pLang = httpApi.nvramGet(["preferred_lang"]).preferred_lang;
+
 		var faqLang = {
 			EN : "",
 			TW : "/tw",
@@ -499,16 +498,16 @@ var httpApi ={
 			TR : "/tr",
 			UK : "/ua"
 		}
-		var temp_URL_lang = _URL1+faqLang[pLang]+_URL2+_faqNum;
-		var temp_URL_global = _URL1+_URL2+_faqNum;
-		document.getElementById(_Objid).href = temp_URL_global;
+
+		var temp_URL_lang = "https://www.asus.com" + faqLang[pLang] + "/support/FAQ/" + _faqNum;
+		if(handler) handler(temp_URL_lang.replace(faqLang[pLang], ""));
 
 		$.ajax({
 			url: temp_URL_lang,
 			dataType: "jsonp",
 			statusCode: {
 				200: function(response) {
-					document.getElementById(_Objid).href =  temp_URL_lang;
+					if(handler) handler(temp_URL_lang);
 				}
 			}
 		});
@@ -578,56 +577,5 @@ var httpApi ={
 			var uiFlag_update = replaceValue(uiFlag_ori, httpApi.uiFlag.list[_name], _value);
 			httpApi.nvramSet({"action_mode": "apply", "uiFlag" : uiFlag_update});
 		}
-	},
-
-	"update_wlanlog": function(){
-		$.get("/update_wlanlog.cgi");
-	},
-
-	"getPAPStatus": function(_band){
-		var papStatus = "";
-		var get_ssid = function(_band){
-			var ssid = "";
-			if(_band == undefined)
-				ssid = decodeURIComponent(httpApi.nvramCharToAscii(["wlc_ssid"], true).wlc_ssid);
-			else
-				ssid = decodeURIComponent(httpApi.nvramCharToAscii(["wlc" + _band + "_ssid"], true)["wlc" + _band + "_ssid"]);
-
-			ssid = ssid.replace(/\</g, "&lt;").replace(/\>/g, "&gt;");
-			return ssid;
-		};
-		var dpsta_rep = (httpApi.nvramGet(["wlc_dpsta"]).wlc_dpsta == "") ? false : true;
-		if(dpsta_rep){
-			var wlc_state = "0";
-			if(_band == undefined)
-				wlc_state = httpApi.nvramGet(["wlc_state"]).wlc_state;
-			else
-				wlc_state = httpApi.nvramGet(["wlc" + _band + "_state"])["wlc" + _band + "_state"];
-			switch(wlc_state){
-				case "0":
-					papStatus = "<#Disconnected#>";
-					break;
-				case "1":
-					papStatus = "<#APSurvey_action_ConnectingStatus1#>";
-					break;
-				case "2":
-					papStatus = get_ssid(_band);
-					break;
-				default:
-					papStatus = "<#Disconnected#>";
-					break;
-			}
-		}
-		else{
-			var wlc_psta_state = httpApi.hookGet("wlc_psta_state", true);
-			if(wlc_psta_state.wlc_state == "1" && wlc_psta_state.wlc_state_auth == "0")
-				papStatus = get_ssid(_band);
-			else if(wlc_psta_state.wlc_state == "2" && wlc_psta_state.wlc_state_auth == "1")
-				papStatus = "<#APSurvey_action_ConnectingStatus1#>";
-			else
-				papStatus = "<#Disconnected#>";
-
-		}
-		return papStatus;
 	}
 }

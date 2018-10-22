@@ -55,9 +55,9 @@ var pptpd_sr_rulelist_array = decodeURIComponent(pptpd_sr_rulelist_array_ori);
 var pptpd_sr_edit_username = "";
 
 var max_shift = "";	/*MODELDEP (include dict #PPTP_desc2# #vpn_max_clients# #vpn_maximum_clients#) : 
-				RT-AC5300/RT-AC5300R/RT-AC3200/RT-AC3100/RT-AC88U/RT-AC87U/RT-AC68U/RT-AC66U/RT-AC56U/RT-N66U/RT-N18U */
-if(based_modelid == "RT-AC5300" || based_modelid == "RT-AC5300R" || based_modelid == "RT-AC3200" || based_modelid == "RT-AC3100" ||
-		based_modelid == "RT-AC88U" || based_modelid == "RT-AC87U" || based_modelid == "RT-AC68U" ||
+				RT-AC5300/GT-AC5300/GT-AX11000/RT-AC86U/AC2900/RT-AC3200/RT-AC3100/RT-AC88U/RT-AX88U/RT-AC87U/RT-AC68U/RT-AC66U/RT-AC56U/RT-N66U/RT-N18U */
+if(based_modelid == "RT-AC5300" || based_modelid == "GT-AC5300" || based_modelid == "GT-AC9600" || based_modelid == "RT-AC3200" || based_modelid == "RT-AC3100" || based_modelid == "GT-AX11000" || based_modelid == "RT-AX92U" ||
+		based_modelid == "RT-AC88U" || based_modelid == "RT-AX88U" || based_modelid == "RT-AC86U" || based_modelid == "AC2900" || based_modelid == "RT-AC87U" || based_modelid == "RT-AC68U" ||
 		based_modelid == "RT-AC66U" || based_modelid == "RT-AC56U" ||
 		based_modelid == "RT-N66U" || based_modelid == "RT-N18U"){
 	max_shift = parseInt("29");
@@ -76,8 +76,8 @@ function initial(){
 	var pptpd_clients = '<% nvram_get("pptpd_clients"); %>';
 	
 	show_menu();
-	httpApi.faqURL("faq", "114892", "https://www.asus.com", "/support/FAQ/");
-	httpApi.faqURL("faq_port_forwarding", "1033906", "https://www.asus.com", "/support/FAQ/");
+	httpApi.faqURL("114892", function(url){document.getElementById("faq").href=url;});
+	httpApi.faqURL("1033906", function(url){document.getElementById("faq_port_forwarding").href=url;});
 
 	//if support pptpd and openvpnd then show switch button
 	if(pptpd_support && openvpnd_support) {

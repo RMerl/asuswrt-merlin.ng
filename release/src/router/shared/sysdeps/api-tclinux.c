@@ -224,6 +224,7 @@ int check_tc_firmware_crc()
 	size_t r_counts = 0;
 	size_t w_counts = 0;
 	size_t buf_size = sizeof(buf);
+	struct stat st;
 
 	fpSrc = fopen("/tmp/tcfw.bin", "rb");
 	if (fpSrc==NULL)
@@ -315,12 +316,17 @@ int check_tc_firmware_crc()
 	}
 
 	cprintf("calc crc: %lx\n", calc_crc);
+	fflush(fpDst);
+
+	stat("/tmp/tclinux.bin", &st);
+	cprintf("size of /tmp/tclinux.bin: %d\n", st.st_size);
 
 	if (ulfw_crc != calc_crc)
 			skip_flag = 1;
 #ifdef RTCONFIG_BRCM_NAND_JFFS2
 	else {
 		cprintf("backup tclinux\n");
+		unlink("/jffs/tclinux.bin");
 		eval("cp", "-f", "/tmp/tclinux.bin", "/jffs/tclinux.bin");
 	}
 #endif

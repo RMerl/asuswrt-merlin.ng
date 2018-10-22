@@ -2779,12 +2779,12 @@ wan_up(const char *pwan_ifname)
 
 		if (val) {
 			// if restart_wan_if, remove dpi engine related
-			if ((f_exists("/dev/detector") || f_exists("/dev/idpfw")) && changed == 0)
+			if ((f_exists(DEVNODE) || f_exists("/dev/idpfw")) && changed == 0)
 			{
 				_dprintf("[%s] stop dpi engine service - %d\n", __FUNCTION__, changed);
 				stop_dpi_engine_service(0);
 			}
-			else if ((f_exists("/dev/detector") || f_exists("/dev/idpfw")) && changed == 1)
+			else if ((f_exists(DEVNODE) || f_exists("/dev/idpfw")) && changed == 1)
 			{
 				_dprintf("[%s] stop dpi engine service - %d\n", __FUNCTION__, changed);
 				stop_dpi_engine_service(1);
@@ -3155,9 +3155,6 @@ found_default_route(int wan_unit)
 	if(wan_unit != wan_primary_ifunit())
 		return 1;
 
-	if(dualwan_unit__usbif(wan_unit) && nvram_get_int("modem_pdp") == 2)
-		return 1;
-
 	n = 0;
 	found = 0;
 	mask = 0;
@@ -3375,6 +3372,7 @@ start_wan(void)
 	symlink("/sbin/rc", "/tmp/wpa_cli");
 #endif
 //	symlink("/dev/null", "/tmp/ppp/connect-errors");
+
 
 #if defined(RTCONFIG_QCA) || \
 		(defined(RTCONFIG_RALINK) && !defined(RTCONFIG_DSL) && !defined(RTN13U))

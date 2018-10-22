@@ -10,9 +10,13 @@ include $(SRCBASE)/router/.config
 
 CFLAGS	+= -I. -I$(TOP)/shared -I$(SRCBASE)/include -I$(SRCBASE)/common/include -Wall 
 CFLAGS	+= $(if $(WLAN_ComponentIncPath),$(WLAN_ComponentIncPath),$(addprefix -I,$(wildcard $(SRCBASE)/shared/bcmwifi/include)))
+ifeq ($(HND_ROUTER_AX), y)
+CFLAGS  += -I$(SRCBASE)/../components/math/include -I$(SRCBASE)/../components/proto/include -I$(SRCBASE)/../components/wlioctl/include
+CFLAGS  += -I$(SRCBASE)/wl -I$(SRCBASE)/wl/sys
+endif
 #CFLAGS	+= -g -DDEBUG
 CFLAGS	+= -s -O2
-LDFLAGS += -L$(TOP)/nvram$(BCMEX)$(EX7) -lnvram ${EXTRA_NV_LDFLAGS}
+LDFLAGS += -L$(TOP_PLATFORM)/nvram$(BCMEX)$(EX7) -lnvram ${EXTRA_NV_LDFLAGS}
 LDFLAGS += -L$(TOP)/shared -L$(INSTALLDIR)/shared/usr/lib -lshared
 LDFLAGS += $(EXTRALDFLAGS)
 
@@ -24,6 +28,9 @@ CFLAGS	+= -DBCMDBG
 #endif
 
 vpath %.c $(SRCBASE)/shared $(WLAN_ComponentSrcDirs)
+ifeq ($(HND_ROUTER_AX), y)
+vpath %.c $(SRCBASE)/shared/bcmwifi/src
+endif
 
 ifeq ($(wildcard $(SRCBASE)/router/bsd/*.c),)
 all:

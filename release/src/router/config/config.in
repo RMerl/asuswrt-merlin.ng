@@ -69,6 +69,15 @@ config RTCONFIG_HND_ROUTER
 	bool "Bcm hnd bsp"
 	default n
 
+config RTCONFIG_HND_ROUTER_AX
+        bool "Bcm hnd 11ax bsp"
+        default n
+
+config RTCONFIG_HND_WL
+	bool "BCM wl NIC mode support"
+	depends on RTCONFIG_HND_ROUTER_AX
+	default n
+
 config RTCONFIG_HNDMFG
 	bool "HND MFG mode"
 	depends on RTCONFIG_HND_ROUTER
@@ -724,6 +733,10 @@ config RTCONFIG_QCA
 	bool "Qualcomm Atheros Chip Support"
 	default n
 
+config RTCONFIG_QCA_BIGRATE_WIFI
+	bool "New QSDK wifi driver - need to adjust iwconfig bitrate"
+	default n
+
 config RTCONFIG_NEW_APP_ARM
 	bool "NEW APP ARM"
 	default n
@@ -1002,6 +1015,10 @@ config RTCONFIG_WPS_RST_BTN
 
 config RTCONFIG_WPS_ALLLED_BTN
 	bool "HW Button for WPS and LED dual function"
+	default n
+
+config RTCONFIG_TURBO_BTN
+	bool "HW Button for Turbo key function"
 	default n
 
 config RTCONFIG_LOGO_LED
@@ -1337,6 +1354,9 @@ config RTCONFIG_EXT_RTL8370MB
 config RTCONFIG_EXT_BCM53134
 	bool "BCM53134 external switch"
 	default n
+
+config RTCONFIG_EXTPHY_BCM84880
+	bool "BCM84880 external 2.5Gbps PHY"
 
 config RTCONFIG_TOR
 	bool "The orion router function"
@@ -1708,6 +1728,10 @@ config RTCONFIG_RGBLED
 	bool "RGB LED control"
 	default n
 
+config RTCONFIG_AURASYNC
+	bool "AURASYNC support"
+	default n
+
 config RTCONFIG_I2CTOOLS
 	bool "I2CTOOLS"
 	default n
@@ -1779,6 +1803,9 @@ config RTCONFIG_SW_HW_AUTH
 config RTCONFIG_LIBASUSLOG
 	bool "asuslog library for debug"
 	default n
+
+config RTCONFIG_BCM_CEVENTD
+	bool "BRCM Connectivity event generation support"
 
 config RTCONFIG_ETHOBD
 	bool "ethernet onboarding for Aimash."

@@ -46,7 +46,7 @@ var ipv6_unit = '0';
 function initial(){	
 	show_menu();	
 	// https://www.asus.com/US/support/FAQ/113990
-	httpApi.faqURL("faq", "113990", "https://www.asus.com", "/support/FAQ/");
+	httpApi.faqURL("113990", function(url){document.getElementById("faq").href=url;});
 	if(!IPv6_Passthrough_support){
 		$("#ipv6_service option[value='ipv6pt']").remove();
 		$("#ipv6_service option[value='flets']").remove();

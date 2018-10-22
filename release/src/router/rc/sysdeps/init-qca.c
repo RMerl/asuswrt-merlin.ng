@@ -383,6 +383,12 @@ void enable_jumbo_frame(void)
 {
 #if defined(RTCONFIG_SWITCH_RTL8370M_PHY_QCA8033_X2) || \
     defined(RTCONFIG_SWITCH_RTL8370MB_PHY_QCA8033_X2)
+#elif defined(RTCONFIG_SOC_IPQ40XX)
+	if (nvram_get_int("jumbo_frame_enable")) {
+		eval("ifconfig", "eth0", "mtu", "9000");
+		eval("ifconfig", "eth1", "mtu", "9000");
+		eval("ssdk_sh", "misc", "frameMaxSize", "set", "9018");
+	}
 #else
 	int mtu = 1518;	/* default value */
 	char mtu_str[] = "9000XXX";
@@ -394,13 +400,7 @@ void enable_jumbo_frame(void)
 		mtu = 9000;
 
 	snprintf(mtu_str, sizeof(mtu_str), "%d", mtu);
-#if defined(RTCONFIG_SOC_IPQ40XX)
-	eval("ifconfig", "eth0", "mtu", mtu_str);
-	eval("ifconfig", "eth1", "mtu", mtu_str);
-	eval("ssdk_sh", "misc", "frameMaxSize", "set", mtu_str);
-#else
 	eval("swconfig", "dev", MII_IFNAME, "set", "max_frame_size", mtu_str);
-#endif
 #endif
 }
 
@@ -889,7 +889,9 @@ void config_switch(void)
 	dbG("link up wan port(s)\n");
 	eval("rtkswitch", "114");	// link up wan port(s)
 
+#if !defined(RTCONFIG_SOC_IPQ40XX)
 	enable_jumbo_frame();
+#endif
 
 #if defined(RTCONFIG_BLINK_LED)
 	if (is_swports_bled("led_lan_gpio")) {
@@ -1229,20 +1231,20 @@ static void __load_wifi_driver(int testmode)
 		/* add acs channel weight */
 		acs_ch_weight_param();
 
-		if(nvram_get_int("x_Setting")) {
 #if defined(RTCONFIG_WIFI_SON)
-		eval("iwpriv", (char*) VPHY_2G, "no_vlan", "1");
-		eval("iwpriv", (char*) VPHY_5G, "no_vlan", "1");
-		//send RCSA to uplink/CAP/PAP when detect radar
-		if(nvram_get_int("dfs_check_period"))
-			eval("iwpriv", (char*) VPHY_5G, "CSwOpts", "0x30");
+		if(sw_mode()!=SW_MODE_REPEATER && nvram_get_int("x_Setting")) {
+			eval("iwpriv", (char*) VPHY_2G, "no_vlan", "1");
+			eval("iwpriv", (char*) VPHY_5G, "no_vlan", "1");
+			//send RCSA to uplink/CAP/PAP when detect radar
+			if(nvram_get_int("dfs_check_period"))
+				eval("iwpriv", (char*) VPHY_5G, "CSwOpts", "0x30");
 #if defined(MAPAC2200) 
-		if (nvram_get_int("ncb_enable"))
-			doSystem("iwpriv %s ncb_enable %s", VPHY_5G, nvram_get("ncb_enable"));
-		eval("iwpriv", (char*) VPHY_5G2, "no_vlan", "1");
-#endif
+				if (nvram_get_int("ncb_enable"))
+					doSystem("iwpriv %s ncb_enable %s", VPHY_5G, nvram_get("ncb_enable"));
+				eval("iwpriv", (char*) VPHY_5G2, "no_vlan", "1");
 #endif
 		}
+#endif
 
 #if defined(BRTAC828) || defined(RTAD7200)
 		set_irq_smp_affinity(68, 1);	/* wifi0 = 2G ==> core 0 */
@@ -1411,22 +1413,24 @@ void init_wl(void)
 #endif
 
 #ifdef RTCONFIG_WIFI_SON
-		if((sw_mode() != SW_MODE_ROUTER && !nvram_match("cfg_master", "1")) || nvram_match("wps_e_success", "1"))
-		{
-			if(nvram_get_int("x_Setting"))
+		if(sw_mode()!=SW_MODE_REPEATER) {
+			if((sw_mode() == SW_MODE_AP && !nvram_match("cfg_master", "1")) || nvram_match("wps_e_success", "1"))
 			{
-				_dprintf("=>init_wl: create sta vaps\n");
+				if(nvram_get_int("x_Setting"))
+				{
+					_dprintf("=>init_wl: create sta vaps\n");
 #ifdef RTCONFIG_DUAL_BACKHAUL
-				doSystem("wlanconfig %s create wlandev %s wlanmode sta nosbeacon",
-					get_staifname(0), get_vphyifname(0));
+					doSystem("wlanconfig %s create wlandev %s wlanmode sta nosbeacon",
+						get_staifname(0), get_vphyifname(0));
 #endif
-				doSystem("wlanconfig %s create wlandev %s wlanmode sta nosbeacon",
-					get_staifname(1), get_vphyifname(1));
-				sleep(1);
+					doSystem("wlanconfig %s create wlandev %s wlanmode sta nosbeacon",
+						get_staifname(1), get_vphyifname(1));
+					sleep(1);
 #ifdef RTCONFIG_DUAL_BACKHAUL
-				ifconfig(get_staifname(0), IFUP, NULL, NULL);
+					ifconfig(get_staifname(0), IFUP, NULL, NULL);
 #endif
-				ifconfig(get_staifname(1), IFUP, NULL, NULL);
+					ifconfig(get_staifname(1), IFUP, NULL, NULL);
+				}
 			}
 		}
 #endif
@@ -1444,6 +1448,9 @@ void init_wl(void)
 	}
 
 #ifdef RTCONFIG_WIFI_SON
+	if(sw_mode() == SW_MODE_REPEATER)
+		goto skip_wifison;
+
 	int i;
 	if(sw_mode() == SW_MODE_AP && !nvram_match("cfg_master", "1")) //router->ap
 	{
@@ -1491,8 +1498,10 @@ void init_wl(void)
 		eval("brctl", "addif", BR_GUEST, MII_IFNAME".55");
 #endif
 	}
-	
 #endif
+
+skip_wifison:
+	return;
 }
 
 void fini_wl(void)
@@ -1561,21 +1570,26 @@ void fini_wl(void)
 #endif
 
 #ifdef RTCONFIG_WIFI_SON
-	eval("killall", "-SIGTERM", "wpa_supplicant");
-	if((sw_mode() != SW_MODE_ROUTER && !nvram_match("cfg_master", "1")) || nvram_match("wps_e_success", "1"))
-	{
-		if(nvram_get_int("x_Setting"))
+	if(sw_mode()!=SW_MODE_REPEATER) {
+		kill_wifi_wpa_supplicant(-1);
+		if((sw_mode() != SW_MODE_ROUTER && !nvram_match("cfg_master", "1")) || nvram_match("wps_e_success", "1"))
 		{
-			_dprintf("=>fini_wl: destroy sta vap\n");
-			ifconfig(get_staifname(0), 0, NULL, NULL);
-			ifconfig(get_staifname(1), 0, NULL, NULL);
-			doSystem("wlanconfig %s destroy", get_staifname(0));
-       	 		doSystem("wlanconfig %s destroy", get_staifname(1));
+			if(nvram_get_int("x_Setting"))
+			{
+				if(nvram_get_int("x_Setting"))
+				{
+					_dprintf("=>fini_wl: destroy sta vap\n");
+					ifconfig(get_staifname(0), 0, NULL, NULL);
+					ifconfig(get_staifname(1), 0, NULL, NULL);
+					doSystem("wlanconfig %s destroy", get_staifname(0));
+					doSystem("wlanconfig %s destroy", get_staifname(1));
+				}
+			}
 		}
 	}
 #endif
 #ifdef RTCONFIG_AMAS
-	eval("killall", "-SIGTERM", "wpa_supplicant");
+	kill_wifi_wpa_supplicant(-1);
 	if((sw_mode() == SW_MODE_AP && nvram_match("re_mode", "1")))
 	{
 		int i;
@@ -1592,7 +1606,7 @@ void fini_wl(void)
 #if defined(RTCONFIG_WIRELESSREPEATER)
 #if defined(RTCONFIG_CONCURRENTREPEATER)
 	if(sw_mode()==SW_MODE_REPEATER)
-		eval("killall", "-SIGKILL", "wpa_supplicant");
+		kill_wifi_wpa_supplicant(-1);
 #endif
 #endif
 
@@ -1720,11 +1734,6 @@ void init_syspara(void)
 		nvram_set("wl_mssid", "0");
 	else
 		nvram_set("wl_mssid", "1");
-#if defined(RTAC58U)
-	if (check_mid("Hydra")) {
-		nvram_set("wl_mssid", "1"); // Hydra's MAC may not be multible of 4
-	}
-#endif
 #endif
 
 #if defined(RTCONFIG_SOC_IPQ8064) || defined(RTCONFIG_QCA_VAP_LOCALMAC)
@@ -1863,15 +1872,34 @@ void init_syspara(void)
 	nvram_set("wl1_txbf_en", "0");
 
 #ifdef RTCONFIG_ODMPID
-	FRead(modelname, OFFSET_ODMPID, sizeof(modelname));
-	modelname[sizeof(modelname) - 1] = '\0';
+#ifdef RTCONFIG_32BYTES_ODMPID
+	FRead(modelname, OFFSET_32BYTES_ODMPID, 32);
+	modelname[31] = '\0';
 	if (modelname[0] != 0 && (unsigned char)(modelname[0]) != 0xff
 	    && is_valid_hostname(modelname)
 	    && strcmp(modelname, "ASUS")) {
 		nvram_set("odmpid", modelname);
 	} else
 #endif
-		nvram_unset("odmpid");
+	{
+		FRead(modelname, OFFSET_ODMPID, 16);
+		modelname[15] = '\0';
+		if (modelname[0] != 0 && (unsigned char)(modelname[0]) != 0xff
+		    && is_valid_hostname(modelname)
+		    && strcmp(modelname, "ASUS")) {
+			nvram_set("odmpid", modelname);
+		} else
+			nvram_unset("odmpid");
+	}
+#else
+	nvram_unset("odmpid");
+#endif
+
+#if defined(MAPAC2200) /* for Lyra */
+	nvram_set("odmpid", "Lyra");
+#elif defined(MAPAC1300)
+	nvram_set("odmpid", "Lyra_Mini");
+#endif
 
 	nvram_set("firmver", rt_version);
 	nvram_set("productid", rt_buildname);

@@ -95,9 +95,9 @@ CFLAGS:= \
 	 -g -W -Wall  -Wno-unused  -g -O2 -g -W -Wall  -Wno-unused  -DHAVE_CONFIG_H -DWINDOW_1 -DTEST_WRITE -DNODEBUG -DLPR_with_ASUS ${GLOBAL_OPTIONS} #-DRETURNOK -DUSBONLY
 
 USER_OBJS := 
-LDFLAGS   := -L$(TOP)/shared -lshared -L$(TOP)/nvram${BCMEX}${EX7} -lnvram
+LDFLAGS   := -L$(TOP)/shared -lshared -L$(TOP_PLATFORM)/nvram${BCMEX}${EX7} -lnvram
 ifeq ($(HND_ROUTER),y)
-LDFLAGS += -L$(TOP)/wlcsm -lwlcsm -lgcc_s
+LDFLAGS += -L$(TOP_PLATFORM)/wlcsm -lwlcsm -lgcc_s
 endif
 
 include ../../common.mak

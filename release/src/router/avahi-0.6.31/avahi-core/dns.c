@@ -55,6 +55,7 @@ AvahiDnsPacket* avahi_dns_packet_new(unsigned mtu) {
 
     p->size = p->rindex = AVAHI_DNS_PACKET_HEADER_SIZE;
     p->max_size = max_size;
+    p->res_size = 0;
     p->name_table = NULL;
     p->data = NULL;
 
@@ -831,6 +832,25 @@ size_t avahi_dns_packet_space(AvahiDnsPacket *p) {
     assert(p->size <= p->max_size);
 
     return p->max_size - p->size;
+}
+
+size_t avahi_dns_packet_reserve_size(AvahiDnsPacket *p, size_t res_size) {
+    assert(p);
+
+    assert(p->size + p->res_size <= p->max_size);
+
+    if ((p->size + p->res_size + res_size) <= p->max_size)
+	p->res_size += res_size;
+
+    return p->res_size;
+}
+
+size_t avahi_dns_packet_reserved_space(AvahiDnsPacket *p) {
+    assert(p);
+
+    assert(p->size + p->res_size <= p->max_size);
+
+    return p->max_size - p->size - p->res_size;
 }
 
 int avahi_rdata_parse(AvahiRecord *record, const void* rdata, size_t size) {

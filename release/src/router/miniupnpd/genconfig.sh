@@ -22,6 +22,7 @@ case "$argv" in
 	--vendorcfg) VENDORCFG=1 ;;
 	--pcp-peer) PCP_PEER=1 ;;
 	--portinuse) PORTINUSE=1 ;;
+	--aurasync) AURASYNC=1 ;;
 	--uda-version=*)
 		UPNP_VERSION=$(echo $argv | cut -d= -f2)
 		UPNP_VERSION_MAJOR=$(echo $UPNP_VERSION | cut -s -d. -f1)
@@ -443,6 +444,16 @@ echo "" >> ${CONFIGFILE}
 echo "/* Comment the following line to disable NAT-PMP operations */" >> ${CONFIGFILE}
 echo "#define ENABLE_NATPMP" >> ${CONFIGFILE}
 echo "" >> ${CONFIGFILE}
+
+if [ -n "$AURASYNC" ]; then
+	echo "#define ENABLE_AURASYNC" >> ${CONFIGFILE}
+	echo "" >> ${CONFIGFILE}
+fi
+
+if [ -n "$AURASYNC" ]; then
+	echo "#define ENABLE_AURASYNC" >> ${CONFIGFILE}
+	echo "" >> ${CONFIGFILE}
+fi
 
 echo "/* Comment the following line to disable PCP operations */" >> ${CONFIGFILE}
 echo "#define ENABLE_PCP" >> ${CONFIGFILE}

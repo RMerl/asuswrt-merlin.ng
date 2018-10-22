@@ -22,6 +22,9 @@
 #include "upnpurns.h"
 #include "getconnstatus.h"
 
+#ifdef ENABLE_AURASYNC
+int aura_standalone = 0;
+#endif
 
 /* Event magical values codes */
 #define SETUPREADY_MAGICALVALUE (248)
@@ -93,8 +96,17 @@ static const char * const upnpallowedvalues[] =
  * ERROR_IP_CONFIGURATION
  * ERROR_UNKNOWN */
 	0,
+#ifdef ENABLE_AURASYNC
+	"-2",	/* 27 , speed */
+	"-1",
+	"0",
+	"1",
+	"2",
+	0,
+#else
 	"",		/* 27 */
 	0
+#endif
 };
 
 static const int upnpallowedranges[] = {
@@ -111,6 +123,20 @@ static const int upnpallowedranges[] = {
 	/* 7 OutboundPinholeTimeout */
 	100,
 	200,
+#ifdef ENABLE_AURASYNC
+	/* 9 AS RGB value */
+	AS_RGB_MIN,
+	AS_RGB_MAX,
+	/* 11 AS group */
+	AS_GROUP_MIN,
+	AS_GROUP_MAX,
+	/* 13 AS mode */
+	AS_MODE_MIN,
+	AS_MODE_MAX,
+	/* 15 AS direction */
+	AS_DIR_MIN,
+	AS_DIR_MAX,
+#endif
 };
 
 static const char * magicargname[] = {
@@ -137,6 +163,253 @@ static const char root_service[] =
 	"scpd xmlns=\"urn:schemas-upnp-org:service-1-0\"";
 static const char root_device[] =
 	"root xmlns=\"urn:schemas-upnp-org:device-1-0\"";
+
+#ifdef ENABLE_AURASYNC
+static const struct XMLElt rootDesc_auraonly[] =
+{
+/* 0 */
+	{root_device, INITHELPER(1,2)},
+	{"specVersion", INITHELPER(3,2)},
+	{"device", INITHELPER(5,13)},
+	{"/major", "1"},
+	{"/minor", "0"},
+/* 5 */
+	{"/deviceType", DEVICE_TYPE_IGD},
+		/* urn:schemas-upnp-org:device:InternetGatewayDevice:1 or 2 */
+#ifdef ENABLE_MANUFACTURER_INFO_CONFIGURATION
+	{"/friendlyName", friendly_name/*ROOTDEV_FRIENDLYNAME*/},	/* required */
+	{"/manufacturer", manufacturer_name/*ROOTDEV_MANUFACTURER*/},		/* required */
+/* 8 */
+	{"/manufacturerURL", manufacturer_url/*ROOTDEV_MANUFACTURERURL*/},	/* optional */
+	{"/modelDescription", model_description/*ROOTDEV_MODELDESCRIPTION*/}, /* recommended */
+	{"/modelName", model_name/*ROOTDEV_MODELNAME*/},	/* required */
+	{"/modelNumber", modelnumber},
+	{"/modelURL", model_url/*ROOTDEV_MODELURL*/},
+#else
+	{"/friendlyName", ROOTDEV_FRIENDLYNAME},	/* required */
+	{"/manufacturer", ROOTDEV_MANUFACTURER},	/* required */
+/* 8 */
+	{"/manufacturerURL", ROOTDEV_MANUFACTURERURL},	/* optional */
+	{"/modelDescription", ROOTDEV_MODELDESCRIPTION}, /* recommended */
+	{"/modelName", ROOTDEV_MODELNAME},	/* required */
+	{"/modelNumber", modelnumber},
+	{"/modelURL", ROOTDEV_MODELURL},
+#endif
+	{"/serialNumber", serialnumber},
+	{"/UDN", uuidvalue_igd},	/* required */
+	/* see if /UPC is needed. */
+	{"serviceList", INITHELPER(17, 1)},
+	{"/presentationURL", presentationurl},	/* recommended */
+/* 17 */
+	{"service", INITHELPER(18,5)},
+	{"/serviceType", SERVICE_TYPE_ASIPC},
+	{"/serviceId", SERVICE_ID_ASIPC},
+	{"/controlURL", AS_CONTROLURL},
+	{"/eventSubURL", AS_EVENTURL}, /* recommended, not mandatory */
+	{"/SCPDURL", AS_PATH},
+	{0, 0}
+};
+
+/* root Description of the UPnP Device
+ * fixed to match UPnP_IGD_InternetGatewayDevice 1.0.pdf
+ * Needs to be checked with UPnP-gw-InternetGatewayDevice-v2-Device.pdf
+ * presentationURL is only "recommended" but the router doesn't appears
+ * in "Network connections" in Windows XP if it is not present. */
+static const struct XMLElt rootDesc_full[] =
+{
+/* 0 */
+	{root_device, INITHELPER(1,2)},
+	{"specVersion", INITHELPER(3,2)},
+#if defined(ENABLE_L3F_SERVICE) || defined(HAS_DUMMY_SERVICE) || defined(ENABLE_DP_SERVICE)
+	{"device", INITHELPER(5,13)},
+#else
+	{"device", INITHELPER(5,12)},
+#endif
+	{"/major", "1"},
+	{"/minor", "0"},
+/* 5 */
+	{"/deviceType", DEVICE_TYPE_IGD},
+		/* urn:schemas-upnp-org:device:InternetGatewayDevice:1 or 2 */
+#ifdef ENABLE_MANUFACTURER_INFO_CONFIGURATION
+	{"/friendlyName", friendly_name/*ROOTDEV_FRIENDLYNAME*/},	/* required */
+	{"/manufacturer", manufacturer_name/*ROOTDEV_MANUFACTURER*/},		/* required */
+/* 8 */
+	{"/manufacturerURL", manufacturer_url/*ROOTDEV_MANUFACTURERURL*/},	/* optional */
+	{"/modelDescription", model_description/*ROOTDEV_MODELDESCRIPTION*/}, /* recommended */
+	{"/modelName", model_name/*ROOTDEV_MODELNAME*/},	/* required */
+	{"/modelNumber", modelnumber},
+	{"/modelURL", model_url/*ROOTDEV_MODELURL*/},
+#else
+	{"/friendlyName", ROOTDEV_FRIENDLYNAME},	/* required */
+	{"/manufacturer", ROOTDEV_MANUFACTURER},	/* required */
+/* 8 */
+	{"/manufacturerURL", ROOTDEV_MANUFACTURERURL},	/* optional */
+	{"/modelDescription", ROOTDEV_MODELDESCRIPTION}, /* recommended */
+	{"/modelName", ROOTDEV_MODELNAME},	/* required */
+	{"/modelNumber", modelnumber},
+	{"/modelURL", ROOTDEV_MODELURL},
+#endif
+	{"/serialNumber", serialnumber},
+	{"/UDN", uuidvalue_igd},	/* required */
+	/* see if /UPC is needed. */
+#ifdef ENABLE_6FC_SERVICE
+#define SERVICES_OFFSET 63
+#else
+#define SERVICES_OFFSET 58
+#endif
+#if defined(ENABLE_L3F_SERVICE) || defined(HAS_DUMMY_SERVICE) || defined(ENABLE_DP_SERVICE) || defined(ENABLE_AURASYNC)
+	/* here we dening Services for the root device :
+	 * L3F and DUMMY and DeviceProtection */
+#ifdef ENABLE_L3F_SERVICE
+#define NSERVICES1 1
+#else
+#define NSERVICES1 0
+#endif
+#ifdef HAS_DUMMY_SERVICE
+#define NSERVICES2 1
+#else
+#define NSERVICES2 0
+#endif
+#ifdef ENABLE_DP_SERVICE
+#define NSERVICES3 1
+#else
+#define NSERVICES3 0
+#endif
+#ifdef ENABLE_AURASYNC
+#define NSERVICES4 1
+#else
+#define NSERVICES4 0
+#endif
+#define NSERVICES (NSERVICES1+NSERVICES2+NSERVICES3+NSERVICES4)
+	{"serviceList", INITHELPER(SERVICES_OFFSET,NSERVICES)},
+	{"deviceList", INITHELPER(18,1)},
+	{"/presentationURL", presentationurl},	/* recommended */
+#else
+	{"deviceList", INITHELPER(18,1)},
+	{"/presentationURL", presentationurl},	/* recommended */
+	{0,0},
+#endif
+/* 18 */
+	{"device", INITHELPER(19,13)},
+/* 19 */
+	{"/deviceType", DEVICE_TYPE_WAN}, /* required */
+		/* urn:schemas-upnp-org:device:WANDevice:1 or 2 */
+	{"/friendlyName", WANDEV_FRIENDLYNAME},
+	{"/manufacturer", WANDEV_MANUFACTURER},
+	{"/manufacturerURL", WANDEV_MANUFACTURERURL},
+	{"/modelDescription" , WANDEV_MODELDESCRIPTION},
+	{"/modelName", WANDEV_MODELNAME},
+	{"/modelNumber", WANDEV_MODELNUMBER},
+	{"/modelURL", WANDEV_MODELURL},
+	{"/serialNumber", serialnumber},
+	{"/UDN", uuidvalue_wan},
+	{"/UPC", WANDEV_UPC},	/* UPC (=12 digit barcode) is optional */
+/* 30 */
+	{"serviceList", INITHELPER(32,1)},
+	{"deviceList", INITHELPER(38,1)},
+/* 32 */
+	{"service", INITHELPER(33,5)},
+/* 33 */
+	{"/serviceType",
+			"urn:schemas-upnp-org:service:WANCommonInterfaceConfig:1"},
+	/*{"/serviceId", "urn:upnp-org:serviceId:WANCommonInterfaceConfig"}, */
+	{"/serviceId", "urn:upnp-org:serviceId:WANCommonIFC1"}, /* required */
+	{"/controlURL", WANCFG_CONTROLURL},
+	{"/eventSubURL", WANCFG_EVENTURL},
+	{"/SCPDURL", WANCFG_PATH},
+/* 38 */
+	{"device", INITHELPER(39,12)},
+/* 39 */
+	{"/deviceType", DEVICE_TYPE_WANC},
+		/* urn:schemas-upnp-org:device:WANConnectionDevice:1 or 2 */
+	{"/friendlyName", WANCDEV_FRIENDLYNAME},
+	{"/manufacturer", WANCDEV_MANUFACTURER},
+	{"/manufacturerURL", WANCDEV_MANUFACTURERURL},
+	{"/modelDescription", WANCDEV_MODELDESCRIPTION},
+	{"/modelName", WANCDEV_MODELNAME},
+	{"/modelNumber", WANCDEV_MODELNUMBER},
+	{"/modelURL", WANCDEV_MODELURL},
+	{"/serialNumber", serialnumber},
+	{"/UDN", uuidvalue_wcd},
+	{"/UPC", WANCDEV_UPC},	/* UPC (=12 digit Barcode) is optional */
+#ifdef ENABLE_6FC_SERVICE
+	{"serviceList", INITHELPER(51,2)},
+#else
+	{"serviceList", INITHELPER(51,1)},
+#endif
+/* 51 */
+	{"service", INITHELPER(53,5)},
+	{"service", INITHELPER(58,5)},
+/* 53 */
+	{"/serviceType", SERVICE_TYPE_WANIPC},
+		/* urn:schemas-upnp-org:service:WANIPConnection:2 for v2 */
+	{"/serviceId", SERVICE_ID_WANIPC},
+		/* urn:upnp-org:serviceId:WANIPConn1 or 2 */
+	{"/controlURL", WANIPC_CONTROLURL},
+	{"/eventSubURL", WANIPC_EVENTURL},
+	{"/SCPDURL", WANIPC_PATH},
+#ifdef ENABLE_6FC_SERVICE
+/* 58 */
+	{"/serviceType", "urn:schemas-upnp-org:service:WANIPv6FirewallControl:1"},
+	{"/serviceId", "urn:upnp-org:serviceId:WANIPv6FC1"},
+	{"/controlURL", WANIP6FC_CONTROLURL},
+	{"/eventSubURL", WANIP6FC_EVENTURL},
+	{"/SCPDURL", WANIP6FC_PATH},
+#endif
+/* 58 / 63 = SERVICES_OFFSET*/
+#if defined(HAS_DUMMY_SERVICE) || defined(ENABLE_L3F_SERVICE) || defined(ENABLE_DP_SERVICE)
+	{"service", INITHELPER(SERVICES_OFFSET+2,5)},
+#if defined(ENABLE_DP_SERVICE)
+	{"service", INITHELPER(SERVICES_OFFSET+7,5)},
+#endif
+#endif
+#if defined(ENABLE_AURASYNC)
+#if defined(ENABLE_DP_SERVICE)
+	{"service", INITHELPER(SERVICES_OFFSET+12,5)},
+#else
+	{"service", INITHELPER(SERVICES_OFFSET+7,5)},
+#endif
+#endif
+#ifdef HAS_DUMMY_SERVICE
+/* 60 / 65 = SERVICES_OFFSET+2 */
+	{"/serviceType", "urn:schemas-dummy-com:service:Dummy:1"},
+	{"/serviceId", "urn:dummy-com:serviceId:dummy1"},
+	{"/controlURL", "/dummy"},
+	{"/eventSubURL", "/dummy"},
+	{"/SCPDURL", DUMMY_PATH},
+#endif
+#ifdef ENABLE_L3F_SERVICE
+/* 60 / 65 = SERVICES_OFFSET+2 */
+	{"/serviceType", "urn:schemas-upnp-org:service:Layer3Forwarding:1"},
+	{"/serviceId", "urn:upnp-org:serviceId:Layer3Forwarding1"},
+	{"/controlURL", L3F_CONTROLURL}, /* The Layer3Forwarding service is only */
+	{"/eventSubURL", L3F_EVENTURL}, /* recommended, not mandatory */
+	{"/SCPDURL", L3F_PATH},
+#endif
+#ifdef ENABLE_DP_SERVICE
+/* InternetGatewayDevice v2 :
+ * it is RECOMMEDED that DeviceProtection service is implemented and applied.
+ * If DeviceProtection is not implemented and applied, it is RECOMMENDED
+ * that control points are able to access only actions and parameters defined
+ * as Public role. */
+/* 65 / 70 = SERVICES_OFFSET+7 */
+	{"/serviceType", "urn:schemas-upnp-org:service:DeviceProtection:1"},
+	{"/serviceId", "urn:upnp-org:serviceId:DeviceProtection1"},
+	{"/controlURL", DP_CONTROLURL},
+	{"/eventSubURL", DP_EVENTURL},
+	{"/SCPDURL", DP_PATH},
+#endif
+#ifdef ENABLE_AURASYNC
+/* 70 / 75 = SERVICES_OFFSET+12 */
+	{"/serviceType", SERVICE_TYPE_ASIPC},
+	{"/serviceId", SERVICE_ID_ASIPC},
+	{"/controlURL", AS_CONTROLURL},
+	{"/eventSubURL", AS_EVENTURL}, /* recommended, not mandatory */
+	{"/SCPDURL", AS_PATH},
+#endif
+	{0, 0}
+};
+#endif
 
 /* root Description of the UPnP Device
  * fixed to match UPnP_IGD_InternetGatewayDevice 1.0.pdf
@@ -797,6 +1070,57 @@ static const struct serviceDesc scpdDP =
 { DPActions, DPVars };
 #endif
 
+#ifdef ENABLE_AURASYNC
+static const struct argument GetAS_State_Args[] =
+{
+	{1, 0}, // set group to get value
+	{2, 1},
+	{2, 2},
+	{2, 3},
+	{2, 4},
+	{2, 5},
+	{2, 6},
+	{2, 7},
+	{2, 8},
+	{0, 0}
+};
+
+static const struct argument SetAS_State_Args[] =
+{
+	{1, 0}, // set Group
+	{1, 1}, // set Red
+	{1, 2}, // set Green
+	{1, 3}, // set Blue
+	{1, 4}, // set Mode
+	{1, 5}, // set Speed
+	{1, 6}, // set Direction
+	{0, 0}
+};
+
+static const struct action ASActions[] =
+{
+	{"GetState", GetAS_State_Args}, /* R */
+	{"SetState", SetAS_State_Args}, /* R */
+	{0, 0}
+};
+
+static const struct stateVar ASVars[] =
+{
+	{"Group",	2, 0, 11},	/* 0-7 */
+	{"Red",		2, 0, 9 },	/* 0-255 */
+	{"Green",	2, 0, 9 },	/* 0-255 */
+	{"Blue",	2, 0, 9 },	/* 0-255 */
+	{"Mode",	2, 0, 13},	/* 0-13 */
+	{"Speed",	0, 0, 27},	/* -2, -1, 0, 1, 2 */
+	{"Direction",	2, 0, 15},	/* 0-1 */
+	{"MSupportH",	2, 0, 9 },	/* 0-255 */
+	{"MSupportL",	2, 0, 9 },	/* 0-255 */
+	{0, 0}
+};
+
+static const struct serviceDesc scpdAS =
+{ ASActions, ASVars };
+#endif
 /* strcat_str()
  * concatenate the string and use realloc to increase the
  * memory buffer if needed. */
@@ -1009,6 +1333,13 @@ genRootDesc(int * len)
 	* len = strlen(xmlver);
 	/*strcpy(str, xmlver); */
 	memcpy(str, xmlver, *len + 1);
+#ifdef ENABLE_AURASYNC
+	if (aura_standalone) /* with flag==1 */
+		str = genXML(str, len, &tmplen, rootDesc_auraonly);
+	else if (GETFLAG(ENABLEAURASYNCMASK))
+		str = genXML(str, len, &tmplen, rootDesc_full);
+	else
+#endif
 	str = genXML(str, len, &tmplen, rootDesc);
 	str[*len] = '\0';
 	return str;
@@ -1211,6 +1542,14 @@ genDP(int * len)
 }
 #endif
 
+#ifdef ENABLE_AURASYNC
+char *
+genAS(int * len)
+{
+	return genServiceDesc(len, &scpdAS);
+}
+#endif
+
 #ifdef ENABLE_EVENTS
 static char *
 genEventVars(int * len, const struct serviceDesc * s)
@@ -1357,6 +1696,15 @@ getVarsDP(int * l)
 {
 	return genEventVars(l,
 	                    &scpdDP);
+}
+#endif
+
+#ifdef ENABLE_AURASYNC
+char *
+getVarsAS(int * l)
+{
+	return genEventVars(l,
+	                    &scpdAS);
 }
 #endif
 

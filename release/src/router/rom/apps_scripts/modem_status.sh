@@ -10,6 +10,7 @@ else
 	prefix="usb_modem${unit}_"
 fi
 
+model=`nvram get productid`
 act_node1="${prefix}act_int"
 act_node2="${prefix}act_bulk"
 modem_act_path=`nvram get ${prefix}act_path`
@@ -845,8 +846,13 @@ elif [ "$1" == "hwver" ]; then
 elif [ "$1" == "swver" ]; then
 	if [ "$is_gobi" -eq "1" ]; then
 		echo -n "Getting SWVER..."
-		at_ret=`/usr/sbin/modem_at.sh I 1 2>&1`
-		ret=`echo -n "$at_ret" |grep "^WW" 2>/dev/null`
+		if [ "$model" == "4G-AC53U" ]; then
+			at_ret=`/usr/sbin/modem_at.sh I 1 2>&1 | grep Revision:`
+			ret=`echo -n "$at_ret" |awk '{print $2}'`
+		else
+			at_ret=`/usr/sbin/modem_at.sh I 1 2>&1`
+			ret=`echo -n "$at_ret" |grep "^WW" 2>/dev/null`
+		fi
 		if [ -z "$ret" ]; then
 			nvram set ${prefix}act_swver=
 			echo "Fail to get the software version from $modem_act_node."

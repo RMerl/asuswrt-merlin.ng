@@ -25,6 +25,7 @@
 #include <sys/types.h>
 #include <stdlib.h>
 #include <stddef.h>
+#include <stdint.h>
 #include <sys/time.h>
 #include <string.h>
 

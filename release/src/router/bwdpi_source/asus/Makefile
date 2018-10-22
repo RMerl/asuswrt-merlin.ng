@@ -1,13 +1,13 @@
 include ../../common.mak
 
 CFLAGS += -Os -Wall $(EXTRACFLAGS) -fPIC
-CFLAGS += -I. -I$(TOP)/shared -I$(TOP)/nvram$(BCMEX)$(EX7) -I$(SRCBASE)/include -I$(TOP)/httpd
+CFLAGS += -I. -I$(TOP)/shared -I$(TOP_PLATFORM)/nvram$(BCMEX)$(EX7) -I$(SRCBASE)/include -I$(TOP)/httpd
 CFLAGS += -I$(TOP)/bwdpi_source/src/tdts_udb_sample
 CFLAGS += -I$(TOP)/bwdpi_source/src/tdts_udb_sample/linux
 CFLAGS += -I$(TOP)/bwdpi_source/include
 CFLAGS += -I$(TOP)/bwdpi_source/asus_include
 
-LDFLAGS += -L$(TOP)/nvram$(BCMEX)$(EX7) -lnvram -L$(TOP)/shared -lshared
+LDFLAGS += -L$(TOP_PLATFORM)/nvram$(BCMEX)$(EX7) -lnvram -L$(TOP)/shared -lshared
 
 ifeq ($(RTCONFIG_QTN),y)
 LDFLAGS += -L$(TOP)/libqcsapi_client -lqcsapi_client
@@ -16,7 +16,11 @@ endif
 ifeq ($(HND_ROUTER),y)
 CFLAGS += -idirafter$(LINUXDIR)/include
 CFLAGS += -I$(HND_SRC)/userspace/public/include -I$(HND_SRC)/userspace/public/include/linux -I$(HND_SRC)/userspace/private/include
-LDFLAGS += -L$(TOP)/wlcsm -lwlcsm -L$(TOP)/bcm_flashutil -lbcm_flashutil -L$(TOP)/bcm_util -lbcm_crc -L$(TOP)/bcm_boardctl -lbcm_boardctl
+LDFLAGS += -L$(TOP_PLATFORM)/wlcsm$(EXHND) -lwlcsm -L$(TOP_PLATFORM)/bcm_flashutil$(EXHND) -lbcm_flashutil -L$(TOP_PLATFORM)/bcm_util$(EXHND) -lbcm_crc -L$(TOP_PLATFORM)/bcm_boardctl$(EXHND) -lbcm_boardctl
+endif
+ifeq ($(HND_ROUTER_AX),y)
+CFLAGS += -I$(SRCBASE)/../components/proto/include -I$(SRCBASE)/../components/wlioctl/include -I$(SRCBASE)/../components/math/include
+CFLAGS += -I$(SRCBASE)/wl -I$(SRCBASE)/wl/sys -I$(SRCBASE)/../components/apps/wps/brcm_apps/include/
 endif
 
 ifeq ($(RTCONFIG_BCMARM),y)

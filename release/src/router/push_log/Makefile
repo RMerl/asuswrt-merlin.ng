@@ -7,9 +7,9 @@ CFLAGS += -fPIC $(EXTRACFLAGS) -Wall
 CFLAGS += -I. -I$(KERNEL_HEADER_DIR) -I$(TOP)/shared -I$(SRCBASE)/include -I$(TOP)/wb/ws_src
 
 LDFLAGS = -L. -lpush_log -lpthread -ldl -lm
-LDFLAGS += -L$(TOP)/nvram$(BCMEX)$(EX7) -lnvram
+LDFLAGS += -L$(TOP_PLATFORM)/nvram$(BCMEX)$(EX7) -lnvram
 ifeq ($(HND_ROUTER),y)
-LDFLAGS += -L$(TOP)/wlcsm -lwlcsm -lgcc_s
+LDFLAGS += -L$(TOP_PLATFORM)/wlcsm -lwlcsm -lgcc_s
 endif
 LDFLAGS += -L$(TOP)/shared -lshared
 LDFLAGS += -L$(TOP)/openssl -lcrypto -lssl

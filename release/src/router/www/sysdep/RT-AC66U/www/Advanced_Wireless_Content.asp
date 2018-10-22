@@ -42,14 +42,28 @@ if(wl_unit == '1')
 else		
 	country = '<% nvram_get("wl0_country_code"); %>';
 
+var enable_bw_160 = ('<% nvram_get("wl_bw_160"); %>' == 1) ? true : false;
+var bw_160_support = false;
+if(band5g_11ax_support && (wl_unit == 1 || wl_unit == 2)){
+	if(based_modelid == "RT-AX92U" && wl_unit == 1){
+		bw_160_support = false;
+	}
+	else{
+		bw_160_support = true;
+	}
+}
+
 function initial(){
 	show_menu();
 	if(band5g_11ac_support){
 		regen_5G_mode(document.form.wl_nmode_x, wl_unit)		
 	}
 
-	genBWTable(wl_unit);
+	if(band5g_11ax_support && bw_160_support){
+		$("#enable_160mhz").attr("checked", enable_bw_160);
+	}
 
+	genBWTable(wl_unit);
 	if((sw_mode == 2 || sw_mode == 4) && wl_unit == '<% nvram_get("wlc_band"); %>' && '<% nvram_get("wl_subunit"); %>' != '1'){
 		_change_wl_unit(wl_unit);
 	}
@@ -126,16 +140,26 @@ function initial(){
 			document.getElementById('acs_band3_checkbox').style.display = "";
 		}		
 	}
+	else if(band5g_11ax_support){
+		if(bw_160_support){
+			document.getElementById('enable_160_field').style.display = "";
+		}
+
+		if(document.form.wl_channel.value  == '0' && (wl_unit == '1' || wl_unit == '2')){
+			document.getElementById('dfs_checkbox').style.display = "";
+			check_DFS_support(document.form.acs_dfs_checkbox);
+		}
+	}
 	else if(country == "EU"){		//display checkbox of DFS channel under 5GHz
 		if(based_modelid == "RT-AC68U" || based_modelid == "RT-AC68A" || based_modelid == "4G-AC68U" || based_modelid == "DSL-AC68U"
 		|| based_modelid == "RT-AC87U"
 		|| based_modelid == "RT-AC3200"
 		|| (based_modelid == "RT-AC66U" && wl1_dfs == "1")		//0: A2 not support, 1: B0 support
 		|| based_modelid == "RT-N66U"){
-				if(document.form.wl_channel.value  == '0' && wl_unit == '1'){
-						document.getElementById('dfs_checkbox').style.display = "";
-						check_DFS_support(document.form.acs_dfs_checkbox);
-				}
+			if(document.form.wl_channel.value  == '0' && wl_unit == '1'){
+				document.getElementById('dfs_checkbox').style.display = "";
+				check_DFS_support(document.form.acs_dfs_checkbox);
+			}
 		}
 	}
 	else if(country == "US" && dfs_US_support){
@@ -161,7 +185,6 @@ function initial(){
 			check_DFS_support(document.form.acs_dfs_checkbox);
 		}
 	}
-
 	
 	if(country == "EU" || country == "JP" || country == "SG" || country == "CN" || country == "UA" || country == "KR"){
 		if(!Qcawifi_support && !Rawifi_support){
@@ -182,6 +205,7 @@ function initial(){
 		document.form.smart_connect_t.value = (smart_connect_flag_t == 0)?1:smart_connect_flag_t;
 		enableSmartCon(smart_connect_flag_t);
 	}
+
 	if(history.pushState != undefined) history.pushState("", document.title, window.location.pathname);
 	
 	if(document.form.wl_channel.value  == '0'){
@@ -298,7 +322,7 @@ function genBWTable(_unit){
 					bws = [1, 2];
 					bwsDesc = ["20 MHz", "40 MHz"];
 				}else{
-					bws = [1, 2, 3, 4];
+					bws = [1, 2, 3, 5];
 					bwsDesc = ["20 MHz", "40 MHz", "80 MHz", "160 MHz"];
 				}
 			}			
@@ -306,8 +330,8 @@ function genBWTable(_unit){
 				based_modelid == "RT-AC56U" || based_modelid == "RT-AC56S" || 
 				based_modelid == "RT-AC66U" || 
 				based_modelid == "RT-AC3200" || 
-				based_modelid == "RT-AC3100" || based_modelid == "RT-AC88U" || based_modelid == "RT-AC86U" || based_modelid == "AC2900" ||
-				based_modelid == "RT-AC5300" || based_modelid == "GT-AC5300" ||
+				based_modelid == "RT-AC3100" || based_modelid == "RT-AC88U" || based_modelid == "RT-AX88U" || based_modelid == "RT-AC86U" || based_modelid == "AC2900" ||
+				based_modelid == "RT-AC5300" || based_modelid == "GT-AC5300" || based_modelid == "GT-AX11000" || based_modelid == "RT-AX92U" ||
 				based_modelid == "RT-AC53U") && document.form.wl_nmode_x.value == 1){		//N only
 				bws = [0, 1, 2];
 				bwsDesc = ["20/40 MHz", "20 MHz", "40 MHz"];
@@ -316,6 +340,16 @@ function genBWTable(_unit){
 				if(no_vht_support){		//Hide 11AC/80MHz from GUI
 					bws = [0, 1, 2];
 					bwsDesc = ["20/40 MHz", "20 MHz", "40 MHz"];
+				}
+				else if(band5g_11ax_support){
+					if(enable_bw_160){
+						bws = [0, 1, 2, 3, 5];
+						bwsDesc = ["20/40/80/160 MHz", "20 MHz", "40 MHz", "80 MHz", "160 MHz"];
+					}
+					else{
+						bws = [0, 1, 2, 3];
+						bwsDesc = ["20/40/80 MHz", "20 MHz", "40 MHz", "80 MHz"];
+					}					
 				}
 				else{
 					bws = [0, 1, 2, 3];
@@ -432,6 +466,10 @@ function applyRule(){
 			}
 		}
 
+		if(band5g_11ax_support && bw_160_support){
+			document.form.wl_bw_160.value = $("#enable_160mhz").prop("checked") ? 1 : 0;
+		}
+
 		showLoading();
 		if(based_modelid == "RT-AC87U" && wl_unit == "1")
 			stopFlag = '0';
@@ -501,7 +539,6 @@ function applyRule(){
 				if(document.form.smart_connect_x.value == '1')
 					document.form.wl_unit.value = 0;
 		}
-
 
 		if (based_modelid == "RT-AC87U" && wl_unit == "1")
 			detect_qtn_ready();
@@ -682,6 +719,18 @@ function regen_5G_mode(obj,flag){	//please sync to initial() : //Change wireless
 			obj.options[1] = new Option("N only", 1);
 			obj.options[2] = new Option("Legacy", 2);
 		}
+		else if(band5g_11ax_support){
+			obj.options[0] = new Option("<#Auto#>", 0);
+			obj.options[1] = new Option("N only", 1);
+			if(based_modelid == "RT-AX92U" && flag == 1){
+				obj.options[2] = new Option("N/AC mixed", 8);
+			}
+			else{
+				obj.options[2] = new Option("N/AC/AX mixed", 8);
+			}
+			
+			obj.options[3] = new Option("Legacy", 2);			
+		}
 		else{
 			obj.options[0] = new Option("<#Auto#>", 0);
 			obj.options[1] = new Option("N only", 1);
@@ -759,9 +808,16 @@ function enableSmartCon(val){
 	if(val == 0){
 		document.getElementById("smart_connect_field").style.display = "none";
 		document.getElementById("smartcon_rule_link").style.display = "none";
+		if(wl_unit != 0){
+			$("#enable_160_field").show();
+			$("#dfs_checkbox").show();
+		}
 	}else if(val > 0){
 		document.getElementById("smart_connect_field").style.display = "";
 		document.getElementById("smartcon_rule_link").style.display = "table-cell";
+		$("#enable_160_field").hide();
+		$("#dfs_checkbox").hide();
+		document.form.acs_dfs.value = 0;
 	}
 
 	if(val == 0 || (val == 2 && wl_unit == 0)){
@@ -798,6 +854,28 @@ function regen_auto_option(obj){
 	free_options(obj);
 	obj.options[0] = new Option("<#Auto#>", 0);
 	obj.selectedIndex = 0;
+}
+
+function enable_160MHz(obj){
+	cur = '<% nvram_get("wl_bw"); %>';
+	var bws = new Array();
+	var bwsDesc = new Array();
+
+
+	if(obj.checked){
+		bws = [0, 1, 2, 3, 5];
+		bwsDesc = ["20/40/80/160 MHz", "20 MHz", "40 MHz", "80 MHz", "160 MHz"];
+		enable_bw_160 = true;
+	}
+	else{
+		bws = [0, 1, 2, 3];
+		bwsDesc = ["20/40/80 MHz", "20 MHz", "40 MHz", "80 MHz"];
+		enable_bw_160 = false;
+	}
+
+	add_options_x2(document.form.wl_bw, bwsDesc, bws, cur);
+	wl_chanspec_list_change();
+	change_channel(document.form.wl_channel);
 }
 </script>
 </head>
@@ -874,6 +952,7 @@ function regen_auto_option(obj){
 <input type="hidden" name="wl_chanspec" value=''>
 <input type="hidden" name="wl_wep_x_orig" value='<% nvram_get("wl_wep_x"); %>'>
 <input type="hidden" name="wl_optimizexbox" value='<% nvram_get("wl_optimizexbox"); %>'>
+<input type="hidden" name="wl_bw_160" value='<% nvram_get("wl_bw_160"); %>'>
 <input type="hidden" name="wl_subunit" value='-1'>
 <input type="hidden" name="wl1_dfs" value='<% nvram_get("wl1_dfs"); %>'>
 <input type="hidden" name="acs_dfs" value='<% nvram_get("acs_dfs"); %>'>
@@ -1008,11 +1087,12 @@ function regen_auto_option(obj){
 			 	<tr id="wl_bw_field">
 			   	<th><#WLANConfig11b_ChannelBW_itemname#></th>
 			   	<td>				    			
-						<select name="wl_bw" class="input_option" onChange="wl_chanspec_list_change();">
-							<option class="content_input_fd" value="0" <% nvram_match("wl_bw", "0","selected"); %>>20 MHz</option>
-							<option class="content_input_fd" value="1" <% nvram_match("wl_bw", "1","selected"); %>>20/40 MHz</option>
-							<option class="content_input_fd" value="2" <% nvram_match("wl_bw", "2","selected"); %>>40 MHz</option>
-						</select>				
+					<select name="wl_bw" class="input_option" style="width:150px;" onChange="wl_chanspec_list_change();">
+						<option class="content_input_fd" value="0" <% nvram_match("wl_bw", "0","selected"); %>>20 MHz</option>
+						<option class="content_input_fd" value="1" <% nvram_match("wl_bw", "1","selected"); %>>20/40 MHz</option>
+						<option class="content_input_fd" value="2" <% nvram_match("wl_bw", "2","selected"); %>>40 MHz</option>
+					</select>
+					<span id="enable_160_field" style="display:none"><input type="checkbox" onClick="enable_160MHz(this);" id="enable_160mhz" >Enable 160 MHz</span>			
 			   	</td>
 			 	</tr>
 				<!-- ac channel -->			  
@@ -1023,10 +1103,10 @@ function regen_auto_option(obj){
 					<td>			
 				 		<select name="wl_channel" class="input_option" onChange="change_channel(this);"></select>
 						<span id="auto_channel" style="display:none;margin-left:10px;"></span><br>
-						<span id="dfs_checkbox" style="display:none"><input type="checkbox" onClick="check_DFS_support(this);" name="acs_dfs_checkbox" <% nvram_match("acs_dfs", "1", "checked"); %>><#WLANConfig11b_EChannel_dfs#></input></span>
-						<span id="acs_band1_checkbox" style="display:none;"><input type="checkbox" onClick="check_acs_band1_support(this);" <% nvram_match("acs_band1", "1", "checked"); %>><#WLANConfig11b_EChannel_band1#></input></span>
-						<span id="acs_band3_checkbox" style="display:none;"><input type="checkbox" onClick="check_acs_band3_support(this);" <% nvram_match("acs_band3", "1", "checked"); %>><#WLANConfig11b_EChannel_band3#></input></span>
-						<span id="acs_ch13_checkbox" style="display:none;"><input type="checkbox" onClick="check_acs_ch13_support(this);" <% nvram_match("acs_ch13", "1", "checked"); %>><#WLANConfig11b_EChannel_acs_ch13#></input></span>
+						<span id="dfs_checkbox" style="display:none"><input type="checkbox" onClick="check_DFS_support(this);" name="acs_dfs_checkbox" <% nvram_match("acs_dfs", "1", "checked"); %>><#WLANConfig11b_EChannel_dfs#></span>
+						<span id="acs_band1_checkbox" style="display:none;"><input type="checkbox" onClick="check_acs_band1_support(this);" <% nvram_match("acs_band1", "1", "checked"); %>><#WLANConfig11b_EChannel_band1#></span>
+						<span id="acs_band3_checkbox" style="display:none;"><input type="checkbox" onClick="check_acs_band3_support(this);" <% nvram_match("acs_band3", "1", "checked"); %>><#WLANConfig11b_EChannel_band3#></span>
+						<span id="acs_ch13_checkbox" style="display:none;"><input type="checkbox" onClick="check_acs_ch13_support(this);" <% nvram_match("acs_ch13", "1", "checked"); %>><#WLANConfig11b_EChannel_acs_ch13#></span>
 					</td>
 			  </tr> 
 		  	<!-- end -->

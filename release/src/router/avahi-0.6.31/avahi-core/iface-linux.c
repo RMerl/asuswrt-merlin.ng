@@ -205,7 +205,7 @@ static void netlink_callback(AvahiNetlink *nl, struct nlmsghdr *n, void* userdat
 
             switch(a->rta_type) {
 
-                case IFA_ADDRESS:
+                case IFA_LOCAL:
 
                     if ((rlocal.proto == AVAHI_PROTO_INET6 && RTA_PAYLOAD(a) != 16) ||
                         (rlocal.proto == AVAHI_PROTO_INET && RTA_PAYLOAD(a) != 4))
@@ -216,7 +216,7 @@ static void netlink_callback(AvahiNetlink *nl, struct nlmsghdr *n, void* userdat
 
                     break;
 
-                case IFA_LOCAL:
+                case IFA_ADDRESS:
 
                     /* Fill in local address data. Usually this is
                      * preferable over IFA_ADDRESS if both are set,

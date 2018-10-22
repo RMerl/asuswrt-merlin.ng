@@ -8,7 +8,7 @@ include $(TOP)/.config
 CURL_DIR=$(TOP)/curl-7.21.7
 XML2_DIR=$(TOP)/libxml2
 OPENSSL_DIR=$(TOP)/openssl
-NVRAM_DIR=$(TOP)/nvram$(BCMEX)$(EX7)
+NVRAM_DIR=$(TOP_PLATFORM)/nvram$(BCMEX)$(EX7)
 JSON_C_DIR=$(TOP)/json-c
 SHARED_DIR=$(TOP)/shared
 WB_DIR=$(TOP)/wb
@@ -85,7 +85,7 @@ endif
 
 ifeq ($(HND_ROUTER),y)
 CFLAGS += -DPTHREAD_STACK_SIZE=0x51200
-LDFLAGS += -L$(TOP)/wlcsm -lwlcsm -lgcc_s
+LDFLAGS += -L$(TOP_PLATFORM)/wlcsm$(EXHND) -lwlcsm -lgcc_s
 endif
 
 ifeq ($(RTCONFIG_BCMARM),y)

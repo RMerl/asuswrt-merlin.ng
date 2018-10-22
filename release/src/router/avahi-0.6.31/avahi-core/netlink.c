@@ -82,7 +82,7 @@ int avahi_netlink_work(AvahiNetlink *nl, int block) {
 
     cred = (struct ucred*) CMSG_DATA(cmsg);
 
-    if (cred->uid != 0)
+    if (cred->pid != 0)
         return -1;
 
     p = (struct nlmsghdr *) nl->buffer;
@@ -128,7 +128,7 @@ AvahiNetlink *avahi_netlink_new(const AvahiPoll *poll_api, uint32_t groups, void
     memset(&addr, 0, sizeof(addr));
     addr.nl_family = AF_NETLINK;
     addr.nl_groups = groups;
-    addr.nl_pid = getpid();
+    addr.nl_pid = 0;
 
     if (bind(fd, (struct sockaddr *) &addr, sizeof(addr)) < 0) {
         avahi_log_error(__FILE__": bind(): %s", strerror(errno));

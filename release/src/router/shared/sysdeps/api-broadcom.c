@@ -379,8 +379,11 @@ static int et_get_phyid2(int skfd, struct ifreq *ifr, int sub_port)
 static int et_get_phyid(int skfd, struct ifreq *ifr, int sub_port)
 {
 	int sub_port_map;
+#ifdef RTCONFIG_HND_ROUTER_AX
+#define MAX_SUB_PORT_BITS (sizeof(int)*8)
+#else
 #define MAX_SUB_PORT_BITS (sizeof(sub_port_map)*8)
-
+#endif
 	if ((sub_port_map = et_dev_subports_query(skfd, ifr)) < 0) {
 		return -1;
 	}
@@ -444,7 +447,7 @@ static void mdio_write(int skfd, struct ifreq *ifr, int phy_id, int location, in
 	}
 }
 
-static int ethctl_get_link_status(char *ifname)
+int ethctl_get_link_status(char *ifname)
 {
 	int skfd=0, err, bmsr;
 	struct ethswctl_data ifdata;
@@ -486,12 +489,13 @@ static int ethctl_get_link_status(char *ifname)
 			ifdata.addressing_flag |= ETHSW_ADDRESSING_SUBPORT;
 		}
 
-		if ((err = ioctl(skfd, SIOCETHSWCTLOPS, ifr))) {
+		if ((err = ioctl(skfd, SIOCETHSWCTLOPS, &ifr))) {
 			fprintf(stderr, "ioctl command return error %d!\n", err);
 			goto error;
 		}
 
 		close(skfd);
+
 		return (ifdata.speed == 0) ? 0 : 1;
 	}
 
@@ -511,6 +515,7 @@ error:
 
 #define _MB 0x1
 #define _GB 0x2
+#define _2GB 0x4
 static int ethctl_get_link_speed(char *ifname)
 {
 	int skfd=0, err;
@@ -554,13 +559,13 @@ static int ethctl_get_link_speed(char *ifname)
 			ifdata.addressing_flag |= ETHSW_ADDRESSING_SUBPORT;
 		}
 
-		if ((err = ioctl(skfd, SIOCETHSWCTLOPS, ifr))) {
+		if ((err = ioctl(skfd, SIOCETHSWCTLOPS, &ifr))) {
 			fprintf(stderr, "ioctl command return error %d!\n", err);
 			goto error;;
 		}
 
 		close(skfd);
-		return (ifdata.speed >= 1000) ? _GB : _MB;
+		return (ifdata.speed >= 2000 ? _2GB : (ifdata.speed >= 1000 ? _GB : _MB));
 	}
 
 	bmsr = mdio_read(skfd, &ifr, phy_id, MII_BMSR);
@@ -612,6 +617,103 @@ static int ethctl_get_link_speed(char *ifname)
 error:
 	if (skfd) close(skfd);
 	return -1;
+}
+
+struct ethctl_data ethctl;
+int ethctl_phy_op(char* phy_type, int addr, unsigned int reg, unsigned int value, int wr)
+{
+	struct ifreq ifr;
+    	int skfd;
+	int err, phy_id = 0, phy_flag = 0;
+	unsigned int phy_reg = 0;
+
+	strcpy(ifr.ifr_name, "bcmsw");
+	if ((skfd = socket(AF_INET, SOCK_DGRAM, 0)) < 0) {
+		fprintf(stderr, "socket open error\n");
+		return -1;
+	}
+
+	if (ioctl(skfd, SIOCGIFINDEX, &ifr) < 0 ) {
+		fprintf(stderr, "ioctl failed. check if %s exists\n", ifr.ifr_name);
+		close(skfd);
+		return -1;
+	}
+
+
+	if (strcmp(phy_type, "ext") == 0) {
+		phy_flag = ETHCTL_FLAG_ACCESS_EXT_PHY;
+	} else if (strcmp(phy_type, "int") == 0) {
+		phy_flag = ETHCTL_FLAG_ACCESS_INT_PHY;
+	} else if (strcmp(phy_type, "extsw") == 0) { // phy connected to external switch
+		phy_flag = ETHCTL_FLAG_ACCESS_EXTSW_PHY;
+	} else if (strcmp(phy_type, "i2c") == 0) { // phy connected through I2C bus
+		phy_flag = ETHCTL_FLAG_ACCESS_I2C_PHY;
+	} else if (strcmp(phy_type, "10gserdes") == 0) { // phy connected through I2C bus
+		phy_flag = ETHCTL_FLAG_ACCESS_10GSERDES;
+	} else if (strcmp(phy_type, "10gpcs") == 0) { // phy connected through I2C bus
+		phy_flag = ETHCTL_FLAG_ACCESS_10GPCS;
+	} else if (strcmp(phy_type, "serdespower") == 0) { // Serdes power saving mode
+		phy_flag = ETHCTL_FLAG_ACCESS_SERDES_POWER_MODE;
+	} else if (strcmp(phy_type, "ext32") == 0) { // Extended 32bit register access.
+		phy_flag = ETHCTL_FLAG_ACCESS_32BIT|ETHCTL_FLAG_ACCESS_EXT_PHY;
+	} else {
+		fprintf(stderr, "Unknown phy type!\n");
+		close(skfd);
+		return -1;
+	}
+
+	phy_id = addr;
+	phy_reg = reg;
+
+	if ((phy_id < 0) || (phy_id > 31)) {
+		fprintf(stderr, "Invalid Phy Address 0x%02x\n", phy_id);
+		close(skfd);
+		return -1;
+        }
+
+	if(phy_flag == ETHCTL_FLAG_ACCESS_SERDES_POWER_MODE && (reg < 0 || reg > 2))
+        {
+		fprintf(stderr, "Invalid Serdes Power Mode%02x\n", reg);
+		close(skfd);
+		return -1;
+	}
+
+	ethctl.phy_addr = phy_id;
+	ethctl.phy_reg = phy_reg;
+	ethctl.flags = phy_flag;
+
+	if(wr) { // Write
+		ethctl.op = ETHSETMIIREG;
+		ethctl.val = value;
+		ifr.ifr_data = (void *)&ethctl;
+		err = ioctl(skfd, SIOCETHCTLOPS, &ifr);
+		if (ethctl.ret_val || err) {
+			_dprintf("SET ERROR!!!\n");
+            		fprintf(stderr, "command return error!\n");
+			close(skfd);
+			return -1;
+		}
+
+//		_dprintf("[SET] %08x = %08x\n", phy_reg, value);
+	}
+	else { // Read
+		ethctl.op = ETHGETMIIREG;
+		ifr.ifr_data = (void *)&ethctl;
+		err = ioctl(skfd, SIOCETHCTLOPS, &ifr);
+		if (ethctl.ret_val || err) {
+			_dprintf("GET ERROR!!!\n");
+			fprintf(stderr, "command return error!\n");
+			close(skfd);
+			return -1;
+		}
+		else {
+//			_dprintf("[GET] %08x = %04x\n", phy_reg, ethctl.val);
+			close(skfd);
+			return ethctl.val;
+		}
+	}
+
+	return 0;
 }
 
 int bcm_reg_read_X(int unit, unsigned int addr, char* data, int len)
@@ -754,13 +856,23 @@ int hnd_ethswctl(ecmd_t act, unsigned int val, int len, int wr, unsigned long lo
 			}
 			break;
 		case PMDIOACCESS:
-			for (i = 0; i < 8; i++) {
-				data[i] = (unsigned char) (*( ((char *)&regdata) + 7-i));
+#ifdef RTCONFIG_HND_ROUTER_AX
+			data64 = cpu_to_le64(regdata);
+			for(i = 0; i < 8; i++)
+			{
+				data[i] = (unsigned char) (*( ((char *)&data64) + i));
 			}
+#else
+			for(i = 0; i < 8; i++)
+			{
+ 				data[i] = (unsigned char) (*( ((char *)&regdata) + 7-i));
+			}
+#endif
 			if (wr) {
 				//_dprintf("\npw data\n");
 				ret_val = bcm_pseudo_mdio_write(val, (char*)data, len);
 			} else {
+				memset(data, 0, sizeof(data));
 				ret_val = bcm_pseudo_mdio_read(val, (char*)data, len);
 				//_dprintf("pr Data: %02x%02x%02x%02x %02x%02x%02x%02x\n",
 				//data[7], data[6], data[5], data[4], data[3], data[2], data[1], data[0]);
@@ -775,8 +887,17 @@ int hnd_ethswctl(ecmd_t act, unsigned int val, int len, int wr, unsigned long lo
 
 uint32_t hnd_get_phy_status(int port, int offs, unsigned int regv, unsigned int pmdv)
 {
-	if (port == 7 ) {			// wan port
+	if (port == 7
+#ifdef RTCONFIG_EXTPHY_BCM84880
+	    || port == 4
+#endif 
+	) {			// wan port
+#ifdef RTCONFIG_EXTPHY_BCM84880
+		// port4(eth0)->1G WAN, port7(eth5)->2.5G LAN
+		return ethctl_get_link_status(port == 4 ? "eth0" : "eth5");
+#else
 		return ethctl_get_link_status("eth0");
+#endif
 	} else if (!offs || (port-offs < 0)) {	// main switch
 		return regv & (1<<port) ? 1 : 0;
 	} else {				// externai switch
@@ -787,8 +908,17 @@ uint32_t hnd_get_phy_status(int port, int offs, unsigned int regv, unsigned int 
 uint32_t hnd_get_phy_speed(int port, int offs, unsigned int regv, unsigned int pmdv)
 {
 	int val = 0;
-	if (port == 7) {			// wan port
+	if (port == 7
+#ifdef RTCONFIG_EXTPHY_BCM84880
+            || port == 4
+#endif
+	) {			// wan port
+#ifdef RTCONFIG_EXTPHY_BCM84880
+                // port4(eth0)->1G WAN, port7(eth5)->2.5G LAN
+		return ethctl_get_link_speed(port == 4 ? "eth0" : "eth5");
+#else
 		return ethctl_get_link_speed("eth0");
+#endif
 	}
 	else if (!offs || (port-offs < 0)) {	// main switch
 		val = regv & (0x0003<<(port*2));
@@ -904,13 +1034,13 @@ uint32_t get_phy_speed(uint32_t portmask)
 	return mask;
 }
 
-#if defined(HND_ROUTER)
+#if defined(RTCONFIG_EXT_BCM53134)
 uint32_t set_ex53134_ctrl(uint32_t portmask, int ctrl)
 {
 	int i=0;
 	uint32_t value;
 
-	for (i = 0; i < 5 && (portmask >> i); i++) {
+	for (i = 0; i < 4 && (portmask >> i); i++) {
 		if ((portmask & (1U << i)) == 0)
 			continue;
 
@@ -1276,15 +1406,7 @@ char *get_wan_hwaddr(void)
 
 char *get_wlifname(int unit, int subunit, int subunit_x, char *buf)
 {
-	char wifnv[12];
-
-	if (!subunit)
-	{
-		snprintf(wifnv, sizeof(wifnv), "wl%d_ifname", unit);
-		sprintf(buf, nvram_safe_get(wifnv));
-	}
-	else
-		sprintf(buf, "wl%d.%d", unit, subunit);
+	sprintf(buf, "wl%d.%d", unit, subunit);
 
 	return buf;
 }

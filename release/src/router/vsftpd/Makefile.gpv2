@@ -4,13 +4,13 @@ INSTALL	=	all
 IFLAGS  =	-idirafter dummyinc
 #CFLAGS = -g
 CFLAGS	=	-O2 -Wall -W -Wshadow
-CFLAGS	+=	-I$(SRCBASE)/include -I$(TOP)/nvram -I$(TOP)/libdisk
+CFLAGS	+=	-I$(SRCBASE)/include -I$(TOP_PLATFORM)/nvram -I$(TOP)/libdisk
 CFLAGS	+=	-DDEBUG
 LIBS	=	-ldl -lresolv
 #-lcrypt
 #`./vsf_findlibs.sh`
 LINK	=	-Wl,-s
-LDFLAGS	=	-L$(TOP)/nvram -lnvram -L$(TOP)/libdisk -ldisk
+LDFLAGS	=	-L$(TOP_PLATFORM)/nvram -lnvram -L$(TOP)/libdisk -ldisk
 OBJS	=	main.o utility.o prelogin.o ftpcmdio.o postlogin.o privsock.o \
 		tunables.o ftpdataio.o secbuf.o ls.o \
 		postprivparent.o logging.o str.o netstr.o sysstr.o strlist.o \

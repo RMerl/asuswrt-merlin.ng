@@ -68,6 +68,9 @@ static const struct led_btn_table_s {
 #ifdef RTCONFIG_WIFI_TOG_BTN
 	{ "btn_wltog_gpio",	&btn_gpio_table[BTN_WIFI_TOG] },
 #endif
+#ifdef RTCONFIG_TURBO_BTN
+	{ "btn_turbo_gpio",     &btn_gpio_table[BTN_TURBO] },
+#endif
 #ifdef RTCONFIG_LED_BTN
 	{ "btn_led_gpio",	&btn_gpio_table[BTN_LED] },
 #endif
@@ -246,6 +249,9 @@ int init_gpio(void)
 		, "btn_swmode1_gpio", "btn_swmode2_gpio", "btn_swmode3_gpio"
 #endif	/* Mode */
 #endif	/* RTCONFIG_SWMODE_SWITCH */
+#ifdef RTCONFIG_TURBO_BTN
+		, "btn_turbo_gpio"
+#endif
 #ifdef RTCONFIG_LED_BTN
 		, "btn_led_gpio"
 #endif
@@ -862,6 +868,8 @@ int get_port_status(int unit)
 #ifdef RTCONFIG_EXT_BCM53134
 	switch(get_model()) {
 		case MODEL_GTAC5300:
+		case MODEL_RTAX88U:
+		case MODEL_GTAX11000:
 			extra_p0 = S_53134;
 			break;
 	}
@@ -1150,7 +1158,7 @@ int lanport_ctrl(int ctrl)
 	else
 		rtkswitch_ioctl(POWERDOWN_LANPORTS, -1, -1);
 #endif
-#if defined(GTAC5300)
+#if defined(RTCONFIG_EXT_BCM53134)
 	set_ex53134_ctrl(0xf, ctrl);
 #endif
 

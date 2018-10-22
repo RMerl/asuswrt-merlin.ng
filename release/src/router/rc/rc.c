@@ -329,12 +329,14 @@ static int rctest_main(int argc, char *argv[])
 		sscanf(argv[3], "%x", &ctrl);
 		_dprintf("phy_ctrl 0x%x/%x (%d)\n", mask, ctrl, set_phy_ctrl(mask, ctrl));
 	}
+#if defined(RTCONFIG_EXT_BCM53134)
 	else if (strcmp(argv[1], "set_ex53134_ctrl")==0) {
 		unsigned int mask, ctrl;
 		sscanf(argv[2], "%x", &mask);
 		sscanf(argv[3], "%x", &ctrl);
 		_dprintf("ex53134 phy_ctrl 0x%x/%x (%d)\n", mask, ctrl, set_ex53134_ctrl(mask, ctrl));
 	}
+#endif
 #endif
 	else if (strcmp(argv[1], "lanports_ctrl")==0) {
 		int val;
@@ -483,7 +485,7 @@ static int rctest_main(int argc, char *argv[])
 					f_write_string("/proc/sys/net/ipv4/conf/all/force_igmp_version", "2", 0, 0);
 #endif
 
-#if defined(RTN14U) || defined(RTAC52U) || defined(RTAC51U) || defined(RTN11P) || defined(RTN300) || defined(RTN54U) || defined(RTAC1200HP) || defined(RTN56UB1) || defined(RTAC54U) || defined(RTN56UB2) || defined(RTAC1200GA1) || defined (RTAC1200GU) || defined(RTAC85U) || defined(RTAC51UP) || defined(RTAC53) || defined(RTN800HP)
+#if defined(RTN14U) || defined(RTAC52U) || defined(RTAC51U) || defined(RTN11P) || defined(RTN300) || defined(RTN54U) || defined(RTAC1200HP) || defined(RTN56UB1) || defined(RTAC54U) || defined(RTN56UB2) || defined(RTAC1200GA1) || defined (RTAC1200GU) || defined(RTAC85U) || defined(RTAC85P) || defined(RTAC51UP) || defined(RTAC53) || defined(RTN800HP)
 					if (!(!nvram_match("switch_wantag", "none")&&!nvram_match("switch_wantag", "")))
 #endif
 					{

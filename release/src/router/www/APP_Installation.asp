@@ -103,9 +103,9 @@ var wan_unit_orig = '<% nvram_get("wan_unit"); %>';
 function initial(){
 	show_menu();
 	//	http://www.asus.com/support/FAQ/1009773/
-	httpApi.faqURL("faq", "1009773", "https://www.asus.com", "/support/FAQ/");
+	httpApi.faqURL("1009773", function(url){document.getElementById("faq").href=url;});
 	//	http://www.asus.com/support/FAQ/1016385/
-	httpApi.faqURL("faq2", "1016385", "https://www.asus.com", "/support/FAQ/");
+	httpApi.faqURL("1016385", function(url){document.getElementById("faq2").href=url;});
 
 	default_apps_array = [["AiDisk", "aidisk.asp", "<#AiDiskWelcome_desp1#>", "Aidisk_png", ""],
 			["<#Servers_Center#>", "mediaserver.asp", "<#UPnPMediaServer_Help#>", "server_png", ""],

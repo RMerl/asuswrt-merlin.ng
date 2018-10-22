@@ -118,7 +118,6 @@ function initial(){
 	
 	addWANOption(document.form.wans_primary, wans_caps_primary.split(" "));
 	addWANOption(document.form.wans_second, wans_caps_secondary.split(" "));
-
    	document.form.wans_mode.value = wans_mode_orig;
 
    	//parse nvram to array
@@ -140,7 +139,6 @@ function initial(){
 	};
 
 	wans_routing_rulelist_array = parseNvramToArray();
-
 	form_show(wans_flag);		
 	setTimeout("showLANIPList();", 1000);
 
@@ -189,7 +187,18 @@ function form_show(v){
 		document.form.wans_routing_enable[1].disabled = true;
 		document.getElementById('watchdog_table').style.display = "none";
 		document.getElementById('Routing_rules_table').style.display = "none";
-		document.form.wans_primary.value = wans_dualwan_array[0];	
+		if(based_modelid == "GT-AX11000"){
+			if( wans_dualwan_array[0] == "wan" && document.form.wans_extwan.value == "1"){
+				document.form.wans_primary.value = "lan2";
+			}
+			else{
+				document.form.wans_primary.value = wans_dualwan_array[0];
+			}			
+		}
+		else{
+			document.form.wans_primary.value = wans_dualwan_array[0];
+		}
+			
 		appendLANoption1(document.form.wans_primary);
 		appendModeOption2("0");
 		document.form.wandog_enable_radio[1].checked = true;		
@@ -203,7 +212,18 @@ function form_show(v){
 		document.getElementById("sentence2").style.display = "none";	
 	}
 	else{ //DualWAN enabled
-		document.form.wans_primary.value = wans_dualwan_array[0];
+		if(based_modelid == "GT-AX11000"){
+			if( wans_dualwan_array[0] == "wan" && document.form.wans_extwan.value == "1"){
+				document.form.wans_primary.value = "lan2";
+			}
+			else{
+				document.form.wans_primary.value = wans_dualwan_array[0];
+			}
+		}
+		else{
+			document.form.wans_primary.value = wans_dualwan_array[0];
+		}
+		
 		if(wans_dualwan_array[1] == "none"){
 
 			if(wans_dualwan_array[0] == "dsl"){
@@ -223,19 +243,36 @@ function form_show(v){
 					document.form.wans_second.value = "usb";
 				else
 					document.form.wans_second.value = "lan";
-
 			}
 			else{
 				if(wans_caps.search("wan") >= 0)
 					document.form.wans_second.value = "wan";
 			}
 		}	
-		else
-			document.form.wans_second.value = wans_dualwan_array[1];
+		else{
+			if(based_modelid == "GT-AX11000"){
+				if(wans_dualwan_array[0] == "wan" && wans_dualwan_array[1] == "lan" && document.form.wans_lanport.value == "5"){
+					if(document.form.wans_extwan.value == "0"){
+						document.form.wans_second.value = "lan2";
+					}
+					else{
+						document.form.wans_second.value = "wan";
+					}					
+				}
+				else if(wans_dualwan_array[1] == "wan" && document.form.wans_lanport.value == "5" && document.form.wans_extwan.value == "1"){
+					document.form.wans_second.value = "lan2";
+				}
+				else{
+					document.form.wans_second.value = wans_dualwan_array[1];
+				}
+			}
+			else{
+				document.form.wans_second.value = wans_dualwan_array[1];
+			}
+		}
 		
 		appendLANoption1(document.form.wans_primary);
 		appendLANoption2(document.form.wans_second);
-
 		if(gobi_support){
 			if(document.form.wans_mode.value != "lb" && (document.form.wans_primary.value == "usb" || document.form.wans_second.value == "usb")){
 				document.getElementById("wans_standby_tr").style.display = "";
@@ -295,13 +332,40 @@ function applyRule(){
 	}
 
 	if(wans_flag == 1){
-		document.form.wans_dualwan.value = document.form.wans_primary.value +" "+ document.form.wans_second.value;
+		document.form.wans_extwan.value = 0;
+		if(document.form.wans_primary.value == "lan2"){
+			if(document.form.wans_second.value == "wan"){
+				document.form.wans_dualwan.value = "wan lan";
+				document.form.wans_lanport.value = "5";
+			}
+			else{
+				document.form.wans_dualwan.value = "wan " + document.form.wans_second.value;
+			}
+			
+			document.form.wans_extwan.value = 1;
+		}
+		else if(document.form.wans_second.value == "lan2"){
+			if(document.form.wans_primary.value == "wan"){
+				document.form.wans_dualwan.value = "wan lan";
+				document.form.wans_lanport.value = "5";
+				document.form.wans_extwan.value = 0;
+			}
+			else{
+				document.form.wans_dualwan.value = document.form.wans_primary.value +" wan";
+				document.form.wans_extwan.value = 1;
+			}			
+		}
+		else{
+			document.form.wans_dualwan.value = document.form.wans_primary.value +" "+ document.form.wans_second.value;
+		}
 		
-		if(!dsl_support && (document.form.wans_dualwan.value == "usb lan" || document.form.wans_dualwan.value == "lan usb")){
+		
+		if(!dsl_support && (document.form.wans_dualwan.value == "usb lan" || document.form.wans_dualwan.value == "lan usb") && based_modelid != "GT-AX11000"){
 			alert("WAN port should be selected in Dual WAN.");
 			document.form.wans_primary.focus();
 			return;
 		}
+
 		document.form.wan_unit.value = "<% nvram_get("wan_unit"); %>";
 		if(document.form.wans_mode.value == "lb"){
 
@@ -361,8 +425,15 @@ function applyRule(){
 		document.form.wan0_routing_isp.disabled = true;	
 		document.form.wan1_routing_isp_enable.disabled = true;
 		document.form.wan1_routing_isp.disabled = true;
-		document.form.wans_routing_rulelist.disabled =true;		
-		document.form.wans_dualwan.value = document.form.wans_primary.value + " none";
+		document.form.wans_routing_rulelist.disabled =true;
+		if(document.form.wans_primary.value == "lan2"){
+			document.form.wans_dualwan.value = "wan none";
+			document.form.wans_extwan.value = "1";
+		}
+		else{
+			document.form.wans_dualwan.value = document.form.wans_primary.value + " none";
+			document.form.wans_extwan.value = "0";
+		}
 		document.form.wan_unit.value = 0;
 		document.form.wandog_enable.value = "0";
 	}	
@@ -371,8 +442,11 @@ function applyRule(){
 		document.form.wans_lanport.value = document.form.wans_lanport1.value;
 	else if(document.form.wans_second.value =="lan")
 		document.form.wans_lanport.value = document.form.wans_lanport2.value;
-	else	
-		document.form.wans_lanport.disabled = true;
+	else{
+		if(based_modelid != "GT-AX11000"){
+			document.form.wans_lanport.disabled = true;
+		}
+	}
 
 	if (document.form.wans_primary.value == "lan" || document.form.wans_second.value == "lan") {
 		var port_conflict = false;
@@ -495,13 +569,19 @@ function addWANOption(obj, wanscapItem){
 			else if(wanscapName == "USB" && (based_modelid == "4G-AC53U" || based_modelid == "4G-AC55U" || based_modelid == "4G-AC68U"))
 				wanscapName = "<#Mobile_title#>";
 			obj.options[i] = new Option(wanscapName, wanscapItem[i]);
-		}	
+		}
+
+		if(based_modelid == "GT-AX11000" && i == wanscapItem.length-1){
+			obj.options[i+1] = new Option("2.5G WAN", "lan2");
+		}
 	}
 }
 
 function changeWANProto(obj){	
 	if(wans_flag == 1){	//dual WAN on
-		if(document.form.wans_primary.value == document.form.wans_second.value){
+		if(document.form.wans_primary.value == document.form.wans_second.value
+		|| (document.form.wans_primary.value == "lan2" && document.form.wans_second.value == "lan")
+		|| (document.form.wans_primary.value == "lan" && document.form.wans_second.value == "lan2")){
 			if(obj.name == "wans_primary"){
 				if (obj.value == "dsl"){				
 					if(wans_caps.search("wan") >= 0)
@@ -527,6 +607,12 @@ function changeWANProto(obj){
 					else if(wans_caps.search("lan") >= 0)
 						document.form.wans_second.value = "lan";
 				}
+				else if(obj.value == "lan2"){
+					if(wans_caps.search("wan") >= 0)
+						document.form.wans_second.value = "wan";
+					else if(wans_caps.search("usb") >= 0)
+						document.form.wans_second.value = "usb";
+				}
 				else{
 					if(wans_caps.search("wan") >= 0)
 						document.form.wans_second.value = "wan";					
@@ -545,8 +631,13 @@ function changeWANProto(obj){
 					else
 						document.form.wans_primary.value = "lan";
 				}
+				else if(obj.value == "lan2"){
+					if(wans_caps.search("wan") >= 0)
+						document.form.wans_primary.value = "wan";
+					else if(wans_caps.search("usb") >= 0)
+						document.form.wans_primary.value = "usb";
+				}
 				else{
-
 					if(wans_caps.search("dsl") >= 0)
 						document.form.wans_primary.value = "dsl";
 					else if(wans_caps.search("wan") >= 0)
@@ -1031,6 +1122,7 @@ function remain_origins(){
 <input type="hidden" name="firmver" value="<% nvram_get("firmver"); %>">
 <input type="hidden" name="wl_ssid" value="<% nvram_get("wl_ssid"); %>">
 <input type="hidden" name="wan_unit" value="<% nvram_get("wan_unit"); %>">
+<input type="hidden" name="wans_extwan" value="<% nvram_get("wans_extwan"); %>">
 <input type="hidden" name="wans_dualwan" value="<% nvram_get("wans_dualwan"); %>">
 <input type="hidden" name="wans_lanport" value="<% nvram_get("wans_lanport"); %>">
 <input type="hidden" name="wans_lb_ratio" value="<% nvram_get("wans_lb_ratio"); %>">

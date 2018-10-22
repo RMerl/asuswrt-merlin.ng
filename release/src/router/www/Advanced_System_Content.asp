@@ -145,7 +145,7 @@ function initial(){
 
 	show_menu();
 	//	https://www.asus.com/us/support/FAQ/1034294
-	httpApi.faqURL("faq", "1034294", "https://www.asus.com", "/support/FAQ/");
+	httpApi.faqURL("1034294", function(url){document.getElementById("faq").href=url;});
 	show_http_clientlist();
 	display_spec_IP(document.form.http_client.value);
 
@@ -507,9 +507,6 @@ function applyRule(){
 
 		if(restart_firewall_flag)
 			action_script_tmp += "restart_firewall;";
-
-		if(pwrsave_support)
-			action_script_tmp += "pwrsave;";
 
 		if(needReboot){
 			action_script_tmp = "reboot";

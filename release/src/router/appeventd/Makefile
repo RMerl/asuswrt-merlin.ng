@@ -6,9 +6,12 @@ CFLAGS	+= -I. -I$(TOP)/shared -I$(SRCBASE)/include ${WLAN_StdIncPathA} -I$(SRCBA
 CFLAGS	+= $(if $(WLAN_ComponentIncPath),$(WLAN_ComponentIncPath),$(addprefix -I,$(wildcard $(SRCBASE)/shared/bcmwifi/include)))
 #CFLAGS	+= -g -DDEBUG
 CFLAGS	+= -s -O2
-LDFLAGS += -L$(TOP)/nvram${BCMEX}${EX7} -L$(INSTALLDIR)/nvram/usr/lib -lnvram
+ifeq ($(RTCONFIG_HND_ROUTER_AX),y)
+CFLAGS += -I$(SRCBASE)/../components/proto/include -I$(SRCBASE)/../components/wlioctl/include -I$(SRCBASE)/../components/math/include
+endif
+LDFLAGS += -L$(TOP_PLATFORM)/nvram${BCMEX}${EX7} -L$(INSTALLDIR)/nvram/usr/lib -lnvram
 LDFLAGS += -L$(TOP)/shared -L$(INSTALLDIR)/shared/usr/lib -lshared
-LDFLAGS += $(EXTRA_LDFLAGS) -L$(TOP)/wlcsm -lwlcsm
+LDFLAGS += $(EXTRA_LDFLAGS) -L$(TOP_PLATFORM)/wlcsm$(EXHND) -lwlcsm
 
 vpath %.c $(SRCBASE)/shared/
 

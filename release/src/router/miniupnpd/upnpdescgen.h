@@ -77,6 +77,11 @@ char *
 genDP(int * len);
 #endif
 
+#ifdef ENABLE_AURASYNC
+char *
+genAS(int * len);
+#endif
+
 #ifdef ENABLE_EVENTS
 char *
 getVarsWANIPCn(int * len);
@@ -95,6 +100,10 @@ getVars6FC(int * len);
 #ifdef ENABLE_DP_SERVICE
 char *
 getVarsDP(int * len);
+#endif
+#ifdef ENABLE_AURASYNC
+char *
+getVarsAS(int * len);
 #endif
 #endif /* ENABLE_EVENTS */
 

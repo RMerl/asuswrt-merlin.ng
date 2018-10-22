@@ -53,7 +53,7 @@ start_wps_method(void)
 		// To avoid WPS is unconfigured state
 		nvram_set_int("w_Setting", 1);
 		nvram_commit();
-		trigger_wave_monitor(__func__, __LINE__, WAVE_ACTION_SET_WPS2G_CONFIGURED);
+		trigger_wave_monitor_and_wait(__func__, __LINE__, WAVE_ACTION_SET_WPS2G_CONFIGURED, 1);
 		start_wsc();
 	}
 

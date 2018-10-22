@@ -31,6 +31,9 @@
 #include <pwd.h>
 #include <sys/stat.h>
 #include <sys/ioctl.h>
+#ifdef HAVE_SYS_FILIO_H
+#include <sys/filio.h>
+#endif
 #include <stdio.h>
 #include <fcntl.h>
 #include <time.h>
@@ -72,6 +75,7 @@
 #include <avahi-core/publish.h>
 #include <avahi-core/dns-srv-rr.h>
 #include <avahi-core/log.h>
+#include <avahi-core/util.h>
 
 #ifdef ENABLE_CHROOT
 #include "chroot.h"
@@ -536,6 +540,9 @@ static int parse_command_line(DaemonConfig *c, int argc, char *argv[]) {
                 break;
             case OPTION_DEBUG:
                 c->debug = 1;
+#ifdef DAEMON_SET_VERBOSITY_AVAILABLE
+                daemon_set_verbosity(LOG_DEBUG);
+#endif
                 break;
             default:
                 return -1;

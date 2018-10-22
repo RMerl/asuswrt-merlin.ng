@@ -45,5 +45,10 @@
 #define DP_EVENTURL			"/evt/DP"
 #endif
 
+#ifdef ENABLE_AURASYNC
+#define AS_PATH				"/AS.xml"
+#define AS_CONTROLURL		"/ctl/AS"
+#define AS_EVENTURL		"/evt/AS"
+#endif
 #endif
 

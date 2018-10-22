@@ -4,6 +4,9 @@
 
 #include <rc.h>
 #include <time.h>
+#ifdef RTCONFIG_BWDPI
+#include <bwdpi_common.h>
+#endif
 
 // define function bit, you can define more functions as below
 #define TRAFFIC_LIMITER		0x01
@@ -28,7 +31,7 @@ void hm_traffic_analyzer_save()
 	snprintf(info, sizeof(info), "%ld", size);
 	eval("TrafficAnalyzer", "-d", info);
 
-	if (!f_exists("/dev/detector") || !f_exists("/dev/idpfw")) {
+	if (!f_exists(DEVNODE) || !f_exists("/dev/idpfw")) {
 		_dprintf("%s : dpi engine doesn't exist, not to save any database\n", __FUNCTION__);
 		logmessage("hour monitor", "dpi engine doesn't exist");
 		return;

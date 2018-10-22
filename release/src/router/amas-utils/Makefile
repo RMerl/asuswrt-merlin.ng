@@ -1,6 +1,6 @@
 include $(TOP)/.config
 OPENSSL_DIR	= $(TOP)/openssl
-NVRAM_DIR	= $(TOP)/nvram$(BCMEX)$(EX7)
+NVRAM_DIR	= $(TOP_PLATFORM)/nvram$(BCMEX)$(EX7)
 JSON_C_DIR	= $(TOP)/json-c
 SHARED_DIR	= $(TOP)/shared
 CFLAGS		= -I$(OPENSSL_DIR)/include -I$(SHARED_DIR) -I$(NVRAM_DIR) -I$(JSON_C_DIR) -I$(SRCBASE)/include -DUSE_GET_TLV_SUPPORT_MAC
@@ -13,7 +13,7 @@ LIBS		= -ljson-c -lcrypto -lnvram -lshared
 LIBS += -ldl -lm
 
 ifeq ($(HND_ROUTER),y)
-LDFLAGS += -L$(TOP)/wlcsm -lwlcsm
+LDFLAGS += -L$(TOP_PLATFORM)/wlcsm -lwlcsm
 endif
 
 OUTPUT_FILE	= libamas-utils

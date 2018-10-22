@@ -81,7 +81,7 @@ function initial(){
 	
 	show_menu();
 	// https://www.asus.com/support/FAQ/1011715/
-	httpApi.faqURL("faq", "1011715", "https://www.asus.com", "/support/FAQ/");
+	httpApi.faqURL("1011715", function(url){document.getElementById("faq").href=url;});
 	change_wan_type(document.form.wan_proto.value, 0);	
 	fixed_change_wan_type(document.form.wan_proto.value);
 	genWANSoption();

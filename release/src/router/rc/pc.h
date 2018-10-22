@@ -49,4 +49,5 @@ extern pc_s *match_day_pc_list(pc_s *pc_list, pc_s **target_list, int target_day
 extern pc_s *match_daytime_pc_list(pc_s *pc_list, pc_s **target_list, int target_day, int target_hour);
 
 extern void config_daytime_string(pc_s *pc_list, FILE *fp, char *logaccept, char *logdrop, int temp);
-extern int count_pc_rules(pc_s *pc_list);
+extern void config_pause_block_string(pc_s *pc_list, FILE *fp, char *logaccept, char *logdrop, int temp);
+extern int count_pc_rules(pc_s *pc_list, int enabled);

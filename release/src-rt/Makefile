@@ -45,6 +45,7 @@
 PLATFORM_ROUTER:=
 
 export HND_ROUTER := $(shell pwd | sed 's/.*hnd/y/g')
+export HND_ROUTER_AX := $(shell pwd | sed 's/.*axhnd/y/g')
 # declare the init var here. Don't include router's arch related var here due to it will break the multi-arch rules
 ifeq ($(HND_ROUTER),y)
 export BCM_CHIP := 4908
@@ -66,6 +67,12 @@ endif
 export SRCBASEDIR := $(shell pwd | sed 's/.*release\///g')
 RELEASEDIR := $(shell (cd $(SRC_ROOT)/.. && pwd -P))
 export PATH := $(RELEASEDIR)/tools:$(SRCBASE)/ctools:$(PATH)
+
+ifneq ($(wildcard $(SRCBASE)/router-sysdep),)
+export TOP_PLATFORM := $(SRCBASE)/router-sysdep
+else
+export TOP_PLATFORM := $(SRCBASE)/router
+endif
 
 # tmp depend on busybox
 E2FSPROGS := $(if $(filter $(BUSYBOX),busybox-1.17.4),n,y)
@@ -154,8 +161,15 @@ export BUILD_NAME ?= $(shell echo $(MAKECMDGOALS) | tr a-z A-Z)
 include ./make.hndrt
 export LINUXDIR := $(HND_SRC)/kernel/linux-4.1
 export CROSS_COMPILER_PREFIX := arm-glibc-
+ifeq ($(HND_ROUTER_AX),y)
+export DHD_DIR := sys
+export DONGLE_DIR := 43684
+else
 export BCMEX7 := _arm_94908hnd
-export BOARD_ID := $(shell cat $(PROFILE_PATH) | grep BRCM_BOARD_ID | awk -F '\"' '{print $$2}')
+export DHD_DIR := dhd
+export DONGLE_DIR := 4365
+endif
+export BOARD_ID := $(shell cat $(PROFILE_FILE) | grep BRCM_BOARD_ID | awk -F '\"' '{print $$2}')
 endif
 
 ifneq ($(HND_ROUTER),y)		# the values have other usage in hnd models
@@ -331,36 +345,97 @@ cfe_sysdep:
 		cp -f $(SRCBASE)/../../../../../../../targets/cfe/sysdeps/$(BUILD_NAME)/cfe4908.bin $(SRCBASE)/../../../../../../../targets/cfe/. ; \
 		cp -f $(SRCBASE)/../../../../../../../targets/cfe/sysdeps/$(BUILD_NAME)/cfe4908ram.bin $(SRCBASE)/../../../../../../../targets/cfe/. ; \
 		cp -f $(SRCBASE)/../../../../../../../targets/cfe/sysdeps/$(BUILD_NAME)/cfe4908rom.bin $(SRCBASE)/../../../../../../../targets/cfe/. ; \
+		if [ -f $(SRCBASE)/../../../../../../../targets/cfe/sysdeps/$(BUILD_NAME)/cfe4908ram_emmc.bin ]; then \
+			cp -f $(SRCBASE)/../../../../../../../targets/cfe/sysdeps/$(BUILD_NAME)/cfe4908ram_emmc.bin $(SRCBASE)/../../../../../../../targets/cfe/. ; \
+		fi; \
+		if [ -f $(SRCBASE)/../../../../../../../targets/cfe/sysdeps/$(BUILD_NAME)/cfe4908ram_emmc.bin ]; then \
+			cp -f $(SRCBASE)/../../../../../../../targets/cfe/sysdeps/$(BUILD_NAME)/cfe4908ram_emmc.bin $(SRCBASE)/../../../../../../../targets/cfe/. ; \
+		fi; \
+		if [ -f $(SRCBASE)/../../../../../../../targets/cfe/sysdeps/$(BUILD_NAME)/cfe4908ram_emmc.bin ]; then \
+			cp -f $(SRCBASE)/../../../../../../../targets/cfe/sysdeps/$(BUILD_NAME)/cfe4908ram_emmc.bin $(SRCBASE)/../../../../../../../targets/cfe/. ; \
+		fi; \
 	else \
 		cp -f $(SRCBASE)/../../../../../../../targets/cfe/sysdeps/default/cfe4908.bin $(SRCBASE)/../../../../../../../targets/cfe/. ; \
 		cp -f $(SRCBASE)/../../../../../../../targets/cfe/sysdeps/default/cfe4908ram.bin $(SRCBASE)/../../../../../../../targets/cfe/. ; \
 		cp -f $(SRCBASE)/../../../../../../../targets/cfe/sysdeps/default/cfe4908rom.bin $(SRCBASE)/../../../../../../../targets/cfe/. ; \
+		if [ -f $(SRCBASE)/../../../../../../../targets/cfe/sysdeps/default/cfe4908ram_emmc.bin ]; then \
+			cp -f $(SRCBASE)/../../../../../../../targets/cfe/sysdeps/default/cfe4908ram_emmc.bin $(SRCBASE)/../../../../../../../targets/cfe/. ; \
+		fi; \
+		if [ -f $(SRCBASE)/../../../../../../../targets/cfe/sysdeps/default/cfe4908ram_emmc.bin ]; then \
+			cp -f $(SRCBASE)/../../../../../../../targets/cfe/sysdeps/default/cfe4908ram_emmc.bin $(SRCBASE)/../../../../../../../targets/cfe/. ; \
+		fi; \
+		if [ -f $(SRCBASE)/../../../../../../../targets/cfe/sysdeps/default/cfe4908ram_emmc.bin ]; then \
+			cp -f $(SRCBASE)/../../../../../../../targets/cfe/sysdeps/default/cfe4908ram_emmc.bin $(SRCBASE)/../../../../../../../targets/cfe/. ; \
+		fi; \
 	fi;
 
 wl_sysdep:
-	if [ -d $(SRCBASE)/../../../impl51/4365/src/wl/sysdeps/$(BUILD_NAME) ]; then \
-		if [ "$(HND_MFG)" = "y" ] && [ -f $(SRCBASE)/../../../impl51/4365/src/wl/sysdeps/$(BUILD_NAME)/clm/src/wlc_clm_data_mfg.c ]; then \
-			cp -f $(SRCBASE)/../../../impl51/4365/src/wl/sysdeps/$(BUILD_NAME)/clm/src/wlc_clm_data_mfg.c $(SRCBASE)/../../../impl51/4365/src/wl/clm/src/wlc_clm_data.c ; \
-		elif [ -d $(SRCBASE)/../../../impl51/4365/src/wl/sysdeps/$(BUILD_NAME)/clm ]; then \
-			cp -f $(SRCBASE)/../../../impl51/4365/src/wl/sysdeps/$(BUILD_NAME)/clm/src/wlc_clm_data.c $(SRCBASE)/../../../impl51/4365/src/wl/clm/src/. ; \
+	if [ -d $(SRCBASE)/../../../impl51/$(DONGLE_DIR)/src/wl/sysdeps/$(BUILD_NAME) ]; then \
+		if [ "$(HND_MFG)" = "y" ] && [ -f $(SRCBASE)/../../../impl51/$(DONGLE_DIR)/src/wl/sysdeps/$(BUILD_NAME)/clm/src/wlc_clm_data_mfg.c ]; then \
+			cp -f $(SRCBASE)/../../../impl51/$(DONGLE_DIR)/src/wl/sysdeps/$(BUILD_NAME)/clm/src/wlc_clm_data_mfg.c $(SRCBASE)/../../../impl51/$(DONGLE_DIR)/src/wl/clm/src/wlc_clm_data.c ; \
+		elif [ -d $(SRCBASE)/../../../impl51/$(DONGLE_DIR)/src/wl/sysdeps/$(BUILD_NAME)/clm ]; then \
+			cp -f $(SRCBASE)/../../../impl51/$(DONGLE_DIR)/src/wl/sysdeps/$(BUILD_NAME)/clm/src/wlc_clm_data.c $(SRCBASE)/../../../impl51/$(DONGLE_DIR)/src/wl/clm/src/. ; \
 		fi; \
-		if [ -d $(SRCBASE)/../../../impl51/4365/src/wl/sysdeps/$(BUILD_NAME)/clm/types ]; then \
-			cp -f $(SRCBASE)/../../../impl51/4365/src/wl/sysdeps/$(BUILD_NAME)/clm/types/*_access.clm $(SRCBASE)/../../../impl51/4365/src/wl/clm/types/. ; \
+		if [ -d $(SRCBASE)/../../../impl51/$(DONGLE_DIR)/src/wl/sysdeps/$(BUILD_NAME)/clm/types ]; then \
+			cp -f $(SRCBASE)/../../../impl51/$(DONGLE_DIR)/src/wl/sysdeps/$(BUILD_NAME)/clm/types/*_access.clm $(SRCBASE)/../../../impl51/$(DONGLE_DIR)/src/wl/clm/types/. ; \
 		fi; \
+	elif [ -d $(SRCBASE)/../../../impl51/$(DONGLE_DIR)/components/clm-api/sysdeps/$(BUILD_NAME) ]; then \
+		cp -f $(SRCBASE)/../../../impl51/$(DONGLE_DIR)/components/clm-api/sysdeps/$(BUILD_NAME)/clm-api/src/wlc_clm_data.c $(SRCBASE)/../../../impl51/$(DONGLE_DIR)/components/clm-api/src/. ; \
 	else \
-		if [ -d $(SRCBASE)/../../../impl51/4365/src/wl/sysdeps/default/clm ]; then \
-			cp -f $(SRCBASE)/../../../impl51/4365/src/wl/sysdeps/default/clm/src/wlc_clm_data.c $(SRCBASE)/../../../impl51/4365/src/wl/clm/src/. ; \
+		if [ -d $(SRCBASE)/../../../impl51/$(DONGLE_DIR)/src/wl/sysdeps/default/clm ]; then \
+			cp -f $(SRCBASE)/../../../impl51/$(DONGLE_DIR)/src/wl/sysdeps/default/clm/src/wlc_clm_data.c $(SRCBASE)/../../../impl51/$(DONGLE_DIR)/src/wl/clm/src/. ; \
+		elif [ -d $(SRCBASE)/../../../impl51/$(DONGLE_DIR)/components/clm-api/sysdeps/default/clm-api ]; then \
+			cp -f $(SRCBASE)/../../../impl51/$(DONGLE_DIR)/components/clm-api/sysdeps/default/clm-api/src/wlc_clm_data.c $(SRCBASE)/../../../impl51/$(DONGLE_DIR)/components/clm-api/src/. ; \
 		fi; \
 	fi;
-	if [ -d $(SRCBASE)/../../../impl51/dhd/src/shared/sysdeps/$(BUILD_NAME) ]; then \
-		if [ "$(HND_MFG)" = "y" ] && [ -f $(SRCBASE)/../../../impl51/dhd/src/shared/sysdeps/$(BUILD_NAME)/rtecdc_4366c0_mfg.h ]; then \
-			cp -f $(SRCBASE)/../../../impl51/dhd/src/shared/sysdeps/$(BUILD_NAME)/rtecdc_4366c0_mfg.h $(SRCBASE)/../../../impl51/dhd/src/shared/rtecdc_4366c0.h ; \
-		elif [ -f $(SRCBASE)/../../../impl51/dhd/src/shared/sysdeps/$(BUILD_NAME)/rtecdc_4366c0.h ]; then \
-			cp -f $(SRCBASE)/../../../impl51/dhd/src/shared/sysdeps/$(BUILD_NAME)/rtecdc_4366c0.h $(SRCBASE)/../../../impl51/dhd/src/shared/. ; \
+	if [ -d $(SRCBASE)/../../../impl51/$(DHD_DIR)/src/shared/sysdeps/$(BUILD_NAME) ]; then \
+		if [ "$(HND_MFG)" = "y" ] && [ -f $(SRCBASE)/../../../impl51/$(DHD_DIR)/src/shared/sysdeps/$(BUILD_NAME)/rtecdc_4366c0_mfg.h ]; then \
+			cp -f $(SRCBASE)/../../../impl51/$(DHD_DIR)/src/shared/sysdeps/$(BUILD_NAME)/rtecdc_4366c0_mfg.h $(SRCBASE)/../../../impl51/$(DHD_DIR)/src/shared/rtecdc_4366c0.h ; \
+		elif [ -f $(SRCBASE)/../../../impl51/$(DHD_DIR)/src/shared/sysdeps/$(BUILD_NAME)/rtecdc_4366c0.h ]; then \
+			cp -f $(SRCBASE)/../../../impl51/$(DHD_DIR)/src/shared/sysdeps/$(BUILD_NAME)/rtecdc_4366c0.h $(SRCBASE)/../../../impl51/$(DHD_DIR)/src/shared/. ; \
+		fi; \
+		if [ "$(HND_MFG)" = "y" ] && [ -f $(SRCBASE)/../../../impl51/$(DHD_DIR)/src/shared/sysdeps/$(BUILD_NAME)/rtecdc_43684a0_mfg.h ]; then \
+			cp -f $(SRCBASE)/../../../impl51/$(DHD_DIR)/src/shared/sysdeps/$(BUILD_NAME)/rtecdc_43684a0_mfg.h $(SRCBASE)/../../../impl51/$(DHD_DIR)/src/shared/rtecdc_43684a0.h ; \
+		elif [ -f $(SRCBASE)/../../../impl51/$(DHD_DIR)/src/shared/sysdeps/$(BUILD_NAME)/rtecdc_43684a0.h ]; then \
+			cp -f $(SRCBASE)/../../../impl51/$(DHD_DIR)/src/shared/sysdeps/$(BUILD_NAME)/rtecdc_43684a0.h $(SRCBASE)/../../../impl51/$(DHD_DIR)/src/shared/. ; \
+		fi; \
+		if [ "$(HND_MFG)" = "y" ] && [ -f $(SRCBASE)/../../../impl51/$(DHD_DIR)/src/shared/sysdeps/$(BUILD_NAME)/rtecdc_43684b0_mfg.h ]; then \
+			cp -f $(SRCBASE)/../../../impl51/$(DHD_DIR)/src/shared/sysdeps/$(BUILD_NAME)/rtecdc_43684b0_mfg.h $(SRCBASE)/../../../impl51/$(DHD_DIR)/src/shared/rtecdc_43684b0.h ; \
+		elif [ -f $(SRCBASE)/../../../impl51/$(DHD_DIR)/src/shared/sysdeps/$(BUILD_NAME)/rtecdc_43684b0.h ]; then \
+			cp -f $(SRCBASE)/../../../impl51/$(DHD_DIR)/src/shared/sysdeps/$(BUILD_NAME)/rtecdc_43684b0.h $(SRCBASE)/../../../impl51/$(DHD_DIR)/src/shared/. ; \
 		fi; \
 	else \
-		if [ -f $(SRCBASE)/../../../impl51/dhd/src/shared/sysdeps/default/rtecdc_4366c0.h ]; then \
-			cp -f $(SRCBASE)/../../../impl51/dhd/src/shared/sysdeps/default/rtecdc_4366c0.h $(SRCBASE)/../../../impl51/dhd/src/shared/. ; \
+		if [ -f $(SRCBASE)/../../../impl51/$(DHD_DIR)/src/shared/sysdeps/default/rtecdc_4366c0.h ]; then \
+			cp -f $(SRCBASE)/../../../impl51/$(DHD_DIR)/src/shared/sysdeps/default/rtecdc_4366c0.h $(SRCBASE)/../../../impl51/$(DHD_DIR)/src/shared/. ; \
+		fi; \
+		if [ -f $(SRCBASE)/../../../impl51/$(DHD_DIR)/src/shared/sysdeps/default/rtecdc_43684a0.h ]; then \
+			cp -f $(SRCBASE)/../../../impl51/$(DHD_DIR)/src/shared/sysdeps/default/rtecdc_43684a0.h $(SRCBASE)/../../../impl51/$(DHD_DIR)/src/shared/. ; \
+		fi; \
+		if [ -f $(SRCBASE)/../../../impl51/$(DHD_DIR)/src/shared/sysdeps/default/rtecdc_43684b0.h ]; then \
+			cp -f $(SRCBASE)/../../../impl51/$(DHD_DIR)/src/shared/sysdeps/default/rtecdc_43684b0.h $(SRCBASE)/../../../impl51/$(DHD_DIR)/src/shared/. ; \
+		fi; \
+	fi;
+	if [ -d $(SRCBASE)/../../../impl51/$(DHD_DIR)/src/dongle/sysdeps/$(BUILD_NAME) ]; then \
+		mkdir -p $(SRCBASE)/../../../impl51/$(DHD_DIR)/src/dongle/bin/43684a0/ ; \
+		if [ "$(HND_MFG)" = "y" ] && [ -f $(SRCBASE)/../../../impl51/$(DHD_DIR)/src/dongle/sysdeps/$(BUILD_NAME)/43684a0/rtecdc_mfg.bin ]; then \
+			cp -f $(SRCBASE)/../../../impl51/$(DHD_DIR)/src/dongle/sysdeps/$(BUILD_NAME)/43684a0/rtecdc_mfg.bin $(SRCBASE)/../../../impl51/$(DHD_DIR)/src/dongle/bin/43684a0/rtecdc.bin ; \
+		elif [ -f $(SRCBASE)/../../../impl51/$(DHD_DIR)/src/dongle/sysdeps/$(BUILD_NAME)/43684a0/rtecdc.bin ]; then \
+			cp -f $(SRCBASE)/../../../impl51/$(DHD_DIR)/src/dongle/sysdeps/$(BUILD_NAME)/43684a0/rtecdc.bin $(SRCBASE)/../../../impl51/$(DHD_DIR)/src/dongle/bin/43684a0/. ; \
+		fi; \
+		mkdir -p $(SRCBASE)/../../../impl51/$(DHD_DIR)/src/dongle/bin/43684b0/ ; \
+		if [ "$(HND_MFG)" = "y" ] && [ -f $(SRCBASE)/../../../impl51/$(DHD_DIR)/src/dongle/sysdeps/$(BUILD_NAME)/43684b0/rtecdc_mfg.bin ]; then \
+			cp -f $(SRCBASE)/../../../impl51/$(DHD_DIR)/src/dongle/sysdeps/$(BUILD_NAME)/43684b0/rtecdc_mfg.bin $(SRCBASE)/../../../impl51/$(DHD_DIR)/src/dongle/bin/43684b0/rtecdc.bin ; \
+		elif [ -f $(SRCBASE)/../../../impl51/$(DHD_DIR)/src/dongle/sysdeps/$(BUILD_NAME)/43684b0/rtecdc.bin ]; then \
+			cp -f $(SRCBASE)/../../../impl51/$(DHD_DIR)/src/dongle/sysdeps/$(BUILD_NAME)/43684b0/rtecdc.bin $(SRCBASE)/../../../impl51/$(DHD_DIR)/src/dongle/bin/43684b0/. ; \
+		fi; \
+	else \
+		if [ -f $(SRCBASE)/../../../impl51/$(DHD_DIR)/src/dongle/sysdeps/default/43684a0/rtecdc.bin ]; then \
+			mkdir -p $(SRCBASE)/../../../impl51/$(DHD_DIR)/src/dongle/bin/43684a0/ ; \
+			cp -f $(SRCBASE)/../../../impl51/$(DHD_DIR)/src/dongle/sysdeps/default/43684a0/rtecdc.bin $(SRCBASE)/../../../impl51/$(DHD_DIR)/src/dongle/bin/43684a0/. ; \
+		fi; \
+		if [ -f $(SRCBASE)/../../../impl51/$(DHD_DIR)/src/dongle/sysdeps/default/43684b0/rtecdc.bin ]; then \
+			mkdir -p $(SRCBASE)/../../../impl51/$(DHD_DIR)/src/dongle/bin/43684b0/ ; \
+			cp -f $(SRCBASE)/../../../impl51/$(DHD_DIR)/src/dongle/sysdeps/default/43684b0/rtecdc.bin $(SRCBASE)/../../../impl51/$(DHD_DIR)/src/dongle/bin/43684b0/. ; \
 		fi; \
 	fi;
 endif
@@ -431,7 +506,6 @@ endif
 ifeq ($(HND_ROUTER),y)
 	@rm -rf image
 	@ln -sf targets/94908HND image
-
 	$(MAKE) buildimage
 else
 	@-mkdir image
@@ -536,7 +610,7 @@ ifeq ($(CONFIG_RALINK),y)
 	PAD2=`expr $${ISIZE} - $${KSIZE} - $${RSIZE}` ; \
 	RFSOFFSET=`expr 64 + $${KSIZE} + $${PAD2}` ; \
 	echo "PAD2: $${PAD2}" ; \
-	if [ "$(BUILD_NAME)" = "RT-N56UB1" ] || [ "$(BUILD_NAME)" = "RT-N56UB2" ] || [ "$(BUILD_NAME)" = "RT-AC1200GA1" ] || [ "$(BUILD_NAME)" = "RT-AC1200GU" ] || [ "$(BUILD_NAME)" = "RP-AC56" ] || [ "$(BUILD_NAME)" = "RP-AC87" ] || [ "$(BUILD_NAME)" = "RT-AC85U" ] || [ "$(BUILD_NAME)" = "RT-AC65U" ] || [ "$(BUILD_NAME)" = "RT-N800HP" ]; then \
+	if [ "$(BUILD_NAME)" = "RT-N56UB1" ] || [ "$(BUILD_NAME)" = "RT-N56UB2" ] || [ "$(BUILD_NAME)" = "RT-AC1200GA1" ] || [ "$(BUILD_NAME)" = "RT-AC1200GU" ] || [ "$(BUILD_NAME)" = "RP-AC56" ] || [ "$(BUILD_NAME)" = "RP-AC87" ] || [ "$(BUILD_NAME)" = "RT-AC85U" ] || [ "$(BUILD_NAME)" = "RT-AC85P" ] || [ "$(BUILD_NAME)" = "RT-AC65U" ] || [ "$(BUILD_NAME)" = "RT-N800HP" ]; then \
 		asustools/mkimage -A mips -O linux -T kernel -C lzma -a 80001000 -e $${ENTRY} -r $${RFSOFFSET} \
 		-n $(BUILD_NAME) -V "$(KERNEL_VER)" "$(FS_VER)"  "$(SERIALNO)" "$(EXTENDNO)" "0" "0" "0" "0" "0" "0"  \
 		-d $(PLATFORMDIR)/zImage.img image/$(IMGNAME).trx ; \
@@ -1109,9 +1183,13 @@ define RouterOptions
 		sed -i "/RTCONFIG_IPERF/d" $(1); \
 		echo "RTCONFIG_IPERF=y" >>$(1); \
 	fi; \
-	if [ "$(RGBLED)" = "y" ]; then \
+	if [ "$(RGBLED)" = "y" ] || [ "$(AURASYNC)" = "y" ] ; then \
 		sed -i "/RTCONFIG_RGBLED/d" $(1); \
 		echo "RTCONFIG_RGBLED=y" >>$(1); \
+	fi; \
+	if [ "$(AURASYNC)" = "y" ]; then \
+		sed -i "/RTCONFIG_AURASYNC/d" $(1); \
+		echo "RTCONFIG_AURASYNC=y" >>$(1); \
 	fi; \
 	if [ "$(I2CTOOLS)" = "y" ]; then \
 		sed -i "/RTCONFIG_I2CTOOLS/d" $(1); \
@@ -1278,6 +1356,10 @@ define RouterOptions
 	if [ "$(BTN_WPS_ALLLED)" = "y" ]; then \
 		sed -i "/RTCONFIG_WPS_ALLLED_BTN/d" $(1); \
 		echo "RTCONFIG_WPS_ALLLED_BTN=y" >>$(1); \
+	fi; \
+	if [ "$(BTN_TURBO)" = "y" ]; then \
+		sed -i "/RTCONFIG_TURBO_BTN/d" $(1); \
+		echo "RTCONFIG_TURBO_BTN=y" >>$(1); \
 	fi; \
 	if [ "$(LOGO_LED)" = "y" ]; then \
 		sed -i "/RTCONFIG_LOGO_LED/d" $(1); \
@@ -2054,6 +2136,8 @@ define RouterOptions
 	if [ "$(HND_ROUTER)" = "y" ]; then \
 		sed -i "/RTCONFIG_HND_ROUTER/d" $(1); \
 		echo "RTCONFIG_HND_ROUTER=y" >>$(1); \
+		sed -i "/RTCONFIG_HND_ROUTER_AX/d" $(1); \
+		echo "RTCONFIG_HND_ROUTER_AX=n" >>$(1); \
 		sed -i "/RTCONFIG_EMF/d" $(1); \
 		echo "RTCONFIG_EMF=y" >>$(1); \
 		sed -i "/RTCONFIG_BCMBSD/d" $(1); \
@@ -2078,6 +2162,22 @@ define RouterOptions
 			echo "RTCONFIG_DFS_US=y" >>$(1); \
 		else \
 			echo "# RTCONFIG_DFS_US is not set" >>$(1); \
+		fi; \
+	fi; \
+	if [ "$(HND_ROUTER_AX)" = "y" ]; then \
+		sed -i "/RTCONFIG_HND_ROUTER_AX/d" $(1); \
+		echo "RTCONFIG_HND_ROUTER_AX=y" >>$(1); \
+		sed -i "/RTCONFIG_BCM_CEVENTD/d" $(1); \
+		if [ "$(BCM_CEVENTD)" = "y" ]; then \
+			echo "RTCONFIG_BCM_CEVENTD=y" >>$(1); \
+		else \
+			echo "# RTCONFIG_BCM_CEVENTD is not set" >>$(1); \
+		fi; \
+		sed -i "/RTCONFIG_HND_WL/d" $(1); \
+		if [ "$(HND_WL)" = "y" ]; then \
+			echo "RTCONFIG_HND_WL=y" >>$(1); \
+		else \
+			echo "# RTCONFIG_HND_WL is not set" >>$(1); \
 		fi; \
 	fi; \
 	if [ "$(HND_ROUTER_F1)" = "y" ]; then \
@@ -2157,9 +2257,17 @@ define RouterOptions
 		echo "# RTCONFIG_EXT_RTL8365MB is not set" >>$(1); \
 		sed -i "/RTCONFIG_EXT_RTL8370MB/d" $(1); \
 		echo "# RTCONFIG_EXT_RTL8370MB is not set" >>$(1); \
+		sed -i "/RTCONFIG_EXT_BCM53134/d" $(1); \
+		echo "# RTCONFIG_EXT_BCM53134 is not set" >>$(1); \
 	fi; \
 	fi; \
 	fi; \
+	fi; \
+	if [ "$(EXT_PHY)" = "BCM84880" ]; then \
+		sed -i "/RTCONFIG_EXTPHY_BCM84880/d" $(1); \
+		echo "# RTCONFIG_EXTPHY_BCM84880 is not set" >>$(1); \
+		sed -i "/RTCONFIG_EXTPHY_BCM84880/d" $(1); \
+		echo "RTCONFIG_EXTPHY_BCM84880=y" >>$(1); \
 	fi; \
 	if [ "$(TOR)" = "y" ]; then \
 		sed -i "/RTCONFIG_TOR/d" $(1); \
@@ -3444,7 +3552,38 @@ fi; \
 		fi ; \
 	fi; \
 	if [ "$(BT_CONN)" = "y" ]; then \
-		if [ "$(LANTIQ)" = "y" ]; then \
+		if [ "$(HND_ROUTER_AX)" = "y" ]; then \
+			sed -i "/CONFIG_BT\b/d" $(1); \
+			echo "CONFIG_BT=m" >>$(1); \
+			sed -i "/CONFIG_BT_BREDR/d" $(1); \
+			echo "CONFIG_BT_BREDR=y" >>$(1); \
+			sed -i "/CONFIG_BT_RFCOMM/d" $(1); \
+			echo "CONFIG_BT_RFCOMM=m" >>$(1); \
+			sed -i "/CONFIG_BT_RFCOMM_TTY/d" $(1); \
+			echo "CONFIG_BT_RFCOMM_TTY=y" >>$(1); \
+			sed -i "/CONFIG_BT_BNEP/d" $(1); \
+			echo "CONFIG_BT_BNEP=m" >>$(1); \
+			sed -i "/CONFIG_BT_LE/d" $(1); \
+			echo "# CONFIG_BT_LE is not set" >>$(1); \
+			sed -i "/CONFIG_BT_DEBUGFS/d" $(1); \
+			echo "CONFIG_BT_DEBUGFS=y" >>$(1); \
+			sed -i "/CONFIG_BT_HIDP/d" $(1); \
+			echo "CONFIG_BT_HIDP=m" >>$(1); \
+			sed -i "/CONFIG_BT_BCM/d" $(1); \
+			echo "# CONFIG_BT_BCM is not set" >>$(1); \
+			sed -i "/CONFIG_BT_HCIBTUSB/d" $(1); \
+			echo "CONFIG_BT_HCIBTUSB=m" >>$(1); \
+			sed -i "/CONFIG_BT_HCIBTUSB_BCM/d" $(1); \
+			echo "# CONFIG_BT_HCIBTUSB_BCM is not set" >>$(1); \
+			sed -i "/CONFIG_BT_HCIUART/d" $(1); \
+			echo "CONFIG_BT_HCIUART=m" >>$(1); \
+			sed -i "/CONFIG_BT_HCIUART_H4/d" $(1); \
+			echo "CONFIG_BT_HCIUART_H4=y" >>$(1); \
+			sed -i "/CONFIG_BT_HCIUART_BCSP/d" $(1); \
+			echo "CONFIG_BT_HCIUART_BCSP=y" >>$(1); \
+			sed -i "/CONFIG_BT_HCIVHCI/d" $(1); \
+			echo "CONFIG_BT_HCIVHCI=m" >>$(1); \
+		elif [ "$(LANTIQ)" = "y" ]; then \
 			sed -i "/CONFIG_BT\b/d" $(1); \
 			echo "CONFIG_BT=m" >>$(1); \
 			sed -i "/CONFIG_BT_RFCOMM/d" $(1); \
@@ -3469,7 +3608,7 @@ fi; \
 			echo "# CONFIG_BT_MRVL is not set" >>$(1); \
 			sed -i "/CONFIG_BT_ATH3K/d" $(1); \
 			echo "CONFIG_BT_ATH3K=m" >>$(1); \
-		elif [ "$(ALPINE)" = "yyy" ]; then \
+		elif [ "$(ALPINE)" = "y" ]; then \
 			sed -i "/CONFIG_BT\b/d" $(1); \
 			echo "CONFIG_BT=y" >>$(1); \
 			sed -i "/CONFIG_BT_RFCOMM\b/d" $(1); \
@@ -3649,6 +3788,12 @@ fi; \
 	else \
 		sed -i "/CONFIG_DHDAP/d" $(1); \
 		echo "# CONFIG_DHDAP is not set" >>$(1); \
+	fi; \
+	sed -i "/CONFIG_HND_WL/d" $(1); \
+	if [ "$(HND_WL)" = "y" ]; then \
+		echo "CONFIG_HND_WL=y" >>$(1); \
+	else \
+		echo "# CONFIG_HND_WL is not set" >>$(1); \
 	fi; \
 	if [ "$(DPSTA)" = "y" ]; then \
 		sed -i "/CONFIG_DPSTA/d" $(1); \
@@ -4141,6 +4286,8 @@ endif
 		rm -f config_current ; \
 		ln -s config_$(lowercase_B) config_current ; \
 		cp config_current .config
+
+	@-cp router/config_current router-sysdep/.config
 
 	@if grep -q "CONFIG_RT3352_INIC_MII=m" $(LINUXDIR)/.config ; then \
 		sed -i "/RTCONFIG_WLMODULE_RT3352_INIC_MII/d" router/.config; \

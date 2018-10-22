@@ -76,6 +76,18 @@ extern int runtime_flags;
 #ifdef IGD_V2
 #define FORCEIGDDESCV1MASK 0x0800
 #endif
+#ifdef ENABLE_AURASYNC
+#define ENABLEAURASYNCMASK	0x0800
+#define	AS_RGB_MIN	0
+#define	AS_RGB_MAX	255
+#define	AS_GROUP_MIN	0
+#define	AS_GROUP_MAX	7
+#define	AS_MODE_MIN	0
+#define	AS_MODE_MAX	13
+#define	AS_DIR_MIN	0
+#define	AS_DIR_MAX	1
+extern int aura_standalone;
+#endif
 
 #define PERFORMSTUNMASK    0x1000
 

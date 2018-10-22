@@ -189,7 +189,8 @@ static int reuseaddr(int fd) {
     yes = 1;
     if (setsockopt(fd, SOL_SOCKET, SO_REUSEPORT, &yes, sizeof(yes)) < 0) {
         avahi_log_warn("SO_REUSEPORT failed: %s", strerror(errno));
-        return -1;
+        if (errno != ENOPROTOOPT)
+            return -1;
     }
 #endif
 

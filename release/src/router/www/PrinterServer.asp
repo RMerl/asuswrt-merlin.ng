@@ -69,11 +69,11 @@
 function initial(){
 	show_menu();
 	//id="faq" href="https://www.asus.com/US/support/FAQ/114046"
-        httpApi.faqURL("faq1", "114046", "https://www.asus.com", "/support/FAQ/");
+        httpApi.faqURL("114046", function(url){document.getElementById("faq1").href=url;});
 	//id="faq" href="https://www.asus.com/US/support/FAQ/114024"
-        httpApi.faqURL("faq2", "114024", "https://www.asus.com", "/support/FAQ/");
+        httpApi.faqURL("114024", function(url){document.getElementById("faq2").href=url;});
 	//id="faq" href="https://www.asus.com/US/support/FAQ/113661"
-        httpApi.faqURL("faq3", "113661", "https://www.asus.com", "/support/FAQ/");
+        httpApi.faqURL("113661", function(url){document.getElementById("faq3").href=url;});
 }
 
 function showMethod(flag1, flag2){

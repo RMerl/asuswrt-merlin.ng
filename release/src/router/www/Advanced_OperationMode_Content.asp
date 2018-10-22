@@ -277,14 +277,14 @@ function initial(){
 
 	document.getElementById("rp_express_2g").style.display = "none";
 	document.getElementById("rp_express_5g").style.display = "none";
-	if(uiSupport("noRouter")){
+	if(isSupport("noRouter")){
 		document.getElementById("routerMode").style.display = "none";
 		document.getElementById("sw_mode1_radio").disabled = true;
 	}
 
-	if(uiSupport("rp_express_2g"))
+	if(isSupport("rp_express_2g"))
 		document.getElementById("rp_express_2g").style.display = "";
-	if(uiSupport("rp_express_5g"))
+	if(isSupport("rp_express_5g"))
 		document.getElementById("rp_express_5g").style.display = "";
 
 	if(!repeater_support){

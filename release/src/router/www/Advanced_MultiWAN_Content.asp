@@ -55,7 +55,7 @@ var Wan_Setting = [
 function initial(){
 	show_menu();
 	// https://www.asus.com/support/FAQ/1011715/
-	httpApi.faqURL("faq", "1011715", "https://www.asus.com", "/support/FAQ/");	
+	httpApi.faqURL("1011715", function(url){document.getElementById("faq").href=url;});	
 
 }
 

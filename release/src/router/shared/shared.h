@@ -317,6 +317,13 @@ enum {
 	WAVE_ACTION_CLIENT5G_OFF=17,
 	WAVE_ACTION_SET_WPS2G_CONFIGURED=18,
 	WAVE_ACTION_SET_WPS5G_CONFIGURED=19,
+#ifdef RTCONFIG_AMAS
+	WAVE_ACTION_ADD_BEACON_VSIE=20,
+	WAVE_ACTION_DEL_BEACON_VSIE=21,
+	WAVE_ACTION_ADD_PROBE_REQ_VSIE=22,
+	WAVE_ACTION_DEL_PROBE_REQ_VSIE=23,
+	WAVE_ACTION_CLEAR_ALL_PROBE_REQ_VSIE=24
+#endif
 };
 #endif
 
@@ -706,6 +713,7 @@ enum {
 	MODEL_RTN11P_B1,
 	MODEL_RPAC87,
 	MODEL_RTAC85U,
+	MODEL_RTAC85P,
 	MODEL_RTN800HP,
 	MODEL_RTAC88N,
 	MODEL_BRTAC828,
@@ -718,8 +726,11 @@ enum {
 	MODEL_BLUECAVE,
 	MODEL_RTAD7200,
 	MODEL_GTAX6000,
+	MODEL_RTAX88U,
 	MODEL_GTAX6000N,
 	MODEL_GTAX6000S,
+	MODEL_GTAX11000,
+	MODEL_RTAX92U,
 };
 
 /* NOTE: Do not insert new entries in the middle of this enum,
@@ -846,6 +857,9 @@ enum btn_id {
 #endif
 #ifdef RTCONFIG_WIFI_TOG_BTN
 	BTN_WIFI_TOG,
+#endif
+#ifdef RTCONFIG_TURBO_BTN
+	BTN_TURBO,
 #endif
 #ifdef RTCONFIG_LED_BTN
 	BTN_LED,
@@ -1058,6 +1072,7 @@ static inline int have_usb3_led(int model)
 		case MODEL_RTAC3100:
 		case MODEL_RTAC5300:
 		case MODEL_GTAC5300:
+		case MODEL_RTAX88U:
 			return 1;
 	}
 	return 0;
@@ -1237,11 +1252,6 @@ static inline int dpsta_mode()
 	return ((sw_mode() == SW_MODE_AP) && (nvram_get_int("wlc_psta") == 2) && (nvram_get_int("wlc_dpsta") == 1));
 }
 #endif
-
-static inline int dpsr_mode()
-{
-	return ((sw_mode() == SW_MODE_AP) && (nvram_get_int("wlc_psta") == 2) && (nvram_get_int("wlc_dpsta") == 2));
-}
 
 #if defined(RTCONFIG_BCMWL6) && defined(RTCONFIG_PROXYSTA)
 static inline int psr_mode()
@@ -1606,6 +1616,8 @@ extern uint32_t hnd_get_phy_status(int port, int offs, unsigned int regv, unsign
 extern uint32_t hnd_get_phy_speed(int port, int offs, unsigned int regv, unsigned int pmdv);
 extern int hnd_ethswctl(ecmd_t act, unsigned int val, int len, int wr, unsigned long long regdata);
 extern uint32_t set_ex53134_ctrl(uint32_t portmask, int ctrl);
+extern int ethctl_phy_op(char* phy_type, int addr, unsigned int reg, unsigned int value, int wr);
+extern int ethctl_get_link_status(char *ifname);
 #endif
 extern int fw_check(void);
 extern int with_non_dfs_chspec(char *wif);
@@ -1739,7 +1751,6 @@ extern int get_wifi_unit(char *wif);
 #ifdef RTCONFIG_DPSTA
 extern int is_dpsta(int unit);
 #endif
-extern int is_dpsr(int unit);
 extern int is_psta(int unit);
 extern int is_psr(int unit);
 extern int psta_exist(void);
@@ -1889,7 +1900,6 @@ static inline int get_dualwan_by_unit(int unit) {
 static inline int get_nr_wan_unit(void) { return 1; }
 #endif
 extern int get_nr_guest_network(int band);
-extern int get_gate_num(void);
 extern void set_lan_phy(char *phy);
 extern void add_lan_phy(char *phy);
 extern void set_wan_phy(char *phy);
@@ -2056,11 +2066,11 @@ static inline void enable_wifi_bled(char *ifname)
 #if defined(RTCONFIG_QCA)
 		v = LED_OFF;	/* WiFi not ready. Don't turn on WiFi LED here. */		
 #endif
-#if defined(RTAC1200HP) || defined(RTN56UB1) || defined(RTN56UB2) || defined(RTAC1200GA1) || defined(RTAC1200GU) || defined(RTAC85U)
+#if defined(RTAC1200HP) || defined(RTN56UB1) || defined(RTN56UB2) || defined(RTAC1200GA1) || defined(RTAC1200GU) || defined(RTAC85U) || defined(RTAC85P)
 		if(!get_radio(1, 0) && unit==1) //*5G WiFi not ready. Don't turn on WiFi GPIO LED . */
 		 	v=LED_OFF;
 #endif		
-#if defined(RTN56UB1) || defined(RTN56UB2) || defined(RTAC1200GA1) || defined(RTAC1200GU) || defined(RTAC85U) || defined(RTN800HP)
+#if defined(RTN56UB1) || defined(RTN56UB2) || defined(RTAC1200GA1) || defined(RTAC1200GU) || defined(RTAC85U) || defined(RTAC85P) || defined(RTN800HP)
 		if(!get_radio(0, 0) && unit==0) //*2G WiFi not ready. Don't turn on WiFi GPIO LED . */
 		 	v=LED_OFF;
 #endif		
@@ -2199,7 +2209,7 @@ static inline int is_m2ssd_port(__attribute__ ((unused)) char *usb_node) { retur
 #define WAN0DEV "vlan2"
 #endif
 
-#if defined(RTAC5300) || defined(GTAC5300)
+#if defined(RTAC5300) || defined(GTAC5300) || defined(RTAX88U) || defined(GTAX11000) || defined(RTAX92U)
 #define WAN0DEV "vlan2"
 #endif
 
@@ -2342,8 +2352,6 @@ extern void deauth_guest_sta(char *, char *);
 #define CLIENT_STALIST_JSON_PATH	"/tmp/stalist.json"
 extern int is_valid_group_id(const char *);
 extern char *if_nametoalias(char *name, char *alias, int alias_len);
-extern int check_re_in_macfilter(int unit, char *mac);
-extern void update_macfilter_relist();
 #endif
 
 #if defined(RTCONFIG_DETWAN) && (defined(RTCONFIG_SOC_IPQ40XX))

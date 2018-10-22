@@ -1426,8 +1426,31 @@
 					<div class="titleSub"><#WLANConfig11b_RBRList_groupitemdesc#></div>
 				</div>
 				<div class="table_td">
-					<div class="pageDesc">Searching for WiFi network nearby...</div><!-- untranslated -->
-					<div id="siteSurveyLoading" class="selectorTopContainer"></div>
+					<div id="siteSurvey_search">
+						<div class="pageDesc">Searching for WiFi network nearby...</div><!-- untranslated -->
+						<div id="siteSurveyLoading" class="selectorTopContainer"></div>
+					</div>
+					<div id="siteSurvey_fail">
+						<div class="pageDesc"><#APSurvey_action_searching_noresult#></div>
+						<div class="selectorTopContainer ">
+							<div class="cssload-bellContainer">
+								<div class="siteSurveyRescan icon_rescan" onclick="goTo.siteSurvey();" title="<#QIS_rescan#>"></div>
+							</div>
+						</div>
+						<!-- Action Button -->
+						<div class="footer_desktop">
+							<div class="desktop_abortBtn" onclick='abort.siteSurvey()'><#CTL_prev#></div>
+						</div>
+						<div class="footer_mobile">
+							<table style="width:100%;" cellpadding="0" cellspacing="0">
+								<tr>
+									<td class="mobileAbort" style="width:50%;" onclick='abort.siteSurvey()'>
+										<div class="mobile_abortBtn"><#CTL_prev#></div>
+									</td>
+								</tr>
+							</table>
+						</div>
+					</div>
 				</div>
 			</div>
 		</div>
@@ -1504,51 +1527,7 @@
 							<div class="inputContainer">
 								<select id="wlc_auth_mode_manual" class="optionInput">
 									<option value="open">Open System</option>
-									<option value="shared">Shared Key</option>
-									<option value="psk">WPA-Personal</option>
 									<option value="psk2" selected>WPA2-Personal</option>
-								</select>
-								<div class="inputTitle hint_yellow" id="manual_pap_setup-nmode_hint">
-									<#WLANConfig11n_automode_limition_hint#>
-								</div>
-							</div>
-						</div>
-
-						<div class="manual_pap_setup" id="manual_pap_setup-crypto">
-							<div class="inputTitleContainer">
-								<div class="inputTitle"><#WLANConfig11b_WPAType_itemname#></div>
-							</div>
-							<div class="inputContainer">
-								<select id="wlc_crypto_manual" class="optionInput">
-									<option value="aes">AES</option>
-									<option value="tkip">TKIP</option>
-								</select>
-							</div>
-						</div>
-
-						<div class="manual_pap_setup" id="manual_pap_setup-wep">
-							<div class="inputTitleContainer">
-								<div class="inputTitle"><#WLANConfig11b_WEPType_itemname#></div>
-							</div>
-							<div class="inputContainer">
-								<select id="wlc_wep_manual" class="optionInput">
-									<option value="0"><#wl_securitylevel_0#></option>
-									<option value="1">WEP-64bits</option>
-									<option value="2">WEP-128bits</option>
-								</select>
-							</div>
-						</div>
-
-						<div class="manual_pap_setup" id="manual_pap_setup-key-index">
-							<div class="inputTitleContainer">
-								<div class="inputTitle"><#WLANConfig11b_WEPDefaultKey_itemname#></div>
-							</div>
-							<div class="inputContainer">
-								<select id="wlc_key_index_manual" class="optionInput">
-									<option value="1">1</option>
-									<option value="2">2</option>
-									<option value="3">3</option>
-									<option value="4">4</option>
 								</select>
 							</div>
 						</div>

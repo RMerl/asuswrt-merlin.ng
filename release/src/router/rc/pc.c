@@ -409,7 +409,7 @@ pc_s *match_enabled_pc_list(pc_s *pc_list, pc_s **target_list, int enabled){
 	if(pc_list == NULL || target_list == NULL)
 		return NULL;
 
-	if(enabled != 0 && enabled != 1)
+	if(enabled != 0 && enabled != 1 && enabled != 2)
 		return NULL;
 
 	follow_target_list = target_list;
@@ -493,6 +493,7 @@ pc_s *match_daytime_pc_list(pc_s *pc_list, pc_s **target_list, int target_day, i
 // MAC address in list and in time period -> ACCEPT.
 // MAC address in list and not in time period -> DROP.
 void config_daytime_string(pc_s *pc_list, FILE *fp, char *logaccept, char *logdrop, int temp){
+
 	pc_s *enabled_list = NULL, *follow_pc;
 	pc_event_s *follow_e;
 	char *lan_if = nvram_safe_get("lan_ifname");
@@ -608,11 +609,53 @@ void config_daytime_string(pc_s *pc_list, FILE *fp, char *logaccept, char *logdr
 	free_pc_list(&enabled_list);
 }
 
-int count_pc_rules(pc_s *pc_list){
+void config_pause_block_string(pc_s *pc_list, FILE *fp, char *logaccept, char *logdrop, int temp){
+
+	pc_s *enabled_list = NULL, *follow_pc;
+	char *lan_if = nvram_safe_get("lan_ifname");
+
+#ifdef BLOCKLOCAL
+	char *ftype;
+#endif
+	char *fftype;
+
+#ifdef BLOCKLOCAL
+	ftype = logaccept;
+#endif
+	fftype = "PControls";
+
+	follow_pc = match_enabled_pc_list(pc_list, &enabled_list, 2);
+	if(follow_pc == NULL){
+		_dprintf("Couldn't get the pause rules of Parental-control correctly!\n");
+		return;
+	}
+
+	for(follow_pc = enabled_list; follow_pc != NULL; follow_pc = follow_pc->next){
+		const char *chk_mac = iptables_chk_mac;
+		if(!follow_pc->mac[0])
+			chk_mac = "";
+
+//_dprintf("[PC] mac=%s\n", follow_pc->mac);
+#ifdef RTCONFIG_PERMISSION_MANAGEMENT
+		if (!strcmp(follow_pc->mac, "")) continue;
+#endif
+		// MAC address in list and not in time period -> DROP.
+		if(!temp){
+#ifdef BLOCKLOCAL
+			fprintf(fp, "-A INPUT -i %s %s %s -j DROP\n", lan_if, chk_mac, follow_pc->mac);
+#endif
+			fprintf(fp, "-A FORWARD -i %s %s %s -j DROP\n", lan_if, chk_mac, follow_pc->mac);
+		}
+	}
+
+	free_pc_list(&enabled_list);
+}
+
+int count_pc_rules(pc_s *pc_list, int enabled){
 	pc_s *enabled_list = NULL, *follow_pc;
 	int count;
 
-	follow_pc = match_enabled_pc_list(pc_list, &enabled_list, 1);
+	follow_pc = match_enabled_pc_list(pc_list, &enabled_list, enabled);
 	if(follow_pc == NULL){
 		_dprintf("Couldn't get the enabled rules of Parental-control correctly!\n");
 		return 0;
@@ -635,7 +678,7 @@ int pc_main(int argc, char *argv[]){
 		print_pc_list(pc_list);
 	}
 	else if((argc == 2 && !strcmp(argv[1], "enabled"))
-			|| (argc == 3 && !strcmp(argv[1], "enabled") && (!strcmp(argv[2], "0") || !strcmp(argv[2], "1")))){
+			|| (argc == 3 && !strcmp(argv[1], "enabled") && (!strcmp(argv[2], "0") || !strcmp(argv[2], "1") || !strcmp(argv[2], "2")))){
 		if(argc == 2)
 			match_enabled_pc_list(pc_list, &enabled_list, 1);
 		else

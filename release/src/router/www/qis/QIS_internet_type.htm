@@ -85,20 +85,18 @@
 <% wan_get_parameter(); %>
 var now_flag = '<% get_parameter("flag"); %>';
 var contentM_height_orig = parent.document.getElementById("contentM").height;
+var ttc = '<% nvram_get("territory_code"); %>';
+var is_TW_sku = (ttc.search("TW") == -1) ? false : true;
+var is_CN_sku = (ttc.search("CN") == -1) ? false : true;
+var is_US_sku = (ttc.search("US") == -1) ? false : true;
 var odmpid = '<% nvram_get("odmpid"); %>';
 
-var isSku = function(country){
-	var ttc = '<% nvram_get("territory_code"); %>';
-	return (ttc.search(country) == -1) ? false : true;
-}
-
-var iptv_support = (isSku("CN") || isSku("US") || isSku("CA"))? false:true;
 
 function QKinternettype_load_body(){
 	parent.document.title = "<#Web_Title#> - <#QKSet_type_head#>";
 
 	/*workaround for PPTP, L2TP connection*/
-	if(isSku("TW") || isSku("CN") || isSku("US")){
+	if(is_TW_sku || is_CN_sku || is_US_sku){
 		var dial_desc_string = document.getElementById("dialUp_string").innerHTML;
 		var key_index = dial_desc_string.indexOf("PPPoE");
 		var dial_desc_string = dial_desc_string.substr(0, key_index+5);
@@ -123,17 +121,16 @@ function QKinternettype_load_body(){
 		if(parent.get_internet_type_reducedmode() == "enable")
 			blocking("dhcppppoe_sec", false);
 
-		if(!iptv_support){
+		if(is_TW_sku){
+			ISP_Profile_Selection("none");
+			document.getElementById("specialisp_desc").innerHTML = "Hinet MOD";
+			document.getElementById("select_profile").style.display = "none";
+		}
+		else if(is_CN_sku){
 			document.getElementById("specialISP_tr").style.display = "none";
 		}
 		else{
-			if(isSku("TW")){
-				ISP_Profile_Selection("none");
-				document.getElementById("specialisp_desc").innerHTML = "Hinet MOD";
-				document.getElementById("select_profile").style.display = "none";
-			}
-			else
-				ISP_Profile_Selection(parent.original_switch_wantag);
+			ISP_Profile_Selection(parent.original_switch_wantag);
 		}
 	
 		if(parent.ruisp_support)
@@ -492,12 +489,11 @@ function next_step(flag){
 			document.getElementById('dhcp_desc').style.display = "";
 			document.getElementById('static_tr').style.display = "";
 			document.getElementById('static_desc').style.display = "";
-			if(iptv_support)
-				document.getElementById('specialISP_tr').style.display = "";
+			document.getElementById('specialISP_tr').style.display = "";
 			document.applyForm.dhcp_type[0].checked = true;
 		}
 
-		if(parent.original_switch_wantag != "none" && iptv_support){
+		if(parent.original_switch_wantag != "none"){
 			document.applyForm.specialisp.checked = true;
 			enable_ISP_special();
 		}
@@ -674,7 +670,7 @@ function previous_step(flag){
 
 function enable_ISP_special(){
 	if(document.applyForm.specialisp.checked){
-		if(isSku("TW")){
+		if(is_TW_sku){
 			ISP_Profile_Selection("hinet");
 			document.getElementById("profile_setting").style.display = "";
 		}
@@ -915,7 +911,7 @@ function enable_ISP_special(){
 						</td>
 					</tr>
 					<tr id="tr_pppoe_username" style="display:none;">
-					<th style="color:#6CF;"><#HSDPAConfig_Username_itemname#>: </th>
+					<th style="color:#6CF;"><#Username#>: </th>
 						<td style="text-align:left;"><input type="text" maxlength="64" class="input_15_table" name="wan10_pppoe_username" value="<% nvram_get("wan10_pppoe_username"); %>" onkeypress="return validator.isString(this, event)"></td>
 					</tr>
 					<tr id="tr_pppoe_password" style="display:none;">

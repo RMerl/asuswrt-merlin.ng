@@ -1,6 +1,9 @@
 #ifdef RTCONFIG_LIBASUSLOG
 #include <libasuslog.h>
 #endif
+#ifdef RTCONFIG_HND_ROUTER_AX
+#include <wlc_types.h>
+#endif
 
 #define RAST_COUNT_RSSI_SENSITIVE	2
 #define RAST_PERIOD_IDLE_SENSITIVE 	10

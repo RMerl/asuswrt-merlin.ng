@@ -593,7 +593,7 @@ static void handle_query_packet(AvahiServer *s, AvahiDnsPacket *p, AvahiInterfac
         int unicast_response = 0;
 
         if (!(key = avahi_dns_packet_consume_key(p, &unicast_response))) {
-            avahi_log_warn(__FILE__": Packet too short or invalid while reading question key. (Maybe a UTF-8 problem?)");
+            avahi_log_debug(__FILE__": Packet too short or invalid while reading question key. (Maybe a UTF-8 problem?)");
             goto fail;
         }
 
@@ -621,7 +621,7 @@ static void handle_query_packet(AvahiServer *s, AvahiDnsPacket *p, AvahiInterfac
             int unique = 0;
 
             if (!(record = avahi_dns_packet_consume_record(p, &unique))) {
-                avahi_log_warn(__FILE__": Packet too short or invalid while reading known answer record. (Maybe a UTF-8 problem?)");
+                avahi_log_debug(__FILE__": Packet too short or invalid while reading known answer record. (Maybe a UTF-8 problem?)");
                 goto fail;
             }
 
@@ -638,7 +638,7 @@ static void handle_query_packet(AvahiServer *s, AvahiDnsPacket *p, AvahiInterfac
             int unique = 0;
 
             if (!(record = avahi_dns_packet_consume_record(p, &unique))) {
-                avahi_log_warn(__FILE__": Packet too short or invalid while reading probe record. (Maybe a UTF-8 problem?)");
+                avahi_log_debug(__FILE__": Packet too short or invalid while reading probe record. (Maybe a UTF-8 problem?)");
                 goto fail;
             }
 
@@ -675,7 +675,7 @@ static void handle_response_packet(AvahiServer *s, AvahiDnsPacket *p, AvahiInter
         int cache_flush = 0;
 
         if (!(record = avahi_dns_packet_consume_record(p, &cache_flush))) {
-            avahi_log_warn(__FILE__": Packet too short or invalid while reading response record. (Maybe a UTF-8 problem?)");
+            avahi_log_debug(__FILE__": Packet too short or invalid while reading response record. (Maybe a UTF-8 problem?)");
             break;
         }
 
@@ -907,13 +907,13 @@ static void dispatch_packet(AvahiServer *s, AvahiDnsPacket *p, const AvahiAddres
 
     if (!(i = avahi_interface_monitor_get_interface(s->monitor, iface, src_address->proto)) ||
         !i->mdns.announcing) {
-        avahi_log_warn("Received packet from invalid interface.");
+        avahi_log_debug("Received packet from invalid interface.");
         return;
     }
 
     if (port <= 0) {
         /* This fixes RHBZ #475394 */
-        avahi_log_warn("Received packet from invalid source port %u.", (unsigned) port);
+        avahi_log_debug("Received packet from invalid source port %u.", (unsigned) port);
         return;
     }
 
@@ -930,7 +930,7 @@ static void dispatch_packet(AvahiServer *s, AvahiDnsPacket *p, const AvahiAddres
         from_local_iface = originates_from_local_iface(s, iface, src_address, port);
 
     if (avahi_dns_packet_check_valid_multicast(p) < 0) {
-        avahi_log_warn("Received invalid packet.");
+        avahi_log_debug("Received invalid packet.");
         return;
     }
 
@@ -946,7 +946,7 @@ static void dispatch_packet(AvahiServer *s, AvahiDnsPacket *p, const AvahiAddres
 
             if ((avahi_dns_packet_get_field(p, AVAHI_DNS_FIELD_ANCOUNT) != 0 ||
                  avahi_dns_packet_get_field(p, AVAHI_DNS_FIELD_NSCOUNT) != 0)) {
-                avahi_log_warn("Invalid legacy unicast query packet.");
+                avahi_log_debug("Invalid legacy unicast query packet.");
                 return;
             }
 
@@ -962,19 +962,19 @@ static void dispatch_packet(AvahiServer *s, AvahiDnsPacket *p, const AvahiAddres
         char t[AVAHI_ADDRESS_STR_MAX];
 
         if (port != AVAHI_MDNS_PORT) {
-            avahi_log_warn("Received response from host %s with invalid source port %u on interface '%s.%i'", avahi_address_snprint(t, sizeof(t), src_address), port, i->hardware->name, i->protocol);
+            avahi_log_debug("Received response from host %s with invalid source port %u on interface '%s.%i'", avahi_address_snprint(t, sizeof(t), src_address), port, i->hardware->name, i->protocol);
             return;
         }
 
         if (ttl != 255 && s->config.check_response_ttl) {
-            avahi_log_warn("Received response from host %s with invalid TTL %u on interface '%s.%i'.", avahi_address_snprint(t, sizeof(t), src_address), ttl, i->hardware->name, i->protocol);
+            avahi_log_debug("Received response from host %s with invalid TTL %u on interface '%s.%i'.", avahi_address_snprint(t, sizeof(t), src_address), ttl, i->hardware->name, i->protocol);
             return;
         }
 
         if (!is_mdns_mcast_address(dst_address) &&
             !avahi_interface_address_on_link(i, src_address)) {
 
-            avahi_log_warn("Received non-local response from host %s on interface '%s.%i'.", avahi_address_snprint(t, sizeof(t), src_address), i->hardware->name, i->protocol);
+            avahi_log_debug("Received non-local response from host %s on interface '%s.%i'.", avahi_address_snprint(t, sizeof(t), src_address), i->hardware->name, i->protocol);
             return;
         }
 
@@ -982,7 +982,7 @@ static void dispatch_packet(AvahiServer *s, AvahiDnsPacket *p, const AvahiAddres
             avahi_dns_packet_get_field(p, AVAHI_DNS_FIELD_ANCOUNT) == 0 ||
             avahi_dns_packet_get_field(p, AVAHI_DNS_FIELD_NSCOUNT) != 0) {
 
-            avahi_log_warn("Invalid response packet from host %s.", avahi_address_snprint(t, sizeof(t), src_address));
+            avahi_log_debug("Invalid response packet from host %s.", avahi_address_snprint(t, sizeof(t), src_address));
             return;
         }
 
@@ -998,12 +998,12 @@ static void dispatch_legacy_unicast_packet(AvahiServer *s, AvahiDnsPacket *p) {
     assert(p);
 
     if (avahi_dns_packet_check_valid(p) < 0 || avahi_dns_packet_is_query(p)) {
-        avahi_log_warn("Received invalid packet.");
+        avahi_log_debug("Received invalid packet.");
         return;
     }
 
     if (!(slot = find_slot(s, avahi_dns_packet_get_field(p, AVAHI_DNS_FIELD_ID)))) {
-        avahi_log_warn("Received legacy unicast response with unknown id");
+        avahi_log_debug("Received legacy unicast response with unknown id");
         return;
     }
 
@@ -1626,9 +1626,9 @@ AvahiServerConfig* avahi_server_config_init(AvahiServerConfig *c) {
     c->host_name = NULL;
     c->domain_name = NULL;
     c->check_response_ttl = 0;
-    c->publish_hinfo = 1;
+    c->publish_hinfo = 0;
     c->publish_addresses = 1;
-    c->publish_workstation = 1;
+    c->publish_workstation = 0;
     c->publish_domain = 1;
     c->use_iff_running = 0;
     c->enable_reflector = 0;
@@ -1842,7 +1842,7 @@ int avahi_server_set_browse_domains(AvahiServer *s, AvahiStringList *domains) {
 
     assert(s);
 
-    for (l = s->config.browse_domains; l; l = l->next)
+    for (l = domains; l; l = l->next)
         if (!avahi_is_valid_domain_name((char*) l->text))
             return avahi_server_set_errno(s, AVAHI_ERR_INVALID_DOMAIN_NAME);
 

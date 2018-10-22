@@ -108,5 +108,6 @@ extern int get_spoof_ifname(char *mac, char *osifname, int osifnamelen);
 extern int get_real_mac(char *mac, int maclen);
 extern int get_lan_mac(unsigned char *mac);
 extern unsigned char *get_wlmacstr_by_unit(char *unit);
+extern bool wl_wlif_is_wet_ap(char *ifname);
 
 #endif /* _wlif_utils_h_ */

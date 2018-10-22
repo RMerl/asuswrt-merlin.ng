@@ -49,6 +49,7 @@ static const struct model_s model_list[] = {
 	{ "RT-N10P_V3", MODEL_RTN11P_B1},
 	{ "RP-AC87", MODEL_RPAC87},	
 	{ "RT-AC85U", MODEL_RTAC85U},
+	{ "RT-AC85P", MODEL_RTAC85P},
 	{ "RT-AC65U", MODEL_RTAC85U},
 	{ "RT-N800HP",  MODEL_RTN800HP},
 #elif defined(RTCONFIG_QCA)
@@ -99,6 +100,9 @@ static const struct model_s model_list[] = {
 	{ "RT-AC3100",	MODEL_RTAC3100	},
 	{ "RT-AC5300",	MODEL_RTAC5300	},
 	{ "GT-AC5300",	MODEL_GTAC5300	},
+	{ "RT-AX88U",	MODEL_RTAX88U	},
+	{ "GT-AX11000",	MODEL_GTAX11000	},
+	{ "RT-AX92U",	MODEL_RTAX92U	},
 	{ "RT-N53",	MODEL_RTN53	},
 	{ "RT-N16",	MODEL_RTN16	},
 	{ "RT-N18U",	MODEL_RTN18U	},

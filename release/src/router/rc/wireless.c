@@ -163,7 +163,7 @@ int wlcscan_main(void)
 	CLIENT *clnt;
 	char host[18];
 #endif
-#if defined(RTCONFIG_BCM7) || defined(RTCONFIG_BCM_7114) || defined(HND_ROUTER)
+#if defined(RTCONFIG_BCM7) || defined(RTCONFIG_BCM_7114) || defined(HND_ROUTER) || defined(RTCONFIG_HND_ROUTER_AX)
 	char tmp[100], prefix[]="wlXXXXXXX_";
 #endif
 
@@ -207,7 +207,7 @@ int wlcscan_main(void)
 #endif
 	{	
 		SKIP_ABSENT_BAND_AND_INC_UNIT(i);
-#if defined(RTCONFIG_BCM7) || defined(RTCONFIG_BCM_7114) || defined(HND_ROUTER)
+#if defined(RTCONFIG_BCM7) || defined(RTCONFIG_BCM_7114) || defined(HND_ROUTER) || defined(RTCONFIG_HND_ROUTER_AX)
 		snprintf(prefix, sizeof(prefix), "wl%d_", i);
 		if (!nvram_match(strcat_r(prefix, "mode", tmp), "wds"))
 			wlcscan_core_escan(APSCAN_INFO, word);

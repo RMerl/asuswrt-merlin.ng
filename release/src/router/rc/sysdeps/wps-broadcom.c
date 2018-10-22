@@ -127,14 +127,12 @@ start_wps_method(void)
 		dbg("wps_band(%d) for wps registrar\n", wps_band);
 	}
 #endif
-	if (is_dpsr(wps_band)
 #ifdef RTCONFIG_DPSTA
-		|| is_dpsta(wps_band)
-#endif
-	)
-		snprintf(prefix, sizeof(prefix), "wl%d.1_", wps_band);
+	if (is_dpsta(wps_band))
+	snprintf(prefix, sizeof(prefix), "wl%d.1_", wps_band);
 	else
-		snprintf(prefix, sizeof(prefix), "wl%d_", wps_band);
+#endif
+	snprintf(prefix, sizeof(prefix), "wl%d_", wps_band);
 	wps_sta_pin = nvram_safe_get("wps_sta_pin");
 
 #ifdef RTCONFIG_QTN
@@ -202,12 +200,8 @@ start_wps_method(void)
 #endif
 	nvram_unset("wps_band");
 
-#if defined(HND_ROUTER) && defined(RTCONFIG_PROXYSTA)
-	if (!wps_band && (is_dpsr(wps_band)
-#ifdef RTCONFIG_DPSTA
-		|| is_dpsta(wps_band)
-#endif
-	))
+#if defined(HND_ROUTER) && defined(RTCONFIG_PROXYSTA) && defined(RTCONFIG_DPSTA)
+	if (!wps_band && is_dpsta(wps_band))
 		eval("wl", "spatial_policy", "0");
 #endif
 
@@ -243,12 +237,8 @@ stop_wps_method(void)
 
 	set_wps_env(buf);
 
-#if defined(HND_ROUTER) && defined(RTCONFIG_PROXYSTA)
-	if (!nvram_get_int("wps_band_x") && (is_dpsr(nvram_get_int("wps_band_x"))
-#ifdef RTCONFIG_DPSTA
-		|| is_dpsta(nvram_get_int("wps_band_x"))
-#endif
-	))
+#if defined(HND_ROUTER) && defined(RTCONFIG_PROXYSTA) && defined(RTCONFIG_DPSTA)
+	if (!nvram_get_int("wps_band_x") && is_dpsta(nvram_get_int("wps_band_x")))
 		eval("wl", "spatial_policy", "1");
 #endif
 
@@ -315,11 +305,7 @@ int is_wps_stopped(void)
 	time_t wps_uptime = strtoul(nvram_safe_get("wps_uptime"), NULL, 10);
 
 #ifdef RTCONFIG_AMAS
-	if ((is_router_mode()
-#if defined(RTCONFIG_DPSTA) && defined(RTAC68U)
-		|| (is_dpsta_repeater() && dpsta_mode() && nvram_get_int("re_mode") == 0)
-#endif
-		) && !nvram_get_int("obd_Setting") && nvram_match("amesh_led", "1"))
+	if (is_router_mode() && !nvram_get_int("obd_Setting") && nvram_match("amesh_led", "1"))
 		return 0;
 #endif
 

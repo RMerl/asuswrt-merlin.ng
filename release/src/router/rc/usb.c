@@ -241,7 +241,7 @@ void add_usb_host_module(void)
 	tweak_usb_affinity(1);
 #endif
 #if defined(RTCONFIG_USB_XHCI)
-#if defined(RTN65U) || defined(RTCONFIG_QCA) || defined(RTAC85U)
+#if defined(RTN65U) || defined(RTCONFIG_QCA) || defined(RTAC85U) || defined(RTAC85P)
 	char *u3_param = "u3intf=0";
 #endif
 #endif
@@ -259,7 +259,7 @@ void add_usb_host_module(void)
 	modprobe(USBCORE_MOD);
 
 #if defined(RTCONFIG_USB_XHCI)
-#if defined(RTN65U) || defined(RTCONFIG_QCA) || defined(RTAC85U)
+#if defined(RTN65U) || defined(RTCONFIG_QCA) || defined(RTAC85U) || defined(RTAC85P)
 	if (nvram_get_int("usb_usb3") == 1)
 		u3_param = "u3intf=1";
 #if !defined(RTCONFIG_SOC_IPQ40XX)
@@ -698,6 +698,9 @@ void start_usb(int orig)
 			modprobe(SD_MOD);
 			modprobe(SG_MOD);
 			modprobe(USBSTORAGE_MOD);
+#if defined(RTCONFIG_HND_ROUTER_AX)
+			modprobe(UAS_MOD);
+#endif
 
 			if (nvram_get_int("usb_fs_ext3")) {
 #ifdef LINUX26
@@ -898,6 +901,9 @@ void remove_usb_storage_module(void)
 	modprobe_r("nls_cp950");
 #endif
 #endif
+#if defined(RTCONFIG_HND_ROUTER_AX)
+	modprobe_r(UAS_MOD);
+#endif
 	modprobe_r(USBSTORAGE_MOD);
 	modprobe_r(SG_MOD);
 	modprobe_r(SD_MOD);
@@ -1075,7 +1081,7 @@ void stop_usb(int f_force)
 #endif
 
 #if defined(RTCONFIG_USB_XHCI)
-#if defined(RTN65U) || defined(RTCONFIG_QCA) || defined(RTAC85U)
+#if defined(RTN65U) || defined(RTCONFIG_QCA) || defined(RTAC85U) || defined(RTAC85P)
 	if (disabled) {
 #if defined(RTCONFIG_SOC_IPQ8064)
 		modprobe_r("dwc3-ipq");
@@ -3071,7 +3077,7 @@ start_samba(void)
 	int acc_num;
 	char cmd[256];
 #if defined(SMP)
-#if defined(GTAC5300)
+#if defined(GTAC5300) || defined(GTAX11000) || defined(RTAX88U)
 	char *cpu_list = "3";
 #else
 	char *cpu_list = "1";

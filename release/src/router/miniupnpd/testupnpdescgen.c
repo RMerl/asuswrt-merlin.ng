@@ -264,6 +264,12 @@ main(int argc, char * * argv)
 	free(s);
 	printf("\n-------------\n");
 #endif
+#ifdef ENABLE_AURASYNC
+	s = getVarsAS(&l);
+	xml_pretty_print(s, l, stdout);
+	free(s);
+	printf("\n-------------\n");
+#endif
 #endif
 #endif
 /*

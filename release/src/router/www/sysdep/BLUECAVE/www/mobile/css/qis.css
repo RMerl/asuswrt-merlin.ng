@@ -390,12 +390,6 @@ a{
 	font-size: 1.4em;
 	font-style: italic;
 }
-.hint_yellow{
-	color: #FC0;
-	margin-top: -25px;
-	font-size: 1.4em;
-	font-style: italic;
-}
 .selectorHint{
 	margin-top: 10px;
 	margin-left: 35px;
@@ -640,6 +634,16 @@ a{
 	text-align:center;
 	line-height: 65px;
 }
+.siteSurveyRescan{
+	background-repeat: no-repeat;
+	background-size: 100%;
+	width: 100px;
+	height: 100px;
+	cursor: pointer;
+	margin-top: 150px;
+	left: calc(50% - 49px);
+	position: absolute;
+}
 
 /* CSS Loader */
 .cssload-bellContainer{
@@ -846,6 +850,9 @@ a{
 	}
 	.summaryNetwork{
 		margin-top: 0px;
+	}
+	.siteSurveyRescan{
+		position: relative;
 	}
 	.cssload-bellContainer{
 		height: 300px;

@@ -94,6 +94,13 @@ bool g_swap = FALSE;
 #define htodenum(i) (g_swap?((sizeof(i) == 4) ? htod32(i) : ((sizeof(i) == 2) ? htod16(i) : i)):i)
 #define dtohenum(i) (g_swap?((sizeof(i) == 4) ? dtoh32(i) : ((sizeof(i) == 2) ? htod16(i) : i)):i)
 
+/* nvram lan_ifname/wan_ifname cache */
+static int nv_first = 0;
+char nv_lan_ifnames[WLIFU_MAX_NO_BRIDGE][256];
+char nv_lan_ifname[WLIFU_MAX_NO_BRIDGE][64];
+char nv_wan_ifnames[64];
+char nv_wan_ifname[64];
+
 /*
  * Flag Bit Values
  * 0-0	: Static info set
@@ -336,6 +343,54 @@ get_wlname_by_mac(unsigned char *mac, char *wlname)
 }
 
 bool
+wl_wlif_is_wet_ap(char *ifname)
+{
+	int32 wet = FALSE;
+	int32 ap = FALSE;
+
+	if (wl_probe(ifname) < 0)
+		return FALSE;
+
+#ifdef __CONFIG_DHDAP__
+	wl_iovar_getint(ifname, "wet_enab", &wet);
+#else
+	wl_iovar_getint(ifname, "wet", &wet);
+#endif
+	wl_iovar_getint(ifname, "ap", &ap);
+
+	return (wet && ap);
+}
+
+void get_ifname_by_wlmac_prep(void)
+{
+	int i;
+	char if_name[16], if_names[16];
+
+	memset(nv_lan_ifnames, 0, sizeof(nv_lan_ifnames));
+	memset(nv_lan_ifname, 0, sizeof(nv_lan_ifname));
+	memset(nv_wan_ifnames, 0, sizeof(nv_wan_ifnames));
+	memset(nv_wan_ifname, 0, sizeof(nv_wan_ifname));
+
+	for (i = 0; i < WLIFU_MAX_NO_BRIDGE; i++) {
+		if (i ==0 ) {
+			sprintf(if_names, "lan_ifnames");
+			sprintf(if_name, "lan_ifname");
+		}
+		else {
+			sprintf(if_names, "lan%d_ifnames", i);
+			sprintf(if_name, "lan%d_ifname", i);
+		}
+
+		strncpy(nv_lan_ifnames[i], nvram_safe_get(if_names), 256);
+		strncpy(nv_lan_ifname[i], nvram_safe_get(if_name), 64);
+	}
+	strncpy(nv_wan_ifnames, nvram_safe_get("wan_ifnames"), 64);
+	strncpy(nv_wan_ifname, nvram_safe_get("wan0_ifname"), 64);
+	return;
+}
+
+
+bool
 wl_wlif_is_psta(char *ifname)
 {
 	int32 psta = FALSE;
@@ -398,6 +453,11 @@ get_ifname_by_wlmac(unsigned char *mac, char *name)
 	char *ifnames, *ifname;
 	int i;
 
+	if (!nv_first) {
+		nv_first = 1;
+		get_ifname_by_wlmac_prep();
+	}
+
 	/*
 	  * In case of URE mode, wl0.1 and wl0 have same mac,
 	  * we need extra identity (name).
@@ -417,6 +477,7 @@ get_ifname_by_wlmac(unsigned char *mac, char *name)
 	if (wl_wlif_is_psta(os_name))
 		return name;
 
+	/* find LAN ifname for wlmac which is in dpsta */
 	ifnames = nvram_get("dpsta_ifnames");
 	if (ifnames && (find_in_list(ifnames, nv_name) || find_in_list(ifnames, os_name))) {
 		/* find dpsta in which bridge */
@@ -439,6 +500,16 @@ get_ifname_by_wlmac(unsigned char *mac, char *name)
 
 	/* find for lan */
 	for (i = 0; i < WLIFU_MAX_NO_BRIDGE; i++) {
+
+		ifnames = nv_lan_ifnames[i];
+		ifname = nv_lan_ifname[i];
+		if (ifname[0]) {
+			/* the name in ifnames may nvifname or osifname */
+			if (find_in_list(ifnames, nv_name) ||
+				find_in_list(ifnames, os_name))
+				return ifname;
+		}
+#if 0
 		if (i == 0) {
 			ifnames = nvram_get("lan_ifnames");
 			ifname = nvram_get("lan_ifname");
@@ -461,11 +532,16 @@ get_ifname_by_wlmac(unsigned char *mac, char *name)
 					return ifname;
 			}
 		}
+#endif
 	}
 
 	/* find for wan  */
+	ifnames = nv_wan_ifnames;
+	ifname = nv_wan_ifname;
+#if 0
 	ifnames = nvram_get("wan_ifnames");
 	ifname = nvram_get("wan0_ifname");
+#endif
 	/* the name in ifnames may nvifname or osifname */
 	if (find_in_list(ifnames, nv_name) ||
 	    find_in_list(ifnames, os_name))

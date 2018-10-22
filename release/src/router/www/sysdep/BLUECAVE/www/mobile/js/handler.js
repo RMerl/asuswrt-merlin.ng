@@ -34,18 +34,17 @@ apply.welcome = function(){
 };
 
 apply.upload = function(){
-	var $settingPofile = $("#setting_profile").val();
-	var $settingPofile_name = $settingPofile.toUpperCase();
+	var $settingPofile = $("#setting_profile");
 
-	if($settingPofile_name == ""){
+	if($settingPofile.val() == ""){
 		$("#settingProfileBar").showSelectorHint("<#JS_fieldblank#>");
 		return false;
 	}
 	
 	if( 
-		$settingPofile_name.length < 6 ||
-		$settingPofile_name.lastIndexOf(".CFG")  < 0 || 
-		$settingPofile_name.lastIndexOf(".CFG") != ($settingPofile_name.length)-4)
+		$settingPofile.val().length < 6 ||
+		$settingPofile.val().lastIndexOf(".CFG")  < 0 || 
+		$settingPofile.val().lastIndexOf(".CFG") != ($settingPofile.val().length)-4)
 	{
 		$("#settingProfileBar").showSelectorHint("<#Setting_upload_hint#>");
 		return false;
@@ -398,28 +397,13 @@ apply.wlcKey = function(){
 		qisPostData["wlc" + unit + "_band"] = $("#wlc_band_manual").val();
 		qisPostData["wlc" + unit + "_ssid"] = $("#wlc_ssid_manual").val();
 
-		qisPostData["wlc" + unit + "_auth_mode"] = "";
-		qisPostData["wlc" + unit + "_crypto"] = "";
-		qisPostData["wlc" + unit + "_wpa_psk"] = "";
-		qisPostData["wlc" + unit + "_wep"] = "";
-		qisPostData["wlc" + unit + "_wep_key"] = "";
-		qisPostData["wlc" + unit + "_key"] = "";
-
-		var auth_mode = $("#wlc_auth_mode_manual").val();
-		qisPostData["wlc" + unit + "_auth_mode"] = auth_mode;
-		var wep = $("#wlc_wep_manual").val();
-		if(auth_mode == "open"){
-			qisPostData["wlc" + unit + "_wep"] = wep;
-			if(wep != "0"){
-				isWepAuthMode = true;
-			}
+		if($("#wlc_auth_mode_manual").val() == "open"){
+			qisPostData["wlc" + unit + "_auth_mode"] = "open";
+			qisPostData["wlc" + unit + "_crypto"] = "";
 		}
-		else if(auth_mode == "shared"){
-			qisPostData["wlc" + unit + "_wep"] = wep;
-			isWepAuthMode = true;
-		}
-		else if(auth_mode == "psk" || auth_mode == "psk2"){
-			qisPostData["wlc" + unit + "_crypto"] = $("#wlc_crypto_manual").val();
+		else{
+			qisPostData["wlc" + unit + "_auth_mode"] = "psk2";
+			qisPostData["wlc" + unit + "_crypto"] = "aes";
 		}
 	}
 	else{
@@ -431,17 +415,16 @@ apply.wlcKey = function(){
 		if(hasBlank([$("#wlc_wifiKey")])) return false;
 
 		if(isWepAuthMode){
-			if(checkWepKey($("#wlc_wifiKey"), wep)) return false;
 			var wepKey = $("#wlc_wifiKey").val();
-			if(isManual){
-				qisPostData["wlc" + unit + "_key"] = $("#wlc_key_index_manual").val();
-				qisPostData["wlc" + unit + "_wep"] = wep;
+
+			if(wepKey.length !== 5 && wepKey.length !== 10 && wepKey.length !== 13 && wepKey.length !== 26){
+				$("#wlc_wifiKey").showTextHint("<#JS_wepkey#>");
+				return false;
 			}
-			else{
-				qisPostData["wlc" + unit + "_key"] = 1;
-				qisPostData["wlc" + unit + "_wep"] = (wepKey.length < 11) ? "1" : "2";
-			}
+
+			qisPostData["wlc" + unit + "_key"] = 1;
 			qisPostData["wlc" + unit + "_wep_key"] = wepKey;
+			qisPostData["wlc" + unit + "_wep"] = (wepKey.length < 11) ? "1" : "2";
 		}
 		else{
 			if(!validator.psk(document.getElementById("wlc_wifiKey"))) return false;
@@ -946,7 +929,7 @@ abort.wlcKey = function(){
 	$("#wlc_wifiKey").showTextHint("");
 
 	if(systemVariable.selectedAP.unit != undefined){//is not manual
-		postDataModel.remove(wlcMultiObj[systemVariable.selectedAP.unit]);
+		postDataModel.remove(wlcMultiObj["wlc" + systemVariable.selectedAP.unit]);
 		systemVariable.selectedAP = [];
 	}
 
@@ -1104,7 +1087,7 @@ abort.backTo_papList_wlcKey = function(){
 		systemVariable.multiPAP.wlcStatus["wlc" + last_unit + "_manual"] = false;
 		systemVariable.multiPAP.wlcOrder.pop();
 		genPAPList(systemVariable.papList, systemVariable.multiPAP.wlcOrder);
-		postDataModel.remove(wlcMultiObj[last_unit]);
+		postDataModel.remove(wlcMultiObj["wlc" + last_unit]);
 		goTo.loadPage("papList_page", true);
 	}
 	else{
@@ -1119,35 +1102,13 @@ abort.backTo_papList_wlcKey = function(){
 			var band = qisPostData["wlc" + last_unit + "_band"];
 			var ssid = qisPostData["wlc" + last_unit + "_ssid"];
 			var auth_mode = qisPostData["wlc" + last_unit + "_auth_mode"];
-			var crypto = qisPostData["wlc" + last_unit + "_crypto"];
 			var wpa_psk = qisPostData["wlc" + last_unit + "_wpa_psk"];
-			var wep = qisPostData["wlc" + last_unit + "_wep"];
-			var wep_key = qisPostData["wlc" + last_unit + "_wep_key"];
-			var key = qisPostData["wlc" + last_unit + "_key"];
 			$("#wlc_band_manual  option[value=" + band + "]").prop("selected", true).change();
 			$("#wlc_ssid_manual").val(ssid);
 			$("#wlc_auth_mode_manual  option[value=" + auth_mode + "]").prop("selected", true).change();
-			if(crypto == "")
-				$("#wlc_crypto_manual  option:first").prop("selected", true).change();
-			else
-				$("#wlc_crypto_manual  option[value=" + crypto + "]").prop("selected", true).change();
-			if(key == "")
-				$("#wlc_key_index_manual  option:first").prop("selected", true).change();
-			else
-				$("#wlc_key_index_manual  option[value=" + key + "]").prop("selected", true).change();
-			handleWLAuthModeItem();
-			handleWLWepOption();
-			if(wep == "")
-				$("#wlc_wep_manual  option:first").prop("selected", true).change();
-			else
-				$("#wlc_wep_manual  option[value=" + wep + "]").prop("selected", true).change();
+			$("#wlc_wifiKey").val(wpa_psk);
 
-			if(wep == "1" || wep == "2")
-				$("#wlc_wifiKey").val(wep_key);
-			else
-				$("#wlc_wifiKey").val(wpa_psk);
-
-			postDataModel.remove(wlcMultiObj[last_unit]);
+			postDataModel.remove(wlcMultiObj["wlc" + last_unit]);
 			goTo.loadPage("wlcKey_setting", true);
 		}
 		else{
@@ -1158,7 +1119,7 @@ abort.backTo_papList_wlcKey = function(){
 			systemVariable.multiPAP.wlcOrder.pop();
 			if(isOpenAuthMode){
 				genPAPList(systemVariable.papList, systemVariable.multiPAP.wlcOrder);
-				postDataModel.remove(wlcMultiObj[last_unit]);
+				postDataModel.remove(wlcMultiObj["wlc" + last_unit]);
 				goTo.loadPage("papList_page", true);
 			}
 			else{
@@ -1978,6 +1939,8 @@ goTo.lanStatic = function(){
 };
 
 goTo.siteSurvey = function(){
+	$("#siteSurvey_search").show();
+	$("#siteSurvey_fail").hide();
 	systemVariable.papList = [];
 	systemVariable.papListAiMesh = [];
 
@@ -2013,6 +1976,10 @@ goTo.siteSurvey = function(){
 					goTo.AiMeshOption();
 				else
 					goTo.papList();
+			}
+			else if(systemVariable.papList.length == 0 && siteSurveyResult.isFinish && isPage("siteSurvey_page")) {
+				$("#siteSurvey_search").hide();
+				$("#siteSurvey_fail").show();
 			}
 
 			if(!siteSurveyResult.isFinish && isPage("siteSurvey_page")) setTimeout(arguments.callee, 1000);
@@ -2067,31 +2034,14 @@ goTo.wlcManual = function(){
 	$("#wlc_ssid_manual").val("");
 	$("#wlc_band_manual option:first").prop("selected", true).change();
 	$("#wlc_auth_mode_manual").val("psk2").change();
-	$("#wlc_crypto_manual option:first").prop("selected", true).change();
-	$("#wlc_wep_manual option:first").prop("selected", true).change();
-	$("#wlc_key_index_manual option:first").prop("selected", true).change();
-	$("#wlc_wifiKey").val("");
-	$("#wlc_wifiKey").showTextHint("");
-
-	$("#manual_pap_setup-nmode_hint").hide();
-	$("#manual_pap_setup-wep").hide();
-	$("#manual_pap_setup-key-index").hide();
-
 	$("#wlc_auth_mode_manual")
 		.change(function(){
-			handleWLAuthModeItem();
-			handleWLWepOption($(this).val());
+			var curAuthMode = $(this).val();
+			$("#manual_pap_setup-key").toggle(curAuthMode !== "open");
 		});
 
-	$("#wlc_crypto_manual")
-		.change(function(){
-			handleWLAuthModeItem();
-		});
-
-	$("#wlc_wep_manual")
-		.change(function(){
-			handleWLAuthModeItem();
-		});
+	$("#wlc_wifiKey").val("");
+	$("#wlc_wifiKey").showTextHint("");
 
 	goTo.loadPage("wlcKey_setting", false);
 };
@@ -2120,8 +2070,8 @@ goTo.Wireless = function(){
 			})
 			.change(function(e){
 				postDataModel.insert(wirelessObj.wl0);
-				if(isSupport("DUALBAND")) postDataModel.insert(wirelessObj.wl1);
-				if(isSupport("TRIBAND")){
+				if(isSupport("dualband")) postDataModel.insert(wirelessObj.wl1);
+				if(isSupport("triband")){
 					postDataModel.insert(wirelessObj.wl1);
 					postDataModel.insert(wirelessObj.wl2);
 				}
@@ -2149,15 +2099,11 @@ goTo.Wireless = function(){
 			if(curStatus){
 				__wlArray = getAllWlArray()
 				qisPostData.smart_connect_x = "0";
-
-				$("#syncSSID").show();
 				$("#wireless_sync_checkbox").enableCheckBox(true);
 			}
 			else{
 				__wlArray = [{"title":"", "ifname":"0"}];
 				qisPostData.smart_connect_x = "1";
-
-				$("#syncSSID").hide();
 				$("#wireless_sync_checkbox").enableCheckBox(false);
 			}
 
@@ -2179,8 +2125,8 @@ goTo.Wireless = function(){
 	$.each($(".wlInput:password"), function(idx, input){
 		if(input.value == ""){
 			postDataModel.insert(wirelessObj.wl0);
-			if(isSupport("DUALBAND")) postDataModel.insert(wirelessObj.wl1);
-			if(isSupport("TRIBAND")){
+			if(isSupport("dualband")) postDataModel.insert(wirelessObj.wl1);
+			if(isSupport("triband")){
 				postDataModel.insert(wirelessObj.wl1);
 				postDataModel.insert(wirelessObj.wl2);
 			}
@@ -2213,8 +2159,8 @@ goTo.Wireless = function(){
 	if(isSwModeChanged()){
 		postDataModel.insert(wirelessObj.wl0);
 
-		if(isSupport("DUALBAND")) postDataModel.insert(wirelessObj.wl1);
-		if(isSupport("TRIBAND")){
+		if(isSupport("dualband")) postDataModel.insert(wirelessObj.wl1);
+		if(isSupport("triband")){
 			postDataModel.insert(wirelessObj.wl1);
 			postDataModel.insert(wirelessObj.wl2);
 		}
@@ -2222,8 +2168,8 @@ goTo.Wireless = function(){
 	else if(systemVariable.multiPAP.wlcOrder.length > 0){
 		postDataModel.insert(wirelessObj.wl0);
 
-		if(isSupport("DUALBAND")) postDataModel.insert(wirelessObj.wl1);
-		if(isSupport("TRIBAND")){
+		if(isSupport("dualband")) postDataModel.insert(wirelessObj.wl1);
+		if(isSupport("triband")){
 			postDataModel.insert(wirelessObj.wl1);
 			postDataModel.insert(wirelessObj.wl2);
 		}
@@ -2696,8 +2642,8 @@ goTo.skip_pap = function(){
 	systemVariable.multiPAP.wlcStatus["wlc" + available_band[0] + "_checked"] = true;
 	systemVariable.multiPAP.wlcStatus["wlc" + available_band[0] + "_skip"] = true;
 	systemVariable.multiPAP.wlcOrder.push(available_band[0]);
-	postDataModel.insert(wlcMultiObj[available_band[0]]);
-	var retData = wlcMultiObj[available_band[0]];
+	postDataModel.insert(wlcMultiObj["wlc" + available_band[0]]);
+	var retData = wlcMultiObj["wlc" + available_band[0]];
 	Object.keys(retData).forEach(function(key){
 		qisPostData[key] = retData[key];
 	});

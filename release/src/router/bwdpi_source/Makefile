@@ -35,6 +35,10 @@ else ifeq ($(HND_ROUTER),y)
 	@cp include/tdts/sysdeps/hnd-tmcfg.h include/tdts/tmcfg.h -f                         # hnd
 	@cp include/udb/sysdeps/hnd-tmcfg_udb.h include/udb/tmcfg_udb.h -f                   # hnd
 	@cp bin/hnd/* bin/ -rf                                                               # hnd
+else ifeq ($(HND_ROUTER_AX),y)
+	@cp include/tdts/sysdeps/axhnd-tmcfg.h include/tdts/axtmcfg.h -f                     # ax-hnd
+	@cp include/udb/sysdeps/axhnd-tmcfg_udb.h include/udb/axtmcfg_udb.h -f               # ax-hnd
+	@cp bin/axhnd/* bin/ -rf                                                             # ax-hnd
 else ifeq ($(RTCONFIG_BCM_7114),y)
 	@cp include/tdts/sysdeps/bcm7114-tmcfg.h include/tdts/tmcfg.h -f                     # bcm7114
 	@cp include/udb/sysdeps/bcm7114-tmcfg_udb.h include/udb/tmcfg_udb.h -f               # bcm7114
@@ -78,6 +82,9 @@ ifeq ($(RTCONFIG_BCM7),y)
 else ifeq ($(HND_ROUTER),y)
 	@cp include/tdts/sysdeps/hnd-tmcfg.h include/tdts/tmcfg.h -f                         # hnd
 	@cp include/udb/sysdeps/hnd-tmcfg_udb.h include/udb/tmcfg_udb.h -f                   # hnd
+else ifeq ($(HND_ROUTER_AX),y)
+	@cp include/tdts/sysdeps/axhnd-tmcfg.h include/tdts/axtmcfg.h -f                     # ax-hnd
+	@cp include/udb/sysdeps/axhnd-tmcfg_udb.h include/udb/axtmcfg_udb.h -f               # ax-hnd
 else ifeq ($(RTCONFIG_BCM_7114),y)
 	@cp include/tdts/sysdeps/bcm7114-tmcfg.h include/tdts/tmcfg.h -f                     # bcm7114
 	@cp include/udb/sysdeps/bcm7114-tmcfg_udb.h include/udb/tmcfg_udb.h -f               # bcm7114
@@ -137,6 +144,8 @@ ifeq ($(RTCONFIG_BCM7),y)
 	@cp -f modules/bcm7/* RC_INDEP/
 else ifeq ($(HND_ROUTER),y)
 	@cp -f modules/hnd/* RC_INDEP/
+else ifeq ($(HND_ROUTER_AX),y)
+	@cp -f modules/axhnd/* RC_INDEP/
 else ifeq ($(RTCONFIG_BCM_7114),y)
 	@cp -f modules/bcm7114/* RC_INDEP/
 else
@@ -148,7 +157,7 @@ else
 endif
 endif
 endif
-ifeq ($(HND_ROUTER),y)
+ifeq ($(or $(HND_ROUTER),$(HND_ROUTER_AX)),y)
 	@echo "start to install bwdpi_source into 94908HND"
 	@install -d $(INSTALLDIR)/usr/bwdpi/
 	@cp -f $(TOP)/bwdpi_source/RC_INDEP/*.so $(INSTALLDIR)/usr/lib/
@@ -172,7 +181,7 @@ install:
 	# [INSTALL] prebuild into RC_INDEP
 	-@mkdir RC_INDEP
 	-@cp -f prebuild$(BCMEX)$(EX7)/* RC_INDEP/
-ifeq ($(HND_ROUTER),y)
+ifeq ($(or $(HND_ROUTER),$(HND_ROUTER_AX)),y)
 	@echo "start to install bwdpi_source into 94908HND"
 	@install -d $(INSTALLDIR)/usr/bwdpi/
 	@cp -f $(TOP)/bwdpi_source/RC_INDEP/*.so $(INSTALLDIR)/usr/lib/

@@ -158,7 +158,7 @@ var safe_count = 0;
 function initial(){
 	show_menu();
 	//	http://www.asus.com/support/FAQ/1008719/
-	httpApi.faqURL("faq", "1008719", "https://www.asus.com", "/support/FAQ/");
+	httpApi.faqURL("1008719", function(url){document.getElementById("faq").href=url;});
 	if(lyra_hide_support){
 		$("#scenario_tr").css({"visibility":"hidden"});
 		$("#scenario_img").attr({"height":"0"});
@@ -166,7 +166,7 @@ function initial(){
 		$(".AiProtection_02").hide();
 		$(".AiProtection_03").hide();
 		$(".line_1").hide();
-		if(!uiSupport("dpi_vp")){
+		if(!isSupport("dpi_vp")){
 			$("#twoWayIPS_padding").hide();
 			$("#twoWayIPS_field").hide();
 		}

@@ -1,12 +1,12 @@
 /*
  * Broadcom micro scheduler library include file
  *
- * Copyright (C) 2016, Broadcom. All Rights Reserved.
- * 
+ * Copyright (C) 2018, Broadcom. All Rights Reserved.
+ *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
  * copyright notice and this permission notice appear in all copies.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
  * WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
  * MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY
@@ -18,7 +18,7 @@
  *
  * <<Broadcom-WL-IPTag/Open:>>
  *
- * $Id: bcm_usched.h 623877 2016-03-09 13:21:51Z $
+ * $Id: bcm_usched.h 734839 2017-12-06 13:30:22Z $
  */
 
 #ifndef __BCM_USCHED_H__

@@ -2363,6 +2363,9 @@ void bcmvlan_models(int model, char *vlan)
 	case MODEL_RTAC3100:
 	case MODEL_RTAC5300:
 	case MODEL_GTAC5300:
+	case MODEL_RTAX88U:
+	case MODEL_GTAX11000:
+	case MODEL_RTAX92U:
 	case MODEL_RTAC1200G:
 	case MODEL_RTAC1200GP:
 		strcpy(vlan, "vlan1");
@@ -2823,16 +2826,6 @@ int is_dpsta(int unit)
 }
 #endif
 
-int is_dpsr(int unit)
-{
-	if (dpsr_mode()) {
-		if ((num_of_wl_if() == 2) || !unit || unit == nvram_get_int("dpsta_band"))
-			return 1;
-	}
-
-	return 0;
-}
-
 int is_psta(int unit)
 {
 	if (unit < 0) return 0;
@@ -2853,14 +2846,13 @@ int is_psr(int unit)
 	if ((sw_mode() == SW_MODE_AP) &&
 		(nvram_get_int("wlc_psta") == 2) &&
 		(
-		is_dpsr(unit) ||
 #ifdef RTCONFIG_DPSTA
 		is_dpsta(unit) ||
-#ifdef RTCONFIG_AMAS
+#endif
+#if defined(RTCONFIG_AMAS) && defined(RTCONFIG_DPSTA)
 		dpsta_mode() ||
 #endif
-#endif
-		((nvram_get_int("wlc_band") == unit) && !dpsr_mode()
+		((nvram_get_int("wlc_band") == unit)
 #ifdef RTCONFIG_DPSTA
 		&& !dpsta_mode()
 #endif
@@ -3754,7 +3746,6 @@ char *if_nametoalias(char *name, char *alias, int alias_len)
 			if (!strcmp(ifname, name)) {
 #if defined(CONFIG_BCMWL5) || defined(RTCONFIG_BCMARM)
 				if (repeater_mode()
-					|| dpsr_mode()
 #if defined(RTCONFIG_PROXYSTA) && defined(RTCONFIG_DPSTA)
 					|| dpsta_mode()
 #endif
@@ -3775,36 +3766,6 @@ char *if_nametoalias(char *name, char *alias, int alias_len)
 	}
 
 	return alias;
-}
-
-int check_re_in_macfilter(int unit, char *mac)
-{
-	char tmp[128], prefix[] = "wlXXXXXXXXXX_";
-	char *nv, *nvp, *b;
-	int exist = 0;
-
-#ifdef RTCONFIG_AMAS
-	if (nvram_get_int("re_mode") == 1)
-		snprintf(prefix, sizeof(prefix), "wl%d.1_", unit);
-	else
-#endif
-		snprintf(prefix, sizeof(prefix), "wl%d_", unit);
-
-	nv = nvp = strdup(nvram_safe_get(strcat_r(prefix, "maclist_x", tmp)));
-	if (nv) {
-		while ((b = strsep(&nvp, "<")) != NULL) {
-			if (strlen(b) == 0) continue;
-
-			if (strcmp(mac, b) == 0) {
-				dbg("mac (%s) exists in maclist_x (%s)\n", mac, prefix);
-				exist = 1;
-				break;
-			}
-		}
-		free(nv);
-	}
-
-	return exist;
 }
 #endif /* RTCONFIG_CFGSYNC */
 

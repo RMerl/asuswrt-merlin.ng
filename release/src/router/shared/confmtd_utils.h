@@ -1,12 +1,12 @@
 /*
  * Shell-like utility functions
  *
- * Copyright (C) 2017, Broadcom Corporation. All Rights Reserved.
- * 
+ * Copyright (C) 2018, Broadcom. All Rights Reserved.
+ *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
  * copyright notice and this permission notice appear in all copies.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
  * WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
  * MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY
@@ -15,20 +15,24 @@
  * OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
+ *
+ * <<Broadcom-WL-IPTag/Open:>>
+ *
  * $Id: $
  */
 
 #ifndef _CONFMTD_UTILS_H_
 #define _CONFMTD_UTILS_H_
 
-
 /* CONFMTD ramfs directories */
 #define RAMFS_CONFMTD_DIR		"/tmp/confmtd"
-#ifdef BCA_HNDROUTER
+
+#if defined(BCA_HNDROUTER)
 #define NAND_DIR			"/data"
 #else /* ! BCA_HNDROUTER */
 #define NAND_DIR			"/tmp/media/nand"
 #endif /* ! BCA_HNDROUTER */
+
 #define NAND_FILE			NAND_DIR"/config.tgz"
 #define CONFMTD_TGZ_TMP_FILE		"/tmp/config.tgz"
 
@@ -57,4 +61,5 @@ int confmtd_backup();
  */
 int confmtd_restore();
 
+extern void dm_register_app_restart_info(int pid, int argc, char **argv, char *dependent_services);
 #endif /* _CONFMTD_UTILS_H_ */

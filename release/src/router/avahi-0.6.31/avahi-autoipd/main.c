@@ -25,6 +25,9 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <sys/ioctl.h>
+#ifdef HAVE_SYS_FILIO_H
+#include <sys/filio.h>
+#endif
 #include <sys/socket.h>
 #include <sys/wait.h>
 #ifdef __FreeBSD__
@@ -60,12 +63,6 @@
 
 #ifndef __linux__
 #include <pcap.h>
-
-/* Old versions of PCAP defined it as D_IN */
-#ifndef PCAP_D_IN
-#define PCAP_D_IN D_IN
-#endif
-
 #endif
 
 #include <avahi-common/malloc.h>
@@ -1536,6 +1533,9 @@ static int parse_command_line(int argc, char *argv[]) {
 
             case OPTION_DEBUG:
                 debug = 1;
+#ifdef DAEMON_SET_VERBOSITY_AVAILABLE
+                daemon_set_verbosity(LOG_DEBUG);
+#endif
                 break;
 
             case OPTION_FORCE_BIND:

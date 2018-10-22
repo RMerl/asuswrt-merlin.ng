@@ -20,9 +20,9 @@ ifeq ($(RTCONFIG_BCMWL6),y)
 CFLAGS  += -I$(SRCBASE)/shared/bcmwifi/include
 endif
 CFLAGS  += -Dlinux -DNO_PARALLEL -DPRNINFO
-LDFLAGS = -L$(TOP)/shared -lshared -L$(TOP)/nvram${BCMEX}$(EX7) -lnvram 
+LDFLAGS = -L$(TOP)/shared -lshared -L$(TOP_PLATFORM)/nvram${BCMEX}$(EX7) -lnvram 
 ifeq ($(HND_ROUTER),y)
-LDFLAGS += -L$(TOP)/wlcsm -lwlcsm
+LDFLAGS += -L$(TOP_PLATFORM)/wlcsm$(EXHND) -lwlcsm
 endif
 
 ifeq ($(RTCONFIG_BCMARM),y)
@@ -32,6 +32,10 @@ endif
 
 ifeq ($(RTCONFIG_QTN),y)
 LDFLAGS += -L$(TOP)/libqcsapi_client -lqcsapi_client
+endif
+
+ifeq ($(HND_ROUTER_AX), y)
+CFLAGS += -I$(SRCBASE)/../components/proto/include -I$(SRCBASE)/../components/wlioctl/include
 endif
 
 all: infosvr

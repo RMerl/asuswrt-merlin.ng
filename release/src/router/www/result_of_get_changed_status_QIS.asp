@@ -39,3 +39,4 @@ usb_modem_auto_spn = '<% nvram_get("usb_modem_auto_spn"); %>';
 var link_internet = '<% nvram_get("link_internet"); %>';
 var wan0_realip_state = '<% nvram_get("wan0_realip_state"); %>';
 var wan1_realip_state = '<% nvram_get("wan1_realip_state"); %>';
+var phy_port_state = <% get_wan_lan_status(); %>;

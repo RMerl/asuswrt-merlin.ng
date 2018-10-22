@@ -906,8 +906,11 @@ function register_event(){
 			min:0,
 			max: (based_modelid == "RT-AC5300" || 
 				based_modelid == "GT-AC5300" || 
-				based_modelid == "RT-AC88U" || 
-				based_modelid == "RT-AC3100")?1000:600,
+				based_modelid == "RT-AC88U" ||
+ 				based_modelid == "RT-AX88U" ||
+				based_modelid == "RT-AC3100" ||
+				based_modelid == "GT-AX11000" ||
+				based_modelid == "RT-AX92U")?1000:600,
 			value:1,
 			slide:function(event, ui){
 				document.getElementById('wl0_bsd_steering_phy_l').value = ui.value; 
@@ -924,9 +927,12 @@ function register_event(){
 			max: (based_modelid == "RT-AC5300" || 
 				based_modelid == "GT-AC5300" || 
 				based_modelid == "RT-AC88U" ||
+				based_modelid == "RT-AX88U" ||
 				based_modelid == "RT-AC86U" ||
 				based_modelid == "AC2900" ||
-				based_modelid == "RT-AC3100")?1000:600,
+				based_modelid == "RT-AC3100" ||
+				based_modelid == "GT-AX11000" ||
+				based_modelid == "RT-AX92U")?1000:600,
 			value:1,
 			slide:function(event, ui){
 				document.getElementById('wl0_bsd_steering_phy_g').value = ui.value; 
@@ -943,9 +949,12 @@ function register_event(){
 			max: (based_modelid == "RT-AC5300" || 
 				based_modelid == "GT-AC5300" || 
 				based_modelid == "RT-AC88U" ||
+				based_modelid == "RT-AX88U" ||
 				based_modelid == "RT-AC86U" ||
 				based_modelid == "AC2900" ||
-				based_modelid == "RT-AC3100")?2167:1300,
+				based_modelid == "RT-AC3100" ||
+				based_modelid == "GT-AX11000" ||
+				based_modelid == "RT-AX92U")?2167:1300,
 			value:1,
 			slide:function(event, ui){
 				document.getElementById('wl1_bsd_steering_phy_l').value = ui.value; 
@@ -962,9 +971,12 @@ function register_event(){
 			max: (based_modelid == "RT-AC5300" || 
 				based_modelid == "GT-AC5300" || 
 				based_modelid == "RT-AC88U" ||
+				based_modelid == "RT-AX88U" ||
 				based_modelid == "RT-AC86U" ||
 				based_modelid == "AC2900" ||
-				based_modelid == "RT-AC3100")?2167:1300,
+				based_modelid == "RT-AC3100" ||
+				based_modelid == "GT-AX11000" ||
+				based_modelid == "RT-AX92U")?2167:1300,
 			value:1,
 			slide:function(event, ui){
 				document.getElementById('wl1_bsd_steering_phy_g').value = ui.value; 
@@ -981,9 +993,12 @@ function register_event(){
 			max: (based_modelid == "RT-AC5300" || 
 				based_modelid == "GT-AC5300" || 
 				based_modelid == "RT-AC88U" ||
+				based_modelid == "RT-AX88U" ||
 				based_modelid == "RT-AC86U" ||
 				based_modelid == "AC2900" ||
-				based_modelid == "RT-AC3100")?2167:1300,
+				based_modelid == "RT-AC3100" ||
+				based_modelid == "GT-AX11000" ||
+				based_modelid == "RT-AX92U")?2167:1300,
 			value:1,
 			slide:function(event, ui){
 				document.getElementById('wl2_bsd_steering_phy_l').value = ui.value; 
@@ -1000,9 +1015,12 @@ function register_event(){
 			max: (based_modelid == "RT-AC5300" || 
 				based_modelid == "GT-AC5300" || 
 				based_modelid == "RT-AC88U" ||
+				based_modelid == "RT-AX88U" ||
 				based_modelid == "RT-AC86U" ||
 				based_modelid == "AC2900" ||
-				based_modelid == "RT-AC3100")?2167:1300,
+				based_modelid == "RT-AC3100" ||
+				based_modelid == "GT-AX11000" ||
+				based_modelid == "RT-AX92U")?2167:1300,
 			value:1,
 			slide:function(event, ui){
 				document.getElementById('wl2_bsd_steering_phy_g').value = ui.value; 
@@ -1019,9 +1037,12 @@ function register_event(){
 			max: (based_modelid == "RT-AC5300" || 
 				based_modelid == "GT-AC5300" || 
 				based_modelid == "RT-AC88U" ||
+				based_modelid == "RT-AX88U" ||
 				based_modelid == "RT-AC86U" ||
 				based_modelid == "AC2900" ||
-				based_modelid == "RT-AC3100")?1000:600,
+				based_modelid == "RT-AC3100" ||
+				based_modelid == "GT-AX11000" ||
+				based_modelid == "RT-AX92U")?1000:600,
 			value:1,
 			slide:function(event, ui){
 				document.getElementById('wl0_bsd_sta_select_policy_phy_l').value = ui.value; 
@@ -1038,9 +1059,12 @@ function register_event(){
 			max: (based_modelid == "RT-AC5300" || 
 				based_modelid == "GT-AC5300" || 
 				based_modelid == "RT-AC88U" ||
+				based_modelid == "RT-AX88U" ||
 				based_modelid == "RT-AC86U" ||
 				based_modelid == "AC2900" ||
-				based_modelid == "RT-AC3100")?1000:600,
+				based_modelid == "RT-AC3100" ||
+				based_modelid == "GT-AX11000" ||
+				based_modelid == "RT-AX92U")?1000:600,
 			value:1,
 			slide:function(event, ui){
 				document.getElementById('wl0_bsd_sta_select_policy_phy_g').value = ui.value; 
@@ -1057,9 +1081,12 @@ function register_event(){
 			max: (based_modelid == "RT-AC5300" || 
 				based_modelid == "GT-AC5300" || 
 				based_modelid == "RT-AC88U" ||
+				based_modelid == "RT-AX88U" ||
 				based_modelid == "RT-AC86U" ||
 				based_modelid == "AC2900" ||
-				based_modelid == "RT-AC3100")?2167:1300,
+				based_modelid == "RT-AC3100" ||
+				based_modelid == "GT-AX11000" ||
+				based_modelid == "RT-AX92U")?2167:1300,
 			value:1,
 			slide:function(event, ui){
 				document.getElementById('wl1_bsd_sta_select_policy_phy_l').value = ui.value; 
@@ -1076,9 +1103,12 @@ function register_event(){
 			max: (based_modelid == "RT-AC5300" || 
 				based_modelid == "GT-AC5300" || 
 				based_modelid == "RT-AC88U" ||
+				based_modelid == "RT-AX88U" ||
 				based_modelid == "RT-AC86U" ||
 				based_modelid == "AC2900" ||
-				based_modelid == "RT-AC3100")?2167:1300,
+				based_modelid == "RT-AC3100" ||
+				based_modelid == "GT-AX11000" ||
+				based_modelid == "RT-AX92U")?2167:1300,
 			value:1,
 			slide:function(event, ui){
 				document.getElementById('wl1_bsd_sta_select_policy_phy_g').value = ui.value; 
@@ -1095,9 +1125,12 @@ function register_event(){
 			max: (based_modelid == "RT-AC5300" || 
 				based_modelid == "GT-AC5300" || 
 				based_modelid == "RT-AC88U" ||
+				based_modelid == "RT-AX88U" ||
 				based_modelid == "RT-AC86U" ||
 				based_modelid == "AC2900" ||
-				based_modelid == "RT-AC3100")?2167:1300,
+				based_modelid == "RT-AC3100" ||
+				based_modelid == "GT-AX11000" ||
+				based_modelid == "RT-AX92U")?2167:1300,
 			value:1,
 			slide:function(event, ui){
 				document.getElementById('wl2_bsd_sta_select_policy_phy_l').value = ui.value; 
@@ -1114,9 +1147,12 @@ function register_event(){
 			max: (based_modelid == "RT-AC5300" || 
 				based_modelid == "GT-AC5300" || 
 				based_modelid == "RT-AC88U" ||
+				based_modelid == "RT-AX88U" ||
 				based_modelid == "RT-AC86U" ||
 				based_modelid == "AC2900" ||
-				based_modelid == "RT-AC3100")?2167:1300,
+				based_modelid == "RT-AC3100" ||
+				based_modelid == "GT-AX11000" ||
+				based_modelid == "RT-AX92U")?2167:1300,
 			value:1,
 			slide:function(event, ui){
 				document.getElementById('wl2_bsd_sta_select_policy_phy_g').value = ui.value; 
@@ -1187,9 +1223,12 @@ function check_power(power_value,flag){
 		if(based_modelid == "RT-AC5300" || 
 			based_modelid == "GT-AC5300" || 
 			based_modelid == "RT-AC88U" ||
+			based_modelid == "RT-AX88U" ||
 			based_modelid == "RT-AC86U" ||
 			based_modelid == "AC2900" ||
-			based_modelid == "RT-AC3100")
+			based_modelid == "RT-AC3100" ||
+			based_modelid == "GT-AX11000" ||
+			based_modelid == "RT-AX92U")
 			power_value_limit = 2167;
 		else
 			power_value_limit = 1300;
@@ -1214,9 +1253,12 @@ function set_lg_power(power_value,flag,idx){
 		if(based_modelid == "RT-AC5300" || 
 			based_modelid == "GT-AC5300" || 
 			based_modelid == "RT-AC88U" ||
+			based_modelid == "RT-AX88U" ||
 			based_modelid == "RT-AC86U" ||
 			based_modelid == "AC2900" ||
-			based_modelid == "RT-AC3100")
+			based_modelid == "RT-AC3100" ||
+			based_modelid == "GT-AX11000" ||
+			based_modelid == "RT-AX92U")
 			divd = 10;
 		else
 			divd = 6;
@@ -1225,9 +1267,12 @@ function set_lg_power(power_value,flag,idx){
 		if(based_modelid == "RT-AC5300" || 
 			based_modelid == "GT-AC5300" || 
 			based_modelid == "RT-AC88U" ||
+			based_modelid == "RT-AX88U" ||
 			based_modelid == "RT-AC86U" ||
 			based_modelid == "AC2900" ||
-			based_modelid == "RT-AC3100")
+			based_modelid == "RT-AC3100" ||
+			based_modelid == "GT-AX11000" ||
+			based_modelid == "RT-AX92U")
 			divd = 21;
 		else
 			divd = 13;

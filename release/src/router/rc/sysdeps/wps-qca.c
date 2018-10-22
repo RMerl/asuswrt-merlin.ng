@@ -114,21 +114,6 @@ int is_wps_stopped(void)
 			continue;
 		}
 
-#ifdef RTCONFIG_WIFI_SON
-#ifndef RTCONFIG_DUAL_BACKHAUL
-		if(i==0)
-		{	
-			++i;
-			continue;
-		}
-#endif
-		if(i==2)
-		{
-			++i;
-			continue;
-		}
-#endif
-
 #ifdef RTCONFIG_WPS_ENROLLEE
 		if (nvram_match("wps_enrollee", "1"))
 			strcpy(status, getWscStatus_enrollee(i));

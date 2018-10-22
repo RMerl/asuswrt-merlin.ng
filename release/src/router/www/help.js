@@ -7,7 +7,6 @@
 	JS_validclientname : "Client device name only accept alphanumeric characters, under line and dash symbol. The first character cannot be dash \"-\" or under line \"_\".",
 	ASUSGATE_act_feedback : "Feedback now",
 	ASUSGATE_DSL_setting : "Go setting DSL",
-	period_time_validation : 'The value of check period can\'t be less than',
 	filter_lw_date_valid : 'Please select at least one day or disable this feature.',
 	ctf_fa_hint : 'System will reboot automatically after enable AiProtection for function working fine. Please click apply to enable this function or click cancel to back to page.'
 };

@@ -111,6 +111,7 @@ typedef unsigned short u16;
 #include "boardparms.h"
 #include "bcmnet.h"
 #include "bcm/bcmswapitypes.h"
+#include <rtconfig.h>
 
 #define PORT        "port"
 static const char *media_names[] = {
@@ -734,9 +735,17 @@ static int et_cmd_phy_power_op(int skfd, struct ifreq *ifr, cmd_t *cmd, char** a
     }
 
     if (strcmp(argv[3], "up") == 0) {
+#ifdef RTCONFIG_HND_ROUTER_AX
+	ethctl.op = ETHSETPHYPWRON;
+#else
         ethctl.op = ETHSETSPOWERUP;
+#endif
     } else if (strcmp(argv[3], "down") == 0) {
+#ifdef RTCONFIG_HND_ROUTER_AX
+	ethctl.op = ETHSETPHYPWROFF;
+#else
         ethctl.op = ETHSETSPOWERDOWN;
+#endif
     } else {
         return 1;
     }

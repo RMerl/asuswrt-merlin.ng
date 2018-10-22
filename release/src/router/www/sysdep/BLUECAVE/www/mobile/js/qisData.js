@@ -112,7 +112,7 @@ var wlcObj = {
 	"wlc_ap_mac": ""
 }
 var wlcMultiObj = {
-	"0" : {
+	"wlc0" : {
 		"wlc0_band": "",
 		"wlc0_ssid": "",
 		"wlc0_auth_mode": "",
@@ -123,7 +123,7 @@ var wlcMultiObj = {
 		"wlc0_key": "",
 		"wlc0_ap_mac": ""
 	},
-	"1" : {
+	"wlc1" : {
 		"wlc1_band": "",
 		"wlc1_ssid": "",
 		"wlc1_auth_mode": "",
@@ -134,7 +134,7 @@ var wlcMultiObj = {
 		"wlc1_key": "",
 		"wlc1_ap_mac": ""
 	},
-	"2" : {
+	"wlc2" : {
 		"wlc2_band": "",
 		"wlc2_ssid": "",
 		"wlc2_auth_mode": "",

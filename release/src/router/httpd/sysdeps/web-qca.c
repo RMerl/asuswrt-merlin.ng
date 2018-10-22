@@ -1088,17 +1088,16 @@ convert_mac_string(char *mac)
 	memset(mac_str,0,sizeof(mac_str));
 
 	for(i=0;i<strlen(mac);i++)
-	{
-		if(*(mac+i)>0x60 && *(mac+i)<0x67){
-			snprintf(mac_str_t, sizeof(mac_str), "%s%c",mac_str,*(mac+i)-0x20);
-			strlcpy(mac_str, mac_str_t, sizeof(mac_str));
-		}
-		else{
-			snprintf(mac_str_t, sizeof(mac_str), "%s%c",mac_str,*(mac+i));
-			strlcpy(mac_str, mac_str_t, sizeof(mac_str));
-		}
-
-	}
+        {
+                if(*(mac+i)>0x60 && *(mac+i)<0x67){
+                       snprintf(mac_str_t, sizeof(mac_str), "%s%c",mac_str,*(mac+i)-0x20);
+                       strlcpy(mac_str, mac_str_t, sizeof(mac_str));
+                }
+                else{
+                       snprintf(mac_str_t, sizeof(mac_str), "%s%c",mac_str,*(mac+i));
+                       strlcpy(mac_str, mac_str_t, sizeof(mac_str));
+                   }
+        }
 	strlcpy(mac, mac_str, strlen(mac_str) + 1);
 }
 
@@ -2163,20 +2162,19 @@ static int ej_wl_rate(int eid, webs_t wp, int argc, char_t **argv, int unit)
 #define ASUS_IOCTL_GET_STA_DATARATE (SIOCDEVPRIVATE+15) /* from qca-wifi/os/linux/include/ieee80211_ioctl.h */
         struct iwreq wrq;
 	int retval = 0;
-	char tmp[256], prefix[] = "wlXXXXXXXXXX_";
+	char tmp[256], prefix[sizeof("wlXXXXXXXXXX_")];
 	char *name;
 	int unit_max = MAX_NR_WL_IF;
 	unsigned int rate[2];
-	char rate_buf[32];
+	char rate_buf[32] = "0 Mbps";
 	int sw_mode = sw_mode();
 	int wlc_band = nvram_get_int("wlc_band");
 	int from_app = 0;
 
-	from_app = check_user_agent(user_agent);
-	strlcpy(rate_buf, "0 Mbps", sizeof(rate_buf));
-
-	if (!nvram_match("wlc_state", "2"))
+	if (sw_mode != SW_MODE_REPEATER && sw_mode != SW_MODE_HOTSPOT)
 		goto ERROR;
+
+	from_app = check_user_agent(user_agent);
 
 	if (unit > (unit_max - 1))
 		goto ERROR;
@@ -2184,21 +2182,20 @@ static int ej_wl_rate(int eid, webs_t wp, int argc, char_t **argv, int unit)
 	if (unit == 2)
 		goto ERROR;
 #endif
-
-	snprintf(prefix, sizeof(prefix), "wlc%d_state", unit);
-	if (!nvram_match(prefix, "2"))
-	{
+	if (wlc_band < 0 || !nvram_match("wlc_state", "2"))
 		goto ERROR;
-	}
 
 #ifdef RTCONFIG_CONCURRENTREPEATER
-	if (sw_mode == SW_MODE_REPEATER || sw_mode == SW_MODE_HOTSPOT)
-#else	
-	if (wlc_band == unit && (sw_mode == SW_MODE_REPEATER || sw_mode == SW_MODE_HOTSPOT))
-#endif
-		snprintf(prefix, sizeof(prefix), "wl%d.1_", unit);
-	else
+	wlc_band = -1;
+	snprintf(prefix, sizeof(prefix), "wlc%d_", unit);
+	if (!nvram_pf_match(prefix, "state", "2"))
 		goto ERROR;
+#endif
+
+	if (wlc_band >= WL_2G_BAND && wlc_band != unit)
+		goto ERROR;
+
+	snprintf(prefix, sizeof(prefix), "wl%d.1_", unit);
 	name = nvram_safe_get(strcat_r(prefix, "ifname", tmp));
 
 	wrq.u.data.pointer = rate;

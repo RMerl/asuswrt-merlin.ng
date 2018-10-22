@@ -52,7 +52,7 @@ enum {
 
     AVAHI_ERR_ACCESS_DENIED = -20,           /**< Access denied */
     AVAHI_ERR_INVALID_OPERATION = -21,       /**< Invalid operation */
-    AVAHI_ERR_DBUS_ERROR = -22,              /**< An unexpected D-Bus error occured */
+    AVAHI_ERR_DBUS_ERROR = -22,              /**< An unexpected D-Bus error occurred */
     AVAHI_ERR_DISCONNECTED = -23,            /**< Daemon connection failed */
     AVAHI_ERR_NO_MEMORY = -24,               /**< Memory exhausted */
     AVAHI_ERR_INVALID_OBJECT = -25,          /**< The object passed to this function was invalid */

@@ -12,6 +12,8 @@
 <link rel="stylesheet" type="text/css" href="../form_style.css">
 <script type="text/javascript" src="/help.js"></script>
 <script type="text/javascript" src="/state.js"></script>
+<script type="text/javascript" src="../js/jquery.js"></script>
+<script type="text/javascript" src="../js/httpApi.js"></script>
 <script>
 if(parent.location.pathname.search("index") === -1) top.location.href = "../"+'<% networkmap_page(); %>';
 
@@ -43,7 +45,9 @@ function initial(){
 		document.getElementById("monoBtn").style.display = "";
 		document.getElementById("monoDesc").style.display = "none";
 	}
-
+	httpApi.faqURL("114046", function(url){document.getElementById("faq1").href=url;});
+	httpApi.faqURL("114024", function(url){document.getElementById("faq2").href=url;});
+	httpApi.faqURL("113661", function(url){document.getElementById("faq3").href=url;});
 }
 
 function cleanTask(){
@@ -95,9 +99,17 @@ function cleanTask(){
 
 <div id="button_descrition" style="display:none;padding:5px 0px 5px 25px;">
 <ul style="font-size:11px; font-family:Arial; color:#FFF; padding:0px; margin:0px; list-style:outside; line-height:150%;">
-	<li><#PrinterStatus_x_Monopoly_itemdesc#></li>
+	<li><#PrinterStatus_x_Monopoly_itemdesc#> <a id="faq" href="https://www.asus.com/support/FAQ/113988/" target="_blank" style="text-decoration:underline;">FAQ</a></li>
 	<li>
-		<a id="faq" href="https://www.asus.com/support/FAQ/113988/" target="_blank" style="text-decoration:underline;"><#Printing_button_item#> FAQ</a>
+		<a id="faq1" href="" target="_blank" style="text-decoration:underline;"><#asus_ez_print_share#> FAQ</a>
+		<br>
+		<a href="http://dlcdnet.asus.com/pub/ASUS/LiveUpdate/Release/Wireless/Printer.zip" style="text-decoration:underline;font-weight:bolder;color:#FC0">Download Now!</a>
+	</li>
+	<li>
+		<a id="faq2" href="" target="_blank" style="text-decoration:underline;"><#LPR_print_share#> FAQ (Windows)</a>
+	</li>
+	<li>
+		<a id="faq3" href="" target="_blank" style="text-decoration:underline;"><#LPR_print_share#> FAQ (MAC)</a>
 	</li>
 </ul>
 </div>

@@ -82,6 +82,10 @@ extern int _eval(char *const argv[], const char *path, int timeout, pid_t *ppid)
  */
 #define CPU0	"0"
 #define CPU1	"1"
+#if defined(GTAC5300) || defined(RTCONFIG_HND_ROUTER_AX)
+#define CPU2	"2"
+#define CPU3	"3"
+#endif
 
 extern int _cpu_eval(int *ppid, char *cmds[]);
 
@@ -386,6 +390,7 @@ extern int generate_wireless_key(unsigned char *key);
 extern int strArgs(int argc, char **argv, char *fmt, ...);
 extern char *trimNL(char *str);
 extern pid_t get_pid_by_name(char *name);
+extern pid_t get_pid_by_thrd_name(char *name);
 extern char *get_process_name_by_pid(const int pid);
 extern char *ether_etoa2(const unsigned char *e, char *a);
 extern char *ATE_FACTORY_MODE_STR();

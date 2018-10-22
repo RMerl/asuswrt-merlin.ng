@@ -121,7 +121,7 @@ var flag = '<% get_parameter("flag"); %>';
 var realip_state = "";
 
 var StatusList = {
-	"NoInetrnet": "Internet is disconnected. Please check your WAN connection for remote control",
+	"NoInetrnet": "<#Alexa_Status_Disconnect#>",
 	"SvrFail": "Server connection failed",
 	"StepAccount": "<#Alexa_Status_Account#>",
 	"EnableRemoteCtrl": "<#Alexa_Register1#>",
@@ -249,7 +249,6 @@ function detcet_aae_state(){
 }
 
 function get_activation_code(){
-	close_alert('alert_pin');
 	ASUS_EULA.config(get_activation_code, function(){});
 	if(ASUS_EULA.check("asus")){
 		detcet_aae_state();

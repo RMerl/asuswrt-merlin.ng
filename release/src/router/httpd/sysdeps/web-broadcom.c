@@ -46,13 +46,17 @@
 #include "bcmwifi_rates.h"
 #include "wlioctl_defs.h"
 #endif
+#ifdef RTCONFIG_HND_ROUTER_AX
+#include <wlc_types.h>
+#include <802.11ax.h>
+#endif
 #include <wlutils.h>
 #include <linux/types.h>
 #include <wlscan.h>
 #include <sysinfo.h>
 #ifdef RTCONFIG_BCMWL6
 #include <dirent.h>
-#if defined(RTCONFIG_BCM7) || defined(RTCONFIG_BCM_7114) || defined(HND_ROUTER)
+#if defined(RTCONFIG_BCM7) || defined(RTCONFIG_BCM_7114) || defined(HND_ROUTER) || defined(RTCONFIG_HND_ROUTER_AX)
 #include <security_ipc.h>
 #endif
 
@@ -141,7 +145,7 @@ ej_wl_sta_status(int eid, webs_t wp, char *name)
 #include <bcmparams.h>		/* for DEV_NUMIFS */
 
 /* The below macros handle endian mis-matches between wl utility and wl driver. */
-#if defined(RTCONFIG_BCM_7114) || defined(RTCONFIG_BCM7) || !defined(RTCONFIG_BCMWL6)
+#if defined(RTCONFIG_HND_ROUTER_AX) || defined(RTCONFIG_BCM_7114) || defined(RTCONFIG_BCM7) || !defined(RTCONFIG_BCMWL6)
 static bool g_swap = FALSE;
 #ifndef htod16
 #define htod16(i) (g_swap?bcmswap16(i):(uint16)(i))
@@ -1073,7 +1077,11 @@ wl_chspec_from_driver(chanspec_t chanspec)
 #endif
 
 static int
+#ifdef RTCONFIG_HND_ROUTER_AX
+dump_bss_info(int eid, webs_t wp, int argc, char_t **argv, wl_bss_info_v109_1_t *bi)
+#else
 dump_bss_info(int eid, webs_t wp, int argc, char_t **argv, wl_bss_info_t *bi)
+#endif
 {
 	char ssidbuf[SSID_FMT_BUF_LEN];
 	char chspec_str[CHANSPEC_STR_LEN];
@@ -1157,9 +1165,10 @@ dump_bss_info(int eid, webs_t wp, int argc, char_t **argv, wl_bss_info_t *bi)
 			retval += websWrite(wp, "HT Capable:\n");
 		retval += websWrite(wp, "\tChanspec: %sGHz channel %d %dMHz (0x%x)\n",
 			CHSPEC_IS2G(bi->chanspec)?"2.4":"5", CHSPEC_CHANNEL(bi->chanspec),
-		       (CHSPEC_IS80(bi->chanspec) ?
-			80 : (CHSPEC_IS40(bi->chanspec) ?
-			      40 : (CHSPEC_IS20(bi->chanspec) ? 20 : 10))),
+		       (CHSPEC_IS160(bi->chanspec) ?
+			160 : CHSPEC_IS80(bi->chanspec) ?
+				80 : (CHSPEC_IS40(bi->chanspec) ?
+			      		40 : (CHSPEC_IS20(bi->chanspec) ? 20 : 10))),
 			bi->chanspec);
 		retval += websWrite(wp, "\tPrimary channel: %d\n", bi->ctl_ch);
 		retval += websWrite(wp, "\tHT Capabilities: ");
@@ -1245,6 +1254,92 @@ dump_bss_info(int eid, webs_t wp, int argc, char_t **argv, wl_bss_info_t *bi)
 				}
 			}
 		}
+#ifdef RTCONFIG_HND_ROUTER_AX
+		if (bi->he_cap) {
+			int i, nss, neg = 0;
+			static const char zero[sizeof(uint16) * WL_HE_CAP_MCS_MAP_NSS_MAX] = { 0 };
+			uint16 *he_mcsmap;
+			uint16 he_txmcsmap, he_rxmcsmap;
+			char *mcs_str, *bw_str;
+			uint rx_mcs, tx_mcs;
+
+			retval += websWrite(wp, "\tHE Capabilities: \n");
+			if (bi->he_neg_bw80_tx_mcs != 0xffff) {
+				he_mcsmap = &bi->he_neg_bw80_tx_mcs;
+				neg = 1;
+			} else {
+				he_mcsmap = &bi->he_sup_bw80_tx_mcs;
+			}
+
+			if (he_mcsmap == NULL || !memcmp(he_mcsmap, zero, sizeof(uint16) * WL_HE_CAP_MCS_MAP_NSS_MAX)) {
+				goto SKIP;
+			}
+
+			if(neg)
+				retval += websWrite(wp, "\tNegotiated HE (tx) Rates:\n");
+			else
+				retval += websWrite(wp, "\tSupported HE (tx) Rates:\n");
+			for (i = 0; i < 3; i++) {
+				if (i == 0) {
+					bw_str = "80 Mhz";
+				} else if (i == 1) {
+					bw_str = "160 Mhz";
+				} else {
+					bw_str = "80+80 Mhz";
+				}
+
+				/* get he bw80, bw160, bw80p80 tx mcs from mcsset[0], mcsset[2], and mcsset[4] */
+				he_txmcsmap = dtoh16(he_mcsmap[i * 2]);
+
+				for (nss = 1; nss <= HE_CAP_MCS_MAP_NSS_MAX; nss++) {
+					tx_mcs = HE_CAP_MAX_MCS_NSS_GET_MCS(nss, he_txmcsmap);
+					mcs_str =
+						(tx_mcs == HE_CAP_MAX_MCS_0_11 ? "0-11" :
+						(tx_mcs == HE_CAP_MAX_MCS_0_9 ? "0-9" :
+						(tx_mcs == HE_CAP_MAX_MCS_0_7 ? "0-7" :
+						"---")));
+					if ((tx_mcs != HE_CAP_MAX_MCS_NONE)) {
+						if (nss == 1)
+							retval += websWrite(wp, "\t    %s:\n", bw_str);
+						retval += websWrite(wp, "\t\tNSS: %d MCS: %s\n", nss, mcs_str);
+					}
+				}
+			}
+
+			if(neg)
+				retval += websWrite(wp, "\tNegotiated HE (rx) Rates:\n");
+			else
+				retval += websWrite(wp, "\tSupported HE (rx) Rates:\n");
+			for (i = 0; i < 3; i++) {
+				if (i == 0) {
+					bw_str = "80 Mhz";
+				} else if (i == 1) {
+					bw_str = "160 Mhz";
+				} else {
+					bw_str = "80+80 Mhz";
+				}
+
+				/* get he bw80, bw160, bw80p80 rx mcs from mcsset[1], mcsset[3], and mcsset[5] */
+				he_rxmcsmap = dtoh16(he_mcsmap[(i * 2) + 1]);
+
+				for (nss = 1; nss <= HE_CAP_MCS_MAP_NSS_MAX; nss++) {
+					rx_mcs = HE_CAP_MAX_MCS_NSS_GET_MCS(nss, he_rxmcsmap);
+					mcs_str =
+						(rx_mcs == HE_CAP_MAX_MCS_0_11 ? "0-11" :
+						(rx_mcs == HE_CAP_MAX_MCS_0_9 ? "0-9" :
+						(rx_mcs == HE_CAP_MAX_MCS_0_7 ? "0-7" :
+						"---")));
+					if ((rx_mcs != HE_CAP_MAX_MCS_NONE)) {
+						if (nss == 1)
+							retval += websWrite(wp, "\t    %s:\n", bw_str);
+						retval += websWrite(wp, "\t\tNSS: %d MCS: %s\n", nss, mcs_str);
+					}
+				}
+			}
+SKIP:
+		;
+		}//he_cap
+#endif	//AX
 #endif
 	}
 #endif
@@ -1269,7 +1364,11 @@ wl_status(int eid, webs_t wp, int argc, char_t **argv, int unit)
 	struct ether_addr bssid;
 	wlc_ssid_t ssid;
 	char ssidbuf[SSID_FMT_BUF_LEN];
-	wl_bss_info_t *bi;
+#ifdef RTCONFIG_HND_ROUTER_AX
+        wl_bss_info_v109_1_t *bi;
+#else
+        wl_bss_info_t *bi;
+#endif
 	int retval = 0;
 	char tmp[128], prefix[] = "wlXXXXXXXXXX_";
 	char *name;
@@ -1289,8 +1388,11 @@ wl_status(int eid, webs_t wp, int argc, char_t **argv, int unit)
 		*(uint32*)buf = htod32(WLC_IOCTL_MAXLEN);
 		if ((ret = wl_ioctl(name, WLC_GET_BSS_INFO, buf, WLC_IOCTL_MAXLEN)) < 0)
 			return 0;
-
+#ifdef RTCONFIG_HND_ROUTER_AX
+		bi = (wl_bss_info_v109_1_t*)(buf + 4);
+#else
 		bi = (wl_bss_info_t*)(buf + 4);
+#endif
 		if (dtoh32(bi->version) == WL_BSS_INFO_VERSION ||
 		    dtoh32(bi->version) == LEGACY2_WL_BSS_INFO_VERSION ||
 		    dtoh32(bi->version) == LEGACY_WL_BSS_INFO_VERSION)
@@ -2121,8 +2223,13 @@ static int ej_wl_chanspecs(int eid, webs_t wp, int argc, char_t **argv, int unit
 
 	snprintf(prefix, sizeof(prefix), "wl%d_", unit);
 	name = nvram_safe_get(strcat_r(prefix, "ifname", tmp));
-
+#if defined(RTCONFIG_HND_ROUTER_AX)
+        /* read from nvram if nvram exist since chanspecs dynamically changes by bw_cap */
+        char *chansps = nvram_safe_get(strcat_r(prefix, "chansps", tmp));
+        if (strlen(chansps)) {
+#else
 	if (is_wlif_up(name) != 1) {
+#endif
 		foreach (word, nvram_safe_get(strcat_r(prefix, "chansps", tmp)), next)
 			count++;
 
@@ -4399,7 +4506,7 @@ typedef struct wlc_ap_list_info
 
 static wlc_ap_list_info_t ap_list[WLC_MAX_AP_SCAN_LIST_LEN];
 
-#if defined(RTCONFIG_BCM7) || defined(RTCONFIG_BCM_7114) || defined(HND_ROUTER)
+#if defined(RTCONFIG_BCM7) || defined(RTCONFIG_BCM_7114) || defined(HND_ROUTER) || defined(RTCONFIG_HND_ROUTER_AX)
 #define MAX_SSID_LEN	32
 
 typedef struct escan_wksp_s {
@@ -4612,6 +4719,7 @@ get_scan_escan(char *scan_buf, uint buf_len)
 	}
 
 exit:
+	/* close fd only, DON'T set d_info->event_fd = -1 will crash */
 	close(fd);
 
 	/* free scan results */
@@ -4634,6 +4742,9 @@ wl_get_scan_results_escan(char *ifname, chanspec_t chanspec)
 	int org_scan_time = 20, scan_time = 40;
 	int wlscan_debug = 0;
 	char chanbuf[CHANSPEC_STR_LEN];
+#ifdef RTCONFIG_HND_ROUTER_AX
+	int band = WLC_BAND_ALL;
+#endif
 
 	if (nvram_match("wlscan_debug", "1"))
 		wlscan_debug = 1;
@@ -4675,11 +4786,21 @@ wl_get_scan_results_escan(char *ifname, chanspec_t chanspec)
 
 	free(params);
 
+#ifdef RTCONFIG_HND_ROUTER_AX
+	wl_ioctl(ifname, WLC_GET_BAND, &band, sizeof(band));
+	if (band == WLC_BAND_5G)
+		sleep(1);
+#endif
+
 	/* restore original scan channel time */
 	wl_ioctl(ifname, WLC_SET_SCAN_CHANNEL_TIME, &org_scan_time, sizeof(org_scan_time));
 
 	if (ret == 0) {
+#ifdef RTCONFIG_HND_ROUTER_AX
+		retry_times = 2;
+#else
 		retry_times = 0;
+#endif
 		while ((ret = get_scan_escan(scan_result, WLC_SCAN_RESULT_BUF_LEN)) < 0 &&
 			retry_times++ < 2) {
 			dbg("get escan results failed, retry %d\n", retry_times);
@@ -4815,10 +4936,20 @@ wl_scan(int eid, webs_t wp, int argc, char_t **argv, int unit)
 			} else {
 				dbg("current chanspec: %s (0x%x)\n", wf_chspec_ntoa(chspec_cur, chanbuf), chspec_cur);
 
+#ifdef RTCONFIG_HND_ROUTER_AX
+				chanspec = (unit == 1 ? select_chspec_with_band_bw(name, 1, 3, chspec_cur) : select_chspec_with_band_bw(name, 4, 3, chspec_cur));
+#else
 				chanspec = (unit == 1 ? select_chspec_with_band_bw(name, 1, 0, chspec_cur) : select_chspec_with_band_bw(name, 4, 0, chspec_cur));
+#endif
 				dbg("switch to chanspec: %s (0x%x)\n", wf_chspec_ntoa(chanspec, chanbuf), chanspec);
+#ifdef RTCONFIG_HND_ROUTER_AX
+				wl_ioctl(name, WLC_DOWN, NULL, 0);
+				wl_iovar_setint(name, "chanspec", chanspec);
+				wl_ioctl(name, WLC_UP, NULL, 0);
+#else
 				wl_iovar_setint(name, "chanspec", chanspec);
 				wl_reset_ssid(name);
+#endif
 			}
 		}
 #if defined(RTCONFIG_DHDAP) && !defined(RTCONFIG_BCM7)
@@ -4853,7 +4984,7 @@ wl_scan(int eid, webs_t wp, int argc, char_t **argv, int unit)
 	} else
 		chanspec = 0;
 
-#if defined(RTCONFIG_BCM7) || defined(RTCONFIG_BCM_7114) || defined(HND_ROUTER)
+#if defined(RTCONFIG_BCM7) || defined(RTCONFIG_BCM_7114) || defined(HND_ROUTER) || defined(RTCONFIG_HND_ROUTER_AX)
 	if (!nvram_match(strcat_r(prefix, "mode", tmp), "wds")) {
 		if (wl_get_scan_results_escan(name, chanspec) == NULL) {
 			return 0;
@@ -4867,7 +4998,7 @@ wl_scan(int eid, webs_t wp, int argc, char_t **argv, int unit)
 
 	if (list->count == 0)
 		return 0;
-#if !(defined(RTCONFIG_BCM7) || defined(RTCONFIG_BCM_7114) || defined(HND_ROUTER))
+#if !(defined(RTCONFIG_BCM7) || defined(RTCONFIG_BCM_7114) || defined(HND_ROUTER) || defined(RTCONFIG_HND_ROUTER_AX))
 	else if (list->version != WL_BSS_INFO_VERSION
 			&& list->version != LEGACY_WL_BSS_INFO_VERSION
 #ifdef RTCONFIG_BCMWL6
@@ -5030,7 +5161,11 @@ ej_wl_auth_psta(int eid, webs_t wp, int argc, char_t **argv)
 	snprintf(prefix, sizeof(prefix), "wl%d_", unit);
 
 	if (!nvram_match(strcat_r(prefix, "mode", tmp), "psta") &&
-	    !nvram_match(strcat_r(prefix, "mode", tmp), "psr"))
+	    !nvram_match(strcat_r(prefix, "mode", tmp), "psr")
+#ifdef RTCONFIG_HND_ROUTER_AX
+	    && !nvram_match(strcat_r(prefix, "mode", tmp), "wet")
+#endif
+	)
 		goto PSTA_ERR;
 
 	name = nvram_safe_get(strcat_r(prefix, "ifname", tmp));
@@ -5079,7 +5214,11 @@ ej_wl_auth_psta(int eid, webs_t wp, int argc, char_t **argv)
 	free(mac_list);
 PSTA_ERR:
 	if (nvram_match(strcat_r(prefix, "mode", tmp), "psta") ||
-	    nvram_match(strcat_r(prefix, "mode", tmp), "psr")) {
+	    nvram_match(strcat_r(prefix, "mode", tmp), "psr")
+#ifdef RTCONFIG_HND_ROUTER_AX
+            || nvram_match(strcat_r(prefix, "mode", tmp), "wet")
+#endif
+	) {
 		if (psta == 1)
 		{
 			if (psta_debug) dbg("connected\n");

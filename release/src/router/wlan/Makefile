@@ -128,7 +128,7 @@ all: $(WLANAPP_DIRS)
 endif
 else
 all:
-	-cp -f $(TOP)/wlan/nvram/$(PRBM_DIR)/libnvram.so nvram/
+	-cp -f $(TOP_PLATFORM)/wlan/nvram/$(PRBM_DIR)/libnvram.so nvram/
 endif
 install:
 	@echo done
@@ -361,8 +361,8 @@ nvram:
 ifneq ($(PREBUILT_BCMBIN),1)
 	$(MAKE) -C $@ $(BUILD_NVRAM)
 else
-	-cp -f $(TOP)/wlan/nvram/$(PRBM_DIR)/libnvram.so nvram/
-	-cp -f $(TOP)/wlan/nvram/$(PRBM_DIR)/nvram nvram/
+	-cp -f $(TOP_PLATFORM)/wlan/nvram/$(PRBM_DIR)/libnvram.so nvram/
+	-cp -f $(TOP_PLATFORM)/wlan/nvram/$(PRBM_DIR)/nvram nvram/
 	$(MAKE) -C $@ all
 endif
 else

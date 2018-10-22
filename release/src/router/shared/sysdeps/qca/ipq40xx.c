@@ -740,6 +740,7 @@ static void config_ipq40xx_LANWANPartition(int type)
 			ipq40xx_vlan_set(vlan++, 0, (wan_mask      | CPU_PORT_WAN_MASK), wan_mask);
 		if (wans_lan_mask)
 			ipq40xx_vlan_set(vlan++, 0, (wans_lan_mask | CPU_PORT_WAN_MASK), wans_lan_mask);
+		edma_group_mask_to_bmp(1, wan_mask);
 	}
 }
 

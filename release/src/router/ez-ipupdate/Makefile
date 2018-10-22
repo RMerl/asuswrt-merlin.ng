@@ -101,9 +101,9 @@ CFLAGS += -I$(SRCBASE)/include -I$(TOP)/shared -DASUS_DDNS -DHAVE_STRING_H
 ifneq ($(HND_ROUTER),y)
 CFLAGS += -D_LIBC
 endif
-LDFLAGS += -L$(TOP)/shared -lshared -L$(TOP)/nvram${BCMEX}${EX7} -lnvram 
+LDFLAGS += -L$(TOP)/shared -lshared -L$(TOP_PLATFORM)/nvram${BCMEX}${EX7} -lnvram 
 ifeq ($(HND_ROUTER),y)
-LDFLAGS += -L$(TOP)/wlcsm -lwlcsm
+LDFLAGS += -L$(TOP_PLATFORM)/wlcsm$(EXHND) -lwlcsm
 endif
 ifeq ($(RTCONFIG_HTTPS),y)
 CFLAGS += -I$(TOP)/mssl -I$(TOP)/openssl/include -DHAVE_SSL

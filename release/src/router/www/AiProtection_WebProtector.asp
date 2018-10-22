@@ -67,7 +67,7 @@ var curState = '<% nvram_get("wrs_enable"); %>';
 function initial(){
 	show_menu();
 	//	http://www.asus.com/support/FAQ/1008720/
-	httpApi.faqURL("faq", "1008720", "https://www.asus.com", "/support/FAQ/");
+	httpApi.faqURL("1008720", function(url){document.getElementById("faq").href=url;});
 	translate_category_id();
 	genMain_table();
 	if('<% nvram_get("wrs_enable"); %>' == 1)

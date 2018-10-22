@@ -97,6 +97,7 @@
 #define SCSI_MOD	"scsi_mod"
 #define SD_MOD		"sd_mod"
 #define SG_MOD		"sg"
+#define UAS_MOD		"uas"
 #ifdef LINUX26
 #define USBOHCI_MOD	"ohci-hcd"
 #define USBUHCI_MOD	"uhci-hcd"
@@ -251,6 +252,14 @@ extern void start_envrams(void);
 extern int chk_envrams_proc(void);
 #endif
 extern int ate_run_arpstrom(void);
+#if defined(RTCONFIG_HND_ROUTER_AX)
+extern void ate_stress_pkteng(void);
+extern void ate_temperature_record(void);
+extern void wl_driver_mode_update(void);
+#ifdef RTCONFIG_EXTPHY_BCM84880
+void config_ext_wan_port();
+#endif
+#endif
 #ifdef BLUECAVE
 extern int setCentralLedLv(int lv);
 #endif
@@ -547,7 +556,7 @@ extern void reset_psr_hwaddr();
 #ifdef RTCONFIG_BCM_7114
 extern void ldo_patch();
 #endif
-#if defined(RTCONFIG_BCM7) || defined(RTCONFIG_BCM_7114) || defined(HND_ROUTER)
+#if defined(RTCONFIG_BCM7) || defined(RTCONFIG_BCM_7114) || defined(HND_ROUTER) || defined(RTCONFIG_HND_ROUTER_AX)
 extern int wl_channel_valid(char *wif, int channel);
 extern int wl_subband(char *wif, int idx);
 #endif
@@ -556,7 +565,7 @@ extern void check_4366_dummy(void);
 extern void check_4366_fabid(void);
 #endif
 extern void wl_dfs_radarthrs_config(char *ifname, int unit);
-#if defined(RTCONFIG_BCM7) || defined(RTCONFIG_BCM_7114) || defined(HND_ROUTER)
+#if defined(RTCONFIG_BCM7) || defined(RTCONFIG_BCM_7114) || defined(HND_ROUTER) || defined(RTCONFIG_HND_ROUTER_AX)
 extern int wlcscan_core_escan(char *ofile, char *wif);
 #endif
 extern int setRegrev_2G(const char *regrev);
@@ -620,6 +629,7 @@ extern int wait_to_forward_state(char *ifname);
 #endif
 #ifdef RTCONFIG_BCMWL6
 extern int hw_vht_cap();
+extern int hw_he_cap();
 #endif
 extern int wl_control_channel(int unit);
 #ifdef RTCONFIG_AMAS
@@ -628,6 +638,9 @@ extern int unset_amas_bdl(void);
 extern int get_amas_bdl(void);
 #if defined(RTCONFIG_BCMWL6) || defined(RTCONFIG_LANTIQ)
 extern int no_need_obd(void);
+extern int no_need_obdeth(void);
+#endif
+#if defined(RTCONFIG_ETHOBD)
 extern int no_need_obdeth(void);
 #endif
 extern int wait_wifi_ready(void);
@@ -1051,6 +1064,7 @@ extern void erase_nvram(void);
 extern int init_toggle(void);
 extern void btn_check(void);
 extern int watchdog_main(int argc, char *argv[]);
+extern int xtop_main(int argc, char *argv[]);
 extern int watchdog02_main(int argc, char *argv[]);
 #ifdef SW_DEVLED
 extern int sw_devled_main(int argc, char *argv[]);
@@ -1159,6 +1173,9 @@ extern int mssid_mac_validate(const char *macaddr);
 extern int setup_dnsmq(int mode);
 #endif
 extern int rand_seed_by_time(void);
+char *get_wpa_supplicant_pidfile(const char *ifname, char *buf, int size);
+void kill_wifi_wpa_supplicant(int unit);
+
 
 // usb.c
 #if defined(RTCONFIG_OPENPLUS_TFAT) \
@@ -1426,6 +1443,10 @@ extern void stop_eventd(void);
 extern int start_appeventd(void);
 extern void stop_appeventd(void);
 #endif
+#ifdef BCM_CEVENTD
+extern int start_ceventd(void);
+extern void stop_ceventd(void);
+#endif
 extern int start_eapd(void);
 extern void stop_eapd(void);
 extern int start_nas(void);
@@ -1438,7 +1459,6 @@ extern void set_acs_ifnames();
 extern int stop_psta_monitor();
 extern int start_psta_monitor();
 #endif
-extern int wl_igs_enabled(void);
 #ifdef RTCONFIG_AMAS
 extern void stop_obd(void);
 extern void start_obd(void);

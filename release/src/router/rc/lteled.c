@@ -88,6 +88,15 @@ int lteled_main(int argc, char **argv)
 			continue;
 		}
 
+#if defined(RTCONFIG_WPS_ALLLED_BTN)
+		if (nvram_match("AllLED", "0")) {
+			state = -1;
+			percent = 0;
+			old_percent = -100;
+			continue;
+		}
+#endif
+
 		if (lighting_time == 0 && --cnt <= 0)
 		{ //every 3 seconds
 			old_state = state;

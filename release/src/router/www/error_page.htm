@@ -242,6 +242,7 @@ var wanauxstate = -1;
 var isSupport = function(_ptn){return ('<% nvram_get("rc_support"); %>'.search(_ptn) == -1) ? false : true;}
 var tmo_support = isSupport("tmo");
 var dsl_support = isSupport("dsl");
+var gobi_support = isSupport("gobi");
 
 //Dual WAN unit
 var wans_dualwan_orig = '<% nvram_get("wans_dualwan"); %>';
@@ -524,10 +525,13 @@ function detect_router(){
 
 function detect_general(){
 	if(wans_flag){		//Dual WAN
-		if(wans_dualwan_orig.split(" ")[0].toUpperCase == "USB"){
-			top.location.href = '/Advanced_Modem_Content.asp';
+		if(wans_dualwan_orig.split(" ")[0].toUpperCase() == "USB"){
+			if(gobi_support)
+				top.location.href = '/Advanced_MobileBroadband_Content.asp';
+			else
+				top.location.href = '/Advanced_Modem_Content.asp';
 		}else if(dsl_support){
-			if(wans_dualwan_orig.split(" ")[0].toUpperCase == "WAN" || wans_dualwan_orig.split(" ")[0].toUpperCase == "LAN")
+			if(wans_dualwan_orig.split(" ")[0].toUpperCase() == "WAN" || wans_dualwan_orig.split(" ")[0].toUpperCase() == "LAN")
 				top.location.href = '/Advanced_WAN_Content.asp';
 			else
 				top.location.href = '/Advanced_DSL_Content.asp';
@@ -538,6 +542,8 @@ function detect_general(){
 	else{		//Single WAN
 		if(dsl_support)                 
 			top.location.href = '/Advanced_DSL_Content.asp';
+		else if(wans_dualwan_orig.split(" ")[0].toUpperCase() == "USB")
+			top.location.href = '/Advanced_MobileBroadband_Content.asp';
 		else if(sw_mode == 3)
 			top.location.href = '/';
 		else

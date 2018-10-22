@@ -1,5 +1,6 @@
 include ../common.mak
 include $(SRCBASE)/.config
+include ../.config
 
 CFLAGS += -Os -Wall $(EXTRACFLAGS) -fPIC
 #CFLAGS += $(PRIVATE_EXTRACFLAGS)
@@ -20,6 +21,12 @@ CFLAGS += -I$(HND_SRC)/shared/opensource/include/bcm963xx
 #CFLAGS += -I$(TOP)/ethswctl
 CFLAGS += -I$(HND_SRC)/userspace/private/include
 #LDFLAGS += -L$(TOP)/ethswctl_lib -lethswctl
+ifeq ($(HND_ROUTER_AX),y)
+CFLAGS  += -DWL11AC_80P80 -DWL11AC_160
+CFLAGS  += -I$(SRCBASE)/include -I$(SRCBASE)/../components/wlioctl/include -I$(SRCBASE)/../components/proto/include
+CFLAGS  += -I$(SRCBASE)/shared/bcmwifi/include -I $(SRCBASE)/../components/math/include/
+CFLAGS += -I$(SRCBASE)/wl/sys
+endif
 endif
 CFLAGS += -D__EXPORTED_HEADERS__
 endif
@@ -91,6 +98,10 @@ ifeq ($(RTCONFIG_BCM7)$(RTCONFIG_HSPOT),y)
 CFLAGS += -DD11AC_IOTYPES
 endif
 
+ifeq ($(RTCONFIG_BCM_CEVENTD),y)
+CFLAGS += -DBCM_CEVENT
+endif
+
 ifeq ($(RTCONFIG_CONCURRENTREPEATER),y)
 SSID = $(subst -,,$(BUILD_NAME))
 CFLAGS += -DDEF_SSID_2G=\"ASUS_$(SSID)\" -DDEF_SSID_5G=\"ASUS_$(SSID)_5G\"
@@ -102,6 +113,10 @@ endif
 
 ifeq ($(BUILD_NAME), RT-N10P_V3)
 CFLAGS += -DRTN10P_V3
+endif
+
+ifeq ($(RTCONFIG_RGBLED),y)
+CFLAGS += -I$(TOP)/i2c-tools-3.1.2/include/linux
 endif
 
 OBJS = shutils.o linux_timer.o defaults.o model.o rtstate.o boardapi.o
@@ -116,6 +131,9 @@ OBJS += bwdpi_utils.o
 OBJS += mac_name_tab.o
 OBJS += stun.o
 OBJS += scripts.o
+ifeq ($(RTCONFIG_RGBLED),y)
+OBJS += $(if $(wildcard aura_rgb.c),aura_rgb.o,prebuild/aura_rgb.o)
+endif
 OBJS += timer_utils.o
 ifeq ($(RTCONFIG_TRAFFIC_LIMITER),y)
 OBJS += tld_utils.o
@@ -145,7 +163,7 @@ OBJS += flash_mtd.o api-ralink.o
 ifeq ($(RTCONFIG_RALINK_RT3052),y)
 OBJS += ra3052.o
 endif
-ifeq ($(RTN14U)$(RTAC52U)$(RTAC51U)$(RTN11P)$(RTN300)$(RTN54U)$(RTAC1200HP)$(RTN56UB1)$(RTN56UB2)$(RTAC54U)$(RTAC1200GA1)$(RTAC1200GU)$(RPAC87)$(RTAC85U)$(RTN800HP),y)
+ifeq ($(RTN14U)$(RTAC52U)$(RTAC51U)$(RTN11P)$(RTN300)$(RTN54U)$(RTAC1200HP)$(RTN56UB1)$(RTN56UB2)$(RTAC54U)$(RTAC1200GA1)$(RTAC1200GU)$(RPAC87)$(RTAC85U)$(RTAC85P)$(RTN800HP),y)
 CFLAGS += -DRA_ESW
 OBJS += mt7620.o
 else
@@ -183,7 +201,7 @@ CFLAGS += -I$(LINUXDIR)/drivers/char/rtl8370mb
 OBJS += rtl8370mb.o mdio.o
 endif
 else ifeq ($(RTCONFIG_LANTIQ),y)
-OBJS += flash_mtd.o
+OBJS += flash_mtd.o api-lantiq.o lantiq.o
 else
 # Broadcom
 OBJS += wl.o wl_linux.o
@@ -307,14 +325,15 @@ else ifeq ($(RTCONFIG_ALPINE),y)
 OBJS += private.o
 vpath %.c sysdeps sysdeps/alpine
 else ifeq ($(RTCONFIG_LANTIQ),y)
-OBJS	+= $(if $(wildcard sysdeps/api-lantiq.c),api-lantiq.o,prebuild/api-lantiq.o)
-OBJS	+= $(if $(wildcard sysdeps/lantiq/lantiq.c),lantiq.o,prebuild/lantiq.o)
-OBJS	+= $(if $(wildcard sysdeps/lantiq/private.c),private.o,prebuild/private.o)
+OBJS += private.o
 vpath %.c sysdeps/lantiq
 else ifeq ($(RTCONFIG_QTN),y)
 vpath %.c sysdeps sysdeps/broadcom sysdeps/qtn $(SRCBASE)/shared/ $(SRCBASE)/shared/bcmwifi/src $(WLAN_StdSrcDirsA) $(WLAN_ComponentSrcDirs) $(TOP)/libqcsapi_client/qcsapi_rpc_common/client  $(TOP)/libqcsapi_client/qcsapi_rpc_common/common
 else
 vpath %.c sysdeps/broadcom  $(SRCBASE)/shared/bcmwifi/src
+ifeq ($(RTCONFIG_HND_ROUTER_AX),y)
+OBJS += bcmxtlv.o bcmutils.o
+endif
 endif
 
 ifeq ($(RTCONFIG_SW_HW_AUTH),y)

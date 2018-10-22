@@ -60,7 +60,7 @@ var support_dual_wan_unit_flag = (mtwancfg_support && dual_wan_lb_status) ? true
 function initial(){
 	show_menu();
 	// https://www.asus.com/support/FAQ/114093/
-	httpApi.faqURL("faq", "114093", "https://www.asus.com", "/support/FAQ/");
+	httpApi.faqURL("114093", function(url){document.getElementById("faq").href=url;});
 	//parse nvram to array
 	var parseNvramToArray = function(oriNvram) {
 		var parseArray = [];

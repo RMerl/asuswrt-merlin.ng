@@ -1063,7 +1063,7 @@ char *get_default_ssid(int unit, int subunit)
 	}
 
 	/* Adjust postfix for different conditions. */
-#ifdef GTAC5300
+#if defined(GTAC5300) || defined(GTAX11000)
 	post_5g = "";
 	post_5g2 = "_Gaming";
 #elif !defined(RTCONFIG_NEWSSID_REV2) && !defined(RTCONFIG_SINGLE_SSID)

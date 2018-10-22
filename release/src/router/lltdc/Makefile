@@ -7,9 +7,9 @@ LD= $(CC)
 CFLAGS += -I$(TOP)/shared
 CFLAGS += -I$(SRCBASE)/include
 
-LDFLAGS += -L$(TOP)/shared -lshared -L$(TOP)/nvram${BCMEX}${EX7} -lnvram
+LDFLAGS += -L$(TOP)/shared -lshared -L$(TOP_PLATFORM)/nvram${BCMEX}${EX7} -lnvram
 ifeq ($(HND_ROUTER),y)
-LDFLAGS += -L$(TOP)/wlcsm -lwlcsm
+LDFLAGS += -L$(TOP_PLATFORM)/wlcsm$(EXHND) -lwlcsm
 endif
 
 ifeq ($(RTCONFIG_BCMARM),y)

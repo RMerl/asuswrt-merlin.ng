@@ -198,13 +198,6 @@ function applyRule(){
 }
 
 function enableWPS(){
-	if(amesh_support && (isSwMode("rt") || isSwMode("ap"))) {
-		if(!AiMesh_confirm_msg("Wireless_WPS", document.form.wps_enable.value)) {
-			document.form.wps_enable.value = "1";
-			$('#radio_wps_enable').find('.iphone_switch').animate({backgroundPosition: 0}, "slow");
-			return;
-		}
-	}
 	document.form.action_script.value = "restart_wireless";
 	document.form.action_mode.value = "apply_new";
 	document.form.action_wait.value = "3";

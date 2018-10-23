@@ -1290,7 +1290,7 @@ function searchReadyOnBoarding() {
 		});
 	}
 	else {
-		var confirm_flag = confirm("<#AiMesh_FindNode_confirm_WPS#>");
+		var confirm_flag = confirm("<#AiMesh_FindNode_confirm_WPS#>\n<#WiFi_temp_unavailable#>");
 		if(confirm_flag) {
 			wps_enable_status = "1"
 			document.wps_form.submit();

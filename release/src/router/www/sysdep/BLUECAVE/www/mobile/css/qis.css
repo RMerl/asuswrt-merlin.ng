@@ -178,6 +178,9 @@ a{
 	border-color: #007AFF;
 	color: #333332;
 }
+#welcome{
+	min-height: 750px;
+}
 #welcomeTitle{
 	font-family:Uni Sans Thin, Helvetica W01 Light, Arial;
 	font-size:5em;
@@ -243,7 +246,7 @@ a{
 	color: #FFF;
 	margin: 30px 0 20px 45px;
 	text-align: left;
-	width: 90%;
+	width: 85%;
 	max-width: 1000px;
 }
 .inputTitle{
@@ -390,6 +393,12 @@ a{
 	font-size: 1.4em;
 	font-style: italic;
 }
+.hint_yellow{
+	color: #FC0;
+	margin-top: -25px;
+	font-size: 1.4em;
+	font-style: italic;
+}
 .selectorHint{
 	margin-top: 10px;
 	margin-left: 35px;
@@ -518,6 +527,87 @@ a{
 .ap_narrow{
 	width: 20px;
 	height: 32px;
+}
+.ap_title_container{
+	font-size: 1.75em;
+	color: #B8D8FF;
+	padding-bottom: 10px;
+	border-bottom: 1px solid #FFFFFF;
+	margin-left: 35px;
+}
+.ap_title_text{
+	width: 60%;
+	float: left;
+}
+.ap_title_icon{
+	width: 32px;
+	height: 32px;
+	margin-left: 5%;
+	float: right;
+	background-repeat: no-repeat;
+	background-position-x: right;
+	cursor: pointer;
+	margin-right: 28px;
+}
+.sort_background{
+	width: 100%;
+	height: 90%;
+	position: absolute;
+	top: 80px;
+	background-color: rgba(0, 0, 0, 0.7);
+	display:none;
+}
+.sort_field{
+	width: 100%;
+	height: auto;
+	background: rgba(64, 64, 64, 0.9);
+	position: fixed;
+	border-radius: 4px 4px 0px 0px;
+	bottom: 105px;
+	display: none;
+}
+.sort_field > table{
+	border-spacing: 0;
+	width: 100%;
+}
+.sort_field > table > tbody > tr > td{
+	padding: 0;
+	width: 96px;
+}
+.sort_field > table > tbody > tr > td:first-child{
+	width: initial;
+}
+.ap_sort_text{
+	width: 284px;
+	font-family: HelveticaNeueW10-45Ligh,Helvetica,Arial;
+	font-size: 2.5em;
+	color: #FFF;
+	margin: 38px 0 38px 46px;
+}
+.ap_sort_icon_background{
+	width: 96px;
+	height: 96px;
+	background: #FFF;
+	border-radius: 20px;
+	margin-right: 56px;
+	position: relative;
+	cursor: pointer;
+}
+.ap_sort_icon_container{
+	position: absolute;
+	top: 0;
+	bottom: 0;
+	left: 0;
+	right: 0;
+	margin: auto;
+	width: 64px;
+	height: 64px;
+	background-size: 64px 64px;
+}
+.ap_sort_line{
+	height: 1px;
+	width: 100%;
+	background: rgba(255,255,255,0.9);
 }
 .selectorContainer{
 	border-bottom: 1px solid #999;
@@ -815,7 +905,7 @@ a{
 		width: 650px;
 	}
 	.tosDesc{
-		width: 80%;
+		width: 95%;
 	}
 	.textInput{
 		max-width: 1000px;
@@ -872,6 +962,13 @@ a{
 	}
 	.narrowContainer{
 		padding-right: 0px;
+	}
+	.ap_title_icon{
+		margin-right: 0px;
+	}
+	.sort_field{
+		top: 0%;
+		bottom: initial;
 	}
 	@media screen and (max-height: 1000px){
 		.tableContainerIndex{ 

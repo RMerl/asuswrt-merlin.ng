@@ -1,0 +1,3 @@
+This directory contains the files for the NOTRACK replication protocol. This
+protocol provides best effort delivery. Therefore, it is unreliable unless
+that you select TCP-based state-synchronization.

@@ -19,37 +19,52 @@
  */
 
 #include "config.h"
-#include "libavformat/avformat.h"
+#include "libavutil/thread.h"
+#include "libavformat/internal.h"
 #include "avdevice.h"
 
-#define REGISTER_OUTDEV(X,x) { \
-          extern AVOutputFormat x##_muxer; \
-          if(CONFIG_##X##_OUTDEV)  av_register_output_format(&x##_muxer); }
-#define REGISTER_INDEV(X,x) { \
-          extern AVInputFormat x##_demuxer; \
-          if(CONFIG_##X##_INDEV)   av_register_input_format(&x##_demuxer); }
-#define REGISTER_INOUTDEV(X,x)  REGISTER_OUTDEV(X,x); REGISTER_INDEV(X,x)
+/* devices */
+extern AVInputFormat  ff_alsa_demuxer;
+extern AVOutputFormat ff_alsa_muxer;
+extern AVInputFormat  ff_android_camera_demuxer;
+extern AVInputFormat  ff_avfoundation_demuxer;
+extern AVInputFormat  ff_bktr_demuxer;
+extern AVOutputFormat ff_caca_muxer;
+extern AVInputFormat  ff_decklink_demuxer;
+extern AVOutputFormat ff_decklink_muxer;
+extern AVInputFormat  ff_libndi_newtek_demuxer;
+extern AVOutputFormat ff_libndi_newtek_muxer;
+extern AVInputFormat  ff_dshow_demuxer;
+extern AVInputFormat  ff_fbdev_demuxer;
+extern AVOutputFormat ff_fbdev_muxer;
+extern AVInputFormat  ff_gdigrab_demuxer;
+extern AVInputFormat  ff_iec61883_demuxer;
+extern AVInputFormat  ff_jack_demuxer;
+extern AVInputFormat  ff_kmsgrab_demuxer;
+extern AVInputFormat  ff_lavfi_demuxer;
+extern AVInputFormat  ff_openal_demuxer;
+extern AVOutputFormat ff_opengl_muxer;
+extern AVInputFormat  ff_oss_demuxer;
+extern AVOutputFormat ff_oss_muxer;
+extern AVInputFormat  ff_pulse_demuxer;
+extern AVOutputFormat ff_pulse_muxer;
+extern AVOutputFormat ff_sdl2_muxer;
+extern AVInputFormat  ff_sndio_demuxer;
+extern AVOutputFormat ff_sndio_muxer;
+extern AVInputFormat  ff_v4l2_demuxer;
+extern AVOutputFormat ff_v4l2_muxer;
+extern AVInputFormat  ff_vfwcap_demuxer;
+extern AVInputFormat  ff_xcbgrab_demuxer;
+extern AVOutputFormat ff_xv_muxer;
+
+/* external libraries */
+extern AVInputFormat  ff_libcdio_demuxer;
+extern AVInputFormat  ff_libdc1394_demuxer;
+
+#include "libavdevice/outdev_list.c"
+#include "libavdevice/indev_list.c"
 
 void avdevice_register_all(void)
 {
-    static int initialized;
-
-    if (initialized)
-        return;
-    initialized = 1;
-
-    /* devices */
-    REGISTER_INOUTDEV (ALSA, alsa);
-    REGISTER_INOUTDEV (AUDIO_BEOS, audio_beos);
-    REGISTER_INDEV    (BKTR, bktr);
-    REGISTER_INDEV    (DV1394, dv1394);
-    REGISTER_INDEV    (JACK, jack);
-    REGISTER_INOUTDEV (OSS, oss);
-    REGISTER_INDEV    (V4L2, v4l2);
-    REGISTER_INDEV    (V4L, v4l);
-    REGISTER_INDEV    (VFWCAP, vfwcap);
-    REGISTER_INDEV    (X11_GRAB_DEVICE, x11_grab_device);
-
-    /* external libraries */
-    REGISTER_INDEV    (LIBDC1394, libdc1394);
+    avpriv_register_devices(outdev_list, indev_list);
 }

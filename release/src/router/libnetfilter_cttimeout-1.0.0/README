@@ -1,0 +1,57 @@
+= cttimeout: timeout policy tuning for Netfilter/conntrack =
+
+This infrastructure allows you to define fine-grain timeout
+policies per flow. Basically, from user-space, you can create
+timeout policy objects via nfct_timeout_alloc(), set the
+policy attributes, via nfct_timeout_*_attr_set(), and then
+build the ctnetlink message to communicate this new timeout
+policy to the kernel.
+
+ctnetlink keeps a list of existing policies that are identified
+by one name. Timeout policies can be attached to flows via the
+iptables CT target.
+
+This is useful in case you want to reduce the timeout of TCP
+Established state to 3000 seconds instead of default 432000
+seconds for certain flows. The infrastructure allows fine
+tuning of all existing protocol trackers and even modifying
+the timeout for several states for one given protocol.
+
+This new infrastructure uses libmnl, thus, libnetfilter_conntrack
+remains in intermediate state, meaning that it depends on
+libnfnetlink and libmnl. This should not be a problem since
+we'll require this dual support during the transition to the
+new libnetfilter_conntrack API.
+
+Under examples/ directory, you can find examples on how to
+create new timeout policies, delete them and to retrieve the
+existing list of policies.
+
+1) You can create one dummy timeout policy:
+examples# ./nfct-timeout-add test 2 6
+
+2) You can retrieve the policy that is known by `test':
+
+examples# ./nfct-timeout-get test
+.test = {
+        .l3proto = 2,
+        .l4proto = 6,
+        .policy = {
+                .SYN_SENT = 100,
+                .SYN_RECV = 120,
+                .ESTABLISHED = 60,
+                .FIN_WAIT = 432000,
+                .CLOSE_WAIT = 120,
+                .LAST_ACK = 60,
+                .TIME_WAIT = 30,
+                .CLOSE = 120,
+                .SYN_SENT2 = 10,
+        },
+};
+
+3) You may want to retrieve all timeout policies:
+
+examples# ./nfct-timeout-get
+
+The kernel-space part is planned to be available since Linux
+kernel >= 3.4.0.

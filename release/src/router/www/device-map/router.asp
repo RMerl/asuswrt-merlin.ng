@@ -13,6 +13,7 @@
 <script type="text/javascript" src="/general.js"></script>
 <script type="text/javascript" src="/state.js"></script>
 <script type="text/javascript" src="/js/jquery.js"></script>
+<script type="text/javascript" src="/switcherplugin/jquery.iphone-switch.js"></script>
 <style>
 .cancel{
 	border: 2px solid #898989;
@@ -112,6 +113,11 @@
 }
 
 #slider .ui-slider-handle { border-color: #3367d6; }	
+.dwb_hint {
+	color:#FC0;
+	margin-left:5px;
+	font-size:13px;
+}
 </style>
 <script>
 if(parent.location.pathname !== '<% abs_networkmap_page(); %>' && parent.location.pathname !== "/") top.location.href = "../"+'<% networkmap_page(); %>';
@@ -263,14 +269,19 @@ function initial(){
 	if(parent.smart_connect_support && (parent.isSwMode("rt") || parent.isSwMode("ap"))){
 		var value = new Array();
 		var desc = new Array();
-
-		if(wl_info.band2g_support && wl_info.band5g_support && wl_info.band5g_2_support){
-			desc = ["none", "Tri-Band Smart Connect", "5GHz Smart Connect"];
-			value = ["0", "1", "2"];
-		}
-		else if(wl_info.band2g_support && wl_info.band5g_support){
+		if(isSupport("triband") && dwb_info.mode) {
 			desc = ["none", "Dual-Band Smart Connect"];
 			value = ["0", "1"];
+		}
+		else {
+			if(wl_info.band2g_support && wl_info.band5g_support && wl_info.band5g_2_support){
+				desc = ["none", "Tri-Band Smart Connect", "5GHz Smart Connect"];
+				value = ["0", "1", "2"];
+			}
+			else if(wl_info.band2g_support && wl_info.band5g_support){
+				desc = ["none", "Dual-Band Smart Connect"];
+				value = ["0", "1"];
+			}
 		}
 		add_options_x2(document.form.smart_connect_t, desc, value, document.form.smart_connect_x.value);
 
@@ -348,6 +359,16 @@ function initial(){
 			}
 		}, 10);
 	}
+
+	$("#tr_dwb_info").css("display", "none");
+	if(isSupport("triband") && dwb_info.mode) {
+		if(dwb_info.band == wl_unit) {
+			$("#tr_wl_info").css("display", "none");
+			$("#apply_tr").css("display", "none");
+			$("#tr_dwb_info").css("display", "");
+			$("#tr_dwb_info").find(".dwb_hint").html("" + wl_nband_title[wl_unit] + " is now used as dedicated WiFi backhaul under AiMesh mode.");
+		}
+	}
 }
 
 function register_event(){
@@ -389,6 +410,9 @@ function tabclickhandler(wl_unit){
 	if(wl_unit == 'status'){
 		location.href = "router_status.asp";
 	}
+	/*else if (wl_unit == "compatibility") {
+		location.href = "compatibility.asp";
+	}*/
 	else{
 		if(parent.sw_mode == 2 && parent.wlc_express != 0){
 			document.form.wl_subunit.value = 1;
@@ -781,16 +805,26 @@ function manualSetup(){
 function tab_reset(v){
 	var tab_array1 = document.getElementsByClassName("tab_NW");
 	var tab_array2 = document.getElementsByClassName("tabclick_NW");
-
 	var tab_width = Math.floor(270/(parent.wl_info.wl_if_total+1));
+
+	/*if (Bcmwifi_support && band5g_11ax_support) {
+		tab_width = "60";
+	}*/
+
 	var i = 0;
 	while(i < tab_array1.length){
-		tab_array1[i].style.width=tab_width+'px';
+		/*if(tab_array1[i].id == "t_compatibility"){
+			tab_array1[i].style.width = '90px';
+		}
+		else{*/
+			tab_array1[i].style.width = tab_width + 'px';
+		//}
+		
 		tab_array1[i].style.display = "";
 	i++;
 	}
 	if(typeof tab_array2[0] != "undefined"){
-		tab_array2[0].style.width=tab_width+'px';
+		tab_array2[0].style.width = tab_width + 'px';
 		tab_array2[0].style.display = "";
 	}
 	if(v == 0){
@@ -807,10 +841,15 @@ function tab_reset(v){
 			document.getElementById("t3").style.display = "none";
 		}
 	}else if(v == 1){	//Smart Connect
-		if(parent.wl_info.band2g_support && parent.wl_info.band5g_support && parent.wl_info.band5g_2_support)
-			document.getElementById("span0").innerHTML = "2.4GHz, 5GHz-1 and 5GHz-2";
-		else if(parent.wl_info.band2g_support && parent.wl_info.band5g_support)
+		if(isSupport("triband") && dwb_info.mode) {
 			document.getElementById("span0").innerHTML = "2.4GHz and 5GHz";
+		}
+		else {
+			if(parent.wl_info.band2g_support && parent.wl_info.band5g_support && parent.wl_info.band5g_2_support)
+				document.getElementById("span0").innerHTML = "2.4GHz, 5GHz-1 and 5GHz-2";
+			else if(parent.wl_info.band2g_support && parent.wl_info.band5g_support)
+				document.getElementById("span0").innerHTML = "2.4GHz and 5GHz";
+		}
 		
 		document.getElementById("t1").style.display = "none";
 		document.getElementById("t2").style.display = "none";				
@@ -902,33 +941,38 @@ function checkWLReady(){
 <input type="hidden" name="wl_unit" value="<% nvram_get("wl_unit"); %>">
 <input type="hidden" name="wl_subunit" value="-1">
 <input type="hidden" name="smart_connect_x" value="<% nvram_get("smart_connect_x"); %>">
-
 <table width="100%" border="0" cellpadding="0" cellspacing="0" id="rt_table">
 <tr>
 	<td>		
 		<table width="100px" border="0" align="left" style="margin-left:8px;" cellpadding="0" cellspacing="0">
 			<td>
-				<div id="t0" class="tab_NW" align="center" style="font-weight: bolder;display:none; margin-right:2px; width:90px;" onclick="tabclickhandler(0)">
+				<div id="t0" class="tab_NW" align="center" style="font-weight: bolder;display:none; margin-right:2px;" onclick="tabclickhandler(0)">
 					<span id="span0" style="cursor:pointer;font-weight: bolder;">2.4GHz</span>
 				</div>
 			</td>
 			<td>
-				<div id="t1" class="tab_NW" align="center" style="font-weight: bolder;display:none; margin-right:2px; width:90px;" onclick="tabclickhandler(1)">
+				<div id="t1" class="tab_NW" align="center" style="font-weight: bolder;display:none; margin-right:2px;" onclick="tabclickhandler(1)">
 					<span id="span1" style="cursor:pointer;font-weight: bolder;">5GHz</span>
 				</div>
 			</td>
 			<td>
-				<div id="t2" class="tab_NW" align="center" style="font-weight: bolder;display:none; margin-right:2px; width:90px;" onclick="tabclickhandler(2)">
+				<div id="t2" class="tab_NW" align="center" style="font-weight: bolder;display:none; margin-right:2px;" onclick="tabclickhandler(2)">
 					<span id="span2" style="cursor:pointer;font-weight: bolder;">5GHz-2</span>
 				</div>
 			</td>
 			<td>
-				<div id="t3" class="tab_NW" align="center" style="font-weight: bolder;display:none; margin-right:2px; width:90px;" onclick="tabclickhandler(3)">
+				<div id="t3" class="tab_NW" align="center" style="font-weight: bolder;display:none; margin-right:2px;" onclick="tabclickhandler(3)">
 					<span id="span3" style="cursor:pointer;font-weight: bolder;">60GHz</span>
 				</div>
 			</td>
+			<!--td>
+				<div id="t_compatibility" class="tab_NW" align="center" style="font-weight: bolder; margin-right:2px;"
+				 onclick="tabclickhandler('compatibility')">
+					<span style="cursor:pointer;font-weight: bolder;">Compatibility</span>
+				</div>
+			</td-->
 			<td>
-				<div id="t_status" class="tab_NW" align="center" style="font-weight: bolder; margin-right:2px; width:90px;" onclick="tabclickhandler('status')">
+				<div id="t_status" class="tab_NW" align="center" style="font-weight: bolder; margin-right:2px;" onclick="tabclickhandler('status')">
 					<span id="span_status" style="cursor:pointer;font-weight: bolder;"><#Status_Str#></span>
 				</div>
 			</td>
@@ -936,7 +980,7 @@ function checkWLReady(){
 	</td>
 </tr>
 
-<tr>
+<tr id="tr_wl_info">
 	<td>
 		<table width="95%" border="1" align="center" cellpadding="4" cellspacing="0" class="table1px" id="WLnetworkmap_re" style="display:none">
 		  <tr>
@@ -1067,6 +1111,11 @@ function checkWLReady(){
 					<input id="applySecurity" type="button" class="button_gen" value="<#CTL_apply#>" onclick="submitForm();" >
     			</td>
   		</tr>
+		<tr id="tr_dwb_info" style="display:none;">
+			<td style="padding:5px 10px 5px 10px;border-bottom:5px #000 solid;">
+				<div class="dwb_hint" ></div>
+			</td>
+		</tr>
 		<tr id="led_tr" style="display:none">
 			<td>
 				<div>

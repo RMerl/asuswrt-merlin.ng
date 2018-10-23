@@ -3563,13 +3563,27 @@ int
 ej_wl_auth_psta(int eid, webs_t wp, int argc, char_t **argv)
 {
 	int retval = 0;
+	int psta = 0, psta_auth = 0;
 
-	if(nvram_match("wlc_state", "2"))	//connected
-		retval += websWrite(wp, "wlc_state=1;wlc_state_auth=0;");
+	if(nvram_match("wlc_state", "2")){	//connected
+		psta = 1;
+		psta_auth = 0;
 	//else if(?)				//authorization failed
 	//	retval += websWrite(wp, "wlc_state=2;wlc_state_auth=1;");
-	else					//disconnected
-		retval += websWrite(wp, "wlc_state=0;wlc_state_auth=0;");
+	}else{					//disconnected
+		psta = 0;
+		psta_auth = 0;
+	}
+
+	if(json_support){
+		retval += websWrite(wp, "{");
+		retval += websWrite(wp, "\"wlc_state\":\"%d\"", psta);
+		retval += websWrite(wp, ",\"wlc_state_auth\":\"%d\"", psta_auth);
+		retval += websWrite(wp, "}");
+	}else{
+		retval += websWrite(wp, "wlc_state=%d;", psta);
+		retval += websWrite(wp, "wlc_state_auth=%d;", psta_auth);
+	}
 
 	return retval;
 }

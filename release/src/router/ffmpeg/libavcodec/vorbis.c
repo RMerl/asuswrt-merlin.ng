@@ -20,13 +20,15 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#undef V_DEBUG
-//#define V_DEBUG
+/**
+ * @file
+ * Common code for Vorbis I encoder and decoder
+ * @author Denes Balatoni  ( dbalatoni programozo hu )
+ */
 
-#define ALT_BITSTREAM_READER_LE
+#include "libavutil/common.h"
+
 #include "avcodec.h"
-#include "get_bits.h"
-
 #include "vorbis.h"
 
 
@@ -51,45 +53,32 @@ unsigned int ff_vorbis_nth_root(unsigned int x, unsigned int n)
 // the two bits[p] > 32 checks should be redundant, all calling code should
 // already ensure that, but since it allows overwriting the stack it seems
 // reasonable to check redundantly.
-int ff_vorbis_len2vlc(uint8_t *bits, uint32_t *codes, uint_fast32_t num)
+int ff_vorbis_len2vlc(uint8_t *bits, uint32_t *codes, unsigned num)
 {
-    uint_fast32_t exit_at_level[33] = {
-        404, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-          0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+    uint32_t exit_at_level[33] = { 404 };
+    unsigned i, j, p, code;
 
-    uint_fast8_t i, j;
-    uint_fast32_t code, p;
-
-#ifdef V_DEBUG
-    GetBitContext gb;
-#endif
-
-    for (p = 0; (bits[p] == 0) && (p < num); ++p)
+    for (p = 0; (p < num) && (bits[p] == 0); ++p)
         ;
-    if (p == num) {
-//        av_log(vc->avccontext, AV_LOG_INFO, "An empty codebook. Heh?! \n");
+    if (p == num)
         return 0;
-    }
 
     codes[p] = 0;
     if (bits[p] > 32)
-        return 1;
+        return AVERROR_INVALIDDATA;
     for (i = 0; i < bits[p]; ++i)
-        exit_at_level[i+1] = 1 << i;
-
-#ifdef V_DEBUG
-    av_log(NULL, AV_LOG_INFO, " %d. of %d code len %d code %d - ", p, num, bits[p], codes[p]);
-    init_get_bits(&gb, (uint_fast8_t *)&codes[p], bits[p]);
-    for (i = 0; i < bits[p]; ++i)
-        av_log(NULL, AV_LOG_INFO, "%s", get_bits1(&gb) ? "1" : "0");
-    av_log(NULL, AV_LOG_INFO, "\n");
-#endif
+        exit_at_level[i+1] = 1u << i;
 
     ++p;
 
+    for (i = p; (i < num) && (bits[i] == 0); ++i)
+        ;
+    if (i == num)
+        return 0;
+
     for (; p < num; ++p) {
         if (bits[p] > 32)
-             return 1;
+             return AVERROR_INVALIDDATA;
         if (bits[p] == 0)
              continue;
         // find corresponding exit(node which the tree can grow further from)
@@ -97,33 +86,25 @@ int ff_vorbis_len2vlc(uint8_t *bits, uint32_t *codes, uint_fast32_t num)
             if (exit_at_level[i])
                 break;
         if (!i) // overspecified tree
-             return 1;
+             return AVERROR_INVALIDDATA;
         code = exit_at_level[i];
         exit_at_level[i] = 0;
         // construct code (append 0s to end) and introduce new exits
         for (j = i + 1 ;j <= bits[p]; ++j)
-            exit_at_level[j] = code + (1 << (j - 1));
+            exit_at_level[j] = code + (1u << (j - 1));
         codes[p] = code;
-
-#ifdef V_DEBUG
-        av_log(NULL, AV_LOG_INFO, " %d. code len %d code %d - ", p, bits[p], codes[p]);
-        init_get_bits(&gb, (uint_fast8_t *)&codes[p], bits[p]);
-        for (i = 0; i < bits[p]; ++i)
-            av_log(NULL, AV_LOG_INFO, "%s", get_bits1(&gb) ? "1" : "0");
-        av_log(NULL, AV_LOG_INFO, "\n");
-#endif
-
     }
 
     //no exits should be left (underspecified tree - ie. unused valid vlcs - not allowed by SPEC)
     for (p = 1; p < 33; p++)
         if (exit_at_level[p])
-            return 1;
+            return AVERROR_INVALIDDATA;
 
     return 0;
 }
 
-void ff_vorbis_ready_floor1_list(vorbis_floor1_entry * list, int values)
+int ff_vorbis_ready_floor1_list(AVCodecContext *avctx,
+                                vorbis_floor1_entry *list, int values)
 {
     int i;
     list[0].sort = 0;
@@ -147,6 +128,11 @@ void ff_vorbis_ready_floor1_list(vorbis_floor1_entry * list, int values)
     for (i = 0; i < values - 1; i++) {
         int j;
         for (j = i + 1; j < values; j++) {
+            if (list[i].x == list[j].x) {
+                av_log(avctx, AV_LOG_ERROR,
+                       "Duplicate value found in floor 1 X coordinates\n");
+                return AVERROR_INVALIDDATA;
+            }
             if (list[list[i].sort].x > list[list[j].sort].x) {
                 int tmp = list[i].sort;
                 list[i].sort = list[j].sort;
@@ -154,9 +140,10 @@ void ff_vorbis_ready_floor1_list(vorbis_floor1_entry * list, int values)
             }
         }
     }
+    return 0;
 }
 
-static inline void render_line_unrolled(intptr_t x, intptr_t y, int x1,
+static inline void render_line_unrolled(intptr_t x, int y, int x1,
                                         intptr_t sy, int ady, int adx,
                                         float *buf)
 {
@@ -168,14 +155,14 @@ static inline void render_line_unrolled(intptr_t x, intptr_t y, int x1,
         if (err >= 0) {
             err += ady - adx;
             y   += sy;
-            buf[x++] = ff_vorbis_floor1_inverse_db_table[y];
+            buf[x++] = ff_vorbis_floor1_inverse_db_table[av_clip_uint8(y)];
         }
-        buf[x] = ff_vorbis_floor1_inverse_db_table[y];
+        buf[x] = ff_vorbis_floor1_inverse_db_table[av_clip_uint8(y)];
     }
     if (x <= 0) {
         if (err + ady >= 0)
             y += sy;
-        buf[x] = ff_vorbis_floor1_inverse_db_table[y];
+        buf[x] = ff_vorbis_floor1_inverse_db_table[av_clip_uint8(y)];
     }
 }
 
@@ -185,14 +172,14 @@ static void render_line(int x0, int y0, int x1, int y1, float *buf)
     int adx = x1 - x0;
     int ady = FFABS(dy);
     int sy  = dy < 0 ? -1 : 1;
-    buf[x0] = ff_vorbis_floor1_inverse_db_table[y0];
+    buf[x0] = ff_vorbis_floor1_inverse_db_table[av_clip_uint8(y0)];
     if (ady*2 <= adx) { // optimized common case
         render_line_unrolled(x0, y0, x1, sy, ady, adx, buf);
     } else {
-        int base = dy / adx;
-        int x    = x0;
-        int y    = y0;
-        int err  = -adx;
+        int base  = dy / adx;
+        int x     = x0;
+        int y     = y0;
+        int err   = -adx;
         ady -= FFABS(base) * adx;
         while (++x < x1) {
             y += base;
@@ -201,13 +188,13 @@ static void render_line(int x0, int y0, int x1, int y1, float *buf)
                 err -= adx;
                 y   += sy;
             }
-            buf[x] = ff_vorbis_floor1_inverse_db_table[y];
+            buf[x] = ff_vorbis_floor1_inverse_db_table[av_clip_uint8(y)];
         }
     }
 }
 
 void ff_vorbis_floor1_render_list(vorbis_floor1_entry * list, int values,
-                                  uint_fast16_t *y_list, int *flag,
+                                  uint16_t *y_list, int *flag,
                                   int multiplier, float *out, int samples)
 {
     int lx, ly, i;

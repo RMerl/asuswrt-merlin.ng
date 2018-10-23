@@ -1036,7 +1036,7 @@ charshunt(ifd, ofd, record_file)
     pty_readable = stdin_readable = 1;
 
     ilevel = olevel = 0;
-    gettimeofday(&levelt, NULL);
+    get_time(&levelt);
     if (max_data_rate) {
 	max_level = max_data_rate / 10;
 	if (max_level < 100)
@@ -1085,7 +1085,7 @@ charshunt(ifd, ofd, record_file)
 	    int nbt;
 	    struct timeval now;
 
-	    gettimeofday(&now, NULL);
+	    get_time(&now);
 	    dt = (now.tv_sec - levelt.tv_sec
 		  + (now.tv_usec - levelt.tv_usec) / 1e6);
 	    nbt = (int)(dt * max_data_rate);

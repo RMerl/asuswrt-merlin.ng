@@ -1,5 +1,5 @@
 /*
- * Provides registration of all codecs, parsers and bitstream filters for libavcodec.
+ * Provide registration of all codecs, parsers and bitstream filters for libavcodec.
  * Copyright (c) 2002 Fabrice Bellard
  *
  * This file is part of FFmpeg.
@@ -21,365 +21,873 @@
 
 /**
  * @file
- * Provides registration of all codecs, parsers and bitstream filters for libavcodec.
+ * Provide registration of all codecs, parsers and bitstream filters for libavcodec.
  */
 
+#include "config.h"
+#include "libavutil/thread.h"
 #include "avcodec.h"
+#include "version.h"
 
-#define REGISTER_HWACCEL(X,x) { \
-          extern AVHWAccel x##_hwaccel; \
-          if(CONFIG_##X##_HWACCEL) av_register_hwaccel(&x##_hwaccel); }
+extern AVCodec ff_a64multi_encoder;
+extern AVCodec ff_a64multi5_encoder;
+extern AVCodec ff_aasc_decoder;
+extern AVCodec ff_aic_decoder;
+extern AVCodec ff_alias_pix_encoder;
+extern AVCodec ff_alias_pix_decoder;
+extern AVCodec ff_amv_encoder;
+extern AVCodec ff_amv_decoder;
+extern AVCodec ff_anm_decoder;
+extern AVCodec ff_ansi_decoder;
+extern AVCodec ff_apng_encoder;
+extern AVCodec ff_apng_decoder;
+extern AVCodec ff_asv1_encoder;
+extern AVCodec ff_asv1_decoder;
+extern AVCodec ff_asv2_encoder;
+extern AVCodec ff_asv2_decoder;
+extern AVCodec ff_aura_decoder;
+extern AVCodec ff_aura2_decoder;
+extern AVCodec ff_avrp_encoder;
+extern AVCodec ff_avrp_decoder;
+extern AVCodec ff_avrn_decoder;
+extern AVCodec ff_avs_decoder;
+extern AVCodec ff_avui_encoder;
+extern AVCodec ff_avui_decoder;
+extern AVCodec ff_ayuv_encoder;
+extern AVCodec ff_ayuv_decoder;
+extern AVCodec ff_bethsoftvid_decoder;
+extern AVCodec ff_bfi_decoder;
+extern AVCodec ff_bink_decoder;
+extern AVCodec ff_bmp_encoder;
+extern AVCodec ff_bmp_decoder;
+extern AVCodec ff_bmv_video_decoder;
+extern AVCodec ff_brender_pix_decoder;
+extern AVCodec ff_c93_decoder;
+extern AVCodec ff_cavs_decoder;
+extern AVCodec ff_cdgraphics_decoder;
+extern AVCodec ff_cdxl_decoder;
+extern AVCodec ff_cfhd_decoder;
+extern AVCodec ff_cinepak_encoder;
+extern AVCodec ff_cinepak_decoder;
+extern AVCodec ff_clearvideo_decoder;
+extern AVCodec ff_cljr_encoder;
+extern AVCodec ff_cljr_decoder;
+extern AVCodec ff_cllc_decoder;
+extern AVCodec ff_comfortnoise_encoder;
+extern AVCodec ff_comfortnoise_decoder;
+extern AVCodec ff_cpia_decoder;
+extern AVCodec ff_cscd_decoder;
+extern AVCodec ff_cyuv_decoder;
+extern AVCodec ff_dds_decoder;
+extern AVCodec ff_dfa_decoder;
+extern AVCodec ff_dirac_decoder;
+extern AVCodec ff_dnxhd_encoder;
+extern AVCodec ff_dnxhd_decoder;
+extern AVCodec ff_dpx_encoder;
+extern AVCodec ff_dpx_decoder;
+extern AVCodec ff_dsicinvideo_decoder;
+extern AVCodec ff_dvaudio_decoder;
+extern AVCodec ff_dvvideo_encoder;
+extern AVCodec ff_dvvideo_decoder;
+extern AVCodec ff_dxa_decoder;
+extern AVCodec ff_dxtory_decoder;
+extern AVCodec ff_dxv_decoder;
+extern AVCodec ff_eacmv_decoder;
+extern AVCodec ff_eamad_decoder;
+extern AVCodec ff_eatgq_decoder;
+extern AVCodec ff_eatgv_decoder;
+extern AVCodec ff_eatqi_decoder;
+extern AVCodec ff_eightbps_decoder;
+extern AVCodec ff_eightsvx_exp_decoder;
+extern AVCodec ff_eightsvx_fib_decoder;
+extern AVCodec ff_escape124_decoder;
+extern AVCodec ff_escape130_decoder;
+extern AVCodec ff_exr_decoder;
+extern AVCodec ff_ffv1_encoder;
+extern AVCodec ff_ffv1_decoder;
+extern AVCodec ff_ffvhuff_encoder;
+extern AVCodec ff_ffvhuff_decoder;
+extern AVCodec ff_fic_decoder;
+extern AVCodec ff_fits_encoder;
+extern AVCodec ff_fits_decoder;
+extern AVCodec ff_flashsv_encoder;
+extern AVCodec ff_flashsv_decoder;
+extern AVCodec ff_flashsv2_encoder;
+extern AVCodec ff_flashsv2_decoder;
+extern AVCodec ff_flic_decoder;
+extern AVCodec ff_flv_encoder;
+extern AVCodec ff_flv_decoder;
+extern AVCodec ff_fmvc_decoder;
+extern AVCodec ff_fourxm_decoder;
+extern AVCodec ff_fraps_decoder;
+extern AVCodec ff_frwu_decoder;
+extern AVCodec ff_g2m_decoder;
+extern AVCodec ff_gdv_decoder;
+extern AVCodec ff_gif_encoder;
+extern AVCodec ff_gif_decoder;
+extern AVCodec ff_h261_encoder;
+extern AVCodec ff_h261_decoder;
+extern AVCodec ff_h263_encoder;
+extern AVCodec ff_h263_decoder;
+extern AVCodec ff_h263i_decoder;
+extern AVCodec ff_h263p_encoder;
+extern AVCodec ff_h263p_decoder;
+extern AVCodec ff_h263_v4l2m2m_decoder;
+extern AVCodec ff_h264_decoder;
+extern AVCodec ff_h264_crystalhd_decoder;
+extern AVCodec ff_h264_v4l2m2m_decoder;
+extern AVCodec ff_h264_mediacodec_decoder;
+extern AVCodec ff_h264_mmal_decoder;
+extern AVCodec ff_h264_qsv_decoder;
+extern AVCodec ff_h264_rkmpp_decoder;
+extern AVCodec ff_hap_encoder;
+extern AVCodec ff_hap_decoder;
+extern AVCodec ff_hevc_decoder;
+extern AVCodec ff_hevc_qsv_decoder;
+extern AVCodec ff_hevc_rkmpp_decoder;
+extern AVCodec ff_hevc_v4l2m2m_decoder;
+extern AVCodec ff_hnm4_video_decoder;
+extern AVCodec ff_hq_hqa_decoder;
+extern AVCodec ff_hqx_decoder;
+extern AVCodec ff_huffyuv_encoder;
+extern AVCodec ff_huffyuv_decoder;
+extern AVCodec ff_idcin_decoder;
+extern AVCodec ff_iff_ilbm_decoder;
+extern AVCodec ff_indeo2_decoder;
+extern AVCodec ff_indeo3_decoder;
+extern AVCodec ff_indeo4_decoder;
+extern AVCodec ff_indeo5_decoder;
+extern AVCodec ff_interplay_video_decoder;
+extern AVCodec ff_jpeg2000_encoder;
+extern AVCodec ff_jpeg2000_decoder;
+extern AVCodec ff_jpegls_encoder;
+extern AVCodec ff_jpegls_decoder;
+extern AVCodec ff_jv_decoder;
+extern AVCodec ff_kgv1_decoder;
+extern AVCodec ff_kmvc_decoder;
+extern AVCodec ff_lagarith_decoder;
+extern AVCodec ff_ljpeg_encoder;
+extern AVCodec ff_loco_decoder;
+extern AVCodec ff_m101_decoder;
+extern AVCodec ff_magicyuv_encoder;
+extern AVCodec ff_magicyuv_decoder;
+extern AVCodec ff_mdec_decoder;
+extern AVCodec ff_mimic_decoder;
+extern AVCodec ff_mjpeg_encoder;
+extern AVCodec ff_mjpeg_decoder;
+extern AVCodec ff_mjpegb_decoder;
+extern AVCodec ff_mmvideo_decoder;
+extern AVCodec ff_motionpixels_decoder;
+extern AVCodec ff_mpeg1video_encoder;
+extern AVCodec ff_mpeg1video_decoder;
+extern AVCodec ff_mpeg2video_encoder;
+extern AVCodec ff_mpeg2video_decoder;
+extern AVCodec ff_mpeg4_encoder;
+extern AVCodec ff_mpeg4_decoder;
+extern AVCodec ff_mpeg4_crystalhd_decoder;
+extern AVCodec ff_mpeg4_v4l2m2m_decoder;
+extern AVCodec ff_mpeg4_mmal_decoder;
+extern AVCodec ff_mpegvideo_decoder;
+extern AVCodec ff_mpeg1_v4l2m2m_decoder;
+extern AVCodec ff_mpeg2_mmal_decoder;
+extern AVCodec ff_mpeg2_crystalhd_decoder;
+extern AVCodec ff_mpeg2_v4l2m2m_decoder;
+extern AVCodec ff_mpeg2_qsv_decoder;
+extern AVCodec ff_mpeg2_mediacodec_decoder;
+extern AVCodec ff_msa1_decoder;
+extern AVCodec ff_mscc_decoder;
+extern AVCodec ff_msmpeg4v1_decoder;
+extern AVCodec ff_msmpeg4v2_encoder;
+extern AVCodec ff_msmpeg4v2_decoder;
+extern AVCodec ff_msmpeg4v3_encoder;
+extern AVCodec ff_msmpeg4v3_decoder;
+extern AVCodec ff_msmpeg4_crystalhd_decoder;
+extern AVCodec ff_msrle_decoder;
+extern AVCodec ff_mss1_decoder;
+extern AVCodec ff_mss2_decoder;
+extern AVCodec ff_msvideo1_encoder;
+extern AVCodec ff_msvideo1_decoder;
+extern AVCodec ff_mszh_decoder;
+extern AVCodec ff_mts2_decoder;
+extern AVCodec ff_mvc1_decoder;
+extern AVCodec ff_mvc2_decoder;
+extern AVCodec ff_mxpeg_decoder;
+extern AVCodec ff_nuv_decoder;
+extern AVCodec ff_paf_video_decoder;
+extern AVCodec ff_pam_encoder;
+extern AVCodec ff_pam_decoder;
+extern AVCodec ff_pbm_encoder;
+extern AVCodec ff_pbm_decoder;
+extern AVCodec ff_pcx_encoder;
+extern AVCodec ff_pcx_decoder;
+extern AVCodec ff_pgm_encoder;
+extern AVCodec ff_pgm_decoder;
+extern AVCodec ff_pgmyuv_encoder;
+extern AVCodec ff_pgmyuv_decoder;
+extern AVCodec ff_pictor_decoder;
+extern AVCodec ff_pixlet_decoder;
+extern AVCodec ff_png_encoder;
+extern AVCodec ff_png_decoder;
+extern AVCodec ff_ppm_encoder;
+extern AVCodec ff_ppm_decoder;
+extern AVCodec ff_prores_encoder;
+extern AVCodec ff_prores_decoder;
+extern AVCodec ff_prores_aw_encoder;
+extern AVCodec ff_prores_ks_encoder;
+extern AVCodec ff_prores_lgpl_decoder;
+extern AVCodec ff_psd_decoder;
+extern AVCodec ff_ptx_decoder;
+extern AVCodec ff_qdraw_decoder;
+extern AVCodec ff_qpeg_decoder;
+extern AVCodec ff_qtrle_encoder;
+extern AVCodec ff_qtrle_decoder;
+extern AVCodec ff_r10k_encoder;
+extern AVCodec ff_r10k_decoder;
+extern AVCodec ff_r210_encoder;
+extern AVCodec ff_r210_decoder;
+extern AVCodec ff_rawvideo_encoder;
+extern AVCodec ff_rawvideo_decoder;
+extern AVCodec ff_rl2_decoder;
+extern AVCodec ff_roq_encoder;
+extern AVCodec ff_roq_decoder;
+extern AVCodec ff_rpza_decoder;
+extern AVCodec ff_rscc_decoder;
+extern AVCodec ff_rv10_encoder;
+extern AVCodec ff_rv10_decoder;
+extern AVCodec ff_rv20_encoder;
+extern AVCodec ff_rv20_decoder;
+extern AVCodec ff_rv30_decoder;
+extern AVCodec ff_rv40_decoder;
+extern AVCodec ff_s302m_encoder;
+extern AVCodec ff_s302m_decoder;
+extern AVCodec ff_sanm_decoder;
+extern AVCodec ff_scpr_decoder;
+extern AVCodec ff_screenpresso_decoder;
+extern AVCodec ff_sdx2_dpcm_decoder;
+extern AVCodec ff_sgi_encoder;
+extern AVCodec ff_sgi_decoder;
+extern AVCodec ff_sgirle_decoder;
+extern AVCodec ff_sheervideo_decoder;
+extern AVCodec ff_smacker_decoder;
+extern AVCodec ff_smc_decoder;
+extern AVCodec ff_smvjpeg_decoder;
+extern AVCodec ff_snow_encoder;
+extern AVCodec ff_snow_decoder;
+extern AVCodec ff_sp5x_decoder;
+extern AVCodec ff_speedhq_decoder;
+extern AVCodec ff_srgc_decoder;
+extern AVCodec ff_sunrast_encoder;
+extern AVCodec ff_sunrast_decoder;
+extern AVCodec ff_svq1_encoder;
+extern AVCodec ff_svq1_decoder;
+extern AVCodec ff_svq3_decoder;
+extern AVCodec ff_targa_encoder;
+extern AVCodec ff_targa_decoder;
+extern AVCodec ff_targa_y216_decoder;
+extern AVCodec ff_tdsc_decoder;
+extern AVCodec ff_theora_decoder;
+extern AVCodec ff_thp_decoder;
+extern AVCodec ff_tiertexseqvideo_decoder;
+extern AVCodec ff_tiff_encoder;
+extern AVCodec ff_tiff_decoder;
+extern AVCodec ff_tmv_decoder;
+extern AVCodec ff_truemotion1_decoder;
+extern AVCodec ff_truemotion2_decoder;
+extern AVCodec ff_truemotion2rt_decoder;
+extern AVCodec ff_tscc_decoder;
+extern AVCodec ff_tscc2_decoder;
+extern AVCodec ff_txd_decoder;
+extern AVCodec ff_ulti_decoder;
+extern AVCodec ff_utvideo_encoder;
+extern AVCodec ff_utvideo_decoder;
+extern AVCodec ff_v210_encoder;
+extern AVCodec ff_v210_decoder;
+extern AVCodec ff_v210x_decoder;
+extern AVCodec ff_v308_encoder;
+extern AVCodec ff_v308_decoder;
+extern AVCodec ff_v408_encoder;
+extern AVCodec ff_v408_decoder;
+extern AVCodec ff_v410_encoder;
+extern AVCodec ff_v410_decoder;
+extern AVCodec ff_vb_decoder;
+extern AVCodec ff_vble_decoder;
+extern AVCodec ff_vc1_decoder;
+extern AVCodec ff_vc1_crystalhd_decoder;
+extern AVCodec ff_vc1image_decoder;
+extern AVCodec ff_vc1_mmal_decoder;
+extern AVCodec ff_vc1_qsv_decoder;
+extern AVCodec ff_vc1_v4l2m2m_decoder;
+extern AVCodec ff_vc2_encoder;
+extern AVCodec ff_vcr1_decoder;
+extern AVCodec ff_vmdvideo_decoder;
+extern AVCodec ff_vmnc_decoder;
+extern AVCodec ff_vp3_decoder;
+extern AVCodec ff_vp5_decoder;
+extern AVCodec ff_vp6_decoder;
+extern AVCodec ff_vp6a_decoder;
+extern AVCodec ff_vp6f_decoder;
+extern AVCodec ff_vp7_decoder;
+extern AVCodec ff_vp8_decoder;
+extern AVCodec ff_vp8_rkmpp_decoder;
+extern AVCodec ff_vp8_v4l2m2m_decoder;
+extern AVCodec ff_vp9_decoder;
+extern AVCodec ff_vp9_rkmpp_decoder;
+extern AVCodec ff_vp9_v4l2m2m_decoder;
+extern AVCodec ff_vqa_decoder;
+extern AVCodec ff_bitpacked_decoder;
+extern AVCodec ff_webp_decoder;
+extern AVCodec ff_wrapped_avframe_encoder;
+extern AVCodec ff_wrapped_avframe_decoder;
+extern AVCodec ff_wmv1_encoder;
+extern AVCodec ff_wmv1_decoder;
+extern AVCodec ff_wmv2_encoder;
+extern AVCodec ff_wmv2_decoder;
+extern AVCodec ff_wmv3_decoder;
+extern AVCodec ff_wmv3_crystalhd_decoder;
+extern AVCodec ff_wmv3image_decoder;
+extern AVCodec ff_wnv1_decoder;
+extern AVCodec ff_xan_wc3_decoder;
+extern AVCodec ff_xan_wc4_decoder;
+extern AVCodec ff_xbm_encoder;
+extern AVCodec ff_xbm_decoder;
+extern AVCodec ff_xface_encoder;
+extern AVCodec ff_xface_decoder;
+extern AVCodec ff_xl_decoder;
+extern AVCodec ff_xpm_decoder;
+extern AVCodec ff_xwd_encoder;
+extern AVCodec ff_xwd_decoder;
+extern AVCodec ff_y41p_encoder;
+extern AVCodec ff_y41p_decoder;
+extern AVCodec ff_ylc_decoder;
+extern AVCodec ff_yop_decoder;
+extern AVCodec ff_yuv4_encoder;
+extern AVCodec ff_yuv4_decoder;
+extern AVCodec ff_zero12v_decoder;
+extern AVCodec ff_zerocodec_decoder;
+extern AVCodec ff_zlib_encoder;
+extern AVCodec ff_zlib_decoder;
+extern AVCodec ff_zmbv_encoder;
+extern AVCodec ff_zmbv_decoder;
 
-#define REGISTER_ENCODER(X,x) { \
-          extern AVCodec x##_encoder; \
-          if(CONFIG_##X##_ENCODER)  avcodec_register(&x##_encoder); }
-#define REGISTER_DECODER(X,x) { \
-          extern AVCodec x##_decoder; \
-          if(CONFIG_##X##_DECODER)  avcodec_register(&x##_decoder); }
-#define REGISTER_ENCDEC(X,x)  REGISTER_ENCODER(X,x); REGISTER_DECODER(X,x)
+/* audio codecs */
+extern AVCodec ff_aac_encoder;
+extern AVCodec ff_aac_decoder;
+extern AVCodec ff_aac_fixed_decoder;
+extern AVCodec ff_aac_latm_decoder;
+extern AVCodec ff_ac3_encoder;
+extern AVCodec ff_ac3_decoder;
+extern AVCodec ff_ac3_fixed_encoder;
+extern AVCodec ff_ac3_fixed_decoder;
+extern AVCodec ff_alac_encoder;
+extern AVCodec ff_alac_decoder;
+extern AVCodec ff_als_decoder;
+extern AVCodec ff_amrnb_decoder;
+extern AVCodec ff_amrwb_decoder;
+extern AVCodec ff_ape_decoder;
+extern AVCodec ff_aptx_encoder;
+extern AVCodec ff_aptx_decoder;
+extern AVCodec ff_aptx_hd_encoder;
+extern AVCodec ff_aptx_hd_decoder;
+extern AVCodec ff_atrac1_decoder;
+extern AVCodec ff_atrac3_decoder;
+extern AVCodec ff_atrac3al_decoder;
+extern AVCodec ff_atrac3p_decoder;
+extern AVCodec ff_atrac3pal_decoder;
+extern AVCodec ff_binkaudio_dct_decoder;
+extern AVCodec ff_binkaudio_rdft_decoder;
+extern AVCodec ff_bmv_audio_decoder;
+extern AVCodec ff_cook_decoder;
+extern AVCodec ff_dca_encoder;
+extern AVCodec ff_dca_decoder;
+extern AVCodec ff_dolby_e_decoder;
+extern AVCodec ff_dsd_lsbf_decoder;
+extern AVCodec ff_dsd_msbf_decoder;
+extern AVCodec ff_dsd_lsbf_planar_decoder;
+extern AVCodec ff_dsd_msbf_planar_decoder;
+extern AVCodec ff_dsicinaudio_decoder;
+extern AVCodec ff_dss_sp_decoder;
+extern AVCodec ff_dst_decoder;
+extern AVCodec ff_eac3_encoder;
+extern AVCodec ff_eac3_decoder;
+extern AVCodec ff_evrc_decoder;
+extern AVCodec ff_ffwavesynth_decoder;
+extern AVCodec ff_flac_encoder;
+extern AVCodec ff_flac_decoder;
+extern AVCodec ff_g723_1_encoder;
+extern AVCodec ff_g723_1_decoder;
+extern AVCodec ff_g729_decoder;
+extern AVCodec ff_gsm_decoder;
+extern AVCodec ff_gsm_ms_decoder;
+extern AVCodec ff_iac_decoder;
+extern AVCodec ff_imc_decoder;
+extern AVCodec ff_interplay_acm_decoder;
+extern AVCodec ff_mace3_decoder;
+extern AVCodec ff_mace6_decoder;
+extern AVCodec ff_metasound_decoder;
+extern AVCodec ff_mlp_encoder;
+extern AVCodec ff_mlp_decoder;
+extern AVCodec ff_mp1_decoder;
+extern AVCodec ff_mp1float_decoder;
+extern AVCodec ff_mp2_encoder;
+extern AVCodec ff_mp2_decoder;
+extern AVCodec ff_mp2float_decoder;
+extern AVCodec ff_mp2fixed_encoder;
+extern AVCodec ff_mp3float_decoder;
+extern AVCodec ff_mp3_decoder;
+extern AVCodec ff_mp3adufloat_decoder;
+extern AVCodec ff_mp3adu_decoder;
+extern AVCodec ff_mp3on4float_decoder;
+extern AVCodec ff_mp3on4_decoder;
+extern AVCodec ff_mpc7_decoder;
+extern AVCodec ff_mpc8_decoder;
+extern AVCodec ff_nellymoser_encoder;
+extern AVCodec ff_nellymoser_decoder;
+extern AVCodec ff_on2avc_decoder;
+extern AVCodec ff_opus_encoder;
+extern AVCodec ff_opus_decoder;
+extern AVCodec ff_paf_audio_decoder;
+extern AVCodec ff_qcelp_decoder;
+extern AVCodec ff_qdm2_decoder;
+extern AVCodec ff_qdmc_decoder;
+extern AVCodec ff_ra_144_encoder;
+extern AVCodec ff_ra_144_decoder;
+extern AVCodec ff_ra_288_decoder;
+extern AVCodec ff_ralf_decoder;
+extern AVCodec ff_sbc_encoder;
+extern AVCodec ff_sbc_decoder;
+extern AVCodec ff_shorten_decoder;
+extern AVCodec ff_sipr_decoder;
+extern AVCodec ff_smackaud_decoder;
+extern AVCodec ff_sonic_encoder;
+extern AVCodec ff_sonic_decoder;
+extern AVCodec ff_sonic_ls_encoder;
+extern AVCodec ff_tak_decoder;
+extern AVCodec ff_truehd_encoder;
+extern AVCodec ff_truehd_decoder;
+extern AVCodec ff_truespeech_decoder;
+extern AVCodec ff_tta_encoder;
+extern AVCodec ff_tta_decoder;
+extern AVCodec ff_twinvq_decoder;
+extern AVCodec ff_vmdaudio_decoder;
+extern AVCodec ff_vorbis_encoder;
+extern AVCodec ff_vorbis_decoder;
+extern AVCodec ff_wavpack_encoder;
+extern AVCodec ff_wavpack_decoder;
+extern AVCodec ff_wmalossless_decoder;
+extern AVCodec ff_wmapro_decoder;
+extern AVCodec ff_wmav1_encoder;
+extern AVCodec ff_wmav1_decoder;
+extern AVCodec ff_wmav2_encoder;
+extern AVCodec ff_wmav2_decoder;
+extern AVCodec ff_wmavoice_decoder;
+extern AVCodec ff_ws_snd1_decoder;
+extern AVCodec ff_xma1_decoder;
+extern AVCodec ff_xma2_decoder;
 
-#define REGISTER_PARSER(X,x) { \
-          extern AVCodecParser x##_parser; \
-          if(CONFIG_##X##_PARSER)  av_register_codec_parser(&x##_parser); }
-#define REGISTER_BSF(X,x) { \
-          extern AVBitStreamFilter x##_bsf; \
-          if(CONFIG_##X##_BSF)     av_register_bitstream_filter(&x##_bsf); }
+/* PCM codecs */
+extern AVCodec ff_pcm_alaw_encoder;
+extern AVCodec ff_pcm_alaw_decoder;
+extern AVCodec ff_pcm_bluray_decoder;
+extern AVCodec ff_pcm_dvd_decoder;
+extern AVCodec ff_pcm_f16le_decoder;
+extern AVCodec ff_pcm_f24le_decoder;
+extern AVCodec ff_pcm_f32be_encoder;
+extern AVCodec ff_pcm_f32be_decoder;
+extern AVCodec ff_pcm_f32le_encoder;
+extern AVCodec ff_pcm_f32le_decoder;
+extern AVCodec ff_pcm_f64be_encoder;
+extern AVCodec ff_pcm_f64be_decoder;
+extern AVCodec ff_pcm_f64le_encoder;
+extern AVCodec ff_pcm_f64le_decoder;
+extern AVCodec ff_pcm_lxf_decoder;
+extern AVCodec ff_pcm_mulaw_encoder;
+extern AVCodec ff_pcm_mulaw_decoder;
+extern AVCodec ff_pcm_s8_encoder;
+extern AVCodec ff_pcm_s8_decoder;
+extern AVCodec ff_pcm_s8_planar_encoder;
+extern AVCodec ff_pcm_s8_planar_decoder;
+extern AVCodec ff_pcm_s16be_encoder;
+extern AVCodec ff_pcm_s16be_decoder;
+extern AVCodec ff_pcm_s16be_planar_encoder;
+extern AVCodec ff_pcm_s16be_planar_decoder;
+extern AVCodec ff_pcm_s16le_encoder;
+extern AVCodec ff_pcm_s16le_decoder;
+extern AVCodec ff_pcm_s16le_planar_encoder;
+extern AVCodec ff_pcm_s16le_planar_decoder;
+extern AVCodec ff_pcm_s24be_encoder;
+extern AVCodec ff_pcm_s24be_decoder;
+extern AVCodec ff_pcm_s24daud_encoder;
+extern AVCodec ff_pcm_s24daud_decoder;
+extern AVCodec ff_pcm_s24le_encoder;
+extern AVCodec ff_pcm_s24le_decoder;
+extern AVCodec ff_pcm_s24le_planar_encoder;
+extern AVCodec ff_pcm_s24le_planar_decoder;
+extern AVCodec ff_pcm_s32be_encoder;
+extern AVCodec ff_pcm_s32be_decoder;
+extern AVCodec ff_pcm_s32le_encoder;
+extern AVCodec ff_pcm_s32le_decoder;
+extern AVCodec ff_pcm_s32le_planar_encoder;
+extern AVCodec ff_pcm_s32le_planar_decoder;
+extern AVCodec ff_pcm_s64be_encoder;
+extern AVCodec ff_pcm_s64be_decoder;
+extern AVCodec ff_pcm_s64le_encoder;
+extern AVCodec ff_pcm_s64le_decoder;
+extern AVCodec ff_pcm_u8_encoder;
+extern AVCodec ff_pcm_u8_decoder;
+extern AVCodec ff_pcm_u16be_encoder;
+extern AVCodec ff_pcm_u16be_decoder;
+extern AVCodec ff_pcm_u16le_encoder;
+extern AVCodec ff_pcm_u16le_decoder;
+extern AVCodec ff_pcm_u24be_encoder;
+extern AVCodec ff_pcm_u24be_decoder;
+extern AVCodec ff_pcm_u24le_encoder;
+extern AVCodec ff_pcm_u24le_decoder;
+extern AVCodec ff_pcm_u32be_encoder;
+extern AVCodec ff_pcm_u32be_decoder;
+extern AVCodec ff_pcm_u32le_encoder;
+extern AVCodec ff_pcm_u32le_decoder;
+extern AVCodec ff_pcm_zork_decoder;
+
+/* DPCM codecs */
+extern AVCodec ff_gremlin_dpcm_decoder;
+extern AVCodec ff_interplay_dpcm_decoder;
+extern AVCodec ff_roq_dpcm_encoder;
+extern AVCodec ff_roq_dpcm_decoder;
+extern AVCodec ff_sol_dpcm_decoder;
+extern AVCodec ff_xan_dpcm_decoder;
+
+/* ADPCM codecs */
+extern AVCodec ff_adpcm_4xm_decoder;
+extern AVCodec ff_adpcm_adx_encoder;
+extern AVCodec ff_adpcm_adx_decoder;
+extern AVCodec ff_adpcm_afc_decoder;
+extern AVCodec ff_adpcm_aica_decoder;
+extern AVCodec ff_adpcm_ct_decoder;
+extern AVCodec ff_adpcm_dtk_decoder;
+extern AVCodec ff_adpcm_ea_decoder;
+extern AVCodec ff_adpcm_ea_maxis_xa_decoder;
+extern AVCodec ff_adpcm_ea_r1_decoder;
+extern AVCodec ff_adpcm_ea_r2_decoder;
+extern AVCodec ff_adpcm_ea_r3_decoder;
+extern AVCodec ff_adpcm_ea_xas_decoder;
+extern AVCodec ff_adpcm_g722_encoder;
+extern AVCodec ff_adpcm_g722_decoder;
+extern AVCodec ff_adpcm_g726_encoder;
+extern AVCodec ff_adpcm_g726_decoder;
+extern AVCodec ff_adpcm_g726le_encoder;
+extern AVCodec ff_adpcm_g726le_decoder;
+extern AVCodec ff_adpcm_ima_amv_decoder;
+extern AVCodec ff_adpcm_ima_apc_decoder;
+extern AVCodec ff_adpcm_ima_dat4_decoder;
+extern AVCodec ff_adpcm_ima_dk3_decoder;
+extern AVCodec ff_adpcm_ima_dk4_decoder;
+extern AVCodec ff_adpcm_ima_ea_eacs_decoder;
+extern AVCodec ff_adpcm_ima_ea_sead_decoder;
+extern AVCodec ff_adpcm_ima_iss_decoder;
+extern AVCodec ff_adpcm_ima_oki_decoder;
+extern AVCodec ff_adpcm_ima_qt_encoder;
+extern AVCodec ff_adpcm_ima_qt_decoder;
+extern AVCodec ff_adpcm_ima_rad_decoder;
+extern AVCodec ff_adpcm_ima_smjpeg_decoder;
+extern AVCodec ff_adpcm_ima_wav_encoder;
+extern AVCodec ff_adpcm_ima_wav_decoder;
+extern AVCodec ff_adpcm_ima_ws_decoder;
+extern AVCodec ff_adpcm_ms_encoder;
+extern AVCodec ff_adpcm_ms_decoder;
+extern AVCodec ff_adpcm_mtaf_decoder;
+extern AVCodec ff_adpcm_psx_decoder;
+extern AVCodec ff_adpcm_sbpro_2_decoder;
+extern AVCodec ff_adpcm_sbpro_3_decoder;
+extern AVCodec ff_adpcm_sbpro_4_decoder;
+extern AVCodec ff_adpcm_swf_encoder;
+extern AVCodec ff_adpcm_swf_decoder;
+extern AVCodec ff_adpcm_thp_decoder;
+extern AVCodec ff_adpcm_thp_le_decoder;
+extern AVCodec ff_adpcm_vima_decoder;
+extern AVCodec ff_adpcm_xa_decoder;
+extern AVCodec ff_adpcm_yamaha_encoder;
+extern AVCodec ff_adpcm_yamaha_decoder;
+
+/* subtitles */
+extern AVCodec ff_ssa_encoder;
+extern AVCodec ff_ssa_decoder;
+extern AVCodec ff_ass_encoder;
+extern AVCodec ff_ass_decoder;
+extern AVCodec ff_ccaption_decoder;
+extern AVCodec ff_dvbsub_encoder;
+extern AVCodec ff_dvbsub_decoder;
+extern AVCodec ff_dvdsub_encoder;
+extern AVCodec ff_dvdsub_decoder;
+extern AVCodec ff_jacosub_decoder;
+extern AVCodec ff_microdvd_decoder;
+extern AVCodec ff_movtext_encoder;
+extern AVCodec ff_movtext_decoder;
+extern AVCodec ff_mpl2_decoder;
+extern AVCodec ff_pgssub_decoder;
+extern AVCodec ff_pjs_decoder;
+extern AVCodec ff_realtext_decoder;
+extern AVCodec ff_sami_decoder;
+extern AVCodec ff_srt_encoder;
+extern AVCodec ff_srt_decoder;
+extern AVCodec ff_stl_decoder;
+extern AVCodec ff_subrip_encoder;
+extern AVCodec ff_subrip_decoder;
+extern AVCodec ff_subviewer_decoder;
+extern AVCodec ff_subviewer1_decoder;
+extern AVCodec ff_text_encoder;
+extern AVCodec ff_text_decoder;
+extern AVCodec ff_vplayer_decoder;
+extern AVCodec ff_webvtt_encoder;
+extern AVCodec ff_webvtt_decoder;
+extern AVCodec ff_xsub_encoder;
+extern AVCodec ff_xsub_decoder;
+
+/* external libraries */
+extern AVCodec ff_aac_at_encoder;
+extern AVCodec ff_aac_at_decoder;
+extern AVCodec ff_ac3_at_decoder;
+extern AVCodec ff_adpcm_ima_qt_at_decoder;
+extern AVCodec ff_alac_at_encoder;
+extern AVCodec ff_alac_at_decoder;
+extern AVCodec ff_amr_nb_at_decoder;
+extern AVCodec ff_eac3_at_decoder;
+extern AVCodec ff_gsm_ms_at_decoder;
+extern AVCodec ff_ilbc_at_encoder;
+extern AVCodec ff_ilbc_at_decoder;
+extern AVCodec ff_mp1_at_decoder;
+extern AVCodec ff_mp2_at_decoder;
+extern AVCodec ff_mp3_at_decoder;
+extern AVCodec ff_pcm_alaw_at_encoder;
+extern AVCodec ff_pcm_alaw_at_decoder;
+extern AVCodec ff_pcm_mulaw_at_encoder;
+extern AVCodec ff_pcm_mulaw_at_decoder;
+extern AVCodec ff_qdmc_at_decoder;
+extern AVCodec ff_qdm2_at_decoder;
+extern AVCodec ff_libaom_av1_decoder;
+extern AVCodec ff_libaom_av1_encoder;
+extern AVCodec ff_libcelt_decoder;
+extern AVCodec ff_libcodec2_encoder;
+extern AVCodec ff_libcodec2_decoder;
+extern AVCodec ff_libfdk_aac_encoder;
+extern AVCodec ff_libfdk_aac_decoder;
+extern AVCodec ff_libgsm_encoder;
+extern AVCodec ff_libgsm_decoder;
+extern AVCodec ff_libgsm_ms_encoder;
+extern AVCodec ff_libgsm_ms_decoder;
+extern AVCodec ff_libilbc_encoder;
+extern AVCodec ff_libilbc_decoder;
+extern AVCodec ff_libmp3lame_encoder;
+extern AVCodec ff_libopencore_amrnb_encoder;
+extern AVCodec ff_libopencore_amrnb_decoder;
+extern AVCodec ff_libopencore_amrwb_decoder;
+extern AVCodec ff_libopenjpeg_encoder;
+extern AVCodec ff_libopenjpeg_decoder;
+extern AVCodec ff_libopus_encoder;
+extern AVCodec ff_libopus_decoder;
+extern AVCodec ff_librsvg_decoder;
+extern AVCodec ff_libshine_encoder;
+extern AVCodec ff_libspeex_encoder;
+extern AVCodec ff_libspeex_decoder;
+extern AVCodec ff_libtheora_encoder;
+extern AVCodec ff_libtwolame_encoder;
+extern AVCodec ff_libvo_amrwbenc_encoder;
+extern AVCodec ff_libvorbis_encoder;
+extern AVCodec ff_libvorbis_decoder;
+extern AVCodec ff_libvpx_vp8_encoder;
+extern AVCodec ff_libvpx_vp8_decoder;
+extern AVCodec ff_libvpx_vp9_encoder;
+extern AVCodec ff_libvpx_vp9_decoder;
+extern AVCodec ff_libwavpack_encoder;
+/* preferred over libwebp */
+extern AVCodec ff_libwebp_anim_encoder;
+extern AVCodec ff_libwebp_encoder;
+extern AVCodec ff_libx262_encoder;
+extern AVCodec ff_libx264_encoder;
+extern AVCodec ff_libx264rgb_encoder;
+extern AVCodec ff_libx265_encoder;
+extern AVCodec ff_libxavs_encoder;
+extern AVCodec ff_libxvid_encoder;
+extern AVCodec ff_libzvbi_teletext_decoder;
+
+/* text */
+extern AVCodec ff_bintext_decoder;
+extern AVCodec ff_xbin_decoder;
+extern AVCodec ff_idf_decoder;
+
+/* external libraries, that shouldn't be used by default if one of the
+ * above is available */
+extern AVCodec ff_h263_v4l2m2m_encoder;
+extern AVCodec ff_libopenh264_encoder;
+extern AVCodec ff_libopenh264_decoder;
+extern AVCodec ff_h264_amf_encoder;
+extern AVCodec ff_h264_cuvid_decoder;
+extern AVCodec ff_h264_nvenc_encoder;
+extern AVCodec ff_h264_omx_encoder;
+extern AVCodec ff_h264_qsv_encoder;
+extern AVCodec ff_h264_v4l2m2m_encoder;
+extern AVCodec ff_h264_vaapi_encoder;
+extern AVCodec ff_h264_videotoolbox_encoder;
+#if FF_API_NVENC_OLD_NAME
+extern AVCodec ff_nvenc_encoder;
+extern AVCodec ff_nvenc_h264_encoder;
+extern AVCodec ff_nvenc_hevc_encoder;
+#endif
+extern AVCodec ff_hevc_amf_encoder;
+extern AVCodec ff_hevc_cuvid_decoder;
+extern AVCodec ff_hevc_mediacodec_decoder;
+extern AVCodec ff_hevc_nvenc_encoder;
+extern AVCodec ff_hevc_qsv_encoder;
+extern AVCodec ff_hevc_v4l2m2m_encoder;
+extern AVCodec ff_hevc_vaapi_encoder;
+extern AVCodec ff_hevc_videotoolbox_encoder;
+extern AVCodec ff_libkvazaar_encoder;
+extern AVCodec ff_mjpeg_cuvid_decoder;
+extern AVCodec ff_mjpeg_qsv_encoder;
+extern AVCodec ff_mjpeg_vaapi_encoder;
+extern AVCodec ff_mpeg1_cuvid_decoder;
+extern AVCodec ff_mpeg2_cuvid_decoder;
+extern AVCodec ff_mpeg2_qsv_encoder;
+extern AVCodec ff_mpeg2_vaapi_encoder;
+extern AVCodec ff_mpeg4_cuvid_decoder;
+extern AVCodec ff_mpeg4_mediacodec_decoder;
+extern AVCodec ff_mpeg4_v4l2m2m_encoder;
+extern AVCodec ff_vc1_cuvid_decoder;
+extern AVCodec ff_vp8_cuvid_decoder;
+extern AVCodec ff_vp8_mediacodec_decoder;
+extern AVCodec ff_vp8_qsv_decoder;
+extern AVCodec ff_vp8_v4l2m2m_encoder;
+extern AVCodec ff_vp8_vaapi_encoder;
+extern AVCodec ff_vp9_cuvid_decoder;
+extern AVCodec ff_vp9_mediacodec_decoder;
+extern AVCodec ff_vp9_vaapi_encoder;
+
+#include "libavcodec/codec_list.c"
+
+static AVOnce av_codec_static_init = AV_ONCE_INIT;
+static void av_codec_init_static(void)
+{
+    for (int i = 0; codec_list[i]; i++) {
+        if (codec_list[i]->init_static_data)
+            codec_list[i]->init_static_data((AVCodec*)codec_list[i]);
+    }
+}
+
+const AVCodec *av_codec_iterate(void **opaque)
+{
+    uintptr_t i = (uintptr_t)*opaque;
+    const AVCodec *c = codec_list[i];
+
+    ff_thread_once(&av_codec_static_init, av_codec_init_static);
+
+    if (c)
+        *opaque = (void*)(i + 1);
+
+    return c;
+}
+
+#if FF_API_NEXT
+FF_DISABLE_DEPRECATION_WARNINGS
+static AVOnce av_codec_next_init = AV_ONCE_INIT;
+
+static void av_codec_init_next(void)
+{
+    AVCodec *prev = NULL, *p;
+    void *i = 0;
+    while ((p = (AVCodec*)av_codec_iterate(&i))) {
+        if (prev)
+            prev->next = p;
+        prev = p;
+    }
+}
+
+
+
+av_cold void avcodec_register(AVCodec *codec)
+{
+    ff_thread_once(&av_codec_next_init, av_codec_init_next);
+}
+
+AVCodec *av_codec_next(const AVCodec *c)
+{
+    ff_thread_once(&av_codec_next_init, av_codec_init_next);
+
+    if (c)
+        return c->next;
+    else
+        return (AVCodec*)codec_list[0];
+}
 
 void avcodec_register_all(void)
 {
-    static int initialized;
+    ff_thread_once(&av_codec_next_init, av_codec_init_next);
+}
+FF_ENABLE_DEPRECATION_WARNINGS
+#endif
 
-    if (initialized)
-        return;
-    initialized = 1;
-
-    /* hardware accelerators */
-    REGISTER_HWACCEL (H263_VAAPI, h263_vaapi);
-    REGISTER_HWACCEL (H264_DXVA2, h264_dxva2);
-    REGISTER_HWACCEL (H264_VAAPI, h264_vaapi);
-    REGISTER_HWACCEL (MPEG2_VAAPI, mpeg2_vaapi);
-    REGISTER_HWACCEL (MPEG4_VAAPI, mpeg4_vaapi);
-    REGISTER_HWACCEL (VC1_DXVA2, vc1_dxva2);
-    REGISTER_HWACCEL (VC1_VAAPI, vc1_vaapi);
-    REGISTER_HWACCEL (WMV3_DXVA2, wmv3_dxva2);
-    REGISTER_HWACCEL (WMV3_VAAPI, wmv3_vaapi);
-
-    /* video codecs */
-    REGISTER_DECODER (AASC, aasc);
-    REGISTER_DECODER (AMV, amv);
-    REGISTER_DECODER (ANM, anm);
-    REGISTER_ENCDEC  (ASV1, asv1);
-    REGISTER_ENCDEC  (ASV2, asv2);
-    REGISTER_DECODER (AURA, aura);
-    REGISTER_DECODER (AURA2, aura2);
-    REGISTER_DECODER (AVS, avs);
-    REGISTER_DECODER (BETHSOFTVID, bethsoftvid);
-    REGISTER_DECODER (BFI, bfi);
-    REGISTER_DECODER (BINK, bink);
-    REGISTER_ENCDEC  (BMP, bmp);
-    REGISTER_DECODER (C93, c93);
-    REGISTER_DECODER (CAVS, cavs);
-    REGISTER_DECODER (CDGRAPHICS, cdgraphics);
-    REGISTER_DECODER (CINEPAK, cinepak);
-    REGISTER_DECODER (CLJR, cljr);
-    REGISTER_DECODER (CSCD, cscd);
-    REGISTER_DECODER (CYUV, cyuv);
-    REGISTER_ENCDEC  (DNXHD, dnxhd);
-    REGISTER_DECODER (DPX, dpx);
-    REGISTER_DECODER (DSICINVIDEO, dsicinvideo);
-    REGISTER_ENCDEC  (DVVIDEO, dvvideo);
-    REGISTER_DECODER (DXA, dxa);
-    REGISTER_DECODER (EACMV, eacmv);
-    REGISTER_DECODER (EAMAD, eamad);
-    REGISTER_DECODER (EATGQ, eatgq);
-    REGISTER_DECODER (EATGV, eatgv);
-    REGISTER_DECODER (EATQI, eatqi);
-    REGISTER_DECODER (EIGHTBPS, eightbps);
-    REGISTER_DECODER (EIGHTSVX_EXP, eightsvx_exp);
-    REGISTER_DECODER (EIGHTSVX_FIB, eightsvx_fib);
-    REGISTER_DECODER (ESCAPE124, escape124);
-    REGISTER_ENCDEC  (FFV1, ffv1);
-    REGISTER_ENCDEC  (FFVHUFF, ffvhuff);
-    REGISTER_ENCDEC  (FLASHSV, flashsv);
-    REGISTER_DECODER (FLIC, flic);
-    REGISTER_ENCDEC  (FLV, flv);
-    REGISTER_DECODER (FOURXM, fourxm);
-    REGISTER_DECODER (FRAPS, fraps);
-    REGISTER_DECODER (FRWU, frwu);
-    REGISTER_ENCDEC  (GIF, gif);
-    REGISTER_ENCDEC  (H261, h261);
-    REGISTER_ENCDEC  (H263, h263);
-    REGISTER_DECODER (H263I, h263i);
-    REGISTER_ENCODER (H263P, h263p);
-    REGISTER_DECODER (H264, h264);
-    REGISTER_DECODER (H264_VDPAU, h264_vdpau);
-    REGISTER_ENCDEC  (HUFFYUV, huffyuv);
-    REGISTER_DECODER (IDCIN, idcin);
-    REGISTER_DECODER (IFF_BYTERUN1, iff_byterun1);
-    REGISTER_DECODER (IFF_ILBM, iff_ilbm);
-    REGISTER_DECODER (INDEO2, indeo2);
-    REGISTER_DECODER (INDEO3, indeo3);
-    REGISTER_DECODER (INDEO5, indeo5);
-    REGISTER_DECODER (INTERPLAY_VIDEO, interplay_video);
-    REGISTER_ENCDEC  (JPEGLS, jpegls);
-    REGISTER_DECODER (KGV1, kgv1);
-    REGISTER_DECODER (KMVC, kmvc);
-    REGISTER_ENCODER (LJPEG, ljpeg);
-    REGISTER_DECODER (LOCO, loco);
-    REGISTER_DECODER (MDEC, mdec);
-    REGISTER_DECODER (MIMIC, mimic);
-    REGISTER_ENCDEC  (MJPEG, mjpeg);
-    REGISTER_DECODER (MJPEGB, mjpegb);
-    REGISTER_DECODER (MMVIDEO, mmvideo);
-    REGISTER_DECODER (MOTIONPIXELS, motionpixels);
-    REGISTER_DECODER (MPEG_XVMC, mpeg_xvmc);
-    REGISTER_ENCDEC  (MPEG1VIDEO, mpeg1video);
-    REGISTER_ENCDEC  (MPEG2VIDEO, mpeg2video);
-    REGISTER_ENCDEC  (MPEG4, mpeg4);
-    REGISTER_DECODER (MPEG4_VDPAU, mpeg4_vdpau);
-    REGISTER_DECODER (MPEGVIDEO, mpegvideo);
-    REGISTER_DECODER (MPEG_VDPAU, mpeg_vdpau);
-    REGISTER_DECODER (MPEG1_VDPAU, mpeg1_vdpau);
-    REGISTER_ENCDEC  (MSMPEG4V1, msmpeg4v1);
-    REGISTER_ENCDEC  (MSMPEG4V2, msmpeg4v2);
-    REGISTER_ENCDEC  (MSMPEG4V3, msmpeg4v3);
-    REGISTER_DECODER (MSRLE, msrle);
-    REGISTER_DECODER (MSVIDEO1, msvideo1);
-    REGISTER_DECODER (MSZH, mszh);
-    REGISTER_DECODER (NUV, nuv);
-    REGISTER_ENCDEC  (PAM, pam);
-    REGISTER_ENCDEC  (PBM, pbm);
-    REGISTER_ENCDEC  (PCX, pcx);
-    REGISTER_ENCDEC  (PGM, pgm);
-    REGISTER_ENCDEC  (PGMYUV, pgmyuv);
-    REGISTER_ENCDEC  (PNG, png);
-    REGISTER_ENCDEC  (PPM, ppm);
-    REGISTER_DECODER (PTX, ptx);
-    REGISTER_DECODER (QDRAW, qdraw);
-    REGISTER_DECODER (QPEG, qpeg);
-    REGISTER_ENCDEC  (QTRLE, qtrle);
-    REGISTER_DECODER (R210,  r210);
-    REGISTER_ENCDEC  (RAWVIDEO, rawvideo);
-    REGISTER_DECODER (RL2, rl2);
-    REGISTER_ENCDEC  (ROQ, roq);
-    REGISTER_DECODER (RPZA, rpza);
-    REGISTER_ENCDEC  (RV10, rv10);
-    REGISTER_ENCDEC  (RV20, rv20);
-    REGISTER_DECODER (RV30, rv30);
-    REGISTER_DECODER (RV40, rv40);
-    REGISTER_ENCDEC  (SGI, sgi);
-    REGISTER_DECODER (SMACKER, smacker);
-    REGISTER_DECODER (SMC, smc);
-    REGISTER_ENCDEC  (SNOW, snow);
-    REGISTER_DECODER (SP5X, sp5x);
-    REGISTER_DECODER (SUNRAST, sunrast);
-    REGISTER_ENCDEC  (SVQ1, svq1);
-    REGISTER_DECODER (SVQ3, svq3);
-    REGISTER_ENCDEC  (TARGA, targa);
-    REGISTER_DECODER (THEORA, theora);
-    REGISTER_DECODER (THP, thp);
-    REGISTER_DECODER (TIERTEXSEQVIDEO, tiertexseqvideo);
-    REGISTER_ENCDEC  (TIFF, tiff);
-    REGISTER_DECODER (TMV, tmv);
-    REGISTER_DECODER (TRUEMOTION1, truemotion1);
-    REGISTER_DECODER (TRUEMOTION2, truemotion2);
-    REGISTER_DECODER (TSCC, tscc);
-    REGISTER_DECODER (TXD, txd);
-    REGISTER_DECODER (ULTI, ulti);
-    REGISTER_ENCDEC  (V210,  v210);
-    REGISTER_DECODER (V210X, v210x);
-    REGISTER_DECODER (VB, vb);
-    REGISTER_DECODER (VC1, vc1);
-    REGISTER_DECODER (VC1_VDPAU, vc1_vdpau);
-    REGISTER_DECODER (VCR1, vcr1);
-    REGISTER_DECODER (VMDVIDEO, vmdvideo);
-    REGISTER_DECODER (VMNC, vmnc);
-    REGISTER_DECODER (VP3, vp3);
-    REGISTER_DECODER (VP5, vp5);
-    REGISTER_DECODER (VP6, vp6);
-    REGISTER_DECODER (VP6A, vp6a);
-    REGISTER_DECODER (VP6F, vp6f);
-    REGISTER_DECODER (VQA, vqa);
-    REGISTER_ENCDEC  (WMV1, wmv1);
-    REGISTER_ENCDEC  (WMV2, wmv2);
-    REGISTER_DECODER (WMV3, wmv3);
-    REGISTER_DECODER (WMV3_VDPAU, wmv3_vdpau);
-    REGISTER_DECODER (WNV1, wnv1);
-    REGISTER_DECODER (XAN_WC3, xan_wc3);
-    REGISTER_DECODER (XL, xl);
-    REGISTER_DECODER (YOP, yop);
-    REGISTER_ENCDEC  (ZLIB, zlib);
-    REGISTER_ENCDEC  (ZMBV, zmbv);
-
-    /* audio codecs */
-    REGISTER_ENCDEC  (AAC, aac);
-    REGISTER_ENCDEC  (AC3, ac3);
-    REGISTER_ENCDEC  (ALAC, alac);
-    REGISTER_DECODER (ALS, als);
-    REGISTER_DECODER (AMRNB, amrnb);
-    REGISTER_DECODER (APE, ape);
-    REGISTER_DECODER (ATRAC1, atrac1);
-    REGISTER_DECODER (ATRAC3, atrac3);
-    REGISTER_DECODER (BINKAUDIO_DCT, binkaudio_dct);
-    REGISTER_DECODER (BINKAUDIO_RDFT, binkaudio_rdft);
-    REGISTER_DECODER (COOK, cook);
-    REGISTER_DECODER (DCA, dca);
-    REGISTER_DECODER (DSICINAUDIO, dsicinaudio);
-    REGISTER_DECODER (EAC3, eac3);
-    REGISTER_ENCDEC  (FLAC, flac);
-    REGISTER_DECODER (IMC, imc);
-    REGISTER_DECODER (MACE3, mace3);
-    REGISTER_DECODER (MACE6, mace6);
-    REGISTER_DECODER (MLP, mlp);
-    REGISTER_DECODER (MP1, mp1);
-    REGISTER_ENCDEC  (MP2, mp2);
-    REGISTER_DECODER (MP3, mp3);
-    REGISTER_DECODER (MP3ADU, mp3adu);
-    REGISTER_DECODER (MP3ON4, mp3on4);
-    REGISTER_DECODER (MPC7, mpc7);
-    REGISTER_DECODER (MPC8, mpc8);
-    REGISTER_ENCDEC  (NELLYMOSER, nellymoser);
-    REGISTER_DECODER (QCELP, qcelp);
-    REGISTER_DECODER (QDM2, qdm2);
-    REGISTER_DECODER (RA_144, ra_144);
-    REGISTER_DECODER (RA_288, ra_288);
-    REGISTER_DECODER (SHORTEN, shorten);
-    REGISTER_DECODER (SIPR, sipr);
-    REGISTER_DECODER (SMACKAUD, smackaud);
-    REGISTER_ENCDEC  (SONIC, sonic);
-    REGISTER_ENCODER (SONIC_LS, sonic_ls);
-    REGISTER_DECODER (TRUEHD, truehd);
-    REGISTER_DECODER (TRUESPEECH, truespeech);
-    REGISTER_DECODER (TTA, tta);
-    REGISTER_DECODER (TWINVQ, twinvq);
-    REGISTER_DECODER (VMDAUDIO, vmdaudio);
-    REGISTER_DECODER  (VORBIS, vorbis);
-    REGISTER_DECODER (WAVPACK, wavpack);
-    REGISTER_DECODER (WMAPRO, wmapro);
-    REGISTER_ENCDEC  (WMAV1, wmav1);
-    REGISTER_ENCDEC  (WMAV2, wmav2);
-    REGISTER_DECODER (WMAVOICE, wmavoice);
-    REGISTER_DECODER (WS_SND1, ws_snd1);
-
-    /* PCM codecs */
-    REGISTER_ENCDEC  (PCM_ALAW, pcm_alaw);
-    REGISTER_DECODER (PCM_BLURAY, pcm_bluray);
-    REGISTER_DECODER (PCM_DVD, pcm_dvd);
-    REGISTER_ENCDEC  (PCM_F32BE, pcm_f32be);
-    REGISTER_ENCDEC  (PCM_F32LE, pcm_f32le);
-    REGISTER_ENCDEC  (PCM_F64BE, pcm_f64be);
-    REGISTER_ENCDEC  (PCM_F64LE, pcm_f64le);
-    REGISTER_ENCDEC  (PCM_MULAW, pcm_mulaw);
-    REGISTER_ENCDEC  (PCM_S8, pcm_s8);
-    REGISTER_ENCDEC  (PCM_S16BE, pcm_s16be);
-    REGISTER_ENCDEC  (PCM_S16LE, pcm_s16le);
-    REGISTER_DECODER (PCM_S16LE_PLANAR, pcm_s16le_planar);
-    REGISTER_ENCDEC  (PCM_S24BE, pcm_s24be);
-    REGISTER_ENCDEC  (PCM_S24DAUD, pcm_s24daud);
-    REGISTER_ENCDEC  (PCM_S24LE, pcm_s24le);
-    REGISTER_ENCDEC  (PCM_S32BE, pcm_s32be);
-    REGISTER_ENCDEC  (PCM_S32LE, pcm_s32le);
-    REGISTER_ENCDEC  (PCM_U8, pcm_u8);
-    REGISTER_ENCDEC  (PCM_U16BE, pcm_u16be);
-    REGISTER_ENCDEC  (PCM_U16LE, pcm_u16le);
-    REGISTER_ENCDEC  (PCM_U24BE, pcm_u24be);
-    REGISTER_ENCDEC  (PCM_U24LE, pcm_u24le);
-    REGISTER_ENCDEC  (PCM_U32BE, pcm_u32be);
-    REGISTER_ENCDEC  (PCM_U32LE, pcm_u32le);
-    REGISTER_ENCDEC  (PCM_ZORK , pcm_zork);
-
-    /* DPCM codecs */
-    REGISTER_DECODER (INTERPLAY_DPCM, interplay_dpcm);
-    REGISTER_ENCDEC  (ROQ_DPCM, roq_dpcm);
-    REGISTER_DECODER (SOL_DPCM, sol_dpcm);
-    REGISTER_DECODER (XAN_DPCM, xan_dpcm);
-
-    /* ADPCM codecs */
-    REGISTER_DECODER (ADPCM_4XM, adpcm_4xm);
-    REGISTER_ENCDEC  (ADPCM_ADX, adpcm_adx);
-    REGISTER_DECODER (ADPCM_CT, adpcm_ct);
-    REGISTER_DECODER (ADPCM_EA, adpcm_ea);
-    REGISTER_DECODER (ADPCM_EA_MAXIS_XA, adpcm_ea_maxis_xa);
-    REGISTER_DECODER (ADPCM_EA_R1, adpcm_ea_r1);
-    REGISTER_DECODER (ADPCM_EA_R2, adpcm_ea_r2);
-    REGISTER_DECODER (ADPCM_EA_R3, adpcm_ea_r3);
-    REGISTER_DECODER (ADPCM_EA_XAS, adpcm_ea_xas);
-    REGISTER_ENCDEC  (ADPCM_G726, adpcm_g726);
-    REGISTER_DECODER (ADPCM_IMA_AMV, adpcm_ima_amv);
-    REGISTER_DECODER (ADPCM_IMA_DK3, adpcm_ima_dk3);
-    REGISTER_DECODER (ADPCM_IMA_DK4, adpcm_ima_dk4);
-    REGISTER_DECODER (ADPCM_IMA_EA_EACS, adpcm_ima_ea_eacs);
-    REGISTER_DECODER (ADPCM_IMA_EA_SEAD, adpcm_ima_ea_sead);
-    REGISTER_DECODER (ADPCM_IMA_ISS, adpcm_ima_iss);
-    REGISTER_ENCDEC  (ADPCM_IMA_QT, adpcm_ima_qt);
-    REGISTER_DECODER (ADPCM_IMA_SMJPEG, adpcm_ima_smjpeg);
-    REGISTER_ENCDEC  (ADPCM_IMA_WAV, adpcm_ima_wav);
-    REGISTER_DECODER (ADPCM_IMA_WS, adpcm_ima_ws);
-    REGISTER_ENCDEC  (ADPCM_MS, adpcm_ms);
-    REGISTER_DECODER (ADPCM_SBPRO_2, adpcm_sbpro_2);
-    REGISTER_DECODER (ADPCM_SBPRO_3, adpcm_sbpro_3);
-    REGISTER_DECODER (ADPCM_SBPRO_4, adpcm_sbpro_4);
-    REGISTER_ENCDEC  (ADPCM_SWF, adpcm_swf);
-    REGISTER_DECODER (ADPCM_THP, adpcm_thp);
-    REGISTER_DECODER (ADPCM_XA, adpcm_xa);
-    REGISTER_ENCDEC  (ADPCM_YAMAHA, adpcm_yamaha);
-
-    /* subtitles */
-    REGISTER_ENCDEC  (DVBSUB, dvbsub);
-    REGISTER_ENCDEC  (DVDSUB, dvdsub);
-    REGISTER_DECODER (PGSSUB, pgssub);
-    REGISTER_ENCDEC  (XSUB, xsub);
-
-    /* external libraries */
-    REGISTER_ENCDEC  (LIBDIRAC, libdirac);
-    REGISTER_ENCODER (LIBFAAC, libfaac);
-    REGISTER_DECODER (LIBFAAD, libfaad);
-    REGISTER_ENCDEC  (LIBGSM, libgsm);
-    REGISTER_ENCDEC  (LIBGSM_MS, libgsm_ms);
-    REGISTER_ENCODER (LIBMP3LAME, libmp3lame);
-    REGISTER_ENCDEC  (LIBOPENCORE_AMRNB, libopencore_amrnb);
-    REGISTER_DECODER (LIBOPENCORE_AMRWB, libopencore_amrwb);
-    REGISTER_DECODER (LIBOPENJPEG, libopenjpeg);
-    REGISTER_ENCDEC  (LIBSCHROEDINGER, libschroedinger);
-    REGISTER_DECODER (LIBSPEEX, libspeex);
-    REGISTER_ENCODER (LIBTHEORA, libtheora);
-    REGISTER_ENCODER (LIBVORBIS, libvorbis);
-    REGISTER_ENCDEC  (LIBVPX, libvpx);
-    REGISTER_ENCODER (LIBX264, libx264);
-    REGISTER_ENCODER (LIBXVID, libxvid);
-
-    /* parsers */
-    REGISTER_PARSER  (AAC, aac);
-    REGISTER_PARSER  (AC3, ac3);
-    REGISTER_PARSER  (CAVSVIDEO, cavsvideo);
-    REGISTER_PARSER  (DCA, dca);
-    REGISTER_PARSER  (DIRAC, dirac);
-    REGISTER_PARSER  (DNXHD, dnxhd);
-    REGISTER_PARSER  (DVBSUB, dvbsub);
-    REGISTER_PARSER  (DVDSUB, dvdsub);
-    REGISTER_PARSER  (H261, h261);
-    REGISTER_PARSER  (H263, h263);
-    REGISTER_PARSER  (H264, h264);
-    REGISTER_PARSER  (MJPEG, mjpeg);
-    REGISTER_PARSER  (MLP, mlp);
-    REGISTER_PARSER  (MPEG4VIDEO, mpeg4video);
-    REGISTER_PARSER  (MPEGAUDIO, mpegaudio);
-    REGISTER_PARSER  (MPEGVIDEO, mpegvideo);
-    REGISTER_PARSER  (PNM, pnm);
-    REGISTER_PARSER  (VC1, vc1);
-    REGISTER_PARSER  (VP3, vp3);
-
-    /* bitstream filters */
-    REGISTER_BSF     (AAC_ADTSTOASC, aac_adtstoasc);
-    REGISTER_BSF     (DUMP_EXTRADATA, dump_extradata);
-    REGISTER_BSF     (H264_MP4TOANNEXB, h264_mp4toannexb);
-    REGISTER_BSF     (IMX_DUMP_HEADER, imx_dump_header);
-    REGISTER_BSF     (MJPEGA_DUMP_HEADER, mjpega_dump_header);
-    REGISTER_BSF     (MP3_HEADER_COMPRESS, mp3_header_compress);
-    REGISTER_BSF     (MP3_HEADER_DECOMPRESS, mp3_header_decompress);
-    REGISTER_BSF     (MOV2TEXTSUB, mov2textsub);
-    REGISTER_BSF     (NOISE, noise);
-    REGISTER_BSF     (REMOVE_EXTRADATA, remove_extradata);
-    REGISTER_BSF     (TEXT2MOVSUB, text2movsub);
+static enum AVCodecID remap_deprecated_codec_id(enum AVCodecID id)
+{
+    switch(id){
+        //This is for future deprecatec codec ids, its empty since
+        //last major bump but will fill up again over time, please don't remove it
+        default                                         : return id;
+    }
 }
 
+static AVCodec *find_codec(enum AVCodecID id, int (*x)(const AVCodec *))
+{
+    const AVCodec *p, *experimental = NULL;
+    void *i = 0;
+
+    id = remap_deprecated_codec_id(id);
+
+    while ((p = av_codec_iterate(&i))) {
+        if (!x(p))
+            continue;
+        if (p->id == id) {
+            if (p->capabilities & AV_CODEC_CAP_EXPERIMENTAL && !experimental) {
+                experimental = p;
+            } else
+                return (AVCodec*)p;
+        }
+    }
+
+    return (AVCodec*)experimental;
+}
+
+AVCodec *avcodec_find_encoder(enum AVCodecID id)
+{
+    return find_codec(id, av_codec_is_encoder);
+}
+
+AVCodec *avcodec_find_decoder(enum AVCodecID id)
+{
+    return find_codec(id, av_codec_is_decoder);
+}
+
+static AVCodec *find_codec_by_name(const char *name, int (*x)(const AVCodec *))
+{
+    void *i = 0;
+    const AVCodec *p;
+
+    if (!name)
+        return NULL;
+
+    while ((p = av_codec_iterate(&i))) {
+        if (!x(p))
+            continue;
+        if (strcmp(name, p->name) == 0)
+            return (AVCodec*)p;
+    }
+
+    return NULL;
+}
+
+AVCodec *avcodec_find_encoder_by_name(const char *name)
+{
+    return find_codec_by_name(name, av_codec_is_encoder);
+}
+
+AVCodec *avcodec_find_decoder_by_name(const char *name)
+{
+    return find_codec_by_name(name, av_codec_is_decoder);
+}

@@ -199,9 +199,12 @@ int _ifconfig(const char *name, int flags, const char *addr, const char *netmask
 	if(strcmp(name, "eth0_1") == 0 ||
 		strcmp(name, "eth0_2") == 0 ||
 		strcmp(name, "eth0_3") == 0 ||
-		strcmp(name, "eth0_4") == 0 ||
-		strcmp(name, "eth1") == 0){
+		strcmp(name, "eth0_4") == 0){
 		set_hwaddr(name, get_lan_hwaddr());
+		if(flags == 0) return -1;
+	}
+	if(strcmp(name, "eth1") == 0){
+		set_hwaddr(name, get_wan_hwaddr());
 		if(flags == 0) return -1;
 	}
 #endif

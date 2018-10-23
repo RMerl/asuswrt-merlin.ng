@@ -81,20 +81,20 @@ function saveSetting(mode){
 		flag = document.getElementById("transfer_ddns").checked ? 1 : 0;
 	}
 
-	//location.href='Settings_'+productid+'_' + mode + '.CFG?path=' + flag + '&mode=' + mode;
 	location.href='Settings_'+productid+'.CFG?path=' + flag;
 }
 
 function uploadSetting(){
-  var file_obj = document.form.file;
+	var file_obj = document.form.file;
+	var file_obj_name = file_obj.value.toUpperCase();
 	
-	if(file_obj.value == ""){
+	if(file_obj_name == ""){
 		alert("<#JS_fieldblank#>");
 		file_obj.focus();
 	}
-	else if(file_obj.value.length < 6 ||
-					file_obj.value.lastIndexOf(".CFG")  < 0 || 
-					file_obj.value.lastIndexOf(".CFG") != (file_obj.value.length)-4){		
+	else if(file_obj_name.length < 6 ||
+					file_obj_name.lastIndexOf(".CFG")  < 0 || 
+					file_obj_name.lastIndexOf(".CFG") != (file_obj_name.length)-4){		
 		alert("<#Setting_upload_hint#>");
 		file_obj.focus();
 	}

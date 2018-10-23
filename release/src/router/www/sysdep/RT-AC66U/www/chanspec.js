@@ -451,6 +451,17 @@ function wl_chanspec_list_change(){
 
 		add_options_x2(document.form.wl_channel, chanspecs_string, chanspecs, cur_control_channel);
 	}
+
+	if(bw_cap == 5){
+		if(cur_control_channel == 0){
+			document.form.acs_dfs_checkbox.checked = true;
+			check_DFS_support(document.form.acs_dfs_checkbox);
+			document.form.acs_dfs_checkbox.disabled = true;
+		}
+	}
+	else{
+		document.form.acs_dfs_checkbox.disabled = false;
+	}
 }
 
 function wlextchannel_fourty(v){
@@ -530,6 +541,14 @@ function change_channel(obj){
 				if(document.form.wl_channel.value  == 0){
 					document.getElementById('dfs_checkbox').style.display = "";
 					document.form.acs_dfs.disabled = false;
+					if(document.form.wl_bw.value == 5){
+						document.form.acs_dfs_checkbox.checked = true;
+						check_DFS_support(document.form.acs_dfs_checkbox);
+						document.form.acs_dfs_checkbox.disabled = true;
+					}
+					else{
+						document.form.acs_dfs_checkbox.disabled = false;
+					}
 				}	
 				else{
 					document.getElementById('dfs_checkbox').style.display = "none";

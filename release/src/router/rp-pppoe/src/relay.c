@@ -1485,7 +1485,7 @@ relayHandlePADS(PPPoEInterface const *iface,
 			       hu, "RP-PPPoE: Relay: Unable to allocate session");
 		} else {
 			relaySendError(CODE_PADS, htons(0), &Interfaces[proxy_idx],
-			       proxy_idx,
+			       proxy_addr,
 			       hu, "RP-PPPoE: Relay: Unable to allocate session");
 		}
 		relaySendError(CODE_PADT, packet->session, iface,

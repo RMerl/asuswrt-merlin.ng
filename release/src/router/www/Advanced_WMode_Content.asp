@@ -72,6 +72,7 @@ function initial(){
 	show_menu();
 
 	regen_band(document.form.wl_unit);
+	dwb_regen_band(document.form.wl_unit);
 	if(lantiq_support){
 		checkWLReady();
 		var mode_desc = ["<#WLANConfig11b_x_APMode_option2#>"];
@@ -118,7 +119,7 @@ function initial(){
 		document.getElementById("wl_unit_field").style.display = "none";
 	}
 	
-	if(wl_info.band5g_2_support){
+	if(wl_info.band5g_2_support && !dwb_info.mode){
 		document.getElementById("wl_5g_mac_2").style.display = "";
 		document.getElementById("wl_5g_mac_th1").innerHTML = "5GHz-1 MAC";
 	}

@@ -282,6 +282,8 @@ function initial() {
 		code += '</div>';
 		$('#terms_service').html(code);
 		control_bt_status();
+		document.getElementById("terms_service_hyperlink").className = "splash_template_terms_service_hyperlink";
+		document.getElementById("terms_service_hyperlink").onclick = open_term_service;
 	}
 
 	if(opener.document.form.cb_passcode.checked == false) {
@@ -446,7 +448,7 @@ function isMobile() {
 				</g>
 			</g>
 		</svg>
-		<div id='splash_template_title' class='splash_template_title'>Welcome to</div>
+		<div id='splash_template_title' class='splash_template_title'><#FreeWiFi_Welcome#></div>
 		<div id='splash_template_brand_name' class='splash_template_brand_name'>Brand Name</div>
 		<input id='splash_template_passcode' name='splash_template_passcode' class='splash_template_passcode' value='' placeHolder='Please enter Passcode' type='text' maxlength='64' autocorrect='off' autocapitalize='off'>
 		<div id='splash_template_terms_service' class='splash_template_terms_service'>
@@ -454,11 +456,11 @@ function isMobile() {
 			<input type='checkbox' name='cbTermService' id='cbTermService' onclick='control_bt_status();'>
 		</div>
 		<div class='splash_template_terms_service_text'>
-			I have read and agree to <a class='splash_template_terms_service_hyperlink' onclick='open_term_service();'>the Terms of Service</a>
+			<#FreeWiFi_Agree_Terms_Service#>
 		</div>
 		<div style='clear:both;'></div>
 		</div>
-		<div id='splash_template_continue' class='splash_template_continue' onclick='continue_action();'>Continue</div>
+		<div id='splash_template_continue' class='splash_template_continue' onclick='continue_action();'><#FreeWiFi_Continue#></div>
 		
 	</div>
 </div>

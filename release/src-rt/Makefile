@@ -1449,6 +1449,10 @@ define RouterOptions
 		sed -i "/RTCONFIG_NEW_USER_LOW_RSSI/d" $(1); \
 		echo "RTCONFIG_NEW_USER_LOW_RSSI=y" >>$(1); \
 	fi; \
+	if [ "$(CONNDIAG)" = "y" ]; then \
+		sed -i "/RTCONFIG_CONNDIAG/d" $(1); \
+		echo "RTCONFIG_CONNDIAG=y" >>$(1); \
+	fi; \
 	if [ "$(USB)" = "USB" ]; then \
 		sed -i "/RTCONFIG_USB\b/d" $(1); \
 		echo "RTCONFIG_USB=y" >>$(1); \
@@ -1659,6 +1663,8 @@ define RouterOptions
 	if [ "$(HTTPS)" = "y" ]; then \
 		sed -i "/RTCONFIG_HTTPS/d" $(1); \
 		echo "RTCONFIG_HTTPS=y" >>$(1); \
+                sed -i "/RTCONFIG_FORCE_AUTO_UPGRADE/d" $(1); \
+		echo "RTCONFIG_FORCE_AUTO_UPGRADE=y" >>$(1); \
 	fi; \
 	if [ "$(USBRESET)" = "y" ]; then \
 		sed -i "/RTCONFIG_USBRESET/d" $(1); \
@@ -2558,6 +2564,10 @@ define RouterOptions
 		sed -i "/RTCONFIG_PERMISSION_MANAGEMENT/d" $(1); \
 		echo "RTCONFIG_PERMISSION_MANAGEMENT=y" >>$(1); \
 	fi; \
+	if [ "$(CONNTRACK)" = "y" ]; then \
+		sed -i "/RTCONFIG_CONNTRACK/d" $(1); \
+		echo "RTCONFIG_CONNTRACK=y" >>$(1); \
+ 	fi; \
 	if [ "$(DETWAN)" = "y" ]; then \
 		sed -i "/RTCONFIG_DETWAN/d" $(1); \
 		echo "RTCONFIG_DETWAN=y" >>$(1); \
@@ -2597,10 +2607,6 @@ define RouterOptions
 	if [ "$(DNSFILTER)" = "y" ]; then \
 		sed -i "/RTCONFIG_DNSFILTER/d" $(1); \
 		echo "RTCONFIG_DNSFILTER=y" >>$(1); \
-	fi; \
-	if [ "$(CFGSYNC)" = "y" ]; then \
-		sed -i "/RTCONFIG_CFGSYNC/d" $(1); \
-		echo "RTCONFIG_CFGSYNC=y" >>$(1); \
 	fi; \
 	if [ "$(WEBMON)" = "y" ]; then \
 		sed -i "/RTCONFIG_WEBMON/d" $(1); \
@@ -2748,6 +2754,10 @@ define RouterOptions
 	if [ "$(ETHOBD)" = "y" ]; then \
 		sed -i "/RTCONFIG_ETHOBD/d" $(1); \
 		echo "RTCONFIG_ETHOBD=y" >>$(1); \
+	fi; \
+	if [ "$(DWB)" = "y" ]; then \
+		sed -i "/RTCONFIG_DWB/d" $(1); \
+		echo "RTCONFIG_DWB=y" >>$(1); \
 	fi; \
 	)
 	$(call platformRouterOptions, $(1))
@@ -3096,6 +3106,12 @@ define BusyboxOptions
 		echo "CONFIG_FEATURE_BASH_IS_ASH=y" >>$(1); \
 		sed -i "/CONFIG_FEATURE_BASH_IS_NONE/d" $(1); \
 		echo "# CONFIG_FEATURE_BASH_IS_NONE is not set" >>$(1); \
+	fi; \
+	if [ "$(CONNDIAG)" = "y" ]; then \
+		sed -i "/CONFIG_IPCRM/d" $(1); \
+		echo "CONFIG_IPCRM=y" >>$(1); \
+		sed -i "/CONFIG_IPCS/d" $(1); \
+		echo "CONFIG_IPCS=y" >>$(1); \
 	fi; \
 	)
 	$(call platformBusyboxOptions, $(1))

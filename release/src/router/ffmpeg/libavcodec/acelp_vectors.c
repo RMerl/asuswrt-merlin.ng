@@ -21,9 +21,12 @@
  */
 
 #include <inttypes.h>
+
+#include "libavutil/avassert.h"
+#include "libavutil/common.h"
+#include "libavutil/float_dsp.h"
 #include "avcodec.h"
 #include "acelp_vectors.h"
-#include "celp_math.h"
 
 const uint8_t ff_fc_2pulses_9bits_track1[16] =
 {
@@ -93,16 +96,6 @@ const uint8_t ff_fc_4pulses_8bits_track_4[32] =
     78, 79,
 };
 
-#if 0
-static uint8_t gray_decode[32] =
-{
-    0,  1,  3,  2,  7,  6,  4,  5,
-   15, 14, 12, 13,  8,  9, 11, 10,
-   31, 30, 28, 29, 24, 25, 27, 26,
-   16, 17, 19, 18, 23, 22, 20, 21
-};
-#endif
-
 const float ff_pow_0_7[10] = {
     0.700000, 0.490000, 0.343000, 0.240100, 0.168070,
     0.117649, 0.082354, 0.057648, 0.040354, 0.028248
@@ -122,10 +115,10 @@ const float ff_b60_sinc[61] = {
  0.898529  ,  0.865051  ,  0.769257  ,  0.624054  ,  0.448639  ,  0.265289   ,
  0.0959167 , -0.0412598 , -0.134338  , -0.178986  , -0.178528  , -0.142609   ,
 -0.0849304 , -0.0205078 ,  0.0369568 ,  0.0773926 ,  0.0955200 ,  0.0912781  ,
- 0.0689392 ,  0.0357056 ,  0.        , -0.0305481 , -0.0504150 , -0.0570068  ,
+ 0.0689392 ,  0.0357056 ,  0.0       , -0.0305481 , -0.0504150 , -0.0570068  ,
 -0.0508423 , -0.0350037 , -0.0141602 ,  0.00665283,  0.0230713 ,  0.0323486  ,
  0.0335388 ,  0.0275879 ,  0.0167847 ,  0.00411987, -0.00747681, -0.0156860  ,
--0.0193481 , -0.0183716 , -0.0137634 , -0.00704956,  0.        ,  0.00582886 ,
+-0.0193481 , -0.0183716 , -0.0137634 , -0.00704956,  0.0       ,  0.00582886 ,
  0.00939941,  0.0103760 ,  0.00903320,  0.00604248,  0.00238037, -0.00109863 ,
 -0.00366211, -0.00497437, -0.00503540, -0.00402832, -0.00241089, -0.000579834,
  0.00103760,  0.00222778,  0.00277710,  0.00271606,  0.00213623,  0.00115967 ,
@@ -211,7 +204,7 @@ void ff_adaptive_gain_control(float *out, const float *in, float speech_energ,
                               int size, float alpha, float *gain_mem)
 {
     int i;
-    float postfilter_energ = ff_dot_productf(in, in, size);
+    float postfilter_energ = avpriv_scalarproduct_float_c(in, in, size);
     float gain_scale_factor = 1.0;
     float mem = *gain_mem;
 
@@ -232,7 +225,7 @@ void ff_scale_vector_to_given_sum_of_squares(float *out, const float *in,
                                              float sum_of_squares, const int n)
 {
     int i;
-    float scalefactor = ff_dot_productf(in, in, n);
+    float scalefactor = avpriv_scalarproduct_float_c(in, in, n);
     if (scalefactor)
         scalefactor = sqrt(sum_of_squares / scalefactor);
     for (i = 0; i < n; i++)
@@ -247,11 +240,13 @@ void ff_set_fixed_vector(float *out, const AMRFixed *in, float scale, int size)
         int x   = in->x[i], repeats = !((in->no_repeat_mask >> i) & 1);
         float y = in->y[i] * scale;
 
-        do {
-            out[x] += y;
-            y *= in->pitch_fac;
-            x += in->pitch_lag;
-        } while (x < size && repeats);
+        if (in->pitch_lag > 0)
+            av_assert0(x < size);
+            do {
+                out[x] += y;
+                y *= in->pitch_fac;
+                x += in->pitch_lag;
+            } while (x < size && repeats);
     }
 }
 
@@ -262,9 +257,18 @@ void ff_clear_fixed_vector(float *out, const AMRFixed *in, int size)
     for (i=0; i < in->n; i++) {
         int x  = in->x[i], repeats = !((in->no_repeat_mask >> i) & 1);
 
-        do {
-            out[x] = 0.0;
-            x += in->pitch_lag;
-        } while (x < size && repeats);
+        if (in->pitch_lag > 0)
+            do {
+                out[x] = 0.0;
+                x += in->pitch_lag;
+            } while (x < size && repeats);
     }
+}
+
+void ff_acelp_vectors_init(ACELPVContext *c)
+{
+    c->weighted_vector_sumf   = ff_weighted_vector_sumf;
+
+    if(HAVE_MIPSFPU)
+        ff_acelp_vectors_init_mips(c);
 }

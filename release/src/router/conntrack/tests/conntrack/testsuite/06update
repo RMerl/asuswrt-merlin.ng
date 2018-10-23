@@ -1,0 +1,8 @@
+# create dummy flow
+-I -s 1.1.1.1 -d 2.2.2.2 -p tcp --sport 10 --dport 20 --state SYN_RECV -u SEEN_REPLY,ASSURED -t 50 ; OK
+# find it again using mark
+-L -s 1.1.1.1 -d 2.2.2.2 -p tcp --sport 10 --dport 20 ; OK
+# set fixed timeout
+-U -s 1.1.1.1 -d 2.2.2.2 -p tcp --sport 10 --dport 20 -u FIXED_TIMEOUT; OK
+# delete it
+-D -s 1.1.1.1 -d 2.2.2.2 -p tcp --sport 10 --dport 20; OK

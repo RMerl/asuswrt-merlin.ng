@@ -63,7 +63,7 @@ static struct hsearch_data htab;
 void
 unescape(char *s)
 {
-	char s_tmp[8192];
+	char s_tmp[65535];
 	unsigned int c;
 
 	while ((s = strpbrk(s, "%+"))) {

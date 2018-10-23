@@ -36,6 +36,7 @@ function initial(){
 	}
 
 	regen_band(document.form.wl_unit);
+	dwb_regen_band(document.form.wl_unit);
 
 	if(!band5g_support || based_modelid == "RT-AC87U")
 		document.getElementById("wl_unit_field").style.display = "none";

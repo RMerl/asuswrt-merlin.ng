@@ -23,19 +23,33 @@
 
 #include <stdint.h>
 
+#include "attributes.h"
+#include "version.h"
+
+/**
+ * @defgroup lavu_aes AES
+ * @ingroup lavu_crypto
+ * @{
+ */
+
 extern const int av_aes_size;
 
 struct AVAES;
 
 /**
- * Initializes an AVAES context.
+ * Allocate an AVAES context.
+ */
+struct AVAES *av_aes_alloc(void);
+
+/**
+ * Initialize an AVAES context.
  * @param key_bits 128, 192 or 256
  * @param decrypt 0 for encryption, 1 for decryption
  */
 int av_aes_init(struct AVAES *a, const uint8_t *key, int key_bits, int decrypt);
 
 /**
- * Encrypts / decrypts.
+ * Encrypt or decrypt a buffer using a previously initialized context.
  * @param count number of 16 byte blocks
  * @param dst destination array, can be equal to src
  * @param src source array, can be equal to dst
@@ -43,5 +57,9 @@ int av_aes_init(struct AVAES *a, const uint8_t *key, int key_bits, int decrypt);
  * @param decrypt 0 for encryption, 1 for decryption
  */
 void av_aes_crypt(struct AVAES *a, uint8_t *dst, const uint8_t *src, int count, uint8_t *iv, int decrypt);
+
+/**
+ * @}
+ */
 
 #endif /* AVUTIL_AES_H */

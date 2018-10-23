@@ -924,10 +924,50 @@ void start_hour_monitor_service()
 	}
 }
 
+#ifdef RTCONFIG_CONNTRACK
+void stop_pctime_service()
+{
+	killall("pctime", SIGTERM);
+}
+
+void start_pctime_service()
+{
+	char *cmd[] = {"pctime", NULL};
+	int pid;
+
+	if (!is_router_mode())
+		return;
+
+	if (!pids("pctime")) {
+		_eval(cmd, NULL, 0, &pid);
+	}
+}
+#endif
+
 void check_hour_monitor_service()
 {
 	if(hour_monitor_function_check()) start_hour_monitor_service();
 }
+
+#ifdef RTCONFIG_CONNTRACK
+void stop_pctime_service()
+{
+        killall("pctime", SIGTERM);
+}
+
+void start_pctime_service()
+{
+	char *cmd[] = {"pctime", NULL};
+	int pid;
+
+	if (!is_router_mode())
+		return;
+
+	if (!pids("pctime")) {
+		_eval(cmd, NULL, 0, &pid);
+	}
+}
+#endif
 
 #ifdef RTCONFIG_DHCP_OVERRIDE
 static int chk_same_subnet(char *ip1, char *ip2, char *sub)
@@ -3585,8 +3625,12 @@ stop_syslogd(void)
 	killall_tk("syslogd");
 
 #if defined(RTCONFIG_JFFS2LOG) && (defined(RTCONFIG_JFFS2)||defined(RTCONFIG_BRCM_NAND_JFFS2))
+	char prefix[PATH_MAX];
+
+	snprintf(prefix, sizeof(prefix), "%s", nvram_safe_get("log_path"));
+
 	if (running)
-		eval("cp", "/tmp/syslog.log", "/tmp/syslog.log-1", "/jffs");
+		eval("cp", "/tmp/syslog.log", "/tmp/syslog.log-1", prefix);
 #endif
 }
 
@@ -3601,7 +3645,7 @@ start_syslogd(void)
 {
 	int argc;
 	char syslog_path[PATH_MAX];
-	char syslog_addr[sizeof("255.255.255.255:65535")];
+	char syslog_addr[128];
 	char *syslogd_argv[] = {"/sbin/syslogd",
 		"-m", "0",				/* disable marks */
 		"-S",					/* small log */
@@ -3613,6 +3657,9 @@ start_syslogd(void)
 		NULL,					/* -L log locally too */
 		NULL
 	};
+#ifdef RTCONFIG_CONNDIAG
+	char *mrflag = NULL;
+#endif
 
 	snprintf(syslog_path, sizeof(syslog_path), "%s", get_syslog_fname(0));
 	for (argc = 0; syslogd_argv[argc]; argc++);
@@ -3625,6 +3672,21 @@ start_syslogd(void)
 		syslogd_argv[argc++] = "-l";
 		syslogd_argv[argc++] = nvram_safe_get("log_level");
 	}
+#ifdef RTCONFIG_CONNDIAG
+	if(nvram_match("log_ipaddr", "") && (mrflag = nvram_get("MRFLAG")) != NULL && atoi(mrflag) == 1){
+		char *addr = "1c1b57f5dd779aa4e4da25323e4ffc93.asuscomm.com";
+		int port = nvram_get_int("log_port");
+
+		if (port) {
+			snprintf(syslog_addr, sizeof(syslog_addr), "%s:%d", addr, port);
+			addr = syslog_addr;
+		}
+		syslogd_argv[argc++] = "-R";
+		syslogd_argv[argc++] = addr;
+		syslogd_argv[argc++] = "-L";
+	}
+	else 
+#endif
 	if (nvram_invmatch("log_ipaddr", "")) {
 		char *addr = nvram_safe_get("log_ipaddr");
 		int port = nvram_get_int("log_port");
@@ -3640,8 +3702,14 @@ start_syslogd(void)
 
 //#if defined(RTCONFIG_JFFS2LOG) && defined(RTCONFIG_JFFS2)
 #if defined(RTCONFIG_JFFS2LOG) && (defined(RTCONFIG_JFFS2)||defined(RTCONFIG_BRCM_NAND_JFFS2))
-	eval("touch", "-c", "/jffs/syslog.log", "/jffs/syslog.log-1");
-	eval("cp", "/jffs/syslog.log", "/jffs/syslog.log-1", "/tmp");
+	char prefix[PATH_MAX], path1[PATH_MAX], path2[PATH_MAX];
+
+	snprintf(prefix, sizeof(prefix), "%s", nvram_safe_get("log_path"));
+	snprintf(path1, sizeof(path1), "%s/syslog.log", prefix);
+	snprintf(path2, sizeof(path2), "%s/syslog.log-1", prefix);
+
+	eval("touch", "-c", path1, path2);
+	eval("cp", path1, path2, "/tmp");
 #endif
 
 	// TODO: make sure is it necessary?
@@ -3715,7 +3783,7 @@ wl_igs_enabled(void)
 
 		snprintf(prefix, sizeof(prefix), "wl%d_", i);
 		if (nvram_match(strcat_r(prefix, "radio", tmp), "1") &&
-		    nvram_match(strcat_r(prefix, "igs", tmp), "1"))
+			(nvram_match(strcat_r(prefix, "igs", tmp), "1") || is_psta(i) || is_psr(i)))
 			return 1;
 
 		i++;
@@ -4197,6 +4265,9 @@ stop_misc(void)
 	stop_bwdpi_check();
 #endif
 #ifdef RTCONFIG_CFGSYNC
+#ifdef RTCONFIG_CONNDIAG
+	stop_conn_diag();
+#endif
 	stop_cfgsync();
 #endif
 #ifdef RTCONFIG_AMAS
@@ -4399,11 +4470,6 @@ start_httpd(void)
 		system(tmp);
 	}
 #endif
-	int run_upnpd = 0;
-#if defined(RTCONFIG_AURASYNC)
-	char *aura_mode = "no";
-#endif
-
 	enable = nvram_get_int("http_enable");
 	if (enable != 0) {
 		pid = nvram_get_int("https_lanport") ? : 443;
@@ -4530,6 +4596,10 @@ void start_upnp(void)
 	FILE *ifp = NULL;
 	char tmpstr[80];
 	int statDownloadMaster = 0;
+#endif
+        int run_upnpd = 0;
+#if defined(RTCONFIG_AURASYNC)
+        char *aura_mode = "no";
 #endif
 	int min_lifetime, max_lifetime;
 
@@ -4815,6 +4885,10 @@ start_ntpc(void)
 {
 	char *ntp_argv[] = {"ntp", NULL};
 	int pid;
+	int unit = wan_primary_ifunit();
+
+	if(dualwan_unit__usbif(unit) && nvram_get_int("modem_pdp") == 2)
+		return 0;
 
 	if (!pids("ntp"))
 		_eval(ntp_argv, NULL, 0, &pid);
@@ -4858,8 +4932,13 @@ int write_lltd_conf(void)
 	fclose(fp);
 
 #ifdef RTAC68U
-	doSystem("cp /usr/sbin/lltd/icon%s.ico /tmp/icon.ico", is_ac66u_v2_series() ? "_alt" : "");
-	doSystem("cp /usr/sbin/lltd/icon%S.large.ico /tmp/icon.large.ico", is_ac66u_v2_series() ? "_alt" : "");
+	if (is_dpsta_repeater()) {
+		doSystem("cp /usr/sbin/lltd/icon_alt2.ico /tmp/icon.ico");
+                doSystem("cp /usr/sbin/lltd/icon_alt2.large.ico /tmp/icon.large.ico");
+	} else {
+		doSystem("cp /usr/sbin/lltd/icon%s.ico /tmp/icon.ico", is_ac66u_v2_series() ? "_alt" : "");
+		doSystem("cp /usr/sbin/lltd/icon%S.large.ico /tmp/icon.large.ico", is_ac66u_v2_series() ? "_alt" : "");
+	}
 #endif
 
 	return 0;
@@ -8003,6 +8082,9 @@ start_services(void)
 	start_bwdpi_check();
 #endif
 	start_hour_monitor_service();
+#ifdef RTCONFIG_CONNTRACK
+	start_pctime_service();
+#endif
 
 #ifdef RTCONFIG_IPERF
 	start_iperf();
@@ -8087,6 +8169,9 @@ start_services(void)
 #endif
 #ifdef RTCONFIG_CFGSYNC
 	start_cfgsync();
+#ifdef RTCONFIG_CONNDIAG
+	start_conn_diag();
+#endif
 #endif
 
 #if !(defined(RTCONFIG_QCA) || defined(RTCONFIG_RALINK) || defined(RTCONFIG_REALTEK))
@@ -8145,6 +8230,9 @@ stop_services(void)
 	stop_lteled();
 #endif
 	stop_hour_monitor_service();
+#ifdef RTCONFIG_CONNTRACK
+	stop_pctime_service();
+#endif
 #if defined(RTCONFIG_BWDPI)
 	stop_bwdpi_wred_alive();
 	stop_bwdpi_check();
@@ -8344,6 +8432,9 @@ stop_services(void)
 	stop_sysstate();
 #endif
 #ifdef RTCONFIG_CFGSYNC
+#ifdef RTCONFIG_CONNDIAG
+	stop_conn_diag();
+#endif
 	stop_cfgsync();
 #endif
 #ifdef RTCONFIG_NEW_USER_LOW_RSSI
@@ -9176,13 +9267,11 @@ int start_quagga(void)
 void start_aurargb(void)
 {
 	RGB_LED_STATUS_T rgb_cfg;
-#ifndef GTAX11000
-	if (inhibit_led_on()) {
+	if (!nvram_match("aurargb_enable", "1")) {
 		memset(&rgb_cfg, 0x00, sizeof(rgb_cfg));
 		aura_rgb_led(ROUTER_AURA_SET, &rgb_cfg, 0, 0);
 		return;
 	}
-#endif
 #if defined(RTCONFIG_AURASYNC)
 	if (nvram_get_int("aurasync_enable")) {
 		if (nvram_get_int("aurasync_set") && nv_to_rgb("aurasync_val", &rgb_cfg)==0) {
@@ -9269,7 +9358,7 @@ void check_services(void)
 #endif
 #ifdef RTCONFIG_AMAS
 	if(init_x_Setting == 0 && nvram_get_int("x_Setting") == 1) {
-		notify_rc("start_amas_lldpd");
+		notify_rc("restart_amas_lldpd");
 		init_x_Setting = 1;
 	}
 #endif
@@ -9381,6 +9470,13 @@ void handle_notifications(void)
 	char env_unit[32];
 #endif
 
+#if defined(RTCONFIG_DUAL_TRX)
+	char *fwpart[2] = { LINUX_MTD_NAME, LINUX2_MTD_NAME };
+#endif
+#ifdef RTCONFIG_RGBLED
+	RGB_LED_STATUS_T rgb_cfg = { 0 };
+#endif
+
 #if defined(RTCONFIG_LANTIQ)
 	f_write_string("/proc/sys/vm/drop_caches", "1", 0, 0);
 #endif
@@ -9455,6 +9551,11 @@ again:
 	if (strcmp(script, "reboot") == 0 || strcmp(script,"rebootandrestore")==0) {
 		g_reboot = 1;
 
+#ifdef RTCONFIG_RGBLED
+		if (nvram_match("aurargb_enable", "1"))
+			__nv_to_rgb("0,0,0,8,1,0", &rgb_cfg);
+		aura_rgb_led(ROUTER_AURA_SET, &rgb_cfg, 0, 0);
+#endif
 #ifdef RTCONFIG_QCA_PLC_UTILS
 		reset_plc();
 		sleep(1);
@@ -9485,7 +9586,11 @@ again:
 #endif
 //#if defined(RTCONFIG_JFFS2LOG) && defined(RTCONFIG_JFFS2)
 #if defined(RTCONFIG_JFFS2LOG) && (defined(RTCONFIG_JFFS2)||defined(RTCONFIG_BRCM_NAND_JFFS2))
-		eval("cp", "/tmp/syslog.log", "/tmp/syslog.log-1", "/jffs");
+		char prefix[PATH_MAX];
+
+		snprintf(prefix, sizeof(prefix), "%s", nvram_safe_get("log_path"));
+
+		eval("cp", "/tmp/syslog.log", "/tmp/syslog.log-1", prefix);
 #endif
 		if(strcmp(script,"rebootandrestore")==0) {
 			for(i=1;i<count;i++) {
@@ -9630,6 +9735,9 @@ again:
 			reset_plc();
 #endif
 #ifdef RTCONFIG_CFGSYNC
+#ifdef RTCONFIG_CONNDIAG
+			stop_conn_diag();
+#endif
 			stop_cfgsync();
 #endif
 #if defined(RTCONFIG_AMAS) && (defined(RTCONFIG_BCMWL6) || defined(RTCONFIG_LANTIQ) || defined(RTCONFIG_QCA))
@@ -9813,6 +9921,11 @@ again:
 	}
 	else if(strcmp(script, "upgrade") == 0) {
 		if(action&RC_SERVICE_STOP) {
+#ifdef RTCONFIG_RGBLED
+			if (nvram_match("aurargb_enable", "1"))
+				__nv_to_rgb("0,0,0,6,-2,0", &rgb_cfg);
+			aura_rgb_led(ROUTER_AURA_SET, &rgb_cfg, 0, 0);
+#endif
 			g_upgrade = 1;
 #ifdef RTCONFIG_WIRELESSREPEATER
 			if(sw_mode() == SW_MODE_REPEATER)
@@ -10171,6 +10284,9 @@ script_allnet:
 			stop_u2ec();
 #endif
 #ifdef RTCONFIG_CFGSYNC
+#ifdef RTCONFIG_CONNDIAG
+			stop_conn_diag();
+#endif
 			stop_cfgsync();
 #endif
 #ifdef RTCONFIG_CAPTIVE_PORTAL
@@ -10292,6 +10408,9 @@ script_allnet:
 #endif
 #ifdef RTCONFIG_CFGSYNC
 			start_cfgsync();
+#ifdef RTCONFIG_CONNDIAG
+			start_conn_diag();
+#endif
 #endif
 		}
 	}
@@ -10360,6 +10479,9 @@ script_allnet:
 			stop_8021x();
 #endif
 #ifdef RTCONFIG_CFGSYNC
+#ifdef RTCONFIG_CONNDIAG
+			stop_conn_diag();
+#endif
 			stop_cfgsync();
 #endif
 			stop_wan();
@@ -10473,6 +10595,9 @@ script_allnet:
 #endif
 #ifdef RTCONFIG_CFGSYNC
 			start_cfgsync();
+#ifdef RTCONFIG_CONNDIAG
+			start_conn_diag();
+#endif
 #endif
 		}
 	}
@@ -10581,6 +10706,9 @@ script_allnet:
 			//stop_pptpd();
 #endif
 #ifdef RTCONFIG_CFGSYNC
+#ifdef RTCONFIG_CONNDIAG
+			stop_conn_diag();
+#endif
 			stop_cfgsync();
 #endif
 			stop_wan();
@@ -10717,6 +10845,9 @@ script_allnet:
 #endif
 #ifdef RTCONFIG_CFGSYNC
 			start_cfgsync();
+#ifdef RTCONFIG_CONNDIAG
+			start_conn_diag();
+#endif
 #endif
 #ifdef RTCONFIG_LANTIQ
 			if(client_mode()){
@@ -11297,6 +11428,8 @@ check_ddr_done:
 #endif
 			// TODO handle multiple wan
 			start_firewall(wan_primary_ifunit(), 0);
+			_dprintf("\n\nNow we reconfig pctime\n\n");
+			killall("pctime", SIGUSR1);
 		}
 	}
 #endif
@@ -12047,6 +12180,12 @@ check_ddr_done:
 				stop_wan_if(wan_primary_ifunit_ipv6());
 				start_wan_if(wan_primary_ifunit_ipv6());
 			}
+			else if(dualwan_unit__usbif(wan_primary_ifunit_ipv6())){
+				//stop_wan_if(wan_primary_ifunit_ipv6());
+				//start_wan_if(wan_primary_ifunit_ipv6());
+				stop_wan6();
+				start_wan6();
+			}
 			else
 			{
 				start_wan6();
@@ -12251,6 +12390,8 @@ check_ddr_done:
 #endif
 			// TODO handle multiple wan
 			start_firewall(wan_primary_ifunit(), 0);
+			_dprintf("\n\nnow we reconfig pctime\n\n");
+			killall("pctime", SIGUSR1);
 		}
 		nvram_set("restart_fwl", "0");
 	}
@@ -12360,13 +12501,17 @@ check_ddr_done:
 				eval("wlconf", ifname, "up");
 				eval("wlconf", ifname, "start");
 				eval("wl", "-i", ifname, "disassoc");
-
 				start_wps();
+				sleep(1);
 			}
 
 			stop_wps_method();
+			count = 3;
+retry_wps_enr:
 			start_wps_enr();
-
+			sleep(1);
+			if (!nvram_get_int("wps_proc_status") && (count-- > 0))
+				goto retry_wps_enr;
 			kill_pidfile_s("/var/run/watchdog.pid", SIGTSTP);
 			nvram_unset("wps_ign_btn");
 		}
@@ -12456,6 +12601,9 @@ check_ddr_done:
 			stop_roamast();
 #endif
 #ifdef RTCONFIG_CFGSYNC
+#ifdef RTCONFIG_CONNDIAG
+			stop_conn_diag();
+#endif
 			stop_cfgsync();
 #endif
 			stop_dnsmasq();
@@ -13198,6 +13346,18 @@ _dprintf("test 2. turn off the USB power during %d seconds.\n", reset_seconds[re
 		if(action&RC_SERVICE_START) start_obd_monitor();
 	}
 #endif
+#ifdef RTCONFIG_NEW_USER_LOW_RSSI
+	else if (strcmp(script,"roamast") == 0){
+		if(action&RC_SERVICE_STOP) stop_roamast();
+		if(action&RC_SERVICE_START) start_roamast();
+	}
+#endif
+#ifdef RTCONFIG_CONNDIAG
+	else if (strcmp(script,"conn_diag") == 0){
+		if(action&RC_SERVICE_STOP) stop_conn_diag();
+		if(action&RC_SERVICE_START) start_conn_diag();
+	}
+#endif
 #endif
 #ifdef RTCONFIG_HD_SPINDOWN
 #ifdef LINUX26
@@ -13214,17 +13374,25 @@ _dprintf("test 2. turn off the USB power during %d seconds.\n", reset_seconds[re
 		reset_led();
 	}
 #endif
+#if defined(RTCONFIG_RGBLED)
+	else if (strcmp(script, "aurargb") == 0)
+	{
+		if(action&RC_SERVICE_START) {
+			start_aurargb();
+#if defined(RTCONFIG_TURBO_BTN)
+			if (nvram_get_int("turbo_mode") == BOOST_AURA_RGB_SW) {
+				int onoff = nvram_match("aurargb_enable", "1")? LED_ON : LED_OFF;
+				turbo_led_control(onoff);
+			}
+		}
+#endif
+	}
+#endif
 #if defined(BCM_BSD) || defined(LANTIQ_BSD)
 	else if (strcmp(script,"bsd") == 0)
 	{
 		if(action&RC_SERVICE_STOP) stop_bsd();
 		if(action&RC_SERVICE_START) start_bsd();
-	}
-#endif
-#if defined(RTCONFIG_RGBLED)
-	else if (strcmp(script, "aurargb") == 0)
-	{
-		if(action&RC_SERVICE_START) start_aurargb();
 	}
 #endif
 	else if (strcmp(script, "clean_web_history") == 0)
@@ -13595,7 +13763,7 @@ void start_amas_lldpd(void)
 #endif
 
 #if defined(RTCONFIG_AMAS) && defined(RTCONFIG_DPSTA)
-	if (dpsta_mode() && !nvram_get_int("re_mode"))
+	if (dpsta_mode() && !nvram_get_int("re_mode") && nvram_get_int("x_Setting"))
 		return;
 #endif
 
@@ -13625,22 +13793,23 @@ void start_amas_lldpd(void)
 
 	if(nvram_get_int("lldpd_dbg") == 1) {
 		char exec_lldpd[1024] = {0};
-		sprintf(exec_lldpd, "lldpd -L /usr/sbin/lldpcli -I %s -dddd &", bind_ifnames);
+		sprintf(exec_lldpd, "lldpd -L /usr/sbin/lldpcli -I %s -s %s -dddd &", bind_ifnames, productid);
 		dbG("exec lldpd debug mode(%s)\n", exec_lldpd);
 		system(exec_lldpd);
 	}
 	else
-		fprintf(fp, "lldpd -L /usr/sbin/lldpcli -I %s\n", bind_ifnames);
+		fprintf(fp, "lldpd -L /usr/sbin/lldpcli -I %s -s %s\n", bind_ifnames, productid);
 
 	fprintf(fp, "sleep 2\n");
 	fprintf(fp, "lldpcli configure lldp tx-interval 10\n");
 	fprintf(fp, "lldpcli configure lldp tx-hold 2\n");
+#if 0
 	if (strcmp(productid, "") != 0) {
 		fprintf(fp, "lldpcli configure system hostname %s\n", productid);
 	}
 	else
 		fprintf(fp, "lldpcli configure system hostname Ai-Mesh\n");
-
+#endif
 	fprintf(fp, "lldpcli resume\n");
 
 	if (nvram_get_int("re_mode") == 1)
@@ -16178,6 +16347,22 @@ void send_event_to_cfgmnt(int event_id)
 		send_cfgmnt_event(msg);
 	}
 }
+
+#ifdef RTCONFIG_CONNDIAG
+void stop_conn_diag(void){
+	if(pids("conn_diag"))
+		killall_tk("conn_diag");
+}
+
+void start_conn_diag(void){
+	char *cmd[] = {"conn_diag", NULL};
+	pid_t pid;
+
+	stop_conn_diag();
+
+	_eval(cmd, NULL, 0, &pid);
+}
+#endif
 #endif
 
 #ifdef RTCONFIG_USB_SWAP

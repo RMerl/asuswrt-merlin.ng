@@ -161,6 +161,7 @@ Android			31
 Mac OS			32
 Smartphone		33
 Desktop			34
+Windows laptop  35
 */
 .type0{
 	background-image:url('/images/New_ui/networkmap/client.svg');
@@ -267,6 +268,9 @@ Desktop			34
 }
 .type34{
 	background-position:100% 50%;
+}
+.type35{
+	background-position:16.5% 33%;
 }
 
 .type0:hover{

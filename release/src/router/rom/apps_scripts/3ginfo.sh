@@ -133,6 +133,8 @@ for modem_unit in 0 1; do
 	echo "${prefix}act_startsec=$str"
 	str=`nvram get ${prefix}act_ip`
 	echo "${prefix}act_ip=$str"
+	str=`nvram get ${prefix}act_ipv6`
+	echo "${prefix}act_ipv6=$str"
 	echo ">"
 	echo "modem autoapn:>"
 	nvram show |grep ^${prefix}auto

@@ -23,8 +23,7 @@
  * RL2 file demuxer
  * @file
  * @author Sascha Sommer (saschasommer@freenet.de)
- * For more information regarding the RL2 file format, visit:
- *   http://wiki.multimedia.cx/index.php?title=RL2
+ * @see http://wiki.multimedia.cx/index.php?title=RL2
  *
  * extradata:
  * 2 byte le initial drawing offset within 320x200 viewport
@@ -33,8 +32,12 @@
  * optional background_frame
  */
 
+#include <stdint.h>
+
 #include "libavutil/intreadwrite.h"
+#include "libavutil/mathematics.h"
 #include "avformat.h"
+#include "internal.h"
 
 #define EXTRADATA1_SIZE (6 + 256 * 3) ///< video base, clr, palette
 
@@ -68,20 +71,16 @@ static int rl2_probe(AVProbeData *p)
 /**
  * read rl2 header data and setup the avstreams
  * @param s demuxer context
- * @param ap format parameters
  * @return 0 on success, AVERROR otherwise
  */
-static av_cold int rl2_read_header(AVFormatContext *s,
-                            AVFormatParameters *ap)
+static av_cold int rl2_read_header(AVFormatContext *s)
 {
-    ByteIOContext *pb = s->pb;
+    AVIOContext *pb = s->pb;
     AVStream *st;
     unsigned int frame_count;
     unsigned int audio_frame_counter = 0;
     unsigned int video_frame_counter = 0;
     unsigned int back_size;
-    int data_size;
-    unsigned short encoding_method;
     unsigned short sound_rate;
     unsigned short rate;
     unsigned short channels;
@@ -95,70 +94,69 @@ static av_cold int rl2_read_header(AVFormatContext *s,
     int i;
     int ret = 0;
 
-    url_fskip(pb,4);          /* skip FORM tag */
-    back_size = get_le32(pb); /** get size of the background frame */
-    signature = get_be32(pb);
-    data_size = get_be32(pb);
-    frame_count = get_le32(pb);
+    avio_skip(pb,4);          /* skip FORM tag */
+    back_size = avio_rl32(pb); /**< get size of the background frame */
+    signature = avio_rb32(pb);
+    avio_skip(pb, 4);         /* data size */
+    frame_count = avio_rl32(pb);
 
     /* disallow back_sizes and frame_counts that may lead to overflows later */
     if(back_size > INT_MAX/2  || frame_count > INT_MAX / sizeof(uint32_t))
         return AVERROR_INVALIDDATA;
 
-    encoding_method = get_le16(pb);
-    sound_rate = get_le16(pb);
-    rate = get_le16(pb);
-    channels = get_le16(pb);
-    def_sound_size = get_le16(pb);
+    avio_skip(pb, 2);         /* encoding method */
+    sound_rate = avio_rl16(pb);
+    rate = avio_rl16(pb);
+    channels = avio_rl16(pb);
+    def_sound_size = avio_rl16(pb);
 
     /** setup video stream */
-    st = av_new_stream(s, 0);
+    st = avformat_new_stream(s, NULL);
     if(!st)
          return AVERROR(ENOMEM);
 
-    st->codec->codec_type = AVMEDIA_TYPE_VIDEO;
-    st->codec->codec_id = CODEC_ID_RL2;
-    st->codec->codec_tag = 0;  /* no fourcc */
-    st->codec->width = 320;
-    st->codec->height = 200;
+    st->codecpar->codec_type = AVMEDIA_TYPE_VIDEO;
+    st->codecpar->codec_id = AV_CODEC_ID_RL2;
+    st->codecpar->codec_tag = 0;  /* no fourcc */
+    st->codecpar->width = 320;
+    st->codecpar->height = 200;
 
     /** allocate and fill extradata */
-    st->codec->extradata_size = EXTRADATA1_SIZE;
+    st->codecpar->extradata_size = EXTRADATA1_SIZE;
 
     if(signature == RLV3_TAG && back_size > 0)
-        st->codec->extradata_size += back_size;
+        st->codecpar->extradata_size += back_size;
 
-    st->codec->extradata = av_mallocz(st->codec->extradata_size +
-                                          FF_INPUT_BUFFER_PADDING_SIZE);
-    if(!st->codec->extradata)
+    if(ff_get_extradata(s, st->codecpar, pb, st->codecpar->extradata_size) < 0)
         return AVERROR(ENOMEM);
-
-    if(get_buffer(pb,st->codec->extradata,st->codec->extradata_size) !=
-                      st->codec->extradata_size)
-        return AVERROR(EIO);
 
     /** setup audio stream if present */
     if(sound_rate){
+        if (!channels || channels > 42) {
+            av_log(s, AV_LOG_ERROR, "Invalid number of channels: %d\n", channels);
+            return AVERROR_INVALIDDATA;
+        }
+
         pts_num = def_sound_size;
         pts_den = rate;
 
-        st = av_new_stream(s, 0);
+        st = avformat_new_stream(s, NULL);
         if (!st)
             return AVERROR(ENOMEM);
-        st->codec->codec_type = AVMEDIA_TYPE_AUDIO;
-        st->codec->codec_id = CODEC_ID_PCM_U8;
-        st->codec->codec_tag = 1;
-        st->codec->channels = channels;
-        st->codec->bits_per_coded_sample = 8;
-        st->codec->sample_rate = rate;
-        st->codec->bit_rate = st->codec->channels * st->codec->sample_rate *
-            st->codec->bits_per_coded_sample;
-        st->codec->block_align = st->codec->channels *
-            st->codec->bits_per_coded_sample / 8;
-        av_set_pts_info(st,32,1,rate);
+        st->codecpar->codec_type = AVMEDIA_TYPE_AUDIO;
+        st->codecpar->codec_id = AV_CODEC_ID_PCM_U8;
+        st->codecpar->codec_tag = 1;
+        st->codecpar->channels = channels;
+        st->codecpar->bits_per_coded_sample = 8;
+        st->codecpar->sample_rate = rate;
+        st->codecpar->bit_rate = st->codecpar->channels * st->codecpar->sample_rate *
+            st->codecpar->bits_per_coded_sample;
+        st->codecpar->block_align = st->codecpar->channels *
+            st->codecpar->bits_per_coded_sample / 8;
+        avpriv_set_pts_info(st,32,1,rate);
     }
 
-    av_set_pts_info(s->streams[0], 32, pts_num, pts_den);
+    avpriv_set_pts_info(s->streams[0], 32, pts_num, pts_den);
 
     chunk_size =   av_malloc(frame_count * sizeof(uint32_t));
     audio_size =   av_malloc(frame_count * sizeof(uint32_t));
@@ -172,12 +170,21 @@ static av_cold int rl2_read_header(AVFormatContext *s,
     }
 
     /** read offset and size tables */
-    for(i=0; i < frame_count;i++)
-        chunk_size[i] = get_le32(pb);
-    for(i=0; i < frame_count;i++)
-        chunk_offset[i] = get_le32(pb);
-    for(i=0; i < frame_count;i++)
-        audio_size[i] = get_le32(pb) & 0xFFFF;
+    for(i=0; i < frame_count;i++) {
+        if (avio_feof(pb))
+            return AVERROR_INVALIDDATA;
+        chunk_size[i] = avio_rl32(pb);
+    }
+    for(i=0; i < frame_count;i++) {
+        if (avio_feof(pb))
+            return AVERROR_INVALIDDATA;
+        chunk_offset[i] = avio_rl32(pb);
+    }
+    for(i=0; i < frame_count;i++) {
+        if (avio_feof(pb))
+            return AVERROR_INVALIDDATA;
+        audio_size[i] = avio_rl32(pb) & 0xFFFF;
+    }
 
     /** build the sample index */
     for(i=0;i<frame_count;i++){
@@ -214,7 +221,7 @@ static int rl2_read_packet(AVFormatContext *s,
                             AVPacket *pkt)
 {
     Rl2DemuxContext *rl2 = s->priv_data;
-    ByteIOContext *pb = s->pb;
+    AVIOContext *pb = s->pb;
     AVIndexEntry *sample = NULL;
     int i;
     int ret = 0;
@@ -232,17 +239,17 @@ static int rl2_read_packet(AVFormatContext *s,
     }
 
     if(stream_id == -1)
-        return AVERROR(EIO);
+        return AVERROR_EOF;
 
     ++rl2->index_pos[stream_id];
 
     /** position the stream (will probably be there anyway) */
-    url_fseek(pb, sample->pos, SEEK_SET);
+    avio_seek(pb, sample->pos, SEEK_SET);
 
     /** fill the packet */
     ret = av_get_packet(pb, pkt, sample->size);
     if(ret != sample->size){
-        av_free_packet(pkt);
+        av_packet_unref(pkt);
         return AVERROR(EIO);
     }
 
@@ -287,14 +294,12 @@ static int rl2_read_seek(AVFormatContext *s, int stream_index, int64_t timestamp
     return 0;
 }
 
-AVInputFormat rl2_demuxer = {
-    "rl2",
-    NULL_IF_CONFIG_SMALL("RL2 format"),
-    sizeof(Rl2DemuxContext),
-    rl2_probe,
-    rl2_read_header,
-    rl2_read_packet,
-    NULL,
-    rl2_read_seek,
+AVInputFormat ff_rl2_demuxer = {
+    .name           = "rl2",
+    .long_name      = NULL_IF_CONFIG_SMALL("RL2"),
+    .priv_data_size = sizeof(Rl2DemuxContext),
+    .read_probe     = rl2_probe,
+    .read_header    = rl2_read_header,
+    .read_packet    = rl2_read_packet,
+    .read_seek      = rl2_read_seek,
 };
-

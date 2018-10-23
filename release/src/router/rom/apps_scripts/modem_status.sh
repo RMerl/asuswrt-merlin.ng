@@ -18,6 +18,7 @@ modem_type=`nvram get ${prefix}act_type`
 modem_vid=`nvram get ${prefix}act_vid`
 modem_pid=`nvram get ${prefix}act_pid`
 modem_dev=`nvram get ${prefix}act_dev`
+modem_pdp=`nvram get modem_pdp`
 modem_reg_time=`nvram get modem_reg_time`
 wandog_interval=`nvram get wandog_interval`
 sim_order=`nvram get modem_sim_order`
@@ -1182,7 +1183,7 @@ elif [ "$1" == "gnws" ]; then
 		mnc=`echo -n "$at_cgnws" |awk 'BEGIN{FS=","}{print $6}' 2>/dev/null`
 		spn=`echo -n "$at_cgnws" |awk 'BEGIN{FS=","}{print $7}' 2>/dev/null`
 		isp_long=`echo -n "$at_cgnws" |awk 'BEGIN{FS=","}{print $8}' 2>/dev/null`
-		isp_short=`echo -n "$at_cgnws" |awk 'BEGIN{FS=","}{print $9}' 2>/dev/null`
+		isp_short=`echo -n "$at_cgnws" |awk 'BEGIN{FS=","}{print $9}' |awk 'BEGIN{FS=" "}{print $1}' 2>/dev/null`
 
 		echo "   Roaming=$roaming."
 		echo "    Signal=$signal."
@@ -1297,6 +1298,8 @@ elif [ "$1" == "smsc" ]; then
 	echo "done."
 elif [ "$1" == "ip" ]; then
 	if [ "$is_gobi" -eq "1" ]; then
+		ip=
+		ipv6=
 		echo "Getting IP..."
 		at_ret=`/usr/sbin/modem_at.sh '+CGPADDR=1' 1 2>&1`
 		ret=`echo -n "$at_ret" |grep "+CGPADDR: 1," 2>/dev/null`
@@ -1305,11 +1308,21 @@ elif [ "$1" == "ip" ]; then
 			exit 48
 		fi
 
-		ip=`echo -n "$ret" |awk 'BEGIN{FS=","}{print $2}' 2>/dev/null`
+		if [ "$modem_pdp" != "2" ]; then
+			ip=`echo -n "$ret" |awk 'BEGIN{FS=","}{print $2}' 2>/dev/null`
+		fi
+
+		if [ "$modem_pdp" == "2" ]; then
+			ipv6=`echo -n "$ret" |awk 'BEGIN{FS=","}{print $2}' 2>/dev/null`
+		elif [ "$modem_pdp" == "3" ]; then
+			ipv6=`echo -n "$ret" |awk 'BEGIN{FS=","}{print $3}' 2>/dev/null`
+		fi
 
 		nvram set ${prefix}act_ip=$ip
+		nvram set ${prefix}act_ipv6=$ipv6
 
 		echo "ip=$ip."
+		echo "ipv6=$ipv6."
 		echo "done."
 	fi
 fi

@@ -104,6 +104,8 @@ else
 
 	if [ "$firmware_check_ret" == "1" ] && [ "$rsasign_check_ret" == "1" ]; then
 		echo "---- fw check OK ----" >> /tmp/webs_upgrade.log
+		nvram set fwpath=2
+		nvram commit
 #		/sbin/ejusb -1 0
 #		rc rc_service restart_upgrade
 	else

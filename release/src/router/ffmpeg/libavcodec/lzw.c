@@ -24,11 +24,13 @@
  * @file
  * @brief LZW decoding routines
  * @author Fabrice Bellard
- * Modified for use in TIFF by Konstantin Shishkov
+ * @author modified for use in TIFF by Konstantin Shishkov
  */
 
 #include "avcodec.h"
+#include "bytestream.h"
 #include "lzw.h"
+#include "libavutil/mem.h"
 
 #define LZW_MAXBITS                 12
 #define LZW_SIZTABLE                (1<<LZW_MAXBITS)
@@ -42,7 +44,7 @@ static const uint16_t mask[17] =
 };
 
 struct LZWState {
-    const uint8_t *pbuf, *ebuf;
+    GetByteContext gb;
     int bbits;
     unsigned int bbuf;
 
@@ -72,9 +74,9 @@ static int lzw_get_code(struct LZWState * s)
     if(s->mode == FF_LZW_GIF) {
         while (s->bbits < s->cursize) {
             if (!s->bs) {
-                s->bs = *s->pbuf++;
+                s->bs = bytestream2_get_byte(&s->gb);
             }
-            s->bbuf |= (*s->pbuf++) << s->bbits;
+            s->bbuf |= bytestream2_get_byte(&s->gb) << s->bbits;
             s->bbits += 8;
             s->bs--;
         }
@@ -82,7 +84,7 @@ static int lzw_get_code(struct LZWState * s)
         s->bbuf >>= s->cursize;
     } else { // TIFF
         while (s->bbits < s->cursize) {
-            s->bbuf = (s->bbuf << 8) | (*s->pbuf++);
+            s->bbuf = (s->bbuf << 8) | bytestream2_get_byte(&s->gb);
             s->bbits += 8;
         }
         c = s->bbuf >> (s->bbits - s->cursize);
@@ -91,22 +93,18 @@ static int lzw_get_code(struct LZWState * s)
     return c & s->curmask;
 }
 
-const uint8_t* ff_lzw_cur_ptr(LZWState *p)
-{
-    return ((struct LZWState*)p)->pbuf;
-}
-
-void ff_lzw_decode_tail(LZWState *p)
+int ff_lzw_decode_tail(LZWState *p)
 {
     struct LZWState *s = (struct LZWState *)p;
 
     if(s->mode == FF_LZW_GIF) {
-        while(s->pbuf < s->ebuf && s->bs>0){
-            s->pbuf += s->bs;
-            s->bs = *s->pbuf++;
+        while (s->bs > 0 && bytestream2_get_bytes_left(&s->gb)) {
+            bytestream2_skip(&s->gb, s->bs);
+            s->bs = bytestream2_get_byte(&s->gb);
         }
     }else
-        s->pbuf= s->ebuf;
+        bytestream2_skip(&s->gb, bytestream2_get_bytes_left(&s->gb));
+    return bytestream2_tell(&s->gb);
 }
 
 av_cold void ff_lzw_decode_open(LZWState **p)
@@ -121,7 +119,7 @@ av_cold void ff_lzw_decode_close(LZWState **p)
 
 /**
  * Initialize LZW decoder
- * @param s LZW context
+ * @param p LZW context
  * @param csize initial code size in bits
  * @param buf input data
  * @param buf_size input data size
@@ -134,8 +132,7 @@ int ff_lzw_decode_init(LZWState *p, int csize, const uint8_t *buf, int buf_size,
     if(csize < 1 || csize >= LZW_MAXBITS)
         return -1;
     /* read buffer */
-    s->pbuf = buf;
-    s->ebuf = s->pbuf + buf_size;
+    bytestream2_init(&s->gb, buf, buf_size);
     s->bbuf = 0;
     s->bbits = 0;
     s->bs = 0;
@@ -161,7 +158,7 @@ int ff_lzw_decode_init(LZWState *p, int csize, const uint8_t *buf, int buf_size,
  * NOTE: the algorithm here is inspired from the LZW GIF decoder
  *  written by Steven A. Bennett in 1987.
  *
- * @param s LZW context
+ * @param p LZW context
  * @param buf output buffer
  * @param len number of bytes to decode
  * @return number of bytes decoded

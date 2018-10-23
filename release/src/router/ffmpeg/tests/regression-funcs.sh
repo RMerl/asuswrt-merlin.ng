@@ -9,116 +9,80 @@ test_ref=$2
 raw_src_dir=$3
 target_exec=$4
 target_path=$5
+threads=${6:-1}
+cpuflags=${8:-all}
+target_samples=$9
 
 datadir="./tests/data"
 target_datadir="${target_path}/${datadir}"
 
 this="$test.$test_ref"
-logfile="$datadir/$this.regression"
 outfile="$datadir/$test_ref/"
-errfile="$datadir/$this.err"
 
-# various files
-ffmpeg="$target_exec ${target_path}/ffmpeg"
-tiny_psnr="tests/tiny_psnr"
-benchfile="$datadir/$this.bench"
-bench="$datadir/$this.bench.tmp"
-bench2="$datadir/$this.bench2.tmp"
+ # various files
+ffmpeg="$target_exec ${target_path}/ffmpeg${PROGSUF}"
 raw_src="${target_path}/$raw_src_dir/%02d.pgm"
 raw_dst="$datadir/$this.out.yuv"
-raw_ref="$datadir/$test_ref.ref.yuv"
 pcm_src="$target_datadir/asynth1.sw"
-pcm_dst="$datadir/$this.out.wav"
-pcm_ref="$datadir/$test_ref.ref.wav"
+pcm_src_1ch="$target_datadir/asynth-16000-1.wav"
+pcm_ref_1ch="$datadir/$test_ref-16000-1.ref.wav"
 crcfile="$datadir/$this.crc"
 target_crcfile="$target_datadir/$this.crc"
+
+cleanfiles="$raw_dst $crcfile"
+trap 'rm -f -- $cleanfiles' EXIT
 
 mkdir -p "$datadir"
 mkdir -p "$outfile"
 
-[ "${V-0}" -gt 0 ] && echov=echo || echov=:
-[ "${V-0}" -gt 1 ] || exec 2>$errfile
+[ "${V-0}" -gt 0 ] && echov=echov || echov=:
+
+echov(){
+    echo "$@" >&3
+}
 
 . $(dirname $0)/md5.sh
 
-FFMPEG_OPTS="-v 0 -y -flags +bitexact -dct fastint -idct simple -sws_flags +accurate_rnd+bitexact"
+AVCONV_OPTS="-nostdin -nostats -y -cpuflags $cpuflags"
+COMMON_OPTS="-flags +bitexact -idct simple -sws_flags +accurate_rnd+bitexact -fflags +bitexact"
+DEC_OPTS="$COMMON_OPTS -threads $threads"
+ENC_OPTS="$COMMON_OPTS -threads $threads -dct fastint"
 
-do_ffmpeg()
+run_avconv()
+{
+    $echov $ffmpeg $AVCONV_OPTS $*
+    $ffmpeg $AVCONV_OPTS $*
+}
+
+do_avconv()
 {
     f="$1"
     shift
     set -- $* ${target_path}/$f
-    $echov $ffmpeg $FFMPEG_OPTS $*
-    $ffmpeg $FFMPEG_OPTS -benchmark $* > $bench
-    do_md5sum $f >> $logfile
-    if [ $f = $raw_dst ] ; then
-        $tiny_psnr $f $raw_ref >> $logfile
-    elif [ $f = $pcm_dst ] ; then
-        $tiny_psnr $f $pcm_ref 2 >> $logfile
-    else
-        wc -c $f >> $logfile
-    fi
-    expr "$(cat $bench)" : '.*utime=\(.*s\)' > $bench2
-    echo $(cat $bench2) $f >> $benchfile
+    run_avconv $*
+    do_md5sum $f
+    echo $(wc -c $f)
 }
 
-do_ffmpeg_nomd5()
+do_avconv_nomd5()
 {
     f="$1"
     shift
     set -- $* ${target_path}/$f
-    $echov $ffmpeg $FFMPEG_OPTS $*
-    $ffmpeg $FFMPEG_OPTS -benchmark $* > $bench
+    run_avconv $*
     if [ $f = $raw_dst ] ; then
-        $tiny_psnr $f $raw_ref >> $logfile
+        $tiny_psnr $f $raw_ref
     elif [ $f = $pcm_dst ] ; then
-        $tiny_psnr $f $pcm_ref 2 >> $logfile
+        $tiny_psnr $f $pcm_ref 2
     else
-        wc -c $f >> $logfile
+        echo $(wc -c $f)
     fi
-    expr "$(cat $bench)" : '.*utime=\(.*s\)' > $bench2
-    echo $(cat $bench2) $f >> $benchfile
 }
 
-do_ffmpeg_crc()
+do_avconv_crc()
 {
     f="$1"
     shift
-    $echov $ffmpeg $FFMPEG_OPTS $* -f crc "$target_crcfile"
-    $ffmpeg $FFMPEG_OPTS $* -f crc "$target_crcfile"
-    echo "$f $(cat $crcfile)" >> $logfile
-    rm -f "$crcfile"
-}
-
-do_ffmpeg_nocheck()
-{
-    f="$1"
-    shift
-    $echov $ffmpeg $FFMPEG_OPTS $*
-    $ffmpeg $FFMPEG_OPTS -benchmark $* > $bench
-    expr "$(cat $bench)" : '.*utime=\(.*s\)' > $bench2
-    echo $(cat $bench2) $f >> $benchfile
-}
-
-do_video_decoding()
-{
-    do_ffmpeg $raw_dst $1 -i $target_path/$file -f rawvideo $2
-    rm -f $raw_dst
-}
-
-do_video_encoding()
-{
-    file=${outfile}$1
-    do_ffmpeg $file $2 -f image2 -vcodec pgmyuv -i $raw_src $3
-}
-
-do_audio_encoding()
-{
-    file=${outfile}$1
-    do_ffmpeg $file -ab 128k -ac 2 -f s16le -i $pcm_src $3
-}
-
-do_audio_decoding()
-{
-    do_ffmpeg $pcm_dst -i $target_path/$file -sample_fmt s16 -f wav
+    run_avconv $* -f crc "$target_crcfile"
+    echo "$f $(cat $crcfile)"
 }

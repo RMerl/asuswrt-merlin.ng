@@ -980,6 +980,11 @@ void remove_usb_module(void)
 void stop_usb_program(int mode)
 {
 #ifdef RTCONFIG_USB_MODEM
+#ifdef RTCONFIG_INTERNAL_GOBI
+	killall_tk("gobi_api");
+	if(!g_reboot)
+		sleep(1);
+#endif
 #ifdef RTCONFIG_USB_BECEEM
 	killall("wimaxd", SIGTERM);
 	killall("wimaxd", SIGUSR1);
@@ -3004,7 +3009,7 @@ static void kill_samba(int sig)
 void enable_gro(int interval)
 {
 	char *argv[3] = {"echo", "", NULL};
-	char lan_ifname[128], lan_ifnames[32], *next;
+	char lan_ifname[32], lan_ifnames[128], *next;
 	char path[64] = {0};
 	char parm[32] = {0};
 
@@ -3077,11 +3082,7 @@ start_samba(void)
 	int acc_num;
 	char cmd[256];
 #if defined(SMP)
-#if defined(GTAC5300) || defined(GTAX11000) || defined(RTAX88U)
-	char *cpu_list = "3";
-#else
-	char *cpu_list = "1";
-#endif
+char *cpu_list = nvram_get("usb_user_core");
 #if (defined(RTCONFIG_BCMARM) || defined(RTCONFIG_SOC_IPQ8064))
 	int cpu_num = sysconf(_SC_NPROCESSORS_CONF);
 	int taskset_ret = -1;
@@ -3236,7 +3237,7 @@ start_samba(void)
 		taskset_ret = eval("ionice", "-c1", "-n0", smbd_cmd, "-D", "-s", "/etc/smb.conf");
 #else
 	if(!nvram_match("stop_taskset", "1")){
-		if(cpu_num > 1)
+		if(cpu_num > 1 && cpu_list)
 			taskset_ret = cpu_eval(NULL, cpu_list, smbd_cmd, "-D", "-s", "/etc/smb.conf");
 		else
 			taskset_ret = eval(smbd_cmd, "-D", "-s", "/etc/smb.conf");

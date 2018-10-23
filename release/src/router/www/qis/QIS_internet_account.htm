@@ -56,6 +56,8 @@ var isSku = function(country){
 }
 //var iptv_port_settings_orig = '<%nvram_get("iptv_port_settings"); %>' == ""? "12": '<%nvram_get("iptv_port_settings"); %>';
 
+var iptv_support = (isSku("CN") || isSku("US") || isSku("CA"))? false:true;
+
 function QKaccount_load_body(){
 	document.getElementById("vpn_client_desc").onmouseover = function(){overHint(50);}
 	document.getElementById("vpn_client_desc").onmouseout = function(){nd();}
@@ -69,25 +71,27 @@ function QKaccount_load_body(){
 	else{
 		parent.set_step("t2");
 		hideLinkTag();
-		if(isSku("TW")){
-			document.getElementById("isp_TW_desc").style.display = "";
-			document.getElementById("mac_clone_field").style.display = "none";
-			document.getElementById("mac_clone_field_1").style.display = "none";
-			document.getElementById("vpn_field").style.display = "none";
-			document.getElementById("specialisp_desc").innerHTML = "Hinet MOD";
-			document.getElementById("select_profile").style.display = "none";
-		}
-		else if(isSku("CN") || isSku("US") || isSku("CA")){
+
+		if(!iptv_support){
 			document.getElementById("vpn_field").style.display = "none";
 			document.getElementById("specialISP_tr").style.display = "none";
 		}
-		else if(isSku("EU") || isSku("SG") || isSku("AA")){
+		else{
 			document.getElementById("specialISP_tr").style.display = "";
+			if(isSku("TW")){
+				document.getElementById("isp_TW_desc").style.display = "";
+				document.getElementById("mac_clone_field").style.display = "none";
+				document.getElementById("mac_clone_field_1").style.display = "none";
+				document.getElementById("vpn_field").style.display = "none";
+				document.getElementById("specialisp_desc").innerHTML = "Hinet MOD";
+				document.getElementById("select_profile").style.display = "none";
+			}
 		}
 
 		if(parent.flag_manual == 1){
 			document.getElementById("vpn_field").style.display = "";
-			document.getElementById("specialISP_tr").style.display = "";
+			if(iptv_support)
+				document.getElementById("specialISP_tr").style.display = "";
 		}
 
 		if(now_flag != "auto_way_pppoe")
@@ -108,7 +112,7 @@ function QKaccount_load_body(){
 		document.getElementById("pppoe_fail_desc").style.display = "";
 	}
 
-	if(parent.original_switch_wantag != "none"){
+	if(parent.original_switch_wantag != "none" && iptv_support){
 		document.form.specialisp.checked = true;
 		enable_ISP_special();
 	}
@@ -709,7 +713,7 @@ function pass_checked_iptv(obj){
 				</select>
 			</th>
 		</tr>
-		<tr id="specialISP_tr">
+		<tr id="specialISP_tr"  style="display:none;">
 			<th colspan="2">
 				<input type="checkbox" id="specialisp" name="specialisp" onclick="enable_ISP_special();">
 				<span id="specialisp_desc" class="QISGeneralFont" style="margin-left:0px;font-style:normal;color:#6CF;font-size:14px;font-weight:bolder;"><#PPPConnection_x_HostNameForISP_sectionname#></span>

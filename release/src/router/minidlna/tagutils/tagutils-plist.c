@@ -25,7 +25,7 @@
 #include <ctype.h>
 
 #include "tagutils.h"
-#include "log.h"
+#include "../log.h"
 
 
 #define MAX_BUF 4096

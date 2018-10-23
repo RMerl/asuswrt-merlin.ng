@@ -27,6 +27,9 @@
 
 #include "common.h"
 #include "integer.h"
+#include "avassert.h"
+
+static const AVInteger zero_i;
 
 AVInteger av_add_i(AVInteger a, AVInteger b){
     int i, carry=0;
@@ -110,8 +113,14 @@ AVInteger av_mod_i(AVInteger *quot, AVInteger a, AVInteger b){
     AVInteger quot_temp;
     if(!quot) quot = &quot_temp;
 
-    assert((int16_t)a[AV_INTEGER_SIZE-1] >= 0 && (int16_t)b[AV_INTEGER_SIZE-1] >= 0);
-    assert(av_log2(b)>=0);
+    if ((int16_t)a.v[AV_INTEGER_SIZE-1] < 0) {
+        a = av_mod_i(quot, av_sub_i(zero_i, a), b);
+        *quot = av_sub_i(zero_i, *quot);
+        return av_sub_i(zero_i, a);
+    }
+
+    av_assert2((int16_t)a.v[AV_INTEGER_SIZE-1] >= 0 && (int16_t)b.v[AV_INTEGER_SIZE-1] >= 0);
+    av_assert2(av_log2_i(b)>=0);
 
     if(i > 0)
         b= av_shr_i(b, -i);
@@ -155,43 +164,3 @@ int64_t av_i2int(AVInteger a){
     }
     return out;
 }
-
-#ifdef TEST
-#undef NDEBUG
-#include <assert.h>
-
-const uint8_t ff_log2_tab[256]={
-        0,0,1,1,2,2,2,2,3,3,3,3,3,3,3,3,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,
-        5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,
-        6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,
-        6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,
-        7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,
-        7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,
-        7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,
-        7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7
-};
-
-int main(void){
-    int64_t a,b;
-
-    for(a=7; a<256*256*256; a+=13215){
-        for(b=3; b<256*256*256; b+=27118){
-            AVInteger ai= av_int2i(a);
-            AVInteger bi= av_int2i(b);
-
-            assert(av_i2int(ai) == a);
-            assert(av_i2int(bi) == b);
-            assert(av_i2int(av_add_i(ai,bi)) == a+b);
-            assert(av_i2int(av_sub_i(ai,bi)) == a-b);
-            assert(av_i2int(av_mul_i(ai,bi)) == a*b);
-            assert(av_i2int(av_shr_i(ai, 9)) == a>>9);
-            assert(av_i2int(av_shr_i(ai,-9)) == a<<9);
-            assert(av_i2int(av_shr_i(ai, 17)) == a>>17);
-            assert(av_i2int(av_shr_i(ai,-17)) == a<<17);
-            assert(av_log2_i(ai) == av_log2(a));
-            assert(av_i2int(av_div_i(ai,bi)) == a/b);
-        }
-    }
-    return 0;
-}
-#endif

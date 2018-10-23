@@ -114,6 +114,7 @@
 #include <sys/dlpi.h>
 #include <sys/stat.h>
 #include <sys/mkdev.h>
+#include <sys/time.h>
 #include <net/if.h>
 #include <net/if_arp.h>
 #include <net/route.h>
@@ -2794,4 +2795,14 @@ get_pty(master_fdp, slave_fdp, slave_name, uid)
     *slave_fdp = sfd;
 
     return 1;
+}
+
+/********************************************************************
+ *
+ * get_time - Get current time, monotonic if possible.
+ */
+int
+get_time(struct timeval *tv)
+{
+    return gettimeofday(tv, NULL);
 }

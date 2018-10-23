@@ -196,6 +196,9 @@ pc_s *initial_pc(pc_s **target_pc){
 	tmp_pc = *target_pc;
 
 	tmp_pc->enabled = 0;
+	tmp_pc->state = INITIAL;
+	tmp_pc->prev_state = INITIAL;
+	tmp_pc->dtimes = nvram_get_int("questcf")?:0;
 	memset(tmp_pc->device, 0, 32);
 	memset(tmp_pc->mac, 0, 18);
 	tmp_pc->events = NULL;
@@ -403,6 +406,27 @@ void print_pc_list(pc_s *pc_list){
 	}
 }
 
+#ifdef RTCONFIG_CONNTRACK
+void flush_pc_list(pc_s *pc_list){
+	pc_s *follow_pc;
+	int i;
+
+	if(pc_list == NULL)
+		return;
+
+	char tip[16];
+	for(follow_pc = pc_list; follow_pc != NULL; follow_pc = follow_pc->next){
+		if(follow_pc->enabled) {
+			memset(tip, 0, sizeof(tip));
+			if(arpcache(follow_pc->mac, tip)==0) {
+				_dprintf("\n[pc flush] clean conntracks of %s\n", tip);
+				eval("conntrack", "-D", "-s", tip);
+			}
+		}
+	}
+}
+#endif
+
 pc_s *match_enabled_pc_list(pc_s *pc_list, pc_s **target_list, int enabled){
 	pc_s *follow_pc, **follow_target_list;
 
@@ -451,6 +475,73 @@ pc_s *match_day_pc_list(pc_s *pc_list, pc_s **target_list, int target_day){
 
 	return *target_list;
 }
+
+#ifdef RTCONFIG_CONNTRACK
+int cleantrack_daytime_pc_list(pc_s *pc_list, int target_day, int target_hour, int verb){
+	pc_s *follow_pc;
+	pc_event_s *follow_e;
+	int target_num, com_start, com_end;
+	int fcf = nvram_get_int("forcedcf")? : 0;	/* force delete pclist conntracks */
+	
+	if(pc_list == NULL)
+		return -1;
+
+	if(target_day < MIN_DAY || target_day > MAX_DAY)
+		return -1;
+
+	if(target_hour < MIN_HOUR || target_hour > MAX_HOUR)
+		return -1;
+
+	target_num = target_day*24+target_hour;
+
+	for(follow_pc = pc_list; follow_pc != NULL; follow_pc = follow_pc->next){
+		if(!follow_pc->enabled)
+			continue;
+
+		follow_pc->prev_state = follow_pc->state;
+		for(follow_e = follow_pc->events; follow_e != NULL; follow_e = follow_e->next){
+			com_start = follow_e->start_day*24+follow_e->start_hour;
+			com_end = follow_e->end_day*24+follow_e->end_hour;
+
+			follow_pc->state = BLOCKED;
+			if(target_num >= com_start && target_num < com_end){ /* in allowed zone */
+				follow_pc->state = NONBLOCK;
+				follow_pc->dtimes = nvram_get_int("questcf")?:0;
+				break;
+			}
+		}
+		
+		if(verb) {
+			_dprintf("\nCHK [%s] pc pre/now state:[%d][%d], dtimes=%d, fcf=%d\n", follow_pc->mac, follow_pc->prev_state, follow_pc->state, follow_pc->dtimes, fcf);
+			_dprintf("now_day/hr:%d/%d\n", target_day, target_hour);
+		}
+		/* denial zone critical zone */
+		if(((follow_pc->prev_state==NONBLOCK||follow_pc->prev_state==INITIAL) && follow_pc->state==BLOCKED) ||
+		   (follow_pc->prev_state==DTIME) ||
+		   fcf ) {
+			char tip[16];
+			if(verb)
+				_dprintf("\n[pc] (%d)change to a denial zone [%s]\n", fcf, follow_pc->mac);
+			/* go clean denial-mac's conntracks */
+			if(arpcache(follow_pc->mac, tip)==0) {
+				_dprintf("\n[pc] delete conntracks of %s\n", tip);
+				eval("conntrack", "-D", "-s", tip);
+			}
+#ifdef HND_ROUTER
+			eval("fc", "flush");
+#elif RTCONFIG_BCMARM
+			/* TBD. ctf ipct entries cleanup. */
+#endif
+			if(follow_pc->dtimes-- > 0) 
+				follow_pc->state = DTIME;
+			else
+				follow_pc->state = BLOCKED;
+		}
+	}
+
+	return 0;
+}
+#endif
 
 pc_s *match_daytime_pc_list(pc_s *pc_list, pc_s **target_list, int target_day, int target_hour){
 	pc_s *follow_pc, **follow_target_list;
@@ -613,16 +704,11 @@ void config_pause_block_string(pc_s *pc_list, FILE *fp, char *logaccept, char *l
 
 	pc_s *enabled_list = NULL, *follow_pc;
 	char *lan_if = nvram_safe_get("lan_ifname");
-
 #ifdef BLOCKLOCAL
 	char *ftype;
-#endif
-	char *fftype;
 
-#ifdef BLOCKLOCAL
 	ftype = logaccept;
 #endif
-	fftype = "PControls";
 
 	follow_pc = match_enabled_pc_list(pc_list, &enabled_list, 2);
 	if(follow_pc == NULL){
@@ -727,12 +813,20 @@ int pc_main(int argc, char *argv[]){
 	else if(argc == 2 && !strcmp(argv[1], "showrules")){
 		config_daytime_string(pc_list, stderr, "ACCEPT", "logdrop", 0);
 	}
+#ifdef RTCONFIG_CONNTRACK
+	else if(argc == 2 && !strcmp(argv[1], "flush")){
+		flush_pc_list(pc_list);
+	}
+#endif
 	else{
 		printf("Usage: pc [show]\n"
 		       "          showrules\n"
 		       "          enabled [1 | 0]\n"
 		       "          daytime [1-7] [0-23]\n"
 		       "          apply\n"
+#ifdef RTCONFIG_CONNTRACK
+		       "          flush\n"
+#endif
 		       );
 	}
 

@@ -27,11 +27,10 @@ LDFLAGS = -ffunction-sections -fdata-sections -Wl,--gc-sections
 ifneq ($(MSIPK),y)
 CFLAGS += -Wall -g -Os -D_GNU_SOURCE $(EXTRACFLAGS) -D_FILE_OFFSET_BITS=64 \
 	-ffunction-sections -fdata-sections \
-	-I$(TOP)/ffmpeg/libavutil -I$(TOP)/ffmpeg/libavcodec -I$(TOP)/ffmpeg/libavformat \
-	-I$(TOP)/ffmpeg/libswscale -I$(TOP)/ffmpeg \
 	-I$(TOP)/flac/include -I$(TOP)/sqlite -I$(TOP)/jpeg \
 	-I$(TOP)/libexif -I$(TOP)/libid3tag -I$(TOP)/libogg/include \
 	-I$(TOP)/libvorbis/include \
+	-I$(TOP)/ffmpeg \
 
 ifneq ($(STATIC),1)
 LDFLAGS += -L$(TOP)/zlib -L$(TOP)/sqlite/.libs -L$(TOP)/jpeg -L$(TOP)/libvorbis/lib/.libs \
@@ -54,7 +53,7 @@ EXTRACFLAGS = -DLINUX26 -DCONFIG_BCMWL5 -pipe -DBCMWPA2 -funit-at-a-time -Wno-po
 endif
 CFLAGS = -Wall -g -Os -D_GNU_SOURCE $(EXTRACFLAGS) -D_FILE_OFFSET_BITS=64 \
 	-ffunction-sections -fdata-sections \
-	-I$(TOP)/ffmpeg-0.5/libavutil -I$(TOP)/ffmpeg-0.5/libavcodec -I$(TOP)/ffmpeg/libavformat \
+	-I$(TOP)/ffmpeg-0.5/libavutil -I$(TOP)/ffmpeg-0.5/libavcodec -I$(TOP)/ffmpeg-0.5/libavformat \
 	-I$(TOP)/ffmpeg-0.5/libswscale -I$(TOP)/ffmpeg-0.5 \
 	-I$(TOP)/flac/include -I$(TOP)/sqlite -I$(TOP)/jpeg \
 	-I$(TOP)/libexif -I$(TOP)/libid3tag -I$(TOP)/libogg/include \

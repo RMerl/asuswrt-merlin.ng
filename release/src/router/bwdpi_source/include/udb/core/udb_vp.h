@@ -26,10 +26,10 @@
 #ifndef __UDB_VP_H__
 #define __UDB_VP_H__
 
-extern int tdts_core_ioctl_vp_op_get_dev_event(char *buf, uint32_t tbl_len, uint32_t *tbl_used_len);
-//extern int udb_core_ioctl_vp_op_get_event_v2(char *buf, uint32_t tbl_len, uint32_t *tbl_used_len);
-extern int tdts_core_ioctl_vp_op_get(char *buf, uint32_t tbl_len, uint32_t *tbl_used_len);
-extern int tdts_core_udb_vp_entry_free(void);
-extern int tdts_core_vp_construct(char *buf, uint32_t tbl_len);
+extern int ioctl_vp_op_get_dev_event(char *buf, uint32_t tbl_len, uint32_t *tbl_used_len);
+extern int ioctl_vp_op_get_log_v2(char *buf, uint32_t tbl_len, uint32_t *tbl_used_len);
+extern int ioctl_vp_op_get(char *buf, uint32_t tbl_len, uint32_t *tbl_used_len);
+extern int ioctl_vp_op_clear(void);
+extern int ioctl_vp_op_set(char *buf, uint32_t tbl_len);
 
 #endif //__UDB_VP_H__

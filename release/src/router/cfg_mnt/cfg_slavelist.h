@@ -37,6 +37,7 @@ typedef struct _CM_CLIENT_TABLE {
 	unsigned char ap2g[CFG_CLIENT_NUM][MAC_LEN];
 	unsigned char ap5g[CFG_CLIENT_NUM][MAC_LEN];
 	unsigned char ap5g1[CFG_CLIENT_NUM][MAC_LEN];
+	unsigned char apDwb[CFG_CLIENT_NUM][MAC_LEN];
 	int level[CFG_CLIENT_NUM];
 	char fwVer[CFG_CLIENT_NUM][FWVER_LEN];
 	char newFwVer[CFG_CLIENT_NUM][FWVER_LEN];

@@ -24,7 +24,7 @@
  * @file
  * @brief LZW decoding routines
  * @author Fabrice Bellard
- * Modified for use in TIFF by Konstantin Shishkov
+ * @author modified for use in TIFF by Konstantin Shishkov
  */
 
 #ifndef AVCODEC_LZW_H
@@ -47,8 +47,7 @@ void ff_lzw_decode_open(LZWState **p);
 void ff_lzw_decode_close(LZWState **p);
 int ff_lzw_decode_init(LZWState *s, int csize, const uint8_t *buf, int buf_size, int mode);
 int ff_lzw_decode(LZWState *s, uint8_t *buf, int len);
-const uint8_t* ff_lzw_cur_ptr(LZWState *lzw);
-void ff_lzw_decode_tail(LZWState *lzw);
+int ff_lzw_decode_tail(LZWState *lzw);
 
 /** LZW encode state */
 struct LZWEncodeState;

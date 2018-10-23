@@ -25,7 +25,7 @@
 #endif
 
 #ifndef I2C_SLAVE_ADDR
-#error Define your model's I2C address
+#error Define your model I2C address
 #endif
 
 extern __s32 i2c_smbus_read_byte(int file);
@@ -309,19 +309,18 @@ aura_rgb_led(int type, RGB_LED_STATUS_T *status, int group, int from_server)
 }
 
 /*
-	convert nvram value to RGB_LED_STATUS_T
+	convert @aurargb_val string to RGB_LED_STATUS_T
 	input  : nvram name containing the R,G,B,Mode,Speed,Dir format
 	return	 0 : format OK
 		-1 : error (invalid input or format)
 */
-int nv_to_rgb(char *nv_name, RGB_LED_STATUS_T *out_rgb)
+int __nv_to_rgb(char *aurargb_val, RGB_LED_STATUS_T *out_rgb)
 {
 	char buf[30], *saveptr, *val;
 	int convert_val;
-	val = nvram_safe_get(nv_name);
-	if (!val || val[0]=='\0' || !out_rgb)
+	if (!aurargb_val || *aurargb_val == '\0' || !out_rgb)
 		return -1;
-	strncpy(buf, val, sizeof(buf)-1);
+	strlcpy(buf, aurargb_val, sizeof(buf));
 
 	// red
 	if (!(val = strtok_r(buf, ",", &saveptr)))
@@ -372,5 +371,91 @@ int nv_to_rgb(char *nv_name, RGB_LED_STATUS_T *out_rgb)
 	else
 		return -1;
 _dprintf("[%s]:%d,%d,%d,%d,%d,%d\n",__func__,out_rgb->red, out_rgb->green, out_rgb->blue, out_rgb->mode, out_rgb->speed, out_rgb->direction);
+	return 0;
+}
+
+/*
+	convert nvram value to RGB_LED_STATUS_T
+	input  : nvram name containing the R,G,B,Mode,Speed,Dir format
+	return	 0 : format OK
+		-1 : error (invalid input or format)
+*/
+int nv_to_rgb(char *nv_name, RGB_LED_STATUS_T *out_rgb)
+{
+	char buf[30], *val;
+
+	val = nvram_get(nv_name);
+	if (!val || *val == '\0' || !out_rgb)
+		return -1;
+	strlcpy(buf, val, sizeof(buf));
+	return __nv_to_rgb(buf, out_rgb);
+}
+
+/*
+	switch_rgb_mode for BoostKey
+	input  : nvram name containing the R,G,B,Mode,Speed,Dir format and led_onff
+	return	 0 : switch OK
+		-1 : error (invalid input or format)
+*/
+int switch_rgb_mode(char *nv_name, RGB_LED_STATUS_T *out_rgb, int led_onoff)
+{
+	char buf[30], *saveptr, *val;
+	int convert_val;
+	val = nvram_safe_get(nv_name);
+	if (!val || val[0]=='\0' || !out_rgb)
+		return -1;
+	strncpy(buf, val, sizeof(buf)-1);
+
+	// red
+	if (!(val = strtok_r(buf, ",", &saveptr)))
+		return -1;
+	convert_val = atoi(val);
+	if (convert_val >= 0 && convert_val <= 255)
+		out_rgb->red = (unsigned char) convert_val;
+	else
+		return -1;
+	// green
+	if (!(val = strtok_r(NULL, ",", &saveptr)))
+		return -1;
+	convert_val = atoi(val);
+	if (convert_val >= 0 && convert_val <= 255)
+		out_rgb->green = (unsigned char) convert_val;
+	else
+		return -1;
+	// blue
+	if (!(val = strtok_r(NULL, ",", &saveptr)))
+		return -1;
+	convert_val = atoi(val);
+	if (convert_val >= 0 && convert_val <= 255)
+		out_rgb->blue = (unsigned char) convert_val;
+	else
+		return -1;
+	// mode
+	if (!(val = strtok_r(NULL, ",", &saveptr)))
+		return -1;
+	convert_val = atoi(val);
+	if (convert_val >= 0 && convert_val <= 13) {
+		out_rgb->mode = (unsigned char) convert_val;
+	}
+	else
+		return -1;
+	// speed
+	if (!(val = strtok_r(NULL, ",", &saveptr)))
+		return -1;
+	convert_val = atoi(val);
+	if (convert_val >= -2 && convert_val <= 2)
+		out_rgb->speed = (signed char) convert_val;
+	else
+		return -1;
+	// direction
+	if (!(val = strtok_r(NULL, ",", &saveptr)))
+		return -1;
+	convert_val = atoi(val);
+	if (convert_val >= 0 && convert_val <= 2)
+		out_rgb->direction = (unsigned char) convert_val;
+	else
+		return -1;
+
+	_dprintf("[%s]:%d,%d,%d,%d,%d,%d\n", __func__ ,out_rgb->red, out_rgb->green, out_rgb->blue, out_rgb->mode, out_rgb->speed, out_rgb->direction);
 	return 0;
 }

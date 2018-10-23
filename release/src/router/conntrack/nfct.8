@@ -1,0 +1,82 @@
+.TH NFCT 8 "Feb 29, 2012" "" ""
+
+.\" Man page written by Pablo Neira Ayuso <pablo@netfilter.org> (Feb 2012)
+
+.SH NAME
+nfct \- command line tool to configure with the connection tracking system
+.SH SYNOPSIS
+.BR "nfct command subsystem [parameters]"
+.SH DESCRIPTION
+.B nfct
+is the command line tool that allows to configure the Connection Tracking
+System.
+.SH COMMANDS
+.TP
+.BI "list "
+List the existing objects.
+.TP
+.BI "add "
+Add new object.
+.TP
+.BI "delete "
+Delete an object.
+.TP
+.BI "get "
+Get an existing object.
+.TP
+.BI "flush "
+Flush the accounting object table.
+.TP
+.BI "disable "
+This command is for the helper subsystem. It allows you to disable enqueueing packets to userspace for helper inspection.
+.TP
+.BI "default-set "
+This command is for the timeout subsystem. It allows you to set default protocol timeouts.
+.TP
+.BI "default-get "
+This command is for the timeout subsystem. It allows you to get the default protocol timeouts.
+.SH SUBSYS
+By the time this manpage has been written, the supported subsystems are
+.B timeout
+and
+.B helper.
+.TP
+.BI "timeout "
+The timeout subsystem allows you to define fine-grain timeout policies.
+.TP
+.BI "helper "
+The helper subsystem allows you to configure userspace helpers.
+.TP
+.BI "version "
+Displays the version information.
+.TP
+.BI "help "
+Displays the help message.
+.SH EXAMPLE
+.TP
+.B nfct add timeout test-tcp inet tcp established 100 close 10 close_wait 10
+.TP
+This creates a timeout policy for tcp using 100 seconds for the ESTABLISHED state, 10 seconds for CLOSE state and 10 seconds for the CLOSE_WAIT state.
+.TP
+Then, you can attach the timeout policy with the iptables CT target:
+.TP
+.B iptables -I PREROUTING -t raw -p tcp -j CT --timeout test-tcp
+.TP
+.B iptables -I OUTPUT -t raw -p tcp -j CT --timeout test-tcp
+.TP
+You can test that the timeout policy with:
+.TP
+.B conntrack -E -p tcp
+.TP
+It should display:
+.TP
+.B [UPDATE] tcp      6 100 ESTABLISHED src=192.168.39.100 dst=57.126.1.20 sport=56463 dport=80 src=57.126.1.20 dst=192.168.39.100 sport=80 dport=56463 [ASSURED]
+.SH SEE ALSO
+.BR iptables (8), conntrack (8)
+.SH BUGS
+Please, report them to netfilter-devel@vger.kernel.org or file a bug in
+Netfilter's bugzilla (https://bugzilla.netfilter.org).
+.SH AUTHORS
+Pablo Neira Ayuso wrote and maintains the nfct tool.
+.PP
+Man page written by Pablo Neira Ayuso <pablo@netfilter.org>.

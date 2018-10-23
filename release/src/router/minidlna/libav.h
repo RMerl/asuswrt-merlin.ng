@@ -213,6 +213,7 @@ lav_codec_extradata(AVStream *s)
 static inline int
 lav_is_thumbnail_stream(AVStream *s, uint8_t **data, int *size)
 {
+#ifdef AV_CODEC_ID_MJPEG
 #if LIBAVFORMAT_VERSION_INT >= ((54<<16)+(6<<8))
 	if (s->disposition & AV_DISPOSITION_ATTACHED_PIC &&
 	    lav_codec_id(s) == AV_CODEC_ID_MJPEG)
@@ -223,6 +224,7 @@ lav_is_thumbnail_stream(AVStream *s, uint8_t **data, int *size)
 			*size = s->attached_pic.size;
 		return 1;
 	}
+#endif
 #endif
 	return 0;
 }

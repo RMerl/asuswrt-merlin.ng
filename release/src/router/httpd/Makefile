@@ -101,8 +101,7 @@ ifeq ($(or $(RTAC68A),$(RT4GAC68U)),y)
 CFLAGS += -DRTAC68U
 endif
 
-OBJS = $(if $(wildcard httpd.c), httpd.o, prebuild/httpd.o)
-OBJS += cgi.o ej.o 
+OBJS = cgi.o ej.o 
 OBJS += web.o common.o nvram_f.o 
 OBJS += aspbw.o initial_web_hook.o
 OBJS += apps.o
@@ -117,7 +116,7 @@ OBJS += web-qca.o
 else ifeq ($(CONFIG_ALPINE),y)
 OBJS += web-alpine.o
 else ifeq ($(CONFIG_LANTIQ),y)
-OBJS += web-lantiq.o
+OBJS += $(if $(wildcard sysdeps/web-lantiq.c),web-lantiq.o,prebuild/web-lantiq.o)
 else
 OBJS += web-broadcom.o
 ifeq ($(RTCONFIG_QTN),y)

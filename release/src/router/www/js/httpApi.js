@@ -351,7 +351,7 @@ var httpApi ={
 		};
 
 		var hadPlugged = function(deviceType){
-			var usbDeviceList = httpApi.hookGet("show_usb_path")[0] || [];
+			var usbDeviceList = httpApi.hookGet("show_usb_path") || [];
 			return (usbDeviceList.join().search(deviceType) != -1)
 		}
 
@@ -577,5 +577,117 @@ var httpApi ={
 			var uiFlag_update = replaceValue(uiFlag_ori, httpApi.uiFlag.list[_name], _value);
 			httpApi.nvramSet({"action_mode": "apply", "uiFlag" : uiFlag_update});
 		}
+	},
+
+	"update_wlanlog": function(){
+		$.get("/update_wlanlog.cgi");
+	},
+
+	"boostKey_support": function(){
+		var ch = eval('<% channel_list_5g(); %>');
+		if(isSupport("triband"))
+			ch += eval('<% channel_list_5g_2(); %>');
+		if(ch.indexOf("52") != -1 || ch.indexOf("56") != -1 || ch.indexOf("60") != -1 || ch.indexOf("64") != -1 || ch.indexOf("100") != -1 || ch.indexOf("104") != -1 || ch.indexOf("108") != -1 || ch.indexOf("112") != -1 || ch.indexOf("116") != -1 || ch.indexOf("120") != -1 || ch.indexOf("124") != -1 || ch.indexOf("128") != -1 || ch.indexOf("132") != -1 || ch.indexOf("136") != -1 || ch.indexOf("140") != -1 || ch.indexOf("144") != -1){
+			return {
+				"GAME_BOOST": {
+					"value": 3,
+					"text": "Enable GameBoost",
+					"desc": "Game Boost analyzes network traffic and prioritizes gaming packets, giving games a second level of acceleration for the best possible performance."
+				},
+				"ACS_DFS": {
+					"value": 1,
+					"text": "<#WLANConfig11b_EChannel_dfs#>",
+					"desc": "Auto channel selection includes DFS band allows <#Web_Title2#> to utilize extra 5GHz channels for less interferences and greater bandwidth."
+				},
+				"LED": {
+					"value": 0,
+					"text": "LED On/Off",
+					"desc": "The LED on/off control is used to turn off all LEDs includes Aura light."
+				},
+				"AURA_RGB": {
+					"value": 2,
+					"text": "Aura RGB",
+					"desc": "Aura sync control is used to get Aura control from other ROG devices, if disabled, it will be customized Aura RGB."
+				}
+			}
+		}else{
+			return {
+				"GAME_BOOST": {
+					"value": 3,
+					"text": "Enable GameBoost",
+					"desc": "Game Boost analyzes network traffic and prioritizes gaming packets, giving games a second level of acceleration for the best possible performance."
+				},
+				"LED": {
+					"value": 0,
+					"text": "LED On/Off",
+					"desc": "The LED on/off control is used to turn off all LEDs includes Aura light."
+				},
+				"AURA_RGB": {
+					"value": 2,
+					"text": "Aura RGB",
+					"desc": "Aura sync control is used to get Aura control from other ROG devices, if disabled, it will be customized Aura RGB."
+				}
+			}
+		}
+	},
+
+	"getPAPStatus": function(_band){
+		var papStatus = "";
+		var get_ssid = function(_band){
+			var ssid = "";
+			if(_band == undefined)
+				ssid = decodeURIComponent(httpApi.nvramCharToAscii(["wlc_ssid"], true).wlc_ssid);
+			else
+				ssid = decodeURIComponent(httpApi.nvramCharToAscii(["wlc" + _band + "_ssid"], true)["wlc" + _band + "_ssid"]);
+
+			ssid = ssid.replace(/\</g, "&lt;").replace(/\>/g, "&gt;");
+			return ssid;
+		};
+		var dpsta_rep = (httpApi.nvramGet(["wlc_dpsta"]).wlc_dpsta == "") ? false : true;
+		if(dpsta_rep){
+			var wlc_state = "0";
+			if(_band == undefined)
+				wlc_state = httpApi.nvramGet(["wlc_state"]).wlc_state;
+			else
+				wlc_state = httpApi.nvramGet(["wlc" + _band + "_state"])["wlc" + _band + "_state"];
+			switch(wlc_state){
+				case "0":
+					papStatus = "<#Disconnected#>";
+					break;
+				case "1":
+					papStatus = "<#APSurvey_action_ConnectingStatus1#>";
+					break;
+				case "2":
+					papStatus = get_ssid(_band);
+					break;
+				default:
+					papStatus = "<#Disconnected#>";
+					break;
+			}
+		}
+		else{
+			var wlc_psta_state = httpApi.hookGet("wlc_psta_state", true);
+			if(wlc_psta_state.wlc_state == "1" && wlc_psta_state.wlc_state_auth == "0")
+				papStatus = get_ssid(_band);
+			else if(wlc_psta_state.wlc_state == "2" && wlc_psta_state.wlc_state_auth == "1")
+				papStatus = "<#APSurvey_action_ConnectingStatus1#>";
+			else
+				papStatus = "<#Disconnected#>";
+
+		}
+		return papStatus;
+	},
+
+	"getISPProfile": function(isp){
+		var isp_profiles = httpApi.hookGet("get_iptvSettings").isp_profiles;
+		var specified_profile = [];
+
+		$.each(isp_profiles, function(i, isp_profile) {
+			if(isp_profile.switch_wantag == isp){
+				specified_profile = isp_profile;
+			}
+		});
+
+		return specified_profile;
 	}
 }

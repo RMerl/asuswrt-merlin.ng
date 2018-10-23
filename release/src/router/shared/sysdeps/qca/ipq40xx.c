@@ -1612,19 +1612,6 @@ void del_beacon_vsie(char *hexdata)
 	}
 }
 
-void set_wpa_cli_cmd(int band, const char *cmd)
-{
-	char ctrl_sk[32];
-	char *sta;
-
-	if(band < 0 || band >= MAX_NR_WL_IF || cmd == NULL || cmd[0] == '\0')
-		return;
-
-	sta = get_staifname(band);
-	snprintf(ctrl_sk, sizeof(ctrl_sk), "/var/run/wpa_supplicant-%s", sta);
-	eval("wpa_cli", "-p", ctrl_sk, "-i", sta, cmd);
-}
-
 /* 
  * int get_psta_status(int unit)
  *
@@ -1722,6 +1709,100 @@ char *get_pap_bssid(int unit, char bssid_str[])
 		snprintf(bssid_str, 18, "%02x:%02x:%02x:%02x:%02x:%02x", mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]);
 	}
 	return bssid_str;
+}
+#endif
+
+
+#ifdef RTCONFIG_CFGSYNC
+
+#define check_re_in_macfilter(...) (0)
+
+void update_macfilter_relist()
+{
+	//TODO
+	char tmp[128], prefix[] = "wlXXXXXXXXXX_";
+	char word[256], *next;
+	int unit = 0;
+	char *wlif_name = NULL;
+	int ret = 0;
+	char *nv, *nvp, *b;
+	char *reMac, *mac2g, *mac5g, *timestamp;
+	char stamac2g[18] = {0};
+	char stamac5g[18] = {0};
+	char *cfg_relist;
+
+	while(nvram_get_int("wlready")!=1)
+		sleep(1);
+
+	if ((cfg_relist = nvram_get("cfg_relist")))
+	{
+#ifdef RTCONFIG_AMAS
+		if (nvram_get_int("re_mode") == 1) {
+			nv = nvp = strdup(cfg_relist);
+			if (nv) {
+				while ((b = strsep(&nvp, "<")) != NULL) {
+					if ((vstrsep(b, ">", &reMac, &mac2g, &mac5g, &timestamp) != 4))
+						continue;
+
+					if (strcmp(reMac, get_2g_hwaddr()) == 0) {
+						snprintf(stamac2g, sizeof(stamac2g), "%s", mac2g);
+						dbg("dut 2g sta (%s)\n", stamac2g);
+						snprintf(stamac5g, sizeof(stamac5g), "%s", mac5g);
+						dbg("dut 5g sta (%s)\n", stamac5g);
+						break;
+					}
+				}
+				free(nv);
+			}
+		}
+#endif
+
+		foreach (word, nvram_safe_get("wl_ifnames"), next) {
+			char athfix[8];
+			int status = 0, cnt = 5;
+			SKIP_ABSENT_BAND_AND_INC_UNIT(unit);
+
+#ifdef RTCONFIG_AMAS
+			if (nvram_get_int("re_mode") == 1)
+				snprintf(prefix, sizeof(prefix), "wl%d.1_", unit);
+			else
+#endif
+				snprintf(prefix, sizeof(prefix), "wl%d_", unit);
+
+			wlif_name = nvram_safe_get(strcat_r(prefix, "ifname", tmp));
+			__get_wlifname(unit, 0, athfix);
+
+			if (nvram_match(strcat_r(prefix, "macmode", tmp), "allow")) {
+				nv = nvp = strdup(nvram_safe_get("cfg_relist"));
+				if (nv) {
+					while ((b = strsep(&nvp, "<")) != NULL) {
+						if ((vstrsep(b, ">", &reMac, &mac2g, &mac5g, &timestamp) != 4))
+							continue;
+
+						if (strcmp(reMac, get_lan_hwaddr()) == 0)
+							continue;
+
+						if (unit == 0) {
+							if (check_re_in_macfilter(unit, mac2g))
+								continue;
+							printf("relist sta (%s) in %s\n", mac2g, wlif_name);
+							set_maclist_add_kick(athfix, 1, mac2g);
+						}
+						else
+						{
+							if (check_re_in_macfilter(unit, mac5g))
+								continue;
+							printf("relist sta (%s) in %s\n", mac5g, wlif_name);
+							set_maclist_add_kick(athfix, 1, mac5g);
+						}
+					}
+					free(nv);
+				}
+			}
+
+			unit++;
+		}
+	}
 }
 #endif
 

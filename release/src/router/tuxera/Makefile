@@ -52,7 +52,10 @@ endif # ARMCPUSMP
 endif # RTCONFIG_BCM_7114
 endif # RTCONFIG_BCM7
 
-ifeq ($(RTCONFIG_HND_ROUTER),y)
+ifeq ($(RTCONFIG_HND_ROUTER_AX),y)
+SRCFILE = broadcom_arm_ax
+DSTDIR = $(INSTALLDIR)/lib/modules/4.1.51/kernel/fs
+else ifeq ($(RTCONFIG_HND_ROUTER),y)
 SRCFILE = broadcom_arm_hnd
 DSTDIR = $(INSTALLDIR)/lib/modules/4.1.27/kernel/fs
 else

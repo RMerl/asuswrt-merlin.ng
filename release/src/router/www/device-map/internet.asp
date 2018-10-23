@@ -14,6 +14,7 @@
 <script type="text/javascript" src="/state.js"></script>
 <script type="text/javascript" src="/js/jquery.js"></script>
 <script type="text/javascript" src="/switcherplugin/jquery.iphone-switch.js"></script>
+<script type="text/javascript" src="/js/httpApi.js"></script>
 <script>
 if(parent.location.pathname.search("index") === -1) top.location.href = "../"+'<% networkmap_page(); %>';
 
@@ -206,39 +207,14 @@ function initial(){
 		document.getElementById("ap_table").style.display = "";
 		if(sw_mode == 3)
 			document.getElementById('RemoteAPtd').style.display = "none";
-		
-		var wlc_ssid = decodeURIComponent("<% nvram_char_to_ascii("WLANConfig11b", "wlc_ssid"); %>");
-		var _wlc_ssid = wlc_ssid.replace(/\</g, "&lt;").replace(/\>/g, "&gt;");   //replace < to &lt and > to &gt
-		if((sw_mode == 2 || sw_mode == 3 || sw_mode == 4) && wlc_ssid.length >= 28){
-			showtext(document.getElementById("RemoteAP"), _wlc_ssid.substring(0, 26)+"...");
-			document.getElementById("RemoteAPtd").title = wlc_ssid;
-		}else{			
-			showtext(document.getElementById("RemoteAP"), _wlc_ssid);
-		}
+
+		showtext(document.getElementById("RemoteAP"), httpApi.getPAPStatus());
 
 		if(parent.concurrent_pap){
-			if(parent.pap_click_flag == 0){
-				var wlc0_ssid = decodeURIComponent("<% nvram_char_to_ascii("WLANConfig11b", "wlc0_ssid"); %>");
-				var _wlc0_ssid = wlc0_ssid.replace(/\</g, "&lt;").replace(/\>/g, "&gt;");   //replace < to &lt and > to &gt
-				if(wlc0_ssid.length >= 28){
-					showtext(document.getElementById("RemoteAP"), _wlc0_ssid.substring(0, 26)+"...");
-					document.getElementById("RemoteAPtd").title = wlc0_ssid;
-				}
-				else{
-					showtext(document.getElementById("RemoteAP"), _wlc0_ssid);
-				}		
-			}
-			else{
-				var wlc1_ssid = decodeURIComponent("<% nvram_char_to_ascii("WLANConfig11b", "wlc1_ssid"); %>");
-				var _wlc1_ssid = wlc1_ssid.replace(/\</g, "&lt;").replace(/\>/g, "&gt;");   //replace < to &lt and > to &gt
-				if(wlc1_ssid.length >= 28){
-					showtext(document.getElementById("RemoteAP"), _wlc1_ssid.substring(0, 26)+"...");
-					document.getElementById("RemoteAPtd").title = wlc1_ssid;
-				}
-				else{
-					showtext(document.getElementById("RemoteAP"), _wlc1_ssid);
-				}						
-			}		
+			if(parent.pap_click_flag == 0)
+				showtext(document.getElementById("RemoteAP"), httpApi.getPAPStatus("0"));
+			else
+				showtext(document.getElementById("RemoteAP"), httpApi.getPAPStatus("1"));
 		}
 				
 		if(lanproto == "static")

@@ -249,6 +249,7 @@ function detcet_aae_state(){
 }
 
 function get_activation_code(){
+	close_alert('alert_pin');
 	ASUS_EULA.config(get_activation_code, function(){});
 	if(ASUS_EULA.check("asus")){
 		detcet_aae_state();

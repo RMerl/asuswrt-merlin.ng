@@ -18,33 +18,35 @@
  * License along with FFmpeg; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
+#include "libavutil/opt.h"
 #include "avformat.h"
 
 /* Multipart JPEG */
 
-#define BOUNDARY_TAG "ffserver"
+#define BOUNDARY_TAG "ffmpeg"
+
+typedef struct MPJPEGContext {
+    AVClass *class;
+    char *boundary_tag;
+} MPJPEGContext;
 
 static int mpjpeg_write_header(AVFormatContext *s)
 {
-    uint8_t buf1[256];
-
-    snprintf(buf1, sizeof(buf1), "--%s\n", BOUNDARY_TAG);
-    put_buffer(s->pb, buf1, strlen(buf1));
-    put_flush_packet(s->pb);
+    MPJPEGContext *mpj = s->priv_data;
+    avio_printf(s->pb, "--%s\r\n", mpj->boundary_tag);
+    avio_flush(s->pb);
     return 0;
 }
 
 static int mpjpeg_write_packet(AVFormatContext *s, AVPacket *pkt)
 {
-    uint8_t buf1[256];
+    MPJPEGContext *mpj = s->priv_data;
+    avio_printf(s->pb, "Content-type: image/jpeg\r\n");
+    avio_printf(s->pb, "Content-length: %d\r\n\r\n",
+                pkt->size);
+    avio_write(s->pb, pkt->data, pkt->size);
 
-    snprintf(buf1, sizeof(buf1), "Content-type: image/jpeg\n\n");
-    put_buffer(s->pb, buf1, strlen(buf1));
-    put_buffer(s->pb, pkt->data, pkt->size);
-
-    snprintf(buf1, sizeof(buf1), "\n--%s\n", BOUNDARY_TAG);
-    put_buffer(s->pb, buf1, strlen(buf1));
-    put_flush_packet(s->pb);
+    avio_printf(s->pb, "\r\n--%s\r\n", mpj->boundary_tag);
     return 0;
 }
 
@@ -53,15 +55,29 @@ static int mpjpeg_write_trailer(AVFormatContext *s)
     return 0;
 }
 
-AVOutputFormat mpjpeg_muxer = {
-    "mpjpeg",
-    NULL_IF_CONFIG_SMALL("MIME multipart JPEG format"),
-    "multipart/x-mixed-replace;boundary=" BOUNDARY_TAG,
-    "mjpg",
-    0,
-    CODEC_ID_NONE,
-    CODEC_ID_MJPEG,
-    mpjpeg_write_header,
-    mpjpeg_write_packet,
-    mpjpeg_write_trailer,
+static const AVOption options[] = {
+    { "boundary_tag",    "Boundary tag", offsetof(MPJPEGContext, boundary_tag),   AV_OPT_TYPE_STRING, {.str = BOUNDARY_TAG}, .flags = AV_OPT_FLAG_ENCODING_PARAM },
+    { NULL },
+};
+
+static const AVClass mpjpeg_muxer_class = {
+    .class_name = "mpjpeg_muxer",
+    .item_name  = av_default_item_name,
+    .option     = options,
+    .version    = LIBAVUTIL_VERSION_INT,
+};
+
+AVOutputFormat ff_mpjpeg_muxer = {
+    .name              = "mpjpeg",
+    .long_name         = NULL_IF_CONFIG_SMALL("MIME multipart JPEG"),
+    .mime_type         = "multipart/x-mixed-replace;boundary=" BOUNDARY_TAG,
+    .extensions        = "mjpg",
+    .priv_data_size    = sizeof(MPJPEGContext),
+    .audio_codec       = AV_CODEC_ID_NONE,
+    .video_codec       = AV_CODEC_ID_MJPEG,
+    .write_header      = mpjpeg_write_header,
+    .write_packet      = mpjpeg_write_packet,
+    .write_trailer     = mpjpeg_write_trailer,
+    .flags             = AVFMT_NOTIMESTAMPS,
+    .priv_class        = &mpjpeg_muxer_class,
 };

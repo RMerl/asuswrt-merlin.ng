@@ -1,5 +1,5 @@
 /*
- * Generate a header file for hardcoded motionpixels RGB to YUV table
+ * Generate a header file for hardcoded motion pixels RGB to YUV table
  *
  * Copyright (c) 2009 Reimar Döffinger <Reimar.Doeffinger@gmx.de>
  *
@@ -23,7 +23,7 @@
 #include <stdlib.h>
 #define CONFIG_HARDCODED_TABLES 0
 #define MAX_NEG_CROP 0
-#define ff_cropTbl ((uint8_t *)NULL)
+#define ff_crop_tab ((uint8_t *)NULL)
 #include "motionpixels_tablegen.h"
 #include "tableprint.h"
 
@@ -34,7 +34,7 @@ int main(void)
     write_fileheader();
 
     printf("static const YuvPixel mp_rgb_yuv_table[1 << 15] = {\n");
-    write_int8_2d_array(mp_rgb_yuv_table, 1 << 15, 3);
+    write_int8_t_2d_array(mp_rgb_yuv_table, 1 << 15, 3);
     printf("};\n");
 
     return 0;

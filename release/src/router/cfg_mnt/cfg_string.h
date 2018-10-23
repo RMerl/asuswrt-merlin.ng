@@ -19,6 +19,7 @@
 #define CFG_STR_AP2G		"ap2g"
 #define CFG_STR_AP5G		"ap5g"
 #define CFG_STR_AP5G1		"ap5g1"
+#define CFG_STR_APDWB		"apdwb"
 #define CFG_STR_WIRED_MAC	"wired_mac"
 #define CFG_STR_FWVER		"fwver"
 #define CFG_STR_NEW_FWVER		"newfwver"
@@ -58,4 +59,5 @@
 #define CFG_STR_2G 	"2G"
 #define CFG_STR_5G 	"5G"
 #define CFG_STR_5G1 	"5G1"
+#define CFG_STR_RE_NUMBER	"re_num"
 #endif /* __CFG_STRING_H__ */

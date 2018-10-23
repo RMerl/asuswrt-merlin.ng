@@ -16,6 +16,8 @@ MODELS_HAVE_USB3 = AC2900 \
 MODELS_HAVE_TRAFFIC_ANALYZER = RT-AC3200 RT-AC87U RT-AC88U RT-AX88U RT-AC86U RT-AC3100 RT-AC5300 GT-AC5300 GT-AC9600 DSL-AC68U RT-AC68U \
 	4G-AC68U RT-AC68R RT-AC68W RT-AC68RW GT-AX11000 RT-AC1900P RT-AC67U RT-AC56U RT-AC56R RT-AC85U RT-AC85P RT-AC65U BRT-AC828 BLUECAVE RT-AX92U
 
+MODELS_QIS_SLIDER = GT-AX11000 GT-AX6000 GT-AC5400
+
 all:
 ifeq ($(and $(HND_ROUTER),$(RTCONFIG_VISUALIZATION)),y)
 VISWWW = $(SRCBASE)/../components/apps/visualization/www
@@ -62,6 +64,7 @@ endif # CONFIG_VISUALIZATION
 	rm -rf $(INSTALLDIR)/www/model_patch
 	rm -rf $(INSTALLDIR)/www/.gitignore
 	rm -rf `find $(INSTALLDIR) -name "*.bak"`
+	rm -rf $(INSTALLDIR)/www/device-map/compatibility.asp
 
 ifeq ($(RTCONFIG_AMAS),y)
 ifneq ($(RTCONFIG_DSL),y)
@@ -70,10 +73,22 @@ ifneq ($(RTCONFIG_DSL),y)
 	cp $(TOP)/www/sysdep/BLUECAVE/www/mobile $(INSTALLDIR)/www/mobile -rf
 	cp $(TOP)/www/sysdep/BLUECAVE/www/require/modules/modem.js $(INSTALLDIR)/www/require/modules/ -rf
 	rm -rf $(INSTALLDIR)/www/images/qis
+	rm -rf $(INSTALLDIR)/www/images/rog_feature*
 	rm -rf $(INSTALLDIR)/www/qis
 	rm -rf $(INSTALLDIR)/www/qis_m
 	rm -rf $(INSTALLDIR)/www/QIS_wizard_m.htm
 endif
+endif
+
+ifeq ($(BUILD_NAME),$(filter $(BUILD_NAME), $(MODELS_QIS_SLIDER)))
+	cp $(TOP)/www/sysdep/BLUECAVE/www/QIS_wizard.htm $(INSTALLDIR)/www/QIS_wizard.htm
+	cp $(TOP)/www/sysdep/BLUECAVE/www/mobile $(INSTALLDIR)/www/mobile -rf
+	cp $(TOP)/www/sysdep/BLUECAVE/www/require/modules/modem.js $(INSTALLDIR)/www/require/modules/ -rf
+	rm -rf $(INSTALLDIR)/www/images/qis
+	rm -rf $(INSTALLDIR)/www/images/rog_feature*
+	rm -rf $(INSTALLDIR)/www/qis
+	rm -rf $(INSTALLDIR)/www/qis_m
+	rm -rf $(INSTALLDIR)/www/QIS_wizard_m.htm
 endif
 
 	chmod -x `find $(INSTALLDIR)/www/ -name "*.asp"`
@@ -203,7 +218,7 @@ endif
 ifneq ($(RTCONFIG_NETOOL),y)
 	rm -rf $(INSTALLDIR)/www/Main_GameServer_Content.asp
 	rm -rf $(INSTALLDIR)/www/ajax/gameList.json
-	rm -rf $(INSTALLDIR)/www/images/map.png
+	rm -rf $(INSTALLDIR)/www/cards/pingMap*
 	rm -rf $(INSTALLDIR)/www/require/modules/mapApi.js
 	rm -rf $(INSTALLDIR)/www/js/table.js
 endif
@@ -421,6 +436,7 @@ ifneq ($(RTCONFIG_ROG),y)
 	rm -rf $(INSTALLDIR)/www/images/New_ui/indicator.png
 	rm -rf $(INSTALLDIR)/www/images/New_ui/speedmeter.png
 	rm -rf $(INSTALLDIR)/www/images/New_ui/speedmeter_2.png
+	rm -rf $(INSTALLDIR)/www/ROG_Fonts-Regular.otf
 endif
 endif
 ifneq ($(RTCONFIG_ADBLOCK),y)
@@ -592,7 +608,6 @@ ifneq ($(RTCONFIG_IFTTT), y)
 endif
 ifneq ($(RTCONFIG_ALEXA), y)
 	rm -rf $(INSTALLDIR)/www/Advanced_Smart_Home_Alexa.asp
-	rm -rf $(INSTALLDIR)/www/images/New_ui/smh_asus_router.png
 endif
 ifneq ($(or $(RTCONFIG_IFTTT),$(RTCONFIG_ALEXA)),y)
 	rm -rf $(INSTALLDIR)/www/images/New_ui/smh_step_1.png
@@ -600,7 +615,7 @@ ifneq ($(or $(RTCONFIG_IFTTT),$(RTCONFIG_ALEXA)),y)
 	rm -rf $(INSTALLDIR)/www/images/New_ui/smh_step_2_text.png
 	rm -rf $(INSTALLDIR)/www/images/New_ui/smh_step_3.png
 	rm -rf $(INSTALLDIR)/www/images/New_ui/smh_step_3_acclink.png
-	rm -rf $(INSTALLDIR)/www/images/New_ui/smh_step_4_flow.png
+	rm -rf $(INSTALLDIR)/www/images/New_ui/smh_step_4_flow.svg
 	rm -rf $(INSTALLDIR)/www/ifttt_style.css
 endif
 
@@ -687,6 +702,8 @@ else
 	cd $(INSTALLDIR)/www/ && mv Advanced_VPNClientFusion_Content.asp Advanced_VPNClient_Content.asp
 endif
 
+	ln -sf /tmp/fb_data.tgz.gz $(INSTALLDIR)/www/fb_data.tgz.gz
+
 ifneq ($(RTCONFIG_AMAS), y)
 	rm -rf $(INSTALLDIR)/www/device-map/amesh.asp
 	rm -rf $(INSTALLDIR)/www/device-map/amesh.css
@@ -698,6 +715,8 @@ ifneq ($(RTCONFIG_AMAS), y)
 	rm -rf $(INSTALLDIR)/www/message.htm
 	rm -rf $(INSTALLDIR)/www/AiMesh_Node_FirmwareUpgrade.asp
 	rm -rf $(INSTALLDIR)/www/Advanced_Roaming_Block_Content.asp
+	rm -rf $(INSTALLDIR)/www/Main_ChkSta_Content.asp
+	rm -rf $(INSTALLDIR)/www/ajax_chk_sta.asp
 endif
 
 ifeq ($(RTCONFIG_TCPDUMP),y)
@@ -712,4 +731,9 @@ ifneq ($(RTCONFIG_DBLOG),y)
 endif
 ifneq ($(BUILD_NAME),$(filter $(BUILD_NAME), GT-AC9600 GT-AX96U GT-AX11000))
 	rm -rf $(INSTALLDIR)/www/qis/QIS_tge_setting.htm
+endif
+
+ifneq ($(BUILD_NAME),$(filter $(BUILD_NAME),  GT-AX11000))
+	rm -rf $(INSTALLDIR)/www/New_ui/img-aurasync-logo.png
+	rm -rf $(INSTALLDIR)/www/New_ui/img-aurasync-rog-logo-mask.png
 endif

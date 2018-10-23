@@ -2223,13 +2223,7 @@ static int ej_wl_chanspecs(int eid, webs_t wp, int argc, char_t **argv, int unit
 
 	snprintf(prefix, sizeof(prefix), "wl%d_", unit);
 	name = nvram_safe_get(strcat_r(prefix, "ifname", tmp));
-#if defined(RTCONFIG_HND_ROUTER_AX)
-        /* read from nvram if nvram exist since chanspecs dynamically changes by bw_cap */
-        char *chansps = nvram_safe_get(strcat_r(prefix, "chansps", tmp));
-        if (strlen(chansps)) {
-#else
 	if (is_wlif_up(name) != 1) {
-#endif
 		foreach (word, nvram_safe_get(strcat_r(prefix, "chansps", tmp)), next)
 			count++;
 
@@ -5235,9 +5229,15 @@ PSTA_ERR:
 		}
 	}
 
-	retval += websWrite(wp, "wlc_state=%d;", psta);
-	retval += websWrite(wp, "wlc_state_auth=%d;", psta_auth);
-
+	if(json_support){
+		retval += websWrite(wp, "{");
+		retval += websWrite(wp, "\"wlc_state\":\"%d\"", psta);
+		retval += websWrite(wp, ",\"wlc_state_auth\":\"%d\"", psta_auth);
+		retval += websWrite(wp, "}");
+	}else{
+		retval += websWrite(wp, "wlc_state=%d;", psta);
+		retval += websWrite(wp, "wlc_state_auth=%d;", psta_auth);
+	}
 	return retval;
 }
 #endif

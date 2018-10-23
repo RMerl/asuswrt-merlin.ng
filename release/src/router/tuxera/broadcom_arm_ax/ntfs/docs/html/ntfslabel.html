@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8"/>
+<style>
+table.head, table.foot { width: 100%; }
+td.head-rtitle, td.foot-os { text-align: right; }
+td.head-vol { text-align: center; }
+table.foot td { width: 50%; }
+table.head td { width: 33%; }
+div.spacer { margin: 1em 0; }
+</style>
+<title>
+NTFSLABEL(8)</title>
+</head>
+<body>
+<div class="mandoc">
+<table class="head">
+<tbody>
+<tr>
+<td class="head-ltitle">
+NTFSLABEL(8)</td>
+<td class="head-vol">
+System Manager's Manual</td>
+<td class="head-rtitle">
+NTFSLABEL(8)</td>
+</tr>
+</tbody>
+</table>
+<div class="section">
+<h1>NAME</h1> ntfslabel - display/change the label on an NTFS file system</div>
+<div class="section">
+<h1>SYNOPSIS</h1> <b>ntfslabel</b> [ <i>options</i>] <i>device </i>[<i>new-label</i>]</div>
+<div class="section">
+<h1>DESCRIPTION</h1> <b>ntfslabel</b> will display or change the file system label on the ntfs file system located on <i>device</i>.<div class="spacer">
+</div>
+If the optional argument <i>new-label</i> is not present, <b>ntfslabel</b> will simply display the current file system label.<div class="spacer">
+</div>
+If the optional argument <i>new-label</i> is present, then <b>ntfslabel</b> will set the file system label to be <i>new-label</i>. NTFS file system labels can be at most 128 Unicode characters long; if <i>new-label</i> is longer than 128 Unicode characters, <b>ntfslabel</b> will truncate it and print a warning message.<div class="spacer">
+</div>
+It is also possible to set the file system label using the <b>-L</b> option of <b>mkntfs</b>(8) during creation of the file system.</div>
+<div class="section">
+<h1>OPTIONS</h1> Below is a summary of all the options that <b>ntfslabel</b> accepts.  Nearly all options have two equivalent names.  The short name is preceded by <b>-</b> and the long name is preceded by <b>--</b>. Any single letter options, that don't take an argument, can be combined into a single command, e.g. <b>-fv</b> is equivalent to <b>-f -v</b>. Long named options can be abbreviated to any unique prefix of their name.<dl>
+<dt>
+<b>-f</b>, <b>--force</b></dt>
+<dd>
+This will override some sensible defaults, such as not working with a mounted volume.  Use this option with caution.</dd>
+</dl>
+<dl>
+<dt>
+<b>-h</b>, <b>--help</b></dt>
+<dd>
+Show a list of options with a brief description of each one.</dd>
+</dl>
+<dl>
+<dt>
+<b>-n</b>, <b>--no-action</b></dt>
+<dd>
+Don't actually write to disk.</dd>
+</dl>
+<dl>
+<dt>
+<b>-q</b>, <b>--quiet</b></dt>
+<dd>
+Reduce the amount of output to a minimum.</dd>
+</dl>
+<dl>
+<dt>
+<b>-v</b>, <b>--verbose</b></dt>
+<dd>
+Increase the amount of output that <b>ntfslabel</b> prints.</dd>
+</dl>
+<dl>
+<dt>
+<b>-V</b>, <b>--version</b></dt>
+<dd>
+Show the version number, copyright and license for <b>ntfslabel</b>.</dd>
+</dl>
+</div>
+<div class="section">
+<h1>BUGS</h1> If you find a bug please send an email describing the problem to ntfs-support@tuxera.com.</div>
+<div class="section">
+<h1>AVAILABILITY</h1> <b>ntfslabel</b> is part of the <b>Tuxera NTFS</b> package.</div>
+<div class="section">
+<h1>SEE ALSO</h1> <b>mkntfs</b>(8)</div>
+<table class="foot">
+<tr>
+<td class="foot-date">
+Sept 2011</td>
+<td class="foot-os">
+Tuxera NTFS Utilities 3017.7.18.4</td>
+</tr>
+</table>
+</div>
+</body>
+</html>
+

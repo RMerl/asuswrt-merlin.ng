@@ -1452,11 +1452,12 @@ lldpd_main(int argc, char *argv[], char *envp[])
 	char *mgmtp = NULL;
 	char *cidp = NULL;
 	char *interfaces = NULL;
+	char *hostname = NULL;
 	/* We do not want more options here. Please add them in lldpcli instead
 	 * unless there is a very good reason. Most command-line options will
 	 * get deprecated at some point. */
 	char *popt, opts[] =
-		"H:vhkrdD:p:xX:m:u:4:6:I:C:p:M:P:S:iL:@                    ";
+		"H:vhkrdD:p:xX:m:s:u:4:6:I:C:p:M:P:S:iL:@                    ";
 	int i, found, advertise_version = 1;
 #ifdef ENABLE_LLDPMED
 	int lldpmed = 0, noinventory = 0;
@@ -1615,6 +1616,13 @@ lldpd_main(int argc, char *argv[], char *envp[])
 				usage();
 			}
 			break;
+		case 's':
+			if (hostname) {
+                                fprintf(stderr, "-s can only be used once\n");
+                                usage();
+			}
+                        hostname = strdup(optarg);
+                        break;
 		default:
 			found = 0;
 			for (i=0; protos[i].mode != 0; i++) {
@@ -1786,6 +1794,7 @@ lldpd_main(int argc, char *argv[], char *envp[])
 #endif /* USE_SNMP */
 	cfg->g_config.c_bond_slave_src_mac_type = \
 	    LLDP_BOND_SLAVE_SRC_MAC_TYPE_LOCALLY_ADMINISTERED;
+	cfg->g_config.c_hostname = hostname;
 
 	/* Get ioctl socket */
 	log_debug("main", "get an ioctl socket");

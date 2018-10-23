@@ -19,6 +19,8 @@
 
 #include <iwlib.h>
 
+#include "rtconfig.h"
+
 #define NAWDS_SH_FMT	"/etc/Wireless/sh/nawds_%s.sh"
 
 
@@ -515,4 +517,21 @@ typedef struct {
 #define BD_5G_CHIP_DIR	"QCA9888"
 #define BD_5G_HW_DIR	"hw.2"
 #endif
+
+#ifdef RTCONFIG_WIFI_SON
+#define	QCA_MACCMD	"maccmd_sec"
+#define	QCA_GETCMD	"get_maccmd_sec"
+#define	QCA_ADDMAC	"addmac_sec"
+#define	QCA_DELMAC	"delmac_sec"
+#define	QCA_GETMAC	"getmac_sec"
+#else
+#define	QCA_MACCMD	"maccmd"
+#define	QCA_GETCMD	"get_maccmd"
+#define	QCA_ADDMAC	"addmac"
+#define	QCA_DELMAC	"delmac"
+#define	QCA_GETMAC	"getmac"
+#endif
+
+#define QCA_DEFAULT_NOISE_FLOOR (-96)	/* via QCA case #03626623 */
+
 #endif	/* _QCA_H_ */

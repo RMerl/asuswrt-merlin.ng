@@ -20,6 +20,24 @@
 <script language="JavaScript" type="text/javascript" src="/validator.js"></script>
 <script type="text/javascript" language="JavaScript" src="/js/jquery.js"></script>
 <script type="text/javascript" src="/js/httpApi.js"></script>
+<script type="text/javascript" src="form.js"></script>
+<style type="text/css">
+.contentM_qis{
+	position:absolute;
+	-webkit-border-radius: 5px;
+	-moz-border-radius: 5px;
+	border-radius: 5px;
+	z-index: 200;
+	display: none;
+	margin-left: 35%;
+	top: 290px;
+	width: 600px;
+	box-shadow: 1px 5px 10px #000;
+	font-size: 12px;
+	color: #FFFFFF;
+	padding: 20px;
+}
+</style>
 <script>
 var wItem = new Array(new Array("", "", "TCP"),
 											new Array("FTP", "20,21", "TCP"),
@@ -57,6 +75,13 @@ var ctf_disable = '<% nvram_get("ctf_disable"); %>';
 var wans_mode ='<% nvram_get("wans_mode"); %>';
 var dual_wan_lb_status = (check_dual_wan_status().status == "1" && check_dual_wan_status().mode == "lb") ? true : false;
 var support_dual_wan_unit_flag = (mtwancfg_support && dual_wan_lb_status) ? true : false;
+var rulelist_table = ["vts_rulelist_0"];
+var rulelist_nv = ["vts_rulelist"];
+if(support_dual_wan_unit_flag){
+	rulelist_table.push("vts_rulelist_1");
+	rulelist_nv.push("vts1_rulelist");
+}
+var profileMaxNum = 64;
 function initial(){
 	show_menu();
 	// https://www.asus.com/support/FAQ/114093/
@@ -71,37 +96,33 @@ function initial(){
 				var oriNvramCol = oriNvramRow[i].split('>');
 				var eachRuleArray = new Array();
 				var serviceName = oriNvramCol[0];
-				eachRuleArray.push(serviceName);
-				var sourceTarget = (oriNvramCol[5] == undefined) ? "" : oriNvramCol[5];
-				eachRuleArray.push(sourceTarget);
-				var portRange = oriNvramCol[1];
-				eachRuleArray.push(portRange);
-				var localIP = oriNvramCol[2];
-				eachRuleArray.push(localIP);
-				var localPort = oriNvramCol[3];
-				eachRuleArray.push(localPort);
+				eachRuleArray["serviceName"] = serviceName;
+				var sourceIP = (oriNvramCol[5] == undefined) ? "" : oriNvramCol[5];
+				eachRuleArray["sourceIP"] = sourceIP;
+				var externalPort = oriNvramCol[1];
+				eachRuleArray["externalPort"] = externalPort;
+				var internalIP = oriNvramCol[2];
+				eachRuleArray["internalIP"] = internalIP;
+				var internalPort = oriNvramCol[3];
+				eachRuleArray["internalPort"] = internalPort;
 				var protocol = oriNvramCol[4];
-				eachRuleArray.push(protocol);
+				eachRuleArray["protocol"] = protocol;
 				parseArray.push(eachRuleArray);
 			}
 		}
 		return parseArray;
 	};
 	vts_rulelist_array["vts_rulelist_0"] = parseNvramToArray('<% nvram_char_to_ascii("","vts_rulelist"); %>');
-	if(support_dual_wan_unit_flag) {
-		document.getElementById("tr_wan_unit").style.display = "";
+	if(support_dual_wan_unit_flag)
 		vts_rulelist_array["vts_rulelist_1"] = parseNvramToArray('<% nvram_char_to_ascii("","vts1_rulelist"); %>');
-	}
+
 	Object.keys(vts_rulelist_array).forEach(function(key) {
 		gen_vts_ruleTable_Block(key);
 	});
 	
 	loadAppOptions();
 	loadGameOptions();
-	setTimeout("showDropdownClientList('setClientIP', 'ip>0', 'all', 'ClientList_Block_0', 'pull_arrow_0', 'online');", 1000);
-	if(support_dual_wan_unit_flag) {
-		setTimeout("showDropdownClientList('setClientIP', 'ip>1', 'all', 'ClientList_Block_1', 'pull_arrow_1', 'online');", 1000);
-	}
+	setTimeout("showDropdownClientList('setClientIP', 'ip', 'all', 'ClientList_Block', 'pull_arrow', 'online');", 1000);
 	Object.keys(vts_rulelist_array).forEach(function(key) {
 		showvts_rulelist(vts_rulelist_array[key], key);
 	});
@@ -115,10 +136,12 @@ function initial(){
 	//	document.getElementById("lb_note").style.display = "";
 
 	if('<% get_parameter("af"); %>' == 'KnownApps' && '<% get_parameter("item"); %>' == 'ftp'){
-		var KnownApps = document.form.KnownApps;
-		KnownApps.options[1].selected = 1;
-		change_wizard(KnownApps, 'KnownApps');
-		if(addRow_Group(128, $("#vts_rulelist_0")[0])) applyRule();
+		if(vts_rulelist_array["vts_rulelist_0"].length < profileMaxNum) {
+			var KnownApps = document.form.KnownApps;
+			KnownApps.options[1].selected = 1;
+			change_wizard(KnownApps, 'KnownApps');
+			saveProfile("new");
+		}
 	}
 
 	if(based_modelid == "GT-AC5300" || based_modelid == "GT-AC9600")
@@ -143,53 +166,10 @@ function isChange(){
 function applyRule(){
 	if(parent.usb_support){
 		if(!validator.numberRange(document.form.vts_ftpport, 1, 65535)){
-			return false;	
-		}	
-	}	
-	
-	//parse array to nvram
-	var parseArrayToNvram = function(_dataArray) {
-		var tmp_value = "";
-		for(var i = 0; i < _dataArray.length; i += 1) {
-			if(_dataArray[i].length != 0) {
-				tmp_value += "<";
-				var serviceName = _dataArray[i][0];
-				tmp_value += serviceName + ">";
-				var portRange = _dataArray[i][2];
-				tmp_value += portRange + ">";
-				var localIP = _dataArray[i][3];
-				tmp_value += localIP + ">";
-				var localPort = _dataArray[i][4];
-				tmp_value += localPort + ">";
-				var protocol = _dataArray[i][5];
-				tmp_value += protocol + ">";
-				var sourceTarget = _dataArray[i][1];
-				tmp_value += sourceTarget;
-			}
-		}
-		return tmp_value;
-	};
-
-	var rulelist = parseArrayToNvram(vts_rulelist_array["vts_rulelist_0"]);
-
-	if (rulelist.length > 2047) {
-		alert("Resulting list of Port Forwards is too long - remove some, or use shorter descriptions.");
-                return false;
-	}
-
-	document.form.vts_rulelist.value = rulelist;
-	if(support_dual_wan_unit_flag) {
-		document.form.vts1_rulelist.disabled = false;
-		rulelist = parseArrayToNvram(vts_rulelist_array["vts_rulelist_1"]);
-
-		if (rulelist.length > 2047) {
-			alert("Resulting list of Port Forwards is too long - remove some, or use shorter descriptions.");
 			return false;
 		}
-
-		document.form.vts1_rulelist.value = rulelist;
 	}
-	
+
 	/* 2014.04 Viz: No need to reboot for ctf enable models.
 	if(ctf_disable == '0' && isChange()){
 		document.form.action_script.value = "reboot";
@@ -215,234 +195,94 @@ function loadGameOptions(){
 }
 
 function change_wizard(o, id){
-	var wan_idx = 0;
-	if(support_dual_wan_unit_flag) {
-		wan_idx = document.getElementById("wans_unit").value;
-	}
 	if(id == "KnownApps"){
-		var set_famous_server_value = function(wan_idx) {
+		var set_famous_server_value = function() {
 			for(var i = 0; i < wItem.length; ++i){
 				if(wItem[i][0] != null && o.value == i){
 					if(wItem[i][2] == "TCP")
-						document.getElementById("vts_proto_x_" + wan_idx + "").options[0].selected = 1;
+						document.getElementById("vts_proto_x").options[0].selected = 1;
 					else if(wItem[i][2] == "UDP")
-						document.getElementById("vts_proto_x_" + wan_idx + "").options[1].selected = 1;
+						document.getElementById("vts_proto_x").options[1].selected = 1;
 					else if(wItem[i][2] == "BOTH")
-						document.getElementById("vts_proto_x_" + wan_idx + "").options[2].selected = 1;
+						document.getElementById("vts_proto_x").options[2].selected = 1;
 					else if(wItem[i][2] == "OTHER")
-						document.getElementById("vts_proto_x_" + wan_idx + "").options[3].selected = 1;
+						document.getElementById("vts_proto_x").options[3].selected = 1;
 					
-					document.getElementById("vts_ipaddr_x_" + wan_idx + "").value = login_ip_str();
-					document.getElementById("vts_port_x_" + wan_idx + "").value = wItem[i][1];
-					document.getElementById("vts_desc_x_" + wan_idx + "").value = wItem[i][0]+" Server";
+					document.getElementById("vts_ipaddr_x").value = login_ip_str();
+					document.getElementById("vts_port_x").value = wItem[i][1];
+					document.getElementById("vts_desc_x").value = wItem[i][0]+" Server";
 					break;
 				}
 			}
 		};
-		if(wan_idx != "2") {
-			set_famous_server_value(wan_idx);
-		}
-		else {
-			set_famous_server_value("0");
-			set_famous_server_value("1");
-		}
+		set_famous_server_value();
 
-		var set_famous_ftp_value = function(wan_idx) {
+		var set_famous_ftp_value = function() {
 			if(document.form.KnownApps.options[1].selected == 1){
 				if(!parent.usb_support){
-					document.getElementById("vts_port_x_" + wan_idx + "").value = "21";
+					document.getElementById("vts_port_x").value = "21";
 				}
-				document.getElementById("vts_lport_x_" + wan_idx + "").value = "21";
+				document.getElementById("vts_lport_x").value = "21";
 			}
 			else {
-				document.getElementById("vts_lport_x_" + wan_idx + "").value = "";
+				document.getElementById("vts_lport_x").value = "";
 			}	
 		};
 
-		if(wan_idx != "2") {
-			set_famous_ftp_value(wan_idx);
-		}
-		else {
-			set_famous_ftp_value("0");
-			set_famous_ftp_value("1");
-		}
+		set_famous_ftp_value();
 		document.getElementById("KnownApps").value = 0;
 	}
 	else if(id == "KnownGames"){
-		var set_famous_game_value = function(wan_idx) {
-			document.getElementById("vts_lport_x_" + wan_idx + "").value = "";
+		var set_famous_game_value = function() {
+			document.getElementById("vts_lport_x").value = "";
 			for(var i = 0; i < wItem2.length; ++i){
 				if(wItem2[i][0] != null && o.value == i){
 					if(wItem2[i][2] == "TCP")
-						document.getElementById("vts_proto_x_" + wan_idx + "").options[0].selected = 1;
+						document.getElementById("vts_proto_x").options[0].selected = 1;
 					else if(wItem2[i][2] == "UDP")
-						document.getElementById("vts_proto_x_" + wan_idx + "").options[1].selected = 1;
+						document.getElementById("vts_proto_x").options[1].selected = 1;
 					else if(wItem2[i][2] == "BOTH")
-						document.getElementById("vts_proto_x_" + wan_idx + "").options[2].selected = 1;
+						document.getElementById("vts_proto_x").options[2].selected = 1;
 					else if(wItem2[i][2] == "OTHER")
-						document.getElementById("vts_proto_x_" + wan_idx + "").options[3].selected = 1;
+						document.getElementById("vts_proto_x").options[3].selected = 1;
 					
-					document.getElementById("vts_ipaddr_x_" + wan_idx + "").value = login_ip_str();
-					document.getElementById("vts_port_x_" + wan_idx + "").value = wItem2[i][1];
-					document.getElementById("vts_desc_x_" + wan_idx + "").value = wItem2[i][0];
+					document.getElementById("vts_ipaddr_x").value = login_ip_str();
+					document.getElementById("vts_port_x").value = wItem2[i][1];
+					document.getElementById("vts_desc_x").value = wItem2[i][0];
 
 					break;
 				}
 			}
 		};
-
-		if(wan_idx != "2") {
-			set_famous_game_value(wan_idx);
-		}
-		else {
-			set_famous_game_value("0");
-			set_famous_game_value("1");
-		}
+		set_famous_game_value();
 		document.getElementById("KnownGames").value = 0;
 	}
 }
 
 /*------------ Mouse event of fake LAN IP select menu {-----------------*/
-function setClientIP(num, wan_idx){
-	document.getElementById('vts_ipaddr_x_' + wan_idx + '').value = num;
-	hideClients_Block(wan_idx);
+function setClientIP(num){
+	document.getElementById('vts_ipaddr_x').value = num;
+	hideClients_Block();
 }
 
 function pullLANIPList(obj){
-	var wan_idx = obj.id.split("_")[2];
-	var element = document.getElementById('ClientList_Block_' + wan_idx + '');
+	var element = document.getElementById('ClientList_Block');
 	var isMenuopen = element.offsetWidth > 0 || element.offsetHeight > 0;
 	if(isMenuopen == 0) {
 		obj.src = "/images/arrow-top.gif"
 		element.style.display = 'block';
-		document.getElementById("vts_ipaddr_x_" + wan_idx + "").focus();
+		document.getElementById("vts_ipaddr_x").focus();
 	}
 	else
-		hideClients_Block(wan_idx);
+		hideClients_Block();
 }
 
-function hideClients_Block(wan_idx){
-	document.getElementById("pull_arrow_" + wan_idx + "").src = "/images/arrow-down.gif";
-	document.getElementById('ClientList_Block_' + wan_idx + '').style.display = 'none';
-	validator.validIPForm(document.getElementById("vts_ipaddr_x_" + wan_idx + ""), 0);
+function hideClients_Block(){
+	document.getElementById("pull_arrow").src = "/images/arrow-down.gif";
+	document.getElementById('ClientList_Block').style.display = 'none';
+	validator.validIPForm(document.getElementById("vts_ipaddr_x"), 0);
 }
 /*----------} Mouse event of fake LAN IP select menu-----------------*/
-
-var add_ruleList_array = new Array();
-function validForm(_wan_idx){
-	if(!Block_chars(document.getElementById("vts_desc_x_" + _wan_idx + ""), ["<" ,">" ,"'" ,"%"])) {
-		return false;
-	}
-	
-	if(!Block_chars(document.getElementById("vts_port_x_" + _wan_idx + ""), ["<" ,">"])) {
-		return false;		
-	}	
-
-	if(document.getElementById("vts_proto_x_" + _wan_idx + "").value == "OTHER") {
-		document.getElementById("vts_lport_x_" + _wan_idx + "").value = "";
-		if (!check_multi_range(document.getElementById("vts_port_x_" + _wan_idx + ""), 1, 255, false))
-			return false;
-	}
-
-	if(!check_multi_range(document.getElementById("vts_port_x_" + _wan_idx + ""), 1, 65535, true)) {
-		return false;
-	}
-	
-	
-	if(document.getElementById("vts_lport_x_" + _wan_idx + "").value.length > 0
-			&& !validator.numberRange(document.getElementById("vts_lport_x_" + _wan_idx + ""), 1, 65535)) {
-		return false;	
-	}
-	
-	if(document.getElementById("vts_ipaddr_x_" + _wan_idx + "").value == "") {
-		alert("<#JS_fieldblank#>");
-		document.getElementById("vts_ipaddr_x_" + _wan_idx + "").focus();
-		document.getElementById("vts_ipaddr_x_" + _wan_idx + "").select();		
-		return false;
-	}
-	if(!validator.validIPForm(document.getElementById("vts_ipaddr_x_" + _wan_idx + ""), 0)){			
-		return false;	
-	}
-	
-	
-	add_ruleList_array = [];
-	add_ruleList_array.push(document.getElementById("vts_desc_x_" + _wan_idx + "").value);
-	add_ruleList_array.push(document.getElementById("vts_target_x_" + _wan_idx + "").value);
-	add_ruleList_array.push(document.getElementById("vts_port_x_" + _wan_idx + "").value);
-	add_ruleList_array.push(document.getElementById("vts_ipaddr_x_" + _wan_idx + "").value);
-	add_ruleList_array.push(document.getElementById("vts_lport_x_" + _wan_idx + "").value);
-	add_ruleList_array.push(document.getElementById("vts_proto_x_" + _wan_idx + "").value);
-	return true;
-}
-
-function addRow_Group(upper, _this){
-	var wan_idx = $(_this).closest("*[wanUnitID]").attr( "wanUnitID" );
-	if(validForm(wan_idx)){
-		if('<% nvram_get("vts_enable_x"); %>' != "1")
-			document.form.vts_enable_x[0].checked = true;
-
-		var rule_num = vts_rulelist_array["vts_rulelist_" + wan_idx + ""].length;
-		if(rule_num >= upper){
-			alert("<#JS_itemlimit1#> " + upper + " <#JS_itemlimit2#>");
-			return false;
-		}
-
-		//match(Source Target + Port Range + Protocol) is not accepted
-		var vts_rulelist_array_temp = vts_rulelist_array["vts_rulelist_" + wan_idx + ""].slice();
-		var add_ruleList_array_temp = add_ruleList_array.slice();
-		if(vts_rulelist_array_temp.length > 0) {
-			add_ruleList_array_temp.splice(0, 1);//filter Service Name
-			add_ruleList_array_temp.splice(2, 2);//filter Local IP and Local Port
-			if(add_ruleList_array_temp[2] == "BOTH") { // BOTH is TCP and UDP
-				for(var i = 0; i < vts_rulelist_array_temp.length; i += 1) {
-					var currentRuleArrayTemp = vts_rulelist_array_temp[i].slice();
-					currentRuleArrayTemp.splice(0, 1);//filter Service Name
-					currentRuleArrayTemp.splice(2, 2);//filter Local IP and Local Port
-					if(add_ruleList_array_temp[0] == currentRuleArrayTemp[0] && add_ruleList_array_temp[1] == currentRuleArrayTemp[1] && currentRuleArrayTemp[2] != "OTHER") {
-						alert("<#JS_duplicate#>");
-						document.getElementById("vts_port_x_" + wan_idx + "").focus();
-						document.getElementById("vts_port_x_" + wan_idx + "").select();
-						return false;
-					}
-				}
-			}
-			else {
-				for(var i = 0; i < vts_rulelist_array_temp.length; i += 1) {
-					var currentRuleArrayTemp = vts_rulelist_array_temp[i].slice();
-					currentRuleArrayTemp.splice(0, 1);//filter Service Name
-					currentRuleArrayTemp.splice(2, 2);//filter Local IP and Local Port
-					if(add_ruleList_array_temp.toString() == currentRuleArrayTemp.toString()) {
-						alert("<#JS_duplicate#>");
-						document.getElementById("vts_port_x_" + wan_idx + "").focus();
-						document.getElementById("vts_port_x_" + wan_idx + "").select();
-						return false;
-					}
-					if(currentRuleArrayTemp[2] == "BOTH" && add_ruleList_array_temp[2] != "OTHER") {
-						if(add_ruleList_array_temp[0] == currentRuleArrayTemp[0] && add_ruleList_array_temp[1] == currentRuleArrayTemp[1]) {
-							alert("<#JS_duplicate#>");
-							document.getElementById("vts_port_x_" + wan_idx + "").focus();
-							document.getElementById("vts_port_x_" + wan_idx + "").select();
-							return false;
-						}
-					}
-				}
-			}
-			vts_rulelist_array["vts_rulelist_" + wan_idx + ""].push(add_ruleList_array);
-		}
-		else {
-			vts_rulelist_array["vts_rulelist_" + wan_idx + ""].push(add_ruleList_array);
-		}
-
-		document.getElementById("vts_desc_x_" + wan_idx + "").value = "";
-		document.getElementById("vts_target_x_" + wan_idx + "").value = "";
-		document.getElementById("vts_port_x_" + wan_idx + "").value = "";
-		document.getElementById("vts_ipaddr_x_" + wan_idx + "").value = "";
-		document.getElementById("vts_lport_x_" + wan_idx + "").value = "";
-		document.getElementById("vts_proto_x_" + wan_idx + "").value = "TCP";
-		showvts_rulelist(vts_rulelist_array["vts_rulelist_" + wan_idx + ""], "vts_rulelist_" + wan_idx + "");
-		return true;
-	}
-}
 
 function validate_multi_range(val, mini, maxi, obj){
 
@@ -485,7 +325,7 @@ function check_multi_range(obj, mini, maxi, allow_range){
 		PortSplit[i] = PortSplit[i].replace(/(^0*)/g, ""); 		// "^0" to ""	
 		
 		if(PortSplit[i] == "" ||PortSplit[i] == 0){
-			alert("<#JS_ipblank1#>");
+			alert("<#JS_fieldblank#>");
 			obj.focus();
 			obj.select();			
 			return false;
@@ -511,57 +351,45 @@ function check_multi_range(obj, mini, maxi, allow_range){
 }
 
 function del_Row(_this){
+	if(!confirm("<#VPN_Fusion_Delete_Alert#>"))
+		return false;
+
 	var row_idx = $(_this).closest("*[row_tr_idx]").attr( "row_tr_idx" );
 	var wan_idx = $(_this).closest("*[wanUnitID]").attr( "wanUnitID" );
 	
 	vts_rulelist_array["vts_rulelist_" + wan_idx + ""].splice(row_idx, 1);
 	showvts_rulelist(vts_rulelist_array["vts_rulelist_" + wan_idx + ""], "vts_rulelist_" + wan_idx + "");
+
+	var obj = {
+		"action_mode": "apply",
+		"rc_service": "restart_firewall",
+	}
+	obj["" +  rulelist_nv[wan_idx] + ""] = parseArrayToNvram(vts_rulelist_array["vts_rulelist_" + wan_idx + ""]);
+	httpApi.nvramSet(obj);
 }
 
 function showvts_rulelist(_arrayData, _tableID) {
 	var wan_idx = _tableID.split("_")[2];
-	var width_array = [20, 20, 16, 18, 10, 10, 6];
-	var handle_long_text = function(_len, _text, _width) {
-		var html = "";
-		if(_text.length > _len) {
-			var display_text = "";
-			display_text = _text.substring(0, (_len - 2)) + "...";
-			html +='<td width="' +_width + '%" title="' + _text + '">' + display_text + '</td>';
-		}
-		else
-			html +='<td width="' + _width + '%">' + _text + '</td>';
-		return html;
-	};
 	var code = "";
-	code +='<table width="100%" cellspacing="0" cellpadding="4" align="center" class="list_table">';
+	code += '<table width="100%" cellspacing="0" cellpadding="4" align="center" class="list_table" style="word-break:break-word;">';
 	if(_arrayData.length == 0)
-		code +='<tr><td style="color:#FFCC00;" colspan="7"><#IPConnection_VSList_Norule#></td></tr>';
+		code += '<tr><td style="color:#FFCC00;" colspan="8"><#IPConnection_VSList_Norule#></td></tr>';
 	else {
 		for(var i = 0; i < _arrayData.length; i += 1) {
 			var eachValue = _arrayData[i];
-			if(eachValue.length != 0) {
-				code +='<tr row_tr_idx="' + i + '">';
-				for(var j = 0; j < eachValue.length; j += 1) {
-					switch(j) {
-						case 0 :
-						case 1 :
-							code += handle_long_text(18, eachValue[j], width_array[j]);
-							break;
-						case 2 :
-							code += handle_long_text(14, eachValue[j], width_array[j]);
-							break;
-						default :
-							code +='<td width="' + width_array[j] + '%">' + eachValue[j] + '</td>';
-							break;
-					}
-				}
-				
-				code +='<td width="14%"><input class="remove_btn" onclick="del_Row(this);" value=""/></td></tr>';
-				code +='</tr>';
-			}
+			code += '<tr row_tr_idx="' + i + '">';
+			code += '<td width="16%">' + eachValue.serviceName + '</td>';
+			code += '<td width="15%">' + eachValue.externalPort + '</td>';
+			code += '<td width="15%">' + eachValue.internalPort + '</td>';
+			code += '<td width="17%">' + eachValue.internalIP + '</td>';
+			code += '<td width="8%">' + eachValue.protocol + '</td>';
+			code += '<td width="17%">' + eachValue.sourceIP + '</td>';
+			code += '<td width="6%"><input class="edit_btn" onclick="editProfile(\'edit\', this);" value=""/></td>';
+			code += '<td width="6%"><input class="remove_btn" onclick="del_Row(this);" value=""/></td>';
+			code += '</tr>';
 		}
 	}
-	code +='</table>';
+	code += '</table>';
 	document.getElementById("vts_rulelist_Block_" + wan_idx + "").innerHTML = code;	     
 }
 
@@ -574,7 +402,7 @@ function changeBgColor(obj, num){
 function gen_vts_ruleTable_Block(_tableID) {
 	var html = "";
 	html += '<table width="100%" border="1" align="center" cellpadding="4" cellspacing="0" class="FormTable_table">';
-	
+
 	html += '<thead>';
 	html += '<tr>';
 	var wan_title = "";
@@ -589,65 +417,250 @@ function gen_vts_ruleTable_Block(_tableID) {
 				break;
 		}
 	}
-	html += '<td colspan="7">' + wan_title + '<#IPConnection_VSList_title#>&nbsp;(<#List_limit#>&nbsp;128)</td>';
+	html += '<td colspan="8">' + wan_title + '<#IPConnection_VSList_title#>&nbsp;(<#List_limit#>&nbsp;' + profileMaxNum + ')</td>';
 	html += '</tr>';
 	html += '</thead>';
 
 	html += '<tr>';
-	html += '<th width="20%"><#BM_UserList1#></th>';
-	html += '<th width="20%"><a class="hintstyle" href="javascript:void(0);" onClick="openHint(50,23)">Source IP</a></th>';
-	html += '<th width="16%"><a class="hintstyle" href="javascript:void(0);" onClick="openHint(7,24);"><#FirewallConfig_LanWanSrcPort_itemname#></a></th>';
-	html += '<th width="18%"><a class="hintstyle" href="javascript:void(0);" onClick="openHint(7,25);"><#IPConnection_VServerIP_itemname#></a></th>';
-	html += '<th width="10%"><a class="hintstyle" href="javascript:void(0);" onClick="openHint(7,26);"><#IPConnection_VServerLPort_itemname#></a></th>';
-	html += '<th width="10%"><#IPConnection_VServerProto_itemname#></th>';
-	html += '<th width="6%"><#list_add_delete#></th>';
+	html += '<th width="16%"><#BM_UserList1#></th>';
+	html += '<th width="15%">External Port</th>';/* untranslated */
+	html += '<th width="15%">Internal Port</th>';/* untranslated */
+	html += '<th width="17%">Internal IP</th>';/* untranslated */
+	html += '<th width="8%"><#IPConnection_VServerProto_itemname#></th>';
+	html += '<th width="17%"><#IPConnection_VSList_SourceTarget#></th>';
+	html += '<th width="6%"><#pvccfg_edit#></th>';
+	html += '<th width="6%"><#CTL_del#></th>';
 	html += '</tr>';
 
-	html += '<tr>';
-	html += '<td width="20%">';
-	html += '<input type="text" maxlength="30" class="input_15_table" name="vts_desc_x_' + wan_idx + '" id="vts_desc_x_' + wan_idx + '" onKeyPress="return validator.isString(this, event)" autocorrect="off" autocapitalize="off"/>';
-	html += '</td>';
-	html += '<td width="20%">';
-	html += '<input type="text" maxlength="30" class="input_15_table" name="vts_target_x_' + wan_idx + '" id="vts_target_x_' + wan_idx + '" onKeyPress="return validator.isString(this, event)" autocorrect="off" autocapitalize="off"/>';
-	html += '</td>';
-	html += '<td width="16%">';
-	html += '<input type="text" maxlength="60" class="input_12_table" name="vts_port_x_' + wan_idx + '" id="vts_port_x_' + wan_idx + '" onkeypress="return validator.isPortRange(this, event)" autocorrect="off" autocapitalize="off"/>';
-	html += '</td>';
-	html += '<td width="18%">';
-	html += "<div style='display:inline-flex;'>";
-	html += '<input type="text" maxlength="15" class="input_12_table" name="vts_ipaddr_x_' + wan_idx + '" id="vts_ipaddr_x_' + wan_idx + '" align="left" onkeypress="return validator.isIPAddr(this, event)" style="float:left;width:95px;"/ autocomplete="off" onClick="hideClients_Block(' + wan_idx + ');" autocorrect="off" autocapitalize="off">';
-	html += "<img id='pull_arrow_" + wan_idx + "' class='pull_arrow' height='14px;' src='images/arrow-down.gif' align='right' onclick='pullLANIPList(this);' title=\"<#select_IP#>\">";
-	html += "</div>";
-	html += '<div id="ClientList_Block_' + wan_idx + '" class="clientlist_dropdown" style="margin-left:3px;"></div>';
-	html += '</td>';
-	html += '<td width="10%">';
-	html += '<input type="text" maxlength="5"  class="input_6_table" name="vts_lport_x_' + wan_idx + '" id="vts_lport_x_' + wan_idx + '" onKeyPress="return validator.isNumber(this,event);" autocorrect="off" autocapitalize="off"/>';
-	html += '</td>';
-	html += '<td width="10%">';
-	html += '<select name="vts_proto_x_' + wan_idx + '" id="vts_proto_x_' + wan_idx + '" class="input_option">';
-	html += '<option value="TCP">TCP</option>';
-	html += '<option value="UDP">UDP</option>';
-	html += '<option value="BOTH">BOTH</option>';
-	html += '<option value="OTHER">OTHER</option>';
-	html += '</select>';
-	html += '</td>';	
-	html += '<td width="6%">';
-	html += '<input type="button" class="add_btn" onClick="addRow_Group(128, this);" name="vts_rulelist_' + wan_idx + '" id="vts_rulelist_' + wan_idx + '" value="">';
-	html += '</td>';
-	html += '</tr>';
 	html += '</table>';
 	document.getElementById("vts_rulelist_Table_" + wan_idx + "").innerHTML = html;
+}
+function parseArrayToNvram(_dataArray) {
+	var tmp_value = "";
+	for(var i = 0; i < _dataArray.length; i += 1) {
+		tmp_value += "<";
+		var serviceName = ((_dataArray[i]["serviceName"] != undefined) ? _dataArray[i]["serviceName"] : "");
+		tmp_value += serviceName + ">";
+		var externalPort = ((_dataArray[i]["externalPort"] != undefined) ? _dataArray[i]["externalPort"] : "");
+		tmp_value += externalPort + ">";
+		var internalIP = ((_dataArray[i]["internalIP"] != undefined) ? _dataArray[i]["internalIP"] : "");
+		tmp_value += internalIP + ">";
+		var internalPort = ((_dataArray[i]["internalPort"] != undefined) ? _dataArray[i]["internalPort"] : "");
+		tmp_value += internalPort + ">";
+		var protocol = ((_dataArray[i]["protocol"] != undefined) ? _dataArray[i]["protocol"] : "");
+		tmp_value += protocol + ">";
+		var sourceIP = ((_dataArray[i]["sourceIP"] != undefined) ? _dataArray[i]["sourceIP"] : "");
+		tmp_value += sourceIP;
+	}
+	return tmp_value;
+}
+function editProfile(_mode, _this) {
+	if(_mode == "new") {
+		$('#wans_unit').find('option').remove().end()
+			.append('<option value="0"><#dualwan_primary#></option>')
+			.append('<option value="1"><#dualwan_secondary#></option>')
+			.append('<option value="2">BOTH</option>')
+			.val('0');
+
+		var upper = profileMaxNum;
+		var have_upper_num = 0;
+		var rulelist_length = rulelist_table.length;
+		for(var i = 0; i <rulelist_length; i += 1) {
+			var rule_num = vts_rulelist_array[rulelist_table[i]].length;
+			if(rule_num >= upper){
+				have_upper_num++;
+				$("#wans_unit option[value='2']").remove();//for both
+				$("#wans_unit option[value='" + i + "']").remove();
+			}
+		}
+
+		if(rulelist_length == have_upper_num){
+			alert("<#JS_itemlimit1#> " + upper + " <#JS_itemlimit2#>");
+			return false;
+		}
+	}
+
+	$("#tr_wan_unit").show();
+	$("#wans_unit").prop("selectedIndex", 0);
+	$("#vts_desc_x").val("");
+	$("#vts_proto_x").prop("selectedIndex", 0);
+	$("#vts_port_x").val("");
+	$("#vts_lport_x").val("");
+	$("#vts_ipaddr_x").val("");
+	$("#vts_target_x").val("");
+	$("#saveProfile").unbind("click");
+	$("#profile_setting").fadeIn(300);
+	adjust_panel_block_top("profile_setting", 100);
+	cal_panel_block("profile_setting", 0.25);
+
+	if(_mode == "edit") {
+		$("#tr_wan_unit").hide();
+
+		var row_idx = $(_this).closest("*[row_tr_idx]").attr( "row_tr_idx" );
+		var wan_idx = $(_this).closest("*[wanUnitID]").attr( "wanUnitID" );
+		$("#vts_desc_x").val(vts_rulelist_array["vts_rulelist_" + wan_idx + ""][row_idx].serviceName);
+		$('#vts_proto_x option[value="' + vts_rulelist_array["vts_rulelist_" + wan_idx + ""][row_idx].protocol +'"]').prop("selected", true);
+		$("#vts_port_x").val(vts_rulelist_array["vts_rulelist_" + wan_idx + ""][row_idx].externalPort);
+		$("#vts_lport_x").val(vts_rulelist_array["vts_rulelist_" + wan_idx + ""][row_idx].internalPort);
+		$("#vts_ipaddr_x").val(vts_rulelist_array["vts_rulelist_" + wan_idx + ""][row_idx].internalIP);
+		$("#vts_target_x").val(vts_rulelist_array["vts_rulelist_" + wan_idx + ""][row_idx].sourceIP);
+		$("#saveProfile").click(
+			function() {
+				saveProfile("edit", wan_idx, row_idx);
+			}
+		);
+	}
+	else if(_mode == "new") {
+		if(!support_dual_wan_unit_flag)
+			$("#tr_wan_unit").hide();
+		$("#saveProfile").click(
+			function() {
+				saveProfile("new");
+			}
+		);
+	}
+}
+function saveProfile(_mode, _wanIdx, _rowIdx) {
+	var checkCurrectData = function(_currectData, _addData) {
+		//match(Source Target + Port Range + Protocol) is not accepted
+		var vts_rulelist_array_temp = $.extend(true, [], _currectData);
+		var add_ruleList_array_temp = $.extend(true, [], _addData);
+		if(vts_rulelist_array_temp.length > 0) {
+			//filter Service Name Local IP and Local Port
+			delete add_ruleList_array_temp.serviceName;
+			delete add_ruleList_array_temp.internalIP;
+			delete add_ruleList_array_temp.internalPort;
+			if(add_ruleList_array_temp.protocol == "BOTH") { // BOTH is TCP and UDP
+				for(var i = 0; i < vts_rulelist_array_temp.length; i += 1) {
+					var currentRuleArrayTemp = $.extend(true, [], vts_rulelist_array_temp[i]);
+					//filter Service Name Local IP and Local Port
+					delete currentRuleArrayTemp.serviceName;
+					delete currentRuleArrayTemp.internalIP;
+					delete currentRuleArrayTemp.internalPort;
+					if(add_ruleList_array_temp.sourceIP == currentRuleArrayTemp.sourceIP && 
+						add_ruleList_array_temp.externalPort == currentRuleArrayTemp.externalPort && 
+						currentRuleArrayTemp.protocol != "OTHER")
+					{
+						alert("<#JS_duplicate#>");
+						document.getElementById("vts_port_x").focus();
+						document.getElementById("vts_port_x").select();
+						return false;
+					}
+				}
+			}
+			else {
+				for(var i = 0; i < vts_rulelist_array_temp.length; i += 1) {
+					var currentRuleArrayTemp = $.extend(true, [], vts_rulelist_array_temp[i]);
+					delete currentRuleArrayTemp.serviceName;
+					delete currentRuleArrayTemp.internalIP;
+					delete currentRuleArrayTemp.internalPort;
+					if(add_ruleList_array_temp.sourceIP == currentRuleArrayTemp.sourceIP && 
+						add_ruleList_array_temp.externalPort == currentRuleArrayTemp.externalPort && 
+						add_ruleList_array_temp.protocol == currentRuleArrayTemp.protocol)
+					{
+						alert("<#JS_duplicate#>");
+						document.getElementById("vts_port_x").focus();
+						document.getElementById("vts_port_x").select();
+						return false;
+					}
+					if(currentRuleArrayTemp.protocol == "BOTH" && add_ruleList_array_temp.protocol != "OTHER") {
+						if(add_ruleList_array_temp.sourceIP == currentRuleArrayTemp.sourceIP && add_ruleList_array_temp.externalPort == currentRuleArrayTemp.externalPort) {
+							alert("<#JS_duplicate#>");
+							document.getElementById("vts_port_x").focus();
+							document.getElementById("vts_port_x").select();
+							return false;
+						}
+					}
+				}
+			}
+		}
+
+		return true;
+	};
+
+	if(!Block_chars(document.getElementById("vts_desc_x"), ["<" ,">" ,"'" ,"%"]))
+		return false;
+	if(!Block_chars(document.getElementById("vts_port_x"), ["<" ,">"]))
+		return false;
+	if(document.getElementById("vts_proto_x").value == "OTHER") {
+		document.getElementById("vts_lport_x").value = "";
+		if (!check_multi_range(document.getElementById("vts_port_x"), 1, 255, false))
+			return false;
+	}
+	if(!check_multi_range(document.getElementById("vts_port_x"), 1, 65535, true))
+		return false;
+	if(document.getElementById("vts_lport_x").value.length > 0
+			&& !validator.numberRange(document.getElementById("vts_lport_x"), 1, 65535)) {
+		return false;
+	}
+	if(document.getElementById("vts_ipaddr_x").value == "") {
+		alert("<#JS_fieldblank#>");
+		document.getElementById("vts_ipaddr_x").focus();
+		document.getElementById("vts_ipaddr_x").select();
+		return false;
+	}
+	if(!validator.validIPForm(document.getElementById("vts_ipaddr_x"), 0))
+		return false;
+	if(!validator.validIPForm(document.getElementById("vts_target_x"), 0))
+		return false;
+
+	var profileArray = new Array();
+	profileArray["serviceName"] = $("#vts_desc_x").val();
+	profileArray["protocol"] = $("#vts_proto_x").val();
+	profileArray["externalPort"] = $("#vts_port_x").val();
+	profileArray["internalPort"] = $("#vts_lport_x").val();
+	profileArray["internalIP"] = $("#vts_ipaddr_x").val();
+	profileArray["sourceIP"] = $("#vts_target_x").val();
+
+	if(_mode == "new") {
+		if(support_dual_wan_unit_flag) {
+			if($("#wans_unit").val() == "2") {
+				for(var i = 0; i < rulelist_table.length; i += 1) {
+					 if(!(checkCurrectData(vts_rulelist_array[rulelist_table[i]], profileArray)))
+						return false;
+				}
+				rulelist_table.forEach(function(element) {
+					vts_rulelist_array[element].push(profileArray);
+				});
+			}
+			else {
+				 if(!(checkCurrectData(vts_rulelist_array["vts_rulelist_" + $("#wans_unit").val() + ""], profileArray)))
+					return false;
+					vts_rulelist_array["vts_rulelist_" + $("#wans_unit").val() + ""].push(profileArray);
+			}
+		}
+		else {
+			if(!(checkCurrectData(vts_rulelist_array["vts_rulelist_0"], profileArray)))
+				return false;
+			vts_rulelist_array["vts_rulelist_0"].push(profileArray);
+		}
+	}
+	else if(_mode == "edit") {
+		vts_rulelist_array["vts_rulelist_" + _wanIdx + ""][_rowIdx] = profileArray;
+	}
+
+	var obj = {
+		"action_mode": "apply",
+		"rc_service": "restart_firewall",
+	}
+
+	rulelist_table.forEach(function(element, idx) {
+		showvts_rulelist(vts_rulelist_array[element], element);
+		obj["" +  rulelist_nv[idx] + ""] = parseArrayToNvram(vts_rulelist_array[element]);
+	});
+	httpApi.nvramSet(obj);
+	$("#profile_setting").fadeOut(300);
+}
+function cancelProfile() {
+	$("#profile_setting").fadeOut(300);
 }
 </script>
 </head>
 
 <body onload="initial();" onunLoad="return unload_body();">
 <div id="TopBanner"></div>
-
 <div id="Loading" class="popup_bg"></div>
-
 <iframe name="hidden_frame" id="hidden_frame" src="" width="0" height="0" frameborder="0"></iframe>
-
 <form method="post" name="form" action="/start_apply.htm" target="hidden_frame" >
 <input type="hidden" name="productid" value="<% nvram_get("productid"); %>">
 <input type="hidden" name="current_page" value="Advanced_VirtualServer_Content.asp">
@@ -659,20 +672,16 @@ function gen_vts_ruleTable_Block(_tableID) {
 <input type="hidden" name="first_time" value="">
 <input type="hidden" name="preferred_lang" id="preferred_lang" value="<% nvram_get("preferred_lang"); %>">
 <input type="hidden" name="firmver" value="<% nvram_get("firmver"); %>">
-<input type="hidden" name="vts_rulelist" value=''>
-<input type="hidden" name="vts1_rulelist" value='' disabled>
-
 <table class="content" align="center" cellpadding="0" cellspacing="0" >
 	<tr>
-		<td width="17">&nbsp;</td>		
-		<td valign="top" width="202">				
-			<div  id="mainMenu"></div>	
-			<div  id="subMenu"></div>		
-		</td>				
-		
-	    <td valign="top">
+		<td width="17">&nbsp;</td>
+		<td valign="top" width="202">
+			<div  id="mainMenu"></div>
+			<div  id="subMenu"></div>
+		</td>
+		<td valign="top">
 			<div id="tabMenu" class="submenuBlock"></div>
-			<!--===================================Beginning of Main Content===========================================-->		
+			<!--===================================Beginning of Main Content===========================================-->
 			<table width="98%" border="0" align="left" cellpadding="0" cellspacing="0">
 				<tr>
 					<td valign="top" >
@@ -688,9 +697,9 @@ function gen_vts_ruleTable_Block(_tableID) {
 									<ul style="margin-left:-25px; *margin-left:10px;">
 										<div class="formfontdesc"><li><#FirewallConfig_Port80_itemdesc#></div>
 										<div class="formfontdesc" id="FTP_desc"><li><#FirewallConfig_FTPPrompt_itemdesc#></div>
-									</ul>	
-								</div>		
-									
+									</ul>
+								</div>
+
 								<div class="formfontdesc" style="margin-top:-10px;">
 									<a id="faq" href="" target="_blank" style="font-family:Lucida Console;text-decoration:underline;"><#menu5_3_4#>&nbspFAQ</a>
 								</div>
@@ -710,63 +719,140 @@ function gen_vts_ruleTable_Block(_tableID) {
 										</td>
 									</tr>
 									<tr>
-										<th><#IPConnection_VSList_groupitemdesc#></th>
-										<td id="vts_rulelist">
-											<select name="KnownApps" id="KnownApps" class="input_option" onchange="change_wizard(this, 'KnownApps');">
-											</select>
-										</td>
-									</tr>
-									<tr>
-										<th><#IPConnection_VSList_gameitemdesc#></th>
-										<td id="VSGameList">
-													<select name="KnownGames" id="KnownGames" class="input_option" onchange="change_wizard(this, 'KnownGames');">
-													</select>
-										</td>
-									</tr>
-									<tr id="tr_wan_unit" style="display: none;">
-										<th><#dualwan_unit#></th>
-										<td>
-											<select id="wans_unit" class="input_option">
-												<option value="0"><#dualwan_primary#></option>
-												<option value="1"><#dualwan_secondary#></option>
-												<option value="2">BOTH</option>
-											</select>
-										</td>
-									</tr>
-									<tr>
 										<th><#IPConnection_VSList_ftpport#></th>
 										<td>
 											<input type="text" maxlength="5" name="vts_ftpport" class="input_6_table" value="<% nvram_get("vts_ftpport"); %>" onkeypress="return validator.isNumber(this,event);" autocorrect="off" autocapitalize="off">
 										</td>
 									</tr>
 								</table>
+								<div class="apply_gen">
+									<input name="button" type="button" class="button_gen" onclick="applyRule();" value="<#CTL_apply#>"/>
+								</div>
 								<div id="vts_rulelist_Table_0" wanUnitID="0"></div>
 								<div id="vts_rulelist_Block_0" wanUnitID="0"></div>
 
 								<div id="vts_rulelist_Table_1" wanUnitID="1"></div>
 								<div id="vts_rulelist_Block_1" wanUnitID="1"></div>
-								
 								<div class="apply_gen">
-									<input name="button" type="button" class="button_gen" onclick="applyRule();" value="<#CTL_apply#>"/>
+									<input class="button_gen" onclick="editProfile('new')" type="button" value="<#vpnc_step1#>">
 								</div>
-
 								</td>
 							</tr>
 							</tbody>
 						</table>
 					</td>
 				</tr>
-			</table>		
+			</table>
 			<!--===================================Ending of Main Content===========================================-->		
 		</td>
-    	<td width="10" align="center" valign="top">&nbsp;</td>
+		<td width="10" align="center" valign="top">&nbsp;</td>
 	</tr>
 </table>
-
+<div id="profile_setting"  class="contentM_qis pop_div_bg">
+	<table width="100%" border="1" align="center" cellpadding="4" cellspacing="0" class="FormTable">
+		<thead>
+			<tr>
+				<td colspan="2"><#vpn_ipsec_Quick_Select#></td>
+			</tr>
+		</thead>
+		<tr>
+			<th><#IPConnection_VSList_groupitemdesc#></th>
+			<td id="vts_rulelist">
+				<select name="KnownApps" id="KnownApps" class="input_option" onchange="change_wizard(this, 'KnownApps');"></select>
+			</td>
+		</tr>
+		<tr>
+			<th><#IPConnection_VSList_gameitemdesc#></th>
+			<td id="VSGameList">
+				<select name="KnownGames" id="KnownGames" class="input_option" onchange="change_wizard(this, 'KnownGames');"></select>
+			</td>
+		</tr>
+	</table>
+	<br>
+	<table width="100%" border="1" align="center" cellpadding="4" cellspacing="0" class="FormTable">
+		<thead>
+			<tr>
+				<td colspan="2"><#vpn_openvpn_CustomConf#></td>
+			</tr>
+		</thead>
+		<tr id="tr_wan_unit" style="display:none;">
+			<th><#dualwan_unit#></th>
+			<td>
+				<select id="wans_unit" class="input_option">
+					<option value="0"><#dualwan_primary#></option>
+					<option value="1"><#dualwan_secondary#></option>
+					<option value="2">BOTH</option>
+				</select>
+			</td>
+		</tr>
+		<tr>
+			<th><#BM_UserList1#></th>
+			<td>
+				<input type="text" maxlength="30" class="input_25_table" id="vts_desc_x" onKeyPress="return validator.isString(this, event);" autocomplete="off" autocorrect="off" autocapitalize="off"/>
+				<span><#feedback_optional#></span>
+			</td>
+		</tr>
+		<tr>
+			<th><#IPConnection_VServerProto_itemname#></th>
+			<td>
+				<select id="vts_proto_x" class="input_option">
+					<option value="TCP">TCP</option>
+					<option value="UDP">UDP</option>
+					<option value="BOTH">BOTH</option>
+					<option value="OTHER">OTHER</option>
+				</select>
+			</td>
+		</tr>
+		<tr>
+			<th>External Port<!--untranslated--></th>
+			<td>
+				<input type="text" maxlength="60" class="input_25_table" id="vts_port_x" onKeyPress="return validator.isPortRange(this, event);" autocomplete="off" autocorrect="off" autocapitalize="off"/>
+			</td>
+		</tr>
+		<tr>
+			<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(7,26);">Internal Port<!--untranslated--></a></th>
+			<td>
+				<input type="text" maxlength="5" class="input_25_table" id="vts_lport_x" onKeyPress="return validator.isNumber(this,event);" autocomplete="off" autocorrect="off" autocapitalize="off"/>
+				<span><#feedback_optional#></span>
+			</td>
+		</tr>
+		<tr>
+			<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(7,25);">Internal IP<!--untranslated--></a></th>
+			<td>
+				<input type="text" maxlength="15" class="input_25_table" id="vts_ipaddr_x" align="left" onkeypress="return validator.isIPAddr(this, event);" style="float:left;" onClick="hideClients_Block();" autocomplete="off" autocorrect="off" autocapitalize="off">
+				<img id="pull_arrow" class="pull_arrow" height="16px;" src="images/arrow-down.gif" align="right" onclick="pullLANIPList(this);" title="<#select_IP#>">
+				<div id="ClientList_Block" class="clientlist_dropdown" style="margin-left:2px;margin-top:27px;width:238px;"></div>
+			</td>
+		</tr>
+		<tr>
+			<th><#IPConnection_VSList_SourceTarget#></th>
+			<td>
+				<input type="text" maxlength="15" class="input_25_table" id="vts_target_x" onKeyPress="return validator.isIPAddr(this, event);" autocomplete="off" autocorrect="off" autocapitalize="off"/>
+				<span><#feedback_optional#></span>
+			</td>
+		</tr>
+	</table>
+	<div style="color:#FC0;margin:10px 0px;">
+		* External Port<!--untranslated-->
+		<br>
+		External Port accepts the following formats <!--untranslated-->
+		<br>
+		1. Port range, use colon " : " between the starting and ending port, such as 300:350.<!--untranslated-->
+		<br>
+		2. Single ports, use comma " , " between individual port, such as 566, 789. <!--untranslated-->
+		<br>
+		3. Mix port range and single port, use colon " : " and comma " , ", such as 1015:1024, 3021.<!--untranslated-->
+		<br><br>
+		* Source IP<!--untranslated-->
+		<br>
+		If you want to open the port to a specific IP address from the internet, input the IP address you want to specify in the Source IP field.<!--untranslated-->
+	</div>
+	<div style="margin-top:15px;text-align:center;">
+		<input class="button_gen" type="button" onclick="cancelProfile();" value="<#CTL_Cancel#>">
+		<input id="saveProfile" class="button_gen" type="button" value="<#CTL_ok#>">
+	</div>
+</div>
 <div id="footer"></div>
 </form>
-<script>
-
-</script>
 </body>
 </html>

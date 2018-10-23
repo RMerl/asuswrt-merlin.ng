@@ -20,237 +20,289 @@
  */
 
 #include "libavutil/intreadwrite.h"
+#include "libavutil/imgutils.h"
 #include "avcodec.h"
-
-enum TargaCompr{
-    TGA_NODATA = 0, // no image data
-    TGA_PAL    = 1, // palettized
-    TGA_RGB    = 2, // true-color
-    TGA_BW     = 3, // black & white or grayscale
-    TGA_RLE    = 8, // flag pointing that data is RLE-coded
-};
+#include "bytestream.h"
+#include "internal.h"
+#include "targa.h"
 
 typedef struct TargaContext {
-    AVFrame picture;
-
-    int width, height;
-    int bpp;
-    int color_type;
-    int compression_type;
+    GetByteContext gb;
 } TargaContext;
 
-static void targa_decode_rle(AVCodecContext *avctx, TargaContext *s, const uint8_t *src, uint8_t *dst, int w, int h, int stride, int bpp)
+static uint8_t *advance_line(uint8_t *start, uint8_t *line,
+                             int stride, int *y, int h, int interleave)
 {
-    int i, x, y;
-    int depth = (bpp + 1) >> 3;
-    int type, count;
-    int diff;
+    *y += interleave;
 
-    diff = stride - w * depth;
-    x = y = 0;
-    while(y < h){
-        type = *src++;
-        count = (type & 0x7F) + 1;
-        type &= 0x80;
-        if((x + count > w) && (x + count + 1 > (h - y) * w)){
-            av_log(avctx, AV_LOG_ERROR, "Packet went out of bounds: position (%i,%i) size %i\n", x, y, count);
-            return;
+    if (*y < h) {
+        return line + interleave * stride;
+    } else {
+        *y = (*y + 1) & (interleave - 1);
+        if (*y && *y < h) {
+            return start + *y * stride;
+        } else {
+            return NULL;
         }
-        for(i = 0; i < count; i++){
-            switch(depth){
-            case 1:
-                *dst = *src;
-                break;
-            case 2:
-                *((uint16_t*)dst) = AV_RL16(src);
-                break;
-            case 3:
-                dst[0] = src[0];
-                dst[1] = src[1];
-                dst[2] = src[2];
-                break;
-            case 4:
-                *((uint32_t*)dst) = AV_RL32(src);
-                break;
-            }
-            dst += depth;
-            if(!type)
-                src += depth;
-
-            x++;
-            if(x == w){
-                x = 0;
-                y++;
-                dst += diff;
-            }
-        }
-        if(type)
-            src += depth;
     }
 }
 
+static int targa_decode_rle(AVCodecContext *avctx, TargaContext *s,
+                            uint8_t *start, int w, int h, int stride,
+                            int bpp, int interleave)
+{
+    int x, y;
+    int depth = (bpp + 1) >> 3;
+    int type, count;
+    uint8_t *line = start;
+    uint8_t *dst  = line;
+
+    x = y = count = 0;
+    while (dst) {
+        if (bytestream2_get_bytes_left(&s->gb) <= 0) {
+            av_log(avctx, AV_LOG_ERROR,
+                   "Ran ouf of data before end-of-image\n");
+            return AVERROR_INVALIDDATA;
+        }
+        type  = bytestream2_get_byteu(&s->gb);
+        count = (type & 0x7F) + 1;
+        type &= 0x80;
+        if (!type) {
+            do {
+                int n  = FFMIN(count, w - x);
+                bytestream2_get_buffer(&s->gb, dst, n * depth);
+                count -= n;
+                dst   += n * depth;
+                x     += n;
+                if (x == w) {
+                    x    = 0;
+                    dst = line = advance_line(start, line, stride, &y, h, interleave);
+                }
+            } while (dst && count > 0);
+        } else {
+            uint8_t tmp[4];
+            bytestream2_get_buffer(&s->gb, tmp, depth);
+            do {
+                int n  = FFMIN(count, w - x);
+                count -= n;
+                x     += n;
+                do {
+                    memcpy(dst, tmp, depth);
+                    dst += depth;
+                } while (--n);
+                if (x == w) {
+                    x    = 0;
+                    dst = line = advance_line(start, line, stride, &y, h, interleave);
+                }
+            } while (dst && count > 0);
+        }
+    }
+
+    if (count) {
+        av_log(avctx, AV_LOG_ERROR, "Packet went out of bounds\n");
+        return AVERROR_INVALIDDATA;
+    }
+
+    return 0;
+}
+
 static int decode_frame(AVCodecContext *avctx,
-                        void *data, int *data_size,
+                        void *data, int *got_frame,
                         AVPacket *avpkt)
 {
-    const uint8_t *buf = avpkt->data;
-    int buf_size = avpkt->size;
     TargaContext * const s = avctx->priv_data;
-    AVFrame *picture = data;
-    AVFrame * const p= (AVFrame*)&s->picture;
+    AVFrame * const p = data;
     uint8_t *dst;
     int stride;
-    int idlen, pal, compr, x, y, w, h, bpp, flags;
+    int idlen, pal, compr, y, w, h, bpp, flags, ret;
     int first_clr, colors, csize;
+    int interleave;
+
+    bytestream2_init(&s->gb, avpkt->data, avpkt->size);
 
     /* parse image header */
-    idlen = *buf++;
-    pal = *buf++;
-    compr = *buf++;
-    first_clr = AV_RL16(buf); buf += 2;
-    colors = AV_RL16(buf); buf += 2;
-    csize = *buf++;
-    x = AV_RL16(buf); buf += 2;
-    y = AV_RL16(buf); buf += 2;
-    w = AV_RL16(buf); buf += 2;
-    h = AV_RL16(buf); buf += 2;
-    bpp = *buf++;
-    flags = *buf++;
-    //skip identifier if any
-    buf += idlen;
-    s->bpp = bpp;
-    s->width = w;
-    s->height = h;
-    switch(s->bpp){
+    idlen     = bytestream2_get_byte(&s->gb);
+    pal       = bytestream2_get_byte(&s->gb);
+    compr     = bytestream2_get_byte(&s->gb);
+    first_clr = bytestream2_get_le16(&s->gb);
+    colors    = bytestream2_get_le16(&s->gb);
+    csize     = bytestream2_get_byte(&s->gb);
+    bytestream2_skip(&s->gb, 4); /* 2: x, 2: y */
+    w         = bytestream2_get_le16(&s->gb);
+    h         = bytestream2_get_le16(&s->gb);
+    bpp       = bytestream2_get_byte(&s->gb);
+
+    if (bytestream2_get_bytes_left(&s->gb) <= idlen) {
+        av_log(avctx, AV_LOG_ERROR,
+                "Not enough data to read header\n");
+        return AVERROR_INVALIDDATA;
+    }
+
+    flags     = bytestream2_get_byte(&s->gb);
+
+    if (!pal && (first_clr || colors || csize)) {
+        av_log(avctx, AV_LOG_WARNING, "File without colormap has colormap information set.\n");
+        // specification says we should ignore those value in this case
+        first_clr = colors = csize = 0;
+    }
+
+    // skip identifier if any
+    bytestream2_skip(&s->gb, idlen);
+
+    switch (bpp) {
     case 8:
-        avctx->pix_fmt = ((compr & (~TGA_RLE)) == TGA_BW) ? PIX_FMT_GRAY8 : PIX_FMT_PAL8;
+        avctx->pix_fmt = ((compr & (~TGA_RLE)) == TGA_BW) ? AV_PIX_FMT_GRAY8 : AV_PIX_FMT_PAL8;
         break;
     case 15:
-        avctx->pix_fmt = PIX_FMT_RGB555;
-        break;
     case 16:
-        avctx->pix_fmt = PIX_FMT_RGB555;
+        avctx->pix_fmt = AV_PIX_FMT_RGB555LE;
         break;
     case 24:
-        avctx->pix_fmt = PIX_FMT_BGR24;
+        avctx->pix_fmt = AV_PIX_FMT_BGR24;
         break;
     case 32:
-        avctx->pix_fmt = PIX_FMT_RGB32;
+        avctx->pix_fmt = AV_PIX_FMT_BGRA;
         break;
     default:
-        av_log(avctx, AV_LOG_ERROR, "Bit depth %i is not supported\n", s->bpp);
-        return -1;
+        av_log(avctx, AV_LOG_ERROR, "Bit depth %i is not supported\n", bpp);
+        return AVERROR_INVALIDDATA;
     }
 
-    if(s->picture.data[0])
-        avctx->release_buffer(avctx, &s->picture);
-
-    if(avcodec_check_dimensions(avctx, w, h))
-        return -1;
-    if(w != avctx->width || h != avctx->height)
-        avcodec_set_dimensions(avctx, w, h);
-    if(avctx->get_buffer(avctx, p) < 0){
-        av_log(avctx, AV_LOG_ERROR, "get_buffer() failed\n");
-        return -1;
+    if (colors && (colors + first_clr) > 256) {
+        av_log(avctx, AV_LOG_ERROR, "Incorrect palette: %i colors with offset %i\n", colors, first_clr);
+        return AVERROR_INVALIDDATA;
     }
-    if(flags & 0x20){
+
+    if ((ret = ff_set_dimensions(avctx, w, h)) < 0)
+        return ret;
+
+    if ((ret = ff_get_buffer(avctx, p, 0)) < 0)
+        return ret;
+    p->pict_type = AV_PICTURE_TYPE_I;
+
+    if (flags & TGA_TOPTOBOTTOM) {
         dst = p->data[0];
         stride = p->linesize[0];
-    }else{ //image is upside-down
+    } else { //image is upside-down
         dst = p->data[0] + p->linesize[0] * (h - 1);
         stride = -p->linesize[0];
     }
 
-    if(avctx->pix_fmt == PIX_FMT_PAL8 && avctx->palctrl){
-        memcpy(p->data[1], avctx->palctrl->palette, AVPALETTE_SIZE);
-        if(avctx->palctrl->palette_changed){
-            p->palette_has_changed = 1;
-            avctx->palctrl->palette_changed = 0;
-        }
-    }
-    if(colors){
-        if((colors + first_clr) > 256){
-            av_log(avctx, AV_LOG_ERROR, "Incorrect palette: %i colors with offset %i\n", colors, first_clr);
-            return -1;
-        }
-        if(csize != 24){
+    interleave = flags & TGA_INTERLEAVE2 ? 2 :
+                 flags & TGA_INTERLEAVE4 ? 4 : 1;
+
+    if (colors) {
+        int pal_size, pal_sample_size;
+
+        switch (csize) {
+        case 32: pal_sample_size = 4; break;
+        case 24: pal_sample_size = 3; break;
+        case 16:
+        case 15: pal_sample_size = 2; break;
+        default:
             av_log(avctx, AV_LOG_ERROR, "Palette entry size %i bits is not supported\n", csize);
-            return -1;
+            return AVERROR_INVALIDDATA;
         }
-        if(avctx->pix_fmt != PIX_FMT_PAL8)//should not occur but skip palette anyway
-            buf += colors * ((csize + 1) >> 3);
-        else{
-            int r, g, b, t;
-            int32_t *pal = ((int32_t*)p->data[1]) + first_clr;
-            for(t = 0; t < colors; t++){
-                r = *buf++;
-                g = *buf++;
-                b = *buf++;
-                *pal++ = (b << 16) | (g << 8) | r;
+        pal_size = colors * pal_sample_size;
+        if (avctx->pix_fmt != AV_PIX_FMT_PAL8) //should not occur but skip palette anyway
+            bytestream2_skip(&s->gb, pal_size);
+        else {
+            int t;
+            uint32_t *pal = ((uint32_t *)p->data[1]) + first_clr;
+
+            if (bytestream2_get_bytes_left(&s->gb) < pal_size) {
+                av_log(avctx, AV_LOG_ERROR,
+                       "Not enough data to read palette\n");
+                return AVERROR_INVALIDDATA;
+            }
+            switch (pal_sample_size) {
+            case 4:
+                for (t = 0; t < colors; t++)
+                    *pal++ = bytestream2_get_le32u(&s->gb);
+                break;
+            case 3:
+                /* RGB24 */
+                for (t = 0; t < colors; t++)
+                    *pal++ = (0xffU<<24) | bytestream2_get_le24u(&s->gb);
+                break;
+            case 2:
+                /* RGB555 */
+                for (t = 0; t < colors; t++) {
+                    uint32_t v = bytestream2_get_le16u(&s->gb);
+                    v = ((v & 0x7C00) <<  9) |
+                        ((v & 0x03E0) <<  6) |
+                        ((v & 0x001F) <<  3);
+                    /* left bit replication */
+                    v |= (v & 0xE0E0E0U) >> 5;
+                    *pal++ = (0xffU<<24) | v;
+                }
+                break;
             }
             p->palette_has_changed = 1;
         }
     }
-    if((compr & (~TGA_RLE)) == TGA_NODATA)
-        memset(p->data[0], 0, p->linesize[0] * s->height);
-    else{
-        if(compr & TGA_RLE)
-            targa_decode_rle(avctx, s, buf, dst, avctx->width, avctx->height, stride, bpp);
-        else{
-            for(y = 0; y < s->height; y++){
-#if HAVE_BIGENDIAN
-                if((s->bpp + 1) >> 3 == 2){
-                    uint16_t *dst16 = (uint16_t*)dst;
-                    for(x = 0; x < s->width; x++)
-                        dst16[x] = AV_RL16(buf + x * 2);
-                }else if((s->bpp + 1) >> 3 == 4){
-                    uint32_t *dst32 = (uint32_t*)dst;
-                    for(x = 0; x < s->width; x++)
-                        dst32[x] = AV_RL32(buf + x * 4);
-                }else
-#endif
-                    memcpy(dst, buf, s->width * ((s->bpp + 1) >> 3));
 
-                dst += stride;
-                buf += s->width * ((s->bpp + 1) >> 3);
+    if ((compr & (~TGA_RLE)) == TGA_NODATA) {
+        memset(p->data[0], 0, p->linesize[0] * h);
+    } else {
+        if (compr & TGA_RLE) {
+            int res = targa_decode_rle(avctx, s, dst, w, h, stride, bpp, interleave);
+            if (res < 0)
+                return res;
+        } else {
+            size_t img_size = w * ((bpp + 1) >> 3);
+            uint8_t *line;
+            if (bytestream2_get_bytes_left(&s->gb) < img_size * h) {
+                av_log(avctx, AV_LOG_ERROR,
+                       "Not enough data available for image\n");
+                return AVERROR_INVALIDDATA;
+            }
+
+            line = dst;
+            y = 0;
+            do {
+                bytestream2_get_buffer(&s->gb, line, img_size);
+                line = advance_line(dst, line, stride, &y, h, interleave);
+            } while (line);
+        }
+
+        if (flags & TGA_RIGHTTOLEFT) { // right-to-left, needs horizontal flip
+            int x;
+            for (y = 0; y < h; y++) {
+                void *line = &p->data[0][y * p->linesize[0]];
+                for (x = 0; x < w >> 1; x++) {
+                    switch (bpp) {
+                    case 32:
+                        FFSWAP(uint32_t, ((uint32_t *)line)[x], ((uint32_t *)line)[w - x - 1]);
+                        break;
+                    case 24:
+                        FFSWAP(uint8_t, ((uint8_t *)line)[3 * x    ], ((uint8_t *)line)[3 * w - 3 * x - 3]);
+                        FFSWAP(uint8_t, ((uint8_t *)line)[3 * x + 1], ((uint8_t *)line)[3 * w - 3 * x - 2]);
+                        FFSWAP(uint8_t, ((uint8_t *)line)[3 * x + 2], ((uint8_t *)line)[3 * w - 3 * x - 1]);
+                        break;
+                    case 16:
+                        FFSWAP(uint16_t, ((uint16_t *)line)[x], ((uint16_t *)line)[w - x - 1]);
+                        break;
+                    case 8:
+                        FFSWAP(uint8_t, ((uint8_t *)line)[x], ((uint8_t *)line)[w - x - 1]);
+                    }
+                }
             }
         }
     }
 
-    *picture= *(AVFrame*)&s->picture;
-    *data_size = sizeof(AVPicture);
 
-    return buf_size;
+    *got_frame = 1;
+
+    return avpkt->size;
 }
 
-static av_cold int targa_init(AVCodecContext *avctx){
-    TargaContext *s = avctx->priv_data;
-
-    avcodec_get_frame_defaults((AVFrame*)&s->picture);
-    avctx->coded_frame= (AVFrame*)&s->picture;
-
-    return 0;
-}
-
-static av_cold int targa_end(AVCodecContext *avctx){
-    TargaContext *s = avctx->priv_data;
-
-    if(s->picture.data[0])
-        avctx->release_buffer(avctx, &s->picture);
-
-    return 0;
-}
-
-AVCodec targa_decoder = {
-    "targa",
-    AVMEDIA_TYPE_VIDEO,
-    CODEC_ID_TARGA,
-    sizeof(TargaContext),
-    targa_init,
-    NULL,
-    targa_end,
-    decode_frame,
-    CODEC_CAP_DR1,
-    NULL,
-    .long_name = NULL_IF_CONFIG_SMALL("Truevision Targa image"),
+AVCodec ff_targa_decoder = {
+    .name           = "targa",
+    .long_name      = NULL_IF_CONFIG_SMALL("Truevision Targa image"),
+    .type           = AVMEDIA_TYPE_VIDEO,
+    .id             = AV_CODEC_ID_TARGA,
+    .priv_data_size = sizeof(TargaContext),
+    .decode         = decode_frame,
+    .capabilities   = AV_CODEC_CAP_DR1,
 };

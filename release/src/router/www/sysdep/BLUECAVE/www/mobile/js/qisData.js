@@ -57,7 +57,15 @@ var wanObj = {
 		"wan_dns1_x": "",
 		"wan_dns2_x": "",
 		"wan_heartbeat_x": ""
-	}	
+	},
+
+	"LWAN_2p5G": {
+		"wans_extwan": "0"
+	},
+
+	"dualWan": {
+		"wans_dualwan": ""
+	}
 }
 
 var lanObj = {
@@ -170,16 +178,22 @@ var timeObj = {
 }
 
 var iptvObj = {
-	"wan10_proto": "",
-	"wan11_proto": "",
 	"switch_stb_x": "",
-	"switch_wantag": "",
+	"switch_wantag": ""
+}
+
+var iptvManualObj = {
 	"switch_wan0tagid": "",
 	"switch_wan0prio": "",
 	"switch_wan1tagid": "",
 	"switch_wan1prio": "",
 	"switch_wan2tagid": "",
-	"switch_wan2prio": "",
+	"switch_wan2prio": ""
+}
+
+var iptvWanSettingObj = {
+	"wan10_proto": "",
+	"wan11_proto": "",
 	"wan10_ipaddr_x": "",
 	"wan10_netmask_x": "",
 	"wan10_gateway_x": "",
@@ -210,6 +224,8 @@ var modemObj = {
 
 var systemVariable = {
 	"originWanType": "", /* ToDo: Secondary WAN support */
+	"originWansExtwan": "",
+	"originWansDualwan": "",
 	"manualWanSetup": false,
 	"wanDnsenable": "",
 	"detwanResult": {
@@ -235,9 +251,20 @@ var systemVariable = {
 	"multiPAP" : {
 		"wlcOrder": [],
 		"wlcStatus": {}
-	}
+	},
+	"wanOption": false
 }
 
 var aimeshObj = {
 	"cfg_master": "1"
+}
+
+var boostKeyObj = {
+	"turbo_mode": "1"
+}
+
+var axModeObj = {
+	"wl0_he_features": "3",
+	"wl1_he_features": "3",
+	"wl2_he_features": "3"
 }

@@ -618,7 +618,7 @@ int
 wl_iovar_xtlv_setint(char *ifname, char *iovar, int32 val, uint16 version,
        uint16 cmd_id, uint16 xtlv_id)
 {
-       wl_iovar_xtlv_set(ifname, iovar, (uint8*)&val, sizeof(val), version,
+	return wl_iovar_xtlv_set(ifname, iovar, (uint8*)&val, sizeof(val), version,
                cmd_id, xtlv_id, BCM_XTLV_OPTION_ALIGN32);
 }
 

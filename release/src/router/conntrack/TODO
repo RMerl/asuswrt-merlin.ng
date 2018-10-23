@@ -1,0 +1,34 @@
+There are several tasks that are pending to be done, I have classified them
+by dificulty levels:
+
+= Relatively easy =
+ [ ] improve shell scripts for keepalived/heartbeat: *really* important
+ [X] NACK as default protocol
+ [X] rename persistent to alarm, rename nack to ftfw
+ [X] manpage for conntrackd(8)
+ [ ] add scripts to use the floating priority feature in keepalived to avoid 
+     premature take over.
+ [X] ignorepool with unlimited size and ignore networks
+ [ ] selective conntracks removal
+ [ ] debian/rpm packages
+ [X] improve website
+ [X] Dumazet improvement hashtable (multiply vs. divide)
+ [X] add secmark support
+ [X] logging support for the statistics mode
+
+= Requires some work =
+ [ ] study better keepalived transitions
+ [X] fix ipv6 support
+ [X] add support setup related conntracks
+ [X] NAT sequence adjustment support
+
+= Open issues that won't be ever resolved =
+ * unsupported stateful iptables matches:
+   * connbytes: probably the persistent may support it
+   * recent: requires further study
+   * quota: private data counters
+
+= conntrack =
+ * add support for -D --dport 1000
+ * improve error messages
+ * add support for SCTP (requires kernel >= 2.6.25)

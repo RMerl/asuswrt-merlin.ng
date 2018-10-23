@@ -1,0 +1,24 @@
+LIBNETFILTER_CTTIMEOUT_1.0 {
+global:
+  nfct_timeout_alloc;
+  nfct_timeout_free;
+  nfct_timeout_attr_set;
+  nfct_timeout_attr_set_u8;
+  nfct_timeout_attr_set_u16;
+  nfct_timeout_attr_unset;
+  nfct_timeout_policy_attr_set_u32;
+  nfct_timeout_policy_unset;
+  nfct_timeout_policy_attr_to_name;
+  nfct_timeout_nlmsg_build_hdr;
+  nfct_timeout_nlmsg_build_payload;
+  nfct_timeout_nlmsg_parse_payload;
+  /* nfct_timeout_snprintf prototype was modified, new version in 1.1.
+     I decided not to keep the old symbol compatibility. See git log
+     for more information. */
+
+local: *;
+};
+
+LIBNETFILTER_CTTIMEOUT_1.1 {
+  nfct_timeout_snprintf;
+} LIBNETFILTER_CTTIMEOUT_1.0;

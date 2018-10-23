@@ -176,6 +176,8 @@ function initial(){
 	if(svc_ready == "0")
 		document.getElementById('svc_hint_div').style.display = "";
 
+	show_network_monitoring();
+
 	if(!HTTPS_support){
 		document.getElementById("http_auth_table").style.display = "none";
 	}
@@ -396,7 +398,7 @@ function applyRule(){
 		}
 
 		// shell_timeout save min to sec
-		document.form.shell_timeout.value = parseInt(document.form.shell_timeout_x.value)*60;		
+		document.form.shell_timeout.value = parseInt(document.form.shell_timeout_x.value)*60;
 		
 		if(document.form.misc_http_x[1].checked == true){
 				document.form.misc_httpport_x.disabled = true;
@@ -497,6 +499,16 @@ function applyRule(){
 
 			action_script_tmp += "restart_usb_idle;";
 		}
+
+		if(document.form.wandog_enable_chk.checked)
+			document.form.wandog_enable.value = "1";
+		else
+			document.form.wandog_enable.value = "0";
+
+		if(document.form.dns_probe_chk.checked)
+			document.form.dns_probe.value = "1";
+		else
+			document.form.dns_probe.value = "0";
 
 		showLoading();
 
@@ -1530,6 +1542,97 @@ function warn_jffs_format(){
 	alert(msg);
 }
 
+function show_network_monitoring(){
+	var orig_dns_probe = httpApi.nvramGet(["dns_probe"]).dns_probe;
+	var orig_wandog_enable = httpApi.nvramGet(["wandog_enable"]).wandog_enable;
+
+	if(svc_ready == "0" || orig_dns_probe == "1" || orig_wandog_enable == "1"){
+		document.getElementById("network_monitor_tr").style.display = "";
+	}
+	else{
+		document.getElementById("network_monitor_tr").style.display = "none";
+	}
+
+	appendMonitorOption(document.form.dns_probe_chk);
+	appendMonitorOption(document.form.wandog_enable_chk);
+	setTimeout("showPingTargetList();", 500);
+}
+
+function appendMonitorOption(obj){
+	if(obj.name == "wandog_enable_chk"){
+		if(obj.checked){
+			document.getElementById("ping_tr").style.display = "";
+			inputCtrl(document.form.wandog_target, 1);
+		}
+		else{
+			document.getElementById("ping_tr").style.display = "none";
+			inputCtrl(document.form.wandog_target, 0);
+		}
+	}
+	else if(obj.name == "dns_probe_chk"){
+		if(obj.checked){
+			document.getElementById("probe_host_tr").style.display = "";
+			document.getElementById("probe_content_tr").style.display = "";
+			inputCtrl(document.form.dns_probe_host, 1);
+			inputCtrl(document.form.dns_probe_content, 1);
+		}
+		else{
+			document.getElementById("probe_host_tr").style.display = "none";
+			document.getElementById("probe_content_tr").style.display = "none";
+			inputCtrl(document.form.dns_probe_host, 0);
+			inputCtrl(document.form.dns_probe_content, 0);
+		}
+	}
+}
+
+var isPingListOpen = 0;
+function showPingTargetList(){
+	var ttc = httpApi.nvramGet(["territory_code"]).territory_code;
+	if(ttc.search("CN") >= 0){
+		var APPListArray = [
+			["Baidu", "www.baidu.com"], ["QQ", "www.qq.com"], ["Taobao", "www.taobao.com"]
+		];
+	}
+	else{
+		var APPListArray = [
+			["Google ", "www.google.com"], ["Facebook", "www.facebook.com"], ["Youtube", "www.youtube.com"], ["Yahoo", "www.yahoo.com"],
+			["Baidu", "www.baidu.com"], ["Wikipedia", "www.wikipedia.org"], ["Windows Live", "www.live.com"], ["QQ", "www.qq.com"],
+			["Amazon", "www.amazon.com"], ["Twitter", "www.twitter.com"], ["Taobao", "www.taobao.com"], ["Blogspot", "www.blogspot.com"],
+			["Linkedin", "www.linkedin.com"], ["Sina", "www.sina.com"], ["eBay", "www.ebay.com"], ["MSN", "msn.com"], ["Bing", "www.bing.com"],
+			["Яндекс", "www.yandex.ru"], ["WordPress", "www.wordpress.com"], ["ВКонтакте", "www.vk.com"]
+		];
+	}
+
+	var code = "";
+	for(var i = 0; i < APPListArray.length; i++){
+		code += '<a><div onclick="setPingTarget(\''+APPListArray[i][1]+'\');"><strong>'+APPListArray[i][0]+'</strong></div></a>';
+	}
+	code +='<!--[if lte IE 6.5]><iframe class="hackiframe2"></iframe><![endif]-->';
+	document.getElementById("TargetList_Block_PC").innerHTML = code;
+}
+
+function setPingTarget(ipaddr){
+	document.form.wandog_target.value = ipaddr;
+	hidePingTargetList();
+}
+
+function hidePingTargetList(){
+	document.getElementById("ping_pull_arrow").src = "/images/arrow-down.gif";
+	document.getElementById('TargetList_Block_PC').style.display='none';
+	isPingListOpen = 0;
+}
+
+function pullPingTargetList(obj){
+	if(isPingListOpen == 0){
+		obj.src = "/images/arrow-top.gif"
+		document.getElementById("TargetList_Block_PC").style.display = 'block';
+		document.form.wandog_target.focus();
+		isPingListOpen = 1;
+	}
+	else
+		hidePingTargetList();
+}
+
 </script>
 </head>
 
@@ -1565,6 +1668,8 @@ function warn_jffs_format(){
 <input type="hidden" name="usb_idle_exclude" value="<% nvram_get("usb_idle_exclude"); %>">
 <input type="hidden" name="shell_timeout" value="<% nvram_get("shell_timeout"); %>">
 <input type="hidden" name="http_lanport" value="<% nvram_get("http_lanport"); %>">
+<input type="hidden" name="dns_probe" value="<% nvram_get("dns_probe"); %>">
+<input type="hidden" name="wandog_enable" value="<% nvram_get("wandog_enable"); %>">
 
 <table class="content" align="center" cellpadding="0" cellspacing="0">
   <tr>
@@ -1786,7 +1891,37 @@ function warn_jffs_format(){
 					<td>
 						<input type="text" maxlength="256" class="input_32_table" name="ntp_server0" value="<% nvram_get("ntp_server0"); %>" onKeyPress="return validator.isString(this, event);" autocorrect="off" autocapitalize="off">
 						<a href="javascript:openLink('x_NTPServer1')"  name="x_NTPServer1_link" style=" margin-left:5px; text-decoration: underline;"><#LANHostConfig_x_NTPServer1_linkname#></a>
-						<div id="svc_hint_div" style="display:none;"><span style="color:#FFCC00;"><#General_x_SystemTime_syncNTP#></span></div>
+						<div id="svc_hint_div" style="display:none;">
+							<span style="color:#FFCC00;"><#General_x_SystemTime_syncNTP#></span>
+							<a href="" target="_blank" style="margin-left:5px; color: #FFCC00; text-decoration: underline;">FAQ</a>
+						</div>
+					</td>
+				</tr>
+				<tr id="network_monitor_tr" style="display: none;">
+					<th><a class="hintstyle"><div id="wandog_title">Network Monitoring</div></a></th>
+					<td>
+						<input type="checkbox" name="dns_probe_chk" value="" <% nvram_match("dns_probe", "1", "checked"); %> onClick="appendMonitorOption(this);"><div style="display: inline-block; vertical-align: middle; margin-bottom: 2px;" >DNS Query</div>
+						<input type="checkbox" name="wandog_enable_chk" value="" <% nvram_match("wandog_enable", "1", "checked"); %>  onClick="appendMonitorOption(this);"><div style="display: inline-block; vertical-align: middle; margin-bottom: 2px;">Ping</div>
+					</td>
+				</tr>
+				<tr id="probe_host_tr" style="display: none;">
+					<th><a class="hintstyle"><div id="wandog_title">Resolved Target</div></a></th>
+					<td>
+							<input type="text" class="input_32_table" name="dns_probe_host" maxlength="255" autocorrect="off" autocapitalize="off" value="<% nvram_get("dns_probe_host"); %>">
+					</td>
+				</tr>
+				<tr id="probe_content_tr" style="display: none;">
+					<th><a class="hintstyle"><div id="wandog_title">Respond IP</div></a></th>
+					<td>
+							<input type="text" class="input_32_table" name="dns_probe_content" maxlength="1024" autocorrect="off" autocapitalize="off" value="<% nvram_get("dns_probe_content"); %>">
+					</td>
+				</tr>
+				<tr id="ping_tr" style="display: none;">
+					<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(26,2);">Ping <#NetworkTools_target#></a></th>
+					<td>
+							<input type="text" class="input_32_table" name="wandog_target" maxlength="100" value="<% nvram_get("wandog_target"); %>" placeholder="ex: www.google.com" autocorrect="off" autocapitalize="off">
+							<img id="ping_pull_arrow" class="pull_arrow" height="14px;" src="/images/arrow-down.gif" style="position:absolute;*margin-left:-3px;*margin-top:1px;" onclick="pullPingTargetList(this);" title="<#select_network_host#>">
+							<div id="TargetList_Block_PC" name="TargetList_Block_PC" class="clientlist_dropdown" style="margin-left: 2px; width: 348px;display: none;"></div>
 					</td>
 				</tr>
 				<tr>

@@ -38,10 +38,11 @@ enum
 	UDB_IOCTL_WRS_OP_MAX
 };
 
-#define UDB_URL_LOG_SIZE   500
+#define UDB_URL_LOG_SIZE   512
 #define UDB_DOMAIN_LOG_SIZE   10000
 #define UDB_DOMAIN_LOG_SIZE_PER_MAC 50
 #define UDB_DN_ENTRY_DOMAIN_NAME_SIZE (63 + 1)
+#define UDB_DN_ENTRY_PATH_SIZE 512
 
 typedef struct udb_url_ioc_entry
 {
@@ -49,6 +50,9 @@ typedef struct udb_url_ioc_entry
 	uint8_t mac[6];
 	int cat_id;//!< WRS cat ID
 	char domain[UDB_DN_ENTRY_DOMAIN_NAME_SIZE];
+#if TMCFG_APP_U_UDB_SAMPLE_URL_FULL_LOG
+	char path[UDB_DN_ENTRY_PATH_SIZE];
+#endif
 	uint8_t action;		//!< the pkt action, 0 means accept, 1 means block
 
 } udb_url_ioctl_entry_t;

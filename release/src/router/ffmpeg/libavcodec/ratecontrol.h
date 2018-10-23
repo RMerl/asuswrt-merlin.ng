@@ -30,7 +30,7 @@
 
 #include <stdio.h>
 #include <stdint.h>
-#include "eval.h"
+#include "libavutil/eval.h"
 
 typedef struct Predictor{
     double coeff;
@@ -49,8 +49,8 @@ typedef struct RateControlEntry{
     uint64_t expected_bits;
     int new_pict_type;
     float new_qscale;
-    int mc_mb_var_sum;
-    int mb_var_sum;
+    int64_t mc_mb_var_sum;
+    int64_t mb_var_sum;
     int i_count;
     int skip_count;
     int f_code;
@@ -61,7 +61,6 @@ typedef struct RateControlEntry{
  * rate control context.
  */
 typedef struct RateControlContext{
-    FILE *stats_file;
     int num_entries;              ///< number of RateControlEntries
     RateControlEntry *entry;
     double buffer_index;          ///< amount of bits in the video/audio buffer
@@ -69,11 +68,11 @@ typedef struct RateControlContext{
     double short_term_qsum;       ///< sum of recent qscales
     double short_term_qcount;     ///< count of recent qscales
     double pass1_rc_eq_output_sum;///< sum of the output of the rc equation, this is used for normalization
-    double pass1_wanted_bits;     ///< bits which should have been outputed by the pass1 code (including complexity init)
+    double pass1_wanted_bits;     ///< bits which should have been output by the pass1 code (including complexity init)
     double last_qscale;
     double last_qscale_for[5];    ///< last qscale for a specific pict type, used for max_diff & ipb factor stuff
-    int last_mc_mb_var_sum;
-    int last_mb_var_sum;
+    int64_t last_mc_mb_var_sum;
+    int64_t last_mb_var_sum;
     uint64_t i_cplx_sum[5];
     uint64_t p_cplx_sum[5];
     uint64_t mv_bits_sum[5];
@@ -97,9 +96,4 @@ void ff_rate_control_uninit(struct MpegEncContext *s);
 int ff_vbv_update(struct MpegEncContext *s, int frame_size);
 void ff_get_2pass_fcode(struct MpegEncContext *s);
 
-int ff_xvid_rate_control_init(struct MpegEncContext *s);
-void ff_xvid_rate_control_uninit(struct MpegEncContext *s);
-float ff_xvid_rate_estimate_qscale(struct MpegEncContext *s, int dry_run);
-
 #endif /* AVCODEC_RATECONTROL_H */
-

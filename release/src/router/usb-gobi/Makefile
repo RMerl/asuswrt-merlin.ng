@@ -1,6 +1,10 @@
 include ../common.mak
 
+ifeq ($(RTCONFIG_BCMARM),y)
+GOBI_LIB_VER=00.00.06
+else
 GOBI_LIB_VER=00.00.05
+endif
 
 NET_USB_GOBI = $(INSTALLDIR)/lib/modules/$(LINUX_KERNEL)/kernel/drivers/net/usb/
 ifeq ($(RTCONFIG_BCMARM),y)

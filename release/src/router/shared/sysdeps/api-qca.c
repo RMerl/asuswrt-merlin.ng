@@ -1299,6 +1299,25 @@ char *get_2g_hwaddr(void)
 #endif
 }
 
+char *get_5g_hwaddr(void)
+{
+#if defined(RTCONFIG_SOC_IPQ8064)
+	static char mac_str[sizeof("00:00:00:00:00:00XXX")];
+	unsigned char mac[ETH_ALEN];
+
+	ether_atoe(nvram_safe_get(get_lan_mac_name()), mac);
+	mac[5] &= 0xFC;
+	ether_etoa(mac, mac_str);
+	return mac_str;
+#else
+#if defined(RTCONFIG_QCA_VAP_LOCALMAC)
+        return nvram_safe_get("wl1macaddr");
+#else
+        return nvram_safe_get(get_lan_mac_name());
+#endif
+#endif
+}
+
 char *get_label_mac()
 {
 	return get_2g_hwaddr();
@@ -1479,17 +1498,6 @@ int get_wlsubnet(int band, const char *ifname)
 }
 
 #define PROC_NET_WIRELESS  "/proc/net/wireless"
-#define strip_new_line(s) ({					\
-	char *end = (s) + strlen(s) -1;				\
-	while((end >= (s)) && (*end == '\n' || *end == '\r'))	\
-		*end-- = '\0';					\
-	s;							\
-})
-
-#define skip_space(s) {						\
-	while(*s == ' ')					\
-		s++;						\
-}
 
 
 int get_wl_status_ioctl(const char *ifname, int *status, int *quality, int *signal, int *noise, unsigned int *update)
@@ -1749,3 +1757,59 @@ int check_mid(char *mid)
 	return ret;
 }
 #endif
+
+char * get_wpa_ctrl_sk(int band, char ctrl_sk[], int size)
+{
+	char *sta;
+	if(band < 0 || band >= MAX_NR_WL_IF || ctrl_sk == NULL)
+		return NULL;
+	sta = get_staifname(band);
+	snprintf(ctrl_sk, size, "/var/run/wpa_supplicant-%s", sta);
+	return ctrl_sk;
+}
+
+void set_wpa_cli_cmd(int band, const char *cmd)
+{
+	char ctrl_sk[32];
+	char *sta;
+
+	if(band < 0 || band >= MAX_NR_WL_IF || cmd == NULL || cmd[0] == '\0')
+		return;
+
+	get_wpa_ctrl_sk(band, ctrl_sk, sizeof(ctrl_sk));
+	sta = get_staifname(band);
+	eval("/usr/bin/wpa_cli", "-p", ctrl_sk, "-i", sta, cmd);
+}
+
+void disassoc_sta(char *ifname, char *sta_addr)
+{
+	if(ifname == NULL || *ifname == '\0' || sta_addr == NULL || *sta_addr == '\0')
+		return;
+
+	eval("iwpriv", ifname, "kickmac", sta_addr);
+}
+/*
+ * mode: 0:disable, 1:allow, 2:deny
+ */
+void set_maclist_add_kick(char *ifname, int mode, char *sta_addr)
+{
+	if(ifname == NULL || *ifname == '\0' || sta_addr == NULL || *sta_addr == '\0')
+		return;
+
+	eval("iwpriv", ifname, QCA_ADDMAC, sta_addr);
+
+	if(mode == 2)
+		disassoc_sta(ifname, sta_addr);
+}
+
+void set_maclist_del_kick(char *ifname, int mode, char *sta_addr)
+{
+	if(ifname == NULL || *ifname == '\0' || sta_addr == NULL || *sta_addr == '\0')
+		return;
+
+	eval("iwpriv", ifname, QCA_DELMAC, sta_addr);
+
+	if(mode == 1)
+		disassoc_sta(ifname, sta_addr);
+}
+

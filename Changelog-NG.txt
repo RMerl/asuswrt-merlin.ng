@@ -2,10 +2,9 @@ Asuswrt-Merlin 384/NG Changelog
 ===============================
 
 384.8 (xx-xxx-xxxx)
-  - NEW: Merged with GPL 384_32797 (with RT-AC86U
-         SDK + binary blobs)
-  - NEW: Merged SDK + binary blobs from 384_32738
-         for AC68/AC88/AC3100/AC5300.
+  - NEW: Merged with GPL + binary blobs from 384_32799
+         for AC68U/AC88U/AC3100/AC5300.
+  - NEW: Merged binary blobs from 384_32797 for RT-AC86U.
   - NEW: Add LZ4 V2 option to OpenVPN compression
          (more effective at handling already compressed
          data)
@@ -15,6 +14,12 @@ Asuswrt-Merlin 384/NG Changelog
              conflicting with more advanced configurations.
   - FIXED: CVE-2018-15599 in dropbear
   - FIXED: Namecheap DDNS service not updating
+
+
+384.7_2 (21-Oct-2018)
+  - FIXED: Namecheap DDNS service not working
+  - FIXED: CVE-2018-15599 security issue in Dropbear
+  - FIXED: Potential buffer overrun in httpd
 
 
 384.7 (7-Oct-2018)

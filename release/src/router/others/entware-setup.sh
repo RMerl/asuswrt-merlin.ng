@@ -139,11 +139,11 @@ chmod +x /jffs/scripts/services-stop
 cat > /jffs/scripts/post-mount << EOF
 #!/bin/sh
 
-if [ "\$1" = "__Partition__" ] ; then
+if [ -d "\$1/entware" ] ; then
   ln -nsf \$1/entware /tmp/opt
 fi
 EOF
-eval sed -i 's,__Partition__,$entPartition,g' /jffs/scripts/post-mount
+# eval sed -i 's,__Partition__,$entPartition,g' /jffs/scripts/post-mount
 chmod +x /jffs/scripts/post-mount
 
 if [ "$(nvram get jffs2_scripts)" != "1" ] ; then

@@ -28,6 +28,12 @@ extern int IsSetID;
 #include <ctype.h>
 #include <string.h>
 
+#ifdef HAVE_SYS_TIME_H
+#include <sys/time.h>
+#endif
+
+#include <time.h>
+
 /* How do we access raw Ethernet devices? */
 #undef USE_LINUX_PACKET
 #undef USE_BPF
@@ -353,6 +359,7 @@ UINT16_t pppFCS16(UINT16_t fcs, unsigned char *cp, int len);
 void discovery(PPPoEConnection *conn);
 unsigned char *findTag(PPPoEPacket *packet, UINT16_t tagType,
 		       PPPoETag *tag);
+int get_time(struct timeval *tv);
 
 static inline int parseHostUniq(const char *uniq, PPPoETag *tag)
 {

@@ -1,0 +1,175 @@
+.TH CONNTRACKD 8 "Apr 16, 2018" "" ""
+
+.\" Man page written by Pablo Neira Ayuso <pablo@netfilter.org> (Dec 2007)
+
+.SH NAME
+conntrackd \- netfilter connection tracking user-space daemon
+
+.SH SYNOPSIS
+.BR "conntrackd [options]"
+
+.SH DESCRIPTION
+\fBconntrackd\fP is the user-space daemon for the netfilter connection
+tracking system. This daemon synchronizes connection tracking states between
+several replica firewalls. Thus, \fBconntrackd\fP can be used to deploy highly
+available stateful firewalls.
+
+The daemon supports Primary-Backup and Multiprimary setups and can also be used
+as statistics collector.
+
+.SH OPTIONS
+The options recognized by \fBconntrackd\fP can be divided into two different
+groups.
+
+.SS GEMERAL OPTIONS
+General options for the \fBconntrackd\fP daemon.
+
+.TP
+.BI "-d"
+Run \fBconntrackd\fP in daemon mode (fork to background).
+
+.TP
+.BI "-C <path>"
+Load config file specified in \fIpath\fP. See \fBconntrackd.conf(5)\fP for
+details.
+
+.TP
+.BI "-v"
+Display version information.
+
+.TP
+.BI "-h"
+Display help information.
+
+.SS CLIENT COMMANDS
+\fBconntrackd\fP can be used in client mode to request several information and
+operations to a running instance of the daemon.
+
+.TP
+.BI "-i [ct|expect]"
+Dump the internal cache, i.e. show local states
+
+.TP
+.BI "-e [ct|expect]"
+Dump the external cache, i.e. show foreign states
+
+.TP
+.BI "-x"
+Display output in XML format. This option is only valid in combination
+with \fB\-i\fP and \fB\-e\fP parameters.
+
+.TP
+.BI "-f [internal|external]"
+Flush the internal and/or external cache
+
+.TP
+.BI "-F [ct|expect]"
+Flush the kernel conntrack table (if you use a Linux kernel >= 2.6.29, this
+option will not flush your internal and external cache).
+.TP
+.BI "-c"
+Commit external cache to conntrack table.
+.TP
+.BI "-B"
+Force a bulk send to other replica firewalls. With this command, you will
+ask conntrackd to send the state-entries that it owns to others.
+.TP
+.BI "-n"
+Request resync with other node (only FT-FW and NOTRACK modes).
+.TP
+.BI "-k"
+Kill the daemon
+.TP
+.BI "-s [network|cache|runtime|link|rsqueue|process|queue|ct|expect]"
+Dump statistics. If no parameter is passed, it displays the general statistics.
+.br
+If "network" is passed as parameter it displays the networking statistics.
+.br
+If "cache" is passed as parameter, it shows the extended cache statistics.
+.br
+If "runtime" is passed as parameter, it shows the run-time statistics.
+.br
+If "process" is passed as parameter, it shows existing child processes (if any).
+.br
+If "queue" is passed as parameter, it shows queue statistics.
+.br
+If "ct" is passed, it displays the general statistics.
+.br
+If "expect" is passed as parameter, it shows expectation statistics.
+.TP
+.BI "-R [ct|expect]"
+Force a resync against the kernel connection tracking table
+.TP
+.BI "-t"
+Reset the in-kernel timers (See PurgeTimeout clause)
+
+.SH DIAGNOSTICS
+The exit code is 0 for correct function. Errors cause an exit code of 1.
+
+.SH EXAMPLES
+The following example are illustrative, for a real use in a firewall fail-over,
+check the primary-backup.sh script that comes with the sources.
+.TP
+.B conntrackd \-d
+Runs conntrackd in daemon and synchronization mode
+.TP
+.B conntrackd \-i
+Dumps the states held in the internal cache, i.e. those handled by this
+firewall
+.TP
+.B conntrackd \-e
+Dumps the states held in the external cache, i.e. those handled by other
+replica firewalls
+.TP
+.B conntrackd \-c
+Commits the external cache into the kernel connection tracking system.
+This is used to inject the state so that the connections can be recovered
+during the failover.
+
+.SH DEPENDENCIES
+This daemon requires a Linux kernel version >= 2.6.18. TCP window tracking
+support requires >= 2.6.22, otherwise you have to disable it.
+Helpers are fully supported since >= 2.6.25, however, if you use any previous
+version, depending on the protocol helper and your setup (e.g. if you setup
+performs NAT sequence adjustments or not), your help connection may be
+successfully recovered.
+
+There are several unsupported stateful iptables matches such as recent,
+connbytes and the quota matches which gather internal
+information to operate. Since that information does not belong to the
+domain of the connection tracking system, connections affected by
+those matches may not be fully recovered during the takeover.
+
+The daemon requires a Linux kernel version >= 2.6.26 to support kernel-space
+event filtering. Otherwise, all the event filtering is done in userspace with
+the corresponding extra overhead. If you are not using the Filter clause in
+the configuration file, ignore this notice.
+
+.SH SYSTEMD INTEGRATION
+Starting with the 1.4.4 release, \fBconntrackd\fP includes integration with
+\fBsystemd(1)\fP to use an unit file of \fIType=notify\fP and watchdog support.
+
+.SH INCOMPATIBILITIES
+During the 0.9.9 development, some important changes in the replication message
+format were introduced. Therefore, \fBconntrackd\fP >= 0.9.9 will not work
+appropriately with \fBconntrackd\fP <= 0.9.8.
+
+This should not be a problem if you use the same conntrackd version in all
+the firewall replica nodes.
+
+.SH SEE ALSO
+.BR conntrackd.conf(5)
+.BR conntrack(8)
+.BR iptables(8)
+.BR nft(8)
+.br
+.BR http://conntrack-tools.netfilter.org
+
+.SH BUGS
+Please, report them to netfilter-devel@vger.kernel.org (subscription required)
+or file a bug in Netfilter's bugzilla (https://bugzilla.netfilter.org).
+
+.SH AUTHORS
+Pablo Neira Ayuso wrote and maintains the conntrackd tool
+.PP
+Man page written by Pablo Neira Ayuso <pablo@netfilter.org>.

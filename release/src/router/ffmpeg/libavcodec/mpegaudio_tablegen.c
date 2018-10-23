@@ -22,6 +22,7 @@
 
 #include <stdlib.h>
 #define CONFIG_HARDCODED_TABLES 0
+#include "libavutil/tablegen.h"
 #include "mpegaudio_tablegen.h"
 #include "tableprint.h"
 
@@ -31,21 +32,12 @@ int main(void)
 
     write_fileheader();
 
-    printf("static const int8_t table_4_3_exp[TABLE_4_3_SIZE] = {\n");
-    write_int8_array(table_4_3_exp, TABLE_4_3_SIZE);
-    printf("};\n");
-
-    printf("static const uint32_t table_4_3_value[TABLE_4_3_SIZE] = {\n");
-    write_uint32_array(table_4_3_value, TABLE_4_3_SIZE);
-    printf("};\n");
-
-    printf("static const uint32_t exp_table[512] = {\n");
-    write_uint32_array(exp_table, 512);
-    printf("};\n");
-
-    printf("static const uint32_t expval_table[512][16] = {\n");
-    write_uint32_2d_array(expval_table, 512, 16);
-    printf("};\n");
+    WRITE_ARRAY("static const", int8_t, table_4_3_exp);
+    WRITE_ARRAY("static const", uint32_t, table_4_3_value);
+    WRITE_ARRAY("static const", uint32_t, exp_table_fixed);
+    WRITE_ARRAY("static const", float, exp_table_float);
+    WRITE_2D_ARRAY("static const", uint32_t, expval_table_fixed);
+    WRITE_2D_ARRAY("static const", float, expval_table_float);
 
     return 0;
 }

@@ -19,10 +19,16 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#include "libavcodec/dsputil.h"
+#include "config.h"
 
-#include "util_altivec.h"
-#include "dsputil_altivec.h"
+#include "libavutil/attributes.h"
+#include "libavutil/cpu.h"
+#include "libavutil/ppc/cpu.h"
+#include "libavutil/ppc/util_altivec.h"
+
+#include "libavcodec/vc1dsp.h"
+
+#if HAVE_ALTIVEC
 
 // main steps of 8x8 transform
 #define STEP8(s0, s1, s2, s3, s4, s5, s6, s7, vec_rnd) \
@@ -129,7 +135,7 @@ do { \
 
 /** Do inverse transform on 8x8 block
 */
-static void vc1_inv_trans_8x8_altivec(DCTELEM block[64])
+static void vc1_inv_trans_8x8_altivec(int16_t block[64])
 {
     vector signed short src0, src1, src2, src3, src4, src5, src6, src7;
     vector signed int s0, s1, s2, s3, s4, s5, s6, s7;
@@ -144,7 +150,6 @@ static void vc1_inv_trans_8x8_altivec(DCTELEM block[64])
     const vector  signed int vec_1s = vec_splat_s32(1);
     const vector unsigned int vec_1 = vec_splat_u32(1);
 
-
     src0 = vec_ld(  0, block);
     src1 = vec_ld( 16, block);
     src2 = vec_ld( 32, block);
@@ -154,7 +159,6 @@ static void vc1_inv_trans_8x8_altivec(DCTELEM block[64])
     src6 = vec_ld( 96, block);
     src7 = vec_ld(112, block);
 
-    TRANSPOSE8(src0, src1, src2, src3, src4, src5, src6, src7);
     s0 = vec_unpackl(src0);
     s1 = vec_unpackl(src1);
     s2 = vec_unpackl(src2);
@@ -226,7 +230,8 @@ static void vc1_inv_trans_8x8_altivec(DCTELEM block[64])
 
 /** Do inverse transform on 8x4 part of block
 */
-static void vc1_inv_trans_8x4_altivec(uint8_t *dest, int stride, DCTELEM *block)
+static void vc1_inv_trans_8x4_altivec(uint8_t *dest, ptrdiff_t stride,
+                                      int16_t *block)
 {
     vector signed short src0, src1, src2, src3, src4, src5, src6, src7;
     vector signed int s0, s1, s2, s3, s4, s5, s6, s7;
@@ -301,16 +306,23 @@ static void vc1_inv_trans_8x4_altivec(uint8_t *dest, int stride, DCTELEM *block)
     src2 = vec_pack(s2, sA);
     src3 = vec_pack(s3, sB);
 
+#if HAVE_BIGENDIAN
     p0 = vec_lvsl (0, dest);
     p1 = vec_lvsl (stride, dest);
     p = vec_splat_u8 (-1);
     perm0 = vec_mergeh (p, p0);
     perm1 = vec_mergeh (p, p1);
+#define GET_TMP2(dst, p)        \
+    tmp = vec_ld (0, dest);     \
+    tmp2 = (vector signed short)vec_perm (tmp, vec_splat_u8(0), p);
+#else
+#define GET_TMP2(dst,p)         \
+    tmp = vec_vsx_ld (0, dst);  \
+    tmp2 = (vector signed short)vec_mergeh (tmp, vec_splat_u8(0));
+#endif
 
 #define ADD(dest,src,perm)                                              \
-    /* *(uint64_t *)&tmp = *(uint64_t *)dest; */                        \
-    tmp = vec_ld (0, dest);                                             \
-    tmp2 = (vector signed short)vec_perm (tmp, vec_splat_u8(0), perm);  \
+    GET_TMP2(dest, perm);                                               \
     tmp3 = vec_adds (tmp2, src);                                        \
     tmp = vec_packsu (tmp3, tmp3);                                      \
     vec_ste ((vector unsigned int)tmp, 0, (unsigned int *)dest);        \
@@ -322,8 +334,32 @@ static void vc1_inv_trans_8x4_altivec(uint8_t *dest, int stride, DCTELEM *block)
     ADD (dest, src3, perm1)
 }
 
+#define PUT_OP_U8_ALTIVEC(d, s, dst) d = s
+#define AVG_OP_U8_ALTIVEC(d, s, dst) d = vec_avg(dst, s)
 
-void vc1dsp_init_altivec(DSPContext* dsp, AVCodecContext *avctx) {
+#define OP_U8_ALTIVEC                          PUT_OP_U8_ALTIVEC
+#define PREFIX_no_rnd_vc1_chroma_mc8_altivec   put_no_rnd_vc1_chroma_mc8_altivec
+#include "h264chroma_template.c"
+#undef OP_U8_ALTIVEC
+#undef PREFIX_no_rnd_vc1_chroma_mc8_altivec
+
+#define OP_U8_ALTIVEC                          AVG_OP_U8_ALTIVEC
+#define PREFIX_no_rnd_vc1_chroma_mc8_altivec   avg_no_rnd_vc1_chroma_mc8_altivec
+#include "h264chroma_template.c"
+#undef OP_U8_ALTIVEC
+#undef PREFIX_no_rnd_vc1_chroma_mc8_altivec
+
+#endif /* HAVE_ALTIVEC */
+
+av_cold void ff_vc1dsp_init_ppc(VC1DSPContext *dsp)
+{
+#if HAVE_ALTIVEC
+    if (!PPC_ALTIVEC(av_get_cpu_flags()))
+        return;
+
     dsp->vc1_inv_trans_8x8 = vc1_inv_trans_8x8_altivec;
     dsp->vc1_inv_trans_8x4 = vc1_inv_trans_8x4_altivec;
+    dsp->put_no_rnd_vc1_chroma_pixels_tab[0] = put_no_rnd_vc1_chroma_mc8_altivec;
+    dsp->avg_no_rnd_vc1_chroma_pixels_tab[0] = avg_no_rnd_vc1_chroma_mc8_altivec;
+#endif /* HAVE_ALTIVEC */
 }

@@ -37,34 +37,24 @@ typedef struct ParseContext{
     uint64_t state64;           ///< contains the last 8 bytes in MSB order
 } ParseContext;
 
-struct MpegEncContext;
-
-typedef struct ParseContext1{
-    ParseContext pc;
-/* XXX/FIXME PC1 vs. PC */
-    /* MPEG-2-specific */
-    AVRational frame_rate;
-    int progressive_sequence;
-    int width, height;
-
-    /* XXX: suppress that, needed by MPEG-4 */
-    struct MpegEncContext *enc;
-    int first_picture;
-} ParseContext1;
-
 #define END_NOT_FOUND (-100)
 
+/**
+ * Combine the (truncated) bitstream to a complete frame.
+ * @return -1 if no complete frame could be created,
+ *         AVERROR(ENOMEM) if there was a memory allocation error
+ */
 int ff_combine_frame(ParseContext *pc, int next, const uint8_t **buf, int *buf_size);
 int ff_mpeg4video_split(AVCodecContext *avctx, const uint8_t *buf,
                         int buf_size);
 void ff_parse_close(AVCodecParserContext *s);
-void ff_parse1_close(AVCodecParserContext *s);
 
 /**
- * Fetches timestamps for a specific byte within the current access unit.
+ * Fetch timestamps for a specific byte within the current access unit.
  * @param off byte position within the access unit
  * @param remove Found timestamps will be removed if set to 1, kept if set to 0.
+ * @param fuzzy Only use found value if it is more informative than what we already have
  */
-void ff_fetch_timestamp(AVCodecParserContext *s, int off, int remove);
+void ff_fetch_timestamp(AVCodecParserContext *s, int off, int remove, int fuzzy);
 
 #endif /* AVCODEC_PARSER_H */

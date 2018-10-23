@@ -1197,7 +1197,7 @@ _dprintf("start_wan_if: USB modem is scanning...\n");
 			nvram_set(strcat_r(prefix, "dnsenable_x", tmp), "1");
 #endif
 
-			char *pppd_argv[] = { "/usr/sbin/pppd", "call", "3g", "nochecktime", NULL};
+			char *pppd_argv[] = { "/usr/sbin/pppd", "call", "3g", NULL};
 
 			if(nvram_get_int("stop_conn_3g") != 1)
 				_eval(pppd_argv, NULL, 0, NULL);
@@ -1303,8 +1303,18 @@ TRACE_PT("3g begin with %s.\n", wan_ifname);
 						sleep(2);
 					}
 #endif
-					dbG("start udhcpc(%d): %s.\n", unit, wan_ifname);
-					start_udhcpc(wan_ifname, unit, &pid);
+#ifdef RTCONFIG_INTERNAL_GOBI
+					/* Skip dhcp for IPv6-only USB modem */
+					if (nvram_get_int("modem_pdp") == 2) {
+						//wan_ifname = get_wan6face();
+						ifconfig(wan_ifname, IFUP, "0.0.0.0", NULL);
+						wan_up(wan_ifname);
+					} else
+#endif
+					{
+						dbG("start udhcpc(%d): %s.\n", unit, wan_ifname);
+						start_udhcpc(wan_ifname, unit, &pid);
+					}
 				}
 				else
 					TRACE_PT("stop_conn_3g was set.\n");
@@ -2809,6 +2819,14 @@ wan_up(const char *pwan_ifname)
 #else
 	start_iQos();
 #endif
+#if defined(RTCONFIG_HND_ROUTER_AX)
+	if (strcmp(wan_proto, "pptp") == 0) {
+		eval("fc", "config", "--tcp-ack-mflows", "0");
+	}
+	else {
+		eval("fc", "config", "--tcp-ack-mflows", "1");
+	}
+#endif
 
 #if !defined(RTCONFIG_MULTIWAN_CFG)
 	/* FIXME: Protect below code from 2-nd WAN temporarilly. */
@@ -3153,6 +3171,9 @@ found_default_route(int wan_unit)
 	char *wanif;
 
 	if(wan_unit != wan_primary_ifunit())
+		return 1;
+
+	if(dualwan_unit__usbif(wan_unit) && nvram_get_int("modem_pdp") == 2)
 		return 1;
 
 	n = 0;

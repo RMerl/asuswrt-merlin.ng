@@ -1,5 +1,5 @@
 /*
- * H263 internal header
+ * H.263 internal header
  *
  * This file is part of FFmpeg.
  *
@@ -24,7 +24,11 @@
 #include "libavutil/rational.h"
 #include "get_bits.h"
 #include "mpegvideo.h"
+#include "h263data.h"
 #include "rl.h"
+
+#define FF_ASPECT_EXTENDED 15
+#define INT_BIT (CHAR_BIT * sizeof(int))
 
 // The defines below define the number of bits that are read at once for
 // reading vlc values. Changing these may improve speed and data cache needs
@@ -35,91 +39,68 @@
 #define CBPY_VLC_BITS 6
 #define TEX_VLC_BITS 9
 
-extern const AVRational ff_h263_pixel_aspect[16];
-extern const uint8_t ff_h263_cbpy_tab[16][2];
-
-extern const uint8_t cbpc_b_tab[4][2];
-
-extern const uint8_t mvtab[33][2];
-
-extern const uint8_t ff_h263_intra_MCBPC_code[9];
-extern const uint8_t ff_h263_intra_MCBPC_bits[9];
-
-extern const uint8_t ff_h263_inter_MCBPC_code[28];
-extern const uint8_t ff_h263_inter_MCBPC_bits[28];
-extern const uint8_t h263_mbtype_b_tab[15][2];
+#define H263_GOB_HEIGHT(h) ((h) <= 400 ? 1 : (h) <= 800 ? 2 : 4)
 
 extern VLC ff_h263_intra_MCBPC_vlc;
 extern VLC ff_h263_inter_MCBPC_vlc;
 extern VLC ff_h263_cbpy_vlc;
 
-extern RLTable ff_h263_rl_inter;
-
-extern RLTable rl_intra_aic;
-
-extern const uint16_t h263_format[8][2];
-extern const uint8_t modified_quant_tab[2][32];
-extern uint16_t ff_mba_max[6];
-extern uint8_t ff_mba_length[7];
-
-extern uint8_t ff_h263_static_rl_table_store[2][2][2*MAX_RUN + MAX_LEVEL + 3];
+extern const enum AVPixelFormat ff_h263_hwaccel_pixfmt_list_420[];
 
 
-int h263_decode_motion(MpegEncContext * s, int pred, int f_code);
+int ff_h263_decode_motion(MpegEncContext * s, int pred, int f_code);
 av_const int ff_h263_aspect_to_info(AVRational aspect);
 int ff_h263_decode_init(AVCodecContext *avctx);
 int ff_h263_decode_frame(AVCodecContext *avctx,
-                             void *data, int *data_size,
+                             void *data, int *got_frame,
                              AVPacket *avpkt);
 int ff_h263_decode_end(AVCodecContext *avctx);
-void h263_encode_mb(MpegEncContext *s,
-                    DCTELEM block[6][64],
-                    int motion_x, int motion_y);
-void h263_encode_picture_header(MpegEncContext *s, int picture_number);
-void h263_encode_gob_header(MpegEncContext * s, int mb_line);
-int16_t *h263_pred_motion(MpegEncContext * s, int block, int dir,
-                        int *px, int *py);
-void h263_encode_init(MpegEncContext *s);
-void h263_decode_init_vlc(MpegEncContext *s);
-int h263_decode_picture_header(MpegEncContext *s);
+void ff_h263_encode_mb(MpegEncContext *s,
+                       int16_t block[6][64],
+                       int motion_x, int motion_y);
+void ff_h263_encode_picture_header(MpegEncContext *s, int picture_number);
+void ff_h263_encode_gob_header(MpegEncContext * s, int mb_line);
+int16_t *ff_h263_pred_motion(MpegEncContext * s, int block, int dir,
+                             int *px, int *py);
+void ff_h263_encode_init(MpegEncContext *s);
+void ff_h263_decode_init_vlc(void);
+int ff_h263_decode_picture_header(MpegEncContext *s);
 int ff_h263_decode_gob_header(MpegEncContext *s);
 void ff_h263_update_motion_val(MpegEncContext * s);
 void ff_h263_loop_filter(MpegEncContext * s);
 int ff_h263_decode_mba(MpegEncContext *s);
 void ff_h263_encode_mba(MpegEncContext *s);
 void ff_init_qscale_tab(MpegEncContext *s);
-int h263_pred_dc(MpegEncContext * s, int n, int16_t **dc_val_ptr);
-void h263_pred_acdc(MpegEncContext * s, DCTELEM *block, int n);
+int ff_h263_pred_dc(MpegEncContext * s, int n, int16_t **dc_val_ptr);
+void ff_h263_pred_acdc(MpegEncContext * s, int16_t *block, int n);
 
 
 /**
- * Prints picture info if FF_DEBUG_PICT_INFO is set.
+ * Print picture info if FF_DEBUG_PICT_INFO is set.
  */
 void ff_h263_show_pict_info(MpegEncContext *s);
 
 int ff_intel_h263_decode_picture_header(MpegEncContext *s);
 int ff_h263_decode_mb(MpegEncContext *s,
-                      DCTELEM block[6][64]);
+                      int16_t block[6][64]);
 
 /**
- * Returns the value of the 3bit "source format" syntax element.
- * that represents some standard picture dimensions or indicates that
+ * Return the value of the 3-bit "source format" syntax element.
+ * This represents some standard picture dimensions or indicates that
  * width&height are explicitly stored later.
  */
 int av_const h263_get_picture_format(int width, int height);
 
 void ff_clean_h263_qscales(MpegEncContext *s);
 int ff_h263_resync(MpegEncContext *s);
-const uint8_t *ff_h263_find_resync_marker(const uint8_t *p, const uint8_t *end);
-int ff_h263_get_gob_height(MpegEncContext *s);
-void ff_h263_encode_motion(MpegEncContext * s, int val, int f_code);
+void ff_h263_encode_motion(PutBitContext *pb, int val, int f_code);
 
 
-static inline int h263_get_motion_length(MpegEncContext * s, int val, int f_code){
+static inline int h263_get_motion_length(int val, int f_code){
     int l, bit_size, code;
 
     if (val == 0) {
-        return mvtab[0][1];
+        return ff_mvtab[0][1];
     } else {
         bit_size = f_code - 1;
         /* modulo encoding */
@@ -128,27 +109,27 @@ static inline int h263_get_motion_length(MpegEncContext * s, int val, int f_code
         val--;
         code = (val >> bit_size) + 1;
 
-        return mvtab[code][1] + 1 + bit_size;
+        return ff_mvtab[code][1] + 1 + bit_size;
     }
 }
 
 static inline void ff_h263_encode_motion_vector(MpegEncContext * s, int x, int y, int f_code){
-    if(s->flags2 & CODEC_FLAG2_NO_OUTPUT){
+    if (s->avctx->flags2 & AV_CODEC_FLAG2_NO_OUTPUT) {
         skip_put_bits(&s->pb,
-            h263_get_motion_length(s, x, f_code)
-           +h263_get_motion_length(s, y, f_code));
+            h263_get_motion_length(x, f_code)
+           +h263_get_motion_length(y, f_code));
     }else{
-        ff_h263_encode_motion(s, x, f_code);
-        ff_h263_encode_motion(s, y, f_code);
+        ff_h263_encode_motion(&s->pb, x, f_code);
+        ff_h263_encode_motion(&s->pb, y, f_code);
     }
 }
 
 static inline int get_p_cbp(MpegEncContext * s,
-                      DCTELEM block[6][64],
+                      int16_t block[6][64],
                       int motion_x, int motion_y){
     int cbp, i;
 
-    if(s->flags & CODEC_FLAG_CBP_RD){
+    if (s->mpv_flags & FF_MPV_FLAG_CBP_RD) {
         int best_cbpy_score= INT_MAX;
         int best_cbpc_score= INT_MAX;
         int cbpc = (-1), cbpy= (-1);
@@ -187,7 +168,7 @@ static inline int get_p_cbp(MpegEncContext * s,
         for (i = 0; i < 6; i++) {
             if (s->block_last_index[i] >= 0 && ((cbp >> (5 - i))&1)==0 ){
                 s->block_last_index[i]= -1;
-                s->dsp.clear_block(s->block[i]);
+                s->bdsp.clear_block(s->block[i]);
             }
         }
     }else{
@@ -200,52 +181,4 @@ static inline int get_p_cbp(MpegEncContext * s,
     return cbp;
 }
 
-static inline int get_b_cbp(MpegEncContext * s, DCTELEM block[6][64],
-                            int motion_x, int motion_y, int mb_type){
-    int cbp=0, i;
-
-    if(s->flags & CODEC_FLAG_CBP_RD){
-        int score=0;
-        const int lambda= s->lambda2 >> (FF_LAMBDA_SHIFT - 6);
-
-        for(i=0; i<6; i++){
-            if(s->coded_score[i] < 0){
-                score += s->coded_score[i];
-                cbp |= 1 << (5 - i);
-            }
-        }
-
-        if(cbp){
-            int zero_score= -6;
-            if ((motion_x | motion_y | s->dquant | mb_type) == 0){
-                zero_score-= 4; //2*MV + mb_type + cbp bit
-            }
-
-            zero_score*= lambda;
-            if(zero_score <= score){
-                cbp=0;
-            }
-        }
-
-        for (i = 0; i < 6; i++) {
-            if (s->block_last_index[i] >= 0 && ((cbp >> (5 - i))&1)==0 ){
-                s->block_last_index[i]= -1;
-                s->dsp.clear_block(s->block[i]);
-            }
-        }
-    }else{
-        for (i = 0; i < 6; i++) {
-            if (s->block_last_index[i] >= 0)
-                cbp |= 1 << (5 - i);
-        }
-    }
-    return cbp;
-}
-
-static inline void memsetw(short *tab, int val, int n)
-{
-    int i;
-    for(i=0;i<n;i++)
-        tab[i] = val;
-}
-#endif
+#endif /* AVCODEC_H263_H */

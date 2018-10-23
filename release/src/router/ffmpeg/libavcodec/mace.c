@@ -25,9 +25,11 @@
  */
 
 #include "avcodec.h"
+#include "internal.h"
+#include "libavutil/common.h"
 
 /*
- * Adapted to ffmpeg by Francois Revol <revol@free.fr>
+ * Adapted to libavcodec by Francois Revol <revol@free.fr>
  * (removed 68k REG stuff, changed types, added some statics and consts,
  * libavcodec api, context stuff, interlaced stereo out).
  */
@@ -185,9 +187,7 @@ static int16_t read_table(ChannelData *chd, uint8_t val, int tab_idx)
     return current;
 }
 
-static void chomp3(ChannelData *chd, int16_t *output, uint8_t val,
-                   int tab_idx,
-                   uint32_t numChannels)
+static void chomp3(ChannelData *chd, int16_t *output, uint8_t val, int tab_idx)
 {
 
     int16_t current = read_table(chd, val, tab_idx);
@@ -198,9 +198,7 @@ static void chomp3(ChannelData *chd, int16_t *output, uint8_t val,
     *output = QT_8S_2_16S(current);
 }
 
-static void chomp6(ChannelData *chd, int16_t *output, uint8_t val,
-                   int tab_idx,
-                   uint32_t numChannels)
+static void chomp6(ChannelData *chd, int16_t *output, uint8_t val, int tab_idx)
 {
     int16_t current = read_table(chd, val, tab_idx);
 
@@ -220,38 +218,47 @@ static void chomp6(ChannelData *chd, int16_t *output, uint8_t val,
 
     output[0] = QT_8S_2_16S(chd->previous + chd->prev2 -
                             ((chd->prev2-current) >> 2));
-    output[numChannels] = QT_8S_2_16S(chd->previous + current +
-                                      ((chd->prev2-current) >> 2));
+    output[1] = QT_8S_2_16S(chd->previous + current +
+                            ((chd->prev2-current) >> 2));
     chd->prev2 = chd->previous;
     chd->previous = current;
 }
 
 static av_cold int mace_decode_init(AVCodecContext * avctx)
 {
-    if (avctx->channels > 2)
-        return -1;
-    avctx->sample_fmt = SAMPLE_FMT_S16;
+    if (avctx->channels > 2 || avctx->channels < 1)
+        return AVERROR(EINVAL);
+    avctx->sample_fmt = AV_SAMPLE_FMT_S16P;
+
     return 0;
 }
 
-static int mace_decode_frame(AVCodecContext *avctx,
-                              void *data, int *data_size,
-                              AVPacket *avpkt)
+static int mace_decode_frame(AVCodecContext *avctx, void *data,
+                             int *got_frame_ptr, AVPacket *avpkt)
 {
+    AVFrame *frame     = data;
     const uint8_t *buf = avpkt->data;
     int buf_size = avpkt->size;
-    int16_t *samples = data;
+    int16_t **samples;
     MACEContext *ctx = avctx->priv_data;
-    int i, j, k, l;
-    int is_mace3 = (avctx->codec_id == CODEC_ID_MACE3);
+    int i, j, k, l, ret;
+    int is_mace3 = (avctx->codec_id == AV_CODEC_ID_MACE3);
 
-    if (*data_size < (3 * buf_size << (2-is_mace3))) {
-        av_log(avctx, AV_LOG_ERROR, "Output buffer too small!\n");
-        return -1;
+    if (buf_size % (avctx->channels << is_mace3)) {
+        av_log(avctx, AV_LOG_ERROR, "buffer size %d is odd\n", buf_size);
+        buf_size -= buf_size % (avctx->channels << is_mace3);
+        if (!buf_size)
+            return AVERROR_INVALIDDATA;
     }
 
+    /* get output buffer */
+    frame->nb_samples = 3 * (buf_size << (1 - is_mace3)) / avctx->channels;
+    if ((ret = ff_get_buffer(avctx, frame, 0)) < 0)
+        return ret;
+    samples = (int16_t **)frame->extended_data;
+
     for(i = 0; i < avctx->channels; i++) {
-        int16_t *output = samples + i;
+        int16_t *output = samples[i];
 
         for (j=0; j < buf_size / (avctx->channels << is_mace3); j++)
             for (k=0; k < (1 << is_mace3); k++) {
@@ -263,43 +270,42 @@ static int mace_decode_frame(AVCodecContext *avctx,
 
                 for (l=0; l < 3; l++) {
                     if (is_mace3)
-                        chomp3(&ctx->chd[i], output, val[1][l], l,
-                               avctx->channels);
+                        chomp3(&ctx->chd[i], output, val[1][l], l);
                     else
-                        chomp6(&ctx->chd[i], output, val[0][l], l,
-                               avctx->channels);
+                        chomp6(&ctx->chd[i], output, val[0][l], l);
 
-                    output += avctx->channels << (1-is_mace3);
+                    output += 1 << (1-is_mace3);
                 }
             }
     }
 
-    *data_size = 3 * buf_size << (2-is_mace3);
+    *got_frame_ptr = 1;
 
     return buf_size;
 }
 
-AVCodec mace3_decoder = {
-    "mace3",
-    AVMEDIA_TYPE_AUDIO,
-    CODEC_ID_MACE3,
-    sizeof(MACEContext),
-    mace_decode_init,
-    NULL,
-    NULL,
-    mace_decode_frame,
-    .long_name = NULL_IF_CONFIG_SMALL("MACE (Macintosh Audio Compression/Expansion) 3:1"),
+AVCodec ff_mace3_decoder = {
+    .name           = "mace3",
+    .long_name      = NULL_IF_CONFIG_SMALL("MACE (Macintosh Audio Compression/Expansion) 3:1"),
+    .type           = AVMEDIA_TYPE_AUDIO,
+    .id             = AV_CODEC_ID_MACE3,
+    .priv_data_size = sizeof(MACEContext),
+    .init           = mace_decode_init,
+    .decode         = mace_decode_frame,
+    .capabilities   = AV_CODEC_CAP_DR1,
+    .sample_fmts    = (const enum AVSampleFormat[]) { AV_SAMPLE_FMT_S16P,
+                                                      AV_SAMPLE_FMT_NONE },
 };
 
-AVCodec mace6_decoder = {
-    "mace6",
-    AVMEDIA_TYPE_AUDIO,
-    CODEC_ID_MACE6,
-    sizeof(MACEContext),
-    mace_decode_init,
-    NULL,
-    NULL,
-    mace_decode_frame,
-    .long_name = NULL_IF_CONFIG_SMALL("MACE (Macintosh Audio Compression/Expansion) 6:1"),
+AVCodec ff_mace6_decoder = {
+    .name           = "mace6",
+    .long_name      = NULL_IF_CONFIG_SMALL("MACE (Macintosh Audio Compression/Expansion) 6:1"),
+    .type           = AVMEDIA_TYPE_AUDIO,
+    .id             = AV_CODEC_ID_MACE6,
+    .priv_data_size = sizeof(MACEContext),
+    .init           = mace_decode_init,
+    .decode         = mace_decode_frame,
+    .capabilities   = AV_CODEC_CAP_DR1,
+    .sample_fmts    = (const enum AVSampleFormat[]) { AV_SAMPLE_FMT_S16P,
+                                                      AV_SAMPLE_FMT_NONE },
 };
-

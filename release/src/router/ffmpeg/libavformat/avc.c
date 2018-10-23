@@ -20,6 +20,7 @@
  */
 
 #include "libavutil/intreadwrite.h"
+#include "libavcodec/h264.h"
 #include "avformat.h"
 #include "avio.h"
 #include "avc.h"
@@ -67,7 +68,7 @@ const uint8_t *ff_avc_find_startcode(const uint8_t *p, const uint8_t *end){
     return out;
 }
 
-int ff_avc_parse_nal_units(ByteIOContext *pb, const uint8_t *buf_in, int size)
+int ff_avc_parse_nal_units(AVIOContext *pb, const uint8_t *buf_in, int size)
 {
     const uint8_t *p = buf_in;
     const uint8_t *end = p + size;
@@ -75,11 +76,14 @@ int ff_avc_parse_nal_units(ByteIOContext *pb, const uint8_t *buf_in, int size)
 
     size = 0;
     nal_start = ff_avc_find_startcode(p, end);
-    while (nal_start < end) {
-        while(!*(nal_start++));
+    for (;;) {
+        while (nal_start < end && !*(nal_start++));
+        if (nal_start == end)
+            break;
+
         nal_end = ff_avc_find_startcode(nal_start, end);
-        put_be32(pb, nal_end - nal_start);
-        put_buffer(pb, nal_start, nal_end - nal_start);
+        avio_wb32(pb, nal_end - nal_start);
+        avio_write(pb, nal_start, nal_end - nal_start);
         size += 4 + nal_end - nal_start;
         nal_start = nal_end;
     }
@@ -88,68 +92,152 @@ int ff_avc_parse_nal_units(ByteIOContext *pb, const uint8_t *buf_in, int size)
 
 int ff_avc_parse_nal_units_buf(const uint8_t *buf_in, uint8_t **buf, int *size)
 {
-    ByteIOContext *pb;
-    int ret = url_open_dyn_buf(&pb);
+    AVIOContext *pb;
+    int ret = avio_open_dyn_buf(&pb);
     if(ret < 0)
         return ret;
 
     ff_avc_parse_nal_units(pb, buf_in, *size);
 
     av_freep(buf);
-    *size = url_close_dyn_buf(pb, buf);
+    *size = avio_close_dyn_buf(pb, buf);
     return 0;
 }
 
-int ff_isom_write_avcc(ByteIOContext *pb, const uint8_t *data, int len)
+int ff_isom_write_avcc(AVIOContext *pb, const uint8_t *data, int len)
 {
-    if (len > 6) {
-        /* check for h264 start code */
-        if (AV_RB32(data) == 0x00000001 ||
-            AV_RB24(data) == 0x000001) {
-            uint8_t *buf=NULL, *end, *start;
-            uint32_t sps_size=0, pps_size=0;
-            uint8_t *sps=0, *pps=0;
+    AVIOContext *sps_pb = NULL, *pps_pb = NULL;
+    uint8_t *buf = NULL, *end, *start = NULL;
+    uint8_t *sps = NULL, *pps = NULL;
+    uint32_t sps_size = 0, pps_size = 0;
+    int ret, nb_sps = 0, nb_pps = 0;
 
-            int ret = ff_avc_parse_nal_units_buf(data, &buf, &len);
-            if (ret < 0)
-                return ret;
-            start = buf;
-            end = buf + len;
+    if (len <= 6)
+        return AVERROR_INVALIDDATA;
 
-            /* look for sps and pps */
-            while (buf < end) {
-                unsigned int size;
-                uint8_t nal_type;
-                size = AV_RB32(buf);
-                nal_type = buf[4] & 0x1f;
-                if (nal_type == 7) { /* SPS */
-                    sps = buf + 4;
-                    sps_size = size;
-                } else if (nal_type == 8) { /* PPS */
-                    pps = buf + 4;
-                    pps_size = size;
-                }
-                buf += size + 4;
-            }
-            assert(sps);
-            assert(pps);
-
-            put_byte(pb, 1); /* version */
-            put_byte(pb, sps[1]); /* profile */
-            put_byte(pb, sps[2]); /* profile compat */
-            put_byte(pb, sps[3]); /* level */
-            put_byte(pb, 0xff); /* 6 bits reserved (111111) + 2 bits nal size length - 1 (11) */
-            put_byte(pb, 0xe1); /* 3 bits reserved (111) + 5 bits number of sps (00001) */
-
-            put_be16(pb, sps_size);
-            put_buffer(pb, sps, sps_size);
-            put_byte(pb, 1); /* number of pps */
-            put_be16(pb, pps_size);
-            put_buffer(pb, pps, pps_size);
-            av_free(start);
-        } else {
-            put_buffer(pb, data, len);
-        }
+    /* check for H.264 start code */
+    if (AV_RB32(data) != 0x00000001 &&
+        AV_RB24(data) != 0x000001) {
+        avio_write(pb, data, len);
+        return 0;
     }
+
+    ret = ff_avc_parse_nal_units_buf(data, &buf, &len);
+    if (ret < 0)
+        return ret;
+    start = buf;
+    end = buf + len;
+
+    ret = avio_open_dyn_buf(&sps_pb);
+    if (ret < 0)
+        goto fail;
+    ret = avio_open_dyn_buf(&pps_pb);
+    if (ret < 0)
+        goto fail;
+
+    /* look for sps and pps */
+    while (end - buf > 4) {
+        uint32_t size;
+        uint8_t nal_type;
+        size = FFMIN(AV_RB32(buf), end - buf - 4);
+        buf += 4;
+        nal_type = buf[0] & 0x1f;
+
+        if (nal_type == 7) { /* SPS */
+            nb_sps++;
+            if (size > UINT16_MAX || nb_sps >= H264_MAX_SPS_COUNT) {
+                ret = AVERROR_INVALIDDATA;
+                goto fail;
+            }
+            avio_wb16(sps_pb, size);
+            avio_write(sps_pb, buf, size);
+        } else if (nal_type == 8) { /* PPS */
+            nb_pps++;
+            if (size > UINT16_MAX || nb_pps >= H264_MAX_PPS_COUNT) {
+                ret = AVERROR_INVALIDDATA;
+                goto fail;
+            }
+            avio_wb16(pps_pb, size);
+            avio_write(pps_pb, buf, size);
+        }
+
+        buf += size;
+    }
+    sps_size = avio_close_dyn_buf(sps_pb, &sps);
+    pps_size = avio_close_dyn_buf(pps_pb, &pps);
+
+    if (sps_size < 6 || !pps_size) {
+        ret = AVERROR_INVALIDDATA;
+        goto fail;
+    }
+
+    avio_w8(pb, 1); /* version */
+    avio_w8(pb, sps[3]); /* profile */
+    avio_w8(pb, sps[4]); /* profile compat */
+    avio_w8(pb, sps[5]); /* level */
+    avio_w8(pb, 0xff); /* 6 bits reserved (111111) + 2 bits nal size length - 1 (11) */
+    avio_w8(pb, 0xe0 | nb_sps); /* 3 bits reserved (111) + 5 bits number of sps */
+
+    avio_write(pb, sps, sps_size);
+    avio_w8(pb, nb_pps); /* number of pps */
+    avio_write(pb, pps, pps_size);
+
+fail:
+    if (!sps)
+        avio_close_dyn_buf(sps_pb, &sps);
+    if (!pps)
+        avio_close_dyn_buf(pps_pb, &pps);
+    av_free(sps);
+    av_free(pps);
+    av_free(start);
+
+    return ret;
+}
+
+int ff_avc_write_annexb_extradata(const uint8_t *in, uint8_t **buf, int *size)
+{
+    uint16_t sps_size, pps_size;
+    uint8_t *out;
+    int out_size;
+
+    *buf = NULL;
+    if (*size >= 4 && (AV_RB32(in) == 0x00000001 || AV_RB24(in) == 0x000001))
+        return 0;
+    if (*size < 11 || in[0] != 1)
+        return AVERROR_INVALIDDATA;
+
+    sps_size = AV_RB16(&in[6]);
+    if (11 + sps_size > *size)
+        return AVERROR_INVALIDDATA;
+    pps_size = AV_RB16(&in[9 + sps_size]);
+    if (11 + sps_size + pps_size > *size)
+        return AVERROR_INVALIDDATA;
+    out_size = 8 + sps_size + pps_size;
+    out = av_mallocz(out_size + AV_INPUT_BUFFER_PADDING_SIZE);
+    if (!out)
+        return AVERROR(ENOMEM);
+    AV_WB32(&out[0], 0x00000001);
+    memcpy(out + 4, &in[8], sps_size);
+    AV_WB32(&out[4 + sps_size], 0x00000001);
+    memcpy(out + 8 + sps_size, &in[11 + sps_size], pps_size);
+    *buf = out;
+    *size = out_size;
     return 0;
+}
+
+const uint8_t *ff_avc_mp4_find_startcode(const uint8_t *start,
+                                         const uint8_t *end,
+                                         int nal_length_size)
+{
+    unsigned int res = 0;
+
+    if (end - start < nal_length_size)
+        return NULL;
+    while (nal_length_size--)
+        res = (res << 8) | *start++;
+
+    if (res > end - start)
+        return NULL;
+
+    return start + res;
 }

@@ -158,8 +158,10 @@
 #define TMCFG_E_UDB_CORE_EXTRA_CFLAGS ""
 #define TMCFG_E_UDB_CORE_CONN_EXTRA 1 // y
 #define TMCFG_E_UDB_CORE_RULE_FORMAT_V2 0 // n
+#define TMCFG_E_UDB_CORE_MESH 1 // y
 #define TMCFG_E_UDB_CORE_URL_QUERY 1 // y
 #define TMCFG_E_UDB_CORE_SHN_QUERY 0 // n
+#define TMCFG_E_UDB_CORE_APP_WBL 0 // n
 #define TMCFG_E_UDB_CORE_WBL 1 // y
 #define TMCFG_E_UDB_CORE_WBL_MAJ_VER 2
 #define TMCFG_E_UDB_CORE_WBL_MIN_VER 2
@@ -181,6 +183,7 @@
 #define TMCFG_E_UDB_CORE_SWNAT 0 // n
 #define TMCFG_E_UDB_CORE_IQOS_SUPPORT 1 // y
 #define TMCFG_E_UDB_CORE_IQOS_RSV_DEF_CLS 0 // n
+#define TMCFG_E_UDB_CORE_GCTRL_SUPPORT 0 // n
 #define TMCFG_E_UDB_CORE_HWNAT 0 // n
 #define TMCFG_E_UDB_CORE_HWQOS 0 // n
 #define TMCFG_E_UDB_CORE_APP_PATROL 1 // y
@@ -195,6 +198,7 @@
 #define TMCFG_E_UDB_CORE_WPR_PAGE 1 // y
 #define TMCFG_E_UDB_CORE_TMDBG 0 // n
 #define TMCFG_E_UDB_CORE_MEMTRACK 0 // n
+#define TMCFG_E_UDB_CORE_HTTP_REFER 0 // n
 #define TMCFG_E_UDB_SHELL 1 // y
 #define TMCFG_E_UDB_SHELL_EXTRA_CFLAGS ""
 #define TMCFG_E_UDB_SHELL_KMOD_NAME "tdts_udb"
@@ -208,7 +212,7 @@
 #define TMCFG_E_REL_PKG_MAJ_VER 2
 #define TMCFG_E_REL_PKG_MIN_VER 0
 #define TMCFG_E_REL_PKG_REV_VER 1
-#define TMCFG_E_REL_PKG_LOCAL_VER "3529123"
+#define TMCFG_E_REL_PKG_LOCAL_VER "890c91d"
 
 /*
  * Accompany applications or modules
@@ -217,7 +221,7 @@
 /*
  * Kernel
  */
-#define TMCFG_APP_K_EXTRA_CFLAGS "-I/opt/ASUS/asuswrt_AC87U_GPL_382_11683/release/src-rt-6.x.4708/include -I/opt/ASUS/asuswrt_AC87U_GPL_382_11683/release/src-rt-6.x.4708/common/include"
+#define TMCFG_APP_K_EXTRA_CFLAGS "-I/opt/ASUS/asuswrt_AC68U_GPL_384_20648/release/src-rt-6.x.4708/include -I/opt/ASUS/asuswrt_AC68U_GPL_384_20648/release/src-rt-6.x.4708/common/include"
 #define TMCFG_APP_K_TDTS_NFFW 0 // n
 #define TMCFG_APP_K_TDTS_UDBFW 1 // y
 #define TMCFG_APP_K_TDTS_UDBFW_EXTRA_SYMBOLS ""
@@ -297,6 +301,7 @@
 #define TMCFG_APP_U_UDB_SAMPLE 1 // y
 #define TMCFG_APP_U_TC_DAEMON 1 // y
 #define TMCFG_APP_U_MTK 0 // n
+#define TMCFG_APP_U_MTK_V2 0 // n
 #define TMCFG_APP_U_PROG_CTRL 1 // y
 #define TMCFG_APP_U_DEMO_GUI 0 // n
 #define TMCFG_APP_U_DEMO_GUI_V22 0 // n

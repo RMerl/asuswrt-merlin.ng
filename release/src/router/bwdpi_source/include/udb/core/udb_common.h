@@ -98,6 +98,9 @@ typedef enum
 	SKB_ETH_P_OTHER = 0
 	, SKB_ETH_P_IP
 	, SKB_ETH_P_IPV6
+#if TMCFG_E_UDB_CORE_MESH
+	, SKB_ETH_P_MESH
+#endif
 } skb_eth_proto_t;
 
 typedef struct usr_msg_header
@@ -224,11 +227,14 @@ enum
 };
 
 typedef int (*dpi_l3_scan_t)(void *skb, tdts_pkt_parameter_t *pkt_param);
+
 #if TMCFG_E_UDB_CORE_RULE_FORMAT_V2
 typedef int (*dpi_set_binding_ver_t)(unsigned int, unsigned int);
-#if TMCFG_E_CORE_PORT_SCAN_DETECTION
+
+#if TMCFG_E_UDB_CORE_ANOMALY_PREVENT && TMCFG_E_CORE_PORT_SCAN_DETECTION
 typedef int (*dpi_remove_tcp_connection_by_tuple_t)(tdts_conn_tuple_t *ct);
-#endif // TMCFG_E_CORE_PORT_SCAN_DETECTION
+typedef int (*dpi_remove_udp_connection_by_tuple_t)(tdts_conn_tuple_t *ct);
+#endif
 #endif // TMCFG_E_UDB_CORE_RULE_FORMAT_V2
 
 typedef struct
@@ -243,9 +249,10 @@ typedef struct
 #if TMCFG_E_UDB_CORE_RULE_FORMAT_V2
 	dpi_set_binding_ver_t dpi_set_binding_ver;
 #endif
-#if TMCFG_E_CORE_PORT_SCAN_DETECTION
+#if TMCFG_E_UDB_CORE_ANOMALY_PREVENT && TMCFG_E_CORE_PORT_SCAN_DETECTION
 #if TMCFG_E_UDB_CORE_RULE_FORMAT_V2
 	dpi_remove_tcp_connection_by_tuple_t dpi_remove_tcp_connection_by_tuple;
+	dpi_remove_udp_connection_by_tuple_t dpi_remove_udp_connection_by_tuple;
 #endif // TMCFG_E_UDB_CORE_RULE_FORMAT_V2
 	unsigned short *port_scan_tholds;
 #endif // TMCFG_E_CORE_PORT_SCAN_DETECTION
@@ -301,12 +308,16 @@ extern int tdts_core_udb_memtrack_print(void *m, void *v);
 extern int udb_core_memtrack_init(void);
 extern void udb_core_memtrack_exit(void);
 extern int udb_core_ver_seq_print(void *m, void *v);
+extern int udb_core_ioctl_op_get_core_ver(char *buf, uint32_t tbl_len, uint32_t *tbl_used_len);
 
 extern int tdts_core_ioctl_op_set_wpr_conf(char *buf, uint32_t tbl_len);
 extern int tdts_core_ioctl_op_wpr_switch(uint32_t flag);
 extern int udb_core_wan_detection(uint8_t *dev_name, uint32_t len);
 #if TMCFG_E_UDB_CORE_WBL
 extern int tdts_core_udb_wbl_proc_read(void *buff, int *eof);
+#endif
+#if TMCFG_E_UDB_CORE_APP_WBL
+extern int tdts_core_udb_app_wbl_proc_read(void *buff, int *eof);
 #endif
 #endif	// __UDB_COMMON_H__
 

@@ -33,8 +33,6 @@
 #include <stdint.h>
 #include "mpegaudio.h"
 
-#define SQRT2 1.41421356237309514547
-
 static const int costab32[30] = {
     FIX(0.54119610014619701222),
     FIX(1.3065629648763763537),
@@ -78,20 +76,6 @@ static const int bitinv32[32] = {
     3,  19, 11, 27,  7,  23,  15,  31
 };
 
-
-static int16_t filter_bank[512];
-
-static int scale_factor_table[64];
-#ifdef USE_FLOATS
-static float scale_factor_inv_table[64];
-#else
-static int8_t scale_factor_shift[64];
-static unsigned short scale_factor_mult[64];
-#endif
-static unsigned char scale_diff_table[128];
-
-/* total number of bits per allocation group */
-static unsigned short total_quant_bits[17];
 
 /* signal to noise ratio of each quantification step (could be
    computed from quant_steps[]). The values are dB multiplied by 10

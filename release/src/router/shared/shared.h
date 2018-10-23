@@ -141,6 +141,12 @@
 #define PROC_IRQ		"/proc/irq"
 #define SYS_CLASS_NET		"/sys/class/net"
 
+#if defined(RTCONFIG_LANTIQ)
+#define WLREADY			"wave_ready"
+#else
+#define WLREADY			"wlready"
+#endif
+
 /**
  * skb->mark usage
  * 1.	bit 28~31:	Load-balance rule, IPTABLES_MARK_LB_*
@@ -164,6 +170,12 @@
 #endif
 
 #define ACTION_LOCK		"/var/lock/action"
+
+#if defined(RTCONFIG_CFG80211)
+#define IWPRIV                 "cfg80211tool"
+#else
+#define IWPRIV                 "iwpriv"
+#endif
 
 #ifdef RTCONFIG_PUSH_EMAIL
 //#define logmessage logmessage_push
@@ -351,9 +363,16 @@ enum romaingEvent {
 	EID_RM_STA_FILTER,
 	EID_RM_MAX
 };
+enum conndiagEvent {
+	EID_CD_STA_CHK_ONE = 1,
+	EID_CD_STA_CHK_ONE_RSP,
+	EID_CD_MAX
+};
 #define RAST_IPC_MAX_CONNECTION		5
 #define RAST_IPC_SOCKET_PATH		"/etc/rast_ipc_socket"
+#define CONNDIAG_IPC_SOCKET_PATH	"/etc/conndiag_ipc_socket"
 #define RAST_PREFIX     "RAST"
+#define CHKSTA_PREFIX   "CHKSTA"
 /* key name of json from rast */
 #define RAST_EVENT_ID   "EID"
 #define RAST_STA        "STA"
@@ -368,11 +387,22 @@ enum romaingEvent {
 #define RAST_STA_RSSI	"STA_RSSI"
 #define RAST_CANDIDATE_AP_RSSI	"AP_RSSI"
 #define RAST_CANDIDATE_AP_RSSI_CRITERIA  "AP_RSSI_CRITERIA"
+#define RAST_ENABLE	"ENABLE"
+#define RAST_RATE       "RATE"
+#define RAST_TXRATE     "TXRATE"
+#define RAST_RXRATE     "RXRATE"
+#define RAST_DATA       "DATA"
+#define RAST_MODE       "MODE"
+#define RAST_SERVED_AP_BSSID	"SERVED_AP_BSSID"
 
 #define RAST_JVALUE_BAND_2G "2"
 #define RAST_JVALUE_BAND_5G "1"
 
 #endif	//END RTCONFIG_ADV_RAST
+
+#ifdef RTCONFIG_HND_ROUTER_AX
+#define RMD_IPC_SOCKET_PATH    "/etc/rmd_ipc_socket"
+#endif
 #endif	//END RTCONFIG_CFGSYNC
 
 #ifdef RTCONFIG_AMAS
@@ -840,6 +870,15 @@ extern int f_read_alloc_string(const char *path, char **buffer, int max);
 extern int f_wait_exists(const char *name, int max);
 extern int f_wait_notexists(const char *name, int max);
 
+/* Boost key mode. (RTCONFIG_TURBO_BTN, BTN_TURBO=y) */
+enum boost_mode {
+	BOOST_LED_SW = 0,	/* LED ON/OFF, except Aura RGB LED */
+	BOOST_ACS_DFS_SW,	/* DFS in ACS ON/OFF */
+	BOOST_AURA_RGB_SW,	/* Aura RGB LED ON/OFF */
+	BOOST_GAME_BOOST_SW,	/* BWDPI Game Boost ON/OFF, need EULA. */
+
+	BOOST_MODE_MAX
+};
 
 // button & led
 enum btn_id {
@@ -932,6 +971,9 @@ enum led_id {
 	LED_FAILOVER,
 #endif
 	LED_SATA,
+#ifdef RTCONFIG_TURBO_BTN
+	LED_TURBO,
+#endif
 #ifdef RTCONFIG_QTN
 	BTN_QTN_RESET,	/* QTN platform uses led_control() to control this gpio. */
 #endif
@@ -1253,6 +1295,11 @@ static inline int dpsta_mode()
 }
 #endif
 
+static inline int dpsr_mode()
+{
+	return ((sw_mode() == SW_MODE_AP) && (nvram_get_int("wlc_psta") == 2) && (nvram_get_int("wlc_dpsta") == 2));
+}
+
 #if defined(RTCONFIG_BCMWL6) && defined(RTCONFIG_PROXYSTA)
 static inline int psr_mode()
 {
@@ -1429,9 +1476,14 @@ extern uint32_t get_phy_status(uint32_t portmask);
 extern uint32_t get_phy_speed(uint32_t portmask);
 extern uint32_t set_phy_ctrl(uint32_t portmask, int ctrl);
 #endif
+extern void pre_config_switch(void);
+extern void post_config_switch(void);
+extern void __pre_config_switch(void) __attribute__((weak));
+extern void __post_config_switch(void) __attribute__((weak));
 extern char *get_lan_mac_name(void);
 extern char *get_wan_mac_name(void);
 extern char *get_2g_hwaddr(void);
+extern char *get_5g_hwaddr(void);
 extern char *get_lan_hwaddr(void);
 extern char *get_wan_hwaddr(void);
 extern char *get_label_mac(void);
@@ -1448,6 +1500,8 @@ extern int chk_assoc(const char *ifname);
 extern int match_radio_status(int unit, int status);
 extern int get_ch(int freq);
 extern int get_channel(const char *ifname);
+extern char *get_wpa_ctrl_sk(int band, char ctrl_sk[], int size);
+extern void set_wpa_cli_cmd(int band, const char *cmd);
 #endif
 extern char *get_wlifname(int unit, int subunit, int subunit_x, char *buf);
 extern char *get_wlxy_ifname(int x, int y, char *buf);
@@ -1625,6 +1679,7 @@ extern chanspec_t select_band1_chspec_with_same_bw(char *wif, chanspec_t chanspe
 extern chanspec_t select_band4_chspec_with_same_bw(char *wif, chanspec_t chanspec);
 extern chanspec_t select_chspec_with_band_bw(char *wif, int band, int bw, chanspec_t chanspec);
 extern void wl_reset_ssid(char *wif);
+extern void wl_list_5g_chans(int unit, int band, char *buf, int len);
 #endif
 #ifdef RTCONFIG_AMAS
 //extern char *get_pap_bssid(int unit, char bssid_str[]);
@@ -1751,6 +1806,7 @@ extern int get_wifi_unit(char *wif);
 #ifdef RTCONFIG_DPSTA
 extern int is_dpsta(int unit);
 #endif
+extern int is_dpsr(int unit);
 extern int is_psta(int unit);
 extern int is_psr(int unit);
 extern int psta_exist(void);
@@ -1803,6 +1859,9 @@ static inline int ctrl_wan_gro(__attribute__ ((unused)) int wan_unit, __attribut
 static inline int ctrl_lan_gro(__attribute__ ((unused)) int onoff) { return 0; }
 #endif
 extern int set_irq_smp_affinity(unsigned int irq, unsigned int cpu_mask);
+extern int exec_and_parse(const char *cmd, const char *keyword, const char *fmt, int cnt, ...);
+extern char *iwpriv_get(const char *iface, char *cmd);
+extern int iwpriv_get_int(const char *iface, char *cmd, int *result);
 extern char *get_qos_prefix(int unit, char *buf);
 extern int internet_ready(void);
 extern void set_no_internet_ready(void);
@@ -1811,6 +1870,10 @@ extern enum led_id get_wl_led_id(int band);
 extern char *get_wl_led_gpio_nv(int band);
 #if defined(RTCONFIG_QCA)
 extern char *get_wsup_drvname(int band);
+extern void disassoc_sta(char *ifname, char *sta_addr);
+/* mode: 0:disable, 1:allow, 2:deny */
+extern void set_maclist_add_kick(char *ifname, int mode, char *sta_addr);
+extern void set_maclist_del_kick(char *ifname, int mode, char *sta_addr);
 #else
 static inline char *get_wsup_drvname(__attribute__ ((unused)) int band) { return ""; }
 #endif
@@ -1997,6 +2060,21 @@ static inline int wan2_red_led_control(int onoff)
 }
 #else
 static inline int wan2_red_led_control(__attribute__ ((unused)) int onoff) { return 0; }
+#endif
+
+#if defined(RTCONFIG_TURBO_BTN)
+static inline int turbo_led_control(int onoff)
+{
+	return led_control(LED_TURBO, onoff);
+}
+#else
+static inline int turbo_led_control(__attribute__ ((unused)) int onoff) { return 0; }
+#endif
+
+#if defined(RTCONFIG_LED_BTN) || defined(RTCONFIG_WPS_ALLLED_BTN) || defined(RTCONFIG_TURBO_BTN)
+static inline int inhibit_led_on(void) { return !nvram_get_int("AllLED"); }
+#else
+static inline int inhibit_led_on(void) { return 0; }
 #endif
 
 /* bled.c */
@@ -2352,6 +2430,8 @@ extern void deauth_guest_sta(char *, char *);
 #define CLIENT_STALIST_JSON_PATH	"/tmp/stalist.json"
 extern int is_valid_group_id(const char *);
 extern char *if_nametoalias(char *name, char *alias, int alias_len);
+extern int check_re_in_macfilter(int unit, char *mac);
+extern void update_macfilter_relist();
 #endif
 
 #if defined(RTCONFIG_DETWAN) && (defined(RTCONFIG_SOC_IPQ40XX))

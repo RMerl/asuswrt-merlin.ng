@@ -63,5 +63,7 @@ typedef struct rgb_led_status_t {
 } RGB_LED_STATUS_T;
 
 extern int aura_rgb_led(int type, RGB_LED_STATUS_T *status, int group, int from_server);
+extern int __nv_to_rgb(char *aurargb_val, RGB_LED_STATUS_T *out_rgb);
 extern int nv_to_rgb(char *nv_name, RGB_LED_STATUS_T *out_rgb);
+extern int switch_rgb_mode(char *nv_name, RGB_LED_STATUS_T *out_rgb, int led_onoff);
 #endif	/* ! __AURA_SYNC_H__ */

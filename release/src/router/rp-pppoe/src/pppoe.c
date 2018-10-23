@@ -16,6 +16,12 @@
 static char const RCSID[] =
 "$Id$";
 
+/* For vsnprintf prototype */
+#define _ISOC99_SOURCE 1
+
+/* For clock_gettime & CLOCK_* prototype */
+#define _POSIX_C_SOURCE 200809L
+
 #include "pppoe.h"
 
 #ifdef HAVE_SYSLOG_H
@@ -33,6 +39,8 @@ static char const RCSID[] =
 #ifdef HAVE_SYS_TIME_H
 #include <sys/time.h>
 #endif
+
+#include <time.h>
 
 #ifdef HAVE_SYS_UIO_H
 #include <sys/uio.h>
@@ -69,6 +77,44 @@ int optFloodDiscovery    = 0;   /* Flood server with discovery requests.
 
 PPPoEConnection *Connection = NULL; /* Must be global -- used
 				       in signal handler */
+
+/***********************************************************************
+*%FUNCTION: get_time
+*%ARGUMENTS:
+* tv -- timeval
+*%RETURNS:
+* 0 if time was obtained; -1 otherwise.
+*%DESCRIPTION:
+* Get current time, monotonic if possible.
+***********************************************************************/
+int
+get_time(struct timeval *tv)
+{
+#ifdef CLOCK_MONOTONIC
+    static int monotonic = -1;
+    struct timespec ts;
+    int ret;
+
+    if (monotonic) {
+	ret = clock_gettime(CLOCK_MONOTONIC, &ts);
+	if (tv && ret == 0) {
+	    tv->tv_sec = ts.tv_sec;
+	    tv->tv_usec = ts.tv_nsec / 1000;
+	}
+
+	if (monotonic < 0)
+	    monotonic = (ret == 0);
+	if (monotonic)
+	    return ret;
+
+	syslog(LOG_WARNING,
+	    "Couldn't use monotonic clock source: %s",
+	    strerror(errno));
+    }
+#endif
+
+    return gettimeofday(tv, NULL);
+}
 
 /***********************************************************************
 *%FUNCTION: sendSessionPacket
@@ -406,6 +452,7 @@ main(int argc, char *argv[])
     FILE *pidfile;
     unsigned int discoveryType, sessionType;
     char const *options;
+    char pidbuf[5];
 
     PPPoEConnection conn;
 
@@ -522,24 +569,22 @@ main(int argc, char *argv[])
 	    conn.synchronous = 1;
 	    break;
 	case 'U':
-	    conn->useHostUniq = 1;
-	    if(conn->hostUniq.length) {
+	    if (conn.hostUniq.length) {
 		fprintf(stderr, "-U and -W are mutually exclusive\n");
 		exit(EXIT_FAILURE);
 	    }
-            char pidbuf[5];
-            snprintf(pidbuf, sizeof(pidbuf), "%04x", getpid());
-            parseHostUniq(pidbuf, &conn->hostUniq);
+	    snprintf(pidbuf, sizeof(pidbuf), "%04x", getpid());
+	    parseHostUniq(pidbuf, &conn.hostUniq);
 	    break;
 	case 'W':
-	    if(conn->hostUniq.length) {
+	    if (conn.hostUniq.length) {
 		fprintf(stderr, "-U and -W are mutually exclusive\n");
 		exit(EXIT_FAILURE);
 	    }
-	    if (!parseHostUniq(optarg, &conn->hostUniq)) {
-                fprintf(stderr, "Invalid host-uniq argument: %s\n", optarg);
-                exit(EXIT_FAILURE);
-            }
+	    if (!parseHostUniq(optarg, &conn.hostUniq)) {
+		fprintf(stderr, "Invalid host-uniq argument: %s\n", optarg);
+		exit(EXIT_FAILURE);
+	    }
 #ifdef DEBUGGING_ENABLED
 	case 'D':
 	    switchToRealID();

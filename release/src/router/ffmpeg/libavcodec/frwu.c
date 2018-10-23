@@ -22,49 +22,48 @@
 
 #include "avcodec.h"
 #include "bytestream.h"
-#include "libavutil/intreadwrite.h"
+#include "internal.h"
+#include "libavutil/opt.h"
+
+typedef struct {
+    AVClass *av_class;
+    int change_field_order;
+} FRWUContext;
 
 static av_cold int decode_init(AVCodecContext *avctx)
 {
     if (avctx->width & 1) {
-        av_log(avctx, AV_LOG_ERROR, "FRWU needs even width\n");
-        return -1;
+        av_log(avctx, AV_LOG_ERROR, "frwu needs even width\n");
+        return AVERROR(EINVAL);
     }
-    avctx->pix_fmt = PIX_FMT_UYVY422;
-
-    avctx->coded_frame = avcodec_alloc_frame();
+    avctx->pix_fmt = AV_PIX_FMT_UYVY422;
 
     return 0;
 }
 
-static int decode_frame(AVCodecContext *avctx, void *data, int *data_size,
+static int decode_frame(AVCodecContext *avctx, void *data, int *got_frame,
                         AVPacket *avpkt)
 {
-    int field;
-    AVFrame *pic = avctx->coded_frame;
+    FRWUContext *s = avctx->priv_data;
+    int field, ret;
+    AVFrame *pic = data;
     const uint8_t *buf = avpkt->data;
     const uint8_t *buf_end = buf + avpkt->size;
 
-    if (pic->data[0])
-        avctx->release_buffer(avctx, pic);
-
     if (avpkt->size < avctx->width * 2 * avctx->height + 4 + 2*8) {
         av_log(avctx, AV_LOG_ERROR, "Packet is too small.\n");
-        return -1;
+        return AVERROR_INVALIDDATA;
     }
-    if (bytestream_get_le32(&buf) != AV_RL32("FRW1")) {
+    if (bytestream_get_le32(&buf) != MKTAG('F', 'R', 'W', '1')) {
         av_log(avctx, AV_LOG_ERROR, "incorrect marker\n");
-        return -1;
+        return AVERROR_INVALIDDATA;
     }
 
-    pic->reference = 0;
-    if (avctx->get_buffer(avctx, pic) < 0)
-        return -1;
+    if ((ret = ff_get_buffer(avctx, pic, 0)) < 0)
+        return ret;
 
-    pic->pict_type = FF_I_TYPE;
+    pic->pict_type = AV_PICTURE_TYPE_I;
     pic->key_frame = 1;
-    pic->interlaced_frame = 1;
-    pic->top_field_first = 1;
 
     for (field = 0; field < 2; field++) {
         int i;
@@ -72,20 +71,25 @@ static int decode_frame(AVCodecContext *avctx, void *data, int *data_size,
         int field_size, min_field_size = avctx->width * 2 * field_h;
         uint8_t *dst = pic->data[0];
         if (buf_end - buf < 8)
-            return -1;
+            return AVERROR_INVALIDDATA;
         buf += 4; // flags? 0x80 == bottom field maybe?
         field_size = bytestream_get_le32(&buf);
         if (field_size < min_field_size) {
             av_log(avctx, AV_LOG_ERROR, "Field size %i is too small (required %i)\n", field_size, min_field_size);
-            return -1;
+            return AVERROR_INVALIDDATA;
         }
         if (buf_end - buf < field_size) {
             av_log(avctx, AV_LOG_ERROR, "Packet is too small, need %i, have %i\n", field_size, (int)(buf_end - buf));
-            return -1;
+            return AVERROR_INVALIDDATA;
         }
-        if (field)
+        if (field ^ s->change_field_order) {
             dst += pic->linesize[0];
+        } else if (s->change_field_order) {
+            dst += 2 * pic->linesize[0];
+        }
         for (i = 0; i < field_h; i++) {
+            if (s->change_field_order && field && i == field_h - 1)
+                dst = pic->data[0];
             memcpy(dst, buf, avctx->width * 2);
             buf += avctx->width * 2;
             dst += pic->linesize[0] << 1;
@@ -93,31 +97,32 @@ static int decode_frame(AVCodecContext *avctx, void *data, int *data_size,
         buf += field_size - min_field_size;
     }
 
-    *data_size = sizeof(AVFrame);
-    *(AVFrame*)data = *pic;
+    *got_frame = 1;
 
     return avpkt->size;
 }
 
-static av_cold int decode_close(AVCodecContext *avctx)
-{
-    AVFrame *pic = avctx->coded_frame;
-    if (pic->data[0])
-        avctx->release_buffer(avctx, pic);
-    av_freep(&avctx->coded_frame);
+static const AVOption frwu_options[] = {
+    {"change_field_order", "Change field order", offsetof(FRWUContext, change_field_order), AV_OPT_TYPE_BOOL,
+     {.i64 = 0}, 0, 1, AV_OPT_FLAG_DECODING_PARAM | AV_OPT_FLAG_VIDEO_PARAM},
+    {NULL}
+};
 
-    return 0;
-}
+static const AVClass frwu_class = {
+    .class_name = "frwu Decoder",
+    .item_name  = av_default_item_name,
+    .option     = frwu_options,
+    .version    = LIBAVUTIL_VERSION_INT,
+};
 
-AVCodec frwu_decoder = {
-    "FRWU",
-    AVMEDIA_TYPE_VIDEO,
-    CODEC_ID_FRWU,
-    0,
-    decode_init,
-    NULL,
-    decode_close,
-    decode_frame,
-    CODEC_CAP_DR1,
-    .long_name = NULL_IF_CONFIG_SMALL("Forward Uncompressed"),
+AVCodec ff_frwu_decoder = {
+    .name           = "frwu",
+    .long_name      = NULL_IF_CONFIG_SMALL("Forward Uncompressed"),
+    .type           = AVMEDIA_TYPE_VIDEO,
+    .id             = AV_CODEC_ID_FRWU,
+    .priv_data_size = sizeof(FRWUContext),
+    .init           = decode_init,
+    .decode         = decode_frame,
+    .capabilities   = AV_CODEC_CAP_DR1,
+    .priv_class     = &frwu_class,
 };

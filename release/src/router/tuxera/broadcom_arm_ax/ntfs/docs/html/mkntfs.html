@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8"/>
+<style>
+table.head, table.foot { width: 100%; }
+td.head-rtitle, td.foot-os { text-align: right; }
+td.head-vol { text-align: center; }
+table.foot td { width: 50%; }
+table.head td { width: 33%; }
+div.spacer { margin: 1em 0; }
+</style>
+<title>
+MKNTFS(8)</title>
+</head>
+<body>
+<div class="mandoc">
+<table class="head">
+<tbody>
+<tr>
+<td class="head-ltitle">
+MKNTFS(8)</td>
+<td class="head-vol">
+System Manager's Manual</td>
+<td class="head-rtitle">
+MKNTFS(8)</td>
+</tr>
+</tbody>
+</table>
+<div class="section">
+<h1>NAME</h1> mkntfs - create an NTFS file system on a device or file</div>
+<div class="section">
+<h1>SYNOPSIS</h1> <b>mkntfs</b> [ <i>options</i>] <i>device </i>[<i>number-of-sectors</i>]<div class="spacer">
+</div>
+<b>mkntfs</b> [ <b>-C</b> ] [ <b>-c</b> <i>cluster-size</i> ] [ <b>-F</b> ] [ <b>-H</b> <i>heads</i> ] [ <b>-h</b> ] [ <b>-I</b> ] [ <b>-L</b> <i>volume-label</i> ] [ <b>-l</b> ] [ <b>-n</b> ] [ <b>-p</b> <i>part-start-sect</i> ] [ <b>-q</b> ] [ <b>-S</b> <i>sectors-per-track</i> ] [ <b>-s</b> <i>sector-size</i> ] [ <b>-T</b> ] [ <b>-U</b> ] [ <b>-V</b> ] [ <b>-v</b> ] [ <b>-z</b> <i>mft-zone-multiplier</i> ] [ <b>--debug</b> ] <i>device</i> [ <i>number-of-sectors</i> ]</div>
+<div class="section">
+<h1>DESCRIPTION</h1> <b>mkntfs</b> is used to create an NTFS file system on a device (usually a disk partition) or file. <i>device</i> is the special file corresponding to the device (e.g <i>/dev/sdXX</i>). <i>number-of-sectors</i> is the number of blocks on the device.  If omitted, <b>mkntfs</b> automagically figures the file system size.</div>
+<div class="section">
+<h1>OPTIONS</h1> Below is a summary of all the options that <b>mkntfs</b> accepts.  Nearly all options have two equivalent names.  The short name is preceded by <b>-</b> and the long name is preceded by <b>--</b>. Any single letter options, that don't take an argument, can be combined into a single command, e.g. <b>-fv</b> is equivalent to <b>-f -v</b>. Long named options can be abbreviated to any unique prefix of their name.<div class="subsection">
+<h2>Basic options</h2><dl>
+<dt>
+<b>-L</b>, <b>--label</b> STRING</dt>
+<dd>
+Set the volume label for the filesystem.</dd>
+</dl>
+<dl>
+<dt>
+<b>-C</b>, <b>--enable-compression</b></dt>
+<dd>
+Enable compression on the volume.</dd>
+</dl>
+<dl>
+<dt>
+<b>-I</b>, <b>--no-indexing</b></dt>
+<dd>
+Disable content indexing on the volume. (This is only meaningful on Windows 2000 and later. Windows NT 4.0 and earlier ignore this as they do not implement content indexing at all.)</dd>
+</dl>
+<dl>
+<dt>
+<b>-n</b>, <b>--no-action</b></dt>
+<dd>
+Causes <b>mkntfs</b> to not actually create a filesystem, but display what it would do if it were to create a filesystem. All steps of the format are carried out except the actual writing to the device.</dd>
+</dl>
+</div>
+<div class="subsection">
+<h2>Advanced options</h2><dl>
+<dt>
+<b>-c</b>, <b>--cluster-size</b> BYTES</dt>
+<dd>
+Specify the size of clusters in bytes. Valid cluster size values are powers of two, with at least 256, and at most 65536 bytes per cluster. If omitted, <b>mkntfs</b> uses 4096 bytes as the default cluster size.<div style="height: 1.00em;">
+&#160;</div>
+Note that the default cluster size is set to be at least equal to the sector size as a cluster cannot be smaller than a sector. Also, note that values greater than 4096 have the side effect that compression is disabled on the volume (due to limitations in the NTFS compression algorithm currently in use by Windows).</dd>
+</dl>
+<dl>
+<dt>
+<b>-s</b>, <b>--sector-size</b> BYTES</dt>
+<dd>
+Specify the size of sectors in bytes. Valid sector size values are 256, 512, 1024, 2048 and 4096 bytes per sector. If omitted, <b>mkntfs</b> attempts to determine the <i>sector-size</i> automatically and if that fails a default of 512 bytes per sector is used.</dd>
+</dl>
+<dl>
+<dt>
+<b>-p</b>, <b>--partition-start</b> SECTOR</dt>
+<dd>
+Specify the partition start sector. The maximum is 4294967295 (2^32-1). If omitted, <b>mkntfs</b> attempts to determine <i>part-start-sect</i> automatically and if that fails a default of 0 is used. Note that <i>part-start-sect</i> is required for Windows to be able to boot from the created volume.</dd>
+</dl>
+<dl>
+<dt>
+<b>-H</b>, <b>--heads</b> NUM</dt>
+<dd>
+Specify the number of heads. The maximum is 65535 (0xffff). If omitted, <b>mkntfs</b> attempts to determine the number of <i>heads</i> automatically and if that fails a default of 0 is used. Note that <i>heads</i> is required for Windows to be able to boot from the created volume.</dd>
+</dl>
+<dl>
+<dt>
+<b>-S</b>, <b>--sectors-per-track</b> NUM</dt>
+<dd>
+Specify the number of sectors per track. The maximum is 65535 (0xffff). If omitted, <b>mkntfs</b> attempts to determine the number of <i>sectors-per-track</i> automatically and if that fails a default of 0 is used. Note that <i>sectors-per-track</i> is required for Windows to be able to boot from the created volume.</dd>
+</dl>
+<dl>
+<dt>
+<b>-z</b>, <b>--mft-zone-multiplier</b> NUM</dt>
+<dd>
+Set the MFT zone multiplier, which determines the size of the MFT zone to use on the volume. The MFT zone is the area at the beginning of the volume reserved for the master file table (MFT), which stores the on disk inodes (MFT records). It is noteworthy that small files are stored entirely within the inode; thus, if you expect to use the volume for storing large numbers of very small files, it is useful to set the zone multiplier to a higher value. Note, that the MFT zone is resized on the fly as required during operation of the NTFS driver but choosing a good value will reduce fragmentation. Valid values are 1, 2, 3 and 4. The values have the following meaning:<table class="tbl">
+<col style="width: 10.00ex;"/>
+<col style="width: 18.00ex;"/>
+<tbody>
+<tr>
+<td>
+MFT zone</td>
+<td>
+MFT zone size</td>
+</tr>
+<tr>
+<td>
+multiplier</td>
+<td>
+(% of volume size)</td>
+</tr>
+<tr>
+<td>
+1</td>
+<td>
+12.5% (default)</td>
+</tr>
+<tr>
+<td>
+2</td>
+<td>
+25.0%</td>
+</tr>
+<tr>
+<td>
+3</td>
+<td>
+37.5%</td>
+</tr>
+<tr>
+<td>
+4</td>
+<td>
+50.0%</td>
+</tr>
+</tbody>
+</table>
+<div style="height: 1.00em;">
+&#160;</div>
+</dd>
+</dl>
+<dl>
+<dt>
+<b>-T</b>, <b>--zero-time</b></dt>
+<dd>
+Fake the time to be 00:00:00 UTC, Jan 1, 1970 instead of the current system time.  This is only really useful for debugging purposes.</dd>
+</dl>
+<dl>
+<dt>
+<b>-U</b>, <b>--with-uuid</b></dt>
+<dd>
+Generate a random volume UUID.</dd>
+</dl>
+<dl>
+<dt>
+<b>-l</b>, <b>--large-file-records</b></dt>
+<dd>
+Format with large file records.</dd>
+</dl>
+<dl>
+<dt>
+<b>-N</b>, <b>--enable-short-filenames</b></dt>
+<dd>
+Enable short filenames. By default they are disabled.</dd>
+</dl>
+<dl>
+<dt>
+<b>-b</b>, <b>--show-progress</b></dt>
+<dd>
+Show approximate progress (Only available for platforms using linux kernel &gt; 2.6.22 and glibc).</dd>
+</dl>
+<dl>
+<dt>
+<b>-F</b>, <b>--force</b></dt>
+<dd>
+Force <b>mkntfs</b> to run, even if the specified <i>device</i> is not a block special device, or is entire device, or appears to be mounted.</dd>
+</dl>
+</div>
+<div class="subsection">
+<h2>Output options</h2><dl>
+<dt>
+<b>-q</b>, <b>--quiet</b></dt>
+<dd>
+Quiet execution; only errors are written to stderr, no output to stdout occurs at all. Useful if <b>mkntfs</b> is run in a script.</dd>
+</dl>
+<dl>
+<dt>
+<b>-v</b>, <b>--verbose</b></dt>
+<dd>
+Verbose execution.</dd>
+</dl>
+<dl>
+<dt>
+<b>--debug</b></dt>
+<dd>
+Really verbose execution; includes the verbose output from the <b>-v</b> option as well as additional output useful for debugging <b>mkntfs.</b></dd>
+</dl>
+</div>
+<div class="subsection">
+<h2>Help options</h2><dl>
+<dt>
+<b>-V</b>, <b>--version</b></dt>
+<dd>
+Print the version number of <b>mkntfs</b> and exit.</dd>
+</dl>
+<dl>
+<dt>
+<b>-h</b>, <b>--help</b></dt>
+<dd>
+Show a list of options with a brief description of each one.</dd>
+</dl>
+</div>
+</div>
+<div class="section">
+<h1>BUGS</h1> If you find a bug please send an email describing the problem to ntfs-support@tuxera.com.</div>
+<div class="section">
+<h1>AUTHORS</h1> <b>mkntfs</b> was written by Anton Altaparmakov, Richard Russon, Szabolcs Szakacsits, Jean-Pierre Andre, Tuxera Inc. It was ported to ntfs-3g by Erik Larsson and Jean-Pierre Andre.</div>
+<div class="section">
+<h1>AVAILABILITY</h1> <b>mkntfs</b> is part of the <b>Tuxera NTFS</b> package.</div>
+<table class="foot">
+<tr>
+<td class="foot-date">
+Sept 2011</td>
+<td class="foot-os">
+Tuxera NTFS Utilities 3017.7.18.4</td>
+</tr>
+</table>
+</div>
+</body>
+</html>
+

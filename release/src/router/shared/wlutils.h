@@ -202,5 +202,8 @@ extern int wl_iovar_xtlv_setbuf(char *ifname, char *iovar, uint8 *param, uint16 
                uint16 version, uint16 cmd_id, uint16 xtlv_id, bcm_xtlv_opts_t opts,
                uint8 *buf, uint16 buflen);
 
+#ifdef __CONFIG_DHDAP__
+extern int dhd_probe(char *name);
+#endif
 #endif /* CONFIG_BCMWL5 */
 #endif /* _wlutils_h_ */

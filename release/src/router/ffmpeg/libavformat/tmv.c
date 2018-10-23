@@ -20,14 +20,16 @@
  */
 
 /**
- * 8088flex TMV file demuxer
  * @file
+ * 8088flex TMV file demuxer
  * @author Daniel Verkamp
- * @sa http://www.oldskool.org/pc/8088_Corruption
+ * @see http://www.oldskool.org/pc/8088_Corruption
  */
 
+#include "libavutil/channel_layout.h"
 #include "libavutil/intreadwrite.h"
 #include "avformat.h"
+#include "internal.h"
 
 enum {
     TMV_PADDING = 0x01,
@@ -62,79 +64,85 @@ static int tmv_probe(AVProbeData *p)
     return 0;
 }
 
-static int tmv_read_header(AVFormatContext *s, AVFormatParameters *ap)
+static int tmv_read_header(AVFormatContext *s)
 {
     TMVContext *tmv   = s->priv_data;
-    ByteIOContext *pb = s->pb;
+    AVIOContext *pb = s->pb;
     AVStream *vst, *ast;
     AVRational fps;
     unsigned comp_method, char_cols, char_rows, features;
 
-    if (get_le32(pb) != TMV_TAG)
+    if (avio_rl32(pb) != TMV_TAG)
         return -1;
 
-    if (!(vst = av_new_stream(s, 0)))
+    if (!(vst = avformat_new_stream(s, NULL)))
         return AVERROR(ENOMEM);
 
-    if (!(ast = av_new_stream(s, 0)))
+    if (!(ast = avformat_new_stream(s, NULL)))
         return AVERROR(ENOMEM);
 
-    ast->codec->sample_rate = get_le16(pb);
-    if (!ast->codec->sample_rate) {
+    ast->codecpar->sample_rate = avio_rl16(pb);
+    if (!ast->codecpar->sample_rate) {
         av_log(s, AV_LOG_ERROR, "invalid sample rate\n");
         return -1;
     }
 
-    tmv->audio_chunk_size   = get_le16(pb);
+    tmv->audio_chunk_size   = avio_rl16(pb);
     if (!tmv->audio_chunk_size) {
         av_log(s, AV_LOG_ERROR, "invalid audio chunk size\n");
         return -1;
     }
 
-    comp_method             = get_byte(pb);
+    comp_method             = avio_r8(pb);
     if (comp_method) {
         av_log(s, AV_LOG_ERROR, "unsupported compression method %d\n",
                comp_method);
         return -1;
     }
 
-    char_cols = get_byte(pb);
-    char_rows = get_byte(pb);
+    char_cols = avio_r8(pb);
+    char_rows = avio_r8(pb);
     tmv->video_chunk_size = char_cols * char_rows * 2;
 
-    features  = get_byte(pb);
+    features  = avio_r8(pb);
     if (features & ~(TMV_PADDING | TMV_STEREO)) {
         av_log(s, AV_LOG_ERROR, "unsupported features 0x%02x\n",
                features & ~(TMV_PADDING | TMV_STEREO));
         return -1;
     }
 
-    ast->codec->codec_type            = AVMEDIA_TYPE_AUDIO;
-    ast->codec->codec_id              = CODEC_ID_PCM_U8;
-    ast->codec->channels              = features & TMV_STEREO ? 2 : 1;
-    ast->codec->bits_per_coded_sample = 8;
-    ast->codec->bit_rate              = ast->codec->sample_rate *
-                                        ast->codec->bits_per_coded_sample;
-    av_set_pts_info(ast, 32, 1, ast->codec->sample_rate);
+    ast->codecpar->codec_type            = AVMEDIA_TYPE_AUDIO;
+    ast->codecpar->codec_id              = AV_CODEC_ID_PCM_U8;
+    if (features & TMV_STEREO) {
+        ast->codecpar->channels       = 2;
+        ast->codecpar->channel_layout = AV_CH_LAYOUT_STEREO;
+    } else {
+        ast->codecpar->channels       = 1;
+        ast->codecpar->channel_layout = AV_CH_LAYOUT_MONO;
+    }
+    ast->codecpar->bits_per_coded_sample = 8;
+    ast->codecpar->bit_rate              = ast->codecpar->sample_rate *
+                                           ast->codecpar->bits_per_coded_sample;
+    avpriv_set_pts_info(ast, 32, 1, ast->codecpar->sample_rate);
 
-    fps.num = ast->codec->sample_rate * ast->codec->channels;
+    fps.num = ast->codecpar->sample_rate * ast->codecpar->channels;
     fps.den = tmv->audio_chunk_size;
     av_reduce(&fps.num, &fps.den, fps.num, fps.den, 0xFFFFFFFFLL);
 
-    vst->codec->codec_type = AVMEDIA_TYPE_VIDEO;
-    vst->codec->codec_id   = CODEC_ID_TMV;
-    vst->codec->pix_fmt    = PIX_FMT_PAL8;
-    vst->codec->width      = char_cols * 8;
-    vst->codec->height     = char_rows * 8;
-    av_set_pts_info(vst, 32, fps.den, fps.num);
+    vst->codecpar->codec_type = AVMEDIA_TYPE_VIDEO;
+    vst->codecpar->codec_id   = AV_CODEC_ID_TMV;
+    vst->codecpar->format     = AV_PIX_FMT_PAL8;
+    vst->codecpar->width      = char_cols * 8;
+    vst->codecpar->height     = char_rows * 8;
+    avpriv_set_pts_info(vst, 32, fps.den, fps.num);
 
     if (features & TMV_PADDING)
         tmv->padding =
             ((tmv->video_chunk_size + tmv->audio_chunk_size + 511) & ~511) -
              (tmv->video_chunk_size + tmv->audio_chunk_size);
 
-    vst->codec->bit_rate = ((tmv->video_chunk_size + tmv->padding) *
-                            fps.num * 8) / fps.den;
+    vst->codecpar->bit_rate = ((tmv->video_chunk_size + tmv->padding) *
+                               fps.num * 8) / fps.den;
 
     return 0;
 }
@@ -142,17 +150,17 @@ static int tmv_read_header(AVFormatContext *s, AVFormatParameters *ap)
 static int tmv_read_packet(AVFormatContext *s, AVPacket *pkt)
 {
     TMVContext *tmv   = s->priv_data;
-    ByteIOContext *pb = s->pb;
+    AVIOContext *pb = s->pb;
     int ret, pkt_size = tmv->stream_index ?
                         tmv->audio_chunk_size : tmv->video_chunk_size;
 
-    if (url_feof(pb))
+    if (avio_feof(pb))
         return AVERROR_EOF;
 
     ret = av_get_packet(pb, pkt, pkt_size);
 
     if (tmv->stream_index)
-        url_fskip(pb, tmv->padding);
+        avio_skip(pb, tmv->padding);
 
     pkt->stream_index  = tmv->stream_index;
     tmv->stream_index ^= 1;
@@ -173,19 +181,19 @@ static int tmv_read_seek(AVFormatContext *s, int stream_index,
     pos = timestamp *
           (tmv->audio_chunk_size + tmv->video_chunk_size + tmv->padding);
 
-    url_fseek(s->pb, pos + TMV_HEADER_SIZE, SEEK_SET);
+    if (avio_seek(s->pb, pos + TMV_HEADER_SIZE, SEEK_SET) < 0)
+        return -1;
     tmv->stream_index = 0;
     return 0;
 }
 
-AVInputFormat tmv_demuxer = {
-    "tmv",
-    NULL_IF_CONFIG_SMALL("8088flex TMV"),
-    sizeof(TMVContext),
-    tmv_probe,
-    tmv_read_header,
-    tmv_read_packet,
-    NULL,
-    tmv_read_seek,
-    .flags = AVFMT_GENERIC_INDEX,
+AVInputFormat ff_tmv_demuxer = {
+    .name           = "tmv",
+    .long_name      = NULL_IF_CONFIG_SMALL("8088flex TMV"),
+    .priv_data_size = sizeof(TMVContext),
+    .read_probe     = tmv_probe,
+    .read_header    = tmv_read_header,
+    .read_packet    = tmv_read_packet,
+    .read_seek      = tmv_read_seek,
+    .flags          = AVFMT_GENERIC_INDEX,
 };

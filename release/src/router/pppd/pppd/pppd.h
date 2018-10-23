@@ -278,7 +278,6 @@ extern struct notifier *fork_notifier;	/* we are a new child process */
  * Variables set by command-line options.
  */
 
-extern bool	nochecktime;	/* Don't check time */
 extern int	debug;		/* Debug flag */
 extern int	kdebugflag;	/* Tell kernel to print debug messages */
 extern int	default_device;	/* Using /dev/tty or equivalent */
@@ -700,6 +699,8 @@ int  cipxfaddr __P((int));
 #endif
 int  get_if_hwaddr __P((u_char *addr, char *name));
 char *get_first_ethernet __P((void));
+int get_time __P((struct timeval *));
+				/* Get current time, monotonic if possible. */
 
 /* Procedures exported from options.c */
 int setipaddr __P((char *, char **, int)); /* Set local/remote ip addresses */

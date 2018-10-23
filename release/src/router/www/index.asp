@@ -231,6 +231,9 @@ window.onresize = function() {
 	if(document.getElementById("edit_usericon_block").style.display == "block") {
 		cal_panel_block("edit_usericon_block", 0.15);
 	}
+	if(document.getElementById("notice_div").style.display == "block") {
+		cal_panel_block("notice_div");
+	}
 } 
 
 var orig_NM_container_height;
@@ -1751,7 +1754,7 @@ function popupEditBlock(clientObj){
 		if(usericon_support && !downsize_4m_support) {
 			//2.check browswer support File Reader and Canvas or not.
 			if(isSupportFileReader() && isSupportCanvas()) {
-				document.getElementById("divUserIcon").style.display = "";
+				document.getElementById("trUserIcon").style.display = "";
 				//Setting drop event
 				var holder = document.getElementById("divDropClientImage");
 				holder.ondragover = function () { return false; };
@@ -2167,6 +2170,41 @@ function AiMesh_promoteHint() {
 			$('.AiMesh_promoteHint_bg').remove();
 	}
 }
+
+function cal_panel_block(obj){
+	var blockmarginLeft;
+	if (window.innerWidth)
+		winWidth = window.innerWidth;
+	else if ((document.body) && (document.body.clientWidth))
+		winWidth = document.body.clientWidth;
+
+	if (document.documentElement  && document.documentElement.clientHeight && document.documentElement.clientWidth){
+		winWidth = document.documentElement.clientWidth;
+	}
+
+	if(winWidth >1050){
+		winPadding = (winWidth-1050)/2;
+		winWidth = 1105;
+		blockmarginLeft= (winWidth*0.2)+winPadding;
+	}
+	else if(winWidth <=1050){
+		blockmarginLeft= (winWidth)*0.2 + document.body.scrollLeft;
+	}
+
+	document.getElementById(obj).style.marginLeft = blockmarginLeft+"px";
+}
+function hide_notice(){
+	$("#notice_div").hide();
+	var iframe = document.getElementById("statusframe");
+	iframe.contentWindow.document.form.wl0_he_features.value = "0";
+	iframe.contentWindow.document.form.wl1_he_features.value = "0";
+	iframe.contentWindow.document.form.wl2_he_features.value = "0";
+}
+function notice_apply(){
+	var iframe = document.getElementById("statusframe");
+	iframe.contentWindow.document.form.next_page.value = "index.asp";
+	iframe.contentWindow.document.form.submit();
+}
 </script>
 </head>
 
@@ -2272,7 +2310,26 @@ function AiMesh_promoteHint() {
 	<input type="hidden" name="next_page" value="">
 	<input type="hidden" name="networkmap_enable" value="<% nvram_get("networkmap_enable"); %>">
 </form>
+<div id="notice_div" style="width:650px;position:absolute;background: rgb(43, 55, 59);z-index:10;margin-left:300px;border-radius:10px;padding: 20px;display:none">
+	<div style="margin: 5px 0 10px 0;font-size: 20px;">[Important]</div>
+	<div style="margin: 20px 0;font-size: 16px;">
+		802.11AX is the latest WiFi technology on the market, however there are still lots of laptops or desktops WLAN card do not support this latest technology properly, before disabling 802.11Ax compatibility mode, please make sure you have updated all your laptops or desktops WLAN card driver manually(* since most of latest WLAN drivers are not updated over the air) from intel website.
+	</div>
+	<div style="font-size: 16px;margin: 30px 0 10px 0;">
+		<div style="padding: 3px 0">Intel WLAN driver download:</div>
+		<a href="https://downloadcenter.intel.com/product/59485/Wireless-Networking" style="text-decoration: underline;">https://downloadcenter.intel.com/product/59485/Wireless-Networking</a>
+		<div style="padding: 3px 0">Intel 7260 Driver: 18.33.13.4 or later version will work properly.</div>
+	</div>
+	<div style="font-size: 16px;margin: 10px 0 10px 0;">
+		<div style="padding: 3px 0">How to update WLAN card driver manually: (FAQ: 候補)</div>
+		<a href="https://downloadcenter.intel.com/product/59485/Wireless-Networking" style="text-decoration: underline;">https://downloadcenter.intel.com/product/59485/Wireless-Networking</a>
+	</div>
 
+	<div style="display:flex;justify-content: center;margin-top:50px;">
+		<div style="background: #121C1E;font-size: 16px;padding: 10px 20px;margin: 0 5px;border-radius: 8px;min-width: 80px;text-align: center;cursor:pointer" onclick="hide_notice()"><#CTL_Cancel#></div>
+		<div style="background: #121C1E;font-size: 16px;padding: 10px 20px;margin: 0 5px;border-radius: 8px;min-width: 80px;text-align: center;cursor:pointer" onclick="notice_apply();"><#CTL_apply#></div>
+	</div>
+</div>
 <div id="edit_usericon_block" class="contentM_usericon">
 	<table width="95%" border="1" align="center" cellpadding="4" cellspacing="0" class="FormTable_table" style="margin-top:8px;">
 		<thead>
@@ -2450,7 +2507,12 @@ function AiMesh_promoteHint() {
 								<div class="type32" onclick="select_image(this.className);" title="Mac OS"></div><!--untranslated-->
 							</td>
 							<td>
-								<div id="divUserIcon" class="client_upload_div" style="display:none;">+
+								<div class="type35" onclick="select_image(this.className);" title="Windows laptop"></div><!--untranslated-->
+							</td>
+						</tr>
+						<tr id="trUserIcon" style="display:none;">
+							<td>
+								<div class="client_upload_div">+
 									<input type="file" name="uploadIcon" id="uploadIcon" class="client_upload_file" onchange="previewImage(this);" title="Upload client icon" /><!--untranslated-->
 								</div>
 							</td>

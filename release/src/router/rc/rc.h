@@ -266,6 +266,8 @@ extern int setCentralLedLv(int lv);
 extern int ate_get_fw_upgrade_state(void);
 extern void set_IpAddr_Lan(const char *);
 extern void get_IpAddr_Lan();
+extern void set_MRFLAG(const char *);
+extern void get_MRFLAG();
 
 /* tcode_rc.c */
 #ifdef RTCONFIG_TCODE
@@ -371,8 +373,19 @@ extern int setWlOffLed(void);
 extern int setWlOffLed(void);
 #error
 #endif
+extern int toggle_dfs_in_acs(int onoff);
 #ifndef CONFIG_BCMWL5
 extern int IS_ATE_FACTORY_MODE(void);
+#endif
+#ifdef CONFIG_BCMWL5
+extern int set_HwId(const char *HwId);
+extern int get_HwId(void);
+extern int set_HwVersion(const char *HwVer);
+extern int get_HwVersion(void);
+extern int set_HwBom(const char *HwBom);
+extern int get_HwBom(void);
+extern int set_DateCode(const char *DateCode);
+extern int get_DateCode(void);
 #endif
 
 /* board API under sysdeps/ralink/ralink.c */
@@ -638,7 +651,6 @@ extern int unset_amas_bdl(void);
 extern int get_amas_bdl(void);
 #if defined(RTCONFIG_BCMWL6) || defined(RTCONFIG_LANTIQ)
 extern int no_need_obd(void);
-extern int no_need_obdeth(void);
 #endif
 #if defined(RTCONFIG_ETHOBD)
 extern int no_need_obdeth(void);
@@ -648,6 +660,12 @@ extern int wait_wifi_ready(void);
 extern int ATE_BRCM_FACTORY_MODE(void);
 #ifdef RTCONFIG_DPSTA
 void set_dpsta_ifnames();
+#endif
+#ifdef RTAC86U
+extern void hnd_cfe_check();
+#endif
+#ifdef RTCONFIG_HND_ROUTER_AX
+extern void dump_WlGetDriverStats();
 #endif
 #endif
 
@@ -1064,6 +1082,9 @@ extern void erase_nvram(void);
 extern int init_toggle(void);
 extern void btn_check(void);
 extern int watchdog_main(int argc, char *argv[]);
+#ifdef RTCONFIG_CONNTRACK
+extern int pctime_main(int argc, char *argv[]);
+#endif
 extern int xtop_main(int argc, char *argv[]);
 extern int watchdog02_main(int argc, char *argv[]);
 #ifdef SW_DEVLED
@@ -1072,7 +1093,7 @@ extern int sw_devled_main(int argc, char *argv[]);
 extern int wdg_monitor_main(int argc, char *argv[]);
 extern void init_wllc(void);
 extern void rssi_check_unit(int unit);
-#if defined(RTCONFIG_LED_BTN) || defined(RTCONFIG_WPS_ALLLED_BTN)
+#if defined(RTCONFIG_LED_BTN) || defined(RTCONFIG_WPS_ALLLED_BTN) || defined(RTCONFIG_TURBO_BTN)
 extern void led_table_ctrl(int on_off);
 #endif
 extern void timecheck(void);
@@ -1340,7 +1361,9 @@ extern int update_wan_leds(int wan_unit);
 static inline int update_wan_leds(int wan_unit) { update_failover_led(); return 0; }
 #endif
 extern int wanduck_main(int argc, char *argv[]);
+#ifdef RTCONFIG_CONNDIAG
 extern int conn_diag_main(int argc, char *argv[]);
+#endif
 
 // tcpcheck.c
 extern int setupsocket(int sock);
@@ -1459,6 +1482,7 @@ extern void set_acs_ifnames();
 extern int stop_psta_monitor();
 extern int start_psta_monitor();
 #endif
+extern int wl_igs_enabled(void);
 #ifdef RTCONFIG_AMAS
 extern void stop_obd(void);
 extern void start_obd(void);
@@ -1720,6 +1744,9 @@ void set_pre_sysdep_config(int iftype);
 void set_post_sysdep_config(int iftype);
 int get_radar_status(int bssidx);
 int Pty_procedure_check(int unit, int wlif_count);
+#if defined(RTCONFIG_DWB)
+void apply_config_to_driver();
+#endif
 #endif
 #endif	/* RTCONFIG_WIRELESSREPEATER */
 
@@ -1773,6 +1800,10 @@ extern int string_remove(char *string, const char *match);
 extern void stop_cfgsync(void);
 extern int start_cfgsync(void);
 extern void send_event_to_cfgmnt(int event_id);
+#ifdef RTCONFIG_CONNDIAG
+extern void stop_conn_diag(void);
+extern void start_conn_diag(void);
+#endif
 #if defined(MAPAC1300) || defined(MAPAC2200) || defined(VZWAC1300) /* for Lyra */
 extern int setDisableWifiDrv(const char *);
 extern int getDisableWifiDrv(void);
@@ -1845,8 +1876,8 @@ extern int set_cc(char *cmd);
 extern int set_vp(char *cmd);
 extern int get_vp(char *cmd);
 extern int data_collect_main(char *cmd, char *path);
-extern int device_main(char *MAC);
-extern int device_info_main(char *MAC);
+extern int device_main();
+extern int device_info_main(char *MAC, char *ipaddr);
 extern int wrs_url_main();
 extern int rewrite_main(char *path1, char *path2, char *path3);
 extern int extract_data_main(char *path);
@@ -2169,6 +2200,13 @@ extern void asm1042_upgrade(int);
 extern void oauth_google_gen_token_email(void);
 extern void oauth_google_update_token(void);
 extern int oauth_google_send_message(const char* receiver, const char* subject, const char* message, const char* attached_files[], int attached_files_count);
+#endif
+
+// rmd.c
+#if defined(RTCONFIG_AMAS) && defined(RTCONFIG_CFGSYNC)
+#if defined(RTCONFIG_HND_ROUTER_AX)
+extern int rmd_main(int argc, char *argv[]);
+#endif
 #endif
 
 #endif	/* __RC_H__ */

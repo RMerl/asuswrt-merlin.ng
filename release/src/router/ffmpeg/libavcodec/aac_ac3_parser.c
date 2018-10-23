@@ -20,6 +20,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
+#include "libavutil/channel_layout.h"
+#include "libavutil/common.h"
 #include "parser.h"
 #include "aac_ac3_parser.h"
 
@@ -32,6 +34,7 @@ int ff_aac_ac3_parse(AVCodecParserContext *s1,
     ParseContext *pc = &s->pc;
     int len, i;
     int new_frame_start;
+    int got_frame = 0;
 
 get_next:
     i=END_NOT_FOUND;
@@ -49,12 +52,16 @@ get_next:
             if(len<=0){
                 i=END_NOT_FOUND;
             }else{
+                got_frame = 1;
                 s->state=0;
                 i-= s->header_size -1;
                 s->remaining_size = len;
                 if(!new_frame_start || pc->index+i<=0){
                     s->remaining_size += i;
                     goto get_next;
+                }
+                else if (i < 0) {
+                    s->remaining_size += i;
                 }
             }
         }
@@ -74,29 +81,25 @@ get_next:
     if(s->codec_id)
         avctx->codec_id = s->codec_id;
 
-    /* Due to backwards compatible HE-AAC the sample rate, channel count,
-       and total number of samples found in an AAC ADTS header are not
-       reliable. Bit rate is still accurate because the total frame duration in
-       seconds is still correct (as is the number of bits in the frame). */
-    if (avctx->codec_id != CODEC_ID_AAC) {
-        avctx->sample_rate = s->sample_rate;
-
-        /* allow downmixing to stereo (or mono for AC-3) */
-        if(avctx->request_channels > 0 &&
-                avctx->request_channels < s->channels &&
-                (avctx->request_channels <= 2 ||
-                (avctx->request_channels == 1 &&
-                (avctx->codec_id == CODEC_ID_AC3 ||
-                 avctx->codec_id == CODEC_ID_EAC3)))) {
-            avctx->channels = avctx->request_channels;
-        } else {
-            avctx->channels = s->channels;
-            avctx->channel_layout = s->channel_layout;
+    if (got_frame) {
+        /* Due to backwards compatible HE-AAC the sample rate, channel count,
+           and total number of samples found in an AAC ADTS header are not
+           reliable. Bit rate is still accurate because the total frame
+           duration in seconds is still correct (as is the number of bits in
+           the frame). */
+        if (avctx->codec_id != AV_CODEC_ID_AAC) {
+            avctx->sample_rate = s->sample_rate;
+            if (avctx->codec_id != AV_CODEC_ID_EAC3) {
+                avctx->channels = s->channels;
+                avctx->channel_layout = s->channel_layout;
+            }
+            s1->duration = s->samples;
+            avctx->audio_service_type = s->service_type;
         }
-        avctx->frame_size = s->samples;
-    }
 
-    avctx->bit_rate = s->bit_rate;
+        if (avctx->codec_id != AV_CODEC_ID_EAC3)
+            avctx->bit_rate = s->bit_rate;
+    }
 
     return i;
 }

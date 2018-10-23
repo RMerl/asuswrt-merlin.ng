@@ -23,7 +23,11 @@
  */
 
 #include <stdio.h>
-#include "dsputil.h"
+
+#include "idctdsp.h"
+#include "mathops.h"
+#include "cavsdsp.h"
+#include "libavutil/common.h"
 
 /*****************************************************************************
  *
@@ -38,7 +42,8 @@
 #define Q1 p0_p[ 1*stride]
 #define Q2 p0_p[ 2*stride]
 
-static inline void loop_filter_l2(uint8_t *p0_p,int stride,int alpha, int beta) {
+static inline void loop_filter_l2(uint8_t *p0_p, ptrdiff_t stride, int alpha, int beta)
+{
     int p0 = P0;
     int q0 = Q0;
 
@@ -58,7 +63,8 @@ static inline void loop_filter_l2(uint8_t *p0_p,int stride,int alpha, int beta) 
     }
 }
 
-static inline void loop_filter_l1(uint8_t *p0_p, int stride, int alpha, int beta, int tc) {
+static inline void loop_filter_l1(uint8_t *p0_p, ptrdiff_t stride, int alpha, int beta, int tc)
+{
     int p0 = P0;
     int q0 = Q0;
 
@@ -77,7 +83,8 @@ static inline void loop_filter_l1(uint8_t *p0_p, int stride, int alpha, int beta
     }
 }
 
-static inline void loop_filter_c2(uint8_t *p0_p,int stride,int alpha, int beta) {
+static inline void loop_filter_c2(uint8_t *p0_p, ptrdiff_t stride, int alpha, int beta)
+{
     int p0 = P0;
     int q0 = Q0;
 
@@ -95,8 +102,9 @@ static inline void loop_filter_c2(uint8_t *p0_p,int stride,int alpha, int beta) 
     }
 }
 
-static inline void loop_filter_c1(uint8_t *p0_p,int stride,int alpha, int beta,
-                                  int tc) {
+static inline void loop_filter_c1(uint8_t *p0_p, ptrdiff_t stride, int alpha, int beta,
+                                  int tc)
+{
     if(abs(P0-Q0)<alpha && abs(P1-P0)<beta && abs(Q1-Q0)<beta) {
         int delta = av_clip(((Q0-P0)*3+P1-Q1+4)>>3, -tc, tc);
         P0 = av_clip_uint8(P0+delta);
@@ -111,8 +119,9 @@ static inline void loop_filter_c1(uint8_t *p0_p,int stride,int alpha, int beta,
 #undef Q1
 #undef Q2
 
-static void cavs_filter_lv_c(uint8_t *d, int stride, int alpha, int beta, int tc,
-                           int bs1, int bs2) {
+static void cavs_filter_lv_c(uint8_t *d, ptrdiff_t stride, int alpha, int beta, int tc,
+                             int bs1, int bs2)
+{
     int i;
     if(bs1==2)
         for(i=0;i<16;i++)
@@ -127,8 +136,9 @@ static void cavs_filter_lv_c(uint8_t *d, int stride, int alpha, int beta, int tc
     }
 }
 
-static void cavs_filter_lh_c(uint8_t *d, int stride, int alpha, int beta, int tc,
-                           int bs1, int bs2) {
+static void cavs_filter_lh_c(uint8_t *d, ptrdiff_t stride, int alpha, int beta, int tc,
+                             int bs1, int bs2)
+{
     int i;
     if(bs1==2)
         for(i=0;i<16;i++)
@@ -143,8 +153,9 @@ static void cavs_filter_lh_c(uint8_t *d, int stride, int alpha, int beta, int tc
     }
 }
 
-static void cavs_filter_cv_c(uint8_t *d, int stride, int alpha, int beta, int tc,
-                           int bs1, int bs2) {
+static void cavs_filter_cv_c(uint8_t *d, ptrdiff_t stride, int alpha, int beta, int tc,
+                             int bs1, int bs2)
+{
     int i;
     if(bs1==2)
         for(i=0;i<8;i++)
@@ -159,8 +170,9 @@ static void cavs_filter_cv_c(uint8_t *d, int stride, int alpha, int beta, int tc
     }
 }
 
-static void cavs_filter_ch_c(uint8_t *d, int stride, int alpha, int beta, int tc,
-                           int bs1, int bs2) {
+static void cavs_filter_ch_c(uint8_t *d, ptrdiff_t stride, int alpha, int beta, int tc,
+                             int bs1, int bs2)
+{
     int i;
     if(bs1==2)
         for(i=0;i<8;i++)
@@ -181,10 +193,10 @@ static void cavs_filter_ch_c(uint8_t *d, int stride, int alpha, int beta, int tc
  *
  ****************************************************************************/
 
-static void cavs_idct8_add_c(uint8_t *dst, DCTELEM *block, int stride) {
+static void cavs_idct8_add_c(uint8_t *dst, int16_t *block, ptrdiff_t stride)
+{
     int i;
-    DCTELEM (*src)[8] = (DCTELEM(*)[8])block;
-    uint8_t *cm = ff_cropTbl + MAX_NEG_CROP;
+    int16_t (*src)[8] = (int16_t(*)[8])block;
 
     src[0][0] += 8;
 
@@ -239,14 +251,14 @@ static void cavs_idct8_add_c(uint8_t *dst, DCTELEM *block, int stride) {
         const int b2 = a5 - a7;
         const int b3 = a4 - a6;
 
-        dst[i + 0*stride] = cm[ dst[i + 0*stride] + ((b0 + b4) >> 7)];
-        dst[i + 1*stride] = cm[ dst[i + 1*stride] + ((b1 + b5) >> 7)];
-        dst[i + 2*stride] = cm[ dst[i + 2*stride] + ((b2 + b6) >> 7)];
-        dst[i + 3*stride] = cm[ dst[i + 3*stride] + ((b3 + b7) >> 7)];
-        dst[i + 4*stride] = cm[ dst[i + 4*stride] + ((b3 - b7) >> 7)];
-        dst[i + 5*stride] = cm[ dst[i + 5*stride] + ((b2 - b6) >> 7)];
-        dst[i + 6*stride] = cm[ dst[i + 6*stride] + ((b1 - b5) >> 7)];
-        dst[i + 7*stride] = cm[ dst[i + 7*stride] + ((b0 - b4) >> 7)];
+        dst[i + 0*stride] = av_clip_uint8( dst[i + 0*stride] + ((b0 + b4) >> 7));
+        dst[i + 1*stride] = av_clip_uint8( dst[i + 1*stride] + ((b1 + b5) >> 7));
+        dst[i + 2*stride] = av_clip_uint8( dst[i + 2*stride] + ((b2 + b6) >> 7));
+        dst[i + 3*stride] = av_clip_uint8( dst[i + 3*stride] + ((b3 + b7) >> 7));
+        dst[i + 4*stride] = av_clip_uint8( dst[i + 4*stride] + ((b3 - b7) >> 7));
+        dst[i + 5*stride] = av_clip_uint8( dst[i + 5*stride] + ((b2 - b6) >> 7));
+        dst[i + 6*stride] = av_clip_uint8( dst[i + 6*stride] + ((b1 - b5) >> 7));
+        dst[i + 7*stride] = av_clip_uint8( dst[i + 7*stride] + ((b0 - b4) >> 7));
     }
 }
 
@@ -257,9 +269,10 @@ static void cavs_idct8_add_c(uint8_t *dst, DCTELEM *block, int stride) {
  ****************************************************************************/
 
 #define CAVS_SUBPIX(OPNAME, OP, NAME, A, B, C, D, E, F) \
-static void OPNAME ## cavs_filt8_h_ ## NAME(uint8_t *dst, uint8_t *src, int dstStride, int srcStride){\
+static void OPNAME ## cavs_filt8_h_ ## NAME(uint8_t *dst, const uint8_t *src, ptrdiff_t dstStride, ptrdiff_t srcStride)\
+{                                                                       \
     const int h=8;\
-    uint8_t *cm = ff_cropTbl + MAX_NEG_CROP;\
+    const uint8_t *cm = ff_crop_tab + MAX_NEG_CROP;\
     int i;\
     for(i=0; i<h; i++)\
     {\
@@ -276,9 +289,10 @@ static void OPNAME ## cavs_filt8_h_ ## NAME(uint8_t *dst, uint8_t *src, int dstS
     }\
 }\
 \
-static void OPNAME ## cavs_filt8_v_  ## NAME(uint8_t *dst, uint8_t *src, int dstStride, int srcStride){\
+static void OPNAME ## cavs_filt8_v_  ## NAME(uint8_t *dst, const uint8_t *src, ptrdiff_t dstStride, ptrdiff_t srcStride)\
+{                                                                       \
     const int w=8;\
-    uint8_t *cm = ff_cropTbl + MAX_NEG_CROP;\
+    const uint8_t *cm = ff_crop_tab + MAX_NEG_CROP;\
     int i;\
     for(i=0; i<w; i++)\
     {\
@@ -308,7 +322,8 @@ static void OPNAME ## cavs_filt8_v_  ## NAME(uint8_t *dst, uint8_t *src, int dst
     }\
 }\
 \
-static void OPNAME ## cavs_filt16_v_ ## NAME(uint8_t *dst, uint8_t *src, int dstStride, int srcStride){\
+static void OPNAME ## cavs_filt16_v_ ## NAME(uint8_t *dst, const uint8_t *src, ptrdiff_t dstStride, ptrdiff_t srcStride)\
+{                                                                       \
     OPNAME ## cavs_filt8_v_ ## NAME(dst  , src  , dstStride, srcStride);\
     OPNAME ## cavs_filt8_v_ ## NAME(dst+8, src+8, dstStride, srcStride);\
     src += 8*srcStride;\
@@ -317,7 +332,8 @@ static void OPNAME ## cavs_filt16_v_ ## NAME(uint8_t *dst, uint8_t *src, int dst
     OPNAME ## cavs_filt8_v_ ## NAME(dst+8, src+8, dstStride, srcStride);\
 }\
 \
-static void OPNAME ## cavs_filt16_h_ ## NAME(uint8_t *dst, uint8_t *src, int dstStride, int srcStride){\
+static void OPNAME ## cavs_filt16_h_ ## NAME(uint8_t *dst, const uint8_t *src, ptrdiff_t dstStride, ptrdiff_t srcStride)\
+{                                                                       \
     OPNAME ## cavs_filt8_h_ ## NAME(dst  , src  , dstStride, srcStride);\
     OPNAME ## cavs_filt8_h_ ## NAME(dst+8, src+8, dstStride, srcStride);\
     src += 8*srcStride;\
@@ -327,12 +343,13 @@ static void OPNAME ## cavs_filt16_h_ ## NAME(uint8_t *dst, uint8_t *src, int dst
 }\
 
 #define CAVS_SUBPIX_HV(OPNAME, OP, NAME, AH, BH, CH, DH, EH, FH, AV, BV, CV, DV, EV, FV, FULL) \
-static void OPNAME ## cavs_filt8_hv_ ## NAME(uint8_t *dst, uint8_t *src1, uint8_t *src2, int dstStride, int srcStride){\
+static void OPNAME ## cavs_filt8_hv_ ## NAME(uint8_t *dst, const uint8_t *src1, const uint8_t *src2, ptrdiff_t dstStride, ptrdiff_t srcStride)\
+{                                                                       \
     int16_t temp[8*(8+5)];\
     int16_t *tmp = temp;\
     const int h=8;\
     const int w=8;\
-    uint8_t *cm = ff_cropTbl + MAX_NEG_CROP;\
+    const uint8_t *cm = ff_crop_tab + MAX_NEG_CROP;\
     int i;\
     src1 -= 2*srcStride;\
     for(i=0; i<h+5; i++)\
@@ -408,7 +425,8 @@ static void OPNAME ## cavs_filt8_hv_ ## NAME(uint8_t *dst, uint8_t *src1, uint8_
     }\
 }\
 \
-static void OPNAME ## cavs_filt16_hv_ ## NAME(uint8_t *dst, uint8_t *src1, uint8_t *src2, int dstStride, int srcStride){ \
+static void OPNAME ## cavs_filt16_hv_ ## NAME(uint8_t *dst, const uint8_t *src1, const uint8_t *src2, ptrdiff_t dstStride, ptrdiff_t srcStride)\
+{                                                                       \
     OPNAME ## cavs_filt8_hv_ ## NAME(dst  , src1,   src2  , dstStride, srcStride); \
     OPNAME ## cavs_filt8_hv_ ## NAME(dst+8, src1+8, src2+8, dstStride, srcStride); \
     src1 += 8*srcStride;\
@@ -419,63 +437,78 @@ static void OPNAME ## cavs_filt16_hv_ ## NAME(uint8_t *dst, uint8_t *src1, uint8
 }\
 
 #define CAVS_MC(OPNAME, SIZE) \
-static void ff_ ## OPNAME ## cavs_qpel ## SIZE ## _mc10_c(uint8_t *dst, uint8_t *src, int stride){\
+static void OPNAME ## cavs_qpel ## SIZE ## _mc10_c(uint8_t *dst, const uint8_t *src, ptrdiff_t stride)\
+{\
     OPNAME ## cavs_filt ## SIZE ## _h_qpel_l(dst, src, stride, stride);\
 }\
 \
-static void ff_ ## OPNAME ## cavs_qpel ## SIZE ## _mc20_c(uint8_t *dst, uint8_t *src, int stride){\
+static void OPNAME ## cavs_qpel ## SIZE ## _mc20_c(uint8_t *dst, const uint8_t *src, ptrdiff_t stride)\
+{\
     OPNAME ## cavs_filt ## SIZE ## _h_hpel(dst, src, stride, stride);\
 }\
 \
-static void ff_ ## OPNAME ## cavs_qpel ## SIZE ## _mc30_c(uint8_t *dst, uint8_t *src, int stride){\
+static void OPNAME ## cavs_qpel ## SIZE ## _mc30_c(uint8_t *dst, const uint8_t *src, ptrdiff_t stride)\
+{\
     OPNAME ## cavs_filt ## SIZE ## _h_qpel_r(dst, src, stride, stride);\
 }\
 \
-static void ff_ ## OPNAME ## cavs_qpel ## SIZE ## _mc01_c(uint8_t *dst, uint8_t *src, int stride){\
+static void OPNAME ## cavs_qpel ## SIZE ## _mc01_c(uint8_t *dst, const uint8_t *src, ptrdiff_t stride)\
+{\
     OPNAME ## cavs_filt ## SIZE ## _v_qpel_l(dst, src, stride, stride);\
 }\
 \
-static void ff_ ## OPNAME ## cavs_qpel ## SIZE ## _mc02_c(uint8_t *dst, uint8_t *src, int stride){\
+static void OPNAME ## cavs_qpel ## SIZE ## _mc02_c(uint8_t *dst, const uint8_t *src, ptrdiff_t stride)\
+{\
     OPNAME ## cavs_filt ## SIZE ## _v_hpel(dst, src, stride, stride);\
 }\
 \
-static void ff_ ## OPNAME ## cavs_qpel ## SIZE ## _mc03_c(uint8_t *dst, uint8_t *src, int stride){\
+static void OPNAME ## cavs_qpel ## SIZE ## _mc03_c(uint8_t *dst, const uint8_t *src, ptrdiff_t stride)\
+{\
     OPNAME ## cavs_filt ## SIZE ## _v_qpel_r(dst, src, stride, stride);\
 }\
 \
-static void ff_ ## OPNAME ## cavs_qpel ## SIZE ## _mc22_c(uint8_t *dst, uint8_t *src, int stride){\
+static void OPNAME ## cavs_qpel ## SIZE ## _mc22_c(uint8_t *dst, const uint8_t *src, ptrdiff_t stride)\
+{\
   OPNAME ## cavs_filt ## SIZE ## _hv_jj(dst, src, NULL, stride, stride); \
 }\
 \
-static void ff_ ## OPNAME ## cavs_qpel ## SIZE ## _mc11_c(uint8_t *dst, uint8_t *src, int stride){\
+static void OPNAME ## cavs_qpel ## SIZE ## _mc11_c(uint8_t *dst, const uint8_t *src, ptrdiff_t stride)\
+{\
   OPNAME ## cavs_filt ## SIZE ## _hv_egpr(dst, src, src, stride, stride); \
 }\
 \
-static void ff_ ## OPNAME ## cavs_qpel ## SIZE ## _mc13_c(uint8_t *dst, uint8_t *src, int stride){\
+static void OPNAME ## cavs_qpel ## SIZE ## _mc13_c(uint8_t *dst, const uint8_t *src, ptrdiff_t stride)\
+{\
   OPNAME ## cavs_filt ## SIZE ## _hv_egpr(dst, src, src+stride, stride, stride); \
 }\
 \
-static void ff_ ## OPNAME ## cavs_qpel ## SIZE ## _mc31_c(uint8_t *dst, uint8_t *src, int stride){\
+static void OPNAME ## cavs_qpel ## SIZE ## _mc31_c(uint8_t *dst, const uint8_t *src, ptrdiff_t stride)\
+{\
   OPNAME ## cavs_filt ## SIZE ## _hv_egpr(dst, src, src+1, stride, stride); \
 }\
 \
-static void ff_ ## OPNAME ## cavs_qpel ## SIZE ## _mc33_c(uint8_t *dst, uint8_t *src, int stride){\
+static void OPNAME ## cavs_qpel ## SIZE ## _mc33_c(uint8_t *dst, const uint8_t *src, ptrdiff_t stride)\
+{\
   OPNAME ## cavs_filt ## SIZE ## _hv_egpr(dst, src, src+stride+1,stride, stride); \
 }\
 \
-static void ff_ ## OPNAME ## cavs_qpel ## SIZE ## _mc21_c(uint8_t *dst, uint8_t *src, int stride){\
+static void OPNAME ## cavs_qpel ## SIZE ## _mc21_c(uint8_t *dst, const uint8_t *src, ptrdiff_t stride)\
+{\
   OPNAME ## cavs_filt ## SIZE ## _hv_ff(dst, src, src+stride+1,stride, stride); \
 }\
 \
-static void ff_ ## OPNAME ## cavs_qpel ## SIZE ## _mc12_c(uint8_t *dst, uint8_t *src, int stride){\
+static void OPNAME ## cavs_qpel ## SIZE ## _mc12_c(uint8_t *dst, const uint8_t *src, ptrdiff_t stride)\
+{\
   OPNAME ## cavs_filt ## SIZE ## _hv_ii(dst, src, src+stride+1,stride, stride); \
 }\
 \
-static void ff_ ## OPNAME ## cavs_qpel ## SIZE ## _mc32_c(uint8_t *dst, uint8_t *src, int stride){\
+static void OPNAME ## cavs_qpel ## SIZE ## _mc32_c(uint8_t *dst, const uint8_t *src, ptrdiff_t stride)\
+{\
   OPNAME ## cavs_filt ## SIZE ## _hv_kk(dst, src, src+stride+1,stride, stride); \
 }\
 \
-static void ff_ ## OPNAME ## cavs_qpel ## SIZE ## _mc23_c(uint8_t *dst, uint8_t *src, int stride){\
+static void OPNAME ## cavs_qpel ## SIZE ## _mc23_c(uint8_t *dst, const uint8_t *src, ptrdiff_t stride)\
+{\
   OPNAME ## cavs_filt ## SIZE ## _hv_qq(dst, src, src+stride+1,stride, stride); \
 }\
 
@@ -510,24 +543,29 @@ CAVS_MC(put_, 16)
 CAVS_MC(avg_, 8)
 CAVS_MC(avg_, 16)
 
-av_cold void ff_cavsdsp_init(DSPContext* c, AVCodecContext *avctx) {
+#define put_cavs_qpel8_mc00_c  ff_put_pixels8x8_c
+#define avg_cavs_qpel8_mc00_c  ff_avg_pixels8x8_c
+#define put_cavs_qpel16_mc00_c ff_put_pixels16x16_c
+#define avg_cavs_qpel16_mc00_c ff_avg_pixels16x16_c
+
+av_cold void ff_cavsdsp_init(CAVSDSPContext* c, AVCodecContext *avctx) {
 #define dspfunc(PFX, IDX, NUM) \
-    c->PFX ## _pixels_tab[IDX][ 0] = ff_ ## PFX ## NUM ## _mc00_c; \
-    c->PFX ## _pixels_tab[IDX][ 1] = ff_ ## PFX ## NUM ## _mc10_c; \
-    c->PFX ## _pixels_tab[IDX][ 2] = ff_ ## PFX ## NUM ## _mc20_c; \
-    c->PFX ## _pixels_tab[IDX][ 3] = ff_ ## PFX ## NUM ## _mc30_c; \
-    c->PFX ## _pixels_tab[IDX][ 4] = ff_ ## PFX ## NUM ## _mc01_c; \
-    c->PFX ## _pixels_tab[IDX][ 5] = ff_ ## PFX ## NUM ## _mc11_c; \
-    c->PFX ## _pixels_tab[IDX][ 6] = ff_ ## PFX ## NUM ## _mc21_c; \
-    c->PFX ## _pixels_tab[IDX][ 7] = ff_ ## PFX ## NUM ## _mc31_c; \
-    c->PFX ## _pixels_tab[IDX][ 8] = ff_ ## PFX ## NUM ## _mc02_c; \
-    c->PFX ## _pixels_tab[IDX][ 9] = ff_ ## PFX ## NUM ## _mc12_c; \
-    c->PFX ## _pixels_tab[IDX][10] = ff_ ## PFX ## NUM ## _mc22_c; \
-    c->PFX ## _pixels_tab[IDX][11] = ff_ ## PFX ## NUM ## _mc32_c; \
-    c->PFX ## _pixels_tab[IDX][12] = ff_ ## PFX ## NUM ## _mc03_c; \
-    c->PFX ## _pixels_tab[IDX][13] = ff_ ## PFX ## NUM ## _mc13_c; \
-    c->PFX ## _pixels_tab[IDX][14] = ff_ ## PFX ## NUM ## _mc23_c; \
-    c->PFX ## _pixels_tab[IDX][15] = ff_ ## PFX ## NUM ## _mc33_c
+    c->PFX ## _pixels_tab[IDX][ 0] = PFX ## NUM ## _mc00_c; \
+    c->PFX ## _pixels_tab[IDX][ 1] = PFX ## NUM ## _mc10_c; \
+    c->PFX ## _pixels_tab[IDX][ 2] = PFX ## NUM ## _mc20_c; \
+    c->PFX ## _pixels_tab[IDX][ 3] = PFX ## NUM ## _mc30_c; \
+    c->PFX ## _pixels_tab[IDX][ 4] = PFX ## NUM ## _mc01_c; \
+    c->PFX ## _pixels_tab[IDX][ 5] = PFX ## NUM ## _mc11_c; \
+    c->PFX ## _pixels_tab[IDX][ 6] = PFX ## NUM ## _mc21_c; \
+    c->PFX ## _pixels_tab[IDX][ 7] = PFX ## NUM ## _mc31_c; \
+    c->PFX ## _pixels_tab[IDX][ 8] = PFX ## NUM ## _mc02_c; \
+    c->PFX ## _pixels_tab[IDX][ 9] = PFX ## NUM ## _mc12_c; \
+    c->PFX ## _pixels_tab[IDX][10] = PFX ## NUM ## _mc22_c; \
+    c->PFX ## _pixels_tab[IDX][11] = PFX ## NUM ## _mc32_c; \
+    c->PFX ## _pixels_tab[IDX][12] = PFX ## NUM ## _mc03_c; \
+    c->PFX ## _pixels_tab[IDX][13] = PFX ## NUM ## _mc13_c; \
+    c->PFX ## _pixels_tab[IDX][14] = PFX ## NUM ## _mc23_c; \
+    c->PFX ## _pixels_tab[IDX][15] = PFX ## NUM ## _mc33_c
     dspfunc(put_cavs_qpel, 0, 16);
     dspfunc(put_cavs_qpel, 1, 8);
     dspfunc(avg_cavs_qpel, 0, 16);
@@ -537,4 +575,8 @@ av_cold void ff_cavsdsp_init(DSPContext* c, AVCodecContext *avctx) {
     c->cavs_filter_cv = cavs_filter_cv_c;
     c->cavs_filter_ch = cavs_filter_ch_c;
     c->cavs_idct8_add = cavs_idct8_add_c;
+    c->idct_perm = FF_IDCT_PERM_NONE;
+
+    if (ARCH_X86)
+        ff_cavsdsp_init_x86(c, avctx);
 }

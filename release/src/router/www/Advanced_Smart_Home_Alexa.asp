@@ -79,20 +79,9 @@
 	height:337px;
 	background-position:center;
 	background-attachment:fixed;
-	background:url(images/New_ui/smh_step_4_flow.png) no-repeat center;
+	background:url(images/New_ui/smh_step_4_flow.svg) no-repeat center;
 	margin:auto;
 	background-size: 365px 292px;
-}
-
-.smh_asus_router{
-	width:146px;
-	height:146px;
-	background-position:center;
-	background-attachment:fixed;
-	background:url(images/New_ui/smh_asus_router.png) no-repeat center;
-	margin:53px 0px 0px 265px;
-	background-size: 110px 110px;
-	position: absolute;
 }
 
 .alertpin{
@@ -245,6 +234,7 @@ function detcet_aae_state(){
 }
 
 function get_activation_code(){
+	close_alert('alert_pin');
 	ASUS_EULA.config(get_activation_code, function(){});
 	if(ASUS_EULA.check("asus"))
 		gen_new_pincode();
@@ -472,7 +462,6 @@ function show_account_state(){
 																</div>
 															</div>
 															<div class="div_td" style="vertical-align:middle;padding-left:23px;padding-top: 5px;">
-																	<div class="smh_asus_router"></div>
 																	<div class="and_you_can"></div>
 															</div>
 														</table>

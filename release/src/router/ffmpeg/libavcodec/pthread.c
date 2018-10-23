@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 2004 Roman Shaposhnik
+ * Copyright (c) 2008 Alexander Strange (astrange@ithinksw.com)
  *
  * Many thanks to Steven M. Schultz for providing clever ideas and
  * to Michael Niedermayer <michaelni@gmx.at> for writing initial
@@ -21,166 +22,67 @@
  * License along with FFmpeg; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
-#include <pthread.h>
+
+/**
+ * @file
+ * Multithreading support functions
+ * @see doc/multithreading.txt
+ */
 
 #include "avcodec.h"
+#include "internal.h"
+#include "pthread_internal.h"
+#include "thread.h"
 
-typedef int (action_func)(AVCodecContext *c, void *arg);
-typedef int (action_func2)(AVCodecContext *c, void *arg, int jobnr, int threadnr);
-
-typedef struct ThreadContext {
-    pthread_t *workers;
-    action_func *func;
-    action_func2 *func2;
-    void *args;
-    int *rets;
-    int rets_count;
-    int job_count;
-    int job_size;
-
-    pthread_cond_t last_job_cond;
-    pthread_cond_t current_job_cond;
-    pthread_mutex_t current_job_lock;
-    int current_job;
-    int done;
-} ThreadContext;
-
-static void* attribute_align_arg worker(void *v)
+/**
+ * Set the threading algorithms used.
+ *
+ * Threading requires more than one thread.
+ * Frame threading requires entire frames to be passed to the codec,
+ * and introduces extra decoding delay, so is incompatible with low_delay.
+ *
+ * @param avctx The context.
+ */
+static void validate_thread_parameters(AVCodecContext *avctx)
 {
-    AVCodecContext *avctx = v;
-    ThreadContext *c = avctx->thread_opaque;
-    int our_job = c->job_count;
-    int thread_count = avctx->thread_count;
-    int self_id;
-
-    pthread_mutex_lock(&c->current_job_lock);
-    self_id = c->current_job++;
-    for (;;){
-        while (our_job >= c->job_count) {
-            if (c->current_job == thread_count + c->job_count)
-                pthread_cond_signal(&c->last_job_cond);
-
-            pthread_cond_wait(&c->current_job_cond, &c->current_job_lock);
-            our_job = self_id;
-
-            if (c->done) {
-                pthread_mutex_unlock(&c->current_job_lock);
-                return NULL;
-            }
-        }
-        pthread_mutex_unlock(&c->current_job_lock);
-
-        c->rets[our_job%c->rets_count] = c->func ? c->func(avctx, (char*)c->args + our_job*c->job_size):
-                                                   c->func2(avctx, c->args, our_job, self_id);
-
-        pthread_mutex_lock(&c->current_job_lock);
-        our_job = c->current_job++;
+    int frame_threading_supported = (avctx->codec->capabilities & AV_CODEC_CAP_FRAME_THREADS)
+                                && !(avctx->flags  & AV_CODEC_FLAG_TRUNCATED)
+                                && !(avctx->flags  & AV_CODEC_FLAG_LOW_DELAY)
+                                && !(avctx->flags2 & AV_CODEC_FLAG2_CHUNKS);
+    if (avctx->thread_count == 1) {
+        avctx->active_thread_type = 0;
+    } else if (frame_threading_supported && (avctx->thread_type & FF_THREAD_FRAME)) {
+        avctx->active_thread_type = FF_THREAD_FRAME;
+    } else if (avctx->codec->capabilities & AV_CODEC_CAP_SLICE_THREADS &&
+               avctx->thread_type & FF_THREAD_SLICE) {
+        avctx->active_thread_type = FF_THREAD_SLICE;
+    } else if (!(avctx->codec->capabilities & AV_CODEC_CAP_AUTO_THREADS)) {
+        avctx->thread_count       = 1;
+        avctx->active_thread_type = 0;
     }
+
+    if (avctx->thread_count > MAX_AUTO_THREADS)
+        av_log(avctx, AV_LOG_WARNING,
+               "Application has requested %d threads. Using a thread count greater than %d is not recommended.\n",
+               avctx->thread_count, MAX_AUTO_THREADS);
 }
 
-static av_always_inline void avcodec_thread_park_workers(ThreadContext *c, int thread_count)
+int ff_thread_init(AVCodecContext *avctx)
 {
-    pthread_cond_wait(&c->last_job_cond, &c->current_job_lock);
-    pthread_mutex_unlock(&c->current_job_lock);
-}
+    validate_thread_parameters(avctx);
 
-void avcodec_thread_free(AVCodecContext *avctx)
-{
-    ThreadContext *c = avctx->thread_opaque;
-    int i;
-
-    pthread_mutex_lock(&c->current_job_lock);
-    c->done = 1;
-    pthread_cond_broadcast(&c->current_job_cond);
-    pthread_mutex_unlock(&c->current_job_lock);
-
-    for (i=0; i<avctx->thread_count; i++)
-         pthread_join(c->workers[i], NULL);
-
-    pthread_mutex_destroy(&c->current_job_lock);
-    pthread_cond_destroy(&c->current_job_cond);
-    pthread_cond_destroy(&c->last_job_cond);
-    av_free(c->workers);
-    av_freep(&avctx->thread_opaque);
-}
-
-static int avcodec_thread_execute(AVCodecContext *avctx, action_func* func, void *arg, int *ret, int job_count, int job_size)
-{
-    ThreadContext *c= avctx->thread_opaque;
-    int dummy_ret;
-
-    if (job_count <= 0)
-        return 0;
-
-    pthread_mutex_lock(&c->current_job_lock);
-
-    c->current_job = avctx->thread_count;
-    c->job_count = job_count;
-    c->job_size = job_size;
-    c->args = arg;
-    c->func = func;
-    if (ret) {
-        c->rets = ret;
-        c->rets_count = job_count;
-    } else {
-        c->rets = &dummy_ret;
-        c->rets_count = 1;
-    }
-    pthread_cond_broadcast(&c->current_job_cond);
-
-    avcodec_thread_park_workers(c, avctx->thread_count);
+    if (avctx->active_thread_type&FF_THREAD_SLICE)
+        return ff_slice_thread_init(avctx);
+    else if (avctx->active_thread_type&FF_THREAD_FRAME)
+        return ff_frame_thread_init(avctx);
 
     return 0;
 }
 
-static int avcodec_thread_execute2(AVCodecContext *avctx, action_func2* func2, void *arg, int *ret, int job_count)
+void ff_thread_free(AVCodecContext *avctx)
 {
-    ThreadContext *c= avctx->thread_opaque;
-    c->func2 = func2;
-    return avcodec_thread_execute(avctx, NULL, arg, ret, job_count, 0);
-}
-
-int avcodec_thread_init(AVCodecContext *avctx, int thread_count)
-{
-    int i;
-    ThreadContext *c;
-
-    avctx->thread_count = thread_count;
-
-    if (thread_count <= 1)
-        return 0;
-
-    c = av_mallocz(sizeof(ThreadContext));
-    if (!c)
-        return -1;
-
-    c->workers = av_mallocz(sizeof(pthread_t)*thread_count);
-    if (!c->workers) {
-        av_free(c);
-        return -1;
-    }
-
-    avctx->thread_opaque = c;
-    c->current_job = 0;
-    c->job_count = 0;
-    c->job_size = 0;
-    c->done = 0;
-    pthread_cond_init(&c->current_job_cond, NULL);
-    pthread_cond_init(&c->last_job_cond, NULL);
-    pthread_mutex_init(&c->current_job_lock, NULL);
-    pthread_mutex_lock(&c->current_job_lock);
-    for (i=0; i<thread_count; i++) {
-        if(pthread_create(&c->workers[i], NULL, worker, avctx)) {
-           avctx->thread_count = i;
-           pthread_mutex_unlock(&c->current_job_lock);
-           avcodec_thread_free(avctx);
-           return -1;
-        }
-    }
-
-    avcodec_thread_park_workers(c, thread_count);
-
-    avctx->execute = avcodec_thread_execute;
-    avctx->execute2 = avcodec_thread_execute2;
-    return 0;
+    if (avctx->active_thread_type&FF_THREAD_FRAME)
+        ff_frame_thread_free(avctx, avctx->thread_count);
+    else
+        ff_slice_thread_free(avctx);
 }

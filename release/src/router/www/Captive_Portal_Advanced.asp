@@ -840,6 +840,12 @@ function edit_update_content_eula() {
 	var terms_background_color = "#" + $("#edit_eula_terms_background_color_set").val();
 	$("#component_eula").css({"color" : font_color});
 
+	$("input[name=edit_eula_text_label]").val($.trim($("input[name=edit_eula_text_label]").val()));
+	var eula_text = $('input[name="edit_eula_text_label"]').val();
+	$("input[name=edit_eula_hyperlink_label]").val($.trim($("input[name=edit_eula_hyperlink_label]").val()));
+	var eula_hyperlink = $('input[name="edit_eula_hyperlink_label"]').val();
+	var hyperlink_color = "#" + $("#edit_eula_hyperlink_label_color_set").val();
+
 	if(eula_terms_service_title == "") {
 		add_hint_msg($('input[name="edit_eula_terms_service_title"]'), "<#JS_fieldblank#>");
 		$('input[name="edit_eula_terms_service_title"]').focus();
@@ -852,21 +858,33 @@ function edit_update_content_eula() {
 		return;
 	}
 
+	if(eula_hyperlink == "") {
+		add_hint_msg($('input[name="edit_eula_hyperlink_label"]'), "<#JS_fieldblank#>");
+		$('input[name="edit_eula_hyperlink_label"]').focus();
+		return;
+	}
+
 	var code = "<div style='height:100%;width:100%;'>";
-	code += "<div style='text-align:left;white-space:nowrap;'>";
+	code += "<div style='float:left;'>";
 	code += "<input type='checkbox' name='eula_check' disabled>";
-	code += "I have read and agree to <span class='edit_eula_terms_service_hyperlink'>the Terms of Service</span>";/*untranslated*/
+	code += "</div>";
+	code += "<div>";
+	code += "<span>" + htmlEnDeCode.htmlEncode(eula_text) + "</span>&nbsp;<span class='edit_eula_terms_service_hyperlink'>" + htmlEnDeCode.htmlEncode(eula_hyperlink) + "</span>";
 	code += "</div>";
 	code += "</div>";
 
 	$("#component_eula div").first().replaceWith(code);
+	$("#component_eula").find(".edit_eula_terms_service_hyperlink").css({"color" : hyperlink_color});
 
 	component_array["component_eula"] = [ { 
 		"attribute" : set_component_attribute("component_eula"), 
 		"eula_terms_service_title" : encode_decode_text(eula_terms_service_title, "encode"),
 		"eula_terms_service" : encode_decode_text($('textarea#edit_eula_terms_service').val(), "encode"),
 		"eula_terms_service_font_color" : terms_font_color,
-		"eula_terms_service_background_color" : terms_background_color
+		"eula_terms_service_background_color" : terms_background_color,
+		"eula_terms_service_text": encode_decode_text(eula_text, "encode"),
+		"eula_terms_service_hyperlink": encode_decode_text(eula_hyperlink, "encode"),
+		"eula_terms_service_hyperlink_color": hyperlink_color
 	 } ];
 }
 function auto_add_onblur_event(_obj) {
@@ -921,6 +939,14 @@ function edit_component_eula() {
 	code += "<div class='edit_component_item_title'><#Captive_Portal_Text_Color#></div>";
 	code += "<div class='edit_component_item_content'>";
 	code += "<input name='edit_eula_label_color_set' id='edit_eula_label_color_set' class='jscolor " + jscolor_attr + " input_12_table auto_add_onblur' style='cursor:pointer;' value='C9C9C9' type='text' maxlength='6' autocorrect='off' autocapitalize='off'>";
+	code += "&nbsp;&nbsp;";
+	code += "<input name='edit_eula_text_label' class='input_22_table auto_add_onblur' value='I have read and agree to' type='text' maxlength='32' autocomplete='off' autocorrect='off' autocapitalize='off'>";
+	code += "</div>";
+	code += "<br>";
+	code += "<div class='edit_component_item_content'>";
+	code += "<input name='edit_eula_hyperlink_label_color_set' id='edit_eula_hyperlink_label_color_set' class='jscolor " + jscolor_attr + " input_12_table auto_add_onblur' style='cursor:pointer;' value='00B0FF' type='text' maxlength='6' autocorrect='off' autocapitalize='off'>";
+	code += "&nbsp;&nbsp;";
+	code += "<input name='edit_eula_hyperlink_label' class='input_22_table auto_add_onblur' value='the Terms of Service' type='text' maxlength='32' autocomplete='off' autocorrect='off' autocapitalize='off'>";
 	code += "</div>";
 
 	code += "<div class='captive_portal_adv_line'></div>";
@@ -938,15 +964,20 @@ function edit_component_eula() {
 	code += "</textarea>";
 	code += "</div>";
 
+	code += "<div style='width:49%;float:left;'>";
 	code += "<div class='edit_component_item_title'><#Captive_Portal_Text_Color#></div>";
 	code += "<div class='edit_component_item_content'>";
 	code += "<input name='edit_eula_terms_color_set' id='edit_eula_terms_color_set' class='jscolor " + jscolor_attr + " input_12_table auto_add_onblur' style='cursor:pointer;' value='E8E8E8' type='text' maxlength='6' autocorrect='off' autocapitalize='off'>";
 	code += "</div>";
+	code += "</div>";
 
+	code += "<div style='width:49%;float:left;'>";
 	code += "<div class='edit_component_item_title'><#Captive_Portal_Dialog_Color#></div>";
 	code += "<div class='edit_component_item_content'>";
 	code += "<input name='edit_eula_terms_background_color_set' id='edit_eula_terms_background_color_set' class='jscolor " + jscolor_attr + " input_12_table auto_add_onblur' style='cursor:pointer;' value='232E32' type='text' maxlength='6' autocorrect='off' autocapitalize='off'>";
 	code += "</div>";
+	code += "</div>";
+	code += "<div style='clear:both;'></div>";
 
 	code += gen_sort_level("component_eula");
 
@@ -968,6 +999,18 @@ function edit_component_eula() {
 		$("#edit_component_level").html(component_array["component_eula"][0].attribute.style_z_index);
 		$("input[name=edit_eula_terms_color_set]").val(terms_font_color);
 		$("input[name=edit_eula_terms_background_color_set]").val(terms_background_color);
+
+		var eula_text = "I have read and agree to";
+		var eula_hyperlink = "the Terms of Service";
+		if(component_array["component_eula"][0].eula_terms_service_text == undefined)
+			component_array["component_eula"][0].eula_terms_service_text = encode_decode_text(eula_text, "encode");
+		if(component_array["component_eula"][0].eula_terms_service_hyperlink == undefined)
+			component_array["component_eula"][0].eula_terms_service_hyperlink = encode_decode_text(eula_hyperlink, "encode");
+		if(component_array["component_eula"][0].eula_terms_service_hyperlink_color == undefined)
+			component_array["component_eula"][0].eula_terms_service_hyperlink_color = "#00B0FF";
+		$("input[name=edit_eula_text_label]").val(encode_decode_text(component_array["component_eula"][0].eula_terms_service_text, "decode"));
+		$("input[name=edit_eula_hyperlink_label]").val(encode_decode_text(component_array["component_eula"][0].eula_terms_service_hyperlink, "decode"));
+		$("input[name=edit_eula_hyperlink_label_color_set]").val(component_array["component_eula"][0].eula_terms_service_hyperlink_color);
 	}
 
 	auto_add_onblur_event("eula");
@@ -1799,7 +1842,7 @@ function gen_splash_page_component(_component, _idx) {
 			code += "</div>";
 			break;
 		case "eula" :
-			code += "<div id='component_eula' class='component_bg' style='left:20px;top:310px;position:absolute;height:40px;width:300px;min-width:160px;min-height:40px;max-height:40px;z-index:1;line-height:40px;' onclick='edit_component_eula();'>";
+			code += "<div id='component_eula' class='component_bg' style='left:20px;top:310px;position:absolute;height:40px;width:300px;min-width:160px;min-height:40px;max-height:40px;z-index:1;' onclick='edit_component_eula();'>";
 			code += "<div class='component_title'><span>EULA Check box</span></div>";/*untranslated*/
 			code += "<div class='component_del' onclick='edit_del_component(\"eula\" , event);' title='Delete this pattern.'></div>";
 			code += "</div>";
@@ -2121,10 +2164,20 @@ function reset_gen_splash_layout() {
 	$("#component_account").remove();
 
 	if(component_array["component_eula"]) {
+		var eula_text = "I have read and agree to";
+		var eula_hyperlink = "the Terms of Service";
+		if(component_array["component_eula"][0].eula_terms_service_text == undefined)
+			component_array["component_eula"][0].eula_terms_service_text = encode_decode_text(eula_text, "encode");
+		if(component_array["component_eula"][0].eula_terms_service_hyperlink == undefined)
+			component_array["component_eula"][0].eula_terms_service_hyperlink = encode_decode_text(eula_hyperlink, "encode");
+		if(component_array["component_eula"][0].eula_terms_service_hyperlink_color == undefined)
+			component_array["component_eula"][0].eula_terms_service_hyperlink_color = "#00B0FF";
 		var code = "<div style='height:100%;width:100%;'>";
-		code += "<div style='text-align:left;white-space:nowrap;'>";
+		code += "<div style='float:left;'>";
 		code += "<input type='checkbox' name='eula_check' disabled>";
-		code += "I have read and agree to <span class='edit_eula_terms_service_hyperlink'>the Terms of Service</span>";
+		code += "</div>";
+		code += "<div>";
+		code += "<span>" + htmlEnDeCode.htmlEncode(encode_decode_text(component_array["component_eula"][0].eula_terms_service_text, "decode")) + "</span>&nbsp;<span class='edit_eula_terms_service_hyperlink'>" +  htmlEnDeCode.htmlEncode(encode_decode_text(component_array["component_eula"][0].eula_terms_service_hyperlink, "decode")) + "</span>";
 		code += "</div>";
 		code += "</div>";
 
@@ -2132,6 +2185,7 @@ function reset_gen_splash_layout() {
 
 		$("#component_eula div").first().replaceWith(code);
 		set_component_attribute("component_eula", component_array["component_eula"][0].attribute);
+		$("#component_eula").find(".edit_eula_terms_service_hyperlink").css({"color" : component_array["component_eula"][0].eula_terms_service_hyperlink_color});
 	}
 	else {
 		$("#component_eula").remove();
@@ -2797,11 +2851,21 @@ function get_splash_page_attribute(_profile_id) {
 				component_array_default_element = JSON.parse( JSON.stringify( response.component_eula ) );
 				component_array["component_eula"] = [component_array_element];
 				component_array_default["component_eula"] = [component_array_default_element];
-
+				var eula_text = 'I have read and agree to';
+				var eula_hyperlink = 'the Terms of Service';
+				var eula_hyperlink_color = '#00B0FF';
+				if(response.component_eula.eula_terms_service_text != undefined)
+					eula_text = response.component_eula.eula_terms_service_text;
+				if(response.component_eula.eula_terms_service_hyperlink != undefined)
+					eula_hyperlink = response.component_eula.eula_terms_service_hyperlink;
+				if(response.component_eula.eula_terms_service_hyperlink_color != undefined)
+					eula_hyperlink_color = response.component_eula.eula_terms_service_hyperlink_color;
 				var code = "<div style='height:100%;width:100%;'>";
-				code += "<div style='text-align:left;white-space:nowrap;'>";
+				code += "<div style='float:left;'>";
 				code += "<input type='checkbox' name='eula_check' disabled>";
-				code += "I have read and agree to <span class='edit_eula_terms_service_hyperlink'>the Terms of Service</span>";
+				code += "</div>";
+				code += "<div>";
+				code += "<span>" + htmlEnDeCode.htmlEncode(decodeURIComponent(eula_text)) + "</span>&nbsp;<span class='edit_eula_terms_service_hyperlink'>" + htmlEnDeCode.htmlEncode(decodeURIComponent(eula_hyperlink)) + "</span>";
 				code += "</div>";
 				code += "</div>";
 
@@ -2809,6 +2873,7 @@ function get_splash_page_attribute(_profile_id) {
 
 				$("#component_eula div").first().replaceWith(code);
 				set_component_attribute("component_eula", component_array["component_eula"][0].attribute);
+				$("#component_eula").find(".edit_eula_terms_service_hyperlink").css({"color" : eula_hyperlink_color});
 			}
 			else {
 				$("#component_eula").remove();
@@ -3268,7 +3333,10 @@ function finishRule(flag) {
 		splash_page_adv_attribute += '"eula_terms_service_title": "' + _component_obj.eula_terms_service_title + '",\n';
 		splash_page_adv_attribute += '"eula_terms_service": "' + _component_obj.eula_terms_service + '",\n';
 		splash_page_adv_attribute += '"eula_terms_service_font_color": "' + _component_obj.eula_terms_service_font_color + '",\n';
-		splash_page_adv_attribute += '"eula_terms_service_background_color": "' + _component_obj.eula_terms_service_background_color + '"\n';
+		splash_page_adv_attribute += '"eula_terms_service_background_color": "' + _component_obj.eula_terms_service_background_color + '",\n';
+		splash_page_adv_attribute += '"eula_terms_service_text": "' + _component_obj.eula_terms_service_text + '",\n';
+		splash_page_adv_attribute += '"eula_terms_service_hyperlink": "' + _component_obj.eula_terms_service_hyperlink + '",\n';
+		splash_page_adv_attribute += '"eula_terms_service_hyperlink_color": "' + _component_obj.eula_terms_service_hyperlink_color + '"\n';
 		splash_page_adv_attribute += '},\n';
 	 }
 	if(component_array["component_account"]) {
@@ -3763,10 +3831,21 @@ function finishRule(flag) {
 	}
 	if(component_array['component_eula']) {
 		splash_page_adv_html += "case 'eula' :\n";
-		splash_page_adv_html += "code += '<div style=' + _component_common_attr + 'font-size:' + font_size + ';line-height:' + _component_height + '>';\n";
-		splash_page_adv_html += "code += '<div style=text-align:left;white-space:nowrap;>';\n";
+		splash_page_adv_html += "var eula_text = 'I have read and agree to';\n";
+		splash_page_adv_html += "var eula_hyperlink = 'the Terms of Service';\n";
+		splash_page_adv_html += "var eula_hyperlink_color = '#00B0FF';\n";
+		splash_page_adv_html += "if(_component_attr_array.eula_terms_service_text != undefined)\n";
+		splash_page_adv_html += "eula_text = _component_attr_array.eula_terms_service_text;\n";
+		splash_page_adv_html += "if(_component_attr_array.eula_terms_service_hyperlink != undefined)\n";
+		splash_page_adv_html += "eula_hyperlink = _component_attr_array.eula_terms_service_hyperlink;\n";
+		splash_page_adv_html += "if(_component_attr_array.eula_terms_service_hyperlink_color != undefined)\n";
+		splash_page_adv_html += "eula_hyperlink_color = _component_attr_array.eula_terms_service_hyperlink_color;\n";
+		splash_page_adv_html += "code += '<div style=' + _component_common_attr + 'font-size:' + font_size + ';>';\n";
+		splash_page_adv_html += "code += '<div style=float:left;>';\n";
 		splash_page_adv_html += "code += '<input type=checkbox name=eula_check id=eula_check style=height:' + font_size + ';width:' + font_size + '; onclick=control_bt_status();>';\n";
-		splash_page_adv_html += "code += 'I have read and agree to <span class=terms_service_hyperlink onclick=open_term_service();>the Terms of Service</span>';\n";
+		splash_page_adv_html += "code += '</div>';\n";
+		splash_page_adv_html += "code += '<div>';\n";
+		splash_page_adv_html += "code += '<span>' + htmlEnDeCode.htmlEncode(decodeURIComponent(eula_text)) + '</span>&nbsp;<span class=terms_service_hyperlink style=color:' + eula_hyperlink_color + '; onclick=open_term_service();>' + htmlEnDeCode.htmlEncode(decodeURIComponent(eula_hyperlink)) + '</span>';\n";
 		splash_page_adv_html += "code += '</div>';\n";
 		splash_page_adv_html += "code += '</div>';\n";
 		splash_page_adv_html += "break;\n";
@@ -4215,7 +4294,7 @@ function set_drop_resize_event(obj) {
 	if(obj == "component_eula") {
 		$("#"+ obj + "").children('.ui-resizable-s').remove();
 		$("#"+ obj + "").children('.ui-resizable-se').remove();
-		$("#"+ obj + "").children('.ui-resizable-e').remove();
+		//$("#"+ obj + "").children('.ui-resizable-e').remove();
 	}
 }
 function transformRGBtoHEX(_rgb) {

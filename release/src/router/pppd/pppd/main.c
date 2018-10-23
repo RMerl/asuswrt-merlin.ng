@@ -90,7 +90,6 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
-#include <sys/sysinfo.h>
 
 #include "pppd.h"
 #include "magic.h"
@@ -229,7 +228,6 @@ static struct subprocess *children;
 
 /* Prototypes for procedures local to this file. */
 
-static void check_time(void);
 static void setup_signals __P((void));
 static void create_pidfile __P((int pid));
 static void create_linkpidfile __P((int pid));
@@ -539,8 +537,7 @@ main(argc, argv)
 	    info("Starting link");
 	}
 
-	check_time();
-	gettimeofday(&start_time, NULL);
+	get_time(&start_time);
 	script_unsetenv("CONNECT_TIME");
 	script_unsetenv("BYTES_SENT");
 	script_unsetenv("BYTES_RCVD");
@@ -1265,7 +1262,7 @@ reset_link_stats(u)
 {
     if (!get_ppp_stats(u, &old_link_stats))
 	return;
-    gettimeofday(&start_time, NULL);
+    get_time(&start_time);
 }
 
 /*
@@ -1279,7 +1276,7 @@ update_link_stats(u)
     char numbuf[32];
 
     if (!get_ppp_stats(u, &link_stats)
-	|| gettimeofday(&now, NULL) < 0)
+	|| get_time(&now) < 0)
 	return;
     link_connect_time = now.tv_sec - start_time.tv_sec;
     link_stats_valid = 1;
@@ -1307,39 +1304,6 @@ struct	callout {
 
 static struct callout *callout = NULL;	/* Callout list */
 static struct timeval timenow;		/* Current time */
-static long uptime_diff = 0;
-static int uptime_diff_set = 0;
-
-static void check_time(void)
-{
-    long new_diff;
-    struct timeval t;
-    struct sysinfo i;
-    struct callout *p;
-
-    if (nochecktime)
-	return;
-
-    gettimeofday(&t, NULL);
-    sysinfo(&i);
-    new_diff = t.tv_sec - i.uptime;
-
-    if (!uptime_diff_set) {
-	uptime_diff = new_diff;
-	uptime_diff_set = 1;
-	return;
-    }
-
-    if ((new_diff - 5 > uptime_diff) || (new_diff + 5 < uptime_diff)) {
-	/* system time has changed, update counters and timeouts */
-	info("System time change detected.");
-	start_time.tv_sec += new_diff - uptime_diff;
-
-	for (p = callout; p != NULL; p = p->c_next)
-	    p->c_time.tv_sec += new_diff - uptime_diff;
-    }
-    uptime_diff = new_diff;
-}
 
 /*
  * timeout - Schedule a timeout.
@@ -1359,7 +1323,7 @@ timeout(func, arg, secs, usecs)
 	fatal("Out of memory in timeout()!");
     newp->c_arg = arg;
     newp->c_func = func;
-    gettimeofday(&timenow, NULL);
+    get_time(&timenow);
     newp->c_time.tv_sec = timenow.tv_sec + secs;
     newp->c_time.tv_usec = timenow.tv_usec + usecs;
     if (newp->c_time.tv_usec >= 1000000) {
@@ -1410,12 +1374,10 @@ calltimeout()
 {
     struct callout *p;
 
-    check_time();
-
     while (callout != NULL) {
 	p = callout;
 
-	if (gettimeofday(&timenow, NULL) < 0)
+	if (get_time(&timenow) < 0)
 	    fatal("Failed to get time of day: %m");
 	if (!(p->c_time.tv_sec < timenow.tv_sec
 	      || (p->c_time.tv_sec == timenow.tv_sec
@@ -1440,9 +1402,7 @@ timeleft(tvp)
     if (callout == NULL)
 	return NULL;
 
-    check_time();
-
-    gettimeofday(&timenow, NULL);
+    get_time(&timenow);
     tvp->tv_sec = callout->c_time.tv_sec - timenow.tv_sec;
     tvp->tv_usec = callout->c_time.tv_usec - timenow.tv_usec;
     if (tvp->tv_usec < 0) {

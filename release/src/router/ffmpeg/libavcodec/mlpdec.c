@@ -27,53 +27,61 @@
 #include <stdint.h>
 
 #include "avcodec.h"
-#include "dsputil.h"
+#include "libavutil/internal.h"
 #include "libavutil/intreadwrite.h"
+#include "libavutil/channel_layout.h"
 #include "get_bits.h"
+#include "internal.h"
 #include "libavutil/crc.h"
 #include "parser.h"
 #include "mlp_parser.h"
+#include "mlpdsp.h"
 #include "mlp.h"
+#include "config.h"
 
 /** number of bits used for VLC lookup - longest Huffman code is 9 */
+#if ARCH_ARM
+#define VLC_BITS            5
+#define VLC_STATIC_SIZE     64
+#else
 #define VLC_BITS            9
-
-
-static const char* sample_message =
-    "Please file a bug report following the instructions at "
-    "http://ffmpeg.org/bugreports.html and include "
-    "a sample of this file.";
+#define VLC_STATIC_SIZE     512
+#endif
 
 typedef struct SubStream {
-    //! Set if a valid restart header has been read. Otherwise the substream cannot be decoded.
+    /// Set if a valid restart header has been read. Otherwise the substream cannot be decoded.
     uint8_t     restart_seen;
 
     //@{
     /** restart header data */
-    //! The type of noise to be used in the rematrix stage.
+    /// The type of noise to be used in the rematrix stage.
     uint16_t    noise_type;
 
-    //! The index of the first channel coded in this substream.
+    /// The index of the first channel coded in this substream.
     uint8_t     min_channel;
-    //! The index of the last channel coded in this substream.
+    /// The index of the last channel coded in this substream.
     uint8_t     max_channel;
-    //! The number of channels input into the rematrix stage.
+    /// The number of channels input into the rematrix stage.
     uint8_t     max_matrix_channel;
-    //! For each channel output by the matrix, the output channel to map it to
+    /// For each channel output by the matrix, the output channel to map it to
     uint8_t     ch_assign[MAX_CHANNELS];
+    /// The channel layout for this substream
+    uint64_t    mask;
+    /// The matrix encoding mode for this substream
+    enum AVMatrixEncoding matrix_encoding;
 
-    //! Channel coding parameters for channels in the substream
+    /// Channel coding parameters for channels in the substream
     ChannelParams channel_params[MAX_CHANNELS];
 
-    //! The left shift applied to random noise in 0x31ea substreams.
+    /// The left shift applied to random noise in 0x31ea substreams.
     uint8_t     noise_shift;
-    //! The current seed value for the pseudorandom noise generator(s).
+    /// The current seed value for the pseudorandom noise generator(s).
     uint32_t    noisegen_seed;
 
-    //! Set if the substream contains extra info to check the size of VLC blocks.
+    /// Set if the substream contains extra info to check the size of VLC blocks.
     uint8_t     data_check_present;
 
-    //! Bitmask of which parameter sets are conveyed in a decoding parameter block.
+    /// Bitmask of which parameter sets are conveyed in a decoding parameter block.
     uint8_t     param_presence_flags;
 #define PARAM_BLOCKSIZE     (1 << 7)
 #define PARAM_MATRIX        (1 << 6)
@@ -88,32 +96,32 @@ typedef struct SubStream {
     //@{
     /** matrix data */
 
-    //! Number of matrices to be applied.
+    /// Number of matrices to be applied.
     uint8_t     num_primitive_matrices;
 
-    //! matrix output channel
+    /// matrix output channel
     uint8_t     matrix_out_ch[MAX_MATRICES];
 
-    //! Whether the LSBs of the matrix output are encoded in the bitstream.
+    /// Whether the LSBs of the matrix output are encoded in the bitstream.
     uint8_t     lsb_bypass[MAX_MATRICES];
-    //! Matrix coefficients, stored as 2.14 fixed point.
-    int32_t     matrix_coeff[MAX_MATRICES][MAX_CHANNELS];
-    //! Left shift to apply to noise values in 0x31eb substreams.
+    /// Matrix coefficients, stored as 2.14 fixed point.
+    DECLARE_ALIGNED(32, int32_t, matrix_coeff)[MAX_MATRICES][MAX_CHANNELS];
+    /// Left shift to apply to noise values in 0x31eb substreams.
     uint8_t     matrix_noise_shift[MAX_MATRICES];
     //@}
 
-    //! Left shift to apply to Huffman-decoded residuals.
+    /// Left shift to apply to Huffman-decoded residuals.
     uint8_t     quant_step_size[MAX_CHANNELS];
 
-    //! number of PCM samples in current audio block
+    /// number of PCM samples in current audio block
     uint16_t    blocksize;
-    //! Number of PCM samples decoded so far in this frame.
+    /// Number of PCM samples decoded so far in this frame.
     uint16_t    blockpos;
 
-    //! Left shift to apply to decoded PCM values to get final 24-bit output.
+    /// Left shift to apply to decoded PCM values to get final 24-bit output.
     int8_t      output_shift[MAX_CHANNELS];
 
-    //! Running XOR of all output samples.
+    /// Running XOR of all output samples.
     int32_t     lossless_check_data;
 
 } SubStream;
@@ -121,21 +129,27 @@ typedef struct SubStream {
 typedef struct MLPDecodeContext {
     AVCodecContext *avctx;
 
-    //! Current access unit being read has a major sync.
+    /// Current access unit being read has a major sync.
     int         is_major_sync_unit;
 
-    //! Set if a valid major sync block has been read. Otherwise no decoding is possible.
+    /// Size of the major sync unit, in bytes
+    int         major_sync_header_size;
+
+    /// Set if a valid major sync block has been read. Otherwise no decoding is possible.
     uint8_t     params_valid;
 
-    //! Number of substreams contained within this stream.
+    /// Number of substreams contained within this stream.
     uint8_t     num_substreams;
 
-    //! Index of the last substream to decode - further substreams are skipped.
+    /// Index of the last substream to decode - further substreams are skipped.
     uint8_t     max_decoded_substream;
 
-    //! number of PCM samples contained in each frame
+    /// Stream needs channel reordering to comply with FFmpeg's channel order
+    uint8_t     needs_reordering;
+
+    /// number of PCM samples contained in each frame
     int         access_unit_size;
-    //! next power of two above the number of samples in each frame
+    /// next power of two above the number of samples in each frame
     int         access_unit_size_pow2;
 
     SubStream   substream[MAX_SUBSTREAMS];
@@ -145,10 +159,45 @@ typedef struct MLPDecodeContext {
 
     int8_t      noise_buffer[MAX_BLOCKSIZE_POW2];
     int8_t      bypassed_lsbs[MAX_BLOCKSIZE][MAX_CHANNELS];
-    int32_t     sample_buffer[MAX_BLOCKSIZE][MAX_CHANNELS];
+    DECLARE_ALIGNED(32, int32_t, sample_buffer)[MAX_BLOCKSIZE][MAX_CHANNELS];
 
-    DSPContext  dsp;
+    MLPDSPContext dsp;
 } MLPDecodeContext;
+
+static const uint64_t thd_channel_order[] = {
+    AV_CH_FRONT_LEFT, AV_CH_FRONT_RIGHT,                     // LR
+    AV_CH_FRONT_CENTER,                                      // C
+    AV_CH_LOW_FREQUENCY,                                     // LFE
+    AV_CH_SIDE_LEFT, AV_CH_SIDE_RIGHT,                       // LRs
+    AV_CH_TOP_FRONT_LEFT, AV_CH_TOP_FRONT_RIGHT,             // LRvh
+    AV_CH_FRONT_LEFT_OF_CENTER, AV_CH_FRONT_RIGHT_OF_CENTER, // LRc
+    AV_CH_BACK_LEFT, AV_CH_BACK_RIGHT,                       // LRrs
+    AV_CH_BACK_CENTER,                                       // Cs
+    AV_CH_TOP_CENTER,                                        // Ts
+    AV_CH_SURROUND_DIRECT_LEFT, AV_CH_SURROUND_DIRECT_RIGHT, // LRsd
+    AV_CH_WIDE_LEFT, AV_CH_WIDE_RIGHT,                       // LRw
+    AV_CH_TOP_FRONT_CENTER,                                  // Cvh
+    AV_CH_LOW_FREQUENCY_2,                                   // LFE2
+};
+
+static int mlp_channel_layout_subset(uint64_t channel_layout, uint64_t mask)
+{
+    return channel_layout && ((channel_layout & mask) == channel_layout);
+}
+
+static uint64_t thd_channel_layout_extract_channel(uint64_t channel_layout,
+                                                   int index)
+{
+    int i;
+
+    if (av_get_channel_layout_nb_channels(channel_layout) <= index)
+        return 0;
+
+    for (i = 0; i < FF_ARRAY_ELEMS(thd_channel_order); i++)
+        if (channel_layout & thd_channel_order[i] && !index--)
+            return thd_channel_order[i];
+    return 0;
+}
 
 static VLC huff_vlc[3];
 
@@ -159,13 +208,13 @@ static av_cold void init_static(void)
     if (!huff_vlc[0].bits) {
         INIT_VLC_STATIC(&huff_vlc[0], VLC_BITS, 18,
                     &ff_mlp_huffman_tables[0][0][1], 2, 1,
-                    &ff_mlp_huffman_tables[0][0][0], 2, 1, 512);
+                    &ff_mlp_huffman_tables[0][0][0], 2, 1, VLC_STATIC_SIZE);
         INIT_VLC_STATIC(&huff_vlc[1], VLC_BITS, 16,
                     &ff_mlp_huffman_tables[1][0][1], 2, 1,
-                    &ff_mlp_huffman_tables[1][0][0], 2, 1, 512);
+                    &ff_mlp_huffman_tables[1][0][0], 2, 1, VLC_STATIC_SIZE);
         INIT_VLC_STATIC(&huff_vlc[2], VLC_BITS, 15,
                     &ff_mlp_huffman_tables[2][0][1], 2, 1,
-                    &ff_mlp_huffman_tables[2][0][0], 2, 1, 512);
+                    &ff_mlp_huffman_tables[2][0][0], 2, 1, VLC_STATIC_SIZE);
     }
 
     ff_mlp_init_crc();
@@ -214,13 +263,13 @@ static inline int read_huff_channels(MLPDecodeContext *m, GetBitContext *gbp,
                             VLC_BITS, (9 + VLC_BITS - 1) / VLC_BITS);
 
         if (result < 0)
-            return -1;
+            return AVERROR_INVALIDDATA;
 
         if (lsb_bits > 0)
             result = (result << lsb_bits) + get_bits(gbp, lsb_bits);
 
         result  += cp->sign_huff_offset;
-        result <<= quant_step_size;
+        result *= 1 << quant_step_size;
 
         m->sample_buffer[pos + s->blockpos][channel] = result;
     }
@@ -237,7 +286,7 @@ static av_cold int mlp_decode_init(AVCodecContext *avctx)
     m->avctx = avctx;
     for (substr = 0; substr < MAX_SUBSTREAMS; substr++)
         m->substream[substr].lossless_check_data = 0xffffffff;
-    dsputil_init(&m->dsp, avctx);
+    ff_mlpdsp_init(&m->dsp);
 
     return 0;
 }
@@ -250,81 +299,169 @@ static av_cold int mlp_decode_init(AVCodecContext *avctx)
 static int read_major_sync(MLPDecodeContext *m, GetBitContext *gb)
 {
     MLPHeaderInfo mh;
-    int substr;
+    int substr, ret;
 
-    if (ff_mlp_read_major_sync(m->avctx, &mh, gb) != 0)
-        return -1;
+    if ((ret = ff_mlp_read_major_sync(m->avctx, &mh, gb)) != 0)
+        return ret;
 
     if (mh.group1_bits == 0) {
         av_log(m->avctx, AV_LOG_ERROR, "invalid/unknown bits per sample\n");
-        return -1;
+        return AVERROR_INVALIDDATA;
     }
     if (mh.group2_bits > mh.group1_bits) {
         av_log(m->avctx, AV_LOG_ERROR,
                "Channel group 2 cannot have more bits per sample than group 1.\n");
-        return -1;
+        return AVERROR_INVALIDDATA;
     }
 
     if (mh.group2_samplerate && mh.group2_samplerate != mh.group1_samplerate) {
         av_log(m->avctx, AV_LOG_ERROR,
                "Channel groups with differing sample rates are not currently supported.\n");
-        return -1;
+        return AVERROR_INVALIDDATA;
     }
 
     if (mh.group1_samplerate == 0) {
         av_log(m->avctx, AV_LOG_ERROR, "invalid/unknown sampling rate\n");
-        return -1;
+        return AVERROR_INVALIDDATA;
     }
     if (mh.group1_samplerate > MAX_SAMPLERATE) {
         av_log(m->avctx, AV_LOG_ERROR,
                "Sampling rate %d is greater than the supported maximum (%d).\n",
                mh.group1_samplerate, MAX_SAMPLERATE);
-        return -1;
+        return AVERROR_INVALIDDATA;
     }
     if (mh.access_unit_size > MAX_BLOCKSIZE) {
         av_log(m->avctx, AV_LOG_ERROR,
                "Block size %d is greater than the supported maximum (%d).\n",
                mh.access_unit_size, MAX_BLOCKSIZE);
-        return -1;
+        return AVERROR_INVALIDDATA;
     }
     if (mh.access_unit_size_pow2 > MAX_BLOCKSIZE_POW2) {
         av_log(m->avctx, AV_LOG_ERROR,
                "Block size pow2 %d is greater than the supported maximum (%d).\n",
                mh.access_unit_size_pow2, MAX_BLOCKSIZE_POW2);
-        return -1;
+        return AVERROR_INVALIDDATA;
     }
 
     if (mh.num_substreams == 0)
-        return -1;
-    if (m->avctx->codec_id == CODEC_ID_MLP && mh.num_substreams > 2) {
+        return AVERROR_INVALIDDATA;
+    if (m->avctx->codec_id == AV_CODEC_ID_MLP && mh.num_substreams > 2) {
         av_log(m->avctx, AV_LOG_ERROR, "MLP only supports up to 2 substreams.\n");
-        return -1;
+        return AVERROR_INVALIDDATA;
     }
     if (mh.num_substreams > MAX_SUBSTREAMS) {
-        av_log(m->avctx, AV_LOG_ERROR,
-               "Number of substreams %d is larger than the maximum supported "
-               "by the decoder. %s\n", mh.num_substreams, sample_message);
-        return -1;
+        avpriv_request_sample(m->avctx,
+                              "%d substreams (more than the "
+                              "maximum supported by the decoder)",
+                              mh.num_substreams);
+        return AVERROR_PATCHWELCOME;
     }
+
+    m->major_sync_header_size = mh.header_size;
 
     m->access_unit_size      = mh.access_unit_size;
     m->access_unit_size_pow2 = mh.access_unit_size_pow2;
 
     m->num_substreams        = mh.num_substreams;
-    m->max_decoded_substream = m->num_substreams - 1;
+
+    /* limit to decoding 3 substreams, as the 4th is used by Dolby Atmos for non-audio data */
+    m->max_decoded_substream = FFMIN(m->num_substreams - 1, 2);
 
     m->avctx->sample_rate    = mh.group1_samplerate;
     m->avctx->frame_size     = mh.access_unit_size;
 
     m->avctx->bits_per_raw_sample = mh.group1_bits;
     if (mh.group1_bits > 16)
-        m->avctx->sample_fmt = SAMPLE_FMT_S32;
+        m->avctx->sample_fmt = AV_SAMPLE_FMT_S32;
     else
-        m->avctx->sample_fmt = SAMPLE_FMT_S16;
+        m->avctx->sample_fmt = AV_SAMPLE_FMT_S16;
+    m->dsp.mlp_pack_output = m->dsp.mlp_select_pack_output(m->substream[m->max_decoded_substream].ch_assign,
+                                                           m->substream[m->max_decoded_substream].output_shift,
+                                                           m->substream[m->max_decoded_substream].max_matrix_channel,
+                                                           m->avctx->sample_fmt == AV_SAMPLE_FMT_S32);
 
     m->params_valid = 1;
     for (substr = 0; substr < MAX_SUBSTREAMS; substr++)
         m->substream[substr].restart_seen = 0;
+
+    /* Set the layout for each substream. When there's more than one, the first
+     * substream is Stereo. Subsequent substreams' layouts are indicated in the
+     * major sync. */
+    if (m->avctx->codec_id == AV_CODEC_ID_MLP) {
+        if (mh.stream_type != 0xbb) {
+            avpriv_request_sample(m->avctx,
+                        "unexpected stream_type %X in MLP",
+                        mh.stream_type);
+            return AVERROR_PATCHWELCOME;
+        }
+        if ((substr = (mh.num_substreams > 1)))
+            m->substream[0].mask = AV_CH_LAYOUT_STEREO;
+        m->substream[substr].mask = mh.channel_layout_mlp;
+    } else {
+        if (mh.stream_type != 0xba) {
+            avpriv_request_sample(m->avctx,
+                        "unexpected stream_type %X in !MLP",
+                        mh.stream_type);
+            return AVERROR_PATCHWELCOME;
+        }
+        if ((substr = (mh.num_substreams > 1)))
+            m->substream[0].mask = AV_CH_LAYOUT_STEREO;
+        if (mh.num_substreams > 2)
+            if (mh.channel_layout_thd_stream2)
+                m->substream[2].mask = mh.channel_layout_thd_stream2;
+            else
+                m->substream[2].mask = mh.channel_layout_thd_stream1;
+        m->substream[substr].mask = mh.channel_layout_thd_stream1;
+
+        if (m->avctx->channels<=2 && m->substream[substr].mask == AV_CH_LAYOUT_MONO && m->max_decoded_substream == 1) {
+            av_log(m->avctx, AV_LOG_DEBUG, "Mono stream with 2 substreams, ignoring 2nd\n");
+            m->max_decoded_substream = 0;
+            if (m->avctx->channels==2)
+                m->avctx->channel_layout = AV_CH_LAYOUT_STEREO;
+        }
+    }
+
+    m->needs_reordering = mh.channel_arrangement >= 18 && mh.channel_arrangement <= 20;
+
+    /* Parse the TrueHD decoder channel modifiers and set each substream's
+     * AVMatrixEncoding accordingly.
+     *
+     * The meaning of the modifiers depends on the channel layout:
+     *
+     * - THD_CH_MODIFIER_LTRT, THD_CH_MODIFIER_LBINRBIN only apply to 2-channel
+     *
+     * - THD_CH_MODIFIER_MONO applies to 1-channel or 2-channel (dual mono)
+     *
+     * - THD_CH_MODIFIER_SURROUNDEX, THD_CH_MODIFIER_NOTSURROUNDEX only apply to
+     *   layouts with an Ls/Rs channel pair
+     */
+    for (substr = 0; substr < MAX_SUBSTREAMS; substr++)
+        m->substream[substr].matrix_encoding = AV_MATRIX_ENCODING_NONE;
+    if (m->avctx->codec_id == AV_CODEC_ID_TRUEHD) {
+        if (mh.num_substreams > 2 &&
+            mh.channel_layout_thd_stream2 & AV_CH_SIDE_LEFT &&
+            mh.channel_layout_thd_stream2 & AV_CH_SIDE_RIGHT &&
+            mh.channel_modifier_thd_stream2 == THD_CH_MODIFIER_SURROUNDEX)
+            m->substream[2].matrix_encoding = AV_MATRIX_ENCODING_DOLBYEX;
+
+        if (mh.num_substreams > 1 &&
+            mh.channel_layout_thd_stream1 & AV_CH_SIDE_LEFT &&
+            mh.channel_layout_thd_stream1 & AV_CH_SIDE_RIGHT &&
+            mh.channel_modifier_thd_stream1 == THD_CH_MODIFIER_SURROUNDEX)
+            m->substream[1].matrix_encoding = AV_MATRIX_ENCODING_DOLBYEX;
+
+        if (mh.num_substreams > 0)
+            switch (mh.channel_modifier_thd_stream0) {
+            case THD_CH_MODIFIER_LTRT:
+                m->substream[0].matrix_encoding = AV_MATRIX_ENCODING_DOLBY;
+                break;
+            case THD_CH_MODIFIER_LBINRBIN:
+                m->substream[0].matrix_encoding = AV_MATRIX_ENCODING_DOLBYHEADPHONE;
+                break;
+            default:
+                break;
+            }
+    }
 
     return 0;
 }
@@ -342,66 +479,72 @@ static int read_restart_header(MLPDecodeContext *m, GetBitContext *gbp,
     uint8_t checksum;
     uint8_t lossless_check;
     int start_count = get_bits_count(gbp);
-    const int max_matrix_channel = m->avctx->codec_id == CODEC_ID_MLP
-                                 ? MAX_MATRIX_CHANNEL_MLP
-                                 : MAX_MATRIX_CHANNEL_TRUEHD;
+    int min_channel, max_channel, max_matrix_channel, noise_type;
+    const int std_max_matrix_channel = m->avctx->codec_id == AV_CODEC_ID_MLP
+                                     ? MAX_MATRIX_CHANNEL_MLP
+                                     : MAX_MATRIX_CHANNEL_TRUEHD;
 
     sync_word = get_bits(gbp, 13);
 
     if (sync_word != 0x31ea >> 1) {
         av_log(m->avctx, AV_LOG_ERROR,
                "restart header sync incorrect (got 0x%04x)\n", sync_word);
-        return -1;
+        return AVERROR_INVALIDDATA;
     }
 
-    s->noise_type = get_bits1(gbp);
+    noise_type = get_bits1(gbp);
 
-    if (m->avctx->codec_id == CODEC_ID_MLP && s->noise_type) {
+    if (m->avctx->codec_id == AV_CODEC_ID_MLP && noise_type) {
         av_log(m->avctx, AV_LOG_ERROR, "MLP must have 0x31ea sync word.\n");
-        return -1;
+        return AVERROR_INVALIDDATA;
     }
 
     skip_bits(gbp, 16); /* Output timestamp */
 
-    s->min_channel        = get_bits(gbp, 4);
-    s->max_channel        = get_bits(gbp, 4);
-    s->max_matrix_channel = get_bits(gbp, 4);
+    min_channel        = get_bits(gbp, 4);
+    max_channel        = get_bits(gbp, 4);
+    max_matrix_channel = get_bits(gbp, 4);
 
-    if (s->max_matrix_channel > max_matrix_channel) {
+    if (max_matrix_channel > std_max_matrix_channel) {
         av_log(m->avctx, AV_LOG_ERROR,
                "Max matrix channel cannot be greater than %d.\n",
-               max_matrix_channel);
-        return -1;
+               std_max_matrix_channel);
+        return AVERROR_INVALIDDATA;
     }
 
-    if (s->max_channel != s->max_matrix_channel) {
+    if (max_channel != max_matrix_channel) {
         av_log(m->avctx, AV_LOG_ERROR,
                "Max channel must be equal max matrix channel.\n");
-        return -1;
+        return AVERROR_INVALIDDATA;
     }
 
     /* This should happen for TrueHD streams with >6 channels and MLP's noise
      * type. It is not yet known if this is allowed. */
-    if (s->max_channel > MAX_MATRIX_CHANNEL_MLP && !s->noise_type) {
-        av_log(m->avctx, AV_LOG_ERROR,
-               "Number of channels %d is larger than the maximum supported "
-               "by the decoder. %s\n", s->max_channel+2, sample_message);
-        return -1;
+    if (max_channel > MAX_MATRIX_CHANNEL_MLP && !noise_type) {
+        avpriv_request_sample(m->avctx,
+                              "%d channels (more than the "
+                              "maximum supported by the decoder)",
+                              max_channel + 2);
+        return AVERROR_PATCHWELCOME;
     }
 
-    if (s->min_channel > s->max_channel) {
+    if (min_channel > max_channel) {
         av_log(m->avctx, AV_LOG_ERROR,
                "Substream min channel cannot be greater than max channel.\n");
-        return -1;
+        return AVERROR_INVALIDDATA;
     }
 
-    if (m->avctx->request_channels > 0
-        && s->max_channel + 1 >= m->avctx->request_channels
-        && substr < m->max_decoded_substream) {
+    s->min_channel        = min_channel;
+    s->max_channel        = max_channel;
+    s->max_matrix_channel = max_matrix_channel;
+    s->noise_type         = noise_type;
+
+    if (mlp_channel_layout_subset(m->avctx->request_channel_layout, s->mask) &&
+        m->max_decoded_substream > substr) {
         av_log(m->avctx, AV_LOG_DEBUG,
-               "Extracting %d channel downmix from substream %d. "
+               "Extracting %d-channel downmix (0x%"PRIx64") from substream %d. "
                "Further substreams will be skipped.\n",
-               s->max_channel + 1, substr);
+               s->max_channel + 1, s->mask, substr);
         m->max_decoded_substream = substr;
     }
 
@@ -427,11 +570,17 @@ static int read_restart_header(MLPDecodeContext *m, GetBitContext *gbp,
 
     for (ch = 0; ch <= s->max_matrix_channel; ch++) {
         int ch_assign = get_bits(gbp, 6);
-        if (ch_assign > s->max_matrix_channel) {
-            av_log(m->avctx, AV_LOG_ERROR,
-                   "Assignment of matrix channel %d to invalid output channel %d. %s\n",
-                   ch, ch_assign, sample_message);
-            return -1;
+        if (m->avctx->codec_id == AV_CODEC_ID_TRUEHD) {
+            uint64_t channel = thd_channel_layout_extract_channel(s->mask,
+                                                                  ch_assign);
+            ch_assign = av_get_channel_layout_channel_index(s->mask,
+                                                            channel);
+        }
+        if (ch_assign < 0 || ch_assign > s->max_matrix_channel) {
+            avpriv_request_sample(m->avctx,
+                                  "Assignment of matrix channel %d to invalid output channel %d",
+                                  ch, ch_assign);
+            return AVERROR_PATCHWELCOME;
         }
         s->ch_assign[ch_assign] = ch;
     }
@@ -459,13 +608,33 @@ static int read_restart_header(MLPDecodeContext *m, GetBitContext *gbp,
 
         /* Default audio coding is 24-bit raw PCM. */
         cp->huff_offset      = 0;
-        cp->sign_huff_offset = (-1) << 23;
+        cp->sign_huff_offset = -(1 << 23);
         cp->codebook         = 0;
         cp->huff_lsbs        = 24;
     }
 
-    if (substr == m->max_decoded_substream)
-        m->avctx->channels = s->max_matrix_channel + 1;
+    if (substr == m->max_decoded_substream) {
+        m->avctx->channels       = s->max_matrix_channel + 1;
+        m->avctx->channel_layout = s->mask;
+        m->dsp.mlp_pack_output = m->dsp.mlp_select_pack_output(s->ch_assign,
+                                                               s->output_shift,
+                                                               s->max_matrix_channel,
+                                                               m->avctx->sample_fmt == AV_SAMPLE_FMT_S32);
+
+        if (m->avctx->codec_id == AV_CODEC_ID_MLP && m->needs_reordering) {
+            if (m->avctx->channel_layout == (AV_CH_LAYOUT_QUAD|AV_CH_LOW_FREQUENCY) ||
+                m->avctx->channel_layout == AV_CH_LAYOUT_5POINT0_BACK) {
+                int i = s->ch_assign[4];
+                s->ch_assign[4] = s->ch_assign[3];
+                s->ch_assign[3] = s->ch_assign[2];
+                s->ch_assign[2] = i;
+            } else if (m->avctx->channel_layout == AV_CH_LAYOUT_5POINT1_BACK) {
+                FFSWAP(int, s->ch_assign[2], s->ch_assign[4]);
+                FFSWAP(int, s->ch_assign[3], s->ch_assign[5]);
+            }
+        }
+
+    }
 
     return 0;
 }
@@ -483,11 +652,11 @@ static int read_filter_params(MLPDecodeContext *m, GetBitContext *gbp,
     int i, order;
 
     // Filter is 0 for FIR, 1 for IIR.
-    assert(filter < 2);
+    av_assert0(filter < 2);
 
     if (m->filter_changed[channel][filter]++ > 1) {
         av_log(m->avctx, AV_LOG_ERROR, "Filters may change only once per access unit.\n");
-        return -1;
+        return AVERROR_INVALIDDATA;
     }
 
     order = get_bits(gbp, 4);
@@ -495,7 +664,7 @@ static int read_filter_params(MLPDecodeContext *m, GetBitContext *gbp,
         av_log(m->avctx, AV_LOG_ERROR,
                "%cIR filter order %d is greater than maximum %d.\n",
                fchar, order, max_order);
-        return -1;
+        return AVERROR_INVALIDDATA;
     }
     fp->order = order;
 
@@ -511,17 +680,17 @@ static int read_filter_params(MLPDecodeContext *m, GetBitContext *gbp,
             av_log(m->avctx, AV_LOG_ERROR,
                    "%cIR filter coeff_bits must be between 1 and 16.\n",
                    fchar);
-            return -1;
+            return AVERROR_INVALIDDATA;
         }
         if (coeff_bits + coeff_shift > 16) {
             av_log(m->avctx, AV_LOG_ERROR,
                    "Sum of coeff_bits and coeff_shift for %cIR filter must be 16 or less.\n",
                    fchar);
-            return -1;
+            return AVERROR_INVALIDDATA;
         }
 
         for (i = 0; i < order; i++)
-            fcoeff[i] = get_sbits(gbp, coeff_bits) << coeff_shift;
+            fcoeff[i] = get_sbits(gbp, coeff_bits) * (1 << coeff_shift);
 
         if (get_bits1(gbp)) {
             int state_bits, state_shift;
@@ -529,7 +698,7 @@ static int read_filter_params(MLPDecodeContext *m, GetBitContext *gbp,
             if (filter == FIR) {
                 av_log(m->avctx, AV_LOG_ERROR,
                        "FIR filter has state data specified.\n");
-                return -1;
+                return AVERROR_INVALIDDATA;
             }
 
             state_bits  = get_bits(gbp, 4);
@@ -538,7 +707,7 @@ static int read_filter_params(MLPDecodeContext *m, GetBitContext *gbp,
             /* TODO: Check validity of state data. */
 
             for (i = 0; i < order; i++)
-                fp->state[i] = get_sbits(gbp, state_bits) << state_shift;
+                fp->state[i] = state_bits ? get_sbits(gbp, state_bits) * (1 << state_shift) : 0;
         }
     }
 
@@ -551,13 +720,13 @@ static int read_matrix_params(MLPDecodeContext *m, unsigned int substr, GetBitCo
 {
     SubStream *s = &m->substream[substr];
     unsigned int mat, ch;
-    const int max_primitive_matrices = m->avctx->codec_id == CODEC_ID_MLP
+    const int max_primitive_matrices = m->avctx->codec_id == AV_CODEC_ID_MLP
                                      ? MAX_MATRICES_MLP
                                      : MAX_MATRICES_TRUEHD;
 
     if (m->matrix_changed++ > 1) {
         av_log(m->avctx, AV_LOG_ERROR, "Matrices may change only once per access unit.\n");
-        return -1;
+        return AVERROR_INVALIDDATA;
     }
 
     s->num_primitive_matrices = get_bits(gbp, 4);
@@ -566,7 +735,7 @@ static int read_matrix_params(MLPDecodeContext *m, unsigned int substr, GetBitCo
         av_log(m->avctx, AV_LOG_ERROR,
                "Number of primitive matrices cannot be greater than %d.\n",
                max_primitive_matrices);
-        return -1;
+        goto error;
     }
 
     for (mat = 0; mat < s->num_primitive_matrices; mat++) {
@@ -579,12 +748,12 @@ static int read_matrix_params(MLPDecodeContext *m, unsigned int substr, GetBitCo
             av_log(m->avctx, AV_LOG_ERROR,
                     "Invalid channel %d specified as output from matrix.\n",
                     s->matrix_out_ch[mat]);
-            return -1;
+            goto error;
         }
         if (frac_bits > 14) {
             av_log(m->avctx, AV_LOG_ERROR,
                     "Too many fractional bits specified.\n");
-            return -1;
+            goto error;
         }
 
         max_chan = s->max_matrix_channel;
@@ -596,7 +765,7 @@ static int read_matrix_params(MLPDecodeContext *m, unsigned int substr, GetBitCo
             if (get_bits1(gbp))
                 coeff_val = get_sbits(gbp, frac_bits + 2);
 
-            s->matrix_coeff[mat][ch] = coeff_val << (14 - frac_bits);
+            s->matrix_coeff[mat][ch] = coeff_val * (1 << (14 - frac_bits));
         }
 
         if (s->noise_type)
@@ -606,6 +775,11 @@ static int read_matrix_params(MLPDecodeContext *m, unsigned int substr, GetBitCo
     }
 
     return 0;
+error:
+    s->num_primitive_matrices = 0;
+    memset(s->matrix_out_ch, 0, sizeof(s->matrix_out_ch));
+
+    return AVERROR_INVALIDDATA;
 }
 
 /** Read channel parameters. */
@@ -617,27 +791,28 @@ static int read_channel_params(MLPDecodeContext *m, unsigned int substr,
     ChannelParams *cp = &s->channel_params[ch];
     FilterParams *fir = &cp->filter_params[FIR];
     FilterParams *iir = &cp->filter_params[IIR];
+    int ret;
 
     if (s->param_presence_flags & PARAM_FIR)
         if (get_bits1(gbp))
-            if (read_filter_params(m, gbp, substr, ch, FIR) < 0)
-                return -1;
+            if ((ret = read_filter_params(m, gbp, substr, ch, FIR)) < 0)
+                return ret;
 
     if (s->param_presence_flags & PARAM_IIR)
         if (get_bits1(gbp))
-            if (read_filter_params(m, gbp, substr, ch, IIR) < 0)
-                return -1;
+            if ((ret = read_filter_params(m, gbp, substr, ch, IIR)) < 0)
+                return ret;
 
     if (fir->order + iir->order > 8) {
         av_log(m->avctx, AV_LOG_ERROR, "Total filter orders too high.\n");
-        return -1;
+        return AVERROR_INVALIDDATA;
     }
 
     if (fir->order && iir->order &&
         fir->shift != iir->shift) {
         av_log(m->avctx, AV_LOG_ERROR,
                 "FIR and IIR filters must use the same precision.\n");
-        return -1;
+        return AVERROR_INVALIDDATA;
     }
     /* The FIR and IIR filters must have the same precision.
      * To simplify the filtering code, only the precision of the
@@ -656,10 +831,9 @@ static int read_channel_params(MLPDecodeContext *m, unsigned int substr,
 
     if (cp->huff_lsbs > 24) {
         av_log(m->avctx, AV_LOG_ERROR, "Invalid huff_lsbs.\n");
-        return -1;
+        cp->huff_lsbs = 0;
+        return AVERROR_INVALIDDATA;
     }
-
-    cp->sign_huff_offset = calculate_sign_huff(m, substr, ch);
 
     return 0;
 }
@@ -672,6 +846,8 @@ static int read_decoding_params(MLPDecodeContext *m, GetBitContext *gbp,
 {
     SubStream *s = &m->substream[substr];
     unsigned int ch;
+    int ret = 0;
+    unsigned recompute_sho = 0;
 
     if (s->param_presence_flags & PARAM_PRESENCE)
         if (get_bits1(gbp))
@@ -681,41 +857,69 @@ static int read_decoding_params(MLPDecodeContext *m, GetBitContext *gbp,
         if (get_bits1(gbp)) {
             s->blocksize = get_bits(gbp, 9);
             if (s->blocksize < 8 || s->blocksize > m->access_unit_size) {
-                av_log(m->avctx, AV_LOG_ERROR, "Invalid blocksize.");
+                av_log(m->avctx, AV_LOG_ERROR, "Invalid blocksize.\n");
                 s->blocksize = 0;
-                return -1;
+                return AVERROR_INVALIDDATA;
             }
         }
 
     if (s->param_presence_flags & PARAM_MATRIX)
         if (get_bits1(gbp))
-            if (read_matrix_params(m, substr, gbp) < 0)
-                return -1;
+            if ((ret = read_matrix_params(m, substr, gbp)) < 0)
+                return ret;
 
     if (s->param_presence_flags & PARAM_OUTSHIFT)
-        if (get_bits1(gbp))
-            for (ch = 0; ch <= s->max_matrix_channel; ch++)
+        if (get_bits1(gbp)) {
+            for (ch = 0; ch <= s->max_matrix_channel; ch++) {
                 s->output_shift[ch] = get_sbits(gbp, 4);
+                if (s->output_shift[ch] < 0) {
+                    avpriv_request_sample(m->avctx, "Negative output_shift");
+                    s->output_shift[ch] = 0;
+                }
+            }
+            if (substr == m->max_decoded_substream)
+                m->dsp.mlp_pack_output = m->dsp.mlp_select_pack_output(s->ch_assign,
+                                                                       s->output_shift,
+                                                                       s->max_matrix_channel,
+                                                                       m->avctx->sample_fmt == AV_SAMPLE_FMT_S32);
+        }
 
     if (s->param_presence_flags & PARAM_QUANTSTEP)
         if (get_bits1(gbp))
             for (ch = 0; ch <= s->max_channel; ch++) {
-                ChannelParams *cp = &s->channel_params[ch];
-
                 s->quant_step_size[ch] = get_bits(gbp, 4);
 
-                cp->sign_huff_offset = calculate_sign_huff(m, substr, ch);
+                recompute_sho |= 1<<ch;
             }
 
     for (ch = s->min_channel; ch <= s->max_channel; ch++)
-        if (get_bits1(gbp))
-            if (read_channel_params(m, substr, gbp, ch) < 0)
-                return -1;
+        if (get_bits1(gbp)) {
+            recompute_sho |= 1<<ch;
+            if ((ret = read_channel_params(m, substr, gbp, ch)) < 0)
+                goto fail;
+        }
 
-    return 0;
+
+fail:
+    for (ch = 0; ch <= s->max_channel; ch++) {
+        if (recompute_sho & (1<<ch)) {
+            ChannelParams *cp = &s->channel_params[ch];
+
+            if (cp->codebook > 0 && cp->huff_lsbs < s->quant_step_size[ch]) {
+                if (ret >= 0) {
+                    av_log(m->avctx, AV_LOG_ERROR, "quant_step_size larger than huff_lsbs\n");
+                    ret = AVERROR_INVALIDDATA;
+                }
+                s->quant_step_size[ch] = 0;
+            }
+
+            cp->sign_huff_offset = calculate_sign_huff(m, substr, ch);
+        }
+    }
+    return ret;
 }
 
-#define MSB_MASK(bits)  (-1u << bits)
+#define MSB_MASK(bits)  (-1u << (bits))
 
 /** Generate PCM samples using the prediction filters and residual values
  *  read from the data stream, and update the filter state. */
@@ -752,25 +956,26 @@ static int read_block_data(MLPDecodeContext *m, GetBitContext *gbp,
 {
     SubStream *s = &m->substream[substr];
     unsigned int i, ch, expected_stream_pos = 0;
+    int ret;
 
     if (s->data_check_present) {
         expected_stream_pos  = get_bits_count(gbp);
         expected_stream_pos += get_bits(gbp, 16);
-        av_log(m->avctx, AV_LOG_WARNING, "This file contains some features "
-               "we have not tested yet. %s\n", sample_message);
+        avpriv_request_sample(m->avctx,
+                              "Substreams with VLC block size check info");
     }
 
     if (s->blockpos + s->blocksize > m->access_unit_size) {
         av_log(m->avctx, AV_LOG_ERROR, "too many audio samples in frame\n");
-        return -1;
+        return AVERROR_INVALIDDATA;
     }
 
     memset(&m->bypassed_lsbs[s->blockpos][0], 0,
            s->blocksize * sizeof(m->bypassed_lsbs[0]));
 
     for (i = 0; i < s->blocksize; i++)
-        if (read_huff_channels(m, gbp, substr, i) < 0)
-            return -1;
+        if ((ret = read_huff_channels(m, gbp, substr, i)) < 0)
+            return ret;
 
     for (ch = s->min_channel; ch <= s->max_channel; ch++)
         filter_channel(m, substr, ch);
@@ -826,8 +1031,8 @@ static void generate_2_noise_channels(MLPDecodeContext *m, unsigned int substr)
 
     for (i = 0; i < s->blockpos; i++) {
         uint16_t seed_shr7 = seed >> 7;
-        m->sample_buffer[i][maxchan+1] = ((int8_t)(seed >> 15)) << s->noise_shift;
-        m->sample_buffer[i][maxchan+2] = ((int8_t) seed_shr7)   << s->noise_shift;
+        m->sample_buffer[i][maxchan+1] = ((int8_t)(seed >> 15)) * (1 << s->noise_shift);
+        m->sample_buffer[i][maxchan+2] = ((int8_t) seed_shr7)   * (1 << s->noise_shift);
 
         seed = (seed << 16) ^ seed_shr7 ^ (seed_shr7 << 5);
     }
@@ -852,15 +1057,27 @@ static void fill_noise_buffer(MLPDecodeContext *m, unsigned int substr)
     s->noisegen_seed = seed;
 }
 
+/** Write the audio data into the output buffer. */
 
-/** Apply the channel matrices in turn to reconstruct the original audio
- *  samples. */
-
-static void rematrix_channels(MLPDecodeContext *m, unsigned int substr)
+static int output_data(MLPDecodeContext *m, unsigned int substr,
+                       AVFrame *frame, int *got_frame_ptr)
 {
+    AVCodecContext *avctx = m->avctx;
     SubStream *s = &m->substream[substr];
-    unsigned int mat, src_ch, i;
+    unsigned int mat;
     unsigned int maxchan;
+    int ret;
+    int is32 = (m->avctx->sample_fmt == AV_SAMPLE_FMT_S32);
+
+    if (m->avctx->channels != s->max_matrix_channel + 1) {
+        av_log(m->avctx, AV_LOG_ERROR, "channel count mismatch\n");
+        return AVERROR_INVALIDDATA;
+    }
+
+    if (!s->blockpos) {
+        av_log(avctx, AV_LOG_ERROR, "No samples to output.\n");
+        return AVERROR_INVALIDDATA;
+    }
 
     maxchan = s->max_matrix_channel;
     if (!s->noise_type) {
@@ -870,80 +1087,51 @@ static void rematrix_channels(MLPDecodeContext *m, unsigned int substr)
         fill_noise_buffer(m, substr);
     }
 
+    /* Apply the channel matrices in turn to reconstruct the original audio
+     * samples. */
     for (mat = 0; mat < s->num_primitive_matrices; mat++) {
-        int matrix_noise_shift = s->matrix_noise_shift[mat];
         unsigned int dest_ch = s->matrix_out_ch[mat];
-        int32_t mask = MSB_MASK(s->quant_step_size[dest_ch]);
-        int32_t *coeffs = s->matrix_coeff[mat];
-        int index  = s->num_primitive_matrices - mat;
-        int index2 = 2 * index + 1;
-
-        /* TODO: DSPContext? */
-
-        for (i = 0; i < s->blockpos; i++) {
-            int32_t bypassed_lsb = m->bypassed_lsbs[i][mat];
-            int32_t *samples = m->sample_buffer[i];
-            int64_t accum = 0;
-
-            for (src_ch = 0; src_ch <= maxchan; src_ch++)
-                accum += (int64_t) samples[src_ch] * coeffs[src_ch];
-
-            if (matrix_noise_shift) {
-                index &= m->access_unit_size_pow2 - 1;
-                accum += m->noise_buffer[index] << (matrix_noise_shift + 7);
-                index += index2;
-            }
-
-            samples[dest_ch] = ((accum >> 14) & mask) + bypassed_lsb;
-        }
-    }
-}
-
-/** Write the audio data into the output buffer. */
-
-static int output_data_internal(MLPDecodeContext *m, unsigned int substr,
-                                uint8_t *data, unsigned int *data_size, int is32)
-{
-    SubStream *s = &m->substream[substr];
-    unsigned int i, out_ch = 0;
-    int32_t *data_32 = (int32_t*) data;
-    int16_t *data_16 = (int16_t*) data;
-
-    if (*data_size < (s->max_channel + 1) * s->blockpos * (is32 ? 4 : 2))
-        return -1;
-
-    for (i = 0; i < s->blockpos; i++) {
-        for (out_ch = 0; out_ch <= s->max_matrix_channel; out_ch++) {
-            int mat_ch = s->ch_assign[out_ch];
-            int32_t sample = m->sample_buffer[i][mat_ch]
-                          << s->output_shift[mat_ch];
-            s->lossless_check_data ^= (sample & 0xffffff) << mat_ch;
-            if (is32) *data_32++ = sample << 8;
-            else      *data_16++ = sample >> 8;
-        }
+        m->dsp.mlp_rematrix_channel(&m->sample_buffer[0][0],
+                                    s->matrix_coeff[mat],
+                                    &m->bypassed_lsbs[0][mat],
+                                    m->noise_buffer,
+                                    s->num_primitive_matrices - mat,
+                                    dest_ch,
+                                    s->blockpos,
+                                    maxchan,
+                                    s->matrix_noise_shift[mat],
+                                    m->access_unit_size_pow2,
+                                    MSB_MASK(s->quant_step_size[dest_ch]));
     }
 
-    *data_size = i * out_ch * (is32 ? 4 : 2);
+    /* get output buffer */
+    frame->nb_samples = s->blockpos;
+    if ((ret = ff_get_buffer(avctx, frame, 0)) < 0)
+        return ret;
+    s->lossless_check_data = m->dsp.mlp_pack_output(s->lossless_check_data,
+                                                    s->blockpos,
+                                                    m->sample_buffer,
+                                                    frame->data[0],
+                                                    s->ch_assign,
+                                                    s->output_shift,
+                                                    s->max_matrix_channel,
+                                                    is32);
+
+    /* Update matrix encoding side data */
+    if ((ret = ff_side_data_update_matrix_encoding(frame, s->matrix_encoding)) < 0)
+        return ret;
+
+    *got_frame_ptr = 1;
 
     return 0;
 }
 
-static int output_data(MLPDecodeContext *m, unsigned int substr,
-                       uint8_t *data, unsigned int *data_size)
-{
-    if (m->avctx->sample_fmt == SAMPLE_FMT_S32)
-        return output_data_internal(m, substr, data, data_size, 1);
-    else
-        return output_data_internal(m, substr, data, data_size, 0);
-}
-
-
 /** Read an access unit from the stream.
- *  Returns < 0 on error, 0 if not enough data is present in the input stream
- *  otherwise returns the number of bytes consumed. */
+ *  @return negative on error, 0 if not enough data is present in the input stream,
+ *  otherwise the number of bytes consumed. */
 
-static int read_access_unit(AVCodecContext *avctx, void* data, int *data_size,
-                            AVPacket *avpkt)
+static int read_access_unit(AVCodecContext *avctx, void* data,
+                            int *got_frame_ptr, AVPacket *avpkt)
 {
     const uint8_t *buf = avpkt->data;
     int buf_size = avpkt->size;
@@ -956,14 +1144,15 @@ static int read_access_unit(AVCodecContext *avctx, void* data, int *data_size,
     uint8_t substream_parity_present[MAX_SUBSTREAMS];
     uint16_t substream_data_len[MAX_SUBSTREAMS];
     uint8_t parity_bits;
+    int ret;
 
     if (buf_size < 4)
-        return 0;
+        return AVERROR_INVALIDDATA;
 
     length = (AV_RB16(buf) & 0xfff) * 2;
 
     if (length < 4 || length > buf_size)
-        return -1;
+        return AVERROR_INVALIDDATA;
 
     init_get_bits(&gb, (buf + 4), (length - 4) * 8);
 
@@ -972,13 +1161,13 @@ static int read_access_unit(AVCodecContext *avctx, void* data, int *data_size,
         if (read_major_sync(m, &gb) < 0)
             goto error;
         m->is_major_sync_unit = 1;
-        header_size += 28;
+        header_size += m->major_sync_header_size;
     }
 
     if (!m->params_valid) {
         av_log(m->avctx, AV_LOG_WARNING,
                "Stream parameters not seen; skipping frame.\n");
-        *data_size = 0;
+        *got_frame_ptr = 0;
         return length;
     }
 
@@ -997,12 +1186,17 @@ static int read_access_unit(AVCodecContext *avctx, void* data, int *data_size,
         substr_header_size += 2;
 
         if (extraword_present) {
-            if (m->avctx->codec_id == CODEC_ID_MLP) {
+            if (m->avctx->codec_id == AV_CODEC_ID_MLP) {
                 av_log(m->avctx, AV_LOG_ERROR, "There must be no extraword for MLP.\n");
                 goto error;
             }
             skip_bits(&gb, 16);
             substr_header_size += 2;
+        }
+
+        if (length < header_size + substr_header_size) {
+            av_log(m->avctx, AV_LOG_ERROR, "Insuffient data for headers\n");
+            goto error;
         }
 
         if (!(nonrestart_substr ^ m->is_major_sync_unit)) {
@@ -1069,8 +1263,8 @@ static int read_access_unit(AVCodecContext *avctx, void* data, int *data_size,
             if (!s->restart_seen)
                 goto next_substr;
 
-            if (read_block_data(m, &gb, substr) < 0)
-                return -1;
+            if ((ret = read_block_data(m, &gb, substr)) < 0)
+                return ret;
 
             if (get_bits_count(&gb) >= substream_data_len[substr] * 8)
                 goto substream_length_mismatch;
@@ -1083,13 +1277,13 @@ static int read_access_unit(AVCodecContext *avctx, void* data, int *data_size,
             int shorten_by;
 
             if (get_bits(&gb, 16) != 0xD234)
-                return -1;
+                return AVERROR_INVALIDDATA;
 
             shorten_by = get_bits(&gb, 16);
-            if      (m->avctx->codec_id == CODEC_ID_TRUEHD && shorten_by  & 0x2000)
+            if      (m->avctx->codec_id == AV_CODEC_ID_TRUEHD && shorten_by  & 0x2000)
                 s->blockpos -= FFMIN(shorten_by & 0x1FFF, s->blockpos);
-            else if (m->avctx->codec_id == CODEC_ID_MLP    && shorten_by != 0xD234)
-                return -1;
+            else if (m->avctx->codec_id == AV_CODEC_ID_MLP    && shorten_by != 0xD234)
+                return AVERROR_INVALIDDATA;
 
             if (substr == m->max_decoded_substream)
                 av_log(m->avctx, AV_LOG_INFO, "End of stream indicated.\n");
@@ -1121,44 +1315,41 @@ next_substr:
         buf += substream_data_len[substr];
     }
 
-    rematrix_channels(m, m->max_decoded_substream);
-
-    if (output_data(m, m->max_decoded_substream, data, data_size) < 0)
-        return -1;
+    if ((ret = output_data(m, m->max_decoded_substream, data, got_frame_ptr)) < 0)
+        return ret;
 
     return length;
 
 substream_length_mismatch:
     av_log(m->avctx, AV_LOG_ERROR, "substream %d length mismatch\n", substr);
-    return -1;
+    return AVERROR_INVALIDDATA;
 
 error:
     m->params_valid = 0;
-    return -1;
+    return AVERROR_INVALIDDATA;
 }
 
-AVCodec mlp_decoder = {
-    "mlp",
-    AVMEDIA_TYPE_AUDIO,
-    CODEC_ID_MLP,
-    sizeof(MLPDecodeContext),
-    mlp_decode_init,
-    NULL,
-    NULL,
-    read_access_unit,
-    .long_name = NULL_IF_CONFIG_SMALL("MLP (Meridian Lossless Packing)"),
+#if CONFIG_MLP_DECODER
+AVCodec ff_mlp_decoder = {
+    .name           = "mlp",
+    .long_name      = NULL_IF_CONFIG_SMALL("MLP (Meridian Lossless Packing)"),
+    .type           = AVMEDIA_TYPE_AUDIO,
+    .id             = AV_CODEC_ID_MLP,
+    .priv_data_size = sizeof(MLPDecodeContext),
+    .init           = mlp_decode_init,
+    .decode         = read_access_unit,
+    .capabilities   = AV_CODEC_CAP_DR1,
 };
-
+#endif
 #if CONFIG_TRUEHD_DECODER
-AVCodec truehd_decoder = {
-    "truehd",
-    AVMEDIA_TYPE_AUDIO,
-    CODEC_ID_TRUEHD,
-    sizeof(MLPDecodeContext),
-    mlp_decode_init,
-    NULL,
-    NULL,
-    read_access_unit,
-    .long_name = NULL_IF_CONFIG_SMALL("TrueHD"),
+AVCodec ff_truehd_decoder = {
+    .name           = "truehd",
+    .long_name      = NULL_IF_CONFIG_SMALL("TrueHD"),
+    .type           = AVMEDIA_TYPE_AUDIO,
+    .id             = AV_CODEC_ID_TRUEHD,
+    .priv_data_size = sizeof(MLPDecodeContext),
+    .init           = mlp_decode_init,
+    .decode         = read_access_unit,
+    .capabilities   = AV_CODEC_CAP_DR1,
 };
 #endif /* CONFIG_TRUEHD_DECODER */

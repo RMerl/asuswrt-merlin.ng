@@ -198,7 +198,12 @@ function initial(){
 			document.form.smart_connect_t.value = smart_connect_flag_t;
 
 		enableSmartCon(smart_connect_flag_t);
+		if(isSupport("triband") && dwb_info.mode) {
+			if(wl_unit_value != document.form.wl_unit.value)
+				change_wl_unit();
+		}
 	}
+	dwb_regen_band(document.form.wl_unit, wl_unit_value);
 }
 
 function genBWTable(_unit){
@@ -724,20 +729,27 @@ function enableSmartCon(val){
 	var value = new Array();
 	var desc = new Array();
 
-	if(based_modelid=="RT-AC5300" || based_modelid=="GT-AC5300"){
-		desc = ["Tri-Band Smart Connect (2.4GHz, 5GHz-1 and 5GHz-2)", "5GHz Smart Connect (5GHz-1 and 5GHz-2)"];
-		value = ["1", "2"];
-		add_options_x2(document.form.smart_connect_t, desc, value, val);
-	}
-	else if(based_modelid =="RT-AC3200"){
-		desc = ["Tri-Band Smart Connect (2.4GHz, 5GHz-1 and 5GHz-2)"];
-		value = ["1"];
-		add_options_x2(document.form.smart_connect_t, desc, value, val);	
-	}
-	else if(based_modelid == "RT-AC88U" || based_modelid == "RT-AC86U" || based_modelid == "AC2900" || based_modelid == "RT-AC3100" || based_modelid == "BLUECAVE"){
+	if(isSupport("triband") && dwb_info.mode) {
 		desc = ["Dual-Band Smart Connect (2.4GHz and 5GHz)"];
 		value = ["1"];
-		add_options_x2(document.form.smart_connect_t, desc, value, val);		
+		add_options_x2(document.form.smart_connect_t, desc, value, val);
+	}
+	else {
+		if(based_modelid=="RT-AC5300" || based_modelid=="GT-AC5300"){
+			desc = ["Tri-Band Smart Connect (2.4GHz, 5GHz-1 and 5GHz-2)", "5GHz Smart Connect (5GHz-1 and 5GHz-2)"];
+			value = ["1", "2"];
+			add_options_x2(document.form.smart_connect_t, desc, value, val);
+		}
+		else if(based_modelid =="RT-AC3200"){
+			desc = ["Tri-Band Smart Connect (2.4GHz, 5GHz-1 and 5GHz-2)"];
+			value = ["1"];
+			add_options_x2(document.form.smart_connect_t, desc, value, val);
+		}
+		else if(based_modelid == "RT-AC88U" || based_modelid == "RT-AC86U" || based_modelid == "AC2900" || based_modelid == "RT-AC3100" || based_modelid == "BLUECAVE"){
+			desc = ["Dual-Band Smart Connect (2.4GHz and 5GHz)"];
+			value = ["1"];
+			add_options_x2(document.form.smart_connect_t, desc, value, val);
+		}
 	}
 	
 	
@@ -783,8 +795,10 @@ function enableSmartCon(val){
 		regen_auto_option(document.form.wl_nctrlsb);			
 	}
 	
-	if(based_modelid=="RT-AC5300" || based_modelid=="GT-AC5300" || based_modelid=="RT-AC3200")
+	if(based_modelid=="RT-AC5300" || based_modelid=="GT-AC5300" || based_modelid=="RT-AC3200") {
 		_change_smart_connect(val);
+		dwb_regen_band(document.form.wl_unit, wl_unit);
+	}
 }
 
 function regen_auto_option(obj){

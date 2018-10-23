@@ -312,6 +312,7 @@ define(function(){
 					{url: "Main_Analysis_Content.asp", tabName: "<#Network_Analysis#>"},
 					{url: "Main_Netstat_Content.asp", tabName: "Netstat"},
 					{url: "Main_WOL_Content.asp", tabName: "<#NetworkTools_WOL#>"},
+					{url: "Main_ChkSta_Content.asp", tabName: "Check Station Status"},
 					{url: "Advanced_Smart_Connect.asp", tabName: "<#smart_connect_rule#>"},
 					{url: "NULL", tabName: "__INHERIT__"}
 				]

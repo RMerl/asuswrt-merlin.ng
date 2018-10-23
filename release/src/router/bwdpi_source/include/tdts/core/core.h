@@ -302,9 +302,11 @@ typedef struct pkt_parameter
 	struct pkt_parameter *(*async_prepare)(struct pkt_parameter *);
 	int (*async_send)(struct pkt_parameter *);
 
+#if 0
 #if TMCFG_APP_K_TDTS_HIT_RATE_NFFW
 	/* Used to store the memory address of system packet */
 	void *sys_pkt_ptr;
+#endif
 #endif
 
 	void *private_ptr;
@@ -576,6 +578,7 @@ extern int tdts_core_system_setting_state_get(unsigned *state_ptr);
 extern int tdts_core_system_setting_state_set(unsigned state);
 
 extern int tdts_core_tcp_conn_remove(uint8_t  ip_ver, uint8_t *sip, uint8_t *dip, uint16_t sport, uint16_t dport);
+extern int tdts_core_udp_conn_remove(uint8_t  ip_ver, uint8_t *sip, uint8_t *dip, uint16_t sport, uint16_t dport);
 extern int tdts_core_system_setting_tcp_conn_max_set(unsigned int conn_max);
 extern int tdts_core_system_setting_tcp_conn_max_get(unsigned int *conn_max_ptr);
 extern int tdts_core_system_setting_tcp_conn_timeout_set(unsigned int timeout_sec);

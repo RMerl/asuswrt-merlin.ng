@@ -5500,6 +5500,22 @@ mangle_setting(char *wan_if, char *wan_ip, char *lan_if, char *lan_ip, char *log
 			     "-m", "state", "--state", "NEW", "-j", "MARK", "--set-mark", "0x01/0x7");
 		}
 
+		/* mark 5060 port connection for SIP signaling of VoIP, including UDP and TCP type */
+#ifdef CONFIG_BCMWL5
+		if (nvram_match("fw_pt_sip", "1")) {
+#ifdef HND_ROUTER
+			//do nothing
+#else
+			eval("iptables", "-t", "mangle", "-A", "FORWARD",
+				"-p", "udp", "-m", "udp",
+				"--dport", "5060", "-j", "MARK", "--set-mark", "0x01/0x7");
+			eval("iptables", "-t", "mangle", "-A", "FORWARD",
+				"-p", "tcp", "-m", "tcp",
+				"--dport", "5060", "-j", "MARK", "--set-mark", "0x01/0x7");
+#endif /* HND_ROUTER */
+		}
+#endif /* CONFIG_BCMWL5 */
+
 		/* mark VTS loopback connections */
 		if (nvram_match("vts_enable_x", "1") || dmz_enabled() ||
 			(is_nat_enabled() && nvram_get_int("upnp_enable"))) {

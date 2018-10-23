@@ -139,12 +139,16 @@ for(i=0;i<bl_version_array.length;i++){
 
 <% wl_get_parameter(); %>
 var mcast_rates = [
-	["HTMIX 6.5/15", "14", 0, 1, 1],
+	["HTMIX 6.5/15", "14", 0, 1, 1],	// MTK HTMIX
 	["HTMIX 13/30",	 "15", 0, 1, 1],
 	["HTMIX 19.5/45","16", 0, 1, 1],
-	["HTMIX 13/30",	 "17", 0, 1, 2],
 	["HTMIX 26/60",	 "18", 0, 1, 2],
 	["HTMIX 130/144","13", 0, 1, 2],
+	["HTMIX 6.5",    "14", 0, 2, 1],	// QCA HTMIX
+	["HTMIX 13",	 "15", 0, 2, 1],
+	["HTMIX 19.5",   "16", 0, 2, 1],
+	["HTMIX 26",	 "18", 0, 2, 2],
+	["HTMIX 130",    "13", 0, 2, 2],
 	["OFDM 6",	 "4",  0, 0, 1],
 	["OFDM 9",	 "5",  0, 0, 1],
 	["OFDM 12",	 "7",  0, 0, 1],
@@ -240,6 +244,8 @@ function initial(){
 		document.getElementById("wl_unit_field").style.display = "none";
 
 	regen_band(document.form.wl_unit);
+	dwb_regen_band(document.form.wl_unit);
+
 	document.getElementById("wl_rate").style.display = "none";
 
 	if(Rawifi_support){
@@ -422,6 +428,15 @@ function initial(){
 		if (mcast_unit == '1' && mcast_rates[i][2]) // 5Ghz && CCK
 			continue;
 		if (!Rawifi_support && !Qcawifi_support && mcast_rates[i][3]) // BCM && HTMIX
+			continue;
+		if (Qcawifi_support){
+			if (mcast_rates[i][3] == 1) // QCA, skip MTK's HTMIX
+				continue;
+		}else{
+			if (mcast_rates[i][3] == 2) // another platform, skip QCA's HTMIX
+				continue;
+		}
+		if ((Rawifi_support || Qcawifi_support) && document.form.wl_nmode_x.value == "2" && mcast_rates[i][3])
 			continue;
 		if (Rawifi_support && HtTxStream < mcast_rates[i][4]) // ralink && HtTxStream
 			continue;
@@ -675,7 +690,9 @@ function adjust_tx_power(){
 			document.getElementById('slider').children[1].style.left =  "100%";
 			document.form.wl_txpower.value = 100;
 			document.getElementById("tx_power_desc").innerHTML = power_table_desc[4];
-		}		
+		}
+
+		FormActions("start_apply.htm", "apply", "reboot", "<% get_default_reboot_time(); %>");		
 	}
 }
 

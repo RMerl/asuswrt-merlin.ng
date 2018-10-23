@@ -123,79 +123,6 @@ static const struct mode_s {
 	{ 0, NULL },
 };
 
-/**
- * Run "iwpriv XXX get_XXX" and return string behind colon.
- * Expected result is shown below:
- * ath1      get_mode:11ACVHT40
- *                    ^^^^^^^^^
- * @iface:	interface name
- * @cmd:	get cmd
- * @buf:	pointer to memory area which is used to keep result.
- * 		it is guarantee as valid/empty string, if it is valid pointer
- * @buf_len:	length of @buf
- * @return:
- * 	0:	success
- *     -1:	invalid parameter
- *     -2:	run iwpriv command fail
- *     -3:	read result strin fail
- */
-static int __iwpriv_get(const char *iface, char *cmd, char *buf, unsigned int buf_len)
-{
-	int len;
-	FILE *fp;
-	char *p = NULL, iwpriv_cmd[64], tmp[128];
-
-	if (!iface || *iface == '\0' || !cmd || *cmd == '\0' || !buf || buf_len <= 1)
-		return -1;
-
-	if (strncmp(cmd, "get_", 4) && strncmp(cmd, "g_", 2)) {
-		dbg("%s: iface [%s] cmd [%s] may not be supported!\n",
-			__func__, iface, cmd);
-	}
-
-	*buf = '\0';
-	snprintf(iwpriv_cmd, sizeof(iwpriv_cmd), "iwpriv %s %s", iface, cmd);
-	if (!(fp = popen(iwpriv_cmd, "r")))
-		return -2;
-
-	len = fread(tmp, 1, sizeof(tmp), fp);
-	pclose(fp);
-	if (len < 1)
-		return -3;
-
-	tmp[len-1] = '\0';
-	if (!(p = strchr(tmp, ':'))) {
-		dbg("%s: parsing [%s] of cmd [%s] error!", __func__, tmp, cmd);
-		return -4;
-	}
-	p++;
-	chomp(p);
-	strlcpy(buf, p, buf_len);
-
-	return 0;
-}
-
-/**
- * Run "iwpriv XXX get_XXX" and return string behind colon.
- * Expected result is shown below:
- * ath1      get_mode:11ACVHT40
- *                    ^^^^^^^^^ result
- * @iface:	interface name
- * @cmd:	get cmd
- * @return:
- * 	NULL	invalid parameter or error.
- *  otherwise:	success
- */
-static char *iwpriv_get(const char *iface, char *cmd)
-{
-	static char result[256];
-
-	if (__iwpriv_get(iface, cmd, result, sizeof(result)))
-		return NULL;
-
-	return result;
-}
-
 static void getWPSConfig(int unit, WPS_CONFIGURED_VALUE *result)
 {
 	char buf[128];
@@ -693,7 +620,7 @@ typedef struct _WIFI_STA_TABLE {
 static int __getSTAInfo(int unit, WIFI_STA_TABLE *sta_info, char *ifname, char id)
 {
 	FILE *fp;
-	int l2_offset, subunit;
+	int l2_offset, subunit, channf;
 	char *l2, *l3;
 	char line_buf[300]; // max 14x
 	char subunit_str[4] = "0", wlif[sizeof("wlX.Yxxx")];
@@ -718,6 +645,8 @@ static int __getSTAInfo(int unit, WIFI_STA_TABLE *sta_info, char *ifname, char i
 		dbg("%s: invalid subunit %d\n", __func__, subunit);
 		return -2;
 	}
+
+	channf = QCA_DEFAULT_NOISE_FLOOR;
 
 	snprintf(wlif, sizeof(wlif), "wl%d.%d", unit, subunit);
 	if (subunit >= 0 && subunit < MAX_NO_MSSID)
@@ -762,6 +691,8 @@ ADDR               AID CHAN TXRATE RXRATE RSSI IDLE  TXSEQ  RXSEQ  CAPS        A
 				&r->u_acaps, &r->u_erp, &r->u_state_maxrate, r->htcaps, r->conn_time, r->ie);
 			if (strlen(r->rxrate) >= 6)
 				strcpy(r->rxrate, "0M");
+			convert_mac_string(r->addr);
+			r->rssi += channf;
 #if 0
 			dbg("[%s][%u][%u][%s][%s][%u][%u][%u][%u][%s]"
 				"[%u][%u][%x][%s][%s][%s][%d]\n",
@@ -770,7 +701,6 @@ ADDR               AID CHAN TXRATE RXRATE RSSI IDLE  TXSEQ  RXSEQ  CAPS        A
 				r->u_acaps, r->u_erp, r->u_state_maxrate, r->htcaps, r->ie,
 				r->mode, r->u_psmode);
 #endif
-				convert_mac_string(r->addr);
 		}
 
 		fclose(fp);
@@ -1368,9 +1298,9 @@ wl_status(int eid, webs_t wp, int argc, char_t **argv, int unit)
 #endif
 		ret += show_wliface_info(wp, unit, ifname, op_mode);
 		ret += websWrite(wp, "\nStations List\n");
-		ret += websWrite(wp, "-------------------------------------------------------------------------------\n");
-		ret += websWrite(wp, "%-16s %-17s %-15s %-7s %-7s %-12s\n",
-			"idx", "MAC", "PhyMode", "TX_RATE", "RX_RATE", "Connect Time");
+		ret += websWrite(wp, "------------------------------------------------------------------------------------\n");
+		ret += websWrite(wp, "%-16s %-17s %-15s %-4s %-7s %-7s %-12s\n",
+			"idx", "MAC", "PhyMode", "RSSI", "TX_RATE", "RX_RATE", "Connect Time");
 
 		if ((sta_info = malloc(sizeof(*sta_info))) != NULL) {
 			getSTAInfo(unit, sta_info);
@@ -1389,10 +1319,11 @@ wl_status(int eid, webs_t wp, int argc, char_t **argv, int unit)
 				else {
 					dbg("%s: Unknown subunit [%s]\n", sta_info->Entry[i].subunit);
 				}
-				ret += websWrite(wp, "%-16s %-17s %-15s %7s %7s %12s\n",
+				ret += websWrite(wp, "%-16s %-17s %-15s %4d %7s %7s %12s\n",
 					subunit_str,
 					sta_info->Entry[i].addr,
 					sta_info->Entry[i].mode,
+					sta_info->Entry[i].rssi,
 					sta_info->Entry[i].txrate,
 					sta_info->Entry[i].rxrate,
 					sta_info->Entry[i].conn_time
@@ -2300,13 +2231,27 @@ int
 ej_wl_auth_psta(int eid, webs_t wp, int argc, char_t **argv)
 {
 	int retval = 0;
+	int psta = 0, psta_auth = 0;
 
-	if(nvram_match("wlc_state", "2"))	//connected
-		retval += websWrite(wp, "wlc_state=1;wlc_state_auth=0;");
+	if(nvram_match("wlc_state", "2")){	//connected
+		psta = 1;
+		psta_auth = 0;
 	//else if(?)				//authorization failed
 	//	retval += websWrite(wp, "wlc_state=2;wlc_state_auth=1;");
-	else					//disconnected
-		retval += websWrite(wp, "wlc_state=0;wlc_state_auth=0;");
+	}else{					//disconnected
+		psta = 0;
+		psta_auth = 0;
+	}
+
+	if(json_support){
+		retval += websWrite(wp, "{");
+		retval += websWrite(wp, "\"wlc_state\":\"%d\"", psta);
+		retval += websWrite(wp, ",\"wlc_state_auth\":\"%d\"", psta_auth);
+		retval += websWrite(wp, "}");
+	}else{
+		retval += websWrite(wp, "wlc_state=%d;", psta);
+		retval += websWrite(wp, "wlc_state_auth=%d;", psta_auth);
+	}
 
 	return retval;
 }

@@ -153,6 +153,28 @@ function checkPasswd($obj){
 	});
 }
 
+function checkWepKey($obj, wepType){
+	var status = false;
+	var wepKey = $obj.val();
+	if(wepType == "1"){
+		if(!(wepKey.length === 5 && validator.string($obj[0])) &&
+			!(wepKey.length === 10 && validator.hex($obj[0])))
+		{
+			$obj.showTextHint("<#JS_wepkey#><#WLANConfig11b_WEPKey_itemtype1#>");
+			status = true;
+		}
+	}
+	else if(wepType == "2"){
+		if(!(wepKey.length === 13 && validator.string($obj[0])) &&
+			!(wepKey.length === 26 && validator.hex($obj[0])))
+		{
+			$obj.showTextHint("<#JS_wepkey#><#WLANConfig11b_WEPKey_itemtype2#>");
+			status = true;
+		}
+	}
+	return status;
+}
+
 function hasBlank(objArray){
 	$(".hint").remove();
 	$.each(objArray, function(idx, $obj){
@@ -164,7 +186,7 @@ function hasBlank(objArray){
 }
 
 function hadPlugged(deviceType){
-	var usbDeviceList = httpApi.hookGet("show_usb_path")[0] || [];
+	var usbDeviceList = httpApi.hookGet("show_usb_path") || [];
 	return (usbDeviceList.join().search(deviceType) != -1)
 }
 
@@ -378,6 +400,36 @@ var Get_Component_WirelessInput = function(wlArray){
 	return container;
 }
 
+var Get_Component_ISPSelect = function(){
+	var isp_select = $("<select>").attr({"name": "switch_wantag", "id": "switch_wantag"});
+	var isp_profiles = httpApi.hookGet("get_iptvSettings").isp_profiles;
+	var original_switch_wantag = httpApi.nvramGet(["switch_wantag"]).switch_wantag;
+	var text = "";
+	var selected = false;
+
+	$.each(isp_profiles, function(i, isp_profile) {
+		text = isp_profile.profile_name;
+
+		if(text == "none")
+			text = "<#wl_securitylevel_0#>";
+		else if(text == "manual")
+			text = "<#Manual_Setting_btn#>";
+
+		if(isp_profile.switch_wantag == original_switch_wantag)
+			selected = true;
+		else
+			selected = false;
+
+		isp_select
+			.append($("<option></option>")
+			.attr("value",isp_profile.switch_wantag)
+			.text(text)
+			.attr("selected", selected));
+	});
+
+	return isp_select;
+}
+
 function handleSysDep(){
 	var isNoWAN = (httpApi.detwanGetRet().wanType == 'NOWAN');
 
@@ -388,7 +440,6 @@ function handleSysDep(){
 	$(".repeaterSupport").toggle(isSupport("repeater"));
 	$(".pstaSupport").toggle(isSupport("psta"));
 	$(".dualbandSupport").toggle(isSupport("dualband") || isSupport("triband"));
-	$(".bandStreeringSupport").toggle(isSupport("SMARTCONNECT"));
 	$(".vpnClient").toggle(isSupport("VPNCLIENT"));
 	$(".iptv").toggle(isSupport("IPTV"));
 	$(".defaultSupport").toggle(systemVariable.isDefault);
@@ -396,10 +447,7 @@ function handleSysDep(){
 	//$(".forceUpgrade").toggle(isSupport("fupgrade")); 
 	$(".routerSupport").toggle(!isSupport("noRouter"));
 
-	$("#syncSSID").hide();
-	$("#wireless_sync_checkbox").enableCheckBox(!isSupport("SMARTCONNECT") && (isSupport("dualband") || isSupport("triband")));
-
-	if(systemVariable.forceChangePw && isSupport("amas")){
+	if(systemVariable.forceChangePw){
 		systemVariable.forceChangePw = false;
 		systemVariable.forceChangePwInTheEnd = true;
 	}
@@ -470,6 +518,22 @@ function handleModelIcon() {
 		else
 			return default_png_path;
 	}() + ')');
+}
+
+function handleSortField(){
+	if(!$("#sort_field").is(":visible")){
+		$("#sort_field").fadeIn(300)
+		$("#sort_background").fadeIn(300)
+	}
+	else{
+		$("#sort_field").fadeOut(300);
+		$("#sort_background").fadeOut(300);
+	}
+
+	if(systemVariable.multiPAP.wlcOrder.length != 0)
+		$("#sortByBand").hide();
+	else
+		$("#sortByBand").show();
 }
 
 function setUpTimeZone(){
@@ -549,6 +613,44 @@ function setupWLCNvram(apProfileID) {
 	}
 }
 
+function sortAP(kind, sequence){
+	var array_tmp = new Array();
+	array_tmp = httpApi.hookGet("get_ap_info", false).sort(function(a,b){
+		if(kind == "signal"){
+			var a_tmp = parseInt(a[5]);	//compare signal strength
+			var b_tmp = parseInt(b[5]);
+		}
+		else if(kind == "alpha"){
+			var a_tmp = a[1].toUpperCase();	//compare SSID
+			var b_tmp = b[1].toUpperCase();
+		}
+		else{
+			var a_tmp = a[0];	//compare band
+			var b_tmp = b[0];
+		}
+
+		if(sequence == "top"){
+			if(a_tmp > b_tmp)
+				return -1;
+			else if(a_tmp < b_tmp)
+				return 1;
+			else
+				return 0;
+		}
+		else{
+			if(a_tmp > b_tmp)
+				return 1;
+			else if(a_tmp < b_tmp)
+				return -1;
+			else
+				return 0;
+		}
+	});
+	systemVariable.papList = getPAPList(array_tmp);
+	genPAPList(systemVariable.papList, systemVariable.multiPAP.wlcOrder);
+	handleSortField();
+}
+
 function updateSubnet(ipAddr){
 	if(ipAddr == systemVariable.lanIpaddr && systemVariable.detwanResult.isIPConflict){
 		var ipAddrArray = ipAddr.split(".");
@@ -588,7 +690,13 @@ var getRestartService = function(){
 		actionScript.push("restart_yadns");
 	}
 
-	if(qisPostData.hasOwnProperty("wl0_ssid") || qisPostData.hasOwnProperty("wl0.1_ssid") || systemVariable.isDefault){
+	if(
+		qisPostData.hasOwnProperty("wl0_ssid") || 
+		qisPostData.hasOwnProperty("wl0.1_ssid") || 
+		qisPostData.hasOwnProperty("wl0_he_features") || 
+		systemVariable.isDefault || 
+		isSmartConnectChanged()
+	){
 		actionScript.push("restart_wireless");
 	}
 
@@ -603,6 +711,11 @@ var getRestartService = function(){
 
 	if(qisPostData.hasOwnProperty("cfg_master")){
 		actionScript.push("restart_cfgsync");
+	}
+
+	if(isSupport("2p5G_LWAN") || isSupport("10G_LWAN") || isSupport("10GS_LWAN")){
+		if(isWANLANChange())
+			return "reboot";
 	}
 
 	if( qisPostData.hasOwnProperty("switch_wantag") ||
@@ -676,6 +789,20 @@ var isWANChanged = function(){
 	return isChanged;
 };
 
+var isWANLANChange = function(){
+	var isChanged = false;
+
+	if(isSupport("2p5G_LWAN") && qisPostData.hasOwnProperty("wans_extwan")){
+		if(qisPostData.wans_extwan != systemVariable.originWansExtwan) isChanged = true;
+	}
+
+	if((isSupport("10G_LWAN") || isSupport("10GS_LWAN")) && qisPostData.hasOwnProperty("wans_dualwan")){
+		if(qisPostData.wans_dualwan != systemVariable.originWansDualwan) isChanged = true;
+	}
+
+	return isChanged;
+};
+
 var isPage = function(page){
 	return $("#" + page).is(":visible");
 }
@@ -695,7 +822,7 @@ var isSupport = function(_ptn){
 			matchingResult = (isSku("US") || isSku("CA") || isSku("TW") || isSku("CN")) ? false : true;
 			break;
 		case "IPTV":
-			matchingResult = (isSku("EU") || isSku("SG") || isSku("AA") || isSku("TW")) ? true : false;
+			matchingResult = (isSku("US") || isSku("CN") || isSku("CA")) ? false : true;
 			break;
 		case "SMARTCONNECT":
 			matchingResult = (ui_support["smart_connect"] == 1 || ui_support["bandstr"] == 1) ? true : false;
@@ -724,6 +851,17 @@ var isSwModeChanged = function(){
 	return (systemVariable.opMode.toLowerCase() != systemVariable.originOpMode.toLowerCase()) ? true : false;
 }
 
+var isSmartConnectChanged = function(){
+	var flag = false;
+	if(isSupport("SMARTCONNECT")){
+		if(qisPostData.hasOwnProperty("smart_connect_x")) {
+			var smart_connect_x = httpApi.nvramGet(["smart_connect_x"]).smart_connect_x;
+			if(qisPostData.smart_connect_x != smart_connect_x)
+				flag = true;
+		}
+	}
+	return flag;
+}
 var isSdk = function(ver){
 	return (ver == systemVariable.sdkVersion) ? true : false;
 }
@@ -1001,5 +1139,40 @@ genWLBandOption = function(){
 		wlArray.forEach(function(band){
 			$("#wlc_band_manual").append($("<option>").val(band).html(getAllWlArray()[band].title));
 		});
+	}
+};
+handleWLWepOption = function(authMode){
+	if(authMode == "open"){
+		$("#wlc_wep_manual option[value='0']").show();
+		$("#wlc_wep_manual option[value='0']").prop("selected", true).change();
+	}
+	else if(authMode == "shared"){
+		$("#wlc_wep_manual option[value='0']").hide();
+		$("#wlc_wep_manual option[value='1']").prop("selected", true).change();
+	}
+};
+handleWLAuthModeItem = function(){
+	var auth_mode = $("#wlc_auth_mode_manual").val();
+	var crypto = $("#wlc_crypto_manual").val();
+	var wep = $("#wlc_wep_manual").val();
+	$("#manual_pap_setup-crypto").hide();
+	$("#manual_pap_setup-wep").hide();
+	$("#manual_pap_setup-key-index").hide();
+	$("#manual_pap_setup-key").hide();
+	$("#manual_pap_setup-nmode_hint").hide();
+	if(auth_mode == "open" && wep == "0"){
+		$("#manual_pap_setup-wep").show();
+	}
+	else if((auth_mode == "open" && wep != "0") || auth_mode == "shared"){
+		$("#manual_pap_setup-wep").show();
+		$("#manual_pap_setup-key-index").show();
+		$("#manual_pap_setup-key").show();
+		$("#manual_pap_setup-nmode_hint").show();
+	}
+	else if(auth_mode == "psk" || auth_mode == "psk2"){
+		$("#manual_pap_setup-crypto").show();
+		$("#manual_pap_setup-key").show();
+		if(crypto == "tkip")
+			$("#manual_pap_setup-nmode_hint").show();
 	}
 };

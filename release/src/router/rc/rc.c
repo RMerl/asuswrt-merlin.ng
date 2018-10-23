@@ -758,6 +758,9 @@ static const applets_t applets[] = {
 #endif
 #endif
 	{ "watchdog",			watchdog_main			},
+#ifdef RTCONFIG_CONNTRACK
+	{ "pctime",			pctime_main			},
+#endif
 #if ! (defined(RTCONFIG_QCA) || defined(RTCONFIG_RALINK))
 	{ "watchdog02",			watchdog02_main			},
 #endif  /* ! (RTCONFIG_QCA || RTCONFIG_RALINK) */
@@ -779,6 +782,11 @@ static const applets_t applets[] = {
 #if defined(RTCONFIG_AMAS) && defined(RTCONFIG_ETHOBD)
 	{ "obd_eth",		obdeth_main					},
 	{ "obd_monitor",	obd_monitor_main			},
+#endif
+#if defined(RTCONFIG_AMAS) && defined(RTCONFIG_CFGSYNC)
+#if defined(RTCONFIG_HND_ROUTER_AX)
+	{ "rmd",			rmd_main			},
+#endif
 #endif
 #ifdef RTCONFIG_IPERF
 	{ "monitor",			monitor_main			},
@@ -833,7 +841,9 @@ static const applets_t applets[] = {
 	{ "delay_exec",			delay_main			},
 
 	{ "wanduck",			wanduck_main			},
+#ifdef RTCONFIG_CONNDIAG
 	{ "conn_diag",			conn_diag_main			},
+#endif
 #if defined(CONFIG_BCMWL5) && !defined(HND_ROUTER) && defined(RTCONFIG_DUALWAN)
 	{ "dualwan",			dualwan_control			},
 #endif

@@ -51,13 +51,6 @@
 
 #define	DEFAULT_SSID_2G	"ASUS"
 #define	DEFAULT_SSID_5G	"ASUS_5G"
-#ifdef RTCONFIG_WIFI_SON
-#define	QCA_MACCMD	"maccmd_sec"
-#define	QCA_ADDMAC	"addmac_sec"
-#else
-#define	QCA_MACCMD	"maccmd"
-#define	QCA_ADDMAC	"addmac"
-#endif
 
 #define APSCAN_WLIST	"/tmp/apscan_wlist"
 
@@ -197,17 +190,15 @@ static int atoh(const char *a, unsigned char *e)
 	return i;
 }
 
-char *htoa(const unsigned char *e, char *a, int len)
+char * htoa(const unsigned char *e, char *a, int len)
 {
 	char *c = a;
-	int i, l;
+	int i;
 
-	for (i = 0, l = len; i < len; i++) {
+	for (i = 0; i < len; i++) {
 		if (i)
 			*c++ = ':';
-		l = snprintf(c, len, "%02X", e[i] & 0xff);
-		len -= l;
-		c += l;
+		c += sprintf(c, "%02X", e[i] & 0xff);
 	}
 	return a;
 }
@@ -286,7 +277,7 @@ void gen_macmode(int mac_filter[], int band, char *prefix)
 static inline void __choose_mrate(char *prefix, int *mcast_phy, int *mcast_mcs, int *rate)
 {
 	int phy = 3, mcs = 7;	/* HTMIX 65/150Mbps */
-	*rate=150000;
+	*rate = 65000;		/* 11N NSS1 MCS7 */
 	char tmp[128];
 
 #ifdef RTCONFIG_IPV6
@@ -305,7 +296,7 @@ static inline void __choose_mrate(char *prefix, int *mcast_phy, int *mcast_mcs, 
 		} else {
 			phy = 3;
 			mcs = 1;	/* 5G: HTMIX 13/30Mbps */
-			*rate=30000;
+			*rate = 13000;
 		}
 		/* fall through */
 	case IPV6_DISABLED:
@@ -514,6 +505,23 @@ int get_bw_via_channel(int band, int channel)
 		}
 	}
 	return wl_bw;
+}
+
+char * conv_iwconfig_essid(char *ssid_in, char *ssid_out)
+{
+	int i, len;
+	if (ssid_out == NULL)
+		return NULL;
+
+	*ssid_out = '\0';
+	if(ssid_in != NULL && (len = strlen(ssid_in)) <= 32) {
+		char *p = ssid_out;
+		for (i = 0; i < len; i++) {
+			p += sprintf(p, "\\%c", ssid_in[i]);
+		}
+		return ssid_out;
+	}
+	return NULL;
 }
 
 #ifdef RTCONFIG_WIRELESSREPEATER
@@ -1042,11 +1050,7 @@ int gen_ath_config(int band, int is_iNIC,int subnet)
 	fprintf(fp2,"iwpriv %s hide_ssid %d\n",wif,nvram_get_int(strcat_r(prefix, "closed", tmp)));
 	strlcpy(tmp, nvram_pf_safe_get(prefix, "ssid"), sizeof(tmp));
 	//replace SSID each char to "\char"
-	*buf = '\0';
-	for (i = 0; i < strlen(tmp); i++) {
-		sprintf(temp, "\\%c", tmp[i]);
-		strlcat(buf, temp, sizeof(buf));
-	}
+	conv_iwconfig_essid(tmp, buf);
 	fprintf(fp2, "iwconfig %s essid -- %s\n", wif, buf);
 	
 	if (!rep_mode)
@@ -1545,6 +1549,16 @@ int gen_ath_config(int band, int is_iNIC,int subnet)
 #endif	/* RTCONFIG_AMAS */
 
 	//AccessPolicy0
+    {
+#ifdef RTCONFIG_AMAS	/* reset prefix locally */
+	char prefix[16];
+	if (subnet <= 0 && nvram_get_int("re_mode") == 1)
+		snprintf(prefix, sizeof(prefix), "wl%d.1_", band);
+	else if(subnet > 0)
+		snprintf(prefix, sizeof(prefix), "wl%d.%d", band, subnet);
+	else
+		snprintf(prefix, sizeof(prefix), "wl%d_", band);
+#endif
 	gen_macmode(mac_filter, band, prefix);	//Ren
 	__get_wlifname(band, subnet, athfix);
 	str = nvram_safe_get(strcat_r(prefix, "macmode", tmp));
@@ -1569,6 +1583,7 @@ int gen_ath_config(int band, int is_iNIC,int subnet)
 			free(nv);
 		}
 	}
+    }
 
 	if(rep_mode){
 #if defined(RTCONFIG_AMAS)
@@ -1814,70 +1829,70 @@ next_mrate:
 			 */
 			break;
 		case 1:		/* Legacy CCK 1Mbps */
-			fprintf(fp2, "iwpriv %s mcast_rate 1000\n",wif);
+			fprintf(fp2, "(sleep 10 ; iwpriv %s mcast_rate 1000) &\n",wif);
 			mcast_phy = 1;
 			break;
 		case 2:		/* Legacy CCK 2Mbps */
-			fprintf(fp2, "iwpriv %s mcast_rate 2000\n",wif);
+			fprintf(fp2, "(sleep 10 ; iwpriv %s mcast_rate 2000) &\n",wif);
 			mcast_phy = 1;
 			break;
 		case 3:		/* Legacy CCK 5.5Mbps */
-			fprintf(fp2, "iwpriv %s mcast_rate 5500\n",wif);
+			fprintf(fp2, "(sleep 10 ; iwpriv %s mcast_rate 5500) &\n",wif);
 			mcast_phy = 1;
 			break;
 		case 4:		/* Legacy OFDM 6Mbps */
-			fprintf(fp2, "iwpriv %s mcast_rate 6000\n",wif);
+			fprintf(fp2, "(sleep 10 ; iwpriv %s mcast_rate 6000) &\n",wif);
 			break;
 		case 5:		/* Legacy OFDM 9Mbps */
-			fprintf(fp2, "iwpriv %s mcast_rate 9000\n",wif);
+			fprintf(fp2, "(sleep 10 ; iwpriv %s mcast_rate 9000) &\n",wif);
 			break;
 		case 6:		/* Legacy CCK 11Mbps */
-			fprintf(fp2, "iwpriv %s mcast_rate 11000\n",wif);
+			fprintf(fp2, "(sleep 10 ; iwpriv %s mcast_rate 11000) &\n",wif);
 			mcast_phy = 1;
 			break;
 		case 7:		/* Legacy OFDM 12Mbps */
-			fprintf(fp2, "iwpriv %s mcast_rate 12000\n",wif);
+			fprintf(fp2, "(sleep 10 ; iwpriv %s mcast_rate 12000) &\n",wif);
 			break;
 		case 8:		/* Legacy OFDM 18Mbps */
-			fprintf(fp2, "iwpriv %s mcast_rate 18000\n",wif);
+			fprintf(fp2, "(sleep 10 ; iwpriv %s mcast_rate 18000) &\n",wif);
 			break;
 		case 9:		/* Legacy OFDM 24Mbps */
-			fprintf(fp2, "iwpriv %s mcast_rate 24000\n",wif);
+			fprintf(fp2, "(sleep 10 ; iwpriv %s mcast_rate 24000) &\n",wif);
 			break;
 		case 10:		/* Legacy OFDM 36Mbps */
-			fprintf(fp2, "iwpriv %s mcast_rate 36000\n",wif);
+			fprintf(fp2, "(sleep 10 ; iwpriv %s mcast_rate 36000) &\n",wif);
 			break;
 		case 11:		/* Legacy OFDM 48Mbps */
-			fprintf(fp2, "iwpriv %s mcast_rate 48000\n",wif);
+			fprintf(fp2, "(sleep 10 ; iwpriv %s mcast_rate 48000) &\n",wif);
 			break;
 		case 12:		/* Legacy OFDM 54Mbps */
-			fprintf(fp2, "iwpriv %s mcast_rate 54000\n",wif);
+			fprintf(fp2, "(sleep 10 ; iwpriv %s mcast_rate 54000) &\n",wif);
 			break;
 		case 13:		/* HTMIX 130/300Mbps 2S */
-			fprintf(fp2, "iwpriv %s mcast_rate 300000\n",wif);
+			fprintf(fp2, "(sleep 10 ; iwpriv %s mcast_rate 130000) &\n",wif);
 			break;
 		case 14:		/* HTMIX 6.5/15Mbps */
-			fprintf(fp2, "iwpriv %s mcast_rate 15000\n",wif);
+			fprintf(fp2, "(sleep 10 ; iwpriv %s mcast_rate 6500) &\n",wif);
 			break;
 		case 15:		/* HTMIX 13/30Mbps */
-			fprintf(fp2, "iwpriv %s mcast_rate 30000\n",wif);
+			fprintf(fp2, "(sleep 10 ; iwpriv %s mcast_rate 13000) &\n",wif);
 			break;
 		case 16:		/* HTMIX 19.5/45Mbps */
-			fprintf(fp2, "iwpriv %s mcast_rate 45000\n",wif);
+			fprintf(fp2, "(sleep 10 ; iwpriv %s mcast_rate 19500) &\n",wif);
 			break;
 		case 17:		/* HTMIX 13/30Mbps 2S */
-			fprintf(fp2, "iwpriv %s mcast_rate 30000\n",wif);
+			fprintf(fp2, "(sleep 10 ; iwpriv %s mcast_rate 13000) &\n",wif);
 			break;
 		case 18:		/* HTMIX 26/60Mbps 2S */
-			fprintf(fp2, "iwpriv %s mcast_rate 60000\n",wif);
+			fprintf(fp2, "(sleep 10 ; iwpriv %s mcast_rate 26000) &\n",wif);
 			break;
 		case 19:		/* HTMIX 39/90Mbps 2S */
-			fprintf(fp2, "iwpriv %s mcast_rate 90000\n",wif);
+			fprintf(fp2, "(sleep 10 ; iwpriv %s mcast_rate 39000) &\n",wif);
 			break;
 		case 20:
 			/* Choose multicast rate base on mode, encryption type, and IPv6 is enabled or not. */
 			__choose_mrate(tmpfix, &mcast_phy, &mcast_mcs, &rate);
-			fprintf(fp2, "iwpriv %s mcast_rate %d\n",wif,rate);
+			fprintf(fp2, "(sleep 10 ; iwpriv %s mcast_rate %d) &\n",wif,rate);
 			break;
 		}
 	/* No CCK for 5Ghz band */
@@ -3266,7 +3281,7 @@ int create_tmp_sta(int unit, const char *sta)
 			_dprintf("%s: Can't open %s\n", __func__, conf);
 			return -1;
 		}
-		fprintf(fp, "ctrl_interface=/var/run/wpa_supplicant\n");
+		fprintf(fp, "ctrl_interface=/var/run/wpa_supplicant-%s\n", sta);
 		fprintf(fp, "update_config=1\n");
 		fclose(fp);
 #ifdef RTCONFIG_WIFI_SON
@@ -3319,7 +3334,7 @@ void start_wsc_enrollee_band(int band)
 		create_tmp_sta(band, sta);
 	}
 
-	doSystem("wpa_cli -i %s wps_pbc", sta);
+	set_wpa_cli_cmd(band, "wps_pbc");
 }
 
 void start_wsc_enrollee(void)
@@ -3356,7 +3371,7 @@ void stop_wsc_enrollee_band(int band)
 {
 	char sta[64];
 	strcpy(sta, get_staifname(band));
-	doSystem("wpa_cli -i %s wps_cancel", sta);
+	set_wpa_cli_cmd(band, "wps_cancel");
 
 	if (sw_mode() == SW_MODE_ROUTER
 			|| sw_mode() == SW_MODE_AP) {
@@ -3451,8 +3466,10 @@ int getting_wps_result(int unit, char *bssid, char *ssid, char *key_mgmt) {
 	FILE *fp;
 	int len;
 	char *pt1, *pt2;
+	char ctrl_sk[32];
 
-	sprintf(buf, "wpa_cli -i%s status", get_staifname(unit));
+	get_wpa_ctrl_sk(unit, ctrl_sk, sizeof(ctrl_sk));
+	sprintf(buf, "wpa_cli -p %s -i%s status", ctrl_sk, get_staifname(unit));
 	fp = popen(buf, "r");
 	if (fp) {
 		len = fread(buf, 1, sizeof(buf), fp);
@@ -3606,8 +3623,10 @@ char *getWscStatus_enrollee(int unit)
 	FILE *fp;
 	int len;
 	char *pt1, *pt2;
+	char ctrl_sk[32];
 
-	snprintf(buf, sizeof(buf), "wpa_cli -i %s status", get_staifname(unit));
+	get_wpa_ctrl_sk(unit, ctrl_sk, sizeof(ctrl_sk));
+	snprintf(buf, sizeof(buf), "wpa_cli -p %s -i %s status", ctrl_sk, get_staifname(unit));
 	fp = popen(buf, "r");
 	if (fp) {
 		memset(buf, 0, sizeof(buf));
@@ -3740,10 +3759,10 @@ typedef struct _WLANCONFIG_LIST {
 void rssi_check_unit(int unit)
 {
 	#define STA_LOW_RSSI_PATH "/tmp/low_rssi"
-   	int rssi_th;
+	int rssi_th, channf;
 	FILE *fp;
 	char line_buf[300],cmd[300],tmp[128],wif[8]; // max 14x
-	char prefix[] = "wlXXXXXXXXXX_";
+	char prefix[sizeof("wlXXXXXXXXXX_")];
 	WLANCONFIG_LIST *result;
 
 	snprintf(prefix, sizeof(prefix), "wl%d_", unit);
@@ -3753,62 +3772,41 @@ void rssi_check_unit(int unit)
 	result=malloc(sizeof(WLANCONFIG_LIST));
 	memset(result, 0, sizeof(WLANCONFIG_LIST));
 	__get_wlifname(unit, 0, wif);
+	channf = QCA_DEFAULT_NOISE_FLOOR;
 	doSystem("wlanconfig %s list > %s", wif, STA_LOW_RSSI_PATH);
-	fp = fopen(STA_LOW_RSSI_PATH, "r");
-		if (fp) {
-			//fseek(fp, 131, SEEK_SET);	// ignore header
-			fgets(line_buf, sizeof(line_buf), fp); // ignore header
-			while ( fgets(line_buf, sizeof(line_buf), fp) ) {
-				sscanf(line_buf, "%s%u%u%s%s%u%u%u%u%s%s%s%s%s%s%s%s", 
-							result->addr, 
-							&result->aid, 
-							&result->chan, 
-							result->txrate, 
-							result->rxrate, 
-							&result->rssi, 
-							&result->idle, 
-							&result->txseq, 
-							&result->rcseq, 
-							result->caps, 
-							result->acaps, 
-							result->erp, 
-							result->state_maxrate, 
-							result->wps, 
-							result->rsn, 
-							result->wme,
-							result->mode);
+	if (!(fp = fopen(STA_LOW_RSSI_PATH, "r")))
+		return;
+	fgets(line_buf, sizeof(line_buf), fp); // ignore header
+	while ( fgets(line_buf, sizeof(line_buf), fp) ) {
+		sscanf(line_buf, "%s%u%u%s%s%u%u%u%u%s%s%s%s%s%s%s%s",
+					result->addr,
+					&result->aid,
+					&result->chan,
+					result->txrate,
+					result->rxrate,
+					&result->rssi,
+					&result->idle,
+					&result->txseq,
+					&result->rcseq,
+					result->caps,
+					result->acaps,
+					result->erp,
+					result->state_maxrate,
+					result->wps,
+					result->rsn,
+					result->wme,
+					result->mode);
 
-#if 0
-				dbg("[%s][%u][%u][%s][%s][%u][%u][%u][%u][%s][%s][%s][%s][%s][%s][%s]\n", 
-					result->addr, 
-					result->aid, 
-					result->chan, 
-					result->txrate, 
-					result->rxrate, 
-					result->rssi, 
-					result->idle, 
-					result->txseq, 
-					result->rcseq, 
-					result->caps, 
-					result->acaps, 
-					result->erp, 
-					result->state_maxrate, 
-					result->wps, 
-					result->rsn, 
-					result->wme);
-#endif
-				if(rssi_th>-result->rssi)
-				{
-					snprintf(cmd, sizeof(cmd), "iwpriv %s kickmac %s", wif, result->addr);
-					doSystem(cmd);
-					dbg("=====>Roaming with %s:Disconnect Station: %s  RSSI: %d\n",
-						wif, result->addr,-result->rssi);
-				}   
-			}
-			free(result);
-			fclose(fp);
-			unlink(STA_LOW_RSSI_PATH);
+		if (rssi_th <= (result->rssi + channf)) {
+			snprintf(cmd, sizeof(cmd), IWPRIV " %s kickmac %s", wif, result->addr);
+			doSystem(cmd);
+			dbg("=====>Roaming with %s:Disconnect Station: %s  RSSI: %d\n",
+				wif, result->addr, (result->rssi + channf));
 		}
+	}
+	free(result);
+	fclose(fp);
+	unlink(STA_LOW_RSSI_PATH);
 }
 #endif
 
@@ -4578,7 +4576,9 @@ unsigned int getPapState(int unit)
 				{
 					char buf2[64] = {0};
 					char *wpa_state;
-					snprintf(buf2, sizeof(buf2), "wpa_cli -p /var/run/wpa_supplicant-sta%d -i sta%d status", unit, unit);
+					char ctrl_sk[32];
+					get_wpa_ctrl_sk(unit, ctrl_sk, sizeof(ctrl_sk));
+					snprintf(buf2, sizeof(buf2), "wpa_cli -p %s -i sta%d status", ctrl_sk, unit);
 					FILE *fp2 = NULL;
 					fp2 = popen(buf2, "r");
 					if (fp2) {
@@ -5021,12 +5021,6 @@ void acs_ch_weight_param()
 	}
 }
 
-#ifdef RTCONFIG_CFGSYNC
-void update_macfilter_relist()
-{
-	//TODO
-}
-#endif
 #ifdef RTCONFIG_AMAS
 int get_psta_rssi(int unit)
 {

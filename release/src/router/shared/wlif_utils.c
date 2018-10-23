@@ -345,17 +345,20 @@ get_wlname_by_mac(unsigned char *mac, char *wlname)
 bool
 wl_wlif_is_wet_ap(char *ifname)
 {
-	int32 wet = FALSE;
-	int32 ap = FALSE;
+	int wet = 0, ap = 0;
+
+#ifdef __CONFIG_DHDAP__
+	if (!dhd_probe(ifname)) {
+		wl_iovar_getint(ifname, "wet_enab", &wet);
+	} else
+#endif /* __CONFIG_DHDAP__ */
+	{
+		wl_iovar_getint(ifname, "wet", &wet);
+	}
 
 	if (wl_probe(ifname) < 0)
 		return FALSE;
 
-#ifdef __CONFIG_DHDAP__
-	wl_iovar_getint(ifname, "wet_enab", &wet);
-#else
-	wl_iovar_getint(ifname, "wet", &wet);
-#endif
 	wl_iovar_getint(ifname, "ap", &ap);
 
 	return (wet && ap);

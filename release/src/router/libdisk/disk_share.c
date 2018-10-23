@@ -2338,7 +2338,12 @@ extern int add_account(const char *const account, const char *const password){
 	char enc_passwd[enclen];
 
 	memset(enc_passwd, 0, sizeof(enc_passwd));
-	pw_enc(ascii_passwd, enc_passwd);
+	if (nvram_match("http_username", (char*) account)) {
+		/* password of login account has been encrypted */
+		strlcpy(enc_passwd, ascii_passwd, sizeof(ascii_passwd));
+	} else {
+		pw_enc(ascii_passwd, enc_passwd);
+	}
 	memset(ascii_passwd, 0, sizeof(ascii_passwd));
 	strlcpy(ascii_passwd, enc_passwd, sizeof(ascii_passwd));
 #endif

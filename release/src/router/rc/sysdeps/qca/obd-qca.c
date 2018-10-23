@@ -4,6 +4,8 @@
 
 #if defined(RTCONFIG_AMAS)
 
+static void obd_clear_all_probe_req_vsie(int unit);
+
 int obd_init()
 {
 	const char *staifname;
@@ -45,13 +47,8 @@ void obd_save_para()
 
 void obd_start_active_scan()
 {
-	char cmd[300];
-	char *ifname = get_staifname(0);
-	OBD_DBG("Send probe-req %s\n\n", ifname);		
-
-	snprintf(cmd, sizeof(cmd), "usr/bin/wpa_cli -i%s scan",	ifname);
-	OBD_DBG("cmd=%s\n", cmd);
-	system(cmd);
+	OBD_DBG("Send probe-req \n\n");
+	set_wpa_cli_cmd(0, "scan");
 }
 
 #define SCAN_WLIST "/tmp/scanned_iwlist"
@@ -150,7 +147,7 @@ int parse_iwlist_scan(const char *filename, int num, const char **key_str, iwlis
 	int size = sizeof(line)-1;
 	char *key;
 
-	if (!(fp= fopen(SCAN_WLIST, "r")))
+	if (!(fp= fopen(filename, "r")))
 		return -1;
 
 	line[size] = '\0';	// string end
@@ -216,7 +213,7 @@ struct scanned_bss *obd_get_bss_scan_result()
 
 	memset(&cb_data, 0, sizeof(cb_data));
 	cb_data.bss_temp = bss_list;
-	iwlist_argv[1] = get_wififname(0);	// ath0
+	iwlist_argv[1] = get_staifname(0);	// sta0
 
 	for(try = 3; try > 0 ; try--) {
 		_eval(iwlist_argv, ">"SCAN_WLIST, 0, NULL);
@@ -251,16 +248,18 @@ void obd_clear_all_probe_req_vsie(int unit)
 	int pktflag = 0xE;
 	char *ifname;
 	FILE *fp;
+	char ctrl_sk[32];
 	
 	ifname = get_staifname(unit);
+	get_wpa_ctrl_sk(unit, ctrl_sk, sizeof(ctrl_sk));
 
-	snprintf(cmd, sizeof(cmd), "/usr/bin/wpa_cli vendor_elem_get -i%s %d", ifname, pktflag);
+	snprintf(cmd, sizeof(cmd), "/usr/bin/wpa_cli -p %s -i %s vendor_elem_get %d", ctrl_sk, ifname, pktflag);
 	if ((fp = popen(cmd, "r")) != NULL) {
 		char vendor_elem[MAX_VSIE_LEN];
 		vendor_elem[sizeof(vendor_elem)-1] = '\0';
 		while (fgets(vendor_elem , sizeof(vendor_elem)-1 , fp) != NULL) {
 			if(strlen(vendor_elem) > 0) {
-				snprintf(cmd, sizeof(cmd), "/usr/bin/wpa_cli vendor_elem_remove -i%s %d %s",
+				snprintf(cmd, sizeof(cmd), "/usr/bin/wpa_cli -p %s -i %s vendor_elem_remove %d %s", ctrl_sk,
 					ifname, pktflag, vendor_elem);
 				OBD_DBG("cmd=%s\n", cmd);
 				system(cmd);
@@ -280,9 +279,11 @@ void obd_add_probe_req_vsie(int unit, int len, unsigned char *ie_data)
 	int pktflag = 0xE;
 	int i, ie_len = (len - OUI_LEN);
 	char *ifname;
+	char ctrl_sk[32];
 
 	cprintf("## %s unit(%d) len(%d) ##\n", __func__, unit, len);
 	ifname = get_staifname(unit);
+	get_wpa_ctrl_sk(unit, ctrl_sk, sizeof(ctrl_sk));
 
 	for (i = 0; i < ie_len; i++)
 		sprintf(&hexdata[2 * i], "%02x", ie_data[i]);
@@ -293,7 +294,7 @@ void obd_add_probe_req_vsie(int unit, int len, unsigned char *ie_data)
 	//_dprintf("%s: wl0_ifname=%s\n", __func__, ifname);
 
 	if (ifname && strlen(ifname)) {
-		snprintf(cmd, sizeof(cmd), "/usr/bin/wpa_cli vendor_elem_add -i%s %d DD%02X%02X%02X%02X%s > /tmp/cmd_add",
+		snprintf(cmd, sizeof(cmd), "/usr/bin/wpa_cli -p %s -i %s vendor_elem_add %d DD%02X%02X%02X%02X%s > /tmp/cmd_add", ctrl_sk, 
 			ifname, pktflag, (uint8_t)len, (uint8_t)OUI_ASUS[0],  (uint8_t)OUI_ASUS[1],  (uint8_t)OUI_ASUS[2], hexdata);
 		OBD_DBG("cmd=%s\n", cmd);
 		system(cmd);
@@ -307,9 +308,11 @@ void obd_del_probe_req_vsie(int unit, int len, unsigned char *ie_data)
 	int pktflag = 0xE;
 	int i, ie_len = (len - OUI_LEN);
 	char *ifname;
+	char ctrl_sk[32];
 
 	cprintf("## %s unit(%d) len(%d) ##\n", __func__, unit, len);
 	ifname = get_staifname(unit);
+	get_wpa_ctrl_sk(unit, ctrl_sk, sizeof(ctrl_sk));
 
 	for (i = 0; i < ie_len; i++)
 		sprintf(&hexdata[2 * i], "%02x", ie_data[i]);
@@ -318,7 +321,7 @@ void obd_del_probe_req_vsie(int unit, int len, unsigned char *ie_data)
 	//_dprintf("%s: wl0_ifname=%s\n", __func__, ifname);
 
 	if (ifname && strlen(ifname)) {
-		snprintf(cmd, sizeof(cmd), "/usr/bin/wpa_cli vendor_elem_remove -i%s %d DD%02X%02X%02X%02X%s",
+		snprintf(cmd, sizeof(cmd), "/usr/bin/wpa_cli -p %s -i %s vendor_elem_remove %d DD%02X%02X%02X%02X%s", ctrl_sk, 
 			ifname, pktflag, (uint8_t)len,  (uint8_t)OUI_ASUS[0],  (uint8_t)OUI_ASUS[1],  (uint8_t)OUI_ASUS[2], hexdata);
 		OBD_DBG("cmd=%s\n", cmd);
 		system(cmd);

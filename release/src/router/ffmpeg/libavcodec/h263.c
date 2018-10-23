@@ -1,7 +1,7 @@
 /*
- * H263/MPEG4 backend for ffmpeg encoder and decoder
+ * H.263/MPEG-4 backend for encoder and decoder
  * Copyright (c) 2000,2001 Fabrice Bellard
- * H263+ support.
+ * H.263+ support.
  * Copyright (c) 2001 Juan J. Sierralta P
  * Copyright (c) 2002-2004 Michael Niedermayer <michaelni@gmx.at>
  *
@@ -24,26 +24,19 @@
 
 /**
  * @file
- * h263/mpeg4 codec.
+ * H.263/MPEG-4 codec.
  */
 
-//#define DEBUG
 #include <limits.h>
 
-#include "dsputil.h"
 #include "avcodec.h"
 #include "mpegvideo.h"
 #include "h263.h"
 #include "h263data.h"
 #include "mathops.h"
-#include "unary.h"
+#include "mpegutils.h"
 #include "flv.h"
 #include "mpeg4video.h"
-
-//#undef NDEBUG
-//#include <assert.h>
-
-uint8_t ff_h263_static_rl_table_store[2][2][2*MAX_RUN + MAX_LEVEL + 3];
 
 
 void ff_h263_update_motion_val(MpegEncContext * s){
@@ -52,7 +45,7 @@ void ff_h263_update_motion_val(MpegEncContext * s){
     const int wrap = s->b8_stride;
     const int xy = s->block_index[0];
 
-    s->current_picture.mbskip_table[mb_xy]= s->mb_skipped;
+    s->current_picture.mbskip_table[mb_xy] = s->mb_skipped;
 
     if(s->mv_type != MV_TYPE_8X8){
         int motion_x, motion_y;
@@ -71,34 +64,34 @@ void ff_h263_update_motion_val(MpegEncContext * s){
                 s->p_field_mv_table[i][0][mb_xy][0]= s->mv[0][i][0];
                 s->p_field_mv_table[i][0][mb_xy][1]= s->mv[0][i][1];
             }
-            s->current_picture.ref_index[0][4*mb_xy    ]=
-            s->current_picture.ref_index[0][4*mb_xy + 1]= s->field_select[0][0];
-            s->current_picture.ref_index[0][4*mb_xy + 2]=
-            s->current_picture.ref_index[0][4*mb_xy + 3]= s->field_select[0][1];
+            s->current_picture.ref_index[0][4*mb_xy    ] =
+            s->current_picture.ref_index[0][4*mb_xy + 1] = s->field_select[0][0];
+            s->current_picture.ref_index[0][4*mb_xy + 2] =
+            s->current_picture.ref_index[0][4*mb_xy + 3] = s->field_select[0][1];
         }
 
         /* no update if 8X8 because it has been done during parsing */
-        s->current_picture.motion_val[0][xy][0] = motion_x;
-        s->current_picture.motion_val[0][xy][1] = motion_y;
-        s->current_picture.motion_val[0][xy + 1][0] = motion_x;
-        s->current_picture.motion_val[0][xy + 1][1] = motion_y;
-        s->current_picture.motion_val[0][xy + wrap][0] = motion_x;
-        s->current_picture.motion_val[0][xy + wrap][1] = motion_y;
+        s->current_picture.motion_val[0][xy][0]            = motion_x;
+        s->current_picture.motion_val[0][xy][1]            = motion_y;
+        s->current_picture.motion_val[0][xy + 1][0]        = motion_x;
+        s->current_picture.motion_val[0][xy + 1][1]        = motion_y;
+        s->current_picture.motion_val[0][xy + wrap][0]     = motion_x;
+        s->current_picture.motion_val[0][xy + wrap][1]     = motion_y;
         s->current_picture.motion_val[0][xy + 1 + wrap][0] = motion_x;
         s->current_picture.motion_val[0][xy + 1 + wrap][1] = motion_y;
     }
 
     if(s->encoding){ //FIXME encoding MUST be cleaned up
         if (s->mv_type == MV_TYPE_8X8)
-            s->current_picture.mb_type[mb_xy]= MB_TYPE_L0 | MB_TYPE_8x8;
+            s->current_picture.mb_type[mb_xy] = MB_TYPE_L0 | MB_TYPE_8x8;
         else if(s->mb_intra)
-            s->current_picture.mb_type[mb_xy]= MB_TYPE_INTRA;
+            s->current_picture.mb_type[mb_xy] = MB_TYPE_INTRA;
         else
-            s->current_picture.mb_type[mb_xy]= MB_TYPE_L0 | MB_TYPE_16x16;
+            s->current_picture.mb_type[mb_xy] = MB_TYPE_L0 | MB_TYPE_16x16;
     }
 }
 
-int h263_pred_dc(MpegEncContext * s, int n, int16_t **dc_val_ptr)
+int ff_h263_pred_dc(MpegEncContext * s, int n, int16_t **dc_val_ptr)
 {
     int x, y, wrap, a, c, pred_dc;
     int16_t *dc_val;
@@ -148,26 +141,24 @@ void ff_h263_loop_filter(MpegEncContext * s){
     uint8_t *dest_cb= s->dest[1];
     uint8_t *dest_cr= s->dest[2];
 
-//    if(s->pict_type==FF_B_TYPE && !s->readable) return;
-
     /*
        Diag Top
        Left Center
     */
-    if(!IS_SKIP(s->current_picture.mb_type[xy])){
+    if (!IS_SKIP(s->current_picture.mb_type[xy])) {
         qp_c= s->qscale;
-        s->dsp.h263_v_loop_filter(dest_y+8*linesize  , linesize, qp_c);
-        s->dsp.h263_v_loop_filter(dest_y+8*linesize+8, linesize, qp_c);
+        s->h263dsp.h263_v_loop_filter(dest_y + 8 * linesize,     linesize, qp_c);
+        s->h263dsp.h263_v_loop_filter(dest_y + 8 * linesize + 8, linesize, qp_c);
     }else
         qp_c= 0;
 
     if(s->mb_y){
         int qp_dt, qp_tt, qp_tc;
 
-        if(IS_SKIP(s->current_picture.mb_type[xy-s->mb_stride]))
+        if (IS_SKIP(s->current_picture.mb_type[xy - s->mb_stride]))
             qp_tt=0;
         else
-            qp_tt= s->current_picture.qscale_table[xy-s->mb_stride];
+            qp_tt = s->current_picture.qscale_table[xy - s->mb_stride];
 
         if(qp_c)
             qp_tc= qp_c;
@@ -176,57 +167,57 @@ void ff_h263_loop_filter(MpegEncContext * s){
 
         if(qp_tc){
             const int chroma_qp= s->chroma_qscale_table[qp_tc];
-            s->dsp.h263_v_loop_filter(dest_y  ,   linesize, qp_tc);
-            s->dsp.h263_v_loop_filter(dest_y+8,   linesize, qp_tc);
+            s->h263dsp.h263_v_loop_filter(dest_y,     linesize, qp_tc);
+            s->h263dsp.h263_v_loop_filter(dest_y + 8, linesize, qp_tc);
 
-            s->dsp.h263_v_loop_filter(dest_cb , uvlinesize, chroma_qp);
-            s->dsp.h263_v_loop_filter(dest_cr , uvlinesize, chroma_qp);
+            s->h263dsp.h263_v_loop_filter(dest_cb, uvlinesize, chroma_qp);
+            s->h263dsp.h263_v_loop_filter(dest_cr, uvlinesize, chroma_qp);
         }
 
         if(qp_tt)
-            s->dsp.h263_h_loop_filter(dest_y-8*linesize+8  ,   linesize, qp_tt);
+            s->h263dsp.h263_h_loop_filter(dest_y - 8 * linesize + 8, linesize, qp_tt);
 
         if(s->mb_x){
-            if(qp_tt || IS_SKIP(s->current_picture.mb_type[xy-1-s->mb_stride]))
+            if (qp_tt || IS_SKIP(s->current_picture.mb_type[xy - 1 - s->mb_stride]))
                 qp_dt= qp_tt;
             else
-                qp_dt= s->current_picture.qscale_table[xy-1-s->mb_stride];
+                qp_dt = s->current_picture.qscale_table[xy - 1 - s->mb_stride];
 
             if(qp_dt){
                 const int chroma_qp= s->chroma_qscale_table[qp_dt];
-                s->dsp.h263_h_loop_filter(dest_y -8*linesize  ,   linesize, qp_dt);
-                s->dsp.h263_h_loop_filter(dest_cb-8*uvlinesize, uvlinesize, chroma_qp);
-                s->dsp.h263_h_loop_filter(dest_cr-8*uvlinesize, uvlinesize, chroma_qp);
+                s->h263dsp.h263_h_loop_filter(dest_y  - 8 * linesize,   linesize,   qp_dt);
+                s->h263dsp.h263_h_loop_filter(dest_cb - 8 * uvlinesize, uvlinesize, chroma_qp);
+                s->h263dsp.h263_h_loop_filter(dest_cr - 8 * uvlinesize, uvlinesize, chroma_qp);
             }
         }
     }
 
     if(qp_c){
-        s->dsp.h263_h_loop_filter(dest_y +8,   linesize, qp_c);
+        s->h263dsp.h263_h_loop_filter(dest_y + 8, linesize, qp_c);
         if(s->mb_y + 1 == s->mb_height)
-            s->dsp.h263_h_loop_filter(dest_y+8*linesize+8,   linesize, qp_c);
+            s->h263dsp.h263_h_loop_filter(dest_y + 8 * linesize + 8, linesize, qp_c);
     }
 
     if(s->mb_x){
         int qp_lc;
-        if(qp_c || IS_SKIP(s->current_picture.mb_type[xy-1]))
+        if (qp_c || IS_SKIP(s->current_picture.mb_type[xy - 1]))
             qp_lc= qp_c;
         else
-            qp_lc= s->current_picture.qscale_table[xy-1];
+            qp_lc = s->current_picture.qscale_table[xy - 1];
 
         if(qp_lc){
-            s->dsp.h263_h_loop_filter(dest_y,   linesize, qp_lc);
+            s->h263dsp.h263_h_loop_filter(dest_y, linesize, qp_lc);
             if(s->mb_y + 1 == s->mb_height){
                 const int chroma_qp= s->chroma_qscale_table[qp_lc];
-                s->dsp.h263_h_loop_filter(dest_y +8*  linesize,   linesize, qp_lc);
-                s->dsp.h263_h_loop_filter(dest_cb             , uvlinesize, chroma_qp);
-                s->dsp.h263_h_loop_filter(dest_cr             , uvlinesize, chroma_qp);
+                s->h263dsp.h263_h_loop_filter(dest_y + 8 * linesize, linesize, qp_lc);
+                s->h263dsp.h263_h_loop_filter(dest_cb, uvlinesize, chroma_qp);
+                s->h263dsp.h263_h_loop_filter(dest_cr, uvlinesize, chroma_qp);
             }
         }
     }
 }
 
-void h263_pred_acdc(MpegEncContext * s, DCTELEM *block, int n)
+void ff_h263_pred_acdc(MpegEncContext * s, int16_t *block, int n)
 {
     int x, y, wrap, a, c, pred_dc, scale, i;
     int16_t *dc_val, *ac_val, *ac_val1;
@@ -270,7 +261,7 @@ void h263_pred_acdc(MpegEncContext * s, DCTELEM *block, int n)
             if (a != 1024) {
                 ac_val -= 16;
                 for(i=1;i<8;i++) {
-                    block[s->dsp.idct_permutation[i<<3]] += ac_val[i];
+                    block[s->idsp.idct_permutation[i << 3]] += ac_val[i];
                 }
                 pred_dc = a;
             }
@@ -279,7 +270,7 @@ void h263_pred_acdc(MpegEncContext * s, DCTELEM *block, int n)
             if (c != 1024) {
                 ac_val -= 16 * wrap;
                 for(i=1;i<8;i++) {
-                    block[s->dsp.idct_permutation[i   ]] += ac_val[i + 8];
+                    block[s->idsp.idct_permutation[i]] += ac_val[i + 8];
                 }
                 pred_dc = c;
             }
@@ -307,14 +298,14 @@ void h263_pred_acdc(MpegEncContext * s, DCTELEM *block, int n)
 
     /* left copy */
     for(i=1;i<8;i++)
-        ac_val1[i    ] = block[s->dsp.idct_permutation[i<<3]];
+        ac_val1[i]     = block[s->idsp.idct_permutation[i << 3]];
     /* top copy */
     for(i=1;i<8;i++)
-        ac_val1[8 + i] = block[s->dsp.idct_permutation[i   ]];
+        ac_val1[8 + i] = block[s->idsp.idct_permutation[i]];
 }
 
-int16_t *h263_pred_motion(MpegEncContext * s, int block, int dir,
-                        int *px, int *py)
+int16_t *ff_h263_pred_motion(MpegEncContext * s, int block, int dir,
+                             int *px, int *py)
 {
     int wrap;
     int16_t *A, *B, *C, (*mot_val)[2];
@@ -326,7 +317,7 @@ int16_t *h263_pred_motion(MpegEncContext * s, int block, int dir,
     A = mot_val[ - 1];
     /* special case for first (slice) line */
     if (s->first_slice_line && block<3) {
-        // we can't just change some MVs to simulate that as we need them for the B frames (and ME)
+        // we can't just change some MVs to simulate that as we need them for the B-frames (and ME)
         // and if we ever support non rectangular objects than we need to do a few ifs here anyway :(
         if(block==0){ //most common case
             if(s->mb_x  == s->resync_mb_x){ //rare
@@ -369,17 +360,4 @@ int16_t *h263_pred_motion(MpegEncContext * s, int block, int dir,
         *py = mid_pred(A[1], B[1], C[1]);
     }
     return *mot_val;
-}
-
-
-/**
- * Get the GOB height based on picture height.
- */
-int ff_h263_get_gob_height(MpegEncContext *s){
-    if (s->height <= 400)
-        return 1;
-    else if (s->height <= 800)
-        return  2;
-    else
-        return 4;
 }

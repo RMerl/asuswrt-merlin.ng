@@ -1054,6 +1054,18 @@ int asus_ate_command(const char *command, const char *value, const char *value2)
 		}
 		return 0;
 	}
+	else if (!strcmp(command, "Set_RegulationDomain_5G_2")) {
+#if defined(RTCONFIG_CFEZ) && defined(RTCONFIG_BCMARM)
+		if (!chk_envrams_proc())
+			return EINVAL;
+#endif
+		if (!setCountryCode_5G_2(value))
+		{
+			puts("ATE_ERROR_INCORRECT_PARAMETER");
+			return EINVAL;
+		}
+		return 0;
+	}
 	else if (!strcmp(command, "Set_Regrev_2G")) {
 #if defined(RTCONFIG_CFEZ) && defined(RTCONFIG_BCMARM)
 		if (!chk_envrams_proc())
@@ -1078,6 +1090,19 @@ int asus_ate_command(const char *command, const char *value, const char *value2)
 #else
 		if (!setRegrev_5G(value))
 #endif
+		{
+			puts("ATE_ERROR_INCORRECT_PARAMETER");
+			return EINVAL;
+		}
+		return 0;
+	}
+	else if (!strcmp(command, "Set_Regrev_5G_2")) {
+#if defined(RTCONFIG_CFEZ) && defined(RTCONFIG_BCMARM)
+		if (!chk_envrams_proc())
+			return EINVAL;
+#endif
+
+		if (!setRegrev_5G_2(value))
 		{
 			puts("ATE_ERROR_INCORRECT_PARAMETER");
 			return EINVAL;
@@ -1344,6 +1369,56 @@ int asus_ate_command(const char *command, const char *value, const char *value2)
 		}
 		return 0;
 	}
+#ifdef CONFIG_BCMWL5
+	else if (!strcmp(command, "Set_HwId")) {
+#if defined(RTCONFIG_CFEZ) && defined(RTCONFIG_BCMARM)
+		if (!chk_envrams_proc())
+			return EINVAL;
+#endif
+                if (set_HwId(value) < 0)
+                {
+                        puts("ATE_ERROR_INCORRECT_PARAMETER");
+                        return EINVAL;
+                }
+                return 0;
+	}
+	else if (!strcmp(command, "Set_HwVersion")) {
+#if defined(RTCONFIG_CFEZ) && defined(RTCONFIG_BCMARM)
+		if (!chk_envrams_proc())
+			return EINVAL;
+#endif
+                if (set_HwVersion(value) < 0)
+                {
+                        puts("ATE_ERROR_INCORRECT_PARAMETER");
+                        return EINVAL;
+                }
+                return 0;
+	}
+	else if (!strcmp(command, "Set_HwBom")) {
+#if defined(RTCONFIG_CFEZ) && defined(RTCONFIG_BCMARM)
+		if (!chk_envrams_proc())
+			return EINVAL;
+#endif
+                if (set_HwBom(value) < 0)
+                {
+                        puts("ATE_ERROR_INCORRECT_PARAMETER");
+                        return EINVAL;
+                }
+                return 0;
+	}
+	else if (!strcmp(command, "Set_DateCode")) {
+#if defined(RTCONFIG_CFEZ) && defined(RTCONFIG_BCMARM)
+		if (!chk_envrams_proc())
+			return EINVAL;
+#endif
+                if (set_DateCode(value) < 0)
+                {
+                        puts("ATE_ERROR_INCORRECT_PARAMETER");
+                        return EINVAL;
+                }
+                return 0;
+	}
+#endif
 	/*** ATE Get functions ***/
 	else if (!strcmp(command, "Get_FWVersion")) {
 		char fwver[16];
@@ -1499,6 +1574,10 @@ int asus_ate_command(const char *command, const char *value, const char *value2)
 #endif
 		return 0;
 	}
+	else if (!strcmp(command, "Get_RegulationDomain_5G_2")) {
+	   	getCountryCode_5G_2();
+		return 0;
+	}
 	else if (!strcmp(command, "Get_Regrev_2G")) {
 		getRegrev_2G();
 		return 0;
@@ -1510,6 +1589,10 @@ int asus_ate_command(const char *command, const char *value, const char *value2)
 #else
 		getRegrev_5G();
 #endif
+		return 0;
+	}
+	else if (!strcmp(command, "Get_Regrev_5G_2")) {
+		getRegrev_5G_2();
 		return 0;
 	}
 #endif	/* RTCONFIG_HAS_5G */
@@ -2196,6 +2279,17 @@ int asus_ate_command(const char *command, const char *value, const char *value2)
 	else if (!strcmp(command, "Get_IpAddr_Lan")) {
 		get_IpAddr_Lan();
 	}
+	else if (!strcmp(command, "Set_MRFLAG")) {
+		if(value == NULL || strlen(value) <= 0){
+			printf("ATE_ERROR_INCORRECT_PARAMETER\n");
+			return EINVAL;
+		}
+
+		set_MRFLAG(value);
+	}
+	else if (!strcmp(command, "Get_MRFLAG")) {
+		get_MRFLAG();
+	}
 	else if (!strcmp(command, "Get_Default")) {
 		char *p = NULL;
 
@@ -2209,6 +2303,24 @@ int asus_ate_command(const char *command, const char *value, const char *value2)
 
 		return 0;
 	}
+#ifdef CONFIG_BCMWL5
+	else if (!strcmp(command, "Get_HwId")) {
+		get_HwId();
+		return 0;
+	}
+	else if (!strcmp(command, "Get_HwVersion")) {
+		get_HwVersion();
+		return 0;
+	}
+	else if (!strcmp(command, "Get_HwBom")) {
+		get_HwBom();
+		return 0;
+	}
+	else if (!strcmp(command, "Get_DateCode")) {
+		get_DateCode();
+		return 0;
+	}
+#endif
 	else
 	{
 		puts("ATE_UNSUPPORT");

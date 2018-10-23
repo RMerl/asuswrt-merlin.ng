@@ -20,7 +20,10 @@
  */
 
 #include <string.h>
+
+#include "libavutil/channel_layout.h"
 #include "avformat.h"
+#include "internal.h"
 
 static int apc_probe(AVProbeData *p)
 {
@@ -30,42 +33,41 @@ static int apc_probe(AVProbeData *p)
     return 0;
 }
 
-static int apc_read_header(AVFormatContext *s, AVFormatParameters *ap)
+static int apc_read_header(AVFormatContext *s)
 {
-    ByteIOContext *pb = s->pb;
+    AVIOContext *pb = s->pb;
     AVStream *st;
 
-    get_le32(pb); /* CRYO */
-    get_le32(pb); /* _APC */
-    get_le32(pb); /* 1.20 */
+    avio_rl32(pb); /* CRYO */
+    avio_rl32(pb); /* _APC */
+    avio_rl32(pb); /* 1.20 */
 
-    st = av_new_stream(s, 0);
+    st = avformat_new_stream(s, NULL);
     if (!st)
         return AVERROR(ENOMEM);
 
-    st->codec->codec_type = AVMEDIA_TYPE_AUDIO;
-    st->codec->codec_id = CODEC_ID_ADPCM_IMA_WS;
+    st->codecpar->codec_type = AVMEDIA_TYPE_AUDIO;
+    st->codecpar->codec_id = AV_CODEC_ID_ADPCM_IMA_APC;
 
-    get_le32(pb); /* number of samples */
-    st->codec->sample_rate = get_le32(pb);
-
-    st->codec->extradata_size = 2 * 4;
-    st->codec->extradata = av_malloc(st->codec->extradata_size +
-                                     FF_INPUT_BUFFER_PADDING_SIZE);
-    if (!st->codec->extradata)
-        return AVERROR(ENOMEM);
+    avio_rl32(pb); /* number of samples */
+    st->codecpar->sample_rate = avio_rl32(pb);
 
     /* initial predictor values for adpcm decoder */
-    get_buffer(pb, st->codec->extradata, 2 * 4);
+    if (ff_get_extradata(s, st->codecpar, pb, 2 * 4) < 0)
+        return AVERROR(ENOMEM);
 
-    st->codec->channels = 1;
-    if (get_le32(pb))
-        st->codec->channels = 2;
+    if (avio_rl32(pb)) {
+        st->codecpar->channels       = 2;
+        st->codecpar->channel_layout = AV_CH_LAYOUT_STEREO;
+    } else {
+        st->codecpar->channels       = 1;
+        st->codecpar->channel_layout = AV_CH_LAYOUT_MONO;
+    }
 
-    st->codec->bits_per_coded_sample = 4;
-    st->codec->bit_rate = st->codec->bits_per_coded_sample * st->codec->channels
-                          * st->codec->sample_rate;
-    st->codec->block_align = 1;
+    st->codecpar->bits_per_coded_sample = 4;
+    st->codecpar->bit_rate = (int64_t)st->codecpar->bits_per_coded_sample * st->codecpar->channels
+                          * st->codecpar->sample_rate;
+    st->codecpar->block_align = 1;
 
     return 0;
 }
@@ -76,15 +78,15 @@ static int apc_read_packet(AVFormatContext *s, AVPacket *pkt)
 {
     if (av_get_packet(s->pb, pkt, MAX_READ_SIZE) <= 0)
         return AVERROR(EIO);
+    pkt->flags &= ~AV_PKT_FLAG_CORRUPT;
     pkt->stream_index = 0;
     return 0;
 }
 
-AVInputFormat apc_demuxer = {
-    "apc",
-    NULL_IF_CONFIG_SMALL("CRYO APC format"),
-    0,
-    apc_probe,
-    apc_read_header,
-    apc_read_packet,
+AVInputFormat ff_apc_demuxer = {
+    .name           = "apc",
+    .long_name      = NULL_IF_CONFIG_SMALL("CRYO APC"),
+    .read_probe     = apc_probe,
+    .read_header    = apc_read_header,
+    .read_packet    = apc_read_packet,
 };

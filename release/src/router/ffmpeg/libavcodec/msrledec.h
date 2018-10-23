@@ -23,18 +23,17 @@
 #define AVCODEC_MSRLEDEC_H
 
 #include "avcodec.h"
+#include "bytestream.h"
 
 /**
- * Decodes stream in MS RLE format into frame.
+ * Decode stream in MS RLE format into frame.
  *
  * @param avctx     codec context
  * @param pic       destination frame
  * @param depth     bit depth
- * @param data      input stream
- * @param data_size input size
+ * @param gb        input bytestream context
  */
-int ff_msrle_decode(AVCodecContext *avctx, AVPicture *pic, int depth,
-                    const uint8_t* data, int data_size);
+int ff_msrle_decode(AVCodecContext *avctx, AVFrame *pic,
+                    int depth, GetByteContext *gb);
 
 #endif /* AVCODEC_MSRLEDEC_H */
-

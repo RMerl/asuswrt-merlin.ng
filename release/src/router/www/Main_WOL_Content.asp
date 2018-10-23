@@ -176,7 +176,8 @@ function showwollist(){
 			code += '</td>';
 			code += '<td width="20%">';
 			code += '<input class="remove_btn" onclick="del_Row(this, \'' + clientMac + '\');" value=""/></td></tr>';
-			clientListEventData.push({"mac" : clientMac, "name" : "", "ip" : "", "callBack" : "WOL"});
+			if(validator.mac_addr(clientMac))
+				clientListEventData.push({"mac" : clientMac, "name" : "", "ip" : "", "callBack" : "WOL"});
 		});
 	}
 

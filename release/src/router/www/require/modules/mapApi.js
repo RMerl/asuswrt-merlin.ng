@@ -1,42 +1,45 @@
 define(function(){
 	var mapApi = {
-		draw: function(pointObj, label, lon, lat, className, clickCallback){
-			lon = Math.min(Math.max(parseInt(lon), -180), 180);
-			lat = Math.min(Math.max(parseInt(lat), -90), 90);
+		draw: function(pointObj, label, element, className, clickCallback){
+			var _lon = Math.min(Math.max(parseInt(element.lon), -180), 180);
+			var _lat = Math.min(Math.max(parseInt(element.lat), -90), 90);
 
-			function pointStyle(){
-				this["background-color"] = pointObj.color;
-				this["left"] = Math.round( (lon+180) * $("#mapContainer").width() / 360 ) + "px";
-				this["top"] = Math.round( Math.abs(lat-90) * $("#mapContainer").height() / 180 ) + "px";
+			function pointContainerStyle(){
+				this["left"] = Math.round( (_lon+180) * $("#mapContainer").width() / 360 ) + "px";
+				this["top"] = Math.round( Math.abs(_lat-90) * $("#mapContainer").height() / 180 ) + "px";
 				this["position"] = "absolute";
+				this["opacity"] = "0.8";
 				this["display"] = "none";
-				this["opacity"] = "0.4";
-				this["width"] = pointObj.size + "px";
-				this["height"] = pointObj.size + "px";
-				this["border-radius"] = pointObj.size/2 + "px";
-				this["margin-top"] = "-" + pointObj.size/2 + "px";
-				this["margin-left"] = "-" + pointObj.size/2 + "px";
-				this["border"] = "0px #AAA solid";
+				this["width"] = "30px";
+				this["height"] = "40px";
+				this["margin-top"] = "-25px";
+				this["margin-left"] = "-20px";
 				this["text-align"] = "center";
-				this["z-index"] = "10";
-				this["cursor"] = "pointer";
-				this["box-shadow"] = "0 0 10px 5px rgba(100,255,0,0.5)";
+				this["z-index"] = "1";
+				this["font-family"] = "monospace";
+				this["font-size"] = "14px";
+				this["font-weight"] = "bolder";
+			}
+
+			function pointBackgroundStyle(){
+				this["width"] = "20px";
+				this["height"] = "60px";
+				this["margin-top"] = "-50px";
+				this["margin-left"] = "4px";
+				this["text-align"] = "center";
+				this["z-index"] = "100";
 			}
 
 			$('<div>')
 				.attr("id", "map")
-				.appendTo("#mapContainer")
-
-			$('<div>')
-				.addClass("point")
 				.addClass(className)
-				.css(new pointStyle())
-				.hover(
-					function(){$(this).css({"background-color": "#06bfb4"})}, 
-					function(){$(this).css({"background-color": pointObj.color})}
+				.css(new pointContainerStyle())
+				.html(element.country)
+				.append($('<div>')
+					.addClass("pDefault")
+					.css(new pointBackgroundStyle())
 				)
-				.click(clickCallback)
-				.appendTo("#map")
+				.appendTo("#mapContainer")
 				.fadeIn(300);
 
 			// Special Point

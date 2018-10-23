@@ -1,0 +1,322 @@
+
+
+                    RELEASE NOTES FOR TUXERA FAT
+
+
+--- Introduction ---
+
+This file contains information regarding to the latest Tuxera FAT delivery.
+Tuxera recommends to read the entire file.
+
+Table of content
+
+ * Installation
+ * Usage
+ * Configurable Mount Options
+ * Contact & Support Information
+
+
+--- Installation ---
+
+Load the Tuxera FAT kernel module, called tfat.ko, into the kernel:
+
+	insmod tfat.ko
+
+then the Tuxera FAT kernel driver is ready to be used.
+
+
+--- Usage ---
+
+Mount FAT volumes the following way:
+
+	mount -t tfat device mountpoint
+
+Example:
+
+	mount -t tfat /dev/block/mmcblk1p1 /mnt/sdcard
+
+For details on options available during (re)mount, kindly refer to section
+'Configurable Mount Options'.
+
+
+--- Configurable Mount Options ---
+
+This section provides details on the available mount options at (re)mount to
+tweak the behaviour of the FAT driver. Default values for mount options depend
+on build options and are normally optimized by Tuxera for optimum performance
+and fail safety. If you want to ensure a particular mount option is in use, you
+need to specify it on the command line or ask Tuxera to make it the default for
+your build target(s). In addition to the generic mount options described by the
+manual page for the mount(8) command (e.g. ro, rw, sync, noatime, etc, please
+see 'man 8 mount' and 'man 5 fstab' for details), the Tuxera FAT driver supports
+the following mount options:
+
+    uid=
+    The UID the files will be mounted as.
+    Usage:
+        -o uid=0
+
+    gid=
+    The GID the files will be mounted as.
+    Usage:
+        -o gid=0
+
+    fmask=
+    Sets the file mode creation mask (Only the file permission bits of the mask
+    are used).
+    Usage:
+        -o fmask=0022
+
+    dmask=
+    Sets the directory mode creation mask (Only the permission bits of the mask
+    are used).
+    Usage:
+        -o dmask=0022
+
+    umask=
+    A super set to options 'fmask' & 'dmask'. This option sets a generic mode
+    creation mask for both files and directories (Only the permission bits of
+    the mask are used).
+    Usage:
+         -o umask=0022
+
+    ioblocksize=SIZE
+    The preferred blocksize for efficient filesystem I/O. This blocksize is
+    reported in the st_blksize field of struct stat for the stat*() system call.
+    Usage:
+         -o ioblocksize=131072
+
+    iostreaming=[0|1]
+    The iostreaming mount mode gives the highest possible read and write
+    throughput performance and at the same time it has the lowest CPU usage
+    during large file transfers. The minimum block size when iostreaming starts
+    is configurable for both read and write via the min_iostreaming_read_iosize
+    and min_iostreaming_write_iosize mount options. Optimal values are chipset
+    and deployment specific, typically between 64kB and 1 MB.
+    Usage (for enabling):
+        -o iostreaming (similar to) -o iostreaming=1
+    Usage (for disabling):
+        -o iostreaming=0
+
+    min_iostreaming_read_iosize=SIZE
+    Sets the minimum block size when iostreaming starts for read.
+    Usage:
+        -o min_iostreaming_read_iosize=131072
+
+    min_iostreaming_write_iosize=SIZE
+    Sets the minimum block size when iostreaming starts for write.
+    Usage:
+        -o min_iostreaming_write_iosize=65536
+
+    readahead=SIZE_WITH_SUFFIX
+    The maximum read-ahead size (speculatively reading the specified size of
+    file data into memory under the assumption that an application requires it).
+    Usage:
+        -o readahead=4M
+
+    min_prealloc_size=SIZE_WITH_SUFFIX
+    Assigns a lower bound on the amount of clusters to preallocate (by default),
+    so as to optimize the allocations and boost I/O performance.
+    Usage:
+        -o min_prealloc_size=64k
+
+    max_prealloc_size=SIZE_WITH_SUFFIX
+    Assigns a limit on the maximum amount of clusters that can be preallocated
+    in order to optimize allocations and boost I/O performance.
+    Usage:
+        -o max_prealloc_size=128M
+
+    falloc_skip_zeroing=[0|1]
+    Do not zero the blocks that are allocated using the *fallocate() and set the
+    initialized size of the file to its data size provided FALLOC_FL_KEEP_SIZE
+    is not set. This will reveal any garbage data that may be present in the
+    non-zeroed region thus causing a potential security breach.
+    Usage (for enabling):
+        -o falloc_skip_zeroing (similar to) -o falloc_skip_zeroing=1
+    Usage (for disabling):
+        -o falloc_skip_zeroing=0
+
+    fail_safe=[0|1]
+    If set, it ensures the integrity of the file system and data under various
+    scenarios like unsafe storage unplugging, system crash and power loss. This
+    option has a performance impact for metadata intensive operations but not
+    for file transfers.
+    Usage (for enabling):
+        -o fail_safe (similar to) -o fail_safe=1
+    Usage (for disabling):
+        -o fail_safe=0
+
+    nobarrier=[0|1]
+    Write barriers enforce proper on-disk ordering of file system metadata
+    updates, making volatile storage write caches safe to use, at some
+    performance penalty. If your storages are battery-backed, disabling barriers
+    may safely improve performance.
+    Usage (barriers are used):
+        -o nobarrier=0
+    Usage (barriers are not used):
+        -o nobarrier (similar to) -o nobarrier=1
+
+    discard=[0|1]
+    Controls whether the filesystem driver should issue a discard request to the
+    underlying device to discard or trim currently unused blocks in the
+    filesystem. This will optimize long term performance and lifetime of SSDs
+    and other flash based storage devices. An alternative to using this option
+    is to run fstrim on a regular basis; please see 'man 8 fstrim'.
+    Usage (for enabling):
+        -o discard (similar to) -o discard=1
+    Usage (for disabling):
+        -o discard=0
+
+    nls=name
+    Character set containing the definition of byte encoding used to represent
+    each Unicode character of file names. It is used for Unicode string
+    handling. To be sure you are not missing any files, it is advised to use
+    nls=utf8 which is capable of representing all Unicode characters.
+    Usage:
+        -o nls=utf8
+
+    utf8=[0|1]
+    Use UTF-8 for converting file names or for any Unicode string handling. Use
+    full Unicode support thus interpreting the characters in long file names to
+    be stored in UTF-16 rather than UCS2 and assuming that the Linux side is
+    using UTF-8.
+    Usage (for enabling):
+        -o utf8 (similar to) -o utf8=1
+    Usage (for disabling):
+        -o utf8=0
+
+    hidden=[show|ignore]
+    If set to 'ignore', the directory entries with the 'hidden'
+    attribute set will not be listed if the directory is listed using 'ls', etc.
+    It should however be noted that irrespective of hidden=ignore, all files are
+    still accessible by name, i.e. you can always do ls -l <filename>" for
+    example to specifically show/access the file with the 'hidden' set.
+    Usage:
+        -o hidden=show
+        -o hidden=ignore
+
+    errors=[continue|remount-ro|recover]
+    Action to be performed by the file-system when a critical error is
+    encountered.
+    continue
+        DEFAULT, try to clean-up as much as possible, e.g. marking a corrupt
+        inode as bad so it is no longer accessed, and then continue.
+    remount-ro
+        remount the volume read-only if any disk write i/o errors occur or the
+        device becomes inaccessible.
+    recover
+        recover as much as possible and continue operation.
+    Usage:
+        -o errors=continue
+        -o errors=remount-ro
+        -o errors=recover
+
+    allow_utime
+    Specifies the permission required for setting the access/modified times of a
+    directory entry. By default, the permissions are derived from the directory
+    mode creation mask.
+    Usage:
+        -o allow_utime=0000
+
+    force_rw/noforce_rw
+    Force mounting/remounting a volume as read-write if the volume would
+    normally be mounted as read-only. Under normal circumstances when a volume
+    has errors, remounting a volume is not allowed. Enabling this option could
+    result in writing corrupt state to the disk.
+    Usage (for enabling):
+        -o force_rw
+    Usage (for disabling):
+        -o noforce_rw
+
+    fastmount
+    Enables the volume to be mounted immediately.
+    Usage (for enabling):
+        -o fastmount
+
+    dirty_on_write
+    Causes the volume to be marked as 'DIRTY' on first write and marked as
+    'CLEAN' on unmount.
+    Usage (for enabling):
+        -o dirty_on_write
+
+    abort_mount_if_dirty=[0|1]
+    Abort mount operation if the volume to be mounted is marked dirty and return
+    EUCLEAN error code. A volume that is marked dirty must be repaired with fsck
+    before attempting to mount again.
+    Usage (for enabling):
+        -o abort_mount_if_dirty (similar to) -o abort_mount_if_dirty=1
+    Usage (for disabling):
+        -o abort_mount_if_dirty=0
+
+    abort_on_journal_error=[0|1]
+    Abort mount operation if the rename journal cannot be opened/replayed.
+    Also, abort rename operation if journal transaction cannot be started.
+    Usage (for enabling):
+        -o abort_on_journal_error (similar to) -o abort_on_journal_error=1
+    Usage (for disabling):
+        -o abort_on_journal_error=0
+
+    codepage=opt
+    Defines the OEM character set used for converting short 8.3 file names.
+    Usage:
+        -o codepage=852
+
+    sloppy=[0|1]
+    If set, the driver ignores any unrecognized mount option(s) and continues to
+    go about mounting the device on the specified mount point with other given
+    valid options. The default behavior will result in mount failure.
+    Usage (for enabling):
+        -o sloppy (similar to) -o sloppy=1
+    Usage (for disabling):
+        -o sloppy=0
+
+    fsck=[skip|force]
+    Flags modifying online fsck behaviour.  Normally online fsck is run if an
+    internal flag indicates that it should be run and not otherwise.
+    skip
+        Do not run online fsck even if it is needed.
+    force
+        Run online fsck even if it is not needed.
+    Usage (to force fsck to run):
+        -o fsck=force
+    Usage (to force fsck to be skipped):
+        -o fsck=skip
+
+    fsck_delay=opt
+    Defines a delay in number of seconds by which to delay the start of online
+    fsck.  Without this option it will run immediately on completion of the
+    mount or read-write remount.  It can be useful to delay online fsck until
+    the system has finished booting for example or until scanning newly
+    attached storage media has been scanned so putting in a delay so fsck is
+    not run in parallel with immediate i/o intensive tasks is advisable to
+    ensure it cannot impact on these other i/o tasks.
+    Usage (example to cause online fsck to be delayed by 5 minutes):
+        -o fsck_delay=300
+
+    sda=[0|1]
+    Enable SDA compliance mode which modifies driver behaviour to match SD
+    association standard for FAT32 rather than the Microsoft standard.  In
+    particular the definition of the flags in the second FAT entry are
+    different and the SDA standard demands that the FSInfo sector has a backup
+    whilst the Microsoft specification says such a backup does not exist.
+    Usage (for enabling):
+        -o sda (similar to) -o sda=1
+    Usage (for disabling):
+        -o sda=0
+
+
+--- Contact & Support Information ---
+
+Please send feedback and support queries to fat-support@tuxera.com.
+
+Besides describing your issue please provide the following information to help
+Tuxera's engineers address the issue:
+
+  - detailed console error messages
+  - kernel log by using the 'dmesg' command, or 'cat /proc/kmsg'
+  - steps to reproduce the issue
+
+Please send feedback and support queries on Tuxera FAT to
+fat-support@tuxera.com. Thank you.
+
+Copyright (c) 2008-2018 Tuxera Inc. All Rights Reserved.

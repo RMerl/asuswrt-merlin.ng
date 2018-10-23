@@ -584,15 +584,16 @@ function switch_operation_mode(mode){
 }
 
 function uploadSetting(){
-  var file_obj = document.form.file;
+	var file_obj = document.form.file;
+	var file_obj_name = file_obj.value.toUpperCase();
 	
-	if(file_obj.value == ""){
+	if(file_obj_name == ""){
 		alert("<#JS_fieldblank#>");
 		file_obj.focus();
 	}
-	else if(file_obj.value.length < 6 ||
-					file_obj.value.lastIndexOf(".CFG")  < 0 || 
-					file_obj.value.lastIndexOf(".CFG") != (file_obj.value.length)-4){		
+	else if(file_obj_name.length < 6 ||
+					file_obj_name.lastIndexOf(".CFG")  < 0 || 
+					file_obj_name.lastIndexOf(".CFG") != (file_obj_name.length)-4){		
 		alert("<#Setting_upload_hint#>");
 		file_obj.focus();
 	}

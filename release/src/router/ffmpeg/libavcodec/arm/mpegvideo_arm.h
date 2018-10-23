@@ -16,12 +16,11 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#ifndef AVCODEC_ARM_MPEGVIDEO_H
-#define AVCODEC_ARM_MPEGVIDEO_H
+#ifndef AVCODEC_ARM_MPEGVIDEO_ARM_H
+#define AVCODEC_ARM_MPEGVIDEO_ARM_H
 
 #include "libavcodec/mpegvideo.h"
 
-void MPV_common_init_iwmmxt(MpegEncContext *s);
-void MPV_common_init_armv5te(MpegEncContext *s);
+void ff_mpv_common_init_armv5te(MpegEncContext *s);
 
-#endif
+#endif /* AVCODEC_ARM_MPEGVIDEO_ARM_H */

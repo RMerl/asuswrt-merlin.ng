@@ -1,5 +1,5 @@
 /*
- * MPEG4 video parser prototypes
+ * MPEG-4 video parser prototypes
  * Copyright (c) 2003 Fabrice Bellard
  * Copyright (c) 2003 Michael Niedermayer
  *
@@ -26,7 +26,7 @@
 #include "parser.h"
 
 /**
- * finds the end of the current frame in the bitstream.
+ * Find the end of the current frame in the bitstream.
  * @return the position of the first byte of the next frame, or -1
  */
 int ff_mpeg4_find_frame_end(ParseContext *pc, const uint8_t *buf, int buf_size);

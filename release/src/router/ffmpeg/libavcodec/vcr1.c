@@ -21,183 +21,113 @@
 
 /**
  * @file
- * ati vcr1 codec.
+ * ATI VCR1 codec
  */
 
 #include "avcodec.h"
-#include "dsputil.h"
+#include "internal.h"
+#include "libavutil/avassert.h"
+#include "libavutil/internal.h"
 
-//#undef NDEBUG
-//#include <assert.h>
-
-/* Disable the encoder. */
-#undef CONFIG_VCR1_ENCODER
-#define CONFIG_VCR1_ENCODER 0
-
-typedef struct VCR1Context{
-    AVCodecContext *avctx;
-    AVFrame picture;
+typedef struct VCR1Context {
     int delta[16];
     int offset[4];
 } VCR1Context;
 
-static int decode_frame(AVCodecContext *avctx,
-                        void *data, int *data_size,
-                        AVPacket *avpkt)
+static av_cold int vcr1_decode_init(AVCodecContext *avctx)
 {
-    const uint8_t *buf = avpkt->data;
-    int buf_size = avpkt->size;
-    VCR1Context * const a = avctx->priv_data;
-    AVFrame *picture = data;
-    AVFrame * const p= (AVFrame*)&a->picture;
-    const uint8_t *bytestream= buf;
-    int i, x, y;
+    avctx->pix_fmt = AV_PIX_FMT_YUV410P;
 
-    if(p->data[0])
-        avctx->release_buffer(avctx, p);
-
-    p->reference= 0;
-    if(avctx->get_buffer(avctx, p) < 0){
-        av_log(avctx, AV_LOG_ERROR, "get_buffer() failed\n");
-        return -1;
+    if (avctx->width % 8 || avctx->height%4) {
+        avpriv_request_sample(avctx, "odd dimensions (%d x %d) support", avctx->width, avctx->height);
+        return AVERROR_INVALIDDATA;
     }
-    p->pict_type= FF_I_TYPE;
-    p->key_frame= 1;
 
-    for(i=0; i<16; i++){
-        a->delta[i]= *(bytestream++);
+    return 0;
+}
+
+static int vcr1_decode_frame(AVCodecContext *avctx, void *data,
+                             int *got_frame, AVPacket *avpkt)
+{
+    VCR1Context *const a      = avctx->priv_data;
+    AVFrame *const p          = data;
+    const uint8_t *bytestream = avpkt->data;
+    const uint8_t *bytestream_end = bytestream + avpkt->size;
+    int i, x, y, ret;
+
+    if(avpkt->size < 32 + avctx->height + avctx->width*avctx->height*5/8){
+        av_log(avctx, AV_LOG_ERROR, "Insufficient input data. %d < %d\n", avpkt->size ,  32 + avctx->height + avctx->width*avctx->height*5/8);
+        return AVERROR(EINVAL);
+    }
+
+    if ((ret = ff_get_buffer(avctx, p, 0)) < 0)
+        return ret;
+    p->pict_type = AV_PICTURE_TYPE_I;
+    p->key_frame = 1;
+
+    for (i = 0; i < 16; i++) {
+        a->delta[i] = *bytestream++;
         bytestream++;
     }
 
-    for(y=0; y<avctx->height; y++){
+    for (y = 0; y < avctx->height; y++) {
         int offset;
-        uint8_t *luma= &a->picture.data[0][ y*a->picture.linesize[0] ];
+        uint8_t *luma = &p->data[0][y * p->linesize[0]];
 
-        if((y&3) == 0){
-            uint8_t *cb= &a->picture.data[1][ (y>>2)*a->picture.linesize[1] ];
-            uint8_t *cr= &a->picture.data[2][ (y>>2)*a->picture.linesize[2] ];
+        if ((y & 3) == 0) {
+            uint8_t *cb = &p->data[1][(y >> 2) * p->linesize[1]];
+            uint8_t *cr = &p->data[2][(y >> 2) * p->linesize[2]];
 
-            for(i=0; i<4; i++)
-                a->offset[i]= *(bytestream++);
+            av_assert0 (bytestream_end - bytestream >= 4 + avctx->width);
 
-            offset= a->offset[0] - a->delta[ bytestream[2]&0xF ];
-            for(x=0; x<avctx->width; x+=4){
-                luma[0]=( offset += a->delta[ bytestream[2]&0xF ]);
-                luma[1]=( offset += a->delta[ bytestream[2]>>4  ]);
-                luma[2]=( offset += a->delta[ bytestream[0]&0xF ]);
-                luma[3]=( offset += a->delta[ bytestream[0]>>4  ]);
-                luma += 4;
+            for (i = 0; i < 4; i++)
+                a->offset[i] = *bytestream++;
 
-                *(cb++) = bytestream[3];
-                *(cr++) = bytestream[1];
+            offset = a->offset[0] - a->delta[bytestream[2] & 0xF];
+            for (x = 0; x < avctx->width; x += 4) {
+                luma[0]     = offset += a->delta[bytestream[2] & 0xF];
+                luma[1]     = offset += a->delta[bytestream[2] >>  4];
+                luma[2]     = offset += a->delta[bytestream[0] & 0xF];
+                luma[3]     = offset += a->delta[bytestream[0] >>  4];
+                luma       += 4;
 
-                bytestream+= 4;
+                *cb++       = bytestream[3];
+                *cr++       = bytestream[1];
+
+                bytestream += 4;
             }
-        }else{
-            offset= a->offset[y&3] - a->delta[ bytestream[2]&0xF ];
+        } else {
+            av_assert0 (bytestream_end - bytestream >= avctx->width / 2);
 
-            for(x=0; x<avctx->width; x+=8){
-                luma[0]=( offset += a->delta[ bytestream[2]&0xF ]);
-                luma[1]=( offset += a->delta[ bytestream[2]>>4  ]);
-                luma[2]=( offset += a->delta[ bytestream[3]&0xF ]);
-                luma[3]=( offset += a->delta[ bytestream[3]>>4  ]);
-                luma[4]=( offset += a->delta[ bytestream[0]&0xF ]);
-                luma[5]=( offset += a->delta[ bytestream[0]>>4  ]);
-                luma[6]=( offset += a->delta[ bytestream[1]&0xF ]);
-                luma[7]=( offset += a->delta[ bytestream[1]>>4  ]);
-                luma += 8;
-                bytestream+= 4;
+            offset = a->offset[y & 3] - a->delta[bytestream[2] & 0xF];
+
+            for (x = 0; x < avctx->width; x += 8) {
+                luma[0]     = offset += a->delta[bytestream[2] & 0xF];
+                luma[1]     = offset += a->delta[bytestream[2] >>  4];
+                luma[2]     = offset += a->delta[bytestream[3] & 0xF];
+                luma[3]     = offset += a->delta[bytestream[3] >>  4];
+                luma[4]     = offset += a->delta[bytestream[0] & 0xF];
+                luma[5]     = offset += a->delta[bytestream[0] >>  4];
+                luma[6]     = offset += a->delta[bytestream[1] & 0xF];
+                luma[7]     = offset += a->delta[bytestream[1] >>  4];
+                luma       += 8;
+                bytestream += 4;
             }
         }
     }
 
-    *picture= *(AVFrame*)&a->picture;
-    *data_size = sizeof(AVPicture);
+    *got_frame = 1;
 
-    emms_c();
-
-    return buf_size;
+    return bytestream - avpkt->data;
 }
 
-#if CONFIG_VCR1_ENCODER
-static int encode_frame(AVCodecContext *avctx, unsigned char *buf, int buf_size, void *data){
-    VCR1Context * const a = avctx->priv_data;
-    AVFrame *pict = data;
-    AVFrame * const p= (AVFrame*)&a->picture;
-    int size;
-
-    *p = *pict;
-    p->pict_type= FF_I_TYPE;
-    p->key_frame= 1;
-
-    emms_c();
-
-    align_put_bits(&a->pb);
-    while(get_bit_count(&a->pb)&31)
-        put_bits(&a->pb, 8, 0);
-
-    size= get_bit_count(&a->pb)/32;
-
-    return size*4;
-}
-#endif
-
-static av_cold void common_init(AVCodecContext *avctx){
-    VCR1Context * const a = avctx->priv_data;
-
-    avctx->coded_frame= (AVFrame*)&a->picture;
-    a->avctx= avctx;
-}
-
-static av_cold int decode_init(AVCodecContext *avctx){
-
-    common_init(avctx);
-
-    avctx->pix_fmt= PIX_FMT_YUV410P;
-
-    return 0;
-}
-
-static av_cold int decode_end(AVCodecContext *avctx){
-    VCR1Context *s = avctx->priv_data;
-
-    if (s->picture.data[0])
-        avctx->release_buffer(avctx, &s->picture);
-
-    return 0;
-}
-
-#if CONFIG_VCR1_ENCODER
-static av_cold int encode_init(AVCodecContext *avctx){
-
-    common_init(avctx);
-
-    return 0;
-}
-#endif
-
-AVCodec vcr1_decoder = {
-    "vcr1",
-    AVMEDIA_TYPE_VIDEO,
-    CODEC_ID_VCR1,
-    sizeof(VCR1Context),
-    decode_init,
-    NULL,
-    decode_end,
-    decode_frame,
-    CODEC_CAP_DR1,
-    .long_name = NULL_IF_CONFIG_SMALL("ATI VCR1"),
+AVCodec ff_vcr1_decoder = {
+    .name           = "vcr1",
+    .long_name      = NULL_IF_CONFIG_SMALL("ATI VCR1"),
+    .type           = AVMEDIA_TYPE_VIDEO,
+    .id             = AV_CODEC_ID_VCR1,
+    .priv_data_size = sizeof(VCR1Context),
+    .init           = vcr1_decode_init,
+    .decode         = vcr1_decode_frame,
+    .capabilities   = AV_CODEC_CAP_DR1,
 };
-
-#if CONFIG_VCR1_ENCODER
-AVCodec vcr1_encoder = {
-    "vcr1",
-    AVMEDIA_TYPE_VIDEO,
-    CODEC_ID_VCR1,
-    sizeof(VCR1Context),
-    encode_init,
-    encode_frame,
-    //encode_end,
-    .long_name = NULL_IF_CONFIG_SMALL("ATI VCR1"),
-};
-#endif

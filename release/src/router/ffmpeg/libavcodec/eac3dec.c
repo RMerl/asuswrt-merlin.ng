@@ -48,10 +48,9 @@
 #include "internal.h"
 #include "aac_ac3_parser.h"
 #include "ac3.h"
-#include "ac3_parser.h"
 #include "ac3dec.h"
 #include "ac3dec_data.h"
-#include "eac3dec_data.h"
+#include "eac3_data.h"
 
 /** gain adaptive quantization mode */
 typedef enum {
@@ -63,7 +62,7 @@ typedef enum {
 
 #define EAC3_SR_CODE_REDUCED  3
 
-void ff_eac3_apply_spectral_extension(AC3DecodeContext *s)
+static void ff_eac3_apply_spectral_extension(AC3DecodeContext *s)
 {
     int bin, bnd, ch, i;
     uint8_t wrapflag[SPX_MAX_BANDS]={1,0,}, num_copy_sections, copy_sizes[SPX_MAX_BANDS];
@@ -101,7 +100,7 @@ void ff_eac3_apply_spectral_extension(AC3DecodeContext *s)
         for (i = 0; i < num_copy_sections; i++) {
             memcpy(&s->transform_coeffs[ch][bin],
                    &s->transform_coeffs[ch][s->spx_dst_start_freq],
-                   copy_sizes[i]*sizeof(float));
+                   copy_sizes[i]*sizeof(INTFLOAT));
             bin += copy_sizes[i];
         }
 
@@ -124,7 +123,7 @@ void ff_eac3_apply_spectral_extension(AC3DecodeContext *s)
             bin = s->spx_src_start_freq - 2;
             for (bnd = 0; bnd < s->num_spx_bands; bnd++) {
                 if (wrapflag[bnd]) {
-                    float *coeffs = &s->transform_coeffs[ch][bin];
+                    INTFLOAT *coeffs = &s->transform_coeffs[ch][bin];
                     coeffs[0] *= atten_tab[0];
                     coeffs[1] *= atten_tab[1];
                     coeffs[2] *= atten_tab[2];
@@ -140,8 +139,13 @@ void ff_eac3_apply_spectral_extension(AC3DecodeContext *s)
            each band. */
         bin = s->spx_src_start_freq;
         for (bnd = 0; bnd < s->num_spx_bands; bnd++) {
-            float nscale = s->spx_noise_blend[ch][bnd] * rms_energy[bnd] * (1.0f/(1<<31));
+            float nscale = s->spx_noise_blend[ch][bnd] * rms_energy[bnd] * (1.0f / INT32_MIN);
             float sscale = s->spx_signal_blend[ch][bnd];
+#if USE_FIXED
+            // spx_noise_blend and spx_signal_blend are both FP.23
+            nscale *= 1.0 / (1<<23);
+            sscale *= 1.0 / (1<<23);
+#endif
             for (i = 0; i < s->spx_band_sizes[bnd]; i++) {
                 float noise  = nscale * (int32_t)av_lfg_get(&s->dith_state);
                 s->transform_coeffs[ch][bin]   *= sscale;
@@ -195,7 +199,7 @@ static void idct6(int pre_mant[6])
     pre_mant[5] = even0 - odd0;
 }
 
-void ff_eac3_decode_transform_coeffs_aht_ch(AC3DecodeContext *s, int ch)
+static void ff_eac3_decode_transform_coeffs_aht_ch(AC3DecodeContext *s, int ch)
 {
     int bin, blk, gs;
     int end_bap, gaq_mode;
@@ -247,7 +251,7 @@ void ff_eac3_decode_transform_coeffs_aht_ch(AC3DecodeContext *s, int ch)
             /* Vector Quantization */
             int v = get_bits(gbc, bits);
             for (blk = 0; blk < 6; blk++) {
-                s->pre_mantissa[ch][bin][blk] = ff_eac3_mantissa_vq[hebap][v][blk] << 8;
+                s->pre_mantissa[ch][bin][blk] = ff_eac3_mantissa_vq[hebap][v][blk] * (1 << 8);
             }
         } else {
             /* Gain Adaptive Quantization */
@@ -266,16 +270,16 @@ void ff_eac3_decode_transform_coeffs_aht_ch(AC3DecodeContext *s, int ch)
                     int b;
                     int mbits = bits - (2 - log_gain);
                     mant = get_sbits(gbc, mbits);
-                    mant <<= (23 - (mbits - 1));
+                    mant = ((unsigned)mant) << (23 - (mbits - 1));
                     /* remap mantissa value to correct for asymmetric quantization */
                     if (mant >= 0)
                         b = 1 << (23 - log_gain);
                     else
-                        b = ff_eac3_gaq_remap_2_4_b[hebap-8][log_gain-1] << 8;
+                        b = ff_eac3_gaq_remap_2_4_b[hebap-8][log_gain-1] * (1 << 8);
                     mant += ((ff_eac3_gaq_remap_2_4_a[hebap-8][log_gain-1] * (int64_t)mant) >> 15) + b;
                 } else {
                     /* small mantissa, no GAQ, or Gk=1 */
-                    mant <<= 24 - bits;
+                    mant *= (1 << 24 - bits);
                     if (!log_gain) {
                         /* remap mantissa value for no GAQ or Gk=1 */
                         mant += (ff_eac3_gaq_remap_1[hebap-8] * (int64_t)mant) >> 15;
@@ -288,7 +292,7 @@ void ff_eac3_decode_transform_coeffs_aht_ch(AC3DecodeContext *s, int ch)
     }
 }
 
-int ff_eac3_parse_header(AC3DecodeContext *s)
+static int ff_eac3_parse_header(AC3DecodeContext *s)
 {
     int i, blk, ch;
     int ac3_exponent_strategy, parse_aht_info, parse_spx_atten_data;
@@ -299,10 +303,7 @@ int ff_eac3_parse_header(AC3DecodeContext *s)
     /* An E-AC-3 stream can have multiple independent streams which the
        application can select from. each independent stream can also contain
        dependent streams which are used to add or replace channels. */
-    if (s->frame_type == EAC3_FRAME_TYPE_DEPENDENT) {
-        av_log_missing_feature(s->avctx, "Dependent substream decoding", 1);
-        return AAC_AC3_PARSE_ERROR_FRAME_TYPE;
-    } else if (s->frame_type == EAC3_FRAME_TYPE_RESERVED) {
+    if (s->frame_type == EAC3_FRAME_TYPE_RESERVED) {
         av_log(s->avctx, AV_LOG_ERROR, "Reserved frame type\n");
         return AAC_AC3_PARSE_ERROR_FRAME_TYPE;
     }
@@ -312,7 +313,10 @@ int ff_eac3_parse_header(AC3DecodeContext *s)
        associated to an independent stream have matching substream id's. */
     if (s->substreamid) {
         /* only decode substream with id=0. skip any additional substreams. */
-        av_log_missing_feature(s->avctx, "Additional substreams", 1);
+        if (!s->eac3_subsbtreamid_found) {
+            s->eac3_subsbtreamid_found = 1;
+            avpriv_request_sample(s->avctx, "Additional substreams");
+        }
         return AAC_AC3_PARSE_ERROR_FRAME_TYPE;
     }
 
@@ -321,23 +325,32 @@ int ff_eac3_parse_header(AC3DecodeContext *s)
            rates in bit allocation.  The best assumption would be that it is
            handled like AC-3 DolbyNet, but we cannot be sure until we have a
            sample which utilizes this feature. */
-        av_log_missing_feature(s->avctx, "Reduced sampling rates", 1);
-        return -1;
+        avpriv_request_sample(s->avctx, "Reduced sampling rate");
+        return AVERROR_PATCHWELCOME;
     }
     skip_bits(gbc, 5); // skip bitstream id
 
     /* volume control params */
     for (i = 0; i < (s->channel_mode ? 1 : 2); i++) {
-        skip_bits(gbc, 5); // skip dialog normalization
-        if (get_bits1(gbc)) {
-            skip_bits(gbc, 8); // skip compression gain word
+        s->dialog_normalization[i] = -get_bits(gbc, 5);
+        if (s->dialog_normalization[i] == 0) {
+            s->dialog_normalization[i] = -31;
+        }
+        if (s->target_level != 0) {
+            s->level_gain[i] = powf(2.0f,
+                (float)(s->target_level - s->dialog_normalization[i])/6.0f);
+        }
+        s->compression_exists[i] = get_bits1(gbc);
+        if (s->compression_exists[i]) {
+            s->heavy_dynamic_range[i] = AC3_HEAVY_RANGE(get_bits(gbc, 8));
         }
     }
 
     /* dependent stream channel map */
     if (s->frame_type == EAC3_FRAME_TYPE_DEPENDENT) {
         if (get_bits1(gbc)) {
-            skip_bits(gbc, 16); // skip custom channel map
+            s->channel_map = get_bits(gbc, 16);
+            av_log(s->avctx, AV_LOG_DEBUG, "channel_map: %0X\n", s->channel_map);
         }
     }
 
@@ -345,23 +358,22 @@ int ff_eac3_parse_header(AC3DecodeContext *s)
     if (get_bits1(gbc)) {
         /* center and surround mix levels */
         if (s->channel_mode > AC3_CHMODE_STEREO) {
-            skip_bits(gbc, 2);  // skip preferred stereo downmix mode
+            s->preferred_downmix = get_bits(gbc, 2);
             if (s->channel_mode & 1) {
                 /* if three front channels exist */
-                skip_bits(gbc, 3); //skip Lt/Rt center mix level
-                s->center_mix_level = get_bits(gbc, 3);
+                s->center_mix_level_ltrt = get_bits(gbc, 3);
+                s->center_mix_level      = get_bits(gbc, 3);
             }
             if (s->channel_mode & 4) {
                 /* if a surround channel exists */
-                skip_bits(gbc, 3); //skip Lt/Rt surround mix level
-                s->surround_mix_level = get_bits(gbc, 3);
+                s->surround_mix_level_ltrt = av_clip(get_bits(gbc, 3), 3, 7);
+                s->surround_mix_level      = av_clip(get_bits(gbc, 3), 3, 7);
             }
         }
 
         /* lfe mix level */
-        if (s->lfe_on && get_bits1(gbc)) {
-            // TODO: use LFE mix level
-            skip_bits(gbc, 5); // skip LFE mix level code
+        if (s->lfe_on && (s->lfe_mix_level_exists = get_bits1(gbc))) {
+            s->lfe_mix_level = get_bits(gbc, 5);
         }
 
         /* info for mixing with other streams and substreams */
@@ -410,13 +422,14 @@ int ff_eac3_parse_header(AC3DecodeContext *s)
 
     /* informational metadata */
     if (get_bits1(gbc)) {
-        skip_bits(gbc, 3); // skip bit stream mode
+        s->bitstream_mode = get_bits(gbc, 3);
         skip_bits(gbc, 2); // skip copyright bit and original bitstream bit
         if (s->channel_mode == AC3_CHMODE_STEREO) {
-            skip_bits(gbc, 4); // skip Dolby surround and headphone mode
+            s->dolby_surround_mode  = get_bits(gbc, 2);
+            s->dolby_headphone_mode = get_bits(gbc, 2);
         }
         if (s->channel_mode >= AC3_CHMODE_2F2R) {
-            skip_bits(gbc, 2); // skip Dolby surround EX mode
+            s->dolby_surround_ex_mode = get_bits(gbc, 2);
         }
         for (i = 0; i < (s->channel_mode ? 1 : 2); i++) {
             if (get_bits1(gbc)) {
@@ -491,7 +504,7 @@ int ff_eac3_parse_header(AC3DecodeContext *s)
     s->skip_syntax       = get_bits1(gbc);
     parse_spx_atten_data = get_bits1(gbc);
 
-    /* coupling strategy occurance and coupling use per block */
+    /* coupling strategy occurrence and coupling use per block */
     num_cpl_blocks = 0;
     if (s->channel_mode > 1) {
         for (blk = 0; blk < s->num_blocks; blk++) {
@@ -593,7 +606,7 @@ int ff_eac3_parse_header(AC3DecodeContext *s)
            It is likely the offset of each block within the frame. */
         int block_start_bits = (s->num_blocks-1) * (4 + av_log2(s->frame_size-2));
         skip_bits_long(gbc, block_start_bits);
-        av_log_missing_feature(s->avctx, "Block start info", 1);
+        avpriv_request_sample(s->avctx, "Block start info");
     }
 
     /* syntax state initialization */

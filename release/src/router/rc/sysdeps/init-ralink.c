@@ -426,24 +426,22 @@ void config_switch()
 #endif
 		if(!nvram_match("switch_wantag", "none")&&!nvram_match("switch_wantag", ""))//2012.03 Yau modify
 		{
-			char *p;
 			int voip_port = 0;
 			int t, vlan_val = -1, prio_val = -1;
 			unsigned int mask = 0;
 
 #if defined(RTCONFIG_RALINK_MT7628)
 			/* Create WAN VLAN interface */
-			char wan_dev[10] = {0};
-			if (strcmp(nvram_safe_get("switch_wan0tagid"), "") != 0) {
+			if (nvram_get_int("switch_wan0tagid") != 0) {
+				char wan_dev[10];
 				eval("vconfig", "rem", "vlan2");
 				eval("vconfig", "add", "eth2", nvram_safe_get("switch_wan0tagid"));
 
 				snprintf(wan_dev, sizeof(wan_dev), "vlan%d", nvram_get_int("switch_wan0tagid"));
-				if ((p = nvram_get("switch_wan0prio")) != NULL && *p != '\0') {
-					prio_val = atoi(p);
-					if (prio_val >= 0 && prio_val <= 7)
-						eval("vconfig", "set_egress_map", wan_dev, "0", nvram_get("switch_wan0prio"));
-				}
+
+				prio_val = nvram_get_int("switch_wan1prio");
+				if (prio_val >= 0 && prio_val <= 7)
+					eval("vconfig", "set_egress_map", wan_dev, "0", nvram_get("switch_wan0prio"));
 			}
 #endif
 			switch (model) {
@@ -577,16 +575,13 @@ void config_switch()
 						system("rtkswitch 38 0");		//No IPTV and VoIP ports
 
 					/*++ Get and set Vlan Information */
-					if(strcmp(nvram_safe_get("switch_wan0tagid"), "") != 0) {
+					t = nvram_get_int("switch_wan0tagid") & 0x0fff;
+					if (t != 0) {
 						// Internet on WAN (port 0)
-						if ((p = nvram_get("switch_wan0tagid")) != NULL) {
-							t = atoi(p);
-							if((t >= 2) && (t <= 4094))
-								vlan_val = t;
-						}
-
-						if((p = nvram_get("switch_wan0prio")) != NULL && *p != '\0')
-							prio_val = atoi(p);
+						if (t >= 2 && t <= 4094)
+							vlan_val = t;
+ 
+						prio_val = nvram_get_int("switch_wan0prio") & 0x7;
 	
 						__setup_vlan(vlan_val, prio_val, 0x00000201);
 
@@ -594,18 +589,15 @@ void config_switch()
 						_set_vlan_mbr(vlan_val);
 					}
 	
-					if(strcmp(nvram_safe_get("switch_wan1tagid"), "") != 0) {
+					t = nvram_get_int("switch_wan1tagid") & 0x0fff;
+					if (t != 0) {
 						// IPTV on LAN4 (port 4)
-						if ((p = nvram_get("switch_wan1tagid")) != NULL) {
-							t = atoi(p);
-							if((t >= 2) && (t <= 4094))
-								vlan_val = t;
-						}
+						if (t >= 2 && t <= 4094)
+							vlan_val = t;
 
-						if((p = nvram_get("switch_wan1prio")) != NULL && *p != '\0')
-							prio_val = atoi(p);
+						prio_val = nvram_get_int("switch_wan1prio") & 0x7;
 
-						if(!strcmp(nvram_safe_get("switch_wan1tagid"), nvram_safe_get("switch_wan2tagid")))
+						if (t == nvram_get_int("switch_wan2tagid"))
 							mask = 0x00180019;	//IPTV=VOIP
 						else
 							mask = 0x00100011;	//IPTV Port: P4 untag 1048593 = 0x10 0011
@@ -619,18 +611,15 @@ void config_switch()
 						eval("mtkswitch", "2", "5");
 					}	
 
-					if(strcmp(nvram_safe_get("switch_wan2tagid"), "") != 0) {
+					t = nvram_get_int("switch_wan2tagid") & 0x0fff;
+					if (t != 0) {
 						// VoIP on LAN3 (port 3)
-						if ((p = nvram_get("switch_wan2tagid")) != NULL) {
-							t = atoi(p);
-							if((t >= 2) && (t <= 4094))
-								vlan_val = t;
-						}
+						if (t >= 2 && t <= 4094)
+							vlan_val = t;
 
-						if((p = nvram_get("switch_wan2prio")) != NULL && *p != '\0')
-							prio_val = atoi(p);
+						prio_val = nvram_get_int("switch_wan2prio") & 0x7;
 
-						if(!strcmp(nvram_safe_get("switch_wan1tagid"), nvram_safe_get("switch_wan2tagid")))
+						if (t == nvram_get_int("switch_wan1tagid"))
 							mask = 0x00180019;	//IPTV=VOIP
 						else
 							mask = 0x00080009;	//VoIP Port: P3 untag
@@ -764,51 +753,48 @@ void config_switch()
 						system("rtkswitch 38 0");		//No IPTV and VoIP ports
 
 					/*++ Get and set Vlan Information */
-					if(strcmp(nvram_safe_get("switch_wan0tagid"), "") != 0) {
+					t = nvram_get_int("switch_wan0tagid") & 0x0fff;
+					if (t != 0) {
 						// Internet on WAN (port 4)
-						if ((p = nvram_get("switch_wan0tagid")) != NULL) {
-							t = atoi(p);
-							if((t >= 2) && (t <= 4094))
-								vlan_val = t;
-						}
+						if (t >= 2 && t <= 4094)
+							vlan_val = t;
 
-						if((p = nvram_get("switch_wan0prio")) != NULL && *p != '\0')
-							prio_val = atoi(p);
-	
+						prio_val = nvram_get_int("switch_wan0prio") & 0x7;
+
 						__setup_vlan(vlan_val, prio_val, 0x02000210);
 					}
+#if defined(RTCONFIG_RALINK_MT7620) || defined(RTCONFIG_RALINK_MT7621)
+					else {
+						/* Internet: untag: P4, P9; port: P4, P9 */
+						__setup_vlan(2, 0, 0x02100210);
+					}
+#endif
 	
-					if(strcmp(nvram_safe_get("switch_wan1tagid"), "") != 0) {
+					t = nvram_get_int("switch_wan1tagid") & 0x0fff;
+					if (t != 0) {
 						// IPTV on LAN4 (port 0)
-						if ((p = nvram_get("switch_wan1tagid")) != NULL) {
-							t = atoi(p);
-							if((t >= 2) && (t <= 4094))
-								vlan_val = t;
-						}
+						if (t >= 2 && t <= 4094)
+							vlan_val = t;
 
-						if((p = nvram_get("switch_wan1prio")) != NULL && *p != '\0')
-							prio_val = atoi(p);
+						prio_val = nvram_get_int("switch_wan1prio") & 0x7;
 
-						if(!strcmp(nvram_safe_get("switch_wan1tagid"), nvram_safe_get("switch_wan2tagid")))
+						if (t == nvram_get_int("switch_wan2tagid"))
 							mask = 0x00030013;	//IPTV=VOIP
 						else
 							mask = 0x00010011;	//IPTV Port: P0 untag 65553 = 0x10 011
 
 						__setup_vlan(vlan_val, prio_val, mask);
-					}	
+					}
 
-					if(strcmp(nvram_safe_get("switch_wan2tagid"), "") != 0) {
+					t = nvram_get_int("switch_wan2tagid") & 0x0fff;
+					if (t != 0) {
 						// VoIP on LAN3 (port 1)
-						if ((p = nvram_get("switch_wan2tagid")) != NULL) {
-							t = atoi(p);
-							if((t >= 2) && (t <= 4094))
-								vlan_val = t;
-						}
+						if (t >= 2 && t <= 4094)
+							vlan_val = t;
 
-						if((p = nvram_get("switch_wan2prio")) != NULL && *p != '\0')
-							prio_val = atoi(p);
+						prio_val = nvram_get_int("switch_wan2prio") & 0x7;
 
-						if(!strcmp(nvram_safe_get("switch_wan1tagid"), nvram_safe_get("switch_wan2tagid")))
+						if (t == nvram_get_int("switch_wan1tagid"))
 							mask = 0x00030013;	//IPTV=VOIP
 						else
 							mask = 0x00020012;	//VoIP Port: P1 untag
@@ -1852,7 +1838,7 @@ set_wan_tag(char *interface) {
 	char wan_dev[10], port_id[7];
 
 	model = get_model();
-	wan_vid = nvram_get_int("switch_wan0tagid");
+	wan_vid = nvram_get_int("switch_wan0tagid") & 0x0fff;
 
 	snprintf(wan_dev, sizeof(wan_dev), "vlan%d", wan_vid);
 
@@ -1878,10 +1864,11 @@ set_wan_tag(char *interface) {
 			eval("vconfig", "rem", "vlan2");
 			sprintf(port_id, "%d", wan_vid);
 			eval("vconfig", "add", interface, port_id);
+
+			/* Set Wan port PRIO */
+			if (nvram_get_int("switch_wan0prio") != 0)
+				eval("vconfig", "set_egress_map", wan_dev, "0", nvram_get("switch_wan0prio"));
 		}
-		/* Set Wan port PRIO */
-		if(nvram_invmatch("switch_wan0prio", "0"))
-			eval("vconfig", "set_egress_map", wan_dev, "0", nvram_get("switch_wan0prio"));
 		break;
 	}
 

@@ -3,8 +3,8 @@
  * ported to MPlayer by Arpi <arpi@thot.banki.hu>
  * ported to libavcodec by Nick Kurshev <nickols_k@mail.ru>
  *
- * Copyright (C) 2002 the xine project
- * Copyright (C) 2002 the ffmpeg project
+ * Copyright (c) 2002 The Xine project
+ * Copyright (c) 2002 The FFmpeg project
  *
  * SVQ1 Encoder (c) 2004 Mike Melanson <melanson@pcisys.net>
  *
@@ -37,7 +37,7 @@
 #include "svq1_vlc.h"
 
 /* standard video sizes */
-const struct svq1_frame_size ff_svq1_frame_size_table[7] = {
-  { 160, 120 }, { 128,  96 }, { 176, 144 }, { 352, 288 },
-  { 704, 576 }, { 240, 180 }, { 320, 240 }
+const uint16_t ff_svq1_frame_size_table[7][2] = {
+    { 160, 120 }, { 128,  96 }, { 176, 144 }, { 352, 288 },
+    { 704, 576 }, { 240, 180 }, { 320, 240 }
 };

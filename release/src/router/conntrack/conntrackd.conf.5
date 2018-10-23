@@ -1,0 +1,1075 @@
+.\"
+.\" (C) Copyright 2015-2018, Arturo Borrero Gonzalez <arturo@netfilter.org>
+.\"
+.\" %%%LICENSE_START(GPLv2+_DOC_FULL)
+.\" This is free documentation; you can redistribute it and/or
+.\" modify it under the terms of the GNU General Public License as
+.\" published by the Free Software Foundation; either version 2 of
+.\" the License, or (at your option) any later version.
+.\"
+.\" The GNU General Public License's references to "object code"
+.\" and "executables" are to be interpreted as the output of any
+.\" document formatting or typesetting system, including
+.\" intermediate and printed output.
+.\"
+.\" This manual is distributed in the hope that it will be useful,
+.\" but WITHOUT ANY WARRANTY; without even the implied warranty of
+.\" MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+.\" GNU General Public License for more details.
+.\"
+.\" You should have received a copy of the GNU General Public
+.\" License along with this manual; if not, see
+.\" <http://www.gnu.org/licenses/>.
+.\" %%%LICENSE_END
+.\"
+.TH CONNTRACKD.CONF 5 "Apr 16, 2018"
+
+.SH NAME
+conntrackd.conf \- configuration file for conntrackd daemon
+
+.SH DESCRIPTION
+\fBconntrackd.conf\fP is the main configuration file for the
+\fBconntrackd(8)\fP daemon. It is loaded by calling `\fIconntrackd -C
+conntrackd.conf\fP'.
+
+The format of this file is simple, using brackets for sections and
+key-value pairs for concrete configuration directives:
+
+.nf
+	section1 {
+		option1 value1
+		option2 value2
+	}
+	section2 {
+		option3 value3
+		subsection1 {
+			option4 value4
+		}
+	}
+.fi
+
+You should consider this file as case-sensitive.
+Empty lines and lines starting with the '#' character are ignored.
+
+Before starting to develop a new configuration, you may want to learn the
+concepts behind this technlogy at
+\fIhttp://conntrack-tools.netfilter.org/manual.html\fP.
+
+There are complete configuration examples at the end of this man page.
+
+.SH SYNC
+
+This top-level section defines how \fBconntrackd(8)\fP should handle
+synchronization with other cluster nodes.
+
+There are 3 main synchronization modes or protocols: \fBNOTRACK\fP, \fBALARM\fP
+and \fBFTFW\fP.
+
+There are 3 transport protocols as well: \fBTCP\fP, \fBMulticast\fP
+and \fBUDP\fP.
+
+You have to choose one synchronization mode and one transport protocol.
+
+Also, there are some general options in this section.
+
+.SS Mode FTFW
+
+This mode is based on a reliable protocol that performs message tracking.
+Thus, the protocol can recover from message loss, re-ordering and corruption.
+
+In this synchronization mode you may configure \fBResendQueueSize\fP,
+\fBCommitTimeout\fP, \fBPurgeTimeout\fP, \fBACKWindowSize\fP ,
+\fBDisableExternalCache\fP and \fBStartupResync\fP.
+
+.TP
+.BI "ResendQueueSize <value>"
+Size of the resend queue (in objects). This is the maximum number of objects
+that can be stored waiting to be confirmed via acknoledgment.
+If you keep this value low, the daemon will have less chances to recover
+state-changes under message omission. On the other hand, if you keep this value
+high, the daemon will consume more memory to store dead objects.
+
+Example: ResendQueueSize 131072
+
+Default is 131072 objects.
+
+.TP
+.BI "CommitTimeout <seconds>"
+This parameter allows you to set an initial fixed timeout for the committed
+entries when this node goes from backup to primary. This mechanism provides
+a way to purge entries that were not recovered appropriately after the
+specified fixed timeout. If you set a low value, TCP entries in Established
+states with no traffic may hang. For example, an SSH connection without
+KeepAlive enabled.
+
+Example: CommitTimeout 180
+
+By default, this option is not set (the daemon uses an approximate timeout
+value calculation mechanism).
+
+.TP
+.BI "PurgeTimeout <seconds>"
+If the firewall replica goes from primary to backup, the
+`\fIconntrackd -t command\fP' is invoked in the script. This command schedules
+a flush of the table in N seconds.
+
+This is useful to purge the connection tracking table of zombie entries and
+avoid clashes with old entries if you trigger several consecutive hand-overs.
+
+Default is 60 seconds.
+
+.TP
+.BI "ACKWindowSize <value>"
+Set the acknowledgement window size. If you decrease this value, the number of
+acknowlegdments increases. More acknowledgments means more overhead as
+\fBconntrackd(8)\fP has to handle more control messages. On the other hand, if
+you increase this value, the resend queue gets more populated. This results in
+more overhead in the queue releasing.
+
+Example: ACKWindowSize 300
+
+If not set, default window size is 300 (value is based on some practical
+experiments measuring the cycles spent by the acknowledgment handling
+with oprofile).
+
+.TP
+.BI "DisableExternalCache <on|off>"
+This clause allows you to disable the external cache. Thus, the state entries
+are directly injected into the kernel conntrack table. As a result, you save
+memory in user-space but you consume slots in the kernel conntrack table for
+backup state entries. Moreover, disabling the external cache means more CPU
+consumption. You need a \fBLinux kernel >= 2.6.29\fP to use this feature.
+
+If you are installing \fBconntrackd(8)\fP for first time, please read the user
+manual and I encourage you to consider using the fail-over scripts instead of
+enabling this option!
+
+By default, this clause is set off.
+
+.TP
+.BI "StartupResync <on|off>"
+Order conntrackd to request a complete conntrack table resync against the other
+node at startup. A single request will be made.
+
+This is useful to get in sync with another node which has been running while we
+were down.
+
+Example: StartupResync on
+
+By default, this clause is set off.
+
+.SS Mode ALARM
+
+This mode is spamming. It is based on a alarm-based protocol that periodically
+re-sends the flow state to the backup firewall replicas. This protocol consumes
+a lot of bandwidth but it resolves synchronization problems fast.
+
+In this synchronization mode you may configure \fBRefreshTime\fP,
+\fBCacheTimeout\fP, \fBCommitTimeout\fP and \fBPurgeTimeout\fP.
+
+.TP
+.BI "RefreshTime <seconds>"
+If a conntrack entry is not modified in <= N seconds, then a message is
+broadcasted. For example, this mechanism may be used to resynchronize nodes
+that just joined the multicast group.
+
+Example: RefreshTime 15
+
+.TP
+.BI "CacheTimeout <seconds>"
+If we don't receive a notification about the state of an entry in the
+external cache after N seconds, then remove it.
+
+Example: CacheTimeout 180
+
+.TP
+.BI "CommitTimeout <seconds>"
+Same as in \fBFTFW\fP mode.
+
+.TP
+.BI "PurgeTimeout <seconds>"
+Same as in \fBFTFW\fP mode.
+
+.SS Mode NOTRACK
+
+Is the most simple mode as it is based on a best effort replication protocol,
+ie. unreliable protocol. This protocol sends and receives the state information
+without performing any specific checking.
+
+In this synchronization mode you may configure \fBDisableInternalCache\fP,
+\fBDisableExternalCache\fP, \fBCommitTimeout\fP, \fBPurgeTimeout\fP and
+\fBStartupResync\fP.
+
+.TP
+.BI "DisableInternalCache <on|off>"
+This clause allows you to disable the internal cache. Thus, the synchronization
+messages are directly sent through the dedicated link.
+
+This option is set off by default.
+
+.TP
+.BI "DisableExternalCache <on|off>"
+Same as in \fBFTFW\fP mode.
+
+.TP
+.BI "CommitTimeout <seconds>"
+Same as in \fBFTFW\fP mode.
+
+.TP
+.BI "PurgeTimeout <seconds>"
+Same as in \fBFTFW\fP mode.
+
+.TP
+.BI "StartupResync <on|off>"
+Same as in \fBFTFW\fP mode.
+
+.SS MULTICAST
+
+This section indicates to \fBconntrackd(8)\fP to use multicast as transport
+mechanism between nodes of the firewall cluster.
+
+Please note you can specify more than one dedicated link. Thus, if one
+dedicated link fails, the daemon can fail-over to another. Note that adding
+more than one dedicated link does not mean that state-updates will be sent to
+all of them. There is only one active dedicated link at a given moment.
+
+The \fIDefault\fP keyword indicates that this interface will be selected as the
+initial dedicated link. You can have up to 4 redundant dedicated links.
+
+Note: use different multicast groups for every redundant link.
+
+Example:
+.nf
+	Multicast Default {
+		IPv4_address 225.0.0.51
+		Group 3781
+		IPv4_interface 192.168.100.101
+		Interface eth3
+		SndSocketBuffer 1249280
+		RcvSocketBuffer 1249280
+		Checksum on
+	}
+	Multicast {
+		IPv4_address 225.0.0.51
+		Group 3782
+		IPv4_interface 192.168.100.102
+		Interface eth4
+		SndSocketBuffer 1249280
+		RcvSocketBuffer 1249280
+		Checksum on
+	}
+.fi
+
+.TP
+.BI "IPv4_address <address>"
+Multicast address: The address that you use as destination in the
+synchronization messages. You do not have to add this IP to any of your
+existing interfaces.
+
+Example: IPv4_address 255.0.0.50
+
+.TP
+.BI "Group <number>"
+The multicast group that identifies the cluster.
+
+Example: Group 3780
+
+If any doubt, do not modify this value.
+
+.TP
+.BI "IPv4_interface <address>"
+IP address of the interface that you are going to use to
+send the synchronization messages. Remember that you must
+use a dedicated link for the synchronization messages.
+
+Example:  IPv4_interface 192.168.100.100
+
+.TP
+.BI "Interface <name>"
+The name of the interface that you are going to use to send the synchronization
+messages.
+
+Example: Interface eth2
+
+.TP
+.BI "SndSocketBuffer <number>"
+This transport protocol sender uses a buffer to enqueue the packets
+that are going to be transmitted. The default size of this socket buffer is
+available at \fB/proc/sys/net/core/wmem_default\fP.
+
+This value determines the chances to have an overrun in the sender queue. The
+overrun results in packet loss, thus, losing state information that would have
+to be retransmitted. If you notice some packet loss, you may want to increase
+the size of the buffer. The system default size is usually around
+~100 KBytes which is fairly small for busy firewalls.
+
+Note: The \fBNOTRACK\fP protocol is best effort, it is really recommended
+to increase the buffer size.
+
+Example: SndSocketBuffer 1249280
+
+.TP
+.BI "RcvSocketBuffer <number>"
+This transport protocol receiver uses a buffer to enqueue the
+packets that the socket is pending to handle. The default size of this socket
+buffer is available at \fB/proc/sys/net/core/rmem_default\fP.
+
+This value determines the chances to have an overrun in the receiver queue.
+The overrun results in packet loss, thus, losing state information that would
+have to be retransmitted. If you notice some packet loss, you may want to
+increase the size of the buffer. The system default size is usually
+around ~100 KBytes which is fairly small for busy firewalls.
+
+Note: The \fBNOTRACK\fP protocol is best effort, it is really recommended
+to increase the buffer size.
+
+Example: RcvSocketBuffer 1249280
+
+.TP
+.BI "Checksum <on|off>"
+Enable/Disable message checksumming. This is a good property to achieve
+fault-tolerance. In case of doubt, use it.
+
+.SS UDP
+This section indicates to \fBconntrackd(8)\fP to use UDP as transport
+mechanism between nodes of the firewall cluster.
+
+As in the \fBMulticast\fP configuration, you may especify several fail-over
+dedicated links using the \fIDefault\fP keyword.
+
+Example:
+.nf
+	UDP {
+		IPv4_address 172.16.0.1
+		IPv4_Destination_Address 172.16.0.2
+		Port 3781
+		Interface eth3
+		SndSocketBuffer 1249280
+		RcvSocketBuffer 1249280
+		Checksum on
+	}
+.fi
+
+.TP
+.BI "IPv4_address <address>"
+UDP IPv4 address that this firewall uses to listen to events.
+
+Example: IPv4_address 192.168.2.100
+
+.TP
+.BI "IPv6_address <address>"
+UDP IPv6 address that this firewall uses to listen to events.
+
+Example: IPv6_address fe80::215:58ff:fe28:5a27
+
+.TP
+.BI "IPv4_Destination_Address <address>"
+Destination IPv4 UDP address that receives events, ie. the other firewall's
+dedicated link address.
+
+Example: IPv4_Destination_Address 192.168.2.101
+
+.TP
+.BI "IPv6_Destionation_Address <address>"
+Destination IPv6 UDP address that receives events, ie. the other firewall's
+dedicated link address.
+
+Example: IPv6_Destination_Address fe80::2d0:59ff:fe2a:775c
+
+.TP
+.BI "Port <number>"
+UDP port used
+
+Example: Port 3780
+
+.TP
+.BI "Interface <name>"
+Same as in the \fBMulticast\fP transport protocol configuration.
+
+.TP
+.BI "SndSocketBuffer <number>"
+Same as in the \fBMulticast\fP transport protocol configuration.
+
+.TP
+.BI "RcvSocketBuffer <number>"
+Same as in the \fBMulticast\fP transport protocol configuration.
+
+.TP
+.BI "Checksum <on|off>"
+Same as in the \fBMulticast\fP transport protocol configuration.
+
+
+.SS TCP
+You can also use Unicast TCP to propagate events.
+
+If you combine this transport with the \fBNOTRACK\fP mode, it becomes reliable.
+
+The TCP transport protocol can be configured in exactly the same way as
+the \fBUDP\fP transport protocol.
+
+As in the \fBMulticast\fP configuration, you may especify several fail-over
+dedicated links using the \fIDefault\fP keyword.
+
+Example:
+.nf
+	TCP {
+		IPv6_address fe80::215:58ff:fe28:5a27
+		IPv6_Destination_Address fe80::215:58ff:fe28:5a27
+		Port 3781
+		Interface eth2
+		SndSocketBuffer 1249280
+		RcvSocketBuffer 1249280
+		Checksum on
+	}
+.fi
+
+.SS OPTIONS
+
+Other unsorted options that are related to the synchronization protocol
+or transport mechanism.
+
+.TP
+.BI "TCPWindowTracking <on|off>"
+TCP state-entries have window tracking disabled by default, you can enable it
+with this option. As said, default is off.
+This feature requires a \fBLinux kernel >= 2.6.36\fP.
+
+.TP
+.BI "ExpectationSync <on|{ list }>"
+Set this option on if you want to enable the synchronization of expectations.
+You have to specify the list of helpers that you want to enable.
+
+This feature requires a \fBLinux kernel >= 3.5\fP.
+
+Example, sync all expectations:
+.nf
+	ExpectationSync on
+.fi
+
+Example, sync given expectations:
+.nf
+	ExpectationSync {
+		ftp
+		ras
+		q.931
+		h.245
+		sip
+	}
+.fi
+
+By default, this option is disabled.
+
+.SH GENERAL
+
+This top-level section contains generic configuration directives for the
+\fBconntrackd(8)\fP daemon.
+
+.TP
+.BI "Systemd <on|off>"
+Enable \fBsystemd(1)\fP runtime support if \fBconntrackd(8)\fP is compiled
+with the proper configuration. Then you can use a service unit of
+\fIType=notify\fP.
+
+Obviously, this requires the init of your system to be \fBsystemd(1)\fP.
+
+Note: \fBsystemd(1)\fP watchdog is supported as well.
+
+Example: Systemd on
+
+By default runtime support is enabled if conntrackd was built with the systemd
+feature. Otherwise is off.
+
+.TP
+.BI "Nice <value>"
+Deprecated. Conntrackd ignores this option and it will be removed in the
+future. Please note that you can run \fBnice(1)\fP and \fBrenice(1)\fP
+externally. Also note that \fBconntrackd(8)\fP now uses by default a RT
+scheduler.
+
+.TP
+.BI "HashSize <value>"
+Number of buckets in the cache hashtable. The bigger it is, the closer it gets
+to \fIO(1)\fP at the cost of consuming more memory. Read some documents about
+tuning hashtables for further reference.
+
+Example: HashSize 32768
+
+.TP
+.BI "HashLimit <value>"
+Maximum number of conntracks, it should be double of
+\fB/proc/sys/net/netfilter/nf_conntrack_max\fP since the daemon may keep some
+dead entries cached for possible retransmission during state synchronization.
+
+Example: HashLimit 131072
+
+.TP
+.BI "LogFile <on|off|filename>"
+Enable \fBconntrackd(8)\fP to log to a file.
+
+Example: LogFile on
+
+Default is off. The default logfile is \fB/var/log/conntrackd.log\fP.
+
+.TP
+.BI "Syslog <on|off|facility>"
+Enable connection logging via Syslog. If you set the facility, use the same as
+in the \fBStats\fP section, otherwise you'll get a warning message.
+
+Example: Syslog local0
+
+Default is off.
+
+.TP
+.BI "Lockfile <filename>"
+Lockfile to be used by \fBconntrackd(8)\fP (absolute path).
+
+Example: LockFile /var/lock/conntrack.lock
+
+Default is \fB/var/lock/conntrack.lock\fP.
+
+.TP
+.BI "NetlinkBufferSize <value>"
+Netlink event socket buffer size. If you do not specify this clause, the
+default buffer size value in \fB/proc/net/core/rmem_default\fP is used. This
+default value is usually around \fB100 Kbytes\fP which is fairly small for
+busy firewalls. This leads to event message dropping and high CPU consumption.
+
+Example: NetlinkBufferSize 2097152
+
+.TP
+.BI "NetlinkBufferSizeMaxGrowth <value>"
+The daemon doubles the size of the netlink event socket buffer size if it
+detects netlink event message dropping. This clause sets the maximum buffer
+size growth that can be reached.
+
+Example:  NetlinkBufferSizeMaxGrowth 8388608
+
+.TP
+.BI "NetlinkOverrunResync <on|off|value>"
+If the daemon detects that Netlink is dropping state-change events, it
+automatically schedules a resynchronization against the Kernel after 30 seconds
+(default value). Resynchronizations are expensive in terms of CPU consumption
+since the daemon has to get the full kernel state-table and purge state-entries
+that do not exist anymore.
+
+Note: Be careful of setting a very small value here.
+
+Example: NetlinkOverrunResync on
+
+The default value is \fB30\fP seconds.
+If not specified, the daemon assumes that this option is enabled and uses the
+default value.
+
+.TP
+.BI "NetlinkEventsReliable <on|off>"
+If you want reliable event reporting over Netlink, set on this option. If you
+set on this clause, it is a good idea to set off \fBNetlinkOverrunResync\fP.
+
+You need \fBLinux Kernel >= 2.6.31\fP for this option to work.
+
+Example: NetlinkEventsReliable on
+
+This option is off by default.
+
+.TP
+.BI "PollSecs <seconds>"
+By default, the daemon receives state updates following an event-driven model.
+You can modify this behaviour by switching to polling mode with this clause.
+
+This clause tells \fBconntrackd(8)\fP to dump the states in the kernel every N
+seconds. With regards to synchronization mode, the polling mode can only
+guarantee that long-lifetime states are recovered. The main advantage of this
+method is the reduction in the state replication at the cost of reducing the
+chances of recovering connections.
+
+Example: PollSecs 15
+
+.TP
+.BI "EventIterationLimit <value>"
+The daemon prioritizes the handling of state-change events coming from the
+core. With this clause, you can set the maximum number of state-change events
+(those coming from kernel-space) that the daemon will handle after which it
+will handle other events coming from the network or userspace.
+
+A low value improves interactivity (in terms of real-time behaviour) at the
+cost of extra CPU consumption.
+
+Example: EventIterationLimit 100
+
+Default (if not set) is 100.
+
+.SS UNIX
+Unix socket configuration. This socket is used by \fBconntrackd(8)\fP to listen
+to external commands like `\fIconntrackd -k\fP' or `\fIconntrackd -n\fP'.
+
+Example:
+.nf
+	UNIX {
+		Path /var/run/conntrackd.ctl
+	}
+.fi
+
+.TP
+.BI "Path <filename>"
+Absolute path to the Unix socket.
+
+Example: Path /var/run/conntrackd.ctl
+
+.TP
+.BI "Backlog <value>"
+Deprecated option.
+
+.SS FILTER
+Event filtering. This clause allows you to filter certain traffic.
+
+There are currently three filter-sets: \fBProtocol\fP, \fBAddress\fP and
+\fBState\fP. The filter is attached to an action that can be: \fBAccept\fP or
+\fBIgnore\fP. Thus, you can define the event filtering policy of the
+filter-sets in positive or negative logic depending on your needs.
+
+You can select if \fBconntrackd(8)\fP filters the event messages from
+user-space or kernel-space. The kernel-space event filtering saves some CPU
+cycles by avoiding the copy of the event message from kernel-space to
+user-space. The kernel-space event filtering is prefered, however, you require
+a \fBLinux kernel >= 2.6.29\fP to filter from kernel-space.
+
+The syntax for this section is: \fBFilter From <from> { }\fP.
+
+If you want to select kernel-space event filtering, use the keyword
+\fBKernelspace\fP instead of \fBUserspace\fP.
+
+Example:
+.nf
+	Filter From Userspace {
+		Protocol Accept {
+			TCP
+			SCTP
+			DCCP
+		}
+		Address Ignore {
+			IPv4_address 127.0.0.1
+			IPv6_address ::1
+		}
+		State Accept {
+			ESTABLISHED CLOSED TIME_WAIT CLOSE_WAIT
+		}
+	}
+.fi
+
+.TP
+.BI "Protocol <policy> { <protocols list> }"
+Accept only certain protocols: You may want to replicate the state of flows
+depending on their layer 4 protocol.
+
+Policy is one of \fBAccept\fP or \fBIgnore\fP.
+
+Protocols are: \fBTCP\fP, \fBSCTP\fP, \fBDCCP\fP, \fBUDP\fP, \fBICMP\fP and
+\fBIPv6-ICMP\fP.
+
+The \fBICMP\fP and \fBIPv6-ICMP\fP protocols require a
+\fBLinux kernel >= 2.6.31\fP.
+
+Example:
+.nf
+	Protocol Accept {
+		TCP
+		SCTP
+		DCCP
+	}
+.fi
+
+.TP
+.BI "Address <policy> { <addresses list> }"
+Ignore traffic for a certain set of IP's: Usually all the IP assigned to the
+firewall since local traffic must be ignored, only forwarded connections are
+worth to replicate.
+
+Note that these values depends on the local IPs that are assigned to the
+firewall.
+
+You may specify several \fBIPv4_address\fP and/or \fBIPv6_address\fP
+directives. You can also specify networks in CIDR format.
+
+Policy is one of \fBAccept\fP or \fBIgnore\fP.
+
+Example:
+.nf
+	Address Ignore {
+		IPv4_address 127.0.0.1 # loopback
+		IPv4_address 192.168.0.100 # virtual IP 1
+		IPv4_address 192.168.1.100 # virtual IP 2
+		IPv4_address 192.168.100.100 # dedicated link ip
+		IPv4_address 192.168.0.0/24
+		IPv6_address ::1
+	}
+.fi
+
+.TP
+.BI "State <policy> { <states list> }"
+Filter by flow state.  This option introduces a trade-off in the replication:
+it reduces CPU consumption at the cost of having lazy backup firewall replicas.
+
+Note: only affects TCP flows.
+
+The existing TCP states are: \fBSYN_SENT\fP, \fBSYN_RECV\fP, \fBESTABLISHED\fP,
+\fBFIN_WAIT\fP, \fBCLOSE_WAIT\fP, \fBLAST_ACK\fP, \fBTIME_WAIT\fP,
+\fBCLOSED\fP and \fBLISTEN\fP.
+
+Policy is one of \fBAccept\fP or \fBIgnore\fP.
+
+Example:
+.nf
+	State Accept {
+		ESTABLISHED CLOSED TIME_WAIT CLOSE_WAIT
+	}
+.fi
+
+.SS SCHEDULER
+Select a different scheduler for the daemon, you can select between \fBRR\fP
+and \fBFIFO\fP and the process priority.
+
+Using a RT scheduler reduces the chances to overrun the Netlink buffer and
+\fBconntrackd(8)\fP uses by default \fBRR\fP unless \fBFIFO\fP is selected.
+See \fBsched_setscheduler(2)\fP for more information.
+
+Example:
+.nf
+	Scheduler {
+		Type FIFO
+		Priority 99
+	}
+.fi
+
+.TP
+.BI "Type <type>"
+Supported values are \fBRR\fP or \fBFIFO\fP.
+
+Default: RR
+
+.TP
+.BI "Priority <value>"
+Value of the scheduler priority.
+Minimum is 0, maximum is 99.
+
+Default: 99 (as returned by \fBsched_get_priority_max(2)\fP for \fBSCHED_RR\fP)
+
+.SH STATS
+This top-level section indicates \fBconntrackd(8)\fP to work as a statistic
+collector for the nf_conntrack linux kernel subsystem.
+
+.TP
+.BI "LogFile <on|off|filename>"
+If you enable this option, the daemon writes the information about destroyed
+connections to a logfile.
+
+Default is off. Default filename is \fB/var/log/conntrackd-stats.log\fP.
+
+.TP
+.BI "NetlinkEventsReliable <on|off>"
+If you want reliable event reporting over Netlink, set on this option. If
+you set on this clause, it is a good idea to set off
+\fBNetlinkOverrunResync\fP. This requires \fBLinux kernel >= 2.6.31\fP.
+
+Default is off.
+
+.TP
+.BI "Syslog <on|off|facility>"
+Enable connection logging via Syslog.
+If you set the facility, use the same as in the \fBGeneral\fP section,
+otherwise you'll get a warning message.
+
+Example: Syslog local0
+
+Default is off.
+
+.SH HELPER
+Note: this configuration is very advanced and has nothing to do with
+synchronization or stats collection.
+
+This top-level section indicates \fBconntrackd(8)\fP to inject user-space
+helpers into the nf_conntrack linux kernel subsystem.
+It will result in the nf_conntrack engine sending connections to userspace
+for further processing.
+
+Before this, you have to make sure you have registered the given user-space
+helper stub.
+
+Example:
+.nf
+	% nfct add helper ftp inet tcp
+.fi
+
+Each user-space helper should be registered using a Type section, which
+are named this way:
+.nf
+	\fBType <name> <af> <transport>\fP
+.fi
+
+Examples:
+
+.nf
+Helper {
+	Type ftp inet tcp {
+		QueueNum 0
+		QueueLen 10240
+		Policy ftp {
+			ExpectMax 1
+			ExpectTimeout 300
+		}
+	}
+	Type rpc inet tcp {
+		QueueNum 1
+		QueueLen 10240
+		Policy rpc {
+			ExpectMax 1
+			ExpectTimeout 300
+		}
+	}
+	Type rpc inet udp {
+		QueueNum 2
+		QueueLen 10240
+		Policy rpc {
+			ExpectMax 1
+			ExpectTimeout 300
+		}
+	}
+	Type tns inet tcp {
+		QueueNum 3
+		QueueLen 10240
+		Policy tns {
+			ExpectMax 1
+			ExpectTimeout 300
+		}
+	}
+	Type dhcpv6 inet6 udp {
+		QueueNum 4
+		QueueLen 10240
+		Policy dhcpv6 {
+			ExpectMax 1
+			ExpectTimeout 300
+		}
+	}
+	Type ssdp inet udp {
+		QueueNum 5
+		QueueLen 10240
+		Policy ssdp {
+			ExpectMax 1
+			ExpectTimeout 300
+		}
+	}
+}
+.fi
+
+Parameters inside the \fBType\fP section:
+
+.TP
+.BI "QueueNum <number>"
+Set NFQUEUE number you want to use to receive traffic from the kernel.
+
+Example: QueueNum 0
+
+.TP
+.BI "QueueLen <number>"
+Maximum number of packets waiting in the queue to receive a verdict from
+user-space.
+
+Rise value if you hit the following error message:
+.nf
+	"nf_queue: full at X entries, dropping packet(s)"
+.fi
+
+Default is 1024.
+
+Example: QueueLen 10240
+
+.TP
+.BI "Policy <name> { }"
+Set the expectation policy for the given helper.
+
+This sub-section contains 2 directives:
+\fBExpectMax <number>\fP (maximum number of simultaneous expectations)
+and \fBExpecTimeout <seconds>\fP (maximum living time for one expectation).
+
+.SH COMPLETE EXAMPLES
+Find below some real-life working examples.
+
+.SS STATS EXAMPLE
+This configuration example tells \fBconntrackd(8)\fP to work as a stats
+collector.
+
+.nf
+Stats {
+	LogFile on
+	NetlinkEventsReliable Off
+	Syslog off
+}
+General {
+	Systemd on
+	HashSize 8192
+	HashLimit 65535
+	Syslog on
+	LockFile /var/lock/conntrack.lock
+	UNIX {
+		Path /var/run/conntrackd.ctl
+	}
+	NetlinkBufferSize 262142
+	NetlinkBufferSizeMaxGrowth 655355
+	Filter {
+		Protocol Accept {
+			TCP
+			UDP
+		}
+		Address Ignore {
+			IPv4_address 127.0.0.1
+			IPv6_address ::1
+		}
+	}
+}
+.fi
+
+.SS SYNC EXAMPLE 1
+This example configures synchronization in \fBFTFW\fP mode with \fBMulticast\fP
+transport.
+
+It includes common general configuration as well.
+
+Note: this is one of the recommended setups for \fBconntrackd(8)\fP in a
+firewall cluster environment.
+
+.nf
+Sync {
+	Mode FTFW {
+		ResendQueueSize 131072
+		PurgeTimeout 60
+		ACKWindowSize 300
+		DisableExternalCache Off
+	}
+	Multicast {
+		IPv4_address 225.0.0.50
+		Group 3780
+		IPv4_interface 192.168.100.100
+		Interface eth2
+		SndSocketBuffer 1249280
+		RcvSocketBuffer 1249280
+		Checksum on
+	}
+	Multicast Default {
+		IPv4_address 225.0.0.51
+		Group 3781
+		IPv4_interface 192.168.100.101
+		Interface eth3
+		SndSocketBuffer 1249280
+		RcvSocketBuffer 1249280
+		Checksum on
+	}
+	Options {
+		TCPWindowTracking Off
+		ExpectationSync On
+	}
+}
+General {
+	Systemd on
+	HashSize 32768
+	HashLimit 131072
+	LogFile on
+	Syslog off
+	LockFile /var/lock/conntrack.lock
+	UNIX {
+		Path /var/run/conntrackd.ctl
+	}
+	NetlinkBufferSize 2097152
+	NetlinkBufferSizeMaxGrowth 8388608
+	NetlinkOverrunResync On
+	NetlinkEventsReliable Off
+	EventIterationLimit 100
+	Filter From Userspace {
+		Protocol Accept {
+			TCP
+			SCTP
+			DCCP
+		}
+		Address Ignore {
+			IPv4_address 127.0.0.1
+			IPv4_address 192.168.100.0/24
+			IPv6_address ::1
+		}
+	}
+}
+.fi
+
+.SS SYNC EXAMPLE 2
+
+This example configures synchronization in \fBNOTRACK\fP mode with \fBTCP\fP
+transport.
+
+It includes common general configuration as well.
+
+.nf
+Sync {
+	Mode NOTRACK {
+		DisableInternalCache on
+		DisableExternalCache on
+	}
+	TCP {
+		IPv4_address 192.168.2.100
+		IPv4_Destination_Address 192.168.2.101
+		Port 3780
+		Interface eth2
+		SndSocketBuffer 1249280
+		RcvSocketBuffer 1249280
+		Checksum on
+	}
+	Options {
+		TCPWindowTracking Off
+		ExpectationSync On
+	}
+}
+General {
+	Systemd on
+	HashSize 32768
+	HashLimit 131072
+	LogFile on
+	Syslog off
+	LockFile /var/lock/conntrack.lock
+	UNIX {
+		Path /var/run/conntrackd.ctl
+	}
+	NetlinkBufferSize 2097152
+	NetlinkBufferSizeMaxGrowth 8388608
+	NetlinkOverrunResync On
+	NetlinkEventsReliable Off
+	EventIterationLimit 100
+	Filter From Userspace {
+		Protocol Accept {
+			TCP
+			SCTP
+			DCCP
+		}
+		Address Ignore {
+			IPv4_address 127.0.0.1
+			IPv4_address 192.168.0.0/16
+			IPv6_address ::1
+		}
+		State Accept {
+			ESTABLISHED CLOSED TIME_WAIT CLOSE_WAIT
+		}
+	}
+}
+.fi
+
+
+.SH SEE ALSO
+.BR conntrackd(8),
+.BR conntrack(8),
+.BR nfct(8),
+.BR http://conntrack-tools.netfilter.org/manual.html
+
+.SH AUTHOR
+Pablo Neira Ayuso wrote and maintains the conntrackd tool.
+
+This manual page was written by Arturo Borrero Gonzalez <arturo@debian.org>
+based on the conntrackd tarball config examples.
+
+Please send bug reports to <netfilter-devel@lists.netfilter.org>. Subscription is required.
+
+This documentation is free/libre under the terms of the GPLv2+.

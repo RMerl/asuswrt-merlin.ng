@@ -1,0 +1,56 @@
+# create dummy
+-I -s 2001:DB8::1.1.1.1 -d 2001:DB8::2.2.2.2 --dst-nat 2001:DB8::3.3.3.3 -p tcp --sport 10 --dport 20 --state LISTEN -u SEEN_REPLY -t 50 ; OK
+# show
+-L --dst-nat ; OK
+# show
+-L --dst-nat 2001:DB8::3.3.3.3 ; OK
+# show
+-L --src-nat ; OK
+# delete
+-D -s 2001:DB8::1.1.1.1 ; OK
+# create dummy again
+-I -s 2001:DB8::1.1.1.1 -d 2001:DB8::2.2.2.2 --src-nat 2001:DB8::3.3.3.3 -p tcp --sport 10 --dport 20 --state LISTEN -u SEEN_REPLY -t 50 ; OK
+# show
+-L --src-nat ; OK
+# show
+-L --src-nat 2001:DB8::3.3.3.3 ; OK
+# show
+-L --dst-nat ; OK
+# show any-nat
+-L --any-nat ; OK
+# delete
+-D -s 2001:DB8::1.1.1.1 ; OK
+# bad combination
+-L --dst-nat --any-nat ; BAD
+# bad combination
+-L --src-nat --any-nat ; BAD
+# bad combination
+-L --src-nat --dst-nat --any-nat ; BAD
+# create
+-I -s 2001:DB8::1.1.1.1 -d 2001:DB8::2.2.2.2 --dst-nat [2001:DB8::3.3.3.3]:80 -p tcp --sport 10 --dport 20 --state LISTEN -u SEEN_REPLY -t 50 ; OK
+# show
+-L --dst-nat [2001:DB8::3.3.3.3]:80 ; OK
+# show
+-L --any-nat [2001:DB8::3.3.3.3]:80 ; OK
+# show
+-L --dst-nat [2001:DB8::3.3.3.3]:81 ; OK
+# show
+-L --dst-nat [2001:DB8::1.1.1.1]:80 ; OK
+# noport
+-L --dst-nat [2001:DB8::1.1.1.1]: ; BAD
+# badport
+-L --dst-nat [2001:DB8::1.1.1.1]:: ; BAD
+# badport
+-L --dst-nat [2001:DB8::1.1.1.1]:80:80 ; BAD
+# badport
+-L --dst-nat [2001:DB8::1.1.1.1]:65536 ; BAD
+# delete
+-D -s 2001:DB8::1.1.1.1 ; OK
+# mismatched address family
+-I -s 2001:DB8::1.1.1.1 -d 2001:DB8::2.2.2.2 --dst-nat 3.3.3.3 -p tcp --sport 10 --dport 20 --state LISTEN -u SEEN_REPLY -t 50 ; BAD
+# mismatched address family
+-I -s 1.1.1.1 -d 2.2.2.2 --dst-nat 2001:DB8::3.3.3.3 -p tcp --sport 10 --dport 20 --state LISTEN -u SEEN_REPLY -t 50 ; BAD
+# create - brackets only for ports in nat
+-I -s 2001:DB8::1.1.1.1 -d 2001:DB8::2.2.2.2 --dst-nat [2001:DB8::3.3.3.3] -p tcp --sport 10 --dport 20 --state LISTEN -u SEEN_REPLY -t 50 ; BAD
+# create - brackets rejected elsewhere
+-I -s [2001:DB8::1.1.1.1] -d 2001:DB8::2.2.2.2 --dst-nat 2001:DB8::3.3.3.3 -p tcp --sport 10 --dport 20 --state LISTEN -u SEEN_REPLY -t 50 ; BAD

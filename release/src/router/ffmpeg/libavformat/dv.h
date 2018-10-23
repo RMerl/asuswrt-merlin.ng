@@ -31,14 +31,11 @@
 #include "avformat.h"
 
 typedef struct DVDemuxContext DVDemuxContext;
-DVDemuxContext* dv_init_demux(AVFormatContext* s);
-int dv_get_packet(DVDemuxContext*, AVPacket *);
-int dv_produce_packet(DVDemuxContext*, AVPacket*, uint8_t*, int);
-void dv_offset_reset(DVDemuxContext *c, int64_t frame_offset);
+DVDemuxContext* avpriv_dv_init_demux(AVFormatContext* s);
+int avpriv_dv_get_packet(DVDemuxContext*, AVPacket *);
+int avpriv_dv_produce_packet(DVDemuxContext*, AVPacket*, uint8_t*, int, int64_t);
+void ff_dv_offset_reset(DVDemuxContext *c, int64_t frame_offset);
 
 typedef struct DVMuxContext DVMuxContext;
-DVMuxContext* dv_init_mux(AVFormatContext* s);
-int dv_assemble_frame(DVMuxContext *c, AVStream*, uint8_t*, int, uint8_t**);
-void dv_delete_mux(DVMuxContext*);
 
 #endif /* AVFORMAT_DV_H */

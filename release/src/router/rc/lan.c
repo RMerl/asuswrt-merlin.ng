@@ -246,7 +246,15 @@ start_emf(char *lan_ifname)
 	return;
 #endif
 
+#ifdef HND_ROUTER
 	if (!nvram_get_int("emf_enable"))
+#else
+	if (!nvram_get_int("emf_enable")
+#ifdef RTCONFIG_BCMWL6
+		&& !wl_igs_enabled()
+#endif
+	)
+#endif
 		return;
 
 	/* Start EMF */
@@ -547,7 +555,8 @@ void start_wl(void)
 #endif
 	nvram_set("reload_svc_radio", "1");
 #ifdef RTCONFIG_CFGSYNC
-	update_macfilter_relist();//rico
+	if (nvram_get("cfg_relist") && strlen(nvram_safe_get("cfg_relist")))
+		update_macfilter_relist();
 #endif
 }
 
@@ -973,6 +982,23 @@ gen_qca_wifi_cfgs(void)
 				cprintf("## WARNING: %s is alive ##\n", pid_file);
 			sprintf(conf, "/etc/Wireless/conf/wpa_supplicant-%s.conf", sta);
 			eval("/usr/bin/wpa_supplicant", "-B", "-P", pid_file, "-D", get_wsup_drvname(i), "-i", sta, "-b", lan_if, "-c", conf);
+			{
+				extern char * conv_iwconfig_essid(char *ssid_in, char *ssid_out);
+				char prefix_wlc[16];
+				if (sw_mode() == SW_MODE_REPEATER)
+#if defined(RTCONFIG_CONCURRENTREPEATER)
+					snprintf(prefix_wlc, sizeof(prefix_wlc), "wlc%d_", i);
+#else
+					snprintf(prefix_wlc, sizeof(prefix_wlc), "wlc_");
+#endif
+#if defined(RTCONFIG_AMAS)
+				else if (nvram_match("re_mode", "1"))
+					snprintf(prefix_wlc, sizeof(prefix_wlc), "wlc%d_", i);
+#endif
+				if (conv_iwconfig_essid(nvram_pf_get(prefix_wlc, "ssid"), tmp) != NULL) {
+					doSystem("iwconfig %s essid -- %s", sta, tmp);
+				}
+			}
 			ifconfig(sta, IFUP, NULL, NULL);
 
 #if defined(RTCONFIG_CONCURRENTREPEATER)
@@ -2058,7 +2084,11 @@ void start_lan(void)
 		set_intf_ipv6_dad(lan_ifname, 1, 1);
 #endif
 #ifdef RTCONFIG_EMF
-		if (nvram_get_int("emf_enable")) {
+		if (nvram_get_int("emf_enable")
+#if defined(RTCONFIG_BCMWL6) && !defined(HND_ROUTER)
+			|| wl_igs_enabled()
+#endif
+		) {
 			eval("emf", "add", "bridge", lan_ifname);
 			eval("igs", "add", "bridge", lan_ifname);
 		}
@@ -2466,11 +2496,16 @@ void start_lan(void)
 gmac3_no_swbr:
 #endif
 #ifdef RTCONFIG_EMF
-					if (nvram_get_int("emf_enable"))
+					if (nvram_get_int("emf_enable")
+#if defined(RTCONFIG_BCMWL6) && !defined(HND_ROUTER)
+						|| wl_igs_enabled()
+#endif
+					) {
 #ifdef HND_ROUTER
-					if (!strstr(bonding_ifnames, ifname))
+						if (!strstr(bonding_ifnames, ifname))
 #endif
 						eval("emf", "add", "iface", lan_ifname, ifname);
+					}
 #endif
 				}
 #ifdef RTCONFIG_BLINK_LED
@@ -2641,7 +2676,7 @@ gmac3_no_swbr:
 		dpsta_ioctl("dpsta", &info, sizeof(dpsta_enable_info_t));
 
 		/* Bring up dpsta interface */
-		ifconfig("dpsta", IFUP, NULL, NULL);
+		ifconfig("dpsta", IFUP | IFF_ALLMULTI, NULL, NULL);
 	}
 #endif
 
@@ -3028,7 +3063,11 @@ void stop_lan(void)
 gmac3_no_swbr:
 #endif
 #ifdef RTCONFIG_EMF
-				if (nvram_get_int("emf_enable"))
+				if (nvram_get_int("emf_enable")
+#if defined(RTCONFIG_BCMWL6) && !defined(HND_ROUTER)
+					|| wl_igs_enabled()
+#endif
+				)
 					eval("emf", "del", "iface", lan_ifname, ifname);
 #endif
 #if defined (RTCONFIG_WLMODULE_RT3352_INIC_MII)
@@ -3211,7 +3250,6 @@ void hotplug_net(void)
 	dyn_if = !strncmp(interface, "wds", 3) || psta_if;
 
 	if (!dyn_if && !remove_event) {
-		if (!is_router_mode()) return;
 		goto NEITHER_WDS_OR_PSTA;
 	}
 
@@ -3234,7 +3272,11 @@ void hotplug_net(void)
 		ifconfig(interface, IFUP, NULL, NULL);
 
 #ifdef RTCONFIG_EMF
-		if (nvram_get_int("emf_enable")) {
+		if (nvram_get_int("emf_enable")
+#if defined(RTCONFIG_BCMWL6) && !defined(HND_ROUTER)
+			|| wl_igs_enabled()
+#endif
+		) {
 			eval("emf", "add", "iface", lan_ifname, interface);
 			emf_mfdb_update(lan_ifname, interface, TRUE);
 			emf_uffp_update(lan_ifname, interface, TRUE);
@@ -3291,7 +3333,11 @@ void hotplug_net(void)
 		wl_send_dif_event(interface, 1);
 
 #ifdef RTCONFIG_EMF
-		if (nvram_get_int("emf_enable"))
+		if (nvram_get_int("emf_enable")
+#if defined(RTCONFIG_BCMWL6) && !defined(HND_ROUTER)
+			|| wl_igs_enabled()
+#endif
+		)
 			eval("emf", "del", "iface", lan_ifname, interface);
 #endif /* RTCONFIG_EMF */
 	}
@@ -3845,7 +3891,9 @@ static int radio_join(int idx, int unit, int subunit, void *param)
 					|| nvram_match("x_Setting", "0")) {
 					eval("wl", "-i", ifname, "disassoc");
 					break;
-				} else if (!strcmp(nvram_safe_get(wl_nvname("mode", unit, subunit)), "wet")) {
+				}
+#ifndef RTCONFIG_HND_ROUTER_AX
+				else if (!strcmp(nvram_safe_get(wl_nvname("mode", unit, subunit)), "wet")) {
 					eval("wl", "-i", ifname, "disassoc");
 
 					snprintf(sec, sizeof(sec), "%s", nvram_safe_get(wl_nvname("akm", unit, subunit)));
@@ -3859,7 +3907,9 @@ static int radio_join(int idx, int unit, int subunit, void *param)
 
 					eval("wl", "-i", ifname, "join", nvram_safe_get(wl_nvname("ssid", unit, subunit)),
 						"imode", "bss", "amode", amode);
-				} else
+				}
+#endif
+				else
 					break;
 #elif RTCONFIG_RALINK
 // add ralink client mode code here.
@@ -4570,7 +4620,11 @@ void stop_lan_wl(void)
 gmac3_no_swbr:
 #endif
 #ifdef RTCONFIG_EMF
-			if (nvram_get_int("emf_enable"))
+			if (nvram_get_int("emf_enable")
+#if defined(RTCONFIG_BCMWL6) && !defined(HND_ROUTER)
+				|| wl_igs_enabled()
+#endif
+			)
 				eval("emf", "del", "iface", lan_ifname, ifname);
 #endif
 
@@ -4779,7 +4833,11 @@ void start_lan_wl(void)
 
 	lan_ifname = strdup(nvram_safe_get("lan_ifname"));
 #ifdef RTCONFIG_EMF
-	if (nvram_get_int("emf_enable")) {
+	if (nvram_get_int("emf_enable")
+#if defined(RTCONFIG_BCMWL6) && !defined(HND_ROUTER)
+		|| wl_igs_enabled()
+#endif
+	) {
 		eval("emf", "add", "bridge", lan_ifname);
 		eval("igs", "add", "bridge", lan_ifname);
 	}
@@ -5170,11 +5228,16 @@ void start_lan_wl(void)
 gmac3_no_swbr:
 #endif
 #ifdef RTCONFIG_EMF
-					if (nvram_get_int("emf_enable"))
+					if (nvram_get_int("emf_enable")
+#if defined(RTCONFIG_BCMWL6) && !defined(HND_ROUTER)
+						|| wl_igs_enabled()
+#endif
+					) {
 #ifdef HND_ROUTER
-					if (!strstr(bonding_ifnames, ifname))
+						if (!strstr(bonding_ifnames, ifname))
 #endif
 						eval("emf", "add", "iface", lan_ifname, ifname);
+					}
 #endif
 				}
 #ifdef RTCONFIG_BLINK_LED
@@ -5236,7 +5299,7 @@ gmac3_no_swbr:
 		dpsta_ioctl("dpsta", &info, sizeof(dpsta_enable_info_t));
 
 		/* Bring up dpsta interface */
-		ifconfig("dpsta", IFUP, NULL, NULL);
+		ifconfig("dpsta", IFUP | IFF_ALLMULTI, NULL, NULL);
 	}
 #endif
 
@@ -5252,11 +5315,11 @@ gmac3_no_swbr:
 #if defined(RTCONFIG_RALINK) && defined(RTCONFIG_WLMODULE_MT7615E_AP)
 	start_wds_ra();
 #endif
-#ifdef RTCONFIG_CFGSYNC
-	update_macfilter_relist();//start_lan_wl
-#endif
+#ifdef RTCONFIG_QCA
+	gen_qca_wifi_cfgs();
 #if defined(RTCONFIG_QCA) && defined(RTCONFIG_SOC_IPQ40XX)
 	enable_jumbo_frame();
+#endif
 #endif
 
 	free(lan_ifname);
@@ -5362,6 +5425,10 @@ void restart_wl(void)
 	nvram_set("reload_svc_radio", "1");
 #ifndef RTCONFIG_QCA
 	timecheck();
+#endif
+#ifdef RTCONFIG_CFGSYNC
+	if (nvram_get("cfg_relist") && strlen(nvram_safe_get("cfg_relist")))
+		update_macfilter_relist();
 #endif
 }
 
@@ -5490,11 +5557,15 @@ void lanaccess_wl(void)
 				for (u = 0; u < MAX_NR_WL_IF; ++u) {
 					if (u == unit || !get_wlxy_ifname(u, 0, owif))
 						continue;
-#if !defined(RTCONFIG_HAS_5G_2)
+#if defined(RTCONFIG_QCA) && !defined(RTCONFIG_HAS_5G_2)
 					if (u == 2)
 						continue;
 #endif
+#ifdef RTCONFIG_QCA
 					eval("ebtables", "-A", "FORWARD", "-p", "arp", "-i", ifname, "-o", owif, "-j", "DROP");
+#else
+					eval("ebtables", "-A", "FORWARD", "-i", ifname, "-o", owif, "-j", "DROP");
+#endif
 				}
 			}
 
@@ -5827,7 +5898,6 @@ void restart_wireless(void)
 #endif
 
 #ifdef RTCONFIG_QCA
-	gen_qca_wifi_cfgs();
 #ifdef RTCONFIG_WIFI_SON
 	if (sw_mode() != SW_MODE_REPEATER) {
 		sleep(10); //wait postwifi to finish..

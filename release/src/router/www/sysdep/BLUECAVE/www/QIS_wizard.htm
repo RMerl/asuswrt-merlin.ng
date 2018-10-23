@@ -59,6 +59,13 @@
 					systemVariable.lanIpaddr = initNvram.lan_ipaddr;
 					systemVariable.forceChangePw = (httpApi.hookGet("check_pw") == '1') ? true : false;
 
+					if(isSupport("2p5G_LWAN"))
+						systemVariable.originWansExtwan = httpApi.nvramGet(["wans_extwan"]).wans_extwan;
+					if(isSupport("10G_LWAN") || isSupport("10GS_LWAN"))
+						systemVariable.originWansDualwan = httpApi.nvramGet(["wans_dualwan"]).wans_dualwan;
+					$("#switchWanTagContainer").append(Get_Component_ISPSelect);
+					$("#switch_wantag").attr("class", "optionInput");
+
 					handleSysDep();
 					var getJsonFromUrl =  (function(){
 						var query = location.search.substr(1);
@@ -133,8 +140,12 @@
 				<div id="welcomeTitle"></div>
 				<div class="pageDesc" style="display:none"></div>
 
-				<div class="productIconContainer">
+				<div class="productIconContainer nonROG">
 					<div><div id="ModelPid_img"></div></div>
+				</div>
+
+				<div class="productIconContainer ROG" style="display:none">
+					<div><div id="ROGLOGO"></div></div>
 				</div>
 
 				<div style="text-align:center;margin:50px 0">
@@ -734,6 +745,90 @@
 			</div>
 		</div>
 
+		<!-- WAN Option Setting -->
+		<div id="wanOption_setting" data-role="page" class="qisBackground">
+			<div class="headerBar"></div>
+			<div class="tableContainer">
+				<div class="desktop_left_field">
+					<div>
+						<div class="titleMain"><#Internet#></div>
+						<div class="titleSub"><#Connectiontype#></div>
+					</div>
+				</div>
+				<div class="table_td">
+					<div class="pageDesc" id="connTypeDesc"><#Layer3Forwarding_x_ConnectionType_itemname#></div>
+					<div>
+						<div class="selectorTopContainer">
+							<div class="selectorContainer">
+								<div class="selectorContainerDiv">
+									<div class="selectBar" onclick="apply.WAN1G();">
+										<#wan_port#>
+									</div>
+									<div class="narrowContainer">
+										<div class="icon_arrow_right" style="width:20px;height:32px;"></div>
+									</div>
+								</div>
+							</div>
+							<div class="selectorContainer LWAN_2p5G">
+								<div class="selectorContainerDiv">
+									<div class="selectBar" onclick="apply.WAN2p5G();">
+										2.5G <#wan_ethernet#>
+									</div>
+									<div class="narrowContainer">
+										<div class="icon_arrow_right" style="width:20px;height:32px;"></div>
+									</div>
+								</div>
+							</div>
+							<div class="selectorContainer LWAN_10G">
+								<div class="selectorContainerDiv">
+									<div class="selectBar" onclick="apply.WAN10G();">
+										10G <#wan_ethernet#>
+									</div>
+									<div class="narrowContainer">
+										<div class="icon_arrow_right" style="width:20px;height:32px;"></div>
+									</div>
+								</div>
+							</div>
+							<div class="selectorContainer LWAN_10GS">
+								<div class="selectorContainerDiv">
+									<div class="selectBar" onclick="apply.WAN10GS();">
+										10G SFP+
+									</div>
+									<div class="narrowContainer">
+										<div class="icon_arrow_right" style="width:20px;height:32px;"></div>
+									</div>
+								</div>
+							</div>
+							<div class="selectorContainer modem">
+								<div class="selectorContainerDiv">
+									<div class="selectBar" onclick="apply.WANModem();">
+										<#menu5_4_4#>
+									</div>
+									<div class="narrowContainer">
+										<div class="icon_arrow_right" style="width:20px;height:32px;"></div>
+									</div>
+								</div>
+							</div>
+						</div>
+
+						<!-- Action Button -->
+						<div class="footer_desktop">
+							<div class="desktop_abortBtn" onclick='abort.wanType()'><#CTL_prev#></div>
+						</div>
+						<div class="footer_mobile">
+							<table style="width:100%;" cellpadding="0" cellspacing="0">
+								<tr>
+									<td class="mobileAbort" style="width:100%;" onclick='abort.wanType()'>
+										<div class="mobile_abortBtn"><#CTL_prev#></div>
+									</td>
+								</tr>
+							</table>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+
 		<!-- Get IP Setting -->
 		<div id="getIp_setting" data-role="page" class="qisBackground">
 			<div class="headerBar"></div>
@@ -940,23 +1035,7 @@
 							<div class="inputTitleContainer">
 								<div class="inputTitle"><#Select_ISPfile#></div>
 							</div>
-							<div class="inputContainer">
-								<select id="switch_wantag" class="optionInput">
-									<option value="none"><#wl_securitylevel_0#></option>
-									<option value="unifi_home">Unifi-Home</option>
-									<option value="unifi_biz">Unifi-Business</option>
-									<option value="singtel_mio">Singtel-MIO</option>
-									<option value="singtel_others">Singtel-Others</option>
-									<option value="m1_fiber">M1-Fiber</option>
-									<option value="maxis_fiber">Maxis-Fiber</option>
-									<option value="maxis_fiber_sp">Maxis-Fiber-Special</option>
-									<option value="movistar">Movistar Triple VLAN</option>
-									<option value="meo">Meo</option>
-									<option value="vodafone">Vodafone</option>
-									<option value="hinet">Hinet MOD</option>
-									<option value="stuff_fibre">Stuff-Fibre</option>
-									<option value="manual"><#Manual_Setting_btn#></option>
-								</select>
+							<div class="inputContainer" id="switchWanTagContainer">
 							</div>
 						</div>
 						<div id="iptv_voip">
@@ -1149,8 +1228,8 @@
 							</div>
 							<div class="inputContainer">
 								<select id="modem_autoapn" class="optionInput">
-									<option value="0">Automatic</option>
-									<option value="1"><#Manual_Setting_btn#></option>
+									<option value="1">Automatic</option>
+									<option value="0"><#Manual_Setting_btn#></option>
 								</select>
 							</div>
 						</div>
@@ -1466,6 +1545,12 @@
 				<div class="table_td">
 					<div class="pageDesc"><#QIS_extend_AP#></div>
 					<div>
+						<div class="ap_title_container">
+							<div class="ap_title_text"><#WLANConfig11b_RBRList_groupitemdesc#></div>
+							<div class="icon_rescan ap_title_icon" onclick='goTo.siteSurvey();'></div>
+							<div class="icon_sorting ap_title_icon" onclick='handleSortField();'></div>
+							<div style="clear:both;"></div>
+						</div>
 						<div id="apList" class="selectorTopContainer"></div>
 
 						<!-- Action Button -->
@@ -1487,6 +1572,66 @@
 						</div>
 					</div>
 				</div>
+			</div>
+			<div id="sort_background" class="sort_background" onclick="handleSortField();"></div>
+			<div id="sort_field" class="sort_field">
+				<table>
+					<tr>
+						<td>
+							<div class="ap_sort_text"><#QIS_RP_desc7#></div></div>
+						</td>
+						<td>
+							<div class="ap_sort_icon_background" onclick="sortAP('alpha', 'down')">
+								<div class="icon_sort_alphabet_A ap_sort_icon_container"></div>
+							</div>
+						</td>
+						<td>
+							<div class="ap_sort_icon_background" onclick="sortAP('alpha', 'top')">
+								<div class="icon_sort_alphabet_Z ap_sort_icon_container"></div>
+							</div>
+						</td>
+					</tr>
+					<tr>
+						<td colspan="3">
+							<div class="ap_sort_line"></div>
+						</td>
+					</tr>
+					<tr>
+						<td>
+							<div class="ap_sort_text"><#QIS_RP_desc8#></div></div>
+						</td>
+						<td>
+							<div class="ap_sort_icon_background" onclick="sortAP('signal', 'top')">
+								<div class="icon_sort_signal_high ap_sort_icon_container"></div>
+							</div>
+						</td>
+						<td>
+							<div class="ap_sort_icon_background" onclick="sortAP('signal', 'down')">
+								<div class="icon_sort_signal_low ap_sort_icon_container"></div>
+							</div>
+						</td>
+					</tr>
+					<tr>
+						<td colspan="3">
+							<div class="ap_sort_line"></div>
+						</td>
+					</tr>
+					<tr id="sortByBand">
+						<td>
+							<div class="ap_sort_text"><#QIS_RP_desc9#></div>
+						</td>
+						<td>
+							<div class="ap_sort_icon_background" onclick="sortAP('band', 'down')">
+								<div class="icon_sort_band_2g ap_sort_icon_container"></div>
+							</div>
+						</td>
+						<td>
+							<div class="ap_sort_icon_background" onclick="sortAP('band', 'top')">
+								<div class="icon_sort_band_5g ap_sort_icon_container"></div>
+							</div>
+						</td>
+					</tr>
+				</table>
 			</div>
 		</div>
 
@@ -1527,7 +1672,51 @@
 							<div class="inputContainer">
 								<select id="wlc_auth_mode_manual" class="optionInput">
 									<option value="open">Open System</option>
+									<option value="shared">Shared Key</option>
+									<option value="psk">WPA-Personal</option>
 									<option value="psk2" selected>WPA2-Personal</option>
+								</select>
+								<div class="inputTitle hint_yellow" id="manual_pap_setup-nmode_hint">
+									<#WLANConfig11n_automode_limition_hint#>
+								</div>
+							</div>
+						</div>
+
+						<div class="manual_pap_setup" id="manual_pap_setup-crypto">
+							<div class="inputTitleContainer">
+								<div class="inputTitle"><#WLANConfig11b_WPAType_itemname#></div>
+							</div>
+							<div class="inputContainer">
+								<select id="wlc_crypto_manual" class="optionInput">
+									<option value="aes">AES</option>
+									<option value="tkip">TKIP</option>
+								</select>
+							</div>
+						</div>
+
+						<div class="manual_pap_setup" id="manual_pap_setup-wep">
+							<div class="inputTitleContainer">
+								<div class="inputTitle"><#WLANConfig11b_WEPType_itemname#></div>
+							</div>
+							<div class="inputContainer">
+								<select id="wlc_wep_manual" class="optionInput">
+									<option value="0"><#wl_securitylevel_0#></option>
+									<option value="1">WEP-64bits</option>
+									<option value="2">WEP-128bits</option>
+								</select>
+							</div>
+						</div>
+
+						<div class="manual_pap_setup" id="manual_pap_setup-key-index">
+							<div class="inputTitleContainer">
+								<div class="inputTitle"><#WLANConfig11b_WEPDefaultKey_itemname#></div>
+							</div>
+							<div class="inputContainer">
+								<select id="wlc_key_index_manual" class="optionInput">
+									<option value="1">1</option>
+									<option value="2">2</option>
+									<option value="3">3</option>
+									<option value="4">4</option>
 								</select>
 							</div>
 						</div>
@@ -1581,7 +1770,7 @@
 		  				<input type="checkbox" id="wireless_checkbox" data-mini="true"/>
 					</div>
 
-					<div class="labelContainer dualbandSupport" id="syncSSID">
+					<div class="labelContainer" id="syncSSID" style="display:none;">
 						<label for="wireless_sync_checkbox" class="labelInput"><#qis_ssid_desc#></label>
 		  				<input type="checkbox" id="wireless_sync_checkbox" data-mini="true"/>
 					</div>
@@ -1846,6 +2035,12 @@
 
 		<!-- ASUS Terms of Use -->
 		<div id="asustos_page" data-role="page" class="qisBackground"></div>
+
+		<!-- ROG Turbo Key -->
+		<div id="boostKey_page" data-role="page" class="qisBackground"></div>
+
+		<!-- 802.11AX mode -->
+		<div id="axMode_page" data-role="page" class="qisBackground"></div>
 
 		<!-- AiMesh Site Survey option-->
 		<div id="amas_option_page" data-role="page" class="qisBackground aimeshPages">

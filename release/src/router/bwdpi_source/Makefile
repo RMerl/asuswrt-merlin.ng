@@ -32,13 +32,15 @@ ifeq ($(RTCONFIG_BCM7),y)
 	@cp include/udb/sysdeps/bcm7-tmcfg_udb.h include/udb/tmcfg_udb.h -f                  # bcm7
 	@cp bin/bcm7/* bin/ -rf                                                              # bcm7
 else ifeq ($(HND_ROUTER),y)
+ifeq ($(HND_ROUTER_AX),y)
+	@cp include/tdts/sysdeps/axhnd-tmcfg.h include/tdts/tmcfg.h -f                       # ax-hnd
+	@cp include/udb/sysdeps/axhnd-tmcfg_udb.h include/udb/tmcfg_udb.h -f                 # ax-hnd
+	@cp bin/axhnd/* bin/ -rf                                                             # ax-hnd
+else
 	@cp include/tdts/sysdeps/hnd-tmcfg.h include/tdts/tmcfg.h -f                         # hnd
 	@cp include/udb/sysdeps/hnd-tmcfg_udb.h include/udb/tmcfg_udb.h -f                   # hnd
 	@cp bin/hnd/* bin/ -rf                                                               # hnd
-else ifeq ($(HND_ROUTER_AX),y)
-	@cp include/tdts/sysdeps/axhnd-tmcfg.h include/tdts/axtmcfg.h -f                     # ax-hnd
-	@cp include/udb/sysdeps/axhnd-tmcfg_udb.h include/udb/axtmcfg_udb.h -f               # ax-hnd
-	@cp bin/axhnd/* bin/ -rf                                                             # ax-hnd
+endif
 else ifeq ($(RTCONFIG_BCM_7114),y)
 	@cp include/tdts/sysdeps/bcm7114-tmcfg.h include/tdts/tmcfg.h -f                     # bcm7114
 	@cp include/udb/sysdeps/bcm7114-tmcfg_udb.h include/udb/tmcfg_udb.h -f               # bcm7114
@@ -80,11 +82,13 @@ ifeq ($(RTCONFIG_BCM7),y)
 	@cp include/tdts/sysdeps/bcm7-tmcfg.h include/tdts/tmcfg.h -f                        # bcm7
 	@cp include/udb/sysdeps/bcm7-tmcfg_udb.h include/udb/tmcfg_udb.h -f                  # bcm7
 else ifeq ($(HND_ROUTER),y)
+ifeq ($(HND_ROUTER_AX),y)
+	@cp include/tdts/sysdeps/axhnd-tmcfg.h include/tdts/tmcfg.h -f                       # ax-hnd
+	@cp include/udb/sysdeps/axhnd-tmcfg_udb.h include/udb/tmcfg_udb.h -f                 # ax-hnd
+else
 	@cp include/tdts/sysdeps/hnd-tmcfg.h include/tdts/tmcfg.h -f                         # hnd
 	@cp include/udb/sysdeps/hnd-tmcfg_udb.h include/udb/tmcfg_udb.h -f                   # hnd
-else ifeq ($(HND_ROUTER_AX),y)
-	@cp include/tdts/sysdeps/axhnd-tmcfg.h include/tdts/axtmcfg.h -f                     # ax-hnd
-	@cp include/udb/sysdeps/axhnd-tmcfg_udb.h include/udb/axtmcfg_udb.h -f               # ax-hnd
+endif
 else ifeq ($(RTCONFIG_BCM_7114),y)
 	@cp include/tdts/sysdeps/bcm7114-tmcfg.h include/tdts/tmcfg.h -f                     # bcm7114
 	@cp include/udb/sysdeps/bcm7114-tmcfg_udb.h include/udb/tmcfg_udb.h -f               # bcm7114
@@ -143,9 +147,11 @@ else ifeq ($(RTCONFIG_BCMARM),y)
 ifeq ($(RTCONFIG_BCM7),y)
 	@cp -f modules/bcm7/* RC_INDEP/
 else ifeq ($(HND_ROUTER),y)
-	@cp -f modules/hnd/* RC_INDEP/
-else ifeq ($(HND_ROUTER_AX),y)
+ifeq ($(HND_ROUTER_AX),y)
 	@cp -f modules/axhnd/* RC_INDEP/
+else
+	@cp -f modules/hnd/* RC_INDEP/
+endif
 else ifeq ($(RTCONFIG_BCM_7114),y)
 	@cp -f modules/bcm7114/* RC_INDEP/
 else

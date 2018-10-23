@@ -24,11 +24,21 @@
 #ifndef AVCODEC_VAAPI_H
 #define AVCODEC_VAAPI_H
 
+/**
+ * @file
+ * @ingroup lavc_codec_hwaccel_vaapi
+ * Public libavcodec VA API header.
+ */
+
 #include <stdint.h>
+#include "libavutil/attributes.h"
+#include "version.h"
+
+#if FF_API_STRUCT_VAAPI_CONTEXT
 
 /**
- * \defgroup VAAPI_Decoding VA API Decoding
- * \ingroup Decoder
+ * @defgroup lavc_codec_hwaccel_vaapi VA API Decoding
+ * @ingroup lavc_codec_hwaccel
  * @{
  */
 
@@ -40,8 +50,10 @@
  * during initialization or through each AVCodecContext.get_buffer()
  * function call. In any case, they must be valid prior to calling
  * decoding functions.
+ *
+ * Deprecated: use AVCodecContext.hw_frames_ctx instead.
  */
-struct vaapi_context {
+struct attribute_deprecated vaapi_context {
     /**
      * Window system dependent data
      *
@@ -65,103 +77,10 @@ struct vaapi_context {
      * - decoding: Set by user
      */
     uint32_t context_id;
-
-    /**
-     * VAPictureParameterBuffer ID
-     *
-     * - encoding: unused
-     * - decoding: Set by libavcodec
-     */
-    uint32_t pic_param_buf_id;
-
-    /**
-     * VAIQMatrixBuffer ID
-     *
-     * - encoding: unused
-     * - decoding: Set by libavcodec
-     */
-    uint32_t iq_matrix_buf_id;
-
-    /**
-     * VABitPlaneBuffer ID (for VC-1 decoding)
-     *
-     * - encoding: unused
-     * - decoding: Set by libavcodec
-     */
-    uint32_t bitplane_buf_id;
-
-    /**
-     * Slice parameter/data buffer IDs
-     *
-     * - encoding: unused
-     * - decoding: Set by libavcodec
-     */
-    uint32_t *slice_buf_ids;
-
-    /**
-     * Number of effective slice buffer IDs to send to the HW
-     *
-     * - encoding: unused
-     * - decoding: Set by libavcodec
-     */
-    unsigned int n_slice_buf_ids;
-
-    /**
-     * Size of pre-allocated slice_buf_ids
-     *
-     * - encoding: unused
-     * - decoding: Set by libavcodec
-     */
-    unsigned int slice_buf_ids_alloc;
-
-    /**
-     * Pointer to VASliceParameterBuffers
-     *
-     * - encoding: unused
-     * - decoding: Set by libavcodec
-     */
-    void *slice_params;
-
-    /**
-     * Size of a VASliceParameterBuffer element
-     *
-     * - encoding: unused
-     * - decoding: Set by libavcodec
-     */
-    unsigned int slice_param_size;
-
-    /**
-     * Size of pre-allocated slice_params
-     *
-     * - encoding: unused
-     * - decoding: Set by libavcodec
-     */
-    unsigned int slice_params_alloc;
-
-    /**
-     * Number of slices currently filled in
-     *
-     * - encoding: unused
-     * - decoding: Set by libavcodec
-     */
-    unsigned int slice_count;
-
-    /**
-     * Pointer to slice data buffer base
-     * - encoding: unused
-     * - decoding: Set by libavcodec
-     */
-    const uint8_t *slice_data;
-
-    /**
-     * Current size of slice data
-     *
-     * - encoding: unused
-     * - decoding: Set by libavcodec
-     */
-    uint32_t slice_data_size;
 };
 
 /* @} */
+
+#endif /* FF_API_STRUCT_VAAPI_CONTEXT */
 
 #endif /* AVCODEC_VAAPI_H */

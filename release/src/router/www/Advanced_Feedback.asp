@@ -79,7 +79,8 @@ function initial(){
 		document.getElementById("attach_modem_span").style.display = "none";
 	}
 
-	setTimeout("check_wan_state();", 300);
+	//Renjie: do not check WAN connection
+	//setTimeout("check_wan_state();", 300);
 
 	if(dblog_support)
 		init_diag_feature();
@@ -97,11 +98,11 @@ function initial(){
 	change_fb_email_provider();
 
 	if(reload_data==1){
-		document.form.fb_country.value = '<% nvram_get("fb_country"); %>';
-		document.form.fb_ptype.value = '<% nvram_get("fb_ptype"); %>';
+		document.form.fb_country.value = decodeURIComponent('<% nvram_char_to_ascii("", "fb_country"); %>');
+		document.form.fb_ptype.value = decodeURIComponent('<% nvram_char_to_ascii("", "fb_ptype"); %>');
 		Reload_pdesc(document.form.fb_ptype);
-		document.form.fb_pdesc.value = '<% nvram_get("fb_pdesc"); %>';
-		document.form.fb_comment.value = '<% nvram_get("fb_comment"); %>';
+		document.form.fb_pdesc.value = decodeURIComponent('<% nvram_char_to_ascii("", "fb_pdesc"); %>');
+		document.form.fb_comment.value = decodeURIComponent('<% nvram_char_to_ascii("", "fb_comment"); %>');
 	}
 
 	$("#oauth_google_btn").click(
@@ -374,13 +375,6 @@ function applyRule(){
 		return false;
 	}
 
-	//WAN connected check
-	if(sw_mode != 3 && document.getElementById("connect_status").className == "connectstatusoff"){
-                alert("<#USB_Application_No_Internet#>");
-                return false;
-        }
-	else{
-
 		/*if(document.form.feedbackresponse.value == "3"){
 				alert("Feedback report daily maximum(10) send limit reached.");
 				return false;
@@ -468,6 +462,9 @@ function applyRule(){
 			}
 		}
 
+		if(document.form.PM_attach_wlanlog.value == "1")
+			httpApi.update_wlanlog();
+
 		document.form.fb_browserInfo.value = navigator.userAgent;
 		if(dsl_support){
 			if(document.form.dslx_diag_enable[0].checked == true){
@@ -479,7 +476,6 @@ function applyRule(){
 		else
 			showLoading(60);
 		document.form.submit();
-	}
 }
 
 function isEmail(strE) {
@@ -504,7 +500,7 @@ function change_dsl_diag_enable(value) {
 			return;
 		}
 		else{
-			alert("While debug log capture in progress, please do not unplug the USB disk as the debug log would be stored in the disk. UI top right globe icon flashing in yellow indicating that debug log capture in progress. Click on the yellow globe icon could cancel the debug log capture. Please note that xDSL line would resync in one minute after Feedback form submitted.");/*untranslated*/
+			alert("<#feedback_capturing_note1#> <#feedback_capturing_note_DSL#>");
 		}
 		showhide("dslx_diag_duration",1);
 	}
@@ -926,18 +922,18 @@ function change_fb_email_provider(obj){
 </tr>
 
 <tr>
-	<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(25,11);">Enable DSL Line Diagnostic *</a></th>
+	<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(25,11);"><#feedback_debug_log_DSL#> *</a></th>
 	<td>
 		<input type="radio" name="dslx_diag_enable" class="input" value="1" onclick="change_dsl_diag_enable(1);"><#checkbox_Yes#>
 		<input type="radio" name="dslx_diag_enable" class="input" value="0" onclick="change_dsl_diag_enable(0);" checked><#checkbox_No#>
 		<br>	
-		<span id="storage_ready" style="display:none;color:#FC0">* USB disk is ready.</span>
+		<span id="storage_ready" style="display:none;color:#FC0">* <#USB_ready#></span>
 		<span id="be_lack_storage" style="display:none;color:#FC0">* <#no_usb_found#></span>
 	</td>
 </tr>
 
 <tr id="dslx_diag_duration">
-	<th>Diagnostic debug log capture duration *</th>
+	<th><#feedback_capturing_duration#> *</th>
 	<td>
 		<select id="" class="input_option" name="dslx_diag_duration">
 			<option value="0" selected><#Auto#></option>

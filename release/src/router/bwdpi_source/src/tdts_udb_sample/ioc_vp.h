@@ -33,6 +33,7 @@
 enum
 {	
 	ACT_VP_GET_LOG = 0,	/* get_vp */
+	ACT_VP_GET_LOG_V2,	/* get_vp_v2 */
 	ACT_VP_MAX
 };
 

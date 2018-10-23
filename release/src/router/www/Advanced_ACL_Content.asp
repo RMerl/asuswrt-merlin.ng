@@ -56,6 +56,7 @@ function initial(){
 
 	show_menu();
 	regen_band(document.form.wl_unit);
+	dwb_regen_band(document.form.wl_unit);
 	if(lantiq_support){
 		checkWLReady();
 	}	
@@ -147,7 +148,8 @@ function show_wl_maclist_x(){
 			code += '</td></tr></table>';
 			code += '</td>';
 			code += '<td width="20%"><input type="button" class=\"remove_btn\" onclick=\"deleteRow(this, \'' + clientMac + '\');\" value=\"\"/></td></tr>';
-			clientListEventData.push({"mac" : clientMac, "name" : "", "ip" : "", "callBack" : "ACL"});
+			if(validator.mac_addr(clientMac))
+				clientListEventData.push({"mac" : clientMac, "name" : "", "ip" : "", "callBack" : "ACL"});
 		});
 	}
 	code += '</table>';

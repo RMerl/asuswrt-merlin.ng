@@ -430,21 +430,9 @@
 	color:#FFFFFF;
 	cursor:default;
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+.dwb_hint{
+	margin-top: 80px;
+	text-align: center;
+	color: #FC0;
+	font-size: 14px;
+}

@@ -338,7 +338,8 @@ function gen_mainTable(){
 
 			code += '<td><input class=\"edit_btn\" type=\"button\" onclick=\"gen_lantowanTable('+i+');" value=\"\"/></td>';
 			code += '<td><input class=\"remove_btn\" type=\"button\" onclick=\"deleteRow_main(this, \''+MULTIFILTER_MAC_row[i]+'\');\" value=\"\"/></td></tr>';
-			clientListEventData.push({"mac" : MULTIFILTER_MAC_row[i], "name" : clientName, "ip" : "", "callBack" : "ParentalControl"});
+			if(validator.mac_addr(MULTIFILTER_MAC_row[i]))
+				clientListEventData.push({"mac" : MULTIFILTER_MAC_row[i], "name" : clientName, "ip" : "", "callBack" : "ParentalControl"});
 		}
 	}
 	code += '</table>';

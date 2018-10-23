@@ -25,64 +25,8 @@
 #include "internal.h"
 #include "libavutil/random_seed.h"
 #include "libavutil/md5.h"
+#include "urldecode.h"
 #include "avformat.h"
-#include <ctype.h>
-
-static void parse_key_value(const char *params,
-                            void (*callback_get_buf)(HTTPAuthState *state,
-                            const char *key, int key_len,
-                            char **dest, int *dest_len), HTTPAuthState *state)
-{
-    const char *ptr = params;
-
-    /* Parse key=value pairs. */
-    for (;;) {
-        const char *key;
-        char *dest = NULL, *dest_end;
-        int key_len, dest_len = 0;
-
-        /* Skip whitespace and potential commas. */
-        while (*ptr && (isspace(*ptr) || *ptr == ','))
-            ptr++;
-        if (!*ptr)
-            break;
-
-        key = ptr;
-
-        if (!(ptr = strchr(key, '=')))
-            break;
-        ptr++;
-        key_len = ptr - key;
-
-        callback_get_buf(state, key, key_len, &dest, &dest_len);
-        dest_end = dest + dest_len - 1;
-
-        if (*ptr == '\"') {
-            ptr++;
-            while (*ptr && *ptr != '\"') {
-                if (*ptr == '\\') {
-                    if (!ptr[1])
-                        break;
-                    if (dest && dest < dest_end)
-                        *dest++ = ptr[1];
-                    ptr += 2;
-                } else {
-                    if (dest && dest < dest_end)
-                        *dest++ = *ptr;
-                    ptr++;
-                }
-            }
-            if (*ptr == '\"')
-                ptr++;
-        } else {
-            for (; *ptr && !(isspace(*ptr) || *ptr == ','); ptr++)
-                if (dest && dest < dest_end)
-                    *dest++ = *ptr;
-        }
-        if (dest)
-            *dest = 0;
-    }
-}
 
 static void handle_basic_params(HTTPAuthState *state, const char *key,
                                 int key_len, char **dest, int *dest_len)
@@ -113,6 +57,9 @@ static void handle_digest_params(HTTPAuthState *state, const char *key,
     } else if (!strncmp(key, "qop=", key_len)) {
         *dest     =        digest->qop;
         *dest_len = sizeof(digest->qop);
+    } else if (!strncmp(key, "stale=", key_len)) {
+        *dest     =        digest->stale;
+        *dest_len = sizeof(digest->stale);
     }
 }
 
@@ -132,8 +79,8 @@ static void choose_qop(char *qop, int size)
     char *ptr = strstr(qop, "auth");
     char *end = ptr + strlen("auth");
 
-    if (ptr && (!*end || isspace(*end) || *end == ',') &&
-        (ptr == qop || isspace(ptr[-1]) || ptr[-1] == ',')) {
+    if (ptr && (!*end || av_isspace(*end) || *end == ',') &&
+        (ptr == qop || av_isspace(ptr[-1]) || ptr[-1] == ',')) {
         av_strlcpy(qop, "auth", size);
     } else {
         qop[0] = 0;
@@ -143,24 +90,31 @@ static void choose_qop(char *qop, int size)
 void ff_http_auth_handle_header(HTTPAuthState *state, const char *key,
                                 const char *value)
 {
-    if (!strcmp(key, "WWW-Authenticate")) {
+    if (!av_strcasecmp(key, "WWW-Authenticate") || !av_strcasecmp(key, "Proxy-Authenticate")) {
         const char *p;
         if (av_stristart(value, "Basic ", &p) &&
             state->auth_type <= HTTP_AUTH_BASIC) {
             state->auth_type = HTTP_AUTH_BASIC;
             state->realm[0] = 0;
-            parse_key_value(p, handle_basic_params, state);
+            state->stale = 0;
+            ff_parse_key_value(p, (ff_parse_key_val_cb) handle_basic_params,
+                               state);
         } else if (av_stristart(value, "Digest ", &p) &&
                    state->auth_type <= HTTP_AUTH_DIGEST) {
             state->auth_type = HTTP_AUTH_DIGEST;
             memset(&state->digest_params, 0, sizeof(DigestParams));
             state->realm[0] = 0;
-            parse_key_value(p, handle_digest_params, state);
+            state->stale = 0;
+            ff_parse_key_value(p, (ff_parse_key_val_cb) handle_digest_params,
+                               state);
             choose_qop(state->digest_params.qop,
                        sizeof(state->digest_params.qop));
+            if (!av_strcasecmp(state->digest_params.stale, "true"))
+                state->stale = 1;
         }
-    } else if (!strcmp(key, "Authentication-Info")) {
-        parse_key_value(value, handle_digest_update, state);
+    } else if (!av_strcasecmp(key, "Authentication-Info")) {
+        ff_parse_key_value(value, (ff_parse_key_val_cb) handle_digest_update,
+                           state);
     }
 }
 
@@ -200,11 +154,11 @@ static char *make_digest_auth(HTTPAuthState *state, const char *username,
 
     /* Generate a client nonce. */
     for (i = 0; i < 2; i++)
-        cnonce_buf[i] = ff_random_get_seed();
+        cnonce_buf[i] = av_get_random_seed();
     ff_data_to_hex(cnonce, (const uint8_t*) cnonce_buf, sizeof(cnonce_buf), 1);
     cnonce[2*sizeof(cnonce_buf)] = 0;
 
-    md5ctx = av_malloc(av_md5_size);
+    md5ctx = av_md5_alloc();
     if (!md5ctx)
         return NULL;
 
@@ -266,18 +220,21 @@ static char *make_digest_auth(HTTPAuthState *state, const char *username,
 
     /* TODO: Escape the quoted strings properly. */
     av_strlcatf(authstr, len, "username=\"%s\"",   username);
-    av_strlcatf(authstr, len, ",realm=\"%s\"",     state->realm);
-    av_strlcatf(authstr, len, ",nonce=\"%s\"",     digest->nonce);
-    av_strlcatf(authstr, len, ",uri=\"%s\"",       uri);
-    av_strlcatf(authstr, len, ",response=\"%s\"",  response);
+    av_strlcatf(authstr, len, ", realm=\"%s\"",     state->realm);
+    av_strlcatf(authstr, len, ", nonce=\"%s\"",     digest->nonce);
+    av_strlcatf(authstr, len, ", uri=\"%s\"",       uri);
+    av_strlcatf(authstr, len, ", response=\"%s\"",  response);
+
+    // we are violating the RFC and use "" because all others seem to do that too.
     if (digest->algorithm[0])
-        av_strlcatf(authstr, len, ",algorithm=%s",  digest->algorithm);
+        av_strlcatf(authstr, len, ", algorithm=\"%s\"",  digest->algorithm);
+
     if (digest->opaque[0])
-        av_strlcatf(authstr, len, ",opaque=\"%s\"", digest->opaque);
+        av_strlcatf(authstr, len, ", opaque=\"%s\"", digest->opaque);
     if (digest->qop[0]) {
-        av_strlcatf(authstr, len, ",qop=\"%s\"",    digest->qop);
-        av_strlcatf(authstr, len, ",cnonce=\"%s\"", cnonce);
-        av_strlcatf(authstr, len, ",nc=%s",         nc);
+        av_strlcatf(authstr, len, ", qop=\"%s\"",    digest->qop);
+        av_strlcatf(authstr, len, ", cnonce=\"%s\"", cnonce);
+        av_strlcatf(authstr, len, ", nc=%s",         nc);
     }
 
     av_strlcatf(authstr, len, "\r\n");
@@ -290,22 +247,35 @@ char *ff_http_auth_create_response(HTTPAuthState *state, const char *auth,
 {
     char *authstr = NULL;
 
+    /* Clear the stale flag, we assume the auth is ok now. It is reset
+     * by the server headers if there's a new issue. */
+    state->stale = 0;
     if (!auth || !strchr(auth, ':'))
         return NULL;
 
     if (state->auth_type == HTTP_AUTH_BASIC) {
-        int auth_b64_len = (strlen(auth) + 2) / 3 * 4 + 1;
-        int len = auth_b64_len + 30;
-        char *ptr;
-        authstr = av_malloc(len);
-        if (!authstr)
+        int auth_b64_len, len;
+        char *ptr, *decoded_auth = ff_urldecode(auth);
+
+        if (!decoded_auth)
             return NULL;
+
+        auth_b64_len = AV_BASE64_SIZE(strlen(decoded_auth));
+        len = auth_b64_len + 30;
+
+        authstr = av_malloc(len);
+        if (!authstr) {
+            av_free(decoded_auth);
+            return NULL;
+        }
+
         snprintf(authstr, len, "Authorization: Basic ");
         ptr = authstr + strlen(authstr);
-        av_base64_encode(ptr, auth_b64_len, auth, strlen(auth));
-        av_strlcat(ptr, "\r\n", len);
+        av_base64_encode(ptr, auth_b64_len, decoded_auth, strlen(decoded_auth));
+        av_strlcat(ptr, "\r\n", len - (ptr - authstr));
+        av_free(decoded_auth);
     } else if (state->auth_type == HTTP_AUTH_DIGEST) {
-        char *username = av_strdup(auth), *password;
+        char *username = ff_urldecode(auth), *password;
 
         if (!username)
             return NULL;
@@ -318,4 +288,3 @@ char *ff_http_auth_create_response(HTTPAuthState *state, const char *auth,
     }
     return authstr;
 }
-

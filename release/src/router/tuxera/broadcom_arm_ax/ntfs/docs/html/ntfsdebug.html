@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8"/>
+<style>
+table.head, table.foot { width: 100%; }
+td.head-rtitle, td.foot-os { text-align: right; }
+td.head-vol { text-align: center; }
+table.foot td { width: 50%; }
+table.head td { width: 33%; }
+div.spacer { margin: 1em 0; }
+</style>
+<title>
+NTFSDEBUG(8)</title>
+</head>
+<body>
+<div class="mandoc">
+<table class="head">
+<tbody>
+<tr>
+<td class="head-ltitle">
+NTFSDEBUG(8)</td>
+<td class="head-vol">
+System Manager's Manual</td>
+<td class="head-rtitle">
+NTFSDEBUG(8)</td>
+</tr>
+</tbody>
+</table>
+<div class="section">
+<h1>NAME</h1> ntfsdebug - Efficiently dump the metadata contents of an NTFS volume.</div>
+<div class="section">
+<h1>SYNOPSIS</h1> <b>ntfsdebug</b>  <i>device|image</i></div>
+<div class="section">
+<h1>DESCRIPTION</h1> <b>ntfsdebug</b> will efficiently extract all relevant metadata from an NTFS volume and dump it to standard output. It works at disk sector level and copies only the used data. Unused disk space becomes zero. <b>ntfsdebug</b> can be useful to exact the metadata snapshot of an NTFS file system for developers to investigate and troubleshoot users' issues using the clone without the risk of destroying the original file system.</div>
+<div class="section">
+<h1>EXIT CODES</h1> The exit code is 0 on success, non-zero otherwise.</div>
+<div class="section">
+<h1>EXAMPLES</h1> Dump NTFS metadata on /dev/sda1 to a compressed metadata image:<div style="margin-left: 5.00ex;">
+<div style="height: 1.00em;">
+&#160;</div>
+<b>ntfsdebug /dev/sda1 | bzip2 &gt; sda1.img.bz2</b><div style="height: 1.00em;">
+&#160;</div>
+</div>
+Dump NTFS metadata on /dev/sda1 to a compressed metadata image in a system with less memory e.g. for 20 MB memory use:<div style="margin-left: 5.00ex;">
+<div style="height: 1.00em;">
+&#160;</div>
+<b>ntfsdebug /dev/sda1 --mem 20 | bzip2 &gt; sda1.img.bz2</b><div style="height: 1.00em;">
+&#160;</div>
+</div>
+Dump NTFS metadata on /dev/sda1 to a compressed metadata image but also collect a full NTFS Journal ($LogFile), use:<div style="margin-left: 5.00ex;">
+<div style="height: 1.00em;">
+&#160;</div>
+<b>ntfsdebug /dev/sda1 --logfile | bzip2 &gt; sda1.img.bz2</b><div style="height: 1.00em;">
+&#160;</div>
+</div>
+Dump NTFS metadata to a remote host, using ssh. Please note that ssh may ask for a password.<div style="margin-left: 5.00ex;">
+<div style="height: 1.00em;">
+&#160;</div>
+<b>ntfsdebug /dev/sda1 | bzip2 | ssh host 'cat &gt; sda1.img.bzip2'</b></div>
+</div>
+<div class="section">
+<h1>KNOWN ISSUES</h1> If you find a problem then please send an email describing it to ntfs-support@tuxera.com.</div>
+<div class="section">
+<h1>AVAILABILITY</h1> <b>ntfsdebug</b> is part of the <b>Tuxera NTFS</b> package.</div>
+<table class="foot">
+<tr>
+<td class="foot-date">
+Sept 2011</td>
+<td class="foot-os">
+Tuxera NTFS Utilities 3017.7.18.4</td>
+</tr>
+</table>
+</div>
+</body>
+</html>
+

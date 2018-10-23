@@ -70,6 +70,7 @@ static const struct led_btn_table_s {
 #endif
 #ifdef RTCONFIG_TURBO_BTN
 	{ "btn_turbo_gpio",     &btn_gpio_table[BTN_TURBO] },
+	{ "led_turbo_gpio",	&led_gpio_table[LED_TURBO] },
 #endif
 #ifdef RTCONFIG_LED_BTN
 	{ "btn_led_gpio",	&btn_gpio_table[BTN_LED] },
@@ -274,6 +275,9 @@ int init_gpio(void)
 #endif
 #if defined(RTCONFIG_PWRRED_LED)
 		, "led_pwr_red_gpio"
+#endif
+#ifdef RTCONFIG_TURBO_BTN
+		, "led_turbo_gpio"
 #endif
 #ifdef RTCONFIG_LOGO_LED
 		, "led_logo_gpio"

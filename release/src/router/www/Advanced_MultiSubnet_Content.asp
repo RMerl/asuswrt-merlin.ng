@@ -770,7 +770,8 @@ function showdhcp_staticlist(){
 			code += '<td width="30%">'+ clientIP +'</td>';
 			code += '<td width="10%">';
 			code += '<input class="remove_btn" onclick="del_Row(this);" value=""/></td></tr>';
-			clientListEventData.push({"mac" : clientMac, "name" : clientName, "ip" : clientIP, "callBack" : "DHCP"});
+			if(validator.mac_addr(clientMac))
+				clientListEventData.push({"mac" : clientMac, "name" : clientName, "ip" : clientIP, "callBack" : "DHCP"});
 		});
 	}
 	code += '</table>';

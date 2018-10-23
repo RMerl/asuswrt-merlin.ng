@@ -397,6 +397,10 @@ void get_related_nvram(){
 #endif
 	for(unit = WAN_UNIT_FIRST; unit < WAN_UNIT_MAX; ++unit)
 		max_wait_time[unit] = scan_interval*max_disconn_count[unit];
+
+#ifdef RTCONFIG_USB_MODEM
+	modem_pdp = nvram_get_int("modem_pdp");
+#endif
 }
 
 void get_lan_nvram(){
@@ -580,6 +584,18 @@ static void wan_led_control(int sig) {
 #endif
 	}
 #endif
+#if defined(RTCONFIG_QCA) && (defined(RTCONFIG_LED_BTN) || defined(RTCONFIG_TURBO_BTN))
+	if (!inhibit_led_on()) {
+		int unit;
+
+		for (unit = WAN_UNIT_FIRST; unit < WAN_UNIT_MAX; ++unit) {
+			if (get_dualwan_by_unit(unit) == WANS_DUALWAN_IF_NONE)
+				continue;
+
+			update_wan_leds(unit);
+		}
+	}
+#endif
 }
 
 /* Return values:
@@ -600,8 +616,13 @@ int do_ping_detect(int wan_unit, const char *target)
 	*/
 
 	/* Check for valid domain to avoid shell escaping */
-	if (!is_valid_domainname(target))
+	if (!is_valid_domainname(target)
+#if defined(RTCONFIG_IPV6) && defined(RTCONFIG_USB_MODEM)
+		&& !(dualwan_unit__usbif(wan_unit) && modem_pdp == 2)
+#endif
+			)
 		return -1;
+
 	if (debug)
 		_dprintf("%s: %s %s\n", __FUNCTION__, "check", target);
 
@@ -780,6 +801,11 @@ int do_dns_detect(int wan_unit)
 	int timeout, size, ret, status, pipefd[2];
 	int debug = nvram_get_int("dns_probe_debug");
 
+#if defined(RTCONFIG_IPV6) && defined(RTCONFIG_USB_MODEM)
+	if(dualwan_unit__usbif(wan_unit) && modem_pdp == 2)
+		return 1;
+#endif
+
 	snprintf(host, sizeof(host), "%s", nvram_safe_get("dns_probe_host"));
 	snprintf(content, sizeof(content), "%s", nvram_safe_get("dns_probe_content"));
 	if (debug)
@@ -937,6 +963,7 @@ int detect_internet(int wan_unit)
 	snprintf(wan_ifname, sizeof(wan_ifname), "%s", get_wan_ifname(wan_unit));
 #endif
 
+
 	snprintf(prefix, sizeof(prefix), "wan%d_", wan_unit);
 	snprintf(wan_proto, sizeof(wan_proto), "%s", nvram_safe_get(strcat_r(prefix, "proto", tmp)));
 
@@ -950,6 +977,11 @@ int detect_internet(int wan_unit)
 
 	dns_ret = is_ppp_demand ? -1 : delay_dns_response(wan_unit);
 
+#if defined(RTCONFIG_IPV6) && defined(RTCONFIG_INTERNAL_GOBI)
+	if(dualwan_unit__usbif(wan_unit) && modem_pdp == 2)
+		ping_ret = do_ping_detect(wan_unit, "2001:4860:4860::8888");
+	else
+#endif
 #if defined(RTCONFIG_DUALWAN)
 	if(wandog_enable)
 		ping_ret = is_ppp_demand ? -1 : wanduck_ping_detect(wan_unit);
@@ -972,6 +1004,10 @@ int detect_internet(int wan_unit)
 	else if(!get_packets_of_net_dev(wan_ifname, &rx_packets, &tx_packets) || rx_packets <= RX_THRESHOLD)
 		link_internet = DISCONN;
 	else if(!isFirstUse && (!dns_ret && !do_tcp_dns_detect(wan_unit) && !wanduck_ping_detect(wan_unit)))
+		link_internet = DISCONN;
+#endif
+#if defined(RTCONFIG_IPV6) && defined(RTCONFIG_INTERNAL_GOBI)
+	else if(dualwan_unit__usbif(wan_unit) && modem_pdp == 2 && !ping_ret)
 		link_internet = DISCONN;
 #endif
 #ifdef RTCONFIG_DUALWAN
@@ -1410,7 +1446,6 @@ int if_wan_phyconnected(int wan_unit){
 	static int got_modem_info = 0;
 	char buf[32];
 	char act_ip[32];
-	int pdp = 0;
 #endif
 
 #ifdef RTCONFIG_ALPINE
@@ -1664,9 +1699,9 @@ _dprintf("# wanduck: if_wan_phyconnected: x_Setting=%d, link_modem=%d, sim_state
 					eval("/usr/sbin/modem_status.sh", "simauth");
 
 				if(sim_state == 1){
-					pdp = nvram_get_int("modem_pdp");
-					if(pdp != 2){
-						eval("/usr/sbin/modem_status.sh", "ip");
+					eval("/usr/sbin/modem_status.sh", "ip");
+
+					if(modem_pdp != 2){
 						snprintf(act_ip, sizeof(act_ip), "%s", nvram_safe_get(strcat_r(prefix2, "act_ip", tmp2)));
 
 						snprintf(buf, sizeof(buf), "%s", nvram_safe_get(strcat_r(prefix, "ipaddr", tmp)));
@@ -3104,6 +3139,10 @@ _dprintf("wanduck(%d)(first detect start): state %d, state_old %d, changed %d, w
 			else if(!nvram_match("cfg_master", "1"))
 				; // do nothing.
 #endif
+#if defined(RTCONFIG_QCA) && defined(RTCONFIG_AMAS)
+			else if(nvram_match("re_mode", "1"))
+				; // do nothing.
+#endif
 			else if(cross_state == CONNED){
 				_dprintf("\n# AP mode: Disable direct rule(CONNED)\n");
 				eval("ebtables", "-t", "broute", "-F");
@@ -4325,19 +4364,20 @@ _dprintf("nat_rule: start_nat_rules 6.\n");
 		}
 		else if(conn_changed_state[current_wan_unit] == D2C || conn_changed_state[current_wan_unit] == CONNED){
 			if(rule_setup && !isFirstUse){
-#if defined(RTCONFIG_WPS_ALLLED_BTN)
-#if !defined(RTAX92U)
-				if(nvram_match("AllLED", "1")
+#if defined(RTCONFIG_WPS_ALLLED_BTN) || \
+    ((defined(RTCONFIG_LED_BTN) || defined(RTCONFIG_TURBO_BTN)) && defined(RTCONFIG_QCA))
+				if (!inhibit_led_on()
 				   && !nvram_get_int("led_disable"))
-#endif
 					led_control(LED_WAN, LED_ON);
 				else
 					led_control(LED_WAN, LED_OFF);
 #elif defined(DSL_N55U) || defined(DSL_N55U_B)
 				led_control(LED_WAN, LED_ON);
 #elif defined(RTAC68U) || defined(RTAC87U) || defined(RTAC3200) || defined(RTCONFIG_BCM_7114) || defined(HND_ROUTER)
+#if !defined(RTAX92U)
 				if(nvram_match("AllLED", "1")
 					&& !nvram_get_int("led_disable")
+#endif
 #ifdef RTAC68U
 						&& is_ac66u_v2_series()
 #endif

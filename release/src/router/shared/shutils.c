@@ -423,11 +423,7 @@ int _cpu_eval(int *ppid, char *cmds[])
 #if defined (SMP) || defined(RTCONFIG_ALPINE) || defined(RTCONFIG_LANTIQ)
         cpucmd[ncmds++]="taskset";
         cpucmd[ncmds++]="-c";
-        if(!strcmp(cmds[n], CPU0) || !strcmp(cmds[n], CPU1)
-#if defined(GTAC5300) || defined(RTCONFIG_HND_ROUTER_AX)
-			|| !strcmp(cmds[n], CPU2) || !strcmp(cmds[n], CPU3)
-#endif
-			) {
+        if(!strcmp(cmds[n], CPU0) || !strcmp(cmds[n], CPU1)) {
                 cpucmd[ncmds++]=cmds[n++];
         } else
 #if defined(RTCONFIG_ALPINE) || defined(RTCONFIG_LANTIQ)
@@ -436,11 +432,7 @@ int _cpu_eval(int *ppid, char *cmds[])
                 cpucmd[ncmds++]=CPU0;
 #endif
 #else
-        if(strcmp(cmds[n], CPU0) && strcmp(cmds[n], CPU1)
-#if defined(GTAC5300) || defined(RTCONFIG_HND_ROUTER_AX)
-			&& strcmp(cmds[n], CPU2) && strcmp(cmds[n], CPU3)
-#endif
-			)
+        if(strcmp(cmds[n], CPU0) && strcmp(cmds[n], CPU1))
                 cpucmd[ncmds++]=cmds[n++];
         else
                 n++;
@@ -667,7 +659,7 @@ char *ether_etoa2(const unsigned char *e, char *a)
 	return a;
 }
 
-#if defined(GTAC5300) || defined(RTAX88U)
+#ifdef GTAC5300
 static int dbg_noisy = -1;
 #endif
 
@@ -684,7 +676,7 @@ void cprintf(const char *format, ...)
 #if defined(DEBUG_NOISY) && !defined(HND_ROUTER)
 	{
 #else
-#if defined(GTAC5300) || defined(RTAX88U)
+#ifdef GTAC5300
 	if(dbg_noisy == -1)
 		dbg_noisy = nvram_get_int("debug_cprintf");
 
@@ -2260,5 +2252,39 @@ void reset_stacksize(int newval)
 		printf("\nreset stack_size soft limit failed\n");
 	else
 		printf("\nreset stack_size soft limit as %d\n", newval);
+}
+
+#define ARP_CACHE       "/proc/net/arp"
+#define ARP_BUFFER_LEN  512
+#define IPLEN           16
+
+/* 1/4/6 */
+#define ARP_LINE_FORMAT "%20s %*s %*s %20s %*s %20s"
+
+int arpcache(char *tgmac, char *tgip)
+{
+	FILE *arpCache = fopen(ARP_CACHE, "r");
+	if (!arpCache) {
+		perror("cannot open arp cache");
+		return -1;
+	}
+
+	char header[ARP_BUFFER_LEN];
+	if (!fgets(header, sizeof(header), arpCache))
+	{
+		return -1;
+	}
+
+	char ipAddr[ARP_BUFFER_LEN], hwAddr[ARP_BUFFER_LEN], device[ARP_BUFFER_LEN];
+	while (fscanf(arpCache, ARP_LINE_FORMAT, ipAddr, hwAddr, device) == 3)
+	{
+		if(!stricmp(tgmac, hwAddr, IPLEN-1)) {
+			strncpy(tgip, ipAddr, IPLEN);
+			break;
+		}
+	}
+
+	fclose(arpCache);
+	return 0;
 }
 

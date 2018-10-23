@@ -19,21 +19,24 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#include "libavcodec/get_bits.h"
+#include "libavutil/channel_layout.h"
+
 #include "avformat.h"
-#include "id3v2.h"
+#include "internal.h"
 #include "apetag.h"
+#include "id3v1.h"
+#include "libavutil/dict.h"
 
 #define MPC_FRAMESIZE  1152
 #define DELAY_FRAMES   32
 
 static const int mpc_rate[4] = { 44100, 48000, 37800, 32000 };
-typedef struct {
+typedef struct MPCFrame {
     int64_t pos;
     int size, skip;
 }MPCFrame;
 
-typedef struct {
+typedef struct MPCContext {
     int ver;
     uint32_t curframe, lastframe;
     uint32_t fcount;
@@ -45,84 +48,68 @@ typedef struct {
 static int mpc_probe(AVProbeData *p)
 {
     const uint8_t *d = p->buf;
-    if (ff_id3v2_match(d)) {
-        d += ff_id3v2_tag_len(d);
-    }
-    if (d+3 < p->buf+p->buf_size)
     if (d[0] == 'M' && d[1] == 'P' && d[2] == '+' && (d[3] == 0x17 || d[3] == 0x7))
         return AVPROBE_SCORE_MAX;
     return 0;
 }
 
-static int mpc_read_header(AVFormatContext *s, AVFormatParameters *ap)
+static int mpc_read_header(AVFormatContext *s)
 {
     MPCContext *c = s->priv_data;
     AVStream *st;
-    int t, ret;
-    int64_t pos = url_ftell(s->pb);
 
-    t = get_le24(s->pb);
-    if(t != MKTAG('M', 'P', '+', 0)){
-        uint8_t buf[ID3v2_HEADER_SIZE];
-        if (url_fseek(s->pb, pos, SEEK_SET) < 0)
-            return -1;
-        ret = get_buffer(s->pb, buf, ID3v2_HEADER_SIZE);
-        if (ret != ID3v2_HEADER_SIZE || !ff_id3v2_match(buf)) {
-            av_log(s, AV_LOG_ERROR, "Not a Musepack file\n");
-            return -1;
-        }
-        /* skip ID3 tags and try again */
-        t = ff_id3v2_tag_len(buf) - ID3v2_HEADER_SIZE;
-        av_log(s, AV_LOG_DEBUG, "Skipping %d(%X) bytes of ID3 data\n", t, t);
-        url_fskip(s->pb, t);
-        if(get_le24(s->pb) != MKTAG('M', 'P', '+', 0)){
-            av_log(s, AV_LOG_ERROR, "Not a Musepack file\n");
-            return -1;
-        }
-        /* read ID3 tags */
-        if (url_fseek(s->pb, pos, SEEK_SET) < 0)
-            return -1;
-        ff_id3v2_read(s);
-        get_le24(s->pb);
+    if(avio_rl24(s->pb) != MKTAG('M', 'P', '+', 0)){
+        av_log(s, AV_LOG_ERROR, "Not a Musepack file\n");
+        return AVERROR_INVALIDDATA;
     }
-    c->ver = get_byte(s->pb);
+    c->ver = avio_r8(s->pb);
     if(c->ver != 0x07 && c->ver != 0x17){
         av_log(s, AV_LOG_ERROR, "Can demux Musepack SV7, got version %02X\n", c->ver);
-        return -1;
+        return AVERROR_INVALIDDATA;
     }
-    c->fcount = get_le32(s->pb);
+    c->fcount = avio_rl32(s->pb);
     if((int64_t)c->fcount * sizeof(MPCFrame) >= UINT_MAX){
         av_log(s, AV_LOG_ERROR, "Too many frames, seeking is not possible\n");
-        return -1;
+        return AVERROR_INVALIDDATA;
     }
-    c->frames = av_malloc(c->fcount * sizeof(MPCFrame));
+    if(c->fcount){
+        c->frames = av_malloc(c->fcount * sizeof(MPCFrame));
+        if(!c->frames){
+            av_log(s, AV_LOG_ERROR, "Cannot allocate seektable\n");
+            return AVERROR(ENOMEM);
+        }
+    }else{
+        av_log(s, AV_LOG_WARNING, "Container reports no frames\n");
+    }
     c->curframe = 0;
     c->lastframe = -1;
     c->curbits = 8;
     c->frames_noted = 0;
 
-    st = av_new_stream(s, 0);
+    st = avformat_new_stream(s, NULL);
     if (!st)
         return AVERROR(ENOMEM);
-    st->codec->codec_type = AVMEDIA_TYPE_AUDIO;
-    st->codec->codec_id = CODEC_ID_MUSEPACK7;
-    st->codec->channels = 2;
-    st->codec->bits_per_coded_sample = 16;
+    st->codecpar->codec_type = AVMEDIA_TYPE_AUDIO;
+    st->codecpar->codec_id = AV_CODEC_ID_MUSEPACK7;
+    st->codecpar->channels = 2;
+    st->codecpar->channel_layout = AV_CH_LAYOUT_STEREO;
+    st->codecpar->bits_per_coded_sample = 16;
 
-    st->codec->extradata_size = 16;
-    st->codec->extradata = av_mallocz(st->codec->extradata_size+FF_INPUT_BUFFER_PADDING_SIZE);
-    get_buffer(s->pb, st->codec->extradata, 16);
-    st->codec->sample_rate = mpc_rate[st->codec->extradata[2] & 3];
-    av_set_pts_info(st, 32, MPC_FRAMESIZE, st->codec->sample_rate);
+    if (ff_get_extradata(s, st->codecpar, s->pb, 16) < 0)
+        return AVERROR(ENOMEM);
+    st->codecpar->sample_rate = mpc_rate[st->codecpar->extradata[2] & 3];
+    avpriv_set_pts_info(st, 32, MPC_FRAMESIZE, st->codecpar->sample_rate);
     /* scan for seekpoints */
     st->start_time = 0;
     st->duration = c->fcount;
 
     /* try to read APE tags */
-    if (!url_is_streamed(s->pb)) {
-        int64_t pos = url_ftell(s->pb);
+    if (s->pb->seekable & AVIO_SEEKABLE_NORMAL) {
+        int64_t pos = avio_tell(s->pb);
         ff_ape_parse_tag(s);
-        url_fseek(s->pb, pos, SEEK_SET);
+        if (!av_dict_get(s->metadata, "", NULL, AV_DICT_IGNORE_SUFFIX))
+            ff_id3v1_read(s);
+        avio_seek(s->pb, pos, SEEK_SET);
     }
 
     return 0;
@@ -132,31 +119,31 @@ static int mpc_read_packet(AVFormatContext *s, AVPacket *pkt)
 {
     MPCContext *c = s->priv_data;
     int ret, size, size2, curbits, cur = c->curframe;
-    int64_t tmp, pos;
+    unsigned tmp;
+    int64_t pos;
 
-    if (c->curframe >= c->fcount)
-        return -1;
+    if (c->curframe >= c->fcount && c->fcount)
+        return AVERROR_EOF;
 
     if(c->curframe != c->lastframe + 1){
-        url_fseek(s->pb, c->frames[c->curframe].pos, SEEK_SET);
+        avio_seek(s->pb, c->frames[c->curframe].pos, SEEK_SET);
         c->curbits = c->frames[c->curframe].skip;
     }
     c->lastframe = c->curframe;
     c->curframe++;
     curbits = c->curbits;
-    pos = url_ftell(s->pb);
-    tmp = get_le32(s->pb);
+    pos = avio_tell(s->pb);
+    tmp = avio_rl32(s->pb);
     if(curbits <= 12){
         size2 = (tmp >> (12 - curbits)) & 0xFFFFF;
     }else{
-        tmp = (tmp << 32) | get_le32(s->pb);
-        size2 = (tmp >> (44 - curbits)) & 0xFFFFF;
+        size2 = (tmp << (curbits - 12) | avio_rl32(s->pb) >> (44 - curbits)) & 0xFFFFF;
     }
     curbits += 20;
-    url_fseek(s->pb, pos, SEEK_SET);
+    avio_seek(s->pb, pos, SEEK_SET);
 
     size = ((size2 + curbits + 31) & ~31) >> 3;
-    if(cur == c->frames_noted){
+    if(cur == c->frames_noted && c->fcount){
         c->frames[cur].pos = pos;
         c->frames[cur].size = size;
         c->frames[cur].skip = curbits - 20;
@@ -165,22 +152,22 @@ static int mpc_read_packet(AVFormatContext *s, AVPacket *pkt)
     }
     c->curbits = (curbits + size2) & 0x1F;
 
-    if (av_new_packet(pkt, size) < 0)
-        return AVERROR(EIO);
+    if ((ret = av_new_packet(pkt, size + 4)) < 0)
+        return ret;
 
     pkt->data[0] = curbits;
-    pkt->data[1] = (c->curframe > c->fcount);
+    pkt->data[1] = (c->curframe > c->fcount) && c->fcount;
     pkt->data[2] = 0;
     pkt->data[3] = 0;
 
     pkt->stream_index = 0;
     pkt->pts = cur;
-    ret = get_buffer(s->pb, pkt->data + 4, size);
+    ret = avio_read(s->pb, pkt->data + 4, size);
     if(c->curbits)
-        url_fseek(s->pb, -4, SEEK_CUR);
+        avio_seek(s->pb, -4, SEEK_CUR);
     if(ret < size){
-        av_free_packet(pkt);
-        return AVERROR(EIO);
+        av_packet_unref(pkt);
+        return ret < 0 ? ret : AVERROR(EIO);
     }
     pkt->size = ret + 4;
 
@@ -208,11 +195,11 @@ static int mpc_read_seek(AVFormatContext *s, int stream_index, int64_t timestamp
     MPCContext *c = s->priv_data;
     AVPacket pkt1, *pkt = &pkt1;
     int ret;
-    int index = av_index_search_timestamp(st, timestamp - DELAY_FRAMES, flags);
+    int index = av_index_search_timestamp(st, FFMAX(timestamp - DELAY_FRAMES, 0), flags);
     uint32_t lastframe;
 
     /* if found, seek there */
-    if (index >= 0){
+    if (index >= 0 && st->index_entries[st->nb_index_entries-1].timestamp >= timestamp - DELAY_FRAMES){
         c->curframe = st->index_entries[index].pos;
         return 0;
     }
@@ -228,22 +215,22 @@ static int mpc_read_seek(AVFormatContext *s, int stream_index, int64_t timestamp
         ret = av_read_frame(s, pkt);
         if (ret < 0){
             c->curframe = lastframe;
-            return -1;
+            return ret;
         }
-        av_free_packet(pkt);
+        av_packet_unref(pkt);
     }
     return 0;
 }
 
 
-AVInputFormat mpc_demuxer = {
-    "mpc",
-    NULL_IF_CONFIG_SMALL("Musepack"),
-    sizeof(MPCContext),
-    mpc_probe,
-    mpc_read_header,
-    mpc_read_packet,
-    mpc_read_close,
-    mpc_read_seek,
-    .extensions = "mpc",
+AVInputFormat ff_mpc_demuxer = {
+    .name           = "mpc",
+    .long_name      = NULL_IF_CONFIG_SMALL("Musepack"),
+    .priv_data_size = sizeof(MPCContext),
+    .read_probe     = mpc_probe,
+    .read_header    = mpc_read_header,
+    .read_packet    = mpc_read_packet,
+    .read_close     = mpc_read_close,
+    .read_seek      = mpc_read_seek,
+    .extensions     = "mpc",
 };

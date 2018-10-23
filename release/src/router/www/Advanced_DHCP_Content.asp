@@ -387,7 +387,8 @@ function showdhcp_staticlist(){
 //				if (j !=3) code += '<td width="28%"></td>';
 			code += '<td width="16%"><input class="edit_btn" onclick="edit_Row(this);" value=""/>';
 			code += '<input class="remove_btn" onclick="del_Row(this);" value=""/></td></tr>';
-			clientListEventData.push({"mac" : clientMac, "name" : clientName, "ip" : clientIP, "callBack" : "DHCP"});
+			if(validator.mac_addr(clientMac))
+				clientListEventData.push({"mac" : clientMac, "name" : clientName, "ip" : clientIP, "callBack" : "DHCP"});
 		}
 	}
 	code += '</table>';

@@ -515,39 +515,7 @@ void config_switch(void)
 		eval("rtkswitch", "27");	// software reset
 	}
 
-#if defined(RTCONFIG_SWITCH_RTL8370M_PHY_QCA8033_X2) || \
-    defined(RTCONFIG_SWITCH_RTL8370MB_PHY_QCA8033_X2)
-	if (is_routing_enabled()) {
-		int wanscap_wanlan = get_wans_dualwan() & (WANSCAP_WAN | WANSCAP_LAN);
-		int wans_lanport = nvram_get_int("wans_lanport");
-		int wan_mask, unit;
-		char cmd[64];
-		char prefix[8], nvram_ports[20];
-
-		if ((wanscap_wanlan & WANSCAP_LAN) && (wans_lanport < 0 || wans_lanport > 8)) {
-			_dprintf("%s: invalid wans_lanport %d!\n", __func__, wans_lanport);
-			wanscap_wanlan &= ~WANSCAP_LAN;
-		}
-
-		wan_mask = 0;
-		if(wanscap_wanlan & WANSCAP_WAN)
-			wan_mask |= 0x1 << 0;
-		if(wanscap_wanlan & WANSCAP_LAN)
-			wan_mask |= 0x1 << wans_lanport;
-		snprintf(cmd, sizeof(cmd), "rtkswitch 44 0x%08x", wan_mask);
-		system(cmd);
-
-		for (unit = WAN_UNIT_FIRST; unit < WAN_UNIT_MAX; ++unit) {
-			snprintf(prefix, sizeof(prefix), "%d", unit);
-			snprintf(nvram_ports, sizeof(nvram_ports), "wan%sports_mask", (unit == WAN_UNIT_FIRST)? "" : prefix);
-			nvram_unset(nvram_ports);
-			if (get_dualwan_by_unit(unit) == WANS_DUALWAN_IF_LAN) {
-				/* BRT-AC828 LAN1 = P0, LAN2 = P1, etc */
-				nvram_set_int(nvram_ports, (1 << (wans_lanport - 1)));
-			}
-		}
-	}
-#endif
+	pre_config_switch();
 
 #ifdef RTCONFIG_DEFAULT_AP_MODE
 	if (!is_router_mode())
@@ -892,6 +860,8 @@ void config_switch(void)
 #if !defined(RTCONFIG_SOC_IPQ40XX)
 	enable_jumbo_frame();
 #endif
+
+	post_config_switch();
 
 #if defined(RTCONFIG_BLINK_LED)
 	if (is_swports_bled("led_lan_gpio")) {
@@ -1734,6 +1704,11 @@ void init_syspara(void)
 		nvram_set("wl_mssid", "0");
 	else
 		nvram_set("wl_mssid", "1");
+#if defined(RTAC58U)
+	if (check_mid("Hydra")) {
+		nvram_set("wl_mssid", "1"); // Hydra's MAC may not be multible of 4
+	}
+#endif
 #endif
 
 #if defined(RTCONFIG_SOC_IPQ8064) || defined(RTCONFIG_QCA_VAP_LOCALMAC)

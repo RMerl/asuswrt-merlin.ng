@@ -240,6 +240,7 @@ bool explicit_passwd = 0;	/* Set if "password" option supplied */
 char remote_name[MAXNAMELEN];	/* Peer's name for authentication */
 
 static char *uafname;		/* name of most recent +ua file */
+static char *path_upapfile = _PATH_UPAPFILE;	/* pathname of pap-secrets file */
 static char *path_chapfile = _PATH_CHAPFILE;	/* pathname of chap-secrets file */
 static char *path_authup = _PATH_AUTHUP;	/* pathname of auth-up script */
 static char *path_authdown = _PATH_AUTHDOWN;	/* pathname of auth-down script */
@@ -404,6 +405,9 @@ option_t auth_options[] = {
     { "allow-number", o_special, (void *)set_permitted_number,
       "Set telephone number(s) which are allowed to connect",
       OPT_PRIV | OPT_A2LIST },
+
+    { "pap-secrets", o_string, &path_upapfile,
+      "Set pathname of pap-secrets file", OPT_PRIO },
 
     { "chap-secrets", o_string, &path_chapfile,
       "Set pathname of chap-secrets file", OPT_PRIO },
@@ -1436,7 +1440,7 @@ check_passwd(unit, auser, userlen, apasswd, passwdlen, msg)
      * Open the file of pap secrets and scan for a suitable secret
      * for authenticating this user.
      */
-    filename = _PATH_UPAPFILE;
+    filename = path_upapfile;
     addrs = opts = NULL;
     ret = UPAP_AUTHNAK;
     f = fopen(filename, "r");
@@ -1536,7 +1540,7 @@ null_login(unit)
      * Open the file of pap secrets and scan for a suitable secret.
      */
     if (ret <= 0) {
-	filename = _PATH_UPAPFILE;
+	filename = path_upapfile;
 	addrs = NULL;
 	f = fopen(filename, "r");
 	if (f == NULL)
@@ -1584,7 +1588,7 @@ get_pap_passwd(passwd)
 	    return ret;
     }
 
-    filename = _PATH_UPAPFILE;
+    filename = path_upapfile;
     f = fopen(filename, "r");
     if (f == NULL)
 	return 0;
@@ -1622,7 +1626,7 @@ have_pap_secret(lacks_ipp)
 	    return ret;
     }
 
-    filename = _PATH_UPAPFILE;
+    filename = path_upapfile;
     f = fopen(filename, "r");
     if (f == NULL)
 	return 0;

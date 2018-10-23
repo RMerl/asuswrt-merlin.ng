@@ -81,6 +81,14 @@ start_vpnc(void)
 	/* shut down previous instance if any */
 	stop_vpnc();
 
+#ifdef HND_ROUTER
+	/* workaround for ppp packets are dropped by fc GRE learning when pptp server / client enabled  */
+	if (nvram_match("fc_disable", "0") && 
+		(nvram_match("wan_proto", "pppoe") || nvram_match("wan_proto", "pptp") || nvram_match("wan_proto", "l2tp"))) {
+		eval("fc", "config", "--gre", "0");
+	}
+#endif
+
 	/* unset vpnc_dut_disc */
 	nvram_unset(strcat_r(prefix, "dut_disc", tmp));
 
@@ -296,6 +304,10 @@ stop_vpnc(void)
 		usleep(3000*1000);
 		kill_pidfile_tk(pidfile);
 	}
+#ifdef HND_ROUTER
+	/* workaround for ppp packets are dropped by fc GRE learning when pptp server / client enabled  */
+	if (nvram_match("fc_disable", "0")) eval("fc", "config", "--gre", "1");
+#endif
 }
 
 int

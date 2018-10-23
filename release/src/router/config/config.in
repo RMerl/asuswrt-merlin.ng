@@ -1018,7 +1018,7 @@ config RTCONFIG_WPS_ALLLED_BTN
 	default n
 
 config RTCONFIG_TURBO_BTN
-	bool "HW Button for Turbo key function"
+	bool "HW Button for Turbo (Boost) key function"
 	default n
 
 config RTCONFIG_LOGO_LED
@@ -1624,6 +1624,10 @@ config RTCONFIG_MUMIMO_5G
 	bool "5G MU-MIMO support"
 	default n
 
+config RTCONFIG_CONNTRACK
+	bool "conntrack tool support"
+	default n
+
 config RTCONFIG_PERMISSION_MANAGEMENT
 	bool "Permission management support"
 	default n
@@ -1810,3 +1814,12 @@ config RTCONFIG_BCM_CEVENTD
 config RTCONFIG_ETHOBD
 	bool "ethernet onboarding for Aimash."
 	default n
+
+config RTCONFIG_DWB
+	bool "Dedicated WiFi Backhaul for Aimash."
+	default n
+
+config RTCONFIG_CONNDIAG
+	bool "enable conn_diag in AiMesh"
+	default n
+

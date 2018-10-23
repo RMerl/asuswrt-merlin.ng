@@ -18,12 +18,20 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 #include "avformat.h"
-#include "libavcodec/opt.h"
+#include "avio_internal.h"
+#include "internal.h"
+
+#include "libavutil/internal.h"
+#include "libavutil/opt.h"
 
 /**
  * @file
  * Options definition for AVFormatContext.
  */
+
+FF_DISABLE_DEPRECATION_WARNINGS
+#include "options_table.h"
+FF_ENABLE_DEPRECATION_WARNINGS
 
 static const char* format_to_name(void* ptr)
 {
@@ -33,47 +41,102 @@ static const char* format_to_name(void* ptr)
     else return "NULL";
 }
 
-#define OFFSET(x) offsetof(AVFormatContext,x)
-#define DEFAULT 0 //should be NAN but it does not work as it is not a constant in glibc as required by ANSI/ISO C
-//these names are too long to be readable
-#define E AV_OPT_FLAG_ENCODING_PARAM
-#define D AV_OPT_FLAG_DECODING_PARAM
+static void *format_child_next(void *obj, void *prev)
+{
+    AVFormatContext *s = obj;
+    if (!prev && s->priv_data &&
+        ((s->iformat && s->iformat->priv_class) ||
+          s->oformat && s->oformat->priv_class))
+        return s->priv_data;
+    if (s->pb && s->pb->av_class && prev != s->pb)
+        return s->pb;
+    return NULL;
+}
 
-static const AVOption options[]={
-{"probesize", "set probing size", OFFSET(probesize), FF_OPT_TYPE_INT, 5000000, 32, INT_MAX, D},
-{"muxrate", "set mux rate", OFFSET(mux_rate), FF_OPT_TYPE_INT, DEFAULT, 0, INT_MAX, E},
-{"packetsize", "set packet size", OFFSET(packet_size), FF_OPT_TYPE_INT, DEFAULT, 0, INT_MAX, E},
-{"fflags", NULL, OFFSET(flags), FF_OPT_TYPE_FLAGS, DEFAULT, INT_MIN, INT_MAX, D|E, "fflags"},
-{"ignidx", "ignore index", 0, FF_OPT_TYPE_CONST, AVFMT_FLAG_IGNIDX, INT_MIN, INT_MAX, D, "fflags"},
-{"genpts", "generate pts", 0, FF_OPT_TYPE_CONST, AVFMT_FLAG_GENPTS, INT_MIN, INT_MAX, D, "fflags"},
-{"nofillin", "do not fill in missing values that can be exactly calculated", 0, FF_OPT_TYPE_CONST, AVFMT_FLAG_NOFILLIN, INT_MIN, INT_MAX, D, "fflags"},
-{"noparse", "disable AVParsers, this needs nofillin too", 0, FF_OPT_TYPE_CONST, AVFMT_FLAG_NOPARSE, INT_MIN, INT_MAX, D, "fflags"},
-{"igndts", "ingore dts", 0, FF_OPT_TYPE_CONST, AVFMT_FLAG_IGNDTS, INT_MIN, INT_MAX, D, "fflags"},
-{"rtphint", "add rtp hinting", 0, FF_OPT_TYPE_CONST, AVFMT_FLAG_RTP_HINT, INT_MIN, INT_MAX, E, "fflags"},
-#if LIBAVFORMAT_VERSION_INT < (53<<16)
-{"track", " set the track number", OFFSET(track), FF_OPT_TYPE_INT, DEFAULT, 0, INT_MAX, E},
-{"year", "set the year", OFFSET(year), FF_OPT_TYPE_INT, DEFAULT, INT_MIN, INT_MAX, E},
-#endif
-{"analyzeduration", "how many microseconds are analyzed to estimate duration", OFFSET(max_analyze_duration), FF_OPT_TYPE_INT, 5*AV_TIME_BASE, 0, INT_MAX, D},
-{"cryptokey", "decryption key", OFFSET(key), FF_OPT_TYPE_BINARY, 0, 0, 0, D},
-{"indexmem", "max memory used for timestamp index (per stream)", OFFSET(max_index_size), FF_OPT_TYPE_INT, 1<<20, 0, INT_MAX, D},
-{"rtbufsize", "max memory used for buffering real-time frames", OFFSET(max_picture_buffer), FF_OPT_TYPE_INT, 3041280, 0, INT_MAX, D}, /* defaults to 1s of 15fps 352x288 YUYV422 video */
-{"fdebug", "print specific debug info", OFFSET(debug), FF_OPT_TYPE_FLAGS, DEFAULT, 0, INT_MAX, E|D, "fdebug"},
-{"ts", NULL, 0, FF_OPT_TYPE_CONST, FF_FDEBUG_TS, INT_MIN, INT_MAX, E|D, "fdebug"},
-{NULL},
+static const AVClass *format_child_class_next(const AVClass *prev)
+{
+    AVInputFormat  *ifmt = NULL;
+    AVOutputFormat *ofmt = NULL;
+
+    if (!prev)
+        return &ff_avio_class;
+
+    while ((ifmt = av_iformat_next(ifmt)))
+        if (ifmt->priv_class == prev)
+            break;
+
+    if (!ifmt)
+        while ((ofmt = av_oformat_next(ofmt)))
+            if (ofmt->priv_class == prev)
+                break;
+    if (!ofmt)
+        while (ifmt = av_iformat_next(ifmt))
+            if (ifmt->priv_class)
+                return ifmt->priv_class;
+
+    while (ofmt = av_oformat_next(ofmt))
+        if (ofmt->priv_class)
+            return ofmt->priv_class;
+
+    return NULL;
+}
+
+static AVClassCategory get_category(void *ptr)
+{
+    AVFormatContext* s = ptr;
+    if(s->iformat) return AV_CLASS_CATEGORY_DEMUXER;
+    else           return AV_CLASS_CATEGORY_MUXER;
+}
+
+static const AVClass av_format_context_class = {
+    .class_name     = "AVFormatContext",
+    .item_name      = format_to_name,
+    .option         = avformat_options,
+    .version        = LIBAVUTIL_VERSION_INT,
+    .child_next     = format_child_next,
+    .child_class_next = format_child_class_next,
+    .category       = AV_CLASS_CATEGORY_MUXER,
+    .get_category   = get_category,
 };
 
-#undef E
-#undef D
-#undef DEFAULT
+static int io_open_default(AVFormatContext *s, AVIOContext **pb,
+                           const char *url, int flags, AVDictionary **options)
+{
+    int loglevel;
 
-static const AVClass av_format_context_class = { "AVFormatContext", format_to_name, options, LIBAVUTIL_VERSION_INT };
+    if (!strcmp(url, s->url) ||
+        s->iformat && !strcmp(s->iformat->name, "image2") ||
+        s->oformat && !strcmp(s->oformat->name, "image2")
+    ) {
+        loglevel = AV_LOG_DEBUG;
+    } else
+        loglevel = AV_LOG_INFO;
+
+    av_log(s, loglevel, "Opening \'%s\' for %s\n", url, flags & AVIO_FLAG_WRITE ? "writing" : "reading");
+
+#if FF_API_OLD_OPEN_CALLBACKS
+FF_DISABLE_DEPRECATION_WARNINGS
+    if (s->open_cb)
+        return s->open_cb(s, pb, url, flags, &s->interrupt_callback, options);
+FF_ENABLE_DEPRECATION_WARNINGS
+#endif
+
+    return ffio_open_whitelist(pb, url, flags, &s->interrupt_callback, options, s->protocol_whitelist, s->protocol_blacklist);
+}
+
+static void io_close_default(AVFormatContext *s, AVIOContext *pb)
+{
+    avio_close(pb);
+}
 
 static void avformat_get_context_defaults(AVFormatContext *s)
 {
     memset(s, 0, sizeof(AVFormatContext));
 
     s->av_class = &av_format_context_class;
+
+    s->io_open  = io_open_default;
+    s->io_close = io_close_default;
 
     av_opt_set_defaults(s);
 }
@@ -84,13 +147,25 @@ AVFormatContext *avformat_alloc_context(void)
     ic = av_malloc(sizeof(AVFormatContext));
     if (!ic) return ic;
     avformat_get_context_defaults(ic);
-    ic->av_class = &av_format_context_class;
+
+    ic->internal = av_mallocz(sizeof(*ic->internal));
+    if (!ic->internal) {
+        avformat_free_context(ic);
+        return NULL;
+    }
+    ic->internal->offset = AV_NOPTS_VALUE;
+    ic->internal->raw_packet_buffer_remaining_size = RAW_PACKET_BUFFER_SIZE;
+    ic->internal->shortest_end = AV_NOPTS_VALUE;
+
     return ic;
 }
 
-#if LIBAVFORMAT_VERSION_MAJOR < 53
-AVFormatContext *av_alloc_format_context(void)
+enum AVDurationEstimationMethod av_fmt_ctx_get_duration_estimation_method(const AVFormatContext* ctx)
 {
-    return avformat_alloc_context();
+    return ctx->duration_estimation_method;
 }
-#endif
+
+const AVClass *avformat_get_class(void)
+{
+    return &av_format_context_class;
+}

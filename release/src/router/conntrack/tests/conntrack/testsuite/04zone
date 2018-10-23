@@ -1,0 +1,24 @@
+# 1) zone, create dummy
+-I -s 1.1.1.1 -d 2.2.2.2 -p tcp --sport 10 --dport 20 --state LISTEN -u SEEN_REPLY -t 50 --zone 1; OK
+# display dummy
+-L --zone 1; OK
+# display dummy
+-L --zone 0; OK
+# delete dummy
+-D --zone 1; OK
+# 2) orig-zone, create dummy
+-I -s 1.1.1.1 -d 2.2.2.2 -p tcp --sport 10 --dport 20 --state LISTEN -u SEEN_REPLY -t 50 --orig-zone 2; OK
+# display dummy
+-L --orig-zone 2; OK
+# display dummy
+-L --orig-zone 0; OK
+# delete dummy
+-D --orig-zone 2; OK
+# 3) reply-zone, create dummy
+-I -s 1.1.1.1 -d 2.2.2.2 -p tcp --sport 10 --dport 20 --state LISTEN -u SEEN_REPLY -t 50 --reply-zone 3; OK
+# display dummy
+-L --reply-zone 3; OK
+# display dummy
+-L --reply-zone 0; OK
+# delete dummy
+-D --reply-zone 3; OK

@@ -24,7 +24,9 @@
  * Tiertex Limited SEQ file demuxer
  */
 
+#include "libavutil/channel_layout.h"
 #include "avformat.h"
+#include "internal.h"
 
 #define SEQ_FRAME_SIZE         6144
 #define SEQ_FRAME_W            256
@@ -78,15 +80,15 @@ static int seq_probe(AVProbeData *p)
     return AVPROBE_SCORE_MAX / 4;
 }
 
-static int seq_init_frame_buffers(SeqDemuxContext *seq, ByteIOContext *pb)
+static int seq_init_frame_buffers(SeqDemuxContext *seq, AVIOContext *pb)
 {
     int i, sz;
     TiertexSeqFrameBuffer *seq_buffer;
 
-    url_fseek(pb, 256, SEEK_SET);
+    avio_seek(pb, 256, SEEK_SET);
 
     for (i = 0; i < SEQ_NUM_FRAME_BUFFERS; i++) {
-        sz = get_le16(pb);
+        sz = avio_rl16(pb);
         if (sz == 0)
             break;
         else {
@@ -102,7 +104,7 @@ static int seq_init_frame_buffers(SeqDemuxContext *seq, ByteIOContext *pb)
     return 0;
 }
 
-static int seq_fill_buffer(SeqDemuxContext *seq, ByteIOContext *pb, int buffer_num, unsigned int data_offs, int data_size)
+static int seq_fill_buffer(SeqDemuxContext *seq, AVIOContext *pb, int buffer_num, unsigned int data_offs, int data_size)
 {
     TiertexSeqFrameBuffer *seq_buffer;
 
@@ -113,25 +115,25 @@ static int seq_fill_buffer(SeqDemuxContext *seq, ByteIOContext *pb, int buffer_n
     if (seq_buffer->fill_size + data_size > seq_buffer->data_size || data_size <= 0)
         return AVERROR_INVALIDDATA;
 
-    url_fseek(pb, seq->current_frame_offs + data_offs, SEEK_SET);
-    if (get_buffer(pb, seq_buffer->data + seq_buffer->fill_size, data_size) != data_size)
+    avio_seek(pb, seq->current_frame_offs + data_offs, SEEK_SET);
+    if (avio_read(pb, seq_buffer->data + seq_buffer->fill_size, data_size) != data_size)
         return AVERROR(EIO);
 
     seq_buffer->fill_size += data_size;
     return 0;
 }
 
-static int seq_parse_frame_data(SeqDemuxContext *seq, ByteIOContext *pb)
+static int seq_parse_frame_data(SeqDemuxContext *seq, AVIOContext *pb)
 {
     unsigned int offset_table[4], buffer_num[4];
     TiertexSeqFrameBuffer *seq_buffer;
     int i, e, err;
 
     seq->current_frame_offs += SEQ_FRAME_SIZE;
-    url_fseek(pb, seq->current_frame_offs, SEEK_SET);
+    avio_seek(pb, seq->current_frame_offs, SEEK_SET);
 
     /* sound data */
-    seq->current_audio_data_offs = get_le16(pb);
+    seq->current_audio_data_offs = avio_rl16(pb);
     if (seq->current_audio_data_offs) {
         seq->current_audio_data_size = SEQ_AUDIO_BUFFER_SIZE * 2;
     } else {
@@ -139,7 +141,7 @@ static int seq_parse_frame_data(SeqDemuxContext *seq, ByteIOContext *pb)
     }
 
     /* palette data */
-    seq->current_pal_data_offs = get_le16(pb);
+    seq->current_pal_data_offs = avio_rl16(pb);
     if (seq->current_pal_data_offs) {
         seq->current_pal_data_size = 768;
     } else {
@@ -148,10 +150,10 @@ static int seq_parse_frame_data(SeqDemuxContext *seq, ByteIOContext *pb)
 
     /* video data */
     for (i = 0; i < 4; i++)
-        buffer_num[i] = get_byte(pb);
+        buffer_num[i] = avio_r8(pb);
 
     for (i = 0; i < 4; i++)
-        offset_table[i] = get_le16(pb);
+        offset_table[i] = avio_rl16(pb);
 
     for (i = 0; i < 3; i++) {
         if (offset_table[i]) {
@@ -180,11 +182,11 @@ static int seq_parse_frame_data(SeqDemuxContext *seq, ByteIOContext *pb)
     return 0;
 }
 
-static int seq_read_header(AVFormatContext *s, AVFormatParameters *ap)
+static int seq_read_header(AVFormatContext *s)
 {
     int i, rc;
     SeqDemuxContext *seq = s->priv_data;
-    ByteIOContext *pb = s->pb;
+    AVIOContext *pb = s->pb;
     AVStream *st;
 
     /* init internal buffers */
@@ -206,33 +208,35 @@ static int seq_read_header(AVFormatContext *s, AVFormatParameters *ap)
     seq->audio_buffer_full = 0;
 
     /* initialize the video decoder stream */
-    st = av_new_stream(s, 0);
+    st = avformat_new_stream(s, NULL);
     if (!st)
         return AVERROR(ENOMEM);
 
-    av_set_pts_info(st, 32, 1, SEQ_FRAME_RATE);
+    avpriv_set_pts_info(st, 32, 1, SEQ_FRAME_RATE);
     seq->video_stream_index = st->index;
-    st->codec->codec_type = AVMEDIA_TYPE_VIDEO;
-    st->codec->codec_id = CODEC_ID_TIERTEXSEQVIDEO;
-    st->codec->codec_tag = 0;  /* no fourcc */
-    st->codec->width = SEQ_FRAME_W;
-    st->codec->height = SEQ_FRAME_H;
+    st->codecpar->codec_type = AVMEDIA_TYPE_VIDEO;
+    st->codecpar->codec_id = AV_CODEC_ID_TIERTEXSEQVIDEO;
+    st->codecpar->codec_tag = 0;  /* no fourcc */
+    st->codecpar->width = SEQ_FRAME_W;
+    st->codecpar->height = SEQ_FRAME_H;
 
     /* initialize the audio decoder stream */
-    st = av_new_stream(s, 0);
+    st = avformat_new_stream(s, NULL);
     if (!st)
         return AVERROR(ENOMEM);
 
-    av_set_pts_info(st, 32, 1, SEQ_SAMPLE_RATE);
+    st->start_time = 0;
+    avpriv_set_pts_info(st, 32, 1, SEQ_SAMPLE_RATE);
     seq->audio_stream_index = st->index;
-    st->codec->codec_type = AVMEDIA_TYPE_AUDIO;
-    st->codec->codec_id = CODEC_ID_PCM_S16BE;
-    st->codec->codec_tag = 0;  /* no tag */
-    st->codec->channels = 1;
-    st->codec->sample_rate = SEQ_SAMPLE_RATE;
-    st->codec->bits_per_coded_sample = 16;
-    st->codec->bit_rate = st->codec->sample_rate * st->codec->bits_per_coded_sample * st->codec->channels;
-    st->codec->block_align = st->codec->channels * st->codec->bits_per_coded_sample;
+    st->codecpar->codec_type = AVMEDIA_TYPE_AUDIO;
+    st->codecpar->codec_id = AV_CODEC_ID_PCM_S16BE;
+    st->codecpar->codec_tag = 0;  /* no tag */
+    st->codecpar->channels = 1;
+    st->codecpar->channel_layout = AV_CH_LAYOUT_MONO;
+    st->codecpar->sample_rate = SEQ_SAMPLE_RATE;
+    st->codecpar->bits_per_coded_sample = 16;
+    st->codecpar->bit_rate = st->codecpar->sample_rate * st->codecpar->bits_per_coded_sample * st->codecpar->channels;
+    st->codecpar->block_align = st->codecpar->channels * st->codecpar->bits_per_coded_sample / 8;
 
     return 0;
 }
@@ -241,7 +245,7 @@ static int seq_read_packet(AVFormatContext *s, AVPacket *pkt)
 {
     int rc;
     SeqDemuxContext *seq = s->priv_data;
-    ByteIOContext *pb = s->pb;
+    AVIOContext *pb = s->pb;
 
     if (!seq->audio_buffer_full) {
         rc = seq_parse_frame_data(seq, pb);
@@ -256,8 +260,8 @@ static int seq_read_packet(AVFormatContext *s, AVPacket *pkt)
             pkt->data[0] = 0;
             if (seq->current_pal_data_size) {
                 pkt->data[0] |= 1;
-                url_fseek(pb, seq->current_frame_offs + seq->current_pal_data_offs, SEEK_SET);
-                if (get_buffer(pb, &pkt->data[1], seq->current_pal_data_size) != seq->current_pal_data_size)
+                avio_seek(pb, seq->current_frame_offs + seq->current_pal_data_offs, SEEK_SET);
+                if (avio_read(pb, &pkt->data[1], seq->current_pal_data_size) != seq->current_pal_data_size)
                     return AVERROR(EIO);
             }
             if (seq->current_video_data_size) {
@@ -279,7 +283,7 @@ static int seq_read_packet(AVFormatContext *s, AVPacket *pkt)
     if (seq->current_audio_data_offs == 0) /* end of data reached */
         return AVERROR(EIO);
 
-    url_fseek(pb, seq->current_frame_offs + seq->current_audio_data_offs, SEEK_SET);
+    avio_seek(pb, seq->current_frame_offs + seq->current_audio_data_offs, SEEK_SET);
     rc = av_get_packet(pb, pkt, seq->current_audio_data_size);
     if (rc < 0)
         return rc;
@@ -297,17 +301,17 @@ static int seq_read_close(AVFormatContext *s)
     SeqDemuxContext *seq = s->priv_data;
 
     for (i = 0; i < SEQ_NUM_FRAME_BUFFERS; i++)
-        av_free(seq->frame_buffers[i].data);
+        av_freep(&seq->frame_buffers[i].data);
 
     return 0;
 }
 
-AVInputFormat tiertexseq_demuxer = {
-    "tiertexseq",
-    NULL_IF_CONFIG_SMALL("Tiertex Limited SEQ format"),
-    sizeof(SeqDemuxContext),
-    seq_probe,
-    seq_read_header,
-    seq_read_packet,
-    seq_read_close,
+AVInputFormat ff_tiertexseq_demuxer = {
+    .name           = "tiertexseq",
+    .long_name      = NULL_IF_CONFIG_SMALL("Tiertex Limited SEQ"),
+    .priv_data_size = sizeof(SeqDemuxContext),
+    .read_probe     = seq_probe,
+    .read_header    = seq_read_header,
+    .read_packet    = seq_read_packet,
+    .read_close     = seq_read_close,
 };

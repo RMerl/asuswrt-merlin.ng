@@ -30,7 +30,7 @@
 
 
 /**
- * finds the end of the current frame in the bitstream.
+ * Find the end of the current frame in the bitstream.
  * @return the position of the first byte of the next frame, or -1
  */
 static int cavs_find_frame_end(ParseContext *pc, const uint8_t *buf,
@@ -97,11 +97,10 @@ static int cavsvideo_parse(AVCodecParserContext *s,
     return next;
 }
 
-AVCodecParser cavsvideo_parser = {
-    { CODEC_ID_CAVS },
-    sizeof(ParseContext1),
-    NULL,
-    cavsvideo_parse,
-    ff_parse1_close,
-    ff_mpeg4video_split,
+AVCodecParser ff_cavsvideo_parser = {
+    .codec_ids      = { AV_CODEC_ID_CAVS },
+    .priv_data_size = sizeof(ParseContext),
+    .parser_parse   = cavsvideo_parse,
+    .parser_close   = ff_parse_close,
+    .split          = ff_mpeg4video_split,
 };

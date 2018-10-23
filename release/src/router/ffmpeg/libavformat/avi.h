@@ -21,8 +21,6 @@
 #ifndef AVFORMAT_AVI_H
 #define AVFORMAT_AVI_H
 
-#include "metadata.h"
-
 #define AVIF_HASINDEX           0x00000010        // Index at end of file?
 #define AVIF_MUSTUSEINDEX       0x00000020
 #define AVIF_ISINTERLEAVED      0x00000100
@@ -31,16 +29,13 @@
 #define AVIF_COPYRIGHTED        0x00020000
 
 #define AVI_MAX_RIFF_SIZE       0x40000000LL
-#define AVI_MASTER_INDEX_SIZE   256
+#define AVI_MAX_STREAM_COUNT    100
+
+/* stream header flags */
+#define AVISF_VIDEO_PALCHANGES  0x00010000
 
 /* index flags */
-#define AVIIF_INDEX             0x10
-
-extern const AVMetadataConv ff_avi_metadata_conv[];
-
-/**
- * A list of AVI info tags.
- */
-extern const char ff_avi_tags[][5];
+#define AVIIF_INDEX             0x00000010
+#define AVIIF_NO_TIME           0x00000100
 
 #endif /* AVFORMAT_AVI_H */

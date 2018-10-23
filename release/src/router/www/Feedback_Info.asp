@@ -80,7 +80,7 @@ function get_debug_log_info(){
 	desc += "PIN Code: <% nvram_get("secret_code"); %>\n";
 	desc += "MAC Address: <% nvram_get("lan_hwaddr"); %>\n\n";
 
-	desc += "Diagnostic debug log capture duration: <% nvram_get("dslx_diag_duration"); %>\n";
+	desc += "<#feedback_capturing_duration#>: <% nvram_get("dslx_diag_duration"); %>\n";
 	desc += "DSL connection: <% nvram_get("fb_availability"); %>\n";
 
 	document.uiForm.fb_send_debug_log_content.value = desc;
@@ -95,6 +95,10 @@ function reset_diag_state(){
 	document.diagform.dslx_diag_state.value = 0;	
 	document.diagform.submit();
 	setTimeout("location.href='TCC.log.gz';", 300);
+}
+
+function get_feedback_tarball(){
+	setTimeout("location.href='fb_data.tgz.gz';", 300);
 }
 
 </script>
@@ -166,6 +170,7 @@ function reset_diag_state(){
 	<#feedback_fail0#>
 	<br>
 	<#feedback_fail1#> : ( <a href="mailto:xdsl_feedback@asus.com?Subject=<%nvram_get("productid");%>" target="_top" style="color:#FFCC00;">xdsl_feedback@asus.com </a>) <#feedback_fail2#>
+	And download <span onClick="get_feedback_tarball();" style="text-decoration: underline; color:#FFCC00; cursor:pointer;">this debug file</span> and add as email attachment.
 	<br>
 </div>
 
@@ -173,6 +178,7 @@ function reset_diag_state(){
 	<#feedback_fail0#>
 	<br>
 	<#feedback_fail1#> : ( <a href="mailto:router_feedback@asus.com?Subject=<%nvram_get("productid");%>" target="_top" style="color:#FFCC00;">router_feedback@asus.com </a>) <#feedback_fail2#>
+	And download <span onClick="get_feedback_tarball();" style="text-decoration: underline; color:#FFCC00; cursor:pointer;">this debug file</span> and add as email attachment.
 	<br>
 	OR you can try to <a href="Advanced_Feedback.asp?provider=google&reload=1" target="_self" style="text-decoration:underline;color:#FFCC00;">bind your Google account</a> to send feedback mail.
 </div>

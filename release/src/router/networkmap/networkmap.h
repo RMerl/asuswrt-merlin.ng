@@ -71,14 +71,7 @@ enum
 #define USERAGENT "Asuswrt/networkmap"
 
 
-#if (defined(RTCONFIG_JFFS2) || defined(RTCONFIG_JFFSV1) || defined(RTCONFIG_BRCM_NAND_JFFS2))
-#define NMP_CLIENT_LIST_FILENAME	"/jffs/nmp_client_list"
-#else
-#define NMP_CLIENT_LIST_FILENAME	"/tmp/nmp_client_list"
-#endif
-
-#define NCL_LIMIT		14336   //nmp_client_list limit to 14KB to avoid UI glitch
-#define SINGLE_CLIENT_SIZE	109
+#define NCL_LIMIT		14336   //database limit to 14KB to avoid UI glitch
 
 #define NMP_DEBUG_FILE			"/tmp/NMP_DEBUG"
 #define NMP_DEBUG_MORE_FILE		"/tmp/NMP_DEBUG_MORE"
@@ -90,6 +83,7 @@ enum
 #else
 #define NMP_CL_JSON_FILE		"/tmp/nmp_cl_json.js"
 #endif
+#define ARP_PATH			"/proc/net/arp"
 
 #if !defined(RTCONFIG_RALINK) && !defined(HND_ROUTER)
 #define NMP_DEBUG(fmt, args...) \

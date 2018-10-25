@@ -280,6 +280,9 @@ int temp_turn_off_auth = 0;	// for QISxxx.htm pages
 /* Const vars */
 const int int_1 = 1;
 
+/* Kludge */
+int json_support = 0;
+
 void http_login(unsigned int ip, char *url);
 void http_login_timeout(unsigned int ip, char *cookies, int fromapp_flag);
 void http_logout(unsigned int ip, char *cookies, int fromapp_flag);

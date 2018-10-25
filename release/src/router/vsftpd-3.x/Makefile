@@ -35,7 +35,7 @@ endif
 CFLAGS  += 	-I$(SRCBASE)/include -I$(TOP)/shared -I$(TOP)/libdisk
 LDFLAGS  +=	-L$(TOP_PLATFORM)/nvram${BCMEX}${EX7} -lnvram -L$(TOP)/shared -lshared -L$(TOP)/libdisk -ldisk
 ifeq ($(RTCONFIG_HND_ROUTER),y)
-LDFLAGS += -L$(TOP_PLATFORM)/wlcsm$(EXHND) -lwlcsm
+LDFLAGS += -L$(TOP_PLATFORM)/wlcsm -lwlcsm
 endif
 ifeq ($(RTCONFIG_BCMARM),y)
 CFLAGS += -I$(SRCBASE)/common/include

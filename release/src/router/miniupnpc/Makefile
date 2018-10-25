@@ -61,7 +61,7 @@ CFLAGS += -I$(TOP)/shared -I$(SRCBASE)/include -I$(TOP)/networkmap
 LDFLAGS += -L$(TOP)/shared -lshared  -L$(TOP_PLATFORM)/nvram${BCMEX}${EX7} -lnvram
 
 ifeq ($(HND_ROUTER),y)
-LDFLAGS += -L$(TOP_PLATFORM)/wlcsm$(EXHND) -lwlcsm
+LDFLAGS += -L$(TOP_PLATFORM)/wlcsm -lwlcsm
 endif
 
 ifeq ($(RTCONFIG_BCMARM),y)

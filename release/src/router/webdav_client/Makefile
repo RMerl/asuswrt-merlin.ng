@@ -13,7 +13,7 @@ LDFLAGS = -L$(TOP)/neon/src/.libs -L$(TOP)/libxml2/.libs -L$(TOP_PLATFORM)/nvram
 # TBD...theose conflict vars should be treated as extern or static
 ifeq ($(HND_ROUTER),y)
 CFLAGS := $(shell echo $(CFLAGS)| sed 's/-fno-common//g')
-LDFLAGS += -L$(TOP_PLATFORM)/wlcsm$(EXHND) -lwlcsm
+LDFLAGS += -L$(TOP_PLATFORM)/wlcsm -lwlcsm
 endif
 LIBS = -lpthread -lnvram -lneon -lxml2 -lshared -lz -lcrypto -lssl
 

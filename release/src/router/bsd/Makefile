@@ -34,7 +34,7 @@ endif
 
 ifeq ($(wildcard $(SRCBASE)/router/bsd/*.c),)
 all:
-	-cp -f prebuilt$(BCMEX)$(EX7)/bsd bsd
+	-cp -f prebuilt$(BCMEX)$(EX7)$(EXHND)/bsd bsd
 else
 all: bsd
 endif

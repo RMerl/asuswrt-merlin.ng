@@ -11,7 +11,7 @@ CFLAGS += -I$(SRCBASE)/../components/proto/include -I$(SRCBASE)/../components/wl
 endif
 LDFLAGS += -L$(TOP_PLATFORM)/nvram${BCMEX}${EX7} -L$(INSTALLDIR)/nvram/usr/lib -lnvram
 LDFLAGS += -L$(TOP)/shared -L$(INSTALLDIR)/shared/usr/lib -lshared
-LDFLAGS += $(EXTRA_LDFLAGS) -L$(TOP_PLATFORM)/wlcsm$(EXHND) -lwlcsm
+LDFLAGS += $(EXTRA_LDFLAGS) -L$(TOP_PLATFORM)/wlcsm -lwlcsm
 
 vpath %.c $(SRCBASE)/shared/
 

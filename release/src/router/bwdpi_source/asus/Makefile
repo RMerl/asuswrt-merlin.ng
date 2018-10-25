@@ -16,7 +16,7 @@ endif
 ifeq ($(HND_ROUTER),y)
 CFLAGS += -idirafter$(LINUXDIR)/include
 CFLAGS += -I$(HND_SRC)/userspace/public/include -I$(HND_SRC)/userspace/public/include/linux -I$(HND_SRC)/userspace/private/include
-LDFLAGS += -L$(TOP_PLATFORM)/wlcsm$(EXHND) -lwlcsm -L$(TOP_PLATFORM)/bcm_flashutil$(EXHND) -lbcm_flashutil -L$(TOP_PLATFORM)/bcm_util$(EXHND) -lbcm_crc -L$(TOP_PLATFORM)/bcm_boardctl$(EXHND) -lbcm_boardctl
+LDFLAGS += -L$(TOP_PLATFORM)/wlcsm -lwlcsm -L$(TOP_PLATFORM)/bcm_flashutil$(EXHND) -lbcm_flashutil -L$(TOP_PLATFORM)/bcm_util$(EXHND) -lbcm_crc -L$(TOP_PLATFORM)/bcm_boardctl$(EXHND) -lbcm_boardctl
 endif
 ifeq ($(HND_ROUTER_AX),y)
 CFLAGS += -I$(SRCBASE)/../components/proto/include -I$(SRCBASE)/../components/wlioctl/include -I$(SRCBASE)/../components/math/include
@@ -76,8 +76,8 @@ vpath %.c $(TOP)/bwdpi_source/src/tdts_udb_sample
 
 ifeq ($(wildcard $(SRCBASE)/router/bwdpi_source/asus/*.c),)
 all:
-	-cp -f prebuild$(BCMEX)$(EX7)/$(BUILD_NAME)/libbwdpi.so libbwdpi.so
-	-cp -f prebuild$(BCMEX)$(EX7)/hwinfo hwinfo
+	-cp -f prebuild$(BCMEX)$(EX7)$(EXHND)$(EXAXHND)/$(BUILD_NAME)/libbwdpi.so libbwdpi.so
+	-cp -f prebuild$(BCMEX)$(EX7)$(EXHND)$(EXAXHND)/hwinfo hwinfo
 else
 all: hwinfo libbwdpi.so dpi_support.prep
 endif

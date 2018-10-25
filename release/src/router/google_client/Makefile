@@ -11,7 +11,7 @@ CFLAGS += $(if $(QCA),$(EXTRACFLAGS))
 LDFLAGS = -L$(TOP)/curl-7.21.7/lib/.libs -L$(TOP)/openssl -L$(TOP_PLATFORM)/nvram${BCMEX}${EX7} -L$(TOP)/shared -lshared -L$(TOP)/smartsync_api
 LIBS = -lpthread -lnvram -lshared -lcrypto -lssl -lcurl -lm -lsmartsync_api
 ifeq ($(HND_ROUTER),y)
-LDFLAGS += -L$(TOP_PLATFORM)/wlcsm$(EXHND) -lwlcsm -lgcc_s
+LDFLAGS += -L$(TOP_PLATFORM)/wlcsm -lwlcsm -lgcc_s
 endif
 
 include ../common.mak

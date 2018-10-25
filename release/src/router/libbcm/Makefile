@@ -29,7 +29,7 @@ OBJS := bcmgpio.o
 
 ifeq ($(wildcard ./*.c),)
 all:
-	cp -f ./prebuilt$(BCMEX)$(EX7)/libbcm.so .
+	cp -f ./prebuilt$(BCMEX)$(EX7)$(EXHND)/libbcm.so .
 else
 all: libbcm.so
 endif

@@ -13,7 +13,7 @@ CFLAGS += -I$(SRCBASE) -I$(SRCBASE)/include -I. -I$(TOP)/shared
 CFLAGS += -D_FILE_OFFSET_BITS=64
 LDFLAGS =  -L$(TOP)/curl-7.21.7/lib/.libs  -L$(TOP)/libxml2/.libs  -L$(TOP)/openssl -L$(TOP_PLATFORM)/nvram${BCMEX}${EX7} -L$(TOP)/shared -lshared
 ifeq ($(HND_ROUTER),y)
-LDFLAGS += -L$(TOP_PLATFORM)/wlcsm$(EXHND) -lwlcsm -lgcc_s
+LDFLAGS += -L$(TOP_PLATFORM)/wlcsm -lwlcsm -lgcc_s
 endif
 
 LIBS = -lcurl -lxml2 -lssl -lcrypto -lpthread -ldl -lnvram -lm

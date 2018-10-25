@@ -103,7 +103,7 @@ CFLAGS += -D_LIBC
 endif
 LDFLAGS += -L$(TOP)/shared -lshared -L$(TOP_PLATFORM)/nvram${BCMEX}${EX7} -lnvram 
 ifeq ($(HND_ROUTER),y)
-LDFLAGS += -L$(TOP_PLATFORM)/wlcsm$(EXHND) -lwlcsm
+LDFLAGS += -L$(TOP_PLATFORM)/wlcsm -lwlcsm
 endif
 ifeq ($(RTCONFIG_HTTPS),y)
 CFLAGS += -I$(TOP)/mssl -I$(TOP)/openssl/include -DHAVE_SSL

@@ -85,7 +85,7 @@ endif
 
 ifeq ($(HND_ROUTER),y)
 CFLAGS += -DPTHREAD_STACK_SIZE=0x51200
-LDFLAGS += -L$(TOP_PLATFORM)/wlcsm$(EXHND) -lwlcsm -lgcc_s
+LDFLAGS += -L$(TOP_PLATFORM)/wlcsm -lwlcsm -lgcc_s
 endif
 
 ifeq ($(RTCONFIG_BCMARM),y)

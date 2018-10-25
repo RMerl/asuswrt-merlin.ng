@@ -20,7 +20,7 @@ endif
 ifeq ($(HND_ROUTER),y)
 CFLAGS += -idirafter$(LINUXDIR)/include
 CFLAGS += -I$(HND_SRC)/userspace/public/include -I$(HND_SRC)/userspace/public/include/linux -I$(HND_SRC)/userspace/private/include
-LDFLAGS += -L$(TOP_PLATFORM)/wlcsm$(EXHND) -lwlcsm -L$(TOP_PLATFORM)/bcm_flashutil$(EXHND) -lbcm_flashutil -L$(TOP_PLATFORM)/bcm_util$(EXHND) -lbcm_crc -L$(TOP_PLATFORM)/bcm_boardctl$(EXHND) -lbcm_boardctl
+LDFLAGS += -L$(TOP_PLATFORM)/wlcsm -lwlcsm -L$(TOP_PLATFORM)/bcm_flashutil$(EXHND) -lbcm_flashutil -L$(TOP_PLATFORM)/bcm_util$(EXHND) -lbcm_crc -L$(TOP_PLATFORM)/bcm_boardctl$(EXHND) -lbcm_boardctl
 endif
 ifeq ($(HND_ROUTER_AX),y)
 CFLAGS += -I$(SRCBASE)/../components/proto/include -I$(SRCBASE)/../components/wlioctl/include -I$(SRCBASE)/../components/math/include
@@ -61,8 +61,8 @@ endif
 
 ifeq ($(wildcard $(SRCBASE)/router/bwdpi_source/asus_sql/*.c),)
 all:
-	-cp -f prebuild$(BCMEX)$(EX7)/bwdpi_sqlite bwdpi_sqlite
-	-cp -f prebuild$(BCMEX)$(EX7)/libbwdpi_sql.so libbwdpi_sql.so
+	-cp -f prebuild$(BCMEX)$(EX7)$(EXHND)$(EXAXHND)/bwdpi_sqlite bwdpi_sqlite
+	-cp -f prebuild$(BCMEX)$(EX7)$(EXHND)$(EXAXHND)/libbwdpi_sql.so libbwdpi_sql.so
 else
 all: bwdpi_sqlite libbwdpi_sql.so
 endif

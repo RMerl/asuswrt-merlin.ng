@@ -148,6 +148,7 @@ export OLD_SRC=$(HND_SRC)/../src
 export BUILD_MFG := 0
 export BCMEX :=
 export EX7 :=
+export EXHND := _arm_axhnd
 export DHD_MONITOR := debug_monitor
 else ifeq ($(HND_ROUTER),y)
 export BCMSRC=src-rt-5.02hnd
@@ -4326,6 +4327,10 @@ dropbear-clean:
 wtfast-configure:
 	@true
 
+wtfast:
+	cp wtfast/wtfslhd/wtfslhd$(BCMEX)$(EX7)$(EXHND)/* wtfast/wtfslhd/
+	$(MAKE) -C $@
+
 wtfast-install:
 	install -D wtfast/wtfslhd/wtfslhd $(INSTALLDIR)/wtfast/usr/sbin/wtfslhd
 
@@ -5495,7 +5500,14 @@ strongswan-5.2.1-install: strongswan-5.2.1
 	@rm -rf $(INSTALLDIR)/strongswan-5.2.1/usr/etc
 	@rm -f $(INSTALLDIR)/strongswan-5.2.1/usr/lib/ipsec/*.la
 	@rm -f $(INSTALLDIR)/strongswan-5.2.1/usr/lib/ipsec/plugins/*.la
-ifeq ($(HND_ROUTER),y)
+ifeq ($(HND_ROUTER_AX),y)
+	$(STRIP_64) $(INSTALLDIR)/strongswan-5.2.1/lib64/ipsec/*.so
+	$(STRIP_64) $(INSTALLDIR)/strongswan-5.2.1/usr/lib/ipsec/starter
+	$(STRIP_64) $(INSTALLDIR)/strongswan-5.2.1/usr/lib/ipsec/stroke
+	$(STRIP_64) $(INSTALLDIR)/strongswan-5.2.1/usr/lib/ipsec/scepclient
+	$(STRIP_64) $(INSTALLDIR)/strongswan-5.2.1/usr/lib/ipsec/charon
+	$(STRIP_64) $(INSTALLDIR)/strongswan-5.2.1/lib64/ipsec/plugins/*.so
+else ifeq ($(HND_ROUTER),y)
 	$(STRIP_64) $(INSTALLDIR)/strongswan-5.2.1/usr/lib/ipsec/*.so
 	$(STRIP_64) $(INSTALLDIR)/strongswan-5.2.1/usr/lib/ipsec/starter
 	$(STRIP_64) $(INSTALLDIR)/strongswan-5.2.1/usr/lib/ipsec/stroke

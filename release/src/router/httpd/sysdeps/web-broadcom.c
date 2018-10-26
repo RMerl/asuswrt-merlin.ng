@@ -5266,7 +5266,11 @@ ej_wl_status_2g_array(int eid, webs_t wp, int argc, char_t **argv)
 }
 
 static int
+#ifdef RTCONFIG_HND_ROUTER_AX
+dump_bss_info_array(int eid, webs_t wp, int argc, char_t **argv, wl_bss_info_v109_1_t *bi)
+#else
 dump_bss_info_array(int eid, webs_t wp, int argc, char_t **argv, wl_bss_info_t *bi)
+#endif
 {
 	char ssidbuf[SSID_FMT_BUF_LEN*2], ssidbuftmp[SSID_FMT_BUF_LEN];
 	char chspec_str[CHANSPEC_STR_LEN];
@@ -5318,7 +5322,11 @@ wl_status_array(int eid, webs_t wp, int argc, char_t **argv, int unit)
 	struct ether_addr bssid;
 	wlc_ssid_t ssid;
 	char ssidbuf[SSID_FMT_BUF_LEN*2], ssidbuftmp[SSID_FMT_BUF_LEN];
+#ifdef RTCONFIG_HND_ROUTER_AX
+	wl_bss_info_v109_1_t *bi;
+#else
 	wl_bss_info_t *bi;
+#endif
 	int retval = 0;
 	char tmp[128], prefix[] = "wlXXXXXXXXXX_";
 	char *name;
@@ -5333,7 +5341,11 @@ wl_status_array(int eid, webs_t wp, int argc, char_t **argv, int unit)
 			retval += websWrite(wp, "\"?\",\"?\",\"?\",\"?\",\"?\",\"?\",");
 			return retval;
 		}
+#ifdef RTCONFIG_HND_ROUTER_AX
+		bi = (wl_bss_info_v109_1_t*)(buf + 4);
+#else
 		bi = (wl_bss_info_t*)(buf + 4);
+#endif
 		if (dtoh32(bi->version) == WL_BSS_INFO_VERSION ||
 		    dtoh32(bi->version) == LEGACY2_WL_BSS_INFO_VERSION ||
 		    dtoh32(bi->version) == LEGACY_WL_BSS_INFO_VERSION)

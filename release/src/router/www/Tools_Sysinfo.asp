@@ -200,7 +200,7 @@ function show_etherstate(){
 	var wan_array;
 	var port_array= Array();
 
-	if (based_modelid == "RT-AC86U") {
+	if (hnd_support) {
 		show_etherstate_hnd();
 		return;
 	} else if ((based_modelid == "RT-N16") || (based_modelid == "RT-AC87U")

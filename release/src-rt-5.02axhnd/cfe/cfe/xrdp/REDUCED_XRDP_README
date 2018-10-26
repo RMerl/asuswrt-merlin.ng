@@ -1,0 +1,74 @@
+REDUCED XRDP CFE README
+
+1) REDUCED_XRDP CFE mode is indicated by a new define _CFE_REDUCED_XRDP_ that should be set
+   - in project's make.proj_flags
+   - in cfe/build/broadcom/bcm63xx_ram/Makefile for the relevant BRCM_CHIP.
+   This new define is temporary, to enable gradual migration of XRDP devices to the "reduced XRDP" mode.
+   Once all XRDP defices will have migrated, _CFE_REDUCED_XRDP_ define can be
+   removed and all references to it in the source code replaced with _CFE_
+
+2) REDUCED_XRDP support is implemented as a new project XRDP_CFE on rdp level.
+   When a new device is migrated to the REDUCED_XRDP mode, RDP_PROJECT variable in
+   cfe/build/broadcom/bcm63xx_ram/Makefile should be set "RDP_PROJECT=XRDP_CFE".
+   See 6858 case for reference.
+
+3) cfe/cfe/xrdp/Makefile should refer to the relevant sources list. See PROJ_DRV_SRC_LIST
+   assignment in the beginning of the Makefile.
+   Additional per-chip source lists can be added under XRDP_CFE project.
+   Hopefully, all XRDP-based devices can use the same FW and sources.
+   The difference, if any, will be confined to memory map.
+
+4) compiling specific CHIP CFE FW
+   make PROJECT=XRDP_CFE BRCM_CHIP=6858 clean fw
+
+Build modes:
+
+1) Default mode. Neither CONFIG_GPL_RDP=1 nor CONFIG_GPL_RDP_GEN=1 is set.
+   Example: cd cfe/build/broadcom/bcm63xx_rom; make BRCM_CHIP=6858
+   In this mode all initializations are done by XRDP drivers (non GPL)
+
+
+2) Access logging mode. This mode is functionally similar to the default mode above.
+   All register and SRAM accesses are logged on the console. After that, saved console log
+   is converted to initialization .h file using cfe/cfe/xrdp/gen_data_path_init_data.sh.
+   Usage:
+    1) cd cfe/build/broadcom/bcm63xx_rom;
+    2) edit Makefile, add 'CONFIG_GPL_RDP=0 CONFIG_GPL_RDP_GEN=1' to CFE ROM and CFE RAM targets, i.e change:
+             $(MAKE) BRCM_CHIP=6858
+       to:
+             $(MAKE) BRCM_CHIP=6858 CONFIG_GPL_RDP=0 CONFIG_GPL_RDP_GEN=1
+       and change:
+	         $(MAKE) BRCM_CHIP=6858 BLD_NAND=1
+       to
+	         $(MAKE) BRCM_CHIP=6858 BLD_NAND=1 CONFIG_GPL_RDP=0 CONFIG_GPL_RDP_GEN=1 
+
+       Then run 'make release'.
+       This build will also automatically generates files
+             $(PROJECT_DIR)/drivers/rdd/rdd_data_structures_auto_gpl_6858.h
+       and
+             $(PROJECT_DIR)/drivers/rdd/rdd_data_structures_auto_gpl_6858.c
+       Then rebuild and reburn CE image.
+    2) Clear console. Load CFE and press "enter" during CFE boot
+    3) Save console log into file (e.g., /tmp/session.log)
+    4) Generate data_path_init_basic_data.h file
+       cfe/cfe/xrdp/gen_data_path_init_data.sh /tmp/session.log rdp/projects/XRDP_CFE/drivers/rdp_subsystem/BCM6858/data_path_init_basic_data.h
+
+3) GPL mode. In this mode only bare minimum of XRDP source files are included in the build.
+   All initializations are done using data_path_init_basic_data.h generated in "access logging mode".
+   Usage:
+    1) Revert changes in Makefile dor for access logging mode.
+    2) Run 'make release' (by default, will set CONFIG_GPL_RDP=1 for 6858)
+
+   The XRDP files needed in GPL mode can be found in cfe/cfe/xrdp
+
+
+
+
+
+
+
+
+
+
+
+

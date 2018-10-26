@@ -1,0 +1,52 @@
+#!/usr/bin/env perl
+use strict;
+use warnings;
+use Getopt::Long;
+my $blobname = "filestruct_full.bin";
+my $nadafs;
+my $rootfs;
+my $metadata;
+
+GetOptions("boot=s",\$nadafs,"root=s",\$rootfs,"metadata=s",\$metadata) or die("bad options");
+
+print qq[
+
+# add files cferam and possibly vmlinux 
+
+[ubi2]
+mode=ubi
+vol_type=static
+image=$nadafs
+vol_id=10
+vol_name=$blobname
+
+# metadata
+[ubi0]
+mode=ubi
+# setting as dynamic, size and CRC will both be zero, changing these causes kernel panic
+vol_type=dynamic
+image=$metadata
+vol_id=1
+vol_size=96KiB
+vol_name=METADATA
+    
+# metadata copy
+[ubi1]
+mode=ubi
+vol_type=dynamic
+image=$metadata
+vol_id=2
+vol_size=96KiB
+vol_name=METADATACOPY
+
+[ubi3]
+mode=ubi
+vol_type=dynamic
+image=$rootfs
+vol_id=0
+vol_name=rootfs_ubifs
+vol_flags=autoresize
+   
+
+];
+

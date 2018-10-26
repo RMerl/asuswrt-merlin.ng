@@ -1,0 +1,6 @@
+ifneq ($(strip $(CONFIG_BCM_KF_NBUFF)),)
+EXTRA_CFLAGS += -DBCM_NBUFF_WLMCAST -I$(WLAN_SHARED_DIR)
+endif
+ifeq ($(strip $(CONFIG_BCM_WLCSM_DEBUG)),y)
+EXTRA_CFLAGS += -DWLCSM_DEBUG
+endif

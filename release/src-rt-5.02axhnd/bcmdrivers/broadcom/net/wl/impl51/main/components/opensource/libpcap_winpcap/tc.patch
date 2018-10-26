@@ -1,0 +1,435 @@
+diff -urb libpcap-1.0.0_remote/configure libpcap-1.0.0_remote_tc/configure
+--- libpcap-1.0.0_remote/configure	2008-12-20 09:29:58.000000000 -0800
++++ libpcap-1.0.0_remote_tc/configure	2008-12-20 09:26:10.000000000 -0800
+@@ -686,6 +686,9 @@
+ V_FINDALLDEVS
+ V_HAVE_REMOTE
+ V_REMOTE_FILES
++V_HAVE_TC_API
++V_TC_FILES
++V_TCLIBS
+ SSRC
+ DYEXT
+ DAGLIBS
+@@ -1286,6 +1289,7 @@
+   --disable-largefile     omit support for large files
+   --disable-protochain    disable \"protochain\" insn
+   --disable-remote        disable remote capture capabilities
++  --disable-turbocap        disable support for the turbocap adapters
+   --enable-ipv6           build IPv6-capable version [default=yes, if getaddrinfo available]
+   --enable-optimizer-dbg  build optimizer debugging code
+   --enable-yydebug        build parser debugging code
+@@ -7742,6 +7746,103 @@
+ 
+ fi
+ 
++{ echo "$as_me:$LINENO: checking if --disable-turbocap option is specified" >&5
++echo $ECHO_N "checking if --disable-turbocap option is specified... $ECHO_C" >&6; }
++# Check whether --enable-turbocap was given.
++if test "${enable_turbocap+set}" = set; then
++  enableval=$enable_turbocap;
++fi
++
++
++case "x$enable_turbocap" in
++xyes) enable_turbocap=enabled   ;;
++xno)  enable_turbocap=disabled  ;;
++x)    enable_turbocap=enabled   ;;
++esac
++
++{ echo "$as_me:$LINENO: result: turbocap ${enable_turbocap}" >&5
++echo "${ECHO_T}turbocap ${enable_turbocap}" >&6; }
++
++if test "$enable_turbocap" = "enabled"; then
++
++
++      { echo "$as_me:$LINENO: checking if turbocap is supported" >&5
++echo $ECHO_N "checking if turbocap is supported... $ECHO_C" >&6; }
++
++	cat >conftest.$ac_ext <<_ACEOF
++/* confdefs.h.  */
++_ACEOF
++cat confdefs.h >>conftest.$ac_ext
++cat >>conftest.$ac_ext <<_ACEOF
++/* end confdefs.h.  */
++
++	#include <TcApi.h>;
++
++int
++main ()
++{
++ TC_INSTANCE a; TC_PORT b; TC_BOARD c;
++	TC_INSTANCE i;
++	(void)TcInstanceCreateByName("foo", &i);
++
++  ;
++  return 0;
++}
++_ACEOF
++rm -f conftest.$ac_objext
++if { (ac_try="$ac_compile"
++case "(($ac_try" in
++  *\"* | *\`* | *\\*) ac_try_echo=\$ac_try;;
++  *) ac_try_echo=$ac_try;;
++esac
++eval "echo \"\$as_me:$LINENO: $ac_try_echo\"") >&5
++  (eval "$ac_compile") 2>conftest.er1
++  ac_status=$?
++  grep -v '^ *+' conftest.er1 >conftest.err
++  rm -f conftest.er1
++  cat conftest.err >&5
++  echo "$as_me:$LINENO: \$? = $ac_status" >&5
++  (exit $ac_status); } && {
++	 test -z "$ac_c_werror_flag" ||
++	 test ! -s conftest.err
++       } && test -s conftest.$ac_objext; then
++  have_turbocap=yes
++else
++  echo "$as_me: failed program was:" >&5
++sed 's/^/| /' conftest.$ac_ext >&5
++
++	have_turbocap=no
++fi
++
++rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
++
++      if test "$have_turbocap" = "yes"; then        # Check that the remote extensions are there
++
++              case "$V_PCAP" in
++
++              linux)
++                      V_TC_FILES="pcap-tc.c"
++                      V_HAVE_TC_API="-DHAVE_TC_API"
++                      V_TCLIBS="-lTcApi -lpthread -lstdc++"
++
++cat >>confdefs.h <<\_ACEOF
++#define HAVE_TC_API 1
++_ACEOF
++
++                      have_turbocap=yes
++                      ;;
++
++              *)
++                      have_turbocap=no
++                      ;;
++
++              esac
++      fi
++      { echo "$as_me:$LINENO: result: ${have_turbocap}" >&5
++echo "${ECHO_T}${have_turbocap}" >&6; }
++
++fi
++
+ # Check whether --enable-ipv6 was given.
+ if test "${enable_ipv6+set}" = set; then
+   enableval=$enable_ipv6;
+@@ -10230,6 +10334,9 @@
+ V_FINDALLDEVS!$V_FINDALLDEVS$ac_delim
+ V_HAVE_REMOTE!$V_HAVE_REMOTE$ac_delim
+ V_REMOTE_FILES!$V_REMOTE_FILES$ac_delim
++V_HAVE_TC_API!$V_HAVE_TC_API$ac_delim
++V_TC_FILES!$V_TC_FILES$ac_delim
++V_TCLIBS!$V_TCLIBS$ac_delim
+ SSRC!$SSRC$ac_delim
+ DYEXT!$DYEXT$ac_delim
+ DAGLIBS!$DAGLIBS$ac_delim
+@@ -10246,7 +10353,7 @@
+ LTLIBOBJS!$LTLIBOBJS$ac_delim
+ _ACEOF
+ 
+-  if test `sed -n "s/.*$ac_delim\$/X/p" conf$$subs.sed | grep -c X` = 86; then
++  if test `sed -n "s/.*$ac_delim\$/X/p" conf$$subs.sed | grep -c X` = 89; then
+     break
+   elif $ac_last_try; then
+     { { echo "$as_me:$LINENO: error: could not make $CONFIG_STATUS" >&5
+diff -urb libpcap-1.0.0_remote/configure.in libpcap-1.0.0_remote_tc/configure.in
+--- libpcap-1.0.0_remote/configure.in	2008-12-20 09:29:51.000000000 -0800
++++ libpcap-1.0.0_remote_tc/configure.in	2008-12-20 09:21:55.000000000 -0800
+@@ -552,6 +552,59 @@
+ fi
+ dnl END HAVE_REMOTE
+ 
++dnl HAVE_TC_API
++AC_MSG_CHECKING(if --disable-turbocap option is specified)
++AC_ARG_ENABLE(turbocap, [  --disable-turbocap        disable support for the turbocap adapters])
++
++case "x$enable_turbocap" in
++xyes) enable_turbocap=enabled   ;;
++xno)  enable_turbocap=disabled  ;;
++x)    enable_turbocap=enabled   ;;
++esac
++
++AC_MSG_RESULT(turbocap ${enable_turbocap})
++
++if test "$enable_turbocap" = "enabled"; then
++
++      dnl
++      dnl Checking if turbocap is supported by the OS and the include files are there
++      dnl
++
++      AC_MSG_CHECKING(if turbocap is supported)
++
++	AC_TRY_COMPILE([
++	#include <TcApi.h>;
++	],
++	[ TC_INSTANCE a; TC_PORT b; TC_BOARD c; 
++	TC_INSTANCE i;
++	(void)TcInstanceCreateByName("foo", &i);
++	],
++	have_turbocap=yes,
++	have_turbocap=no)
++
++      if test "$have_turbocap" = "yes"; then        # Check that the remote extensions are there
++
++              case "$V_PCAP" in
++
++              linux)
++                      V_TC_FILES="pcap-tc.c"
++                      V_HAVE_TC_API="-DHAVE_TC_API"
++                      V_TCLIBS="-lTcApi -lpthread -lstdc++"	
++                      AC_DEFINE(HAVE_TC_API,1,[Enable support for turbocap adapters])
++                      have_turbocap=yes
++                      ;;
++
++              *)
++                      have_turbocap=no
++                      ;;
++
++              esac
++      fi
++      AC_MSG_RESULT(${have_turbocap})
++
++fi
++dnl END HAVE_TC_API
++
+ AC_ARG_ENABLE(ipv6, [  --enable-ipv6           build IPv6-capable version @<:@default=yes, if getaddrinfo available@:>@],
+     [],
+     [enable_ipv6=ifavailable])
+@@ -1062,6 +1115,9 @@
+ AC_SUBST(V_HAVE_REMOTE)
+ AC_SUBST(V_REMOTE_FILES)
+ # END HAVE_REMOTE
++AC_SUBST(V_HAVE_TC_API)
++AC_SUBST(V_TC_FILES)
++AC_SUBST(V_TCLIBS)
+ AC_SUBST(V_YACC)
+ AC_SUBST(SSRC)
+ AC_SUBST(DYEXT)
+diff -urb libpcap-1.0.0_remote/gencode.c libpcap-1.0.0_remote_tc/gencode.c
+--- libpcap-1.0.0_remote/gencode.c	2008-12-20 09:29:51.000000000 -0800
++++ libpcap-1.0.0_remote_tc/gencode.c	2008-12-20 09:19:46.000000000 -0800
+@@ -374,6 +374,20 @@
+ 	const char * volatile xbuf = buf;
+ 	int len;
+ 
++#ifdef HAVE_TC_API
++	/*
++	 * We cannot generate PPI filters with TurboCap ports, as the
++	 * compiler doesn't generate the correct filtering code in case
++	 * of ethernet over PPI. It only generates 802.11 over PPI code
++	 */
++	if (p->TcInstance != NULL && p->linktype == DLT_PPI && strlen(buf) > 0)
++	{
++		snprintf(p->errbuf, PCAP_ERRBUF_SIZE, "pcap_compile cannot generate filters for a TurboCap port when the PPI linktype is used.");
++		return -1;
++	
++	}
++#endif
++
+ #ifdef HAVE_REMOTE
+ 	/*
+ 	   Check if:
+diff -urb libpcap-1.0.0_remote/Makefile.in libpcap-1.0.0_remote_tc/Makefile.in
+--- libpcap-1.0.0_remote/Makefile.in	2008-12-20 09:29:51.000000000 -0800
++++ libpcap-1.0.0_remote_tc/Makefile.in	2008-12-20 09:26:02.000000000 -0800
+@@ -48,8 +48,9 @@
+ CCOPT = @V_CCOPT@
+ INCLS = -I. @V_INCLS@
+ # HAVE_REMOTE
+-DEFS = @DEFS@ @V_DEFS@ @V_HAVE_REMOTE@
++DEFS = @DEFS@ @V_DEFS@ @V_HAVE_REMOTE@ @V_HAVE_TC_API@
+ LIBS = @V_LIBS@
++TCLIBS = @V_TCLIBS@
+ DAGLIBS = @DAGLIBS@
+ DEPLIBS = @DEPLIBS@
+ DYEXT = @DYEXT@
+@@ -86,15 +87,16 @@
+ GENSRC = scanner.c grammar.c version.c
+ # HAVE_REMOTE
+ REMOTESRC = @V_REMOTE_FILES@
++TCSRC = @V_TC_FILES@
+ LIBOBJS = @LIBOBJS@
+ 
+ # HAVE_REMOTE
+-SRC =	$(PSRC) $(FSRC) $(CSRC) $(SSRC) $(GENSRC) $(REMOTESRC)
++SRC =	$(PSRC) $(FSRC) $(CSRC) $(SSRC) $(GENSRC) $(TCSRC) $(REMOTESRC)
+ 
+ # We would like to say "OBJ = $(SRC:.c=.o)" but Ultrix's make cannot
+ # hack the extra indirection
+ # HAVE_REMOTE
+-OBJ =	$(PSRC:.c=.o) $(FSRC:.c=.o) $(CSRC:.c=.o) $(SSRC:.c=.o) $(GENSRC:.c=.o) $(REMOTESRC:.c=.o) $(LIBOBJS)
++OBJ =	$(PSRC:.c=.o) $(FSRC:.c=.o) $(CSRC:.c=.o) $(SSRC:.c=.o) $(GENSRC:.c=.o) $(TCSRC:.c=.o) $(REMOTESRC:.c=.o) $(LIBOBJS)
+ HDR = \
+ 	acconfig.h \
+ 	arcnet.h \
+@@ -331,7 +333,7 @@
+ #
+ libpcap.so: $(OBJ)
+ 	@rm -f $@
+-	$(CC) -shared -Wl,-soname,$@.1 -o $@.`cat $(srcdir)/VERSION` $(OBJ) $(DAGLIBS)
++	$(CC) -shared -Wl,-soname,$@.1 -o $@.`cat $(srcdir)/VERSION` $(OBJ) $(DAGLIBS) $(TCLIBS)
+ 
+ #
+ # The following rule succeeds, but the result is untested.
+diff -urb libpcap-1.0.0_remote/pcap-int.h libpcap-1.0.0_remote_tc/pcap-int.h
+--- libpcap-1.0.0_remote/pcap-int.h	2008-12-20 09:29:51.000000000 -0800
++++ libpcap-1.0.0_remote_tc/pcap-int.h	2008-12-20 09:19:46.000000000 -0800
+@@ -50,6 +50,10 @@
+ #include <Packet32.h>
+ #endif /* WIN32 */
+ 
++#ifdef HAVE_TC_API
++#include "pcap-tc.h"
++#endif
++
+ #ifdef MSDOS
+ #include <fcntl.h>
+ #include <io.h>
+@@ -264,6 +268,13 @@
+ 	int send_fd;
+ #endif /* WIN32 */
+ 
++#ifdef HAVE_TC_API
++	TC_INSTANCE TcInstance;
++	TC_PACKETS_BUFFER TcPacketsBuffer;
++	ULONG TcAcceptedCount;
++	PCHAR PpiPacket;
++#endif
++
+ #ifdef HAVE_LIBDLPI
+ 	dlpi_handle_t dlpi_hd;
+ #endif
+diff -urb libpcap-1.0.0_remote/pcap-linux.c libpcap-1.0.0_remote_tc/pcap-linux.c
+--- libpcap-1.0.0_remote/pcap-linux.c	2008-12-20 09:29:51.000000000 -0800
++++ libpcap-1.0.0_remote_tc/pcap-linux.c	2008-12-20 09:19:46.000000000 -0800
+@@ -369,8 +369,19 @@
+ 	if (handle == NULL)
+ 		return NULL;
+ 
++#ifdef HAVE_TC_API
++	if (IsTcDevice(handle) == TRUE)
++	{
++		handle->activate_op = TcActivate;
++		handle->can_set_rfmon_op = NULL;
++	}
++#endif
++	else
++	{
+ 	handle->activate_op = pcap_activate_linux;
+ 	handle->can_set_rfmon_op = pcap_can_set_rfmon_linux;
++	}
++	
+ 	return handle;
+ }
+ 
+@@ -1236,6 +1247,11 @@
+ 		return (-1);
+ #endif
+ 
++#ifdef HAVE_TC_API
++	if (TcFindAllDevs(alldevsp, errbuf) < 0)
++		return (-1);
++#endif
++
+ 	return (0);
+ }
+ 
+diff -urb libpcap-1.0.0_remote/pcap-win32.c libpcap-1.0.0_remote_tc/pcap-win32.c
+--- libpcap-1.0.0_remote/pcap-win32.c	2008-12-20 09:29:51.000000000 -0800
++++ libpcap-1.0.0_remote_tc/pcap-win32.c	2008-12-20 09:19:46.000000000 -0800
+@@ -56,6 +56,8 @@
+ #include <pcap-remote.h>
+ #endif	/* HAVE_REMOTE */
+ 
++#include "pcap-tc.h"
++
+ static int pcap_setfilter_win32_npf(pcap_t *, struct bpf_program *);
+ static int pcap_setfilter_win32_dag(pcap_t *, struct bpf_program *);
+ static int pcap_getnonblock_win32(pcap_t *, char *);
+@@ -843,7 +845,15 @@
+ 	if (p == NULL)
+ 		return (NULL);
+ 
++	if (IsTcDevice(p) == TRUE)
++	{
++		p->activate_op = TcActivate;
++	}
++	else
++	{
+ 	p->activate_op = pcap_activate_win32;
++	}
++
+ 	return (p);
+ }
+ 
+@@ -937,5 +947,5 @@
+ int
+ pcap_platform_finddevs(pcap_if_t **alldevsp, char *errbuf)
+ {
+-	return (0);
++	return TcFindAllDevs(alldevsp, errbuf);
+ }
+diff -urb libpcap-1.0.0_remote/Win32/Prj/libpcap.dsp libpcap-1.0.0_remote_tc/Win32/Prj/libpcap.dsp
+--- libpcap-1.0.0_remote/Win32/Prj/libpcap.dsp	2008-12-20 09:29:51.000000000 -0800
++++ libpcap-1.0.0_remote_tc/Win32/Prj/libpcap.dsp	2008-12-20 09:19:46.000000000 -0800
+@@ -43,7 +43,7 @@
+ # PROP Intermediate_Dir "Release"
+ # PROP Target_Dir ""
+ # ADD BASE CPP /nologo /W3 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_MBCS" /D "_LIB" /YX /FD /c
+-# ADD CPP /nologo /MT /W3 /GX /O2 /I "../../" /I "../../lbl/" /I "../../bpf/" /I "../include/" /I "../../../../common" /I "../../../../dag/include" /I "../../../../dag/drv/windows" /D "NDEBUG" /D "YY_NEVER_INTERACTIVE" /D yylval=pcap_lval /D "_USRDLL" /D "LIBPCAP_EXPORTS" /D "HAVE_STRERROR" /D "__STDC__" /D "INET6" /D "_WINDOWS" /D "_MBCS" /D SIZEOF_CHAR=1 /D SIZEOF_SHORT=2 /D SIZEOF_INT=4 /D "HAVE_ADDRINFO" /D "WIN32" /D _U_= /D "HAVE_SNPRINTF" /D "HAVE_VSNPRINTF" /YX /FD /c
++# ADD CPP /nologo /MT /W3 /GX /O2 /I "../../" /I "../../lbl/" /I "../../bpf/" /I "../include/" /I "../../../../common" /I "../../../../dag/include" /I "../../../../dag/drv/windows" /D "NDEBUG" /D "YY_NEVER_INTERACTIVE" /D yylval=pcap_lval /D "_USRDLL" /D "LIBPCAP_EXPORTS" /D "HAVE_STRERROR" /D "__STDC__" /D "INET6" /D "_WINDOWS" /D "_MBCS" /D SIZEOF_CHAR=1 /D SIZEOF_SHORT=2 /D SIZEOF_INT=4 /D "HAVE_ADDRINFO" /D "WIN32" /D _U_= /D "HAVE_SNPRINTF" /D "HAVE_VSNPRINTF" /D "HAVE_TC_API" /YX /FD /c
+ # ADD BASE RSC /l 0x409 /d "NDEBUG"
+ # ADD RSC /l 0x409 /d "NDEBUG"
+ BSC32=bscmake.exe
+@@ -66,7 +66,7 @@
+ # PROP Intermediate_Dir "Debug"
+ # PROP Target_Dir ""
+ # ADD BASE CPP /nologo /W3 /Gm /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_MBCS" /D "_LIB" /YX /FD /GZ /c
+-# ADD CPP /nologo /MTd /W3 /Gm /GX /ZI /Od /I "../../" /I "../../lbl/" /I "../../bpf/" /I "../include/" /I "../../../../common" /I "../../../../dag/include" /I "../../../../dag/drv/windows" /D "_DEBUG" /D "YY_NEVER_INTERACTIVE" /D yylval=pcap_lval /D "_USRDLL" /D "LIBPCAP_EXPORTS" /D "HAVE_STRERROR" /D "__STDC__" /D "INET6" /D "_WINDOWS" /D "_MBCS" /D SIZEOF_CHAR=1 /D SIZEOF_SHORT=2 /D SIZEOF_INT=4 /D "HAVE_ADDRINFO" /D "WIN32" /D _U_= /D "HAVE_SNPRINTF" /D "HAVE_VSNPRINTF" /YX /FD /GZ /c
++# ADD CPP /nologo /MTd /W3 /Gm /GX /ZI /Od /I "../../" /I "../../lbl/" /I "../../bpf/" /I "../include/" /I "../../../../common" /I "../../../../dag/include" /I "../../../../dag/drv/windows" /D "_DEBUG" /D "YY_NEVER_INTERACTIVE" /D yylval=pcap_lval /D "_USRDLL" /D "LIBPCAP_EXPORTS" /D "HAVE_STRERROR" /D "__STDC__" /D "INET6" /D "_WINDOWS" /D "_MBCS" /D SIZEOF_CHAR=1 /D SIZEOF_SHORT=2 /D SIZEOF_INT=4 /D "HAVE_ADDRINFO" /D "WIN32" /D _U_= /D "HAVE_SNPRINTF" /D "HAVE_VSNPRINTF" /D "HAVE_TC_API" /YX /FD /GZ /c
+ # ADD BASE RSC /l 0x409 /d "_DEBUG"
+ # ADD RSC /l 0x409 /d "_DEBUG"
+ BSC32=bscmake.exe
+@@ -89,7 +89,7 @@
+ # PROP Intermediate_Dir "Debug_REMOTE"
+ # PROP Target_Dir ""
+ # ADD BASE CPP /nologo /MTd /W3 /Gm /GX /ZI /Od /I "../../" /I "../../lbl/" /I "../../bpf/" /I "../include/" /I "../../../../common" /I "../../../../dag/include" /I "../../../../dag/drv/windows" /D "_DEBUG" /D "YY_NEVER_INTERACTIVE" /D yylval=pcap_lval /D "_USRDLL" /D "LIBPCAP_EXPORTS" /D "HAVE_STRERROR" /D "__STDC__" /D "INET6" /D "_WINDOWS" /D "_MBCS" /D SIZEOF_CHAR=1 /D SIZEOF_SHORT=2 /D SIZEOF_INT=4 /D "HAVE_ADDRINFO" /D "WIN32" /D _U_= /D "HAVE_SNPRINTF" /D "HAVE_VSNPRINTF" /YX /FD /GZ /c
+-# ADD CPP /nologo /MTd /W3 /Gm /GX /ZI /Od /I "../../" /I "../../lbl/" /I "../../bpf/" /I "../include/" /I "../../../../common" /I "../../../../dag/include" /I "../../../../dag/drv/windows" /D "_DEBUG" /D "YY_NEVER_INTERACTIVE" /D yylval=pcap_lval /D "_USRDLL" /D "LIBPCAP_EXPORTS" /D "HAVE_STRERROR" /D "__STDC__" /D "INET6" /D "_WINDOWS" /D "_MBCS" /D SIZEOF_CHAR=1 /D SIZEOF_SHORT=2 /D SIZEOF_INT=4 /D "HAVE_ADDRINFO" /D "WIN32" /D _U_= /D "HAVE_SNPRINTF" /D "HAVE_VSNPRINTF" /D "HAVE_REMOTE" /YX /FD /GZ /c
++# ADD CPP /nologo /MTd /W3 /Gm /GX /ZI /Od /I "../../" /I "../../lbl/" /I "../../bpf/" /I "../include/" /I "../../../../common" /I "../../../../dag/include" /I "../../../../dag/drv/windows" /D "_DEBUG" /D "YY_NEVER_INTERACTIVE" /D yylval=pcap_lval /D "_USRDLL" /D "LIBPCAP_EXPORTS" /D "HAVE_STRERROR" /D "__STDC__" /D "INET6" /D "_WINDOWS" /D "_MBCS" /D SIZEOF_CHAR=1 /D SIZEOF_SHORT=2 /D SIZEOF_INT=4 /D "HAVE_ADDRINFO" /D "WIN32" /D _U_= /D "HAVE_SNPRINTF" /D "HAVE_VSNPRINTF" /D "HAVE_REMOTE" /D "HAVE_TC_API" /YX /FD /GZ /c
+ # ADD BASE RSC /l 0x409 /d "_DEBUG"
+ # ADD RSC /l 0x409 /d "_DEBUG"
+ BSC32=bscmake.exe
+@@ -112,7 +112,7 @@
+ # PROP Intermediate_Dir "Release_REMOTE"
+ # PROP Target_Dir ""
+ # ADD BASE CPP /nologo /MT /W3 /GX /O2 /I "../../" /I "../../lbl/" /I "../../bpf/" /I "../include/" /I "../../../../common" /I "../../../../dag/include" /I "../../../../dag/drv/windows" /D "NDEBUG" /D "YY_NEVER_INTERACTIVE" /D yylval=pcap_lval /D "_USRDLL" /D "LIBPCAP_EXPORTS" /D "HAVE_STRERROR" /D "__STDC__" /D "INET6" /D "_WINDOWS" /D "_MBCS" /D SIZEOF_CHAR=1 /D SIZEOF_SHORT=2 /D SIZEOF_INT=4 /D "HAVE_ADDRINFO" /D "WIN32" /D _U_= /D "HAVE_SNPRINTF" /D "HAVE_VSNPRINTF" /YX /FD /c
+-# ADD CPP /nologo /MT /W3 /GX /O2 /I "../../" /I "../../lbl/" /I "../../bpf/" /I "../include/" /I "../../../../common" /I "../../../../dag/include" /I "../../../../dag/drv/windows" /D "NDEBUG" /D "YY_NEVER_INTERACTIVE" /D yylval=pcap_lval /D "_USRDLL" /D "LIBPCAP_EXPORTS" /D "HAVE_STRERROR" /D "__STDC__" /D "INET6" /D "_WINDOWS" /D "_MBCS" /D SIZEOF_CHAR=1 /D SIZEOF_SHORT=2 /D SIZEOF_INT=4 /D "HAVE_ADDRINFO" /D "WIN32" /D _U_= /D "HAVE_SNPRINTF" /D "HAVE_VSNPRINTF" /D "HAVE_REMOTE" /YX /FD /c
++# ADD CPP /nologo /MT /W3 /GX /O2 /I "../../" /I "../../lbl/" /I "../../bpf/" /I "../include/" /I "../../../../common" /I "../../../../dag/include" /I "../../../../dag/drv/windows" /D "NDEBUG" /D "YY_NEVER_INTERACTIVE" /D yylval=pcap_lval /D "_USRDLL" /D "LIBPCAP_EXPORTS" /D "HAVE_STRERROR" /D "__STDC__" /D "INET6" /D "_WINDOWS" /D "_MBCS" /D SIZEOF_CHAR=1 /D SIZEOF_SHORT=2 /D SIZEOF_INT=4 /D "HAVE_ADDRINFO" /D "WIN32" /D _U_= /D "HAVE_SNPRINTF" /D "HAVE_VSNPRINTF" /D "HAVE_REMOTE" /D "HAVE_TC_API" /YX /FD /c
+ # ADD BASE RSC /l 0x409 /d "NDEBUG"
+ # ADD RSC /l 0x409 /d "NDEBUG"
+ BSC32=bscmake.exe
+@@ -200,6 +200,14 @@
+ # End Source File
+ # Begin Source File
+ 
++SOURCE="..\..\pcap-tc.c"
++# End Source File
++# Begin Source File
++
++SOURCE="..\..\pcap-tc.h"
++# End Source File
++# Begin Source File
++
+ SOURCE="..\..\Pcap-win32.c"
+ # End Source File
+ # Begin Source File

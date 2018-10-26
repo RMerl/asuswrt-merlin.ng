@@ -1,0 +1,14 @@
+Begin3
+Title:          The PCI Utilities
+Version:        3.5.0
+Entered-date:   160519
+Description:    This package contains various utilities for inspecting and
+		setting of devices connected to the PCI bus.
+Keywords:       kernel, pci, lspci, setpci, libpci
+Author:         mj@ucw.cz (Martin Mares)
+Maintained-by:  mj@ucw.cz (Martin Mares)
+Primary-site:   atrey.karlin.mff.cuni.cz pub/linux/pci/pciutils-3.5.0.tar.gz
+Alternate-site: ftp.kernel.org pub/software/utils/pciutils/pciutils-3.5.0.tar.gz
+Alternate-site: metalab.unc.edu pub/Linux/hardware/pciutils-3.5.0.tar.gz
+Copying-policy: GPL
+End

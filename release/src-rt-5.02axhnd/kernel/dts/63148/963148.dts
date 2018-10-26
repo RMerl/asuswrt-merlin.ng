@@ -1,0 +1,101 @@
+/*
+ * Broadcom BCM63148 Reference Board DTS
+ */
+
+/dts-v1/;
+/memreserve/ 0x00000000 0x00008000;
+
+#include "../bcm_963xx_template.dtsi"
+#include <dt-bindings/interrupt-controller/arm-gic.h>
+
+/ {
+	compatible = "brcm,bcm963148";
+	model = "Broadcom BCM963148";
+	interrupt-parent = <&gic>;
+
+	cpus {
+		#address-cells = <1>;
+		#size-cells = <0>;
+
+		CPU0: cpu@0 {
+			device_type = "cpu";
+			compatible = "arm,cortex-a15";
+			reg = <0>;
+		};
+		CPU1: cpu@1 {
+			device_type = "cpu";
+			compatible = "arm,cortex-a15";
+			reg = <1>;
+			enable-method = "brcm,bca-smp";
+		};
+	};
+
+	/* increase coherent_pool size for ARM-based chip */
+	chosen {
+		bootargs = "console=ttyS0,115200 debug irqaffinity=0 coherent_pool=1M pci=pcie_bus_safe";
+	};
+
+	gic: interrupt-controller@80031000 {
+		compatible = "arm,cortex-a15-gic";
+		#interrupt-cells = <3>;
+		#address-cells = <0>;
+		interrupt-controller;
+		reg = <0x80031000 0x1000>, <0x80032000 0x0100>;
+	};
+
+
+	/* Legacy UBUS base */
+	ubus@fffe8000 {
+		compatible = "simple-bus";
+		#address-cells = <1>;
+		#size-cells = <1>;
+		ranges = <0 0xfffe8000 0x8000>;
+
+		nand@2000 {
+			#address-cells = <1>;
+			#size-cells = <0>;
+			compatible = "brcm,nand-bcm63xx", "brcm,brcmnand-v7.1";
+			reg = <0x2000 0x600>, <0xf0 0x10>;
+			reg-names = "nand", "nand-int-base";
+			status = "okay";
+
+			nandcs@0 {
+				compatible = "brcm,nandcs";
+				reg = <0>;
+				nand-on-flash-bbt;
+			};
+
+		};
+
+		watchdog@a8 {
+			compatible = "brcm,bcm96xxx-wdt";
+			reg = <0xa8 0x10>;
+			timeout-sec = <80>;
+		};
+
+		bcm63xx-i2s@fffe8900 {
+			compatible = "brcm,bcm63xx-i2s";
+			reg = <0x900 0x2d>; 
+		};
+
+		i2c@3e00 {
+			compatible = "brcm,bcm63000-i2c";
+			reg = <0x3e00 0x60>;
+		};
+	};
+
+	pmu {
+		compatible = "arm,cortex-a15-pmu";
+		interrupts = <GIC_SPI 8 IRQ_TYPE_LEVEL_HIGH>,
+			     <GIC_SPI 9 IRQ_TYPE_LEVEL_HIGH>;
+		interrupt-affinity = <&CPU0>, <&CPU1>;
+	};
+
+        pcm5100 {
+                compatible = "ti,pcm5100-dac";
+	};
+
+	bcm63xx-pcm-audio {
+		compatible = "brcm,bcm63xx-pcm-audio";
+	};
+};

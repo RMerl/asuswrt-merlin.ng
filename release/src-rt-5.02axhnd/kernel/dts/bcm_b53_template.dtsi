@@ -1,0 +1,184 @@
+#include <dt-bindings/interrupt-controller/arm-gic.h>
+#include <dt-bindings/interrupt-controller/irq.h>
+
+#include <dt-bindings/soc/bcm963xx_dt_bindings.h> 
+
+/dts-v1/;
+
+/* Reserve memory for ARM bootstrap code and PMC firmware 
+   0x00000000:0x00010000 used for ARM bootstrap
+   0x00010000:0x00020000 used for PMC firmware
+*/
+
+/memreserve/ 0x00000000 0x00020000;
+
+/ {
+	model = "Broadcom-v8A";
+	compatible = "brcm,brcm-v8A";
+	interrupt-parent = <&gic>;
+	#address-cells = <2>;
+	#size-cells = <2>;
+
+	cpus {
+		#address-cells = <2>;
+		#size-cells = <0>;
+
+		B53_0: cpu@0 {
+			device_type = "cpu";
+			compatible = "arm,cortex-a53";
+			reg = <0x0 0x0>;
+			next-level-cache = <&L2_0>;
+		};
+		B53_1: cpu@1 {
+			device_type = "cpu";
+			compatible = "arm,cortex-a53";
+			reg = <0x0 0x1>;
+#if defined (CONFIG_OPTEE)
+			enable-method = "psci";
+#else
+			enable-method = "spin-table";
+#endif
+			cpu-release-addr = <0x0 0xfff8>;
+			next-level-cache = <&L2_0>;
+		};
+		B53_2: cpu@2 {
+			device_type = "cpu";
+			compatible = "arm,cortex-a53";
+			reg = <0x0 0x2>;
+#if defined (CONFIG_OPTEE)
+			enable-method = "psci";
+#else
+			enable-method = "spin-table";
+#endif
+			cpu-release-addr = <0x0 0xfff8>;
+			next-level-cache = <&L2_0>;
+		};
+		B53_3: cpu@3 {
+			device_type = "cpu";
+			compatible = "arm,cortex-a53";
+			reg = <0x0 0x3>;
+#if defined (CONFIG_OPTEE)
+			enable-method = "psci";
+#else
+			enable-method = "spin-table";
+#endif
+			cpu-release-addr = <0x0 0xfff8>;
+			next-level-cache = <&L2_0>;
+		};
+
+		L2_0: l2-cache0 {
+			compatible = "cache";
+		};
+	};
+
+#if defined (CONFIG_OPTEE)
+	psci {
+		compatible	= "arm,psci-0.2";
+		method		= "smc";
+		cpu_off		= <1>;
+		cpu_on		= <2>;
+	};
+
+	firmware {
+		optee {
+			compatible = "linaro,optee-tz";
+			method = "smc";
+		};
+	};
+#endif /* CONFIG_OPTEE */
+
+	memory@00000000 {
+		device_type = "memory";
+		reg = <0x00000000 DRAM_BASE 0x0 DRAM_DEF_SIZE>;
+	};
+
+	reserved-memory {
+		#address-cells = <2>;
+		#size-cells = <2>;
+		ranges;
+#if defined (CONFIG_BCM_ADSL)
+		dt_reserved_adsl {
+			reg = <0x0 DRAM_OFFSET_ADSL 0x0 ADSL_SDRAM_IMAGE_SIZE>;
+			no-map;
+		};
+#endif
+#if defined (CONFIG_BCM_DHD_RUNNER)
+		dt_reserved_dhd0 {
+			reg = <0x0 0x0 0x0 DHD_PARAM1_DDR_SIZE>;
+			no-map;
+		};
+		dt_reserved_dhd1 {
+			reg = <0x0 0x0 0x0 DHD_PARAM2_DDR_SIZE>;
+			no-map;
+		};
+		dt_reserved_dhd2 {
+			reg = <0x0 0x0 0x0 DHD_PARAM3_DDR_SIZE>;
+			no-map;
+		};
+#endif
+	};
+
+	/* increase coherent_pool size */
+	chosen {
+		bootargs = "coherent_pool=4M cpuidle_sysfs_switch pci=pcie_bus_safe rootwait";
+	};
+
+	gic: interrupt-controller@81000000 {
+		compatible = "arm,cortex-a15-gic", "arm,cortex-a9-gic";
+		#interrupt-cells = <3>;
+		#address-cells = <0>;
+		interrupt-controller;
+		reg = <0x0 GIC_DIST_BASE 0 0x1000>,
+		      <0x0 GIC_CPUI_BASE 0 0x2000>;
+	};
+
+	timer {
+		compatible = "arm,armv8-timer";
+		interrupts = <GIC_PPI TIMER_PHYS_SECURE_PPI    (GIC_CPU_MASK_SIMPLE(4) | IRQ_TYPE_LEVEL_LOW)>,
+			     <GIC_PPI TIMER_PHYS_NONSECURE_PPI (GIC_CPU_MASK_SIMPLE(4) | IRQ_TYPE_LEVEL_LOW)>,
+			     <GIC_PPI TIMER_VIRT_PPI           (GIC_CPU_MASK_SIMPLE(4) | IRQ_TYPE_LEVEL_LOW)>,
+			     <GIC_PPI TIMER_HYP_PPI            (GIC_CPU_MASK_SIMPLE(4) | IRQ_TYPE_LEVEL_LOW)>;
+	};
+
+	pmu {
+		compatible = "arm,armv8-pmuv3";
+		interrupts = <GIC_SPI PMU_CORE0_SPI IRQ_TYPE_LEVEL_HIGH>,
+			     <GIC_SPI PMU_CORE1_SPI IRQ_TYPE_LEVEL_HIGH>,
+			     <GIC_SPI PMU_CORE2_SPI IRQ_TYPE_LEVEL_HIGH>,
+			     <GIC_SPI PMU_CORE3_SPI IRQ_TYPE_LEVEL_HIGH>;
+		interrupt-affinity = <&B53_0>,
+				     <&B53_1>,
+				     <&B53_2>,
+				     <&B53_3>;
+	};
+
+	/* Legacy UBUS base */
+	ubus@ff800000 {
+		compatible = "simple-bus";
+		#address-cells = <2>;
+		#size-cells = <2>;
+		ranges = <0x0 0x0 0x0 0xff800000 0x0 0x62000>;
+
+		sdhci: sdhci@ff858000 {
+			compatible = "brcm,bcm63xx-sdhci";
+			reg = <0x00000000 0x58000 0x00000000 0x100>;
+			interrupts = <GIC_SPI SDIO_EMMC_SPI IRQ_TYPE_LEVEL_HIGH>;
+			bus-width = <8>;
+#ifdef EMMC_DDR_1_8V 
+			mmc-ddr-1_8v;
+#endif
+#ifdef ENABLE_SD_UHS_I_1_8V
+			sd-uhs-sdr50;
+			sd-uhs-sdr104;
+			sd-uhs-ddr50;
+#else
+			no-1-8-v;
+#endif			
+		};
+	};
+
+	brcm-legacy {
+		compatible = "brcm,brcm-legacy";
+	};
+
+};

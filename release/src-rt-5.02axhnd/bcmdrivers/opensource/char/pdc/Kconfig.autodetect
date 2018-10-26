@@ -1,0 +1,11 @@
+config BCM_PDC
+	tristate "Support for PDC"
+	depends on BCM_SPU
+	depends on BCM94908 || BCM963158 || BCM96858
+	default m
+
+config BCM_PDC_IMPL
+	int "Implementation index for PDC"
+	depends on BCM_PDC
+	default 1
+

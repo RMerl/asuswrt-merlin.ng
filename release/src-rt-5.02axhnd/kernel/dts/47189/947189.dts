@@ -1,0 +1,98 @@
+/dts-v1/;
+
+/ {
+	compatible = "brcm,bcm947189";
+	model = "Broadcom BCM947189";
+	arm,hbi = <0x249>;
+	interrupt-parent = <&gic>;
+	#address-cells = <1>;
+	#size-cells = <1>;
+
+	chosen {
+		bootargs = "console=ttyS0,115200 earlycon=ns16550,mmio,0x18000300,115200n8" ;
+	};
+
+	aliases {
+	};
+
+	memory {
+		device_type = "memory";
+		reg = <0x0 0x8000000>;
+	};
+
+	timer {
+		compatible = "arm,armv7-timer";
+		interrupts = <1 13 8>,
+			     <1 14 8>,
+			     <1 11 8>,
+			     <1 10 8>;
+	};
+
+
+	gic: interrupt-controller@18311000 {
+		compatible = "arm,cortex-a7-gic";
+		#interrupt-cells = <3>;
+		#address-cells = <0>;
+		interrupt-controller;
+		reg = < 0x18311000  0x1000>,
+		      < 0x18312000  0x2000>,
+		      < 0x18314000  0x1000>,
+		      < 0x18315000  0x1000>,
+		      < 0x18316000  0x1000>;
+		interrupts = <1 9 4>;
+	};
+
+	chipcommonA {
+		compatible = "simple-bus";
+		ranges = <0x0      0x18000000 0x10000
+			  0x108000 0x18108000 0x600
+			  0x5000   0x18005000 0x1000
+			  0xB000   0x1800B000 0x1000>;
+		#address-cells = <0x1>;
+		#size-cells = <0x1>;
+
+		serial@0300 {
+			compatible = "ns16550";
+			reg = <0x300 0x100>;
+			interrupts = <0x0 0 0x4>;
+			clock-frequency = <40000000>;
+			status = "okay";
+		};
+
+		nand@8000 {
+			#address-cells = <1>;
+			#size-cells = <0>;
+			compatible = "brcm,nand-iproc", "brcm,brcmnand-v6.1";
+			reg = <0x8000 0x600>, <0x108408 0x600>, <0x108500 0x10>;
+			reg-names = "nand", "iproc-idm", "iproc-ext";
+			status = "okay";
+
+			nandcs@0 {
+				compatible = "brcm,nandcs";
+				reg = <0>;
+				nand-on-flash-bbt;
+			};
+		};
+
+#if (CONFIG_BCM_ENET_IMPL == 7)
+		enetcore0@5000 {
+			compatible = "bcmenet0";
+			reg = <0x5000 0x1000>;
+			#address-cells = <1>;
+			interrupts = <0 5 4>;
+		};
+
+		enetcore1@B000 {
+			compatible = "bcmenet1";
+			reg = <0xB000 0x1000>;
+			#address-cells = <1>;
+			interrupts = <0 6 4>;
+		};
+#endif
+
+	};
+	brcm-legacy {
+		compatible = "brcm,brcm-legacy";
+	};
+		
+};

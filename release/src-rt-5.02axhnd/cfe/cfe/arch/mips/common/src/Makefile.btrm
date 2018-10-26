@@ -1,0 +1,12 @@
+#
+#
+# This file should just append object file names to "ALLOBJS",
+# but since it is mean to be linked *first*, it will append
+# modules to "CRT0OBJS"
+#
+
+ifndef INIT_MIPS
+INIT_MIPS = init_btrm_mips.o
+endif
+CRT0OBJS += $(INIT_MIPS)
+

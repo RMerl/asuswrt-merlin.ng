@@ -1,0 +1,148 @@
+/*
+ * Broadcom BCM63138 Reference Board DTS
+ */
+
+/dts-v1/;
+/memreserve/ 0x00000000 0x00008000;
+
+#include "../bcm_963xx_template.dtsi"
+#include <dt-bindings/interrupt-controller/arm-gic.h>
+
+/ {
+	compatible = "brcm,bcm963138";
+	model = "Broadcom BCM963138";
+	interrupt-parent = <&gic>;
+
+	cpus {
+		#address-cells = <1>;
+		#size-cells = <0>;
+
+		CPU0: cpu@0 {
+			device_type = "cpu";
+			compatible = "arm,cortex-a9";
+			reg = <0>;
+			next-level-cache = <&L2>;
+		};
+
+		CPU1: cpu@1 {
+			device_type = "cpu";
+			compatible = "arm,cortex-a9";
+			reg = <1>;
+			next-level-cache = <&L2>;
+#if defined (CONFIG_OPTEE)
+			enable-method = "psci";
+#else
+			enable-method = "brcm,bca-smp";
+#endif
+		};
+	};
+
+
+	/* increase coherent_pool size for ARM-based chip */
+	chosen {
+		bootargs = "console=ttyS0,115200 debug irqaffinity=0 coherent_pool=1M cpuidle_sysfs_switch pci=pcie_bus_safe";
+	};
+
+#if defined (CONFIG_OPTEE)
+	psci {
+		compatible	= "arm,psci-0.2";
+		method		= "smc";
+		cpu_off		= <1>;
+		cpu_on		= <2>;
+	};
+
+	firmware {
+		optee {
+			compatible = "linaro,optee-tz";
+			method = "smc";
+		};
+	};
+#endif
+
+	/* ARM bus */
+	axi@80018000 {
+		compatible = "simple-bus";
+		ranges = <0 0x80018000 0x20000>;
+		#address-cells = <1>;
+		#size-cells = <1>;
+
+		L2: cache-controller@5000 {
+			compatible = "arm,pl310-cache";
+			reg = <0x5000 0x1000>;
+			cache-unified;
+			cache-level = <2>;
+		};
+
+		gic: interrupt-controller@7000 {
+			compatible = "arm,cortex-a9-gic";
+			#interrupt-cells = <3>;
+			#address-cells = <0>;
+			interrupt-controller;
+			reg = <0x7000 0x1000>, <0x6100 0x0100>;
+		};
+	};
+
+	/* Legacy UBUS base */
+	ubus@fffe8000 {
+		compatible = "simple-bus";
+		#address-cells = <1>;
+		#size-cells = <1>;
+		ranges = <0 0xfffe8000 0x8000>;
+
+		nand@2000 {
+			#address-cells = <1>;
+			#size-cells = <0>;
+			compatible = "brcm,nand-bcm63xx", "brcm,brcmnand-v7.0";
+			reg = <0x2000 0x600>, <0xf0 0x10>;
+			reg-names = "nand", "nand-int-base";
+			status = "okay";
+
+			nandcs@0 {
+				compatible = "brcm,nandcs";
+				reg = <0>;
+				nand-on-flash-bbt;
+			};
+
+		};
+
+		watchdog@a8 {
+			compatible = "brcm,bcm96xxx-wdt";
+			reg = <0xa8 0x10>;
+			timeout-sec = <80>;
+		};
+
+		bcm63xx-i2s@fffe8900 {
+			compatible = "brcm,bcm63xx-i2s";
+			reg = <0x900 0x2d>; 
+		};
+
+		i2c@3e00 {
+			compatible = "brcm,bcm63000-i2c";
+			reg = <0x3e00 0x60>;
+		};
+	};
+
+	sdhci: sdhci@fffec000 {
+		compatible = "brcm,bcm63xx-sdhci";
+		#address-cells = <1>;
+		#size-cells = <1>;
+		reg = <0xfffec000 0x100>;
+		bus-width = <8>;
+		non-removable;
+	};
+
+	pmu {
+		compatible = "arm,cortex-a9-pmu";
+		interrupts = <GIC_SPI 8 IRQ_TYPE_LEVEL_HIGH>,
+			     <GIC_SPI 9 IRQ_TYPE_LEVEL_HIGH>;
+		interrupt-affinity = <&CPU0>, <&CPU1>;
+	};
+
+        pcm5100 {
+              compatible = "ti,pcm5100-dac";
+	};
+
+        bcm63xx-pcm-audio {
+              compatible = "brcm,bcm63xx-pcm-audio";
+        };
+};

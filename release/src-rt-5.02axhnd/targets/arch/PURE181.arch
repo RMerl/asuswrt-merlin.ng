@@ -1,0 +1,9 @@
+<PUBLISH>
+# The only thing that does not compile in PURE181 mode is TR143.
+# Wifi compiles, but is not functional yet.
+# TR64 compiles, but is not supported (probably won't be supported for a long time)
+@@ special demark for maketargets.  All + and - lines after this line will modify profile.
+-BUILD_DM_HYBRID=y
+-BUILD_DM_LEGACY98=y
++BUILD_DM_PURE181=y
+

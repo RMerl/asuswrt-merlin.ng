@@ -1,0 +1,120 @@
+#***********************************************************************
+#
+# <:copyright-BRCM:2004:proprietary:standard
+# 
+#    Copyright (c) 2004 Broadcom 
+#    All Rights Reserved
+# 
+#  This program is the proprietary software of Broadcom and/or its
+#  licensors, and may only be used, duplicated, modified or distributed pursuant
+#  to the terms and conditions of a separate, written license agreement executed
+#  between you and Broadcom (an "Authorized License").  Except as set forth in
+#  an Authorized License, Broadcom grants no license (express or implied), right
+#  to use, or waiver of any kind with respect to the Software, and Broadcom
+#  expressly reserves all rights in and to the Software and all intellectual
+#  property rights therein.  IF YOU HAVE NO AUTHORIZED LICENSE, THEN YOU HAVE
+#  NO RIGHT TO USE THIS SOFTWARE IN ANY WAY, AND SHOULD IMMEDIATELY NOTIFY
+#  BROADCOM AND DISCONTINUE ALL USE OF THE SOFTWARE.
+# 
+#  Except as expressly set forth in the Authorized License,
+# 
+#  1. This program, including its structure, sequence and organization,
+#     constitutes the valuable trade secrets of Broadcom, and you shall use
+#     all reasonable efforts to protect the confidentiality thereof, and to
+#     use this information only in connection with your use of Broadcom
+#     integrated circuit products.
+# 
+#  2. TO THE MAXIMUM EXTENT PERMITTED BY LAW, THE SOFTWARE IS PROVIDED "AS IS"
+#     AND WITH ALL FAULTS AND BROADCOM MAKES NO PROMISES, REPRESENTATIONS OR
+#     WARRANTIES, EITHER EXPRESS, IMPLIED, STATUTORY, OR OTHERWISE, WITH
+#     RESPECT TO THE SOFTWARE.  BROADCOM SPECIFICALLY DISCLAIMS ANY AND
+#     ALL IMPLIED WARRANTIES OF TITLE, MERCHANTABILITY, NONINFRINGEMENT,
+#     FITNESS FOR A PARTICULAR PURPOSE, LACK OF VIRUSES, ACCURACY OR
+#     COMPLETENESS, QUIET ENJOYMENT, QUIET POSSESSION OR CORRESPONDENCE
+#     TO DESCRIPTION. YOU ASSUME THE ENTIRE RISK ARISING OUT OF USE OR
+#     PERFORMANCE OF THE SOFTWARE.
+# 
+#  3. TO THE MAXIMUM EXTENT PERMITTED BY LAW, IN NO EVENT SHALL BROADCOM OR
+#     ITS LICENSORS BE LIABLE FOR (i) CONSEQUENTIAL, INCIDENTAL, SPECIAL,
+#     INDIRECT, OR EXEMPLARY DAMAGES WHATSOEVER ARISING OUT OF OR IN ANY
+#     WAY RELATING TO YOUR USE OF OR INABILITY TO USE THE SOFTWARE EVEN
+#     IF BROADCOM HAS BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGES;
+#     OR (ii) ANY AMOUNT IN EXCESS OF THE AMOUNT ACTUALLY PAID FOR THE
+#     SOFTWARE ITSELF OR U.S. $1, WHICHEVER IS GREATER. THESE LIMITATIONS
+#     SHALL APPLY NOTWITHSTANDING ANY FAILURE OF ESSENTIAL PURPOSE OF ANY
+#     LIMITED REMEDY.
+# :>
+#
+#***********************************************************************/
+
+
+CURR_DIR := $(shell pwd)
+BUILD_DIR:=$(HND_SRC)
+include $(BUILD_DIR)/make.common
+
+PROGRAM_NAME:= ethctl
+
+SOURCE_FILES:= ethctl.o ethctl_cmd.o
+
+LIBS = -lethctl 
+
+CFLAGS =-s -Os -fomit-frame-pointer -I$(INC_BRCMDRIVER_PUB_PATH)/$(BRCM_BOARD) -I$(INC_BRCMDRIVER_PRIV_PATH)/$(BRCM_BOARD) -I$(INC_BRCMSHARED_PUB_PATH)/$(BRCM_BOARD) -I$(INC_BRCMSHARED_PRIV_PATH)/$(BRCM_BOARD)
+CFLAGS += -I$(TOOLCHAIN)/include -I$(BUILD_DIR)/userspace/private/include
+
+
+ifeq ("$(TOOLCHAIN_VER)", "4.6.2")
+#KU_TBD: need to adjust toolchain such that files are under /usr/include
+CFLAGS += -I$(TOOLCHAIN)/mips-unknown-linux-uclibc/sysroot/usr/include
+endif
+
+INC_ETHERNET_DRIVER_PATH=$(BRCMDRIVERS_DIR)/broadcom/net/enet/bcm9$(BRCM_CHIP)/include
+INC_KERNEL_INC_PATH=$(KERNEL_LINKS_DIR)
+
+CFLAGS += -Wall -I$(INC_ETHERNET_DRIVER_PATH) -I$(INC_KERNEL_INC_PATH) -I$(INC_BRCMBOARDPARMS_PATH)/bcm963xx
+CFLAGS += $(BRCM_WERROR_CFLAGS)
+
+ifeq ($(strip $(BUILD_WLCTL)), static)
+CFLAGS += -DBUILD_STATIC 
+endif
+
+ALLOWED_LIB_DIRS := /lib:/lib/private:/lib/public
+
+CFLAGS += -DCONFIG_BCM9$(BRCM_CHIP) 
+
+CFLAGS += -Werror
+
+%.o: %.c
+	$(CC) -c $(CFLAGS) -o $@ $<
+
+all: $(PROGRAM_NAME) generic_exe_install
+
+install: $(PROGRAM_NAME)
+	install -m 755 $(PROGRAM_NAME) $(INSTALL_DIR)/bin
+	$(STRIP) $(INSTALL_DIR)/bin/$(PROGRAM_NAME)
+	mkdir -p $(INSTALL_DIR)/sbin
+	ln -sf ../bin/$(PROGRAM_NAME) $(INSTALL_DIR)/sbin/ethctl
+
+dynamic: $(PROGRAM_NAME) install
+
+static: $(PROGRAM_NAME).a
+
+ifneq ($(PREBUILT_BCMBIN),1)
+$(PROGRAM_NAME): $(SOURCE_FILES)
+	$(CC) -o $@ $(SOURCE_FILES) $(CMS_LIB_PATH) $(LIBS)
+
+#	$(CC) $(CFLAGS) -Wl,--allow-shlib-undefined -o $@ $^
+else
+$(PROGRAM_NAME): 
+	cp -f $(TOP_PLATFORM)/$(shell pwd | sed 's/\(.*router-sysdep\/\)//')/$(PRBM_DIR)/$@ ./
+endif
+
+$(PROGRAM_NAME).a: $(SOURCE_FILES)
+	$(AR) rcs $(PROGRAM_NAME).a $^
+
+clean:
+	-rm -f $(PROGRAM_NAME) *.o *.a
+
+binaryonly_dist_clean: clean
+	rm -f Makefile.fullsrc
+	rm -rf *.c *.h linux
+

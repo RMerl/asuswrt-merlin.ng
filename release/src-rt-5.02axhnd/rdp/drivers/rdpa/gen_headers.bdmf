@@ -1,0 +1,82 @@
+# Generate headers
+/bdmf/code/gen system AG_INC_DIR/rdpa_ag_system.h rdpa what_generate:1 children:no action_mask:0x3e
+/bdmf/code/gen bridge AG_INC_DIR/rdpa_ag_bridge.h rdpa what_generate:1 children:yes action_mask:0x3e
+/bdmf/code/gen egress_tm AG_INC_DIR/rdpa_ag_egress_tm.h rdpa what_generate:1 children:yes action_mask:0x3e
+/bdmf/code/gen policer AG_INC_DIR/rdpa_ag_policer.h rdpa what_generate:1 children:yes action_mask:0x3e
+/bdmf/code/gen vlan_action AG_INC_DIR/rdpa_ag_vlan_action.h rdpa what_generate:1 children:yes action_mask:0x3e
+/bdmf/code/gen dscp_to_pbit AG_INC_DIR/rdpa_ag_dscp_to_pbit.h rdpa what_generate:1 children:yes action_mask:0x3e
+/bdmf/code/gen pbit_to_queue AG_INC_DIR/rdpa_ag_pbit_to_queue.h rdpa what_generate:1 children:yes action_mask:0x3e
+/bdmf/code/gen tc_to_queue AG_INC_DIR/rdpa_ag_tc_to_queue.h rdpa what_generate:1 children:yes action_mask:0x3e
+/bdmf/code/gen ip_class AG_INC_DIR/rdpa_ag_ip_class.h rdpa what_generate:1 children:yes action_mask:0x3e
+/bdmf/code/gen l2_class AG_INC_DIR/rdpa_ag_l2_class.h rdpa what_generate:1 children:yes action_mask:0x3e
+/bdmf/code/gen port AG_INC_DIR/rdpa_ag_port.h rdpa what_generate:1 children:yes action_mask:0x3e
+/bdmf/code/gen vlan AG_INC_DIR/rdpa_ag_vlan.h rdpa what_generate:1 children:yes action_mask:0x3e
+/bdmf/code/gen iptv AG_INC_DIR/rdpa_ag_iptv.h rdpa what_generate:1 children:yes action_mask:0x3e
+/bdmf/code/gen cpu AG_INC_DIR/rdpa_ag_cpu.h rdpa what_generate:1 children:yes action_mask:0x3e
+/bdmf/code/gen filter AG_INC_DIR/rdpa_ag_filter.h rdpa what_generate:1 children:yes action_mask:0x3e
+/bdmf/code/gen ingress_class AG_INC_DIR/rdpa_ag_ingress_class.h rdpa what_generate:1 children:yes action_mask:0x3e
+/bdmf/code/gen llid AG_INC_DIR/rdpa_ag_llid.h rdpa what_generate:1 children:yes action_mask:0x3e
+/bdmf/code/gen pbit_to_gem AG_INC_DIR/rdpa_ag_pbit_to_gem.h rdpa what_generate:1 children:yes action_mask:0x3e
+/bdmf/code/gen spdsvc AG_INC_DIR/rdpa_ag_spdsvc.h rdpa what_generate:1 children:yes action_mask:0x3e
+/bdmf/code/gen gem AG_INC_DIR/rdpa_ag_gem.h rdpa what_generate:1 children:yes action_mask:0x3e
+/bdmf/code/gen tcont AG_INC_DIR/rdpa_ag_tcont.h rdpa what_generate:1 children:yes action_mask:0x3e
+/bdmf/code/gen ucast AG_INC_DIR/rdpa_ag_ucast.h rdpa what_generate:1 children:yes action_mask:0x3e
+/bdmf/code/gen l2_ucast AG_INC_DIR/rdpa_ag_l2_ucast.h rdpa what_generate:1 children:yes action_mask:0x3e
+/bdmf/code/gen mcast AG_INC_DIR/rdpa_ag_mcast.h rdpa what_generate:1 children:yes action_mask:0x3e
+/bdmf/code/gen xtm AG_INC_DIR/rdpa_ag_xtm.h rdpa what_generate:1 children:yes action_mask:0x3e
+/bdmf/code/gen ipsec AG_INC_DIR/rdpa_ag_ipsec.h rdpa what_generate:1 children:yes action_mask:0x3e
+/bdmf/code/gen dhd_helper AG_INC_DIR/rdpa_ag_dhd_helper.h rdpa what_generate:1 children:yes action_mask:0x3e
+/bdmf/code/gen wlan_mcast AG_INC_DIR/rdpa_ag_wlan_mcast.h rdpa what_generate:1 children:yes action_mask:0x3e
+/bdmf/code/gen tcpspdtest AG_INC_DIR/rdpa_ag_tcpspdtest.h rdpa what_generate:1 children:yes action_mask:0x3e
+
+# Generate GPL layer
+/bdmf/code/gen system AG_GPL_DIR/rdpa_gpl_system.c rdpa what_generate:2 children:no action_mask:0x3e
+/bdmf/code/gen bridge AG_GPL_DIR/rdpa_gpl_bridge.c rdpa what_generate:2 children:yes action_mask:0x3e
+/bdmf/code/gen egress_tm AG_GPL_DIR/rdpa_gpl_egress_tm.c rdpa what_generate:2 children:yes action_mask:0x3e
+/bdmf/code/gen policer AG_GPL_DIR/rdpa_gpl_policer.c rdpa what_generate:2 children:yes action_mask:0x3e
+/bdmf/code/gen vlan_action AG_GPL_DIR/rdpa_gpl_vlan_action.c rdpa what_generate:2 children:yes action_mask:0x3e
+/bdmf/code/gen dscp_to_pbit AG_GPL_DIR/rdpa_gpl_dscp_to_pbit.c rdpa what_generate:2 children:yes action_mask:0x3e
+/bdmf/code/gen pbit_to_queue AG_GPL_DIR/rdpa_gpl_pbit_to_queue.c rdpa what_generate:2 children:yes action_mask:0x3e
+/bdmf/code/gen tc_to_queue AG_GPL_DIR/rdpa_gpl_tc_to_queue.c rdpa what_generate:2 children:yes action_mask:0x3e
+/bdmf/code/gen ip_class AG_GPL_DIR/rdpa_gpl_ip_class.c rdpa what_generate:2 children:yes action_mask:0x3e
+/bdmf/code/gen l2_class AG_GPL_DIR/rdpa_gpl_l2_class.c rdpa what_generate:2 children:yes action_mask:0x3e
+/bdmf/code/gen port AG_GPL_DIR/rdpa_gpl_port.c rdpa what_generate:2 children:yes action_mask:0x3e
+/bdmf/code/gen vlan AG_GPL_DIR/rdpa_gpl_vlan.c rdpa what_generate:2 children:yes action_mask:0x3e
+/bdmf/code/gen iptv AG_GPL_DIR/rdpa_gpl_iptv.c rdpa what_generate:2 children:yes action_mask:0x3e
+/bdmf/code/gen cpu AG_GPL_DIR/rdpa_gpl_cpu.c rdpa what_generate:2 children:yes action_mask:0x3e
+/bdmf/code/gen filter AG_GPL_DIR/rdpa_gpl_filter.c rdpa what_generate:2 children:yes action_mask:0x3e
+/bdmf/code/gen ingress_class AG_GPL_DIR/rdpa_gpl_ingress_class.c rdpa what_generate:2 children:yes action_mask:0x3e
+/bdmf/code/gen llid AG_GPL_DIR/rdpa_gpl_llid.c rdpa what_generate:2 children:yes action_mask:0x3e
+/bdmf/code/gen pbit_to_gem AG_GPL_DIR/rdpa_gpl_pbit_to_gem.c rdpa what_generate:2 children:yes action_mask:0x3e
+/bdmf/code/gen spdsvc AG_GPL_DIR/rdpa_gpl_spdsvc.c rdpa what_generate:2 children:yes action_mask:0x3e
+/bdmf/code/gen gem AG_GPL_DIR/rdpa_gpl_gem.c rdpa what_generate:2 children:yes action_mask:0x3e
+/bdmf/code/gen tcont AG_GPL_DIR/rdpa_gpl_tcont.c rdpa what_generate:2 children:yes action_mask:0x3e
+/bdmf/code/gen ucast AG_GPL_DIR/rdpa_gpl_ucast.c rdpa what_generate:2 children:yes action_mask:0x3e
+/bdmf/code/gen l2_ucast AG_GPL_DIR/rdpa_gpl_l2_ucast.c rdpa what_generate:2 children:yes action_mask:0x3e
+/bdmf/code/gen mcast AG_GPL_DIR/rdpa_gpl_mcast.c rdpa what_generate:2 children:yes action_mask:0x3e
+/bdmf/code/gen xtm AG_GPL_DIR/rdpa_gpl_xtm.c rdpa what_generate:2 children:yes action_mask:0x3e
+/bdmf/code/gen ipsec AG_GPL_DIR/rdpa_gpl_ipsec.c rdpa what_generate:2 children:yes action_mask:0x3e
+/bdmf/code/gen dhd_helper AG_GPL_DIR/rdpa_gpl_dhd_helper.c rdpa what_generate:2 children:yes action_mask:0x3e
+/bdmf/code/gen wlan_mcast AG_GPL_DIR/rdpa_gpl_wlan_mcast.c rdpa what_generate:2 children:yes action_mask:0x3e
+/bdmf/code/gen tcpspdtest AG_GPL_DIR/rdpa_gpl_tcpspdtest.c rdpa what_generate:2 children:yes action_mask:0x3e
+
+/bdmf/code/gen system AG_USR_DIR/rdpa_system_user_ag.h rdpa what_generate:4 children:no action_mask:0x3e
+/bdmf/code/gen port AG_USR_DIR/rdpa_port_user_ag.h rdpa what_generate:4 children:yes action_mask:0x3e
+/bdmf/code/gen egress_tm AG_USR_DIR/rdpa_egress_tm_user_ag.h rdpa what_generate:4 children:yes action_mask:0x3e
+/bdmf/code/gen iptv AG_USR_DIR/rdpa_iptv_user_ag.h rdpa what_generate:4 children:yes action_mask:0x3e
+/bdmf/code/gen vlan AG_USR_DIR/rdpa_vlan_user_ag.h rdpa what_generate:4 children:yes action_mask:0x3e
+/bdmf/code/gen vlan_action AG_USR_DIR/rdpa_vlan_action_user_ag.h rdpa what_generate:4 children:yes action_mask:0x3e
+/bdmf/code/gen tcont AG_USR_DIR/rdpa_tcont_user_ag.h rdpa what_generate:4 children:yes action_mask:0x3e
+/bdmf/code/gen tc_to_queue AG_USR_DIR/rdpa_tc_to_queue_user_ag.h rdpa what_generate:4 children:yes action_mask:0x3e
+/bdmf/code/gen llid AG_USR_DIR/rdpa_llid_user_ag.h rdpa what_generate:4 children:yes action_mask:0x3e
+/bdmf/code/gen ingress_class AG_USR_DIR/rdpa_ingress_class_user_ag.h rdpa what_generate:4 children:yes action_mask:0x3e
+/bdmf/code/gen policer AG_USR_DIR/rdpa_policer_user_ag.h rdpa what_generate:4 children:yes action_mask:0x3e
+/bdmf/code/gen pbit_to_queue AG_USR_DIR/rdpa_pbit_to_queue_user_ag.h rdpa what_generate:4 children:yes action_mask:0x3e
+/bdmf/code/gen pbit_to_gem AG_USR_DIR/rdpa_pbit_to_gem_user_ag.h rdpa what_generate:4 children:yes action_mask:0x3e
+
+# Generate Python classes
+/bdmf/code/py UT_PY_DIR rdpa_ debug
+
+/ quit
+
+

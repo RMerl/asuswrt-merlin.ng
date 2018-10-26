@@ -1,0 +1,27 @@
+if BCM_KF_OPTEE_414_BACKPORTS
+# Generic Trusted Execution Environment Configuration
+config HAVE_ARM_SMCCC
+	bool "SMC Call Support"
+	def_bool n
+	depends on BCM_KF_OPTEE
+
+config TEE
+	tristate "Trusted Execution Environment support"
+	depends on COMPILE_TEST || BCM_KF_OPTEE
+	select DMA_SHARED_BUFFER
+	select GENERIC_ALLOCATOR
+	select HAVE_ARM_SMCCC
+	help
+	  This implements a generic interface towards a Trusted Execution
+	  Environment (TEE).
+
+if TEE
+
+menu "TEE drivers"
+
+source "drivers/tee/optee/Kconfig"
+
+endmenu
+
+endif
+endif # BCM_KF_OPTEE_414_BACKPORTS

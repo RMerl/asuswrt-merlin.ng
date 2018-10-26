@@ -1,0 +1,74 @@
+<PUBLISH>
+--- targets/963268GW/963268GW	2017-06-16 03:43:59.209424481 +0000
++++ targets/963268GW_DESKTOP/963268GW_DESKTOP	2017-08-02 07:13:29.268809027 +0000
+@@ -126,7 +126,9 @@
+ BUILD_DM_HYBRID=y
+ # BUILD_DM_PURE181 is not set
+ # BUILD_DM_DETECT is not set
+-# DESKTOP_LINUX is not set
++DESKTOP_LINUX=y
++# BUILD_DESKTOP_BEEP is not set
++PROFILE_ARCH=i386
+ BUILD_BUSYBOX=dynamic
+ # BUILD_BUSYBOX_BRCM_LITE is not set
+ BUILD_BUSYBOX_BRCM_FULL=y
+@@ -238,28 +240,27 @@
+ #
+ # WLAN Selection
+ #
+-BRCM_DRIVER_WIRELESS=m
++# BRCM_DRIVER_WIRELESS is not set
+ BRCM_DRIVER_DHD=m
+ # BRCM_WAPI is not set
+-BRCM_WLALTBLD="default"
+ BUILD_WIFIWAN=
+ # BRCM_WLMEDIA is not set
+ WLBRAND_none=y
+ BRCM_WLBRAND=
+ BCM_WLIMPL=
+-BUILD_WLCTL=dynamic
++# BUILD_WLCTL is not set
+ BUILD_DHDCTL=dynamic
+-BUILD_WLHSPOT=y
++# BUILD_WLHSPOT is not set
+ BUILD_WBD=y
+ BUILD_WLVISUALIZATION=y
+ BUILD_UNIFIED_WLMNGR=y
+-BUILD_NAS=dynamic
+-WLSETUP_WPS=y
+-# WLSETUP_none is not set
+-BUILD_WPS_BTN=dynamic
+-BUILD_LLTD=dynamic
+-BUILD_WSC=dynamic
+-BUILD_NVRAM=dynamic
++# BUILD_NAS is not set
++# WLSETUP_WPS is not set
++WLSETUP_none=y
++BUILD_WPS_BTN=
++BUILD_LLTD=
++BUILD_WSC=
++# BUILD_NVRAM is not set
+ # BRCM_DRIVER_WIRELESS_USBAP is not set
+ 
+ #
+@@ -431,10 +432,7 @@
+ # BUILD_LIBXML2 is not set
+ # BUILD_LIBSQLITE is not set
+ # BUILD_LIBCAP is not set
+-BRCM_USER_SSP=y
+-BRCM_SSP_LEVEL_MIN=y
+-# BRCM_SSP_LEVEL_TYP is not set
+-# BRCM_SSP_LEVEL_MAX is not set
++# BRCM_USER_SSP is not set
+ # BUILD_LXC is not set
+ # BUILD_QRCODE is not set
+ # BUILD_BCM_RECVFILE is not set
+@@ -492,7 +490,7 @@
+ # BUILD_TR69_AUTONOMOUS_TRANSFER_COMPLETE_RPC is not set
+ # BUILD_STUN is not set
+ # BUILD_PROFILE_SUPPORTED_DATA_MODEL is not set
+-BUILD_XMPP=y
++# BUILD_XMPP is not set
+ # BUILD_ALLJOYN is not set
+ # BUILD_UPNP_IGD_HTTP_CONNREQ is not set
+ # BUILD_SNMP is not set

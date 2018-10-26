@@ -1,0 +1,756 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<title>Broadcom MDK Programmer's Reference, mdk_ug_cdk_components</title>
+
+<meta http-equiv="Content-Type" content="text/html;charset=utf-8">
+
+<style type="text/css">
+<!--
+body {
+	font-family: verdana, arial, helvetica, sans-serif;
+}
+pre.code {
+        background: #eaeaea;
+        color: black;
+        width: auto;
+        margin-left: 0em;
+        margin-right: 1em;
+        border: solid 1px black;
+        white-space: pre;
+        padding: 4px;
+        font-family: courier new, courier, monospace;
+        font-weight: normal;
+        font-size: 80%;
+}
+tt {
+        font-family: courier new, courier, monospace;
+}
+a:link, a:visited {
+        text-decoration: none;
+}
+-->
+</style>
+</head>
+
+<body bgcolor="#ffffff">
+<table><tr><td width="20">&nbsp;</td><td width="700">
+    <h2><a href="index.html">Broadcom MDK Programmer's Reference</a></h2>
+    <h2>4.  CDK Components
+</h2>
+<p>The CDK is the basic building block for switching applications, and it
+provides several components that can be used independently of each
+other.
+<a name="mdk_ug_basic_programming_interface"></a>
+<h3>4.1.   Basic Programming Interface</h3>
+<p>An header file for each supported chip defines all necessary access
+macros for operating the chip, i.e. for each register and memory the
+following definitions exist:
+<ul><li> Base address
+</li><li> C type definition
+</li><li> Field access macros
+</li><li> Read/write access macros
+</li></ul>The C types and access macros are defined in such way that basic type
+checks can be performed by a C compiler, e.g. if a register type is
+used with an incorrect field access macro, this will result in a
+compile error.
+<p>All macro names are prefixed with the chip name, but by default these
+names are redefined to "chip-less" macro names for improved code
+readability. It is only necessary to use the chip-specific macro names
+if multiple chips must be supported in a single C source file. In this
+case, the chip-less macro names must be disabled in order to avoid name
+ conflicts. Please see  <a href="sect_mdk_ug_cdk_components.html#mdk_ug_cdk_configuration">Section 4.6,  CDK Configuration
+</a>  for additional
+information.
+<pre class="code">
+/* Chip-less type */
+CMIC_CONFIGr_t
+
+/* Fully qualified type */
+BCM56504_B0_CMIC_CONFIGr_t
+
+The following is an example of driver code built on the CDK macros:
+
+static int
+<tt>_cmic_burst_config</tt>(int unit)
+{
+    CMIC_CONFIGr_t cc; 
+    int ioerr = 0;
+    
+    /* Read the current <tt>CMIC_CONFIG</tt> register */
+    ioerr += READ_CMIC_CONFIGr(unit, &amp;cc); 
+
+    /* Enable Read and Write Bursting */
+    CMIC_CONFIGr_RD_BRST_ENf_SET(cc, 1);
+    CMIC_CONFIGr_WR_BRST_ENf_SET(cc, 1);
+
+    /* Write the config */
+    ioerr += WRITE_CMIC_CONFIGr(unit, cc); 
+    
+    return ioerr; 
+}
+</pre>
+The lowercase r appended to the register name indicates that this is
+indeed a register. Chip memory names will have a lowercase m appended
+instead, a port table memory entry type will look like this:
+<pre class="code">
+PORT_TABm_t
+</pre>
+The read/write macros always have the same basic format whether they
+access a simple 32-bit register or a multi-word memory entry. This
+means that for read macros data is passed by reference, and for write
+macros data is passed as immediate data.
+<p>A common operation on register and memory variables is to initialize
+these to all zeros. A special macro exists for this purpose:
+<pre class="code">
+int foo(void)
+{
+    CMIC_IRQ_MASKr_t <tt>irq_mask</tt>;
+
+    /* Disable Interrupts */
+    CMIC_IRQ_MASKr_CLR(<tt>irq_mask</tt>);
+    WRITE_CMIC_IRQ_MASKr(unit, <tt>irq_mask</tt>); 
+}
+</pre>
+Some registers require special access, which cannot be accommodated
+with the field access macros. To address this, all 32-bit registers
+also have a special macro for assigning a raw value to the register
+variable:
+<pre class="code">
+int foo(void)
+{
+    CMIC_ENDIANESS_SELr_t ces; 
+    <tt>uint32_t</tt> <tt>endian_sel</tt> = <tt>get_endian_val</tt>();
+
+    CMIC_ENDIANESS_SELr_SET(ces, <tt>endian_sel</tt>);
+    WRITE_CMIC_ENDIANESS_SELr(unit, ces); 
+}
+</pre>
+<p><a name="mdk_ug_system_interface"></a>
+<h3>4.2.   System Interface</h3>
+<p>Before the basic CDK programming interface can be used for reading and
+writing registers each switch device must be assigned a set of
+hardware access functions. The most simple possible system interface is a
+logical register base address, but it is also possible to supply register
+read/write functions.The hardware access functions are supplied via a
+device vector structure with the following layout:
+<pre class="code">
+typedef struct <tt>cdk_dev_vectors_s</tt> {
+
+    /* Context pointer for device vector functions */
+    void *dvc;
+
+    /* Device base address (if memory mapped) */
+    volatile <tt>uint32_t</tt> *<tt>base_addr</tt>;
+
+    /* Register read/write vectors for 32-bit register entities */
+    int (*read32)(void *dvc, <tt>uint32_t</tt> addr, <tt>uint32_t</tt> *data); 
+    int (*write32)(void *dvc, <tt>uint32_t</tt> addr, <tt>uint32_t</tt> data); 
+
+    /* Register read/write vectors for arbitrary register widths */
+    int (*read)(void *dvc, <tt>uint32_t</tt> addr, <tt>uint8_t</tt> *data, <tt>uint32_t</tt> len); 
+    int (*write)(void *dvc, <tt>uint32_t</tt> addr, const <tt>uint8_t</tt> *data, <tt>uint32_t</tt> len); 
+
+} <tt>cdk_dev_vectors_t</tt>; 
+</pre>
+Depending on the switch architecture family, some of the hardware
+access functions can be left empty, e.g. the StrataXGS family of chips need
+only the <tt>base_addr</tt> or the read32/write32 fields defined to function,
+whereas the RoboSwitch family needs only the read/write fields defined.
+<p>The device vectors are assigned with the following function:
+<pre class="code">
+extern int <tt>cdk_dev_create</tt>(<tt>cdk_dev_id_t</tt> *id, <tt>cdk_dev_vectors_t</tt> *dv, <tt>uint32_t</tt> flags);
+</pre>
+The id structure must be filled with complete device ID information,
+e.g. for a PCI interface this would be PCI Vendor ID, PCI Device ID
+and Revision.
+<pre class="code">
+typedef struct <tt>cdk_dev_id_s</tt> {
+    <tt>uint16_t</tt> <tt>vendor_id</tt>;
+    <tt>uint16_t</tt> <tt>device_id</tt>;
+    <tt>uint16_t</tt> revision;
+    <tt>uint16_t</tt> reserved;
+} <tt>cdk_dev_id_t</tt>; 
+</pre>
+The flags argument depends on the switch architecture family and the
+CPU subsystem, and e.g. for the XGS family, one or more of the
+following flags must be supplied:
+<pre class="code">
+<tt>CDK_DEV_BE_PIO</tt>
+<tt>CDK_DEV_BE_PACKET</tt>
+<tt>CDK_DEV_BE_OTHER</tt>
+</pre>
+These flags are used to configure the endianess of various access
+types as described in the XGS chip documentation.
+<p>After a CDK device has been created the basic programming interface
+can be used without any additional initialization.
+<p><a name="mdk_ug_debug_shell"></a>
+<h3>4.3.   Debug Shell</h3>
+<p>The CDK includes a small extensible debug shell, which can be used to
+inspect and modify chip registers and memories. The initial shell
+configuration has only very few commands built-in (help, quit, exit,
+cdk and optionally debug.) All other commands must be added to the
+shell configuration before it is started, but the CDK includes a
+helper function which installs a set of basic debug commands. The set
+of debug commands can be adjusted via the general CDK configuration
+mechanism, which is described in a separate section.
+<p>To add commands to the CDK shell, use the following function:
+<pre class="code">
+extern int <tt>cdk_shell_add_command</tt>(<tt>cdk_shell_command_t</tt> *shcmd, <tt>uint32_t</tt>
+flags);
+</pre>
+The commands are described using the structure below, which must
+contain a command name, a command function pointer and a brief
+description (less than 40 characters recommended) of the purpose of
+the command. It is strongly recommended that a synopsis (command
+syntax) and a detailed help text are supplied as well.
+<pre class="code">
+typedef struct <tt>cdk_shell_command_s</tt> {
+    /* Mandatory fields */
+    char *name;
+    int (*func)(int argc, char *argv[]);
+    char *desc;
+    /* Recommended fields */
+    char *synop;
+    char *help[<tt>CDK_SHELL_MAX_HELP_LINES</tt>];
+    /* Fields for internal use */
+    struct <tt>cdk_shell_command_s</tt> *next;
+    <tt>uint32_t</tt> flags;
+} <tt>cdk_shell_command_t</tt>;
+</pre>
+The command function will be passed trimmed arguments starting from
+the first argument following the command name, i.e. the command name
+itself is not passed in the arguments list. The command function must
+return one of the following result codes:
+<pre class="code">
+<tt>CDK_SHELL_CMD_OK</tt>      
+<tt>CDK_SHELL_CMD_ERROR</tt>   
+<tt>CDK_SHELL_CMD_EXIT</tt>    
+<tt>CDK_SHELL_CMD_INVALID</tt> 
+<tt>CDK_SHELL_CMD_BAD_ARG</tt> 
+<tt>CDK_SHELL_CMD_NO_SYM</tt>  
+</pre>
+The shell is launched with the following function:
+<pre class="code">
+extern int <tt>cdk_shell</tt>(const char *<tt>sh_prompt</tt>, <tt>cdk_shell_gets_t</tt> <tt>sh_gets</tt>); 
+</pre>
+The <tt>sh_gets</tt> argument is a pointer to a console input function supplied
+by the system:
+<pre class="code">
+typedef char *(*<tt>cdk_shell_gets_t</tt>)(const char *prompt, char* str, int max); 
+</pre>
+The input function should display prompt and store zero-terminated
+console input in the str buffer, which can hold max number of
+characters.
+<p>Console output is handled by the printf function, which can be
+supplied by the system or the CDK. If the CDK printf is used, the
+function pointer <tt>cdk_printhook</tt> must be assigned a pointer to an output
+function with the following definition:
+<pre class="code">
+extern int (*<tt>cdk_printhook</tt>)(const char *str);
+</pre>
+By default the CDK shell includes a help function, which displays
+command-specific help or lists all available shell commands. To see a
+list of available commands type <tt>help</tt> at the shell prompt. For
+command specific help, type <tt> help &lt;command-name&gt;. </tt><p>The CDK shell supports partial command name matches, e.g. it is
+sufficient to type h instead of help given that no other command
+starts with an 'h'.
+<p>The CDK shell offers two types of commands for reading and writing
+switch chip registers/memories, symbolic and raw. The symbolic access
+commands are called get and set and the raw access commands are called
+geti and seti (get/set immediate.) The symbolic access functions are
+obviously much easier to work with, but they require the symbol
+library to be included in the application, which easily takes the
+application size beyond 1 MB even if only a single chip is
+supported. Through configuration options the symbol tables can be
+reduced in size if no field decoding of registers/memories is
+required.
+<p>The symbolic access functions use the same naming conventions as the
+CDK programming interface, i.e. to reference a register, the register
+name must have an 'r' appended and likewise memory names must have an
+'m' appended.
+<p>The following is an example of reading the contents of the <tt>CMIC_CONFIG</tt> register:
+<pre class="code">
+CDK&gt; get <tt>cmic_configr</tt>
+</pre>
+Note that the register name can be supplied in lowercase as well as in
+uppercase.
+<p>Using the raw access method, the corresponding command would be:
+<pre class="code">
+CDK&gt; geti cmic 0x10c
+</pre>
+Since the access type cannot be derived from the register/memory name
+for raw access, the access type must be specified explicitly. In
+addition to cmic (directly mapped PCI register access), reg (indirect
+register access), mem (memory access) and miim (MII/PHY register
+access) are supported.
+<p>Note that some shell commands offer additional debug output messages,
+which can be enabled with the debug command. Currently the CDK
+supports 4 classes of debug messages, which are:
+<ul><li> Error
+</li><li> Warning
+</li><li> Verbose
+</li><li> Very Verbose
+<p>The debug message subsystem can be compiled out completely to save
+space.
+</li></ul><p><a name="mdk_ug_cdk_shell_commands"></a>
+<h3>4.4.   CDK Shell Commands</h3>
+<p>The following section described the available CDK shell commands in
+detail. These descriptions apply to the StrataXGS family
+of chips, which means that some commands may have a slightly different
+syntax for other chip families.
+<p>A special feature of the CDK shell is that the current unit number is
+shown as part of the shell prompt. All commands will be performed on
+the current unit. If multiple units exist, as shown in the following example, a unit number followed by a colon will switch to another unit:
+<pre class="code">
+CDK.0&gt; 2:
+CDK.2&gt;
+</pre>
+<a name="mdk_ug_cdk_shcmd_help"></a>
+<h4>4.4.1.   help</h4>
+<p>With no arguments, the <tt>help</tt> command will show a brief
+description of all available shell commands. For detailed help on a
+specific command, the command name should be specified as an argument.
+<p>Examples:
+<pre class="code">
+CDK.0&gt; help
+CDK.0&gt; help geti
+</pre>
+<p><a name="mdk_ug_cdk_shcmd_quit_exit"></a>
+<h4>4.4.2.   quit, exit</h4>
+<p>The <tt>quit</tt> and <tt>exit</tt> commands can both be used to quit the CDK
+shell. There is no functional difference between the two commands.
+<p>Example:
+<pre class="code">
+CDK.0&gt; quit
+</pre>
+<p><a name="mdk_ug_cdk_shcmd_cdk"></a>
+<h4>4.4.3.   cdk</h4>
+<p>The <tt>cdk</tt> command will show a complete list of all CDK compile-time
+configuration options and their settings.
+<p>The syntax for the command is as follows:
+<pre class="code">
+cdk [argument [argument ...]]
+</pre>
+The arguments to the <tt>cdk</tt> command are option filters on the configuration options 
+you wish to display. You may specify any number of the following optional arguments:
+<pre class="code">
+1             Display all variables that are non-zero.
+0             Display all variables that are zero. 
+&lt;substring&gt;   Only display if the given substring is in the name. 
+!&lt;substring&gt;  Only display if the given substring is not in the name. 
+</pre>
+Examples:
+<pre class="code">
+CDK.0&gt; cdk
+CDK.0&gt; cdk !BCM
+CDK.0&gt; cdk <tt>SHELL_INCLUDE</tt>
+CDK.0&gt; cdk BCM56 !5695
+</pre>
+<p><a name="mdk_ug_cdk_shcmd_debug"></a>
+<h4>4.4.4.   debug</h4>
+<p>With no arguments, the current debug settings are displayed. To turn
+on additional debug messages, add one or more debug options as
+arguments. To turn off a debug option, prepend it with a '!' (bang.)
+<p>Example turning off warning messages:
+<pre class="code">
+CDK.0&gt; debug !warn
+</pre>
+<p><a name="mdk_ug_cdk_shcmd_unit"></a>
+<h4>4.4.5.   unit</h4>
+<p>The <tt>unit</tt> command will display information about the current unit such
+as PCI device ID and block types.
+<p>Example:
+<pre class="code">
+CDK.0&gt; unit
+</pre>
+<p><a name="mdk_ug_cdk_shcmd_geti"></a>
+<h4>4.4.6.   geti</h4>
+<p>The <tt>geti</tt> command (get immediate) reads registers and memories based on
+raw numbers, and does not rely on symbols tables at all, which makes
+it suitable as a debug command in e.g. a boot loader
+application. Since no symbol information is used, the geti command
+needs to know which address space to use (PCI, indirect
+register/memory or MII) and optionally the size of the entity to read
+(the default size is one 32-bit word.)
+<p>The syntax for the geti command is as follows:
+<pre class="code">
+geti access-type address [size]
+</pre>
+Supported access types for XGS devices are cmic (PCI), reg (chip
+register), mem (chip memory) and miim (MII).
+<p>Example reading the <tt>CMIC_CONFIG</tt> register on a BCM56504 device:
+<pre class="code">
+CDK.0&gt; geti cmic 0x10c
+</pre>
+Example reading L2X memory entry 4 on a BCM45504 device (one entry
+occupies three 32-bit words):
+<pre class="code">
+CDK.0&gt; geti mem 0x6700004 3
+</pre>
+<p><a name="mdk_ug_cdk_shcmd_seti"></a>
+<h4>4.4.7.   seti</h4>
+<p>The <tt>seti</tt> command is used to modify registers and memories using raw
+values and the syntax is similar to that of the geti command:
+<pre class="code">
+seti access-type address value[:value2[:value3 ...]] [size]
+</pre>
+If a register or memory occupies more than one 32-bit word, multiple
+32-bit word can be specified using a colon as separator.
+<p>Example writing 0x43 to the <tt>CMIC_CONFIG</tt> register on a BCM56504 device:
+<pre class="code">
+CDK.0&gt; seti cmic 0x10c 0x43
+</pre>
+Example writing L2X memory entry 4 on a BCM45504 device (one entry
+occupies three 32-bit words):
+<pre class="code">
+CDK.0&gt; seti mem 0x6700004 0x112233:0x44550000:0x8 3
+</pre>
+<p><a name="mdk_ug_cdk_shcmd_list"></a>
+<h4>4.4.8.   list</h4>
+<p>The <tt>list</tt> command displays information of one or more symbols in the
+symbol table. The command takes a symbol-string as argument, and
+information for all symbols that matches the symbol-string will be
+displayed. The first character of the symbol-string determines how the
+symbols are matched.
+<p>If the first character is <tt>*</tt> (asterisk) then all symbols that contain
+the symbol-string will be matched.
+<p> If the first character is <tt>@</tt> (at) then a symbol must match the
+symbol-string exactly.
+<p>If the first character is <tt>^</tt> (caret) the all symbols that begin with
+symbol-string will be matched.
+<p>If no special character is specified, the symbol-string will be
+matched as if a * had been specified (sub-string match.)
+<p><a name="mdk_ug_cdk_shcmd_get"></a>
+<h4>4.4.9.   get</h4>
+<p>The <tt>get</tt> command provides symbolic access to all chip registers and
+memories. The command syntax is a follows:
+<pre class="code">
+get expr [nz] [raw] [flags=symflags]
+</pre>
+The mandatory expr argument can be in one of the following forms:
+<pre class="code">
+name
+name.port
+name.block
+name.block.first-port,last-port
+name[index]
+name[first-index,last-index]
+name[index].block.first-port,last-port
+</pre>
+If the nz option is specified, then only registers/memories with
+non-zero contents will be displayed.
+<p>The raw option suppresses the decoding of individual register/memory
+fields, which is sometimes useful when displaying a large range of
+complex memory entries.
+<p>The flags argument can be used to match against one or more flags in
+the symbol table. Currently the following flags are supported:
+register, port, counter, memory, r64, big-endian.
+<p>Example reading the GMACC1 register for logical port 0:
+<pre class="code">
+CDK.0&gt; get GMACC1r.0
+</pre>
+Example reading the GMACC1 register for logical ports 1 through 4:
+<pre class="code">
+CDK.0&gt; get GMACC1r.1,4
+</pre>
+Example reading the GMACC1 register for all ports in block GPORT0 with
+no field decoding:
+<pre class="code">
+CDK.0&gt; get raw GMACC1r.gport0
+</pre>
+Example reading array index 1 of LWMCOSCELLSETLIMIT registers for
+logical port 1 and 2:
+<pre class="code">
+CDK.0&gt; get LWMCOSCELLSETLIMITr[1].mmu0.1,2
+</pre>
+Example reading all non-zero counter registers:
+<pre class="code">
+CDK.0&gt; get nz flags=counter
+</pre>
+<p><a name="mdk_ug_cdk_shcmd_set"></a>
+<h4>4.4.10.   set</h4>
+<p>The <tt>set</tt> command is used to modify chip register and memory contents
+using the symbolic names. The basic syntax is a follows:
+<pre class="code">
+set expr value [value [value ... ]] [field=value [field=value ... ]]
+</pre>
+The expr argument takes the same forms as described for the get
+command, and the contents can be modified either on a field basis or
+by writing one or more raw 32-bit words (depending on the size of the
+register/memory.)
+<p>Example updating the GMACC1 register on logical port 0:
+<pre class="code">
+CDK.0&gt; set GMACC1r.0 RXEN0=1 TXEN0=1
+</pre>
+Example updating the GMACC1 register on logical ports 1 through 3
+(notice th binary notation):
+<pre class="code">
+CDK.0&gt; set GMACC1r.1,3 RXEN0=0b1 TXEN0=0b1
+</pre>
+Example updating L2X memory entry 0:
+<pre class="code">
+CDK.0&gt; set L2Xm[0] <tt>MAC_ADDR</tt>=0x010203040506
+</pre>
+Example clearing L2X memory entry 0 using raw values:
+<pre class="code">
+CDK.0&gt; set L2Xm[0] 0 0 0
+</pre>
+<p><p><a name="mdk_ug_minimal_c_library"></a>
+<h3>4.5.   Minimal C Library</h3>
+<p>The CDK includes a minimal C library to eliminate dependencies on
+external libraries, however if such external libraries are available,
+it is fairly simple to let the CDK take advantage of this in order to
+reduce the application size.
+<p>The CDK C library has its own namespace in which all functions are
+prefixed with cdk_ (e.g. <tt>cdk_strcpy</tt>), however the header files have
+macros that allow an application to use standard names
+(e.g. strcpy). The header files allow use of external versions of
+library functions with per-function granularity.
+<p>For a complete list of CDK C library functions, please refer to the
+following header files in the CDK include directory:
+<pre class="code">
+<tt>cdk_string</tt>.h
+<tt>cdk_printf</tt>.h
+<tt>cdk_stdlib</tt>.h
+<tt>cdk_assert</tt>.h
+</pre>
+<p><a name="mdk_ug_cdk_configuration"></a>
+<h3>4.6.   CDK Configuration</h3>
+<p>The CDK configuration is controlled from the header file
+<tt>cdk_config.h.</tt> This file provides reasonable default values for all
+configuration parameters, but all default configuration values can be
+overridden without changing the <tt>cdk_config.h</tt> file. The configuration
+file controls the following major aspects of the CDK:
+<ul><li> Which devices to include support for
+</li><li> How many device instances to include support for
+</li><li> Which debug shell commands to include
+</li><li> How much chip symbol information to include
+</li></ul>The configuration parameters can be overridden via the compiler
+command line or through a special configuration file called
+<tt>cdk_custom_config</tt>.h, which must exist in the default compiler include
+path. In the latter case the only parameter that needs to be specified
+on the compiler command line is <tt>CDK_INCLUDE_CUSTOM_CONFIG</tt>.
+<p>Because of the large number of Broadcom switch devices in existence, a
+number of convenience macros exist to simplify the task of specifying
+which devices to include support for.
+<p>To be very specific, chip support can be specified at the revision
+level, e.g.:
+<pre class="code">
+#define <tt>CDK_CONFIG_INCLUDE_BCM56504_B1</tt>    1
+</pre>
+To be a little less specific, a revision group can be specified:
+<pre class="code">
+#define CDK_CONFIG_INCLUDE_BCM56504_Bx    1
+</pre>
+This will include support for revision B0, B1, etc.
+<p>Finally, chip support can be specified at the device ID level, e.g.:
+<pre class="code">
+#define <tt>CDK_CONFIG_INCLUDE_BCM56504</tt>       1
+</pre>
+This will include support for revisions A0, A1, A2, B0, B1, etc.
+<p>Most chip revisions of a particular device ID share the same driver
+code, but there are several exceptions to this rule, so if application
+size matters, the chips to support should be defined as narrowly as
+possible.
+<p>Please refer to the <tt>cdk_config.h</tt> file or the following table for a complete list of CDK
+configuration options. Note that a special shell command called <tt>cdk</tt>
+will list the settings of all CDK configuration parameters.
+
+<a name=CDK_CONFIG_TABLE></a>
+<br><br><b>Table 1:   CDK Configuration Definitions</b>
+<table cellpadding="4" cellspacing="0" border="1" summary="section"><tbody><tr><td><b>  DEFINE</b></td><td><b>  DEFAULT</b></td><td><b> Description
+</b></td></tr><tr><td><tt>CDK_INCLUDE_CUSTOM_CONFIG</tt></td><td><tt>Undefined</tt></td><td> Include system config file if specified
+</td></tr><tr><td><tt>CDK_CONFIG_INCLUDE_ASSERT</tt></td><td><tt> 1 </tt></td><td> Please see <tt>libc_assert</tt>.c and <tt>cdk_assert</tt>.h for details on providing a custom handler
+</td></tr><tr><td><tt>CDK_CONFIG_MAX_UNITS</tt></td><td><tt> 8 </tt></td><td> Maximum number of chips supported
+</td></tr><tr><td><tt>CDK_CONFIG_MAX_PORTS</tt></td><td><tt> 160 </tt></td><td> Maximum number of ports per chip supported
+</td></tr><tr><td><tt>CDK_CONFIG_SCHAN_MAX_POLLS</tt></td><td><tt> 100000 </tt></td><td> Maximum number of SCHAN polls
+</td></tr><tr><td><tt>CDK_CONFIG_MIIM_MAX_POLLS</tt></td><td><tt> 100000 </tt></td><td> Maximum number of MIIM polls
+</td></tr><tr><td><tt>CDK_CONFIG_MEMMAP_DIRECT</tt></td><td><tt> 0 </tt></td><td> Direct access to memory-mapped registers
+</td></tr><tr><td><tt>CDK_CONFIG_MEMORY_BARRIER</tt></td><td><tt> ; </tt></td><td> Memory Barrier if necessary
+</td></tr><tr><td><tt>CDK_CONFIG_INCLUDE_PORT_MAP</tt></td><td><tt> 0 </tt></td><td> Logical to physical port mappings
+</td></tr><tr><td><tt>CDK_CONFIG_INCLUDE_DYN_CONFIG</tt></td><td><tt> 1 </tt></td><td> Dynamic chip and port configuration
+</td></tr><tr><td><tt>CDK_CONFIG_INCLUDE_DEBUG</tt></td><td><tt> 1 </tt></td><td> Enable debug messages
+</td></tr><tr><td><tt>CDK_CONFIG_INCLUDE_CHIP_SYMBOLS</tt></td><td><tt> 1 </tt></td><td> Include chip symbol tables for the debug shell.
+No symbolic debugging (register/memory names) will be available
+without this defined.
+<p>You should enable at least these symbols if you can afford the space.
+<p>This define is required to get any symbols at all.
+If you only wish to include symbols for a subset of chips in the system
+(probably for code space reasons), you can define the following for each chip
+whose symbols you wish to EXCLUDE:
+<p>      <tt>CDK_CONFIG_EXCLUDE_CHIP_SYMBOLS_</tt>&lt;CHIP&gt;
+</td></tr><tr><td><tt>CDK_CONFIG_INCLUDE_FIELD_INFO</tt></td><td><tt> 1 </tt></td><td> Include register and memory field information for the debug shell.
+This provides encoding, decoding, and displaying individual field values for
+each register and memory.
+<p>Requires more code space than just the chip symbols alone.
+The per-chip exclusion define (<tt>CDK_CONFIG_EXCLUDE_FIELD_INFO_</tt>&lt;CHIP&gt;) also applies.
+</td></tr><tr><td><tt>CDK_CONFIG_INCLUDE_FIELD_NAMES</tt></td><td><tt> 1 </tt></td><td> Use symbolic names for all of the fields in a register or memory when
+encoding or decoding them.
+<p>This is the most powerful option, but increases the code size a little beyond
+the basic field information (which deals only with the bit spans of the fields).
+<p>Definitely enable if you have space.
+The per-chip exclusion define (<tt>CDK_CONFIG_EXCLUDE_FIELD_NAMES_</tt>&lt;CHIP&gt; also applies.
+</td></tr><tr><td><tt>CDK_CONFIG_INCLUDE_ALIAS_NAMES</tt></td><td><tt> 0 </tt></td><td> Include alternative symbol names for registers and memories.
+Mainly for internal Broadcom use, so you can safely leave this option off.
+</td></tr><tr><td><tt>CDK_CONFIG_CHIP_SYMBOLS_USE_DSYMS</tt></td><td><tt> 0 </tt></td><td> Use the regenerated symbol tables produced by the DSYM program with the debug shell instead of the individual chip-based static tables.
+When rebuilt according to your intended configuration the regenerated DSYM symbol tables will be smaller than the originals.
+</td></tr><tr><td><tt>CDK_CONFIG_DSYMS_USE_SYMTAB</tt></td><td><tt> 0 </tt></td><td> Use the DSYM regenerated symbol table for all dynamic chip programming structures instead of the individual definitions.
+</td></tr><tr><td><tt>CDK_CONFIG_DSYMS_INCLUDE_ALL</tt></td><td><tt> 0 </tt></td><td> Include all DSYM generated structures in a single build. This is used for testing purposes only, and should remain disabled by default.
+</td></tr><tr><td><tt>CDK_CONFIG_DSYMS_INCLUDE_NAMES</tt></td><td><tt> 0 </tt></td><td> Include the name string for each DSYM object. Makes debugging easier at the cost of string space.
+</td></tr><tr><td><tt>CDK_CONFIG_CHIP_DEFS_USE_DSYMS</tt></td><td><tt> 0 </tt></td><td> Redirect the static definitions in the chip headers to the DSYM versions.
+</td></tr><tr><td><tt>CDK_CONFIG_SHELL_IO_MAX_LINE</tt></td><td><tt> 128 </tt></td><td> Maximum shell input line length.
+</td></tr><tr><td><tt>CDK_CONFIG_SHELL_IO_MAX_PROMPT</tt></td><td><tt> 32 </tt></td><td> Maximum length of the shell prompt.
+</td></tr><tr><td><tt>CDK_CONFIG_SHELL_MAX_ARGS</tt></td><td><tt> 12 </tt></td><td> Maximum number of shell command arguments.
+</td></tr><tr><td><tt>CDK_CONFIG_SHELL_ERROR_STR</tt></td><td><tt> "*** error: " </tt></td><td> Prefix used when reporting errors during shell commands.
+</td></tr><tr><td><tt>CDK_CONFIG_SHELL_UNIT_PREFIX</tt></td><td><tt> 1 </tt></td><td> Allow command prefix to select current unit.
+</td></tr><tr><td><tt>CDK_CONFIG_SHELL_INCLUDE_HELP</tt></td><td><tt> 1 </tt></td><td> Include the HELP Command.
+</td></tr><tr><td><tt>CDK_CONFIG_SHELL_MAX_HELP_LINES</tt></td><td><tt> 4 </tt></td><td> Maximum number of command help lines.
+</td></tr><tr><td><tt>CDK_CONFIG_SHELL_INCLUDE_DEFAULT</tt></td><td><tt> 1 </tt></td><td> This is the default setting for all unspecified shell commands.
+</td></tr><tr><td><tt>CDK_CONFIG_SHELL_INCLUDE_GETI</tt></td><td><tt> 1 </tt></td><td> Include the GETI Command.
+</td></tr><tr><td><tt>CDK_CONFIG_SHELL_INCLUDE_SETI</tt></td><td><tt> 1 </tt></td><td> Include the SETI Command.
+</td></tr><tr><td><tt>CDK_CONFIG_SHELL_INCLUDE_GET</tt></td><td><tt> CDK_CONFIG_SHELL_INCLUDE_DEFAULT </tt></td><td> Include the GET Command.
+</td></tr><tr><td><tt>CDK_CONFIG_SHELL_INCLUDE_SET</tt></td><td><tt> CDK_CONFIG_SHELL_INCLUDE_DEFAULT </tt></td><td> Include the SET Command.
+</td></tr><tr><td><tt>CDK_CONFIG_SHELL_INCLUDE_CDK</tt></td><td><tt> CDK_CONFIG_SHELL_INCLUDE_DEFAULT </tt></td><td> Include the CDK Command.
+</td></tr><tr><td><tt>CDK_CONFIG_SHELL_INCLUDE_UNIT</tt></td><td><tt> CDK_CONFIG_SHELL_INCLUDE_DEFAULT </tt></td><td> Include the UNIT command.
+</td></tr><tr><td><tt>CDK_CONFIG_SHELL_INCLUDE_LIST</tt></td><td><tt> CDK_CONFIG_SHELL_INCLUDE_DEFAULT </tt></td><td> Include the LIST command.
+</td></tr><tr><td><tt>CDK_CONFIG_SHELL_INCLUDE_PID</tt></td><td><tt> CDK_CONFIG_SHELL_INCLUDE_DEFAULT </tt></td><td> Include the PID command.
+</td></tr><tr><td><tt>CDK_CONFIG_SHELL_INCLUDE_DEBUG</tt></td><td><tt> CDK_CONFIG_SHELL_INCLUDE_DEFAULT </tt></td><td> Include the DEBUG command.
+</td></tr><tr><td><tt>CDK_CONFIG_DEFINE_UINT8_T</tt></td><td><tt> 1 </tt></td><td> Type <tt>uint8_t</tt> is not provided by the system
+</td></tr><tr><td><tt>CDK_CONFIG_TYPE_UINT8_T</tt></td><td><tt> unsigned char </tt></td><td> Default type definition for <tt>uint8_t</tt>
+</td></tr><tr><td><tt>CDK_CONFIG_DEFINE_UINT16_T</tt></td><td><tt> 1 </tt></td><td> Type <tt>uint16_t</tt> is not provided by the system
+</td></tr><tr><td><tt>CDK_CONFIG_TYPE_UINT16_T</tt></td><td><tt> unsigned short </tt></td><td> Default type definition for <tt>uint16_t</tt>
+</td></tr><tr><td><tt>CDK_CONFIG_DEFINE_UINT32_T</tt></td><td><tt> 1 </tt></td><td> Type <tt>uint32_t</tt> is not provided by the system
+</td></tr><tr><td><tt>CDK_CONFIG_TYPE_UINT32_T</tt></td><td><tt> unsigned int </tt></td><td> Default type definition for <tt>uint32_t</tt>
+</td></tr><tr><td><tt>CDK_CONFIG_DEFINE_SIZE_T</tt></td><td><tt> 1 </tt></td><td> Type <tt>size_t</tt> is not provided by the system
+</td></tr><tr><td><tt>CDK_CONFIG_TYPE_SIZE_T</tt></td><td><tt> unsigned int </tt></td><td> Default type definition for <tt>size_t</tt>
+</td></tr><tr><td><tt>CDK_CONFIG_DEFINE_DMA_ADDR_T</tt></td><td><tt> 1 </tt></td><td> Type <tt>dma_addr_t</tt> is not provided by the system
+</td></tr><tr><td><tt>CDK_CONFIG_TYPE_DMA_ADDR_T</tt></td><td><tt> unsigned int </tt></td><td> Default type definition for <tt>dma_addr_t</tt>
+</td></tr><tr><td><tt>CDK_CONFIG_DEFINE_PRIu32</tt></td><td><tt> 1 </tt></td><td> Formatting macro CDK_PRIu32 is not provided by the system
+</td></tr><tr><td><tt>CDK_CONFIG_MACRO_PRIu32</tt></td><td><tt> "u" </tt></td><td> Default definition for formatting macro CDK_PRIu32
+</td></tr><tr><td><tt>CDK_CONFIG_DEFINE_PRIx32</tt></td><td><tt> 1 </tt></td><td> Formatting macro CDK_PRIx32 is not provided by the system
+</td></tr><tr><td><tt>CDK_CONFIG_MACRO_PRIx32</tt></td><td><tt> "x" </tt></td><td> Default definition for formatting macro CDK_PRIx32
+</td></tr></tbody></table><br><p><a name="mdk_ug_building_the_cdk_libraries"></a>
+<h3>4.7.   Building the CDK libraries</h3>
+<p>The MDK build infrastructure is based on the GNU make program (gmake
+or gnumake.exe). By default the libraries are compiled with the
+operating system's native GNU compiler toolchain, however this can be
+overridden by proper use of make variables. If you are on a UNIX/Linux
+system with the GNU tools installed, the CDK can be built by entering
+to the cdk directory and type gmake. The objects will be placed in a
+new directory named build.
+<p>For examples on how to change the compiler, pass compiler options,
+change output directory, etc. please refer to the makefiles of the
+sample applications.
+<p><a name="mdk_ug_cdk_chip_configuration"></a>
+<h3>4.8.   CDK Chip Configuration</h3>
+<p>Traditionally the Broadcom switch devices would support only a single
+port configuration per device type, e.g. BCM56504 always has 24 GbE
+ports and four 10GbE/HiGig ports.  A device variant e.g. with only two
+10GbE/HiGig ports would have a different device ID which makes it easy
+to distinguish the two port configurations (24+4 and 24+2) from a
+programming perspective.
+<p>The CDK deals with fixed chip configurations by having a static data
+structure for each device type. The data structure contains
+information about port configuration and other features which are
+specific to this device type.
+<p>On several newer Broadcom switch devices a single device ID now
+supports multiple fixed port configurations, and for such devices the
+CDK provides a simple mechanism for selecting a specific
+configuration.
+<p>The configuration information is usually needed very early in the
+driver initialization sequence, so the application should call
+ <tt>CDK_CHIP_CONFIG_SET</tt> before calling  <a href="sect_bmd_api_function_reference.html#bmd_attach"><tt>bmd_attach</tt></a> , e.g.:
+<pre class="code">
+/* Application code example */
+<tt>CDK_CHIP_CONFIG_SET</tt>(unit, <tt>BCM56634_B0_DCFG_48G_2X24</tt>);
+</pre>
+A chip driver can execute configuration-dependent code by using
+the <tt>CDK_CHIP_CONFIG</tt> macro as shown below:
+<pre class="code">
+/* Driver code example */
+config = <tt>CDK_CHIP_CONFIG</tt>(unit);
+switch (config) {
+    case <tt>BCM56634_B0_DCFG_48G_2X24</tt>:
+  ...
+}
+</pre>
+Some switch chips offer extensive port configuration flexibility which
+makes fixed chip configurations unfeasible. For such cases the CDK
+offers a dynamic configuration option that allows parameters to be set
+for individual ports and/or groups of ports.
+<p>The application must supply an array of port configuration structures
+(<tt>cdk_port_config_t</tt>) and each of these port configurations can then be
+assigned to one or more ports.  In the simplest cases, the port
+configuration will just assign a maximum allowed port speed or an
+extended packet queueing capability, and such configurations can be
+shared across a group of ports.  In more complex situations, the port
+configuration will include an internal port mapping, which means that
+each port will need its own port configuration.
+<p>Below is an example of a port configuration array for a BCM56843
+device:
+<pre class="code">
+/* Array of port configurations */
+static <tt>cdk_port_config_t</tt> <tt>bcm56843_40g</tt>[] = {
+    /*   max   port  port   sys   app */
+    /* speed  flags  mode  port  port */
+    {      0,     0,    0,   -1,   -1  },
+    {   1000,     0,    0,    1,    1  },
+    {   1000,     0,    0,    2,    2  },
+    {   1000,     0,    0,    3,    3  },
+    {   1000,     0,    0,    4,    4  },
+    {  40000,     0,    0,    5,    9  },
+    {  40000,     0,    0,    6,   13  },
+    {  40000,     0,    0,    7,   17  },
+    {  40000,     0,    0,    8,   25  },
+    {  40000,     0,    0,    9,   29  },
+    {  40000,     0,    0,   10,   33  },
+    {  40000,     0,    0,   11,   37  },
+    {  40000,     0,    0,   12,   41  },
+    {  40000,     0,    0,   13,   45  },
+    {  40000,     0,    0,   14,   57  },
+    {  40000,     0,    0,   15,   61  },
+    {  40000,     0,    0,   16,   65  }
+};
+</pre>
+The <tt>CDK_PORT_CONFIGS_SET</tt> macro should be used for assigning the port
+configuration array to a device, and <tt>CDK_PORT_CONFIG_ID_SET</tt> should be
+used to assign a port configuration to a physical port.  The port
+configurations must be defined in static memory since the CDK will
+store only a pointer and not a separate copy.
+<p>Note that the <tt>app_port</tt> field (never used by a driver) can be used
+by the application to simplify port configuration assignment as shown
+in this example:
+<pre class="code">
+/* Assign port configurations to individual ports */
+void <tt>assign_port_configs</tt>(int unit)
+{
+    int idx;
+
+    <tt>CDK_PORT_CONFIGS_SET</tt>(unit, <tt>bcm56843_40g</tt>, COUNTOF(<tt>bcm56843_40g</tt>));
+    for (idx = 1; idx &lt; COUNTOF(<tt>bcm56843_40g</tt>); idx++) {
+        /* <tt>app_port</tt> is the physical port number */
+        <tt>CDK_PORT_CONFIG_ID_SET</tt>(unit, <tt>bcm56843_40g</tt>[idx].<tt>app_port</tt>, idx);
+    }
+}
+</pre>
+A driver should use the macros shown in the example below to access
+individual port configuration parameters:
+<pre class="code">
+void <tt>configure_port</tt>(int unit, int port)
+{
+    <tt>uint32_t</tt> <tt>speed_max</tt>, <tt>port_flags</tt>;
+    int <tt>port_mode</tt>, <tt>sys_port</tt>;
+
+    /* Read port configuration */
+    <tt>speed_max</tt> = <tt>CDK_PORT_CONFIG_SPEED_MAX</tt>(unit, port);
+    <tt>port_flags</tt> = <tt>CDK_PORT_CONFIG_PORT_FLAGS</tt>(unit, port);
+    <tt>port_mode</tt> = <tt>CDK_PORT_CONFIG_PORT_MODE</tt>(unit, port);
+    <tt>sys_port</tt> = <tt>CDK_PORT_CONFIG_SYS_PORT</tt>(unit, port);
+      ...
+}
+</pre>
+<p>
+</table>
+</body>
+</html>

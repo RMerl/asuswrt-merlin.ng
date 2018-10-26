@@ -1,0 +1,1 @@
+cmd_../../bcmdrivers/opensource/char/rdpa_drv/bcm94908/rdpa_cmd.o := /opt/toolchains/crosstools-aarch64-gcc-5.5-linux-4.1-glibc-2.26-binutils-2.28.1/usr/bin/aarch64-buildroot-linux-gnu-ld -EL    -r -o ../../bcmdrivers/opensource/char/rdpa_drv/bcm94908/rdpa_cmd.o ../../bcmdrivers/opensource/char/rdpa_drv/bcm94908/rdpa_cmd_preb.o 

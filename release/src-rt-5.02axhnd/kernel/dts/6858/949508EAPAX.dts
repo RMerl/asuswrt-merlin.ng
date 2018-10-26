@@ -1,0 +1,20 @@
+#include "96858.dts"
+
+&hsspi {
+      flash: mt25@0 {
+      status = "okay";
+      compatible = "jedec,spi-nor";
+      reg = <0>; /* chip select 0 */
+      spi-max-frequency = <60000000>;
+      #address-cells = <1>;
+      #size-cells = <1>;
+      partition@0 {
+           label = "bootloader";
+           reg = <0x0 0x0100000>;
+           };
+      partition@1 {
+           label = OOPSLOG_PARTITION_NAME;
+           reg = <0x0100000 0x0020000>;
+           };
+       };
+};

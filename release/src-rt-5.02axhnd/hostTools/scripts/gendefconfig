@@ -1,0 +1,12 @@
+#!/bin/bash
+
+profile=$1
+cfile=$KERNEL_DIR/arch/$ARCH/defconfig
+
+cat $HOSTTOOLS_DIR/scripts/defconfig-bcm.template > $cfile
+
+for i in  $HOSTTOOLS_DIR/scripts/gendefconfig.d/*.conf
+do
+  $i $profile $cfile
+done
+

@@ -1,0 +1,29 @@
+#!/bin/bash
+
+source $KERNEL_DIR/.config
+
+# make root file system image
+if [ "$BRCM_IKOS" = "y" ]; then
+# ikos need a simple init to just run the busybox shell
+   rm -f $TARGET_FS/etc/inittab
+   sed -e 's/^::respawn.*sh.*/::respawn:-\/bin\/sh/' -e 's/^::sysinit.*sh.*/::sysinit:\/bin\/sh -l -c \/etc\/init.sh/' $FSSRC_DIR/etc/inittab > $TARGET_FS/etc/inittab
+   echo -e "\x23\x21bin/sh\nmount -t proc /proc /proc\nmount -t sysfs none /sys" > $TARGET_FS/etc/init.sh
+   chmod +x $TARGET_FS/etc/init.sh
+# ikos is too slow for using compressed SquashFS, so we are disabling the compression. Make sure kernel creates large enough ramdisk for the uncompressed fs image
+   $HOSTTOOLS_DIR/mksquashfs $TARGET_FS $PROFILE_DIR/ramdisk -noappend -all-root -noI -noD -noF
+else
+   (ulimit -t 900 ; $HOSTTOOLS_DIR/mksquashfs $TARGET_FS $PROFILE_DIR/ramdisk -noappend -all-root -comp xz) 
+   if [ $? -ne 0 ]; then
+        echo "mksquashfs failed once"
+        (ulimit -t 900 ; $HOSTTOOLS_DIR/mksquashfs $TARGET_FS $PROFILE_DIR/ramdisk -noappend -all-root -comp xz) 
+        if [ $? -ne 0 ]; then
+            echo "mksquashfs failed twice"
+            exit 2
+        fi
+   fi
+
+   if [ ! -e "$PROFILE_DIR/vmlinux_rd_boot" ]; then
+        echo "error: $PROFILE_DIR/vmlinux_rd_boot not found! Check buildFS output"
+        exit 2
+   fi 
+fi

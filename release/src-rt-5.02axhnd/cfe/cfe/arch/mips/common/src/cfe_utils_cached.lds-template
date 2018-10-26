@@ -1,0 +1,65 @@
+OUTPUT_ARCH(mips)
+ENTRY(vec_reset)
+SECTIONS
+{
+  /* . = 0xbfc00000; specify on-chip memory via cflag	 */
+  .text : 
+    {
+     _ftext = . ;
+     init_utils_mips.o(.text*)
+     bcm63xx_impl1_util_boot.o(.text*)
+     bcm63xx_nand_btldr.o(.text*)
+     nandflash.o(.text*)
+     lib_string.o(.text*)
+     bcmcore_cpuinit.o(.text*)
+     bcmcore_l1cache.o(.text*)
+     production_cache.o(.text*)
+     _nandend = .; 
+    *(.init*)
+     eprol  =  .;
+    *(.text*)
+    *(.fini*)
+    _etext  =  .;    
+   }
+
+  /*The data section will be placed in another descrete memory area. This line will be replaced with ".bss $BOOTUTILS_DATA : {" 
+  where BOOTUTILS_DATA is chip dependent address during the building processing. Refer to the makefile for details */  	  
+  .bss : {
+   _fbss = .;
+    *(.bss*)
+    *(COMMON)
+  }
+  
+  .sbss : {
+    *(.sbss*)
+    *(.scommon*)
+  }
+  
+  . = ALIGN(16);
+   _end = .;
+   
+   .data :
+   {
+    _fdata = ALIGN(16) ;
+    *(.rodata*)
+    *(.data*)
+    CONSTRUCTORS
+    . = ALIGN(16);
+    _gp = . + 0x8000;
+    *(.sdata*)
+    /* imgdata must be the last section in the image */
+    _cferam = .;
+    flashimg.o(.imgdata)
+   }
+   . = ALIGN(16);
+   _edata  =  .;
+
+   /DISCARD/ :
+   {
+    *(.reginfo)
+   }   
+}
+
+ASSERT(((_nandend - _ftext) < 16384), "Init and NAND loader code size must be less than 16K")
+ASSERT(((_etext - _ftext) < 32768), "Code size must be less than 32K")
+

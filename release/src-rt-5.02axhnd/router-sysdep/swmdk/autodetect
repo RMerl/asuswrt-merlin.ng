@@ -1,0 +1,2 @@
+dependson: private/libs/mdk public/libs/cms_msg public/libs/cms_util public/libs/bcm_flashutil public/libs/cms_boardctl private/libs/ethswctl
+

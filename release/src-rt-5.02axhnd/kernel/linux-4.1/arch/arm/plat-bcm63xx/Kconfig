@@ -1,0 +1,184 @@
+if (BCM_KF_ARM_BCM963XX)
+# Broadcom platforms selection
+
+config PLAT_CA7_MPCORE
+	bool "ARM Cortex A7 MPCORE architecture support"
+    select CPU_V7
+	select ARM_GIC
+	select ARM_L1_CACHE_SHIFT_6
+	select HAVE_CLK
+	select CLKDEV_LOOKUP
+	select HAVE_ARM_ARCH_TIMER
+    select SPARSE_IRQ
+	help
+	 Support for ARM A7 MPCORE subsystem
+	  
+config PLAT_CA7_SMP
+    bool "Enable SMP on ARM Cortex A7 MPCORE"
+	select HAVE_SMP
+	select SMP
+	select SMP_ON_UP
+    select HOTPLUG_CPU
+	select HAVE_ARM_SCU
+	select PLAT_CA7_MPCORE
+	help 
+		 Support for ARM A7 SMP
+
+config PLAT_CA9_MPCORE
+	bool "ARM Cortex A9 MPCORE architecture support"
+	select CPU_V7
+	select ARM_GIC
+	select HAVE_CLK
+	select CLKDEV_LOOKUP
+	select HAVE_MACH_CLKDEV
+	select GENERIC_CLOCKEVENTS_BUILD
+	select GENERIC_CLOCKEVENTS
+	select NEED_MACH_MEMORY_H
+	select ARM_ERRATA_764369 if SMP && PLAT_BCM63138
+#	select CONSTRUCTORS
+	help
+	  Support for ARM A9 MPCORE subsystem
+
+config PLAT_CA9_SMP
+	bool "Enable SMP on ARM Cortex A9 MPCORE"
+	select HAVE_SMP
+	select SMP
+	select SMP_ON_UP
+	select HOTPLUG_CPU
+	select HAVE_ARM_SCU
+
+config PLAT_CA9_MPCORE_TIMER
+	bool "Enable ARM Cortex A9 MPcore Timer for Clock event"
+	select HAVE_ARM_TWD if PLAT_CA9_SMP
+	select LOCAL_TIMERS if PLAT_CA9_SMP
+	depends on PLAT_CA9_MPCORE
+
+config PLAT_B15_CORE
+	bool "Broadcom ARM based on Cortex A15 architecture support"
+	select CPU_V7
+	select ARM_GIC
+	select HAVE_CLK
+	select CLKDEV_LOOKUP
+	select HAVE_MACH_CLKDEV
+	select GENERIC_CLOCKEVENTS_BUILD
+	select GENERIC_CLOCKEVENTS
+	select NEED_MACH_MEMORY_H
+	help
+	  Support for Broadcom's ARMv7 processr based on ARM Cortex A15
+
+config PLAT_B15_SMP
+	bool "Enable SMP on Broadcom ARMv7 core"
+	select HAVE_SMP
+	select SMP
+	select SMP_ON_UP
+	select HOTPLUG_CPU
+	select HAVE_ARM_TWD
+	select HAVE_ARM_SCU
+	select LOCAL_TIMERS
+
+config PLAT_B15_MPCORE_TIMER
+	bool "Enable Broadcom B15 MPcore Timer for Clock event"
+	select HAVE_ARM_TWD if PLAT_B15_SMP
+	select LOCAL_TIMERS if PLAT_B15_SMP
+	depends on PLAT_B15_CORE
+
+config CACHE_L310 
+	bool "PL310 Level-2 Cache Controller"
+        select OUTER_CACHE
+        select OUTER_CACHE_SYNC
+	depends on PLAT_CA9_MPCORE
+
+config PLAT_BCM63XX_AMBA_PL011
+	bool "Enable AMBA PL011 Serial console"
+	select ARM_AMBA
+	select SERIAL_AMBA_PL011
+	select SERIAL_AMBA_PL011_CONSOLE
+	depends on PLAT_BCM63138
+
+config PLAT_BCM63XX_AMBA_PL081
+	bool "Enable AMBA PL081 DMAC"
+	select DMADEVICES
+	select ARM_AMBA
+	select AMBA_PL08X
+	depends on PLAT_BCM63138
+
+config PLAT_BCM63XX_EMMC
+	bool "Enable Broadcom EMMC support"
+	select MMC
+	select MMC_BLOCK
+	select MMC_SDHCI
+	select MMC_SDHCI_PLTFM
+	select MMC_SDHCI_IO_ACCESSORS
+	select MMC_SDHCI_BCM63xx
+	depends on PLAT_BCM63138
+
+config PLAT_BCM63XX_UART
+	bool "Enable Broadcom Serial console"
+
+config PLAT_BCM63XX_EXT_TIMER
+	bool "Enable Broadcom External Timer for Clockevent"
+	depends on BCM_EXT_TIMER
+
+config PLAT_BCM63XX_ACP
+	bool "Enable ARM ACP"
+	default n
+	select BCM_ZONE_ACP
+	depends on PLAT_BCM63138 && PLAT_CA9_SMP
+
+config ARM_BCM63XX_CPUFREQ
+	bool "Broadcom BCM63xx ARM SoCs CPUFreq"
+	select ARCH_HAS_CPUFREQ
+	select CPU_FREQ
+	select CPU_FREQ_TABLE
+	select CPU_FREQ_STAT
+	select CPU_FREQ_GOV_USERSPACE
+	default y
+	help
+	  This adds the CPUFreq driver for Broadcom BCM63xx ARM SoCs.
+
+	  If in doubt, say N.
+
+config PLAT_BCM63138
+	bool "Broadcom BCM63138 SoC support"
+# Based on ARM Cortex-A9 r4p1 and L310 r3p3
+#	select PLAT_CA9_SMP		# will be chosen by BRCM_SMP_EN
+	select ARM_ERRATA_754322
+	select CACHE_L2X0
+	select CACHE_PL310
+	select EARLY_PRINTK
+ 	select PLAT_BCM63XX_EXT_TIMER
+#	select PLAT_CA9_MPCORE_TIMER
+#	select PLAT_BCM63XX_AMBA_PL011
+	select PLAT_BCM63XX_UART
+#	select MIGHT_HAVE_PCI
+#	select HAVE_PWM			# kona has it, Do we?
+	select ZONE_DMA
+	select ARCH_SUPPORTS_MSI
+	select CONFIG_ARCH_HAS_BARRIERS
+	depends on PLAT_CA9_MPCORE
+
+config PLAT_BCM63148
+	bool "Broadcom BCM63148 SoC support"
+# Based on ARM Cortex-A15 r3p2
+	select ARM_L1_CACHE_SHIFT_6	# B15 L1 cache line size is 64 bytes
+#	select PLAT_B15_SMP		# will be chosen by BRCM_SMP_EN
+	select EARLY_PRINTK
+ 	select PLAT_BCM63XX_EXT_TIMER
+	select PLAT_BCM63XX_UART
+	select ARM_ERRATA_798181 if SMP
+	select ZONE_DMA
+	select ARCH_SUPPORTS_MSI
+	select BCM_B15_MEGA_BARRIER
+	select CONFIG_ARCH_HAS_BARRIERS
+	depends on PLAT_B15_CORE
+
+config BCM_PCIE_PLATFORM
+	tristate "PCI Express repower module"
+
+#Apply the mega-barrier prior to DMA operations to work around issue noted
+#in HW7445-1301
+config BCM_B15_MEGA_BARRIER
+	depends on PLAT_B15_CORE
+	bool
+
+endif # BCM_KF_ARM_BCM963XX

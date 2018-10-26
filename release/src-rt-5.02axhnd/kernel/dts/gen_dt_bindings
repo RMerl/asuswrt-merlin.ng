@@ -1,0 +1,42 @@
+#!/bin/bash
+source ${KERNEL_DIR}/.config
+echo "#ifndef __BCM63XX_DT_BINDINGS_H" > ${2}
+echo "#define __BCM63XX_DT_BINDINGS_H" >> ${2}
+echo "Echoing config word ${CONFIG_BCM_ADSL}"
+
+if [ -n "${CONFIG_BRCM_CHIP_REV}" ]
+then
+	echo "#define CONFIG_BRCM_CHIP_REV ${CONFIG_BRCM_CHIP_REV}" >> ${2}
+fi
+
+if [ "${CONFIG_BCM_ADSL}" == "m" -o "${CONFIG_BCM_ADSL}" == "y" ]
+then
+	echo "#define CONFIG_BCM_ADSL" >> ${2}
+fi
+
+if [ "${CONFIG_BCM_RDPA}" == "m" -o "${CONFIG_BCM_RDPA}" == "y" ]
+then
+	echo "#define CONFIG_BCM_RDPA" >> ${2}
+fi
+
+if [ "${CONFIG_BCM_DHD_RUNNER}" == "m" -o "${CONFIG_BCM_DHD_RUNNER}" == "y" ]
+then
+	echo "#define CONFIG_BCM_DHD_RUNNER" >> ${2}
+fi
+
+if [ "${CONFIG_OPTEE}" == "y" ]
+then
+	echo "#define CONFIG_OPTEE" >> ${2}
+fi
+
+# Support string defines like:
+# #define SOMETHING "something"
+# The input here will be ' #define "SOMETHING" "something" ' which means
+# we want to remove the first two instances of " but not the rest.
+# So what we do:
+#     - Replace all instances of " AFTER instance 2 with \n
+#     - Replace all remaining instances with nothing
+#     - Replace all instances of \n with "
+cat ${1}|grep \#define|sed -r "s/\"/\n/g3; s/\"//g; s/\n/\"/g">>${2}
+
+echo "#endif /*__BCM63XX_DT_BINDINGS_H */" >> ${2}

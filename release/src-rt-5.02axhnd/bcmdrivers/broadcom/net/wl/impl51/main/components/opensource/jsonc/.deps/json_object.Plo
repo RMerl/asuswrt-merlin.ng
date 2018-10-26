@@ -1,0 +1,162 @@
+json_object.lo: json_object.c config.h \
+ /tools/linux/local/hndtools-arm-linux-2.6.36-uclibc-4.5.3/bin/../arm-brcm-linux-uclibcgnueabi/sysroot/usr/include/stdio.h \
+ /tools/linux/local/hndtools-arm-linux-2.6.36-uclibc-4.5.3/bin/../arm-brcm-linux-uclibcgnueabi/sysroot/usr/include/features.h \
+ /tools/linux/local/hndtools-arm-linux-2.6.36-uclibc-4.5.3/bin/../arm-brcm-linux-uclibcgnueabi/sysroot/usr/include/bits/uClibc_config.h \
+ /tools/linux/local/hndtools-arm-linux-2.6.36-uclibc-4.5.3/bin/../arm-brcm-linux-uclibcgnueabi/sysroot/usr/include/sys/cdefs.h \
+ /tools/linux/local/hndtools-arm-linux-2.6.36-uclibc-4.5.3/bin/../lib/gcc/arm-brcm-linux-uclibcgnueabi/4.5.3/include/stddef.h \
+ /tools/linux/local/hndtools-arm-linux-2.6.36-uclibc-4.5.3/bin/../arm-brcm-linux-uclibcgnueabi/sysroot/usr/include/bits/types.h \
+ /tools/linux/local/hndtools-arm-linux-2.6.36-uclibc-4.5.3/bin/../arm-brcm-linux-uclibcgnueabi/sysroot/usr/include/bits/wordsize.h \
+ /tools/linux/local/hndtools-arm-linux-2.6.36-uclibc-4.5.3/bin/../arm-brcm-linux-uclibcgnueabi/sysroot/usr/include/bits/typesizes.h \
+ /tools/linux/local/hndtools-arm-linux-2.6.36-uclibc-4.5.3/bin/../arm-brcm-linux-uclibcgnueabi/sysroot/usr/include/bits/pthreadtypes.h \
+ /tools/linux/local/hndtools-arm-linux-2.6.36-uclibc-4.5.3/bin/../arm-brcm-linux-uclibcgnueabi/sysroot/usr/include/bits/sched.h \
+ /tools/linux/local/hndtools-arm-linux-2.6.36-uclibc-4.5.3/bin/../arm-brcm-linux-uclibcgnueabi/sysroot/usr/include/bits/uClibc_stdio.h \
+ /tools/linux/local/hndtools-arm-linux-2.6.36-uclibc-4.5.3/bin/../arm-brcm-linux-uclibcgnueabi/sysroot/usr/include/wchar.h \
+ /tools/linux/local/hndtools-arm-linux-2.6.36-uclibc-4.5.3/bin/../arm-brcm-linux-uclibcgnueabi/sysroot/usr/include/bits/wchar.h \
+ /tools/linux/local/hndtools-arm-linux-2.6.36-uclibc-4.5.3/bin/../arm-brcm-linux-uclibcgnueabi/sysroot/usr/include/bits/uClibc_mutex.h \
+ /tools/linux/local/hndtools-arm-linux-2.6.36-uclibc-4.5.3/bin/../arm-brcm-linux-uclibcgnueabi/sysroot/usr/include/pthread.h \
+ /tools/linux/local/hndtools-arm-linux-2.6.36-uclibc-4.5.3/bin/../arm-brcm-linux-uclibcgnueabi/sysroot/usr/include/sched.h \
+ /tools/linux/local/hndtools-arm-linux-2.6.36-uclibc-4.5.3/bin/../arm-brcm-linux-uclibcgnueabi/sysroot/usr/include/time.h \
+ /tools/linux/local/hndtools-arm-linux-2.6.36-uclibc-4.5.3/bin/../arm-brcm-linux-uclibcgnueabi/sysroot/usr/include/bits/time.h \
+ /tools/linux/local/hndtools-arm-linux-2.6.36-uclibc-4.5.3/bin/../arm-brcm-linux-uclibcgnueabi/sysroot/usr/include/bits/uClibc_clk_tck.h \
+ /tools/linux/local/hndtools-arm-linux-2.6.36-uclibc-4.5.3/bin/../arm-brcm-linux-uclibcgnueabi/sysroot/usr/include/xlocale.h \
+ /tools/linux/local/hndtools-arm-linux-2.6.36-uclibc-4.5.3/bin/../arm-brcm-linux-uclibcgnueabi/sysroot/usr/include/locale.h \
+ /tools/linux/local/hndtools-arm-linux-2.6.36-uclibc-4.5.3/bin/../arm-brcm-linux-uclibcgnueabi/sysroot/usr/include/bits/uClibc_locale.h \
+ /tools/linux/local/hndtools-arm-linux-2.6.36-uclibc-4.5.3/bin/../arm-brcm-linux-uclibcgnueabi/sysroot/usr/include/signal.h \
+ /tools/linux/local/hndtools-arm-linux-2.6.36-uclibc-4.5.3/bin/../arm-brcm-linux-uclibcgnueabi/sysroot/usr/include/bits/sigset.h \
+ /tools/linux/local/hndtools-arm-linux-2.6.36-uclibc-4.5.3/bin/../arm-brcm-linux-uclibcgnueabi/sysroot/usr/include/bits/initspin.h \
+ /tools/linux/local/hndtools-arm-linux-2.6.36-uclibc-4.5.3/bin/../arm-brcm-linux-uclibcgnueabi/sysroot/usr/include/bits/sigthread.h \
+ /tools/linux/local/hndtools-arm-linux-2.6.36-uclibc-4.5.3/bin/../arm-brcm-linux-uclibcgnueabi/sysroot/usr/include/bits/uClibc_pthread.h \
+ /tools/linux/local/hndtools-arm-linux-2.6.36-uclibc-4.5.3/bin/../lib/gcc/arm-brcm-linux-uclibcgnueabi/4.5.3/include/stdarg.h \
+ /tools/linux/local/hndtools-arm-linux-2.6.36-uclibc-4.5.3/bin/../arm-brcm-linux-uclibcgnueabi/sysroot/usr/include/bits/stdio_lim.h \
+ /tools/linux/local/hndtools-arm-linux-2.6.36-uclibc-4.5.3/bin/../arm-brcm-linux-uclibcgnueabi/sysroot/usr/include/stdlib.h \
+ /tools/linux/local/hndtools-arm-linux-2.6.36-uclibc-4.5.3/bin/../arm-brcm-linux-uclibcgnueabi/sysroot/usr/include/bits/waitflags.h \
+ /tools/linux/local/hndtools-arm-linux-2.6.36-uclibc-4.5.3/bin/../arm-brcm-linux-uclibcgnueabi/sysroot/usr/include/bits/waitstatus.h \
+ /tools/linux/local/hndtools-arm-linux-2.6.36-uclibc-4.5.3/bin/../arm-brcm-linux-uclibcgnueabi/sysroot/usr/include/endian.h \
+ /tools/linux/local/hndtools-arm-linux-2.6.36-uclibc-4.5.3/bin/../arm-brcm-linux-uclibcgnueabi/sysroot/usr/include/bits/endian.h \
+ /tools/linux/local/hndtools-arm-linux-2.6.36-uclibc-4.5.3/bin/../arm-brcm-linux-uclibcgnueabi/sysroot/usr/include/byteswap.h \
+ /tools/linux/local/hndtools-arm-linux-2.6.36-uclibc-4.5.3/bin/../arm-brcm-linux-uclibcgnueabi/sysroot/usr/include/bits/byteswap.h \
+ /tools/linux/local/hndtools-arm-linux-2.6.36-uclibc-4.5.3/bin/../arm-brcm-linux-uclibcgnueabi/sysroot/usr/include/bits/byteswap-common.h \
+ /tools/linux/local/hndtools-arm-linux-2.6.36-uclibc-4.5.3/bin/../arm-brcm-linux-uclibcgnueabi/sysroot/usr/include/sys/types.h \
+ /tools/linux/local/hndtools-arm-linux-2.6.36-uclibc-4.5.3/bin/../arm-brcm-linux-uclibcgnueabi/sysroot/usr/include/sys/select.h \
+ /tools/linux/local/hndtools-arm-linux-2.6.36-uclibc-4.5.3/bin/../arm-brcm-linux-uclibcgnueabi/sysroot/usr/include/bits/select.h \
+ /tools/linux/local/hndtools-arm-linux-2.6.36-uclibc-4.5.3/bin/../arm-brcm-linux-uclibcgnueabi/sysroot/usr/include/sys/sysmacros.h \
+ /tools/linux/local/hndtools-arm-linux-2.6.36-uclibc-4.5.3/bin/../arm-brcm-linux-uclibcgnueabi/sysroot/usr/include/alloca.h \
+ /tools/linux/local/hndtools-arm-linux-2.6.36-uclibc-4.5.3/bin/../arm-brcm-linux-uclibcgnueabi/sysroot/usr/include/string.h \
+ debug.h printbuf.h linkhash.h json_object.h json_inttypes.h \
+ json_config.h \
+ /tools/linux/local/hndtools-arm-linux-2.6.36-uclibc-4.5.3/bin/../arm-brcm-linux-uclibcgnueabi/sysroot/usr/include/inttypes.h \
+ /tools/linux/local/hndtools-arm-linux-2.6.36-uclibc-4.5.3/bin/../lib/gcc/arm-brcm-linux-uclibcgnueabi/4.5.3/include/stdint.h \
+ /tools/linux/local/hndtools-arm-linux-2.6.36-uclibc-4.5.3/bin/../arm-brcm-linux-uclibcgnueabi/sysroot/usr/include/stdint.h \
+ arraylist.h json_object_private.h json_util.h
+
+config.h:
+
+/tools/linux/local/hndtools-arm-linux-2.6.36-uclibc-4.5.3/bin/../arm-brcm-linux-uclibcgnueabi/sysroot/usr/include/stdio.h:
+
+/tools/linux/local/hndtools-arm-linux-2.6.36-uclibc-4.5.3/bin/../arm-brcm-linux-uclibcgnueabi/sysroot/usr/include/features.h:
+
+/tools/linux/local/hndtools-arm-linux-2.6.36-uclibc-4.5.3/bin/../arm-brcm-linux-uclibcgnueabi/sysroot/usr/include/bits/uClibc_config.h:
+
+/tools/linux/local/hndtools-arm-linux-2.6.36-uclibc-4.5.3/bin/../arm-brcm-linux-uclibcgnueabi/sysroot/usr/include/sys/cdefs.h:
+
+/tools/linux/local/hndtools-arm-linux-2.6.36-uclibc-4.5.3/bin/../lib/gcc/arm-brcm-linux-uclibcgnueabi/4.5.3/include/stddef.h:
+
+/tools/linux/local/hndtools-arm-linux-2.6.36-uclibc-4.5.3/bin/../arm-brcm-linux-uclibcgnueabi/sysroot/usr/include/bits/types.h:
+
+/tools/linux/local/hndtools-arm-linux-2.6.36-uclibc-4.5.3/bin/../arm-brcm-linux-uclibcgnueabi/sysroot/usr/include/bits/wordsize.h:
+
+/tools/linux/local/hndtools-arm-linux-2.6.36-uclibc-4.5.3/bin/../arm-brcm-linux-uclibcgnueabi/sysroot/usr/include/bits/typesizes.h:
+
+/tools/linux/local/hndtools-arm-linux-2.6.36-uclibc-4.5.3/bin/../arm-brcm-linux-uclibcgnueabi/sysroot/usr/include/bits/pthreadtypes.h:
+
+/tools/linux/local/hndtools-arm-linux-2.6.36-uclibc-4.5.3/bin/../arm-brcm-linux-uclibcgnueabi/sysroot/usr/include/bits/sched.h:
+
+/tools/linux/local/hndtools-arm-linux-2.6.36-uclibc-4.5.3/bin/../arm-brcm-linux-uclibcgnueabi/sysroot/usr/include/bits/uClibc_stdio.h:
+
+/tools/linux/local/hndtools-arm-linux-2.6.36-uclibc-4.5.3/bin/../arm-brcm-linux-uclibcgnueabi/sysroot/usr/include/wchar.h:
+
+/tools/linux/local/hndtools-arm-linux-2.6.36-uclibc-4.5.3/bin/../arm-brcm-linux-uclibcgnueabi/sysroot/usr/include/bits/wchar.h:
+
+/tools/linux/local/hndtools-arm-linux-2.6.36-uclibc-4.5.3/bin/../arm-brcm-linux-uclibcgnueabi/sysroot/usr/include/bits/uClibc_mutex.h:
+
+/tools/linux/local/hndtools-arm-linux-2.6.36-uclibc-4.5.3/bin/../arm-brcm-linux-uclibcgnueabi/sysroot/usr/include/pthread.h:
+
+/tools/linux/local/hndtools-arm-linux-2.6.36-uclibc-4.5.3/bin/../arm-brcm-linux-uclibcgnueabi/sysroot/usr/include/sched.h:
+
+/tools/linux/local/hndtools-arm-linux-2.6.36-uclibc-4.5.3/bin/../arm-brcm-linux-uclibcgnueabi/sysroot/usr/include/time.h:
+
+/tools/linux/local/hndtools-arm-linux-2.6.36-uclibc-4.5.3/bin/../arm-brcm-linux-uclibcgnueabi/sysroot/usr/include/bits/time.h:
+
+/tools/linux/local/hndtools-arm-linux-2.6.36-uclibc-4.5.3/bin/../arm-brcm-linux-uclibcgnueabi/sysroot/usr/include/bits/uClibc_clk_tck.h:
+
+/tools/linux/local/hndtools-arm-linux-2.6.36-uclibc-4.5.3/bin/../arm-brcm-linux-uclibcgnueabi/sysroot/usr/include/xlocale.h:
+
+/tools/linux/local/hndtools-arm-linux-2.6.36-uclibc-4.5.3/bin/../arm-brcm-linux-uclibcgnueabi/sysroot/usr/include/locale.h:
+
+/tools/linux/local/hndtools-arm-linux-2.6.36-uclibc-4.5.3/bin/../arm-brcm-linux-uclibcgnueabi/sysroot/usr/include/bits/uClibc_locale.h:
+
+/tools/linux/local/hndtools-arm-linux-2.6.36-uclibc-4.5.3/bin/../arm-brcm-linux-uclibcgnueabi/sysroot/usr/include/signal.h:
+
+/tools/linux/local/hndtools-arm-linux-2.6.36-uclibc-4.5.3/bin/../arm-brcm-linux-uclibcgnueabi/sysroot/usr/include/bits/sigset.h:
+
+/tools/linux/local/hndtools-arm-linux-2.6.36-uclibc-4.5.3/bin/../arm-brcm-linux-uclibcgnueabi/sysroot/usr/include/bits/initspin.h:
+
+/tools/linux/local/hndtools-arm-linux-2.6.36-uclibc-4.5.3/bin/../arm-brcm-linux-uclibcgnueabi/sysroot/usr/include/bits/sigthread.h:
+
+/tools/linux/local/hndtools-arm-linux-2.6.36-uclibc-4.5.3/bin/../arm-brcm-linux-uclibcgnueabi/sysroot/usr/include/bits/uClibc_pthread.h:
+
+/tools/linux/local/hndtools-arm-linux-2.6.36-uclibc-4.5.3/bin/../lib/gcc/arm-brcm-linux-uclibcgnueabi/4.5.3/include/stdarg.h:
+
+/tools/linux/local/hndtools-arm-linux-2.6.36-uclibc-4.5.3/bin/../arm-brcm-linux-uclibcgnueabi/sysroot/usr/include/bits/stdio_lim.h:
+
+/tools/linux/local/hndtools-arm-linux-2.6.36-uclibc-4.5.3/bin/../arm-brcm-linux-uclibcgnueabi/sysroot/usr/include/stdlib.h:
+
+/tools/linux/local/hndtools-arm-linux-2.6.36-uclibc-4.5.3/bin/../arm-brcm-linux-uclibcgnueabi/sysroot/usr/include/bits/waitflags.h:
+
+/tools/linux/local/hndtools-arm-linux-2.6.36-uclibc-4.5.3/bin/../arm-brcm-linux-uclibcgnueabi/sysroot/usr/include/bits/waitstatus.h:
+
+/tools/linux/local/hndtools-arm-linux-2.6.36-uclibc-4.5.3/bin/../arm-brcm-linux-uclibcgnueabi/sysroot/usr/include/endian.h:
+
+/tools/linux/local/hndtools-arm-linux-2.6.36-uclibc-4.5.3/bin/../arm-brcm-linux-uclibcgnueabi/sysroot/usr/include/bits/endian.h:
+
+/tools/linux/local/hndtools-arm-linux-2.6.36-uclibc-4.5.3/bin/../arm-brcm-linux-uclibcgnueabi/sysroot/usr/include/byteswap.h:
+
+/tools/linux/local/hndtools-arm-linux-2.6.36-uclibc-4.5.3/bin/../arm-brcm-linux-uclibcgnueabi/sysroot/usr/include/bits/byteswap.h:
+
+/tools/linux/local/hndtools-arm-linux-2.6.36-uclibc-4.5.3/bin/../arm-brcm-linux-uclibcgnueabi/sysroot/usr/include/bits/byteswap-common.h:
+
+/tools/linux/local/hndtools-arm-linux-2.6.36-uclibc-4.5.3/bin/../arm-brcm-linux-uclibcgnueabi/sysroot/usr/include/sys/types.h:
+
+/tools/linux/local/hndtools-arm-linux-2.6.36-uclibc-4.5.3/bin/../arm-brcm-linux-uclibcgnueabi/sysroot/usr/include/sys/select.h:
+
+/tools/linux/local/hndtools-arm-linux-2.6.36-uclibc-4.5.3/bin/../arm-brcm-linux-uclibcgnueabi/sysroot/usr/include/bits/select.h:
+
+/tools/linux/local/hndtools-arm-linux-2.6.36-uclibc-4.5.3/bin/../arm-brcm-linux-uclibcgnueabi/sysroot/usr/include/sys/sysmacros.h:
+
+/tools/linux/local/hndtools-arm-linux-2.6.36-uclibc-4.5.3/bin/../arm-brcm-linux-uclibcgnueabi/sysroot/usr/include/alloca.h:
+
+/tools/linux/local/hndtools-arm-linux-2.6.36-uclibc-4.5.3/bin/../arm-brcm-linux-uclibcgnueabi/sysroot/usr/include/string.h:
+
+debug.h:
+
+printbuf.h:
+
+linkhash.h:
+
+json_object.h:
+
+json_inttypes.h:
+
+json_config.h:
+
+/tools/linux/local/hndtools-arm-linux-2.6.36-uclibc-4.5.3/bin/../arm-brcm-linux-uclibcgnueabi/sysroot/usr/include/inttypes.h:
+
+/tools/linux/local/hndtools-arm-linux-2.6.36-uclibc-4.5.3/bin/../lib/gcc/arm-brcm-linux-uclibcgnueabi/4.5.3/include/stdint.h:
+
+/tools/linux/local/hndtools-arm-linux-2.6.36-uclibc-4.5.3/bin/../arm-brcm-linux-uclibcgnueabi/sysroot/usr/include/stdint.h:
+
+arraylist.h:
+
+json_object_private.h:
+
+json_util.h:

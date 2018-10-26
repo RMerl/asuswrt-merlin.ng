@@ -1,0 +1,355 @@
+diff --git a/release/src/router/nas_arm/nas.h b/release/src/router/nas_arm/nas.h
+index 0b33e3a..1ee06a1 100644
+--- a/release/src/router/nas_arm/nas.h
++++ b/release/src/router/nas_arm/nas.h
+@@ -141,8 +141,13 @@ typedef struct nas {
+ 	struct ether_addr ea;			/* LAN Ethernet address */
+ 	wpa_t *wpa;				/* WPA struct (NULL if wpa not in use) */
+ 	int wan;				/* RADIUS interface handle */
++#ifdef NAS_IPV6
++	struct sockaddr_storage client;      /* RADIUS interface IP address */
++	struct sockaddr_storage server;      /* RADIUS server IP address */
++#else
+ 	struct sockaddr_in client;		/* RADIUS interface IP address */
+ 	struct sockaddr_in server;		/* RADIUS server IP address */
++#endif
+ 	binstring_t key;			/* PSK shared secret */
+ 	unsigned int type;			/* RADIUS NAS Port Type */
+ 	nas_sta_t sta[MAX_SUPPLICANTS];		/* STAs */
+diff --git a/release/src/router/nas_arm/nas_radius.c b/release/src/router/nas_arm/nas_radius.c
+index 62e4d84..f34d433 100644
+--- a/release/src/router/nas_arm/nas_radius.c
++++ b/release/src/router/nas_arm/nas_radius.c
+@@ -545,9 +545,15 @@ radius_forward(nas_t *nas, nas_sta_t *sta, eap_header_t *eap)
+ 	if (sta->pae.radius.username.data && sta->pae.radius.username.length)
+ 		radius_add(request, RD_TP_USER_NAME, sta->pae.radius.username.data,
+ 		           sta->pae.radius.username.length);
++
+ 	/* NAS IP Address */
++#ifdef NAS_IPV6
++	radius_add(request, ((struct sockaddr_in *)&(nas->client))->sin_family == AF_INET6 ? RD_TP_NAS_IPV6_ADDRESS : RD_TP_NAS_IP_ADDRESS, (unsigned char *) &(((struct sockaddr_in *)&(nas->client))->sin_addr),
++	           (((struct sockaddr_in *)&(nas->client))->sin_family == AF_INET6 ? 16 : 4));
++#else
+ 	radius_add(request, RD_TP_NAS_IP_ADDRESS, (unsigned char *) &nas->client.sin_addr,
+ 	           sizeof(nas->client.sin_addr));
++#endif
+ 	/* Called Station Id */
+ 
+ 	snprintf((char *)buf, sizeof(buf), "%02x%02x%02x%02x%02x%02x",
+@@ -611,7 +617,11 @@ radius_forward(nas_t *nas, nas_sta_t *sta, eap_header_t *eap)
+ 
+ 	/* Send packet */
+ 	if (NAS_RADIUS_SEND_PACKET(nas, request, ntohs(request->length)) < 0) {
++#ifdef NAS_IPV6
++		perror(inet_ntoa(((struct sockaddr_in *)&(nas->server))->sin_addr));
++#else
+ 		perror(inet_ntoa(nas->server.sin_addr));
++#endif
+ 		free(request);
+ 		request = NULL;
+ 	}
+diff --git a/release/src/router/nas_arm/nas_wksp.c b/release/src/router/nas_arm/nas_wksp.c
+index 112c3e3..4954605 100644
+--- a/release/src/router/nas_arm/nas_wksp.c
++++ b/release/src/router/nas_arm/nas_wksp.c
+@@ -47,6 +47,7 @@
+ #include <eapd.h>
+ #include <security_ipc.h>
+ #include <bcmnvram.h>
++#include <netdb.h>
+ 
+ /* debug stuff */
+ #ifdef BCMDBG
+@@ -195,7 +196,11 @@ nas_wksp_parse_cmd(int argc, char *argv[], nas_wksp_t *nwksp)
+ 			nwcb->nas.flags |= NAS_FLAG_AUTHENTICATOR;
+ #endif	/* #if defined(NAS_WKSP_BUILD_NAS_AUTH) && !defined(NAS_WKSP_BUILD_NAS_SUPPL) */
+ 			nwcb->nas.wan = NAS_WKSP_UNK_FILE_DESC;
++#ifdef NAS_IPV6
++			((struct sockaddr_in *)&(nwcb->nas.server))->sin_port = htons(RADIUS_PORT);
++#else
+ 			nwcb->nas.server.sin_port = htons(RADIUS_PORT);
++#endif
+ 			nwcb->nas.wsec = TKIP_ENABLED|AES_ENABLED;
+ 			nwcb->nas.wpa = &nwcb->wpa;
+ 			nwcb->nas.appl = nwcb;
+@@ -264,14 +269,23 @@ nas_wksp_parse_cmd(int argc, char *argv[], nas_wksp_t *nwksp)
+ 		case 'h':
+ #ifdef NAS_RADIUS
+ 			/* update radius server address */
++#ifdef NAS_IPV6
++			((struct sockaddr_in *)&(nwcb->nas.server))->sin_family = AF_INET;
++			((struct sockaddr_in *)&(nwcb->nas.server))->sin_addr.s_addr = inet_addr(optarg);
++#else
+ 			nwcb->nas.server.sin_family = AF_INET;
+ 			nwcb->nas.server.sin_addr.s_addr = inet_addr(optarg);
++#endif
+ 			NASDBG("nas[%d].server.address %s\n", i, optarg);
+ #endif /* #ifdef NAS_RADIUS */
+ 			break;
+ 		case 'p':
+ 			/* update radius server port number */
++#ifdef NAS_IPV6
++			((struct sockaddr_in *)&(nwcb->nas.server))->sin_port = htons((int)strtoul(optarg, NULL, 0));
++#else
+ 			nwcb->nas.server.sin_port = htons((int)strtoul(optarg, NULL, 0));
++#endif
+ 			NASDBG("nas[%d].server.port %s\n", i, optarg);
+ 			break;
+ #endif	/* #ifdef NAS_WKSP_BUILD_NAS_AUTH */
+@@ -1106,7 +1120,11 @@ nas_get_wsec(nas_wksp_t *nwksp, uint8 *mac, char *osifname, nas_wpa_cb_t *nwcb_r
+ 	nwcb->nas.flags |= NAS_FLAG_AUTHENTICATOR;
+ #endif	/* #if defined(NAS_WKSP_BUILD_NAS_AUTH) && !defined(NAS_WKSP_BUILD_NAS_SUPPL) */
+ 	nwcb->nas.wan = NAS_WKSP_UNK_FILE_DESC;
++#ifdef NAS_IPV6
++	((struct sockaddr_in *)&(nwcb->nas.server))->sin_port = htons(RADIUS_PORT);
++#else
+ 	nwcb->nas.server.sin_port = htons(RADIUS_PORT);
++#endif
+ 	nwcb->nas.wsec = TKIP_ENABLED|AES_ENABLED;
+ 	nwcb->nas.wpa = &nwcb->wpa;
+ 	nwcb->nas.appl = nwcb;
+@@ -1206,12 +1224,53 @@ nas_get_wsec(nas_wksp_t *nwksp, uint8 *mac, char *osifname, nas_wpa_cb_t *nwcb_r
+ #ifdef NAS_RADIUS
+ 	/* update radius server address */
+ 	if (info.radius_addr) {
++#ifdef NAS_IPV6
++{
++    struct addrinfo *res, *itr;
++    int ret_ga;
++    int addr_ok = 0;
++
++    ret_ga = getaddrinfo(info.radius_addr, NULL, NULL, &res);
++    if ( ret_ga ) {
++        fprintf(stderr, "error: %s\n", gai_strerror(ret_ga));
++        exit(1);
++    }
++    if ( !res->ai_addr ) {
++        fprintf(stderr, "getaddrinfo failed to get an address... target was '%s'\n", info.radius_addr);
++        exit(1);
++    }
++
++    // Check address type before filling in the address
++    // ai_family = PF_xxx; ai_protocol = IPPROTO_xxx, see netdb.h
++    // ...but AF_INET6 == PF_INET6
++    itr = res;
++    // First check all results for a IPv6 Address
++    while ( itr != NULL ) {
++        if ( itr->ai_family == AF_INET6 || itr->ai_family == AF_INET) {
++            memcpy(&(nwcb->nas.server), (itr->ai_addr),
++                   (itr->ai_addrlen));
++            ((struct sockaddr_in *)&(nwcb->nas.server))->sin_family = itr->ai_family;
++            freeaddrinfo(res);
++            addr_ok = 1;
++            break;
++        }
++        else {
++            itr = itr->ai_next;
++        }
++    }
++    if (addr_ok != 1)
++        printf ("\n func=%s, line=%d, get radius addr error:%s", __FUNCTION__, __LINE__, info.radius_addr);
++
++	((struct sockaddr_in *)&(nwcb->nas.server))->sin_port = info.radius_port;
++}
++#else
+ 		nwcb->nas.server.sin_family = AF_INET;
+ 		nwcb->nas.server.sin_addr.s_addr = inet_addr(info.radius_addr);
+ 		/* update radius server port number */
+ 		nwcb->nas.server.sin_port = info.radius_port;
+ 		NASDBG("new nwcb's nas radius server address %s, port %d\n",
+ 			info.radius_addr, nwcb->nas.server.sin_port);
++#endif
+ 	}
+ #endif /* NAS_RADIUS */
+ 	/* 802.1x session timeout/pmk cache duration */
+diff --git a/release/src/router/nas_arm/nas_wksp_radius.c b/release/src/router/nas_arm/nas_wksp_radius.c
+index 662faf8..b8907ff 100644
+--- a/release/src/router/nas_arm/nas_wksp_radius.c
++++ b/release/src/router/nas_arm/nas_wksp_radius.c
+@@ -31,6 +31,124 @@
+ #define NAS_WKSP_RADIUS_TRIES	5
+ #define NAS_WKSP_RADIUS_SLEEP	5	/* in seconds */
+ 
++#ifdef NAS_IPV6
++#define NS_INT16SZ       2
++#define NS_INADDRSZ     4
++#define NS_IN6ADDRSZ    16
++
++
++int
++inet_ntop4(const unsigned char *src, char *dst, size_t size) {
++    static const char *fmt = "%u.%u.%u.%u";
++    char tmp[sizeof "255.255.255.255"];
++
++    if ( (size_t)sprintf(tmp, fmt, src[0], src[1], src[2], src[3]) >= size ) {
++        return 0;
++    }
++    strcpy(dst, tmp);
++
++    return 1;
++}
++
++/* const char *
++ * isc_inet_ntop6(src, dst, size)
++ *      convert IPv6 binary address into presentation (printable) format
++ * author:
++ *      Paul Vixie, 1996.
++ */
++int
++inet_ntop6(const unsigned char *src, char *dst, size_t size) {
++    /*
++     * Note that int32_t and int16_t need only be "at least" large enough
++     * to contain a value of the specified size.  On some systems, like
++     * Crays, there is no such thing as an integer variable with 16 bits.
++     * Keep this in mind if you think this function should have been coded
++     * to use pointer overlays.  All the world's not a VAX.
++     */
++    char tmp[sizeof "ffff:ffff:ffff:ffff:ffff:ffff:255.255.255.255"], *tp;
++    struct {
++        int base, len;
++    } best, cur;
++    unsigned int words[NS_IN6ADDRSZ / NS_INT16SZ];
++    int i;
++
++    /*
++     * Preprocess:
++     *      Copy the input (bytewise) array into a wordwise array.
++     *      Find the longest run of 0x00's in src[] for :: shorthanding.
++     */
++    memset(words, '\0', sizeof words);
++    for ( i = 0; i < NS_IN6ADDRSZ; i++ )
++        words[i / 2] |= (src[i] << ((1 - (i % 2)) << 3));
++    best.base = -1;
++    best.len = 0;
++    cur.base = -1;
++    cur.len = 0;
++    for ( i = 0; i < (NS_IN6ADDRSZ / NS_INT16SZ); i++ ) {
++        if ( words[i] == 0 ) {
++            if ( cur.base == -1 )
++                cur.base = i, cur.len = 1;
++            else
++                cur.len++;
++        } else {
++            if ( cur.base != -1 ) {
++                if ( best.base == -1 || cur.len > best.len )
++                    best = cur;
++                cur.base = -1;
++            }
++        }
++    }
++    if ( cur.base != -1 ) {
++        if ( best.base == -1 || cur.len > best.len )
++            best = cur;
++    }
++    if ( best.base != -1 && best.len < 2 )
++        best.base = -1;
++
++    /*
++     * Format the result.
++     */
++    tp = tmp;
++    for ( i = 0; i < (NS_IN6ADDRSZ / NS_INT16SZ); i++ ) {
++        /* Are we inside the best run of 0x00's? */
++        if ( best.base != -1 && i >= best.base &&
++             i < (best.base + best.len) ) {
++            if ( i == best.base )
++                *tp++ = ':';
++            continue;
++        }
++        /* Are we following an initial run of 0x00s or any real hex? */
++        if ( i != 0 )
++            *tp++ = ':';
++        /* Is this address an encapsulated IPv4? */
++        if ( i == 6 && best.base == 0 &&
++             (best.len == 6 || (best.len == 5 && words[5] == 0xffff)) ) {
++            if ( !inet_ntop4(src+12, tp,
++                             sizeof tmp - (tp - tmp)) )
++                return 0;
++            tp += strlen(tp);
++            break;
++        }
++        tp += sprintf(tp, "%x", words[i]);
++    }
++    /* Was it a trailing run of 0x00's? */
++    if ( best.base != -1 && (best.base + best.len) ==
++         (NS_IN6ADDRSZ / NS_INT16SZ) )
++        *tp++ = ':';
++    *tp++ = '\0';
++
++    /*
++     * Check for overflow, copy, and we're done.
++     */
++    if ( (size_t)(tp - tmp) > size ) {
++        errno = ENOSPC;
++        return 0;
++    }
++    strcpy(dst, tmp);
++    return 1;
++}
++#endif
++
+ /* establish connection to radius server */
+ int
+ nas_radius_open(nas_wksp_t *nwksp, nas_wpa_cb_t *nwcb)
+@@ -50,7 +168,12 @@ nas_radius_open(nas_wksp_t *nwksp, nas_wpa_cb_t *nwcb)
+ 	}
+ 
+ 	/* Connect to server */
+-	if ((nas->wan = socket(PF_INET, SOCK_DGRAM, IPPROTO_UDP)) < 0) {
++#ifdef NAS_IPV6
++	if ((nas->wan = socket(((struct sockaddr_in *)&(nas->server))->sin_family, SOCK_DGRAM, IPPROTO_UDP)) < 0)
++#else
++	if ((nas->wan = socket(PF_INET, SOCK_DGRAM, IPPROTO_UDP)) < 0)
++#endif
++        {
+ 		NASDBG("%s: Unable to create radius socket\n", nas->interface);
+ 		goto exit0;
+ 	}
+@@ -60,9 +183,34 @@ nas_radius_open(nas_wksp_t *nwksp, nas_wpa_cb_t *nwcb)
+ 	 * good to get an open descriptor now if possible.
+ 	 */
+ 	for (i = 0; i < NAS_WKSP_RADIUS_TRIES; i ++) {
+-		if (connect(nas->wan, (struct sockaddr *)&nas->server, sizeof(nas->server)) < 0) {
++#ifdef NAS_IPV6
++        if (connect(nas->wan, (struct sockaddr *)&nas->server,
++            (((struct sockaddr_in *)&(nas->server))->sin_family == AF_INET6 ? sizeof(struct sockaddr_in6) : sizeof(struct sockaddr_in))) < 0)
++#else
++		if (connect(nas->wan, (struct sockaddr *)&nas->server, sizeof(nas->server)) < 0)
++#endif
++        {
+ 			NASDBG("%s: Unable to connect radius socket %d\n", nas->interface,
+ 			       nas->wan);
++#ifdef NAS_IPV6
++            if (((struct sockaddr_in *)&(nas->server))->sin_family == AF_INET6 )
++            {
++                char tmp[200];
++                if(inet_ntop6((unsigned char *)&(((struct sockaddr_in6 *)(&(nas->server)))->sin6_addr), tmp, 200))
++                    NASDBG("%s: ipv6=%s\n", nas->interface, tmp);
++                else
++                    NASDBG("%s: transfer ipv6 addr to str fail\n", nas->interface);
++            }
++            else
++            {
++                char tmp[200];
++                if(inet_ntop4((unsigned char *)&(((struct sockaddr_in *)(&(nas->server)))->sin_addr), tmp, 200))
++                    NASDBG("%s: ipv4=%s\n", nas->interface, tmp);
++                else
++                    NASDBG("%s: transfer ipv4 addr to str fail\n", nas->interface);
++            }
++#endif
++
+ 			nas_sleep_ms(NAS_WKSP_RADIUS_SLEEP*1000);
+ 			continue;
+ 		}
+diff --git a/release/src/router/nas_arm/radius.h b/release/src/router/nas_arm/radius.h
+index 80462c9..1583913 100644
+--- a/release/src/router/nas_arm/radius.h
++++ b/release/src/router/nas_arm/radius.h
+@@ -126,6 +126,7 @@ typedef struct {
+ #define RD_TP_NAS_PORT_ID 87
+ #define RD_TP_TUNNEL_CLIENT_AUTH_ID 90
+ #define RD_TP_TUNNEL_SERVER_AUTH_ID 91
++#define RD_TP_NAS_IPV6_ADDRESS 95
+ #define RD_TP_ASCEND_MODEM_PORTNO 120
+ #define RD_TP_ASCEND_MODEM_SLOTNO 121
+ #define RD_TP_ASCEND_MULTILINK_ID 187

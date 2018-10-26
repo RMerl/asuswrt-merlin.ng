@@ -1,0 +1,22 @@
+ 
+# This file should just append object file names to "ALLOBJS",
+# but since it is mean to be linked *first*, it will append
+# modules to "CRT0OBJS"
+#
+
+ifndef INIT_ARM
+
+ifeq ($(strip ${CFG_ARMV8_AARCH64}),1)
+INIT_ARM = init_btrm_arm_aarch64.o
+else
+ifeq ($(strip $(BRCM_CHIP)),6846)
+INIT_ARM = init_btrm_arm_impl2.o 
+else
+INIT_ARM = init_btrm_arm.o
+endif
+endif
+
+endif
+
+CRT0OBJS += $(INIT_ARM)
+

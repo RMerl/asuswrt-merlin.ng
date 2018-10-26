@@ -1,0 +1,136 @@
+#***********************************************************************
+#
+#  Copyright (c) 2014  Broadcom Corporation
+#  All Rights Reserved
+#
+#
+#***********************************************************************/
+
+#
+# Makefile for Traffic Management(TM) Control Utility.
+# Program Executable: tmctl
+# Set custom variables in this first section
+#
+EXE = tmctl
+OBJS = tmctl.o tmctl_cmds.o
+LIBS = -ltmctl -lbcm_crc -lbcm_flashutil -lbcm_boardctl
+
+
+all dynamic install: conditional_build
+
+
+clean: generic_clean
+	rm -f $(INSTALL_DIR)/bin/$(EXE)
+
+binaryonly_dist_clean: clean generic_binaryonly_dist_clean
+	rm -f Makefile.fullsrc
+
+#
+# Set our CommEngine directory (by splitting the pwd into two words
+# at /userspace and taking the first word only).
+# Then include the common defines under CommEngine.
+#
+CURR_DIR := $(shell pwd)
+BUILD_DIR:=$(HND_SRC)
+
+-include $(BUILD_DIR)/make.common
+
+
+ifneq ($(strip $(BUILD_FAPCTL)),)
+LIBS += -lfapctl
+BUILD_TMCTL_APP := 1
+else ifneq ($(strip $(BUILD_RDPACTL)),)
+LIBS += -lrdpactl -lethswctl -lbdmf
+BUILD_TMCTL_APP := 1
+else ifneq ($(strip $(BUILD_BCMTM)),)
+LIBS += -lbcmtm
+BUILD_TMCTL_APP := 1
+else
+BUILD_TMCTL_APP := 0
+endif
+
+ifneq ($(strip $(BUILD_BRCM_CMS)),)
+ifneq ($(strip $(BUILD_EPONCTL)),)
+LIBS += -leponctl
+endif
+endif
+
+ifneq ($(strip $(BUILD_BRCM_CMS)),)
+LIBS += -lcms_msg -lcms_util
+endif
+
+ifeq ($(BUILD_TMCTL_APP),1)
+conditional_build: $(EXE) generic_exe_install
+else
+conditional_build:
+	@echo "Skipping $(EXE) (not configured)"
+endif
+
+#
+# Private apps and libs are allowed to include header files from the
+# private and public directories.
+#
+# WARNING: Do not modify this section unless you understand the
+# license implications of what you are doing.
+#
+ALLOWED_INCLUDE_PATHS := -I.\
+                         -I$(BUILD_DIR)/userspace/public/include  \
+                         -I$(BUILD_DIR)/userspace/public/include/$(OALDIR) \
+                         -I$(BUILD_DIR)/userspace/private/include  \
+                         -I$(BUILD_DIR)/userspace/private/include/$(OALDIR) \
+                         -I$(INC_BRCMDRIVER_PUB_PATH)/$(BRCM_BOARD) \
+                         -I$(INC_BRCMDRIVER_PRIV_PATH)/$(BRCM_BOARD) \
+                         -I$(INC_BRCMSHARED_PUB_PATH)/$(BRCM_BOARD) \
+                         -I$(INC_BRCMSHARED_PRIV_PATH)/$(BRCM_BOARD)
+
+
+#
+# Private apps and libs are allowed to link with libraries from the
+# private and public directories.
+#
+# WARNING: Do not modify this section unless you understand the
+# license implications of what you are doing.
+#
+ALLOWED_LIB_DIRS := /lib:/lib/private:/lib/public
+
+
+CFLAGS += -Werror
+CFLAGS += $(ALLOWED_INCLUDE_PATHS)
+
+ifneq ($(strip $(BUILD_BRCM_FTTDP)),)
+    CUSTOM_CFLAGS += -DBRCM_FTTDP
+endif
+
+#
+# Implicit rule will make the .c into a .o
+# Implicit rule is $(CC) -c $(CPPFLAGS) $(CFLAGS)
+# See Section 10.2 of Gnu Make manual
+#
+ifneq ($(PREBUILT_BCMBIN),1)
+$(EXE): $(OBJS)
+	@echo 
+	@echo allowed_include_patsh=$(ALLOWED_INCLUDE_PATHS)
+	@echo
+	$(CC) -o $@ $(OBJS) $(ALLOWED_INCLUDE_PATHS) -Wl,-rpath,$(CMS_LIB_RPATH) $(CMS_LIB_PATH) $(LIBS)
+else
+$(EXE): 
+	-cp -f $(TOP_PLATFORM)/$(shell pwd | sed 's/\(.*router-sysdep\/\)//')/$(PRBM_DIR)/$@ ./
+endif
+
+
+#
+# Include the rule for making dependency files.
+# The '-' in front of the second include suppresses
+# error messages when make cannot find the .d files.
+# It will just regenerate them.
+# See Section 4.14 of Gnu Make.
+#
+
+-include $(BUILD_DIR)/make.deprules
+
+-include $(OBJS:.o=.d)
+
+%.o: %.c
+	@echo " CC $@"
+	$(CC) $(CFLAGS) -c $<
+

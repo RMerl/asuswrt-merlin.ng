@@ -1,0 +1,1 @@
+cmd_../../bcmdrivers/opensource/char/i2c/chips/bcm94908/built-in.o :=  /opt/toolchains/crosstools-aarch64-gcc-5.5-linux-4.1-glibc-2.26-binutils-2.28.1/usr/bin/aarch64-buildroot-linux-gnu-ld -EL    -r -o ../../bcmdrivers/opensource/char/i2c/chips/bcm94908/built-in.o ../../bcmdrivers/opensource/char/i2c/chips/bcm94908/bcmsfp_i2c.o 

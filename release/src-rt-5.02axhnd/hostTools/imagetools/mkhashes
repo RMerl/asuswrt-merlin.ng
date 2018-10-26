@@ -1,0 +1,115 @@
+#!/usr/bin/env perl
+
+#
+# mkhashes -- assemble a block of hashes
+#
+# Usage example....
+# hostTools/imagetools/mkhashes --out="hashes.bin"  --item rootfs=targets/963158GW/squashfs.img  targets/963158GW/bootfs/
+#
+# mkhashes [options] PATHS ...
+#     --out output filename (defaults to hashes.bin)
+#     --item name=path    Add a file to the list of files to be hashed, but use "name" as its designation instead
+#                         of the basename
+#     PATHS....       A list of paths that should have every regular file within them included
+#
+#
+
+use strict;
+use warnings;
+use bytes;
+use Getopt::Long;
+use File::Find;
+use File::stat;
+use File::Temp qw[ tempfile ];
+use File::Basename;
+use Data::Dumper;
+
+# constants match cfe/cfe/board/bcm63xx_rom/include/bcm63xx_boot.h
+use constant {
+    FLAG_BOOTLOADER => 1,
+    FLAG_COMPRESSED => 2,
+    FLAG_ENCRYPTED  => 4
+};
+
+my $end    = '<';
+my $output = "hashes.bin";
+my @items;
+my @hashes;
+my %extra;
+my @exclude;
+my %flags;
+my $current = '';
+
+GetOptions(
+    "output=s",   \$output,
+    "item=s",     \%extra,
+    "exclude=s",  \@exclude,
+    "file=s",   \$current,
+    "bootloader", sub { $flags{$current} |= FLAG_BOOTLOADER },
+    "compressed", sub { $flags{$current} |= FLAG_COMPRESSED },
+    "encrypted",  sub { $flags{$current} |= FLAG_ENCRYPTED },
+) or die("bad option");
+
+
+if (@ARGV) {
+
+    # generate list of paths
+    find(
+        sub {
+            if ( -f $_ ) {
+                foreach my $exclusion (@exclude) {
+                    return if ( $File::Find::name =~ /$exclusion/ );
+                }
+                push @items, { path => $File::Find::name };
+            }
+        },
+        @ARGV
+    );
+}
+
+foreach ( keys %extra ) {
+    push @items, { path => $extra{$_}, tag => $_ };
+
+}
+
+open( FO, ">", $output );
+
+foreach my $item (@items) {
+    my $file = $item->{path};
+    my $st   = stat($file);
+    my $sha;
+    $sha = `sha256sum $file`;
+    $sha =~ s/^([0-9a-fA-F]+)\s.*$/$1/;
+    my $shabin = join( '', map { pack( 'C', hex($_) ) } ( $sha =~ /(..)/g ) );
+    my $fname = $item->{tag} || basename($file);
+    push @hashes, { name => $fname, len => $st->size, hash => $shabin };
+}
+
+# TLV
+# Type:  U32
+# Length : U32
+# Value
+#
+#  If type is NAME_FILELEN_SHA  0x00000001
+#  After the lenth field
+#     Flags: U32 
+#     Name: ASCIIZ
+#     Filelen: U32
+#     SHA256: 32 bytes
+
+foreach (@hashes) {
+    my $flags = $flags{$_->{name}} || 0;
+    my $rec = pack( "(LZ*LA*)$end", $flags, $_->{name}, $_->{len}, $_->{hash} );
+    print FO pack( "(LL)$end", 0x00000001, 8 + length($rec) );
+    print FO $rec;
+    print $_->{name}
+      . " has flags "
+      . $flags 
+      . " has size "
+      . $_->{len}
+      . " length "
+      . length( $_->{hash} ) . "\n";
+}
+print FO pack( "(LL)$end", 0x00000000, 0 );
+close(FO);
+

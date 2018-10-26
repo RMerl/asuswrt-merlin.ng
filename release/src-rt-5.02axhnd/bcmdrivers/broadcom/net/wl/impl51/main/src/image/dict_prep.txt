@@ -1,0 +1,926 @@
+﻿Load language header mapping : HdrMapping.txt
+MODEL: RT-AC3200
+gen model specified, skip
+MODEL: RT-AC87U
+gen model specified, skip
+MODEL: DSL-AC68U
+gen model specified, skip
+MODEL: RT-AC56S
+gen model specified, skip
+MODEL: RT-AC56U
+gen model specified, skip
+MODEL: RT-AC68U
+gen model specified, skip
+MODEL: RT-AC68A
+gen model specified, skip
+MODEL: 4G-AC68U
+gen model specified, skip
+MODEL: RT-AC88U
+gen model specified, skip
+MODEL: RT-AC3100
+gen model specified, skip
+MODEL: RT-AC5300
+gen model specified, skip
+MODEL: GT-AC5300
+gen model specified, skip
+MODEL: RT-AX88U
+gen files for this one
+DICT: EN
+LANG:EN=English
+ENUM:EN=English
+ENUM:TW=繁體中文
+ENUM:CN=简体中文
+ENUM:CZ=Česky
+ENUM:PL=Polski
+ENUM:RU=Pусский
+ENUM:DE=Deutsch
+ENUM:ES=Español
+ENUM:FR=Français
+ENUM:TR=Türkçe
+ENUM:TH=ไทย
+ENUM:MS=Malay
+ENUM:NO=Norsk
+ENUM:FI=Suomi
+ENUM:DA=Dansk
+ENUM:SV=Svensk
+ENUM:BR=Portuguese(Brazil)
+ENUM:JP=日本語
+ENUM:IT=Italiano
+ENUM:UK=Український
+ENUM:HU=Hungarian
+ENUM:RO=Romanian
+ENUM:KR=한국어
+ENUM:NL=Nederlands
+ENUM:SL=Slovenščina
+DICT: BR
+ENUM:EN=English
+ENUM:TW=繁體中文
+ENUM:CN=简体中文
+ENUM:CZ=Česky
+ENUM:PL=Polski
+ENUM:RU=Pусский
+ENUM:DE=Deutsch
+ENUM:ES=Español
+ENUM:FR=Français
+ENUM:TR=Türkçe
+ENUM:TH=ไทย
+ENUM:MS=Malay
+ENUM:NO=Norsk
+ENUM:FI=Suomi
+ENUM:DA=Dansk
+ENUM:SV=Svensk
+LANG:BR=Portuguese(Brazil)
+ENUM:BR=Portuguese(Brazil)
+ENUM:JP=日本語
+ENUM:IT=Italiano
+ENUM:UK=Український
+ENUM:HU=Hungarian
+ENUM:RO=Romanian
+ENUM:KR=한국어
+ENUM:NL=Nederlands
+ENUM:SL=Slovenščina
+DICT: CN
+ENUM:EN=English
+ENUM:TW=繁體中文
+LANG:CN=简体中文
+ENUM:CN=简体中文
+ENUM:CZ=Česky
+ENUM:PL=Polski
+ENUM:RU=Pусский
+ENUM:DE=Deutsch
+ENUM:ES=Español
+ENUM:FR=Français
+ENUM:TR=Türkçe
+ENUM:TH=ไทย
+ENUM:MS=Malay
+ENUM:NO=Norsk
+ENUM:FI=Suomi
+ENUM:DA=Dansk
+ENUM:SV=Svensk
+ENUM:BR=Portuguese(Brazil)
+ENUM:JP=日本語
+ENUM:IT=Italiano
+ENUM:UK=Український
+ENUM:HU=Hungarian
+ENUM:RO=Romanian
+ENUM:KR=한국어
+ENUM:NL=Nederlands
+ENUM:SL=Slovenščina
+DICT: CZ
+ENUM:EN=English
+ENUM:TW=繁體中文
+ENUM:CN=简体中文
+LANG:CZ=Česky
+ENUM:CZ=Česky
+ENUM:PL=Polski
+ENUM:RU=Pусский
+ENUM:DE=Deutsch
+ENUM:ES=Español
+ENUM:FR=Français
+ENUM:TR=Türkçe
+ENUM:TH=ไทย
+ENUM:MS=Malay
+ENUM:NO=Norsk
+ENUM:FI=Suomi
+ENUM:DA=Dansk
+ENUM:SV=Svensk
+ENUM:BR=Portuguese(Brazil)
+ENUM:JP=日本語
+ENUM:IT=Italiano
+ENUM:UK=Український
+ENUM:HU=Hungarian
+ENUM:RO=Romanian
+ENUM:KR=한국어
+ENUM:NL=Nederlands
+ENUM:SL=Slovenščina
+DICT: DA
+ENUM:EN=English
+ENUM:TW=繁體中文
+ENUM:CN=简体中文
+ENUM:CZ=Česky
+ENUM:PL=Polski
+ENUM:RU=Pусский
+ENUM:DE=Deutsch
+ENUM:ES=Español
+ENUM:FR=Français
+ENUM:TR=Türkçe
+ENUM:TH=ไทย
+ENUM:MS=Malay
+ENUM:NO=Norsk
+ENUM:FI=Suomi
+LANG:DA=Dansk
+ENUM:DA=Dansk
+ENUM:SV=Svensk
+ENUM:BR=Portuguese(Brazil)
+ENUM:JP=日本語
+ENUM:IT=Italiano
+ENUM:UK=Український
+ENUM:HU=Hungarian
+ENUM:RO=Romanian
+ENUM:KR=한국어
+ENUM:NL=Nederlands
+ENUM:SL=Slovenščina
+DICT: DE
+ENUM:EN=English
+ENUM:TW=繁體中文
+ENUM:CN=简体中文
+ENUM:CZ=Česky
+ENUM:PL=Polski
+ENUM:RU=Pусский
+LANG:DE=Deutsch
+ENUM:DE=Deutsch
+ENUM:ES=Español
+ENUM:FR=Français
+ENUM:TR=Türkçe
+ENUM:TH=ไทย
+ENUM:MS=Malay
+ENUM:NO=Norsk
+ENUM:FI=Suomi
+ENUM:DA=Dansk
+ENUM:SV=Svensk
+ENUM:BR=Portuguese(Brazil)
+ENUM:JP=日本語
+ENUM:IT=Italiano
+ENUM:UK=Український
+ENUM:HU=Hungarian
+ENUM:RO=Romanian
+ENUM:KR=한국어
+ENUM:NL=Nederlands
+ENUM:SL=Slovenščina
+DICT: ES
+ENUM:EN=English
+ENUM:TW=繁體中文
+ENUM:CN=简体中文
+ENUM:CZ=Česky
+ENUM:PL=Polski
+ENUM:RU=Pусский
+ENUM:DE=Deutsch
+LANG:ES=Español
+ENUM:ES=Español
+ENUM:FR=Français
+ENUM:TR=Türkçe
+ENUM:TH=ไทย
+ENUM:MS=Malay
+ENUM:NO=Norsk
+ENUM:FI=Suomi
+ENUM:DA=Dansk
+ENUM:SV=Svensk
+ENUM:BR=Portuguese(Brazil)
+ENUM:JP=日本語
+ENUM:IT=Italiano
+ENUM:UK=Український
+ENUM:HU=Hungarian
+ENUM:RO=Romanian
+ENUM:KR=한국어
+ENUM:NL=Nederlands
+ENUM:SL=Slovenščina
+DICT: FI
+ENUM:EN=English
+ENUM:TW=繁體中文
+ENUM:CN=简体中文
+ENUM:CZ=Česky
+ENUM:PL=Polski
+ENUM:RU=Pусский
+ENUM:DE=Deutsch
+ENUM:ES=Español
+ENUM:FR=Français
+ENUM:TR=Türkçe
+ENUM:TH=ไทย
+ENUM:MS=Malay
+ENUM:NO=Norsk
+LANG:FI=Suomi
+ENUM:FI=Suomi
+ENUM:DA=Dansk
+ENUM:SV=Svensk
+ENUM:BR=Portuguese(Brazil)
+ENUM:JP=日本語
+ENUM:IT=Italiano
+ENUM:UK=Український
+ENUM:HU=Hungarian
+ENUM:RO=Romanian
+ENUM:KR=한국어
+ENUM:NL=Nederlands
+ENUM:SL=Slovenščina
+DICT: FR
+ENUM:EN=English
+ENUM:TW=繁體中文
+ENUM:CN=简体中文
+ENUM:CZ=Česky
+ENUM:PL=Polski
+ENUM:RU=Pусский
+ENUM:DE=Deutsch
+ENUM:ES=Español
+LANG:FR=Français
+ENUM:FR=Français
+ENUM:TR=Türkçe
+ENUM:TH=ไทย
+ENUM:MS=Malay
+ENUM:NO=Norsk
+ENUM:FI=Suomi
+ENUM:DA=Dansk
+ENUM:SV=Svensk
+ENUM:BR=Portuguese(Brazil)
+ENUM:JP=日本語
+ENUM:IT=Italiano
+ENUM:UK=Український
+ENUM:HU=Hungarian
+ENUM:RO=Romanian
+ENUM:KR=한국어
+ENUM:NL=Nederlands
+ENUM:SL=Slovenščina
+DICT: HU
+ENUM:EN=English
+ENUM:TW=繁體中文
+ENUM:CN=简体中文
+ENUM:CZ=Česky
+ENUM:PL=Polski
+ENUM:RU=Pусский
+ENUM:DE=Deutsch
+ENUM:ES=Español
+ENUM:FR=Français
+ENUM:TR=Türkçe
+ENUM:TH=ไทย
+ENUM:MS=Malay
+ENUM:NO=Norsk
+ENUM:FI=Suomi
+ENUM:DA=Dansk
+ENUM:SV=Svensk
+ENUM:BR=Portuguese(Brazil)
+ENUM:JP=日本語
+ENUM:IT=Italiano
+ENUM:UK=Український
+LANG:HU=Hungarian
+ENUM:HU=Hungarian
+ENUM:RO=Romanian
+ENUM:KR=한국어
+ENUM:NL=Nederlands
+ENUM:SL=Slovenščina
+DICT: IT
+ENUM:EN=English
+ENUM:TW=繁體中文
+ENUM:CN=简体中文
+ENUM:CZ=Česky
+ENUM:PL=Polski
+ENUM:RU=Pусский
+ENUM:DE=Deutsch
+ENUM:ES=Español
+ENUM:FR=Français
+ENUM:TR=Türkçe
+ENUM:TH=ไทย
+ENUM:MS=Malay
+ENUM:NO=Norsk
+ENUM:FI=Suomi
+ENUM:DA=Dansk
+ENUM:SV=Svensk
+ENUM:BR=Portuguese(Brazil)
+ENUM:JP=日本語
+LANG:IT=Italiano
+ENUM:IT=Italiano
+ENUM:UK=Український
+ENUM:HU=Hungarian
+ENUM:RO=Romanian
+ENUM:KR=한국어
+ENUM:NL=Nederlands
+ENUM:SL=Slovenščina
+DICT: JP
+ENUM:EN=English
+ENUM:TW=繁體中文
+ENUM:CN=简体中文
+ENUM:CZ=Česky
+ENUM:PL=Polski
+ENUM:RU=Pусский
+ENUM:DE=Deutsch
+ENUM:ES=Español
+ENUM:FR=Français
+ENUM:TR=Türkçe
+ENUM:TH=ไทย
+ENUM:MS=Malay
+ENUM:NO=Norsk
+ENUM:FI=Suomi
+ENUM:DA=Dansk
+ENUM:SV=Svensk
+ENUM:BR=Portuguese(Brazil)
+LANG:JP=日本語
+ENUM:JP=日本語
+ENUM:IT=Italiano
+ENUM:UK=Український
+ENUM:HU=Hungarian
+ENUM:RO=Romanian
+ENUM:KR=한국어
+ENUM:NL=Nederlands
+ENUM:SL=Slovenščina
+DICT: KR
+ENUM:EN=English
+ENUM:TW=繁體中文
+ENUM:CN=简体中文
+ENUM:CZ=Česky
+ENUM:PL=Polski
+ENUM:RU=Pусский
+ENUM:DE=Deutsch
+ENUM:ES=Español
+ENUM:FR=Français
+ENUM:TR=Türkçe
+ENUM:TH=ไทย
+ENUM:MS=Malay
+ENUM:NO=Norsk
+ENUM:FI=Suomi
+ENUM:DA=Dansk
+ENUM:SV=Svensk
+ENUM:BR=Portuguese(Brazil)
+ENUM:JP=日本語
+ENUM:IT=Italiano
+ENUM:UK=Український
+ENUM:HU=Hungarian
+ENUM:RO=Romanian
+LANG:KR=한국어
+ENUM:KR=한국어
+ENUM:NL=Nederlands
+ENUM:SL=Slovenščina
+DICT: MS
+ENUM:EN=English
+ENUM:TW=繁體中文
+ENUM:CN=简体中文
+ENUM:CZ=Česky
+ENUM:PL=Polski
+ENUM:RU=Pусский
+ENUM:DE=Deutsch
+ENUM:ES=Español
+ENUM:FR=Français
+ENUM:TR=Türkçe
+ENUM:TH=ไทย
+LANG:MS=Malay
+ENUM:MS=Malay
+ENUM:NO=Norsk
+ENUM:FI=Suomi
+ENUM:DA=Dansk
+ENUM:SV=Svensk
+ENUM:BR=Portuguese(Brazil)
+ENUM:JP=日本語
+ENUM:IT=Italiano
+ENUM:UK=Український
+ENUM:HU=Hungarian
+ENUM:RO=Romanian
+ENUM:KR=한국어
+ENUM:NL=Nederlands
+ENUM:SL=Slovenščina
+DICT: NO
+ENUM:EN=English
+ENUM:TW=繁體中文
+ENUM:CN=简体中文
+ENUM:CZ=Česky
+ENUM:PL=Polski
+ENUM:RU=Pусский
+ENUM:DE=Deutsch
+ENUM:ES=Español
+ENUM:FR=Français
+ENUM:TR=Türkçe
+ENUM:TH=ไทย
+ENUM:MS=Malay
+LANG:NO=Norsk
+ENUM:NO=Norsk
+ENUM:FI=Suomi
+ENUM:DA=Dansk
+ENUM:SV=Svensk
+ENUM:BR=Portuguese(Brazil)
+ENUM:JP=日本語
+ENUM:IT=Italiano
+ENUM:UK=Український
+ENUM:HU=Hungarian
+ENUM:RO=Romanian
+ENUM:KR=한국어
+ENUM:NL=Nederlands
+ENUM:SL=Slovenščina
+DICT: PL
+ENUM:EN=English
+ENUM:TW=繁體中文
+ENUM:CN=简体中文
+ENUM:CZ=Česky
+LANG:PL=Polski
+ENUM:PL=Polski
+ENUM:RU=Pусский
+ENUM:DE=Deutsch
+ENUM:ES=Español
+ENUM:FR=Français
+ENUM:TR=Türkçe
+ENUM:TH=ไทย
+ENUM:MS=Malay
+ENUM:NO=Norsk
+ENUM:FI=Suomi
+ENUM:DA=Dansk
+ENUM:SV=Svensk
+ENUM:BR=Portuguese(Brazil)
+ENUM:JP=日本語
+ENUM:IT=Italiano
+ENUM:UK=Український
+ENUM:HU=Hungarian
+ENUM:RO=Romanian
+ENUM:KR=한국어
+ENUM:NL=Nederlands
+ENUM:SL=Slovenščina
+DICT: RO
+ENUM:EN=English
+ENUM:TW=繁體中文
+ENUM:CN=简体中文
+ENUM:CZ=Česky
+ENUM:PL=Polski
+ENUM:RU=Pусский
+ENUM:DE=Deutsch
+ENUM:ES=Español
+ENUM:FR=Français
+ENUM:TR=Türkçe
+ENUM:TH=ไทย
+ENUM:MS=Malay
+ENUM:NO=Norsk
+ENUM:FI=Suomi
+ENUM:DA=Dansk
+ENUM:SV=Svensk
+ENUM:BR=Portuguese(Brazil)
+ENUM:JP=日本語
+ENUM:IT=Italiano
+ENUM:UK=Український
+ENUM:HU=Hungarian
+LANG:RO=Romanian
+ENUM:RO=Romanian
+ENUM:KR=한국어
+ENUM:NL=Nederlands
+ENUM:SL=Slovenščina
+DICT: RU
+ENUM:EN=English
+ENUM:TW=繁體中文
+ENUM:CN=简体中文
+ENUM:CZ=Česky
+ENUM:PL=Polski
+LANG:RU=Pусский
+ENUM:RU=Pусский
+ENUM:DE=Deutsch
+ENUM:ES=Español
+ENUM:FR=Français
+ENUM:TR=Türkçe
+ENUM:TH=ไทย
+ENUM:MS=Malay
+ENUM:NO=Norsk
+ENUM:FI=Suomi
+ENUM:DA=Dansk
+ENUM:SV=Svensk
+ENUM:BR=Portuguese(Brazil)
+ENUM:JP=日本語
+ENUM:IT=Italiano
+ENUM:UK=Український
+ENUM:HU=Hungarian
+ENUM:RO=Romanian
+ENUM:KR=한국어
+ENUM:NL=Nederlands
+ENUM:SL=Slovenščina
+DICT: SV
+ENUM:EN=English
+ENUM:TW=繁體中文
+ENUM:CN=简体中文
+ENUM:CZ=Česky
+ENUM:PL=Polski
+ENUM:RU=Pусский
+ENUM:DE=Deutsch
+ENUM:ES=Español
+ENUM:FR=Français
+ENUM:TR=Türkçe
+ENUM:TH=ไทย
+ENUM:MS=Malay
+ENUM:NO=Norsk
+ENUM:FI=Suomi
+ENUM:DA=Dansk
+LANG:SV=Svensk
+ENUM:SV=Svensk
+ENUM:BR=Portuguese(Brazil)
+ENUM:JP=日本語
+ENUM:IT=Italiano
+ENUM:UK=Український
+ENUM:HU=Hungarian
+ENUM:RO=Romanian
+ENUM:KR=한국어
+ENUM:NL=Nederlands
+ENUM:SL=Slovenščina
+DICT: TH
+ENUM:EN=English
+ENUM:TW=繁體中文
+ENUM:CN=简体中文
+ENUM:CZ=Česky
+ENUM:PL=Polski
+ENUM:RU=Pусский
+ENUM:DE=Deutsch
+ENUM:ES=Español
+ENUM:FR=Français
+ENUM:TR=Türkçe
+LANG:TH=ไทย
+ENUM:TH=ไทย
+ENUM:MS=Malay
+ENUM:NO=Norsk
+ENUM:FI=Suomi
+ENUM:DA=Dansk
+ENUM:SV=Svensk
+ENUM:BR=Portuguese(Brazil)
+ENUM:JP=日本語
+ENUM:IT=Italiano
+ENUM:UK=Український
+ENUM:HU=Hungarian
+ENUM:RO=Romanian
+ENUM:KR=한국어
+ENUM:NL=Nederlands
+ENUM:SL=Slovenščina
+DICT: TR
+ENUM:EN=English
+ENUM:TW=繁體中文
+ENUM:CN=简体中文
+ENUM:CZ=Česky
+ENUM:PL=Polski
+ENUM:RU=Pусский
+ENUM:DE=Deutsch
+ENUM:ES=Español
+ENUM:FR=Français
+LANG:TR=Türkçe
+ENUM:TR=Türkçe
+ENUM:TH=ไทย
+ENUM:MS=Malay
+ENUM:NO=Norsk
+ENUM:FI=Suomi
+ENUM:DA=Dansk
+ENUM:SV=Svensk
+ENUM:BR=Portuguese(Brazil)
+ENUM:JP=日本語
+ENUM:IT=Italiano
+ENUM:UK=Український
+ENUM:HU=Hungarian
+ENUM:RO=Romanian
+ENUM:KR=한국어
+ENUM:NL=Nederlands
+ENUM:SL=Slovenščina
+DICT: TW
+ENUM:EN=English
+LANG:TW=繁體中文
+ENUM:TW=繁體中文
+ENUM:CN=简体中文
+ENUM:CZ=Česky
+ENUM:PL=Polski
+ENUM:RU=Pусский
+ENUM:DE=Deutsch
+ENUM:ES=Español
+ENUM:FR=Français
+ENUM:TR=Türkçe
+ENUM:TH=ไทย
+ENUM:MS=Malay
+ENUM:NO=Norsk
+ENUM:FI=Suomi
+ENUM:DA=Dansk
+ENUM:SV=Svensk
+ENUM:BR=Portuguese(Brazil)
+ENUM:JP=日本語
+ENUM:IT=Italiano
+ENUM:UK=Український
+ENUM:HU=Hungarian
+ENUM:RO=Romanian
+ENUM:KR=한국어
+ENUM:NL=Nederlands
+ENUM:SL=Slovenščina
+DICT: UK
+ENUM:EN=English
+ENUM:TW=繁體中文
+ENUM:CN=简体中文
+ENUM:CZ=Česky
+ENUM:PL=Polski
+ENUM:RU=Pусский
+ENUM:DE=Deutsch
+ENUM:ES=Español
+ENUM:FR=Français
+ENUM:TR=Türkçe
+ENUM:TH=ไทย
+ENUM:MS=Malay
+ENUM:NO=Norsk
+ENUM:FI=Suomi
+ENUM:DA=Dansk
+ENUM:SV=Svensk
+ENUM:BR=Portuguese(Brazil)
+ENUM:JP=日本語
+ENUM:IT=Italiano
+LANG:UK=Український
+ENUM:UK=Український
+ENUM:HU=Hungarian
+ENUM:RO=Romanian
+ENUM:KR=한국어
+ENUM:NL=Nederlands
+ENUM:SL=Slovenščina
+get modem_dep lang item name to array
+temp.dict
+Pass 1 - Model dep strings : 7
+It is EN.dict and will generate enum list
+Check duplicated strang and empty line
+**** Validating ****  /home/merlin/amng-ax-build/release/src-rt-5.02axhnd/targets/94908HND/fs.install/www/www/EN.dict
+get modem_dep lang item name to array
+temp.dict
+Pass 1 - Model dep strings : 7
+Check duplicated strang and empty line
+**** Validating ****  /home/merlin/amng-ax-build/release/src-rt-5.02axhnd/targets/94908HND/fs.install/www/www/BR.dict
+get modem_dep lang item name to array
+temp.dict
+Pass 1 - Model dep strings : 7
+Check duplicated strang and empty line
+**** Validating ****  /home/merlin/amng-ax-build/release/src-rt-5.02axhnd/targets/94908HND/fs.install/www/www/CN.dict
+get modem_dep lang item name to array
+temp.dict
+Pass 1 - Model dep strings : 7
+Check duplicated strang and empty line
+**** Validating ****  /home/merlin/amng-ax-build/release/src-rt-5.02axhnd/targets/94908HND/fs.install/www/www/CZ.dict
+get modem_dep lang item name to array
+temp.dict
+Pass 1 - Model dep strings : 7
+Check duplicated strang and empty line
+**** Validating ****  /home/merlin/amng-ax-build/release/src-rt-5.02axhnd/targets/94908HND/fs.install/www/www/DA.dict
+get modem_dep lang item name to array
+temp.dict
+Pass 1 - Model dep strings : 7
+Check duplicated strang and empty line
+**** Validating ****  /home/merlin/amng-ax-build/release/src-rt-5.02axhnd/targets/94908HND/fs.install/www/www/DE.dict
+get modem_dep lang item name to array
+temp.dict
+Pass 1 - Model dep strings : 7
+Check duplicated strang and empty line
+**** Validating ****  /home/merlin/amng-ax-build/release/src-rt-5.02axhnd/targets/94908HND/fs.install/www/www/ES.dict
+get modem_dep lang item name to array
+temp.dict
+Pass 1 - Model dep strings : 7
+Check duplicated strang and empty line
+**** Validating ****  /home/merlin/amng-ax-build/release/src-rt-5.02axhnd/targets/94908HND/fs.install/www/www/FI.dict
+get modem_dep lang item name to array
+temp.dict
+Pass 1 - Model dep strings : 7
+Check duplicated strang and empty line
+**** Validating ****  /home/merlin/amng-ax-build/release/src-rt-5.02axhnd/targets/94908HND/fs.install/www/www/FR.dict
+get modem_dep lang item name to array
+temp.dict
+Pass 1 - Model dep strings : 7
+Check duplicated strang and empty line
+**** Validating ****  /home/merlin/amng-ax-build/release/src-rt-5.02axhnd/targets/94908HND/fs.install/www/www/HU.dict
+get modem_dep lang item name to array
+temp.dict
+Pass 1 - Model dep strings : 7
+Check duplicated strang and empty line
+**** Validating ****  /home/merlin/amng-ax-build/release/src-rt-5.02axhnd/targets/94908HND/fs.install/www/www/IT.dict
+get modem_dep lang item name to array
+temp.dict
+Pass 1 - Model dep strings : 7
+Check duplicated strang and empty line
+**** Validating ****  /home/merlin/amng-ax-build/release/src-rt-5.02axhnd/targets/94908HND/fs.install/www/www/JP.dict
+get modem_dep lang item name to array
+temp.dict
+Pass 1 - Model dep strings : 7
+Check duplicated strang and empty line
+**** Validating ****  /home/merlin/amng-ax-build/release/src-rt-5.02axhnd/targets/94908HND/fs.install/www/www/KR.dict
+get modem_dep lang item name to array
+temp.dict
+Pass 1 - Model dep strings : 7
+Check duplicated strang and empty line
+**** Validating ****  /home/merlin/amng-ax-build/release/src-rt-5.02axhnd/targets/94908HND/fs.install/www/www/MS.dict
+get modem_dep lang item name to array
+temp.dict
+Pass 1 - Model dep strings : 7
+Check duplicated strang and empty line
+**** Validating ****  /home/merlin/amng-ax-build/release/src-rt-5.02axhnd/targets/94908HND/fs.install/www/www/NO.dict
+get modem_dep lang item name to array
+temp.dict
+Pass 1 - Model dep strings : 7
+Check duplicated strang and empty line
+**** Validating ****  /home/merlin/amng-ax-build/release/src-rt-5.02axhnd/targets/94908HND/fs.install/www/www/PL.dict
+get modem_dep lang item name to array
+temp.dict
+Pass 1 - Model dep strings : 7
+Check duplicated strang and empty line
+**** Validating ****  /home/merlin/amng-ax-build/release/src-rt-5.02axhnd/targets/94908HND/fs.install/www/www/RO.dict
+get modem_dep lang item name to array
+temp.dict
+Pass 1 - Model dep strings : 7
+Check duplicated strang and empty line
+**** Validating ****  /home/merlin/amng-ax-build/release/src-rt-5.02axhnd/targets/94908HND/fs.install/www/www/RU.dict
+No string : vpn_openvpn_KC_Edit2=
+get modem_dep lang item name to array
+temp.dict
+Pass 1 - Model dep strings : 7
+Check duplicated strang and empty line
+**** Validating ****  /home/merlin/amng-ax-build/release/src-rt-5.02axhnd/targets/94908HND/fs.install/www/www/SV.dict
+get modem_dep lang item name to array
+temp.dict
+Pass 1 - Model dep strings : 7
+Check duplicated strang and empty line
+**** Validating ****  /home/merlin/amng-ax-build/release/src-rt-5.02axhnd/targets/94908HND/fs.install/www/www/TH.dict
+get modem_dep lang item name to array
+temp.dict
+Pass 1 - Model dep strings : 7
+Check duplicated strang and empty line
+**** Validating ****  /home/merlin/amng-ax-build/release/src-rt-5.02axhnd/targets/94908HND/fs.install/www/www/TR.dict
+get modem_dep lang item name to array
+temp.dict
+Pass 1 - Model dep strings : 7
+Check duplicated strang and empty line
+**** Validating ****  /home/merlin/amng-ax-build/release/src-rt-5.02axhnd/targets/94908HND/fs.install/www/www/TW.dict
+get modem_dep lang item name to array
+temp.dict
+Pass 1 - Model dep strings : 7
+Check duplicated strang and empty line
+**** Validating ****  /home/merlin/amng-ax-build/release/src-rt-5.02axhnd/targets/94908HND/fs.install/www/www/UK.dict
+MODEL: GT-AX11000
+gen model specified, skip
+MODEL: RT-AX92U
+gen model specified, skip
+MODEL: RT-AC86U
+gen model specified, skip
+MODEL: AC2900
+gen model specified, skip
+MODEL: GT-AC9600
+gen model specified, skip
+MODEL: BLUECAVE
+gen model specified, skip
+MODEL: RT-AC53U
+gen model specified, skip
+MODEL: RT-N66U
+gen model specified, skip
+MODEL: DSL-N55U
+gen model specified, skip
+MODEL: RT-N36U3
+gen model specified, skip
+MODEL: DSL-N55U-B
+gen model specified, skip
+MODEL: RT-N56U
+gen model specified, skip
+MODEL: RT-N14U
+gen model specified, skip
+MODEL: RT-AC52U
+gen model specified, skip
+MODEL: RT-AC51U
+gen model specified, skip
+MODEL: RT-AC51U+
+gen model specified, skip
+MODEL: RT-AC53
+gen model specified, skip
+MODEL: RT-AC55U
+gen model specified, skip
+MODEL: RT-AC55UHP
+gen model specified, skip
+MODEL: 4G-AC55U
+gen model specified, skip
+MODEL: PL-N12
+gen model specified, skip
+MODEL: PL-AC56
+gen model specified, skip
+MODEL: PL-AC66U
+gen model specified, skip
+MODEL: RP-AC66
+gen model specified, skip
+MODEL: RP-AC51
+gen model specified, skip
+MODEL: BRT-AC828
+gen model specified, skip
+MODEL: RT-AD7200
+gen model specified, skip
+MODEL: RT-AC88Q
+gen model specified, skip
+MODEL: RT-AC88S
+gen model specified, skip
+MODEL: RT-AC88N
+gen model specified, skip
+MODEL: RT-AC58U
+gen model specified, skip
+MODEL: 4G-AC53U
+gen model specified, skip
+MODEL: RT-AC82U
+gen model specified, skip
+MODEL: RT-N54U
+gen model specified, skip
+MODEL: RT-AC54U
+gen model specified, skip
+MODEL: RT-N56UB1
+gen model specified, skip
+MODEL: RT-N56UB2
+gen model specified, skip
+MODEL: RT-AC1200HP
+gen model specified, skip
+MODEL: RT-AC1200G
+gen model specified, skip
+MODEL: RT-AC1200G+
+gen model specified, skip
+MODEL: RT-N65U
+gen model specified, skip
+MODEL: RT-AC66U
+gen model specified, skip
+MODEL: RT-N53
+gen model specified, skip
+MODEL: RT-N16
+gen model specified, skip
+MODEL: RT-N18U
+gen model specified, skip
+MODEL: RT-N15U
+gen model specified, skip
+MODEL: RT-N12
+gen model specified, skip
+MODEL: RT-N12B1
+gen model specified, skip
+MODEL: RT-N12C1
+gen model specified, skip
+MODEL: RT-N12D1
+gen model specified, skip
+MODEL: RT-N12VP
+gen model specified, skip
+MODEL: RT-N12HP
+gen model specified, skip
+MODEL: RT-N12HP_B1
+gen model specified, skip
+MODEL: RT-N10U
+gen model specified, skip
+MODEL: RT-N14UHP
+gen model specified, skip
+MODEL: RT-N10+
+gen model specified, skip
+MODEL: RT-N10D1
+gen model specified, skip
+MODEL: RT-N10P
+gen model specified, skip
+MODEL: RT-N10PV2
+gen model specified, skip
+MODEL: RT-N11P
+gen model specified, skip
+MODEL: RT-N11P_B1
+gen model specified, skip
+MODEL: RT-N10P_V3
+gen model specified, skip
+MODEL: RT-AC1200
+gen model specified, skip
+MODEL: RT-AC1200GA1
+gen model specified, skip
+MODEL: RT-AC1200GU
+gen model specified, skip
+MODEL: RT-N600
+gen model specified, skip
+MODEL: RT-N300
+gen model specified, skip
+MODEL: MAP-AC1300
+gen model specified, skip
+MODEL: MAP-AC2200
+gen model specified, skip
+MODEL: VZW-AC1300
+gen model specified, skip
+MODEL: MAP-AC1750
+gen model specified, skip
+MODEL: MAP-AC3000
+gen model specified, skip
+MODEL: RT-AC85U
+gen model specified, skip
+MODEL: RT-AC85P
+gen model specified, skip
+MODEL: RP-AC87
+gen model specified, skip
+MODEL: RP-AC68U
+gen model specified, skip
+MODEL: RP-AC53
+gen model specified, skip
+MODEL: RT-AC65U
+gen model specified, skip
+MODEL: RP-AC55
+gen model specified, skip
+MODEL: RT-N800HP
+gen model specified, skip
+Done!

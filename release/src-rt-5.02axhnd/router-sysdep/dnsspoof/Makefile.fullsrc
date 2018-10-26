@@ -1,0 +1,35 @@
+CFLAGS = -s -Os -fomit-frame-pointer
+LDFLAGS = -Wl,-allow-shlib-undefined
+
+CFLAGS+=-I$(TOOLCHAIN)/include
+CFLAGS+=-Wall
+CFLAGS += $(BRCM_WERROR_CFLAGS)
+
+OBJS = dnsspoof.o
+
+all: dnsspoof
+
+install: dnsspoof
+	install -m 755 dnsspoof $(INSTALL_DIR)/bin
+	$(STRIP) $(INSTALL_DIR)/bin/dnsspoof
+
+dynamic: all install
+
+.c.o:
+	$(CC) $(CFLAGS) -c $<
+
+ifneq ($(PREBUILT_BCMBIN),1)
+dnsspoof: dnsspoof.o
+	$(CC) $(CFLAGS) -o dnsspoof dnsspoof.o
+else
+dnsspoof:
+	cp -f $(TOP_PLATFORM)/$(shell pwd | sed 's/\(.*router-sysdep\/\)//')/$(PRBM_DIR)/$@ ./
+endif
+
+clean:
+	-rm -f dnsspoof *.o
+
+binaryonly_dist_clean: clean
+	rm -f Makefile.fullsrc
+	rm -rf *.c *.h linux
+

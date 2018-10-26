@@ -1,0 +1,5 @@
+
+dependson: private/libs/tmctl public/libs/cms_msg public/libs/cms_util public/libs/bcm_flashutil public/libs/cms_boardctl
+condition: ifneq ($(strip $(BUILD_TMCTL)),)
+
+

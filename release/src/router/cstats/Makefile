@@ -9,7 +9,7 @@ CFLAGS += -I$(SRCBASE)/shared/bcmwifi/include -DTYPEDEF_FLOAT_T
 CFLAGS += -I$(SRCBASE)/common/include
 endif
 
-LDFLAGS	= -L$(TOP)/nvram${BCMEX}${EX7} -lnvram -L$(TOP)/shared -lshared $(LIBS)
+LDFLAGS	= -L$(TOP_PLATFORM)/nvram${BCMEX}${EX7} -lnvram -L$(TOP)/shared -lshared $(LIBS)
 
 ifeq ($(HND_ROUTER),y)
 LDFLAGS += -L$(TOP)/wlcsm -lwlcsm

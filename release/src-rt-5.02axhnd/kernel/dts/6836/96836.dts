@@ -1,0 +1,179 @@
+#include <dt-bindings/interrupt-controller/arm-gic.h>
+#include <dt-bindings/interrupt-controller/irq.h>
+#include <dt-bindings/soc/bcm963xx_dt_bindings.h> 
+
+#define GIC_DIST_BASE	0x81001000
+#define GIC_CPUI_BASE	0x81002000
+
+#define TIMER_HYP_PPI			10
+#define TIMER_VIRT_PPI			11
+#define TIMER_PHYS_SECURE_PPI		13
+#define TIMER_PHYS_NONSECURE_PPI	14
+
+#define PMU_CORE0_SPI			9
+#define PMU_CORE1_SPI			10
+#define SDIO_EMMC_SPI           95
+	
+/dts-v1/;
+
+/memreserve/ 0x00000000 0x00020000;
+
+/ {
+    model = "Broadcom-v8A";
+    compatible = "brcm,brcm-v8A";
+    interrupt-parent = <&gic>;
+    #address-cells = <2>;
+    #size-cells = <2>;
+   
+
+	cpus {
+		#address-cells = <2>;
+		#size-cells = <0>;
+
+		B53_0: cpu@0 {
+			device_type = "cpu";
+			compatible = "arm,cortex-a53";
+			reg = <0x0 0x0>;
+			next-level-cache = <&L2_0>;
+		};
+		B53_1: cpu@1 {
+			device_type = "cpu";
+			compatible = "arm,cortex-a53";
+			reg = <0x0 0x1>;
+			enable-method = "spin-table";
+			cpu-release-addr = <0x0 0xfff8>;
+			next-level-cache = <&L2_0>;
+		};
+
+		L2_0: l2-cache0 {
+			compatible = "cache";
+		};
+	};
+
+	gic: interrupt-controller@81000000 {
+		compatible = "arm,cortex-a15-gic", "arm,cortex-a9-gic";
+		#interrupt-cells = <3>;
+		#address-cells = <0>;
+		interrupt-controller;
+		reg = <0x0 GIC_DIST_BASE 0 0x1000>,
+		      <0x0 GIC_CPUI_BASE 0 0x2000>;
+	};
+
+	timer {
+		compatible = "arm,armv8-timer";
+		interrupts = <GIC_PPI TIMER_PHYS_SECURE_PPI    (GIC_CPU_MASK_SIMPLE(4) | IRQ_TYPE_LEVEL_LOW)>,
+			     <GIC_PPI TIMER_PHYS_NONSECURE_PPI (GIC_CPU_MASK_SIMPLE(4) | IRQ_TYPE_LEVEL_LOW)>,
+			     <GIC_PPI TIMER_VIRT_PPI           (GIC_CPU_MASK_SIMPLE(4) | IRQ_TYPE_LEVEL_LOW)>,
+			     <GIC_PPI TIMER_HYP_PPI            (GIC_CPU_MASK_SIMPLE(4) | IRQ_TYPE_LEVEL_LOW)>;
+	};
+
+	pmu {
+		compatible = "arm,armv8-pmuv3";
+		interrupts = <GIC_SPI PMU_CORE0_SPI IRQ_TYPE_LEVEL_HIGH>,
+			     <GIC_SPI PMU_CORE1_SPI IRQ_TYPE_LEVEL_HIGH>;
+		interrupt-affinity = <&B53_0>,
+				     <&B53_1>;
+	};
+	
+	brcm-legacy {
+		compatible = "brcm,brcm-legacy";
+	};
+
+	memory@00000000 {
+		device_type = "memory";
+		reg = <0x00000000 DRAM_BASE 0x0 DRAM_DEF_SIZE>;  /* 64MBMB */
+	};
+
+    /* according to inclusion rules of device tree */
+    reserved-memory {
+        #address-cells = <2>;
+		#size-cells = <2>;
+		ranges;
+
+        dt_reserved_fpm_pool {
+            reg = <0x00000000 DRAM_OFFSET_RDP_PARAM1 0x0 RDP_PARAM1_DDR_SIZE>; /* 32MB */
+            no-map;
+        };
+        dt_reserved_rnr_tbls {
+            reg = <0x00000000 DRAM_OFFSET_RDP_PARAM2 0x0 RDP_PARAM2_DDR_SIZE>; /* 8MB */
+            no-map;
+        };
+#if defined (CONFIG_BCM_DHD_RUNNER)        
+        dt_reserved_dhd0 {
+            reg = <0x00000000 0x0 0x0 DHD_PARAM1_DDR_SIZE>;
+            no-map;
+        };
+        dt_reserved_dhd1 {
+            reg = <0x00000000 0x0 0x0 DHD_PARAM2_DDR_SIZE>;
+            no-map;
+        };
+        dt_reserved_dhd2 {
+            reg = <0x00000000 0x0 0x0 DHD_PARAM3_DDR_SIZE>;
+            no-map;
+        };
+#endif                
+    };
+
+	/* Legacy UBUS base */
+	ubus@ff800000 {
+		compatible = "simple-bus";
+		#address-cells = <2>;
+		#size-cells = <2>;
+		ranges = <0x0 0x0 0x0 0xff800000 0x0 0x62000>;
+
+		nand@ff801800 {
+			#address-cells = <1>;
+			#size-cells = <0>;
+			compatible = "brcm,nand-bcm63xx", "brcm,brcmnand-v7.1";
+			reg = <0x0 0x1800 0x0 0x600>, <0x0 0x2000 0x0 0x10>;
+			reg-names = "nand", "nand-int-base";
+			status = "okay";
+
+			nandcs@0 {
+				compatible = "brcm,nandcs";
+				reg = <0>;
+				nand-on-flash-bbt;
+			};
+
+		};
+
+		watchdog@ff800428 {
+			compatible = "brcm,bcm96xxx-wdt";
+			reg = <0x0 0x428 0x0 0x10>;
+			timeout-sec = <80>;
+		};
+
+
+		i2c_0: i2c@ff802100 {
+			compatible = "brcm,bcm63000-i2c";
+			reg = <0x0 0x2100 0x0 0x60>;
+		};
+
+		/* not enabling the first i2c bus until pon sfp driver fix 
+                   the assumption that only one i2c bus in the system 
+		i2c_1: i2c@ff85a800 {
+			compatible = "brcm,bcm63000-i2c";
+			reg = <0x0 0x5a800 0x0 0x60>;
+		};*/
+
+		sdhci: sdhci@ff858000 {
+		       compatible = "brcm,bcm63xx-sdhci";
+		       	reg = <0x00000000 0x58000 0x00000000 0x100>;
+			interrupts = <GIC_SPI SDIO_EMMC_SPI IRQ_TYPE_LEVEL_HIGH>;
+			bus-width = <8>;
+			non-removable;
+#ifdef EMMC_DDR_1_8V 
+			mmc-ddr-1_8v;
+#endif
+	};
+
+	};
+
+	/* increase coherent_pool size */
+	chosen {
+		bootargs = "coherent_pool=1M cpuidle_sysfs_switch pci=pcie_bus_safe";
+	};
+};
+
+
+

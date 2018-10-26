@@ -1,0 +1,122 @@
+/*
+ * CSS styles used in Zero Wait DFS demo tab
+ *
+ * $ Copyright Open Broadcom Corporation $
+ *
+ *
+ * <<Broadcom-WL-IPTag/Open:>>
+ *
+ * $Id: zerowaitdfs.css 603186 2015-12-01 07:49:11Z spalanga $
+ */
+
+#zerowaitdfscontent {
+	margin-top:10px;
+	width:90%;
+	height:auto;
+}
+
+.zwdcontenttbl {
+	border-collapse: collapse;
+	width: 100%;
+	margin-left:10%;
+	margin-right:10%;
+}
+
+.zwdcontenttbl th td {
+	border: 1px solid black;
+}
+
+#actionbtns {
+	width:100%;
+}
+
+.cmnzwdbtnclass {
+	margin-left:50px;
+	width:250px;
+}
+
+#switchtodfsbtn {
+	margin-top:0px;
+}
+
+.cmnzwdselectclass {
+	margin-left:30px;
+	padding:5px;
+	font-size:1.2em;
+	width:auto;
+	height:auto;
+}
+
+#triggerradarbtn {
+	margin-top:200px;
+}
+
+.apdescverline {
+	width:2px;
+	height:550px;
+	background:#610B0B;
+	box-shadow:3px 0px 3px #999;
+}
+
+#apstatusdiv {
+	width:60%;
+	height:auto;
+	margin-left:70px;
+}
+
+.phymodeheadclass {
+	font-size:20px;
+	font-weight:bold;
+	text-align:center;
+	color:#005568;
+}
+
+.primarycoredivclass {
+	position: relative;
+	margin-top:20px;
+	height:220px;
+	background:#F2F6F7;
+	box-shadow:3px 3px 3px #999;
+}
+
+.scancoredivclass {
+	margin-top:10px;
+	height:180px;
+	background:#F2F6F7;
+	box-shadow:3px 3px 3px #999;
+}
+
+.cmndesctableclass {
+	font-size:17px;
+	text-align:left;
+}
+
+.cmndesctableclass td {
+	padding-bottom:20px;
+}
+
+.primarycoretbl {
+	padding:20px;
+}
+
+.scancoretbl {
+	padding:20px;
+}
+
+.apstatusheader {
+	width:100%;
+	height:30px;
+	font-size:18px;
+	font-weight:bold;
+	text-align:left;
+	color:white;
+	background-color:#FFFFFF;
+	border: 2px solid #4873A8;
+}
+
+.divheading {
+	margin-left:10px;
+	padding:5px;
+	font-weight:bold;
+	font-size:20px;
+}

@@ -1,0 +1,24 @@
+<PUBLISH>
+--- targets/963268GW/963268GW.prev	2013-08-07 11:35:08.994471224 -0400
++++ targets/963268GW/963268GW	2013-08-07 11:33:14.136088334 -0400
+@@ -165,7 +165,8 @@
+ BUILD_VLANCTL=dynamic
+ # BUILD_LANVLAN is not set
+ # BUILD_VLAN_AGGR is not set
+-# BUILD_ETHTOOL is not set
++BUILD_ETHTOOL=y
++BUILD_ETHTOOL_APP=y
+ 
+ #
+ # USB and Storage Options Selection
+@@ -363,7 +364,8 @@
+ BUILD_IPPD=dynamic
+ # BUILD_DLNA is not set
+ # BUILD_HOMEPLUG is not set
+-# BUILD_IEEE1905 is not set
++BUILD_IEEE1905=y
++# BRCM_1905_FM is not set
++BRCM_1905_TOPOLOGY_WEB_PAGE=y
+ BUILD_CERT=dynamic
+ BRCM_DEFAULTCFG=""
+ 

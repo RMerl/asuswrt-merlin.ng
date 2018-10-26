@@ -1,0 +1,14 @@
+<PUBLISH>
+--- 963158GW.old	2018-02-28 17:42:55.238762195 -0800
++++ 963158GW	2018-02-28 17:43:01.188022707 -0800
+@@ -485,7 +485,10 @@
+ # Secure Feature Selection
+ #
+ # BUILD_SECURE_BOOT is not set
+-# BUILD_SECURE_OS is not set
++BUILD_SECURE_OS=y
++BCM_OPTEE=y
++BUILD_ARMTF=y
+
+ #
+ # Bootrom

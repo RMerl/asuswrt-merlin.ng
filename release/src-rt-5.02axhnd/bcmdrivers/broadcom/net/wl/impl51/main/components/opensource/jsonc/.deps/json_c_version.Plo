@@ -1,0 +1,5 @@
+json_c_version.lo: json_c_version.c config.h json_c_version.h
+
+config.h:
+
+json_c_version.h:

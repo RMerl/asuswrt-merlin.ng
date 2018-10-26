@@ -1,0 +1,118 @@
+.TH pcilib 7 "@TODAY@" "@VERSION@" "The PCI Utilities"
+.SH NAME
+pcilib \- a library for accessing PCI devices
+
+.SH DESCRIPTION
+
+The PCI library (also known as \fIpcilib\fP and \fIlibpci\fP) is a portable library
+for accessing PCI devices and their configuration space.
+
+.SH ACCESS METHODS
+
+.PP
+The library supports a variety of methods to access the configuration space
+on different operating systems. By default, the first matching method in this
+list is used, but you can specify override the decision (see the \fB-A\fP switch
+of \fIlspci\fP).
+
+.TP
+.B linux-sysfs
+The
+.B /sys
+filesystem on Linux 2.6 and newer. The standard header of the config space is available
+to all users, the rest only to root. Supports extended configuration space, PCI domains,
+VPD (from Linux 2.6.26), physical slots (also since Linux 2.6.26) and information on attached
+kernel drivers.
+.TP
+.B linux-proc
+The
+.B /proc/bus/pci
+interface supported by Linux 2.1 and newer. The standard header of the config space is available
+to all users, the rest only to root.
+.TP
+.B intel-conf1
+Direct hardware access via Intel configuration mechanism 1. Available on i386 and compatibles
+on Linux, Solaris/x86, GNU Hurd, Windows, BeOS and Haiku. Requires root privileges.
+.TP
+.B intel-conf2
+Direct hardware access via Intel configuration mechanism 2. Available on i386 and compatibles
+on Linux, Solaris/x86, GNU Hurd, Windows, BeOS and Haiku. Requires root privileges. Warning: This method
+is able to address only the first 16 devices on any bus and it seems to be very
+unreliable in many cases.
+.TP
+.B fbsd-device
+The
+.B /dev/pci
+device on FreeBSD. Requires root privileges.
+.TP
+.B aix-device
+Access method used on AIX. Requires root privileges.
+.TP
+.B nbsd-libpci
+The
+.B /dev/pci0
+device on NetBSD accessed using the local libpci library.
+.TP
+.B obsd-device
+The
+.B /dev/pci
+device on OpenBSD. Requires root privileges.
+.TP
+.B dump
+Read the contents of configuration registers from a file specified in the
+.B dump.name
+parameter. The format corresponds to the output of \fIlspci\fP \fB-x\fP.
+.TP
+.B darwin
+Access method used on Mac OS X / Darwin. Must be run as root and the system
+must have been booted with debug=0x144.
+
+.SH PARAMETERS
+
+.PP
+The library is controlled by several parameters. They should have sensible default
+values, but in case you want to do something unusual (or even something weird),
+you can override them (see the \fB-O\fP switch of \fIlspci\fP).
+
+.SS Parameters of specific access methods
+
+.TP
+.B dump.name
+Name of the bus dump file to read from.
+.TP
+.B fbsd.path
+Path to the FreeBSD PCI device.
+.TP
+.B nbsd.path
+Path to the NetBSD PCI device.
+.TP
+.B obsd.path
+Path to the OpenBSD PCI device.
+.TP
+.B proc.path
+Path to the procfs bus tree.
+.TP
+.B sysfs.path
+Path to the sysfs device tree.
+
+.SS Parameters for resolving of ID's via DNS
+.TP
+.B net.domain
+DNS domain containing the ID database.
+.TP
+.B net.cache_name
+Name of the file used for caching of resolved ID's.
+
+.SS Parameters for resolving of ID's via UDEV's HWDB
+.TP
+.B hwdb.disable
+Disable use of HWDB if set to a non-zero value.
+
+.SH SEE ALSO
+
+.BR lspci (8),
+.BR setpci (8),
+.BR update-pciids (8)
+
+.SH AUTHOR
+The PCI Utilities are maintained by Martin Mares <mj@ucw.cz>.

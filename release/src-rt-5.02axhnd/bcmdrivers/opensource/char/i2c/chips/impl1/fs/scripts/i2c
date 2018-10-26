@@ -1,0 +1,10 @@
+#!/bin/sh
+if [ -z "$4" ] ; then
+  echo "Usage: $0 <i2c bus num> <i2c_addr(7-bit address in hex)> <offset(hex)> <length(1-4)> [val]: Access i2c device"
+else
+  if [ -z "$5" ] ; then
+    echo a $2 $3 $4 > /proc/i2c_bcmsfp_$1/bcmsfpTest
+  else
+    echo a $2 $3 $4 $5> /proc/i2c_bcmsfp_$1/bcmsfpTest
+  fi
+fi

@@ -1,0 +1,175 @@
+#***********************************************************************
+#
+#  Copyright (c) 2007-2013  Broadcom Corporation
+#  All Rights Reserved
+#
+#***********************************************************************/
+
+
+#
+# In most cases, you only need to modify this first section.
+#
+EXE = swmdk
+OBJS = swmdk.o mdkshell_thread.o
+LIBS = -lethswctl -lpthread
+ifneq ($(strip $(BUILD_BRCM_CMS)),)
+LIBS += $(CMS_COMMON_LIBS) -lcms_msg 
+endif
+EID_FILE = eid_bcm_swmdk.txt
+
+BMD_TARGETS = shell api pkgsrc shared
+BMD_LIBNAMES = $(addprefix -lbmd,$(BMD_TARGETS))
+CDK_TARGETS = shell main pkgsrc shared sym libc
+CDK_LIBNAMES = $(addprefix -lcdk,$(CDK_TARGETS))
+PHY_TARGETS = pkgsrc generic util sym
+PHY_LIBNAMES = $(addprefix -lphy,$(PHY_TARGETS))
+
+LIBS += $(BMD_LIBNAMES)
+LIBS += $(PHY_LIBNAMES)
+LIBS += $(CDK_LIBNAMES)
+
+all dynamic install: conditional_build
+
+clean: generic_clean generic_eid_file_clean
+	rm -f $(INSTALL_DIR)/bin/$(EXE)
+	rm -f $(INSTALL_DIR)/rom/rom/etc/init.d/swmdk.sh
+	rm -f $(INSTALL_DIR)/rom/rom/etc/rc3.d/S45swmdk
+
+binaryonly_dist_clean: clean generic_binaryonly_dist_clean
+	rm -f Makefile.fullsrc
+
+
+#
+# Set our CommEngine directory (by splitting the pwd into two words
+# at /userspace and taking the first word only).
+# Then include the common defines under CommEngine.
+#
+CURR_DIR := $(shell pwd)
+BUILD_DIR:=$(HND_SRC)
+
+include $(BUILD_DIR)/make.common
+
+
+ifneq ($(strip $(BUILD_SWMDK)),)
+conditional_build: $(EXE) generic_exe_install generic_eid_file_install
+	mkdir -p $(INSTALL_DIR)/rom/rom/etc/init.d
+	mkdir -p $(INSTALL_DIR)/rom/rom/etc/rc3.d
+	install scripts/swmdk.sh $(INSTALL_DIR)/rom/rom/etc/init.d
+	(cd $(INSTALL_DIR)/rom/rom/etc/rc3.d; rm -f S45swmdk; ln -s ../init.d/swmdk.sh S45swmdk)
+else
+conditional_build:
+	@echo "Skipping $(EXE) (not configured)"
+endif
+
+
+#
+# Private apps and libs are allowed to include header files from the
+# private and public directories.
+#
+# WARNING: Do not modify this section unless you understand the
+# license implications of what you are doing.
+
+ALLOWED_INCLUDE_PATHS := -I.\
+                         -I$(BUILD_DIR)/userspace/public/include  \
+                         -I$(BUILD_DIR)/userspace/public/include/$(OALDIR) \
+                         -I$(BUILD_DIR)/userspace/private/include  \
+                         -I$(BUILD_DIR)/userspace/private/include/$(OALDIR) \
+            			 -I$(INC_BRCMDRIVER_PUB_PATH)/$(BRCM_BOARD)  \
+                         -I$(INC_BRCMDRIVER_PRIV_PATH)/$(BRCM_BOARD) \
+                         -I$(INC_BRCMSHARED_PUB_PATH)/$(BRCM_BOARD)
+
+#
+# Private apps and libs are allowed to link with libraries from the
+# private and public directories.
+#
+# WARNING: Do not modify this section unless you understand the
+# license implications of what you are doing.
+#
+ALLOWED_LIB_DIRS := /lib:/lib/private:/lib/public
+
+# CFLAGS += -D
+CFLAGS += -Werror
+CFLAGS += -DCONFIG_BCM9$(BRCM_CHIP)
+
+SWMDK_DIR = $(CURR_DIR)/../$(SWMDK_BASE)$(EXHND)
+
+CFLAGS +=-I$(SWMDK_DIR)/cdk/include
+CFLAGS +=-I$(SWMDK_DIR)/bmd/include
+CFLAGS +=-I$(SWMDK_DIR)/phy/include
+
+ifndef SYS_NO_TTY
+CFLAGS += -DSYS_HAS_TTY
+endif
+
+ifneq ($(strip $(BUILD_BRCM_CMS)),)
+CFLAGS += -DBRCM_CMS_BUILD
+endif
+
+ifneq ($(strip $(BRCM_EXT_SWITCH_TYPE)),0)
+CFLAGS += -DBRCM_EXT_SWITCH_TYPE=$(BRCM_EXT_SWITCH_TYPE)
+endif
+
+ifneq ($(strip $(BCM_PHY_54616)),0)
+CFLAGS += -DBCM_PHY_54616
+endif
+
+CFLAGS += -DCDK_INCLUDE_CUSTOM_CONFIG -DBMD_INCLUDE_CUSTOM_CONFIG -DUSE_SYSTEM_LIBC -DBMD_CONFIG_INCLUDE_DMA=0 -DBMD_SYS_USLEEP=_usleep -DPHY_SYS_USLEEP=_usleep
+ifndef SYS_BE_PIO
+ifeq ($(strip $(BRCM_CHIP)),63138)
+CFLAGS += -DSYS_BE_PIO=0
+else
+ifeq ($(strip $(BRCM_CHIP)),63148)
+CFLAGS += -DSYS_BE_PIO=0
+else
+ifeq ($(strip $(BRCM_CHIP)),4908)
+CFLAGS += -DSYS_BE_PIO=0
+else
+ifeq ($(strip $(BRCM_CHIP)),63158)
+CFLAGS += -DSYS_BE_PIO=0
+else
+ifeq ($(strip $(BRCM_CHIP)),47189)
+CFLAGS += -DSYS_BE_PIO=0
+else
+CFLAGS += -DSYS_BE_PIO=1 
+endif 
+endif 
+endif
+endif 
+endif 
+endif
+ifndef SYS_BE_PACKET
+CFLAGS += -DSYS_BE_PACKET=0
+endif
+ifndef SYS_BE_OTHER
+CFLAGS += -DSYS_BE_OTHER=0
+endif
+
+#CFLAGS += -DBCM_MDK_OS_DEP=1
+
+#
+# Implicit rule will make the .c into a .o
+# Implicit rule is $(CC) -c $(CPPFLAGS) $(CFLAGS)
+# See Section 10.2 of Gnu Make manual
+#
+ifneq ($(PREBUILT_BCMBIN),1)
+$(EXE): $(OBJS)
+	$(CC) -o $@ $(OBJS) -Wl,-rpath,$(CMS_LIB_RPATH) $(CMS_LIB_PATH) $(LIBS) -lpthread
+#	$(CC) $(BOBJS) $(BMD_BLIBS) $(PHY_BLIBS) $(CDK_BLIBS)  $(OSLIBS) $(LDFLAGS) -o $@  $(CMS_LIB_PATH) $(LIBS)
+else
+$(EXE): 
+	cp -f $(TOP_PLATFORM)/$(shell pwd | sed 's/\(.*router-sysdep\/\)//')/$(PRBM_DIR)/$@ ./
+endif
+
+#
+# Include the rule for making dependency files.
+# The '-' in front of the second include suppresses
+# error messages when make cannot find the .d files.
+# It will just regenerate them.
+# See Section 4.14 of Gnu Make.
+#
+
+include $(BUILD_DIR)/make.deprules
+
+-include $(OBJS:.o=.d)
+
+

@@ -1,0 +1,77 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<title>Broadcom MDK Quick Start Guide, mdk_qsg_examples</title>
+
+<meta http-equiv="Content-Type" content="text/html;charset=utf-8">
+
+<style type="text/css">
+<!--
+body {
+	font-family: verdana, arial, helvetica, sans-serif;
+}
+pre.code {
+        background: #eaeaea;
+        color: black;
+        width: auto;
+        margin-left: 0em;
+        margin-right: 1em;
+        border: solid 1px black;
+        white-space: pre;
+        padding: 4px;
+        font-family: courier new, courier, monospace;
+        font-weight: normal;
+        font-size: 80%;
+}
+tt {
+        font-family: courier new, courier, monospace;
+}
+a:link, a:visited {
+        text-decoration: none;
+}
+-->
+</style>
+</head>
+
+<body bgcolor="#ffffff">
+<table><tr><td width="20">&nbsp;</td><td width="700">
+    <h2><a href="index.html">Broadcom MDK Quick Start Guide</a></h2>
+    <h2>3.  Example Applications
+</h2>
+<p>The following sections will explain how to build a simple MDK
+application in a Linux/Unix environment.
+<a name="mdk_qsg_cdksim"></a>
+<h3>3.1.   Simple CDK Shell</h3>
+<p>This section will explain how to build a simple debug shell based on
+the CDK.  The sample application does not require a target system
+since all register access is emulated.
+<p>At this point you have probably already installed the MDK package. Now
+you must set the CDK environment variable to point to the CDK package,
+e.g. from the MDK root directory (bash syntax):
+<pre class="code">
+export CDK=`pwd`/cdk
+</pre>
+Now go to the sample application directory and run GNU make:
+<pre class="code">
+cd examples/cdksim
+gmake
+</pre>
+Assuming that the build completes without errors, go ahead and run the
+application:
+<pre class="code">
+./cdksim
+</pre>
+Hopefully you are now seeing the CDK prompt:
+<pre class="code">
+CDK.0&gt;
+</pre>
+The zero in the prompt is the current unit number. To get information
+about this unit, type<tt> unit</tt> at the prompt (followed by<tt>
+ENTER</tt>).
+<p>At any time you can type<tt> help</tt> to get a list of available
+commands.  If you need detailed help on a command, simply type<tt>
+help command-name</tt>, e.g.<tt> help help</tt>.
+<p>
+</table>
+</body>
+</html>

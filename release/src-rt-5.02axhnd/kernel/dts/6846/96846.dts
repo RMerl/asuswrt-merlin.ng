@@ -1,0 +1,159 @@
+#include <dt-bindings/interrupt-controller/arm-gic.h>
+#include <dt-bindings/interrupt-controller/irq.h>
+#include <dt-bindings/soc/bcm963xx_dt_bindings.h> 
+
+#define GIC_DIST_BASE	0x81001000
+#define GIC_CPUI_BASE	0x81002000
+
+#define TIMER_HYP_PPI			10
+#define TIMER_VIRT_PPI			11
+#define TIMER_PHYS_SECURE_PPI		13
+#define TIMER_PHYS_NONSECURE_PPI	14
+
+#define PMU_CORE0_SPI			9
+#define PMU_CORE1_SPI			10
+#define DEVICE_TREE
+#include "../../../shared/opensource/include/pmc/pmc_firmware_68460.h"
+#undef DEVICE_TREE
+	
+/dts-v1/;
+/* For secondary boot area */
+/memreserve/ 0x00000000 0x00008000;
+/* For PMC3 firmware */
+/memreserve/ PMC3_RESERVED_MEM_START PMC3_RESERVED_MEM_SIZE;
+
+/ {
+    model = "Broadcom BCM96846";
+    compatible = "brcm,bcm96846";
+    interrupt-parent = <&gic>;
+    #address-cells = <1>;
+    #size-cells = <1>;
+   
+	cpus {
+		#address-cells = <1>;
+		#size-cells = <0>;
+
+		CA7_0: cpu@0 {
+			device_type = "cpu";
+			compatible = "arm,cortex-a7";
+			reg = <0x0>;
+			next-level-cache = <&L2_0>;
+		};
+
+		CA7_1: cpu@1 {
+			device_type = "cpu";
+			compatible = "arm,cortex-a7";
+			reg = <0x1>;
+			next-level-cache = <&L2_0>;
+			enable-method = "brcm,bca-smp";
+		};
+
+		L2_0: l2-cache0 {
+			compatible = "cache";
+		};
+	};
+
+	gic: interrupt-controller@81000000 {
+		compatible = "arm,cortex-a7-gic";
+		#interrupt-cells = <3>;
+		#address-cells = <0>;
+		interrupt-controller;
+		reg = <GIC_DIST_BASE 0x1000>,
+		      <GIC_CPUI_BASE 0x2000>;
+	};
+
+	timer {
+		compatible = "arm,armv7-timer";
+		interrupts = <GIC_PPI TIMER_PHYS_SECURE_PPI    (GIC_CPU_MASK_SIMPLE(2) | IRQ_TYPE_LEVEL_LOW)>,
+			     <GIC_PPI TIMER_PHYS_NONSECURE_PPI (GIC_CPU_MASK_SIMPLE(2) | IRQ_TYPE_LEVEL_LOW)>,
+			     <GIC_PPI TIMER_VIRT_PPI           (GIC_CPU_MASK_SIMPLE(2) | IRQ_TYPE_LEVEL_LOW)>,
+			     <GIC_PPI TIMER_HYP_PPI            (GIC_CPU_MASK_SIMPLE(2) | IRQ_TYPE_LEVEL_LOW)>;
+		arm,cpu-registers-not-fw-configured = <1>;
+	};
+
+	pmu {
+		compatible = "arm,cortex-a7-pmu";
+		interrupts = <GIC_SPI PMU_CORE0_SPI IRQ_TYPE_LEVEL_HIGH>,
+			     <GIC_SPI PMU_CORE1_SPI IRQ_TYPE_LEVEL_HIGH>;
+		interrupt-affinity = <&CA7_0>,
+				     <&CA7_1>;
+	};
+	
+	brcm-legacy {
+		compatible = "brcm,brcm-legacy";
+	};
+
+	/* increase coherent_pool size */
+	chosen {
+		bootargs = "coherent_pool=2M cpuidle_sysfs_switch pci=pcie_bus_safe";
+	};
+
+	memory@00000000 {
+		device_type = "memory";
+		reg = <0x00000000 0x04000000>;  /* 64MBMB */
+	};
+
+    reserved-memory {
+        #address-cells = <1>;
+        #size-cells = <1>;
+		ranges;
+
+        dt_reserved_fpm_pool {
+            reg = <DRAM_OFFSET_RDP_PARAM1 RDP_PARAM1_DDR_SIZE>; /* 16MB */
+            no-map;
+        };
+        dt_reserved_rnr_tbls {
+            reg = <DRAM_OFFSET_RDP_PARAM2 RDP_PARAM2_DDR_SIZE>; /* 4MB */
+            no-map;
+        };
+#if defined (CONFIG_BCM_DHD_RUNNER)
+        dt_reserved_dhd0 {
+            reg = <0x0 DHD_PARAM1_DDR_SIZE>;
+            no-map;
+        };
+        dt_reserved_dhd1 {
+            reg = <0x0 DHD_PARAM2_DDR_SIZE>;
+            no-map;
+        };
+#endif 
+    };
+
+	/* Legacy UBUS base */
+	ubus@ff800000 {
+		compatible = "simple-bus";
+		#address-cells = <1>;
+		#size-cells = <1>;
+		ranges = <0 0xff800000 0x8000>;
+
+		nand@ff801800 {
+			#address-cells = <1>;
+			#size-cells = <0>;
+			compatible = "brcm,nand-bcm63xx", "brcm,brcmnand-v7.1";
+			reg = <0x1800 0x600>, <0x2000 0x10>;
+			reg-names = "nand", "nand-int-base";
+			status = "okay";
+
+			nandcs@0 {
+				compatible = "brcm,nandcs";
+				reg = <0>;
+				nand-on-flash-bbt;
+			};
+
+		};
+
+		watchdog@480 {
+			compatible = "brcm,bcm96xxx-wdt";
+			reg = <0x480 0x10>;
+			timeout-sec = <80>;
+		};
+
+		i2c@0xff802100 {
+			compatible = "brcm,bcm63000-i2c";
+			reg = <0x2100 0x60>;
+		};
+	};
+
+};
+
+
+

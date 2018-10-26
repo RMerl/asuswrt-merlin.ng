@@ -1,0 +1,60 @@
+always	:=  $(dtb-y)
+
+PP_OUT:=$(DTS_DIR)/dts/bcm963xx_dt_bindings
+GEN_BIND:=$(DTS_DIR)/dts/gen_dt_bindings
+DT_BIND_OUT:=${KERNEL_DIR}/include/dt-bindings/soc/bcm963xx_dt_bindings.h
+CLEAN_LIST:= *.dtb .*.dtb* *.o .*.o *.o.cmd $(DT_BIND_OUT) $(PP_OUT) $(DTS_DIR)/dts/*.o $(DTS_DIR)/dts/*.o.cmd
+clean-files	:= $(CLEAN_LIST)
+
+LOCAL_CFLAGS := -I$(INC_ADSLDRV_PATH) -I$(INC_BRCMDRIVER_PUB_PATH) -I$(KERNEL_DIR)/include -I$(INC_BRCMSHARED_PUB_PATH) \
+	-I$(KERNEL_DIR)/arch/$(KARCH)/mach-bcm963xx -I$(KERNEL_DIR)/arch/$(KARCH)/bcm963xx -DCONFIG_BCM9$(CONFIG_BCM_CHIP_NUMBER) 
+ifneq ($(CONFIG_BCM_ADSL),) 
+LOCAL_CFLAGS += -DCONFIG_BCM_ADSL
+endif
+ifneq ($(CONFIG_BCM_RDPA),) 
+LOCAL_CFLAGS += -DCONFIG_BCM_RDPA
+endif
+
+ifneq ($(CONFIG_BCM_RDPA_MCAST),)
+LOCAL_CFLAGS += -DCONFIG_BCM_RDPA_MCAST
+endif
+
+ifneq ($(CONFIG_OPTEE),)
+LOCAL_CFLAGS += -DCONFIG_OPTEE
+endif
+
+ifneq ($(CONFIG_BCM_DHD_RUNNER),) 
+LOCAL_CFLAGS += -DCONFIG_BCM_DHD_RUNNER
+endif
+ifneq ($(CONFIG_BCM_JUMBO_FRAME),) 
+LOCAL_CFLAGS += -DCONFIG_BCM_JUMBO_FRAME
+endif
+
+ifneq ($(strip $(BRCM_RDP_PARAM1_SIZE)),)
+LOCAL_CFLAGS += -DCONFIG_RDP_PARAM1_SIZE=$(BRCM_RDP_PARAM1_SIZE)
+endif
+ifneq ($(strip $(BRCM_RDP_PARAM2_SIZE)),)
+LOCAL_CFLAGS += -DCONFIG_RDP_PARAM2_SIZE=$(BRCM_RDP_PARAM2_SIZE)
+endif
+
+ifneq ($(strip $(BRCM_DHD_PARAM1_SIZE)),)
+LOCAL_CFLAGS += -DCONFIG_DHD_PARAM1_SIZE=$(BRCM_DHD_PARAM1_SIZE)
+endif
+ifneq ($(strip $(BRCM_DHD_PARAM2_SIZE)),)
+LOCAL_CFLAGS += -DCONFIG_DHD_PARAM2_SIZE=$(BRCM_DHD_PARAM2_SIZE)
+endif
+ifneq ($(strip $(BRCM_DHD_PARAM3_SIZE)),)
+LOCAL_CFLAGS += -DCONFIG_DHD_PARAM3_SIZE=$(BRCM_DHD_PARAM3_SIZE)
+endif
+
+ifneq ($(strip $(OOPSLOG_PARTITION_NAME)),)
+LOCAL_CFLAGS += -DOOPSLOG_PARTITION_NAME="$(OOPSLOG_PARTITION_NAME)"
+endif
+
+GEN_BIND_CMD := $(CC) -E $(LOCAL_CFLAGS) $(PP_OUT).c -o $(PP_OUT).o
+
+9$(CONFIG_BCM_CHIP_NUMBER).dtb := $(shell $(GEN_BIND_CMD); \
+			$(GEN_BIND) $(PP_OUT).o $(DT_BIND_OUT); echo "$(GEN_BIND_CMD)">$(PP_OUT).o.cmd) 
+.PHONY:dtsb_clean
+dtbs_clean:
+	rm -vf $(CLEAN_LIST)

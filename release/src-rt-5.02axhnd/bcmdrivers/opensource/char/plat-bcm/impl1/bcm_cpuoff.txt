@@ -1,0 +1,70 @@
+.TH bcm_cpuoff 9
+
+.SH NAME
+bcm_cpuoff.ko - power on/off cpu cores to save power
+
+.SH SYNOPSIS
+insmod bcm_cpuoff [option=value [option=value] ...]
+
+.SH DESCRIPTION
+Simple power-saving module to power-down idle processors, and power-up
+offline processors when the system load crosses a user-specified threshold.
+
+.SH OPTIONS
+Options may be provided using name=value syntax with insmod command
+or modified at run-time by writing the value files of the same in
+/sys/modules/bcm_cpuidle/parameters
+
+.IP allow_bits 12
+Bitmask for CPUs eligible for power-down.
+.br
+Default is all CPUs (15 [bottom 4-bits] on 4908)
+.IP busy
+How busy (ms) before power-up.
+.br
+Default is 50ms out of default 100ms interval
+.IP busy_run
+Consecutive busy intervals needed before power-up.
+.br
+Default is 1
+.IP debug
+Debug verbosity.
+.br
+Default is 0 (off)
+.IP enable
+Enable/disable operation.
+.br
+Default is 1 (on)
+.IP epsilon
+How close to full slice (ms).
+.br
+Default is 5ms
+.IP idle_run
+Consecutive idle intervals needed before power-down.
+.br
+Default is 100
+.IP period
+Delay between system load checks (ms).
+.br
+Default is 100ms
+
+.SH ALGORITHM
+Start high-priority kernel thread that:
+.PP
+.nf
+every interval [100ms]
+	for each online cpu
+		compute recent idleness from kcpustats
+		if cpu-0 idleness is less than busy [50%] threshold
+			power-up first allowed cpu that is offline
+		else if cpu-n was mostly idle [95%]
+			if many [100] consecutive intervals at mostly idle
+				power-down cpu if allowed
+.PP
+Values [in square brackets] above represent the default values which
+are configurable as module parameters or at runtime through sysfs.
+
+.SH NOTES
+Will not power-up processors which have been powered-down by the thermal
+management module which can also power-down processors when temperature
+thresholds are exceeded.

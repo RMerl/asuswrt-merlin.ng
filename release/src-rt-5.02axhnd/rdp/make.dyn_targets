@@ -1,0 +1,112 @@
+#***********************************************************************
+#
+#  Copyright (c) 2014  Broadcom Corporation
+#  All Rights Reserved
+#
+#***********************************************************************/
+
+RCS_SIGN = $$$$
+ENDLINE = $$
+
+ifdef BLD
+	OPT_FLAGS = --optimize $(PORTABLE_PROJ_FW_OUTPUT)$(RUNNER_FW)_$(1).opt.txt
+	OPT_RENAME = rename -v .opt. . $(PROJ_FW_OUTPUT)runner_fw_*.opt.*
+endif
+
+ifeq ("$(RUNNER_SUPPORT_64_BIT_LD_ST)", "y")
+    LLVM_LLC_EXTRA_OPTS += -runner-support-64bit-ldst
+endif    
+
+define build_runner_fw_3G
+$(RUNNER_FW)_$(1)_$(2)_$(3)_3G:
+	@echo "Building FW for Runner" $(1) $(2).
+	$(CC) -xc $(PROJ_DEFS) -E $(PROJ_FW_TARGET)/$(RUNNER_FW)_$(1).uc $(FW_INCLUDE_FLAGS) | \
+		gawk -f $(TOOLS_BIN)/lineReference.awk - $(PROJ_FW_OUTPUT)/$(RUNNER_FW)_$(1).p.lines 1>$(PROJ_FW_OUTPUT)/$(RUNNER_FW)_$(1).p
+	python $(TOOLS_BIN)/PreprocessorOutputAdapter.py $(PROJ_FW_OUTPUT)/$(RUNNER_FW)_$(1).p
+	$(TOOLS_RUNNER_BIN)BinaryBuilder --compile --instructions $(PORTABLE_TOOLS_RUNNER_BIN)Runner.ins.p --processor Runner --input-files $(PORTABLE_PROJ_FW_OUTPUT)$(RUNNER_FW)_$(1).p  --obj $(PORTABLE_PROJ_FW_OUTPUT)$(RUNNER_FW)_$(1).obj --lines $(PORTABLE_PROJ_FW_OUTPUT)$(RUNNER_FW)_$(1).p.lines
+	$(TOOLS_RUNNER_BIN)BinaryBuilder --link --instructions $(PORTABLE_TOOLS_RUNNER_BIN)Runner.ins.p --processor Runner $(PORTABLE_PROJ_FW_OUTPUT)$(RUNNER_FW)_$(1).obj --source $(PORTABLE_PROJ_FW_OUTPUT)$(RUNNER_FW)_$(1).src  --lines $(PORTABLE_PROJ_FW_OUTPUT)$(RUNNER_FW)_$(1).lines --base-name $(RUNNER_FW)_$(1) --map $(PORTABLE_PROJ_FW_OUTPUT)$(RUNNER_FW)_$(1).amap --liveness $(PORTABLE_PROJ_FW_OUTPUT)$(RUNNER_FW)_$(1).liveness --int $(PORTABLE_PROJ_FW_OUTPUT)$(RUNNER_FW)_$(1).int --vm $(PORTABLE_PROJ_FW_OUTPUT)$(RUNNER_FW)_$(1).vm --print-causing-restrictions 0 $(SPLIT_LIVENESS) $(PROJ_FW_LINK_FLAGS) $(OPT_FLAGS)
+	$(OPT_RENAME)
+	$(CP) $(FW_COMMON_SRC_DIR)/runner_copyright.h $(PROJ_FW_TARGET)/fw_output/
+	$(CP) $(FW_COMMON_SRC_DIR)/runner_proprietary.h $(PROJ_FW_TARGET)/fw_output/
+	cd $(PROJ_FW_TARGET)/fw_output && $(ACE_EXE) -ob -$(2) $(RUNNER_FW)_$(1).src -t \
+		-Crunner_copyright.h -Hrunner_proprietary.h -S$($(3)) -F$(RUNNER_FW)_$(2).c && cd -
+	echo 'char *rdpa_version_fw_$(2) = "$(RCS_SIGN)Change: 00000 $(RCS_SIGN)";' >> $(PROJ_FW_TARGET)/fw_output/$(RUNNER_FW)_$(2).c
+	$(PERL) $(TOOLS_BIN)/put_fw_version.pl $(PROJ_FW_TARGET)/fw_output/$(RUNNER_FW)_$(2).c $(PROJ_FW_BIN)/$(RUNNER_FW)_$(2).c $(DRIVERS_DIR)/rdpa/rdp_version.h
+	chmod +w $(PROJ_RDD_SRC)/*
+	chmod +w $(PROJ_FW_BIN)/*
+	find $(PROJ_FW_TARGET) -type f -name "*.[ch]" | xargs dos2unix
+	$(CP) $(PROJ_FW_TARGET)/fw_output/*.c $(PROJ_FW_BIN)
+	$(CP) $(PROJ_FW_TARGET)/fw_output/*.lst $(PROJ_FW_OBJS)
+	$(CP) $(PROJ_FW_TARGET)/fw_output/*.o $(PROJ_FW_OBJS)
+	$(CP) $(PROJ_FW_TARGET)/fw_output/*.bin $(PROJ_FW_OBJS)
+	$(MV) $(PROJ_FW_TARGET)/fw_output/*.c $(PROJ_FW_TARGET)/
+	$(PERL) $(TOOLS_BIN)/create_tasks_addresses_defs.pl \
+		$(PROJ_FW_OUTPUT)/$(RUNNER_FW)_$(1).int firmware_bin/rdd_runner_$(2)_labels.h runner_$(2)
+endef
+
+define build_runner_fw_4G
+$(RUNNER_FW)_$(1)_4G:
+	@echo "Building FW for Runner" $(1)
+	$(CC) -xc $(PROJ_DEFS) $(FW_PROJ_DEFS) -E $(PROJ_FW_TARGET)/$(RUNNER_FW)_$(1).uc $(FW_INCLUDE_FLAGS) -o $(PROJ_FW_OUTPUT)/$(RUNNER_FW)_$(1).E1
+	gawk -f $(TOOLS_BIN)/extractHeaders.awk $(PROJ_FW_OUTPUT)/$(RUNNER_FW)_$(1).E1 | uniq > $(PROJ_FW_OUTPUT)/$(RUNNER_FW)_$(1).headers.list
+	gawk -f $(TOOLS_BIN)/lineReference.awk $(PROJ_FW_OUTPUT)/$(RUNNER_FW)_$(1).E1 $(PROJ_FW_OUTPUT)/$(RUNNER_FW)_$(1).p1.lines 1>$(PROJ_FW_OUTPUT)$(RUNNER_FW)_$(1).p1
+	python $(TOOLS_BIN)/PreprocessorOutputAdapter.py $(PROJ_FW_OUTPUT)$(RUNNER_FW)_$(1).p1
+	cat $(PROJ_FW_OUTPUT)/$(RUNNER_FW)_$(1).headers.list $(PROJ_FW_OUTPUT)$(RUNNER_FW)_$(1).p1 > $(PROJ_FW_OUTPUT)$(RUNNER_FW)_$(1).p2
+	$(CC) -xc $(PROJ_DEFS) $(FW_PROJ_DEFS) -I $(PROJ_FW_TARGET) -E $(PROJ_FW_OUTPUT)$(RUNNER_FW)_$(1).p2 $(FW_INCLUDE_FLAGS) -o $(PROJ_FW_OUTPUT)$(RUNNER_FW)_$(1).E2
+	sed -i '1,/END_OF_HEADERS/d' $(PROJ_FW_OUTPUT)$(RUNNER_FW)_$(1).E2
+	gawk -f $(TOOLS_BIN)/lineReference.awk $(PROJ_FW_OUTPUT)$(RUNNER_FW)_$(1).E2 $(PROJ_FW_OUTPUT)/$(RUNNER_FW)_$(1).p.lines $(PROJ_FW_OUTPUT)/$(RUNNER_FW)_$(1).p1.lines 1>$(PROJ_FW_OUTPUT)$(RUNNER_FW)_$(1).p
+	$(TOOLS_RUNNER_BIN)BinaryBuilder --compile --instructions $(PORTABLE_TOOLS_RUNNER_BIN)Runner.ins.p --processor Runner --input-files $(PORTABLE_PROJ_FW_OUTPUT)$(RUNNER_FW)_$(1).p --obj $(PORTABLE_PROJ_FW_OUTPUT)$(RUNNER_FW)_$(1).obj --lines $(PORTABLE_PROJ_FW_OUTPUT)$(RUNNER_FW)_$(1).p.lines --platform $(RUNNER_VERSION_FOR_TOOLS)
+	$(TOOLS_RUNNER_BIN)BinaryBuilder --link --instructions $(PORTABLE_TOOLS_RUNNER_BIN)Runner.ins.p --processor Runner $(PORTABLE_PROJ_FW_OUTPUT)$(RUNNER_FW)_$(1).obj --source $(PORTABLE_PROJ_FW_OUTPUT)$(RUNNER_FW)_$(1).src --lines $(PORTABLE_PROJ_FW_OUTPUT)$(RUNNER_FW)_$(1).lines --base-name $(RUNNER_FW)_$(1) --map $(PORTABLE_PROJ_FW_OUTPUT)$(RUNNER_FW)_$(1).amap --liveness $(PORTABLE_PROJ_FW_OUTPUT)$(RUNNER_FW)_$(1).liveness --rliveness $(PORTABLE_PROJ_FW_OUTPUT)$(RUNNER_FW)_$(1).rliveness  --int $(PORTABLE_PROJ_FW_OUTPUT)$(RUNNER_FW)_$(1).int --binary $(PORTABLE_PROJ_FW_OUTPUT)$(RUNNER_FW)_$(1).binary --vm $(PORTABLE_PROJ_FW_OUTPUT)$(RUNNER_FW)_$(1).vm --print-causing-restrictions 0 $(SPLIT_LIVENESS) --platform $(RUNNER_VERSION_FOR_TOOLS) $(OPT_FLAGS) 1>>$(BB_ERR)
+	$(OPT_RENAME)
+	$(CP) $(FW_COMMON_SRC_DIR)/runner_copyright.h $(PROJ_FW_TARGET)/fw_output/
+	$(CP) $(FW_COMMON_SRC_DIR)/runner_proprietary.h $(PROJ_FW_TARGET)/fw_output/
+	cat $(PROJ_FW_OUTPUT)/runner_copyright.h > $(PROJ_FW_OUTPUT)/$(RUNNER_FW)_$(1).c
+	cat $(PROJ_FW_OUTPUT)/runner_copyright.h > $(PROJ_FW_OUTPUT)/predict_$(RUNNER_FW)_$(1).c
+	@echo -e '/* Firmware version: xx.xx.xx.xx */\n' >> $(PROJ_FW_OUTPUT)/$(RUNNER_FW)_$(1).c
+	@echo -e 'char *rdpa_version_fw_$(1) = "$(RCS_SIGN)Change: 00000 $(RCS_SIGN)";\n' >> $(PROJ_FW_OUTPUT)/$(RUNNER_FW)_$(1).c
+	$(PERL) $(TOOLS_BIN)/put_fw_version.pl $(PROJ_FW_OUTPUT)/$(RUNNER_FW)_$(1).c $(PROJ_FW_BIN)/$(RUNNER_FW)_$(1).c $(DRIVERS_DIR)/rdpa/rdp_version.h
+	@echo 'uint32_t fw_binary_$(1)[] = {' >> $(PROJ_FW_OUTPUT)/$(RUNNER_FW)_$(1).c
+	@echo 'uint16_t fw_predict_$(1)[] = {' >> $(PROJ_FW_OUTPUT)/predict_$(RUNNER_FW)_$(1).c
+	@cat $(PROJ_FW_OUTPUT)/$(RUNNER_FW)_$(1).binary | sed -r 's/(^0x[A-F0-9]*)/\1,/g' >> $(PROJ_FW_OUTPUT)/$(RUNNER_FW)_$(1).c
+	@cat $(PROJ_FW_OUTPUT)/$(RUNNER_FW)_$(1)_predict.binary | sed -r 's/(^0x[A-F0-9]*)/\1,/g' >> $(PROJ_FW_OUTPUT)/predict_$(RUNNER_FW)_$(1).c
+	@echo '};' >> $(PROJ_FW_OUTPUT)/$(RUNNER_FW)_$(1).c
+	@echo '};' >> $(PROJ_FW_OUTPUT)/predict_$(RUNNER_FW)_$(1).c
+	chmod +w $(PROJ_RDD_SRC)/*
+	chmod +w $(PROJ_FW_BIN)/*
+	find $(PROJ_FW_TARGET) -type f -name "*.[ch]" | xargs dos2unix
+	$(CP) $(PROJ_FW_TARGET)/fw_output/*.c $(PROJ_FW_BIN)
+	$(CP) $(PROJ_FW_TARGET)/fw_output/fw_binary_auto.h $(PROJ_FW_BIN)
+	$(CP) $(PROJ_FW_TARGET)/fw_output/*.src $(PROJ_FW_OBJS)
+	$(MV) $(PROJ_FW_TARGET)/fw_output/*.c $(PROJ_FW_TARGET)/
+	$(PERL) $(TOOLS_BIN)/create_tasks_addresses_defs.pl \
+		$(PROJ_FW_OUTPUT)/$(RUNNER_FW)_$(1).int firmware_bin/rdd_runner_$(1)_labels.h image_$(1)
+endef
+
+define build_runner_c_fw_4G
+$(RUNNER_C_FW)_$(1)_4G:
+	@echo "Building C FW for Runner" $(1)
+	$$(TOOLS_DIR)/bin/llvm/clang $(PROJ_DEFS) $(FW_PROJ_DEFS) -I$(COMMON_INCLUDE_FLAGS) -I$(PROJ_FW_TARGET) -target runner4g -O3 -gline-tables-only -Wall -emit-llvm -S $(PROJ_FW_TARGET)/$(RUNNER_C_FW)_$(1).c -o $(PROJ_FW_TARGET)/$(RUNNER_C_FW)_$(1).ll
+	$$(TOOLS_DIR)/bin/llvm/llc $(PROJ_FW_TARGET)/$(RUNNER_C_FW)_$(1).ll -march runner4g $(LLVM_LLC_EXTRA_OPTS) -o $(PROJ_FW_TARGET)/$(RUNNER_C_FW)_$(1).s 
+	gawk -f $(TOOLS_DIR)/bin/llvm/llvm_pp.awk $(PROJ_FW_TARGET)/$(RUNNER_C_FW)_$(1).s > $(PROJ_FW_TARGET)/$(RUNNER_C_FW)_$(1).uc
+endef
+
+$(eval $(call build_runner_fw_3G,0_main,a,MAIN_INSTR_SIZE))
+$(eval $(call build_runner_fw_3G,1_main,b,MAIN_INSTR_SIZE))
+$(eval $(call build_runner_fw_3G,0_pico,c,PICO_INSTR_SIZE))
+$(eval $(call build_runner_fw_3G,1_pico,d,PICO_INSTR_SIZE))
+
+$(eval $(call build_runner_fw_4G,0))
+$(eval $(call build_runner_fw_4G,1))
+$(eval $(call build_runner_fw_4G,2))
+$(eval $(call build_runner_fw_4G,3))
+$(eval $(call build_runner_fw_4G,4))
+$(eval $(call build_runner_fw_4G,5))
+$(eval $(call build_runner_fw_4G,6))
+
+$(eval $(call build_runner_c_fw_4G,0))
+$(eval $(call build_runner_c_fw_4G,1))
+$(eval $(call build_runner_c_fw_4G,2))
+$(eval $(call build_runner_c_fw_4G,3))
+$(eval $(call build_runner_c_fw_4G,4))
+$(eval $(call build_runner_c_fw_4G,5))
+$(eval $(call build_runner_c_fw_4G,6))

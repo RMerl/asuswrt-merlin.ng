@@ -1,0 +1,20 @@
+/*
+ * rdpa user ioctl define header file.
+ * This header file is generated automatically. Do not edit!
+ */
+#ifndef _RDPA_VLAN_ACTION_USER_IOCTL_H_
+#define _RDPA_VLAN_ACTION_USER_IOCTL_H_
+
+enum
+{
+	RDPA_VLAN_ACTION_DRV,
+	RDPA_VLAN_ACTION_GET,
+	RDPA_VLAN_ACTION_DIR_GET,
+	RDPA_VLAN_ACTION_DIR_SET,
+	RDPA_VLAN_ACTION_INDEX_GET,
+	RDPA_VLAN_ACTION_INDEX_SET,
+	RDPA_VLAN_ACTION_ACTION_GET,
+	RDPA_VLAN_ACTION_ACTION_SET,
+};
+
+#endif /* _RDPA_VLAN_ACTION_USER_IOCTL_H_ */

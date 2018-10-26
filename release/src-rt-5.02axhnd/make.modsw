@@ -1,0 +1,140 @@
+#***********************************************************************
+#
+#  Copyright (c) 2010  Broadcom Corporation
+#  All Rights Reserved
+#
+#***********************************************************************/
+
+
+#
+# The modsw directories install a SUBDIR_HINT_FILE in the 
+# base build tree to tell the base build tree where the modsw dir is.
+# Basically, the hint file is the modsw's location with all directory
+# separators '/' replaced with '=' and prefixed with "hintfile"
+#
+modsw_location := $(patsubst /%,hintfile=%,$(shell pwd))
+MODSW_SUBDIR_HINT_FILE := $(subst /,=,$(modsw_location))
+
+
+#
+# these are just a bunch of rules used by various modsw subdirs
+# to install and clean hint files in the base build tree
+#
+generic_private_app_modsw_install:
+	mkdir -p $(BUILD_DIR)/userspace/private/apps/.modswdirs
+	touch $(BUILD_DIR)/userspace/private/apps/.modswdirs/$(MODSW_SUBDIR_HINT_FILE)
+
+generic_private_app_modsw_clean:
+	rm -f $(BUILD_DIR)/userspace/private/apps/.modswdirs/$(MODSW_SUBDIR_HINT_FILE)
+
+generic_hostTools_modsw_install:
+	mkdir -p $(BUILD_DIR)/hostTools/.modswdirs
+	touch $(BUILD_DIR)/hostTools/.modswdirs/$(MODSW_SUBDIR_HINT_FILE)
+
+generic_hostTools_modsw_clean:
+	rm -f $(BUILD_DIR)/hostTools/.modswdirs/$(MODSW_SUBDIR_HINT_FILE)
+
+generic_cmsutil_contrib_lib_modsw_install:
+	mkdir -p $(BUILD_DIR)/userspace/public/libs/cms_util/.modswdirs
+	touch $(BUILD_DIR)/userspace/public/libs/cms_util/.modswdirs/$(MODSW_SUBDIR_HINT_FILE)
+
+generic_cmsutil_contrib_lib_modsw_clean:
+	rm -f $(BUILD_DIR)/userspace/public/libs/cms_util/.modswdirs/$(MODSW_SUBDIR_HINT_FILE)
+
+generic_public_include_modsw_install:
+	mkdir -p $(BUILD_DIR)/userspace/public/include/.modswdirs
+	touch $(BUILD_DIR)/userspace/public/include/.modswdirs/$(MODSW_SUBDIR_HINT_FILE)
+
+generic_public_include_modsw_clean:
+	rm -f $(BUILD_DIR)/userspace/public/include/.modswdirs/$(MODSW_SUBDIR_HINT_FILE)	
+
+
+generic_subdir_modsw_install:
+	for dir in $(SUBDIRS); do \
+		$(MAKE) -C $$dir modsw_install; \
+	done
+
+generic_subdir_modsw_clean:
+	for dir in $(SUBDIRS); do \
+		$(MAKE) -C $$dir modsw_clean; \
+	done
+
+
+# find auto-detect subdirs in the directory.
+# Auto-detect subdirs are subdirs which are still in the build tree,
+# but not listed in the upper level makefile.  They are detected by the
+# presence of a .autodetect or autodetect file in the sub-directory.
+# Auto-detect subdirs are further divided into "base" and "layer1".
+# All base subdirs are built before the layer1 subdirs.
+# Layer1 subdirs are indicated by beginning a line with "Layer1".
+# All other subdirs will be classified as a base subdir.
+
+tmp_subdir_list := $(shell egrep -L ^Layer */.autodetect */autodetect 2> /dev/null)
+AUTODETECT_SUBDIRS_BASE := $(subst /autodetect,,$(subst /.autodetect,,$(tmp_subdir_list)))
+
+tmp_subdir_list := $(shell egrep -l ^Layer1 */.autodetect */autodetect 2> /dev/null)
+AUTODETECT_SUBDIRS_LAYER1 := $(subst /autodetect,,$(subst /.autodetect,,$(tmp_subdir_list)))
+
+
+show_subdirs:
+	@echo HARDCODED_SUBDIRS=$(HARDCODED_SUBDIRS)
+	@echo AUTODETECT_SUBDIRS_BASE=$(AUTODETECT_SUBDIRS_BASE)
+	@echo AUTODETECT_SUBDIRS_LAYER1=$(AUTODETECT_SUBDIRS_LAYER1)
+	@echo SUBDIRS=$(SUBDIRS)
+
+
+# find modular sw directories.
+# These are directories which live outside the base build tree but a hint
+# file has been installed in the base build tree to let it know where to
+# to to build the modsw dir
+tmp_subdir_list := $(shell ls .modswdirs 2> /dev/null)
+modsw_subdir_list := $(subst =,/,$(subst hintfile=,/,$(tmp_subdir_list)))
+MODSW_SUBDIRS := $(modsw_subdir_list)
+
+
+# find any libraries contributed by modsw to this library
+MODSW_CONTRIB_LIBS_DIRS := $(modsw_subdir_list)
+
+generic_modsw_contrib_libs_make:
+	for dir in $(MODSW_CONTRIB_LIBS_DIRS); do \
+		$(MAKE) -C $$dir; \
+	done
+
+
+# must use delayed evaluation here so that the .a is made before
+# we try to find it.
+ifneq ($(strip $(MODSW_CONTRIB_LIBS_DIRS)),)
+MODSW_CONTRIB_LIBS = $(shell find $(MODSW_CONTRIB_LIBS_DIRS) -name '*.a')
+endif
+
+
+# This rule is used by libraries to do a clean of any sub-libraries
+# contributed by modsw
+#
+generic_modsw_contrib_libs_clean:
+	for dir in $(MODSW_CONTRIB_LIBS_DIRS); do \
+		$(MAKE) -C $$dir clean; \
+	done
+
+# Remove any installation effects of modsw in the base dir
+generic_modsw_base_clean:
+	rm -rf .modswdirs
+	
+
+# create a list of include paths to modular sw include dirs
+incdir_list := $(shell ls $(BUILD_DIR)/userspace/public/include/.modswdirs 2> /dev/null)
+ifneq ($(strip $(incdir_list)),)
+MODSW_PUBLIC_INCLUDE := $(subst =,/,$(subst hintfile=,-I/,$(incdir_list)))
+endif
+
+AUTODIRS := $(patsubst %/,%,$(dir $(wildcard */*/*/autodetect) $(wildcard */*/*/.autodetect)))
+
+makefile.modsw.autogen : $(BUILD_DIR)/.last_profile
+	@echo "AUTODIRS := $(AUTODIRS)"  > m1 ; 
+	../hostTools/create_autogen.pl --ke $(KERNEL_ARCH)  m1 makefile.modsw.autogen
+	rm m1
+
+ifneq ($(MAKECMDGOALS),clean)
+include makefile.modsw.autogen
+endif
+

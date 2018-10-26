@@ -1,0 +1,71 @@
+<html>
+	<head>
+		<meta HTTP-EQUIV='Pragma' CONTENT='no-cache'>
+				<script language="javascript">
+					/* Assign web_vars here */
+					var is_emmc 					= '<%cfe_web_var_get(isEmmcImg)%>';
+					var is_imgupd_repart_enabled 	= '<%cfe_web_var_get(isImgupdRepart)%>';
+
+					function processWebVars() {
+						/* Add entries for your corresponding Web vars */
+						var divElem = document.getElementById('emmccfg'); 
+						if ( is_emmc == 1 )  {
+							divElem.style.display = 'block'  ; 
+							if ( is_imgupd_repart_enabled == 1 )  {
+								document.getElementById('imgupdrepartition').checked = true; 
+                            } else {
+                                document.getElementById('imgupdrepartition').checked = false;
+                            }
+                        }
+					}
+					window.onload = processWebVars;
+				</script>
+				<script language="javascript">
+					var progress = 0;
+					function isInProgress() {
+						if ( progress == 0 )  {
+							progress = 1;
+							return true;
+						}
+						alert('Upload software is in progress. Please wait for a minute.');
+						return false;
+					}
+				</script>
+	</head>
+	<body>
+		<blockquote>
+			<form method='post' ENCTYPE='multipart/form-data' action='upload.cgi' onSubmit='return isInProgress();'>
+				<table><tr> <td>Select Only if you want to write misc partition</td> <td> <select name="mpn">
+				<option value="i"></option> <option value="1">1</option> <option value="2">2</option> <option value="3">3</option> </select> </tr> </table>
+
+				<b>Update Software</b><br>
+				<br>
+				<b>Step 1:</b> Obtain an updated software image file.<br>
+				<br>
+				<b>Step 2:</b> Enter the path to the image file location in the box below or 
+				click the &quot;Browse&quot; button to locate the image file.<br>
+				<br>
+				<b>Step 3:</b> Click the "Update Software" button once to upload the new image 
+				file.<br>
+				<br>
+				NOTE: The update process takes about 2 minutes to complete, and your Router 
+				will reboot.<br>
+				<br>
+				<div class='hidden' style="display: none;"  id='emmccfg'>
+					<table border="0" cellpadding="0" cellspacing="0">
+						<tr><td><input type='checkbox' id='imgupdrepartition' name='imgupdrepartition' value='1'>Allow image update to repartition eMMC if required.</td></tr>
+						<tr><td><b>(Note: This option may destroy all data on eMMC. Should only be enabled on a board with a cfeonly image)</b></td></tr>
+					</table><br>
+				</div>
+				<table border="0" cellpadding="0" cellspacing="0">
+					<tr>
+						<td>Software File Name:&nbsp;
+						</td>
+						<td><input type='file' name='filename' size='15'></td>
+					</tr>
+				</table>
+				<p align="center"><input type='submit' value='Update Software'></p>
+			</form>
+		</blockquote>
+	</body>
+</html>

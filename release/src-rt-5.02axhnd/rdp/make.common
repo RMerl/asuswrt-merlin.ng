@@ -1,0 +1,395 @@
+#***********************************************************************
+#
+#  Copyright (c) 2014  Broadcom Corporation
+#  All Rights Reserved
+#
+#***********************************************************************/
+
+#
+# This makefile is included by most of the lower level makefiles
+# to suck in the common defines.
+#
+ifeq ($(OS),Windows_NT)
+	OS_PLATFORM = cyg
+    ifeq ($(PROCESSOR_ARCHITECTURE),AMD64)
+        #64 bit
+    endif
+    ifeq ($(PROCESSOR_ARCHITECTURE),x86)
+        #32 bit
+    endif
+else
+	OS_PLATFORM = linux
+endif
+
+GEN ?= 3
+FW_CHECK ?= y
+RUNNER_FW := runner_fw
+RUNNER_C_FW := runner_c_fw
+
+FIRMWARE_DIR ?= $(TOP_DIR)/firmware
+DRIVERS_DIR := $(TOP_DIR)/drivers
+PROJECTS_DIR := $(TOP_DIR)/projects
+PROJECT_DIR := $(PROJECTS_DIR)/$(PROJECT)
+TOOLS_DIR := $(TOP_DIR)/../tools
+TOOLS_BIN := $(TOP_DIR)/tools/bin
+SIM_DIR := $(TOOLS_DIR)/src/Sim
+COVERAGE_DIR := $(SIM_DIR)/Coverage
+ASM_TOOLS_DIR := $(TOOLS_DIR)/src/AsmTools/
+PROJ_XRDP_DEBUG := $(FIRMWARE_DIR)/xrdp_debug
+TARGET := target$(BLD)
+
+RDP_PROJ = Rdp$(GEN)G
+
+include $(PROJECT_DIR)/make.proj_flags
+
+ifeq ($(GEN),4)
+TABLE_MANAGER_DIR := $(TOP_DIR)/tools/xrdp_table_manager
+FW_IMAGES := $(addprefix $(RUNNER_FW)_, $(NUM_FW_IMAGES))
+FW_IMAGES := $(addsuffix _4G, $(FW_IMAGES))
+ifneq ("$(NUM_C_FW_IMAGES)", "")
+   C_FW_IMAGES := $(addprefix $(RUNNER_C_FW)_, $(NUM_C_FW_IMAGES))
+   C_FW_IMAGES := $(addsuffix _4G, $(C_FW_IMAGES))
+endif
+else
+TABLE_MANAGER_DIR := $(TOP_DIR)/tools/rdp_table_manager
+FW_IMAGES = $(RUNNER_FW)_0_main_a_MAIN_INSTR_SIZE_3G $(RUNNER_FW)_0_pico_c_PICO_INSTR_SIZE_3G $(RUNNER_FW)_1_main_b_MAIN_INSTR_SIZE_3G $(RUNNER_FW)_1_pico_d_PICO_INSTR_SIZE_3G
+ifeq ($(OS_PLATFORM),linux)
+ACE_EXE = wine $(TOOLS_BIN)/Runner$(GEN)G/ace_runner.exe
+else
+ACE_EXE = $(TOOLS_BIN)/Runner$(GEN)G/ace_runner.exe
+endif
+endif
+
+RDP_SUBSYSTEM_DIR := $(DRIVERS_DIR)/rdp_subsystem
+
+FW_COMMON_SRC_DIR ?= $(FIRMWARE_DIR)/common
+FW_COMMON_UT_DIR := $(TOP_DIR)/ut_common
+REINIT_CONTEXT_DIR := $(FW_COMMON_UT_DIR)/reinit_context
+FW_SRC_FILES := $(shell find $(FIRMWARE_DIR) -type f -printf "%p ")
+
+RDD_SRC_DIR ?= $(TOP_DIR)/drivers/rdd
+RDD_SRC_FILES := $(shell find $(RDD_SRC_DIR) -type f -printf "%f ")
+
+BDMF_SRC_DIR := $(TOP_DIR)/drivers/bdmf
+BDMF_SRC_SUBDIRS := $(shell find $(BDMF_SRC_DIR) -type d -printf "%P ")
+BDMF_SRC_FILES := $(shell find $(BDMF_SRC_DIR) -type f -printf "%P ")
+PROJ_BDMF_TARGET := $(PROJECT_DIR)/$(TARGET)/bdmf
+
+RDPA_SRC_DIR := $(TOP_DIR)/drivers/rdpa
+RDPA_SRC_FILES := $(shell find $(RDPA_SRC_DIR) -type f -printf "%P ")
+PROJ_RDPA_TARGET := $(PROJECT_DIR)/$(TARGET)/rdpa
+PROJ_RDPA_GPL_TARGET := $(PROJECT_DIR)/$(TARGET)/rdpa_gpl
+PROJ_RDPA_USER_TARGET := $(PROJECT_DIR)/$(TARGET)/rdpa_user
+
+PROJ_RDP_SUBSYS_TARGET := $(PROJECT_DIR)/$(TARGET)/rdp_subsystem
+PROJ_FW_TARGET := $(TARGET)/firmware
+PROJ_FW_OUTPUT := $(PROJ_FW_TARGET)/fw_output/
+BB_ERR := $(PROJECT_DIR)/$(PROJ_FW_TARGET)/bb_errors.txt
+
+ifdef TOOLS_WIN
+TOOLS_RUNNER_BIN := $(TOOLS_BIN)/Runner$(GEN)G/
+PORTABLE_TOOLS_RUNNER_BIN := `cygpath -w $(TOOLS_RUNNER_BIN)`
+PORTABLE_PROJ_FW_OUTPUT := `cygpath -w $(PROJ_FW_OUTPUT)`
+else
+TOOLS_RUNNER_BIN := $(TOOLS_BIN)/Runner$(GEN)G/$(OS_PLATFORM)/
+PORTABLE_TOOLS_RUNNER_BIN := $(TOOLS_RUNNER_BIN)
+PORTABLE_PROJ_FW_OUTPUT := $(PROJ_FW_OUTPUT)
+endif
+PROJ_RDD_TARGET := $(PROJECT_DIR)/$(TARGET)/rdd
+PROJ_FW := $(PROJECT_DIR)/firmware
+
+ifeq ($(PROJECT),XRDP_CFE)
+PROJ_RDD_SRC := $(PROJECT_DIR)/drivers/rdd/$(PLATFORM)
+PROJ_RDD_SRC_ORIG := $(PROJECT_DIR)/drivers/rdd
+PROJ_FW_SRC := $(PROJ_FW)/src/$(PLATFORM)
+PROJ_FW_BIN := $(PROJECT_DIR)/firmware_bin/$(PLATFORM)
+PROJ_FW_SRC_LIST := $(PROJECT_DIR)/$(CHIP_TYPE)_fw_sources.list
+else
+PROJ_RDD_SRC := $(PROJECT_DIR)/drivers/rdd
+PROJ_FW_SRC := $(PROJ_FW)/src
+PROJ_FW_BIN := $(PROJECT_DIR)/firmware_bin
+PROJ_FW_SRC_LIST := $(PROJECT_DIR)/fw_sources.list
+endif
+PROJ_FW_OBJS := $(PROJ_FW)/objs
+PROJ_UT_SRC := $(PROJ_FW)/ut
+PROJ_FW_RESOURCE_DOC := $(PROJ_FW)/resource_doc
+PROJ_UT_TARGET := $(PROJECT_DIR)/$(TARGET)/ut
+REINIT_CONTEXT_TARGET := $(PROJ_UT_TARGET)/reinit_context
+ifeq ($(GEN),4)
+PROJ_DRV_SRC_LIST := $(PROJECT_DIR)/$(CHIP_TYPE)_sources.list
+PROJ_XML_SRC_LIST := $(PROJECT_DIR)/$(CHIP_TYPE)_xml_sources.list
+else
+PROJ_DRV_SRC_LIST := $(PROJECT_DIR)/sources.list
+PROJ_XML_SRC_LIST := $(PROJECT_DIR)/xml_sources.list
+endif
+ifdef PROJECT
+PROJ_XML_FILES := $(foreach src,$(shell grep "\.xml" $(PROJ_XML_SRC_LIST)), $(src))
+HW_DTS = hw_data_structures
+HW_HDR_FILE := $(SIM_DIR)/$(RDP_PROJ)/autogen/$(CHIP_TYPE)/$(HW_DTS)_auto.h
+HW_XML_FILES = $(SIM_DIR)/$(RDP_PROJ)/$(HW_DTS).xml $(SIM_DIR)/$(RDP_PROJ)/$(CHIP_TYPE)_$(HW_DTS).xml
+HW_XML_FILES_ARGS := $(foreach src, $(HW_XML_FILES), $(addprefix -l , $(src)))
+CHIP_OUTPUT:=$(TOOLS_DIR)/hal_generator/$(CHIP_TYPE)/output
+RDP_SUBSYSTEM_DIR_PROJECT_AUTOGEN:=$(RDP_SUBSYSTEM_DIR)/$(PLATFORM)$(CHIP_VER)/autogen
+endif
+AGH_DONE_COPY = $(TABLE_MANAGER_DIR)/agh_generated
+AGH_DONE = $(PROJECT_DIR)/$(TARGET)/agh_generated
+HOST_PLATFORM_FLAGS ?= -m32 -march=i386 
+
+DELIVERIES_DIR := deliveries
+TARBALL_DIR := $(DELIVERIES_DIR)/build
+
+SPLIT_LIVENESS := --split-liveness-ranges
+
+FW_INCLUDE_FLAGS := -I$(RDD_SRC_DIR)
+RDPA_INCLUDE_FLAGS := -I$(PROJ_BDMF_TARGET)/framework -I$(PROJ_BDMF_TARGET)/system -I$(PROJ_BDMF_TARGET)/system/sim -I$(PROJ_BDMF_TARGET)/shell
+RDPA_INCLUDE_FLAGS += -I$(PROJ_RDPA_GPL_TARGET)
+
+PROJECT_INCLUDE_FLAGS := -I$(PROJ_RDD_TARGET) -I$(PROJ_RDP_SUBSYS_TARGET)
+
+COMMON_INCLUDE_FLAGS := $(RDPA_INCLUDE_FLAGS) $(PROJECT_INCLUDE_FLAGS)
+COMMON_CFLAGS := $(COMMON_INCLUDE_FLAGS) -c -Wall -Werror -g -ggdb -DFIRMWARE_INIT -DFIRMWARE_LITTLE_ENDIAN -DUSE_BDMF_SHELL -DBDMF_SYSTEM_SIM
+LD_LIBRARY_PATH = $(TOOLS_DIR)/src/AsmTools/Packages/boost_lib_$(OS_PLATFORM)
+
+CC = gcc
+AR = ar -rcs
+ifeq ($(OS_PLATFORM),linux)
+PERL ?= perl
+HOST_EDITLINE ?= y
+else
+PERL ?= perl
+HOST_EDITLINE ?= n
+endif
+SED  ?= sed
+VALIDATE_FILES ?= $(PERL) $(TOOLS_BIN)/checkpatch.pl -f
+
+CP = cp -f
+LN = ln -sf
+MKDIR = mkdir -p
+RM = rm -f
+MV = mv -f 
+
+# TODO - check if all necessary tools are installed (i.e. gcc, ace, python, perl, gawk, etc.)
+prebuild_checks:
+	@echo "Prebuild Check..."
+	
+project_prepare_dirs:
+	$(MKDIR) $(PROJECT_DIR)/$(PROJ_FW_TARGET)
+	$(MKDIR) $(PROJECT_DIR)/$(PROJ_FW_OUTPUT)
+	$(MKDIR) $(PROJ_RDD_TARGET)
+	$(MKDIR) $(PROJ_RDD_SRC)
+	$(MKDIR) $(PROJ_RDD_SRC)/auto/
+	$(MKDIR) $(PROJ_RDPA_TARGET)
+	$(MKDIR) $(PROJ_RDPA_GPL_TARGET)
+	$(MKDIR) $(PROJ_RDPA_USER_TARGET)
+	$(MKDIR) $(PROJ_UT_TARGET)
+	$(MKDIR) $(REINIT_CONTEXT_TARGET)
+	$(MKDIR) $(PROJ_FW_BIN)
+	$(MKDIR) $(PROJ_FW_OBJS)
+	$(MKDIR) $(PROJ_FW_RESOURCE_DOC)
+	$(MKDIR) $(PROJ_RDP_SUBSYS_TARGET)
+ifeq ($(PROJECT),XRDP_CFE)
+	$(MKDIR) $(PROJ_FW_SRC)/
+endif
+	$(LN) $(FW_COMMON_UT_DIR)/*.p* $(PROJ_UT_TARGET)/
+	$(LN) $(FW_COMMON_UT_DIR)/results.html $(PROJ_UT_TARGET)/results.html   
+	$(LN) $(FW_COMMON_UT_DIR)/empty.html $(PROJ_UT_TARGET)/empty.html  
+	$(LN) $(FW_COMMON_UT_DIR)/no_signal.jpg $(PROJ_UT_TARGET)/no_signal.jpg
+	$(LN) $(FW_COMMON_UT_DIR)/Makefile.proj_ut $(PROJ_UT_TARGET)/Makefile
+	$(LN) $(FW_COMMON_UT_DIR)/generate_html_menu.py $(PROJ_UT_TARGET)/generate_html_menu.py
+	$(LN) $(REINIT_CONTEXT_DIR)/* $(REINIT_CONTEXT_TARGET)
+ifeq ($(GEN),4)
+ifdef PROJECT
+	$(MKDIR) $(RDP_SUBSYSTEM_DIR_PROJECT_AUTOGEN)
+	$(MKDIR) $(RDP_SUBSYSTEM_DIR_PROJECT_AUTOGEN)/bac_if
+	$(MKDIR) $(RDP_SUBSYSTEM_DIR_PROJECT_AUTOGEN)/bbh_rx
+	$(MKDIR) $(RDP_SUBSYSTEM_DIR_PROJECT_AUTOGEN)/bbh_tx
+	$(MKDIR) $(RDP_SUBSYSTEM_DIR_PROJECT_AUTOGEN)/cnpl
+	$(MKDIR) $(RDP_SUBSYSTEM_DIR_PROJECT_AUTOGEN)/dis_reor
+	$(MKDIR) $(RDP_SUBSYSTEM_DIR_PROJECT_AUTOGEN)/dma
+	$(MKDIR) $(RDP_SUBSYSTEM_DIR_PROJECT_AUTOGEN)/dqm
+	$(MKDIR) $(RDP_SUBSYSTEM_DIR_PROJECT_AUTOGEN)/fpm
+	$(MKDIR) $(RDP_SUBSYSTEM_DIR_PROJECT_AUTOGEN)/hash
+	$(MKDIR) $(RDP_SUBSYSTEM_DIR_PROJECT_AUTOGEN)/natc
+	$(MKDIR) $(RDP_SUBSYSTEM_DIR_PROJECT_AUTOGEN)/psram
+	$(MKDIR) $(RDP_SUBSYSTEM_DIR_PROJECT_AUTOGEN)/qm
+	$(MKDIR) $(RDP_SUBSYSTEM_DIR_PROJECT_AUTOGEN)/rnr
+	$(MKDIR) $(RDP_SUBSYSTEM_DIR_PROJECT_AUTOGEN)/rnr_quad
+	$(MKDIR) $(RDP_SUBSYSTEM_DIR_PROJECT_AUTOGEN)/sbpm
+	$(MKDIR) $(RDP_SUBSYSTEM_DIR_PROJECT_AUTOGEN)/tcam
+	$(MKDIR) $(RDP_SUBSYSTEM_DIR_PROJECT_AUTOGEN)/ubus_mstr
+	$(MKDIR) $(RDP_SUBSYSTEM_DIR_PROJECT_AUTOGEN)/ubus_slv
+	$(MKDIR) $(RDP_SUBSYSTEM_DIR_PROJECT_AUTOGEN)/xlif
+endif
+endif
+		
+prepare_fw_headers: project_prepare_dirs
+	$(foreach src,$(shell grep "\.h" $(PROJ_FW_SRC_LIST) | grep -v "^#"),$(shell $(LN) $(TOP_DIR)/$(src) $(PROJECT_DIR)/$(PROJ_FW_TARGET)))
+
+prepare_fw_links: prepare_fw_headers
+	$(foreach src,$(shell grep "\.uc" $(PROJ_FW_SRC_LIST) | grep -v "^#"),$(shell $(LN) $(TOP_DIR)/$(src) $(PROJECT_DIR)/$(PROJ_FW_TARGET)))
+	$(foreach src,$(shell grep "\.c" $(PROJ_FW_SRC_LIST) | grep -v "^#"),$(shell $(LN) $(TOP_DIR)/$(src) $(PROJECT_DIR)/$(PROJ_FW_TARGET)))
+ifeq ($(GEN),4)
+ifeq ("$(FW_CHECK)", "y")
+	$(foreach src,$(shell grep "\.uc" $(PROJ_FW_SRC_LIST) | grep -v "^#"),python $(TOOLS_BIN)/fw_checkpatch.py $(TOP_DIR)/$(src))
+endif
+endif
+
+prepare_rdd_links: prepare_fw_headers
+	$(foreach src,$(shell grep "drivers/rdd" $(PROJ_DRV_SRC_LIST) | grep -v "^#"),$(shell $(LN) $(TOP_DIR)/$(src) $(PROJ_RDD_TARGET)))
+	$(foreach src,$(shell grep "firmware/.*\.h" $(PROJ_DRV_SRC_LIST) | grep -v "^#"),$(shell $(LN) $(TOP_DIR)/$(src) $(PROJ_RDD_TARGET)))
+	$(foreach src,$(shell grep "firmware/.*rdd_.*\.c" $(PROJ_DRV_SRC_LIST) | grep -v "^#"),$(shell $(LN) $(TOP_DIR)/$(src) $(PROJ_RDD_TARGET)))
+
+$(HW_HDR_FILE): $(HW_XML_FILES)
+	$(CP) $(TOOLS_BIN)/runner_copyright.h .
+	python $(TABLE_MANAGER_DIR)/fmtbl.py \
+		$(HW_XML_FILES_ARGS) -F $(SIM_DIR)/$(RDP_PROJ)/autogen/$(CHIP_TYPE) -g -c -b $(TABLE_MANAGER_FLAGS)
+	$(RM) runner_copyright.h
+	touch $(HW_HDR_FILE)
+
+hw_dts_gen: $(HW_HDR_FILE)
+
+run_table_manager: $(AGH_DONE)
+
+$(AGH_DONE): $(PROJ_XML_FILES)
+	$(CP) $(AGH_DONE_COPY) $(AGH_DONE)
+	# XXX: Temporary - use same data_structures.xml for all projects until data_structures.xml is auto-generated from modules
+	# XXX: Need to update fmtbl.py to have runner_reg_dump.h outside
+	$(CP) $(TABLE_MANAGER_DIR)/runner_reg_dump.h .
+	$(CP) $(TOOLS_BIN)/runner_copyright.h .
+	python $(TABLE_MANAGER_DIR)/fmtbl.py \
+		--ld $(PROJ_XML_SRC_LIST) -F $(PROJ_FW_OUTPUT) -g -c -b $(TABLE_MANAGER_FLAGS)
+	$(RM) runner_copyright.h
+	$(MV) $(PROJ_FW_OUTPUT)/rdd_*.[ch] $(PROJ_RDD_SRC)/auto/
+ifeq ($(PROJECT),XRDP_CFE)
+	-$(MV) $(PROJ_FW_OUTPUT)/auto/rdd_*.[ch] $(PROJ_RDD_SRC)/auto/
+	$(MV) $(PROJ_FW_OUTPUT)/$(TABLE_MANAGER_PLATFORM)_maps.csv $(PROJ_FW_RESOURCE_DOC)/maps.csv
+else
+	-$(MV) $(PROJ_FW_OUTPUT)/auto/rdd_*.[ch] $(PROJ_RDD_SRC)/auto/
+	$(MV) $(PROJ_FW_OUTPUT)/$(PLATFORM)_maps.csv $(PROJ_FW_RESOURCE_DOC)/maps.csv
+endif
+	$(RM) runner_reg_dump.h
+	$(MV) $(PROJ_FW_OUTPUT)/fw_defs_auto.h $(PROJ_FW_SRC)/
+	$(MV) $(PROJ_FW_OUTPUT)/fw_runner_defs_auto.h $(PROJ_FW_SRC)/
+	$(LN) $(PROJ_FW_SRC)/fw_defs_auto.h $(PROJECT_DIR)/$(PROJ_FW_TARGET)/
+	$(LN) $(PROJ_FW_SRC)/fw_runner_defs_auto.h $(PROJECT_DIR)/$(PROJ_FW_TARGET)/
+	@echo $(FW_IMAGES)       
+	@echo "Done creating auto Files"       
+	touch $(AGH_DONE) 
+
+project_target_prepare: prebuild_checks project_prepare_dirs
+	@echo "Done building project target dirs"
+
+firmware: project_target_prepare copy_dlls run_table_manager prepare_fw_links prepare_rdd_links $(C_FW_IMAGES) $(FW_IMAGES) remove_dlls
+	echo "set path ." > $(PROJECT_DIR)/$(PROJ_FW_OUTPUT)/conf_temp.txt
+	echo "set path .." >> $(PROJECT_DIR)/$(PROJ_FW_OUTPUT)/conf_temp.txt
+	[ -f $(PROJECT_DIR)/$(PROJ_FW_OUTPUT)/conf.txt ] && (grep firmware $(PROJ_FW_SRC_LIST) | rev | cut -d"/" -f2- | rev | sort -u | awk '{print "set path ../../../../../"$$1}' && cat $(PROJECT_DIR)/$(PROJ_FW_OUTPUT)/conf.txt) >> $(PROJECT_DIR)/$(PROJ_FW_OUTPUT)/conf_temp.txt || echo "No conf.txt file! Debugger cannot be used"
+	mv $(PROJECT_DIR)/$(PROJ_FW_OUTPUT)/conf_temp.txt $(PROJECT_DIR)/$(PROJ_FW_OUTPUT)/conf.txt
+	@echo "Done compiling FW binaries"
+ifeq ($(PROJECT),XRDP_CFE)
+	$(MV) $(PROJ_FW_BIN)/../rdd_*labels.h $(PROJ_RDD_SRC)/
+endif
+copy_dlls:
+ifneq ($(wildcard $(LD_LIBRARY_PATH)/*.dll),) 
+	$(CP) $(LD_LIBRARY_PATH)/*.dll .
+endif
+
+remove_dlls:
+ifneq ($(wildcard $(LD_LIBRARY_PATH)/*.dll),) 
+	$(RM) *.dll
+endif
+
+rdd: prepare_rdd_links prepare_rdpa_gpl_links
+	$(MAKE) -C $(PROJ_RDD_TARGET) PLATFORM=$(PLATFORM) CHIP_TYPE=$(CHIP_TYPE) CONFIG_SYSTEM=sim lib
+
+prepare_bdmf_links:
+	$(foreach src,$(BDMF_SRC_SUBDIRS),$(shell $(MKDIR) $(PROJ_BDMF_TARGET)/$(src)))
+	$(foreach src,$(BDMF_SRC_FILES),$(shell $(LN) $(BDMF_SRC_DIR)/$(src) $(PROJ_BDMF_TARGET)/$(src)))
+
+bdmf: prepare_bdmf_links
+	$(MAKE) -C $(PROJ_BDMF_TARGET) TOP_DIR=$(TOP_DIR) PROJECT_DIR=$(PROJECT_DIR) src=$(PROJ_BDMF_TARGET) BDMF_OUTDIR=$(PROJ_BDMF_TARGET) CONFIG_BDMF_DEBUG=y CONFIG_SYSTEM=sim CONFIG_LIBEDIT=$(HOST_EDITLINE) libbdmf.a bdmf_test
+	@echo "Done building BDMF"
+
+prepare_rdpa_links: project_target_prepare
+	$(foreach src,$(shell grep "drivers/rdpa/" $(PROJ_DRV_SRC_LIST) | grep -v "^#"),$(shell $(LN) $(TOP_DIR)/$(src) $(PROJ_RDPA_TARGET)))
+
+rdpa: prepare_rdpa_links rdd rdp_subsys
+	$(MAKE) -C $(PROJ_RDPA_TARGET) PLATFORM=$(PLATFORM) CONFIG_BDMF_DEBUG=y CONFIG_SYSTEM=sim CONFIG_EDITLINE=$(HOST_EDITLINE) RDP_TARGET=$(TARGET) sim_all V=1 
+	@echo "Done building RDPA"
+
+prepare_rdpa_gpl_links: project_target_prepare
+	$(foreach src,$(shell grep "drivers/rdpa_gpl/" $(PROJ_DRV_SRC_LIST) | grep -v "^#"),$(shell $(LN) $(TOP_DIR)/$(src) $(PROJ_RDPA_GPL_TARGET)))
+
+prepare_rdpa_user_links: project_target_prepare
+	$(foreach src,$(shell grep "drivers/rdpa_user/" $(PROJ_DRV_SRC_LIST) | grep -v "^#"),$(shell $(LN) $(TOP_DIR)/$(src) $(PROJ_RDPA_USER_TARGET)))
+
+prepare_rdp_subsys_links: project_target_prepare
+	$(foreach src,$(shell grep "drivers/rdp_subsystem" $(PROJ_DRV_SRC_LIST) | grep -v "^#"),$(shell $(LN) $(TOP_DIR)/$(src) $(PROJ_RDP_SUBSYS_TARGET)))
+	$(foreach src,$(shell grep "firmware_bin/" $(PROJ_DRV_SRC_LIST) | grep -v "^#"),$(shell $(LN) $(TOP_DIR)/$(src) $(PROJ_RDP_SUBSYS_TARGET)))
+	$(foreach src,$(shell grep "drivers/rdp_drv/" $(PROJ_DRV_SRC_LIST) | grep -v "^#"),$(shell $(LN) $(TOP_DIR)/$(src) $(PROJ_RDP_SUBSYS_TARGET)))
+
+rdp_subsys: prepare_rdp_subsys_links
+	$(MAKE) -C $(PROJ_RDP_SUBSYS_TARGET) PLATFORM=$(PLATFORM) CHIP_TYPE=$(CHIP_TYPE) CONFIG_SYSTEM=sim lib
+
+prepare_drv_links: prepare_bdmf_links prepare_rdd_links prepare_rdp_subsys_links prepare_rdpa_gpl_links prepare_rdpa_links prepare_rdpa_user_links
+	@echo "Done preparing links"
+
+vrf_drivers: firmware drivers
+
+rdp_link: prebuild_checks prepare_drv_links project_target_prepare
+
+drivers: prebuild_checks prepare_drv_links project_target_prepare bdmf rdp_subsys rdd rdpa
+	@echo "Done building Drivers"
+
+tarball_prepare_dirs:
+	rm -rf $(TARBALL_DIR)
+	$(MKDIR) $(TARBALL_DIR)
+
+export TOP_DIR FIRMWARE_DIR DRIVERS_DIR TOOLS_DIR TOOLS_BIN PROJECT PROJECT_DIR \
+	SPLIT_LIVENESS PROJ_FW_OUTPUT PROJ_FW_SRC PROJ_UT_SRC PROJ_UT_TARGET OPT TOOLS_WIN
+
+sim: 
+	$(MAKE) -C $(TOOLS_DIR) GEN=$(GEN) sim CHIP_TYPE=$(CHIP_TYPE)
+
+coverage:
+	$(MAKE) -C $(TOOLS_DIR) GEN=$(GEN) coverage CHIP_TYPE=$(CHIP_TYPE)
+
+asm_tools:
+	$(MAKE) -C $(TOOLS_DIR) GEN=$(GEN) asm_tools
+
+sim_rebuild:
+	$(MAKE) -C $(TOOLS_DIR) GEN=$(GEN) sim_rebuild CHIP_TYPE=$(CHIP_TYPE)
+
+coverage_rebuild:
+	$(MAKE) -C $(TOOLS_DIR) GEN=$(GEN) coverage_rebuild CHIP_TYPE=$(CHIP_TYPE)
+
+asm_tools_rebuild:
+	$(MAKE) -C $(TOOLS_DIR) GEN=$(GEN) asm_tools_rebuild
+
+tools:
+	$(MAKE) -C $(TOOLS_DIR) GEN=$(GEN) all CHIP_TYPE=$(CHIP_TYPE)
+	
+tools_rebuild:
+	$(MAKE) -C $(TOOLS_DIR) GEN=$(GEN) rebuild CHIP_TYPE=$(CHIP_TYPE)
+
+rebuild_hal:
+	@which flex
+	@which bison
+	$(CP) $(TOOLS_BIN)/runner_copyright.h $(TOOLS_DIR)/hal_generator/
+	$(MAKE) -C $(TOOLS_DIR)/hal_generator CHIP_TYPE=$(CHIP_TYPE) rebuild
+	$(RM) $(TOOLS_DIR)/hal_generator/runner_copyright.h
+
+xrdp_debug:
+	$(MKDIR) $(PROJ_XRDP_DEBUG)
+	$(CP) -rf $(PROJECT_DIR)/$(PROJ_FW_OUTPUT)/* $(PROJ_XRDP_DEBUG)/
+	$(CP) -rf $(PROJECT_DIR)/$(PROJ_FW_TARGET)/* $(PROJ_XRDP_DEBUG)/
+
+cp_output:
+	$(MAKE) -C $(PROJECT_DIR) $@
+
+hal_generator: rebuild_hal cp_output
+	echo 'done'
+
+distclean:
+	@rm -rf $(PROJECT_DIR)/$(TARGET)
+	@echo "RDP DISTCLEAN DONE"
+

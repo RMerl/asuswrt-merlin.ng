@@ -1,0 +1,70 @@
+/*
+ * Broadcom BCM63148 Reference Board DTS
+ */
+
+#include <dt-bindings/soc/bcm963xx_dt_bindings.h> 
+
+/ {
+	#address-cells = <1>;
+	#size-cells = <1>;
+
+	chosen {
+		bootargs = "console=ttyS0,115200 debug irqaffinity=0 rootwait";
+	};
+
+	memory {
+		device_type = "memory";
+		reg = <DRAM_BASE DRAM_DEF_SIZE>;
+	};
+
+	reserved-memory {
+		#address-cells = <1>;
+		#size-cells = <1>;
+		ranges;
+
+#if defined (CONFIG_OPTEE)
+		dt_reserved_optee {
+			reg = <0x10000000 0x01000000>;
+			no-map;
+		};
+
+		dt_reserved_tzioc {
+			reg = <0x11000000 0x00800000>;
+		};
+#endif /* CONFIG_OPTEE */
+
+#if defined (CONFIG_BCM_ADSL)
+		dt_reserved_adsl {
+			reg = <DRAM_OFFSET_ADSL ADSL_SDRAM_IMAGE_SIZE>;
+			no-map;
+		};
+#endif
+
+#if defined (CONFIG_BCM_RDPA)
+		dt_reserved_tm {
+			reg = <DRAM_OFFSET_RDP_PARAM1 RDP_PARAM1_DDR_SIZE>;
+			no-map;
+		};
+		dt_reserved_mc {
+			reg = <DRAM_OFFSET_RDP_PARAM2 RDP_PARAM2_DDR_SIZE>;
+			no-map;
+		};
+#endif
+
+#if defined (CONFIG_BCM_DHD_RUNNER)
+		dt_reserved_dhd0 {
+			reg = <0x0 DHD_PARAM1_DDR_SIZE>;
+			no-map;
+		};
+		dt_reserved_dhd1 {
+			reg = <0x0 DHD_PARAM2_DDR_SIZE>;
+			no-map;
+		};
+		dt_reserved_dhd2 {
+			reg = <0x0 DHD_PARAM3_DDR_SIZE>;
+			no-map;
+		};
+#endif 
+	};
+
+};

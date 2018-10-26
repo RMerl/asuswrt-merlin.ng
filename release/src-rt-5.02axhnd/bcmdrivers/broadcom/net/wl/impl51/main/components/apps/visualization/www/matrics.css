@@ -1,0 +1,144 @@
+/*
+ * CSS styles used in Advanced Troubleshooting Tab
+ *
+ * $ Copyright Open Broadcom Corporation $
+ *
+ *
+ * <<Broadcom-WL-IPTag/Open:>>
+ *
+ * $Id: matrics.css 603469 2015-12-02 07:52:28Z pankajj $
+ */
+
+th {
+	text-align:center
+}
+
+.ampdu-container {
+	position: relative;
+	box-sizing: border-box;
+	width: 300px;
+	height: 300px;
+	padding: 20px 15px 15px 15px;
+	margin: 25px auto 30px auto;
+	border: 1px solid #ddd;
+	background: #fff;
+	background: linear-gradient(#f6f6f6 0, #fff 50px);
+	background: -o-linear-gradient(#f6f6f6 0, #fff 50px);
+	background: -ms-linear-gradient(#f6f6f6 0, #fff 50px);
+	background: -moz-linear-gradient(#f6f6f6 0, #fff 50px);
+	background: -webkit-linear-gradient(#f6f6f6 0, #fff 50px);
+	box-shadow: 0 3px 10px rgba(0,0,0,0.15);
+	-o-box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+	-ms-box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+	-moz-box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+	-webkit-box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+}
+
+.ampdu-placeholder {
+	width: 100%;
+	height: 100%;
+	font-size: 14px;
+	line-height: 1.2em;
+	float:left;
+}
+
+.ampdu-container .legend table, .legend > div {
+	height: auto;
+	right: -18%;
+	top: 10px;
+	width: auto;
+}
+
+.ampdulegend-class{
+	width:90px;
+}
+
+.ampdutable{
+	padding-left:60px;
+}
+
+.apstainfolisttable{
+	padding:0;
+	border-collapse:collapse;
+	width:30%;
+	margin-bottom:40px;
+}
+
+.apstainfolisttable thead tr{
+	text-align:center;
+	color:white;
+	height:30px;
+}
+
+.apstainfolisttable tbody tr{
+	text-align:center;
+}
+
+.apstainfolisttable tbody tr:nth-child(even){
+	background-color:#E6EDF0;
+}
+
+.apstainfolisttable tbody tr.hilite td {
+    background: none repeat scroll 0 0 #6BAAFC;
+	color: white;
+}
+
+.apstainfolisttable tbody tr:nth-child(odd){
+	background-color:#CDD6DB;
+}
+
+#apstainfoplaceholder{
+	margin-top:10px;
+	clear:both;
+}
+
+#countermatrics{
+	width:95.5%;
+	margin-top:40px;
+	margin-left:60px;
+}
+
+.ampdustatstable{
+	width:92.7%;
+	height:500px;
+	margin-top:20px;
+}
+
+.packetqueuetable{
+	width:92.7%;
+	margin-top:20px;
+	margin-bottom:20px;
+}
+
+.packetqueuegraphtable{
+	border-collapse:collapse;
+	width:100%;
+	margin-top:5px;
+	margin-bottom:5px;
+}
+
+.packetqueuegraphtable thead{
+	color:white;
+}
+
+.packetqueuegraphtable th{
+	height:0px;
+}
+
+.packetqueuesmallhead {
+	padding:10px;
+	text-align:center;
+	font-size:14px;
+	font-weight:bold;
+	text-decoration: underline;
+}
+
+#frequencybandselector{
+	float:left;
+}
+
+.cmnstasstatsgrphtbl {
+	width:92.7%;
+	margin-top:20px;
+	margin-bottom:20px;
+}

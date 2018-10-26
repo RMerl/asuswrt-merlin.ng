@@ -1,0 +1,218 @@
+/*
+ * CSS styles used in iQoS Network Summary page
+ *
+ * $ Copyright Open Broadcom Corporation $
+ *
+ *
+ * <<Broadcom-WL-IPTag/Open:>>
+ *
+ * $Id: iQoSNetworkSummary.css,v 1.0 2015-02-12 15:25:43 vbemblek $
+ */
+
+#flotTip {
+	padding: 3px 5px;
+	background-color: #000;
+	z-index: 100;
+	color: #fff;
+	box-shadow: 0 0 10px #555;
+	opacity: .7;
+	filter: alpha(opacity=70);
+	border: 2px solid #fff;
+	-webkit-border-radius: 4px;
+	-moz-border-radius: 4px;
+	border-radius: 4px;
+}
+
+.ntwrksummarygroupbx {
+	position:relative;
+	background:rgb(226,226,226);
+	padding-left:0.8%;
+	margin-top:16px;
+	width:100%;
+}
+
+#iQoSQuickSettings {
+	height:176px;
+}
+
+.quicksettingstbl {
+	width:35%;
+}
+
+.NetworkLayout {
+	height:300px;
+}
+
+.networklayoutheading {
+	width:35%;
+}
+
+.BandwidthUsage {
+	height:300px;
+}
+
+.networklayoutmapleftcol {
+	float:right;
+}
+
+.networklayoutmaprightcol {
+	float:left;
+}
+
+.bandiwdthusageheading {
+	width:35%;
+}
+
+.EnableiQoSCheck {
+	float: left;
+	position:relative;
+	width:30%;
+	height:100px;
+	font-family: arial, sans-serif;
+	margin-left:5%;
+}
+
+.bandwidthenabled {
+	margin-left:5%;
+	font-family: arial, sans-serif;
+	font-weight:normal;
+	text-align:center-left;
+	color:darkgrey;
+}
+
+.bandwidthdisabled {
+	margin-left:5%;
+	font-family: arial, sans-serif;
+	font-weight:normal;
+	text-align:center-left;
+	color:black;
+}
+
+.bandwidthpiechart {
+	position:relative;
+	float:left;
+}
+
+#upstreampiechart {
+	text-align: left;
+}
+
+#downstreampiechart {
+	text-align: left;
+}
+.downband {
+	padding:3px;
+	width:250px;
+	margin-left:10px;
+	font-weight:bold;
+}
+.upband {
+	padding:3px;
+	width:250px;
+	margin-left:10px;
+	font-weight:bold;
+}
+
+.networklayouttextbox {
+	background-color:rgb(255,250,235);
+	position:relative;
+	float:left;
+	text-align:left;
+	width:200px;
+	height:70px;
+	border:1px solid #008bb0;
+	box-shadow:3px 3px 3px #999;
+	padding-left:2px;
+}
+
+.networklayoutseperator {
+	background-color: rgb(0,139,176);
+}
+
+.prioritylayout {
+	position:relative;
+	float:right;
+	text-align:right;
+}
+
+.prioritytextbox {
+	background-color:rgb(255,250,235);
+	position:relative;
+	float:left;
+	text-align:left;
+	width:60px;
+	height:20px;
+	padding-left:2px;
+	border:1px solid #008bb0;
+	box-shadow:3px 3px 3px #999;
+	-webkit-border-radius: 5px;
+	-moz-border-radius: 5px;
+	border-radius: 5px;
+}
+
+.priorityhigh {
+	width:100px;
+	background:green;
+}
+
+.prioritymedium {
+	width:100px;
+	background:orange;
+}
+
+.prioritylow {
+	width:100px;
+	background:skyblue;
+}
+
+.networklayoutpriorityline {
+	width:100px;
+	background-color:skyblue
+}
+
+.centerverticalline {
+	height:50px;
+	background-color:green;
+}
+
+.bwpielegend {
+	height:300px;
+	width:300px;
+	font-size:14pt;
+	float:left;
+}
+/*
+.bwpielegend .legend table, .legend > div {
+	margin-right:15%;
+	height: auto;
+	width: auto;
+	background-color:rgb(226,226,226);
+}
+
+.bwpielegend .legend table {
+	border:1px solid #008bb0;
+	box-shadow:3px 3px 3px #999;
+	padding: 1px;
+	background-color:rgb(226,226,226);
+
+	-webkit-border-radius: 5px;
+	-moz-border-radius: 5px;
+	border-radius: 5px;
+}
+*/
+.bwpielegend-class {
+	border:1px solid #008bb0;
+	background-color:rgb(226,226,226);
+	box-shadow:3px 3px 3px #999;
+	padding: 1px;
+	-webkit-border-radius: 5px;
+	-moz-border-radius: 5px;
+	border-radius: 5px;
+	margin-top:5px;
+	font-size:14pt;
+	float:left;
+}
+
+.disabled {
+    color: #888;
+}

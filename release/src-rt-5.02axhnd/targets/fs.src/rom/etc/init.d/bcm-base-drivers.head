@@ -1,0 +1,10 @@
+#!/bin/sh
+
+trap "" 2
+
+
+case "$1" in
+	start)
+		echo "Loading drivers and kernel modules... "
+		echo
+

@@ -1301,8 +1301,8 @@ obj-y += cstats
 endif
 
 ifeq ($(RTCONFIG_BCMARM),y)
-obj-y += libnfnetlink
-obj-y += libmnl
+obj-y += libnfnetlink-1.0.1
+obj-y += libmnl-1.0.4
 obj-y += ipset_arm
 else
 obj-y += ipset
@@ -3102,7 +3102,7 @@ else
 		CFLAGS="-Os $(EXTRACFLAGS) -U CONFIG_NVRAM_SIZE"
 endif
 
-iptables-1.4.x: iptables-1.4.x/Makefile libnfnetlink
+iptables-1.4.x: iptables-1.4.x/Makefile libnfnetlink-1.0.1
 	@$(SEP)
 	$(MAKE) -C $@ KERNEL_DIR=$(LINUX_INC_DIR) COPT_FLAGS="-Os $(EXTRACFLAGS) -U CONFIG_NVRAM_SIZE"
 #		CFLAGS="-Wall -Os -D_GNU_SOURCE $(EXTRACFLAGS) -I$(TOP)/libnfnetlink/include" \
@@ -7214,58 +7214,13 @@ ipset-install:
 	$(STRIP) $(INSTALLDIR)/ipset/usr/lib/*.so
 	$(STRIP) $(INSTALLDIR)/ipset/usr/sbin/ipset
 
-libnfnetlink/stamp-h1:
-	cd $(TOP)/libnfnetlink && CC=$(CC) STRIP=$(STRIP) \
-		CFLAGS="-Os -Wall $(EXTRACFLAGS) -ffunction-sections -fdata-sections" \
-		LDFLAGS="-ffunction-sections -fdata-sections -Wl,--gc-sections" \
-		$(CONFIGURE) --prefix=/usr --enable-shared --enable-static
-	touch libnfnetlink/stamp-h1
-
-libnfnetlink: libnfnetlink/stamp-h1
-	@$(SEP)
-	$(MAKE) -C libnfnetlink
-
-libnfnetlink-clean:
-	-@$(MAKE) -C libnfnetlink distclean
-	@rm -f libnfnetlink/stamp-h1
-
-libnfnetlink-install:
-	install -D libnfnetlink/src/.libs/libnfnetlink.so.0.2.0 $(INSTALLDIR)/libnfnetlink/usr/lib/libnfnetlink.so.0.2.0
-	$(STRIP) -s $(INSTALLDIR)/libnfnetlink/usr/lib/libnfnetlink.so.0.2.0
-	cd $(INSTALLDIR)/libnfnetlink/usr/lib/ && \
-		ln -sf libnfnetlink.so.0.2.0 libnfnetlink.so.0 && \
-		ln -sf libnfnetlink.so.0.2.0 libnfnetlink.so
-
-libmnl/stamp-h1:
-	cd $(TOP)/libmnl && CC=$(CC) STRIP=$(STRIP) \
-	CFLAGS="-Os -Wall $(EXTRACFLAGS) -ffunction-sections -fdata-sections" \
-	LDFLAGS="-ffunction-sections -fdata-sections -Wl,--gc-sections" \
-	$(CONFIGURE) --prefix=/usr
-	touch libmnl/stamp-h1
-
-libmnl: libmnl/stamp-h1
-	$(MAKE) -C libmnl
-	$(MAKE) -C libmnl DESTDIR=$(TOP)/libmnl/staged install
-
-libmnl-install: libmnl
-	install -d $(INSTALLDIR)/libmnl/usr/lib/
-	install libmnl/src/.libs/libmnl.so.0.1.0 $(INSTALLDIR)/libmnl/usr/lib/libmnl.so.0.1.0
-	$(STRIP) $(INSTALLDIR)/libmnl/usr/lib/libmnl.so.0.1.0
-	cd $(INSTALLDIR)/libmnl/usr/lib/ && \
-		ln -sf libmnl.so.0.1.0 libmnl.so.0 && \
-		ln -sf libmnl.so.0.1.0 libmnl.so
-
-libmnl-clean:
-	-@$(MAKE) -C libmnl clean
-	-@rm -rf libmnl/staged
-
-ipset_arm/stamp-h1: libmnl
+ipset_arm/stamp-h1: libmnl-1.0.4
 	cd $(TOP)/ipset_arm && CC=$(CC) STRIP=$(STRIP) \
 	autoreconf -i -f && \
-	CFLAGS="-Os -Wall $(EXTRACFLAGS) -ffunction-sections -fdata-sections" \
+	CFLAGS="-Os -Wall $(EXTRACFLAGS) -ffunction-sections -fdata-sections -I$(TOP)/libmnl-1.0.4/include -I$(TOP)/libnfnetlink-1.0.1/include/" \
 	LDFLAGS="-ffunction-sections -fdata-sections -Wl,--gc-sections" \
-	libmnl_CFLAGS="-I$(TOP)/libmnl/staged/usr/include" \
-	libmnl_LIBS="-L$(TOP)/libmnl/staged/usr/lib -lmnl" \
+	libmnl_CFLAGS="-L$(TOP)/libmnl-1.0.4/src/.libs" \
+	libmnl_LIBS="-lmnl" \
 	$(CONFIGURE) --prefix=/usr --with-kmod=$(if $(HND_ROUTER),no,yes) --with-kbuild=$(LINUXDIR)
 	touch ipset_arm/stamp-h1
 

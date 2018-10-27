@@ -384,9 +384,6 @@ define(function(){
 				if(!rrsut_support)
 					retArray.push("cloud_router_sync.asp");
 
-				if(!amesh_support)
-					retArray.push("Advanced_Roaming_Block_Content.asp");
-
 				/* Operation Mode */
 				if(isSwMode("re")){
 					retArray.push("menu_GuestNetwork");
@@ -714,6 +711,11 @@ define(function(){
 					retArray.push("Main_ConnStatus_Content.asp");
 					retArray.push("Advanced_Smart_Connect.asp");
 					retArray.push("DNSFilter.asp");
+				}
+
+				if(!amesh_support){
+					retArray.push("Advanced_Roaming_Block_Content.asp");
+					retArray.push("Main_ChkSta_Content.asp");
 				}
 
 				if(amesh_support && (!isSwMode("rt") && !isSwMode("ap")))

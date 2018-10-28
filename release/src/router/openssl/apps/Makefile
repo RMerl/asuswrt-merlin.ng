@@ -949,14 +949,15 @@ speed.o: ../include/openssl/objects.h ../include/openssl/ocsp.h
 speed.o: ../include/openssl/opensslconf.h ../include/openssl/opensslv.h
 speed.o: ../include/openssl/ossl_typ.h ../include/openssl/pkcs7.h
 speed.o: ../include/openssl/rand.h ../include/openssl/rc2.h
-speed.o: ../include/openssl/rc4.h ../include/openssl/ripemd.h
-speed.o: ../include/openssl/rsa.h ../include/openssl/safestack.h
-speed.o: ../include/openssl/seed.h ../include/openssl/sha.h
-speed.o: ../include/openssl/stack.h ../include/openssl/symhacks.h
-speed.o: ../include/openssl/txt_db.h ../include/openssl/ui.h
-speed.o: ../include/openssl/ui_compat.h ../include/openssl/whrlpool.h
-speed.o: ../include/openssl/x509.h ../include/openssl/x509_vfy.h
-speed.o: ../include/openssl/x509v3.h apps.h speed.c testdsa.h testrsa.h
+speed.o: ../include/openssl/rc4.h ../include/openssl/rc5.h
+speed.o: ../include/openssl/ripemd.h ../include/openssl/rsa.h
+speed.o: ../include/openssl/safestack.h ../include/openssl/seed.h
+speed.o: ../include/openssl/sha.h ../include/openssl/stack.h
+speed.o: ../include/openssl/symhacks.h ../include/openssl/txt_db.h
+speed.o: ../include/openssl/ui.h ../include/openssl/ui_compat.h
+speed.o: ../include/openssl/whrlpool.h ../include/openssl/x509.h
+speed.o: ../include/openssl/x509_vfy.h ../include/openssl/x509v3.h apps.h
+speed.o: speed.c testdsa.h testrsa.h
 spkac.o: ../e_os.h ../include/openssl/asn1.h ../include/openssl/bio.h
 spkac.o: ../include/openssl/buffer.h ../include/openssl/conf.h
 spkac.o: ../include/openssl/crypto.h ../include/openssl/e_os2.h

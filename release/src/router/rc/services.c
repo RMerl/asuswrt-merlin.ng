@@ -14730,7 +14730,7 @@ void setup_leds()
 		    (model == MODEL_RTAC68U) || (model == MODEL_RTAC87U) ||
 		    (model == MODEL_RTAC3200) || (model == MODEL_RTAC88U) ||
 		    (model == MODEL_RTAC3100) || (model == MODEL_RTAC5300) ||
-		    (model == MODEL_RTAC86U)) {
+		    (model == MODEL_RTAC86U) || (model == MODEL_RTAX88U)) {
 			setAllLedOff();
 			if (model == MODEL_RTAC87U)
 				led_control_atomic(LED_5G, LED_OFF);

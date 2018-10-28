@@ -21,6 +21,7 @@
 /makefile.*
 /out.*
 /tmp.*
+/krb5.h
 
 # Most *.c files under test/ are symlinks
 /test/*.c
@@ -71,6 +72,7 @@ crypto/rc5/asm/r5_win32.asm
 crypto/ripemd/asm/rm_win32.asm
 crypto/sha/asm/s1_win32.asm
 crypto/sha/asm/sha512-sse2.asm
+crypto/*/*.S
 
 # Executables
 /apps/openssl
@@ -98,6 +100,7 @@ crypto/sha/asm/sha512-sse2.asm
 /test/evptests.txt
 lib
 Makefile.save
+Makefile.tmp
 *.bak
 tags
 TAGS

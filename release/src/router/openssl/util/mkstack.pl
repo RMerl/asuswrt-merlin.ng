@@ -1,4 +1,4 @@
-#!/usr/local/bin/perl -w
+#!/usr/bin/perl
 
 # This is a utility that searches out "DECLARE_STACK_OF()"
 # declarations in .h and .c files, and updates/creates/replaces

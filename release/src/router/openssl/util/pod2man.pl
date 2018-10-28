@@ -1,4 +1,4 @@
-: #!/usr/bin/perl-5.005
+#!/usr/bin/perl
     eval 'exec /usr/bin/perl -S $0 ${1+"$@"}'
 	if $running_under_some_shell;
 

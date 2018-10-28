@@ -9,18 +9,18 @@
 # Simon Kelley <simon@thekelleys.org.uk>, 2005.
 msgid ""
 msgstr ""
-"Project-Id-Version: dnsmasq 2.77\n"
+"Project-Id-Version: dnsmasq 2.80\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2009-06-18 12:24+0100\n"
-"PO-Revision-Date: 2017-07-17 18:30+0100\n"
-"Last-Translator: Conrad Kostecki <ck@conrad-kostecki.de>\n"
+"PO-Revision-Date: 2018-09-29 00:13+0200\n"
+"Last-Translator: Conrad Kostecki <conrad@kostecki.com>\n"
 "Language-Team: German <de@li.org>\n"
 "Language: de\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
-"X-Generator: Poedit 2.0.1\n"
+"X-Generator: Poedit 2.1.1\n"
 "X-Poedit-SourceCharset: UTF-8\n"
 
 #: cache.c:518
@@ -150,7 +150,7 @@ msgstr "Konfigurationsdatei festlegen (Voreinstellung: %s)."
 
 #: option.c:350
 msgid "Do NOT fork into the background: run in debug mode."
-msgstr "NICHT in den Hintergrund gehen: Betrieb im Debug-Modus"
+msgstr "NICHT in den Hintergrund gehen: Betrieb im Debug-Modus."
 
 #: option.c:351
 msgid "Do NOT forward queries with no domain part."
@@ -166,12 +166,12 @@ msgstr "Erweitere einfache Namen in /etc/hosts mit der Domänen-Endung."
 
 #: option.c:354
 msgid "Don't forward spurious DNS requests from Windows hosts."
-msgstr "'unechte' DNS-Anfragen von Windows-Rechnern nicht weiterleiten"
+msgstr "'unechte' DNS-Anfragen von Windows-Rechnern nicht weiterleiten."
 
 # @Simon: I'm a bit unsure about "spurious"
 #: option.c:355
 msgid "Enable DHCP in the range given with lease duration."
-msgstr "DHCP für angegebenen Bereich und Dauer einschalten"
+msgstr "DHCP für angegebenen Bereich und Dauer einschalten."
 
 #: option.c:356
 #, c-format
@@ -314,7 +314,7 @@ msgstr "Ausgehenden Port erzwingen für DNS-Anfragen an vorgelagerte Server."
 
 #: option.c:389
 msgid "Do NOT read resolv.conf."
-msgstr "resolv.conf NICHT lesen."
+msgstr "Die resolv.conf NICHT lesen."
 
 #: option.c:390
 #, c-format
@@ -323,7 +323,7 @@ msgstr "Pfad zu resolv.conf festlegen (%s voreingestellt)."
 
 #: option.c:391
 msgid "Specify path to file with server= options"
-msgstr " Dateipfad mit der Option server= angeben"
+msgstr "Dateipfad mit der Option server= angeben"
 
 #: option.c:392
 msgid "Specify address(es) of upstream servers with optional domains."
@@ -376,7 +376,7 @@ msgstr "DHCP-\"vendor class\" auf Marke abbilden."
 
 #: option.c:404
 msgid "Display dnsmasq version and copyright information."
-msgstr "dnsmasq-Version und Urheberrecht anzeigen."
+msgstr "DNSMasq-Version und Urheberrecht anzeigen."
 
 #: option.c:405
 msgid "Translate IPv4 addresses from upstream servers."
@@ -504,9 +504,8 @@ msgid "Export files by TFTP only from the specified subtree."
 msgstr "Nur vom festgelegten Unterbaum Dateien per TFTP exportieren."
 
 #: option.c:435
-#, fuzzy
 msgid "Add client IP or hardware address to tftp-root."
-msgstr "IP-Adresse des Klienten an tftp-root anhängen."
+msgstr "IP-Adresse oder Hardware-Adresse des Klienten an tftp-root anhängen."
 
 #: option.c:436
 msgid "Allow access only to files owned by the user running dnsmasq."
@@ -517,9 +516,9 @@ msgid "Do not terminate the service if TFTP directories are inaccessible."
 msgstr "Der Dienst sollte nicht beendet werden, wenn die TFTP-Verzeichnisse nicht zugreifbar sind."
 
 #: option.c:438
-#, fuzzy, c-format
+#, c-format
 msgid "Maximum number of concurrent TFTP transfers (defaults to %s)."
-msgstr "Höchstzahl nebenläufiger TFTP-Übertragungen (%s voreingestellt)."
+msgstr "Maximale Anzahl gleichzeitiger TFTP-Übertragungen (%s voreingestellt)."
 
 #: option.c:439
 msgid "Maximum MTU to use for TFTP transfers."
@@ -675,7 +674,6 @@ msgid "Set TTL for authoritative replies"
 msgstr "Setzte TTL für autoritative Antworten"
 
 #: option.c:477
-#, fuzzy
 msgid "Set authoritative zone information"
 msgstr "Setze autoritative Zoneninformationen"
 
@@ -724,9 +722,8 @@ msgid "Specify DHCPv6 prefix class"
 msgstr "Spezifiziere DHCPv6 Prefix Klasse"
 
 #: option.c:491
-#, fuzzy
 msgid "Set MTU, priority, resend-interval and router-lifetime"
-msgstr "Setze Priorität, Intervall des erneuten Sendens und Router Lebenszeit"
+msgstr "Setze MTU, Priorität, Sendewiederholungsintervall und Router-Lebensdauer"
 
 #: option.c:492
 msgid "Do not log routine DHCP."
@@ -758,7 +755,7 @@ msgstr "Setzte TTL in DNS-Antworten mit DHCP-abgeleiteten Adressen."
 
 #: option.c:499
 msgid "Delay DHCP replies for at least number of seconds."
-msgstr ""
+msgstr "Verzögere DHCP-Antworten für mindestens Anzahl von Sekunden."
 
 #: option.c:703
 #, c-format
@@ -781,7 +778,7 @@ msgstr "Gültige Optionen sind:\n"
 
 #: option.c:754 option.c:868
 msgid "bad address"
-msgstr "Fehlerhafte Adresse."
+msgstr "Fehlerhafte Adresse"
 
 #: option.c:779 option.c:783
 msgid "bad port"
@@ -793,7 +790,7 @@ msgstr "Schnittstellenbindung nicht unterstützt"
 
 #: option.c:821 option.c:856
 msgid "interface can only be specified once"
-msgstr ""
+msgstr "Schnittstelle kann nur einmal angegeben werden"
 
 #: option.c:835 option.c:3809
 msgid "bad interface name"
@@ -960,7 +957,7 @@ msgstr "Fehlerhafte DHCP-Proxy-Adresse"
 
 #: option.c:3704
 msgid "Bad dhcp-relay"
-msgstr "unzulässiger dhcp-relay"
+msgstr "Uunzulässiger dhcp-relay"
 
 #: option.c:3745
 msgid "bad RA-params"
@@ -1016,7 +1013,7 @@ msgstr "unzulässige Wichtung"
 
 #: option.c:4073
 msgid "Bad host-record"
-msgstr "unzulässiger host-record"
+msgstr "Unzulässiger host-record"
 
 #: option.c:4097
 msgid "Bad name in host-record"
@@ -1123,7 +1120,7 @@ msgstr "unzulässige Optionen auf der Befehlszeile: %s"
 #: option.c:4818
 #, c-format
 msgid "CNAME loop involving %s"
-msgstr ""
+msgstr "CNAME-Schleife mit %s"
 
 #: option.c:4854
 #, c-format
@@ -1178,7 +1175,7 @@ msgstr "möglichen DNS-Rebind-Angriff entdeckt: %s"
 #: forward.c:870
 #, c-format
 msgid "reducing DNS packet size for nameserver %s to %d"
-msgstr ""
+msgstr "Reduziere der DNS-Paketgröße für Nameserver %s auf %d"
 
 #: forward.c:1266 forward.c:1704
 msgid "Ignoring query from non-local network"
@@ -1204,9 +1201,9 @@ msgid "LOUD WARNING: use --bind-dynamic rather than --bind-interfaces to avoid D
 msgstr "LOUD WARNING: Es sollte --bind-dynamic anstatt --bind-interfaces benutzt werden, um DNS-Verstärkungsangriffe auf diesen Schnittstellen zu unterbinden"
 
 #: network.c:1047
-#, fuzzy, c-format
+#, c-format
 msgid "warning: using interface %s instead"
-msgstr "Warnung: %s nicht zugreifbar"
+msgstr "Warnung: Benutzer stattdessen Schnittstelle %s"
 
 #: network.c:1056
 #, c-format
@@ -1289,9 +1286,9 @@ msgid "using nameserver %s#%d"
 msgstr "Benutze Namensserver %s#%d"
 
 #: network.c:1591
-#, fuzzy, c-format
+#, c-format
 msgid "using %d more local addresses"
-msgstr "Benutze %d mehr Namensserver"
+msgstr "Benutze %d mehr lokale Adressen"
 
 #: network.c:1593
 #, c-format
@@ -1425,9 +1422,8 @@ msgid "DNSSEC validation enabled"
 msgstr "DNSSEC-Validierung aktiviert"
 
 #: dnsmasq.c:775
-#, fuzzy
 msgid "DNSSEC signature timestamps not checked until receipt of SIGINT"
-msgstr "DNSSEC Signatur-Zeitstempel werden erst ab dem ersten Neuladen des Caches überprüft"
+msgstr "DNSSEC-Signatur-Zeitstempel werden erst nach Empfang von SIGINT überprüft"
 
 #: dnsmasq.c:778
 msgid "DNSSEC signature timestamps not checked until system time valid"
@@ -1549,7 +1545,7 @@ msgstr "Das TFTP-Verzeichnis %s ist nicht zugreifbar: %s"
 #: dnsmasq.c:1242
 #, c-format
 msgid "cannot create timestamp file %s: %s"
-msgstr "Kann keine timestamp-Datei %s erzeugen: %s "
+msgstr "Kann keine Zeitstempel-Datei %s erzeugen: %s"
 
 #: dnsmasq.c:1326
 #, c-format
@@ -1671,12 +1667,12 @@ msgstr "kann Lease-Datei %s nicht öffnen: %s"
 #: lease.c:175
 #, c-format
 msgid "failed to parse lease database, invalid line: %s %s %s %s ..."
-msgstr ""
+msgstr "Fehler beim Parsen der Lease-Datenbank, ungültige Zeile: %s %s %s %s ..."
 
 #: lease.c:180
-#, fuzzy, c-format
+#, c-format
 msgid "failed to read lease file %s: %s"
-msgstr "konnte %s nicht lesen: %s"
+msgstr "konnte Lease-Datei %s nicht lesen: %s"
 
 #: lease.c:196
 #, c-format
@@ -1874,7 +1870,7 @@ msgstr "Kann RFC3925-Option nicht senden: zu viele Optionen für Unternehmen Nr.
 #: rfc2131.c:2650
 #, c-format
 msgid "%u reply delay: %d"
-msgstr ""
+msgstr "%u Antwortverzögerung: %d"
 
 #: netlink.c:77
 #, c-format
@@ -2111,7 +2107,7 @@ msgstr ", Prefix veraltet"
 #: dhcp-common.c:823
 #, c-format
 msgid ", lease time "
-msgstr ", Lease Zeit"
+msgstr ", Lease Zeit "
 
 #: dhcp-common.c:865
 #, c-format
@@ -2174,14 +2170,13 @@ msgid "failed to create IPset control socket: %s"
 msgstr "konnte IPset-Kontroll-Socket nicht erzeugen: %s"
 
 #: ipset.c:233
-#, fuzzy, c-format
+#, c-format
 msgid "failed to update ipset %s: %s"
-msgstr "kann die mtime nicht auf %s aktualisieren: %s"
+msgstr "Aktualisierung von ipset %s fehlgeschlagen: %s"
 
 #: dnssec.c:208
-#, fuzzy
 msgid "system time considered valid, now checking DNSSEC signature timestamps."
-msgstr "Prüfe jetzt DNSSEC Signatur-Zeitstempel"
+msgstr "Prüfe jetzt DNSSEC Signatur-Zeitstempel."
 
 #: blockdata.c:58
 #, c-format
@@ -2209,9 +2204,9 @@ msgid "error: cannot strlcpy table name %s"
 msgstr "Fehler: Kann den Tabellennamen %s nicht strlcpy"
 
 #: tables.c:101
-#, fuzzy, c-format
+#, c-format
 msgid "IPset: error:%s"
-msgstr "DBus-Fehler: %s"
+msgstr "IPset: Fehler: %s"
 
 #: tables.c:108
 msgid "info: table created"

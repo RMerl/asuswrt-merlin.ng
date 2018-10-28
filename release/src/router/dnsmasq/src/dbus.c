@@ -185,9 +185,6 @@ static void dbus_read_servers(DBusMessage *message)
 		}
 	    }
 
-#ifndef HAVE_IPV6
-	  my_syslog(LOG_WARNING, _("attempt to set an IPv6 server address via DBus - no IPv6 support"));
-#else
 	  if (i == sizeof(struct in6_addr))
 	    {
 	      memcpy(&addr.in6.sin6_addr, p, sizeof(struct in6_addr));
@@ -202,7 +199,6 @@ static void dbus_read_servers(DBusMessage *message)
               source_addr.in6.sin6_port = htons(daemon->query_port);
 	      skip = 0;
 	    }
-#endif
 	}
       else
 	/* At the end */

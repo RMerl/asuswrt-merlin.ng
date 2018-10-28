@@ -31,9 +31,7 @@
 #  include <net/if_var.h> 
 #endif
 #include <netinet/in_var.h>
-#ifdef HAVE_IPV6
-#  include <netinet6/in6_var.h>
-#endif
+#include <netinet6/in6_var.h>
 
 #ifndef SA_SIZE
 #define SA_SIZE(sa)                                             \
@@ -121,7 +119,7 @@ int iface_enumerate(int family, void *parm, int (*callback)())
   if (getifaddrs(&head) == -1)
     return 0;
 
-#if defined(HAVE_BSD_NETWORK) && defined(HAVE_IPV6)
+#if defined(HAVE_BSD_NETWORK)
   if (family == AF_INET6)
     fd = socket(PF_INET6, SOCK_DGRAM, 0);
 #endif
@@ -152,7 +150,6 @@ int iface_enumerate(int family, void *parm, int (*callback)())
 	      if (!((*callback)(addr, iface_index, NULL, netmask, broadcast, parm)))
 		goto err;
 	    }
-#ifdef HAVE_IPV6
 	  else if (family == AF_INET6)
 	    {
 	      struct in6_addr *addr = &((struct sockaddr_in6 *) addrs->ifa_addr)->sin6_addr;
@@ -219,7 +216,6 @@ int iface_enumerate(int family, void *parm, int (*callback)())
 				(int) preferred, (int)valid, parm)))
 		goto err;	      
 	    }
-#endif /* HAVE_IPV6 */
 
 #ifdef HAVE_DHCP6      
 	  else if (family == AF_LINK)
@@ -427,10 +423,8 @@ void route_sock(void)
 		 del_family = sa->sa_family;
 		 if (del_family == AF_INET)
 		   del_addr.addr.addr4 = ((struct sockaddr_in *)sa)->sin_addr;
-#ifdef HAVE_IPV6
 		 else if (del_family == AF_INET6)
 		   del_addr.addr.addr6 = ((struct sockaddr_in6 *)sa)->sin6_addr;
-#endif
 		 else
 		   del_family = 0;
 	       }

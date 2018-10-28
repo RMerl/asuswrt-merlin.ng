@@ -120,13 +120,8 @@ static int new_add_to_ipset(const char *setname, const struct all_addr *ipaddr, 
   struct my_nfgenmsg *nfg;
   struct my_nlattr *nested[2];
   uint8_t proto;
-  int addrsz = INADDRSZ;
+  int addrsz = (af == AF_INET6) ? INADDRSZ : IN6ADDRSZ;
 
-#ifdef HAVE_IPV6
-  if (af == AF_INET6)
-    addrsz = IN6ADDRSZ;
-#endif
-    
   if (strlen(setname) >= IPSET_MAXNAMELEN) 
     {
       errno = ENAMETOOLONG;
@@ -213,7 +208,6 @@ int add_to_ipset(const char *setname, const struct all_addr *ipaddr, int flags, 
 {
   int ret = 0, af = AF_INET;
 
-#ifdef HAVE_IPV6
   if (flags & F_IPV6)
     {
       af = AF_INET6;
@@ -224,7 +218,6 @@ int add_to_ipset(const char *setname, const struct all_addr *ipaddr, int flags, 
 	  ret = -1;
 	}
     }
-#endif
   
   if (ret != -1) 
     ret = old_kernel ? old_add_to_ipset(setname, ipaddr, remove) : new_add_to_ipset(setname, ipaddr, af, remove);

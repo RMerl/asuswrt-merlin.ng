@@ -137,7 +137,6 @@ HAVE_INOTIFY
 
 NO_ID
    Don't report *.bind CHAOS info to clients, forward such requests upstream instead.
-NO_IPV6
 NO_TFTP
 NO_DHCP
 NO_DHCP6
@@ -147,8 +146,8 @@ NO_AUTH
 NO_DUMPFILE
 NO_INOTIFY
    these are available to explicitly disable compile time options which would 
-   otherwise be enabled automatically (HAVE_IPV6, >2Gb file sizes) or 
-   which are enabled  by default in the distributed source tree. Building dnsmasq
+   otherwise be enabled automatically or which are enabled  by default 
+   in the distributed source tree. Building dnsmasq
    with something like "make COPTS=-DNO_SCRIPT" will do the trick.
 NO_GMP
    Don't use and link against libgmp, Useful if nettle is built with --enable-mini-gmp.
@@ -268,12 +267,10 @@ HAVE_SOCKADDR_SA_LEN
 #if !defined(__ARCH_HAS_MMU__) && !defined(__UCLIBC_HAS_MMU__)
 #  define NO_FORK
 #endif
-#if defined(__UCLIBC_HAS_IPV6__) && defined(USE_IPV6)
+#if defined(__UCLIBC_HAS_IPV6__)
 #  ifndef IPV6_V6ONLY
 #    define IPV6_V6ONLY 26
 #  endif
-#elif !defined(NO_IPV6)
-#  define NO_IPV6
 #endif
 
 /* This is for glibc 2.x */
@@ -317,28 +314,8 @@ HAVE_SOCKADDR_SA_LEN
  
 #endif
 
-/* Decide if we're going to support IPv6 */
-/* We assume that systems which don't have IPv6
-   headers don't have ntop and pton either */
-
-#if defined(INET6_ADDRSTRLEN) && defined(IPV6_V6ONLY)
-#  define HAVE_IPV6
-#  define ADDRSTRLEN INET6_ADDRSTRLEN
-#else
-#  if !defined(INET_ADDRSTRLEN)
-#      define INET_ADDRSTRLEN 16 /* 4*3 + 3 dots + NULL */
-#  endif
-#  undef HAVE_IPV6
-#  define ADDRSTRLEN INET_ADDRSTRLEN
-#endif
-
-
 /* rules to implement compile-time option dependencies and 
    the NO_XXX flags */
-
-#ifdef NO_IPV6
-#undef HAVE_IPV6
-#endif
 
 #ifdef NO_TFTP
 #undef HAVE_TFTP
@@ -349,7 +326,7 @@ HAVE_SOCKADDR_SA_LEN
 #undef HAVE_DHCP6
 #endif
 
-#if defined(NO_DHCP6) || !defined(HAVE_IPV6)
+#if defined(NO_DHCP6)
 #undef HAVE_DHCP6
 #endif
 
@@ -394,9 +371,6 @@ HAVE_SOCKADDR_SA_LEN
 #ifdef DNSMASQ_COMPILE_OPTS
 
 static char *compile_opts = 
-#ifndef HAVE_IPV6
-"no-"
-#endif
 "IPv6 "
 #ifndef HAVE_GETOPT_LONG
 "no-"

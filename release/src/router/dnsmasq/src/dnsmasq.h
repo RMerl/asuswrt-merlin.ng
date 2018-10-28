@@ -126,9 +126,7 @@ typedef unsigned long long u64;
 #include <net/if_arp.h>
 #include <netinet/in_systm.h>
 #include <netinet/ip.h>
-#ifdef HAVE_IPV6
 #include <netinet/ip6.h>
-#endif
 #include <netinet/ip_icmp.h>
 #include <sys/uio.h>
 #include <syslog.h>
@@ -158,6 +156,8 @@ extern int capget(cap_user_header_t header, cap_user_data_t data);
 
 /* daemon is function in the C library.... */
 #define daemon dnsmasq_daemon
+
+#define ADDRSTRLEN INET6_ADDRSTRLEN
 
 /* Async event queue */
 struct event_desc {
@@ -199,9 +199,6 @@ struct event_desc {
 #define EC_NOMEM       4
 #define EC_MISC        5
 #define EC_INIT_OFFSET 10
-
-/* Trust the compiler dead-code eliminator.... */
-#define option_bool(x) (((x) < 32) ? daemon->options & (1u << (x)) : daemon->options2 & (1u << ((x) - 32)))
 
 #define OPT_BOGUSPRIV      0
 #define OPT_FILTER         1
@@ -264,6 +261,12 @@ struct event_desc {
 #define OPT_UBUS           58
 #define OPT_LAST           59
 
+#define OPTION_BITS (sizeof(unsigned int)*8)
+#define OPTION_SIZE ( (OPT_LAST/OPTION_BITS)+((OPT_LAST%OPTION_BITS)!=0) )
+#define option_var(x) (daemon->options[(x) / OPTION_BITS])
+#define option_val(x) ((1u) << ((x) % OPTION_BITS))
+#define option_bool(x) (option_var(x) & option_val(x))
+
 /* extra flags for my_syslog, we use a couple of facilities since they are known 
    not to occupy the same bits as priorities, no matter how syslog.h is set up. */
 #define MS_TFTP   LOG_USER
@@ -273,9 +276,7 @@ struct event_desc {
 struct all_addr {
   union {
     struct in_addr addr4;
-#ifdef HAVE_IPV6
     struct in6_addr addr6;
-#endif
     /* for log_query */
     struct {
       unsigned short keytag, algo, digest;
@@ -383,9 +384,7 @@ struct host_record {
     struct name_list *next;
   } *names;
   struct in_addr addr;
-#ifdef HAVE_IPV6
   struct in6_addr addr6;
-#endif
   struct host_record *next;
 };
 
@@ -496,9 +495,7 @@ struct crec {
 union mysockaddr {
   struct sockaddr sa;
   struct sockaddr_in in;
-#if defined(HAVE_IPV6)
   struct sockaddr_in6 in6;
-#endif
 };
 
 /* bits in flag param to IPv6 callbacks from iface_enumerate() */
@@ -660,9 +657,7 @@ struct frec {
   struct all_addr dest;
   struct server *sentto; /* NULL means free */
   struct randfd *rfd4;
-#ifdef HAVE_IPV6
   struct randfd *rfd6;
-#endif
   unsigned int iface;
   unsigned short orig_id, new_id;
   int log_id, fd, forwardall, flags;
@@ -877,9 +872,7 @@ struct dhcp_bridge {
 struct cond_domain {
   char *domain, *prefix;
   struct in_addr start, end;
-#ifdef HAVE_IPV6
   struct in6_addr start6, end6;
-#endif
   int is6, indexed;
   struct cond_domain *next;
 }; 
@@ -988,7 +981,7 @@ extern struct daemon {
      config file arguments. All set (including defaults)
      in option.c */
 
-  unsigned int options, options2;
+  unsigned int options[OPTION_SIZE];
   struct resolvc default_resolv, *resolv_files;
   time_t last_resolv;
   char *servers_file;
@@ -1091,6 +1084,8 @@ extern struct daemon {
   size_t packet_len;       /*      "        "        */
   struct randfd *rfd_save; /*      "        "        */
   pid_t tcp_pids[MAX_PROCS];
+  int tcp_pipes[MAX_PROCS];
+  int pipe_to_parent;
   struct randfd randomsocks[RANDOM_SOCKS];
   int v6pktinfo; 
   struct addrlist *interface_addrs; /* list of all addresses/prefix lengths associated with all local interfaces */
@@ -1152,6 +1147,7 @@ struct crec *cache_find_by_name(struct crec *crecp,
 				char *name, time_t now, unsigned int prot);
 void cache_end_insert(void);
 void cache_start_insert(void);
+int cache_recv_insert(time_t now, int fd);
 struct crec *cache_insert(char *name, struct all_addr *addr,
 			  time_t now, unsigned long ttl, unsigned short flags);
 void cache_reload(void);
@@ -1174,14 +1170,14 @@ void blockdata_init(void);
 void blockdata_report(void);
 struct blockdata *blockdata_alloc(char *data, size_t len);
 void *blockdata_retrieve(struct blockdata *block, size_t len, void *data);
+struct blockdata *blockdata_read(int fd, size_t len);
+void blockdata_write(struct blockdata *block, size_t len, int fd);
 void blockdata_free(struct blockdata *blocks);
 #endif
 
 /* domain.c */
 char *get_domain(struct in_addr addr);
-#ifdef HAVE_IPV6
 char *get_domain6(struct in6_addr *addr);
-#endif
 int is_name_synthetic(int flags, char *name, struct all_addr *addr);
 int is_rev_synth(int flag, struct all_addr *addr, char *name);
 
@@ -1266,11 +1262,9 @@ int hostname_issubdomain(char *a, char *b);
 time_t dnsmasq_time(void);
 int netmask_length(struct in_addr mask);
 int is_same_net(struct in_addr a, struct in_addr b, struct in_addr mask);
-#ifdef HAVE_IPV6
 int is_same_net6(struct in6_addr *a, struct in6_addr *b, int prefixlen);
 u64 addr6part(struct in6_addr *addr);
 void setaddr6part(struct in6_addr *addr, u64 host);
-#endif
 int retry_send(ssize_t rc);
 void prettyprint_time(char *buf, unsigned int t);
 int prettyprint_addr(union mysockaddr *addr, char *buf);
@@ -1349,9 +1343,7 @@ int loopback_exception(int fd, int family, struct all_addr *addr, char *name);
 int label_exception(int index, int family, struct all_addr *addr);
 int fix_fd(int fd);
 int tcp_interface(int fd, int af);
-#ifdef HAVE_IPV6
 int set_ipv6pktinfo(int fd);
-#endif
 #ifdef HAVE_DHCP6
 void join_multicast(int dienow);
 #endif

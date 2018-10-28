@@ -82,10 +82,8 @@ void dump_init(void)
 void dump_packet(int mask, void *packet, size_t len, union mysockaddr *src, union mysockaddr *dst)
 {
   struct ip ip;
-#ifdef HAVE_IPV6
   struct ip6_hdr ip6;
   int family;
-#endif
   struct udphdr {
     u16 uh_sport;               /* source port */
     u16 uh_dport;               /* destination port */
@@ -105,7 +103,6 @@ void dump_packet(int mask, void *packet, size_t len, union mysockaddr *src, unio
   /* So wireshark can Id the packet. */
   udp.uh_sport = udp.uh_dport = htons(NAMESERVER_PORT);
 
-#ifdef HAVE_IPV6
   if (src)
     family = src->sa.sa_family;
   else
@@ -139,7 +136,6 @@ void dump_packet(int mask, void *packet, size_t len, union mysockaddr *src, unio
 	sum += ((u16 *)&ip6.ip6_src)[i];
     }
   else
-#endif
     {
       iphdr = &ip;
       ipsz = sizeof(ip);

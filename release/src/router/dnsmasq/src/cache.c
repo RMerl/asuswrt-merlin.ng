@@ -26,6 +26,8 @@ static union bigname *big_free = NULL;
 static int bignames_left, hash_size;
 
 static void make_non_terminals(struct crec *source);
+static struct crec *really_insert(char *name, struct all_addr *addr, 
+				  time_t now,  unsigned long ttl, unsigned short flags);
 
 /* type->string mapping: this is also used by the name-hash function as a mixing table. */
 static const struct {
@@ -408,11 +410,8 @@ static struct crec *cache_scan_free(char *name, struct all_addr *addr, time_t no
   else
     {
       int i;
-#ifdef HAVE_IPV6
       int addrlen = (flags & F_IPV6) ? IN6ADDRSZ : INADDRSZ;
-#else
-      int addrlen = INADDRSZ;
-#endif 
+
       for (i = 0; i < hash_size; i++)
 	for (crecp = hash_table[i], up = &hash_table[i]; 
 	     crecp && ((crecp->flags & F_REVERSE) || !(crecp->flags & F_IMMORTAL));
@@ -464,16 +463,10 @@ void cache_start_insert(void)
   new_chain = NULL;
   insert_error = 0;
 }
- 
+
 struct crec *cache_insert(char *name, struct all_addr *addr, 
 			  time_t now,  unsigned long ttl, unsigned short flags)
 {
-  struct crec *new, *target_crec = NULL;
-  union bigname *big_name = NULL;
-  int freed_all = flags & F_REVERSE;
-  int free_avail = 0;
-  unsigned int target_uid;
-  
   /* Don't log DNSSEC records here, done elsewhere */
   if (flags & (F_IPV4 | F_IPV6 | F_CNAME))
     {
@@ -484,7 +477,20 @@ struct crec *cache_insert(char *name, struct all_addr *addr,
       if (daemon->min_cache_ttl != 0 && daemon->min_cache_ttl > ttl)
 	ttl = daemon->min_cache_ttl;
     }
+  
+  return really_insert(name, addr, now, ttl, flags);
+}
 
+
+static struct crec *really_insert(char *name, struct all_addr *addr, 
+				  time_t now,  unsigned long ttl, unsigned short flags)
+{
+  struct crec *new, *target_crec = NULL;
+  union bigname *big_name = NULL;
+  int freed_all = flags & F_REVERSE;
+  int free_avail = 0;
+  unsigned int target_uid;
+  
   /* if previous insertion failed give up now. */
   if (insert_error)
     return NULL;
@@ -503,11 +509,9 @@ struct crec *cache_insert(char *name, struct all_addr *addr,
 	  if ((flags & F_IPV4) && (new->flags & F_IPV4) &&
 	      new->addr.addr.addr.addr4.s_addr == addr->addr.addr4.s_addr)
 	    return new;
-#ifdef HAVE_IPV6
 	  else if ((flags & F_IPV6) && (new->flags & F_IPV6) &&
 		   IN6_ARE_ADDR_EQUAL(&new->addr.addr.addr.addr6, &addr->addr.addr6))
 	    return new;
-#endif
 	}
       
       insert_error = 1;
@@ -645,12 +649,185 @@ void cache_end_insert(void)
 	  cache_hash(new_chain);
 	  cache_link(new_chain);
 	  daemon->metrics[METRIC_DNS_CACHE_INSERTED]++;
+
+	  /* If we're a child process, send this cache entry up the pipe to the master.
+	     The marshalling process is rather nasty. */
+	  if (daemon->pipe_to_parent != -1)
+	    {
+	      char *name = cache_get_name(new_chain);
+	      ssize_t m = strlen(name);
+	      unsigned short flags = new_chain->flags;
+#ifdef HAVE_DNSSEC
+	      u16 class = new_chain->uid;
+#endif
+	      
+	      read_write(daemon->pipe_to_parent, (unsigned char *)&m, sizeof(m), 0);
+	      read_write(daemon->pipe_to_parent, (unsigned char *)name, m, 0);
+	      read_write(daemon->pipe_to_parent, (unsigned char *)&new_chain->ttd, sizeof(new_chain->ttd), 0);
+	      read_write(daemon->pipe_to_parent, (unsigned  char *)&flags, sizeof(flags), 0);
+
+	      if (flags & (F_IPV4 | F_IPV6))
+		read_write(daemon->pipe_to_parent, (unsigned char *)&new_chain->addr, sizeof(new_chain->addr), 0);
+#ifdef HAVE_DNSSEC
+	      else if (flags & F_DNSKEY)
+		{
+		  read_write(daemon->pipe_to_parent, (unsigned char *)&class, sizeof(class), 0);
+		  read_write(daemon->pipe_to_parent, (unsigned char *)&new_chain->addr.key.algo, sizeof(new_chain->addr.key.algo), 0);
+		  read_write(daemon->pipe_to_parent, (unsigned char *)&new_chain->addr.key.keytag, sizeof(new_chain->addr.key.keytag), 0);
+		  read_write(daemon->pipe_to_parent, (unsigned char *)&new_chain->addr.key.flags, sizeof(new_chain->addr.key.flags), 0);
+		  read_write(daemon->pipe_to_parent, (unsigned char *)&new_chain->addr.key.keylen, sizeof(new_chain->addr.key.keylen), 0);
+		  blockdata_write(new_chain->addr.key.keydata, new_chain->addr.key.keylen, daemon->pipe_to_parent);
+		}
+	      else if (flags & F_DS)
+		{
+		  read_write(daemon->pipe_to_parent, (unsigned char *)&class, sizeof(class), 0);
+		  /* A negative DS entry is possible and has no data, obviously. */
+		  if (!(flags & F_NEG))
+		    {
+		      read_write(daemon->pipe_to_parent, (unsigned char *)&new_chain->addr.ds.algo, sizeof(new_chain->addr.ds.algo), 0);
+		      read_write(daemon->pipe_to_parent, (unsigned char *)&new_chain->addr.ds.keytag, sizeof(new_chain->addr.ds.keytag), 0);
+		      read_write(daemon->pipe_to_parent, (unsigned char *)&new_chain->addr.ds.digest, sizeof(new_chain->addr.ds.digest), 0);
+		      read_write(daemon->pipe_to_parent, (unsigned char *)&new_chain->addr.ds.keylen, sizeof(new_chain->addr.ds.keylen), 0);
+		      blockdata_write(new_chain->addr.ds.keydata, new_chain->addr.ds.keylen, daemon->pipe_to_parent);
+		    }
+		}
+#endif
+	      
+	    }
 	}
+      
       new_chain = tmp;
     }
+
+  /* signal end of cache insert in master process */
+  if (daemon->pipe_to_parent != -1)
+    {
+      ssize_t m = -1;
+      read_write(daemon->pipe_to_parent, (unsigned char *)&m, sizeof(m), 0);
+    }
+      
   new_chain = NULL;
 }
 
+
+/* A marshalled cache entry arrives on fd, read, unmarshall and insert into cache of master process. */
+int cache_recv_insert(time_t now, int fd)
+{
+  ssize_t m;
+  struct all_addr addr;
+  unsigned long ttl;
+  time_t ttd;
+  unsigned short flags;
+  struct crec *crecp = NULL;
+  
+  cache_start_insert();
+  
+  while(1)
+    {
+ 
+      if (!read_write(fd, (unsigned char *)&m, sizeof(m), 1))
+	return 0;
+      
+      if (m == -1)
+	{
+	  cache_end_insert();
+	  return 1;
+	}
+
+      if (!read_write(fd, (unsigned char *)daemon->namebuff, m, 1) ||
+	  !read_write(fd, (unsigned char *)&ttd, sizeof(ttd), 1) ||
+	  !read_write(fd, (unsigned char *)&flags, sizeof(flags), 1))
+	return 0;
+
+      daemon->namebuff[m] = 0;
+
+      ttl = difftime(ttd, now);
+      
+      if (flags & (F_IPV4 | F_IPV6))
+	{
+	  if (!read_write(fd, (unsigned char *)&addr, sizeof(addr), 1))
+	    return 0;
+	  crecp = really_insert(daemon->namebuff, &addr, now, ttl, flags);
+	}
+      else if (flags & F_CNAME)
+	{
+	  struct crec *newc = really_insert(daemon->namebuff, NULL, now, ttl, flags);
+	  /* This relies on the fact the the target of a CNAME immediately preceeds
+	     it because of the order of extraction in extract_addresses, and
+	     the order reversal on the new_chain. */
+	  if (newc)
+	    {
+	      if (!crecp)
+		{
+		  newc->addr.cname.target.cache = NULL;
+		  /* anything other than zero, to avoid being mistaken for CNAME to interface-name */ 
+		  newc->addr.cname.uid = 1; 
+		}
+	      else
+		{
+		  next_uid(crecp);
+		  newc->addr.cname.target.cache = crecp;
+		  newc->addr.cname.uid = crecp->uid;
+		}
+	    }
+	}
+#ifdef HAVE_DNSSEC
+      else if (flags & (F_DNSKEY | F_DS))
+	{
+	  unsigned short class, keylen, keyflags, keytag;
+	  unsigned char algo, digest;
+	  struct blockdata *keydata;
+	  
+	  if (!read_write(fd, (unsigned char *)&class, sizeof(class), 1))
+	    return 0;
+	  /* Cache needs to known class for DNSSEC stuff */
+	  addr.addr.dnssec.class = class;
+
+	  crecp = really_insert(daemon->namebuff, &addr, now, ttl, flags);
+	    
+	  if (flags & F_DNSKEY)
+	    {
+	      if (!read_write(fd, (unsigned char *)&algo, sizeof(algo), 1) ||
+		  !read_write(fd, (unsigned char *)&keytag, sizeof(keytag), 1) ||
+		  !read_write(fd, (unsigned char *)&keyflags, sizeof(keyflags), 1) ||
+		  !read_write(fd, (unsigned char *)&keylen, sizeof(keylen), 1) ||
+		  !(keydata = blockdata_read(fd, keylen)))
+		return 0;
+	    }
+	  else if (!(flags & F_NEG))
+	    {
+	      if (!read_write(fd, (unsigned char *)&algo, sizeof(algo), 1) ||
+		  !read_write(fd, (unsigned char *)&keytag, sizeof(keytag), 1) ||
+		  !read_write(fd, (unsigned char *)&digest, sizeof(digest), 1) ||
+		  !read_write(fd, (unsigned char *)&keylen, sizeof(keylen), 1) ||
+		  !(keydata = blockdata_read(fd, keylen)))
+		return 0;
+	    }
+
+	  if (crecp)
+	    {
+	       if (flags & F_DNSKEY)
+		 {
+		   crecp->addr.key.algo = algo;
+		   crecp->addr.key.keytag = keytag;
+		   crecp->addr.key.flags = flags;
+		   crecp->addr.key.keylen = keylen;
+		   crecp->addr.key.keydata = keydata;
+		 }
+	       else if (!(flags & F_NEG))
+		 {
+		   crecp->addr.ds.algo = algo;
+		   crecp->addr.ds.keytag = keytag;
+		   crecp->addr.ds.digest = digest;
+		   crecp->addr.ds.keylen = keylen;
+		   crecp->addr.ds.keydata = keydata;
+		 }
+	    }
+	}
+#endif
+    }
+}
+	
 int cache_find_non_terminal(char *name, time_t now)
 {
   struct crec *crecp;
@@ -756,11 +933,7 @@ struct crec *cache_find_by_addr(struct crec *crecp, struct all_addr *addr,
 				time_t now, unsigned int prot)
 {
   struct crec *ans;
-#ifdef HAVE_IPV6
   int addrlen = (prot == F_IPV6) ? IN6ADDRSZ : INADDRSZ;
-#else
-  int addrlen = INADDRSZ;
-#endif
   
   if (crecp) /* iterating */
     ans = crecp->next;
@@ -989,14 +1162,12 @@ int read_hostsfile(char *filename, unsigned int index, int cache_size, struct cr
 	  addrlen = INADDRSZ;
 	  domain_suffix = get_domain(addr.addr.addr4);
 	}
-#ifdef HAVE_IPV6
       else if (inet_pton(AF_INET6, token, &addr) > 0)
 	{
 	  flags = F_HOSTS | F_IMMORTAL | F_FORWARD | F_REVERSE | F_IPV6;
 	  addrlen = IN6ADDRSZ;
 	  domain_suffix = get_domain6(&addr.addr.addr6);
 	}
-#endif
       else
 	{
 	  my_syslog(LOG_ERR, _("bad address at %s line %d"), filename, lineno); 
@@ -1161,7 +1332,7 @@ void cache_reload(void)
 	    cache->flags = F_HOSTS | F_IMMORTAL | F_FORWARD | F_REVERSE | F_IPV4 | F_NAMEP | F_CONFIG;
 	    add_hosts_entry(cache, (struct all_addr *)&hr->addr, INADDRSZ, SRC_CONFIG, (struct crec **)daemon->packet, revhashsz);
 	  }
-#ifdef HAVE_IPV6
+
 	if (!IN6_IS_ADDR_UNSPECIFIED(&hr->addr6) &&
 	    (cache = whine_malloc(SIZEOF_POINTER_CREC)))
 	  {
@@ -1170,7 +1341,6 @@ void cache_reload(void)
 	    cache->flags = F_HOSTS | F_IMMORTAL | F_FORWARD | F_REVERSE | F_IPV6 | F_NAMEP | F_CONFIG;
 	    add_hosts_entry(cache, (struct all_addr *)&hr->addr6, IN6ADDRSZ, SRC_CONFIG, (struct crec **)daemon->packet, revhashsz);
 	  }
-#endif
       }
 	
   if (option_bool(OPT_NO_HOSTS) && !daemon->addn_hosts)
@@ -1269,13 +1439,11 @@ void cache_add_dhcp_entry(char *host_name, int prot,
   int in_hosts = 0;
   size_t addrlen = sizeof(struct in_addr);
 
-#ifdef HAVE_IPV6
   if (prot == AF_INET6)
     {
       flags = F_IPV6;
       addrlen = sizeof(struct in6_addr);
     }
-#endif
   
   inet_ntop(prot, host_address, daemon->addrbuff, ADDRSTRLEN);
   
@@ -1628,10 +1796,8 @@ void dump_cache(time_t now)
 		a = daemon->addrbuff;
 		if (cache->flags & F_IPV4)
 		  inet_ntop(AF_INET, &cache->addr.addr, a, ADDRSTRLEN);
-#ifdef HAVE_IPV6
 		else if (cache->flags & F_IPV6)
 		  inet_ntop(AF_INET6, &cache->addr.addr, a, ADDRSTRLEN);
-#endif
 	      }
 
 	    if (cache->flags & F_IPV4)
@@ -1772,14 +1938,9 @@ void log_query(unsigned int flags, char *name, struct all_addr *addr, char *arg)
 	     sprintf(daemon->addrbuff, "%u", rcode);
 	}
       else
-	{
-#ifdef HAVE_IPV6
-	  inet_ntop(flags & F_IPV4 ? AF_INET : AF_INET6,
-		    addr, daemon->addrbuff, ADDRSTRLEN);
-#else
-	  strncpy(daemon->addrbuff, inet_ntoa(addr->addr.addr4), ADDRSTRLEN);  
-#endif
-	}
+	inet_ntop(flags & F_IPV4 ? AF_INET : AF_INET6,
+		  addr, daemon->addrbuff, ADDRSTRLEN);
+      
     }
   else
     dest = arg;

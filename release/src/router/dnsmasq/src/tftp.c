@@ -60,17 +60,11 @@ void tftp_request(struct listener *listen, time_t now)
   char *prefix = daemon->tftp_prefix;
   struct tftp_prefix *pref;
   struct all_addr addra;
-#ifdef HAVE_IPV6
   /* Can always get recvd interface for IPv6 */
   int check_dest = !option_bool(OPT_NOWILD) || listen->family == AF_INET6;
-#else
-  int check_dest = !option_bool(OPT_NOWILD);
-#endif
   union {
     struct cmsghdr align; /* this ensures alignment */
-#ifdef HAVE_IPV6
     char control6[CMSG_SPACE(sizeof(struct in6_pktinfo))];
-#endif
 #if defined(HAVE_LINUX_NETWORK)
     char control[CMSG_SPACE(sizeof(struct in_pktinfo))];
 #elif defined(HAVE_SOLARIS_NETWORK)
@@ -174,7 +168,6 @@ void tftp_request(struct listener *listen, time_t now)
 	  
 #endif
 
-#ifdef HAVE_IPV6
       if (listen->family == AF_INET6)
         {
           for (cmptr = CMSG_FIRSTHDR(&msg); cmptr; cmptr = CMSG_NXTHDR(&msg, cmptr))
@@ -190,7 +183,6 @@ void tftp_request(struct listener *listen, time_t now)
                 if_index = p.p->ipi6_ifindex;
               }
         }
-#endif
       
       if (!indextoname(listen->tftpfd, if_index, namebuff))
 	return;
@@ -199,10 +191,8 @@ void tftp_request(struct listener *listen, time_t now)
       
       addra.addr.addr4 = addr.in.sin_addr;
 
-#ifdef HAVE_IPV6
       if (listen->family == AF_INET6)
 	addra.addr.addr6 = addr.in6.sin6_addr;
-#endif
 
       if (daemon->tftp_interfaces)
 	{
@@ -262,7 +252,6 @@ void tftp_request(struct listener *listen, time_t now)
       addr.in.sin_len = sizeof(addr.in);
 #endif
     }
-#ifdef HAVE_IPV6
   else
     {
       addr.in6.sin6_port = htons(port);
@@ -272,7 +261,6 @@ void tftp_request(struct listener *listen, time_t now)
       addr.in6.sin6_len = sizeof(addr.in6);
 #endif
     }
-#endif
 
   if (!(transfer = whine_malloc(sizeof(struct tftp_transfer))))
     return;
@@ -310,10 +298,9 @@ void tftp_request(struct listener *listen, time_t now)
 		{ 
 		  if (listen->family == AF_INET)
 		    addr.in.sin_port = htons(port);
-#ifdef HAVE_IPV6
 		  else
-		     addr.in6.sin6_port = htons(port);
-#endif
+		    addr.in6.sin6_port = htons(port);
+		  
 		  continue;
 		}
 	      my_syslog(MS_TFTP | LOG_ERR, _("unable to get free port for TFTP"));

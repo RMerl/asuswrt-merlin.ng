@@ -61,7 +61,7 @@ void blockdata_report(void)
 	      blockdata_alloced * sizeof(struct blockdata));
 } 
 
-struct blockdata *blockdata_alloc(char *data, size_t len)
+static struct blockdata *blockdata_alloc_real(int fd, char *data, size_t len)
 {
   struct blockdata *block, *ret = NULL;
   struct blockdata **prev = &ret;
@@ -89,8 +89,17 @@ struct blockdata *blockdata_alloc(char *data, size_t len)
 	blockdata_hwm = blockdata_count; 
       
       blen = len > KEYBLOCK_LEN ? KEYBLOCK_LEN : len;
-      memcpy(block->key, data, blen);
-      data += blen;
+      if (data)
+	{
+	  memcpy(block->key, data, blen);
+	  data += blen;
+	}
+      else if (!read_write(fd, block->key, blen, 1))
+	{
+	  /* failed read free partial chain */
+	  blockdata_free(ret);
+	  return NULL;
+	}
       len -= blen;
       *prev = block;
       prev = &block->next;
@@ -100,6 +109,10 @@ struct blockdata *blockdata_alloc(char *data, size_t len)
   return ret;
 }
 
+struct blockdata *blockdata_alloc(char *data, size_t len)
+{
+  return blockdata_alloc_real(0, data, len);
+}
 
 void blockdata_free(struct blockdata *blocks)
 {
@@ -148,5 +161,21 @@ void *blockdata_retrieve(struct blockdata *block, size_t len, void *data)
 
   return data;
 }
- 
+
+
+void blockdata_write(struct blockdata *block, size_t len, int fd)
+{
+  for (; len > 0 && block; block = block->next)
+    {
+      size_t blen = len > KEYBLOCK_LEN ? KEYBLOCK_LEN : len;
+      read_write(fd, block->key, blen, 0);
+      len -= blen;
+    }
+}
+
+struct blockdata *blockdata_read(int fd, size_t len)
+{
+  return blockdata_alloc_real(fd, NULL, len);
+}
+
 #endif

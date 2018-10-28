@@ -137,12 +137,10 @@ int iface_check(int family, struct all_addr *addr, char *name, int *auth)
 	      if (family == AF_INET &&
 		  tmp->addr.in.sin_addr.s_addr == addr->addr.addr4.s_addr)
 		ret = match_addr = tmp->used = 1;
-#ifdef HAVE_IPV6
 	      else if (family == AF_INET6 &&
 		       IN6_ARE_ADDR_EQUAL(&tmp->addr.in6.sin6_addr, 
 					  &addr->addr.addr6))
 		ret = match_addr = tmp->used = 1;
-#endif
 	    }          
     }
   
@@ -162,11 +160,9 @@ int iface_check(int family, struct all_addr *addr, char *name, int *auth)
     else if (addr && tmp->addr.sa.sa_family == AF_INET && family == AF_INET &&
 	     tmp->addr.in.sin_addr.s_addr == addr->addr.addr4.s_addr)
       break;
-#ifdef HAVE_IPV6
     else if (addr && tmp->addr.sa.sa_family == AF_INET6 && family == AF_INET6 &&
 	     IN6_ARE_ADDR_EQUAL(&tmp->addr.in6.sin6_addr, &addr->addr.addr6))
       break;
-#endif      
 
   if (tmp && auth) 
     {
@@ -200,11 +196,8 @@ int loopback_exception(int fd, int family, struct all_addr *addr, char *name)
 		if (iface->addr.in.sin_addr.s_addr == addr->addr.addr4.s_addr)
 		  return 1;
 	      }
-#ifdef HAVE_IPV6
 	    else if (IN6_ARE_ADDR_EQUAL(&iface->addr.in6.sin6_addr, &addr->addr.addr6))
 	      return 1;
-#endif
-	    
 	  }
     }
   return 0;
@@ -292,19 +285,15 @@ static int iface_allowed(struct iface_param *param, int if_index, char *label,
 	      al->addr.addr.addr4 = addr->in.sin_addr;
 	      al->flags = 0;
 	    }
-#ifdef HAVE_IPV6
 	  else
 	    {
 	      al->addr.addr.addr6 = addr->in6.sin6_addr;
 	      al->flags = ADDRLIST_IPV6;
 	    } 
-#endif
 	}
     }
   
-#ifdef HAVE_IPV6
   if (addr->sa.sa_family != AF_INET6 || !IN6_IS_ADDR_LINKLOCAL(&addr->in6.sin6_addr))
-#endif
     {
       struct interface_name *int_name;
       struct addrlist *al;
@@ -337,7 +326,6 @@ static int iface_allowed(struct iface_param *param, int if_index, char *label,
 		    }
 		}
 	      
-#ifdef HAVE_IPV6
 	      if (addr->sa.sa_family == AF_INET6 && (name->flags & AUTH6))
 		{
 		  if (param->spare)
@@ -357,8 +345,6 @@ static int iface_allowed(struct iface_param *param, int if_index, char *label,
 		      al->flags = ADDRLIST_IPV6;
 		    }
 		} 
-#endif
-	      
 	    }
 #endif
        
@@ -386,7 +372,6 @@ static int iface_allowed(struct iface_param *param, int if_index, char *label,
 		    al->addr.addr.addr4 = addr->in.sin_addr;
 		    al->flags = 0;
 		  }
-#ifdef HAVE_IPV6
 		else
 		 {
 		    al->addr.addr.addr6 = addr->in6.sin6_addr;
@@ -396,7 +381,6 @@ static int iface_allowed(struct iface_param *param, int if_index, char *label,
 		    if (!(iface_flags & IFACE_PERMANENT) || (iface_flags & (IFACE_DEPRECATED | IFACE_TENTATIVE)))
 		      al->flags |= ADDRLIST_REVONLY;
 		 } 
-#endif
 	      }
 	  }
     }
@@ -438,11 +422,9 @@ static int iface_allowed(struct iface_param *param, int if_index, char *label,
       !iface_check(AF_INET, (struct all_addr *)&addr->in.sin_addr, label, &auth_dns))
     return 1;
 
-#ifdef HAVE_IPV6
   if (addr->sa.sa_family == AF_INET6 &&
       !iface_check(AF_INET6, (struct all_addr *)&addr->in6.sin6_addr, label, &auth_dns))
     return 1;
-#endif
     
 #ifdef HAVE_DHCP
   /* No DHCP where we're doing auth DNS. */
@@ -501,7 +483,6 @@ static int iface_allowed(struct iface_param *param, int if_index, char *label,
   return 0;
 }
 
-#ifdef HAVE_IPV6
 static int iface_allowed_v6(struct in6_addr *local, int prefix, 
 			    int scope, int if_index, int flags, 
 			    int preferred, int valid, void *vparam)
@@ -529,7 +510,6 @@ static int iface_allowed_v6(struct in6_addr *local, int prefix,
   
   return iface_allowed((struct iface_param *)vparam, if_index, NULL, &addr, netmask, prefix, flags);
 }
-#endif
 
 static int iface_allowed_v4(struct in_addr local, int if_index, char *label,
 			    struct in_addr netmask, struct in_addr broadcast, void *vparam)
@@ -633,9 +613,7 @@ int enumerate_interfaces(int reset)
 
   param.spare = spare;
   
-#ifdef HAVE_IPV6
   ret = iface_enumerate(AF_INET6, &param, iface_allowed_v6);
-#endif
 
   if (ret)
     ret = iface_enumerate(AF_INET, &param, iface_allowed_v4); 
@@ -740,10 +718,8 @@ static int make_sock(union mysockaddr *addr, int type, int dienow)
   if (setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt)) == -1 || !fix_fd(fd))
     goto err;
   
-#ifdef HAVE_IPV6
   if (family == AF_INET6 && setsockopt(fd, IPPROTO_IPV6, IPV6_V6ONLY, &opt, sizeof(opt)) == -1)
     goto err;
-#endif
   
   if ((rc = bind(fd, (struct sockaddr *)addr, sa_len(addr))) == -1)
     goto err;
@@ -767,15 +743,12 @@ static int make_sock(union mysockaddr *addr, int type, int dienow)
 #endif
 	}
     }
-#ifdef HAVE_IPV6
   else if (!set_ipv6pktinfo(fd))
     goto err;
-#endif
   
   return fd;
 }
 
-#ifdef HAVE_IPV6  
 int set_ipv6pktinfo(int fd)
 {
   int opt = 1;
@@ -802,7 +775,6 @@ int set_ipv6pktinfo(int fd)
 
   return 0;
 }
-#endif
 
 
 /* Find the interface on which a TCP connection arrived, if possible, or zero otherwise. */
@@ -842,7 +814,6 @@ int tcp_interface(int fd, int af)
 	      }
 	}
     }
-#ifdef HAVE_IPV6
   else
     {
       /* Only the RFC-2292 API has the ability to find the interface for TCP connections,
@@ -874,7 +845,6 @@ int tcp_interface(int fd, int af)
               }
 	}
     }
-#endif /* IPV6 */
 #endif /* Linux */
  
   return if_index;
@@ -904,7 +874,6 @@ static struct listener *create_listeners(union mysockaddr *addr, int do_tftp, in
 	  tftpfd = make_sock(addr, SOCK_DGRAM, dienow);
 	  addr->in.sin_port = save;
 	}
-#  ifdef HAVE_IPV6
       else
 	{
 	  short save = addr->in6.sin6_port;
@@ -912,7 +881,6 @@ static struct listener *create_listeners(union mysockaddr *addr, int do_tftp, in
 	  tftpfd = make_sock(addr, SOCK_DGRAM, dienow);
 	  addr->in6.sin6_port = save;
 	}  
-#  endif
     }
 #endif
 
@@ -945,11 +913,10 @@ void create_wildcard_listeners(void)
 
   l = create_listeners(&addr, !!option_bool(OPT_TFTP), 1);
 
-#ifdef HAVE_IPV6
   memset(&addr, 0, sizeof(addr));
-#  ifdef HAVE_SOCKADDR_SA_LEN
+#ifdef HAVE_SOCKADDR_SA_LEN
   addr.in6.sin6_len = sizeof(addr.in6);
-#  endif
+#endif
   addr.in6.sin6_family = AF_INET6;
   addr.in6.sin6_addr = in6addr_any;
   addr.in6.sin6_port = htons(daemon->port);
@@ -959,7 +926,6 @@ void create_wildcard_listeners(void)
     l->next = l6;
   else 
     l = l6;
-#endif
 
   daemon->listeners = l;
 }
@@ -1159,7 +1125,6 @@ int random_sock(int family)
 		addr.in.sin_len = sizeof(struct sockaddr_in);
 #endif
 	      }
-#ifdef HAVE_IPV6
 	    else
 	      {
 		addr.in6.sin6_addr = in6addr_any; 
@@ -1168,7 +1133,6 @@ int random_sock(int family)
 		addr.in6.sin6_len = sizeof(struct sockaddr_in6);
 #endif
 	      }
-#endif
 	    
 	    if (bind(fd, (struct sockaddr *)&addr, sa_len(&addr)) == 0)
 	      return fd;
@@ -1193,10 +1157,8 @@ int local_bind(int fd, union mysockaddr *addr, char *intname, unsigned int ifind
     {
       if (addr_copy.sa.sa_family == AF_INET)
 	addr_copy.in.sin_port = 0;
-#ifdef HAVE_IPV6
       else
 	addr_copy.in6.sin6_port = 0;
-#endif
     }
   
   if (bind(fd, (struct sockaddr *)&addr_copy, sa_len(&addr_copy)) == -1)
@@ -1211,7 +1173,7 @@ int local_bind(int fd, union mysockaddr *addr, char *intname, unsigned int ifind
           return setsockopt(fd, IPPROTO_IP, IP_UNICAST_IF, &ifindex_opt, sizeof(ifindex_opt)) == 0;
         }
 #endif
-#if defined(HAVE_IPV6) && defined (IPV6_UNICAST_IF)
+#if defined (IPV6_UNICAST_IF)
       if (addr_copy.sa.sa_family == AF_INET6)
         {
           uint32_t ifindex_opt = htonl(ifindex);
@@ -1247,12 +1209,10 @@ static struct serverfd *allocate_sfd(union mysockaddr *addr, char *intname)
 	  addr->in.sin_port == htons(0)) 
 	return NULL;
 
-#ifdef HAVE_IPV6
       if (addr->sa.sa_family == AF_INET6 &&
 	  memcmp(&addr->in6.sin6_addr, &in6addr_any, sizeof(in6addr_any)) == 0 &&
 	  addr->in6.sin6_port == htons(0)) 
 	return NULL;
-#endif
     }
 
   if (intname && strlen(intname) != 0)
@@ -1315,7 +1275,7 @@ void pre_allocate_sfds(void)
 #endif
       if ((sfd = allocate_sfd(&addr, "")))
 	sfd->preallocated = 1;
-#ifdef HAVE_IPV6
+
       memset(&addr, 0, sizeof(addr));
       addr.in6.sin6_family = AF_INET6;
       addr.in6.sin6_addr = in6addr_any;
@@ -1325,7 +1285,6 @@ void pre_allocate_sfds(void)
 #endif
       if ((sfd = allocate_sfd(&addr, "")))
 	sfd->preallocated = 1;
-#endif
     }
   
   for (srv = daemon->servers; srv; srv = srv->next)
@@ -1658,7 +1617,6 @@ int reload_servers(char *fname)
 	  source_addr.in.sin_addr.s_addr = INADDR_ANY;
 	  source_addr.in.sin_port = htons(daemon->query_port);
 	}
-#ifdef HAVE_IPV6
       else 
 	{	
 	  int scope_index = 0;
@@ -1686,10 +1644,6 @@ int reload_servers(char *fname)
 	  else
 	    continue;
 	}
-#else /* IPV6 */
-      else
-	continue;
-#endif 
 
       add_update_server(SERV_FROM_RESOLV, &addr, &source_addr, NULL, NULL);
       gotone = 1;

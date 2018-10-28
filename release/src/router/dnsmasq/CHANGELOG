@@ -1,3 +1,17 @@
+version 2.81
+	Impove cache behaviour for TCP connections. For ease of
+	implementaion, dnsmasq has always forked a new process to handle
+	each incoming TCP connection. A side-effect of this is that
+	any DNS queries answered from TCP connections are not cached:
+	when TCP connections were rare, this was not a problem.
+	With the coming of DNSSEC, it's now the case that some
+	DNSSEC queries have answers which spill to TCP, and if,
+	for instance, this applies to the keys for the root then
+	those never get cached, and performance is very bad.
+	This fix passes cache entries back from the TCP child process to
+	the main server process, and fixes the problem.
+
+
 version 2.80
 	Add support for RFC 4039 DHCP rapid commit. Thanks to Ashram Method
 	for the initial patch and motivation.

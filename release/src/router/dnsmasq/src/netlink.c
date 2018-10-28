@@ -51,11 +51,10 @@ void netlink_init(void)
   addr.nl_groups = RTMGRP_IPV4_ROUTE;
   if (option_bool(OPT_CLEVERBIND))
     addr.nl_groups |= RTMGRP_IPV4_IFADDR;  
-#ifdef HAVE_IPV6
   addr.nl_groups |= RTMGRP_IPV6_ROUTE;
   if (option_bool(OPT_CLEVERBIND))
     addr.nl_groups |= RTMGRP_IPV6_IFADDR;
-#endif
+
 #ifdef HAVE_DHCP6
   if (daemon->doing_ra || daemon->doing_dhcp6)
     addr.nl_groups |= RTMGRP_IPV6_IFADDR;
@@ -235,7 +234,6 @@ int iface_enumerate(int family, void *parm, int (*callback)())
 		      if (!((*callback)(addr, ifa->ifa_index, label,  netmask, broadcast, parm)))
 			callback_ok = 0;
 		  }
-#ifdef HAVE_IPV6
 		else if (ifa->ifa_family == AF_INET6)
 		  {
 		    struct in6_addr *addrp = NULL;
@@ -270,7 +268,6 @@ int iface_enumerate(int family, void *parm, int (*callback)())
 					(int) preferred, (int)valid, parm)))
 			callback_ok = 0;
 		  }
-#endif
 	      }
 	  }
 	else if (h->nlmsg_type == RTM_NEWNEIGH && family == AF_UNSPEC)

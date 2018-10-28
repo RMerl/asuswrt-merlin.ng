@@ -36,7 +36,6 @@ int get_incoming_mark(union mysockaddr *peer_addr, struct all_addr *local_addr, 
       nfct_set_attr_u8(ct, ATTR_L4PROTO, istcp ? IPPROTO_TCP : IPPROTO_UDP);
       nfct_set_attr_u16(ct, ATTR_PORT_DST, htons(daemon->port));
       
-#ifdef HAVE_IPV6
       if (peer_addr->sa.sa_family == AF_INET6)
 	{
 	  nfct_set_attr_u8(ct, ATTR_L3PROTO, AF_INET6);
@@ -45,7 +44,6 @@ int get_incoming_mark(union mysockaddr *peer_addr, struct all_addr *local_addr, 
 	  nfct_set_attr(ct, ATTR_IPV6_DST, local_addr->addr.addr6.s6_addr);
 	}
       else
-#endif
 	{
 	  nfct_set_attr_u8(ct, ATTR_L3PROTO, AF_INET);
 	  nfct_set_attr_u32(ct, ATTR_IPV4_SRC, peer_addr->in.sin_addr.s_addr);

@@ -33,7 +33,15 @@
 
 #define _dprintf(args...)	while (0) {}
 
-const char *allowedCiphers = "ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-AES256-GCM-SHA384:DHE-RSA-AES128-GCM-SHA256:DHE-DSS-AES128-GCM-SHA256:ECDHE-RSA-AES128-SHA256:ECDHE-ECDSA-AES128-SHA256:ECDHE-RSA-AES128-SHA:ECDHE-ECDSA-AES128-SHA:ECDHE-RSA-AES256-SHA384:ECDHE-ECDSA-AES256-SHA384:ECDHE-RSA-AES256-SHA:ECDHE-ECDSA-AES256-SHA:DHE-RSA-AES128-SHA256:DHE-RSA-AES128-SHA:DHE-DSS-AES128-SHA256:DHE-RSA-AES256-SHA256:DHE-DSS-AES256-SHA:DHE-RSA-AES256-SHA:AES128-GCM-SHA256:AES256-GCM-SHA384:AES128-SHA256:AES256-SHA256:AES128-SHA:AES256-SHA:AES:CAMELLIA:DES-CBC3-SHA:!aNULL:!eNULL:!EXPORT:!DES:!RC4:!MD5:!PSK:!aECDH:!EDH-DSS-DES-CBC3-SHA:!EDH-RSA-DES-CBC3-SHA:!KRB5-DES-CBC3-SHA:!3DES";
+// refer https://mozilla.github.io/server-side-tls/ssl-config-generator/ w/o DES ciphers
+#define SERVER_CIPHERS "ECDHE-ECDSA-CHACHA20-POLY1305:ECDHE-RSA-CHACHA20-POLY1305:ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384:DHE-RSA-AES128-GCM-SHA256:DHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-AES128-SHA256:ECDHE-RSA-AES128-SHA256:ECDHE-ECDSA-AES128-SHA:ECDHE-RSA-AES256-SHA384:ECDHE-RSA-AES128-SHA:ECDHE-ECDSA-AES256-SHA384:ECDHE-ECDSA-AES256-SHA:ECDHE-RSA-AES256-SHA:DHE-RSA-AES128-SHA256:DHE-RSA-AES128-SHA:DHE-RSA-AES256-SHA256:DHE-RSA-AES256-SHA:AES128-GCM-SHA256:AES256-GCM-SHA384:AES128-SHA256:AES256-SHA256:AES128-SHA:AES256-SHA:!DSS"
+
+#if OPENSSL_VERSION_NUMBER >= 0x10100000L
+// use reasonable defaults
+#define CLIENT_CIPHERS NULL
+#else
+#define CLIENT_CIPHERS "ALL:!EXPORT:!EXPORT40:!EXPORT56:!aNULL:!LOW:!RC4:@STRENGTH"
+#endif
 
 typedef struct {
 	SSL* ssl;
@@ -125,11 +133,7 @@ OUT:
 	return total;
 }
 
-#ifdef HND_ROUTER
-#define __offmax_t  uint64_t
-#endif
-
-static int mssl_seek(void *cookie, __offmax_t *pos, int whence)
+static int mssl_seek(void *cookie, off64_t *pos, int whence)
 {
 	_dprintf("%s()\n", __FUNCTION__);
 	errno = EIO;
@@ -180,12 +184,7 @@ static FILE *_ssl_fopen(int sd, int client, const char *name)
 	SSL_set_verify(kuki->ssl, SSL_VERIFY_NONE, NULL);
 	SSL_set_mode(kuki->ssl, SSL_MODE_AUTO_RETRY);
 
-	if (!client) {
-		// Enforce server cipher order
-		SSL_set_options(kuki->ssl, SSL_OP_CIPHER_SERVER_PREFERENCE);
-	}
-	else
-	{
+	if (client) {
 		// Setup SNI
 #if OPENSSL_VERSION_NUMBER >= 0x0090806fL && !defined(OPENSSL_NO_TLSEXT)
 		if (name && *name) {
@@ -254,11 +253,26 @@ FILE *ssl_client_fopen_name(int sd, const char *name)
 	return _ssl_fopen(sd, 1, name);
 }
 
+#ifndef SSL_OP_NO_RENEGOTIATION
+#if OPENSSL_VERSION_NUMBER < 0x10100000L && defined(SSL3_FLAGS_NO_RENEGOTIATE_CIPHERS)
+static void ssl_info_cb(const SSL *ssl, int where, int ret)
+{
+	if ((where & SSL_CB_HANDSHAKE_DONE) != 0 && SSL_is_server((SSL *) ssl)) {
+		// disable renegotiation (CVE-2009-3555)
+		ssl->s3->flags |= SSL3_FLAGS_NO_RENEGOTIATE_CIPHERS;
+	}
+}
+#endif
+#endif
+
 int mssl_init(char *cert, char *priv)
 {
+	char *ciphers;
+	int server;
+
 	_dprintf("%s()\n", __FUNCTION__);
 
-	int server = (cert != NULL);
+	server = (cert != NULL);
 
 	// Register error strings for libcrypto and libssl functions
 	SSL_load_error_strings();
@@ -267,14 +281,36 @@ int mssl_init(char *cert, char *priv)
 	// Create the new CTX with the method 
 	// If server=1, use TLSv1_server_method() or SSLv23_server_method()
 	// else 	use TLSv1_client_method() or SSLv23_client_method()
+#if OPENSSL_VERSION_NUMBER >= 0x10100000L
+	ctx = SSL_CTX_new(server ? TLS_server_method() : TLS_client_method());
+#else
 	ctx = SSL_CTX_new(server ? SSLv23_server_method() : SSLv23_client_method());
+#endif
 	if (!ctx) {
 		_dprintf("SSL_CTX_new() failed\n");
 		mssl_print_err(NULL);
 		return 0;
 	}
 
-	SSL_CTX_set_verify(ctx, SSL_VERIFY_NONE, NULL);
+	// Setup common modes
+	SSL_CTX_set_mode(ctx,
+#ifdef SSL_MODE_RELEASE_BUFFERS
+				 SSL_MODE_RELEASE_BUFFERS |
+#endif
+				 SSL_MODE_ACCEPT_MOVING_WRITE_BUFFER);
+
+	// Setup common options
+	SSL_CTX_set_options(ctx, SSL_OP_ALL |
+#ifdef SSL_OP_NO_TICKET
+				 SSL_OP_NO_TICKET |
+#endif
+#ifdef SSL_OP_NO_COMPRESSION
+				 SSL_OP_NO_COMPRESSION |
+#endif
+#ifdef SSL_OP_SINGLE_DH_USE
+				 SSL_OP_SINGLE_DH_USE |
+#endif
+				 SSL_OP_NO_SSLv2 | SSL_OP_NO_SSLv3);
 
 	// Setup EC support
 #ifdef NID_X9_62_prime256v1
@@ -282,22 +318,24 @@ int mssl_init(char *cert, char *priv)
 	if ((ecdh = EC_KEY_new_by_curve_name(NID_X9_62_prime256v1)) != NULL) {
 		SSL_CTX_set_tmp_ecdh(ctx, ecdh);
 		EC_KEY_free(ecdh);
+#ifdef SSL_OP_SINGLE_ECDH_USE
+		SSL_CTX_set_options(ctx, SSL_OP_SINGLE_ECDH_USE);
+#endif
 	}
 #endif
 
 	// Setup available ciphers
-	if (SSL_CTX_set_cipher_list(ctx, allowedCiphers) != 1) {
+	ciphers = server ? SERVER_CIPHERS : CLIENT_CIPHERS;
+	if (ciphers && SSL_CTX_set_cipher_list(ctx, ciphers) != 1) {
 		_dprintf("%s: SSL_CTX_set_cipher_list failed\n", __FUNCTION__);
 		mssl_cleanup(1);
 		return 0;
 	}
 
-	// Disable obsolete protocols
-	SSL_CTX_set_options(ctx, SSL_OP_NO_SSLv2 | SSL_OP_NO_SSLv3 |
-				 SSL_OP_NO_COMPRESSION |
-				 SSL_OP_SAFARI_ECDHE_ECDSA_BUG);
-
 	if (server) {
+		// Enforce server cipher order
+		SSL_CTX_set_options(ctx, SSL_OP_CIPHER_SERVER_PREFERENCE);
+
 		// Set the certificate to be used
 		_dprintf("SSL_CTX_use_certificate_chain_file(%s)\n", cert);
 		if (SSL_CTX_use_certificate_chain_file(ctx, cert) <= 0) {
@@ -318,7 +356,16 @@ int mssl_init(char *cert, char *priv)
 			mssl_cleanup(0);
 			return 0;
 		}
+
+		// Disable renegotiation
+#ifdef SSL_OP_NO_RENGOTIATION
+		SSL_CTX_set_options(ctx, SSL_OP_NO_RENGOTIATION);
+#elif OPENSSL_VERSION_NUMBER < 0x10100000L && defined(SSL3_FLAGS_NO_RENEGOTIATE_CIPHERS)
+		SSL_CTX_set_info_callback(ctx, ssl_info_cb);
+#endif
 	}
+
+	SSL_CTX_set_verify(ctx, SSL_VERIFY_NONE, NULL);
 
 	_dprintf("%s() success\n", __FUNCTION__);
 	return 1;

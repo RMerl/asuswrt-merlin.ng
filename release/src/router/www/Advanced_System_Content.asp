@@ -502,8 +502,17 @@ function applyRule(){
 
 		var action_script_tmp = "restart_time;restart_upnp;";
 
-		if(restart_httpd_flag)
+		if(restart_httpd_flag) {
 			action_script_tmp += "restart_httpd;";
+
+			if ((getRadioItemCheck(document.form.https_crt_gen) == "1"
+				|| uploaded_cert
+				|| document.form.https_crt_cn.value != '<% nvram_get("https_crt_cn"); %>')
+				&& ('<% nvram_get("enable_ftp"); %>' == "1")
+				&& ('<% nvram_get("ftp_tls"); %>' == "1")) {
+					action_script_tmp += ";restart_ftpd";
+			}
+		}
 
 		if(restart_firewall_flag)
 			action_script_tmp += "restart_firewall;";

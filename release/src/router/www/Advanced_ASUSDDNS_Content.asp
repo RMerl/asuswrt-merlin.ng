@@ -162,6 +162,10 @@ function submitForm(){
 				document.form.action_script.value = "restart_httpd;restart_webdav;restart_ddns_le";
 			else
 				document.form.action_script.value += ";restart_httpd;restart_webdav";
+
+		}
+		if (('<% nvram_get("enable_ftp"); %>' == "1") && ('<% nvram_get("ftp_tls"); %>' == "1")) {
+			document.form.action_script.value += ";restart_ftpd";
 		}
 	}
 

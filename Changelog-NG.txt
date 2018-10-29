@@ -1,6 +1,17 @@
 Asuswrt-Merlin 384/NG Changelog
 ===============================
 
+384.8-ax (xx-xxx-xxxx)
+  - NEW: Added RT-AX88U support (based on GPL 384_4730).
+         Note that for the time being, the RT-AX88U
+         firmware will be developped in parallel, with
+         the suffix "-ax" added to the version string,
+         until Asus unifies the code on their end.
+         This special build will also contain the changes
+         from the non-ax release of the same version
+         number (384.8 in this case).
+
+
 384.8 (xx-xxx-xxxx)
   - NEW: Merged with GPL + binary blobs from 384_32799
          for AC68U/AC88U/AC3100/AC5300.
@@ -10,8 +21,14 @@ Asuswrt-Merlin 384/NG Changelog
          data)
   - NEW: Added "extend" support to SNMP.
   - NEW: Added CleanBrowsing to DNSFilter supported services.
+  - CHANGED: Updated dnsmasq to 2.80-7-g24b8760 (themiron)
   - CHANGED: Removed watchdog from OpenVPN clients, to avoid
              conflicting with more advanced configurations.
+  - CHANGED: Vsftpd TLS mode will now reuse the web server
+             certificate (including any Let's Encrypt generated
+             one).
+  - CHANGED: SSL crypto/cipher hardening for httpd (themiron)
+  - CHANGED: Syslog will now ignore bwdpi debug output (themiron)
   - FIXED: CVE-2018-15599 in dropbear
   - FIXED: Namecheap DDNS service not updating
 

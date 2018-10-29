@@ -25,6 +25,19 @@
 p{
 	font-weight: bolder;
 }
+
+.contentM_details{
+        position:absolute;
+        -webkit-border-radius: 5px;
+        -moz-border-radius: 5px;
+        border-radius: 5px;
+        z-index:500;
+        background-color:#2B373B;
+        display:none;
+        margin-left: 18%;
+        top: 250px;
+        width:945px;
+}
 </style>
 
 <script>
@@ -36,6 +49,9 @@ var timedEvent = 0;
 
 <% get_wl_status(); %>;
 
+var nvram_dump_String = function(){/*
+<% nvram_dump("wlan11b_2g.log",""); %>
+*/}.toString().slice(14,-3);
 
 function initial(){
 	show_menu();
@@ -80,6 +96,12 @@ function redraw(){
 				display_clients(wificlients5, document.getElementById('wifi5block'));
 			}
 		}
+	}
+
+	try {
+		document.getElementById("wl_log").innerHTML = classObj.UnHexCode(nvram_dump_String);
+	} catch(e) {
+		document.getElementById("wl_log").innerHTML = nvram_dump_String;
 	}
 }
 
@@ -230,6 +252,13 @@ function setRefresh(obj) {
 }
 
 
+function open_details_window(){
+        $("#details_window").fadeIn(300);
+}
+
+function hide_details_window(){
+        $("#details_window").fadeOut(300);
+}
 </script>
 </head>
 <body onload="initial();">
@@ -281,6 +310,12 @@ function setRefresh(obj) {
 												</select>
 											</td>
 										</tr>
+										<tr>
+											<th>Display low level details</th>
+											<td>
+												<input class="button_gen" type="button" onclick="open_details_window();" value="Open">
+											</td>
+										</tr>
 										<tr id="dfs_toggle" style="display:none;">
 											<th>Display DFS channel details</th>
 											<td>
@@ -288,7 +323,6 @@ function setRefresh(obj) {
 												<input type="radio" name="show_dfs" class="input" checked value="0" onclick="showhide('dfstable',0);"><#checkbox_No#>
 											</td>
 										</tr>
-
 									</table>
 									<br>
 									<div id="wifi24headerblock"></div>
@@ -316,6 +350,15 @@ function setRefresh(obj) {
 </table>
 <div id="footer"></div>
 </form>
+
+<div id="details_window"  class="contentM_details" style="box-shadow: 1px 5px 10px #000;">
+	<div style="margin: 15px;">
+		<textarea id="wl_log" cols="63" rows="30" class="textarea_ssh_table" style="width:99%;font-family:'Courier New', Courier, mono; font-size:13px;" readonly="readonly" wrap="off"></textarea>
+	</div>
+	<div style="margin-top:5px;margin-bottom:5px;width:100%;text-align:center;">
+		<input class="button_gen" type="button" onclick="hide_details_window();" value="Close">
+	</div>
+</div>
 </body>
 </html>
 

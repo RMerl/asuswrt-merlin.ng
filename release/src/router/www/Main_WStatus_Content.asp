@@ -25,6 +25,19 @@
 p{
 	font-weight: bolder;
 }
+
+.contentM_details{
+        position:absolute;
+        -webkit-border-radius: 5px;
+        -moz-border-radius: 5px;
+        border-radius: 5px;
+        z-index:500;
+        background-color:#2B373B;
+        display:none;
+        margin-left: 18%;
+        top: 250px;
+        width:945px;
+}
 </style>
 
 <script>
@@ -36,11 +49,13 @@ var timedEvent = 0;
 
 <% get_wl_status(); %>;
 
+var nvram_dump_String = function(){/*
+<% nvram_dump("wlan11b_2g.log",""); %>
+*/}.toString().slice(14,-3);
 
 function initial(){
 	show_menu();
 	refreshRate = getRefresh();
-	showhide("dfs_toggle", dfs_chanarray.length > 1 ? "1" : "0");
 	get_wlclient_list();
 
 	if (bcm_mumimo_support) {
@@ -80,6 +95,12 @@ function redraw(){
 				display_clients(wificlients5, document.getElementById('wifi5block'));
 			}
 		}
+	}
+
+	try {
+		document.getElementById("wl_log").innerHTML = classObj.UnHexCode(nvram_dump_String);
+	} catch(e) {
+		document.getElementById("wl_log").innerHTML = nvram_dump_String;
 	}
 }
 
@@ -167,20 +188,10 @@ function display_header(dataarray, title, obj, show_dfs) {
 
 	code += '<td><span class="wifiheader">Channel: </span>'+ dataarray[4] + '</td> <td><span class="wifiheader">BSSID: </span>' + dataarray[5] +'</td></tr>';
 
-	if (show_dfs && dfs_chanarray.length > 1) {
+	if (show_dfs && dfs_statusarray.length > 1) {
                 code += '<tr><td colspan="2"><span class="wifiheader">DFS State: </span>' + dfs_statusarray[0] + '</td>';
-                code += '<td><span class="wifiheader">Time elapsed: </span>' + dfs_statusarray[1] + '</td>';
+                code += '<td><span class="wifiheader">Time elapsed: </span>' + dfs_statusarray[1].replace("ms", " ms") + '</td>';
                 code += '<td><span class="wifiheader">Channel cleared for radar: </span>' + dfs_statusarray[2] + '</td></tr>';
-
-		state = getRadioValue(document.form.show_dfs) == "1" ? "" : "display: none;";
-		code += '</table><table id="dfstable" width="100%" style="border: none;'+state+'">';
-
-		code += '<tr><td><span class="wifiheader"><b>Channel States</b></td></tr>';
-
-		for (i = 0; i < dfs_chanarray.length-1; ++i) {
-			channel = dfs_chanarray[i];
-			code += '<tr><td><span class="wifiheader">Channel ' + channel[0] + '</span> ' + channel[1] + '</td></tr>';
-		}
 	}
 
 	code += '</table>';
@@ -230,6 +241,13 @@ function setRefresh(obj) {
 }
 
 
+function open_details_window(){
+        $("#details_window").fadeIn(300);
+}
+
+function hide_details_window(){
+        $("#details_window").fadeOut(300);
+}
 </script>
 </head>
 <body onload="initial();">
@@ -281,14 +299,12 @@ function setRefresh(obj) {
 												</select>
 											</td>
 										</tr>
-										<tr id="dfs_toggle" style="display:none;">
-											<th>Display DFS channel details</th>
+										<tr>
+											<th>Display low level details</th>
 											<td>
-												<input type="radio" name="show_dfs" class="input" value="1" onclick="showhide('dfstable',1);"><#checkbox_Yes#>
-												<input type="radio" name="show_dfs" class="input" checked value="0" onclick="showhide('dfstable',0);"><#checkbox_No#>
+												<input class="button_gen" type="button" onclick="open_details_window();" value="Open">
 											</td>
 										</tr>
-
 									</table>
 									<br>
 									<div id="wifi24headerblock"></div>
@@ -316,6 +332,15 @@ function setRefresh(obj) {
 </table>
 <div id="footer"></div>
 </form>
+
+<div id="details_window"  class="contentM_details" style="box-shadow: 1px 5px 10px #000;">
+	<div style="margin: 15px;">
+		<textarea id="wl_log" cols="63" rows="30" class="textarea_ssh_table" style="width:99%;font-family:'Courier New', Courier, mono; font-size:13px;" readonly="readonly" wrap="off"></textarea>
+	</div>
+	<div style="margin-top:5px;margin-bottom:5px;width:100%;text-align:center;">
+		<input class="button_gen" type="button" onclick="hide_details_window();" value="Close">
+	</div>
+</div>
 </body>
 </html>
 

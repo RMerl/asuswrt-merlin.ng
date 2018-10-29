@@ -1,12 +1,5 @@
 #!/bin/sh
 
-if [ "$1" == "web" -o "$1" == "ftp" ]
-then
-        SERVICE=$1
-else
-        SERVICE="web"
-fi
-
 PID=$$
 SECS=1262278080
 
@@ -18,16 +11,9 @@ do
 done
 touch /var/run/gencert.pid
 
-if [ "$SERVICE" == "ftp" ]
-then
-	cd /jffs/ssl/
-	KEYNAME="ftp.key"
-	CERTNAME="ftp.crt"
-else
-	cd /etc
-	KEYNAME="key.pem"
-	CERTNAME="cert.pem"
-fi
+cd /etc
+KEYNAME="key.pem"
+CERTNAME="cert.pem"
 
 OPENSSLCNF="/etc/openssl.config.$PID"
 
@@ -132,14 +118,9 @@ openssl genrsa -out $KEYNAME.$PID 2048 -config $OPENSSLCNF
 # create certificate request and sign it
 openssl req -new -x509 -key $KEYNAME.$PID -sha256 -out $CERTNAME.$PID -days 3653 -config $OPENSSLCNF
 
+# server.pem for WebDav SSL
+cat $KEYNAME.$PID $CERTNAME.$PID > server.pem
 
-#	openssl x509 -in /etc/$CERTNAME.$PID -text -noout
-
-if [ "$SERVICE" == "web" ]
-then
-	# server.pem for WebDav SSL
-	cat $KEYNAME.$PID $CERTNAME.$PID > server.pem
-fi
 mv $KEYNAME.$PID $KEYNAME
 mv $CERTNAME.$PID $CERTNAME
 

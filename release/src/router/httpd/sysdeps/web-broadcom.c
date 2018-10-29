@@ -5247,12 +5247,13 @@ ej_wl_status_array(int eid, webs_t wp, int argc, char_t **argv, int unit)
 #ifdef RTCONFIG_BCMWL6
 	wl_dfs_status_t *dfs_status;
 	char chanspec_str[CHANSPEC_STR_LEN];
+#if 0	// DFS channel details
 	uint bitmap;
 	uint channel;
 	uint32 chanspec_arg;
 	int first = 0, last = MAXCHANNEL, minutes;
 #endif
-
+#endif
 
 	snprintf(prefix, sizeof(prefix), "wl%d_", unit);
 
@@ -5419,6 +5420,7 @@ ej_wl_status_array(int eid, webs_t wp, int argc, char_t **argv, int unit)
 		}
 	}
 
+#if 0	// DFS channel details
 	ret += websWrite(wp, "var dfs_chanarray = [");
 
 	for (; first <= last; first++) {
@@ -5462,6 +5464,7 @@ ej_wl_status_array(int eid, webs_t wp, int argc, char_t **argv, int unit)
 		ret += websWrite(wp, "\"],\n");
 	}
 	ret += websWrite(wp, "[]];\n");
+#endif
 #endif
 
 sta_list:

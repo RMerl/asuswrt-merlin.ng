@@ -2213,6 +2213,8 @@ void start_ssl(void)
 	int lockfd;
 	int retry;
 	int i;
+	unsigned long long sn;
+	char t[32];
 
 	lockfd = open("/var/lock/sslinit.lock", O_CREAT | O_RDWR, 0666);
 
@@ -2235,7 +2237,12 @@ void start_ssl(void)
 		if ((!f_exists("/etc/cert.pem")) || (!f_exists("/etc/key.pem"))) {
 			erase_cert();
 			logmessage("httpd", "Generating SSL certificate...");
-			eval("gencert.sh", "web");
+
+			// browsers seems to like this when the ip address moves...     -- zzz
+			f_read("/dev/urandom", &sn, sizeof(sn));
+
+			sprintf(t, "%llu", sn & 0x7FFFFFFFFFFFFFFFULL);
+			eval("gencert.sh", t);
 
 #ifdef RTCONFIG_LETSENCRYPT
 			if (nvram_match("le_enable", "2"))

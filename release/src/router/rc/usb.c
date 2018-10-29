@@ -2637,11 +2637,42 @@ void write_ftpd_conf()
 
 	if(nvram_get_int("ftp_tls")){
 		fprintf(fp, "ssl_enable=YES\n");
-		fprintf(fp, "rsa_cert_file=/jffs/ssl/ftp.crt\n");
-		fprintf(fp, "rsa_private_key_file=/jffs/ssl/ftp.key\n");
+		fprintf(fp, "rsa_cert_file=%s\n", HTTPD_CERT);
+		fprintf(fp, "rsa_private_key_file=%s\n", HTTPD_KEY);
 
-		if(!check_if_file_exist("/jffs/ssl/ftp.key")||!check_if_file_exist("/jffs/ssl/ftp.crt")){
-			eval("gencert.sh", "ftp");
+		if(!f_exists(HTTPD_CERT) || !f_exists(HTTPD_KEY)
+#ifdef RTCONFIG_LETSENCRYPT
+			|| !cert_key_match(HTTPD_CERT, HTTPD_KEY)
+#endif
+			) {
+#ifdef RTCONFIG_LETSENCRYPT
+			if(nvram_match("le_enable", "1")) {
+				cp_le_cert(LE_FULLCHAIN, HTTPD_CERT);
+				cp_le_cert(LE_KEY, HTTPD_KEY);
+			}
+			else if(nvram_match("le_enable", "2")) {
+				unlink(HTTPD_CERT);
+				unlink(HTTPD_KEY);
+				if(f_exists(UPLOAD_CERT) && f_exists(UPLOAD_KEY)) {
+					eval("cp", UPLOAD_CERT, HTTPD_CERT);
+					eval("cp", UPLOAD_KEY, HTTPD_KEY);
+				}
+			}
+#else
+			if(f_exists(UPLOAD_CERT) && f_exists(UPLOAD_KEY)){
+				eval("cp", UPLOAD_CERT, HTTPD_CERT);
+				eval("cp", UPLOAD_KEY, HTTPD_KEY);
+			}
+#endif
+		}
+
+		// Is it valid now?  Otherwise, generate one.
+		if(!f_exists(HTTPD_CERT) || !f_exists(HTTPD_KEY)
+#ifdef RTCONFIG_LETSENCRYPT
+                        || !cert_key_match(HTTPD_CERT, HTTPD_KEY)
+#endif
+		) {
+			eval("gencert.sh", "web");
 		}
 	} else {
 		fprintf(fp, "ssl_enable=NO\n");

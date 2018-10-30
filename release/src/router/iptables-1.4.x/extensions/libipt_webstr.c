@@ -196,7 +196,25 @@ webstr_print(const void *ip,
 static void
 webstr_save(const void *ip, const struct ipt_entry_match *match)
 {
-	printf("--webstr ");
+	struct ipt_webstr_info *stringinfo = (struct ipt_webstr_info *)match->data;
+
+	switch (stringinfo->type) {
+	case IPT_WEBSTR_HOST:
+		printf(" --host ");
+		break;
+
+	case IPT_WEBSTR_URL:
+		printf(" --url ");
+		break;
+
+	case IPT_WEBSTR_CONTENT:
+		printf(" --content ");
+		break;
+
+	default:
+		printf(" ERROR ");
+		break;
+	}
 	print_string(((struct ipt_webstr_info *)match->data)->string,
 		  ((struct ipt_webstr_info *)match->data)->invert, 0);
 }

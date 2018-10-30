@@ -30,7 +30,7 @@ RSYNC_TREE=y
 
 DEFAULTBUILD="none"
 
-BAC56=y
+#BAC56=y
 BAC68=y
 #BAC87=y
 
@@ -38,10 +38,11 @@ BAC68=y
 
 BAC88=y
 BAC3100=y
-#BAC5300=y
+BAC5300=y
 
 BAC86=y
 
+#BAX88=y
 
 ### Specify at run time through env vars
 #
@@ -103,12 +104,16 @@ build_fw()
 	FWMODEL=$2
 	FWPATH=$1
 	echo "*** $(date +%R) - Starting building $FWMODEL..."
+	if [ "$FWMODEL" == "rt-ax88u" ]; then
+		cd ~/amng.ax88/
+		git checkout rtax88
+	fi
 	cd ~/$FWPATH
 	make $FWMODEL &> output.txt
 
 	if [ $? -eq 0 ]; then
 		cd image
-		if [ "$FWMODEL" == "rt-ac86u" ]; then
+		if [ "$FWMODEL" == "rt-ac86u" -o "$FWMODEL" == "rt-ax88u" ]; then
 			FWNAME=$(ls -t *_cferom_ubi.w | head -n 1)
 			ZIPNAME="${FWNAME//_cferom_ubi.w/}".zip
 		else
@@ -131,14 +136,13 @@ clean_tree()
 	SDKPATH=$2
 	FWMODEL=$3
 	echo "*** $(date +%R) - Cleaning up $FWMODEL..."
-	cd ~/$FWPATH/$SDKPATH
-
 	if [ "$RSYNC_TREE" == "y" ]; then
 		echo "*** $(date +%R) - Updating $FWMODEL tree..."
 		rsync -a --del $SRC_LOC/ ~/$FWPATH
 	fi
 
 	if [ "$CLEANUP_TREE" == "y" ]; then
+		cd ~/$FWPATH/$SDKPATH
 		make cleankernel clean &>/dev/null 2>&1
 		rm .config image/*.trx image/*.w &>/dev/null
 	fi
@@ -182,7 +186,9 @@ fi
 if [ "$BAC86" == "y" ]; then
 	clean_tree amng.ac86 release/src-rt-5.02hnd rt-ac86u
 fi
-
+if [ "$BAX88" == "y" ]; then
+	clean_tree amng.ax88 release/src-rt-5.02axhnd rt-ax88u
+fi
 
 echo -e "--- $(date +%R) - All trees ready!\n"
 
@@ -217,12 +223,14 @@ if [ "$BAC5300" == "y" ]; then
 	build_fw amng.ac5300/release/src-rt-7.14.114.x/src rt-ac5300 &
 	sleep 10
 fi
-
 if [ "$BAC86" == "y" ]; then
 	build_fw amng.ac86/release/src-rt-5.02hnd rt-ac86u &
 	sleep 10
 fi
-
+if [ "$BAX88" == "y" ]; then
+        build_fw amng.ax88/release/src-rt-5.02axhnd rt-ax88u &
+        sleep 10
+fi
 
 echo "--- $(date +%R) - All builds launched, please wait..."
 

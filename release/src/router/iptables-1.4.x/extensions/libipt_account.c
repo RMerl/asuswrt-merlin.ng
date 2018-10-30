@@ -205,6 +205,8 @@ static void init(struct ipt_entry_match *match,
 
   /* set default table name to DEFAULT */
   strncpy(info->name, "DEFAULT", IPT_ACCOUNT_NAME_LEN);
+  info->network = 0;
+  info->netmask = 0;
   info->shortlisting = 0;
   info->table = NULL;
   

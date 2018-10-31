@@ -2058,121 +2058,58 @@ ej_vpn_client_get_parameter(int eid, webs_t wp, int argc, char_t **argv)
 
 	return (websWrite(wp,"%s",""));
 }
-static int
-ej_vpn_crt_server(int eid, webs_t wp, int argc, char **argv) {
+
+void
+_get_vpn_crt_value(int eid, webs_t wp, int type, int cert, int idx) {
 	char buf[8000];
 	char file_name[32];
+	char *c;
+
+	buf[0] = '\0';
+
+	sprintf(file_name, "vpn_crt_%s%d_ca",
+		(type == OVPN_TYPE_SERVER ? "server" : "client"),
+		idx);
+
+	get_ovpn_key(type, idx, cert, buf, sizeof(buf));
+	websWrite(wp, "%s=['", file_name);
+
+	for (c = buf; *c; c++) {
+		if (isprint(*c) &&
+			*c != '"' && *c != '&' && *c != '<' && *c != '>')
+			websWrite(wp, "%c", *c);
+		else
+			websWrite(wp, "&#%d", *c);
+	}
+	websWrite(wp, "'];\n");
+}
+
+static int
+ej_vpn_crt_server(int eid, webs_t wp, int argc, char **argv) {
 	int idx = 0;
 
 	for (idx = 1; idx <= OVPN_SERVER_MAX; idx++) {
-		char *c;
 
 		//vpn_crt_server_ca
-		memset(buf, 0, sizeof(buf));
-		memset(file_name, 0, sizeof(file_name));
-		sprintf(file_name, "vpn_crt_server%d_ca", idx);
-		get_ovpn_key(OVPN_TYPE_SERVER, idx, OVPN_SERVER_CA, buf, sizeof(buf));
-		websWrite(wp, "%s=['", file_name);
-
-		for (c = buf; *c; c++) {
-			if (isprint(*c) &&
-				*c != '"' && *c != '&' && *c != '<' && *c != '>')
-					websWrite(wp, "%c", *c);
-			else
-				websWrite(wp, "&#%d", *c);
-		}
-		websWrite(wp, "'];\n");
+		_get_vpn_crt_value(eid, wp, OVPN_TYPE_SERVER, OVPN_SERVER_CA, idx);
 
 		//vpn_crt_server_crt
-		memset(buf, 0, sizeof(buf));
-		memset(file_name, 0, sizeof(file_name));
-		sprintf(file_name, "vpn_crt_server%d_crt", idx);
-		get_ovpn_key(OVPN_TYPE_SERVER, idx, OVPN_SERVER_CERT, buf, sizeof(buf));
-		websWrite(wp, "%s=['", file_name);
-		for (c = buf; *c; c++) {
-			if (isprint(*c) &&
-				*c != '"' && *c != '&' && *c != '<' && *c != '>')
-					websWrite(wp, "%c", *c);
-			else
-				websWrite(wp, "&#%d", *c);
-		}
-		websWrite(wp, "'];\n");
+		_get_vpn_crt_value(eid, wp, OVPN_TYPE_SERVER, OVPN_SERVER_CERT, idx);
 
 		//vpn_crt_server_key
-		memset(buf, 0, sizeof(buf));
-		memset(file_name, 0, sizeof(file_name));
-		sprintf(file_name, "vpn_crt_server%d_key", idx);
-		get_ovpn_key(OVPN_TYPE_SERVER, idx, OVPN_SERVER_KEY, buf, sizeof(buf));
-		websWrite(wp, "%s=['", file_name);
-		for (c = buf; *c; c++) {
-			if (isprint(*c) &&
-				*c != '"' && *c != '&' && *c != '<' && *c != '>')
-					websWrite(wp, "%c", *c);
-			else
-				websWrite(wp, "&#%d", *c);
-		}
-		websWrite(wp, "'];\n");
+		_get_vpn_crt_value(eid, wp, OVPN_TYPE_SERVER, OVPN_SERVER_KEY, idx);
 
 		//vpn_crt_server_dh
-		memset(buf, 0, sizeof(buf));
-		memset(file_name, 0, sizeof(file_name));
-		sprintf(file_name, "vpn_crt_server%d_dh", idx);
-		get_ovpn_key(OVPN_TYPE_SERVER, idx, OVPN_SERVER_DH, buf, sizeof(buf));
-		websWrite(wp, "%s=['", file_name);
-		for (c = buf; *c; c++) {
-			if (isprint(*c) &&
-				*c != '"' && *c != '&' && *c != '<' && *c != '>')
-					websWrite(wp, "%c", *c);
-			else
-				websWrite(wp, "&#%d", *c);
-		}
-		websWrite(wp, "'];\n");
+		_get_vpn_crt_value(eid, wp, OVPN_TYPE_SERVER, OVPN_SERVER_DH, idx);
 
 		//vpn_crt_server_crl
-		memset(buf, 0, sizeof(buf));
-		memset(file_name, 0, sizeof(file_name));
-		sprintf(file_name, "vpn_crt_server%d_crl", idx);
-		get_ovpn_key(OVPN_TYPE_SERVER, idx, OVPN_SERVER_CRL, buf, sizeof(buf));
-		websWrite(wp, "%s=['", file_name);
-		for (c = buf; *c; c++) {
-			if (isprint(*c) &&
-				*c != '"' && *c != '&' && *c != '<' && *c != '>')
-					websWrite(wp, "%c", *c);
-			else
-				websWrite(wp, "&#%d", *c);
-		}
-		websWrite(wp, "'];\n");
+		_get_vpn_crt_value(eid, wp, OVPN_TYPE_SERVER, OVPN_SERVER_CRL, idx);
 
 		//vpn_crt_server_static
-		memset(buf, 0, sizeof(buf));
-		memset(file_name, 0, sizeof(file_name));
-		sprintf(file_name, "vpn_crt_server%d_static", idx);
-		get_ovpn_key(OVPN_TYPE_SERVER, idx, OVPN_SERVER_STATIC, buf, sizeof(buf));
-		websWrite(wp, "%s=['", file_name);
-		for (c = buf; *c; c++) {
-			if (isprint(*c) &&
-				*c != '"' && *c != '&' && *c != '<' && *c != '>')
-					websWrite(wp, "%c", *c);
-			else
-				websWrite(wp, "&#%d", *c);
-		}
-		websWrite(wp, "'];\n");
+		_get_vpn_crt_value(eid, wp, OVPN_TYPE_SERVER, OVPN_SERVER_STATIC, idx);
 
 		//vpn_crt_server_extra
-		memset(buf, 0, sizeof(buf));
-		memset(file_name, 0, sizeof(file_name));
-		sprintf(file_name, "vpn_crt_server%d_extra", idx);
-		get_ovpn_key(OVPN_TYPE_SERVER, idx, OVPN_SERVER_CA_EXTRA, buf, sizeof(buf));
-		websWrite(wp, "%s=['", file_name);
-		for (c = buf; *c; c++) {
-			if (isprint(*c) &&
-				*c != '"' && *c != '&' && *c != '<' && *c != '>')
-					websWrite(wp, "%c", *c);
-			else
-			websWrite(wp, "&#%d", *c);
-		}
-		websWrite(wp, "'];\n");
-
+		_get_vpn_crt_value(eid, wp, OVPN_TYPE_SERVER, OVPN_SERVER_CA_EXTRA, idx);
 
 		websWrite(wp, "\n");
 	}
@@ -2180,103 +2117,27 @@ ej_vpn_crt_server(int eid, webs_t wp, int argc, char **argv) {
 }
 static int
 ej_vpn_crt_client(int eid, webs_t wp, int argc, char **argv) {
-	char buf[8000];
-	char file_name[32];
 	int idx = 0;
 
 	for (idx = 1; idx <= OVPN_CLIENT_MAX; idx++) {
-		char *c;
 
 		//vpn_crt_client_ca
-		memset(buf, 0, sizeof(buf));
-		memset(file_name, 0, sizeof(file_name));
-		sprintf(file_name, "vpn_crt_client%d_ca", idx);
-		get_ovpn_key(OVPN_TYPE_CLIENT, idx, OVPN_CLIENT_CA, buf, sizeof(buf));
-		websWrite(wp, "%s=['", file_name);
-
-		for (c = buf; *c; c++) {
-			if (isprint(*c) &&
-				*c != '"' && *c != '&' && *c != '<' && *c != '>')
-					websWrite(wp, "%c", *c);
-			else
-				websWrite(wp, "&#%d", *c);
-		}
-		websWrite(wp, "'];\n");
+		_get_vpn_crt_value(eid, wp, OVPN_TYPE_CLIENT, OVPN_CLIENT_CA, idx);
 
 		//vpn_crt_client_crt
-		memset(buf, 0, sizeof(buf));
-		memset(file_name, 0, sizeof(file_name));
-		sprintf(file_name, "vpn_crt_client%d_crt", idx);
-		get_ovpn_key(OVPN_TYPE_CLIENT, idx, OVPN_CLIENT_CERT, buf, sizeof(buf));
-		websWrite(wp, "%s=['", file_name);
-		for (c = buf; *c; c++) {
-			if (isprint(*c) &&
-				*c != '"' && *c != '&' && *c != '<' && *c != '>')
-					websWrite(wp, "%c", *c);
-			else
-				websWrite(wp, "&#%d", *c);
-		}
-		websWrite(wp, "'];\n");
+		_get_vpn_crt_value(eid, wp, OVPN_TYPE_CLIENT, OVPN_CLIENT_CERT, idx);
 
 		//vpn_crt_client_key
-		memset(buf, 0, sizeof(buf));
-		memset(file_name, 0, sizeof(file_name));
-		sprintf(file_name, "vpn_crt_client%d_key", idx);
-		get_ovpn_key(OVPN_TYPE_CLIENT, idx, OVPN_CLIENT_KEY, buf, sizeof(buf));
-		websWrite(wp, "%s=['", file_name);
-		for (c = buf; *c; c++) {
-			if (isprint(*c) &&
-				*c != '"' && *c != '&' && *c != '<' && *c != '>')
-					websWrite(wp, "%c", *c);
-			else
-				websWrite(wp, "&#%d", *c);
-		}
-		websWrite(wp, "'];\n");
+		_get_vpn_crt_value(eid, wp, OVPN_TYPE_CLIENT, OVPN_CLIENT_KEY, idx);
 
 		//vpn_crt_client_static
-		memset(buf, 0, sizeof(buf));
-		memset(file_name, 0, sizeof(file_name));
-		sprintf(file_name, "vpn_crt_client%d_static", idx);
-		get_ovpn_key(OVPN_TYPE_CLIENT, idx, OVPN_CLIENT_STATIC, buf, sizeof(buf));
-		websWrite(wp, "%s=['", file_name);
-		for (c = buf; *c; c++) {
-			if (isprint(*c) &&
-				*c != '"' && *c != '&' && *c != '<' && *c != '>')
-					websWrite(wp, "%c", *c);
-			else
-				websWrite(wp, "&#%d", *c);
-		}
-		websWrite(wp, "'];\n");
+		_get_vpn_crt_value(eid, wp, OVPN_TYPE_CLIENT, OVPN_CLIENT_STATIC, idx);
 
 		//vpn_crt_client_crl
-		memset(buf, 0, sizeof(buf));
-		memset(file_name, 0, sizeof(file_name));
-		sprintf(file_name, "vpn_crt_client%d_crl", idx);
-		get_ovpn_key(OVPN_TYPE_CLIENT, idx, OVPN_CLIENT_CRL, buf, sizeof(buf));
-		websWrite(wp, "%s=['", file_name);
-		for (c = buf; *c; c++) {
-			if (isprint(*c) &&
-				*c != '"' && *c != '&' && *c != '<' && *c != '>')
-					websWrite(wp, "%c", *c);
-			else
-				websWrite(wp, "&#%d", *c);
-		}
-		websWrite(wp, "'];\n");
+		_get_vpn_crt_value(eid, wp, OVPN_TYPE_CLIENT, OVPN_CLIENT_CRL, idx);
 
 		//vpn_crt_client_extra
-		memset(buf, 0, sizeof(buf));
-		memset(file_name, 0, sizeof(file_name));
-		sprintf(file_name, "vpn_crt_client%d_extra", idx);
-		get_ovpn_key(OVPN_TYPE_CLIENT, idx, OVPN_CLIENT_CA_EXTRA, buf, sizeof(buf));
-		websWrite(wp, "%s=['", file_name);
-		for (c = buf; *c; c++) {
-			if (isprint(*c) &&
-				*c != '"' && *c != '&' && *c != '<' && *c != '>')
-					websWrite(wp, "%c", *c);
-			else
-				websWrite(wp, "&#%d", *c);
-		}
-		websWrite(wp, "'];\n");
+		_get_vpn_crt_value(eid, wp, OVPN_TYPE_CLIENT, OVPN_CLIENT_CA_EXTRA, idx);
 
 		websWrite(wp, "\n");
 	}

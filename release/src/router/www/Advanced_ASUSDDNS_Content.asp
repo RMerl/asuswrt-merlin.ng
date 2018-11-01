@@ -742,7 +742,7 @@ function save_cert_key(){
 				<td><input type="text" maxlength="32" class="input_25_table" name="ddns_username_x" value="<% nvram_get("ddns_username_x"); %>" onKeyPress="return validator.isString(this, event)" autocomplete="off" autocorrect="off" autocapitalize="off"></td>
 			</tr>
 			<tr>
-				<th><#LANHostConfig_x_DDNSPassword_itemname#></th>
+				<th id="ddns_password_th"><#LANHostConfig_x_DDNSPassword_itemname#></th>
 				<td><input type="password" maxlength="64" class="input_25_table" name="ddns_passwd_x" value="<% nvram_get("ddns_passwd_x"); %>" autocomplete="new-password" autocorrect="off" autocapitalize="off"></td>
 			</tr>
 			<tr id="wildcard_field">

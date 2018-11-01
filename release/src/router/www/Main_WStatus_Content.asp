@@ -47,6 +47,11 @@ overlib.isOut = true;
 var refreshRate = 3;
 var timedEvent = 0;
 
+var dataarray24 = [], wificlients24 = [];
+var dataarray5 = [], wificlients5 = [];
+var dataarray52 = [], wificlients52 = [];
+var dfs_statusarray = [];
+
 <% get_wl_status(); %>;
 
 var nvram_dump_String = function(){/*

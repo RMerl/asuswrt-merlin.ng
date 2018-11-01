@@ -1567,12 +1567,12 @@ ej_wl_status(int eid, webs_t wp, int argc, char_t **argv, int unit)
 	} else {
 		const char *dfs_cacstate_str[WL_DFS_CACSTATES] = {
 			"IDLE",
-			"PRE-ISM Channel Availability Check(CAC)",
-			"In-Service Monitoring(ISM)",
-			"Channel Switching Announcement(CSA)",
+			"PRE-ISM Channel Availability Check (CAC)",
+			"In-Service Monitoring (ISM)",
+			"Channel Switching Announcement (CSA)",
 			"POST-ISM Channel Availability Check",
-			"PRE-ISM Ouf Of Channels(OOC)",
-			"POST-ISM Out Of Channels(OOC)"
+			"PRE-ISM Ouf Of Channels (OOC)",
+			"POST-ISM Out Of Channels (OOC)"
 		};
 
 		ret += websWrite(wp, "\nDFS status: state %s time elapsed %dms radar channel cleared by DFS ",
@@ -5247,38 +5247,25 @@ ej_wl_status_array(int eid, webs_t wp, int argc, char_t **argv, int unit)
 #ifdef RTCONFIG_BCMWL6
 	wl_dfs_status_t *dfs_status;
 	char chanspec_str[CHANSPEC_STR_LEN];
-#if 0	// DFS channel details
-	uint bitmap;
-	uint channel;
-	uint32 chanspec_arg;
-	int first = 0, last = MAXCHANNEL, minutes;
 #endif
+#ifdef RTCONFIG_QTN
+	int res;
 #endif
-
-	snprintf(prefix, sizeof(prefix), "wl%d_", unit);
 
 #ifdef RTCONFIG_PROXYSTA
 	if (psta_exist_except(unit))
-	{
-		if (unit == 1)
-			ret += websWrite(wp, "dataarray5 = [];wificlients5 = [];");
-		else if (unit == 2)
-			ret += websWrite(wp, "dataarray52 = [];wificlients52 = [];");
-		else
-			ret += websWrite(wp, "dataarray24 = [];wificlients24 = [];");
 		return ret;
-	}
 #endif
 
+	snprintf(prefix, sizeof(prefix), "wl%d_", unit);
 	name = nvram_safe_get(strcat_r(prefix, "ifname", tmp));
+
 #ifdef RTCONFIG_QTN
 	if (unit && rpc_qtn_ready())
 	{
-		ret = qcsapi_wifi_rfstatus((qcsapi_unsigned_int *) &val);
-		if (ret < 0) {
-			ret += websWrite(wp, "dataarray5 = [];wificlients5 = [];");
-			dbG("qcsapi_wifi_rfstatus error, return: %d\n", ret);
-		}
+		res = qcsapi_wifi_rfstatus((qcsapi_unsigned_int *) &val);
+		if (res < 0)
+			dbG("qcsapi_wifi_rfstatus error, return: %d\n", res);
 		else
 			val = !val;
 	}
@@ -5290,29 +5277,23 @@ ej_wl_status_array(int eid, webs_t wp, int argc, char_t **argv, int unit)
 	}
 #ifdef RTCONFIG_QTN
 	if (unit && !rpc_qtn_ready())
-	{
-		ret += websWrite(wp, "dataarray5 = [];wificlients5 = [];");
 		return ret;
-	}
 	else
 #endif
 	if (val)
-	{
-		if (unit == 1)
-			ret += websWrite(wp, "dataarray5 = [];wificlients5 = [];");
-		else if (unit == 2)
-			ret += websWrite(wp, "dataarray52 = [];wificlients52 = [];");
-		else
-			ret += websWrite(wp, "dataarray24 = [];wificlients24 = [];");
 		return ret;
-	}
 
-	if (unit == 1)
-		ret += websWrite(wp, "dataarray5 = [");
-	else if (unit == 2)
-		ret += websWrite(wp, "dataarray52 = [");
-	else
+        switch (unit) {
+        case 0:
 		ret += websWrite(wp, "dataarray24 = [");
+                break;
+        case 1:
+		ret += websWrite(wp, "dataarray5 = [");
+		break;
+        case 2:
+		ret += websWrite(wp, "dataarray52 = [");
+                break;
+        }
 
 	if (nvram_match(strcat_r(prefix, "mode", tmp), "wds")) {
 		ret += websWrite(wp, "\"\",\"\",\"\",\"\",\"%d\",\"\",", wl_control_channel(unit));
@@ -5365,117 +5346,58 @@ ej_wl_status_array(int eid, webs_t wp, int argc, char_t **argv, int unit)
 // Close dataarray
 	ret += websWrite(wp, "];\n");
 
-	if (noclients) {
-		if (unit == 1)
-			ret += websWrite(wp, "wificlients5 = [];");
-		else if (unit == 2)
-			ret += websWrite(wp, "wificlients52 = [];");
-		else
-			ret += websWrite(wp, "wificlients24 = [];");
-		return ret;
-	}
 // DFS status
-
 #ifdef RTCONFIG_BCMWL6
-	if (nvram_match(strcat_r(prefix, "reg_mode", tmp), "off")) {
-		ret += websWrite(wp, "var dfs_status=\"\";\nvar dfs_chanarray=[];\n");
+	if (unit != 1)
 		goto sta_list;
-	}
+
+	if (nvram_match(strcat_r(prefix, "reg_mode", tmp), "off"))
+		goto sta_list;
 
 	memset(buf, 0, sizeof(buf));
 	strcpy(buf, "dfs_status");
 
-	if (wl_ioctl(name, WLC_GET_VAR, buf, sizeof(buf)) < 0) {
-		ret += websWrite(wp, "var dfs_status=\"\";\nvar dfs_chanarray=[];\n");
+	if (wl_ioctl(name, WLC_GET_VAR, buf, sizeof(buf)) < 0)
 		goto sta_list;
-	}
+
 	dfs_status = (wl_dfs_status_t *) buf;
 	dfs_status->state = dtoh32(dfs_status->state);
 	dfs_status->duration = dtoh32(dfs_status->duration);
 	dfs_status->chanspec_cleared = wl_chspec_from_driver(dfs_status->chanspec_cleared);
 
-	if (dfs_status->state >= WL_DFS_CACSTATES) {
-		ret += websWrite(wp, "var dfs_status=\"Unknown DFS state %d\";\nvar dfs_chanarray=[];\n", dfs_status->state);
-	} else {
-		const char *dfs_cacstate_str[WL_DFS_CACSTATES] = {
-			"Idle",
-			"PRE-ISM Channel Availability Check(CAC)",
-			"In-Service Monitoring(ISM)",
-			"Channel Switching Announcement(CSA)",
-			"POST-ISM Channel Availability Check",
-			"PRE-ISM Ouf Of Channels(OOC)",
-			"POST-ISM Out Of Channels(OOC)"
-		};
+	const char *dfs_cacstate_str[WL_DFS_CACSTATES] = {
+		"Idle",
+		"PRE-ISM Channel Availability Check (CAC)",
+		"In-Service Monitoring (ISM)",
+		"Channel Switching Announcement (CSA)",
+		"POST-ISM Channel Availability Check",
+		"PRE-ISM Ouf Of Channels (OOC)",
+		"POST-ISM Out Of Channels (OOC)"
+	};
 
-		ret += websWrite(wp, "var dfs_statusarray = [\"%s\", \"%dms\", \"",
-			dfs_cacstate_str[dfs_status->state], dfs_status->duration);
-
-		if (dfs_status->chanspec_cleared) {
-			ret += websWrite(wp, "%s (0x%04X)\"];\n",
-				wf_chspec_ntoa(dfs_status->chanspec_cleared, chanspec_str),
-				dfs_status->chanspec_cleared);
-		}
-		else {
-			ret += websWrite(wp, "None\"];\n");
-		}
-	}
-
-#if 0	// DFS channel details
-	ret += websWrite(wp, "var dfs_chanarray = [");
-
-	for (; first <= last; first++) {
-		channel = first;
-		chanspec_arg = CH20MHZ_CHSPEC(channel);
-
-		strcpy(buf, "per_chan_info");
-		memcpy((char *)(buf + strlen(buf) + 1), (char*)&chanspec_arg, sizeof(chanspec_arg));
-
-		if (wl_ioctl(name, WLC_GET_VAR, buf, sizeof(buf)) < 0)
-			break;
-
-		bitmap = dtoh32(*(uint *)buf);
-		minutes = (bitmap >> 24) & 0xff;
-
-		if (!(bitmap & WL_CHAN_VALID_HW))
-			continue;
-
-		if (!(bitmap & WL_CHAN_VALID_SW))
-			continue;
-
-		ret += websWrite(wp, "[%d, \"", channel);
-
-		if (bitmap & WL_CHAN_BAND_5G)
-			ret += websWrite(wp, "A Band");
-		else
-			ret += websWrite(wp, "B Band");
-
-		if (bitmap & WL_CHAN_RADAR) {
-			ret += websWrite(wp, ", RADAR Sensitive");
-		}
-		if (bitmap & WL_CHAN_RESTRICTED) {
-			ret += websWrite(wp, ", Restricted");
-		}
-		if (bitmap & WL_CHAN_PASSIVE) {
-			ret += websWrite(wp, ", Passive");
-		}
-		if (bitmap & WL_CHAN_INACTIVE) {
-			ret += websWrite(wp, ", Temporarily Out of Service for %d minutes", minutes);
-		}
-		ret += websWrite(wp, "\"],\n");
-	}
-	ret += websWrite(wp, "[]];\n");
+	ret += websWrite(wp, "var dfs_statusarray = [\"%s\", \"%d ms\", \"%s\"];\n",
+		(dfs_status->state >= WL_DFS_CACSTATES ? "Unknown" : dfs_cacstate_str[dfs_status->state]),
+		 dfs_status->duration,
+		(dfs_status->chanspec_cleared ? wf_chspec_ntoa(dfs_status->chanspec_cleared, chanspec_str) : "None"));
 #endif
-#endif
+
+	if (noclients)
+		return ret;
 
 sta_list:
 
 // Open client array
-	if (unit == 1)
-		ret += websWrite(wp, "wificlients5 = [");
-	else if (unit == 2)
-		ret += websWrite(wp, "wificlients52 = [");
-	else
+	switch(unit) {
+	case 0:
 		ret += websWrite(wp, "wificlients24 = [");
+		break;
+	case 1:
+		ret += websWrite(wp, "wificlients5 = [");
+		break;
+	case 2:
+		ret += websWrite(wp, "wificlients52 = [");
+		break;
+	}
 
 #ifdef RTCONFIG_QTN
 	if (unit && rpc_qtn_ready())
@@ -5568,18 +5490,19 @@ sta_list:
 			if ((found) && (str_escape_quotes(hostnameentry, tmp, sizeof(hostnameentry)) == 0 ))
 				strlcpy(hostnameentry, tmp, sizeof(hostnameentry));
 
-			if (found == 0) {
-				// Not in arplist nor in leaselist
+			switch (found) {
+			case 0:	// Not in arplist nor in leaselist
 				ret += websWrite(wp, "\"<not found>\",\"<not found>\",");
-			} else if (found == 1) {
-				// Only in arplist (static IP)
+				break;
+			case 1:	// Only in arplist (static IP)
 				ret += websWrite(wp, "\"<not found>\",");
-			} else if (found == 2) {
-				// Only in leaselist (dynamic IP that has not communicated with router for a while)
+				break;
+			case 2:	// Only in leaselist (dynamic IP that has not communicated with router for a while)
 				ret += websWrite(wp, "\"%s\", \"%s\",", ipentry, hostnameentry);
-			} else if (found == 3) {
-				// In both arplist and leaselist (dynamic IP)
+				break;
+			case 3:	// In both arplist and leaselist (dynamic IP)
 				ret += websWrite(wp, "\"%s\",", hostnameentry);
+				break;
 			}
 		} else {
 			ret += websWrite(wp, "\"<unknown>\",");
@@ -5713,18 +5636,19 @@ sta_list:
 					if ((found) && (str_escape_quotes(hostnameentry, tmp,sizeof(hostnameentry)) == 0 ))
 						strlcpy(hostnameentry, tmp, sizeof(hostnameentry));
 
-					if (found == 0) {
-						// Not in arplist nor in leaselist
+					switch (found) {
+					case 0:	// Not in arplist nor in leaselist
 						ret += websWrite(wp, "\"<not found>\",\"<not found>\",");
-					} else if (found == 1) {
-						// Only in arplist (static IP)
+						break;
+					case 1:	// Only in arplist (static IP)
 						ret += websWrite(wp, "\"<not found>\",");
-					} else if (found == 2) {
-						// Only in leaselist (dynamic IP that has not communicated with router for a while)
+						break;
+					case 2:	// Only in leaselist (dynamic IP that has not communicated with router for a while)
 						ret += websWrite(wp, "\"%s\",\"%s\",", ipentry, hostnameentry);
-					} else if (found == 3) {
-						// In both arplist and leaselist (dynamic IP)
+						break;
+					case 3:	// In both arplist and leaselist (dynamic IP)
 						ret += websWrite(wp, "\"%s\",", hostnameentry);
+						break;
 					}
 				} else {
 					ret += websWrite(wp, "\"<unknown>\",");

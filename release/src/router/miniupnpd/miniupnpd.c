@@ -1058,7 +1058,7 @@ int update_ext_ip_addr_from_stun(int init)
 		else
 			syslog(LOG_INFO, "STUN: ext interface %s has now public IP address %s: Port forwarding is now enabled", ext_if_name, if_addr_str);
 	} else if ((init || !disable_port_forwarding) && restrictive_nat) {
-		syslog(LOG_WARNING, "STUN: ext interface %s with IP address %s is now behind restrictive NAT with public IP address %s: Port forwarding is now impossible", ext_if_name, if_addr_str, ext_addr_str);
+		syslog(LOG_WARNING, "STUN: ext interface %s with IP address %s is now behind restrictive NAT with public IP address %s: Port forwarding might not work properly", ext_if_name, if_addr_str, ext_addr_str);
 	} else {
 		syslog(LOG_INFO, "STUN: ... done");
 	}
@@ -2026,9 +2026,9 @@ main(int argc, char * * argv)
 		if (getifaddr(ext_if_name, if_addr, INET_ADDRSTRLEN, &addr, NULL) < 0) {
 			syslog(LOG_WARNING, "Cannot get IP address for ext interface %s. Network is down", ext_if_name);
 		} else if (addr_is_reserved(&addr)) {
-			syslog(LOG_INFO, "Reserved / private IP address %s on ext interface %s: Port forwarding is impossible", if_addr, ext_if_name);
-			syslog(LOG_INFO, "You are probably behind NAT, enable option ext_perform_stun=yes to detect public IP address");
-			disable_port_forwarding = 1;
+			syslog(LOG_INFO, "Reserved / private IP address %s on ext interface %s: Port forwarding might not work properly", if_addr, ext_if_name);
+//			syslog(LOG_INFO, "You are probably behind NAT, enable option ext_perform_stun=yes to detect public IP address");
+//			disable_port_forwarding = 1;
 		}
 	}
 
@@ -2234,10 +2234,10 @@ main(int argc, char * * argv)
 					if (disable_port_forwarding && !reserved) {
 						syslog(LOG_INFO, "Public IP address %s on ext interface %s: Port forwarding is enabled", if_addr, ext_if_name);
 					} else if (!disable_port_forwarding && reserved) {
-						syslog(LOG_INFO, "Reserved / private IP address %s on ext interface %s: Port forwarding is impossible", if_addr, ext_if_name);
-						syslog(LOG_INFO, "You are probably behind NAT, enable option ext_perform_stun=yes to detect public IP address");
+						syslog(LOG_INFO, "Reserved / private IP address %s on ext interface %s: Port forwarding might not be working properly", if_addr, ext_if_name);
+//						syslog(LOG_INFO, "You are probably behind NAT, enable option ext_perform_stun=yes to detect public IP address");
 					}
-					disable_port_forwarding = reserved;
+//					disable_port_forwarding = reserved;
 				}
 			}
 #ifdef ENABLE_NATPMP

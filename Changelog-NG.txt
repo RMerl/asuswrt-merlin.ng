@@ -35,6 +35,11 @@ Asuswrt-Merlin 384/NG Changelog
              option to display DFS channel details.
   - FIXED: CVE-2018-15599 in dropbear
   - FIXED: Namecheap DDNS service not updating
+  - FIXED: UOPNP port forwarding not working in CGNAT/double NAT
+           scenario even if proper ports were forwarded upstream.
+  - FIXED: Pages based on table.js (like the port trigger one)
+           would fail to work properly under Firefox
+           (Michael Ziminsky)
 
 
 384.7_2 (21-Oct-2018)

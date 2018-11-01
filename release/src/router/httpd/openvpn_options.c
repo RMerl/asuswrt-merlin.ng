@@ -740,4 +740,3 @@ void parse_openvpn_status(int unit){
 	if(fpi) fclose(fpi);
 	if(fpo) fclose(fpo);
 }
-

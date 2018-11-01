@@ -29,6 +29,10 @@ Asuswrt-Merlin 384/NG Changelog
              one).
   - CHANGED: SSL crypto/cipher hardening for httpd (themiron)
   - CHANGED: Syslog will now ignore bwdpi debug output (themiron)
+  - CHANGED: Reworked Wireless Log page, adding a new button to
+             view low-level details (what stock firmware shows
+             on its Wireless Log page), and removed redundant
+             option to display DFS channel details.
   - FIXED: CVE-2018-15599 in dropbear
   - FIXED: Namecheap DDNS service not updating
 

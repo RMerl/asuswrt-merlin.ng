@@ -5403,29 +5403,14 @@ ej_wl_status_array(int eid, webs_t wp, int argc, char_t **argv, int unit)
 	int res;
 #endif
 
-	snprintf(prefix, sizeof(prefix), "wl%d_", unit);
-
-/* Initialize */
-	switch (unit) {
-	case 0:
-		ret += websWrite(wp, "var dataarray24 = [], wificlients24 = [];");
-		break;
-	case 1:
-		ret += websWrite(wp, "var dataarray5 = [], wificlients5 = [];");
-		break;
-	case 2:
-		ret += websWrite(wp, "var dataarray52 = [], wificlients52 = [];");
-		break;
-	}
-
-	ret += websWrite(wp, "var dfs_statusarray = [];\n");
-
 #ifdef RTCONFIG_PROXYSTA
 	if (psta_exist_except(unit))
 		return ret;
 #endif
 
+	snprintf(prefix, sizeof(prefix), "wl%d_", unit);
 	name = nvram_safe_get(strcat_r(prefix, "ifname", tmp));
+
 #ifdef RTCONFIG_QTN
 	if (unit && rpc_qtn_ready())
 	{

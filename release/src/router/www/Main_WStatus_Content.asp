@@ -47,6 +47,11 @@ overlib.isOut = true;
 var refreshRate = 3;
 var timedEvent = 0;
 
+var dataarray24 = [], wificlients24 = [];
+var dataarray5 = [], wificlients5 = [];
+var dataarray52 = [], wificlients52 = [];
+var dfs_statusarray = [];
+
 <% get_wl_status(); %>;
 
 var nvram_dump_String = function(){/*
@@ -190,7 +195,7 @@ function display_header(dataarray, title, obj, show_dfs) {
 
 	if (show_dfs && dfs_statusarray.length > 1) {
                 code += '<tr><td colspan="2"><span class="wifiheader">DFS State: </span>' + dfs_statusarray[0] + '</td>';
-                code += '<td><span class="wifiheader">Time elapsed: </span>' + dfs_statusarray[1].replace("ms", " ms") + '</td>';
+                code += '<td><span class="wifiheader">Time elapsed: </span>' + dfs_statusarray[1] + '</td>';
                 code += '<td><span class="wifiheader">Channel cleared for radar: </span>' + dfs_statusarray[2] + '</td></tr>';
 	}
 

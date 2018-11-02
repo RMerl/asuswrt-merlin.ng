@@ -1669,12 +1669,12 @@ ej_wl_status(int eid, webs_t wp, int argc, char_t **argv, int unit)
 	} else {
 		const char *dfs_cacstate_str[WL_DFS_CACSTATES] = {
 			"IDLE",
-			"PRE-ISM Channel Availability Check(CAC)",
-			"In-Service Monitoring(ISM)",
-			"Channel Switching Announcement(CSA)",
+			"PRE-ISM Channel Availability Check (CAC)",
+			"In-Service Monitoring (ISM)",
+			"Channel Switching Announcement (CSA)",
 			"POST-ISM Channel Availability Check",
-			"PRE-ISM Ouf Of Channels(OOC)",
-			"POST-ISM Out Of Channels(OOC)"
+			"PRE-ISM Ouf Of Channels (OOC)",
+			"POST-ISM Out Of Channels (OOC)"
 		};
 
 		ret += websWrite(wp, "\nDFS status: state %s time elapsed %dms radar channel cleared by DFS ",
@@ -5533,26 +5533,18 @@ ej_wl_status_array(int eid, webs_t wp, int argc, char_t **argv, int unit)
 
 	const char *dfs_cacstate_str[WL_DFS_CACSTATES] = {
 		"Idle",
-		"PRE-ISM Channel Availability Check(CAC)",
-		"In-Service Monitoring(ISM)",
-		"Channel Switching Announcement(CSA)",
+		"PRE-ISM Channel Availability Check (CAC)",
+		"In-Service Monitoring (ISM)",
+		"Channel Switching Announcement (CSA)",
 		"POST-ISM Channel Availability Check",
-		"PRE-ISM Ouf Of Channels(OOC)",
-		"POST-ISM Out Of Channels(OOC)"
+		"PRE-ISM Ouf Of Channels (OOC)",
+		"POST-ISM Out Of Channels (OOC)"
 	};
 
-	ret += websWrite(wp, "var dfs_statusarray = [\"%s\", \"%dms\", \"",
+	ret += websWrite(wp, "var dfs_statusarray = [\"%s\", \"%d ms\", \"%s\"];\n",
 		(dfs_status->state >= WL_DFS_CACSTATES ? "Unknown" : dfs_cacstate_str[dfs_status->state]),
-		 dfs_status->duration);
-
-	if (dfs_status->chanspec_cleared) {
-		ret += websWrite(wp, "%s (0x%04X)\"];\n",
-			wf_chspec_ntoa(dfs_status->chanspec_cleared, chanspec_str),
-			dfs_status->chanspec_cleared);
-	}
-	else {
-		ret += websWrite(wp, "None\"];\n");
-	}
+		 dfs_status->duration,
+		(dfs_status->chanspec_cleared ? wf_chspec_ntoa(dfs_status->chanspec_cleared, chanspec_str) : "None"));
 #endif
 
 	if (noclients)

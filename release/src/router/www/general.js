@@ -394,11 +394,18 @@ function change_ddns_setting(v){
 					inputCtrl(document.form.ddns_regular_period, 1);
 		}
 
-		if(v == "WWW.NAMECHEAP.COM")
+		if(v == "WWW.NAMECHEAP.COM") {
 			document.getElementById("ddns_username_th").innerHTML = "Domain Name";
-		else
+			document.getElementById("ddns_password_th").innerHTML = "<#LANHostConfig_x_DDNSPassword_itemname#>";
+		}
+		else if(v == "FREEDNS.AFRAID.ORG") {
+			document.getElementById("ddns_username_th").innerHTML = "Username";
+			document.getElementById("ddns_password_th").innerHTML = "<#PPPConnection_Password_itemname#>";
+		}
+		else {
 			document.getElementById("ddns_username_th").innerHTML = "<#LANHostConfig_x_DDNSUserName_itemname#>";
-
+			document.getElementById("ddns_password_th").innerHTML = "<#LANHostConfig_x_DDNSPassword_itemname#>";
+		}
 		if(letsencrypt_support){
 			document.getElementById("le_crypt").style.display = "";
 		}

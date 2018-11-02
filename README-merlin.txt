@@ -40,6 +40,7 @@ Devices supported on the new generation/current branch (382.xx and newer):
  * RT-AC5300
  * RT-AC86U
  * RT-AC2900 (use the RT-AC86U firmware)
+ * RT-AX88U
 
 No longer supported:
  * RT-N16

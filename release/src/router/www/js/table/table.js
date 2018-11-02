@@ -664,7 +664,7 @@ var tableApi = {
 		var $newPullArrowHtml = $("<div>");
 		$newPullArrowHtml.addClass("pullDownbg");
 		$newPullArrowHtml.click(
-			function() {
+			function(event) {
 				event.stopPropagation();
 				if($(this).closest(".editFrame").siblings('.table_clientlist_dropdown').length) {
 					if($(this).closest(".editFrame").siblings('.table_clientlist_dropdown').css("display") == "none") {
@@ -703,7 +703,7 @@ var tableApi = {
 		var genClientItem = function(_clientObj, _state) {
 			var $clientHtml = $('<div>');
 			$clientHtml.click(
-				function(){
+				function(event){
 					event.stopPropagation();
 					$(this).closest(".table_clientlist_dropdown").siblings(".editFrame").children(".setMac").val(_clientObj.mac);
 					$(this).closest(".table_clientlist_dropdown").css("display", "none");
@@ -735,7 +735,7 @@ var tableApi = {
 				$offlineDel.addClass("offlineClientDel");
 				$offlineDel.appendTo($clientHtml);
 				 $offlineDel.click(
-				 	function() {
+				 	function(event) {
 				 		event.stopPropagation();
 				 		if($("#remove_nmpclientlist_form").length) {
 				 			$("#remove_nmpclientlist_form").remove();
@@ -780,7 +780,7 @@ var tableApi = {
 		$offlineExpandHtml.appendTo($newItemFrameHtml);
 		$offlineExpandHtml.html("<#Offline_client_show#>");
 		$offlineExpandHtml.click(
-			function() {
+			function(event) {
 				event.stopPropagation();
 				var display_state = $(this).siblings(".clientList_offline").css("display");
 				if(display_state == "none") {
@@ -1098,7 +1098,7 @@ var tableApi = {
 					case "select" :
 					case "pureText" :
 						$("tr[row_tr_idx='" + i + "']").find($("td[row_td_idx='" + j + "']")).click(
-							function() {
+							function(event) {
 								if($(".row_tr").children().find(".hint").length != 0) {
 									return false;
 								}
@@ -1297,7 +1297,7 @@ var tableApi = {
 			var $editHtml = $('<input/>');
 			$editHtml.addClass("remove_btn");
 			$editHtml.click(
-				function() {
+				function(event) {
 					event.stopPropagation();
 					var delRawIdx = $(this).closest("*[row_tr_idx]").attr( "row_tr_idx" );
 					var delRawArray = tableApi._attr.data.slice(delRawIdx, (delRawIdx + 1))[0];

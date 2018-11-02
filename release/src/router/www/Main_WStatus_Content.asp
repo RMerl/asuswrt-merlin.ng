@@ -195,7 +195,7 @@ function display_header(dataarray, title, obj, show_dfs) {
 
 	if (show_dfs && dfs_statusarray.length > 1) {
                 code += '<tr><td colspan="2"><span class="wifiheader">DFS State: </span>' + dfs_statusarray[0] + '</td>';
-                code += '<td><span class="wifiheader">Time elapsed: </span>' + dfs_statusarray[1].replace("ms", " ms") + '</td>';
+                code += '<td><span class="wifiheader">Time elapsed: </span>' + dfs_statusarray[1] + '</td>';
                 code += '<td><span class="wifiheader">Channel cleared for radar: </span>' + dfs_statusarray[2] + '</td></tr>';
 	}
 

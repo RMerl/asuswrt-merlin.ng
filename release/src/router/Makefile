@@ -5750,7 +5750,7 @@ avahi/Makefile: avahi/configure
 		--disable-autoipd \
 		--disable-doxygen-doc --disable-manpages --disable-xmltoman \
 		--with-xml=expat \
-		--with-avahi-user="admin" --with-avahi-group="root" \
+		--with-avahi-user="nobody" --with-avahi-group="nobody" \
 		--disable-dependency-tracking \
 		--disable-stack-protector \
 		avahi_runtime_dir=/var/run \

@@ -33,8 +33,9 @@ Asuswrt-Merlin 384/NG Changelog
              view low-level details (what stock firmware shows
              on its Wireless Log page), and removed redundant
              option to display DFS channel details.
-  - FIXED: CVE-2018-15599 in dropbear
-  - FIXED: Namecheap DDNS service not updating
+  - CHANGED: Updated nettle to 3.4
+  - CHANGED: Migrated /jffs/ssl/* content to /jffs/.cert (to
+             share the same folder used by Asus stock)
   - FIXED: UOPNP port forwarding not working in CGNAT/double NAT
            scenario even if proper ports were forwarded upstream.
   - FIXED: Pages based on table.js (like the port trigger one)

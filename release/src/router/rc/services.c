@@ -13951,7 +13951,7 @@ firmware_check_main(int argc, char *argv[])
 #endif
 
 #ifdef CONFIG_BCMWL5
-#if defined(RTAC68U) || defined(RTAC88U) || defined(RTAC3100) || defined(RTAC5300) || defined(RTAC86U) // kludge
+#if !defined(RTAC3200) && !defined(RTAC56U) && !defined(RTAC87U)	// Kludge
 	fw_check_pre();
 #endif
 #endif

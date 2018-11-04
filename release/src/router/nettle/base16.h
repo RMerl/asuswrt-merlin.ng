@@ -56,12 +56,12 @@ extern "C" {
 
 /* Encodes a single byte. Always stores two digits in dst[0] and dst[1]. */
 void
-base16_encode_single(uint8_t *dst,
+base16_encode_single(char *dst,
 		     uint8_t src);
 
 /* Always stores BASE16_ENCODE_LENGTH(length) digits in dst. */
 void
-base16_encode_update(uint8_t *dst,
+base16_encode_update(char *dst,
 		     size_t length,
 		     const uint8_t *src);
 
@@ -86,7 +86,7 @@ base16_decode_init(struct base16_decode_ctx *ctx);
 int
 base16_decode_single(struct base16_decode_ctx *ctx,
 		     uint8_t *dst,
-		     uint8_t src);
+		     char src);
 
 /* Returns 1 on success, 0 on error. DST should point to an area of
  * size at least BASE16_DECODE_LENGTH(length). The amount of data
@@ -97,7 +97,7 @@ base16_decode_update(struct base16_decode_ctx *ctx,
 		     size_t *dst_length,
 		     uint8_t *dst,
 		     size_t src_length,
-		     const uint8_t *src);
+		     const char *src);
 
 /* Returns 1 on success. */
 int

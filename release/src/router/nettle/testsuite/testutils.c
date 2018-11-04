@@ -4,6 +4,7 @@
 
 #include "base16.h"
 #include "cbc.h"
+#include "cfb.h"
 #include "ctr.h"
 #include "knuth-lfib.h"
 #include "macros.h"
@@ -62,7 +63,7 @@ tstring_clear(void)
 }
 
 struct tstring *
-tstring_data(size_t length, const char *data)
+tstring_data(size_t length, const uint8_t *data)
 {
   struct tstring *s = tstring_alloc (length);
   memcpy (s->data, data, length);
@@ -241,6 +242,184 @@ test_cipher_cbc(const struct nettle_cipher *cipher,
 
   free(ctx);
   free(data);
+  free(iv);
+}
+
+void
+test_cipher_cfb(const struct nettle_cipher *cipher,
+		const struct tstring *key,
+		const struct tstring *cleartext,
+		const struct tstring *ciphertext,
+		const struct tstring *iiv)
+{
+  void *ctx = xalloc(cipher->context_size);
+  uint8_t *data, *data2;
+  uint8_t *iv = xalloc(cipher->block_size);
+  size_t length;
+
+  ASSERT (cleartext->length == ciphertext->length);
+  length = cleartext->length;
+
+  ASSERT (key->length == cipher->key_size);
+  ASSERT (iiv->length == cipher->block_size);
+
+  data = xalloc(length);
+  data2 = xalloc(length);
+
+  cipher->set_encrypt_key(ctx, key->data);
+  memcpy(iv, iiv->data, cipher->block_size);
+
+  cfb_encrypt(ctx, cipher->encrypt,
+	      cipher->block_size, iv,
+	      length, data, cleartext->data);
+
+  if (!MEMEQ(length, data, ciphertext->data))
+    {
+      fprintf(stderr, "CFB encrypt failed:\nInput:");
+      tstring_print_hex(cleartext);
+      fprintf(stderr, "\nOutput: ");
+      print_hex(length, data);
+      fprintf(stderr, "\nExpected:");
+      tstring_print_hex(ciphertext);
+      fprintf(stderr, "\n");
+      FAIL();
+    }
+  cipher->set_encrypt_key(ctx, key->data);
+  memcpy(iv, iiv->data, cipher->block_size);
+
+  cfb_decrypt(ctx, cipher->encrypt,
+	      cipher->block_size, iv,
+	      length, data2, data);
+
+  if (!MEMEQ(length, data2, cleartext->data))
+    {
+      fprintf(stderr, "CFB decrypt failed:\nInput:");
+      tstring_print_hex(ciphertext);
+      fprintf(stderr, "\nOutput: ");
+      print_hex(length, data2);
+      fprintf(stderr, "\nExpected:");
+      tstring_print_hex(cleartext);
+      fprintf(stderr, "\n");
+      FAIL();
+    }
+  cipher->set_encrypt_key(ctx, key->data);
+  memcpy(iv, iiv->data, cipher->block_size);
+  memcpy(data, cleartext->data, length);
+
+  cfb_encrypt(ctx, cipher->encrypt,
+	      cipher->block_size, iv,
+	      length, data, data);
+
+  if (!MEMEQ(length, data, ciphertext->data))
+    {
+      fprintf(stderr, "CFB inplace encrypt failed:\nInput:");
+      tstring_print_hex(cleartext);
+      fprintf(stderr, "\nOutput: ");
+      print_hex(length, data);
+      fprintf(stderr, "\nExpected:");
+      tstring_print_hex(ciphertext);
+      fprintf(stderr, "\n");
+      FAIL();
+    }
+  cipher->set_encrypt_key(ctx, key->data);
+  memcpy(iv, iiv->data, cipher->block_size);
+
+  cfb_decrypt(ctx, cipher->encrypt,
+	      cipher->block_size, iv,
+	      length, data, data);
+
+  if (!MEMEQ(length, data, cleartext->data))
+    {
+      fprintf(stderr, "CFB inplace decrypt failed:\nInput:");
+      tstring_print_hex(ciphertext);
+      fprintf(stderr, "\nOutput: ");
+      print_hex(length, data);
+      fprintf(stderr, "\nExpected:");
+      tstring_print_hex(cleartext);
+      fprintf(stderr, "\n");
+      FAIL();
+    }
+
+  /* Repeat all tests with incomplete last block */
+  length -= 1;
+
+  cipher->set_encrypt_key(ctx, key->data);
+  memcpy(iv, iiv->data, cipher->block_size);
+
+  cfb_encrypt(ctx, cipher->encrypt,
+	      cipher->block_size, iv,
+	      length, data, cleartext->data);
+
+  if (!MEMEQ(length, data, ciphertext->data))
+    {
+      fprintf(stderr, "CFB encrypt failed:\nInput:");
+      print_hex(length, cleartext->data);
+      fprintf(stderr, "\nOutput: ");
+      print_hex(length, data);
+      fprintf(stderr, "\nExpected:");
+      print_hex(length, ciphertext->data);
+      fprintf(stderr, "\n");
+      FAIL();
+    }
+  cipher->set_encrypt_key(ctx, key->data);
+  memcpy(iv, iiv->data, cipher->block_size);
+
+  cfb_decrypt(ctx, cipher->encrypt,
+	      cipher->block_size, iv,
+	      length, data2, data);
+
+  if (!MEMEQ(length, data2, cleartext->data))
+    {
+      fprintf(stderr, "CFB decrypt failed:\nInput:");
+      print_hex(length, ciphertext->data);
+      fprintf(stderr, "\nOutput: ");
+      print_hex(length, data2);
+      fprintf(stderr, "\nExpected:");
+      print_hex(length, cleartext->data);
+      fprintf(stderr, "\n");
+      FAIL();
+    }
+  cipher->set_encrypt_key(ctx, key->data);
+  memcpy(iv, iiv->data, cipher->block_size);
+  memcpy(data, cleartext->data, length);
+
+  cfb_encrypt(ctx, cipher->encrypt,
+	      cipher->block_size, iv,
+	      length, data, data);
+
+  if (!MEMEQ(length, data, ciphertext->data))
+    {
+      fprintf(stderr, "CFB inplace encrypt failed:\nInput:");
+      print_hex(length, cleartext->data);
+      fprintf(stderr, "\nOutput: ");
+      print_hex(length, data);
+      fprintf(stderr, "\nExpected:");
+      print_hex(length, ciphertext->data);
+      fprintf(stderr, "\n");
+      FAIL();
+    }
+  cipher->set_encrypt_key(ctx, key->data);
+  memcpy(iv, iiv->data, cipher->block_size);
+
+  cfb_decrypt(ctx, cipher->encrypt,
+	      cipher->block_size, iv,
+	      length, data, data);
+
+  if (!MEMEQ(length, data, cleartext->data))
+    {
+      fprintf(stderr, "CFB inplace decrypt failed:\nInput:");
+      print_hex(length, ciphertext->data);
+      fprintf(stderr, "\nOutput: ");
+      print_hex(length, data);
+      fprintf(stderr, "\nExpected:");
+      print_hex(length, cleartext->data);
+      fprintf(stderr, "\n");
+      FAIL();
+    }
+
+  free(ctx);
+  free(data);
+  free(data2);
   free(iv);
 }
 
@@ -563,10 +742,10 @@ void
 test_armor(const struct nettle_armor *armor,
            size_t data_length,
            const uint8_t *data,
-           const uint8_t *ascii)
+           const char *ascii)
 {
   size_t ascii_length = strlen(ascii);
-  uint8_t *buffer = xalloc(1 + ascii_length);
+  char *buffer = xalloc(1 + ascii_length);
   uint8_t *check = xalloc(1 + armor->decode_length(ascii_length));
   void *encode = xalloc(armor->encode_context_size);
   void *decode = xalloc(armor->decode_context_size);
@@ -605,18 +784,6 @@ test_armor(const struct nettle_armor *armor,
 }
 
 #if WITH_HOGWEED
-
-#ifndef mpz_combit
-/* Missing in older gmp */
-static void
-mpz_combit (mpz_t x, unsigned long int bit)
-{
-  if (mpz_tstbit(x, bit))
-    mpz_clrbit(x, bit);
-  else
-    mpz_setbit(x, bit);
-}
-#endif
 
 #ifndef mpn_zero_p
 int

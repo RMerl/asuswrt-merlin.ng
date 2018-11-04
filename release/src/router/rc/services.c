@@ -5025,7 +5025,7 @@ void stop_lltd(void)
 int generate_mdns_config(void)
 {
 	FILE *fp;
-	char avahi_config[80], *user;
+	char avahi_config[80];
 	char et0macaddr[18];
 	int ret = 0;
 	char *wan1_ifname;
@@ -5042,11 +5042,6 @@ int generate_mdns_config(void)
 
 	/* Set [server] configuration */
 	fprintf(fp, "[Server]\n");
-
-	user = nvram_safe_get("http_username");
-	if (*user == '\0')
-		user = "admin";
-	fprintf(fp, "user=%s\n", user);
 
 	fprintf(fp, "host-name=%s-%c%c%c%c\n", get_productid(),et0macaddr[12],et0macaddr[13],et0macaddr[15],et0macaddr[16]);
 #ifdef RTCONFIG_FINDASUS
@@ -14269,7 +14264,7 @@ firmware_check_main(int argc, char *argv[])
 #endif
 
 #ifdef CONFIG_BCMWL5
-#if defined(RTAC68U) || defined(RTAC88U) || defined(RTAC3100) || defined(RTAC5300) || defined(RTAC86U) // kludge
+#if !defined(RTAC3200) && !defined(RTAC56U) && !defined(RTAC87U)	// Kludge
 	fw_check_pre();
 #endif
 #endif

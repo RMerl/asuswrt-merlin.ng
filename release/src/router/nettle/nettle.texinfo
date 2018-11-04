@@ -7,14 +7,14 @@
 @syncodeindex fn cp
 @c %**end of header
 
-@set UPDATED-FOR 3.2
+@set UPDATED-FOR 3.4
 @set AUTHOR Niels Möller
 
 @copying
 This manual is for the Nettle library (version @value{UPDATED-FOR}), a
 low-level cryptographic library.
 
-Originally written 2001 by @value{AUTHOR}, updated 2015.
+Originally written 2001 by @value{AUTHOR}, updated 2017.
 
 @quotation
 This manual is placed in the public domain. You may freely copy it, in
@@ -93,6 +93,7 @@ Cipher modes
 
 * CBC::                         
 * CTR::                         
+* CFB::
 * GCM::                         
 * CCM::                         
 
@@ -106,6 +107,12 @@ Public-key algorithms
 * RSA::                         The RSA public key algorithm.
 * DSA::                         The DSA digital signature algorithm.
 * Elliptic curves::             Elliptic curves and ECDSA
+
+@acronym{Elliptic curves}
+
+* Side-channel silence::
+* ECDSA::
+* Curve 25519::
 
 @end detailmenu
 @end menu
@@ -1002,6 +1009,7 @@ This function also resets the context in the same way as
 @subsection The @code{struct nettle_hash} abstraction
 @cindex nettle_hash
 @cindex nettle_hashes
+@cindex nettle_get_hashes
 
 Nettle includes a struct including information about the supported hash
 functions. It is defined in @file{<nettle/nettle-meta.h>}, and is used
@@ -1032,10 +1040,19 @@ These are all the hash functions that Nettle implements.
 
 Nettle also exports a list of all these hashes.
 
-@deftypevr {Constant Array} {struct nettle_hash **} nettle_hashes
+@deftypefun const struct nettle_hash **nettle_get_hashes(void)
+Returns a NULL-terminated list of pointers to supported hash functions.
 This list can be used to dynamically enumerate or search the supported
-algorithms. NULL-terminated.
-@end deftypevr
+algorithms.
+@end deftypefun
+
+@deffn Macro nettle_hashes
+A macro expanding to a call to nettle_get_hashes, so that one could
+write, e.g., @code{nettle_hashes[0]->name} for the name of the first
+hash function on the list. In earlier versions, this was not a macro but
+the actual array of pointers. However, referring directly to the array
+makes the array size leak into the ABI in some cases.
+@end deffn
 
 @node Cipher functions, Cipher modes, Hash functions, Reference
 @comment  node-name,  next,  previous,  up
@@ -1819,6 +1836,7 @@ Analogous to @code{twofish_encrypt}
 @subsection The @code{struct nettle_cipher} abstraction
 @cindex nettle_cipher
 @cindex nettle_ciphers
+@cindex nettle_get_ciphers
 
 Nettle includes a struct including information about some of the more
 regular cipher functions. It can be useful for applications that need a
@@ -1863,10 +1881,16 @@ ones without weak keys or other oddities.
 Nettle also exports a list of all these ciphers without weak keys or
 other oddities.
 
-@deftypevr {Constant Array} {struct nettle_cipher **} nettle_ciphers
+@deftypefun const struct nettle_cipher **nettle_get_ciphers(void)
+Returns a NULL-terminated list of pointers to supported block ciphers.
 This list can be used to dynamically enumerate or search the supported
-algorithms. NULL-terminated.
-@end deftypevr
+algorithms.
+@end deftypefun
+
+@deffn Macro nettle_ciphers
+A macro expanding to a call to nettle_get_ciphers. In earlier versions,
+this was not a macro but the actual array of pointers.
+@end deffn
 
 @node Cipher modes, Authenticated encryption, Cipher functions, Reference
 @comment  node-name,  next,  previous,  up
@@ -1878,21 +1902,23 @@ a message that is larger than the cipher's block size. As explained in
 processing them independently with the block cipher (Electronic Code
 Book mode, @acronym{ECB}), leaks information.
 
-Besides @acronym{ECB}, Nettle provides a two other modes of operation:
-Cipher Block Chaining (@acronym{CBC}), Counter mode (@acronym{CTR}), and
-a couple of @acronym{AEAD} modes (@pxref{Authenticated encryption}).
-@acronym{CBC} is widely used, but there are a few subtle issues of
-information leakage, see, e.g.,
+Besides @acronym{ECB}, Nettle provides several other modes of operation:
+Cipher Block Chaining (@acronym{CBC}), Counter mode (@acronym{CTR}), Cipher
+Feedback (@acronym{CFB}) and a couple of @acronym{AEAD} modes
+(@pxref{Authenticated encryption}).  @acronym{CBC} is widely used, but
+there are a few subtle issues of information leakage, see, e.g.,
 @uref{http://www.kb.cert.org/vuls/id/958563, @acronym{SSH} @acronym{CBC}
 vulnerability}. Today, @acronym{CTR} is usually preferred over @acronym{CBC}.
 
-Modes like @acronym{CBC} and @acronym{CTR} provide @emph{no} message
-authentication, and should always be used together with a @acronym{MAC}
-(@pxref{Keyed hash functions}) or signature to authenticate the message.
+Modes like @acronym{CBC}, @acronym{CTR} and @acronym{CFB} provide @emph{no}
+message authentication, and should always be used together with a
+@acronym{MAC} (@pxref{Keyed hash functions}) or signature to authenticate
+the message.
 
 @menu
 * CBC::                         
 * CTR::                         
+* CFB::
 @end menu
 
 @node CBC, CTR, Cipher modes, Cipher modes
@@ -1935,7 +1961,7 @@ around.
 
 Applies the encryption or decryption function @var{f} in @acronym{CBC}
 mode. The final ciphertext block processed is copied into @var{iv}
-before returning, so that large message be processed be a sequence of
+before returning, so that a large message can be processed by a sequence of
 calls to @code{cbc_encrypt}. The function @var{f} is of type
 
 @code{void f (void *@var{ctx}, size_t @var{length}, uint8_t @var{dst},
@@ -1988,7 +2014,7 @@ These macros use some tricks to make the compiler display a warning if
 the types of @var{f} and @var{ctx} don't match, e.g. if you try to use
 an @code{struct aes_ctx} context with the @code{des_encrypt} function.
 
-@node CTR, , CBC, Cipher modes
+@node CTR, CFB, CBC, Cipher modes
 @comment  node-name,  next,  previous,  up
 @subsection Counter mode
 
@@ -2059,6 +2085,91 @@ is copied into that context.
 @deffn Macro CTR_CRYPT (@var{ctx}, @var{f}, @var{length}, @var{dst}, @var{src})
 A simpler way to invoke @code{ctr_crypt}. The first argument is a
 pointer to a context struct as defined by @code{CTR_CTX}, and the second
+argument is an encryption function following Nettle's conventions. The
+last three arguments define the source and destination area for the
+operation.
+@end deffn
+
+@node CFB, , CTR, Cipher modes
+@comment  node-name,  next,  previous,  up
+@subsection Cipher Feedback mode
+
+@cindex Cipher Feedback Mode
+@cindex CFB Mode
+
+Cipher Feedback mode (@acronym{CFB}) being a close relative to both
+@acronym{CBC} mode and @acronym{CTR} mode borrows some characteristics
+from stream ciphers.
+
+The message is divided into @code{n} blocks @code{M_1},@dots{}
+@code{M_n}, where @code{M_n} is of size @code{m} which may be smaller
+than the block size. Except for the last block, all the message blocks
+must be of size equal to the cipher's block size.
+
+If @code{E_k} is the encryption function of a block cipher, @code{IV} is
+the initialization vector, then the @code{n} plaintext blocks are
+transformed into @code{n} ciphertext blocks @code{C_1},@dots{}
+@code{C_n} as follows:
+
+@example
+C_1 = E_k(IV) XOR M_1
+C_2 = E_k(C_1) XOR M_2
+
+@dots{}
+
+C_(n-1) = E_k(C_(n - 2)) XOR M_(n-1)
+C_n = E_k(C_(n - 1)) [1..m] XOR M_n
+@end example
+
+Nettle's includes two functions for applying a block cipher in Cipher
+Feedback (@acronym{CFB}) mode, one for encryption and one for
+decryption. These functions uses @code{void *} to pass cipher contexts
+around.
+
+@deftypefun {void} cfb_encrypt (const void *@var{ctx}, nettle_cipher_func *@var{f}, size_t @var{block_size}, uint8_t *@var{iv}, size_t @var{length}, uint8_t *@var{dst}, const uint8_t *@var{src})
+@deftypefunx {void} cfb_decrypt (const void *@var{ctx}, nettle_cipher_func *@var{f}, size_t @var{block_size}, uint8_t *@var{iv}, size_t @var{length}, uint8_t *@var{dst}, const uint8_t *@var{src})
+
+Applies the encryption or decryption function @var{f} in @acronym{CFB}
+mode. The final ciphertext block processed is copied into @var{iv}
+before returning, so that a large message can be processed by a sequence
+of calls to @code{cfb_encrypt}. Note that for @acronym{CFB} mode
+internally uses encryption only function and hence @var{f} should always
+be the encryption function for the underlying block cipher.
+
+When a message is encrypted using a sequence of calls to
+@code{cfb_encrypt}, all but the last call @emph{must} use a length that
+is a multiple of the block size.
+@end deftypefun
+
+Like for @acronym{CBC}, there are also a couple of helper macros.
+
+@deffn Macro CFB_CTX (@var{context_type}, @var{block_size})
+Expands to
+@example
+@{
+   context_type ctx;
+   uint8_t iv[block_size];
+@}
+@end example
+@end deffn
+
+@deffn Macro CFB_SET_IV(@var{ctx}, @var{iv})
+First argument is a pointer to a context struct as defined by
+@code{CFB_CTX}, and the second is a pointer to an initialization vector
+that is copied into that context.
+@end deffn
+
+@deffn Macro CFB_ENCRYPT (@var{ctx}, @var{f}, @var{length}, @var{dst}, @var{src})
+A simpler way to invoke @code{cfb_encrypt}. The first argument is a
+pointer to a context struct as defined by @code{CFB_CTX}, and the second
+argument is an encryption function following Nettle's conventions. The
+last three arguments define the source and destination area for the
+operation.
+@end deffn
+
+@deffn Macro CFB_DECRYPT (@var{ctx}, @var{f}, @var{length}, @var{dst}, @var{src})
+A simpler way to invoke @code{cfb_decrypt}. The first argument is a
+pointer to a context struct as defined by @code{CFB_CTX}, and the second
 argument is an encryption function following Nettle's conventions. The
 last three arguments define the source and destination area for the
 operation.
@@ -2881,6 +2992,7 @@ smaller than @code{CHACHA_POLY1305_DIGEST_SIZE}, only the first
 @subsection The @code{struct nettle_aead} abstraction
 @cindex nettle_aead
 @cindex nettle_aeads
+@cindex nettle_get_aeads
 
 Nettle includes a struct including information about the supported hash
 functions. It is defined in @file{<nettle/nettle-meta.h>}.
@@ -2904,10 +3016,16 @@ message size is specified in advance makes it incompatible with the
 
 Nettle also exports a list of all these constructions.
 
-@deftypevr {Constant Array} {struct nettle_aead **} nettle_aeads
-This list can be used to dynamically enumerate or search the supported
-algorithms. NULL-terminated.
-@end deftypevr
+@deftypefun const struct nettle_aead **nettle_get_aeads(void)
+Returns a NULL-terminated list of pointers to supported algorithms.This
+list can be used to dynamically enumerate or search the supported
+algorithms.
+@end deftypefun
+
+@deffn Macro nettle_aeads
+A macro expanding to a call to nettle_get_aeads. In earlier versions,
+this was not a macro but the actual array of pointers.
+@end deffn
 
 @node Keyed hash functions, Key derivation functions, Authenticated encryption, Reference
 @comment  node-name,  next,  previous,  up
@@ -3360,12 +3478,7 @@ processing a new message.
 @node Key derivation functions, Public-key algorithms, Keyed hash functions, Reference
 @comment  node-name,  next,  previous,  up
 @section Key derivation Functions
-
 @cindex Key Derivation Function
-@cindex Password Based Key Derivation Function
-@cindex PKCS #5
-@cindex KDF
-@cindex PBKDF
 
 A @dfn{key derivation function} (@acronym{KDF}) is a function that from
 a given symmetric key derives other symmetric keys.  A sub-class of KDFs
@@ -3374,7 +3487,51 @@ which take as input a password or passphrase, and its purpose is
 typically to strengthen it and protect against certain pre-computation
 attacks by using salting and expensive computation.
 
+@subsection HKDF: HMAC-based Extract-and-Expand
+@cindex HKDF
+
+HKDF is a key derivation function used as a building block of
+higher-level protocols like TLS 1.3. It is a derivation function
+based on HMAC described in @cite{RFC 5869},
+and is split into two logical modules, called 'extract' and 'expand'.
+The extract module takes an initial secret and a random
+salt to "extract" a fixed-length pseudorandom key (PRK). The second stage
+takes as input the previous PRK and some informational data (e.g.,
+text) and expands them into multiple keys.
+
+Nettle's @acronym{HKDF} functions are defined in
+@file{<nettle/hkdf.h>}.  There are two abstract functions for the extract
+and expand operations that operate on any HMAC implemented via the @code{nettle_hash_update_func},
+and @code{nettle_hash_digest_func} interfaces.
+
+@deftypefun void hkdf_extract (void *mac_ctx, nettle_hash_update_func *update, nettle_hash_digest_func *digest, size_t digest_size,size_t secret_size, const uint8_t *secret, uint8_t *dst)
+Extract a Pseudorandom Key (PRK) from a secret and a salt according
+to HKDF. The HMAC must have been initialized, with its key being the
+salt for the Extract operation. This function will call the
+@var{update} and @var{digest} functions passing the @var{mac_ctx}
+context parameter as an argument in order to compute digest of size
+@var{digest_size}.  Inputs are the secret @var{secret} of length
+@var{secret_length}. The output length is fixed to @var{digest_size} octets,
+thus the output buffer @var{dst} must have room for at least @var{digest_size} octets.
+@end deftypefun
+
+@deftypefun void hkdf_expand (void *mac_ctx, nettle_hash_update_func *update, nettle_hash_digest_func *digest, size_t digest_size, size_t info_size, const uint8_t *info, size_t length, uint8_t *dst)
+Expand a Pseudorandom Key (PRK) to an arbitrary size according to HKDF.
+The HMAC must have been initialized, with its key being the
+PRK from the Extract operation. This function will call the
+@var{update} and @var{digest} functions passing the @var{mac_ctx}
+context parameter as an argument in order to compute digest of size
+@var{digest_size}.  Inputs are the info @var{info} of length
+@var{info_length}, and the desired derived output length @var{length}.
+The output buffer is @var{dst} which must have room for at least @var{length} octets.
+@end deftypefun
+
+
 @subsection @acronym{PBKDF2}
+@cindex Password Based Key Derivation Function
+@cindex PKCS #5
+@cindex KDF
+@cindex PBKDF
 The most well known PBKDF is the @code{PKCS #5 PBKDF2} described in
 @cite{RFC 2898} which uses a pseudo-random function such as
 @acronym{HMAC-SHA1}.
@@ -3762,6 +3919,43 @@ Similar to the above _verify_digest functions, but the input is not the
 plain hash digest, but a PKCS#1 ``DigestInfo'', and ASN.1 DER-encoding
 of the digest together with an object identifier for the used hash
 algorithm.
+@end deftypefun
+
+While the above functions for the RSA signature operations use the
+@cite{PKCS#1} padding scheme, Nettle also provides the variants based on
+the PSS padding scheme, specified in @cite{RFC 3447}.  These variants
+take advantage of a randomly choosen salt value, which could enhance the
+security by causing output to be different for equivalent inputs.
+However, assuming the same security level as inverting the @acronym{RSA}
+algorithm, a longer salt value does not always mean a better security
+@uref{http://www.iacr.org/archive/eurocrypt2002/23320268/coron.pdf}.
+The typical choices of the length are between 0 and the digest size of
+the underlying hash function.
+
+Creating an RSA signature with the PSS padding scheme is done with one
+of the following functions:
+
+@deftypefun int rsa_pss_sha256_sign_digest_tr(const struct rsa_public_key *@var{pub}, const struct rsa_private_key *@var{key}, void *@var{random_ctx}, nettle_random_func *@var{random}, size_t @var{salt_length}, const uint8_t *@var{salt}, const uint8_t *@var{digest}, mpz_t @var{signature})
+@deftypefunx int rsa_pss_sha384_sign_digest_tr(const struct rsa_public_key *@var{pub}, const struct rsa_private_key *@var{key}, void *@var{random_ctx}, nettle_random_func *@var{random}, size_t @var{salt_length}, const uint8_t *@var{salt}, const uint8_t *@var{digest}, mpz_t @var{signature})
+@deftypefunx int rsa_pss_sha512_sign_digest_tr(const struct rsa_public_key *@var{pub}, const struct rsa_private_key *@var{key}, void *@var{random_ctx}, nettle_random_func *@var{random}, size_t @var{salt_length}, const uint8_t *@var{salt}, const uint8_t *@var{digest}, mpz_t @var{signature})
+Creates a signature using the PSS padding scheme. @var{salt} should
+point to a salt string of size @var{salt_length}. @var{digest} should
+point to a digest of size @code{SHA256_DIGEST_SIZE},
+@code{SHA384_DIGEST_SIZE}, or @code{SHA512_DIGEST_SIZE}respectively. The
+signature is stored in @var{signature} (which must have been
+@code{mpz_init}:ed earlier).
+Returns one on success, or zero on failure.
+@end deftypefun
+
+Verifying an RSA signature with the PSS padding scheme is done with one
+of the following functions:
+
+@deftypefun int rsa_pss_sha256_verify_digest (const struct rsa_public_key *@var{key}, size_t @var{salt_length}, const uint8_t *@var{digest}, const mpz_t @var{signature})
+@deftypefunx int rsa_pss_sha384_verify_digest (const struct rsa_public_key *@var{key}, size_t @var{salt_length}, const uint8_t *@var{digest}, const mpz_t @var{signature})
+@deftypefunx int rsa_pss_sha512_verify_digest (const struct rsa_public_key *@var{key}, size_t @var{salt_length}, const uint8_t *@var{digest}, const mpz_t @var{signature})
+Returns 1 if the signature is valid, or 0 if it isn't. @var{digest}
+should point to a digest of size @code{SHA256_DIGEST_SIZE},
+@code{SHA384_DIGEST_SIZE}, or @code{SHA512_DIGEST_SIZE} respectively.
 @end deftypefun
 
 The following function is used to encrypt a clear text message using RSA.
@@ -4167,14 +4361,24 @@ x^3 - 3 x + b @pmod{p}}, i.e., the points have coordinates @math{(x,y)},
 both considered as integers modulo a specified prime @math{p}. Curves
 are represented as a @code{struct ecc_curve}. It also supports
 curve25519, which uses a different form of curve. Supported curves are
-declared in @file{<nettle/ecc-curve.h>}, e.g., @code{nettle_secp_256r1}
-for a standardized curve using the 256-bit prime @math{p = 2^{256} -
-2^{224} + 2^{192} + 2^{96} - 1}. The contents of these structs is not
-visible to nettle users. The ``bitsize of the curve'' is used as a
-shorthand for the bitsize of the curve's prime @math{p}, e.g., 256 bits
-for @code{nettle_secp_256r1}.
+declared in @file{<nettle/ecc-curve.h>}, e.g., call
+@code{nettle_get_secp_256r1} for a standardized curve using the 256-bit
+prime @math{p = 2^{256} - 2^{224} + 2^{192} + 2^{96} - 1}. The contents
+of these structs is not visible to nettle users. The ``bitsize of the
+curve'' is used as a shorthand for the bitsize of the curve's prime
+@math{p}, e.g., 256 bits for the SECP 256R1 curve.
 
+@menu
+* Side-channel silence::
+* ECDSA::
+* Curve 25519::
+@end menu
+
+@node Side-channel silence, ECDSA, , Elliptic curves
+@comment  node-name,  next,  previous,  up
 @subsubsection Side-channel silence
+@cindex Side-channel attack
+
 Nettle's implementation of the elliptic curve operations is intended to
 be side-channel silent. The side-channel attacks considered are:
 
@@ -4191,7 +4395,8 @@ it. If you have a process operating on the secret data, and this process
 does memory accesses depending on the data, e.g, an internal lookup
 table in some cryptographic algorithm, an attacker running a separate
 process on the same system may use behavior of internal CPU caches to
-get information about your secrets.
+get information about your secrets. This type of attack can even cross
+virtual machine boundaries.
 @end itemize
 
 Nettle's ECC implementation is designed to be @dfn{side-channel silent},
@@ -4200,6 +4405,8 @@ accesses depend only on the size of the input data and its location in
 memory, not on the actual data bits. This implies a performance penalty
 in several of the building blocks.
 
+@node ECDSA, Curve 25519, Side-channel silence, Elliptic curves
+@comment  node-name,  next,  previous,  up
 @subsubsection ECDSA
 
 ECDSA is a variant of the DSA digital signature scheme (@pxref{DSA}),
@@ -4227,7 +4434,7 @@ Represents a point on an elliptic curve. In particular, it is used to
 represent an ECDSA public key.
 @end deftp
 
-@deftypefun void ecc_point_init (struct ecc_point *@var{p}, const structecc_curve *@var{ecc})
+@deftypefun void ecc_point_init (struct ecc_point *@var{p}, const struct ecc_curve *@var{ecc})
 Initializes @var{p} to represent points on the given curve @var{ecc}.
 Allocates storage for the coordinates, using the same allocation
 functions as GMP.
@@ -4241,7 +4448,7 @@ Deallocate storage.
 Check that the given coordinates represent a point on the curve. If so,
 the coordinates are copied and converted to internal representation, and
 the function returns 1. Otherwise, it returns 0. Currently, the
-infinity point (or zero point, with additive notation) i snot allowed.
+infinity point (or zero point, with additive notation) is not allowed.
 @end deftypefun
 
 @deftypefun void ecc_point_get (const struct ecc_point *@var{p}, mpz_t @var{x}, mpz_t @var{y})
@@ -4290,7 +4497,7 @@ signature for the message digest @var{digest} (of @var{length} octets).
 Returns 1 if the signature is valid, otherwise 0.
 @end deftypefun
 
-Finally, to generation of new an ECDSA key pairs
+Finally, generating a new ECDSA key pair:
 
 @deftypefun void ecdsa_generate_keypair (struct ecc_point *@var{pub}, struct ecc_scalar *@var{key}, void *@var{random_ctx}, nettle_random_func *@var{random});
 @var{pub} and @var{key} is where the resulting key pair is stored. The
@@ -4302,32 +4509,57 @@ random octets and store them at @code{dst}. For advice, see
 @xref{Randomness}.
 @end deftypefun
 
+@node Curve 25519, , ECDSA, Elliptic curves
+@comment  node-name,  next,  previous,  up
 @subsubsection Curve25519
+@cindex Curve 25519
+
+@c FIXME: Make 2^255 pretty in all output formats. Use @sup?
+@c There are other places too (2^32, 2^130).
 
 Curve25519 is an elliptic curve of Montgomery type, @math{y^2 = x^3 +
 486662 x^2 + x @pmod{p}}, with @math{p = 2^255 - 19}. Montgomery curves
 have the advantage of simple and efficient point addition based on the
-x-coordinate only. This particular curve was proposed by D.~J.~Bernstein
-in 2006, for fast Diffie-Hellman key exchange. The group generator is
-defined by @math{x = 9} (there are actually two points with @math{x =
-9}, differing by the sign of the y-coordinate, but that doesn't matter
-for the curve25519 operations which work with the x-coordinate only).
+x-coordinate only. This particular curve was proposed by D. J. Bernstein
+in 2006, for fast Diffie-Hellman key exchange, and is also described in
+@cite{RFC 7748}. The group generator is defined by @math{x = 9} (there
+are actually two points with @math{x = 9}, differing by the sign of the
+y-coordinate, but that doesn't matter for the curve25519 operations
+which work with the x-coordinate only).
 
 The curve25519 functions are defined as operations on octet strings,
-which are interpreted as x-coordinates in little-endian byte order.
+representing 255-bit scalars or x-coordinates, in little-endian byte
+order. The most significant input bit, i.e, the most significant bit of
+the last octet, is always ignored.
 
-Of all the possible input strings, only about half correspond to points
-on curve25519, i.e., a value that can be produced by
-@code{curve25519_mul_g}. The other half corresponds to points on a
-related ``twist curve''. The current implementation of
+For scalars, in addition, the least significant three bits are ignored,
+and treated as zero, and the second most significant bit is ignored too,
+and treated as one. Then the scalar input string always represents 8
+times a number in the range @math{2^251 <= s < 2^252}.
+
+Of all the possible input strings, only about half correspond to
+x-coordinates of points on curve25519, i.e., a value @math{x} for which
+the the curve equation can be solved for @math{y}. The other half
+correspond to points on a related ``twist curve''. The function
 @code{curve25519_mul} uses a Montgomery ladder for the scalar
-multiplication, as suggested in the curve25519 literature, and produces
-a well defined output for all possible inputs, no matter if points are
-on the proper curve or on its twist. However, at the time of writing, it
-is not yet ruled out that other implementations could be faster, and
-therefore the behaviour for inputs corresponding to points on the twist
-curve must be considered an implementation idiosyncrasy, and may change
-in future versions.
+multiplication, as suggested in the curve25519 literature, and required
+by @cite{RFC 7748}. The output is therefore well defined for
+@emph{all} possible inputs, no matter if the input string represents a
+valid point on the curve or not.
+
+Note that the curve25519 implementation in earlier versions of Nettle
+deviates slightly from @cite{RFC 7748}, in that bit 255 of the @math{x}
+coordinate of the point input to curve25519_mul was not ignored. The
+@file{nette/curve25519.h} defines a preprocessor symbol
+@code{NETTLE_CURVE25519_RFC7748} to indicate conformance with the
+standard.
+
+Nettle defines Curve 25519 in @file{<nettle/curve25519.h>}.
+
+@defvr Constant NETTLE_CURVE25519_RFC7748
+Defined to 1 in Nettle versions conforming to RFC 7748. Undefined in
+earlier versions.
+@end defvr
 
 @defvr Constant CURVE25519_SIZE
 The size of the strings representing curve25519 points and scalars, 32.
@@ -4351,10 +4583,6 @@ argument @var{q} use a little-endian representation of the scalar and
 the x-coordinates, respectively. They are all of size
 @code{CURVE25519_SIZE}.
 
-The output value is defined only when the input @var{p} is a string
-produced by @code{curve25519_mul_g}. (See discussion above, about the
-twist curve).
-
 This function is intended to be compatible with the function
 @code{crypto_scalar_mult} in the NaCl library.
 @end deftypefun
@@ -4362,7 +4590,7 @@ This function is intended to be compatible with the function
 @subsubsection EdDSA
 @cindex eddsa
 
-EdDSA is a signature scheme proposed by D.~J.~Bernstein et al. in 2011.
+EdDSA is a signature scheme proposed by D. J. Bernstein et al. in 2011.
 It is defined using a ``Twisted Edwards curve'', of the form @math{-x^2
 + y^2 = 1 + d x^2 y^2}. The specific signature scheme Ed25519 uses a
 curve which is equivalent to curve25519: The two groups used differ only
@@ -4898,8 +5126,16 @@ Like @code{memxor}, but takes two source areas and separate
 destination area.
 @end deftypefun
 
+@deftypefun int memeql_sec (const void *@var{a}, const void *@var{b}, size_t @var{n})
+Side-channel silent comparison of the @var{n} bytes at @var{a} and
+@var{b}. I.e., instructions executed and memory accesses are identical
+no matter where the areas differ, @pxref{Side-channel silence}. Return
+non-zero if the areas are equal, and zero if they differ.
+@end deftypefun
 
-@code{memxor} is declared in @file{<nettle/memxor.h>}.
+These functions are declared in @file{<nettle/memops.h>}. For
+compatibility with earlier versions of Nettle, @code{memxor} and
+@code{memxor3} are also declared in @file{<nettle/memxor.h>}.
 
 @node Compatibility functions,  , Miscellaneous functions, Reference
 @comment  node-name,  next,  previous,  up
@@ -5042,20 +5278,6 @@ option to be able to build with BSD make.
 
 Local Variables:
 ispell-local-dictionary: "american"
-ispell-skip-region-alist: (
- (ispell-words-keyword forward-line)
- ("^@example" . "^@end.*example")
- ("^@ignore" . "^@end.*ignore")
- ("^@\\(end\\|syncodeindex\\|vskip\\|\\(un\\)?macro\\|node\\|deftp\\) .*$")
- ("^@\\(printindex\\|set\\) .*$")
- ("^@def.*$")
- ;; Allows one level of nested braces in the argument 
- ("@\\(uref\\|value\\|badspell\\|code\\|file\\|var\\|url\\){[^{}]*\\({[^{}]*}[^{}]*\\)*}")
- ("@[a-z]+[{ ]")
- ("@[a-z]+$")
- ("\input texinfo.*$")
- ("ispell-ignore" . "ispell-end-ignore")
- ("^Local Variables:$" . "^End:$"))
 End:
 
 @c  LocalWords:  cryptographics crypto LSH GNUPG API GPL LGPL aes rijndael ller

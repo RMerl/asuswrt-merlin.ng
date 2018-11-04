@@ -26,7 +26,7 @@ test_main (void)
       ecc->mul (ecc, p, n, ecc->g, scratch);
       ecc->h_to_a (ecc, 0, p, p, scratch);
 
-      if (mpn_cmp (p, ecc->g, 2*size != 0))
+      if (mpn_cmp (p, ecc->g, 2*size) != 0)
 	die ("curve %d: ecc->mul with n = 1 failed.\n", ecc->p.bit_size);
 
       for (n[0] = 2; n[0] <= 4; n[0]++)

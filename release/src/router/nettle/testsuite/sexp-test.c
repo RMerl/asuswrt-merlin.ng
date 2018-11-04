@@ -70,7 +70,7 @@ test_main(void)
 
   }
   {
-    static const uint8_t *keys[2] = { "n", "e" };
+    static const char * const keys[2] = { "n", "e" };
     struct sexp_iterator v[2];
     
     ASSERT(sexp_iterator_first(&i, LDATA("((1:n2:xx3:foo)0:(1:y)(1:e))")));

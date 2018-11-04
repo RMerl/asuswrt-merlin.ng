@@ -70,7 +70,7 @@ main(int argc UNUSED, char **argv UNUSED)
       /* "buffer" will hold the bytes from disk: */
       uint8_t buffer[CHUNK_SIZE];
       /* "result" will hold bytes before output: */
-      uint8_t result[ENCODED_SIZE + 1];
+      char result[ENCODED_SIZE + 1];
       unsigned nbytes; /* Number of bytes read from stdin */
       int encoded_bytes; /* Total number of bytes encoded per iteration */
       
@@ -88,7 +88,7 @@ main(int argc UNUSED, char **argv UNUSED)
 	      werror ("Error reading file: %s\n", strerror(errno));
 	      return EXIT_FAILURE;
 	    }
-	  if (!write_string (stdout, encoded_bytes, result)
+	  if (!write_data (stdout, encoded_bytes, result)
 	      || fflush (stdout) != 0)
 	    {
 	      werror ("Error writing file: %s\n", strerror(errno));
@@ -97,7 +97,7 @@ main(int argc UNUSED, char **argv UNUSED)
 	  return EXIT_SUCCESS;
 	}
       /* The result vector is printed */
-      if (!write_string(stdout,encoded_bytes, result))
+      if (!write_data(stdout, encoded_bytes, result))
 	{
 	  werror ("Error writing file: %s\n", strerror(errno));
 	  return EXIT_FAILURE;

@@ -75,9 +75,7 @@ test_a (const uint8_t *s, const uint8_t *b, const uint8_t *r)
 void
 test_main (void)
 {
-  /* From draft-turner-thecurve25519function-00 (same also in
-     draft-josefsson-tls-curve25519-05, but the latter uses different
-     endianness). */
+  /* From RFC 7748. */
   test_g (H("77076d0a7318a57d3c16c17251b26645"
 	    "df4c2f87ebc0992ab177fba51db92c2a"),
 	  H("8520f0098930a754748b7ddcb43ef75a"
@@ -98,6 +96,46 @@ test_main (void)
 	    "6f3bb1292618b6fd1c2f8b27ff88e0eb"),
 	  H("8520f0098930a754748b7ddcb43ef75a"
 	    "0dbf3a0d26381af4eba4a98eaa9b4e6a"),
+	  H("4a5d9d5ba4ce2de1728e3bf480350f25"
+	    "e07e21c947d19e3376f09b3c1e161742"));
+
+  /* Check that the least significant three bits (first octet) of the
+     scalar are ignored by mul_g. */
+  test_g (H("70076d0a7318a57d3c16c17251b26645"
+	    "df4c2f87ebc0992ab177fba51db92c2a"),
+	  H("8520f0098930a754748b7ddcb43ef75a"
+	    "0dbf3a0d26381af4eba4a98eaa9b4e6a"));
+  /* Check that the most significant two bits (last octet) of the
+     scalar are ignored by mul_g. */
+  test_g (H("5dab087e624a8a4b79e17f8b83800ee6"
+	    "6f3bb1292618b6fd1c2f8b27ff88e02b"),
+	  H("de9edb7d7b7dc1b4d35b61c2ece43537"
+	    "3f8343c85b78674dadfc7e146f882b4f"));
+
+  /* Check that the least significant three bits (first octet) of the
+     scalar are ignored by mul_a. */
+  test_a (H("5aab087e624a8a4b79e17f8b83800ee6"
+	    "6f3bb1292618b6fd1c2f8b27ff88e0eb"),
+	  H("8520f0098930a754748b7ddcb43ef75a"
+	    "0dbf3a0d26381af4eba4a98eaa9b4e6a"),
+	  H("4a5d9d5ba4ce2de1728e3bf480350f25"
+	    "e07e21c947d19e3376f09b3c1e161742"));
+
+  /* Check that the most significant two bits (last octet) of the
+     scalar are ignored by mul_g. */
+  test_a (H("77076d0a7318a57d3c16c17251b26645"
+	    "df4c2f87ebc0992ab177fba51db92cea"),
+	  H("de9edb7d7b7dc1b4d35b61c2ece43537"
+	    "3f8343c85b78674dadfc7e146f882b4f"),
+	  H("4a5d9d5ba4ce2de1728e3bf480350f25"
+	    "e07e21c947d19e3376f09b3c1e161742"));
+
+  /* Check that the most significant bit (last octet) of the x
+     coordinate is ignored. */
+  test_a (H("77076d0a7318a57d3c16c17251b26645"
+	    "df4c2f87ebc0992ab177fba51db92c2a"),
+	  H("de9edb7d7b7dc1b4d35b61c2ece43537"
+	    "3f8343c85b78674dadfc7e146f882bcf"),
 	  H("4a5d9d5ba4ce2de1728e3bf480350f25"
 	    "e07e21c947d19e3376f09b3c1e161742"));
 }

@@ -90,13 +90,12 @@ xalloc (size_t size)
 }
 
 static uint8_t *
-hash_string (const struct nettle_hash *hash,
-	     unsigned length, const char *s)
+hash_string (const struct nettle_hash *hash, const char *s)
 {
   void *ctx = xalloc (hash->context_size);
   uint8_t *digest = xalloc (hash->digest_size);
   hash->init (ctx);
-  hash->update (ctx, length, s);
+  hash->update (ctx, strlen(s), (const uint8_t *) s);
   hash->digest (ctx, hash->digest_size, digest);
   free (ctx);
 
@@ -173,7 +172,7 @@ struct rsa_ctx
 static void *
 bench_rsa_init (unsigned size)
 {
-  char rsa1024[] = 
+  unsigned char rsa1024[] =
     "{KDExOnByaXZhdGUta2V5KDE0OnJzYS1wa2NzMS1zaGExKDE6bjEyOToA90+K5EmjbFJBeJD"
     " xP2KD2Df+0Twc9425uB+vhqTrVijtd2PnwEQDfR2VoducgkKcXJzYYyCNILQJbFAi2Km/sD"
     " jImERBqDtaI217Ze+tOKEmImexYTAgFuqEptp2F3M4DqgRQ7s/3nJQ/bPE5Hfi1OZhJSShu"
@@ -188,7 +187,7 @@ bench_rsa_init (unsigned size)
     " tAiGzthfSbFsBiLQgb3VOr+AeIybT+XKSgxOmM2NDojigqARWN5u1CVDVuD2L2ManpoGiM6"
     " kQ6FaJjqRjxeRRKFrQxGJa9tM1hqStxokC1oJidgaOLGnn60iwzToug9KSkp}";
     
-  char rsa2048[] =
+  unsigned char rsa2048[] =
     "{KDExOnByaXZhdGUta2V5KDE0OnJzYS1wa2NzMS1zaGExKDE6bjI1NzoAtxWXiglIdunDK48"
     " 8I0vW0wTqnh/riW9pLk8n1F8MUPBFdhvkkl0bDQqSJPUvSHy+w4fLVwcEzeI4qFyo3b2Avz"
     " JK20MFbt/WfHD1TbxuK8rNqXyqmqjJ9vgjtV9nPzAz7CM9ogs3/RJHpcfZPQF15ifizleUZ"
@@ -239,7 +238,7 @@ bench_rsa_init (unsigned size)
 	 && rsa_keypair_from_sexp_alist (&ctx->pub, &ctx->key, 0, &i)))
     die ("Internal error.\n");
 
-  ctx->digest = hash_string (&nettle_sha256, 3, "foo");
+  ctx->digest = hash_string (&nettle_sha256, "foo");
 
   rsa_sha256_sign_digest (&ctx->key, ctx->digest, ctx->s);
   
@@ -294,7 +293,7 @@ bench_dsa_init (unsigned size)
   struct dsa_ctx *ctx;
   struct sexp_iterator i;  
 
-  char dsa1024[] =
+  unsigned char dsa1024[] =
     "{KDExOnByaXZhdGUta2V5KDM6ZHNhKDE6cDEyOToA2q4hOXEClLMXXMOl9xaPcGC/GeGmCMv"
     " VCaaW0uWc50DvvmJDPQPdCehyfZr/1dv2UDbx06TC7ls/IFd+BsDzGBRxqIQ44J20cn+0gt"
     " NMIXAocE1QhCCFaT5gXrk8zMlqBEGaP3RdpgxNanEXkTj2Wma8r1GtrLX3HPafio62jicpK"
@@ -324,7 +323,7 @@ bench_dsa_init (unsigned size)
 					 0, DSA_SHA1_Q_BITS, &i)) )
     die ("Internal error.\n");
 
-  ctx->digest = hash_string (&nettle_sha1, 3, "foo");
+  ctx->digest = hash_string (&nettle_sha1, "foo");
 
   dsa_sign (&ctx->params, ctx->key,
 	    &ctx->lfib, (nettle_random_func *)knuth_lfib_random,
@@ -399,7 +398,7 @@ bench_ecdsa_init (unsigned size)
       xs = "8e8e07360350fb6b7ad8370cfd32fa8c6bba785e6e200599";
       ys = "7f82ddb58a43d59ff8dc66053002b918b99bd01bd68d6736";
       zs = "f2e620e086d658b4b507996988480917640e4dc107808bdd";
-      ctx->digest = hash_string (&nettle_sha1, 3, "abc");
+      ctx->digest = hash_string (&nettle_sha1, "abc");
       ctx->digest_size = 20;
       break;
     case 224:
@@ -407,7 +406,7 @@ bench_ecdsa_init (unsigned size)
       xs = "993bf363f4f2bc0f255f22563980449164e9c894d9efd088d7b77334";
       ys = "b75fff9849997d02d135140e4d0030944589586e22df1fc4b629082a";
       zs = "cdfd01838247f5de3cc70b688418046f10a2bfaca6de9ec836d48c27";
-      ctx->digest = hash_string (&nettle_sha224, 3, "abc");
+      ctx->digest = hash_string (&nettle_sha224, "abc");
       ctx->digest_size = 28;
       break;
 
@@ -417,7 +416,7 @@ bench_ecdsa_init (unsigned size)
       xs = "2442A5CC 0ECD015F A3CA31DC 8E2BBC70 BF42D60C BCA20085 E0822CB0 4235E970";
       ys = "6FC98BD7 E50211A4 A27102FA 3549DF79 EBCB4BF2 46B80945 CDDFE7D5 09BBFD7D";
       zs = "DC51D386 6A15BACD E33D96F9 92FCA99D A7E6EF09 34E70975 59C27F16 14C88A7F";
-      ctx->digest = hash_string (&nettle_sha256, 3, "abc");
+      ctx->digest = hash_string (&nettle_sha256, "abc");
       ctx->digest_size = 32;
       break;
     case 384:
@@ -428,7 +427,7 @@ bench_ecdsa_init (unsigned size)
 	"3D383B91 C5E7EDAA 2B714CC9 9D5743CA";
       zs = "0BEB6466 34BA8773 5D77AE48 09A0EBEA 865535DE 4C1E1DCB 692E8470 8E81A5AF"
 	"62E528C3 8B2A81B3 5309668D 73524D9F";
-      ctx->digest = hash_string (&nettle_sha384, 3, "abc");
+      ctx->digest = hash_string (&nettle_sha384, "abc");
       ctx->digest_size = 48;
       break;
     case 521:
@@ -443,7 +442,7 @@ bench_ecdsa_init (unsigned size)
 	"20597779 060A7FF9 D704ADF7 8B570FFA D6F062E9 5C7E0C5D 5481C5B1 53B48B37"
 	"5FA1";
 
-      ctx->digest = hash_string (&nettle_sha512, 3, "abc");
+      ctx->digest = hash_string (&nettle_sha512, "abc");
       ctx->digest_size = 64;
       break;
     default:
@@ -526,7 +525,7 @@ bench_openssl_rsa_init (unsigned size)
   ctx->key = RSA_generate_key (size, 65537, NULL, NULL);
   ctx->ref = xalloc (RSA_size (ctx->key));
   ctx->signature = xalloc (RSA_size (ctx->key));
-  ctx->digest = hash_string (&nettle_sha1, 3, "foo");
+  ctx->digest = hash_string (&nettle_sha1, "foo");
   RSA_blinding_off(ctx->key);
 
   if (! RSA_sign (NID_sha1, ctx->digest, SHA1_DIGEST_SIZE,
@@ -585,27 +584,27 @@ bench_openssl_ecdsa_init (unsigned size)
     case 192:
       ctx->key = EC_KEY_new_by_curve_name (NID_X9_62_prime192v1);
       ctx->digest_length = 24; /* truncated */
-      ctx->digest = hash_string (&nettle_sha224, 3, "abc");
+      ctx->digest = hash_string (&nettle_sha224, "abc");
       break;
     case 224:
       ctx->key = EC_KEY_new_by_curve_name (NID_secp224r1);
       ctx->digest_length = SHA224_DIGEST_SIZE;
-      ctx->digest = hash_string (&nettle_sha224, 3, "abc");
+      ctx->digest = hash_string (&nettle_sha224, "abc");
       break;
     case 256:
       ctx->key = EC_KEY_new_by_curve_name (NID_X9_62_prime256v1);
       ctx->digest_length = SHA256_DIGEST_SIZE;
-      ctx->digest = hash_string (&nettle_sha256, 3, "abc");
+      ctx->digest = hash_string (&nettle_sha256, "abc");
       break;
     case 384:
       ctx->key = EC_KEY_new_by_curve_name (NID_secp384r1);
       ctx->digest_length = SHA384_DIGEST_SIZE;
-      ctx->digest = hash_string (&nettle_sha384, 3, "abc");
+      ctx->digest = hash_string (&nettle_sha384, "abc");
       break;
     case 521:
       ctx->key = EC_KEY_new_by_curve_name (NID_secp521r1);
       ctx->digest_length = SHA512_DIGEST_SIZE;
-      ctx->digest = hash_string (&nettle_sha512, 3, "abc");
+      ctx->digest = hash_string (&nettle_sha512, "abc");
       break;
     default:
       die ("Internal error.\n");
@@ -613,7 +612,10 @@ bench_openssl_ecdsa_init (unsigned size)
 
   /* This curve isn't supported in this build of openssl */
   if (ctx->key == NULL)
-    return NULL;
+    {
+      free(ctx);
+      return NULL;
+    }
 
   if (!EC_KEY_generate_key( ctx->key))
     die ("Openssl EC_KEY_generate_key failed.\n");
@@ -652,15 +654,15 @@ bench_openssl_ecdsa_clear (void *p)
 
 struct curve25519_ctx
 {
-  char x[CURVE25519_SIZE];
-  char s[CURVE25519_SIZE];
+  uint8_t x[CURVE25519_SIZE];
+  uint8_t s[CURVE25519_SIZE];
 };
 
 static void
 bench_curve25519_mul_g (void *p)
 {
   struct curve25519_ctx *ctx = p;
-  char q[CURVE25519_SIZE];
+  uint8_t q[CURVE25519_SIZE];
   curve25519_mul_g (q, ctx->s);
 }
 
@@ -668,7 +670,7 @@ static void
 bench_curve25519_mul (void *p)
 {
   struct curve25519_ctx *ctx = p;
-  char q[CURVE25519_SIZE];
+  uint8_t q[CURVE25519_SIZE];
   curve25519_mul (q, ctx->s, ctx->x);
 }
 

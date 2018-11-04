@@ -90,7 +90,7 @@ test_eddsa (const struct ecc_curve *ecc,
   if (msg->length == 0)
     {
       if (_eddsa_verify  (ecc, H, pub, A, ctx,
-			  3, "foo", signature, scratch))
+			  LDATA("foo"), signature, scratch))
 	{
 	  fprintf (stderr,
 		   "ecdsa_verify unexpectedly succeeded with different message.\n");

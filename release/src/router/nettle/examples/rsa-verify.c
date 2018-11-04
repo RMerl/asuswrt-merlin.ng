@@ -44,7 +44,7 @@
 static int
 read_signature(const char *name, mpz_t s)
 {
-  char *buffer;
+  uint8_t *buffer;
   unsigned length;
   int res;
   
@@ -52,7 +52,7 @@ read_signature(const char *name, mpz_t s)
   if (!length)
     return 0;
 
-  res = (mpz_set_str(s, buffer, 16) == 0);
+  res = (mpz_set_str(s, (const char *) buffer, 16) == 0);
   free(buffer);
 
   return res;

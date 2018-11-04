@@ -135,26 +135,9 @@ nettle_mpz_get_str_256(size_t length, uint8_t *s, const mpz_t x)
 
 /* Converting from strings */
 
-#ifdef mpz_import
-/* Was introduced in GMP-4.1 */
-# define nettle_mpz_from_octets(x, length, s) \
+/* mpz_import was introduced in GMP-4.1 */
+#define nettle_mpz_from_octets(x, length, s) \
    mpz_import((x), (length), 1, 1, 0, 0, (s))
-#else
-static void
-nettle_mpz_from_octets(mpz_t x,
-		       size_t length, const uint8_t *s)
-{
-  size_t i;
-
-  mpz_set_ui(x, 0);
-
-  for (i = 0; i < length; i++)
-    {
-      mpz_mul_2exp(x, x, 8);
-      mpz_add_ui(x, x, s[i]);
-    }
-}
-#endif
 
 void
 nettle_mpz_set_str_256_u(mpz_t x,

@@ -165,7 +165,10 @@ sexp_parse(struct sexp_parser *parser,
 	case SEXP_CODING_END:
 	  die("Unexpected end of transport encoding.\n");
 	  
-	default:
+	case SEXP_DISPLAY_END:
+	  die("Unexpected end of display tag.\n");
+
+	case SEXP_DISPLAY:
 	  /* Internal error. */
 	  abort();
 	}

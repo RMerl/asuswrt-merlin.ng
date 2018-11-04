@@ -46,13 +46,10 @@
 
 # define GMP_NUMB_MASK (~(mp_limb_t) 0)
 
-/* Functions missing in older gmp versions, and checked for with ifdef */
+/* Function missing in older gmp versions, and checked for with ifdef */
 # define mpz_limbs_read mpz_limbs_read
-# define mpn_copyd mpn_copyd
-# define mpn_sqr mpn_sqr
-# define mpz_combit mpz_combit
-# define mpz_import mpz_import
-# define mpz_export mpz_export
+/* Side-channel silent powm not available in mini-gmp. */
+# define mpz_powm_sec mpz_powm
 #else
 # include <gmp.h>
 #endif

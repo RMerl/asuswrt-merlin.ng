@@ -66,14 +66,16 @@ hex_decode_table[0x80] =
 int
 base16_decode_single(struct base16_decode_ctx *ctx,
 		     uint8_t *dst,
-		     uint8_t src)
+		     char src)
 {
+  /* Avoid signed char for indexing. */
+  unsigned char usrc = src;
   int digit;
 
-  if (src >= 0x80)
+  if (usrc >= 0x80)
     return -1;
 
-  digit = hex_decode_table[src];
+  digit = hex_decode_table[usrc];
   switch (digit)
     {
     case -1:
@@ -104,7 +106,7 @@ base16_decode_update(struct base16_decode_ctx *ctx,
 		     size_t *dst_length,
 		     uint8_t *dst,
 		     size_t src_length,
-		     const uint8_t *src)
+		     const char *src)
 {
   size_t done;
   size_t i;

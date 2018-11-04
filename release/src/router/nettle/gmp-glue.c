@@ -116,32 +116,6 @@ mpz_roinit_n (mpz_ptr x, const mp_limb_t *xp, mp_size_t xs)
 }
 #endif /* !GMP_HAVE_mpz_limbs_read */
 
-#if !GMP_HAVE_mpn_copyd
-void
-mpn_copyd (mp_ptr dst, mp_srcptr src, mp_size_t n)
-{
-  mp_size_t i;
-  for (i = n - 1; i >= 0; i--)
-    dst[i] = src[i];
-}
-
-void
-mpn_copyi (mp_ptr dst, mp_srcptr src, mp_size_t n)
-{
-  mp_size_t i;
-  for (i = 0; i < n; i++)
-    dst[i] = src[i];
-}
-
-void
-mpn_zero (mp_ptr ptr, mp_size_t n)
-{
-  mp_size_t i;
-  for (i = 0; i < n; i++)
-    ptr[i] = 0;
-}
-#endif /* !GMP_HAVE_mpn_copyd */
-
 void
 cnd_swap (mp_limb_t cnd, mp_limb_t *ap, mp_limb_t *bp, mp_size_t n)
 {

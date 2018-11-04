@@ -90,6 +90,12 @@ format_string(struct nettle_buffer *buffer,
   return prefix_length + length;
 }
 
+static inline size_t
+strlen_u8 (const uint8_t *s)
+{
+  return strlen((const char*) s);
+}
+
 size_t
 sexp_vformat(struct nettle_buffer *buffer, const char *format, va_list args)
 {
@@ -103,7 +109,8 @@ sexp_vformat(struct nettle_buffer *buffer, const char *format, va_list args)
 	{
 	  const char *start = format - 1;
 	  size_t length = 1 + strcspn(format, "()% \t");
-	  size_t output_length = format_string(buffer, length, start);
+	  size_t output_length
+	    = format_string(buffer, length, (const uint8_t *) start);
 	  if (!output_length)
 	    return 0;
 	  
@@ -161,19 +168,19 @@ sexp_vformat(struct nettle_buffer *buffer, const char *format, va_list args)
 	      
 	    case 's':
 	      {
-		const char *s;
+		const uint8_t *s;
 		size_t length;
 		size_t output_length;
 		
 		if (nul_flag)
 		  {
-		    s = va_arg(args, const char *);
-		    length = strlen(s);
+		    s = va_arg(args, const uint8_t *);
+		    length = strlen_u8(s);
 		  }
 		else
 		  {
 		    length = va_arg(args, size_t);
-		    s = va_arg(args, const char *);
+		    s = va_arg(args, const uint8_t *);
 		  }
 		
 		output_length = format_string(buffer, length, s);
@@ -185,22 +192,22 @@ sexp_vformat(struct nettle_buffer *buffer, const char *format, va_list args)
 	      }
 	    case 't':
 	      {
-		const char *s;
+		const uint8_t *s;
 		size_t length;
 		size_t output_length;
 		
 		if (nul_flag)
 		  {
-		    s = va_arg(args, const char *);
+		    s = va_arg(args, const uint8_t *);
 		    if (!s)
 		      break;
 		    
-		    length = strlen(s);
+		    length = strlen_u8(s);
 		  }
 		else
 		  {
 		    length = va_arg(args, size_t);
-		    s = va_arg(args, const char *);
+		    s = va_arg(args, const uint8_t *);
 		    if (!s)
 		      break;
 		  }
@@ -225,18 +232,18 @@ sexp_vformat(struct nettle_buffer *buffer, const char *format, va_list args)
 	      
 	    case 'l':
 	      {
-		const char *s;
+		const uint8_t *s;
 		size_t length;
 		
 		if (nul_flag)
 		  {
-		    s = va_arg(args, const char *);
-		    length = strlen(s);
+		    s = va_arg(args, const uint8_t *);
+		    length = strlen_u8(s);
 		  }
 		else
 		  {
 		    length = va_arg(args, size_t);
-		    s = va_arg(args, const char *);
+		    s = va_arg(args, const uint8_t *);
 		  }
 
 		if (buffer && !nettle_buffer_write(buffer, length, s))

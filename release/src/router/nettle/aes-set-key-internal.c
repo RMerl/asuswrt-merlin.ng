@@ -39,6 +39,7 @@
 #endif
 
 #include "aes-internal.h"
+#include <assert.h>
 #include "macros.h"
 
 void
@@ -52,6 +53,7 @@ _aes_set_key(unsigned nr, unsigned nk,
   unsigned lastkey, i;
   uint32_t t;
 
+  assert(nk != 0);
   lastkey = (AES_BLOCK_SIZE/4) * (nr + 1);
   
   for (i=0, rp = rcon; i<nk; i++)

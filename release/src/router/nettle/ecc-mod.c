@@ -51,7 +51,7 @@ ecc_mod (const struct ecc_modulo *m, mp_limb_t *rp)
   mp_size_t i;
   unsigned shift;
 
-  assert (sn > 0);
+  assert (bn < mn);
 
   /* FIXME: Could use mpn_addmul_2. */
   /* Eliminate sn limbs at a time */
@@ -72,6 +72,12 @@ ecc_mod (const struct ecc_modulo *m, mp_limb_t *rp)
     }
   else
     {
+      /* The loop below always runs at least once. But the analyzer
+	 doesn't realize that, and complains about hi being used later
+	 on without a well defined value. */
+#ifdef __clang_analyzer__
+      hi = 0;
+#endif
       while (rn >= 2 * mn - bn)
 	{
 	  rn -= sn;

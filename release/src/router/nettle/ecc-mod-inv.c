@@ -145,6 +145,7 @@ ecc_mod_inv (const struct ecc_modulo *m,
       cnd_swap (swap, up, vp, n);
       cy = cnd_sub_n (odd, up, vp, n);
       cy -= cnd_add_n (cy, up, m->m, n);
+      assert (cy == 0);
 
       cy = mpn_rshift (ap, ap, n, 1);
       assert (cy == 0);

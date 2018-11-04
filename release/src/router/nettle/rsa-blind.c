@@ -61,7 +61,7 @@ _rsa_blind (const struct rsa_public_key *pub,
   while (!mpz_invert (ri, r, pub->n));
 
   /* c = c*(r^e) mod n */
-  mpz_powm(r, r, pub->e, pub->n);
+  mpz_powm_sec(r, r, pub->e, pub->n);
   mpz_mul(c, c, r);
   mpz_fdiv_r(c, c, pub->n);
 

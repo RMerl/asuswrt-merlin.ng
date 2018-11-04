@@ -72,7 +72,11 @@ curve25519_mul (uint8_t *q, const uint8_t *n, const uint8_t *p)
   itch = ecc->p.size * 12;
   scratch = gmp_alloc_limbs (itch);
 
+  /* Note that 255 % GMP_NUMB_BITS == 0 isn't supported, so x1 always
+     holds at least 256 bits. */
   mpn_set_base256_le (x1, ecc->p.size, p, CURVE25519_SIZE);
+  /* Clear bit 255, as required by RFC 7748. */
+  x1[255/GMP_NUMB_BITS] &= ~((mp_limb_t) 1 << (255 % GMP_NUMB_BITS));
 
   /* Initialize, x2 = x1, z2 = 1 */
   mpn_copyi (x2, x1, ecc->p.size);
@@ -118,6 +122,7 @@ curve25519_mul (uint8_t *q, const uint8_t *n, const uint8_t *p)
       ecc_modp_sqr (ecc, DA, C);
       ecc_modp_mul (ecc, z3, DA, x1);
 
+      /* FIXME: Could be combined with the loop's initial cnd_swap. */
       cnd_swap (bit, x2, x3, 2*ecc->p.size);
     }
   /* Do the 3 low zero bits, just duplicating x2 */

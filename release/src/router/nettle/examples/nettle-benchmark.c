@@ -723,6 +723,10 @@ main(int argc, char **argv)
   int c;
   const char *alg;
 
+#if WITH_OPENSSL
+  nettle_openssl_init();
+#endif
+
   const struct nettle_hash *hashes[] =
     {
       &nettle_md2, &nettle_md4, &nettle_md5,

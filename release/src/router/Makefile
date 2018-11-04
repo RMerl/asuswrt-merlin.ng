@@ -5100,10 +5100,8 @@ openvpn: shared openssl lzo openpam zlib openvpn/Makefile
 openvpn/Makefile:
 ifeq ($(HND_ROUTER),y)
 	cd $(SRCBASE) && rm -f kernel
-	( cd openvpn ; ./autogen.sh && export OPENSSL_CRYPTO_CFLAGS="-I$(TOP)/openssl -I$(LINUX_INC_DIR)/include"; \
-		export OPENSSL_CRYPTO_LIBS="-L$(TOP)/openssl -lcrypto"; \
-		export OPENSSL_SSL_CFLAGS="-I$(TOP)/openssl -I$(LINUX_INC_DIR)/include"; \
-		export OPENSSL_SSL_LIBS="-L$(TOP)/openssl -lssl"; \
+	( cd openvpn ; ./autogen.sh && export OPENSSL_CFLAGS="-I$(TOP)/openssl -I$(LINUX_INC_DIR)/include"; \
+		export OPENSSL_LIBS="-L$(TOP)/openssl -lcrypto -lssl"; \
 		CFLAGS="-O3 -Wall $(EXTRACFLAGS) -ffunction-sections -fdata-sections $(if $(RTCONFIG_HTTPS),-I$(TOP)/openssl/include/openssl) $(if $(RTCONFIG_BCMARM),-I$(SRCBASE)/shared/bcmwifi/include) -I$(LINUX_INC_DIR)/include" \
 		LDFLAGS="$(EXTRALDFLAGS) -L$(TOP_PLATFORM)/nvram$(BCMEX)$(EX7) -lnvram $(shell if [[ "$(HND_ROUTER)" = "y" ]] ; then echo "-L$(TOP_PLATFORM)/wlcsm -lwlcsm"; else echo ""; fi) -L$(TOP)/shared -lshared $(if $(RTCONFIG_QTN),-L$(TOP)/libqcsapi_client -lqcsapi_client) $(if $(RTCONFIG_HTTPS),-L$(TOP)/openssl -lcrypto -lssl) -L$(TOP)/zlib -lz -lpthread -ldl -L$(TOP)/lzo/src/.libs -L$(TOP)/openpam/lib/libpam/.libs -ffunction-sections -fdata-sections -Wl,--gc-sections" \
 		CPPFLAGS="-I$(TOP)/lzo/include -I$(TOP)/openssl/include -I$(TOP)/openpam/include -I$(TOP)/shared -I$(SRCBASE)/include -I$(LINUX_INC_DIR)/include" \
@@ -5117,10 +5115,8 @@ ifeq ($(HND_ROUTER),y)
 	#cd openvpn; sed -i 's/build_libtool_libs=no/build_libtool_libs=yes/g' libtool;
 	cd $(SRCBASE) && ln -sf ../../../../../../../kernel kernel
 else
-	( cd openvpn ; ./autogen.sh && export OPENSSL_CRYPTO_CFLAGS="-I$(TOP)/openssl"; \
-		export OPENSSL_CRYPTO_LIBS="-L$(TOP)/openssl -lcrypto"; \
-		export OPENSSL_SSL_CFLAGS="-I$(TOP)/openssl"; \
-		export OPENSSL_SSL_LIBS="-L$(TOP)/openssl -lssl"; \
+	( cd openvpn ; ./autogen.sh && export OPENSSL_CFLAGS="-I$(TOP)/openssl"; \
+		export OPENSSL_LIBS="-L$(TOP)/openssl -lcrypto -lssl"; \
 		CFLAGS="-O3 -Wall $(EXTRACFLAGS) -ffunction-sections -fdata-sections $(if $(RTCONFIG_BCMARM),-I$(SRCBASE)/shared/bcmwifi/include) $(if $(RTCONFIG_HTTPS),-I$(TOP)/openssl/include/openssl)" \
 		LDFLAGS="$(EXTRALDFLAGS) -L$(TOP_PLATFORM)/nvram$(BCMEX)${EX7} ${EXTRA_NV_LDFLAGS} -lnvram -L$(TOP)/shared -lshared $(if $(RTCONFIG_QTN),-L$(TOP)/libqcsapi_client -lqcsapi_client) $(if $(RTCONFIG_HTTPS),-L$(TOP)/openssl -lcrypto -lssl) -L$(TOP)/zlib -lz -lpthread -ldl -L$(TOP)/lzo/src/.libs -L$(TOP)/openpam/lib/libpam/.libs -ffunction-sections -fdata-sections -Wl,--gc-sections" \
 		CPPFLAGS="-I$(TOP)/lzo/include -I$(TOP)/openssl/include -I$(TOP)/openpam/include -I$(TOP)/shared -I$(SRCBASE)/include" \
@@ -5976,7 +5972,7 @@ avahi/Makefile: avahi/configure
 		--disable-autoipd \
 		--disable-doxygen-doc --disable-manpages --disable-xmltoman \
 		--with-xml=expat \
-		--with-avahi-user="admin" --with-avahi-group="root" \
+		--with-avahi-user="nobody" --with-avahi-group="nobody" \
 		--disable-dependency-tracking \
 		--disable-stack-protector \
 		avahi_runtime_dir=/var/run \

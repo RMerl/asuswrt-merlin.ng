@@ -14,12 +14,12 @@ test_main(void)
   ASSERT(BASE16_DECODE_LENGTH(3) == 2);
   ASSERT(BASE16_DECODE_LENGTH(4) == 2);
   
-  test_armor(&nettle_base16, 0, "", "");
-  test_armor(&nettle_base16, 1, "H", "48");
-  test_armor(&nettle_base16, 2, "He", "4865");
-  test_armor(&nettle_base16, 3, "Hel", "48656c");
-  test_armor(&nettle_base16, 4, "Hell", "48656c6c");
-  test_armor(&nettle_base16, 5, "Hello", "48656c6c6f");
-  test_armor(&nettle_base16, 6, "Hello", "48656c6c6f00");
+  test_armor(&nettle_base16, LDATA(""), "");
+  test_armor(&nettle_base16, LDATA("H"), "48");
+  test_armor(&nettle_base16, LDATA("He"), "4865");
+  test_armor(&nettle_base16, LDATA("Hel"), "48656c");
+  test_armor(&nettle_base16, LDATA("Hell"), "48656c6c");
+  test_armor(&nettle_base16, LDATA("Hello"), "48656c6c6f");
+  test_armor(&nettle_base16, LDATA("Hello\0"), "48656c6c6f00");
 }
   

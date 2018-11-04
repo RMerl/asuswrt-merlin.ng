@@ -90,7 +90,7 @@ sexp_get_char(struct sexp_input *input)
 	 * character at a time. */
 	if (!input->coding->decode_update(&input->state,
 					  &done, &input->c,
-					  1, &input->c))
+					  1, (const char*) &input->c))
 	  die("Invalid coded data.\n");
 	
 	if (done)
@@ -286,57 +286,56 @@ sexp_get_string_length(struct sexp_input *input, enum sexp_mode mode,
 	}
     }
 
-  switch(input->c)
-    {
-    case ':':
-      /* Verbatim */
-      for (; length; length--)
-	{
-	  sexp_next_char(input);
-	  sexp_push_char(input, string);
-	}
+  if (input->c == ':')
+    /* Verbatim */
+    for (; length; length--)
+      {
+	sexp_next_char(input);
+	sexp_push_char(input, string);
+      }
+
+  else if (mode != SEXP_ADVANCED)
+    die("Encountered advanced string in canonical mode.\n");
+
+  else
+    switch(input->c)
+      {
+      case '"':
+	for (; length; length--)
+	  if (sexp_get_quoted_char(input))
+	    sexp_push_char(input, string);
+	  else
+	    die("Unexpected end of string.\n");
       
-      break;
-
-    case '"':
-      if (mode != SEXP_ADVANCED)
-	die("Encountered quoted string in canonical mode.\n");
-
-      for (; length; length--)
 	if (sexp_get_quoted_char(input))
-	  sexp_push_char(input, string);
-	else
-	  die("Unexpected end of string.\n");
-      
-      if (sexp_get_quoted_char(input))
-	die("Quoted string longer than expected.\n");
+	  die("Quoted string longer than expected.\n");
 
-      break;
+	break;
       
-    case '#':
-      sexp_input_start_coding(input, &nettle_base16, '#');
-      goto decode;
+      case '#':
+	sexp_input_start_coding(input, &nettle_base16, '#');
+	goto decode;
 
-    case '|':
-      sexp_input_start_coding(input, &nettle_base64, '|');
+      case '|':
+	sexp_input_start_coding(input, &nettle_base64, '|');
 
-    decode:
-      for (; length; length--)
-	{
-	  sexp_next_char(input);
-	  sexp_push_char(input, string);
-	}
-      sexp_get_char(input);
-      if (input->ctype != SEXP_END_CHAR)
-	die("Coded string too long.\n");
+      decode:
+	for (; length; length--)
+	  {
+	    sexp_next_char(input);
+	    sexp_push_char(input, string);
+	  }
+	sexp_get_char(input);
+	if (input->ctype != SEXP_END_CHAR)
+	  die("Coded string too long.\n");
 
-      sexp_input_end_coding(input);
+	sexp_input_end_coding(input);
       
-      break;
+	break;
       
-    default:
-      die("Invalid string.\n");
-    }
+      default:
+	die("Invalid string.\n");
+      }
 
   /* Skip the ending character. */
   sexp_get_char(input);  

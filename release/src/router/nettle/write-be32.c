@@ -41,7 +41,7 @@
 
 void
 _nettle_write_be32(size_t length, uint8_t *dst,
-		   uint32_t *src)
+		   const uint32_t *src)
 {
   size_t i;
   size_t words;

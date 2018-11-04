@@ -54,6 +54,7 @@
 /* Arbitrary limits which apply to systems that don't have alloca */
 #define NETTLE_MAX_HASH_BLOCK_SIZE 128
 #define NETTLE_MAX_HASH_DIGEST_SIZE 64
+#define NETTLE_MAX_HASH_CONTEXT_SIZE (sizeof(struct sha3_224_ctx))
 #define NETTLE_MAX_SEXP_ASSOC 17
 #define NETTLE_MAX_CIPHER_BLOCK_SIZE 32
 
@@ -78,6 +79,7 @@ extern const struct nettle_aead nettle_salsa20r12;
 
 /* Glue to openssl, for comparative benchmarking. Code in
  * examples/nettle-openssl.c. */
+extern void nettle_openssl_init(void);
 extern const struct nettle_cipher nettle_openssl_aes128;
 extern const struct nettle_cipher nettle_openssl_aes192;
 extern const struct nettle_cipher nettle_openssl_aes256;

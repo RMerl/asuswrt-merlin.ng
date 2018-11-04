@@ -25,7 +25,7 @@ test_main (void)
       ecc->mul_g (ecc, p, n, scratch);
       ecc->h_to_a (ecc, 0, p, p, scratch);
 
-      if (mpn_cmp (p, ecc->g, 2*size != 0))
+      if (mpn_cmp (p, ecc->g, 2*size) != 0)
 	{
 	  fprintf (stderr, "ecc->mul_g with n = 1 failed.\n");
 	  abort ();

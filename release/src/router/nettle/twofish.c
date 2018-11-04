@@ -135,9 +135,10 @@ static const uint8_t q1[256] = {
 
 /* ------------------------------------------------------------------------- */
 
-/* uint8_t gf_multiply(uint8_t p, uint8_t a, uint8_t b)
+/* uint32_t gf_multiply(uint8_t p, uint8_t a, uint8_t b)
  *
- * Multiplication in GF(2^8).
+ * Multiplication in GF(2^8). Larger return type, to avoid need for
+ * type casts when the return value is shifted left.
  *
  * This function multiplies a times b in the Galois Field GF(2^8) with
  * primitive polynomial p.
@@ -149,7 +150,7 @@ static const uint8_t q1[256] = {
  * operation.
  */
 
-static uint8_t
+static uint32_t
 gf_multiply(uint8_t p, uint8_t a, uint8_t b)
 {
   uint32_t shift  = b;
@@ -241,10 +242,10 @@ h_byte(int k, int i, uint8_t x, uint8_t l0, uint8_t l1, uint8_t l2, uint8_t l3)
               q_table[i][2][k == 2 ? x : l2 ^
                 q_table[i][1][k == 3 ? x : l3 ^ q_table[i][0][x]]]]];
 
-  return ( ((uint32_t)gf_multiply(0x69, mds_matrix[0][i], y))
-	   | ((uint32_t)gf_multiply(0x69, mds_matrix[1][i], y) << 8)
-	   | ((uint32_t)gf_multiply(0x69, mds_matrix[2][i], y) << 16)
-	   | ((uint32_t)gf_multiply(0x69, mds_matrix[3][i], y) << 24) );
+  return ( (gf_multiply(0x69, mds_matrix[0][i], y))
+	   | (gf_multiply(0x69, mds_matrix[1][i], y) << 8)
+	   | (gf_multiply(0x69, mds_matrix[2][i], y) << 16)
+	   | (gf_multiply(0x69, mds_matrix[3][i], y) << 24) );
 }
 
 /* uint32_t h(int k, uint8_t x, uint32_t l0, uint32_t l1, uint32_t l2, uint32_t l3);

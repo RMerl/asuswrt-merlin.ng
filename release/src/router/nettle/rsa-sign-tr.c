@@ -60,7 +60,7 @@ rsa_blind (const struct rsa_public_key *pub,
   while (!mpz_invert (ri, r, pub->n));
 
   /* c = c*(r^e) mod n */
-  mpz_powm(r, r, pub->e, pub->n);
+  mpz_powm_sec(r, r, pub->e, pub->n);
   mpz_mul(c, m, r);
   mpz_fdiv_r(c, c, pub->n);
 
@@ -88,6 +88,14 @@ rsa_compute_root_tr(const struct rsa_public_key *pub,
   int res;
   mpz_t t, mb, xb, ri;
 
+  /* mpz_powm_sec handles only odd moduli. If p, q or n is even, the
+     key is invalid and rejected by rsa_private_key_prepare. However,
+     some applications, notably gnutls, don't use this function, and
+     we don't want an invalid key to lead to a crash down inside
+     mpz_powm_sec. So do an additional check here. */
+  if (mpz_even_p (pub->n) || mpz_even_p (key->p) || mpz_even_p (key->q))
+    return 0;
+
   mpz_init (mb);
   mpz_init (xb);
   mpz_init (ri);
@@ -97,7 +105,7 @@ rsa_compute_root_tr(const struct rsa_public_key *pub,
 
   rsa_compute_root (key, xb, mb);
 
-  mpz_powm(t, xb, pub->e, pub->n);
+  mpz_powm_sec(t, xb, pub->e, pub->n);
   res = (mpz_cmp(mb, t) == 0);
 
   if (res)

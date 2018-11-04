@@ -39,7 +39,7 @@
 
 void
 _nettle_write_le64(size_t length, uint8_t *dst,
-		   uint64_t *src)
+		   const uint64_t *src)
 {
   size_t i;
   size_t words;

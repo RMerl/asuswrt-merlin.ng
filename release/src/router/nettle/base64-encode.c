@@ -41,11 +41,11 @@
 #define ENCODE(alphabet,x) ((alphabet)[0x3F & (x)])
 
 static void
-encode_raw(const uint8_t *alphabet,
-	   uint8_t *dst, size_t length, const uint8_t *src)
+encode_raw(const char *alphabet,
+	   char *dst, size_t length, const uint8_t *src)
 {
   const uint8_t *in = src + length;
-  uint8_t *out = dst + BASE64_ENCODE_RAW_LENGTH(length);
+  char *out = dst + BASE64_ENCODE_RAW_LENGTH(length);
 
   unsigned left_over = length % 3;
 
@@ -83,19 +83,19 @@ encode_raw(const uint8_t *alphabet,
   assert(out == dst);
 }
 
-static const uint8_t base64_encode_table[64] =
+static const char base64_encode_table[64] =
   "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
   "abcdefghijklmnopqrstuvwxyz"
   "0123456789+/";
 
 void
-base64_encode_raw(uint8_t *dst, size_t length, const uint8_t *src)
+base64_encode_raw(char *dst, size_t length, const uint8_t *src)
 {
   encode_raw(base64_encode_table, dst, length, src);
 }
 
 void
-base64_encode_group(uint8_t *dst, uint32_t group)
+base64_encode_group(char *dst, uint32_t group)
 {
   *dst++ = ENCODE(base64_encode_table, (group >> 18));
   *dst++ = ENCODE(base64_encode_table, (group >> 12));
@@ -113,7 +113,7 @@ base64_encode_init(struct base64_encode_ctx *ctx)
 /* Encodes a single byte. */
 size_t
 base64_encode_single(struct base64_encode_ctx *ctx,
-		     uint8_t *dst,
+		     char *dst,
 		     uint8_t src)
 {
   unsigned done = 0;
@@ -138,7 +138,7 @@ base64_encode_single(struct base64_encode_ctx *ctx,
  * area of size at least BASE64_ENCODE_LENGTH(length). */
 size_t
 base64_encode_update(struct base64_encode_ctx *ctx,
-		     uint8_t *dst,
+		     char *dst,
 		     size_t length,
 		     const uint8_t *src)
 {
@@ -181,7 +181,7 @@ base64_encode_update(struct base64_encode_ctx *ctx,
  * BASE64_ENCODE_FINAL_SIZE */
 size_t
 base64_encode_final(struct base64_encode_ctx *ctx,
-		    uint8_t *dst)
+		    char *dst)
 {
   unsigned done = 0;
   unsigned bits = ctx->bits;

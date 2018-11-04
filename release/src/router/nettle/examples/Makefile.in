@@ -116,9 +116,10 @@ hogweed-benchmark$(EXEEXT): $(HOGWEED_BENCH_OBJS)
 $(TARGETS) : io.$(OBJEXT) ../libnettle.stamp
 $(HOGWEED_TARGETS): ../libhogweed.stamp
 
+# The PATH update is for windows dlls, DYLD_LIBRARY_PATH is for OSX.
 check: $(TS_ALL)
-	LD_LIBRARY_PATH=../.lib PATH="../.lib:$$PATH" srcdir="$(srcdir)" \
-	  EMULATOR="$(EMULATOR)" EXEEXT="$(EXEEXT)" \
+	LD_LIBRARY_PATH=../.lib PATH="../.lib:$$PATH" DYLD_LIBRARY_PATH=../.lib \
+	  srcdir="$(srcdir)" EMULATOR="$(EMULATOR)" EXEEXT="$(EXEEXT)" \
           "$(top_srcdir)"/run-tests $(TS_ALL)
 
 Makefile: $(srcdir)/Makefile.in ../config.status

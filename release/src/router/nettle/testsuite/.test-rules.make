@@ -46,6 +46,9 @@ md5-test$(EXEEXT): md5-test.$(OBJEXT)
 md5-compat-test$(EXEEXT): md5-compat-test.$(OBJEXT)
 	$(LINK) md5-compat-test.$(OBJEXT) $(TEST_OBJS) -o md5-compat-test$(EXEEXT)
 
+memeql-test$(EXEEXT): memeql-test.$(OBJEXT)
+	$(LINK) memeql-test.$(OBJEXT) $(TEST_OBJS) -o memeql-test$(EXEEXT)
+
 memxor-test$(EXEEXT): memxor-test.$(OBJEXT)
 	$(LINK) memxor-test.$(OBJEXT) $(TEST_OBJS) -o memxor-test$(EXEEXT)
 
@@ -54,6 +57,9 @@ gosthash94-test$(EXEEXT): gosthash94-test.$(OBJEXT)
 
 ripemd160-test$(EXEEXT): ripemd160-test.$(OBJEXT)
 	$(LINK) ripemd160-test.$(OBJEXT) $(TEST_OBJS) -o ripemd160-test$(EXEEXT)
+
+hkdf-test$(EXEEXT): hkdf-test.$(OBJEXT)
+	$(LINK) hkdf-test.$(OBJEXT) $(TEST_OBJS) -o hkdf-test$(EXEEXT)
 
 salsa20-test$(EXEEXT): salsa20-test.$(OBJEXT)
 	$(LINK) salsa20-test.$(OBJEXT) $(TEST_OBJS) -o salsa20-test$(EXEEXT)
@@ -109,6 +115,9 @@ knuth-lfib-test$(EXEEXT): knuth-lfib-test.$(OBJEXT)
 cbc-test$(EXEEXT): cbc-test.$(OBJEXT)
 	$(LINK) cbc-test.$(OBJEXT) $(TEST_OBJS) -o cbc-test$(EXEEXT)
 
+cfb-test$(EXEEXT): cfb-test.$(OBJEXT)
+	$(LINK) cfb-test.$(OBJEXT) $(TEST_OBJS) -o cfb-test$(EXEEXT)
+
 ctr-test$(EXEEXT): ctr-test.$(OBJEXT)
 	$(LINK) ctr-test.$(OBJEXT) $(TEST_OBJS) -o ctr-test$(EXEEXT)
 
@@ -154,6 +163,9 @@ yarrow-test$(EXEEXT): yarrow-test.$(OBJEXT)
 pbkdf2-test$(EXEEXT): pbkdf2-test.$(OBJEXT)
 	$(LINK) pbkdf2-test.$(OBJEXT) $(TEST_OBJS) -o pbkdf2-test$(EXEEXT)
 
+pss-mgf1-test$(EXEEXT): pss-mgf1-test.$(OBJEXT)
+	$(LINK) pss-mgf1-test.$(OBJEXT) $(TEST_OBJS) -o pss-mgf1-test$(EXEEXT)
+
 sexp-test$(EXEEXT): sexp-test.$(OBJEXT)
 	$(LINK) sexp-test.$(OBJEXT) $(TEST_OBJS) -o sexp-test$(EXEEXT)
 
@@ -175,8 +187,14 @@ random-prime-test$(EXEEXT): random-prime-test.$(OBJEXT)
 pkcs1-test$(EXEEXT): pkcs1-test.$(OBJEXT)
 	$(LINK) pkcs1-test.$(OBJEXT) $(TEST_OBJS) -o pkcs1-test$(EXEEXT)
 
+pss-test$(EXEEXT): pss-test.$(OBJEXT)
+	$(LINK) pss-test.$(OBJEXT) $(TEST_OBJS) -o pss-test$(EXEEXT)
+
 rsa-sign-tr-test$(EXEEXT): rsa-sign-tr-test.$(OBJEXT)
 	$(LINK) rsa-sign-tr-test.$(OBJEXT) $(TEST_OBJS) -o rsa-sign-tr-test$(EXEEXT)
+
+rsa-pss-sign-tr-test$(EXEEXT): rsa-pss-sign-tr-test.$(OBJEXT)
+	$(LINK) rsa-pss-sign-tr-test.$(OBJEXT) $(TEST_OBJS) -o rsa-pss-sign-tr-test$(EXEEXT)
 
 rsa-test$(EXEEXT): rsa-test.$(OBJEXT)
 	$(LINK) rsa-test.$(OBJEXT) $(TEST_OBJS) -o rsa-test$(EXEEXT)

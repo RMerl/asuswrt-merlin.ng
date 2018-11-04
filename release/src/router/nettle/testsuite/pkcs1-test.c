@@ -10,7 +10,7 @@ test_main(void)
 			   0xff, 0xff, 0xff, 0xff, 0,    'a',  'b',  'c' };
 
   _pkcs1_signature_prefix(sizeof(buffer), buffer,
-			  3, "abc", 0);
+			  LDATA("abc"), 0);
 
   ASSERT(MEMEQ(sizeof(buffer), buffer, expected));
 }

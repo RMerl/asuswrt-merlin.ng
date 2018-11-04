@@ -72,7 +72,7 @@ main(int argc UNUSED, char **argv UNUSED)
       /* "buffer" will hold the bytes from disk: */
       uint8_t buffer[CHUNK_SIZE];
       /* "result" is the result vector: */
-      uint8_t result[ENCODED_SIZE + BASE64_ENCODE_FINAL_LENGTH + 1];
+      char result[ENCODED_SIZE + BASE64_ENCODE_FINAL_LENGTH + 1];
       unsigned nbytes; /* Number of bytes read from stdin */
       int encoded_bytes; /* total number of bytes encoded per iteration */
       nbytes = fread(buffer,1,CHUNK_SIZE,stdin);
@@ -90,7 +90,7 @@ main(int argc UNUSED, char **argv UNUSED)
 	  encoded_bytes += base64_encode_final(&b64_ctx,result + encoded_bytes);
 
 	  result[encoded_bytes++] = '\n';
-	  if (!write_string (stdout, encoded_bytes, result)
+	  if (!write_data (stdout, encoded_bytes, result)
 	      || fflush (stdout) != 0)
 	    {
 	      werror ("Error writing file: %s\n", strerror(errno));
@@ -101,7 +101,7 @@ main(int argc UNUSED, char **argv UNUSED)
 
       /* The result vector is written */
       result[encoded_bytes++] = '\n';
-      if (!write_string (stdout, encoded_bytes, result))
+      if (!write_data (stdout, encoded_bytes, result))
 	{
 	  werror ("Error writing file: %s\n", strerror(errno));
 	  return EXIT_FAILURE;

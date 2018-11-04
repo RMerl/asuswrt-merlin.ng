@@ -121,8 +121,8 @@ ecc_point_mul_g (struct ecc_point *r, const struct ecc_scalar *n);
   
 /* Points on a curve are represented as arrays of mp_limb_t, with
    curve-specific representation. For the secp curves, we use Jacobian
-   coordinates (possibly in Montgomery for for mod multiplication).
-   For curve25519 we use homogeneous coordiantes on an equivalent
+   coordinates (possibly in Montgomery form for mod multiplication).
+   For curve25519 we use homogeneous coordinates on an equivalent
    Edwards curve. The suffix "_h" denotes this internal
    representation.
    

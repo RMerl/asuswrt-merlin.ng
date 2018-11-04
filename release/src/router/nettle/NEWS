@@ -1,3 +1,197 @@
+NEWS for the Nettle 3.4 release
+
+	This release fixes bugs and adds a few new features. It also
+	addresses an ABI compatibility issue affecting Nettle-3.1 and
+	later, see below.
+
+	Bug fixes:
+
+	* Fixed an improper use of GMP mpn_mul, breaking curve2559 and
+	  eddsa on certain platforms. Reported by Sergei Trofimovich.
+
+	* Fixed memory leak when handling invalid signatures in
+	  ecdsa_verify. Fix contributed by Nikos Mavrogiannopoulos.
+
+	* Fix compilation error with --enable-fat om ARM. Fix
+	  contributed by Andreas Schneider.
+
+	* Reorganized the way certain data items are made available.
+
+	  Short version: Nettle header files now define the symbols
+	  nettle_hashes, nettle_ciphers, and nettle_aeads, as
+	  preprocessor macros invoking a corresponding accessor
+	  function. For backwards ABI compatibility, the symbols are
+	  still present in the compiled libraries, and with the same
+	  sizes as in nettle-3.3.
+
+	New features:
+
+	* Support for RSA-PSS signatures, contributed by Daiki Ueno.
+
+	* Support for the HKDF key derivation function, defined by RFC
+	  5869. Contributed by Nikos Mavrogiannopoulos.
+
+	* Support for the Cipher Feedback Mode (CFB), contributed by
+	  Dmitry Eremin-Solenikov.
+
+	* New accessor functions: nettle_get_hashes,
+	  nettle_get_ciphers, nettle_get_aeads, nettle_get_secp_192r1,
+	  nettle_get_secp_224r1, nettle_get_secp_256r1,
+	  nettle_get_secp_384r1, nettle_get_secp_521r1.
+
+	  For source-level compatibility with future versions,
+	  applications are encouraged to migrate to using these
+	  functions instead of referring to the corresponding data
+	  items directly.
+
+	Miscellaneous:
+
+	* The base16 and base64 functions now use the type char * for
+	  ascii data, rather than uint8_t *. This eliminates the last
+	  pointer-signedness warnings when building Nettle. This is a
+	  minor API change, and applications may need to be adjusted,
+	  but the ABI is unaffected on all platforms I'm aware of.
+
+	* The contents of the header file nettle/version.h is now
+	  architecture independent, except in --enable-mini-gmp
+	  configurations.
+
+	ABI issue:
+
+	  Since the breakage was a bit subtle, let me document it
+	  here. The nettle and hogweed libraries export a couple of
+	  data symbols, and for some of these, the size was never
+	  intended to be part of the ABI. E.g.,
+
+	    extern const struct nettle_hash * const nettle_hashes[];
+
+	  which is an NULL-terminated array.
+
+	  It turns out the sizes nevertheless may leak into the ABI, and
+	  that increasing the sizes can break old executables linked
+	  with a newer version of the library.
+
+	  When linking a classic non-PIE executable with a shared
+	  library, we get ELF relocations of type R_X86_64_COPY for
+	  references to data items. These mean that the linker allocates
+	  space for the data item in the data segment of executable, at
+	  a fixed address determined at link-time, and with size
+	  extracted from the version of the .so-file seen when linking.
+
+	  At load time, the run time linker then copies the contents of
+	  the symbol from the .so file to that location, and uses the
+	  copy instead of the version loaded with the .so-file. And if
+	  the data item in the .so file used at load time is larger than
+	  the data item seen at link time, it is silently truncated in
+	  the process.
+
+	  So when SHA3 hashes were was added to the nettle_hashes array
+	  in the nettle-3.3 release, this way of linking produces a
+	  truncated array at load time, no longer NULL-terminated.
+
+	  We will get similar problems for planned extensions of the
+	  internal struct ecc_curve, and exported data items like
+
+	    extern const struct ecc_curve nettle_secp_256r1;
+
+	  where the ecc_curve struct is only forward declared in the
+	  public headers. To prepare, applications should migrate to
+	  using the new function nettle_get_secp_256r1, and similarly
+	  for the other curves.
+
+	  In some future version, the plan is to add a leading
+	  underscore to the name of the actual data items. E.g.,
+	  nettle_hashes --> _nettle_hashes, breaking the ABI, while
+	  keeping the nettle_get_hashes function and the nettle_hashes
+	  macro as the supported ways to access it. We will also
+	  rename nettle_secp_256r1 --> _nettle_secp_256r1, breaking
+	  both ABI and API.
+
+	  Note that data items like nettle_sha256 are *not* affected,
+	  since the size and layout of this struct is considered part
+	  of the ABI, and R_X86_64_COPY-relocations then work fine.
+
+	The shared library names are libnettle.so.6.4 and
+	libhogweed.so.4.4, with sonames still libnettle.so.6 and
+	libhogweed.so.4. It is intended to be fully binary compatible
+	with nettle-3.1.
+
+NEWS for the Nettle 3.3 release
+
+	This release fixes a couple of bugs, and improves resistance
+	to side-channel attacks on RSA and DSA private key operations.
+
+	Changes in behavoir:
+
+	* Invalid private RSA keys, with an even modulo, are now
+	  rejected by rsa_private_key_prepare. (Earlier versions
+	  allowed such keys, even if results of using them were bogus).
+
+	  Nettle applications are required to call
+	  rsa_private_key_prepare and check the return value, before
+	  using any other RSA private key functions; failing to do so
+	  may result in crashes for invalid private keys. As a
+	  workaround for versions of Gnutls which don't use
+	  rsa_private_key_prepare, additional checks for even moduli
+	  are added to the rsa_*_tr functions which are used by all
+	  recent versions of Gnutls.
+
+	* Ignore bit 255 of the x coordinate of the input point to
+	  curve25519_mul, as required by RFC 7748. To differentiate at
+	  compile time, curve25519.h defines the constant
+	  NETTLE_CURVE25519_RFC7748.
+
+	Security:
+
+	* RSA and DSA now use side-channel silent modular
+	  exponentiation, to defend against attacks on the private key
+	  from evil processes sharing the same processor cache. This
+	  attack scenario is of particular relevance when running an
+	  HTTPS server on a virtual machine, where you don't know who
+	  you share the cache hardware with.
+
+	  (Private key operations on elliptic curves were already
+	  side-channel silent).
+
+	Bug fixes:
+
+	* Fix sexp-conv crashes on invalid input. Reported by Hanno
+	  Böck.
+
+	* Fix out-of-bounds read in des_weak_p. Fixed by Nikos
+	  Mavrogiannopoulos.
+
+	* Fix a couple of formally undefined shift operations,
+	  reported by Nikos Mavrogiannopoulos.
+
+	* Fix compilation with c89. Reported by Henrik Grubbström.
+
+	New features:
+
+	* New function memeql_sec, for side-channel silent comparison
+	  of two memory areas.
+
+	Miscellaneous:
+
+	* Building the public key support of nettle now requires GMP
+	  version 5.0 or later (unless --enable-mini-gmp is used).
+
+	* Filenames of windows DLL libraries now include major number
+	  only. So the dll names change at the same time as the
+	  corresponding soname on ELF platforms. Fixed by Nikos
+	  Mavrogiannopoulos.
+
+	* Eliminate most pointer-signedness warnings. In the process,
+	  the strings representing expression type for sexp_interator
+	  functions were changed from const uint8_t * to const char *.
+	  These functions are undocumented, and it doesn't change the
+	  ABI on any platform I'm aware of.
+
+	The shared library names are libnettle.so.6.3 and
+	libhogweed.so.4.3, with sonames still libnettle.so.6 and
+	libhogweed.so.4. It is intended to be fully binary compatible
+	with nettle-3.1.
+
 NEWS for the Nettle 3.2 release
 
 	Bug fixes:

@@ -52,14 +52,14 @@ werror(const char *format, ...) PRINTF_STYLE(1, 2);
  * treated as an error; return value is zero, and no space is
  * allocated. The returned data is NUL-terminated, for convenience. */
 
-unsigned
-read_file(const char *name, unsigned size, char **buffer);
+size_t
+read_file(const char *name, size_t size, uint8_t **buffer);
 
 int
-write_file(const char *name, unsigned size, const char *buffer);
+write_file(const char *name, size_t size, const void *data);
 
 int
-write_string(FILE *f, unsigned size, const char *buffer);
+write_data(FILE *f, size_t size, const void *data);
 
 int
 simple_random(struct yarrow256_ctx *ctx, const char *name);

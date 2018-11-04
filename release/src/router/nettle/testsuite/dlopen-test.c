@@ -28,6 +28,7 @@ main (int argc UNUSED, char **argv UNUSED)
       fprintf (stderr, "unexpected nettle version\n");
       FAIL ();
     }
+  dlclose (handle);
   return EXIT_SUCCESS;
 #else
   SKIP();

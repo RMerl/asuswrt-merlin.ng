@@ -59,7 +59,7 @@ base16_encode_init(void *ctx UNUSED)
 
 static nettle_armor_encode_update_func base16_encode_update_wrapper;
 static size_t
-base16_encode_update_wrapper(void *ctx UNUSED, uint8_t *dst,
+base16_encode_update_wrapper(void *ctx UNUSED, char *dst,
 			     size_t length, const uint8_t *src)
 {
   base16_encode_update(dst, length, src);
@@ -71,7 +71,7 @@ base16_encode_update_wrapper(void *ctx UNUSED, uint8_t *dst,
 
 static nettle_armor_encode_final_func base16_encode_final;
 static size_t
-base16_encode_final(void *ctx UNUSED, uint8_t *dst UNUSED)
+base16_encode_final(void *ctx UNUSED, char *dst UNUSED)
 {
   return 0;
 }

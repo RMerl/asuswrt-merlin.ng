@@ -73,20 +73,11 @@
 #undef HAVE_NATIVE_umac_nh
 #undef HAVE_NATIVE_umac_nh_n
 
-/* Define to 1 if you have the <openssl/aes.h> header file. */
-#undef HAVE_OPENSSL_AES_H
-
-/* Define to 1 if you have the <openssl/blowfish.h> header file. */
-#undef HAVE_OPENSSL_BLOWFISH_H
-
-/* Define to 1 if you have the <openssl/cast.h> header file. */
-#undef HAVE_OPENSSL_CAST_H
-
-/* Define to 1 if you have the <openssl/des.h> header file. */
-#undef HAVE_OPENSSL_DES_H
-
 /* Define to 1 if you have the <openssl/ecdsa.h> header file. */
 #undef HAVE_OPENSSL_ECDSA_H
+
+/* Define to 1 if you have the <openssl/evp.h> header file. */
+#undef HAVE_OPENSSL_EVP_H
 
 /* Define to 1 if you have the `secure_getenv' function. */
 #undef HAVE_SECURE_GETENV

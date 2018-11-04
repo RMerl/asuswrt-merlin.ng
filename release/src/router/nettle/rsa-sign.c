@@ -96,11 +96,11 @@ rsa_compute_root(const struct rsa_private_key *key,
 
   /* Compute xq = m^d % q = (m%q)^b % q */
   mpz_fdiv_r(xq, m, key->q);
-  mpz_powm(xq, xq, key->b, key->q);
+  mpz_powm_sec(xq, xq, key->b, key->q);
 
   /* Compute xp = m^d % p = (m%p)^a % p */
   mpz_fdiv_r(xp, m, key->p);
-  mpz_powm(xp, xp, key->a, key->p);
+  mpz_powm_sec(xp, xp, key->a, key->p);
 
   /* Set xp' = (xp - xq) c % p. */
   mpz_sub(xp, xp, xq);

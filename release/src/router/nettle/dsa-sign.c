@@ -56,6 +56,11 @@ dsa_sign(const struct dsa_params *params,
   mpz_t tmp;
   int res;
   
+  /* Check that p is odd, so that invalid keys don't result in a crash
+     inside mpz_powm_sec. */
+  if (mpz_even_p (params->p))
+    return 0;
+
   /* Select k, 0<k<q, randomly */
   mpz_init_set(tmp, params->q);
   mpz_sub_ui(tmp, tmp, 1);
@@ -65,7 +70,7 @@ dsa_sign(const struct dsa_params *params,
   mpz_add_ui(k, k, 1);
 
   /* Compute r = (g^k (mod p)) (mod q) */
-  mpz_powm(tmp, params->g, k, params->p);
+  mpz_powm_sec(tmp, params->g, k, params->p);
   mpz_fdiv_r(signature->r, tmp, params->q);
 
   /* Compute hash */

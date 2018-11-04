@@ -74,7 +74,7 @@ write_uint32(FILE *f, uint32_t n)
   uint8_t buffer[4];
   WRITE_UINT32(buffer, n);
 
-  return write_string(f, sizeof(buffer), buffer);
+  return write_data(f, sizeof(buffer), buffer);
 }
 
 static int
@@ -96,7 +96,7 @@ write_bignum(FILE *f, mpz_t x)
   p = xalloc(size);
   nettle_mpz_get_str_256(size, p, x);
 
-  res = write_string(f, size, p);
+  res = write_data(f, size, p);
   free(p);
   return res;
 }
@@ -143,7 +143,7 @@ process_file(struct rsa_session *ctx,
 	  hmac_sha1_digest(&ctx->hmac, SHA1_DIGEST_SIZE, buffer + size);
 	  size += SHA1_DIGEST_SIZE;
 
-	  if (!write_string(out, size, buffer))
+	  if (!write_data(out, size, buffer))
 	    {
 	      werror("Writing output failed: %s\n", strerror(errno));
 	      return 0;
@@ -152,7 +152,7 @@ process_file(struct rsa_session *ctx,
 	}
 
       CBC_ENCRYPT(&ctx->aes, aes_encrypt, size, buffer, buffer);
-      if (!write_string(out, size, buffer))
+      if (!write_data(out, size, buffer))
 	{
 	  werror("Writing output failed: %s\n", strerror(errno));
 	  return 0;

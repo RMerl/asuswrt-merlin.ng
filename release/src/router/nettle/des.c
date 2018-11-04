@@ -173,10 +173,13 @@ des_weak_p(const uint8_t *key)
   int8_t k1 = key[1] >> 1;
 
   unsigned hash = asso_values[k1 + 1] + asso_values[k0];
-  const int8_t *candidate = weak_key_hash[hash];
+  const int8_t *candidate;
 
   if (hash > 25)
     return 0;
+
+  candidate = weak_key_hash[hash];
+
   if (k0 != candidate[0]
       || k1 != candidate[1])
     return 0;

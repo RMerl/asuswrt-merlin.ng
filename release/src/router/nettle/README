@@ -42,6 +42,8 @@ Read the manual. Mail me if you have any questions or suggestions.
 You may want to subscribe to the nettle-bugs mailing list. See
 <URL: http://lists.lysator.liu.se/mailman/listinfo/nettle-bugs>.
 
+See CONTRIBUTING.md for information on contibuting patches.
+
 
 Happy hacking,
 /Niels Möller <nisse@lysator.liu.se>

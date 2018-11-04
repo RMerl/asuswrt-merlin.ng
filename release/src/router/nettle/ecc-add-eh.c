@@ -98,8 +98,8 @@ ecc_add_eh (const struct ecc_curve *ecc,
   ecc_modp_mul (ecc, x3, B, z1);
 
   /* y3 */
-  ecc_modp_mul (ecc, B, F, C); /* ! */
-  ecc_modp_mul (ecc, y3, B, z1);
+  ecc_modp_mul (ecc, B, F, z1); /* ! */
+  ecc_modp_mul (ecc, y3, B, C); /* Clobbers z1 in case r == p. */
 
   /* z3 */
   ecc_modp_mul (ecc, B, F, G);

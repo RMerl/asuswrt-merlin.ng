@@ -339,7 +339,11 @@ pgp_crc24(unsigned length, const uint8_t *data)
 }
 
 
-#define WRITE(buffer, s) (nettle_buffer_write(buffer, strlen((s)), (s)))
+static int
+write_string (struct nettle_buffer *buffer, const char *s)
+{
+  return nettle_buffer_write(buffer, strlen((s)), (const uint8_t *) (s));
+}
 
 /* 15 base 64 groups data per line */
 #define BINARY_PER_LINE 45
@@ -357,9 +361,9 @@ pgp_armor(struct nettle_buffer *buffer,
 
   base64_encode_init(&ctx);
   
-  if (! (WRITE(buffer, "BEGIN PGP ")
-	 && WRITE(buffer, tag)
-	 && WRITE(buffer, "\nComment: Nettle\n\n")))
+  if (! (write_string(buffer, "BEGIN PGP ")
+	 && write_string(buffer, tag)
+	 && write_string(buffer, "\nComment: Nettle\n\n")))
     return 0;
 
   for (;
@@ -367,8 +371,8 @@ pgp_armor(struct nettle_buffer *buffer,
        length -= BINARY_PER_LINE, data += BINARY_PER_LINE)
     {
       unsigned done;
-      uint8_t *p
-	= nettle_buffer_space(buffer, TEXT_PER_LINE);
+      char *p
+	= (char *) nettle_buffer_space(buffer, TEXT_PER_LINE);
       
       if (!p)
 	return 0;
@@ -389,8 +393,8 @@ pgp_armor(struct nettle_buffer *buffer,
 	+ BASE64_ENCODE_FINAL_LENGTH;
       unsigned done;
       
-      uint8_t *p
-	= nettle_buffer_space(buffer, text_size);
+      char *p
+	= (char *) nettle_buffer_space(buffer, text_size);
       if (!p)
 	return 0;
 
@@ -408,13 +412,13 @@ pgp_armor(struct nettle_buffer *buffer,
     return 0;
 
   {
-    uint8_t *p = nettle_buffer_space(buffer, 4);
+    char *p = (char *) nettle_buffer_space(buffer, 4);
     if (!p)
       return 0;
     base64_encode_group(p, crc);
   }
   
-  return (WRITE(buffer, "\nBEGIN PGP ")
-	  && WRITE(buffer, tag)
+  return (write_string(buffer, "\nBEGIN PGP ")
+	  && write_string(buffer, tag)
 	  && NETTLE_BUFFER_PUTC(buffer, '\n'));
 }

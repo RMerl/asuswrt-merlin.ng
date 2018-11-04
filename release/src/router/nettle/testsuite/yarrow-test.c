@@ -93,7 +93,7 @@ test_main(void)
 
   unsigned i;
   
-  static const char zeroes[100];
+  static const char unsigned zeroes[100];
 
   yarrow256_init(&yarrow, 2, sources);
   

@@ -16,8 +16,8 @@ TS_NETTLE_SOURCES = aes-test.c arcfour-test.c arctwo-test.c \
 		    camellia-test.c chacha-test.c \
 		    des-test.c des3-test.c des-compat-test.c \
 		    md2-test.c md4-test.c md5-test.c md5-compat-test.c \
-		    memxor-test.c gosthash94-test.c \
-		    ripemd160-test.c \
+		    memeql-test.c memxor-test.c gosthash94-test.c \
+		    ripemd160-test.c hkdf-test.c \
 		    salsa20-test.c \
 		    sha1-test.c sha224-test.c sha256-test.c \
 		    sha384-test.c sha512-test.c sha512-224-test.c sha512-256-test.c \
@@ -25,17 +25,18 @@ TS_NETTLE_SOURCES = aes-test.c arcfour-test.c arctwo-test.c \
 		    sha3-384-test.c sha3-512-test.c \
 		    serpent-test.c twofish-test.c version-test.c \
 		    knuth-lfib-test.c \
-		    cbc-test.c ctr-test.c gcm-test.c eax-test.c ccm-test.c \
+		    cbc-test.c cfb-test.c ctr-test.c gcm-test.c eax-test.c ccm-test.c \
 		    poly1305-test.c chacha-poly1305-test.c \
 		    hmac-test.c umac-test.c \
 		    meta-hash-test.c meta-cipher-test.c\
 		    meta-aead-test.c meta-armor-test.c \
-		    buffer-test.c yarrow-test.c pbkdf2-test.c
+		    buffer-test.c yarrow-test.c pbkdf2-test.c pss-mgf1-test.c
 
 TS_HOGWEED_SOURCES = sexp-test.c sexp-format-test.c \
 		     rsa2sexp-test.c sexp2rsa-test.c \
 		     bignum-test.c random-prime-test.c \
-		     pkcs1-test.c rsa-sign-tr-test.c \
+		     pkcs1-test.c pss-test.c rsa-sign-tr-test.c \
+		     rsa-pss-sign-tr-test.c \
 		     rsa-test.c rsa-encrypt-test.c rsa-keygen-test.c \
 		     dsa-test.c dsa-keygen-test.c \
 		     curve25519-dh-test.c \
@@ -66,6 +67,7 @@ EXTRA_TARGETS = $(EXTRA_SOURCES:.c=$(EXEEXT))
 SOURCES = $(TS_SOURCES) $(EXTRA_SOURCES) testutils.c dlopen-test.c
 
 DISTFILES = $(SOURCES) $(CXX_SOURCES) Makefile.in .test-rules.make \
+	    test-rules.stamp \
 	    $(TS_SH) setup-env teardown-env \
 	    gold-bug.txt testutils.h sha3.awk
 
@@ -107,6 +109,14 @@ test-rules:
 	  echo ; \
 	done) > $(srcdir)/.test-rules.make
 
+$(srcdir)/.test-rules.make: $(srcdir)/test-rules.stamp
+
+# Updates the stamp file *first*, so that this rule isn't triggered
+# again and again by the recursive $(MAKE).
+$(srcdir)/test-rules.stamp: Makefile.in
+	echo stamp > $(srcdir)/test-rules.stamp
+	$(MAKE) test-rules
+
 include $(srcdir)/.test-rules.make
 
 $(TARGETS) $(EXTRA_TARGETS): testutils.$(OBJEXT) ../nettle-internal.$(OBJEXT) \
@@ -121,9 +131,10 @@ $(TARGETS) $(EXTRA_TARGETS): testutils.$(OBJEXT) ../nettle-internal.$(OBJEXT) \
 # data.
 VALGRIND = valgrind --error-exitcode=1 --leak-check=full --show-reachable=yes @IF_ASM@ --partial-loads-ok=yes
 
-# The PATH update is for locating dlls on w*ndows.
+# The PATH update is for windows dlls, DYLD_LIBRARY_PATH is for OSX.
 check: $(TS_ALL)
-	LD_LIBRARY_PATH=../.lib PATH="../.lib:$$PATH" srcdir="$(srcdir)" \
+	LD_LIBRARY_PATH=../.lib PATH="../.lib:$$PATH" DYLD_LIBRARY_PATH=../.lib \
+	  srcdir="$(srcdir)" \
 	  EMULATOR="$(EMULATOR)" NM="$(NM)" EXEEXT="$(EXEEXT)" \
           $(top_srcdir)/run-tests $(TS_ALL)
 

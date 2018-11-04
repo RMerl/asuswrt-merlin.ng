@@ -58,7 +58,7 @@ int
 main(int argc UNUSED, char **argv UNUSED)
 {
   /* "buffer" will hold the bytes from disk: */
-  uint8_t * buffer = xalloc (CHUNK_SIZE);
+  char * buffer = xalloc (CHUNK_SIZE);
 
   /* "result" will hold bytes before output: */
   uint8_t * result = xalloc (DECODED_SIZE);
@@ -93,7 +93,7 @@ main(int argc UNUSED, char **argv UNUSED)
 	  return EXIT_FAILURE;
 	}
 
-      if (!write_string (stdout, decoded_bytes, result))
+      if (!write_data (stdout, decoded_bytes, result))
 	{
 	  werror ("Error writing file: %s\n", strerror(errno));
 	  return EXIT_FAILURE;

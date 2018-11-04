@@ -53,25 +53,12 @@ list_algorithms (void)
 {
   unsigned i;
   const struct nettle_hash *alg;
-  printf ("%10s digestsize (internal block size), in units of octets\n", "name");
+  printf ("%10s digestsize (internal block size, context size), in units of octets\n", "name");
 
   for (i = 0; (alg = nettle_hashes[i]); i++)
-    printf ("%10s %d (%d)\n",
-	    alg->name, alg->digest_size, alg->block_size);
+    printf ("%10s %d (%d, %d)\n",
+	    alg->name, alg->digest_size, alg->block_size, alg->context_size);
 };
-
-static const struct nettle_hash *
-find_algorithm (const char *name)
-{
-  const struct nettle_hash *alg;
-  unsigned i;
-  
-  for (i = 0; (alg = nettle_hashes[i]); i++)
-    if (!strcmp(name, alg->name))
-      return alg;
-
-  return NULL;
-}
 
 /* Also in examples/io.c */
 static int
@@ -79,7 +66,7 @@ hash_file(const struct nettle_hash *hash, void *ctx, FILE *f)
 {
   for (;;)
     {
-      char buffer[BUFSIZE];
+      uint8_t buffer[BUFSIZE];
       size_t res = fread(buffer, 1, sizeof(buffer), f);
       if (ferror(f))
 	return 0;
@@ -211,7 +198,7 @@ main (int argc, char **argv)
     die("Algorithm argument (-a option) is mandatory.\n"
 	"See nettle-hash --help for further information.\n");
       
-  alg = find_algorithm (alg_name);
+  alg = nettle_lookup_hash (alg_name);
   if (!alg)
     die("Hash algorithm `%s' not supported or .\n"
 	"Use nettle-hash --list to list available algorithms.\n",

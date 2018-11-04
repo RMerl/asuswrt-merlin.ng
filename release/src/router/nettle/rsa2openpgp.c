@@ -85,7 +85,7 @@ rsa_keypair_to_openpgp(struct nettle_buffer *buffer,
 
   /* userid packet */
   userid_start = buffer->size;
-  if (!pgp_put_userid(buffer, strlen(userid), userid))
+  if (!pgp_put_userid(buffer, strlen(userid), (const uint8_t *) userid))
     return 0;
 
   /* FIXME: We hash the key first, and then the user id. Is this right? */

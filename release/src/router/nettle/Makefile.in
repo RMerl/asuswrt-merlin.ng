@@ -91,7 +91,7 @@ nettle_SOURCES = aes-decrypt-internal.c aes-decrypt.c \
 		 camellia256-set-decrypt-key.c \
 		 camellia256-meta.c \
 		 cast128.c cast128-meta.c cbc.c \
-		 ccm.c ccm-aes128.c ccm-aes192.c ccm-aes256.c \
+		 ccm.c ccm-aes128.c ccm-aes192.c ccm-aes256.c cfb.c \
 		 chacha-crypt.c chacha-core-internal.c \
 		 chacha-poly1305.c chacha-poly1305-meta.c \
 		 chacha-set-key.c chacha-set-nonce.c \
@@ -106,10 +106,11 @@ nettle_SOURCES = aes-decrypt-internal.c aes-decrypt.c \
 		 gosthash94.c gosthash94-meta.c \
 		 hmac.c hmac-md5.c hmac-ripemd160.c hmac-sha1.c \
 		 hmac-sha224.c hmac-sha256.c hmac-sha384.c hmac-sha512.c \
-		 knuth-lfib.c \
+		 knuth-lfib.c hkdf.c \
 		 md2.c md2-meta.c md4.c md4-meta.c \
 		 md5.c md5-compress.c md5-compat.c md5-meta.c \
-		 memxor.c memxor3.c \
+		 memeql-sec.c memxor.c memxor3.c \
+		 nettle-lookup-hash.c \
 		 nettle-meta-aeads.c nettle-meta-armors.c \
 		 nettle-meta-ciphers.c nettle-meta-hashes.c \
 		 pbkdf2.c pbkdf2-hmac-sha1.c pbkdf2-hmac-sha256.c \
@@ -144,12 +145,15 @@ hogweed_SOURCES = sexp.c sexp-format.c \
 		  pkcs1.c pkcs1-encrypt.c pkcs1-decrypt.c \
 		  pkcs1-rsa-digest.c pkcs1-rsa-md5.c pkcs1-rsa-sha1.c \
 		  pkcs1-rsa-sha256.c pkcs1-rsa-sha512.c \
+		  pss.c pss-mgf1.c \
 		  rsa.c rsa-sign.c rsa-sign-tr.c rsa-verify.c \
 		  rsa-pkcs1-sign.c rsa-pkcs1-sign-tr.c rsa-pkcs1-verify.c \
 		  rsa-md5-sign.c rsa-md5-sign-tr.c rsa-md5-verify.c \
 		  rsa-sha1-sign.c rsa-sha1-sign-tr.c rsa-sha1-verify.c \
 		  rsa-sha256-sign.c rsa-sha256-sign-tr.c rsa-sha256-verify.c \
 		  rsa-sha512-sign.c rsa-sha512-sign-tr.c rsa-sha512-verify.c \
+		  rsa-pss-sha256-sign-tr.c rsa-pss-sha256-verify.c \
+		  rsa-pss-sha512-sign-tr.c rsa-pss-sha512-verify.c \
 		  rsa-encrypt.c rsa-decrypt.c rsa-decrypt-tr.c \
 		  rsa-keygen.c rsa-blind.c \
 		  rsa2sexp.c sexp2rsa.c \
@@ -185,18 +189,18 @@ OPT_SOURCES = fat-x86_64.c fat-arm.c mini-gmp.c
 
 HEADERS = aes.h arcfour.h arctwo.h asn1.h blowfish.h \
 	  base16.h base64.h bignum.h buffer.h camellia.h cast128.h \
-	  cbc.h ccm.h chacha.h chacha-poly1305.h ctr.h \
+	  cbc.h ccm.h cfb.h chacha.h chacha-poly1305.h ctr.h \
 	  curve25519.h des.h des-compat.h dsa.h dsa-compat.h eax.h \
 	  ecc-curve.h ecc.h ecdsa.h eddsa.h \
 	  gcm.h gosthash94.h hmac.h \
-	  knuth-lfib.h \
+	  knuth-lfib.h hkdf.h \
 	  macros.h \
 	  md2.h md4.h \
 	  md5.h md5-compat.h \
-	  memxor.h \
+	  memops.h memxor.h \
 	  nettle-meta.h nettle-types.h \
 	  pbkdf2.h \
-	  pgp.h pkcs1.h realloc.h ripemd160.h rsa.h \
+	  pgp.h pkcs1.h pss.h pss-mgf1.h realloc.h ripemd160.h rsa.h \
 	  salsa20.h sexp.h \
 	  serpent.h sha.h sha1.h sha2.h sha3.h twofish.h \
 	  umac.h yarrow.h poly1305.h
@@ -217,7 +221,7 @@ DISTFILES = $(SOURCES) $(HEADERS) getopt.h getopt_int.h \
 	libnettle.map.in libhogweed.map.in \
 	config.guess config.sub install-sh texinfo.tex \
 	config.h.in config.m4.in config.make.in	Makefile.in \
-	README AUTHORS COPYING.LESSERv3 COPYINGv2 COPYINGv3 \
+	README CONTRIBUTING.md AUTHORS COPYING.LESSERv3 COPYINGv2 COPYINGv3 \
 	INSTALL NEWS TODO ChangeLog \
 	nettle.pc.in hogweed.pc.in \
 	$(des_headers) descore.README \
@@ -323,7 +327,7 @@ des.$(OBJEXT): des.c des.h $(des_headers)
 #	k =  7, c = 6, 320 entries, ~15 KB
 #	k =  9, c = 7, 512 entries, ~24 KB
 ecc-192.h: eccdata.stamp
-	./eccdata$(EXEEXT_FOR_BUILD) 192 7 6 $(GMP_NUMB_BITS) > $@T && mv $@T $@
+	./eccdata$(EXEEXT_FOR_BUILD) 192 7 6 $(NUMB_BITS) > $@T && mv $@T $@
 # Some possible choices for 224:
 #	k = 18, c = 4,  64 entries,  ~4 KB
 #	k = 24, c = 6, 128 entries,  ~8 KB
@@ -331,7 +335,7 @@ ecc-192.h: eccdata.stamp
 #	k =  8, c = 6, 320 entries, ~20 KB
 #	k = 10, c = 7, 512 entries, ~32 KB
 ecc-224.h: eccdata.stamp
-	./eccdata$(EXEEXT_FOR_BUILD) 224 12 6 $(GMP_NUMB_BITS) > $@T && mv $@T $@
+	./eccdata$(EXEEXT_FOR_BUILD) 224 12 6 $(NUMB_BITS) > $@T && mv $@T $@
 # Some possible choices for 256:
 #	k = 20, c = 4,  64 entries,  ~4 KB
 #	k = 27, c = 6, 128 entries,  ~8 KB
@@ -339,7 +343,7 @@ ecc-224.h: eccdata.stamp
 #	k =  9, c = 6, 320 entries, ~20 KB
 #	k = 12, c = 7, 512 entries, ~32 KB
 ecc-256.h: eccdata.stamp
-	./eccdata$(EXEEXT_FOR_BUILD) 256 14 6 $(GMP_NUMB_BITS) > $@T && mv $@T $@
+	./eccdata$(EXEEXT_FOR_BUILD) 256 14 6 $(NUMB_BITS) > $@T && mv $@T $@
 # Some possible choices for 384:
 #	k = 31, c = 4,  64 entries,  ~6 KB
 #	k = 41, c = 6, 128 entries, ~12 KB
@@ -347,7 +351,7 @@ ecc-256.h: eccdata.stamp
 #	k = 14, c = 6, 320 entries, ~30 KB
 #	k = 18, c = 7, 512 entries, ~48 KB
 ecc-384.h: eccdata.stamp
-	./eccdata$(EXEEXT_FOR_BUILD) 384 41 6 $(GMP_NUMB_BITS) > $@T && mv $@T $@
+	./eccdata$(EXEEXT_FOR_BUILD) 384 41 6 $(NUMB_BITS) > $@T && mv $@T $@
 # Some possible choices for 521:
 #	k = 42, c = 4,  64 entries,  ~9 KB
 #	k = 56, c = 6, 128 entries, ~18 KB
@@ -355,10 +359,10 @@ ecc-384.h: eccdata.stamp
 #	k = 19, c = 6, 320 entries, ~44 KB
 #	k = 24, c = 7, 512 entries, ~70 KB
 ecc-521.h: eccdata.stamp
-	./eccdata$(EXEEXT_FOR_BUILD) 521 56 6 $(GMP_NUMB_BITS) > $@T && mv $@T $@
+	./eccdata$(EXEEXT_FOR_BUILD) 521 56 6 $(NUMB_BITS) > $@T && mv $@T $@
 
 ecc-25519.h: eccdata.stamp
-	./eccdata$(EXEEXT_FOR_BUILD) 255 14 6 $(GMP_NUMB_BITS) > $@T && mv $@T $@
+	./eccdata$(EXEEXT_FOR_BUILD) 255 14 6 $(NUMB_BITS) > $@T && mv $@T $@
 
 eccdata.stamp: eccdata.c
 	$(MAKE) eccdata$(EXEEXT_FOR_BUILD)

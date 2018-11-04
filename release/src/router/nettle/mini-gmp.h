@@ -1,6 +1,6 @@
 /* mini-gmp, a minimalistic implementation of a GNU GMP subset.
 
-Copyright 2011-2014 Free Software Foundation, Inc.
+Copyright 2011-2015 Free Software Foundation, Inc.
 
 This file is part of the GNU MP Library.
 
@@ -82,6 +82,7 @@ void mpn_copyd (mp_ptr, mp_srcptr, mp_size_t);
 void mpn_zero (mp_ptr, mp_size_t);
 
 int mpn_cmp (mp_srcptr, mp_srcptr, mp_size_t);
+int mpn_zero_p (mp_srcptr, mp_size_t);
 
 mp_limb_t mpn_add_1 (mp_ptr, mp_srcptr, mp_size_t, mp_limb_t);
 mp_limb_t mpn_add_n (mp_ptr, mp_srcptr, mp_srcptr, mp_size_t);
@@ -106,6 +107,9 @@ mp_limb_t mpn_rshift (mp_ptr, mp_srcptr, mp_size_t, unsigned int);
 
 mp_bitcnt_t mpn_scan0 (mp_srcptr, mp_bitcnt_t);
 mp_bitcnt_t mpn_scan1 (mp_srcptr, mp_bitcnt_t);
+
+void mpn_com (mp_ptr, mp_srcptr, mp_size_t);
+mp_limb_t mpn_neg (mp_ptr, mp_srcptr, mp_size_t);
 
 mp_bitcnt_t mpn_popcount (mp_srcptr, mp_size_t);
 

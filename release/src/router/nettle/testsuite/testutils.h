@@ -60,7 +60,7 @@ void
 tstring_clear(void);
 
 struct tstring *
-tstring_data(size_t length, const char *data);
+tstring_data(size_t length, const uint8_t *data);
 
 struct tstring *
 tstring_hex(const char *hex);
@@ -123,6 +123,13 @@ test_cipher_cbc(const struct nettle_cipher *cipher,
 		const struct tstring *iv);
 
 void
+test_cipher_cfb(const struct nettle_cipher *cipher,
+		const struct tstring *key,
+		const struct tstring *cleartext,
+		const struct tstring *ciphertext,
+		const struct tstring *iv);
+
+void
 test_cipher_ctr(const struct nettle_cipher *cipher,
 		const struct tstring *key,
 		const struct tstring *cleartext,
@@ -160,16 +167,9 @@ void
 test_armor(const struct nettle_armor *armor,
            size_t data_length,
            const uint8_t *data,
-           const uint8_t *ascii);
+           const char *ascii);
 
 #if WITH_HOGWEED
-#ifndef mpn_zero_p
-int
-mpn_zero_p (mp_srcptr ap, mp_size_t n);
-#endif
-
-void
-mpn_out_str (FILE *f, int base, const mp_limb_t *xp, mp_size_t xn);
 
 #if NETTLE_USE_MINI_GMP
 typedef struct knuth_lfib_ctx gmp_randstate_t[1];
@@ -180,7 +180,19 @@ void mpz_urandomb (mpz_t r, struct knuth_lfib_ctx *ctx, mp_bitcnt_t bits);
 /* This is cheating */
 #define mpz_rrandomb mpz_urandomb
 
+/* mini-gmp defines this function (in the GMP library, it was added in
+   gmp in version 6.1.0). */
+#define mpn_zero_p mpn_zero_p
+
 #endif /* NETTLE_USE_MINI_GMP */
+
+#ifndef mpn_zero_p
+int
+mpn_zero_p (mp_srcptr ap, mp_size_t n);
+#endif
+
+void
+mpn_out_str (FILE *f, int base, const mp_limb_t *xp, mp_size_t xn);
 
 mp_limb_t *
 xalloc_limbs (mp_size_t n);
@@ -267,14 +279,21 @@ void
 test_ecc_mul_h (unsigned curve, unsigned n, const mp_limb_t *p);
 
 #endif /* WITH_HOGWEED */
+
+/* String literal of type unsigned char. The GNUC version is safer. */
+#if __GNUC__
+#define US(s) ({ static const unsigned char us_s[] = s; us_s; })
+#else
+#define US(s) ((const uint8_t *) (s))
+#endif
   
 /* LDATA needs to handle NUL characters. */
 #define LLENGTH(x) (sizeof(x) - 1)
-#define LDATA(x) LLENGTH(x), x
+#define LDATA(x) LLENGTH(x), US(x)
 #define LDUP(x) strlen(x), strdup(x)
 
 #define SHEX(x) (tstring_hex(x))
-#define SDATA(x) ((const struct tstring *)tstring_data(LLENGTH(x), x))
+#define SDATA(x) ((const struct tstring *)tstring_data(LLENGTH(x), US(x)))
 #define H(x) (SHEX(x)->data)
 
 #define MEMEQ(length, a, b) (!memcmp((a), (b), (length)))

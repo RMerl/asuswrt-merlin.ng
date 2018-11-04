@@ -44,6 +44,9 @@ extern "C" {
 
 #define CURVE25519_SIZE 32
 
+/* Indicates that curve25519_mul conforms to RFC 7748. */
+#define NETTLE_CURVE25519_RFC7748 1
+
 void
 curve25519_mul_g (uint8_t *q, const uint8_t *n);
 

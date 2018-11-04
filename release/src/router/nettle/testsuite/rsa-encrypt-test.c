@@ -11,8 +11,8 @@ test_main(void)
   struct knuth_lfib_ctx lfib;
 
   /* FIXME: How is this spelled? */
-  const uint8_t *msg = "Squemish ossifrage";
-  size_t msg_length;
+  const unsigned char msg[] = "Squemish ossifrage";
+  size_t msg_length = LLENGTH(msg);
 
   uint8_t *decrypted;
   size_t decrypted_length;
@@ -27,7 +27,6 @@ test_main(void)
   knuth_lfib_init(&lfib, 17);
   
   test_rsa_set_key_1(&pub, &key);
-  msg_length = strlen(msg);
 
   if (verbose)
     fprintf(stderr, "msg: `%s', length = %d\n", msg, (int) msg_length);

@@ -38,7 +38,7 @@
 void
 base64url_encode_init(struct base64_encode_ctx *ctx)
 {
-  static const uint8_t base64url_encode_table[64] =
+  static const char base64url_encode_table[64] =
     "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
     "abcdefghijklmnopqrstuvwxyz"
     "0123456789-_";

@@ -9,7 +9,7 @@ test_fuzz_once(struct base64_encode_ctx *encode,
 {
   size_t base64_len = BASE64_ENCODE_RAW_LENGTH (size);
   size_t out_len;
-  uint8_t *base64 = xalloc (base64_len + 2);
+  char *base64 = xalloc (base64_len + 2);
   uint8_t *decoded = xalloc (size + 2);
 
   *base64++ = 0x12;
@@ -66,6 +66,20 @@ test_fuzz(void)
     }
 }
 
+static inline void
+base64_encode_in_place (size_t length, uint8_t *data)
+{
+  base64_encode_raw ((char *) data, length, data);
+}
+
+static inline int
+base64_decode_in_place (struct base64_decode_ctx *ctx, size_t *dst_length,
+			size_t length, uint8_t *data)
+{
+  return base64_decode_update (ctx, dst_length,
+			       data, length, (const char *) data);
+}
+
 void
 test_main(void)
 {
@@ -84,25 +98,25 @@ test_main(void)
   ASSERT(BASE64_DECODE_LENGTH(3) == 3); /* At most 24 bits */
   ASSERT(BASE64_DECODE_LENGTH(4) == 3); /* At most 30 bits */
   
-  test_armor(&nettle_base64, 0, "", "");
-  test_armor(&nettle_base64, 1, "H", "SA==");
-  test_armor(&nettle_base64, 2, "He", "SGU=");
-  test_armor(&nettle_base64, 3, "Hel", "SGVs");
-  test_armor(&nettle_base64, 4, "Hell", "SGVsbA==");
-  test_armor(&nettle_base64, 5, "Hello", "SGVsbG8=");
-  test_armor(&nettle_base64, 6, "Hello", "SGVsbG8A");
-  test_armor(&nettle_base64, 9, "Hello?>>>", "SGVsbG8/Pj4+");
-  test_armor(&nettle_base64, 4, "\xff\xff\xff\xff", "/////w==");
+  test_armor(&nettle_base64, LDATA(""), "");
+  test_armor(&nettle_base64, LDATA("H"), "SA==");
+  test_armor(&nettle_base64, LDATA("He"), "SGU=");
+  test_armor(&nettle_base64, LDATA("Hel"), "SGVs");
+  test_armor(&nettle_base64, LDATA("Hell"), "SGVsbA==");
+  test_armor(&nettle_base64, LDATA("Hello"), "SGVsbG8=");
+  test_armor(&nettle_base64, LDATA("Hello\0"), "SGVsbG8A");
+  test_armor(&nettle_base64, LDATA("Hello?>>>"), "SGVsbG8/Pj4+");
+  test_armor(&nettle_base64, LDATA("\xff\xff\xff\xff"), "/////w==");
 
-  test_armor(&nettle_base64url, 0, "", "");
-  test_armor(&nettle_base64url, 1, "H", "SA==");
-  test_armor(&nettle_base64url, 2, "He", "SGU=");
-  test_armor(&nettle_base64url, 3, "Hel", "SGVs");
-  test_armor(&nettle_base64url, 4, "Hell", "SGVsbA==");
-  test_armor(&nettle_base64url, 5, "Hello", "SGVsbG8=");
-  test_armor(&nettle_base64url, 6, "Hello", "SGVsbG8A");
-  test_armor(&nettle_base64url, 9, "Hello?>>>", "SGVsbG8_Pj4-");
-  test_armor(&nettle_base64url, 4, "\xff\xff\xff\xff", "_____w==");
+  test_armor(&nettle_base64url, LDATA(""), "");
+  test_armor(&nettle_base64url, LDATA("H"), "SA==");
+  test_armor(&nettle_base64url, LDATA("He"), "SGU=");
+  test_armor(&nettle_base64url, LDATA("Hel"), "SGVs");
+  test_armor(&nettle_base64url, LDATA("Hell"), "SGVsbA==");
+  test_armor(&nettle_base64url, LDATA("Hello"), "SGVsbG8=");
+  test_armor(&nettle_base64url, LDATA("Hello\0"), "SGVsbG8A");
+  test_armor(&nettle_base64url, LDATA("Hello?>>>"), "SGVsbG8_Pj4-");
+  test_armor(&nettle_base64url, LDATA("\xff\xff\xff\xff"), "_____w==");
 
   {
     /* Test overlapping areas */
@@ -111,12 +125,12 @@ test_main(void)
     size_t dst_length;
     
     ASSERT(BASE64_ENCODE_RAW_LENGTH(5) == 8);
-    base64_encode_raw(buffer, 5, buffer);
+    base64_encode_in_place(5, buffer);
     ASSERT(MEMEQ(9, buffer, "SGVsbG8=x"));
 
     base64_decode_init(&ctx);
     dst_length = 0; /* Output parameter only. */
-    ASSERT(base64_decode_update(&ctx, &dst_length, buffer, 8, buffer));
+    ASSERT(base64_decode_in_place(&ctx, &dst_length, 8, buffer));
     ASSERT(dst_length == 5);
     
     ASSERT(MEMEQ(9, buffer, "HelloG8=x"));

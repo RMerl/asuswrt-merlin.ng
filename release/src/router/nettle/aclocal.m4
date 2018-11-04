@@ -526,7 +526,7 @@ else
     fi
   fi
   if test "$CC_FOR_BUILD" = gcc ; then
-    CC_FOR_BUILD="$CC_FOR_BUILD -O"
+    CC_FOR_BUILD="$CC_FOR_BUILD -O -g"
   fi
 fi
 

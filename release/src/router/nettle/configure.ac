@@ -2,7 +2,7 @@ dnl -*- mode: shell-script; sh-indentation: 2; -*-
 
 dnl Process this file with autoconf to produce a configure script.
 
-AC_INIT([nettle], [3.2], [nettle-bugs@lists.lysator.liu.se])
+AC_INIT([nettle], [3.4], [nettle-bugs@lists.lysator.liu.se])
 AC_PREREQ(2.61)
 AC_CONFIG_SRCDIR([arcfour.c])
 # Needed to stop autoconf from looking for files in parent directories.
@@ -11,10 +11,10 @@ AC_CONFIG_AUX_DIR([.])
 AC_CONFIG_HEADER([config.h])
 
 LIBNETTLE_MAJOR=6
-LIBNETTLE_MINOR=2
+LIBNETTLE_MINOR=4
 
 LIBHOGWEED_MAJOR=4
-LIBHOGWEED_MINOR=2
+LIBHOGWEED_MINOR=4
 
 dnl Note double square brackets, for extra m4 quoting.
 MAJOR_VERSION=`echo $PACKAGE_VERSION | sed 's/^\([[^.]]*\)\..*/\1/'`
@@ -91,7 +91,7 @@ AC_ARG_ENABLE(mini-gmp,
 
 if test "x$enable_mini_gmp" = xyes ; then
   NETTLE_USE_MINI_GMP=1
-  HOGWEED_EXTRA_SYMBOLS="mpz_*;gmp_*;mpn_*;"
+  HOGWEED_EXTRA_SYMBOLS="mpz_*;gmp_*;mpn_*;mp_*;"
 else
   NETTLE_USE_MINI_GMP=0
   HOGWEED_EXTRA_SYMBOLS=""
@@ -185,7 +185,7 @@ AC_HEADER_TIME
 AC_CHECK_SIZEOF(long)
 AC_CHECK_SIZEOF(size_t)
 
-AC_CHECK_HEADERS([openssl/blowfish.h openssl/des.h openssl/cast.h openssl/aes.h openssl/ecdsa.h],,
+AC_CHECK_HEADERS([openssl/evp.h openssl/ecdsa.h],,
 [enable_openssl=no
  break])
 
@@ -236,9 +236,9 @@ fi
 # Checks for libraries
 if test "x$enable_public_key" = "xyes" ; then
   if test "x$enable_mini_gmp" = "xno" ; then
-    AC_CHECK_LIB(gmp, __gmpz_getlimbn,,
+    AC_CHECK_LIB(gmp, __gmpz_powm_sec,,
         [AC_MSG_WARN(
-    [GNU MP not found, or not 3.1 or up, see http://gmplib.org/.
+    [GNU MP not found, or too old. GMP-5.0 or later is needed, see http://gmplib.org/.
     Support for public key algorithms will be unavailable.])]
         enable_public_key=no)
 
@@ -268,7 +268,16 @@ if test "x$enable_public_key" = "xyes" ; then
   fi
 fi
 
-GMP_NUMB_BITS="$nettle_cv_gmp_numb_bits"
+# Substituted in Makefile, passed on to the eccdata command.
+NUMB_BITS="$nettle_cv_gmp_numb_bits"
+AC_SUBST([NUMB_BITS])
+
+# Substituted in version.h, used only with mini-gmp.
+if test "x$enable_mini_gmp" = "xyes" ; then
+  GMP_NUMB_BITS="$NUMB_BITS"
+else
+  GMP_NUMB_BITS="n/a"
+fi
 AC_SUBST([GMP_NUMB_BITS])
 
 # Figure out ABI. Currently, configurable only by setting CFLAGS.
@@ -489,7 +498,7 @@ EOF
 	  dnl Note double square brackets, for extra m4 quoting.
 	  tmp_bits=`grep GMP_NUMB_BITS "$srcdir/$asm_dir/$tmp_h" \
             | sed 's/^.*GMP_NUMB_BITS(\([[0-9]]*\)).*$/\1/'`
-	  if test "$tmp_bits" && test "$tmp_bits" != "${GMP_NUMB_BITS}" ; then
+	  if test "$tmp_bits" && test "$tmp_bits" != "${NUMB_BITS}" ; then
 	     AC_MSG_WARN([skipping $tmp_h, because GMP_NUMB_BITS != $tmp_bits])
 	     continue
 	  fi
@@ -576,12 +585,12 @@ case "$host_os" in
     # linking to the DLL, is installed into the lib dir.
     case "$host_os" in
       mingw32*)
-        LIBNETTLE_FORLINK='libnettle-$(LIBNETTLE_MAJOR)-$(LIBNETTLE_MINOR).dll'
-        LIBHOGWEED_FORLINK='libhogweed-$(LIBHOGWEED_MAJOR)-$(LIBHOGWEED_MINOR).dll'
+        LIBNETTLE_FORLINK='libnettle-$(LIBNETTLE_MAJOR).dll'
+        LIBHOGWEED_FORLINK='libhogweed-$(LIBHOGWEED_MAJOR).dll'
         ;;
       cygwin*)
-        LIBNETTLE_FORLINK='cygnettle-$(LIBNETTLE_MAJOR)-$(LIBNETTLE_MINOR).dll'
-        LIBHOGWEED_FORLINK='cyghogweed-$(LIBHOGWEED_MAJOR)-$(LIBHOGWEED_MINOR).dll'
+        LIBNETTLE_FORLINK='cygnettle-$(LIBNETTLE_MAJOR).dll'
+        LIBHOGWEED_FORLINK='cyghogweed-$(LIBHOGWEED_MAJOR).dll'
         ;;
     esac
     if test "x$cross_compiling" = xyes ; then
@@ -876,7 +885,7 @@ OPENSSL_LIBFLAGS=''
 
 # Check for openssl's libcrypto (used only for benchmarking)
 if test x$enable_openssl = xyes ; then
-  AC_CHECK_LIB(crypto, BF_ecb_encrypt,
+  AC_CHECK_LIB(crypto, EVP_CIPHER_CTX_new,
     [OPENSSL_LIBFLAGS='-lcrypto'],
     [enable_openssl=no])
 fi

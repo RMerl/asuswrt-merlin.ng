@@ -61,8 +61,9 @@ enum sexp_token
     SEXP_LIST_END,
     SEXP_EOF,
 
-    /* The below types are internal to the input parsing. sexp_parse
-     * should never return a token of this type. */
+    /* The below types are internal to the input parsing, only
+     * returned by sexp_get_token. sexp_parse should never return a
+     * token of these types. */
     SEXP_DISPLAY_START,
     SEXP_DISPLAY_END,
     SEXP_TRANSPORT_START,

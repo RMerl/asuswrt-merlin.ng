@@ -137,3 +137,7 @@ const struct ecc_curve nettle_secp_521r1 =
   ecc_table
 };
 
+const struct ecc_curve *nettle_get_secp_521r1(void)
+{
+  return &nettle_secp_521r1;
+}

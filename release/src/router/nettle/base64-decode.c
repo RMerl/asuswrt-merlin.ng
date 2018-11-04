@@ -73,9 +73,9 @@ base64_decode_init(struct base64_decode_ctx *ctx)
 int
 base64_decode_single(struct base64_decode_ctx *ctx,
 		     uint8_t *dst,
-		     uint8_t src)
+		     char src)
 {
-  int data = ctx->table[src];
+  int data = ctx->table[(uint8_t) src];
 
   switch(data)
     {
@@ -122,7 +122,7 @@ base64_decode_update(struct base64_decode_ctx *ctx,
 		     size_t *dst_length,
 		     uint8_t *dst,
 		     size_t src_length,
-		     const uint8_t *src)
+		     const char *src)
 {
   size_t done;
   size_t i;

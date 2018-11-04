@@ -37,6 +37,8 @@
 
 #include "nettle-meta.h"
 
+#undef nettle_aeads
+
 const struct nettle_aead * const nettle_aeads[] = {
   &nettle_gcm_aes128,
   &nettle_gcm_aes192,
@@ -47,3 +49,9 @@ const struct nettle_aead * const nettle_aeads[] = {
   &nettle_chacha_poly1305,
   NULL
 };
+
+const struct nettle_aead * const *
+nettle_get_aeads (void)
+{
+  return nettle_aeads;
+}

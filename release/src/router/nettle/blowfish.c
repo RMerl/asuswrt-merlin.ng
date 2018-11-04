@@ -337,8 +337,8 @@ blowfish_encrypt (const struct blowfish_ctx *ctx,
     {
       uint32_t d1, d2;
 
-      d1 = src[0] << 24 | src[1] << 16 | src[2] << 8 | src[3];
-      d2 = src[4] << 24 | src[5] << 16 | src[6] << 8 | src[7];
+      d1 = READ_UINT32(src);
+      d2 = READ_UINT32(src+4);
       encrypt (ctx, &d1, &d2);
       dst[0] = (d1 >> 24) & 0xff;
       dst[1] = (d1 >> 16) & 0xff;
@@ -359,8 +359,8 @@ blowfish_decrypt (const struct blowfish_ctx *ctx,
     {
       uint32_t d1, d2;
 
-      d1 = src[0] << 24 | src[1] << 16 | src[2] << 8 | src[3];
-      d2 = src[4] << 24 | src[5] << 16 | src[6] << 8 | src[7];
+      d1 = READ_UINT32(src);
+      d2 = READ_UINT32(src+4);
       decrypt (ctx, &d1, &d2);
       dst[0] = (d1 >> 24) & 0xff;
       dst[1] = (d1 >> 16) & 0xff;

@@ -58,13 +58,18 @@ rsa_public_key_clear(struct rsa_public_key *key)
 }
 
 /* Computes the size, in octets, of a the modulo. Returns 0 if the
- * modulo is too small to be useful. */
-
+ * modulo is too small to be useful, or otherwise appears invalid. */
 size_t
 _rsa_check_size(mpz_t n)
 {
   /* Round upwards */
-  size_t size = (mpz_sizeinbase(n, 2) + 7) / 8;
+  size_t size;
+
+  /* Even moduli are invalid, and not supported by mpz_powm_sec. */
+  if (mpz_even_p (n))
+    return 0;
+
+  size = (mpz_sizeinbase(n, 2) + 7) / 8;
 
   if (size < RSA_MINIMUM_N_OCTETS)
     return 0;

@@ -114,7 +114,7 @@ sexp_put_char(struct sexp_output *output, uint8_t c)
   if (output->coding)
     {
       /* Two is enough for both base16 and base64. */
-      uint8_t encoded[2];
+      char encoded[2];
       unsigned done;
 
       unsigned i;
@@ -183,7 +183,7 @@ void
 sexp_put_code_end(struct sexp_output *output)
 {
   /* Enough for both hex and base64 */
-  uint8_t encoded[BASE64_ENCODE_FINAL_LENGTH];
+  char encoded[BASE64_ENCODE_FINAL_LENGTH];
   unsigned done;
 
   assert(output->coding);
@@ -194,7 +194,7 @@ sexp_put_code_end(struct sexp_output *output)
   
   output->coding = NULL;
 
-  sexp_put_data(output, done, encoded);
+  sexp_put_data(output, done, (const uint8_t*) encoded);
 }
 
 void
@@ -203,7 +203,7 @@ sexp_put_string(struct sexp_output *output, enum sexp_mode mode,
 {
   if (!string->size)
     sexp_put_data(output, 2,
-		  (mode == SEXP_ADVANCED) ? "\"\"": "0:");
+		  (const uint8_t *) ((mode == SEXP_ADVANCED) ? "\"\"": "0:"));
 
   else if (mode == SEXP_ADVANCED)
     {

@@ -74,11 +74,11 @@ werror(const char *format, ...)
     }
 }
 
-unsigned
-read_file(const char *name, unsigned max_size, char **contents)
+size_t
+read_file(const char *name, size_t max_size, uint8_t **contents)
 {
-  unsigned size, done;
-  char *buffer;
+  size_t size, done;
+  uint8_t *buffer;
   FILE *f;
     
   f = fopen(name, "rb");
@@ -92,7 +92,7 @@ read_file(const char *name, unsigned max_size, char **contents)
 
   for (buffer = NULL, done = 0;; size *= 2)
     {
-      char *p;
+      uint8_t *p;
 
       if (max_size && size > max_size)
 	size = max_size;
@@ -143,7 +143,7 @@ read_file(const char *name, unsigned max_size, char **contents)
 }
 
 int
-write_string(FILE *f, unsigned size, const char *buffer)
+write_data(FILE *f, size_t size, const void *buffer)
 {
   size_t res = fwrite(buffer, 1, size, f);
 
@@ -151,7 +151,7 @@ write_string(FILE *f, unsigned size, const char *buffer)
 }
 
 int
-write_file(const char *name, unsigned size, const char *buffer)
+write_file(const char *name, size_t size, const void *buffer)
 {
   FILE *f = fopen(name, "wb");
   int res;
@@ -159,7 +159,7 @@ write_file(const char *name, unsigned size, const char *buffer)
   if (!f)
     return 0;
 
-  res = write_string(f, size, buffer);
+  res = write_data(f, size, buffer);
   return fclose(f) == 0 && res;
 }
 
@@ -167,7 +167,7 @@ int
 simple_random(struct yarrow256_ctx *ctx, const char *name)
 {
   unsigned length;
-  char *buffer;
+  uint8_t *buffer;
 
   if (name)
     length = read_file(name, 0, &buffer);
@@ -189,7 +189,7 @@ hash_file(const struct nettle_hash *hash, void *ctx, FILE *f)
 {
   for (;;)
     {
-      char buffer[BUFSIZE];
+      uint8_t buffer[BUFSIZE];
       size_t res = fread(buffer, 1, sizeof(buffer), f);
       if (ferror(f))
 	return 0;

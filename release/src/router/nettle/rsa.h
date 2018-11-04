@@ -79,6 +79,12 @@ extern "C" {
 #define rsa_sha512_sign_digest nettle_rsa_sha512_sign_digest
 #define rsa_sha512_sign_digest_tr nettle_rsa_sha512_sign_digest_tr
 #define rsa_sha512_verify_digest nettle_rsa_sha512_verify_digest
+#define rsa_pss_sha256_sign_digest_tr nettle_rsa_pss_sha256_sign_digest_tr
+#define rsa_pss_sha256_verify_digest nettle_rsa_pss_sha256_verify_digest
+#define rsa_pss_sha384_sign_digest_tr nettle_rsa_pss_sha384_sign_digest_tr
+#define rsa_pss_sha384_verify_digest nettle_rsa_pss_sha384_verify_digest
+#define rsa_pss_sha512_sign_digest_tr nettle_rsa_pss_sha512_sign_digest_tr
+#define rsa_pss_sha512_verify_digest nettle_rsa_pss_sha512_verify_digest
 #define rsa_encrypt nettle_rsa_encrypt
 #define rsa_decrypt nettle_rsa_decrypt
 #define rsa_decrypt_tr nettle_rsa_decrypt_tr
@@ -93,6 +99,7 @@ extern "C" {
 #define rsa_keypair_from_der nettle_rsa_keypair_from_der
 #define rsa_keypair_to_openpgp nettle_rsa_keypair_to_openpgp
 #define _rsa_verify _nettle_rsa_verify
+#define _rsa_verify_recover _nettle_rsa_verify_recover
 #define _rsa_check_size _nettle_rsa_check_size
 #define _rsa_blind _nettle_rsa_blind
 #define _rsa_unblind _nettle_rsa_unblind
@@ -341,6 +348,49 @@ rsa_sha512_verify_digest(const struct rsa_public_key *key,
 			 const uint8_t *digest,
 			 const mpz_t signature);
 
+/* PSS style signatures */
+int
+rsa_pss_sha256_sign_digest_tr(const struct rsa_public_key *pub,
+			      const struct rsa_private_key *key,
+			      void *random_ctx, nettle_random_func *random,
+			      size_t salt_length, const uint8_t *salt,
+			      const uint8_t *digest,
+			      mpz_t s);
+
+int
+rsa_pss_sha256_verify_digest(const struct rsa_public_key *key,
+			     size_t salt_length,
+			     const uint8_t *digest,
+			     const mpz_t signature);
+
+int
+rsa_pss_sha384_sign_digest_tr(const struct rsa_public_key *pub,
+			      const struct rsa_private_key *key,
+			      void *random_ctx, nettle_random_func *random,
+			      size_t salt_length, const uint8_t *salt,
+			      const uint8_t *digest,
+			      mpz_t s);
+
+int
+rsa_pss_sha384_verify_digest(const struct rsa_public_key *key,
+			     size_t salt_length,
+			     const uint8_t *digest,
+			     const mpz_t signature);
+
+int
+rsa_pss_sha512_sign_digest_tr(const struct rsa_public_key *pub,
+			      const struct rsa_private_key *key,
+			      void *random_ctx, nettle_random_func *random,
+			      size_t salt_length, const uint8_t *salt,
+			      const uint8_t *digest,
+			      mpz_t s);
+
+int
+rsa_pss_sha512_verify_digest(const struct rsa_public_key *key,
+			     size_t salt_length,
+			     const uint8_t *digest,
+			     const mpz_t signature);
+
 
 /* RSA encryption, using PKCS#1 */
 /* These functions uses the v1.5 padding. What should the v2 (OAEP)
@@ -479,6 +529,11 @@ int
 _rsa_verify(const struct rsa_public_key *key,
 	    const mpz_t m,
 	    const mpz_t s);
+
+int
+_rsa_verify_recover(const struct rsa_public_key *key,
+		    mpz_t m,
+		    const mpz_t s);
 
 size_t
 _rsa_check_size(mpz_t n);

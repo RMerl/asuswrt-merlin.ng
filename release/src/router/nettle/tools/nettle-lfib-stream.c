@@ -80,10 +80,10 @@ main(int argc, char **argv)
 
   for (;;)
     {
-      char buffer[BUFSIZE];
-      knuth_lfib_random(&ctx, BUFSIZE, buffer);
+      uint8_t buffer[BUFSIZE];
+      knuth_lfib_random(&ctx, sizeof(buffer), buffer);
 
-      if (fwrite(buffer, 1, BUFSIZE, stdout) < BUFSIZE
+      if (fwrite(buffer, 1, sizeof(buffer), stdout) < sizeof(buffer)
 	  || fflush(stdout) < 0)
 	return EXIT_FAILURE;
     }

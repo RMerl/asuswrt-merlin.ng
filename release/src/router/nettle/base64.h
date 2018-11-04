@@ -73,7 +73,7 @@ extern "C" {
 
 struct base64_encode_ctx
 {
-  const uint8_t *alphabet; /* Alphabet to use for encoding */
+  const char *alphabet;    /* Alphabet to use for encoding */
   unsigned short word;     /* Leftover bits */
   unsigned char bits;      /* Number of bits, always 0, 2, or 4. */
 };
@@ -89,14 +89,14 @@ base64url_encode_init(struct base64_encode_ctx *ctx);
 /* Encodes a single byte. Returns amount of output (always 1 or 2). */
 size_t
 base64_encode_single(struct base64_encode_ctx *ctx,
-		     uint8_t *dst,
+		     char *dst,
 		     uint8_t src);
 
 /* Returns the number of output characters. DST should point to an
  * area of size at least BASE64_ENCODE_LENGTH(length). */
 size_t
 base64_encode_update(struct base64_encode_ctx *ctx,
-		     uint8_t *dst,
+		     char *dst,
 		     size_t length,
 		     const uint8_t *src);
 
@@ -104,18 +104,20 @@ base64_encode_update(struct base64_encode_ctx *ctx,
  * BASE64_ENCODE_FINAL_LENGTH */
 size_t
 base64_encode_final(struct base64_encode_ctx *ctx,
-		    uint8_t *dst);
+		    char *dst);
 
 /* Lower level functions */
 
 /* Encodes a string in one go, including any padding at the end.
  * Generates exactly BASE64_ENCODE_RAW_LENGTH(length) bytes of output.
- * Supports overlapped operation, if src <= dst. */
+ * Supports overlapped operation, if src <= dst. FIXME: Use of overlap
+ * is deprecated, if needed there should be a separate public fucntion
+ * to do that.*/
 void
-base64_encode_raw(uint8_t *dst, size_t length, const uint8_t *src);
+base64_encode_raw(char *dst, size_t length, const uint8_t *src);
 
 void
-base64_encode_group(uint8_t *dst, uint32_t group);
+base64_encode_group(char *dst, uint32_t group);
 
 
 /* Base64 decoding */
@@ -147,7 +149,7 @@ base64url_decode_init(struct base64_decode_ctx *ctx);
 int
 base64_decode_single(struct base64_decode_ctx *ctx,
 		     uint8_t *dst,
-		     uint8_t src);
+		     char src);
 
 /* Returns 1 on success, 0 on error. DST should point to an area of
  * size at least BASE64_DECODE_LENGTH(length). The amount of data
@@ -157,7 +159,7 @@ base64_decode_update(struct base64_decode_ctx *ctx,
 		     size_t *dst_length,
 		     uint8_t *dst,
 		     size_t src_length,
-		     const uint8_t *src);
+		     const char *src);
 
 /* Returns 1 on success. */
 int

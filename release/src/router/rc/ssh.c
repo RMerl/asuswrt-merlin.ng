@@ -14,7 +14,7 @@ static inline int check_host_key(const char *ktype, const char *nvname, const ch
 {
 	char filename[64];
 
-	snprintf(filename, sizeof (filename), "%s/%s", SSHD_CERT_FOLDER, nvname);
+	snprintf(filename, sizeof (filename), "%s/%s", UPLOAD_CERT_FOLDER, nvname);
 
 	unlink(hkfn);
 

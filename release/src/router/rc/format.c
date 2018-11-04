@@ -76,13 +76,11 @@ void adjust_merlin_config(void)
 
 #endif
 
-/* migrade httpd key/cert from Asus */
-#ifdef RTCONFIG_HTTPS
-	if (f_exists("/jffs/.cert/cert.pem"))
-		eval("mv", "/jffs/.cert/cert.pem", UPLOAD_CERT);
-	if (f_exists("/jffs/.cert/key.pem"))
-		eval("mv", "/jffs/.cert/key.pem", UPLOAD_KEY);
-#endif
+/* migrate httpd/ssh key/cert to same location as Asus */
+	if (d_exists("/jffs/ssl")) {
+		system("/bin/rm -f /jffs/ssl/* /jffs/.cert/"); /* */
+		rmdir("/jffs/ssl");
+	}
 
 /* migrate dhcpc_options to wanxxx_clientid */
 	char *oldclientid = nvram_safe_get("wan0_dhcpc_options");

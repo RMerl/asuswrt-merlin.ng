@@ -1,0 +1,17 @@
+*.o
+*.lo
+*.a
+*.la
+Makefile
+autom4te.cache
+config.h
+.deps
+.libs
+*.pc
+src/daemon/lldpd
+libtool
+src/client/lldpcli
+.dirstamp
+src/lib/atom-glue.c
+src/client/lldpcli.8
+src/daemon/lldpd.8

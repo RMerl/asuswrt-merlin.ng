@@ -76,12 +76,6 @@ void adjust_merlin_config(void)
 
 #endif
 
-/* migrate httpd/ssh key/cert to same location as Asus */
-	if (d_exists("/jffs/ssl")) {
-		system("/bin/rm -f /jffs/ssl/* /jffs/.cert/"); /* */
-		rmdir("/jffs/ssl");
-	}
-
 /* migrate dhcpc_options to wanxxx_clientid */
 	char *oldclientid = nvram_safe_get("wan0_dhcpc_options");
 	if (*oldclientid) {
@@ -107,13 +101,6 @@ void adjust_merlin_config(void)
 	if (nvram_match("dev_fail_reboot", "3")) {
 		nvram_set("dev_fail_reboot", "1");
 	}
-
-/* Remove legacy 1.xxx Trend Micro signatures if present */
-#ifdef RTCONFIG_BWDPI
-	if (f_exists("/jffs/signature/rule.trf") &&
-	   f_size("/jffs/signature/rule.trf") < 50000)
-		unlink("/jffs/signature/rule.trf");
-#endif
 
 /* Remove discontinued DNSFilter services */
 #ifdef RTCONFIG_DNSFILTER
@@ -440,4 +427,20 @@ void force_off_push_msg(void)
 	if(nv) free(nv);
 }
 #endif
+
+void adjust_jffs_content(void)
+{
+/* migrate httpd/ssh key/cert to same location as Asus */
+	if (d_exists("/jffs/ssl")) {
+		system("/bin/mv -f /jffs/ssl/* /jffs/.cert/");     /* */
+		rmdir("/jffs/ssl");
+	}
+
+/* Remove legacy 1.xxx Trend Micro signatures if present */
+#ifdef RTCONFIG_BWDPI
+	if (f_exists("/jffs/signature/rule.trf") &&
+	    f_size("/jffs/signature/rule.trf") < 50000)
+		unlink("/jffs/signature/rule.trf");
+#endif
+}
 

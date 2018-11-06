@@ -1281,12 +1281,13 @@ void start_dnsmasq(void)
 	}
 #endif
 	if (!is_routing_enabled()
-		&& !repeater_mode()
+		&& (repeater_mode()
 #if defined(RTCONFIG_BCMWL6) && defined(RTCONFIG_PROXYSTA)
-		&& !psr_mode() && !mediabridge_mode()
+		|| psr_mode() || mediabridge_mode()
 #elif defined(RTCONFIG_REALTEK)
-		&& !mediabridge_mode()
+		|| mediabridge_mode()
 #endif
+		)
 #ifdef RTCONFIG_DPSTA
 		&& !(dpsta_mode() && nvram_get_int("re_mode") == 0)
 #endif

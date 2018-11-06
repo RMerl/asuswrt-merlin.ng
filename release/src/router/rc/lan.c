@@ -4213,20 +4213,19 @@ lan_up(char *lan_ifname)
 
 	/* Set default route to gateway if specified */
 	if(access_point_mode()
-		|| ((repeater_mode()
+		|| (((repeater_mode() && (nvram_get_int("wlc_state") == WLC_STATE_CONNECTED))
 #if defined(RTCONFIG_BCMWL6) && defined(RTCONFIG_PROXYSTA)
-			|| psr_mode() || mediabridge_mode()
+			|| psr_mode() || mediabridge_mode())
 #elif defined(RTCONFIG_REALTEK)
-			|| mediabridge_mode()
+			|| mediabridge_mode())
 #endif
 #ifdef RTCONFIG_DPSTA
-			|| (dpsta_mode() && nvram_get_int("re_mode") == 0)
+			&& !(dpsta_mode() && nvram_get_int("re_mode") == 0)
 #endif
-		    ) && nvram_get_int("wlc_state") == WLC_STATE_CONNECTED)
 #if defined(RTCONFIG_AMAS)
-		|| (nvram_get_int("re_mode") == 1)
+		&& !(nvram_get_int("re_mode") == 1)
 #endif
-	) {
+	)) {
 		route_add(lan_ifname, 0, "0.0.0.0", nvram_safe_get("lan_gateway"), "0.0.0.0");
 
 		refresh_ntpc();

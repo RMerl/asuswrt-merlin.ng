@@ -710,6 +710,7 @@ extern void adjust_vpnc_config(void);
 #if defined(RTCONFIG_NOTIFICATION_CENTER)
 extern void force_off_push_msg(void);
 #endif
+extern void adjust_jffs_content(void);
 
 // format.c
 extern void adjust_url_urlelist();

@@ -18,6 +18,7 @@
 #include <linux/stringify.h>
 #include <linux/vmalloc.h>
 #include <net/netlink.h>
+#include <linux/netfilter/ipset/ip_set_compat.h>
 #include <uapi/linux/netfilter/ipset/ip_set.h>
 
 #define _IP_SET_MODULE_DESC(a, b, c)		\
@@ -79,10 +80,12 @@ enum ip_set_ext_id {
 	IPSET_EXT_ID_MAX,
 };
 
+struct ip_set;
+
 /* Extension type */
 struct ip_set_ext_type {
 	/* Destroy extension private data (can be NULL) */
-	void (*destroy)(void *ext);
+	void (*destroy)(struct ip_set *set, void *ext);
 	enum ip_set_extension type;
 	enum ipset_cadt_flags flag;
 	/* Size and minimal alignment */
@@ -92,24 +95,18 @@ struct ip_set_ext_type {
 
 extern const struct ip_set_ext_type ip_set_extensions[];
 
-struct ip_set_ext {
-	u64 packets;
-	u64 bytes;
-	u32 timeout;
-	u32 skbmark;
-	u32 skbmarkmask;
-	u32 skbprio;
-	u16 skbqueue;
-	char *comment;
-};
-
 struct ip_set_counter {
 	atomic64_t bytes;
 	atomic64_t packets;
 };
 
+struct ip_set_comment_rcu {
+	struct rcu_head rcu;
+	char str[0];
+};
+
 struct ip_set_comment {
-	char *str;
+	struct ip_set_comment_rcu __rcu *c;
 };
 
 struct ip_set_skbinfo {
@@ -117,18 +114,27 @@ struct ip_set_skbinfo {
 	u32 skbmarkmask;
 	u32 skbprio;
 	u16 skbqueue;
+	u16 __pad;
+};
+
+struct ip_set_ext {
+	struct ip_set_skbinfo skbinfo;
+	u64 packets;
+	u64 bytes;
+	char *comment;
+	u32 timeout;
 };
 
 struct ip_set;
 
 #define ext_timeout(e, s)	\
-(unsigned long *)(((void *)(e)) + (s)->offset[IPSET_EXT_ID_TIMEOUT])
+((unsigned long *)(((void *)(e)) + (s)->offset[IPSET_EXT_ID_TIMEOUT]))
 #define ext_counter(e, s)	\
-(struct ip_set_counter *)(((void *)(e)) + (s)->offset[IPSET_EXT_ID_COUNTER])
+((struct ip_set_counter *)(((void *)(e)) + (s)->offset[IPSET_EXT_ID_COUNTER]))
 #define ext_comment(e, s)	\
-(struct ip_set_comment *)(((void *)(e)) + (s)->offset[IPSET_EXT_ID_COMMENT])
+((struct ip_set_comment *)(((void *)(e)) + (s)->offset[IPSET_EXT_ID_COMMENT]))
 #define ext_skbinfo(e, s)	\
-(struct ip_set_skbinfo *)(((void *)(e)) + (s)->offset[IPSET_EXT_ID_SKBINFO])
+((struct ip_set_skbinfo *)(((void *)(e)) + (s)->offset[IPSET_EXT_ID_SKBINFO]))
 
 typedef int (*ipset_adtfn)(struct ip_set *set, void *value,
 			   const struct ip_set_ext *ext,
@@ -176,6 +182,9 @@ struct ip_set_type_variant {
 	/* List elements */
 	int (*list)(const struct ip_set *set, struct sk_buff *skb,
 		    struct netlink_callback *cb);
+	/* Keep listing private when resizing runs parallel */
+	void (*uref)(struct ip_set *set, struct netlink_callback *cb,
+		     bool start);
 
 	/* Return true if "b" set is the same as "a"
 	 * according to the create set parameters */
@@ -223,9 +232,13 @@ struct ip_set {
 	/* The name of the set */
 	char name[IPSET_MAXNAMELEN];
 	/* Lock protecting the set data */
-	rwlock_t lock;
+	spinlock_t lock;
 	/* References to the set */
 	u32 ref;
+	/* References to the set for netlink events like dump,
+	 * ref can be swapped out by ip_set_swap
+	 */
+	u32 ref_netlink;
 	/* The core set type */
 	struct ip_set_type *type;
 	/* The type variant doing the real job */
@@ -240,6 +253,10 @@ struct ip_set {
 	u8 flags;
 	/* Default timeout value, if enabled */
 	u32 timeout;
+	/* Number of elements (vs timeout) */
+	u32 elements;
+	/* Size of the dynamic extensions (vs timeout) */
+	size_t ext_size;
 	/* Element data size */
 	size_t dsize;
 	/* Offsets to extensions in elements */
@@ -256,7 +273,7 @@ ip_set_ext_destroy(struct ip_set *set, void *data)
 	 */
 	if (SET_WITH_COMMENT(set))
 		ip_set_extensions[IPSET_EXT_ID_COMMENT].destroy(
-			ext_comment(data, set));
+			set, ext_comment(data, set));
 }
 
 static inline int
@@ -282,110 +299,14 @@ ip_set_put_flags(struct sk_buff *skb, struct ip_set *set)
 	return nla_put_net32(skb, IPSET_ATTR_CADT_FLAGS, htonl(cadt_flags));
 }
 
-static inline void
-ip_set_add_bytes(u64 bytes, struct ip_set_counter *counter)
-{
-	atomic64_add((long long)bytes, &(counter)->bytes);
-}
-
-static inline void
-ip_set_add_packets(u64 packets, struct ip_set_counter *counter)
-{
-	atomic64_add((long long)packets, &(counter)->packets);
-}
-
-static inline u64
-ip_set_get_bytes(const struct ip_set_counter *counter)
-{
-	return (u64)atomic64_read(&(counter)->bytes);
-}
-
-static inline u64
-ip_set_get_packets(const struct ip_set_counter *counter)
-{
-	return (u64)atomic64_read(&(counter)->packets);
-}
-
-static inline void
-ip_set_update_counter(struct ip_set_counter *counter,
-		      const struct ip_set_ext *ext,
-		      struct ip_set_ext *mext, u32 flags)
-{
-	if (ext->packets != ULLONG_MAX &&
-	    !(flags & IPSET_FLAG_SKIP_COUNTER_UPDATE)) {
-		ip_set_add_bytes(ext->bytes, counter);
-		ip_set_add_packets(ext->packets, counter);
-	}
-	if (flags & IPSET_FLAG_MATCH_COUNTERS) {
-		mext->packets = ip_set_get_packets(counter);
-		mext->bytes = ip_set_get_bytes(counter);
-	}
-}
-
-static inline void
-ip_set_get_skbinfo(struct ip_set_skbinfo *skbinfo,
-		      const struct ip_set_ext *ext,
-		      struct ip_set_ext *mext, u32 flags)
-{
-		mext->skbmark = skbinfo->skbmark;
-		mext->skbmarkmask = skbinfo->skbmarkmask;
-		mext->skbprio = skbinfo->skbprio;
-		mext->skbqueue = skbinfo->skbqueue;
-}
-static inline bool
-ip_set_put_skbinfo(struct sk_buff *skb, struct ip_set_skbinfo *skbinfo)
-{
-	/* Send nonzero parameters only */
-	return ((skbinfo->skbmark || skbinfo->skbmarkmask) &&
-		nla_put_net64(skb, IPSET_ATTR_SKBMARK,
-			      cpu_to_be64((u64)skbinfo->skbmark << 32 |
-					  skbinfo->skbmarkmask))) ||
-	       (skbinfo->skbprio &&
-	        nla_put_net32(skb, IPSET_ATTR_SKBPRIO,
-			      cpu_to_be32(skbinfo->skbprio))) ||
-	       (skbinfo->skbqueue &&
-	        nla_put_net16(skb, IPSET_ATTR_SKBQUEUE,
-			     cpu_to_be16(skbinfo->skbqueue)));
-
-}
-
-static inline void
-ip_set_init_skbinfo(struct ip_set_skbinfo *skbinfo,
-		    const struct ip_set_ext *ext)
-{
-	skbinfo->skbmark = ext->skbmark;
-	skbinfo->skbmarkmask = ext->skbmarkmask;
-	skbinfo->skbprio = ext->skbprio;
-	skbinfo->skbqueue = ext->skbqueue;
-}
-
-static inline bool
-ip_set_put_counter(struct sk_buff *skb, struct ip_set_counter *counter)
-{
-	return nla_put_net64(skb, IPSET_ATTR_BYTES,
-			     cpu_to_be64(ip_set_get_bytes(counter))) ||
-	       nla_put_net64(skb, IPSET_ATTR_PACKETS,
-			     cpu_to_be64(ip_set_get_packets(counter)));
-}
-
-static inline void
-ip_set_init_counter(struct ip_set_counter *counter,
-		    const struct ip_set_ext *ext)
-{
-	if (ext->bytes != ULLONG_MAX)
-		atomic64_set(&(counter)->bytes, (long long)(ext->bytes));
-	if (ext->packets != ULLONG_MAX)
-		atomic64_set(&(counter)->packets, (long long)(ext->packets));
-}
-
 /* Netlink CB args */
 enum {
-	IPSET_CB_NET = 0,
-	IPSET_CB_DUMP,
-	IPSET_CB_INDEX,
-	IPSET_CB_ARG0,
+	IPSET_CB_NET = 0,	/* net namespace */
+	IPSET_CB_DUMP,		/* dump single set/all sets */
+	IPSET_CB_INDEX,		/* set index */
+	IPSET_CB_PRIVATE,	/* set private data */
+	IPSET_CB_ARG0,		/* type specific */
 	IPSET_CB_ARG1,
-	IPSET_CB_ARG2,
 };
 
 /* register and unregister set references */
@@ -414,9 +335,11 @@ extern void ip_set_free(void *members);
 extern int ip_set_get_ipaddr4(struct nlattr *nla,  __be32 *ipaddr);
 extern int ip_set_get_ipaddr6(struct nlattr *nla, union nf_inet_addr *ipaddr);
 extern size_t ip_set_elem_len(struct ip_set *set, struct nlattr *tb[],
-			      size_t len);
+			      size_t len, size_t align);
 extern int ip_set_get_extensions(struct ip_set *set, struct nlattr *tb[],
 				 struct ip_set_ext *ext);
+extern int ip_set_put_extensions(struct sk_buff *skb, const struct ip_set *set,
+				 const void *e, bool active);
 
 static inline int
 ip_set_get_hostipaddr4(struct nlattr *nla, u32 *ipaddr)
@@ -532,30 +455,9 @@ bitmap_bytes(u32 a, u32 b)
 
 #include <linux/netfilter/ipset/ip_set_timeout.h>
 #include <linux/netfilter/ipset/ip_set_comment.h>
+#include <linux/netfilter/ipset/ip_set_counter.h>
+#include <linux/netfilter/ipset/ip_set_skbinfo.h>
 
-static inline int
-ip_set_put_extensions(struct sk_buff *skb, const struct ip_set *set,
-		      const void *e, bool active)
-{
-	if (SET_WITH_TIMEOUT(set)) {
-		unsigned long *timeout = ext_timeout(e, set);
-
-		if (nla_put_net32(skb, IPSET_ATTR_TIMEOUT,
-			htonl(active ? ip_set_timeout_get(timeout)
-				: *timeout)))
-			return -EMSGSIZE;
-	}
-	if (SET_WITH_COUNTER(set) &&
-	    ip_set_put_counter(skb, ext_counter(e, set)))
-		return -EMSGSIZE;
-	if (SET_WITH_COMMENT(set) &&
-	    ip_set_put_comment(skb, ext_comment(e, set)))
-		return -EMSGSIZE;
-	if (SET_WITH_SKBINFO(set) &&
-	    ip_set_put_skbinfo(skb, ext_skbinfo(e, set)))
-		return -EMSGSIZE;
-	return 0;
-}
 
 #define IP_SET_INIT_KEXT(skb, opt, set)			\
 	{ .bytes = (skb)->len, .packets = 1,		\
@@ -564,8 +466,6 @@ ip_set_put_extensions(struct sk_buff *skb, const struct ip_set *set,
 #define IP_SET_INIT_UEXT(set)				\
 	{ .bytes = ULLONG_MAX, .packets = ULLONG_MAX,	\
 	  .timeout = (set)->timeout }
-
-#define IP_SET_INIT_CIDR(a, b) ((a) ? (a) : (b))
 
 #define IPSET_CONCAT(a, b)		a##b
 #define IPSET_TOKEN(a, b)		IPSET_CONCAT(a, b)

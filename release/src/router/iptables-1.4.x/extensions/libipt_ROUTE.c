@@ -214,14 +214,14 @@ static void ROUTE_save(const void *ip, const struct xt_entry_target *target)
 
 	if (route_info->gw) {
 		struct in_addr ip_1 = { route_info->gw };
-		printf("--gw %s ", inet_ntoa(ip_1));
+		printf(" --gw %s", inet_ntoa(ip_1));
 	}
 
 	if (route_info->flags & IPT_ROUTE_CONTINUE)
-		printf("--continue ");
+		printf(" --continue");
 
 	if (route_info->flags & IPT_ROUTE_TEE)
-		printf("--tee ");
+		printf(" --tee");
 }
 
 

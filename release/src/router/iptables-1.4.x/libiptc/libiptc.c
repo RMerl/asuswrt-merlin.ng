@@ -40,6 +40,7 @@
 #include "linux_list.h"
 
 //#define IPTC_DEBUG2 1
+//#define DEBUG 1
 
 #ifdef IPTC_DEBUG2
 #include <fcntl.h>
@@ -1892,23 +1893,49 @@ match_different(const STRUCT_ENTRY_MATCH *a,
 {
 	const STRUCT_ENTRY_MATCH *b;
 	unsigned int i;
+	int mismatch = 0;
+	int compare_size = 0;
 
 	/* Offset of b is the same as a. */
 	b = (void *)b_elems + ((unsigned char *)a - a_elems);
 
+	debug("match_different\n");
+
 	if (a->u.match_size != b->u.match_size)
 		return 1;
+	debug("match_size = %i\n",
+		a->u.match_size);
 
 	if (strcmp(a->u.user.name, b->u.user.name) != 0)
 		return 1;
+	debug("user.name  = %s\n",
+		a->u.user.name);
+
+	if (!strcmp(a->u.user.name, "account"))
+		compare_size = a->u.match_size - 8;  //hack for ipt_account, don't compare table stats
+	else
+		compare_size = a->u.match_size;
 
 	*maskptr += ALIGN(sizeof(*a));
+	debug("ALIGN size = %i\n",
+		ALIGN(sizeof(*a)));
 
-	for (i = 0; i < a->u.match_size - ALIGN(sizeof(*a)); i++)
-		if (((a->data[i] ^ b->data[i]) & (*maskptr)[i]) != 0)
-			return 1;
+	for (i = 0; i < compare_size - ALIGN(sizeof(*a)); i++) {
+		debug("%02X",
+			a->data[i]);
+		if (((a->data[i] ^ b->data[i]) & (*maskptr)[i]) != 0) {
+			debug("(%02X:%02X)",
+				b->data[i], (*maskptr)[i]);
+			mismatch = 1;
+			break;
+		}
+	}
+	debug("\n");
 	*maskptr += i;
-	return 0;
+	if (mismatch == 1)
+		return 1;
+	else
+		return 0;
 }
 
 static inline int
@@ -1994,11 +2021,15 @@ static int delete_entry(const IPT_CHAINLABEL chain, const STRUCT_ENTRY *origfw,
 		unsigned char *mask;
 
 		mask = is_same(r->entry, i->entry, matchmask);
-		if (!mask)
+		if (!mask) {
+			debug("mask fail\n");
 			continue;
+		}
 
-		if (!target_same(r, i, mask))
+		if (!target_same(r, i, mask)) {
+			debug("target fail\n");
 			continue;
+		}
 
 		/* if we are just doing a dry run, we simply skip the rest */
 		if (dry_run){

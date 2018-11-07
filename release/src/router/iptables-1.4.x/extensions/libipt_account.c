@@ -205,6 +205,8 @@ static void init(struct ipt_entry_match *match,
 
   /* set default table name to DEFAULT */
   strncpy(info->name, "DEFAULT", IPT_ACCOUNT_NAME_LEN);
+  info->network = 0;
+  info->netmask = 0;
   info->shortlisting = 0;
   info->table = NULL;
   
@@ -311,13 +313,13 @@ static void save(
 
   struct t_ipt_account_info *info = (struct t_ipt_account_info *)match->data;
   
-  printf("--aaddr ");
+  printf(" --aaddr ");
   printf("%u.%u.%u.%u/%u.%u.%u.%u ",
        HIPQUAD(info->network),
        HIPQUAD(info->netmask)
          );
   
-  printf("--aname %s ", info->name);
+  printf("--aname %s", info->name);
   if (info->shortlisting)
     printf("--ashort ");
 }

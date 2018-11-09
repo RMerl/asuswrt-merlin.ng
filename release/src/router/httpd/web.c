@@ -2062,17 +2062,13 @@ ej_vpn_client_get_parameter(int eid, webs_t wp, int argc, char_t **argv)
 void
 _get_vpn_crt_value(int eid, webs_t wp, int type, int cert, int idx) {
 	char buf[8000];
-	char file_name[32];
+	char filename[32];
 	char *c;
 
-	buf[0] = '\0';
-
-	sprintf(file_name, "vpn_crt_%s%d_ca",
-		(type == OVPN_TYPE_SERVER ? "server" : "client"),
-		idx);
-
+	get_ovpn_filename(type, idx, cert, filename, sizeof(filename));
 	get_ovpn_key(type, idx, cert, buf, sizeof(buf));
-	websWrite(wp, "%s=['", file_name);
+
+	websWrite(wp, "%s=['", filename);
 
 	for (c = buf; *c; c++) {
 		if (isprint(*c) &&
@@ -2111,7 +2107,6 @@ ej_vpn_crt_server(int eid, webs_t wp, int argc, char **argv) {
 		//vpn_crt_server_extra
 		_get_vpn_crt_value(eid, wp, OVPN_TYPE_SERVER, OVPN_SERVER_CA_EXTRA, idx);
 
-		websWrite(wp, "\n");
 	}
 	return 0;
 }
@@ -2139,7 +2134,6 @@ ej_vpn_crt_client(int eid, webs_t wp, int argc, char **argv) {
 		//vpn_crt_client_extra
 		_get_vpn_crt_value(eid, wp, OVPN_TYPE_CLIENT, OVPN_CLIENT_CA_EXTRA, idx);
 
-		websWrite(wp, "\n");
 	}
 	return 0;
 }

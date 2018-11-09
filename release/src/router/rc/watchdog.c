@@ -5307,11 +5307,26 @@ void dnsmasq_check()
 			return;
 
 	if (!is_routing_enabled()
-#ifdef RTCONFIG_WIRELESSREPEATER
-		&& sw_mode() != SW_MODE_REPEATER
+		&& (repeater_mode()
+#if defined(RTCONFIG_BCMWL6) && defined(RTCONFIG_PROXYSTA)
+		|| psr_mode() || mediabridge_mode()
+#elif defined(RTCONFIG_REALTEK)
+		|| mediabridge_mode()
 #endif
-	)
+		)
+#ifdef RTCONFIG_DPSTA
+		&& !(dpsta_mode() && nvram_get_int("re_mode") == 0)
+#endif
+	) {
+#ifdef RTCONFIG_WIFI_SON
+		if (sw_mode() == SW_MODE_AP && nvram_match("cfg_master", "1")) {
+			if (nvram_get_int("wl0.1_bss_enabled"))
+				gen_apmode_dnsmasq();
+			return;
+		} else
+#endif
 		return;
+	}
 
 #if defined(RTL_WTDOG)
 		stop_rtl_watchdog();

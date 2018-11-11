@@ -1066,14 +1066,14 @@ function clean_macerr(){
 			<tr>
 				<th style="width:200px; height:35px; color:#949393; font-size:14px; text-align:right; padding-right:15px;"><#AiProtection_WebProtector_EMail#></th>
 				<td style="color:#949393; font-size:14px; text-align:left;">
-				<input type="text" maxlength="32" class="login_input" id="wtf_username" name="wtf_username" value="" onkeypress="return validator.isString(this, event)" autocorrect="off" autocapitalize="off">
+				<input type="text" maxlength="256" class="login_input" id="wtf_username" name="wtf_username" value="" onkeypress="return validator.isString(this, event)" autocorrect="off" autocapitalize="off">
 				<span ><a href="javascript:open_link('newAccount')" style="margin-left:5px;text-decoration:underline;color:#949393;"><#create_free_acc#></a></span>
 				</td>
 			</tr>
 			<tr>
 				<th style="height:35px; color:#949393; font-size:14px; text-align:right; padding-right:15px;"><#PPPConnection_Password_itemname#></th>
 				<td style="color:#949393; font-size:14px; text-align:left;">
-					<input type="password" maxlength="32" class="login_input" id="wtf_passwd" name="wtf_passwd" value="" autocorrect="off" autocapitalize="off">
+					<input type="password" maxlength="256" class="login_input" id="wtf_passwd" name="wtf_passwd" value="" autocorrect="off" autocapitalize="off">
 				</td>
 			</tr>
 			<tr>

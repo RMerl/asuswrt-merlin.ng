@@ -4,8 +4,10 @@ filebase=$(echo $filedir/$dev | sed 's/\(tun\|tap\)1/client/;s/\(tun\|tap\)2/ser
 conffile=$filebase\.conf
 resolvfile=$filebase\.resolv
 dnsscript=$(echo /etc/openvpn/fw/$(echo $dev)-dns\.sh | sed 's/\(tun\|tap\)1/client/;s/\(tun\|tap\)2/server/')
+qosscript=$(echo /etc/openvpn/fw/$(echo $dev)-qos\.sh | sed 's/\(tun\|tap\)1/client/;s/\(tun\|tap\)2/server/')
 fileexists=
 instance=$(echo $dev | sed "s/tun1//;s/tun2*/0/")
+QOS_ENABLE=$(nvram get qos_enable)
 
 
 create_client_list(){
@@ -39,6 +41,34 @@ create_client_list(){
 	IFS=$OLDIFS
 }
 
+create_qos_list(){
+	VPN_IP_LIST=$(nvram get vpn_client$(echo $instance)_clientlist)
+
+	OLDIFS=$IFS
+	IFS="<"
+
+	for ENTRY in $VPN_IP_LIST
+	do
+		if [ "$ENTRY" = "" ]
+		then
+			continue
+		fi
+
+		VPN_IP=$(echo $ENTRY | cut -d ">" -f 2)
+		if [ "$VPN_IP" != "0.0.0.0" ]
+		then
+			TARGET_ROUTE=$(echo $ENTRY | cut -d ">" -f 4)
+			if [ "$TARGET_ROUTE" = "VPN" ]
+			then
+				echo /usr/sbin/iptables -t mangle -A POSTROUTING -o br0 -d $VPN_IP -j MARK --set-xmark 0x80000000/0xC0000000 >> $qosscript
+			fi
+		fi
+	done
+	IFS=$OLDIFS
+}
+
+
+### Main
 
 if [ ! -d $filedir ]; then mkdir $filedir; fi
 if [ -f $conffile ]; then rm $conffile; fileexists=1; fi
@@ -77,6 +107,21 @@ then
 		echo /usr/sbin/iptables -t nat -I PREROUTING -p udp -m udp --dport 53 -j DNSVPN$instance >> $dnsscript
 		echo /usr/sbin/iptables -t nat -I PREROUTING -p tcp -m tcp --dport 53 -j DNSVPN$instance >> $dnsscript
 	fi
+
+# QoS
+	if [ $instance != 0 -a $(nvram get vpn_client$(echo $instance)_rgw) -ge 2 -a $QOS_ENABLE -eq 1 ]
+	then
+		echo "#!/bin/sh" >> $qosscript
+		create_qos_list
+	elif [ $instance != 0 -a $(nvram get vpn_client$(echo $instance)_rgw) -eq 1 -a $QOS_ENABLE -eq 1 ]
+	then
+		echo "#!/bin/sh" >> $qosscript
+		echo /usr/sbin/iptables -t mangle -A POSTROUTING -o br0 -j MARK --set-xmark 0x80000000/0xC0000000 >> $qosscript
+	fi
+	if [ -f $qosscript ]
+	then
+		/bin/sh $qosscript
+	fi
 fi
 
 
@@ -86,6 +131,13 @@ then
 	/usr/sbin/iptables -t nat -D PREROUTING -p tcp -m tcp --dport 53 -j DNSVPN$instance
 	/usr/sbin/iptables -t nat -F DNSVPN$instance
 	/usr/sbin/iptables -t nat -X DNSVPN$instance
+
+	if [ -f $qosscript ]
+	then
+		sed -i "s/-A/-D/g" $qosscript
+		/bin/sh $qosscript
+		rm $qosscript
+	fi
 fi
 
 if [ -f $conffile -o -f $resolvfile -o -n "$fileexists" ]

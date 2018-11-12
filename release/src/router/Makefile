@@ -1067,7 +1067,7 @@ endif
 endif
 
 #add for snmpd
-SNMPD_CFLAGS += -D$(BUILD_NAME)
+#SNMPD_CFLAGS += -D$(BUILD_NAME)
 ifeq ($(BUILD_NAME), $(filter $(BUILD_NAME), RT-N66U RT-AC66U RT-AC68U))
 SNMPD_CFLAGS += -DDUAL_BAND
 endif

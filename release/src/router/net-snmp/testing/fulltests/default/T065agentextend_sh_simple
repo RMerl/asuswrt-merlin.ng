@@ -1,0 +1,65 @@
+#!/bin/sh
+
+# See also http://sourceforge.net/p/net-snmp/bugs/2575/
+
+pwd
+
+. ../support/simple_eval_tools.sh
+
+HEADER "extending agent functionality with extend and an external shell script"
+
+[ "x$OSTYPE" = xmsys -a "x$MSYS_SH" = x ] && SKIP "\$MSYS_SH has not been set"
+SKIPIF NETSNMP_DISABLE_SNMPV2C
+SKIPIFNOT USING_AGENT_EXTEND_MODULE
+SKIPIFNOT USING_UTILITIES_EXECUTE_MODULE
+
+# make sure snmpget can be executed
+SNMPGET="${SNMP_UPDIR}/apps/snmpget"
+[ -x "$SNMPGET" ] || SKIP snmpget not compiled
+SNMPSET="${builddir}/apps/snmpset"
+[ -x "$SNMPSET" ] || SKIP snmpset not compiled
+
+snmp_write_access='all'
+TESTCOMMUNITY=testcommunity
+. ./Sv2cconfig
+
+#
+# Begin test
+#
+
+oid=.1.3.6.1.4.1.8072.1.3.2
+index='"two_numbers"'
+echo_two_numbers=$SNMP_TMPDIR/echo_two_numbers
+number1=111
+number2=222
+rm -f $echo_two_numbers
+cat <<EOF >$echo_two_numbers
+#!${MSYS_SH:-/bin/sh}
+echo $number1
+echo $number2
+EOF
+chmod a+x $echo_two_numbers
+CONFIGAGENT extend $index $echo_two_numbers
+
+STARTAGENT
+
+CAPTURE "$SNMPSET $SNMP_FLAGS -$snmp_version -c $TESTCOMMUNITY $SNMP_TRANSPORT_SPEC:$SNMP_TEST_DEST$SNMP_SNMPD_PORT versionUpdateConfig.0 i 1"
+CHECKORDIE "versionUpdateConfig.0 = INTEGER: 1"
+
+CAPTURE "$SNMPGET $SNMP_FLAGS -$snmp_version -c $TESTCOMMUNITY $SNMP_TRANSPORT_SPEC:$SNMP_TEST_DEST$SNMP_SNMPD_PORT ${oid}.3.1.1.$index"
+CHECKORDIE "STRING: ${number1}"
+
+CAPTURE "$SNMPGET $SNMP_FLAGS -$snmp_version -c $TESTCOMMUNITY $SNMP_TRANSPORT_SPEC:$SNMP_TEST_DEST$SNMP_SNMPD_PORT ${oid}.3.1.2.$index"
+CHECKORDIE "STRING: ${number1}"
+
+CAPTURE "$SNMPGET $SNMP_FLAGS -$snmp_version -c $TESTCOMMUNITY $SNMP_TRANSPORT_SPEC:$SNMP_TEST_DEST$SNMP_SNMPD_PORT ${oid}.4.1.2.$index.1"
+CHECKORDIE "STRING: ${number1}"
+
+CAPTURE "$SNMPGET $SNMP_FLAGS -$snmp_version -c $TESTCOMMUNITY $SNMP_TRANSPORT_SPEC:$SNMP_TEST_DEST$SNMP_SNMPD_PORT ${oid}.3.1.3.$index"
+CHECKORDIE "INTEGER: 2"
+
+CAPTURE "$SNMPGET $SNMP_FLAGS -$snmp_version -c $TESTCOMMUNITY $SNMP_TRANSPORT_SPEC:$SNMP_TEST_DEST$SNMP_SNMPD_PORT ${oid}.3.1.4.$index"
+CHECKORDIE "INTEGER: 0"
+
+STOPAGENT
+FINISHED

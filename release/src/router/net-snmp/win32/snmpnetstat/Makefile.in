@@ -1,0 +1,92 @@
+PROGNAME=
+CFG=
+OUTDIR=
+INTDIR=
+LINKTYPE=
+CFLAGS=
+LDFLAGS=
+
+# Set to 1 to allow the building using the DLL version of SNMPLIB.
+ALLOW_DLL=1
+
+!IF "$(OS)" == "Windows_NT"
+NULL=
+!ELSE 
+NULL=nul
+!ENDIF 
+
+CPP=cl.exe
+CPP_PROJ=/I.. -I..\..\include $(CFLAGS)
+
+
+ALL : "..\bin\$(OUTDIR)\$(PROGNAME).exe" "$(INTDIR)"
+
+
+CLEAN :
+	-@erase "$(INTDIR)\if.obj"
+	-@erase "$(INTDIR)\inet.obj"
+	-@erase "$(INTDIR)\inet6.obj"
+	-@erase "$(INTDIR)\inetx.obj"
+	-@erase "$(INTDIR)\main.obj"
+	-@erase "$(INTDIR)\route.obj"
+	-@erase "$(INTDIR)\routex.obj"
+	-@erase "$(INTDIR)\ffs.obj"
+	-@erase "$(INTDIR)\vc??.idb"
+	-@erase "$(INTDIR)\winstub.obj"
+	-@erase "$(INTDIR)\$(PROGNAME).pch"
+	-@erase "..\bin\$(OUTDIR)\$(PROGNAME).exe"
+	-@erase "..\bin\$(OUTDIR)\$(PROGNAME).exe.manifest"
+
+"..\bin\$(OUTDIR)" :
+    if not exist "..\bin\$(OUTDIR)/$(NULL)" mkdir "..\bin\$(OUTDIR)"
+
+"$(INTDIR)" :
+    if not exist "$(INTDIR)/$(NULL)" mkdir "$(INTDIR)"
+
+{..\..\apps\$(PROGNAME)}.c{$(INTDIR)}.obj::
+   $(CPP) $(CPP_PROJ) $<
+
+RSC=rc.exe
+LINK32=link.exe
+LINK32_FLAGS=netsnmp.lib advapi32.lib ws2_32.lib kernel32.lib user32.lib /nologo /subsystem:console /pdb:"../bin/$(OUTDIR)/$(PROGNAME).pdb" /out:"../bin/$(OUTDIR)/$(PROGNAME).exe" /libpath:"../lib/$(INTDIR)" $(LDFLAGS)
+LINK32_OBJS= \
+	"$(INTDIR)\if.obj" \
+	"$(INTDIR)\inet.obj" \
+	"$(INTDIR)\inet6.obj" \
+	"$(INTDIR)\inetx.obj" \
+	"$(INTDIR)\main.obj" \
+	"$(INTDIR)\route.obj" \
+	"$(INTDIR)\routex.obj" \
+	"$(INTDIR)\ffs.obj" \
+	"$(INTDIR)\winstub.obj"
+
+"..\bin\$(OUTDIR)\$(PROGNAME).exe" : "..\bin\$(OUTDIR)" $(DEF_FILE) $(LINK32_OBJS)
+!IF "$(LINKTYPE)" == "static" || "$(ALLOW_DLL)" == "1"
+    $(LINK32) $(LINK32_FLAGS) $(LINK32_OBJS)
+ if exist "..\bin\$(OUTDIR)\$(PROGNAME).exe.manifest" \
+	    mt.exe -manifest "..\bin\$(OUTDIR)\$(PROGNAME).exe.manifest" -outputresource:"..\bin\$(OUTDIR)\$(PROGNAME).exe";1
+!ELSE	# Linktype check
+	-@echo .
+	-@echo Aborting build.  Applications can not be built using --linktype=dynamic
+	-@echo .
+!ENDIF
+
+
+!IF "$(NO_EXTERNAL_DEPS)" != "1"
+!IF EXISTS("$(PROGNAME).dep")
+!INCLUDE "$(PROGNAME).dep"
+!ELSE 
+!MESSAGE Warning: cannot find "$(PROGNAME).dep"
+!ENDIF 
+!ENDIF 
+
+
+"$(INTDIR)\ffs.obj": ..\..\apps\$(PROGNAME)\ffs.c "$(INTDIR)"
+"$(INTDIR)\if.obj": ..\..\apps\$(PROGNAME)\if.c "$(INTDIR)"
+"$(INTDIR)\inet.obj": ..\..\apps\$(PROGNAME)\inet.c "$(INTDIR)"
+"$(INTDIR)\inet6.obj": ..\..\apps\$(PROGNAME)\inet6.c "$(INTDIR)"
+"$(INTDIR)\inetx.obj": ..\..\apps\$(PROGNAME)\inetx.c "$(INTDIR)"
+"$(INTDIR)\main.obj": ..\..\apps\$(PROGNAME)\main.c "$(INTDIR)"
+"$(INTDIR)\route.obj": ..\..\apps\$(PROGNAME)\route.c "$(INTDIR)"
+"$(INTDIR)\routex.obj": ..\..\apps\$(PROGNAME)\routex.c "$(INTDIR)"
+"$(INTDIR)\winstub.obj": ..\..\apps\$(PROGNAME)\winstub.c "$(INTDIR)"

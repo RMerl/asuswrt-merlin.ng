@@ -1,0 +1,9 @@
+#!/bin/bash
+
+# See also the output of the following command:
+# find -name '*.so' | sed 's/^\.\///;s/\/[^\/]*$//' | sort -u
+export LD_LIBRARY_PATH="$PWD/snmplib/.libs:$PWD/agent/helpers/.libs:$PWD/agent/.libs:$PWD/apps/.libs:" &&
+make perlmakefiles &&
+cd perl &&
+make &&
+make test

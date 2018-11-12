@@ -186,6 +186,9 @@ function initial(){
 		hide_https_crt();
 		show_cert_details();
 	}
+	var lanport = '<% nvram_get("http_lanport"); %>';
+	if (lanport == '') lanport = '80';
+	change_url(lanport, 'http_lan')
 
 	if(wifi_tog_btn_support || wifi_hw_sw_support || sw_mode == 2 || sw_mode == 4){		// wifi_tog_btn && wifi_hw_sw && hide WPS button behavior under repeater mode
 			if(cfg_wps_btn_support){
@@ -666,7 +669,7 @@ function validForm(){
 	}
 
 	if (!validator.range(document.form.http_lanport, 1, 65535))
-		/*return false;*/ document.form.http_lanport = 80;
+		return false;
 	if (HTTPS_support && !validator.range(document.form.https_lanport, 1, 65535) && !tmo_support)
 		return false;
 
@@ -696,13 +699,14 @@ function validForm(){
 		alert("You must configure at least one SSH authentication method!");
 		return false;
 	}
-
+/*
 	if(!document.form.misc_httpport_x.disabled &&
 			isPortConflict(document.form.misc_httpport_x.value)){
 		alert(isPortConflict(document.form.misc_httpport_x.value));
 		document.form.misc_httpport_x.focus();
 		return false;
 	}
+*/
 	else if(!document.form.misc_httpsport_x.disabled &&
 			isPortConflict(document.form.misc_httpsport_x.value) && HTTPS_support){
 		alert(isPortConflict(document.form.misc_httpsport_x.value));
@@ -714,11 +718,13 @@ function validForm(){
 		document.form.https_lanport.focus();
 		return false;
 	}
+/*
 	else if(document.form.misc_httpsport_x.value == document.form.misc_httpport_x.value && HTTPS_support){
 		alert("<#https_port_conflict#>");
 		document.form.misc_httpsport_x.focus();
 		return false;
 	}
+*/
 	else if(!validator.rangeAllowZero(document.form.http_autologout, 10, 999, '<% nvram_get("http_autologout"); %>'))
 		return false;
 
@@ -1307,6 +1313,16 @@ function change_url(num, flag){
 		document.getElementById("wan_access_url").innerHTML = "<#https_access_url#> ";
 		document.getElementById("wan_access_url").innerHTML += "<a href=\"https://"+host_addr+":"+https_wanport+"\" target=\"_blank\" style=\"color:#FC0;text-decoration: underline; font-family:Lucida Console;\">http<span>s</span>://"+host_addr+"<span>:"+https_wanport+"</span></a>";		
 	}
+	else if(flag = 'http_lan'){
+		var http_lanport_num_new = num;
+		if (http_lanport_num_new != 80)
+			var lanport_str = ":"+http_lanport_num_new;
+		else
+			var lanport_str = "";
+
+		document.getElementById("http_access_page").innerHTML = "<#https_access_url#> ";
+                document.getElementById("http_access_page").innerHTML += "<a href=\"http://"+theUrl+lanport_str+"\" target=\"_blank\" style=\"color:#FC0;text-decoration: underline; font-family:Lucida Console;\">http://"+theUrl+lanport_str+"</a>";
+	}
 }
 
 /* password item show or not */
@@ -1676,7 +1692,6 @@ function pullPingTargetList(obj){
 <input type="hidden" name="reboot_schedule_enable" value="<% nvram_get("reboot_schedule_enable"); %>">
 <input type="hidden" name="usb_idle_exclude" value="<% nvram_get("usb_idle_exclude"); %>">
 <input type="hidden" name="shell_timeout" value="<% nvram_get("shell_timeout"); %>">
-<input type="hidden" name="http_lanport" value="<% nvram_get("http_lanport"); %>">
 <input type="hidden" name="dns_probe" value="<% nvram_get("dns_probe"); %>">
 <input type="hidden" name="wandog_enable" value="<% nvram_get("wandog_enable"); %>">
 
@@ -1759,32 +1774,6 @@ function pullPingTargetList(obj){
 						<input type="radio" name="jffs2_scripts" value="0" <% nvram_match("jffs2_scripts", "0", "checked"); %>><#checkbox_No#>
 					</td>
 				</tr>
-				<tr id="reduce_usb3_tr" style="display:none">
-					<th width="40%"><a class="hintstyle" href="javascript:void(0);" onclick="openHint(3, 29)">USB Mode</a></th>
-					<td>
-						<select class="input_option" name="usb_usb3" onchange="enableUsbMode(this.value);">
-							<option value="0" <% nvram_match("usb_usb3", "0", "selected"); %>>USB 2.0</option>
-							<option value="1" <% nvram_match("usb_usb3", "1", "selected"); %>>USB 3.0</option>
-						</select>
-						<script>
-							var needReboot = false;
-
-							if( based_modelid == "DSL-AC68U" || based_modelid == "RT-AC3200" || based_modelid == "RT-AC87U" || based_modelid == "RT-AC68U" || based_modelid == "RT-AC68A" || based_modelid == "RT-AC56S" || based_modelid == "RT-AC56U" || based_modelid == "RT-AC55U" || based_modelid == "RT-AC55UHP" || based_modelid == "RT-N18U" || based_modelid == "RT-AC88U" || based_modelid == "RT-AC86U" || based_modelid == "AC2900" || based_modelid == "RT-AC3100" || based_modelid == "RT-AC5300" || based_modelid == "RP-AC68U" || based_modelid == "RT-AC58U" || based_modelid == "RT-AC82U" || based_modelid == "MAP-AC3000" || based_modelid == "RT-AC85U" || based_modelid == "RT-AC65U" || based_modelid == "4G-AC68U" || based_modelid == "BLUECAVE" || based_modelid == "RT-AC88Q" || based_modelid == "RT-AD7200" || based_modelid == "RT-N65U" || based_modelid == "GT-AC5300" || based_modelid == "RT-AX88U" || based_modelid == "RT-AX95U" || based_modelid == "BRT-AC828"
-							){
-								$("#reduce_usb3_tr").show();
-							}
-
-							function enableUsbMode(v){
-								httpApi.nvramGetAsync({
-									data: ["usb_usb3"],
-									success: function(nvram){
-										needReboot = (nvram.usb_usb3 != v);
-									}
-								})
-							}
-						</script>
-					</td>
-				</tr>
 			</table>
 
 			<table id="hdd_spindown_table" width="100%" border="1" align="center" cellpadding="4" cellspacing="0" bordercolor="#6b8fa3"  class="FormTable" style="margin-top:8px;display:none;">
@@ -1793,6 +1782,7 @@ function pullPingTargetList(obj){
 					  <td colspan="2"><#USB_Setting#></td>
 					</tr>
 				</thead>
+
 				<tr>
 					<th width="40%"><a class="hintstyle" href="javascript:void(0);" onClick="openHint(11,11)"><#usb_HDD_Hibernation#></a></th>
 					<td>
@@ -1823,7 +1813,32 @@ function pullPingTargetList(obj){
 						<input type="checkbox" name="usb_idle_exclude_i">sdi</input>
 					</td>
 				</tr>
+				<tr id="reduce_usb3_tr" style="display:none">
+					<th width="40%"><a class="hintstyle" href="javascript:void(0);" onclick="openHint(3, 29)">USB Mode</a></th>
+					<td>
+						<select class="input_option" name="usb_usb3" onchange="enableUsbMode(this.value);">
+							<option value="0" <% nvram_match("usb_usb3", "0", "selected"); %>>USB 2.0</option>
+							<option value="1" <% nvram_match("usb_usb3", "1", "selected"); %>>USB 3.0</option>
+						</select>
+						<script>
+							var needReboot = false;
 
+							if( based_modelid == "DSL-AC68U" || based_modelid == "RT-AC3200" || based_modelid == "RT-AC87U" || based_modelid == "RT-AC68U" || based_modelid == "RT-AC68A" || based_modelid == "RT-AC56S" || based_modelid == "RT-AC56U" || based_modelid == "RT-AC55U" || based_modelid == "RT-AC55UHP" || based_modelid == "RT-N18U" || based_modelid == "RT-AC88U" || based_modelid == "RT-AC86U" || based_modelid == "AC2900" || based_modelid == "RT-AC3100" || based_modelid == "RT-AC5300" || based_modelid == "RP-AC68U" || based_modelid == "RT-AC58U" || based_modelid == "RT-AC82U" || based_modelid == "MAP-AC3000" || based_modelid == "RT-AC85U" || based_modelid == "RT-AC65U" || based_modelid == "4G-AC68U" || based_modelid == "BLUECAVE" || based_modelid == "RT-AC88Q" || based_modelid == "RT-AD7200" || based_modelid == "RT-N65U" || based_modelid == "GT-AC5300" || based_modelid == "RT-AX88U" || based_modelid == "RT-AX95U" || based_modelid == "BRT-AC828"
+							){
+								$("#reduce_usb3_tr").show();
+							}
+
+							function enableUsbMode(v){
+								httpApi.nvramGetAsync({
+									data: ["usb_usb3"],
+									success: function(nvram){
+										needReboot = (nvram.usb_usb3 != v);
+									}
+								})
+							}
+						</script>
+					</td>
+				</tr>
 			</table>
 
 			<table width="100%" border="1" align="center" cellpadding="4" cellspacing="0" bordercolor="#6b8fa3"  class="FormTable" style="margin-top:8px;">
@@ -2083,7 +2098,13 @@ function pullPingTargetList(obj){
 						</select>
 					</td>
 				</tr>
-		
+				<tr id="http_lanport">
+					<th>HTTP LAN port</th>
+					<td>
+						<input type="text" maxlength="5" class="input_6_table" name="http_lanport" value="<% nvram_get("http_lanport"); %>" onKeyPress="return validator.isNumber(this,event);" onBlur="change_url(this.value, 'http_lan');" autocorrect="off" autocapitalize="off">
+						<span id="http_access_page"></span>
+					</td>
+				</tr>
 				<tr id="https_lanport">
 					<th><#System_HTTPS_LAN_Port#></th>
 					<td>

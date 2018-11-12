@@ -1,0 +1,154 @@
+PROGNAME=
+CFG=
+OUTDIR=
+INTDIR=
+CFLAGS=
+LDFLAGS=
+
+!IF "$(OS)" == "Windows_NT"
+NULL=
+!ELSE 
+NULL=nul
+!ENDIF 
+
+CPP=cl.exe
+CPP_PROJ=/I.. /I..\..\include /I..\..\agent\mibgroup $(CFLAGS)
+
+ALL : "..\lib\$(OUTDIR)\netsnmpagent.lib"
+
+LIB32_OBJS= \
+	"$(INTDIR)\agent_handler.obj" \
+	"$(INTDIR)\agent_index.obj" \
+	"$(INTDIR)\agent_read_config.obj" \
+	"$(INTDIR)\agent_registry.obj" \
+	"$(INTDIR)\agent_sysORTable.obj" \
+	"$(INTDIR)\agent_trap.obj" \
+	"$(INTDIR)\all_helpers.obj" \
+	"$(INTDIR)\baby_steps.obj" \
+	"$(INTDIR)\bulk_to_next.obj" \
+	"$(INTDIR)\cache_handler.obj" \
+	"$(INTDIR)\debug_handler.obj" \
+	"$(INTDIR)\instance.obj" \
+	"$(INTDIR)\mode_end_call.obj" \
+	"$(INTDIR)\multiplexer.obj" \
+	"$(INTDIR)\null.obj" \
+	"$(INTDIR)\old_api.obj" \
+	"$(INTDIR)\read_only.obj" \
+	"$(INTDIR)\row_merge.obj" \
+	"$(INTDIR)\scalar.obj" \
+	"$(INTDIR)\scalar_group.obj" \
+	"$(INTDIR)\serialize.obj" \
+	"$(INTDIR)\snmp_agent.obj" \
+	"$(INTDIR)\snmp_get_statistic.obj" \
+	"$(INTDIR)\snmp_vars.obj" \
+	"$(INTDIR)\stash_cache.obj" \
+	"$(INTDIR)\stash_to_next.obj" \
+	"$(INTDIR)\table.obj" \
+	"$(INTDIR)\table_array.obj" \
+	"$(INTDIR)\table_container.obj" \
+	"$(INTDIR)\table_data.obj" \
+	"$(INTDIR)\table_dataset.obj" \
+	"$(INTDIR)\table_iterator.obj" \
+	"$(INTDIR)\table_tdata.obj" \
+	"$(INTDIR)\watcher.obj"
+
+CLEAN :
+	-@for %f in ($(LIB32_OBJS)) do erase %%f
+	-@erase "$(INTDIR)\vc??.idb"
+	-@erase "..\lib\$(OUTDIR)\netsnmpagent.lib"
+
+"..\lib\$(OUTDIR)" :
+    if not exist "..\lib\$(OUTDIR)/$(NULL)" mkdir "..\lib\$(OUTDIR)"
+
+"$(INTDIR)" :
+    if not exist "$(INTDIR)/$(NULL)" mkdir "$(INTDIR)"
+
+{..\..\agent}.c{$(INTDIR)}.obj::
+   $(CPP) $(CPP_PROJ) $<
+
+{..\..\agent\helpers}.c{$(INTDIR)}.obj::
+   $(CPP) $(CPP_PROJ) $<
+
+RSC=rc.exe
+LIB32=link.exe -lib
+LIB32_FLAGS=/nologo /out:"..\lib\$(OUTDIR)\netsnmpagent.lib" $(LDFLAGS)
+
+"..\lib\$(OUTDIR)\netsnmpagent.lib" : "..\lib\$(OUTDIR)" $(DEF_FILE) $(LIB32_OBJS)
+    $(LIB32) $(LIB32_FLAGS) $(DEF_FLAGS) $(LIB32_OBJS)
+
+
+!IF "$(NO_EXTERNAL_DEPS)" != "1"
+!IF EXISTS("libagent.dep")
+!INCLUDE "libagent.dep"
+!ELSE 
+!MESSAGE Warning: cannot find "libagent.dep"
+!ENDIF 
+!ENDIF 
+
+"$(INTDIR)\agent_handler.obj": ..\..\agent\agent_handler.c "$(INTDIR)"
+
+"$(INTDIR)\agent_index.obj": ..\..\agent\agent_index.c "$(INTDIR)"
+
+"$(INTDIR)\agent_read_config.obj": ..\..\agent\agent_read_config.c "$(INTDIR)"
+
+"$(INTDIR)\agent_registry.obj": ..\..\agent\agent_registry.c "$(INTDIR)"
+
+"$(INTDIR)\agent_sysORTable.obj": ..\..\agent\agent_sysORTable.c "$(INTDIR)"
+
+"$(INTDIR)\agent_trap.obj": ..\..\agent\agent_trap.c "$(INTDIR)"
+
+"$(INTDIR)\all_helpers.obj": ..\..\agent\helpers\all_helpers.c "$(INTDIR)"
+
+"$(INTDIR)\baby_steps.obj": ..\..\agent\helpers\baby_steps.c "$(INTDIR)"
+
+"$(INTDIR)\bulk_to_next.obj": ..\..\agent\helpers\bulk_to_next.c "$(INTDIR)"
+
+"$(INTDIR)\cache_handler.obj": ..\..\agent\helpers\cache_handler.c "$(INTDIR)"
+
+"$(INTDIR)\debug_handler.obj": ..\..\agent\helpers\debug_handler.c "$(INTDIR)"
+
+"$(INTDIR)\instance.obj": ..\..\agent\helpers\instance.c "$(INTDIR)"
+
+"$(INTDIR)\mode_end_call.obj": ..\..\agent\helpers\mode_end_call.c "$(INTDIR)"
+
+"$(INTDIR)\multiplexer.obj": ..\..\agent\helpers\multiplexer.c "$(INTDIR)"
+
+"$(INTDIR)\null.obj": ..\..\agent\helpers\null.c "$(INTDIR)"
+
+"$(INTDIR)\old_api.obj": ..\..\agent\helpers\old_api.c "$(INTDIR)"
+
+"$(INTDIR)\read_only.obj": ..\..\agent\helpers\read_only.c "$(INTDIR)"
+
+"$(INTDIR)\row_merge.obj": ..\..\agent\helpers\row_merge.c "$(INTDIR)"
+
+"$(INTDIR)\scalar.obj": ..\..\agent\helpers\scalar.c "$(INTDIR)"
+
+"$(INTDIR)\scalar_group.obj": ..\..\agent\helpers\scalar_group.c "$(INTDIR)"
+
+"$(INTDIR)\serialize.obj": ..\..\agent\helpers\serialize.c "$(INTDIR)"
+
+"$(INTDIR)\snmp_agent.obj": ..\..\agent\snmp_agent.c "$(INTDIR)"
+
+"$(INTDIR)\snmp_get_statistic.obj": ..\..\agent\helpers\snmp_get_statistic.c "$(INTDIR)"
+
+"$(INTDIR)\snmp_vars.obj": ..\..\agent\snmp_vars.c "$(INTDIR)"
+
+"$(INTDIR)\stash_cache.obj": ..\..\agent\helpers\stash_cache.c "$(INTDIR)"
+
+"$(INTDIR)\stash_to_next.obj": ..\..\agent\helpers\stash_to_next.c "$(INTDIR)"
+
+"$(INTDIR)\table.obj": ..\..\agent\helpers\table.c "$(INTDIR)"
+
+"$(INTDIR)\table_array.obj": ..\..\agent\helpers\table_array.c "$(INTDIR)"
+
+"$(INTDIR)\table_container.obj": ..\..\agent\helpers\table_container.c "$(INTDIR)"
+
+"$(INTDIR)\table_data.obj": ..\..\agent\helpers\table_data.c "$(INTDIR)"
+
+"$(INTDIR)\table_dataset.obj": ..\..\agent\helpers\table_dataset.c "$(INTDIR)"
+
+"$(INTDIR)\table_iterator.obj": ..\..\agent\helpers\table_iterator.c "$(INTDIR)"
+
+"$(INTDIR)\table_tdata.obj": ..\..\agent\helpers\table_tdata.c "$(INTDIR)"
+
+"$(INTDIR)\watcher.obj": ..\..\agent\helpers\watcher.c "$(INTDIR)"

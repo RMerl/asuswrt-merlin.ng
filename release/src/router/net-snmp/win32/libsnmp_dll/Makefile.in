@@ -1,0 +1,143 @@
+PROGNAME=
+CFG=
+OUTDIR=
+INTDIR=
+OPENSSL=
+SDK=
+CFLAGS=
+LDFLAGS=
+
+!IF "$(OS)" == "Windows_NT"
+NULL=
+!ELSE 
+NULL=nul
+!ENDIF 
+
+CPP=cl.exe
+CPP_PROJ=/I.. /I..\..\snmplib /I..\..\include /D NETSNMP_DLL $(CFLAGS)
+
+ALL : "..\bin\$(OUTDIR)\netsnmp.dll"
+
+LINK32_OBJS= \
+	"$(INTDIR)\asn1.obj" \
+	"$(INTDIR)\asprintf.obj" \
+	"$(INTDIR)\callback.obj" \
+	"$(INTDIR)\cert_util.obj" \
+	"$(INTDIR)\check_varbind.obj" \
+	"$(INTDIR)\closedir.obj" \
+	"$(INTDIR)\container.obj" \
+	"$(INTDIR)\container_binary_array.obj" \
+	"$(INTDIR)\container_iterator.obj" \
+	"$(INTDIR)\container_list_ssll.obj" \
+	"$(INTDIR)\container_null.obj" \
+	"$(INTDIR)\data_list.obj" \
+	"$(INTDIR)\default_store.obj" \
+	"$(INTDIR)\dir_utils.obj" \
+	"$(INTDIR)\fd_event_manager.obj" \
+	"$(INTDIR)\file_utils.obj" \
+	"$(INTDIR)\getopt.obj" \
+	"$(INTDIR)\gettimeofday.obj" \
+	"$(INTDIR)\inet_ntop.obj" \
+	"$(INTDIR)\inet_pton.obj" \
+	"$(INTDIR)\int64.obj" \
+	"$(INTDIR)\keytools.obj" \
+	"$(INTDIR)\large_fd_set.obj" \
+	"$(INTDIR)\lcd_time.obj" \
+	"$(INTDIR)\md5.obj" \
+	"$(INTDIR)\mib.obj" \
+	"$(INTDIR)\mt_support.obj" \
+	"$(INTDIR)\oid_stash.obj" \
+	"$(INTDIR)\opendir.obj" \
+	"$(INTDIR)\parse.obj" \
+	"$(INTDIR)\read_config.obj" \
+	"$(INTDIR)\readdir.obj" \
+	"$(INTDIR)\scapi.obj" \
+	"$(INTDIR)\snmp-tc.obj" \
+	"$(INTDIR)\snmp.obj" \
+	"$(INTDIR)\snmpCallbackDomain.obj" \
+	"$(INTDIR)\snmpIPv4BaseDomain.obj" \
+	"$(INTDIR)\snmpSocketBaseDomain.obj" \
+	"$(INTDIR)\snmpTCPBaseDomain.obj" \
+	"$(INTDIR)\snmpTCPDomain.obj" \
+	"$(INTDIR)\snmpUDPBaseDomain.obj" \
+	"$(INTDIR)\snmpUDPDomain.obj" \
+	"$(INTDIR)\snmpUDPIPv4BaseDomain.obj" \
+	"$(INTDIR)\snmp_alarm.obj" \
+	"$(INTDIR)\snmp_api.obj" \
+	"$(INTDIR)\snmp_auth.obj" \
+	"$(INTDIR)\snmp_client.obj" \
+	"$(INTDIR)\snmp_debug.obj" \
+	"$(INTDIR)\snmp_enum.obj" \
+	"$(INTDIR)\snmp_logging.obj" \
+	"$(INTDIR)\snmp_parse_args.obj" \
+	"$(INTDIR)\snmp_secmod.obj" \
+	"$(INTDIR)\snmp_service.obj" \
+	"$(INTDIR)\snmp_transport.obj" \
+	"$(INTDIR)\snmp_version.obj" \
+	"$(INTDIR)\snmptsm.obj" \
+	"$(INTDIR)\snmpusm.obj" \
+	"$(INTDIR)\snmpv3.obj" \
+	"$(INTDIR)\strlcat.obj" \
+	"$(INTDIR)\strlcpy.obj" \
+	"$(INTDIR)\strtok_r.obj" \
+	"$(INTDIR)\strtoull.obj" \
+	"$(INTDIR)\system.obj" \
+	"$(INTDIR)\tools.obj" \
+	"$(INTDIR)\ucd_compat.obj" \
+	"$(INTDIR)\vacm.obj" \
+	"$(INTDIR)\winpipe.obj"
+!IF "$(SDK)" == "true"
+LINK32_OBJS=$(LINK32_OBJS)\
+	"$(INTDIR)\snmpIPv6BaseDomain.obj" \
+	"$(INTDIR)\snmpTCPIPv6Domain.obj" \
+	"$(INTDIR)\snmpUDPIPv6Domain.obj"
+!ENDIF
+!IF "$(OPENSSL)" == "true"
+LINK32_OBJS=$(LINK32_OBJS)\
+	"$(INTDIR)\snmpDTLSUDPDomain.obj" \
+	"$(INTDIR)\snmpTLSBaseDomain.obj" \
+	"$(INTDIR)\snmpTLSTCPDomain.obj" \
+	"$(INTDIR)\snmp_openssl.obj"
+!ENDIF
+
+CLEAN :
+	-@for %f in ($(LINK32_OBJS)) do erase %%f
+	-@erase "..\lib\$(OUTDIR)\netsnmp.exp"
+	-@erase "..\lib\$(OUTDIR)\netsnmp.lib"
+	-@erase "..\bin\$(OUTDIR)\netsnmp.dll"
+	-@erase "..\bin\$(OUTDIR)\netsnmp.dll.manifest"
+
+"..\lib\$(OUTDIR)" :
+    if not exist "..\lib\$(OUTDIR)/$(NULL)" mkdir "..\lib\$(OUTDIR)"
+
+"..\bin\$(OUTDIR)" :
+    if not exist "..\bin\$(OUTDIR)/$(NULL)" mkdir "..\bin\$(OUTDIR)"
+
+.SUFFIXES: .c .obj
+
+{..\..\snmplib}.c{$(INTDIR)}.obj::
+   @if not exist "$(INTDIR)/$(NULL)" mkdir "$(INTDIR)"
+   $(CPP) $(CPP_PROJ) $<
+
+{..\..\snmplib\transports}.c{$(INTDIR)}.obj::
+   @if not exist "$(INTDIR)/$(NULL)" mkdir "$(INTDIR)"
+   $(CPP) $(CPP_PROJ) $<
+
+
+RSC=rc.exe
+LINK32=link.exe
+LINK32_FLAGS=advapi32.lib ws2_32.lib kernel32.lib user32.lib /nologo /subsystem:console /dll /pdb:"../bin/$(OUTDIR)/netsnmp.pdb" /def:".\libsnmp.def" /out:"../bin/$(OUTDIR)/netsnmp.dll" /implib:"../lib/$(OUTDIR)/netsnmp.lib" $(LDFLAGS)
+
+"..\bin\$(OUTDIR)\netsnmp.dll" : "..\bin\$(OUTDIR)" "..\lib\$(OUTDIR)" $(DEF_FILE) $(LINK32_OBJS)
+    $(LINK32) $(LINK32_FLAGS) $(LINK32_OBJS)
+ if exist "../bin/$(OUTDIR)/netsnmp.dll.manifest" \
+	    mt.exe -manifest "../bin/$(OUTDIR)/netsnmp.dll.manifest" -outputresource:"../bin/$(OUTDIR)/netsnmp.dll";2
+
+
+!IF "$(NO_EXTERNAL_DEPS)" != "1"
+!IF EXISTS("$(PROGNAME).dep")
+!INCLUDE "$(PROGNAME).dep"
+!ELSE 
+!MESSAGE Warning: cannot find "$(PROGNAME).dep"
+!ENDIF 
+!ENDIF 

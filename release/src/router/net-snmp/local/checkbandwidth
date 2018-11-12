@@ -1,0 +1,835 @@
+#!/usr/bin/perl
+
+=pod
+
+=head1 NAME
+
+checkbandwidth - Alert on bandwidth high/low levels for a host/interface
+
+=head1 DESCRIPTION
+
+The checkbandwidth script uses the perl SNMP module to collect, store
+and analyze date from the IF-MIB::ifXTable for the ifHCInOctets and
+ifHCOutOctets counters.  It can be configured with high/low levels and
+issue warnings, either through email or via output text and exit
+codes.  Specifically, the exit codes (1 = warning, 2 = error) and text
+output are designed to be used with Nagios.  It calculates bandwidth
+by comparing the values from the last run against the values from the
+current run and the amonut of time that has passeed between the two
+runs [i.e. bandwidth = (this_run - last_run)/time].  Because we need
+data from two runs, the first time it is run after configuration will
+never detect an error until the second run.
+
+Data is stored in ~/.snmp/checkbandwidth.json, which can be
+removed/unlinked to reset the command's data store if needed.  Or the
+-r switch can be used to just reset the data without wiping the
+configuration.
+
+=head1 SYNOPSIS
+
+1) Setup your snmp.conf file with authentication parameters for your system:
+
+    # snmpconf -g basic_setup
+
+2) Add the interface on the host you want monitor, along with an optional
+"threshold" parameters that you want to be warned about:
+
+    # checkbandwidth --add-interface eth0 \
+                     --max-in-bandwidth 300000=admin@example.com \
+                     foo.example.com
+
+3A) Then run the tool against the host on a regular basis (eg, every 5
+minutes in cron):
+
+    # checkbandwidth foo.example.com
+    foo.example.com  wlan1    49200.1426 in   5538.7522 out (B/s) IO
+
+The numbers reported are the measured bandwidth during this run.  The
+"IO" letters are flags letting you know that the (I)nput or (O)utput
+values are out of expected range.
+
+3B) Run the tool inside of nagios:
+
+    define command {
+           command_name checkbandwidth
+           # specific path to vendor_perl is to fix vir's /usr/local installation
+           command_line /usr/bin/perl /usr/local/bin/checkbandwidth -L /var/spool/nagios/.snmp/checkbandwidth.json.lock -N -s $ARG1$
+    }
+
+=head1 OPTIONS
+
+=head2 Configuration and setup:
+
+=over
+
+=item  -i STRING
+
+=item  --add-interface=STRING
+
+Add this interface to the list of things to report data for.
+
+=item  -I INT[:COUNT]=( 'nagioswarn' | 'nagioscritical' | ADDRESS )
+
+=item  --max-in-bandwidth=INT[:COUNT]=( 'nagioswarn' | 'nagioscritical' | ADDRESS )
+
+=item  -O INT[:COUNT]=( 'nagioswarn' | 'nagioscritical' | ADDRESS )
+
+=item  --max-out-bandwidth=INT[:COUNT]=( 'nagioswarn' | 'nagioscritical' | ADDRESS )
+
+These setup options specify an maximum input and/or output bandwidth that will:
+
+1) When running as a nagios script (using the --nagios flag), the
+   script will display an appropriate message and exit with a return
+   code based on whether the string passed to the flag is 'nagioswarn'
+   or 'nagioscritical'.
+
+2) When run manually or via cron, then the checkbandwidth will send an
+   email address to ADDRESS about the error.
+
+The INT field should be the bandwidth above which the error or warning
+should occur.  If the :COUNT field is included, no messages will be
+sent/generated until at least the COUNT'th time is seen (default: 1).
+The frequency of the count is dependent on often often the script gets
+called or the loop frequency occurs (--loop).
+
+Note that the --add-interface (-i) flag is required for this flag to be useful.
+
+See the EXAMPLES section below for more usage.
+
+=item  -J INT[:COUNT]=( 'nagioswarn' | 'nagioscritical' | ADDRESS )
+
+=item  --min-in-bandwidth=INT[:COUNT]=( 'nagioswarn' | 'nagioscritical' | ADDRESS )
+
+=item  -Q INT[:COUNT]=( 'nagioswarn' | 'nagioscritical' | ADDRESS )
+
+=item  --min-out-bandwidth=INT[:COUNT]=( 'nagioswarn' | 'nagioscritical' | ADDRESS )
+
+These two are similar to --max-in-bandwidth and --max-out-bandwidth,
+but set the low-water mark thresholds for an interface.
+
+=back
+
+=head2 Operation:
+
+=over
+
+=item  -c STRING
+
+=item  --cache-file=STRING
+
+Location to store persistent data file, which is a JSON encoded structure.
+This defaults to ~/.snmp/checkbandwidth.json.
+
+=item  -r
+
+=item  --reset
+
+Ignore all past data and restart the statists collection from scratch
+for all hosts/interfaces.  This wipes the collected data without
+wiping the configuration min/max warning/critical levels.
+
+
+
+=item  -l INTEGER
+
+=item  --loop=INTEGER
+
+Run as a daemon and loop forever, displaying bandwidth performing
+checks every INTEGER seconds and displaying an output summary line.
+
+=back
+
+=head2 Nagios mode:
+
+The following options only make sense when acting as an interface with
+nagios.  An example nagios command definition is as follows:
+
+    define command {
+           command_name checkbandwidth
+           command_line /usr/local/bin/checkbandwidth -c /var/spool/nagios/.snmp/checkbandwidth.nagios.json -L /var/spool/nagios/.snmp/checkbandwidth.nagios.json.lock -N $ARG1
+    }
+
+Note that if you need to specify perl module paths, you'll need to call it as:
+
+    /usr/bin/perl -I /usr/lib64/perl5/vendor_perl/ /usr/local/bin/checkbandwidth
+
+You can then use a service definition such as this one:
+
+    define service {
+           service_description  bandwidth
+           host_name            localhost
+           check_command        checkbandwidth!localhost
+           use                  ...
+
+    }
+
+Recommendation: Use a different configuration file for nagios hosts
+than other command line usage.
+
+Recommendation: Use a lock file (-L) to ensure that data from two
+parallel calls in nagios won't be written to at once, causing the file
+to be corrupted.
+
+Recommendation: If you're monitoring a large number of hosts, use a
+sepearate configuration file (and lock file) for each host by passing
+an argument like -c /var/spool/nagios/.snmp/checkbandwidth.nagios.$ARG1.json
+
+=over
+
+=item  -N
+
+=item  --nagios
+
+Operate in nagios mode, which will display appropriate nagios display
+error codes and exit with an exit code that nagios will process.
+
+=item  -s 
+
+=item --nagios-summary
+
+Place a basic summary line of bandwidth in the output even when no
+errors are currently present.  Otherwise, the output will simply be
+"All interfaces ok"
+
+
+
+=item  -L LOCKFILE
+
+=item  --lock-file LOCKFILE
+
+Use this file as a lockfile to ensure multiple checkbandwidth's
+running won't try to write to the file at the same time.
+
+=back
+
+=head2 Sending mail on errors from cron
+
+When not in nagios mode, checkbandwidth will send mail if an error
+condition is reached.  The following options specify the SMTP server
+parameters used to send mail.
+
+=over
+
+=item  -S STRING
+
+=item  --smtp-server=STRING
+
+The hostname or IP address of the SMTP serve to use.
+
+
+
+=item  -P INTEGER
+
+=item  --port=INTEGER
+
+The port number of the SMTP server to use.
+
+
+
+=item  -F STRING
+
+=item  --from=STRING
+
+The email address to put in the From: line.
+
+
+=item  -q
+
+=item  --quiet
+
+Don't output data to the terminal (i.e., email only).
+
+=back
+
+=head2 Debugging:
+
+=over
+
+=item  -d
+
+=item  --dump
+
+Dump the raw JSON data when finished.
+
+=item  -v
+
+=item  --verbose
+
+Log (debugging) messages to stderr about what is being done
+
+=item  -n
+
+=item  --noop
+
+Don't store the collected information from the SNMP agent to the
+persistent data storage file.  I.E., only compare the results to last time.
+
+[This is highly useful when you just want to check the server from the
+command line using a data store configuration cache that is being used
+by another daemon (--loop mode) or by nagios], without affecting the
+timing between runs]
+
+=back
+
+=head1 EXAMPLES
+
+=head2 Example Setup
+
+With these goals:
+
+* monitor eth0
+* send a message to root@localhost when the input bandwidth goes above 50000 B/s
+* send a message to ops@localhost when the input bandwidth goes above 100000 B/s
+
+This can be configured as following:
+
+    # checkbandwidth -i eth0 -I 50000=root@localhost localhost
+    # checkbandwidth -i eth0 -I 100000=ops@localhost localhost
+
+If we want to add new configuration in the future, say for the output
+interface at 50000 but with a minimum number of 3 "times seen", we can do so:
+
+    # checkbandwidth -i eth0 -O 50000:3=root@localhost localhost
+
+Testing it on a regalur basis is as simple as running:
+
+    # checkbandwidth
+    localhost       eth0           3907.2973 in        1638.1081 out (B/s)
+
+=head2 Nagios usage example
+
+* monitor eth0
+* Alert at nagios 'warning' when the input bandwidth goes above 50000 B/s
+* Alert at nagios 'critical' when the input bandwidth goes above 100000 B/s
+
+    # checkbandwidth -i eth0 -I 50000=nagioswarning -O 50000=nagioswarning localhost
+    # checkbandwidth -i eth0 -I 50000=nagioscritical -O 50000=nagioscritical localhost
+
+(and you may or may not want to add -s to always include summary information)
+
+=head1 BUGS / TODO
+
+* There is no way to automatically remove a configured option.  IE,
+  once an delivery address is designated, there is no way to remove it
+  without manually editing the json file.
+
+=head1 AUTHOR
+
+Wes Hardaker <hardaker@users.sourceforge.net>
+USC/ISI
+
+=head1 COPYRIGHT and LICENSING
+ 
+See the Net-SNMP COPYING file for licensing information for this script.
+
+=cut
+
+use JSON;
+use Data::Dumper;
+use Mail::Sender;
+use SNMP;
+use Fcntl ':flock';
+
+use strict;
+
+my %opts = (
+            c => "$ENV{HOME}/.snmp/checkbandwidth.json",
+            S => 'localhost',
+            F => 'root',
+            P => 25,
+            );
+my %storage;
+my ($NAGIOS_NORMAL, $NAGIOS_WARNING, $NAGIOS_CRITICAL) = (0,1,2);
+my $nagiosexit = $NAGIOS_NORMAL;
+my $nagiosstr = "";
+
+LocalGetOptions(\%opts,
+           ["GUI:separator",     "Configuration and setup:"],
+           ["i|add-interface=s", "Add this interface to the list of things to monitor"],
+           ["I|max-in-bandwidth=s", "Alert to ADDRESS on bandwidth > INT, COUNT times; STRING format: INT[:COUNT]=ADDRESS"],
+           ["O|max-out-bandwidth=s", "Alert to ADDRESS on bandwidth > INT, COUNT times; STRING format: INT[:COUNT]=ADDRESS"],
+           ["J|min-in-bandwidth=s", "Alert to ADDRESS on bandwidth < INT, COUNT times; STRING format: INT[:COUNT]=ADDRESS"],
+           ["Q|min-out-bandwidth=s", "Alert to ADDRESS on bandwidth < INT, COUNT times; STRING format: INT[:COUNT]=ADDRESS"],
+
+           ["GUI:separator",     "Operation:"],
+           ["c|cache-file=s", 	 "Location to store persistent data"],
+           ["r|reset",         	 "Ignore all past data and start from scratch for all hosts/interfaces"],
+           ["l|loop=i",          "Loop forever, displaying bandwidth every INTEGER seconds"],
+
+           ["GUI:separator",     "Nagios mode:"],
+           ["N|nagios",          "Operate in nagios mode, displaying errors/exit code for a given host"],
+           ["s|nagios-summary",  "Always include summary information in the nagios output"],
+           ["L|lock-file=s",     "Use a lockfile to ensure no simultaneous runs"],
+
+           ["GUI:separator",     "Sending mail:"],
+           ["S|smtp-server=s",   "SMTP server to use"],
+           ["P|port=i",          "SMTP port to use"],
+           ["F|from=s",          "From address to use"],
+
+           ["GUI:separator",     "Debugging:"],
+           ["q|quiet",           "Don't output data to the terminal (i.e., email only)"],
+           ["d|dump",         	 "Dump the raw JSON data when finished"], 
+           ["v|verbose",      	 "Log (debugging) messages to stderr about what is being done"],
+           ["n|noop",         	 "Don\'t store persistent data ; compare only to last time"],
+          ) || die "Illegal usage; see -h for help";
+
+my @hosts = @ARGV; # remaining arguments should be hosts
+
+my $cache = read_cache();
+
+if ($#hosts == -1) {
+	@hosts = keys(%{$cache->{'hosts'}});
+	Verbose("loading hosts from cache: ", join(", ", @hosts));
+}
+
+my $lockfileh;
+
+if ($opts{'d'}) {
+	print to_json($cache, { ascii => 1, pretty => 1}),"\n";
+} elsif ($opts{'i'}) {
+	add_interface($cache, $opts{'i'}, $opts{'I'}, $opts{'O'}, $opts{'J'}, $opts{'Q'}, \@hosts);
+} else {
+	# just process per norm
+	do {
+		if ($opts{'L'}) {
+			open($lockfileh, ">>$opts{L}");
+			my $have_lock = flock($lockfileh, LOCK_EX | LOCK_NB);
+			if (! $have_lock) {
+				print STDERR "failed to get lock on $opts{L}\n";
+				print "failed to get lock on $opts{L}\n";
+				exit($NAGIOS_NORMAL);
+			}
+		}
+		$cache = process_hosts($cache, \@hosts);
+		if (defined($opts{'l'})) {
+			Output("");
+			save_cache($cache);
+			sleep($opts{'l'});
+		}
+	} while ($opts{'l'});
+}
+
+save_cache($cache);
+if ($lockfileh) {
+	unlink($lockfileh);
+	flock($lockfileh, LOCK_UN);  # it's ok if it fails
+}
+nagios_exit() if ($opts{'N'});
+
+sub read_cache {
+	# read in the json-based cache file
+	my $cache = {};
+	my ($buf, $content);
+	
+	if (-f $opts{'c'}) {
+		Verbose("Reading cache file from '$opts{c}'");
+
+		open(my $cacheh, "<", $opts{'c'});
+		while (read($cacheh, $buf, 4096 * 16) > 0) {
+			$content .= $buf;
+		}
+		close($cacheh);
+			
+		$cache = from_json($content); # cheap hack
+	}
+	return $cache;
+}
+
+sub process_hosts($$) {
+	my ($cache, $hosts) = @_;
+	
+	# process hosts
+	foreach my $host (sort @$hosts) {
+		Verbose("Procesing host '$host'");
+
+		my $sess = get_snmp_session($host);
+
+		# we always want the uptime
+		my @vars;
+		push @vars, ['sysUpTime',0];
+
+		foreach my $interface (sort keys(%{$cache->{'hosts'}{$host}{'interfaces'}})) {
+			push @vars, ['ifHCInOctets', $cache->{'hosts'}{$host}{'interfaces'}{$interface}{'index'}];
+			push @vars, ['ifHCOutOctets', $cache->{'hosts'}{$host}{'interfaces'}{$interface}{'index'}];
+		}
+		
+		my $list = new SNMP::VarList(@vars);
+		my $res = $sess->get($list);
+
+		my $sysUpTime = shift @$list;
+		my $sysUpTime = $sysUpTime->[2];
+
+		my $sysUpTimeDiff = $sysUpTime - $cache->{'hosts'}{$host}{'sysUpTime'};
+
+		foreach my $interface (sort keys(%{$cache->{'hosts'}{$host}{'interfaces'}})) {
+			my $ifHCInOctets = shift @$list;
+			my $ifHCOutOctets = shift @$list;
+
+			my $ifData = $cache->{'hosts'}{$host}{'interfaces'}{$interface};
+
+			if ($opts{'r'} ||
+			    !exists($ifData->{'data'}{'ifHCInOctets'}) ||
+			    !exists($cache->{'hosts'}{$host}{'sysUpTime'}) ||
+			    $sysUpTimeDiff < 0) {
+				# reset all past data or...
+				# no data is collected yet -- just store the sysUpTime
+				# XXX: should collect engine boots too
+				$ifData->{'data'}{'ifHCInOctets'}  = $ifHCInOctets->[2];
+				$ifData->{'data'}{'ifHCOutOctets'} = $ifHCOutOctets->[2];
+				Verbose("interface $interface on $host needs to start with new data");
+			} else {
+				# the great analysis
+
+				my $diffIn  = $ifHCInOctets->[2] - $ifData->{'data'}{'ifHCInOctets'};
+				my $diffOut = $ifHCOutOctets->[2] - $ifData->{'data'}{'ifHCOutOctets'};
+				
+				Verbose("$interface   in: $ifHCInOctets->[2] - $ifData->{'data'}{'ifHCInOctets'}");
+				Verbose("$interface diff: $diffIn/$sysUpTimeDiff = " . (100 * $diffIn/$sysUpTimeDiff) . " B/s");
+
+				Verbose("$interface  out: $ifHCOutOctets->[2] - $ifData->{'data'}{'ifHCOutOctets'}");
+				Verbose("$interface diff: $diffOut/$sysUpTimeDiff = " . (100 * $diffOut/$sysUpTimeDiff) . " B/s");
+
+				my $inRate = (100 * $diffIn/$sysUpTimeDiff);
+				my $outRate = (100 * $diffOut/$sysUpTimeDiff);
+				
+				my $inMarker = " ";
+				my $outMarker = " ";
+
+				# check maximum bandwidth limits
+				if (defined($ifData->{'maxInBandwidth'})) {
+					foreach my $limit (@{$ifData->{'maxInBandwidth'}}) {
+						if ($inRate > 0 && $inRate > $limit->{'rate'}) {
+							$inMarker = "I";
+							$ifData->{'maxInBandwidthCount'} ++;
+
+							if ($ifData->{'maxInBandwidthCount'} == $limit->{'maxcount'} || $opts{'N'}) {
+								Verbose("  input too high!!!  $inRate > $limit->{'rate'} ; emailing $limit->{'email'}");
+								send_rate_message($limit->{'email'},
+								                  $host, $interface, 'in', 'gt',
+								                  $ifData->{'maxInBandwidthCount'},
+								                  $inRate, $limit->{'rate'});
+							}
+						} else {
+							$ifData->{'maxInBandwidthCount'} = 0;
+						}
+					}
+				}
+
+				if (defined($ifData->{'maxOutBandwidth'})) {
+					foreach my $limit (@{$ifData->{'maxOutBandwidth'}}) {
+						if ($outRate > 0 && $outRate > $limit->{'rate'}) {
+							$outMarker = "O";
+							$ifData->{'maxOutBandwidthCount'} ++;
+							
+							if ($ifData->{'maxOutBandwidthCount'} == $limit->{'maxcount'} || $opts{'N'}) {
+								Verbose("  output too high!!! $outRate > $limit->{'rate'} ; emailing $limit->{'email'}");
+
+								send_rate_message($limit->{'email'},
+								                  $host, $interface, 'out', 'gt',
+								                  $ifData->{'maxOutBandwidthCount'},
+								                  $outRate, $limit->{'rate'});
+							}
+						} else {
+							$ifData->{'maxOutBandwidthCount'} = 0;
+						}
+					}
+				}
+
+				# check minimum bandwidth limits
+				if (defined($ifData->{'minInBandwidth'})) {
+					foreach my $limit (@{$ifData->{'minInBandwidth'}}) {
+						if ($inRate > 0 && $inRate < $limit->{'rate'}) {
+							$inMarker = "I";
+							$ifData->{'minInBandwidthCount'} ++;
+
+							if ($ifData->{'minInBandwidthCount'} == $limit->{'maxcount'} || $opts{'N'}) {
+								Verbose("  input too low!!!  $inRate < $limit->{'rate'} ; emailing $limit->{'email'}");
+								send_rate_message($limit->{'email'},
+								                  $host, $interface, 'in', 'lt',
+								                  $ifData->{'minInBandwidthCount'},
+								                  $inRate, $limit->{'rate'});
+							}
+						} else {
+							$ifData->{'minInBandwidthCount'} = 0;
+						}
+					}
+				}
+
+				if (defined($ifData->{'minOutBandwidth'})) {
+					foreach my $limit (@{$ifData->{'minOutBandwidth'}}) {
+						if ($outRate > 0 && $outRate < $limit->{'rate'}) {
+							$outMarker = "O";
+							$ifData->{'minOutBandwidthCount'} ++;
+							
+							if ($ifData->{'minOutBandwidthCount'} == $limit->{'maxcount'} || $opts{'N'}) {
+								Verbose("  output too low!!! $outRate < $limit->{'rate'} ; emailing $limit->{'email'}");
+
+								send_rate_message($limit->{'email'},
+								                  $host, $interface, 'out', 'lt',
+								                  $ifData->{'minOutBandwidthCount'},
+								                  $outRate, $limit->{'rate'});
+							}
+						} else {
+							$ifData->{'minOutBandwidthCount'} = 0;
+						}
+					}
+				}
+				
+				Output(sprintf("%-15s %-8s %16.0f in %16.0f out (B/s) %s%s",
+				               $host, $interface,
+				               $inRate, $outRate,
+				               $inMarker, $outMarker));
+
+				# Update the cache data.  Maybe.
+				if (! $opts{'n'}) {
+					$ifData->{'data'}{'ifHCInOctets'}  = $ifHCInOctets->[2];
+					$ifData->{'data'}{'ifHCOutOctets'} = $ifHCOutOctets->[2];
+				}
+			}
+		}
+
+		# store the sysUpTime
+		$cache->{'hosts'}{$host}{'sysUpTime'} = $sysUpTime unless ($opts{'n'});
+	}
+
+	return $cache;
+}
+
+sub add_interface($$$$$) {
+	my ($cache, $interface, $maxInBandwidth, $maxOutBandwidth, $minInBandwidth, $minOutBandwidth, $hosts) = @_;
+	foreach my $host (@$hosts) {
+		Verbose("adding interface $interface to $host");
+
+		my $session = get_snmp_session($host);
+		my $tabledata = $session->gettable('ifTable');
+		my $found = 0;
+
+		foreach my $key (keys(%$tabledata)) {
+			# each key is an interface number; find the matching interface
+			if ($tabledata->{$key}{'ifDescr'} eq $interface) {
+				# found it!
+
+				Verbose("found $interface on $host at $key; adding it");
+				
+				$cache->{'hosts'}{$host}{'interfaces'}{$interface}{'index'} = $key;
+				if ($maxInBandwidth) {
+					my ($ratespec, $email) = split(/=/, $maxInBandwidth);
+					my ($rate, $count)     = split(/:/, $ratespec);
+					if (!defined($count)) {
+						$rate = $ratespec;
+						$count = 1;
+					}
+					push @{$cache->{'hosts'}{$host}{'interfaces'}{$interface}{'maxInBandwidth'}},
+					  { rate => $rate,
+					    email => $email,
+					    maxcount => $count };
+				}
+				if ($maxOutBandwidth) {
+					my ($ratespec, $email) = split(/=/, $maxOutBandwidth);
+					my ($rate, $count)     = split(/:/, $ratespec);
+					if (!defined($count)) {
+						$rate = $ratespec;
+						$count = 1;
+					}
+					push @{$cache->{'hosts'}{$host}{'interfaces'}{$interface}{'maxOutBandwidth'}},
+					  { rate => $rate,
+					    email => $email,
+					    maxcount => $count};
+				}
+				if ($minInBandwidth) {
+					my ($ratespec, $email) = split(/=/, $minInBandwidth);
+					my ($rate, $count)     = split(/:/, $ratespec);
+					if (!defined($count)) {
+						$rate = $ratespec;
+						$count = 1;
+					}
+					push @{$cache->{'hosts'}{$host}{'interfaces'}{$interface}{'minInBandwidth'}},
+					  { rate => $rate,
+					    email => $email,
+					    maxcount => $count };
+				}
+				if ($minOutBandwidth) {
+					my ($ratespec, $email) = split(/=/, $minOutBandwidth);
+					my ($rate, $count)     = split(/:/, $ratespec);
+					if (!defined($count)) {
+						$rate = $ratespec;
+						$count = 1;
+					}
+					push @{$cache->{'hosts'}{$host}{'interfaces'}{$interface}{'minOutBandwidth'}},
+					  { rate => $rate,
+					    email => $email,
+					    maxcount => $count};
+				}
+				$found = 1;
+				Output("Configured $interface for $host");
+			}
+		}
+
+		if (!$found) {
+			Log("  failed to find interface '$interface' on '$host'");
+		}
+	}
+}
+
+my %session_cache;
+sub get_snmp_session($) {
+	my ($host) = @_;
+	if (exists($session_cache{$host})) {
+		return $session_cache{$host};
+	}
+
+	my @args;
+	
+	if (-f "/etc/snmp/perl/$host.conf") {
+		open(CC, "/etc/snmp/perl/$host.conf");
+		while (<CC>) {
+			next if (/^\s*#/);
+			chomp;
+			push @args, split();
+		}
+	}
+
+	# hack to work around perl not handling per-host files correctly
+	$session_cache{$host} = new SNMP::Session(DestHost => $host, @args);
+	return	$session_cache{$host};
+}
+
+sub save_cache($) {
+	my ($cache) = @_;
+
+	# save data to the json cache (maybe)
+	if (!$opts{'n'}) {
+		my $dir = $opts{'c'};
+		$dir =~ s/(.*)\/.*/$1/;
+		if (! -d $dir) {
+			mkdir($dir);
+			if (! -d $dir) {
+				Log("failed to create directory $dir");
+			} else {
+				Verbose("note: created directory $dir");
+			}
+		}
+		# XXX: mkdir
+		
+		Verbose("Writing cache file to '$opts{c}'"); 
+		
+		my $jsondata = to_json($cache);
+		open(my $outh, ">", $opts{'c'} . $$);
+		print $outh $jsondata,"\n";
+		$outh->close();
+		rename($opts{'c'} . $$, $opts{'c'});
+	}
+}
+
+sub send_rate_message($$$$$$) {
+	my ($to, $host, $interface, $direction, $highlow, $count, $measured, $max) = @_;
+
+	if ($opts{'N'} && ($to eq 'nagioswarn' || $to eq 'nagioscritical')) {
+		# nagios mode ; collect simple output for later
+		nagios_collect($to, $host, $interface, $direction, $highlow, $count, $measured, $max);
+	} elsif($to ne 'nagioswarn' && $to ne 'nagioscritical') {
+		# send email
+		my $word = ($highlow eq '>' ? 'exceeded' : 'too low');
+		send_message($to,
+		             "rate $word: $host/$interface=$direction ($count times)",
+		             "Rate limit $word for:\n\n" .
+		             "\thost:\t\t$host\n" .
+		             "\tinterface:\t$interface ($direction)\n" .
+		             "\trate:\t\t$measured\n" .
+		             "\tmax allowed:\t$max\n" .
+		             "\tcount:\t\t$count times in a row\n");
+	}
+}
+
+sub send_message($$$) {
+	my ($to, $subject, $text) = @_;
+
+	my $sender = new Mail::Sender { smtp => $opts{'S'} ,
+	                                port => $opts{'P'},
+	                                from => $opts{'F'},
+                                  };
+
+	my $status =
+	  $sender->MailMsg({
+	                    to      => $to,
+	                    subject => $subject,
+	                    msg     => $text
+	                   });
+	if ($status < 0) {
+		Log("Failed to send mail with error code $status: $Mail::Sender::Error");
+	}
+}
+
+sub nagios_collect($$$$$$) {
+	my ($to, $host, $interface, $direction, $highlow, $count, $measured, $max) = @_;
+
+	if ($to eq 'nagioscritical') {
+		$nagiosexit = $NAGIOS_CRITICAL;
+	} elsif ($to eq 'nagioswarn' && $nagiosexit < $NAGIOS_CRITICAL) {
+		$nagiosexit = $NAGIOS_WARNING;
+	}
+
+	$nagiosstr .= sprintf(", %s $direction %16.0f B/s $highlow %s", $interface, $measured, $max);
+}
+
+sub nagios_exit() {
+	if ($nagiosstr eq '') {
+		$nagiosstr = "All interfaces ok: " . join(", ", keys(%{$cache->{'hosts'}{$hosts[0]}{'interfaces'}}));
+	} else {
+		$nagiosstr =~ s/^, //;
+	}
+
+	print $nagiosstr, "\n";
+	exit $nagiosexit;
+}
+
+sub Verbose {
+	if ($opts{'v'}) {
+		print STDERR @_, "\n";
+	}
+}
+
+sub Log {
+	print STDERR @_,"\n";
+}
+
+sub Output {
+	if (! $opts{'q'} && !$opts{'N'}) {
+		print @_, "\n";
+	}
+	if ($opts{'N'} && $opts{'s'}) {
+		$nagiosstr .= ", " . join(" ", @_);
+	}
+}
+
+#### portability for not requiring Getopt::GUI::Long directly
+sub LocalGetOptions {
+	if (eval {require Getopt::GUI::Long;}) {
+		import Getopt::GUI::Long;
+		# optional configure call
+		Getopt::GUI::Long::Configure(qw(display_help no_ignore_case allow_zero));
+		return GetOptions(@_);
+	}
+	require Getopt::Long;
+	import Getopt::Long;
+	# optional configure call
+	Getopt::Long::Configure(qw(auto_help no_ignore_case));
+	GetOptions(LocalOptionsMap(@_));
+}
+
+sub LocalOptionsMap {
+	my ($st, $cb, @opts) = ((ref($_[0]) eq 'HASH') 
+	                        ? (1, 1, $_[0]) : (0, 2));
+	for (my $i = $st; $i <= $#_; $i += $cb) {
+		if ($_[$i]) {
+			next if (ref($_[$i]) eq 'ARRAY' && $_[$i][0] =~ /^GUI:/);
+			push @opts, ((ref($_[$i]) eq 'ARRAY') ? $_[$i][0] : $_[$i]);
+			push @opts, $_[$i+1] if ($cb == 2);
+		}
+	}
+	return @opts;
+}
+
+# Local Variables:
+# tab-width: 4
+# End:

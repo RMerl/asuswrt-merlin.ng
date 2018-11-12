@@ -1,0 +1,69 @@
+PROGNAME=
+CFG=
+OUTDIR=
+INTDIR=
+CFLAGS=
+LDFLAGS=
+
+!IF "$(OS)" == "Windows_NT"
+NULL=
+!ELSE 
+NULL=nul
+!ENDIF 
+
+CPP=cl.exe
+CPP_PROJ=/I.. /I..\..\include /I..\..\agent\mibgroup $(CFLAGS)
+
+
+ALL : "..\lib\$(OUTDIR)\netsnmptrapd.lib"
+
+
+CLEAN :
+	-@erase "$(INTDIR)\snmptrapd.obj"
+	-@erase "$(INTDIR)\snmptrapd_handlers.obj"
+	-@erase "$(INTDIR)\snmptrapd_log.obj"
+	-@erase "$(INTDIR)\snmptrapd_auth.obj"
+	-@erase "$(INTDIR)\winservice.obj"
+	-@erase "$(INTDIR)\vc??.idb"
+	-@erase "$(INTDIR)\$(PROGNAME).pch"
+	-@erase "..\lib\$(OUTDIR)\netsnmptrapd.lib"
+
+"..\lib\$(OUTDIR)" :
+    if not exist "..\lib\$(OUTDIR)/$(NULL)" mkdir "..\lib\$(OUTDIR)"
+
+"$(INTDIR)" :
+    if not exist "$(INTDIR)/$(NULL)" mkdir "$(INTDIR)"
+
+{..\..\apps}.c{$(INTDIR)}.obj::
+   $(CPP) $(CPP_PROJ) $<
+
+{..\..\snmplib}.c{$(INTDIR)}.obj::
+   $(CPP) $(CPP_PROJ) $<
+
+RSC=rc.exe
+LIB32=link.exe -lib
+LIB32_FLAGS=/nologo /out:"..\lib\$(OUTDIR)\netsnmptrapd.lib" $(LDFLAGS)
+LIB32_OBJS= \
+	"$(INTDIR)\snmptrapd.obj" \
+	"$(INTDIR)\snmptrapd_handlers.obj" \
+	"$(INTDIR)\snmptrapd_log.obj" \
+	"$(INTDIR)\snmptrapd_auth.obj" \
+	"$(INTDIR)\winservice.obj"
+
+"..\lib\$(OUTDIR)\netsnmptrapd.lib" : "..\lib\$(OUTDIR)" $(DEF_FILE) $(LIB32_OBJS)
+    $(LIB32) $(LIB32_FLAGS) $(DEF_FLAGS) $(LIB32_OBJS)
+
+
+!IF "$(NO_EXTERNAL_DEPS)" != "1"
+!IF EXISTS("libnetsnmptrapd.dep")
+!INCLUDE "libnetsnmptrapd.dep"
+!ELSE 
+!MESSAGE Warning: cannot find "libnetsnmptrapd.dep"
+!ENDIF 
+!ENDIF 
+
+"$(INTDIR)\snmptrapd.obj": ..\..\apps\snmptrapd.c "$(INTDIR)"
+"$(INTDIR)\snmptrapd_auth.obj": ..\..\apps\snmptrapd_auth.c "$(INTDIR)"
+"$(INTDIR)\snmptrapd_handlers.obj": ..\..\apps\snmptrapd_handlers.c "$(INTDIR)"
+"$(INTDIR)\snmptrapd_log.obj": ..\..\apps\snmptrapd_log.c "$(INTDIR)"
+"$(INTDIR)\winservice.obj": ..\..\snmplib\winservice.c "$(INTDIR)"

@@ -1,0 +1,72 @@
+#!/bin/sh
+
+. ../support/simple_eval_tools.sh
+
+HEADER "execfix configuration directive"
+
+SKIPIFNOT USING_UCD_SNMP_EXTENSIBLE_MODULE
+SKIPIF NETSNMP_DISABLE_SET_SUPPORT
+SKIPIF NETSNMP_NO_WRITE_SUPPORT
+SKIPIF NETSNMP_DISABLE_SNMPV2C
+
+# make sure snmpset and snmpwalk can be executed
+SNMPSET="${builddir}/apps/snmpset"
+[ -x "$SNMPSET" ] || SKIP snmpset not compiled
+SNMPWALK="${builddir}/apps/snmpwalk"
+[ -x "$SNMPWALK" ] || SKIP snmpwalk not compiled
+
+snmp_version=v2c
+snmp_write_access='all'
+TESTCOMMUNITY=testcommunity
+. ./Sv2cconfig
+
+#
+# Begin test
+#
+if [ "x$OSTYPE" = xmsys ]; then
+    cmd1="true"
+    cmd2="false"
+    echo="echo"
+else
+    cmd1="$(which true)"
+    cmd2="$(which false)"
+    echo="$(which echo)"
+fi
+CONFIGAGENT exec    true-command    $cmd1
+CONFIGAGENT execfix true-command    $cmd1
+CONFIGAGENT exec    false-command   $cmd2
+CONFIGAGENT execfix false-command   $cmd2
+CONFIGAGENT exec    echo-%s-command ${echo} %s
+CONFIGAGENT execfix echo-%s-command ${echo} fix-%s
+
+STARTAGENT
+
+# Check a full walk of UCD-SNMP-MIB::extTable
+CAPTURE "$SNMPWALK $SNMP_FLAGS -$snmp_version -c $TESTCOMMUNITY $SNMP_TRANSPORT_SPEC:$SNMP_TEST_DEST$SNMP_SNMPD_PORT UCD-SNMP-MIB::extEntry"
+CHECK 'UCD-SNMP-MIB::extNames.1 = STRING: true-command$'
+CHECK 'UCD-SNMP-MIB::extCommand.1 = STRING: '"$cmd1"
+CHECK 'UCD-SNMP-MIB::extResult.1 = INTEGER: 0$'
+CHECK 'UCD-SNMP-MIB::extOutput.1 = STRING: $'
+CHECK 'UCD-SNMP-MIB::extErrFix.1 = INTEGER: noError(0)$'
+CHECK 'UCD-SNMP-MIB::extErrFixCmd.1 = STRING: '"$cmd1"
+CHECK 'UCD-SNMP-MIB::extNames.2 = STRING: false-command$'
+CHECK 'UCD-SNMP-MIB::extCommand.2 = STRING: '"$cmd2"'$'
+CHECK 'UCD-SNMP-MIB::extResult.2 = INTEGER: 1$'
+CHECK 'UCD-SNMP-MIB::extOutput.2 = STRING: $'
+CHECK 'UCD-SNMP-MIB::extErrFix.2 = INTEGER: noError(0)$'
+CHECK 'UCD-SNMP-MIB::extErrFixCmd.2 = STRING: '"$cmd2"'$'
+CHECK 'UCD-SNMP-MIB::extNames.3 = STRING: echo-%s-command$'
+CHECK 'UCD-SNMP-MIB::extCommand.3 = STRING: '"${echo}"' %s$'
+CHECK 'UCD-SNMP-MIB::extResult.3 = INTEGER: 0$'
+CHECK 'UCD-SNMP-MIB::extOutput.3 = STRING: %s$'
+CHECK 'UCD-SNMP-MIB::extErrFix.3 = INTEGER: noError(0)$'
+CHECK 'UCD-SNMP-MIB::extErrFixCmd.3 = STRING: '"${echo}"' fix-%s$'
+
+CAPTURE "$SNMPSET $SNMP_FLAGS -$snmp_version -c $TESTCOMMUNITY -r0 $SNMP_TRANSPORT_SPEC:$SNMP_TEST_DEST$SNMP_SNMPD_PORT UCD-SNMP-MIB::extErrFix.3 i 1"
+CHECK 'UCD-SNMP-MIB::extErrFix.3 = INTEGER: runFix(1)'
+
+CAPTURE "$SNMPWALK $SNMP_FLAGS -$snmp_version -c $TESTCOMMUNITY $SNMP_TRANSPORT_SPEC:$SNMP_TEST_DEST$SNMP_SNMPD_PORT UCD-SNMP-MIB::extEntry"
+CHECK 'UCD-SNMP-MIB::extErrFixCmd.3 = STRING: '"${echo}"' fix-%s'
+
+STOPAGENT
+FINISHED

@@ -1,0 +1,16 @@
+#!/bin/bash
+
+set -x
+killall snmpd
+export LD_LIBRARY_PATH="$PWD/snmplib/.libs:$PWD/agent/.libs:$PWD/agent/helpers/.libs:"
+export MIBDIRS=$PWD/mibs
+export SNMP_PERSISTENT_DIR=/tmp/net-snmp
+export SNMP_SNMPD_PORT=1161
+export PYTHONPATH=$PWD/python/netsnmp
+mkdir -p "$SNMP_PERSISTENT_DIR" || exit $?
+agent/snmpd -I-smux -r -f -Lo -c python/netsnmp/tests/snmpd.conf localhost:${SNMP_SNMPD_PORT} &
+pid=$!
+cd python || exit $?
+python setup.py --basedir="$PWD/.." test || exit $?
+kill $pid
+wait

@@ -1,0 +1,37 @@
+#!/bin/bash
+
+scriptdir="$(dirname "$0")"
+
+killall snmpd snmptrapd >&/dev/null
+
+export SNMP_VERBOSE=1 &&
+export SNMP_SAVE_TMPDIR=1 &&
+export NETSNMP_DNS_WORKAROUND=1 &&
+make -s &&
+(
+      export PATH="$PWD/agent/.libs:$PWD/apps/.libs:$PWD:$PATH" &&
+      export LD_LIBRARY_PATH="$PWD/snmplib/.libs:$PWD/agent/.libs:$PWD/agent/helpers/.libs:$PWD/perl/blib/arch/auto/NetSNMP/default_store:$PWD/perl/blib/arch/auto/SNMP:$PWD/perl/blib/arch/auto/NetSNMP/ASN:$PWD/perl/blib/arch/auto/NetSNMP/OID:$PWD/perl/blib/arch/auto/NetSNMP/TrapReceiver:$PWD/perl/blib/arch/auto/NetSNMP/agent:$PWD/perl/blib/arch/auto/NetSNMP/agent/default_store:" &&
+      export PERL5LIB="$PWD/perl/blib/lib:$PWD/perl/blib/lib/NetSNMP:$PWD/perl/blib/lib/NetSNMP/agent" &&
+      cd testing &&
+      if [ -e RUNFULLTESTS ] &&
+	     perl -e 'require TAP::Harness;' >/dev/null 2>&1; then
+          if [ "${TRAVIS_OS_NAME}" == "osx" ]; then
+              for g in default snmpv3 unit-tests; do
+                  echo "==== Test group $g ===="
+	          ./RUNFULLTESTS -g $g || exit $?
+                  echo "==== End of test group $g ===="
+              done
+          else
+	      ./RUNFULLTESTS -g all
+          fi
+      else
+	  make -s test
+      fi &&
+      cd .. &&
+      if [ "${TRAVIS_OS_NAME}" != "osx" ]; then
+          "$scriptdir/net-snmp-run-perl-tests"
+      fi
+) &&
+if [ "${TRAVIS_OS_NAME}" != "osx" ]; then
+    "$scriptdir/net-snmp-run-python-tests"
+fi

@@ -1,0 +1,89 @@
+#!/bin/sh
+
+. ../support/simple_eval_tools.sh
+
+HEADER DISMAN EXPRESSION MIB
+
+ISDEFINED USING_DISMAN_EXPRESSION_EXPEXPRESSIONTABLE_MODULE ||
+ISDEFINED USING_DISMAN_EXPRESSION_MODULE ||
+SKIP "DISMAN EXPRESSION MIB is not available"
+
+# SNMPv2-TC
+active=1
+createAndWait=5
+destroy=6
+# Test configuration
+# expExpressionOwner and expExpressionName
+on='"foo"."bar"'
+
+#
+# Begin test
+#
+
+# standard V3 configuration
+snmp_write_access='all'
+. ./Sv3config
+
+CONFIGAGENT "createUser    internal"
+CONFIGAGENT "iquerySecName internal"
+CONFIGAGENT "rouser        internal"
+
+AGENT_FLAGS="$AGENT_FLAGS -DexpValueTable -Ddisman:expr:run"
+
+STARTAGENT
+
+capture_snmpset() {
+    CAPTURE "snmpset $SNMP_FLAGS $NOAUTHTESTARGS                 \
+         $SNMP_TRANSPORT_SPEC:$SNMP_TEST_DEST$SNMP_SNMPD_PORT $*"
+}
+
+capture_snmpget() {
+    CAPTURE "snmpget $SNMP_FLAGS $NOAUTHTESTARGS                 \
+         $SNMP_TRANSPORT_SPEC:$SNMP_TEST_DEST$SNMP_SNMPD_PORT $*"
+}
+
+capture_snmpwalk() {
+    CAPTURE "snmpwalk $SNMP_FLAGS $NOAUTHTESTARGS                \
+         $SNMP_TRANSPORT_SPEC:$SNMP_TEST_DEST$SNMP_SNMPD_PORT $*"
+}
+
+capture_snmpset DISMAN-EXPRESSION-MIB::expExpressionEntryStatus."${on}" \
+    i $destroy
+CHECK "^DISMAN-EXPRESSION-MIB::expExpressionEntryStatus.${on} = INTEGER: destroy(6)"
+capture_snmpset DISMAN-EXPRESSION-MIB::expExpressionEntryStatus."${on}" \
+    i $createAndWait
+CHECK "^DISMAN-EXPRESSION-MIB::expExpressionEntryStatus.${on} = INTEGER: createAndWait(5)"
+capture_snmpset DISMAN-EXPRESSION-MIB::expExpression."${on}"            \
+    = '$1+$2*($1+$2*($1+$2))'
+CHECK "^DISMAN-EXPRESSION-MIB::expExpression.${on} = STRING: "
+capture_snmpset DISMAN-EXPRESSION-MIB::expExpressionValueType."${on}"   \
+    = counter32
+CHECK "^DISMAN-EXPRESSION-MIB::expExpressionValueType.${on} = INTEGER: counter32(1)"
+capture_snmpset DISMAN-EXPRESSION-MIB::expExpressionEntryStatus."${on}" \
+    i $active
+CHECK "^DISMAN-EXPRESSION-MIB::expExpressionEntryStatus.${on} = INTEGER: active(1)"
+
+i=1
+for e in IF-MIB::ifIndex.1 IF-MIB::ifIndex.2; do
+    capture_snmpset DISMAN-EXPRESSION-MIB::expObjectEntryStatus."${on}".$i \
+        i $destroy
+    CHECK "^DISMAN-EXPRESSION-MIB::expObjectEntryStatus.${on}.$i = INTEGER: destroy(6)"
+    capture_snmpset DISMAN-EXPRESSION-MIB::expObjectEntryStatus."${on}".$i \
+        = createAndWait
+    CHECK "^DISMAN-EXPRESSION-MIB::expObjectEntryStatus.${on}.$i = INTEGER: createAndWait(5)"
+    capture_snmpset DISMAN-EXPRESSION-MIB::expObjectID."${on}".$i          \
+        = $e
+    CHECK "^DISMAN-EXPRESSION-MIB::expObjectID.${on}.$i = OID: $e"
+    capture_snmpset DISMAN-EXPRESSION-MIB::expObjectEntryStatus."${on}".$i \
+        i $active
+    CHECK "^DISMAN-EXPRESSION-MIB::expObjectEntryStatus.${on}.$i = INTEGER: active(1)"
+    i=`expr $i + 1`
+done
+
+capture_snmpget DISMAN-EXPRESSION-MIB::expValueCounter32Val."${on}".0.0.0
+
+CHECK "^DISMAN-EXPRESSION-MIB::expValueCounter32Val.${on}.0.0.0 = Counter32: 15"
+
+STOPAGENT
+
+FINISHED

@@ -593,7 +593,7 @@ function popClientListEditTable(event) {
 			cell.id = "tbCardClientListIcon" + (colIndex + (rowIndex * 7));
 			var idx = (colIndex + (rowIndex * eachColCount));
 			if(clientListIconArray[colIndex + (rowIndex * eachColCount)] != undefined) {
-				cell.innerHTML = '<div class="type' + clientListIconArray[idx][1] + '" onclick="select_image(this.className,\''+clientInfo.vendor+'\');" title="' + clientListIconArray[idx][0] + '"></div>';
+				cell.innerHTML = '<div class="type' + clientListIconArray[idx][1] + '" onclick="select_image(this.className,\''+clientInfo.vendor.replace("'","\\'")+'\');"  title="' + clientListIconArray[idx][0] + '"></div>';
 			}
 			else {
 				if(usericon_support) {

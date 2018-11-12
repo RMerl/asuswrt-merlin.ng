@@ -1,0 +1,37 @@
+#!/bin/sh
+
+srcdir=`dirname $0`
+srcdir=`cd $srcdir; pwd`
+srcdir=`dirname $srcdir`
+
+# set up MIBDIRS to refer to the src directory
+if [ "x$MIBDIRS" = "x" ]; then
+    MIBDIRS=${srcdir}/mibs
+    export MIBDIRS
+fi
+
+"`dirname "$0"`/check_for_pskill"
+
+success_count=0
+failed_count=0
+rm -f failed_tests
+for i in "${srcdir}"/testing/fulltests/default/T*$1*; do
+    echo "RUNNING $i"
+    ${srcdir}/testing/fulltests/support/simple_run $i
+    if [ $? = 0 ]; then
+        success_count=`expr $success_count + 1`
+    else
+        failed_count=`expr $failed_count + 1`
+        echo "$i" >> failed_tests
+    fi
+done
+
+if [ -f failed_tests ]; then
+    echo
+    echo Failed tests:
+    cat failed_tests
+fi
+echo
+echo Summary: $success_count / `expr $failed_count + $success_count` succeeded.
+
+exit $failed_count

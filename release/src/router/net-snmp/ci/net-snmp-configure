@@ -1,0 +1,232 @@
+#!/usr/bin/env bash
+
+branch_name="$1"
+shift
+
+is_5_7_or_above="false"
+is_5_8_or_above="false"
+if [ "${branch_name#master}" != "${branch_name}" ]; then
+  is_5_8_or_above="true"
+  is_5_7_or_above="true"
+elif [ "${branch_name#V5-7-}" != "${branch_name}" ]; then
+  is_5_7_or_above="true"
+fi
+case "${OSTYPE}" in
+    linux*)
+        opensslver="$(
+                for p in openssl-devel libopenssl-devel libressl-devel; do
+	            rpm -q --qf '%{version}\n' $p 2>/dev/null;
+                done;
+	        dpkg-query --show -f '${Version}\n' libssl-dev 2>/dev/null;
+	        pacman -Q openssl 2>&1 | sed -n 's/^openssl[[:blank:]]*//p'
+            )";;
+    *)
+	opensslver=1.0;;
+esac
+opensshver="$({
+    rpm -q openssh-devel;
+    rpm -q libssh2-devel;
+    rpm -q libssh-devel; } 2>/dev/null |
+    sed -n 's/^.*ssh[0-9]*-devel-\([0-9a-z.]*\)-.*$/\1/p' | head -n1)"
+
+options=()
+options+=(--enable-developer)
+options+=(--enable-ipv6)
+options+=("--prefix=/usr/local/net-snmp-${branch_name}")
+options+=("--with-cflags=$cflags")
+options+=(--with-defaults)
+transports=()
+[ "$opensshver" != "" ] && transports+=(SSH)
+# Mib names can be found as follows:
+# (cd agent/mibgroup &&
+# git grep -lE 'void[[:blank:]]*init_.*\(void\)|config_require\(' |
+#  sed -n 's/\.h$//p')
+mibs=()
+mibs+=(mibII)
+case "$MODE" in
+    read-only)
+        ;;
+    *)
+        mibs+=(examples/data_set)
+        mibs+=(examples/delayed_instance)
+        mibs+=(examples/example)
+        mibs+=(examples/notification)
+        mibs+=(examples/scalar_int)
+        mibs+=(examples/ucdDemoPublic)
+        mibs+=(examples/watched)
+        mibs+=(smux)
+        ;;
+esac
+
+case "$(uname)" in
+  Linux*)
+      options+=(--enable-new-features)
+      case "$MODE" in
+          mini*|read-only)
+              ;;
+          *)
+              $is_5_7_or_above && mibs+=(deliver/deliverByNotify)
+              mibs+=(disman/event)
+              #mibs+=(disman/expression) - to do: figure out why this fails on Travis
+              mibs+=(disman/mteEventNotificationTable)
+              mibs+=(disman/mteEventTable)
+              mibs+=(disman/mteObjectsTable)
+              mibs+=(disman/mteTriggerBooleanTable)
+              mibs+=(disman/mteTriggerDeltaTable)
+              mibs+=(disman/mteTriggerExistenceTable)
+              mibs+=(disman/mteTriggerTable)
+              mibs+=(disman/mteTriggerThresholdTable)
+              mibs+=(disman/nslookup-mib)
+              mibs+=(disman/ping-mib)
+              mibs+=(disman/schedule)
+              mibs+=(disman/traceroute-mib)
+              mibs+=(etherlike-mib)
+              mibs+=(examples/netSnmpHostsTable)
+              mibs+=(hardware/cpu)
+              mibs+=(hardware/fsys)
+              mibs+=(hardware/memory)
+              mibs+=(hardware/sensors)
+              mibs+=(host)
+              mibs+=(ip-forward-mib)
+              mibs+=(ip-mib/inetNetToMediaTable)
+              mibs+=(ip-mib/ipDefaultRouterTable)
+              mibs+=(ip-mib/ipv4InterfaceTable)
+              mibs+=(ip-mib/ipv6InterfaceTable)
+              mibs+=(ip-mib/ipv6ScopeZoneIndexTable)
+              mibs+=(mibII/ipAddr)
+              mibs+=(mibII/mta_sendmail)
+              mibs+=(misc/ipfwacc)
+              mibs+=(sctp-mib)
+              mibs+=(snmp-notification-mib)
+              [ "$opensslver" != "" ] && mibs+=(snmp-usm-dh-objects-mib)
+              mibs+=(tcp-mib)
+              mibs+=(testhandler)
+              [ "$opensslver" != "" ] && mibs+=(tlstm-mib tsm-mib)
+              mibs+=(tunnel)
+              mibs+=(ucd-snmp/diskio)
+              mibs+=(ucd-snmp/lmsensorsMib)
+              mibs+=(ucd-snmp/extensible)
+              mibs+=(udp-mib)
+	      mibs+=(rmon-mib)
+              ;;
+      esac
+      options+=(--with-mysql)
+      options+=(--with-perl-modules)
+      transports+=(AAL5PVC)
+      transports+=(IPX)
+      transports+=(STD)
+      $is_5_8_or_above && transports+=(UDPshared)
+      [ "$opensslver" = "" ] && options+=("--with-openssl=internal")
+      options+=("--with-default-snmp-version=2")
+      { rpm -q python-setuptools >/dev/null 2>&1 || rpm -q python-devel >/dev/null 2>&1 || dpkg-query -l python-setuptools >/dev/null 2>&1; } && options+=(--with-python-modules)
+      # Disabled modules because troublesome: Rmon ipfwchains/ipfwchains ucd-snmp/lmSensors
+    ;;
+  darwin*|Darwin*)
+      case "$MODE" in
+          mini*|read-only)
+              ;;
+          *)
+              mibs+=(disman/nslookup-mib)
+              mibs+=(host)
+              mibs+=(if-mib)
+              mibs+=(mibII/mta_sendmail)
+              mibs+=(misc/ipfwacc)
+              mibs+=(snmp-notification-mib)
+              mibs+=(snmp-usm-dh-objects-mib)
+              mibs+=(tcp-mib)
+              mibs+=(ucd-snmp/diskio)
+              mibs+=(ucd-snmp/extensible)
+              mibs+=(udp-mib)
+              mibs+=(Rmon)
+              ;;
+      esac
+      options+=(--with-python-modules)
+      if [ "${TRAVIS_OS_NAME}" == "osx" ]; then
+          options+=("--with-openssl=$(brew --prefix openssl)")
+          # On Travis OS/X linking the Perl modules fails with "undefined symbol
+          # _BN_bin2bn" etc.
+          options+=(--disable-embedded-perl --without-perl-modules)
+      fi
+    ;;
+  CYGWIN*)
+      export ENV_SEPARATOR=":"
+      mibs+=(ucd-snmp/extensible)
+      mibs+=(winExtDLL)
+      # To do: avoid that the Net-SNMP headers trigger the following build
+      # failure: /usr/include/w32api/psdk_inc/_fd_types.h:100:2: warning: #warning "fd_set and associated macros have been defined in sys/types. This can cause runtime problems with W32 sockets" [-Wcpp]
+      # #warning "fd_set and associated macros have been defined in sys/types.
+      options+=("--with-openssl=internal")
+      if [ -n "$APPVEYOR" ]; then
+          # On Appveyor building the Perl modules fails as follows:
+          # /usr/lib/perl5/5.26/i686-cygwin-threads-64int/CORE/reentr.h:104:26: fatal error: crypt.h: No such file or directory
+          options+=(--disable-embedded-perl --without-perl-modules)
+      fi
+    ;;
+  MINGW*|MSYS*)
+      options+=(--disable-embedded-perl)
+      if [ "$branch_name" != "V5-4-patches" ]; then
+	  options+=("--with-openssl=/c/OpenSSL")
+      fi
+      mibs+=(snmp-notification-mib)
+      mibs+=(ucd-snmp/dlmod)
+      mibs+=(ucd-snmp/extensible)
+      mibs+=(winExtDLL)
+      options+=(--without-perl-modules)
+      #options+=(--with-mibdirs="C:/usr/share/snmp/mibs")
+      if [ -n "$APPVEYOR" ]; then
+          options+=("--build=x86_64-pc-mingw32")
+      fi
+    ;;
+  *)
+    echo "Unknown OS $(uname)."
+    ;;
+esac
+
+with_openssl=""
+for o in "${options[@]}"; do
+    if [ "${o#--with-openssl=}" != "$o" ]; then
+        with_openssl="${o#--with-openssl=}"
+    fi
+done
+set -x
+if [ "$opensslver" != "" ] &&
+	grep -rqw BIO_dgram_get_peer "${with_openssl:-/usr}/include/openssl" 2>/dev/null
+then
+	transports+=(DTLSUDP)
+        # to do: figure out why one of the IPv6 TLSTCP test fails on Travis.
+        if [ "${TRAVIS_OS_NAME}" != linux ]; then
+	    transports+=(TLSTCP)
+        fi
+fi
+set +x
+if $is_5_8_or_above; then
+    [ -e "${with_openssl:-/usr}/openssl/aes.h" ] &&
+        [ -e "${with_openssl:-/usr}/openssl/evp.h" ] &&
+        options+=(--enable-blumenthal-aes)
+fi
+security_modules=(usm tsm)
+if [ -e /usr/include/krb5.h ]; then
+    security_modules+=(ksm)
+fi
+
+case "$MODE" in
+    disable-set)
+        options+=(--disable-set-support);;
+    mini)
+        options+=(--enable-mini-agent);;
+    minimalist)
+        options+=(--enable-minimalist);;
+    read-only)
+        options+=(--enable-read-only);;
+    regular|"")
+        ;;
+    *)
+        echo "Error: unknown build type $MODE"
+        exit 1;;
+esac
+
+set -x
+./configure "${options[@]}" --with-transports="${transports[*]}"	\
+            --with-security-modules="${security_modules[*]}"		\
+	    --with-mib-modules="${mibs[*]}" "$@"
+set +x

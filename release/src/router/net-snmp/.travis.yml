@@ -1,0 +1,39 @@
+language: c
+
+os:
+  - linux
+  - osx
+
+env:
+  - env: MODE=regular
+  - env: MODE=disable-set
+  - env: MODE=mini
+  - env: MODE=minimalist
+  - env: MODE=read-only
+
+addons:
+  apt:
+    packages:
+      - dpkg
+      - gcc
+      - libatm-dev
+      - libperl-dev
+      - libsensors4-dev
+      - libssh-dev
+      - libssl-dev
+      - make
+      - perl-modules
+      - pkg-config
+      - python-dev
+      - python-setuptools
+
+sudo: required
+
+before_script:
+  # Add an IPv6 config - see the corresponding Travis issue
+  # https://github.com/travis-ci/travis-ci/issues/8361
+  - 'if [ "${TRAVIS_OS_NAME}" == "linux" ]; then sudo sh -c ''echo 0 > /proc/sys/net/ipv6/conf/all/disable_ipv6; printf "\n::1 localhost ipv6-localhost ipv6-loopback\n" >>/etc/hosts; cat /etc/hosts''; fi'
+  # Upgrade openssl such that Net-SNMP can be built with Blumenthal AES support.
+  - 'if [ "${TRAVIS_OS_NAME}" == "osx" ]; then brew upgrade openssl >/dev/null 2>&1; fi'
+
+script: ci/build.sh

@@ -1,0 +1,142 @@
+#!/bin/sh
+
+. ../support/simple_eval_tools.sh
+
+HEADER snmpTargetAddrTable
+
+SKIPIF NETSNMP_DISABLE_SET_SUPPORT
+SKIPIF NETSNMP_NO_WRITE_SUPPORT
+SKIPIF NETSNMP_DISABLE_SNMPV2C
+SKIPIFNOT USING_TARGET_SNMPTARGETADDRENTRY_MODULE
+
+#
+# Begin test
+#
+
+. ./Sv3config
+
+STARTAGENT
+
+# Check that the table starts out empty
+CAPTURE "snmpgetnext -On -Oe $SNMP_FLAGS $AUTHTESTARGS $SNMP_TRANSPORT_SPEC:$SNMP_TEST_DEST$SNMP_SNMPD_PORT .1.3.6.1.6.3.12.1.2.1"
+
+CHECKANDDIE "^.1.3.6.1.6.3.12.1.2.1"
+
+# Create an entry with index '' (empty)
+CAPTURE "snmpset -On -Oe $SNMP_FLAGS $AUTHTESTARGS $SNMP_TRANSPORT_SPEC:$SNMP_TEST_DEST$SNMP_SNMPD_PORT .1.3.6.1.6.3.12.1.2.1.9 i 5"
+
+CHECKORDIE "noCreation"
+
+# Create an entry with index '0123456789A123456789B123456789C123' (overlong)
+CAPTURE "snmpset -On -Oe $SNMP_FLAGS $AUTHTESTARGS $SNMP_TRANSPORT_SPEC:$SNMP_TEST_DEST$SNMP_SNMPD_PORT .1.3.6.1.6.3.12.1.2.1.9.30.31.32.33.34.35.36.37.38.39.65.31.32.33.34.35.36.37.38.39.66.31.32.33.34.35.36.37.38.39.67.31.32.33 i 5"
+
+CHECKORDIE "noCreation"
+
+# Create an entry with index 'B\0A'
+CAPTURE "snmpset -On -Oe $SNMP_FLAGS $AUTHTESTARGS $SNMP_TRANSPORT_SPEC:$SNMP_TEST_DEST$SNMP_SNMPD_PORT .1.3.6.1.6.3.12.1.2.1.9.66.0.65 i 5"
+
+CHECKORDIE ".1.3.6.1.6.3.12.1.2.1.9.66.0.65 = INTEGER: 5"
+
+# Check that the table contains the 'B\0A' entry and no other
+CAPTURE "snmpwalk -On -Oe $SNMP_FLAGS $AUTHTESTARGS $SNMP_TRANSPORT_SPEC:$SNMP_TEST_DEST$SNMP_SNMPD_PORT .1.3.6.1.6.3.12.1.2.1.9"
+
+CHECK "^.1.3.6.1.6.3.12.1.2.1.9"
+CHECKORDIE ".1.3.6.1.6.3.12.1.2.1.9.66.0.65 ="
+
+# Delete an entry with index 'B\0A'
+CAPTURE "snmpset -On -Oe $SNMP_FLAGS $AUTHTESTARGS $SNMP_TRANSPORT_SPEC:$SNMP_TEST_DEST$SNMP_SNMPD_PORT .1.3.6.1.6.3.12.1.2.1.9.66.0.65 i 6"
+
+# Create an entry with index 'A'
+CAPTURE "snmpset -On -Oe $SNMP_FLAGS $AUTHTESTARGS $SNMP_TRANSPORT_SPEC:$SNMP_TEST_DEST$SNMP_SNMPD_PORT .1.3.6.1.6.3.12.1.2.1.9.65 i 5"
+
+CHECKORDIE ".1.3.6.1.6.3.12.1.2.1.9.65 = INTEGER: 5"
+
+# Check that the table contains one and only one entry
+CAPTURE "snmpwalk -On -Oe $SNMP_FLAGS $AUTHTESTARGS $SNMP_TRANSPORT_SPEC:$SNMP_TEST_DEST$SNMP_SNMPD_PORT .1.3.6.1.6.3.12.1.2.1.9"
+
+CHECK "^.1.3.6.1.6.3.12.1.2.1.9"
+
+# Check that the entry is the expected one
+CHECKORDIE ".1.3.6.1.6.3.12.1.2.1.9.65 = INTEGER: 3"
+
+# Check that the default values are set as expected
+CAPTURE "snmpget -On -Oe $SNMP_FLAGS $AUTHTESTARGS $SNMP_TRANSPORT_SPEC:$SNMP_TEST_DEST$SNMP_SNMPD_PORT .1.3.6.1.6.3.12.1.2.1.2.65 .1.3.6.1.6.3.12.1.2.1.3.65 .1.3.6.1.6.3.12.1.2.1.4.65 .1.3.6.1.6.3.12.1.2.1.5.65 .1.3.6.1.6.3.12.1.2.1.6.65 .1.3.6.1.6.3.12.1.2.1.7.65 .1.3.6.1.6.3.12.1.2.1.8.65 .1.3.6.1.6.3.12.1.2.1.9.65"
+
+CHECKORDIE ".1.3.6.1.6.3.12.1.2.1.2.65 = No Such Instance"
+CHECKORDIE ".1.3.6.1.6.3.12.1.2.1.3.65 = No Such Instance"
+CHECKORDIE ".1.3.6.1.6.3.12.1.2.1.4.65 = INTEGER: 1500"
+CHECKORDIE ".1.3.6.1.6.3.12.1.2.1.5.65 = INTEGER: 3"
+CHECKORDIE ".1.3.6.1.6.3.12.1.2.1.6.65 = STRING: "
+CHECKORDIE ".1.3.6.1.6.3.12.1.2.1.7.65 = No Such Instance"
+CHECKORDIE ".1.3.6.1.6.3.12.1.2.1.8.65 = INTEGER: 3"
+CHECKORDIE ".1.3.6.1.6.3.12.1.2.1.9.65 = INTEGER: 3"
+
+# Try to set timeout < 0
+CAPTURE "snmpset -On -Oe -Ir $SNMP_FLAGS $AUTHTESTARGS $SNMP_TRANSPORT_SPEC:$SNMP_TEST_DEST$SNMP_SNMPD_PORT .1.3.6.1.6.3.12.1.2.1.4.65 i -1"
+
+CHECKORDIE "wrongValue"
+
+# Try to set timeout to 2147483647
+CAPTURE "snmpset -On -Oe -Ir $SNMP_FLAGS $AUTHTESTARGS $SNMP_TRANSPORT_SPEC:$SNMP_TEST_DEST$SNMP_SNMPD_PORT .1.3.6.1.6.3.12.1.2.1.4.65 i 2147483647"
+
+CHECKORDIE "^.1.3.6.1.6.3.12.1.2.1.4.65 = INTEGER: 2147483647"
+
+# Fetch and verify that the timeout still is 2147483647
+CAPTURE "snmpget -On -Oe $SNMP_FLAGS $AUTHTESTARGS $SNMP_TRANSPORT_SPEC:$SNMP_TEST_DEST$SNMP_SNMPD_PORT .1.3.6.1.6.3.12.1.2.1.4.65"
+
+CHECKORDIE "^.1.3.6.1.6.3.12.1.2.1.4.65 = INTEGER: 2147483647"
+
+# Try to set retry count < 0
+CAPTURE "snmpset -On -Oe -Ir $SNMP_FLAGS $AUTHTESTARGS $SNMP_TRANSPORT_SPEC:$SNMP_TEST_DEST$SNMP_SNMPD_PORT .1.3.6.1.6.3.12.1.2.1.5.65 i -1"
+
+CHECKORDIE "wrongValue"
+
+# Try to set retry count > 255
+CAPTURE "snmpset -On -Oe -Ir $SNMP_FLAGS $AUTHTESTARGS $SNMP_TRANSPORT_SPEC:$SNMP_TEST_DEST$SNMP_SNMPD_PORT .1.3.6.1.6.3.12.1.2.1.5.65 i 256"
+
+CHECKORDIE "wrongValue"
+
+# Try to set taglist to a single value
+CAPTURE "snmpset -On -Oe $SNMP_FLAGS $AUTHTESTARGS $SNMP_TRANSPORT_SPEC:$SNMP_TEST_DEST$SNMP_SNMPD_PORT .1.3.6.1.6.3.12.1.2.1.6.65 s alfa"
+
+CHECKORDIE ".1.3.6.1.6.3.12.1.2.1.6.65 = STRING: alfa"
+
+# Fetch and verify that the taglist have kept it's value
+CAPTURE "snmpget -On -Oe $SNMP_FLAGS $AUTHTESTARGS $SNMP_TRANSPORT_SPEC:$SNMP_TEST_DEST$SNMP_SNMPD_PORT .1.3.6.1.6.3.12.1.2.1.6.65"
+
+CHECKORDIE ".1.3.6.1.6.3.12.1.2.1.6.65 = STRING: alfa"
+
+# Try to set taglist to multiple values
+CAPTURE "snmpset -On -Oe $SNMP_FLAGS $AUTHTESTARGS $SNMP_TRANSPORT_SPEC:$SNMP_TEST_DEST$SNMP_SNMPD_PORT .1.3.6.1.6.3.12.1.2.1.6.65 x 616c66612062657461"
+
+CHECKORDIE ".1.3.6.1.6.3.12.1.2.1.6.65 = STRING: alfa beta"
+
+# Fetch and verify that the taglist have kept it's values
+CAPTURE "snmpget -On -Oe $SNMP_FLAGS $AUTHTESTARGS $SNMP_TRANSPORT_SPEC:$SNMP_TEST_DEST$SNMP_SNMPD_PORT .1.3.6.1.6.3.12.1.2.1.6.65"
+
+CHECKORDIE ".1.3.6.1.6.3.12.1.2.1.6.65 = STRING: alfa beta"
+
+# Try to set taglist to a value with an embedded nul character
+CAPTURE "snmpset -On -Oe $SNMP_FLAGS $AUTHTESTARGS $SNMP_TRANSPORT_SPEC:$SNMP_TEST_DEST$SNMP_SNMPD_PORT .1.3.6.1.6.3.12.1.2.1.6.65 x 616c006661"
+
+CHECKORDIE ".1.3.6.1.6.3.12.1.2.1.6.65 = STRING: al.fa"
+
+# Try to set taglist to a value with a leading space
+CAPTURE "snmpset -On -Oe $SNMP_FLAGS $AUTHTESTARGS $SNMP_TRANSPORT_SPEC:$SNMP_TEST_DEST$SNMP_SNMPD_PORT .1.3.6.1.6.3.12.1.2.1.6.65 x 20616c6661"
+
+CHECKORDIE "wrongValue"
+
+# Try to set taglist to a value with a trailing space
+CAPTURE "snmpset -On -Oe $SNMP_FLAGS $AUTHTESTARGS $SNMP_TRANSPORT_SPEC:$SNMP_TEST_DEST$SNMP_SNMPD_PORT .1.3.6.1.6.3.12.1.2.1.6.65 x 616c666120"
+
+CHECKORDIE "wrongValue"
+
+# Try to set taglist to multiple values separated by more than on whitespace
+# character
+CAPTURE "snmpset -On -Oe $SNMP_FLAGS $AUTHTESTARGS $SNMP_TRANSPORT_SPEC:$SNMP_TEST_DEST$SNMP_SNMPD_PORT .1.3.6.1.6.3.12.1.2.1.6.65 x 616c6661202062657461"
+
+CHECKORDIE "wrongValue"
+
+STOPAGENT
+
+FINISHED

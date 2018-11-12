@@ -1,0 +1,79 @@
+PROGNAME=
+CFG=
+OUTDIR=
+INTDIR=
+LINKTYPE=
+CFLAGS=
+LDFLAGS=
+RSCFLAGS=
+
+# Set to 1 to allow the building using the DLL version of SNMPLIB.
+ALLOW_DLL=1
+
+CPP=cl.exe
+CPP_PROJ=/I.. /I..\..\include /I..\..\agent/mibgroup $(CFLAGS)
+
+!IF "$(OS)" == "Windows_NT"
+NULL=
+!ELSE 
+NULL=nul
+!ENDIF 
+
+ALL : "..\bin\$(OUTDIR)\$(PROGNAME).exe" "$(INTDIR)"
+
+
+CLEAN :
+	-@erase "$(INTDIR)\winservice.obj"
+	-@erase "$(INTDIR)\winservice.res"
+	-@erase "$(INTDIR)\$(PROGNAME).obj"
+	-@erase "$(INTDIR)\vc??.idb"
+	-@erase "$(INTDIR)\$(PROGNAME).pch"
+	-@erase "..\bin\$(OUTDIR)\$(PROGNAME).exe"
+	-@erase "..\bin\$(OUTDIR)\$(PROGNAME).exe.manifest"
+
+"..\bin\$(OUTDIR)" :
+    if not exist "..\bin\$(OUTDIR)/$(NULL)" mkdir "..\bin\$(OUTDIR)"
+
+"$(INTDIR)" :
+    if not exist "$(INTDIR)/$(NULL)" mkdir "$(INTDIR)"
+
+{..\..\apps}.c{$(INTDIR)}.obj::
+   $(CPP) $(CPP_PROJ) $<
+
+{..\..\snmplib}.c{$(INTDIR)}.obj::
+   $(CPP) $(CPP_PROJ) $<
+
+RSC=rc.exe
+LINK32=link.exe
+LINK32_FLAGS=netsnmp.lib netsnmpagent.lib netsnmpmibs.lib netsnmptrapd.lib advapi32.lib ws2_32.lib kernel32.lib user32.lib /nologo /subsystem:console /pdb:"../bin/$(OUTDIR)/$(PROGNAME).pdb" /out:"..\bin\$(OUTDIR)/$(PROGNAME).exe" /libpath:"../lib/$(INTDIR)" $(LDFLAGS)
+LINK32_OBJS= \
+	"$(INTDIR)\$(PROGNAME).obj" \
+	"$(INTDIR)\winservice.obj" \
+	"$(INTDIR)\winservice.res"
+
+"..\bin\$(OUTDIR)\$(PROGNAME).exe" : "..\bin\$(OUTDIR)" $(DEF_FILE) $(LINK32_OBJS)
+!IF "$(LINKTYPE)" == "static" || "$(ALLOW_DLL)" == "1"
+    $(LINK32) $(LINK32_FLAGS) $(LINK32_OBJS)
+ if exist "..\bin\$(OUTDIR)\$(PROGNAME).exe.manifest" \
+	    mt.exe -manifest "..\bin\$(OUTDIR)\$(PROGNAME).exe.manifest" -outputresource:"..\bin\$(OUTDIR)\$(PROGNAME).exe";1
+!ELSE	# Linktype check
+	-@echo .
+	-@echo Aborting build.  Applications can not be built using --linktype=dynamic
+	-@echo .
+!ENDIF
+
+!IF "$(NO_EXTERNAL_DEPS)" != "1"
+!IF EXISTS("$(PROGNAME).dep")
+!INCLUDE "$(PROGNAME).dep"
+!ELSE 
+!MESSAGE Warning: cannot find "$(PROGNAME).dep"
+!ENDIF 
+!ENDIF 
+
+"$(INTDIR)\$(PROGNAME).obj": ..\..\apps\$(PROGNAME).c "$(INTDIR)"
+"$(INTDIR)\$(PROGNAME)_handlers.obj": ..\..\apps\$(PROGNAME)_handlers.c "$(INTDIR)"
+"$(INTDIR)\$(PROGNAME)_log.obj": ..\..\apps\$(PROGNAME)_log.c "$(INTDIR)"
+"$(INTDIR)\winservice.obj": ..\..\snmplib\winservice.c "$(INTDIR)"
+
+"$(INTDIR)\winservice.res": ..\..\snmplib\winservice.rc "$(INTDIR)"
+	$(RSC) $(RSCFLAGS) /fo$@ /i "..\..\snmplib" ..\..\snmplib\winservice.rc

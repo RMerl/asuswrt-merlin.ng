@@ -1,0 +1,20 @@
+image:
+  - Visual Studio 2017
+
+environment:
+  CYG_MIRROR: http://mirrors.kernel.org/sourceware/cygwin/
+  matrix:
+    - BUILD: MSVCDYNAMIC64
+    - BUILD: MSVCSTATIC64
+    - BUILD: MinGW64
+    - BUILD: Cygwin32
+    - BUILD: Cygwin64
+
+matrix:
+  allow_failures:
+  - BUILD: MINGW64
+
+clone_depth: 5
+
+build_script:
+  - 'call "ci\build.bat"'

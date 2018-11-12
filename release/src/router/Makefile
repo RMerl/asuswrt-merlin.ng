@@ -1125,7 +1125,7 @@ endif
 endif
 
 #add for snmpd
-SNMPD_CFLAGS += -D$(BUILD_NAME)
+#SNMPD_CFLAGS += -D$(BUILD_NAME)
 ifeq ($(BUILD_NAME), $(filter $(BUILD_NAME), RT-N66U RT-AC66U RT-AC68U))
 SNMPD_CFLAGS += -DDUAL_BAND
 endif
@@ -5627,6 +5627,7 @@ curl-7.21.7/Makefile: curl/configure
 		$(if $(RTCONFIG_IPV6),--enable-ipv6) \
 		--disable-gopher --disable-dict --disable-telnet \
 		--disable-proxy --disable-manual --disable-libcurl-option \
+		--disable-threaded-resolver \
 		LDFLAGS='$(LDFLAGS) -L$(TOP)/openssl' LIBS='-lcrypto -lssl -ldl' \
 		--with-ca-bundle=/etc/ssl/certs/ca-certificates.crt
 

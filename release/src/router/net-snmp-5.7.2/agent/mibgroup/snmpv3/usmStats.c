@@ -1,76 +1,51 @@
-
 /*
- * usmStats.c: implements the usmStats portion of the SNMP-USER-BASED-SM-MIB 
+ * usmStats.c: implements the usmStats portion of the SNMP-USER-BASED-SM-MIB
  */
 
 #include <net-snmp/net-snmp-config.h>
+
+#include <net-snmp/net-snmp-features.h>
+
 #include <net-snmp/net-snmp-includes.h>
 #include <net-snmp/agent/net-snmp-agent-includes.h>
 #include <net-snmp/agent/sysORTable.h>
 
-#include "util_funcs/header_generic.h"
 #include "usmStats.h"
 
-struct variable2 usmStats_variables[] = {
-    {USMSTATSUNSUPPORTEDSECLEVELS, ASN_COUNTER, NETSNMP_OLDAPI_RONLY,
-     var_usmStats, 1, {1}},
-    {USMSTATSNOTINTIMEWINDOWS, ASN_COUNTER, NETSNMP_OLDAPI_RONLY,
-     var_usmStats, 1, {2}},
-    {USMSTATSUNKNOWNUSERNAMES, ASN_COUNTER, NETSNMP_OLDAPI_RONLY,
-     var_usmStats, 1, {3}},
-    {USMSTATSUNKNOWNENGINEIDS, ASN_COUNTER, NETSNMP_OLDAPI_RONLY,
-     var_usmStats, 1, {4}},
-    {USMSTATSWRONGDIGESTS, ASN_COUNTER, NETSNMP_OLDAPI_RONLY,
-     var_usmStats, 1, {5}},
-    {USMSTATSDECRYPTIONERRORS, ASN_COUNTER, NETSNMP_OLDAPI_RONLY,
-     var_usmStats, 1, {6}},
-};
+#include <net-snmp/agent/snmp_get_statistic.h>
 
-/*
- * now load this mib into the agents mib table 
- */
-oid             usmStats_variables_oid[] = { 1, 3, 6, 1, 6, 3, 15, 1, 1 };
+#define snmpUsmMIB 1, 3, 6, 1, 6, 3, 15
+#define usmMIBCompliances snmpUsmMIB, 2, 1
 
+static oid usmStats[] = { snmpUsmMIB, 1, 1 };
+
+static netsnmp_handler_registration* usmStats_reg = NULL;
+static oid usmMIBCompliance[] = { usmMIBCompliances, 1 };
+
+netsnmp_feature_require(helper_statistics)
 
 void
 init_usmStats(void)
 {
-    static oid      reg[] = { 1, 3, 6, 1, 6, 3, 15, 2, 1, 1 };
-    REGISTER_SYSOR_ENTRY(reg,
-                         "The management information definitions for the "
-                         "SNMP User-based Security Model.");
-    REGISTER_MIB("snmpv3/usmStats", usmStats_variables, variable2,
-                 usmStats_variables_oid);
+    netsnmp_handler_registration* s =
+        netsnmp_create_handler_registration(
+            "usmStats", NULL, usmStats, OID_LENGTH(usmStats),
+            HANDLER_CAN_RONLY);
+    if (s &&
+	NETSNMP_REGISTER_STATISTIC_HANDLER(s, 1, USM) == MIB_REGISTERED_OK) {
+        REGISTER_SYSOR_ENTRY(usmMIBCompliance,
+                             "The management information definitions for the "
+                             "SNMP User-based Security Model.");
+        usmStats_reg = s;
+    }
 }
 
-u_char         *
-var_usmStats(struct variable *vp,
-             oid * name,
-             size_t * length,
-             int exact, size_t * var_len, WriteMethod ** write_method)
+void
+shutdown_usmStats(void)
 {
-
-    /*
-     * variables we may use later 
-     */
-    static long     long_ret;
-    int             tmagic;
-
-    *write_method = 0;          /* assume it isnt writable for the time being */
-    *var_len = sizeof(long_ret);        /* assume an integer and change later if not */
-
-    if (header_generic(vp, name, length, exact, var_len, write_method))
-        return 0;
-
-    /*
-     * this is where we do the value assignments for the mib results. 
-     */
-    tmagic = vp->magic;
-    if ((tmagic >= 0)
-        && (tmagic <= (STAT_USM_STATS_END - STAT_USM_STATS_START))) {
-        long_ret = snmp_get_statistic(tmagic + STAT_USM_STATS_START);
-        return (unsigned char *) &long_ret;
+    UNREGISTER_SYSOR_ENTRY(usmMIBCompliance);
+    if (usmStats_reg) {
+        netsnmp_unregister_handler(usmStats_reg);
+        usmStats_reg = NULL;
     }
-
-    return 0;
 }

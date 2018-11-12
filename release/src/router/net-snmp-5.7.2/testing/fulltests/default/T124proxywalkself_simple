@@ -1,0 +1,54 @@
+#!/bin/sh
+
+. ../support/simple_eval_tools.sh
+
+HEADER Proxy GETNEXT support: walk when proxying to self
+
+SKIPIFNOT USING_UCD_SNMP_PROXY_MODULE
+SKIPIFNOT USING_MIBII_SYSTEM_MIB_MODULE
+SKIPIF NETSNMP_DISABLE_SNMPV2C
+
+# XXX: ucd-snmp/proxy doesn't properly support TCP -- remove this once it does
+[ "x$SNMP_TRANSPORT_SPEC" = "xtcp" -o "x$SNMP_TRANSPORT_SPEC" = "xtcp6" ] && SKIP Test does not support TCP
+
+#
+# Begin test
+#
+
+OID=.1.3.6.1.4.1.8072.42
+
+# standard v2c configuration
+. ./Sv2cconfig
+# config the proxy to proxy to itself
+CONFIGAGENT proxy -v 2c -c testcommunity $SNMP_TRANSPORT_SPEC:$SNMP_TEST_DEST$SNMP_SNMPD_PORT $OID .1.3.6.1.2.1.1
+
+# Start the agent with proxy debugging
+ORIG_AGENT_FLAGS="$AGENT_FLAGS"
+AGENT_FLAGS="$ORIG_AGENT_FLAGS -Dproxy"
+STARTAGENT
+
+# Check that we get a string from the proxied sysObjectID
+CAPTURE "snmpgetnext -On $SNMP_FLAGS -v 2c -c testcommunity $SNMP_TRANSPORT_SPEC:$SNMP_TEST_DEST$SNMP_SNMPD_PORT $OID"
+
+# TODO: can we compare with the real sysDescr?
+CHECK "${OID}.1.0 = STRING: "
+
+# Check that we can walk without a non-increasing error
+CAPTURE "snmpwalk -On $SNMP_FLAGS -v 2c -c testcommunity $SNMP_TRANSPORT_SPEC:$SNMP_TEST_DEST$SNMP_SNMPD_PORT $OID"
+
+CHECKANDDIE "Error: OID not increasing"
+CHECKCOUNT atleastone "^${OID}"
+
+# Also check the same for a table underneath the proxy OID itself
+# using the sysORTable
+CAPTURE "snmpwalk -On $SNMP_FLAGS -v 2c -c testcommunity $SNMP_TRANSPORT_SPEC:$SNMP_TEST_DEST$SNMP_SNMPD_PORT ${OID}.9"
+
+CHECKANDDIE "Error: OID not increasing"
+CHECKCOUNT atleastone "^${OID}.9."
+
+
+# stop the agent
+STOPAGENT
+
+# all done (whew)
+FINISHED

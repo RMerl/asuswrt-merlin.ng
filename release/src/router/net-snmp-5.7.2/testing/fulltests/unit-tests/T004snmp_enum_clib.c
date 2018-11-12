@@ -82,8 +82,7 @@ OK(strcmp(se_find_label_in_slist("testing", 2), STRING2) == 0,
 se_clear_slist("testing");
 
 
-se_read_conf("enum",
-             NETSNMP_REMOVE_CONST(char *, "2:3 1:apple 2:pear 3:kiwifruit"));
+se_read_conf("enum", "2:3 1:apple 2:pear 3:kiwifruit");
 OK(se_find_list(2, 3), "list (2, 3) should be present");
 if (se_find_list(2, 3)) {
   OK(se_find_value(2, 3, "kiwifruit") == 3,
@@ -93,8 +92,7 @@ if (se_find_list(2, 3)) {
      "lookup by label should return the proper string");
 }
 
-se_read_conf("enum",
-             NETSNMP_REMOVE_CONST(char *, "fruit 1:apple 2:pear 3:kiwifruit"));
+se_read_conf("enum", "fruit 1:apple 2:pear 3:kiwifruit");
 OK(se_find_value_in_slist("fruit", "kiwifruit") == 3,
    "lookup by string should return the proper value");
 se_find_result = se_find_label_in_slist("fruit", 2);

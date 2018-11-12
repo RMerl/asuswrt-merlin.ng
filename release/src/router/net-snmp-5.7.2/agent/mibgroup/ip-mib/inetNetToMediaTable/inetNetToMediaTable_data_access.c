@@ -102,8 +102,8 @@ _add_or_update_arp_entry(netsnmp_arp_entry *arp_entry,
         break;
 
     default:
+        snmp_log(LOG_ERR, "inetNetToMediaTable:_add_or_update_arpentry: unsupported address type, len = %d\n", arp_entry->arp_ipaddress_len);
         netsnmp_access_arp_entry_free(arp_entry);
-        snmp_log(LOG_ERR, "unsupported address type\n");
         return;
     }
 

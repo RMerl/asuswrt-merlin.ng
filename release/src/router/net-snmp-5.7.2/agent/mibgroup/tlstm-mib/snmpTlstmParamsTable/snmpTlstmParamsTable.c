@@ -336,9 +336,7 @@ _params_add(snmpTlstmParamsTable_entry *entry)
     if (entry->snmpTlstmParamsStorageType == ST_NONVOLATILE)
         params->flags |= TLSTM_PARAMS_NONVOLATILE;
 
-    if (netsnmp_tlstmParams_add(params) != 0) {
-        netsnmp_tlstmParams_free(params);
-    }
+    netsnmp_tlstmParams_add(params);
 }
 
 static void
@@ -1139,8 +1137,8 @@ _tlstmParamsTable_save(int majorID, int minorID, void *serverarg,
                 continue;
             _save_params(params, type);
         }
+        ITERATOR_RELEASE(params_itr);
     }
-    ITERATOR_RELEASE(params_itr);
 
     /*
      * save inactive rows from mib
@@ -1260,17 +1258,17 @@ _tlstmParamsTable_row_restore_mib(const char *token, char *buf)
     if (RS_ACTIVE == rowStatus) {
         params->flags = TLSTM_PARAMS_FROM_MIB | TLSTM_PARAMS_NONVOLATILE;
 
-        if (netsnmp_tlstmParams_add(params) != 0)
-            netsnmp_tlstmParams_free(params);
-    }
-    else {
+        netsnmp_tlstmParams_add(params);
+    } else {
         netsnmp_tdata_row     *row;
         snmpTlstmParamsTable_entry  *entry;
 
         row = snmpTlstmParamsTable_createEntry(_table_data, params->name,
                                                strlen(params->name));
-        if (!row)
+        if (!row) {
+            netsnmp_tlstmParams_free(params);
             return;
+        }
 
         entry = row->data;
         

@@ -31,10 +31,12 @@
 #endif
 
 #include <net-snmp/net-snmp-includes.h>
+#include <net-snmp/agent/agent_index.h>
 #include <net-snmp/agent/net-snmp-agent-includes.h>
 #include <net-snmp/library/snmp_assert.h>
 
 #include "snmpd.h"
+#include "agent_global_vars.h"
 #include "agentx/protocol.h"
 #include "agentx/client.h"
 #include "agentx/agentx_config.h"
@@ -89,8 +91,6 @@ struct agent_netsnmp_set_info {
 static struct agent_netsnmp_set_info *Sets = NULL;
 
 netsnmp_session *agentx_callback_sess = NULL;
-extern int      callback_master_num;
-extern netsnmp_session *main_session;   /* from snmp_agent.c */
 
 int
 subagent_startup(int majorID, int minorID,
@@ -744,11 +744,11 @@ subagent_shutdown(int majorID, int minorID, void *serverarg, void *clientarg)
 	return 0;
     }
     agentx_close_session(thesession, AGENTX_CLOSE_SHUTDOWN);
-    snmp_close(thesession);
     if (main_session != NULL) {
         remove_trap_session(main_session);
         main_session = NULL;
     }
+    snmp_close(thesession);
     DEBUGMSGTL(("agentx/subagent", "shut down finished.\n"));
 
     subagent_init_init = 0;
@@ -768,7 +768,7 @@ agentx_register_callbacks(netsnmp_session * s)
 
     DEBUGMSGTL(("agentx/subagent",
                 "registering callbacks for session %p\n", s));
-    memdup((u_char **)&sess_p, &s, sizeof(s));
+    sess_p = netsnmp_memdup(&s, sizeof(s));
     netsnmp_assert(sess_p);
     s->myvoid = sess_p;
     if (!sess_p)

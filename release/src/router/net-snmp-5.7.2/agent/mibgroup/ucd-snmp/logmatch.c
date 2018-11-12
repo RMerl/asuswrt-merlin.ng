@@ -121,6 +121,9 @@ updateLogmatch(int iindex)
     struct stat     sb;
     char            lastFilename[256];
 
+    if (iindex >= MAXLOGMATCH)
+        return;
+
     /*
      * ------------------------------------ 
      * we can never be sure if this is the  
@@ -157,7 +160,7 @@ updateLogmatch(int iindex)
 
             pos = counter = ccounter = 0;
 
-            if (fscanf(perfile, "%lu %lu %lu %s",
+            if (fscanf(perfile, "%lu %lu %lu %255s",
                        &pos, &ccounter, &counter, lastFilename)) {
 
 
@@ -393,8 +396,9 @@ logmatch_parse_config(const char *token, char *cptr)
                logmatchTable[logmatchCount].regEx);
 
         /* fill in filename with initial data */
-        strcpy(logmatchTable[logmatchCount].filename,
-               logmatchTable[logmatchCount].filenamePattern);
+        strlcpy(logmatchTable[logmatchCount].filename,
+                logmatchTable[logmatchCount].filenamePattern,
+                sizeof(logmatchTable[logmatchCount].filename));
         logmatch_update_filename(logmatchTable[logmatchCount].filenamePattern,
                                  logmatchTable[logmatchCount].filename);
 
@@ -432,17 +436,24 @@ logmatch_parse_config(const char *token, char *cptr)
          */
 
         logmatchTable[logmatchCount].myRegexError =
-            regcomp(&(logmatchTable[logmatchCount].regexBuffer),
+            regcomp(&logmatchTable[logmatchCount].regexBuffer,
                     logmatchTable[logmatchCount].regEx,
                     REG_EXTENDED | REG_NOSUB);
 
-        if (logmatchTable[logmatchCount].frequency > 0) {
+        if (logmatchTable[logmatchCount].myRegexError) {
+            char regexErrorString[100];
+            regerror(logmatchTable[logmatchCount].myRegexError,
+                     &logmatchTable[logmatchCount].regexBuffer,
+                     regexErrorString, 100);
+            snmp_log(LOG_ERR, "Could not process the logmatch regex - %s," \
+                     "\n since regcomp() failed with - %s\n",
+                     logmatchTable[logmatchCount].regEx, regexErrorString);
+        }
+        else if (logmatchTable[logmatchCount].frequency > 0) {
             snmp_alarm_register(logmatchTable[logmatchCount].frequency,
                                 SA_REPEAT,
-                                (SNMPAlarmCallback *)
-                                updateLogmatch_Scheduled,
-                                &(logmatchTable[logmatchCount])
-                );
+                                (SNMPAlarmCallback *) updateLogmatch_Scheduled,
+                                &logmatchTable[logmatchCount]);
         }
 
         logmatchCount++;
@@ -469,8 +480,8 @@ logmatch_free_config(void)
      */
 
     for (i = 0; i < logmatchCount; i++) {
-
-        regfree(&(logmatchTable[i].regexBuffer));
+        if (logmatchTable[i].myRegexError == 0)
+            regfree(&logmatchTable[i].regexBuffer);
     }
     logmatchCount = 0;
 }
@@ -504,8 +515,8 @@ var_logmatch_table(struct variable *vp,
 {
     static long     long_ret;
     static char     message[1024];
-    int             iindex;
-    struct logmatchstat *logmatch;
+    int             iindex = 0;
+    struct logmatchstat *logmatch = NULL;
 
     if (vp->magic == LOGMATCH_INFO) {
         if (header_generic(vp, name, length, exact, var_len, write_method)
@@ -516,14 +527,15 @@ var_logmatch_table(struct variable *vp,
             (vp, name, length, exact, var_len, write_method,
              logmatchCount))
             return (NULL);
+
+        iindex = name[*length - 1] - 1;
+        if (iindex >= MAXLOGMATCH)
+            return NULL;
+        logmatch = &logmatchTable[iindex];
+
+        if (logmatch->myRegexError == 0)
+            updateLogmatch(iindex);
     }
-
-
-    iindex = name[*length - 1] - 1;
-    logmatch = &logmatchTable[iindex];
-
-    if (logmatch->myRegexError == 0)
-        updateLogmatch(iindex);
 
     switch (vp->magic) {
     case LOGMATCH_INFO:
@@ -646,6 +658,13 @@ init_logmatch(void)
                                   logmatch_free_config,
                                   "logmatch name path cycletime regex");
 
+}
+
+#else /* HAVE_REGEX_H */
+
+void
+init_logmatch(void)
+{
 }
 
 #endif /* HAVE_REGEX_H */

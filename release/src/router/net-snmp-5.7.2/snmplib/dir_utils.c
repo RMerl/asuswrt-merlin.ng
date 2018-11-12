@@ -33,8 +33,12 @@
 #if HAVE_SYS_STAT_H
 #include <sys/stat.h>
 #endif
-#ifdef HAVE_DIRENT_H
-#include <dirent.h>
+#if HAVE_DIRENT_H
+# include <dirent.h>
+# define NAMLEN(dirent) strlen((dirent)->d_name)
+#else
+# define dirent direct
+# define NAMLEN(dirent) (dirent)->d_namlen
 #endif
 
 #include <errno.h>
@@ -237,10 +241,13 @@ _insert_nsfile( netsnmp_container *c, const char *name, struct stat *stats,
         }
     
         /** use stats from earlier if we have them */
-        if (stats)
+        if (stats) {
             memcpy(ns_file->stats, stats, sizeof(*stats));
-        else
-            stat(ns_file->name, ns_file->stats);
+        } else if (stat(ns_file->name, ns_file->stats) < 0) {
+            snmp_log(LOG_ERR, "stat() failed for ns_file\n");
+            netsnmp_file_release(ns_file);
+            return -1;
+        }
     }
 
     rc = CONTAINER_INSERT(c, ns_file);

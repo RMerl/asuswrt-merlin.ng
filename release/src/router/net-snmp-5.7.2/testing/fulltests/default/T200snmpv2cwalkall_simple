@@ -4,10 +4,12 @@
 
 HEADER "full snmpwalk (SNMPv2c) against agent (may take time)"
 
+[ "${TRAVIS_OS_NAME}" = "osx" ] && SKIP "Skipping MIB walk on OS/X"
+
 if test `uname -s` = "HP-UX" ; then
     if test `id -u` != "0" ; then
         # The agent needs to be run as root - else force skip
-        SKIP
+        SKIP Agent must be run at root on HP-UX
     fi
 fi
 
@@ -15,7 +17,7 @@ SKIPIF NETSNMP_DISABLE_SNMPV2C
 
 # make sure snmpwalk can be executed
 SNMPWALK="${SNMP_UPDIR}/apps/snmpwalk"
-[ -x "$SNMPWALK" ] || SKIP
+[ -x "$SNMPWALK" ] || SKIP snmpwalk not compiled
 
 snmp_version=v2c
 . ./Sv2cconfig

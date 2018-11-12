@@ -4,6 +4,11 @@
 # Checks for library functions.
 ##
 #########################################
+#
+# Portions of this file are copyrighted by:
+# Copyright (c) 2016 VMware, Inc. All rights reserved.
+# Use is subject to license terms specified in the COPYING file
+# distributed with the Net-SNMP package.
 
 ##
 #   Standard checks:
@@ -27,11 +32,12 @@ AC_TYPE_SIGNAL
 #   Stand-alone function checks:
 ##
 #  Core:
-AC_CHECK_FUNCS([lrand48         rand          random    ] dnl
-               [signal          sigset                  ] )
+AC_CHECK_FUNCS([rand   random srand srandom lrand48 srand48] dnl
+               [signal sigset                              ] )
 
 #  Library:
-AC_CHECK_FUNCS([closedir        fgetc_unlocked  flockfile        ] dnl
+AC_CHECK_FUNCS([asprintf                                         ] dnl
+               [closedir        fgetc_unlocked  flockfile        ] dnl
                [fork            funlockfile     getipnodebyname  ] dnl
                [gettimeofday    if_nametoindex  mkstemp          ] dnl
                [opendir         readdir         regcomp          ] dnl
@@ -44,6 +50,12 @@ AC_CHECK_FUNCS([closedir        fgetc_unlocked  flockfile        ] dnl
 # since these functions have the __cdecl calling convention on MinGW.
 case x$target_os in
   xmingw*)
+    AC_LINK_IFELSE([AC_LANG_PROGRAM([#include <winsock2.h>],
+    [ closesocket(0); ])],
+    [ ac_cv_func_closesocket=yes
+      AS_ECHO "#define HAVE_CLOSESOCKET 1" >>confdefs.h
+    ], [ ])
+
     AC_LINK_IFELSE([AC_LANG_PROGRAM([#include <ws2tcpip.h>],
     [ gai_strerror(0); ])],
     [ ac_cv_func_gai_strerror=yes
@@ -76,7 +88,7 @@ case x$target_os in
     ;;
 
   *)
-    AC_CHECK_FUNCS([gai_strerror getaddrinfo gethostbyname gethostbyname2 gethostname gethostbyaddr])
+    AC_CHECK_FUNCS([closesocket gai_strerror getaddrinfo gethostbyname gethostbyname2 gethostname gethostbyaddr])
     ;;
 esac
 
@@ -88,7 +100,8 @@ AC_REPLACE_FUNCS([getopt        inet_ntop     inet_pton        ] dnl
 
 #  Agent:
 AC_CHECK_FUNCS([cgetnext        chown          execv           ] dnl
-               [gai_strerror                   getgrnam        ] dnl
+               [forkall         fsync                          ] dnl
+               [gai_strerror    getgrnam                       ] dnl
                [gethostname     getloadavg                     ] dnl
                [getpid          getpwnam                       ] dnl
                [hasmntopt       initgroups                     ] dnl
@@ -190,7 +203,7 @@ fi
 #       Whether static inline functions are broken      (SCO Unixware)
 #
 AC_CACHE_CHECK([[whether static inline functions are broken (Unixware)]],
-                [netsnmp_cv_c_broken_inline],
+                [netsnmp_cv_broken_inline],
     AC_COMPILE_IFELSE([AC_LANG_SOURCE([
 static inline int nested_inline_function(void) {
   return 0;
@@ -198,11 +211,7 @@ static inline int nested_inline_function(void) {
 inline int main_inline_function( void ) {
   return nested_inline_function();
 }
-    ])],
-    netsnmp_cv_broken_inline=no,
-    netsnmp_cv_broken_inline=yes))
-
-
+    ])], [[
 #       Yes -  static inline functions are broken       (Solaris 2.x)
 #
 case "$target_os" in
@@ -210,8 +219,11 @@ case "$target_os" in
         netsnmp_cv_broken_inline=yes
         ;;
     *)
+        netsnmp_cv_broken_inline=no
         ;;
-esac
+esac]], [
+    netsnmp_cv_broken_inline=yes]
+))
 
 if test "$netsnmp_cv_broken_inline" = yes ; then
   AC_DEFINE(NETSNMP_BROKEN_INLINE, 1,

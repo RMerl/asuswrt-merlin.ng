@@ -8,6 +8,10 @@
  *    If new ds_agent entries are added to this header file,
  *    then remember to run 'perl/agent/default_store/gen' to
  *    update the corresponding perl interface.
+ *
+ * Portions of this file are copyrighted by:
+ * Copyright (c) 2016 VMware, Inc. All rights reserved.
+ * Use is subject to license terms specified in the COPYING file
  */
 
 /*
@@ -70,5 +74,7 @@
 #define NETSNMP_DS_AGENT_INTERNAL_SECLEVEL 12   /* used by internal queries */
 #define NETSNMP_DS_AGENT_MAX_GETBULKREPEATS 13 /* max getbulk repeats */
 #define NETSNMP_DS_AGENT_MAX_GETBULKRESPONSES 14   /* max getbulk respones */
-
+#define NETSNMP_DS_AGENT_AVG_BULKVARBINDSIZE 15 /* avg varbind size estimate */
+#define NETSNMP_DS_AGENT_PDU_STATS_MAX       16 /* size of top N array*/
+#define NETSNMP_DS_AGENT_PDU_STATS_THRESHOLD 17 /* minimum threshold time */
 #endif

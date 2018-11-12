@@ -92,6 +92,11 @@ xdump(const void * data, size_t length, const char *prefix)
     const u_char * const cp = (const u_char*)data;
     int                  col, count;
     char                *buffer;
+#ifndef NETSNMP_DISABLE_DYNAMIC_LOG_LEVEL
+    int      debug_log_level = netsnmp_get_debug_log_level();
+#else
+#define debug_log_level LOG_DEBUG
+#endif /* NETSNMP_DISABLE_DYNAMIC_LOG_LEVEL */
 
     buffer = (char *) malloc(strlen(prefix) + 80);
     if (!buffer) {
@@ -122,10 +127,10 @@ xdump(const void * data, size_t length, const char *prefix)
         }
         buffer[col + 60] = '\n';
         buffer[col + 60 + 1] = 0;
-        snmp_log(LOG_DEBUG, "%s", buffer);
+        snmp_log(debug_log_level, "%s", buffer);
         count += col;
     }
-    snmp_log(LOG_DEBUG, "\n");
+    snmp_log(debug_log_level, "\n");
     free(buffer);
 
 }                               /* end xdump() */

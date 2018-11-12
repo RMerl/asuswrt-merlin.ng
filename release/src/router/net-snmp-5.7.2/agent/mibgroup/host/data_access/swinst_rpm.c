@@ -43,6 +43,7 @@
 #include <net-snmp/library/container.h>
 #include <net-snmp/library/snmp_debug.h>
 #include <net-snmp/data_access/swinst.h>
+#include "swinst_private.h"
 
 netsnmp_feature_require(date_n_time)
 
@@ -96,13 +97,25 @@ netsnmp_swinst_arch_load( netsnmp_container *container, u_int flags)
 
     rpmdbMatchIterator    mi;
     Header                h;
+#if HAVE_HEADERGET
+    const char           *g;
+    rpmtd                 td_name, td_version, td_release, td_group, td_time;
+#else
     char                 *n, *v, *r, *g;
     int32_t              *t;
+#endif
     time_t                install_time;
     size_t                date_len;
     int                   i = 1;
     netsnmp_swinst_entry *entry;
 
+#if HAVE_HEADERGET
+    td_name = rpmtdNew();
+    td_version = rpmtdNew();
+    td_release = rpmtdNew();
+    td_group = rpmtdNew();
+    td_time = rpmtdNew();
+#endif
     ts = rpmtsCreate();
     rpmtsSetVSFlags( ts, (_RPMVSF_NOSIGNATURES|_RPMVSF_NODIGESTS));
 
@@ -113,27 +126,41 @@ netsnmp_swinst_arch_load( netsnmp_container *container, u_int flags)
     while (NULL != (h = rpmdbNextIterator( mi )))
     {
         const u_char *dt;
+
         entry = netsnmp_swinst_entry_create( i++ );
         if (NULL == entry)
             continue;   /* error already logged by function */
         CONTAINER_INSERT(container, entry);
 
         h = headerLink( h );
+#if HAVE_HEADERGET
+        headerGet(h, RPMTAG_NAME, td_name, HEADERGET_EXT);
+        headerGet(h, RPMTAG_VERSION, td_version, HEADERGET_EXT);
+        headerGet(h, RPMTAG_RELEASE, td_release, HEADERGET_EXT);
+        headerGet(h, RPMTAG_GROUP, td_group, HEADERGET_EXT);
+        headerGet(h, RPMTAG_INSTALLTIME, td_time, HEADERGET_EXT);
+        entry->swName_len = snprintf( entry->swName, sizeof(entry->swName),
+                                      "%s-%s-%s", rpmtdGetString(td_name),
+                                      rpmtdGetString(td_version),
+                                      rpmtdGetString(td_release));
+        install_time = rpmtdGetNumber(td_time);
+        g = rpmtdGetString(td_group);
+#else
         headerGetEntry( h, RPMTAG_NAME,        NULL, (void**)&n, NULL);
         headerGetEntry( h, RPMTAG_VERSION,     NULL, (void**)&v, NULL);
         headerGetEntry( h, RPMTAG_RELEASE,     NULL, (void**)&r, NULL);
         headerGetEntry( h, RPMTAG_GROUP,       NULL, (void**)&g, NULL);
         headerGetEntry( h, RPMTAG_INSTALLTIME, NULL, (void**)&t, NULL);
-
         entry->swName_len = snprintf( entry->swName, sizeof(entry->swName),
                                       "%s-%s-%s", n, v, r);
-        if (entry->swName_len > sizeof(entry->swName))
-            entry->swName_len = sizeof(entry->swName);
-        entry->swType = (NULL != strstr( g, "System Environment"))
+        install_time = *t;
+#endif
+        entry->swType = (g && NULL != strstr( g, "System Environment"))
                         ? 2      /* operatingSystem */
                         : 4;     /*  application    */
+        if (entry->swName_len > sizeof(entry->swName))
+            entry->swName_len = sizeof(entry->swName);
 
-        install_time = *t;
         dt = date_n_time( &install_time, &date_len );
         if (date_len != 8 && date_len != 11) {
             snmp_log(LOG_ERR, "Bogus length from date_n_time for %s", entry->swName);
@@ -144,10 +171,24 @@ netsnmp_swinst_arch_load( netsnmp_container *container, u_int flags)
             memcpy(entry->swDate, dt, entry->swDate_len);
         }
 
+#if HAVE_HEADERGET
+        rpmtdFreeData(td_name);
+        rpmtdFreeData(td_version);
+        rpmtdFreeData(td_release);
+        rpmtdFreeData(td_group);
+        rpmtdFreeData(td_time);
+#endif
         headerFree( h );
     }
     rpmdbFreeIterator( mi );
     rpmtsFree( ts );
+#if HAVE_HEADERGET
+    rpmtdFree(td_name);
+    rpmtdFree(td_version);
+    rpmtdFree(td_release);
+    rpmtdFree(td_group);
+    rpmtdFree(td_time);
+#endif
 
     DEBUGMSGTL(("swinst:load:arch", "loaded %d entries\n",
                 (int)CONTAINER_SIZE(container)));

@@ -1,3 +1,14 @@
+/*
+ * Portions of this file are subject to the following copyright(s).  See
+ * the Net-SNMP's COPYING file for more details and other copyrights
+ * that may apply:
+ *
+ * Portions of this file are copyrighted by:
+ * Copyright (c) 2016 VMware, Inc. All rights reserved.
+ * Use is subject to license terms specified in the COPYING file
+ * distributed with the Net-SNMP package.
+ */
+
 #include <net-snmp/net-snmp-config.h>
 #include <net-snmp/net-snmp-features.h>
 
@@ -96,8 +107,7 @@ netsnmp_table_data_clone_row(netsnmp_table_row *row)
     if (!row)
         return NULL;
 
-    memdup((u_char **) & newrow, (u_char *) row,
-           sizeof(netsnmp_table_row));
+    newrow = netsnmp_memdup(row, sizeof(netsnmp_table_row));
     if (!newrow)
         return NULL;
 
@@ -431,7 +441,15 @@ netsnmp_register_table_data(netsnmp_handler_registration *reginfo,
                             netsnmp_table_data *table,
                             netsnmp_table_registration_info *table_info)
 {
-    netsnmp_inject_handler(reginfo, netsnmp_get_table_data_handler(table));
+    netsnmp_mib_handler *handler = netsnmp_get_table_data_handler(table);
+    if (!table || !handler ||
+        (netsnmp_inject_handler(reginfo, handler) != SNMPERR_SUCCESS)) {
+        snmp_log(LOG_ERR, "could not create table data handler\n");
+        netsnmp_handler_free(handler);
+        netsnmp_handler_registration_free(reginfo);
+        return MIB_REGISTRATION_FAILED;
+    }
+
     return netsnmp_register_table(reginfo, table_info);
 }
 
@@ -444,7 +462,15 @@ netsnmp_register_read_only_table_data(netsnmp_handler_registration *reginfo,
                                       netsnmp_table_data *table,
                                       netsnmp_table_registration_info *table_info)
 {
-    netsnmp_inject_handler(reginfo, netsnmp_get_read_only_handler());
+    netsnmp_mib_handler *handler = netsnmp_get_read_only_handler();
+    if (!handler ||
+        (netsnmp_inject_handler(reginfo, handler) != SNMPERR_SUCCESS)) {
+        snmp_log(LOG_ERR, "could not create read only table data handler\n");
+        netsnmp_handler_free(handler);
+        netsnmp_handler_registration_free(reginfo);
+        return MIB_REGISTRATION_FAILED;
+    }
+
     return netsnmp_register_table_data(reginfo, table, table_info);
 }
 #endif /* NETSNMP_FEATURE_REMOVE_REGISTER_READ_ONLY_TABLE_DATA */

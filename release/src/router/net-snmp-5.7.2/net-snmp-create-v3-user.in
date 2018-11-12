@@ -5,29 +5,6 @@
 # this shell script is designed to add new SNMPv3 users
 # to Net-SNMP config file.
 
-prefix=@prefix@
-exec_prefix=@exec_prefix@
-includedir=@includedir@
-libdir=@libdir@
-datarootdir=@datarootdir@
-NSC_LDFLAGS="@LDFLAGS@"
-NSC_INCLUDEDIR=${includedir}
-NSC_LIBDIR=-L${libdir}
-NSC_LIBS="@LIBS@"
-NSC_AGENTLIBS="@AGENTLIBS@ @PERLLDOPTS_FOR_APPS@"
-NSC_PREFIX=$prefix
-NSC_EXEC_PREFIX=$exec_prefix
-NSC_SRCDIR=@srcdir@
-NSC_INCDIR=${NSC_PREFIX}/include
-NSC_BASE_SUBAGENT_LIBS="-lnetsnmpagent -lnetsnmp"
-NSC_BASE_AGENT_LIBS="-lnetsnmpagent -lnetsnmpmibs -lnetsnmp"
-NSC_SRC_LIBDIRS="agent/.libs snmplib/.libs"
-NSC_SRC_LIBDEPS="agent/.libs/libnetsnmpmibs.a agent/.libs/libnetsnmpagent.a snmplib/.libs/libnetsnmp.a"
-
-if test "x$NSC_SRCDIR" = "x." ; then
-   NSC_SRCDIR="NET-SNMP-SOURCE-DIR"
-fi
-
 if @PSCMD@ | egrep ' snmpd *$' > /dev/null 2>&1 ; then
     echo "Apparently at least one snmpd demon is already running."
     echo "You must stop them in order to use this command."
@@ -60,7 +37,7 @@ case $1 in
 	    exit 1
 	fi
         case $1 in
-            MD5|SHA)
+            MD5|SHA|SHA-512|SHA-384|SHA-256|SHA-224)
 	    Aalgorithm=$1
 	    shift
 	    ;;
@@ -114,7 +91,7 @@ if test "x$usage" = "xyes"; then
     echo ""
     echo "Usage:"
     echo "  net-snmp-create-v3-user [-ro] [-A authpass] [-X privpass]"
-    echo "                          [-a MD5|SHA] [-x DES|AES] [username]"
+    echo "                          [-a MD5|SHA|SHA-512|SHA-384|SHA-256|SHA-224] [-x DES|AES] [username]"
     echo ""
     exit
 fi
@@ -147,7 +124,7 @@ fi
 fi
 outdir="@PERSISTENT_DIRECTORY@"
 outfile="$outdir/snmpd.conf"
-line="createUser $user $Aalgorithm \"$apassphrase\" $Xalgorithm $xpassphrase"
+line="createUser $user $Aalgorithm \"$apassphrase\" $Xalgorithm \"$xpassphrase\""
 echo "adding the following line to $outfile:"
 echo "  " $line
 # in case it hasn't ever been started yet, start it.
@@ -158,6 +135,8 @@ if test ! -d $outfile ; then
     touch $outfile
 fi
 echo $line >> $outfile
+prefix="@prefix@"
+datarootdir="@datarootdir@"
 outfile="@datadir@/snmp/snmpd.conf"
 line="$token $user"
 echo "adding the following line to $outfile:"

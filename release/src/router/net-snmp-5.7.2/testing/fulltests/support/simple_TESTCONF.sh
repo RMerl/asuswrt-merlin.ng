@@ -196,6 +196,9 @@ elif test -x /cygdrive/c/windows/system32/netstat ; then
 elif test -x /c/Windows/System32/netstat ; then
     # MinGW + MSYS
     NETSTAT=/c/Windows/System32/netstat
+elif test -x /usr/sbin/ss ; then
+    # Fedora24, RHEL7 does not install netstat as standard
+    NETSTAT=/usr/sbin/ss
 else
     NETSTAT=""
 fi
@@ -231,6 +234,10 @@ PROBE_FOR_PORT() {
                 exit 255
             fi
         done
+    else
+	echo "ERROR: Cannot probe for port - netstat not found." >&2
+	echo "NOPORT"
+	exit 255
     fi
 }
 

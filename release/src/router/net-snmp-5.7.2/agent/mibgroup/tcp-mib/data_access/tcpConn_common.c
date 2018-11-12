@@ -21,26 +21,6 @@ static void _access_tcpconn_entry_release(netsnmp_tcpconn_entry * entry,
 
 /**---------------------------------------------------------------------*/
 /*
- * external per-architecture functions prototypes
- *
- * These shouldn't be called by the general public, so they aren't in
- * the header file.
- */
-extern int
-netsnmp_arch_tcpconn_container_load(netsnmp_container* container,
-                                      u_int load_flags);
-extern int
-netsnmp_arch_tcpconn_entry_init(netsnmp_tcpconn_entry *entry);
-extern int
-netsnmp_arch_tcpconn_entry_copy(netsnmp_tcpconn_entry *lhs,
-                                  netsnmp_tcpconn_entry *rhs);
-extern void
-netsnmp_arch_tcpconn_entry_cleanup(netsnmp_tcpconn_entry *entry);
-
-
-
-/**---------------------------------------------------------------------*/
-/*
  * container functions
  */
 /**

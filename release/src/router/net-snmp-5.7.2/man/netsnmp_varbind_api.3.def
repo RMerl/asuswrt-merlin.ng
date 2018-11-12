@@ -202,7 +202,7 @@ do the same as the equivalent
 routines, but only displaying the value of the variable, without the
 corresponding object identifier.
 .PP
-For displaying the OID of a varbind, see \fBmin_api\fP(3).
+For displaying the OID of a varbind, see \fBnetsnmp_mib_api\fP(3).
 .br
 .SS Deletion
 .B snmp_free_var
@@ -212,5 +212,5 @@ releases all memory used by the given varbind structure.
 releases all memory used by each varbind structure in the varbind list provided.
 .br
 .SH "SEE ALSO"
-.BR pdu_api "(3)"
-.BR mib_api "(3)"
+.BR netsnmp_pdu_api "(3)"
+.BR netsnmp_mib_api "(3)"

@@ -7,6 +7,11 @@
  * Copyright © 2003 Sun Microsystems, Inc. All rights reserved.
  * Use is subject to license terms specified in the COPYING file
  * distributed with the Net-SNMP package.
+ *
+ * Portions of this file are copyrighted by:
+ * Copyright (c) 2016 VMware, Inc. All rights reserved.
+ * Use is subject to license terms specified in the COPYING file
+ * distributed with the Net-SNMP package.
  */
 #include <net-snmp/net-snmp-config.h>
 #include <net-snmp/net-snmp-features.h>
@@ -38,6 +43,7 @@ typedef struct netsnmp_num_file_instance_s {
     int   flags;
 } netsnmp_num_file_instance;
 
+#ifndef NETSNMP_FEATURE_REMOVE_REGISTER_NUM_FILE_INSTANCE
 /** @defgroup instance instance
  *  Process individual MIB instances easily.
  *  @ingroup leaf
@@ -59,6 +65,7 @@ netsnmp_num_file_instance_deref(netsnmp_num_file_instance *nfi)
 	free(nfi);
     }
 }
+#endif /* NETSNMP_FEATURE_REMOVE_REGISTER_NUM_FILE_INSTANCE */
 
 /**
  * Creates an instance helper handler, calls netsnmp_create_handler, which
@@ -96,9 +103,17 @@ int
 netsnmp_register_instance(netsnmp_handler_registration *reginfo)
 {
     netsnmp_mib_handler *handler = netsnmp_get_instance_handler();
-    handler->flags |= MIB_HANDLER_INSTANCE;
-    netsnmp_inject_handler(reginfo, handler);
-    return netsnmp_register_serialize(reginfo);
+    if (handler) {
+        handler->flags |= MIB_HANDLER_INSTANCE;
+        if (netsnmp_inject_handler(reginfo, handler) == SNMPERR_SUCCESS)
+            return netsnmp_register_serialize(reginfo);
+    }
+
+    snmp_log(LOG_ERR, "failed to register instance\n");
+    netsnmp_handler_free(handler);
+    netsnmp_handler_registration_free(reginfo);
+
+    return MIB_REGISTRATION_FAILED;
 }
 
 /**
@@ -122,11 +137,27 @@ netsnmp_register_instance(netsnmp_handler_registration *reginfo)
 int
 netsnmp_register_read_only_instance(netsnmp_handler_registration *reginfo)
 {
-    netsnmp_inject_handler(reginfo, netsnmp_get_instance_handler());
-    netsnmp_inject_handler(reginfo, netsnmp_get_read_only_handler());
-    return netsnmp_register_serialize(reginfo);
+    netsnmp_mib_handler *h1, *h2;
+    if (!reginfo)
+        return MIB_REGISTRATION_FAILED;
+
+    h1 = netsnmp_get_instance_handler();
+    h2 = netsnmp_get_read_only_handler();
+    if (h1 && h2 && netsnmp_inject_handler(reginfo, h1) == SNMPERR_SUCCESS) {
+        h1 = NULL;
+        if (netsnmp_inject_handler(reginfo, h2) == SNMPERR_SUCCESS)
+            return netsnmp_register_serialize(reginfo);
+    }
+
+    snmp_log(LOG_ERR, "failed to register read only instance\n");
+    netsnmp_handler_free(h1);
+    netsnmp_handler_free(h2);
+    netsnmp_handler_registration_free(reginfo);
+
+   return MIB_REGISTRATION_FAILED;
 }
 
+#ifndef NETSNMP_FEATURE_REMOVE_REGISTER_NUM_FILE_INSTANCE
 static
 netsnmp_handler_registration *
 get_reg(const char *name,
@@ -142,31 +173,45 @@ get_reg(const char *name,
 
     if (subhandler) {
         myreg =
-            netsnmp_create_handler_registration(name,
-                                                subhandler,
-                                                reg_oid, reg_oid_len,
-                                                modes);
+            netsnmp_create_handler_registration(name, subhandler, reg_oid,
+                                                reg_oid_len, modes);
+        if (!myreg)
+            return NULL;
         myhandler = netsnmp_create_handler(ourname, scalarh);
+        if (!myhandler) {
+            netsnmp_handler_registration_free(myreg);
+            return NULL;
+        }
         myhandler->myvoid = it;
 	myhandler->data_clone = (void*(*)(void*))netsnmp_num_file_instance_ref;
 	myhandler->data_free = (void(*)(void*))netsnmp_num_file_instance_deref;
-        netsnmp_inject_handler(myreg, myhandler);
+        if (netsnmp_inject_handler(myreg, myhandler) != SNMPERR_SUCCESS) {
+            netsnmp_handler_free(myhandler);
+            netsnmp_handler_registration_free(myreg);
+            return NULL;
+        }
     } else {
-        myreg =
-            netsnmp_create_handler_registration(name,
-                                                scalarh,
-                                                reg_oid, reg_oid_len,
-                                                modes);
+        myreg = netsnmp_create_handler_registration(name, scalarh, reg_oid,
+                                                    reg_oid_len, modes);
+        if (!myreg)
+            return NULL;
         myreg->handler->myvoid = it;
 	myreg->handler->data_clone
 	    = (void *(*)(void *))netsnmp_num_file_instance_ref;
 	myreg->handler->data_free
 	    = (void (*)(void *))netsnmp_num_file_instance_deref;
     }
-    if (contextName)
+    if (contextName) {
         myreg->contextName = strdup(contextName);
+        if (!myreg->contextName) {
+            netsnmp_handler_registration_free(myreg);
+            return NULL;
+        }
+    }
+
     return myreg;
 }
+#endif /* NETSNMP_FEATURE_REMOVE_REGISTER_NUM_FILE_INSTANCE */
 
 /* Watched 'long' instances are writable on both 32-bit and 64-bit systems  */
 netsnmp_feature_child_of(read_only_ulong_instance,instance)
@@ -656,7 +701,7 @@ netsnmp_instance_num_file_handler(netsnmp_mib_handler *handler,
             return SNMP_ERR_NOERROR;
         }
 
-        memdup((u_char **) & it_save, (u_char *)&it, sizeof(u_long));
+        it_save = netsnmp_memdup(&it, sizeof(u_long));
         if (it_save == NULL) {
             netsnmp_set_request_error(reqinfo, requests,
                                       SNMP_ERR_RESOURCEUNAVAILABLE);
@@ -694,8 +739,7 @@ netsnmp_instance_num_file_handler(netsnmp_mib_handler *handler,
         if (rc < 0)
             netsnmp_set_request_error(reqinfo, requests,
                                       SNMP_ERR_UNDOFAILED);
-        /** fall through */
-
+        /* FALL THROUGH */
     case MODE_SET_COMMIT:
     case MODE_SET_FREE:
         if (NULL != nfi->filep) {

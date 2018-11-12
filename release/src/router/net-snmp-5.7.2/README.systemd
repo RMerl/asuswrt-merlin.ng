@@ -1,0 +1,41 @@
+README.systemd
+--------------
+Net-SNMP provides two daemons, which support systemd system manager. 
+See http://www.freedesktop.org/wiki/Software/systemd to learn how
+systemd works. Both socket activation and notification is supported by these
+daemons.
+
+To enable systemd support, the sources must be compiled with
+--with-systemd configure option.
+
+snmpd - The SNMP agent
+----------------------
+Socket activation od snmpd daemon is implemented, but it's discouraged.
+The reason is simple - snmpd not only listens and processes SNMP requests
+from network, but also gathers system statistics counters, sends traps and
+communicates with subagents. It even opens few netlink sockets.
+
+In other words, snmpd should run from system start to properly work.
+This can be done in two ways:
+1) either as snmpd service unit with 'Type=notification' and without a socket
+   unit
+2) or as snmpd service unit with 'Type=simple', appropriate socket socket unit
+   and the snmpd service enabled. This way systemd creates the snmpd listening
+   socket early during boot and passes the sockets to snmpd slightly later
+   (but still during machine boot). This way systemd can paralelize start of
+   services, which depend on snmpd. Admins must adjust the socket file manually,
+   depending if the snmpd support AgentX, IPv6, SMUX etc.
+
+snmpd should be started with '-f' command line parameter to disable forking -
+systemd does that for us automatically.
+
+
+snmptrapd - The trap processing daemon
+--------------------------------------
+snmptrapd supports full socket activation and also notification (if needed).
+Both 'Type=simple' (with appropriate socket unit) and 'Type=notify' services
+will work. Again, '-f' parameter should be provided on snmptrapd command line.
+
+If integration with SNMP agent using AgentX protocol is enabled, snmptrapd should
+start during boot and not after first SNMP trap arrives. Same rules as for snmpd
+applies then.

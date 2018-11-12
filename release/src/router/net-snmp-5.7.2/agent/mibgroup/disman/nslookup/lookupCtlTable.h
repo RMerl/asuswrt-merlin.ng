@@ -56,6 +56,9 @@ struct lookupResultsTable_data {
     int             storagetype;
 };
 
+extern struct header_complex_index *lookupCtlTableStorage;
+extern struct header_complex_index *lookupResultsTableStorage;
+
 /*
  * function declarations 
  */

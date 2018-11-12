@@ -40,6 +40,7 @@
 #include <net-snmp/net-snmp-includes.h>
 #include <net-snmp/agent/net-snmp-agent-includes.h>
 #include "alarm.h"
+#include "event.h"
     /*
      * Implementation headers 
      */
@@ -128,19 +129,6 @@
          0;
 #endif
 
-/*
- * find & enjoy it in event.c 
- */
-     extern int
-     event_api_send_alarm(u_char is_rising,
-                          u_long alarm_index,
-                          u_long event_index,
-                          oid * alarmed_var,
-                          size_t alarmed_var_length,
-                          u_long sample_type,
-                          u_long value,
-                          u_long the_threshold, char *alarm_descr);
-
 static int
 fetch_var_val(oid * name, size_t namelen, u_long * new_value)
 {
@@ -185,7 +173,7 @@ fetch_var_val(oid * name, size_t namelen, u_long * new_value)
                     && snmp_oid_compare(name, namelen, tree_ptr->end_a,
                                         tree_ptr->end_len) > 0) {
                     memcpy(name, tree_ptr->end_a, tree_ptr->end_len);
-                    access = 0;
+                    access = NULL;
                     ag_trace("access := 0");
                 }
 
@@ -566,7 +554,7 @@ write_alarmEntry(int action, u_char * var_val, u_char var_val_type,
         case IDalarmOwner:
             if (hdr->new_owner)
                 AGFREE(hdr->new_owner);
-            hdr->new_owner = AGMALLOC(MAX_OWNERSTRING);;
+            hdr->new_owner = AGMALLOC(MAX_OWNERSTRING);
             if (!hdr->new_owner)
                 return SNMP_ERR_TOOBIG;
             snmp_status = AGUTIL_get_string_value(var_val, var_val_type,

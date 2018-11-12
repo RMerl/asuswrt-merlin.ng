@@ -1,5 +1,10 @@
 /*
  * tools.c
+ *
+ * Portions of this file are copyrighted by:
+ * Copyright (c) 2016 VMware, Inc. All rights reserved.
+ * Use is subject to license terms specified in the COPYING file
+ * distributed with the Net-SNMP package.
  */
 
 #define NETSNMP_TOOLS_C 1 /* dont re-define malloc wrappers here */
@@ -52,7 +57,7 @@
 #ifdef HAVE_VALGRIND_MEMCHECK_H
 #include <valgrind/memcheck.h>
 #endif
-#ifdef cygwin
+#if defined(cygwin) || defined(mingw32)
 #include <windows.h>
 #endif
 
@@ -207,6 +212,9 @@ snmp_strcat(u_char ** buf, size_t * buf_len, size_t * out_len,
         }
     }
 
+    if (!*buf)
+        return 0;
+
     strcpy((char *) (*buf + *out_len), (const char *) s);
     *out_len += strlen((char *) (*buf + *out_len));
     return 1;
@@ -260,31 +268,58 @@ malloc_random(size_t * size)
 }                               /* end malloc_random() */
 #endif /* NETSNMP_FEATURE_REMOVE_USM_SCAPI */
 
-/** Duplicates a memory block.
- *  Copies a existing memory location from a pointer to another, newly
-    malloced, pointer.
-
- *	@param to       Pointer to allocate and copy memory to.
- *      @param from     Pointer to copy memory from.
- *      @param size     Size of the data to be copied.
+/**
+ * Duplicates a memory block.
+ *
+ * @param[in] from Pointer to copy memory from.
+ * @param[in] size Size of the data to be copied.
  *      
- *	@return SNMPERR_SUCCESS	on success, SNMPERR_GENERR on failure.
+ * @return Pointer to the duplicated memory block, or NULL if memory allocation
+ * failed.
  */
-int
-memdup(u_char ** to, const void * from, size_t size)
+void *netsnmp_memdup(const void *from, size_t size)
 {
-    if (to == NULL)
-        return SNMPERR_GENERR;
-    if (from == NULL) {
-        *to = NULL;
-        return SNMPERR_SUCCESS;
-    }
-    if ((*to = (u_char *) malloc(size)) == NULL)
-        return SNMPERR_GENERR;
-    memcpy(*to, from, size);
-    return SNMPERR_SUCCESS;
+    void *to = NULL;
 
-}                               /* end memdup() */
+    if (from) {
+        to = malloc(size);
+        if (to)
+            memcpy(to, from, size);
+    }
+    return to;
+}                               /* end netsnmp_memdup() */
+
+/**
+ * Duplicates a memory block, adding a NULL at the end.
+ *
+ * NOTE: the returned size DOES NOT include the extra byte for the NULL
+ *       termination, just the raw data (i.e. from_size).
+ *
+ * This is mainly to protect agains code that uses str* functions on
+ * a fixed buffer that may not have a terminating NULL.
+ *
+ * @param[in] from Pointer to copy memory from.
+ * @param[in] from_size Size of the data to be copied.
+ * @param[out] new_size Pointer to size var for new block (OPTIONAL)
+ *
+ * @return Pointer to the duplicated memory block, or NULL if memory allocation
+ * failed.
+ */
+void *netsnmp_memdup_nt(const void *from, size_t from_size, size_t *to_size)
+{
+    char *to = NULL;
+
+    if (from) {
+        to = malloc(from_size+1);
+        if (to) {
+            memcpy(to, from, from_size);
+            to[from_size] = 0;
+            if (to_size)
+               *to_size = from_size;
+        }
+    }
+    return to;
+}                               /* end netsnmp_memdupNT() */
 
 #ifndef NETSNMP_FEATURE_REMOVE_NETSNMP_CHECK_DEFINEDNESS
 /**
@@ -327,18 +362,13 @@ netsnmp_strdup_and_null(const u_char * from, size_t from_len)
 {
     char         *ret;
 
-    if (from_len == 0 || from[from_len - 1] != '\0') {
-        ret = (char *)malloc(from_len + 1);
-        if (!ret)
-            return NULL;
+    if (from_len > 0 && from[from_len - 1] == '\0')
+        from_len--;
+    ret = malloc(from_len + 1);
+    if (ret) {
+        memcpy(ret, from, from_len);
         ret[from_len] = '\0';
-    } else {
-        ret = (char *)malloc(from_len);
-        if (!ret)
-            return NULL;
-        ret[from_len - 1] = '\0';
     }
-    memcpy(ret, from, from_len);
     return ret;
 }
 
@@ -437,11 +467,14 @@ int
 hex_to_binary2(const u_char * input, size_t len, char **output)
 {
     u_int           olen = (len / 2) + (len % 2);
-    char           *s = (char *) calloc(1, (olen) ? olen : 1), *op = s;
+    char           *s = calloc(1, olen ? olen : 1), *op = s;
     const u_char   *ip = input;
 
 
     *output = NULL;
+    if (!s)
+        goto hex_to_binary2_quit;
+
     *op = 0;
     if (len % 2) {
         if (!isxdigit(*ip))
@@ -450,7 +483,7 @@ hex_to_binary2(const u_char * input, size_t len, char **output)
         ip++;
     }
 
-    while (ip - input < (int) len) {
+    while (ip < input + len) {
         if (!isxdigit(*ip))
             goto hex_to_binary2_quit;
         *op = HEX2VAL(*ip) << 4;
@@ -705,7 +738,7 @@ dump_snmpEngineID(const u_char * estring, size_t * estring_len)
 {
 #define eb(b)	( *(esp+b) & 0xff )
 
-    int             rval = SNMPERR_SUCCESS, gotviolation = 0, slen = 0;
+    int             gotviolation = 0, slen = 0;
     u_int           remaining_len;
 
     char            buf[SNMP_MAXBUF], *s = NULL, *t;
@@ -719,7 +752,7 @@ dump_snmpEngineID(const u_char * estring, size_t * estring_len)
      * Sanity check.
      */
     if (!estring || (*estring_len <= 0)) {
-        QUITFUN(SNMPERR_GENERR, dump_snmpEngineID_quit);
+        goto dump_snmpEngineID_quit;
     }
     remaining_len = *estring_len;
     memset(buf, 0, SNMP_MAXBUF);
@@ -822,6 +855,7 @@ dump_snmpEngineID(const u_char * estring, size_t * estring_len)
                                  */
         gotviolation = 1;
         s += sprintf(s, "!!! ");
+        /* FALLTHROUGH */
 
     default:                   /* Unknown encoding. */
 
@@ -921,8 +955,7 @@ void netsnmp_get_monotonic_clock(struct timeval* tv)
         tv->tv_sec = ts.tv_sec;
         tv->tv_usec = ts.tv_nsec / 1000;
     } else {
-        netsnmp_assert(FALSE);
-        memset(tv, 0, sizeof(*tv));
+        gettimeofday(tv, NULL);
     }
 #elif defined(WIN32)
     /*

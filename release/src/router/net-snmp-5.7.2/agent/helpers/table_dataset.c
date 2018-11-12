@@ -1,3 +1,14 @@
+/*
+ * Portions of this file are subject to the following copyright(s).  See
+ * the Net-SNMP's COPYING file for more details and other copyrights
+ * that may apply:
+ *
+ * Portions of this file are copyrighted by:
+ * Copyright (c) 2016 VMware, Inc. All rights reserved.
+ * Use is subject to license terms specified in the COPYING file
+ * distributed with the Net-SNMP package.
+ */
+
 #include <net-snmp/net-snmp-config.h>
 #include <net-snmp/net-snmp-features.h>
 
@@ -107,7 +118,7 @@ netsnmp_init_table_dataset(void) {
 /** deletes a single dataset table data.
  *  returns the (possibly still good) next pointer of the deleted data object.
  */
-NETSNMP_INLINE netsnmp_table_data_set_storage *
+NETSNMP_STATIC_INLINE netsnmp_table_data_set_storage *
 netsnmp_table_dataset_delete_data(netsnmp_table_data_set_storage *data)
 {
     netsnmp_table_data_set_storage *nextPtr = NULL;
@@ -246,16 +257,16 @@ netsnmp_table_data_set_clone_row(netsnmp_table_row *row)
              (netsnmp_table_data_set_storage **) &(newrow->data); data;
              newrowdata = &((*newrowdata)->next), data = data->next) {
 
-            memdup((u_char **) newrowdata, (u_char *) data,
-                   sizeof(netsnmp_table_data_set_storage));
+            *newrowdata = netsnmp_memdup(data,
+                sizeof(netsnmp_table_data_set_storage));
             if (!*newrowdata) {
                 netsnmp_table_dataset_delete_row(newrow);
                 return NULL;
             }
 
             if (data->data.voidp) {
-                memdup((u_char **) & ((*newrowdata)->data.voidp),
-                       (u_char *) data->data.voidp, data->data_len);
+                (*newrowdata)->data.voidp =
+                    netsnmp_memdup(data->data.voidp, data->data_len);
                 if (!(*newrowdata)->data.voidp) {
                     netsnmp_table_dataset_delete_row(newrow);
                     return NULL;
@@ -331,8 +342,7 @@ netsnmp_table_set_add_default_row(netsnmp_table_data_set *table_set,
     new_col->writable = writable;
     new_col->column = column;
     if (default_value) {
-        memdup((u_char **) & (new_col->data.voidp),
-               (u_char *) default_value, default_value_len);
+        new_col->data.voidp = netsnmp_memdup(default_value, default_value_len);
         new_col->data_len = default_value_len;
     }
     if (table_set->default_row == NULL)
@@ -426,6 +436,7 @@ netsnmp_register_table_data_set(netsnmp_handler_registration *reginfo,
                                 netsnmp_table_data_set *data_set,
                                 netsnmp_table_registration_info *table_info)
 {
+    netsnmp_mib_handler *handler;
     int ret;
 
     if (NULL == table_info) {
@@ -463,8 +474,15 @@ netsnmp_register_table_data_set(netsnmp_handler_registration *reginfo,
             table_info->max_column = maxcol;
     }
 
-    netsnmp_inject_handler(reginfo,
-                           netsnmp_get_table_data_set_handler(data_set));
+    handler = netsnmp_get_table_data_set_handler(data_set);
+    if (!handler ||
+        (netsnmp_inject_handler(reginfo, handler) != SNMPERR_SUCCESS)) {
+        snmp_log(LOG_ERR, "could not create table data set handler\n");
+        netsnmp_handler_free(handler);
+        netsnmp_handler_registration_free(reginfo);
+        return MIB_REGISTRATION_FAILED;
+    }
+
     ret = netsnmp_register_table_data(reginfo, data_set->table,
                                        table_info);
     if (ret == SNMPERR_SUCCESS && reginfo->handler)
@@ -503,23 +521,28 @@ netsnmp_table_data_set_helper_handler(netsnmp_mib_handler *handler,
                                       netsnmp_request_info *requests)
 {
     netsnmp_table_data_set_storage *data = NULL;
-    newrow_stash   *newrowstash = NULL;
-    netsnmp_table_row *row, *newrow = NULL;
     netsnmp_table_request_info *table_info;
     netsnmp_request_info *request;
+    netsnmp_table_row *row = NULL;
+#ifndef NETSNMP_NO_WRITE_SUPPORT
     netsnmp_oid_stash_node **stashp = NULL;
+    netsnmp_table_row *newrow = NULL;
+    newrow_stash   *newrowstash = NULL;
+#endif /* NETSNMP_NO_WRITE_SUPPORT */
 
     if (!handler)
         return SNMPERR_GENERR;
         
     DEBUGMSGTL(("netsnmp_table_data_set", "handler starting\n"));
     for (request = requests; request; request = request->next) {
+#ifndef NETSNMP_NO_WRITE_SUPPORT
         netsnmp_table_data_set *datatable =
             (netsnmp_table_data_set *) handler->myvoid;
         const oid * const suffix =
             requests->requestvb->name + reginfo->rootoid_len + 2;
         const size_t suffix_len =
             requests->requestvb->name_length - (reginfo->rootoid_len + 2);
+#endif /* NETSNMP_NO_WRITE_SUPPORT */
 
         if (request->processed)
             continue;

@@ -24,7 +24,7 @@ quad_t    swapTotal;
 quad_t    swapUsed;
 quad_t    swapFree;
 
-int swapmode(long);
+static int swapmode(long);
 
 
     /*
@@ -36,9 +36,15 @@ int netsnmp_mem_arch_load( netsnmp_cache *cache, void *magic ) {
     long           pagesize;
     int            nswap;
 
+#if !defined(VM_TOTAL)
+    unsigned int   free_mem;
+    size_t         free_size = sizeof(free_mem);
+    unsigned int   mem_pages;
+#else
     struct vmtotal total;
     size_t         total_size  = sizeof(total);
-    int            total_mib[] = { CTL_VM, VM_METER };
+    int            total_mib[] = { CTL_VM, VM_TOTAL };
+#endif
 
     u_long         phys_mem;
     u_long         user_mem;
@@ -57,7 +63,12 @@ int netsnmp_mem_arch_load( netsnmp_cache *cache, void *magic ) {
     /*
      * Retrieve the memory information from the underlying O/S...
      */
+#if !defined(VM_TOTAL)
+    sysctlbyname("vm.stats.vm.v_free_count", &free_mem,    &free_size,    NULL, 0);
+    sysctlbyname("vm.stats.vm.v_page_count", &mem_pages,    &free_size,    NULL, 0);
+#else
     sysctl(total_mib,    2, &total,    &total_size,    NULL, 0);
+#endif
     sysctl(phys_mem_mib, 2, &phys_mem, &mem_size,      NULL, 0);
     sysctl(user_mem_mib, 2, &user_mem, &mem_size,      NULL, 0);
     sysctlbyname("vm.stats.vm.v_cache_count",    &cache_count, &cache_size, NULL, 0);
@@ -82,7 +93,11 @@ int netsnmp_mem_arch_load( netsnmp_cache *cache, void *magic ) {
              mem->descr = strdup("Physical memory");
         mem->units = pagesize;
         mem->size  = phys_mem/pagesize;
+#if !defined(VM_TOTAL)
+	mem->free  = free_mem;
+#else
         mem->free  = total.t_free;
+#endif
     }
 
     mem = netsnmp_memory_get_byIdx( NETSNMP_MEM_TYPE_USERMEM, 1 );
@@ -92,8 +107,13 @@ int netsnmp_mem_arch_load( netsnmp_cache *cache, void *magic ) {
         if (!mem->descr)
              mem->descr = strdup("Real memory");
         mem->units = pagesize;
+#if !defined(VM_TOTAL)
+	mem->size  = user_mem/pagesize;
+	mem->free  = free_mem;
+#else
         mem->size  = total.t_rm;
-        mem->free  = total.t_arm;
+        mem->free  = total.t_rm - total.t_arm;
+#endif
     }
 
     mem = netsnmp_memory_get_byIdx( NETSNMP_MEM_TYPE_VIRTMEM, 1 );
@@ -103,10 +123,16 @@ int netsnmp_mem_arch_load( netsnmp_cache *cache, void *magic ) {
         if (!mem->descr)
              mem->descr = strdup("Virtual memory");
         mem->units = pagesize;
+#if !defined(VM_TOTAL)
+	mem->size  = mem_pages+swapTotal;
+	mem->free  = free_mem+swapFree;
+#else
         mem->size  = total.t_vm;
-        mem->free  = total.t_avm;
+        mem->free  = total.t_vm - total.t_avm;
+#endif
     }
 
+#if defined(VM_TOTAL)
     mem = netsnmp_memory_get_byIdx( NETSNMP_MEM_TYPE_SHARED, 1 );
     if (!mem) {
         snmp_log_perror("No Shared Memory info entry");
@@ -115,7 +141,7 @@ int netsnmp_mem_arch_load( netsnmp_cache *cache, void *magic ) {
              mem->descr = strdup("Shared virtual memory");
         mem->units = pagesize;
         mem->size  = total.t_vmshr;
-        mem->free  = total.t_avmshr;
+        mem->free  = total.t_vmshr - total.t_avmshr;
     }
 
     mem = netsnmp_memory_get_byIdx( NETSNMP_MEM_TYPE_SHARED2, 1 );
@@ -126,8 +152,9 @@ int netsnmp_mem_arch_load( netsnmp_cache *cache, void *magic ) {
              mem->descr = strdup("Shared real memory");
         mem->units = pagesize;
         mem->size  = total.t_rmshr;
-        mem->free  = total.t_armshr;
+        mem->free  = total.t_rmshr - total.t_armshr;
     }
+#endif
 
     mem = netsnmp_memory_get_byIdx( NETSNMP_MEM_TYPE_CACHED, 1 );
     if (!mem) {
@@ -136,8 +163,8 @@ int netsnmp_mem_arch_load( netsnmp_cache *cache, void *magic ) {
         if (!mem->descr)
              mem->descr = strdup("Cached memory");
         mem->units = pagesize;
-        mem->size  = cache_max + inact_count;
-        mem->free  = cache_max - cache_count;
+        mem->size  = cache_count;
+        mem->free  = 0;
     }
 
     nswap = swapmode(pagesize);
@@ -180,7 +207,7 @@ int netsnmp_mem_arch_load( netsnmp_cache *cache, void *magic ) {
  * This is just way too ugly ;) 
  */
 
-int
+static int
 swapmode(long pagesize)
 {
     struct extensible ext;
@@ -211,22 +238,21 @@ swapmode(long pagesize)
 
 #include <sys/conf.h>
 
-int
+extern kvm_t *kd;
+
+static int
 swapmode(long pagesize)
 {
     int             i, n;
-    static kvm_t   *kd = NULL;
     struct kvm_swap kswap[16];
     netsnmp_memory_info *mem;
     char buf[1024];
 
-    if (kd == NULL)
-        kd = kvm_openfiles(NULL, NULL, NULL, O_RDONLY, NULL);
     n = kvm_getswapinfo(kd, kswap, sizeof(kswap) / sizeof(kswap[0]), 0);
 
     swapUsed = swapTotal = swapFree = 0;
 
-    if ( n > 1 ) {
+    if ( n > 0 ) {
         /*
          * If there are multiple swap devices, then record
          *   the statistics for each one separately...

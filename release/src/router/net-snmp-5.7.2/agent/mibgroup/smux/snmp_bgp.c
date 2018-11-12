@@ -112,7 +112,6 @@ init_snmp_bdp(void)
 static oid      max_bgp_mib[] =
     { 1, 3, 6, 1, 2, 1, 15, 5, 1, 6, 255, 255, 255, 255 };
 static oid      min_bgp_mib[] = { 1, 3, 6, 1, 2, 1, 15, 1, 0 };
-extern u_char   smux_type;
 
 u_char         *
 var_bgp(struct variable *vp,

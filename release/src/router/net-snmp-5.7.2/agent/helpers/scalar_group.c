@@ -1,3 +1,14 @@
+/*
+ * Portions of this file are subject to the following copyright(s).  See
+ * the Net-SNMP's COPYING file for more details and other copyrights
+ * that may apply:
+ *
+ * Portions of this file are copyrighted by:
+ * Copyright (c) 2016 VMware, Inc. All rights reserved.
+ * Use is subject to license terms specified in the COPYING file
+ * distributed with the Net-SNMP package.
+ */
+
 #include <net-snmp/net-snmp-config.h>
 
 #include <net-snmp/net-snmp-includes.h>
@@ -60,9 +71,25 @@ int
 netsnmp_register_scalar_group(netsnmp_handler_registration *reginfo,
                               oid first, oid last)
 {
-    netsnmp_inject_handler(reginfo, netsnmp_get_instance_handler());
-    netsnmp_inject_handler(reginfo, netsnmp_get_scalar_group_handler(first, last));
-    return netsnmp_register_serialize(reginfo);
+    netsnmp_mib_handler *h1, *h2;
+
+    h1 = netsnmp_get_instance_handler();
+    h2 = netsnmp_get_scalar_group_handler(first, last);
+
+    if (h1 && h2) {
+        if (netsnmp_inject_handler(reginfo, h1) == SNMPERR_SUCCESS) {
+            h1 = NULL;
+            if (netsnmp_inject_handler(reginfo, h2) == SNMPERR_SUCCESS)
+                return netsnmp_register_serialize(reginfo);
+        }
+    }
+
+    snmp_log(LOG_ERR, "register read only scalar group failed\n");
+    netsnmp_handler_free(h1);
+    netsnmp_handler_free(h2);
+    netsnmp_handler_registration_free(reginfo);
+
+    return MIB_REGISTRATION_FAILED;
 }
 
 
@@ -98,17 +125,12 @@ netsnmp_scalar_group_helper_handler(netsnmp_mib_handler *handler,
     root_tmp[reginfo->rootoid_len + 1] = 0;
     root_save = reginfo->rootoid;
 
-    ret = SNMP_ERR_NOCREATION;
     switch (reqinfo->mode) {
     /*
      * The handling of "exact" requests is basically the same.
      * The only difference between GET and SET requests is the
      *     error/exception to return on failure.
      */
-    case MODE_GET:
-        ret = SNMP_NOSUCHOBJECT;
-        /* Fallthrough */
-
 #ifndef NETSNMP_NO_WRITE_SUPPORT
     case MODE_SET_RESERVE1:
     case MODE_SET_RESERVE2:
@@ -117,6 +139,8 @@ netsnmp_scalar_group_helper_handler(netsnmp_mib_handler *handler,
     case MODE_SET_UNDO:
     case MODE_SET_FREE:
 #endif /* NETSNMP_NO_WRITE_SUPPORT */
+    case MODE_GET:
+	ret = reqinfo->mode == MODE_GET ? SNMP_NOSUCHOBJECT : SNMP_ERR_NOCREATION;
         if (cmp != 0 ||
             requests->requestvb->name_length <= reginfo->rootoid_len) {
 	    /*

@@ -38,6 +38,10 @@ OK_TO_SAVE_RESULT=1
 export OK_TO_SAVE_RESULT
 fi
 
+if [ `uname -s` = SunOS ]
+then PATH=/usr/xpg4/bin:$PATH
+fi
+
 #
 # HEADER: returns a single line when SNMP_HEADERONLY mode and exits.
 #
@@ -127,7 +131,7 @@ SKIPIF() {
 #------------------------------------ -o-
 #
 VERIFY() {	# <path_to_file(s)>
-	local	missingfiles=
+	missingfiles=""
 
 	for f in $*; do
 		[ -f "$f" ] && continue
@@ -210,7 +214,7 @@ KNORG
 
 	fi
 	echo "RUNNING: $*" > $junkoutputfile
-	( $* 2>&1 ) >> $junkoutputfile 2>&1
+	( $DYNAMIC_ANALYZER $* 2>&1 ) >> $junkoutputfile 2>&1
 	RC=$?
 
 	if [ $SNMP_VERBOSE -gt 1 ]; then
@@ -353,12 +357,18 @@ CHECKAGENTCOUNT() {
 }
 
 # Return 0 (true) if a process with pid $1 exists and 1 (false) if no process
-# with pid $1 exists. Do not use this function on MinGW: the PIDs written by
-# snmpd and snmptrapd to their pid files are not visible in the MinGW/MSYS
-# process table.
+# with pid $1 exists.
 ISRUNNING() {
-    #ps -e 2>/dev/null | egrep "^[	 ]*$1[	 ]+" >/dev/null 2>&1
-    kill -0 "$pid" 2>/dev/null
+    if [ "x$OSTYPE" = "xmsys" ]; then
+	pslist.exe "$1" 2>&1 | while read name pspid rest; do
+	    if [ "$1" = "$pspid" ]; then
+		return 0
+	    fi
+	done
+	return 1
+    else
+        kill -0 "$1" 2>/dev/null
+    fi
 }
 
 # Echo a command that asks the process with pid $1 to stop.
@@ -404,10 +414,20 @@ WAITFORCOND() {
 
 WAITFORAGENT() {
     WAITFOR "$@" $SNMP_SNMPD_LOG_FILE
+    if [ $SNMP_CAN_USLEEP = 1 ]; then
+        sleep .1
+    else
+        sleep 1
+    fi
 }
 
 WAITFORTRAPD() {
     WAITFOR "$@" $SNMP_SNMPTRAPD_LOG_FILE
+    if [ $SNMP_CAN_USLEEP = 1 ]; then
+        sleep .1
+    else
+        sleep 1
+    fi
 }
 
 # Wait until pattern "$1" appears in file "$2".
@@ -536,7 +556,7 @@ STARTAGENT() {
     fi
     STARTPROG
     WAITFORCOND test -f $SNMP_SNMPD_PID_FILE
-    WAITFORAGENT "NET-SNMP version"
+    WAITFORAGENT "NET-SNMP.version"
 }
 
 #------------------------------------ -o-
@@ -551,7 +571,7 @@ STARTTRAPD() {
     fi
     STARTPROG
     WAITFORCOND test -f $SNMP_SNMPTRAPD_PID_FILE
-    WAITFORTRAPD "NET-SNMP version"
+    WAITFORTRAPD "NET-SNMP.version"
 }
 
 ## sending SIGHUP for reconfiguration
@@ -595,12 +615,7 @@ STOPPROG() {
 	echo "$COMMAND ($1)" >> $SNMP_TMPDIR/invoked
 	VERBOSE_OUT 0 "$COMMAND ($1)"
         $COMMAND >/dev/null 2>&1
-        if [ "x$OSTYPE" = "xmsys" ]; then
-            # Wait until $pid and its parent have stopped.
-            sleep 1
-        else
-            WAITFORNOTCOND "ISRUNNING $pid"
-        fi
+        WAITFORNOTCOND "ISRUNNING $pid"
     fi
 }
 
@@ -649,10 +664,8 @@ FINISHED() {
       STOPTRAPD
     fi
     for pid in $pids; do
-        if [ "x$OSTYPE" = "xmsys" ] || ISRUNNING $pid; then
-            if [ "x$OSTYPE" != "xmsys" ]; then
-                SNMP_SAVE_TMPDIR=yes
-            fi
+        if ISRUNNING $pid; then
+	    SNMP_SAVE_TMPDIR=yes
 	    COMMAND="`ECHOSENDSIGKILL $pid`"
 	    echo "$COMMAND ($pfile)" >> $SNMP_TMPDIR/invoked
 	    VERBOSE_OUT 0 "$COMMAND ($pfile)"

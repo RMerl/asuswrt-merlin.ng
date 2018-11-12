@@ -20,6 +20,8 @@
 
 #include <net-snmp/net-snmp-config.h>
 
+#ifndef HAVE_STRTOULL
+
 #include <errno.h>
 #include <ctype.h>
 #include <limits.h>
@@ -156,3 +158,5 @@ strtoull(const char *nptr, char **endptr, int base)
         *endptr = (char *) nptr;
     return 0;
 }
+
+#endif /* HAVE_STRTOULL */

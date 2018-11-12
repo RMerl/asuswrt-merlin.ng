@@ -317,3 +317,100 @@ And this can be very slow.])
     fi         # "test $ac_inet_ip_h = yes"
     ;;
 esac
+
+#   Check whether IP_PKTINFO is usable.
+#
+
+AC_CACHE_CHECK([for IP_PKTINFO ],
+                [ac_cv_have_ip_pktinfo],
+[AC_LINK_IFELSE([AC_LANG_PROGRAM([
+#include <stdio.h>  /* printf() */
+#include <stdlib.h> /* malloc() */
+#include <string.h> /* memset() */
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+], [
+    void *buf;
+    int len;
+    void *from;
+    socklen_t *fromlen;
+
+    struct iovec iov;
+    char *cmsg = malloc(CMSG_SPACE(sizeof(struct in_pktinfo)));
+    struct cmsghdr *cm;
+    struct msghdr msg;
+
+    iov.iov_base = buf;
+    iov.iov_len = len;
+
+    memset(&msg, 0, sizeof msg);
+    msg.msg_name = from;
+    msg.msg_namelen = *fromlen;
+    msg.msg_iov = &iov;
+    msg.msg_iovlen = 1;
+    msg.msg_control = &cmsg;
+    msg.msg_controllen = sizeof(cmsg);
+
+    for (cm = CMSG_FIRSTHDR(&msg); cm; cm = CMSG_NXTHDR(&msg, cm)) {
+        if (cm->cmsg_level == SOL_IP && cm->cmsg_type == IP_PKTINFO) {
+            struct in_pktinfo* src = (struct in_pktinfo *)CMSG_DATA(cm);
+            printf("Address: %s; index: %d\n", inet_ntoa(src->ipi_addr),
+	           src->ipi_ifindex);
+        }
+    }
+])],
+[ac_cv_have_ip_pktinfo=yes],
+[ac_cv_have_ip_pktinfo=no]
+)])
+if test x$ac_cv_have_ip_pktinfo = xyes; then
+    AC_DEFINE(HAVE_IP_PKTINFO, 1, [Set if IP_PKTINFO is usable])
+fi
+
+#   Check whether IP_RECVDSTADDR is usable.
+#
+
+AC_CACHE_CHECK([for IP_RECVDSTADDR ],
+                [ac_cv_have_ip_recvdstaddr],
+[AC_LINK_IFELSE([AC_LANG_PROGRAM([
+#include <stdio.h>  /* printf() */
+#include <stdlib.h> /* malloc() */
+#include <string.h> /* memset() */
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+], [
+    void *buf;
+    int len;
+    void *from;
+    socklen_t *fromlen;
+
+    struct iovec iov;
+    char *cmsg = malloc(CMSG_SPACE(sizeof(struct in_addr)));
+    struct cmsghdr *cm;
+    struct msghdr msg;
+
+    iov.iov_base = buf;
+    iov.iov_len = len;
+
+    memset(&msg, 0, sizeof msg);
+    msg.msg_name = from;
+    msg.msg_namelen = *fromlen;
+    msg.msg_iov = &iov;
+    msg.msg_iovlen = 1;
+    msg.msg_control = &cmsg;
+    msg.msg_controllen = sizeof(cmsg);
+
+    for (cm = CMSG_FIRSTHDR(&msg); cm; cm = CMSG_NXTHDR(&msg, cm)) {
+        if (cm->cmsg_level == IPPROTO_IP && cm->cmsg_type == IP_RECVDSTADDR) {
+            struct in_addr* src = (struct in_addr *)CMSG_DATA(cm);
+            printf("Address: %s\n", inet_ntoa(src));
+        }
+    }
+])],
+[ac_cv_have_ip_recvdstaddr=yes],
+[ac_cv_have_ip_recvdstaddr=no]
+)])
+if test x$ac_cv_have_ip_recvdstaddr = xyes; then
+    AC_DEFINE(HAVE_IP_RECVDSTADDR, 1, [Set if IP_RECVDSTADDR is usable])
+fi

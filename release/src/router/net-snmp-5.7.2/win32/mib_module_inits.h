@@ -29,6 +29,9 @@
 #ifndef _MSC_VER
   if (should_init("disk")) init_disk();
 #endif
+#ifdef USING_UCD_SNMP_DLMOD_MODULE
+  if (should_init("dlmod")) init_dlmod();
+#endif
   if (should_init("loadave")) init_loadave();
   if (should_init("extensible")) init_extensible();
   if (should_init("extend")) init_extend();

@@ -2,6 +2,8 @@
 #include <net-snmp/net-snmp-includes.h>
 #include <net-snmp/agent/net-snmp-agent-includes.h>
 #include <net-snmp/agent/hardware/fsys.h>
+#include "hw_fsys.h"
+#include "hardware/fsys/hw_fsys_private.h"
 
 #include <stdio.h>
 #if HAVE_MNTENT_H
@@ -57,7 +59,7 @@
 
 #endif
 
-int
+static int
 _fsys_remote( char *device, int type )
 {
     if (( type == NETSNMP_FS_TYPE_NFS) ||
@@ -67,7 +69,7 @@ _fsys_remote( char *device, int type )
         return 0;
 }
 
-int
+static int
 _fsys_type( char *typename )
 {
     DEBUGMSGTL(("fsys:type", "Classifying %s\n", typename));
@@ -103,7 +105,9 @@ _fsys_type( char *typename )
               !strcmp(typename, MNTTYPE_NFS3) ||
               !strcmp(typename, MNTTYPE_NFS4) ||
               !strcmp(typename, MNTTYPE_CIFS) ||  /* i.e. SMB - ?? */
-              !strcmp(typename, MNTTYPE_SMBFS)    /* ?? */ )
+              !strcmp(typename, MNTTYPE_SMBFS) || /* ?? */
+              /* mvfs (IBM ClearCase) is nfs-like in nature */
+              !strcmp(typename, MNTTYPE_MVFS))
        return NETSNMP_FS_TYPE_NFS;
     else if ( !strcmp(typename, MNTTYPE_NCPFS) )
        return NETSNMP_FS_TYPE_NETWARE;
@@ -129,8 +133,7 @@ _fsys_type( char *typename )
      *    (The systems listed are not fixed in stone,
      *     but are simply here to illustrate the principle!)
      */    
-    else if ( !strcmp(typename, MNTTYPE_MVFS) ||
-              !strcmp(typename, MNTTYPE_TMPFS) ||
+    else if ( !strcmp(typename, MNTTYPE_TMPFS) ||
               !strcmp(typename, MNTTYPE_GFS) ||
               !strcmp(typename, MNTTYPE_GFS2) ||
               !strcmp(typename, MNTTYPE_XFS) ||
@@ -139,6 +142,11 @@ _fsys_type( char *typename )
               !strcmp(typename, MNTTYPE_REISERFS) ||
               !strcmp(typename, MNTTYPE_OCFS2) ||
               !strcmp(typename, MNTTYPE_CVFS) ||
+              !strcmp(typename, MNTTYPE_SIMFS) ||
+              !strcmp(typename, MNTTYPE_BTRFS) ||
+              !strcmp(typename, MNTTYPE_ZFS) ||
+              !strcmp(typename, MNTTYPE_NVMFS) ||
+              !strcmp(typename, MNTTYPE_ACFS) ||
               !strcmp(typename, MNTTYPE_LOFS))
        return NETSNMP_FS_TYPE_OTHER;
 
@@ -167,15 +175,16 @@ netsnmp_fsys_arch_load( void )
 #endif
     struct NSFS_STATFS stat_buf;
     netsnmp_fsys_info *entry;
-    char               tmpbuf[1024];
+    char              *tmpbuf = NULL;
 
     /*
      * Retrieve information about the currently mounted filesystems...
      */
     fp = fopen( ETC_MNTTAB, "r" );   /* OR setmntent()?? */
     if ( !fp ) {
-        snprintf( tmpbuf, sizeof(tmpbuf), "Cannot open %s\n", ETC_MNTTAB );
-        snmp_log_perror( tmpbuf );
+        if (asprintf(&tmpbuf, "Cannot open %s", ETC_MNTTAB) >= 0)
+            snmp_log_perror(tmpbuf);
+        free(tmpbuf);
         return;
     }
 
@@ -205,6 +214,8 @@ netsnmp_fsys_arch_load( void )
 #if HAVE_HASMNTOPT
         if (hasmntopt( m, "ro" ))
             entry->flags |= NETSNMP_FS_FLAG_RONLY;
+        else
+            entry->flags &= ~NETSNMP_FS_FLAG_RONLY;
 #endif
         /*
          *  The root device is presumably bootable.
@@ -234,8 +245,17 @@ netsnmp_fsys_arch_load( void )
         if ( NSFS_STATFS( entry->path, &stat_buf ) < 0 )
 #endif
         {
-            snprintf( tmpbuf, sizeof(tmpbuf), "Cannot statfs %s\n", entry->path );
-            snmp_log_perror( tmpbuf );
+            tmpbuf = NULL;
+            if (asprintf(&tmpbuf, "Cannot statfs %s", entry->path) >= 0)
+                snmp_log_perror(tmpbuf);
+            free(tmpbuf);
+            entry->units = stat_buf.NSFS_SIZE;
+            entry->size  = 0;
+            entry->used  = 0;
+            entry->avail = 0;
+            entry->inums_total = stat_buf.f_files;
+            entry->inums_avail = stat_buf.f_ffree;
+            netsnmp_fsys_calculate32(entry);
             continue;
         }
         entry->units =  stat_buf.NSFS_SIZE;
@@ -255,4 +275,3 @@ netsnmp_fsys_arch_load( void )
     }
     fclose( fp );
 }
-

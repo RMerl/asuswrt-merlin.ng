@@ -3,6 +3,282 @@ that have been applied in released versions.  Please see the NEWS file for
 a summary of the major changes, and the ChangeLog file for a comprehensive
 listing of all changes made to the code.
 
+*5.8*
+    snmplib:
+      - [BUG 3444939]: BUG: 1796886: snmplib: Avoid that
+        sprint_realloc_octet_string() triggers a segmentation fault
+        strlcpy() implementations typically scan for the end of the source
+        argument passed to strlcpy(). Hence avoid passing an unterminated
+        string to strlcpy().
+      - Flush persistent config to persistent storage
+      - Asn1: BUG: 2828: from "Google Autofuzz project": fix off-by-one
+	heap access for opaque types   (and an adjacent bug that was not in
+	5.4, noticed by code inspection)
+      - Asn1: from "Google Autofuzz project": propagate error from
+	asn_parse_length
+      - TLS/DTLS fixes
+      - Add more openssl error cases where we check for local cert
+      - fix usm keychanges for new algorithms and longer keylengths
+      - fix some memory leaks in usm processing
+      - IP address formatting fixes
+      - Make the source code C89 compliant
+      - Fixed reporting 'error writing to /var/xxx/snmpapp.conf'. When a
+	client utility, such as snmptrap, tries to write to its persistent
+	configuration file (/var/net-snmp/snmpapp.conf in Fedora), do not
+	report any error when open() fails. The tool is typically run by
+	non-root, who cannot write to /var and the error just confuses
+	users. And when doing it, make sure that "snmpapp" string is
+	defined only on one place, just in case.
+      - BUG: 2622: Fix excessive indents in log file
+
+    snmpd:
+      - SNMP-TARGET-MIB: Fix snmpTargetAddrTAddress
+      - [BUG 2815]: Display UTF-8 characters again
+      - [BUG 3444939]: BUG: 1796886: snmplib: Avoid that
+	sprint_realloc_octet_string() embeds unprintable control characters
+	or binary zeroes in its output. This behavior could cause truncated
+	output in snmptrapd.")
+      - BUG: 2864: use clientaddr properly
+      - Add the ability to set the source address with "-s" for trapsess
+      - BUG: 1366: Pass proper buffer length to netsnmp_tls_fingerprint_build()
+      - Fix/enforce ipDefaultRouterLifetime value range
+      - BUG: 2810: from "Minzhuan Gong": fix compile with
+	--enable-read-only
+      - BUG: 2845: fix compilation error with NETSNMP_NO_WRITE_SUPPORT
+      - BUG: 2846: fix agent compile when both --enable-read-only and
+	--disable-set-support are given.
+      - Com2sec and com2sec6 SOURCE values may deny sources as well as
+	permit.
+      - TLSTM MIB: Fix support for sha256, 384 and 512 fingerprints
+      - BUG: 2830: Make the agentxperms keyword work again
+      - Add new snmpd.conf option 'diskio' to monitor only selected disks.
+	On machines with thousands of block devices, parsing
+	/proc/diskstats is really slow. The new option enables monitoring
+	of selected devices, saving lot of CPU time.
+
+    agentx:
+      - From "Google AutoFuzz project": account for the nul character we
+	will add to the string.
+      - From "Google Autofuzz project": additional agentx protocol parser
+	bounds checking
+
+    install:
+      - Install missing system header files
+
+    building:
+      - Add Travis and Appveyor CI support
+      - Fix recently introduced autoreconf warnings
+      - Unbreak AIX support
+      - RHEL 5 build fix
+
+    docs:
+      - Bug 2826: from Tomasz: fix utf-8 encoding
+
+    python:
+      - BUG 2824: from: Tomasz: Fix python module make install
+
+    snmptranslate:
+      - Introduce bulk translation mode The special argument "-" causes
+	snmptranslate to enter bulk translation mode, in which it expects
+	one OID per line.  Whitespace is treated as the end of the OID, and
+	only that portion of the line is replaced, meaning that this can be
+	used to translate, e.g., "snmpwalk" output without the proper MIBs
+	loaded: snmptranslate -m all -OX < numeric.txt > symbolic.txt
+
+    snmptrapd:
+      - Add support for the latest libmysqlclient version
+      - Correctly forward traps with Request-ID '0'. Request-ID of
+	forwarded traps is taken from the incoming trap and it can be zero.
+	We should not report error in this case.
+
+    mib2c:
+      - PATCH: 1281, BUG: 2534 fixed mfd writability
+
+    python:
+      - Patch from David Hankins to fix python binding error codes
+
+    unspecified:
+      - A new 'checkbandwidth' script to check host min/max bandwidth
+      - Many fixes found by Coverity scans
+      - Fixed crash when receiving non-standard compliant responses. Some
+	HW sends ifOperStatus as NULL instead of INTEGER type. We should
+	not try to dereference this NULL.
+      - IPv6 support is now compiled by default.  If you need an IPv4-only
+	agent, use --disable-ipv6.
+      - [BUG 2616]: Fix certain spelling errors in source code comments and
+	printed messages
+      - [BUG 2624]: stop trying to use the deprecated perl uninstall
+      - [BUG 2712]: Fix Perl module compilation 
+      - [BUG ]: #2615: Don't return incompletely parsed varbinds
+
+    DISMAN EXPRESSION MIB:
+      - Avoid that enabling this MIB causes snmpd to crash during startup
+
+    DISMAN MIB:
+      - Avoid reading past the end of a buffer Terminate the expExpression
+	string with a NUL character.
+
+    HP:
+      - UX on ia64: Fix large fd set implementation Reported-by: Dixon
+	Xavier <dixoncx@gmail.com>
+
+    NetBSD:
+      - Fix for NetBSD 8
+
+    MIB:
+      - Speed up reading /proc/net/tcp and /proc/net/tcp6 The time needed
+	to read Linux procfs files is proportional to the square of the
+	quotient of the file size and the read buffer size. Increase the
+	read buffer size to decrease the time needed to read large procfs
+	files.
+
+    Windows:
+      - BUG: 2550: Suppress netsnmp_assert s != (-1) messages
+      - Feature-request: 181: Export snmp_api and ASN functions See also
+	http://sourceforge.net/p/net-snmp/feature-requests/181/.
+
+    Cygwin64:
+      -  Fix build with OpenSSL
+      -  Fix winExtDLL build
+
+    Win32:
+      - Add support for the DTLS-UDP and TLS-TCP transports
+      - Win32/MSVC general cleanup
+
+
+*5.7.3*
+    snmplib:
+      - Fixed crash when MD5 hash is not supported by OpenSSL.
+      - Fixed parsing of sequences. Don't overwrite 'data' variable, it's
+	used when parsing bulk responses.
+      - [BUG 1267 ]: snmplib: register_mib_context() fix for read-only
+	variables   This is a slightly modified version of a patch from
+	Harsha Shivanna.
+
+    snmp:
+      - Usm-dh-objects-mib: Avoid triggering an assert statement in
+	netsnmp_ready_monotonic() The cache timeout for
+	snmp-usm-dh-objects-mib is -1. Any cache timeout value < 0 disables
+	caching. However, strictly negative values trigger the assert
+	statement in netsnmp_ready_monotonic(). Avoid triggering that
+	assert statement.
+      - Fixed monitoring based on non-delta trigger.   snmpd crashed wit
+	following snmpd.conf: monitor -s -D -r 10 -e LOGMATCH -o
+	logMatchCurrentCount "Log Match" != logMatchCurrentCount logmatch
+	LoginFailure1 /var/log/secure 10 su: .*fail.* The reason was
+	unitialized variable sysUT_var in mteTrigger_run(), it was filled
+	only if the trigger was delta-valued, while its value was used for
+	all triggers. With this patch, sysUT_var is filled for all code
+	branches where it is needed.
+
+    snmpd:
+      - Add a missing function declaration
+      - Added btrfs support to hrFSTable
+      - Correct the size of of the EXAMPLEIPADDRESS value on L64 hosts
+      - Fixed crash in UCD-SNMP-MIB::extTable snmpd crashed when the
+	command to execute had no arguments, i.e. extend->args was NULL.
+      - Fixed value of UCD-SNMP-MIB::extCommand to contain full command
+	line. MIB description of UCD-SNMP-MIB::extCommand suggests it
+	should contail full command line. Also in Net-SNMP 5.3.2.2, whole
+	command line was shown.
+      - Make it possible to use NUL characters in the indices for
+	snmpTargetAddrTable
+      - PATCH 2472: from Sunil: don't use HBKT as heartbeat interval in
+	SCTP-MIB::sctpAssocTable.
+      - Remove some unused includes
+      - Show Linux kernel threads in hrSWRunTable.
+      - Use 0 for the ignored numvars argument to netsnmp_register_mib The
+	numvars argument of netsnmp_register_mib is ignored if the var
+	argument is NULL. In order to unify this use of it with all other
+	ones, change it from 1 to 0
+      - SECURITY: a denial of service attack vector was discovered on
+        the linux implementation of the ICMP-MIB.  This release fixes
+        this bug and all users are encouraged to update their SNMP
+        agent if they make use of the ICMP-MIB table objects.
+      - PATCH: 1275: from Viliam Púčik: fixed Perl trap handler when
+	processing trap with empty community string.
+
+    snmpd, snmptrapd and apps:
+      - Make ENV_SEPARATOR_CHAR configurable
+
+    snmptrapd:
+
+    apps:
+      - Stop agentxtrap from accessing the persistent configuration This is
+	needed to prevent moaning about not beeing allowed to write those
+	files due to bad permissions.
+      - Stop using snmp_perror when logging after functions that don't set
+	snmp_errno.
+
+    building:
+      - Make the -without options to rpmbuild work
+      - Avoid duplicate and trailing spaces in the dependency files.
+
+    documentation:
+      - From "Eric S. Raymond": Correct man page markup problem Ambiguous
+	or invalid backslash.  This doesn't cause groff a problem. but it
+	confuses doclifter and may confuse older troff implementations.
+
+    perl:
+      - BUG: 2402: Add support for SNMPv3 traps
+
+    python:
+      - Fixed IPADDRESS size on 64bit systems.
+      - Fixed returning of empty strings. Varbind type (SNMP_NOSUCHOBJECT
+	etc.) should be used to detect errors instead of length of the
+	variable - it can be empty string.
+      - [PATCH 1239]: Fix memory leak
+
+    testing:
+      - Make sure Test::Harness is of at least version 1.21 Test::Harness
+	1.21 is the first version that implements TAP v12 which allows
+	putting the header (1..N) after the tests and since our tests
+	utilize that we should make sure that the test runner supports it.
+
+    AIX:
+      - Make tcp-mib build
+      - Make udp-mib build
+
+    Linux:
+      - BUG: 2238: Add libnl3 support
+      - RESOURCES-MIB, hrSWRun table: Parse /proc/<pid>/stat correctly on
+	Linux This issue was reported by Vincent Bernat
+	<vincent.bernat@dailymotion.com>. See also
+	http://sourceforge.net/p/net-snmp/patches/1257/.
+
+    Win32:
+      - Modified patch from Bart Van Assche to improve cygwin building
+      - Perl: BUG: 2488: Avoid "Free to wrong pool" error
+      - Perl: BUG: 2488: Avoid "Free to wrong pool" error" This reverts
+	commit b2725964bde921b6285e3a59a512552cae0a0ca5.
+
+    Windows:
+      - Add multihoming support On Windows Vista / Windows Server 2008 and
+	later it is possible to add multihoming support by using the
+	IP_PKTINFO socket option. Conflicts:
+	snmplib/transports/snmpUDPBaseDomain.c
+      - Make winExtDLL work on 64-bit Windows systems
+      - Port batch build infrastructure to Visual Studio 2010 and later
+	From Visual Studio 2010 on it is no longer possible to specify
+	include or library directories globally - these have to be
+	specified per project. Hence two additional menu entries in
+	build.bat that allow to specify these directories.
+      - Ported ucd-snmp/dlmod to MinGW / MSVC
+
+    MinGW:
+      - Port T005table_dataset_cagentlib.c to MinGW
+
+    unspecified:
+      - Added simfs (OpenVZ filesystem) to hrStorageTable and hrFSTable.
+      - Upport new MIB structures and MFD rewrites under Darwin
+      - [BUG 2470]: Accept 65535 as a valid IPv6 port number
+      - [BUG 2476]: snmpd fails to start on AIX On an AIX system there is
+	no <kvm.h> header file nor do the /dev/dmem or /dev/drum devices
+	exist and hence DMEM_LOC is not defined. Avoid that init_kmem()
+	fails in that case.
+      - [BUG 2568]: Avoid that file descriptors above FD_SETSIZE trigger
+	abort()
+
 *5.7.2*
 
     snmplib:
@@ -2315,7 +2591,6 @@ listing of all changes made to the code.
       - [PATCH 1600453]: OS X compile-time endian determination
       - [PATCH 1600522]: CPU HAL implementation for mach/darwin
       - Improve memory reporting (patch from Apple)
-      - Patch: 3514049 from twobits-github: fix compilation on darwin11
 
     Solaris:
       - [BUG 1626153]: No hrSWRun informations on Solaris zones

@@ -1,7 +1,6 @@
 #
 # Makefile for the man page directory
 #
-top_builddir=..
 VPATH		= @srcdir@
 
 #
@@ -14,7 +13,7 @@ OTHERUNINSTALL=manuninstall
 # local stuff
 #
 
-MAN1  = snmpinform.1 snmp-bridge-mib.1
+MAN1  = snmpinform.1 snmp-bridge-mib.1 snmptop.1
 
 @NETSNMP_HAVE_AGENTX_LIBS_TRUE@AGENTXTRAP = agentxtrap.1
 @NETSNMP_HAVE_AGENTX_LIBS_FALSE@AGENTXTRAP =
@@ -22,7 +21,8 @@ MAN1  = snmpinform.1 snmp-bridge-mib.1
 MAN1G = $(AGENTXTRAP) snmpbulkget.1 snmpcmd.1 snmpget.1 snmpset.1 snmpwalk.1 \
 	snmpbulkwalk.1 snmpgetnext.1 snmptest.1 snmptranslate.1 snmptrap.1 \
 	snmpusm.1 snmpvacm.1 snmptable.1 snmpstatus.1 snmpconf.1 mib2c.1 \
-	snmpnetstat.1 snmpdelta.1 snmpdf.1 encode_keychange.1 fixproc.1 \
+	snmpnetstat.1 snmpdelta.1 snmpdf.1 snmpps.1 encode_keychange.1 \
+	fixproc.1 \
 	net-snmp-config.1 mib2c-update.1 tkmib.1 traptoemail.1 \
 	net-snmp-create-v3-user.1
 
@@ -54,11 +54,13 @@ CONFIG_ALIASES  = config_perror.3 config_pwarn.3			    \
 ALARM_ALIASES   = snmp_alarm_register.3 snmp_alarm_register_hr.3 snmp_alarm_unregister.3
 SESSION_ALIASES = snmp_api_errstring.3 snmp_close.3 snmp_error.3    \
 	snmp_open.3 snmp_perror.3 snmp_read.3 snmp_select_info.3    \
-	snmp_send.3 snmp_sess_perror.3 snmp_timeout.3
+	snmp_send.3 snmp_sess_perror.3 snmp_timeout.3               \
+	snmp_async_send.3 snmp_synch_response.3
 SSESS_ALIASES   = snmp_sess_async_send.3 snmp_sess_close.3 snmp_sess_error.3 \
 	snmp_sess_init.3 snmp_sess_open.3 snmp_sess_read.3		     \
 	snmp_sess_select_info.3 snmp_sess_send.3			     \
-	snmp_sess_session.3 snmp_sess_timeout.3
+	snmp_sess_session.3 snmp_sess_timeout.3                              \
+	snmp_sess_synch_response.3
 TRAP_ALIASES    = send_easy_trap.3 send_trap_vars.3 send_v2trap.3 
 VARBIND_ALIASES = fprint_value.3 fprint_variable.3	\
 	print_value.3 print_variable.3			\
@@ -81,14 +83,26 @@ OTHERCLEANTARGETS=$(TARGETS) default_store.3.h $(MANALIASES) manaliases
 
 all: $(TARGETS) standardall manaliases
 
-manaliases: Makefile
+manaliases: Makefile $(MAN3_API)
 	touch manaliases
-	@for i in $(MAN3_API) ; do				  \
-            for j in `sed -n '/^.SH NAME/,/^.SH SYNOPSIS/p' $$i  | sed -e 's/.- .*//' | sed 's/,.*//'  | @EGREP@ -v '^.SH ' `; do \
+	@result=0 ; \
+        for i in $(MAN3_API) ; do				  \
+            for j in `$(SED) -n '/^.SH NAME/,/^.SH SYNOPSIS/p' $$i  | $(SED) -e 's/.- .*//' | $(SED) 's/,.*//'  | $(EGREP) -v '^.SH ' `; do \
 		echo "making man page alias $$j -> $$i APIs" ;    \
 		echo ".so man3/$$i" > $$j.3 ; 		  \
+		if expr "$(MANALIASES)" : ".*$$j\\.3" > /dev/null ; \
+		then \
+		  : ; \
+		else \
+		    var=`echo $$i | $(SED) -e 's/^netsnmp_//' -e 's/_api.3//' | tr '[a-z]' '[A-Z]'` ; \
+		    echo "You must add $$j.3 to the $${var}_ALIASES variable in the Makefile.in" ; \
+		    result=1 ; \
+	        fi; \
 	    done                                                  \
-	done
+	done ; \
+	exit $$result
+
+$(MANALIASES): manaliases
 
 agentxtrap.1: $(srcdir)/agentxtrap.1.def ../sedscript
 	$(SED) -f ../sedscript < $(srcdir)/agentxtrap.1.def > agentxtrap.1
@@ -113,6 +127,9 @@ snmpdelta.1: $(srcdir)/snmpdelta.1.def ../sedscript
 
 snmpdf.1: $(srcdir)/snmpdf.1.def ../sedscript
 	$(SED) -f ../sedscript < $(srcdir)/snmpdf.1.def > snmpdf.1
+
+snmpps.1: $(srcdir)/snmpps.1.def ../sedscript
+	$(SED) -f ../sedscript < $(srcdir)/snmpps.1.def > snmpps.1
 
 snmpget.1: $(srcdir)/snmpget.1.def ../sedscript
 	$(SED) -f ../sedscript < $(srcdir)/snmpget.1.def > snmpget.1
@@ -239,8 +256,8 @@ mib2c.conf.5: $(top_srcdir)/local/mib2c mib2c.conf.5.in $(srcdir)/mib2c.extract.
 	  touch mib2c.conf.5 ; \
 	fi
 
-maninstall:  maninstalldirs $(MAN1) $(MAN1G) $(MAN3) $(MAN5G) $(MAN8) $(MANALIASES)
-	@for i in $(MAN1) ; do $(INSTALL_DATA) $(srcdir)/$$i $(INSTALL_PREFIX)$(man1dir) ; echo "install:  installed $$i in $(INSTALL_PREFIX)$(man1dir)" ; done
+maninstall:  maninstalldirs $(MAN1) $(MAN1G) $(MAN3) $(MAN3_API) $(MAN3G) $(MAN5G) $(MAN8G) $(MANALIASES)
+	@for i in $(MAN1) ; do $(INSTALL_DATA) $(srcdir)/`basename $$i` $(INSTALL_PREFIX)$(man1dir) ; echo "install:  installed $$i in $(INSTALL_PREFIX)$(man1dir)" ; done
 	@$(INSTALL_DATA) $(MAN1G) $(INSTALL_PREFIX)$(man1dir)
 	@for i in $(MAN1G) ; do echo "install:  installed $$i in $(INSTALL_PREFIX)$(man1dir)" ; done
 	#EMPTY LIST#@for i in $(MAN3) ; do $(INSTALL_DATA) $(srcdir)/$$i $(INSTALL_PREFIX)$(man3dir) ; echo "install:  installed $$i in $(INSTALL_PREFIX)$(man3dir)" ; done

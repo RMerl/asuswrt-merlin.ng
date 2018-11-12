@@ -1,5 +1,14 @@
 /*
  * snmpv3.c
+ *
+ * Portions of this file are subject to the following copyright(s).  See
+ * the Net-SNMP's COPYING file for more details and other copyrights
+ * that may apply:
+ *
+ * Portions of this file are copyrighted by:
+ * Copyright (c) 2016 VMware, Inc. All rights reserved.
+ * Use is subject to license terms specified in the COPYING file
+ * distributed with the Net-SNMP package.
  */
 
 #include <net-snmp/net-snmp-config.h>
@@ -135,46 +144,15 @@ snmpv3_secLevel_conf(const char *word, char *cptr)
 }
 
 
-NETSNMP_IMPORT int
-snmpv3_options(char *optarg, netsnmp_session * session, char **Apsz,
-               char **Xpsz, int argc, char *const *argv);
 int
-snmpv3_options(char *optarg, netsnmp_session * session, char **Apsz,
-               char **Xpsz, int argc, char *const *argv)
+snmpv3_parse_arg(int arg, char *optarg, netsnmp_session *session, char **Apsz,
+                 char **Xpsz, int argc, char *const *argv, int flags)
 {
-    char           *cp = optarg;
-    int testcase;
-    optarg++;
-    /*
-     * Support '... -3x=value ....' syntax
-     */
-    if (*optarg == '=') {
-        optarg++;
-    }
-    /*
-     * and '.... "-3x value" ....'  (*with* the quotes)
-     */
-    while (*optarg && isspace((unsigned char)(*optarg))) {
-        optarg++;
-    }
-    /*
-     * Finally, handle ".... -3x value ...." syntax
-     *   (*without* surrounding quotes)
-     */
-    if (!*optarg) {
-        /*
-         * We've run off the end of the argument
-         *  so move on the the next.
-         */
-        optarg = argv[optind++];
-        if (optind > argc) {
-            fprintf(stderr,
-                    "Missing argument after SNMPv3 '-3%c' option.\n", *cp);
-            return (-1);
-        }
-    }
+    int        priv_type;
+    char      *cp;
+    int        zero_sensitive = !( flags & NETSNMP_PARSE_ARGS_NOZERO );
 
-    switch (*cp) {
+    switch (arg) {
 
     case 'Z':
         errno=0;
@@ -189,6 +167,16 @@ snmpv3_options(char *optarg, netsnmp_session * session, char **Apsz,
             session->engineTime = strtoul(cp, &endptr, 10);
             if (errno || cp == endptr) {
                 fprintf(stderr, "Need engine time after \"-3Z engineBoot,\".\n");
+                return (-1);
+            }
+        }
+        /*
+         * Handle previous '-Z boot time' syntax
+         */
+        else if (optind < argc) {
+            session->engineTime = strtoul(argv[optind], &cp, 10);
+            if (errno || cp == argv[optind]) {
+                fprintf(stderr, "Need engine time after \"-Z engineBoot\".\n");
                 return (-1);
             }
         } else {
@@ -211,6 +199,11 @@ snmpv3_options(char *optarg, netsnmp_session * session, char **Apsz,
                 SNMP_FREE(ebuf);
                 return (-1);
             }
+            if ((eout_len < 5) || (eout_len > 32)) {
+                fprintf(stderr, "Invalid engine ID value after -e flag.\n");
+                free(ebuf);
+                return (-1);
+            }
             session->securityEngineID = ebuf;
             session->securityEngineIDLen = eout_len;
             break;
@@ -230,6 +223,11 @@ snmpv3_options(char *optarg, netsnmp_session * session, char **Apsz,
                 SNMP_FREE(ebuf);
                 return (-1);
             }
+            if ((eout_len < 5) || (eout_len > 32)) {
+                fprintf(stderr, "Invalid engine ID value after -E flag.\n");
+                free(ebuf);
+                return (-1);
+            }
             session->contextEngineID = ebuf;
             session->contextEngineIDLen = eout_len;
             break;
@@ -247,12 +245,14 @@ snmpv3_options(char *optarg, netsnmp_session * session, char **Apsz,
 
     case 'l':
         if (!strcasecmp(optarg, "noAuthNoPriv") || !strcmp(optarg, "1") ||
-            !strcasecmp(optarg, "nanp")) {
+            !strcasecmp(optarg, "noauth") || !strcasecmp(optarg, "nanp")) {
             session->securityLevel = SNMP_SEC_LEVEL_NOAUTH;
         } else if (!strcasecmp(optarg, "authNoPriv")
+                   || !strcasecmp(optarg, "auth")
                    || !strcmp(optarg, "2") || !strcasecmp(optarg, "anp")) {
             session->securityLevel = SNMP_SEC_LEVEL_AUTHNOPRIV;
         } else if (!strcasecmp(optarg, "authPriv") || !strcmp(optarg, "3")
+                   || !strcasecmp(optarg, "priv")
                    || !strcasecmp(optarg, "ap")) {
             session->securityLevel = SNMP_SEC_LEVEL_AUTHPRIV;
         } else {
@@ -261,59 +261,55 @@ snmpv3_options(char *optarg, netsnmp_session * session, char **Apsz,
                     optarg);
             return (-1);
         }
-
         break;
 
 #ifdef NETSNMP_SECMOD_USM
-    case 'a':
-#ifndef NETSNMP_DISABLE_MD5
-        if (!strcasecmp(optarg, "MD5")) {
-            session->securityAuthProto = usmHMACMD5AuthProtocol;
-            session->securityAuthProtoLen = USM_AUTH_PROTO_MD5_LEN;
-        } else
-#endif
-            if (!strcasecmp(optarg, "SHA")) {
-            session->securityAuthProto = usmHMACSHA1AuthProtocol;
-            session->securityAuthProtoLen = USM_AUTH_PROTO_SHA_LEN;
-        } else {
+    case 'a': {
+        int auth_type = usm_lookup_auth_type(optarg);
+        if (auth_type > 0) {
+            session->securityAuthProto =
+                sc_get_auth_oid(auth_type, &session->securityAuthProtoLen);
+         } else {
             fprintf(stderr,
                     "Invalid authentication protocol specified after -3a flag: %s\n",
                     optarg);
             return (-1);
         }
+    }
         break;
 
     case 'x':
-        testcase = 0;
-#ifndef NETSNMP_DISABLE_DES
-        if (!strcasecmp(optarg, "DES")) {
-            session->securityPrivProto = usmDESPrivProtocol;
-            session->securityPrivProtoLen = USM_PRIV_PROTO_DES_LEN;
-            testcase = 1;
-        }
-#endif
-#ifdef HAVE_AES
-        if (!strcasecmp(optarg, "AES128") ||
-            strcasecmp(optarg, "AES")) {
-            session->securityPrivProto = usmAES128PrivProtocol;
-            session->securityPrivProtoLen = USM_PRIV_PROTO_AES128_LEN;
-            testcase = 1;
-        }
-#endif
-        if (testcase == 0) {
+        priv_type = usm_lookup_priv_type(optarg);
+        if (priv_type < 0) {
             fprintf(stderr,
                     "Invalid privacy protocol specified after -3x flag: %s\n",
                     optarg);
             return (-1);
         }
+        session->securityPrivProto =
+            sc_get_priv_oid(priv_type, &session->securityPrivProtoLen);
         break;
 
     case 'A':
-        *Apsz = optarg;
+        *Apsz = strdup(optarg);
+        if (NULL == *Apsz) {
+            fprintf(stderr, "malloc failure processing -%c flag.\n",
+                    (char)arg);
+            return -1;
+        }
+        if (zero_sensitive)
+            memset(optarg, 0x0, strlen(optarg));
         break;
 
     case 'X':
-        *Xpsz = optarg;
+        *Xpsz = strdup(optarg);
+        if (NULL == *Xpsz) {
+            fprintf(stderr, "malloc failure processing -%c flag.\n",
+                    (char)arg);
+            return -1;
+        }
+        if (zero_sensitive)
+            memset(optarg, 0x0, strlen(optarg));
         break;
 #endif /* NETSNMP_SECMOD_USM */
 
@@ -378,10 +374,49 @@ snmpv3_options(char *optarg, netsnmp_session * session, char **Apsz,
     }
         
     default:
-        fprintf(stderr, "Unknown SNMPv3 option passed to -3: %c.\n", *cp);
+        fprintf(stderr, "Unknown SNMPv3 option passed to -3: %c.\n", arg);
         return -1;
     }
     return 0;
+}
+
+int
+snmpv3_parse_args(char *optarg, netsnmp_session * session, char **Apsz,
+                  char **Xpsz, int argc, char *const *argv, int flags)
+{
+    char           *cp = optarg;
+    optarg++;
+    /*
+     * Support '... -3x=value ....' syntax
+     */
+    if (*optarg == '=') {
+        optarg++;
+    }
+    /*
+     * and '.... "-3x value" ....'  (*with* the quotes)
+     */
+    while (*optarg && isspace((unsigned char)(*optarg))) {
+        optarg++;
+    }
+    /*
+     * Finally, handle ".... -3x value ...." syntax
+     *   (*without* surrounding quotes)
+     */
+    if (!*optarg) {
+        /*
+         * We've run off the end of the argument
+         *  so move on the the next.
+         */
+        if (optind >= argc) {
+            fprintf(stderr,
+                    "Missing argument after SNMPv3 '-3%c' option.\n", *cp);
+            return (-1);
+        }
+        optarg = argv[optind++];
+    }
+
+    return snmpv3_parse_arg(*cp, optarg, session, Apsz, Xpsz, argc, argv,
+                            flags);
 }
 
 /*******************************************************************-o-******
@@ -523,7 +558,7 @@ setup_engineID(u_char ** eidp, const char *text)
     /*
      * Allocate memory and store enterprise ID.
      */
-    if ((bufp = (u_char *) malloc(len)) == NULL) {
+    if ((bufp = (u_char *) calloc(1, len)) == NULL) {
         snmp_log_perror("setup_engineID malloc");
         return -1;
     }
@@ -563,7 +598,7 @@ setup_engineID(u_char ** eidp, const char *text)
              * seed at startup, but few OSes should have that problem.
              */
             bufp[4] = ENGINEID_TYPE_NETSNMP_RND;
-            tmpint = random();
+            tmpint = netsnmp_random();
             memcpy(bufp + 5, &tmpint, sizeof(tmpint));
             tmptime = time(NULL);
             memcpy(bufp + 5 + sizeof(tmpint), &tmptime, sizeof(tmptime));
@@ -577,7 +612,8 @@ setup_engineID(u_char ** eidp, const char *text)
 #ifdef AF_INET6
     case ENGINEID_TYPE_IPV6:
         bufp[4] = ENGINEID_TYPE_IPV6;
-        memcpy(bufp + 5, hent->h_addr_list[0], hent->h_length);
+        if (hent)
+            memcpy(bufp + 5, hent->h_addr_list[0], hent->h_length);
         break;
 #endif
 #endif
@@ -824,6 +860,42 @@ oldengineID_conf(const char *word, char *cptr)
 }
 
 /*
+ * set_exact_engineID_conf(const oid *, size_t):
+ *
+ * Specifies an exact engineID OID.
+ */
+int
+set_exact_engineID(const u_char *id, size_t len)
+{
+    int rc = SNMPERR_SUCCESS;
+    u_char *newID = NULL;
+
+    if (NULL == id || 0 == len)
+        return SNMPERR_GENERR;
+
+    if (len > MAX_ENGINEID_LENGTH)
+        return SNMPERR_TOO_LONG;
+
+    newID = malloc(len+1);
+    if (NULL == newID) {
+        snmp_log(LOG_ERR, "malloc failed for engineID\n");
+        return SNMPERR_GENERR;
+    }
+    if (NULL != engineID)
+        free(engineID);
+
+    memcpy(newID, id, len);
+    newID[len] = 0;
+
+    engineID = newID;
+    engineIDLength = len;
+    engineIDIsSet = 1;
+    engineIDType = ENGINEID_TYPE_EXACT;
+
+    return rc;
+}
+
+/*
  * exactEngineID_conf(const char *, char *):
  * 
  * Reads a octet string encoded engineID into the engineID and
@@ -832,16 +904,20 @@ oldengineID_conf(const char *word, char *cptr)
 void
 exactEngineID_conf(const char *word, char *cptr)
 {
-    read_config_read_octet_string(cptr, &engineID, &engineIDLength);
-    if (engineIDLength > MAX_ENGINEID_LENGTH) {
+    /** we want buf > max so we know if there is truncation */
+    u_char new_engineID[MAX_ENGINEID_LENGTH+2],
+        *new_engineIDptr = new_engineID;
+    size_t new_engineIDLength = sizeof(new_engineID);
+
+    read_config_read_octet_string(cptr, &new_engineIDptr, &new_engineIDLength);
+    if (new_engineIDLength > MAX_ENGINEID_LENGTH) {
+        new_engineIDLength = MAX_ENGINEID_LENGTH;
 	netsnmp_config_error(
 	    "exactEngineID '%s' too long; truncating to %d bytes",
 	    cptr, MAX_ENGINEID_LENGTH);
-        engineID[MAX_ENGINEID_LENGTH - 1] = '\0';
-        engineIDLength = MAX_ENGINEID_LENGTH;
     }
-    engineIDIsSet = 1;
-    engineIDType = ENGINEID_TYPE_EXACT;
+
+    set_exact_engineID( new_engineIDptr, new_engineIDLength);
 }
 
 
@@ -1148,13 +1224,11 @@ snmpv3_generate_engineID(size_t * length)
 
     if (newID) {
         *length = snmpv3_get_engineID(newID, engineIDLength);
+        if (*length == 0) {
+            SNMP_FREE(newID);
+            newID = NULL;
+        }
     }
-
-    if (*length == 0) {
-        SNMP_FREE(newID);
-        newID = NULL;
-    }
-
     return newID;
 
 }                               /* end snmpv3_generate_engineID() */

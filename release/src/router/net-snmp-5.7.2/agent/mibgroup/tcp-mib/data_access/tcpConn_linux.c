@@ -121,6 +121,8 @@ _load4(netsnmp_container *container, u_int load_flags)
     int             rc = 0;
     FILE           *in;
     char            line[160];
+    enum            { rbufsize = 65536 };
+    void           *rbuf = alloca(rbufsize);
     
     netsnmp_assert(NULL != container);
 
@@ -130,6 +132,7 @@ _load4(netsnmp_container *container, u_int load_flags)
         return -2;
     }
     
+    setvbuf(in, rbuf, _IOFBF, rbufsize);
     fgets(line, sizeof(line), in); /* skip header */
 
     /*
@@ -150,6 +153,8 @@ _load4(netsnmp_container *container, u_int load_flags)
             DEBUGMSGT(("access:tcpconn:container",
                        "error parsing line (%d != 6)\n", rc));
             DEBUGMSGT(("access:tcpconn:container"," line '%s'\n", line));
+	    snmp_log(LOG_ERR, "tcp:_load4: bad line in " PROCFILE ": %s\n", line);
+	    rc = 0;
             continue;
         }
         DEBUGMSGT(("verbose:access:tcpconn:container"," line '%s'\n", line));
@@ -259,7 +264,9 @@ _load6(netsnmp_container *container, u_int load_flags)
 {
     int             rc = 0;
     FILE           *in;
-    char            line[180];
+    char            line[360];
+    enum            { rbufsize = 65536 };
+    void           *rbuf = alloca(rbufsize);
 
     netsnmp_assert(NULL != container);
 
@@ -270,6 +277,7 @@ _load6(netsnmp_container *container, u_int load_flags)
         return -2;
     }
 
+    setvbuf(in, rbuf, _IOFBF, rbufsize);
     fgets(line, sizeof(line), in); /* skip header */
 
     /*
@@ -292,6 +300,8 @@ _load6(netsnmp_container *container, u_int load_flags)
             DEBUGMSGT(("access:tcpconn:container",
                        "error parsing line (%d != 6)\n", rc));
             DEBUGMSGT(("access:tcpconn:container"," line '%s'\n", line));
+	    snmp_log(LOG_ERR, "tcp:_load6: bad line in " PROCFILE ": %s\n", line);
+	    rc = 0;
             continue;
         }
         DEBUGMSGT(("verbose:access:tcpconn:container"," line '%s'\n", line));

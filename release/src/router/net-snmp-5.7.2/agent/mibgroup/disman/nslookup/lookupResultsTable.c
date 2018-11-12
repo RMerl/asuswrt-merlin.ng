@@ -34,12 +34,6 @@ struct variable2 lookupResultsTable_variables[] = {
      var_lookupResultsTable, 2, {1, 3}}
 };
 
-/*
- * global storage of our data, saved in and configured by header_complex() 
- */
-
-extern struct header_complex_index *lookupCtlTableStorage;
-extern struct header_complex_index *lookupResultsTableStorage;
 
 int
 lookupResultsTable_inadd(struct lookupResultsTable_data *thedata);
@@ -47,13 +41,14 @@ lookupResultsTable_inadd(struct lookupResultsTable_data *thedata);
 void
 lookupResultsTable_cleaner(struct header_complex_index *thestuff)
 {
-    struct header_complex_index *hciptr = NULL;
-    struct lookupResultsTable_data *StorageDel = NULL;
+    struct header_complex_index *hciptr, *nhciptr;
+    struct lookupResultsTable_data *StorageDel;
+
     DEBUGMSGTL(("lookupResultsTable", "cleanerout  "));
-    for (hciptr = thestuff; hciptr != NULL; hciptr = hciptr->next) {
-        StorageDel =
-            header_complex_extract_entry(&lookupResultsTableStorage,
-                                         hciptr);
+    for (hciptr = thestuff; hciptr; hciptr = nhciptr) {
+        nhciptr = hciptr->next;
+        StorageDel = header_complex_extract_entry(&lookupResultsTableStorage,
+                                                  hciptr);
         if (StorageDel != NULL) {
             SNMP_FREE(StorageDel->lookupCtlOwnerIndex);
             SNMP_FREE(StorageDel->lookupCtlOperationName);
@@ -62,8 +57,8 @@ lookupResultsTable_cleaner(struct header_complex_index *thestuff)
         }
         DEBUGMSGTL(("lookupResultsTable", "cleaner  "));
     }
-
 }
+
 void
 init_lookupResultsTable(void)
 {

@@ -53,23 +53,14 @@ fi
 AC_CHECK_PROGS(FIND,   find)
 AC_CHECK_PROGS(WHOAMI, whoami logname, whoami)
 
-AC_PATH_PROG(AUTOCONF,    autoconf)
-AC_PATH_PROG(AUTOHEADER,  autoheader)
+AC_PATH_PROG(AUTOCONF,    autoconf,   [:])
+AC_PATH_PROG(AUTOHEADER,  autoheader, [:])
 AC_PATH_PROG([PERLPROG],  perl)
 AC_PATH_PROG([PSPROG],    ps)
 AC_PATH_PROG([PYTHONPROG],python)
 
 AC_PATH_PROG([UNAMEPROG], uname)
 AC_DEFINE_UNQUOTED(UNAMEPROG,"$UNAMEPROG", [Where is the uname command])
-
-if test "x$ac_cv_prog_AUTOCONF" = "x"; then
-	AUTOCONF=":"
-	AC_SUBST(AUTOCONF)
-fi
-if test "x$ac_cv_prog_AUTOHEADER" = "x"; then
-	AUTOHEADER=":"
-	AC_SUBST(AUTOHEADER)
-fi
 
 MAKE=${MAKE-"make"}
 $MAKE -v -f /dev/null 2>/dev/null | $GREP GNU >/dev/null
@@ -85,13 +76,13 @@ have_gnu_make=$?
 ##
 
 AC_MSG_CHECKING([whether the Perl function system() invokes a POSIX shell])
-if test "x$PERLPROG" != 'x' && test -x "$PERLPROG" && test "x`$PERLPROG -e 'system('"'"'echo $OSTYPE'"'"');'`" != 'x$OSTYPE'; then
+if test "x$PERLPROG" != 'x' && test -x "$PERLPROG" && test "x`$PERLPROG -e 'system('\''echo $OSTYPE'\'');'`" != 'x$OSTYPE'; then
     PERL_SYSTEM_INVOKES_POSIX_SHELL=yes
 else
     PERL_SYSTEM_INVOKES_POSIX_SHELL=no
 fi
+AC_MSG_RESULT([$PERL_SYSTEM_INVOKES_POSIX_SHELL])
 AC_SUBST([PERL_SYSTEM_INVOKES_POSIX_SHELL])
-AC_MSG_RESULT([yes])
 
 
 ##
@@ -104,7 +95,6 @@ AC_PROG_CPP
 LINKCC=${LINKCC-"$CC"}
 AC_SUBST(LINKCC)
 
-AC_AIX
 AC_C_CONST
 AC_C_INLINE
 
@@ -130,7 +120,27 @@ if test "x$developer" = "xyes" -a "x$GCC" = "xyes"; then
 
     #       WWWXXX - strict type checking
     #
-    DEVFLAGS="-Wall -Wstrict-prototypes -Wwrite-strings -Wcast-qual"
+    netsnmp_save_CFLAGS="$CFLAGS"
+    for opt in -Wall -Wextra -Wstrict-prototypes -Wwrite-strings -Wcast-qual \
+        -Wimplicit-fallthrough=2 -Wlogical-op                                \
+        -Wno-format-truncation -Wno-missing-field-initializers               \
+        -Wno-sign-compare -Wno-unused-parameter -Wno-type-limits
+    do
+      AC_MSG_CHECKING([whether the compiler supports $opt])
+      if test x$opt != x-Wstrict-prototypes; then
+        CFLAGS="-Werror $opt $CFLAGS"
+      else
+        CFLAGS="$opt $CFLAGS"
+      fi
+      AC_LINK_IFELSE([AC_LANG_PROGRAM([], [])], [
+        AC_MSG_RESULT([yes])
+        DEVFLAGS="$DEVFLAGS $opt"
+      ], [
+        AC_MSG_RESULT([no])
+      ])
+      CFLAGS="$netsnmp_save_CFLAGS"
+    done
+
 else
     DEVFLAGS=""
 fi
@@ -171,6 +181,7 @@ AC_SUBST(SNMPLIB_INCLUDES)
 AC_SUBST(AGENT_INCLUDES)
 AC_SUBST(HELPER_INCLUDES)
 AC_SUBST(MIBGROUP_INCLUDES)
+AC_SUBST(EXTERNAL_MIBGROUP_INCLUDES)
 AC_SUBST(GNU_vpath)
 AC_SUBST(NON_GNU_VPATH)
 
@@ -187,6 +198,12 @@ PARTIALTARGETOS=`echo $target_os | sed 's/[-._].*//'`
 changequote([, ])
 AC_MSG_CACHE_ADD(Building for:               $PARTIALTARGETOS)
 
+
+# Avoid conflicts on Cygwin between <windows.h> and the openssl header files.
+case x$target_os in
+     xcygwin*)
+        CPPFLAGS="-DVC_EXTRALEAN -DWIN32_LEAN_AND_MEAN $CPPFLAGS";;
+esac
 
 #
 #    Whether or not Cygwin's ld recognizes the flag -no-undefined. 
@@ -362,6 +379,8 @@ esac
 #   Compiler flags:
 #
 
+CFLAGS="-DNETSNMP_REMOVE_U64 $CFLAGS"
+
 # The Net-SNMP source code is not strict-aliasing safe, so add
 # -fno-strict-aliasing to $CFLAGS if the compiler supports it.
 AC_MSG_CHECKING([whether the compiler supports -fno-strict-aliasing])
@@ -400,13 +419,16 @@ case $target_os in
 	fi
 	;;
 
-    darwin8*|darwin9*|darwin10*)
+    darwin*)
         #   Flat Namespace linking                      (Mac OS/X)
         #
         AC_MSG_CHECKING([whether darwin ld might need -flat_namespace])
 	if test -z "$MACOSX_DEPLOYMENT_TARGET"; then
-		LDFLAGS="-flat_namespace $LDFLAGS"
-		AC_MSG_RESULT([yes])
+		saved_LDFLAGS="$LDFLAGS"
+                LDFLAGS="-flat_namespace -framework CoreFoundation -framework CoreServices -framework DiskArbitration -framework IOKit $LDFLAGS"
+                AC_LINK_IFELSE([AC_LANG_PROGRAM([], [])],
+                               [AC_MSG_RESULT([yes])],
+                               [LDFLAGS="$saved_LDFLAGS"; AC_MSG_RESULT([no])])
 	else
 		AC_MSG_RESULT([no])
 	fi

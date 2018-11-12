@@ -7,6 +7,11 @@
  * Copyright © 2003 Sun Microsystems, Inc. All rights reserved.
  * Use is subject to license terms specified in the COPYING file
  * distributed with the Net-SNMP package.
+ *
+ * Portions of this file are copyrighted by:
+ * Copyright (c) 2016 VMware, Inc. All rights reserved.
+ * Use is subject to license terms specified in the COPYING file
+ * distributed with the Net-SNMP package.
  */
 #include <net-snmp/net-snmp-config.h>
 #include <net-snmp/net-snmp-features.h>
@@ -293,8 +298,16 @@ netsnmp_register_handler(netsnmp_handler_registration *reginfo)
      * for handlers that can't GETBULK, force a conversion handler on them 
      */
     if (!(reginfo->modes & HANDLER_CAN_GETBULK)) {
-        netsnmp_inject_handler(reginfo,
-                               netsnmp_get_bulk_to_next_handler());
+        handler = netsnmp_get_bulk_to_next_handler();
+        if (!handler ||
+            (netsnmp_inject_handler(reginfo, handler) != SNMPERR_SUCCESS)) {
+            snmp_log(LOG_WARNING, "could not inject bulk to next handler\n");
+            if (handler)
+                netsnmp_handler_free(handler);
+            /** should this be a critical error? */
+            netsnmp_handler_registration_free(reginfo);
+            return SNMP_ERR_GENERR;
+        }
     }
 
     for (handler = reginfo->handler; handler; handler = handler->next) {
@@ -327,6 +340,8 @@ netsnmp_register_handler(netsnmp_handler_registration *reginfo)
 int
 netsnmp_unregister_handler(netsnmp_handler_registration *reginfo)
 {
+    if (!reginfo)
+        return SNMPERR_SUCCESS;
     return unregister_mib_context(reginfo->rootoid, reginfo->rootoid_len,
                                   reginfo->priority,
                                   reginfo->range_subid, reginfo->range_ubound,
@@ -439,8 +454,13 @@ netsnmp_inject_handler_before(netsnmp_handler_registration *reginfo,
             if (strcmp(nexth->handler_name, before_what) == 0)
                 break;
         }
-        if (!nexth)
+        if (!nexth) {
+	    snmp_log(LOG_ERR, "Cannot inject '%s' before '%s': not found\n", handler->handler_name, before_what);
+	    snmp_log(LOG_ERR, "The handlers are:\n");
+	    for (nexth = reginfo->handler; nexth; nexth = nexth->next)
+		snmp_log(LOG_ERR, "  %s\n", nexth->handler_name);
             return SNMP_ERR_GENERR;
+	}
         if (prevh) {
             /* after prevh and before nexth */
             prevh->next = handler;
@@ -1183,7 +1203,7 @@ netsnmp_inject_handler_into_subtree(netsnmp_subtree *tp, const char *name,
                         tptr->label_a, tptr->reginfo->handlerName));
             netsnmp_inject_handler_before(tptr->reginfo, _clone_handler(handler),
                                           before_what);
-        } else {
+        } else if (tptr->reginfo != NULL) {
             for (mh = tptr->reginfo->handler; mh != NULL; mh = mh->next) {
                 if (mh->handler_name && strcmp(mh->handler_name, name) == 0) {
                     DEBUGMSGTL(("injectHandler", "injecting handler into %s\n",

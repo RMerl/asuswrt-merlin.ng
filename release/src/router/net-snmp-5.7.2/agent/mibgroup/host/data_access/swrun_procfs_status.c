@@ -29,6 +29,7 @@
 #include <net-snmp/library/container.h>
 #include <net-snmp/library/snmp_debug.h>
 #include <net-snmp/data_access/swrun.h>
+#include "swrun_private.h"
 
 static long pagesize;
 static long sc_clk_tck;
@@ -57,7 +58,7 @@ netsnmp_arch_swrun_container_load( netsnmp_container *container, u_int flags)
     FILE                *fp;
     int                  pid, i;
     unsigned long long   cpu;
-    char                 buf[BUFSIZ], buf2[BUFSIZ], *cp;
+    char                 buf[BUFSIZ], buf2[BUFSIZ], *cp, *cp1;
     netsnmp_swrun_entry *entry;
     
     procdir = opendir("/proc");
@@ -120,40 +121,38 @@ netsnmp_arch_swrun_container_load( netsnmp_container *container, u_int flags)
         if (!fp) {
             netsnmp_swrun_entry_free(entry);
             continue; /* file (process) probably went away */
-	}
-        memset(buf, 0, sizeof(buf));
-        if ((cp = fgets( buf, BUFSIZ-1, fp )) == NULL) {
-            fclose(fp);
-            netsnmp_swrun_entry_free(entry);
-            continue;
         }
-        fclose(fp);
-
-        /*
-         *     argv[0]   is hrSWRunPath
-         */ 
-        entry->hrSWRunPath_len = snprintf(entry->hrSWRunPath,
-                                   sizeof(entry->hrSWRunPath)-1, "%s", buf);
-        /*
-         * Stitch together argv[1..] to construct hrSWRunParameters
-         */
-        cp = buf + entry->hrSWRunPath_len+1;
-        while ( 1 ) {
-            while (*cp)
-                cp++;
-            if ( '\0' == *(cp+1))
-                break;      /* '\0''\0' => End of command line */
-            *cp = ' ';
-        }
-        entry->hrSWRunParameters_len
-            = sprintf(entry->hrSWRunParameters, "%.*s",
-                      (int)sizeof(entry->hrSWRunParameters) - 1,
-                      buf + entry->hrSWRunPath_len + 1);
- 
-        /*
-         * XXX - No information regarding system processes vs applications
-         */
         entry->hrSWRunType = HRSWRUNTYPE_APPLICATION;
+        memset(buf, 0, sizeof(buf));
+        cp = fgets( buf, BUFSIZ-1, fp );
+        fclose(fp);
+        if (cp != NULL) {
+            /*
+             *     argv[0]   is hrSWRunPath
+             */ 
+            entry->hrSWRunPath_len = snprintf(entry->hrSWRunPath,
+                                       sizeof(entry->hrSWRunPath)-1, "%s", buf);
+            /*
+             * Stitch together argv[1..] to construct hrSWRunParameters
+             */
+            cp = buf + entry->hrSWRunPath_len+1;
+            while ( 1 ) {
+                while (*cp)
+                    cp++;
+                if ( '\0' == *(cp+1))
+                    break;      /* '\0''\0' => End of command line */
+                *cp = ' ';
+            }
+            entry->hrSWRunParameters_len
+                = sprintf(entry->hrSWRunParameters, "%.*s",
+                          (int)sizeof(entry->hrSWRunParameters) - 1,
+                          buf + entry->hrSWRunPath_len + 1);
+        } else {
+            /* empty /proc/PID/cmdline, it's probably a kernel thread */
+            entry->hrSWRunPath_len = 0;
+            entry->hrSWRunParameters_len = 0;
+            entry->hrSWRunType = HRSWRUNTYPE_OPERATINGSYSTEM;
+        }
 
         /*
          *   {xxx} {xxx} STATUS  {xxx}*10  UTIME STIME  {xxx}*8 RSS
@@ -174,8 +173,12 @@ netsnmp_arch_swrun_container_load( netsnmp_container *container, u_int flags)
         cp = buf;
         while ( ' ' != *(cp++))    /* Skip first field */
             ;
-        while ( ' ' != *(cp++))    /* Skip second field */
-            ;
+        cp1 = cp;                  /* Skip second field */
+        while (*cp1) {
+            if (*cp1 == ')') cp = cp1;
+            cp1++;
+        }
+        cp += 2;
         
         switch (*cp) {
         case 'R':  entry->hrSWRunStatus = HRSWRUNSTATUS_RUNNING;

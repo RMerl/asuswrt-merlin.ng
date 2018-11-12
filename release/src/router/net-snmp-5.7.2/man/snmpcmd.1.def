@@ -50,7 +50,7 @@ In addition to the options described in this manual page, all of the
 tokens described in the \fIsnmp.conf\fR and other .conf manual pages
 can be used on the command line of Net-SNMP applications as well by
 prefixing them with "\-\-".  EG, specifying
-\fI\-\-dontLoadHostConfig=true\fR on the command line will turn of
+\fI\-\-dontLoadHostConfig=true\fR on the command line will turn off
 loading of the host specific configuration files.
 .PP
 The snmp.conf file settings and the double-dash arguments over-ride
@@ -60,7 +60,7 @@ single-dash arguments aren't working because you have settings in the
 the longer-form double-dash arguments to successfully trump the
 \fIsnmp.conf\fR file settings.
 .SH Generic Options
-Thes options control how the Net-SNMP commands behave regardless of
+These options control how the Net-SNMP commands behave regardless of
 what version of SNMP you are using.  See further below for options
 that control specific versions or sub-modules of the SNMP protocol. 
 .TP
@@ -279,7 +279,8 @@ file, see
 .I snmp.conf(5).
 .TP
 .BI \-a " authProtocol"
-Set the authentication protocol (MD5 or SHA) used for authenticated SNMPv3
+Set the authentication protocol (MD5|SHA|SHA-512|SHA-384|SHA-256|SHA-224)
+used for authenticated SNMPv3
 messages. Overrides the \fIdefAuthType\fR token in the
 .I snmp.conf
 file.
@@ -622,6 +623,17 @@ Displays the OID numerically:
 .br
 \fC    .1.3.6.1.2.1.1.3.0 = Timeticks: (14096763) 1 day, 15:09:27.63\fR
 .TP
+.B -Op PRECISION
+Uses the PRECISION string to allow modification of the value output format.
+This is used with OPAQUE float/double at the moment, but might be usabe for
+other types in the future. Allowed PRECISION strings are compatible to the
+flag/field with/precision part of the printf(3) function:
+.br
+\fC    $ snmpget localhost outputVoltage.1
+    WIENER-CRATE-MIB::outputVoltage.u0 = Opaque: Float: 0.000000 V
+    $ snmpget -Op +020.12 localhost outputVoltage.1
+    WIENER-CRATE-MIB::outputVoltage.u0 = Opaque: Float: +000000.000000000000 V\fR
+.TP
 .B \-Oq
 Removes the equal sign and type information when displaying varbind values:
 .br
@@ -705,6 +717,9 @@ messages can be controlled by passing various parameters to the
 .B \-L
 flag.
 .TP
+.B \-Ln
+Disable all logging.
+.TP
 .B \-Le
 Log messages to the standard error stream.
 .TP
@@ -726,9 +741,10 @@ priorities of message.  Using standard error logging as an example:
 .TP
 .B \-LE pri
 will log messages of priority 'pri' and above to standard error.
+See below for possible 'pri' values-
 .TP
-.B \-LE p1\-p2
-will log messages with priority between 'p1' and 'p2' (inclusive) to
+.B \-LE pri1\-pri2
+will log messages with priority between 'pri1' and 'pri2' (inclusive) to
 standard error.
 .PP
 For
@@ -736,6 +752,7 @@ For
 and
 .B \-LS
 the priority specification comes before the file or facility token.
+.PP
 The priorities recognised are:
 .IP
 .B 0
@@ -888,7 +905,9 @@ The standard prefix for object identifiers (when using UCD-style output).
 Defaults to .iso.org.dod.internet.mgmt.mib\-2
 .IP MIBS
 The list of MIBs to load. Defaults to
-SNMPv2\-TC:SNMPv2\-MIB:IF\-MIB:IP\-MIB:TCP\-MIB:UDP\-MIB:SNMP\-VACM\-MIB.
+.br
+SNMPv2\-TC:\:SNMPv2\-MIB:\:IF\-MIB:\:IP\-MIB:\:TCP\-MIB:\:UDP\-MIB:\:SNMP\-VACM\-MIB.
+.br
 Overridden by the
 .B \-m
 option.

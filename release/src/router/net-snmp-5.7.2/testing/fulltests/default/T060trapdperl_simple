@@ -31,11 +31,11 @@ echo "use NetSNMP::TrapReceiver;" >> ${SNMP_TMPDIR}/snmp_perl_trapd.pl
 
 CONFIGTRAPD authcommunity execute $TESTCOMMUNITY
 CONFIGTRAPD perlInitFile ${SNMP_TMPDIR}/snmp_perl_trapd.pl
-CONFIGTRAPD 'perl sub my_receiver { open LOG,">>'$EMBPERL_LOGFILE'"; print LOG "handled_by_embperl\n"; close LOG };'
-CONFIGTRAPD 'perl sub my_receiver2 { open LOG,">>'$EMBPERL_LOGFILE'"; print LOG "handled_again_by_embperl\n"; close LOG };'
+CONFIGTRAPD 'perl sub my_receiver { open LOG,">>'$EMBPERL_LOGFILE'"; print LOG "handled_by_embperl\\n"; close LOG };'
+CONFIGTRAPD 'perl sub my_receiver2 { open LOG,">>'$EMBPERL_LOGFILE'"; print LOG "handled_again_by_embperl\\n"; close LOG };'
 CONFIGTRAPD 'perl NetSNMP::TrapReceiver::register("'$TESTOID'", \&my_receiver) || warn "register_perl_handler_failed";'
 CONFIGTRAPD 'perl NetSNMP::TrapReceiver::register("'$TESTOID2'", \&my_receiver2) || warn "register_second_perl_handler_failed";'
-CONFIGTRAPD 'perl print STDERR "registered_perl_handler_ok\n";'
+CONFIGTRAPD 'perl print STDERR "registered_perl_handler_ok\\n";'
 CONFIGTRAPD agentxsocket /dev/null
 
 STARTTRAPD

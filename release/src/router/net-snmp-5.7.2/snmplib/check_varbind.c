@@ -20,6 +20,9 @@ netsnmp_feature_child_of(check_vb_truthvalue, check_varbind_all)
 #ifdef NETSNMP_FEATURE_REQUIRE_CHECK_VB_ROWSTATUS_WITH_STORAGETYPE
 netsnmp_feature_require(check_rowstatus_with_storagetype_transition)
 #endif /* NETSNMP_FEATURE_REQUIRES_CHECK_VB_ROWSTATUS_WITH_STORAGETYPE */
+#ifdef NETSNMP_FEATURE_REQUIRE_CHECK_VB_STORAGETYPE
+netsnmp_feature_require(check_storage_transition)
+#endif /* NETSNMP_FEATURE_REQUIRE_CHECK_VB_STORAGETYPE */
 
 
 NETSNMP_INLINE int

@@ -7,6 +7,7 @@
 #include <net-snmp/agent/sysORTable.h>
 
 #include "sysORTable.h"
+#include "system_mib.h"
 
 #include <net-snmp/net-snmp-features.h>
 
@@ -191,12 +192,6 @@ sysORTable_handler(netsnmp_mib_handler *handler,
     }
     return SNMP_ERR_NOERROR;
 }
-
-#ifdef USING_MIBII_SYSTEM_MIB_MODULE
-extern oid      system_module_oid[];
-extern int      system_module_oid_len;
-extern int      system_module_count;
-#endif
 
 static netsnmp_handler_registration *sysORLastChange_reg;
 static netsnmp_watcher_info sysORLastChange_winfo;

@@ -278,4 +278,5 @@ that functions like the
 .I perror
 standard routine.
 .SH "SEE ALSO"
-select(2), snmp_api.h
+select(2), netsnmp_sess_api(3), netsnmp_mib_api(3), netsnmp_pdu_api(3),
+netsnmp_varbind_api(3), snmp_api.h

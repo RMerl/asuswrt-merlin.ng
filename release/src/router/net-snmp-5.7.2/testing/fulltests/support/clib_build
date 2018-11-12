@@ -2,6 +2,13 @@
 
 # build the C test file ...
 
+scriptname="$0"
+if [ "${scriptname#/}" = "${scriptname}" ]; then
+    scriptname="${PWD}/${scriptname}"
+fi
+scriptdir="$(dirname ${scriptname})"
+srcdir="$(dirname $(dirname $(dirname $scriptdir)))"
+
 rm -f "$2.c"
 cat >>"$2.c" <<EOF
 /* net-snmp standard headers */
@@ -16,6 +23,9 @@ cat >>"$2.c" <<EOF
 #include <errno.h>
 #include <stdio.h>
 #include <sys/types.h>
+#ifdef HAVE_LIMITS_H
+#include <limits.h>
+#endif
 #ifdef HAVE_STDLIB_H
 #include <stdlib.h>
 #endif
@@ -39,6 +49,8 @@ cat >>"$2.c" <<EOF
 #ifndef HAVE_INET_NTOP
 #include "snmplib/inet_ntop.h"
 #endif
+
+#define ABS_SRCDIR "${srcdir}"
 
 int
 main(int argc, char *argv[]) {

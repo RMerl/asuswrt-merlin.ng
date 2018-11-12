@@ -1,4 +1,4 @@
-.TH SNMPTRAPD.CONF 5 "19 Feb 2009" VVERSIONINFO "Net-SNMP"
+.TH SNMPTRAPD.CONF 5 "13 Mar 2014" VVERSIONINFO "Net-SNMP"
 .SH NAME
 snmptrapd.conf - configuration file for the Net-SNMP notification receiver
 .SH DESCRIPTION
@@ -7,7 +7,7 @@ configuration files to control its operation and how incoming traps
 (and INFORM requests) should be processed.
 This file (\fBsnmptrapd.conf\fR) can be located in
 one of several locations, as described in the
-.I snmp_config(5)
+.IR snmp_config (5)
 manual page.
 .SH IMPORTANT
 Previously,
@@ -32,7 +32,7 @@ incoming SNMP notifications.
 See the section 
 .B LISTENING ADDRESSES
 in the
-.I snmpd(8)
+.IR snmpd (8)
 manual page for more information about the format of listening
 addresses.
 .IP
@@ -46,7 +46,7 @@ the \fCnlmLogTable\fR and \fCnlmLogvariableTable\fR tables.
 This directive can be used to suppress this behaviour.
 .IP
 See the 
-.I snmptrapd(8) 
+.IR snmptrapd (8) 
 manual page and the NOTIFICATION\-LOG\-MIB for details.
 .IP "doNotLogTraps yes"
 disables the logging of notifications altogether.
@@ -87,7 +87,9 @@ community to trigger the types of processing listed.
 By default, this will allow any notification using this community
 to be processed.  The SOURCE field can be used to specify that the
 configuration should only apply to notifications received from
-particular sources - see \fIsnmpd.conf(5)\fR for more details.
+particular sources - see
+.IR snmpd.conf (5)
+for more details.
 .IP "authUser   TYPES [\-s MODEL] USER  [LEVEL [OID | \-v VIEW ]]"
 authorises SNMPv3 notifications with the specified
 user to trigger the types of processing listed.
@@ -112,10 +114,12 @@ held within that notification.
 authorise notifications in the specified GROUP
 (configured using the \fIgroup\fR directive)
 to trigger the types of processing listed.
-See \fIsnmpd.conf(5)\fR for more details.
-.IP "createUser [-e  ENGINEID] username (MD5|SHA) authpassphrase [DES|AES]"
+See
+.IR snmpd.conf (5)
+for more details.
+.IP "createUser [-e  ENGINEID] username (MD5|SHA|SHA-512|SHA-384|SHA-256|SHA-224) authpassphrase [DES|AES]"
 See the 
-.I snmpd.conf(5)
+.IR snmpd.conf (5)
 manual page for a description of how to create SNMPv3 users.  This
 is roughly the same, but the file name changes to snmptrapd.conf from
 snmpd.conf.
@@ -131,9 +135,38 @@ previous behaviour of accepting all incoming notifications.
 specify the format used to display SNMPv1 TRAPs and SNMPv2
 notifications respectively.  Note that SNMPv2c and SNMPv3
 both use the same SNMPv2 PDU format.
+.IP "format DESTINATION FORMAT"
+specify the format used for different destinations.
+DESTINATION is one of:
+.IR print ", " print1 ", " print2 ", " 
+.IR syslog ", " syslog1 ", " syslog2 ", " 
+.IR execute ", " execute1 ", " execute2 .
+.I print1
+is used for printing SNMPv1 traps,
+.I print2
+is for SNMPv2.
+.I print
+is used for both versions.
+.I syslog
+is similarly used when sending traps to syslog, and
+.I execute
+used when sending traps to a program such as
+.IR traptoemail (1).
+.IP
+The default formats are
+.br
+.I format print1 %.4y-%.2m-%.2l %.2h:%.2j:%.2k %B [%b] (via %A [%a]): %N\en\et%W Trap (%q) Uptime: %#T\en%v\en
+.br
+.I format print2 %.4y-%.2m-%.2l %.2h:%.2j:%.2k %B [%b]:\en%v\en
+.br
+.I format syslog1 %a: %W Trap (%q) Uptime: %#T%#v\en
+.br
+.I format syslog2 %B [%b]: Trap %#v\en
+.br
+.I format execute %B\en%b\en%V\en%v\en
 .IP
 See
-.IR snmptrapd(8)
+.IR snmptrapd (8)
 for the layout characters available.
 .IP "ignoreAuthFailure yes"
 instructs the receiver to ignore \fIauthenticationFailure\fR traps.
@@ -149,12 +182,14 @@ to change in future versions.
 specifies where notifications should be logged - to standard
 output, standard error, a specified file or via \fIsyslog\fR.
 See the section LOGGING OPTIONS in the
-\fIsnmpcmd(1)\fR manual page for details.
+.IR snmpcmd (1)
+manual page for details.
 .IP "outputOption string"
 specifies various characteristics of how OIDs and other values
 should be displayed.
 See the section OUTPUT OPTIONS in the
-\fIsnmpcmd(1)\fR manual page for details.
+.IR snmpcmd (1)
+manual page for details.
 .SH MySQL Logging
 There are two configuration variables that work together to control
 when queued traps are logged to the MySQL database. A non-zero
@@ -201,14 +236,17 @@ Details of the notification are fed to the program via its standard input.
 Note that this will always use the SNMPv2-style notification format, with
 SNMPv1 traps being converted as per RFC 2576, before being passed to the
 program.
-The input format is as follows, one entry per line:
+The input format is, if you use the default set by
+the "format execute %B\en%b\en%V\en%v\en", one entry per line:
 .RS
 .IP HOSTNAME
 The name of the host that sent the notification, as determined by
-.IR gethostbyaddr(3) .
+.IR gethostbyaddr (3).
 .br
-.IP IPADDRESS
-The IP address of the host that sent the notification.
+.IP ADDRESS
+The transport address, like
+.br
+"[UDP: [172.16.10.12]:23456->[10.150.0.8]]"
 .\"
 .\" XXX - What about non-IPv4 transports?
 .\"
@@ -242,7 +280,7 @@ as for the \fItraphandle\fR directive).
 See the section 
 .B LISTENING ADDRESSES
 in the
-.I snmpd(8)
+.IR snmpd (8)
 manual page for more information about the format of listening
 addresses.
 .RE
@@ -262,5 +300,5 @@ directives are typically only used to enable the appropriate behaviour.
 .SH FILES
 SYSCONFDIR/snmp/snmptrapd.conf
 .SH "SEE ALSO"
-snmp_config(5), snmptrapd(8), syslog(8), variables(5), snmpd.conf(5), netsnmp_config_api(3).
+snmp_config(5), snmptrapd(8), syslog(8), traptoemail(1), variables(5), netsnmp_config_api(3).
 

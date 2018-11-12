@@ -8,6 +8,12 @@
 config_require(mibII/ip)
 config_arch_require(solaris2, kernel_sunos5)
 
+#if defined(HAVE_IPHLPAPI_H)
+#include <iphlpapi.h>
+     extern PMIB_IPFORWARDROW route_row;
+#endif
+     extern int      create_flag;
+
      void            init_var_route(void);
 #if defined(RTENTRY_4_4) && !defined(hpux11)
      struct radix_node;

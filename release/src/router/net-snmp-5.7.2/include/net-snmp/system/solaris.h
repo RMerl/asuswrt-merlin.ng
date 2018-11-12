@@ -2,10 +2,6 @@
 
 #undef bsdlike
 #undef IP_FORWARDING_SYMBOL
-#undef ARPTAB_SYMBOL
-#define ARPTAB_SYMBOL "arptab_nb"
-#undef ARPTAB_SIZE_SYMBOL
-#define ARPTAB_SIZE_SYMBOL "arphd"
 #undef ICMPSTAT_SYMBOL
 #undef TCPSTAT_SYMBOL
 #undef TCP_SYMBOL

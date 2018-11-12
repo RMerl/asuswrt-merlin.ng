@@ -41,6 +41,6 @@ netsnmp_register_old_api("exp.327.b",
                          0, /* range_ubound */
                          sess,
                          "context", 5/*timeout*/, 0/*flags - ignored*/);
-OK(res == SNMPERR_SUCCESS, "Handler registration (2).");
+OK(res == MIB_DUPLICATE_REGISTRATION, "Handler registration (2).");
 
 snmp_shutdown("snmp");

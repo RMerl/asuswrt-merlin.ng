@@ -3,6 +3,82 @@ Please see the CHANGES file for a more detailed list of specific bugs/patches
 that have been fixed/applied, and the ChangeLog file for a comprehensive
 listing of all changes made to the code.
 
+*5.8*
+    snmplib:
+      - TLS/DTLS fixes
+      - fix usm keychanges for new algorithms and longer keylengths
+      - IP address formatting fixes
+      - BUG: 2592: from Stuart Kendrick - increase MAXTC to 16384
+      - add new sha2 auth protocols
+      - Restore AES-192 and AES-256 privacy protocols - from
+	draft-blumenthal-aes-usm-04 (precursor to RFC 3826)
+        - Use OIDs from http://www.snmp.com/eso/esoConsortiumMIB.txt
+        - Some code borrowed from PATCH 1346, thanks to
+          Alexander Ivanov and Vladimir Sukhorukov.
+      - BUG: 2622: Fix excessive indents in log file
+      - new config tokens:
+        - sendMessageMaxSize
+        - disableSNMPv1 / disableSNMPv2c
+      - new api for dynamic debug log level (netsnmp_set_debug_log_level)
+
+    snmpd:
+      - SNMP-TARGET-MIB: Fix snmpTargetAddrTAddress
+      - Com2sec and com2sec6 SOURCE values may deny sources as well as
+        permit.
+      - allow trap sinks to set Target-MIB characteristics (name, tag, profile)
+      - add source addr/port option to trapsink/trap2sink/informsink
+      - packet filtering by source ip (enableSourceFiltering/filtersource)
+      - several getbulk handling improvements
+      - several new APIs introduced for run-time configuration of agent:
+        - netsnmp_vacm_simple_usm_add/del
+        - usm_create_usmUser_*
+        - netsnmp_udp_com2SecEntry_create/netsnmp_udp_com2SecList_remove
+        - netsnmp_agent_listen_on to open agent port
+
+    Win32:
+      - Add support for the DTLS-UDP and TLS-TCP transports
+
+    scripts:
+      - A new 'checkbandwidth' script to check host min/max bandwidth
+
+    snmptranslate:
+      - Introduce bulk translation mode The special argument "-" causes
+	snmptranslate to enter bulk translation mode, in which it expects
+	one OID per line.  Whitespace is treated as the end of the OID, and
+	only that portion of the line is replaced, meaning that this can be
+	used to translate, e.g., "snmpwalk" output without the proper MIBs
+	loaded: snmptranslate -m all -OX < numeric.txt > symbolic.txt
+
+    building:
+      - Add Travis and Appveyor CI support
+      - IPv6 support is now compiled by default.  If you need an IPv4-only
+	agent, use --disable-ipv6.
+      - Fixed/improved support for several non-Linux platforms
+      - Many fixes found by Coverity anf Fortify scans
+
+*5.7.3*
+    Many many bug fixes and minor improvements
+
+    snmpd, snmptrapd and apps:
+      - Patch 2525: from Ryan Steinmetz: Fix argument length parsing of the
+	host resources mib
+      - Make ENV_SEPARATOR_CHAR configurable
+      - SECURITY: a denial of service attack vector was discovered on
+        the linux implementation of the ICMP-MIB.  This release fixes
+        this bug and all users are encouraged to update their SNMP
+        agent if they make use of the ICMP-MIB table objects.
+
+    perl:
+      - BUG: 2402: Add support for SNMPv3 traps
+
+    Windows:
+      - Port batch build infrastructure to Visual Studio 2010 and later
+	From Visual Studio 2010 on it is no longer possible to specify
+	include or library directories globally - these have to be
+	specified per project. Hence two additional menu entries in
+	build.bat that allow to specify these directories.
+      - Patch from Bart Van Assche to improve cygwin building
+
 *5.7.2*
     snmp:
       - BUG: 3526549: CVE-2012-2141 Array index error leading to crash

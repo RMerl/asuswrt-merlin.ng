@@ -84,6 +84,10 @@ LINK32=link.exe
 # Name "snmpnetstat - Win32 Debug"
 # Begin Source File
 
+SOURCE=..\..\apps\snmpnetstat\ffs.c
+# End Source File
+# Begin Source File
+
 SOURCE=..\..\apps\snmpnetstat\if.c
 # End Source File
 # Begin Source File
@@ -96,6 +100,10 @@ SOURCE=..\..\apps\snmpnetstat\inet6.c
 # End Source File
 # Begin Source File
 
+SOURCE=..\..\apps\snmpnetstat\inetx.c
+# End Source File
+# Begin Source File
+
 SOURCE=..\..\apps\snmpnetstat\main.c
 # End Source File
 # Begin Source File
@@ -104,7 +112,7 @@ SOURCE=..\..\apps\snmpnetstat\route.c
 # End Source File
 # Begin Source File
 
-SOURCE=..\..\apps\snmpnetstat\ffs.c
+SOURCE=..\..\apps\snmpnetstat\routex.c
 # End Source File
 # Begin Source File
 

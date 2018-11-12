@@ -1,3 +1,14 @@
+/*
+ * Portions of this file are subject to the following copyright(s).  See
+ * the Net-SNMP's COPYING file for more details and other copyrights
+ * that may apply:
+ *
+ * Portions of this file are copyrighted by:
+ * Copyright (c) 2016 VMware, Inc. All rights reserved.
+ * Use is subject to license terms specified in the COPYING file
+ * distributed with the Net-SNMP package.
+ */
+
 #include <net-snmp/net-snmp-config.h>
 
 #include <net-snmp/net-snmp-includes.h>
@@ -33,7 +44,15 @@ netsnmp_get_serialize_handler(void)
 int
 netsnmp_register_serialize(netsnmp_handler_registration *reginfo)
 {
-    netsnmp_inject_handler(reginfo, netsnmp_get_serialize_handler());
+    netsnmp_mib_handler *handler = netsnmp_get_serialize_handler();
+    if (!handler ||
+        (netsnmp_inject_handler(reginfo, handler) != SNMPERR_SUCCESS)) {
+        snmp_log(LOG_ERR, "could not create serialize handler\n");
+        netsnmp_handler_free(handler);
+        netsnmp_handler_registration_free(reginfo);
+        return MIB_REGISTRATION_FAILED;
+    }
+
     return netsnmp_register_handler(reginfo);
 }
 
@@ -86,8 +105,12 @@ netsnmp_serialize_helper_handler(netsnmp_mib_handler *handler,
 void
 netsnmp_init_serialize(void)
 {
-    netsnmp_register_handler_by_name("serialize",
-                                     netsnmp_get_serialize_handler());
+    netsnmp_mib_handler *handler = netsnmp_get_serialize_handler();
+    if (!handler) {
+        snmp_log(LOG_ERR, "could not create serialize handler\n");
+        return;
+    }
+    netsnmp_register_handler_by_name("serialize", handler);
 }
 /**  @} */
 

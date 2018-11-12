@@ -13,8 +13,6 @@
 
 netsnmp_feature_require(cert_util)
 
-#include <net-snmp/library/snmpTLSTCPDomain.h>
-
 #include <stdio.h>
 #include <sys/types.h>
 #include <ctype.h>
@@ -62,6 +60,7 @@ netsnmp_feature_require(cert_util)
 #include <net-snmp/library/snmpIPv4BaseDomain.h>
 #include <net-snmp/library/snmpSocketBaseDomain.h>
 #include <net-snmp/library/snmpTLSBaseDomain.h>
+#include <net-snmp/library/snmpTLSTCPDomain.h>
 #include <net-snmp/library/system.h>
 #include <net-snmp/library/tools.h>
 #include <net-snmp/library/cert_util.h>
@@ -90,20 +89,49 @@ static netsnmp_tdomain tlstcpDomain;
  */
 
 static char *
-netsnmp_tlstcp_fmtaddr(netsnmp_transport *t, void *data, int len)
+netsnmp_tlstcp_fmtaddr(netsnmp_transport *t, const void *data, int len)
 {
-    if (NULL == data || 0 == len || 0 == ((char *) data)[0])
-        return strdup("TLSTCP: unknown");
-    else if (len == sizeof(netsnmp_indexed_addr_pair) ||
-             len == sizeof(struct sockaddr_in))
+    if (t && !data) {
+        data = t->data;
+        len = t->data_length;
+    }
+
+    switch (data ? len : 0) {
+    case sizeof(netsnmp_indexed_addr_pair):
         return netsnmp_ipv4_fmtaddr("TLSTCP", t, data, len);
-    else {
-        /* an already ascii formatted string */
-        char buf[1024];
-        snprintf(buf, sizeof(buf)-1, "TLSTCP: %s", (char *) data);
-        return strdup(buf);
+    case sizeof(netsnmp_tmStateReference): {
+        const netsnmp_tmStateReference *r = data;
+        const netsnmp_indexed_addr_pair *p = &r->addresses;
+
+        return netsnmp_ipv4_fmtaddr("TLSTCP", t, p, sizeof(*p));
+    }
+    case sizeof(_netsnmpTLSBaseData): {
+        const _netsnmpTLSBaseData *b = data;
+        char *buf;
+
+        if (asprintf(&buf, "TLSTCP: %s", b->addr_string) < 0)
+            buf = NULL;
+        return buf;
+    }
+    case 0:
+        return strdup("TLSTCP: unknown");
+    default: {
+        char *buf;
+
+        if (asprintf(&buf, "TLSTCP: len %d", len) < 0)
+            buf = NULL;
+        return buf;
+    }
     }
 }
+
+static void netsnmp_tlstcp_get_taddr(struct netsnmp_transport_s *t,
+                                     void **addr, size_t *addr_len)
+{
+    *addr_len = t->remote_length;
+    *addr = netsnmp_memdup(t->remote, *addr_len);
+}
+
 /*
  * You can write something into opaque that will subsequently get passed back 
  * to your send function if you like.  For instance, you might want to
@@ -111,7 +139,7 @@ netsnmp_tlstcp_fmtaddr(netsnmp_transport *t, void *data, int len)
  */
 
 static int
-netsnmp_tlstcp_copy(netsnmp_transport *oldt, netsnmp_transport *newt)
+netsnmp_tlstcp_copy(const netsnmp_transport *oldt, netsnmp_transport *newt)
 {
     _netsnmpTLSBaseData *oldtlsdata = (_netsnmpTLSBaseData *) oldt->data;
     _netsnmpTLSBaseData *newtlsdata = (_netsnmpTLSBaseData *) newt->data;
@@ -134,8 +162,8 @@ netsnmp_tlstcp_copy(netsnmp_transport *oldt, netsnmp_transport *newt)
     if (oldtlsdata->trust_cert)
         newtlsdata->trust_cert = strdup(oldtlsdata->trust_cert);
     if (oldtlsdata->addr)
-        memdup((u_char**)&newtlsdata->addr, oldtlsdata->addr,
-               sizeof(*oldtlsdata->addr));
+        newtlsdata->addr = netsnmp_memdup(oldtlsdata->addr,
+                                          sizeof(*oldtlsdata->addr));
 
     return 0;
 }
@@ -153,7 +181,9 @@ netsnmp_tlstcp_recv(netsnmp_transport *t, void *buf, int size,
                  "tlstcp received an invalid invocation with missing data\n");
         DEBUGMSGTL(("tlstcp", "recvfrom fd %d err %d (\"%s\")\n",
                     (t ? t->sock : -1), errno, strerror(errno)));
-        DEBUGMSGTL(("tlstcp", "  tdata = %p\n", t->data));
+        if (t)
+            DEBUGMSGTL(("tlstcp", "  tdata = %p", t->data));
+        DEBUGMSGTL(("tlstcp", "\n"));
         return -1;
     }
         
@@ -298,11 +328,11 @@ netsnmp_tlstcp_recv(netsnmp_transport *t, void *buf, int size,
 
 
 static int
-netsnmp_tlstcp_send(netsnmp_transport *t, void *buf, int size,
-		 void **opaque, int *olength)
+netsnmp_tlstcp_send(netsnmp_transport *t, const void *buf, int size,
+                    void **opaque, int *olength)
 {
     int rc = -1;
-    netsnmp_tmStateReference *tmStateRef = NULL;
+    const netsnmp_tmStateReference *tmStateRef = NULL;
     _netsnmpTLSBaseData *tlsdata;
     
     DEBUGTRACETOK("tlstcp");
@@ -318,7 +348,7 @@ netsnmp_tlstcp_send(netsnmp_transport *t, void *buf, int size,
     /* Implementation Notes: the tmStateReference is stored in the opaque ptr */
     if (opaque != NULL && *opaque != NULL &&
         *olength == sizeof(netsnmp_tmStateReference)) {
-        tmStateRef = (netsnmp_tmStateReference *) *opaque;
+        tmStateRef = (const netsnmp_tmStateReference *) *opaque;
     } else {
         snmp_log(LOG_ERR, "TLSTCP was called with an invalid state; possibly the wrong security model is in use.  It should be 'tsm'.\n");
         snmp_increment_statistic(STAT_TLSTM_SNMPTLSTMSESSIONINVALIDCACHES);
@@ -507,7 +537,7 @@ netsnmp_tlstcp_accept(netsnmp_transport *t)
 
     tlsdata->accepted_bio = accepted_bio = BIO_pop(tlsdata->accept_bio);
     if (!accepted_bio) {
-        snmp_log(LOG_ERR, "Failed to pop an accepted bio off the bio staack\n");
+        snmp_log(LOG_ERR, "Failed to pop an accepted bio off the bio stack\n");
         /* XXX: need to close the listening connection here? */
         return -1;
     }
@@ -692,8 +722,7 @@ netsnmp_tlstcp_open(netsnmp_transport *t)
         /* XXX: check securityLevel and ensure no NULL fingerprints are used */
 
         /* set up the needed SSL context */
-        tlsdata->ssl_context = ctx =
-            sslctx_client_setup(TLSv1_method(), tlsdata);
+        tlsdata->ssl_context = ctx = sslctx_client_setup(TLS_method(), tlsdata);
         if (!ctx) {
             snmp_log(LOG_ERR, "failed to create TLS context\n");
             return NULL;
@@ -883,8 +912,7 @@ netsnmp_tlstcp_open(netsnmp_transport *t)
         }
 
         /* create the OpenSSL TLS context */
-        tlsdata->ssl_context =
-            sslctx_server_setup(TLSv1_method());
+        tlsdata->ssl_context = sslctx_server_setup(TLS_method());
 
         t->sock = BIO_get_fd(tlsdata->accept_bio, NULL);
         t->flags |= NETSNMP_TRANSPORT_FLAG_LISTEN;
@@ -966,6 +994,7 @@ netsnmp_tlstcp_transport(const char *addr_string, int isserver)
     t->f_config        = netsnmp_tlsbase_config;
     t->f_setup_session = netsnmp_tlsbase_session_init;
     t->f_fmtaddr       = netsnmp_tlstcp_fmtaddr;
+    t->f_get_taddr     = netsnmp_tlstcp_get_taddr;
 
     t->flags |= NETSNMP_TRANSPORT_FLAG_TUNNELED | NETSNMP_TRANSPORT_FLAG_STREAM;
 
@@ -1006,7 +1035,7 @@ netsnmp_tlstcp_create_tstring(const char *str, int local,
 
 
 netsnmp_transport *
-netsnmp_tlstcp_create_ostring(const u_char * o, size_t o_len, int local)
+netsnmp_tlstcp_create_ostring(const void *o, size_t o_len, int local)
 {
     char buf[SPRINT_MAX_LEN];
 

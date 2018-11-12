@@ -419,9 +419,10 @@ inetCidrRouteTable_indexes_set_tbl_idx(inetCidrRouteTable_mib_index *
     /*
      * make sure there is enough space for inetCidrRoutePolicy data
      */
-    if ((NULL == tbl_idx->inetCidrRoutePolicy) ||
-        (tbl_idx->inetCidrRoutePolicy_len <
-         (inetCidrRoutePolicy_val_ptr_len / sizeof(inetCidrRoutePolicy_val_ptr[0])))) {
+    if (tbl_idx->inetCidrRoutePolicy == NULL ||
+        inetCidrRoutePolicy_val_ptr_len >
+        tbl_idx->inetCidrRoutePolicy_len *
+        sizeof(inetCidrRoutePolicy_val_ptr[0])) {
         snmp_log(LOG_ERR,
 	    "inetCidrRoutePolicy: Not enough space for value (%d < %d)\n",
 	    (int)tbl_idx->inetCidrRoutePolicy_len,

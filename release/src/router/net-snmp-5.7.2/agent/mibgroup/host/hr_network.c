@@ -257,7 +257,7 @@ int      HRN_index;
 void
 Save_HR_Network_Info(void)
 {
-    strcpy(HRN_savedName, HRN_name);
+    strlcpy(HRN_savedName, HRN_name, sizeof(HRN_savedName));
 #if defined( USING_IF_MIB_IFTABLE_IFTABLE_DATA_ACCESS_MODULE )
     HRN_savedFlags  = HRN_ifnet->os_flags;
     HRN_savedErrors = HRN_ifnet->stats.ierrors + HRN_ifnet->stats.oerrors;

@@ -37,3 +37,4 @@ netsnmp_memory_info *netsnmp_memory_get_next_byIdx(int,int );
 
 netsnmp_cache *netsnmp_memory_get_cache( void );
 int netsnmp_memory_load( void );
+int netsnmp_mem_arch_load(netsnmp_cache *cache, void *magic);

@@ -7,12 +7,12 @@
 .\" Use is subject to license terms specified in the COPYING file
 .\" distributed with the Net-SNMP package.
 .\" ******************************************************************/
-.TH SNMPDF 1 "25 Jul 2003" VVERSIONINFO "Net-SNMP"
+.TH SNMPDF 1 "28 Jan 2013" VVERSIONINFO "Net-SNMP"
 .SH NAME
 snmpdf - display disk space usage on a network entity via SNMP
 .SH SYNOPSIS
 .B snmpdf
-[COMMON OPTIONS] [\-Cu] AGENT
+[COMMON OPTIONS] [\-Cu] [\-Ch] AGENT
 .SH DESCRIPTION
 .B snmpdf
 is simply a networked version of the typical df command.  It
@@ -23,7 +23,7 @@ more information.  However, the \-Cu argument can be passed to snmpdf
 to force the usage of the dskTable.
 .PP
 AGENT identifies a target SNMP agent, which is instrumented
-to monitor the gievn objects.  At its simplest, the AGENT
+to monitor the given objects.  At its simplest, the AGENT
 specification will consist of a hostname or an IPv4
 address.  In this situation, the command will attempt
 communication with the agent, using UDP/IPv4 to port 161
@@ -51,6 +51,12 @@ the storage information. Generally, the default
 use of hrStorageTable in mib HOST\-RESOURCES\-MIB
 is preferred because it typically contains
 more information.
+.TP
+.B \-Ch
+Print sizes in human readable format (i.e. MiB, GiB, TiB)
+.TP
+.B \-CH
+Print sizes in human readable SI format (i.e. MB, GB, TB)
 .SH "EXAMPLES"
 .PP
 % snmpdf \-v 2c \-c public localhost

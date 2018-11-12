@@ -10,7 +10,7 @@ extern          "C" {
 #endif
 
 #define MAX_CALLBACK_IDS    2
-#define MAX_CALLBACK_SUBIDS 16
+#define MAX_CALLBACK_SUBIDS 17
 
     /*
      * Callback Major Types 

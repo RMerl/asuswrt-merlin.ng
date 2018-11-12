@@ -7,6 +7,11 @@
  * Copyright © 2003 Sun Microsystems, Inc. All rights reserved.
  * Use is subject to license terms specified in the COPYING file
  * distributed with the Net-SNMP package.
+ *
+ * Portions of this file are copyrighted by:
+ * Copyright (c) 2016 VMware, Inc. All rights reserved.
+ * Use is subject to license terms specified in the COPYING file
+ * distributed with the Net-SNMP package.
  */
 /*
  * @file snmp_agent.h
@@ -31,6 +36,9 @@ extern          "C" {
 
 #define SNMP_MAX_PDU_SIZE 64000 /* local constraint on PDU size sent by agent
                                  * (see also SNMP_MAX_MSG_SIZE in snmp_api.h) */
+
+#define SNMP_AGENT_FLAGS_NONE                   0x0
+#define SNMP_AGENT_FLAGS_CANCEL_IN_PROGRESS     0x1
 
     /*
      * If non-zero, causes the addresses of peers to be logged when receptions
@@ -205,6 +213,7 @@ extern          "C" {
         int             treecache_num;  /* number of current cache entries */
         netsnmp_cachemap *cache_store;
         int             vbcount;
+        int             flags;
     } netsnmp_agent_session;
 
     /*
@@ -240,6 +249,7 @@ extern          "C" {
     int             init_master_agent(void);
     void            shutdown_master_agent(void);
     int             agent_check_and_process(int block);
+    void            netsnmp_check_delegated_requests(void);
     void            netsnmp_check_outstanding_agent_requests(void);
 
     int             netsnmp_request_set_error(netsnmp_request_info *request,
@@ -295,6 +305,8 @@ extern          "C" {
                                                 *t);
     void            netsnmp_deregister_agent_nsap(int handle);
 
+    int             netsnmp_agent_listen_on(const char *port);
+
     void
         netsnmp_agent_add_list_data(netsnmp_agent_request_info *agent,
                                     netsnmp_data_list *node);
@@ -314,6 +326,22 @@ extern          "C" {
            netsnmp_free_agent_data_sets(netsnmp_agent_request_info *agent);
     void
         netsnmp_free_agent_request_info(netsnmp_agent_request_info *ari);
+
+
+#ifndef NETSNMP_NO_PDU_STATS
+    /*
+     * pdu stats
+     */
+    typedef struct netsnmp_pdu_stats_s {
+        u_long          processing_time; /* ms */
+        time_t          timestamp; /* date/time */
+        netsnmp_pdu    *pdu;
+    } netsnmp_pdu_stats;
+
+    netsnmp_container * netsnmp_get_pdu_stats(void);
+
+#endif /* NETSNMP_NO_PDU_STATS */
+
 
 #ifdef __cplusplus
 }

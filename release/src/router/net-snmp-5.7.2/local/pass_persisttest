@@ -62,6 +62,10 @@ while (<>){
          ($req eq  "$place.5"))       { $ret = "$place.5.0";}       # netSnmpPassCounter.0
   elsif (($req =~ m/$place\.5\..*/)  ||
          ($req eq  "$place.6"))       { $ret = "$place.6.0";}       # netSnmpPassGauge.0
+  elsif (($req =~ m/$place\.6\..*/)  ||
+         ($req eq  "$place.7"))       { $ret = "$place.7.0";}       # netSnmpPassCounter64.0
+  elsif (($req =~ m/$place\.7\..*/)  ||
+         ($req eq  "$place.8"))       { $ret = "$place.8.0";}       # netSnmpPassInteger64.0
   else   {
       print "NONE\n";
       next;
@@ -92,6 +96,10 @@ while (<>){
     print "counter\n$counter\n";
   } elsif ($ret eq "$place.6.0") {
     print "gauge\n42\n";
+  } elsif ($ret eq "$place.7.0") {
+    print "counter64\n9223372036854775806\n";
+  } elsif ($ret eq "$place.8.0") {
+    print "integer64\n9223372036854775807\n";
   } else {
     print  "string\nack... $ret $req\n";
   }

@@ -3,7 +3,6 @@
 # snmptrapd, snmptable, snmpset, snmpgetnext, and other utilities.
 #
 
-top_builddir=..
 mysubdir=apps
 
 # use GNU vpath, if available, to only set a path for source and headers
@@ -42,6 +41,14 @@ mysubdir=apps
 @NETSNMP_BUILD_SET_PROG_FALSE@SNMPVACMINSTALLBINPROG = 
 @NETSNMP_BUILD_SET_PROG_TRUE@SNMPVACMFEATUREPROG = snmpvacm.ft
 @NETSNMP_BUILD_SET_PROG_FALSE@SNMPVACMFEATUREPROG = 
+@NETSNMP_BUILD_SET_PROG_TRUE@SNMPPINGINSTALLBINPROG = snmpping$(EXEEXT)
+@NETSNMP_BUILD_SET_PROG_FALSE@SNMPPINGINSTALLBINPROG =
+@NETSNMP_BUILD_SET_PROG_TRUE@SNMPPINGFEATUREPROG = snmpping.ft
+@NETSNMP_BUILD_SET_PROG_FALSE@SNMPPINGFEATUREPROG =
+@NETSNMP_BUILD_PCAP_PROG_TRUE@SNMPPCAPINSTALLBINPROG = snmppcap$(EXEEXT)
+@NETSNMP_BUILD_PCAP_PROG_FALSE@SNMPPCAPINSTALLBINPROG =
+@NETSNMP_BUILD_PCAP_PROG_TRUE@SNMPPCAPFEATUREPROG = snmppcap.ft
+@NETSNMP_BUILD_PCAP_PROG_FALSE@SNMPPCAPFEATUREPROG =
 
 @NETSNMP_HAVE_AGENTX_LIBS_TRUE@AGENTXTRAP = agentxtrap$(EXEEXT)
 @NETSNMP_HAVE_AGENTX_LIBS_FALSE@AGENTXTRAP =
@@ -59,10 +66,13 @@ INSTALLBINPROGS	= snmpget$(EXEEXT) 			\
 		snmpdelta$(EXEEXT) 			\
 		snmptest$(EXEEXT)			\
 		snmpdf$(EXEEXT) 			\
+		snmpps$(EXEEXT) 			\
+		$(SNMPPINGINSTALLBINPROG)               \
 		$(AGENTXTRAP)				\
 		$(SNMPVACMINSTALLBINPROG)	        \
                 $(SSHINSTALLBINPROG) $(TLSINSTALLBINPROG) \
-		$(USMINSTALLBINPROG) $(EKCSTALLBINPROG)
+		$(USMINSTALLBINPROG) $(EKCSTALLBINPROG) \
+		$(SNMPPCAPINSTALLBINPROG)
 
 INSTALLSBINPROGS = snmptrapd$(EXEEXT)
 
@@ -126,18 +136,21 @@ FTOBJS=$(LIBTRAPD_FTS) \
        snmptrap.ft \
        $(SNMPSETFEATUREPROG) \
        $(SNMPVACMFEATUREPROG) \
+       $(SNMPPINGFEATUREPROG) \
+       $(SNMPPCAPFEATUREPROG) \
        $(USMFEATUREPROG) \
        $(TLSFEATUREPROG) \
        agentxtrap.ft \
        snmpgetnext.ft \
        $(EKCFEATUREPROG) \
        snmpdf.ft \
+       snmpps.ft \
        $(SSHFEATUREPROG)
 
 all: standardall
 
-OTHERINSTALL=snmpinforminstall snmptrapdperlinstall
-OTHERUNINSTALL=snmpinformuninstall snmptrapdperluninstall
+OTHERINSTALL=snmpinforminstall snmptopinstall snmptrapdperlinstall
+OTHERUNINSTALL=snmpinformuninstall snmptopuninstall snmptrapdperluninstall
 
 #
 # build rules
@@ -179,6 +192,10 @@ snmpinform$(EXEEXT): snmptrap$(EXEEXT)
 	rm -f snmpinform
 	$(LN_S) snmptrap$(EXEEXT) snmpinform$(EXEEXT)
 
+snmptop$(EXEEXT): snmpps$(EXEEXT)
+	rm -f snmptop
+	$(LN_S) snmpps$(EXEEXT) snmptop$(EXEEXT)
+
 snmpset$(EXEEXT):    snmpset.$(OSUFFIX) $(USELIBS)
 	$(LINK) ${CFLAGS} -o $@ snmpset.$(OSUFFIX) ${LDFLAGS} ${LIBS}
 
@@ -203,6 +220,15 @@ encode_keychange$(EXEEXT):    encode_keychange.$(OSUFFIX) $(USELIBS)
 snmpdf$(EXEEXT):    snmpdf.$(OSUFFIX) $(USELIBS)
 	$(LINK) ${CFLAGS} -o $@ snmpdf.$(OSUFFIX) ${LDFLAGS} ${LIBS}
 
+snmpps$(EXEEXT):    snmpps.$(OSUFFIX) $(USELIBS)
+	$(LINK) ${CFLAGS} -o $@ snmpps.$(OSUFFIX) ${LDFLAGS} @LIBCURSES@ ${LIBS}
+
+snmpping$(EXEEXT):    snmpping.$(OSUFFIX) $(USELIBS)
+	$(LINK) ${CFLAGS} -o $@ snmpping.$(OSUFFIX) ${LDFLAGS} ${LIBS} -lm
+
+snmppcap$(EXEEXT):    snmppcap.$(OSUFFIX) $(USELIBS)
+	$(LINK) ${CFLAGS} -o $@ snmppcap.$(OSUFFIX) ${LDFLAGS} ${LIBS} -lpcap
+
 libnetsnmptrapd.$(LIB_EXTENSION)$(LIB_VERSION): $(LLIBTRAPD_OBJS)
 	$(LIB_LD_CMD) $@ ${LLIBTRAPD_OBJS} $(MIBLIB) $(USELIBS) $(PERLLDOPTS_FOR_LIBS) $(LIB_LD_LIBS)
 	$(RANLIB) $@
@@ -213,6 +239,13 @@ snmpinforminstall:
 
 snmpinformuninstall:
 	rm -f $(INSTALL_PREFIX)$(bindir)/snmpinform$(EXEEXT)
+
+snmptopinstall:
+	rm -f $(INSTALL_PREFIX)$(bindir)/snmptop$(EXEEXT)
+	$(LN_S) snmpps$(EXEEXT) $(INSTALL_PREFIX)$(bindir)/snmptop$(EXEEXT)
+
+snmptopuninstall:
+	rm -f $(INSTALL_PREFIX)$(bindir)/snmptop$(EXEEXT)
 
 snmptrapdperlinstall: installdirs
 	  @$(INSTALL_DATA) $(srcdir)/snmp_perl_trapd.pl $(INSTALL_PREFIX)$(snmplibdir)/snmp_perl_trapd.pl

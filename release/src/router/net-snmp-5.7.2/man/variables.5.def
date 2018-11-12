@@ -84,7 +84,8 @@ A variant of this (typically used when writing OIDs in descriptive
 text, rather than running programs), is to combine the name and
 numeric subidentifier:
 .RS
- .iso(1).org(3).dod(6).internet(1).mgmt(2).mib-2(1).system(1).sysDescr(1)
+ .iso(1).org(3).dod(6).internet(1).mgmt(2).mib-2(1).system(1)
+ .sysDescr(1)
 .RE
 
 .SS Module-qualified OIDs

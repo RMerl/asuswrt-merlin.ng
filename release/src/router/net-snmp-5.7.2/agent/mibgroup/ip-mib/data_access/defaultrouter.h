@@ -20,6 +20,10 @@
 config_require(ip-mib/data_access/defaultrouter_common)
 #if defined( linux )
 config_require(ip-mib/data_access/defaultrouter_linux)
+#elif defined( freebsd4 ) || defined( netbsd5 ) || defined( openbsd ) || defined( dragonfly ) || defined( darwin )
+config_require(ip-mib/data_access/defaultrouter_sysctl)
+#elif defined( solaris2 )
+config_require(ip-mib/data_access/defaultrouter_solaris2)
 #else
 /*
  * couldn't determine the correct file!

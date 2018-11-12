@@ -19,11 +19,6 @@
  */
 /* #define NEED_KLGETSA 1 */
 
-/*
- * ARP_Scan_Next needs a 4th ifIndex argument 
- */
-#define ARP_SCAN_FOUR_ARGUMENTS 1
-
 #define CHECK_RT_FLAGS 1
 
 /*
@@ -65,6 +60,7 @@
 /*
  * use new host resources files as well
  */
+#define NETSNMP_INCLUDE_HOST_RESOURCES
 #define NETSNMP_INCLUDE_HRSWINST_REWRITES
 #define NETSNMP_INCLUDE_HRSWRUN_REWRITES
 #undef NETSNMP_INCLUDE_HRSWRUN_WRITE_SUPPORT
@@ -78,17 +74,6 @@
 #endif
 #ifndef __APPLE_API_UNSTABLE
 #define __APPLE_API_UNSTABLE 1
-#endif
-
-/*
- * Darwin's tools are capable of building multiple architectures in one pass.
- * As a result, platform definitions should be deferred until compile time.
- */
-#ifdef BYTE_ORDER
-# undef WORDS_BIGENDIAN
-# if BYTE_ORDER == BIG_ENDIAN
-#  define WORDS_BIGENDIAN 1
-# endif
 #endif
 
 /*

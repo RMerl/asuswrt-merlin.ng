@@ -95,7 +95,7 @@ _load_v4(netsnmp_arp_access *access)
 
 #define PROCFILE "/proc/net/arp"
     if (!(in = fopen(PROCFILE, "r"))) {
-        snmp_log(LOG_DEBUG,"could not open " PROCFILE "\n");
+        snmp_log_perror("arp_linux: could not open " PROCFILE);
         return -2;
     }
 

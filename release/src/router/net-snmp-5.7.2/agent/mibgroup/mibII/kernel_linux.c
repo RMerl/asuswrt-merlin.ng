@@ -16,6 +16,7 @@
 #include <sys/param.h>
 #endif
 #include <errno.h>
+#include <stddef.h>
 
 #include "kernel_linux.h"
 
@@ -28,20 +29,152 @@ struct tcp_mib  cached_tcp_mib;
 struct udp_mib  cached_udp_mib;
 struct udp6_mib  cached_udp6_mib;
 
-#define IP_STATS_LINE	"Ip: %lu %lu %lu %lu %lu %lu %lu %lu %lu %lu %lu %lu %lu %lu %lu %lu %lu %lu %lu"
-#define ICMP_STATS_LINE	"Icmp: %lu %lu %lu %lu %lu %lu %lu %lu %lu %lu %lu %lu %lu %lu %lu %lu %lu %lu %lu %lu %lu %lu %lu %lu %lu %lu"
-#define ICMP_MSG_STATS_LINE "IcmpMsg: "
-#define TCP_STATS_LINE	"Tcp: %lu %lu %lu %lu %lu %lu %lu %lu %lu %lu %lu %lu %lu %lu"
-#define UDP_STATS_LINE	"Udp: %lu %lu %lu %lu"
+struct stats_descr {
+    const char *prefix;
+    const char *col_name;
+    void *var;
+    unsigned int offset;
+    unsigned int validity_offset;
+};
+
+static const struct stats_descr ipv4_snmp_stats[] = {
+    { "Ip:", "Forwarding", &cached_ip_mib,
+      offsetof(struct ip_mib, ipForwarding) },
+    { "Ip:", "DefaultTTL", &cached_ip_mib,
+      offsetof(struct ip_mib, ipDefaultTTL) },
+    { "Ip:", "InReceives", &cached_ip_mib,
+      offsetof(struct ip_mib, ipInReceives) },
+    { "Ip:", "InHdrErrors", &cached_ip_mib,
+      offsetof(struct ip_mib, ipInHdrErrors) },
+    { "Ip:", "InAddrErrors", &cached_ip_mib,
+      offsetof(struct ip_mib, ipInAddrErrors) },
+    { "Ip:", "ForwDatagrams", &cached_ip_mib,
+      offsetof(struct ip_mib, ipForwDatagrams) },
+    { "Ip:", "InUnknownProtos", &cached_ip_mib,
+      offsetof(struct ip_mib, ipInUnknownProtos) },
+    { "Ip:", "InDiscards", &cached_ip_mib,
+      offsetof(struct ip_mib, ipInDiscards) },
+    { "Ip:", "InDelivers", &cached_ip_mib,
+      offsetof(struct ip_mib, ipInDelivers) },
+    { "Ip:", "OutRequests", &cached_ip_mib,
+      offsetof(struct ip_mib, ipOutRequests) },
+    { "Ip:", "OutDiscards", &cached_ip_mib,
+      offsetof(struct ip_mib, ipOutDiscards) },
+    { "Ip:", "OutNoRoutes", &cached_ip_mib,
+      offsetof(struct ip_mib, ipOutNoRoutes) },
+    { "Ip:", "ReasmTimeout", &cached_ip_mib,
+      offsetof(struct ip_mib, ipReasmTimeout) },
+    { "Ip:", "ReasmReqds", &cached_ip_mib,
+      offsetof(struct ip_mib, ipReasmReqds) },
+    { "Ip:", "ReasmOKs", &cached_ip_mib,
+      offsetof(struct ip_mib, ipReasmOKs) },
+    { "Ip:", "ReasmFails", &cached_ip_mib,
+      offsetof(struct ip_mib, ipReasmFails) },
+    { "Ip:", "FragOKs", &cached_ip_mib,
+      offsetof(struct ip_mib, ipFragOKs) },
+    { "Ip:", "FragFails", &cached_ip_mib,
+      offsetof(struct ip_mib, ipFragFails) },
+    { "Ip:", "FragCreates", &cached_ip_mib,
+      offsetof(struct ip_mib, ipFragCreates) },
+
+    { "Icmp:", "InMsgs", &cached_icmp_mib,
+      offsetof(struct icmp_mib, icmpInMsgs) },
+    { "Icmp:", "InErrors", &cached_icmp_mib,
+      offsetof(struct icmp_mib, icmpInErrors) },
+    { "Icmp:", "InDestUnreachs", &cached_icmp_mib,
+      offsetof(struct icmp_mib, icmpInDestUnreachs) },
+    { "Icmp:", "InTimeExcds", &cached_icmp_mib,
+      offsetof(struct icmp_mib, icmpInTimeExcds) },
+    { "Icmp:", "InParmProbs", &cached_icmp_mib,
+      offsetof(struct icmp_mib, icmpInParmProbs) },
+    { "Icmp:", "InSrcQuenchs", &cached_icmp_mib,
+      offsetof(struct icmp_mib, icmpInSrcQuenchs) },
+    { "Icmp:", "InRedirects", &cached_icmp_mib,
+      offsetof(struct icmp_mib, icmpInRedirects) },
+    { "Icmp:", "InEchos", &cached_icmp_mib,
+      offsetof(struct icmp_mib, icmpInEchos) },
+    { "Icmp:", "InEchoReps", &cached_icmp_mib,
+      offsetof(struct icmp_mib, icmpInEchoReps) },
+    { "Icmp:", "InTimestamps", &cached_icmp_mib,
+      offsetof(struct icmp_mib, icmpInTimestamps) },
+    { "Icmp:", "InTimestampReps", &cached_icmp_mib,
+      offsetof(struct icmp_mib, icmpInTimestampReps) },
+    { "Icmp:", "InAddrMasks", &cached_icmp_mib,
+      offsetof(struct icmp_mib, icmpInAddrMasks) },
+    { "Icmp:", "InAddrMaskReps", &cached_icmp_mib,
+      offsetof(struct icmp_mib, icmpInAddrMaskReps) },
+    { "Icmp:", "OutMsgs", &cached_icmp_mib,
+      offsetof(struct icmp_mib, icmpOutMsgs) },
+    { "Icmp:", "OutErrors", &cached_icmp_mib,
+      offsetof(struct icmp_mib, icmpOutErrors) },
+    { "Icmp:", "OutDestUnreachs", &cached_icmp_mib,
+      offsetof(struct icmp_mib, icmpOutDestUnreachs) },
+    { "Icmp:", "OutTimeExcds", &cached_icmp_mib,
+      offsetof(struct icmp_mib, icmpOutTimeExcds) },
+    { "Icmp:", "OutParmProbs", &cached_icmp_mib,
+      offsetof(struct icmp_mib, icmpOutParmProbs) },
+    { "Icmp:", "OutSrcQuenchs", &cached_icmp_mib,
+      offsetof(struct icmp_mib, icmpOutSrcQuenchs) },
+    { "Icmp:", "OutRedirects", &cached_icmp_mib,
+      offsetof(struct icmp_mib, icmpOutRedirects) },
+    { "Icmp:", "OutEchos", &cached_icmp_mib,
+      offsetof(struct icmp_mib, icmpOutEchos) },
+    { "Icmp:", "OutEchoReps", &cached_icmp_mib,
+      offsetof(struct icmp_mib, icmpOutEchoReps) },
+    { "Icmp:", "OutTimestamps", &cached_icmp_mib,
+      offsetof(struct icmp_mib, icmpOutTimestamps) },
+    { "Icmp:", "OutTimestampReps", &cached_icmp_mib,
+      offsetof(struct icmp_mib, icmpOutTimestampReps) },
+    { "Icmp:", "OutAddrMasks", &cached_icmp_mib,
+      offsetof(struct icmp_mib, icmpOutAddrMasks) },
+    { "Icmp:", "OutAddrMaskReps", &cached_icmp_mib,
+      offsetof(struct icmp_mib, icmpOutAddrMaskReps) },
+
+    { "Tcp:", "RtoAlgorithm", &cached_tcp_mib,
+      offsetof(struct tcp_mib, tcpRtoAlgorithm) },
+    { "Tcp:", "RtoMin", &cached_tcp_mib,
+      offsetof(struct tcp_mib, tcpRtoMin) },
+    { "Tcp:", "RtoMax", &cached_tcp_mib,
+      offsetof(struct tcp_mib, tcpRtoMax) },
+    { "Tcp:", "MaxConn", &cached_tcp_mib,
+      offsetof(struct tcp_mib, tcpMaxConn) },
+    { "Tcp:", "ActiveOpens", &cached_tcp_mib,
+      offsetof(struct tcp_mib, tcpActiveOpens) },
+    { "Tcp:", "PassiveOpens", &cached_tcp_mib,
+      offsetof(struct tcp_mib, tcpPassiveOpens) },
+    { "Tcp:", "AttemptFails", &cached_tcp_mib,
+      offsetof(struct tcp_mib, tcpAttemptFails) },
+    { "Tcp:", "EstabResets", &cached_tcp_mib,
+      offsetof(struct tcp_mib, tcpEstabResets) },
+    { "Tcp:", "CurrEstab", &cached_tcp_mib,
+      offsetof(struct tcp_mib, tcpCurrEstab) },
+    { "Tcp:", "InSegs", &cached_tcp_mib,
+      offsetof(struct tcp_mib, tcpInSegs) },
+    { "Tcp:", "OutSegs", &cached_tcp_mib,
+      offsetof(struct tcp_mib, tcpOutSegs) },
+    { "Tcp:", "RetransSegs", &cached_tcp_mib,
+      offsetof(struct tcp_mib, tcpRetransSegs) },
+    { "Tcp:", "InErrs", &cached_tcp_mib,
+      offsetof(struct tcp_mib, tcpInErrs),
+      offsetof(struct tcp_mib, tcpInErrsValid) },
+    { "Tcp:", "OutRsts", &cached_tcp_mib,
+      offsetof(struct tcp_mib, tcpOutRsts),
+      offsetof(struct tcp_mib, tcpOutRstsValid) },
+
+    { "Udp:", "InDatagrams", &cached_udp_mib,
+      offsetof(struct udp_mib, udpInDatagrams) },
+    { "Udp:", "NoPorts", &cached_udp_mib,
+      offsetof(struct udp_mib, udpNoPorts) },
+    { "Udp:", "InErrors", &cached_udp_mib,
+      offsetof(struct udp_mib, udpInErrors) },
+    { "Udp:", "OutDatagrams", &cached_udp_mib,
+      offsetof(struct udp_mib, udpOutDatagrams) },
+};
+
 #define IP6_STATS_LINE   "Ip6"
 #define ICMP6_STATS_LINE "Icmp6"
 #define UDP6_STATS_LINE "Udp6"
 
-#define IP_STATS_PREFIX_LEN	4
-#define ICMP_STATS_PREFIX_LEN	6
-#define ICMP_MSG_STATS_PREFIX_LEN 9
-#define TCP_STATS_PREFIX_LEN	5
-#define UDP_STATS_PREFIX_LEN	5
 #define IP6_STATS_PREFIX_LEN	3
 #define ICMP6_STATS_PREFIX_LEN	5
 #define UDP6_STATS_PREFIX_LEN   4
@@ -50,7 +183,7 @@ netsnmp_feature_child_of(linux_ip6_stat_all, libnetsnmpmibs)
 
 netsnmp_feature_child_of(linux_read_ip6_stat, linux_ip6_stat_all)
 
-int
+static int
 decode_icmp_msg(char *line, char *data, struct icmp4_msg_mib *msg)
 {
     char *token, *saveptr, *lineptr, *saveptr1, *dataptr, *delim = NULL;
@@ -71,7 +204,7 @@ decode_icmp_msg(char *line, char *data, struct icmp4_msg_mib *msg)
 
     lineptr = line_cpy;
     dataptr = data_cpy;
-    saveptr1 = NULL;
+    saveptr1 = saveptr = NULL;
     while (1) {
         if(NULL == (token = strtok_r(lineptr, " ", &saveptr)))
             break;
@@ -81,9 +214,9 @@ decode_icmp_msg(char *line, char *data, struct icmp4_msg_mib *msg)
             index = strtol(token, &delim, 0);
             if (ERANGE == errno) {
                 continue;
-            } else if (index > LONG_MAX) {
+            } else if (index > 255) {
                 continue;
-            } else if (index < LONG_MIN) {
+            } else if (index < 0) {
                 continue;
             }
             if (NULL == (token = strtok_r(dataptr, " ", &saveptr1)))
@@ -94,9 +227,9 @@ decode_icmp_msg(char *line, char *data, struct icmp4_msg_mib *msg)
             index = strtol(token, &delim, 0);
             if (ERANGE == errno) {
                 continue;
-            } else if (index > LONG_MAX) {
+            } else if (index > 255) {
                 continue;
-            } else if (index < LONG_MIN) {
+            } else if (index < 0) {
                 continue;
             }
             if(NULL == (token = strtok_r(dataptr, " ", &saveptr1)))
@@ -108,108 +241,46 @@ decode_icmp_msg(char *line, char *data, struct icmp4_msg_mib *msg)
     return 0;
 }
 
-int
+static int
 linux_read_mibII_stats(void)
 {
-    FILE           *in = fopen("/proc/net/snmp", "r");
-    char            line[1024], data[1024];
-    int ret = 0;
+    FILE           *in;
+    char            line[1024], data[1024], *linepos, *datapos, *pfx, *hdr, *v;
+    const struct stats_descr *d;
+    const struct stats_descr *const end = ipv4_snmp_stats +
+                          sizeof(ipv4_snmp_stats) / sizeof(ipv4_snmp_stats[0]);
+    int             ret = 0;
+
+    in = fopen("/proc/net/snmp", "r");
     if (!in) {
         DEBUGMSGTL(("mibII/kernel_linux","Unable to open /proc/net/snmp"));
         return -1;
     }
 
-
-    memset(line, '\0', sizeof(line));
-    memset(data, '\0', sizeof(data));
-    while (line == fgets(line, sizeof(line), in)) {
-        if (!strncmp(line, IP_STATS_LINE, IP_STATS_PREFIX_LEN)) {
-            sscanf(line, IP_STATS_LINE,
-                   &cached_ip_mib.ipForwarding,
-                   &cached_ip_mib.ipDefaultTTL,
-                   &cached_ip_mib.ipInReceives,
-                   &cached_ip_mib.ipInHdrErrors,
-                   &cached_ip_mib.ipInAddrErrors,
-                   &cached_ip_mib.ipForwDatagrams,
-                   &cached_ip_mib.ipInUnknownProtos,
-                   &cached_ip_mib.ipInDiscards,
-                   &cached_ip_mib.ipInDelivers,
-                   &cached_ip_mib.ipOutRequests,
-                   &cached_ip_mib.ipOutDiscards,
-                   &cached_ip_mib.ipOutNoRoutes,
-                   &cached_ip_mib.ipReasmTimeout,
-                   &cached_ip_mib.ipReasmReqds,
-                   &cached_ip_mib.ipReasmOKs,
-                   &cached_ip_mib.ipReasmFails,
-                   &cached_ip_mib.ipFragOKs,
-                   &cached_ip_mib.ipFragFails,
-                   &cached_ip_mib.ipFragCreates);
-            cached_ip_mib.ipRoutingDiscards = 0;        /* XXX */
-        } else if (!strncmp(line, ICMP_STATS_LINE, ICMP_STATS_PREFIX_LEN)) {
-            sscanf(line, ICMP_STATS_LINE,
-                   &cached_icmp_mib.icmpInMsgs,
-                   &cached_icmp_mib.icmpInErrors,
-                   &cached_icmp_mib.icmpInDestUnreachs,
-                   &cached_icmp_mib.icmpInTimeExcds,
-                   &cached_icmp_mib.icmpInParmProbs,
-                   &cached_icmp_mib.icmpInSrcQuenchs,
-                   &cached_icmp_mib.icmpInRedirects,
-                   &cached_icmp_mib.icmpInEchos,
-                   &cached_icmp_mib.icmpInEchoReps,
-                   &cached_icmp_mib.icmpInTimestamps,
-                   &cached_icmp_mib.icmpInTimestampReps,
-                   &cached_icmp_mib.icmpInAddrMasks,
-                   &cached_icmp_mib.icmpInAddrMaskReps,
-                   &cached_icmp_mib.icmpOutMsgs,
-                   &cached_icmp_mib.icmpOutErrors,
-                   &cached_icmp_mib.icmpOutDestUnreachs,
-                   &cached_icmp_mib.icmpOutTimeExcds,
-                   &cached_icmp_mib.icmpOutParmProbs,
-                   &cached_icmp_mib.icmpOutSrcQuenchs,
-                   &cached_icmp_mib.icmpOutRedirects,
-                   &cached_icmp_mib.icmpOutEchos,
-                   &cached_icmp_mib.icmpOutEchoReps,
-                   &cached_icmp_mib.icmpOutTimestamps,
-                   &cached_icmp_mib.icmpOutTimestampReps,
-                   &cached_icmp_mib.icmpOutAddrMasks,
-                   &cached_icmp_mib.icmpOutAddrMaskReps);
-        } else if (!strncmp(line, ICMP_MSG_STATS_LINE, ICMP_MSG_STATS_PREFIX_LEN)) {
-            /*
-             * Note: We have to do this differently from other stats as the
-             * counters to this stats are dynamic. So we will not know the
-             * number of counters at a given time.
-             */
-            fgets(data, sizeof(data), in);
-            if(decode_icmp_msg(line + ICMP_MSG_STATS_PREFIX_LEN,
-                        data + ICMP_MSG_STATS_PREFIX_LEN,
-                        &cached_icmp4_msg_mib) < 0) {
-                continue;
+    while (fgets(line, sizeof(line), in) && fgets(data, sizeof(data), in)) {
+        if (!(pfx = strtok_r(line, " ", &linepos)))
+            continue;
+        if (!strtok_r(data, " ", &datapos))
+            continue;
+        if (strcmp(pfx, "IcmpMsg:") == 0) {
+            decode_icmp_msg(linepos, datapos, &cached_icmp4_msg_mib);
+        } else {
+            while ((hdr = strtok_r(linepos, " \n", &linepos)) &&
+                   (v = strtok_r(datapos, " \n", &datapos))) {
+                for (d = ipv4_snmp_stats; d < end; d++) {
+                    if (strcmp(d->prefix, pfx) == 0 &&
+                        strcmp(d->col_name, hdr) == 0) {
+                        *(unsigned long *)(d->var + d->offset) = atol(v);
+                        if (d->validity_offset != 0) {
+                           *(short *)(d->var + d->validity_offset) = 1;
+                        }
+                        break;
+                    }
+                }
+                if (d == end)
+                    DEBUGMSGTL(("mibII/kernel_linux", "Skipped %s %s %s\n", pfx,
+                                hdr, v));
             }
-            ret = 1;
-        } else if (!strncmp(line, TCP_STATS_LINE, TCP_STATS_PREFIX_LEN)) {
-            int             ret = sscanf(line, TCP_STATS_LINE,
-                                         &cached_tcp_mib.tcpRtoAlgorithm,
-                                         &cached_tcp_mib.tcpRtoMin,
-                                         &cached_tcp_mib.tcpRtoMax,
-                                         &cached_tcp_mib.tcpMaxConn,
-                                         &cached_tcp_mib.tcpActiveOpens,
-                                         &cached_tcp_mib.tcpPassiveOpens,
-                                         &cached_tcp_mib.tcpAttemptFails,
-                                         &cached_tcp_mib.tcpEstabResets,
-                                         &cached_tcp_mib.tcpCurrEstab,
-                                         &cached_tcp_mib.tcpInSegs,
-                                         &cached_tcp_mib.tcpOutSegs,
-                                         &cached_tcp_mib.tcpRetransSegs,
-                                         &cached_tcp_mib.tcpInErrs,
-                                         &cached_tcp_mib.tcpOutRsts);
-            cached_tcp_mib.tcpInErrsValid = (ret > 12) ? 1 : 0;
-            cached_tcp_mib.tcpOutRstsValid = (ret > 13) ? 1 : 0;
-        } else if (!strncmp(line, UDP_STATS_LINE, UDP_STATS_PREFIX_LEN)) {
-            sscanf(line, UDP_STATS_LINE,
-                   &cached_udp_mib.udpInDatagrams,
-                   &cached_udp_mib.udpNoPorts,
-                   &cached_udp_mib.udpInErrors,
-                   &cached_udp_mib.udpOutDatagrams);
         }
     }
     fclose(in);
@@ -273,7 +344,8 @@ int linux_read_ip6_stat( struct ip6_mib *ip6stat)
             continue;
 
         endp = strchr(line, ' ');
-        *endp = '\0';
+        if (endp)
+            *endp = '\0';
         DEBUGMSGTL(("mibII/kernel_linux/ip6stats", "Find tag: %s\n", line));
 
         match = 1;
@@ -386,7 +458,7 @@ linux_read_icmp_stat(struct icmp_mib *icmpstat)
     return 0;
 }
 
-int
+static int
 linux_read_icmp6_parse(struct icmp6_mib *icmp6stat,
                        struct icmp6_msg_mib *icmp6msgstat,
                        int *support)
@@ -421,19 +493,27 @@ linux_read_icmp6_parse(struct icmp6_mib *icmp6stat,
             continue;
 
         endp = strchr(line, ' ');
-        *endp = '\0';
+        if (endp)
+            *endp = '\0';
         DEBUGMSGTL(("mibII/kernel_linux/icmp6stats", "Find tag: %s\n", line));
 
         vals = name;
         if (NULL != icmp6msgstat) {
+            int type;
             if (0 == strncmp(name, "Icmp6OutType", 12)) {
                 strsep(&vals, "e");
-                icmp6msgstat->vals[atoi(vals)].OutType = stats;
+                type = atoi(vals);
+                if ( type < 0 || type > 255 )
+                    continue;
+                icmp6msgstat->vals[type].OutType = stats;
                 *support = 1;
                 continue;
             } else if (0 == strncmp(name, "Icmp6InType", 11)) {
                 strsep(&vals, "e");
-                icmp6msgstat->vals[atoi(vals)].InType = stats;
+                type = atoi(vals);
+                if ( type < 0 || type > 255 )
+                    continue;
+                icmp6msgstat->vals[type].InType = stats;
                 *support = 1;
                 continue;
             }
@@ -479,6 +559,8 @@ linux_read_icmp6_parse(struct icmp6_mib *icmp6stat,
         } else if (0 == strncmp(line + 5, "Out", 3)) {  /* Out */
             if (0 == strcmp(line + 8, "DestUnreachs")) {
                 cached_icmp6_mib.icmp6OutDestUnreachs = stats;
+            } else if (0 == strcmp(line + 8, "Echos")) {
+                cached_icmp6_mib.icmp6OutEchos = stats;
             } else if (0 == strcmp(line + 8, "EchoReplies")) {
                 cached_icmp6_mib.icmp6OutEchoReplies = stats;
             } else if (0 == strcmp(line + 8, "GroupMembReductions")) {
@@ -603,7 +685,8 @@ linux_read_udp6_stat(struct udp6_mib *udp6stat)
             continue;
 
         endp = strchr(line, ' ');
-        *endp = '\0';
+        if (endp)
+            *endp = '\0';
         DEBUGMSGTL(("mibII/kernel_linux/udp6stats", "Find tag: %s\n", line));
 
         if (0 == strcmp(line + 4, "OutDatagrams")) {

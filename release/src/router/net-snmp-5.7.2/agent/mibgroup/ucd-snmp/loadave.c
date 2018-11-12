@@ -258,12 +258,6 @@ loadave_free_config(void)
 int
 try_getloadavg(double *r_ave, size_t s_ave)
 {
-#if defined(HAVE_GETLOADAVG) || defined(linux) || defined(ultrix) \
-    || defined(sun) || defined(__alpha) || defined(dynix) \
-    || !defined(cygwin) && defined(NETSNMP_CAN_USE_NLIST) \
-       && defined(LOADAVE_SYMBOL)
-    double         *pave = r_ave;
-#endif
 #ifndef HAVE_GETLOADAVG
 #ifdef HAVE_SYS_FIXPOINT_H
     fix             favenrun[3];
@@ -278,7 +272,6 @@ try_getloadavg(double *r_ave, size_t s_ave)
 #endif
 #endif
 #if defined(aix4) || defined(aix5) || defined(aix6) || defined(aix7)
-    int             favenrun[3];
     perfstat_cpu_total_t cs;
 #endif
 #if defined(hpux10) || defined(hpux11)
@@ -291,7 +284,7 @@ try_getloadavg(double *r_ave, size_t s_ave)
 #endif	/* !HAVE_GETLOADAVG */
 
 #ifdef HAVE_GETLOADAVG
-    if (getloadavg(pave, s_ave) == -1)
+    if (getloadavg(r_ave, s_ave) == -1)
         return (-1);
 #elif defined(linux)
     {
@@ -300,7 +293,7 @@ try_getloadavg(double *r_ave, size_t s_ave)
             NETSNMP_LOGONCE((LOG_ERR, "snmpd: cannot open /proc/loadavg\n"));
             return (-1);
         }
-        fscanf(in, "%lf %lf %lf", pave, (pave + 1), (pave + 2));
+        fscanf(in, "%lf %lf %lf", r_ave, (r_ave + 1), (r_ave + 2));
         fclose(in);
     }
 #elif (defined(ultrix) || defined(sun) || defined(__alpha) || defined(dynix))
@@ -308,7 +301,7 @@ try_getloadavg(double *r_ave, size_t s_ave)
         0)
         return (-1);
     for (i = 0; i < s_ave; i++)
-        *(pave + i) = FIX_TO_DBL(favenrun[i]);
+        *(r_ave + i) = FIX_TO_DBL(favenrun[i]);
 #elif defined(hpux10) || defined(hpux11)
     if (pstat_getdynamic(&pst_buf, sizeof(struct pst_dynamic), 1, 0) < 0)
         return(-1);
@@ -330,7 +323,7 @@ try_getloadavg(double *r_ave, size_t s_ave)
     DEBUGMSGTL(("ucd-snmp/loadave", "irix6: %d %d %d\n", favenrun[0], favenrun[1], favenrun[2]));
 #elif !defined(cygwin)
 #if defined(NETSNMP_CAN_USE_NLIST) && defined(LOADAVE_SYMBOL)
-    if (auto_nlist(LOADAVE_SYMBOL, (char *) pave, sizeof(double) * s_ave)
+    if (auto_nlist(LOADAVE_SYMBOL, (char *) r_ave, sizeof(double) * s_ave)
         == 0)
 #endif
         return (-1);

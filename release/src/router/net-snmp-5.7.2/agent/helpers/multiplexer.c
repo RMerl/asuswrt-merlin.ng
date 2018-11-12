@@ -72,11 +72,13 @@ netsnmp_multiplexer_helper_handler(netsnmp_mib_handler *handler,
         if (handler)
             break;
         /* Deliberate fallthrough to use GetNext handler */
+	/* FALL THROUGH */
     case MODE_GETNEXT:
         handler = methods->getnext_handler;
         if (handler)
             break;
         /* Deliberate fallthrough to use Get handler */
+	/* FALL THROUGH */
     case MODE_GET:
         handler = methods->get_handler;
         if (!handler) {

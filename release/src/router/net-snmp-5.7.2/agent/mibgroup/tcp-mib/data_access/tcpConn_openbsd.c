@@ -26,7 +26,25 @@
 #include <netinet/tcp_var.h>
 #endif
 
+#if HAVE_KVM_GETFILES
+#if defined(HAVE_KVM_GETFILE2) || !defined(openbsd5)
+#undef HAVE_KVM_GETFILES
+#endif
+#endif
+
+#if HAVE_KVM_GETFILES
+#include <kvm.h>
+#include <sys/sysctl.h>
+#define _KERNEL /* for DTYPE_SOCKET */
+#include <sys/file.h>
+#undef _KERNEL
+#endif
+
+#ifdef HAVE_KVM_GETFILES
+static int _kvmload(netsnmp_container *container, u_int flags);
+#else
 static int _load(netsnmp_container *container, u_int flags);
+#endif
 
 /*
  * initialize arch specific storage
@@ -96,11 +114,100 @@ netsnmp_arch_tcpconn_container_load(netsnmp_container *container,
         return -1;
     }
 
+#ifdef HAVE_KVM_GETFILES
+    rc = _kvmload(container, load_flags);
+#else
     rc = _load(container, load_flags);
+#endif
 
     return rc;
 }
 
+#ifdef HAVE_KVM_GETFILES
+/**
+ *
+ * @retval  0 no errors
+ * @retval !0 errors
+ */
+static int
+_kvmload(netsnmp_container *container, u_int load_flags)
+{
+    int      StateMap[] = { 1, 2, 3, 4, 5, 8, 6, 10, 9, 7, 11 };
+    netsnmp_tcpconn_entry  *entry;
+    struct   kinfo_file *kf;
+    int      count;
+    int      state;
+    int      rc = 0;
+
+    kf = kvm_getfiles(kd, KERN_FILE_BYFILE, DTYPE_SOCKET, sizeof(struct kinfo_file), &count);
+
+    while (count--) {
+	if (kf->so_protocol != IPPROTO_TCP)
+	    goto skip;
+
+	state = StateMap[kf->t_state];
+
+	if (load_flags) {
+	    if (state == TCPCONNECTIONSTATE_LISTEN) {
+		if (load_flags & NETSNMP_ACCESS_TCPCONN_LOAD_NOLISTEN) {
+		    DEBUGMSGT(("verbose:access:tcpconn:container",
+			       " skipping listen\n"));
+		    goto skip;
+		}
+	    }
+	    else if (load_flags & NETSNMP_ACCESS_TCPCONN_LOAD_ONLYLISTEN) {
+		DEBUGMSGT(("verbose:access:tcpconn:container",
+			    " skipping non-listen\n"));
+		goto skip;
+	    }
+	}
+
+#if !defined(NETSNMP_ENABLE_IPV6)
+        if (kf->so_family == AF_INET6)
+	    goto skip;
+#endif
+
+        entry = netsnmp_access_tcpconn_entry_create();
+        if(NULL == entry) {
+            rc = -3;
+            break;
+        }
+
+        /** oddly enough, these appear to already be in network order */
+        entry->loc_port = ntohs(kf->inp_lport);
+        entry->rmt_port = ntohs(kf->inp_fport);
+        entry->tcpConnState = StateMap[kf->t_state];
+        entry->pid = kf->p_pid;
+        
+        /** the addr string may need work */
+	if (kf->so_family == AF_INET6) {
+	    entry->loc_addr_len = entry->rmt_addr_len = 16;
+	    memcpy(entry->loc_addr, &kf->inp_laddru, 16);
+	    memcpy(entry->rmt_addr, &kf->inp_faddru, 16);
+	}
+	else {
+	    entry->loc_addr_len = entry->rmt_addr_len = 4;
+	    memcpy(entry->loc_addr, &kf->inp_laddru, 4);
+	    memcpy(entry->rmt_addr, &kf->inp_faddru, 4);
+	}
+	DEBUGMSGTL(("tcp-mib/data_access", "tcp %d %d %d\n",
+	    entry->loc_addr_len, entry->loc_port, entry->rmt_port));
+
+        /*
+         * add entry to container
+         */
+        entry->arbitrary_index = CONTAINER_SIZE(container) + 1;
+        CONTAINER_INSERT(container, entry);
+skip:
+	kf++;
+    }
+
+    if (rc < 0)
+    return rc;
+    return 0;
+}
+
+#else /* HAVE_KVM_GETFILES */
 
 /**
  *
@@ -209,3 +316,4 @@ skip:
 
     return 0;
 }
+#endif /* HAVE_KVM_GETFILES */

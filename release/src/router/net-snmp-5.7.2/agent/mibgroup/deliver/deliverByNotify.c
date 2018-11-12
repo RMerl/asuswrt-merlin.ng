@@ -191,7 +191,7 @@ parse_deliver_config(const char *token, char *line) {
         config_perror("no frequency given");
         return;
     }
-    copy_nword(cp, buf, buf_len);
+    copy_nword_const(cp, buf, buf_len);
     frequency = netsnmp_string_time_to_secs(buf);
     cp = skip_token_const(cp);
 

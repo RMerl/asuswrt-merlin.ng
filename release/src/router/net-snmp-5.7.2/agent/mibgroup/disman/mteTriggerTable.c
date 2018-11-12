@@ -189,7 +189,6 @@ struct variable2 mteTriggerTable_variables[] = {
 struct header_complex_index *mteTriggerTableStorage = NULL;
 
 netsnmp_session *mte_callback_sess = NULL;
-extern int      callback_master_num;
 
 /*
  * init_mteTriggerTable():
@@ -283,9 +282,8 @@ create_mteTriggerTable_data(void)
     StorageNew->mteTriggerObjectsOwner = strdup("");
     StorageNew->mteTriggerObjects = strdup("");
     StorageNew->mteTriggerEnabled = MTETRIGGERENABLED_FALSE;
-    memdup((unsigned char **)
-           &(StorageNew->mteTriggerDeltaDiscontinuityID),
-           (unsigned char *) sysUpTimeInstance, sizeof(sysUpTimeInstance));
+    StorageNew->mteTriggerDeltaDiscontinuityID =
+        netsnmp_memdup(sysUpTimeInstance, sizeof(sysUpTimeInstance));
     StorageNew->mteTriggerDeltaDiscontinuityIDLen =
         sizeof(sysUpTimeInstance) / sizeof(oid);
     StorageNew->mteTriggerDeltaDiscontinuityIDWildcard = TV_FALSE;
@@ -469,7 +467,7 @@ parse_simple_monitor(const char *token, char *line)
                      */
                     return;
                 }
-                StorageNew->mteTriggerFrequency = (unsigend long) freq;
+                StorageNew->mteTriggerFrequency = (unsigned long) freq;
             } else {
                 config_perror("No parameter after -r given\n");
                 /*
@@ -1678,8 +1676,7 @@ write_mteTriggerComment(int action,
          */
         tmpvar = StorageTmp->mteTriggerComment;
         tmplen = StorageTmp->mteTriggerCommentLen;
-        memdup((u_char **) & StorageTmp->mteTriggerComment, var_val,
-               var_val_len);
+        StorageTmp->mteTriggerComment = netsnmp_memdup(var_val, var_val_len);
         StorageTmp->mteTriggerCommentLen = var_val_len;
         break;
 
@@ -1766,8 +1763,7 @@ write_mteTriggerTest(int action,
          */
         tmpvar = StorageTmp->mteTriggerTest;
         tmplen = StorageTmp->mteTriggerTestLen;
-        memdup((u_char **) & StorageTmp->mteTriggerTest, var_val,
-               var_val_len);
+        StorageTmp->mteTriggerTest = netsnmp_memdup(var_val, var_val_len);
         StorageTmp->mteTriggerTestLen = var_val_len;
         break;
 
@@ -1939,8 +1935,7 @@ write_mteTriggerValueID(int action,
          */
         tmpvar = StorageTmp->mteTriggerValueID;
         tmplen = StorageTmp->mteTriggerValueIDLen;
-        memdup((u_char **) & StorageTmp->mteTriggerValueID, var_val,
-               var_val_len);
+        StorageTmp->mteTriggerValueID = netsnmp_memdup(var_val, var_val_len);
         StorageTmp->mteTriggerValueIDLen = var_val_len / sizeof(oid);
         break;
 
@@ -2118,8 +2113,7 @@ write_mteTriggerTargetTag(int action,
          */
         tmpvar = StorageTmp->mteTriggerTargetTag;
         tmplen = StorageTmp->mteTriggerTargetTagLen;
-        memdup((u_char **) & StorageTmp->mteTriggerTargetTag, var_val,
-               var_val_len);
+        StorageTmp->mteTriggerTargetTag = netsnmp_memdup(var_val, var_val_len);
         StorageTmp->mteTriggerTargetTagLen = var_val_len;
         break;
 
@@ -2208,8 +2202,8 @@ write_mteTriggerContextName(int action,
          */
         tmpvar = StorageTmp->mteTriggerContextName;
         tmplen = StorageTmp->mteTriggerContextNameLen;
-        memdup((u_char **) & StorageTmp->mteTriggerContextName, var_val,
-               var_val_len);
+        StorageTmp->mteTriggerContextName =
+            netsnmp_memdup(var_val, var_val_len);
         StorageTmp->mteTriggerContextNameLen = var_val_len;
         break;
 
@@ -2469,8 +2463,8 @@ write_mteTriggerObjectsOwner(int action,
          */
         tmpvar = StorageTmp->mteTriggerObjectsOwner;
         tmplen = StorageTmp->mteTriggerObjectsOwnerLen;
-        memdup((u_char **) & StorageTmp->mteTriggerObjectsOwner, var_val,
-               var_val_len);
+        StorageTmp->mteTriggerObjectsOwner =
+            netsnmp_memdup(var_val, var_val_len);
         StorageTmp->mteTriggerObjectsOwnerLen = var_val_len;
         break;
 
@@ -2559,8 +2553,7 @@ write_mteTriggerObjects(int action,
          */
         tmpvar = StorageTmp->mteTriggerObjects;
         tmplen = StorageTmp->mteTriggerObjectsLen;
-        memdup((u_char **) & StorageTmp->mteTriggerObjects, var_val,
-               var_val_len);
+        StorageTmp->mteTriggerObjects = netsnmp_memdup(var_val, var_val_len);
         StorageTmp->mteTriggerObjectsLen = var_val_len;
         break;
 
@@ -2923,7 +2916,7 @@ write_mteTriggerEntryStatus(int action,
          */
         if (StorageDel != NULL) {
             mte_disable_trigger(StorageDel);
-            StorageDel = 0;
+            StorageDel = NULL;
             /*
              * XXX: free it, its dead 
              */
@@ -3133,16 +3126,17 @@ mte_get_response(struct mteTriggerTable_data *item, netsnmp_pdu *pdu)
     pdu->securityLevel = item->pdu_securityLevel;
     pdu->tDomain = item->pdu_tDomain;
     pdu->tDomainLen = item->pdu_tDomainLen;
-    memdup((u_char **) & pdu->transport_data, item->pdu_transport,
-           item->pdu_transportLen);
+    pdu->transport_data = netsnmp_memdup(item->pdu_transport,
+                                         item->pdu_transportLen);
     pdu->transport_data_length = item->pdu_transportLen;
-    memdup(&pdu->community, item->pdu_community, item->pdu_community_len);
+    pdu->community = netsnmp_memdup(item->pdu_community,
+                                    item->pdu_community_len);
     pdu->community_len = item->pdu_community_len;
-    memdup((u_char **) & pdu->contextName, item->mteTriggerContextName,
-           item->mteTriggerContextNameLen);
+    pdu->contextName = netsnmp_memdup(item->mteTriggerContextName,
+                                      item->mteTriggerContextNameLen);
     pdu->contextNameLen = item->mteTriggerContextNameLen;
-    memdup((u_char **) & pdu->securityName, item->pdu_securityName,
-           item->pdu_securityNameLen);
+    pdu->securityName = netsnmp_memdup(item->pdu_securityName,
+                                       item->pdu_securityNameLen);
     pdu->securityNameLen = item->pdu_securityNameLen;
     DEBUGMSGTL(("mteTriggerTable",
                 "accessing locally with secName \"%s\" community \"%s\"\n",
@@ -3169,7 +3163,7 @@ mte_get_response(struct mteTriggerTable_data *item, netsnmp_pdu *pdu)
              * xxx 
              */
             char           *errstr;
-            snmp_error(mte_callback_sess, 0, 0, &errstr);
+            snmp_error(mte_callback_sess, NULL, NULL, &errstr);
             if (response) {
                 DEBUGMSGTL(("mteTriggerTable",
                             "Error received: status=%d, sess_error=%s, pduerr=%d/%s, pdu version=%d\n",
@@ -3460,9 +3454,8 @@ mte_run_trigger(unsigned int clientreg, void *clientarg)
          */
         if (response->errstat == SNMPERR_SUCCESS &&
             response->variables->val.integer)
-            memdup((unsigned char **) &value,
-                   (unsigned char *) response->variables->val.integer,
-                   sizeof(*response->variables->val.integer));
+            value = netsnmp_memdup(response->variables->val.integer,
+                                   sizeof(*response->variables->val.integer));
         else
             value = NULL;
 

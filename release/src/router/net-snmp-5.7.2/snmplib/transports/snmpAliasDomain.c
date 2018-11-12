@@ -91,7 +91,7 @@ netsnmp_alias_create_tstring(const char *str, int local,
 
 
 netsnmp_transport *
-netsnmp_alias_create_ostring(const u_char * o, size_t o_len, int local)
+netsnmp_alias_create_ostring(const void *o, size_t o_len, int local)
 {
     fprintf(stderr, "make ostring\n");
     return NULL;

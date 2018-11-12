@@ -97,8 +97,6 @@ struct variable2 expExpressionTable_variables[] = {
  */
 
 struct header_complex_index *expExpressionTableStorage = NULL;
-extern struct header_complex_index *expObjectTableStorage;
-extern struct header_complex_index *expValueTableStorage;
 
 oid             mmTimeInstance[] = { 1, 3, 6, 1, 2, 1, 1, 3, 0 };
 
@@ -563,8 +561,10 @@ write_expExpression(int action,
          */
         tmpvar = StorageTmp->expExpression;
         tmplen = StorageTmp->expExpressionLen;
-        memdup((u_char **) & StorageTmp->expExpression, var_val,
-               var_val_len);
+        StorageTmp->expExpression = malloc(var_val_len + 1);
+        if (StorageTmp->expExpression)
+            snprintf(StorageTmp->expExpression, var_val_len + 1, "%.*s",
+                     (int)var_val_len, var_val);
         StorageTmp->expExpressionLen = var_val_len;
         break;
 
@@ -738,8 +738,7 @@ write_expExpressionComment(int action,
          */
         tmpvar = StorageTmp->expExpressionComment;
         tmplen = StorageTmp->expExpressionCommentLen;
-        memdup((u_char **) & StorageTmp->expExpressionComment, var_val,
-               var_val_len);
+        StorageTmp->expExpressionComment = netsnmp_memdup(var_val, var_val_len);
         StorageTmp->expExpressionCommentLen = var_val_len;
         break;
 
@@ -1031,7 +1030,7 @@ write_expExpressionEntryStatus(int action,
          */
 
 
-        if (StorageTmp == NULL) {
+        if (StorageTmp == NULL && set_value != RS_DESTROY) {
             /*
              * row creation, so add it 
              */
@@ -1040,7 +1039,7 @@ write_expExpressionEntryStatus(int action,
             /*
              * XXX: ack, and if it is NULL? 
              */
-        } else if (set_value != RS_DESTROY) {
+        } else if (StorageTmp && set_value != RS_DESTROY) {
             /*
              * set the flag? 
              */

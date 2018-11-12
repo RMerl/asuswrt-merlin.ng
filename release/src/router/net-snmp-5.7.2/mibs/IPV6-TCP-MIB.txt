@@ -7,7 +7,7 @@ IMPORTS
    Ipv6Address, Ipv6IfIndexOrZero       FROM IPV6-TC;
 
 ipv6TcpMIB MODULE-IDENTITY
-   LAST-UPDATED "9801290000Z"
+   LAST-UPDATED "201702220000Z"
    ORGANIZATION "IETF IPv6 MIB Working Group"
    CONTACT-INFO
         "       Mike Daniele
@@ -20,7 +20,25 @@ ipv6TcpMIB MODULE-IDENTITY
                 Phone:  +1 603 884 1423
                 Email:  daniele@zk3.dec.com"
    DESCRIPTION
-        "The MIB module for entities implementing TCP over IPv6."
+        "The obsolete MIB module for entities implementing TCP
+        over IPv6.  Use the TCP-MIB instead.
+
+        Copyright (c) 2017 IETF Trust and the persons identified
+        as authors of the code.  All rights reserved.
+
+        Redistribution and use in source and binary forms, with
+        or without modification, is permitted pursuant to, and
+        subject to the license terms contained in, the Simplified
+        BSD License set forth in Section 4.c of the IETF Trust's
+        Legal Provisions Relating to IETF Documents
+        (http://trustee.ietf.org/license-info)."
+   REVISION "201702220000Z"
+   DESCRIPTION
+        "Obsoleting this MIB module; it has been replaced by
+        the revised TCP-MIB (RFC 4022)."
+   REVISION "9801290000Z"
+   DESCRIPTION
+        "First revision, published as RFC 2452"
    ::= { experimental 86 }
 
 -- objects specific to TCP for IPv6
@@ -38,16 +56,18 @@ tcp      OBJECT IDENTIFIER ::= { mib-2 6 }
 ipv6TcpConnTable OBJECT-TYPE
    SYNTAX      SEQUENCE OF Ipv6TcpConnEntry
    MAX-ACCESS  not-accessible
-   STATUS      current
+   STATUS      obsolete
    DESCRIPTION
         "A table containing TCP connection-specific information,
-         for only those connections whose endpoints are IPv6 addresses."
+         for only those connections whose endpoints are IPv6 addresses.
+
+         This table is obsoleted by TCP-MIB::tcpConnectionTable."
    ::= { tcp 16 }
 
 ipv6TcpConnEntry OBJECT-TYPE
    SYNTAX      Ipv6TcpConnEntry
    MAX-ACCESS  not-accessible
-   STATUS      current
+   STATUS      obsolete
    DESCRIPTION
         "A conceptual row of the ipv6TcpConnTable containing
          information about a particular current TCP connection.
@@ -57,7 +77,9 @@ ipv6TcpConnEntry OBJECT-TYPE
 
          Note that conceptual rows in this table require an additional
          index object compared to tcpConnTable, since IPv6 addresses
-         are not guaranteed to be unique on the managed node."
+         are not guaranteed to be unique on the managed node.
+
+         This entry is obsoleted by TCP-MIB::tcpConnectionEntry."
    INDEX   { ipv6TcpConnLocalAddress,
              ipv6TcpConnLocalPort,
              ipv6TcpConnRemAddress,
@@ -67,75 +89,89 @@ ipv6TcpConnEntry OBJECT-TYPE
 
 Ipv6TcpConnEntry ::=
    SEQUENCE { ipv6TcpConnLocalAddress    Ipv6Address,
-              ipv6TcpConnLocalPort       INTEGER (0..65535),
+              ipv6TcpConnLocalPort       INTEGER,
               ipv6TcpConnRemAddress      Ipv6Address,
-              ipv6TcpConnRemPort         INTEGER (0..65535),
+              ipv6TcpConnRemPort         INTEGER,
               ipv6TcpConnIfIndex         Ipv6IfIndexOrZero,
               ipv6TcpConnState           INTEGER }
 
 ipv6TcpConnLocalAddress OBJECT-TYPE
    SYNTAX     Ipv6Address
    MAX-ACCESS not-accessible
-   STATUS     current
+   STATUS     obsolete
    DESCRIPTION
-        "The local IPv6 address for this TCP connection. In
+        "The local IPv6 address for this TCP connection.  In
          the case of a connection in the listen state which
          is willing to accept connections for any IPv6
          address associated with the managed node, the value
-         ::0 is used."
+         ::0 is used.
+
+         This object is obsoleted by
+         TCP-MIB::tcpConnectionLocalAddressType."
    ::= { ipv6TcpConnEntry 1 }
 
 ipv6TcpConnLocalPort OBJECT-TYPE
    SYNTAX     INTEGER (0..65535)
    MAX-ACCESS not-accessible
-   STATUS     current
+   STATUS     obsolete
    DESCRIPTION
-        "The local port number for this TCP connection."
+        "The local port number for this TCP connection.
+
+        This object is obsoleted by TCP-MIB::tcpConnectionLocalPort."
    ::= { ipv6TcpConnEntry 2 }
 
 ipv6TcpConnRemAddress OBJECT-TYPE
    SYNTAX     Ipv6Address
    MAX-ACCESS not-accessible
-   STATUS     current
+   STATUS     obsolete
    DESCRIPTION
-        "The remote IPv6 address for this TCP connection."
+        "The remote IPv6 address for this TCP connection.
+
+        This object is obsoleted by TCP-MIB::tcpConnectionRemAddress."
    ::= { ipv6TcpConnEntry 3 }
 
 ipv6TcpConnRemPort OBJECT-TYPE
    SYNTAX     INTEGER (0..65535)
    MAX-ACCESS not-accessible
-   STATUS     current
+   STATUS     obsolete
    DESCRIPTION
-        "The remote port number for this TCP connection."
+        "The remote port number for this TCP connection.
+
+        This object is obsoleted by TCP-MIB::tcpConnectionRemPort."
    ::= { ipv6TcpConnEntry 4 }
 
 ipv6TcpConnIfIndex OBJECT-TYPE
    SYNTAX     Ipv6IfIndexOrZero
    MAX-ACCESS not-accessible
-   STATUS     current
+   STATUS     obsolete
    DESCRIPTION
         "An index object used to disambiguate conceptual rows in
          the table, since the connection 4-tuple may not be unique.
 
          If the connection's remote address (ipv6TcpConnRemAddress)
          is a link-local address and the connection's local address
-
          (ipv6TcpConnLocalAddress) is not a link-local address, this
          object identifies a local interface on the same link as
          the connection's remote link-local address.
 
          Otherwise, this object identifies the local interface that
          is associated with the ipv6TcpConnLocalAddress for this
-         TCP connection.  If such a local interface cannot be determined,
-         this object should take on the value 0.  (A possible example
-         of this would be if the value of ipv6TcpConnLocalAddress is ::0.)
+         TCP connection.  If such a local interface cannot be
+         determined, this object should take on the value 0.
+         (A possible example of this would be if the value of
+         ipv6TcpConnLocalAddress is ::0.)
 
          The interface identified by a particular non-0 value of this
          index is the same interface as identified by the same value
          of ipv6IfIndex.
 
          The value of this object must remain constant during the life
-         of the TCP connection."
+         of the TCP connection.
+
+         This object is obsoleted by the zone identifier in
+         an InetAddressIPv6z address in either
+         TCP-MIB::tcpConnectionLocalAddress or
+         TCP-MIB::tcpConnectionRemAddress."
    ::= { ipv6TcpConnEntry 5 }
 
 ipv6TcpConnState OBJECT-TYPE
@@ -153,15 +189,15 @@ ipv6TcpConnState OBJECT-TYPE
         timeWait(11),
         deleteTCB(12) }
    MAX-ACCESS read-write
-   STATUS     current
+   STATUS     obsolete
    DESCRIPTION
         "The state of this TCP connection.
 
          The only value which may be set by a management station is
          deleteTCB(12).  Accordingly, it is appropriate for an agent
-         to return an error response (`badValue' for SNMPv1, 'wrongValue'
-         for SNMPv2) if a management station attempts to set this
-         object to any other value.
+         to return an error response ('badValue' for SNMPv1,
+         'wrongValue' for SNMPv2) if a management station attempts
+         to set this object to any other value.
 
          If a management station sets this object to the value
          deleteTCB(12), then this has the effect of deleting the TCB
@@ -171,7 +207,9 @@ ipv6TcpConnState OBJECT-TYPE
 
          As an implementation-specific option, a RST segment may be
          sent from the managed node to the other TCP endpoint (note
-         however that RST segments are not sent reliably)."
+         however that RST segments are not sent reliably).
+
+         This object is obsoleted by TCP-MIB::tcpConnectionState."
    ::= { ipv6TcpConnEntry 6 }
 
 --
@@ -186,26 +224,32 @@ ipv6TcpGroups      OBJECT IDENTIFIER ::= { ipv6TcpConformance 2 }
 -- compliance statements
 
 ipv6TcpCompliance MODULE-COMPLIANCE
-   STATUS  current
+   STATUS  obsolete
    DESCRIPTION
         "The compliance statement for SNMPv2 entities which
-         implement TCP over IPv6."
+         implement TCP over IPv6.
+
+         This compliance statement is obsoleted by
+         TCP-MIB::tcpMIBCompliance2."
    MODULE  -- this module
    MANDATORY-GROUPS { ipv6TcpGroup }
    ::= { ipv6TcpCompliances 1 }
 
 ipv6TcpGroup OBJECT-GROUP
    OBJECTS   { -- these are defined in this module
+
                -- ipv6TcpConnLocalAddress (not-accessible)
                -- ipv6TcpConnLocalPort (not-accessible)
                -- ipv6TcpConnRemAddress (not-accessible)
                -- ipv6TcpConnRemPort (not-accessible)
                -- ipv6TcpConnIfIndex (not-accessible)
                ipv6TcpConnState }
-   STATUS    current
+   STATUS    obsolete
    DESCRIPTION
         "The group of objects providing management of
-         TCP over IPv6."
+         TCP over IPv6.
+
+         This group is obsoleted by several groups in TCP-MIB."
    ::= { ipv6TcpGroups 1 }
 
 END

@@ -80,6 +80,7 @@ NETSNMP_ARG_WITH(rsaref,
 
 tryopenssl=defaultyes
 askedopenssl=no
+aes_capable=no
 NETSNMP_ARG_WITH(openssl,
 [  --with-openssl=PATH             Look for openssl in PATH/lib,
                                   or PATH may be "internal" to build with
@@ -107,6 +108,14 @@ if test "x$tryopenssl" = "xdefaultyes"; then
       AC_ADD_SEARCH_PATH(/usr/local/ssl)
       tryopenssl=yes
 fi
+if test "x$tryopenssl" = "xyes"; then
+    AC_CHECK_HEADERS(
+        [openssl/aes.h openssl/evp.h],
+        [aes_capable=yes],
+        []
+    )
+fi
+
 AC_ARG_WITH([ssl],,NETSNMP_INVALID_WITH([openssl]))
 AC_ARG_ENABLE([ssl],,NETSNMP_INVALID_WITH([openssl]))
 
@@ -157,6 +166,11 @@ NETSNMP_ARG_WITH(rpm,
                                   management system when building the host MIB
                                   module.])
 
+
+NETSNMP_ARG_WITH(pcre,
+[  --without-pcre                  Don't include pcre process searching
+                                  support in the agent.],
+      with_pcre="$withval", with_pcre="maybe")
 
 ##
 #   Project: Build configuration settings
@@ -405,6 +419,17 @@ if test "x$enable_internal_md5" = "xyes"; then
   fi
 fi
 
+NETSNMP_ARG_ENABLE(blumenthal-aes,
+[  --enable-blumenthal-aes         Enable AES-192/AES-256 (Blumenthal draft)])
+if test "x$enable_blumenthal_aes" = "xyes"; then
+    if test "x$aes_capable" = "xyes"; then
+        AC_DEFINE([NETSNMP_DRAFT_BLUMENTHAL_AES_04], 1,
+            [Define if AES-192/AES-256 encryption should be supported])
+    else
+        AC_MSG_ERROR([Blumenthal draft requires OpenSSL with AES functions enabled])
+    fi
+fi
+
 
 ##
 #   Project: Library: Misc configuration
@@ -426,11 +451,13 @@ if test "x$with_opaque_special_types" != "xno"; then
 fi
 
 NETSNMP_ARG_ENABLE(ipv6,
-[  --enable-ipv6                   Generate IPv6 ready version.],
-    [if test "x$enable_ipv6" = "xyes"; then
-      AC_DEFINE(NETSNMP_ENABLE_IPV6, 1,
-        [define if you want to enable IPv6 support])
-    fi])
+[  --disable-ipv6                  Disable IPv6 support.],
+    [],dnl default to "yes"
+    [enable_ipv6="yes"])
+if test "x$enable_ipv6" != "xno"; then
+  AC_DEFINE(NETSNMP_ENABLE_IPV6, 1,
+      [define if you want to enable IPv6 support])
+fi
 
 NETSNMP_ARG_WITH(logfile,
 [  --with-logfile="location"       Default log file location for snmpd.],
@@ -438,6 +465,21 @@ NETSNMP_ARG_WITH(logfile,
 if test "$ac_cv_user_prompt_NETSNMP_LOGFILE" = "no"; then
     ac_cv_user_prompt_NETSNMP_LOGFILE="none"
 fi
+
+NETSNMP_ARG_ENABLE(usmUser-uses-default-auth-priv,
+[  --enable-usmUser-uses-default-auth-priv Use default auth/priv protocols; createUser
+                                          only needs auth/priv passphrases.],
+    [if test "x$enable_usmUser_uses_default_auth_priv" = "xyes"; then
+      AC_DEFINE(NETSNMP_FORCE_SYSTEM_V3_AUTHPRIV, 1,
+        [if defined always use default auth/priv protocol when creating usmUsers])
+    fi])
+
+NETSNMP_ARG_ENABLE(daemons-syslog-as-default,
+[  --enable-daemons-syslog-as-default Use syslog when no other log destination defined.],
+    [if test "x$enable_daemons_syslog_as_default" = "xyes"; then
+      AC_DEFINE(NETSNMP_DAEMONS_DEFAULT_LOG_SYSLOG, 1,
+        [if defined daemons will use syslog when no log destination is defined])
+    fi])
 
 NETSNMP_ARG_WITH(persistent-directory,
 [  --with-persistent-directory="directory"
@@ -539,6 +581,9 @@ AC_ARG_WITH(out_transports,
                 This transport is available for Linux, Solaris and
                 FreeBSD at least.
                 This transport is compiled in by default if IPv6 support is enabled.
+    UDPshared   Allows a UDP port to be shared with multiple transports. It
+                enables multiple notification destinations to share a single
+                source address/port.
     TCPIPv6     support for SNMP over UDP/IPv6.
                 This transport is available for Linux, Solaris and
                 FreeBSD at least.
@@ -688,6 +733,15 @@ if test "x$with_dummy_values" != "xyes"; then
   AC_DEFINE(NETSNMP_NO_DUMMY_VALUES, 1,
     [If you don't want the agent to report on variables it doesn't have
      data for])
+fi
+
+NETSNMP_ARG_WITH(systemd,
+[  --with-systemd                 Provide systemd support. See README.systemd
+                                  for details.])
+# Define unless specifically suppressed (i.e., option defaults to false).
+if test "x$with_systemd" != "xyes"; then
+  AC_DEFINE(NETSNMP_NO_SYSTEMD, 1,
+    [If you don't want to integrate with systemd.])
 fi
 
 NETSNMP_ARG_ENABLE(set-support,
@@ -1016,9 +1070,10 @@ NETSNMP_ARG_WITH(perl-modules,
 [
 Perl:
   --with-perl-modules[=ARGS]      Install the Perl modules along with the rest
-                                  of the net-snmp toolkit.  If ARGS is
-                                  specified, they're passed to the
-                                  Makefile.PL script.],[
+                                  of the net-snmp toolkit. If ARGS is specified,
+                                  they're passed to the Makefile.PL script. Use
+                                  --with-perl-modules=verbose while debugging
+                                  the Makefile.PL files],[
     if test "$withval" = "no"; then
       install_perl="no"
     else

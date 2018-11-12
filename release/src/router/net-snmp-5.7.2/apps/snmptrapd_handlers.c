@@ -102,6 +102,7 @@ snmptrapd_parse_traphandle(const char *token, char *line)
     }
     if ( !cptr ) {
         netsnmp_config_error("Missing traphandle command (%s)", buf);
+        free(format);
         return;
     }
 
@@ -126,6 +127,7 @@ snmptrapd_parse_traphandle(const char *token, char *line)
         if (!read_objid(buf, obuf, &olen)) {
 	    netsnmp_config_error("Bad trap OID in traphandle directive: %s",
 				 buf);
+            free(format);
             return;
         }
         DEBUGMSGOID(("read_config:traphandle", obuf, olen));
@@ -138,9 +140,12 @@ snmptrapd_parse_traphandle(const char *token, char *line)
         traph->flags = flags;
         traph->authtypes = TRAP_AUTH_EXE;
         traph->token = strdup(cptr);
-        if (format)
+        if (format) {
             traph->format = format;
+            format = NULL;
+        }
     }
+    free(format);
 }
 
 
@@ -189,6 +194,7 @@ parse_forward(const char *token, char *line)
 
         if (!read_objid(buf, obuf, &olen)) {
 	    netsnmp_config_error("Bad trap OID in forward directive: %s", buf);
+            free(format);
             return;
         }
         DEBUGMSGOID(("read_config:forward", obuf, olen));
@@ -206,6 +212,8 @@ parse_forward(const char *token, char *line)
         traph->token = strdup(cptr);
         if (format)
             traph->format = format;
+    } else {
+        free(format);
     }
 }
 
@@ -909,9 +917,12 @@ int   forward_handler( netsnmp_pdu           *pdu,
         pdu2->transport_data        = NULL;
         pdu2->transport_data_length = 0;
     }
-    if (!snmp_send( ss, pdu2 )) {
-	snmp_sess_perror("Forward failed", ss);
-	snmp_free_pdu(pdu2);
+
+    ss->s_snmp_errno = SNMPERR_SUCCESS;
+    if (!snmp_send( ss, pdu2 ) &&
+            ss->s_snmp_errno != SNMPERR_SUCCESS) {
+        snmp_sess_perror("Forward failed", ss);
+        snmp_free_pdu(pdu2);
     }
     snmp_close( ss );
     return NETSNMPTRAPD_HANDLER_OK;

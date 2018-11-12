@@ -184,6 +184,7 @@ struct mteTrigger {
    * Container structure for the (combined) mteTrigger*Tables,
    * and routine to create this.
    */
+extern long mteTriggerFailures;
 extern netsnmp_tdata *trigger_table_data;
 extern void      init_trigger_table_data(void);
 

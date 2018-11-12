@@ -489,9 +489,12 @@ SOFTWARE.
     NETSNMP_IMPORT
     char           *snmp_out_toggle_options(char *);
     NETSNMP_IMPORT
+    char           *snmp_out_options(char *, int, char * const *);
+    NETSNMP_IMPORT
     void            snmp_out_toggle_options_usage(const char *, FILE *);
     NETSNMP_IMPORT
     char           *snmp_in_toggle_options(char *);
+    NETSNMP_IMPORT
     char           *snmp_in_options(char *, int, char * const *);
     NETSNMP_IMPORT
     void            snmp_in_toggle_options_usage(const char *, FILE *);
@@ -500,6 +503,7 @@ SOFTWARE.
 
 
     int             netsnmp_str2oid(const char *S, oid * O, int L);
+    char            *make_printf_format_string(const char *);
 
 
 #define NETSNMP_STRING_OUTPUT_GUESS  1

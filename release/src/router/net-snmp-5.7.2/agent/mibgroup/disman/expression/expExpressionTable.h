@@ -116,6 +116,8 @@ config_require(header_complex)
 #define EXP_FAILURE_DIVIDEBYZERO        11
 
 
+     extern struct header_complex_index *expExpressionTableStorage;
+
 /*
  * function prototypes 
  */

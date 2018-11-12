@@ -53,7 +53,7 @@ if test "x$CRYPTO" = "xinternal" ; then
     AC_DEFINE(NETSNMP_USE_INTERNAL_CRYPTO, 1, "Define if internal cryptography code should be used")
     AC_MSG_RESULT(Internal Crypto Support)
 elif test "x$useopenssl" != "xno" ; then
-    authmodes="MD5 SHA1"
+    authmodes="MD5 SHA1 SHA512 SHA384 SHA256 SHA192"
     if test "x$enable_privacy" != "xno" ; then
         if test "x$ac_cv_header_openssl_aes_h" = "xyes" ; then
             encrmodes="DES AES"

@@ -16,12 +16,13 @@ AC_DEFUN([NETSNMP_SEARCH_LIBS],
      LIBS="${netsnmp_temp_LIBS}"
      AC_LINK_IFELSE([AC_LANG_CALL([],[$1])],
          [netsnmp_result="none required"],
+         ifelse([$2],[],[],
          [for netsnmp_cur_lib in $2 ; do
               LIBS="-l${netsnmp_cur_lib} ${netsnmp_temp_LIBS}"
               AC_LINK_IFELSE([AC_LANG_CALL([],[$1])],
                   [netsnmp_result=-l${netsnmp_cur_lib}
                    break])
-          done])
+          done]))
      LIBS="${netsnmp_func_search_save_LIBS}"
      [netsnmp_cv_func_$1_]netsnmp_target="${netsnmp_result}"])
  if test "${[netsnmp_cv_func_$1_]netsnmp_target}" != "no" ; then

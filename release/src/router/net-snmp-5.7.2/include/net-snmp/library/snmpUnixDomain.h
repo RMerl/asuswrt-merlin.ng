@@ -30,7 +30,7 @@ extern          "C" {
 #define TRANSPORT_DOMAIN_LOCAL	1,3,6,1,2,1,100,1,13
 NETSNMP_IMPORT oid netsnmp_UnixDomain[];
 
-netsnmp_transport *netsnmp_unix_transport(struct sockaddr_un *addr,
+netsnmp_transport *netsnmp_unix_transport(const struct sockaddr_un *addr,
                                           int local);
 void netsnmp_unix_agent_config_tokens_register(void);
 void netsnmp_unix_parse_security(const char *token, char *param);

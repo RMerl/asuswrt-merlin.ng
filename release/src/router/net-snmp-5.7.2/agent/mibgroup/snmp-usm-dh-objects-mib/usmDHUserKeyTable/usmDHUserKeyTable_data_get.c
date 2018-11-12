@@ -9,9 +9,8 @@
  */
 #include <net-snmp/net-snmp-config.h>
 #include <net-snmp/net-snmp-includes.h>
+#include <net-snmp/library/snmp_openssl.h>
 #include <net-snmp/agent/net-snmp-agent-includes.h>
-
-#include <openssl/dh.h>
 
 /*
  * include our parent header 
@@ -20,10 +19,12 @@
 #include "usmDHUserKeyTable.h"
 #include "snmp-usm-dh-objects-mib/usmDHParameters/usmDHParameters.h"
 
+
 DH             *
 usmDHGetUserDHptr(struct usmUser *user, int for_auth_key)
 {
     DH             *dh, *dh_params;
+    const BIGNUM   *g, *p;
     void          **theptr;
 
     if (user == NULL)
@@ -44,9 +45,10 @@ usmDHGetUserDHptr(struct usmUser *user, int for_auth_key)
         dh_params = get_dh_params();
         if (!dh_params)
             return NULL;
-        dh->g = BN_dup(dh_params->g);
-        dh->p = BN_dup(dh_params->p);
-        if (!dh->g || !dh->p)
+        DH_get0_pqg(dh_params, &p, NULL, &g);
+        DH_set0_pqg(dh, BN_dup(p), NULL, BN_dup(g));
+        DH_get0_pqg(dh, &p, NULL, &g);
+        if (!g || !p)
             return NULL;
         DH_generate_key(dh);
         *theptr = dh;
@@ -61,6 +63,7 @@ usmDHGetUserKeyChange(struct usmUser *user, int for_auth_key,
                       u_char **keyobj, size_t *keyobj_len)
 {
     DH             *dh;
+    const BIGNUM   *pub_key;
 
     dh = usmDHGetUserDHptr(user, for_auth_key);
 
@@ -70,9 +73,10 @@ usmDHGetUserKeyChange(struct usmUser *user, int for_auth_key,
         return MFD_ERROR;
     }
 
-    *keyobj_len = BN_num_bytes(dh->pub_key);
+    DH_get0_key(dh, &pub_key, NULL);
+    *keyobj_len = BN_num_bytes(pub_key);
     *keyobj = malloc(*keyobj_len);
-    BN_bn2bin(dh->pub_key, *keyobj);
+    BN_bn2bin(pub_key, *keyobj);
 
     return MFD_SUCCESS;
 }
@@ -125,13 +129,13 @@ usmDHUserKeyTable_allocate_data(void)
     if (NULL == rtn) {
         snmp_log(LOG_ERR, "unable to malloc memory for new "
                  "usmDHUserKeyTable_data.\n");
+    } else {
+        /*
+         * not real user, not in a list. mark for testing
+         */
+        rtn->next = (struct usmUser *) -1;
+        rtn->prev = (struct usmUser *) -1;
     }
-    /*
-     * not real user, not in a list. mark for testing
-     */
-    rtn->next = (struct usmUser *) -1;
-    rtn->prev = (struct usmUser *) -1;
-
     return rtn;
 }                               /* usmDHUserKeyTable_allocate_data */
 

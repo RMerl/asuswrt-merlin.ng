@@ -6,6 +6,9 @@
 #include <net-snmp/net-snmp-config.h>
 #include <net-snmp/net-snmp-features.h>
 #include <net-snmp/net-snmp-includes.h>
+#include <net-snmp/agent/snmp_agent.h>
+#include <net-snmp/agent/snmp_vars.h>
+#include "interface_private.h"
 
 netsnmp_feature_require(fd_event_manager)
 netsnmp_feature_require(delete_prefix_info)
@@ -18,18 +21,41 @@ netsnmp_feature_require(interface_ioctl_flags_set)
 
 #ifdef HAVE_PCI_LOOKUP_NAME
 #include <pci/pci.h>
+#include <setjmp.h>
 static struct pci_access *pci_access;
+
+/* Avoid letting libpci call exit(1) when no PCI bus is available. */
+static int do_longjmp =0;
+static jmp_buf err_buf;
+static void
+netsnmp_pci_error(char *msg, ...)
+{
+    va_list args;
+    char *buf;
+    int buflen;
+
+    va_start(args, msg);
+    buflen = strlen("pcilib: ")+strlen(msg)+2;
+    buf = malloc(buflen);
+    snprintf(buf, buflen, "pcilib: %s\n", msg);
+    snmp_vlog(LOG_ERR, buf, args);
+    free(buf);
+    va_end(args);
+    if (do_longjmp)
+	longjmp(err_buf, 1);
+    else
+	exit(1);
+}
 #endif
 
 #ifdef HAVE_LINUX_ETHTOOL_H
+#ifdef HAVE_LINUX_ETHTOOL_NEEDS_U64
 #include <linux/types.h>
-#ifndef HAVE_PCI_LOOKUP_NAME
 typedef __u64 u64;         /* hack, so we may include kernel's ethtool.h */
 typedef __u32 u32;         /* ditto */
 typedef __u16 u16;         /* ditto */
 typedef __u8 u8;           /* ditto */
 #endif
-
 #include <linux/ethtool.h>
 #endif /* HAVE_LINUX_ETHTOOL_H */
 
@@ -147,10 +173,22 @@ netsnmp_arch_interface_init(void)
 
 #ifdef HAVE_PCI_LOOKUP_NAME
     pci_access = pci_alloc();
-    if (pci_access)
+    if (!pci_access) {
+	snmp_log(LOG_ERR, "pcilib: pci_alloc failed\n");
+	return;
+    }
+
+    pci_access->error = netsnmp_pci_error;
+
+    do_longjmp = 1;
+    if (setjmp(err_buf)) {
+        pci_cleanup(pci_access);
+	snmp_log(LOG_ERR, "pcilib: pci_init failed\n");
+        pci_access = NULL;
+    }
+    else if (pci_access)
 	pci_init(pci_access);
-    else
-	snmp_log(LOG_ERR, "Unable to create pci access method\n");
+    do_longjmp = 0;
 #endif
 }
 
@@ -580,7 +618,7 @@ netsnmp_arch_interface_container_load(netsnmp_container* container,
     if (!(devin = fopen("/proc/net/dev", "r"))) {
         DEBUGMSGTL(("access:interface",
                     "Failed to load Interface Table (linux1)\n"));
-        NETSNMP_LOGONCE((LOG_ERR, "cannot open /proc/net/dev ...\n"));
+        snmp_log_perror("interface_linux: cannot open /proc/net/dev");
         return -2;
     }
 
@@ -589,7 +627,7 @@ netsnmp_arch_interface_container_load(netsnmp_container* container,
      */
     fd = socket(AF_INET, SOCK_DGRAM, 0);
     if(fd < 0) {
-        snmp_log(LOG_ERR, "could not create socket\n");
+        snmp_log_perror("interface_linux: could not create socket");
         fclose(devin);
         return -2;
     }
@@ -1028,7 +1066,7 @@ netsnmp_linux_interface_get_if_speed(int fd, const char *name,
 void netsnmp_prefix_process(int fd, void *data);
 
 /* Open netlink socket to watch new ipv6 addresses and prefixes. */
-int netsnmp_prefix_listen()
+int netsnmp_prefix_listen(void)
 {
     struct {
                 struct nlmsghdr n;
@@ -1061,7 +1099,7 @@ int netsnmp_prefix_listen()
     }
 
     memset(&req, 0, sizeof(req));
-    req.n.nlmsg_len = NLMSG_LENGTH(sizeof(struct ifinfomsg));
+    req.n.nlmsg_len = NLMSG_LENGTH(sizeof(struct rtgenmsg));
     req.n.nlmsg_flags = NLM_F_REQUEST | NLM_F_ROOT;
     req.n.nlmsg_type = RTM_GETLINK;
     req.r.ifi_family = AF_INET6;

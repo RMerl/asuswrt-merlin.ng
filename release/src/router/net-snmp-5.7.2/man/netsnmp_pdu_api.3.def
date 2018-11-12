@@ -26,5 +26,4 @@ These functions deal with SNMP request structures.
 .PP
 .B snmp_free_pdu
 .SH "SEE ALSO"
-.BR varbind_api "(3)"
-.BR session_api "(3)"
+netsnmp_varbind_api(3), netsnmp_session_api(3)

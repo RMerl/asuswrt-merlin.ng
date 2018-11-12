@@ -28,7 +28,7 @@ done
 AC_MSG_CHECKING([for and configuring mib modules to use])
 
 # set up the CPP command
-MODULECPP="$CPP $PARTIALTARGETFLAGS -DNETSNMP_FEATURE_CHECKING -I${srcdir}/include -I${srcdir}/agent/mibgroup"
+MODULECPP="$CPP $PARTIALTARGETFLAGS $CPPFLAGS -DNETSNMP_FEATURE_CHECKING -I${srcdir}/include -I${srcdir}/agent/mibgroup"
 if test "x$enable_mfd_rewrites" = "xyes"; then
   MODULECPP="$MODULECPP -DNETSNMP_ENABLE_MFD_REWRITES"
 fi
@@ -40,17 +40,22 @@ new_with_mib_modules=`echo $with_mib_modules | $SED 's/,/ /g;'`
 new_with_out_mib_modules=`echo $with_out_mib_modules | $SED 's/,/ /g;'`
 
 # set up initial module list
-new_module_list="$new_with_mib_modules default_modules"
+new_module_list="$new_with_mib_modules"
 
-# minor modifications
-if test "x$enable_agent" = "xno"; then
-   # minimum mib module list for snmptrapd
-   new_module_list="mibII/vacm_vars mibII/vacm_conf utilities/execute $new_with_mib_modules"
-   default_mibs=SNMPv2-MIB:IF-MIB:IP-MIB:TCP-MIB:UDP-MIB
-   default_mibs_install=" "
-elif test "x$mini_agent" = "xyes"; then
-   # define the mini agent flag to reduce our load list from default_mibs.h
-   MODULECPP="$MODULECPP -DNETSNMP_MINI_AGENT"
+if test "x$enable_agent" != "xno" ; then
+  # If the agent should be built then use default_modules
+  new_module_list="$new_module_list default_modules"
+
+  if test "x$mini_agent" = "xyes"; then
+    # define the mini agent flag to reduce our load list from default_mibs.h
+    MODULECPP="$MODULECPP -DNETSNMP_MINI_AGENT"
+  fi
+elif test "x$enable_applications" != "xno" ; then
+    # otherwise, if snmptrapd should be built then add SNMPv3 and
+    # snmptrapd-specific parts
+    new_module_list="$new_module_list mibII/vacm_conf utilities/execute"
+    default_mibs=SNMPv2-MIB:IF-MIB:IP-MIB:TCP-MIB:UDP-MIB
+    default_mibs_install=" "
 fi
 
 test_modules="$new_module_list"
@@ -76,6 +81,8 @@ for i in $test_modules
     new_module_list="$new_module_list $i"
   fi
 done
+
+new_module_list=`(echo $new_module_list | tr ' ' '\n' | sort | tr '\n' ' '; echo '') | $SED 's/ $//'`
 
 AC_MSG_RESULT([$new_module_list.])
 
@@ -783,8 +790,10 @@ AC_MSG_CHECKING([default mib files to read])
 if test "x$NETSNMP_DEFAULT_MIBS" = "x"; then
   NETSNMP_DEFAULT_MIBS="$default_mibs"
 fi
-if test "x$PARTIALTARGETOS" = "xmingw32" -o "x$PARTIALTARGETOS" = "xmingw32msvc" -o "x$PARTIALTARGETOS" = "xcygwin"; then
-  # mingw32 and cygwin use ';' as the environment variable separator char
+if test "x$ENV_SEPARATOR" != "x"; then
+  :
+elif test "x$PARTIALTARGETOS" = "xmingw32" -o "x$PARTIALTARGETOS" = "xmingw32msvc" -o "x$PARTIALTARGETOS" = "xcygwin"; then
+  # mingw32 and cygwin use ';' as the default environment variable separator
   ENV_SEPARATOR=";"
   NETSNMP_DEFAULT_MIBS=`echo "$NETSNMP_DEFAULT_MIBS" | $SED 's/:/;/g'`
   default_mibs=`echo "$default_mibs" | $SED 's/:/;/g'`
@@ -792,6 +801,10 @@ else
   ENV_SEPARATOR=":"
 fi
 AC_SUBST(ENV_SEPARATOR)
+AC_DEFINE_UNQUOTED([ENV_SEPARATOR], ["$ENV_SEPARATOR"],
+         [Environment separator character surrounded by double quotes.])
+AC_DEFINE_UNQUOTED([ENV_SEPARATOR_CHAR], ['$ENV_SEPARATOR'],
+          [Environment separator character surrounded by single quotes.])
 AC_DEFINE_UNQUOTED(NETSNMP_DEFAULT_MIBS,"$NETSNMP_DEFAULT_MIBS")
 AC_SUBST(NETSNMP_DEFAULT_MIBS)
 AC_MSG_RESULT($NETSNMP_DEFAULT_MIBS)
@@ -802,7 +815,6 @@ AC_MSG_RESULT($NETSNMP_DEFAULT_MIBS)
 
 if echo " $agent_module_list " | \
    fgrep ' agentx/agentx_config ' | \
-   fgrep ' agentx/client ' | \
    fgrep ' agentx/protocol ' > /dev/null ; then
    NETSNMP_HAVE_AGENTX_LIBS_TRUE=''
    NETSNMP_HAVE_AGENTX_LIBS_FALSE='#'

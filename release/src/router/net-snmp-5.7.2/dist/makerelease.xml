@@ -38,10 +38,10 @@
 	  parameter="VERSION">
 	  <text>
 	    Please enter the version number to publish.  Net-SNMP
-	    convention dictates that this be a version number like 5.4 or
-	    5.4.1.  Pre-releases that occur before a branch freezes should
-	    be appended with ".preN" like 5.4.1.pre2.  Release-candidates
-	    should be labeled ".rcN" like 5.4.1.rc1.
+	    convention dictates that this be a version number like 5.7 or
+	    5.7.1.  Pre-releases that occur before a branch freezes should
+	    be appended with ".preN" like 5.7.1.pre2.  Release-candidates
+	    should be labeled ".rcN" like 5.7.1.rc1.
 	  </text>
 	</step>
 	<step type="prompt" prompt="Enter the last version number:"
@@ -253,7 +253,7 @@
 	      </commands>
 	    </step>
 	    <step type="system" stepname="release:versiondiff"
-	      title="Running svn diff to check changes">
+	      title="Running diff to check changes">
 
 	      <text>Check the following changes for proper version number
 		differences before we commit the chances.</text>
@@ -274,28 +274,33 @@
 	</step>
         <step type="section" title="Handle dist/release">
           <steps>
-	    <step type="system" skipunless="'{RELEASETYPE}' eq 'rc'">
+	    <step type="system" title="Set RC mode" skipunless="'{RELEASETYPE}' eq 'rc'">
 	      <text>Note in 'dist/release' that this branch is in release candidate mode
 	      </text>
 	      <commands>
-	        <command>git checkout V5-4-patches</command>
-	        <command>echo {BRANCHPATH} rc >> dist/release </command>
+	        <command>git checkout V5-7-patches</command>
+	        <command>grep -v {BRANCHPATH} dist/release > dist/release.new </command>
+	        <command>echo {BRANCHPATH} rc >> dist/release.new </command>
+	        <command>mv dist/release.new dist/release </command>
 	        <command ignoreerror="1">git commit -m "Release Candidate for {BRANCHPATH}" dist/release</command>
 	        <command>git checkout {BRANCHPATH} </command>
-	        <command>git merge V5-4-patches    </command>
-	        <command>git commit                </command>
+	        <command>grep -v {BRANCHPATH} dist/release > dist/release.new </command>
+	        <command>echo {BRANCHPATH} rc >> dist/release.new </command>
+	        <command>mv dist/release.new dist/release </command>
+	        <command>git commit -m "Release Candidate for {BRANCHPATH}" dist/release</command>
 	      </commands>
 	    </step>
-	    <step type="system" skipif="'{RELEASETYPE}' eq 'rc'">
+	    <step type="system" title="Unset RC mode" skipif="'{RELEASETYPE}' eq 'rc'">
 	      <text>Ensure that 'dist/release' doesn't reference this branch
 	      </text>
 	      <commands>
-	        <command>git checkout V5-4-patches</command>
+	        <command>git checkout V5-7-patches</command>
 	        <command>grep -v {BRANCHPATH} dist/release > dist/release.new </command>
 	        <command>mv dist/release.new dist/release </command>
 	        <command ignoreerror="1">git commit -m "{BRANCHPATH} out of Release Candidate" dist/release</command>
 	        <command>git checkout {BRANCHPATH} </command>
-	        <command>git merge V5-4-patches    </command>
+	        <command>grep -v {BRANCHPATH} dist/release > dist/release.new </command>
+	        <command>mv dist/release.new dist/release </command>
 	        <command>git commit                </command>
 	      </commands>
 	    </step>
@@ -320,7 +325,7 @@
 	  done.  After this step, we'll commit all the modified files.
 
 	  You may find additional files (marked with a ?) that should
-	  be added to the svn repository and you'll need to do this by
+	  be added to the repository and you'll need to do this by
 	  hand before going on to the next step.
 
 	  Note: based on a recent net-snmp-admin discussion, we're no
@@ -368,7 +373,7 @@
 	<step type="system" stepname="build:make" title="build:make">
 	  <text>Then we need to build the code</text>
 	  <commands>
-	    <command>NETSNMP_DONT_CHECK_VERSION=1 make</command>
+	    <command>NETSNMP_DONT_CHECK_VERSION=1 make 2>&amp;1 | tee -a make-$(date +%y%m%d_%H%M).log</command>
 	  </commands>
 	</step>
 	<step type="system" stepname="build:test" title="testing: default tests">
@@ -376,7 +381,7 @@
 	  set up test results.  If not, this needs to be fixed or at
 	  least understood and accepted as is for some other reason.</text>
 	  <commands>
-	    <command>make test</command>
+	    <command>make test 2>&amp;1 | tee -a make-test-$(date +%y%m%d_%H%M).log</command>
 	  </commands>
 	</step>
 	<step type="system" stepname="build:test:unit" title="testing: unit-tests">
@@ -499,13 +504,13 @@
       <steps>
 	<step prompt="true" type="system" stepname="release:tag" title="release:tag">
 	  <text>
-	    This will actually svn copy the current checked out branch
+	    This will actually copy the current checked out branch
 	    to the new tag name.  Specifically:
 
-               git tag -u A77C5329 -s {VERSIONTAGNAME} -m "Tagging of version {VERSION} as {VERSIONTAGNAME}"
+               git tag -u ACB19FD6 -s {VERSIONTAGNAME} -m "Tagging of version {VERSION} as {VERSIONTAGNAME}"
 	  </text>
 	  <commands>
-	    <command>git tag -u A77C5329 -s {VERSIONTAGNAME} -m "Tagging of version {VERSION} as {VERSIONTAGNAME}"</command>
+	    <command>git tag -u ACB19FD6 -s {VERSIONTAGNAME} -m "Tagging of version {VERSION} as {VERSIONTAGNAME}"</command>
 	  </commands>
 	</step>
 	<step prompt="true" type="system" stepname="release:makedist" title="release:makedist">
@@ -540,12 +545,12 @@
 	</step>
 	<step type="system" stepname="release:gpg" title="release:gpg">
 	  <commands>
-	    <command>gpg -u A77C5329 -a --detach-sign net-snmp-{VERSION}.tar.gz</command>
+	    <command>gpg --use-agent -u ACB19FD6 -a --detach-sign net-snmp-{VERSION}.tar.gz</command>
 	  </commands>
 	</step>
 	<step type="system" stepname="release:gpg" title="release:gpg">
 	  <commands>
-	    <command>gpg -u A77C5329 -a --detach-sign net-snmp-{VERSION}.zip</command>
+	    <command>gpg --use-agent -u ACB19FD6 -a --detach-sign net-snmp-{VERSION}.zip</command>
 	  </commands>
 	</step>
 	<step type="command" name="release:nextbranch" title="Don't propagate code modifications"
@@ -592,12 +597,12 @@
 	    </step>
 	    <step type="system" stepname="posttest:make" title="posttest:make">
 	      <commands>
-		<command>cd net-snmp-{VERSION} &amp;&amp; make</command>
+		<command>cd net-snmp-{VERSION} &amp;&amp; make 2>&amp;1 | tee -a make-$(date +%y%m%d_%H%M).log</command>
 	      </commands>
 	    </step>
 	    <step type="system" stepname="posttest:test" title="posttest:test">
 	      <commands>
-		<command>cd net-snmp-{VERSION} &amp;&amp; make test</command>
+		<command>cd net-snmp-{VERSION} &amp;&amp; make test 2>&amp;1 | tee -a make-test-$(date +%y%m%d_%H%M).log</command>
 	      </commands>
 	    </step>
 	  </steps>
@@ -614,17 +619,7 @@
 	    is just as an example - this script does *not* upload the
 	    files automatically.  You must do something like:</text>
 	  <commands>
-	    <command>echo rsync -v net-snmp-{VERSION}.tar.gz net-snmp-{VERSION}.tar.gz.asc net-snmp-{VERSION}.zip net-snmp-{VERSION}.zip.asc hardaker,net-snmp@frs.sourceforge.net:/home/frs/project/n/ne/net-snmp/net-snmp/{VERSIONTARGET}-pre-releases/</command>
-	  </commands>
-	</step>
-	<step pause="true" type="system" skipunless="'{RELEASETYPE}' eq 'full'"
-	      stepname="publish:rsync" title="rsync the new files">
-	  <text>This will copy the results to the SF uploads directory
-	    in your account on frs.sourceforge.net.  The following command
-	    is just as an example - this script does *not* upload the
-	    files automatically.  You must do something like:</text>
-	  <commands>
-	    <command>echo rsync -v net-snmp-{VERSION}.tar.gz net-snmp-{VERSION}.tar.gz.asc net-snmp-{VERSION}.zip net-snmp-{VERSION}.zip.asc hardaker,net-snmp@frs.sourceforge.net:/home/frs/project/n/ne/net-snmp/net-snmp/{VERSIONTARGET}/</command>
+	    <command>echo rsync -v net-snmp-{VERSION}.tar.gz net-snmp-{VERSION}.tar.gz.asc net-snmp-{VERSION}.zip net-snmp-{VERSION}.zip.asc $USER@frs.sourceforge.net:/home/frs/project/net-snmp/net-snmp/{VERSIONTARGET}-pre-releases/</command>
 	  </commands>
 	</step>
 	<step type="informational" stepname="publish:editrelease"
@@ -652,7 +647,7 @@
 	</step>
       </steps>
     </step>
-    <step type="informational">
+    <step type="informational" title="reminder:binaries">
       <text>
 	Binaries: build rpms, .tar.gzs, etc.
       </text>
@@ -677,16 +672,7 @@
     </step>
     <step type="section" title="Advertise it!">
       <steps>
-	<step type="system" pause="1" title="Add note to the news system">
-	  <text>Add a note to the source forge news system:
-
-	    http://sourceforge.net/news/submit.php?group_id=12694
-	  </text>
-	  <commands>
-	    <command>echo firefox 'http://sourceforge.net/news/submit.php?group_id=12694'</command>
-	  </commands>
-	</step>
-	<step type="informational" pause="1">
+	<step type="informational" pause="1" title="announcements">
 	  <text>Send an announcement message to one of the following
 	  mailing lists based on its type:
 
@@ -698,23 +684,14 @@
                        (one week after the source tarball is made available)
 	  </text>
 	</step>
-	<step type="informational" skipunless="'{RELEASETYPE}' eq 'full'" pause="1">
+	<step type="informational" title="irc:topicupdate" skipunless="'{RELEASETYPE}' eq 'full'" pause="1">
 	  <text>Update the topic on the #Net-SNMP channel if this is a
-	    trunk based release.
+	    trunk based release (or the latest on the top most patch tree).
 	  </text>
-	</step>
-	<step type="system" skipunless="'{RELEASETYPE}' eq 'full'" pause="1">
-	  <text>Update the freshmeat listing (Wes needs to do this):
-
-	    http://freshmeat.net/projects/net-snmp/
-	  </text>
-	  <commands>
-	    <command>echo firefox http://freshmeat.net/projects/net-snmp/</command>
-	  </commands>
 	</step>
       </steps>
     </step>
-    <step type="informational" skipunless="'{RELEASETYPE}' eq 'full'" pause="1">
+    <step type="informational" title="publish" skipunless="'{RELEASETYPE}' eq 'full'" pause="1">
       <text>
 	Advertise: NEWS upload to sf, publish on -announce, freshmeat,
 	and the GNU FSF directory

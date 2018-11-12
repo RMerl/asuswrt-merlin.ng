@@ -100,7 +100,7 @@ CONFIGAGENT '[snmp]' debugTokens tsm
 # ,tls,ssl,cert,tsm
 CONFIGAGENT '[snmp]' doDebugging 1
 CONFIGAGENT '[snmp]' logTimestamp 1
-CONFIGAGENT '[snmp]' serverCert $SERVERFP
+CONFIGAGENT '[snmp]' localCert $SERVERFP
 
 CONFIGAGENT '[snmp]' trustCert $CAFP
 CONFIGAGENT '[snmp]' trustCert $CADIRECT9CFP
@@ -126,7 +126,7 @@ CONFIGAGENT certSecName 102 $CADIRECT9CFP  --sn causerdirect9cmap
 # *** INTENTIONALLY NOT MAPPING AT ALL: ***
 # CONFIGAGENT certSecName 1000 $UNMAPPEDFP ....
 
-CONFIGAPP   serverCert  	  $SERVERFP
+CONFIGAPP   peerCert		  $SERVERFP
 CONFIGAPP   defSecurityModel      tsm
 CONFIGAPP   logTimestamp          1
 
@@ -148,9 +148,10 @@ CONFIGAGENT  rwuser -s tsm causerdirect9cmap authpriv
 
 # this file contains tests common to both tls and dtls usages
 
-# start the agent up
-FLAGS="-Dtls -v3 -On $SNMP_FLAGS $SNMP_TRANSPORT_SPEC:$SNMP_TEST_DEST$SNMP_SNMPD_PORT"
+# app flags
+FLAGS="-Dtls -r1 -v3 -On $SNMP_FLAGS $SNMP_TRANSPORT_SPEC:$SNMP_TEST_DEST$SNMP_SNMPD_PORT"
 
+# start the agent up
 STARTAGENT
 
 # shouldn't have config errors
@@ -187,7 +188,7 @@ CHECKVALUEISNT "$UNKNOWNCAUSERFP" "" "generated fingerprint for unknowncauser ce
 DOSETTEST user1SnmpApp "$FLAGS"
 
 # now rerun the test after specifying our default using the (same) fingerprint
-CONFIGAPP   clientCert  	  $TESTUSER2FP
+CONFIGAPP   localCert		  $TESTUSER2FP
 DOSETTEST user1ClientPub "$FLAGS"
 
 # using user 2 - a common name mapped certificate with a direct -T FP request
@@ -213,7 +214,7 @@ CHECK "failed rfc5343"
 # Check *their* certificate with a different one than expected; should fail
 DOFAILSETTEST "incorectServerCertificate" "-r 0 -T our_identity=$OTHERUSERFP -T their_identity=$OTHERUSERFP $FLAGS"
 
-CHECK "failed to verify ssl certificate"
+CHECKCOUNT atleastone "failed to verify ssl certificate"
 
 # using user 5 - a completely remapped certificate (direct specified secname)
 DOSETTEST user5RemappedSecname "-T our_identity=$MAPPEDUSERFP $FLAGS"
@@ -245,10 +246,10 @@ DOFAILSETTEST user9dCASignedDirectMap "-T our_identity=$CADIRECT9DFP $FLAGS"
 # using user unknown - the server will not have seen this fingerprint at all
 CAPTURE "snmpget -T our_identity=$UNKNOWNUSER -T trust_cert=$CAFP $FLAGS .1.3.6.1.2.1.1.6.0"
 
-# different types of failure messaages for tls/dtls...
+# different types of failure messages for tls/dtls...
 if [ $SNMP_TRANSPORT_SPEC = dtlsudp ]; then
     CHECK              "failed rfc5343 contextEngineID probing"
-    CHECKAGENTCOUNT  1 "TLS Error: no certificate returned"
+    CHECKAGENTCOUNT  1 "TLS Error: no certificate returned\|TLS Error: certificate verify failed"
 else
     CHECK              "failed to ssl_connect"
     CHECKAGENTCOUNT  1 "Failed SSL_accept"

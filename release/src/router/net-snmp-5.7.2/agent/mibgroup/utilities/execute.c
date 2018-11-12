@@ -35,6 +35,8 @@
 #include <net-snmp/agent/net-snmp-agent-includes.h>
 #include <ucd-snmp/errormib.h>
 
+#include <net-snmp/agent/netsnmp_close_fds.h>
+
 #include "execute.h"
 #include "struct.h"
 
@@ -200,15 +202,18 @@ run_exec_command( char *command, char *input,
          */
         close(0);
         dup(  ipipe[0]);
+        close(ipipe[0]);
 	close(ipipe[1]);
 
         close(1);
         dup(  opipe[1]);
         close(opipe[0]);
+        close(opipe[1]);
+
         close(2);
         dup(1);
-        for (i = getdtablesize()-1; i>2; i--)
-            close(i);
+
+        netsnmp_close_fds(2);
 
         /*
          * Set up the argv array and execute it
@@ -321,7 +326,7 @@ run_exec_command( char *command, char *input,
                         break;
                     } else
                         DEBUGMSGTL(("verbose:run:exec",
-                                    "      child not done!?!\n"));;
+                                    "      child not done!?!\n"));
                 } else {
                     DEBUGMSGTL(("verbose:run:exec", "      child done\n"));
                     waited = 1; /* don't wait again */

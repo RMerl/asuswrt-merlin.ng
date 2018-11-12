@@ -47,6 +47,10 @@ static char     HRP_savedName[1024];
 #ifdef NETSNMP_CAN_GET_DISK_LABEL
 static char     HRP_savedLabel[1024];
 #endif
+#ifdef darwin
+extern int
+Get_HR_Disk_Label(char *string, size_t str_len, const char *devfull);
+#endif
 
 static int      HRP_DiskIndex;
 
@@ -61,8 +65,6 @@ static void     Save_HR_Partition(int, int);
 
 static void     Init_HR_Partition(void);
 static int      Get_Next_HR_Partition(void);
-int             header_hrpartition(struct variable *, oid *, size_t *, int,
-                                   size_t *, WriteMethod **);
 
 
 #define	HRPART_INDEX		1

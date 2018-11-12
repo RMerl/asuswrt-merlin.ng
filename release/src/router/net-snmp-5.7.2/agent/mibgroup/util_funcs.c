@@ -6,6 +6,11 @@
  * Copyright Copyright 2003 Sun Microsystems, Inc. All rights reserved.
  * Use is subject to license terms specified in the COPYING file
  * distributed with the Net-SNMP package.
+ *
+ * Portions of this file are copyrighted by:
+ * Copyright (c) 2016 VMware, Inc. All rights reserved.
+ * Use is subject to license terms specified in the COPYING file
+ * distributed with the Net-SNMP package.
  */
 
 #include <net-snmp/net-snmp-config.h>
@@ -83,6 +88,7 @@
 #include <net-snmp/net-snmp-includes.h>
 #include <net-snmp/agent/net-snmp-agent-includes.h>
 #include <net-snmp/library/snmp_logging.h>
+#include <net-snmp/agent/netsnmp_close_fds.h>
 
 #include "struct.h"
 #include "util_funcs.h"
@@ -116,11 +122,9 @@ netsnmp_feature_child_of(find_prefix_info, prefix_info_all)
 netsnmp_feature_child_of(create_prefix_info, prefix_info_all)
 #endif /* HAVE_LINUX_RTNETLINK_H */
 
-#ifdef NETSNMP_EXCACHETIME
+#if defined(NETSNMP_EXCACHETIME) && defined(USING_UTILITIES_EXECUTE_MODULE) && defined(HAVE_EXECV)
 static long     cachetime;
 #endif
-
-extern int      numprocs, numextens;
 
 /** deprecated, use netsnmp_mktemp instead */
 const char *
@@ -135,7 +139,7 @@ shell_command(struct extensible *ex)
 {
 #if HAVE_SYSTEM
     const char     *ofname;
-    char            shellline[STRMAX];
+    char           *shellline = NULL;
     FILE           *shellout;
 
     ofname = make_tempfile();
@@ -145,10 +149,11 @@ shell_command(struct extensible *ex)
         return ex->result;
     }
 
-    snprintf(shellline, sizeof(shellline), "%s > %s", ex->command, ofname);
-    shellline[ sizeof(shellline)-1 ] = 0;
-    ex->result = system(shellline);
-    ex->result = WEXITSTATUS(ex->result);
+    if (asprintf(&shellline, "%s > %s", ex->command, ofname) >= 0) {
+        ex->result = system(shellline);
+        ex->result = WEXITSTATUS(ex->result);
+        free(shellline);
+    }
     shellout = fopen(ofname, "r");
     if (shellout != NULL) {
         if (fgets(ex->output, sizeof(ex->output), shellout) == NULL) {
@@ -258,7 +263,7 @@ get_exec_output(struct extensible *ex)
     curtime = time(NULL);
     if (curtime > (cachetime + NETSNMP_EXCACHETIME) ||
         strcmp(ex->command, lastcmd) != 0) {
-        strcpy(lastcmd, ex->command);
+        strlcpy(lastcmd, ex->command, sizeof(lastcmd));
         cachetime = curtime;
 #endif
 
@@ -346,7 +351,7 @@ get_exec_output(struct extensible *ex)
     }
     
     /* Associates a C run-time file descriptor with an existing operating-system file handle. */
-    fd = _open_osfhandle((long) hOutputRead, 0);
+    fd = _open_osfhandle((intptr_t) hOutputRead, 0);
     
     /* Set up STARTUPINFO for CreateProcess with the handles and have it hide the window
      * for the new process. */
@@ -389,7 +394,7 @@ get_exec_output(struct extensible *ex)
     }
     return fd;
 #endif                          /* WIN32 */
-#endif
+#endif       /* HAVE_EXEC */
 #endif /* !defined(USING_UTILITIES_EXECUTE_MODULE) */
     return -1;
 }
@@ -463,16 +468,20 @@ get_exec_pipes(char *cmd, int *fdIn, int *fdOut, netsnmp_pid_t *pid)
         return 0;
     }
     if ((*pid = fork()) == 0) { /* First handle for the child */
+        close(fd[0][1]);
+        close(fd[1][0]);
         close(0);
         if (dup(fd[0][0]) != 0) {
             setPerrorstatus("dup 0");
             return 0;
         }
+        close(fd[0][0]);
         close(1);
         if (dup(fd[1][1]) != 1) {
             setPerrorstatus("dup 1");
             return 0;
         }
+        close(fd[1][1]);
 
         /*
          * write standard output and standard error to pipe. 
@@ -480,8 +489,7 @@ get_exec_pipes(char *cmd, int *fdIn, int *fdOut, netsnmp_pid_t *pid)
         /*
          * close all non-standard open file descriptors 
          */
-        for (cnt = getdtablesize() - 1; cnt >= 2; --cnt)
-            (void) close(cnt);
+        netsnmp_close_fds(1);
         (void) dup(1);          /* stderr */
 
         for (cnt = 1, cptr1 = cmd, cptr2 = argvs; *cptr1 != 0;
@@ -599,8 +607,8 @@ get_exec_pipes(char *cmd, int *fdIn, int *fdOut, netsnmp_pid_t *pid)
     }
     
     /* Associates a C run-time file descriptor with an existing operating-system file handle. */
-    *fdIn = _open_osfhandle((long) hOutputRead, 0);
-    *fdOut = _open_osfhandle((long) hInputWrite, 0);
+    *fdIn = _open_osfhandle((intptr_t) hOutputRead, 0);
+    *fdOut = _open_osfhandle((intptr_t) hInputWrite, 0);
     
     /* Set up STARTUPINFO for CreateProcess with the handles and have it hide the window
      * for the new process. */
@@ -623,7 +631,7 @@ get_exec_pipes(char *cmd, int *fdIn, int *fdOut, netsnmp_pid_t *pid)
       return 0;
     }
     
-    DEBUGMSGTL(("util_funcs","child hProcess (stored in pid): %d\n",(int)pi.hProcess));
+    DEBUGMSGTL(("util_funcs","child hProcess (stored in pid): %p\n", pi.hProcess));
     DEBUGMSGTL(("util_funcs","child dwProcessId (task manager): %d\n",(int)pi.dwProcessId));
 
     /* Set global child process handle */
@@ -664,19 +672,19 @@ clear_cache(int action,
             size_t var_val_len,
             u_char * statP, oid * name, size_t name_len)
 {
-
-    long            tmp = 0;
-
     if (var_val_type != ASN_INTEGER) {
         snmp_log(LOG_NOTICE, "Wrong type != int\n");
         return SNMP_ERR_WRONGTYPE;
     }
-    tmp = *((long *) var_val);
-    if (tmp == 1 && action == COMMIT) {
-#ifdef NETSNMP_EXCACHETIME
-        cachetime = 0;          /* reset the cache next read */
-#endif
+#if defined(NETSNMP_EXCACHETIME) && defined(USING_UTILITIES_EXECUTE_MODULE) && defined(HAVE_EXECV)
+    else {
+        long            tmp = 0;
+        tmp = *((long *) var_val);
+        if (tmp == 1 && action == COMMIT) {
+            cachetime = 0;          /* reset the cache next read */
+        }
     }
+#endif
     return SNMP_ERR_NOERROR;
 }
 #endif /* NETSNMP_FEATURE_REMOVE_CLEAR_CACHE */
@@ -778,7 +786,7 @@ parse_miboid(const char *buf, oid * oidout)
          * so we need to use 'strtoul' rather than 'atoi'
          */
         oidout[i] = strtoul(buf, NULL, 10) & 0xffffffff;
-        while (isdigit((unsigned char)(*buf++)));
+        while (isdigit((unsigned char)(*buf))) buf++;
         if (*buf == '.')
             buf++;
     }

@@ -49,11 +49,7 @@ init_setSerialNo(void)
      *  then it should be initialised to a pseudo-random value.  So set it
      *  as such, before registering the config handlers to override this.
      */
-#ifdef SVR4
-    setserialno = lrand48();
-#else
-    setserialno = random();
-#endif
+    setserialno = netsnmp_random();
     DEBUGMSGTL(("snmpSetSerialNo",
                 "Initalizing SnmpSetSerialNo to %d\n", setserialno));
     snmpd_register_config_handler("setserialno", setserial_parse_config,

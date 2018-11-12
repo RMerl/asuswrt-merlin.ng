@@ -674,10 +674,10 @@ _ipSystemStatsTable_get_column(ipSystemStatsTable_rowreq_ctx * rowreq_ctx,
          * ipSystemStatsHCInReceives(4)/COUNTER64/ASN_COUNTER64/U64(U64)//l/A/w/e/r/d/h 
          */
     case COLUMN_IPSYSTEMSTATSHCINRECEIVES:
-        var->val_len = sizeof(U64);
+        var->val_len = sizeof(struct counter64);
         var->type = ASN_COUNTER64;
         rc = ipSystemStatsHCInReceives_get(rowreq_ctx,
-                                           (U64 *) var->val.string);
+                                           (struct counter64 *) var->val.string);
         break;
 
         /*
@@ -694,10 +694,10 @@ _ipSystemStatsTable_get_column(ipSystemStatsTable_rowreq_ctx * rowreq_ctx,
          * ipSystemStatsHCInOctets(6)/COUNTER64/ASN_COUNTER64/U64(U64)//l/A/w/e/r/d/h 
          */
     case COLUMN_IPSYSTEMSTATSHCINOCTETS:
-        var->val_len = sizeof(U64);
+        var->val_len = sizeof(struct counter64);
         var->type = ASN_COUNTER64;
         rc = ipSystemStatsHCInOctets_get(rowreq_ctx,
-                                         (U64 *) var->val.string);
+                                         (struct counter64 *) var->val.string);
         break;
 
         /*
@@ -764,10 +764,10 @@ _ipSystemStatsTable_get_column(ipSystemStatsTable_rowreq_ctx * rowreq_ctx,
          * ipSystemStatsHCInForwDatagrams(13)/COUNTER64/ASN_COUNTER64/U64(U64)//l/A/w/e/r/d/h 
          */
     case COLUMN_IPSYSTEMSTATSHCINFORWDATAGRAMS:
-        var->val_len = sizeof(U64);
+        var->val_len = sizeof(struct counter64);
         var->type = ASN_COUNTER64;
         rc = ipSystemStatsHCInForwDatagrams_get(rowreq_ctx,
-                                                (U64 *) var->val.string);
+                                                (struct counter64 *) var->val.string);
         break;
 
         /*
@@ -824,10 +824,10 @@ _ipSystemStatsTable_get_column(ipSystemStatsTable_rowreq_ctx * rowreq_ctx,
          * ipSystemStatsHCInDelivers(19)/COUNTER64/ASN_COUNTER64/U64(U64)//l/A/w/e/r/d/h 
          */
     case COLUMN_IPSYSTEMSTATSHCINDELIVERS:
-        var->val_len = sizeof(U64);
+        var->val_len = sizeof(struct counter64);
         var->type = ASN_COUNTER64;
         rc = ipSystemStatsHCInDelivers_get(rowreq_ctx,
-                                           (U64 *) var->val.string);
+                                           (struct counter64 *) var->val.string);
         break;
 
         /*
@@ -844,10 +844,10 @@ _ipSystemStatsTable_get_column(ipSystemStatsTable_rowreq_ctx * rowreq_ctx,
          * ipSystemStatsHCOutRequests(21)/COUNTER64/ASN_COUNTER64/U64(U64)//l/A/w/e/r/d/h 
          */
     case COLUMN_IPSYSTEMSTATSHCOUTREQUESTS:
-        var->val_len = sizeof(U64);
+        var->val_len = sizeof(struct counter64);
         var->type = ASN_COUNTER64;
         rc = ipSystemStatsHCOutRequests_get(rowreq_ctx,
-                                            (U64 *) var->val.string);
+                                            (struct counter64 *) var->val.string);
         break;
 
         /*
@@ -874,10 +874,10 @@ _ipSystemStatsTable_get_column(ipSystemStatsTable_rowreq_ctx * rowreq_ctx,
          * ipSystemStatsHCOutForwDatagrams(24)/COUNTER64/ASN_COUNTER64/U64(U64)//l/A/w/e/r/d/h 
          */
     case COLUMN_IPSYSTEMSTATSHCOUTFORWDATAGRAMS:
-        var->val_len = sizeof(U64);
+        var->val_len = sizeof(struct counter64);
         var->type = ASN_COUNTER64;
         rc = ipSystemStatsHCOutForwDatagrams_get(rowreq_ctx,
-                                                 (U64 *) var->val.string);
+                                                 (struct counter64 *) var->val.string);
         break;
 
         /*
@@ -944,10 +944,10 @@ _ipSystemStatsTable_get_column(ipSystemStatsTable_rowreq_ctx * rowreq_ctx,
          * ipSystemStatsHCOutTransmits(31)/COUNTER64/ASN_COUNTER64/U64(U64)//l/A/w/e/r/d/h 
          */
     case COLUMN_IPSYSTEMSTATSHCOUTTRANSMITS:
-        var->val_len = sizeof(U64);
+        var->val_len = sizeof(struct counter64);
         var->type = ASN_COUNTER64;
         rc = ipSystemStatsHCOutTransmits_get(rowreq_ctx,
-                                             (U64 *) var->val.string);
+                                             (struct counter64 *) var->val.string);
         break;
 
         /*
@@ -964,10 +964,10 @@ _ipSystemStatsTable_get_column(ipSystemStatsTable_rowreq_ctx * rowreq_ctx,
          * ipSystemStatsHCOutOctets(33)/COUNTER64/ASN_COUNTER64/U64(U64)//l/A/w/e/r/d/h 
          */
     case COLUMN_IPSYSTEMSTATSHCOUTOCTETS:
-        var->val_len = sizeof(U64);
+        var->val_len = sizeof(struct counter64);
         var->type = ASN_COUNTER64;
         rc = ipSystemStatsHCOutOctets_get(rowreq_ctx,
-                                          (U64 *) var->val.string);
+                                          (struct counter64 *) var->val.string);
         break;
 
         /*
@@ -984,10 +984,10 @@ _ipSystemStatsTable_get_column(ipSystemStatsTable_rowreq_ctx * rowreq_ctx,
          * ipSystemStatsHCInMcastPkts(35)/COUNTER64/ASN_COUNTER64/U64(U64)//l/A/w/e/r/d/h 
          */
     case COLUMN_IPSYSTEMSTATSHCINMCASTPKTS:
-        var->val_len = sizeof(U64);
+        var->val_len = sizeof(struct counter64);
         var->type = ASN_COUNTER64;
         rc = ipSystemStatsHCInMcastPkts_get(rowreq_ctx,
-                                            (U64 *) var->val.string);
+                                            (struct counter64 *) var->val.string);
         break;
 
         /*
@@ -1004,10 +1004,10 @@ _ipSystemStatsTable_get_column(ipSystemStatsTable_rowreq_ctx * rowreq_ctx,
          * ipSystemStatsHCInMcastOctets(37)/COUNTER64/ASN_COUNTER64/U64(U64)//l/A/w/e/r/d/h 
          */
     case COLUMN_IPSYSTEMSTATSHCINMCASTOCTETS:
-        var->val_len = sizeof(U64);
+        var->val_len = sizeof(struct counter64);
         var->type = ASN_COUNTER64;
         rc = ipSystemStatsHCInMcastOctets_get(rowreq_ctx,
-                                              (U64 *) var->val.string);
+                                              (struct counter64 *) var->val.string);
         break;
 
         /*
@@ -1024,10 +1024,10 @@ _ipSystemStatsTable_get_column(ipSystemStatsTable_rowreq_ctx * rowreq_ctx,
          * ipSystemStatsHCOutMcastPkts(39)/COUNTER64/ASN_COUNTER64/U64(U64)//l/A/w/e/r/d/h 
          */
     case COLUMN_IPSYSTEMSTATSHCOUTMCASTPKTS:
-        var->val_len = sizeof(U64);
+        var->val_len = sizeof(struct counter64);
         var->type = ASN_COUNTER64;
         rc = ipSystemStatsHCOutMcastPkts_get(rowreq_ctx,
-                                             (U64 *) var->val.string);
+                                             (struct counter64 *) var->val.string);
         break;
 
         /*
@@ -1044,10 +1044,10 @@ _ipSystemStatsTable_get_column(ipSystemStatsTable_rowreq_ctx * rowreq_ctx,
          * ipSystemStatsHCOutMcastOctets(41)/COUNTER64/ASN_COUNTER64/U64(U64)//l/A/w/e/r/d/h 
          */
     case COLUMN_IPSYSTEMSTATSHCOUTMCASTOCTETS:
-        var->val_len = sizeof(U64);
+        var->val_len = sizeof(struct counter64);
         var->type = ASN_COUNTER64;
         rc = ipSystemStatsHCOutMcastOctets_get(rowreq_ctx,
-                                               (U64 *) var->val.string);
+                                               (struct counter64 *) var->val.string);
         break;
 
         /*
@@ -1064,10 +1064,10 @@ _ipSystemStatsTable_get_column(ipSystemStatsTable_rowreq_ctx * rowreq_ctx,
          * ipSystemStatsHCInBcastPkts(43)/COUNTER64/ASN_COUNTER64/U64(U64)//l/A/w/e/r/d/h 
          */
     case COLUMN_IPSYSTEMSTATSHCINBCASTPKTS:
-        var->val_len = sizeof(U64);
+        var->val_len = sizeof(struct counter64);
         var->type = ASN_COUNTER64;
         rc = ipSystemStatsHCInBcastPkts_get(rowreq_ctx,
-                                            (U64 *) var->val.string);
+                                            (struct counter64 *) var->val.string);
         break;
 
         /*
@@ -1084,10 +1084,10 @@ _ipSystemStatsTable_get_column(ipSystemStatsTable_rowreq_ctx * rowreq_ctx,
          * ipSystemStatsHCOutBcastPkts(45)/COUNTER64/ASN_COUNTER64/U64(U64)//l/A/w/e/r/d/h 
          */
     case COLUMN_IPSYSTEMSTATSHCOUTBCASTPKTS:
-        var->val_len = sizeof(U64);
+        var->val_len = sizeof(struct counter64);
         var->type = ASN_COUNTER64;
         rc = ipSystemStatsHCOutBcastPkts_get(rowreq_ctx,
-                                             (U64 *) var->val.string);
+                                             (struct counter64 *) var->val.string);
         break;
 
         /*

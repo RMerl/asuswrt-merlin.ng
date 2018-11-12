@@ -22,6 +22,7 @@
  * This should always be included first before anything else 
  */
 #include <net-snmp/net-snmp-config.h>
+#include <ctype.h>
 #if HAVE_STDLIB_H
 #include <stdlib.h>
 #endif
@@ -43,6 +44,7 @@
  */
 #include <net-snmp/net-snmp-includes.h>
 #include <net-snmp/agent/net-snmp-agent-includes.h>
+#include "utilities/iquery.h"
 #include "header_complex.h"
 #include "expExpressionTable.h"
 #include "expValueTable.h"
@@ -56,22 +58,22 @@
  *   variable below.
  */
 
-oid             expValueTable_variables_oid[] =
-    { 1, 3, 6, 1, 2, 1, 90, 1, 3, 1 };
+static const oid expValueTable_variables_oid[] = {
+    1, 3, 6, 1, 2, 1, 90, 1, 3, 1
+};
 
 struct s_node {
     unsigned        data;
     struct s_node  *next;
 };
 typedef struct s_node nodelink;
-nodelink           *operater = NULL;
-nodelink           *operand = NULL;
+static FindVarMethod var_expValueTable;
 
 /*
  * variable2 expObjectTable_variables:
  */
 
-struct variable2 expValueTable_variables[] = {
+static const struct variable2 expValueTable_variables[] = {
     /*
      * magic number        , variable type , ro/rw , callback fn  , L, oidsuffix 
      */
@@ -102,13 +104,7 @@ struct variable2 expValueTable_variables[] = {
 };
 
 
-/*
- * global storage of our data, saved in and configured by header_complex() 
- */
-extern struct header_complex_index *expExpressionTableStorage;
-extern struct header_complex_index *expObjectTableStorage;
-struct header_complex_index *expValueTableStorage = NULL;
-struct snmp_session session;
+static struct header_complex_index *expValueTableStorage = NULL;
 
 /*
  * init_expValueTable():
@@ -127,127 +123,328 @@ init_expValueTable(void)
     REGISTER_MIB("expValueTable",
                  expValueTable_variables, variable2,
                  expValueTable_variables_oid);
-    init_snmp("snmpapp");
-
-    /*
-     * Initialize a "session" that defines who we're going to talk to
-     */
-    snmp_sess_init(&session);   /* set up defaults */
-    session.peername = strdup("localhost");
 
     DEBUGMSGTL(("expValueTable", "done.\n"));
 }
 
-struct expValueTable_data *
-create_expValueTable_data(void)
-{
-    struct expValueTable_data *StorageNew;
-
-    StorageNew = SNMP_MALLOC_STRUCT(expValueTable_data);
-
-    /*
-     * fill in default row values here into StorageNew 
-     */
-    /*
-     * fill in values for all tables (even if not
-     * appropriate), since its easier to do here than anywhere
-     * else 
-     */
-    StorageNew->expExpressionOwner = strdup("");
-    StorageNew->expExpressionName = strdup("");
-    StorageNew->expValueInstance = calloc(1, sizeof(oid) * sizeof(2));  /* 0.0.0 */
-    StorageNew->expValueInstanceLen = 3;
-    return StorageNew;
-}
-
-/*
- * mteTriggerTable_add(): adds a structure node to our data set 
- */
-int
-expValueTable_add(struct expExpressionTable_data *expression_data,
-                  char *owner, size_t owner_len, char *name,
-                  size_t name_len, oid * index, size_t index_len)
+static int
+expValueTable_set(struct expExpressionTable_data *expression_data,
+                  const char *owner, size_t owner_len, const char *name,
+                  size_t name_len, oid *index, size_t index_len)
 {
     netsnmp_variable_list *vars = NULL;
-    struct expValueTable_data *thedata, *StorageTmp;
+    struct expValueTable_data *thedata;
     struct header_complex_index *hcindex;
-    int             founded = 0;
-    thedata = create_expValueTable_data();
-    thedata->expValueCounter32Val = 0;
-    thedata->expExpressionOwner = owner;
-    thedata->expExpressionOwnerLen = owner_len;
-    thedata->expExpressionName = name;
-    thedata->expExpressionNameLen = name_len;
-    thedata->expValueInstance = index;
-    thedata->expValueInstanceLen = index_len;
-    thedata->expression_data = expression_data;
-    DEBUGMSGTL(("expValueTable", "adding data...  "));
-    /*
-     * add the index variables to the varbind list, which is 
-     * used by header_complex to index the data 
-     */
+    int             found = 0;
 
-
-    snmp_varlist_add_variable(&vars, NULL, 0, ASN_OCTET_STR, (char *) thedata->expExpressionOwner, thedata->expExpressionOwnerLen);     /* expExpressionOwner */
-    snmp_varlist_add_variable(&vars, NULL, 0, ASN_OCTET_STR, (char *) thedata->expExpressionName, thedata->expExpressionNameLen);       /* expExpressionName */
-    snmp_varlist_add_variable(&vars, NULL, 0, ASN_PRIV_IMPLIED_OBJECT_ID,
-                              (u_char *) thedata->expValueInstance,
-                              thedata->expValueInstanceLen * sizeof(oid));
-
-    for (hcindex = expValueTableStorage; hcindex != NULL;
-         hcindex = hcindex->next) {
-        StorageTmp = (struct expValueTable_data *) hcindex->data;
-        if (!strcmp
-            (StorageTmp->expExpressionOwner, thedata->expExpressionOwner)
-            && (StorageTmp->expExpressionOwnerLen ==
-                thedata->expExpressionOwnerLen)
-            && !strcmp(StorageTmp->expExpressionName,
-                       thedata->expExpressionName)
-            && (StorageTmp->expExpressionNameLen ==
-                thedata->expExpressionNameLen)
-            && !snmp_oid_compare(StorageTmp->expValueInstance,
-                                 StorageTmp->expValueInstanceLen,
-                                 thedata->expValueInstance,
-                                 thedata->expValueInstanceLen)) {
-            founded = 1;
+    for (hcindex = expValueTableStorage; hcindex; hcindex = hcindex->next) {
+        thedata = hcindex->data;
+        if (strcmp(thedata->expExpressionOwner, owner) == 0 &&
+            thedata->expExpressionOwnerLen == owner_len &&
+            strcmp(thedata->expExpressionName, name) == 0 &&
+            thedata->expExpressionNameLen == name_len) {
+            found = 1;
             break;
         }
 
     }
-    if (!founded) {
+
+    if (found) {
+        if (snmp_oid_compare(thedata->expValueInstance,
+                             thedata->expValueInstanceLen, index,
+                             index_len) != 0) {
+            SNMP_FREE(thedata->expValueInstance);
+            thedata->expValueInstance = netsnmp_memdup(index, index_len);
+            thedata->expValueInstanceLen = index_len;
+        } else {
+            SNMP_FREE(index);
+        }
+    } else if ((thedata = calloc(1, sizeof(*thedata)))) {
+        thedata->expExpressionOwner = owner;
+        thedata->expExpressionOwnerLen = owner_len;
+        thedata->expExpressionName = name;
+        thedata->expExpressionNameLen = name_len;
+        thedata->expValueInstance = index;
+        thedata->expValueInstanceLen = index_len;
+        thedata->expression_data = expression_data;
+
+        snmp_varlist_add_variable(&vars, NULL, 0, ASN_OCTET_STR,
+                                  (const char *) thedata->expExpressionOwner,
+                                  thedata->expExpressionOwnerLen);
+        snmp_varlist_add_variable(&vars, NULL, 0, ASN_OCTET_STR,
+                                  (const char *) thedata->expExpressionName,
+                                  thedata->expExpressionNameLen);
+        snmp_varlist_add_variable(&vars, NULL, 0, ASN_PRIV_IMPLIED_OBJECT_ID,
+                                  (u_char *) thedata->expValueInstance,
+                                  thedata->expValueInstanceLen * sizeof(oid));
+
         header_complex_add_data(&expValueTableStorage, vars, thedata);
-        DEBUGMSGTL(("expValueTable", "registered an entry\n"));
     } else {
-        SNMP_FREE(thedata);
-        DEBUGMSGTL(("expValueTable",
-                    "already have an entry, dont registe\n"));
+        return SNMPERR_GENERR;
     }
 
+    thedata->set = 1;
 
-    DEBUGMSGTL(("expValueTable", "done.\n"));
     return SNMPERR_SUCCESS;
 }
 
-
-
-
-
-unsigned long
-Evaluate_Expression(struct expValueTable_data *vtable_data)
+static void push(nodelink ** stack, unsigned long value)
 {
+    nodelink           *newnode;
+    newnode = (nodelink *) malloc(sizeof(nodelink));
+    if (!newnode) {
+        printf("\nMemory allocation failure!");
+        return;
+    }
+    newnode->data = value;
+    newnode->next = *stack;
+    *stack = newnode;
+}
 
+static unsigned long pop(nodelink **stack)
+{
+    unsigned long   value;
+    nodelink       *top;
+
+    if (!*stack)
+        return 0;
+
+    top = *stack;
+    *stack = (*stack)->next;
+    value = top->data;
+    free(top);
+    return value;
+}
+
+static int priority(char operator)
+{
+    switch (operator) {
+    case '*':
+    case '/':
+        return 4;
+    case '+':
+    case '-':
+        return 3;
+    case ')':
+        return 2;
+    case '(':
+        return 1;
+    default:
+        return 0;
+    }
+}
+
+static unsigned long calculate(int operator, unsigned long a, unsigned long b)
+{
+    switch (operator) {
+    case '+':
+        return (a + b);
+    case '-':
+        return (a - b);
+    case '*':
+        return (a * b);
+    case '/':
+        if (operator == '/' && b == 0) {
+            snmp_log(LOG_ERR, "Division by zero attempted\n");
+            return 0;
+        } else
+            return (a / b);
+    }
+    return 0;
+}
+
+static unsigned long get_operand(const char *p, int *length)
+{
+    char            c[13];
+    int             i = 0, k = 1;
+    unsigned long   result = 0;
+
+    while (isdigit((unsigned char) *p))
+        c[i++] = *(p++);
+    *length += --i;
+    for (; i >= 0; i--) {
+        result += (c[i] - 48) * k;
+        k *= 10;
+    }
+    return result;
+}
+
+enum operator_class {
+    c_other	= 0,
+    c_digit	= 1,
+    c_binop	= 2,
+    c_rpar	= 3,
+    c_lpar	= 4,
+};
+
+static int operator_class(char c)
+{
+    if (isdigit((unsigned char) c))
+        return c_digit;
+    else if (c == '*' || c == '+' || c == '-' || c == '/')
+        return c_binop;
+    else if (c == ')')
+        return c_rpar;
+    else if (c == '(')
+        return c_lpar;
+    else
+        return c_other;
+}
+
+static void eval(nodelink **operator, nodelink **operand, char new_op)
+{
+    unsigned long a, b, op, c;
+
+    DEBUGMSG(("expValueTable", "eval: operator %c; new_op %c\n",
+              *operator ? (*operator)->data : '?', new_op));
+
+    while (*operator != NULL &&
+           priority(new_op) <= priority((*operator)->data)) {
+        b = pop(operand);
+        op = pop(operator);
+        if (op) {
+            a = pop(operand);
+            c = calculate(op, a, b);
+            DEBUGMSG(("expValueTable", "eval: %ld %c %ld -> %ld\n", a, (char)op,
+                      b, c));
+            push(operand, c);
+        } else {
+            DEBUGMSG(("expValueTable", "eval: returning %ld\n", b));
+            push(operand, b);
+            break;
+        }
+    }
+
+}
+
+static unsigned long get_result(const char *expr)
+{
+    int             position = 0;
+    unsigned long   a, result = 0;
+    const char     *expression;
+    nodelink       *operator = NULL;
+    nodelink       *operand = NULL;
+
+    expression = expr;
+    while (*(expression + position) != '\0'
+           && *(expression + position) != '\n') {
+        switch (operator_class(*(expression + position))) {
+        case c_digit:
+            push(&operand, get_operand(expression + position, &position));
+            break;
+        case c_binop:
+            eval(&operator, &operand, *(expression + position));
+            push(&operator, *(expression + position));
+            break;
+        case c_rpar:
+            eval(&operator, &operand, ')');
+            if (operator->data == '(')
+                pop(&operator);
+            break;
+        case c_lpar:
+            push(&operator, '(');
+            break;
+        default:
+            printf("\nInvalid character in expression:");
+            a = 0;
+            while (*(expression + (int) a) != '\n'
+                   && *(expression + (int) a) != '\0') {
+                if (a != position)
+                    printf("%c", *(expression + (int) a));
+                else
+                    printf("<%c>", *(expression + (int) a));
+                a++;
+            }
+            return 0;
+        }                       /* end switch */
+        position++;
+    }
+    eval(&operator, &operand, ')');
+    result = pop(&operand);
+    DEBUGMSG(("expValueTable", "%s: %s -> %ld\n", __func__, expr, result));
+    return result;
+}
+
+static int iquery(struct variable_list **vars, char *secName, int snmp_version,
+                  const oid *name, int name_len)
+{
+    struct snmp_session *ss;
+    struct snmp_pdu *pdu;
+    struct snmp_pdu *response;
+    struct variable_list *v;
+    int status, rc = SNMP_ERR_GENERR;
+
+    ss = netsnmp_query_get_default_session();
+    if (!ss) {
+        snmp_log(LOG_ERR, "%s: default SNMP session not available\n", __func__);
+        goto out;
+    }
+
+    ss->retries = 0;
+
+    pdu = snmp_pdu_create(SNMP_MSG_GET);
+    if (!pdu) {
+        snmp_log(LOG_ERR, "%s: failed to create an SNMP PDU\n", __func__);
+        goto out;
+    }
+
+    if (snmp_add_null_var(pdu, name, name_len) == NULL) {
+        snmp_log(LOG_ERR, "%s: appending a variable to a PDU failed\n",
+                 __func__);
+        goto free_pdu;
+    }
+
+    DEBUGMSGTL(("expValueTable", "%s: querying OID ", __func__));
+    DEBUGMSGOID(("expValueTable", name, name_len));
+    DEBUGMSG(("expValueTable", "\n"));
+
+    status = snmp_synch_response(ss, pdu, &response);
+
+    DEBUGMSGTL(("expValueTable", "%s: SNMP response status %d; rc %ld\n",
+                __func__, status, response ? response->errstat : -1));
+
+    if (status != STAT_SUCCESS)
+        goto free_pdu;
+
+    rc = response->errstat;
+    *vars = snmp_clone_varbind(response->variables);
+    if (*vars == NULL)
+        goto free_response;
+
+    for (v = *vars; v; v = v->next_variable) {
+        DEBUGMSGTL(("expValueTable", "%s: response variable type %d; oid ",
+                    __func__, v->type));
+        DEBUGMSGOID(("expValueTable", v->name, v->name_length));
+        if (v->type == ASN_INTEGER)
+            DEBUGMSG(("expValueTable", "; value %ld\n", *v->val.integer));
+        DEBUGMSG(("expValueTable", "\n"));
+    }
+
+    rc = SNMPERR_SUCCESS;
+
+free_response:
+    if (response)
+        snmp_free_pdu(response);
+
+free_pdu:
+    /* if (pdu) snmp_free_pdu(pdu); -- triggers a use-after-free */
+
+out:
+    return rc;
+}
+
+static unsigned long Evaluate_Expression(struct expValueTable_data *vtable_data)
+{
     struct header_complex_index *hcindex;
     struct expObjectTable_data *objstorage, *objfound;
-    struct expValueTable_data *valstorage;
-    valstorage = vtable_data;
-
-    char           *expression;
+    struct expValueTable_data *const valstorage = vtable_data;
+    const char     *expression;
     char           *result, *resultbak;
     char           *temp, *tempbak;
-    char            intchar[10];
-    int             i = 0, j, k, l;
-    long            value;
-    unsigned long   result_u_long;
+    int             i = 0, j, l;
+    unsigned long   result_u_long = 0;
+    static int      level;
+
     temp = malloc(100);
     result = malloc(100);
     tempbak = temp;
@@ -255,7 +452,18 @@ Evaluate_Expression(struct expValueTable_data *vtable_data)
     *result = '\0';
     resultbak = result;
 
+    level++;
+
+    if (level > 1) {
+        snmp_log(LOG_ERR, "%s: detected recursion\n", __func__);
+        goto out;
+    }
+
     expression = vtable_data->expression_data->expExpression;
+
+    DEBUGMSGTL(("expValueTable", "%s(%s.%s): evaluating %s\n", __func__,
+                valstorage->expExpressionOwner, valstorage->expExpressionName,
+                expression));
 
     while (*expression != '\0') {
         if (*expression == '$') {
@@ -296,14 +504,19 @@ Evaluate_Expression(struct expValueTable_data *vtable_data)
                 }
             }
 
-
             if (!objfound) {
-                /* have err */
-                return 0;
+                snmp_log(LOG_ERR, "%s: lookup of expression %s.%s failed\n",
+                         __func__, valstorage->expExpressionOwner,
+                         valstorage->expExpressionName);
+                goto out;
             }
-            struct snmp_session *ss;
-            struct snmp_pdu *pdu;
-            struct snmp_pdu *response;
+
+            DEBUGMSGTL(("expValueTable", "%s: Found OID ", __func__));
+            DEBUGMSGOID(("expValueTable", objfound->expObjectID,
+                         objfound->expObjectIDLen));
+            DEBUGMSG(("expValueTable", "%s\n",
+                      objfound->expObjectIDWildcard ==
+                      EXPOBJCETIDWILDCARD_TRUE ? "(wildcard)" : ""));
 
             oid             anOID[MAX_OID_LEN];
             size_t          anOID_len;
@@ -319,124 +532,49 @@ Evaluate_Expression(struct expValueTable_data *vtable_data)
                        (valstorage->expValueInstanceLen -
                         2) * sizeof(oid));
             }
+
             struct variable_list *vars;
-            int             status;
+            int             rc;
 
-            /*
-             * Initialize the SNMP library
-             */
-
-            /*
-             * Initialize a "session" that defines who we're going to talk to
-             */
-            session.version = vtable_data->expression_data->pdu_version;
-
-            /*
-             * set the SNMPv1 community name used for authentication 
-             */
-            session.community =
-                vtable_data->expression_data->pdu_community;
-            session.community_len =
-                vtable_data->expression_data->pdu_community_len;
-            /*
-             * Open the session
-             */
-            SOCK_STARTUP;
-            ss = snmp_open(&session);   /* establish the session */
-
-            if (!ss) {
-                /* err */
-                exit(2);
-            }
-            pdu = snmp_pdu_create(SNMP_MSG_GET);
-            snmp_add_null_var(pdu, anOID, anOID_len);
-
-            /*
-             * Send the Request out.
-             */
-            status = snmp_synch_response(ss, pdu, &response);
-
-            /*
-             * Process the response.
-             */
-            if (status == STAT_SUCCESS
-                && response->errstat == SNMP_ERR_NOERROR) {
-                /*
-                 * SUCCESS: Print the result variables
-                 */
-
-                vars = response->variables;
-                value = *(vars->val.integer);
-                sprintf(intchar, "%lu", value);
-                for (k = 1; k <= strlen(intchar); k++) {
-                    *result = intchar[k - 1];
-                    result++;
-                }
-
-            } else {
-                /*
-                 * FAILURE: print what went wrong!
-                 */
-
-                if (status == STAT_SUCCESS)
-                    fprintf(stderr, "Error in packet\nReason: %s\n",
-                            snmp_errstring(response->errstat));
-                else
-                    snmp_sess_perror("snmpget", ss);
-
-            }
-
-            /*
-             * Clean up:
-             *  1) free the response.
-             *  2) close the session.
-             */
-            if (response)
-                snmp_free_pdu(response);
-            snmp_close(ss);
-
-            SOCK_CLEANUP;
-
+            rc = iquery(&vars,
+                        (char *)vtable_data->expression_data->pdu_community,
+                        vtable_data->expression_data->pdu_version,
+                        anOID, anOID_len);
+            if (rc != SNMP_ERR_NOERROR)
+                snmp_log(LOG_ERR, "Error in packet: %s\n", snmp_errstring(rc));
+            sprintf(result, "%lu", rc == SNMP_ERR_NOERROR ?
+                    *(vars->val.integer) : 0);
+            result += strlen(result);
         } else {
-            *result = *expression;
-            result++;
-            expression++;
+            *result++ = *expression++;
         }
     }
     result_u_long = get_result(resultbak);
+    DEBUGMSGTL(("expValueTable", "%s(%s.%s): evaluated %s into %ld\n", __func__,
+                valstorage->expExpressionOwner, valstorage->expExpressionName,
+                resultbak, result_u_long));
+
+out:
     free(tempbak);
     free(resultbak);
+    level--;
     return result_u_long;
 }
 
-
-
-
-
-
-
-
-void
-expValueTable_clean(void *data)
+static void expValueTable_clean(void *data)
 {
-    struct expValueTable_data *cleanme =
-        (struct expValueTable_data *) data;
+    struct expValueTable_data *cleanme = data;
+
     SNMP_FREE(cleanme->expValueInstance);
-    SNMP_FREE(cleanme->expValueIpAddressVal);
-    SNMP_FREE(cleanme->expValueOctetStringVal);
-    SNMP_FREE(cleanme->expValueOidVal);
     SNMP_FREE(cleanme);
 }
 
-
-
-void
-build_valuetable(void)
+static void build_valuetable(void)
 {
     struct expExpressionTable_data *expstorage;
     struct expObjectTable_data *objstorage, *objfound = NULL;
     struct header_complex_index *hcindex, *object_hcindex;
-    char           *expression;
+    const char     *expression;
     oid            *index;
     int             i = 0, j, l;
 
@@ -506,74 +644,30 @@ build_valuetable(void)
             *index = 0;
             *(index + 1) = 0;
             *(index + 2) = 0;
-            expValueTable_add(expstorage, objfound->expExpressionOwner,
+            expValueTable_set(expstorage, objfound->expExpressionOwner,
                               objfound->expExpressionOwnerLen,
                               objfound->expExpressionName,
                               objfound->expExpressionNameLen, index, 3);
         } else {
-            oid            *targetOID;
-            size_t          taggetOID_len;
-            targetOID = objfound->expObjectID;
-            struct snmp_pdu *pdu;
-            struct snmp_pdu *response;
+            oid            *targetOID = objfound->expObjectID;
+            size_t          taggetOID_len = objfound->expObjectIDLen;
             oid            *next_OID;
             size_t          next_OID_len;
-            taggetOID_len = objfound->expObjectIDLen;
-            int             status;
-            struct snmp_session *ss;
-            /*
-             * Initialize the SNMP library
-             */
-
-
-            /*
-             * set the SNMP version number 
-             */
-            session.version = expstorage->pdu_version;
-
-            /*
-             * set the SNMPv1 community name used for authentication 
-             */
-            session.community = expstorage->pdu_community;
-            session.community_len = expstorage->pdu_community_len;
-
-            /*
-             * Open the session
-             */
-            SOCK_STARTUP;
-            ss = snmp_open(&session);   /* establish the session */
-            if (!ss) {
-                snmp_perror("ack");
-                snmp_log(LOG_ERR, "something horrible happened!!!\n");
-                exit(2);
-            }
+            struct variable_list *vars;
+            int             rc;
 
             next_OID = targetOID;
             next_OID_len = taggetOID_len;
             do {
                 index = calloc(1, MAX_OID_LEN);
-                pdu = snmp_pdu_create(SNMP_MSG_GETNEXT);
 
-                snmp_add_null_var(pdu, next_OID, next_OID_len);
-
-                /*
-                 * Send the Request out.
-                 */
-                status = snmp_synch_response(ss, pdu, &response);
-
-                /*
-                 * Process the response.
-                 */
-                if (status == STAT_SUCCESS
-                    && response->errstat == SNMP_ERR_NOERROR) {
-                    /*
-                     * SUCCESS: Print the result variables
-                     */
-
-                    if (((response->variables->type >= SNMP_NOSUCHOBJECT &&
-                          response->variables->type <= SNMP_ENDOFMIBVIEW)
+                rc = iquery(&vars, (char *)expstorage->pdu_community,
+                            expstorage->pdu_version, next_OID, next_OID_len);
+                if (rc == SNMP_ERR_NOERROR) {
+                    if (((vars->type >= SNMP_NOSUCHOBJECT &&
+                          vars->type <= SNMP_ENDOFMIBVIEW)
                          || snmp_oid_compare(targetOID, taggetOID_len,
-                                             response->variables->name,
+                                             vars->name,
                                              taggetOID_len) != 0)) {
                         break;
                     }
@@ -581,80 +675,64 @@ build_valuetable(void)
 
                     *index = 0;
                     *(index + 1) = 0;
-                    memcpy(index + 2,
-                           response->variables->name + taggetOID_len,
-                           (response->variables->name_length -
-                            taggetOID_len) * sizeof(oid));
-                    expValueTable_add(expstorage,
+                    memcpy(index + 2, vars->name + taggetOID_len,
+                           (vars->name_length - taggetOID_len) * sizeof(oid));
+                    expValueTable_set(expstorage,
                                       objfound->expExpressionOwner,
                                       objfound->expExpressionOwnerLen,
                                       objfound->expExpressionName,
                                       objfound->expExpressionNameLen,
                                       index,
-                                      response->variables->name_length -
+                                      vars->name_length -
                                       taggetOID_len + 2);
 
-                    next_OID = response->variables->name;
-
-                    next_OID_len = response->variables->name_length;
-
-
-
-
+                    next_OID = vars->name;
+                    next_OID_len = vars->name_length;
                 } else {
-                    /*
-                     * FAILURE: print what went wrong!
-                     */
-                    if (status == STAT_SUCCESS)
-                        fprintf(stderr, "Error in packet\nReason: %s\n",
-                                snmp_errstring(response->errstat));
-                    else
-                        snmp_sess_perror("snmpget", ss);
+                    snmp_log(LOG_ERR, "Error in packet: %s\n",
+                             snmp_errstring(rc));
                 }
             } while (TRUE);
-
         }
-
     }
-
 }
 
-
-
-/*
- * var_expValueTable():
- */
-unsigned char  *
-var_expValueTable(struct variable *vp,
-                  oid * name,
-                  size_t *length,
-                  int exact, size_t *var_len, WriteMethod ** write_method)
+static unsigned char *var_expValueTable(struct variable *vp, oid * name,
+                                        size_t *length, int exact,
+                                        size_t *var_len,
+                                        WriteMethod ** write_method)
 {
-
     struct expValueTable_data *StorageTmp = NULL;
-
-
-
 
     DEBUGMSGTL(("expValueTable", "var_expValueTable: Entering...  \n"));
 
-    /*
-     *  before we build valuetable we must free any other valutable if exist
-     */
-    header_complex_free_all(expValueTableStorage, expValueTable_clean);
-    expValueTableStorage = NULL;
+    struct header_complex_index *hciptr, *hciptrn;
 
+    for (hciptr = expValueTableStorage; hciptr; hciptr = hciptr->next) {
+        StorageTmp = hciptr->data;
+        StorageTmp->set = 0;
+    }
 
     build_valuetable();
 
+    for (hciptr = expValueTableStorage; hciptr; hciptr = hciptrn) {
+        hciptrn = hciptr->next;
+        StorageTmp = hciptr->data;
+        if (!StorageTmp->set)
+            header_complex_free_entry(hciptr, expValueTable_clean);
+    }
 
     /*
      * this assumes you have registered all your data properly
      */
     if ((StorageTmp =
          header_complex(expValueTableStorage, vp, name, length, exact,
-                        var_len, write_method)) == NULL)
+                        var_len, write_method)) == NULL) {
+        DEBUGMSGTL(("expValueTable", "%s: entry not found.\n", __func__));
         return NULL;
+    }
+
+    DEBUGMSGTL(("expValueTable", "%s: vp->magic = %d.\n", __func__, vp->magic));
 
 
     /*
@@ -708,166 +786,4 @@ var_expValueTable(struct variable *vp,
         ERROR_MSG("");
 	return NULL;
     }
-}
-
-
-
-
-
-void
-push(nodelink ** stack, unsigned long value)
-{
-    nodelink           *newnode;
-    newnode = (nodelink *) malloc(sizeof(nodelink));
-    if (!newnode) {
-        printf("\nMemory allocation failure!");
-        return;
-    }
-    newnode->data = value;
-    newnode->next = *stack;
-    *stack = newnode;
-}
-
-unsigned long
-pop(nodelink ** stack)
-{
-    unsigned long   value;
-    nodelink           *top;
-    top = *stack;
-    *stack = (*stack)->next;
-    value = top->data;
-    free(top);
-    return value;
-}
-
-int
-priority(char operater)
-{
-    switch (operater) {
-    case '*':
-    case '/':
-        return 4;
-    case '+':
-    case '-':
-        return 3;
-    case ')':
-        return 2;
-    case '(':
-        return 1;
-    default:
-        return 0;
-    }
-}
-
-unsigned long
-calculate(int operater, unsigned long a, unsigned long b)
-{
-    switch (operater) {
-    case '+':
-        return (a + b);
-    case '-':
-        return (a - b);
-    case '*':
-        return (a * b);
-    case '/':
-        if (operater == '/' && b == 0) {
-            printf("\nDivision mustn\'t be 0!");
-            exit(0);
-        } else
-            return (a / b);
-    }
-    return 0;
-}
-
-unsigned long
-get_operand(char *p, int *length)
-{
-    char            c[13];
-    int             i = 0, k = 1;
-    unsigned long   result = 0;
-    while (*p <= 57 && *p >= 48)
-        c[i++] = *(p++);
-    *length += --i;
-    for (; i >= 0; i--) {
-        result += (c[i] - 48) * k;
-        k *= 10;
-    }
-    return result;
-}
-
-int
-operator_class(char c)
-{
-    if (c <= 57 && c >= 48)
-        return 1;
-    if (c == 42 || c == 43 || c == 45 || c == 47)
-        return 2;
-    if (c == 41)
-        return 3;
-    if (c == 40)
-        return 4;
-    return 0;
-}
-
-unsigned long
-get_result(char *expr)
-{
-    int             position = 0;
-    unsigned long   op = 0, a = 0, b = 0, result = 0;
-    char           *expression;
-    expression = expr;
-    while (*(expression + position) != '\0'
-           && *(expression + position) != '\n') {
-        switch (operator_class(*(expression + position))) {
-        case 1:
-            push(&operand, get_operand(expression + position, &position));
-            break;
-        case 2:
-            if (operater != NULL)
-                while (operater != NULL
-                       && priority(*(expression + position)) <=
-                       priority(operater->data)) {
-                    a = pop(&operand);
-                    b = pop(&operand);
-                    op = pop(&operater);
-                    push(&operand, calculate(op, b, a));
-                }
-            push(&operater, *(expression + position));
-            break;
-        case 3:
-            while (operater != NULL && operater->data != '(') {
-                a = pop(&operand);
-                b = pop(&operand);
-                op = pop(&operater);
-                push(&operand, calculate(op, b, a));
-            }
-            if (operater->data == '(')
-                pop(&operater);
-            break;
-        case 4:
-            push(&operater, '(');
-            break;
-        default:
-            printf("\nInvalid character in expression:");
-            a = 0;
-            while (*(expression + (int) a) != '\n'
-                   && *(expression + (int) a) != '\0') {
-                if (a != position)
-                    printf("%c", *(expression + (int) a));
-                else
-                    printf("<%c>", *(expression + (int) a));
-                a++;
-            }
-            exit(0);
-        }                       /* end switch */
-        position++;
-    }
-    while (operater != NULL) {
-        op = pop(&operater);
-        a = pop(&operand);
-        b = pop(&operand);
-        push(&operand, calculate(op, b, a));
-    }
-    result = pop(&operand);
-    return result;
 }

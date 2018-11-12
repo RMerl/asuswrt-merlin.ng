@@ -1,0 +1,17 @@
+[Unit]
+Description=Socket listening for SNMP and AgentX messages
+
+[Socket]
+ListenDatagram=0.0.0.0:161
+# Uncomment other listening addresses as needed - TCP, UDP6, TCP6.
+# It must match listening addresses/ports defined in snmpd.service
+# or snmpd.conf.
+# ListenStream=0.0.0.0:161
+# ListenDatagram=[::]:161
+# ListenStream=[::]:161
+#
+# Uncomment AgentX socket if snmpd.conf enables AgentX protocol.
+# ListenStream=/var/agentx/master
+
+[Install]
+WantedBy=sockets.target

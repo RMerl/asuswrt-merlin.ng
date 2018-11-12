@@ -32,6 +32,11 @@ SOFTWARE.
  * Copyright © 2003 Sun Microsystems, Inc. All rights reserved.
  * Use is subject to license terms specified in the COPYING file
  * distributed with the Net-SNMP package.
+ *
+ * Portions of this file are copyrighted by:
+ * Copyright (c) 2016 VMware, Inc. All rights reserved.
+ * Use is subject to license terms specified in the COPYING file
+ * distributed with the Net-SNMP package.
  */
 
 /** @defgroup snmp_client various PDU processing routines
@@ -97,6 +102,7 @@ SOFTWARE.
 #include <net-snmp/library/mib.h>
 #include <net-snmp/library/snmp_logging.h>
 #include <net-snmp/library/snmp_assert.h>
+#include <net-snmp/library/large_fd_set.h>
 #include <net-snmp/pdu_api.h>
 
 netsnmp_feature_child_of(snmp_client_all, libnetsnmp)
@@ -110,16 +116,6 @@ netsnmp_feature_child_of(row_create, snmp_client_all)
 #define BSD4_2
 #endif
 
-#ifndef FD_SET
-
-typedef long    fd_mask;
-#define NFDBITS	(sizeof(fd_mask) * NBBY)        /* bits per mask */
-
-#define	FD_SET(n, p)	((p)->fds_bits[(n)/NFDBITS] |= (1 << ((n) % NFDBITS)))
-#define	FD_CLR(n, p)	((p)->fds_bits[(n)/NFDBITS] &= ~(1 << ((n) % NFDBITS)))
-#define	FD_ISSET(n, p)	((p)->fds_bits[(n)/NFDBITS] & (1 << ((n) % NFDBITS)))
-#define FD_ZERO(p)	memset((p), 0, sizeof(*(p)))
-#endif
 
 /*
  * Prototype definitions 
@@ -216,12 +212,24 @@ snmp_synch_input(int op,
         state->status = STAT_TIMEOUT;
         session->s_snmp_errno = SNMPERR_TIMEOUT;
         SET_SNMP_ERROR(SNMPERR_TIMEOUT);
+    } else if (op == NETSNMP_CALLBACK_OP_SEC_ERROR) {
+        state->pdu = NULL;
+        /*
+         * If we already have an error in status, then leave it alone.
+         */
+        if (state->status == STAT_SUCCESS) {
+            state->status = STAT_ERROR;
+            session->s_snmp_errno = SNMPERR_GENERR;
+            SET_SNMP_ERROR(SNMPERR_GENERR);
+        }
     } else if (op == NETSNMP_CALLBACK_OP_DISCONNECT) {
         state->pdu = NULL;
         state->status = STAT_ERROR;
         session->s_snmp_errno = SNMPERR_ABORT;
         SET_SNMP_ERROR(SNMPERR_ABORT);
     }
+    DEBUGMSGTL(("snmp_synch", "status = %d errno = %d\n",
+                               state->status, session->s_snmp_errno));
 
     return 1;
 }
@@ -352,6 +360,9 @@ _clone_pdu_header(netsnmp_pdu *pdu)
     struct snmp_secmod_def *sptr;
     int ret;
 
+    if (!pdu)
+        return NULL;
+
     newpdu = (netsnmp_pdu *) malloc(sizeof(netsnmp_pdu));
     if (!newpdu)
         return NULL;
@@ -391,7 +402,7 @@ _clone_pdu_header(netsnmp_pdu *pdu)
         return NULL;
     }
 
-    if (pdu != NULL && pdu->securityStateRef &&
+    if (pdu->securityStateRef &&
         pdu->command == SNMP_MSG_TRAP2) {
 
         ret = usm_clone_usmStateReference((struct usmStateReference *) pdu->securityStateRef,
@@ -400,7 +411,7 @@ _clone_pdu_header(netsnmp_pdu *pdu)
         if (ret)
         {
             snmp_free_pdu(newpdu);
-            return 0;
+            return NULL;
         }
     }
 
@@ -430,6 +441,8 @@ _copy_varlist(netsnmp_variable_list * var,      /* source varList */
     while (var && (copy_count-- > 0)) {
         /*
          * Drop the specified variable (if applicable) 
+         * xxx hmm, is it intentional that dropping the errindex
+         *     counts towards copy_count?
          */
         if (++ii == errindex) {
             var = var->next_variable;
@@ -925,7 +938,7 @@ snmp_set_var_value(netsnmp_variable_list * vars,
         if (4 != vars->val_len) {
             netsnmp_assert("ipaddress length == 4");
         }
-        /** FALL THROUGH */
+        /* FALL THROUGH */
     case ASN_PRIV_IMPLIED_OCTET_STR:
     case ASN_OCTET_STR:
     case ASN_BIT_STR:
@@ -1029,13 +1042,13 @@ snmp_synch_response_cb(netsnmp_session * ss,
                        netsnmp_pdu *pdu,
                        netsnmp_pdu **response, snmp_callback pcb)
 {
-    struct synch_state lstate, *state;
-    snmp_callback   cbsav;
-    void           *cbmagsav;
-    int             numfds, count;
-    fd_set          fdset;
-    struct timeval  timeout, *tvp;
-    int             block;
+    struct synch_state    lstate, *state;
+    snmp_callback         cbsav;
+    void                 *cbmagsav;
+    int                   numfds, count;
+    netsnmp_large_fd_set  fdset;
+    struct timeval        timeout, *tvp;
+    int                   block;
 
     memset((void *) &lstate, 0, sizeof(lstate));
     state = &lstate;
@@ -1043,26 +1056,29 @@ snmp_synch_response_cb(netsnmp_session * ss,
     cbmagsav = ss->callback_magic;
     ss->callback = pcb;
     ss->callback_magic = (void *) state;
+    netsnmp_large_fd_set_init(&fdset, FD_SETSIZE);
 
-    if ((state->reqid = snmp_send(ss, pdu)) == 0) {
+    if (snmp_send(ss, pdu) == 0) {
         snmp_free_pdu(pdu);
         state->status = STAT_ERROR;
-    } else
+    } else {
+        state->reqid = pdu->reqid;
         state->waiting = 1;
+    }
 
     while (state->waiting) {
         numfds = 0;
-        FD_ZERO(&fdset);
+        NETSNMP_LARGE_FD_ZERO(&fdset);
         block = NETSNMP_SNMPBLOCK;
         tvp = &timeout;
         timerclear(tvp);
-        snmp_sess_select_info_flags(0, &numfds, &fdset, tvp, &block,
-                                    NETSNMP_SELECT_NOALARMS);
+        snmp_sess_select_info2_flags(NULL, &numfds, &fdset, tvp, &block,
+                                     NETSNMP_SELECT_NOALARMS);
         if (block == 1)
             tvp = NULL;         /* block without timeout */
-        count = select(numfds, &fdset, NULL, NULL, tvp);
+        count = netsnmp_large_fd_set_select(numfds, &fdset, NULL, NULL, tvp);
         if (count > 0) {
-            snmp_read(&fdset);
+            snmp_read2(&fdset);
         } else {
             switch (count) {
             case 0:
@@ -1082,9 +1098,7 @@ snmp_synch_response_cb(netsnmp_session * ss,
                      */
                     snmp_set_detail(strerror(errno));
                 }
-                /*
-                 * FALLTHRU 
-                 */
+                /* FALLTHRU */
             default:
                 state->status = STAT_ERROR;
                 state->waiting = 0;
@@ -1101,6 +1115,7 @@ snmp_synch_response_cb(netsnmp_session * ss,
     *response = state->pdu;
     ss->callback = cbsav;
     ss->callback_magic = cbmagsav;
+    netsnmp_large_fd_set_cleanup(&fdset);
     return state->status;
 }
 
@@ -1115,14 +1130,14 @@ int
 snmp_sess_synch_response(void *sessp,
                          netsnmp_pdu *pdu, netsnmp_pdu **response)
 {
-    netsnmp_session *ss;
-    struct synch_state lstate, *state;
-    snmp_callback   cbsav;
-    void           *cbmagsav;
-    int             numfds, count;
-    fd_set          fdset;
-    struct timeval  timeout, *tvp;
-    int             block;
+    netsnmp_session      *ss;
+    struct synch_state    lstate, *state;
+    snmp_callback         cbsav;
+    void                 *cbmagsav;
+    int                   numfds, count;
+    netsnmp_large_fd_set  fdset;
+    struct timeval        timeout, *tvp;
+    int                   block;
 
     ss = snmp_sess_session(sessp);
     if (ss == NULL) {
@@ -1135,26 +1150,29 @@ snmp_sess_synch_response(void *sessp,
     cbmagsav = ss->callback_magic;
     ss->callback = snmp_synch_input;
     ss->callback_magic = (void *) state;
+    netsnmp_large_fd_set_init(&fdset, FD_SETSIZE);
 
-    if ((state->reqid = snmp_sess_send(sessp, pdu)) == 0) {
+    if (snmp_sess_send(sessp, pdu) == 0) {
         snmp_free_pdu(pdu);
         state->status = STAT_ERROR;
-    } else
+    } else {
         state->waiting = 1;
+        state->reqid = pdu->reqid;
+    }
 
     while (state->waiting) {
         numfds = 0;
-        FD_ZERO(&fdset);
+        NETSNMP_LARGE_FD_ZERO(&fdset);
         block = NETSNMP_SNMPBLOCK;
         tvp = &timeout;
         timerclear(tvp);
-        snmp_sess_select_info_flags(sessp, &numfds, &fdset, tvp, &block,
-                                    NETSNMP_SELECT_NOALARMS);
+        snmp_sess_select_info2_flags(sessp, &numfds, &fdset, tvp, &block,
+                                     NETSNMP_SELECT_NOALARMS);
         if (block == 1)
             tvp = NULL;         /* block without timeout */
-        count = select(numfds, &fdset, NULL, NULL, tvp);
+        count = netsnmp_large_fd_set_select(numfds, &fdset, NULL, NULL, tvp);
         if (count > 0) {
-            snmp_sess_read(sessp, &fdset);
+            snmp_sess_read2(sessp, &fdset);
         } else
             switch (count) {
             case 0:
@@ -1174,9 +1192,7 @@ snmp_sess_synch_response(void *sessp,
                      */
                     snmp_set_detail(strerror(errno));
                 }
-                /*
-                 * FALLTHRU 
-                 */
+                /* FALLTHRU */
             default:
                 state->status = STAT_ERROR;
                 state->waiting = 0;
@@ -1185,6 +1201,7 @@ snmp_sess_synch_response(void *sessp,
     *response = state->pdu;
     ss->callback = cbsav;
     ss->callback_magic = cbmagsav;
+    netsnmp_large_fd_set_cleanup(&fdset);
     return state->status;
 }
 
@@ -1281,17 +1298,37 @@ static int _query(netsnmp_variable_list *list,
                   int                    request,
                   netsnmp_session       *session) {
 
-    netsnmp_pdu *pdu      = snmp_pdu_create( request );
+    netsnmp_pdu *pdu;
     netsnmp_pdu *response = NULL;
     netsnmp_variable_list *vb1, *vb2, *vtmp;
     int ret, count;
 
     DEBUGMSGTL(("iquery", "query on session %p\n", session));
+
+    if (NULL == list) {
+        snmp_log(LOG_ERR, "empty variable list in _query\n");
+        return SNMP_ERR_GENERR;
+    }
+
+    pdu = snmp_pdu_create( request );
+    if (NULL == pdu) {
+        snmp_log(LOG_ERR, "could not allocate pdu\n");
+        return SNMP_ERR_GENERR;
+    }
+
     /*
      * Clone the varbind list into the request PDU...
      */
     pdu->variables = snmp_clone_varbind( list );
+    if (NULL == pdu->variables) {
+        snmp_log(LOG_ERR, "could not clone variable list\n");
+        snmp_free_pdu(pdu);
+        return SNMP_ERR_GENERR;
+    }
+
+#ifndef NETSNMP_NO_WRITE_SUPPORT
 retry:
+#endif
     if ( session )
         ret = snmp_synch_response(            session, pdu, &response );
     else if (_def_query_session)
@@ -1355,7 +1392,7 @@ retry:
                 }
                 vtmp = vb2->next_variable;
                 snmp_free_var_internals( vb2 );
-                snmp_clone_var( vb1, vb2 );
+                snmp_clone_var( vb1, vb2 ); /* xxx: check return? */
                 vb2->next_variable = vtmp;
             }
         }
@@ -1411,6 +1448,11 @@ int netsnmp_query_walk(netsnmp_variable_list *list,
     while ( ret == SNMP_ERR_NOERROR &&
         snmp_oidtree_compare( list->name, list->name_length,
                                 vb->name,   vb->name_length ) == 0) {
+
+	if (vb->type == SNMP_ENDOFMIBVIEW ||
+	    vb->type == SNMP_NOSUCHOBJECT ||
+	    vb->type == SNMP_NOSUCHINSTANCE)
+	    break;
 
         /*
          * Copy each response varbind to the end of the result list

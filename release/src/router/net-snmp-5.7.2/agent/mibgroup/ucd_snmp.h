@@ -12,7 +12,9 @@ config_require(ucd-snmp/file)
 config_require(ucd-snmp/dlmod)
 #endif
 config_require(ucd-snmp/proxy)
+#ifdef HAVE_REGEX_H
 config_require(ucd-snmp/logmatch)
+#endif
 config_require(ucd-snmp/memory)
 config_require(ucd-snmp/vmstat)
 config_add_mib(UCD-SNMP-MIB)

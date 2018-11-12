@@ -54,7 +54,6 @@
 static oid      max_rip_mib[] =
     { 1, 3, 6, 1, 2, 1, 23, 3, 1, 9, 255, 255, 255, 255 };
 static oid      min_rip_mib[] = { 1, 3, 6, 1, 2, 1, 23, 1, 1, 0 };
-extern u_char   smux_type;
 
 struct variable13 rip2_variables[] = {
     {RIP2GLOBALROUTECHANGES, ASN_COUNTER, NETSNMP_OLDAPI_RONLY,

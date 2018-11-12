@@ -100,7 +100,7 @@ usmDHSetKey(struct usmUser *user, int for_auth_key,
          * copy right most bits, per the object requirements 
          */
         SNMP_FREE(*replkey);
-        memdup(replkey, key + key_len - replkey_size, replkey_size);
+        *replkey = netsnmp_memdup(key + key_len - replkey_size, replkey_size);
 
         return MFD_SUCCESS;
     }
@@ -585,8 +585,8 @@ usmDHUserAuthKeyChange_undo_setup(usmDHUserKeyTable_rowreq_ctx *
     undouser = rowreq_ctx->undo;
 
     undouser->authKeyLen = rowreq_ctx->data->authKeyLen;
-    memdup(&undouser->authKey, rowreq_ctx->data->authKey,
-           rowreq_ctx->data->authKeyLen);
+    undouser->authKey = netsnmp_memdup(rowreq_ctx->data->authKey,
+                                       rowreq_ctx->data->authKeyLen);
 
     return MFD_SUCCESS;
 }                               /* usmDHUserAuthKeyChange_undo_setup */
@@ -970,8 +970,8 @@ usmDHUserPrivKeyChange_undo_setup(usmDHUserKeyTable_rowreq_ctx *
     undouser = rowreq_ctx->undo;
 
     undouser->privKeyLen = rowreq_ctx->data->privKeyLen;
-    memdup(&undouser->privKey, rowreq_ctx->data->privKey,
-           rowreq_ctx->data->privKeyLen);
+    undouser->privKey = netsnmp_memdup(rowreq_ctx->data->privKey,
+                                       rowreq_ctx->data->privKeyLen);
 
     return MFD_SUCCESS;
 }                               /* usmDHUserPrivKeyChange_undo_setup */

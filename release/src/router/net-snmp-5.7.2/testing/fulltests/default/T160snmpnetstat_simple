@@ -13,25 +13,25 @@ elif [ "x$SNMP_TRANSPORT_SPEC" = "xtcp" ]; then
   SKIPIFNOT USING_MIBII_TCPTABLE_MODULE
 else
   HEADER "if snmpnetstat finds the running agent in udpTable/tcpTable"
-  SKIP
+  SKIP Not using TCP or UDP transport
 fi
 
 # on some systems the agent needs to be run as root to access udpTable/tcpTable
 # - else force skip
 case "x`uname -s`" in
-  xAIX)     [ "x`id -u`" != "x0" ] && SKIP;;
-  xHP-UX)   [ "x`id -u`" != "x0" ] && SKIP;;
-  xIRIX*)   [ "x`id -u`" != "x0" ] && SKIP;;
-  xNetBSD)  [ "x`id -u`" != "x0" ] && SKIP;;
-  xOpenBSD) [ "x`id -u`" != "x0" ] && SKIP;;
-  xOSF1)    [ "x`id -u`" != "x0" ] && SKIP;;
+  xAIX)     [ "x`id -u`" != "x0" ] && SKIP Not running as root;;
+  xHP-UX)   [ "x`id -u`" != "x0" ] && SKIP Not running as root;;
+  xIRIX*)   [ "x`id -u`" != "x0" ] && SKIP Not running as root;;
+  xNetBSD)  [ "x`id -u`" != "x0" ] && SKIP Not running as root;;
+  xOpenBSD) [ "x`id -u`" != "x0" ] && SKIP Not running as root;;
+  xOSF1)    [ "x`id -u`" != "x0" ] && SKIP Not running as root;;
 esac
 
 SKIPIF NETSNMP_DISABLE_SNMPV2C
 
 # make sure snmpnetstat can be executed
 SNMPNETSTAT="${SNMP_UPDIR}/apps/snmpnetstat/snmpnetstat"
-[ -x "$SNMPNETSTAT" ] || SKIP
+[ -x "$SNMPNETSTAT" ] || SKIP snmpnetstat not compiled
 
 snmp_version=v2c
 . ./Sv2cconfig

@@ -279,7 +279,8 @@ expExpressionTable_handler(netsnmp_mib_handler *handler,
             tinfo = netsnmp_extract_table_info(request);
             entry = (struct expExpression *)
                     netsnmp_tdata_extract_entry(request);
-            if (!entry) {
+            if (!entry && tinfo->colnum != COLUMN_EXPEXPRESSIONENTRYSTATUS &&
+                *request->requestvb->val.integer != RS_DESTROY) {
                 /*
                  * New rows must be created via the RowStatus column
                  */

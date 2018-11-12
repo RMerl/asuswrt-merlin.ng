@@ -66,7 +66,7 @@ void init_cpu_sysinfo( void )
     {
        cpu = netsnmp_cpu_get_byIdx(i, 1);
        sprintf(tstr, "cpu%d",i);
-       strcpy(cpu->name,  tstr);
+       strlcpy(cpu->name, tstr, sizeof(cpu->name));
        strcpy(cpu->descr, "Central Processing Unit");
     }
 }

@@ -41,11 +41,9 @@
 #include <net-snmp/library/scapi.h>
 #include <net-snmp/library/transform_oids.h>
 #include <net-snmp/library/callback.h>
+#include <net-snmp/library/getopt.h>
 
 #include <stdlib.h>
-
-extern char    *optarg;
-extern int      optind, optopt, opterr;
 
 int testcount = 0;
 
@@ -96,24 +94,18 @@ int             doalltests = 0, dogenKu = 0, dogenkul = 0, dokeychange = 0;
 #define OLDKEY_DEFAULT		"This is a very old key."
 #define NEWKEY_DEFAULT		"This key, on the other hand, is very new."
 
+#define USM_LENGTH_OID_TRANSFORM OID_LENGTH(usmHMACSHA1AuthProtocol)
+
 u_char         *engineID = NULL;
 char           *passphrase = NULL;
 const u_char   *oldkey = NULL;
 const u_char   *newkey = NULL;
 int             bequiet = 0;
 
-
-/*
- * Prototypes.
- */
-void            usage(FILE * ofp);
-
-int             test_genkul(void);
-int             test_genKu(void);
-int             test_keychange(void);
-
-
-
+static void usage(FILE *);
+static int test_genKu(void);
+static int test_genkul(void);
+static int test_keychange(void);
 
 int
 main(int argc, char **argv)
@@ -158,6 +150,7 @@ main(int argc, char **argv)
             break;
         case 'h':
             rval = 0;
+            /* fall through */
         default:
             usage(stdout);
             exit(rval);

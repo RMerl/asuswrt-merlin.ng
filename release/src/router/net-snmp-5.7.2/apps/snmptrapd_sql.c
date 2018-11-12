@@ -15,6 +15,23 @@
 
 #ifdef NETSNMP_USE_MYSQL
 
+/*
+ * SQL includes
+ */
+#undef PACKAGE_BUGREPORT
+#undef PACKAGE_NAME
+#undef PACKAGE_STRING
+#undef PACKAGE_TARNAME
+#undef PACKAGE_VERSION
+#ifdef HAVE_MY_GLOBAL_H
+#include <my_global.h>
+#endif
+#ifdef HAVE_MY_SYS_H
+#include <my_sys.h>
+#endif
+#include <mysql.h>
+#include <errmsg.h>
+
 #if HAVE_STDLIB_H
 #include <stdlib.h>
 #endif
@@ -41,19 +58,7 @@
 #include "snmptrapd_handlers.h"
 #include "snmptrapd_auth.h"
 #include "snmptrapd_log.h"
-
-/*
- * SQL includes
- */
-#undef PACKAGE_BUGREPORT
-#undef PACKAGE_NAME
-#undef PACKAGE_STRING
-#undef PACKAGE_TARNAME
-#undef PACKAGE_VERSION
-#include <mysql/my_global.h>
-#include <mysql/my_sys.h>
-#include <mysql/mysql.h>
-#include <mysql/errmsg.h>
+#include "snmptrapd_sql.h"
 
 netsnmp_feature_require(container_fifo)
 
@@ -437,14 +442,21 @@ netsnmp_mysql_init(void)
         return -1;
     }
 
-#ifdef HAVE_BROKEN_LIBMYSQLCLIENT
-    my_init();
-#else
+#if defined(HAVE_MYSQL_INIT)
+    mysql_init(NULL);
+#elif defined(HAVE_MY_INIT)
     MY_INIT("snmptrapd");
+#else
+    my_init();
 #endif
 
     /** load .my.cnf values */
+#if HAVE_MY_LOAD_DEFAULTS
+    my_load_defaults ("my", _sql.groups, &not_argc, &not_argv, 0);
+#elif defined(HAVE_LOAD_DEFAULTS)
     load_defaults ("my", _sql.groups, &not_argc, &not_argv);
+#endif
+
     for(i=0; i < not_argc; ++i) {
         if (NULL == not_argv[i])
             continue;
@@ -458,6 +470,8 @@ netsnmp_mysql_init(void)
             _sql.port_num = atoi(&not_argv[i][7]);
         else if (strncmp(not_argv[i],"--socket=",9) == 0)
             _sql.socket_name = &not_argv[i][9];
+        else if (strncmp(not_argv[i],"--database=",11) == 0)
+            _sql.db_name = &not_argv[i][11];
         else
             snmp_log(LOG_WARNING, "unknown argument[%d] %s\n", i, not_argv[i]);
     }
@@ -539,6 +553,10 @@ netsnmp_mysql_init(void)
         netsnmp_sql_error("mysql_init() failed (out of memory?)");
         return -1;
     }
+
+#if MYSQL_VERSION_ID >= 100000
+    mysql_options(_sql.conn, MYSQL_READ_DEFAULT_GROUP, "snmptrapd");
+#endif
 
     /** try to connect; we'll try again later if we fail */
     (void) netsnmp_mysql_connect();
@@ -730,7 +748,7 @@ _sql_save_trap_info(sql_buf *sqlb, netsnmp_pdu  *pdu,
 
     /** host name */
     buf_host_len_t = 0;
-    tmp_size = sizeof(sqlb->host);
+    tmp_size = 0;
     realloc_format_trap((u_char**)&sqlb->host, &tmp_size,
                         &buf_host_len_t, 1, "%B", pdu, transport);
     sqlb->host_len = buf_host_len_t;
@@ -877,10 +895,10 @@ _sql_save_varbind_info(sql_buf *sqlb, netsnmp_pdu  *pdu)
         tmp_size = 0;
         buf_val_len_t = 0;
         sprint_realloc_by_type((u_char**)&sqlvb->val, &tmp_size,
-                               &buf_val_len_t, 1, var, 0, 0, 0);
+                               &buf_val_len_t, 1, var, NULL, NULL, NULL);
         sqlvb->val_len = buf_val_len_t;
 #else
-        memdup(&sqlvb->val, var->val.string, var->val_len);
+        sqlvb->val = netsnmp_memdup(var->val.string, var->val_len);
         sqlvb->val_len = var->val_len;
 #endif
 
@@ -934,7 +952,7 @@ mysql_handler(netsnmp_pdu           *pdu,
     if(rc) {
         snmp_log(LOG_ERR, "Could not log queue sql trap buffer\n");
         _sql_log(sqlb, NULL);
-        _sql_buf_free(sqlb, 0);
+        _sql_buf_free(sqlb, NULL);
         return -1;
     }
 

@@ -15,6 +15,7 @@
 #include "ip-mib/ipAddressTable/ipAddressTable_constants.h"
 #include "ip-mib/ipAddressPrefixTable/ipAddressPrefixTable_constants.h"
 #include "mibgroup/util_funcs.h"
+#include "../../if-mib/data_access/interface_private.h"
 
 #include <errno.h>
 #include <sys/ioctl.h>
@@ -40,11 +41,12 @@ netsnmp_feature_require(ipaddress_ioctl_entry_copy)
 #endif /* HAVE_LINUX_RTNETLINK_H */
 #endif
 
+#include "ipaddress.h"
 #include "ipaddress_ioctl.h"
-#ifdef SUPPORT_PREFIX_FLAGS
-extern prefix_cbx *prefix_head_list;
-#endif
+#include "ipaddress_private.h"
+
 int _load_v6(netsnmp_container *container, int idx_offset);
+
 #ifdef HAVE_LINUX_RTNETLINK_H
 int
 netsnmp_access_ipaddress_extra_prefix_info(int index,
@@ -232,7 +234,7 @@ _load_v6(netsnmp_container *container, int idx_offset)
 
 #define PROCFILE "/proc/net/if_inet6"
     if (!(in = fopen(PROCFILE, "r"))) {
-        DEBUGMSGTL(("access:ipaddress:container","could not open " PROCFILE "\n"));
+        snmp_log_perror("ipaddress_linux: could not open " PROCFILE);
         return -2;
     }
 
@@ -275,8 +277,7 @@ _load_v6(netsnmp_container *container, int idx_offset)
         buf = entry->ia_address;
         if(1 != netsnmp_hex_to_binary(&buf, &in_len,
                                       &out_len, 0, addr, ":")) {
-            snmp_log(LOG_ERR,"error parsing '%s', skipping\n",
-                     entry->ia_address);
+            snmp_log(LOG_ERR,"error parsing '%s', skipping\n", addr);
             netsnmp_access_ipaddress_entry_free(entry);
             continue;
         }
@@ -433,7 +434,7 @@ netsnmp_access_other_info_get(int index, int family)
    memset(&addr, 0, sizeof(struct address_flag_info));
    sd = socket(PF_NETLINK, SOCK_DGRAM, NETLINK_ROUTE);
    if(sd < 0) {
-      snmp_log(LOG_ERR, "could not open netlink socket\n");
+      snmp_log_perror("ipaddress_linux: could not open netlink socket");
       return addr;
    }
 
@@ -450,19 +451,19 @@ netsnmp_access_other_info_get(int index, int family)
 
     status = send(sd, &req, req.n.nlmsg_len, 0);
     if (status < 0) {
-        snmp_log(LOG_ERR, "could not send netlink request\n");
-        return addr;
+        snmp_log_perror("ipadress_linux: could not send netlink request");
+        goto out;
     }
 
     status = recv(sd, buf, sizeof(buf), 0);
     if (status < 0) {
-        snmp_log (LOG_ERR, "could not recieve netlink request\n");
-        return addr;
+        snmp_log_perror("ipadress_linux: could not receive netlink request");
+        goto out;
     }
 
     if(status == 0) {
-       snmp_log (LOG_ERR, "nothing to read\n");
-       return addr;
+       snmp_log (LOG_ERR, "ipadress_linux: nothing to read\n");
+       goto out;
     }
 
     for(nlmp = (struct nlmsghdr *)buf; status > sizeof(*nlmp);) {
@@ -471,12 +472,12 @@ netsnmp_access_other_info_get(int index, int family)
 
         if (req_len < 0 || len > status) {
             snmp_log (LOG_ERR, "invalid netlink message\n");
-            return addr;
+            goto out;
         }
 
         if (!NLMSG_OK(nlmp, status)) {
             snmp_log (LOG_ERR, "invalid NLMSG message\n");
-            return addr;
+            goto out;
         }
         rtmp = (struct ifaddrmsg *)NLMSG_DATA(nlmp);
         rtatp = (struct rtattr *)IFA_RTA(rtmp);
@@ -496,6 +497,7 @@ netsnmp_access_other_info_get(int index, int family)
         status -= NLMSG_ALIGN(len);
         nlmp = (struct nlmsghdr*)((char*)nlmp + NLMSG_ALIGN(len));
     }
+out:
     close(sd);
     return addr;
 #endif

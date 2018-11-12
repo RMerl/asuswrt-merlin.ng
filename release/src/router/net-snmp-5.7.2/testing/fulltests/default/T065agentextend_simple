@@ -11,7 +11,7 @@ SKIPIFNOT USING_UTILITIES_EXECUTE_MODULE
 
 # make sure snmpget can be executed
 SNMPGET="${SNMP_UPDIR}/apps/snmpget"
-[ -x "$SNMPGET" ] || SKIP
+[ -x "$SNMPGET" ] || SKIP snmpget not compiled
 
 snmp_version=v2c
 TESTCOMMUNITY=testcommunity

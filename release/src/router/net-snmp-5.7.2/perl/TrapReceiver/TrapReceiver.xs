@@ -27,6 +27,56 @@ typedef struct netsnmp_oid_s {
     oid                  namebuf[ MAX_OID_LEN ];
 } netsnmp_oid;
 
+static SV* newSVoid(oid* sname, size_t slen)
+{
+    /*assert(slen < MAX_OID_LEN);*/
+    netsnmp_oid *o = malloc(sizeof(netsnmp_oid));
+    o->name = o->namebuf;
+    o->len = slen;
+    memcpy(o->name, sname, slen * sizeof(oid));
+
+#undef CALL_EXTERNAL_OID_NEW
+
+#ifdef CALL_EXTERNAL_OID_NEW
+    {
+      SV *arg;
+      SV *rarg;
+
+      PUSHMARK(sp);
+
+      rarg = sv_2mortal(newSViv((IV) 0));
+      arg = sv_2mortal(newSVrv(rarg, "netsnmp_oidPtr"));
+      sv_setiv(arg, (IV) o);
+      XPUSHs(rarg);
+
+      PUTBACK;
+      i = perl_call_pv("NetSNMP::OID::newwithptr", G_SCALAR);
+      SPAGAIN;
+
+      if (i != 1) {
+	snmp_log(LOG_ERR, "unhandled OID error.\n");
+	/* ack XXX */
+      }
+      /* get the value */
+      {
+	  SV *rv = POPs;
+	  SvREFCNT_inc(rv);
+	  PUTBACK;
+	  return rv;
+      }
+    }
+#else /* build it and bless ourselves */
+    {
+      HV *hv = newHV();
+      SV *rv = newRV_noinc((SV *) hv);
+      SV *rvsub = newRV_noinc((SV *) newSViv((UV) o));
+      rvsub = sv_bless(rvsub, gv_stashpv("netsnmp_oidPtr", 1));
+      (void)hv_store(hv, "oidptr", 6,  rvsub, 0);
+      return sv_bless(rv, gv_stashpv("NetSNMP::OID", 1));
+    }
+#endif /* build oid ourselves */
+}
+
 int   perl_trapd_handler( netsnmp_pdu           *pdu,
                           netsnmp_transport     *transport,
                           netsnmp_trapd_handler *handler)
@@ -34,7 +84,6 @@ int   perl_trapd_handler( netsnmp_pdu           *pdu,
     trapd_cb_data *cb_data;
     SV *pcallback;
     netsnmp_variable_list *vb;
-    netsnmp_oid *o;
     SV **tmparray;
     int i, c = 0;
     u_char *outbuf;
@@ -81,18 +130,18 @@ int   perl_trapd_handler( netsnmp_pdu           *pdu,
         STOREPDUi("securitymodel", pdu->securityModel);
         STOREPDUi("securitylevel", pdu->securityLevel);
         STOREPDU("contextName",
-                 newSVpv(pdu->contextName, pdu->contextNameLen));
+                 newSVpv(pdu->contextName ? pdu->contextName : "", pdu->contextNameLen));
         STOREPDU("contextEngineID",
-                 newSVpv((char *) pdu->contextEngineID,
+                 newSVpv(pdu->contextEngineID ? (char *) pdu->contextEngineID : "",
                                     pdu->contextEngineIDLen));
         STOREPDU("securityEngineID",
-                 newSVpv((char *) pdu->securityEngineID,
+                 newSVpv(pdu->securityEngineID ? (char *) pdu->securityEngineID : "",
                                     pdu->securityEngineIDLen));
         STOREPDU("securityName",
-                 newSVpv((char *) pdu->securityName, pdu->securityNameLen));
+                 newSVpv(pdu->securityName ? (char *) pdu->securityName : "", pdu->securityNameLen));
     } else {
         STOREPDU("community",
-                 newSVpv((char *) pdu->community, pdu->community_len));
+                 newSVpv(pdu->community ? (char *) pdu->community : "", pdu->community_len));
     }
 
     if (transport && transport->f_fmtaddr) {
@@ -113,50 +162,7 @@ int   perl_trapd_handler( netsnmp_pdu           *pdu,
     for(vb = pdu->variables; vb; vb = vb->next_variable) {
 
         /* get the oid */
-        o = malloc(sizeof(netsnmp_oid));
-        o->name = o->namebuf;
-        o->len = vb->name_length;
-        memcpy(o->name, vb->name, vb->name_length * sizeof(oid));
-
-#undef CALL_EXTERNAL_OID_NEW
-
-#ifdef CALL_EXTERNAL_OID_NEW
-        {
-        SV *arg;
-        SV *rarg;
-
-        PUSHMARK(sp);
-
-        rarg = sv_2mortal(newSViv((IV) 0));
-        arg = sv_2mortal(newSVrv(rarg, "netsnmp_oidPtr"));
-        sv_setiv(arg, (IV) o);
-        XPUSHs(rarg);
-
-        PUTBACK;
-        i = perl_call_pv("NetSNMP::OID::newwithptr", G_SCALAR);
-        SPAGAIN;
-
-        if (i != 1) {
-            snmp_log(LOG_ERR, "unhandled OID error.\n");
-            /* ack XXX */
-        }
-        /* get the value */
-        tmparray[c++] = POPs;
-        SvREFCNT_inc(tmparray[c-1]);
-        PUTBACK;
-        }
-#else /* build it and bless ourselves */
-        {
-            HV *hv = newHV();
-            SV *rv = newRV_noinc((SV *) hv);
-            SV *rvsub = newRV_noinc((SV *) newSViv((UV) o));
-            rvsub = sv_bless(rvsub, gv_stashpv("netsnmp_oidPtr", 1));
-            (void)hv_store(hv, "oidptr", 6,  rvsub, 0);
-            rv = sv_bless(rv, gv_stashpv("NetSNMP::OID", 1));
-            tmparray[c++] = rv;
-        }
-        
-#endif /* build oid ourselves */
+	tmparray[c++] = newSVoid(vb->name, vb->name_length);
     }
 
     /*
@@ -180,6 +186,57 @@ int   perl_trapd_handler( netsnmp_pdu           *pdu,
         av_push(vba,newSVpvn((char *) outbuf, oo_len));
         netsnmp_free(outbuf);
         av_push(vba,newSViv(vb->type));
+	switch (vb->type) {
+	case ASN_INTEGER:
+		av_push(vba,newSViv((int32_t)*vb->val.integer));
+		break;
+	case ASN_COUNTER:
+	case ASN_GAUGE:
+	case ASN_TIMETICKS:
+	case ASN_UINTEGER: /* from rfc1442 */
+		av_push(vba,newSVuv((uint32_t)*vb->val.integer));
+		break;
+	case ASN_IPADDRESS:
+	case ASN_OCTET_STR:
+	case ASN_OPAQUE:
+	case ASN_NSAP:
+		av_push(vba,newSVpvn((char*)vb->val.string,vb->val_len));
+		break;
+	case ASN_BIT_STR:
+		av_push(vba,newSVpvn((char*)vb->val.bitstring,vb->val_len));
+		break;
+	case ASN_OBJECT_ID:
+		av_push(vba,newSVoid(vb->val.objid,vb->val_len / sizeof(oid)));
+		break;
+#ifdef NETSNMP_WITH_OPAQUE_SPECIAL_TYPES
+	case ASN_OPAQUE_FLOAT:
+		av_push(vba,newSVnv(*vb->val.floatVal));
+		break;
+	case ASN_OPAQUE_DOUBLE:
+		av_push(vba,newSVnv(*vb->val.doubleVal));
+		break;
+	case ASN_OPAQUE_I64:
+		{
+			char buf[I64CHARSZ + 1];
+			printI64(buf, vb->val.counter64);
+			av_push(vba,newSVpv(buf,0));
+		}
+		break;
+	case ASN_OPAQUE_COUNTER64:
+	case ASN_OPAQUE_U64:
+#endif
+	case ASN_COUNTER64:
+		{
+			char buf[I64CHARSZ + 1];
+			printU64(buf, vb->val.counter64);
+			av_push(vba,newSVpv(buf,0));
+		}
+		break;
+	case ASN_NULL:
+	default:
+		av_push(vba,newSV(0));
+		break;
+	}
         av_push(varbinds, (SV *) newRV_noinc((SV *) vba));
     }
 

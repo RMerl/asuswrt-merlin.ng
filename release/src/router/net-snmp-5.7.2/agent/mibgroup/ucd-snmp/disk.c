@@ -568,7 +568,6 @@ find_device(char *path)
   FILE           *mntfp;
 #elif HAVE_FSTAB_H
   struct fstab   *fstab;
-  struct stat     stat1;
 #elif HAVE_STATFS
   struct statfs   statf;
 #endif
@@ -622,7 +621,6 @@ find_device(char *path)
     strlcpy(device, mnttab.mnt_special, sizeof(device));
 #endif /* HAVE_SETMNTENT */
 #elif HAVE_FSTAB_H
-  stat(path, &stat1);
   setfsent();
   if ((fstab = getfsfile(path)))
     strlcpy(device, fstab->fs_spec, sizeof(device));
@@ -823,10 +821,10 @@ var_extensible_disk(struct variable *vp,
                     size_t * var_len, WriteMethod ** write_method)
 {
     int             ret;
-	unsigned int	disknum = 0;
+    unsigned int    disknum = 0;
     struct dsk_entry entry;
     static long     long_ret;
-    static char     errmsg[300];
+    static char    *errmsg;
 
 tryAgain:
     if (header_simple_table
@@ -913,22 +911,22 @@ tryAgain:
         return ((u_char *) (&long_ret));
 
     case ERRORMSG:
+        free(errmsg);
+        errmsg = NULL;
+        *var_len = 0;
         if (entry.dskErrorFlag) {
-            if (disks[disknum].minimumspace >= 0)
-                snprintf(errmsg, sizeof(errmsg),
-                        "%s: less than %d free (= %d)",
-                        disks[disknum].path, disks[disknum].minimumspace,
-                        (int) entry.dskAvail);
-            else
-                snprintf(errmsg, sizeof(errmsg),
-                        "%s: less than %d%% free (= %d%%)",
-                        disks[disknum].path, disks[disknum].minpercent,
-                        (int)entry.dskPercent);
-            errmsg[ sizeof(errmsg)-1 ] = 0;
-        } else
-            errmsg[0] = 0;
-        *var_len = strlen(errmsg);
-        return ((u_char *) (errmsg));
+            if ((disks[disknum].minimumspace >= 0 &&
+                 asprintf(&errmsg, "%s: less than %d free (= %d)",
+                          disks[disknum].path, disks[disknum].minimumspace,
+                          (int) entry.dskAvail) >= 0) ||
+                (disks[disknum].minimumspace < 0 &&
+                 asprintf(&errmsg, "%s: less than %d%% free (= %d%%)",
+                          disks[disknum].path, disks[disknum].minpercent,
+                          (int)entry.dskPercent) >= 0)) {
+                *var_len = strlen(errmsg);
+            }
+        }
+        return (u_char *) (errmsg);
     }
     return NULL;
 }

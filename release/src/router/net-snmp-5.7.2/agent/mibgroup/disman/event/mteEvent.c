@@ -7,6 +7,8 @@
 #include <net-snmp/net-snmp-features.h>
 #include <net-snmp/net-snmp-includes.h>
 #include <net-snmp/agent/net-snmp-agent-includes.h>
+#include "agent_global_vars.h"
+#include "agentx/subagent.h"
 #include "disman/event/mteEvent.h"
 #include "disman/event/mteTrigger.h"
 #include "disman/event/mteObjects.h"
@@ -76,9 +78,7 @@ _init_builtin_mteEvent( const char *event, const char *oname, oid *trapOID, size
     netsnmp_tdata_row *row;
     struct mteEvent   *entry;
 
-    memset(ename, 0, sizeof(ename));
-    ename[0] = '_';
-    memcpy(ename+1, event, strlen(event));
+    snprintf(ename, sizeof(ename), "_%s", event);
 
     row = mteEvent_createEntry( "_snmpd", ename, 1 );
     if (!row || !row->data)
@@ -89,7 +89,7 @@ _init_builtin_mteEvent( const char *event, const char *oname, oid *trapOID, size
     entry->mteNotification_len = trapOID_len;
     memcpy( entry->mteNotification, trapOID, trapOID_len*sizeof(oid));
     memcpy( entry->mteNotifyOwner, "_snmpd", 6 );
-    memcpy( entry->mteNotifyObjects,  oname, strlen(oname));
+    strlcpy(entry->mteNotifyObjects, oname, sizeof(entry->mteNotifyObjects));
     entry->flags |= MTE_EVENT_FLAG_ENABLED|
                     MTE_EVENT_FLAG_ACTIVE|
                     MTE_EVENT_FLAG_VALID;
@@ -349,8 +349,6 @@ _mteEvent_fire_notify( struct mteEvent   *entry,     /* The event to fire  */
                        oid *suffix, size_t sfx_len ) /* Matching instance  */
 {
     netsnmp_variable_list *var, *v2;
-    extern const oid       snmptrap_oid[];
-    extern const size_t    snmptrap_oid_len;
     netsnmp_session       *s;
 
          /*

@@ -31,7 +31,7 @@ CHECKVALUEISNT "$TESTUSER2FP" "" "generated fingerprint for testuser2 certificat
 ########################################
 # Configure the .conf files
 
-CONFIGAPP serverCert $SERVERFP
+CONFIGAPP peerCert		  $SERVERFP
 
 # common name mappings
 CONFIGAGENT certSecName 9  $TESTUSERFP     --cn
@@ -64,8 +64,10 @@ CAPTURE "$CRLCACMD -gencrl $CRLARGS -out $CRLFILE"
 # Run the actual list of tests
 #
 
+# app flags
+FLAGS="-Dtls -v3 -r1 -On $SNMP_FLAGS $SNMP_TRANSPORT_SPEC:$SNMP_TEST_DEST$SNMP_SNMPD_PORT"
+
 # start the agent up
-FLAGS="-Dtls -On $SNMP_FLAGS $SNMP_TRANSPORT_SPEC:$SNMP_TEST_DEST$SNMP_SNMPD_PORT"
 AGENT_FLAGS="-Dtls"
 STARTAGENT
 

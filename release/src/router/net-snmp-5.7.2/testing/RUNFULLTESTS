@@ -3,6 +3,7 @@
 use Getopt::Long;
 #use Data::Dumper;
 use File::Basename;
+use File::Spec;
 use Cwd qw(abs_path);
 use strict;
 
@@ -69,6 +70,12 @@ if (!$ENV{'MIBDIRS'}) {
     $ENV{'MIBDIRS'} = "$opts{srcdir}/mibs";
 }
 
+my $cfp_path = File::Spec->catfile(dirname(abs_path($0)), "check_for_pskill");
+my $rc = `$cfp_path`;
+if ($rc != 0) {
+    die "$cfp_path failed with error code $rc\n";
+}
+
 ########################################
 # Protection measures
 $ENV{'SNMPCONFPATH'} = "/dev/null";
@@ -94,6 +101,9 @@ Either:
 ";
 	exit 1;
     }
+    DIE("Test::Harness must be of version 1.21 or newer\n" .
+	"Install the TAP::Harness module or use the RUNTESTS script\n")
+      if $Test::Harness::VERSION < 1.21;
 }
 
 
@@ -264,7 +274,7 @@ sub rename_tests {
     return @newtests;
 }
 
-# called to possibly manipluate the list of tests to run by building some
+# called to possibly manipulate the list of tests to run by building some
 sub build_tests {
     my (@tests) = @_;
     my @newtests;

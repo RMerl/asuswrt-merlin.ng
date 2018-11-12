@@ -132,7 +132,7 @@ var_extensible_version(struct variable *vp,
             *var_len = 1024;    /* mib imposed restriction */
         return (u_char *) config_opts;
 #else
-        strlcpy(errmsg, "", sizeof(errmsg)));
+        strlcpy(errmsg, "", sizeof(errmsg));
         *var_len = strlen(errmsg);
         return ((u_char *) errmsg);
 #endif

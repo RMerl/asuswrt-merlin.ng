@@ -7,6 +7,11 @@
  * Copyright © 2003 Sun Microsystems, Inc. All rights reserved.
  * Use is subject to license terms specified in the COPYING file
  * distributed with the Net-SNMP package.
+ *
+ * Portions of this file are copyrighted by:
+ * Copyright (c) 2016 VMware, Inc. All rights reserved.
+ * Use is subject to license terms specified in the COPYING file
+ * distributed with the Net-SNMP package.
  */
 #include <net-snmp/net-snmp-config.h>
 #include <net-snmp/net-snmp-includes.h>
@@ -161,6 +166,11 @@ netsnmp_debug_helper(netsnmp_mib_handler *handler,
 void
 netsnmp_init_debug_helper(void)
 {
-    netsnmp_register_handler_by_name("debug", netsnmp_get_debug_handler());
+    netsnmp_mib_handler *handler = netsnmp_get_debug_handler();
+    if (!handler) {
+        snmp_log(LOG_ERR, "could not create debug handler\n");
+        return;
+    }
+    netsnmp_register_handler_by_name("debug", handler);
 }
 /**  @} */

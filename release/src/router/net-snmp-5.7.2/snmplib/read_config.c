@@ -113,6 +113,9 @@
 #include <netdb.h>
 #endif
 #include <errno.h>
+#if HAVE_IO_H
+#include <io.h>
+#endif
 
 #if HAVE_DIRENT_H
 # include <dirent.h>
@@ -150,7 +153,6 @@ netsnmp_feature_child_of(read_config_all, libnetsnmp)
 
 netsnmp_feature_child_of(unregister_app_config_handler, read_config_all)
 netsnmp_feature_child_of(read_config_register_app_prenetsnmp_mib_handler, netsnmp_unused)
-netsnmp_feature_child_of(read_config_register_const_config_handler, netsnmp_unused)
 
 static int      config_errors;
 
@@ -314,7 +316,6 @@ register_config_handler(const char *type,
 					    help, NORMAL_CONFIG);
 }
 
-#ifndef NETSNMP_FEATURE_REMOVE_READ_CONFIG_REGISTER_CONST_CONFIG_HANDLER
 struct config_line *
 register_const_config_handler(const char *type,
                               const char *token,
@@ -326,7 +327,6 @@ register_const_config_handler(const char *type,
                                             parser, releaser,
 					    help, NORMAL_CONFIG);
 }
-#endif /* NETSNMP_FEATURE_REMOVE_READ_CONFIG_REGISTER_CONST_CONFIG_HANDLER */
 
 struct config_line *
 register_app_config_handler(const char *token,
@@ -536,13 +536,13 @@ run_config_handler(struct config_line *lptr,
     lptr = read_config_find_handler(lptr, token);
     if (lptr != NULL) {
         if (when == EITHER_CONFIG || lptr->config_time == when) {
+            char tmpbuf[1];
             DEBUGMSGTL(("read_config:parser",
                         "Found a parser.  Calling it: %s / %s\n", token,
                         cptr));
             /*
              * Make sure cptr is non-null
              */
-            char tmpbuf[1];
             if (!cptr) {
                 tmpbuf[0] = '\0';
                 cptr = tmpbuf;
@@ -907,7 +907,7 @@ read_config(const char *filename,
                         continue;
                     }
                     while ((entry = readdir( d )) != NULL ) {
-                        if ( entry->d_name && entry->d_name[0] != '.') {
+                        if ( entry->d_name[0] != '.') {
                             len = NAMLEN(entry);
                             if ((len > 5) && (strcmp(&(entry->d_name[len-5]),".conf") == 0)) {
                                 snprintf(fname, SNMP_MAXPATH, "%s/%s",
@@ -1020,6 +1020,8 @@ read_configs_optional(const char *optional_config, int when)
                 "reading optional configuration tokens for %s\n", type));
     
     newp = strdup(optional_config);      /* strtok_r messes it up */
+    if (!newp)
+        return ret;
     cp = strtok_r(newp, ",", &st);
     while (cp) {
         struct stat     statbuf;
@@ -1538,9 +1540,31 @@ read_config_store(const char *type, const char *line)
         if (line[strlen(line)] != '\n')
             fprintf(fout, "\n");
         DEBUGMSGTL(("read_config:store", "storing: %s\n", line));
+        fflush(fout);
+#if defined(HAVE_FSYNC)
+        fsync(fileno(fout));
+#elif defined(WIN32) && !defined(cygwin)
+        {
+            int fd;
+            void *h;
+
+            fd = _fileno(fout);
+            netsnmp_assert(fd != -1);
+            h = _get_osfhandle(fd);
+            netsnmp_assert(h != INVALID_HANDLE_VALUE);
+            FlushFileBuffers(h);
+        }
+#endif
         fclose(fout);
     } else {
-        snmp_log(LOG_ERR, "read_config_store open failure on %s\n", filep);
+        if (strcmp(NETSNMP_APPLICATION_CONFIG_TYPE, type) != 0) {
+            /*
+             * Ignore this error in client utilities, they can run with random
+             * UID/GID and typically cannot write to /var. Error message just
+             * confuses people.
+             */
+            snmp_log(LOG_ERR, "read_config_store open failure on %s\n", filep);
+        }
     }
 #ifdef NETSNMP_PERSISTENT_MASK
     umask(oldmask);
@@ -1885,23 +1909,32 @@ copy_word(char *from, char *to)
     return copy_nword(from, to, SPRINT_MAX_LEN);
 }                               /* copy_word */
 
-/*
- * read_config_save_octet_string(): saves an octet string as a length
- * followed by a string of hex 
+/**
+ * Stores an quoted version of the first len bytes from str into saveto.
+ *
+ * If all octets in str are in the set [[:alnum:] ] then the quotation
+ * is to enclose the string in quotation marks ("str") otherwise the
+ * quotation is to prepend the string 0x and then add the hex representation
+ * of all characters from str (0x737472)
+ *
+ * @param[in] saveto pointer to output stream, is assumed to be big enough.
+ * @param[in] str pointer of the data that is to be stored.
+ * @param[in] len length of the data that is to be stored.
+ * @return A pointer to saveto after str is added to it.
  */
 char           *
-read_config_save_octet_string(char *saveto, u_char * str, size_t len)
+read_config_save_octet_string(char *saveto, const u_char * str, size_t len)
 {
-    int             i;
-    u_char         *cp;
+    size_t          i;
+    const u_char   *cp;
 
     /*
-     * is everything easily printable 
+     * is everything easily printable
      */
-    for (i = 0, cp = str; i < (int) len && cp &&
+    for (i = 0, cp = str; i < len && cp &&
          (isalpha(*cp) || isdigit(*cp) || *cp == ' '); cp++, i++);
 
-    if (len != 0 && i == (int) len) {
+    if (len != 0 && i == len) {
         *saveto++ = '"';
         memcpy(saveto, str, len);
         saveto += len;
@@ -1911,7 +1944,7 @@ read_config_save_octet_string(char *saveto, u_char * str, size_t len)
         if (str != NULL) {
             sprintf(saveto, "0x");
             saveto += 2;
-            for (i = 0; i < (int) len; i++) {
+            for (i = 0; i < len; i++) {
                 sprintf(saveto, "%02x", str[i]);
                 saveto = saveto + 2;
             }
@@ -2261,10 +2294,10 @@ read_config_read_memory(int type, char *readfrom,
         return readfrom;
 
     case ASN_COUNTER64:
-        if (*len < sizeof(U64))
+        if (*len < sizeof(struct counter64))
             return NULL;
-        *len = sizeof(U64);
-        read64((U64 *) dataptr, readfrom);
+        *len = sizeof(struct counter64);
+        read64((struct counter64 *) dataptr, readfrom);
         readfrom = skip_token(readfrom);
         return readfrom;
     }

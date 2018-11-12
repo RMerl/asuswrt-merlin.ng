@@ -23,7 +23,7 @@
 .\" ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 .\" SOFTWARE.
 .\" ******************************************************************/
-.TH SNMPTRAPD 8 "30 Mar 2011" VVERSIONINFO "Net-SNMP"
+.TH SNMPTRAPD 8 "27 Apr 2014" VVERSIONINFO "Net-SNMP"
 .SH NAME
 snmptrapd - Receive and log SNMP trap messages.
 .SH SYNOPSIS
@@ -142,6 +142,9 @@ Connect to the AgentX master agent on the specified address,
 rather than the default AGENTX_SOCKET.
 See \fIsnmpd(8)\fR for details of the format of such addresses.
 .TP
+.B \-X
+Do not connect to a AgentX master agent
+.TP
 .BI \-\- "name"="value"
 Allows one to specify any token ("name") supported in the
 .I snmptrapd.conf
@@ -170,12 +173,17 @@ the PDU, if available, otherwise the contents of the agent\-addr field
 of the PDU (v1 TRAPs only).
 .TP
 .B %b
-PDU source address (Note: this is not necessarily an IPv4
-address)
+PDU transport address (Note: this is not necessarily an IPv4
+address).
+.br
+Something like "[UDP: [172.16.10.12]:23456->[10.150.0.8]]"
 .TP
 .B %B
 PDU source hostname if available, otherwise PDU source address (see
 note above) 
+.TP
+.B %E
+SNMPv3 context engine id
 .TP
 .B %h
 current hour on the local system
@@ -210,12 +218,18 @@ the numeric month field from the \fCsysUpTime.0\fR varbind
 .B %N
 enterprise string
 .TP
-.B %q
-trap sub-type (numeric, in decimal)
-.TP
 .B %P
 security information from the PDU (community name for v1/v2c,
 user and context for v3)
+.TP
+.B %q
+trap sub-type (numeric, in decimal)
+.TP
+.B %s
+SNMP version number (0: v1, 1: v2c, 2: v3)
+.TP
+.B %S
+SNMPv3 security model version number
 .TP
 .B %t
 decimal number of seconds since the operating system epoch (as
@@ -224,6 +238,9 @@ returned by
 .TP
 .B %T
 the value of the \fCsysUpTime.0\fR varbind in seconds
+.TP
+.B %u
+SNMPv3 security name, or v1/v2c community name
 .TP
 .B %v
 list of variable-bindings from the notification payload.
@@ -317,4 +334,4 @@ See the
 .I snmptrapd.conf(5)
 manual page.
 .SH "SEE ALSO"
-snmpcmd(1), snmpd(8), printf(3), snmptrapd.conf(5), syslog(8), variables(5)
+snmpcmd(1), snmpd(8), printf(3), snmptrapd.conf(5), syslog(8), traptoemail(1), variables(5)

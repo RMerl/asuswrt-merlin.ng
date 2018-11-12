@@ -60,7 +60,7 @@ PERFORMANCE OF THIS SOFTWARE.
      * @see struct variable8
      * @see struct variable13
      */
-    struct variable *netsnmp_duplicate_variable(struct variable *var);
+    struct variable *netsnmp_duplicate_variable(const struct variable *var);
 
     /*
      * Function pointer called by the master agent for writes. 

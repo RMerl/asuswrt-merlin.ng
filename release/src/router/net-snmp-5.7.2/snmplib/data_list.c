@@ -1,7 +1,14 @@
 /*
  * netsnmp_data_list.c
  *
- * $Id$
+ * Portions of this file are subject to the following copyright(s).  See
+ * the Net-SNMP's COPYING file for more details and other copyrights
+ * that may apply:
+ *
+ * Portions of this file are copyrighted by:
+ * Copyright (c) 2016 VMware, Inc. All rights reserved.
+ * Use is subject to license terms specified in the COPYING file
+ * distributed with the Net-SNMP package.
  */
 #include <net-snmp/net-snmp-config.h>
 #include <net-snmp/net-snmp-features.h>
@@ -87,6 +94,9 @@ netsnmp_data_list_add_node(netsnmp_data_list **head, netsnmp_data_list *node)
 
     netsnmp_assert(NULL != head);
     netsnmp_assert(NULL != node);
+    if (!head || !node)
+        return;
+
     netsnmp_assert(NULL != node->name);
 
     DEBUGMSGTL(("data_list","adding key '%s'\n", node->name));
@@ -379,5 +389,12 @@ netsnmp_read_data_callback(const char *token, char *line) {
 
     return;
 }
+
+void
+shutdown_data_list(void)
+{
+    netsnmp_free_all_list_data(saveHead);
+}
+
 /**  @} */
 

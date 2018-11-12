@@ -24,11 +24,11 @@
 #
 # Check for -without embedded_perl
 #
-%{?_without_embedded_perl:%define netsnmp_embedded_perl 0}
+%{?_without_embedded_perl:%undefine netsnmp_embedded_perl}
 #
 # check for -without perl_modules
 #
-%{?_without_perl_modules:%define netsnmp_perl_modules 0}
+%{?_without_perl_modules:%undefine netsnmp_perl_modules}
 #
 # if embedded_perl or perl_modules specified, include some Perl stuff
 #
@@ -37,7 +37,7 @@
 %endif
 Summary: Tools and servers for the SNMP protocol
 Name: net-snmp
-Version: 5.7.2
+Version: 5.8
 # update release for vendor release. (eg 1.fc6, 1.rh72, 1.ydl3, 1.ydl23)
 Release: 1
 URL: http://www.net-snmp.org/
@@ -51,7 +51,7 @@ BuildRoot: /tmp/%{name}-root
 Packager: The Net-SNMP Coders <http://sourceforge.net/projects/net-snmp/>
 Requires: openssl, popt, rpm, zlib, bzip2-libs, elfutils-libelf, glibc
 BuildRequires: perl, elfutils-libelf-devel, openssl-devel, bzip2-devel, rpm-devel
-%if %{netsnmp_embedded_perl}
+%if 0%{?netsnmp_embedded_perl}
 BuildRequires: perl(ExtUtils::Embed)
 Requires: perl
 %endif
@@ -81,7 +81,7 @@ generate and handle SNMP traps, etc.  Using SNMP you can check the
 status of a network of computers, routers, switches, servers, ... to
 evaluate the state of your network.
 
-%if %{netsnmp_embedded_perl}
+%if 0%{?netsnmp_embedded_perl}
 This package includes embedded Perl support within the agent.
 %endif
 
@@ -96,7 +96,7 @@ Obsoletes: cmu-snmp-devel ucd-snmp-devel
 The net-snmp-devel package contains headers and libraries which are
 useful for building SNMP applications, agents, and sub-agents.
 
-%if %{netsnmp_include_perl}
+%if 0%{?netsnmp_include_perl}
 %package perlmods
 Group: System Environment/Libraries
 Summary: The Perl modules provided with Net-SNMP
@@ -120,7 +120,7 @@ protocol.  Both client and agent support modules are provided.
 %endif
 
 %prep
-%if %{netsnmp_embedded_perl} == 1 && %{netsnmp_perl_modules} == 0
+%if 0%{?netsnmp_embedded_perl} != 0 && 0%{?netsnmp_perl_modules} == 0
 echo "'-with embedded_perl' requires '-with perl_modules'"
 exit 1
 %endif
@@ -155,7 +155,7 @@ mkdir -p $RPM_BUILD_ROOT/etc/rc.d/init.d
 perl -i -p -e 's@/usr/local/share/snmp/@/etc/snmp/@g;s@usr/local@%{_prefix}@g' dist/snmpd-init.d
 install -m 755 dist/snmpd-init.d $RPM_BUILD_ROOT/etc/rc.d/init.d/snmpd
 
-%if %{netsnmp_include_perl}
+%if 0%{?netsnmp_include_perl}
 # unneeded Perl stuff
 find $RPM_BUILD_ROOT/%{_libdir}/perl5/ -name Bundle -type d | xargs rm -rf
 find $RPM_BUILD_ROOT/%{_libdir}/perl5/ -name perllocal.pod | xargs rm -f
@@ -226,7 +226,7 @@ rm -rf $RPM_BUILD_ROOT
 %{_libdir}/*.a
 %{_libdir}/*.la
 
-%if %{netsnmp_include_perl}
+%if 0%{?netsnmp_include_perl}
 %files -f net-snmp-perl-files perlmods
 %defattr(-,root,root)
 %{_mandir}/man3/*::*
@@ -237,6 +237,9 @@ rm -rf $RPM_BUILD_ROOT
 echo "No additional verification is done for net-snmp"
 
 %changelog
+* Sat Dec 15 2012 Magnus Fromreide <magfr@lysator.liu.se>
+- Make he -without options to rpmbuild work
+
 * Thu Jul 26 2012 Dave Shield <D.T.Shield@liverpool.ac.uk>
 - Additional "Provides:" to complete the list of perl modules
   Triggered by Bug ID #3540621

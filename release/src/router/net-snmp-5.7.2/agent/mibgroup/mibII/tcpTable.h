@@ -35,4 +35,8 @@ extern Netsnmp_Next_Data_Point  tcpTable_next_entry;
 #define TCPCONNREMOTEADDRESS 4
 #define TCPCONNREMOTEPORT    5
 
+#ifndef NETSNMP_FEATURE_REMOVE_TCP_COUNT_CONNECTIONS
+int TCP_Count_Connections(void);
+#endif /* NETSNMP_FEATURE_REMOVE_TCP_COUNT_CONNECTIONS */
+
 #endif                          /* _MIBGROUP_TCPTABLE_H */

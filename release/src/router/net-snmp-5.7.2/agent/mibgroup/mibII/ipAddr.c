@@ -115,10 +115,12 @@
 #include <net-snmp/data_access/interface.h>
 
 #include "ip.h"
+#include "ipAddr.h"
 #include "interfaces.h"
 
-#ifdef cygwin
+#if defined(cygwin) || defined(mingw32)
 #include <windows.h>
+#include <winerror.h>
 #endif
 
 netsnmp_feature_require(interface_legacy)
@@ -531,7 +533,6 @@ Address_Scan_Init(void)
     while (ifc.ifc_len >= (sizeof(struct ifreq) * num_interfaces));
     
     ifr = ifc.ifc_req;
-    close(fd);
 }
 
 /*

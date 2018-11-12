@@ -33,11 +33,14 @@ IMPORTS
     Integer32, Opaque, enterprises, Counter32, Unsigned32
         FROM SNMPv2-SMI
 
+    CounterBasedGauge64
+        FROM HCNUM-TC
+
     TEXTUAL-CONVENTION, DisplayString, TruthValue
 	FROM SNMPv2-TC;
 
 ucdavis MODULE-IDENTITY
-    LAST-UPDATED "200901190000Z"
+    LAST-UPDATED "201606100000Z"
     ORGANIZATION "University of California, Davis"
     CONTACT-INFO    
 	"This mib is no longer being maintained by the University of
@@ -55,6 +58,13 @@ ucdavis MODULE-IDENTITY
     DESCRIPTION
 	"This file defines the private UCD SNMP MIB extensions."
 
+    REVISION     "201606100000Z"
+    DESCRIPTION
+	"New 64-bit memory objects"
+
+    REVISION     "201407310000Z"
+    DESCRIPTION
+	"New object for number of CPUs as counted by the agent"
     REVISION	 "201105140000Z"
     DESCRIPTION
 	"New objects for monitoring CPU Steal, Guest and Nice values"
@@ -628,6 +638,113 @@ memUsedRealTXT OBJECT-TYPE
          underlying operating system does not distinguish text
          pages from other uses of physical memory."
     ::= { memory 17 }
+
+memTotalSwapX OBJECT-TYPE
+    SYNTAX	CounterBasedGauge64
+    UNITS       "kB"
+    MAX-ACCESS	read-only
+    STATUS	current
+    DESCRIPTION
+	"The total amount of swap space configured for this host."
+    ::= { memory 18 }
+
+memAvailSwapX OBJECT-TYPE
+    SYNTAX	CounterBasedGauge64
+    UNITS       "kB"
+    MAX-ACCESS	read-only
+    STATUS	current
+    DESCRIPTION
+	"The amount of swap space currently unused or available."
+    ::= { memory 19 }
+
+memTotalRealX OBJECT-TYPE
+    SYNTAX	CounterBasedGauge64
+    UNITS       "kB"
+    MAX-ACCESS	read-only
+    STATUS	current
+    DESCRIPTION
+	"The total amount of real/physical memory installed
+         on this host."
+    ::= { memory 20 }
+
+memAvailRealX OBJECT-TYPE
+    SYNTAX	CounterBasedGauge64
+    UNITS       "kB"
+    MAX-ACCESS	read-only
+    STATUS	current
+    DESCRIPTION
+	"The amount of real/physical memory currently unused
+         or available."
+    ::= { memory 21 }
+
+
+memTotalFreeX OBJECT-TYPE
+    SYNTAX	CounterBasedGauge64
+    UNITS       "kB"
+    MAX-ACCESS	read-only
+    STATUS	current
+    DESCRIPTION
+        "The total amount of memory free or available for use on
+         this host.  This value typically covers both real memory
+         and swap space or virtual memory."
+    ::= { memory 22 }
+
+memMinimumSwapX OBJECT-TYPE
+    SYNTAX	CounterBasedGauge64
+    UNITS       "kB"
+    MAX-ACCESS	read-only
+    STATUS	current
+    DESCRIPTION
+	"The minimum amount of swap space expected to be kept
+         free or available during normal operation of this host.
+
+         If this value (as reported by 'memAvailSwap(4)') falls
+         below the specified level, then 'memSwapError(100)' will
+         be set to 1 and an error message made available via
+         'memSwapErrorMsg(101)'."
+    ::= { memory 23 }
+
+memSharedX OBJECT-TYPE
+    SYNTAX	CounterBasedGauge64
+    UNITS       "kB"
+    MAX-ACCESS	read-only
+    STATUS	current
+    DESCRIPTION
+        "The total amount of real or virtual memory currently
+         allocated for use as shared memory.
+
+         This object will not be implemented on hosts where the
+         underlying operating system does not explicitly identify
+         memory as specifically reserved for this purpose."
+    ::= { memory 24 }
+
+memBufferX OBJECT-TYPE
+    SYNTAX	CounterBasedGauge64
+    UNITS       "kB"
+    MAX-ACCESS	read-only
+    STATUS	current
+    DESCRIPTION
+        "The total amount of real or virtual memory currently
+         allocated for use as memory buffers.
+
+         This object will not be implemented on hosts where the
+         underlying operating system does not explicitly identify
+         memory as specifically reserved for this purpose."
+    ::= { memory 25 }
+
+memCachedX OBJECT-TYPE
+    SYNTAX	CounterBasedGauge64
+    UNITS       "kB"
+    MAX-ACCESS	read-only
+    STATUS	current
+    DESCRIPTION
+        "The total amount of real or virtual memory currently
+         allocated for use as cached memory.
+
+         This object will not be implemented on hosts where the
+         underlying operating system does not explicitly identify
+         memory as specifically reserved for this purpose."
+    ::= { memory 26 }
 
 memSwapError OBJECT-TYPE
     SYNTAX	UCDErrorFlag
@@ -1487,6 +1604,23 @@ ssCpuRawGuestNice OBJECT-TYPE
          counters are cumulative over all CPUs, so their
          sum will typically be N*100 (for N processors)."
     ::= { systemStats 66 }
+
+ssCpuNumCpus OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The number of processors, as counted by the agent.
+         This object's value may be useful in the management
+         of certain operating systems where notions such as
+         load average do not take into account the number of
+         processors in the system.
+
+         For other objects in the systemStats group whose
+         descriptions refer to 'N processors', this object's
+         value is N."
+    ::= { systemStats 67 }
+
 
 -- possibly used in the future:
 --

@@ -38,14 +38,9 @@
 #include <net-snmp/library/lcd_time.h>
 #include <net-snmp/library/snmp_debug.h>
 #include <net-snmp/library/callback.h>
+#include <net-snmp/library/getopt.h>
 
 static u_int    dummy_etime, dummy_eboot;       /* For ISENGINEKNOWN(). */
-
-
-#include <stdlib.h>
-
-extern char    *optarg;
-extern int      optind, optopt, opterr;
 
 int             testcount=0;
 
@@ -94,19 +89,9 @@ int             sleeptime = 2;
 
 #define BLAT "alk;djf;an riu;alicenmrul;aiknglksajhe1 adcfalcenrco2"
 
-
-
-
-/*
- * Prototypes.
- */
-void            usage(FILE * ofp);
-
-int             test_etime(void);
-int             test_hashindex(void);
-
-
-
+static void usage(FILE *);
+static int test_hashindex(void);
+static int test_etime(void);
 
 int
 main(int argc, char **argv)
@@ -140,6 +125,7 @@ main(int argc, char **argv)
             break;
         case 'h':
             rval = 0;
+            /* fall through */
         default:
             usage(stdout);
             exit(rval);

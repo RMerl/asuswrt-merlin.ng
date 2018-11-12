@@ -59,12 +59,13 @@ netsnmp_feature_require(file_utils)
 /*
  * parse methods
  */
-void
+static void
 _pm_save_index_string_string(FILE *f, netsnmp_container *cin,
                              int flags);
-void
+static void
 _pm_save_everything(FILE *f, netsnmp_container *cin, int flags);
-void
+
+static void
 _pm_user_function(FILE *f, netsnmp_container *cin,
                   netsnmp_line_process_info *lpi, int flags);
 
@@ -72,8 +73,9 @@ _pm_user_function(FILE *f, netsnmp_container *cin,
 /*
  * line processors
  */
-int _process_line_tvi(netsnmp_line_info *line_info, void *mem,
-                      struct netsnmp_line_process_info_s* lpi);
+static int
+_process_line_tvi(netsnmp_line_info *line_info, void *mem,
+                  struct netsnmp_line_process_info_s* lpi);
 
 
 
@@ -222,7 +224,7 @@ netsnmp_text_token_container_from_file(const char *file, u_int flags,
  * @internal
  * parse mode: save everything
  */
-void
+static void
 _pm_save_everything(FILE *f, netsnmp_container *cin, int flags)
 {
     char               line[STRINGMAX], *ptr;
@@ -258,9 +260,9 @@ _pm_save_everything(FILE *f, netsnmp_container *cin, int flags)
 
 /**
  * @internal
- * parse mode: 
+ * parse mode:
  */
-void
+static void
 _pm_save_index_string_string(FILE *f, netsnmp_container *cin,
                              int flags)
 {
@@ -315,9 +317,9 @@ _pm_save_index_string_string(FILE *f, netsnmp_container *cin,
 
 /**
  * @internal
- * parse mode: 
+ * parse mode:
  */
-void
+static void
 _pm_user_function(FILE *f, netsnmp_container *cin,
                   netsnmp_line_process_info *lpi, int flags)
 {
@@ -441,7 +443,7 @@ _pm_user_function(FILE *f, netsnmp_container *cin,
  * @internal
  * process token value index line
  */
-int
+static int
 _process_line_tvi(netsnmp_line_info *line_info, void *mem,
                   struct netsnmp_line_process_info_s* lpi)
 {

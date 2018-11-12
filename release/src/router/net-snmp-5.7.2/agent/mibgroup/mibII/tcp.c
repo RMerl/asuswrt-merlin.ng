@@ -92,9 +92,6 @@ perfstat_id_t ps_name;
 int  hz = 1000;
 #endif
 
-#ifndef NETSNMP_FEATURE_REMOVE_TCP_COUNT_CONNECTIONS
-extern int TCP_Count_Connections( void );
-#endif /* NETSNMP_FEATURE_REMOVE_TCP_COUNT_CONNECTIONS */
         /*********************
 	 *
 	 *  Initialisation & common implementation functions
@@ -321,6 +318,9 @@ tcp_handler(netsnmp_mib_handler          *handler,
             ret_value = tcpstat.tcpOutRsts;
             break;
 	}
+#elif defined(solaris2)
+        ret_value = tcpstat.tcpOutRsts;
+        break;
 #endif			/* linux */
         netsnmp_set_request_error(reqinfo, request, SNMP_NOSUCHOBJECT);
         continue;

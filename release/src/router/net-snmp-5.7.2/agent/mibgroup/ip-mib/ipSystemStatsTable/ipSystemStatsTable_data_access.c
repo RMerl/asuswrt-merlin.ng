@@ -65,6 +65,7 @@ ipSystemStatsTable_init_data(ipSystemStatsTable_registration *
      * TODO:303:o: Initialize ipSystemStatsTable data.
      */
 
+    netsnmp_access_systemstats_init();
     return MFD_SUCCESS;
 }                               /* ipSystemStatsTable_init_data */
 

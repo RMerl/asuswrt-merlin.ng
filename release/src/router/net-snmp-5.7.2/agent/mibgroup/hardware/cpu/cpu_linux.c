@@ -2,6 +2,7 @@
 #include <net-snmp/net-snmp-includes.h>
 #include <net-snmp/agent/net-snmp-agent-includes.h>
 #include <net-snmp/agent/hardware/cpu.h>
+#include "cpu_linux.h"
 
 #include <unistd.h>
 #include <fcntl.h>
@@ -53,7 +54,7 @@ void init_cpu_linux( void ) {
             cpu->status = 2;  /* running */
             sprintf( cpu->name, "cpu%d", i );
 #if defined(__s390__) || defined(__s390x__)
-            strcat( cpu->descr, "An S/390 CPU" );
+            strlcat(cpu->descr, "An S/390 CPU", sizeof(cpu->descr));
 #endif
         }
 #if defined(__s390__) || defined(__s390x__)
@@ -63,8 +64,8 @@ void init_cpu_linux( void ) {
                 n++;
                 cpu = netsnmp_cpu_get_byIdx( i, 1 );
                 cpu->status = 2;  /* running */
-                sprintf( cpu->name, "cpu%d", i );
-                strcat( cpu->descr, "An S/390 CPU" );
+                sprintf(cpu->name, "cpu%d", i);
+                strlcat(cpu->descr, "An S/390 CPU", sizeof(cpu->descr));
             }
         }
 #endif
@@ -72,17 +73,23 @@ void init_cpu_linux( void ) {
 #ifdef DESCR_FIELD
         if (!strncmp( buf, DESCR_FIELD, strlen(DESCR_FIELD))) {
             cp = strchr( buf, ':' );
-            strcpy( cpu->descr, cp+2 );
-            cp = strchr( cpu->descr, '\n' );
-            *cp = 0;
+            if (cp) {
+                strlcpy(cpu->descr, cp + 2, sizeof(cpu->descr));
+                cp = strchr(cpu->descr, '\n');
+                if (cp)
+                    *cp = 0;
+            }
         }
 #endif
 #ifdef DESCR2_FIELD
         if (!strncmp( buf, DESCR2_FIELD, strlen(DESCR2_FIELD))) {
             cp = strchr( buf, ':' );
-            strcat( cpu->descr, cp );
-            cp = strchr( cpu->descr, '\n' );
-            *cp = 0;
+            if (cp) {
+                strlcat(cpu->descr, cp, sizeof(cpu->descr));
+                cp = strchr(cpu->descr, '\n');
+                if (cp)
+                    *cp = 0;
+            }
         }
 #endif
     }
@@ -114,6 +121,9 @@ int netsnmp_cpu_arch_load( netsnmp_cache *cache, void *magic ) {
     if (bsize == 0) {
         bsize = getpagesize()-1;
         buff = (char*)malloc(bsize+1);
+        if (buff == NULL) {
+            return -1;
+        }
     }
     while ((bytes_read = read(statfd, buff, bsize)) == bsize) {
         bsize += BUFSIZ;
@@ -154,7 +164,9 @@ int netsnmp_cpu_arch_load( netsnmp_cache *cache, void *magic ) {
                 snmp_log_perror("Missing CPU info entry");
                 break;
             }
-            b1 = b2+5; /* Skip "cpuN " */
+            b1 = b2; /* Skip "cpuN " */
+            while(*b1 != ' ') b1++;
+            b1++;
         }
 
         num_cpuline_elem = sscanf(b1, "%llu %llu %llu %llu %llu %llu %llu %llu %llu %llu",
@@ -163,27 +175,27 @@ int netsnmp_cpu_arch_load( netsnmp_cache *cache, void *magic ) {
 
         /* kernel 2.6.33 and above */
         if (num_cpuline_elem == 10) {
-            cpu->guestnice_ticks = (unsigned long long)cguest_nicell;
+            cpu->guestnice_ticks = cguest_nicell;
         }
         /* kernel 2.6.24 and above */
         if (num_cpuline_elem >= 9) {
-            cpu->guest_ticks = (unsigned long long)cguestll;
+            cpu->guest_ticks = cguestll;
         }
         /* kernel 2.6.11 and above */
         if (num_cpuline_elem >= 8) {
-            cpu->steal_ticks = (unsigned long long)cstealll;
+            cpu->steal_ticks = cstealll;
         }
         /* kernel 2.6 */
         if (num_cpuline_elem >= 5) {
-            cpu->wait_ticks   = (unsigned long long)ciowll;
-            cpu->intrpt_ticks = (unsigned long long)cirqll;
-            cpu->sirq_ticks   = (unsigned long long)csoftll;
+            cpu->wait_ticks   = ciowll;
+            cpu->intrpt_ticks = cirqll;
+            cpu->sirq_ticks   = csoftll;
         }
         /* rest */
-        cpu->user_ticks = (unsigned long long)cusell;
-        cpu->nice_ticks = (unsigned long long)cicell;
-        cpu->sys_ticks  = (unsigned long long)csysll;
-        cpu->idle_ticks = (unsigned long long)cidell;
+        cpu->user_ticks = cusell;
+        cpu->nice_ticks = cicell;
+        cpu->sys_ticks  = csysll;
+        cpu->idle_ticks = cidell;
     }
     if ( b1 == buff ) {
 	if (first)
@@ -330,4 +342,3 @@ void _cpu_load_swap_etc( char *buff, netsnmp_cpu_info *cpu ) {
     }
     first = 0;
 }
-

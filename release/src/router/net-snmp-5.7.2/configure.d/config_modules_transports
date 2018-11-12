@@ -8,7 +8,7 @@ new_with_transport_list=`echo $with_transports | $SED 's/,/ /g;'`
 new_with_out_transport_list=`echo $with_out_transports | $SED 's/,/ /g;'`
 
 # set up the CPP command
-MODULECPP="$CPP $PARTIALTARGETFLAGS -I${srcdir} -I${srcdir}/include"
+MODULECPP="$CPP $CPPFLAGS $PARTIALTARGETFLAGS -I${srcdir} -I${srcdir}/include"
 
 #
 # Add the default transports to the list

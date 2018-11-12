@@ -1,6 +1,12 @@
 #ifndef AGENT_TRAP_H
 #define AGENT_TRAP_H
 
+/*
+ * Portions of this file are copyrighted by:
+ * Copyright (c) 2016 VMware, Inc. All rights reserved.
+ * Use is subject to license terms specified in the COPYING file
+ * distributed with the Net-SNMP package.
+ */
 #ifdef __cplusplus
 extern          "C" {
 #endif
@@ -8,6 +14,13 @@ extern          "C" {
 struct agent_add_trap_args {
     netsnmp_session *ss;
     int             confirm;
+    const char      *nameData; /* notification target addr name */
+    int             nameLen;
+    const char      *tagData; /* notification tag */
+    int             tagLen;
+    const char      *profileData; /* filter profile */
+    int             profileLen;
+    int             rc;
 };
 
 void            init_traps(void);
@@ -40,8 +53,36 @@ void            send_trap_to_sess(netsnmp_session * sess,
                                   netsnmp_pdu *template_pdu);
 
 int             create_trap_session(char *, u_short, char *, int, int);
+int             create_trap_session_with_src(const char *, const char *,
+                                             const char *, const char *,
+                                             int, int);
 int             add_trap_session(netsnmp_session *, int, int, int);
 int             remove_trap_session(netsnmp_session *);
+netsnmp_session *netsnmp_create_v1v2_notification_session(const char *,
+                                                          const char*,
+                                                          const char *,
+                                                          const char *,
+                                                          int, int,
+                                                          const char *,
+                                                          const char *,
+                                                          const char*);
+netsnmp_session *netsnmp_create_v3user_notification_session(const char *dst,
+                                                            const char *user,
+                                                            int lvl,
+                                                            const char *ctx,
+                                                            int pdutype,
+                                                            const u_char *eid,
+                                                            size_t eidl,
+                                                            const char *src,
+                                                            const char *name,
+                                                            const char *tag,
+                                                            const char *prof);
+int             netsnmp_add_notification_session(netsnmp_session *, int, int,
+                                                 int, const char*, const char*,
+                                                 const char*);
+void            netsnmp_unregister_notification(const char *, u_char);
+
+int             netsnmp_build_trap_oid(netsnmp_pdu *pdu, oid *, size_t *);
 
 void                   convert_v2_to_v1(netsnmp_variable_list *, netsnmp_pdu *);
 netsnmp_variable_list *convert_v1_to_v2(netsnmp_pdu *);

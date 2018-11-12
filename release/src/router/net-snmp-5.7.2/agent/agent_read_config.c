@@ -1,5 +1,10 @@
 /*
  * agent_read_config.c
+ *
+ * Portions of this file are copyrighted by:
+ * Copyright (c) 2016 VMware, Inc. All rights reserved.
+ * Use is subject to license terms specified in the COPYING file
+ * distributed with the Net-SNMP package.
  */
 
 #include <net-snmp/net-snmp-config.h>
@@ -223,22 +228,22 @@ init_agent_read_config(const char *app)
         register_app_config_handler("trapsink",
                                     snmpd_parse_config_trapsink,
                                     snmpd_free_trapsinks,
-                                    "host [community] [port]");
+                                    "[-profile p] [-name n] [-tag t] host [community] [port]");
 #endif
 #ifndef NETSNMP_DISABLE_SNMPV2C
         register_app_config_handler("trap2sink",
                                     snmpd_parse_config_trap2sink, 
                                     snmpd_free_trapsinks,
-                                    "host [community] [port]");
+                                    "[-profile p] [-name n] [-tag t] host [community] [port]");
         register_app_config_handler("informsink",
                                     snmpd_parse_config_informsink,
                                     snmpd_free_trapsinks,
-                                    "host [community] [port]");
+                                    "[-profile p] [-name n] [-tag t] host [community] [port]");
 #endif
         register_app_config_handler("trapsess",
                                     snmpd_parse_config_trapsess,
                                     snmpd_free_trapsinks,
-                                    "[snmpcmdargs] host");
+                                    "[-profile p] [-name n] [-tag t] [snmpcmdargs] host");
     }
 #if !defined(NETSNMP_DISABLE_SNMPV1) || !defined(NETSNMP_DISABLE_SNMPV2C)
     register_app_config_handler("trapcommunity",
@@ -275,6 +280,18 @@ init_agent_read_config(const char *app)
     netsnmp_ds_register_config(ASN_INTEGER, app, "maxGetbulkResponses",
                                NETSNMP_DS_APPLICATION_ID,
                                NETSNMP_DS_AGENT_MAX_GETBULKRESPONSES);
+    netsnmp_ds_register_config(ASN_INTEGER, app, "avgBulkVarbindSize",
+                               NETSNMP_DS_APPLICATION_ID,
+                               NETSNMP_DS_AGENT_AVG_BULKVARBINDSIZE);
+#ifndef NETSNMP_NO_PDU_STATS
+    netsnmp_ds_register_config(ASN_INTEGER, app, "pduStatsMax",
+                               NETSNMP_DS_APPLICATION_ID,
+                               NETSNMP_DS_AGENT_PDU_STATS_MAX);
+    netsnmp_ds_register_config(ASN_INTEGER, app, "pduStatsThreshold",
+                               NETSNMP_DS_APPLICATION_ID,
+                               NETSNMP_DS_AGENT_PDU_STATS_THRESHOLD);
+#endif /* NETSNMP_NO_PDU_STATS */
+
     netsnmp_init_handler_conf();
 
 #include "agent_module_dot_conf.h"

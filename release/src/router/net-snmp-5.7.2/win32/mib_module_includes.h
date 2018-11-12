@@ -61,6 +61,9 @@
 #include "mibgroup/mibII/setSerialNo.h"
 
 #ifdef USING_UCD_SNMP_MODULE
+#ifdef USING_UCD_SNMP_DLMOD_MODULE
+#include "mibgroup/ucd-snmp/dlmod.h"
+#endif
 #include "mibgroup/ucd-snmp/memory.h"
 #include "mibgroup/ucd-snmp/vmstat.h"
 #include "mibgroup/ucd-snmp/proc.h"

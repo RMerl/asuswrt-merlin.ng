@@ -291,10 +291,12 @@ _tcpConnectionTable_initialize_interface(tcpConnectionTable_registration *
         netsnmp_handler_registration_create("tcpConnectionTable", handler,
                                             tcpConnectionTable_oid,
                                             tcpConnectionTable_oid_size,
-                                            HANDLER_CAN_BABY_STEP
+                                            HANDLER_CAN_BABY_STEP |
 #if !(defined(NETSNMP_NO_WRITE_SUPPORT) || defined(NETSNMP_DISABLE_SET_SUPPORT))
-                                          | HANDLER_CAN_RWRITE
-#endif
+                                            HANDLER_CAN_RWRITE
+#else
+                                            HANDLER_CAN_RONLY
+#endif /* NETSNMP_NO_WRITE_SUPPORT || NETSNMP_DISABLE_SET_SUPPORT  */
                                           );
     if (NULL == reginfo) {
         snmp_log(LOG_ERR, "error registering table tcpConnectionTable\n");

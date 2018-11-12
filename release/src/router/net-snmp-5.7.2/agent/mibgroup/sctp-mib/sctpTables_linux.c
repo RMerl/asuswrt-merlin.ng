@@ -150,13 +150,7 @@ parse_assoc_line(char *line, sctpTables_containers * containers)
     }
     entry->sctpAssocState = strtol(token, NULL, 10);
 
-    token = strtok(NULL, " ");  /* HBKT */
-    if (token == NULL) {
-        ret = SNMP_ERR_GENERR;
-        goto error;
-    }
-    entry->sctpAssocHeartBeatInterval = strtol(token, NULL, 10);
-
+    token = strtok(NULL, " ");  /* HBKT, ignore */
     token = strtok(NULL, " ");  /* ASSOC-ID, store */
     if (token == NULL) {
         ret = SNMP_ERR_GENERR;

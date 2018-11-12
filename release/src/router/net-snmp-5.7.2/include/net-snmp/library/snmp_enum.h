@@ -1,6 +1,13 @@
 #ifndef SNMP_ENUM_H
 #define SNMP_ENUM_H
 
+/*
+ * Portions of this file are copyrighted by:
+ * Copyright (c) 2016 VMware, Inc. All rights reserved.
+ * Use is subject to license terms specified in the COPYING file
+ * distributed with the Net-SNMP package.
+ */
+
 #ifdef __cplusplus
 extern          "C" {
 #endif
@@ -69,6 +76,9 @@ extern          "C" {
     NETSNMP_IMPORT
     int             se_find_value_in_slist(const char *listname,
                                            const char *label);
+    NETSNMP_IMPORT
+    int             se_find_casevalue_in_slist(const char *listname,
+                                               const char *label);
     int             se_find_free_value_in_slist(const char *listname);
     /**
      * Add the pair (label, value) to the slist with name listname. Transfers
@@ -86,6 +96,8 @@ extern          "C" {
                                           int value);
     int             se_find_value_in_list(struct snmp_enum_list *list,
                                           const char *label);
+    int             se_find_casevalue_in_list(struct snmp_enum_list *list,
+                                              const char *label);
     int             se_find_free_value_in_list(struct snmp_enum_list *list);
     int             se_add_pair_to_list(struct snmp_enum_list **list,
                                         char *label, int value);
@@ -101,7 +113,7 @@ extern          "C" {
     void            se_store_slist(const char *listname, const char *type);
     int             se_store_slist_callback(int majorID, int minorID,
                                            void *serverargs, void *clientargs);
-    void            se_read_conf(const char *word, char *cptr);
+    void            se_read_conf(const char *word, const char *cptr);
     /**
      * Deallocate the memory allocated by init_snmp_enum(): remove all key/value
      * pairs stored by se_add_*() calls.

@@ -29,6 +29,7 @@
 
 #include "util_funcs/MIB_STATS_CACHE_TIMEOUT.h"
 #include "icmp.h"
+#include "ip.h"
 
 #ifndef MIB_STATS_CACHE_TIMEOUT
 #define MIB_STATS_CACHE_TIMEOUT	5
@@ -71,6 +72,95 @@ perfstat_id_t ps_name;
 	 *********************/
 
 
+#ifdef hpux11
+#define ICMP_STAT_STRUCTURE	int
+#endif
+
+#ifdef linux
+#define ICMP_STAT_STRUCTURE	struct icmp_mib
+#define USES_SNMP_DESIGNED_ICMPSTAT
+#undef ICMPSTAT_SYMBOL
+#endif
+
+#ifdef solaris2
+#define USES_SNMP_DESIGNED_ICMPSTAT
+#define ICMP_STAT_STRUCTURE	mib2_icmp_t
+#include "kernel_mib.h"
+static int
+solaris_read_icmp_stat(ICMP_STAT_STRUCTURE *);
+static int
+solaris_read_icmp_msg_stat(ICMP_STAT_STRUCTURE *, struct icmp4_msg_mib *, int *);
+#ifdef NETSNMP_ENABLE_IPV6
+static int
+solaris_read_icmp6_stat(struct icmp6_mib *);
+static int
+solaris_read_icmp6_msg_stat(struct icmp6_mib *, struct icmp6_msg_mib *, int *);
+#endif
+#endif
+
+#ifdef NETBSD_STATS_VIA_SYSCTL
+#define ICMP_STAT_STRUCTURE     struct icmp_mib
+#define USES_SNMP_DESIGNED_ICMPSTAT
+#undef ICMP_NSTATS
+#endif
+
+#ifdef HAVE_IPHLPAPI_H
+#include <iphlpapi.h>
+#define ICMP_STAT_STRUCTURE MIB_ICMP
+#endif
+
+#if (defined(NETSNMP_CAN_USE_SYSCTL) && defined(ICMPCTL_STATS))
+#define ICMP_STAT_STRUCTURE	struct icmp_mib
+#define USES_SNMP_DESIGNED_ICMPSTAT
+#undef ICMPSTAT_SYMBOL
+#endif
+
+#ifdef HAVE_SYS_ICMPIPSTATS_H
+/* or #ifdef		HAVE_SYS_TCPIPSTATS_H  ??? */
+#define ICMP_STAT_STRUCTURE	struct kna
+#define USES_TRADITIONAL_ICMPSTAT
+#endif
+
+#if !defined(ICMP_STAT_STRUCTURE)
+#define ICMP_STAT_STRUCTURE	struct icmpstat
+#define USES_TRADITIONAL_ICMPSTAT
+#endif
+
+ICMP_STAT_STRUCTURE icmpstat;
+#if defined(solaris2) && defined(NETSNMP_ENABLE_IPV6)
+static struct icmp6_mib icmp6stat;
+#endif
+
+/* If they just all agreed ... */
+
+#ifndef ICMP_DEST_UNREACH
+#define ICMP_DEST_UNREACH ICMP_UNREACH
+#endif
+#ifndef ICMP_SOURCE_QUENCH
+#define ICMP_SOURCE_QUENCH ICMP_SOURCEQUENCH
+#endif
+#ifndef ICMP_TIME_EXCEEDED
+#define ICMP_TIME_EXCEEDED ICMP_TIMXCEED
+#endif
+#ifndef ICMP_PARAMETERPROB
+#define ICMP_PARAMETERPROB ICMP_PARAMPROB
+#endif
+#ifndef ICMP_TIMESTAMP
+#define ICMP_TIMESTAMP ICMP_TSTAMP
+#endif
+#ifndef ICMP_TIMESTAMPREPLY
+#define ICMP_TIMESTAMPREPLY ICMP_TSTAMPREPLY
+#endif
+#ifndef ICMP_ADDRESS
+#define ICMP_ADDRESS ICMP_MASKREQ
+#endif
+#ifndef ICMP_ADDRESSREPLY
+#define ICMP_ADDRESSREPLY ICMP_MASKREPLY
+#endif
+#ifndef MLD_LISTENER_REDUCTION
+#define MLD_LISTENER_REDUCTION MLD_LISTENER_DONE
+#endif
+
 /*
  * Define the OID pointer to the top of the mib tree that we're
  * registering underneath 
@@ -78,13 +168,8 @@ perfstat_id_t ps_name;
 static const oid icmp_oid[] = { SNMP_OID_MIB2, 5 };
 static const oid icmp_stats_tbl_oid[] = { SNMP_OID_MIB2, 5, 29 };
 static const oid icmp_msg_stats_tbl_oid[] = { SNMP_OID_MIB2, 5, 30 };
-#ifdef USING_MIBII_IP_MODULE
-extern oid      ip_module_oid[];
-extern int      ip_module_oid_len;
-extern int      ip_module_count;
-#endif
 
-#ifdef linux
+#ifdef USES_SNMP_DESIGNED_ICMPSTAT
 struct icmp_stats_table_entry {
 	uint32_t ipVer;
         uint32_t icmpStatsInMsgs;
@@ -106,10 +191,20 @@ struct icmp_msg_stats_table_entry {
         int flags;
 };
 
+#ifdef linux
+/* Linux keeps track of all possible message types */
+#define ICMP_MSG_STATS_IPV4_COUNT 256
+#else
 #define ICMP_MSG_STATS_IPV4_COUNT 11
+#endif
 
 #ifdef NETSNMP_ENABLE_IPV6
+#ifdef linux
+/* Linux keeps track of all possible message types */
+#define ICMP_MSG_STATS_IPV6_COUNT 256
+#else
 #define ICMP_MSG_STATS_IPV6_COUNT 14
+#endif
 #else
 #define ICMP_MSG_STATS_IPV6_COUNT 0
 #endif /* NETSNMP_ENABLE_IPV6 */
@@ -120,54 +215,79 @@ int
 icmp_stats_load(netsnmp_cache *cache, void *vmagic)
 {
 
-	/*
-         * note don't bother using the passed in cache
-	 * and vmagic pointers.  They are useless as they 
-	 * currently point to the icmp system stats cache	
-	 * since I see little point in registering another
-	 * cache for this table.  Its not really needed
-	 */
+    /*
+     * note don't bother using the passed in cache
+     * and vmagic pointers.  They are useless as they 
+     * currently point to the icmp system stats cache	
+     * since I see little point in registering another
+     * cache for this table.  Its not really needed
+     */
 
-	int i;
-	struct icmp_mib v4icmp;
-	struct icmp6_mib v6icmp;
-	for(i=0;i<2;i++) {
-		switch(i) {
-			case 0:
-				linux_read_icmp_stat(&v4icmp);
-				icmp_stats_table[i].icmpStatsInMsgs = v4icmp.icmpInMsgs;
-				icmp_stats_table[i].icmpStatsInErrors = v4icmp.icmpInErrors;
-				icmp_stats_table[i].icmpStatsOutMsgs = v4icmp.icmpOutMsgs;
-				icmp_stats_table[i].icmpStatsOutErrors = v4icmp.icmpOutErrors;
-				break;
-			default:
-				memset(&icmp_stats_table[i],0,
-					sizeof(struct icmp_stats_table_entry));
-				linux_read_icmp6_stat(&v6icmp);
-				icmp_stats_table[i].icmpStatsInMsgs = v6icmp.icmp6InMsgs;
-				icmp_stats_table[i].icmpStatsInErrors = v6icmp.icmp6InErrors;
-				icmp_stats_table[i].icmpStatsOutMsgs = v6icmp.icmp6OutMsgs;
-				icmp_stats_table[i].icmpStatsOutErrors = v6icmp.icmp6OutDestUnreachs +
-					v6icmp.icmp6OutPktTooBigs +  v6icmp.icmp6OutTimeExcds +
-					v6icmp.icmp6OutParmProblems;
-				break;
-		}
-		icmp_stats_table[i].ipVer=i+1;
-	}
+    int i;
+    ICMP_STAT_STRUCTURE v4icmp;
+#ifdef NETSNMP_ENABLE_IPV6
+    struct icmp6_mib v6icmp;
+#endif
+    for(i = 0; i < 2; i++) {
+        switch(i) {
+        case 0:
+#ifdef linux
+            linux_read_icmp_stat(&v4icmp);
+#elif defined(NETBSD_STATS_VIA_SYSCTL)
+	    netbsd_read_icmp_stat(&v4icmp);
+#elif (defined(NETSNMP_CAN_USE_SYSCTL) && defined(ICMPCTL_STATS))
+	    sysctl_read_icmp_stat(&v4icmp);
+#elif defined(solaris2)
+	    solaris_read_icmp_stat(&v4icmp);
+#else
+	    return -1;
+#endif
+            icmp_stats_table[i].icmpStatsInMsgs = v4icmp.icmpInMsgs;
+            icmp_stats_table[i].icmpStatsInErrors = v4icmp.icmpInErrors;
+            icmp_stats_table[i].icmpStatsOutMsgs = v4icmp.icmpOutMsgs;
+            icmp_stats_table[i].icmpStatsOutErrors = v4icmp.icmpOutErrors;
+            break;
+        case 1:
+#ifdef NETSNMP_ENABLE_IPV6
+            memset(&icmp_stats_table[i],0,
+                    sizeof(struct icmp_stats_table_entry));
+#ifdef linux
+            linux_read_icmp6_stat(&v6icmp);
+#elif defined(NETBSD_STATS_VIA_SYSCTL)
+	    netbsd_read_icmp6_stat(&v6icmp);
+#elif (defined(NETSNMP_CAN_USE_SYSCTL) && defined(ICMPCTL_STATS))
+	    sysctl_read_icmp6_stat(&v6icmp);
+#elif defined(solaris2)
+	    solaris_read_icmp6_stat(&v6icmp);
+#else
+	    return -1;
+#endif
+            icmp_stats_table[i].icmpStatsInMsgs = v6icmp.icmp6InMsgs;
+            icmp_stats_table[i].icmpStatsInErrors = v6icmp.icmp6InErrors;
+            icmp_stats_table[i].icmpStatsOutMsgs = v6icmp.icmp6OutMsgs;
+            icmp_stats_table[i].icmpStatsOutErrors =
+                        v6icmp.icmp6OutDestUnreachs +
+                        v6icmp.icmp6OutPktTooBigs +  v6icmp.icmp6OutTimeExcds +
+                        v6icmp.icmp6OutParmProblems;
+#endif	/* NETSNMP_ENABLE_IPV6 */
+            break;
+        }
+        icmp_stats_table[i].ipVer = i + 1;
+    }
 
-	return 0;
+    return 0;
 }
 
 int
 icmp_msg_stats_load(netsnmp_cache *cache, void *vmagic)
 {
-    struct icmp_mib v4icmp;
+    ICMP_STAT_STRUCTURE v4icmp;
     struct icmp4_msg_mib v4icmpmsg;
 #ifdef NETSNMP_ENABLE_IPV6
     struct icmp6_mib v6icmp;
     struct icmp6_msg_mib v6icmpmsg;
 #endif
-    int i, j, k, flag, inc;
+    int i, k, flag, inc;
 
     memset(&icmp_msg_stats_table, 0, sizeof(icmp_msg_stats_table));
 
@@ -175,9 +295,19 @@ icmp_msg_stats_load(netsnmp_cache *cache, void *vmagic)
     flag = 0;
     k = 0;
     inc = 0;
+#ifdef linux
     linux_read_icmp_msg_stat(&v4icmp, &v4icmpmsg, &flag);
+#elif defined(NETBSD_STATS_VIA_SYSCTL)
+    netbsd_read_icmp_msg_stat(&v4icmp, &v4icmpmsg, &flag);
+#elif (defined(NETSNMP_CAN_USE_SYSCTL) && defined(ICMPCTL_STATS))
+    sysctl_read_icmp_msg_stat(&v4icmp, &v4icmpmsg, &flag);
+#elif defined(solaris2)
+    solaris_read_icmp_msg_stat(&v4icmp, &v4icmpmsg, &flag);
+#else
+    return -1;
+#endif
     if (flag) {
-        while (254 != k) {
+        while (255 >= k) {
             if (v4icmpmsg.vals[k].InType) {
                 icmp_msg_stats_table[i].ipVer = 1;
                 icmp_msg_stats_table[i].icmpMsgStatsType = k;
@@ -202,72 +332,98 @@ icmp_msg_stats_load(netsnmp_cache *cache, void *vmagic)
         icmp_msg_stats_table[i].icmpMsgStatsType = ICMP_ECHOREPLY;
         icmp_msg_stats_table[i].icmpMsgStatsInPkts = v4icmp.icmpInEchoReps;
         icmp_msg_stats_table[i].icmpMsgStatsOutPkts = v4icmp.icmpOutEchoReps;
+        icmp_msg_stats_table[i].flags = ICMP_MSG_STATS_HAS_IN | ICMP_MSG_STATS_HAS_OUT;
+        icmp_msg_stats_table[i].ipVer = 1;
         i++;
 
         icmp_msg_stats_table[i].icmpMsgStatsType = ICMP_DEST_UNREACH;
         icmp_msg_stats_table[i].icmpMsgStatsInPkts = v4icmp.icmpInDestUnreachs;
         icmp_msg_stats_table[i].icmpMsgStatsOutPkts = v4icmp.icmpOutDestUnreachs;
+        icmp_msg_stats_table[i].flags = ICMP_MSG_STATS_HAS_IN | ICMP_MSG_STATS_HAS_OUT;
+        icmp_msg_stats_table[i].ipVer = 1;
         i++;
 
         icmp_msg_stats_table[i].icmpMsgStatsType = ICMP_SOURCE_QUENCH;
         icmp_msg_stats_table[i].icmpMsgStatsInPkts = v4icmp.icmpInSrcQuenchs;
         icmp_msg_stats_table[i].icmpMsgStatsOutPkts = v4icmp.icmpOutSrcQuenchs;
+        icmp_msg_stats_table[i].flags = ICMP_MSG_STATS_HAS_IN | ICMP_MSG_STATS_HAS_OUT;
+        icmp_msg_stats_table[i].ipVer = 1;
         i++;
 
         icmp_msg_stats_table[i].icmpMsgStatsType = ICMP_REDIRECT;
         icmp_msg_stats_table[i].icmpMsgStatsInPkts = v4icmp.icmpInRedirects;
         icmp_msg_stats_table[i].icmpMsgStatsOutPkts = v4icmp.icmpOutRedirects;
+        icmp_msg_stats_table[i].flags = ICMP_MSG_STATS_HAS_IN | ICMP_MSG_STATS_HAS_OUT;
+        icmp_msg_stats_table[i].ipVer = 1;
         i++;
 
         icmp_msg_stats_table[i].icmpMsgStatsType = ICMP_ECHO;
         icmp_msg_stats_table[i].icmpMsgStatsInPkts = v4icmp.icmpInEchos;
         icmp_msg_stats_table[i].icmpMsgStatsOutPkts = v4icmp.icmpOutEchos;
+        icmp_msg_stats_table[i].flags = ICMP_MSG_STATS_HAS_IN | ICMP_MSG_STATS_HAS_OUT;
+        icmp_msg_stats_table[i].ipVer = 1;
         i++;
 
         icmp_msg_stats_table[i].icmpMsgStatsType = ICMP_TIME_EXCEEDED;
         icmp_msg_stats_table[i].icmpMsgStatsInPkts = v4icmp.icmpInTimeExcds;
         icmp_msg_stats_table[i].icmpMsgStatsOutPkts = v4icmp.icmpOutTimeExcds;
+        icmp_msg_stats_table[i].flags = ICMP_MSG_STATS_HAS_IN | ICMP_MSG_STATS_HAS_OUT;
+        icmp_msg_stats_table[i].ipVer = 1;
         i++;
 
         icmp_msg_stats_table[i].icmpMsgStatsType = ICMP_PARAMETERPROB;
         icmp_msg_stats_table[i].icmpMsgStatsInPkts = v4icmp.icmpInParmProbs;
         icmp_msg_stats_table[i].icmpMsgStatsOutPkts = v4icmp.icmpOutParmProbs;
+        icmp_msg_stats_table[i].flags = ICMP_MSG_STATS_HAS_IN | ICMP_MSG_STATS_HAS_OUT;
+        icmp_msg_stats_table[i].ipVer = 1;
         i++;
 
         icmp_msg_stats_table[i].icmpMsgStatsType = ICMP_TIMESTAMP;
         icmp_msg_stats_table[i].icmpMsgStatsInPkts = v4icmp.icmpInTimestamps;
         icmp_msg_stats_table[i].icmpMsgStatsOutPkts = v4icmp.icmpOutTimestamps;
+        icmp_msg_stats_table[i].flags = ICMP_MSG_STATS_HAS_IN | ICMP_MSG_STATS_HAS_OUT;
+        icmp_msg_stats_table[i].ipVer = 1;
         i++;
 
         icmp_msg_stats_table[i].icmpMsgStatsType = ICMP_TIMESTAMPREPLY;
         icmp_msg_stats_table[i].icmpMsgStatsInPkts = v4icmp.icmpInTimestampReps;
         icmp_msg_stats_table[i].icmpMsgStatsOutPkts = v4icmp.icmpOutTimestampReps;
+        icmp_msg_stats_table[i].flags = ICMP_MSG_STATS_HAS_IN | ICMP_MSG_STATS_HAS_OUT;
+        icmp_msg_stats_table[i].ipVer = 1;
         i++;
 
         icmp_msg_stats_table[i].icmpMsgStatsType = ICMP_ADDRESS;
         icmp_msg_stats_table[i].icmpMsgStatsInPkts = v4icmp.icmpInAddrMasks;
         icmp_msg_stats_table[i].icmpMsgStatsOutPkts = v4icmp.icmpOutAddrMasks;
+        icmp_msg_stats_table[i].flags = ICMP_MSG_STATS_HAS_IN | ICMP_MSG_STATS_HAS_OUT;
+        icmp_msg_stats_table[i].ipVer = 1;
         i++;
 
         icmp_msg_stats_table[i].icmpMsgStatsType = ICMP_ADDRESSREPLY;
         icmp_msg_stats_table[i].icmpMsgStatsInPkts = v4icmp.icmpInAddrMaskReps;
         icmp_msg_stats_table[i].icmpMsgStatsOutPkts = v4icmp.icmpOutAddrMaskReps;
+        icmp_msg_stats_table[i].flags = ICMP_MSG_STATS_HAS_IN | ICMP_MSG_STATS_HAS_OUT;
+        icmp_msg_stats_table[i].ipVer = 1;
         i++;
-
-        /* set the IP version and default flags */
-        for (j = 0; j < ICMP_MSG_STATS_IPV4_COUNT; j++) {
-            icmp_msg_stats_table[j].ipVer = 1;
-            icmp_msg_stats_table[j].flags = ICMP_MSG_STATS_HAS_IN | ICMP_MSG_STATS_HAS_OUT;
-        }
     }
 
 #ifdef NETSNMP_ENABLE_IPV6
     flag = 0;
     k = 0;
     inc = 0;
+#ifdef linux
     linux_read_icmp6_msg_stat(&v6icmp, &v6icmpmsg, &flag);
+#elif defined(NETBSD_STATS_VIA_SYSCTL)
+    netbsd_read_icmp6_msg_stat(&v6icmp, &v6icmpmsg, &flag);
+#elif (defined(NETSNMP_CAN_USE_SYSCTL) && defined(ICMPCTL_STATS))
+    sysctl_read_icmp6_msg_stat(&v6icmp, &v6icmpmsg, &flag);
+#elif defined(solaris2)
+    solaris_read_icmp6_msg_stat(&v6icmp, &v6icmpmsg, &flag);
+#else
+    return -1;
+#endif
     if (flag) {
-        while (254 != k) {
+        while (255 >= k) {
             if (v6icmpmsg.vals[k].InType) {
                 icmp_msg_stats_table[i].ipVer = 2;
                 icmp_msg_stats_table[i].icmpMsgStatsType = k;
@@ -292,80 +448,101 @@ icmp_msg_stats_load(netsnmp_cache *cache, void *vmagic)
         icmp_msg_stats_table[i].icmpMsgStatsType = ICMP6_DST_UNREACH;
         icmp_msg_stats_table[i].icmpMsgStatsInPkts = v6icmp.icmp6InDestUnreachs;
         icmp_msg_stats_table[i].icmpMsgStatsOutPkts = v6icmp.icmp6OutDestUnreachs;
+        icmp_msg_stats_table[i].ipVer = 2;
+        icmp_msg_stats_table[i].flags = ICMP_MSG_STATS_HAS_IN | ICMP_MSG_STATS_HAS_OUT;
         i++;
 
         icmp_msg_stats_table[i].icmpMsgStatsType = ICMP6_PACKET_TOO_BIG;
         icmp_msg_stats_table[i].icmpMsgStatsInPkts = v6icmp.icmp6InPktTooBigs;
         icmp_msg_stats_table[i].icmpMsgStatsOutPkts = v6icmp.icmp6OutPktTooBigs;
+        icmp_msg_stats_table[i].ipVer = 2;
+        icmp_msg_stats_table[i].flags = ICMP_MSG_STATS_HAS_IN | ICMP_MSG_STATS_HAS_OUT;
         i++;
 
         icmp_msg_stats_table[i].icmpMsgStatsType = ICMP6_TIME_EXCEEDED;
         icmp_msg_stats_table[i].icmpMsgStatsInPkts = v6icmp.icmp6InTimeExcds;
         icmp_msg_stats_table[i].icmpMsgStatsOutPkts = v6icmp.icmp6OutTimeExcds;
+        icmp_msg_stats_table[i].ipVer = 2;
+        icmp_msg_stats_table[i].flags = ICMP_MSG_STATS_HAS_IN | ICMP_MSG_STATS_HAS_OUT;
         i++;
 
         icmp_msg_stats_table[i].icmpMsgStatsType = ICMP6_PARAM_PROB;
         icmp_msg_stats_table[i].icmpMsgStatsInPkts = v6icmp.icmp6InParmProblems;
         icmp_msg_stats_table[i].icmpMsgStatsOutPkts = v6icmp.icmp6OutParmProblems;
+        icmp_msg_stats_table[i].ipVer = 2;
+        icmp_msg_stats_table[i].flags = ICMP_MSG_STATS_HAS_IN | ICMP_MSG_STATS_HAS_OUT;
         i++;
 
         icmp_msg_stats_table[i].icmpMsgStatsType = ICMP6_ECHO_REQUEST;
         icmp_msg_stats_table[i].icmpMsgStatsInPkts = v6icmp.icmp6InEchos;
-        icmp_msg_stats_table[i].icmpMsgStatsOutPkts = 0;
-        icmp_msg_stats_table[i].flags = ICMP_MSG_STATS_HAS_IN;
+        icmp_msg_stats_table[i].icmpMsgStatsOutPkts = v6icmp.icmp6OutEchos;
+        icmp_msg_stats_table[i].ipVer = 2;
+        icmp_msg_stats_table[i].flags = ICMP_MSG_STATS_HAS_IN | ICMP_MSG_STATS_HAS_OUT;
         i++;
 
         icmp_msg_stats_table[i].icmpMsgStatsType = ICMP6_ECHO_REPLY;
         icmp_msg_stats_table[i].icmpMsgStatsInPkts = v6icmp.icmp6InEchoReplies;
         icmp_msg_stats_table[i].icmpMsgStatsOutPkts = v6icmp.icmp6OutEchoReplies;
+        icmp_msg_stats_table[i].ipVer = 2;
+        icmp_msg_stats_table[i].flags = ICMP_MSG_STATS_HAS_IN | ICMP_MSG_STATS_HAS_OUT;
         i++;
 
 #ifdef MLD_LISTENER_QUERY
         icmp_msg_stats_table[i].icmpMsgStatsType = MLD_LISTENER_QUERY;
         icmp_msg_stats_table[i].icmpMsgStatsInPkts = v6icmp.icmp6InGroupMembQueries;
         icmp_msg_stats_table[i].icmpMsgStatsOutPkts = 0;
+        icmp_msg_stats_table[i].ipVer = 2;
         icmp_msg_stats_table[i].flags = ICMP_MSG_STATS_HAS_IN;
         i++;
+
         icmp_msg_stats_table[i].icmpMsgStatsType = MLD_LISTENER_REPORT;
         icmp_msg_stats_table[i].icmpMsgStatsInPkts = v6icmp.icmp6InGroupMembResponses;
         icmp_msg_stats_table[i].icmpMsgStatsOutPkts = v6icmp.icmp6OutGroupMembResponses;
+        icmp_msg_stats_table[i].ipVer = 2;
+        icmp_msg_stats_table[i].flags = ICMP_MSG_STATS_HAS_IN | ICMP_MSG_STATS_HAS_OUT;
         i++;
 
         icmp_msg_stats_table[i].icmpMsgStatsType = MLD_LISTENER_REDUCTION;
         icmp_msg_stats_table[i].icmpMsgStatsInPkts = v6icmp.icmp6InGroupMembReductions;
         icmp_msg_stats_table[i].icmpMsgStatsOutPkts = v6icmp.icmp6OutGroupMembReductions;
+        icmp_msg_stats_table[i].ipVer = 2;
+        icmp_msg_stats_table[i].flags = ICMP_MSG_STATS_HAS_IN | ICMP_MSG_STATS_HAS_OUT;
         i++;
-#endif
 
         icmp_msg_stats_table[i].icmpMsgStatsType = ND_ROUTER_SOLICIT;
         icmp_msg_stats_table[i].icmpMsgStatsInPkts = v6icmp.icmp6InRouterSolicits;
         icmp_msg_stats_table[i].icmpMsgStatsOutPkts = v6icmp.icmp6OutRouterSolicits;
+        icmp_msg_stats_table[i].ipVer = 2;
+        icmp_msg_stats_table[i].flags = ICMP_MSG_STATS_HAS_IN | ICMP_MSG_STATS_HAS_OUT;
         i++;
 
         icmp_msg_stats_table[i].icmpMsgStatsType = ND_ROUTER_ADVERT;
         icmp_msg_stats_table[i].icmpMsgStatsInPkts = v6icmp.icmp6InRouterAdvertisements;
         icmp_msg_stats_table[i].icmpMsgStatsOutPkts = 0;
+        icmp_msg_stats_table[i].ipVer = 2;
         icmp_msg_stats_table[i].flags = ICMP_MSG_STATS_HAS_IN;
         i++;
 
         icmp_msg_stats_table[i].icmpMsgStatsType = ND_NEIGHBOR_SOLICIT;
         icmp_msg_stats_table[i].icmpMsgStatsInPkts = v6icmp.icmp6InNeighborSolicits;
         icmp_msg_stats_table[i].icmpMsgStatsOutPkts = v6icmp.icmp6OutNeighborSolicits;
+        icmp_msg_stats_table[i].ipVer = 2;
+        icmp_msg_stats_table[i].flags = ICMP_MSG_STATS_HAS_IN | ICMP_MSG_STATS_HAS_OUT;
         i++;
 
         icmp_msg_stats_table[i].icmpMsgStatsType = ND_NEIGHBOR_ADVERT;
         icmp_msg_stats_table[i].icmpMsgStatsInPkts = v6icmp.icmp6InNeighborAdvertisements;
         icmp_msg_stats_table[i].icmpMsgStatsOutPkts = v6icmp.icmp6OutNeighborAdvertisements;
+        icmp_msg_stats_table[i].ipVer = 2;
+        icmp_msg_stats_table[i].flags = ICMP_MSG_STATS_HAS_IN | ICMP_MSG_STATS_HAS_OUT;
         i++;
 
         icmp_msg_stats_table[i].icmpMsgStatsType = ND_REDIRECT;
         icmp_msg_stats_table[i].icmpMsgStatsInPkts = v6icmp.icmp6InRedirects;
         icmp_msg_stats_table[i].icmpMsgStatsOutPkts = v6icmp.icmp6OutRedirects;
-
-        for (j = 0; j < ICMP_MSG_STATS_IPV6_COUNT; j++) {
-            icmp_msg_stats_table[ICMP_MSG_STATS_IPV4_COUNT + j].ipVer = 2;
-            icmp_msg_stats_table[ICMP_MSG_STATS_IPV4_COUNT + j].flags = ICMP_MSG_STATS_HAS_IN | ICMP_MSG_STATS_HAS_OUT;
-        }
+        icmp_msg_stats_table[i].ipVer = 2;
+        icmp_msg_stats_table[i].flags = ICMP_MSG_STATS_HAS_IN | ICMP_MSG_STATS_HAS_OUT;
+#endif
     }
 #endif /* NETSNMP_ENABLE_IPV6 */
     return 0;
@@ -377,25 +554,25 @@ icmp_stats_next_entry( void **loop_context,
                      netsnmp_variable_list *index,
                      netsnmp_iterator_info *data)
 {
-	int i = (int)(intptr_t)(*loop_context);
-	netsnmp_variable_list *idx = index;
+    int i = (int)(intptr_t)(*loop_context);
+    netsnmp_variable_list *idx = index;
 
-	if(i > 1)
-		return NULL;
+    if(i > 1)
+        return NULL;
 
 
-	/*
-	 *set IP version
-	 */
-	snmp_set_var_typed_value(idx, ASN_INTEGER, (u_char *)&icmp_stats_table[i].ipVer,
-                                sizeof(uint32_t));
-	idx = idx->next_variable;
+    /*
+     *set IP version
+     */
+    snmp_set_var_typed_value(idx, ASN_INTEGER, (u_char *)&icmp_stats_table[i].ipVer,
+                            sizeof(uint32_t));
+    idx = idx->next_variable;
 
-	*data_context = &icmp_stats_table[i];
+    *data_context = &icmp_stats_table[i];
 
-	*loop_context = (void *)(intptr_t)(++i);
-	
-	return index;
+    *loop_context = (void *)(intptr_t)(++i);
+    
+    return index;
 }
 
 
@@ -405,10 +582,9 @@ icmp_stats_first_entry( void **loop_context,
                      netsnmp_variable_list *index,
                      netsnmp_iterator_info *data)
 {
-
-        *loop_context = NULL;
-        *data_context = NULL;
-        return icmp_stats_next_entry(loop_context, data_context, index, data);
+    *loop_context = NULL;
+    *data_context = NULL;
+    return icmp_stats_next_entry(loop_context, data_context, index, data);
 }
 
 netsnmp_variable_list *
@@ -456,12 +632,12 @@ icmp_msg_stats_first_entry(void **loop_context,
 void
 init_icmp(void)
 {
-#ifdef linux
+#ifdef USES_SNMP_DESIGNED_ICMPSTAT
     netsnmp_handler_registration *msg_stats_reginfo = NULL;
     netsnmp_handler_registration *table_reginfo = NULL;
     netsnmp_iterator_info *iinfo;
     netsnmp_iterator_info *msg_stats_iinfo;
-    netsnmp_table_registration_info *table_info;
+    netsnmp_table_registration_info *table_info = NULL;
     netsnmp_table_registration_info *msg_stats_table_info;
 #endif
     netsnmp_handler_registration *scalar_reginfo = NULL;
@@ -488,7 +664,7 @@ init_icmp(void)
     if (rc != SNMPERR_SUCCESS)
 	goto bail;
 #endif
-#ifdef linux
+#ifdef USES_SNMP_DESIGNED_ICMPSTAT
 
     /* register icmpStatsTable */
     table_info = SNMP_MALLOC_TYPEDEF(netsnmp_table_registration_info);
@@ -516,9 +692,9 @@ init_icmp(void)
         goto bail;
     }
     netsnmp_inject_handler( table_reginfo,
-		    netsnmp_get_cache_handler(ICMP_STATS_CACHE_TIMEOUT,
-			   		icmp_load, icmp_free,
-					icmp_stats_tbl_oid, OID_LENGTH(icmp_stats_tbl_oid)));
+            netsnmp_get_cache_handler(ICMP_STATS_CACHE_TIMEOUT,
+                        icmp_load, icmp_free,
+                        icmp_stats_tbl_oid, OID_LENGTH(icmp_stats_tbl_oid)));
 
     /* register icmpMsgStatsTable */
     msg_stats_table_info = SNMP_MALLOC_TYPEDEF(netsnmp_table_registration_info);
@@ -549,7 +725,7 @@ init_icmp(void)
             netsnmp_get_cache_handler(ICMP_STATS_CACHE_TIMEOUT,
                 icmp_load, icmp_free,
                 icmp_msg_stats_tbl_oid, OID_LENGTH(icmp_msg_stats_tbl_oid)));
-#endif /* linux */
+#endif /* USES_SNMP_DESIGNED_ICMPSTAT */
 
 #ifdef USING_MIBII_IP_MODULE
     if (++ip_module_count == 2)
@@ -570,7 +746,7 @@ init_icmp(void)
 #ifndef hpux11
 bail:
 #endif
-#ifdef linux
+#ifdef USES_SNMP_DESIGNED_ICMPSTAT
     if (msg_stats_reginfo)
         netsnmp_handler_registration_free(msg_stats_reginfo);
     if (table_reginfo)
@@ -586,48 +762,6 @@ bail:
 	 *  System specific data formats
 	 *
 	 *********************/
-
-#ifdef hpux11
-#define ICMP_STAT_STRUCTURE	int
-#endif
-
-#ifdef linux
-#define ICMP_STAT_STRUCTURE	struct icmp_mib
-#define USES_SNMP_DESIGNED_ICMPSTAT
-#undef ICMPSTAT_SYMBOL
-#endif
-
-#ifdef solaris2
-#define ICMP_STAT_STRUCTURE	mib2_icmp_t
-#define USES_SNMP_DESIGNED_ICMPSTAT
-#endif
-
-#ifdef NETBSD_STATS_VIA_SYSCTL
-#define ICMP_STAT_STRUCTURE     struct icmp_mib
-#define USES_SNMP_DESIGNED_ICMPSTAT
-#undef ICMP_NSTATS
-#endif
-
-#ifdef HAVE_IPHLPAPI_H
-#include <iphlpapi.h>
-#define ICMP_STAT_STRUCTURE MIB_ICMP
-#endif
-
-/* ?? #if (defined(NETSNMP_CAN_USE_SYSCTL) && defined(ICMPCTL_STATS)) ?? */
-
-#ifdef HAVE_SYS_ICMPIPSTATS_H
-/* or #ifdef		HAVE_SYS_TCPIPSTATS_H  ??? */
-#define ICMP_STAT_STRUCTURE	struct kna
-#define USES_TRADITIONAL_ICMPSTAT
-#endif
-
-#if !defined(ICMP_STAT_STRUCTURE)
-#define ICMP_STAT_STRUCTURE	struct icmpstat
-#define USES_TRADITIONAL_ICMPSTAT
-#endif
-
-ICMP_STAT_STRUCTURE icmpstat;
-
 
         /*********************
 	 *
@@ -646,9 +780,6 @@ icmp_handler(netsnmp_mib_handler          *handler,
     netsnmp_variable_list *requestvb;
     long     ret_value;
     oid      subid;
-#ifdef USES_TRADITIONAL_ICMPSTAT
-    int      i;
-#endif
 
     /*
      * The cached data should already have been loaded by the
@@ -756,13 +887,16 @@ icmp_handler(netsnmp_mib_handler          *handler,
         ret_value = icmpstat.icmpOutAddrMaskReps;
         break;
 #elif defined(USES_TRADITIONAL_ICMPSTAT) && !defined(_USE_PERFSTAT_PROTOCOL)
-    case ICMPINMSGS:
+    case ICMPINMSGS: {
+        int i;
+
         ret_value = icmpstat.icps_badcode +
             icmpstat.icps_tooshort +
             icmpstat.icps_checksum + icmpstat.icps_badlen;
         for (i = 0; i <= ICMP_MAXTYPE; i++)
             ret_value += icmpstat.icps_inhist[i];
         break;
+    }
     case ICMPINERRORS:
         ret_value = icmpstat.icps_badcode +
             icmpstat.icps_tooshort +
@@ -801,11 +935,14 @@ icmp_handler(netsnmp_mib_handler          *handler,
     case ICMPINADDRMASKREPS:
         ret_value = icmpstat.icps_inhist[ICMP_MASKREPLY];
         break;
-    case ICMPOUTMSGS:
+    case ICMPOUTMSGS: {
+        int i;
+
         ret_value = icmpstat.icps_oldshort + icmpstat.icps_oldicmp;
         for (i = 0; i <= ICMP_MAXTYPE; i++)
             ret_value += icmpstat.icps_outhist[i];
         break;
+    }
     case ICMPOUTERRORS:
         ret_value = icmpstat.icps_oldshort + icmpstat.icps_oldicmp;
         break;
@@ -1028,7 +1165,7 @@ icmp_handler(netsnmp_mib_handler          *handler,
 }
 
 
-#ifdef linux
+#ifdef USES_SNMP_DESIGNED_ICMPSTAT
 int
 icmp_stats_table_handler(netsnmp_mib_handler  *handler,
                  netsnmp_handler_registration *reginfo,
@@ -1050,6 +1187,12 @@ icmp_stats_table_handler(netsnmp_mib_handler  *handler,
 					continue;
 				table_info = netsnmp_extract_table_info(request);
 				subid      = table_info->colnum;
+				DEBUGMSGTL(( "mibII/icmpStatsTable", "oid: " ));
+				DEBUGMSGOID(( "mibII/icmpStatsTable", request->requestvb->name,
+						 request->requestvb->name_length ));
+				DEBUGMSG(( "mibII/icmpStatsTable", " In %d InErr %d Out %d OutErr %d\n",
+					      entry->icmpStatsInMsgs, entry->icmpStatsInErrors,
+					      entry->icmpStatsOutMsgs, entry->icmpStatsOutErrors ));
 
 				switch (subid) {
 					case ICMP_STAT_INMSG:
@@ -1117,6 +1260,11 @@ icmp_msg_stats_table_handler(netsnmp_mib_handler          *handler,
                     continue;
                 table_info = netsnmp_extract_table_info(request);
                 subid = table_info->colnum;
+                DEBUGMSGTL(( "mibII/icmpMsgStatsTable", "oid: " ));
+                DEBUGMSGOID(( "mibII/icmpMsgStatsTable", request->requestvb->name,
+                                 request->requestvb->name_length ));
+                DEBUGMSG(( "mibII/icmpMsgStatsTable", " In %d Out %d Flags 0x%x\n",
+                                 entry->icmpMsgStatsInPkts, entry->icmpMsgStatsOutPkts, entry->flags ));
 
                 switch (subid) {
                     case ICMP_MSG_STAT_IN_PKTS:
@@ -1162,7 +1310,7 @@ icmp_msg_stats_table_handler(netsnmp_mib_handler          *handler,
 
     return SNMP_ERR_NOERROR;
 }
-#endif		/* linux */
+#endif		/* USES_SNMP_DESIGNED_ICMPSTAT */
 
         /*********************
 	 *
@@ -1301,7 +1449,11 @@ icmp_load(netsnmp_cache *cache, void *vmagic)
 int
 icmp_load(netsnmp_cache *cache, void *vmagic)
 {
-    long            ret_value = -1;
+    int ret_value = -1;
+#ifdef NETSNMP_ENABLE_IPV6
+    mib2_ipv6IfIcmpEntry_t ifstat;
+    int req = GET_FIRST;
+#endif
 
     ret_value =
         getMibstat(MIB_ICMP, &icmpstat, sizeof(mib2_icmp_t), GET_FIRST,
@@ -1312,8 +1464,85 @@ icmp_load(netsnmp_cache *cache, void *vmagic)
     } else {
         DEBUGMSGTL(("mibII/icmp", "Loaded ICMP Group (solaris)\n"));
     }
+
+#ifdef NETSNMP_ENABLE_IPV6
+    memset(&icmp6stat, 0, sizeof(icmp6stat));
+    while ((ret_value = getMibstat(MIB_ICMP6, &ifstat, sizeof(ifstat), req,
+                   &Get_everything, NULL)) == 0) {
+	if ( ret_value < 0 ) {
+	    DEBUGMSGTL(("mibII/icmp", "Failed to load ICMP6 Group (solaris)\n"));
+	} else {
+	    DEBUGMSGTL(("mibII/icmp", "Loaded ICMP6 Group (solaris)\n"));
+	}
+	icmp6stat.icmp6OutMsgs += ifstat.ipv6IfIcmpOutMsgs;
+	icmp6stat.icmp6InMsgs += ifstat.ipv6IfIcmpInMsgs;
+	icmp6stat.icmp6InErrors += ifstat.ipv6IfIcmpInErrors;
+	icmp6stat.icmp6OutDestUnreachs += ifstat.ipv6IfIcmpOutDestUnreachs;
+	icmp6stat.icmp6InDestUnreachs += ifstat.ipv6IfIcmpInDestUnreachs;
+	icmp6stat.icmp6OutPktTooBigs += ifstat.ipv6IfIcmpOutPktTooBigs;
+	icmp6stat.icmp6InPktTooBigs += ifstat.ipv6IfIcmpInPktTooBigs;
+	icmp6stat.icmp6OutTimeExcds += ifstat.ipv6IfIcmpOutTimeExcds;
+	icmp6stat.icmp6InTimeExcds += ifstat.ipv6IfIcmpInTimeExcds;
+	icmp6stat.icmp6OutParmProblems += ifstat.ipv6IfIcmpOutParmProblems;
+	icmp6stat.icmp6InParmProblems += ifstat.ipv6IfIcmpInParmProblems;
+	icmp6stat.icmp6OutEchos += ifstat.ipv6IfIcmpOutEchos;
+	icmp6stat.icmp6InEchos += ifstat.ipv6IfIcmpInEchos;
+	icmp6stat.icmp6OutEchoReplies += ifstat.ipv6IfIcmpOutEchoReplies;
+	icmp6stat.icmp6InEchoReplies += ifstat.ipv6IfIcmpInEchoReplies;
+	icmp6stat.icmp6OutRouterSolicits += ifstat.ipv6IfIcmpOutRouterSolicits;
+	icmp6stat.icmp6InRouterSolicits += ifstat.ipv6IfIcmpInRouterSolicits;
+	icmp6stat.icmp6OutNeighborAdvertisements += ifstat.ipv6IfIcmpOutNeighborAdvertisements;
+	icmp6stat.icmp6InNeighborAdvertisements += ifstat.ipv6IfIcmpInNeighborAdvertisements;
+	icmp6stat.icmp6OutNeighborSolicits += ifstat.ipv6IfIcmpOutNeighborSolicits;
+	icmp6stat.icmp6InNeighborSolicits += ifstat.ipv6IfIcmpInNeighborSolicits;
+	icmp6stat.icmp6OutRedirects += ifstat.ipv6IfIcmpOutRedirects;
+	icmp6stat.icmp6InRedirects += ifstat.ipv6IfIcmpInRedirects;
+	icmp6stat.icmp6InGroupMembQueries += ifstat.ipv6IfIcmpInGroupMembQueries;
+	icmp6stat.icmp6OutGroupMembResponses += ifstat.ipv6IfIcmpOutGroupMembResponses;
+	icmp6stat.icmp6InGroupMembResponses += ifstat.ipv6IfIcmpInGroupMembResponses;
+	icmp6stat.icmp6OutGroupMembReductions += ifstat.ipv6IfIcmpOutGroupMembReductions;
+	icmp6stat.icmp6InGroupMembReductions += ifstat.ipv6IfIcmpInGroupMembReductions;
+	req = GET_NEXT;
+    }
+#endif
+
+    icmp_stats_load(cache, vmagic);
+    icmp_msg_stats_load(cache, vmagic);
     return ret_value;
 }
+
+static int
+solaris_read_icmp_stat(ICMP_STAT_STRUCTURE *mib)
+{
+    *mib = icmpstat;
+    return 0;
+}
+
+static int
+solaris_read_icmp_msg_stat(ICMP_STAT_STRUCTURE *mib, struct icmp4_msg_mib *msg_mib, int *flag)
+{
+    *mib = icmpstat;
+    *flag = 0;
+    return 0;
+}
+
+#ifdef NETSNMP_ENABLE_IPV6
+static int
+solaris_read_icmp6_stat(struct icmp6_mib *mib)
+{
+    *mib = icmp6stat;
+    return 0;
+}
+
+static int
+solaris_read_icmp6_msg_stat(struct icmp6_mib *mib, struct icmp6_msg_mib *msg_mib, int *flag)
+{
+    *mib = icmp6stat;
+    *flag = 0;
+    return 0;
+}
+#endif
+
 #elif defined(NETBSD_STATS_VIA_SYSCTL)
 int
 icmp_load(netsnmp_cache *cache, void *vmagic)
@@ -1327,6 +1556,8 @@ icmp_load(netsnmp_cache *cache, void *vmagic)
     } else {
 	DEBUGMSGTL(("mibII/icmp", "Loaded ICMP Group (netbsd)\n"));
     }
+    icmp_stats_load(cache, vmagic);
+    icmp_msg_stats_load(cache, vmagic);
     return ret_value;
 }
 #elif defined (WIN32) || defined (cygwin)
@@ -1366,17 +1597,16 @@ int
 icmp_load(netsnmp_cache *cache, void *vmagic)
 {
     long            ret_value = -1;
-    static int      sname[4] =
-        { CTL_NET, PF_INET, IPPROTO_ICMP, ICMPCTL_STATS };
-    size_t          len = sizeof(icmpstat);
 
-    ret_value = sysctl(sname, 4, &icmpstat, &len, 0, 0);
+    ret_value = sysctl_read_icmp_stat(&icmpstat);
 
     if ( ret_value < 0 ) {
-        DEBUGMSGTL(("mibII/icmp", "Failed to load ICMP Group (sysctl)\n"));
+	DEBUGMSGTL(("mibII/icmp", "Failed to load ICMP Group (netbsd)\n"));
     } else {
-        DEBUGMSGTL(("mibII/icmp", "Loaded ICMP Group (sysctl)\n"));
+	DEBUGMSGTL(("mibII/icmp", "Loaded ICMP Group (netbsd)\n"));
     }
+    icmp_stats_load(cache, vmagic);
+    icmp_msg_stats_load(cache, vmagic);
     return ret_value;
 }
 #elif defined(HAVE_SYS_TCPIPSTATS_H)

@@ -3,6 +3,7 @@
 #include <net-snmp/net-snmp-includes.h>
 #include <net-snmp/agent/net-snmp-agent-includes.h>
 #include <net-snmp/agent/hardware/cpu.h>
+#include "cpu.h"
 
 netsnmp_feature_child_of(hardware_cpu, libnetsnmpmibs)
 
@@ -11,7 +12,6 @@ netsnmp_feature_child_of(hardware_cpu_load, hardware_cpu)
 netsnmp_feature_child_of(hardware_cpu_get_cache, hardware_cpu)
 netsnmp_feature_child_of(hardware_cpu_get_byName, hardware_cpu)
 
-extern NetsnmpCacheLoad netsnmp_cpu_arch_load;
 static void _cpu_update_stats( unsigned int, void* );
 
 static int _cpuAutoUpdate =  5;
@@ -148,7 +148,7 @@ netsnmp_cpu_info *netsnmp_cpu_get_byName( char *name, int create ) {
         return NULL;
     }
 
-    strcpy(cpu->name, name);
+    strlcpy(cpu->name, name, sizeof(cpu));
     if ( _cpu_tail ) {
         cpu->idx = _cpu_tail->idx+1;
         _cpu_tail->next = cpu;

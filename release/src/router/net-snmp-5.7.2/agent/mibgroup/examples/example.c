@@ -370,8 +370,12 @@ var_example(struct variable *vp,
         /*
          * we're returning 127.0.0.1 
          */
-        long_ret = ntohl(INADDR_LOOPBACK);
-        return (u_char *) & long_ret;
+        {
+            in_addr_t addr = ntohl(INADDR_LOOPBACK);
+            memcpy(string, &addr, sizeof(addr));
+            *var_len = sizeof(addr);
+        }
+        return (u_char *) string;
 
     case EXAMPLECOUNTER:
         long_ret = 42;
@@ -602,10 +606,10 @@ write_exampletrap(int action,
  * second since the netwok management portion of system was last
  * reinitialized.  - snmpTrapOID.0 which is part of the trap group SNMPv2
  * MIB whose value is the object-id of the specific trap you have defined
- * in your own MIB.  Other variables can be added to caracterize the
+ * in your own MIB.  Other variables can be added to characterize the
  * trap.
  * 
- * The function send_v2trap adds automaticallys the two objects but the
+ * The function send_v2trap adds automatically the two objects but the
  * value of snmpTrapOID.0 is 0.0 by default. If you want to add your trap
  * name, you have to reconstruct this object and to add your own
  * variable.
@@ -624,7 +628,7 @@ write_exampletrap2(int action,
     long            intval;
 
     /*
-     * these variales will be used when we send the trap 
+     * these variables will be used when we send the trap
      */
     oid             objid_snmptrap[] = { 1, 3, 6, 1, 6, 3, 1, 1, 4, 1, 0 };     /* snmpTrapOID.0 */
     oid             demo_trap[] = { 1, 3, 6, 1, 4, 1, 2021, 13, 990 };  /*demo-trap */
@@ -715,7 +719,7 @@ write_exampletrap2(int action,
         var_obj.name = example_string_oid;
         var_obj.name_length = sizeof(example_string_oid) / sizeof(oid); /* number of sub-ids */
         var_obj.type = ASN_OCTET_STR;   /* type of variable */
-        var_obj.val.string = (unsigned char *) example_str;       /* value */
+        var_obj.val.string = (u_char *)example_str;       /* value */
         var_obj.val_len = strlen(example_str);
         DEBUGMSGTL(("example", "write_exampletrap2 sending the v2 trap\n"));
         send_v2trap(&var_trap);

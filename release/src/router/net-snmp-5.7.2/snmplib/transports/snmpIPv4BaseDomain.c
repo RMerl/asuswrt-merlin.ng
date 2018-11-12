@@ -5,6 +5,7 @@
 
 #include <net-snmp/types.h>
 #include <net-snmp/library/snmpIPv4BaseDomain.h>
+#include <net-snmp/library/snmp_assert.h>
 
 #include <stddef.h>
 #include <stdio.h>
@@ -36,6 +37,7 @@
 #include <net-snmp/library/default_store.h>
 #include <net-snmp/library/system.h>
 
+#include "inet_ntop.h"
 
 #ifndef INADDR_NONE
 #define INADDR_NONE     -1
@@ -183,41 +185,90 @@ netsnmp_sockaddr_in2(struct sockaddr_in *addr,
 
 char *
 netsnmp_ipv4_fmtaddr(const char *prefix, netsnmp_transport *t,
-                     void *data, int len)
+                     const void *data, int len)
 {
-    netsnmp_indexed_addr_pair *addr_pair = NULL;
+    const netsnmp_indexed_addr_pair *addr_pair;
+    const struct sockaddr_in *from, *to;
     struct hostent *host;
-    char tmp[64];
+    char *tmp;
 
-    if (data != NULL && len == sizeof(netsnmp_indexed_addr_pair)) {
-	addr_pair = (netsnmp_indexed_addr_pair *) data;
-    } else if (t != NULL && t->data != NULL) {
-	addr_pair = (netsnmp_indexed_addr_pair *) t->data;
+    if (t && !data) {
+        data = t->data;
+        len = t->data_length;
     }
 
-    if (addr_pair == NULL) {
-        snprintf(tmp, sizeof(tmp), "%s: unknown", prefix);
+    switch (data ? len : 0) {
+    case sizeof(netsnmp_indexed_addr_pair):
+        addr_pair = data;
+        break;
+    case sizeof(struct sockaddr_in): {
+        char a[16];
+
+        to = data;
+        if (asprintf(&tmp, "%s: [%s]:%hu", prefix,
+		     inet_ntop(AF_INET, &to->sin_addr, a, sizeof(a)),
+		     ntohs(to->sin_port)) < 0)
+            tmp = NULL;
+        return tmp;
+    }
+    default:
+        netsnmp_assert(0);
+        if (asprintf(&tmp, "%s: unknown", prefix) < 0)
+            tmp = NULL;
+        return tmp;
+    }
+
+    from = (const struct sockaddr_in *)&addr_pair->local_addr;
+    to = (const struct sockaddr_in *)&addr_pair->remote_addr;
+    netsnmp_assert(from->sin_family == 0 || from->sin_family == AF_INET);
+    netsnmp_assert(to->sin_family == 0 || to->sin_family == AF_INET);
+    if (t && t->flags & NETSNMP_TRANSPORT_FLAG_HOSTNAME) {
+        /* XXX: hmm...  why isn't this prefixed */
+        /* assuming intentional */
+        host = netsnmp_gethostbyaddr(&to->sin_addr, sizeof(struct in_addr), AF_INET);
+        return (host ? strdup(host->h_name) : NULL); 
     } else {
-        struct sockaddr_in *to = NULL;
-        to = (struct sockaddr_in *) &(addr_pair->remote_addr);
-        if (to == NULL) {
-            snprintf(tmp, sizeof(tmp), "%s: unknown->[%s]:%hu", prefix,
-                     inet_ntoa(addr_pair->local_addr.sin.sin_addr),
-                     ntohs(addr_pair->local_addr.sin.sin_port));
-        } else if ( t && t->flags & NETSNMP_TRANSPORT_FLAG_HOSTNAME ) {
-            /* XXX: hmm...  why isn't this prefixed */
-            /* assuming intentional */
-            host = netsnmp_gethostbyaddr((char *)&to->sin_addr, 4, AF_INET);
-            return (host ? strdup(host->h_name) : NULL); 
-        } else {
-            snprintf(tmp, sizeof(tmp), "%s: [%s]:%hu->", prefix,
-                     inet_ntoa(to->sin_addr), ntohs(to->sin_port));
-            snprintf(tmp + strlen(tmp), sizeof(tmp)-strlen(tmp), "[%s]:%hu",
-                     inet_ntoa(addr_pair->local_addr.sin.sin_addr),
-                     ntohs(addr_pair->local_addr.sin.sin_port));
-        }
+        char a1[16];
+        char a2[16];
+
+        if (asprintf(&tmp, "%s: [%s]:%hu->[%s]:%hu", prefix,
+		     inet_ntop(AF_INET, &to->sin_addr, a1, sizeof(a1)),
+		     ntohs(to->sin_port),
+		     inet_ntop(AF_INET, &from->sin_addr, a2, sizeof(a2)),
+		     ntohs(from->sin_port)) < 0)
+            tmp = NULL;
     }
-    tmp[sizeof(tmp)-1] = '\0';
-    return strdup(tmp);
+
+    return tmp;
 }
 
+void netsnmp_ipv4_get_taddr(struct netsnmp_transport_s *t, void **addr,
+                            size_t *addr_len)
+{
+    struct sockaddr_in *sin = t->remote;
+
+    netsnmp_assert(t->remote_length == sizeof(*sin));
+
+    *addr_len = 6;
+    if ((*addr = malloc(*addr_len))) {
+        unsigned char *p = *addr;
+
+        memcpy(p,     &sin->sin_addr, 4);
+        memcpy(p + 4, &sin->sin_port, 2);
+    }
+}
+
+int netsnmp_ipv4_ostring_to_sockaddr(struct sockaddr_in *sin, const void *o,
+                                     size_t o_len)
+{
+    const char *p = o;
+
+    if (o_len != 6)
+        return 0;
+
+    memset(sin, 0, sizeof(*sin));
+    sin->sin_family = AF_INET;
+    memcpy(&sin->sin_addr, p + 0, 4);
+    memcpy(&sin->sin_port, p + 4, 2);
+    return 1;
+}

@@ -1,3 +1,14 @@
+/*
+ * Portions of this file are subject to the following copyright(s).  See
+ * the Net-SNMP's COPYING file for more details and other copyrights
+ * that may apply:
+ *
+ * Portions of this file are copyrighted by:
+ * Copyright (c) 2016 VMware, Inc. All rights reserved.
+ * Use is subject to license terms specified in the COPYING file
+ * distributed with the Net-SNMP package.
+ */
+
 #include <net-snmp/net-snmp-config.h>
 #include <net-snmp/net-snmp-features.h>
 
@@ -50,9 +61,21 @@ netsnmp_feature_child_of(register_row_merge, row_merge_all)
 int
 netsnmp_register_row_merge(netsnmp_handler_registration *reginfo)
 {
-    netsnmp_inject_handler(reginfo,
-		    netsnmp_get_row_merge_handler(reginfo->rootoid_len+1));
-    return netsnmp_register_handler(reginfo);
+    netsnmp_mib_handler *handler;
+
+    if (!reginfo)
+        return MIB_REGISTRATION_FAILED;
+
+    handler = netsnmp_get_row_merge_handler(reginfo->rootoid_len+1);
+    if (handler &&
+        (netsnmp_inject_handler(reginfo, handler) == SNMPERR_SUCCESS))
+        return netsnmp_register_handler(reginfo);
+
+    snmp_log(LOG_ERR, "failed to register row_merge\n");
+    netsnmp_handler_free(handler);
+    netsnmp_handler_registration_free(reginfo);
+
+    return MIB_REGISTRATION_FAILED;
 }
 #endif /* NETSNMP_FEATURE_REMOVE_REGISTER_ROW_MERGE */
 

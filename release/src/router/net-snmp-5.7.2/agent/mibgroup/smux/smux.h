@@ -60,6 +60,7 @@ typedef struct _smux_reg {
     int             sr_priority;        /* priority of registration     */
     int             sr_fd;      /* descriptor of owner          */
     struct _smux_reg *sr_next;  /* next one                     */
+    netsnmp_handler_registration *reginfo;
 } smux_reg;
 
 extern void     init_smux(void);

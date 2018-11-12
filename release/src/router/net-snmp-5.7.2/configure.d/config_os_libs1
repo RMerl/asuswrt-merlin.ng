@@ -46,11 +46,9 @@ if test "x$with_rpm" != "xno"; then
   ],, $LMIBLIBS, _rpmlibs)
 
   # rpm 4.6 has incompatible API, turn on the legacy one
-  AC_CHECK_DECL([headerGetEntry],
-    : ,
-    AC_DEFINE([_RPM_4_4_COMPAT], [], [Define if you have RPM 4.6 or newer to turn on legacy API]),
-    [[#include <rpm/rpmlib.h>]]
-  )
+  NETSNMP_SEARCH_LIBS(headerGet,, [
+    AC_DEFINE(HAVE_HEADERGET, 1,
+      [Define to 1 if you have the headerGet function.])],, $LMIBLIBS)
 fi
 
 #
@@ -79,10 +77,12 @@ NETSNMP_SEARCH_LIBS(kvm_read, kvm,,,, LAGENTLIBS)
 NETSNMP_SEARCH_LIBS(kvm_openfiles, kvm,,,, LAGENTLIBS)
 NETSNMP_SEARCH_LIBS(kvm_getprocs, kvm,,,, LMIBLIBS)
 NETSNMP_SEARCH_LIBS(kvm_getproc2, kvm,,,, LMIBLIBS)
+NETSNMP_SEARCH_LIBS(kvm_getfiles, kvm,,,, LMIBLIBS)
+NETSNMP_SEARCH_LIBS(kvm_getfile2, kvm,,,, LMIBLIBS)
 NETSNMP_SEARCH_LIBS(kvm_getswapinfo, kvm,,,, LMIBLIBS)
 netsnmp_save_LIBS="$LIBS"
 LIBS="$LAGENTLIBS $LMIBLIBS $LIBS"
-AC_CHECK_FUNCS([kvm_openfiles kvm_getprocs kvm_getproc2 kvm_getswapinfo])
+AC_CHECK_FUNCS([kvm_openfiles kvm_getprocs kvm_getproc2 kvm_getswapinfo kvm_getfiles kvm_getfile2])
 LIBS="$netsnmp_save_LIBS"
 
 #
@@ -93,3 +93,35 @@ netsnmp_save_LIBS="$LIBS"
 LIBS="$LMIBLIBS $LAGENTLIBS $LSNMPLIBS $LIBS"
 AC_CHECK_FUNCS([dlopen])
 LIBS="$netsnmp_save_LIBS"
+
+#
+#   regex in process table
+#
+AC_CHECK_HEADER([pcre.h], 
+  [
+    AC_DEFINE([HAVE_PCRE_H], [1], [Define to 1 if you have <pcre.h>.])
+    pcre_h=yes
+  ],
+  [
+    pcre_h=no
+  ]
+)
+if test "x$pcreheader_h" = "xno" -o "x$pcre_h" = "xno" ; then
+  if test "x$with_pcre" = "xyes" ; then
+    AC_MSG_ERROR([Could not find the pcre header file needed and was specifically asked to use pcre support])
+  else
+    with_pcre=no
+  fi
+fi
+
+#
+# pcre libraries only needed for the ucd process agent mib software
+#
+if test "x$with_pcre" != "xno"; then
+  _pcrelibs=""
+  NETSNMP_SEARCH_LIBS([pcre_exec], [pcre],,,, _pcrelibs)
+  if test "x$_pcrelibs" != "x"; then
+    LAGENTLIBS="$LAGENTLIBS $_pcrelibs"
+    LMIBLIBS="$LMIBLIBS $_pcrelibs"
+  fi
+fi

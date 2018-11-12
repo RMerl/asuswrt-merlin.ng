@@ -12,7 +12,7 @@ extern          "C" {
  */
     int netsnmp_tcpbase_recv(netsnmp_transport *t, void *buf, int size,
                              void **opaque, int *olength);
-    int netsnmp_tcpbase_send(netsnmp_transport *t, void *buf, int size,
+    int netsnmp_tcpbase_send(netsnmp_transport *t, const void *buf, int size,
                              void **opaque, int *olength);
         
 #ifdef __cplusplus

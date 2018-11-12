@@ -1,5 +1,14 @@
 /*
  * usmUser.c
+ *
+ * Portions of this file are subject to the following copyright(s).  See
+ * the Net-SNMP's COPYING file for more details and other copyrights
+ * that may apply:
+ *
+ * Portions of this file are copyrighted by:
+ * Copyright (c) 2016 VMware, Inc. All rights reserved.
+ * Use is subject to license terms specified in the COPYING file
+ * distributed with the Net-SNMP package.
  */
 
 #include <net-snmp/net-snmp-config.h>
@@ -24,6 +33,8 @@ int usmStatusCheck(struct usmUser *uptr);
 
 netsnmp_feature_child_of(usmuser_all, libnetsnmpmibs)
 netsnmp_feature_child_of(init_register_usmuser_context, usmuser_all)
+
+netsnmp_feature_require(scapi_get_proper_priv_length)
 
 struct variable4 usmUser_variables[] = {
     {USMUSERSPINLOCK, ASN_INTEGER, NETSNMP_OLDAPI_RWRITE,
@@ -61,7 +72,9 @@ oid             usmUser_variables_oid[] = { 1, 3, 6, 1, 6, 3, 15, 1, 2 };
  */
 #define USM_MIB_LENGTH 12
 
+#ifndef NETSNMP_NO_WRITE_SUPPORT
 static unsigned int usmUserSpinLock = 0;
+#endif
 
 void
 init_usmUser(void)
@@ -305,8 +318,10 @@ var_usmUser(struct variable * vp,
      * variables we may use later 
      */
     static long     long_ret;
+#ifndef NETSNMP_NO_WRITE_SUPPORT
     static u_char   string[1];
     static oid      objid[2];   /* for .0.0 */
+#endif
 
     if (!vp || !name || !length || !var_len)
         return NULL;
@@ -346,14 +361,14 @@ var_usmUser(struct variable * vp,
                 indexOid =
                     usm_generate_OID(vp->name, vp->namelen, nptr, &len);
                 result = snmp_oid_compare(name, *length, indexOid, len);
-                DEBUGMSGTL(("usmUser", "Checking user: %s - ",
+                DEBUGMSGTL(("9:usmUser", "Checking user: %s - ",
                             nptr->name));
                 for (i = 0; i < (int) nptr->engineIDLen; i++) {
-                    DEBUGMSG(("usmUser", " %x", nptr->engineID[i]));
+                    DEBUGMSG(("9:usmUser", " %x", nptr->engineID[i]));
                 }
-                DEBUGMSG(("usmUser", " - %d \n  -> OID: ", result));
-                DEBUGMSGOID(("usmUser", indexOid, len));
-                DEBUGMSG(("usmUser", "\n"));
+                DEBUGMSG(("9:usmUser", " - %d \n  -> OID: ", result));
+                DEBUGMSGOID(("9:usmUser", indexOid, len));
+                DEBUGMSG(("9:usmUser", "\n"));
 
                 free(indexOid);
 
@@ -901,7 +916,7 @@ write_usmUserAuthKeyChange(int action,
         resetOnFail = 1;
         oldkey = uptr->authKey;
         oldkeylen = uptr->authKeyLen;
-        memdup(&uptr->authKey, buf, buflen);
+        uptr->authKey = netsnmp_memdup(buf, buflen);
         if (uptr->authKey == NULL) {
             return SNMP_ERR_RESOURCEUNAVAILABLE;
         }
@@ -946,6 +961,7 @@ write_usmUserPrivProtocol(int action,
         }
     } else if (action == RESERVE2) {
         if ((uptr = usm_parse_user(name, name_len)) == NULL) {
+            DEBUGMSGTL(("usmUser", "usm_parse_user() error\n"));
             return SNMP_ERR_INCONSISTENTNAME;
         }
 
@@ -967,6 +983,7 @@ write_usmUserPrivProtocol(int action,
                                                           var_val_len /
                                                           sizeof(oid));
                 if (uptr->privProtocol == NULL) {
+                    DEBUGMSGTL(("usmUser", "snmp_duplicate_objid() error\n"));
                     return SNMP_ERR_RESOURCEUNAVAILABLE;
                 }
                 uptr->privProtocolLen = var_val_len / sizeof(oid);
@@ -980,6 +997,7 @@ write_usmUserPrivProtocol(int action,
                  */
                 return SNMP_ERR_NOERROR;
             } else {
+                DEBUGMSGTL(("usmUser", "inconsistent value error\n"));
                 return SNMP_ERR_INCONSISTENTVALUE;
             }
         } else {
@@ -999,6 +1017,7 @@ write_usmUserPrivProtocol(int action,
                     ((oid *) var_val, var_val_len / sizeof(oid),
                      usmNoPrivProtocol,
                      sizeof(usmNoPrivProtocol) / sizeof(oid)) != 0) {
+                    DEBUGMSGTL(("usmUser", "inconsistent value error\n"));
                     return SNMP_ERR_INCONSISTENTVALUE;
                 }
             } else {
@@ -1016,6 +1035,7 @@ write_usmUserPrivProtocol(int action,
                     ((oid *) var_val, var_val_len / sizeof(oid),
                      usmAESPrivProtocol,
                      sizeof(usmAESPrivProtocol) / sizeof(oid)) != 0) {
+                    DEBUGMSGTL(("usmUser", "wrong value error\n"));
                     return SNMP_ERR_WRONGVALUE;
                 }
             }
@@ -1026,6 +1046,7 @@ write_usmUserPrivProtocol(int action,
                                                       var_val_len /
                                                       sizeof(oid));
             if (uptr->privProtocol == NULL) {
+                DEBUGMSGTL(("usmUser", "resource unavailable error\n"));
                 return SNMP_ERR_RESOURCEUNAVAILABLE;
             }
             uptr->privProtocolLen = var_val_len / sizeof(oid);
@@ -1062,14 +1083,15 @@ write_usmUserPrivKeyChange(int action,
                            u_char * statP, oid * name, size_t name_len)
 {
     struct usmUser *uptr;
-    unsigned char   buf[SNMP_MAXBUF_SMALL];
-    size_t          buflen = SNMP_MAXBUF_SMALL;
+    unsigned char   buf[SNMP_MAXBUF_SMALL], buf2[SNMP_MAXBUF_SMALL];
+    size_t          buflen = sizeof(buf);
     const char      fnPrivKey[] = "write_usmUserPrivKeyChange";
     const char      fnOwnPrivKey[] = "write_usmUserOwnPrivKeyChange";
     const char     *fname;
     static unsigned char *oldkey;
     static size_t   oldkeylen;
     static int      resetOnFail;
+    int plen, alen;
 
     if (name[USM_MIB_LENGTH - 1] == 9) {
         fname = fnPrivKey;
@@ -1091,32 +1113,41 @@ write_usmUserPrivKeyChange(int action,
         if ((uptr = usm_parse_user(name, name_len)) == NULL) {
             return SNMP_ERR_INCONSISTENTNAME;
         } else {
-#ifndef NETSNMP_DISABLE_DES
-            if (snmp_oid_compare(uptr->privProtocol, uptr->privProtocolLen,
-                                 usmDESPrivProtocol,
-                                 sizeof(usmDESPrivProtocol) /
-                                 sizeof(oid)) == 0) {
-                if (var_val_len != 0 && var_val_len != 32) {
-                    return SNMP_ERR_WRONGLENGTH;
-                }
+            netsnmp_priv_alg_info *pai =
+                sc_get_priv_alg_byoid(uptr->privProtocol,
+                                      uptr->privProtocolLen);
+            if (NULL == pai) {
+                DEBUGMSGTL(("usmUser", "%s: unknown privProtocol\n",
+                            fname));
+                return SNMP_ERR_GENERR;
             }
+            alen = sc_get_properlength(uptr->authProtocol,
+                                       uptr->authProtocolLen);
+            plen = pai->proper_length;
+            DEBUGMSGTL(("usmUser", "plen %d, alen %d\n", plen, alen));
+#if 0
+            if (USM_CREATE_USER_PRIV_DES == pai->type)
+                plen *= 2; /* ?? we store salt with key */
 #endif
-            if (snmp_oid_compare(uptr->privProtocol, uptr->privProtocolLen,
-                                 usmAESPrivProtocol,
-                                 sizeof(usmAESPrivProtocol) /
-                                 sizeof(oid)) == 0) {
-                if (var_val_len != 0 && var_val_len != 32) {
-                    return SNMP_ERR_WRONGLENGTH;
-                }
+            if (var_val_len != 0 && var_val_len != (2 * plen)) {
+                DEBUGMSGTL(("usmUser", "%s: bad len. %" NETSNMP_PRIz "d != %d\n",
+                            fname, var_val_len, (2*alen)));
+                return SNMP_ERR_WRONGLENGTH;
             }
         }
     } else if (action == ACTION) {
+
         if ((uptr = usm_parse_user(name, name_len)) == NULL) {
             return SNMP_ERR_INCONSISTENTNAME;
         }
         if (uptr->cloneFrom == NULL) {
             return SNMP_ERR_INCONSISTENTNAME;
         }
+        plen = sc_get_proper_priv_length(uptr->privProtocol,
+                                         uptr->privProtocolLen);
+        alen = sc_get_properlength(uptr->authProtocol,
+                                   uptr->authProtocolLen);
+        DEBUGMSGTL(("usmUser", "plen %d, alen %d\n", plen, alen));
         if (snmp_oid_compare(uptr->privProtocol, uptr->privProtocolLen,
                              usmNoPrivProtocol,
                              sizeof(usmNoPrivProtocol) / sizeof(oid)) ==
@@ -1130,6 +1161,35 @@ write_usmUserPrivKeyChange(int action,
                         "%s: noPrivProtocol keyChange... success!\n",
                         fname));
             return SNMP_ERR_NOERROR;
+        }
+
+        /*
+         * extend key as needed
+         */
+        DEBUGMSGTL(("9:usmUser", "%s: var_val_len %" NETSNMP_PRIz "d\n", fname, var_val_len));
+        if (var_val_len < ( 2 * plen )) {
+            struct usmUser dummy;
+            memset(&dummy, 0x0, sizeof(dummy));
+            dummy.engineID = uptr->engineID;
+            dummy.engineIDLen = uptr->engineIDLen;
+            dummy.authProtocol = uptr->authProtocol;
+            dummy.authProtocolLen = uptr->authProtocolLen;
+            dummy.privProtocol = uptr->privProtocol;
+            dummy.privProtocolLen = uptr->privProtocolLen;
+            memcpy(buf2, var_val, var_val_len);
+            dummy.privKey = buf2;
+            dummy.privKeyLen = var_val_len;
+            if (SNMP_ERR_NOERROR != usm_extend_user_kul(&dummy, sizeof(buf2))) {
+                DEBUGMSGTL(("usmUser", "%s: extend kul failed\n", fname));
+                return SNMP_ERR_GENERR;
+            }
+            DEBUGMSGTL(("9:usmUser", "%s: extend kul OK\n", fname));
+            var_val = dummy.privKey;
+            var_val_len = dummy.privKeyLen;
+            /*
+             * make sure no reallocation happened; buf2 must be large enoungh
+             */
+            netsnmp_assert( dummy.privKey == buf2 );
         }
 
         /*
@@ -1149,7 +1209,7 @@ write_usmUserPrivKeyChange(int action,
         resetOnFail = 1;
         oldkey = uptr->privKey;
         oldkeylen = uptr->privKeyLen;
-        memdup(&uptr->privKey, buf, buflen);
+        uptr->privKey = netsnmp_memdup(buf, buflen);
         if (uptr->privKey == NULL) {
             return SNMP_ERR_RESOURCEUNAVAILABLE;
         }

@@ -47,7 +47,7 @@ do_usage () {
 
 
 do_strip () {
-    cat $1 | $AWK -v test="$test" -v dir="$dir" -v single="$single" -v suffix="$suffix" -v verbose="$verbose" '
+    expand $1 | sed 's/[ \r]*$//' | $AWK -v test="$test" -v dir="$dir" -v single="$single" -v suffix="$suffix" -v verbose="$verbose" '
 
     BEGIN {
 	if (length(single) != 0) {

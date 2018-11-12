@@ -12,7 +12,6 @@
 # Makefile for snmplib
 #
 
-top_builddir=..
 mysubdir=snmplib
 
 # use GNU vpath, if available, to only set a path for source and headers
@@ -31,71 +30,72 @@ mysubdir=snmplib
 
 # headers
 INSTALLHEADERS=\
-	net-snmp-includes.h \
 	config_api.h  \
+	definitions.h \
 	mib_api.h     \
+	net-snmp-includes.h \
 	output_api.h  \
 	pdu_api.h     \
 	session_api.h \
 	snmpv3_api.h  \
-	varbind_api.h \
 	types.h       \
 	utilities.h   \
-	version.h     \
-	definitions.h
+	varbind_api.h \
+	version.h
 
 INCLUDESUBDIR=library
 INCLUDESUBDIRHEADERS=README \
 	asn1.h \
 	callback.h \
 	cert_util.h \
+	check_varbind.h \
 	container.h \
 	container_binary_array.h \
-	container_list_ssll.h \
 	container_iterator.h \
+	container_list_ssll.h \
 	container_null.h \
-	factory.h \
 	data_list.h \
 	default_store.h \
 	dir_utils.h \
+	factory.h \
 	fd_event_manager.h \
 	file_utils.h \
+	getopt.h \
 	int64.h \
 	keytools.h \
-	mib.h \
+	large_fd_set.h \
+	lcd_time.h \
 	md5.h \
+	mib.h \
+	mt_support.h \
+	netsnmp-attribute-format.h \
+	oid.h \
+	oid_stash.h \
 	parse.h \
 	read_config.h \
 	scapi.h \
+	snmp-tc.h \
 	snmp.h \
 	snmp_alarm.h \
 	snmp_api.h \
-	large_fd_set.h \
 	snmp_assert.h \
 	snmp_client.h \
 	snmp_debug.h \
+	snmp_enum.h \
 	snmp_impl.h \
 	snmp_logging.h \
 	snmp_parse_args.h \
+	snmp_secmod.h \
 	snmp_service.h \
-	snmp-tc.h \
+	snmp_transport.h \
 	snmpv3.h \
 	system.h \
 	text_utils.h \
 	tools.h \
 	transform_oids.h \
 	types.h \
-        getopt.h \
-        lcd_time.h \
-        mt_support.h \
-        oid.h \
-        oid_stash.h \
-        snmp_enum.h \
-        snmp_secmod.h \
-        ucd_compat.h \
-        vacm.h \
-	check_varbind.h \
-	snmp_transport.h \
+	ucd_compat.h \
+	vacm.h \
 	winpipe.h \
 	winservice.h \
 	@transport_hdr_list@ \
@@ -105,28 +105,29 @@ INSTALLBUILTSUBDIRHEADERS=../include/net-snmp/library/snmpv3-security-includes.h
 INSTALLBUILTSUBDIR=library
 
 
-INSTALLUCDHEADERS= asn1.h \
+INSTALLUCDHEADERS=\
+	asn1.h          \
 	callback.h	\
 	default_store.h	\
 	int64.h		\
 	keytools.h	\
+	large_fd_set.h	\
 	mib.h		\
 	parse.h		\
 	read_config.h	\
 	scapi.h		\
+	snmp-tc.h	\
+	snmp.h		\
 	snmp_alarm.h	\
 	snmp_api.h	\
-	large_fd_set.h	\
 	snmp_client.h	\
 	snmp_debug.h	\
-	snmp.h		\
 	snmp_impl.h	\
 	snmp_logging.h	\
 	snmp_parse_args.h \
-	snmp-tc.h	\
+	snmp_vars.h	\
 	snmpusm.h	\
 	snmpv3.h	\
-	snmp_vars.h	\
 	struct.h	\
 	system.h	\
 	tools.h		\
@@ -152,7 +153,7 @@ CSRCS=	snmp_client.c mib.c parse.c snmp_api.c snmp.c 		\
 	data_list.c oid_stash.c fd_event_manager.c 		\
 	check_varbind.c 					\
 	mt_support.c snmp_enum.c snmp-tc.c snmp_service.c	\
-	snprintf.c						\
+	snprintf.c asprintf.c					\
 	snmp_transport.c @transport_src_list@			\
 	snmp_secmod.c @security_src_list@ snmp_version.c        \
 	container_null.c container_list_ssll.c container_iterator.c \
@@ -171,7 +172,7 @@ OBJS=	snmp_client.o mib.o parse.o snmp_api.o snmp.o 		\
 	data_list.o oid_stash.o fd_event_manager.o		\
 	check_varbind.o 					\
 	mt_support.o snmp_enum.o snmp-tc.o snmp_service.o	\
-	snprintf.o						\
+	snprintf.o asprintf.o					\
 	snmp_transport.o @transport_obj_list@                   \
 	snmp_secmod.o @security_obj_list@ snmp_version.o        \
 	container_null.o container_list_ssll.o container_iterator.o \
@@ -190,7 +191,7 @@ LOBJS=	snmp_client.lo mib.lo parse.lo snmp_api.lo snmp.lo 	\
 	data_list.lo oid_stash.lo fd_event_manager.lo		\
 	check_varbind.lo 					\
 	mt_support.lo snmp_enum.lo snmp-tc.lo snmp_service.lo	\
-	snprintf.lo						\
+	snprintf.lo asprintf.lo					\
 	snmp_transport.lo @transport_lobj_list@                 \
 	snmp_secmod.lo @security_lobj_list@ snmp_version.lo     \
 	container.lo container_binary_array.lo			\
@@ -208,7 +209,7 @@ FTOBJS=	snmp_client.ft mib.ft parse.ft snmp_api.ft snmp.ft 	\
 	data_list.ft oid_stash.ft fd_event_manager.ft		\
 	check_varbind.ft 					\
 	mt_support.ft snmp_enum.ft snmp-tc.ft snmp_service.ft	\
-	snprintf.ft						\
+	snprintf.ft asprintf.ft					\
 	snmp_transport.ft @transport_ftobj_list@                \
 	snmp_secmod.ft @security_ftobj_list@ snmp_version.ft    \
 	container.ft container_binary_array.ft	\

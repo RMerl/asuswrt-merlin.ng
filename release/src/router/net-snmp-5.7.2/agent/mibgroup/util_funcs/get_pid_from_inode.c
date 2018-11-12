@@ -2,6 +2,7 @@
 
 #include "get_pid_from_inode.h"
 
+#include <net-snmp/library/system.h> /* strlcpy() */
 #include <net-snmp/output_api.h>
 
 #include <ctype.h>
@@ -144,7 +145,8 @@ netsnmp_get_pid_from_inode_init(void)
             if (filelen + strlen(pidinfo->d_name) > PATH_MAX)
                 continue;
 
-            strcpy(path_name + filelen, pidinfo->d_name);
+            strlcpy(path_name + filelen, pidinfo->d_name,
+                    sizeof(path_name) - filelen);
 
             /* The file discriptor is a symbolic link to a socket or a file.*/
             /* Thus read the symbolic link.*/

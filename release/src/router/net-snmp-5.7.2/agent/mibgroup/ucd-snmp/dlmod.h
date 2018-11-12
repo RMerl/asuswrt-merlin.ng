@@ -6,7 +6,7 @@
 #ifndef MIBGROUP_DLMOD_H
 #define MIBGROUP_DLMOD_H
 
-#if !defined(HAVE_DLFCN_H) || !defined(HAVE_DLOPEN)
+#if (!defined(HAVE_DLFCN_H) || !defined(HAVE_DLOPEN)) && !defined(WIN32)
 config_error(Dynamic modules not supported on this platform)
 #endif
 

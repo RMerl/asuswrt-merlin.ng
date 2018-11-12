@@ -30,7 +30,7 @@ snmpgetnext - communicates with a network entity using SNMP GETNEXT requests
 .B snmpgetnext
 [COMMON OPTIONS] [\-Cf] AGENT OID [OID]...
 .SH DESCRIPTION
-.B snmpget
+.B snmpgetnext
 is an SNMP application that uses the SNMP GETNEXT request to query for
 information on a network entity.  One or more object identifiers
 (OIDs) may be given as arguments on the command line.  Each variable

@@ -113,7 +113,8 @@ The simplest way to compile this package is:
      files that `configure' created (so you can compile the package for
      a different kind of computer), type `make distclean'.
 
-  7. You can remove the application by typing `make uninstall'.
+  7. You can remove the application (but not the perl or python modules)
+     by typing `make uninstall'.
 
 There may be additional installation issues discussed in the 
 README's for various platforms such as README.solaris.

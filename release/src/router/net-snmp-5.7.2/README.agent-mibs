@@ -67,7 +67,7 @@ SNMPv2-MIB
  system.?.0                   A         5.5     W mibII/system_mib.c
  .sysORLastChange.0           A         5.5     W mibII/sysORTable.c
  sysORTable                   A         5.5     C mibII/sysORTable.c
- snmp.*.0                     A         5.5     G mibII/snmp_mib_5_5.c
+ snmp.*.0                     A         5.5     G mibII/snmp_mib.c
  setSerialNo.0                A         5.0     W mibII/setSerialNo.c
 
 ------------------------------------------------------------------------------
@@ -76,15 +76,15 @@ SNMP-FRAMEWORK-MIB
 
 ------------------------------------------------------------------------------
 SNMP-MPD-MIB
- snmpMPDStats.*.0             A         ~4.0?   G snmpv3/snmpMPDStats_5_5.c
+ snmpMPDStats.*.0             A         ~4.0?   G snmpv3/snmpMPDStats.c
 
 ------------------------------------------------------------------------------
 SNMP-TARGET-MIB
  snmpTargetSpinLock.0         A         3.6     O target/snmpTargetAddrEntry.c
  snmpTargetAddrTable          A         3.6     O target/snmpTargetAddrEntry.c
  snmpTargetParamsTable        A         3.6     O target/snmpTargetParamsEntry.c
- snmpUnavailableContexts.0    A         5.5     G target/target_counters_5_5.c
- snmpUnknownContexts.0        A         5.5     G target/target_counters_5_5.c
+ snmpUnavailableContexts.0    A         5.5     G target/target_counters.c
+ snmpUnknownContexts.0        A         5.5     G target/target_counters.c
 
 ------------------------------------------------------------------------------
 SNMP-NOTIFICATION-MIB
@@ -104,8 +104,8 @@ SNMP-PROXY-MIB
 
 ------------------------------------------------------------------------------
 SNMP-USER-BASED-SM-MIB
- usmStats.*.0                 A         ~4.0    O snmpv3/usmStats.c
- usmStats.*.0                 A         5.5     G snmpv3/usmStats_5_5.c
+ usmStats.*.0                 A         ~4.0    O --- deleted ---
+ usmStats.*.0                 A         5.5     G snmpv3/usmStats.c
  usmUserTable                 A         ~4.0?   O snmpv3/usmUser.c
 
 ------------------------------------------------------------------------------

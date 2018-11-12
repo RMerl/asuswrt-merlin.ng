@@ -10,7 +10,11 @@ config_require(util_funcs)
 
      extern FindVarMethod var_extensible_proc;
      extern WriteMethod fixProcError;
+     int sh_count_myprocs(struct myproc *);
      int             sh_count_procs(char *);
+#ifdef HAVE_PCRE_H
+     int sh_count_procs_by_regex(char *, netsnmp_regex_ptr);
+#endif
 
 /*
  * config file parsing routines 

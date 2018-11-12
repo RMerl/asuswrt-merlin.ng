@@ -33,8 +33,7 @@ OID_LENGTH(ipv6InterfaceTable_oid);
 ipv6InterfaceTable_registration ipv6InterfaceTable_user_context;
 static ipv6InterfaceTable_registration *ipv6InterfaceTable_user_context_p;
 
-void            initialize_table_ipv6InterfaceTable(void);
-void            shutdown_table_ipv6InterfaceTable(void);
+static void     shutdown_table_ipv6InterfaceTable(void);
 
 
 /**

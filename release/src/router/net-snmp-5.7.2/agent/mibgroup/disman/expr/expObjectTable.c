@@ -288,7 +288,8 @@ expObjectTable_handler(netsnmp_mib_handler *handler,
             tinfo = netsnmp_extract_table_info(request);
             entry = (struct expObject *)
                     netsnmp_tdata_extract_entry(request);
-            if (!entry) {
+            if (!entry && tinfo->colnum != COLUMN_EXPOBJECTENTRYSTATUS &&
+                *request->requestvb->val.integer != RS_DESTROY) {
                 /*
                  * New rows must be created via the RowStatus column
                  */
@@ -322,7 +323,7 @@ expObjectTable_handler(netsnmp_mib_handler *handler,
                 memset(entry->expObjectID, 0, sizeof(entry->expObjectID));
                 memcpy(entry->expObjectID, request->requestvb->val.string,
                                            request->requestvb->val_len);
-                entry->expObjectID_len = request->requestvb->val_len;
+                entry->expObjectID_len = request->requestvb->val_len/sizeof(oid);
                 break;
             case COLUMN_EXPOBJECTIDWILDCARD:
                 if (*request->requestvb->val.integer == TV_TRUE)
@@ -371,7 +372,7 @@ expObjectTable_handler(netsnmp_mib_handler *handler,
                         ret = 1;   /* Set the prefix later  */
                     entry->flags |=  EXP_OBJ_FLAG_DWILD;
                 } else {
-                    if ( entry->flags | EXP_OBJ_FLAG_PREFIX ) {
+                    if ( entry->flags & EXP_OBJ_FLAG_PREFIX ) {
                         exp = expExpression_getEntry( entry->expOwner,
                                                       entry->expName );
                         memset( exp->expPrefix, 0, MAX_OID_LEN*sizeof(oid));

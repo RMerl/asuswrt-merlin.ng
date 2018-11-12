@@ -249,7 +249,7 @@ nsop_get_indexes(oid1)
         struct tree    *tp, *tpe, *tpnode, *indexnode;
         struct index_list *index;
         netsnmp_variable_list vbdata;
-        u_char         *buf = NULL;
+        char           *buf = NULL;
         size_t          buf_len = 256, out_len = 0;
         oid name[MAX_OID_LEN];
         size_t name_len = MAX_OID_LEN;
@@ -370,7 +370,7 @@ nsop_get_indexes(oid1)
                                      1, name, name_len, &vbdata);
 */
                 snmp_free_var_internals(&vbdata);
-                av_push(myret, newSVpv((char *)buf, out_len));
+                av_push(myret, newSVpv(buf, out_len));
             }
             netsnmp_free(buf);
             RETVAL = newRV((SV *)myret);

@@ -10,6 +10,7 @@
 #include <net-snmp/net-snmp-includes.h>
 #include "netSnmpHostsTable_checkfns.h"
 #include "netSnmpHostsTable_enums.h"
+#include "netSnmpHostsTable_checkfns_local.h"
 
 /** Decides if an incoming value for the netSnmpHostAddressType mib node is legal, from a local implementation specific viewpoint.
  *  @param type    The incoming data type.

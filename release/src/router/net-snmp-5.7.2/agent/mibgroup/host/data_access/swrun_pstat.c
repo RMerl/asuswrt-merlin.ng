@@ -29,6 +29,7 @@
 #include <net-snmp/library/container.h>
 #include <net-snmp/library/snmp_debug.h>
 #include <net-snmp/data_access/swrun.h>
+#include "swrun_private.h"
 
 /* ---------------------------------------------------------------------
  */
@@ -51,7 +52,7 @@ netsnmp_arch_swrun_container_load( netsnmp_container *container, u_int flags)
     struct pst_status   *proc_table;
     struct pst_dynamic   pst_dyn;
     int                  nproc, i, rc;
-    char                *cp1, *cp2;
+    char                *cp;
     netsnmp_swrun_entry *entry;
 
     pstat_getdynamic( &pst_dyn, sizeof(struct pst_dynamic), 1, 0);
@@ -73,16 +74,18 @@ netsnmp_arch_swrun_container_load( netsnmp_container *container, u_int flags)
          *     argv[0]   is hrSWRunPath
          *     argv[1..] is hrSWRunParameters
          */
-        for ( cp1 = proc_table[i].pst_cmd; ' ' == *cp1; cp1++ )
-            ;
-        *cp1 = '\0';    /* End of argv[0] */
+        cp = strchr(proc_table[i].pst_cmd, ' ');
+        if (cp)
+            *cp = '\0';    /* End of argv[0] */
         entry->hrSWRunPath_len = snprintf(entry->hrSWRunPath,
                                    sizeof(entry->hrSWRunPath)-1,
                                           "%s", proc_table[i].pst_cmd);
-        entry->hrSWRunParameters_len = snprintf(entry->hrSWRunParameters,
-                                         sizeof(entry->hrSWRunParameters)-1,
-                                          "%s", cp1+1);
-        *cp1 = ' ';     /* Restore pst_cmd value */
+        if (cp) {
+            entry->hrSWRunParameters_len =
+                snprintf(entry->hrSWRunParameters,
+                         sizeof(entry->hrSWRunParameters)-1, "%s", cp+1);
+            *cp = ' ';     /* Restore pst_cmd value */
+        }
 
         entry->hrSWRunType = (PS_SYS & proc_table[i].pst_flag)
                               ? 2   /* kernel process */

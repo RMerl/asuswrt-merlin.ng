@@ -23,10 +23,6 @@ netsnmp_feature_require(insert_table_row)
 #endif /* NETSNMP_NO_WRITE_SUPPORT */
 
 oid  ns_extend_oid[]    = { 1, 3, 6, 1, 4, 1, 8072, 1, 3, 2 };
-oid  extend_count_oid[] = { 1, 3, 6, 1, 4, 1, 8072, 1, 3, 2, 1 };
-oid  extend_config_oid[] = { 1, 3, 6, 1, 4, 1, 8072, 1, 3, 2, 2 };
-oid  extend_out1_oid[]  = { 1, 3, 6, 1, 4, 1, 8072, 1, 3, 2, 3 };
-oid  extend_out2_oid[]  = { 1, 3, 6, 1, 4, 1, 8072, 1, 3, 2, 4 };
 
 typedef struct extend_registration_block_s {
     netsnmp_table_data *dinfo;
@@ -34,7 +30,7 @@ typedef struct extend_registration_block_s {
     size_t              oid_len;
     long                num_entries;
     netsnmp_extend     *ehead;
-    netsnmp_handler_registration       *reg[3];
+    netsnmp_handler_registration       *reg[4];
     struct extend_registration_block_s *next;
 } extend_registration_block;
 extend_registration_block *ereg_head = NULL;
@@ -50,6 +46,9 @@ typedef struct netsnmp_old_extend_s {
 unsigned int             num_compatability_entries = 0;
 unsigned int             max_compatability_entries = 50;
 netsnmp_old_extend *compatability_entries;
+
+char           *cmdlinebuf;
+size_t          cmdlinesize;
 
 WriteMethod fixExec2Error;
 FindVarMethod var_extensible_old;
@@ -222,10 +221,13 @@ _register_extend( oid *base, size_t len )
     rc = netsnmp_register_watched_scalar2( reg, winfo );
     if (rc != SNMPERR_SUCCESS)
         goto bail;
+    eptr->reg[3] = reg;
 
     return eptr;
 
 bail:
+    if (eptr->reg[3])
+        netsnmp_unregister_handler(eptr->reg[3]);
     if (eptr->reg[2])
         netsnmp_unregister_handler(eptr->reg[2]);
     if (eptr->reg[1])
@@ -267,6 +269,7 @@ extend_clear_callback(int majorID, int minorID,
         netsnmp_unregister_handler( eptr->reg[0] );
         netsnmp_unregister_handler( eptr->reg[1] );
         netsnmp_unregister_handler( eptr->reg[2] );
+        netsnmp_unregister_handler( eptr->reg[3] );
         SNMP_FREE(eptr);
     }
     ereg_head = NULL;
@@ -515,8 +518,28 @@ extend_parse_config(const char *token, char *cptr)
     size_t oid_len;
     extend_registration_block *eptr;
     int  flags;
+    int cache_timeout = 0;
+    int exec_type = NS_EXTEND_ETYPE_EXEC;
 
-    cptr = copy_nword(cptr, exec_name,    sizeof(exec_name));
+    cptr = copy_nword(cptr, exec_name, sizeof(exec_name));
+    if (strcmp(exec_name, "-cacheTime") == 0) {
+        char cache_timeout_str[32];
+
+        cptr = copy_nword(cptr, cache_timeout_str, sizeof(cache_timeout_str));
+        /* If atoi can't do the conversion, it returns 0 */
+        cache_timeout = atoi(cache_timeout_str);
+        cptr = copy_nword(cptr, exec_name, sizeof(exec_name));
+    }
+    if (strcmp(exec_name, "-execType") == 0) {
+        char exec_type_str[16];
+
+        cptr = copy_nword(cptr, exec_type_str, sizeof(exec_type_str));
+        if (strcmp(exec_type_str, "sh") == 0)
+            exec_type = NS_EXTEND_ETYPE_SHELL;
+        else
+            exec_type = NS_EXTEND_ETYPE_EXEC;
+        cptr = copy_nword(cptr, exec_name, sizeof(exec_name));
+    }
     if ( *exec_name == '.' ) {
         oid_len = MAX_OID_LEN - 2;
         if (0 == read_objid( exec_name, oid_buf, &oid_len )) {
@@ -538,7 +561,8 @@ extend_parse_config(const char *token, char *cptr)
     flags = (NS_EXTEND_FLAGS_ACTIVE | NS_EXTEND_FLAGS_CONFIG);
     if (!strcmp( token, "sh"        ) ||
         !strcmp( token, "extend-sh" ) ||
-        !strcmp( token, "sh2" ))
+        !strcmp( token, "sh2") ||
+        exec_type == NS_EXTEND_ETYPE_SHELL)
         flags |= NS_EXTEND_FLAGS_SHELL;
     if (!strcmp( token, "execFix"   ) ||
         !strcmp( token, "extendfix" ) ||
@@ -550,11 +574,17 @@ extend_parse_config(const char *token, char *cptr)
     }
 
     eptr      = _register_extend( oid_buf, oid_len );
+    if (!eptr) {
+        snmp_log(LOG_ERR, "Failed to register extend entry '%s' - possibly duplicate name.\n", exec_name );
+        return;
+    }
     extension = _new_extension( exec_name, flags, eptr );
     if (extension) {
         extension->command  = strdup( exec_command );
         if (cptr)
             extension->args = strdup( cptr );
+        if (cache_timeout != 0)
+            extension->cache->timeout = cache_timeout;
     } else {
         snmp_log(LOG_ERR, "Failed to register extend entry '%s' - possibly duplicate name.\n", exec_name );
         return;
@@ -1451,6 +1481,32 @@ handle_nsExtendOutput2Table(netsnmp_mib_handler          *handler,
          *
          *************************/
 
+char * _get_cmdline(netsnmp_extend *extend)
+{
+    size_t          size;
+    char           *newbuf;
+    const char     *args = extend->args;
+
+    if (args == NULL)
+        /* Use empty string for processes without arguments. */
+        args = "";
+
+    size = strlen(extend->command) + strlen(args) + 2;
+    if (size > cmdlinesize) {
+        newbuf = realloc(cmdlinebuf, size);
+        if (!newbuf) {
+            free(cmdlinebuf);
+            cmdlinebuf = NULL;
+            cmdlinesize = 0;
+            return NULL;
+        }
+        cmdlinebuf = newbuf;
+        cmdlinesize = size;
+    }
+    sprintf(cmdlinebuf, "%s %s", extend->command, args);
+    return cmdlinebuf;
+}
+
 u_char *
 var_extensible_old(struct variable * vp,
                      oid * name,
@@ -1461,6 +1517,7 @@ var_extensible_old(struct variable * vp,
     netsnmp_old_extend *exten = NULL;
     static long     long_ret;
     unsigned int idx;
+    char         *cmdline;
 
     if (header_simple_table
         (vp, name, length, exact, var_len, write_method, num_compatability_entries))
@@ -1479,8 +1536,10 @@ var_extensible_old(struct variable * vp,
             *var_len = strlen(exten->exec_entry->token);
             return ((u_char *) (exten->exec_entry->token));
         case SHELLCOMMAND:
-            *var_len = strlen(exten->exec_entry->command);
-            return ((u_char *) (exten->exec_entry->command));
+            cmdline = _get_cmdline(exten->exec_entry);
+            if (cmdline)
+                *var_len = strlen(cmdline);
+            return ((u_char *) cmdline);
         case ERRORFLAG:        /* return code from the process */
             netsnmp_cache_check_and_reload( exten->exec_entry->cache );
             long_ret = exten->exec_entry->result;
@@ -1503,8 +1562,10 @@ var_extensible_old(struct variable * vp,
 
         case ERRORFIXCMD:
             if (exten->efix_entry) {
-                *var_len = strlen(exten->efix_entry->command);
-                return ((u_char *) exten->efix_entry->command);
+                cmdline = _get_cmdline(exten->efix_entry);
+		if (cmdline)
+                    *var_len = strlen(cmdline);
+                return ((u_char *) cmdline);
             } else {
                 *var_len = 0;
                 return ((u_char *) &long_return);  /* Just needs to be non-null! */

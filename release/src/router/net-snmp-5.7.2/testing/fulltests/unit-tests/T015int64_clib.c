@@ -1,4 +1,4 @@
-/* HEADER Testing 64-bit integer operations (U64). */
+/* HEADER Testing 64-bit integer operations (struct counter64). */
 
 int i, j;
 char buf[22];
@@ -15,7 +15,7 @@ static const int64_t intval[] = {
 };
 
 for (i = 0; i < sizeof(intval)/sizeof(intval[0]); ++i) {
-    U64 a, b;
+    struct counter64 a, b;
     a.low = (uint32_t)intval[i];
     a.high = (uint32_t)(intval[i] >> 32);
     printI64(buf, &a);
@@ -27,7 +27,7 @@ for (i = 0; i < sizeof(intval)/sizeof(intval[0]); ++i) {
 
 for (i = 0; i < sizeof(intval)/sizeof(intval[0]); ++i) {
     for (j = i; j < sizeof(intval)/sizeof(intval[0]); ++j) {
-        U64 a, b;
+        struct counter64 a, b;
         uint64_t d;
         a.low = (uint32_t)intval[i];
         a.high = (uint32_t)(intval[i] >> 32);
@@ -43,7 +43,7 @@ for (i = 0; i < sizeof(intval)/sizeof(intval[0]); ++i) {
         
 for (i = 0; i < sizeof(intval)/sizeof(intval[0]); ++i) {
     for (j = i; j < sizeof(intval)/sizeof(intval[0]); ++j) {
-        U64 a, b, c;
+        struct counter64 a, b, c;
         uint64_t d;
         a.low = (uint32_t)intval[i];
         a.high = (uint32_t)(intval[i] >> 32);
@@ -58,7 +58,7 @@ for (i = 0; i < sizeof(intval)/sizeof(intval[0]); ++i) {
 }
         
 {
-    U64 old_val, new_val;
+    struct counter64 old_val, new_val;
     old_val.low = 7;
     old_val.high = 0;
     new_val = old_val;

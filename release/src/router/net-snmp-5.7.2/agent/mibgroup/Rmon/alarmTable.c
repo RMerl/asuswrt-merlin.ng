@@ -15,6 +15,7 @@
 #include <net-snmp/agent/net-snmp-agent-includes.h>
 #include "utilities/iquery.h"
 #include "alarmTable.h"
+#include "event.h"
 
 netsnmp_feature_require(iquery)
 netsnmp_feature_require(query_set_default_session)
@@ -68,16 +69,6 @@ initialize_table_alarmTable(void)
      * Initialise the contents of the table here 
      */
 }
-
-extern int
-event_api_send_alarm(u_char is_rising,
-                     u_long alarm_index,
-                     u_long event_index,
-                     oid * alarmed_var,
-                     size_t alarmed_var_length,
-                     u_long sample_type,
-                     u_long value,
-                     u_long the_threshold, const char *alarm_descr);
 
 #define ALARM_STR1_LEN	32
 typedef enum {

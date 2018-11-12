@@ -201,6 +201,9 @@ struct pingProbeHistoryTable_data {
 
 };
 
+extern struct header_complex_index *pingCtlTableStorage;
+extern struct header_complex_index *pingResultsTableStorage;
+extern struct header_complex_index *pingProbeHistoryTableStorage;
 
 /*
  * function declarations 
@@ -285,20 +288,6 @@ void            readloop(struct pingCtlTable_data *, struct addrinfo *,
 void            sig_alrm(int);
 void            tv_sub(struct timeval *, struct timeval *);
 unsigned long   round_double(double);
-struct proto {
-    int             (*fproc) (char *, ssize_t, struct timeval *, time_t,
-                              struct pingCtlTable_data *,
-                              struct addrinfo *, int, unsigned long *,
-                              unsigned long *, unsigned long *,
-                              unsigned long *, unsigned long, int, int,
-                              int, struct pingProbeHistoryTable_data *,
-                              pid_t);
-    void            (*fsend) (int, pid_t, int, int, char *);
-    struct sockaddr *sasend;    /* sockaddr{} for send, from getaddrinfo */
-    struct sockaddr *sarecv;    /* sockaddr{} for receiving */
-    socklen_t       salen;      /* length of sockaddr{}s */
-    int             icmpproto;  /* IPPROTO_xxx value for ICMP */
-}              *pr;
 
 
 /*
@@ -337,7 +326,6 @@ struct proto {
 
 
 #define	MAX_DUP_CHK	0x10000
-char            rcvd_tbl[MAX_DUP_CHK / 8];
 
 volatile int    exiting;
 volatile int    status_snapshot;

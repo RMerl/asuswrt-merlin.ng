@@ -108,6 +108,7 @@ int netsnmp_cpu_arch_load( netsnmp_cache *cache, void *magic ) {
     cpu0->pageIn = vmstat.pageins;
     cpu0->pageOut = vmstat.pageouts;
 	/* not implemented: swapIn, swapOut, nInterrupts, nCtxSwitches */
+    return 1;
 }
 
  	  	 

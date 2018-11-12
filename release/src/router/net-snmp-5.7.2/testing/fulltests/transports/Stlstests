@@ -23,7 +23,7 @@ CHECKVALUEISNT "$TESTUSERFP" "" "generated fingerprint for testuser certificate"
 ########################################
 # Configure the .conf files
 
-CONFIGAPP serverCert $SERVERFP
+CONFIGAPP peerCert		  $SERVERFP
 
 # common name mappings
 CONFIGAGENT certSecName 9  $TESTUSERFP     --cn
@@ -33,9 +33,10 @@ CONFIGAGENT  rwuser -s tsm testuser authpriv
 # Run the actual list of tests
 #
 
-# start the agent up
-FLAGS="-On $SNMP_FLAGS $SNMP_TRANSPORT_SPEC:$SNMP_TEST_DEST$SNMP_SNMPD_PORT"
+# app flags
+FLAGS="-v3 -On $SNMP_FLAGS $SNMP_TRANSPORT_SPEC:$SNMP_TEST_DEST$SNMP_SNMPD_PORT"
 
+# start the agent up
 STARTAGENT
 
 # using user 1 - a common name mapped certificate

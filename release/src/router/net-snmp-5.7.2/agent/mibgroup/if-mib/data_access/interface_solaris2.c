@@ -12,6 +12,7 @@
 
 #include <net-snmp/data_access/interface.h>
 #include "if-mib/data_access/interface.h"
+#include "interface_private.h"
 #include <sys/ioctl.h>
 #include <sys/sockio.h>
 #include <strings.h>

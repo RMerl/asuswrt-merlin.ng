@@ -1025,9 +1025,7 @@ The Cygwin compiler and toolkit provides a Unix style shell and environment
 for Windows based systems. The cygwin1.dll provides a POSIX emulation layer 
 that simplifies porting Unix / Linux applications to Windows. The Cygwin dlls
 are required if an application is to be distributed. The dependency on the 
-Cygwin dlls can be eliminated with the --mno-cygwin compiler flag, which uses
-MinGW to compile a native Windows binary, but the benefit of the POSIX emulation
-is lost. The Cygwin tool chain and documentation can be found at:
+The Cygwin tool chain and documentation can be found at:
 
 http://sources.redhat.com/cygwin/
 
@@ -1057,6 +1055,7 @@ Cygwin allows you to compile almost the complete agent and applications.
 As an example, the following configure options create a working set of
 programs:
 
+ENV_SEPARATOR=":" \
 ./configure \
 	--with-mib-modules="host agentx disman/event-mib examples/example" \
 	--with-out-mib-modules=host/hr_network \
@@ -1179,6 +1178,21 @@ Follow these steps to install OpenSSL:
 
  4. Continue with the section 'MinGW - Building"
 
+
+***************************************************************************
+*
+* Building the Windows Net-SNMP Installer
+*
+***************************************************************************
+
+Proceed as follows:
+ 1. Uninstall Net-SNMP.
+ 2. Remove the C:\usr directory completely.
+ 3. Open a command prompt
+ 4. Run the MSVC vcvarsall.bat script.
+ 5. Change the current working directory to the Net-SNMP win32\dist directory.
+ 6. Run the .\build-binary.bat script.
+ 7. Copy the net-snmp-${version}.x86.exe installer to the desired location.
 
 ***************************************************************************
 *

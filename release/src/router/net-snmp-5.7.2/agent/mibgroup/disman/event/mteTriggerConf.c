@@ -507,13 +507,12 @@ parse_mteMonitor(const char *token, const char *line)
                     memcpy(oid_name_buf, buf, SPRINT_MAX_LEN);
                     memset(         buf,   0, SPRINT_MAX_LEN);
                     cp  = copy_nword_const(cp, buf, SPRINT_MAX_LEN);
-                        value = strtol(buf, NULL, 0);
+                    value = strtol(buf, NULL, 0);
     
                     /*
                      * ... then save the rest of the line for later.
                      */
-                    memset( buf, 0,  strlen(buf));
-                    memcpy( buf, cp, strlen(cp));
+                    strlcpy(buf, cp, sizeof(buf));
                     cp = NULL;  /* To terminate the processing loop */
                     DEBUGMSGTL(("disman:event:conf", "%s: Thresh (%s, %ld, %s)\n",
                                               tname, oid_name_buf, value, buf));

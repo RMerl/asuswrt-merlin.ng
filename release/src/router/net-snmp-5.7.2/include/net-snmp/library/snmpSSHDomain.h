@@ -25,7 +25,8 @@ extern          "C" {
 NETSNMP_IMPORT const oid netsnmp_snmpSSHDomain[];
 enum { netsnmp_snmpSSHDomain_len = 9 };
 
-netsnmp_transport *netsnmp_ssh_transport(struct sockaddr_in *addr, int local);
+netsnmp_transport *netsnmp_ssh_transport(const struct sockaddr_in *addr,
+                                         int local);
 
 /*
  * "Constructor" for transport domain object.

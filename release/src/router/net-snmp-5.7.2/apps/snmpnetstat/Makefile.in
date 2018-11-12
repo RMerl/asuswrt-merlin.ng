@@ -2,7 +2,6 @@
 # snmpnetstat Makefile
 #
 
-top_builddir=../..
 mysubdir=apps/snmpnetstat
 
 INSTALLBINPROGS=snmpnetstat$(EXEEXT)
@@ -18,10 +17,10 @@ INSTALLBINPROGS=snmpnetstat$(EXEEXT)
 #
 # build info
 #
-SRCS=	inet.c inet6.c if.c main.c route.c winstub.c ffs.c
-OBJS=	inet.o inet6.o if.o main.o route.o winstub.o ffs.o
-LOBJS=	inet.lo inet6.lo if.lo main.lo route.lo winstub.lo ffs.lo
-FTOBJS=	inet.ft inet6.ft if.ft main.ft route.ft winstub.ft ffs.ft
+SRCS=	inet.c inet6.c inetx.c if.c main.c route.c routex.c winstub.c ffs.c
+OBJS=	inet.o inet6.o inetx.o if.o main.o route.o routex.o winstub.o ffs.o
+LOBJS=	inet.lo inet6.lo inetx.lo if.lo main.lo route.lo routex.lo winstub.lo ffs.lo
+FTOBJS=	inet.ft inet6.ft inetx.ft if.ft main.ft route.ft routex.ft winstub.ft ffs.ft
 TARG= snmpnetstat$(EXEEXT)
 
 FEATUREFILE=../../include/net-snmp/features-snmpnetstat.h

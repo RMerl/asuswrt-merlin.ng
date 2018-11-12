@@ -1,7 +1,18 @@
+/*
+ * Portions of this file are subject to the following copyright(s).  See
+ * the Net-SNMP's COPYING file for more details and other copyrights
+ * that may apply:
+ *
+ * Portions of this file are copyrighted by:
+ * Copyright (c) 2016 VMware, Inc. All rights reserved.
+ * Use is subject to license terms specified in the COPYING file
+ * distributed with the Net-SNMP package.
+ */
+
 #include <net-snmp/net-snmp-config.h>
 #include <net-snmp/net-snmp-features.h>
 
-#if defined(NETSNMP_USE_OPENSSL) && defined(HAVE_LIBSSL)
+#if defined(NETSNMP_USE_OPENSSL) && defined(HAVE_LIBSSL) && NETSNMP_TRANSPORT_TLSBASE_DOMAIN
 netsnmp_feature_child_of(cert_util_all, libnetsnmp)
 netsnmp_feature_child_of(cert_util, cert_util_all)
 #ifdef NETSNMP_FEATURE_REQUIRE_CERT_UTIL
@@ -193,7 +204,6 @@ _setup_trusted_certs(void)
         return;
     }
     _trusted_certs->container_name = strdup("trusted certificates");
-    _trusted_certs->free_item = (netsnmp_container_obj_func*) free;
     _trusted_certs->compare = (netsnmp_container_compare*) strcmp;
 }
 
@@ -436,8 +446,7 @@ _new_cert(const char *dirname, const char *filename, int certType,
         return NULL;
     }
 
-    DEBUGMSGT(("9:cert:struct:new","new cert 0x%#lx for %s\n", (u_long)cert,
-                  filename));
+    DEBUGMSGT(("9:cert:struct:new","new cert 0x%p for %s\n", cert, filename));
 
     cert->info.dir = strdup(dirname);
     cert->info.filename = strdup(filename);
@@ -474,11 +483,13 @@ _new_key(const char *dirname, const char *filename)
         return NULL;
     }
 
-    if ((fstat.st_mode & S_IROTH) || (fstat.st_mode & S_IROTH)) {
+#if !defined(_MSC_VER)
+    if ((fstat.st_mode & S_IROTH) || (fstat.st_mode & S_IWOTH)) {
         snmp_log(LOG_ERR,
                  "refusing to read world readable or writable key %s\n", fn);
         return NULL;
     }
+#endif
 
     key = SNMP_MALLOC_TYPEDEF(netsnmp_key);
     if (NULL == key) {
@@ -487,8 +498,7 @@ _new_key(const char *dirname, const char *filename)
         return NULL;
     }
 
-    DEBUGMSGT(("cert:key:struct:new","new key 0x%#lx for %s\n", (u_long)key,
-               filename));
+    DEBUGMSGT(("cert:key:struct:new","new key %p for %s\n", key, filename));
 
     key->info.type = NS_CERT_TYPE_KEY;
     key->info.dir = strdup(dirname);
@@ -504,8 +514,8 @@ netsnmp_cert_free(netsnmp_cert *cert)
     if (NULL == cert)
         return;
 
-    DEBUGMSGT(("9:cert:struct:free","freeing cert 0x%#lx, %s (fp %s; CN %s)\n",
-               (u_long)cert, cert->info.filename ? cert->info.filename : "UNK",
+    DEBUGMSGT(("9:cert:struct:free","freeing cert %p, %s (fp %s; CN %s)\n",
+               cert, cert->info.filename ? cert->info.filename : "UNK",
                cert->fingerprint ? cert->fingerprint : "UNK",
                cert->common_name ? cert->common_name : "UNK"));
 
@@ -529,8 +539,8 @@ netsnmp_key_free(netsnmp_key *key)
     if (NULL == key)
         return;
 
-    DEBUGMSGT(("cert:key:struct:free","freeing key 0x%#lx, %s\n",
-               (u_long)key, key->info.filename ? key->info.filename : "UNK"));
+    DEBUGMSGT(("cert:key:struct:free","freeing key %p, %s\n",
+               key, key->info.filename ? key->info.filename : "UNK"));
 
     SNMP_FREE(key->info.dir);
     SNMP_FREE(key->info.filename);
@@ -932,7 +942,8 @@ netsnmp_ocert_get(netsnmp_cert *cert)
             if (NULL != ocert)
                 break;
             (void)BIO_reset(certbio);
-            /** FALLTHROUGH: check for PEM if DER didn't work */
+            /* Check for PEM if DER didn't work */
+            /* FALLTHROUGH */
 
         case NS_CERT_TYPE_PEM:
             ocert = PEM_read_bio_X509_AUX(certbio, NULL, NULL, NULL);
@@ -1310,7 +1321,7 @@ _add_certfile(const char* dirname, const char* filename, FILE *index)
 
     if (index) {
         /** filename = NAME_MAX = 255 */
-        /** fingerprint = 60 */
+        /** fingerprint max = 64*3=192 for sha512 */
         /** common name / CN  = 64 */
         if (cert)
             fprintf(index, "c:%s %d %d %s '%s' '%s'\n", filename,
@@ -1330,7 +1341,7 @@ _cert_read_index(const char *dirname, struct stat *dirstat)
     char           *idxname, *pos;
     struct stat     idx_stat;
     char            tmpstr[SNMP_MAXPATH + 5], filename[NAME_MAX];
-    char            fingerprint[60+1], common_name[64+1], type_str[15];
+    char            fingerprint[EVP_MAX_MD_SIZE*3], common_name[64+1], type_str[15];
     char            subject[SNMP_MAXBUF_SMALL], hash_str[15];
     int             count = 0, type, hash, version;
     netsnmp_cert    *cert;
@@ -1605,6 +1616,8 @@ _cert_indexes_load(void)
     subdirs[0] = netsnmp_ds_get_string(NETSNMP_DS_LIBRARY_ID,
                                        NETSNMP_DS_LIB_CERT_EXTRA_SUBDIR);
     confpath_copy = strdup(confpath);
+    if (!confpath_copy)
+        return;
     for ( dir = strtok_r(confpath_copy, ENV_SEPARATOR, &st);
           dir; dir = strtok_r(NULL, ENV_SEPARATOR, &st)) {
 
@@ -1736,8 +1749,8 @@ netsnmp_cert_find(int what, int where, void *hint)
     netsnmp_cert *result = NULL;
     char         *fp, *hint_str;
 
-    DEBUGMSGT(("cert:find:params", "looking for %s(%d) in %s(0x%x), hint %lu\n",
-               _mode_str(what), what, _where_str(where), where, (u_long)hint));
+    DEBUGMSGT(("cert:find:params", "looking for %s(%d) in %s(0x%x), hint %p\n",
+               _mode_str(what), what, _where_str(where), where, hint));
 
     if (NS_CERTKEY_DEFAULT == where) {
             
@@ -1965,7 +1978,7 @@ netsnmp_tls_fingerprint_build(int hash_type, const char *hex_fp,
                                    int realloc)
 {
     int     hex_fp_len, rc;
-    size_t  tls_fp_size;
+    size_t  tls_fp_size = *tls_fp_len;
     size_t  offset;
 
     netsnmp_require_ptr_LRV( hex_fp, SNMPERR_GENERR );
@@ -2069,7 +2082,7 @@ netsnmp_cert_trust_ca(SSL_CTX *ctx, netsnmp_cert *thiscert)
         DEBUGMSGTL(("cert:trust_ca", "  up one to %p\n", thiscert));
     }
 
-    /* Add the found top lever certificate to the store */
+    /* Add the found top level certificate to the store */
     return netsnmp_cert_trust(ctx, thiscert);
 }
 
@@ -2131,7 +2144,7 @@ static netsnmp_cert *
 _cert_find_fp(const char *fingerprint)
 {
     netsnmp_cert cert, *result = NULL;
-    char         fp[EVP_MAX_MD_SIZE];
+    char         fp[EVP_MAX_MD_SIZE*3];
 
     if (NULL == fingerprint)
         return NULL;
@@ -2973,7 +2986,7 @@ netsnmp_tlstmParams_create(const char *name, int hashType, const char *fp,
     stp->hashType = hashType;
     if (fp)
         stp->fingerprint = strdup(fp);
-    DEBUGMSGT(("9:tlstmParams:create", "0x%lx: %s\n", (u_long)stp,
+    DEBUGMSGT(("9:tlstmParams:create", "%p: %s\n", stp,
                stp->name ? stp->name : "null"));
 
     return stp;
@@ -2985,7 +2998,7 @@ netsnmp_tlstmParams_free(snmpTlstmParams *stp)
     if (NULL == stp)
         return;
 
-    DEBUGMSGT(("9:tlstmParams:release", "0x%lx %s\n", (u_long)stp,
+    DEBUGMSGT(("9:tlstmParams:release", "%p %s\n", stp,
                stp->name ? stp->name : "null"));
     SNMP_FREE(stp->name);
     SNMP_FREE(stp->fingerprint);
@@ -3050,8 +3063,7 @@ netsnmp_tlstmParams_add(snmpTlstmParams *stp)
     if (NULL == stp)
         return -1;
 
-    DEBUGMSGTL(("tlstmParams:add", "adding entry 0x%lx %s\n", (u_long)stp,
-                stp->name));
+    DEBUGMSGTL(("tlstmParams:add", "adding entry %p %s\n", stp, stp->name));
 
     if (CONTAINER_INSERT(_tlstmParams, stp) != 0) {
         snmp_log(LOG_ERR, "error inserting tlstmParams %s", stp->name);
@@ -3069,7 +3081,7 @@ netsnmp_tlstmParams_remove(snmpTlstmParams *stp)
     if (NULL == stp)
         return -1;
 
-    DEBUGMSGTL(("tlstmParams:remove", "removing entry 0x%lx %s\n", (u_long)stp,
+    DEBUGMSGTL(("tlstmParams:remove", "removing entry %p %s\n", stp,
                 stp->name));
 
     if (CONTAINER_REMOVE(_tlstmParams, stp) != 0) {
@@ -3122,7 +3134,7 @@ _find_tlstmParams_fingerprint(const char *name)
     if ((NULL == result) || (NULL == result->fingerprint))
         return NULL;
 
-    return strdup(result->fingerprint);
+    return result->fingerprint;
 }
 /*
  * END snmpTlstmParmsTable data
@@ -3210,6 +3222,13 @@ netsnmp_tlstmAddr_restore_common(char **line, char *name, size_t *name_len,
 {
     size_t fp_len_save = *fp_len;
 
+    /*
+     * Calling this function with name == NULL, fp == NULL or id == NULL would
+     * trigger a memory leak.
+     */
+    if (!name || !fp || !id)
+        return -1;
+
     *line = read_config_read_octet_string(*line, (u_char **)&name, name_len);
     if (NULL == *line) {
         config_perror("incomplete line");
@@ -3261,8 +3280,8 @@ netsnmp_tlstmAddr_add(snmpTlstmAddr *entry)
     if (!entry)
         return -1;
 
-    DEBUGMSGTL(("tlstmAddr:add", "adding entry 0x%lx %s %s\n",
-                (u_long)entry, entry->name, entry->fingerprint));
+    DEBUGMSGTL(("tlstmAddr:add", "adding entry %p %s %s\n",
+                entry, entry->name, entry->fingerprint));
     if (CONTAINER_INSERT(_tlstmAddr, entry) != 0) {
         snmp_log(LOG_ERR, "could not insert addr %s", entry->name);
         netsnmp_tlstmAddr_free(entry);
@@ -3364,4 +3383,4 @@ netsnmp_tlstmAddr_get_serverId(const char *name)
 netsnmp_feature_unused(cert_util);
 #endif /* NETSNMP_FEATURE_REMOVE_CERT_UTIL */
 netsnmp_feature_unused(cert_util);
-#endif /* defined(NETSNMP_USE_OPENSSL) && defined(HAVE_LIBSSL) */
+#endif /* defined(NETSNMP_USE_OPENSSL) && defined(HAVE_LIBSSL) && NETSNMP_TRANSPORT_TLSBASE_DOMAIN */

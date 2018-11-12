@@ -39,13 +39,13 @@
 /* What is the max length of a pointer printed with %p (including 0x)? */
 #define PLEN	(LONG_BIT / 4 + 2)
 
-extern int	Aflag;		/* show addresses of protocol control block */
 extern int	aflag;		/* show all sockets (including servers) */
 extern int	bflag;		/* show bytes instead of packets */
 extern int	dflag;		/* show i/f dropped packets */
 extern int	gflag;		/* show group (multicast) routing or stats */
 extern int	iflag;		/* show interfaces */
 extern int	lflag;		/* show routing table with use and ref */
+extern int	Lflag;		/* Legacy mibs */
 extern int	mflag;		/* show memory stats */
 extern int	nflag;		/* show addresses numerically */
 extern int	oflag;		/* Open/Net-BSD style octet output */
@@ -80,15 +80,26 @@ void	udp6protopr(const char *);
 void	ip6_stats(  const char *);
 void	icmp6_stats(const char *);
 
+void	tcpxprotopr(const char *);
+void	udpxprotopr(const char *);
+void	listenxprotopr(const char *);
+void	ipx_stats(const char *);
+void	icmpx_stats(const char *);
+
 void	pr_rthdr(int);
 void	pr_encaphdr(void);
 void	pr_family(int);
 void	rt_stats(void);
 
+void    get_ifname(char *, int);
 char	*routename(in_addr_t);
 char	*netname(in_addr_t, in_addr_t);
 char	*ns_print(struct sockaddr *);
 void	routepr(void);
+int     route4pr(int);
+int     route6pr(int);
+int     routexpr(int);
 
 void	intpr(int);
-
+void	inetprint(struct in_addr *, int, const char *, int);
+void	inet6print(unsigned char *, int, const char *, int);

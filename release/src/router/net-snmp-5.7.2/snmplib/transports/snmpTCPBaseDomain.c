@@ -83,7 +83,7 @@ int netsnmp_tcpbase_recv(netsnmp_transport *t, void *buf, int size,
     return rc;
 }
 
-int netsnmp_tcpbase_send(netsnmp_transport *t, void *buf, int size,
+int netsnmp_tcpbase_send(netsnmp_transport *t, const void *buf, int size,
                          void **opaque, int *olength) {
     int rc = -1;
 

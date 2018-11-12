@@ -1,3 +1,14 @@
+/*
+ * Portions of this file are subject to the following copyright(s).  See
+ * the Net-SNMP's COPYING file for more details and other copyrights
+ * that may apply:
+ *
+ * Portions of this file are copyrighted by:
+ * Copyright (c) 2016 VMware, Inc. All rights reserved.
+ * Use is subject to license terms specified in the COPYING file
+ * distributed with the Net-SNMP package.
+ */
+
 #include <net-snmp/net-snmp-config.h>
 
 #include <net-snmp/net-snmp-includes.h>
@@ -73,8 +84,12 @@ netsnmp_read_only_helper(netsnmp_mib_handler *handler,
 void
 netsnmp_init_read_only_helper(void)
 {
-    netsnmp_register_handler_by_name("read_only",
-                                     netsnmp_get_read_only_handler());
+    netsnmp_mib_handler *handler = netsnmp_get_read_only_handler();
+    if (!handler) {
+        snmp_log(LOG_ERR, "could not create read_only handler\n");
+        return;
+    }
+    netsnmp_register_handler_by_name("read_only", handler);
 }
 /**  @} */
 

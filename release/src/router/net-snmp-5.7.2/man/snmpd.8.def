@@ -78,9 +78,9 @@ To get a list of compiled modules, run the agent with the arguments
 .I "\-Dmib_init \-H"
 (assuming debugging support has been compiled in).
 .TP
-.B \-L[efos]
+.B \-L[eEfFoOsSnN]
 Specify where logging output should be directed (standard error or output,
-to a file or via syslog).  See LOGGING OPTIONS in snmpcmd(5) for details.
+to a file or via syslog).  See LOGGING OPTIONS in snmpcmd(1) for details.
 .TP
 .BR \-m " \fIMIBLIST"
 Specifies a colon separated list of MIB modules to load for this

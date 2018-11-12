@@ -7,6 +7,11 @@
  * Copyright © 2003 Sun Microsystems, Inc. All rights reserved.
  * Use is subject to license terms specified in the COPYING file
  * distributed with the Net-SNMP package.
+ *
+ * Portions of this file are copyrighted by:
+ * Copyright (c) 2016 VMware, Inc. All rights reserved.
+ * Use is subject to license terms specified in the COPYING file
+ * distributed with the Net-SNMP package.
  */
 /*
  * Note:
@@ -94,7 +99,12 @@ extern          "C" {
 #define NETSNMP_DS_LIB_TSM_USE_PREFIX      39 /* TSM's simple security name mapping */
 #define NETSNMP_DS_LIB_DONT_LOAD_HOST_FILES 40 /* don't read host.conf files */
 #define NETSNMP_DS_LIB_DNSSEC_WARN_ONLY     41 /* tread DNSSEC errors as warnings */
-#define NETSNMP_DS_LIB_MAX_BOOL_ID          48 /* match NETSNMP_DS_MAX_SUBIDS */
+#define NETSNMP_DS_LIB_CLIENT_ADDR_USES_PORT 42 /* NETSNMP_DS_LIB_CLIENT_ADDR includes address and also port */
+#define NETSNMP_DS_LIB_DISABLE_V1          43 /* disable SNMPv1 */
+#define NETSNMP_DS_LIB_DISABLE_V2c         44 /* disable SNMPv2c */
+#define NETSNMP_DS_LIB_DISABLE_V3          45 /* disable SNMPv3 */
+#define NETSNMP_DS_LIB_FILTER_SOURCE       46 /* filter pkt by source IP */
+#define NETSNMP_DS_LIB_MAX_BOOL_ID         48 /* match NETSNMP_DS_MAX_SUBIDS */
 
     /*
      * library integers 
@@ -117,6 +127,8 @@ extern          "C" {
 #define NETSNMP_DS_SSHDOMAIN_SOCK_GROUP    13
 #define NETSNMP_DS_LIB_TIMEOUT             14
 #define NETSNMP_DS_LIB_RETRIES             15
+#define NETSNMP_DS_LIB_MSG_SEND_MAX        16 /* global max response size */
+#define NETSNMP_DS_LIB_FILTER_TYPE         17 /* 0=NONE, 1=whitelist, -1=blacklist */
 #define NETSNMP_DS_LIB_MAX_INT_ID          48 /* match NETSNMP_DS_MAX_SUBIDS */
     
     /*
@@ -169,11 +181,75 @@ extern          "C" {
 #define NETSNMP_DS_LIB_SSH_USERNAME      32
 #define NETSNMP_DS_LIB_SSH_PUBKEY        33
 #define NETSNMP_DS_LIB_SSH_PRIVKEY       34
+#define NETSNMP_DS_LIB_OUTPUT_PRECISION  35
 #define NETSNMP_DS_LIB_MAX_STR_ID        48 /* match NETSNMP_DS_MAX_SUBIDS */
 
     /*
      * end storage definitions 
      */
+
+    /*
+     * macros for dynamic protocol switches
+     */
+#ifndef NETSNMP_FEATURE_REMOVE_RUNTIME_DISABLE_VERSION
+
+#if !defined(NETSNMP_DISABLE_SNMPV1) || !defined(NETSNMP_DISABLE_SNMPV2C)
+
+#define NETSNMP_RUNTIME_PROTOCOL_SKIP_V1(pc_ver) \
+    ((pc_ver == SNMP_VERSION_1) &&                                     \
+     netsnmp_ds_get_boolean(NETSNMP_DS_LIBRARY_ID,                      \
+                            NETSNMP_DS_LIB_DISABLE_V1))
+
+#define NETSNMP_RUNTIME_PROTOCOL_SKIP_V2(pc_ver) \
+    ((pc_ver == SNMP_VERSION_2c) &&                                     \
+     netsnmp_ds_get_boolean(NETSNMP_DS_LIBRARY_ID,                      \
+                            NETSNMP_DS_LIB_DISABLE_V2c))
+
+#define NETSNMP_RUNTIME_PROTOCOL_CHECK_V1V2(pc_ver, pc_target) do {    \
+        if (NETSNMP_RUNTIME_PROTOCOL_SKIP_V1(pc_ver) ||                \
+            NETSNMP_RUNTIME_PROTOCOL_SKIP_V2(pc_ver)) {                \
+            DEBUGMSGTL(("snmp:protocol:disabled", "enforced\n"));      \
+            goto pc_target;                                            \
+        }                                                              \
+    } while(0)
+#else
+#define NETSNMP_RUNTIME_PROTOCOL_SKIP_V1(pc_ver) (0)
+#define NETSNMP_RUNTIME_PROTOCOL_SKIP_V2(pc_ver) (0)
+#define NETSNMP_RUNTIME_PROTOCOL_CHECK_V1V2(ver, gt) do { ; } while(0)
+#endif
+
+#define NETSNMP_RUNTIME_PROTOCOL_SKIP_V3(pc_ver) \
+    ((pc_ver == SNMP_VERSION_3) &&                                   \
+     netsnmp_ds_get_boolean(NETSNMP_DS_LIBRARY_ID,                     \
+                            NETSNMP_DS_LIB_DISABLE_V3))
+
+#define NETSNMP_RUNTIME_PROTOCOL_CHECK_V3(pc_ver, pc_target) do {      \
+        if (NETSNMP_RUNTIME_PROTOCOL_SKIP_V3(pc_ver)) {                \
+            DEBUGMSGTL(("snmp:protocol:disabled", "enforced\n"));      \
+            goto pc_target;                                            \
+        }                                                              \
+    } while(0)
+
+#define NETSNMP_RUNTIME_PROTOCOL_CHECK(pc_ver, pc_target) do {         \
+        NETSNMP_RUNTIME_PROTOCOL_CHECK_V1V2(pc_ver, pc_target);            \
+        NETSNMP_RUNTIME_PROTOCOL_CHECK_V3(pc_ver, pc_target);            \
+    } while(0)
+
+#define NETSNMP_RUNTIME_PROTOCOL_SKIP(pc_ver) \
+    (NETSNMP_RUNTIME_PROTOCOL_SKIP_V1(pc_ver) ||        \
+     NETSNMP_RUNTIME_PROTOCOL_SKIP_V2(pc_ver) ||        \
+     NETSNMP_RUNTIME_PROTOCOL_SKIP_V3(pc_ver))
+
+#else /* NETSNMP_FEATURE_REMOVE_RUNTIME_DISABLE_VERSION */
+#define NETSNMP_RUNTIME_PROTOCOL_SKIP(pc_ver) (0)
+#define NETSNMP_RUNTIME_PROTOCOL_SKIP_V1(pc_ver) (0)
+#define NETSNMP_RUNTIME_PROTOCOL_SKIP_V2(pc_ver) (0)
+#define NETSNMP_RUNTIME_PROTOCOL_SKIP_V3(pc_ver) (0)
+#define NETSNMP_RUNTIME_PROTOCOL_CHECK(ver, gt) do { ; } while(0)
+#define NETSNMP_RUNTIME_PROTOCOL_CHECK_V1V2(ver, gt) do { ; } while(0)
+#define NETSNMP_RUNTIME_PROTOCOL_CHECK_V3(ver, gt) do { ; } while(0)
+#endif /* NETSNMP_FEATURE_REMOVE_RUNTIME_DISABLE_VERSION */
+
 
     NETSNMP_IMPORT
     int             netsnmp_ds_set_boolean(int storeid, int which, int value);

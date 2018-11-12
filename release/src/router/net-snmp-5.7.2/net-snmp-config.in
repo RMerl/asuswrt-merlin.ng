@@ -74,6 +74,8 @@ NSC_SRC_LIBDEPS="agent/.libs/libnetsnmpmibs.a agent/.libs/libnetsnmpagent.a snmp
 
 if test "x$NSC_SRCDIR" = "x." ; then
    NSC_SRCDIR="NET-SNMP-SOURCE-DIR"
+elif test "x$NSC_SRCDIR" = "x" ; then
+   NSC_SRCDIR="NET-SNMP-SOURCE-DIR"
 fi
 
 if test "x$1" = "x"; then
@@ -183,7 +185,7 @@ else
       echo $result
       ;;
     --build-command)
-      echo "@CC@ @CFLAGS@ @DEVFLAGS@"
+      echo "@CC@ @CFLAGS@ @DEVFLAGS@ @CPPFLAGS@"
       ;;
     #################################################### client lib
     --libs)
@@ -250,7 +252,7 @@ else
 	            echo "You must specify the extra cflags"
 	            exit 1
 	        fi
-	        cflags=$1
+	        cflags="$1"
 	        echo "setting extra cflags: $cflags"
 	        shift
 		;;
@@ -260,7 +262,7 @@ else
 	            echo "You must specify the extra ldflags"
 	            exit 1
 	        fi
-	        ldflags=$1
+	        ldflags="$1"
 	        echo "setting extra ldflags: $ldflags"
 	        shift
 		;;
@@ -291,6 +293,12 @@ else
 #ifdef HAVE_SIGNAL
 #include <signal.h>
 #endif /* HAVE_SIGNAL */
+#ifdef HAVE_SYS_STAT_H
+#include <sys/stat.h>
+#endif /*  HAVE_SYS_STAT_H */
+#ifdef HAVE_FCNTL_H
+#include <fcntl.h>
+#endif /* HAVE_FCNTL_H */
 #include <net-snmp/net-snmp-includes.h>
 #include <net-snmp/agent/net-snmp-agent-includes.h>
 EOF
@@ -334,14 +342,8 @@ static int reconfig = 0;
 
 extern int netsnmp_running;
 
-#ifdef __GNUC__
-#define UNUSED __attribute__((unused))
-#else
-#define UNUSED
-#endif
-
 RETSIGTYPE
-stop_server(UNUSED int a) {
+stop_server(int a) {
     netsnmp_running = 0;
 }
 
@@ -363,6 +365,8 @@ usage(const char *prog)
             "OPTIONS:\n", prog);
 
     fprintf(stderr,
+            "  -c FILE[,...]\t\tread FILE(s) as configuration file(s)\n"
+            "  -C\t\t\tdo not read the default configuration files\n"
             "  -d\t\t\tdump all traffic\n"
             "  -D TOKEN[,...]\tturn on debugging output for the specified "
             "TOKENs\n"
@@ -374,10 +378,12 @@ usage(const char *prog)
     snmp_log_options_usage("\t\t\t  ", stderr);
 #ifndef DISABLE_MIB_LOADING
     fprintf(stderr,
-            "  -m MIB[:...]\t\tload given list of MIBs (ALL loads "
+            "  -m MIB[" ENV_SEPARATOR "...]\t\tload given list of MIBs (ALL loads "
             "everything)\n"
-            "  -M DIR[:...]\t\tlook in given list of directories for MIBs\n");
+            "  -M DIR[" ENV_SEPARATOR "...]\t\tlook in given list of directories for MIBs\n");
 #endif /* DISABLE_MIB_LOADING */
+    fprintf(stderr,
+            "  -p FILE\t\tstore process id in FILE\n");
 #ifndef DISABLE_MIB_LOADING
     fprintf(stderr,
             "  -P MIBOPTS\t\tToggle various defaults controlling mib "
@@ -403,17 +409,32 @@ main (int argc, char **argv)
   int arg;
   char* cp = NULL;
   int dont_fork = 0, do_help = 0;
+  char* pid_file = NULL;
 
-  while ((arg = getopt(argc, argv, "dD:fhHL:"
+  while ((arg = getopt(argc, argv, "c:CdD:fhHL:"
 #ifndef DISABLE_MIB_LOADING
                        "m:M:"
 #endif /* DISABLE_MIB_LOADING */
-                       "n:"
+                       "n:p:"
 #ifndef DISABLE_MIB_LOADING
                        "P:"
 #endif /* DISABLE_MIB_LOADING */
                        "vx:")) != EOF) {
     switch (arg) {
+      case 'c':
+        if (optarg != NULL) {
+          netsnmp_ds_set_string(NETSNMP_DS_LIBRARY_ID,
+                                NETSNMP_DS_LIB_OPTIONALCONFIG, optarg);
+        } else {
+          usage(argv[0]);
+        }
+        break;
+
+      case 'C':
+        netsnmp_ds_set_boolean(NETSNMP_DS_LIBRARY_ID,
+                               NETSNMP_DS_LIB_DONT_READ_CONFIGS, 1);
+        break;
+
     case 'd':
       netsnmp_ds_set_boolean(NETSNMP_DS_LIBRARY_ID,
                              NETSNMP_DS_LIB_DUMP_PACKET, 1);
@@ -470,6 +491,14 @@ main (int argc, char **argv)
       }
       break;
 
+    case 'p':
+      if (optarg != NULL) {
+        pid_file = optarg;
+      } else {
+        usage(argv[0]);
+      }
+      break;
+
 #ifndef DISABLE_MIB_LOADING
     case 'P':
       cp = snmp_mib_toggle_options(optarg);
@@ -512,6 +541,31 @@ main (int argc, char **argv)
       if (netsnmp_daemonize(1, snmp_stderrlog_status()) != 0)
         exit(1);
     }
+
+#if HAVE_GETPID
+    if (pid_file != NULL) {
+      /*
+       * unlink the pid_file, if it exists, prior to open.  Without
+       * doing this the open will fail if the user specified pid_file
+       * already exists.
+       */
+      int fd;
+      unlink(pid_file);
+      fd = open(pid_file, O_CREAT | O_EXCL | O_WRONLY, 0600);
+      if (fd == -1) {
+        snmp_log_perror(pid_file);
+        if (!netsnmp_ds_get_boolean(NETSNMP_DS_APPLICATION_ID,
+                                    NETSNMP_DS_AGENT_NO_ROOT_ACCESS)) {
+          exit(1);
+        }
+      } else {
+        char buf[3 + sizeof(long) * 3];
+        int len = snprintf(buf, sizeof(buf), "%ld\n", (long int)getpid());
+        write(fd, buf, len);
+        close(fd);
+      }
+    }
+#endif
 
     /* initialize tcpip, if necessary */
     SOCK_STARTUP;
@@ -590,6 +644,11 @@ EOF
 
   /* shutdown the agent library */
   shutdown_agent();
+
+  if (pid_file != NULL) {
+    unlink(pid_file);
+  }
+
   SOCK_CLEANUP;
   exit(0);
 }
@@ -601,15 +660,17 @@ EOF
       cmd="@CC@ $cflags @CFLAGS@ @DEVFLAGS@ -I. -I${NSC_INCLUDEDIR} -o $outname $tmpfile $cfiles $NSC_LDFLAGS $NSC_LIBDIR $NSC_BASE_AGENT_LIBS $NSC_AGENTLIBS $ldflags"
       echo "running: $cmd"
       `$cmd`
+      result=$?
       if test "x$norm" != "x1" ; then
         echo "removing the temporary code file: $tmpfile"
         rm -f $tmpfile
       else
         echo "leaving the temporary code file: $tmpfile"
       fi
-      if test -f $outname ; then
+      if test "$result" = "0" -a -f "$outname" ; then
         echo "subagent program $outname created"
       fi
+      exit $result
       ;;
 
     *)

@@ -11,10 +11,5 @@
  */
 #define NEED_KLGETSA 1
 
-/*
- * ARP_Scan_Next needs a 4th ifIndex argument 
- */
-#define ARP_SCAN_FOUR_ARGUMENTS 1
-
 #define UTMP_HAS_NO_TYPE 1
 #define UTMP_HAS_NO_PID 1

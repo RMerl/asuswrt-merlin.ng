@@ -32,7 +32,7 @@ if (-f "rfclist") {
 if (-f "nodemap") {
     open(I,"nodemap");
     while (<I>) {
-	if (/^([-\w]+)\s+(\w+)\s*$/) {
+	if (/^([-\w]+)\s+(\S+)\s*$/) {
 	    $nodemap{$1} = $2;
 	}
     }
@@ -80,7 +80,9 @@ foreach my $mibf (@ARGV) {
 
     # get a different tree than the module identity though.
     if (exists($nodemap{$mib})) {
-	$node = $nodemap{$mib};
+	@nodelist = split(/,/,$nodemap{$mib});
+    } else {
+	@nodelist = $node;
     }
 
     # Change tabs to spaces
@@ -95,7 +97,18 @@ foreach my $mibf (@ARGV) {
     $desc =~ s/>/&gt;/g;
 
     print "  <tr>\n";
-    print "    <td><a href=\"$node.html\">$mib</a><br />\n";
+    print "    <td>";
+    for (my $i = 0; $i <= $#nodelist; $i++) {
+	my $node = $nodelist[$i];
+	if ($i != 0) {
+	    print "        ";
+	}
+	print "<a href=\"$node.html\">$mib";
+	if ($#nodelist > 0) {
+	    print " ($node)";
+	}
+	print "</a><br />\n";
+    }
     print "        <a href=\"$mib.txt\">[mib file]</a></td>\n";
     print "        <br><a href=\"$mib-conf.html\">[conformance summary]</a></td>\n";
     print "    <td><a href=\"http://www.ietf.org/rfc/rfc$mibs{$mib}.txt\">rfc$mibs{$mib}</a></td>\n" if ($mibs{$mib});
@@ -103,8 +116,11 @@ foreach my $mibf (@ARGV) {
     print "    <td><pre>$desc</pre></td>\n";
     print "  </tr>\n";
 
-    system("MIBS=$mib mib2c -c mib2c.genhtml.conf $node");
-    system("mv $node.html $opts{D}");
+    for (my $i = 0; $i <= $#nodelist; $i++) {
+	my $node = $nodelist[$i];
+	system("MIBS=$mib mib2c -c mib2c.genhtml.conf $node");
+	system("mv $node.html $opts{D}");
+    }
 }
 
 print "</table>\n";

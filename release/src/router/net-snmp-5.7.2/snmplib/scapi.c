@@ -7,6 +7,11 @@
  * Copyright © 2003 Sun Microsystems, Inc. All rights reserved.
  * Use is subject to license terms specified in the COPYING file
  * distributed with the Net-SNMP package.
+ *
+ * Portions of this file are copyrighted by:
+ * Copyright (c) 2016 VMware, Inc. All rights reserved.
+ * Use is subject to license terms specified in the COPYING file
+ * distributed with the Net-SNMP package.
  */
 
 /*
@@ -124,6 +129,341 @@ int MD5_hmac(const u_char * data, size_t len, u_char * mac, size_t maclen,
              const u_char * secret, size_t secretlen);
 #endif
 
+static netsnmp_auth_alg_info _auth_alg_info[] = {
+    { NETSNMP_USMAUTH_NOAUTH, "usmNoAuthProtocol", usmNoAuthProtocol,
+      OID_LENGTH(usmNoAuthProtocol), 0, 0 },
+    { NETSNMP_USMAUTH_HMACSHA1, "usmHMACSHA1AuthProtocol",
+      usmHMACSHA1AuthProtocol, OID_LENGTH(usmHMACSHA1AuthProtocol),
+      BYTESIZE(SNMP_TRANS_AUTHLEN_HMACSHA1), USM_MD5_AND_SHA_AUTH_LEN },
+#ifndef NETSNMP_DISABLE_MD5
+    { NETSNMP_USMAUTH_HMACMD5, "usmHMACMD5AuthProtocol",
+      usmHMACMD5AuthProtocol, OID_LENGTH(usmHMACMD5AuthProtocol),
+      BYTESIZE(SNMP_TRANS_AUTHLEN_HMACMD5), USM_MD5_AND_SHA_AUTH_LEN },
+#endif
+#ifdef HAVE_EVP_SHA224
+    { NETSNMP_USMAUTH_HMAC128SHA224, "usmHMAC128SHA224AuthProtocol",
+      usmHMAC128SHA224AuthProtocol, OID_LENGTH(usmHMAC128SHA224AuthProtocol),
+      BYTESIZE(SNMP_TRANS_AUTHLEN_HMAC128SHA224), USM_HMAC128SHA224_AUTH_LEN },
+    { NETSNMP_USMAUTH_HMAC192SHA256, "usmHMAC192SHA256AuthProtocol",
+      usmHMAC192SHA256AuthProtocol, OID_LENGTH(usmHMAC192SHA256AuthProtocol),
+      BYTESIZE(SNMP_TRANS_AUTHLEN_HMAC192SHA256), USM_HMAC192SHA256_AUTH_LEN },
+#endif
+#ifdef HAVE_EVP_SHA384
+    { NETSNMP_USMAUTH_HMAC256SHA384, "usmHMAC256SHA384AuthProtocol",
+      usmHMAC256SHA384AuthProtocol, OID_LENGTH(usmHMAC256SHA384AuthProtocol),
+      BYTESIZE(SNMP_TRANS_AUTHLEN_HMAC256SHA384), USM_HMAC256SHA384_AUTH_LEN },
+    { NETSNMP_USMAUTH_HMAC384SHA512, "usmHMAC384SHA512AuthProtocol",
+      usmHMAC384SHA512AuthProtocol, OID_LENGTH(usmHMAC384SHA512AuthProtocol),
+      BYTESIZE(SNMP_TRANS_AUTHLEN_HMAC384SHA512), USM_HMAC384SHA512_AUTH_LEN },
+#endif
+    { -1, "unknown", NULL, 0, 0, 0 }
+};
+
+static netsnmp_priv_alg_info _priv_alg_info[] = {
+    { USM_CREATE_USER_PRIV_NONE, "usmNoPrivProtocol",
+      usmNoPrivProtocol, OID_LENGTH(usmNoPrivProtocol), 0, 0, 0 },
+#ifndef NETSNMP_DISABLE_DES
+    { USM_CREATE_USER_PRIV_DES, "usmDESPrivProtocol",
+      usmDESPrivProtocol, OID_LENGTH(usmDESPrivProtocol),
+      BYTESIZE(SNMP_TRANS_PRIVLEN_1DES),
+      BYTESIZE(SNMP_TRANS_PRIVLEN_1DES_IV),
+      BYTESIZE(SNMP_TRANS_PRIVLEN_1DES) },
+#endif
+#ifdef HAVE_AES
+    { USM_CREATE_USER_PRIV_AES, "usmAESPrivProtocol",
+      usmAESPrivProtocol, OID_LENGTH(usmAESPrivProtocol),
+      BYTESIZE(SNMP_TRANS_PRIVLEN_AES),
+      BYTESIZE(SNMP_TRANS_PRIVLEN_AES_IV),
+      0 },
+#ifdef NETSNMP_DRAFT_BLUMENTHAL_AES_04
+    { USM_CREATE_USER_PRIV_AES192, "usmAES192PrivProtocol",
+      usmAES192PrivProtocol, OID_LENGTH(usmAES192PrivProtocol),
+      BYTESIZE(SNMP_TRANS_PRIVLEN_AES192),
+      BYTESIZE(SNMP_TRANS_PRIVLEN_AES192_IV),
+      0 },
+    { USM_CREATE_USER_PRIV_AES192_CISCO, "usmAES192CiscoPrivProtocol",
+      usmAES192CiscoPrivProtocol, OID_LENGTH(usmAES192CiscoPrivProtocol),
+      BYTESIZE(SNMP_TRANS_PRIVLEN_AES192),
+      BYTESIZE(SNMP_TRANS_PRIVLEN_AES192_IV),
+      0 },
+    { USM_CREATE_USER_PRIV_AES256, "usmAES256PrivProtocol",
+      usmAES256PrivProtocol, OID_LENGTH(usmAES256PrivProtocol),
+      BYTESIZE(SNMP_TRANS_PRIVLEN_AES256),
+      BYTESIZE(SNMP_TRANS_PRIVLEN_AES256_IV),
+      0 },
+    { USM_CREATE_USER_PRIV_AES256_CISCO, "usmAES256CiscoPrivProtocol",
+      usmAES256CiscoPrivProtocol, OID_LENGTH(usmAES256CiscoPrivProtocol),
+      BYTESIZE(SNMP_TRANS_PRIVLEN_AES256),
+      BYTESIZE(SNMP_TRANS_PRIVLEN_AES256_IV),
+      0 },
+#endif
+#endif
+    { -1, NULL, NULL, 0 , 0, 0, 0 },
+};
+
+
+/*
+ * sc_get_priv_alg(oid *privoid, u_int len)
+ *
+ * returns a pointer to a netsnmp_priv_alg_info struct
+ */
+netsnmp_priv_alg_info *
+sc_get_priv_alg_byoid(const oid *privoid, u_int len)
+{
+    int i = 0;
+
+    DEBUGTRACE;
+
+    if ((NULL == privoid) || (0 == len))
+        return NULL;
+
+    for( ; _priv_alg_info[i].type != -1; ++i) {
+        if (len != _priv_alg_info[i].oid_len)
+            continue;
+        if (snmp_oid_compare(_priv_alg_info[i].alg_oid,
+                             _priv_alg_info[i].oid_len,
+                             privoid, len) == 0 )
+            return(&_priv_alg_info[i]);
+    }
+
+    DEBUGMSGTL(("scapi", "no match for OID "));
+    DEBUGMSGOID(("scapi", privoid, len));
+    DEBUGMSG(("scapi", "\n"));
+    return NULL;
+}
+
+/*
+ * sc_get_priv_alg_bytype(u_int type)
+ *
+ * returns a pointer to a netsnmp_priv_alg_info struct
+ */
+netsnmp_priv_alg_info *
+sc_get_priv_alg_bytype(u_int type)
+{
+    int i = 0;
+
+    DEBUGTRACE;
+
+    for( ; _priv_alg_info[i].type != -1; ++i) {
+        if (type != _priv_alg_info[i].type)
+            continue;
+        return(&_priv_alg_info[i]);
+    }
+
+    return NULL;
+}
+
+/*
+ * sc_find_auth_alg(oid *authoid, u_int len)
+ *
+ * returns a pointer to a netsnmp_auth_alg_info struct
+ */
+netsnmp_auth_alg_info *
+sc_find_auth_alg_byoid(const oid *authoid, u_int len)
+{
+    int i = 0;
+
+    DEBUGTRACE;
+
+    if ((NULL == authoid) || (0 == len))
+        return NULL;
+
+    for( ; _auth_alg_info[i].type != -1; ++i) {
+        if (len != _auth_alg_info[i].oid_len)
+            continue;
+        if (snmp_oid_compare(_auth_alg_info[i].alg_oid,
+                             _auth_alg_info[i].oid_len,
+                             authoid, len) == 0 )
+            return(&_auth_alg_info[i]);
+    }
+
+/*    DEBUGMSGTL(("scapi", "No auth alg found for"));
+      DEBUGMSGOID(("scapi", authoid, len ));*/
+
+    return NULL;
+}
+
+/*
+ * sc_get_auth_alg_byindex(u_int index)
+ *
+ * returns a pointer to a netsnmp_auth_alg_info struct
+ */
+netsnmp_auth_alg_info *
+sc_get_auth_alg_byindex(u_int index)
+{
+    DEBUGTRACE;
+
+    if (index >= (sizeof(_auth_alg_info)) / (sizeof(_auth_alg_info[0])) ||
+        -1 == _auth_alg_info[index].type)
+        return NULL;
+
+    return(&_auth_alg_info[index]);
+}
+
+/*
+ * sc_find_auth_alg_bytype(u_int type)
+ *
+ * returns a pointer to a netsnmp_auth_alg_info struct
+ */
+netsnmp_auth_alg_info *
+sc_find_auth_alg_bytype(u_int type)
+{
+    int i = 0;
+
+    DEBUGTRACE;
+
+    for( ; _auth_alg_info[i].type != -1; ++i) {
+        if (type != _auth_alg_info[i].type)
+            continue;
+        return(&_auth_alg_info[i]);
+    }
+
+    return NULL;
+}
+
+/*
+ * sc_get_authtype(oid *hashtype, u_int hashtype_len):
+ * 
+ * Given a hashing type ("hashtype" and its length hashtype_len), return
+ * its type (the last suboid). NETSNMP_USMAUTH_* constants are defined in
+ * transform_oids.h.
+ * 
+ * Returns SNMPERR_GENERR for an unknown hashing type.
+ */
+int
+sc_get_authtype(const oid * hashtype, u_int hashtype_len)
+{
+    netsnmp_auth_alg_info *aai;
+
+    DEBUGTRACE;
+
+    aai = sc_find_auth_alg_byoid(hashtype, hashtype_len);
+    if (NULL == aai)
+        return SNMPERR_GENERR;
+
+    return aai->type;
+}
+
+int
+sc_get_privtype(const oid * privtype, u_int privtype_len)
+{
+    netsnmp_priv_alg_info *pai;
+
+    DEBUGTRACE;
+
+    pai = sc_get_priv_alg_byoid(privtype, privtype_len);
+    if (NULL == pai)
+        return SNMPERR_GENERR;
+
+    return pai->type;
+}
+
+/*
+ * sc_get_auth_maclen(int hashtype):
+ *
+ * Given a hash type, return its MAC length, which may be shorter than
+ * the full hash length.
+ *
+ * Returns 0 for an unknown hash type.
+ */
+int
+sc_get_auth_maclen(int hashtype)
+{
+    netsnmp_auth_alg_info *aai;
+
+    DEBUGTRACE;
+
+    aai = sc_find_auth_alg_bytype(hashtype);
+    if (NULL == aai)
+        return 0;
+
+    return aai->mac_length;
+}
+
+/*
+ * sc_get_proper_auth_length_bytype(int hashtype):
+ * 
+ * Given a hashing type, return the length of the hash result.
+ * 
+ * Returns either the length or SNMPERR_GENERR for an unknown hashing type.
+ */
+int
+sc_get_proper_auth_length_bytype(int hashtype)
+{
+    netsnmp_auth_alg_info *aai;
+
+    DEBUGTRACE;
+
+    aai = sc_find_auth_alg_bytype(hashtype);
+    if (NULL == aai)
+        return SNMPERR_GENERR;
+
+    return aai->proper_length;
+}
+
+/*
+ * sc_get_auth_oid(int hashtype, int *oid_len):
+ * 
+ * Given a type, return the OID and optionally set OID length.
+ */
+oid *
+sc_get_auth_oid(int type, size_t *oid_len)
+{
+    netsnmp_auth_alg_info *ai;
+
+    DEBUGTRACE;
+
+    ai = sc_find_auth_alg_bytype(type);
+    if (NULL == ai)
+        return NULL;
+
+    if (NULL != oid_len)
+        *oid_len = ai->oid_len;
+
+    return ai->alg_oid;
+}
+
+/*
+ * sc_get_auth_name(int hashtype):
+ * 
+ * Given a type, return the name string
+ */
+const char*
+sc_get_auth_name(int type)
+{
+    netsnmp_auth_alg_info *ai;
+
+    DEBUGTRACE;
+
+    ai = sc_find_auth_alg_bytype(type);
+    if (NULL == ai)
+        return NULL;
+
+    return ai->name;
+}
+
+/*
+ * sc_get_priv_oid(int type, int *oid_len):
+ * 
+ * Given a type, return the OID and optionally set OID length.
+ */
+oid *
+sc_get_priv_oid(int type, size_t *oid_len)
+{
+    netsnmp_priv_alg_info *ai;
+
+    DEBUGTRACE;
+
+    ai = sc_get_priv_alg_bytype(type);
+    if (NULL == ai)
+        return NULL;
+
+    if (NULL != oid_len)
+        *oid_len = ai->oid_len;
+
+    return ai->alg_oid;
+}
+
 /*
  * sc_get_properlength(oid *hashtype, u_int hashtype_len):
  * 
@@ -139,15 +479,8 @@ sc_get_properlength(const oid * hashtype, u_int hashtype_len)
     /*
      * Determine transform type hash length.
      */
-#ifndef NETSNMP_DISABLE_MD5
-    if (ISTRANSFORM(hashtype, HMACMD5Auth)) {
-        return BYTESIZE(SNMP_TRANS_AUTHLEN_HMACMD5);
-    } else
-#endif
-        if (ISTRANSFORM(hashtype, HMACSHA1Auth)) {
-        return BYTESIZE(SNMP_TRANS_AUTHLEN_HMACSHA1);
-    }
-    return SNMPERR_GENERR;
+    return sc_get_proper_auth_length_bytype(
+        sc_get_authtype(hashtype, hashtype_len));
 }
 
 netsnmp_feature_child_of(scapi_get_proper_priv_length, netsnmp_unused)
@@ -155,20 +488,48 @@ netsnmp_feature_child_of(scapi_get_proper_priv_length, netsnmp_unused)
 int
 sc_get_proper_priv_length(const oid * privtype, u_int privtype_len)
 {
-    int properlength = 0;
-#ifndef NETSNMP_DISABLE_DES
-    if (ISTRANSFORM(privtype, DESPriv)) {
-        properlength = BYTESIZE(SNMP_TRANS_PRIVLEN_1DES);
-    }
-#endif
-#ifdef HAVE_AES
-    if (ISTRANSFORM(privtype, AESPriv)) {
-        properlength = BYTESIZE(SNMP_TRANS_PRIVLEN_AES);
-    }
-#endif
-    return properlength;
+    netsnmp_priv_alg_info *pai;
+
+    DEBUGTRACE;
+
+    pai = sc_get_priv_alg_byoid(privtype, privtype_len);
+    if (NULL == pai)
+        return 0;
+
+    return pai->proper_length;
 }
 #endif /* NETSNMP_FEATURE_REMOVE_SCAPI_GET_PROPER_PRIV_LENGTH */
+
+/*
+ * sc_get_priv_alg_byindex(u_int index)
+ *
+ * returns a pointer to a netsnmp_priv_alg_info struct
+ */
+netsnmp_priv_alg_info *
+sc_get_priv_alg_byindex(u_int index)
+{
+    DEBUGTRACE;
+
+    if (index >= (sizeof(_priv_alg_info)) / (sizeof(_priv_alg_info[0])) ||
+        -1 == _priv_alg_info[index].type)
+        return NULL;
+
+    return(&_priv_alg_info[index]);
+}
+
+int
+sc_get_proper_priv_length_bytype(int privtype)
+{
+    netsnmp_priv_alg_info *pai;
+
+    DEBUGTRACE;
+
+    pai = sc_get_priv_alg_bytype(privtype);
+    if (NULL == pai)
+        return 0;
+
+    return pai->proper_length;
+}
 
 
 /*******************************************************************-o-******
@@ -190,7 +551,7 @@ sc_init(void)
 
     gettimeofday(&tv, (struct timezone *) 0);
 
-    srandom((unsigned)(tv.tv_sec ^ tv.tv_usec));
+    netsnmp_srandom((unsigned)(tv.tv_sec ^ tv.tv_usec));
 #elif NETSNMP_USE_PKCS11
     DEBUGTRACE;
     rval = pkcs_init();
@@ -202,6 +563,7 @@ sc_init(void)
      * * XXX ogud: seed random number generator 
      */
 #endif                          /* ifndef NETSNMP_USE_OPENSSL */
+
     return rval;
 }                               /* end sc_init() */
 
@@ -240,12 +602,12 @@ sc_random(u_char * buf, size_t * buflen)
      */
     rval = *buflen - *buflen % sizeof(rndval);
     for (i = 0; i < rval; i += sizeof(rndval)) {
-        rndval = random();
+        rndval = netsnmp_random();
         memcpy(ucp, &rndval, sizeof(rndval));
         ucp += sizeof(rndval);
     }
 
-    rndval = random();
+    rndval = netsnmp_random();
     memcpy(ucp, &rndval, *buflen % sizeof(rndval));
 
     rval = SNMPERR_SUCCESS;
@@ -257,6 +619,78 @@ sc_random(u_char * buf, size_t * buflen)
 #else
 _SCAPI_NOT_CONFIGURED
 #endif                          /*  */
+
+
+#ifdef NETSNMP_USE_OPENSSL
+const EVP_MD   *
+sc_get_openssl_hashfn(int auth_type)
+{
+    const EVP_MD   *hashfn = NULL;
+
+    DEBUGTRACE;
+
+    switch (auth_type) {
+#ifndef NETSNMP_DISABLE_MD5
+        case NETSNMP_USMAUTH_HMACMD5:
+            hashfn = (const EVP_MD *) EVP_md5();
+            break;
+#endif
+        case NETSNMP_USMAUTH_HMACSHA1:
+            hashfn = (const EVP_MD *) EVP_sha1();
+            break;
+
+#ifdef HAVE_EVP_SHA224
+        case NETSNMP_USMAUTH_HMAC128SHA224:
+            hashfn = (const EVP_MD *) EVP_sha224();
+            break;
+
+        case NETSNMP_USMAUTH_HMAC192SHA256:
+            hashfn = (const EVP_MD *) EVP_sha256();
+            break;
+#endif /* HAVE_EVP_SHA224 */
+
+#ifdef HAVE_EVP_SHA384
+        case NETSNMP_USMAUTH_HMAC256SHA384:
+            hashfn = (const EVP_MD *) EVP_sha384();
+            break;
+
+        case NETSNMP_USMAUTH_HMAC384SHA512:
+            hashfn = (const EVP_MD *) EVP_sha512();
+            break;
+#endif /* HAVE_EVP_SHA384 */
+    }
+
+    return hashfn;
+}
+
+const EVP_CIPHER *
+sc_get_openssl_privfn(int priv_type)
+{
+    const EVP_CIPHER *fn = NULL;
+
+    DEBUGTRACE;
+
+    switch(priv_type & (USM_PRIV_MASK_ALG | USM_PRIV_MASK_VARIANT)) {
+#ifdef HAVE_AES
+        case USM_CREATE_USER_PRIV_AES:
+            fn = (const EVP_CIPHER *)EVP_aes_128_cfb();
+            break;
+#ifdef NETSNMP_DRAFT_BLUMENTHAL_AES_04
+        case USM_CREATE_USER_PRIV_AES192:
+            fn = (const void*)EVP_aes_192_cfb();
+            break;
+        case USM_CREATE_USER_PRIV_AES256:
+            fn = (const void*)EVP_aes_256_cfb();
+            break;
+#endif
+#endif /* HAVE_AES */
+    }
+
+    return fn;
+}
+#endif /* openssl */
+
+
 /*******************************************************************-o-******
  * sc_generate_keyed_hash
  *
@@ -285,19 +719,23 @@ _SCAPI_NOT_CONFIGURED
  * ASSUMED that the number of hash bits is a multiple of 8.
  */
 int
-sc_generate_keyed_hash(const oid * authtype, size_t authtypelen,
+sc_generate_keyed_hash(const oid * authtypeOID, size_t authtypeOIDlen,
                        const u_char * key, u_int keylen,
                        const u_char * message, u_int msglen,
                        u_char * MAC, size_t * maclen)
 #if  defined(NETSNMP_USE_INTERNAL_MD5) || defined(NETSNMP_USE_OPENSSL) || defined(NETSNMP_USE_PKCS11) || defined(NETSNMP_USE_INTERNAL_CRYPTO)
 {
-    int             rval = SNMPERR_SUCCESS;
+    int             rval = SNMPERR_SUCCESS, auth_type;
     int             iproperlength;
     size_t          properlength;
-
     u_char          buf[SNMP_MAXBUF_SMALL];
 #if  defined(NETSNMP_USE_OPENSSL) || defined(NETSNMP_USE_PKCS11)
     unsigned int    buf_len = sizeof(buf);
+#endif
+#ifdef NETSNMP_USE_OPENSSL
+    const EVP_MD   *hashfn;
+#elif defined(NETSNMP_USE_PKCS11)
+    u_long          ck_type;
 #endif
 
     DEBUGTRACE;
@@ -316,33 +754,31 @@ sc_generate_keyed_hash(const oid * authtype, size_t authtypelen,
     /*
      * Sanity check.
      */
-    if (!authtype || !key || !message || !MAC || !maclen
-        || (keylen <= 0) || (msglen <= 0) || (*maclen <= 0)
-        || (authtypelen != USM_LENGTH_OID_TRANSFORM)) {
+    if (!authtypeOID || !key || !message || !MAC || !maclen
+        || (keylen <= 0) || (msglen <= 0) || (*maclen <= 0)) {
         QUITFUN(SNMPERR_GENERR, sc_generate_keyed_hash_quit);
     }
 
-    iproperlength = sc_get_properlength(authtype, authtypelen);
+    auth_type = sc_get_authtype(authtypeOID, authtypeOIDlen);
+    iproperlength = sc_get_auth_maclen(auth_type);
     if (iproperlength == SNMPERR_GENERR)
         return SNMPERR_GENERR;
     properlength = (size_t)iproperlength;
     if (keylen < properlength) {
         QUITFUN(SNMPERR_GENERR, sc_generate_keyed_hash_quit);
     }
-#ifdef NETSNMP_USE_OPENSSL
-    /*
-     * Determine transform type.
-     */
-#ifndef NETSNMP_DISABLE_MD5
-    if (ISTRANSFORM(authtype, HMACMD5Auth))
-        HMAC(EVP_md5(), key, keylen, message, msglen, buf, &buf_len);
-    else
+#ifdef NETSNMP_ENABLE_TESTING_CODE
+    DEBUGMSGTL(("scapi", "iproperlength: %d, maclen:%" NETSNMP_PRIz "d\n", iproperlength,
+                *maclen));
 #endif
-        if (ISTRANSFORM(authtype, HMACSHA1Auth))
-        HMAC(EVP_sha1(), key, keylen, message, msglen, buf, &buf_len);
-    else {
+#ifdef NETSNMP_USE_OPENSSL
+    /** get hash function */
+    hashfn = sc_get_openssl_hashfn(auth_type);
+    if (NULL == hashfn) {
         QUITFUN(SNMPERR_GENERR, sc_generate_keyed_hash_quit);
     }
+
+    HMAC(hashfn, key, keylen, message, msglen, buf, &buf_len);
     if (buf_len != properlength) {
         QUITFUN(rval, sc_generate_keyed_hash_quit);
     }
@@ -353,14 +789,14 @@ sc_generate_keyed_hash(const oid * authtype, size_t authtypelen,
 #elif NETSNMP_USE_PKCS11                    /* NETSNMP_USE_PKCS11 */
 
 #ifndef NETSNMP_DISABLE_MD5
-    if (ISTRANSFORM(authtype, HMACMD5Auth)) {
+    if (NETSNMP_USMAUTH_HMACMD5 == auth_type) {
 	if (pkcs_sign(CKM_MD5_HMAC,key, keylen, message,
 			msglen, buf, &buf_len) != SNMPERR_SUCCESS) {
             QUITFUN(SNMPERR_GENERR, sc_generate_keyed_hash_quit);
         }
     } else
 #endif
-        if (ISTRANSFORM(authtype, HMACSHA1Auth)) {
+        if (NETSNMP_USMAUTH_HMACSHA1 == auth_type) {
 	if (pkcs_sign(CKM_SHA_1_HMAC,key, keylen, message,
 			msglen, buf, &buf_len) != SNMPERR_SUCCESS) {
             QUITFUN(SNMPERR_GENERR, sc_generate_keyed_hash_quit);
@@ -380,11 +816,11 @@ sc_generate_keyed_hash(const oid * authtype, size_t authtypelen,
     if (*maclen > properlength)
         *maclen = properlength;
 #ifndef NETSNMP_DISABLE_MD5
-    if (ISTRANSFORM(authtype, HMACMD5Auth))
+    if (NETSNMP_USMAUTH_HMACMD5 == auth_type)
         rval = MD5_hmac(message, msglen, MAC, *maclen, key, keylen);
     else
 #endif
-         if (ISTRANSFORM(authtype, HMACSHA1Auth))
+         if (NETSNMP_USMAUTH_HMACSHA1 == auth_type)
         rval = SHA1_hmac(message, msglen, MAC, *maclen, key, keylen);
     else {
         QUITFUN(SNMPERR_GENERR, sc_generate_keyed_hash_quit);
@@ -421,7 +857,7 @@ sc_generate_keyed_hash(const oid * authtype, size_t authtypelen,
 #else
                 _SCAPI_NOT_CONFIGURED
 #endif                          /* */
-/*
+/*******************************************************************-o-******
  * sc_hash(): a generic wrapper around whatever hashing package we are using.
  * 
  * IN:
@@ -438,10 +874,49 @@ sc_generate_keyed_hash(const oid * authtype, size_t authtypelen,
  * Returns:
  * SNMPERR_SUCCESS              Success.
  * SNMP_SC_GENERAL_FAILURE      Any error.
+ * SNMPERR_SC_NOT_CONFIGURED    Hash type not supported.
  */
 int
 sc_hash(const oid * hashtype, size_t hashtypelen, const u_char * buf,
         size_t buf_len, u_char * MAC, size_t * MAC_len)
+{
+    int auth_type;
+
+    DEBUGTRACE;
+
+    if (hashtype == NULL)
+        return (SNMPERR_GENERR);
+
+    auth_type = sc_get_authtype(hashtype, hashtypelen);
+    if (auth_type < 0 )
+        return (SNMPERR_GENERR);
+
+    return sc_hash_type(auth_type, buf, buf_len, MAC, MAC_len);
+}
+
+/*******************************************************************-o-******
+ * sc_hash_type():
+ *    a generic wrapper around whatever hashing package we are using.
+ *
+ * IN:
+ * hashtype    - oid pointer to a hash type
+ * hashtypelen - length of oid pointer
+ * buf         - u_char buffer to be hashed
+ * buf_len     - integer length of buf data
+ * MAC_len     - length of the passed MAC buffer size.
+ *
+ * OUT:
+ * MAC         - pre-malloced space to store hash output.
+ * MAC_len     - length of MAC output to the MAC buffer.
+ *
+ * Returns:
+ * SNMPERR_SUCCESS              Success.
+ * SNMP_SC_GENERAL_FAILURE      Any error.
+ * SNMPERR_SC_NOT_CONFIGURED    Hash type not supported.
+ */
+int
+sc_hash_type(int auth_type, const u_char * buf, size_t buf_len, u_char * MAC,
+             size_t * MAC_len)
 #if defined(NETSNMP_USE_INTERNAL_MD5) || defined(NETSNMP_USE_OPENSSL) || defined(NETSNMP_USE_PKCS11) || defined(NETSNMP_USE_INTERNAL_CRYPTO)
 {
 #if defined(NETSNMP_USE_OPENSSL) || defined(NETSNMP_USE_PKCS11) || defined(NETSNMP_USE_INTERNAL_CRYPTO)
@@ -462,10 +937,10 @@ sc_hash(const oid * hashtype, size_t hashtypelen, const u_char * buf,
 #endif
     DEBUGTRACE;
 
-    if (hashtype == NULL || buf == NULL || buf_len <= 0 ||
-        MAC == NULL || MAC_len == NULL )
+    if (buf == NULL || buf_len <= 0 || MAC == NULL || MAC_len == NULL )
         return (SNMPERR_GENERR);
-    ret = sc_get_properlength(hashtype, hashtypelen);
+
+    ret = sc_get_proper_auth_length_bytype(auth_type);
     if (( ret < 0 ) || (*MAC_len < (size_t)ret ))
         return (SNMPERR_GENERR);
 
@@ -473,19 +948,14 @@ sc_hash(const oid * hashtype, size_t hashtypelen, const u_char * buf,
     /*
      * Determine transform type.
      */
-#ifndef NETSNMP_DISABLE_MD5
-    if (ISTRANSFORM(hashtype, HMACMD5Auth)) {
-        hashfn = (const EVP_MD *) EVP_md5();
-    } else
-#endif
-        if (ISTRANSFORM(hashtype, HMACSHA1Auth)) {
-        hashfn = (const EVP_MD *) EVP_sha1();
-    } else {
-        return (SNMPERR_GENERR);
-    }
+    hashfn = sc_get_openssl_hashfn(auth_type);
+    if (NULL == hashfn)
+        return SNMPERR_GENERR;
 
 /** initialize the pointer */
-#ifdef HAVE_EVP_MD_CTX_CREATE
+#if defined(HAVE_EVP_MD_CTX_NEW)
+    cptr = EVP_MD_CTX_new();
+#elif defined(HAVE_EVP_MD_CTX_CREATE)
     cptr = EVP_MD_CTX_create();
 #else
     cptr = malloc(sizeof(*cptr));
@@ -495,7 +965,10 @@ sc_hash(const oid * hashtype, size_t hashtypelen, const u_char * buf,
     EVP_MD_CTX_init(cptr);
 #endif
 #endif
-    EVP_DigestInit(cptr, hashfn);
+    if (!EVP_DigestInit(cptr, hashfn)) {
+        /* requested hash function is not available */
+        return SNMPERR_SC_NOT_CONFIGURED;
+    }
 
 /** pass the data */
     EVP_DigestUpdate(cptr, buf, buf_len);
@@ -503,7 +976,9 @@ sc_hash(const oid * hashtype, size_t hashtypelen, const u_char * buf,
 /** do the final pass */
     EVP_DigestFinal(cptr, MAC, &tmp_len);
     *MAC_len = tmp_len;
-#ifdef HAVE_EVP_MD_CTX_DESTROY
+#if defined(HAVE_EVP_MD_CTX_FREE)
+    EVP_MD_CTX_free(cptr);
+#elif defined(HAVE_EVP_MD_CTX_DESTROY)
     EVP_MD_CTX_destroy(cptr);
 #else
 #if !defined(OLD_DES)
@@ -515,19 +990,19 @@ sc_hash(const oid * hashtype, size_t hashtypelen, const u_char * buf,
 
 #elif NETSNMP_USE_INTERNAL_CRYPTO
 #ifndef NETSNMP_DISABLE_MD5
-    if (ISTRANSFORM(hashtype, HMACMD5Auth)) {
+    if (NETSNMP_USMAUTH_HMACMD5 == auth_type) {
         if (*MAC_len < MD5_DIGEST_LENGTH)
             return (SNMPERR_GENERR);      /* the buffer isn't big enough */
-	MD5_Init(&cmd5);
+        MD5_Init(&cmd5);
         MD5_Update(&cmd5, buf, buf_len);
         MD5_Final(MAC, &cmd5);
         *MAC_len = MD5_DIGEST_LENGTH;
     } else 
 #endif
-    if (ISTRANSFORM(hashtype, HMACSHA1Auth)) {
+    if (NETSNMP_USMAUTH_HMACSHA1 == auth_type) {
         if (*MAC_len < SHA_DIGEST_LENGTH)
             return (SNMPERR_GENERR);      /* the buffer isn't big enough */
-	SHA1_Init(&csha1);
+        SHA1_Init(&csha1);
         SHA1_Update(&csha1, buf, buf_len);
         SHA1_Final(MAC, &csha1);
         *MAC_len = SHA_DIGEST_LENGTH;
@@ -539,13 +1014,13 @@ sc_hash(const oid * hashtype, size_t hashtypelen, const u_char * buf,
 #elif NETSNMP_USE_PKCS11                  /* NETSNMP_USE_PKCS11 */
 
 #ifndef NETSNMP_DISABLE_MD5
-    if (ISTRANSFORM(hashtype, HMACMD5Auth)) {
-	rval = pkcs_digest(CKM_MD5, buf, buf_len, MAC, &tmp_len);
+    if (NETSNMP_USMAUTH_HMACMD5 == auth_type) {
+        rval = pkcs_digest(CKM_MD5, buf, buf_len, MAC, &tmp_len);
         *MAC_len = tmp_len;
     } else
 #endif
-        if (ISTRANSFORM(hashtype, HMACSHA1Auth)) {
-	rval = pkcs_digest(CKM_SHA_1, buf, buf_len, MAC, &tmp_len);
+    if (NETSNMP_USMAUTH_HMACSHA1 == auth_type) {
+       rval = pkcs_digest(CKM_SHA_1, buf, buf_len, MAC, &tmp_len);
         *MAC_len = tmp_len;
     } else {
         return (SNMPERR_GENERR);
@@ -591,13 +1066,13 @@ _SCAPI_NOT_CONFIGURED
  * length of the hash transform output.
  */
 int
-sc_check_keyed_hash(const oid * authtype, size_t authtypelen,
+sc_check_keyed_hash(const oid * authtypeOID, size_t authtypeOIDlen,
                     const u_char * key, u_int keylen,
                     const u_char * message, u_int msglen,
                     const u_char * MAC, u_int maclen)
 #if defined(NETSNMP_USE_INTERNAL_MD5) || defined(NETSNMP_USE_OPENSSL) || defined(NETSNMP_USE_PKCS11) || defined(NETSNMP_USE_INTERNAL_CRYPTO)
 {
-    int             rval = SNMPERR_SUCCESS;
+    int             rval = SNMPERR_SUCCESS, auth_type, auth_size;
     size_t          buf_len = SNMP_MAXBUF_SMALL;
 
     u_char          buf[SNMP_MAXBUF_SMALL];
@@ -617,24 +1092,26 @@ sc_check_keyed_hash(const oid * authtype, size_t authtypelen,
     /*
      * Sanity check.
      */
-    if (!authtype || !key || !message || !MAC
-        || (keylen <= 0) || (msglen <= 0) || (maclen <= 0)
-        || (authtypelen != USM_LENGTH_OID_TRANSFORM)) {
+    if (!authtypeOID || !key || !message || !MAC
+        || (keylen <= 0) || (msglen <= 0) || (maclen <= 0)) {
         QUITFUN(SNMPERR_GENERR, sc_check_keyed_hash_quit);
     }
 
+    auth_type = sc_get_authtype(authtypeOID, authtypeOIDlen);
+    if (auth_type < 0 )
+        return (SNMPERR_GENERR);
 
-    if (maclen != USM_MD5_AND_SHA_AUTH_LEN) {
+    auth_size = sc_get_auth_maclen(auth_type);
+    if (0 == auth_size || maclen != auth_size) {
         QUITFUN(SNMPERR_GENERR, sc_check_keyed_hash_quit);
     }
-    
+
     /*
      * Generate a full hash of the message, then compare
-     * the result with the given MAC which may shorter than
+     * the result with the given MAC which may be shorter than
      * the full hash length.
      */
-    rval = sc_generate_keyed_hash(authtype, authtypelen,
-                                  key, keylen,
+    rval = sc_generate_keyed_hash(authtypeOID, authtypeOIDlen, key, keylen,
                                   message, msglen, buf, &buf_len);
     QUITFUN(rval, sc_check_keyed_hash_quit);
 
@@ -690,24 +1167,19 @@ sc_encrypt(const oid * privtype, size_t privtypelen,
 #if defined(NETSNMP_USE_OPENSSL) || defined(NETSNMP_USE_INTERNAL_CRYPTO)
 {
     int             rval = SNMPERR_SUCCESS;
-    u_int           properlength = 0, properlength_iv = 0;
     u_char          pad_block[128];      /* bigger than anything I need */
     u_char          my_iv[128];  /* ditto */
-    int             pad, plast, pad_size = 0;
-    int             have_trans;
+    netsnmp_priv_alg_info *pai = NULL;
 #ifndef NETSNMP_DISABLE_DES
+    int             pad, plast, pad_size = 0;
 #ifdef OLD_DES
     DES_key_schedule key_sch;
 #else
     DES_key_schedule key_sched_store;
     DES_key_schedule *key_sch = &key_sched_store;
-#endif
+#endif /* OLD_DES */
     DES_cblock       key_struct;
-#endif
-#ifdef HAVE_AES
-    AES_KEY aes_key;
-    int new_ivlen = 0;
-#endif
+#endif /* NETSNMP_DISABLE_DES */
 
     DEBUGTRACE;
 
@@ -715,15 +1187,17 @@ sc_encrypt(const oid * privtype, size_t privtypelen,
      * Sanity check.
      */
 #if	!defined(NETSNMP_ENABLE_SCAPI_AUTHPRIV)
-    snmp_log(LOG_ERR, "Encryption support not enabled.\n");
+    snmp_log(LOG_ERR, "Encryption support not enabled.(2)\n");
     return SNMPERR_SC_NOT_CONFIGURED;
 #endif
 
     if (!privtype || !key || !iv || !plaintext || !ciphertext || !ctlen
-        || (keylen <= 0) || (ivlen <= 0) || (ptlen <= 0) || (*ctlen <= 0)
-        || (privtypelen != USM_LENGTH_OID_TRANSFORM)) {
+        || (keylen <= 0) || (ivlen <= 0) || (ivlen > sizeof(my_iv))
+        || (ptlen <= 0) || (*ctlen <= 0)) {
+        DEBUGMSGTL(("scapi:encrypt", "bad arguments 1\n"));
         QUITFUN(SNMPERR_GENERR, sc_encrypt_quit);
     } else if (ptlen > *ctlen) {
+        DEBUGMSGTL(("scapi:encrypt", "bad arguments 2\n"));
         QUITFUN(SNMPERR_GENERR, sc_encrypt_quit);
     }
 #ifdef NETSNMP_ENABLE_TESTING_CODE
@@ -734,16 +1208,16 @@ sc_encrypt(const oid * privtype, size_t privtypelen,
         if (buf != NULL) {
             if (sprint_realloc_hexstring(&buf, &buf_len, &out_len, 1,
                                          iv, ivlen)) {
-                DEBUGMSGTL(("scapi", "encrypt: IV: %s/", buf));
+                DEBUGMSGTL(("scapi", "encrypt: IV: %s\n", buf));
             } else {
-                DEBUGMSGTL(("scapi", "encrypt: IV: %s [TRUNCATED]/", buf));
+                DEBUGMSGTL(("scapi", "encrypt: IV: %s [TRUNCATED]\n", buf));
             }
             out_len = 0;
             if (sprint_realloc_hexstring(&buf, &buf_len, &out_len, 1,
                                          key, keylen)) {
-                DEBUGMSG(("scapi", "%s\n", buf));
+                DEBUGMSG(("scapi", "key: %s\n", buf));
             } else {
-                DEBUGMSG(("scapi", "%s [TRUNCATED]\n", buf));
+                DEBUGMSG(("scapi", "key: %s [TRUNCATED]\n", buf));
             }
             out_len = 0;
             if (sprint_realloc_hexstring(&buf, &buf_len, &out_len, 1,
@@ -765,34 +1239,24 @@ sc_encrypt(const oid * privtype, size_t privtypelen,
     /*
      * Determine privacy transform.
      */
-    have_trans = 0;
-#ifndef NETSNMP_DISABLE_DES
-    if (ISTRANSFORM(privtype, DESPriv)) {
-        properlength = BYTESIZE(SNMP_TRANS_PRIVLEN_1DES);
-        properlength_iv = BYTESIZE(SNMP_TRANS_PRIVLEN_1DES_IV);
-        pad_size = properlength;
-        have_trans = 1;
-    }
-#endif
-#ifdef HAVE_AES
-    if (ISTRANSFORM(privtype, AESPriv)) {
-        properlength = BYTESIZE(SNMP_TRANS_PRIVLEN_AES);
-        properlength_iv = BYTESIZE(SNMP_TRANS_PRIVLEN_AES_IV);
-        have_trans = 1;
-    }
-#endif
-    if (!have_trans) {
-        QUITFUN(SNMPERR_GENERR, sc_encrypt_quit);
-    }
+    pai = sc_get_priv_alg_byoid(privtype, privtypelen);
+    if (NULL == pai ||
+        (keylen < pai->proper_length) || (ivlen < pai->iv_length)) {
+        DEBUGMSGTL(("scapi:encrypt",
+                    "bad arguments 3 pai %p, keylen %d ivlen %d\n",
+                    pai, keylen, ivlen));
+        if (pai)
+            DEBUGMSGTL(("scapi:encrypt", " pai: properlen %d, ivlen %d\n",
+                        pai->proper_length, pai->iv_length));
 
-    if ((keylen < properlength) || (ivlen < properlength_iv)) {
         QUITFUN(SNMPERR_GENERR, sc_encrypt_quit);
     }
+    pad_size = pai->pad_size;
 
     memset(my_iv, 0, sizeof(my_iv));
 
 #ifndef NETSNMP_DISABLE_DES
-    if (ISTRANSFORM(privtype, DESPriv)) {
+    if (USM_CREATE_USER_PRIV_DES == (pai->type & USM_PRIV_MASK_ALG)) {
 
         /*
          * now calculate the padding needed 
@@ -802,6 +1266,7 @@ sc_encrypt(const oid * privtype, size_t privtypelen,
         if (pad == pad_size)
             pad = 0;
         if (ptlen + pad > *ctlen) {
+            DEBUGMSGTL(("scapi:encrypt", "not enough space\n"));
             QUITFUN(SNMPERR_GENERR, sc_encrypt_quit);    /* not enough space */
         }
         if (pad > 0) {              /* copy data into pad block if needed */
@@ -830,16 +1295,50 @@ sc_encrypt(const oid * privtype, size_t privtypelen,
         }
     }
 #endif
-#ifdef HAVE_AES
-    if (ISTRANSFORM(privtype, AESPriv)) {
-        (void) AES_set_encrypt_key(key, properlength*8, &aes_key);
+#if defined(NETSNMP_USE_OPENSSL) && defined(HAVE_AES)
+    if (USM_CREATE_USER_PRIV_AES == (pai->type & USM_PRIV_MASK_ALG)) {
+        EVP_CIPHER_CTX *ctx;
+        const EVP_CIPHER *cipher;
+        int len, rc, enclen;
+
+        cipher = sc_get_openssl_privfn(pai->type);
+        if (NULL == cipher) {
+            DEBUGMSGTL(("scapi:encrypt", "cipher not found\n"));
+            QUITFUN(SNMPERR_GENERR, sc_encrypt_quit);
+        }
 
         memcpy(my_iv, iv, ivlen);
         /*
          * encrypt the data 
          */
-        AES_cfb128_encrypt(plaintext, ciphertext, ptlen,
-                           &aes_key, my_iv, &new_ivlen, AES_ENCRYPT);
+        ctx = EVP_CIPHER_CTX_new();
+        if (!ctx) {
+            DEBUGMSGTL(("scapi:encrypt", "openssl error: ctx_new\n"));
+            QUITFUN(SNMPERR_GENERR, sc_encrypt_quit);
+        }
+        rc = EVP_EncryptInit(ctx, cipher, key, my_iv);
+        if (rc != 1) {
+            DEBUGMSGTL(("scapi:encrypt", "openssl error: init\n"));
+            EVP_CIPHER_CTX_free(ctx);
+            QUITFUN(SNMPERR_GENERR, sc_encrypt_quit);
+        }
+        rc = EVP_EncryptUpdate(ctx, ciphertext, &len, plaintext, ptlen);
+        if (rc != 1) {
+            DEBUGMSGTL(("scapi:encrypt", "openssl error: update\n"));
+            EVP_CIPHER_CTX_free(ctx);
+            QUITFUN(SNMPERR_GENERR, sc_encrypt_quit);
+        }
+        enclen = len;
+        rc = EVP_EncryptFinal(ctx, ciphertext + len, &len);
+        if (rc != 1) {
+            DEBUGMSGTL(("scapi:encrypt", "openssl error: final\n"));
+            EVP_CIPHER_CTX_free(ctx);
+            QUITFUN(SNMPERR_GENERR, sc_encrypt_quit);
+        }
+        enclen += len;
+        ptlen = enclen;
+        /* Clean up */
+        EVP_CIPHER_CTX_free(ctx);
         *ctlen = ptlen;
     }
 #endif
@@ -857,17 +1356,14 @@ sc_encrypt(const oid * privtype, size_t privtypelen,
     memset(&key_sched_store, 0, sizeof(key_sched_store));
 #endif
 #endif
-#ifdef HAVE_AES
-    memset(&aes_key,0,sizeof(aes_key));
-#endif
     return rval;
 
 }                               /* end sc_encrypt() */
 #elif defined(NETSNMP_USE_PKCS11)
 {
-    int             rval = SNMPERR_SUCCESS;
-    u_int           properlength, properlength_iv;
+    int             rval = SNMPERR_SUCCESS, priv_type
     u_char	    pkcs_des_key[8];
+    netsnmp_priv_alg_info *pai;
 
     DEBUGTRACE;
 
@@ -875,13 +1371,12 @@ sc_encrypt(const oid * privtype, size_t privtypelen,
      * Sanity check.
      */
 #if	!defined(NETSNMP_ENABLE_SCAPI_AUTHPRIV)
-    snmp_log(LOG_ERR, "Encryption support not enabled.\n");
+    snmp_log(LOG_ERR, "Encryption support not enabled.(1)\n");
     return SNMPERR_SC_NOT_CONFIGURED;
 #endif
 
     if (!privtype || !key || !iv || !plaintext || !ciphertext || !ctlen
-        || (keylen <= 0) || (ivlen <= 0) || (ptlen <= 0) || (*ctlen <= 0)
-        || (privtypelen != USM_LENGTH_OID_TRANSFORM)) {
+        || (keylen <= 0) || (ivlen <= 0) || (ptlen <= 0) || (*ctlen <= 0)) {
         QUITFUN(SNMPERR_GENERR, sc_encrypt_quit);
     } else if (ptlen > *ctlen) {
         QUITFUN(SNMPERR_GENERR, sc_encrypt_quit);
@@ -890,24 +1385,17 @@ sc_encrypt(const oid * privtype, size_t privtypelen,
     /*
      * Determine privacy transform.
      */
-    if (ISTRANSFORM(privtype, DESPriv)) {
-        properlength = BYTESIZE(SNMP_TRANS_PRIVLEN_1DES);
-        properlength_iv = BYTESIZE(SNMP_TRANS_PRIVLEN_1DES_IV);
-    } else {
+    pai = sc_get_priv_alg_byoid(privtype, privtypelen);
+    if (NULL == pai || USM_CREATE_USER_PRIV_DES != priv_type ||
+        (keylen < pai->proper_length) || (ivlen < pai->iv_length)) {
         QUITFUN(SNMPERR_GENERR, sc_encrypt_quit);
     }
 
-    if ((keylen < properlength) || (ivlen < properlength_iv)) {
-	QUITFUN(SNMPERR_GENERR, sc_encrypt_quit);
-    }
-
-    if (ISTRANSFORM(privtype, DESPriv)) {
-	memset(pkcs_des_key, 0, sizeof(pkcs_des_key));
-	memcpy(pkcs_des_key, key, sizeof(pkcs_des_key));
-	rval = pkcs_encrpyt(CKM_DES_CBC, pkcs_des_key,
-		sizeof(pkcs_des_key), iv, ivlen, plaintext, ptlen,
-		ciphertext, ctlen);
-    }
+    memset(pkcs_des_key, 0, sizeof(pkcs_des_key));
+    memcpy(pkcs_des_key, key, sizeof(pkcs_des_key));
+    rval = pkcs_encrpyt(CKM_DES_CBC, pkcs_des_key,
+                        sizeof(pkcs_des_key), iv, ivlen, plaintext, ptlen,
+                        ciphertext, ctlen);
 
   sc_encrypt_quit:
     return rval;
@@ -916,7 +1404,7 @@ sc_encrypt(const oid * privtype, size_t privtypelen,
 {
 #	if NETSNMP_USE_INTERNAL_MD5
     {
-        snmp_log(LOG_ERR, "Encryption support not enabled.\n");
+        snmp_log(LOG_ERR, "Encryption support not enabled.(3)\n");
         DEBUGMSGTL(("scapi", "Encrypt function not defined.\n"));
         return SNMPERR_SC_GENERAL_FAILURE;
     }
@@ -974,18 +1462,13 @@ sc_decrypt(const oid * privtype, size_t privtypelen,
 #endif
     DES_cblock      key_struct;
 #endif
-    u_int           properlength = 0, properlength_iv = 0;
-    int             have_transform;
-#ifdef HAVE_AES
-    int new_ivlen = 0;
-    AES_KEY aes_key;
-#endif
+    netsnmp_priv_alg_info *pai = NULL;
 
     DEBUGTRACE;
 
     if (!privtype || !key || !iv || !plaintext || !ciphertext || !ptlen
-        || (ctlen <= 0) || (*ptlen <= 0) || (*ptlen < ctlen)
-        || (privtypelen != USM_LENGTH_OID_TRANSFORM)) {
+        || (ctlen <= 0) || (*ptlen <= 0) || (*ptlen < ctlen)) {
+        DEBUGMSGTL(("scapi", "decrypt: arg sanity checks failed\n"));
         QUITFUN(SNMPERR_GENERR, sc_decrypt_quit);
     }
 #ifdef NETSNMP_ENABLE_TESTING_CODE
@@ -996,16 +1479,16 @@ sc_decrypt(const oid * privtype, size_t privtypelen,
         if (buf != NULL) {
             if (sprint_realloc_hexstring(&buf, &buf_len, &out_len, 1,
                                          iv, ivlen)) {
-                DEBUGMSGTL(("scapi", "decrypt: IV: %s/", buf));
+                DEBUGMSGTL(("scapi", "decrypt: IV: %s\n", buf));
             } else {
-                DEBUGMSGTL(("scapi", "decrypt: IV: %s [TRUNCATED]/", buf));
+                DEBUGMSGTL(("scapi", "decrypt: IV: %s [TRUNCATED]\n", buf));
             }
             out_len = 0;
             if (sprint_realloc_hexstring(&buf, &buf_len, &out_len, 1,
                                          key, keylen)) {
-                DEBUGMSG(("scapi", "%s\n", buf));
+                DEBUGMSG(("scapi", "key: %s\n", buf));
             } else {
-                DEBUGMSG(("scapi", "%s\n", buf));
+                DEBUGMSG(("scapi", "key: %s [TRUNCATED]\n", buf));
             }
             free(buf);
         } else {
@@ -1018,32 +1501,15 @@ sc_decrypt(const oid * privtype, size_t privtypelen,
     /*
      * Determine privacy transform.
      */
-    have_transform = 0;
-#ifndef NETSNMP_DISABLE_DES
-    if (ISTRANSFORM(privtype, DESPriv)) {
-        properlength = BYTESIZE(SNMP_TRANS_PRIVLEN_1DES);
-        properlength_iv = BYTESIZE(SNMP_TRANS_PRIVLEN_1DES_IV);
-        have_transform = 1;
-    }
-#endif
-#ifdef HAVE_AES
-    if (ISTRANSFORM(privtype, AESPriv)) {
-        properlength = BYTESIZE(SNMP_TRANS_PRIVLEN_AES);
-        properlength_iv = BYTESIZE(SNMP_TRANS_PRIVLEN_AES_IV);
-        have_transform = 1;
-    }
-#endif
-    if (!have_transform) {
-        QUITFUN(SNMPERR_GENERR, sc_decrypt_quit);
-    }
-
-    if ((keylen < properlength) || (ivlen < properlength_iv)) {
+    pai = sc_get_priv_alg_byoid(privtype, privtypelen);
+    if (NULL == pai ||
+        (keylen < pai->proper_length) || (ivlen < pai->iv_length)) {
         QUITFUN(SNMPERR_GENERR, sc_decrypt_quit);
     }
 
     memset(my_iv, 0, sizeof(my_iv));
 #ifndef NETSNMP_DISABLE_DES
-    if (ISTRANSFORM(privtype, DESPriv)) {
+    if (USM_CREATE_USER_PRIV_DES == (pai->type & USM_PRIV_MASK_ALG)) {
         memcpy(key_struct, key, sizeof(key_struct));
         (void) DES_key_sched(&key_struct, key_sch);
 
@@ -1053,16 +1519,41 @@ sc_decrypt(const oid * privtype, size_t privtypelen,
         *ptlen = ctlen;
     }
 #endif
-#ifdef HAVE_AES
-    if (ISTRANSFORM(privtype, AESPriv)) {
-        (void) AES_set_encrypt_key(key, properlength*8, &aes_key);
+#if defined(NETSNMP_USE_OPENSSL) && defined(HAVE_AES)
+    if (USM_CREATE_USER_PRIV_AES == (pai->type & USM_PRIV_MASK_ALG)) {
+        EVP_CIPHER_CTX *ctx;
+        const EVP_CIPHER *cipher;
+        int len, rc;
+
+        cipher = sc_get_openssl_privfn(pai->type);
+        if (NULL == cipher)
+            QUITFUN(SNMPERR_GENERR, sc_decrypt_quit);
 
         memcpy(my_iv, iv, ivlen);
         /*
-         * encrypt the data 
+         * decrypt the data
          */
-        AES_cfb128_encrypt(ciphertext, plaintext, ctlen,
-                           &aes_key, my_iv, &new_ivlen, AES_DECRYPT);
+        ctx = EVP_CIPHER_CTX_new();
+        if (!ctx) {
+            QUITFUN(SNMPERR_GENERR, sc_decrypt_quit);
+        }
+        rc = EVP_DecryptInit(ctx, cipher, key, my_iv);
+        if (rc != 1) {
+            EVP_CIPHER_CTX_free(ctx);
+            QUITFUN(SNMPERR_GENERR, sc_decrypt_quit);
+        }
+        rc = EVP_DecryptUpdate(ctx, plaintext, &len, ciphertext, ctlen);
+        if (rc != 1) {
+            EVP_CIPHER_CTX_free(ctx);
+            QUITFUN(SNMPERR_GENERR, sc_decrypt_quit);
+        }
+        rc = EVP_DecryptFinal(ctx, plaintext + len, &len);
+        if (rc != 1) {
+            EVP_CIPHER_CTX_free(ctx);
+            QUITFUN(SNMPERR_GENERR, sc_decrypt_quit);
+        }
+        /* Clean up */
+        EVP_CIPHER_CTX_free(ctx);
         *ptlen = ctlen;
     }
 #endif
@@ -1085,39 +1576,31 @@ sc_decrypt(const oid * privtype, size_t privtypelen,
 #elif NETSNMP_USE_PKCS11                  /* USE PKCS */
 {
     int             rval = SNMPERR_SUCCESS;
-    u_int           properlength, properlength_iv;
     u_char	    pkcs_des_key[8];
+    netsnmp_priv_alg_info *pai;
 
     DEBUGTRACE;
 
     if (!privtype || !key || !iv || !plaintext || !ciphertext || !ptlen
-        || (ctlen <= 0) || (*ptlen <= 0) || (*ptlen < ctlen)
-        || (privtypelen != USM_LENGTH_OID_TRANSFORM)) {
+        || (ctlen <= 0) || (*ptlen <= 0) || (*ptlen < ctlen)) {
         QUITFUN(SNMPERR_GENERR, sc_decrypt_quit);
     }
 
     /*
      * Determine privacy transform.
      */
-    if (ISTRANSFORM(privtype, DESPriv)) {
-        properlength = BYTESIZE(SNMP_TRANS_PRIVLEN_1DES);
-        properlength_iv = BYTESIZE(SNMP_TRANS_PRIVLEN_1DES_IV);
-    } else {
+    pai = sc_get_priv_alg_byoid(privtype, privtypelen);
+    if (NULL == pai || USM_CREATE_USER_PRIV_DES != priv_type ||
+        (keylen < pai->proper_length) || (ivlen < pai->iv_length)) {
         QUITFUN(SNMPERR_GENERR, sc_decrypt_quit);
     }
 
-    if ((keylen < properlength) || (ivlen < properlength_iv)) {
-        QUITFUN(SNMPERR_GENERR, sc_decrypt_quit);
-    }
-
-    if (ISTRANSFORM(privtype, DESPriv)) {
-	memset(pkcs_des_key, 0, sizeof(pkcs_des_key));
-	memcpy(pkcs_des_key, key, sizeof(pkcs_des_key));
-	rval = pkcs_decrpyt(CKM_DES_CBC, pkcs_des_key, 
-		sizeof(pkcs_des_key), iv, ivlen, ciphertext,
-		ctlen, plaintext, ptlen);
-        *ptlen = ctlen;
-    }
+    memset(pkcs_des_key, 0, sizeof(pkcs_des_key));
+    memcpy(pkcs_des_key, key, sizeof(pkcs_des_key));
+    rval = pkcs_decrpyt(CKM_DES_CBC, pkcs_des_key, 
+                        sizeof(pkcs_des_key), iv, ivlen, ciphertext,
+                        ctlen, plaintext, ptlen);
+    *ptlen = ctlen;
 
   sc_decrypt_quit:
     return rval;
@@ -1125,7 +1608,7 @@ sc_decrypt(const oid * privtype, size_t privtypelen,
 #else
 {
 #if	!defined(NETSNMP_ENABLE_SCAPI_AUTHPRIV)
-    snmp_log(LOG_ERR, "Encryption support not enabled.\n");
+    snmp_log(LOG_ERR, "Encryption support not enabled.(4)\n");
     return SNMPERR_SC_NOT_CONFIGURED;
 #else
 #	if NETSNMP_USE_INTERNAL_MD5
@@ -1177,6 +1660,8 @@ MD5_hmac(const u_char * data, size_t len, u_char * mac, size_t maclen,
     u_char         *newdata = NULL;
     int             rc = 0;
 
+    DEBUGTRACE;
+
     /*
      * memset(K1,0,MD5_HASHKEYLEN);
      * memset(K2,0,MD5_HASHKEYLEN);
@@ -1211,7 +1696,7 @@ MD5_hmac(const u_char * data, size_t len, u_char * mac, size_t maclen,
          * this relies on the ability to use integer math and thus we
          * must rely on data that aligns on 32-bit-word-boundries 
          */
-        memdup(&newdata, data, len);
+        newdata = netsnmp_memdup(data, len);
         cp = newdata;
     } else {
         cp = data;
@@ -1275,6 +1760,8 @@ SHA1_hmac(const u_char * data, size_t len, u_char * mac, size_t maclen,
     u_char         *newdata = NULL;
     int             rc = 0;
 
+    DEBUGTRACE;
+
     /*
      * memset(K1,0,SHA1_HASHKEYLEN);
      * memset(K2,0,SHA1_HASHKEYLEN);
@@ -1309,7 +1796,7 @@ SHA1_hmac(const u_char * data, size_t len, u_char * mac, size_t maclen,
          * this relies on the ability to use integer math and thus we
          * must rely on data that aligns on 32-bit-word-boundries 
          */
-        memdup(&newdata, data, len);
+        newdata = netsnmp_memdup(data, len);
         cp = newdata;
     } else {
         cp = data;

@@ -312,8 +312,8 @@ sched_nextTime( struct schedTable_entry *entry )
                         ctime(&entry->schedNextRun)));
             return;
         }
-        /* Fallthrough */
         DEBUGMSGTL(("disman:schedule:time", "one-shot: fallthrough\n"));
+        /* FALL THROUGH */
     case SCHED_TYPE_CALENDAR:
         /*
          *  Check for complete time specification
@@ -454,6 +454,7 @@ schedTable_createEntry(const char *schedOwner, const char *schedName)
 {
     struct schedTable_entry *entry;
     netsnmp_tdata_row *row;
+    int len;
 
     DEBUGMSGTL(("disman:schedule:entry", "creating entry (%s, %s)\n",
                                           schedOwner, schedName));
@@ -472,16 +473,20 @@ schedTable_createEntry(const char *schedOwner, const char *schedName)
      *  data structure, and in the table_data helper.
      */
     if (schedOwner) {
-        memcpy(entry->schedOwner, schedOwner, strlen(schedOwner));
-        netsnmp_tdata_row_add_index(row, ASN_OCTET_STR,
-                           entry->schedOwner, strlen(schedOwner));
+        len = strlen(schedOwner);
+        if (len > sizeof(entry->schedOwner))
+            len = sizeof(entry->schedOwner);
+        memcpy(entry->schedOwner, schedOwner, len);
+        netsnmp_tdata_row_add_index(row, ASN_OCTET_STR, entry->schedOwner, len);
     }
     else
         netsnmp_tdata_row_add_index(row, ASN_OCTET_STR, "", 0 );
 
-    memcpy(    entry->schedName,  schedName,  strlen(schedName));
-    netsnmp_tdata_row_add_index(row, ASN_OCTET_STR,
-                           entry->schedName,  strlen(schedName));
+    len = strlen(schedName);
+    if (len > sizeof(entry->schedName))
+        len = sizeof(entry->schedName);
+    memcpy(entry->schedName, schedName, len);
+    netsnmp_tdata_row_add_index(row, ASN_OCTET_STR, entry->schedName, len);
     /*
      * Set the (non-zero) default values in the row data structure.
      */

@@ -1,6 +1,13 @@
 #include <net-snmp/net-snmp-config.h>
 #include <net-snmp/net-snmp-features.h>
 
+/*
+ * Portions of this file are copyrighted by:
+ * Copyright (c) 2016 VMware, Inc. All rights reserved.
+ * Use is subject to license terms specified in the COPYING file
+ * distributed with the Net-SNMP package.
+ */
+
 #ifdef HAVE_STDLIB_H
 #include <stdlib.h>
 #endif
@@ -21,6 +28,7 @@
 
 #include <net-snmp/library/snmp_enum.h>
 #include <net-snmp/library/tools.h>
+#include <net-snmp/library/system.h>      /* strcasecmp() */
 #include <net-snmp/library/snmp_assert.h>
 
 netsnmp_feature_child_of(snmp_enum_all, libnetsnmp)
@@ -67,7 +75,7 @@ init_snmp_enum(const char *type)
     }
     current_min_num = SE_MAX_SUBIDS;
 
-    register_config_handler(type, "enum", se_read_conf, NULL, NULL);
+    register_const_config_handler(type, "enum", se_read_conf, NULL, NULL);
     return SE_OK;
 }
 
@@ -94,11 +102,11 @@ se_store_in_list(struct snmp_enum_list *new_list,
 }
 
 void
-se_read_conf(const char *word, char *cptr)
+se_read_conf(const char *word, const char *cptr)
 {
     int major, minor;
     int value;
-    char *cp, *cp2;
+    const char *cp, *cp2;
     char e_name[BUFSIZ];
     char e_enum[  BUFSIZ];
 
@@ -109,8 +117,8 @@ se_read_conf(const char *word, char *cptr)
      * Extract the first token
      *   (which should be the name of the list)
      */
-    cp = copy_nword(cptr, e_name, sizeof(e_name));
-    cp = skip_white(cp);
+    cp = copy_nword_const(cptr, e_name, sizeof(e_name));
+    cp = skip_white_const(cp);
     if (!cp || *cp=='\0')
         return;
 
@@ -124,7 +132,7 @@ se_read_conf(const char *word, char *cptr)
          *  Numeric major/minor style
          */
         while (1) {
-            cp = copy_nword(cp, e_enum, sizeof(e_enum));
+            cp = copy_nword_const(cp, e_enum, sizeof(e_enum));
             if (sscanf(e_enum, "%d:", &value) != 1) {
                 break;
             }
@@ -140,7 +148,7 @@ se_read_conf(const char *word, char *cptr)
          *  Named enumeration
          */
         while (1) {
-            cp = copy_nword(cp, e_enum, sizeof(e_enum));
+            cp = copy_nword_const(cp, e_enum, sizeof(e_enum));
             if (sscanf(e_enum, "%d:", &value) != 1) {
                 break;
             }
@@ -213,6 +221,20 @@ se_find_value_in_list(struct snmp_enum_list *list, const char *label)
         return SE_DNE;          /* XXX: um, no good solution here */
     while (list) {
         if (strcmp(list->label, label) == 0)
+            return (list->value);
+        list = list->next;
+    }
+
+    return SE_DNE;              /* XXX: um, no good solution here */
+}
+
+int
+se_find_casevalue_in_list(struct snmp_enum_list *list, const char *label)
+{
+    if (!list)
+        return SE_DNE;          /* XXX: um, no good solution here */
+    while (list) {
+        if (strcasecmp(list->label, label) == 0)
             return (list->value);
         list = list->next;
     }
@@ -345,6 +367,12 @@ int
 se_find_value_in_slist(const char *listname, const char *label)
 {
     return (se_find_value_in_list(se_find_slist(listname), label));
+}
+
+int
+se_find_casevalue_in_slist(const char *listname, const char *label)
+{
+    return (se_find_casevalue_in_list(se_find_slist(listname), label));
 }
 
 #ifndef NETSNMP_FEATURE_REMOVE_SE_FIND_FREE_VALUE_IN_SLIST

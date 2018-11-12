@@ -153,7 +153,11 @@ _load(netsnmp_container *container, u_int load_flags)
 #endif
 
 #if !defined(NETSNMP_ENABLE_IPV6)
+#ifdef INP_ISIPV6
+        if (INP_ISIPV6(&pcb.xi_inp))
+#else
         if (pcb.xi_inp.inp_vflag & INP_IPV6)
+#endif
 	    continue;
 #endif
 
@@ -169,7 +173,11 @@ _load(netsnmp_container *container, u_int load_flags)
         entry->pid = 0;
         
         /** the addr string may need work */
+#ifdef INP_ISIPV6
+	if (INP_ISIPV6(&pcb.xi_inp)) {
+#else
 	if (pcb.xi_inp.inp_vflag & INP_IPV6) {
+#endif
 	    entry->loc_addr_len = entry->rmt_addr_len = 16;
 	    memcpy(entry->loc_addr, &pcb.xi_inp.in6p_laddr, 16);
 	    memcpy(entry->rmt_addr, &pcb.xi_inp.in6p_faddr, 16);
@@ -186,6 +194,8 @@ _load(netsnmp_container *container, u_int load_flags)
 	entry->index = CONTAINER_SIZE(container) + 1;
         CONTAINER_INSERT(container, entry);
     }
+
+    free(udpcb_buf);
 
     if(rc<0)
         return rc;

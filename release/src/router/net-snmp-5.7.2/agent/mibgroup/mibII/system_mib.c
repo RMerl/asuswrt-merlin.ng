@@ -37,6 +37,10 @@
 #endif
 #endif
 
+#if defined(cygwin) || defined(mingw32)
+#include <winerror.h>
+#endif
+
 #include <net-snmp/net-snmp-includes.h>
 #include <net-snmp/agent/net-snmp-agent-includes.h>
 #include <net-snmp/agent/sysORTable.h>
@@ -44,6 +48,7 @@
 #include "util_funcs.h"
 #include "system_mib.h"
 #include "updates.h"
+#include "agent_global_vars.h"
 
 netsnmp_feature_require(watcher_read_only_int_scalar)
 
@@ -62,14 +67,8 @@ static char     sysLocation[SYS_STRING_LEN] = NETSNMP_SYS_LOC;
 static oid      sysObjectID[MAX_OID_LEN];
 static size_t sysObjectIDByteLength;
 
-extern oid      version_sysoid[];
-extern int      version_sysoid_len;
-
 static int      sysServices = 72;
 static int      sysServicesConfiged = 0;
-
-extern oid      version_id[];
-extern int      version_id_len;
 
 static int      sysContactSet = 0, sysLocationSet = 0, sysNameSet = 0;
 
@@ -255,7 +254,8 @@ init_system_mib(void)
     /*
      * set default values of system stuff 
      */
-    sprintf(extmp.command, "%s -a", UNAMEPROG);
+    if (asprintf(&extmp.command, "%s -a", UNAMEPROG) < 0)
+        extmp.command = NULL;
     /*
      * setup defaults 
      */
@@ -281,7 +281,8 @@ init_system_mib(void)
     strlcpy(sysName, utsName.nodename, sizeof(sysName));
 #else
 #if defined (HAVE_EXECV) && !defined (mingw32)
-    sprintf(extmp.command, "%s -n", UNAMEPROG);
+    if (asprintf(&extmp.command, "%s -n", UNAMEPROG) < 0)
+        extmp.command = NULL;
     /*
      * setup defaults 
      */
@@ -309,7 +310,7 @@ init_system_mib(void)
           if (RegQueryValueEx(hKey, "RegisteredOwner", NULL, NULL,
                               (LPBYTE)registeredOwner,
                               &registeredOwnerSz) == ERROR_SUCCESS) {
-              strcpy(sysContact, registeredOwner);
+              strlcpy(sysContact, registeredOwner, sizeof(sysContact));
           }
           RegCloseKey(hKey);
       }
@@ -464,122 +465,82 @@ init_system_mib(void)
 	 *********************/
 
 #if (defined (WIN32) && defined (HAVE_WIN32_PLATFORM_SDK)) || defined (mingw32)
+static DWORD RegReadDword(HKEY hKey, LPCTSTR lpSubkey, LPCTSTR lpValueName)
+{
+    HKEY hSubkey;
+    LONG qres;
+    DWORD key_type;
+    DWORD result = 0;
+    DWORD result_len = sizeof(result);
+
+    if (RegOpenKeyEx(hKey, lpSubkey, 0, KEY_READ, &hSubkey) != ERROR_SUCCESS)
+        goto out;
+    qres = RegQueryValueEx(hSubkey, lpValueName, NULL, &key_type,
+                           (void *)&result, &result_len);
+    if (qres != ERROR_SUCCESS || key_type != REG_DWORD ||
+        result_len != sizeof(DWORD))
+        result = 0;
+    RegCloseKey(hKey);
+
+out:
+    return result;
+}
+
+static BOOL RegReadString(HKEY hKey, LPCTSTR lpSubkey, LPCTSTR lpValueName,
+                          char *str, DWORD *str_len)
+{
+    HKEY hSubkey;
+    LONG qres;
+    DWORD key_type;
+    BOOL result = FALSE;
+
+    if (RegOpenKeyEx(hKey, lpSubkey, 0, KEY_READ, &hSubkey) != ERROR_SUCCESS)
+        goto out;
+    qres = RegQueryValueEx(hSubkey, lpValueName, NULL, &key_type, (void *)str,
+			   str_len);
+    if (qres == ERROR_SUCCESS && key_type == REG_SZ)
+        result = TRUE;
+    RegCloseKey(hKey);
+
+out:
+    return result;
+}
+
 static void
 windowsOSVersionString(char stringbuf[], size_t stringbuflen)
 {
     /* copy OS version to string buffer in 'uname -a' format */
-    OSVERSIONINFOEX osVersionInfo;
-    BOOL gotOsVersionInfoEx;
-    char windowsVersion[256] = "";
-    char hostname[256] = "";
-    char identifier[256] = "";
-    DWORD identifierSz = 256;
-    HKEY hKey;
+    static const char wcv[] = "SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion";
+    char windowsVersion[256] = "?";
+    DWORD windowsVersionSz = sizeof(windowsVersion);
+    char build[256] = "?";
+    DWORD buildSz = sizeof(256);
+    DWORD dwMajorVersion;
+    DWORD dwMinorVersion;
+    char hostname[256] = "?";
+    char identifier[256] = "?";
+    DWORD identifierSz = sizeof(identifier);
 
-    ZeroMemory(&osVersionInfo, sizeof(OSVERSIONINFOEX));
-    osVersionInfo.dwOSVersionInfoSize = sizeof(OSVERSIONINFOEX);
-    gotOsVersionInfoEx = GetVersionEx((OSVERSIONINFO *)&osVersionInfo);
-    if (gotOsVersionInfoEx == FALSE) {
-       GetVersionEx((OSVERSIONINFO *)&osVersionInfo);
-    }
-
-    switch (osVersionInfo.dwPlatformId) {
-       case VER_PLATFORM_WIN32_NT:
-          if ((osVersionInfo.dwMajorVersion == 5) && (osVersionInfo.dwMinorVersion == 2)) {
-             strcat(windowsVersion, "Server 2003");
-          } else if ((osVersionInfo.dwMajorVersion == 5) && (osVersionInfo.dwMinorVersion == 1)) {
-             strcat(windowsVersion, "XP");
-          } else if ((osVersionInfo.dwMajorVersion == 5) && (osVersionInfo.dwMinorVersion == 0)) {
-             strcat(windowsVersion, "2000");
-          } else if (osVersionInfo.dwMajorVersion <= 4) {
-             strcat(windowsVersion, "NT");
-          }
-          if (gotOsVersionInfoEx == TRUE) {
-             if (osVersionInfo.wProductType == VER_NT_WORKSTATION) {
-                if (osVersionInfo.dwMajorVersion == 4) {
-                   strcat(windowsVersion, " Workstation 4.0");
-                } else if (osVersionInfo.wSuiteMask & VER_SUITE_PERSONAL) {
-                   strcat(windowsVersion, " Home Edition");
-                } else {
-                   strcat(windowsVersion, " Professional");
-                }
-             } else if (osVersionInfo.wProductType == VER_NT_SERVER) {
-                if ((osVersionInfo.dwMajorVersion == 5) && (osVersionInfo.dwMinorVersion == 2)) {
-                   if (osVersionInfo.wSuiteMask & VER_SUITE_DATACENTER) {
-                      strcat(windowsVersion, " Datacenter Edition");
-                   } else if (osVersionInfo.wSuiteMask & VER_SUITE_ENTERPRISE) {
-                      strcat(windowsVersion, " Enterprise Edition");
-                   } else if (osVersionInfo.wSuiteMask == VER_SUITE_BLADE) {
-                      strcat(windowsVersion, " Web Edition");
-                   } else {
-                      strcat(windowsVersion, " Standard Edition");
-                   }
-                } else if ((osVersionInfo.dwMajorVersion == 5) && (osVersionInfo.dwMinorVersion == 0)) {
-                   if (osVersionInfo.wSuiteMask & VER_SUITE_DATACENTER) {
-                      strcat(windowsVersion, " Datacenter Server");
-                   } else if (osVersionInfo.wSuiteMask & VER_SUITE_ENTERPRISE) {
-                      strcat(windowsVersion, " Advanced Server");
-                   } else {
-                      strcat(windowsVersion, " Server");
-                   }
-                } else {
-                   if (osVersionInfo.wSuiteMask & VER_SUITE_ENTERPRISE) {
-                      strcat(windowsVersion, " Server 4.0, Enterprise Edition");
-                   } else {
-                      strcat(windowsVersion, " Server 4.0");
-                   }
-                }
-             }
-          } else {
-             char productType[80];
-             DWORD productTypeSz = 80;
-
-             if (RegOpenKeyEx(HKEY_LOCAL_MACHINE, "SYSTEM\\CurrentControlSet\\Control\\ProductOptions", 0, KEY_QUERY_VALUE, &hKey) == ERROR_SUCCESS) {
-                if (RegQueryValueEx(hKey, "ProductType", NULL, NULL, (LPBYTE) productType, &productTypeSz) == ERROR_SUCCESS) {
-                   char versionStr[10];
-                   if (strcmpi("WINNT", productType) == 0) {
-                      strcat(windowsVersion, " Workstation");
-                   } else if (strcmpi("LANMANNT", productType) == 0) {
-                      strcat(windowsVersion, " Server");
-                   } else if (strcmpi("SERVERNT", productType) == 0) {
-                      strcat(windowsVersion, " Advanced Server");
-                   }
-                   sprintf(versionStr, " %d.%d", (int)osVersionInfo.dwMajorVersion, (int)osVersionInfo.dwMinorVersion);
-                   strcat(windowsVersion, versionStr);
-                }
-                RegCloseKey(hKey);
-             }
-          }
-          break;
-       case VER_PLATFORM_WIN32_WINDOWS:
-          if ((osVersionInfo.dwMajorVersion == 4) && (osVersionInfo.dwMinorVersion == 90)) {
-             strcat(windowsVersion, "ME");
-          } else if ((osVersionInfo.dwMajorVersion == 4) && (osVersionInfo.dwMinorVersion == 10)) {
-             strcat(windowsVersion, "98");
-             if (osVersionInfo.szCSDVersion[1] == 'A') {
-                strcat(windowsVersion, " SE");
-             }
-          } else if ((osVersionInfo.dwMajorVersion == 4) && (osVersionInfo.dwMinorVersion == 0)) {
-             strcat(windowsVersion, "95");
-             if ((osVersionInfo.szCSDVersion[1] == 'C') || (osVersionInfo.szCSDVersion[1] == 'B')) {
-                strcat(windowsVersion, " OSR2");
-             }
-          }
-          break;
-    }
+    dwMajorVersion = RegReadDword(HKEY_LOCAL_MACHINE, wcv,
+                                  "CurrentMajorVersionNumber");
+    dwMinorVersion = RegReadDword(HKEY_LOCAL_MACHINE, wcv,
+                                  "CurrentMinorVersionNumber");
+    if (!RegReadString(HKEY_LOCAL_MACHINE, wcv, "CurrentBuildNumber",
+                       build, &buildSz))
+        RegReadString(HKEY_LOCAL_MACHINE, wcv, "CurrentBuild",
+                      build, &buildSz);
 
     gethostname(hostname, sizeof(hostname));
 
-    if (RegOpenKeyEx(HKEY_LOCAL_MACHINE, "HARDWARE\\DESCRIPTION\\System\\CentralProcessor\\0", 0, KEY_ALL_ACCESS, &hKey) == ERROR_SUCCESS) {
-       RegQueryValueEx(hKey, "Identifier", NULL, NULL, (LPBYTE)&identifier, &identifierSz);
-       RegCloseKey(hKey);
-    }
+    RegReadString(HKEY_LOCAL_MACHINE, wcv, "ProductName", windowsVersion,
+                  &windowsVersionSz);
+    RegReadString(HKEY_LOCAL_MACHINE,
+                  "HARDWARE\\DESCRIPTION\\System\\CentralProcessor\\0",
+                  "Identifier", identifier, &identifierSz);
 
     /* Output is made to look like results from uname -a */
-    snprintf(stringbuf, stringbuflen,
-            "Windows %s %d.%d.%d %s %s %s", hostname,
-             (int)osVersionInfo.dwMajorVersion, (int)osVersionInfo.dwMinorVersion,
-             (int)osVersionInfo.dwBuildNumber, osVersionInfo.szCSDVersion,
+    snprintf(stringbuf, stringbuflen, "Windows %s %d.%d.%s %s %s",
+             hostname, (int)dwMajorVersion, (int)dwMinorVersion, build,
              windowsVersion, identifier);
 }
 #endif /* WIN32 and HAVE_WIN32_PLATFORM_SDK or mingw32 */

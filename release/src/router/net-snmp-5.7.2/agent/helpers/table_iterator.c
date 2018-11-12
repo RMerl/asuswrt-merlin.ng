@@ -10,6 +10,11 @@
  * Copyright © 2003 Sun Microsystems, Inc. All rights reserved.
  * Use is subject to license terms specified in the COPYING file
  * distributed with the Net-SNMP package.
+ *
+ * Portions of this file are copyrighted by:
+ * Copyright (c) 2016 VMware, Inc. All rights reserved.
+ * Use is subject to license terms specified in the COPYING file
+ * distributed with the Net-SNMP package.
  */
 
 /** @defgroup table_iterator table_iterator
@@ -259,14 +264,21 @@ int
 netsnmp_register_table_iterator(netsnmp_handler_registration *reginfo,
                                 netsnmp_iterator_info *iinfo)
 {
+    netsnmp_mib_handler *handler = netsnmp_get_table_iterator_handler(iinfo);
+
+    if (!reginfo || !iinfo || !handler ||
+        (netsnmp_inject_handler(reginfo, handler) != SNMPERR_SUCCESS)) {
+        snmp_log(LOG_ERR, "could not create iterator table handler\n");
+        netsnmp_handler_free(handler);
+        netsnmp_handler_registration_free(reginfo);
+        return SNMP_ERR_GENERR;
+    }
+
 #ifndef NETSNMP_FEATURE_REMOVE_STASH_CACHE
     reginfo->modes |= HANDLER_CAN_STASH;
 #endif  /* NETSNMP_FEATURE_REMOVE_STASH_CACHE */
-    netsnmp_inject_handler(reginfo,
-                           netsnmp_get_table_iterator_handler(iinfo));
-    if (!iinfo)
-        return SNMPERR_GENERR;
-    if (!iinfo->indexes && iinfo->table_reginfo &&
+
+   if (!iinfo->indexes && iinfo->table_reginfo &&
                            iinfo->table_reginfo->indexes )
         iinfo->indexes = snmp_clone_varbind( iinfo->table_reginfo->indexes );
 
@@ -731,6 +743,7 @@ netsnmp_table_iterator_helper_handler(netsnmp_mib_handler *handler,
                                 if (free_this_index_search)
                                     snmp_free_varbind
                                         (free_this_index_search);
+                                SNMP_FREE(reqtmp);
                                 return SNMP_ERR_GENERR;
                             }
                             vb->type = ASN_NULL;

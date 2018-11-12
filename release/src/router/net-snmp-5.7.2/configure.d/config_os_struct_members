@@ -91,6 +91,20 @@ AC_CHECK_MEMBERS([struct ipstat.ips_cantfrag,
 #include <netinet/ip_var.h>
 #endif
     ]])
+#       struct ip6stat
+#   Agent:
+#
+AC_CHECK_MEMBERS([struct ip6stat.ip6s_exthdrtoolong ],,,[
+    AC_INCLUDES_DEFAULT()
+    [
+#if HAVE_NETINET_IN_H
+#include <netinet/in.h>
+#endif
+#if HAVE_NETINET6_IP6_VAR_H
+#include <netinet6/ip6_var.h>
+#endif
+    ]])
+
 #
 #   Not-Used:
 AC_CHECK_MEMBERS([struct ipstat.ips_cantforward,
@@ -119,6 +133,15 @@ AC_CHECK_MEMBERS([struct mbstat.m_clusters,
 #if HAVE_SYS_MBUF_H
 #include <sys/mbuf.h>
 #endif
+    ]])
+
+#	struct uvmexp
+#
+AC_CHECK_MEMBERS([struct uvmexp.pgswapin],,,[
+    AC_INCLUDES_DEFAULT()
+    [
+#include <sys/sysctl.h>
+#include <uvm/uvm_extern.h>
     ]])
 
 #       struct nlist
@@ -172,30 +195,6 @@ AC_CHECK_MEMBERS([struct sockaddr.sa_len,
 #   Library:
 #
 AC_CHECK_MEMBERS([struct sockaddr_in6.sin6_scope_id],,,[
-    AC_INCLUDES_DEFAULT()
-    [
-#ifdef HAVE_SYS_PARAM_H
-#include <sys/param.h>
-#endif
-#ifdef HAVE_SYS_SOCKET_H
-#include <sys/socket.h>
-#endif
-#ifdef HAVE_NETINET_IN_H
-#include <netinet/in.h>
-#endif
-#ifdef HAVE_WINSOCK2_H
-#include <winsock2.h>
-#endif
-#ifdef HAVE_WS2TCPIP_H
-#include <ws2tcpip.h>
-#endif
-    ]])
-
-#       struct msghdr
-#   Library:
-#
-AC_CHECK_MEMBERS([struct msghdr.msg_control,
-                  struct msghdr.msg_flags],,,[
     AC_INCLUDES_DEFAULT()
     [
 #ifdef HAVE_SYS_PARAM_H
@@ -307,7 +306,7 @@ AC_CHECK_MEMBERS([struct tcpstat.tcp_rcvmemdrop],,,[
 #       struct tm
 #   Library:
 #
-AC_CHECK_MEMBERS([struct tm.tm_gmtoff],,,[
+AC_CHECK_MEMBERS([struct tm.tm_gmtoff, struct time.tm_isdst],,,[
     AC_INCLUDES_DEFAULT()
     [
 #if TIME_WITH_SYS_TIME
@@ -372,6 +371,7 @@ AC_CHECK_MEMBERS([struct udpstat.udps_discard,
                   struct udpstat.udps_fullsock,
                   struct udpstat.udps_noport,
                   struct udpstat.udps_noportbcast,
+                  struct udpstat.udps_ipackets,
                   struct udpstat.udps_opackets],,,[
     AC_INCLUDES_DEFAULT()
     [
@@ -608,44 +608,6 @@ struct ifnet {
     ]])
 
 
-##
-#   rtentry structure checks:
-##
-
-# Check struct rtentry for common fields
-#   Agent:
-#
-AC_CHECK_MEMBERS([struct rtentry.rt_dst,
-                  struct rtentry.rt_hash,
-                  struct rtentry.rt_next,
-                  struct rtentry.rt_refcnt,
-                  struct rtentry.rt_unit,
-                  struct rtentry.rt_use],,,
-    [
-#ifdef HAVE_SYS_PARAM_H
-#include <sys/param.h>
-#endif
-#include <sys/types.h>
-#ifdef NETSNMP_IFNET_NEEDS_KERNEL_STRUCTURES
-#define _KERNEL_STRUCTURES 1
-#endif
-#ifdef HAVE_SYS_SOCKET_H
-#ifdef NETSNMP_IFNET_NEEDS_KERNEL
-#define KERNEL
-#if !defined(__DragonFly__)
-#define _KERNEL 1
-#endif
-#endif
-#include <sys/socket.h>
-#undef KERNEL
-#undef _KERNEL
-#endif
-#ifdef HAVE_NET_ROUTE_H
-#include <net/route.h>
-#endif
-    ])
-
-
 # Check for BSD 4.3 vs 4.4 struct rtentry
 #
 AC_CACHE_CHECK([type of rtentry structure],
@@ -752,3 +714,20 @@ fi
 AC_DEFINE_UNQUOTED(RTENTRY,struct ${ac_cv_struct_rtentry},
         [define rtentry to ortentry on SYSV machines (alphas)])
 
+#       prioritynames
+AC_MSG_CHECKING([syslog prioritynames])
+AC_LINK_IFELSE([AC_LANG_PROGRAM([[
+#include <stdio.h>
+#if HAVE_SYSLOG_H
+#define SYSLOG_NAMES
+#include <syslog.h>
+#endif
+]], [[
+  char *test = prioritynames[0].c_name;
+  printf("%s\n", test); /* so it's not unused */
+]])], [
+AC_MSG_RESULT([yes])
+AC_DEFINE([HAVE_PRIORITYNAMES], [1], [Define if prioritynames variable is declared in <syslog.h>])
+], [
+AC_MSG_RESULT([no])
+])

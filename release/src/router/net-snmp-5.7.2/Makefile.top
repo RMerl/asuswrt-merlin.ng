@@ -4,6 +4,7 @@
 SHELL		= @SHELL@
 srcdir		= @srcdir@
 top_srcdir	= @top_srcdir@
+top_builddir	= @top_builddir@
 VERSION		= @VERSION@
 @SET_MAKE@
 
@@ -46,6 +47,7 @@ AUTOHEADER	= @AUTOHEADER@
 PERL            = @PERLPROG@
 PYTHON          = @PYTHONPROG@
 FIND            = @FIND@
+EGREP           = @EGREP@
 
 #
 # Compiler arguments
@@ -79,9 +81,10 @@ LINKCC	        = @LINKCC@
 # 5.3 was at 10, 5.4 is at 15, ...  This leaves some room for needed
 # changes for past releases if absolutely necessary.
 #
-LIBCURRENT  = 30
+# Most recent change: 35 for release 5.8
+LIBCURRENT  = 35
 LIBAGE      = 0
-LIBREVISION = 2
+LIBREVISION = 0
 
 LIB_LD_CMD      = $(LIBTOOL) --mode=link $(LINKCC) $(CFLAGS) -rpath $(libdir) -version-info $(LIBCURRENT):$(LIBREVISION):$(LIBAGE) -o
 LIB_EXTENSION   = la
@@ -116,5 +119,5 @@ TOP_INCLUDES            = $(@TOP_INCLUDES@)
 SNMPLIB_INCLUDES        = $(@SNMPLIB_INCLUDES@)
 AGENT_INCLUDES          = $(@AGENT_INCLUDES@)
 HELPER_INCLUDES         = $(@HELPER_INCLUDES@)
-MIBGROUP_INCLUDES       = $(@MIBGROUP_INCLUDES@)
+MIBGROUP_INCLUDES       = $(@MIBGROUP_INCLUDES@) @EXTERNAL_MIBGROUP_INCLUDES@
 

@@ -1,5 +1,5 @@
 dnl
-dnl Add a search path to the LIBS and CFLAGS variables
+dnl Add a search path to the LIBS and CPPFLAGS variables
 dnl
 AC_DEFUN([AC_ADD_SEARCH_PATH],[
   if test "x$1" != x -a -d $1; then

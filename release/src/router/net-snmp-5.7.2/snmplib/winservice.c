@@ -39,6 +39,8 @@ labelFIN: \
 
 #if defined(WIN32) && defined(HAVE_WIN32_PLATFORM_SDK) && !defined(mingw32)
 #pragma comment(lib, "iphlpapi.lib")
+#endif
+#if defined(WIN32) && !defined(mingw32)
 #ifdef USING_WINEXTDLL_MODULE
 #pragma comment(lib, "snmpapi.lib")
 #pragma comment(lib, "mgmtapi.lib")
@@ -157,7 +159,8 @@ RegisterService (LPCTSTR lpszServiceName, LPCTSTR lpszServiceDisplayName,
     /*
      * Generate the command to be executed by the SCM 
      */
-    _sntprintf (szServiceCommand, CountOf(szServiceCommand), _T("%s %s"), szServicePath, _T ("-service"));
+    _sntprintf(szServiceCommand, CountOf(szServiceCommand), _T("\"%s\" %s"),
+               szServicePath, _T("-service"));
 
     /*
      * Create the desired service 
@@ -629,7 +632,7 @@ ProcessError (WORD eventLogType, LPCTSTR pszMessage, int useGetLastError, int qu
 static BOOL
 UpdateServiceStatus (DWORD dwStatus, DWORD dwErrorCode, DWORD dwWaitHint)
 {
-  DWORD static dwCheckpoint = 1;
+  static DWORD dwCheckpoint = 1;
   DWORD dwControls = SERVICE_ACCEPT_STOP | SERVICE_ACCEPT_PAUSE_CONTINUE;
   if (g_fRunningAsService == FALSE)
     return FALSE;

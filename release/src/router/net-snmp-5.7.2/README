@@ -1,4 +1,4 @@
-	       README file for net-snmp Version: 5.7.2
+	       README file for net-snmp Version: 5.8
 
 DISCLAIMER
 
@@ -62,15 +62,12 @@ AVAILABILITY
 
   Download:
     - http://www.net-snmp.org/download/
-    - ftp://ftp.net-snmp.org/pub/sourceforge/net-snmp/
   Web page:
     - http://www.net-snmp.org/
   Project Wiki:
     - http://www.net-snmp.org/wiki/
   Sourceforge Project page:
     - http://sourceforge.net/projects/net-snmp
-  Mirrors:
-    - US:        ftp://ftp.freesnmp.com/mirrors/net-snmp/
 
   The old ucd-snmp.ucdavis.edu web site and ftp server is now
   offline and should not be accessed any longer.
@@ -300,7 +297,7 @@ THANKS
     Bert Driehuis <driehuis@playbeing.org>
     Juergen Schoenwaelder <schoenw@ibr.cs.tu-bs.de>
     Frank Strauss <strauss@ibr.cs.tu-bs.de>
-    Ragnar Kjørstad <ucd@ragnark.vestdata.no>
+    Ragnar KjÃ¸rstad <ucd@ragnark.vestdata.no>
     Jochen Kmietsch <jochen.kmietsch@tu-clausthal.de>
     Jun-ichiro itojun Hagino <itojun@iijlab.net>
     John L Villalovos <john.l.villalovos@intel.com>
@@ -352,6 +349,13 @@ THANKS
     Anders Persson <apersson@users.sourceforge.net>
     Rojer <rojer@users.sourceforge.net>
     Bart Van Assche <bart.vanassche@gmail.com>
+    Pablo Carboni <pcarboni@users.sourceforge.net>
+    Bill Fenner <fenner@gmail.com>
+    Brian Sipos <bsiposrkf@users.sourceforge.net>
+    Eugene M. Kim <eugene.kim@ntti3.com>
+    Anders Wallin <wallinux@gmail.com>
+    Andrew Stormont <andy-js@users.sourceforge.net>
+    Keith Mendoza <keith@icei.org>
 
   We've probably forgotten people on this list.  Let us know if you've
   contributed code and we've left you out.

@@ -28,6 +28,9 @@ debug_register_tokens("dumpv_recv,dumpv_send,asn");
 	u_char decoded_type;
 	long decoded_value = 0;
 	u_char *parse_result;
+        u_char *rbuild_result = NULL;
+        size_t rbuild_len = 0;
+        size_t offset = 0;
 
 	encoded_length = sizeof(encoded);
 	build_result = asn_build_int(encoded, &encoded_length, ASN_INTEGER,
@@ -43,6 +46,16 @@ debug_register_tokens("dumpv_recv,dumpv_send,asn");
 	     " decoded value %ld",
 	     intval[i], parse_result == build_result ? "succeeded" : "failed",
 	     decoded_type, ASN_INTEGER, decoded_value));
+
+        OKF(asn_realloc_rbuild_int(&rbuild_result, &rbuild_len, &offset, 1,
+                                   ASN_INTEGER, &intval[i], sizeof(intval[i])),
+            ("asn_realloc_rbuild_int(%ld)", intval[i]));
+        OKF(sizeof(encoded) - encoded_length == offset &&
+            memcmp(encoded, rbuild_result + rbuild_len - offset,
+                   offset) == 0,
+            ("asn_build_int(%ld) != asn_realloc_rbuild_int(%ld)",
+             intval[i], intval[i]));
+        free (rbuild_result);
     }
 }
 
@@ -58,6 +71,9 @@ debug_register_tokens("dumpv_recv,dumpv_send,asn");
 	u_char decoded_type;
 	unsigned long decoded_value = 0;
 	u_char *parse_result;
+        u_char *rbuild_result = NULL;
+        size_t rbuild_len = 0;
+        size_t offset = 0;
 
 	encoded_length = sizeof(encoded);
 	build_result = asn_build_unsigned_int(encoded, &encoded_length,
@@ -75,6 +91,52 @@ debug_register_tokens("dumpv_recv,dumpv_send,asn");
 	     " decoded type %d <> %d; decoded value %lu",
 	     intval[i], parse_result == build_result ? "succeeded" : "failed",
 	     decoded_type, ASN_UINTEGER, decoded_value));
+
+        OKF(asn_realloc_rbuild_unsigned_int(&rbuild_result, &rbuild_len,
+                                            &offset, 1, ASN_UINTEGER,
+                                            &intval[i], sizeof(intval[i])),
+            ("asn_realloc_rbuild_unsigned_int(%lud)", intval[i]));
+        OKF(sizeof(encoded) - encoded_length == offset &&
+            memcmp(encoded, rbuild_result + rbuild_len - offset,
+                   offset) == 0,
+            ("asn_build_unsigned_int(%ld) != "
+             "asn_realloc_rbuild_unsigned_int(%ld)",
+             intval[i], intval[i]));
+        free (rbuild_result);
+    }
+}
+
+{
+    static struct {
+        unsigned char encoded[8];
+        unsigned encoded_len;
+        unsigned long decoded;
+    } data[] = {
+        { { ASN_UINTEGER, 1, 0x80			}, 3, 0x80 },
+        { { ASN_UINTEGER, 2, 0x80, 0x00			}, 4, 0x8000 },
+        { { ASN_UINTEGER, 3, 0x80, 0x00, 0x00		}, 5, 0x800000 },
+        { { ASN_UINTEGER, 4, 0x80, 0x00, 0x00, 0x00	}, 6, 0x80000000 },
+    };
+    for (i = 0; i < sizeof(data)/sizeof(data[0]); i++) {
+	size_t decoded_length;
+	u_char decoded_type;
+	unsigned long decoded_value = 0;
+	u_char *parse_result;
+
+	decoded_length = data[i].encoded_len;
+	parse_result = asn_parse_unsigned_int(data[i].encoded,
+                                              &decoded_length,
+					      &decoded_type, &decoded_value,
+					      sizeof(decoded_value));
+	OKF(parse_result && decoded_type == ASN_UINTEGER
+	    && decoded_value == data[i].decoded,
+	    ("asn_parse_unsigned_int(%02x %02x %02x %02x %02x %02x %02x %02x, %d) %s;"
+	     " decoded type %d <> %d; decoded length %d; decoded value %lu",
+	     data[i].encoded[0], data[i].encoded[1], data[i].encoded[2],
+             data[i].encoded[3], data[i].encoded[4], data[i].encoded[5],
+             data[i].encoded[6], data[i].encoded[7], data[i].encoded_len,
+             parse_result ? "succeeded" : "failed",
+	     decoded_type, ASN_UINTEGER, (int)decoded_length, decoded_value));
     }
 }
 
@@ -107,8 +169,11 @@ debug_register_tokens("dumpv_recv,dumpv_send,asn");
 	u_char *build_result;
 	size_t decoded_length;
 	u_char decoded_type;
-	struct counter64 decoded_value = { };
+	struct counter64 decoded_value = { 0 };
 	u_char *parse_result;
+        u_char *rbuild_result = NULL;
+        size_t rbuild_len = 0;
+        size_t offset = 0;
 
 	encoded_length = sizeof(encoded);
 	build_result = asn_build_signed_int64(encoded, &encoded_length,
@@ -127,6 +192,18 @@ debug_register_tokens("dumpv_recv,dumpv_send,asn");
 	     TOINT64(intval[i]),
 	     parse_result == build_result ? "succeeded" : "failed",
 	     decoded_type, ASN_OPAQUE_I64, TOINT64(decoded_value)));
+
+        OKF(asn_realloc_rbuild_signed_int64(&rbuild_result, &rbuild_len,
+                                            &offset, 1, ASN_OPAQUE_I64,
+                                            &intval[i], sizeof(intval[i])),
+            ("asn_realloc_rbuild_signed_int64(%lld)", TOINT64(intval[i])));
+        OKF(sizeof(encoded) - encoded_length == offset &&
+            memcmp(encoded, rbuild_result + rbuild_len - offset,
+                   offset) == 0,
+            ("asn_build_signed_int64(%lld) != "
+             "asn_realloc_rbuild_signed_int64(%lld)",
+             TOINT64(intval[i]), TOINT64(intval[i])));
+        free (rbuild_result);
     }
 }
 
@@ -158,8 +235,11 @@ debug_register_tokens("dumpv_recv,dumpv_send,asn");
 	u_char *build_result;
 	size_t decoded_length;
 	u_char decoded_type;
-	struct counter64 decoded_value = { };
+	struct counter64 decoded_value = { 0 };
 	u_char *parse_result;
+        u_char *rbuild_result = NULL;
+        size_t rbuild_len = 0;
+        size_t offset = 0;
 
 	encoded_length = sizeof(encoded);
 	build_result = asn_build_unsigned_int64(encoded, &encoded_length,
@@ -178,5 +258,107 @@ debug_register_tokens("dumpv_recv,dumpv_send,asn");
 	     TOUINT64(intval[i]),
 	     parse_result == build_result ? "succeeded" : "failed",
 	     decoded_type, ASN_COUNTER64, TOUINT64(decoded_value)));
+
+        OKF(asn_realloc_rbuild_unsigned_int64(&rbuild_result, &rbuild_len,
+                                              &offset, 1, ASN_COUNTER64,
+                                              &intval[i], sizeof(intval[i])),
+            ("asn_realloc_rbuild_unsigned_int64(%llud)", TOUINT64(intval[i])));
+        OKF(sizeof(encoded) - encoded_length == offset &&
+            memcmp(encoded, rbuild_result + rbuild_len - offset,
+                   offset) == 0,
+            ("asn_build_unsigned_int64(%lld) != "
+             "asn_realloc_rbuild_unsigned_int64(%lld)",
+             TOUINT64(intval[i]), TOUINT64(intval[i])));
+        free (rbuild_result);
     }
+
+#ifdef NETSNMP_WITH_OPAQUE_SPECIAL_TYPES
+
+    for (i = 0; i < sizeof(intval)/sizeof(intval[0]); ++i) {
+	u_char encoded[256];
+	size_t encoded_length;
+	u_char *build_result;
+	size_t decoded_length;
+	u_char decoded_type;
+	struct counter64 decoded_value = { 0 };
+	u_char *parse_result;
+        u_char *rbuild_result = NULL;
+        size_t rbuild_len = 0;
+        size_t offset = 0;
+
+	encoded_length = sizeof(encoded);
+	build_result = asn_build_unsigned_int64(encoded, &encoded_length,
+						ASN_OPAQUE_COUNTER64,
+						&intval[i], sizeof(intval[i]));
+	OKF(build_result + encoded_length == encoded + sizeof(encoded),
+	    ("asn_build_unsigned_int64(%llu)", TOUINT64(intval[i])));
+	decoded_length = sizeof(encoded) - encoded_length;
+	parse_result = asn_parse_unsigned_int64(encoded, &decoded_length,
+						&decoded_type, &decoded_value,
+						sizeof(decoded_value));
+	OKF(parse_result && decoded_type == ASN_OPAQUE_COUNTER64
+	    && memcmp(&decoded_value, &intval[i], sizeof(decoded_value)) == 0,
+	    ("asn_parse_unsigned_int64(asn_build_unsigned_int64(%llu)) %s;"
+	     " decoded type %d <> %d; decoded value %llu",
+	     TOUINT64(intval[i]),
+	     parse_result == build_result ? "succeeded" : "failed",
+	     decoded_type, ASN_OPAQUE_COUNTER64, TOUINT64(decoded_value)));
+
+        OKF(asn_realloc_rbuild_unsigned_int64(&rbuild_result, &rbuild_len,
+                                              &offset, 1, ASN_OPAQUE_COUNTER64,
+                                              &intval[i], sizeof(intval[i])),
+            ("asn_realloc_rbuild_unsigned_int64(%llud)", TOUINT64(intval[i])));
+        OKF(sizeof(encoded) - encoded_length == offset &&
+            memcmp(encoded, rbuild_result + rbuild_len - offset,
+                   offset) == 0,
+            ("asn_build_unsigned_int64(%lld) != "
+             "asn_realloc_rbuild_unsigned_int64(%lld)",
+             TOUINT64(intval[i]), TOUINT64(intval[i])));
+        free (rbuild_result);
+    }
+
+    for (i = 0; i < sizeof(intval)/sizeof(intval[0]); ++i) {
+	u_char encoded[256];
+	size_t encoded_length;
+	u_char *build_result;
+	size_t decoded_length;
+	u_char decoded_type;
+	struct counter64 decoded_value = { 0 };
+	u_char *parse_result;
+        u_char *rbuild_result = NULL;
+        size_t rbuild_len = 0;
+        size_t offset = 0;
+
+	encoded_length = sizeof(encoded);
+	build_result = asn_build_unsigned_int64(encoded, &encoded_length,
+						ASN_OPAQUE_U64,
+						&intval[i], sizeof(intval[i]));
+	OKF(build_result + encoded_length == encoded + sizeof(encoded),
+	    ("asn_build_unsigned_int64(%llu)", TOUINT64(intval[i])));
+	decoded_length = sizeof(encoded) - encoded_length;
+	parse_result = asn_parse_unsigned_int64(encoded, &decoded_length,
+						&decoded_type, &decoded_value,
+						sizeof(decoded_value));
+	OKF(parse_result && decoded_type == ASN_OPAQUE_U64
+	    && memcmp(&decoded_value, &intval[i], sizeof(decoded_value)) == 0,
+	    ("asn_parse_unsigned_int64(asn_build_unsigned_int64(%llu)) %s;"
+	     " decoded type %d <> %d; decoded value %llu",
+	     TOUINT64(intval[i]),
+	     parse_result == build_result ? "succeeded" : "failed",
+	     decoded_type, ASN_OPAQUE_U64, TOUINT64(decoded_value)));
+
+        OKF(asn_realloc_rbuild_unsigned_int64(&rbuild_result, &rbuild_len,
+                                              &offset, 1, ASN_OPAQUE_U64,
+                                              &intval[i], sizeof(intval[i])),
+            ("asn_realloc_rbuild_unsigned_int64(%llud)", TOUINT64(intval[i])));
+        OKF(sizeof(encoded) - encoded_length == offset &&
+            memcmp(encoded, rbuild_result + rbuild_len - offset,
+                   offset) == 0,
+            ("asn_build_unsigned_int64(%lld) != "
+             "asn_realloc_rbuild_unsigned_int64(%lld)",
+             TOUINT64(intval[i]), TOUINT64(intval[i])));
+        free (rbuild_result);
+    }
+
+#endif
 }

@@ -14,7 +14,7 @@ HEADER SNMPv3 vacm acceptance support
 #This case test for successful access
 
 snmp_version=v3
-. ./Sv3vacmconfig
+. ./Sv3vacmconfigMD5
 
 STARTAGENT
 

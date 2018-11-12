@@ -7,6 +7,11 @@
  * Copyright © 2003 Sun Microsystems, Inc. All rights reserved.
  * Use is subject to license terms specified in the COPYING file
  * distributed with the Net-SNMP package.
+ *
+ * Portions of this file are copyrighted by:
+ * Copyright (c) 2016 VMware, Inc. All rights reserved.
+ * Use is subject to license terms specified in the COPYING file
+ * distributed with the Net-SNMP package.
  */
 
 /*
@@ -49,11 +54,14 @@
 #include <dmalloc.h>
 #endif
 
+#include <ctype.h>
+
 #include <net-snmp/types.h>
 #include <net-snmp/output_api.h>
 #include <net-snmp/config_api.h>
 
 #include <net-snmp/library/snmp_api.h>
+#include <net-snmp/library/system.h> /* strlcpy() */
 #include <net-snmp/library/tools.h>
 #include <net-snmp/library/vacm.h>
 
@@ -177,7 +185,7 @@ vacm_parse_config_view(const char *token, const char *line)
     len = sizeof(view.viewName);
     line =
         read_config_read_octet_string(line, (u_char **) & viewName, &len);
-    view.viewSubtreeLen = MAX_OID_LEN;
+    view.viewSubtreeLen = MAX_OID_LEN + 1;
     line =
         read_config_read_objid_const(line, (oid **) & viewSubtree,
                                &view.viewSubtreeLen);
@@ -439,7 +447,7 @@ netsnmp_view_get(struct vacm_viewEntry *head, const char *viewName,
     if (glen < 0 || glen > VACM_MAX_STRING)
         return NULL;
     view[0] = glen;
-    strcpy(view + 1, viewName);
+    strlcpy(view + 1, viewName, sizeof(view) - 1);
     for (vp = head; vp; vp = vp->next) {
         if (!memcmp(view, vp->viewName, glen + 1)
             && viewSubtreeLen >= (vp->viewSubtreeLen - 1)) {
@@ -492,6 +500,38 @@ netsnmp_view_get(struct vacm_viewEntry *head, const char *viewName,
 }
 
 /*******************************************************************o-o******
+ * netsnmp_view_exists
+ *
+ * Check to see if a view with the given name exists.
+ *
+ * Parameters:
+ *    viewName           - Name of view to check
+ *
+ * Returns 0 if the view does not exist. Otherwise, it returns the number
+ *         of OID rows for the given name.
+ */
+int
+netsnmp_view_exists(struct vacm_viewEntry *head, const char *viewName)
+{
+    struct vacm_viewEntry *vp;
+    char                   view[VACMSTRINGLEN];
+    int                    len, count = 0;
+
+    len = (int) strlen(viewName);
+    if (len < 0 || len > VACM_MAX_STRING)
+        return 0;
+    view[0] = len;
+    strcpy(view + 1, viewName);
+    DEBUGMSGTL(("9:vacm:view_exists", "checking %s\n", viewName));
+    for (vp = head; vp; vp = vp->next) {
+        if (memcmp(view, vp->viewName, len + 1) == 0)
+            ++count;
+    }
+
+    return count;
+}
+
+/*******************************************************************o-o******
  * vacm_checkSubtree
  *
  * Check to see if everything within a subtree is in view, not in view,
@@ -522,7 +562,7 @@ netsnmp_view_subtree_check(struct vacm_viewEntry *head, const char *viewName,
     if (glen < 0 || glen > VACM_MAX_STRING)
         return VACM_NOTINVIEW;
     view[0] = glen;
-    strcpy(view + 1, viewName);
+    strlcpy(view + 1, viewName, sizeof(view) - 1);
     DEBUGMSGTL(("9:vacm:checkSubtree", "view %s\n", viewName));
     for (vp = head; vp; vp = vp->next) {
         if (!memcmp(view, vp->viewName, glen + 1)) {
@@ -675,7 +715,7 @@ netsnmp_view_create(struct vacm_viewEntry **head, const char *viewName,
     int             cmp, cmp2, glen;
 
     glen = (int) strlen(viewName);
-    if (glen < 0 || glen > VACM_MAX_STRING)
+    if (glen < 0 || glen > VACM_MAX_STRING || viewSubtreeLen > MAX_OID_LEN)
         return NULL;
     vp = (struct vacm_viewEntry *) calloc(1,
                                           sizeof(struct vacm_viewEntry));
@@ -689,7 +729,7 @@ netsnmp_view_create(struct vacm_viewEntry **head, const char *viewName,
     }
 
     vp->viewName[0] = glen;
-    strcpy(vp->viewName + 1, viewName);
+    strlcpy(vp->viewName + 1, viewName, sizeof(vp->viewName) - 1);
     vp->viewSubtree[0] = viewSubtreeLen;
     memcpy(vp->viewSubtree + 1, viewSubtree, viewSubtreeLen * sizeof(oid));
     vp->viewSubtreeLen = viewSubtreeLen + 1;
@@ -768,7 +808,7 @@ vacm_getGroupEntry(int securityModel, const char *securityName)
     if (glen < 0 || glen > VACM_MAX_STRING)
         return NULL;
     secname[0] = glen;
-    strcpy(secname + 1, securityName);
+    strlcpy(secname + 1, securityName, sizeof(secname) - 1);
 
     for (vp = groupList; vp; vp = vp->next) {
         if ((securityModel == vp->securityModel
@@ -817,7 +857,7 @@ vacm_createGroupEntry(int securityModel, const char *securityName)
 
     gp->securityModel = securityModel;
     gp->securityName[0] = glen;
-    strcpy(gp->securityName + 1, securityName);
+    strlcpy(gp->securityName + 1, securityName, sizeof(gp->securityName) - 1);
 
     lg = groupList;
     og = NULL;
@@ -842,7 +882,6 @@ vacm_createGroupEntry(int securityModel, const char *securityName)
     return gp;
 }
 
-#ifndef NETSNMP_NO_WRITE_SUPPORT
 void
 vacm_destroyGroupEntry(int securityModel, const char *securityName)
 {
@@ -868,7 +907,7 @@ vacm_destroyGroupEntry(int securityModel, const char *securityName)
     free(vp);
     return;
 }
-#endif /* NETSNMP_NO_WRITE_SUPPORT */
+
 
 void
 vacm_destroyAllGroupEntries(void)
@@ -939,9 +978,9 @@ vacm_getAccessEntry(const char *groupName,
         return NULL;
 
     group[0] = glen;
-    strcpy(group + 1, groupName);
+    strlcpy(group + 1, groupName, sizeof(group) - 1);
     context[0] = clen;
-    strcpy(context + 1, contextPrefix);
+    strlcpy(context + 1, contextPrefix, sizeof(context) - 1);
     for (vp = accessList; vp; vp = vp->next) {
         if ((securityModel == vp->securityModel
              || vp->securityModel == SNMP_SEC_MODEL_ANY)
@@ -1006,9 +1045,10 @@ vacm_createAccessEntry(const char *groupName,
     vp->securityModel = securityModel;
     vp->securityLevel = securityLevel;
     vp->groupName[0] = glen;
-    strcpy(vp->groupName + 1, groupName);
+    strlcpy(vp->groupName + 1, groupName, sizeof(vp->groupName) - 1);
     vp->contextPrefix[0] = clen;
-    strcpy(vp->contextPrefix + 1, contextPrefix);
+    strlcpy(vp->contextPrefix + 1, contextPrefix,
+            sizeof(vp->contextPrefix) - 1);
 
     lp = accessList;
     while (lp) {
@@ -1040,7 +1080,6 @@ vacm_createAccessEntry(const char *groupName,
     return vp;
 }
 
-#ifndef NETSNMP_NO_WRITE_SUPPORT
 void
 vacm_destroyAccessEntry(const char *groupName,
                         const char *contextPrefix,
@@ -1072,7 +1111,6 @@ vacm_destroyAccessEntry(const char *groupName,
     free(vp);
     return;
 }
-#endif /* NETSNMP_NO_WRITE_SUPPORT */
 
 void
 vacm_destroyAllAccessEntries(void)
@@ -1146,14 +1184,12 @@ vacm_createViewEntry(const char *viewName,
                                 viewSubtreeLen);
 }
 
-#ifndef NETSNMP_NO_WRITE_SUPPORT
 void
 vacm_destroyViewEntry(const char *viewName,
                       oid * viewSubtree, size_t viewSubtreeLen)
 {
     netsnmp_view_destroy( &viewList, viewName, viewSubtree, viewSubtreeLen);
 }
-#endif /* NETSNMP_NO_WRITE_SUPPORT */
 
 void
 vacm_destroyAllViewEntries(void)
@@ -1161,3 +1197,163 @@ vacm_destroyAllViewEntries(void)
     netsnmp_view_clear( &viewList );
 }
 
+/*
+ * vacm simple api
+ */
+
+int
+netsnmp_vacm_simple_usm_add(const char *user, int rw, int authLevel,
+                            const char *view, oid *oidView, size_t oidViewLen,
+                            const char *context)
+{
+    struct vacm_viewEntry   *vacmEntry = NULL;
+    struct vacm_groupEntry  *groupEntry = NULL;
+    struct vacm_accessEntry *accessEntry = NULL;
+    char                    *tmp, localContext[VACMSTRINGLEN];
+    int                      exact = 1;  /* exact context match */
+
+    if (NULL == user)
+        return SNMPERR_GENERR;
+
+    if (authLevel < SNMP_SEC_LEVEL_NOAUTH ||
+        authLevel > SNMP_SEC_LEVEL_AUTHPRIV)
+        return SNMPERR_GENERR;
+
+    if (NULL != view) {
+        /*
+         * if we are given a view name, it is an error if
+         *   - it exists and we have an oid
+         *   - it doesn't exist and we don't have an oid
+         */
+        if (netsnmp_view_exists(viewList, view) != 0) {
+            if (NULL != oidView || oidViewLen > 0) {
+                DEBUGMSGTL(("vacm:simple_usm", "can't modify existing view"));
+                return SNMPERR_GENERR;
+            }
+        } else {
+            if (NULL == oidView || oidViewLen == 0) {
+                DEBUGMSGTL(("vacm:simple_usm", "can't create view w/out oid"));
+                return SNMPERR_GENERR;
+            }
+            /** try and create view for oid */
+            vacmEntry = vacm_createViewEntry(view, oidView, oidViewLen);
+            if (NULL == vacmEntry) {
+                DEBUGMSGTL(("vacm:simple_usm", "createViewEntry failed"));
+                return SNMPERR_GENERR;
+            }
+            SNMP_FREE(vacmEntry->reserved);
+        }
+    } else if (0 == oidViewLen || NULL == oidView) {
+        view = "_all_"; /* no oid either, just use _all_ */
+    } else {
+        DEBUGMSGTL(("vacm:simple_usm", "need view name for new views"));
+        return SNMPERR_GENERR;
+    }
+
+    /*
+     * group
+     * grpv3user usm \"v3user\"\000prefix\000_all_\000_all_\000_all_\000\060"
+     * vacm_createGroupEntry() also automatically inserts into group list.
+     */
+    groupEntry = vacm_createGroupEntry(SNMP_SEC_MODEL_USM, user);
+    if (NULL == groupEntry) {
+        DEBUGMSGTL(("vacm:simple_usm", "createViewEntry failed"));
+        goto bail;
+    }
+    snprintf(groupEntry->groupName, sizeof(groupEntry->groupName)-2,
+             "grp%.28s", user);
+    for (tmp=groupEntry->groupName; *tmp; tmp++)
+        if (!isalnum((unsigned char)(*tmp)))
+            *tmp = '_';
+    groupEntry->storageType = SNMP_STORAGE_PERMANENT;
+    groupEntry->status = SNMP_ROW_ACTIVE;
+    SNMP_FREE(groupEntry->reserved);
+
+    /*
+     * access
+     * grpv3user myctx usm noauth exact _all_ none none
+     */
+    if (NULL == context) {
+        localContext[0] = 0;
+        context = localContext;
+    } else {
+        /** check for wildcard in context */
+        int contextLen = strlen(context);
+        if ('*' == context[contextLen - 1]) {
+            strlcpy(localContext, context, sizeof(localContext));
+            localContext[contextLen - 1] = 0;
+            context = localContext;
+            exact = 2; /* not exact, have context prefix */
+        }
+    }
+    accessEntry = vacm_createAccessEntry(groupEntry->groupName, context,
+                                         SNMP_SEC_MODEL_USM, authLevel);
+    if (NULL == accessEntry) {
+        DEBUGMSGTL(("vacm:simple_usm", "createViewEntry failed"));
+        goto bail;
+    }
+    strlcpy(accessEntry->views[VACM_VIEW_READ], view,
+            sizeof(accessEntry->views[VACM_VIEW_READ]));
+    if (0 == rw)
+        view = "none";
+    strlcpy(accessEntry->views[VACM_VIEW_WRITE], view,
+            sizeof(accessEntry->views[VACM_VIEW_WRITE]));
+    strlcpy(accessEntry->views[VACM_VIEW_NOTIFY], view,
+            sizeof(accessEntry->views[VACM_VIEW_NOTIFY]));
+
+    accessEntry->contextMatch = exact;
+    accessEntry->storageType = SNMP_STORAGE_PERMANENT;
+    accessEntry->status = SNMP_ROW_ACTIVE;
+    SNMP_FREE(accessEntry->reserved);
+
+    return SNMPERR_SUCCESS;
+
+bail:
+    if (NULL != groupEntry)
+        vacm_destroyGroupEntry(SNMP_SEC_MODEL_USM, user);
+
+    if (NULL != vacmEntry)
+        vacm_destroyViewEntry(vacmEntry->viewName+1, vacmEntry->viewSubtree,
+                              vacmEntry->viewSubtreeLen);
+
+    return SNMPERR_GENERR;
+}
+
+int
+netsnmp_vacm_simple_usm_del(const char *user, int authLevel,
+                            const char *view, oid *oidView, size_t oidViewLen,
+                            const char *context)
+{
+    char                     localContext[VACMSTRINGLEN];
+    char                     group[VACMSTRINGLEN];
+
+    /*
+     * only delete simple views (one OID) for which we have an OID.
+     * never delete '_all_'.
+     */
+    if ((NULL != view) && (NULL != oidView) && (oidViewLen > 0) &&
+        (strcmp(view, "_all_") != 0) &&
+        (netsnmp_view_exists(viewList, view) == 1)) {
+        vacm_destroyViewEntry(view, oidView, oidViewLen);
+    }
+
+    vacm_destroyGroupEntry(SNMP_SEC_MODEL_USM, user);
+
+    snprintf(group, sizeof(group)-2, "grp%.28s", user);
+    if (NULL == context) {
+        localContext[0] = 0;
+        context = localContext;
+    } else {
+        /** check for wildcard in context */
+        int contextLen = strlen(context);
+        if ('*' == context[contextLen - 1]) {
+            strlcpy(localContext, context, sizeof(localContext));
+            localContext[contextLen - 1] = 0;
+            context = localContext;
+        }
+    }
+
+    vacm_destroyAccessEntry(group, context, SNMP_SEC_MODEL_USM, authLevel);
+
+    return SNMPERR_SUCCESS;
+}

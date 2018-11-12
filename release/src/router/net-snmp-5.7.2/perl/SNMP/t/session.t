@@ -50,10 +50,9 @@ ok(defined($s3));
 #print STDERR "Error string1 = $s3->{ErrorStr}:$s3->{ErrorInd}\n";
 #print("\n");
 #####################=== 4 ====###########################################
-#create a V3 session by setting an IP address/port not running an agent
+#create a V3 session with an IP address/port not running an agent
 my $s4 = new SNMP::Session (Version => 3, RemotePort => 1002, Retries => 0);
-# engineId discovery should fail resulting in session creation failure (undef)
-ok(!defined($s4));
+ok(defined($s4));
 #print STDERR "Error string1 = $s4->{ErrorStr}:$s4->{ErrorInd}\n";
 #print("\n");
 ######################  5  ###########################################

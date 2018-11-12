@@ -3,7 +3,6 @@
 # Makefile.in (at the root of net-snmp)
 #
 
-top_builddir	= .
 VPATH		= @srcdir@
 
 SUBDIRS		= snmplib @MAINSUBS@
@@ -18,12 +17,16 @@ CPP		= @CPP@ 					        \
 INSTALLHEADERS=version.h net-snmp-features.h
 INCLUDESUBDIR=system
 INCLUDESUBDIRHEADERS= aix.h bsd.h bsdi3.h bsdi4.h bsdi.h cygwin.h \
-	darwin.h darwin7.h darwin8.h darwin9.h darwin10.h dragonfly.h dynix.h \
+	darwin.h darwin7.h darwin8.h darwin9.h darwin10.h darwin11.h darwin12.h \
+	darwin13.h darwin14.h darwin15.h darwin16.h darwin17.h \
+	dragonfly.h dynix.h \
 	freebsd2.h freebsd3.h freebsd4.h freebsd5.h freebsd6.h \
-	freebsd7.h freebsd8.h freebsd9.h freebsd10.h freebsd.h \
-        generic.h \
-	hpux.h irix.h linux.h mingw32.h mips.h netbsd.h osf5.h \
-	openbsd.h openbsd5.h openbsd4.h \
+	freebsd7.h freebsd8.h freebsd9.h freebsd10.h freebsd11.h \
+	freebsd12.h freebsd.h kfreebsd.h \
+	generic.h \
+	hpux.h irix.h linux.h mingw32.h mingw32msvc.h mips.h \
+	netbsd.h nto-qnx6.h osf5.h \
+	openbsd.h openbsd6.h openbsd5.h openbsd4.h \
 	solaris2.3.h solaris2.4.h solaris2.5.h solaris2.6.h \
 	solaris.h sunos.h svr5.h sysv.h ultrix4.h
 INCLUDESUBDIR2=machine
@@ -175,12 +178,17 @@ perlmodules: perlmakefiles subdirs
            exit 1 ; \
         fi
 
-perlmakefiles: net-snmp-config-x
-	@if test ! -f perl/Makefile; then \
-	  (dir=`pwd`; \
-	   cd perl ; \
-	   $(PERL) Makefile.PL -NET-SNMP-IN-SOURCE=true -NET-SNMP-CONFIG="sh $$dir/net-snmp-config" $(PERLARGS) ) ; \
-        fi
+perlmakefiles: perl/Makefile net-snmp-config-x
+
+perl/Makefile: perl/Makefile.PL
+	dir=`pwd` &&							\
+	cd perl &&							\
+	if false; then							\
+	    carp=-MCarp::Always;					\
+	fi &&								\
+	export PERL5LIB="$$dir/perl" &&					\
+	$(PERL) $$carp Makefile.PL -NET-SNMP-IN-SOURCE=true		\
+	    -NET-SNMP-CONFIG="sh $$dir/net-snmp-config" $(PERLARGS)
 
 perlinstall:
 	@(cd perl ; $(MAKE) install) ; \
@@ -189,10 +197,7 @@ perlinstall:
         fi
 
 perluninstall:
-	@(cd perl ; $(MAKE) uninstall) ; \
-        if test $$? != 0 ; then \
-           exit 1 ; \
-        fi
+	echo "WARNING: perl doesn't support uninstall"
 
 perltest:
 	@(cd perl ; $(MAKE) test) ; \
@@ -229,7 +234,7 @@ pythonmodules: subdirs
         fi
 
 pythoninstall:
-	@(dir=`pwd`; cd python; $(PYMAKE) install --basedir=$$dir) ; \
+	@(dir=`pwd`; cd python; $(PYMAKE) install --basedir=$$dir --root=$(DESTDIR) --prefix=$(prefix)) ; \
         if test $$? != 0 ; then \
            exit 1 ; \
         fi
@@ -284,7 +289,8 @@ configclean: makefileclean
 		agent/mibgroup/mib_module_includes.h 	\
 		agent/mibgroup/mib_module_inits.h 	\
 		agent/mibgroup/mib_module_shutdown.h 	\
-		agent/mibgroup/mib_module_dot_conf.h
+		agent/mibgroup/mib_module_dot_conf.h    \
+		local/snmpconf
 	rm -rf mk
 	rm -f *.core
 	rm -f stamp-h1
@@ -309,6 +315,7 @@ Makefile: Makefile.in config.status Makefile.rules Makefile.top
 configure_ac = configure.ac \
 	configure.d/config_modules_agent \
 	configure.d/config_modules_lib \
+	configure.d/config_net_snmp_config_h \
 	configure.d/config_os_functions \
 	configure.d/config_os_headers \
 	configure.d/config_os_libs1 \
@@ -327,7 +334,7 @@ configure_ac = configure.ac \
 	configure.d/config_project_with_enable
 
 $(srcdir)/include/net-snmp/net-snmp-config.h.in: stamp-h.in
-$(srcdir)/stamp-h.in: $(configure_ac) acconfig.h
+$(srcdir)/stamp-h.in: $(configure_ac)
 	@if test "x$(NOAUTODEPS)" = "x" -a "x$(AUTOHEADER)" != "x:"; then \
 	    cd ${srcdir} && LC_COLLATE=C $(AUTOHEADER); \
 	    echo timestamp > ${srcdir}/stamp-h.in; \
@@ -429,7 +436,7 @@ warningcheck:
 
 assertcheck:
 	@echo "Checking for non-snmp asserts..."
-	@if grep -n -w "assert" `$(FIND) $(top_srcdir) -name \*.\[ch\] | grep -v snmp_assert.h | egrep -v 'perl/.*c' | grep -v openssl`; then false; fi
+	@if grep -n -w "assert" `$(FIND) $(top_srcdir) -name \*.\[ch\] | grep -v snmp_assert.h`; then false; fi
 
 commentcheck:
 	@echo "Checking for C++ style comments..."

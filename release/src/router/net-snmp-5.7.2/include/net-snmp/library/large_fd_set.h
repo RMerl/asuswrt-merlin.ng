@@ -55,8 +55,9 @@ extern "C" {
  * Number of bytes needed to store a number of file descriptors as a
  * struct fd_set.
  */
-#define NETSNMP_FD_SET_BYTES(setsize)                           \
-    (sizeof(fd_set) + ((setsize) - FD_SETSIZE) * sizeof(SOCKET))
+#define NETSNMP_FD_SET_BYTES(setsize)                                   \
+    (sizeof(fd_set) + ((setsize) > FD_SETSIZE ?                         \
+                       ((setsize) - FD_SETSIZE) * sizeof(SOCKET) : 0))
 
 /** Remove all sockets from the set *fdset. */
 #define NETSNMP_LARGE_FD_ZERO(fdset) \
@@ -91,9 +92,10 @@ int    netsnmp_large_fd_is_set(SOCKET fd, netsnmp_large_fd_set *fdset);
  * Number of bytes needed to store a number of file descriptors as a
  * struct fd_set.
  */
-#define NETSNMP_FD_SET_BYTES(setsize)                                   \
-    (sizeof(fd_set) + NETSNMP_FD_SET_ELEM_COUNT((setsize) - FD_SETSIZE) \
-     * NETSNMP_FD_MASK_SIZE)
+#define NETSNMP_FD_SET_BYTES(setsize)                                    \
+    (sizeof(fd_set) + ((setsize) > FD_SETSIZE ?                          \
+                       NETSNMP_FD_SET_ELEM_COUNT((setsize) - FD_SETSIZE) \
+                       * NETSNMP_FD_MASK_SIZE : 0))
 
 /** Remove all file descriptors from the set *fdset. */
 #define NETSNMP_LARGE_FD_ZERO(fdset)                            \

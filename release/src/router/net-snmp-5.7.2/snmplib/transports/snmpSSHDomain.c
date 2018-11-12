@@ -1,6 +1,7 @@
 #include <net-snmp/net-snmp-config.h>
 #include <net-snmp/net-snmp-features.h>
 
+#include <net-snmp/library/snmp_assert.h>
 #include <net-snmp/library/snmpSSHDomain.h>
 
 #include <stdio.h>
@@ -46,7 +47,7 @@
 #include <pwd.h>
 
 #ifndef MAXPATHLEN
-#warn no system max path length detected
+#warning no system max path length detected
 #define MAXPATHLEN 2048
 #endif
 
@@ -99,33 +100,42 @@ netsnmp_sockaddr_in2(struct sockaddr_in *addr,
  */
 
 static char *
-netsnmp_ssh_fmtaddr(netsnmp_transport *t, void *data, int len)
+netsnmp_ssh_fmtaddr(netsnmp_transport *t, const void *data, int len)
 {
-    netsnmp_ssh_addr_pair *addr_pair = NULL;
+    const netsnmp_ssh_addr_pair *addr_pair = NULL;
 
     if (data != NULL && len == sizeof(netsnmp_ssh_addr_pair)) {
-	addr_pair = (netsnmp_ssh_addr_pair *) data;
+	addr_pair = (const netsnmp_ssh_addr_pair *) data;
     } else if (t != NULL && t->data != NULL) {
-	addr_pair = (netsnmp_ssh_addr_pair *) t->data;
+	addr_pair = (const netsnmp_ssh_addr_pair *) t->data;
     }
 
     if (addr_pair == NULL) {
         return strdup("SSH: unknown");
     } else {
-        struct sockaddr_in *to = NULL;
-	char tmp[64];
-        to = (struct sockaddr_in *) &(addr_pair->remote_addr);
-        if (to == NULL) {
-            return strdup("SSH: unknown");
-        }
+        const struct sockaddr_in *to;
+	char *tmp;
 
-        sprintf(tmp, "SSH: [%s]:%hd",
-                inet_ntoa(to->sin_addr), ntohs(to->sin_port));
-        return strdup(tmp);
+        to = (const struct sockaddr_in *) &(addr_pair->remote_addr);
+        if (asprintf(&tmp, "SSH: [%s]:%hd",
+                     inet_ntoa(to->sin_addr), ntohs(to->sin_port)) < 0)
+            tmp = NULL;
+        return tmp;
     }
 }
 
-
+static void netsnmp_ssh_get_taddr(struct netsnmp_transport_s *t,
+                                  void **addr, size_t *addr_len)
+{
+    switch (t->remote_length) {
+    case sizeof(struct sockaddr_in):
+        netsnmp_ipv4_get_taddr(t, addr, addr_len);
+        break;
+    default:
+        *addr = NULL;
+        netsnmp_assert(0);
+    }
+}
 
 /*
  * You can write something into opaque that will subsequently get passed back 
@@ -185,7 +195,7 @@ netsnmp_ssh_recv(netsnmp_transport *t, void *buf, int size,
                 return -1;
             };
 
-            if (addr_pair->username[0] == '\0') {
+            if (addr_pair && addr_pair->username[0] == '\0') {
                 /* we don't have a username yet, so this is the first message */
                 struct ucred *remoteuser;
                 struct msghdr msg;
@@ -362,13 +372,13 @@ netsnmp_ssh_recv(netsnmp_transport *t, void *buf, int size,
 
 
 static int
-netsnmp_ssh_send(netsnmp_transport *t, void *buf, int size,
+netsnmp_ssh_send(netsnmp_transport *t, const void *buf, int size,
 		 void **opaque, int *olength)
 {
     int rc = -1;
 
     netsnmp_ssh_addr_pair *addr_pair = NULL;
-    netsnmp_tmStateReference *tmStateRef = NULL;
+    const netsnmp_tmStateReference *tmStateRef = NULL;
 
     if (t != NULL && t->data != NULL) {
 	addr_pair = (netsnmp_ssh_addr_pair *) t->data;
@@ -376,7 +386,7 @@ netsnmp_ssh_send(netsnmp_transport *t, void *buf, int size,
 
     if (opaque != NULL && *opaque != NULL &&
         *olength == sizeof(netsnmp_tmStateReference)) {
-        tmStateRef = (netsnmp_tmStateReference *) *opaque;
+        tmStateRef = (const netsnmp_tmStateReference *) *opaque;
     }
 
     if (!tmStateRef) {
@@ -463,12 +473,7 @@ netsnmp_ssh_close(netsnmp_transport *t)
 
 #ifdef SNMPSSHDOMAIN_USE_EXTERNAL_PIPE
 
-        close(t->sock);
-        
         if (!addr_pair->session && !addr_pair->channel) {
-            /* unix socket based connection */
-            close(t->sock);
-
             /* XXX: make configurable */
             unlink(addr_pair->socket_path);
         }
@@ -522,18 +527,18 @@ netsnmp_ssh_accept(netsnmp_transport *t)
 
         newsock = accept(t->sock, farend, &farendlen);
 
-        /* set the SO_PASSCRED option so we can receive the remote uid */
-        {
-            int one = 1;
-            setsockopt(newsock, SOL_SOCKET, SO_PASSCRED, (void *) &one,
-                       sizeof(one));
-        }
-
         if (newsock < 0) {
             DEBUGMSGTL(("ssh","accept failed rc %d errno %d \"%s\"\n",
                         newsock, errno, strerror(errno)));
             free(addr_pair);
             return newsock;
+        }
+
+        /* set the SO_PASSCRED option so we can receive the remote uid */
+        {
+            int one = 1;
+            setsockopt(newsock, SOL_SOCKET, SO_PASSCRED, (void *) &one,
+                       sizeof(one));
         }
 
         if (t->data != NULL) {
@@ -569,7 +574,7 @@ netsnmp_ssh_accept(netsnmp_transport *t)
  */
 
 netsnmp_transport *
-netsnmp_ssh_transport(struct sockaddr_in *addr, int local)
+netsnmp_ssh_transport(const struct sockaddr_in *addr, int local)
 {
     netsnmp_transport *t = NULL;
     netsnmp_ssh_addr_pair *addr_pair = NULL;
@@ -629,8 +634,9 @@ netsnmp_ssh_transport(struct sockaddr_in *addr, int local)
             sockpath = tmpsockpath;
         }
 
-        strcpy(unaddr->sun_path, sockpath);
-        strcpy(addr_pair->socket_path, sockpath);
+        snprintf(unaddr->sun_path, sizeof(unaddr->sun_path), "%s", sockpath);
+        snprintf(addr_pair->socket_path, sizeof(addr_pair->socket_path), "%s",
+                 sockpath);
 
         t->sock = socket(PF_UNIX, SOCK_STREAM, 0);
         if (t->sock < 0) {
@@ -646,7 +652,7 @@ netsnmp_ssh_transport(struct sockaddr_in *addr, int local)
         }
 
         unlink(unaddr->sun_path);
-        rc = bind(t->sock, (struct sockaddr *) unaddr, SUN_LEN(unaddr));
+        rc = bind(t->sock, unaddr, SUN_LEN(unaddr));
         if (rc != 0) {
             DEBUGMSGTL(("netsnmp_ssh_transport",
                         "couldn't bind \"%s\", errno %d (%s)\n",
@@ -720,6 +726,7 @@ netsnmp_ssh_transport(struct sockaddr_in *addr, int local)
         t->sock = STDIN_FILENO;
 #endif /* ! SNMPSSHDOMAIN_USE_EXTERNAL_PIPE */
 #else /* NETSNMP_NO_LISTEN_SUPPORT */
+        netsnmp_transport_free(t);
         return NULL;
 #endif /* NETSNMP_NO_LISTEN_SUPPORT */
     } else {
@@ -733,6 +740,7 @@ netsnmp_ssh_transport(struct sockaddr_in *addr, int local)
                                          NETSNMP_DS_LIB_SSH_USERNAME);
         if (!username || 0 == *username) {
             snmp_log(LOG_ERR, "You must specify a ssh username to use.  See the snmp.conf manual page\n");
+            netsnmp_transport_free(t);
             return NULL;
         }
 
@@ -742,6 +750,7 @@ netsnmp_ssh_transport(struct sockaddr_in *addr, int local)
         if (!keyfilepub || 0 == *keyfilepub) {
             /* XXX: default to ~/.ssh/id_rsa.pub */
             snmp_log(LOG_ERR, "You must specify a ssh public key file to use.  See the snmp.conf manual page\n");
+            netsnmp_transport_free(t);
             return NULL;
         }
 
@@ -751,6 +760,7 @@ netsnmp_ssh_transport(struct sockaddr_in *addr, int local)
         if (!keyfilepriv || 0 == *keyfilepriv) {
             /* XXX: default to keyfilepub without the .pub suffix */
             snmp_log(LOG_ERR, "You must specify a ssh private key file to use.  See the snmp.conf manual page\n");
+            netsnmp_transport_free(t);
             return NULL;
         }
 
@@ -765,16 +775,13 @@ netsnmp_ssh_transport(struct sockaddr_in *addr, int local)
             return NULL;
         }
 
-        t->remote = (u_char *)malloc(6);
-        if (t->remote == NULL) {
+        t->remote_length = sizeof(*addr);
+        t->remote = netsnmp_memdup(addr, sizeof(*addr));
+        if (!t->remote) {
             netsnmp_ssh_close(t);
             netsnmp_transport_free(t);
             return NULL;
         }
-        memcpy(t->remote, (u_char *) & (addr->sin_addr.s_addr), 4);
-        t->remote[4] = (htons(addr->sin_port) & 0xff00) >> 8;
-        t->remote[5] = (htons(addr->sin_port) & 0x00ff) >> 0;
-        t->remote_length = 6;
 
         /*
          * This is a client-type session, so attempt to connect to the far
@@ -783,8 +790,7 @@ netsnmp_ssh_transport(struct sockaddr_in *addr, int local)
          * had completed.  So this can block.
          */
 
-        rc = connect(t->sock, (struct sockaddr *)addr,
-		     sizeof(struct sockaddr));
+        rc = connect(t->sock, addr, sizeof(struct sockaddr));
 
         if (rc < 0) {
             netsnmp_ssh_close(t);
@@ -883,12 +889,13 @@ netsnmp_ssh_transport(struct sockaddr_in *addr, int local)
      * is equal to the maximum legal size of an SNMP message).  
      */
 
-    t->msgMaxSize = 0x7fffffff;
+    t->msgMaxSize = SNMP_MAX_PACKET_LEN;
     t->f_recv     = netsnmp_ssh_recv;
     t->f_send     = netsnmp_ssh_send;
     t->f_close    = netsnmp_ssh_close;
     t->f_accept   = netsnmp_ssh_accept;
     t->f_fmtaddr  = netsnmp_ssh_fmtaddr;
+    t->f_get_taddr = netsnmp_ssh_get_taddr;
 
     return t;
 }
@@ -911,17 +918,14 @@ netsnmp_ssh_create_tstring(const char *str, int local,
 
 
 netsnmp_transport *
-netsnmp_ssh_create_ostring(const u_char * o, size_t o_len, int local)
+netsnmp_ssh_create_ostring(const void *o, size_t o_len, int local)
 {
-    struct sockaddr_in addr;
+    struct sockaddr_in sin;
 
-    if (o_len == 6) {
-        unsigned short porttmp = (o[4] << 8) + o[5];
-        addr.sin_family = AF_INET;
-        memcpy((u_char *) & (addr.sin_addr.s_addr), o, 4);
-        addr.sin_port = htons(porttmp);
-        return netsnmp_ssh_transport(&addr, local);
-    }
+    if (netsnmp_ipv4_ostring_to_sockaddr(&sin, o, o_len))
+        return netsnmp_ssh_transport(&sin, local);
+    else
+        netsnmp_assert(0);
     return NULL;
 }
 

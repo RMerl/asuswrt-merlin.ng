@@ -314,10 +314,10 @@ ipCidrRouteTable_release_data(ipCidrRouteTable_data * data)
  */
 int
 ipCidrRouteTable_indexes_set_tbl_idx(ipCidrRouteTable_mib_index * tbl_idx,
-                                     u_long ipCidrRouteDest_val,
-                                     u_long ipCidrRouteMask_val,
+                                     in_addr_t ipCidrRouteDest_val,
+                                     in_addr_t ipCidrRouteMask_val,
                                      long ipCidrRouteTos_val,
-                                     u_long ipCidrRouteNextHop_val)
+                                     in_addr_t ipCidrRouteNextHop_val)
 {
     DEBUGMSGTL(("verbose:ipCidrRouteTable:ipCidrRouteTable_indexes_set_tbl_idx", "called\n"));
 
@@ -360,10 +360,10 @@ ipCidrRouteTable_indexes_set_tbl_idx(ipCidrRouteTable_mib_index * tbl_idx,
  */
 int
 ipCidrRouteTable_indexes_set(ipCidrRouteTable_rowreq_ctx * rowreq_ctx,
-                             u_long ipCidrRouteDest_val,
-                             u_long ipCidrRouteMask_val,
+                             in_addr_t ipCidrRouteDest_val,
+                             in_addr_t ipCidrRouteMask_val,
                              long ipCidrRouteTos_val,
-                             u_long ipCidrRouteNextHop_val)
+                             in_addr_t ipCidrRouteNextHop_val)
 {
     DEBUGMSGTL(("verbose:ipCidrRouteTable:ipCidrRouteTable_indexes_set",
                 "called\n"));

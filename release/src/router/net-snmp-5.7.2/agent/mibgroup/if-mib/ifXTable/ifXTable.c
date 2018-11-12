@@ -704,7 +704,7 @@ The total number of octets received on the interface,
  *
  *
  * Its syntax is COUNTER64 (based on perltype COUNTER64)
- * The net-snmp type is ASN_COUNTER64. The C type decl is U64 (U64)
+ * The net-snmp type is ASN_COUNTER64. The C type is struct counter64.
  */
 /**
  * Extract the current value of the ifHCInOctets data.
@@ -714,7 +714,7 @@ The total number of octets received on the interface,
  * @param rowreq_ctx
  *        Pointer to the row request context.
  * @param ifHCInOctets_val_ptr
- *        Pointer to storage for a U64 variable
+ *        Pointer to storage for a struct counter64 variable
  *
  * @retval MFD_SUCCESS         : success
  * @retval MFD_SKIP            : skip this node (no value for now)
@@ -722,7 +722,7 @@ The total number of octets received on the interface,
  */
 int
 ifHCInOctets_get(ifXTable_rowreq_ctx * rowreq_ctx,
-                 U64 * ifHCInOctets_val_ptr)
+                 struct counter64 *ifHCInOctets_val_ptr)
 {
    /** we should have a non-NULL pointer */
     netsnmp_assert(NULL != ifHCInOctets_val_ptr);
@@ -761,7 +761,7 @@ The number of packets, delivered by this sub-layer to a
  *
  *
  * Its syntax is COUNTER64 (based on perltype COUNTER64)
- * The net-snmp type is ASN_COUNTER64. The C type decl is U64 (U64)
+ * The net-snmp type is ASN_COUNTER64. The C type is struct counter64
  */
 /**
  * Extract the current value of the ifHCInUcastPkts data.
@@ -771,7 +771,7 @@ The number of packets, delivered by this sub-layer to a
  * @param rowreq_ctx
  *        Pointer to the row request context.
  * @param ifHCInUcastPkts_val_ptr
- *        Pointer to storage for a U64 variable
+ *        Pointer to storage for a struct counter64 variable
  *
  * @retval MFD_SUCCESS         : success
  * @retval MFD_SKIP            : skip this node (no value for now)
@@ -779,7 +779,7 @@ The number of packets, delivered by this sub-layer to a
  */
 int
 ifHCInUcastPkts_get(ifXTable_rowreq_ctx * rowreq_ctx,
-                    U64 * ifHCInUcastPkts_val_ptr)
+                    struct counter64 *ifHCInUcastPkts_val_ptr)
 {
    /** we should have a non-NULL pointer */
     netsnmp_assert(NULL != ifHCInUcastPkts_val_ptr);
@@ -820,7 +820,7 @@ The number of packets, delivered by this sub-layer to a
  *
  *
  * Its syntax is COUNTER64 (based on perltype COUNTER64)
- * The net-snmp type is ASN_COUNTER64. The C type decl is U64 (U64)
+ * The net-snmp type is ASN_COUNTER64. The C type is struct counter64
  */
 /**
  * Extract the current value of the ifHCInMulticastPkts data.
@@ -830,7 +830,7 @@ The number of packets, delivered by this sub-layer to a
  * @param rowreq_ctx
  *        Pointer to the row request context.
  * @param ifHCInMulticastPkts_val_ptr
- *        Pointer to storage for a U64 variable
+ *        Pointer to storage for a struct counter64 variable
  *
  * @retval MFD_SUCCESS         : success
  * @retval MFD_SKIP            : skip this node (no value for now)
@@ -838,7 +838,7 @@ The number of packets, delivered by this sub-layer to a
  */
 int
 ifHCInMulticastPkts_get(ifXTable_rowreq_ctx * rowreq_ctx,
-                        U64 * ifHCInMulticastPkts_val_ptr)
+                        struct counter64 *ifHCInMulticastPkts_val_ptr)
 {
    /** we should have a non-NULL pointer */
     netsnmp_assert(NULL != ifHCInMulticastPkts_val_ptr);
@@ -879,7 +879,7 @@ The number of packets, delivered by this sub-layer to a
  *
  *
  * Its syntax is COUNTER64 (based on perltype COUNTER64)
- * The net-snmp type is ASN_COUNTER64. The C type decl is U64 (U64)
+ * The net-snmp type is ASN_COUNTER64. The C type is struct counter64.
  */
 /**
  * Extract the current value of the ifHCInBroadcastPkts data.
@@ -889,7 +889,7 @@ The number of packets, delivered by this sub-layer to a
  * @param rowreq_ctx
  *        Pointer to the row request context.
  * @param ifHCInBroadcastPkts_val_ptr
- *        Pointer to storage for a U64 variable
+ *        Pointer to storage for a struct counter64 variable
  *
  * @retval MFD_SUCCESS         : success
  * @retval MFD_SKIP            : skip this node (no value for now)
@@ -897,7 +897,7 @@ The number of packets, delivered by this sub-layer to a
  */
 int
 ifHCInBroadcastPkts_get(ifXTable_rowreq_ctx * rowreq_ctx,
-                        U64 * ifHCInBroadcastPkts_val_ptr)
+                        struct counter64 *ifHCInBroadcastPkts_val_ptr)
 {
    /** we should have a non-NULL pointer */
     netsnmp_assert(NULL != ifHCInBroadcastPkts_val_ptr);
@@ -937,7 +937,7 @@ The total number of octets transmitted out of the
  *
  *
  * Its syntax is COUNTER64 (based on perltype COUNTER64)
- * The net-snmp type is ASN_COUNTER64. The C type decl is U64 (U64)
+ * The net-snmp type is ASN_COUNTER64. The C type is struct counter64.
  */
 /**
  * Extract the current value of the ifHCOutOctets data.
@@ -947,7 +947,7 @@ The total number of octets transmitted out of the
  * @param rowreq_ctx
  *        Pointer to the row request context.
  * @param ifHCOutOctets_val_ptr
- *        Pointer to storage for a U64 variable
+ *        Pointer to storage for a struct counter64 variable
  *
  * @retval MFD_SUCCESS         : success
  * @retval MFD_SKIP            : skip this node (no value for now)
@@ -955,7 +955,7 @@ The total number of octets transmitted out of the
  */
 int
 ifHCOutOctets_get(ifXTable_rowreq_ctx * rowreq_ctx,
-                  U64 * ifHCOutOctets_val_ptr)
+                  struct counter64 *ifHCOutOctets_val_ptr)
 {
    /** we should have a non-NULL pointer */
     netsnmp_assert(NULL != ifHCOutOctets_val_ptr);
@@ -995,7 +995,7 @@ The total number of packets that higher-level protocols
  *
  *
  * Its syntax is COUNTER64 (based on perltype COUNTER64)
- * The net-snmp type is ASN_COUNTER64. The C type decl is U64 (U64)
+ * The net-snmp type is ASN_COUNTER64. The C type is struct counter64.
  */
 /**
  * Extract the current value of the ifHCOutUcastPkts data.
@@ -1005,7 +1005,7 @@ The total number of packets that higher-level protocols
  * @param rowreq_ctx
  *        Pointer to the row request context.
  * @param ifHCOutUcastPkts_val_ptr
- *        Pointer to storage for a U64 variable
+ *        Pointer to storage for a struct counter64 variable
  *
  * @retval MFD_SUCCESS         : success
  * @retval MFD_SKIP            : skip this node (no value for now)
@@ -1013,7 +1013,7 @@ The total number of packets that higher-level protocols
  */
 int
 ifHCOutUcastPkts_get(ifXTable_rowreq_ctx * rowreq_ctx,
-                     U64 * ifHCOutUcastPkts_val_ptr)
+                     struct counter64 *ifHCOutUcastPkts_val_ptr)
 {
    /** we should have a non-NULL pointer */
     netsnmp_assert(NULL != ifHCOutUcastPkts_val_ptr);
@@ -1056,7 +1056,7 @@ The total number of packets that higher-level protocols
  *
  *
  * Its syntax is COUNTER64 (based on perltype COUNTER64)
- * The net-snmp type is ASN_COUNTER64. The C type decl is U64 (U64)
+ * The net-snmp type is ASN_COUNTER64. The C type is struct counter64.
  */
 /**
  * Extract the current value of the ifHCOutMulticastPkts data.
@@ -1066,7 +1066,7 @@ The total number of packets that higher-level protocols
  * @param rowreq_ctx
  *        Pointer to the row request context.
  * @param ifHCOutMulticastPkts_val_ptr
- *        Pointer to storage for a U64 variable
+ *        Pointer to storage for a struct counter64 variable
  *
  * @retval MFD_SUCCESS         : success
  * @retval MFD_SKIP            : skip this node (no value for now)
@@ -1074,7 +1074,7 @@ The total number of packets that higher-level protocols
  */
 int
 ifHCOutMulticastPkts_get(ifXTable_rowreq_ctx * rowreq_ctx,
-                         U64 * ifHCOutMulticastPkts_val_ptr)
+                         struct counter64 *ifHCOutMulticastPkts_val_ptr)
 {
    /** we should have a non-NULL pointer */
     netsnmp_assert(NULL != ifHCOutMulticastPkts_val_ptr);
@@ -1116,7 +1116,7 @@ The total number of packets that higher-level protocols
  *
  *
  * Its syntax is COUNTER64 (based on perltype COUNTER64)
- * The net-snmp type is ASN_COUNTER64. The C type decl is U64 (U64)
+ * The net-snmp type is ASN_COUNTER64. The C type is struct counter64.
  */
 /**
  * Extract the current value of the ifHCOutBroadcastPkts data.
@@ -1126,7 +1126,7 @@ The total number of packets that higher-level protocols
  * @param rowreq_ctx
  *        Pointer to the row request context.
  * @param ifHCOutBroadcastPkts_val_ptr
- *        Pointer to storage for a U64 variable
+ *        Pointer to storage for a struct counter64 variable
  *
  * @retval MFD_SUCCESS         : success
  * @retval MFD_SKIP            : skip this node (no value for now)
@@ -1134,7 +1134,7 @@ The total number of packets that higher-level protocols
  */
 int
 ifHCOutBroadcastPkts_get(ifXTable_rowreq_ctx * rowreq_ctx,
-                         U64 * ifHCOutBroadcastPkts_val_ptr)
+                         struct counter64 *ifHCOutBroadcastPkts_val_ptr)
 {
    /** we should have a non-NULL pointer */
     netsnmp_assert(NULL != ifHCOutBroadcastPkts_val_ptr);

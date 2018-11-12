@@ -23,6 +23,7 @@
 #include "hrh_filesys.h"
 #include "hrh_storage.h"
 #include "hr_disk.h"
+#include "hr_filesys.h"
 #include <net-snmp/utilities.h>
 
 #if HAVE_MNTENT_H
@@ -77,9 +78,6 @@ netsnmp_fsys_info *HRFS_entry;
 #define	FULL_DUMP	0
 #define	PART_DUMP	1
 
-extern void     Init_HR_FileSys(void);
-extern int      Get_Next_HR_FileSys(void);
-char           *cook_device(char *);
 static u_char  *when_dumped(char *filesys, int level, size_t * length);
 int             header_hrhfilesys(struct variable *, oid *, size_t *, int,
                                  size_t *, WriteMethod **);
@@ -189,7 +187,7 @@ header_hrhfilesys(struct variable *vp,
     memcpy((char *) name, (char *) newname,
            (vp->namelen + 1) * sizeof(oid));
     *length = vp->namelen + 1;
-    *write_method = 0;
+    *write_method = NULL;
     *var_len = sizeof(long);    /* default to 'long' results */
 
     DEBUGMSGTL(("host/hr_filesys", "... get filesys stats "));
@@ -220,7 +218,7 @@ var_hrhfilesys(struct variable *vp,
               int exact, size_t * var_len, WriteMethod ** write_method)
 {
     int             fsys_idx;
-    static char     string[1024];
+    static char    *string;
 
     fsys_idx =
         header_hrhfilesys(vp, name, length, exact, var_len, write_method);
@@ -232,17 +230,21 @@ var_hrhfilesys(struct variable *vp,
         long_return = fsys_idx;
         return (u_char *) & long_return;
     case HRFSYS_MOUNT:
-        snprintf(string, sizeof(string), "%s", HRFS_entry->path);
-        string[ sizeof(string)-1 ] = 0;
-        *var_len = strlen(string);
+        free(string);
+        string = NULL;
+        *var_len = 0;
+        if (asprintf(&string, "%s", HRFS_entry->path) >= 0)
+            *var_len = strlen(string);
         return (u_char *) string;
     case HRFSYS_RMOUNT:
+        free(string);
         if (HRFS_entry->flags & NETSNMP_FS_FLAG_REMOTE) {
-            snprintf(string, sizeof(string), "%s", HRFS_entry->device);
-            string[ sizeof(string)-1 ] = 0;
-        } else
-            string[0] = '\0';
-        *var_len = strlen(string);
+            if (asprintf(&string, "%s", HRFS_entry->device) < 0)
+                string = NULL;
+        } else {
+            string = strdup("");
+        }
+        *var_len = string ? strlen(string) : 0;
         return (u_char *) string;
 
     case HRFSYS_TYPE:

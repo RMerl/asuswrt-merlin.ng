@@ -27,6 +27,7 @@
 #include <net-snmp/library/snmp_debug.h>
 #include <net-snmp/data_access/swrun.h>
 #include <net-snmp/data_access/swrun.h>
+#include "swrun_private.h"
 
 /*
  * a lot of this is "stolen" from cygwin ps.cc
@@ -122,7 +123,6 @@ to_msec(PFILETIME ptr)
     return x;
 }
 
-OSVERSIONINFO   ver;
 HMODULE         h;
 
 /* ---------------------------------------------------------------------
@@ -130,27 +130,18 @@ HMODULE         h;
 void
 netsnmp_arch_swrun_init(void)
 {
-    memset(&ver, 0, sizeof ver);
-    ver.dwOSVersionInfoSize = sizeof ver;
-    GetVersionEx(&ver);
-
-    if (ver.dwPlatformId == VER_PLATFORM_WIN32_NT) {
-        h = LoadLibrary("psapi.dll");
-        if (h) {
-            myEnumProcessModules   = (ENUMPROCESSMODULES)
-                       GetProcAddress(h, "EnumProcessModules");
-            myGetModuleFileNameEx  = (GETMODULEFILENAME)
-                       GetProcAddress(h, "GetModuleFileNameExA");
-            myGetProcessMemoryInfo = (GETPROCESSMEMORYINFO)
-                       GetProcAddress(h, "GetProcessMemoryInfo");
-            if (myEnumProcessModules && myGetModuleFileNameEx)
-                query = CW_GETPINFO_FULL;
-            else
-                snmp_log(LOG_ERR, "hr_swrun failed NT init\n");
-        } else
-            snmp_log(LOG_ERR, "hr_swrun failed to load psapi.dll\n");
-    } else {
-        h = GetModuleHandle("KERNEL32.DLL");
+    if ((h = LoadLibrary("psapi.dll")) != NULL) {
+        myEnumProcessModules   = (ENUMPROCESSMODULES)
+            GetProcAddress(h, "EnumProcessModules");
+        myGetModuleFileNameEx  = (GETMODULEFILENAME)
+            GetProcAddress(h, "GetModuleFileNameExA");
+        myGetProcessMemoryInfo = (GETPROCESSMEMORYINFO)
+            GetProcAddress(h, "GetProcessMemoryInfo");
+        if (myEnumProcessModules && myGetModuleFileNameEx)
+            query = CW_GETPINFO_FULL;
+        else
+            snmp_log(LOG_ERR, "hr_swrun failed NT init\n");
+    } elif ((h = GetModuleHandle("KERNEL32.DLL")) != NULL) {
         myCreateToolhelp32Snapshot = (CREATESNAPSHOT)
                        GetProcAddress(h, "CreateToolhelp32Snapshot");
         myProcess32First = (PROCESSWALK) GetProcAddress(h, "Process32First");
@@ -161,7 +152,7 @@ netsnmp_arch_swrun_init(void)
             && myProcess32Next)
 #if 0
             /*
-             * This doesn't work after all on Win98 SE 
+             * This doesn't work at all on Win98 SE
              */
             query = CW_GETPINFO_FULL;
 #else
@@ -170,7 +161,6 @@ netsnmp_arch_swrun_init(void)
         else
             snmp_log(LOG_ERR, "hr_swrun failed non-NT init\n");
     }
-    return;
 }
 
 /* ---------------------------------------------------------------------
@@ -205,9 +195,10 @@ netsnmp_arch_swrun_container_load( netsnmp_container *container, u_int flags)
         h = OpenProcess(PROCESS_QUERY_INFORMATION | PROCESS_VM_READ, FALSE, n);
 
         if (curproc.ppid) {
-            entry->hrSWRunPath_len = snprintf(entry->hrSWRunPath,
-                                       sizeof(entry->hrSWRunPath)-1, "%s",
-                    cygwin_conv_to_posix_path(curproc.progname));
+            entry->hrSWRunPath_len =
+                sprintf(entry->hrSWRunPath, "%.*s",
+                        (int)sizeof(entry->hrSWRunPath) - 1,
+                        cygwin_conv_to_posix_path(curproc.progname));
         } else if (query == CW_GETPINFO_FULL) {
 
             if (h) {
@@ -216,9 +207,9 @@ netsnmp_arch_swrun_container_load( netsnmp_container *container, u_int flags)
                     n = 0;
                 if (n && myGetModuleFileNameEx(h, hm[0], string,
                                                   sizeof string)) {
-                   entry->hrSWRunPath_len = snprintf(entry->hrSWRunPath,
-                                              sizeof(entry->hrSWRunPath)-1,
-                                                    "%s", string );
+                   entry->hrSWRunPath_len =
+                       sprintf(entry->hrSWRunPath, "%.*s",
+                               (int)sizeof(entry->hrSWRunPath) - 1, string);
                 }
             }
         }
@@ -236,8 +227,9 @@ netsnmp_arch_swrun_container_load( netsnmp_container *container, u_int flags)
                 cp2++;           /* Find the final component ... */
             else
                 cp2 = entry->hrSWRunPath;          /* ... if any */
-            entry->hrSWRunName_len = snprintf(entry->hrSWRunName,
-                                       sizeof(entry->hrSWRunName)-1, "%s", cp2);
+            entry->hrSWRunName_len =
+                sprintf(entry->hrSWRunName, "%.*s",
+                        (int)sizeof(entry->hrSWRunName) - 1, cp2);
 
             if ( cp1 )
                 *cp1 = '.';     /* Restore the file extension */

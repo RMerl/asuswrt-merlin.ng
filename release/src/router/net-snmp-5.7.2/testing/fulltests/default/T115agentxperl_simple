@@ -9,7 +9,7 @@ SKIPIFNOT USING_AGENTX_MASTER_MODULE
 SKIPIFNOT USING_AGENTX_SUBAGENT_MODULE
 SKIPIFNOT HAVE_SIGHUP
 # make sure the toolkit has been configured --with-perl-modules
-[ -d ${SNMP_UPDIR}/perl/blib/arch/auto/NetSNMP/agent ] || SKIP
+[ -d ${SNMP_UPDIR}/perl/blib/arch/auto/NetSNMP/agent ] || SKIP Not --with-perl-modules
 
 #
 # Begin test

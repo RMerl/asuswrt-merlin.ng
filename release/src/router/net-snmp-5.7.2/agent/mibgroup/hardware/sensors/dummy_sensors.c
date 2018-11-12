@@ -2,6 +2,7 @@
 #include <net-snmp/net-snmp-includes.h>
 #include <net-snmp/agent/net-snmp-agent-includes.h>
 #include <net-snmp/agent/hardware/sensors.h>
+#include "hw_sensors_private.h"
 
 
 void netsnmp_sensor_arch_init( void ) {

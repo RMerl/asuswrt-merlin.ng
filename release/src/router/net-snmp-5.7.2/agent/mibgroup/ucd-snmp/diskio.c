@@ -27,11 +27,23 @@
 
 #include <math.h>
 
+#if defined (linux)
+/* for stat() */
+#include <ctype.h>
+#include <sys/stat.h>
+#endif
+
+#ifdef HAVE_SYS_SYSMACROS_H
+#include <sys/sysmacros.h> /* major() */
+#endif
+
 #include <net-snmp/net-snmp-includes.h>
 #include <net-snmp/agent/net-snmp-agent-includes.h>
+#include <net-snmp/agent/agent_callbacks.h>
 
 #include "util_funcs/header_simple_table.h"
 
+#include "struct.h"
 /*
  * include our .h file 
  */
@@ -63,18 +75,22 @@ static perfstat_disk_t *ps_disk;	/* storage for all disk values */
 static int ps_numdisks;			/* number of disks in system, may change while running */
 #endif
 
-#if defined(bsdi3) || defined(bsdi4)
+#if defined(bsdi3) || defined(bsdi4) || defined(openbsd4)
 #include <string.h>
 #include <sys/param.h>
 #include <sys/sysctl.h>
+#ifdef openbsd4
+#include <sys/disk.h>
+#else
 #include <sys/diskstats.h>
+#endif
 #endif                          /* bsdi */
 
-#if defined (freebsd4) || defined(freebsd5)
+#if defined(HAVE_GETDEVS) || defined(HAVE_DEVSTAT_GETDEVS)
 #include <sys/param.h>
-#if __FreeBSD_version >= 500101
+#if HAVE_DEVSTAT_GETDEVS
 #include <sys/resource.h>       /* for CPUSTATES in devstat.h */
-#elif !defined(dragonfly)
+#elif HAVE_SYS_DKSTAT_H
 #include <sys/dkstat.h>
 #endif
 #include <devstat.h>
@@ -86,7 +102,7 @@ static int ps_numdisks;			/* number of disks in system, may change while running
 
 #endif                          /* freebsd */
 
-#if defined(freebsd5) && __FreeBSD_version >= 500107
+#if HAVE_DEVSTAT_GETDEVS
   #define GETDEVS(x) devstat_getdevs(NULL, (x))
 #else
   #define GETDEVS(x) getdevs((x))
@@ -95,6 +111,54 @@ static int ps_numdisks;			/* number of disks in system, may change while running
 #if defined (linux)
 #define DISKIO_SAMPLE_INTERVAL 5
 void devla_getstats(unsigned int regno, void * dummy);
+static void diskio_parse_config_disks(const char *token, char *cptr);
+static int diskio_pre_update_config(int, int, void *, void *);
+static void diskio_free_config(void);
+
+#define DISK_INCR 2
+
+typedef struct linux_diskio
+{
+    int major;
+    int  minor;
+    unsigned long  blocks;
+    char name[256];
+    unsigned long  rio;
+    unsigned long  rmerge;
+    unsigned long  rsect;
+    unsigned long  ruse;
+    unsigned long  wio;
+    unsigned long  wmerge;
+    unsigned long  wsect;
+    unsigned long  wuse;
+    unsigned long  running;
+    unsigned long  use;
+    unsigned long  aveq;
+} linux_diskio;
+
+/* disk load averages */
+typedef struct linux_diskio_la
+{
+    unsigned long use_prev;
+    double la1, la5, la15;
+} linux_diskio_la;
+
+typedef struct linux_diskio_header
+{
+    linux_diskio* indices;
+    int length;
+    int alloc;
+} linux_diskio_header;
+
+typedef struct linux_diskio_la_header
+{
+    linux_diskio_la * indices;
+    int length;
+} linux_diskio_la_header;
+
+static linux_diskio_header head;
+static linux_diskio_la_header la_head;
+
 #endif /* linux */
 
 #if defined (darwin)
@@ -107,18 +171,26 @@ void devla_getstats(unsigned int regno, void * dummy);
 static mach_port_t masterPort;		/* to communicate with I/O Kit	*/
 #endif                          /* darwin */
 
-#ifndef solaris2
+#if !defined(solaris2) && !(defined(aix4) || defined(aix5) || defined(aix6) || defined(aix7))
 static int      getstats(void);
 #endif
 
-#if defined (freebsd4) || defined(freebsd5)
+#if defined (HAVE_GETDEVS) || defined(HAVE_DEVSTAT_GETDEVS)
 void		devla_getstats(unsigned int regno, void *dummy);
 #endif
 
-FILE           *file;
+#ifdef linux
+struct diskiopart {
+    char            syspath[STRMAX];	/* full stat path */
+    char            name[STRMAX];	/* name as provided */
+    char            shortname[STRMAX];	/* short name for output */
+    int             major;
+    int             minor;
+};
 
-#if 0
-static void	diskio_free_config(void);
+static int             numdisks;
+static int             maxdisks = 0;
+static struct diskiopart *disks;
 #endif
 
          /*********************
@@ -167,7 +239,7 @@ init_diskio(void)
          var_diskio, 1, {5}},
         {DISKIO_WRITES, ASN_COUNTER, NETSNMP_OLDAPI_RONLY,
          var_diskio, 1, {6}},
-#if defined(freebsd4) || defined(freebsd5) || defined(linux)
+#if defined(HAVE_GETDEVS) || defined(HAVE_DEVSTAT_GETDEVS) || defined(linux)
         {DISKIO_LA1, ASN_INTEGER, NETSNMP_OLDAPI_RONLY,
          var_diskio, 1, {9}},
         {DISKIO_LA5, ASN_INTEGER, NETSNMP_OLDAPI_RONLY,
@@ -179,6 +251,8 @@ init_diskio(void)
          var_diskio, 1, {12}},
         {DISKIO_NWRITTENX, ASN_COUNTER64, NETSNMP_OLDAPI_RONLY,
          var_diskio, 1, {13}},
+        {DISKIO_BUSYTIME, ASN_COUNTER64, NETSNMP_OLDAPI_RONLY,
+         var_diskio, 1, {14}},
     };
 
     /*
@@ -224,7 +298,7 @@ init_diskio(void)
     ps_disk = NULL;
 #endif
 
-#if defined (freebsd4) || defined(freebsd5) || defined(linux)
+#if defined (HAVE_GETDEVS) || defined(HAVE_DEVSTAT_GETDEVS) || defined(linux)
     devla_getstats(0, NULL);
     /* collect LA data regularly */
     snmp_alarm_register(DISKIO_SAMPLE_INTERVAL, SA_REPEAT, devla_getstats, NULL);
@@ -244,23 +318,172 @@ init_diskio(void)
                                NETSNMP_DS_APPLICATION_ID,
                                NETSNMP_DS_AGENT_DISKIO_NO_RAM);
 
-        /* or possible an exclusion pattern? */
+    snmpd_register_config_handler("diskio", diskio_parse_config_disks,
+        diskio_free_config, "path | device");
+    
+
+    snmp_register_callback(SNMP_CALLBACK_APPLICATION,
+	                   SNMPD_CALLBACK_PRE_UPDATE_CONFIG,
+	                   diskio_pre_update_config, NULL);
+
 #endif
 }
 
-#if 0
+#ifdef linux
 /* to do: make sure diskio_free_config() gets invoked upon SIGHUP. */
+static int
+diskio_pre_update_config(int major, int minor, void *serverarg, void *clientarg)
+{
+    diskio_free_config();
+    return 0;
+}
+
 static void
 diskio_free_config(void)
 {
+    int i;
+
+    DEBUGMSGTL(("diskio", "free config %d\n",
+		netsnmp_ds_get_boolean(NETSNMP_DS_APPLICATION_ID,
+				       NETSNMP_DS_AGENT_DISKIO_NO_RAM)));
     netsnmp_ds_set_boolean(NETSNMP_DS_APPLICATION_ID, 
 			   NETSNMP_DS_AGENT_DISKIO_NO_FD,   0);
     netsnmp_ds_set_boolean(NETSNMP_DS_APPLICATION_ID, 
 			   NETSNMP_DS_AGENT_DISKIO_NO_LOOP, 0);
     netsnmp_ds_set_boolean(NETSNMP_DS_APPLICATION_ID, 
 			   NETSNMP_DS_AGENT_DISKIO_NO_RAM,  0);
+
+    if (la_head.length) {
+        /* reset any usage stats, we may get different list of devices from config */
+        free(la_head.indices);
+        la_head.length = 0;
+        la_head.indices = NULL;
+    }
+    if (numdisks > 0) {
+        head.length = 0;
+        numdisks = 0;
+        for (i = 0; i < maxdisks; i++) {    /* init/erase disk db */
+            disks[i].syspath[0] = 0;
+            disks[i].name[0] = 0;
+            disks[i].shortname[0] = 0;
+            disks[i].major = -1;
+            disks[i].minor = -1;
+        }
+    }
 }
-#endif
+
+static int
+disk_exists(char *path) 
+{
+    int index;
+    for(index = 0; index < numdisks; index++) {
+        DEBUGMSGTL(("ucd-snmp/disk", "Checking for %s. Found %s at %d\n", path, disks[index].syspath, index));
+        if(strcmp(path, disks[index].syspath) == 0) {
+            return index;
+        }
+    }
+    return -1;
+}
+
+static void
+add_device(char *path, int addNewDisks ) 
+{
+    int index;
+    char device[STRMAX];
+    char syspath[STRMAX];
+    char *basename;
+    struct stat stbuf;
+
+    if (!path || !strcmp(path, "none")) {
+        DEBUGMSGTL(("ucd-snmp/diskio", "Skipping null path device (%s)\n", path));
+        return;
+    }
+    if (numdisks == maxdisks) {
+        if (maxdisks == 0) {
+            maxdisks = 50;
+            disks = malloc(maxdisks * sizeof(struct diskiopart));
+            if (!disks) {
+                config_perror("malloc failed for new disko allocation.");
+	            netsnmp_config_error("\tignoring:  %s", path);
+                return;
+            }
+            memset(disks, 0, maxdisks * sizeof(struct diskiopart));
+        } else {
+            struct diskiopart *newdisks;
+            maxdisks *= 2;
+            newdisks = realloc(disks, maxdisks * sizeof(struct diskiopart));
+            if (!newdisks) {
+                free(disks);
+                disks = NULL;
+                config_perror("malloc failed for new disko allocation.");
+	            netsnmp_config_error("\tignoring:  %s", path);
+                return;
+            }
+            disks = newdisks;
+            memset(disks + maxdisks/2, 0, maxdisks/2 * sizeof(struct diskiopart));
+        }
+    }
+
+    /* first find the path for this device */
+    device[0]='\0';
+    if ( *path != '/' ) {
+        strlcpy(device, "/dev/", STRMAX - 1 );
+    }
+    strncat(device, path, STRMAX - 1 );
+
+    /* check for /dev existence */
+    if ( stat(device,&stbuf)!=0 ) { /* ENOENT */
+        config_perror("diskio path does not exist.");
+        netsnmp_config_error("\tignoring:  %s", path);
+        return;
+    }
+    else if ( ! S_ISBLK(stbuf.st_mode) ) { /* ENODEV */
+        config_perror("diskio path is not a device.");
+        netsnmp_config_error("\tignoring:  %s", path);
+        return;
+    }
+
+    /* either came with a slash or we just put one there, so the following always works */
+    basename = strrchr(device, '/' )+1;
+    /* construct a sys path using the device numbers to avoid having to disambiguate the various text forms */
+    snprintf( syspath, STRMAX - 1, "/sys/dev/block/%d:%d/stat", major(stbuf.st_rdev), minor(stbuf.st_rdev) );
+    DEBUGMSGTL(("ucd-snmp/diskio", " monitoring sys path (%s)\n", syspath));
+
+    index = disk_exists(syspath);
+
+    if(index == -1 && addNewDisks){
+        /* The following buffers are cleared above, no need to add '\0' */
+        strlcpy(disks[numdisks].syspath, syspath, sizeof(disks[numdisks].syspath) - 1);
+        strlcpy(disks[numdisks].name, path, sizeof(disks[numdisks].name) - 1);
+        strlcpy(disks[numdisks].shortname, basename, sizeof(disks[numdisks].shortname) - 1);
+        disks[numdisks].major = major(stbuf.st_rdev);
+        disks[numdisks].minor = minor(stbuf.st_rdev);
+        numdisks++;  
+    }
+}
+
+static void 
+diskio_parse_config_disks(const char *token, char *cptr)
+{
+#if HAVE_FSTAB_H || HAVE_GETMNTENT || HAVE_STATFS
+    char path[STRMAX];
+
+
+    /*
+     * read disk path (eg, /1 or /usr) 
+     */
+    copy_nword(cptr, path, sizeof(path));
+
+    /* TODO: we may include regular expressions in future */
+    /*
+     * check if the disk already exists, if so then modify its
+     * parameters. if it does not exist then add it
+     */
+    add_device(path, 1);
+#endif /* HAVE_FSTAB_H || HAVE_GETMNTENT || HAVE_STATFS */
+}
+
+#endif /* linux */
 
 
 #ifdef solaris2
@@ -340,12 +563,12 @@ var_diskio(struct variable * vp,
         return (u_char *) & long_ret;
     case DISKIO_NREADX:
         *var_len = sizeof(struct counter64);
-        c64_ret.low = kio.nread & 0xffffffff;;
+        c64_ret.low = kio.nread & 0xffffffff;
         c64_ret.high = kio.nread >> 32;
         return (u_char *) & c64_ret;
     case DISKIO_NWRITTENX:
         *var_len = sizeof(struct counter64);
-        c64_ret.low = kio.nwritten & 0xffffffff;;
+        c64_ret.low = kio.nwritten & 0xffffffff;
         c64_ret.high = kio.nwritten >> 32;
         return (u_char *) & c64_ret;
     case DISKIO_READS:
@@ -477,6 +700,138 @@ var_diskio(struct variable * vp,
 }
 #endif                          /* bsdi */
 
+#if defined(openbsd4)
+static int      ndisk;
+static struct diskstats *dk;
+static char   **dkname;
+
+static int
+getstats(void)
+{
+    time_t          now;
+    int             mib[2];
+    char           *t, *tp,*te;
+    size_t          size, dkn_size;
+    int             i;
+
+    now = time(NULL);
+    if (cache_time + CACHE_TIMEOUT > now) {
+        return 1;
+    }
+    mib[0] = CTL_HW;
+    mib[1] = HW_DISKSTATS;
+    size = 0;
+    if (sysctl(mib, 2, NULL, &size, NULL, 0) < 0) {
+        perror("Can't get size of HW_DISKSTATS mib");
+        return 0;
+    }
+    if (ndisk != size / sizeof(*dk)) {
+        if (dk)
+            free(dk);
+        if (dkname) {
+            for (i = 0; i < ndisk; i++)
+                if (dkname[i])
+                    free(dkname[i]);
+            free(dkname);
+        }
+        ndisk = size / sizeof(*dk);
+        if (ndisk == 0)
+            return 0;
+        dkname = malloc(ndisk * sizeof(char *));
+        mib[0] = CTL_HW;
+        mib[1] = HW_DISKNAMES;
+        if (sysctl(mib, 2, NULL, &dkn_size, NULL, 0) < 0) {
+            perror("Can't get size of HW_DISKNAMES mib");
+            return 0;
+        }
+        te = tp = t = malloc(dkn_size);
+        if (sysctl(mib, 2, t, &dkn_size, NULL, 0) < 0) {
+            perror("Can't get size of HW_DISKNAMES mib");
+            return 0;
+        }
+        for (i = 0; i < ndisk; i++) {
+	    while (te-t < dkn_size && *te != ',') te++;
+	    *te++ = '\0';
+            dkname[i] = strdup(tp);
+            tp = te;
+        }
+        free(t);
+        dk = malloc(ndisk * sizeof(*dk));
+    }
+    mib[0] = CTL_HW;
+    mib[1] = HW_DISKSTATS;
+    if (sysctl(mib, 2, dk, &size, NULL, 0) < 0) {
+        perror("Can't get HW_DISKSTATS mib");
+        return 0;
+    }
+    cache_time = now;
+    return 1;
+}
+
+u_char         *
+var_diskio(struct variable * vp,
+           oid * name,
+           size_t * length,
+           int exact, size_t * var_len, WriteMethod ** write_method)
+{
+    static long     long_ret;
+    static long long        longlong_ret;
+    static struct counter64 c64_ret;
+    unsigned int    indx;
+
+    if (getstats() == 0)
+        return 0;
+
+    if (header_simple_table
+        (vp, name, length, exact, var_len, write_method, ndisk))
+        return NULL;
+
+    indx = (unsigned int) (name[*length - 1] - 1);
+    if (indx >= ndisk)
+        return NULL;
+
+    switch (vp->magic) {
+    case DISKIO_INDEX:
+        long_ret = (long) indx + 1;
+        return (u_char *) & long_ret;
+    case DISKIO_DEVICE:
+        *var_len = strlen(dkname[indx]);
+        return (u_char *) dkname[indx];
+    case DISKIO_NREAD:
+        long_ret = (unsigned long) (dk[indx].ds_rbytes) & 0xffffffff;
+        return (u_char *) & long_ret;
+    case DISKIO_NWRITTEN:
+        long_ret = (unsigned long) (dk[indx].ds_wbytes) & 0xffffffff;
+        return (u_char *) & long_ret;
+    case DISKIO_READS:
+        long_ret = (unsigned long) dk[indx].ds_rxfer & 0xffffffff;
+        return (u_char *) & long_ret;
+    case DISKIO_WRITES:
+        long_ret = (unsigned long) dk[indx].ds_wxfer & 0xffffffff;
+        return (u_char *) & long_ret;
+    case DISKIO_NREADX:
+        *var_len = sizeof(struct counter64);
+        c64_ret.low = dk[indx].ds_rbytes & 0xffffffff;
+        c64_ret.high = dk[indx].ds_rbytes >> 32;
+        return (u_char *) & c64_ret;
+    case DISKIO_NWRITTENX:
+        *var_len = sizeof(struct counter64);
+        c64_ret.low = dk[indx].ds_rbytes & 0xffffffff;
+        c64_ret.high = dk[indx].ds_rbytes >> 32;
+        return (u_char *) & c64_ret;
+    case DISKIO_BUSYTIME:
+        *var_len = sizeof(struct counter64);
+	longlong_ret = dk[indx].ds_time.tv_sec*1000000 + dk[indx].ds_time.tv_usec;
+        c64_ret.low = longlong_ret & 0xffffffff;
+        c64_ret.high = longlong_ret >> 32;
+	return (u_char *) &c64_ret;
+    default:
+        ERROR_MSG("diskio.c: don't know how to handle this request.");
+    }
+    return NULL;
+}
+#endif                          /* openbsd */
+
 #ifdef __NetBSD__
 #include <sys/sysctl.h>
 static int      ndisk;
@@ -559,6 +914,8 @@ var_diskio(struct variable * vp,
            int exact, size_t * var_len, WriteMethod ** write_method)
 {
     static long     long_ret;
+    static long long        longlong_ret;
+    static struct counter64 c64_ret;
     unsigned int    indx;
 
     if (getstats() == 0)
@@ -601,6 +958,20 @@ var_diskio(struct variable * vp,
 #endif
         return (u_char *) & long_ret;
 
+    case DISKIO_NREADX:
+        *var_len = sizeof(struct counter64);
+        longlong_ret = dk[indx].rbytes;
+        c64_ret.low = longlong_ret & 0xffffffff;
+        c64_ret.high = longlong_ret >> 32;
+        return (u_char *) & c64_ret;
+
+    case DISKIO_NWRITTENX:
+        *var_len = sizeof(struct counter64);
+        longlong_ret = dk[indx].wbytes;
+        c64_ret.low = longlong_ret & 0xffffffff;
+        c64_ret.high = longlong_ret >> 32;
+        return (u_char *) & c64_ret;
+
     case DISKIO_READS:
 #ifdef HW_DISKSTATS
      	long_ret = dk[indx].dk_rxfer;
@@ -621,6 +992,21 @@ var_diskio(struct variable * vp,
 #endif
         return (u_char *) & long_ret;
 
+    case DISKIO_BUSYTIME:
+#ifdef HW_IOSTATS
+        *var_len = sizeof(struct counter64);
+	if (dk[indx].type == IOSTAT_DISK) {
+	    longlong_ret = dk[indx].time_sec*1000 + dk[indx].time_usec/1000;
+	    c64_ret.low = longlong_ret & 0xffffffff;
+	    c64_ret.high = longlong_ret >> 32;
+	    return (u_char *) & c64_ret;
+	}
+	else
+	    return NULL;
+#else
+	return NULL;
+#endif
+
     default:
         ERROR_MSG("diskio.c: don't know how to handle this request.");
     }
@@ -628,12 +1014,12 @@ var_diskio(struct variable * vp,
 }
 #endif /* __NetBSD__ */
 
-#if defined(freebsd4) || defined(freebsd5)
+#if defined(HAVE_GETDEVS) || defined(HAVE_DEVSTAT_GETDEVS)
 
 /* disk load average patch by Rojer */
 
 struct dev_la {
-#if ( defined(freebsd5) && __FreeBSD_version >= 500107 )
+#if HAVE_DEVSTAT_GETDEVS
         struct bintime prev;
 #else
         struct timeval prev;
@@ -645,7 +1031,7 @@ struct dev_la {
 static struct dev_la *devloads = NULL;
 static int ndevs = 0;
 
-#if ! ( defined(freebsd5) && __FreeBSD_version >= 500107 )
+#if ! HAVE_DEVSTAT_GETDEVS
 double devla_timeval_diff(struct timeval *t1, struct timeval *t2) {
 
         double dt1 = (double) t1->tv_sec + (double) t1->tv_usec * 0.000001;
@@ -707,7 +1093,7 @@ void devla_getstats(unsigned int regno, void *dummy) {
                 }
 
         for (i=0; i<ndevs; i++) {
-#if defined(freebsd5) && __FreeBSD_version >= 500107
+#if HAVE_DEVSTAT_GETDEVS
                 busy_time = devstat_compute_etime(&lastat->dinfo->devices[i].busy_time, &devloads[i].prev);
 #else
                 busy_time = devla_timeval_diff(&devloads[i].prev, &lastat->dinfo->devices[i].busy_time);
@@ -797,28 +1183,28 @@ var_diskio(struct variable * vp,
 
     switch (vp->magic) {
     case DISKIO_INDEX:
-        long_ret = (long) indx + 1;;
+        long_ret = (long) indx + 1;
         return (u_char *) & long_ret;
     case DISKIO_DEVICE:
         *var_len = strlen(stat->dinfo->devices[indx].device_name);
         return (u_char *) stat->dinfo->devices[indx].device_name;
     case DISKIO_NREAD:
-#if defined(freebsd5) && __FreeBSD_version >= 500107
-        long_ret = (signed long) stat->dinfo->devices[indx].bytes[DEVSTAT_READ];
+#if HAVE_DEVSTAT_GETDEVS
+        long_ret = (signed long) stat->dinfo->devices[indx].bytes[DEVSTAT_READ] & 0xFFFFFFFF;
 #else
         long_ret = (signed long) stat->dinfo->devices[indx].bytes_read;
 #endif
         return (u_char *) & long_ret;
     case DISKIO_NWRITTEN:
-#if defined(freebsd5) && __FreeBSD_version >= 500107
-        long_ret = (signed long) stat->dinfo->devices[indx].bytes[DEVSTAT_WRITE];
+#if HAVE_DEVSTAT_GETDEVS
+        long_ret = (signed long) stat->dinfo->devices[indx].bytes[DEVSTAT_WRITE] & 0xFFFFFFFF;
 #else
         long_ret = (signed long) stat->dinfo->devices[indx].bytes_written;
 #endif
         return (u_char *) & long_ret;
     case DISKIO_NREADX:
         *var_len = sizeof(struct counter64);
-#if defined(freebsd5) && __FreeBSD_version >= 500107
+#if HAVE_DEVSTAT_GETDEVS
         longlong_ret = stat->dinfo->devices[indx].bytes[DEVSTAT_READ];
 #else
         longlong_ret = stat->dinfo->devices[indx].bytes_read;
@@ -828,7 +1214,7 @@ var_diskio(struct variable * vp,
         return (u_char *) & c64_ret;
     case DISKIO_NWRITTENX:
         *var_len = sizeof(struct counter64);
-#if defined(freebsd5) && __FreeBSD_version >= 500107
+#if HAVE_DEVSTAT_GETDEVS
         longlong_ret = stat->dinfo->devices[indx].bytes[DEVSTAT_WRITE];
 #else
         longlong_ret = stat->dinfo->devices[indx].bytes_written;
@@ -837,15 +1223,15 @@ var_diskio(struct variable * vp,
         c64_ret.high = longlong_ret >> 32;
         return (u_char *) & c64_ret;
     case DISKIO_READS:
-#if defined(freebsd5) && __FreeBSD_version >= 500107
-        long_ret = (signed long) stat->dinfo->devices[indx].operations[DEVSTAT_READ];
+#if HAVE_DEVSTAT_GETDEVS
+        long_ret = (signed long) stat->dinfo->devices[indx].operations[DEVSTAT_READ] & 0xFFFFFFFF;
 #else
         long_ret = (signed long) stat->dinfo->devices[indx].num_reads;
 #endif
         return (u_char *) & long_ret;
     case DISKIO_WRITES:
-#if defined(freebsd5) && __FreeBSD_version >= 500107
-        long_ret = (signed long) stat->dinfo->devices[indx].operations[DEVSTAT_WRITE];
+#if HAVE_DEVSTAT_GETDEVS
+        long_ret = (signed long) stat->dinfo->devices[indx].operations[DEVSTAT_WRITE] & 0xFFFFFFFF;
 #else
         long_ret = (signed long) stat->dinfo->devices[indx].num_writes;
 #endif
@@ -870,49 +1256,6 @@ var_diskio(struct variable * vp,
 
 #ifdef linux
 
-#define DISK_INCR 2
-
-typedef struct linux_diskio
-{
-    int major;
-    int  minor;
-    unsigned long  blocks;
-    char name[256];
-    unsigned long  rio;
-    unsigned long  rmerge;
-    unsigned long  rsect;
-    unsigned long  ruse;
-    unsigned long  wio;
-    unsigned long  wmerge;
-    unsigned long  wsect;
-    unsigned long  wuse;
-    unsigned long  running;
-    unsigned long  use;
-    unsigned long  aveq;
-} linux_diskio;
-
-/* disk load averages */
-typedef struct linux_diskio_la
-{
-    unsigned long use_prev;
-    double la1, la5, la15;
-} linux_diskio_la;
-
-typedef struct linux_diskio_header
-{
-    linux_diskio* indices;
-    int length;
-    int alloc;
-} linux_diskio_header;
-
-typedef struct linux_diskio_la_header
-{
-    linux_diskio_la * indices;   
-    int length;
-} linux_diskio_la_header;
-
-static linux_diskio_header head;
-static linux_diskio_la_header la_head;
 
 void devla_getstats(unsigned int regno, void * dummy) {
 
@@ -976,6 +1319,48 @@ int is_excluded(const char *name)
     return 0;
 }
 
+static int get_sysfs_stats(void)
+{
+    int i;
+    char buffer[1024];
+
+    head.length  = 0;
+
+    for(i = 0; i < numdisks; i++) {
+        FILE *f = fopen(disks[i].syspath, "r");
+        if ( f == NULL ) {
+            DEBUGMSGTL(("ucd-snmp/diskio", "Can't open %s, skipping", disks[i].syspath));
+            continue;
+        }
+
+        if (fgets(buffer, sizeof(buffer), f) == NULL) {
+            DEBUGMSGTL(("ucd-snmp/diskio", "Can't read %s, skipping", disks[i].syspath));
+            fclose(f);
+            continue;
+        }
+
+        linux_diskio* pTemp;
+        if (head.length == head.alloc) {
+            head.alloc += DISK_INCR;
+            head.indices = (linux_diskio *) realloc(head.indices, head.alloc*sizeof(linux_diskio));
+        }
+        pTemp = &head.indices[head.length];
+        pTemp->major = disks[i].major;
+        pTemp->minor = disks[i].minor;
+        strlcpy( pTemp->name, disks[i].shortname, sizeof(pTemp->name) - 1 );
+        if (sscanf (buffer, "%*[ \n\t]%lu%*[ \n\t]%lu%*[ \n\t]%lu%*[ \n\t]%lu%*[ \n\t]%lu%*[ \n\t]%lu%*[ \n\t]%lu%*[ \n\t]%lu%*[ \n\t]%lu%*[ \n\t]%lu%*[ \n\t]%lu\n",
+                &pTemp->rio, &pTemp->rmerge, &pTemp->rsect, &pTemp->ruse,
+                &pTemp->wio, &pTemp->wmerge, &pTemp->wsect, &pTemp->wuse,
+                &pTemp->running, &pTemp->use, &pTemp->aveq) != 11)
+            sscanf (buffer, "%*[ \n\t]%lu%*[ \n\t]%lu%*[ \n\t]%lu%*[ \n\t]%lu\n",
+                &pTemp->rio, &pTemp->rsect,
+                &pTemp->wio, &pTemp->wsect);
+        head.length++;
+        fclose(f);
+    }
+    return 0;
+}
+
 static int
 getstats(void)
 {
@@ -995,6 +1380,13 @@ getstats(void)
 
     memset(head.indices, 0, head.alloc*sizeof(linux_diskio));
 
+    if (numdisks>0) {
+        /* 'diskio' configuration is used - go through the whitelist only and
+         * read /sys/dev/block/xxx */
+        cache_time = now;
+        return get_sysfs_stats();
+    }
+    /* 'diskio' configuration is not used - report all devices */
     /* Is this a 2.6 kernel? */
     parts = fopen("/proc/diskstats", "r");
     if (parts) {
@@ -1045,7 +1437,7 @@ getstats(void)
 	    }
 	    pTemp = &head.indices[head.length];
 
-	    rc = fscanf (parts, "%d %d %lu %s %lu %lu %lu %lu %lu %lu %lu %lu %lu %lu %lu\n",
+	    rc = fscanf(parts, "%d %d %lu %255s %lu %lu %lu %lu %lu %lu %lu %lu %lu %lu %lu\n",
 		    &pTemp->major, &pTemp->minor, &pTemp->blocks, pTemp->name,
 		    &pTemp->rio, &pTemp->rmerge, &pTemp->rsect, &pTemp->ruse,
 		    &pTemp->wio, &pTemp->wmerge, &pTemp->wsect, &pTemp->wuse,
@@ -1111,14 +1503,28 @@ var_diskio(struct variable * vp,
       long_ret = head.indices[indx].wio & 0xffffffff;
       return (u_char *) & long_ret;
     case DISKIO_LA1:
-      long_ret = la_head.indices[indx].la1;
+      if (la_head.length > indx)
+          long_ret = la_head.indices[indx].la1;
+      else
+          long_ret = 0; /* we don't have the load yet */
       return (u_char *) & long_ret;
     case DISKIO_LA5:
-      long_ret = la_head.indices[indx].la5;
+      if (la_head.length > indx)
+          long_ret = la_head.indices[indx].la5;
+      else
+          long_ret = 0; /* we don't have the load yet */
       return (u_char *) & long_ret;
     case DISKIO_LA15:
-      long_ret = la_head.indices[indx].la15;
+      if (la_head.length > indx)
+          long_ret = la_head.indices[indx].la15;
+      else
+          long_ret = 0;
       return (u_char *) & long_ret;
+    case DISKIO_BUSYTIME:
+      *var_len = sizeof(struct counter64);
+      c64_ret.low = head.indices[indx].use*1000 & 0xffffffff;
+      c64_ret.high = head.indices[indx].use*1000 >> 32;
+      return (u_char *) & c64_ret;
     case DISKIO_NREADX:
       *var_len = sizeof(struct counter64);
       c64_ret.low = head.indices[indx].rsect * 512 & 0xffffffff;
@@ -1145,7 +1551,11 @@ var_diskio(struct variable * vp,
 #define kIDXBytesWritten	1
 #define kIDXNumReads		2
 #define kIDXNumWrites		3
-#define kIDXLast		3
+#define kIDXBytesReadXhi	4
+#define kIDXBytesReadXlo	5
+#define kIDXBytesWrittenXhi	6
+#define kIDXBytesWrittenXlo	7
+#define kIDXLast		7
 
 struct drivestats {
     char name[MAXDRIVENAME + 1];
@@ -1166,6 +1576,7 @@ collect_drive_stats(io_registry_entry_t driver, long *stats)
     CFDictionaryRef properties;
     CFDictionaryRef statistics;
     long            value;
+    SInt64          value64;
     kern_return_t   status;
     int             i;
 
@@ -1214,6 +1625,21 @@ collect_drive_stats(io_registry_entry_t driver, long *stats)
 						 CFSTR(kIOBlockStorageDriverStatisticsWritesKey)))) {
 	    CFNumberGetValue(number, kCFNumberSInt32Type, &value);
 	    stats[kIDXNumWrites] = value;
+	}
+	/* grab the 64 bit versions of the bytes read */
+	if ((number = (CFNumberRef)CFDictionaryGetValue(statistics,
+						 CFSTR(kIOBlockStorageDriverStatisticsBytesReadKey)))) {
+	    CFNumberGetValue(number, kCFNumberSInt64Type, &value64);
+	    stats[kIDXBytesReadXhi] = (long)(value64 >> 32);
+	    stats[kIDXBytesReadXlo] = (long)(value64 & 0xffffffff);	
+	}
+		
+	/* grab the 64 bit versions of the bytes written */
+	if ((number = (CFNumberRef)CFDictionaryGetValue(statistics,
+						 CFSTR(kIOBlockStorageDriverStatisticsBytesWrittenKey)))) {
+	    CFNumberGetValue(number, kCFNumberSInt64Type, &value64);
+	    stats[kIDXBytesWrittenXhi] = (long)(value64 >> 32);
+	    stats[kIDXBytesWrittenXlo] = (long)(value64 & 0xffffffff);	
 	}
     }
     /* we're done with the properties, release them */
@@ -1298,7 +1724,7 @@ getstats(void)
     if (status != KERN_SUCCESS) {
 	snmp_log(LOG_ERR, "diskio: couldn't match whole IOMedia devices\n");
 /*	fprintf(stderr,"Couldn't match whole IOMedia devices\n"); */
-	return(1);
+	return -1;
     }
 
     num_drives = 0;  /* NB: Incremented by handle_drive */
@@ -1309,7 +1735,7 @@ getstats(void)
     IOObjectRelease(drivelist);
 
     cache_time = now;
-    return (0);
+    return 0;
 }
 
 u_char         *
@@ -1319,6 +1745,7 @@ var_diskio(struct variable * vp,
            int exact, size_t * var_len, WriteMethod ** write_method)
 {
     static long     long_ret;
+    static struct   counter64 c64_ret;
     unsigned int    indx;
 
     if (getstats() == 1) {
@@ -1355,7 +1782,16 @@ var_diskio(struct variable * vp,
 	case DISKIO_WRITES:
 	    long_ret = (signed long) drivestat[indx].stats[kIDXNumWrites];
 	    return (u_char *) & long_ret;
-
+	case DISKIO_NREADX:
+	    *var_len = 8;
+	    c64_ret.low = (signed long) drivestat[indx].stats[kIDXBytesReadXlo];
+	    c64_ret.high = (signed long) drivestat[indx].stats[kIDXBytesReadXhi];
+	    return (u_char *) & c64_ret;
+	case DISKIO_NWRITTENX:
+	    *var_len = 8;
+	    c64_ret.low = (signed long) drivestat[indx].stats[kIDXBytesWrittenXlo];
+	    c64_ret.high = (signed long) drivestat[indx].stats[kIDXBytesWrittenXhi];
+	    return (u_char *) & c64_ret;
 	default:
 	    ERROR_MSG("diskio.c: don't know how to handle this request.");
     }
@@ -1447,12 +1883,12 @@ var_diskio(struct variable * vp,
         return (u_char *) & long_ret;
     case DISKIO_NREADX:
         *var_len = sizeof(struct counter64);
-        c64_ret.low = (ps_disk[indx].rblks * ps_disk[indx].bsize) & 0xffffffff;;
+        c64_ret.low = (ps_disk[indx].rblks * ps_disk[indx].bsize) & 0xffffffff;
         c64_ret.high = (ps_disk[indx].rblks * ps_disk[indx].bsize) >> 32;
         return (u_char *) & c64_ret;
     case DISKIO_NWRITTENX:
         *var_len = sizeof(struct counter64);
-        c64_ret.low = (ps_disk[indx].wblks * ps_disk[indx].bsize) & 0xffffffff;;
+        c64_ret.low = (ps_disk[indx].wblks * ps_disk[indx].bsize) & 0xffffffff;
         c64_ret.high = (ps_disk[indx].wblks * ps_disk[indx].bsize) >> 32;
         return (u_char *) & c64_ret;
 

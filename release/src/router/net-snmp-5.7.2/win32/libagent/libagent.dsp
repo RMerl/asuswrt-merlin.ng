@@ -177,6 +177,10 @@ SOURCE=..\..\agent\snmp_vars.c
 # End Source File
 # Begin Source File
 
+SOURCE=..\..\agent\helpers\snmp_get_statistic.c
+# End Source File
+# Begin Source File
+
 SOURCE=..\..\agent\helpers\stash_cache.c
 # End Source File
 # Begin Source File

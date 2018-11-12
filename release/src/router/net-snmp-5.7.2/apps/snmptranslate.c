@@ -70,9 +70,9 @@ usage(void)
     fprintf(stderr, "  -h\t\t\tdisplay this help message\n");
     fprintf(stderr, "  -V\t\t\tdisplay package version number\n");
     fprintf(stderr,
-            "  -m MIB[:...]\t\tload given list of MIBs (ALL loads everything)\n");
+            "  -m MIB[" ENV_SEPARATOR "...]\t\tload given list of MIBs (ALL loads everything)\n");
     fprintf(stderr,
-            "  -M DIR[:...]\t\tlook in given list of directories for MIBs\n");
+            "  -M DIR[" ENV_SEPARATOR "...]\t\tlook in given list of directories for MIBs\n");
     fprintf(stderr,
             "  -D[TOKEN[,...]]\tturn on debugging output for the specified TOKENs\n\t\t\t   (ALL gives extremely verbose debugging output)\n");
     fprintf(stderr, "  -w WIDTH\t\tset width of tree and detail output\n");
@@ -103,7 +103,67 @@ usage(void)
     fprintf(stderr,
             "  -L LOGOPTS\t\tToggle various defaults controlling logging:\n");
     snmp_log_options_usage("\t\t\t  ", stderr);
-    exit(1);
+}
+
+/**
+ * For every line on stdin, assume that it is either a plain OID
+ * or snmpwalk/snmpget output:
+ * mib-2.1.2.3.4
+ * -or-
+ * mib-2.1.2.3.4 = INTEGER: 5
+ *
+ * Replace the OID with its translation.
+ * If translation fails, just output the original string.
+ */
+#define MAX_LINE_TEMP   10240
+void
+process_stdin(void)
+{
+    char        buf[MAX_LINE_TEMP];
+    oid         name[MAX_OID_LEN];
+    size_t      name_length;
+
+    while ( NULL != fgets( buf, sizeof( buf ), stdin ) ) {
+        char delim = ' ';
+        char *nl = strchr(buf, '\n');
+        char *rest = strchr(buf, delim);
+
+        if (nl != NULL) {
+            *nl = '\0';
+        } /* else too-long line: output will look weird.  Too bad. */
+        if (rest == NULL) {
+            delim = '\t';
+            rest = strchr(buf, delim);
+        }
+        if (rest != NULL) {
+            *rest++ = '\0';
+        }
+        name_length = MAX_OID_LEN;
+        /*
+         * If it's not the whole line, only try to process buffer
+         * longer than 5 characters.
+         * The idea is to avoid false positives including, e.g.,
+         * a hex dump.
+         */
+        if ( !(rest && strlen( buf ) <= 5) &&
+              read_objid( buf, name, &name_length )) {
+            char objbuf[MAX_LINE_TEMP];
+            snprint_objid( objbuf, MAX_LINE_TEMP, name, name_length );
+            fputs( objbuf, stdout );
+        } else {
+            fputs( buf, stdout );
+        }
+        /*
+         * For future improvement: if delim == ' ' && rest && *rest == '='
+         * see if rest looks like snmpget/snmpwalk output
+         * and handle it in the context of the given node
+         */
+        if (rest) {
+            fputc( delim, stdout );
+            fputs( rest, stdout );
+        }
+        fputc( '\n', stdout );
+    }
 }
 
 int
@@ -117,15 +177,20 @@ main(int argc, char *argv[])
     int             print = 0;
     int             find_all = 0;
     int             width = 1000000;
+    int             exit_code = 1;
+    netsnmp_session dummy;
+
+    SOCK_STARTUP;
 
     /*
      * usage: snmptranslate name
      */
+    snmp_sess_init(&dummy);
     while ((arg = getopt(argc, argv, "Vhm:M:w:D:P:T:O:I:L:")) != EOF) {
         switch (arg) {
         case 'h':
             usage();
-            exit(1);
+            goto out;
 
         case 'm':
             setenv("MIBS", optarg, 1);
@@ -140,13 +205,14 @@ main(int argc, char *argv[])
         case 'V':
             fprintf(stderr, "NET-SNMP version: %s\n",
                     netsnmp_get_version());
-            exit(0);
+            exit_code = 0;
+            goto out;
             break;
         case 'w':
 	    width = atoi(optarg);
 	    if (width <= 0) {
 		fprintf(stderr, "Invalid width specification: %s\n", optarg);
-		exit (1);
+		goto out;
 	    }
 	    break;
 #ifndef NETSNMP_DISABLE_MIB_LOADING
@@ -155,7 +221,7 @@ main(int argc, char *argv[])
             if (cp != NULL) {
                 fprintf(stderr, "Unknown parser option to -P: %c.\n", *cp);
                 usage();
-                exit(1);
+                goto out;
             }
             break;
 #endif /* NETSNMP_DISABLE_MIB_LOADING */
@@ -164,7 +230,7 @@ main(int argc, char *argv[])
             if (cp != NULL) {
                 fprintf(stderr, "Unknown OID option to -O: %c.\n", *cp);
                 usage();
-                exit(1);
+                goto out;
             }
             break;
         case 'I':
@@ -172,7 +238,7 @@ main(int argc, char *argv[])
             if (cp != NULL) {
                 fprintf(stderr, "Unknown OID option to -I: %c.\n", *cp);
                 usage();
-                exit(1);
+                goto out;
             }
             break;
         case 'T':
@@ -218,25 +284,23 @@ main(int argc, char *argv[])
                     fprintf(stderr, "Invalid -T<lostpad> character: %c\n",
                             *cp);
                     usage();
-                    exit(1);
-                    break;
+                    goto out;
                 }
             }
             break;
         case 'L':
-            if (snmp_log_options(optarg, argc, argv) < 0) {
-                return (-1);
-            }
+            if (snmp_log_options(optarg, argc, argv) < 0)
+                goto out;
             break;
         default:
             fprintf(stderr, "invalid option: -%c\n", arg);
             usage();
-            exit(1);
-            break;
+            goto out;
         }
     }
 
-    init_snmp("snmpapp");
+    init_snmp(NETSNMP_APPLICATION_CONFIG_TYPE);
+
     if (optind < argc)
         current_name = argv[optind];
 
@@ -244,7 +308,7 @@ main(int argc, char *argv[])
         switch (print) {
         default:
             usage();
-            exit(1);
+            goto out;
 #ifndef NETSNMP_DISABLE_MIB_LOADING
         case 1:
             print_mib_tree(stdout, get_tree_head(), width);
@@ -257,10 +321,17 @@ main(int argc, char *argv[])
             break;
 #endif /* NETSNMP_DISABLE_MIB_LOADING */
         }
-        exit(0);
+        exit_code = 0;
+        goto out;
     }
 
     do {
+        if ( strcmp( current_name, "-" ) == 0  && ( print == 0 ) ) {
+            process_stdin();
+            current_name = argv[++optind];
+            continue;
+        }
+
         name_length = MAX_OID_LEN;
         if (netsnmp_ds_get_boolean(NETSNMP_DS_LIBRARY_ID, 
 				  NETSNMP_DS_LIB_RANDOM_ACCESS)) {
@@ -269,7 +340,8 @@ main(int argc, char *argv[])
 #endif /* NETSNMP_DISABLE_MIB_LOADING */
                 fprintf(stderr, "Unknown object identifier: %s\n",
                         current_name);
-                exit(2);
+                exit_code = 2;
+                goto out;
 #ifndef NETSNMP_DISABLE_MIB_LOADING
             }
 #endif /* NETSNMP_DISABLE_MIB_LOADING */
@@ -280,9 +352,9 @@ main(int argc, char *argv[])
                 fprintf(stderr,
                         "Unable to find a matching object identifier for \"%s\"\n",
                         current_name);
-                exit(1);
+                goto out;
             }
-            exit(0);
+            break;
         } else if (netsnmp_ds_get_boolean(NETSNMP_DS_LIBRARY_ID, 
 					  NETSNMP_DS_LIB_REGEX_ACCESS)) {
 #ifndef NETSNMP_DISABLE_MIB_LOADING
@@ -291,14 +363,15 @@ main(int argc, char *argv[])
                 fprintf(stderr,
                         "Unable to find a matching object identifier for \"%s\"\n",
                         current_name);
-                exit(1);
+                goto out;
 #ifndef NETSNMP_DISABLE_MIB_LOADING
             }
 #endif /* NETSNMP_DISABLE_MIB_LOADING */
         } else {
             if (!read_objid(current_name, name, &name_length)) {
                 snmp_perror(current_name);
-                exit(2);
+                exit_code = 2;
+                goto out;
             }
         }
 
@@ -312,7 +385,7 @@ main(int argc, char *argv[])
                 snmp_log(LOG_ERR,
                         "Unable to find a matching object identifier for \"%s\"\n",
                         current_name);
-                exit(1);
+                goto out;
 #ifndef NETSNMP_DISABLE_MIB_LOADING
             }
             print_mib_tree(stdout, tp, width);
@@ -330,7 +403,11 @@ main(int argc, char *argv[])
             printf("\n");
     } while (optind < argc);
 
-    return (0);
+    exit_code = 0;
+
+out:
+    SOCK_CLEANUP;
+    return exit_code;
 }
 
 /*

@@ -1,9 +1,9 @@
 This is a summary of the steps required to make a new release.  Do not
 attempt to run these manually - instead use the 'makerelease'
 application and makerelease.xml file.  Get 'makerelease' from the
-makerelease SVN repository:
+makerelease repository:
 
-  svn co https://makerelease.svn.sourceforge.net/svnroot/makerelease/trunk/makerelease
+  git clone https://github.com/hardaker/makerelease
   cd makerelease
   perl Makefile.PL
   make
@@ -67,7 +67,7 @@ STEP: 1.4: Release Parameter Information
 
   Floating point VERSION:  {VERSIONFLOAT}
 
-  SVN Branch URL:	   {BRANCHPATH}
+  Branch URL:		   {BRANCHPATH}
 
 STEP: 1.5: update
 
@@ -444,7 +444,7 @@ STEP: 5: Make the Release
 
   This is it!  After this point it's much harder to turn back.	If
   everything is ok until this point and you're ready to actually stamp the
-  release in SVN and make release files, these steps will do that for you.
+  release in git and make release files, these steps will do that for you.
 
   ===== Entering Step: 5 =====
 
@@ -775,7 +775,7 @@ Note:  This is the last stage that is handled by the "makerelease" script
      news item on the project home page - including the NEWS snippet
      of significant changes since the last release.
 
- 17) Update the following htdocs files (in the main SVN trunk):
+ 17) Update the following htdocs files (in the main git trunk):
          htdocs/download.html
          htdocs/dev/schedule.html
 
@@ -801,7 +801,7 @@ Note:  This is the last stage that is handled by the "makerelease" script
      Wikipedia entries.
 
  20) For a release on the most recent development line, update the
-     'htdocs/page-top.html' file (in the main SVN trunk) to reference
+     'htdocs/page-top.html' file (in the main git trunk) to reference
      the latest version.
 
      Update the following files with any changes:
@@ -818,9 +818,9 @@ Note:  This is the last stage that is handled by the "makerelease" script
  21) For a major new-feature release (i.e. 5.x), create the patches
      branch:
 
-        $ svn copy  /tags/Ext-5-x   /branches/V5-x-patches
+        $ git co -b  V5-x-patches
 
-     and update the SVN main trunk with a new version number:
+     and update the git main trunk with a new version number:
 
         $ local/Version-Munge.pl -v 5.(x+1).dev -M -P -C
 
@@ -852,7 +852,7 @@ Note:  This is the last stage that is handled by the "makerelease" script
      net-snmp.spec  snmpd-init.d  snmptrapd-init.d
 
      Note that any files removed should also be deleted from
-     SVN repository.
+     git repository.
 
 
 ***************************************************************************
@@ -863,7 +863,7 @@ CREATING BINARY DISTRIBUTIONS
      binaries again.  This ensures that everything (especially perl
      modules) are properly linked against the right libraries.
 
-  1) always build releases from a tarball, not from SVN.
+  1) always build releases from a tarball, not from git.
 
   2) Add mib modules that are common.  Basically, add:
 
@@ -990,7 +990,7 @@ Updating README, NEWS, and CHANGES files
 
 However, leaving some examples here for quick referral:
 
-  SVN commit messages that generate auto-NEWS and auto-CHANGES
+  git commit messages that generate auto-NEWS and auto-CHANGES
   extractions should be formatted like the following examples:
 
     NEWS: snmpd: I did something really cool to the agent

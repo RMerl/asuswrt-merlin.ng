@@ -5,3 +5,4 @@ void netsnmp_arch_udp_endpoint_entry_cleanup(netsnmp_udp_endpoint_entry *);
 int netsnmp_arch_udp_endpoint_entry_delete(netsnmp_udp_endpoint_entry *);
 int netsnmp_arch_udp_endpoint_entry_copy(netsnmp_udp_endpoint_entry *,
                                     netsnmp_udp_endpoint_entry *);
+int netsnmp_arch_udp_endpoint_delete(netsnmp_udp_endpoint_entry *entry);

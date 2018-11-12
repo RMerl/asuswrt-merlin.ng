@@ -6,6 +6,12 @@
 # Change 1..1 below to 1..last_test_to_print .
 # (It may become useful if the test is moved to ./t subdirectory.)
 
+use strict;
+use warnings;
+
+my %tests;
+my $loaded;
+
 BEGIN { $| = 1; 
 
 	%tests = ( 
@@ -52,6 +58,7 @@ BEGIN { $| = 1;
                   "NETSNMP_DS_LIB_DISABLE_PERSISTENT_LOAD" => 35,
                   "NETSNMP_DS_LIB_DISABLE_PERSISTENT_SAVE" => 36,
                   "NETSNMP_DS_LIB_APPEND_LOGFILES"         => 37,
+                  "NETSNMP_DS_LIB_CLIENT_ADDR_USES_PORT"   => 42,
                   "NETSNMP_DS_LIB_MIB_WARNINGS"            => 0,
                   "NETSNMP_DS_LIB_SECLEVEL"                => 1,
                   "NETSNMP_DS_LIB_SNMPVERSION"             => 2,
@@ -111,10 +118,10 @@ print ((netsnmp_ds_get_int(1, 1) == 42) ? "ok 5\n" : "not ok 5\n");
 print ((netsnmp_ds_get_int(1, 2) == 0) ? "ok 6\n" : "not ok 6\n"); 
 print ((NETSNMP_DS_LIB_REGEX_ACCESS == 15) ? "ok 7\n" : "not ok 7\n"); 
 print ((netsnmp_ds_get_int(NETSNMP_DS_APPLICATION_ID, 1) == 42) ? "ok 8\n" : "not ok 8\n"); 
-print ((netsnmp_ds_set_int(NETSNMP_DS_LIBRARY_ID, DS_LIB_DEFAULT_PORT, 9161) == 0) ? "ok 9\n" : "not ok 9\n"); 
-print ((netsnmp_ds_get_int(NETSNMP_DS_LIBRARY_ID, DS_LIB_DEFAULT_PORT) == 9161) ? "ok 10\n" : "not ok 10\n"); 
+print ((netsnmp_ds_set_int(NETSNMP_DS_LIBRARY_ID, NETSNMP_DS_LIB_DEFAULT_PORT, 9161) == 0) ? "ok 9\n" : "not ok 9\n");
+print ((netsnmp_ds_get_int(NETSNMP_DS_LIBRARY_ID, NETSNMP_DS_LIB_DEFAULT_PORT) == 9161) ? "ok 10\n" : "not ok 10\n");
 
-$c = 10;
+my $c = 10;
 foreach my $i (keys(%tests)) {
     my $str = "NetSNMP::default_store::$i";
     my $val = eval $str;

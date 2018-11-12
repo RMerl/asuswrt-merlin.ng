@@ -9,27 +9,14 @@
 
 #include <net-snmp/agent/net-snmp-agent-includes.h>
 #include <net-snmp/data_access/route.h>
+#include "route.h"
+#include "route_private.h"
 
 /**---------------------------------------------------------------------*/
 /*
  * local static prototypes
  */
 static void _access_route_entry_release(netsnmp_route_entry * entry, void *unused);
-
-/**---------------------------------------------------------------------*/
-/*
- * external per-architecture functions prototypes
- *
- * These shouldn't be called by the general public, so they aren't in
- * the header file.
- */
-extern int netsnmp_access_route_container_arch_load(netsnmp_container* container,
-                                                    u_int load_flags);
-extern int
-netsnmp_arch_route_create(netsnmp_route_entry *entry);
-extern int
-netsnmp_arch_route_delete(netsnmp_route_entry *entry);
-
 
 /**---------------------------------------------------------------------*/
 /*
@@ -83,6 +70,12 @@ netsnmp_access_route_container_free(netsnmp_container *container, u_int free_fla
         CONTAINER_CLEAR(container,
                         (netsnmp_container_obj_func*)_access_route_entry_release,
                         NULL);
+    }
+    else {
+        /*
+         * free the CONTAINER's sl_nodes, but not their data
+         */
+        CONTAINER_CLEAR(container, NULL, NULL);
     }
 
     if(! (free_flags & NETSNMP_ACCESS_ROUTE_FREE_KEEP_CONTAINER))

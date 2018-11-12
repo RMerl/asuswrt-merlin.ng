@@ -12,7 +12,7 @@ netsnmp_sctp_params sctp_params;
 static int      need_wrap_check = 1;
 
 void
-netsnmp_access_sctp_stats_init()
+netsnmp_access_sctp_stats_init(void)
 {
     netsnmp_access_sctp_stats_arch_init();
 }
@@ -140,7 +140,7 @@ netsnmp_access_sctp_stats_free(netsnmp_cache * cache, void *magic)
 }
 
 void
-netsnmp_access_sctp_params_init()
+netsnmp_access_sctp_params_init(void)
 {
     netsnmp_access_sctp_params_arch_init();
 }

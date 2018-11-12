@@ -437,8 +437,7 @@ write_mteObjectsID(int action,
          */
         tmpvar = StorageTmp->mteObjectsID;
         tmplen = StorageTmp->mteObjectsIDLen;
-        memdup((u_char **) & StorageTmp->mteObjectsID, var_val,
-               var_val_len);
+        StorageTmp->mteObjectsID = netsnmp_memdup(var_val, var_val_len);
         StorageTmp->mteObjectsIDLen = var_val_len / sizeof(oid);
         break;
 
@@ -802,7 +801,7 @@ write_mteObjectsEntryStatus(int action,
          * permanently.  Make sure that anything done here can't fail! 
          */
         if (StorageDel != NULL) {
-            StorageDel = 0;
+            StorageDel = NULL;
             /*
              * XXX: free it, its dead 
              */

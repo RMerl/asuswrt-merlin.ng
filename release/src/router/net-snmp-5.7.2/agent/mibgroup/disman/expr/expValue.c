@@ -230,7 +230,7 @@ _expParse_integer( char *start, char **end ) {
 
     n = atoi(start);
     for (cp=start; *cp; cp++)
-        if (!isdigit(*cp))
+        if (!isdigit(*cp & 0xFF))
             break;
     *end = cp;
     return n;
@@ -242,6 +242,9 @@ _expValue_evalOperator(netsnmp_variable_list *left,
                        netsnmp_variable_list *right) {
     int n;
 
+    if (left->val.integer == NULL || right->val.integer == NULL) {
+	return right;
+    }
     switch( *op->val.integer ) {
     case EXP_OPERATOR_ADD:
         n = *left->val.integer + *right->val.integer; break;
@@ -354,6 +357,7 @@ _expValue_evalExpr(  netsnmp_variable_list *expIdx,
                 /* Note position of failure in expression */
                 var->data = (void *)(cp1 - exprRaw);
                 snmp_free_var(exprAlDente);
+		*exprEnd = cp1;
                 return var;
             } else {
                 if (vtail)
@@ -372,7 +376,7 @@ _expValue_evalExpr(  netsnmp_variable_list *expIdx,
                                       suffix, suffix_len );
             if ( var && var->type == ASN_NULL ) {
                 /* Adjust position of failure */
-                var->data = (void *)(cp1 - exprRaw + (int)var->data);
+                var->data = (void *)(cp1 - exprRaw + (uintptr_t)var->data);
                 return var;
             } else if (*cp2 != ')') {
                 snmp_free_var(exprAlDente);
@@ -381,6 +385,7 @@ _expValue_evalExpr(  netsnmp_variable_list *expIdx,
                                             EXPERRCODE_PARENTHESIS );
                 var->type = ASN_NULL;
                 var->data = (void *)(cp2 - exprRaw);
+		*exprEnd = cp1;
                 return var;
             } else {
                 if (vtail)
@@ -401,7 +406,6 @@ _expValue_evalExpr(  netsnmp_variable_list *expIdx,
              */
             *exprEnd = cp1;
             var = _expValue_evalExpr2( exprAlDente );
-            snmp_free_var(exprAlDente);
             return var;
 
             /* === Constants === */
@@ -501,6 +505,7 @@ DIGIT:
                                             EXPERRCODE_SYNTAX );
                 var->type = ASN_NULL;
                 var->data = (void *)(cp1 - exprRaw);
+		*exprEnd = cp1;
                 return var;
             }
             n = ops[ *cp1 & 0xFF ];
@@ -531,6 +536,7 @@ DIGIT:
                                             EXPERRCODE_SYNTAX );
                 var->type = ASN_NULL;
                 var->data = (void *)(cp1 - exprRaw);
+		*exprEnd = cp1;
                 return var;
             }
             if ( *(cp1+1) == '=' )
@@ -565,7 +571,7 @@ DIGIT:
             break;
 
         default:
-            if (isalpha( *cp1 )) {
+            if (isalpha( *cp1 & 0xFF )) {
                 /*
                  * Unrecognised function call ?
                  */
@@ -574,9 +580,10 @@ DIGIT:
                                             EXPERRCODE_FUNCTION );
                 var->type = ASN_NULL;
                 var->data = (void *)(cp1 - exprRaw);
+		*exprEnd = cp1;
                 return var;
             }
-            else if (!isspace( *cp1 )) {
+            else if (!isspace( *cp1 & 0xFF )) {
                 /*
                  * Unrecognised operator ?
                  */
@@ -585,6 +592,7 @@ DIGIT:
                                             EXPERRCODE_OPERATOR );
                 var->type = ASN_NULL;
                 var->data = (void *)(cp1 - exprRaw);
+		*exprEnd = cp1;
                 return var;
             }
             cp1++;
@@ -722,13 +730,19 @@ expValue_evaluateExpression( struct expExpression *exp,
     char exprRaw[     EXP_STR3_LEN+1 ];
     netsnmp_variable_list *var;
     netsnmp_variable_list owner_var, name_var, param_var;
-    long n;
+    int n;
     char *cp;
 
     if (!exp)
         return NULL;
 
     /*
+     * Gather data for evaluating expressions with no regular delta-value
+     * sampling, i.e. expressions with sampling/delta interval of 0
+     */
+    expExpression_getData(0, exp);
+
+    /* 
      * Set up a varbind list containing the various index values
      *   (including a placeholder for expObjectIndex).
      *
@@ -743,7 +757,7 @@ expValue_evaluateExpression( struct expExpression *exp,
                   (u_char*)exp->expName,  strlen(exp->expName));
     n = 99; /* dummy value */
     snmp_set_var_typed_value( &param_var, ASN_INTEGER,
-                             (u_char*)&n, sizeof(long));
+                             (u_char*)&n, sizeof(n));
     owner_var.next_variable = &name_var;
     name_var.next_variable  = &param_var;
 
@@ -762,7 +776,7 @@ expValue_evaluateExpression( struct expExpression *exp,
          * When we had finished, there was a lot
          * of bricks^Wcharacters left over....
          */
-        _expValue_setError( exp, EXPERRCODE_SYNTAX, suffix, suffix_len, NULL );
+        _expValue_setError( exp, EXPERRCODE_SYNTAX, suffix, suffix_len, var );
         return NULL;
     }
     if (!var) {
@@ -799,10 +813,11 @@ _expValue_setError( struct expExpression *exp, int reason,
         return;
     exp->expErrorCount++;
  /* exp->expErrorTime  = NOW; */
-    exp->expErrorIndex = ( var && var->data ? (int)var->data : 0 );
+    exp->expErrorIndex = ( var && var->data ? (uintptr_t)var->data : 0 );
     exp->expErrorCode  = reason;
     memset( exp->expErrorInstance, 0, sizeof(exp->expErrorInstance));
     memcpy( exp->expErrorInstance, suffix, suffix_len * sizeof(oid));
     exp->expErrorInst_len = suffix_len;
+    if (var) var->data = NULL;
     snmp_free_var( var );
 }

@@ -49,6 +49,10 @@
 #include <net-snmp/library/snmpTCPBaseDomain.h>
 #include <net-snmp/library/tools.h>
 
+#ifndef NETSNMP_NO_SYSTEMD
+#include <net-snmp/library/sd-daemon.h>
+#endif
+
 #include "inet_ntop.h"
 
 oid netsnmp_TCPIPv6Domain[] = { TRANSPORT_DOMAIN_TCP_IPV6 };
@@ -60,7 +64,7 @@ static netsnmp_tdomain tcp6Domain;
  */
 
 static char *
-netsnmp_tcp6_fmtaddr(netsnmp_transport *t, void *data, int len)
+netsnmp_tcp6_fmtaddr(netsnmp_transport *t, const void *data, int len)
 {
     return netsnmp_ipv6_fmtaddr("TCP/IPv6", t, data, len);
 }
@@ -83,7 +87,7 @@ netsnmp_tcp6_accept(netsnmp_transport *t)
     }
 
     if (t != NULL && t->sock >= 0) {
-        newsock = accept(t->sock, (struct sockaddr *) farend, &farendlen);
+        newsock = (int) accept(t->sock, (struct sockaddr *) farend, &farendlen);
 
         if (newsock < 0) {
             DEBUGMSGTL(("netsnmp_tcp6","accept failed rc %d errno %d \"%s\"\n",
@@ -136,10 +140,11 @@ netsnmp_tcp6_accept(netsnmp_transport *t)
  */
 
 netsnmp_transport *
-netsnmp_tcp6_transport(struct sockaddr_in6 *addr, int local)
+netsnmp_tcp6_transport(const struct sockaddr_in6 *addr, int local)
 {
     netsnmp_transport *t = NULL;
     int             rc = 0;
+    int             socket_initialized = 0;
 
 #ifdef NETSNMP_NO_LISTEN_SUPPORT
     if (local)
@@ -156,8 +161,8 @@ netsnmp_tcp6_transport(struct sockaddr_in6 *addr, int local)
     }
 
     DEBUGIF("netsnmp_tcp6") {
-        char *str = netsnmp_tcp6_fmtaddr(NULL, (void *)addr,
-                                   sizeof(struct sockaddr_in6));
+        char *str = netsnmp_tcp6_fmtaddr(NULL, addr,
+                                         sizeof(struct sockaddr_in6));
         DEBUGMSGTL(("netsnmp_tcp6", "open %s %s\n", local ? "local" : "remote",
                     str));
         free(str);
@@ -174,7 +179,19 @@ netsnmp_tcp6_transport(struct sockaddr_in6 *addr, int local)
     t->domain = netsnmp_TCPIPv6Domain;
     t->domain_length = sizeof(netsnmp_TCPIPv6Domain) / sizeof(oid);
 
-    t->sock = socket(PF_INET6, SOCK_STREAM, 0);
+#ifndef NETSNMP_NO_SYSTEMD
+    /*
+     * Maybe the socket was already provided by systemd...
+     */
+    if (local) {
+        t->sock = netsnmp_sd_find_inet_socket(PF_INET6, SOCK_STREAM, 1,
+                ntohs(addr->sin6_port));
+        if (t->sock >= 0)
+            socket_initialized = 1;
+    }
+#endif
+    if (!socket_initialized)
+        t->sock = (int) socket(PF_INET6, SOCK_STREAM, 0);
     if (t->sock < 0) {
         netsnmp_transport_free(t);
         return NULL;
@@ -203,16 +220,13 @@ netsnmp_tcp6_transport(struct sockaddr_in6 *addr, int local)
 #endif
 
         t->flags |= NETSNMP_TRANSPORT_FLAG_LISTEN;
-        t->local = (unsigned char*)malloc(18);
-        if (t->local == NULL) {
+        t->local_length = sizeof(*addr);
+        t->local = netsnmp_memdup(addr, sizeof(*addr));
+        if (!t->local) {
             netsnmp_socketbase_close(t);
             netsnmp_transport_free(t);
             return NULL;
         }
-        memcpy(t->local, addr->sin6_addr.s6_addr, 16);
-        t->local[16] = (addr->sin6_port & 0xff00) >> 8;
-        t->local[17] = (addr->sin6_port & 0x00ff) >> 0;
-        t->local_length = 18;
 
         /*
          * We should set SO_REUSEADDR too.  
@@ -220,12 +234,13 @@ netsnmp_tcp6_transport(struct sockaddr_in6 *addr, int local)
 
         setsockopt(t->sock, SOL_SOCKET, SO_REUSEADDR, (void *)&opt, sizeof(opt));
 
-        rc = bind(t->sock, (struct sockaddr *) addr,
-		  sizeof(struct sockaddr_in6));
-        if (rc != 0) {
-            netsnmp_socketbase_close(t);
-            netsnmp_transport_free(t);
-            return NULL;
+        if (!socket_initialized) {
+            rc = bind(t->sock, (const struct sockaddr *)addr, sizeof(*addr));
+            if (rc != 0) {
+                netsnmp_socketbase_close(t);
+                netsnmp_transport_free(t);
+                return NULL;
+            }
         }
 
         /*
@@ -242,11 +257,13 @@ netsnmp_tcp6_transport(struct sockaddr_in6 *addr, int local)
          * Now sit here and wait for connections to arrive.  
          */
 
-        rc = listen(t->sock, NETSNMP_STREAM_QUEUE_LEN);
-        if (rc != 0) {
-            netsnmp_socketbase_close(t);
-            netsnmp_transport_free(t);
-            return NULL;
+        if (!socket_initialized) {
+            rc = listen(t->sock, NETSNMP_STREAM_QUEUE_LEN);
+            if (rc != 0) {
+                netsnmp_socketbase_close(t);
+                netsnmp_transport_free(t);
+                return NULL;
+            }
         }
         
         /*
@@ -256,16 +273,13 @@ netsnmp_tcp6_transport(struct sockaddr_in6 *addr, int local)
         return NULL;
 #endif /* NETSNMP_NO_LISTEN_SUPPORT */
     } else {
-        t->remote = (unsigned char*)malloc(18);
-        if (t->remote == NULL) {
+        t->remote_length = sizeof(*addr);
+        t->remote = netsnmp_memdup(addr, sizeof(*addr));
+        if (!t->remote) {
             netsnmp_socketbase_close(t);
             netsnmp_transport_free(t);
             return NULL;
         }
-        memcpy(t->remote, addr->sin6_addr.s6_addr, 16);
-        t->remote[16] = (addr->sin6_port & 0xff00) >> 8;
-        t->remote[17] = (addr->sin6_port & 0x00ff) >> 0;
-        t->remote_length = 18;
 
         /*
          * This is a client-type session, so attempt to connect to the far
@@ -274,11 +288,8 @@ netsnmp_tcp6_transport(struct sockaddr_in6 *addr, int local)
          * had completed.  So this can block.
          */
 
-        rc = connect(t->sock, (struct sockaddr *) addr,
-                     sizeof(struct sockaddr_in6));
-
+        rc = connect(t->sock, (const struct sockaddr *)addr, sizeof(*addr));
         DEBUGMSGTL(("netsnmp_tcp6", "connect returns %d\n", rc));
-
         if (rc < 0) {
             netsnmp_socketbase_close(t);
             netsnmp_transport_free(t);
@@ -299,21 +310,16 @@ netsnmp_tcp6_transport(struct sockaddr_in6 *addr, int local)
      * is equal to the maximum legal size of an SNMP message).  
      */
 
-    t->msgMaxSize = 0x7fffffff;
+    t->msgMaxSize = SNMP_MAX_PACKET_LEN;
     t->f_recv     = netsnmp_tcpbase_recv;
     t->f_send     = netsnmp_tcpbase_send;
     t->f_close    = netsnmp_socketbase_close;
     t->f_accept   = netsnmp_tcp6_accept;
     t->f_fmtaddr  = netsnmp_tcp6_fmtaddr;
+    t->f_get_taddr = netsnmp_ipv6_get_taddr;
 
     return t;
 }
-
-/*
- * Not extern but still defined in snmpUDPIPv6Domain.c
- */
-extern int
-netsnmp_sockaddr_in6_2(struct sockaddr_in6*, const char*, const char*);
 
 netsnmp_transport *
 netsnmp_tcp6_create_tstring(const char *str, int local,
@@ -339,17 +345,12 @@ netsnmp_tcp6_create_tstring(const char *str, int local,
  */
 
 netsnmp_transport *
-netsnmp_tcp6_create_ostring(const u_char * o, size_t o_len, int local)
+netsnmp_tcp6_create_ostring(const void *o, size_t o_len, int local)
 {
-    struct sockaddr_in6 addr;
+    struct sockaddr_in6 sin6;
 
-    if (o_len == 18) {
-        memset((u_char *) & addr, 0, sizeof(struct sockaddr_in6));
-        addr.sin6_family = AF_INET6;
-        memcpy((u_char *) & (addr.sin6_addr.s6_addr), o, 16);
-        addr.sin6_port = (o[16] << 8) + o[17];
-        return netsnmp_tcp6_transport(&addr, local);
-    }
+    if (netsnmp_ipv6_ostring_to_sockaddr(&sin6, o, o_len))
+        return netsnmp_tcp6_transport(&sin6, local);
     return NULL;
 }
 

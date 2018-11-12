@@ -215,6 +215,8 @@ config_error(disman/mteTriggerTable depends on the Callback transport)
 #define MTE_FAILURE_SAMPLEOVERRUN		-6
 
 
+     extern struct header_complex_index *mteTriggerTableStorage;
+
 /*
  * function prototypes 
  */

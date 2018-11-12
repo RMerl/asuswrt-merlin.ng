@@ -1,3 +1,9 @@
+/*
+ * Portions of this file are copyrighted by:
+ * Copyright (c) 2016 VMware, Inc. All rights reserved.
+ * Use is subject to license terms specified in the COPYING file
+ * distributed with the Net-SNMP package.
+ */
 #include <net-snmp/net-snmp-config.h>
 #include <net-snmp/net-snmp-features.h>
 
@@ -67,6 +73,9 @@
 #ifdef NETSNMP_TRANSPORT_TCPIPV6_DOMAIN
 #include <net-snmp/library/snmpTCPIPv6Domain.h>
 #endif
+#ifdef NETSNMP_TRANSPORT_UDPSHARED_DOMAIN
+#include <net-snmp/library/snmpUDPsharedDomain.h>
+#endif
 #include <net-snmp/library/snmp_api.h>
 #include <net-snmp/library/snmp_service.h>
 #include <net-snmp/library/read_config.h>
@@ -76,6 +85,7 @@ netsnmp_feature_child_of(transport_all, libnetsnmp)
 netsnmp_feature_child_of(tdomain_support, transport_all)
 netsnmp_feature_child_of(tdomain_transport_oid, transport_all)
 netsnmp_feature_child_of(sockaddr_size, transport_all)
+netsnmp_feature_child_of(transport_cache, transport_all)
 
 /*
  * Our list of supported transport domains.  
@@ -100,11 +110,17 @@ size_t          netsnmpDDPDomain_len = OID_LENGTH(netsnmpDDPDomain);
 oid             netsnmpIPXDomain[] = { 1, 3, 6, 1, 6, 1, 5 };
 size_t          netsnmpIPXDomain_len = OID_LENGTH(netsnmpIPXDomain);
 
+static netsnmp_container *_container = NULL;
 
 
 static void     netsnmp_tdomain_dump(void);
 
 
+#if !defined(NETSNMP_FEATURE_REMOVE_FILTER_SOURCE)
+static netsnmp_container * filtered = NULL;
+
+void netsnmp_transport_parse_filter(const char *word, char *cptr);
+#endif /* NETSNMP_FEATURE_REMOVE_FILTER_SOURCE */
 
 void
 init_snmp_transport(void)
@@ -113,13 +129,30 @@ init_snmp_transport(void)
                                "snmp", "dontLoadHostConfig",
                                NETSNMP_DS_LIBRARY_ID,
                                NETSNMP_DS_LIB_DONT_LOAD_HOST_FILES);
+#ifndef NETSNMP_FEATURE_REMOVE_FILTER_SOURCE
+    register_app_config_handler("sourceFilterType",
+                                netsnmp_transport_parse_filterType,
+                                NULL, "none|whitelist|blacklist");
+    register_app_config_handler("sourceFilterAddress",
+                                netsnmp_transport_parse_filter,
+                                netsnmp_transport_filter_cleanup,
+                                "host");
+#endif /* NETSNMP_FEATURE_REMOVE_FILTER_SOURCE */
+}
+
+void
+shutdown_snmp_transport(void)
+{
+#ifndef NETSNMP_FEATURE_REMOVE_FILTER_SOURCE
+    netsnmp_transport_filter_cleanup();
+#endif
 }
 
 /*
  * Make a deep copy of an netsnmp_transport.  
  */
 netsnmp_transport *
-netsnmp_transport_copy(netsnmp_transport *t)
+netsnmp_transport_copy(const netsnmp_transport *t)
 {
     netsnmp_transport *n = NULL;
 
@@ -141,39 +174,36 @@ netsnmp_transport_copy(netsnmp_transport *t)
     }
 
     if (t->local != NULL) {
-        n->local = (u_char *) malloc(t->local_length);
+        n->local = netsnmp_memdup(t->local, t->local_length);
         if (n->local == NULL) {
             netsnmp_transport_free(n);
             return NULL;
         }
         n->local_length = t->local_length;
-        memcpy(n->local, t->local, t->local_length);
     } else {
         n->local = NULL;
         n->local_length = 0;
     }
 
     if (t->remote != NULL) {
-        n->remote = (u_char *) malloc(t->remote_length);
+        n->remote = netsnmp_memdup(t->remote, t->remote_length);
         if (n->remote == NULL) {
             netsnmp_transport_free(n);
             return NULL;
         }
         n->remote_length = t->remote_length;
-        memcpy(n->remote, t->remote, t->remote_length);
     } else {
         n->remote = NULL;
         n->remote_length = 0;
     }
 
     if (t->data != NULL && t->data_length > 0) {
-        n->data = malloc(t->data_length);
+        n->data = netsnmp_memdup(t->data, t->data_length);
         if (n->data == NULL) {
             netsnmp_transport_free(n);
             return NULL;
         }
         n->data_length = t->data_length;
-        memcpy(n->data, t->data, t->data_length);
     } else {
         n->data = NULL;
         n->data_length = 0;
@@ -206,6 +236,12 @@ netsnmp_transport_free(netsnmp_transport *t)
     if (NULL == t)
         return;
 
+#ifndef FEATURE_REMOVE_TRANSPORT_CACHE
+    /** don't free a transport that is currently shared */
+    if (netsnmp_transport_cache_remove(t) == 1)
+        return;
+#endif
+
     SNMP_FREE(t->local);
     SNMP_FREE(t->remote);
     SNMP_FREE(t->data);
@@ -222,7 +258,7 @@ netsnmp_transport_free(netsnmp_transport *t)
  * caller is responsible for freeing the allocated string.
  */
 char *
-netsnmp_transport_peer_string(netsnmp_transport *t, void *data, int len)
+netsnmp_transport_peer_string(netsnmp_transport *t, const void *data, int len)
 {
     char           *str;
 
@@ -237,9 +273,112 @@ netsnmp_transport_peer_string(netsnmp_transport *t, void *data, int len)
     return str;
 }
 
+#if !defined(NETSNMP_FEATURE_REMOVE_FILTER_SOURCE)
+static int _transport_filter_init(void)
+{
+    if (filtered)
+        return 0;
+
+    filtered = netsnmp_container_find("transport_filter:cstring");
+    if (NULL == filtered) {
+        NETSNMP_LOGONCE((LOG_WARNING,
+                         "couldn't allocate container for transport_filter list\n"));
+        return -1;
+    }
+    filtered->container_name = strdup("transport_filter list");
+
+    return 0;
+}
+
+int
+netsnmp_transport_filter_add(const char *addrtxt)
+{
+    char *tmp;
+
+    /*
+     * create the container, if needed
+     */
+    if (!filtered && _transport_filter_init()) {
+        snmp_log(LOG_ERR,"netsnmp_transport_filter_add %s failed\n",
+                 addrtxt);
+        return (-1);
+    }
+    tmp = strdup(addrtxt);
+    if (NULL == tmp) {
+        snmp_log(LOG_ERR,"netsnmp_transport_filter_add strdup failed\n");
+        return(-1);
+    }
+    return CONTAINER_INSERT(filtered, tmp);
+}
+
+int
+netsnmp_transport_filter_remove(const char *addrtxt)
+{
+    /*
+     * create the container, if needed
+     */
+    if (NULL == filtered)
+        return -1;
+    return CONTAINER_REMOVE(filtered, addrtxt);
+}
+
+/*
+ * netsnmp_transport_filter_check
+ *
+ * returns 1 if the specified address string is in the filter list
+ */
+int
+netsnmp_transport_filter_check(const char *addrtxt)
+{
+    char *addr;
+    if (NULL == filtered)
+        return 0;
+    addr = CONTAINER_FIND(filtered, addrtxt);
+    return addr ? 1 : 0;
+}
+
+void
+netsnmp_transport_parse_filterType(const char *word, char *cptr)
+{
+    int type = 42;
+    if (strcmp(cptr,"whitelist") == 0)
+        type = 1;
+    else if (strcmp(cptr,"blacklist") == 0)
+        type = -1;
+    else if (strcmp(cptr,"none") == 0)
+        type = 0;
+    else
+        netsnmp_config_error("unknown source filter type: %s", cptr);
+
+    if (type != 42) {
+        DEBUGMSGTL(("transport:filterType", "set to %d\n", type));
+        netsnmp_ds_set_int(NETSNMP_DS_LIBRARY_ID,
+                           NETSNMP_DS_LIB_FILTER_TYPE, type);
+    }
+}
+
+void
+netsnmp_transport_parse_filter(const char *word, char *cptr)
+{
+    if (netsnmp_transport_filter_add(cptr))
+        netsnmp_config_error("cannot create source filter: %s", cptr);
+}
+
+void
+netsnmp_transport_filter_cleanup(void)
+{
+    if (NULL == filtered)
+        return;
+    CONTAINER_CLEAR(filtered, filtered->free_item, NULL);
+    CONTAINER_FREE(filtered);
+    filtered = NULL;
+}
+#endif /* NETSNMP_FEATURE_REMOVE_FILTER_SOURCE */
+
+
 #ifndef NETSNMP_FEATURE_REMOVE_SOCKADDR_SIZE
 int
-netsnmp_sockaddr_size(struct sockaddr *sa)
+netsnmp_sockaddr_size(const struct sockaddr *sa)
 {
     if (NULL == sa)
         return 0;
@@ -260,7 +399,7 @@ netsnmp_sockaddr_size(struct sockaddr *sa)
 #endif /* NETSNMP_FEATURE_REMOVE_SOCKADDR_SIZE */
     
 int
-netsnmp_transport_send(netsnmp_transport *t, void *packet, int length,
+netsnmp_transport_send(netsnmp_transport *t, const void *packet, int length,
                        void **opaque, int *olength)
 {
     int dumpPacket, debugLength;
@@ -358,6 +497,8 @@ netsnmp_tdomain_init(void)
 #include "transports/snmp_transport_inits.h"
 
     netsnmp_tdomain_dump();
+
+
 }
 
 void
@@ -488,22 +629,32 @@ netsnmp_is_fqdn(const char *thename)
  * it.
  */
 netsnmp_transport *
-netsnmp_tdomain_transport_full(const char *application,
-                               const char *str, int local,
-                               const char *default_domain,
-                               const char *default_target)
+netsnmp_tdomain_transport_tspec(netsnmp_tdomain_spec *tspec)
 {
+    const char *application, *str, *default_domain, *default_target, *source;
+    int local;
     netsnmp_tdomain    *match = NULL;
     const char         *addr = NULL;
     const char * const *spec = NULL;
     int                 any_found = 0;
     char buf[SNMP_MAXPATH];
+    char **lspec = NULL;
+    char *tokenized_domain = NULL;
+
+    application = tspec->application;
+    str = tspec->target;
+    local = tspec->flags & NETSNMP_TSPEC_LOCAL;
+    default_domain = tspec->default_domain;
+    default_target = tspec->default_target;
+    source = tspec->source;
+    /** transport_config = tspec->transport_config; not used yet */
 
     DEBUGMSGTL(("tdomain",
-                "tdomain_transport_full(\"%s\", \"%s\", %d, \"%s\", \"%s\")\n",
+                "tdomain_transport_spec(\"%s\", \"%s\", %d, \"%s\", \"%s\", \"%s\")\n",
                 application, str ? str : "[NIL]", local,
                 default_domain ? default_domain : "[NIL]",
-                default_target ? default_target : "[NIL]"));
+                default_target ? default_target : "[NIL]",
+                source ? source : "[NIL]"));
 
     /* see if we can load a host-name specific set of conf files */
     if (!netsnmp_ds_get_boolean(NETSNMP_DS_LIBRARY_ID,
@@ -587,7 +738,22 @@ netsnmp_tdomain_transport_full(const char *application,
             DEBUGMSGTL(("tdomain",
                         "Use user specified default domain \"%s\"\n",
                         default_domain));
-            match = find_tdomain(default_domain);
+            if (!strchr(default_domain, ','))
+                match = find_tdomain(default_domain);
+            else {
+                int commas = 0;
+                const char *cp = default_domain;
+                char *ptr = NULL;
+                tokenized_domain = strdup(default_domain);
+
+                while (*++cp) if (*cp == ',') commas++;
+                lspec = calloc(commas+2, sizeof(char *));
+                commas = 1;
+                lspec[0] = strtok_r(tokenized_domain, ",", &ptr);
+                while ((lspec[commas++] = strtok_r(NULL, ",", &ptr)))
+                    ;
+                spec = (const char * const *)lspec;
+            }
         } else {
             spec = netsnmp_lookup_default_domains(application);
             if (spec == NULL) {
@@ -627,15 +793,34 @@ netsnmp_tdomain_transport_full(const char *application,
                         "default address \"%s\"\n",
                         match->prefix[0], addr ? addr : "[NIL]",
                         addr2 ? addr2 : "[NIL]"));
-            if (match->f_create_from_tstring) {
-                NETSNMP_LOGONCE((LOG_WARNING,
-                                 "transport domain %s uses deprecated f_create_from_tstring\n",
-                                 match->prefix[0]));
-                t = match->f_create_from_tstring(addr, local);
+            if (match->f_create_from_tspec) {
+                netsnmp_tdomain_spec tspec_tmp;
+                memcpy(&tspec_tmp, tspec, sizeof(tspec_tmp));
+                /** if we didn't have a default target but looked one up,
+                 *  copy the spec and use the found default. */
+                if ((default_target == NULL) && (addr2 != NULL))
+                    tspec_tmp.default_target = addr2;
+                if (addr != tspec_tmp.target)
+                    tspec_tmp.target = addr;
+                t = match->f_create_from_tspec(&tspec_tmp);
             }
-            else
-                t = match->f_create_from_tstring_new(addr, local, addr2);
+            else {
+#if 0 /** remove warning until all transports implement tspec */
+                NETSNMP_LOGONCE((LOG_WARNING,
+                                 "transport domain %s uses deprecated f_create function\n",
+                                 match->prefix[0]));
+#endif
+                if (match->f_create_from_tstring) {
+                    t = match->f_create_from_tstring(addr, local);
+                }
+                else
+                    t = match->f_create_from_tstring_new(addr, local, addr2);
+            }
             if (t) {
+                if (lspec) {
+                    free(tokenized_domain);
+                    free(lspec);
+                }
                 return t;
             }
         }
@@ -647,18 +832,48 @@ netsnmp_tdomain_transport_full(const char *application,
     }
     if (!any_found)
         snmp_log(LOG_ERR, "No support for any checked transport domain\n");
+    if (lspec) {
+        free(tokenized_domain);
+        free(lspec);
+    }
     return NULL;
 }
 
+netsnmp_transport *
+netsnmp_tdomain_transport_full(const char *application,
+                               const char *str, int local,
+                               const char *default_domain,
+                               const char *default_target)
+{
+    netsnmp_tdomain_spec tspec;
+    memset(&tspec, 0x0, sizeof(tspec));
+    tspec.application = application;
+    tspec.target = str;
+    if (local)
+        tspec.flags |= NETSNMP_TSPEC_LOCAL;
+    tspec.default_domain = default_domain;
+    tspec.default_target = default_target;
+    tspec.source = NULL;
+    tspec.transport_config = NULL;
+    return netsnmp_tdomain_transport_tspec(&tspec);
+}
 
 netsnmp_transport *
 netsnmp_tdomain_transport(const char *str, int local,
 			  const char *default_domain)
 {
-    return netsnmp_tdomain_transport_full("snmp", str, local, default_domain,
-					  NULL);
+    netsnmp_tdomain_spec tspec;
+    memset(&tspec, 0x0, sizeof(tspec));
+    tspec.application = "snmp";
+    tspec.target = str;
+    if (local)
+        tspec.flags |= NETSNMP_TSPEC_LOCAL;
+    tspec.default_domain = default_domain;
+    tspec.default_target = NULL;
+    tspec.source = NULL;
+    tspec.transport_config = NULL;
+    return netsnmp_tdomain_transport_tspec(&tspec);
 }
-
 
 #ifndef NETSNMP_FEATURE_REMOVE_TDOMAIN_TRANSPORT_OID
 netsnmp_transport *
@@ -766,3 +981,352 @@ netsnmp_transport_create_config(char *key, char *value) {
     entry->value = strdup(value);
     return entry;
 }
+
+#ifndef FEATURE_REMOVE_TRANSPORT_CACHE
+
+/* *************************************************************************
+ * transport caching by address family, type and use
+ */
+typedef struct trans_cache_s {
+    netsnmp_transport *t;
+    int af;
+    int type;
+    int local;
+    netsnmp_sockaddr_storage bind_addr;
+    int count; /* number of times this transport has been returned */
+} trans_cache;
+
+static void _tc_free_item(trans_cache *tc, void *context);
+static int _tc_compare(trans_cache *lhs, trans_cache *rhs);
+
+/** initialize transport cache */
+static int
+_tc_init(void)
+{
+    DEBUGMSGTL(("transport:cache:init", "%p\n", _container));
+
+    /** prevent double init */
+    if (NULL != _container)
+        return 0;
+
+    _container = netsnmp_container_find("trans_cache:binary_array");
+    if (NULL == _container) {
+        snmp_log(LOG_ERR, "failed to allocate trans_cache container\n");
+        return 1;
+    }
+
+    _container->container_name = strdup("trans_cache");
+    _container->free_item = (netsnmp_container_obj_func*) _tc_free_item;
+    _container->compare = (netsnmp_container_compare*) _tc_compare;
+
+    return 0;
+}
+
+/*
+ * container compare function
+ *
+ * sort by af, type, local
+ */
+static int
+_tc_compare(trans_cache *lhs, trans_cache *rhs)
+{
+    netsnmp_assert((lhs != NULL) && (rhs != NULL));
+
+    DEBUGMSGTL(("9:transport:cache:compare", "%p/%p\n", lhs, rhs));
+
+   if (lhs->af < rhs->af)
+        return -1;
+    else if (lhs->af > rhs->af)
+        return 1;
+
+    if (lhs->type < rhs->type)
+        return -1;
+    else if (lhs->type > rhs->type)
+        return 1;
+
+    if (lhs->local < rhs->local)
+        return -1;
+    else if (lhs->local > rhs->local)
+        return 1;
+
+    if (AF_INET == lhs->af) {
+        struct sockaddr_in *lha = &lhs->bind_addr.sin,
+            *rha = &rhs->bind_addr.sin;
+        if (lha->sin_addr.s_addr < rha->sin_addr.s_addr)
+            return -1;
+        else if (lha->sin_addr.s_addr > rha->sin_addr.s_addr)
+            return 1;
+
+        if (lha->sin_port < rha->sin_port)
+            return -1;
+        else if (lha->sin_port > rha->sin_port)
+            return 1;
+    }
+#ifdef NETSNMP_ENABLE_IPV6
+    else if (AF_INET6 == lhs->af) {
+        struct sockaddr_in6 *lha = &lhs->bind_addr.sin6,
+            *rha = &rhs->bind_addr.sin6;
+        int rc = memcmp(lha->sin6_addr.s6_addr, rha->sin6_addr.s6_addr,
+                        sizeof(rha->sin6_addr.s6_addr));
+        if (rc)
+            return rc;
+
+        if (lha->sin6_port < rha->sin6_port)
+            return -1;
+        else if (lha->sin6_port > rha->sin6_port)
+            return 1;
+
+        if (lha->sin6_flowinfo < rha->sin6_flowinfo)
+            return -1;
+        else if (lha->sin6_flowinfo > rha->sin6_flowinfo)
+            return 1;
+
+        if (lha->sin6_scope_id < rha->sin6_scope_id)
+            return -1;
+        else if (lha->sin6_scope_id > rha->sin6_scope_id)
+            return 1;
+    }
+#endif
+    return 0;
+}
+
+static void
+_tc_free(trans_cache *tc)
+{
+    if (NULL == tc)
+        return;
+
+    DEBUGMSGTL(("transport:cache:free", "%p %d/%d/%d/%p %d\n", tc, tc->af,
+                tc->type, tc->local, tc->t, tc->count));
+    netsnmp_transport_free(tc->t);
+    memset(tc, 0x0, sizeof(*tc));
+    free(tc);
+}
+
+static void
+_tc_free_item(trans_cache *tc, void *context)
+{
+    _tc_free(tc);
+}
+
+static void
+_tc_remove(trans_cache *tc)
+{
+    if (NULL == tc || NULL == _container)
+        return;
+
+    DEBUGMSGTL(("transport:cache:remove", "%p\n", tc));
+
+    CONTAINER_REMOVE(_container, tc);
+}
+
+static trans_cache *
+_tc_create(int af, int type, int local, const netsnmp_sockaddr_storage *addr,
+           netsnmp_transport *t)
+{
+    trans_cache *tc = SNMP_MALLOC_TYPEDEF(trans_cache);
+    if (NULL == tc) {
+        snmp_log(LOG_ERR, "failed to allocate trans_cache\n");
+        return NULL;
+    }
+    DEBUGMSGTL(("transport:cache:create", "%p\n", tc));
+    tc->af = af;
+    tc->type = type;
+    tc->local = local;
+    tc->t = t;
+    if (addr)
+        memcpy(&tc->bind_addr, addr, sizeof(tc->bind_addr));
+    /** we only understand ipv6 and ipv6 sockaddrs in compare */
+    if (AF_INET != tc->af && AF_INET6 != tc->af)
+        NETSNMP_LOGONCE((LOG_WARNING, "transport cache not tested for af %d\n",
+                         tc->af));
+    return tc;
+}
+
+static trans_cache *
+_tc_add(int af, int type, int local, const netsnmp_sockaddr_storage *addr,
+        netsnmp_transport *t)
+{
+    trans_cache *tc;
+    int rc;
+
+    DEBUGMSGTL(("transport:cache:add", "%d/%d/%d/%p\n", af, type, local, t));
+
+    if (NULL == _container) {
+        _tc_init();
+        if (NULL == _container)
+            return NULL;
+    }
+
+    tc = _tc_create(af, type, local, addr, t);
+    if (NULL == tc) {
+        DEBUGMSGTL(("transport:cache:add",
+                    "could not create transport cache\n"));
+        return NULL;
+    }
+
+    rc = CONTAINER_INSERT(_container, tc);
+    if (rc) {
+        DEBUGMSGTL(("transport:cache:add", "container insert failed\n"));
+        _tc_free(tc);
+        return NULL;
+    }
+
+    return tc;
+}
+
+trans_cache *
+_tc_find(int af, int type, int local, const netsnmp_sockaddr_storage *addr)
+{
+    trans_cache tc, *rtn;
+
+    DEBUGMSGTL(("transport:cache:find", "%d/%d/%d\n", af, type, local));
+
+    if (NULL == _container)
+        return NULL;
+
+    memset(&tc, 0x00, sizeof(tc));
+    tc.af = af;
+    tc.type = type;
+    tc.local = local;
+    if (addr)
+        memcpy(&tc.bind_addr, addr, sizeof(tc.bind_addr));
+
+    rtn = CONTAINER_FIND(_container, &tc);
+    DEBUGMSGTL(("transport:cache:find", "%p\n", rtn));
+    return rtn;
+}
+
+trans_cache *
+_tc_find_transport(netsnmp_transport *t)
+{
+    /*
+     * we shouldn't really have that many transports, so instead of
+     * using an additional key, just iterate over the whole container.
+     */
+    netsnmp_iterator  *itr;
+    trans_cache *tc;
+
+    DEBUGMSGTL(("transport:cache:find_transport", "%p\n", t));
+
+    if (NULL == _container)
+        return NULL;
+
+    itr = CONTAINER_ITERATOR(_container);
+    if (NULL == itr) {
+        snmp_log(LOG_ERR, "could not get iterator for transport cache\n");
+        return NULL;
+    }
+
+    tc = ITERATOR_FIRST(itr);
+    for( ; tc; tc = ITERATOR_NEXT(itr))
+        if (tc->t == t)
+            break;
+    ITERATOR_RELEASE(itr);
+
+    DEBUGMSGT(("transport:cache:find_transport","found %p\n", tc));
+
+    return tc;
+}
+
+int
+netsnmp_transport_cache_remove(netsnmp_transport *t)
+{
+    trans_cache *tc;
+
+    DEBUGMSGTL(("transport:cache:close", "%p\n", t));
+
+    if (NULL == t)
+        return 0;
+
+    /** transport in cache? */
+    tc = _tc_find_transport(t);
+    if (NULL == tc) {
+        DEBUGMSGTL(("transport:cache:close", "%p not found in cache\n", t));
+        return 0;
+    }
+
+    --tc->count;
+
+    /** still in use? */
+    if (tc->count > 0) {
+        DEBUGMSGTL(("transport:cache:close", "still %d user(s) of %p\n",
+                    tc->count, t));
+        return 1;
+    }
+
+    /** unbalanced get/close? */
+    if (tc->count < 0)
+        snmp_log(LOG_WARNING, "transport cache get/close mismatch\n");
+
+    _tc_remove(tc);
+    _tc_free(tc); /* also does close */
+
+    return 0;
+}
+
+/*
+ * netsnmp_transport_get: get a (possibly duplicate, cached) transport
+ */
+netsnmp_transport *
+netsnmp_transport_cache_get(int af, int type, int local,
+                            const netsnmp_sockaddr_storage *bind_addr)
+{
+    trans_cache       *tc;
+    netsnmp_transport *t;
+
+    DEBUGMSGTL(("transport:cache:get", "%d/%d/%d\n", af, type, local));
+
+#define USE_CACHE 1
+
+#if USE_CACHE
+    /** check for existing transport */
+    tc = _tc_find(af, type, local, bind_addr);
+    if (tc) {
+        DEBUGMSGTL(("transport:cache:get", "using existing transport %p\n",
+                    tc->t));
+        ++tc->count;
+        return tc->t;
+    }
+#endif
+    /** get transport */
+    t = NULL; /* _transport(af, type, 0);*/
+    if (NULL == t) {
+        snmp_log(LOG_ERR, "could not get new transport for %d/%d/%d\n", af,
+                 type, local);
+        return NULL;
+    }
+    DEBUGMSGTL(("transport:cache:get", "new transport %p\n", t));
+
+#if USE_CACHE
+    /** create transport cache for new transport */
+    tc = _tc_add(af, type, local, bind_addr, t);
+    if (NULL == tc) {
+        DEBUGMSGTL(("transport:cache:get", "could not create transport cache\n"));
+        /*
+         * hmmm.. this isn't really a critical error, is it? We have a
+         * transport, just no cache for it. Let's continue on and hope for the
+         * best.
+         */
+        /** return -1; */
+    }
+    tc->count = 1;
+#endif
+
+    return t;
+}
+
+int
+netsnmp_transport_cache_save(int af, int type, int local,
+                             const netsnmp_sockaddr_storage *addr,
+                             netsnmp_transport *t)
+{
+    if (NULL == t)
+        return 1;
+
+    if (NULL == _tc_add(af, type, local, addr, t))
+        return 1;
+
+    return 0;
+}
+#endif /* FEATURE_REMOVE_TRANSPORT_CACHE */

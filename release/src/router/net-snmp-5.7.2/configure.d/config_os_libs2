@@ -152,10 +152,12 @@ AC_LINK_IFELSE([AC_LANG_PROGRAM([
 
 #   kstat library                                       (Solaris)
 #
-NETSNMP_SEARCH_LIBS(kstat_lookup, kstat,
-        AC_DEFINE(HAVE_LIBKSTAT, 1,
-        	[Define to 1 if you have the `kstat' library (-lkstat).]),,,
-        LNETSNMPLIBS)
+AC_CHECK_LIB(kstat, kstat_lookup, [LNETSNMPLIBS="$LNETSNMPLIBS -lkstat"])
+
+
+#   socket library                                      (Solaris)
+#
+AC_CHECK_LIB(socket, in6addr_any, [LNETSNMPLIBS="$LNETSNMPLIBS -lsocket"])
 
 
 #
@@ -225,9 +227,48 @@ fi
 if test "x$with_nl" != "xno"; then
     case $target_os in
     linux*) # Check for libnl (linux)
-	NETSNMP_SEARCH_LIBS(
-	    nl_connect, nl,
-	    [AC_CHECK_HEADERS(netlink/netlink.h)],,, LMIBLIBS)
+        # The test below verifies whether the libnl-3 package been installed.
+        # This test works as follows:
+        # - If pkg-config was not installed at the time autogen.sh was run,
+        #   the definition of the PKG_CHECK_EXISTS() macro will not be found by
+        #   autogen.sh. Augogen.sh will generate a configure script that prints
+        #   a warning about pkg-config and proceeds as if libnl-3 has not been
+        #   installed.
+        # - If pkg-config was installed at the time autogen.sh was run,
+        #   the generated configure script will try to detect the presence of
+        #   the libnl-3 library by looking up compile and linker flags in the
+        #   file called libnl-3.pc.
+        # - pkg-config settings can be overridden via the configure variables
+        #   LIBNL3_CFLAGS and LIBNL3_LIBS (added by the pkg-config m4 macro's to
+        #   the configure script -- see also ./configure --help).
+        # - The LIBNL3_CFLAGS and LIBNL3_LIBS configure variables can be used
+        #   even if the pkg-config executable is not present on the system on
+        #   which the configure script is run.
+        ifdef(
+          [PKG_CHECK_EXISTS],
+          [PKG_CHECK_EXISTS([libnl-3.0],
+            [PKG_CHECK_MODULES([LIBNL3], [libnl-3.0])])
+          ],
+          AC_MSG_WARN([pkg-config has not been installed or is too old.])
+          AC_MSG_WARN([Detection of libnl-3.0 will be skipped.])
+        )
+
+        netsnmp_save_CPPFLAGS="$CPPFLAGS"
+        CPPFLAGS="${LIBNL3_CFLAGS} $CPPFLAGS"
+        NETSNMP_SEARCH_LIBS(nl_connect, nl-3,
+            [AC_CHECK_HEADERS(netlink/netlink.h)
+            EXTERNAL_MIBGROUP_INCLUDES="$EXTERNAL_MIBGROUP_INCLUDES ${LIBNL3_CFLAGS}"],
+            [CPPFLAGS="$netsnmp_save_CPPFLAGS"], [], [], [LMIBLIBS])
+        if test "x$ac_cv_header_netlink_netlink_h" != xyes; then
+            NETSNMP_SEARCH_LIBS(nl_connect, nl, [
+                AC_CHECK_HEADERS(netlink/netlink.h)], [], [], LMIBLIBS)
+        fi
+        if test "x$ac_cv_header_netlink_netlink_h" = xyes; then
+            AC_EGREP_HEADER([nl_socket_free], [netlink/socket.h],
+                            [AC_DEFINE([HAVE_LIBNL3], [1],
+                            [Define to 1 if <netlink/netlink.h> provides the
+                            libnl3 API])])
+        fi
     ;;
     esac
 fi
@@ -275,30 +316,59 @@ if test "x$tryopenssl" != "xno" -a "x$tryopenssl" != "xinternal"; then
             AC_DEFINE(HAVE_LIBCRYPTO, 1,
                 [Define to 1 if you have the OpenSSL library (-lcrypto or -leay32).])
             LIBCRYPTO="-l${CRYPTO}"
-            AC_CHECK_LIB(${CRYPTO}, AES_cfb128_encrypt, 
-                AC_DEFINE(HAVE_AES_CFB128_ENCRYPT, 1,
-                    [Define to 1 if you have the `AES_cfb128_encrypt' function.]))
-
-            AC_CHECK_LIB(${CRYPTO}, EVP_MD_CTX_create,
-                AC_DEFINE([HAVE_EVP_MD_CTX_CREATE], [],
-                    [Define to 1 if you have the `EVP_MD_CTX_create' function.])
-                AC_DEFINE([HAVE_EVP_MD_CTX_DESTROY], [],
-                    [Define to 1 if you have the `EVP_MD_CTX_destroy' function.]))
+            netsnmp_save_LIBS="$LIBS"
+            LIBS="$LIBCRYPTO"
+            AC_CHECK_FUNCS([AES_cfb128_encrypt]dnl
+                           [EVP_sha224        EVP_sha384        ]dnl
+                           [EVP_MD_CTX_create EVP_MD_CTX_destroy]dnl
+                           [EVP_MD_CTX_new    EVP_MD_CTX_free   ]dnl
+                           [DH_set0_pqg DH_get0_pqg DH_get0_key]dnl
+                           [ASN1_STRING_get0_data X509_NAME_ENTRY_get_object]dnl
+                           [X509_NAME_ENTRY_get_data X509_get_signature_nid])
+            AC_MSG_CHECKING([whether 2nd app_verify_cookie_cb() arg is const])
+            netsnmp_save_CFLAGS="$CFLAGS"
+            CFLAGS="$CFLAGS -Werror"
+            AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
+              #include <openssl/ssl.h>
+            ]],[[
+              int (*app_verify_cookie_cb)(SSL *ssl,
+                                          const unsigned char *cookie,
+                                          unsigned int cookie_len) = NULL;
+              SSL_CTX_set_cookie_verify_cb(NULL, app_verify_cookie_cb);
+            ]])],
+            [AC_MSG_RESULT(yes); ac_cv_saccaq=const],
+            [AC_MSG_RESULT(no)])
+            AC_DEFINE_UNQUOTED([SECOND_APPVERIFY_COOKIE_CB_ARG_QUALIFIER],
+                               [$ac_cv_saccaq],
+                               [Qualifier for second argument of the appverify_cookie_cb() callback function])
+            CFLAGS="$netsnmp_save_CFLAGS"
+            LIBS="$netsnmp_save_LIBS"
         fi
+        netsnmp_save_LIBS="$LIBS"
+        LIBS="-lssl"
+        AC_CHECK_FUNCS([TLS_method TLSv1_method DTLS_method DTLSv1_method]dnl
+                       [SSL_library_init SSL_load_error_strings])
+        LIBS="$netsnmp_save_LIBS"
         if echo " $transport_result_list " | $GREP "DTLS" > /dev/null; then
-	    AC_CHECK_LIB(ssl, DTLSv1_method,
+	    if test x$ac_cv_func_DTLSv1_method = xyes -o \
+                    x$ac_cv_func_DTLS_method = xyes; then
                 AC_DEFINE(HAVE_LIBSSL_DTLS, 1,
                     [Define to 1 if your `ssl' library supports DTLS (-lssl).])
-                LIBCRYPTO=" -lssl $LIBCRYPTO",	
-		AC_MSG_ERROR([The DTLS based transports require the libssl library from OpenSSL to be available and support DTLS])	,-lcrypto)
+                LIBCRYPTO=" -lssl $LIBCRYPTO"
+	    else
+		AC_MSG_ERROR([The DTLS based transports require the libssl library from OpenSSL to be available and support DTLS])
+            fi
             TLSPROG=yes
         fi
         if echo " $transport_result_list " | $GREP "TLS" > /dev/null; then
-	    AC_CHECK_LIB(ssl, SSL_library_init,
+	    if test x$ac_cv_func_TLSv1_method = xyes -o \
+                    x$ac_cv_func_TLS_method = xyes; then
                 AC_DEFINE(HAVE_LIBSSL, 1,
                     [Define to 1 if you have the `ssl' library (-lssl).])
-                LIBCRYPTO=" -lssl $LIBCRYPTO",	
-		AC_MSG_ERROR([The DTLS based transports require the libssl library from OpenSSL to be available])	,-lcrypto)
+                LIBCRYPTO=" -lssl $LIBCRYPTO"
+            else
+		AC_MSG_ERROR([The TLS based transports require the libssl library from OpenSSL to be available])
+            fi
             TLSPROG=yes
         fi
         if echo " $transport_result_list " | $GREP " SSH " > /dev/null; then
@@ -317,12 +387,12 @@ elif test "x$askedpkcs" = "xyes"; then
 fi
 if test "x$TLSPROG" = "xyes"; then
    AC_CHECK_DECL([EVP_sha224],
-    : ,
     AC_DEFINE([HAVE_EVP_SHA224], [], [Define if you have EVP_sha224/256 in openssl]),
+    : ,
     [[#include <openssl/evp.h>]])
    AC_CHECK_DECL([EVP_sha384],
+    AC_DEFINE([HAVE_EVP_SHA384], [], [Define if you have EVP_sha384/512 in openssl]),
     : ,
-    AC_DEFINE([HAVE_EVP_SHA384], [], [Define if you have EVP_sha384/256 in openssl]),
     [[#include <openssl/evp.h>]])
 fi
 
@@ -452,22 +522,55 @@ fi
 ##
 if test "x$with_mysql" = "xyes" ; then
   AC_PATH_PROGS(MYSQLCONFIG,mysql_config)
-  AC_CHECK_HEADERS(mysql/mysql.h)
-  AC_CHECK_HEADER(mysql/mysql.h,mysql_h=yes,mysql_h=no)
-  if test "x$MYSQLCONFIG" = "x" -o "x$mysql_h" = "xno"; then
-     AC_MSG_ERROR([Could not find mysql_config or mysql.h and was specifically asked to use MySQL support])
-  fi
+  test -x "$MYSQLCONFIG" \
+	|| AC_MSG_ERROR([Could not find mysql_config and was specifically asked to use MySQL support])
   MYSQL_LIBS=`$MYSQLCONFIG --libs`
-  MYSQL_INCLUDES=`$MYSQLCONFIG --cflags`
-  AC_MSG_CHECKING([whether MY_INIT() works])
+  MYSQL_INCLUDES=`$MYSQLCONFIG --include`
   _libs="${LIBS}"
   _cppflags="${CPPFLAGS}"
   LIBS="${LIBS} ${MYSQL_LIBS}"
   CPPFLAGS="${CPPFLAGS} ${MYSQL_INCLUDES}"
-  AC_LINK_IFELSE([AC_LANG_PROGRAM([[#include <mysql/my_global.h>
-               #include <mysql/my_sys.h>]], [[MY_INIT("my_init_test")]])],[AC_MSG_RESULT(yes)],[AC_MSG_RESULT(no)
-               AC_DEFINE([HAVE_BROKEN_LIBMYSQLCLIENT], 1,
-	                 [Define if using MY_INIT() causes a linker error])])
+  AC_CHECK_HEADER(mysql.h,,
+     [AC_MSG_ERROR([Could not find mysql.h and was specifically asked to use MySQL support])])
+  AC_CHECK_HEADER([my_global.h my_sys.h])
+  AC_MSG_CHECKING([whether MY_INIT() works])
+  AC_LINK_IFELSE([
+    AC_LANG_PROGRAM(
+      [[#ifdef HAVE_MY_GLOBAL_H
+        #include <my_global.h>
+        #endif
+        #ifdef HAVE_MY_SYS_H
+        #include <my_sys.h>
+        #endif
+        #include <mysql.h>]],
+      [[MY_INIT("my_init_test")]])],
+      [AC_MSG_RESULT(yes)
+       AC_DEFINE([HAVE_MY_INIT], 1,
+                 [Define if MY_INIT() is availabe in libmysqlclient])],
+      [AC_MSG_RESULT(no)])
+  AC_MSG_CHECKING([whether my_load_defaults() exists])
+  AC_LINK_IFELSE([
+    AC_LANG_PROGRAM(
+      [[#ifdef HAVE_MY_GLOBAL_H
+        #include <my_global.h>
+        #endif
+        #ifdef HAVE_MY_SYS_H
+        #include <my_sys.h>
+        #endif
+        #include <mysql.h>]],
+      [[my_load_defaults("my_init_test")]])],
+      [AC_MSG_RESULT(yes)
+       AC_DEFINE([HAVE_MY_LOAD_DEFAULTS], 1,
+                 [Define if having my_load_defaults()])],
+      [AC_MSG_RESULT(no)])
+  AC_CHECK_FUNC(
+    [mysql_init],
+    AC_DEFINE([HAVE_MYSQL_INIT], 1,
+              [Define if mysql_init() is available in libmysqlclient]))
+  AC_CHECK_FUNC(
+    [load_defaults],
+    AC_DEFINE([HAVE_LOAD_DEFAULTS], 1,
+              [Define if load_defaults() is available in libmysqlclient]))
   CPPFLAGS="${_cppflags}"
   LIBS="${_libs}"
   AC_MSG_CACHE_ADD(MYSQL Trap Logging:         enabled)
@@ -476,7 +579,20 @@ else
 fi
 AC_SUBST(MYSQL_LIBS)
 AC_SUBST(MYSQL_INCLUDES)
-  
+
+##
+#   libpcap
+##
+NETSNMP_BUILD_PCAP_PROG_TRUE='#'
+NETSNMP_BUILD_PCAP_PROG_FALSE=''
+AC_CHECK_LIB([pcap], [pcap_create], [
+   AC_CHECK_HEADERS([pcap/pcap.h], [
+      NETSNMP_BUILD_PCAP_PROG_TRUE=''
+      NETSNMP_BUILD_PCAP_PROG_FALSE='#'
+       ])
+])
+AC_SUBST(NETSNMP_BUILD_PCAP_PROG_TRUE)
+AC_SUBST(NETSNMP_BUILD_PCAP_PROG_FALSE)
 
 ##
 #   Non-library checks
@@ -485,3 +601,29 @@ AC_SUBST(MYSQL_INCLUDES)
 # nlist
 AC_CHECK_FUNCS(nlist nlist64 knlist)
 
+AC_CHECK_HEADERS([curses.h])
+AC_CHECK_HEADERS([ncurses/curses.h])
+NETSNMP_SEARCH_LIBS([endwin], [curses ncurses],,,,[LIBCURSES])
+AC_SUBST([LIBCURSES])
+
+#   libm for ceil
+#
+AC_MSG_CHECKING([for ceil without -lm])
+AC_LINK_IFELSE([AC_LANG_PROGRAM([
+  #include <math.h>
+], [
+  ceil((double)2.4);
+])], [
+  AC_MSG_RESULT(yes);
+  # Keep LIBS.
+  need_ceil_lib="no"
+  true
+], [
+  AC_MSG_RESULT(no)
+  need_ceil_lib="yes"
+  # Restore LIBS.
+])
+
+if test "${need_ceil_lib}" = yes; then
+  AC_SEARCH_LIBS([ceil], [m])
+fi

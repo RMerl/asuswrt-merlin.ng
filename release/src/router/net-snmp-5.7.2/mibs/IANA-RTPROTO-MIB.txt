@@ -5,15 +5,15 @@ IMPORTS
     TEXTUAL-CONVENTION               FROM SNMPv2-TC;
 
 ianaRtProtoMIB  MODULE-IDENTITY
-    LAST-UPDATED "201107220000Z" -- July 22, 2011
+    LAST-UPDATED "201604250000Z" -- April 25, 2016
     ORGANIZATION "IANA"
     CONTACT-INFO
             " Internet Assigned Numbers Authority
               Internet Corporation for Assigned Names and Numbers
-              4676 Admiralty Way, Suite 330
-              Marina del Rey, CA 90292-6601
+              12025 Waterfront Drive, Suite 300
+              Los Angeles, CA 90094-2536
 
-              Phone: +1 310 823 9358
+              Phone: +1 310 301 5800
               EMail: iana&iana.org"
     DESCRIPTION
             "This MIB module defines the IANAipRouteProtocol and
@@ -24,14 +24,23 @@ ianaRtProtoMIB  MODULE-IDENTITY
             Any additions or changes to the contents of this MIB module
             require either publication of an RFC, or Designated Expert
             Review as defined in RFC 2434, Guidelines for Writing an
-            IANA Considerations Section in RFCs.  The Designated Expert 
+            IANA Considerations Section in RFCs.  The Designated Expert
             will be selected by the IESG Area Director(s) of the Routing
             Area."
 
-    REVISION     "201107220000Z"  -- July 22, 2011 
+    REVISION     "201604250000Z"  -- April 25, 2016
+    DESCRIPTION  "Corrected typographical error in revision date."
+
+    REVISION     "201604060000Z"  -- April 6, 2016
+    DESCRIPTION  "Added ttdp(20)."
+
+    REVISION     "201208300000Z"  -- August 30, 2012
+    DESCRIPTION  "Added dhcp(19)."
+
+    REVISION     "201107220000Z"  -- July 22, 2011
     DESCRIPTION  "Added rpl(18) ."
 
-    REVISION     "200009260000Z"  -- September 26, 2000 
+    REVISION     "200009260000Z"  -- September 26, 2000
     DESCRIPTION  "Original version, published in coordination
                  with RFC 2932."
     ::= { mib-2 84 }
@@ -64,7 +73,9 @@ IANAipRouteProtocol ::= TEXTUAL-CONVENTION
                 idpr       (15), -- InterDomain Policy Routing
                 ciscoEigrp (16), -- Cisco EIGRP
                 dvmrp      (17), -- DVMRP
-                rpl        (18)  -- RPL [RFC-ietf-roll-rpl-19]
+                rpl        (18), -- RPL [RFC-ietf-roll-rpl-19]
+                dhcp       (19), -- DHCP [RFC2132]
+                ttdp       (20)  -- Train Topology Discovery Protocol (TTDP) [IEC 61375-2-5]
                }
 
 IANAipMRouteProtocol ::= TEXTUAL-CONVENTION

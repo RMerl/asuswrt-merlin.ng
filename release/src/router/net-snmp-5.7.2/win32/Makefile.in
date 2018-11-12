@@ -5,6 +5,8 @@ PREFIX=
 PREFIX_DOS=
 PERL=
 NMAKE=nmake /nologo
+APPS=
+APPS_CLEAN=
 
 all : libs apps snmptrapd snmpd local
 
@@ -26,9 +28,9 @@ libsnmp_clean : libsnmp_dll_clean_
 libs : libagent libsnmp libnetsnmptrapd netsnmpmibs 
 libs_clean : libagent_clean libsnmp_clean libnetsnmptrapd_clean netsnmpmibs_clean
 
-apps : snmpdf snmpset snmpusm snmptest snmptrap snmpvacm snmpwalk snmpdelta snmptable snmpstatus snmpbulkget snmpget snmpgetnext snmpbulkwalk snmptranslate encode_keychange snmpnetstat
+apps : $(APPS)
 
-apps_clean : snmpdf_clean snmpset_clean snmpusm_clean snmptest_clean snmptrap_clean snmpvacm_clean snmpwalk_clean snmpdelta_clean snmptable_clean snmpstatus_clean snmpbulkget_clean snmpget_clean snmpgetnext_clean snmpbulkwalk_clean snmptranslate_clean encode_keychange_clean snmpnetstat_clean
+apps_clean : $(APPS_CLEAN)
 
 local : snmpconf mib2c traptoemail
 
@@ -388,11 +390,7 @@ help ::
         @-echo "libs_clean      libagent_clean libnetsnmptrapd_clean          "
         @-echo "                libsnmp_clean netsnmpmibs_clean               "
         @-echo "                                                              "
-        @-echo "apps            encode_keychange snmpbulkget snmpbulkwalk     "
-        @-echo "                snmpdelta snmpdf snmpget snmpgetnext          "
-        @-echo "                snmpnetstsat snmpset snmpstatus snmptable     "
-        @-echo "                snmptest snmptranslate snmptrap snmpusm       "
-        @-echo "                snmpvacm snmpwalk                             "
+        @-echo "apps            $(APPS)"
         @-echo "                                                              "
         @-echo "apps_clean      (clean all the apps)                          "
         @-echo "                                                              "

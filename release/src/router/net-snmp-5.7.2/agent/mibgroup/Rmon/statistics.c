@@ -272,7 +272,7 @@ write_etherStatsEntry(int action, u_char * var_val, u_char var_val_type,
         case Leaf_etherStatsOwner:
             if (hdr->new_owner)
                 AGFREE(hdr->new_owner);
-            hdr->new_owner = AGMALLOC(MAX_OWNERSTRING);;
+            hdr->new_owner = AGMALLOC(MAX_OWNERSTRING);
             if (!hdr->new_owner)
                 return SNMP_ERR_TOOBIG;
             snmp_status = AGUTIL_get_string_value(var_val, var_val_type,

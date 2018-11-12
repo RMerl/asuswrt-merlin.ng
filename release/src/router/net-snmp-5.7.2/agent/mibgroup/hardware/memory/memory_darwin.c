@@ -5,10 +5,14 @@
 
 #include <dirent.h>
 #include <unistd.h>
-#include <mach/mach_host.h>
+
 #include <sys/stat.h>
 #include <sys/sysctl.h>
 
+#include <mach/mach.h>
+#include <mach/mach_time.h>
+#include <CoreFoundation/CoreFoundation.h>
+#include <IOKit/ps/IOPowerSources.h>
 
 /*
  * Retained from UCD implementation
@@ -44,8 +48,7 @@ int pages_swapped(void) {
      mach_port = mach_host_self();
      error = host_processor_sets(mach_port, &psets, &pcnt);
      if (error != KERN_SUCCESS) {
-        snprintf(errmsg, sizeof(errmsg), "Error in host_processor_sets(): %s\n", mach_error_string(error));
-        snmp_log_perror(errmsg);
+        snmp_log(LOG_ERR, "Error in host_processor_sets(): %s\n", mach_error_string(error));
         return(0);
      }
 
@@ -75,7 +78,11 @@ int pages_swapped(void) {
             for (address = 0;; address += size) {
                 /* Get memory region. */
                 count = VM_REGION_EXTENDED_INFO_COUNT; 
-                if (vm_region(tasks[j], &address, &size, VM_REGION_EXTENDED_INFO, (vm_region_extended_info_t)&info, &count, &object_name) != KERN_SUCCESS) {
+#if defined(__ppc64__) || defined(__x86_64__)
+                if (vm_region_64(tasks[j], &address, &size, VM_REGION_EXTENDED_INFO, &info, &count, &object_name) != KERN_SUCCESS) {
+#else
+                if (vm_region(tasks[j], &address, &size, VM_REGION_EXTENDED_INFO, &info, &count, &object_name) != KERN_SUCCESS) {
+#endif
                     /* No more memory regions. */
                     break;
                 }

@@ -19,7 +19,7 @@ extern          "C" {
 NETSNMP_IMPORT oid netsnmpDTLSUDPDomain[7];
 NETSNMP_IMPORT size_t netsnmpDTLSUDPDomain_len;
 
-netsnmp_transport *netsnmp_dtlsudp_transport(struct sockaddr_in *addr,
+netsnmp_transport *netsnmp_dtlsudp_transport(const struct sockaddr_in *addr,
                                              int local);
 
 

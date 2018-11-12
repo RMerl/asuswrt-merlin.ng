@@ -106,9 +106,7 @@ handle_mteTriggerFailures(netsnmp_mib_handler          *handler,
                           netsnmp_agent_request_info   *reqinfo,
                           netsnmp_request_info         *requests)
 {
-#ifdef USING_DISMAN_EVENT_MTETRIGGER_MODULE
-    extern long mteTriggerFailures;
-#else
+#ifndef USING_DISMAN_EVENT_MTETRIGGER_MODULE
     long mteTriggerFailures = 0;
 #endif
 

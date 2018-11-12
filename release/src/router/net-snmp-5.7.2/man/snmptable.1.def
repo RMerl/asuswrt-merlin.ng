@@ -31,17 +31,10 @@ AGENT TABLE\-OID
 .B snmptable
 is an SNMP application that repeatedly uses the SNMP GETNEXT or
 GETBULK requests to query for information on a network entity.  The
-parameter
-.I TABLE\-OID
-must specify an SNMP table.
-.PP
-snmptable is an SNMP application that repeatedly uses the
-SNMP GETNEXT or GETBULK requests to query for  information
-on a network entity.  The parameter TABLE\-OID must specify
-an SNMP table.
+parameter TABLE\-OID must specify an SNMP table.
 
 AGENT identifies a target SNMP agent, which is instrumented
-to monitor the gievn objects.  At its simplest, the AGENT
+to monitor the given objects.  At its simplest, the AGENT
 specification will consist of a hostname or an IPv4
 address.  In this situation, the command will attempt
 communication with the agent, using UDP/IPv4 to port 161

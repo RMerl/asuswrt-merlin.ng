@@ -66,3 +66,4 @@ netsnmp_cpu_info *netsnmp_cpu_get_byName( char*, int );
 
 netsnmp_cache *netsnmp_cpu_get_cache( void );
 int netsnmp_cpu_load( void );
+int netsnmp_cpu_arch_load(netsnmp_cache *cache, void *magic);

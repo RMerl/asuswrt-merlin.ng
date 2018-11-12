@@ -5,6 +5,7 @@
 
 #include <net-snmp/net-snmp-config.h>
 #include <net-snmp/net-snmp-includes.h>
+#include <net-snmp/library/snmp_openssl.h>
 #include <net-snmp/agent/net-snmp-agent-includes.h>
 #include "usmDHParameters.h"
 
@@ -22,6 +23,7 @@ get_dh_params(void)
 void
 init_usmDHParameters(void)
 {
+    BIGNUM         *p = NULL, *g = NULL;
     static oid      usmDHParameters_oid[] =
         { 1, 3, 6, 1, 3, 101, 1, 1, 1 };
 
@@ -38,9 +40,9 @@ init_usmDHParameters(void)
        management apps though */
     if (!dh_params) {
         dh_params = DH_new();
-        dh_params->g = BN_new();
-        BN_hex2bn(&dh_params->g, "02");
-        BN_hex2bn(&dh_params->p, "ffffffffffffffffc90fdaa22168c234c4c6628b80dc1cd129024e088a67cc74020bbea63b139b22514a08798e3404ddef9519b3cd3a431b302b0a6df25f14374fe1356d6d51c245e485b576625e7ec6f44c42e9a637ed6b0bff5cb6f406b7edee386bfb5a899fa5ae9f24117c4b1fe649286651ece65381ffffffffffffffff");
+        BN_hex2bn(&g, "02");
+        BN_hex2bn(&p, "ffffffffffffffffc90fdaa22168c234c4c6628b80dc1cd129024e088a67cc74020bbea63b139b22514a08798e3404ddef9519b3cd3a431b302b0a6df25f14374fe1356d6d51c245e485b576625e7ec6f44c42e9a637ed6b0bff5cb6f406b7edee386bfb5a899fa5ae9f24117c4b1fe649286651ece65381ffffffffffffffff");
+        DH_set0_pqg(dh_params, p, NULL, g);
     }
 }
 

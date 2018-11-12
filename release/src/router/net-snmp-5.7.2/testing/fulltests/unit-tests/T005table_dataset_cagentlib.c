@@ -15,6 +15,8 @@ netsnmp_table_row* row;
 int32_t ival;
 int32_t i, j;
 
+SOCK_STARTUP;
+
 init_agent("snmpd");
 init_snmp("snmpd");
 
@@ -54,5 +56,7 @@ netsnmp_delete_table_data_set(tds);
 
 snmp_shutdown("snmpd");
 shutdown_agent();
+
+SOCK_CLEANUP;
 
 OK(TRUE, "done");

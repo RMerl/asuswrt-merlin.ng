@@ -5,17 +5,17 @@ IMPORTS
         FROM SNMPv2-SMI;
 
 ianaLanguages MODULE-IDENTITY
-    LAST-UPDATED "200005100000Z"  -- May 10, 2000
+    LAST-UPDATED "201405220000Z" -- May 22, 2014
     ORGANIZATION "IANA"
     CONTACT-INFO
         "Internet Assigned Numbers Authority (IANA)
 
          Postal: ICANN
-                 4676 Admiralty Way, Suite 330
-                 Marina del Rey, CA 90292
+                 12025 Waterfront Drive, Suite 300
+                 Los Angeles, CA 90094-2536
 
-         Tel:    +1 310 823 9358 x20
-         E-Mail: iana@iana.org"
+         Tel:    +1 310-301-5800
+         E-Mail: iana&iana.org"
     DESCRIPTION
         "The MIB module registers object identifier values for
          well-known programming and scripting languages. Every
@@ -30,14 +30,17 @@ ianaLanguages MODULE-IDENTITY
 
          Note, this module does not have to register all possible
          languages since languages are identified by object
-         identifier values. It is therefore possible to registered 
+         identifier values. It is therefore possible to registered
          languages in private OID trees. The references given below are not
          normative with regard to the language version. Other
-         references might be better suited to describe some newer 
+         references might be better suited to describe some newer
          versions of this language. The references are only
          provided as `a pointer into the right direction'."
 
  -- Revision log, in reverse chronological order
+
+    REVISION    "201405220000Z" -- May 22, 2014
+    DESCRIPTION "Updated contact info."
 
     REVISION    "200005100000Z" -- May 10, 2000
     DESCRIPTION "Import mib-2 instead of experimental, so that

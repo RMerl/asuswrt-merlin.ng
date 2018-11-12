@@ -61,41 +61,30 @@ struct variable2 traceRouteHopsTable_variables[] = {
 };
 
 
-
-
-/*
- * global storage of our data, saved in and configured by header_complex() 
- */
-
-extern struct header_complex_index *traceRouteCtlTableStorage;
-extern struct header_complex_index *traceRouteHopsTableStorage;
 void
 traceRouteHopsTable_inadd(struct traceRouteHopsTable_data *thedata);
 
 void
 traceRouteHopsTable_cleaner(struct header_complex_index *thestuff)
 {
-    struct header_complex_index *hciptr = NULL;
-    struct traceRouteHopsTable_data *StorageDel = NULL;
+    struct header_complex_index *hciptr, *nhciptr;
+    struct traceRouteHopsTable_data *StorageDel;
+
     DEBUGMSGTL(("traceRouteHopsTable", "cleanerout  "));
-    for (hciptr = thestuff; hciptr != NULL; hciptr = hciptr->next) {
-        StorageDel =
-            header_complex_extract_entry(&traceRouteHopsTableStorage,
-                                         hciptr);
+    for (hciptr = thestuff; hciptr; hciptr = nhciptr) {
+        nhciptr = hciptr->next;
+        StorageDel = header_complex_extract_entry(&traceRouteHopsTableStorage,
+                                                  hciptr);
         if (StorageDel != NULL) {
             free(StorageDel->traceRouteCtlOwnerIndex);
-            StorageDel->traceRouteCtlOwnerIndex = NULL;
             free(StorageDel->traceRouteCtlTestName);
-            StorageDel->traceRouteCtlTestName = NULL;
             free(StorageDel->traceRouteHopsLastGoodProbe);
-            StorageDel->traceRouteHopsLastGoodProbe = NULL;
             free(StorageDel);
-            StorageDel = NULL;
         }
         DEBUGMSGTL(("traceRouteHopsTable", "cleaner  "));
     }
-
 }
+
 void
 init_traceRouteHopsTable(void)
 {
@@ -151,6 +140,7 @@ parse_traceRouteHopsTable(const char *token, char *line)
                               &StorageTmp->traceRouteCtlOwnerIndexLen);
     if (StorageTmp->traceRouteCtlOwnerIndex == NULL) {
         config_perror("invalid specification for traceRouteCtlOwnerIndex");
+        free(StorageTmp);
         return;
     }
 
@@ -160,6 +150,7 @@ parse_traceRouteHopsTable(const char *token, char *line)
                               &StorageTmp->traceRouteCtlTestNameLen);
     if (StorageTmp->traceRouteCtlTestName == NULL) {
         config_perror("invalid specification for traceRouteCtlTestName");
+        free(StorageTmp);
         return;
     }
 
@@ -178,6 +169,7 @@ parse_traceRouteHopsTable(const char *token, char *line)
     if (StorageTmp->traceRouteHopsIpTgtAddress == NULL) {
         config_perror
             ("invalid specification for traceRouteHopsIpTgtAddress");
+        free(StorageTmp);
         return;
     }
 
@@ -211,6 +203,7 @@ parse_traceRouteHopsTable(const char *token, char *line)
     if (StorageTmp->traceRouteHopsLastGoodProbe == NULL) {
         config_perror
             ("invalid specification for traceRouteHopsLastGoodProbe");
+        free(StorageTmp);
         return;
     }
 

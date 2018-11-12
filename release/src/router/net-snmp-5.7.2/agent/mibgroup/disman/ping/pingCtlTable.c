@@ -45,17 +45,34 @@
 #include "pingProbeHistoryTable.h"
 #include "header_complex.h"
 
-static inline void tvsub(struct timeval *, struct timeval *);
-static inline int schedule_exit(int, int *, long *, long *, long *, long *);
-static inline int in_flight(__u16 *, long *, long *, long *);
-static inline void acknowledge(__u16, __u16 *, long *, int *);
-static inline void advance_ntransmitted(__u16 *, long *);
-static inline void update_interval(int, int, int *, int *);
+NETSNMP_STATIC_INLINE void tvsub(struct timeval *, struct timeval *);
+NETSNMP_STATIC_INLINE int schedule_exit(int, int *, long *, long *, long *, long *);
+NETSNMP_STATIC_INLINE int in_flight(__u16 *, long *, long *, long *);
+NETSNMP_STATIC_INLINE void acknowledge(__u16, __u16 *, long *, int *);
+NETSNMP_STATIC_INLINE void advance_ntransmitted(__u16 *, long *);
+NETSNMP_STATIC_INLINE void update_interval(int, int, int *, int *);
 static long     llsqrt(long long);
 static __inline__ int ipv6_addr_any(struct in6_addr *);
 static char    *pr_addr(struct in6_addr *, int);
 static char    *pr_addr_n(struct in6_addr *);
 void pingCtlTable_cleaner(struct header_complex_index *thestuff);
+
+static char rcvd_tbl[MAX_DUP_CHK / 8];
+
+static struct proto {
+    int             (*fproc) (char *, ssize_t, struct timeval *, time_t,
+                              struct pingCtlTable_data *,
+                              struct addrinfo *, int, unsigned long *,
+                              unsigned long *, unsigned long *,
+                              unsigned long *, unsigned long, int, int,
+                              int, struct pingProbeHistoryTable_data *,
+                              pid_t);
+    void            (*fsend) (int, pid_t, int, int, char *);
+    struct sockaddr *sasend;    /* sockaddr{} for send, from getaddrinfo */
+    struct sockaddr *sarecv;    /* sockaddr{} for receiving */
+    socklen_t       salen;      /* length of sockaddr{}s */
+    int             icmpproto;  /* IPPROTO_xxx value for ICMP */
+} *pr;
 
 /*
  *pingCtlTable_variables_oid:
@@ -507,6 +524,7 @@ parse_pingCtlTable(const char *token, char *line)
                               &StorageTmp->pingCtlSourceAddressLen);
     if (StorageTmp->pingCtlSourceAddress == NULL) {
         config_perror("invalid specification for pingCtlSourceAddress");
+        free(StorageTmp);
         return;
     }
 
@@ -1012,6 +1030,7 @@ sock_ntop_host(const struct sockaddr *sa, socklen_t salen)
 }
 
 
+#if 0
 char           *
 Sock_ntop_host(const struct sockaddr *sa, socklen_t salen)
 {
@@ -1023,6 +1042,7 @@ Sock_ntop_host(const struct sockaddr *sa, socklen_t salen)
     }
     return (ptr);
 }
+#endif
 
 
 
@@ -1083,6 +1103,7 @@ host_serv(const char *host, const char *serv, int family, int socktype)
  * end host_serv 
  */
 
+#if 0
 /*
  * There is no easy way to pass back the integer return code from
  * getaddrinfo() in the function above, short of adding another argument
@@ -1116,6 +1137,7 @@ Host_serv(const char *host, const char *serv, int family, int socktype)
 
     return (res);               /* return pointer to first on linked list */
 }
+#endif
 
 int
 readable_timeo(int fd, int sec)
@@ -1453,9 +1475,10 @@ proc_v4(char *ptr, ssize_t len, struct timeval *tvrecv, time_t timep,
 
 	    StorageNew->pingResultsLastGoodProbe_time = timep;
             free(StorageNew->pingResultsLastGoodProbe);
-            memdup(&StorageNew->pingResultsLastGoodProbe,
-		date_n_time(&timep,
-		    &StorageNew->pingResultsLastGoodProbeLen), 11);
+            StorageNew->pingResultsLastGoodProbe =
+                netsnmp_memdup(date_n_time(&timep,
+                                      &StorageNew->pingResultsLastGoodProbeLen),
+                               11);
 
             temp = SNMP_MALLOC_STRUCT(pingProbeHistoryTable_data);
 
@@ -1489,8 +1512,10 @@ proc_v4(char *ptr, ssize_t len, struct timeval *tvrecv, time_t timep,
             temp->pingProbeHistoryLastRC = 0;
 
 	    temp->pingProbeHistoryTime_time = timep;
-	    memdup(&temp->pingProbeHistoryTime,
-		date_n_time(&timep, &temp->pingProbeHistoryTimeLen), 11);
+            temp->pingProbeHistoryTime = 
+                netsnmp_memdup(date_n_time(&timep,
+                                           &temp->pingProbeHistoryTimeLen),
+                               11);
 
             if (StorageNew->pingResultsSendProbes == 1)
                 item->pingProbeHis = temp;
@@ -1568,8 +1593,9 @@ proc_v4(char *ptr, ssize_t len, struct timeval *tvrecv, time_t timep,
         temp->pingProbeHistoryLastRC = 1;
 
 	temp->pingProbeHistoryTime_time = timep;
-	memdup(&temp->pingProbeHistoryTime,
-	    date_n_time(&timep, &temp->pingProbeHistoryTimeLen), 11);
+	temp->pingProbeHistoryTime =
+            netsnmp_memdup(date_n_time(&timep, &temp->pingProbeHistoryTimeLen),
+                           11);
 
         if (StorageNew->pingResultsSendProbes == 1)
             item->pingProbeHis = temp;
@@ -1940,6 +1966,7 @@ run_ping(unsigned int clientreg, void *clientarg)
                        sz_opt);
         if (err < 0) {
             perror("setsockopt(RAW_CHECKSUM)");
+            free(packet);
             return;
         }
 
@@ -1963,6 +1990,7 @@ run_ping(unsigned int clientreg, void *clientarg)
 
         if (err < 0) {
             perror("setsockopt(ICMP6_FILTER)");
+            free(packet);
             return;
         }
 
@@ -1971,6 +1999,7 @@ run_ping(unsigned int clientreg, void *clientarg)
             if (setsockopt(icmp_sock, IPPROTO_IPV6, IPV6_HOPLIMIT,
                            &on, sizeof(on)) == -1) {
                 perror("can't receive hop limit");
+                free(packet);
                 return;
             }
         }
@@ -4405,7 +4434,7 @@ write_pingCtlRowStatus(int action,
 }
 
 
-static inline void
+NETSNMP_STATIC_INLINE void
 tvsub(struct timeval *out, struct timeval *in)
 {
     if ((out->tv_usec -= in->tv_usec) < 0) {
@@ -4416,7 +4445,7 @@ tvsub(struct timeval *out, struct timeval *in)
 }
 
 
-static inline int
+NETSNMP_STATIC_INLINE int
 schedule_exit(int next, int *deadline, long *npackets, long *nreceived,
               long *ntransmitted, long *tmax)
 {
@@ -4425,7 +4454,7 @@ schedule_exit(int next, int *deadline, long *npackets, long *nreceived,
     return next;
 }
 
-static inline int
+NETSNMP_STATIC_INLINE int
 in_flight(__u16 * acked, long *nreceived, long *ntransmitted,
           long *nerrors)
 {
@@ -4434,7 +4463,7 @@ in_flight(__u16 * acked, long *nreceived, long *ntransmitted,
             0x7FFF) ? diff : (*ntransmitted) - (*nreceived) - (*nerrors);
 }
 
-static inline void
+NETSNMP_STATIC_INLINE void
 acknowledge(__u16 seq, __u16 * acked, long *ntransmitted, int *pipesize)
 {
     __u16           diff = (__u16) (*ntransmitted) - seq;
@@ -4447,7 +4476,7 @@ acknowledge(__u16 seq, __u16 * acked, long *ntransmitted, int *pipesize)
     }
 }
 
-static inline void
+NETSNMP_STATIC_INLINE void
 advance_ntransmitted(__u16 * acked, long *ntransmitted)
 {
     (*ntransmitted)++;
@@ -4459,7 +4488,7 @@ advance_ntransmitted(__u16 * acked, long *ntransmitted)
 }
 
 
-static inline void
+NETSNMP_STATIC_INLINE void
 update_interval(int uid, int interval, int *rtt_addend, int *rtt)
 {
     int             est = (*rtt) ? (*rtt) / 8 : interval * 1000;
@@ -4662,10 +4691,8 @@ sock_setbufs(int icmp_sock, int alloc, int preload)
 {
     int             rcvbuf, hold;
     socklen_t       tmplen = sizeof(hold);
-    int             sndbuf;
+    int             sndbuf = alloc;
 
-    if (!sndbuf)
-        sndbuf = alloc;
     setsockopt(icmp_sock, SOL_SOCKET, SO_SNDBUF, (char *) &sndbuf,
                sizeof(sndbuf));
 
@@ -4956,6 +4983,7 @@ main_loop(struct pingCtlTable_data *item, int icmp_sock, int preload,
             msg.msg_iovlen = 1;
             msg.msg_control = ans_data;
             msg.msg_controllen = sizeof(ans_data);
+            msg.msg_flags = 0;
 
             cc = recvmsg(icmp_sock, &msg, polling);
             time_t          timep;
@@ -5027,8 +5055,10 @@ main_loop(struct pingCtlTable_data *item, int icmp_sock, int preload,
                     temp->pingProbeHistoryLastRC = 1;
 
 		    temp->pingProbeHistoryTime_time = timep;
-		    memdup(&temp->pingProbeHistoryTime,
-			date_n_time(&timep, &temp->pingProbeHistoryTimeLen), 11);
+                    temp->pingProbeHistoryTime =
+                        netsnmp_memdup(date_n_time(&timep,
+                                               &temp->pingProbeHistoryTimeLen),
+                                       11);
 
                     if (StorageNew->pingResultsSendProbes == 1)
                         item->pingProbeHis = temp;
@@ -5320,8 +5350,10 @@ gather_statistics(int *series, struct pingCtlTable_data *item, __u8 * ptr,
 
     StorageNew->pingResultsLastGoodProbe_time = timep;
     free(StorageNew->pingResultsLastGoodProbe);
-    memdup(&StorageNew->pingResultsLastGoodProbe,
-	date_n_time(&timep, &StorageNew->pingResultsLastGoodProbeLen), 11);
+    StorageNew->pingResultsLastGoodProbe =
+        netsnmp_memdup(date_n_time(&timep,
+                                   &StorageNew->pingResultsLastGoodProbeLen),
+                       11);
 
     /* ProbeHistory               */
     if (item->pingCtlMaxRows != 0) {
@@ -5356,8 +5388,9 @@ gather_statistics(int *series, struct pingCtlTable_data *item, __u8 * ptr,
         temp->pingProbeHistoryLastRC = 0;
 
 	temp->pingProbeHistoryTime_time = timep;
-	memdup(&temp->pingProbeHistoryTime,
-	    date_n_time(&timep, &temp->pingProbeHistoryTimeLen), 11);
+	temp->pingProbeHistoryTime =
+            netsnmp_memdup(date_n_time(&timep, &temp->pingProbeHistoryTimeLen),
+                           11);
 
         if (StorageNew->pingResultsSendProbes == 1)
             item->pingProbeHis = temp;
@@ -5630,6 +5663,7 @@ send_v6(int icmp_sock, int cmsglen, char *cmsgbuf,
         iov.iov_len = cc;
         iov.iov_base = outpack;
 
+        memset(&mhdr, 0, sizeof(mhdr));
         mhdr.msg_name = whereto;
         mhdr.msg_namelen = sizeof(struct sockaddr_in6);
         mhdr.msg_iov = &iov;

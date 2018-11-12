@@ -2,7 +2,7 @@
 
 #ifdef HAVE_STRTOULL
 
-OK(1, "Skipping strtoull() test because using strtoull() from C library.\n");;
+OK(1, "Skipping strtoull() test because using strtoull() from C library.\n");
 
 #else
 

@@ -16,8 +16,6 @@
 #undef TCPSTAT_SYMBOL
 #undef UDPSTAT_SYMBOL
 
-#define ARP_SCAN_FOUR_ARGUMENTS 1
-
 #define _KMEMUSER 1
 
 /*

@@ -442,12 +442,15 @@ int
 snmp_unregister_callback(int major, int minor, SNMPCallback * target,
                          void *arg, int matchargs)
 {
-    struct snmp_gen_callback *scp = thecallbacks[major][minor];
-    struct snmp_gen_callback **prevNext = &(thecallbacks[major][minor]);
+    struct snmp_gen_callback *scp;
+    struct snmp_gen_callback **prevNext;
     int             count = 0;
 
     if (major >= MAX_CALLBACK_IDS || minor >= MAX_CALLBACK_SUBIDS)
         return SNMPERR_GENERR;
+
+    scp = thecallbacks[major][minor];
+    prevNext = &(thecallbacks[major][minor]);
 
     if (_callback_need_init)
         init_callbacks();

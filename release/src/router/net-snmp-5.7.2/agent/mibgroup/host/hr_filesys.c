@@ -201,12 +201,7 @@ struct mntent  *HRFS_entry;
 #define	FULL_DUMP	0
 #define	PART_DUMP	1
 
-extern void     Init_HR_FileSys(void);
-extern int      Get_Next_HR_FileSys(void);
-char           *cook_device(char *);
 static u_char  *when_dumped(char *filesys, int level, size_t * length);
-int             header_hrfilesys(struct variable *, oid *, size_t *, int,
-                                 size_t *, WriteMethod **);
 
         /*********************
 	 *

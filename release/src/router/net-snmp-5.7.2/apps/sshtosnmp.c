@@ -28,7 +28,7 @@
 #include <stdio.h>
 
 #ifndef MAXPATHLEN
-#warn no system max path length detected
+#warning no system max path length detected
 #define MAXPATHLEN 2048
 #endif
 
@@ -44,10 +44,10 @@
 
 #undef DEBUGGING
 
-#ifdef DEBUGGING
 #define DEBUG(x) deb(x)
+#ifdef DEBUGGING
 FILE *debf = NULL;
-void
+static void
 deb(const char *string) {
     if (NULL == debf) {
         debf = fopen("/tmp/sshtosnmp.log", "a");
@@ -58,7 +58,8 @@ deb(const char *string) {
     }
 }
 #else  /* !DEBUGGING */
-#define DEBUG(x)
+NETSNMP_STATIC_INLINE void
+deb(const char *string) { }
 #endif /* DEBUGGING code */
 
 int
@@ -77,11 +78,8 @@ main(int argc, char **argv) {
     /* Open a connection to the UNIX domain socket or fail */
 
     addr.sun_family = AF_UNIX;
-    if (argc > 1) {
-        strcpy(addr.sun_path, argv[1]);
-    } else {
-        strcpy(addr.sun_path, DEFAULT_SOCK_PATH);
-    }
+    snprintf(addr.sun_path, sizeof(addr.sun_path), "%s",
+             argc > 1 ? argv[1] : DEFAULT_SOCK_PATH);
 
     sock = socket(PF_UNIX, SOCK_STREAM, 0);
     DEBUG("created socket");
@@ -165,6 +163,7 @@ main(int argc, char **argv) {
 
     while(1) {
         /* read from stdin and the socket */
+        FD_ZERO(&read_set);
         FD_SET(sock, &read_set);
         FD_SET(STDIN_FILENO, &read_set);
 

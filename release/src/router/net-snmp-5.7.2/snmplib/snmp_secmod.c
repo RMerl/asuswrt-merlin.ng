@@ -1,5 +1,14 @@
 /*
  * security service wrapper to support pluggable security models 
+ *
+ * Portions of this file are subject to the following copyright(s).  See
+ * the Net-SNMP's COPYING file for more details and other copyrights
+ * that may apply:
+ *
+ * Portions of this file are copyrighted by:
+ * Copyright (c) 2016 VMware, Inc. All rights reserved.
+ * Use is subject to license terms specified in the COPYING file
+ * distributed with the Net-SNMP package.
  */
 
 #include <net-snmp/net-snmp-config.h>
@@ -63,9 +72,9 @@ int
 register_sec_mod(int secmod, const char *modname,
                  struct snmp_secmod_def *newdef)
 {
-    int             result;
+    int             result = 0;
     struct snmp_secmod_list *sptr;
-    char           *othername;
+    char           *othername, *modname2 = NULL;
 
     for (sptr = registered_services; sptr; sptr = sptr->next) {
         if (sptr->securityModel == secmod) {
@@ -79,9 +88,12 @@ register_sec_mod(int secmod, const char *modname,
     sptr->securityModel = secmod;
     sptr->next = registered_services;
     registered_services = sptr;
-    if ((result =
-         se_add_pair_to_slist("snmp_secmods", strdup(modname), secmod))
-        != SE_OK) {
+    modname2 = strdup(modname);
+    if (!modname2)
+        result = SE_NOMEM;
+    else
+        result = se_add_pair_to_slist("snmp_secmods", modname2, secmod);
+    if (result != SE_OK) {
         switch (result) {
         case SE_NOMEM:
             snmp_log(LOG_CRIT, "snmp_secmod: no memory\n");

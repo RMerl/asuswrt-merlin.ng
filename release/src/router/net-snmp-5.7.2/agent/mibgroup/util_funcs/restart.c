@@ -21,6 +21,8 @@
 
 #include <net-snmp/net-snmp-includes.h>
 #include <net-snmp/library/snmp_logging.h>
+#include <net-snmp/agent/net-snmp-agent-includes.h>
+#include "restart.h"
 
 #ifdef USING_UCD_SNMP_ERRORMIB_MODULE
 #include "ucd-snmp/errormib.h"

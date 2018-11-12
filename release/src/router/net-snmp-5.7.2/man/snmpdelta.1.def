@@ -108,7 +108,7 @@ Specifies the maximum number of oids allowed to be packaged
 in a single PDU. Multiple PDUs can be created in a single
 request. The default value of variables per packet is 60.
 This option is useful if a request response results in an
-error becaues the packet is too big.
+error because the packet is too big.
 .PP
 Note that
 .B snmpdelta

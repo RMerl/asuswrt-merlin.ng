@@ -8,24 +8,13 @@
 
 #include <net-snmp/agent/net-snmp-agent-includes.h>
 #include <net-snmp/data_access/scopezone.h>
+#include "ipv6scopezone_private.h"
+
 /*
  * local static prototypes
  */
 static void _entry_release(netsnmp_v6scopezone_entry * entry, void *unused);
 
-
-/**---------------------------------------------------------------------*/
-/*
- * external per-architecture functions prototypes
- *
- * These shouldn't be called by the general public, so they aren't in
- * the header file.
- */
-extern int
-netsnmp_access_scopezone_container_arch_load(netsnmp_container* container,
-                                             u_int load_flags);
-extern void
-netsnmp_access_scopezone_arch_init(void);
 
 /**
  * initialize systemstats container

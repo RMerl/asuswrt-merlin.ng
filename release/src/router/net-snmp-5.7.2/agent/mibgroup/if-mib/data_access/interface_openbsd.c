@@ -22,6 +22,7 @@ netsnmp_feature_child_of(interface_arch_set_admin_status, interface_all)
 #include <net-snmp/data_access/interface.h>
 #include <net-snmp/data_access/ipaddress.h>
 #include "if-mib/data_access/interface.h"
+#include "interface_private.h"
 
 #include <sys/types.h>
 #include <sys/time.h>

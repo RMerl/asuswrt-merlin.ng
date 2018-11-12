@@ -68,7 +68,7 @@ SOFTWARE.
 
 int             command = SNMP_MSG_GET;
 
-int             input_variable(netsnmp_variable_list *);
+static int      input_variable(netsnmp_variable_list *);
 
 void
 usage(void)
@@ -87,26 +87,28 @@ main(int argc, char *argv[])
     netsnmp_variable_list *vars, *vp;
     netsnmp_transport *transport = NULL;
     int             ret;
+    int             exit_code = 1;
     int             status, count;
     char            input[128];
     int             varcount, nonRepeaters = -1, maxRepetitions;
+
+    SOCK_STARTUP;
 
     /*
      * get the common command line arguments 
      */
     switch (snmp_parse_args(argc, argv, &session, NULL, NULL)) {
     case NETSNMP_PARSE_ARGS_ERROR:
-        exit(1);
+        goto out;
     case NETSNMP_PARSE_ARGS_SUCCESS_EXIT:
-        exit(0);
+        exit_code = 0;
+        goto out;
     case NETSNMP_PARSE_ARGS_ERROR_USAGE:
         usage();
-        exit(1);
+        goto out;
     default:
         break;
     }
-
-    SOCK_STARTUP;
 
     /*
      * open an SNMP session 
@@ -117,8 +119,7 @@ main(int argc, char *argv[])
          * diagnose snmp_open errors with the input netsnmp_session pointer 
          */
         snmp_sess_perror("snmptest", &session);
-        SOCK_CLEANUP;
-        exit(1);
+        goto out;
     }
 
     varcount = 0;
@@ -165,8 +166,8 @@ main(int argc, char *argv[])
                         fflush(stdout);
                         if (!fgets(input, sizeof(input), stdin)) {
                             printf("Quitting,  Goodbye\n");
-                            SOCK_CLEANUP;
-                            exit(0);
+                            exit_code = 0;
+                            goto out;
                         }
                         maxRepetitions = atoi(input);
                         pdu->non_repeaters = nonRepeaters;
@@ -279,6 +280,10 @@ main(int argc, char *argv[])
         nonRepeaters = -1;
     }
     /* NOTREACHED */
+
+out:
+    SOCK_CLEANUP;
+    return exit_code;
 }
 
 int

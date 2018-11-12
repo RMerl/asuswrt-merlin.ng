@@ -18,7 +18,11 @@ extern          "C" {
  */
 
     char *netsnmp_ipv4_fmtaddr(const char *prefix, netsnmp_transport *t,
-                               void *data, int len);
+                               const void *data, int len);
+    void netsnmp_ipv4_get_taddr(struct netsnmp_transport_s *t, void **addr,
+                                size_t *addr_len);
+    int netsnmp_ipv4_ostring_to_sockaddr(struct sockaddr_in *sin,
+                                         const void *o, size_t o_len);
 
 /*
  * Convert a "traditional" peername into a sockaddr_in structure which is

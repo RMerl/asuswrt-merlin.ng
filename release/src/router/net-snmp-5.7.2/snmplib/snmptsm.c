@@ -30,8 +30,6 @@
 netsnmp_feature_require(snmpv3_probe_contextEngineID_rfc5343)
 netsnmp_feature_require(row_create)
 
-#include <unistd.h>
-
 static int      tsm_session_init(netsnmp_session *);
 static void     tsm_free_state_ref(void *);
 static int      tsm_clone_pdu(netsnmp_pdu *, netsnmp_pdu *);
@@ -104,12 +102,11 @@ tsm_session_init(netsnmp_session * sess)
 static void
 tsm_free_state_ref(void *ptr)
 {
-    netsnmp_tsmSecurityReference *tsmRef;
+    netsnmp_tsmSecurityReference *tsmRef = ptr;
 
-    if (NULL == ptr)
+    if (!tsmRef)
         return;
 
-    tsmRef = (netsnmp_tsmSecurityReference *) ptr;
     /* the tmStateRef is always taken care of by the normal PDU, since this
        is just a reference to that one */
     /* DON'T DO: SNMP_FREE(tsmRef->tmStateRef); */
@@ -138,21 +135,26 @@ tsm_clone_pdu(netsnmp_pdu *pdu, netsnmp_pdu *pdu2)
         return SNMPERR_SUCCESS;
 
     newref = SNMP_MALLOC_TYPEDEF(netsnmp_tsmSecurityReference);
+    netsnmp_assert_or_return(NULL != newref, SNMPERR_GENERR);
     DEBUGMSGTL(("tsm", "cloned as pdu=%p, ref=%p (oldref=%p)\n",
-            pdu2, newref, pdu2->securityStateRef));
-    if (!newref)
-        return SNMPERR_GENERR;
+                pdu2, newref, pdu2->securityStateRef));
     
     memcpy(newref, oldref, sizeof(*oldref));
-
-    pdu2->securityStateRef = newref;
 
     /* the tm state reference is just a link to the one in the pdu,
        which was already copied by snmp_clone_pdu before handing it to
        us. */
 
-    memdup((u_char **) &newref->tmStateRef, oldref->tmStateRef,
-           sizeof(*oldref->tmStateRef));
+    newref->tmStateRef = netsnmp_memdup(oldref->tmStateRef,
+                                        sizeof(*oldref->tmStateRef));
+    if (!newref->tmStateRef) {
+        snmp_log(LOG_ERR, "tsm: malloc failure\n");
+        free(newref);
+        return SNMPERR_GENERR;
+    }
+
+    pdu2->securityStateRef = newref;
+
     return SNMPERR_SUCCESS;
 }
 
@@ -367,15 +369,16 @@ tsm_rgenerate_out_msg(struct snmp_secmod_outgoing_params *parms)
     }
 
     /* put the transport state reference into the PDU for the transport */
-    if (SNMPERR_SUCCESS !=
-        memdup((u_char **) &parms->pdu->transport_data,
-               tmStateRef, sizeof(*tmStateRef))) {
+    parms->pdu->transport_data = netsnmp_memdup(tmStateRef, sizeof(*tmStateRef));
+    if (tmStateRefLocal)
+        SNMP_FREE(tmStateRef);
+
+    if (!parms->pdu->transport_data) {
         snmp_log(LOG_ERR, "tsm: malloc failure\n");
+        return SNMPERR_GENERR;
     }
     parms->pdu->transport_data_length = sizeof(*tmStateRef);
 
-    if (tmStateRefLocal)
-        SNMP_FREE(tmStateRef);
     DEBUGMSGTL(("tsm", "TSM processing completed.\n"));
     return SNMPERR_SUCCESS;
 }
@@ -460,11 +463,6 @@ tsm_process_in_msg(struct snmp_secmod_incoming_params *parms)
            |--------------------+-------|
         */
         
-        if (tmStateRef->transportDomain == NULL) {
-            /* XXX: snmpTsmInvalidCaches++ ??? */
-            return SNMPERR_GENERR;
-        }
-
         /* XXX: cache in session! */
 #ifdef NETSNMP_TRANSPORT_SSH_DOMAIN
         if (netsnmp_oid_equals(netsnmp_snmpSSHDomain,

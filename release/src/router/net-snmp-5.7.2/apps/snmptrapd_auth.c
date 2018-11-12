@@ -1,6 +1,11 @@
 /*
  * snmptrapd_auth.c - authorize notifications for further processing
  *
+ * Portions of this file are copyrighted by:
+ * Copyright (c) 2016 VMware, Inc. All rights reserved.
+ * Use is subject to license terms specified in the COPYING file
+ * distributed with the Net-SNMP package.
+ *
  */
 #include <net-snmp/net-snmp-config.h>
 
@@ -66,9 +71,11 @@ netsnmp_trapd_auth(netsnmp_pdu           *pdu,
     int ret = 0;
     oid snmptrapoid[] = { 1,3,6,1,6,3,1,1,4,1,0 };
     size_t snmptrapoid_len = OID_LENGTH(snmptrapoid);
-    int i;
     netsnmp_pdu *newpdu = pdu;
     netsnmp_variable_list *var;
+#ifdef USING_MIBII_VACM_CONF_MODULE
+    int i;
+#endif
 
     /* check to see if authorization was not disabled */
     if (netsnmp_ds_get_boolean(NETSNMP_DS_APPLICATION_ID,

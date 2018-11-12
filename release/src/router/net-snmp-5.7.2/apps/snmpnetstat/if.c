@@ -69,6 +69,7 @@ static void timerPause(void);
 
     struct _if_info {
         char            name[128];
+        char            descr[128];
         char            ip[128], route[128];
         int             mtu;
         int             drops;
@@ -150,16 +151,16 @@ _set_address( struct _if_info *cur_if )
          *   displaying the local network information
          */
         cp = tmpAddr.data;
-        cp[0] = vp2->name[ 10 ] & 0xff;
-        cp[1] = vp2->name[ 11 ] & 0xff;
-        cp[2] = vp2->name[ 12 ] & 0xff;
-        cp[3] = vp2->name[ 13 ] & 0xff;
+        cp[0] = (uint8_t) vp2->name[10];
+        cp[1] = (uint8_t) vp2->name[11];
+        cp[2] = (uint8_t) vp2->name[12];
+        cp[3] = (uint8_t) vp2->name[13];
         ifAddr = tmpAddr.addr;
         cp = tmpAddr.data;
-        cp[0] = vp2->val.string[ 0 ] & 0xff;
-        cp[1] = vp2->val.string[ 1 ] & 0xff;
-        cp[2] = vp2->val.string[ 2 ] & 0xff;
-        cp[3] = vp2->val.string[ 3 ] & 0xff;
+        cp[0] = (uint8_t) vp2->val.string[0];
+        cp[1] = (uint8_t) vp2->val.string[1];
+        cp[2] = (uint8_t) vp2->val.string[2];
+        cp[3] = (uint8_t) vp2->val.string[3];
         mask = tmpAddr.addr;
         snprintf( cur_if->route, 128, "%s", netname(ifAddr, mask));
     }
@@ -174,6 +175,8 @@ intpr(int interval)
 {
     oid    ifcol_oid[]  = { 1,3,6,1,2,1,2,2,1,0 };
     size_t ifcol_len    = OID_LENGTH( ifcol_oid );
+    oid    ifxcol_oid[] = { 1,3,6,1,2,1,31,1,1,1,0 };
+    size_t ifxcol_len   = OID_LENGTH( ifxcol_oid );
 
     struct _if_info *if_head, *if_tail, *cur_if;
     netsnmp_variable_list *var, *vp;
@@ -254,12 +257,18 @@ intpr(int interval)
         ADD_IFVAR( 19 );            /* ifOutDiscards  */
     }
 #undef ADD_IFVAR
+#define ADD_IFXVAR( x ) ifxcol_oid[ ifxcol_len-1 ] = x; \
+    snmp_varlist_add_variable( &var, ifxcol_oid, ifxcol_len, ASN_NULL, NULL,  0)
+    ADD_IFXVAR(1);                  /* ifName */
+#undef ADD_IFXVAR
 
         /*
 	 * Now walk the ifTable, creating a list of interfaces
 	 */
     while ( 1 ) {
         if (netsnmp_query_getnext( var, ss ) != SNMP_ERR_NOERROR)
+            break;
+        if ((var->type & 0xF0) == 0x80)     /* Exception */
             break;
         ifcol_oid[ ifcol_len-1 ] = 2;	/* ifDescr */
         if ( snmp_oid_compare( ifcol_oid, ifcol_len,
@@ -270,6 +279,8 @@ intpr(int interval)
             break;
         cur_if->ifindex = var->name[ var->name_length-1 ];
         for ( vp=var; vp; vp=vp->next_variable ) {
+            if ((vp->type & 0xF0) == 0x80)     /* Exception */
+                continue;
             if ( ! vp->val.integer )
                 continue;
             if ( var->name[ var->name_length-1 ] != cur_if->ifindex ) {
@@ -286,8 +297,8 @@ intpr(int interval)
                     vp->val_len  = sizeof(cur_if->name)-1;
                 memmove( cur_if->name, vp->val.string, vp->val_len );
                 cur_if->name[vp->val_len] = 0;
-                if ((i = strlen(cur_if->name) + 1) > max_name)
-                    max_name = i;
+                memmove( cur_if->descr, vp->val.string, vp->val_len );
+                cur_if->descr[vp->val_len] = 0;
                 break;
             case 4:     /* ifMtu   */
                 cur_if->mtu = *vp->val.integer;
@@ -357,6 +368,14 @@ intpr(int interval)
                 if (i > max_outq)
                     max_outq = i;
                 break;
+            case 1:     /* ifName */
+                if (vp->val_len >= sizeof(cur_if->name))
+                    vp->val_len  = sizeof(cur_if->name)-1;
+                memmove( cur_if->name, vp->val.string, vp->val_len );
+                cur_if->name[vp->val_len] = 0;
+                if ((i = strlen(cur_if->name) + 1) > max_name)
+                    max_name = i;
+                break;
             }
         }
 
@@ -372,7 +391,7 @@ intpr(int interval)
          *   the varbind list).  But performing this test here
          *   means we can recognise ifXTable names as well)
          */
-        if ( intrface && strcmp( cur_if->name, intrface ) != 0) {
+        if ( intrface && strcmp( cur_if->name, intrface) != 0 && strcmp( cur_if->descr, intrface) != 0) {
             SNMP_FREE( cur_if );
         }
 
@@ -381,6 +400,8 @@ intpr(int interval)
          *   add the new _if_stat structure to the list.
          */
         if ( cur_if ) {
+            if ((i = strlen(cur_if->name) + 1) > max_name)
+                max_name = i;
             _set_address( cur_if );
             i = strlen(cur_if->ip);
             if (i > max_ip)
@@ -398,6 +419,7 @@ intpr(int interval)
             }
         }
     }   /* while (1) */
+    snmp_free_varbind(var);
 
         /*
          * Now display the specified results (in Free-BSD format)
@@ -539,6 +561,36 @@ sidewaysintpr(unsigned int interval)
          * XXX - Might be worth searching ifName/ifAlias as well
          */
         if (!vp) {
+            oid    ifname_oid[]  = { 1,3,6,1,2,1,31,1,1,1,1,0 };
+            size_t ifname_len    = OID_LENGTH( ifname_oid );
+            snmp_free_var( var );
+            var = NULL;
+            snmp_varlist_add_variable( &var, ifname_oid, ifname_len-1,
+                                       ASN_NULL, NULL,  0);
+            i = strlen(intrface);
+            netsnmp_query_walk( var, ss );
+            for (vp=var; vp; vp=vp->next_variable) {
+                if (strncmp(intrface, (char *)vp->val.string, i) == 0 &&
+                    i == vp->val_len)
+                    break;  /* found requested interface */
+            }
+        }
+        if (!vp) {
+            oid    ifalias_oid[]  = { 1,3,6,1,2,1,31,1,1,1,18,0 };
+            size_t ifalias_len    = OID_LENGTH( ifalias_oid );
+            snmp_free_var( var );
+            var = NULL;
+            snmp_varlist_add_variable( &var, ifalias_oid, ifalias_len-1,
+                                       ASN_NULL, NULL,  0);
+            i = strlen(intrface);
+            netsnmp_query_walk( var, ss );
+            for (vp=var; vp; vp=vp->next_variable) {
+                if (strncmp(intrface, (char *)vp->val.string, i) == 0 &&
+                    i == vp->val_len)
+                    break;  /* found requested interface */
+            }
+        }
+        if (!vp) {
             fprintf(stderr, "%s: unknown interface\n", intrface );
             exit(1);
         }
@@ -613,6 +665,8 @@ loop:
         cur_if->ift_dr = 0;
         cur_if->ifIndex = var->name[ ifcol_len-1 ];
         for (vp=var; vp; vp=vp->next_variable) {
+            if ((var->type & 0xF0) == 0x80)     /* Exception */
+                continue;
             if ( ! vp->val.integer )
                 continue;
             switch (vp->name[ifcol_len-2]) {
@@ -705,11 +759,15 @@ loop:
         while ( 1 ) {
             if (netsnmp_query_getnext( var, ss ) != SNMP_ERR_NOERROR)
                 break;
+            if ((var->type & 0xF0) == 0x80)     /* Exception */
+                break;
             if ( snmp_oid_compare( ifcol_oid, ifcol_len-2,
                                    var->name, ifcol_len-2) != 0 )
                 break;    /* End of Table */
             
             for ( vp=var; vp; vp=vp->next_variable ) {
+                if ((vp->type & 0xF0) == 0x80)     /* Exception */
+                    continue;
                 if ( ! vp->val.integer )
                     continue;
                 switch ( vp->name[ ifcol_len-2 ] ) {

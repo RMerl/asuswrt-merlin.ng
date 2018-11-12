@@ -70,6 +70,7 @@ int netsnmp_mem_arch_load( netsnmp_cache *cache, void *magic ) {
     close(statfd);
     if (bytes_read <= 0) {
         snmp_log_perror(MEMINFO_FILE);
+        buff[0] = '\0';
     } else {
         buff[bytes_read] = '\0';
     }

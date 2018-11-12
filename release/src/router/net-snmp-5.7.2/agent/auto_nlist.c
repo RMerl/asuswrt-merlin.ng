@@ -56,6 +56,7 @@ auto_nlist_value(const char *string)
         static char *n_name = NULL;
 #endif
         *ptr = (struct autonlist *) malloc(sizeof(struct autonlist));
+        memset(*ptr, 0, sizeof(struct autonlist));
         it = *ptr;
         it->left = 0;
         it->right = 0;

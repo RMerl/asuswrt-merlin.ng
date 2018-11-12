@@ -40,6 +40,8 @@ int             unregister_index(netsnmp_variable_list *, int,
 unsigned long   count_indexes(oid * name, size_t namelen,
                               int include_unallocated);
 
+void dump_idx_registry(void);
+
 #ifdef __cplusplus
 }
 #endif

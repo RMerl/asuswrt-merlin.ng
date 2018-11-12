@@ -85,6 +85,7 @@ SOFTWARE.
 #endif
 
 #include <net-snmp/net-snmp-includes.h>
+#include "snmptrapd_handlers.h"
 #include "snmptrapd_log.h"
 
 
@@ -301,11 +302,6 @@ typedef enum {
       * Input Parameters:
       *    var - the parameter to reference
       */
-
-/*
- * prototypes 
- */
-extern const char *trap_description(int trap);
 
 static void
 init_options(options_type * options)

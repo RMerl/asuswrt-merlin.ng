@@ -270,18 +270,18 @@ config_require(ip-forward-mib/ipCidrRouteTable/ipCidrRouteTable_data_access)
     int
         ipCidrRouteTable_indexes_set_tbl_idx(ipCidrRouteTable_mib_index *
                                              tbl_idx,
-                                             u_long ipCidrRouteDest_val,
-                                             u_long ipCidrRouteMask_val,
+                                             in_addr_t ipCidrRouteDest_val,
+                                             in_addr_t ipCidrRouteMask_val,
                                              long ipCidrRouteTos_val,
-                                             u_long
+                                             in_addr_t
                                              ipCidrRouteNextHop_val);
     int
         ipCidrRouteTable_indexes_set(ipCidrRouteTable_rowreq_ctx *
                                      rowreq_ctx,
-                                     u_long ipCidrRouteDest_val,
-                                     u_long ipCidrRouteMask_val,
+                                     in_addr_t ipCidrRouteDest_val,
+                                     in_addr_t ipCidrRouteMask_val,
                                      long ipCidrRouteTos_val,
-                                     u_long ipCidrRouteNextHop_val);
+                                     in_addr_t ipCidrRouteNextHop_val);
 
 
 

@@ -32,9 +32,12 @@
 
 #include <net-snmp/net-snmp-includes.h>
 #include <net-snmp/agent/net-snmp-agent-includes.h>
+#include "agent_global_vars.h"
 
 #include "agentx/protocol.h"
 #include "agentx/client.h"
+#include "agentx/subagent.h"
+#include "agentx/master_admin.h"
 
 #include <net-snmp/agent/agent_index.h>
 #include <net-snmp/agent/agent_trap.h>
@@ -133,11 +136,16 @@ close_agentx_session(netsnmp_session * session, int sessid)
          * requests, so that the delegated request will be completed and
          * further requests can be processed
          */
-        netsnmp_remove_delegated_requests_for_session(session);
+	while (netsnmp_remove_delegated_requests_for_session(session)) {
+		DEBUGMSGTL(("agentx/master", "Continue removing delegated reqests\n"));
+	}
+
         if (session->subsession != NULL) {
             netsnmp_session *subsession = session->subsession;
             for(; subsession; subsession = subsession->next) {
-                netsnmp_remove_delegated_requests_for_session(subsession);
+                while (netsnmp_remove_delegated_requests_for_session(subsession)) {
+			DEBUGMSGTL(("agentx/master", "Continue removing delegated subsession reqests\n"));
+		}
             }
         }
                 
@@ -153,6 +161,7 @@ close_agentx_session(netsnmp_session * session, int sessid)
     for (sp = session->subsession; sp != NULL; sp = sp->next) {
 
         if (sp->sessid == sessid) {
+            netsnmp_remove_delegated_requests_for_session(sp);
             unregister_mibs_by_session(sp);
             unregister_index_by_session(sp);
             unregister_sysORTable_by_session(sp);
@@ -229,7 +238,7 @@ register_agentx_list(netsnmp_session * session, netsnmp_pdu *pdu)
      * register mib. Note that for failure cases, the registration info
      * (reg) will be freed, and thus is no longer a valid pointer.
      */
-    switch (netsnmp_register_mib(buf, NULL, 0, 1,
+    switch (netsnmp_register_mib(buf, NULL, 0, 0,
                                  pdu->variables->name,
                                  pdu->variables->name_length,
                                  pdu->priority, pdu->range_subid, ubound,
@@ -408,8 +417,6 @@ agentx_notify(netsnmp_session * session, netsnmp_pdu *pdu)
 {
     netsnmp_session       *sp;
     netsnmp_variable_list *var;
-    extern const oid       sysuptime_oid[], snmptrap_oid[];
-    extern const size_t    sysuptime_oid_len, snmptrap_oid_len;
 
     sp = find_agentx_session(session, pdu->sessid);
     if (sp == NULL)

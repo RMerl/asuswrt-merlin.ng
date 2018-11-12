@@ -108,7 +108,7 @@ manual page.
 .SH EXAMPLES
 .br
 Note that
-.B snmpbulkget
+.B snmpwalk
 REQUIRES  an argument specifying the agent to query
 and at most one OID argument, as described there.
 The command:

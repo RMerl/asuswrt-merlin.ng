@@ -54,7 +54,6 @@
 static oid      max_ospf_mib[] = { 1, 3, 6, 1, 2, 1, 14, 14, 1, 6, 0 };
 static oid      min_ospf_mib[] =
     { 1, 3, 6, 1, 2, 1, 14, 1, 1, 0, 0, 0, 0 };
-extern u_char   smux_type;
 
 struct variable13 ospf_variables[] = {
     {ospfRouterId, ASN_IPADDRESS, NETSNMP_OLDAPI_RWRITE,

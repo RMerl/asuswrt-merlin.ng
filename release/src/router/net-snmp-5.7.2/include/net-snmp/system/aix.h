@@ -9,12 +9,6 @@
 #undef RTTABLES_SYMBOL
 #define RTTABLES_SYMBOL "rt_tables"
 
-#undef ARPTAB_SIZE_SYMBOL
-#define ARPTAB_SIZE_SYMBOL "arptabsize"
-
-#undef ARPTAB_SYMBOL
-#define ARPTAB_SYMBOL "arptabnb"
-
 #ifndef __GNUC__
 #  undef NETSNMP_ENABLE_INLINE
 #  define NETSNMP_ENABLE_INLINE 0

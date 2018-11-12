@@ -11,6 +11,8 @@
 #include <net-snmp/data_access/systemstats.h>
 
 #include "../ipSystemStatsTable/ipSystemStatsTable.h"
+#include "systemstats.h"
+#include "systemstats_private.h"
 
 #include <sys/types.h>
 #include <dirent.h>
@@ -114,9 +116,7 @@ _systemstats_v4(netsnmp_container* container, u_int load_flags)
     }
 
     if (!(devin = fopen("/proc/net/snmp", "r"))) {
-        DEBUGMSGTL(("access:systemstats",
-                    "Failed to load Systemstats Table (linux1)\n"));
-        NETSNMP_LOGONCE((LOG_ERR, "cannot open /proc/net/snmp ...\n"));
+        snmp_log_perror("systemstats_linux: cannot open /proc/net/snmp");
         return -2;
     }
 
@@ -127,7 +127,7 @@ _systemstats_v4(netsnmp_container* container, u_int load_flags)
     len = strlen(line);
     if (224 != len) {
         fclose(devin);
-        snmp_log(LOG_ERR, "unexpected header length in /proc/net/snmp."
+        snmp_log(LOG_ERR, "systemstats_linux: unexpected header length in /proc/net/snmp."
                  " %d != 224\n", len);
         return -4;
     }
@@ -210,19 +210,19 @@ _systemstats_v4(netsnmp_container* container, u_int load_flags)
         entry->stats.HCInDelivers.high = scan_vals[8] >> 32;
         entry->stats.HCOutRequests.low = scan_vals[9] & 0xffffffff;
         entry->stats.HCOutRequests.high = scan_vals[9] >> 32;
-        entry->stats.HCOutDiscards.low = scan_vals[10] & 0xffffffff;;
+        entry->stats.HCOutDiscards.low = scan_vals[10] & 0xffffffff;
         entry->stats.HCOutDiscards.high = scan_vals[10] >> 32;
-        entry->stats.HCOutNoRoutes.low = scan_vals[11] & 0xffffffff;;
+        entry->stats.HCOutNoRoutes.low = scan_vals[11] & 0xffffffff;
         entry->stats.HCOutNoRoutes.high = scan_vals[11] >> 32;
         /* entry->stats. = scan_vals[12]; / * ReasmTimeout */
         entry->stats.ReasmReqds = scan_vals[13];
         entry->stats.ReasmOKs = scan_vals[14];
         entry->stats.ReasmFails = scan_vals[15];
-        entry->stats.HCOutFragOKs.low = scan_vals[16] & 0xffffffff;;
+        entry->stats.HCOutFragOKs.low = scan_vals[16] & 0xffffffff;
         entry->stats.HCOutFragOKs.high = scan_vals[16] >> 32;
-        entry->stats.HCOutFragFails.low = scan_vals[17] & 0xffffffff;;
+        entry->stats.HCOutFragFails.low = scan_vals[17] & 0xffffffff;
         entry->stats.HCOutFragFails.high = scan_vals[17] >> 32;
-        entry->stats.HCOutFragCreates.low = scan_vals[18] & 0xffffffff;;
+        entry->stats.HCOutFragCreates.low = scan_vals[18] & 0xffffffff;
         entry->stats.HCOutFragCreates.high = scan_vals[18] >> 32;
 
         entry->stats.columnAvail[IPSYSTEMSTATSTABLE_HCINRECEIVES] = 1;
@@ -272,16 +272,14 @@ _additional_systemstats_v4(netsnmp_systemstats_entry* entry,
     FILE           *devin;
     char            line[1024];
     int             scan_count;
-    unsigned long long scan_vals[6];
+    unsigned long long scan_vals[12];
     int             retval = 0;
 
     DEBUGMSGTL(("access:systemstats:container:arch",
                 "load addtional v4 (flags %u)\n", load_flags));
 
     if (!(devin = fopen("/proc/net/netstat", "r"))) {
-        DEBUGMSGTL(("access:systemstats",
-                    "cannot open /proc/net/netstat\n"));
-        NETSNMP_LOGONCE((LOG_ERR,"cannot open /proc/net/netstat\n"));
+        snmp_log_perror("systemstats_linux: cannot open /proc/net/netstat");
         return -2;
     }
 
@@ -303,9 +301,11 @@ _additional_systemstats_v4(netsnmp_systemstats_entry* entry,
             memset(scan_vals, 0x0, sizeof(scan_vals));
             scan_count = sscanf(line,
                                 "%*s"   /* ignore `IpExt:' */
-                                "%llu %llu %llu %llu %llu %llu",
+                                "%llu %llu %llu %llu %llu %llu %llu %llu %llu %llu %llu %llu",
                                 &scan_vals[0], &scan_vals[1], &scan_vals[2],
-                                &scan_vals[3], &scan_vals[4], &scan_vals[5]);
+                                &scan_vals[3], &scan_vals[4], &scan_vals[5],
+                                &scan_vals[6], &scan_vals[7], &scan_vals[8],
+                                &scan_vals[9], &scan_vals[10], &scan_vals[11]);
             if (scan_count < 6) {
                 snmp_log(LOG_ERR,
                         "error scanning addtional systemstats data"
@@ -333,6 +333,21 @@ _additional_systemstats_v4(netsnmp_systemstats_entry* entry,
             entry->stats.columnAvail[IPSYSTEMSTATSTABLE_HCOUTMCASTPKTS] = 1;
             entry->stats.columnAvail[IPSYSTEMSTATSTABLE_HCINBCASTPKTS] = 1;
             entry->stats.columnAvail[IPSYSTEMSTATSTABLE_HCOUTBCASTPKTS] = 1;
+	    if (scan_count >= 12) {
+		entry->stats.HCInOctets.low        = scan_vals[6] & 0xffffffff;
+		entry->stats.HCInOctets.high       = scan_vals[6] >> 32;
+		entry->stats.HCOutOctets.low       = scan_vals[7] & 0xffffffff;
+		entry->stats.HCOutOctets.high      = scan_vals[7] >> 32;
+		entry->stats.HCInMcastOctets.low   = scan_vals[8] & 0xffffffff;
+		entry->stats.HCInMcastOctets.high  = scan_vals[8] >> 32;
+		entry->stats.HCOutMcastOctets.low  = scan_vals[9] & 0xffffffff;
+		entry->stats.HCOutMcastOctets.high = scan_vals[9] >> 32;
+		/* 10 and 11 are In/OutBcastOctets */
+		entry->stats.columnAvail[IPSYSTEMSTATSTABLE_HCINOCTETS] = 1;
+		entry->stats.columnAvail[IPSYSTEMSTATSTABLE_HCOUTOCTETS] = 1;
+		entry->stats.columnAvail[IPSYSTEMSTATSTABLE_HCINMCASTOCTETS] = 1;
+		entry->stats.columnAvail[IPSYSTEMSTATSTABLE_HCOUTMCASTOCTETS] = 1;
+	    }
         }
     }
 
@@ -422,7 +437,7 @@ _systemstats_v6_load_file(netsnmp_systemstats_entry *entry, FILE *devin)
                     entry->stats.columnAvail[IPSYSTEMSTATSTABLE_HCINMCASTOCTETS] = 1;
                 } else
                     rc = 1;
-            } else if ('N' == line[5]) {
+            } else if ('N' == line[5] && 'R' == line[7]) {
                 entry->stats.HCInNoRoutes.low = scan_val & 0xffffffff;
                 entry->stats.HCInNoRoutes.high = scan_val >> 32;
                 entry->stats.columnAvail[IPSYSTEMSTATSTABLE_HCINNOROUTES] = 1;
@@ -613,7 +628,9 @@ _systemstats_v6_load_ifstats(netsnmp_container* container, u_int load_flags)
             continue;
         }
         if (NULL == (devin = fopen(dev_filename, "r"))) {
-            snmp_log(LOG_ERR, "Failed to open %s\n", dev_filename);
+            char msg[128];
+            snprintf(msg, sizeof(msg), "systemstats_linux: %s", dev_filename);
+            snmp_log_perror(dev_filename);
             continue;
         }
     

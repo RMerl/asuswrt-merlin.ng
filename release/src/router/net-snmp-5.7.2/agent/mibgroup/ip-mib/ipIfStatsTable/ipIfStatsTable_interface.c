@@ -722,10 +722,10 @@ _ipIfStatsTable_get_column(ipIfStatsTable_rowreq_ctx * rowreq_ctx,
          * ipIfStatsHCInReceives(4)/COUNTER64/ASN_COUNTER64/U64(U64)//l/A/w/e/r/d/h 
          */
     case COLUMN_IPIFSTATSHCINRECEIVES:
-        var->val_len = sizeof(U64);
+        var->val_len = sizeof(struct counter64);
         var->type = ASN_COUNTER64;
         rc = ipIfStatsHCInReceives_get(rowreq_ctx,
-                                       (U64 *) var->val.string);
+                                       (struct counter64 *) var->val.string);
         break;
 
         /*
@@ -741,9 +741,9 @@ _ipIfStatsTable_get_column(ipIfStatsTable_rowreq_ctx * rowreq_ctx,
          * ipIfStatsHCInOctets(6)/COUNTER64/ASN_COUNTER64/U64(U64)//l/A/w/e/r/d/h 
          */
     case COLUMN_IPIFSTATSHCINOCTETS:
-        var->val_len = sizeof(U64);
+        var->val_len = sizeof(struct counter64);
         var->type = ASN_COUNTER64;
-        rc = ipIfStatsHCInOctets_get(rowreq_ctx, (U64 *) var->val.string);
+        rc = ipIfStatsHCInOctets_get(rowreq_ctx, (struct counter64 *) var->val.string);
         break;
 
         /*
@@ -810,10 +810,10 @@ _ipIfStatsTable_get_column(ipIfStatsTable_rowreq_ctx * rowreq_ctx,
          * ipIfStatsHCInForwDatagrams(13)/COUNTER64/ASN_COUNTER64/U64(U64)//l/A/w/e/r/d/h 
          */
     case COLUMN_IPIFSTATSHCINFORWDATAGRAMS:
-        var->val_len = sizeof(U64);
+        var->val_len = sizeof(struct counter64);
         var->type = ASN_COUNTER64;
         rc = ipIfStatsHCInForwDatagrams_get(rowreq_ctx,
-                                            (U64 *) var->val.string);
+                                            (struct counter64 *) var->val.string);
         break;
 
         /*
@@ -869,10 +869,10 @@ _ipIfStatsTable_get_column(ipIfStatsTable_rowreq_ctx * rowreq_ctx,
          * ipIfStatsHCInDelivers(19)/COUNTER64/ASN_COUNTER64/U64(U64)//l/A/w/e/r/d/h 
          */
     case COLUMN_IPIFSTATSHCINDELIVERS:
-        var->val_len = sizeof(U64);
+        var->val_len = sizeof(struct counter64);
         var->type = ASN_COUNTER64;
         rc = ipIfStatsHCInDelivers_get(rowreq_ctx,
-                                       (U64 *) var->val.string);
+                                       (struct counter64 *) var->val.string);
         break;
 
         /*
@@ -889,10 +889,10 @@ _ipIfStatsTable_get_column(ipIfStatsTable_rowreq_ctx * rowreq_ctx,
          * ipIfStatsHCOutRequests(21)/COUNTER64/ASN_COUNTER64/U64(U64)//l/A/w/e/r/d/h 
          */
     case COLUMN_IPIFSTATSHCOUTREQUESTS:
-        var->val_len = sizeof(U64);
+        var->val_len = sizeof(struct counter64);
         var->type = ASN_COUNTER64;
         rc = ipIfStatsHCOutRequests_get(rowreq_ctx,
-                                        (U64 *) var->val.string);
+                                        (struct counter64 *) var->val.string);
         break;
 
         /*
@@ -909,10 +909,10 @@ _ipIfStatsTable_get_column(ipIfStatsTable_rowreq_ctx * rowreq_ctx,
          * ipIfStatsHCOutForwDatagrams(24)/COUNTER64/ASN_COUNTER64/U64(U64)//l/A/w/e/r/d/h 
          */
     case COLUMN_IPIFSTATSHCOUTFORWDATAGRAMS:
-        var->val_len = sizeof(U64);
+        var->val_len = sizeof(struct counter64);
         var->type = ASN_COUNTER64;
         rc = ipIfStatsHCOutForwDatagrams_get(rowreq_ctx,
-                                             (U64 *) var->val.string);
+                                             (struct counter64 *) var->val.string);
         break;
 
         /*
@@ -979,10 +979,10 @@ _ipIfStatsTable_get_column(ipIfStatsTable_rowreq_ctx * rowreq_ctx,
          * ipIfStatsHCOutTransmits(31)/COUNTER64/ASN_COUNTER64/U64(U64)//l/A/w/e/r/d/h 
          */
     case COLUMN_IPIFSTATSHCOUTTRANSMITS:
-        var->val_len = sizeof(U64);
+        var->val_len = sizeof(struct counter64);
         var->type = ASN_COUNTER64;
         rc = ipIfStatsHCOutTransmits_get(rowreq_ctx,
-                                         (U64 *) var->val.string);
+                                         (struct counter64 *) var->val.string);
         break;
 
         /*
@@ -999,9 +999,9 @@ _ipIfStatsTable_get_column(ipIfStatsTable_rowreq_ctx * rowreq_ctx,
          * ipIfStatsHCOutOctets(33)/COUNTER64/ASN_COUNTER64/U64(U64)//l/A/w/e/r/d/h 
          */
     case COLUMN_IPIFSTATSHCOUTOCTETS:
-        var->val_len = sizeof(U64);
+        var->val_len = sizeof(struct counter64);
         var->type = ASN_COUNTER64;
-        rc = ipIfStatsHCOutOctets_get(rowreq_ctx, (U64 *) var->val.string);
+        rc = ipIfStatsHCOutOctets_get(rowreq_ctx, (struct counter64 *) var->val.string);
         break;
 
         /*
@@ -1018,10 +1018,10 @@ _ipIfStatsTable_get_column(ipIfStatsTable_rowreq_ctx * rowreq_ctx,
          * ipIfStatsHCInMcastPkts(35)/COUNTER64/ASN_COUNTER64/U64(U64)//l/A/w/e/r/d/h 
          */
     case COLUMN_IPIFSTATSHCINMCASTPKTS:
-        var->val_len = sizeof(U64);
+        var->val_len = sizeof(struct counter64);
         var->type = ASN_COUNTER64;
         rc = ipIfStatsHCInMcastPkts_get(rowreq_ctx,
-                                        (U64 *) var->val.string);
+                                        (struct counter64 *) var->val.string);
         break;
 
         /*
@@ -1038,10 +1038,10 @@ _ipIfStatsTable_get_column(ipIfStatsTable_rowreq_ctx * rowreq_ctx,
          * ipIfStatsHCInMcastOctets(37)/COUNTER64/ASN_COUNTER64/U64(U64)//l/A/w/e/r/d/h 
          */
     case COLUMN_IPIFSTATSHCINMCASTOCTETS:
-        var->val_len = sizeof(U64);
+        var->val_len = sizeof(struct counter64);
         var->type = ASN_COUNTER64;
         rc = ipIfStatsHCInMcastOctets_get(rowreq_ctx,
-                                          (U64 *) var->val.string);
+                                          (struct counter64 *) var->val.string);
         break;
 
         /*
@@ -1058,10 +1058,10 @@ _ipIfStatsTable_get_column(ipIfStatsTable_rowreq_ctx * rowreq_ctx,
          * ipIfStatsHCOutMcastPkts(39)/COUNTER64/ASN_COUNTER64/U64(U64)//l/A/w/e/r/d/h 
          */
     case COLUMN_IPIFSTATSHCOUTMCASTPKTS:
-        var->val_len = sizeof(U64);
+        var->val_len = sizeof(struct counter64);
         var->type = ASN_COUNTER64;
         rc = ipIfStatsHCOutMcastPkts_get(rowreq_ctx,
-                                         (U64 *) var->val.string);
+                                         (struct counter64 *) var->val.string);
         break;
 
         /*
@@ -1078,10 +1078,10 @@ _ipIfStatsTable_get_column(ipIfStatsTable_rowreq_ctx * rowreq_ctx,
          * ipIfStatsHCOutMcastOctets(41)/COUNTER64/ASN_COUNTER64/U64(U64)//l/A/w/e/r/d/h 
          */
     case COLUMN_IPIFSTATSHCOUTMCASTOCTETS:
-        var->val_len = sizeof(U64);
+        var->val_len = sizeof(struct counter64);
         var->type = ASN_COUNTER64;
         rc = ipIfStatsHCOutMcastOctets_get(rowreq_ctx,
-                                           (U64 *) var->val.string);
+                                           (struct counter64 *) var->val.string);
         break;
 
         /*
@@ -1098,10 +1098,10 @@ _ipIfStatsTable_get_column(ipIfStatsTable_rowreq_ctx * rowreq_ctx,
          * ipIfStatsHCInBcastPkts(43)/COUNTER64/ASN_COUNTER64/U64(U64)//l/A/w/e/r/d/h 
          */
     case COLUMN_IPIFSTATSHCINBCASTPKTS:
-        var->val_len = sizeof(U64);
+        var->val_len = sizeof(struct counter64);
         var->type = ASN_COUNTER64;
         rc = ipIfStatsHCInBcastPkts_get(rowreq_ctx,
-                                        (U64 *) var->val.string);
+                                        (struct counter64 *) var->val.string);
         break;
 
         /*
@@ -1118,10 +1118,10 @@ _ipIfStatsTable_get_column(ipIfStatsTable_rowreq_ctx * rowreq_ctx,
          * ipIfStatsHCOutBcastPkts(45)/COUNTER64/ASN_COUNTER64/U64(U64)//l/A/w/e/r/d/h 
          */
     case COLUMN_IPIFSTATSHCOUTBCASTPKTS:
-        var->val_len = sizeof(U64);
+        var->val_len = sizeof(struct counter64);
         var->type = ASN_COUNTER64;
         rc = ipIfStatsHCOutBcastPkts_get(rowreq_ctx,
-                                         (U64 *) var->val.string);
+                                         (struct counter64 *) var->val.string);
         break;
 
         /*

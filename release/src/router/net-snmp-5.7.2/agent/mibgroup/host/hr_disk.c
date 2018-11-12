@@ -130,11 +130,10 @@
 	 *
 	 *********************/
 
-void            Init_HR_Disk(void);
-int             Get_Next_HR_Disk(void);
-int             Get_Next_HR_Disk_Partition(char *, size_t, int);
+#if !(defined(aix4) || defined(aix5) || defined(aix6) || defined(aix7))
 static void     Add_HR_Disk_entry(const char *, int, int, int, int,
                                   const char *, int, int);
+#endif
 static void     Save_HR_Disk_General(void);
 static void     Save_HR_Disk_Specific(void);
 static int      Query_Disk(int, const char *);
@@ -150,7 +149,9 @@ static int      HRD_type_index;
 static int      HRD_index;
 static char     HRD_savedModel[40];
 static long     HRD_savedCapacity = 1044;
+#if defined(DIOC_DESCRIBE) || defined(DKIOCINFO) || defined(HAVE_LINUX_HDREG_H)
 static int      HRD_savedFlags;
+#endif
 static time_t   HRD_history[HRDEV_TYPE_MASK + 1];
 
 #ifdef DIOC_DESCRIBE
@@ -403,7 +404,7 @@ parse_disk_config(const char *token, char *cptr)
                  *p != '\0' && *p != '?' && *p != '*' && *p != '['; p++);
             c = *p;
             *p = '\0';
-            d_str = (char *) malloc(strlen(name) + 1);
+            d_str = strdup(name);
             if (!d_str) {
                 SNMP_FREE(d_new);
                 SNMP_FREE(d_str);
@@ -412,7 +413,6 @@ parse_disk_config(const char *token, char *cptr)
                 config_perror("Out of memory");
                 return;
             }
-            strcpy(d_str, name);
             *p = c;
             di_curr->item_type = ITEM_STRING;
             di_curr->item_details = (void *) d_str;
@@ -668,6 +668,7 @@ typedef struct {
 static HRD_disk_t disk_devices[MAX_NUMBER_DISK_TYPES];
 static int      HR_number_disk_types = 0;
 
+#if !(defined(aix4) || defined(aix5) || defined(aix6) || defined(aix7))
 static void
 Add_HR_Disk_entry(const char *devpart_string,
                   int first_ctl,
@@ -724,6 +725,7 @@ Add_HR_Disk_entry(const char *devpart_string,
                     devpart_string, nbr_created));
 #endif
 }
+#endif
 
 void
 Init_HR_Disk(void)
@@ -804,7 +806,7 @@ Get_Next_HR_Disk(void)
                      */
                     DEBUGMSGTL(("host/hr_disk",
                                 "Get_Next_HR_Disk: %s ignored\n", string));
-                    HRD_history[iindex] = LONG_MAX;
+                    HRD_history[iindex] = (time_t)LONG_MAX;
                     HRD_index++;
                     continue;
                 }

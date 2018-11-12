@@ -144,6 +144,8 @@ int netsnmp_ipaddress_prefix_copy(u_char *dst, u_char *src,
                                   int addr_len, int pfx_len);
 
 int netsnmp_ipaddress_ipv4_prefix_len(in_addr_t mask);
+in_addr_t netsnmp_ipaddress_ipv4_mask(int len);
+int netsnmp_ipaddress_ipv6_prefix_len(struct in6_addr mask);
 
 int netsnmp_ipaddress_flags_copy(u_long *ipAddressPrefixAdvPreferredLifetime,
                                  u_long *ipAddressPrefixAdvValidLifetime,

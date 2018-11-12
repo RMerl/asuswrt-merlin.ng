@@ -2,7 +2,6 @@
 # Makefile for snmpd
 #
 
-top_builddir	= ..
 mysubdir=agent
 
 # use GNU vpath, if available, to only set a path for source and headers
@@ -65,7 +64,8 @@ HEADERS=\
 	table_dataset.h \
 	table_tdata.h \
 	table_iterator.h \
-	watcher.h
+	watcher.h \
+	netsnmp_close_fds.h
 
 HEADERSONLY=mfd.h set_helper.h
 
@@ -177,6 +177,7 @@ LIBAGENTOBJS= \
 	agent_sysORTable.o \
 	agent_trap.o \
 	kernel.o \
+	netsnmp_close_fds.o \
 	snmp_agent.o \
 	snmp_vars.o \
 	$(agentgroup_list_o) \
@@ -217,6 +218,7 @@ LLIBAGENTOBJS= \
 	agent_sysORTable.lo \
 	agent_trap.lo \
 	kernel.lo \
+	netsnmp_close_fds.lo \
 	snmp_agent.lo \
 	snmp_vars.lo \
 	$(agentgroup_list_lo) \
@@ -257,6 +259,7 @@ LLIBAGENTFTS= \
 	agent_sysORTable.ft \
 	agent_trap.ft \
 	kernel.ft \
+	netsnmp_close_fds.ft \
 	snmp_agent.ft \
 	snmp_vars.ft \
 	$(agentgroup_list_ft) \
@@ -342,4 +345,3 @@ mib_modules.lo: mibgroup/mib_module_inits.h
 
 subdirs: agentlib
 # wait for agentlib before building 'subdirs' target
-

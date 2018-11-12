@@ -232,4 +232,5 @@ The specified session was not open.
 .RE
 .PP
 .SH "SEE ALSO"
-.BR select "(2), " snmp_api "(3), " snmp_api.h
+select(2), netsnmp_session_api(3), netsnmp_pdu_api(3),
+netsnmp_varbind_api(3), netsnmp_mib_api(3), snmp_api.h

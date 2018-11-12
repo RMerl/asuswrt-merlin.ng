@@ -14,11 +14,18 @@
 
 #include <net-snmp/agent/net-snmp-agent-includes.h>
 #include <net-snmp/data_access/swrun.h>
+#include "swrun.h"
+#include "swrun_private.h"
+
+#if HAVE_PCRE_H
+#include <pcre.h>
+#endif
 
 netsnmp_feature_child_of(software_running, libnetsnmpmibs)
 
 netsnmp_feature_child_of(swrun_max_processes, software_running)
 netsnmp_feature_child_of(swrun_count_processes_by_name, software_running)
+netsnmp_feature_child_of(swrun_count_processes_by_regex, software_running)
 
 /**---------------------------------------------------------------------*/
 /*
@@ -29,25 +36,11 @@ static int _swrun_init = 0;
 static netsnmp_cache     *swrun_cache     = NULL;
 static netsnmp_container *swrun_container = NULL;
 
-netsnmp_container * netsnmp_swrun_container(void);
-netsnmp_cache     * netsnmp_swrun_cache    (void);
-
 /*
  * local static prototypes
  */
 static void _swrun_entry_release(netsnmp_swrun_entry * entry,
                                             void *unused);
-
-/**---------------------------------------------------------------------*/
-/*
- * external per-architecture functions prototypes
- *
- * These shouldn't be called by the general public, so they aren't in
- * the header file.
- */
-extern void netsnmp_arch_swrun_init(void);
-extern int netsnmp_arch_swrun_container_load(netsnmp_container* container,
-                                             u_int load_flags);
 
 /**
  * initialization
@@ -75,10 +68,27 @@ shutdown_swrun(void)
 }
 
 int
-swrun_count_processes( void )
+swrun_count_processes(int include_kthreads)
 {
+    netsnmp_swrun_entry *entry;
+    netsnmp_iterator  *it;
+    int i = 0;
+
     netsnmp_cache_check_and_reload(swrun_cache);
-    return ( swrun_container ? CONTAINER_SIZE(swrun_container) : 0 );
+    if ( !swrun_container )
+        return 0;    /* or -1 */
+
+    if (include_kthreads)
+        return ( swrun_container ? CONTAINER_SIZE(swrun_container) : 0 );
+
+    it = CONTAINER_ITERATOR( swrun_container );
+    while ((entry = (netsnmp_swrun_entry*)ITERATOR_NEXT( it )) != NULL) {
+        if (4 == entry->hrSWRunType)
+            i++;
+    }
+    ITERATOR_RELEASE( it );
+
+    return i;
 }
 
 #ifndef NETSNMP_FEATURE_REMOVE_SWRUN_MAX_PROCESSES
@@ -88,6 +98,38 @@ swrun_max_processes( void )
     return _swrun_max;
 }
 #endif /* NETSNMP_FEATURE_REMOVE_SWRUN_MAX_PROCESSES */
+
+#ifndef NETSNMP_FEATURE_REMOVE_SWRUN_COUNT_PROCESSES_BY_REGEX
+#if HAVE_PCRE_H
+int
+swrun_count_processes_by_regex( char *name, struct real_pcre *regexp )
+{
+    netsnmp_swrun_entry *entry;
+    netsnmp_iterator  *it;
+    int i = 0;
+    int found_ndx[30];
+    int found;
+    char fullCommand[64 + 128 + 128 + 3];
+
+    netsnmp_cache_check_and_reload(swrun_cache);
+    if ( !swrun_container || !name || !regexp )
+        return 0;    /* or -1 */
+
+    it = CONTAINER_ITERATOR( swrun_container );
+    while ((entry = (netsnmp_swrun_entry*)ITERATOR_NEXT( it )) != NULL) {
+        /* need to assemble full command back so regexps can get full picture */
+        sprintf(fullCommand, "%s %s", entry->hrSWRunPath, entry->hrSWRunParameters);
+        found = pcre_exec(regexp, NULL, fullCommand, strlen(fullCommand), 0, 0, found_ndx, 30);
+        if (found > 0) {
+            i++;
+        }
+    }
+    ITERATOR_RELEASE( it );
+
+    return i;
+}
+#endif /* HAVE_PCRE_H */
+#endif /* NETSNMP_FEATURE_REMOVE_SWRUN_COUNT_PROCESSES_BY_REGEX */
 
 #ifndef NETSNMP_FEATURE_REMOVE_SWRUN_COUNT_PROCESSES_BY_NAME
 int

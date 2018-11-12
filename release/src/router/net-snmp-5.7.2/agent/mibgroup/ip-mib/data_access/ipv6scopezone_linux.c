@@ -8,6 +8,7 @@
 
 #include <net-snmp/agent/net-snmp-agent-includes.h>
 #include <net-snmp/data_access/scopezone.h>
+#include "ipv6scopezone_private.h"
 
 #if defined (NETSNMP_ENABLE_IPV6)
 static int _scopezone_v6(netsnmp_container* container, int idx_offset);

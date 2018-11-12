@@ -7,6 +7,11 @@
  * Copyright (C) 2007 Apple, Inc. All rights reserved.
  * Use is subject to license terms specified in the COPYING file
  * distributed with the Net-SNMP package.
+ *
+ * Portions of this file are copyrighted by:
+ * Copyright (c) 2016 VMware, Inc. All rights reserved.
+ * Use is subject to license terms specified in the COPYING file
+ * distributed with the Net-SNMP package.
  */
 #include <net-snmp/net-snmp-config.h>
 #include <net-snmp/net-snmp-features.h>
@@ -428,6 +433,28 @@ netsnmp_get_cache_handler(int timeout, NetsnmpCacheLoad * load_hook,
     return ret;
 }
 
+#if !defined(NETSNMP_FEATURE_REMOVE_NETSNMP_CACHE_HANDLER_REGISTER) || !defined(NETSNMP_FEATURE_REMOVE_NETSNMP_REGISTER_CACHE_HANDLER)
+static int
+_cache_handler_register(netsnmp_handler_registration * reginfo,
+                        netsnmp_mib_handler *handler)
+{
+    /** success path */
+    if (reginfo && handler &&
+        (netsnmp_inject_handler(reginfo, handler) == SNMPERR_SUCCESS))
+        return netsnmp_register_handler(reginfo);
+
+    /** error path */
+    snmp_log(LOG_ERR, "could not register cache handler\n");
+
+    if (handler)
+        netsnmp_handler_free(handler);
+
+    netsnmp_handler_registration_free(reginfo);
+
+    return MIB_REGISTRATION_FAILED;
+}
+#endif
+
 /** functionally the same as calling netsnmp_register_handler() but also
  * injects a cache handler at the same time for you. */
 netsnmp_feature_child_of(netsnmp_cache_handler_register,netsnmp_unused)
@@ -436,11 +463,13 @@ int
 netsnmp_cache_handler_register(netsnmp_handler_registration * reginfo,
                                netsnmp_cache* cache)
 {
-    netsnmp_mib_handler *handler = NULL;
-    handler = netsnmp_cache_handler_get(cache);
+    if ((NULL == reginfo) || (NULL == cache)) {
+        snmp_log(LOG_ERR, "bad param in netsnmp_cache_handler_register\n");
+        netsnmp_handler_registration_free(reginfo);
+        return MIB_REGISTRATION_FAILED;
+    }
 
-    netsnmp_inject_handler(reginfo, handler);
-    return netsnmp_register_handler(reginfo);
+    return _cache_handler_register(reginfo, netsnmp_cache_handler_get(cache));
 }
 #endif /* NETSNMP_FEATURE_REMOVE_NETSNMP_CACHE_HANDLER_REGISTER */
 
@@ -453,13 +482,19 @@ netsnmp_register_cache_handler(netsnmp_handler_registration * reginfo,
                                int timeout, NetsnmpCacheLoad * load_hook,
                                NetsnmpCacheFree * free_hook)
 {
-    netsnmp_mib_handler *handler = NULL;
-    handler = netsnmp_get_cache_handler(timeout, load_hook, free_hook,
-                                        reginfo->rootoid,
-                                        reginfo->rootoid_len);
+    netsnmp_mib_handler *handler;
 
-    netsnmp_inject_handler(reginfo, handler);
-    return netsnmp_register_handler(reginfo);
+    if (NULL == reginfo) {
+        snmp_log(LOG_ERR, "bad param in netsnmp_cache_handler_register\n");
+        netsnmp_handler_registration_free(reginfo);
+        return MIB_REGISTRATION_FAILED;
+    }
+
+    handler =  netsnmp_get_cache_handler(timeout, load_hook, free_hook,
+                                         reginfo->rootoid,
+                                         reginfo->rootoid_len);
+
+    return _cache_handler_register(reginfo, handler);
 }
 #endif /* NETSNMP_FEATURE_REMOVE_NETSNMP_REGISTER_CACHE_HANDLER */
 
@@ -596,7 +631,7 @@ netsnmp_cache_helper_handler(netsnmp_mib_handler * handler,
                    "cache not found, disabled or had no load method\n"));
         return SNMP_ERR_NOERROR;
     }
-    snprintf(addrstr,sizeof(addrstr), "%ld", (long int)cache);
+    snprintf(addrstr, sizeof(addrstr), "%p", cache);
     DEBUGMSGTL(("helper:cache_handler", "using cache %s: ", addrstr));
     DEBUGMSGOID(("helper:cache_handler", cache->rootoid, cache->rootoid_len));
     DEBUGMSG(("helper:cache_handler", "\n"));

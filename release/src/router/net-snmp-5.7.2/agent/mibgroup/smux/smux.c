@@ -66,7 +66,6 @@
 #include <net-snmp/library/tools.h>
 
 #include "smux.h"
-#include "mibdefs.h"
 #include "snmpd.h"
 
 netsnmp_feature_require(snprint_objid)
@@ -103,24 +102,15 @@ static int      smux_pdu_process(int, u_char *, size_t);
 static int      smux_send_rrsp(int, int);
 static smux_reg *smux_find_match(smux_reg *, int, oid *, size_t, long);
 static smux_reg *smux_find_replacement(oid *, size_t);
-u_char         *var_smux(struct variable *, oid *, size_t *, int, size_t *,
-                         WriteMethod ** write_method);
-int             var_smux_write(int, u_char *, u_char, size_t, u_char *,
-                               oid *, size_t);
+u_char         *var_smux_get(oid *, size_t, oid *, size_t *, int, size_t *,
+                               u_char *);
+int             var_smux_write(int, u_char *, u_char, size_t, oid *, size_t);
 
 static smux_reg *ActiveRegs;    /* Active registrations                 */
 static smux_reg *PassiveRegs;   /* Currently unused registrations       */
 
 static smux_peer_auth *Auths[SMUX_MAX_PEERS];   /* Configured peers */
 static int      nauths, npeers = 0;
-
-struct variable2 smux_variables[] = {
-    /*
-     * bogus entry, as in pass.c 
-     */
-    {MIBINDEX, ASN_INTEGER, NETSNMP_OLDAPI_RWRITE,
-     var_smux, 0, {MIBINDEX}},
-};
 
 
 
@@ -244,7 +234,7 @@ real_init_smux(void)
 #endif
     netsnmp_sockaddr_in( &lo_socket, smux_socket, SMUXPORT );
 
-    if ((smux_listen_sd = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
+    if ((smux_listen_sd = (int) socket(AF_INET, SOCK_STREAM, 0)) < 0) {
         snmp_log_perror("[init_smux] socket failed");
         return;
     }
@@ -291,21 +281,89 @@ real_init_smux(void)
                 smux_listen_sd, ntohs(lo_socket.sin_port)));
 }
 
-u_char         *
-var_smux(struct variable * vp,
-         oid * name,
-         size_t * length,
-         int exact, size_t * var_len, WriteMethod ** write_method)
+static int
+smux_handler(netsnmp_mib_handler *handler,
+                netsnmp_handler_registration *reginfo,
+                netsnmp_agent_request_info *reqinfo,
+                netsnmp_request_info *requests)
 {
-    u_char         *valptr, val_type;
+    u_char *access = NULL;
+    size_t var_len;
+    int exact = 1;
+    int status = 0;
+    u_char var_type;
+    static long old_reqid = -1;
+    static long old_sessid = -1;
+    long new_reqid, new_sessid;
+
+    /* Increment the reqid of outgoing SMUX messages only when processing
+     * new incoming SNMP message, i.e. when reqid or session id chamges */
+    new_reqid = reqinfo->asp->pdu->reqid;
+    new_sessid = reqinfo->asp->session->sessid;
+    DEBUGMSGTL(("smux", "smux_handler: incoming reqid=%ld, sessid=%ld\n",
+            new_reqid, new_sessid));
+    if (old_reqid != new_reqid || old_sessid != new_sessid) {
+        smux_reqid++;
+        old_reqid = new_reqid;
+	old_sessid = new_sessid;
+    }
+
+    switch (reqinfo->mode) {
+    case MODE_GETNEXT:
+    case MODE_GETBULK:
+        exact = 0;
+    }
+
+    for (; requests; requests = requests->next) {
+        switch(reqinfo->mode) {
+        case MODE_GET:
+        case MODE_GETNEXT:
+        case MODE_SET_RESERVE1:
+            access = var_smux_get(reginfo->rootoid,
+                    reginfo->rootoid_len,
+                    requests->requestvb->name,
+                    &requests->requestvb->name_length,
+                    exact,
+                    &var_len,
+                    &var_type);
+            if (access)
+                if (reqinfo->mode != MODE_SET_RESERVE1)
+                    snmp_set_var_typed_value(requests->requestvb,
+                            var_type, access, var_len);
+            if (reqinfo->mode != MODE_SET_RESERVE1)
+                break;
+            /* fall through if MODE_SET_RESERVE1 */
+	    /* FALL THROUGH */
+
+        default:
+            /* SET processing */
+            status = var_smux_write(reqinfo->mode,
+                    requests->requestvb->val.string,
+                    requests->requestvb->type,
+                    requests->requestvb->val_len,
+                    requests->requestvb->name,
+                    requests->requestvb->name_length);
+            if (status != SNMP_ERR_NOERROR) {
+                netsnmp_set_request_error(reqinfo, requests, status);
+            }
+        }
+    }
+    return SNMP_ERR_NOERROR;
+}
+
+u_char         *
+var_smux_get(oid *root, size_t root_len,
+         oid * name, size_t * length,
+         int exact, size_t * var_len, u_char *var_type)
+{
+    u_char         *valptr;
     smux_reg       *rptr;
 
-    *write_method = var_smux_write;
     /*
      * search the active registration list 
      */
     for (rptr = ActiveRegs; rptr; rptr = rptr->sr_next) {
-        if (0 >= snmp_oidtree_compare(vp->name, vp->namelen, rptr->sr_name,
+        if (0 >= snmp_oidtree_compare(root, root_len, rptr->sr_name,
                                       rptr->sr_name_len))
             break;
     }
@@ -315,7 +373,7 @@ var_smux(struct variable * vp,
         return NULL;
 
     valptr = smux_snmp_process(exact, name, length,
-                               var_len, &val_type, rptr->sr_fd);
+                               var_len, var_type, rptr->sr_fd);
 
     if (valptr == NULL)
         return NULL;
@@ -328,10 +386,6 @@ var_smux(struct variable * vp,
          */
         return NULL;
     } else {
-        /*
-         * set the type and return the value 
-         */
-        vp->type = val_type;
         return valptr;
     }
 }
@@ -341,7 +395,7 @@ var_smux_write(int action,
                u_char * var_val,
                u_char var_val_type,
                size_t var_val_len,
-               u_char * statP, oid * name, size_t name_len)
+               oid * name, size_t name_len)
 {
     smux_reg       *rptr;
     u_char          buf[SMUXMAXPKTSIZE], *ptr, sout[3], type;
@@ -451,6 +505,8 @@ var_smux_write(int action,
              */
             packet_len = len;
             ptr = asn_parse_header(buf, &packet_len, &type);
+            if (ptr == NULL)
+                return SNMP_ERR_GENERR;
             packet_len += (ptr - buf);
             if (len > (ssize_t)packet_len) {
                 /*
@@ -483,9 +539,11 @@ var_smux_write(int action,
 
             if (buf[0] == SMUX_TRAP) {
                 DEBUGMSGTL(("smux", "[var_smux_write] Received trap\n"));
-                snmp_log(LOG_INFO, "Got trap from peer on fd %d\n",
-                         rptr->sr_fd);
+                DEBUGMSGTL(("smux", "Got trap from peer on fd %d\n",
+                         rptr->sr_fd));
                 ptr = asn_parse_header(buf, &len, &type);
+                if (ptr == NULL)
+                    return SNMP_ERR_GENERR;
                 smux_trap_process(ptr, &len);
 
 
@@ -589,18 +647,18 @@ smux_accept(int sd)
      */
     DEBUGMSGTL(("smux", "[smux_accept] Calling accept()\n"));
     errno = 0;
-    if ((fd = accept(sd, (struct sockaddr *) &in_socket, &alen)) < 0) {
+    if ((fd = (int) accept(sd, (struct sockaddr *) &in_socket, &alen)) < 0) {
         snmp_log_perror("[smux_accept] accept failed");
         return -1;
     } else {
-        snmp_log(LOG_INFO, "[smux_accept] accepted fd %d from %s:%d\n",
+        DEBUGMSGTL(("smux", "[smux_accept] accepted fd %d from %s:%d\n",
                  fd, inet_ntoa(in_socket.sin_addr),
-                 ntohs(in_socket.sin_port));
+                 ntohs(in_socket.sin_port)));
         if (npeers + 1 == SMUXMAXPEERS) {
             snmp_log(LOG_ERR,
                      "[smux_accept] denied peer on fd %d, limit %d reached",
                      fd, SMUXMAXPEERS);
-            close(sd);
+            close(fd);
             return -1;
         }
 
@@ -694,7 +752,8 @@ smux_process(int fd)
 
     if (length <= 0)
     {
-       snmp_log_perror("[smux_process] peek failed");
+       if (length < 0)
+           snmp_log_perror("[smux_process] peek failed");
        smux_peer_cleanup(fd);
        return -1;
     }
@@ -704,6 +763,8 @@ smux_process(int fd)
      */
     packet_len = length;
     ptr = asn_parse_header(data, &packet_len, &type);
+    if (ptr == NULL)
+        return -1;
     packet_len += (ptr - data);
     if (length > packet_len) {
         /*
@@ -750,6 +811,10 @@ smux_pdu_process(int fd, u_char * data, size_t length)
     while (error == 0 && ptr != NULL && ptr < data + length) {
         len = length - (ptr - data);
         ptr = asn_parse_header(ptr, &len, &type);
+        if (ptr == NULL) {
+            DEBUGMSGTL(("smux", "[smux_pdu_process] cannot parse header\n"));
+            break;
+        }
         DEBUGMSGTL(("smux", "[smux_pdu_process] type is %d\n",
                     (int) type));
         switch (type) {
@@ -784,7 +849,7 @@ smux_pdu_process(int fd, u_char * data, size_t length)
             DEBUGMSGTL(("smux", "This shouldn't have happened!\n"));
             break;
         case SMUX_TRAP:
-            snmp_log(LOG_INFO, "Got trap from peer on fd %d\n", fd);
+            DEBUGMSGTL(("smux", "Got trap from peer on fd %d\n", fd));
             if (ptr)
             {
                DEBUGMSGTL(("smux", "[smux_pdu_process] call smux_trap_process.\n"));
@@ -890,9 +955,9 @@ smux_open_process(int fd, u_char * ptr, size_t * len, int *fail)
         *fail = TRUE;
         return ptr;
     }
-    snmp_log(LOG_INFO,
+    DEBUGMSGTL(("smux",
              "accepted smux peer: oid %s, descr %s\n",
-             oid_print, descr);
+             oid_print, descr));
     *fail = FALSE;
     return ptr;
 }
@@ -1000,6 +1065,7 @@ smux_rreq_process(int sd, u_char * ptr, size_t * len)
     int             i, result;
     u_char          type;
     smux_reg       *rptr, *nrptr;
+    netsnmp_handler_registration *reg;
 
     oid_name_len = MAX_OID_LEN;
     ptr = asn_parse_objid(ptr, len, &type, oid_name, &oid_name_len);
@@ -1157,17 +1223,27 @@ smux_rreq_process(int sd, u_char * ptr, size_t * len)
          */
         if (nrptr->sr_priority == -1)
             nrptr->sr_priority = 0;
+
+        reg = netsnmp_create_handler_registration("smux",
+                smux_handler,
+                nrptr->sr_name,
+                nrptr->sr_name_len,
+                HANDLER_CAN_RWRITE);
+        if (reg == NULL) {
+            snmp_log(LOG_ERR, "SMUX: cannot create new smux peer "
+                    "registration\n");
+            smux_send_rrsp(sd, -1);
+            free(nrptr);
+            return NULL;
+        }
+        if (netsnmp_register_handler(reg) != MIB_REGISTERED_OK) {
+            snmp_log(LOG_ERR, "SMUX: cannot register new smux peer\n");
+            smux_send_rrsp(sd, -1);
+            free(nrptr);
+            return NULL;
+        }
+        nrptr->reginfo = reg;
         smux_list_add(&ActiveRegs, nrptr);
-        if (register_mib("smux", (struct variable *)
-                             smux_variables, sizeof(struct variable2),
-                             1, nrptr->sr_name, nrptr->sr_name_len)
-                     != SNMPERR_SUCCESS) {
-		DEBUGMSGTL(("smux", "[smux_rreq_process] Failed to register subtree\n"));
-		smux_list_detach(&ActiveRegs, nrptr);
-		free(nrptr);
-		smux_send_rrsp(sd, -1);
-		return NULL;
-	}
 
       done:
         smux_send_rrsp(sd, nrptr->sr_priority);
@@ -1214,16 +1290,35 @@ smux_find_match(smux_reg * regs, int sd, oid * oid_name,
 static void
 smux_replace_active(smux_reg * actptr, smux_reg * pasptr)
 {
+    netsnmp_handler_registration *reg;
+
     smux_list_detach(&ActiveRegs, actptr);
-    unregister_mib(actptr->sr_name, actptr->sr_name_len);
+    if (actptr->reginfo) {
+        netsnmp_unregister_handler(actptr->reginfo);
+        actptr->reginfo = NULL;
+    }
 
     smux_list_detach(&PassiveRegs, pasptr);
-    (void) smux_list_add(&ActiveRegs, pasptr);
 
-    register_mib("smux", (struct variable *) smux_variables,
-                 sizeof(struct variable2), 1, pasptr->sr_name,
-                 pasptr->sr_name_len);
+    (void) smux_list_add(&ActiveRegs, pasptr);
     free(actptr);
+
+    reg = netsnmp_create_handler_registration("smux",
+            smux_handler,
+            pasptr->sr_name,
+            pasptr->sr_name_len,
+            HANDLER_CAN_RWRITE);
+    if (reg == NULL) {
+        snmp_log(LOG_ERR, "SMUX: cannot create new smux peer registration\n");
+        pasptr->reginfo = NULL;
+        return;
+    }
+    if (netsnmp_register_handler(reg) != MIB_REGISTERED_OK) {
+        snmp_log(LOG_ERR, "SMUX: cannot register new smux peer\n");
+        pasptr->reginfo = NULL;
+        return;
+    }
+    pasptr->reginfo = reg;
 }
 
 static void
@@ -1373,8 +1468,6 @@ smux_snmp_process(int exact,
     /*
      * Send the query to the peer
      */
-    smux_reqid++;
-
     if (exact)
         type = SMUX_GET;
     else
@@ -1426,6 +1519,8 @@ smux_snmp_process(int exact,
          */
         packet_len = length;
         ptr = asn_parse_header(result, &packet_len, &type);
+        if (ptr == NULL)
+            return NULL;
         packet_len += (ptr - result);
         if (length > packet_len) {
             /*
@@ -1457,8 +1552,10 @@ smux_snmp_process(int exact,
 
         if (result[0] == SMUX_TRAP) {
             DEBUGMSGTL(("smux", "[smux_snmp_process] Received trap\n"));
-            snmp_log(LOG_INFO, "Got trap from peer on fd %d\n", sd);
+            DEBUGMSGTL(("smux", "Got trap from peer on fd %d\n", sd));
             ptr = asn_parse_header(result, (size_t *) &length, &type);
+            if (ptr == NULL)
+                return NULL;
             smux_trap_process(ptr, (size_t *) &length);
 
             /*
@@ -1757,6 +1854,7 @@ smux_peer_cleanup(int sd)
 {
     smux_reg       *nrptr, *rptr, *rptr2;
     int             i;
+    netsnmp_handler_registration *reg;
 
     /*
      * close the descriptor 
@@ -1781,15 +1879,30 @@ smux_peer_cleanup(int sd)
         rptr2 = rptr->sr_next;
         if (rptr->sr_fd == sd) {
             smux_list_detach(&ActiveRegs, rptr);
-            unregister_mib(rptr->sr_name, rptr->sr_name_len);
+            if (rptr->reginfo) {
+                netsnmp_unregister_handler(rptr->reginfo);
+                rptr->reginfo = NULL;
+            }
             if ((nrptr = smux_find_replacement(rptr->sr_name,
                                                rptr->sr_name_len)) !=
-                NULL) {
+                                                       NULL) {
                 smux_list_detach(&PassiveRegs, nrptr);
+                reg = netsnmp_create_handler_registration("smux",
+                        smux_handler,
+                        nrptr->sr_name,
+                        nrptr->sr_name_len,
+                        HANDLER_CAN_RWRITE);
+                if (reg == NULL) {
+                    snmp_log(LOG_ERR, "SMUX: cannot create new smux peer "
+                            "registration\n");
+                    continue;
+                }
+                if (netsnmp_register_handler(reg) != MIB_REGISTERED_OK) {
+                    snmp_log(LOG_ERR, "SMUX: cannot register new smux peer\n");
+                    continue;
+                }
+                nrptr->reginfo = reg;
                 smux_list_add(&ActiveRegs, nrptr);
-                register_mib("smux", (struct variable *)
-                             smux_variables, sizeof(struct variable2),
-                             1, nrptr->sr_name, nrptr->sr_name_len);
             }
             free(rptr);
         }
@@ -1809,7 +1922,7 @@ smux_peer_cleanup(int sd)
             Auths[i]->sa_active_fd = -1;
             snprint_objid(oid_name, sizeof(oid_name), Auths[i]->sa_oid,
                           Auths[i]->sa_oid_len);
-            snmp_log(LOG_INFO, "peer disconnected: %s\n", oid_name);
+            DEBUGMSGTL(("smux", "peer disconnected: %s\n", oid_name));
         }
     }
 }
@@ -1945,9 +2058,8 @@ smux_trap_process(u_char * rsp, size_t * len)
         ptr = snmp_parse_var_op(ptr, var_name, &var_name_len, &vartype,
                                 &var_val_len, (u_char **) & var_val, len);
 
-        if (ptr == NULL) {
-            return NULL;
-        }
+        if (ptr == NULL)
+            goto err;
 
         maxlen = SMUXMAXPKTSIZE;
         switch ((short) vartype) {
@@ -1981,7 +2093,7 @@ smux_trap_process(u_char * rsp, size_t * len)
              */
             if ((var_val =
                  asn_parse_header(var_val, &maxlen, &vartype)) == NULL)
-                return NULL;
+                goto err;
             memcpy((u_char *) & (smux_sa.sin_addr.s_addr), var_val,
                    var_val_len);
             var_val = (u_char *) & (smux_sa.sin_addr.s_addr);
@@ -1991,8 +2103,6 @@ smux_trap_process(u_char * rsp, size_t * len)
             /*
              * XXX 
              */
-            if (len == NULL)
-                return NULL;
             var_val_len = SMUXMAXSTRLEN;
             asn_parse_string(var_val, &maxlen, &vartype,
                              smux_str, &var_val_len);
@@ -2015,8 +2125,6 @@ smux_trap_process(u_char * rsp, size_t * len)
             /*
              * XXX 
              */
-            if (len == NULL)
-                return NULL;
             var_val_len = SMUXMAXSTRLEN;
             asn_parse_bitstring(var_val, &maxlen, &vartype,
                                 smux_str, &var_val_len);
@@ -2029,12 +2137,9 @@ smux_trap_process(u_char * rsp, size_t * len)
             break;
         }
 
-        snmptrap_tmp =
-            (netsnmp_variable_list *)
-            malloc(sizeof(netsnmp_variable_list));
+        snmptrap_tmp = calloc(1, sizeof(netsnmp_variable_list));
         if (snmptrap_tmp == NULL)
-            return NULL;
-        memset(snmptrap_tmp, 0, sizeof(netsnmp_variable_list));
+            goto err;
         if (snmptrap_head == NULL) {
             snmptrap_head = snmptrap_tmp;
             snmptrap_ptr = snmptrap_head;
@@ -2063,6 +2168,9 @@ smux_trap_process(u_char * rsp, size_t * len)
 
     return ptr;
 
+err:
+    snmp_free_varbind(snmptrap_head);
+    return NULL;
 }
 
 #define NUM_SOCKETS	32

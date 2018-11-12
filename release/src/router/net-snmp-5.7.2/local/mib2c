@@ -326,6 +326,9 @@ sub process_vars {
 
     # mib substitutions ($var.type -> $mibnode->{'type'})
    if ( $it =~ /\$(\w+)\.(\w+)/ ) {
+    if (!defined($vars{$1})) {
+      m2c_die "Undefined variable \$$1";
+    }
     if ($SNMP::MIB{$vars{$1}} && defined($tables{$SNMP::MIB{$vars{$1}}{'label'}})) {
       $it =~ s/\$(\w+)\.(settable)/(table_is_writable($SNMP::MIB{$vars{$1}}{label}))/eg;
       $it =~ s/\$(\w+)\.(creatable)/(table_has_create($SNMP::MIB{$vars{$1}}{label}))/eg;

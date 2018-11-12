@@ -1,10 +1,8 @@
 #include <net-snmp/net-snmp-config.h>
-
 #include <net-snmp/net-snmp-features.h>
+#include <net-snmp/types.h>
 
 netsnmp_feature_require(cert_util)
-
-#include <net-snmp/library/snmpTLSBaseDomain.h>
 
 #if HAVE_DMALLOC_H
 #include <dmalloc.h>
@@ -37,8 +35,8 @@ netsnmp_feature_require(cert_util)
 #include <openssl/x509_vfy.h>
 #include <openssl/x509v3.h>
 
-#include <net-snmp/types.h>
 #include <net-snmp/config_api.h>
+#include <net-snmp/library/container.h>
 #include <net-snmp/library/cert_util.h>
 #include <net-snmp/library/snmp_openssl.h>
 #include <net-snmp/library/default_store.h>
@@ -52,12 +50,13 @@ netsnmp_feature_require(cert_util)
 #include <net-snmp/library/snmp_secmod.h>
 #include <net-snmp/library/read_config.h>
 #include <net-snmp/library/system.h>
+#include <net-snmp/library/snmpTLSBaseDomain.h>
 
 #define LOGANDDIE(msg) do { snmp_log(LOG_ERR, "%s\n", msg); return 0; } while(0)
 
 int openssl_local_index;
 
-/* this is called during negotiationn */
+/* this is called during negotiation */
 int verify_callback(int ok, X509_STORE_CTX *ctx) {
     int err, depth;
     char buf[1024], *fingerprint;
@@ -90,7 +89,6 @@ int verify_callback(int ok, X509_STORE_CTX *ctx) {
        locally known fingerprint and then accept it */
     if (!ok &&
         (X509_V_ERR_DEPTH_ZERO_SELF_SIGNED_CERT == err ||
-         X509_V_ERR_UNABLE_TO_GET_ISSUER_CERT_LOCALLY == err ||
          X509_V_ERR_CERT_UNTRUSTED == err ||
          X509_V_ERR_UNABLE_TO_VERIFY_LEAF_SIGNATURE == err ||
          X509_V_ERR_SELF_SIGNED_CERT_IN_CHAIN == err)) {
@@ -116,6 +114,11 @@ int verify_callback(int ok, X509_STORE_CTX *ctx) {
             return 0;
         }
 
+#if 0
+        /*
+         * This code is unreachable because of the return statements above.
+         * Comment it out to avoid that Coverity complains about this code.
+         */
         if (0 == depth && verify_info &&
             (verify_info->flags & VRFY_PARENT_WAS_OK)) {
             DEBUGMSGTL(("tls_x509:verify", "verify_callback called with: ok=%d ctx=%p depth=%d err=%i:%s\n", ok, ctx, depth, err, X509_verify_cert_error_string(err)));
@@ -123,6 +126,7 @@ int verify_callback(int ok, X509_STORE_CTX *ctx) {
             SNMP_FREE(fingerprint);
             return 1; /* we'll check the hostname later at this level */
         }
+#endif
     }
 
     if (0 == ok)
@@ -296,10 +300,13 @@ netsnmp_tlsbase_verify_server_cert(SSL *ssl, _netsnmpTLSBaseData *tlsdata) {
             if (is_wildcarded) {
                 /* we *only* allow passing till the first '.' */
                 /* ie *.example.com can't match a.b.example.com */
-                check_name = strchr(check_name, '.') + 1;
+                if (check_name)
+                    check_name = strchr(check_name, '.');
+                if (check_name)
+                    check_name++;
             }
 
-            if (strcmp(compare_to, check_name) == 0) {
+            if (check_name && strcmp(compare_to, check_name) == 0) {
                 DEBUGMSGTL(("tls_x509:verify", "Successful match on a common name of %s\n", check_name));
                 return SNMPERR_SUCCESS;
             }

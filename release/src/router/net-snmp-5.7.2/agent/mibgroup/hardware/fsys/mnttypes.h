@@ -142,6 +142,21 @@
 #ifndef MNTTYPE_CVFS
 #define MNTTYPE_CVFS     "cvfs"
 #endif
+#ifndef MNTTYPE_SIMFS
+#define MNTTYPE_SIMFS     "simfs"
+#endif
+#ifndef MNTTYPE_BTRFS
+#define MNTTYPE_BTRFS     "btrfs"
+#endif
+#ifndef MNTTYPE_ZFS
+#define MNTTYPE_ZFS       "zfs"
+#endif
+#ifndef MNTTYPE_NVMFS
+#define MNTTYPE_NVMFS     "nvmfs"
+#endif
+#ifndef MNTTYPE_ACFS
+#define MNTTYPE_ACFS      "acfs"
+#endif
 
 /*
  *  File systems to skip

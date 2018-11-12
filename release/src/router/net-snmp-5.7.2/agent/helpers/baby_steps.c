@@ -1,6 +1,11 @@
 /*
  * baby_steps.c
  * $Id$
+ *
+ * Portions of this file are copyrighted by:
+ * Copyright (c) 2016 VMware, Inc. All rights reserved.
+ * Use is subject to license terms specified in the COPYING file
+ * distributed with the Net-SNMP package.
  */
 #include <net-snmp/net-snmp-config.h>
 #include <net-snmp/net-snmp-features.h>
@@ -142,8 +147,7 @@ _baby_steps_helper(netsnmp_mib_handler *handler,
          * merge helper as well (or if requests are serialized).
          */
         bs_modes->completed = 0;
-        /** fall through */
-
+        /* FALL THROUGH */
     case MODE_SET_RESERVE2:
     case MODE_SET_ACTION:
     case MODE_SET_COMMIT:
@@ -356,8 +360,15 @@ netsnmp_feature_child_of(netsnmp_baby_steps_handler_init,netsnmp_unused)
 void
 netsnmp_baby_steps_handler_init(void)
 {
-    netsnmp_register_handler_by_name("baby_steps",
-                                     netsnmp_baby_steps_handler_get(BABY_STEP_ALL));
+    netsnmp_mib_handler *handler =
+        netsnmp_baby_steps_handler_get(BABY_STEP_ALL);
+    if (NULL == handler) {
+        netsnmp_handler_free(handler);
+        snmp_log(LOG_ERR, "could not create baby steps handler\n");
+        return;
+    }
+
+    netsnmp_register_handler_by_name("baby_steps", handler);
 }
 #endif /* NETSNMP_FEATURE_REMOVE_NETSNMP_BABY_STEPS_HANDLER_INIT */
 

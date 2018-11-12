@@ -73,25 +73,25 @@ specifying "\-U" on the command line.
 .IP "maxGetbulkRepeats NUM"
 Sets the maximum number of responses allowed for a single variable in
 a getbulk request.  Set to 0 to enable the default and set it to \-1 to
-enable unlimited.  Because memory is allocated ahead of time, sitting
+enable unlimited.  Because memory is allocated ahead of time, setting
 this to unlimited is not considered safe if your user population can
 not be trusted.  A repeat number greater than this will be truncated
 to this value.
 .IP
-This is set by default to -1.
+This is set by default to \-1.
 .IP "maxGetbulkResponses NUM"
 Sets the maximum number of responses allowed for a getbulk request.
 This is set by default to 100.  Set to 0 to enable the default and set
 it to \-1 to enable unlimited.  Because memory is allocated ahead of
-time, sitting this to unlimited is not considered safe if your user
+time, setting this to unlimited is not considered safe if your user
 population can not be trusted.
 .IP
 In general, the total number of responses will not be allowed to
-exceed the maxGetbulkResponses number and the total number returned
+exceed the maxGetbulkResponses number, and the total number returned
 will be an integer multiple of the number of variables requested times
 the calculated number of repeats allow to fit below this number.
 .IP
-Also not that processing of maxGetbulkRepeats is handled first.
+Also note that processing of maxGetbulkRepeats is handled first.
 .SS SNMPv3 Configuration - Real Security
 SNMPv3 is added flexible security models to the SNMP packet structure
 so that multiple security solutions could be used.  SNMPv3 was
@@ -181,7 +181,7 @@ HIGH:!AES128\-SHA
 .RE
 .IP
 The default value is whatever openssl itself was configured with.
-.IP "[snmp] x059CRLFile"
+.IP "[snmp] x509CRLFile"
 If you are using a Certificate Authority (CA) that publishes a
 Certificate Revocation List (CRL) then this token can be used to
 specify the location in the filesystem of a copy of the CRL file.
@@ -262,16 +262,17 @@ them.  It is recommended you
 .B "use the net\-snmp\-config command"
 to do this, but you can also do it by directly specifying createUser
 directives yourself instead:
-.IP "createUser [\-e ENGINEID] username (MD5|SHA) authpassphrase [DES|AES] [privpassphrase]"
+.IP "createUser [\-e ENGINEID] username (MD5|SHA|SHA-512|SHA-384|SHA-256|SHA-224) authpassphrase [DES|AES] [privpassphrase]"
 .IP
-MD5 and SHA are the authentication types to use.  DES and AES are the
-privacy protocols to use.  If the privacy
+MD5|SHA|SHA-512|SHA-384|SHA-256|SHA-224 are the authentication types to use.
+DES and AES are the privacy protocols to use.  If the privacy
 passphrase is not specified, it is assumed to be the same as the
 authentication passphrase.  Note that the users created will be
 useless unless they are also added to the VACM access control tables
 described above.
 .IP
-SHA authentication and DES/AES privacy require OpenSSL to be installed and
+SHA|SHA-512|SHA-384|SHA-256|SHA-224 authentication and DES/AES privacy
+require OpenSSL to be installed and
 the agent to be built with OpenSSL support.  MD5 authentication may be
 used without OpenSSL.
 .IP
@@ -390,6 +391,20 @@ a particular range of source addresses, or globally (\fI"default"\fR).
 A restricted source can either be a specific hostname (or address), or
 a subnet - represented as IP/MASK (e.g. 10.10.10.0/255.255.255.0), or
 IP/BITS (e.g. 10.10.10.0/24), or the IPv6 equivalents.
+A restriction preceded by an exclamation mark (!) denies access from
+that address or subnet, e.g., !10.10.10.0/24 denies requests from
+that sources in that subnet.  Deny restrictions must be before
+permit.  E.g., the following example permits access from all of 10.0.0.0/8
+except for 10.10.10.0/24:
+.RS
+.RS
+com2sec sec1 !10.10.10.0/24 public
+.br
+com2sec sec1 10.0.0.0/8 public
+.RE
+.RE
+.IP
+Access from outside of 10.0.0.0/8 would still be denied.
 .IP
 The same community string can be specified in several separate directives
 (presumably with different source tokens), and the first source/community
@@ -652,6 +667,8 @@ This requires that the agent was built with support for the
 default build configuration).
 .IP "disk PATH [ MINSPACE | MINPERCENT% ]"
 monitors the disk mounted at PATH for available disk space.
+Disks mounted after the agent has started will not be monitored,
+unless \fIincludeAllDisks\fR option is specified.
 .IP
 The minimum threshold can either be specified in kB (MINSPACE) or
 as a percentage of the total disk (MINPERCENT% with a '%' character),
@@ -668,6 +685,9 @@ the problem - see the DisMan Event MIB section later.
 .IP "includeAllDisks MINPERCENT%"
 configures monitoring of all disks found on the system,
 using the specified (percentage) threshold.
+The \fCdskTable\fR is dynamically updated, unmounted disks
+disappear from the table and newly mounted disks are
+added to the table.
 The threshold for individual disks can be adjusted using suitable
 \fIdisk\fR directives (which can come either before or after the
 \fIincludeAllDisks\fR directive).
@@ -680,12 +700,8 @@ may affect the indexing of the \fCdskTable\fR.
 Only one \fIincludeAllDisks\fR directive should be specified - any
 subsequent copies will be ignored.
 .IP
-The list of mounted disks will be determined when the agent starts using the
-setmntent(3) and getmntent(3), or fopen(3) and getmntent(3),  or
-setfsent(3)  and  getfsent(3) system calls. If none of the above
-system calls are available then the root partition  "/"
-(which  is  assumed to exist on any UNIX based system) will be monitored.
-Disks mounted after the agent has started will not be monitored.
+The list of mounted disks will be determined from
+HOST-RESOURCES-MIB::hrFSTable.
 .\"
 .\" XXX - unless the config is re-read ??
 .\"
@@ -714,6 +730,15 @@ e.g. "loop0"
 .IP "diskio_exclude_ram yes"
 Excludes all LInux ramdisk block devices, whose names start with "ram", e.g.
 "ram0"
+.PP
+On Linux systems, it is also possible to report only explicitly whitelisted
+devices. It may take significant amount of time to process diskIOTable data
+on systems with tens of thousands of block devices and whitelisting only the
+important ones avoids large CPU consumption.
+.IP "diskio <device>"
+Enables whitelisting of devices and adds the device to the whitelist. Only
+explicitly whitelisted devices will be reported. This option may be used
+multiple times.
 .SS System Load Monitoring
 This requires that the agent was built with support for either the
 \fIucd\-snmp/loadave\fR module or the \fIucd\-snmp/memory\fR module
@@ -826,9 +851,9 @@ can configure \fIsnmpd\fR to take a more active role.
 defines the default community string to be used when sending traps.
 Note that this directive must be used prior to any community-based
 trap destination directives that need to use it.
-.IP "trapsink HOST [COMMUNITY [PORT]]"
-.IP "trap2sink HOST [COMMUNITY [PORT]]"
-.IP "informsink HOST [COMMUNITY [PORT]]"
+.IP "trapsink [-profile p] [-name n] [-tag t] HOST [COMMUNITY [PORT]]"
+.IP "trap2sink [-profile p] [-name n] [-tag t] HOST [COMMUNITY [PORT]]"
+.IP "informsink [-profile p] [-name n] [-tag t] HOST [COMMUNITY [PORT]]"
 define the address of a notification receiver that should be sent
 SNMPv1 TRAPs, SNMPv2c TRAP2s, or SNMPv2 INFORM notifications respectively.
 See the section 
@@ -850,6 +875,11 @@ This mechanism is being deprecated, and the listening port
 should be specified via the transport specification HOST instead.
 .RE
 .IP
+The optional name and tag parameters specifies the name or tag that will
+be used for SNMP-NOTIFICATION-MIB table entries. The profile specifies
+which notification filter profile entry will be used for filtering
+outgoing notifications. (See \fInotificationFilter\fR)
+.IP
 If several sink directives are specified, multiple
 copies of each notification (in the appropriate formats)
 will be generated.
@@ -858,7 +888,7 @@ will be generated.
 It is \fBnot\fR normally appropriate to list two (or all three)
 sink directives with the same destination.
 .RE
-.IP "trapsess [SNMPCMD_ARGS] HOST"
+.IP "trapsess [-profile p] [-name n] [-tag t] [SNMPCMD_ARGS] HOST"
 provides a more generic mechanism for defining notification destinations.
 .I "SNMPCMD_ARGS"
 should be the command-line options required for an equivalent
@@ -866,10 +896,28 @@ should be the command-line options required for an equivalent
 The option \fI\-Ci\fR can be used (with \fI\-v2c\fR or \fI\-v3\fR) to generate
 an INFORM notification rather than an unacknowledged TRAP.
 .IP
+The optional name and tag parameters specifies the name or tag that will
+be used for SNMP-NOTIFICATION-MIB table entries. The profile specifies
+which notification filter profile entry will be used for filtering
+outgoing notifications. (See \fInotificationFilter\fR)
+.IP
 This is the appropriate directive for defining SNMPv3 trap receivers.
 See
 http://www.net\-snmp.org/tutorial/tutorial\-5/commands/snmptrap\-v3.html
 for more information about SNMPv3 notification behaviour.
+.IP "notificationFilter NAME OID MASK TYPE"
+specifies a SNMP-NOTIFICATION-MIB notification filter profile, which may
+be used to filter traps. TYPE must be included or excluded, Some examples:
+.RS
+.IP
+.nf
+notificationFilter all_ok .1.3 0x00 included
+notificationFilter no_coldstart .1.3 0x00 included
+notificationFilter no_coldstart .1.3.6.1.6.3.1.1.5.1 0x00 excluded
+
+trapsink -profile no_coldstart 192.168.1.3:3162 secret3
+.fi
+.RE
 .IP "authtrapenable {1|2}"
 determines whether to generate authentication failure traps
 (\fIenabled(1)\fR) or not (\fIdisabled(2)\fR - the default).
@@ -1284,7 +1332,7 @@ Attempting to define an unaccompanied \fIexecfix\fR directive will fail.
 .PP
 \fIexec\fR and \fIsh\fR extensions can only be configured via the
 snmpd.conf file.  They cannot be set up via SNMP SET requests.
-.IP "extend [MIBOID] NAME PROG ARGS"
+.IP "extend [-cacheTime TIME] [-execType TYPE] [MIBOID] NAME PROG ARGS"
 works in a similar manner to the \fIexec\fR directive, but with a number
 of improvements.  The MIB tables (\fInsExtendConfigTable\fR
 etc) are indexed by the NAME token, so are unaffected by the order in
@@ -1293,6 +1341,14 @@ There are \fItwo\fR result tables - one (\fInsExtendOutput1Table\fR)
 containing the exit status, the first line and full output (as a single string)
 for each \fIextend\fR entry, and the other (\fInsExtendOutput2Table\fR)
 containing the complete output as a series of separate lines.
+.IP
+If -cacheTime is specified, then its argument is used as the cache timeout
+(in whole seconds) for this \fIextend\fR entry. This mechanism provides a
+non-volatile way to specify the cache timeout.
+.IP
+If -execType is specified and has a value of \fIsh\fR, then this \fIextend\fR
+entry will be run in a shell. Otherwise it will be run in the default \fIexec\fR
+fashion. This mechanism provides a non-volatile way to specify the exec type.
 .IP
 If MIBOID is specified, then the configuration and result tables will be rooted
 at this point in the OID tree, but are otherwise structured in exactly
@@ -1338,10 +1394,11 @@ respectively, where OID is the requested OID.
 The PROG command should return the response varbind as three separate
 lines printed to stdout - the first line should be the OID of the returned
 value, the second should be its TYPE (one of the text strings
-.B integer, gauge, counter, timeticks, ipaddress, objectid,
+.B integer, gauge, counter, timeticks, ipaddress, objectid, octet,
 or
 .B string
-), and the third should be the value itself.
+), and the third should be the value itself. (Note: octets are sent as
+ASCII, space-separated hex strings, e.g. "00 3f dd 00 c6 be".)
 .IP
 If the command cannot return an appropriate varbind - e.g the specified
 OID did not correspond to a valid instance for a GET request, or there

@@ -33,6 +33,7 @@
 #include <net-snmp/output_api.h>
 #include <net-snmp/config_api.h>
 
+#include <net-snmp/library/snmp_assert.h>
 #include <net-snmp/library/snmp_transport.h>
 #include <net-snmp/library/tools.h>
 
@@ -45,28 +46,45 @@ static netsnmp_tdomain ipxDomain;
  */
 
 static char *
-netsnmp_ipx_fmtaddr(netsnmp_transport *t, void *data, int len)
+netsnmp_ipx_fmtaddr(netsnmp_transport *t, const void *data, int len)
 {
-    struct sockaddr_ipx *to = NULL;
+    const struct sockaddr_ipx *to = NULL;
 
     if (data != NULL && len == sizeof(struct sockaddr_ipx)) {
-        to = (struct sockaddr_ipx *) data;
+        to = (const struct sockaddr_ipx *) data;
     } else if (t != NULL && t->data != NULL) {
-        to = (struct sockaddr_ipx *) t->data;
+        to = (const struct sockaddr_ipx *) t->data;
     }
     if (to == NULL) {
         return strdup("IPX: unknown");
     } else {
-        char tmp[64];
-        sprintf(tmp, "IPX: %08X:%02X%02X%02X%02X%02X%02X/%hu",
-                ntohl(to->sipx_network), to->sipx_node[0],
-                to->sipx_node[1], to->sipx_node[2], to->sipx_node[3],
-                to->sipx_node[4], to->sipx_node[5], ntohs(to->sipx_port));
-        return strdup(tmp);
+        char *tmp;
+
+        if (asprintf(&tmp, "IPX: %08X:%02X%02X%02X%02X%02X%02X/%hu",
+		     ntohl(to->sipx_network), to->sipx_node[0],
+		     to->sipx_node[1], to->sipx_node[2], to->sipx_node[3],
+		     to->sipx_node[4], to->sipx_node[5], ntohs(to->sipx_port))
+	    < 0)
+            tmp = NULL;
+        return tmp;
     }
 }
 
+static void netsnmp_ipx_get_taddr(struct netsnmp_transport_s *t,
+                                  void **addr, size_t *addr_len)
+{
+    struct sockaddr_ipx *sa = t->remote;
 
+    netsnmp_assert(t->remote_length == sizeof(*sa));
+    *addr_len = 12;
+    if ((*addr = malloc(*addr_len))) {
+        unsigned char *p = *addr;
+
+        memcpy(p + 0,  &sa->sipx_network, 4);
+        memcpy(p + 4,  &sa->sipx_node,    6);
+        memcpy(p + 10, &sa->sipx_port,    2);
+    }
+}
 
 /*
  * You can write something into opaque that will subsequently get passed back 
@@ -120,23 +138,23 @@ netsnmp_ipx_recv(netsnmp_transport *t, void *buf, int size,
 
 
 static int
-netsnmp_ipx_send(netsnmp_transport *t, void *buf, int size,
+netsnmp_ipx_send(netsnmp_transport *t, const void *buf, int size,
 		 void **opaque, int *olength)
 {
     int rc = -1;
-    struct sockaddr *to = NULL;
+    const struct sockaddr *to = NULL;
 
     if (opaque != NULL && *opaque != NULL &&
 	*olength == sizeof(struct sockaddr_ipx)) {
-        to = (struct sockaddr *) (*opaque);
+        to = (const struct sockaddr *) (*opaque);
     } else if (t != NULL && t->data != NULL &&
                t->data_length == sizeof(struct sockaddr_ipx)) {
-        to = (struct sockaddr *) (t->data);
+        to = (const struct sockaddr *) (t->data);
     }
 
     if (to != NULL && t != NULL && t->sock >= 0) {
         DEBUGIF("netsnmp_ipx") {
-            char *str = netsnmp_ipx_fmtaddr(NULL, (void *)to,
+            char *str = netsnmp_ipx_fmtaddr(NULL, to,
                                             sizeof(struct sockaddr_ipx));
             DEBUGMSGTL(("netsnmp_ipx", "send %d bytes from %p to %s on fd %d\n",
                         size, buf, str, t->sock));
@@ -178,7 +196,7 @@ netsnmp_ipx_close(netsnmp_transport *t)
  */
 
 netsnmp_transport *
-netsnmp_ipx_transport(struct sockaddr_ipx *addr, int local)
+netsnmp_ipx_transport(const struct sockaddr_ipx *addr, int local)
 {
     netsnmp_transport *t = NULL;
     int             rc = 0;
@@ -198,7 +216,7 @@ netsnmp_ipx_transport(struct sockaddr_ipx *addr, int local)
     }
 
     DEBUGIF("netsnmp_ipx") {
-        char *str = netsnmp_ipx_fmtaddr(NULL, (void *)addr,
+        char *str = netsnmp_ipx_fmtaddr(NULL, addr,
                                   sizeof(struct sockaddr_ipx));
         DEBUGMSGTL(("netsnmp_ipx", "open %s %s\n", local ? "local" : "remote",
                     str));
@@ -216,15 +234,12 @@ netsnmp_ipx_transport(struct sockaddr_ipx *addr, int local)
 
     if (local) {
 #ifndef NETSNMP_NO_LISTEN_SUPPORT
-        t->local = (unsigned char*)malloc(12);
+        t->local_length = sizeof(*addr);
+        t->local = netsnmp_memdup(addr, sizeof(*addr));
         if (t->local == NULL) {
             netsnmp_transport_free(t);
             return NULL;
         }
-        memcpy(&(t->local[00]), (u_char *) & (addr->sipx_network), 4);
-        memcpy(&(t->local[04]), (u_char *) & (addr->sipx_node), 6);
-        memcpy(&(t->local[10]), (u_char *) & (addr->sipx_port), 2);
-        t->local_length = 12;
 
         /*
          * This session is inteneded as a server, so we must bind on to the
@@ -232,8 +247,7 @@ netsnmp_ipx_transport(struct sockaddr_ipx *addr, int local)
          * address, but definitely includes a port number).
          */
 
-        rc = bind(t->sock, (struct sockaddr *) addr,
-                  sizeof(struct sockaddr));
+        rc = bind(t->sock, addr, sizeof(struct sockaddr));
         if (rc != 0) {
             netsnmp_ipx_close(t);
             netsnmp_transport_free(t);
@@ -245,15 +259,12 @@ netsnmp_ipx_transport(struct sockaddr_ipx *addr, int local)
         return NULL;
 #endif /* NETSNMP_NO_LISTEN_SUPPORT */
     } else {
-        t->remote = (unsigned char*)malloc(12);
+        t->remote_length = sizeof(*addr);
+        t->remote = netsnmp_memdup(addr, sizeof(*addr));
         if (t->remote == NULL) {
             netsnmp_transport_free(t);
             return NULL;
         }
-        memcpy(&(t->remote[00]), (u_char *) & (addr->sipx_network), 4);
-        memcpy(&(t->remote[04]), (u_char *) & (addr->sipx_node), 6);
-        memcpy(&(t->remote[10]), (u_char *) & (addr->sipx_port), 2);
-        t->remote_length = 12;
 
         /*
          * This is a client session.  Save the address in the
@@ -280,6 +291,7 @@ netsnmp_ipx_transport(struct sockaddr_ipx *addr, int local)
     t->f_close    = netsnmp_ipx_close;
     t->f_accept   = NULL;
     t->f_fmtaddr  = netsnmp_ipx_fmtaddr;
+    t->f_get_taddr = netsnmp_ipx_get_taddr;
 
     return t;
 }
@@ -363,7 +375,9 @@ netsnmp_sockaddr_ipx2(struct sockaddr_ipx *addr, const char *peername,
         node = "000000000000";
 
     if (port == NULL || *port == '\0')
-        port = __STRING(SNMP_IPX_DEFAULT_PORT);
+#define val(x) __STRING(x)
+        port = val(SNMP_IPX_DEFAULT_PORT);
+#undef val
 
     DEBUGMSGTL(("netsnmp_sockaddr_ipx", "Address: %s:%s/%s\n",
                 network ? network : "[NIL]", node ? node : "[NIL]",
@@ -432,20 +446,30 @@ netsnmp_ipx_create_tstring(const char *str, int local,
     }
 }
 
+static int netsnmp_ipx_ostring_to_sockaddr(struct sockaddr_ipx *sa,
+                                           const void *o, size_t o_len)
+{
+    const char *p = o;
 
+    if (o_len != 12)
+        return 0;
+
+    memset(sa, 0, sizeof(*sa));
+    sa->sipx_family = AF_IPX;
+    memcpy(&sa->sipx_network, p + 0, 4);
+    memcpy(&sa->sipx_node,    p + 4, 6);
+    memcpy(&sa->sipx_port,    p + 10, 2);
+    return 1;
+}
 
 netsnmp_transport *
-netsnmp_ipx_create_ostring(const u_char * o, size_t o_len, int local)
+netsnmp_ipx_create_ostring(const void *o, size_t o_len, int local)
 {
-    struct sockaddr_ipx addr;
+    struct sockaddr_ipx sa;
 
-    if (o_len == 12) {
-        addr.sipx_family = AF_IPX;
-        memcpy((u_char *) & (addr.sipx_network), &(o[00]), 4);
-        memcpy((u_char *) & (addr.sipx_node), &(o[04]), 6);
-        memcpy((u_char *) & (addr.sipx_port), &(o[10]), 2);
-        return netsnmp_ipx_transport(&addr, local);
-    }
+    if (netsnmp_ipx_ostring_to_sockaddr(&sa, o, o_len))
+        return netsnmp_ipx_transport(&sa, local);
+
     return NULL;
 }
 

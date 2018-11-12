@@ -195,8 +195,7 @@ return_delayed_response(unsigned int clientreg, void *clientarg)
         /*
          * store old value for UNDO support in the future. 
          */
-        memdup((u_char **) & delay_time_cache,
-               (u_char *) & delay_time, sizeof(delay_time));
+        delay_time_cache = netsnmp_memdup(&delay_time, sizeof(delay_time));
 
         /*
          * malloc failed 

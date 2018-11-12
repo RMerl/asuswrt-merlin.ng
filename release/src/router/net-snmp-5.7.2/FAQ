@@ -1,7 +1,7 @@
       Frequently Asked Questions (FAQ) for the UCD/Net-SNMP package
       =============================================================
 		       FAQ Author: Dave Shield
-			Net-SNMP Version: 5.7.2
+			Net-SNMP Version: 5.8
 	    Net-SNMP/UCD-SNMP Project Leader: Wes Hardaker
 	     Email: net-snmp-coders@lists.sourceforge.net
 
@@ -190,13 +190,11 @@ Where can I get it?
 
   Download:
     - http://www.net-snmp.org/download/
-    - ftp://ftp.net-snmp.org/pub/sourceforge/net-snmp/
   Web page:
     - http://www.net-snmp.org/
   Sourceforge Project page:
     - http://www.net-snmp.org/project/
   Mirrors (note that sourceforge download servers are mirrored themselves):
-    - US:          ftp://ftp.freesnmp.com/mirrors/net-snmp/
     - Greece:      ftp://ftp.ntua.gr/pub/net/snmp/net-snmp/
 
 
@@ -237,8 +235,6 @@ Are there binaries available?
 
   These binaries are also available on the project FTP site,
   with a link on the same web page.
-
-  There is also a mirror at ftp://ftp.freesnmp.org/mirrors/net-snmp/
 
 
 

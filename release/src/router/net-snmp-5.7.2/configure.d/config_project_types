@@ -13,6 +13,21 @@
 AC_TYPE_OFF_T
 AC_TYPE_PID_T
 AC_HEADER_TIME
+AC_COMPILE_IFELSE(
+    [AC_LANG_PROGRAM([],
+        [int x __attribute__((deprecated))])],
+    [attr="__attribute__((deprecated))"],
+    [attr="/**/"])
+AC_DEFINE_UNQUOTED([NETSNMP_ATTRIBUTE_DEPRECATED], [${attr}],
+          [Used to make the compiler issue a warning about deprecated functions and variables])
+
+AC_COMPILE_IFELSE(
+    [AC_LANG_PROGRAM([],
+        [int x __attribute__((unused))])],
+    [attr="__attribute__((unused))"],
+    [attr="/**/"])
+AC_DEFINE_UNQUOTED([NETSNMP_ATTRIBUTE_UNUSED], [${attr}],
+          [Used to suppress compiler warnings about unused functions and variables])
 
 
 ##

@@ -141,18 +141,13 @@ int             header_hrswInstEntry(struct variable *, oid *, size_t *,
 	 *  Initialisation & common implementation functions
 	 *
 	 *********************/
-extern void     Init_HR_SWInst(void);
-extern int      Get_Next_HR_SWInst(void);
-extern void     End_HR_SWInst(void);
-extern int      Save_HR_SW_info(int ix);
+static void     Init_HR_SWInst(void);
+static int      Get_Next_HR_SWInst(void);
+static void     End_HR_SWInst(void);
+static int      Save_HR_SW_info(int ix);
 
-#ifdef HAVE_LIBRPM
 static void     Mark_HRSW_token(void);
 static void     Release_HRSW_token(void);
-#else
-#define	Mark_HRSW_token()
-#define	Release_HRSW_token()
-#endif
 
 
 #define	HRSWINST_CHANGE		1
@@ -515,9 +510,12 @@ var_hrswinst(struct variable * vp,
                 snprintf(string, sizeof(string), "%s/%s",
                          swi->swi_directory, swi->swi_name);
                 string[ sizeof(string)-1 ] = 0;
-                stat(string, &stat_buf);
-                ret = date_n_time(&stat_buf.st_mtime, var_len);
+                if (stat(string, &stat_buf) >= 0)
+                    ret = date_n_time(&stat_buf.st_mtime, var_len);
+                else
+                    goto err;
             } else {
+err:
 #if NETSNMP_NO_DUMMY_VALUES
                 ret = NULL;
 #else
@@ -702,7 +700,6 @@ Save_HR_SW_info(int ix)
     return 0;
 }
 
-#ifdef	HAVE_LIBRPM
 void
 Mark_HRSW_token(void)
 {
@@ -711,14 +708,15 @@ Mark_HRSW_token(void)
 void
 Release_HRSW_token(void)
 {
+#ifdef	HAVE_LIBRPM
     SWI_t          *swi = &_myswi;      /* XXX static for now */
     if (swi != NULL && swi->swi_h) {
         headerFree(swi->swi_h);
         swi->swi_h = NULL;
         swi->swi_prevx = -1;
     }
-}
 #endif                          /* HAVE_LIBRPM */
+}
 
 void
 End_HR_SWInst(void)

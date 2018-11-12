@@ -1,3 +1,14 @@
+/*
+ * Portions of this file are subject to the following copyright(s).  See
+ * the Net-SNMP's COPYING file for more details and other copyrights
+ * that may apply:
+ *
+ * Portions of this file are copyrighted by:
+ * Copyright (c) 2016 VMware, Inc. All rights reserved.
+ * Use is subject to license terms specified in the COPYING file
+ * distributed with the Net-SNMP package.
+ */
+
 #ifndef NET_SNMP_SESSION_API_H
 #define NET_SNMP_SESSION_API_H
 
@@ -11,6 +22,8 @@
 #ifdef __cplusplus
 extern          "C" {
 #endif
+
+    struct session_list;
 
     NETSNMP_IMPORT
     void            snmp_sess_init(netsnmp_session *);
@@ -43,6 +56,10 @@ extern          "C" {
     NETSNMP_IMPORT
     int             snmp_close_sessions(void);
 
+    NETSNMP_IMPORT
+    int
+    _build_initial_pdu_packet(struct session_list *slp, netsnmp_pdu *pdu,
+                              int bulk);
 
     /*
      * int snmp_send(session, pdu)
@@ -54,6 +71,7 @@ extern          "C" {
      * session defaults.  Add a request corresponding to this pdu to the list
      * of outstanding requests on this session, then send the pdu.
      * Returns the request id of the generated packet if applicable, otherwise 1.
+     * (There is a special case: if the request id is 0, 1 will be returned).
      * On any error, 0 is returned.
      * The pdu is freed by snmp_send() unless a failure occured.
      */
@@ -185,7 +203,6 @@ extern          "C" {
      
      snmp_sess_init(&session);
      session.retries = ...
-     session.remote_port = ...
      sessp = snmp_sess_open(&session);
      ss = snmp_sess_session(sessp);
      if (ss == NULL)
@@ -217,7 +234,8 @@ extern          "C" {
     netsnmp_session *snmp_sess_session(void *);
     NETSNMP_IMPORT
     netsnmp_session *snmp_sess_session_lookup(void *);
-
+    NETSNMP_IMPORT
+    netsnmp_session *snmp_sess_lookup_by_name(const char *paramName);
 
     /*
      * use return value from snmp_sess_open as void * parameter 

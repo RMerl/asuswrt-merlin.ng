@@ -5,6 +5,8 @@
  * Written by Dale Rahn.
  */
 
+#include "ffs.h"
+
 /*
  * ffs -- vax ffs instruction
  */

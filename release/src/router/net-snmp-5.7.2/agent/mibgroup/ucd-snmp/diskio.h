@@ -34,5 +34,6 @@ config_add_mib(UCD-DISKIO-MIB)
 #define DISKIO_LA15             11
 #define DISKIO_NREADX           12
 #define DISKIO_NWRITTENX        13
+#define DISKIO_BUSYTIME		14
 
 #endif                          /* _MIBGROUP_DISKIO_H */

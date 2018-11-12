@@ -16,8 +16,6 @@
 #undef RTHASHSIZE_SYMBOL
 #define RTHASHSIZE_SYMBOL "rhash_size"
 
-#undef ARPTAB_SIZE_SYMBOL
-
 #ifndef __GNUC__
 #  undef NETSNMP_ENABLE_INLINE
 #  define NETSNMP_ENABLE_INLINE 0

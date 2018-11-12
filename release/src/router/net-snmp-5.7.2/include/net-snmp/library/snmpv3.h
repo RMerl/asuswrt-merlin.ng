@@ -1,5 +1,10 @@
 /*
  * snmpv3.h
+ *
+ * Portions of this file are copyrighted by:
+ * Copyright (c) 2016 VMware, Inc. All rights reserved.
+ * Use is subject to license terms specified in the COPYING file
+ * distributed with the Net-SNMP package.
  */
 
 #ifndef SNMPV3_H
@@ -20,8 +25,13 @@ extern          "C" {
 
 #define	DEFAULT_NIC "eth0"
 
+    NETSNMP_IMPORT int
+    snmpv3_parse_args(char *optarg, netsnmp_session * session, char **Apsz,
+                      char **Xpsz, int argc, char *const *argv, int flags);
     NETSNMP_IMPORT
     int             setup_engineID(u_char ** eidp, const char *text);
+    NETSNMP_IMPORT
+    int             set_exact_engineID(const u_char *id, size_t len);
     void            engineID_conf(const char *word, char *cptr);
     void            engineBoots_conf(const char *, char *);
     void            engineIDType_conf(const char *, char *);
@@ -54,6 +64,13 @@ extern          "C" {
 				  void *clientarg);
     NETSNMP_IMPORT
     int             parse_secLevel_conf(const char* word, char *cptr);
+    NETSNMP_IMPORT int
+    snmpv3_parse_arg(int arg, char *optarg, netsnmp_session *session,
+                     char **Apsz, char **Xpsz, int argc, char *const *argv,
+                     int flags);
+    NETSNMP_IMPORT int
+    snmpv3_options(char *optarg, netsnmp_session * session, char **Apsz,
+                   char **Xpsz, int argc, char *const *argv);
 
 #ifdef __cplusplus
 }

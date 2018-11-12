@@ -12,6 +12,11 @@
  * Copyright © 2003 Sun Microsystems, Inc. All rights reserved.
  * Use is subject to license terms specified in the COPYING file
  * distributed with the Net-SNMP package.
+ *
+ * Portions of this file are copyrighted by:
+ * Copyright (c) 2016 VMware, Inc. All rights reserved.
+ * Use is subject to license terms specified in the COPYING file
+ * distributed with the Net-SNMP package.
  */
 
 #include <net-snmp/net-snmp-config.h>
@@ -161,7 +166,7 @@ netsnmp_feature_provide(interface_legacy)
 #include <netinet/mib_kern.h>
 #endif                          /* hpux */
 
-#ifdef cygwin
+#if defined(cygwin) || defined(mingw32)
 #include <windows.h>
 #endif
 
@@ -198,6 +203,7 @@ netsnmp_feature_provide(interface_legacy)
 
 #include "interfaces.h"
 #include "struct.h"
+#include "util_funcs.h"
 #include "util_funcs/header_generic.h"
 
 /* if you want caching enabled for speed retrieval purposes, set this to 5?*/
@@ -318,10 +324,10 @@ if_type_from_name(const char *pcch)
         {0, 0}                  /* end of list */
     };
 
-    int             ii, len;
+    int             len;
     register pmatch_if pm;
 
-    for (ii = 0, pm = lmatch_if; pm->mi_name; pm++) {
+    for (pm = lmatch_if; pm->mi_name; pm++) {
         len = strlen(pm->mi_name);
         if (0 == strncmp(pcch, pm->mi_name, len)) {
             return (pm->mi_type);
@@ -432,8 +438,6 @@ struct small_ifaddr {
     struct in_addr  sifa_broadcast;
 };
 
-extern const struct sockaddr *get_address(const void *, int, int);
-extern const struct in_addr *get_in_address(const void *, int, int);
 static int      Interface_Scan_By_Index(int, struct if_msghdr *, char *,
                                         struct small_ifaddr *);
 static int      Interface_Get_Ether_By_Index(int, u_char *);
@@ -777,9 +781,6 @@ var_ifEntry(struct variable *vp,
     static char     Name[16];
     char           *cp;
     conf_if_list   *if_ptr;
-#if HAVE_STRUCT_IFNET_IF_LASTCHANGE_TV_SEC
-    struct timeval  now;
-#endif
 
     interface =
         header_ifEntry(vp, name, length, exact, var_len, write_method);
@@ -1466,11 +1467,6 @@ static int      saveIndex = 0;
 unsigned int getIfSpeed(int fd, struct ifreq ifr, unsigned int defaultspeed)
 {
 #ifdef linux
-    /** temporary expose internal until this module can be re-written */
-    extern unsigned int
-        netsnmp_linux_interface_get_if_speed(int fd, const char *name,
-                unsigned long long defaultspeed);
-
     return netsnmp_linux_interface_get_if_speed(fd, ifr.ifr_name, defaultspeed);
 #else /*!linux*/			   
     return defaultspeed;
@@ -1866,7 +1862,9 @@ Interface_Scan_NextInt(int *Index,
                     struct ifnet *Retifnet, struct in_ifaddr *dummy)
 {
     struct ifnet    ifnet;
+#if !defined(linux)
     register char  *cp;
+#endif
 
     while (ifnetaddr) {
         /*
@@ -1900,7 +1898,6 @@ Interface_Scan_NextInt(int *Index,
 #endif
 
         saveName[sizeof(saveName) - 1] = '\0';
-        cp = (char *) strchr(saveName, '\0');
 #ifdef linux
         strlcat(saveName, ifnet.if_unit, sizeof(saveName));
 #else
@@ -1908,6 +1905,7 @@ Interface_Scan_NextInt(int *Index,
         /* this exists here just so we don't copy ifdef logic elsewhere */
         netsnmp_feature_require(string_append_int);
 #endif
+        cp = (char *) strchr(saveName, '\0');
         string_append_int(cp, ifnet.if_unit);
 #endif
         if (1 || strcmp(saveName, "lo0") != 0) {        /* XXX */
@@ -2376,8 +2374,6 @@ static int      header_interfaces(struct variable *, oid *, size_t *, int,
                                   size_t *, WriteMethod ** write);
 static int      header_ifEntry(struct variable *, oid *, size_t *, int,
                                size_t *, WriteMethod ** write);
-u_char         *var_ifEntry(struct variable *, oid *, size_t *, int,
-                            size_t *, WriteMethod ** write);
 
 static char    *physaddrbuf;
 static int      nphysaddrs;

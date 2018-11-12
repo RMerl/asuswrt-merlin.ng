@@ -23,6 +23,7 @@
 #include <net-snmp/library/container.h>
 #include <net-snmp/library/snmp_debug.h>
 #include <net-snmp/data_access/swrun.h>
+#include "swrun_private.h"
 
 int avail = 1024;    /* Size of table to allocate */
 
@@ -42,7 +43,7 @@ netsnmp_arch_swrun_container_load( netsnmp_container *container, u_int flags)
 {
     struct procsinfo    *proc_table;
     pid_t                proc_index = 0;
-    int                  nprocs, rc, i;
+    int                  nprocs, i;
     char                 pentry[128], *ppentry, fullpath[128];
     netsnmp_swrun_entry *entry;
 
@@ -67,7 +68,7 @@ netsnmp_arch_swrun_container_load( netsnmp_container *container, u_int flags)
         entry = netsnmp_swrun_entry_create(proc_table[i].pi_pid);
         if (NULL == entry)
             continue;   /* error already logged by function */
-        rc = CONTAINER_INSERT(container, entry);
+        CONTAINER_INSERT(container, entry);
 
 	memset(pentry, 0, sizeof(pentry));								/* Empty each time */
 	if(!(SKPROC & proc_table[i].pi_flags)) {							/* Remove kernel processes */
@@ -124,7 +125,7 @@ netsnmp_arch_swrun_container_load( netsnmp_container *container, u_int flags)
     free(proc_table);
 
     DEBUGMSGTL(("swrun:load:arch"," loaded %d entries\n",
-                CONTAINER_SIZE(container)));
+                (int) CONTAINER_SIZE(container)));
 
     return 0;
 }

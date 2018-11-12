@@ -2,6 +2,7 @@
 #include <net-snmp/net-snmp-includes.h>
 #include <net-snmp/agent/net-snmp-agent-includes.h>
 #include <net-snmp/agent/hardware/sensors.h>
+#include "hw_sensors_private.h"
 
 #include <time.h>
 #include <sensors/sensors.h>
@@ -86,7 +87,28 @@ netsnmp_sensor_arch_load(netsnmp_cache *cache, void *vp) {
                  *  (inserting it in the appropriate sub-containers)
                  */
                 sp = sensor_by_name( label, type );
-                if ( sp ) {
+                if ( sp && sp->flags & NETSNMP_SENSOR_FLAG_ACTIVE) {
+                    /*
+                     * Some HW does not have unique sensors labels.
+                     * We already have a sensor with this label, thus
+                     * try to create unique label by adding chip-name prefix
+                     * and try again.
+                     */
+                    char chip_name[64];
+                    char new_label[128];
+                    int ret;
+                    DEBUGMSGTL(("sensors:arch:detail", "Already know label %s, adding prefix\n", label));
+                    ret = sensors_snprintf_chip_name(chip_name, sizeof(chip_name), chip);
+                    if (ret < 0) {
+                        DEBUGMSGTL(("sensors:arch:detail", "Can't get chip name for label %s\n", label));
+                        free(label);
+                        continue;
+                    }
+                    snprintf(new_label, sizeof(new_label), "%s:%s", chip_name, label);
+                    DEBUGMSGTL(("sensors:arch:detail", "New label: %s\n", new_label));
+                    sp = sensor_by_name( new_label, type );
+                }
+                if (sp) {
                     sp->value = val;
                     sp->flags|= NETSNMP_SENSOR_FLAG_ACTIVE;
                 }

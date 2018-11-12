@@ -4,7 +4,7 @@
 
 nsbuildroot=${nsbuildroot:=$HOME/ns-build-root}
 nsecho=${nsecho:=}
-nsbranches=${nsbranches:="V5-4-patches V5-5-patches V5-6-patches V5-7-patches master"}
+nsbranches=${nsbranches:="V5-4-patches V5-7-patches master"}
 
 # set nsverbose to ':' if you don't want verbose output of what's going on
 nsverbose=${nsverbose:="echo ::: Net-SNMP: "}
@@ -64,6 +64,9 @@ nsmake () {
 	shift
         _ns_setbuilddir "$1"
 	shift
+    elif [ "$1" != "" ]; then
+    	echo "Unknown argument: $1"
+	exit 1
     else
         _ns_setbuilddir
     fi
@@ -82,6 +85,13 @@ nsmakeall () {
 
     for branch in $nsbranches ; do
 	git checkout $branch
+	if [ $? != 0 ] ; then
+            echo ""
+            echo "---------------------------------------------"
+            echo "Checkout of $branch failed!!!"
+            echo
+            return
+        fi
 	nsmake "$@"
     done
 }
@@ -94,6 +104,9 @@ nsconfigure () {
 	shift
         _ns_setbuilddir "$1"
 	shift
+    elif [ "$1" != "" ]; then
+    	echo "Unknown argument: $1"
+	exit 1
     else
         _ns_setbuilddir
     fi
@@ -125,6 +138,11 @@ nspatchtry() {
 	nspatchfile=`echo $nspatchargs | sed 's/.* \([^ ]+\)$/\1/'`
 	# attempt to count the slashes before any agent/snmplib/apps/etc
 	patchcount=$((`grep diff $nspatchfile | head -1 | awk '{print $NF}' | sed 's/\(agent\|snmplib\|apps\|local\|perl\|python\).*//;s#[^/]##g' | wc -c` - 1))
+	# if we failed to guess, bail out.
+	if [ "X$patchcount" = "X-1" ]; then
+	    echo "Please specify -p argument; I failed to guess the right one."
+	    return
+	fi
 	nspatchargs="-p $patchcount $nspatchargs"
     fi
 
@@ -139,6 +157,13 @@ nspatchtry() {
     for branch in $nsbranches ; do
 	$nsverbose checking out and applying patch in $branch
 	$nsecho git checkout $branch
+	if [ $? != 0 ] ; then
+            echo ""
+            echo "---------------------------------------------"
+            echo "Checkout of $branch failed!!!"
+            echo
+            return
+        fi
 
 	$nsverbose Appling patch
 	$nsecho patch -N --batch $nspatchargs
@@ -170,6 +195,13 @@ _nspatchapplybase() {
 
     $nsverbose Checking out $patchbranch
     $nsecho git checkout $patchbranch
+    if [ $? != 0 ] ; then
+        echo ""
+        echo "---------------------------------------------"
+        echo "Checkout of $branch failed!!!"
+        echo
+        return
+    fi
 
     $nsverbose applying the patch "$nspatchargs"
     $nsecho patch $nspatchargs
@@ -267,6 +299,9 @@ nsrollup() {
 	mergeop="merge"
     elif [ "$1" = "--rebase" ] ; then
 	mergeop="rebase"
+    elif [ "$1" != "" ]; then
+    	echo "Unknown argument: $1"
+	exit 1
     else
 	mergeop="merge"
     fi
@@ -290,6 +325,13 @@ nsrollup() {
 	if [ "$nslastbranch" != "" ] ; then
 	    $nsverbose checking out $branch
 	    $nsecho git checkout $branch
+	    if [ $? != 0 ] ; then
+		echo ""
+		echo "---------------------------------------------"
+		echo "Checkout of $branch failed!!!"
+                echo
+                return
+            fi
 
 	    if [ -f dist/release ] ; then
 		if [ "`egrep ^$branch dist/release`" = "$branch rc" ] ; then
@@ -379,6 +421,9 @@ nspull() {
 	mergeop="merge"
     elif [ "$1" = "--rebase" ] ; then
 	mergeop="rebase"
+    elif [ "$1" != "" ]; then
+    	echo "Unknown argument: $1"
+	exit 1
     else
 	mergeop="merge"
     fi
@@ -386,6 +431,13 @@ nspull() {
     git fetch --all
     for branch in $nsbranches ; do
 	git checkout $branch
+        if [ $? != 0 ] ; then
+            echo ""
+            echo "---------------------------------------------"
+            echo "Checkout of $branch failed!!!"
+            echo
+            return
+        fi
 	MERGE_AUTOEDIT=no git $mergeop origin/$branch
 	if [ $? != 0 ] ; then
 	    echo "git $mergeop failed; please fix first"
@@ -393,6 +445,13 @@ nspull() {
 	fi
     done
     git checkout $nscurrentbranch
+    if [ $? != 0 ] ; then
+        echo ""
+        echo "---------------------------------------------"
+        echo "Checkout of $branch failed!!!"
+        echo
+        return
+    fi
 }
 
 nspush() {
@@ -434,10 +493,10 @@ nsautoconf() {
     if [ "$VER" != "$COR" ] ; then
 	echo "failed to find the correct version of autoconf"
 	echo "please install autoconf version $COR in /usr/local/autoconf-$COR"
-	echo "  (configure autoconf-$COR using -prefix=/usr/local/autoconf-$COR"
+	echo "  (configure autoconf-$COR using --prefix=/usr/local/autoconf-$COR"
 	return
     fi
 
     echo "RUNNING AUTOCONF $COR"
-    PATH=/usr/local/autoconf-${autover}/bin:$PATH $tool
+    PATH=/usr/local/autoconf-${COR}/bin:$PATH $tool
 }

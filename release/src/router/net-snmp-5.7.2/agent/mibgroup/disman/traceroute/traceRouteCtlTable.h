@@ -580,7 +580,6 @@ void            freehostinfo(struct hostinfo *);
 void            getaddr(u_int32_t *, char *);
 struct hostinfo *gethostinfo(char *);
 u_short         in_checksum(u_short *, int);
-char           *inetname(struct in_addr);
 void            run_traceRoute(unsigned int, void *);
 int             packet_ok(u_char *, int, struct sockaddr_in *, int,
                           u_short, int, u_short);
@@ -599,8 +598,6 @@ int             usleep(u_int);
 #endif
 void            setsin(struct sockaddr_in *, u_int32_t);
 int             ifaddrlist(struct ifaddrlist **, char *);
-const char     *findsaddr(const struct sockaddr_in *,
-                          struct sockaddr_in *);
 struct addrinfo *host_serv_tr(const char *, const char *, int, int);
 char           *sock_ntop_host_tr(const struct sockaddr *, socklen_t);
 

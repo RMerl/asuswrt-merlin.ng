@@ -7,7 +7,7 @@
 
 config_require(smux/smux)
 
-     extern FindVarMethod var_rip2;;
+     extern FindVarMethod var_rip2;
      void            init_snmp_rip2(void);
 
 

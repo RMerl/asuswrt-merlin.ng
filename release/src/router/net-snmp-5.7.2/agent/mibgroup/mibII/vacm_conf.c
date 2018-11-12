@@ -10,6 +10,11 @@
  * Copyright © 2003 Sun Microsystems, Inc. All rights reserved.
  * Use is subject to license terms specified in the COPYING file
  * distributed with the Net-SNMP package.
+ *
+ * Portions of this file are copyrighted by:
+ * Copyright (c) 2016 VMware, Inc. All rights reserved.
+ * Use is subject to license terms specified in the COPYING file
+ * distributed with the Net-SNMP package.
  */
 
 #include <net-snmp/net-snmp-config.h>
@@ -478,9 +483,9 @@ vacm_parse_authaccess(const char *token, char *confline)
         return;
     }
 
-    for (i = 0; i <= VACM_MAX_VIEWS; i++) {
+    for (i = 0; i < VACM_MAX_VIEWS; i++) {
         if (viewtypes & (1 << i)) {
-            strcpy(ap->views[i], view);
+            strlcpy(ap->views[i], view, sizeof(ap->views[i]));
         }
     }
     ap->contextMatch = prefix;
@@ -542,7 +547,7 @@ vacm_parse_setaccess(const char *token, char *param)
         return;
     }
 
-    strcpy(ap->views[viewnum], viewval);
+    strlcpy(ap->views[viewnum], viewval, sizeof(ap->views[viewnum]));
     ap->contextMatch = iprefix;
     ap->storageType = SNMP_STORAGE_PERMANENT;
     ap->status = SNMP_ROW_ACTIVE;
@@ -598,9 +603,12 @@ vacm_parse_access(const char *token, char *param)
         config_perror("failed to create access entry");
         return;
     }
-    strcpy(ap->views[VACM_VIEW_READ], readView);
-    strcpy(ap->views[VACM_VIEW_WRITE], writeView);
-    strcpy(ap->views[VACM_VIEW_NOTIFY], notify);
+    strlcpy(ap->views[VACM_VIEW_READ], readView,
+            sizeof(ap->views[VACM_VIEW_READ]));
+    strlcpy(ap->views[VACM_VIEW_WRITE], writeView,
+            sizeof(ap->views[VACM_VIEW_WRITE]));
+    strlcpy(ap->views[VACM_VIEW_NOTIFY], notify,
+            sizeof(ap->views[VACM_VIEW_NOTIFY]));
     ap->contextMatch = iprefix;
     ap->storageType = SNMP_STORAGE_PERMANENT;
     ap->status = SNMP_ROW_ACTIVE;
@@ -806,6 +814,10 @@ vacm_create_simple(const char *token, char *confline,
     char           *view_ptr = viewname;
 #if !defined(NETSNMP_DISABLE_SNMPV1) || !defined(NETSNMP_DISABLE_SNMPV2C)
     char            addressname[SPRINT_MAX_LEN];
+    /* Conveniently, the community-based security
+       model values can also be used as bit flags */
+    int             commversion = SNMP_SEC_MODEL_SNMPv1 |
+                                  SNMP_SEC_MODEL_SNMPv2c;
 #endif
     const char     *rw = "none";
     char            model[SPRINT_MAX_LEN];
@@ -816,10 +828,6 @@ vacm_create_simple(const char *token, char *confline,
     char            context[SPRINT_MAX_LEN];
     int             ctxprefix = 1;  /* Default to matching all contexts */
     static int      commcount = 0;
-    /* Conveniently, the community-based security
-       model values can also be used as bit flags */
-    int             commversion = SNMP_SEC_MODEL_SNMPv1 |
-                                  SNMP_SEC_MODEL_SNMPv2c;
 
     /*
      * init 
@@ -1258,11 +1266,13 @@ vacm_check_view_contents(netsnmp_pdu *pdu, oid * name, size_t namelen,
     struct vacm_accessEntry *ap;
     struct vacm_groupEntry *gp;
     struct vacm_viewEntry *vp;
+#if !defined(NETSNMP_DISABLE_SNMPV1) || !defined(NETSNMP_DISABLE_SNMPV2C)
     char            vacm_default_context[1] = "";
     const char     *contextName = vacm_default_context;
+    const char     *pdu_community;
+#endif
     const char     *sn = NULL;
     char           *vn;
-    const char     *pdu_community;
 
     /*
      * len defined by the vacmContextName object 
@@ -1379,7 +1389,7 @@ vacm_check_view_contents(netsnmp_pdu *pdu, oid * name, size_t namelen,
         }
 
     } else
-#endif /* support for community based SNMP */
+#endif /* !defined(NETSNMP_DISABLE_SNMPV1) || !defined(NETSNMP_DISABLE_SNMPV2C) */
       if (find_sec_mod(pdu->securityModel)) {
         /*
          * any legal defined v3 security model 
@@ -1388,7 +1398,6 @@ vacm_check_view_contents(netsnmp_pdu *pdu, oid * name, size_t namelen,
                   "vacm_in_view: ver=%ld, model=%d, secName=%s\n",
                   pdu->version, pdu->securityModel, pdu->securityName));
         sn = pdu->securityName;
-        contextName = pdu->contextName;
     } else {
         sn = NULL;
     }

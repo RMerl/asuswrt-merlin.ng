@@ -1,11 +1,12 @@
 #!/usr/bin/perl
-# 
+#
 # Configure script for Net-SNMP and MSVC
 # Written by Alex Burger
 # March 5th, 2004
 #
 use Getopt::Long;
 use strict;
+use warnings;
 
 my $version = "unknown";
 my $config;
@@ -14,6 +15,8 @@ my $linktype;
 my $prefix;
 my $prefixdos;
 my $openssl = 0;
+my $opensslincdir;
+my $openssllibdir;
 my $b_ipv6 = 0;
 my $b_winextdll = 0;
 my $help = 0;
@@ -24,16 +27,18 @@ GetOptions      ('config=s' => \$config,
                  'destdir=s' => \$prefix,
                  'prefix=s' => \$prefix,
                  'with-ssl' => \$openssl,
+                 'with-sslincdir=s' => \$opensslincdir,
+                 'with-ssllibdir=s' => \$openssllibdir,
                  'with-ipv6' => \$b_ipv6,
                  'with-winextdll' => \$b_winextdll,
                  'help' => \$help);
 
-if ($help == 1)
-{
+if ($help == 1 || !defined($config) || !defined($linktype) ||
+    !defined($b_ipv6) || !defined($b_winextdll)) {
 my $USAGE = qq/
 Usage:
-    perl Configure [<options>] 
-    
+    perl Configure [<options>]
+
 Options:
 
     --config=[release | debug]       Compile as release or with debug symbols
@@ -42,6 +47,8 @@ Options:
     --prefix=\"path\"                  Set INSTALL_BASE path (install path)
     --destdir=\"path\"                 Same as --prefix
     --with-ssl                       Link against OpenSSL
+    --with-sslincdir=\"path\"          OpenSSL include path
+    --with-ssllibdir=\"path\"          OpenSSL library path
     --with-ipv6                      Build in IPv6 transports (enables SDK)
     --with-winextdll                 Build winExtDLL agent (enables SDK, see README.win32)
     --help                           This help screen
@@ -52,18 +59,18 @@ Options:
   exit(0);
 
 }
-               
-$config = lc($config);  
+
+$config = lc($config);
 if (($config ne "debug") && ($config ne "release")) {
   $config = "release";
 }
 
-$linktype = lc($linktype);              
+$linktype = lc($linktype);
 if (($linktype ne "static") && ($linktype ne "dynamic")) {
   $linktype = "static";
 }
 
-if ($prefix eq "") {
+if (!$prefix) {
   $prefix = "c:/usr";
 }
 
@@ -89,7 +96,7 @@ print "\n\n";
 # Determine version from unix configure script
 #
 ###############################################
-  
+
 my $unix_configure_in = "../configure";
 
 open (UNIX_CONFIGURE_IN, "<$unix_configure_in") || die "Can't Open $unix_configure_in\n";
@@ -97,56 +104,52 @@ open (UNIX_CONFIGURE_IN, "<$unix_configure_in") || die "Can't Open $unix_configu
 while (<UNIX_CONFIGURE_IN>)
 {
   chomp;
-  /PACKAGE_VERSION='(.*)'/;
-  if ($1 ne "") {
+  if (/PACKAGE_VERSION='(.*)'/) {
     $version = $1;
     last;
   }
 }
 
-###############################################
-#
-# Create main Makefile
-#
-###############################################
-{  
-  my $makefile_out = "Makefile";
-  my $makefile_in  = "Makefile.in";
+# Arguments:
+# $1: Name of output file
+# $2: Name of input file
+# $3: Reference to a hash with substitutions. A substitution is an array with
+#     two elements where element [0] is the pattern to search for and element
+#     [1] the replacement text.
+sub substitute
+{
+  my $out  = shift;
+  my $in   = shift;
+  my $subs = shift;
 
-  open (MAKE_OUT, ">$makefile_out") || die "Can't Open $makefile_out\n";
-  open (MAKE_IN, "<$makefile_in") || die "Can't Open $makefile_in\n";
+  open (OUT, ">$out") || die "Can't open $out\n";
+  open (IN,  "<$in")  || die "Can't open $in\n";
 
-  print "creating $makefile_out\n";
-  
-  while (<MAKE_IN>)
-  {
+  print "creating $out\n";
+
+  while (<IN>) {
     chomp;
-    if ($sdk == 1) {
-      s/^SDK=/SDK=true/;
+    foreach my $e (keys %$subs) {
+        my $p = $$subs{$e}[0];
+        my $q = $$subs{$e}[1];
+        s/$p/$q/;
     }
-    else {
-      s/^SDK=/SDK=false/;
-    }
-    
-    s/^LINKTYPE=/LINKTYPE=$linktype/;
-    s/^CFG=/CFG=$config/;
-    s/^PREFIX=/PREFIX=$prefix/;    
-    s/^PREFIX_DOS=/PREFIX_DOS=$prefixdos/;    
-    s/^SSL=.*/SSL=$openssl/;
-
-    print MAKE_OUT $_ . "\n";
+    print OUT $_ . "\n";
   }
+
+  close IN;
+  close OUT;
 }
 
 ###############################################
 #
-# Create Makefiles for applications from 
-# Makefile-apps.in
-# (except for snmpnetstat)
+# Perform substitutions
 #
 ###############################################
-my @programs = qw 
-/encode_keychange
+
+my @programs = qw
+/
+encode_keychange
 snmpbulkget
 snmpbulkwalk
 snmpdelta
@@ -164,241 +167,107 @@ snmpvacm
 snmpwalk
 /;
 
-foreach my $progName (@programs) {
-  
-  my $makefile_out = "$progName\\Makefile";
-  my $makefile_in = "Makefile-apps.in";
-
-  my $outdir = $config;
-  my $intdir = $config;
-  
-  open (MAKE_OUT, ">$makefile_out") || die "Can't Open $makefile_out\n";
-  open (MAKE_IN, "<$makefile_in") || die "Can't Open $makefile_in\n";
-
-  print "creating $makefile_out\n";
-  
-  while (<MAKE_IN>)
-  {
-    chomp;
-    
-    s/^LINKTYPE=/LINKTYPE=$linktype/;
-    s/^PROGNAME=/PROGNAME=$progName/;
-    s/^CFG=/CFG=$config/;
-    s/^OUTDIR=/OUTDIR=.\\$outdir/;
-    s/^INTDIR=/INTDIR=.\\$intdir/;
-    s/^SSL=.*/SSL=$openssl/;
-
-    print MAKE_OUT $_ . "\n";
-  }
+my @apps=sort("snmpnetstat", @programs);
+my @apps_clean;
+foreach my $app (@apps) {
+    push @apps_clean, $app . "_clean";
 }
 
-###############################################
-#
-# Create Makefiles for snmpnetstat from
-# snmpnetstat\Makefile.in
-#
-###############################################
-my @programs = qw 
-/snmpnetstat
-/;
+my %makefile_subs = (
+    "app" => [ "^APPS=",       "APPS=" . join(" ", @apps)	    ],
+    "apc" => [ "^APPS_CLEAN=", "APPS_CLEAN=" . join(" ", @apps_clean)],
+    "cfg" => [ "^CFG=",        "CFG=$config"                        ],
+    "int" => [ "^INTDIR=",     "INTDIR=.\\$config"                  ],
+    "lnk" => [ "^LINKTYPE=",   "LINKTYPE=$linktype"                 ],
+    "out" => [ "^OUTDIR=",     "OUTDIR=.\\$config"                  ],
+    "pfx" => [ "^PREFIX=",     "PREFIX=$prefix"                     ],
+    "dos" => [ "^PREFIX_DOS=", "PREFIX_DOS=$prefixdos"              ],
+    "ssl" => [ "^OPENSSL=",    $openssl ? "OPENSSL=true" : "OPENSSL=false" ],
+    "sdk" => [ "^SDK=",        $sdk == 1 ? "SDK=true" : "SDK=false" ],
+    "cfl" => [ "^CFLAGS=",     "CFLAGS=" .
+                               "/D WIN32 " .
+                               "/D _BIND_TO_CURRENT_VCLIBS_VERSION " .
+                               "/D _CONSOLE " .
+                               "/D _CRT_NONSTDC_NO_WARNINGS " .
+                               "/D _CRT_SECURE_NO_WARNINGS " .
+                               "/D _MBCS " .
+                               "/D _WINSOCK_DEPRECATED_NO_WARNINGS " .
+                               "/EHsc " .
+                               "/FD " .
+                               "/FR\$(INTDIR)\\ " .
+                               "/Fd\$(INTDIR)\\\$(PROGNAME).pdb " .
+                               "/Fo\$(INTDIR)\\ " .
+                               ($opensslincdir ? "/I $opensslincdir " : "") .
+                               "/c " .
+                               "/W3 " .
+                               "/Zi " .
+                               "/nologo " .
+                               "/wd4244 " .
+                               "/wd4267 " .
+               ($config eq "release" ?
+                "/MD  /D NDEBUG /O2 " :
+                "/MDd /D _DEBUG /Od /Gm ")
+             ],
+    "lfl" => [ "^LDFLAGS=",    "LDFLAGS=" .
+                               ($config eq "debug" ? "/debug " : "") .
+                               ($openssllibdir ? "/libpath:$openssllibdir" :
+                                "")
+             ],
+    "rsc" => [ "^RSCFLAGS=",   "RSCFLAGS=/l 0x409 " .
+                               ($config eq "release" ? "/d NDEBUG" :
+                                "/d _DEBUG")
+	     ],
+    );
+
+substitute("Makefile", "Makefile.in", \%makefile_subs);
+substitute("local/Makefile", "local/Makefile.in", \%makefile_subs);
 
 foreach my $progName (@programs) {
-  
-  my $makefile_out = "$progName\\Makefile";
-  my $makefile_in = "$progName\\Makefile.in";
-
-  my $outdir = $config;
-  my $intdir = $config;
-  
-  open (MAKE_OUT, ">$makefile_out") || die "Can't Open $makefile_out\n";
-  open (MAKE_IN, "<$makefile_in") || die "Can't Open $makefile_in\n";
-
-  print "creating $makefile_out\n";
-  
-  while (<MAKE_IN>)
-  {
-    chomp;
-
-    s/^LINKTYPE=/LINKTYPE=$linktype/;    
-    s/^PROGNAME=/PROGNAME=$progName/;
-    s/^CFG=/CFG=$config/;
-    s/^OUTDIR=/OUTDIR=.\\$outdir/;
-    s/^INTDIR=/INTDIR=.\\$intdir/;
-    s/^SSL=.*/SSL=$openssl/;
-
-    print MAKE_OUT $_ . "\n";
-  }
+    $makefile_subs{"prg"} = [ "^PROGNAME=", "PROGNAME=$progName" ];
+    substitute("$progName/Makefile", "Makefile-apps.in", \%makefile_subs);
 }
 
+foreach my $progName ("libagent", "libnetsnmptrapd", "local",
+                      "netsnmpmibs", "snmpd", "snmptrapd", "snmpnetstat",
+                      $linktype eq "dynamic" ? "libsnmp_dll" : "libsnmp") {
+    $makefile_subs{"prg"} = [ "^PROGNAME=", "PROGNAME=$progName" ];
+    substitute("$progName/Makefile", "$progName/Makefile.in", \%makefile_subs);
+}
 
-###############################################
-#
-# Create Makefiles for libraries  
-# from name\Makefile.in
-#
-###############################################
-my @programs = qw 
-/libagent
-libnetsnmptrapd
-netsnmpmibs
-/;
+my %snmpconf_subs = (
+    "env" => [ "\@ENV_SEPARATOR\@", ";" ]
+);
 
+substitute("../local/snmpconf", "../local/snmpconf.in", \%snmpconf_subs);
+
+
+my %net_snmp_config_subs = (
+    "ver" => [ "^#define PACKAGE_VERSION.*",
+               "#define PACKAGE_VERSION \"$version\"" ]
+    );
+if ($prefix ne "") {
+    $net_snmp_config_subs{"pfx"} = [ "^#define INSTALL_BASE.*", "#define INSTALL_BASE \"$prefix\"" ];
+}
 if ($linktype eq "dynamic") {
-  push (@programs, "libsnmp_dll");
+    $net_snmp_config_subs{"dll"} = [ "^.*#undef NETSNMP_USE_DLL.*", "#define NETSNMP_USE_DLL 1" ];
 }
-else {
-  push (@programs, "libsnmp");
+if ($sdk == 1) {
+    $net_snmp_config_subs{"sdk"} = [ "^.*#undef HAVE_WIN32_PLATFORM_SDK.*", "#define HAVE_WIN32_PLATFORM_SDK 1" ];
 }
-
-foreach my $progName (@programs) {
-  
-  my $makefile_out = "$progName\\Makefile";
-  my $makefile_in = "$progName\\Makefile.in";
-  
-  my $outdir = $config;
-  my $intdir = $config;
-  
-  open (MAKE_OUT, ">$makefile_out") || die "Can't Open $makefile_out\n";
-  open (MAKE_IN, "<$makefile_in") || die "Can't Open $makefile_in\n";
-
-  print "creating $makefile_out\n";
-  
-  while (<MAKE_IN>)
-  {
-    chomp;
-    
-    if ($sdk == 1) {
-      s/^SDK=/SDK=true/;
-    }
-    else {
-      s/^SDK=/SDK=false/;
-    }
-
-    s/^PROGNAME=/PROGNAME=$progName/;
-    s/^CFG=/CFG=$config/;
-    s/^OUTDIR=/OUTDIR=.\\$outdir/;
-    s/^INTDIR=/INTDIR=.\\$intdir/;
-    s/^SSL=.*/SSL=$openssl/;
-    print MAKE_OUT $_ . "\n";
-  }
+if ($openssl == 1) {
+    $net_snmp_config_subs{"ssl"} = [ "^.*#undef NETSNMP_USE_OPENSSL.*", "#define NETSNMP_USE_OPENSSL 1" ];
+} else {
+    $net_snmp_config_subs{"ssl"} = [ "^.*#undef NETSNMP_USE_INTERNAL_MD5.*", "#define NETSNMP_USE_INTERNAL_MD5 1" ];
+}
+if ($b_ipv6 == 1) {
+    $net_snmp_config_subs{"ipv6"} = [ "^.*#undef NETSNMP_ENABLE_IPV6.*", "#define NETSNMP_ENABLE_IPV6 1" ];
+}
+if ($b_winextdll == 1) {
+    $net_snmp_config_subs{"winextdll"} = [ "^.*#undef USING_WINEXTDLL_MODULE.*", "#define USING_WINEXTDLL_MODULE 1" ];
 }
 
-###############################################
-#
-# Create Makefiles for daemons
-# from name\Makefile.in
-#
-###############################################
-my @programs = qw 
-/snmpd
-snmptrapd
-/;
-
-foreach my $progName (@programs) {
-  
-  my $makefile_out = "$progName\\Makefile";
-  my $makefile_in = "$progName\\Makefile.in";
-  
-  my $outdir = $config;
-  my $intdir = $config;
-  
-  open (MAKE_OUT, ">$makefile_out") || die "Can't Open $makefile_out\n";
-  open (MAKE_IN, "<$makefile_in") || die "Can't Open $makefile_in\n";
-
-  print "creating $makefile_out\n";
-  
-  while (<MAKE_IN>)
-  {
-    chomp;
-    
-    if ($sdk == 1) {
-      s/^SDK=/SDK=true/;
-    }
-    else {
-      s/^SDK=/SDK=false/;
-    }
-
-    s/^LINKTYPE=/LINKTYPE=$linktype/;
-    s/^PROGNAME=/PROGNAME=$progName/;
-    s/^CFG=/CFG=$config/;
-    s/^OUTDIR=/OUTDIR=.\\$outdir/;
-    s/^INTDIR=/INTDIR=.\\$intdir/;
-    s/^SSL=.*/SSL=$openssl/;
-
-    print MAKE_OUT $_ . "\n";
-  }
-}
-
-###############################################
-#
-# Create Makefile for Perl scripts in local
-# from local\Makefile.in
-#
-###############################################
-  
-my $makefile_out = "local\\Makefile";
-my $makefile_in = "local\\Makefile.in";
-
-my $outdir = $config;
-
-open (MAKE_OUT, ">$makefile_out") || die "Can't Open $makefile_out\n";
-open (MAKE_IN, "<$makefile_in") || die "Can't Open $makefile_in\n";
-
-print "creating $makefile_out\n";
-
-while (<MAKE_IN>)
-{
-  chomp;
-  
-  s/^OUTDIR=/OUTDIR=.\\$outdir/;
-  s/^PREFIX=/PREFIX=$prefix/;   
-  s/^PREFIX_DOS=/PREFIX_DOS=$prefixdos/;    
-  
-  print MAKE_OUT $_ . "\n";
-}
-
-
-###############################################
-#
-# Create net-snmp-config.h
-#
-###############################################
-{
-  my $file_out = "net-snmp\\net-snmp-config.h";
-  my $file_in = "net-snmp\\net-snmp-config.h.in";
-
-  open (FILE_OUT, ">$file_out") || die "Can't Open $file_out\n";
-  open (FILE_IN, "<$file_in") || die "Can't Open $file_in\n";
-  
-  print "creating $file_out\n";
-
-  while (<FILE_IN>)
-  {
-    chomp;
-    s/^#define PACKAGE_VERSION.*/#define PACKAGE_VERSION \"$version\"/;
-    if ($prefix ne "") {
-      s/^#define INSTALL_BASE.*/#define INSTALL_BASE \"$prefix\"/;
-    }
-    if ($linktype eq "dynamic") {
-      s/^.*#undef NETSNMP_USE_DLL.*/#define NETSNMP_USE_DLL 1/;
-    }
-    if ($sdk == 1) {
-      s/^.*#undef HAVE_WIN32_PLATFORM_SDK.*/#define HAVE_WIN32_PLATFORM_SDK 1/;
-    }
-    if ($openssl == 1) {
-      s/^.*#undef NETSNMP_USE_OPENSSL.*/#define NETSNMP_USE_OPENSSL 1/;
-    }
-    if ($b_ipv6 == 1) {
-      s/^.*#undef NETSNMP_ENABLE_IPV6.*/#define NETSNMP_ENABLE_IPV6 1/;
-    }
-    if ($b_winextdll == 1) {
-      s/^.*#undef USING_WINEXTDLL_MODULE.*/#define USING_WINEXTDLL_MODULE 1/;
-    }
-
-    print FILE_OUT $_ . "\n";
-  }
-}
-
+substitute("net-snmp/net-snmp-config.h", "net-snmp/net-snmp-config.h.in",
+           \%net_snmp_config_subs);
 
 print qq/
 ---------------------------------------------------------

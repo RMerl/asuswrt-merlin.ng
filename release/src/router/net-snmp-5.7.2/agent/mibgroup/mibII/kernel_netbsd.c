@@ -15,6 +15,7 @@
 #include <netinet/ip_icmp.h>
 #include <netinet/ip_var.h>
 #include <netinet/icmp_var.h>
+#include <netinet/icmp6.h>
 #include <netinet/tcp.h>
 #include <netinet/tcp_timer.h>
 #include <netinet/tcp_var.h>
@@ -38,8 +39,10 @@ netbsd_read_icmp_stat(struct icmp_mib *mib)
 
     (void)memset(mib, 0, sizeof(*mib));
 
-    if (-1 == sysctlbyname("net.inet.icmp.stats", icmpstat, &size, NULL, 0))
+    if (-1 == sysctlbyname("net.inet.icmp.stats", icmpstat, &size, NULL, 0)) {
+	snmp_perror("netbsd_read_icmp_stat: net.inet.icmp.stats");
         return -1;
+    }
 
     mib->icmpInMsgs = icmpstat[ICMP_STAT_BADCODE]
         + icmpstat[ICMP_STAT_TOOSHORT]
@@ -86,6 +89,104 @@ netbsd_read_icmp_stat(struct icmp_mib *mib)
     return 0;
 }
 
+
+int
+netbsd_read_icmp6_stat(struct icmp6_mib *mib)
+{
+    uint64_t icmpstat[ICMP6_NSTATS];
+    size_t   size = sizeof(icmpstat);
+    int      i;
+
+    (void)memset(mib, 0, sizeof(*mib));
+
+    if (-1 == sysctlbyname("net.inet6.icmp6.stats", icmpstat, &size, NULL, 0)) {
+	snmp_perror("netbsd_read_icmp6_stat: net.inet6.icmp6.stats");
+        return -1;
+    }
+
+    mib->icmp6InMsgs = icmpstat[ICMP6_STAT_BADCODE]
+            + icmpstat[ICMP_STAT_TOOSHORT]
+	    + icmpstat[ICMP_STAT_CHECKSUM]
+            + icmpstat[ICMP_STAT_BADLEN];
+    for (i = 0; i <= ICMP6_MAXTYPE; i++)
+        mib->icmp6InMsgs  += icmpstat[ICMP6_STAT_INHIST + i];
+    mib->icmp6InErrors = icmpstat[ICMP6_STAT_BADCODE]
+        + icmpstat[ICMP6_STAT_TOOSHORT]
+        + icmpstat[ICMP6_STAT_CHECKSUM]
+        + icmpstat[ICMP6_STAT_BADLEN];
+    mib->icmp6InDestUnreachs = icmpstat[ICMP6_STAT_INHIST + ICMP6_DST_UNREACH];
+    mib->icmp6InPktTooBigs = icmpstat[ICMP6_STAT_INHIST + ICMP6_PACKET_TOO_BIG];
+    mib->icmp6InTimeExcds = icmpstat[ICMP6_STAT_INHIST + ICMP6_TIME_EXCEEDED];
+    mib->icmp6InParmProblems = icmpstat[ICMP6_STAT_INHIST + ICMP6_PARAM_PROB];
+    mib->icmp6InEchos = icmpstat[ICMP6_STAT_INHIST + ICMP6_ECHO_REQUEST];
+    mib->icmp6InEchoReplies = icmpstat[ICMP6_STAT_INHIST + ICMP6_ECHO_REPLY];
+    mib->icmp6InGroupMembQueries = icmpstat[ICMP6_STAT_INHIST + MLD_LISTENER_QUERY];
+    mib->icmp6InGroupMembResponses = icmpstat[ICMP6_STAT_INHIST + MLD_LISTENER_REPORT];
+    mib->icmp6InRouterSolicits = icmpstat[ICMP6_STAT_INHIST + ND_ROUTER_SOLICIT];
+    mib->icmp6InRouterAdvertisements = icmpstat[ICMP6_STAT_INHIST + ND_ROUTER_ADVERT];
+    mib->icmp6InNeighborSolicits = icmpstat[ICMP6_STAT_INHIST + ND_NEIGHBOR_SOLICIT];
+    mib->icmp6InNeighborAdvertisements = icmpstat[ICMP6_STAT_INHIST + ND_NEIGHBOR_ADVERT];
+    mib->icmp6InRedirects = icmpstat[ICMP6_STAT_INHIST + ND_REDIRECT];
+
+    mib->icmp6OutMsgs = icmpstat[ICMP6_STAT_BADCODE]
+        + icmpstat[ICMP6_STAT_TOOSHORT]
+        + icmpstat[ICMP6_STAT_CHECKSUM]
+        + icmpstat[ICMP6_STAT_BADLEN];
+    for (i = 0; i <= ICMP6_MAXTYPE; i++)
+        mib->icmp6OutMsgs += icmpstat[ICMP6_STAT_OUTHIST + i];
+    mib->icmp6OutDestUnreachs = icmpstat[ICMP6_STAT_OUTHIST + ICMP6_DST_UNREACH];
+    mib->icmp6OutPktTooBigs =  icmpstat[ICMP6_STAT_OUTHIST + ICMP6_PACKET_TOO_BIG];
+    mib->icmp6OutTimeExcds = icmpstat[ICMP6_STAT_OUTHIST + ICMP6_TIME_EXCEEDED];
+    mib->icmp6OutParmProblems = icmpstat[ICMP6_STAT_OUTHIST + ICMP6_PARAM_PROB];
+    mib->icmp6OutEchos = icmpstat[ICMP6_STAT_OUTHIST + ICMP6_ECHO_REQUEST];
+    mib->icmp6OutEchoReplies = icmpstat[ICMP6_STAT_OUTHIST + ICMP6_ECHO_REPLY];
+    mib->icmp6OutRouterSolicits =  icmpstat[ICMP6_STAT_OUTHIST + ND_ROUTER_SOLICIT];
+    mib->icmp6OutNeighborSolicits =  icmpstat[ICMP6_STAT_OUTHIST + ND_NEIGHBOR_SOLICIT];
+    mib->icmp6OutNeighborAdvertisements =  icmpstat[ICMP6_STAT_OUTHIST + ND_NEIGHBOR_ADVERT];
+    mib->icmp6OutRedirects = icmpstat[ICMP6_STAT_OUTHIST + ND_REDIRECT];
+    mib->icmp6OutGroupMembResponses =  icmpstat[ICMP6_STAT_OUTHIST + MLD_LISTENER_REPORT];
+    mib->icmp6OutGroupMembReductions =  icmpstat[ICMP6_STAT_OUTHIST + MLD_LISTENER_DONE];
+
+    return 0;
+}
+
+
+int
+netbsd_read_icmp_msg_stat(struct icmp_mib *mib,
+                          struct icmp4_msg_mib *msgmib,
+			  int *flag)
+{
+    netbsd_read_icmp_stat(mib);
+    *flag = 0;
+    return 0;
+}
+
+
+int
+netbsd_read_icmp6_msg_stat(struct icmp6_mib *mib,
+                           struct icmp6_msg_mib *msgmib,
+			   int *support)
+{
+    uint64_t icmpstat[ICMP6_NSTATS];
+    size_t   size = sizeof(icmpstat);
+    int      i;
+
+    netbsd_read_icmp6_stat(mib);
+
+    if (-1 == sysctlbyname("net.inet6.icmp6.stats", icmpstat, &size, NULL, 0)) {
+	snmp_perror("netbsd_read_icmp6_stat: net.inet6.icmp6.stats");
+        return -1;
+    }
+
+    for (i = 0; i < 256; i++) {
+	msgmib->vals[i].InType = icmpstat[ICMP6_STAT_INHIST+i];
+	msgmib->vals[i].OutType = icmpstat[ICMP6_STAT_OUTHIST+i];
+    }
+    *support = 1;
+    return 0;
+}
+
+
 int
 netbsd_read_ip_stat(struct ip_mib *mib)
 {
@@ -97,8 +198,10 @@ netbsd_read_ip_stat(struct ip_mib *mib)
 
     (void)memset(mib, 0, sizeof(*mib));
 
-    if (-1 == sysctlbyname("net.inet.ip.stats", ipstat, &size, NULL, 0))
+    if (-1 == sysctlbyname("net.inet.ip.stats", ipstat, &size, NULL, 0)) {
+	snmp_perror("netbsd_read_ip_stat: net.inet.ip.stats");
         return -1;
+    }
 
     mib->ipForwarding = 0;
     len = sizeof i;
@@ -138,6 +241,7 @@ netbsd_read_ip_stat(struct ip_mib *mib)
     return 0;
 }
 
+
 int
 netbsd_read_tcp_stat(struct tcp_mib *mib)
 {
@@ -146,8 +250,10 @@ netbsd_read_tcp_stat(struct tcp_mib *mib)
 
     (void)memset(mib, 0, sizeof(*mib));
 
-    if (-1 == sysctlbyname("net.inet.tcp.stats", tcpstat, &size, NULL, 0))
+    if (-1 == sysctlbyname("net.inet.tcp.stats", tcpstat, &size, NULL, 0)) {
+	snmp_perror("netbsd_read_tcp_stat: net.inet.tcp.stats");
         return -1;
+    }
 
     mib->tcpRtoAlgorithm = 4; /* Assume Van Jacobsen's algorithm */
     mib->tcpRtoMin = TCPTV_MIN;
@@ -174,6 +280,7 @@ netbsd_read_tcp_stat(struct tcp_mib *mib)
     return 0;
 }
 
+
 int
 netbsd_read_udp_stat(struct udp_mib *mib)
 {
@@ -182,14 +289,16 @@ netbsd_read_udp_stat(struct udp_mib *mib)
 
     (void)memset(mib, 0, sizeof(*mib));
 
-    if (-1 == sysctlbyname("net.inet.udp.stats", udpstat, &size, NULL, 0))
+    if (-1 == sysctlbyname("net.inet.udp.stats", udpstat, &size, NULL, 0)) {
+	snmp_perror("netbsd_read_udp_stat: net.inet.udp.stats");
         return -1;
+    }
 
     mib->udpInDatagrams = udpstat[UDP_STAT_IPACKETS];
     mib->udpNoPorts = udpstat[UDP_STAT_NOPORT];
     mib->udpOutDatagrams = udpstat[UDP_STAT_OPACKETS];
     mib->udpInErrors = udpstat[UDP_STAT_HDROPS]
-        + udpstat[UDP_STAT_BADSUM] /* + udpstat[UDP_STAT_DISCARD] /* FIXME */
+        + udpstat[UDP_STAT_BADSUM] /* + udpstat[UDP_STAT_DISCARD] */ /* FIXME */
         + udpstat[UDP_STAT_FULLSOCK] + udpstat[UDP_STAT_BADLEN];
 
     return 0;

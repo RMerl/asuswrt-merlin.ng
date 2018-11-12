@@ -84,7 +84,7 @@ if test "x$install_perl" != "xno" ; then
 
     #       What compiler was used to build the perl binary?
     #
-    if test "xenable_perl_cc_checks" != "xno" ; then
+    if test "x$enable_perl_cc_checks" != "xno" ; then
         AC_MSG_CHECKING([for Perl cc])
         changequote(, )
         PERLCC=`$myperl -V:cc | $myperl -n -e 'print if (s/^\s*cc=.([-=\w\s\/]+).;\s*/$1/);'`

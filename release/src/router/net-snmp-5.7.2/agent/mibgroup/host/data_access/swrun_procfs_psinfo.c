@@ -23,21 +23,21 @@
 #include <fcntl.h>
 #endif
 
-#define HAVE_SYS_PROCFS_H    /* XXX - Needs a configure check! */
-#ifdef HAVE_SYS_PROCFS_H
-#define _KERNEL              /* For psinfo_t */
-#include <sys/procfs.h>
-#undef _KERNEL
-#endif
+#include <procfs.h>
 #ifdef HAVE_SYS_PROC_H
 #include <sys/proc.h>
 #endif
+
+#include <sys/processor.h>
+#include <sys/procset.h>
+#include <thread.h>
 
 #include <net-snmp/net-snmp-includes.h>
 #include <net-snmp/agent/net-snmp-agent-includes.h>
 #include <net-snmp/library/container.h>
 #include <net-snmp/library/snmp_debug.h>
 #include <net-snmp/data_access/swrun.h>
+#include "swrun_private.h"
 
 /* ---------------------------------------------------------------------
  */
@@ -98,18 +98,16 @@ netsnmp_arch_swrun_container_load( netsnmp_container *container, u_int flags)
          *     argv[0]   is hrSWRunPath
          *     argv[1..] is hrSWRunParameters
          */
-        for ( cp = psinfo.pr_psargs; ' ' == *cp; cp++ )
-            ;
-        *cp = '\0';    /* End of argv[0] */
-        entry->hrSWRunPath_len
-            = sprintf(entry->hrSWRunPath, "%.*s",
-                      (int)sizeof(entry->hrSWRunPath) - 1,
-                      psinfo.pr_psargs);
-
-        entry->hrSWRunParameters_len
-            = sprintf(entry->hrSWRunParameters, "%.*s",
-                      (int)sizeof(entry->hrSWRunParameters) - 1, cp+1);
-        *cp = ' ';     /* Restore pr_psargs value */
+        cp = strchr(psinfo.pr_psargs, ' ');
+        if (cp)
+            *cp = '\0';    /* End of argv[0] */
+        entry->hrSWRunPath_len = sprintf(entry->hrSWRunPath, "%.*s",
+                      (int)sizeof(entry->hrSWRunPath) - 1, psinfo.pr_psargs);
+        if (cp) {
+            entry->hrSWRunParameters_len = sprintf(entry->hrSWRunParameters,
+                      "%.*s", (int)sizeof(entry->hrSWRunParameters) - 1, cp+1);
+            *cp = ' ';     /* Restore pr_psargs value */
+        }
 
         /*
          * check for system processes

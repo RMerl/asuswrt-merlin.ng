@@ -12,6 +12,7 @@ config_add_mib(NET-SNMP-VACM-MIB)
  */
 void            init_nsVacmAccessTable(void);
 void            initialize_table_nsVacmAccessTable(void);
+void            init_register_nsVacm_context(const char *context);
 Netsnmp_Node_Handler nsVacmAccessTable_handler;
 Netsnmp_First_Data_Point nsVacmAccessTable_get_first_data_point;
 Netsnmp_Next_Data_Point nsVacmAccessTable_get_next_data_point;

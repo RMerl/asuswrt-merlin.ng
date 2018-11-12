@@ -7,6 +7,11 @@
  * Copyright (C) 2007 Apple, Inc. All rights reserved.
  * Use is subject to license terms specified in the COPYING file
  * distributed with the Net-SNMP package.
+ *
+ * Portions of this file are copyrighted by:
+ * Copyright (c) 2016 VMware, Inc. All rights reserved.
+ * Use is subject to license terms specified in the COPYING file
+ * distributed with the Net-SNMP package.
  */
 #include <net-snmp/net-snmp-config.h>
 #include <net-snmp/net-snmp-features.h>
@@ -204,8 +209,10 @@ netsnmp_container_find_factory(const char *type_list)
         return NULL;
 
     list = strdup(type_list);
+    if (!list)
+        return NULL;
     entry = strtok_r(list, ":", &st);
-    while(entry) {
+    while (entry) {
         f = netsnmp_container_get_factory(entry);
         if (NULL != f)
             break;
@@ -242,8 +249,10 @@ netsnmp_container_find_ct(const char *type_list)
         return NULL;
 
     list = strdup(type_list);
+    if (!list)
+        return NULL;
     entry = strtok_r(list, ":", &st);
-    while(entry) {
+    while (entry) {
         ct = netsnmp_container_get_ct(entry);
         if (NULL != ct)
             break;
@@ -353,6 +362,28 @@ int CONTAINER_INSERT(netsnmp_container* x, const void* k)
  * These functions should EXACTLY match the inline version in
  * container.h. If you change one, change them both.
  */
+int CONTAINER_INSERT_BEFORE(netsnmp_container *x, size_t pos, void *k)
+{
+    int rc = 0;
+
+    if (NULL == x || NULL == x->insert_before) {
+        snmp_log(LOG_ERR, "container '%s' does not support insert_before\n",
+                 x && x->container_name ? x->container_name : "");
+        return -1;
+    }
+
+    rc = x->insert_before(x, pos, k);
+    if (rc < 0)
+        snmp_log(LOG_ERR, "error on container '%s' insert_before %" NETSNMP_PRIz "d (%d)\n",
+                 x->container_name ? x->container_name : "", pos, rc);
+
+    return rc;
+}
+
+/*------------------------------------------------------------------
+ * These functions should EXACTLY match the inline version in
+ * container.h. If you change one, change them both.
+ */
 int CONTAINER_REMOVE(netsnmp_container *x, const void *k)
 {
     int rc2, rc = 0;
@@ -371,6 +402,64 @@ int CONTAINER_REMOVE(netsnmp_container *x, const void *k)
         x = x->prev;
         
     }
+    return rc;
+}
+
+/*------------------------------------------------------------------
+ * These functions should EXACTLY match the inline version in
+ * container.h. If you change one, change them both.
+ */
+int CONTAINER_REMOVE_AT(netsnmp_container *x, size_t pos, void **k)
+{
+    int rc = 0;
+    netsnmp_container *orig = x;
+
+    if (NULL == x || NULL == x->remove_at) {
+        snmp_log(LOG_ERR, "container '%s' does not support REMOVE_AT\n",
+                 x && x->container_name ? x->container_name : "");
+        return -1;
+    }
+
+    /** start at given container */
+    rc = x->remove_at(x, pos, k);
+    if (rc < 0) {
+        snmp_log(LOG_ERR, "error on container '%s' remove_at %" NETSNMP_PRIz "d (%d)\n",
+                 x->container_name ? x->container_name : "", pos, rc);
+        return rc;
+    } else if (NULL == k || NULL == *k)
+        return rc;
+
+    /** remove k from any other containers */
+    while(x->prev)
+        x = x->prev;
+    for(; x; x = x->next) {
+        if (x == orig)
+            continue;
+        x->remove(x,*k); /** ignore remove errors in other containers */
+    }
+    return rc;
+}
+
+/*------------------------------------------------------------------
+ * These functions should EXACTLY match the inline version in
+ * container.h. If you change one, change them both.
+ */
+int CONTAINER_GET_AT(netsnmp_container *x, size_t pos, void **k)
+{
+    int rc = 0;
+
+    if (NULL == x || NULL == x->get_at) {
+        snmp_log(LOG_ERR, "container '%s' does not support GET_AT\n",
+                 x && x->container_name ? x->container_name : "");
+        return -1;
+    }
+
+    /** start at given container */
+    rc = x->get_at(x, pos, k);
+    if (rc < 0)
+        snmp_log(LOG_ERR, "error on container '%s' get_at %" NETSNMP_PRIz "d (%d)\n",
+                 x->container_name ? x->container_name : "", pos, rc);
+
     return rc;
 }
 
@@ -397,7 +486,10 @@ netsnmp_container *CONTAINER_DUP(netsnmp_container *x, void *ctx, u_int flags)
 int CONTAINER_FREE(netsnmp_container *x)
 {
     int  rc2, rc = 0;
-        
+
+    if (!x)
+        return rc;
+
     /** start at last container */
     while(x->next)
         x = x->next;

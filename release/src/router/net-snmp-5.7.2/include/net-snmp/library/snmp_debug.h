@@ -1,5 +1,18 @@
+/*
+ * Portions of this file are subject to the following copyright(s).  See
+ * the Net-SNMP's COPYING file for more details and other copyrights
+ * that may apply:
+ *
+ * Portions of this file are copyrighted by:
+ * Copyright (c) 2016 VMware, Inc. All rights reserved.
+ * Use is subject to license terms specified in the COPYING file
+ * distributed with the Net-SNMP package.
+ */
+
 #ifndef SNMP_DEBUG_H
 #define SNMP_DEBUG_H
+
+#include <net-snmp/library/netsnmp-attribute-format.h>
 
 #ifdef __cplusplus
 extern          "C" {
@@ -14,14 +27,6 @@ extern          "C" {
      * compile time.
      */
 
-
-#if !defined(__GNUC__) || __GNUC__ < 2 || (__GNUC__ == 2 && __GNUC_MINOR__ < 8)
-#define NETSNMP_ATTRIBUTE_FORMAT(type, formatArg, firstArg)
-#else
-#define NETSNMP_ATTRIBUTE_FORMAT(type, formatArg, firstArg) \
-  __attribute__((__format__( __ ## type ## __, formatArg, firstArg )))
-#endif
-
     /*
      * These functions should not be used, if at all possible.  Instead, use
      * the macros below. 
@@ -33,12 +38,10 @@ extern          "C" {
     void            debugmsgtoken(const char *token, const char *format,
                                   ...)
                         NETSNMP_ATTRIBUTE_FORMAT(printf, 2, 3);
+    NETSNMP_IMPORT
     void            debug_combo_nc(const char *token, const char *format,
                                    ...)
                         NETSNMP_ATTRIBUTE_FORMAT(printf, 2, 3);
-
-#undef NETSNMP_ATTRIBUTE_FORMAT
-
     NETSNMP_IMPORT
     void            debugmsg_oid(const char *token, const oid * theoid,
                                  size_t len);
@@ -61,7 +64,11 @@ extern          "C" {
     NETSNMP_IMPORT
     void            debug_indent_add(int amount);
     NETSNMP_IMPORT
+    void            debug_indent_reset(void);
+    NETSNMP_IMPORT
     int             debug_indent_get(void);
+    NETSNMP_IMPORT
+    void            debug_indent_reset(void);
     /*
      * What is said above is true for this function as well. Further this
      * function is deprecated and only provided for backwards compatibility.
@@ -214,6 +221,7 @@ extern          "C" {
 #endif
 
     void            snmp_debug_init(void);
+    void            snmp_debug_shutdown(void);
 
 #define MAX_DEBUG_TOKENS 256
 #define MAX_DEBUG_TOKEN_LEN 128

@@ -27,12 +27,15 @@
 .\" Use is subject to license terms specified in the COPYING file
 .\" distributed with the Net-SNMP package.
 .\" ******************************************************************/
-.TH SNMPTRANSLATE 1 "20 Jul 2010" VVERSIONINFO "Net-SNMP"
+.TH SNMPTRANSLATE 1 "13 Nov 2013" VVERSIONINFO "Net-SNMP"
 .SH NAME
 snmptranslate - translate MIB OID names between numeric and textual forms
 .SH SYNOPSIS
 .B snmptranslate
 [OPTIONS] OID [OID]...
+.br
+.B snmptranslate
+[OPTIONS] -
 .SH DESCRIPTION
 .B snmptranslate
 is an application that translates one or more SNMP object identifier
@@ -40,6 +43,16 @@ values from their symbolic (textual) forms into their numerical forms
 (or vice versa).  
 .PP
 OID is either a numeric or textual object identifier.
+.PP
+The special
+.B \-
+argument is used to translate multiple object IDs in one run.
+Input is taken from stdin, and output is written to stdout.
+The input format can be a single object ID per line, or
+can be the output of
+.B snmpwalk
+or
+.B snmpget .
 .SH OPTIONS
 .TP 8
 .B \-D\fI[TOKEN[,...]]
@@ -73,6 +86,9 @@ following
 are available:
 .RS
 .TP 6
+.B \-TB
+Print all matching objects for a regex search.
+.TP
 .B \-Td
 Print full details of the specified OID.
 .TP
@@ -284,5 +300,25 @@ will produce the following dump
               sysObjectID(2) type=1
               sysUpTime(3) type=8
 .fi
+.PP
+.IP \(bu 4
+snmptranslate -OX -
+.br
+with the following input:
+.IP
+.nf
+SNMPv2-SMI::mib-2.14.1.1.0 = IpAddress: 192.0.2.1
+SNMPv2-SMI::mib-2.14.1.2.0 = INTEGER: 1
+SNMPv2-SMI::mib-2.14.1.3.0 = INTEGER: 2
+.fi
+.IP
+will produce the following output:
+.IP
+.nf
+OSPF-MIB::ospfRouterId.0 = IpAddress: 192.0.2.1
+OSPF-MIB::ospfAdminStat.0 = INTEGER: 1
+OSPF-MIB::ospfVersionNumber.0 = INTEGER: 2
+.fi
+
 .SH "SEE ALSO"
 snmpcmd(1), variables(5), RFC 2578-2580.

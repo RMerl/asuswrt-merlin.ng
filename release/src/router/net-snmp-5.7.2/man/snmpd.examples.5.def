@@ -567,7 +567,7 @@ Note that the administrative settings for the proxied request
 are specified explicitly, and are independent of the settings
 from the incoming request.
 .PP
-An alternative use for the \fiproxy\fR directive is to pass
+An alternative use for the \fIproxy\fR directive is to pass
 part of the OID tree to another agent (either on a remote host
 or listening on a different port on the same system),
 while handling the rest internally:

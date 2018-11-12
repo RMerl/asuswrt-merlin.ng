@@ -1,8 +1,6 @@
 #
 # local (scripts) directory Makefile
 #
-top_builddir=..
-
 VPATH		= @srcdir@
 
 #
@@ -16,11 +14,11 @@ OTHERUNINSTALL=localuninstall
 #
 SNMPCONFPATH=@SNMPCONFPATH@
 PERSISTENT_DIRECTORY=@PERSISTENT_DIRECTORY@
-PERLSCRIPTS=snmpcheck tkmib mib2c fixproc ipf-mod.pl snmpconf traptoemail snmp-bridge-mib net-snmp-cert
+PERLSCRIPTS=snmpcheck tkmib mib2c fixproc ipf-mod.pl snmpconf traptoemail snmp-bridge-mib net-snmp-cert checkbandwidth
 SHELLSCRIPTS=mib2c-update
 SCRIPTSMADEFORPERL=snmpcheck.made tkmib.made mib2c.made fixproc.made \
 	ipf-mod.pl.made snmpconf.made traptoemail.made snmp-bridge-mib.made \
-	net-snmp-cert.made
+	net-snmp-cert.made checkbandwidth.made
 DATASRCS=mib2c.conf mib2c.iterate.conf mib2c.iterate_access.conf \
 	mib2c.create-dataset.conf mib2c.mfd.conf \
 	mib2c.array-user.conf mib2c.column_enums.conf \
@@ -28,7 +26,7 @@ DATASRCS=mib2c.conf mib2c.iterate.conf mib2c.iterate_access.conf \
 	mib2c.old-api.conf mib2c.scalar.conf \
 	mib2c.check_values.conf mib2c.check_values_local.conf \
 	mib2c.access_functions.conf mib2c.notify.conf \
-	mib2c.int_watch.conf mib2c.genhtml.conf \
+	mib2c.int_watch.conf mib2c.genhtml.conf mib2c.org-mode.conf \
 	mib2c.raw-table.conf mib2c.table_data.conf \
 	mib2c.container.conf mib2c.perl.conf
 MIB2CINSTALLDIR=$(snmplibdir)/mib2c-data
@@ -130,9 +128,9 @@ fixproc.made: $(srcdir)/fixproc
 	  touch fixproc.made; \
         fi
 
-snmpconf.made: $(srcdir)/snmpconf
+snmpconf.made: snmpconf
 	if test "x$(PERL)" != "x" ; then \
-	  $(PERL) -p -e 's%^#!.*/perl.*%#!$(PERL)%; s#/usr/local/share#$(datadir)#g; s#/usr/local/etc/snmp#$(SNMPCONFPATH)#g; s#/var/net-snmp#$(PERSISTENT_DIRECTORY)#g' ${srcdir}/snmpconf > snmpconf.made; \
+	  $(PERL) -p -e 's%^#!.*/perl.*%#!$(PERL)%; s#/usr/local/share#$(datadir)#g; s#/usr/local/etc/snmp#$(SNMPCONFPATH)#g; s#/var/net-snmp#$(PERSISTENT_DIRECTORY)#g' snmpconf > snmpconf.made; \
 	else \
 	  touch snmpconf.made; \
         fi
@@ -150,6 +148,13 @@ snmp-bridge-mib.made: $(srcdir)/snmp-bridge-mib
 	else \
 	  touch snmp-bridge-mib.made; \
         fi
+
+checkbandwidth.made: checkbandwidth
+	if test "x$(PERL)" != "x" ; then \
+	  $(PERL) -p -e 's%^#!.*/perl.*%#!$(PERL)%' checkbandwidth > checkbandwidth.made ; \
+	else \
+	  touch checkbandwidth.made ; \
+	fi
 
 localinstall: $(SCRIPTSMADEFORPERL)
 	@if test "x$(PERL)" != "x" ; then \

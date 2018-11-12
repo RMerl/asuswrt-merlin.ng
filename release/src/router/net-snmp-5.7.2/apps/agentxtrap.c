@@ -10,25 +10,16 @@
 
 #include <net-snmp/net-snmp-includes.h>
 #include <net-snmp/agent/ds_agent.h>
+#include "../agent_global_vars.h"
 
 #include "../agent/mibgroup/agentx/agentx_config.h"
 #include "../agent/mibgroup/agentx/client.h"
 #include "../agent/mibgroup/agentx/protocol.h"
+#include "../agent/mibgroup/agentx/subagent.h"
 
 netsnmp_feature_require(snmp_split_pdu)
 netsnmp_feature_require(snmp_reset_var_types)
 
-
-#ifdef __GNUC__
-#define UNUSED __attribute__((unused))
-#else
-#define UNUSED
-#endif
-
-extern const oid sysuptime_oid[];
-extern const size_t sysuptime_oid_len;
-extern const oid snmptrap_oid[];
-extern const size_t snmptrap_oid_len;
 
 static void
 usage(const char* progname)
@@ -45,9 +36,9 @@ usage(const char* progname)
     fprintf(stderr,
             "  -h\t\t\tdisplay this help message\n"
             "  -V\t\t\tdisplay package version number\n"
-            "  -m MIB[:...]\t\tload given list of MIBs (ALL loads "
+            "  -m MIB[" ENV_SEPARATOR "...]\t\tload given list of MIBs (ALL loads "
             "everything)\n"
-            "  -M DIR[:...]\t\tlook in given list of directories for MIBs\n"
+            "  -M DIR[" ENV_SEPARATOR "...]\t\tlook in given list of directories for MIBs\n"
             "  -D[TOKEN[,...]]\tturn on debugging output for the specified "
             "TOKENs\n"
             "\t\t\t   (ALL gives extremely verbose debugging output)\n"
@@ -117,8 +108,8 @@ change_state(tState new_state)
 }
 
 static int
-handle_agentx_response(int operation, netsnmp_session *sp, UNUSED int reqid,
-                       netsnmp_pdu *act, UNUSED void *magic)
+handle_agentx_response(int operation, netsnmp_session *sp, int reqid,
+                       netsnmp_pdu *act, void *magic)
 {
     switch(operation) {
     case NETSNMP_CALLBACK_OP_RECEIVED_MESSAGE:
@@ -195,14 +186,14 @@ extern const struct tState_s Disconnecting;
 extern const struct tState_s Exit;
 
 static void
-StateDisconnect(UNUSED tState self)
+StateDisconnect(tState self)
 {
     snmp_log(LOG_ERR, "Unexpected disconnect in state %s\n", self->name);
     change_state(&Disconnecting);
 }
 
 static void
-StateClose(UNUSED tState self, netsnmp_pdu *act)
+StateClose(tState self, netsnmp_pdu *act)
 {
     snmp_log(LOG_ERR, "Unexpected close with reason code %ld in state %s\n",
              act->errstat, self->name);
@@ -210,7 +201,7 @@ StateClose(UNUSED tState self, netsnmp_pdu *act)
 }
 
 static void
-ConnectingEntry(UNUSED tState self)
+ConnectingEntry(tState self)
 {
     netsnmp_session init;
     netsnmp_transport* t;
@@ -232,12 +223,12 @@ ConnectingEntry(UNUSED tState self)
     if(!(t = netsnmp_transport_open_client(
              "agentx", netsnmp_ds_get_string(
                  NETSNMP_DS_APPLICATION_ID, NETSNMP_DS_AGENT_X_SOCKET)))) {
-        snmp_perror("Failed to connect to AgentX server");
+        snmp_log(LOG_ERR, "Failed to connect to AgentX server\n");
         change_state(&Exit);
     } else if(!(sess = snmp_sess_add_ex(
                     &init, t, NULL, agentx_parse, NULL, NULL,
                     agentx_realloc_build, agentx_check_packet, NULL))) {
-        snmp_perror("Failed to create session");
+      snmp_log(LOG_ERR, "Failed to create session\n");
         change_state(&Exit);
     } else {
         sessp = sess;
@@ -272,7 +263,7 @@ pdu_create_opt_context(int command, const char* context, size_t len)
 }
 
 static void
-OpeningEntry(UNUSED tState self)
+OpeningEntry(tState self)
 {
     netsnmp_pdu* act =
         pdu_create_opt_context(AGENTX_MSG_OPEN, context, contextLen);
@@ -288,13 +279,13 @@ OpeningEntry(UNUSED tState self)
 }
 
 static void
-OpeningRes(UNUSED tState self, netsnmp_pdu *act)
+OpeningRes(tState self, netsnmp_pdu *act)
 {
     if(act->errstat == AGENTX_ERR_NOERROR) {
         session = act->sessid;
         change_state(&Notifying);
     } else {
-        snmp_perror("Failed to open session");
+        snmp_log(LOG_ERR, "Failed to open session");
         change_state(&Exit);
     }
 }
@@ -311,7 +302,7 @@ const struct tState_s Opening = {
 };
 
 static void
-NotifyingEntry(UNUSED tState self)
+NotifyingEntry(tState self)
 {
     netsnmp_pdu* act = snmp_clone_pdu(pdu);
     if(act) {
@@ -324,12 +315,12 @@ NotifyingEntry(UNUSED tState self)
 }
 
 static void
-NotifyingRes(UNUSED tState self, netsnmp_pdu *act)
+NotifyingRes(tState self, netsnmp_pdu *act)
 {
     if(act->errstat == AGENTX_ERR_NOERROR)
         result = 0;
     else
-        snmp_perror("Failed to send notification");
+        snmp_log(LOG_ERR, "Failed to send notification");
     /** \todo: Retry handling --- ClosingReconnect??? */
     change_state(&Closing);
 }
@@ -346,7 +337,7 @@ const struct tState_s Notifying = {
 };
 
 static void
-ClosingEntry(UNUSED tState self)
+ClosingEntry(tState self)
 {
     /* CLOSE pdu->errstat */
     netsnmp_pdu* act =
@@ -362,7 +353,7 @@ ClosingEntry(UNUSED tState self)
 }
 
 static void
-ClosingRes(UNUSED tState self, netsnmp_pdu *act)
+ClosingRes(tState self, netsnmp_pdu *act)
 {
     if(act->errstat != AGENTX_ERR_NOERROR) {
         snmp_log(LOG_ERR, "AgentX error status of %ld\n", act->errstat);
@@ -371,13 +362,13 @@ ClosingRes(UNUSED tState self, netsnmp_pdu *act)
 }
 
 static void
-ClosingDisconnect(UNUSED tState self)
+ClosingDisconnect(tState self)
 {
     change_state(&Disconnecting);
 }
 
 static void
-ClosingClose(UNUSED tState self, UNUSED netsnmp_pdu *act)
+ClosingClose(tState self, netsnmp_pdu *act)
 {
     change_state(&Disconnecting);
 }
@@ -394,7 +385,7 @@ const struct tState_s Closing = {
 };
 
 static void
-DisconnectingEntry(UNUSED tState self)
+DisconnectingEntry(tState self)
 {
     snmp_sess_close(sessp);
     sessp = NULL;
@@ -429,8 +420,10 @@ main(int argc, char *argv[])
     int             arg;
     char           *prognam;
     char           *cp = NULL;
-
     const char*     sysUpTime = NULL;
+
+    /* initialize tcpip, if necessary */
+    SOCK_STARTUP;
 
     prognam = strrchr(argv[0], '/');
     if (prognam)
@@ -440,11 +433,17 @@ main(int argc, char *argv[])
 
     putenv(strdup("POSIXLY_CORRECT=1"));
 
+    netsnmp_ds_set_boolean(NETSNMP_DS_LIBRARY_ID,
+			   NETSNMP_DS_LIB_DISABLE_PERSISTENT_LOAD, 1);
+    netsnmp_ds_set_boolean(NETSNMP_DS_LIBRARY_ID,
+			   NETSNMP_DS_LIB_DISABLE_PERSISTENT_SAVE, 1);
+
     while ((arg = getopt(argc, argv, ":Vhm:M:D:dP:L:U:c:x:")) != -1) {
         switch (arg) {
         case 'h':
             usage(prognam);
-            exit(0);
+            result = 0;
+            goto out;
         case 'm':
             setenv("MIBS", optarg, 1);
             break;
@@ -468,22 +467,21 @@ main(int argc, char *argv[])
             break;
         case 'V':
             fprintf(stderr, "NET-SNMP version: %s\n", netsnmp_get_version());
-            exit(0);
-            break;
+            result = 0;
+            goto out;
 #ifndef DISABLE_MIB_LOADING
         case 'P':
             cp = snmp_mib_toggle_options(optarg);
             if (cp != NULL) {
                 fprintf(stderr, "Unknown parser option to -P: %c.\n", *cp);
                 usage(prognam);
-                exit(1);
+                goto out;
             }
             break;
 #endif /* DISABLE_MIB_LOADING */
         case 'L':
-            if (snmp_log_options(optarg, argc, argv) < 0) {
-                exit(1);
-            }
+            if (snmp_log_options(optarg, argc, argv) < 0)
+                goto out;
             break;
         case 'x':
             if (optarg != NULL) {
@@ -496,22 +494,17 @@ main(int argc, char *argv[])
         case ':':
             fprintf(stderr, "Option -%c requires an operand\n", optopt);
             usage(prognam);
-            exit(1);
-            break;
+            goto out;
         case '?':
             fprintf(stderr, "Unrecognized option: -%c\n", optopt);
             usage(prognam);
-            exit(1);
-            break;
+            goto out;
         }
     }
 
     arg = optind;
 
-    /* initialize tcpip, if necessary */
-    SOCK_STARTUP;
-
-    init_snmp("snmpapp");
+    init_snmp(NETSNMP_APPLICATION_CONFIG_TYPE);
     agentx_config_init();
 
     /* NOTIFY varlist */
@@ -523,14 +516,12 @@ main(int argc, char *argv[])
     if (arg == argc) {
         fprintf(stderr, "Missing trap-oid parameter\n");
         usage(prognam);
-        SOCK_CLEANUP;
-        exit(1);
+        goto out;
     }
 
     if (snmp_add_var(pdu, snmptrap_oid, snmptrap_oid_len, 'o', argv[arg])) {
         snmp_perror(argv[arg]);
-        SOCK_CLEANUP;
-        exit(1);
+        goto out;
     }
     ++arg;
 
@@ -541,19 +532,16 @@ main(int argc, char *argv[])
         if (arg > argc) {
             fprintf(stderr, "%s: Missing type/value for variable\n",
                     argv[arg - 3]);
-            SOCK_CLEANUP;
-            exit(1);
+            goto out;
         }
         if (!snmp_parse_oid(argv[arg - 3], name, &name_length)) {
             snmp_perror(argv[arg - 3]);
-            SOCK_CLEANUP;
-            exit(1);
+            goto out;
         }
         if (snmp_add_var(pdu, name, name_length, argv[arg - 2][0],
                          argv[arg - 1]) != 0) {
             snmp_perror(argv[arg - 3]);
-            SOCK_CLEANUP;
-            exit(1);
+            goto out;
         }
     }
 
@@ -600,8 +588,9 @@ main(int argc, char *argv[])
     snmp_free_pdu(pdu);
     pdu = NULL;
 
-    snmp_shutdown("snmpapp");
+    snmp_shutdown(NETSNMP_APPLICATION_CONFIG_TYPE);
 
+out:
     SOCK_CLEANUP;
-    exit(result);
+    return result;
 }

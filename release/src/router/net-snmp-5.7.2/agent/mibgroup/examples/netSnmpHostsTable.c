@@ -65,6 +65,8 @@ initialize_table_netSnmpHostsTable(void)
     if (!my_handler || !table_info || !iinfo) {
         snmp_log(LOG_ERR,
                  "malloc failed in initialize_table_netSnmpHostsTable");
+        free(iinfo);
+        free(table_info);
         return; /** Serious error. */
     }
 
@@ -259,8 +261,7 @@ netSnmpHostsTable_handler(netsnmp_mib_handler *handler,
                     if (retval) {
                         ui = SNMP_MALLOC_STRUCT(undoInfo);
                         ui->len = retval_len;
-                        memdup((u_char **) & ui->ptr,
-                               (u_char *) retval, ui->len);
+                        ui->ptr = netsnmp_memdup(retval, ui->len);
                     }
 
                     /** check the new value, possibly against the
@@ -298,8 +299,7 @@ netSnmpHostsTable_handler(netsnmp_mib_handler *handler,
                     if (retval) {
                         ui = SNMP_MALLOC_STRUCT(undoInfo);
                         ui->len = retval_len;
-                        memdup((u_char **) & ui->ptr,
-                               (u_char *) retval, ui->len);
+                        ui->ptr = netsnmp_memdup(retval, ui->len);
                     }
 
                     /** check the new value, possibly against the
@@ -336,8 +336,7 @@ netSnmpHostsTable_handler(netsnmp_mib_handler *handler,
                     if (retval) {
                         ui = SNMP_MALLOC_STRUCT(undoInfo);
                         ui->len = retval_len;
-                        memdup((u_char **) & ui->ptr,
-                               (u_char *) retval, ui->len);
+                        ui->ptr = netsnmp_memdup(retval, ui->len);
                     }
 
                     /** check the new value, possibly against the
@@ -374,8 +373,7 @@ netSnmpHostsTable_handler(netsnmp_mib_handler *handler,
                     if (retval) {
                         ui = SNMP_MALLOC_STRUCT(undoInfo);
                         ui->len = retval_len;
-                        memdup((u_char **) & ui->ptr,
-                               (u_char *) retval, ui->len);
+                        ui->ptr = netsnmp_memdup(retval, ui->len);
                     }
 
                     /** check the new value, possibly against the

@@ -30,7 +30,7 @@ code for a list of available debug tokens
 SNMP Setup commands:
 .TP
 \fB\-\-create\-snmpv3\-user\fR [\-ro] [\-a authpass] [\-x privpass]
-[\-X DES|AES] [\-A MD5|SHA] [username]
+[\-X DES|AES] [\-A MD5|SHA|SHA-512|SHA-384|SHA-256|SHA-224] [username]
 .PP
 These options produce the various compilation flags needed when
 building external SNMP applications:

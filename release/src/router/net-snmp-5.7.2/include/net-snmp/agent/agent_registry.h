@@ -57,6 +57,7 @@ typedef struct subtree_context_cache_s {
 
 void             setup_tree		  (void);
 void             shutdown_tree    (void);
+void             dump_registry(void);
 
 
 netsnmp_subtree *netsnmp_subtree_find	  (const oid *, size_t,
@@ -89,25 +90,30 @@ int netsnmp_get_lookup_cache_size(void);
 #define MIB_UNREGISTRATION_FAILED	-2
 #define DEFAULT_MIB_PRIORITY		127
 
-int             register_mib		   (const char *, struct variable *,
+int             register_mib		   (const char *,
+                                            const struct variable *,
 					    size_t, size_t, const oid *,
 					    size_t);
 
-int             register_mib_priority	   (const char *, struct variable *,
+int             register_mib_priority	   (const char *,
+                                            const struct variable *,
 					    size_t, size_t, const oid *, size_t,
 					    int);
 
-int             register_mib_range	   (const char *, struct variable *,
+int             register_mib_range	   (const char *,
+                                            const struct variable *,
 					    size_t, size_t, const oid *,
 					    size_t, int, int, oid,
 					    netsnmp_session *);
 
-int		register_mib_context	   (const char *, struct variable *,
+int		register_mib_context	   (const char *,
+                                            const struct variable *,
 					    size_t, size_t, const oid *, size_t,
 					    int, int, oid, netsnmp_session *,
 					    const char *, int, int);
 
-int	netsnmp_register_mib_table_row	   (const char *, struct variable *,
+int	netsnmp_register_mib_table_row	   (const char *,
+                                            const struct variable *,
 					    size_t, size_t, oid *,
 					    size_t, int, int, netsnmp_session *,
 					    const char *, int, int);
@@ -144,10 +150,12 @@ void            register_mib_detach	   (void);
  *          (sizeof(theoid) *must* return the number of elements!) 
  */
 
-#define REGISTER_MIB(descr, var, vartype, theoid)                      \
-  if (register_mib(descr, (struct variable *) var, sizeof(struct vartype), \
-               sizeof(var)/sizeof(struct vartype),                     \
-               theoid, sizeof(theoid)/sizeof(oid)) != MIB_REGISTERED_OK ) \
+#define REGISTER_MIB(descr, var, vartype, theoid)                       \
+    if (register_mib(descr, (const struct variable *) var,              \
+                     sizeof(struct vartype),                            \
+                     sizeof(var)/sizeof(struct vartype),                \
+                     theoid, sizeof(theoid)/sizeof(oid)) !=             \
+        MIB_REGISTERED_OK)                                              \
 	DEBUGMSGTL(("register_mib", "%s registration failed\n", descr));
 
 

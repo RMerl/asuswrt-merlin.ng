@@ -22,7 +22,7 @@ extern          "C" {
 
 extern oid  netsnmp_AAL5PVCDomain[]; /* = { NETSNMP_ENTERPRISE_MIB, 3, 3, 3 }; */
 
-netsnmp_transport *netsnmp_aal5pvc_transport(struct sockaddr_atmpvc *addr,
+netsnmp_transport *netsnmp_aal5pvc_transport(const struct sockaddr_atmpvc *addr,
                                              int local);
 
 /*

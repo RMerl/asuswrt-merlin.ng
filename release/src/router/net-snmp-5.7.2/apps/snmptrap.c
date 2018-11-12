@@ -67,7 +67,6 @@ SOFTWARE.
 #include <net-snmp/net-snmp-includes.h>
 
 oid             objid_enterprise[] = { 1, 3, 6, 1, 4, 1, 3, 1, 1 };
-oid             objid_sysdescr[] = { 1, 3, 6, 1, 2, 1, 1, 1, 0 };
 oid             objid_sysuptime[] = { 1, 3, 6, 1, 2, 1, 1, 3, 0 };
 oid             objid_snmptrap[] = { 1, 3, 6, 1, 6, 3, 1, 1, 4, 1, 0 };
 int             inform = 0;
@@ -128,11 +127,13 @@ main(int argc, char *argv[])
     int             status;
     char           *trap = NULL;
     char           *prognam;
-    int             exitval = 0;
+    int             exitval = 1;
 #ifndef NETSNMP_DISABLE_SNMPV1
     char           *specific = NULL, *description = NULL, *agent = NULL;
     in_addr_t      *pdu_in_addr_t;
 #endif
+
+    SOCK_STARTUP;
 
     prognam = strrchr(argv[0], '/');
     if (prognam)
@@ -144,19 +145,20 @@ main(int argc, char *argv[])
 
     if (strcmp(prognam, "snmpinform") == 0)
         inform = 1;
+
+    /** parse args (also initializes session) */
     switch (arg = snmp_parse_args(argc, argv, &session, "C:", optProc)) {
     case NETSNMP_PARSE_ARGS_ERROR:
-        exit(1);
+        goto out;
     case NETSNMP_PARSE_ARGS_SUCCESS_EXIT:
-        exit(0);
+        exitval = 0;
+        goto out;
     case NETSNMP_PARSE_ARGS_ERROR_USAGE:
         usage();
-        exit(1);
+        goto out;
     default:
         break;
     }
-
-    SOCK_STARTUP;
 
     session.callback = snmp_input;
     session.callback_magic = NULL;
@@ -223,29 +225,25 @@ main(int argc, char *argv[])
          * the input netsnmp_session pointer
          */
         snmp_sess_perror("snmptrap", &session);
-        SOCK_CLEANUP;
-        exit(1);
+        goto out;
     }
 
 #ifndef NETSNMP_DISABLE_SNMPV1
     if (session.version == SNMP_VERSION_1) {
         if (inform) {
             fprintf(stderr, "Cannot send INFORM as SNMPv1 PDU\n");
-            SOCK_CLEANUP;
-            exit(1);
+            goto out;
         }
         pdu = snmp_pdu_create(SNMP_MSG_TRAP);
         if ( !pdu ) {
             fprintf(stderr, "Failed to create trap PDU\n");
-            SOCK_CLEANUP;
-            exit(1);
+            goto out;
         }
         pdu_in_addr_t = (in_addr_t *) pdu->agent_addr;
         if (arg == argc) {
             fprintf(stderr, "No enterprise oid\n");
             usage();
-            SOCK_CLEANUP;
-            exit(1);
+            goto out;
         }
         if (argv[arg][0] == 0) {
             pdu->enterprise = (oid *) malloc(sizeof(objid_enterprise));
@@ -258,8 +256,7 @@ main(int argc, char *argv[])
             if (!snmp_parse_oid(argv[arg], name, &name_length)) {
                 snmp_perror(argv[arg]);
                 usage();
-                SOCK_CLEANUP;
-                exit(1);
+                goto out;
             }
             pdu->enterprise = (oid *) malloc(name_length * sizeof(oid));
             memcpy(pdu->enterprise, name, name_length * sizeof(oid));
@@ -268,15 +265,14 @@ main(int argc, char *argv[])
         if (++arg >= argc) {
             fprintf(stderr, "Missing agent parameter\n");
             usage();
-            SOCK_CLEANUP;
-            exit(1);
+            goto out;
         }
         agent = argv[arg];
         if (agent != NULL && strlen(agent) != 0) {
             int ret = netsnmp_gethostbyname_v4(agent, pdu_in_addr_t);
             if (ret < 0) {
                 fprintf(stderr, "unknown host: %s\n", agent);
-                exit(1);
+                goto out;
             }
         } else {
             *pdu_in_addr_t = get_myaddr();
@@ -284,24 +280,21 @@ main(int argc, char *argv[])
         if (++arg == argc) {
             fprintf(stderr, "Missing generic-trap parameter\n");
             usage();
-            SOCK_CLEANUP;
-            exit(1);
+            goto out;
         }
         trap = argv[arg];
         pdu->trap_type = atoi(trap);
         if (++arg == argc) {
             fprintf(stderr, "Missing specific-trap parameter\n");
             usage();
-            SOCK_CLEANUP;
-            exit(1);
+            goto out;
         }
         specific = argv[arg];
         pdu->specific_type = atoi(specific);
         if (++arg == argc) {
             fprintf(stderr, "Missing uptime parameter\n");
             usage();
-            SOCK_CLEANUP;
-            exit(1);
+            goto out;
         }
         description = argv[arg];
         if (description == NULL || *description == 0)
@@ -317,14 +310,12 @@ main(int argc, char *argv[])
         pdu = snmp_pdu_create(inform ? SNMP_MSG_INFORM : SNMP_MSG_TRAP2);
         if ( !pdu ) {
             fprintf(stderr, "Failed to create notification PDU\n");
-            SOCK_CLEANUP;
-            exit(1);
+            goto out;
         }
         if (arg == argc) {
             fprintf(stderr, "Missing up-time parameter\n");
             usage();
-            SOCK_CLEANUP;
-            exit(1);
+            goto out;
         }
         trap = argv[arg];
         if (*trap == 0) {
@@ -337,15 +328,13 @@ main(int argc, char *argv[])
         if (++arg == argc) {
             fprintf(stderr, "Missing trap-oid parameter\n");
             usage();
-            SOCK_CLEANUP;
-            exit(1);
+            goto out;
         }
         if (snmp_add_var
             (pdu, objid_snmptrap, sizeof(objid_snmptrap) / sizeof(oid),
              'o', argv[arg]) != 0) {
             snmp_perror(argv[arg]);
-            SOCK_CLEANUP;
-            exit(1);
+            goto out;
         }
     }
     arg++;
@@ -355,21 +344,18 @@ main(int argc, char *argv[])
         if (arg > argc) {
             fprintf(stderr, "%s: Missing type/value for variable\n",
                     argv[arg - 3]);
-            SOCK_CLEANUP;
-            exit(1);
+            goto out;
         }
         name_length = MAX_OID_LEN;
         if (!snmp_parse_oid(argv[arg - 3], name, &name_length)) {
             snmp_perror(argv[arg - 3]);
-            SOCK_CLEANUP;
-            exit(1);
+            goto out;
         }
         if (snmp_add_var
             (pdu, name, name_length, argv[arg - 2][0],
              argv[arg - 1]) != 0) {
             snmp_perror(argv[arg - 3]);
-            SOCK_CLEANUP;
-            exit(1);
+            goto out;
         }
     }
 
@@ -381,12 +367,17 @@ main(int argc, char *argv[])
         snmp_sess_perror(inform ? "snmpinform" : "snmptrap", ss);
         if (!inform)
             snmp_free_pdu(pdu);
-        exitval = 1;
+        goto close_session;
     } else if (inform)
         snmp_free_pdu(response);
 
+    exitval = 0;
+
+close_session:
     snmp_close(ss);
-    snmp_shutdown("snmpapp");
+    snmp_shutdown(NETSNMP_APPLICATION_CONFIG_TYPE);
+
+out:
     SOCK_CLEANUP;
     return exitval;
 }

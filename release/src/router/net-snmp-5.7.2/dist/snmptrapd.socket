@@ -1,0 +1,14 @@
+[Unit]
+Description=Socket listening for SNMP trap messages
+
+[Socket]
+ListenDatagram=0.0.0.0:162
+# Uncomment other listening addresses as needed - TCP, UDP6, TCP6.
+# It must match listening addresses/ports defined in snmptrapd.service
+# or snmptrapd.conf.
+# ListenStream=0.0.0.0:162
+# ListenDatagram=[::]:162
+# ListenStream=[::]:162
+
+[Install]
+WantedBy=sockets.target

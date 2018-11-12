@@ -114,7 +114,7 @@ the GET request.
 .PP
 GETNEXT Request:
 .PP
-The "GETNEXT request" mode ($N) is simlar to the "Get request"
+The "GETNEXT request" mode ($N) is similar to the "Get request"
 mode, described above.
 .PP
 SET Request:

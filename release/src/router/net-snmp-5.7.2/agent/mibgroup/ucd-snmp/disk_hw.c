@@ -34,6 +34,7 @@
 
 #include "struct.h"
 #include "disk.h"
+#include "disk_hw.h"
 #include "util_funcs/header_simple_table.h"
 #if USING_UCD_SNMP_ERRORMIB_MODULE
 #include "errormib.h"
@@ -55,6 +56,7 @@ static netsnmp_fsys_info ** _expand_disk_array( char *cptr );
 
 int             numdisks;
 int             allDisksIncluded = 0;
+int             allDisksMinPercent = 0;
 int             maxdisks = 0;
 netsnmp_fsys_info **disks = NULL;
 
@@ -119,6 +121,7 @@ init_disk_hw(void)
 				disk_free_config,
 				"minpercent%");
   allDisksIncluded = 0;
+  allDisksMinPercent = 0;
 }
 
 static void
@@ -140,6 +143,7 @@ disk_free_config(void)
      maxdisks = numdisks = 0;
   }
   allDisksIncluded = 0;
+  allDisksMinPercent = 0;
 }
 
 static void 
@@ -199,8 +203,7 @@ static void
 disk_parse_config_all(const char *token, char *cptr)
 {
   int             minpercent = DISKMINPERCENT;
-  netsnmp_fsys_info *entry;
-    
+
   /*
    * read the minimum disk usage percent
    */
@@ -220,30 +223,36 @@ disk_parse_config_all(const char *token, char *cptr)
       netsnmp_config_error("\tignoring: includeAllDisks %s", cptr);
   }
   else {
-
-      netsnmp_fsys_load( NULL, NULL );  /* Prime the fsys H/W module */
-      for ( entry  = netsnmp_fsys_get_first();
-            entry != NULL;
-            entry  = netsnmp_fsys_get_next( entry )) {
-
-          if ( !(entry->flags & NETSNMP_FS_FLAG_ACTIVE ))
-              continue;
-          entry->minspace   = -1;
-          entry->minpercent = minpercent;
-          entry->flags     |= NETSNMP_FS_FLAG_UCD;
-          /*
-           * Ensure there is space for the new entry
-           */
-          if (numdisks == maxdisks) {
-              if (!_expand_disk_array( entry->device )) 
-                  return;
-          }
-          disks[numdisks++] = entry;
-      }
       allDisksIncluded = 1;
+      allDisksMinPercent = minpercent;
   }
 }
 
+/* add new entries to dskTable dynamically */
+static void _refresh_disks(int minpercent)
+{
+    netsnmp_fsys_info *entry;
+
+    for ( entry  = netsnmp_fsys_get_first();
+        entry != NULL;
+        entry  = netsnmp_fsys_get_next( entry )) {
+
+        if (!(entry->flags & NETSNMP_FS_FLAG_UCD)) {
+            /* this is new disk, add it to the table */
+            entry->minspace   = -1;
+            entry->minpercent = minpercent;
+            entry->flags     |= NETSNMP_FS_FLAG_UCD;
+            /*
+             * Ensure there is space for the new entry
+             */
+            if (numdisks == maxdisks) {
+                if (!_expand_disk_array( entry->device ))
+                    return;
+            }
+            disks[numdisks++] = entry;
+        }
+    }
+}
 
 static int _percent( unsigned long long value, unsigned long long total ) {
     float v=value, t=total, pct;
@@ -301,12 +310,17 @@ var_extensible_disk(struct variable *vp,
                     size_t * var_len, WriteMethod ** write_method)
 {
     int             disknum = 0;
-  netsnmp_fsys_info *entry;
+    netsnmp_fsys_info *entry;
     unsigned long long val;
     static long     long_ret;
-    static char     errmsg[300];
+    static char    *errmsg;
+    netsnmp_cache  *cache;
 
-    netsnmp_fsys_load( NULL, NULL );  /* Update the fsys H/W module */
+    /* Update the fsys H/W module */
+    cache = netsnmp_fsys_get_cache();
+    netsnmp_cache_check_and_reload(cache);
+    if (allDisksIncluded)
+        _refresh_disks(allDisksMinPercent);
 
 tryAgain:
     if (header_simple_table
@@ -315,9 +329,14 @@ tryAgain:
     disknum = name[*length - 1] - 1;
     entry = disks[disknum];
     if ( !entry ) {
-        if (!exact || !(entry->flags & NETSNMP_FS_FLAG_UCD))
-            goto tryAgain;
-        return NULL;
+        if (exact)
+            return NULL;
+        goto tryAgain;
+    }
+    if (!(entry->flags & NETSNMP_FS_FLAG_ACTIVE) || !(entry->flags & NETSNMP_FS_FLAG_UCD)) {
+        if (exact)
+            return NULL;
+        goto tryAgain;
     }
 
     switch (vp->magic) {
@@ -399,23 +418,21 @@ tryAgain:
         return ((u_char *) (&long_ret));
 
     case ERRORMSG:
-        errmsg[0] = 0;
+        free(errmsg);
+        errmsg = NULL;
+        *var_len = 0;
         val = netsnmp_fsys_avail_ull(entry);
-        if (( entry->minspace >= 0 ) &&
-            ( val < entry->minspace ))
-                snprintf(errmsg, sizeof(errmsg),
-                        "%s: less than %d free (= %d)",
-                        entry->path, entry->minspace,
-                        (int) val);
-        else if (( entry->minpercent >= 0 ) &&
-                 (_percent( entry->avail, entry->size ) < entry->minpercent ))
-                snprintf(errmsg, sizeof(errmsg),
-                        "%s: less than %d%% free (= %d%%)",
-                        entry->path, entry->minpercent,
-                        _percent( entry->avail, entry->size ));
-        errmsg[ sizeof(errmsg)-1 ] = 0;
-        *var_len = strlen(errmsg);
-        return ((u_char *) (errmsg));
+        if ((entry->minspace >= 0 && val < entry->minspace &&
+             asprintf(&errmsg, "%s: less than %d free (= %d)", entry->path,
+                      entry->minspace, (int) val) >= 0) ||
+            (entry->minpercent >= 0 &&
+             _percent(entry->avail, entry->size) < entry->minpercent &&
+             asprintf(&errmsg, "%s: less than %d%% free (= %d%%)", entry->path,
+                      entry->minpercent, _percent(entry->avail, entry->size))
+             >= 0)) {
+            *var_len = strlen(errmsg);
+        }
+        return (u_char *) errmsg;
     }
     return NULL;
 }

@@ -68,6 +68,20 @@ netSnmpPassGauge OBJECT-TYPE
     DEFVAL { 42 }
     ::= { netSnmpPassExamples 6 }
 
+netSnmpPassCounter64 OBJECT-TYPE
+    SYNTAX      Counter64
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION "Example Counter64 object."
+    ::= { netSnmpPassExamples 7 }
+
+netSnmpPassInteger64 OBJECT-TYPE
+    SYNTAX      Opaque
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION "Example Opaque Integer64 object."
+    ::= { netSnmpPassExamples 8 }
+
 
 netSnmpPassOIDValue OBJECT IDENTIFIER
     ::= { netSnmpPassExamples 99 }

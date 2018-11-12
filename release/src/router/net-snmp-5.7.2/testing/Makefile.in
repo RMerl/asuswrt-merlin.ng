@@ -31,10 +31,11 @@ all:
 	@echo "Also see the RUNFULLTESTS script for details"
 
 test:
+	@$(srcdir)/check_for_pskill
 	@if test "x$(PERL)" = "x" \
 	         -o "x@PERL_SYSTEM_INVOKES_POSIX_SHELL@" != xyes \
 		 || { ! $(PERL) -e 'require TAP::Harness;' >/dev/null 2>&1 \
-		    && ! $(PERL) -e 'require Test::Harness;' >/dev/null 2>&1; };\
+		    && ! $(PERL) -e 'require Test::Harness; die if $$Test::Harness::VERSION < 1.21;' >/dev/null 2>&1; };\
 	then \
 		echo $(srcdir)/RUNTESTS ; \
 		$(srcdir)/RUNTESTS ; \

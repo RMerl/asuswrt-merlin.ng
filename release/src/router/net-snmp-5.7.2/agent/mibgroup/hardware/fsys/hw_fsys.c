@@ -3,14 +3,14 @@
 #include <net-snmp/net-snmp-includes.h>
 #include <net-snmp/agent/net-snmp-agent-includes.h>
 #include <net-snmp/agent/hardware/fsys.h>
+#include "hw_fsys.h"
+#include "hardware/fsys/hw_fsys_private.h"
 #ifdef HAVE_INTTYPES_H
 #include <inttypes.h>
 #endif
 
 netsnmp_feature_child_of(hw_fsys_get_container, netsnmp_unused)
 
-extern void             netsnmp_fsys_arch_load( void );
-extern void             netsnmp_fsys_arch_init( void );
 static int  _fsys_load( void );
 static void _fsys_free( void );
 

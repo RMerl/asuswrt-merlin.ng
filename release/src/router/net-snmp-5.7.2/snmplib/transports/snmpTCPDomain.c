@@ -43,6 +43,10 @@
 #include <net-snmp/library/snmpTCPBaseDomain.h>
 #include <net-snmp/library/tools.h>
 
+#ifndef NETSNMP_NO_SYSTEMD
+#include <net-snmp/library/sd-daemon.h>
+#endif
+
 /*
  * needs to be in sync with the definitions in snmplib/snmpUDPDomain.c
  * and perl/agent/agent.xs
@@ -66,7 +70,7 @@ netsnmp_sockaddr_in2(struct sockaddr_in *addr,
  */
 
 static char *
-netsnmp_tcp_fmtaddr(netsnmp_transport *t, void *data, int len)
+netsnmp_tcp_fmtaddr(netsnmp_transport *t, const void *data, int len)
 {
     return netsnmp_ipv4_fmtaddr("TCP", t, data, len);
 }
@@ -77,9 +81,9 @@ netsnmp_tcp_accept(netsnmp_transport *t)
     struct sockaddr *farend = NULL;
     netsnmp_udp_addr_pair *addr_pair = NULL;
     int             newsock = -1;
-    socklen_t       farendlen = sizeof(netsnmp_udp_addr_pair);
+    socklen_t       farendlen;
 
-    addr_pair = (netsnmp_udp_addr_pair *)malloc(farendlen);
+    addr_pair = malloc(sizeof(*addr_pair));
     if (addr_pair == NULL) {
         /*
          * Indicate that the acceptance of this socket failed.  
@@ -89,9 +93,10 @@ netsnmp_tcp_accept(netsnmp_transport *t)
     }
     memset(addr_pair, 0, sizeof *addr_pair);
     farend = &addr_pair->remote_addr.sa;
+    farendlen = sizeof(addr_pair->remote_addr.sa);
 
     if (t != NULL && t->sock >= 0) {
-        newsock = accept(t->sock, farend, &farendlen);
+        newsock = (int) accept(t->sock, farend, &farendlen);
 
         if (newsock < 0) {
             DEBUGMSGTL(("netsnmp_tcp", "accept failed rc %d errno %d \"%s\"\n",
@@ -144,11 +149,12 @@ netsnmp_tcp_accept(netsnmp_transport *t)
  */
 
 netsnmp_transport *
-netsnmp_tcp_transport(struct sockaddr_in *addr, int local)
+netsnmp_tcp_transport(const struct sockaddr_in *addr, int local)
 {
     netsnmp_transport *t = NULL;
     netsnmp_udp_addr_pair *addr_pair = NULL;
     int rc = 0;
+    int socket_initialized = 0;
 
 #ifdef NETSNMP_NO_LISTEN_SUPPORT
     if (local)
@@ -178,7 +184,19 @@ netsnmp_tcp_transport(struct sockaddr_in *addr, int local)
     t->domain_length =
         sizeof(netsnmp_snmpTCPDomain) / sizeof(netsnmp_snmpTCPDomain[0]);
 
-    t->sock = socket(PF_INET, SOCK_STREAM, 0);
+#ifndef NETSNMP_NO_SYSTEMD
+    /*
+     * Maybe the socket was already provided by systemd...
+     */
+    if (local) {
+        t->sock = netsnmp_sd_find_inet_socket(PF_INET, SOCK_STREAM, 1,
+                ntohs(addr->sin_port));
+        if (t->sock >= 0)
+            socket_initialized = 1;
+    }
+#endif
+    if (!socket_initialized)
+        t->sock = (int) socket(PF_INET, SOCK_STREAM, 0);
     if (t->sock < 0) {
         netsnmp_transport_free(t);
         return NULL;
@@ -197,16 +215,13 @@ netsnmp_tcp_transport(struct sockaddr_in *addr, int local)
          */
 
         t->flags |= NETSNMP_TRANSPORT_FLAG_LISTEN;
-        t->local = (u_char *)malloc(6);
-        if (t->local == NULL) {
+        t->local_length = sizeof(*addr);
+        t->local = netsnmp_memdup(addr, sizeof(*addr));
+        if (!t->local) {
             netsnmp_socketbase_close(t);
             netsnmp_transport_free(t);
             return NULL;
         }
-        memcpy(t->local, (u_char *) & (addr->sin_addr.s_addr), 4);
-        t->local[4] = (htons(addr->sin_port) & 0xff00) >> 8;
-        t->local[5] = (htons(addr->sin_port) & 0x00ff) >> 0;
-        t->local_length = 6;
 
         /*
          * We should set SO_REUSEADDR too.  
@@ -215,11 +230,13 @@ netsnmp_tcp_transport(struct sockaddr_in *addr, int local)
         setsockopt(t->sock, SOL_SOCKET, SO_REUSEADDR, (void *)&opt,
 		   sizeof(opt));
 
-        rc = bind(t->sock, (struct sockaddr *)addr, sizeof(struct sockaddr));
-        if (rc != 0) {
-            netsnmp_socketbase_close(t);
-            netsnmp_transport_free(t);
-            return NULL;
+        if (!socket_initialized) {
+            rc = bind(t->sock, (const struct sockaddr *)addr, sizeof(*addr));
+            if (rc != 0) {
+                netsnmp_socketbase_close(t);
+                netsnmp_transport_free(t);
+                return NULL;
+            }
         }
 
         /*
@@ -235,12 +252,13 @@ netsnmp_tcp_transport(struct sockaddr_in *addr, int local)
         /*
          * Now sit here and wait for connections to arrive.  
          */
-
-        rc = listen(t->sock, NETSNMP_STREAM_QUEUE_LEN);
-        if (rc != 0) {
-            netsnmp_socketbase_close(t);
-            netsnmp_transport_free(t);
-            return NULL;
+        if (!socket_initialized) {
+            rc = listen(t->sock, NETSNMP_STREAM_QUEUE_LEN);
+            if (rc != 0) {
+                netsnmp_socketbase_close(t);
+                netsnmp_transport_free(t);
+                return NULL;
+            }
         }
         
         /*
@@ -250,16 +268,13 @@ netsnmp_tcp_transport(struct sockaddr_in *addr, int local)
         return NULL;
 #endif /* NETSNMP_NO_LISTEN_SUPPORT */
     } else {
-      t->remote = (u_char *)malloc(6);
-        if (t->remote == NULL) {
+        t->remote_length = sizeof(*addr);
+        t->remote = netsnmp_memdup(addr, sizeof(*addr));
+        if (!t->remote) {
             netsnmp_socketbase_close(t);
             netsnmp_transport_free(t);
             return NULL;
         }
-        memcpy(t->remote, (u_char *) & (addr->sin_addr.s_addr), 4);
-        t->remote[4] = (htons(addr->sin_port) & 0xff00) >> 8;
-        t->remote[5] = (htons(addr->sin_port) & 0x00ff) >> 0;
-        t->remote_length = 6;
 
         /*
          * This is a client-type session, so attempt to connect to the far
@@ -268,9 +283,7 @@ netsnmp_tcp_transport(struct sockaddr_in *addr, int local)
          * had completed.  So this can block.
          */
 
-        rc = connect(t->sock, (struct sockaddr *)addr,
-		     sizeof(struct sockaddr));
-
+        rc = connect(t->sock, (const struct sockaddr *)addr, sizeof(*addr));
         if (rc < 0) {
             netsnmp_socketbase_close(t);
             netsnmp_transport_free(t);
@@ -291,12 +304,13 @@ netsnmp_tcp_transport(struct sockaddr_in *addr, int local)
      * is equal to the maximum legal size of an SNMP message).  
      */
 
-    t->msgMaxSize = 0x7fffffff;
+    t->msgMaxSize = SNMP_MAX_PACKET_LEN;
     t->f_recv     = netsnmp_tcpbase_recv;
     t->f_send     = netsnmp_tcpbase_send;
     t->f_close    = netsnmp_socketbase_close;
     t->f_accept   = netsnmp_tcp_accept;
     t->f_fmtaddr  = netsnmp_tcp_fmtaddr;
+    t->f_get_taddr = netsnmp_ipv4_get_taddr;
 
     return t;
 }
@@ -319,17 +333,12 @@ netsnmp_tcp_create_tstring(const char *str, int local,
 
 
 netsnmp_transport *
-netsnmp_tcp_create_ostring(const u_char * o, size_t o_len, int local)
+netsnmp_tcp_create_ostring(const void *o, size_t o_len, int local)
 {
-    struct sockaddr_in addr;
+    struct sockaddr_in sin;
 
-    if (o_len == 6) {
-        unsigned short porttmp = (o[4] << 8) + o[5];
-        addr.sin_family = AF_INET;
-        memcpy((u_char *) & (addr.sin_addr.s_addr), o, 4);
-        addr.sin_port = htons(porttmp);
-        return netsnmp_tcp_transport(&addr, local);
-    }
+    if (netsnmp_ipv4_ostring_to_sockaddr(&sin, o, o_len))
+        return netsnmp_tcp_transport(&sin, local);
     return NULL;
 }
 

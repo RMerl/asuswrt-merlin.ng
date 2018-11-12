@@ -90,7 +90,7 @@ int netsnmp_cpu_arch_load( netsnmp_cache *cache, void *magic ) {
     strcpy( name.name, "");
     if (perfstat_cpu(&name, cs2, sizeof(perfstat_cpu_t), n) > 0) {
         for ( i = 0; i < n; i++ ) {
-            cpu = netsnmp_cpu_get_byIdx( i, 0 );
+            cpu = netsnmp_cpu_get_byIdx( i, 1 );
             cpu->user_ticks = (unsigned long long)cs2[i].user;
             cpu->sys_ticks  = (unsigned long long)cs2[i].sys + (unsigned long long)cs2[i].wait;
             cpu->kern_ticks = (unsigned long long)cs2[i].sys;

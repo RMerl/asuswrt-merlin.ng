@@ -65,9 +65,11 @@
 
 #include "ip.h"
 #include "route_write.h"
+#include "var_route.h"
 
-#ifdef cygwin
+#if defined(cygwin) || defined(mingw32)
 #include <windows.h>
+#include <winerror.h>
 #endif
 
 #if !defined (WIN32) && !defined (cygwin)
@@ -108,13 +110,15 @@ addRoute(u_long dstip, u_long gwip, u_long iff, u_short flags)
 
     flags |= RTF_UP;
 
+    memset(&dst, 0, sizeof(dst));
     dst.sin_family = AF_INET;
     dst.sin_addr.s_addr = htonl(dstip);
 
-
+    memset(&gateway, 0, sizeof(gateway));
     gateway.sin_family = AF_INET;
     gateway.sin_addr.s_addr = htonl(gwip);
 
+    memset(&route, 0, sizeof(route));
     memcpy(&route.rt_dst, &dst, sizeof(struct sockaddr_in));
     memcpy(&route.rt_gateway, &gateway, sizeof(struct sockaddr_in));
 
@@ -198,10 +202,11 @@ delRoute(u_long dstip, u_long gwip, u_long iff, u_short flags)
 
     flags |= RTF_UP;
 
+    memset(&dst, 0, sizeof(dst));
     dst.sin_family = AF_INET;
     dst.sin_addr.s_addr = htonl(dstip);
 
-
+    memset(&gateway, 0, sizeof(gateway));
     gateway.sin_family = AF_INET;
     gateway.sin_addr.s_addr = htonl(gwip);
 
@@ -595,9 +600,6 @@ write_rte(int action,
 
 #elif defined(HAVE_IPHLPAPI_H)  /* WIN32 cygwin */
 #include <iphlpapi.h>
-
-extern PMIB_IPFORWARDROW route_row;
-extern int      create_flag;
 
 int
 write_rte(int action,

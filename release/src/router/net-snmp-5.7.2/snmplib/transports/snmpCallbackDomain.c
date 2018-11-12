@@ -73,11 +73,14 @@ callback_queue *thequeue;
 static netsnmp_transport *
 find_transport_from_callback_num(int num)
 {
-    static netsnmp_transport_list *ptr;
-    for (ptr = trlist; ptr; ptr = ptr->next)
-        if (((netsnmp_callback_info *) ptr->transport->data)->
-            callback_num == num)
+    netsnmp_transport_list *ptr;
+    netsnmp_callback_info *ci;
+
+    for (ptr = trlist; ptr; ptr = ptr->next) {
+        ci = ptr->transport->data;
+        if (ci->callback_num == num)
             return ptr->transport;
+    }
     return NULL;
 }
 
@@ -153,22 +156,19 @@ callback_pop_queue(int num)
  */
 
 char *
-netsnmp_callback_fmtaddr(netsnmp_transport *t, void *data, int len)
+netsnmp_callback_fmtaddr(netsnmp_transport *t, const void *data, int len)
 {
-    char buf[SPRINT_MAX_LEN];
+    char *buf;
     netsnmp_callback_info *mystuff;
 
-    if (!t)
+    if (!t || !t->data)
         return strdup("callback: unknown");
 
-    mystuff = (netsnmp_callback_info *) t->data;
-
-    if (!mystuff)
-        return strdup("callback: unknown");
-
-    snprintf(buf, SPRINT_MAX_LEN, "callback: %d on fd %d",
-             mystuff->callback_num, mystuff->pipefds[0]);
-    return strdup(buf);
+    mystuff = t->data;
+    if (asprintf(&buf, "callback: %d on fd %d", mystuff->callback_num,
+		 mystuff->pipefds[0]) < 0)
+        buf = NULL;
+    return buf;
 }
 
 
@@ -185,7 +185,7 @@ netsnmp_callback_recv(netsnmp_transport *t, void *buf, int size,
 {
     int rc = -1;
     char newbuf[1];
-    netsnmp_callback_info *mystuff = (netsnmp_callback_info *) t->data;
+    netsnmp_callback_info *mystuff = t->data;
 
     DEBUGMSGTL(("transport_callback", "hook_recv enter\n"));
 
@@ -211,8 +211,7 @@ netsnmp_callback_recv(netsnmp_transport *t, void *buf, int size,
          * malloc the space here, but it's filled in by
          * snmp_callback_created_pdu() below 
          */
-        int            *returnnum = (int *) calloc(1, sizeof(int));
-        *opaque = returnnum;
+        *opaque = calloc(1, sizeof(int));
         *olength = sizeof(int);
     }
     DEBUGMSGTL(("transport_callback", "hook_recv exit\n"));
@@ -222,19 +221,20 @@ netsnmp_callback_recv(netsnmp_transport *t, void *buf, int size,
 
 
 int
-netsnmp_callback_send(netsnmp_transport *t, void *buf, int size,
+netsnmp_callback_send(netsnmp_transport *t, const void *buf, int size,
 		      void **opaque, int *olength)
 {
     int from, rc = -1;
-    netsnmp_callback_info *mystuff = (netsnmp_callback_info *) t->data;
+    netsnmp_callback_info *mystuff = t->data, *theirstuff;
     netsnmp_callback_pass *cp;
 
     /*
      * extract the pdu from the hacked buffer 
      */
     netsnmp_transport *other_side;
-    callback_hack  *ch = (callback_hack *) * opaque;
+    callback_hack  *ch = *opaque;
     netsnmp_pdu    *pdu = ch->pdu;
+
     *opaque = ch->orig_transport_data;
     SNMP_FREE(ch);
 
@@ -274,12 +274,12 @@ netsnmp_callback_send(netsnmp_transport *t, void *buf, int size,
             return -1;
         }
 
+        theirstuff = other_side->data;
 	while (rc < 0) {
 #ifdef WIN32
-	    rc = sendto(((netsnmp_callback_info*) other_side->data)->pipefds[1], " ", 1, 0, NULL, 0);
+	    rc = sendto(theirstuff->pipefds[1], " ", 1, 0, NULL, 0);
 #else
-	    rc = write(((netsnmp_callback_info *)other_side->data)->pipefds[1],
-		       " ", 1);
+	    rc = write(theirstuff->pipefds[1], " ", 1);
 #endif
 	    if (rc < 0 && errno != EINTR) {
 		break;
@@ -305,12 +305,12 @@ netsnmp_callback_send(netsnmp_transport *t, void *buf, int size,
             SNMP_FREE(cp);
             return -1;
         }
+        theirstuff = other_side->data;
 	while (rc < 0) {
 #ifdef WIN32
-	    rc = sendto(((netsnmp_callback_info*) other_side->data)->pipefds[1], " ", 1, 0, NULL, 0);
+	    rc = sendto(theirstuff->pipefds[1], " ", 1, 0, NULL, 0);
 #else
-	    rc = write(((netsnmp_callback_info *)other_side->data)->pipefds[1],
-		       " ", 1);
+	    rc = write(theirstuff->pipefds[1], " ", 1);
 #endif
 	    if (rc < 0 && errno != EINTR) {
 		break;
@@ -329,10 +329,10 @@ int
 netsnmp_callback_close(netsnmp_transport *t)
 {
     int             rc;
-    netsnmp_callback_info *mystuff = (netsnmp_callback_info *) t->data;
+    netsnmp_callback_info *mystuff = t->data;
     DEBUGMSGTL(("transport_callback", "hook_close enter\n"));
 
-#ifdef WIN32
+#ifdef HAVE_CLOSESOCKET
     rc  = closesocket(mystuff->pipefds[0]);
     rc |= closesocket(mystuff->pipefds[1]);
 #else
@@ -399,14 +399,21 @@ netsnmp_callback_transport(int to)
 #else
     rc = pipe(mydata->pipefds);
 #endif
-    t->sock = mydata->pipefds[0];
 
     if (rc) {
-        SNMP_FREE(mydata);
-        SNMP_FREE(t);
+        netsnmp_transport_free(t);
         return NULL;
     }
 
+    netsnmp_assert(mydata->pipefds[0] != -1);
+    t->sock      = mydata->pipefds[0];
+
+    /*
+     * Message size is not limited by this transport (hence msgMaxSize
+     * is equal to the maximum legal size of an SNMP message).  
+     */
+
+    t->msgMaxSize = SNMP_MAX_PACKET_LEN;
     t->f_recv    = netsnmp_callback_recv;
     t->f_send    = netsnmp_callback_send;
     t->f_close   = netsnmp_callback_close;
@@ -469,9 +476,7 @@ netsnmp_callback_hook_build(netsnmp_session * sp,
     case SNMP_MSG_TRAP:
     case SNMP_MSG_TRAP2:
         pdu->flags &= (~UCD_MSG_FLAG_EXPECT_RESPONSE);
-        /*
-         * Fallthrough
-         */
+        /* FALL THROUGH */
     default:
         if (pdu->errstat == SNMP_DEFAULT_ERRSTAT)
             pdu->errstat = 0;
@@ -496,7 +501,7 @@ netsnmp_callback_hook_build(netsnmp_session * sp,
                 sp->s_snmp_errno = SNMPERR_BAD_COMMUNITY;
                 return -1;
             }
-            pdu->community = (u_char *) malloc(sp->community_len);
+            pdu->community = malloc(sp->community_len);
             if (pdu->community == NULL) {
                 sp->s_snmp_errno = SNMPERR_MALLOC;
                 return -1;
@@ -509,7 +514,7 @@ netsnmp_callback_hook_build(netsnmp_session * sp,
 #endif
     case SNMP_VERSION_3:
         if (pdu->securityNameLen == 0) {
-	  pdu->securityName = (char *)malloc(sp->securityNameLen);
+	  pdu->securityName = malloc(sp->securityNameLen);
             if (pdu->securityName == NULL) {
                 sp->s_snmp_errno = SNMPERR_MALLOC;
                 return -1;
@@ -583,7 +588,6 @@ netsnmp_callback_open(int attach_to,
     } else {
         callback_sess.isAuthoritative = SNMP_SESS_AUTHORITATIVE;
     }
-    callback_sess.remote_port = 0;
     callback_sess.retries = 0;
     callback_sess.timeout = 30000000;
     callback_sess.version = SNMP_DEFAULT_VERSION;       /* (mostly) bogus */

@@ -729,72 +729,72 @@ _ifXTable_get_column(ifXTable_rowreq_ctx * rowreq_ctx,
          * ifHCInOctets(6)/COUNTER64/ASN_COUNTER64/U64(U64)//l/A/w/e/r/d/h 
          */
     case COLUMN_IFHCINOCTETS:
-        var->val_len = sizeof(U64);
+        var->val_len = sizeof(struct counter64);
         var->type = ASN_COUNTER64;
-        rc = ifHCInOctets_get(rowreq_ctx, (U64 *) var->val.string);
+        rc = ifHCInOctets_get(rowreq_ctx, (struct counter64 *) var->val.string);
         break;
 
         /*
          * ifHCInUcastPkts(7)/COUNTER64/ASN_COUNTER64/U64(U64)//l/A/w/e/r/d/h 
          */
     case COLUMN_IFHCINUCASTPKTS:
-        var->val_len = sizeof(U64);
+        var->val_len = sizeof(struct counter64);
         var->type = ASN_COUNTER64;
-        rc = ifHCInUcastPkts_get(rowreq_ctx, (U64 *) var->val.string);
+        rc = ifHCInUcastPkts_get(rowreq_ctx, (struct counter64 *) var->val.string);
         break;
 
         /*
          * ifHCInMulticastPkts(8)/COUNTER64/ASN_COUNTER64/U64(U64)//l/A/w/e/r/d/h 
          */
     case COLUMN_IFHCINMULTICASTPKTS:
-        var->val_len = sizeof(U64);
+        var->val_len = sizeof(struct counter64);
         var->type = ASN_COUNTER64;
-        rc = ifHCInMulticastPkts_get(rowreq_ctx, (U64 *) var->val.string);
+        rc = ifHCInMulticastPkts_get(rowreq_ctx, (struct counter64 *) var->val.string);
         break;
 
         /*
          * ifHCInBroadcastPkts(9)/COUNTER64/ASN_COUNTER64/U64(U64)//l/A/w/e/r/d/h 
          */
     case COLUMN_IFHCINBROADCASTPKTS:
-        var->val_len = sizeof(U64);
+        var->val_len = sizeof(struct counter64);
         var->type = ASN_COUNTER64;
-        rc = ifHCInBroadcastPkts_get(rowreq_ctx, (U64 *) var->val.string);
+        rc = ifHCInBroadcastPkts_get(rowreq_ctx, (struct counter64 *) var->val.string);
         break;
 
         /*
          * ifHCOutOctets(10)/COUNTER64/ASN_COUNTER64/U64(U64)//l/A/w/e/r/d/h 
          */
     case COLUMN_IFHCOUTOCTETS:
-        var->val_len = sizeof(U64);
+        var->val_len = sizeof(struct counter64);
         var->type = ASN_COUNTER64;
-        rc = ifHCOutOctets_get(rowreq_ctx, (U64 *) var->val.string);
+        rc = ifHCOutOctets_get(rowreq_ctx, (struct counter64 *) var->val.string);
         break;
 
         /*
          * ifHCOutUcastPkts(11)/COUNTER64/ASN_COUNTER64/U64(U64)//l/A/w/e/r/d/h 
          */
     case COLUMN_IFHCOUTUCASTPKTS:
-        var->val_len = sizeof(U64);
+        var->val_len = sizeof(struct counter64);
         var->type = ASN_COUNTER64;
-        rc = ifHCOutUcastPkts_get(rowreq_ctx, (U64 *) var->val.string);
+        rc = ifHCOutUcastPkts_get(rowreq_ctx, (struct counter64 *) var->val.string);
         break;
 
         /*
          * ifHCOutMulticastPkts(12)/COUNTER64/ASN_COUNTER64/U64(U64)//l/A/w/e/r/d/h 
          */
     case COLUMN_IFHCOUTMULTICASTPKTS:
-        var->val_len = sizeof(U64);
+        var->val_len = sizeof(struct counter64);
         var->type = ASN_COUNTER64;
-        rc = ifHCOutMulticastPkts_get(rowreq_ctx, (U64 *) var->val.string);
+        rc = ifHCOutMulticastPkts_get(rowreq_ctx, (struct counter64 *) var->val.string);
         break;
 
         /*
          * ifHCOutBroadcastPkts(13)/COUNTER64/ASN_COUNTER64/U64(U64)//l/A/w/e/r/d/h 
          */
     case COLUMN_IFHCOUTBROADCASTPKTS:
-        var->val_len = sizeof(U64);
+        var->val_len = sizeof(struct counter64);
         var->type = ASN_COUNTER64;
-        rc = ifHCOutBroadcastPkts_get(rowreq_ctx, (U64 *) var->val.string);
+        rc = ifHCOutBroadcastPkts_get(rowreq_ctx, (struct counter64 *) var->val.string);
         break;
 
         /*
@@ -1828,7 +1828,7 @@ ifXTable_container_init_persistence(netsnmp_container *container)
     register_config_handler(NULL, row_token,
                             _ifXTable_container_row_restore, NULL, NULL);
     netsnmp_assert(container);
-    memdup((u_char **)&container_p, &container, sizeof(container));
+    container_p = netsnmp_memdup(&container, sizeof(container));
     netsnmp_assert(container_p);
     rc = snmp_register_callback(SNMP_CALLBACK_LIBRARY,
                                 SNMP_CALLBACK_STORE_DATA,

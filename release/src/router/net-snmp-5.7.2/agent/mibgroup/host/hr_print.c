@@ -28,7 +28,6 @@
 
 void            Init_HR_Print(void);
 int             Get_Next_HR_Print(void);
-void            Save_HR_Print(void);
 const char     *describe_printer(int);
 int             printer_status(int);
 int             printer_detail_status(int);
@@ -199,7 +198,10 @@ var_hrprint(struct variable * vp,
 
 static int      HRP_index;
 static char   **HRP_name;
-static int      HRP_nbrnames, HRP_maxnames;
+static int      HRP_nbrnames;
+#if HAVE_LPSTAT || HAVE_CGETNEXT || HAVE_PRINTCAP
+static int      HRP_maxnames;
+#endif
 
 #define HRP_MAX_INCR 10
 
@@ -359,10 +361,9 @@ run_lpstat(int *fd)
     struct extensible ex;
 
     memset(&ex, 0, sizeof(ex));
-    strcpy(ex.command, LPSTAT_PATH " -v");
-    if ((*fd = get_exec_output(&ex)) < 0)
-        return NULL;
-
-    return fdopen(*fd, "r");
+    ex.command = strdup(LPSTAT_PATH " -v");
+    *fd = get_exec_output(&ex);
+    free(ex.command);
+    return *fd >= 0 ? fdopen(*fd, "r") : NULL;
 }
 #endif

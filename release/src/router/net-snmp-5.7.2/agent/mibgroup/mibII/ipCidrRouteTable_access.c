@@ -69,7 +69,7 @@ get_ipCidrRouteIfIndex(void *data_context, size_t * ret_len)
 {
     RTENTRY *ourroute = (RTENTRY *) data_context;
     long_ret = ourroute->rt_unit;
-    *ret_len = sizeof(long_ret);;
+    *ret_len = sizeof(long_ret);
     return &long_ret;
 }
 

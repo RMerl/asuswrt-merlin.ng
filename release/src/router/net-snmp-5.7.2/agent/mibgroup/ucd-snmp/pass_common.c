@@ -122,6 +122,8 @@ netsnmp_internal_pass_parse(char * buf,
      */
     if (!strncasecmp(buf, "string", 6)) {
         buf2[strlen(buf2) - 1] = 0; /* zap the linefeed */
+        if (buf2[strlen(buf2) - 1] == '\r')
+            buf2[strlen(buf2) - 1] = 0; /* zap the carriage-return */
         *var_len = strlen(buf2);
         vp->type = ASN_OCTET_STR;
         return ((unsigned char *) buf2);
@@ -133,7 +135,7 @@ netsnmp_internal_pass_parse(char * buf,
         c64.high = (unsigned long)(v64 >> 32);
         c64.low  = (unsigned long)(v64 & 0xffffffff);
         *var_len = sizeof(c64);
-        vp->type = ASN_INTEGER64;
+        vp->type = ASN_OPAQUE_I64;
         return ((unsigned char *) &c64);
     }
 #endif
@@ -250,15 +252,15 @@ netsnmp_internal_pass_set_format(char *buf,
             sprintf(buf, "string \"\"\n");
         else if (netsnmp_internal_bin2asc(buf2, var_val_len) ==
                  (int) var_val_len)
-            snprintf(buf, sizeof(buf), "string \"%s\"\n", buf2);
+            snprintf(buf, SNMP_MAXBUF, "string \"%s\"\n", buf2);
         else
-            snprintf(buf, sizeof(buf), "octet \"%s\"\n", buf2);
-        buf[ sizeof(buf)-1 ] = 0;
+            snprintf(buf, SNMP_MAXBUF, "octet \"%s\"\n", buf2);
+        buf[ SNMP_MAXBUF-1 ] = 0;
         break;
     case ASN_OBJECT_ID:
         sprint_mib_oid(buf2, (const oid *) var_val, var_val_len/sizeof(oid));
-        snprintf(buf, sizeof(buf), "objectid \"%s\"\n", buf2);
-        buf[ sizeof(buf)-1 ] = 0;
+        snprintf(buf, SNMP_MAXBUF, "objectid \"%s\"\n", buf2);
+        buf[ SNMP_MAXBUF-1 ] = 0;
         break;
     }
 }

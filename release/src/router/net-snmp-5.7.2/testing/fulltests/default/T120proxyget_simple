@@ -9,7 +9,7 @@ SKIPIFNOT USING_MIBII_SYSTEM_MIB_MODULE
 SKIPIF NETSNMP_DISABLE_SNMPV2C
 
 # XXX: ucd-snmp/proxy doesn't properly support TCP -- remove this once it does
-[ "x$SNMP_TRANSPORT_SPEC" = "xtcp" -o "x$SNMP_TRANSPORT_SPEC" = "xtcp6" ] && SKIP
+[ "x$SNMP_TRANSPORT_SPEC" = "xtcp" -o "x$SNMP_TRANSPORT_SPEC" = "xtcp6" ] && SKIP Test does not support TCP
 
 #
 # Begin test

@@ -29,12 +29,12 @@ die "Cannot create session: ${SNMP::ErrorStr}\n" unless defined $sess;
 #
 #   The 'get' performed for non-repeaters is a "GETNEXT" (the non-repeater
 #   requests are not fulfilled with SNMP GET's).  This means that you must
-#   ask for the lexicographically preceeding variable for non-repeaters.
+#   ask for the lexicographically preceding variable for non-repeaters.
 #
 #   For most branches (i.e. 'sysUpTime'), this "just works" -- be sure you
 #   don't ask for an instance, and the response will be as expected.  However,
 #   if you want a specific variable instance (i.e. 'ifSpeed.5'), you must 
-#   ask for the _preceeding_ variable ('ifSpeed.4' in this example).
+#   ask for the _preceding_ variable ('ifSpeed.4' in this example).
 #
 #   See section 4.2.3 of RFC 1905 for more details on GETBULK PDU handling.
 #

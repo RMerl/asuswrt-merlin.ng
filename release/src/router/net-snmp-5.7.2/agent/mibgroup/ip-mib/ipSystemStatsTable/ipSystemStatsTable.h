@@ -144,93 +144,22 @@ config_require(ip-mib/ipSystemStatsTable/ipSystemStatsTable_data_access)
      *********************************************************************
      * function prototypes
      */
-    int
-     
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        ipSystemStatsTable_pre_request(ipSystemStatsTable_registration *
+    int ipSystemStatsTable_pre_request(ipSystemStatsTable_registration *
                                        user_context);
-    int
-     
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        ipSystemStatsTable_post_request(ipSystemStatsTable_registration *
+    int ipSystemStatsTable_post_request(ipSystemStatsTable_registration *
                                         user_context, int rc);
 
-    int
-     
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        ipSystemStatsTable_rowreq_ctx_init(ipSystemStatsTable_rowreq_ctx *
+    int ipSystemStatsTable_rowreq_ctx_init(ipSystemStatsTable_rowreq_ctx *
                                            rowreq_ctx,
                                            void *user_init_ctx);
     void
-     
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
         ipSystemStatsTable_rowreq_ctx_cleanup(ipSystemStatsTable_rowreq_ctx
                                               * rowreq_ctx);
 
     ipSystemStatsTable_data *ipSystemStatsTable_allocate_data(void);
     void            ipSystemStatsTable_release_data(ipSystemStatsTable_data
                                                     * data);
-
-
-         
-         
-         
-         
-         
-         
-        ipSystemStatsTable_rowreq_ctx
+    ipSystemStatsTable_rowreq_ctx
         * ipSystemStatsTable_row_find_by_mib_index
         (ipSystemStatsTable_mib_index * mib_idx);
 
@@ -265,226 +194,50 @@ config_require(ip-mib/ipSystemStatsTable/ipSystemStatsTable_data_access)
      * indexes
      */
 
-    int
-     
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        ipSystemStatsInReceives_get(ipSystemStatsTable_rowreq_ctx *
+    int ipSystemStatsInReceives_get(ipSystemStatsTable_rowreq_ctx *
                                     rowreq_ctx,
                                     u_long *
                                     ipSystemStatsInReceives_val_ptr);
-    int
-     
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        ipSystemStatsHCInReceives_get(ipSystemStatsTable_rowreq_ctx *
+    int ipSystemStatsHCInReceives_get(ipSystemStatsTable_rowreq_ctx *
                                       rowreq_ctx,
-                                      U64 *
+                                      struct counter64 *
                                       ipSystemStatsHCInReceives_val_ptr);
     int             ipSystemStatsInOctets_get(ipSystemStatsTable_rowreq_ctx
                                               * rowreq_ctx,
                                               u_long *
                                               ipSystemStatsInOctets_val_ptr);
-    int
-     
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        ipSystemStatsHCInOctets_get(ipSystemStatsTable_rowreq_ctx *
+    int ipSystemStatsHCInOctets_get(ipSystemStatsTable_rowreq_ctx *
                                     rowreq_ctx,
-                                    U64 * ipSystemStatsHCInOctets_val_ptr);
-    int
-     
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        ipSystemStatsInHdrErrors_get(ipSystemStatsTable_rowreq_ctx *
+                                    struct counter64 *ipSystemStatsHCInOctets_val_ptr);
+    int ipSystemStatsInHdrErrors_get(ipSystemStatsTable_rowreq_ctx *
                                      rowreq_ctx,
                                      u_long *
                                      ipSystemStatsInHdrErrors_val_ptr);
-    int
-     
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        ipSystemStatsInNoRoutes_get(ipSystemStatsTable_rowreq_ctx *
+    int ipSystemStatsInNoRoutes_get(ipSystemStatsTable_rowreq_ctx *
                                     rowreq_ctx,
                                     u_long *
                                     ipSystemStatsInNoRoutes_val_ptr);
-    int
-     
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        ipSystemStatsInAddrErrors_get(ipSystemStatsTable_rowreq_ctx *
+    int ipSystemStatsInAddrErrors_get(ipSystemStatsTable_rowreq_ctx *
                                       rowreq_ctx,
                                       u_long *
                                       ipSystemStatsInAddrErrors_val_ptr);
-    int
-     
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        ipSystemStatsInUnknownProtos_get(ipSystemStatsTable_rowreq_ctx *
+    int ipSystemStatsInUnknownProtos_get(ipSystemStatsTable_rowreq_ctx *
                                          rowreq_ctx,
                                          u_long *
                                          ipSystemStatsInUnknownProtos_val_ptr);
-    int
-     
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        ipSystemStatsInTruncatedPkts_get(ipSystemStatsTable_rowreq_ctx *
+    int ipSystemStatsInTruncatedPkts_get(ipSystemStatsTable_rowreq_ctx *
                                          rowreq_ctx,
                                          u_long *
                                          ipSystemStatsInTruncatedPkts_val_ptr);
-    int
-     
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        ipSystemStatsInForwDatagrams_get(ipSystemStatsTable_rowreq_ctx *
+    int ipSystemStatsInForwDatagrams_get(ipSystemStatsTable_rowreq_ctx *
                                          rowreq_ctx,
                                          u_long *
                                          ipSystemStatsInForwDatagrams_val_ptr);
-    int
-     
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        ipSystemStatsHCInForwDatagrams_get(ipSystemStatsTable_rowreq_ctx *
+    int ipSystemStatsHCInForwDatagrams_get(ipSystemStatsTable_rowreq_ctx *
                                            rowreq_ctx,
-                                           U64 *
+                                           struct counter64 *
                                            ipSystemStatsHCInForwDatagrams_val_ptr);
-    int
-     
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        ipSystemStatsReasmReqds_get(ipSystemStatsTable_rowreq_ctx *
+    int ipSystemStatsReasmReqds_get(ipSystemStatsTable_rowreq_ctx *
                                     rowreq_ctx,
                                     u_long *
                                     ipSystemStatsReasmReqds_val_ptr);
@@ -492,689 +245,141 @@ config_require(ip-mib/ipSystemStatsTable/ipSystemStatsTable_data_access)
                                               * rowreq_ctx,
                                               u_long *
                                               ipSystemStatsReasmOKs_val_ptr);
-    int
-     
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        ipSystemStatsReasmFails_get(ipSystemStatsTable_rowreq_ctx *
+    int ipSystemStatsReasmFails_get(ipSystemStatsTable_rowreq_ctx *
                                     rowreq_ctx,
                                     u_long *
                                     ipSystemStatsReasmFails_val_ptr);
-    int
-     
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        ipSystemStatsInDiscards_get(ipSystemStatsTable_rowreq_ctx *
+    int ipSystemStatsInDiscards_get(ipSystemStatsTable_rowreq_ctx *
                                     rowreq_ctx,
                                     u_long *
                                     ipSystemStatsInDiscards_val_ptr);
-    int
-     
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        ipSystemStatsInDelivers_get(ipSystemStatsTable_rowreq_ctx *
+    int ipSystemStatsInDelivers_get(ipSystemStatsTable_rowreq_ctx *
                                     rowreq_ctx,
                                     u_long *
                                     ipSystemStatsInDelivers_val_ptr);
-    int
-     
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        ipSystemStatsHCInDelivers_get(ipSystemStatsTable_rowreq_ctx *
+    int ipSystemStatsHCInDelivers_get(ipSystemStatsTable_rowreq_ctx *
                                       rowreq_ctx,
-                                      U64 *
+                                      struct counter64 *
                                       ipSystemStatsHCInDelivers_val_ptr);
-    int
-     
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        ipSystemStatsOutRequests_get(ipSystemStatsTable_rowreq_ctx *
+    int ipSystemStatsOutRequests_get(ipSystemStatsTable_rowreq_ctx *
                                      rowreq_ctx,
                                      u_long *
                                      ipSystemStatsOutRequests_val_ptr);
-    int
-     
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        ipSystemStatsHCOutRequests_get(ipSystemStatsTable_rowreq_ctx *
+    int ipSystemStatsHCOutRequests_get(ipSystemStatsTable_rowreq_ctx *
                                        rowreq_ctx,
-                                       U64 *
+                                       struct counter64 *
                                        ipSystemStatsHCOutRequests_val_ptr);
-    int
-     
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        ipSystemStatsOutNoRoutes_get(ipSystemStatsTable_rowreq_ctx *
+    int ipSystemStatsOutNoRoutes_get(ipSystemStatsTable_rowreq_ctx *
                                      rowreq_ctx,
                                      u_long *
                                      ipSystemStatsOutNoRoutes_val_ptr);
-    int
-     
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        ipSystemStatsOutForwDatagrams_get(ipSystemStatsTable_rowreq_ctx *
+    int ipSystemStatsOutForwDatagrams_get(ipSystemStatsTable_rowreq_ctx *
                                           rowreq_ctx,
                                           u_long *
                                           ipSystemStatsOutForwDatagrams_val_ptr);
-    int
-     
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        ipSystemStatsHCOutForwDatagrams_get(ipSystemStatsTable_rowreq_ctx *
+    int ipSystemStatsHCOutForwDatagrams_get(ipSystemStatsTable_rowreq_ctx *
                                             rowreq_ctx,
-                                            U64 *
+                                            struct counter64 *
                                             ipSystemStatsHCOutForwDatagrams_val_ptr);
-    int
-     
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        ipSystemStatsOutDiscards_get(ipSystemStatsTable_rowreq_ctx *
+    int ipSystemStatsOutDiscards_get(ipSystemStatsTable_rowreq_ctx *
                                      rowreq_ctx,
                                      u_long *
                                      ipSystemStatsOutDiscards_val_ptr);
-    int
-     
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        ipSystemStatsOutFragReqds_get(ipSystemStatsTable_rowreq_ctx *
+    int ipSystemStatsOutFragReqds_get(ipSystemStatsTable_rowreq_ctx *
                                       rowreq_ctx,
                                       u_long *
                                       ipSystemStatsOutFragReqds_val_ptr);
-    int
-     
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        ipSystemStatsOutFragOKs_get(ipSystemStatsTable_rowreq_ctx *
+    int ipSystemStatsOutFragOKs_get(ipSystemStatsTable_rowreq_ctx *
                                     rowreq_ctx,
                                     u_long *
                                     ipSystemStatsOutFragOKs_val_ptr);
-    int
-     
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        ipSystemStatsOutFragFails_get(ipSystemStatsTable_rowreq_ctx *
+    int ipSystemStatsOutFragFails_get(ipSystemStatsTable_rowreq_ctx *
                                       rowreq_ctx,
                                       u_long *
                                       ipSystemStatsOutFragFails_val_ptr);
-    int
-     
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        ipSystemStatsOutFragCreates_get(ipSystemStatsTable_rowreq_ctx *
+    int ipSystemStatsOutFragCreates_get(ipSystemStatsTable_rowreq_ctx *
                                         rowreq_ctx,
                                         u_long *
                                         ipSystemStatsOutFragCreates_val_ptr);
-    int
-     
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        ipSystemStatsOutTransmits_get(ipSystemStatsTable_rowreq_ctx *
+    int ipSystemStatsOutTransmits_get(ipSystemStatsTable_rowreq_ctx *
                                       rowreq_ctx,
                                       u_long *
                                       ipSystemStatsOutTransmits_val_ptr);
-    int
-     
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        ipSystemStatsHCOutTransmits_get(ipSystemStatsTable_rowreq_ctx *
+    int ipSystemStatsHCOutTransmits_get(ipSystemStatsTable_rowreq_ctx *
                                         rowreq_ctx,
-                                        U64 *
+                                        struct counter64 *
                                         ipSystemStatsHCOutTransmits_val_ptr);
-    int
-     
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        ipSystemStatsOutOctets_get(ipSystemStatsTable_rowreq_ctx *
+    int ipSystemStatsOutOctets_get(ipSystemStatsTable_rowreq_ctx *
                                    rowreq_ctx,
                                    u_long *
                                    ipSystemStatsOutOctets_val_ptr);
-    int
-     
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        ipSystemStatsHCOutOctets_get(ipSystemStatsTable_rowreq_ctx *
+    int ipSystemStatsHCOutOctets_get(ipSystemStatsTable_rowreq_ctx *
                                      rowreq_ctx,
-                                     U64 *
+                                     struct counter64 *
                                      ipSystemStatsHCOutOctets_val_ptr);
-    int
-     
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        ipSystemStatsInMcastPkts_get(ipSystemStatsTable_rowreq_ctx *
+    int ipSystemStatsInMcastPkts_get(ipSystemStatsTable_rowreq_ctx *
                                      rowreq_ctx,
                                      u_long *
                                      ipSystemStatsInMcastPkts_val_ptr);
-    int
-     
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        ipSystemStatsHCInMcastPkts_get(ipSystemStatsTable_rowreq_ctx *
+    int ipSystemStatsHCInMcastPkts_get(ipSystemStatsTable_rowreq_ctx *
                                        rowreq_ctx,
-                                       U64 *
+                                       struct counter64 *
                                        ipSystemStatsHCInMcastPkts_val_ptr);
-    int
-     
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        ipSystemStatsInMcastOctets_get(ipSystemStatsTable_rowreq_ctx *
+    int ipSystemStatsInMcastOctets_get(ipSystemStatsTable_rowreq_ctx *
                                        rowreq_ctx,
                                        u_long *
                                        ipSystemStatsInMcastOctets_val_ptr);
-    int
-     
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        ipSystemStatsHCInMcastOctets_get(ipSystemStatsTable_rowreq_ctx *
+    int ipSystemStatsHCInMcastOctets_get(ipSystemStatsTable_rowreq_ctx *
                                          rowreq_ctx,
-                                         U64 *
+                                         struct counter64 *
                                          ipSystemStatsHCInMcastOctets_val_ptr);
-    int
-     
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        ipSystemStatsOutMcastPkts_get(ipSystemStatsTable_rowreq_ctx *
+    int ipSystemStatsOutMcastPkts_get(ipSystemStatsTable_rowreq_ctx *
                                       rowreq_ctx,
                                       u_long *
                                       ipSystemStatsOutMcastPkts_val_ptr);
-    int
-     
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        ipSystemStatsHCOutMcastPkts_get(ipSystemStatsTable_rowreq_ctx *
+    int ipSystemStatsHCOutMcastPkts_get(ipSystemStatsTable_rowreq_ctx *
                                         rowreq_ctx,
-                                        U64 *
+                                        struct counter64 *
                                         ipSystemStatsHCOutMcastPkts_val_ptr);
-    int
-     
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        ipSystemStatsOutMcastOctets_get(ipSystemStatsTable_rowreq_ctx *
+    int ipSystemStatsOutMcastOctets_get(ipSystemStatsTable_rowreq_ctx *
                                         rowreq_ctx,
                                         u_long *
                                         ipSystemStatsOutMcastOctets_val_ptr);
-    int
-     
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        ipSystemStatsHCOutMcastOctets_get(ipSystemStatsTable_rowreq_ctx *
+    int ipSystemStatsHCOutMcastOctets_get(ipSystemStatsTable_rowreq_ctx *
                                           rowreq_ctx,
-                                          U64 *
+                                          struct counter64 *
                                           ipSystemStatsHCOutMcastOctets_val_ptr);
-    int
-     
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        ipSystemStatsInBcastPkts_get(ipSystemStatsTable_rowreq_ctx *
+    int ipSystemStatsInBcastPkts_get(ipSystemStatsTable_rowreq_ctx *
                                      rowreq_ctx,
                                      u_long *
                                      ipSystemStatsInBcastPkts_val_ptr);
-    int
-     
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        ipSystemStatsHCInBcastPkts_get(ipSystemStatsTable_rowreq_ctx *
+    int ipSystemStatsHCInBcastPkts_get(ipSystemStatsTable_rowreq_ctx *
                                        rowreq_ctx,
-                                       U64 *
+                                       struct counter64 *
                                        ipSystemStatsHCInBcastPkts_val_ptr);
-    int
-     
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        ipSystemStatsOutBcastPkts_get(ipSystemStatsTable_rowreq_ctx *
+    int ipSystemStatsOutBcastPkts_get(ipSystemStatsTable_rowreq_ctx *
                                       rowreq_ctx,
                                       u_long *
                                       ipSystemStatsOutBcastPkts_val_ptr);
-    int
-     
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        ipSystemStatsHCOutBcastPkts_get(ipSystemStatsTable_rowreq_ctx *
+    int ipSystemStatsHCOutBcastPkts_get(ipSystemStatsTable_rowreq_ctx *
                                         rowreq_ctx,
-                                        U64 *
+                                        struct counter64 *
                                         ipSystemStatsHCOutBcastPkts_val_ptr);
-    int
-     
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        ipSystemStatsDiscontinuityTime_get(ipSystemStatsTable_rowreq_ctx *
+    int ipSystemStatsDiscontinuityTime_get(ipSystemStatsTable_rowreq_ctx *
                                            rowreq_ctx,
                                            u_long *
                                            ipSystemStatsDiscontinuityTime_val_ptr);
-    int
-     
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        ipSystemStatsRefreshRate_get(ipSystemStatsTable_rowreq_ctx *
+    int ipSystemStatsRefreshRate_get(ipSystemStatsTable_rowreq_ctx *
                                      rowreq_ctx,
                                      u_long *
                                      ipSystemStatsRefreshRate_val_ptr);
-
-
-    int
-     
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        ipSystemStatsTable_indexes_set_tbl_idx(ipSystemStatsTable_mib_index
+    int ipSystemStatsTable_indexes_set_tbl_idx(ipSystemStatsTable_mib_index
                                                * tbl_idx,
                                                u_long
                                                ipSystemStatsIPVersion_val);
-    int
-     
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        ipSystemStatsTable_indexes_set(ipSystemStatsTable_rowreq_ctx *
+    int ipSystemStatsTable_indexes_set(ipSystemStatsTable_rowreq_ctx *
                                        rowreq_ctx,
                                        u_long ipSystemStatsIPVersion_val);
-
-
 
     /*
      *********************************************************************

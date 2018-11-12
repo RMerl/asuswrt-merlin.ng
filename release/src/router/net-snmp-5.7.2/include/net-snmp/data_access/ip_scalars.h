@@ -8,9 +8,14 @@ extern          "C" {
 int netsnmp_arch_ip_scalars_ipForwarding_get(u_long *value);
 int netsnmp_arch_ip_scalars_ipForwarding_set(u_long value);
 
+int netsnmp_arch_ip_scalars_ipDefaultTTL_get(u_long *value);
+int netsnmp_arch_ip_scalars_ipDefaultTTL_set(u_long value);
+
 int netsnmp_arch_ip_scalars_ipv6IpForwarding_get(u_long *value);
 int netsnmp_arch_ip_scalars_ipv6IpForwarding_set(u_long value);
 
+int netsnmp_arch_ip_scalars_ipv6IpDefaultHopLimit_get(u_long *value);
+int netsnmp_arch_ip_scalars_ipv6IpDefaultHopLimit_set(u_long value);
 
 #ifdef __cplusplus
 }

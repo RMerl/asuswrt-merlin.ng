@@ -15,9 +15,9 @@ SKIPIFNOT USING_UCD_SNMP_PASS_PERSIST_MODULE
 
 # make sure snmpget and snmpwalk can be executed
 SNMPGET="${builddir}/apps/snmpget"
-[ -x "$SNMPGET" ] || SKIP
+[ -x "$SNMPGET" ] || SKIP snmpget not compiled
 SNMPWALK="${builddir}/apps/snmpwalk"
-[ -x "$SNMPWALK" ] || SKIP
+[ -x "$SNMPWALK" ] || SKIP snmpwalk not compiled
 
 snmp_version=v2c
 TESTCOMMUNITY=testcommunity
@@ -44,6 +44,8 @@ CHECKORDIE "NET-SNMP-PASS-MIB::netSnmpPassTimeTicks.0 = Timeticks: (363136200) 4
 CHECKORDIE "NET-SNMP-PASS-MIB::netSnmpPassIpAddress.0 = IpAddress: 127.0.0.1"
 CHECKORDIE "NET-SNMP-PASS-MIB::netSnmpPassCounter.0 = Counter32: 1"
 CHECKORDIE "NET-SNMP-PASS-MIB::netSnmpPassGauge.0 = Gauge32: 42"
+CHECKORDIE "NET-SNMP-PASS-MIB::netSnmpPassCounter64.0 = Counter64: 9223372036854775806"
+CHECKORDIE "NET-SNMP-PASS-MIB::netSnmpPassInteger64.0 = Opaque: Int64: 9223372036854775807"
 
 #COMMENT A couple of spot checks of GET requests.
 CAPTURE "$SNMPGET $SNMP_FLAGS -$snmp_version -c $TESTCOMMUNITY $SNMP_TRANSPORT_SPEC:$SNMP_TEST_DEST$SNMP_SNMPD_PORT NET-SNMP-PASS-MIB::netSnmpPassInteger.1"

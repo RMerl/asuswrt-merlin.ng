@@ -39,10 +39,10 @@
 #include <net-snmp/agent/agent_index.h>
 
 #include "snmpd.h"
+#include "agent_global_vars.h"
 #include "mibgroup/struct.h"
 #include <net-snmp/agent/table.h>
 #include <net-snmp/agent/table_iterator.h>
-#include "mib_module_includes.h"
 
 #ifdef USING_AGENTX_SUBAGENT_MODULE
 #include "agentx/subagent.h"
@@ -65,8 +65,6 @@ struct snmp_index {
     struct snmp_index *prev_oid;
     struct snmp_index *next_idx;
 }              *snmp_index_head = NULL;
-
-extern netsnmp_session *main_session;
 
 /*
  * The caller is responsible for free()ing the memory returned by
@@ -528,9 +526,30 @@ unregister_index(netsnmp_variable_list * varbind, int remember,
 
     for (idxptr2 = idxptr; idxptr2 != NULL;
          prev_idx_ptr = idxptr2, idxptr2 = idxptr2->next_idx) {
-        i = SNMP_MIN(varbind->val_len, idxptr2->varbind->val_len);
-        res2 =
-            memcmp(varbind->val.string, idxptr2->varbind->val.string, i);
+        switch (varbind->type) {
+        case ASN_INTEGER:
+            res2 =
+                (*varbind->val.integer -
+                 *idxptr2->varbind->val.integer);
+            break;
+        case ASN_OCTET_STR:
+            i = SNMP_MIN(varbind->val_len,
+                         idxptr2->varbind->val_len);
+            res2 =
+                memcmp(varbind->val.string,
+                       idxptr2->varbind->val.string, i);
+            break;
+        case ASN_OBJECT_ID:
+            res2 =
+                snmp_oid_compare(varbind->val.objid,
+                                 varbind->val_len / sizeof(oid),
+                                 idxptr2->varbind->val.objid,
+                                 idxptr2->varbind->val_len /
+                                 sizeof(oid));
+            break;
+        default:
+            return INDEX_ERR_WRONG_TYPE;        /* wrong type */
+        }
         if (res2 <= 0)
             break;
     }

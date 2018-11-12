@@ -44,7 +44,7 @@ load_uint_file(const char *filename, u_int * value)
 }
 
 void
-netsnmp_access_sctp_stats_arch_init()
+netsnmp_access_sctp_stats_arch_init(void)
 {
 }
 
@@ -84,17 +84,17 @@ netsnmp_access_sctp_stats_arch_load(netsnmp_sctp_stats * sctp_stats)
             return -1;
         }
 
-        if (line[6] == 'r')
+        if (line[4] == 'C' && line[8] == 'E')
             sctp_stats->curr_estab = value;
-        else if (line[5] == 'c')
+        else if (line[4] == 'A' && line[10] == 'E')
             sctp_stats->active_estabs = value;
-        else if (line[4] == 'P')
+        else if (line[4] == 'P' && line[11] == 'E')
             sctp_stats->passive_estabs = value;
-        else if (line[5] == 'b')
+        else if (line[4] == 'A' && line[5] == 'b')
             sctp_stats->aborteds = value;
-        else if (line[4] == 'S')
+        else if (line[4] == 'S' && line[5] == 'h')
             sctp_stats->shutdowns = value;
-        else if (line[8] == 'f')
+        else if (line[4] == 'O' && line[9] == 'B')
             sctp_stats->out_of_blues = value;
         else if (line[6] == 'e')
             sctp_stats->checksum_errors = value;
@@ -113,7 +113,7 @@ netsnmp_access_sctp_stats_arch_load(netsnmp_sctp_stats * sctp_stats)
                 sctp_stats->out_sctp_packs.high = value >> 32;
             } else
                 ret = -1;
-        } else {
+        } else if (line[4] == 'I') {
             if (line[6] == 'C') {
                 sctp_stats->in_ctrl_chunks.low = value & 0xffffffff;
                 sctp_stats->in_ctrl_chunks.high = value >> 32;
@@ -123,24 +123,27 @@ netsnmp_access_sctp_stats_arch_load(netsnmp_sctp_stats * sctp_stats)
             } else if (line[6] == 'U') {
                 sctp_stats->in_unorder_chunks.low = value & 0xffffffff;
                 sctp_stats->in_unorder_chunks.high = value >> 32;
-            } else if (line[4] == 'F') {
-                sctp_stats->frag_usr_msgs.low = value & 0xffffffff;
-                sctp_stats->frag_usr_msgs.high = value >> 32;
-            } else if (line[4] == 'R') {
-                sctp_stats->reasm_usr_msgs.low = value & 0xffffffff;
-                sctp_stats->reasm_usr_msgs.high = value >> 32;
             } else if (line[6] == 'S') {
                 sctp_stats->in_sctp_packs.low = value & 0xffffffff;
                 sctp_stats->in_sctp_packs.high = value >> 32;
-            } else
-                ret = -1;
+            } else  {
+		ret = -1;
+	    }
+	} else if (line[4] == 'F' && line[8] == 'U') {
+	    sctp_stats->frag_usr_msgs.low = value & 0xffffffff;
+	    sctp_stats->frag_usr_msgs.high = value >> 32;
+	} else if (line[4] == 'R') {
+	    sctp_stats->reasm_usr_msgs.low = value & 0xffffffff;
+	    sctp_stats->reasm_usr_msgs.high = value >> 32;
+	} else if (line[4] == 'T') {
+	} else {
+	    ret = -1;
         }
 
         if (ret < 0) {
             DEBUGMSGTL(("sctp:scalars:stats:arch_load",
-                        "Unknown entry!'\n"));
-            fclose(f);
-            return ret;
+                        "Unknown entry: %s\n", line));
+	    ret = 0;
         }
     }
 
@@ -150,7 +153,7 @@ netsnmp_access_sctp_stats_arch_load(netsnmp_sctp_stats * sctp_stats)
 }
 
 void
-netsnmp_access_sctp_params_arch_init()
+netsnmp_access_sctp_params_arch_init(void)
 {
 }
 

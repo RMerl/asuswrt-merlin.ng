@@ -184,6 +184,9 @@ function initial(){
 		hide_https_crt();
 		show_cert_details();
 	}
+	var lanport = '<% nvram_get("http_lanport"); %>';
+	if (lanport == '') lanport = '80';
+	change_url(lanport, 'http_lan')
 
 	if(wifi_tog_btn_support || wifi_hw_sw_support || sw_mode == 2 || sw_mode == 4){		// wifi_tog_btn && wifi_hw_sw && hide WPS button behavior under repeater mode
 			if(cfg_wps_btn_support){
@@ -657,7 +660,7 @@ function validForm(){
 	}
 
 	if (!validator.range(document.form.http_lanport, 1, 65535))
-		/*return false;*/ document.form.http_lanport = 80;
+		return false;
 	if (HTTPS_support && !validator.range(document.form.https_lanport, 1, 65535) && !tmo_support)
 		return false;
 
@@ -687,13 +690,14 @@ function validForm(){
 		alert("You must configure at least one SSH authentication method!");
 		return false;
 	}
-
+/*
 	if(!document.form.misc_httpport_x.disabled &&
 			isPortConflict(document.form.misc_httpport_x.value)){
 		alert(isPortConflict(document.form.misc_httpport_x.value));
 		document.form.misc_httpport_x.focus();
 		return false;
 	}
+*/
 	else if(!document.form.misc_httpsport_x.disabled &&
 			isPortConflict(document.form.misc_httpsport_x.value) && HTTPS_support){
 		alert(isPortConflict(document.form.misc_httpsport_x.value));
@@ -705,11 +709,13 @@ function validForm(){
 		document.form.https_lanport.focus();
 		return false;
 	}
+/*
 	else if(document.form.misc_httpsport_x.value == document.form.misc_httpport_x.value && HTTPS_support){
 		alert("<#https_port_conflict#>");
 		document.form.misc_httpsport_x.focus();
 		return false;
 	}
+*/
 	else if(!validator.rangeAllowZero(document.form.http_autologout, 10, 999, '<% nvram_get("http_autologout"); %>'))
 		return false;
 
@@ -1298,6 +1304,16 @@ function change_url(num, flag){
 		document.getElementById("wan_access_url").innerHTML = "<#https_access_url#> ";
 		document.getElementById("wan_access_url").innerHTML += "<a href=\"https://"+host_addr+":"+https_wanport+"\" target=\"_blank\" style=\"color:#FC0;text-decoration: underline; font-family:Lucida Console;\">http<span>s</span>://"+host_addr+"<span>:"+https_wanport+"</span></a>";		
 	}
+	else if(flag = 'http_lan'){
+		var http_lanport_num_new = num;
+		if (http_lanport_num_new != 80)
+			var lanport_str = ":"+http_lanport_num_new;
+		else
+			var lanport_str = "";
+
+		document.getElementById("http_access_page").innerHTML = "<#https_access_url#> ";
+                document.getElementById("http_access_page").innerHTML += "<a href=\"http://"+theUrl+lanport_str+"\" target=\"_blank\" style=\"color:#FC0;text-decoration: underline; font-family:Lucida Console;\">http://"+theUrl+lanport_str+"</a>";
+	}
 }
 
 /* password item show or not */
@@ -1576,7 +1592,6 @@ function warn_jffs_format(){
 <input type="hidden" name="reboot_schedule_enable" value="<% nvram_get("reboot_schedule_enable"); %>">
 <input type="hidden" name="usb_idle_exclude" value="<% nvram_get("usb_idle_exclude"); %>">
 <input type="hidden" name="shell_timeout" value="<% nvram_get("shell_timeout"); %>">
-<input type="hidden" name="http_lanport" value="<% nvram_get("http_lanport"); %>">
 
 <table class="content" align="center" cellpadding="0" cellspacing="0">
   <tr>
@@ -1951,7 +1966,13 @@ function warn_jffs_format(){
 						</select>
 					</td>
 				</tr>
-		
+				<tr id="http_lanport">
+					<th>HTTP LAN port</th>
+					<td>
+						<input type="text" maxlength="5" class="input_6_table" name="http_lanport" value="<% nvram_get("http_lanport"); %>" onKeyPress="return validator.isNumber(this,event);" onBlur="change_url(this.value, 'http_lan');" autocorrect="off" autocapitalize="off">
+						<span id="http_access_page"></span>
+					</td>
+				</tr>
 				<tr id="https_lanport">
 					<th><#System_HTTPS_LAN_Port#></th>
 					<td>

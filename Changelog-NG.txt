@@ -13,14 +13,13 @@ Asuswrt-Merlin 384/NG Changelog
 
 
 384.8 (xx-xxx-xxxx)
-  - NEW: Merged with GPL + binary blobs from 384_32799
-         for AC68U/AC88U/AC3100/AC5300.
-  - NEW: Merged binary blobs from 384_32797 for RT-AC86U.
+  - NEW: Merged with GPL + binary blobs from 384_32799.
   - NEW: Add LZ4 V2 option to OpenVPN compression
          (more effective at handling already compressed
          data)
   - NEW: Added "extend" support to SNMP.
   - NEW: Added CleanBrowsing to DNSFilter supported services.
+  - NEW: Webui HTTP LAN port can now be changed from the default 80.
   - CHANGED: Updated dnsmasq to 2.80-7-g24b8760 (themiron)
   - CHANGED: Removed watchdog from OpenVPN clients, to avoid
              conflicting with more advanced configurations.
@@ -34,13 +33,28 @@ Asuswrt-Merlin 384/NG Changelog
              on its Wireless Log page), and removed redundant
              option to display DFS channel details.
   - CHANGED: Updated nettle to 3.4
+  - CHANGED: Updated net-snmp to 5.8
   - CHANGED: Migrated /jffs/ssl/* content to /jffs/.cert (to
              share the same folder used by Asus stock)
+  - CHANGED: Re-enabled WTFast on non-HND models (curl-related
+             crash has been fixed).  This is still untested.
   - FIXED: UOPNP port forwarding not working in CGNAT/double NAT
            scenario even if proper ports were forwarded upstream.
   - FIXED: Pages based on table.js (like the port trigger one)
            would fail to work properly under Firefox
            (Michael Ziminsky)
+  - FIXED: Dnsmasq issues when running in non-router mode
+           (John Bacho)
+  - FIXED: Routing issues when in non-router mode (John Bacho)
+  - FIXED: Bug in curl that could cause some applications to
+           crash on non-HND models
+  - FIXED: IFTTT failing to start on non-HND models (caused by
+           curl issue).
+  - FIXED: Webui could complain about port 8080 being reserved for
+           http WAN port (which is no longer supported)
+  - FIXED: Cannot change image for device with a vendor name
+           containing an apostrophe (like Micro-Star int'l)
+           (Asus bug)
 
 
 384.7_2 (21-Oct-2018)

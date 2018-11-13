@@ -865,7 +865,7 @@ function ppp_echo_control(flag){
 }
 
 function change_nat(state) {
-	if (based_modelid == "RT-AC86U") {
+	if (hnd_support) {
 		document.getElementById("nat_type_tr").style.display = (state ? "" : "none");
 	}
 }

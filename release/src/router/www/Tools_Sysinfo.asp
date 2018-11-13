@@ -396,8 +396,10 @@ function show_memcpu(){
 	document.getElementById("mem_free_td").innerHTML = mem_stats_arr[1] + " MB";
 	document.getElementById("mem_buffer_td").innerHTML = mem_stats_arr[2] + " MB";
 	document.getElementById("mem_cache_td").innerHTML = mem_stats_arr[3] + " MB";
-	document.getElementById("mem_swap_td").innerHTML = mem_stats_arr[4] + " / " + mem_stats_arr[5] + " MB";
-
+	if (parseInt(mem_stats_arr[5]) == 0)
+		document.getElementById("mem_swap_td").innerHTML = "<span>No swap configured</span>";
+	else
+		document.getElementById("mem_swap_td").innerHTML = mem_stats_arr[4] + " / " + mem_stats_arr[5] + " MB";
 	document.getElementById("nvram_td").innerHTML = mem_stats_arr[6] + " / " + <% sysinfo("nvram.total"); %> + " bytes";
 	document.getElementById("jffs_td").innerHTML = mem_stats_arr[7];
 }

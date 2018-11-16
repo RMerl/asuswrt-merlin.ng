@@ -1,19 +1,21 @@
 Asuswrt-Merlin 384/NG Changelog
 ===============================
 
-384.8-ax (xx-xxx-xxxx)
-  - NEW: Added RT-AX88U support (based on GPL 384_4730).
-         Note that for the time being, the RT-AX88U
-         firmware will be developped in parallel, with
-         the suffix "-ax" added to the version string,
-         until Asus unifies the code on their end.
-         This special build will also contain the changes
-         from the non-ax release of the same version
-         number (384.8 in this case).
-
-
 384.8 (xx-xxx-xxxx)
-  - NEW: Merged with GPL + binary blobs from 384_32799.
+  - NOTE: Asus has put the RT-AC56U on their End of Life
+          list, meaning no further firmware releases from
+          them.  Since it's impossible for me to support
+          models without matching GPL releases from Asus,
+          I also have to retire the RT-AC56U.  384.6 is
+          the final release for that model.
+
+  - NOTE: The RT-AC3200 and RT-AC56U are not supported by this
+          release, Asus hasn't released any updated code yet for
+          these models.
+
+  - NEW: Added RT-AX88U support (based on GPL 384_4730).
+  - NEW: Merged with GPL + binary blobs from 384_32799 (all
+         supported models except RT-AX88U)
   - NEW: Add LZ4 V2 option to OpenVPN compression
          (more effective at handling already compressed
          data)

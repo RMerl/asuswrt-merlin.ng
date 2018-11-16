@@ -9,7 +9,7 @@ Asuswrt-Merlin 384/NG Changelog
           I also have to retire the RT-AC56U.  384.6 is
           the final release for that model.
 
-  - NOTE: The RT-AC3200 and RT-AC56U are not supported by this
+  - NOTE: The RT-AC3200 and RT-AC87U are not supported by this
           release, Asus hasn't released any updated code yet for
           these models.
 
@@ -40,6 +40,7 @@ Asuswrt-Merlin 384/NG Changelog
              share the same folder used by Asus stock)
   - CHANGED: Re-enabled WTFast on non-HND models (curl-related
              crash has been fixed).  This is still untested.
+  - CHANGED: Updated CA bundle to October 17th 2018 version.
   - FIXED: UOPNP port forwarding not working in CGNAT/double NAT
            scenario even if proper ports were forwarded upstream.
   - FIXED: Pages based on table.js (like the port trigger one)
@@ -57,6 +58,9 @@ Asuswrt-Merlin 384/NG Changelog
   - FIXED: Cannot change image for device with a vendor name
            containing an apostrophe (like Micro-Star int'l)
            (Asus bug)
+  - FIXED: OpenVPN client download was capped by Adaptive QOS
+           upload limit (fix devised by FreshJR)
+
 
 
 384.7_2 (21-Oct-2018)

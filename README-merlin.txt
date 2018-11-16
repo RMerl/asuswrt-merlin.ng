@@ -30,7 +30,6 @@ Supported Devices
 -----------------
 Devices supported on the new generation/current branch (382.xx and newer):
  * RT-AC66U_B1 (use the RT-AC68U firmware)
- * RT-AC56U
  * RT-AC68U, RT-AC68P, RT-AC68UF (including HW revision C1 and E1)
  * RT-AC1900 & RT-AC1900P (use the RT-AC68U firmware)
  * RT-AC87U
@@ -46,6 +45,7 @@ No longer supported:
  * RT-N16
  * RT-N66U
  * RT-AC66U
+ * RT-AC56U
 
 NOTE: all the "R" versions (for example RT-N66R) are the same as their 
 "U" counterparts, they are just different packages aimed at large 

@@ -394,17 +394,26 @@ function change_ddns_setting(v){
 					inputCtrl(document.form.ddns_regular_period, 1);
 		}
 
+		var default_hostname_label = '<a class="hintstyle" href="javascript:void(0);" onClick="openHint(5,13);"><#LANHostConfig_x_DDNSHostNames_itemname#></a>';
 		if(v == "WWW.NAMECHEAP.COM") {
 			document.getElementById("ddns_username_th").innerHTML = "Domain Name";
 			document.getElementById("ddns_password_th").innerHTML = "<#LANHostConfig_x_DDNSPassword_itemname#>";
+			document.getElementById("ddns_hostname_th").innerHTML = default_hostname_label;
 		}
 		else if(v == "FREEDNS.AFRAID.ORG") {
 			document.getElementById("ddns_username_th").innerHTML = "Username";
 			document.getElementById("ddns_password_th").innerHTML = "<#PPPConnection_Password_itemname#>";
+			document.getElementById("ddns_hostname_th").innerHTML = default_hostname_label;
+		}
+		else if (v == "WWW.TUNNELBROKER.NET") {
+			document.getElementById("ddns_username_th").innerHTML = "Account Name";
+			document.getElementById("ddns_password_th").innerHTML = "Update Key";
+			document.getElementById("ddns_hostname_th").innerHTML = "Tunnel ID";
 		}
 		else {
 			document.getElementById("ddns_username_th").innerHTML = "<#LANHostConfig_x_DDNSUserName_itemname#>";
 			document.getElementById("ddns_password_th").innerHTML = "<#LANHostConfig_x_DDNSPassword_itemname#>";
+			document.getElementById("ddns_hostname_th").innerHTML = default_hostname_label;
 		}
 		if(letsencrypt_support){
 			document.getElementById("le_crypt").style.display = "";

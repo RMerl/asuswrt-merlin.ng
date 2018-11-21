@@ -169,7 +169,7 @@ function initial(){
 
 	show_menu();
 	// http://www.asus.com/support/FAQ/1008717/
-	httpApi.faqURL("faq", "1008717", "https://www.asus.com", "/support/FAQ/");
+	httpApi.faqURL("faq", "1010934", "https://www.asus.com", "/support/FAQ/");
 	show_clients();
 }
 

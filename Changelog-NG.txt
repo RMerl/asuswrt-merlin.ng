@@ -13,7 +13,7 @@ Asuswrt-Merlin 384/NG Changelog
           release, Asus hasn't released any updated code yet for
           these models.
 
-  - NEW: Added RT-AX88U support (based on GPL 384_4730).
+  - NEW: Added RT-AX88U support (based on GPL 384_4736).
   - NEW: Merged with GPL + binary blobs from 384_32799 (all
          supported models except RT-AX88U)
   - NEW: Add LZ4 V2 option to OpenVPN compression
@@ -22,7 +22,7 @@ Asuswrt-Merlin 384/NG Changelog
   - NEW: Added "extend" support to SNMP.
   - NEW: Added CleanBrowsing to DNSFilter supported services.
   - NEW: Webui HTTP LAN port can now be changed from the default 80.
-  - CHANGED: Updated dnsmasq to 2.80-7-g24b8760 (themiron)
+  - NEW: Added support for the Netfilter TEE target.
   - CHANGED: Removed watchdog from OpenVPN clients, to avoid
              conflicting with more advanced configurations.
   - CHANGED: Vsftpd TLS mode will now reuse the web server
@@ -34,8 +34,10 @@ Asuswrt-Merlin 384/NG Changelog
              view low-level details (what stock firmware shows
              on its Wireless Log page), and removed redundant
              option to display DFS channel details.
+  - CHANGED: Updated dnsmasq to 2.80-7-g24b8760 (themiron)
   - CHANGED: Updated nettle to 3.4
   - CHANGED: Updated net-snmp to 5.8
+  - CHANGED: Updated openssl to 1.0.2q
   - CHANGED: Migrated /jffs/ssl/* content to /jffs/.cert (to
              share the same folder used by Asus stock)
   - CHANGED: Re-enabled WTFast on non-HND models (curl-related

@@ -5311,7 +5311,15 @@ _dprintf("*** Multicast IPTV: config Singtel TR069 on wan port ***\n");
 #endif
 			sprintf(port_id, "%d", wan_vid);
 			/* handle vlan + pppoe w/o bridge case. Using vconfig instead */
-			if (nvram_match("switch_wantag", "movistar") || nvram_match("switch_wantag", "unifi_biz") || nvram_match("switch_wantag", "stuff_fibre") || (nvram_match("switch_wantag", "none") && switch_stb == 0 && !wan_vid)) {
+			if (nvram_match("switch_wantag", "movistar") || nvram_match("switch_wantag", "unifi_biz") || 
+				nvram_match("switch_wantag", "stuff_fibre") || nvram_match("switch_wantag", "spark") ||
+				nvram_match("switch_wantag", "2degrees") || nvram_match("switch_wantag", "slingshot") ||
+				nvram_match("switch_wantag", "orcon") || nvram_match("switch_wantag", "voda_nz") ||
+				nvram_match("switch_wantag", "tpg") || nvram_match("switch_wantag", "iinet") ||
+				nvram_match("switch_wantag", "aapt") || nvram_match("switch_wantag", "intronode") ||
+				nvram_match("switch_wantag", "amaysim") || nvram_match("switch_wantag", "dodo") ||
+				nvram_match("switch_wantag", "iprimus") ||
+				(nvram_match("switch_wantag", "none") && switch_stb == 0 && !wan_vid)) {
 				eval("vconfig", "add", "eth0", port_id);
 				sprintf(wan_dev, "vlan%d", wan_vid);
 				eval("ifconfig", wan_dev, "allmulti", "up");

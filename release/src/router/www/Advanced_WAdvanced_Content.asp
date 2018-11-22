@@ -487,12 +487,18 @@ function initial(){
 		document.form.wl_mumimo.disabled = false;
 
 		/* MODELDEP */
-		if(based_modelid == "AC2900"){	//MODELDEP: AC2900(RT-AC86U)
+		if (based_modelid == "AC2900") {	//MODELDEP: AC2900(RT-AC86U)
 			document.getElementById("wl_MU_MIMO_field").style.display = "none";
-		}	
-		else if((based_modelid == "RT-AC85U" || based_modelid == "RT-AC85P" || based_modelid == "RT-AC65U") && wl_unit_value == '0'){
+			document.form.wl_mumimo.disabled = true;
+		}
+		else if ((based_modelid == "RT-AC85U" || based_modelid == "RT-AC85P" || based_modelid == "RT-AC65U") && wl_unit_value == '0') {
 			document.getElementById("wl_MU_MIMO_field").style.display = "none";
-		}	
+			document.form.wl_mumimo.disabled = true;
+		}
+		else if (based_modelid == 'RT-AX88U' && wl_unit_value == '0') {
+			document.getElementById("wl_MU_MIMO_field").style.display = "none";
+			document.form.wl_mumimo.disabled = true;
+		}
 	}
 	
 	/*Airtime fairness, only for Broadcom ARM platform, except RT-AC87U 5 GHz*/

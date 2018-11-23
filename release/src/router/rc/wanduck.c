@@ -768,8 +768,8 @@ int do_dns_detect(int wan_unit)
 		struct in6_addr in6;
 	} *addr, target;
 	sigset_t set;
-	char word[64], *next, host[PATH_MAX], content[PATH_MAX];
-	int timeout, size, ret, status, pipefd[2];
+	char status, word[64], *next, host[PATH_MAX], content[PATH_MAX];
+	int timeout, size, ret, pipefd[2];
 	int debug = nvram_get_int("dns_probe_debug");
 
 	if(dualwan_unit__usbif(wan_unit) && nvram_get_int("modem_pdp") == 2)
@@ -791,7 +791,7 @@ int do_dns_detect(int wan_unit)
 	hints.ai_family = AF_INET;
 #endif
 	hints.ai_socktype = SOCK_STREAM;
-	timeout = nvram_get_int("dns_probe_timeout") ? : 2;
+	timeout = nvram_get_int("dns_probe_timeout") ? : 3;
 
 	ret = -1;
 	if (pipe(pipefd) < 0)
@@ -811,15 +811,19 @@ int do_dns_detect(int wan_unit)
 		do {
 			ret = read(pipefd[0], &status, sizeof(status));
 		} while (ret < 0 && errno == EINTR);
-		ret = (ret == sizeof(status)) ? status : -1;
+
+		/* ret > 0: status has been read, return real status
+		 * ret = 0: child timeout or dead w/o status, return 0
+		 * ret < 0: child read error, return -1 */
+		if (ret >= sizeof(status))
+			ret = status;
+		else if (ret != 0)
+			ret = -1;
 	error:
 		close(pipefd[0]);
 
 		if (debug)
 			_dprintf("%s: %s ret %d\n", __FUNCTION__, host, ret);
-
-		if (ret == 0 && debug)
-			logmessage("WAN Connection", "DNS probe failed");
 
 		return ret;
 	}
@@ -852,7 +856,9 @@ int do_dns_detect(int wan_unit)
 	getaddrinfo_jmpset = 0;
 
 	if (ret == 0) {
-		for (ai = res; ai; ai = ai->ai_next) {
+		if (*content == '\0' && res)
+			status = 1;
+		for (ai = res; !status && ai; ai = ai->ai_next) {
 			if (ai->ai_family == AF_INET) {
 				addr = (void *)&((struct sockaddr_in *)ai->ai_addr)->sin_addr;
 				size = sizeof(addr->in);
@@ -875,11 +881,10 @@ int do_dns_detect(int wan_unit)
 				if ((strcmp(word, "*") == 0) ||
 				    (inet_pton(ai->ai_family, word, &target) > 0 && memcmp(addr, &target, size) == 0)) {
 					status = 1;
-					goto done;
+					break;
 				}
 			}
 		}
-done:
 		freeaddrinfo(res);
 	}
 
@@ -888,6 +893,8 @@ dns_timeout:
 		ret = write(pipefd[1], &status, sizeof(status));
 	} while (ret < 0 && errno == EINTR);
 
+	close(pipefd[1]);
+
 	_exit(ret != sizeof(status));
 }
 
@@ -895,24 +902,29 @@ int delay_dns_response(int wan_unit)
 {
 	static int last = -1;
 	static int fail = 0;
-	int ret = do_dns_detect(wan_unit);
+	static int skip = 0;
 	int delay_round = nvram_get_int("dns_delay_round");
 	int debug = nvram_get_int("dns_probe_debug");
+	int ret;
 
-	if (debug && ret != last && ret >= 0) {
-		logmessage("WAN Connection", "DNS probe %s (%d/%d)",
-			   ret ? "succeeded" : "failed", fail, delay_round);
+	if (last > 0 && skip > 0) {
+		skip--;
+		return last;
 	}
 
+	ret = do_dns_detect(wan_unit);
 	if (ret > 0) {
-		last = ret;
 		fail = 0;
+		skip = delay_round;
 	} else if (ret < 0) {
-		/* do nothing */
+		return ret;
 	} else if (fail++ < delay_round && last >= 0) {
-		ret = last;
-	} else
-		last = ret;
+		return last;
+	}
+
+	if (debug && ret != last)
+		logmessage("WAN Connection", "DNS probe %s", ret ? "succeeded" : "failed");
+	last = ret;
 
 	return ret;
 }

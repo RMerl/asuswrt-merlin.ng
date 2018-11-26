@@ -1484,12 +1484,12 @@ function refreshVPNIP() {
 							<input type="text" class="input_15_table" maxlength="15" name="clientlist_deviceName" onClick="hideClients_Block();" onKeyPress="return validator.isString(this, event);">
 						</td>
 						<td width="29%">
-							<input type="text" class="input_18_table" maxlength="18" name="clientlist_ipAddr">
+							<input type="text" class="input_18_table" maxlength="18" name="clientlist_ipAddr" onKeyPress="return validator.isIPAddrPlusNetmask(this, event)" autocomplete="off" autocorrect="off" autocapitalize="off">
 							<img id="pull_arrow" height="14px;" src="/images/arrow-down.gif" style="position:absolute;*margin-left:-3px;*margin-top:1px;" onclick="pullLANIPList(this);" title="<#select_device_name#>" onmouseover="over_var=1;" onmouseout="over_var=0;">
 							<div id="ClientList_Block_PC" class="ClientList_Block_PC"></div>
 						</td>
 						<td width="25%">
-							<input type="text" class="input_18_table" maxlength="18" name="clientlist_dstipAddr">
+							<input type="text" class="input_18_table" maxlength="18" name="clientlist_dstipAddr" onKeyPress="return validator.isIPAddrPlusNetmask(this, event)" autocomplete="off" autocorrect="off" autocapitalize="off">
 						</td>
 						<td width="10%">
 							<select name="clientlist_iface" class="input_option">

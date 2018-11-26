@@ -246,27 +246,13 @@ HAVE_SOCKADDR_SA_LEN
    defined if struct sockaddr has sa_len field (*BSD) 
 */
 
-/* Must precede __linux__ since uClinux defines __linux__ too. */
-#if defined(__uClinux__)
-#define HAVE_LINUX_NETWORK
-#define HAVE_GETOPT_LONG
-#undef HAVE_SOCKADDR_SA_LEN
-/* Never use fork() on uClinux. Note that this is subtly different from the
-   --keep-in-foreground option, since it also  suppresses forking new 
-   processes for TCP connections and disables the call-a-script on leasechange
-   system. It's intended for use on MMU-less kernels. */
-#define NO_FORK
-
-#elif defined(__UCLIBC__)
+#if defined(__UCLIBC__)
 #define HAVE_LINUX_NETWORK
 #if defined(__UCLIBC_HAS_GNU_GETOPT__) || \
    ((__UCLIBC_MAJOR__==0) && (__UCLIBC_MINOR__==9) && (__UCLIBC_SUBLEVEL__<21))
 #    define HAVE_GETOPT_LONG
 #endif
 #undef HAVE_SOCKADDR_SA_LEN
-#if !defined(__ARCH_HAS_MMU__) && !defined(__UCLIBC_HAS_MMU__)
-#  define NO_FORK
-#endif
 #if defined(__UCLIBC_HAS_IPV6__)
 #  ifndef IPV6_V6ONLY
 #    define IPV6_V6ONLY 26
@@ -335,7 +321,7 @@ HAVE_SOCKADDR_SA_LEN
 #define HAVE_DHCP
 #endif
 
-#if defined(NO_SCRIPT) || defined(NO_FORK)
+#if defined(NO_SCRIPT)
 #undef HAVE_SCRIPT
 #undef HAVE_LUASCRIPT
 #endif
@@ -378,9 +364,6 @@ static char *compile_opts =
 "GNU-getopt "
 #ifdef HAVE_BROKEN_RTC
 "no-RTC "
-#endif
-#ifdef NO_FORK
-"no-MMU "
 #endif
 #ifndef HAVE_DBUS
 "no-"

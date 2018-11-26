@@ -957,8 +957,7 @@ void reply_query(int fd, int family, time_t now)
      we get a good reply from another server. Kill it when we've
      had replies from all to avoid filling the forwarding table when
      everything is broken */
-  if (forward->forwardall == 0 || --forward->forwardall == 1 ||
-      (RCODE(header) != REFUSED && RCODE(header) != SERVFAIL))
+  if (forward->forwardall == 0 || --forward->forwardall == 1 || RCODE(header) != REFUSED)
     {
       int check_rebind = 0, no_cache_dnssec = 0, cache_secure = 0, bogusanswer = 0;
       

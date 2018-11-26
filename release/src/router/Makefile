@@ -6883,8 +6883,8 @@ libical-2.0.0-install:
 
 libconfuse/Makefile:
 	cd libconfuse && $(CONFIGURE) \
-		CFLAGS="$(EXTRACFLAGS) -Os -I$(STAGEDIR)/usr/include -ffunction-sections -fdata-sections -fPIC -I$(TOP)/libiconv-1.14/include" \
-		LDFLAGS="$(LDFLAGS) -ffunction-sections -fdata-sections -Wl,--gc-sections -L$(TOP)/libiconv-1.14/lib/.libs -liconv" \
+		CFLAGS="$(EXTRACFLAGS) -Os -I$(STAGEDIR)/usr/include -ffunction-sections -fdata-sections -fPIC" \
+		LDFLAGS="$(LDFLAGS) -ffunction-sections -fdata-sections -Wl,--gc-sections" \
 		--prefix=/usr --disable-shared \
 		--without-libiconv-prefix --without-libintl-prefix --disable-examples --disable-nls
 

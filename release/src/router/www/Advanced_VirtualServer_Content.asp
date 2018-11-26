@@ -601,7 +601,7 @@ function saveProfile(_mode, _wanIdx, _rowIdx) {
 	}
 	if(!validator.validIPForm(document.getElementById("vts_ipaddr_x"), 0))
 		return false;
-	if(!validator.validIPForm(document.getElementById("vts_target_x"), 0))
+	if(!validator.ipv4cidr(document.getElementById("vts_target_x"), 0))
 		return false;
 
 	var profileArray = new Array();
@@ -827,7 +827,7 @@ function cancelProfile() {
 		<tr>
 			<th><#IPConnection_VSList_SourceTarget#></th>
 			<td>
-				<input type="text" maxlength="15" class="input_25_table" id="vts_target_x" onKeyPress="return validator.isIPAddr(this, event);" autocomplete="off" autocorrect="off" autocapitalize="off"/>
+				<input type="text" maxlength="18" class="input_25_table" id="vts_target_x" onKeyPress="return validator.isIPAddrPlusNetmask(this, event)" autocomplete="off" autocorrect="off" autocapitalize="off"/>
 				<span><#feedback_optional#></span>
 			</td>
 		</tr>

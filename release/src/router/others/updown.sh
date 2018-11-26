@@ -10,7 +10,7 @@ instance=$(echo $dev | sed "s/tun1//;s/tun2*/0/")
 
 create_client_list(){
 	server=$1
-	VPN_IP_LIST=$(nvram get vpn_client$(echo $instance)_clientlist)
+	VPN_IP_LIST=$(nvram get vpn_client$(echo $instance)_clientlist)$(nvram get vpn_client$(echo $instance)_clientlist1)$(nvram get vpn_client$(echo $instance)_clientlist2)$(nvram get vpn_client$(echo $instance)_clientlist3)$(nvram get vpn_client$(echo $instance)_clientlist4)$(nvram get vpn_client$(echo $instance)_clientlist5)
 
 	OLDIFS=$IFS
 	IFS="<"

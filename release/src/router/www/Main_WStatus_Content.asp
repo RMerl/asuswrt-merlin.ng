@@ -184,10 +184,11 @@ function display_header(dataarray, title, obj, show_dfs) {
 	code += '<thead><tr><span class="wifiheader" style="font-size: 125%;">' + title +'</span></tr></thead>';
 	code += '<tr><td colspan="3"><span class="wifiheader">SSID: </span>' + dataarray[0] + '</td><td colspan="2"><span class="wifiheader">Mode: </span>' + dataarray[6] + '</td></tr>';
 
+	code += '<tr>';
 	if (dataarray[1] != 0)
-		code += '<tr><td><span class="wifiheader">RSSI: </span>' + dataarray[1] + ' dBm</td>';
+		code += '<td><span class="wifiheader">RSSI: </span>' + dataarray[1] + ' dBm</td>';
 	if (dataarray[2] != 0)
-		code += ' <td><span class="wifiheader">SNR: </span>' + dataarray[2] +' dB</td> <td>';
+		code += '<td><span class="wifiheader">SNR: </span>' + dataarray[2] +' dB</td>';
 	if (dataarray[3] != 0)
 		code += '<td><span class="wifiheader">Noise: </span>' + dataarray[3] + ' dBm</td>';
 

@@ -5375,9 +5375,9 @@ ej_wl_status_array(int eid, webs_t wp, int argc, char_t **argv, int unit)
 		"POST-ISM Out Of Channels (OOC)"
 	};
 
-	ret += websWrite(wp, "var dfs_statusarray = [\"%s\", \"%d ms\", \"%s\"];\n",
+	ret += websWrite(wp, "var dfs_statusarray = [\"%s\", \"%d s\", \"%s\"];\n",
 		(dfs_status->state >= WL_DFS_CACSTATES ? "Unknown" : dfs_cacstate_str[dfs_status->state]),
-		 dfs_status->duration,
+		dfs_status->duration/1000,
 		(dfs_status->chanspec_cleared ? wf_chspec_ntoa(dfs_status->chanspec_cleared, chanspec_str) : "None"));
 #endif
 

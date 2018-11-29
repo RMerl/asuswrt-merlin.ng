@@ -33,20 +33,57 @@ void adjust_merlin_config(void)
 		nvram_unset("vpn_server_clientlist");
 	}
 
-/* Convert ASCII custom into base64 cust2 */
+/* Migrate OVPN custom settings, either from stock _custom or previous AM _custom2* */
 	for (unit = 1; unit <= OVPN_SERVER_MAX; unit++) {
-		sprintf(varname_ori,"vpn_server%d_custom", unit);
+		sprintf(varname_ori, "vpn_server%d_custom2", unit);
 		if(!nvram_is_empty(varname_ori)) {
-			set_ovpn_custom(OVPN_TYPE_SERVER, unit, nvram_safe_get(varname_ori));
+			sprintf(varname_new, "vpn_server%d_cust2", unit);
+			nvram_set(varname_new, nvram_safe_get(varname_ori));
 			nvram_unset(varname_ori);
+#ifdef HND_ROUTER
+			sprintf(varname_ori, "vpn_server%d_custom21", unit);
+			sprintf(varname_new, "vpn_server%d_cust21", unit);
+			nvram_set(varname_new, nvram_safe_get(varname_ori));
+			nvram_unset(varname_ori);
+
+			sprintf(varname_ori, "vpn_server%d_custom22", unit);
+			sprintf(varname_new, "vpn_server%d_cust22", unit);
+			nvram_set(varname_new, nvram_safe_get(varname_ori));
+			nvram_unset(varname_ori);
+#endif
+		} else {	// Check if need to migrate from stock or older Asuswrt-Merlin
+			sprintf(varname_ori,"vpn_server%d_custom", unit);
+			if(!nvram_is_empty(varname_ori)) {
+				set_ovpn_custom(OVPN_TYPE_SERVER, unit, nvram_safe_get(varname_ori));
+				nvram_unset(varname_ori);
+			}
 		}
 	}
 
 	for (unit = 1; unit <= OVPN_CLIENT_MAX; unit++) {
-		sprintf(varname_ori,"vpn_client%d_custom", unit);
+		sprintf(varname_ori, "vpn_client%d_custom2", unit);
 		if(!nvram_is_empty(varname_ori)) {
-			set_ovpn_custom(OVPN_TYPE_CLIENT, unit, nvram_safe_get(varname_ori));
+			sprintf(varname_new, "vpn_client%d_cust2", unit);
+			nvram_set(varname_new, nvram_safe_get(varname_ori));
 			nvram_unset(varname_ori);
+
+#ifdef HND_ROUTER
+			sprintf(varname_ori, "vpn_client%d_custom21", unit);
+			sprintf(varname_new, "vpn_client%d_cust21", unit);
+			nvram_set(varname_new, nvram_safe_get(varname_ori));
+			nvram_unset(varname_ori);
+
+			sprintf(varname_ori, "vpn_client%d_custom22", unit);
+			sprintf(varname_new, "vpn_client%d_cust22", unit);
+			nvram_set(varname_new, nvram_safe_get(varname_ori));
+			nvram_unset(varname_ori);
+#endif
+		} else {	// Check if need to migrate from stock or older Asuswrt-Merlin
+			sprintf(varname_ori,"vpn_client%d_custom", unit);
+			if(!nvram_is_empty(varname_ori)) {
+				set_ovpn_custom(OVPN_TYPE_CLIENT, unit, nvram_safe_get(varname_ori));
+				nvram_unset(varname_ori);
+			}
 		}
 	}
 

@@ -11,7 +11,6 @@
 <title><#Web_Title#> - OpenVPN Client Settings</title>
 <link rel="stylesheet" type="text/css" href="index_style.css">
 <link rel="stylesheet" type="text/css" href="form_style.css">
-
 <script language="JavaScript" type="text/javascript" src="/state.js"></script>
 <script language="JavaScript" type="text/javascript" src="/general.js"></script>
 <script language="JavaScript" type="text/javascript" src="/popup.js"></script>
@@ -293,13 +292,13 @@ function initial()
 	update_visibility();
 
 
-	var custom2 = document.form.vpn_client_custom2.value;
+	var cust2 = document.form.vpn_client_cust2.value;
 	if (isSupport("hnd")) {
 		document.getElementById("vpn_client_custom_x").maxLength = 170 * 3;     // 255 * 3 - base64 overhead
-		custom2 += document.form.vpn_client_custom21.value +
-		           document.form.vpn_client_custom22.value;
+		cust2 += document.form.vpn_client_cust21.value +
+		           document.form.vpn_client_cust22.value;
 	}
-	document.getElementById("vpn_client_custom_x").value = Base64.decode(custom2);
+	document.getElementById("vpn_client_custom_x").value = Base64.decode(cust2);
 
 	setTimeout("getConnStatus()", 1000);
 
@@ -613,7 +612,7 @@ function applyRule(manual_switch){
 		split_custom2(Base64.encode(document.getElementById("vpn_client_custom_x").value));
 	} else {
 		document.form.vpn_client_clientlist.value = tmp_value;
-		document.form.vpn_client_custom2.value = Base64.encode(document.getElementById("vpn_client_custom_x").value);
+		document.form.vpn_client_cust2.value = Base64.encode(document.getElementById("vpn_client_custom_x").value);
 	}
 
 	if (((enforce_ori != getRadioValue(document.form.vpn_client_enforce)) ||
@@ -635,12 +634,12 @@ function split_clientlist(clientlist){
 	document.form.vpn_client_clientlist5.value = clientlist.substring(counter, (counter+=255));
 }
 
-function split_custom2(custom2){
+function split_custom2(cust2){
 	var counter = 0;
-	document.form.vpn_client_custom2.value = custom2.substring(counter, (counter+=255));
+	document.form.vpn_client_cust2.value = cust2.substring(counter, (counter+=255));
 
-	document.form.vpn_client_custom21.value = custom2.substring(counter, (counter+=255));
-	document.form.vpn_client_custom22.value = custom2.substring(counter, (counter+=255));
+	document.form.vpn_client_cust21.value = cust2.substring(counter, (counter+=255));
+	document.form.vpn_client_cust22.value = cust2.substring(counter, (counter+=255));
 }
 
 function change_vpn_unit(val){
@@ -1131,9 +1130,9 @@ function refreshVPNIP() {
 <input type="hidden" name="vpn_client_clientlist3" value="<% nvram_clean_get("vpn_client_clientlist3"); %>">
 <input type="hidden" name="vpn_client_clientlist4" value="<% nvram_clean_get("vpn_client_clientlist4"); %>">
 <input type="hidden" name="vpn_client_clientlist5" value="<% nvram_clean_get("vpn_client_clientlist5"); %>">
-<input type="hidden" name="vpn_client_custom2" value="<% nvram_get("vpn_client_custom2"); %>">
-<input type="hidden" name="vpn_client_custom21" value="<% nvram_get("vpn_client_custom21"); %>">
-<input type="hidden" name="vpn_client_custom22" value="<% nvram_get("vpn_client_custom22"); %>">
+<input type="hidden" name="vpn_client_cust2" value="<% nvram_get("vpn_client_cust2"); %>">
+<input type="hidden" name="vpn_client_cust21" value="<% nvram_get("vpn_client_cust21"); %>">
+<input type="hidden" name="vpn_client_cust22" value="<% nvram_get("vpn_client_cust22"); %>">
 
 <table class="content" align="center" cellpadding="0" cellspacing="0">
   <tr>

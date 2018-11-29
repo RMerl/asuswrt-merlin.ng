@@ -33,7 +33,7 @@ void adjust_merlin_config(void)
 		nvram_unset("vpn_server_clientlist");
 	}
 
-/* Convert ASCII custom into base64 custom2 */
+/* Convert ASCII custom into base64 cust2 */
 	for (unit = 1; unit <= OVPN_SERVER_MAX; unit++) {
 		sprintf(varname_ori,"vpn_server%d_custom", unit);
 		if(!nvram_is_empty(varname_ori)) {

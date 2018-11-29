@@ -190,14 +190,14 @@ function initial(){
 	//	https://www.asus.com/support/FAQ/1004466
 	httpApi.faqURL("faq_android", "1004466", "https://www.asus.com", "/support/FAQ/");
 
-	var custom2 = document.form.vpn_server_custom2.value;
+	var cust2 = document.form.vpn_server_cust2.value;
 	if (isSupport("hnd")) {
 		document.getElementById("vpn_server_custom_x").maxLength = 170 * 3; // 255*3 - base64 overhead
 
-		custom2 += document.form.vpn_server_custom21.value +
-		           document.form.vpn_server_custom22.value;
+		cust2 += document.form.vpn_server_cust21.value +
+		           document.form.vpn_server_cust22.value;
 	}
-	document.getElementById("vpn_server_custom_x").value = Base64.decode(custom2);
+	document.getElementById("vpn_server_custom_x").value = Base64.decode(cust2);
 }
 
 var MAX_RETRY_NUM = 5;
@@ -587,12 +587,12 @@ function applyRule(){
 	}
 }
 
-function split_custom2(custom2){
+function split_custom2(cust2){
 	var counter = 0;
-	document.form.vpn_server_custom2.value = custom2.substring(counter, (counter+=255));
+	document.form.vpn_server_cust2.value = cust2.substring(counter, (counter+=255));
 
-	document.form.vpn_server_custom21.value = custom2.substring(counter, (counter+=255));
-	document.form.vpn_server_custom22.value = custom2.substring(counter, (counter+=255));
+	document.form.vpn_server_cust21.value = cust2.substring(counter, (counter+=255));
+	document.form.vpn_server_cust22.value = cust2.substring(counter, (counter+=255));
 }
 
 function addRow(obj, head){
@@ -1326,9 +1326,9 @@ function callback_upload_cert(_flag) {
 <input type="hidden" name="vpn_serverx_start" value="<% nvram_get("vpn_serverx_start"); %>">
 <input type="hidden" name="vpn_server_ccd_val" value="">
 <input type="hidden" name="vpn_server_tls_keysize" value="<% nvram_get("vpn_server_tls_keysize"); %>">
-<input type="hidden" name="vpn_server_custom2" value="<% nvram_get("vpn_server_custom2"); %>">
-<input type="hidden" name="vpn_server_custom21" value="<% nvram_get("vpn_server_custom21"); %>">
-<input type="hidden" name="vpn_server_custom22" value="<% nvram_get("vpn_server_custom22"); %>">
+<input type="hidden" name="vpn_server_cust2" value="<% nvram_get("vpn_server_cust2"); %>">
+<input type="hidden" name="vpn_server_cust21" value="<% nvram_get("vpn_server_cust21"); %>">
+<input type="hidden" name="vpn_server_cust22" value="<% nvram_get("vpn_server_cust22"); %>">
 <table class="content" align="center" cellpadding="0" cellspacing="0">
 	<tr>
 		<td width="17">&nbsp;</td>		

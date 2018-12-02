@@ -380,7 +380,7 @@ char *get_ovpn_custom(ovpn_type_t type, int unit, char* buffer, int bufferlen)
 			return buffer;
         }
 
-	snprintf(varname, sizeof (varname), "vpn_%s%d_custom2", typeStr, unit);
+	snprintf(varname, sizeof (varname), "vpn_%s%d_cust2", typeStr, unit);
 
 #ifdef HND_ROUTER
 	nvcontent = malloc(255 * 3 + 1);
@@ -427,7 +427,7 @@ int set_ovpn_custom(ovpn_type_t type, int unit, char* buffer)
 			enclen = base64_encode((unsigned char*)buffer, encbuffer, datalen);
 			encbuffer[enclen] = '\0';
 
-			snprintf(varname, sizeof (varname), "vpn_%s%d_custom2", typeStr, unit);
+			snprintf(varname, sizeof (varname), "vpn_%s%d_cust2", typeStr, unit);
 
 #ifdef HND_ROUTER
 			nvram_split_set(varname, encbuffer, 255, 2);

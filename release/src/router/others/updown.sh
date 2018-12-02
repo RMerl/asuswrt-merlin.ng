@@ -7,6 +7,8 @@ dnsscript=$(echo /etc/openvpn/fw/$(echo $dev)-dns\.sh | sed 's/\(tun\|tap\)1/cli
 qosscript=$(echo /etc/openvpn/fw/$(echo $dev)-qos\.sh | sed 's/\(tun\|tap\)1/client/;s/\(tun\|tap\)2/server/')
 fileexists=
 instance=$(echo $dev | sed "s/tun1//;s/tun2*/0/")
+serverips=
+searchdomains=
 
 create_client_list(){
 	server=$1
@@ -57,20 +59,28 @@ then
 		setdns=-1
 	fi
 
+# Extract IPs and search domains; write WINS
 	for optionname in `set | grep "^foreign_option_" | sed "s/^\(.*\)=.*$/\1/g"`
 	do
 		option=`eval "echo \\$$optionname"`
 		if echo $option | grep "dhcp-option WINS "; then echo $option | sed "s/ WINS /=44,/" >> $conffile; fi
-		if echo $option | grep "dhcp-option DNS"
+		if echo $option | grep "dhcp-option DNS"; then serverips="$serverips $(echo $option | sed "s/dhcp-option DNS //")"; fi
+		if echo $option | grep "dhcp-option DOMAIN"; then searchdomains="$searchdomains $(echo $option | sed "s/dhcp-option DOMAIN //")"; fi
+	done
+
+# Write resolv file
+	for server in $serverips
+	do
+		echo "server=$server" >> $resolvfile
+		if [ $setdns == 0 ]
 		then
-			echo $option | sed "s/dhcp-option DNS/server=/" >> $resolvfile
-			if [ $setdns == 0 ]
-			then
-				create_client_list $(echo $option | sed "s/dhcp-option DNS//")
-				setdns=1
-			fi
+			create_client_list $server
+			setdns=1
 		fi
-#		if echo $option | grep "dhcp-option DOMAIN"; then echo $option | sed "s/dhcp-option DOMAIN/search/" >> $resolvfile; fi
+		for domain in $searchdomains
+		do
+			echo "server=/$domain/$server" >> $resolvfile
+		done
 	done
 
 	if [ $setdns == 1 ]

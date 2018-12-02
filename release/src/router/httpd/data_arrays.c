@@ -287,7 +287,7 @@ ej_get_vserver_array(int eid, webs_t wp, int argc, char_t **argv)
 			continue;
 
 		/* Don't list DNS redirections  from DNSFilter or UPNP */
-		if ((strcmp(chain, "DNSFILTER") == 0) || (strcmp(chain, "VUPNP") == 0) || (strcmp(chain, "PUPNP") == 0))
+		if ((strcmp(chain, "DNSFILTER") == 0) || (strcmp(chain, "VUPNP") == 0) || (strcmp(chain, "PUPNP") == 0) || (strncmp(chain, "DNSVPN", 6) == 0))
 			continue;
 
 		/* uppercase proto */

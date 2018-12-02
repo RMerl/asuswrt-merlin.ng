@@ -1,7 +1,7 @@
 Asuswrt-Merlin 384/NG Changelog
 ===============================
 
-384.8 (xx-xxx-xxxx)
+384.8 (2-Dec-2018)
   - NOTE: Asus has put the RT-AC56U on their End of Life
           list, meaning no further firmware releases from
           them.  Since it's impossible for me to support
@@ -43,6 +43,8 @@ Asuswrt-Merlin 384/NG Changelog
   - CHANGED: Re-enabled WTFast on non-HND models (curl-related
              crash has been fixed).  This is still untested.
   - CHANGED: Updated CA bundle to October 17th 2018 version.
+  - CHANGED: Support search domains pushed by a remote OpenVPN
+             server
   - FIXED: UOPNP port forwarding not working in CGNAT/double NAT
            scenario even if proper ports were forwarded upstream.
   - FIXED: Pages based on table.js (like the port trigger one)
@@ -62,7 +64,8 @@ Asuswrt-Merlin 384/NG Changelog
            (Asus bug)
   - FIXED: OpenVPN client download was capped by Adaptive QOS
            upload limit (fix devised by FreshJR)
-
+  - FIXED: OpenVPN custom config might be lost after a reboot
+           on the RT-AC86U.
 
 
 384.7_2 (21-Oct-2018)

@@ -1,5 +1,9 @@
 Asuswrt-Merlin 384/NG Changelog
 ===============================
+384.8_2 (xx-xxx-xxxx)
+  - FIXED: Cannot save custom settings on OpenVPN server page
+           on non-HND models.
+
 
 384.8 (2-Dec-2018)
   - NOTE: Asus has put the RT-AC56U on their End of Life
@@ -34,7 +38,7 @@ Asuswrt-Merlin 384/NG Changelog
              view low-level details (what stock firmware shows
              on its Wireless Log page), and removed redundant
              option to display DFS channel details.
-  - CHANGED: Updated dnsmasq to 2.80-7-g24b8760 (themiron)
+  - CHANGED: Update dnsmasq to 2.80-11-g59e4703 (themiron)
   - CHANGED: Updated nettle to 3.4
   - CHANGED: Updated net-snmp to 5.8
   - CHANGED: Updated openssl to 1.0.2q

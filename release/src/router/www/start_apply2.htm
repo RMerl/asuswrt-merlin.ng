@@ -396,7 +396,7 @@ function showdr_advise(setting){
 	if(parent.parent.document.forms[0].current_page.value == "/QIS_wizard.htm"
 			&& parent.parent.document.forms[0].sw_mode.value == "3"){
 		parent.parent.document.getElementById('drword').innerHTML = "<#DrSurf_sweet_advise1#><br/><br/>";
-		setTimeout("parent.parent.document.getElementById('drword').innerHTML = '<#DrSurf_sweet_advise3#><br/><br/>'", 10000);
+		setTimeout("parent.parent.document.getElementById('drword').innerHTML = \"<#DrSurf_sweet_advise3#><br/><br/>\"", 10000);
 		setTimeout(getXMLAndRedirect, restart_time*1000);
 	}
 	else if(setting == "finish"){

@@ -23,7 +23,7 @@
 				return false;
 			}
 		})
-		return '<#login_hint1#> ' + loginUserIp + hostName;
+		return "<#login_hint1#> " + loginUserIp + hostName;
 	})();
 
 	top.document.body.style.background = "#DDD";

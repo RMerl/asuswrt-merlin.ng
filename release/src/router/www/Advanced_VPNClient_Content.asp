@@ -739,7 +739,7 @@ function show_vpnc_rulelist(){
 						else if(client_errno == 1 || client_errno == 2 || client_errno == 3)
 							code +="<td width='10%'><div title='<#vpn_openvpn_conflict#>' class='vpnc_ipconflict_icon'></div></td>";
 						else if(client_errno == 4 || client_errno == 5 || client_errno == 6)
-							code +="<td width='10%'><img title='<#qis_fail_desc1#>' src='/images/button-close2.png' style='width:25px;'></td>";
+							code +="<td width='10%'><img title=\"<#qis_fail_desc1#>\" src='/images/button-close2.png' style='width:25px;'></td>";
 						else		//Stop connection
 							code +="<td width='10%'><img title='<#ConnectionFailed#>' src='/images/button-close2.png' style='width:25px;'></td>";
 				}
@@ -752,7 +752,7 @@ function show_vpnc_rulelist(){
 						else if(vpnc_state_t == 2) // Connected
 							code +="<td width='10%'><img title='<#Connected#>' src='/images/checked_parentctrl.png' style='width:25px;'></td>";
 						else if(vpnc_state_t == 4 && vpnc_sbstate_t == 2)
-							code +="<td width='10%'><img title='<#qis_fail_desc1#>' src='/images/button-close2.png' style='width:25px;'></td>";
+							code +="<td width='10%'><img title=\"<#qis_fail_desc1#>\" src='/images/button-close2.png' style='width:25px;'></td>";
 						else if(vpnc_state_t == 4 && vpnc_sbstate_t == 7)
 							code +="<td width='10%'><div title='<#vpn_openvpn_conflict#>' class='vpnc_ipconflict_icon'></div></td>";
 						else // Stop connection

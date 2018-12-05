@@ -577,15 +577,14 @@ static void *opt_malloc(size_t size)
   return ret;
 }
 
-static char *opt_string_alloc(const char *cp)
+static char *opt_string_alloc(char *cp)
 {
   char *ret = NULL;
-  size_t len;
   
-  if (cp && (len = strlen(cp)) != 0)
+  if (cp && strlen(cp) != 0)
     {
-      ret = opt_malloc(len+1);
-      memcpy(ret, cp, len+1); 
+      ret = opt_malloc(strlen(cp)+1);
+      strcpy(ret, cp); 
       
       /* restore hidden metachars */
       unhide_metas(ret);
@@ -760,8 +759,6 @@ static void do_usage(void)
 }
 
 #define ret_err(x) do { strcpy(errstr, (x)); return 0; } while (0)
-#define ret_err_free(x,m) do { strcpy(errstr, (x)); free((m)); return 0; } while (0)
-#define goto_err(x) do { strcpy(errstr, (x)); goto on_error; } while (0)
 
 static char *parse_mysockaddr(char *arg, union mysockaddr *addr) 
 {
@@ -907,8 +904,6 @@ static struct server *add_rev4(struct in_addr addr, int msize)
       p += sprintf(p, "%d.", (a >> 24) & 0xff);
       break;
     default:
-      free(serv->domain);
-      free(serv);
       return NULL;
     }
 
@@ -963,97 +958,6 @@ static char *set_prefix(char *arg)
    return arg;
 }
 
-static struct dhcp_netid *
-dhcp_netid_create(const char *net, struct dhcp_netid *next)
-{
-  struct dhcp_netid *tt;
-  tt = opt_malloc(sizeof (struct dhcp_netid));
-  tt->net = opt_string_alloc(net);
-  tt->next = next;
-  return tt;
-}
-
-static void dhcp_netid_free(struct dhcp_netid *nid)
-{
-  while (nid)
-    {
-      struct dhcp_netid *tmp = nid;
-      nid = nid->next;
-      free(tmp->net);
-      free(tmp);
-    }
-}
-
-/* Parse one or more tag:s before parameters.
- * Moves arg to the end of tags. */
-static struct dhcp_netid * dhcp_tags(char **arg)
-{
-  struct dhcp_netid *id = NULL;
-
-  while (is_tag_prefix(*arg))
-    {
-      char *comma = split(*arg);
-      id = dhcp_netid_create((*arg)+4, id);
-      *arg = comma;
-    };
-  if (!*arg)
-    {
-      dhcp_netid_free(id);
-      id = NULL;
-    }
-  return id;
-}
-
-static void dhcp_netid_list_free(struct dhcp_netid_list *netid)
-{
-  while (netid)
-    {
-      struct dhcp_netid_list *tmplist = netid;
-      netid = netid->next;
-      dhcp_netid_free(tmplist->list);
-      free(tmplist);
-    }
-}
-
-static void dhcp_config_free(struct dhcp_config *config)
-{
-  if (config)
-    {
-      struct hwaddr_config *hwaddr = config->hwaddr;
-      while (hwaddr)
-        {
-	  struct hwaddr_config *tmp = hwaddr;
-          hwaddr = hwaddr->next;
-	  free(tmp);
-        }
-      dhcp_netid_list_free(config->netid);
-      if (config->flags & CONFIG_CLID)
-        free(config->clid);
-      free(config);
-    }
-}
-
-static void dhcp_context_free(struct dhcp_context *ctx)
-{
-  if (ctx)
-    {
-      dhcp_netid_free(ctx->filter);
-      free(ctx->netid.net);
-      free(ctx->template_interface);
-      free(ctx);
-    }
-}
-
-static void dhcp_opt_free(struct dhcp_opt *opt)
-{
-  if (opt->flags & DHOPT_VENDOR)
-    free(opt->u.vendor_class);
-  dhcp_netid_free(opt->netid);
-  free(opt->val);
-  free(opt);
-}
-
-
 /* This is too insanely large to keep in-line in the switch */
 static int parse_dhcp_opt(char *errstr, char *arg, int flags)
 {
@@ -1061,6 +965,7 @@ static int parse_dhcp_opt(char *errstr, char *arg, int flags)
   char lenchar = 0, *cp;
   int addrs, digs, is_addr, is_addr6, is_hex, is_dec, is_string, dots;
   char *comma = NULL;
+  struct dhcp_netid *np = NULL;
   u16 opt_len = 0;
   int is6 = 0;
   int option_ok = 0;
@@ -1147,9 +1052,14 @@ static int parse_dhcp_opt(char *errstr, char *arg, int flags)
 	}
       else
 	{
+	  new->netid = opt_malloc(sizeof (struct dhcp_netid));
 	  /* allow optional "net:" or "tag:" for consistency */
-	  const char *name = (is_tag_prefix(arg)) ? arg+4 : set_prefix(arg);
-	  new->netid = dhcp_netid_create(name, new->netid);
+	  if (is_tag_prefix(arg))
+	    new->netid->net = opt_string_alloc(arg+4);
+	  else
+	    new->netid->net = opt_string_alloc(set_prefix(arg));
+	  new->netid->next = np;
+	  np = new->netid;
 	}
       
       arg = comma; 
@@ -1159,7 +1069,7 @@ static int parse_dhcp_opt(char *errstr, char *arg, int flags)
   if (is6)
     {
       if (new->flags & (DHOPT_VENDOR | DHOPT_ENCAPSULATE))
-	goto_err(_("unsupported encapsulation for IPv6 option"));
+	ret_err(_("unsupported encapsulation for IPv6 option"));
       
       if (opt_len == 0 &&
 	  !(new->flags & DHOPT_RFC3925))
@@ -1173,7 +1083,7 @@ static int parse_dhcp_opt(char *errstr, char *arg, int flags)
   
   /* option may be missing with rfc3925 match */
   if (!option_ok)
-    goto_err(_("bad dhcp-option"));
+    ret_err(_("bad dhcp-option"));
   
   if (comma)
     {
@@ -1241,10 +1151,10 @@ static int parse_dhcp_opt(char *errstr, char *arg, int flags)
 	  is_string = is_dec = is_hex = 0;
 	  
 	  if (!is6 && (!is_addr || dots == 0))
-	    goto_err(_("bad IP address"));
+	    ret_err(_("bad IP address"));
 
 	   if (is6 && !is_addr6)
-	     goto_err(_("bad IPv6 address"));
+	     ret_err(_("bad IPv6 address"));
 	}
       /* or names */
       else if (opt_len & (OT_NAME | OT_RFC1035_NAME | OT_CSTRING))
@@ -1337,7 +1247,7 @@ static int parse_dhcp_opt(char *errstr, char *arg, int flags)
 	      comma = split(cp);
 	      slash = split_chr(cp, '/');
 	      if (!inet_pton(AF_INET, cp, &in))
-		goto_err(_("bad IPv4 address"));
+		ret_err(_("bad IPv4 address"));
 	      if (!slash)
 		{
 		  memcpy(op, &in, INADDRSZ);
@@ -1382,8 +1292,8 @@ static int parse_dhcp_opt(char *errstr, char *arg, int flags)
 		  op += IN6ADDRSZ;
 		  continue;
 		}
-
-	      goto_err(_("bad IPv6 address"));
+	  
+	      ret_err(_("bad IPv6 address"));
 	    } 
 	  new->len = op - new->val;
 	}
@@ -1410,7 +1320,7 @@ static int parse_dhcp_opt(char *errstr, char *arg, int flags)
 		  if (strcmp (arg, ".") != 0)
 		    {
 		      if (!(dom = canonicalise_opt(arg)))
-			goto_err(_("bad domain in dhcp-option"));
+			ret_err(_("bad domain in dhcp-option"));
 			
 		      domlen = strlen(dom) + 2;
 		    }
@@ -1504,7 +1414,7 @@ static int parse_dhcp_opt(char *errstr, char *arg, int flags)
 		{
 		  char *dom = canonicalise_opt(arg);
 		  if (!dom)
-		    goto_err(_("bad domain in dhcp-option"));
+		    ret_err(_("bad domain in dhcp-option"));
 		    		  
 		  newp = opt_malloc(len + strlen(dom) + 2);
 		  
@@ -1542,14 +1452,14 @@ static int parse_dhcp_opt(char *errstr, char *arg, int flags)
       ((new->len > 255) || 
       (new->len > 253 && (new->flags & (DHOPT_VENDOR | DHOPT_ENCAPSULATE))) ||
        (new->len > 250 && (new->flags & DHOPT_RFC3925))))
-    goto_err(_("dhcp-option too long"));
+    ret_err(_("dhcp-option too long"));
   
   if (flags == DHOPT_MATCH)
     {
       if ((new->flags & (DHOPT_ENCAPSULATE | DHOPT_VENDOR)) ||
 	  !new->netid ||
 	  new->netid->next)
-	goto_err(_("illegal dhcp-match"));
+	ret_err(_("illegal dhcp-match"));
        
       if (is6)
 	{
@@ -1574,9 +1484,6 @@ static int parse_dhcp_opt(char *errstr, char *arg, int flags)
     }
     
   return 1;
-on_error:
-  dhcp_opt_free(new);
-  return 0;
 }
 
 #endif
@@ -1589,16 +1496,6 @@ void set_option_bool(unsigned int opt)
 void reset_option_bool(unsigned int opt)
 {
   option_var(opt) &= ~(option_val(opt));
-}
-
-static void server_list_free(struct server *list)
-{
-  while (list)
-    {
-      struct server *tmp = list;
-      list = list->next;
-      free(tmp);
-    }
 }
 
 static int one_opt(int option, char *arg, char *errstr, char *gen_err, int command_line, int servers_only)
@@ -1782,13 +1679,13 @@ static int one_opt(int option, char *arg, char *errstr, char *gen_err, int comma
 	      /* has subnet+len */
 	      err = parse_mysockaddr(arg, &new->addr);
 	      if (err)
-		ret_err_free(err, new);
+		ret_err(err);
 	      if (!atoi_check(end, &new->mask))
-		ret_err_free(gen_err, new);
+		ret_err(gen_err);
 	      new->addr_used = 1;
 	    } 
 	  else if (!atoi_check(arg, &new->mask))
-	    ret_err_free(gen_err, new);
+	    ret_err(gen_err);
 	    
           daemon->add_subnet4 = new;
 
@@ -1800,15 +1697,15 @@ static int one_opt(int option, char *arg, char *errstr, char *gen_err, int comma
 		  /* has subnet+len */
                   err = parse_mysockaddr(comma, &new->addr);
                   if (err)
-                    ret_err_free(err, new);
+                    ret_err(err);
                   if (!atoi_check(end, &new->mask))
-                    ret_err_free(gen_err, new);
+                    ret_err(gen_err);
                   new->addr_used = 1;
                 }
               else
                 {
                   if (!atoi_check(comma, &new->mask))
-                    ret_err_free(gen_err, new);
+                    ret_err(gen_err);
                 }
           
 	      daemon->add_subnet6 = new;
@@ -2016,10 +1913,7 @@ static int one_opt(int option, char *arg, char *errstr, char *gen_err, int comma
 		  else if (strcmp(fam, "6") == 0)
 		    new->addr.sa.sa_family = AF_INET6;
 		  else
-		  {
-		    free(new->name);
-		    ret_err_free(gen_err, new);
-		  }
+		    ret_err(gen_err);
 		} 
 	    }
 	  new->next = daemon->authinterface;
@@ -2185,7 +2079,7 @@ static int one_opt(int option, char *arg, char *errstr, char *gen_err, int comma
 
 		      arg = split(netpart);
 		      if (!atoi_check(netpart, &msize))
-			ret_err_free(gen_err, new);
+			ret_err(gen_err);
 		      else if (inet_pton(AF_INET, comma, &new->start))
 			{
 			  int mask = (1 << (32 - msize)) - 1;
@@ -2198,18 +2092,18 @@ static int one_opt(int option, char *arg, char *errstr, char *gen_err, int comma
 				{
 				  if (!(new->prefix = canonicalise_opt(arg)) ||
 				      strlen(new->prefix) > MAXLABEL - INET_ADDRSTRLEN)
-				    ret_err_free(_("bad prefix"), new);
+				    ret_err(_("bad prefix"));
 				}
 			      else if (strcmp(arg, "local") != 0 ||
 				       (msize != 8 && msize != 16 && msize != 24))
-				ret_err_free(gen_err, new);
+				ret_err(gen_err);
 			      else
 				{
 				   /* generate the equivalent of
 				      local=/xxx.yyy.zzz.in-addr.arpa/ */
 				  struct server *serv = add_rev4(new->start, msize);
 				  if (!serv)
-				    ret_err_free(_("bad prefix"), new);
+				    ret_err(_("bad prefix"));
 
 				  serv->flags |= SERV_NO_ADDR;
 
@@ -2238,17 +2132,17 @@ static int one_opt(int option, char *arg, char *errstr, char *gen_err, int comma
 			  setaddr6part(&new->end6, addrpart | mask);
 			  
 			  if (msize < 64)
-			    ret_err_free(gen_err, new);
+			    ret_err(gen_err);
 			  else if (arg)
 			    {
 			      if (option != 's')
 				{
 				  if (!(new->prefix = canonicalise_opt(arg)) ||
 				      strlen(new->prefix) > MAXLABEL - INET6_ADDRSTRLEN)
-				    ret_err_free(_("bad prefix"), new);
+				    ret_err(_("bad prefix"));
 				}	
 			      else if (strcmp(arg, "local") != 0 || ((msize & 4) != 0))
-				ret_err_free(gen_err, new);
+				ret_err(gen_err);
 			      else 
 				{
 				  /* generate the equivalent of
@@ -2267,7 +2161,7 @@ static int one_opt(int option, char *arg, char *errstr, char *gen_err, int comma
 			    }
 			}
 		      else
-			ret_err_free(gen_err, new);
+			ret_err(gen_err);
 		    }
 		  else
 		    {
@@ -2281,7 +2175,7 @@ static int one_opt(int option, char *arg, char *errstr, char *gen_err, int comma
 			  if (!arg)
 			    new->end.s_addr = new->start.s_addr;
 			  else if (!inet_pton(AF_INET, arg, &new->end))
-			    ret_err_free(gen_err, new);
+			    ret_err(gen_err);
 			}
 		      else if (inet_pton(AF_INET6, comma, &new->start6))
 			{
@@ -2289,16 +2183,16 @@ static int one_opt(int option, char *arg, char *errstr, char *gen_err, int comma
 			  if (!arg)
 			    memcpy(&new->end6, &new->start6, IN6ADDRSZ);
 			  else if (!inet_pton(AF_INET6, arg, &new->end6))
-			    ret_err_free(gen_err, new);
+			    ret_err(gen_err);
 			}
 		      else 
-			ret_err_free(gen_err, new);
+			ret_err(gen_err);
 
 		      if (option != 's' && prefstr)
 			{
 			  if (!(new->prefix = canonicalise_opt(prefstr)) ||
 			      strlen(new->prefix) > MAXLABEL - INET_ADDRSTRLEN)
-			    ret_err_free(_("bad prefix"), new);
+			    ret_err(_("bad prefix"));
 			}
 		    }
 
@@ -2460,7 +2354,7 @@ static int one_opt(int option, char *arg, char *errstr, char *gen_err, int comma
 #endif
 	  }
 	else
-	  ret_err_free(gen_err, new);
+	  ret_err(gen_err);
 
 	new->used = 0;
 	if (option == 'a')
@@ -2531,10 +2425,7 @@ static int one_opt(int option, char *arg, char *errstr, char *gen_err, int comma
 	  {
 	    newlist->flags |= SERV_LITERAL_ADDRESS;
 	    if (!(newlist->flags & SERV_TYPE))
-	      {
-	        server_list_free(newlist);
-	        ret_err(gen_err);
-	      }
+	      ret_err(gen_err);
 	  }
 	else if (option == LOPT_NO_REBIND)
 	  newlist->flags |= SERV_NO_REBIND;
@@ -2551,10 +2442,7 @@ static int one_opt(int option, char *arg, char *errstr, char *gen_err, int comma
 	  {
 	    char *err = parse_server(arg, &newlist->addr, &newlist->source_addr, newlist->interface, &newlist->flags);
 	    if (err)
-	      {
-	        server_list_free(newlist);
-	        ret_err(err);
-	      }
+	      ret_err(err);
 	  }
 	
 	serv = newlist;
@@ -2890,19 +2778,21 @@ static int one_opt(int option, char *arg, char *errstr, char *gen_err, int comma
 	      {
 		if (is_tag_prefix(arg))
 		  {
+		    struct dhcp_netid *tt = opt_malloc(sizeof (struct dhcp_netid));
+		    tt->net = opt_string_alloc(arg+4);
+		    tt->next = new->filter;
 		    /* ignore empty tag */
-		    if (arg[4])
-		      new->filter = dhcp_netid_create(arg+4, new->filter);
+		    if (tt->net)
+		      new->filter = tt;
 		  }
 		else
 		  {
 		    if (new->netid.net)
-		      {
-			dhcp_context_free(new);
-			ret_err(_("only one tag allowed"));
-		      }
+		      ret_err(_("only one tag allowed"));
+		    else if (strstr(arg, "set:") == arg)
+		      new->netid.net = opt_string_alloc(arg+4);
 		    else
-		      new->netid.net = opt_string_alloc(set_prefix(arg));
+		      new->netid.net = opt_string_alloc(arg);
 		  }
 		arg = comma;
 	      }
@@ -2918,10 +2808,7 @@ static int one_opt(int option, char *arg, char *errstr, char *gen_err, int comma
 	    break;
 	
 	if (k < 2)
-	  {
-	    dhcp_context_free(new);
-	    ret_err(_("bad dhcp-range"));
-	  }
+	  ret_err(_("bad dhcp-range"));
 	
 	if (inet_pton(AF_INET, a[0], &new->start))
 	  {
@@ -2933,10 +2820,7 @@ static int one_opt(int option, char *arg, char *errstr, char *gen_err, int comma
 	    else if (strcmp(a[1], "proxy") == 0)
 	      new->flags |= CONTEXT_PROXY;
 	    else if (!inet_pton(AF_INET, a[1], &new->end))
-	      {
-		dhcp_context_free(new);
-		ret_err(_("bad dhcp-range"));
-	      }
+	      ret_err(_("bad dhcp-range"));
 	    
 	    if (ntohl(new->start.s_addr) > ntohl(new->end.s_addr))
 	      {
@@ -2951,10 +2835,7 @@ static int one_opt(int option, char *arg, char *errstr, char *gen_err, int comma
 		new->flags |= CONTEXT_NETMASK;
 		leasepos = 3;
 		if (!is_same_net(new->start, new->end, new->netmask))
-		  {
-		    dhcp_context_free(new);
-		    ret_err(_("inconsistent DHCP range"));
-		  }
+		  ret_err(_("inconsistent DHCP range"));
 		
 	    
 		if (k >= 4 && strchr(a[3], '.') &&  
@@ -2968,8 +2849,6 @@ static int one_opt(int option, char *arg, char *errstr, char *gen_err, int comma
 #ifdef HAVE_DHCP6
 	else if (inet_pton(AF_INET6, a[0], &new->start6))
 	  {
-	    const char *err = NULL;
-
 	    new->flags |= CONTEXT_V6; 
 	    new->prefix = 64; /* default */
 	    new->end6 = new->start6;
@@ -3015,24 +2894,19 @@ static int one_opt(int option, char *arg, char *errstr, char *gen_err, int comma
 		  }
 	      }
 	    
-	    if (new->prefix > 64)
+	    if (new->prefix != 64)
 	      {
 		if (new->flags & CONTEXT_RA)
-		  err=(_("prefix length must be exactly 64 for RA subnets"));
+		  ret_err(_("prefix length must be exactly 64 for RA subnets"));
 		else if (new->flags & CONTEXT_TEMPLATE)
-		  err=(_("prefix length must be exactly 64 for subnet constructors"));
+		  ret_err(_("prefix length must be exactly 64 for subnet constructors"));
 	      }
-	    else if (new->prefix < 64)
-	      err=(_("prefix length must be at least 64"));
-	    
-	    if (!err && !is_same_net6(&new->start6, &new->end6, new->prefix))
-	      err=(_("inconsistent DHCPv6 range"));
 
-	    if (err)
-	      {
-		dhcp_context_free(new);
-		ret_err(err);
-	      }
+	    if (new->prefix < 64)
+	      ret_err(_("prefix length must be at least 64"));
+	    
+	    if (!is_same_net6(&new->start6, &new->end6, new->prefix))
+	      ret_err(_("inconsistent DHCPv6 range"));
 
 	    /* dhcp-range=:: enables DHCP stateless on any interface */
 	    if (IN6_IS_ADDR_UNSPECIFIED(&new->start6) && !(new->flags & CONTEXT_TEMPLATE))
@@ -3043,10 +2917,7 @@ static int one_opt(int option, char *arg, char *errstr, char *gen_err, int comma
 		struct in6_addr zero;
 		memset(&zero, 0, sizeof(zero));
 		if (!is_same_net6(&zero, &new->start6, new->prefix))
-		  {
-		    dhcp_context_free(new);
-		    ret_err(_("prefix must be zero with \"constructor:\" argument"));
-		  }
+		  ret_err(_("prefix must be zero with \"constructor:\" argument"));
 	      }
 	    
 	    if (addr6part(&new->start6) > addr6part(&new->end6))
@@ -3058,18 +2929,12 @@ static int one_opt(int option, char *arg, char *errstr, char *gen_err, int comma
 	  }
 #endif
 	else
-	  {
-	    dhcp_context_free(new);
-	    ret_err(_("bad dhcp-range"));
-	  }
+	  ret_err(_("bad dhcp-range"));
 	
 	if (leasepos < k)
 	  {
 	    if (leasepos != k-1)
-	      {
-		dhcp_context_free(new);
-		ret_err(_("bad dhcp-range"));
-	      }
+	      ret_err(_("bad dhcp-range"));
 	    
 	    if (strcmp(a[leasepos], "infinite") == 0)
 	      new->lease_time = 0xffffffff;
@@ -3108,7 +2973,7 @@ static int one_opt(int option, char *arg, char *errstr, char *gen_err, int comma
 			break;
 
 		    if (*cp || (leasepos+1 < k))
-		      ret_err_free(_("bad dhcp-range"), new);
+		      ret_err(_("bad dhcp-range"));
 		    
 		    new->lease_time = atoi(a[leasepos]) * fac;
 		    /* Leases of a minute or less confuse
@@ -3135,7 +3000,6 @@ static int one_opt(int option, char *arg, char *errstr, char *gen_err, int comma
 	new->flags = (option == LOPT_BANK) ? CONFIG_BANK : 0;
 	new->hwaddr = NULL;
 	new->netid = NULL;
-	new->clid = NULL;
 
 	if ((a[0] = arg))
 	  for (k = 1; k < 7; k++)
@@ -3166,10 +3030,7 @@ static int one_opt(int option, char *arg, char *errstr, char *gen_err, int comma
 			}
 
 		      if (len == -1)
-			{
-			  dhcp_config_free(new);
-			  ret_err(_("bad hex constant"));
-			}
+			ret_err(_("bad hex constant"));
 		      else if ((new->clid = opt_malloc(len)))
 			{
 			  new->flags |= CONFIG_CLID;
@@ -3181,17 +3042,17 @@ static int one_opt(int option, char *arg, char *errstr, char *gen_err, int comma
 	      /* dhcp-host has strange backwards-compat needs. */
 	      else if (strstr(arg, "net:") == arg || strstr(arg, "set:") == arg)
 		{
+		  struct dhcp_netid *newtag = opt_malloc(sizeof(struct dhcp_netid));
 		  struct dhcp_netid_list *newlist = opt_malloc(sizeof(struct dhcp_netid_list));
+		  newtag->net = opt_malloc(strlen(arg + 4) + 1);
 		  newlist->next = new->netid;
 		  new->netid = newlist;
-		  newlist->list = dhcp_netid_create(arg+4, NULL);
+		  newlist->list = newtag;
+		  strcpy(newtag->net, arg+4);
+		  unhide_metas(newtag->net);
 		}
 	      else if (strstr(arg, "tag:") == arg)
-		{
-		  
-		  dhcp_config_free(new);
-		  ret_err(_("cannot match tags in --dhcp-host"));
-		}
+		ret_err(_("cannot match tags in --dhcp-host"));
 #ifdef HAVE_DHCP6
 	      else if (arg[0] == '[' && arg[strlen(arg)-1] == ']')
 		{
@@ -3199,10 +3060,7 @@ static int one_opt(int option, char *arg, char *errstr, char *gen_err, int comma
 		  arg++;
 		  
 		  if (!inet_pton(AF_INET6, arg, &new->addr6))
-		    {
-		      dhcp_config_free(new);
-		      ret_err(_("bad IPv6 address"));
-		    }
+		    ret_err(_("bad IPv6 address"));
 
 		  for (i= 0; i < 8; i++)
 		    if (new->addr6.s6_addr[i] != 0)
@@ -3220,13 +3078,10 @@ static int one_opt(int option, char *arg, char *errstr, char *gen_err, int comma
 		  struct hwaddr_config *newhw = opt_malloc(sizeof(struct hwaddr_config));
 		  if ((newhw->hwaddr_len = parse_hex(a[j], newhw->hwaddr, DHCP_CHADDR_MAX, 
 						     &newhw->wildcard_mask, &newhw->hwaddr_type)) == -1)
-		    {
-		      free(newhw);
-		      dhcp_config_free(new);
-		      ret_err(_("bad hex constant"));
-		    }
+		    ret_err(_("bad hex constant"));
 		  else
 		    {
+		      
 		      newhw->next = new->hwaddr;
 		      new->hwaddr = newhw;
 		    }		    
@@ -3303,10 +3158,7 @@ static int one_opt(int option, char *arg, char *errstr, char *gen_err, int comma
 		    {
 		      if (!(new->hostname = canonicalise_opt(a[j])) ||
 			  !legal_hostname(new->hostname))
-			{
-			  dhcp_config_free(new);
-			  ret_err(_("bad DHCP host name"));
-			}
+			ret_err(_("bad DHCP host name"));
 		     
 		      new->flags |= CONFIG_NAME;
 		      new->domain = strip_hostname(new->hostname);			
@@ -3359,7 +3211,10 @@ static int one_opt(int option, char *arg, char *errstr, char *gen_err, int comma
 	      }
 	    else
 	      {
-		struct dhcp_netid *newtag = dhcp_netid_create(arg+4, NULL);
+		struct dhcp_netid *newtag = opt_malloc(sizeof(struct dhcp_netid));
+		newtag->net = opt_malloc(len - 3);
+		strcpy(newtag->net, arg+4);
+		unhide_metas(newtag->net);
 
 		if (strstr(arg, "set:") == arg)
 		  {
@@ -3376,7 +3231,7 @@ static int one_opt(int option, char *arg, char *errstr, char *gen_err, int comma
 		else 
 		  {
 		    new->set = NULL;
-		    dhcp_netid_free(newtag);
+		    free(newtag);
 		    break;
 		  }
 	      }
@@ -3385,11 +3240,7 @@ static int one_opt(int option, char *arg, char *errstr, char *gen_err, int comma
 	  }
 
 	if (!new->set)
-	  {
-	    dhcp_netid_free(new->tag);
-	    dhcp_netid_list_free(new->set);
-	    ret_err_free(_("bad tag-if"), new);
-	  }
+	  ret_err(_("bad tag-if"));
 	  
 	break;
       }
@@ -3432,12 +3283,19 @@ static int one_opt(int option, char *arg, char *errstr, char *gen_err, int comma
       
     case 'M': /* --dhcp-boot */
       {
-	struct dhcp_netid *id = dhcp_tags(&arg);
-	
-	if (!id)
+	struct dhcp_netid *id = NULL;
+	while (is_tag_prefix(arg))
 	  {
-	    ret_err(gen_err);
-	  }
+	    struct dhcp_netid *newid = opt_malloc(sizeof(struct dhcp_netid));
+	    newid->next = id;
+	    id = newid;
+	    comma = split(arg);
+	    newid->net = opt_string_alloc(arg+4);
+	    arg = comma;
+	  };
+	
+	if (!arg)
+	  ret_err(gen_err);
 	else 
 	  {
 	    char *dhcp_file, *dhcp_sname = NULL, *tftp_sname = NULL;
@@ -3483,12 +3341,19 @@ static int one_opt(int option, char *arg, char *errstr, char *gen_err, int comma
 
     case LOPT_REPLY_DELAY: /* --dhcp-reply-delay */
       {
-	struct dhcp_netid *id = dhcp_tags(&arg);
-	
-	if (!id)
+	struct dhcp_netid *id = NULL;
+	while (is_tag_prefix(arg))
 	  {
-	    ret_err(gen_err);
-	  }
+	    struct dhcp_netid *newid = opt_malloc(sizeof(struct dhcp_netid));
+	    newid->next = id;
+	    id = newid;
+	    comma = split(arg);
+	    newid->net = opt_string_alloc(arg+4);
+	    arg = comma;
+	  };
+	
+	if (!arg)
+	  ret_err(gen_err);
 	else
 	  {
 	    struct delay_config *new;
@@ -3513,13 +3378,19 @@ static int one_opt(int option, char *arg, char *errstr, char *gen_err, int comma
 	 
 	 new->netid = NULL;
 	 new->opt = 10; /* PXE_MENU_PROMPT */
-	 new->netid = dhcp_tags(&arg);
-	 
-	 if (!new->netid)
-	   {
-	     dhcp_opt_free(new);
-	     ret_err(gen_err);
+
+	 while (is_tag_prefix(arg))
+	  {
+	     struct dhcp_netid *nn = opt_malloc(sizeof (struct dhcp_netid));
+	     comma = split(arg);
+	     nn->next = new->netid;
+	     new->netid = nn;
+	     nn->net = opt_string_alloc(arg+4);
+	     arg = comma;
 	   }
+	 
+	 if (!arg)
+	   ret_err(gen_err);
 	 else
 	   {
 	     comma = split(arg);
@@ -3555,8 +3426,17 @@ static int one_opt(int option, char *arg, char *errstr, char *gen_err, int comma
 	 new->netid = NULL;
 	 new->sname = NULL;
 	 new->server.s_addr = 0;
-	 new->netid = dhcp_tags(&arg);
 
+	 while (is_tag_prefix(arg))
+	   {
+	     struct dhcp_netid *nn = opt_malloc(sizeof (struct dhcp_netid));
+	     comma = split(arg);
+	     nn->next = new->netid;
+	     new->netid = nn;
+	     nn->net = opt_string_alloc(arg+4);
+	     arg = comma;
+	   }
+       
 	 if (arg && (comma = split(arg)))
 	   {
 	     for (i = 0; CSA[i]; i++)
@@ -3633,10 +3513,7 @@ static int one_opt(int option, char *arg, char *errstr, char *gen_err, int comma
 	    unhide_metas(comma);
 	    new->hwaddr_len = parse_hex(comma, new->hwaddr, DHCP_CHADDR_MAX, &new->mask, &new->hwaddr_type);
 	    if (new->hwaddr_len == -1)
-	      {
-		free(new->netid.net);
-		ret_err_free(gen_err, new);
-	      }
+	      ret_err(gen_err);
 	    else
 	      {
 		new->next = daemon->dhcp_macs;
@@ -3653,7 +3530,7 @@ static int one_opt(int option, char *arg, char *errstr, char *gen_err, int comma
 	
 	if (!(comma = split(arg)) ||
 	    !atoi_check16(comma, &new->class))
-	  ret_err_free(gen_err, new);
+	  ret_err(gen_err);
 	
 	new->tag.net = opt_string_alloc(set_prefix(arg));
 	new->next = daemon->prefix_classes;
@@ -3675,7 +3552,7 @@ static int one_opt(int option, char *arg, char *errstr, char *gen_err, int comma
 	 struct dhcp_vendor *new = opt_malloc(sizeof(struct dhcp_vendor));
 	 
 	 if (!(comma = split(arg)))
-	   ret_err_free(gen_err, new);
+	   ret_err(gen_err);
 	
 	 new->netid.net = opt_string_alloc(set_prefix(arg));
 	 /* check for hex string - must digits may include : must not have nothing else, 
@@ -3685,10 +3562,7 @@ static int one_opt(int option, char *arg, char *errstr, char *gen_err, int comma
 	 if ((comma = split(arg)))
 	   {
 	     if (option  != 'U' || strstr(arg, "enterprise:") != arg)
-	       {
-	         free(new->netid.net);
-	         ret_err_free(gen_err, new);
-	       }
+	       ret_err(gen_err);
 	     else
 	       new->enterprise = atoi(arg+11);
 	   }
@@ -3790,8 +3664,14 @@ static int one_opt(int option, char *arg, char *errstr, char *gen_err, int comma
 	  }
 	
 	while (arg) {
+	  struct dhcp_netid *member = opt_malloc(sizeof(struct dhcp_netid));
 	  comma = split(arg);
-	  list = dhcp_netid_create(is_tag_prefix(arg) ? arg+4 :arg, list);
+	  member->next = list;
+	  list = member;
+	  if (is_tag_prefix(arg))
+	    member->net = opt_string_alloc(arg+4);
+	  else
+	    member->net = opt_string_alloc(arg);
 	  arg = comma;
 	}
 	
@@ -3805,7 +3685,7 @@ static int one_opt(int option, char *arg, char *errstr, char *gen_err, int comma
 	struct addr_list *new = opt_malloc(sizeof(struct addr_list));
 	comma = split(arg);
 	if (!(inet_pton(AF_INET, arg, &new->addr) > 0))
-	  ret_err_free(_("bad dhcp-proxy address"), new);
+	  ret_err(_("bad dhcp-proxy address"));
 	new->next = daemon->override_relays;
 	daemon->override_relays = new;
 	arg = comma;
@@ -3831,10 +3711,7 @@ static int one_opt(int option, char *arg, char *errstr, char *gen_err, int comma
 	  }
 #endif
 	else
-	  {
-	    free(new->interface);
-	    ret_err_free(_("Bad dhcp-relay"), new);
-	  }
+	  ret_err(_("Bad dhcp-relay"));
 	
 	break;
       }
@@ -3874,11 +3751,8 @@ static int one_opt(int option, char *arg, char *errstr, char *gen_err, int comma
 	   arg = split(comma);
 	   if (!atoi_check(comma, &new->interval) || 
 	      (arg && !atoi_check(arg, &new->lifetime)))
-             {
 err:
-	       free(new->name);
-	       ret_err_free(_("bad RA-params"), new);
-             }
+	    ret_err(_("bad RA-params"));
 	  
 	  new->next = daemon->ra_interfaces;
 	  daemon->ra_interfaces = new;
@@ -3927,7 +3801,7 @@ err:
 	    (!(inet_pton(AF_INET, dash, &new->end) > 0) ||
 	     !is_same_net(new->in, new->end, new->mask) ||
 	     ntohl(new->in.s_addr) > ntohl(new->end.s_addr)))
-	  ret_err_free(_("invalid alias range"), new);
+	  ret_err(_("invalid alias range"));
 	
 	break;
       }
@@ -3960,7 +3834,7 @@ err:
 	    else if (strcmp(arg, "6") == 0)
 	      new->family = AF_INET6;
 	    else
-	      ret_err_free(gen_err, new);
+	      ret_err(gen_err);
 	  } 
 	new->intr = opt_string_alloc(comma);
 	break;
@@ -3992,19 +3866,11 @@ err:
 	    alias = canonicalise_opt(arg);
 
 	    if (!alias || !target)
-	      {
-		free(target);
-		free(alias);
-		ret_err(_("bad CNAME"));
-	      }
+	      ret_err(_("bad CNAME"));
 	    
 	    for (new = daemon->cnames; new; new = new->next)
 	      if (hostname_isequal(new->alias, alias))
-		{
-		  free(target);
-		  free(alias);
-		  ret_err(_("duplicate CNAME"));
-		}
+		ret_err(_("duplicate CNAME"));
 	    new = opt_malloc(sizeof(struct cname));
 	    new->next = daemon->cnames;
 	    daemon->cnames = new;
@@ -4027,11 +3893,7 @@ err:
 	
 	if (!(dom = canonicalise_opt(arg)) ||
 	    (comma && !(target = canonicalise_opt(comma))))
-	  {
-	    free(dom);
-	    free(target);
-	    ret_err(_("bad PTR record"));
-	  }
+	  ret_err(_("bad PTR record"));
 	else
 	  {
 	    new = opt_malloc(sizeof(struct ptr_record));
@@ -4049,7 +3911,7 @@ err:
 	int k = 0;
 	struct naptr *new;
 	int order, pref;
-	char *name=NULL, *replace = NULL;
+	char *name, *replace = NULL;
 
 	if ((a[0] = arg))
 	  for (k = 1; k < 7; k++)
@@ -4062,11 +3924,7 @@ err:
 	    !atoi_check16(a[1], &order) || 
 	    !atoi_check16(a[2], &pref) ||
 	    (k == 7 && !(replace = canonicalise_opt(a[6]))))
-          {
-	    free(name);
-	    free(replace);
-	    ret_err(_("bad NAPTR record"));
-          }
+	  ret_err(_("bad NAPTR record"));
 	else
 	  {
 	    new = opt_malloc(sizeof(struct naptr));
@@ -4088,26 +3946,22 @@ err:
        	struct txt_record *new;
 	size_t len = 0;
 	char *data;
-	int class;
+	int val;
 
 	comma = split(arg);
 	data = split(comma);
 		
 	new = opt_malloc(sizeof(struct txt_record));
-	new->name = NULL;
-	
-	if (!atoi_check(comma, &class) || 
-	    !(new->name = canonicalise_opt(arg)) ||
-	    (data && (len = parse_hex(data, (unsigned char *)data, -1, NULL, NULL)) == -1U))
-          {
-            free(new->name);
-	    ret_err_free(_("bad RR record"), new);
-          }
-
-	new->len = 0;
-	new->class = class;
 	new->next = daemon->rr;
 	daemon->rr = new;
+	
+	if (!atoi_check(comma, &val) || 
+	    !(new->name = canonicalise_opt(arg)) ||
+	    (data && (len = parse_hex(data, (unsigned char *)data, -1, NULL, NULL)) == -1U))
+	  ret_err(_("bad RR record"));
+	   	
+	new->class = val;
+	new->len = 0;
 	
 	if (data)
 	  {
@@ -4159,14 +4013,14 @@ err:
 	comma = split(arg);
 		
 	new = opt_malloc(sizeof(struct txt_record));
+	new->next = daemon->txt;
+	daemon->txt = new;
 	new->class = C_IN;
 	new->stat = 0;
 
 	if (!(new->name = canonicalise_opt(arg)))
-	  ret_err_free(_("bad TXT record"), new);
+	  ret_err(_("bad TXT record"));
 	
-	new->next = daemon->txt;
-	daemon->txt = new;
 	len = comma ? strlen(comma) : 0;
 	len += (len/255) + 1; /* room for extra counts */
 	new->txt = p = opt_malloc(len);
@@ -4213,32 +4067,24 @@ err:
 	    arg = comma;
 	    comma = split(arg);
 	    if (!(target = canonicalise_opt(arg)))
-	      ret_err_free(_("bad SRV target"), name);
+	      ret_err(_("bad SRV target"));
 		
 	    if (comma)
 	      {
 		arg = comma;
 		comma = split(arg);
 		if (!atoi_check16(arg, &port))
-                  {
-                    free(name);
-		    ret_err_free(_("invalid port number"), target);
-                  }
+		  ret_err(_("invalid port number"));
 		
 		if (comma)
 		  {
 		    arg = comma;
 		    comma = split(arg);
 		    if (!atoi_check16(arg, &priority))
-                      {
-                        free(name);
-		        ret_err_free(_("invalid priority"), target);
-		      }
+		      ret_err(_("invalid priority"));
+			
 		    if (comma && !atoi_check16(comma, &weight))
-                      {
-                        free(name);
-		        ret_err_free(_("invalid weight"), target);
-                      }
+		      ret_err(_("invalid weight"));
 		  }
 	      }
 	  }
@@ -4257,15 +4103,13 @@ err:
       
     case LOPT_HOST_REC: /* --host-record */
       {
-	struct host_record *new;
+	struct host_record *new = opt_malloc(sizeof(struct host_record));
+	memset(new, 0, sizeof(struct host_record));
+	new->ttl = -1;
 
 	if (!arg || !(comma = split(arg)))
 	  ret_err(_("Bad host-record"));
 	
-	new = opt_malloc(sizeof(struct host_record));
-	memset(new, 0, sizeof(struct host_record));
-	new->ttl = -1;
-
 	while (arg)
 	  {
 	    struct all_addr addr;
@@ -4284,19 +4128,10 @@ err:
 	      {
 		int nomem;
 		char *canon = canonicalise(arg, &nomem);
-		struct name_list *nl;
+		struct name_list *nl = opt_malloc(sizeof(struct name_list));
 		if (!canon)
-                  {
-		    struct name_list *tmp = new->names, *next;
-		    for (tmp = new->names; tmp; tmp = next)
-		      {
-			next = tmp->next;
-			free(tmp);
-		      }
-		    ret_err_free(_("Bad name in host-record"), new);
-                  }
+		  ret_err(_("Bad name in host-record"));
 
-		nl = opt_malloc(sizeof(struct name_list));
 		nl->name = canon;
 		/* keep order, so that PTR record goes to first name */
 		nl->next = NULL;
@@ -4346,7 +4181,6 @@ err:
 	int len;
 	
 	new->class = C_IN;
-	new->name = NULL;
 
 	if ((comma = split(arg)) && (algo = split(comma)))
 	  {
@@ -4371,7 +4205,7 @@ err:
 	    !atoi_check8(algo, &new->algo) ||
 	    !atoi_check8(digest, &new->digest_type) ||
 	    !(new->name = canonicalise_opt(arg)))
-	  ret_err_free(_("bad trust anchor"), new);
+	  ret_err(_("bad trust anchor"));
 	    
 	/* Upper bound on length */
 	len = (2*strlen(keyhex))+1;
@@ -4385,10 +4219,7 @@ err:
 	  else
 	    cp++;
 	if ((new->digestlen = parse_hex(keyhex, (unsigned char *)new->digest, len, NULL, NULL)) == -1)
-	  {
-	    free(new->name);
-	    ret_err_free(_("bad HEX in trust anchor"), new);
-	  }
+	  ret_err(_("bad HEX in trust anchor"));
 	
 	new->next = daemon->ds;
 	daemon->ds = new;
@@ -4857,8 +4688,8 @@ void read_opts(int argc, char **argv, char *compile_opts)
   size_t argbuf_size = MAXDNAME;
   char *argbuf = opt_malloc(argbuf_size);
   char *buff = opt_malloc(MAXDNAME);
-  int option, testmode = 0;
-  char *arg, *conffile = NULL;
+  int option, conffile_opt = '7', testmode = 0;
+  char *arg, *conffile = CONFFILE;
       
   opterr = 0;
 
@@ -4967,8 +4798,7 @@ void read_opts(int argc, char **argv, char *compile_opts)
         }
       else if (option == 'C')
 	{
-          if (conffile)
-            free(conffile);
+	  conffile_opt = 0; /* file must exist */
 	  conffile = opt_string_alloc(arg);
 	}
       else
@@ -4986,11 +4816,10 @@ void read_opts(int argc, char **argv, char *compile_opts)
 
   if (conffile)
     {
-      one_file(conffile, 0);
-      free(conffile);
+      one_file(conffile, conffile_opt);
+      if (conffile_opt == 0)
+	free(conffile);
     }
-  else
-    one_file(CONFFILE, '7');
 
   /* port might not be known when the address is parsed - fill in here */
   if (daemon->servers)

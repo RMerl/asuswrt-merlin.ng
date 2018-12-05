@@ -349,7 +349,7 @@ function applyRule(){
 		if (isSupport("hnd"))
 			split_custom2(Base64.encode(document.getElementById("vpn_server_custom_x").value));
 		else
-			document.form.vpn_server_custom2.value = Base64.encode(document.getElementById("vpn_server_custom_x").value);
+			document.form.vpn_server_cust2.value = Base64.encode(document.getElementById("vpn_server_custom_x").value);
 
 		if(document.form.vpn_server_if.value == 'tun'){
 			if(vpnSubnet.value == ""){

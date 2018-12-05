@@ -394,7 +394,7 @@ function change_ddns_setting(v){
 					inputCtrl(document.form.ddns_regular_period, 1);
 		}
 
-		var default_hostname_label = '<a class="hintstyle" href="javascript:void(0);" onClick="openHint(5,13);"><#LANHostConfig_x_DDNSHostNames_itemname#></a>';
+		var default_hostname_label = "<a class=\"hintstyle\" href=\"javascript:void(0);\" onClick=\"openHint(5,13);\"><#LANHostConfig_x_DDNSHostNames_itemname#></a>";
 		if(v == "WWW.NAMECHEAP.COM") {
 			document.getElementById("ddns_username_th").innerHTML = "Domain Name";
 			document.getElementById("ddns_password_th").innerHTML = "<#LANHostConfig_x_DDNSPassword_itemname#>";

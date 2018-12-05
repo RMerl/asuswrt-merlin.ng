@@ -3,6 +3,7 @@ Asuswrt-Merlin 384/NG Changelog
 384.8_2 (xx-xxx-xxxx)
   - FIXED: Cannot save custom settings on OpenVPN server page
            on non-HND models.
+  - FIXED: Some webui pages fail to load properly in French
 
 
 384.8 (2-Dec-2018)

@@ -176,6 +176,12 @@ function initial(){
 	if(!ipsec_srv_support) {
 		delete vpn_server_array.IPSEC;
 	}
+
+	// Models with encrypted passwords
+	if (based_modelid == "RT-AX88U") {
+		showhide("show_pass_div", 0);
+	}
+
 	$('#divSwitchMenu').html(gen_switch_menu(vpn_server_array, "PPTP"));
 
 }
@@ -926,7 +932,7 @@ function check_vpn_conflict() {		//if conflict with LAN ip & DHCP ip pool & stat
 												</li>
 											</ul>
 										</div>
-										<div style="color:#FFCC00;"><input type="checkbox" name="show_pass" id="show_pass" onclick="showpptpd_clientlist(); parsePPTPClients();pptpd_connected_status();">Show passwords</div>
+										<div style="color:#FFCC00;" id="show_pass_div"><input type="checkbox" name="show_pass" id="show_pass" onclick="showpptpd_clientlist(); parsePPTPClients();pptpd_connected_status();">Show passwords</div>
 										<table width="100%" border="1" align="center" cellpadding="4" cellspacing="0" class="FormTable_table" style="margin-top:8px;">
 											<thead>
 											<tr>

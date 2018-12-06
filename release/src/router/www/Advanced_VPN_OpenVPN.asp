@@ -197,6 +197,12 @@ function initial(){
 		cust2 += document.form.vpn_server_cust21.value +
 		           document.form.vpn_server_cust22.value;
 	}
+
+	// Models with encrypted passwords
+	if (based_modelid == "RT-AX88U") {
+		showhide("show_pass_div", 0);
+	}
+
 	document.getElementById("vpn_server_custom_x").value = Base64.decode(cust2);
 }
 
@@ -1464,7 +1470,7 @@ function callback_upload_cert(_flag) {
 											<ol>
 										</div>
 
-										<div style="color:#FFCC00;"><input type="checkbox" name="show_pass" id="show_pass" onclick="showopenvpnd_clientlist();update_vpn_client_state();openvpnd_connected_status();">Show passwords</div>
+										<div style="color:#FFCC00;" id="show_pass_div"><input type="checkbox" name="show_pass" id="show_pass" onclick="showopenvpnd_clientlist();update_vpn_client_state();openvpnd_connected_status();">Show passwords</div>
 
 										<table width="100%" border="1" align="center" cellpadding="4" cellspacing="0" class="FormTable_table" style="margin-top:8px;">
 											<thead>

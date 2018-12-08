@@ -1,7 +1,10 @@
 Asuswrt-Merlin 384/NG Changelog
 ===============================
 
-384.8_2 (xx-xxx-xxxx)
+384.8_2 (8-Dec-2018)
+  - CHANGED: Updated miniupnpd to 20181205.
+  - CHANGED: Push LAN domain to OpenVPN clients as DNS suffix
+             for the connection.
   - FIXED: Cannot save custom settings on OpenVPN server page
            on non-HND models.
   - FIXED: Some webui pages fail to load properly in French
@@ -9,6 +12,8 @@ Asuswrt-Merlin 384/NG Changelog
            configured (themiron)
   - FIXED: Non-functionnal Show Password option on OpenVPN/PPTP
            server page for RT-AX88U (removed)
+  - FIXED: Persistent SSL cert was wiped at boot time in
+           some specific scenarios.
 
 
 384.8 (2-Dec-2018)

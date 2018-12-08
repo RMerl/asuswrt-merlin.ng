@@ -1043,7 +1043,7 @@ ProcessSSDPData(int s, const char *bufr, int n,
 			{
 				st = bufr+i+3;
 				st_len = 0;
-				while((*st == ' ' || *st == '\t') && (st < bufr + n))
+				while((st < bufr + n) && (*st == ' ' || *st == '\t'))
 					st++;
 				while((st + st_len < bufr + n)
 				      && (st[st_len]!='\r' && st[st_len]!='\n'))

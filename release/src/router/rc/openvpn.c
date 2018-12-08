@@ -998,8 +998,8 @@ void start_ovpn_server(int serverNum)
 
 		if ( nvram_pf_get_int(prefix, "pdns") )
 		{
-			if ( nvram_safe_get("wan_domain")[0] != '\0' )
-				fprintf(fp, "push \"dhcp-option DOMAIN %s\"\n", nvram_safe_get("wan_domain"));
+			if ( nvram_safe_get("lan_domain")[0] != '\0' )
+				fprintf(fp, "push \"dhcp-option DOMAIN %s\"\n", nvram_safe_get("lan_domain"));
 			fprintf(fp, "push \"dhcp-option DNS %s\"\n", nvram_safe_get("lan_ipaddr"));
 		}
 

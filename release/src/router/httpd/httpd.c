@@ -2209,6 +2209,7 @@ void erase_cert(void)
 #endif
 	//nvram_unset("https_crt_gen");
 	nvram_set("https_crt_gen", "0");
+	nvram_commit();
 }
 
 void start_ssl(void)

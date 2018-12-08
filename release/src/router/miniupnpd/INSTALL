@@ -1,5 +1,5 @@
 MiniUPnP project.
-(c) 2006-2017 Thomas Bernard
+(c) 2006-2018 Thomas Bernard
 Homepage : http://miniupnp.free.fr/
 Mirror: https://miniupnp.tuxfamily.org/
 github: https://github.com/miniupnp/miniupnp
@@ -140,7 +140,19 @@ the wrong mask would be picked. You can force the mask when using interface
 names :
 listening_ip=eth0/24
 
-Miniupnpd supports some kind of security check for allowing or disallowing
+Some users want to use miniupnpd on a NAT router which is connected to the
+internet through another NAT router (NAT behind NAT). This kind of setup is
+strongly discouraged. miniupnpd will refuses to launch when detecting a
+private (RFC1918) "WAN" IP address. The ext_ip option sould be added :
+ext_ifname=eth1  # "WAN" network interface, whose IP could be 192.168.1.22
+ext_ip=80.1.2.3  # Real public IP address
+listening_ip=eth0
+Please note that miniupnpd doesn't redirect any port on the other NAT router.
+UPNP requests forwarding is not implemented.
+It is however possible to use STUN. See the ext_perform_stun / ext_stun_host
+ / ext_stun_port options.
+
+miniupnpd supports some kind of security check for allowing or disallowing
 redirection to be made. The UPnP permission rules are read from the
 miniupnpd.conf configuration file.
 When a new redirection is requested, permission rules are evaluated in

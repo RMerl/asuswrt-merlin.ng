@@ -1,4 +1,4 @@
-# hostent.m4 serial 2
+# hostent.m4 serial 3
 dnl Copyright (C) 2008, 2010-2018 Free Software Foundation, Inc.
 dnl This file is free software; the Free Software Foundation
 dnl gives unlimited permission to copy and/or distribute it,
@@ -8,7 +8,7 @@ AC_DEFUN([gl_HOSTENT],
 [
   dnl Where are gethostent(), sethostent(), endhostent(), gethostbyname(),
   dnl gethostbyaddr() defined?
-  dnl - On Solaris, they are in libnsl. Ignore libxnet.
+  dnl - On Solaris < 11.4, they are in libnsl. Ignore libxnet.
   dnl - On Haiku, they are in libnetwork.
   dnl - On BeOS, they are in libnet.
   dnl - On native Windows, they are in ws2_32.dll.

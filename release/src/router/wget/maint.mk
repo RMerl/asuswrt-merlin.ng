@@ -421,6 +421,7 @@ sc_error_message_period:
 
 sc_file_system:
 	@prohibit=file''system						\
+	exclude='/proc/filesystems'					\
 	ignore_case=1							\
 	halt='found use of "file''system"; spell it "file system"'	\
 	  $(_sc_search_regexp)
@@ -571,7 +572,7 @@ sc_prohibit_posixver_without_use:
 	@h='posixver.h' re='\<posix2_version *\(' $(_sc_header_without_use)
 
 sc_prohibit_same_without_use:
-	@h='same.h' re='\<same_name *\(' $(_sc_header_without_use)
+	@h='same.h' re='\<same_name(at)? *\(' $(_sc_header_without_use)
 
 sc_prohibit_hash_pjw_without_use:
 	@h='hash-pjw.h' \

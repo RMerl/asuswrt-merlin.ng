@@ -1,4 +1,4 @@
-#!/usr/bin/env perl
+#!/usr/bin/env -S perl -I .
 
 use strict;
 use warnings;
@@ -19,13 +19,6 @@ my %urls = (
         content => "blabla",
     },
 );
-
-# Skip the test if openssl is not available
-my $ossl = `openssl version`;
-unless ($ossl =~ m/OpenSSL 1/)
-{
-  exit 77;
-}
 
 my $srcdir;
 if (@ARGV) {
@@ -54,16 +47,6 @@ unless (inet_ntoa($addr) =~ "127.0.0.1")
 # Prepare self-signed certificates
 my $certfile="$srcdir/certs/selfsigned.crt";
 my $keyfile="$srcdir/certs/selfsigned.key";
-
-my $sscheck=`(openssl x509 -noout -modulus -in $certfile | openssl md5 ;
-              openssl rsa  -noout -modulus -in $keyfile | openssl md5) |
-              uniq|wc -l`;
-
-# Check if Self signed certificate and key are made correctly.
-unless(-e $certfile && -e $keyfile && $sscheck == 1)
-{
-    exit 77; # skip
-}
 
 # Try Wget using SSL first without --no-check-certificate. expect error
 my $port    = 26443;

@@ -36,7 +36,7 @@ extern "C" {
 #endif
 
 # if GNULIB_DIRNAME
-char *base_name (char const *file);
+char *base_name (char const *file) _GL_ATTRIBUTE_MALLOC;
 char *dir_name (char const *file);
 # endif
 

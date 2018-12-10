@@ -68,7 +68,10 @@ as that of the covered work.  */
 #include <setjmp.h>
 
 #include <regex.h>
-#ifdef HAVE_LIBPCRE
+#ifdef HAVE_LIBPCRE2
+# define PCRE2_CODE_UNIT_WIDTH 8
+# include <pcre2.h>
+#elif defined HAVE_LIBPCRE
 # include <pcre.h>
 #endif
 
@@ -563,6 +566,9 @@ file_exists_p (const char *filename, file_stats_t *fstats)
 {
   struct stat buf;
 
+  if (!filename)
+	  return false;
+
 #if defined(WINDOWS) || defined(__VMS)
     int ret = stat (filename, &buf);
     if (ret >= 0)
@@ -921,6 +927,7 @@ open_stat(const char *fname, int flags, mode_t mode, file_stats_t *fstats)
   if (fstat (fd, &fdstats) == -1)
   {
     logprintf (LOG_NOTQUIET, _("Failed to stat file %s, error: %s\n"), fname, strerror(errno));
+    close (fd);
     return -1;
   }
 #if !(defined(WINDOWS) || defined(__VMS))
@@ -2425,6 +2432,23 @@ wget_base64_decode (const char *base64, void *dest, size_t size)
   return n;
 }
 
+#ifdef HAVE_LIBPCRE2
+/* Compiles the PCRE2 regex. */
+void *
+compile_pcre2_regex (const char *str)
+{
+  int errornumber;
+  PCRE2_SIZE erroroffset;
+  pcre2_code *regex = pcre2_compile((PCRE2_SPTR) str, PCRE2_ZERO_TERMINATED, 0, &errornumber, &erroroffset, NULL);
+  if (! regex)
+    {
+      fprintf (stderr, _("Invalid regular expression %s, PCRE2 error %d\n"),
+               quote (str), errornumber);
+    }
+  return regex;
+}
+#endif
+
 #ifdef HAVE_LIBPCRE
 /* Compiles the PCRE regex. */
 void *
@@ -2437,7 +2461,6 @@ compile_pcre_regex (const char *str)
     {
       fprintf (stderr, _("Invalid regular expression %s, %s\n"),
                quote (str), errbuf);
-      return false;
     }
   return regex;
 }
@@ -2468,6 +2491,34 @@ compile_posix_regex (const char *str)
 
   return regex;
 }
+
+#ifdef HAVE_LIBPCRE2
+/* Matches a PCRE2 regex.  */
+bool
+match_pcre2_regex (const void *regex, const char *str)
+{
+  int rc;
+  pcre2_match_data *match_data;
+
+  match_data = pcre2_match_data_create_from_pattern(regex, NULL);
+
+  if (match_data)
+    {
+      rc = pcre2_match(regex, (PCRE2_SPTR) str, strlen(str), 0, 0, match_data, NULL);
+      pcre2_match_data_free(match_data);
+    }
+  else
+	  rc = PCRE2_ERROR_NOMEMORY;
+
+  if (rc < 0 && rc != PCRE2_ERROR_NOMATCH)
+    {
+      logprintf (LOG_VERBOSE, _("Error while matching %s: %d\n"),
+                 quote (str), rc);
+    }
+
+  return rc >= 0;
+}
+#endif
 
 #ifdef HAVE_LIBPCRE
 #define OVECCOUNT 30

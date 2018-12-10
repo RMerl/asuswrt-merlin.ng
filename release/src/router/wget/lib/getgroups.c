@@ -58,8 +58,8 @@ int posix_getgroups (int, gid_t []) __asm ("_getgroups");
 #  define getgroups posix_getgroups
 # endif
 
-/* On at least Ultrix 4.3 and NextStep 3.2, getgroups (0, NULL) always
-   fails.  On other systems, it returns the number of supplemental
+/* On at least NeXTstep 3.2, getgroups (0, NULL) always fails.
+   On other systems, it returns the number of supplemental
    groups for the process.  This function handles that special case
    and lets the system-provided function handle all others.  However,
    it can fail with ENOMEM if memory is tight.  It is unspecified

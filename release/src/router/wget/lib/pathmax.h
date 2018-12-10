@@ -65,7 +65,7 @@
 #  define PATH_MAX 1024
 # endif
 
-# if (defined _WIN32 || defined __WIN32__) && ! defined __CYGWIN__
+# if defined _WIN32 && ! defined __CYGWIN__
 /* The page "Naming Files, Paths, and Namespaces" on msdn.microsoft.com,
    section "Maximum Path Length Limitation",
    <https://msdn.microsoft.com/en-us/library/aa365247.aspx#maxpath>

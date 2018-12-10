@@ -1,4 +1,4 @@
-#!/usr/bin/env perl
+#!/usr/bin/env -S perl -I .
 
 use strict;
 use warnings;
@@ -19,13 +19,6 @@ my %urls = (
         content => "blabla",
     },
 );
-
-# Skip the test if openssl is not available
-my $ossl = `openssl version`;
-unless ($ossl =~ m/OpenSSL 1/)
-{
-  exit 77;
-}
 
 my $srcdir;
 if (@ARGV) {
@@ -52,20 +45,10 @@ unless (inet_ntoa($addr) =~ "127.0.0.1")
 }
 
 my $cacrt      = "$srcdir/certs/test-ca-cert.pem";
-my $cakey      = "$srcdir/certs/test-ca-key.pem";
 
 # Use a revoked certificate
-my $servercrt  = "$srcdir/certs/server.crt";
-my $serverkey  = "$srcdir/certs/server.key";
-
-my $servercheck =`(openssl x509 -noout -modulus -in $servercrt | openssl md5 ;
-                   openssl rsa  -noout -modulus -in $serverkey | openssl md5) |
-                   uniq | wc -l`;
-# Check if certificate and key are correct.
-unless(-e $servercrt && -e $serverkey && $servercheck == 1)
-{
-    exit 77; # skip
-}
+my $servercrt  = "$srcdir/certs/server-cert.pem";
+my $serverkey  = "$srcdir/certs/server-key.pem";
 
 # Try Wget using SSL first without --no-check-certificate. Expect Success.
 my $port    = 32443;
@@ -96,16 +79,7 @@ if ($sslsock->run() != 0)
 }
 
 # Revoke the certificate
-my $crlfile   = "$srcdir/certs/revokedcrl.pem";
-
-# Check if CRL file is generated.
-unless(-e $crlfile)
-{
-    exit 77; # skip
-}
-
-# To read a CRL file use the following command:
-# openssl crl -text -in $srcdir/certs/root.crl.pem
+my $crlfile   = "$srcdir/certs/revoked-crl.pem";
 
 # Retry the test with CRL. Expect Failure.
 $port    = 23443;

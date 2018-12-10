@@ -654,11 +654,13 @@ open_hsts_test_store (void)
 static void
 close_hsts_test_store (hsts_store_t store)
 {
-  char *filename = NULL;
+  char *filename;
 
-  filename = get_hsts_store_filename ();
-  unlink (filename);
-  xfree (filename);
+  if ((filename = get_hsts_store_filename ()))
+    {
+      unlink (filename);
+      xfree (filename);
+    }
   xfree (store);
 }
 

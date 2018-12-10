@@ -1,4 +1,5 @@
-/* Copyright (C) 1991-1993, 1996-1999, 2001-2003, 2005, 2007, 2009-2018 Free
+/* Substitute for and wrapper around <fnmatch.h>.
+   Copyright (C) 1991-1993, 1996-1999, 2001-2003, 2005, 2007, 2009-2018 Free
    Software Foundation, Inc.
 
    This file is part of the GNU C Library.
@@ -16,14 +17,28 @@
    You should have received a copy of the GNU General Public License
    along with this program; if not, see <https://www.gnu.org/licenses/>.  */
 
-#ifndef _FNMATCH_H
-#define _FNMATCH_H      1
+#ifndef _@GUARD_PREFIX@_FNMATCH_H
+
+#if __GNUC__ >= 3
+@PRAGMA_SYSTEM_HEADER@
+#endif
+@PRAGMA_COLUMNS@
+
+/* The include_next requires a split double-inclusion guard.  */
+#if @HAVE_FNMATCH_H@ && !@REPLACE_FNMATCH@
+# @INCLUDE_NEXT@ @NEXT_FNMATCH_H@
+#endif
+
+#ifndef _@GUARD_PREFIX@_FNMATCH_H
+#define _@GUARD_PREFIX@_FNMATCH_H
+
+/* The definitions of _GL_FUNCDECL_RPL etc. are copied here.  */
 
 /* The definition of _GL_ARG_NONNULL is copied here.  */
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+/* The definition of _GL_WARN_ON_USE is copied here.  */
+
+#if !@HAVE_FNMATCH_H@ || @REPLACE_FNMATCH@
 
 /* We #undef these before defining them because some losing systems
    (HP-UX A.08.07 for example) define these in <unistd.h>.  */
@@ -54,14 +69,42 @@ extern "C" {
 # define FNM_NOSYS      (-1)
 #endif
 
-/* Match NAME against the file name pattern PATTERN,
-   returning zero if it matches, FNM_NOMATCH if not.  */
-extern int fnmatch (const char *__pattern, const char *__name,
-                    int __flags)
-     _GL_ARG_NONNULL ((1, 2));
-
-#ifdef __cplusplus
-}
 #endif
 
-#endif /* fnmatch.h */
+
+#if @GNULIB_FNMATCH@
+/* Match NAME against the file name pattern PATTERN,
+   returning zero if it matches, FNM_NOMATCH if not.  */
+# if @REPLACE_FNMATCH@
+#  if !(defined __cplusplus && defined GNULIB_NAMESPACE)
+#   define fnmatch rpl_fnmatch
+#  endif
+_GL_FUNCDECL_RPL (fnmatch, int,
+                  (const char *pattern, const char *name, int flags)
+                  _GL_ARG_NONNULL ((1, 2)));
+_GL_CXXALIAS_RPL (fnmatch, int,
+                  (const char *pattern, const char *name, int flags));
+# else
+#  if !@HAVE_FNMATCH@
+_GL_FUNCDECL_SYS (fnmatch, int,
+                  (const char *pattern, const char *name, int flags)
+                  _GL_ARG_NONNULL ((1, 2)));
+#  endif
+_GL_CXXALIAS_SYS (fnmatch, int,
+                  (const char *pattern, const char *name, int flags));
+# endif
+# if !GNULIB_FNMATCH_GNU
+_GL_CXXALIASWARN (fnmatch);
+# endif
+#elif defined GNULIB_POSIXCHECK
+# undef fnmatch
+# if HAVE_RAW_DECL_FNMATCH
+_GL_WARN_ON_USE (fnmatch,
+                 "fnmatch does not portably work - "
+                 "use gnulib module fnmatch for portability or gnulib module fnmatch-gnu for a glibc compatible implementation");
+# endif
+#endif
+
+
+#endif /* _@GUARD_PREFIX@_FNMATCH_H */
+#endif /* _@GUARD_PREFIX@_FNMATCH_H */

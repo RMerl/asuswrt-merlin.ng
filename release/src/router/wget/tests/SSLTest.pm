@@ -18,8 +18,8 @@ if (defined $ENV{srcdir}) {
 }
 
 my %ssl_defaults = (
-    _certfile  => "$srcdir/certs/server.crt",
-    _keyfile   => "$srcdir/certs/server.key",
+    _certfile  => "$srcdir/certs/server-cert.pem",
+    _keyfile   => "$srcdir/certs/server-key.pem",
     _cafile    => "$srcdir/certs/test-ca-cert.pem",
     _ciphers   => 'ALL',
     _lhostname => 'wgettestingserver',

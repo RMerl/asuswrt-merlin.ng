@@ -1,10 +1,12 @@
-# size_max.m4 serial 10
+# size_max.m4 serial 11
 dnl Copyright (C) 2003, 2005-2006, 2008-2018 Free Software Foundation, Inc.
 dnl This file is free software; the Free Software Foundation
 dnl gives unlimited permission to copy and/or distribute it,
 dnl with or without modifications, as long as this notice is preserved.
 
 dnl From Bruno Haible.
+
+AC_PREREQ([2.61])
 
 AC_DEFUN([gl_SIZE_MAX],
 [
@@ -70,10 +72,4 @@ Found it
 #ifndef SIZE_MAX
 # undef SIZE_MAX
 #endif])
-])
-
-dnl Autoconf >= 2.61 has AC_COMPUTE_INT built-in.
-dnl Remove this when we can assume autoconf >= 2.61.
-m4_ifdef([AC_COMPUTE_INT], [], [
-  AC_DEFUN([AC_COMPUTE_INT], [_AC_COMPUTE_INT([$2],[$1],[$3],[$4])])
 ])

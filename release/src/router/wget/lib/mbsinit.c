@@ -54,7 +54,7 @@ mbsinit (const mbstate_t *ps)
 int
 mbsinit (const mbstate_t *ps)
 {
-# if (defined _WIN32 || defined __WIN32__) && !defined __CYGWIN__
+# if defined _WIN32 && !defined __CYGWIN__
   /* Native Windows.  */
 #  ifdef __MINGW32__
   /* On mingw, 'mbstate_t' is defined as 'int'.  */

@@ -22,12 +22,13 @@
 
 #include <locale.h>
 #include <string.h>
-#if (defined _WIN32 || defined __WIN32__) && ! defined __CYGWIN__
+#if defined _WIN32 && ! defined __CYGWIN__
 # define WIN32_LEAN_AND_MEAN  /* avoid including junk */
 # include <windows.h>
 # include <stdio.h>
 #endif
 
+#if !REPLACE_NL_LANGINFO || GNULIB_defined_CODESET
 /* Return the codeset of the current locale, if this is easily deducible.
    Otherwise, return "".  */
 static char *
@@ -64,7 +65,7 @@ ctype_codeset (void)
         }
     }
 
-#if (defined _WIN32 || defined __WIN32__) && ! defined __CYGWIN__
+# if defined _WIN32 && ! defined __CYGWIN__
   /* If setlocale is successful, it returns the number of the
      codepage, as a string.  Otherwise, fall back on Windows API
      GetACP, which returns the locale's codepage as a number (although
@@ -76,9 +77,10 @@ ctype_codeset (void)
   else
     sprintf (buf + 2, "%u", GetACP ());
   codeset = memcpy (buf, "CP", 2);
-#endif
+# endif
   return codeset;
 }
+#endif
 
 
 #if REPLACE_NL_LANGINFO
@@ -99,6 +101,24 @@ rpl_nl_langinfo (nl_item item)
 # if GNULIB_defined_T_FMT_AMPM
     case T_FMT_AMPM:
       return (char *) "%I:%M:%S %p";
+# endif
+# if GNULIB_defined_ALTMON
+    case ALTMON_1:
+    case ALTMON_2:
+    case ALTMON_3:
+    case ALTMON_4:
+    case ALTMON_5:
+    case ALTMON_6:
+    case ALTMON_7:
+    case ALTMON_8:
+    case ALTMON_9:
+    case ALTMON_10:
+    case ALTMON_11:
+    case ALTMON_12:
+      /* We don't ship the appropriate localizations with gnulib.  Therefore,
+         treat ALTMON_i like MON_i.  */
+      item = item - ALTMON_1 + MON_1;
+      break;
 # endif
 # if GNULIB_defined_ERA
     case ERA:
@@ -171,8 +191,10 @@ nl_langinfo (nl_item item)
       return localeconv () ->decimal_point;
     case THOUSEP:
       return localeconv () ->thousands_sep;
+# ifdef GROUPING
     case GROUPING:
       return localeconv () ->grouping;
+# endif
     /* nl_langinfo items of the LC_TIME category.
        TODO: Really use the locale.  */
     case D_T_FMT:
@@ -228,28 +250,49 @@ nl_langinfo (nl_item item)
           return (char *) abdays[item - ABDAY_1];
         return nlbuf;
       }
-    case MON_1:
-    case MON_2:
-    case MON_3:
-    case MON_4:
-    case MON_5:
-    case MON_6:
-    case MON_7:
-    case MON_8:
-    case MON_9:
-    case MON_10:
-    case MON_11:
-    case MON_12:
-      {
-        static char const months[][sizeof "September"] = {
-          "January", "February", "March", "April", "May", "June", "July",
-          "September", "October", "November", "December"
-        };
+    {
+      static char const months[][sizeof "September"] = {
+        "January", "February", "March", "April", "May", "June", "July",
+        "September", "October", "November", "December"
+      };
+      case MON_1:
+      case MON_2:
+      case MON_3:
+      case MON_4:
+      case MON_5:
+      case MON_6:
+      case MON_7:
+      case MON_8:
+      case MON_9:
+      case MON_10:
+      case MON_11:
+      case MON_12:
         tmm.tm_mon = item - MON_1;
         if (!strftime (nlbuf, sizeof nlbuf, "%B", &tmm))
           return (char *) months[item - MON_1];
         return nlbuf;
-      }
+      case ALTMON_1:
+      case ALTMON_2:
+      case ALTMON_3:
+      case ALTMON_4:
+      case ALTMON_5:
+      case ALTMON_6:
+      case ALTMON_7:
+      case ALTMON_8:
+      case ALTMON_9:
+      case ALTMON_10:
+      case ALTMON_11:
+      case ALTMON_12:
+        tmm.tm_mon = item - ALTMON_1;
+        /* The platforms without nl_langinfo() don't support strftime with %OB.
+           We don't even need to try.  */
+        #if 0
+        if (!strftime (nlbuf, sizeof nlbuf, "%OB", &tmm))
+        #endif
+          if (!strftime (nlbuf, sizeof nlbuf, "%B", &tmm))
+            return (char *) months[item - ALTMON_1];
+        return nlbuf;
+    }
     case ABMON_1:
     case ABMON_2:
     case ABMON_3:
@@ -279,6 +322,7 @@ nl_langinfo (nl_item item)
     /* nl_langinfo items of the LC_MONETARY category.  */
     case CRNCYSTR:
       return localeconv () ->currency_symbol;
+# ifdef INT_CURR_SYMBOL
     case INT_CURR_SYMBOL:
       return localeconv () ->int_curr_symbol;
     case MON_DECIMAL_POINT:
@@ -307,6 +351,7 @@ nl_langinfo (nl_item item)
       return & localeconv () ->p_sign_posn;
     case N_SIGN_POSN:
       return & localeconv () ->n_sign_posn;
+# endif
     /* nl_langinfo items of the LC_MESSAGES category
        TODO: Really use the locale. */
     case YESEXPR:

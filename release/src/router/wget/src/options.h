@@ -41,6 +41,7 @@ struct options
   bool quiet;                   /* Are we quiet? */
   int ntry;                     /* Number of tries per URL */
   bool retry_connrefused;       /* Treat CONNREFUSED as non-fatal. */
+  bool retry_on_host_error;     /* Treat host errors as non-fatal. */
   char *retry_on_http_error;    /* Treat given HTTP errors as non-fatal. */
   bool background;              /* Whether we should work in background. */
   bool ignore_length;           /* Do we heed content-length at all?  */
@@ -91,7 +92,7 @@ struct options
   void *acceptregex;            /* Patterns to accept (a regex struct). */
   void *rejectregex;            /* Patterns to reject (a regex struct). */
   enum {
-#ifdef HAVE_LIBPCRE
+#if defined HAVE_LIBPCRE || HAVE_LIBPCRE2
     regex_type_pcre,
 #endif
     regex_type_posix

@@ -57,13 +57,13 @@
 /* Before doing "#define mkdir rpl_mkdir" below, we need to include all
    headers that may declare mkdir().  Native Windows platforms declare mkdir
    in <io.h> and/or <direct.h>, not in <unistd.h>.  */
-#if (defined _WIN32 || defined __WIN32__) && ! defined __CYGWIN__
+#if defined _WIN32 && ! defined __CYGWIN__
 # include <io.h>     /* mingw32, mingw64 */
 # include <direct.h> /* mingw64, MSVC 9 */
 #endif
 
 /* Native Windows platforms declare umask() in <io.h>.  */
-#if 0 && ((defined _WIN32 || defined __WIN32__) && ! defined __CYGWIN__)
+#if 0 && (defined _WIN32 && ! defined __CYGWIN__)
 # include <io.h>
 #endif
 
@@ -576,7 +576,7 @@ _GL_CXXALIAS_RPL (mkdir, int, (char const *name, mode_t mode));
    Additionally, it declares _mkdir (and depending on compile flags, an
    alias mkdir), only in the nonstandard includes <direct.h> and <io.h>,
    which are included above.  */
-# if (defined _WIN32 || defined __WIN32__) && ! defined __CYGWIN__
+# if defined _WIN32 && ! defined __CYGWIN__
 
 #  if !GNULIB_defined_rpl_mkdir
 static int

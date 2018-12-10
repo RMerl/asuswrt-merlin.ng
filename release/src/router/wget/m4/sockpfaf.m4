@@ -1,4 +1,4 @@
-# sockpfaf.m4 serial 8
+# sockpfaf.m4 serial 9
 dnl Copyright (C) 2004, 2006, 2009-2018 Free Software Foundation, Inc.
 dnl This file is free software; the Free Software Foundation
 dnl gives unlimited permission to copy and/or distribute it,
@@ -16,8 +16,8 @@ AC_DEFUN([gl_SOCKET_FAMILIES],
   AC_REQUIRE([gl_HEADER_SYS_SOCKET])
   AC_CHECK_HEADERS_ONCE([netinet/in.h])
 
-  AC_MSG_CHECKING([for IPv4 sockets])
-  AC_CACHE_VAL([gl_cv_socket_ipv4],
+  AC_CACHE_CHECK([for IPv4 sockets],
+    [gl_cv_socket_ipv4],
     [AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[#include <sys/types.h>
 #ifdef HAVE_SYS_SOCKET_H
 #include <sys/socket.h>
@@ -31,13 +31,12 @@ AC_DEFUN([gl_SOCKET_FAMILIES],
 [[int x = AF_INET; struct in_addr y; struct sockaddr_in z;
  if (&x && &y && &z) return 0;]])],
        gl_cv_socket_ipv4=yes, gl_cv_socket_ipv4=no)])
-  AC_MSG_RESULT([$gl_cv_socket_ipv4])
   if test $gl_cv_socket_ipv4 = yes; then
     AC_DEFINE([HAVE_IPV4], [1], [Define to 1 if <sys/socket.h> defines AF_INET.])
   fi
 
-  AC_MSG_CHECKING([for IPv6 sockets])
-  AC_CACHE_VAL([gl_cv_socket_ipv6],
+  AC_CACHE_CHECK([for IPv6 sockets],
+    [gl_cv_socket_ipv6],
     [AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[#include <sys/types.h>
 #ifdef HAVE_SYS_SOCKET_H
 #include <sys/socket.h>
@@ -54,7 +53,6 @@ AC_DEFUN([gl_SOCKET_FAMILIES],
 [[int x = AF_INET6; struct in6_addr y; struct sockaddr_in6 z;
  if (&x && &y && &z) return 0;]])],
        gl_cv_socket_ipv6=yes, gl_cv_socket_ipv6=no)])
-  AC_MSG_RESULT([$gl_cv_socket_ipv6])
   if test $gl_cv_socket_ipv6 = yes; then
     AC_DEFINE([HAVE_IPV6], [1], [Define to 1 if <sys/socket.h> defines AF_INET6.])
   fi
@@ -65,8 +63,8 @@ AC_DEFUN([gl_SOCKET_FAMILY_UNIX],
   AC_REQUIRE([gl_HEADER_SYS_SOCKET])
   AC_CHECK_HEADERS_ONCE([sys/un.h])
 
-  AC_MSG_CHECKING([for UNIX domain sockets])
-  AC_CACHE_VAL([gl_cv_socket_unix],
+  AC_CACHE_CHECK([for UNIX domain sockets],
+    [gl_cv_socket_unix],
     [AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[#include <sys/types.h>
 #ifdef HAVE_SYS_SOCKET_H
 #include <sys/socket.h>
@@ -80,7 +78,6 @@ AC_DEFUN([gl_SOCKET_FAMILY_UNIX],
 [[int x = AF_UNIX; struct sockaddr_un y;
  if (&x && &y) return 0;]])],
        gl_cv_socket_unix=yes, gl_cv_socket_unix=no)])
-  AC_MSG_RESULT([$gl_cv_socket_unix])
   if test $gl_cv_socket_unix = yes; then
     AC_DEFINE([HAVE_UNIXSOCKET], [1], [Define to 1 if <sys/socket.h> defines AF_UNIX.])
   fi

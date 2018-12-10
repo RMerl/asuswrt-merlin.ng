@@ -1,4 +1,4 @@
-# posix_spawn.m4 serial 14
+# posix_spawn.m4 serial 15
 dnl Copyright (C) 2008-2018 Free Software Foundation, Inc.
 dnl This file is free software; the Free Software Foundation
 dnl gives unlimited permission to copy and/or distribute it,
@@ -33,45 +33,57 @@ AC_DEFUN([gl_POSIX_SPAWN_BODY],
   dnl AC_CHECK_FUNCS_ONCE([posix_spawnattr_setsigmask])
   dnl AC_CHECK_FUNCS_ONCE([posix_spawnattr_destroy])
   if test $ac_cv_func_posix_spawn = yes; then
-    gl_POSIX_SPAWN_WORKS
-    case "$gl_cv_func_posix_spawn_works" in
-      *yes)
-        AC_DEFINE([HAVE_WORKING_POSIX_SPAWN], [1],
-          [Define if you have the posix_spawn and posix_spawnp functions and
-           they work.])
-        dnl Assume that these functions are available if POSIX_SPAWN_SETSCHEDULER
-        dnl evaluates to nonzero.
-        dnl AC_CHECK_FUNCS_ONCE([posix_spawnattr_getschedpolicy])
-        dnl AC_CHECK_FUNCS_ONCE([posix_spawnattr_setschedpolicy])
-        AC_CACHE_CHECK([whether posix_spawnattr_setschedpolicy is supported],
-          [gl_cv_func_spawnattr_setschedpolicy],
-          [AC_EGREP_CPP([POSIX scheduling supported], [
+    m4_ifdef([gl_FUNC_POSIX_SPAWN_FILE_ACTIONS_ADDCHDIR],
+      [dnl Module 'posix_spawn_file_actions_addchdir' is present.
+       AC_CHECK_FUNCS_ONCE([posix_spawn_file_actions_addchdir_np])
+       if test $ac_cv_func_posix_spawn_file_actions_addchdir_np = no; then
+         dnl In order to implement the posix_spawn_file_actions_addchdir
+         dnl function, we need to replace the entire posix_spawn facility.
+         REPLACE_POSIX_SPAWN=1
+       fi
+      ])
+    if test $REPLACE_POSIX_SPAWN = 0; then
+      gl_POSIX_SPAWN_WORKS
+      case "$gl_cv_func_posix_spawn_works" in
+        *yes)
+          dnl Assume that these functions are available if POSIX_SPAWN_SETSCHEDULER
+          dnl evaluates to nonzero.
+          dnl AC_CHECK_FUNCS_ONCE([posix_spawnattr_getschedpolicy])
+          dnl AC_CHECK_FUNCS_ONCE([posix_spawnattr_setschedpolicy])
+          AC_CACHE_CHECK([whether posix_spawnattr_setschedpolicy is supported],
+            [gl_cv_func_spawnattr_setschedpolicy],
+            [AC_EGREP_CPP([POSIX scheduling supported], [
 #include <spawn.h>
 #if POSIX_SPAWN_SETSCHEDULER
  POSIX scheduling supported
 #endif
 ],
-             [gl_cv_func_spawnattr_setschedpolicy=yes],
-             [gl_cv_func_spawnattr_setschedpolicy=no])
-          ])
-        dnl Assume that these functions are available if POSIX_SPAWN_SETSCHEDPARAM
-        dnl evaluates to nonzero.
-        dnl AC_CHECK_FUNCS_ONCE([posix_spawnattr_getschedparam])
-        dnl AC_CHECK_FUNCS_ONCE([posix_spawnattr_setschedparam])
-        AC_CACHE_CHECK([whether posix_spawnattr_setschedparam is supported],
-          [gl_cv_func_spawnattr_setschedparam],
-          [AC_EGREP_CPP([POSIX scheduling supported], [
+               [gl_cv_func_spawnattr_setschedpolicy=yes],
+               [gl_cv_func_spawnattr_setschedpolicy=no])
+            ])
+          dnl Assume that these functions are available if POSIX_SPAWN_SETSCHEDPARAM
+          dnl evaluates to nonzero.
+          dnl AC_CHECK_FUNCS_ONCE([posix_spawnattr_getschedparam])
+          dnl AC_CHECK_FUNCS_ONCE([posix_spawnattr_setschedparam])
+          AC_CACHE_CHECK([whether posix_spawnattr_setschedparam is supported],
+            [gl_cv_func_spawnattr_setschedparam],
+            [AC_EGREP_CPP([POSIX scheduling supported], [
 #include <spawn.h>
 #if POSIX_SPAWN_SETSCHEDPARAM
  POSIX scheduling supported
 #endif
 ],
-             [gl_cv_func_spawnattr_setschedparam=yes],
-             [gl_cv_func_spawnattr_setschedparam=no])
-          ])
-        ;;
-      *) REPLACE_POSIX_SPAWN=1 ;;
-    esac
+               [gl_cv_func_spawnattr_setschedparam=yes],
+               [gl_cv_func_spawnattr_setschedparam=no])
+            ])
+          ;;
+        *) REPLACE_POSIX_SPAWN=1 ;;
+      esac
+    fi
+  fi
+  if test $ac_cv_func_posix_spawn != yes || test $REPLACE_POSIX_SPAWN = 1; then
+    AC_DEFINE([REPLACE_POSIX_SPAWN], [1],
+      [Define if gnulib uses its own posix_spawn and posix_spawnp functions.])
   fi
 ])
 

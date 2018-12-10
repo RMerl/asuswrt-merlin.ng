@@ -117,35 +117,6 @@
 # define STRTOL_LONG_MIN LLONG_MIN
 # define STRTOL_LONG_MAX LLONG_MAX
 # define STRTOL_ULONG_MAX ULLONG_MAX
-
-/* The extra casts in the following macros work around compiler bugs,
-   e.g., in Cray C 5.0.3.0.  */
-
-/* True if the arithmetic type T is signed.  */
-# define TYPE_SIGNED(t) (! ((t) 0 < (t) -1))
-
-/* Minimum and maximum values for integer types.
-   These macros have undefined behavior for signed types that either
-   have padding bits or do not use two's complement.  If this is a
-   problem for you, please let us know how to fix it for your host.  */
-
-/* The maximum and minimum values for the integer type T.  */
-# define TYPE_MINIMUM(t) ((t) ~ TYPE_MAXIMUM (t))
-# define TYPE_MAXIMUM(t)                                                 \
-   ((t) (! TYPE_SIGNED (t)                                               \
-         ? (t) -1                                                        \
-         : ((((t) 1 << (sizeof (t) * CHAR_BIT - 2)) - 1) * 2 + 1)))
-
-# ifndef ULLONG_MAX
-#  define ULLONG_MAX TYPE_MAXIMUM (unsigned long long)
-# endif
-# ifndef LLONG_MAX
-#  define LLONG_MAX TYPE_MAXIMUM (long long int)
-# endif
-# ifndef LLONG_MIN
-#  define LLONG_MIN TYPE_MINIMUM (long long int)
-# endif
-
 # if __GNUC__ == 2 && __GNUC_MINOR__ < 7
    /* Work around gcc bug with using this constant.  */
    static const unsigned long long int maxquad = ULLONG_MAX;

@@ -28,15 +28,32 @@
 #ifndef _@GUARD_PREFIX@_LIMITS_H
 #define _@GUARD_PREFIX@_LIMITS_H
 
-/* For HP-UX 11.31.  */
-#if defined LONG_LONG_MIN && !defined LLONG_MIN
-# define LLONG_MIN LONG_LONG_MIN
+#ifndef LLONG_MIN
+# if defined LONG_LONG_MIN /* HP-UX 11.31 */
+#  define LLONG_MIN LONG_LONG_MIN
+# elif defined LONGLONG_MIN /* IRIX 6.5 */
+#  define LLONG_MIN LONGLONG_MIN
+# elif defined __GNUC__
+#  define LLONG_MIN (- __LONG_LONG_MAX__ - 1LL)
+# endif
 #endif
-#if defined LONG_LONG_MAX && !defined LLONG_MAX
-# define LLONG_MAX LONG_LONG_MAX
+#ifndef LLONG_MAX
+# if defined LONG_LONG_MAX /* HP-UX 11.31 */
+#  define LLONG_MAX LONG_LONG_MAX
+# elif defined LONGLONG_MAX /* IRIX 6.5 */
+#  define LLONG_MAX LONGLONG_MAX
+# elif defined __GNUC__
+#  define LLONG_MAX __LONG_LONG_MAX__
+# endif
 #endif
-#if defined ULONG_LONG_MAX && !defined ULLONG_MAX
-# define ULLONG_MAX ULONG_LONG_MAX
+#ifndef ULLONG_MAX
+# if defined ULONG_LONG_MAX /* HP-UX 11.31 */
+#  define ULLONG_MAX ULONG_LONG_MAX
+# elif defined ULONGLONG_MAX /* IRIX 6.5 */
+#  define ULLONG_MAX ULONGLONG_MAX
+# elif defined __GNUC__
+#  define ULLONG_MAX (__LONG_LONG_MAX__ * 2ULL + 1ULL)
+# endif
 #endif
 
 /* The number of usable bits in an unsigned or signed integer type
@@ -52,6 +69,19 @@
 #define _GL_COB16(n) (_GL_COB8 ((n) >> 8) + _GL_COB8 (n))
 #define _GL_COB8(n) (_GL_COB4 ((n) >> 4) + _GL_COB4 (n))
 #define _GL_COB4(n) (!!((n) & 8) + !!((n) & 4) + !!((n) & 2) + !!((n) & 1))
+
+#ifndef WORD_BIT
+/* Assume 'int' is 32 bits wide.  */
+# define WORD_BIT 32
+#endif
+#ifndef LONG_BIT
+/* Assume 'long' is 32 or 64 bits wide.  */
+# if LONG_MAX == INT_MAX
+#  define LONG_BIT 32
+# else
+#  define LONG_BIT 64
+# endif
+#endif
 
 /* Macros specified by ISO/IEC TS 18661-1:2014.  */
 

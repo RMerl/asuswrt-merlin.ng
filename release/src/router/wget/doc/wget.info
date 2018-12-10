@@ -18,8 +18,8 @@ END-INFO-DIR-ENTRY
 
 File: wget.info,  Node: Top,  Next: Overview,  Prev: (dir),  Up: (dir)
 
-Wget 1.19.5
-***********
+Wget 1.20
+*********
 
 This file documents the GNU Wget utility for downloading network data.
 
@@ -1508,6 +1508,10 @@ File: wget.info,  Node: HTTP Options,  Next: HTTPS (SSL/TLS) Options,  Prev: Dir
      authentication challenges, but accept unsolicited auth info, say,
      in addition to form-based authentication.
 
+‘--retry-on-host-error’
+     Consider host errors, such as “Temporary failure in name
+     resolution”, as non-fatal, transient errors.
+
 ‘--retry-on-http-error=CODE[,CODE,...]’
      Consider given HTTP response codes as non-fatal, transient errors.
      Supply a comma-separated list of 3-digit HTTP response codes as
@@ -1536,10 +1540,10 @@ compiled without SSL support, none of these options are available.
 
 ‘--secure-protocol=PROTOCOL’
      Choose the secure protocol to be used.  Legal values are ‘auto’,
-     ‘SSLv2’, ‘SSLv3’, ‘TLSv1’, ‘TLSv1_1’, ‘TLSv1_2’ and ‘PFS’.  If
-     ‘auto’ is used, the SSL library is given the liberty of choosing
-     the appropriate protocol automatically, which is achieved by
-     sending a TLSv1 greeting.  This is the default.
+     ‘SSLv2’, ‘SSLv3’, ‘TLSv1’, ‘TLSv1_1’, ‘TLSv1_2’, ‘TLSv1_3’ and
+     ‘PFS’.  If ‘auto’ is used, the SSL library is given the liberty of
+     choosing the appropriate protocol automatically, which is achieved
+     by sending a TLSv1 greeting.  This is the default.
 
      Specifying ‘SSLv2’, ‘SSLv3’, ‘TLSv1’, ‘TLSv1_1’, ‘TLSv1_2’ or
      ‘TLSv1_3’ forces the use of the corresponding protocol.  This is
@@ -3794,8 +3798,7 @@ File: wget.info,  Node: Distribution,  Next: Web Site,  Prev: Proxies,  Up: Vari
 
 Like all GNU utilities, the latest version of Wget can be found at the
 master GNU archive site ftp.gnu.org, and its mirrors.  For example, Wget
-1.19.5 can be found at
-<https://ftp.gnu.org/pub/gnu/wget/wget-1.19.5.tar.gz>
+1.20 can be found at <https://ftp.gnu.org/pub/gnu/wget/wget-1.20.tar.gz>
 
 
 File: wget.info,  Node: Web Site,  Next: Mailing Lists,  Prev: Distribution,  Up: Various
@@ -5001,58 +5004,58 @@ Concept Index
 
 Tag Table:
 Node: Top744
-Node: Overview2076
-Node: Invoking5768
-Node: URL Format6628
-Ref: URL Format-Footnote-19307
-Node: Option Syntax9413
-Node: Basic Startup Options12191
-Node: Logging and Input File Options13049
-Node: Download Options18433
-Node: Directory Options47999
-Node: HTTP Options50850
-Node: HTTPS (SSL/TLS) Options71357
-Node: FTP Options84501
-Node: Recursive Retrieval Options91563
-Node: Recursive Accept/Reject Options100820
-Node: Exit Status105025
-Node: Recursive Download106060
-Node: Following Links109299
-Node: Spanning Hosts110265
-Node: Types of Files112534
-Node: Directory-Based Limits117428
-Node: Relative Links120695
-Node: FTP Links121545
-Node: Time-Stamping122436
-Node: Time-Stamping Usage124108
-Node: HTTP Time-Stamping Internals125980
-Ref: HTTP Time-Stamping Internals-Footnote-1127328
-Node: FTP Time-Stamping Internals127531
-Node: Startup File129018
-Node: Wgetrc Location129958
-Node: Wgetrc Syntax130812
-Node: Wgetrc Commands131577
-Node: Sample Wgetrc148170
-Node: Examples154198
-Node: Simple Usage154559
-Node: Advanced Usage156008
-Node: Very Advanced Usage159824
-Node: Various161368
-Node: Proxies162077
-Node: Distribution165034
-Node: Web Site165378
-Node: Mailing Lists165678
-Node: Internet Relay Chat167415
-Node: Reporting Bugs167710
-Node: Portability170438
-Node: Signals172085
-Node: Appendices172792
-Node: Robot Exclusion173140
-Node: Security Considerations177002
-Node: Contributors178212
-Node: Copying this manual183942
-Node: GNU Free Documentation License184182
-Node: Concept Index209534
+Node: Overview2072
+Node: Invoking5764
+Node: URL Format6624
+Ref: URL Format-Footnote-19303
+Node: Option Syntax9409
+Node: Basic Startup Options12187
+Node: Logging and Input File Options13045
+Node: Download Options18429
+Node: Directory Options47995
+Node: HTTP Options50846
+Node: HTTPS (SSL/TLS) Options71498
+Node: FTP Options84657
+Node: Recursive Retrieval Options91719
+Node: Recursive Accept/Reject Options100976
+Node: Exit Status105181
+Node: Recursive Download106216
+Node: Following Links109455
+Node: Spanning Hosts110421
+Node: Types of Files112690
+Node: Directory-Based Limits117584
+Node: Relative Links120851
+Node: FTP Links121701
+Node: Time-Stamping122592
+Node: Time-Stamping Usage124264
+Node: HTTP Time-Stamping Internals126136
+Ref: HTTP Time-Stamping Internals-Footnote-1127484
+Node: FTP Time-Stamping Internals127687
+Node: Startup File129174
+Node: Wgetrc Location130114
+Node: Wgetrc Syntax130968
+Node: Wgetrc Commands131733
+Node: Sample Wgetrc148326
+Node: Examples154354
+Node: Simple Usage154715
+Node: Advanced Usage156164
+Node: Very Advanced Usage159980
+Node: Various161524
+Node: Proxies162233
+Node: Distribution165190
+Node: Web Site165530
+Node: Mailing Lists165830
+Node: Internet Relay Chat167567
+Node: Reporting Bugs167862
+Node: Portability170590
+Node: Signals172237
+Node: Appendices172944
+Node: Robot Exclusion173292
+Node: Security Considerations177154
+Node: Contributors178364
+Node: Copying this manual184094
+Node: GNU Free Documentation License184334
+Node: Concept Index209686
 
 End Tag Table
 

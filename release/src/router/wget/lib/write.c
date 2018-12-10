@@ -25,7 +25,7 @@
    GetLastError() = ERROR_NO_DATA, and write() in consequence fails with
    error EINVAL.  */
 
-#if (defined _WIN32 || defined __WIN32__) && ! defined __CYGWIN__
+#if defined _WIN32 && ! defined __CYGWIN__
 
 # include <errno.h>
 # include <signal.h>

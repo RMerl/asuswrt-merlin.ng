@@ -215,6 +215,15 @@ struct msghdr {
 
 #endif
 
+/* Ensure SO_REUSEPORT is defined.  */
+/* For the subtle differences between SO_REUSEPORT and SO_REUSEADDR, see
+   https://stackoverflow.com/questions/14388706/socket-options-so-reuseaddr-and-so-reuseport-how-do-they-differ-do-they-mean-t
+   and https://lwn.net/Articles/542629/
+ */
+#ifndef SO_REUSEPORT
+# define SO_REUSEPORT SO_REUSEADDR
+#endif
+
 /* Fix some definitions from <winsock2.h>.  */
 
 #if @HAVE_WINSOCK2_H@

@@ -38,7 +38,7 @@ secure_getenv (char const *name)
   if (geteuid () != getuid () || getegid () != getgid ())
     return NULL;
   return getenv (name);
-#elif (defined _WIN32 || defined __WIN32__) && ! defined __CYGWIN__ /* native Windows */
+#elif defined _WIN32 && ! defined __CYGWIN__ /* native Windows */
   /* On native Windows, there is no such concept as setuid or setgid binaries.
      - Programs launched as system services have high privileges, but they don't
        inherit environment variables from a user.

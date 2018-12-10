@@ -26,7 +26,7 @@
 # define __sysconf(open_max) getdtablesize ()
 #endif
 
-#if !HAVE_WORKING_POSIX_SPAWN
+#if REPLACE_POSIX_SPAWN
 # include "spawn_int.h"
 #endif
 
@@ -43,7 +43,7 @@ posix_spawn_file_actions_adddup2 (posix_spawn_file_actions_t *file_actions,
   if (fd < 0 || newfd < 0 || fd >= maxfd || newfd >= maxfd)
     return EBADF;
 
-#if HAVE_WORKING_POSIX_SPAWN
+#if !REPLACE_POSIX_SPAWN
   return posix_spawn_file_actions_adddup2 (file_actions, fd, newfd);
 #else
   /* Allocate more memory if needed.  */

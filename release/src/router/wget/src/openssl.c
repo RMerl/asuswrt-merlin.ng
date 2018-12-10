@@ -43,7 +43,9 @@ as that of the covered work.  */
 #include <openssl/bio.h>
 #if OPENSSL_VERSION_NUMBER >= 0x00907000
 #include <openssl/conf.h>
+#ifndef OPENSSL_NO_ENGINE
 #include <openssl/engine.h>
+#endif
 #endif
 
 #include "utils.h"
@@ -193,7 +195,9 @@ ssl_init (void)
 
 #if OPENSSL_VERSION_NUMBER >= 0x00907000
   OPENSSL_load_builtin_modules();
+#ifndef OPENSSL_NO_ENGINE
   ENGINE_load_builtin_engines();
+#endif
   CONF_modules_load_file(NULL, NULL,
       CONF_MFLAGS_DEFAULT_SECTION|CONF_MFLAGS_IGNORE_MISSING_FILE);
 #endif

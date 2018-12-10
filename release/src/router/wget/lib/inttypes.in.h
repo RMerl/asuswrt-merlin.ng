@@ -52,7 +52,7 @@
 /* Get CHAR_BIT.  */
 #include <limits.h>
 /* On mingw, __USE_MINGW_ANSI_STDIO only works if <stdio.h> is also included */
-#if (defined _WIN32 || defined __WIN32__) && ! defined __CYGWIN__
+#if defined _WIN32 && ! defined __CYGWIN__
 # include <stdio.h>
 #endif
 
@@ -1067,11 +1067,13 @@ _GL_WARN_ON_USE (imaxabs, "imaxabs is unportable - "
 #endif
 
 #if @GNULIB_IMAXDIV@
-# if !@HAVE_DECL_IMAXDIV@
+# if !@HAVE_IMAXDIV_T@
 #  if !GNULIB_defined_imaxdiv_t
 typedef struct { intmax_t quot; intmax_t rem; } imaxdiv_t;
 #   define GNULIB_defined_imaxdiv_t 1
 #  endif
+# endif
+# if !@HAVE_DECL_IMAXDIV@
 extern imaxdiv_t imaxdiv (intmax_t, intmax_t);
 # endif
 #elif defined GNULIB_POSIXCHECK

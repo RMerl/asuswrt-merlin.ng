@@ -1,4 +1,4 @@
-#!/usr/bin/env perl
+#!/usr/bin/env -S perl -I .
 
 use strict;
 use warnings;
@@ -20,13 +20,6 @@ my %urls = (
         content => "blabla",
     },
 );
-
-# Skip the test if openssl is not available
-my $ossl = `openssl version`;
-unless ($ossl =~ m/OpenSSL 1/)
-{
-  exit 77;
-}
 
 my $srcdir;
 if (@ARGV) {

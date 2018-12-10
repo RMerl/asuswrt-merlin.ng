@@ -303,7 +303,7 @@ convert_links (const char *file, struct urlpos *links)
         {
         case CO_CONVERT_TO_RELATIVE:
           /* Convert absolute URL to relative. */
-          {
+          if (link->local_name) {
             char *newname = construct_relative (file, link->local_name);
             char *quoted_newname = local_quote_string (newname,
                                                        link->link_css_p);
@@ -322,8 +322,8 @@ convert_links (const char *file, struct urlpos *links)
             xfree (newname);
             xfree (quoted_newname);
             ++to_file_count;
-            break;
           }
+          break;
         case CO_CONVERT_BASENAME_ONLY:
           {
             char *newname = convert_basename (p, link);

@@ -1,4 +1,4 @@
-# stdint.m4 serial 51
+# stdint.m4 serial 53
 dnl Copyright (C) 2001-2018 Free Software Foundation, Inc.
 dnl This file is free software; the Free Software Foundation
 dnl gives unlimited permission to copy and/or distribute it,
@@ -6,6 +6,8 @@ dnl with or without modifications, as long as this notice is preserved.
 
 dnl From Paul Eggert and Bruno Haible.
 dnl Test whether <stdint.h> is supported or must be substituted.
+
+AC_PREREQ([2.61])
 
 AC_DEFUN_ONCE([gl_STDINT_H],
 [
@@ -364,8 +366,7 @@ int32_t i32 = INT32_C (0x7fffffff);
   esac
 
   dnl The substitute stdint.h needs the substitute limit.h's _GL_INTEGER_WIDTH.
-  LIMITS_H=limits.h
-  AM_CONDITIONAL([GL_GENERATE_LIMITS_H], [test -n "$LIMITS_H"])
+  gl_REPLACE_LIMITS_H
 
   AC_SUBST([HAVE_C99_STDINT_H])
   AC_SUBST([HAVE_SYS_BITYPES_H])
@@ -540,10 +541,4 @@ AC_DEFUN([gl_STDINT_TYPE_PROPERTIES],
   if test $GNULIB_OVERRIDES_WINT_T = 1; then
     BITSIZEOF_WINT_T=32
   fi
-])
-
-dnl Autoconf >= 2.61 has AC_COMPUTE_INT built-in.
-dnl Remove this when we can assume autoconf >= 2.61.
-m4_ifdef([AC_COMPUTE_INT], [], [
-  AC_DEFUN([AC_COMPUTE_INT], [_AC_COMPUTE_INT([$2],[$1],[$3],[$4])])
 ])

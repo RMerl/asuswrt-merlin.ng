@@ -92,8 +92,11 @@ extern void *sha512_buffer (const char *buffer, size_t len, void *resblock);
 extern void *sha384_buffer (const char *buffer, size_t len, void *resblock);
 
 # endif
-/* Compute SHA512 (SHA384) message digest for bytes read from STREAM.  The
-   resulting message digest number will be written into the 64 (48) bytes
+/* Compute SHA512 (SHA384) message digest for bytes read from STREAM.
+   STREAM is an open file stream.  Regular files are handled more efficiently.
+   The contents of STREAM from its current position to its end will be read.
+   The case that the last operation on STREAM was an 'ungetc' is not supported.
+   The resulting message digest number will be written into the 64 (48) bytes
    beginning at RESBLOCK.  */
 extern int sha512_stream (FILE *stream, void *resblock);
 extern int sha384_stream (FILE *stream, void *resblock);

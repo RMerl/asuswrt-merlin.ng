@@ -1,4 +1,4 @@
-# spawn_h.m4 serial 16
+# spawn_h.m4 serial 17
 dnl Copyright (C) 2008-2018 Free Software Foundation, Inc.
 dnl This file is free software; the Free Software Foundation
 dnl gives unlimited permission to copy and/or distribute it,
@@ -53,7 +53,7 @@ AC_DEFUN([gl_SPAWN_H],
     posix_spawnattr_getschedparam posix_spawnattr_setschedparam
     posix_spawn_file_actions_init posix_spawn_file_actions_destroy
     posix_spawn_file_actions_addopen posix_spawn_file_actions_addclose
-    posix_spawn_file_actions_adddup2])
+    posix_spawn_file_actions_adddup2 posix_spawn_file_actions_addchdir])
 ])
 
 dnl Checks whether the system has the functions posix_spawn.
@@ -92,6 +92,7 @@ AC_DEFUN([gl_SPAWN_H_DEFAULTS],
   GNULIB_POSIX_SPAWN=0;                       AC_SUBST([GNULIB_POSIX_SPAWN])
   GNULIB_POSIX_SPAWNP=0;                      AC_SUBST([GNULIB_POSIX_SPAWNP])
   GNULIB_POSIX_SPAWN_FILE_ACTIONS_INIT=0;     AC_SUBST([GNULIB_POSIX_SPAWN_FILE_ACTIONS_INIT])
+  GNULIB_POSIX_SPAWN_FILE_ACTIONS_ADDCHDIR=0; AC_SUBST([GNULIB_POSIX_SPAWN_FILE_ACTIONS_ADDCHDIR])
   GNULIB_POSIX_SPAWN_FILE_ACTIONS_ADDCLOSE=0; AC_SUBST([GNULIB_POSIX_SPAWN_FILE_ACTIONS_ADDCLOSE])
   GNULIB_POSIX_SPAWN_FILE_ACTIONS_ADDDUP2=0;  AC_SUBST([GNULIB_POSIX_SPAWN_FILE_ACTIONS_ADDDUP2])
   GNULIB_POSIX_SPAWN_FILE_ACTIONS_ADDOPEN=0;  AC_SUBST([GNULIB_POSIX_SPAWN_FILE_ACTIONS_ADDOPEN])
@@ -115,7 +116,11 @@ AC_DEFUN([gl_SPAWN_H_DEFAULTS],
   HAVE_POSIX_SPAWNATTR_T=1;  AC_SUBST([HAVE_POSIX_SPAWNATTR_T])
   HAVE_POSIX_SPAWN_FILE_ACTIONS_T=1;
                              AC_SUBST([HAVE_POSIX_SPAWN_FILE_ACTIONS_T])
+  HAVE_POSIX_SPAWN_FILE_ACTIONS_ADDCHDIR=1;
+                             AC_SUBST([HAVE_POSIX_SPAWN_FILE_ACTIONS_ADDCHDIR])
   REPLACE_POSIX_SPAWN=0;     AC_SUBST([REPLACE_POSIX_SPAWN])
+  REPLACE_POSIX_SPAWN_FILE_ACTIONS_ADDCHDIR=0;
+                             AC_SUBST([REPLACE_POSIX_SPAWN_FILE_ACTIONS_ADDCHDIR])
   REPLACE_POSIX_SPAWN_FILE_ACTIONS_ADDCLOSE=0;
                              AC_SUBST([REPLACE_POSIX_SPAWN_FILE_ACTIONS_ADDCLOSE])
   REPLACE_POSIX_SPAWN_FILE_ACTIONS_ADDDUP2=0;

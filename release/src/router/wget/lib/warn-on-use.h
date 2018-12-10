@@ -20,23 +20,32 @@
    supported by the compiler.  If the compiler does not support this
    feature, the macro expands to an unused extern declaration.
 
-   This macro is useful for marking a function as a potential
+   _GL_WARN_ON_USE_ATTRIBUTE ("literal string") expands to the
+   attribute used in _GL_WARN_ON_USE.  If the compiler does not support
+   this feature, it expands to empty.
+
+   These macros are useful for marking a function as a potential
    portability trap, with the intent that "literal string" include
    instructions on the replacement function that should be used
-   instead.  However, one of the reasons that a function is a
-   portability trap is if it has the wrong signature.  Declaring
-   FUNCTION with a different signature in C is a compilation error, so
-   this macro must use the same type as any existing declaration so
-   that programs that avoid the problematic FUNCTION do not fail to
-   compile merely because they included a header that poisoned the
-   function.  But this implies that _GL_WARN_ON_USE is only safe to
-   use if FUNCTION is known to already have a declaration.  Use of
-   this macro implies that there must not be any other macro hiding
-   the declaration of FUNCTION; but undefining FUNCTION first is part
-   of the poisoning process anyway (although for symbols that are
-   provided only via a macro, the result is a compilation error rather
-   than a warning containing "literal string").  Also note that in
-   C++, it is only safe to use if FUNCTION has no overloads.
+   instead.
+   _GL_WARN_ON_USE is for functions with 'extern' linkage.
+   _GL_WARN_ON_USE_ATTRIBUTE is for functions with 'static' or 'inline'
+   linkage.
+
+   However, one of the reasons that a function is a portability trap is
+   if it has the wrong signature.  Declaring FUNCTION with a different
+   signature in C is a compilation error, so this macro must use the
+   same type as any existing declaration so that programs that avoid
+   the problematic FUNCTION do not fail to compile merely because they
+   included a header that poisoned the function.  But this implies that
+   _GL_WARN_ON_USE is only safe to use if FUNCTION is known to already
+   have a declaration.  Use of this macro implies that there must not
+   be any other macro hiding the declaration of FUNCTION; but
+   undefining FUNCTION first is part of the poisoning process anyway
+   (although for symbols that are provided only via a macro, the result
+   is a compilation error rather than a warning containing
+   "literal string").  Also note that in C++, it is only safe to use if
+   FUNCTION has no overloads.
 
    For an example, it is possible to poison 'getline' by:
    - adding a call to gl_WARN_ON_USE_PREPARE([[#include <stdio.h>]],
@@ -54,12 +63,21 @@
    (less common usage, like &environ, will cause a compilation error
    rather than issue the nice warning, but the end result of informing
    the developer about their portability problem is still achieved):
-   #if HAVE_RAW_DECL_ENVIRON
-   static char ***rpl_environ (void) { return &environ; }
-   _GL_WARN_ON_USE (rpl_environ, "environ is not always properly declared");
-   # undef environ
-   # define environ (*rpl_environ ())
-   #endif
+     #if HAVE_RAW_DECL_ENVIRON
+     static char ***
+     rpl_environ (void) { return &environ; }
+     _GL_WARN_ON_USE (rpl_environ, "environ is not always properly declared");
+     # undef environ
+     # define environ (*rpl_environ ())
+     #endif
+   or better (avoiding contradictory use of 'static' and 'extern'):
+     #if HAVE_RAW_DECL_ENVIRON
+     static char ***
+     _GL_WARN_ON_USE_ATTRIBUTE ("environ is not always properly declared")
+     rpl_environ (void) { return &environ; }
+     # undef environ
+     # define environ (*rpl_environ ())
+     #endif
    */
 #ifndef _GL_WARN_ON_USE
 
@@ -67,13 +85,17 @@
 /* A compiler attribute is available in gcc versions 4.3.0 and later.  */
 #  define _GL_WARN_ON_USE(function, message) \
 extern __typeof__ (function) function __attribute__ ((__warning__ (message)))
+#  define _GL_WARN_ON_USE_ATTRIBUTE(message) \
+  __attribute__ ((__warning__ (message)))
 # elif __GNUC__ >= 3 && GNULIB_STRICT_CHECKING
 /* Verify the existence of the function.  */
 #  define _GL_WARN_ON_USE(function, message) \
 extern __typeof__ (function) function
+#  define _GL_WARN_ON_USE_ATTRIBUTE(message)
 # else /* Unsupported.  */
 #  define _GL_WARN_ON_USE(function, message) \
 _GL_WARN_EXTERN_C int _gl_warn_on_use
+#  define _GL_WARN_ON_USE_ATTRIBUTE(message)
 # endif
 #endif
 

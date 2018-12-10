@@ -29,7 +29,7 @@
 
 # undef dup2
 
-# if (defined _WIN32 || defined __WIN32__) && ! defined __CYGWIN__
+# if defined _WIN32 && ! defined __CYGWIN__
 
 /* Get declarations of the native Windows API functions.  */
 #  define WIN32_LEAN_AND_MEAN

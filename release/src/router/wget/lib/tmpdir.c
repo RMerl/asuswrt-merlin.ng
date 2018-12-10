@@ -42,7 +42,7 @@
 
 #include <sys/stat.h>
 
-#if (defined _WIN32 || defined __WIN32__) && ! defined __CYGWIN__
+#if defined _WIN32 && ! defined __CYGWIN__
 # define WIN32_LEAN_AND_MEAN  /* avoid including junk */
 # include <windows.h>
 #endif
@@ -60,7 +60,7 @@
 /* Pathname support.
    ISSLASH(C)           tests whether C is a directory separator character.
  */
-#if defined _WIN32 || defined __WIN32__ || defined __CYGWIN__ || defined __EMX__ || defined __DJGPP__
+#if defined _WIN32 || defined __CYGWIN__ || defined __EMX__ || defined __DJGPP__
   /* Native Windows, Cygwin, OS/2, DOS */
 # define ISSLASH(C) ((C) == '/' || (C) == '\\')
 #else
@@ -115,7 +115,7 @@ path_search (char *tmpl, size_t tmpl_len, const char *dir, const char *pfx,
     }
   if (dir == NULL)
     {
-#if (defined _WIN32 || defined __WIN32__) && ! defined __CYGWIN__
+#if defined _WIN32 && ! defined __CYGWIN__
       char dirbuf[PATH_MAX];
       DWORD retval;
 

@@ -276,7 +276,8 @@ template <int w>
      when 'assume' silences warnings even with older GCCs.  */
 # define assume(R) ((R) ? (void) 0 : __builtin_trap ())
 #else
-# define assume(R) ((void) (0 && (R)))
+  /* Some tools grok NOTREACHED, e.g., Oracle Studio 12.6.  */
+# define assume(R) ((R) ? (void) 0 : /*NOTREACHED*/ (void) 0)
 #endif
 
 /* @assert.h omit end@  */

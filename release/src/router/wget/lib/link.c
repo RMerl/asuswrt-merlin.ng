@@ -25,10 +25,14 @@
 #include <sys/stat.h>
 
 #if !HAVE_LINK
-# if (defined _WIN32 || defined __WIN32__) && ! defined __CYGWIN__
+# if defined _WIN32 && ! defined __CYGWIN__
 
 #  define WIN32_LEAN_AND_MEAN
 #  include <windows.h>
+
+/* Avoid warnings from gcc -Wcast-function-type.  */
+#  define GetProcAddress \
+    (void *) GetProcAddress
 
 /* CreateHardLink was introduced only in Windows 2000.  */
 typedef BOOL (WINAPI * CreateHardLinkFuncType) (LPCTSTR lpFileName,

@@ -60,7 +60,7 @@
    isw* functions in <ctype.h>, <wchar.h> as well as in <wctype.h>.  Include
    <ctype.h>, <wchar.h> in advance to avoid rpl_ prefix being added to the
    declarations.  */
-#if (defined _WIN32 || defined __WIN32__) && ! defined __CYGWIN__
+#if defined _WIN32 && ! defined __CYGWIN__
 # include <ctype.h>
 # include <wchar.h>
 #endif

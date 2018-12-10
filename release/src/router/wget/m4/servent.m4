@@ -1,4 +1,4 @@
-# servent.m4 serial 2
+# servent.m4 serial 3
 dnl Copyright (C) 2008, 2010-2018 Free Software Foundation, Inc.
 dnl This file is free software; the Free Software Foundation
 dnl gives unlimited permission to copy and/or distribute it,
@@ -10,7 +10,7 @@ AC_DEFUN([gl_SERVENT],
   dnl getservbyport() defined?
   dnl Where are getprotoent(), setprotoent(), endprotoent(), getprotobyname(),
   dnl getprotobynumber() defined?
-  dnl - On Solaris, they are in libsocket. Ignore libxnet.
+  dnl - On Solaris < 11.4, they are in libsocket. Ignore libxnet.
   dnl - On Haiku, they are in libnetwork.
   dnl - On BeOS, they are in libnet.
   dnl - On native Windows, they are in ws2_32.dll.

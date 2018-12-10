@@ -1,4 +1,4 @@
-# serial 37
+# serial 38
 
 dnl From Jim Meyering.
 dnl Check for the nanosleep function.
@@ -21,6 +21,8 @@ AC_DEFUN([gl_FUNC_NANOSLEEP],
 
  AC_CHECK_HEADERS_ONCE([sys/time.h])
  AC_REQUIRE([gl_FUNC_SELECT])
+
+ AC_CHECK_DECLS_ONCE([alarm])
 
  nanosleep_save_libs=$LIBS
 
@@ -62,40 +64,49 @@ AC_DEFUN([gl_FUNC_NANOSLEEP],
                   ? (t) -1 \
                   : ((((t) 1 << (sizeof (t) * CHAR_BIT - 2)) - 1) * 2 + 1)))
 
+          #if HAVE_DECL_ALARM
           static void
           check_for_SIGALRM (int sig)
           {
             if (sig != SIGALRM)
               _exit (1);
           }
+          #endif
 
           int
           main ()
           {
             static struct timespec ts_sleep;
             static struct timespec ts_remaining;
-            static struct sigaction act;
             /* Test for major problems first.  */
             if (! nanosleep)
               return 2;
-            act.sa_handler = check_for_SIGALRM;
-            sigemptyset (&act.sa_mask);
-            sigaction (SIGALRM, &act, NULL);
             ts_sleep.tv_sec = 0;
             ts_sleep.tv_nsec = 1;
-            alarm (1);
-            if (nanosleep (&ts_sleep, NULL) != 0)
+            #if HAVE_DECL_ALARM
+            {
+              static struct sigaction act;
+              act.sa_handler = check_for_SIGALRM;
+              sigemptyset (&act.sa_mask);
+              sigaction (SIGALRM, &act, NULL);
+              alarm (1);
+              if (nanosleep (&ts_sleep, NULL) != 0)
+                return 3;
+              /* Test for a minor problem: the handling of large arguments.  */
+              ts_sleep.tv_sec = TYPE_MAXIMUM (time_t);
+              ts_sleep.tv_nsec = 999999999;
+              alarm (1);
+              if (nanosleep (&ts_sleep, &ts_remaining) != -1)
+                return 4;
+              if (errno != EINTR)
+                return 5;
+              if (ts_remaining.tv_sec <= TYPE_MAXIMUM (time_t) - 10)
+                return 6;
+            }
+            #else /* A simpler test for native Windows.  */
+            if (nanosleep (&ts_sleep, &ts_remaining) < 0)
               return 3;
-            /* Test for a minor problem: the handling of large arguments.  */
-            ts_sleep.tv_sec = TYPE_MAXIMUM (time_t);
-            ts_sleep.tv_nsec = 999999999;
-            alarm (1);
-            if (nanosleep (&ts_sleep, &ts_remaining) != -1)
-              return 4;
-            if (errno != EINTR)
-              return 5;
-            if (ts_remaining.tv_sec <= TYPE_MAXIMUM (time_t) - 10)
-              return 6;
+            #endif
             return 0;
           }]])],
        [gl_cv_func_nanosleep=yes],

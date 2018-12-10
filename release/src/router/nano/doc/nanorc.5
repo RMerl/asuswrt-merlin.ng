@@ -7,16 +7,16 @@
 .\"   Foundation, version 3 or (at your option) any later version.  You
 .\"   should have received a copy of the GNU General Public License
 .\"   along with this program.  If not, see
-.\"   <http://www.gnu.org/licenses/>.
+.\"   <https://www.gnu.org/licenses/>.
 .\"
 .\" * The GNU Free Documentation License, as published by the Free
 .\"   Software Foundation, version 1.2 or (at your option) any later
 .\"   version, with no Invariant Sections, no Front-Cover Texts, and no
 .\"   Back-Cover Texts.  You should have received a copy of the GNU Free
 .\"   Documentation License along with this program.  If not, see
-.\"   <http://www.gnu.org/licenses/>.
+.\"   <https://www.gnu.org/licenses/>.
 .\"
-.TH NANORC 5 "version 3.1" "September 2018"
+.TH NANORC 5 "version 3.2" "November 2018"
 
 .SH NAME
 nanorc \- GNU nano's configuration file
@@ -280,7 +280,9 @@ default behavior of saving a file in the format that it had.
 (This option has no effect when you also use \fBset noconvert\fR.)
 .TP
 .B set view
-Disallow file modification.
+Disallow file modification: read-only mode.
+This mode allows the user to open also other files for viewing,
+unless \fB--restricted\fR is given on the command line.
 .TP
 .B set whitespace "\fIstring\fP"
 Set the two characters used to indicate the presence of tabs and
@@ -295,6 +297,10 @@ characters as parts of words.
 Specify which other characters (besides the normal alphanumeric ones)
 should be considered as parts of words.  This overrides the option
 \fBwordbounds\fR.
+.TP
+.B set zap
+Let an unmodified Backspace or Delete erase the marked region
+(instead of a single character, and without affecting the cutbuffer).
 
 .SH SYNTAX HIGHLIGHTING
 Coloring the different syntactic elements of a file
@@ -504,6 +510,10 @@ Pastes the currently stored text into the current buffer at the
 current cursor position.
 (The old form 'uncut' is deprecated.)
 .TP
+.B zap
+Throw away the current line (or the marked region).
+(This function is bound by default to <Meta+Delete>.)
+.TP
 .B cutwordleft
 Cuts from the cursor position to the beginning of the preceding word.
 (This function is not bound by default.  If your terminal produces
@@ -673,11 +683,11 @@ Toggles whether searching/replacing uses literal strings or regular expressions.
 .B backwards
 Toggles whether searching/replacing goes forward or backward.
 .TP
-.B prevhistory
-Retrieves the previous (older) entry at a prompt.
+.B older
+Retrieves the previous (earlier) entry at a prompt.
 .TP
-.B nexthistory
-Retrieves the next (newer) entry at a prompt.
+.B newer
+Retrieves the next (later) entry at a prompt.
 .TP
 .B flipreplace
 Toggles between searching for something and replacing something.

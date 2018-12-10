@@ -55,33 +55,25 @@ extern bool also_the_last;
 
 extern int didfind;
 
-extern int controlleft;
-extern int controlright;
-extern int controlup;
-extern int controldown;
-extern int controlhome;
-extern int controlend;
-extern int controldelete;
-extern int controlshiftdelete;
+extern int controlleft, controlright;
+extern int controlup, controldown;
+extern int controlhome, controlend;
 #ifndef NANO_TINY
-extern int shiftcontrolleft;
-extern int shiftcontrolright;
-extern int shiftcontrolup;
-extern int shiftcontroldown;
-extern int shiftcontrolhome;
-extern int shiftcontrolend;
-extern int altleft;
-extern int altright;
-extern int altup;
-extern int altdown;
-extern int shiftaltleft;
-extern int shiftaltright;
-extern int shiftaltup;
-extern int shiftaltdown;
+extern int controldelete, controlshiftdelete;
+extern int shiftleft, shiftright;
+extern int shiftup, shiftdown;
+extern int shiftcontrolleft, shiftcontrolright;
+extern int shiftcontrolup, shiftcontroldown;
+extern int shiftcontrolhome, shiftcontrolend;
+extern int altleft, altright;
+extern int altup, altdown;
+extern int altdelete;
+extern int shiftaltleft, shiftaltright;
+extern int shiftaltup, shiftaltdown;
 #endif
 
 #ifdef ENABLED_WRAPORJUSTIFY
-extern ssize_t fill;
+extern ssize_t wrap_at, fill;
 #endif
 
 extern char *last_search;
@@ -183,6 +175,10 @@ extern char *statedir;
 extern char *rcfile_with_errors;
 #endif
 
+extern bool spotlighted;
+extern size_t light_from_col;
+extern size_t light_to_col;
+
 typedef void (*functionptrtype)(void);
 
 /* Most functions in browser.c. */
@@ -251,15 +247,15 @@ void precalc_multicolorinfo(void);
 
 /* Most functions in cut.c. */
 void cutbuffer_reset(void);
-bool keeping_cutbuffer(void);
 #ifndef NANO_TINY
 void cut_marked(bool *right_side_up);
 #endif
-void do_cut_text(bool copy_text, bool marked, bool cut_till_eof);
+void do_cut_text(bool copy_text, bool marked, bool cut_till_eof, bool append);
 void do_cut_text_void(void);
 #ifndef NANO_TINY
 void do_copy_text(void);
 void do_cut_till_eof(void);
+void zap_text(void);
 #endif
 void do_uncut_text(void);
 
@@ -323,10 +319,6 @@ int keycode_from_string(const char *keystring);
 void assign_keyinfo(sc *s, const char *keystring, const int keycode);
 void print_sclist(void);
 void shortcut_init(void);
-#ifdef ENABLE_COLOR
-void set_linter_shortcut(void);
-void set_speller_shortcut(void);
-#endif
 const subnfunc *sctofunc(const sc *s);
 const char *flagtostr(int flag);
 #ifdef ENABLE_NANORC
@@ -371,22 +363,22 @@ void to_last_line(void);
 void do_page_up(void);
 void do_page_down(void);
 #ifdef ENABLE_JUSTIFY
-void do_para_begin(bool update_screen);
-void do_para_end(bool update_screen);
+void do_para_begin(void);
+void do_para_end(void);
 void do_para_begin_void(void);
 void do_para_end_void(void);
 #endif
 void do_prev_block(void);
 void do_next_block(void);
-void do_prev_word(bool allow_punct, bool update_screen);
-bool do_next_word(bool after_ends, bool allow_punct, bool update_screen);
+void do_prev_word(bool allow_punct);
+bool do_next_word(bool after_ends, bool allow_punct);
 void do_prev_word_void(void);
 void do_next_word_void(void);
 void do_home(void);
 void do_end(void);
 void do_up(void);
 void do_down(void);
-#ifdef ENABLE_HELP
+#if !defined(NANO_TINY) || defined(ENABLE_HELP)
 void do_scroll_up(void);
 void do_scroll_down(void);
 #endif
@@ -408,7 +400,6 @@ void extract_buffer(filestruct **file_top, filestruct **file_bot,
 		filestruct *top, size_t top_x, filestruct *bot, size_t bot_x);
 void ingraft_buffer(filestruct *somebuffer);
 void copy_from_buffer(filestruct *somebuffer);
-openfilestruct *make_new_opennode(void);
 #ifdef ENABLE_MULTIBUFFER
 void unlink_opennode(openfilestruct *fileptr);
 void delete_opennode(openfilestruct *fileptr);
@@ -433,7 +424,6 @@ RETSIGTYPE do_continue(int signal);
 #ifndef NANO_TINY
 RETSIGTYPE handle_sigwinch(int signal);
 void regenerate_screen(void);
-void allow_sigwinch(bool allow);
 void do_toggle(int flag);
 void enable_signals(void);
 #endif
@@ -671,12 +661,11 @@ void edit_refresh(void);
 void adjust_viewport(update_type location);
 void total_redraw(void);
 void total_refresh(void);
-void display_main_list(void);
 void do_cursorpos(bool force);
 void do_cursorpos_void(void);
-void spotlight(bool active, size_t from_col, size_t to_col);
+void spotlight(size_t from_col, size_t to_col);
 #ifndef NANO_TINY
-void spotlight_softwrapped(bool active, size_t from_col, size_t to_col);
+void spotlight_softwrapped(size_t from_col, size_t to_col);
 #endif
 void do_suspend_void(void);
 void disable_waiting(void);

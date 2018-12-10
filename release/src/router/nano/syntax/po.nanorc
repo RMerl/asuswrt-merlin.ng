@@ -26,4 +26,4 @@ color cyan "\\[abcefnrtv"\]"
 # Reminders.
 color brightwhite,yellow "(FIXME|TODO|XXX)"
 # Obsolete strings.
-color red "#~.*$"
+color red "#~.*"

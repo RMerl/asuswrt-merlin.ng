@@ -1,4 +1,4 @@
-# fcntl-o.m4 serial 5
+# fcntl-o.m4 serial 6
 dnl Copyright (C) 2006, 2009-2018 Free Software Foundation, Inc.
 dnl This file is free software; the Free Software Foundation
 dnl gives unlimited permission to copy and/or distribute it,
@@ -6,17 +6,15 @@ dnl with or without modifications, as long as this notice is preserved.
 
 dnl Written by Paul Eggert.
 
+AC_PREREQ([2.60])
+
 # Test whether the flags O_NOATIME and O_NOFOLLOW actually work.
 # Define HAVE_WORKING_O_NOATIME to 1 if O_NOATIME works, or to 0 otherwise.
 # Define HAVE_WORKING_O_NOFOLLOW to 1 if O_NOFOLLOW works, or to 0 otherwise.
 AC_DEFUN([gl_FCNTL_O_FLAGS],
 [
   dnl Persuade glibc <fcntl.h> to define O_NOATIME and O_NOFOLLOW.
-  dnl AC_USE_SYSTEM_EXTENSIONS was introduced in autoconf 2.60 and obsoletes
-  dnl AC_GNU_SOURCE.
-  m4_ifdef([AC_USE_SYSTEM_EXTENSIONS],
-    [AC_REQUIRE([AC_USE_SYSTEM_EXTENSIONS])],
-    [AC_REQUIRE([AC_GNU_SOURCE])])
+  AC_REQUIRE([AC_USE_SYSTEM_EXTENSIONS])
 
   AC_REQUIRE([AC_CANONICAL_HOST]) dnl for cross-compiles
   AC_CHECK_HEADERS_ONCE([unistd.h])

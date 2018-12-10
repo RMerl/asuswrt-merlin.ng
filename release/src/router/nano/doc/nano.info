@@ -11,7 +11,7 @@ File: nano.info,  Node: Top,  Next: Introduction,  Up: (dir)
 nano
 ****
 
-This manual documents the GNU ‘nano’ editor, version 3.1.
+This manual documents the GNU ‘nano’ editor, version 3.2.
 
 * Menu:
 
@@ -164,12 +164,12 @@ File: nano.info,  Node: Command-line Options,  Next: Editor Basics,  Prev: Invok
 ‘-R’
 ‘--restricted’
      Restricted mode: don’t read or write to any file not specified on
-     the command line; don’t read any nanorc files nor history files;
-     don’t allow suspending nor spell checking; don’t allow a file to be
-     appended to, prepended to, or saved under a different name if it
-     already has one; and don’t use backup files.  This restricted mode
-     is also accessible by invoking ‘nano’ with any name beginning with
-     ‘r’ (e.g. ‘rnano’).
+     the command line.  This means: don’t read or write history files;
+     don’t allow suspending; don’t allow spell checking; don’t allow a
+     file to be appended to, prepended to, or saved under a different
+     name if it already has one; and don’t make backup files.
+     Restricted mode can also be activated by invoking ‘nano’ with any
+     name beginning with ‘r’ (e.g. ‘rnano’).
 
 ‘-S’
 ‘--smooth’
@@ -207,6 +207,12 @@ File: nano.info,  Node: Command-line Options,  Next: Editor Basics,  Prev: Invok
      Specify the syntax to be used for highlighting.  *Note Syntax
      Highlighting:: for more info.
 
+‘-Z’
+‘--zap’
+     Let an unmodified <Backspace> or <Delete> erase the marked region
+     (instead of a single character, and without affecting the
+     cutbuffer).
+
 ‘-a’
 ‘--atblanks’
      When doing soft line wrapping, wrap lines at whitespace instead of
@@ -226,8 +232,9 @@ File: nano.info,  Node: Command-line Options,  Next: Editor Basics,  Prev: Invok
 
 ‘-g’
 ‘--showcursor’
-     Make the cursor visible in the file browser, putting it on the
-     highlighted item.  Useful for braille users.
+     Make the cursor visible in the file browser (putting it on the
+     highlighted item) and in the help viewer.  Useful for braille users
+     and people with poor vision.
 
 ‘-h’
 ‘--help’
@@ -311,9 +318,11 @@ File: nano.info,  Node: Command-line Options,  Next: Editor Basics,  Prev: Invok
 
 ‘-v’
 ‘--view’
-     Don’t allow the contents of the file to be altered.  Note that this
-     option should NOT be used in place of correct file permissions to
-     implement a read-only file.
+     Don’t allow the contents of the file to be altered: read-only mode.
+     This mode allows the user to open also other files for viewing,
+     unless ‘--restricted’ is given too.  (Note that this option should
+     NOT be used in place of correct file permissions to implement a
+     read-only file.)
 
 ‘-w’
 ‘--nowrap’
@@ -819,8 +828,9 @@ The supported settings in a nanorc file are:
      functioncolor:: for valid color names.
 
 ‘set showcursor’
-     Put the cursor on the highlighted item in the file browser, to aid
-     braille users.
+     Put the cursor on the highlighted item in the file browser, and
+     show the cursor in the help viewer, to aid braille users and people
+     with poor vision.
 
 ‘set smarthome’
      Make the Home key smarter.  When Home is pressed anywhere but at
@@ -871,7 +881,9 @@ The supported settings in a nanorc file are:
      option has no effect when you also use ‘set noconvert’.)
 
 ‘set view’
-     Disallow file modification.
+     Disallow file modification: read-only mode.  This mode allows the
+     user to open also other files for viewing, unless ‘--restricted’ is
+     given on the command line.
 
 ‘set whitespace "STRING"’
      Set the two characters used to indicate the presence of tabs and
@@ -886,6 +898,11 @@ The supported settings in a nanorc file are:
      Specify which other characters (besides the normal alphanumeric
      ones) should be considered as parts of words.  This overrides the
      option ‘wordbounds’.
+
+‘set zap’
+     Let an unmodified <Backspace> or <Delete> erase the marked region
+     (instead of a single character, and without affecting the
+     cutbuffer).
 
 
 File: nano.info,  Node: Syntax Highlighting,  Next: Rebinding Keys,  Prev: Settings,  Up: Nanorc Files
@@ -1088,6 +1105,10 @@ file:
      Pastes the currently stored text into the current buffer at the
      current cursor position.  (The old form ’uncut’ is deprecated.)
 
+‘zap’
+     Throw away the current line (or the marked region).  (This function
+     is bound by default to <Meta+Delete>.)
+
 ‘cutwordleft’
      Cuts from the cursor position to the beginning of the preceding
      word.  (This function is not bound by default.  If your terminal
@@ -1261,11 +1282,11 @@ file:
 ‘backwards’
      Toggles whether searching/replacing goes forward or backward.
 
-‘prevhistory’
-     Retrieves the previous (older) entry at a prompt.
+‘older’
+     Retrieves the previous (earlier) entry at a prompt.
 
-‘nexthistory’
-     Retrieves the next (newer) entry at a prompt.
+‘newer’
+     Retrieves the next (later) entry at a prompt.
 
 ‘flipreplace’
      Toggles between searching for something and replacing something.
@@ -1666,28 +1687,28 @@ Node: Top199
 Node: Introduction554
 Node: Invoking1354
 Node: Command-line Options2400
-Ref: --speller9566
-Ref: Expert Mode10787
-Node: Editor Basics11904
-Node: Entering Text12188
-Node: Commands13177
-Node: The Cutbuffer13974
-Node: The Mark14695
-Node: Screen Layout15694
-Node: Search and Replace16873
-Node: Using the Mouse17608
-Node: Limitations18225
-Node: Built-in Help18781
-Node: Feature Toggles19205
-Node: Nanorc Files21098
-Node: Settings22695
-Ref: set functioncolor25532
-Ref: Whitespace31824
-Node: Syntax Highlighting32380
-Node: Rebinding Keys37982
-Node: The File Browser50206
-Node: Pico Compatibility51099
-Node: Building and Configure Options54635
+Ref: --speller9806
+Ref: Expert Mode11159
+Node: Editor Basics12276
+Node: Entering Text12560
+Node: Commands13549
+Node: The Cutbuffer14346
+Node: The Mark15067
+Node: Screen Layout16066
+Node: Search and Replace17245
+Node: Using the Mouse17980
+Node: Limitations18597
+Node: Built-in Help19153
+Node: Feature Toggles19577
+Node: Nanorc Files21470
+Node: Settings23067
+Ref: set functioncolor25904
+Ref: Whitespace32416
+Node: Syntax Highlighting33138
+Node: Rebinding Keys38740
+Node: The File Browser51082
+Node: Pico Compatibility51975
+Node: Building and Configure Options55511
 
 End Tag Table
 

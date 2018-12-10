@@ -1,3 +1,25 @@
+2018.11.11 - GNU nano 3.2 "Het kromme hout" changes the default binding
+             for the linter to M-B so that the spell checker (^T) can
+             always be used, and changes (when linting) the text in the
+             title bar and the color of the status bar to make linting
+             mode more obvious.  It also adds a bindable 'zap' function
+             for deleting a line or marked region without changing the
+             cutbuffer, adds --zap to bind the <Del> and <Backspace>
+             keys to the zap function when something is marked, and
+             hard-binds <Alt+Del> to 'zap'.  Furthermore, it shows the
+             cursor also in the help viewer (when --showcursor is used),
+             renames the bindable functions 'prevhistory' to 'older' and
+             'nexthistory' to 'newer' (update your nanorcs when needed),
+             reads the nanorc files also in restricted mode to allow
+             customization by the user (if this should not be allowed,
+             use --ignorercfiles in addition to --restricted), allows
+             in view mode to open also other files (if this should not
+             be allowed, use --restricted in addition to --view), makes
+             resizes respect a relative --fill again, no longer binds
+             F13...F15 by default, properly re-highlights a misspelled
+             word after invoking help in the internal spell checker,
+             and does not skip Unicode characters in string binds.
+
 2018.09.18 - GNU nano 3.1 "Je faisais des bonds comme ça!" fixes a
              misbinding of ^H on some terminals and some systems,
              does not leave stray stuff after the prompt upon exit

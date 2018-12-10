@@ -7,16 +7,16 @@
 .\"   Foundation, version 3 or (at your option) any later version.  You
 .\"   should have received a copy of the GNU General Public License
 .\"   along with this program.  If not, see
-.\"   <http://www.gnu.org/licenses/>.
+.\"   <https://www.gnu.org/licenses/>.
 .\"
 .\" * The GNU Free Documentation License, as published by the Free
 .\"   Software Foundation, version 1.2 or (at your option) any later
 .\"   version, with no Invariant Sections, no Front-Cover Texts, and no
 .\"   Back-Cover Texts.  You should have received a copy of the GNU Free
 .\"   Documentation License along with this program.  If not, see
-.\"   <http://www.gnu.org/licenses/>.
+.\"   <https://www.gnu.org/licenses/>.
 .\"
-.TH RNANO 1 "version 3.1" "September 2018"
+.TH RNANO 1 "version 3.2" "November 2018"
 
 .SH NAME
 rnano \- a restricted nano
@@ -32,13 +32,11 @@ access to the filesystem nor to a command shell.
 .PP
 In restricted mode, \fBnano\fR will:
 .IP \[bu] 2
-not read any nanorc files;
-.IP \[bu]
 not allow suspending;
 .IP \[bu]
-not read nor write any file not specified on the command line;
+not allow saving the current buffer under a different name;
 .IP \[bu]
-not allow saving a file under a different name;
+not allow inserting another file or opening a new buffer;
 .IP \[bu]
 not allow appending or prepending to any file;
 .IP \[bu]

@@ -575,19 +575,18 @@ ssize_t do_replace_loop(const char *needle, bool whole_word_only,
 			numreplaced = 0;
 
 		if (!replaceall) {
-			size_t from_col = xplustabs();
-			size_t to_col = strnlenpt(openfile->current->data,
+			spotlighted = TRUE;
+			light_from_col = xplustabs();
+			light_to_col = strnlenpt(openfile->current->data,
 										openfile->current_x + match_len);
 
 			/* Refresh the edit window, scrolling it if necessary. */
 			edit_refresh();
 
-			spotlight(TRUE, from_col, to_col);
-
 			/* TRANSLATORS: This is a prompt. */
 			i = do_yesno_prompt(TRUE, _("Replace this instance?"));
 
-			spotlight(FALSE, from_col, to_col);
+			spotlighted = FALSE;
 
 			if (i == -1)  /* The replacing was cancelled. */
 				break;

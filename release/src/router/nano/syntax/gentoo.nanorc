@@ -39,7 +39,7 @@ color brightblue "\<tc-(arch(-kernel)?|export|has-(tls|openmp))\>"
 ## Common commands used in ebuilds:
 color blue "\<(awk|cat|cd|chmod|chown|cp|echo|env|find|e?grep|ln|make|mkdir|mv|popd|printf|pushd|rm|rmdir|sed|set|tar|touch|unset|xargs)\>"
 ## Comments (doesn't work that well):
-color yellow "(^|[[:space:]])#.*$"
+color yellow "(^|[[:space:]])#.*"
 ## Strings (doesn't work that well):
 color brightyellow ""(\\.|[^\"])*"" "'(\\.|[^'])*'"
 ## Trailing space is bad!
@@ -52,7 +52,7 @@ syntax /etc/portage "\.(accept_keywords|env|keywords|mask|unmask|use)(/.+)?$"
 comment "#"
 
 ## Base text:
-color green "^.+$"
+color green ".+"
 ## Likely version and slot numbers:
 color magenta "-[[:digit:].]+(_(alpha|beta|pre|rc|p)[[:digit:]]*)*(-r[[:digit:]]+)?([:[:space:]]|$)"
 color magenta ":[^[:space:]]+([[:space:]]|$)"
@@ -67,7 +67,7 @@ color cyan "^[[:space:]]*[^/]*/"
 ## Masking regulators:
 color brightmagenta "^[[:space:]]*(=|~|<|<=|>|>=)"
 ## Comments:
-color yellow "#.*$"
+color yellow "#.*"
 ## Trailing space is bad!
 color ,green "[[:space:]]+$"
 ## Mixed whitespace is also bad.

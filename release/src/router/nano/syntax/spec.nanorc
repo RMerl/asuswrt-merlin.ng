@@ -31,7 +31,7 @@ color red "^%(post|posttrans|postun|trigger|triggerin|triggerpostun|triggerun|ve
 color brightred "%(if|else|endif|define|global|undefine)"
 
 # Comments.
-color cyan "#.*$"
+color cyan "#.*"
 # Special case: "# norootforbuild" is handled as main tag.
 color brightblue "^# norootforbuild"
 # %changelog date entries.

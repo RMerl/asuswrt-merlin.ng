@@ -17,9 +17,9 @@
    along with this program.  If not, see <https://www.gnu.org/licenses/>.  */
 
 #if ! defined TIMESPEC_H
-# define TIMESPEC_H
+#define TIMESPEC_H
 
-# include <time.h>
+#include <time.h>
 
 #ifndef _GL_INLINE_HEADER_BEGIN
  #error "Please include config.h first."
@@ -33,13 +33,20 @@ _GL_INLINE_HEADER_BEGIN
 extern "C" {
 #endif
 
+#include "arg-nonnull.h"
 #include "verify.h"
 
-/* Resolution of timespec timestamps (in units per second), and log
-   base 10 of the resolution.  */
+/* Inverse resolution of timespec timestamps (in units per second),
+   and log base 10 of the inverse resolution.  */
 
-enum { TIMESPEC_RESOLUTION = 1000000000 };
-enum { LOG10_TIMESPEC_RESOLUTION = 9 };
+enum { TIMESPEC_HZ = 1000000000 };
+enum { LOG10_TIMESPEC_HZ = 9 };
+
+/* Obsolescent names for backward compatibility.
+   They are misnomers, because TIMESPEC_RESOLUTION is not a resolution.  */
+
+enum { TIMESPEC_RESOLUTION = TIMESPEC_HZ };
+enum { LOG10_TIMESPEC_RESOLUTION = LOG10_TIMESPEC_HZ };
 
 /* Return a timespec with seconds S and nanoseconds NS.  */
 
@@ -88,8 +95,8 @@ timespec_cmp (struct timespec a, struct timespec b)
 
   /* Pacify gcc -Wstrict-overflow (bleeding-edge circa 2017-10-02).  See:
      https://lists.gnu.org/r/bug-gnulib/2017-10/msg00006.html  */
-  assume (-1 <= a.tv_nsec && a.tv_nsec <= 2 * TIMESPEC_RESOLUTION);
-  assume (-1 <= b.tv_nsec && b.tv_nsec <= 2 * TIMESPEC_RESOLUTION);
+  assume (-1 <= a.tv_nsec && a.tv_nsec <= 2 * TIMESPEC_HZ);
+  assume (-1 <= b.tv_nsec && b.tv_nsec <= 2 * TIMESPEC_HZ);
 
   return a.tv_nsec - b.tv_nsec;
 }
@@ -116,8 +123,9 @@ timespectod (struct timespec a)
   return a.tv_sec + a.tv_nsec / 1e9;
 }
 
-void gettime (struct timespec *);
-int settime (struct timespec const *);
+struct timespec current_timespec (void);
+void gettime (struct timespec *) _GL_ARG_NONNULL ((1));
+int settime (struct timespec const *) _GL_ARG_NONNULL ((1));
 
 #ifdef __cplusplus
 }

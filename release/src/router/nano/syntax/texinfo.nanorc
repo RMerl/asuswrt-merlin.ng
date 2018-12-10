@@ -12,10 +12,10 @@ color brightmagenta "@[a-zA-Z]+\{[^}]*\}"
 color yellow "@[a-zA-Z]+\{?" "\}"
 
 # Menu items.
-color brightred "^\*[[:space:]]+.*::.*$"
+color brightred "^\*[[:space:]]+.*::.*"
 
 # Comments.
-color green "@c[[:space:]]+.*$"
+color green "@c[[:space:]]+.*"
 
 # Trailing whitespace.
 color ,green "[[:space:]]+$"

@@ -28,7 +28,7 @@ color brightred "\{" "\}"
 color brightred "," ":"
 
 # Comments.
-color cyan "(^|[[:space:]]+)(//|#).*$"
+color cyan "(^|[[:space:]]+)(//|#).*"
 
 # Trailing whitespace.
 color ,green "[[:space:]]+$"

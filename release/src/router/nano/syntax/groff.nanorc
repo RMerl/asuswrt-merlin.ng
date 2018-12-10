@@ -15,7 +15,7 @@ color cyan start="(\\|\\\\)n\[" end="]"
 # Requests
 color brightgreen "^\.[[:space:]]*[^[:space:]]*"
 # Comments
-color yellow "^\.\\".*$"
+color yellow "^\.\\".*"
 # Strings
 color green "(\\|\\\\)\*(.|\(..)"
 color green start="(\\|\\\\)\*\[" end="]"

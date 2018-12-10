@@ -1,8 +1,10 @@
-# gnulib-common.m4 serial 39
+# gnulib-common.m4 serial 41
 dnl Copyright (C) 2007-2018 Free Software Foundation, Inc.
 dnl This file is free software; the Free Software Foundation
 dnl gives unlimited permission to copy and/or distribute it,
 dnl with or without modifications, as long as this notice is preserved.
+
+AC_PREREQ([2.62])
 
 # gl_COMMON
 # is expanded unconditionally through gnulib-tool magic.
@@ -14,12 +16,15 @@ AC_DEFUN([gl_COMMON], [
 AC_DEFUN([gl_COMMON_BODY], [
   AH_VERBATIM([_Noreturn],
 [/* The _Noreturn keyword of C11.  */
-#if ! (defined _Noreturn \
-       || (defined __STDC_VERSION__ && 201112 <= __STDC_VERSION__))
-# if (3 <= __GNUC__ || (__GNUC__ == 2 && 8 <= __GNUC_MINOR__) \
-      || 0x5110 <= __SUNPRO_C)
+#ifndef _Noreturn
+# if 201103 <= (defined __cplusplus ? __cplusplus : 0)
+#  define _Noreturn [[noreturn]]
+# elif (201112 <= (defined __STDC_VERSION__ ? __STDC_VERSION__ : 0) \
+        || 4 < __GNUC__ + (7 <= __GNUC_MINOR__))
+   /* _Noreturn works as-is.  */
+# elif 2 < __GNUC__ + (8 <= __GNUC_MINOR__) || 0x5110 <= __SUNPRO_C
 #  define _Noreturn __attribute__ ((__noreturn__))
-# elif defined _MSC_VER && 1200 <= _MSC_VER
+# elif 1200 <= (defined _MSC_VER ? _MSC_VER : 0)
 #  define _Noreturn __declspec (noreturn)
 # else
 #  define _Noreturn
@@ -214,13 +219,6 @@ AC_DEFUN([gl_FEATURES_H],
   AC_SUBST([HAVE_FEATURES_H])
 ])
 
-# m4_foreach_w
-# is a backport of autoconf-2.59c's m4_foreach_w.
-# Remove this macro when we can assume autoconf >= 2.60.
-m4_ifndef([m4_foreach_w],
-  [m4_define([m4_foreach_w],
-    [m4_foreach([$1], m4_split(m4_normalize([$2]), [ ]), [$3])])])
-
 # AS_VAR_IF(VAR, VALUE, [IF-MATCH], [IF-NOT-MATCH])
 # ----------------------------------------------------
 # Backport of autoconf-2.63b's macro.
@@ -233,7 +231,6 @@ m4_ifndef([AS_VAR_IF],
 # Modifies the value of the shell variable CC in an attempt to make $CC
 # understand ISO C99 source code.
 # This is like AC_PROG_CC_C99, except that
-# - AC_PROG_CC_C99 did not exist in Autoconf versions < 2.60,
 # - AC_PROG_CC_C99 does not mix well with AC_PROG_CC_STDC
 #   <https://lists.gnu.org/r/bug-gnulib/2011-09/msg00367.html>,
 #   but many more packages use AC_PROG_CC_STDC than AC_PROG_CC_C99
@@ -322,25 +319,6 @@ Amsterdam
   AC_SUBST([RANLIB])
 ])
 
-# AC_PROG_MKDIR_P
-# is a backport of autoconf-2.60's AC_PROG_MKDIR_P, with a fix
-# for interoperability with automake-1.9.6 from autoconf-2.62.
-# Remove this macro when we can assume autoconf >= 2.62 or
-# autoconf >= 2.60 && automake >= 1.10.
-# AC_AUTOCONF_VERSION was introduced in 2.62, so use that as the witness.
-m4_ifndef([AC_AUTOCONF_VERSION],[
-m4_ifdef([AC_PROG_MKDIR_P], [
-  dnl For automake-1.9.6 && autoconf < 2.62: Ensure MKDIR_P is AC_SUBSTed.
-  m4_define([AC_PROG_MKDIR_P],
-    m4_defn([AC_PROG_MKDIR_P])[
-    AC_SUBST([MKDIR_P])])], [
-  dnl For autoconf < 2.60: Backport of AC_PROG_MKDIR_P.
-  AC_DEFUN_ONCE([AC_PROG_MKDIR_P],
-    [AC_REQUIRE([AM_PROG_MKDIR_P])dnl defined by automake
-     MKDIR_P='$(mkdir_p)'
-     AC_SUBST([MKDIR_P])])])
-])
-
 # AC_C_RESTRICT
 # This definition is copied from post-2.69 Autoconf and overrides the
 # AC_C_RESTRICT macro from autoconf 2.60..2.69.  It can be removed
@@ -414,61 +392,3 @@ AC_DEFUN([gl_CACHE_VAL_SILENT],
 # AS_VAR_COPY was added in autoconf 2.63b
 m4_define_default([AS_VAR_COPY],
 [AS_LITERAL_IF([$1[]$2], [$1=$$2], [eval $1=\$$2])])
-
-# AC_PROG_SED was added in autoconf 2.59b
-m4_ifndef([AC_PROG_SED],
-[AC_DEFUN([AC_PROG_SED],
-[AC_CACHE_CHECK([for a sed that does not truncate output], ac_cv_path_SED,
-    [dnl ac_script should not contain more than 99 commands (for HP-UX sed),
-     dnl but more than about 7000 bytes, to catch a limit in Solaris 8 /usr/ucb/sed.
-     ac_script=s/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb/
-     for ac_i in 1 2 3 4 5 6 7; do
-       ac_script="$ac_script$as_nl$ac_script"
-     done
-     echo "$ac_script" 2>/dev/null | sed 99q >conftest.sed
-     AS_UNSET([ac_script])
-     if test -z "$SED"; then
-       ac_path_SED_found=false
-       _AS_PATH_WALK([], [
-         for ac_prog in sed gsed; do
-           for ac_exec_ext in '' $ac_executable_extensions; do
-             ac_path_SED="$as_dir/$ac_prog$ac_exec_ext"
-             AS_EXECUTABLE_P(["$ac_path_SED"]) || continue
-             case `"$ac_path_SED" --version 2>&1` in
-               *GNU*) ac_cv_path_SED=$ac_path_SED ac_path_SED_found=:;;
-               *)
-                 ac_count=0
-                 _AS_ECHO_N([0123456789]) >conftest.in
-                 while :
-                 do
-                   cat conftest.in conftest.in >conftest.tmp
-                   mv conftest.tmp conftest.in
-                   cp conftest.in conftest.nl
-                   echo >> conftest.nl
-                   "$ac_path_SED" -f conftest.sed <conftest.nl >conftest.out 2>/dev/null || break
-                   diff conftest.out conftest.nl >/dev/null 2>&1 || break
-                   ac_count=`expr $ac_count + 1`
-                   if test $ac_count -gt ${ac_path_SED_max-0}; then
-                     # Best so far, but keep looking for better
-                     ac_cv_path_SED=$ac_path_SED
-                     ac_path_SED_max=$ac_count
-                   fi
-                   test $ac_count -gt 10 && break
-                 done
-                 rm -f conftest.in conftest.tmp conftest.nl conftest.out;;
-             esac
-             $ac_path_SED_found && break 3
-           done
-         done])
-       if test -z "$ac_cv_path_SED"; then
-         AC_ERROR([no acceptable sed could be found in \$PATH])
-       fi
-     else
-       ac_cv_path_SED=$SED
-     fi
-    ])
- SED="$ac_cv_path_SED"
- AC_SUBST([SED])dnl
- rm -f conftest.sed
-])
-])

@@ -38,5 +38,5 @@ color brightblue "^[[:space:]]*#[[:space:]]*(define|include|import|(un|ifn?)def|
 color yellow "//.*"
 color yellow start="/\*" end="\*/"
 
-# Trailing whitespace.                                                                                                       
+# Trailing whitespace.
 color ,green "[[:space:]]+$"

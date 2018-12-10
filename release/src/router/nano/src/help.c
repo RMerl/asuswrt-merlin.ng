@@ -183,37 +183,29 @@ void do_help(void)
 		focusing = TRUE;
 
 		/* Show the cursor when we searched and found something. */
-		kbinput = get_kbinput(edit, didfind == 1);
+		kbinput = get_kbinput(edit, didfind == 1 || ISSET(SHOW_CURSOR));
 		didfind = 0;
 
 		func = parse_help_input(&kbinput);
 
 		if (func == total_refresh) {
 			total_redraw();
+		} else if (ISSET(SHOW_CURSOR) && (func == do_left || func == do_right ||
+											func == do_up || func == do_down)) {
+			func();
 		} else if (func == do_up) {
 			do_scroll_up();
 		} else if (func == do_down) {
 			if (openfile->edittop->lineno + editwinrows - 1 <
 								openfile->filebot->lineno)
 				do_scroll_down();
-		} else if (func == do_page_up) {
-			do_page_up();
-		} else if (func == do_page_down) {
-			do_page_down();
-		} else if (func == to_first_line) {
-			to_first_line();
-		} else if (func == to_last_line) {
-			to_last_line();
-		} else if (func == do_search_forward) {
-			do_search_forward();
+		} else if (func == do_page_up || func == do_page_down ||
+					func == to_first_line || func == to_last_line ||
+					func == do_findprevious || func == do_findnext) {
+			func();
+		} else if (func == do_search_forward || func == do_search_backward) {
+			func();
 			bottombars(MHELP);
-		} else if (func == do_search_backward) {
-			do_search_backward();
-			bottombars(MHELP);
-		} else if (func == do_findprevious) {
-			do_findprevious();
-		} else if (func == do_findnext) {
-			do_findnext();
 #ifdef ENABLE_NANORC
 		} else if (func == (functionptrtype)implant) {
 			implant(first_sc_for(MHELP, func)->expansion);
@@ -421,6 +413,15 @@ void help_init(void)
 				"command.\n\n");
 		htx[2] = N_(" The following function keys are "
 				"available in Execute Command mode:\n\n");
+	} else if (currmenu == MLINTER) {
+		htx[0] = N_("=== Linter ===\n\n "
+				"In this mode, the status bar shows an error message or "
+				"warning, and the cursor is put at the corresponding "
+				"position in the file.  With PageUp and PageDown you "
+				"can switch to earlier and later messages.\n\n");
+		htx[1] = N_(" The following function keys are "
+				"available in Linter mode:\n\n");
+		htx[2] = NULL;
 	}
 #endif /* !NANO_TINY */
 	else {
@@ -566,10 +567,11 @@ functionptrtype parse_help_input(int *kbinput)
 {
 	if (!meta_key) {
 		switch (*kbinput) {
-			case ' ':
-				return do_page_down;
+			case DEL_CODE:
 			case '-':
 				return do_page_up;
+			case ' ':
+				return do_page_down;
 			case 'W':
 			case 'w':
 			case '/':

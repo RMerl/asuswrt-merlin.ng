@@ -1,8 +1,10 @@
-# errno_h.m4 serial 12
+# errno_h.m4 serial 13
 dnl Copyright (C) 2004, 2006, 2008-2018 Free Software Foundation, Inc.
 dnl This file is free software; the Free Software Foundation
 dnl gives unlimited permission to copy and/or distribute it,
 dnl with or without modifications, as long as this notice is preserved.
+
+AC_PREREQ([2.61])
 
 AC_DEFUN_ONCE([gl_HEADER_ERRNO_H],
 [
@@ -128,10 +130,4 @@ yes
     AC_SUBST($1[_HIDDEN])
     AC_SUBST($1[_VALUE])
   fi
-])
-
-dnl Autoconf >= 2.61 has AC_COMPUTE_INT built-in.
-dnl Remove this when we can assume autoconf >= 2.61.
-m4_ifdef([AC_COMPUTE_INT], [], [
-  AC_DEFUN([AC_COMPUTE_INT], [_AC_COMPUTE_INT([$2],[$1],[$3],[$4])])
 ])

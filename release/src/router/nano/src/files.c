@@ -62,7 +62,7 @@ bool has_valid_path(const char *filename)
 /* Add an item to the circular list of openfile structs. */
 void make_new_buffer(void)
 {
-	openfilestruct *newnode = make_new_opennode();
+	openfilestruct *newnode = nmalloc(sizeof(openfilestruct));
 
 	if (openfile == NULL) {
 		/* Make the first open file the only element in the list. */
@@ -533,7 +533,7 @@ void replace_buffer(const char *filename)
 #ifndef NANO_TINY
 	add_undo(CUT_TO_EOF);
 #endif
-	do_cut_text(FALSE, FALSE, TRUE);
+	do_cut_text(FALSE, FALSE, TRUE, FALSE);
 #ifndef NANO_TINY
 	update_undo(CUT_TO_EOF);
 #endif
@@ -574,7 +574,7 @@ void replace_marked_buffer(const char *filename)
 	/* Throw away the text under the mark. */
 	cutbuffer = NULL;
 	add_undo(CUT);
-	do_cut_text(FALSE, TRUE, FALSE);
+	do_cut_text(FALSE, TRUE, FALSE, FALSE);
 	update_undo(CUT);
 	free_filestruct(cutbuffer);
 	cutbuffer = was_cutbuffer;
@@ -687,7 +687,7 @@ bool close_buffer(void)
 		return FALSE;
 
 #ifdef ENABLE_HISTORIES
-	if (ISSET(POS_HISTORY))
+	if (ISSET(POSITIONLOG))
 		update_poshistory(openfile->filename,
 						openfile->current->lineno, xplustabs() + 1);
 #endif
@@ -1221,7 +1221,7 @@ void do_insertfile(void)
 #ifdef ENABLE_MULTIBUFFER
 			if (ISSET(MULTIBUFFER)) {
 #ifdef ENABLE_HISTORIES
-				if (ISSET(POS_HISTORY)) {
+				if (ISSET(POSITIONLOG)) {
 					ssize_t priorline, priorcol;
 #ifndef NANO_TINY
 					if (!execute)
@@ -1258,10 +1258,6 @@ void do_insertfile_void(void)
 {
 	if (ISSET(RESTRICTED))
 		show_restricted_warning();
-#ifdef ENABLE_MULTIBUFFER
-	else if (ISSET(VIEW_MODE) && !ISSET(MULTIBUFFER))
-		statusbar(_("Key invalid in non-multibuffer mode"));
-#endif
 	else
 		do_insertfile();
 }
@@ -1904,13 +1900,12 @@ bool write_file(const char *name, FILE *f_open, bool tmp,
 	while (fileptr != NULL) {
 		size_t data_len = strlen(fileptr->data), size;
 
-		/* Convert newlines to nulls, just before we write to disk. */
+		/* Decode LFs as the NULs that they are, before writing to disk. */
 		sunder(fileptr->data);
 
 		size = fwrite(fileptr->data, sizeof(char), data_len, f);
 
-		/* Convert nulls to newlines.  data_len is the string's real
-		 * length. */
+		/* Re-encode any embedded NULs as LFs. */
 		unsunder(fileptr->data, data_len);
 
 		if (size < data_len) {

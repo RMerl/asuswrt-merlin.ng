@@ -1,3 +1,124 @@
+Changes between v3.1 and v3.2:
+------------------------------
+
+Benjamin Mintz (1):
+      syntax: python: do not highlight 'print' and 'exec' in Python 3
+
+Benno Schulenberg (87):
+      bindings: allow using <Enter> to exit from the linter
+      bindings: allow using ^X to exit from the linter
+      bindings: drop M-| as a keystroke for 'cutwordleft' -- set it free again
+      bindings: in tiny version with help, don't show unfunctional M-◀ and M-▶
+      bindings: make <Alt+Up> and <Alt+Down> work also on a Linux console
+      bindings: make the linter separately accessible, through M-B by default
+      bindings: make the Shift+arrow keys work by default on more terminals
+      bindings: no longer bind F13 and F14 and F15
+      bindings: recognize ASCII DEL as backspace also in viewer and browser
+      bindings: recognize <Ctrl+Shift+Delete> also on a Linux console
+      bindings: rename 'prevhistory' to 'older' and 'nexthistory' to 'newer'
+      bindings: stop binding <Bsp> to do_backspace() in the browser menu
+      bindings: when implanting a string, make sure to use positive values
+      build: exclude scrolling functions only from tiny version without help
+      build: fix compilation again when configured with --enable-tiny
+      build: fix compilation when configured with --disable-multibuffer
+      build: verify that --enable-tiny compiles before allowing a release
+      bump version numbers and add a news item for the 3.1 release
+      debug: report for which modified editing keys ncurses has no keycode
+      display: correct a mistaken label in the help lines of the browser
+      display: ensure that the help lines are shown when in linting mode
+      display: let the title bar show when nano is in linting mode
+      display: show the cursor also in a help text (when --showcursor is used)
+      display: use a different color when showing a linting message
+      docs: document the slightly changed workings of the --view option
+      docs: give suggestions for alternative key bindings in the sample nanorc
+      docs: remove a no-longer-needed suggestion from the sample nanorc
+      docs: update the description of -R/--restricted, as it now reads nanorc
+      docs, usage: mention that --showcursor now covers help texts too
+      feedback: give proper message for ^R when combining --view & --restricted
+      gnulib: update to its current upstream state
+      help: add a relevant explanatory text for the linter
+      help: move the linter to the end, to restore pairing in the help lines
+      help: pull "Older" and "Newer" into view on an 80-column terminal
+      help: restore the blank line between manipulation and position stuff
+      help: show <PgUp> and <PgDn> instead of F7 and F8 for pagewise scrolling
+      help: show the keystroke <Ctrl+Shift+Delete> as "Sh-^Del"
+      linter: allow using <Ctrl+Up> and <Ctrl+Down> to jump to other message
+      linter: do not pause when there are no messages for unopened files
+      linter: for "first"/"last", reshow actual message after a short pause
+      options: --ignorercfiles is now available in restricted mode
+      options: let view mode activate "multibuffer" to allow viewing more files
+      speller: remove a pointless message -- it is never seen
+      startup: allow reading nanorc in restricted mode, to permit customization
+      syntaxes: remove several redundant end-of-line anchors from regexes
+      tweaks: add a comment, and correct an indentation
+      tweaks: add two more translator hints
+      tweaks: capitalize the word "nano" when at the start of a sentence
+      tweaks: change a bunch of URLs to use 'https' instead of 'http'
+      tweaks: condense a handful of comments, and drop an assert
+      tweaks: condense another bit of code
+      tweaks: define a symbol to make the code itself a little simpler
+      tweaks: don't bother asking ncurses for keycodes for shifted Left/Right
+      tweaks: drop a check for the needle (the search string) being empty
+      tweaks: drop the checking of two flags that can no longer be toggled
+      tweaks: elide a function that is used just once and is a oneliner
+      tweaks: elide a wrapper function that is no longer useful
+      tweaks: exclude word-deletion keystrokes from the tiny version
+      tweaks: fold a few pairs of regexes into each other
+      tweaks: group a series of related variables together
+      tweaks: improve two comments, and reshuffle a line for consistency
+      tweaks: include an extra function call only where it is needed
+      tweaks: move all the function keys to the end of the shortcuts list
+      tweaks: move some calls of edit_redraw() to where they are needed
+      tweaks: redefine MMOST to exclude MBROWSER, to simplify the bindings
+      tweaks: reduce some repetitious and superfluous comments to just one
+      tweaks: remove a check that was made redundant by the previous commit
+      tweaks: remove a now-unused parameter from four functions
+      tweaks: remove an unneeded check for NULL, and rename a parameter
+      tweaks: remove a stray file that was accidentally comitted
+      tweaks: remove some old debugging code
+      tweaks: rename a bunch of variables, to make it clearer what they contain
+      tweaks: rename a flag, to match the name of the option
+      tweaks: rename a variable, to be a bit more fitting
+      tweaks: renumber a couple of symbols, and reshuffle a bit of code
+      tweaks: reorder some code to put backward motion before the forward one
+      tweaks: reshuffle a couple of conditions, to group things better
+      tweaks: reshuffle some conditions, putting the least likely one first
+      tweaks: reshuffle some lines to get standard order (first up, then down)
+      tweaks: reshuffle some lines, to put things in order of option name
+      tweaks: snip trailing whitespace that ended with a non-breaking space
+      tweaks: stop setting and requiring the Meta flag for special keycodes
+      tweaks: swap and reword two bullet points in the rnano manpage
+      tweaks: there is no reason to block SIGWINCHes while waiting for speller
+      undo: move another piece of checking to the two places that need it
+      undo: move some special checking code to the one place that needs it
+      wrapping: make the --fill option override 'set fill' again
+
+Brand Huntsman (5):
+      bindings: hard-bind the zap function to M-Del (Alt+Delete)
+      display: make all dying messages end in a newline
+      linter: throttle "first"/"last" message on repeated key presses
+      new feature: a bindable 'zap', to erase text without changing cutbuffer
+      options: add --zap, that makes <Bsp> and <Del> erase a marked region
+
+David Lawrence Ramsey (16):
+      display: do spotlighting as part of drawing the screen
+      docs: update rnano manpage, as -R/--restricted now reads nanorc
+      input: don't detect <Ctrl+Shift+Delete> on Linux console in tiny version
+      input: properly consume a modified Delete key also in the tiny version
+      input: properly recognize Alt+Delete when using -K/--rebindkeypad
+      input: recognize some escape sequences for <Shift+Delete>
+      speller: restore the mark coordinates slightly later
+      syntax: nanohelp: properly color the keystroke "Sh-^Del"
+      tweaks: don't define controldelete or controlshiftdelete in tiny version
+      tweaks: join two lines, and add a clarifying comment
+      tweaks: move the justifying of a single paragraph into its own function
+      tweaks: normalize the indentation of the shuffled code
+      tweaks: reshuffle some code to avoid several checks for having justified
+      tweaks: simplify by using a 'do/while' loop instead of 'while (TRUE)'
+      weeding: remove the 'active' parameter from spotlight()
+      wrapping: make relative fill values work again also for screen resizes
+
+
 Changes between v3.0 and v3.1:
 ------------------------------
 
@@ -18,6 +139,7 @@ Benno Schulenberg (13):
 
 Liu Hao (1):
       search: disallow switching to the Replace prompt when in view mode
+
 
 Changes between v2.9.8 and v3.0:
 --------------------------------

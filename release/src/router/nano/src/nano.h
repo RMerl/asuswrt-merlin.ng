@@ -153,7 +153,7 @@ typedef enum {
 } file_format;
 
 typedef enum {
-	HUSH, MILD, ALERT
+	HUSH, NOTICE, MILD, ALERT
 } message_type;
 
 typedef enum {
@@ -178,7 +178,7 @@ typedef enum {
 #ifdef ENABLE_COMMENT
 	COMMENT, UNCOMMENT, PREFLIGHT,
 #endif
-	CUT, CUT_TO_EOF, PASTE, INSERT, COUPLE_BEGIN, COUPLE_END, OTHER
+	ZAP, CUT, CUT_TO_EOF, PASTE, INSERT, COUPLE_BEGIN, COUPLE_END, OTHER
 } undo_type;
 
 /* Structure types. */
@@ -531,7 +531,7 @@ enum
 	BOLD_TEXT,
 	QUIET,
 	SOFTWRAP,
-	POS_HISTORY,
+	POSITIONLOG,
 	LOCKING,
 	NOREAD_MODE,
 	MAKE_IT_UNIX,
@@ -540,7 +540,8 @@ enum
 	LINE_NUMBERS,
 	NO_PAUSES,
 	AT_BLANKS,
-	AFTER_ENDS
+	AFTER_ENDS,
+	LET_THEM_ZAP
 };
 
 /* Flags for the menus in which a given function should be present. */
@@ -560,11 +561,11 @@ enum
 #define MYESNO          (1<<13)
 #define MLINTER         (1<<14)
 #define MFINDINHELP     (1<<15)
-/* This is an abbreviation for all menus except Help and YesNo. */
+/* This is an abbreviation for all menus except Help and Browser and YesNo. */
 #define MMOST  (MMAIN|MWHEREIS|MREPLACE|MREPLACEWITH|MGOTOLINE|MWRITEFILE|MINSERTFILE|\
-                MEXTCMD|MBROWSER|MWHEREISFILE|MGOTODIR|MFINDINHELP|MSPELL|MLINTER)
+                MEXTCMD|MWHEREISFILE|MGOTODIR|MFINDINHELP|MSPELL|MLINTER)
 #ifndef NANO_TINY
-#define MSOME  MMOST
+#define MSOME  MMOST|MBROWSER
 #else
 #define MSOME  MMAIN|MBROWSER
 #endif
@@ -581,26 +582,32 @@ enum
 #define CONTROL_DOWN 0x404
 #define CONTROL_HOME 0x405
 #define CONTROL_END 0x406
-#define CONTROL_DELETE 0x407
+#define CONTROL_DELETE 0x40D
 #define SHIFT_CONTROL_LEFT 0x411
 #define SHIFT_CONTROL_RIGHT 0x412
 #define SHIFT_CONTROL_UP 0x413
 #define SHIFT_CONTROL_DOWN 0x414
 #define SHIFT_CONTROL_HOME 0x415
 #define SHIFT_CONTROL_END 0x416
-#define CONTROL_SHIFT_DELETE 0x417
+#define CONTROL_SHIFT_DELETE 0x41D
 #define ALT_LEFT 0x421
 #define ALT_RIGHT 0x422
 #define ALT_UP 0x423
 #define ALT_DOWN 0x424
+#define ALT_DELETE 0x42D
 #define SHIFT_ALT_LEFT 0x431
 #define SHIFT_ALT_RIGHT 0x432
 #define SHIFT_ALT_UP 0x433
 #define SHIFT_ALT_DOWN 0x434
+//#define SHIFT_LEFT 0x451
+//#define SHIFT_RIGHT 0x452
+#define SHIFT_UP 0x453
+#define SHIFT_DOWN 0x454
 #define SHIFT_HOME 0x455
 #define SHIFT_END 0x456
 #define SHIFT_PAGEUP 0x457
 #define SHIFT_PAGEDOWN 0x458
+#define SHIFT_DELETE 0x45D
 #define SHIFT_TAB 0x45F
 
 #ifdef USE_SLANG

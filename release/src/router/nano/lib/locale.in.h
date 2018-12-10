@@ -190,11 +190,40 @@ _GL_WARN_ON_USE (setlocale, "setlocale works differently on native Windows - "
 # endif
 #endif
 
-#if @GNULIB_DUPLOCALE@
+#if /*@GNULIB_NEWLOCALE@ ||*/ (@GNULIB_LOCALENAME@ && @HAVE_NEWLOCALE@)
+# if @REPLACE_NEWLOCALE@
+#  if !(defined __cplusplus && defined GNULIB_NAMESPACE)
+#   undef newlocale
+#   define newlocale rpl_newlocale
+#   define GNULIB_defined_newlocale 1
+#  endif
+_GL_FUNCDECL_RPL (newlocale, locale_t,
+                  (int category_mask, const char *name, locale_t base)
+                  _GL_ARG_NONNULL ((2)));
+_GL_CXXALIAS_RPL (newlocale, locale_t,
+                  (int category_mask, const char *name, locale_t base));
+# else
+#  if @HAVE_NEWLOCALE@
+_GL_CXXALIAS_SYS (newlocale, locale_t,
+                  (int category_mask, const char *name, locale_t base));
+#  endif
+# endif
+# if @HAVE_NEWLOCALE@
+_GL_CXXALIASWARN (newlocale);
+# endif
+#elif defined GNULIB_POSIXCHECK
+# undef newlocale
+# if HAVE_RAW_DECL_NEWLOCALE
+_GL_WARN_ON_USE (newlocale, "newlocale is not portable");
+# endif
+#endif
+
+#if @GNULIB_DUPLOCALE@ || (@GNULIB_LOCALENAME@ && @HAVE_DUPLOCALE@)
 # if @REPLACE_DUPLOCALE@
 #  if !(defined __cplusplus && defined GNULIB_NAMESPACE)
 #   undef duplocale
 #   define duplocale rpl_duplocale
+#   define GNULIB_defined_duplocale 1
 #  endif
 _GL_FUNCDECL_RPL (duplocale, locale_t, (locale_t locale) _GL_ARG_NONNULL ((1)));
 _GL_CXXALIAS_RPL (duplocale, locale_t, (locale_t locale));
@@ -211,6 +240,30 @@ _GL_CXXALIASWARN (duplocale);
 # if HAVE_RAW_DECL_DUPLOCALE
 _GL_WARN_ON_USE (duplocale, "duplocale is buggy on some glibc systems - "
                  "use gnulib module duplocale for portability");
+# endif
+#endif
+
+#if /*@GNULIB_FREELOCALE@ ||*/ (@GNULIB_LOCALENAME@ && @HAVE_FREELOCALE@)
+# if @REPLACE_FREELOCALE@
+#  if !(defined __cplusplus && defined GNULIB_NAMESPACE)
+#   undef freelocale
+#   define freelocale rpl_freelocale
+#   define GNULIB_defined_freelocale 1
+#  endif
+_GL_FUNCDECL_RPL (freelocale, void, (locale_t locale) _GL_ARG_NONNULL ((1)));
+_GL_CXXALIAS_RPL (freelocale, void, (locale_t locale));
+# else
+#  if @HAVE_FREELOCALE@
+_GL_CXXALIAS_SYS (freelocale, void, (locale_t locale));
+#  endif
+# endif
+# if @HAVE_FREELOCALE@
+_GL_CXXALIASWARN (freelocale);
+# endif
+#elif defined GNULIB_POSIXCHECK
+# undef freelocale
+# if HAVE_RAW_DECL_FREELOCALE
+_GL_WARN_ON_USE (freelocale, "freelocale is not portable");
 # endif
 #endif
 

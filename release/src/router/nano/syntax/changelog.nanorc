@@ -3,7 +3,7 @@
 syntax changelog "Change[Ll]og[^/]*$"
 
 # Author lines.
-color green "^(19|20).*$"
+color green "^(19|20).*"
 # Dates.
 color red "^(19|20)[0-9-]{8}"
 # Email addresses.

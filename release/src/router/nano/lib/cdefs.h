@@ -409,6 +409,12 @@
 # define __glibc_likely(cond)	(cond)
 #endif
 
+#ifdef __has_attribute
+# define __glibc_has_attribute(attr)	__has_attribute (attr)
+#else
+# define __glibc_has_attribute(attr)	0
+#endif
+
 #if (!defined _Noreturn \
      && (defined __STDC_VERSION__ ? __STDC_VERSION__ : 0) < 201112 \
      &&  !__GNUC_PREREQ (4,7))

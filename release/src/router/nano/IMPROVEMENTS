@@ -2,6 +2,7 @@ Improvements in GNU nano
 ========================
 
 Since 3.0:
+  - Addition of --zap to make <Del> and <Bsp> obliterate marked text.
   - <Ctrl+Delete> wipes next word and <Shift+Ctrl+Delete> preceding word.
   - An external spell check can be undone.
 

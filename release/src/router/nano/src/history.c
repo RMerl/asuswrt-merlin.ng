@@ -403,7 +403,7 @@ void load_poshistory(void)
 	if (hisfile == NULL) {
 		if (errno != ENOENT) {
 			/* When reading failed, don't save history when we quit. */
-			UNSET(POS_HISTORY);
+			UNSET(POSITIONLOG);
 			history_error(N_("Error reading %s: %s"), poshistname, strerror(errno));
 		}
 	} else {

@@ -1,10 +1,12 @@
-# threadlib.m4 serial 14
+# threadlib.m4 serial 15
 dnl Copyright (C) 2005-2018 Free Software Foundation, Inc.
 dnl This file is free software; the Free Software Foundation
 dnl gives unlimited permission to copy and/or distribute it,
 dnl with or without modifications, as long as this notice is preserved.
 
 dnl From Bruno Haible.
+
+AC_PREREQ([2.60])
 
 dnl gl_THREADLIB
 dnl ------------
@@ -43,11 +45,7 @@ AC_DEFUN([gl_THREADLIB_EARLY_BODY],
 
   AC_REQUIRE([AC_CANONICAL_HOST])
   dnl _GNU_SOURCE is needed for pthread_rwlock_t on glibc systems.
-  dnl AC_USE_SYSTEM_EXTENSIONS was introduced in autoconf 2.60 and obsoletes
-  dnl AC_GNU_SOURCE.
-  m4_ifdef([AC_USE_SYSTEM_EXTENSIONS],
-    [AC_REQUIRE([AC_USE_SYSTEM_EXTENSIONS])],
-    [AC_REQUIRE([AC_GNU_SOURCE])])
+  AC_REQUIRE([AC_USE_SYSTEM_EXTENSIONS])
   dnl Check for multithreading.
   m4_ifdef([gl_THREADLIB_DEFAULT_NO],
     [m4_divert_text([DEFAULTS], [gl_use_threads_default=no])],

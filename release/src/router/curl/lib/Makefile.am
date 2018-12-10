@@ -23,13 +23,13 @@ AUTOMAKE_OPTIONS = foreign nostdinc
 
 CMAKE_DIST = CMakeLists.txt curl_config.h.cmake
 
-EXTRA_DIST = Makefile.m32 config-win32.h	                        \
- config-win32ce.h config-riscos.h config-mac.h curl_config.h.in		\
- makefile.dj config-dos.h libcurl.plist libcurl.rc config-amigaos.h	\
- makefile.amiga Makefile.netware nwlib.c nwos.c config-win32ce.h	\
- config-os400.h setup-os400.h config-symbian.h Makefile.Watcom		\
- config-tpf.h mk-ca-bundle.pl mk-ca-bundle.vbs $(CMAKE_DIST)	\
- firefox-db2pem.sh config-vxworks.h Makefile.vxworks checksrc.pl	\
+EXTRA_DIST = Makefile.m32 config-win32.h                            \
+ config-win32ce.h config-riscos.h config-mac.h curl_config.h.in     \
+ makefile.dj config-dos.h libcurl.plist libcurl.rc config-amigaos.h \
+ makefile.amiga Makefile.netware nwlib.c nwos.c config-win32ce.h    \
+ config-os400.h setup-os400.h config-symbian.h Makefile.Watcom      \
+ config-tpf.h mk-ca-bundle.pl mk-ca-bundle.vbs $(CMAKE_DIST)        \
+ firefox-db2pem.sh config-vxworks.h Makefile.vxworks checksrc.pl    \
  objnames-test08.sh objnames-test10.sh objnames.inc
 
 lib_LTLIBRARIES = libcurl.la
@@ -144,3 +144,11 @@ if CURLDEBUG
 # for debug builds, we scan the sources on all regular make invokes
 all-local: checksrc
 endif
+
+# disable the tests that are mostly causing false positives
+TIDYFLAGS=-checks=-clang-analyzer-security.insecureAPI.strcpy,-clang-analyzer-optin.performance.Padding,-clang-analyzer-valist.Uninitialized,-clang-analyzer-core.NonNullParamChecker,-clang-analyzer-core.NullDereference -quiet
+
+TIDY:=clang-tidy
+
+tidy:
+	$(TIDY) $(CSOURCES) $(TIDYFLAGS) -- $(AM_CPPFLAGS) $(CPPFLAGS) -DHAVE_CONFIG_H

@@ -139,7 +139,7 @@ check_PROGRAMS = 10-at-a-time$(EXEEXT) anyauthput$(EXEEXT) \
 	http-post$(EXEEXT) httpput$(EXEEXT) https$(EXEEXT) \
 	multi-app$(EXEEXT) multi-debugcallback$(EXEEXT) \
 	multi-double$(EXEEXT) multi-post$(EXEEXT) \
-	multi-single$(EXEEXT) persistant$(EXEEXT) \
+	multi-single$(EXEEXT) persistent$(EXEEXT) \
 	post-callback$(EXEEXT) postit2$(EXEEXT) sepheaders$(EXEEXT) \
 	simple$(EXEEXT) simplepost$(EXEEXT) simplessl$(EXEEXT) \
 	sendrecv$(EXEEXT) httpcustomheader$(EXEEXT) certinfo$(EXEEXT) \
@@ -162,7 +162,8 @@ check_PROGRAMS = 10-at-a-time$(EXEEXT) anyauthput$(EXEEXT) \
 	ftpuploadfrommem$(EXEEXT) ftpuploadresume$(EXEEXT) \
 	sslbackend$(EXEEXT) postit2-formadd$(EXEEXT) \
 	multi-formadd$(EXEEXT) shared-connection-cache$(EXEEXT) \
-	sftpuploadresume$(EXEEXT)
+	sftpuploadresume$(EXEEXT) http2-pushinmemory$(EXEEXT) \
+	parseurl$(EXEEXT)
 subdir = docs/examples
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/m4/ax_code_coverage.m4 \
@@ -347,6 +348,13 @@ http2_download_LDADD = $(LDADD)
 @USE_EXPLICIT_LIB_DEPS_FALSE@	$(LIBDIR)/libcurl.la
 @USE_EXPLICIT_LIB_DEPS_TRUE@http2_download_DEPENDENCIES =  \
 @USE_EXPLICIT_LIB_DEPS_TRUE@	$(LIBDIR)/libcurl.la
+http2_pushinmemory_SOURCES = http2-pushinmemory.c
+http2_pushinmemory_OBJECTS = http2-pushinmemory.$(OBJEXT)
+http2_pushinmemory_LDADD = $(LDADD)
+@USE_EXPLICIT_LIB_DEPS_FALSE@http2_pushinmemory_DEPENDENCIES =  \
+@USE_EXPLICIT_LIB_DEPS_FALSE@	$(LIBDIR)/libcurl.la
+@USE_EXPLICIT_LIB_DEPS_TRUE@http2_pushinmemory_DEPENDENCIES =  \
+@USE_EXPLICIT_LIB_DEPS_TRUE@	$(LIBDIR)/libcurl.la
 http2_serverpush_SOURCES = http2-serverpush.c
 http2_serverpush_OBJECTS = http2-serverpush.$(OBJEXT)
 http2_serverpush_LDADD = $(LDADD)
@@ -521,12 +529,19 @@ multi_single_LDADD = $(LDADD)
 @USE_EXPLICIT_LIB_DEPS_FALSE@	$(LIBDIR)/libcurl.la
 @USE_EXPLICIT_LIB_DEPS_TRUE@multi_single_DEPENDENCIES =  \
 @USE_EXPLICIT_LIB_DEPS_TRUE@	$(LIBDIR)/libcurl.la
-persistant_SOURCES = persistant.c
-persistant_OBJECTS = persistant.$(OBJEXT)
-persistant_LDADD = $(LDADD)
-@USE_EXPLICIT_LIB_DEPS_FALSE@persistant_DEPENDENCIES =  \
+parseurl_SOURCES = parseurl.c
+parseurl_OBJECTS = parseurl.$(OBJEXT)
+parseurl_LDADD = $(LDADD)
+@USE_EXPLICIT_LIB_DEPS_FALSE@parseurl_DEPENDENCIES =  \
 @USE_EXPLICIT_LIB_DEPS_FALSE@	$(LIBDIR)/libcurl.la
-@USE_EXPLICIT_LIB_DEPS_TRUE@persistant_DEPENDENCIES =  \
+@USE_EXPLICIT_LIB_DEPS_TRUE@parseurl_DEPENDENCIES =  \
+@USE_EXPLICIT_LIB_DEPS_TRUE@	$(LIBDIR)/libcurl.la
+persistent_SOURCES = persistent.c
+persistent_OBJECTS = persistent.$(OBJEXT)
+persistent_LDADD = $(LDADD)
+@USE_EXPLICIT_LIB_DEPS_FALSE@persistent_DEPENDENCIES =  \
+@USE_EXPLICIT_LIB_DEPS_FALSE@	$(LIBDIR)/libcurl.la
+@USE_EXPLICIT_LIB_DEPS_TRUE@persistent_DEPENDENCIES =  \
 @USE_EXPLICIT_LIB_DEPS_TRUE@	$(LIBDIR)/libcurl.la
 pop3_dele_SOURCES = pop3-dele.c
 pop3_dele_OBJECTS = pop3-dele.$(OBJEXT)
@@ -790,20 +805,22 @@ am__depfiles_remade = ./$(DEPDIR)/10-at-a-time.Po \
 	./$(DEPDIR)/ftpuploadfrommem.Po ./$(DEPDIR)/ftpuploadresume.Po \
 	./$(DEPDIR)/getinfo.Po ./$(DEPDIR)/getinmemory.Po \
 	./$(DEPDIR)/getredirect.Po ./$(DEPDIR)/http-post.Po \
-	./$(DEPDIR)/http2-download.Po ./$(DEPDIR)/http2-serverpush.Po \
-	./$(DEPDIR)/http2-upload.Po ./$(DEPDIR)/httpcustomheader.Po \
-	./$(DEPDIR)/httpput.Po ./$(DEPDIR)/https.Po \
-	./$(DEPDIR)/imap-append.Po ./$(DEPDIR)/imap-copy.Po \
-	./$(DEPDIR)/imap-create.Po ./$(DEPDIR)/imap-delete.Po \
-	./$(DEPDIR)/imap-examine.Po ./$(DEPDIR)/imap-fetch.Po \
-	./$(DEPDIR)/imap-list.Po ./$(DEPDIR)/imap-lsub.Po \
-	./$(DEPDIR)/imap-multi.Po ./$(DEPDIR)/imap-noop.Po \
-	./$(DEPDIR)/imap-search.Po ./$(DEPDIR)/imap-ssl.Po \
-	./$(DEPDIR)/imap-store.Po ./$(DEPDIR)/imap-tls.Po \
-	./$(DEPDIR)/multi-app.Po ./$(DEPDIR)/multi-debugcallback.Po \
-	./$(DEPDIR)/multi-double.Po ./$(DEPDIR)/multi-formadd.Po \
-	./$(DEPDIR)/multi-post.Po ./$(DEPDIR)/multi-single.Po \
-	./$(DEPDIR)/persistant.Po ./$(DEPDIR)/pop3-dele.Po \
+	./$(DEPDIR)/http2-download.Po \
+	./$(DEPDIR)/http2-pushinmemory.Po \
+	./$(DEPDIR)/http2-serverpush.Po ./$(DEPDIR)/http2-upload.Po \
+	./$(DEPDIR)/httpcustomheader.Po ./$(DEPDIR)/httpput.Po \
+	./$(DEPDIR)/https.Po ./$(DEPDIR)/imap-append.Po \
+	./$(DEPDIR)/imap-copy.Po ./$(DEPDIR)/imap-create.Po \
+	./$(DEPDIR)/imap-delete.Po ./$(DEPDIR)/imap-examine.Po \
+	./$(DEPDIR)/imap-fetch.Po ./$(DEPDIR)/imap-list.Po \
+	./$(DEPDIR)/imap-lsub.Po ./$(DEPDIR)/imap-multi.Po \
+	./$(DEPDIR)/imap-noop.Po ./$(DEPDIR)/imap-search.Po \
+	./$(DEPDIR)/imap-ssl.Po ./$(DEPDIR)/imap-store.Po \
+	./$(DEPDIR)/imap-tls.Po ./$(DEPDIR)/multi-app.Po \
+	./$(DEPDIR)/multi-debugcallback.Po ./$(DEPDIR)/multi-double.Po \
+	./$(DEPDIR)/multi-formadd.Po ./$(DEPDIR)/multi-post.Po \
+	./$(DEPDIR)/multi-single.Po ./$(DEPDIR)/parseurl.Po \
+	./$(DEPDIR)/persistent.Po ./$(DEPDIR)/pop3-dele.Po \
 	./$(DEPDIR)/pop3-list.Po ./$(DEPDIR)/pop3-multi.Po \
 	./$(DEPDIR)/pop3-noop.Po ./$(DEPDIR)/pop3-retr.Po \
 	./$(DEPDIR)/pop3-ssl.Po ./$(DEPDIR)/pop3-stat.Po \
@@ -845,41 +862,41 @@ SOURCES = 10-at-a-time.c anyauthput.c certinfo.c chkspeed.c \
 	fopen.c ftp-wildcard.c ftpget.c ftpgetinfo.c ftpgetresp.c \
 	ftpsget.c ftpupload.c ftpuploadfrommem.c ftpuploadresume.c \
 	getinfo.c getinmemory.c getredirect.c http-post.c \
-	http2-download.c http2-serverpush.c http2-upload.c \
-	httpcustomheader.c httpput.c https.c imap-append.c imap-copy.c \
-	imap-create.c imap-delete.c imap-examine.c imap-fetch.c \
-	imap-list.c imap-lsub.c imap-multi.c imap-noop.c imap-search.c \
-	imap-ssl.c imap-store.c imap-tls.c multi-app.c \
-	multi-debugcallback.c multi-double.c multi-formadd.c \
-	multi-post.c multi-single.c persistant.c pop3-dele.c \
-	pop3-list.c pop3-multi.c pop3-noop.c pop3-retr.c pop3-ssl.c \
-	pop3-stat.c pop3-tls.c pop3-top.c pop3-uidl.c post-callback.c \
-	postinmemory.c postit2.c postit2-formadd.c progressfunc.c \
-	resolve.c rtsp.c sendrecv.c sepheaders.c sftpget.c \
-	sftpuploadresume.c shared-connection-cache.c simple.c \
-	simplepost.c simplessl.c smtp-expn.c smtp-mail.c smtp-mime.c \
-	smtp-multi.c smtp-ssl.c smtp-tls.c smtp-vrfy.c sslbackend.c \
-	url2file.c
+	http2-download.c http2-pushinmemory.c http2-serverpush.c \
+	http2-upload.c httpcustomheader.c httpput.c https.c \
+	imap-append.c imap-copy.c imap-create.c imap-delete.c \
+	imap-examine.c imap-fetch.c imap-list.c imap-lsub.c \
+	imap-multi.c imap-noop.c imap-search.c imap-ssl.c imap-store.c \
+	imap-tls.c multi-app.c multi-debugcallback.c multi-double.c \
+	multi-formadd.c multi-post.c multi-single.c parseurl.c \
+	persistent.c pop3-dele.c pop3-list.c pop3-multi.c pop3-noop.c \
+	pop3-retr.c pop3-ssl.c pop3-stat.c pop3-tls.c pop3-top.c \
+	pop3-uidl.c post-callback.c postinmemory.c postit2.c \
+	postit2-formadd.c progressfunc.c resolve.c rtsp.c sendrecv.c \
+	sepheaders.c sftpget.c sftpuploadresume.c \
+	shared-connection-cache.c simple.c simplepost.c simplessl.c \
+	smtp-expn.c smtp-mail.c smtp-mime.c smtp-multi.c smtp-ssl.c \
+	smtp-tls.c smtp-vrfy.c sslbackend.c url2file.c
 DIST_SOURCES = 10-at-a-time.c anyauthput.c certinfo.c chkspeed.c \
 	cookie_interface.c debug.c externalsocket.c fileupload.c \
 	fopen.c ftp-wildcard.c ftpget.c ftpgetinfo.c ftpgetresp.c \
 	ftpsget.c ftpupload.c ftpuploadfrommem.c ftpuploadresume.c \
 	getinfo.c getinmemory.c getredirect.c http-post.c \
-	http2-download.c http2-serverpush.c http2-upload.c \
-	httpcustomheader.c httpput.c https.c imap-append.c imap-copy.c \
-	imap-create.c imap-delete.c imap-examine.c imap-fetch.c \
-	imap-list.c imap-lsub.c imap-multi.c imap-noop.c imap-search.c \
-	imap-ssl.c imap-store.c imap-tls.c multi-app.c \
-	multi-debugcallback.c multi-double.c multi-formadd.c \
-	multi-post.c multi-single.c persistant.c pop3-dele.c \
-	pop3-list.c pop3-multi.c pop3-noop.c pop3-retr.c pop3-ssl.c \
-	pop3-stat.c pop3-tls.c pop3-top.c pop3-uidl.c post-callback.c \
-	postinmemory.c postit2.c postit2-formadd.c progressfunc.c \
-	resolve.c rtsp.c sendrecv.c sepheaders.c sftpget.c \
-	sftpuploadresume.c shared-connection-cache.c simple.c \
-	simplepost.c simplessl.c smtp-expn.c smtp-mail.c smtp-mime.c \
-	smtp-multi.c smtp-ssl.c smtp-tls.c smtp-vrfy.c sslbackend.c \
-	url2file.c
+	http2-download.c http2-pushinmemory.c http2-serverpush.c \
+	http2-upload.c httpcustomheader.c httpput.c https.c \
+	imap-append.c imap-copy.c imap-create.c imap-delete.c \
+	imap-examine.c imap-fetch.c imap-list.c imap-lsub.c \
+	imap-multi.c imap-noop.c imap-search.c imap-ssl.c imap-store.c \
+	imap-tls.c multi-app.c multi-debugcallback.c multi-double.c \
+	multi-formadd.c multi-post.c multi-single.c parseurl.c \
+	persistent.c pop3-dele.c pop3-list.c pop3-multi.c pop3-noop.c \
+	pop3-retr.c pop3-ssl.c pop3-stat.c pop3-tls.c pop3-top.c \
+	pop3-uidl.c post-callback.c postinmemory.c postit2.c \
+	postit2-formadd.c progressfunc.c resolve.c rtsp.c sendrecv.c \
+	sepheaders.c sftpget.c sftpuploadresume.c \
+	shared-connection-cache.c simple.c simplepost.c simplessl.c \
+	smtp-expn.c smtp-mail.c smtp-mime.c smtp-multi.c smtp-ssl.c \
+	smtp-tls.c smtp-vrfy.c sslbackend.c url2file.c
 am__can_run_installinfo = \
   case $$AM_UPDATE_INFO_DIR in \
     n|no|NO) false;; \
@@ -1050,6 +1067,7 @@ USE_LIBRTMP = @USE_LIBRTMP@
 USE_LIBSSH = @USE_LIBSSH@
 USE_LIBSSH2 = @USE_LIBSSH2@
 USE_MBEDTLS = @USE_MBEDTLS@
+USE_MESALINK = @USE_MESALINK@
 USE_NGHTTP2 = @USE_NGHTTP2@
 USE_NSS = @USE_NSS@
 USE_OPENLDAP = @USE_OPENLDAP@
@@ -1118,7 +1136,7 @@ top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 AUTOMAKE_OPTIONS = foreign nostdinc
 EXTRA_DIST = README Makefile.example Makefile.inc Makefile.m32 \
-	Makefile.netware makefile.dj $(COMPLICATED_EXAMPLES)
+  Makefile.netware makefile.dj $(COMPLICATED_EXAMPLES)
 
 
 # Specify our include paths here, and do it relative to $(top_srcdir) and
@@ -1138,11 +1156,11 @@ LIBDIR = $(top_builddir)/lib
 
 # These examples require external dependencies that may not be commonly
 # available on POSIX systems, so don't bother attempting to compile them here.
-COMPLICATED_EXAMPLES = curlgtk.c curlx.c htmltitle.cpp cacertinmem.c	\
-  ghiper.c hiperfifo.c htmltidy.c multithread.c opensslthreadlock.c	\
-  sampleconv.c synctime.c threaded-ssl.c evhiperfifo.c			\
-  smooth-gtk-thread.c version-check.pl href_extractor.c asiohiper.cpp	\
-  multi-uv.c xmlstream.c usercertinmem.c sessioninfo.c			\
+COMPLICATED_EXAMPLES = curlgtk.c curlx.c htmltitle.cpp cacertinmem.c \
+  ghiper.c hiperfifo.c htmltidy.c multithread.c opensslthreadlock.c \
+  sampleconv.c synctime.c threaded-ssl.c evhiperfifo.c \
+  smooth-gtk-thread.c version-check.pl href_extractor.c asiohiper.cpp \
+  multi-uv.c xmlstream.c usercertinmem.c sessioninfo.c \
   threaded-shared-conn.c crawler.c ephiperfifo.c
 
 all: all-am
@@ -1277,6 +1295,10 @@ http2-download$(EXEEXT): $(http2_download_OBJECTS) $(http2_download_DEPENDENCIES
 	@rm -f http2-download$(EXEEXT)
 	$(AM_V_CCLD)$(LINK) $(http2_download_OBJECTS) $(http2_download_LDADD) $(LIBS)
 
+http2-pushinmemory$(EXEEXT): $(http2_pushinmemory_OBJECTS) $(http2_pushinmemory_DEPENDENCIES) $(EXTRA_http2_pushinmemory_DEPENDENCIES) 
+	@rm -f http2-pushinmemory$(EXEEXT)
+	$(AM_V_CCLD)$(LINK) $(http2_pushinmemory_OBJECTS) $(http2_pushinmemory_LDADD) $(LIBS)
+
 http2-serverpush$(EXEEXT): $(http2_serverpush_OBJECTS) $(http2_serverpush_DEPENDENCIES) $(EXTRA_http2_serverpush_DEPENDENCIES) 
 	@rm -f http2-serverpush$(EXEEXT)
 	$(AM_V_CCLD)$(LINK) $(http2_serverpush_OBJECTS) $(http2_serverpush_LDADD) $(LIBS)
@@ -1377,9 +1399,13 @@ multi-single$(EXEEXT): $(multi_single_OBJECTS) $(multi_single_DEPENDENCIES) $(EX
 	@rm -f multi-single$(EXEEXT)
 	$(AM_V_CCLD)$(LINK) $(multi_single_OBJECTS) $(multi_single_LDADD) $(LIBS)
 
-persistant$(EXEEXT): $(persistant_OBJECTS) $(persistant_DEPENDENCIES) $(EXTRA_persistant_DEPENDENCIES) 
-	@rm -f persistant$(EXEEXT)
-	$(AM_V_CCLD)$(LINK) $(persistant_OBJECTS) $(persistant_LDADD) $(LIBS)
+parseurl$(EXEEXT): $(parseurl_OBJECTS) $(parseurl_DEPENDENCIES) $(EXTRA_parseurl_DEPENDENCIES) 
+	@rm -f parseurl$(EXEEXT)
+	$(AM_V_CCLD)$(LINK) $(parseurl_OBJECTS) $(parseurl_LDADD) $(LIBS)
+
+persistent$(EXEEXT): $(persistent_OBJECTS) $(persistent_DEPENDENCIES) $(EXTRA_persistent_DEPENDENCIES) 
+	@rm -f persistent$(EXEEXT)
+	$(AM_V_CCLD)$(LINK) $(persistent_OBJECTS) $(persistent_LDADD) $(LIBS)
 
 pop3-dele$(EXEEXT): $(pop3_dele_OBJECTS) $(pop3_dele_DEPENDENCIES) $(EXTRA_pop3_dele_DEPENDENCIES) 
 	@rm -f pop3-dele$(EXEEXT)
@@ -1545,6 +1571,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/getredirect.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/http-post.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/http2-download.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/http2-pushinmemory.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/http2-serverpush.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/http2-upload.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/httpcustomheader.Po@am__quote@ # am--include-marker
@@ -1570,7 +1597,8 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/multi-formadd.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/multi-post.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/multi-single.Po@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/persistant.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/parseurl.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/persistent.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/pop3-dele.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/pop3-list.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/pop3-multi.Po@am__quote@ # am--include-marker
@@ -1790,6 +1818,7 @@ distclean: distclean-am
 	-rm -f ./$(DEPDIR)/getredirect.Po
 	-rm -f ./$(DEPDIR)/http-post.Po
 	-rm -f ./$(DEPDIR)/http2-download.Po
+	-rm -f ./$(DEPDIR)/http2-pushinmemory.Po
 	-rm -f ./$(DEPDIR)/http2-serverpush.Po
 	-rm -f ./$(DEPDIR)/http2-upload.Po
 	-rm -f ./$(DEPDIR)/httpcustomheader.Po
@@ -1815,7 +1844,8 @@ distclean: distclean-am
 	-rm -f ./$(DEPDIR)/multi-formadd.Po
 	-rm -f ./$(DEPDIR)/multi-post.Po
 	-rm -f ./$(DEPDIR)/multi-single.Po
-	-rm -f ./$(DEPDIR)/persistant.Po
+	-rm -f ./$(DEPDIR)/parseurl.Po
+	-rm -f ./$(DEPDIR)/persistent.Po
 	-rm -f ./$(DEPDIR)/pop3-dele.Po
 	-rm -f ./$(DEPDIR)/pop3-list.Po
 	-rm -f ./$(DEPDIR)/pop3-multi.Po
@@ -1917,6 +1947,7 @@ maintainer-clean: maintainer-clean-am
 	-rm -f ./$(DEPDIR)/getredirect.Po
 	-rm -f ./$(DEPDIR)/http-post.Po
 	-rm -f ./$(DEPDIR)/http2-download.Po
+	-rm -f ./$(DEPDIR)/http2-pushinmemory.Po
 	-rm -f ./$(DEPDIR)/http2-serverpush.Po
 	-rm -f ./$(DEPDIR)/http2-upload.Po
 	-rm -f ./$(DEPDIR)/httpcustomheader.Po
@@ -1942,7 +1973,8 @@ maintainer-clean: maintainer-clean-am
 	-rm -f ./$(DEPDIR)/multi-formadd.Po
 	-rm -f ./$(DEPDIR)/multi-post.Po
 	-rm -f ./$(DEPDIR)/multi-single.Po
-	-rm -f ./$(DEPDIR)/persistant.Po
+	-rm -f ./$(DEPDIR)/parseurl.Po
+	-rm -f ./$(DEPDIR)/persistent.Po
 	-rm -f ./$(DEPDIR)/pop3-dele.Po
 	-rm -f ./$(DEPDIR)/pop3-list.Po
 	-rm -f ./$(DEPDIR)/pop3-multi.Po

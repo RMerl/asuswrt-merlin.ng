@@ -48,6 +48,9 @@
 /* to disable --libcurl C code generation option */
 #undef CURL_DISABLE_LIBCURL_OPTION
 
+/* if the OpenSSL configuration won't be loaded automatically */
+#undef CURL_DISABLE_OPENSSL_AUTO_LOAD_CONFIG
+
 /* to disable POP3 */
 #undef CURL_DISABLE_POP3
 
@@ -957,6 +960,9 @@
 
 /* if mbedTLS is enabled */
 #undef USE_MBEDTLS
+
+/* if MesaLink is enabled */
+#undef USE_MESALINK
 
 /* Define to enable metalink support */
 #undef USE_METALINK

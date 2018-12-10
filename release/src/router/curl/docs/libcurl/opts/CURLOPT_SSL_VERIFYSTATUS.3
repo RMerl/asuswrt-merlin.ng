@@ -5,7 +5,7 @@
 .\" *                            | (__| |_| |  _ <| |___
 .\" *                             \___|\___/|_| \_\_____|
 .\" *
-.\" * Copyright (C) 1998 - 2017, Daniel Stenberg, <daniel@haxx.se>, et al.
+.\" * Copyright (C) 1998 - 2018, Daniel Stenberg, <daniel@haxx.se>, et al.
 .\" *
 .\" * This software is licensed as described in the file COPYING, which
 .\" * you should have received as part of this distribution. The terms
@@ -20,7 +20,7 @@
 .\" *
 .\" **************************************************************************
 .\"
-.TH CURLOPT_SSL_VERIFYSTATUS 3 "May 31, 2017" "libcurl 7.61.1" "curl_easy_setopt options"
+.TH CURLOPT_SSL_VERIFYSTATUS 3 "October 09, 2018" "libcurl 7.62.0" "curl_easy_setopt options"
 
 .SH NAME
 CURLOPT_SSL_VERIFYSTATUS \- verify the certificate's status
@@ -45,7 +45,7 @@ All TLS based protocols: HTTPS, FTPS, IMAPS, POP3S, SMTPS etc.
 CURL *curl = curl_easy_init();
 if(curl) {
   curl_easy_setopt(curl, CURLOPT_URL, "https://example.com/");
-  /* ask for OSCP stapling! */
+  /* ask for OCSP stapling! */
   curl_easy_setopt(curl, CURLOPT_SSL_VERIFYSTATUS, 1L);
   ret = curl_easy_perform(curl);
   curl_easy_cleanup(curl);

@@ -1,5 +1,9 @@
 set(TARGET_LABEL_PREFIX "Test ")
 
+if(MSVC)
+  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} /wd4127")
+endif()
+
 function(setup_test TEST_NAME)          # ARGN are the files in the test
   add_executable( ${TEST_NAME} ${ARGN} )
   string(TOUPPER ${TEST_NAME} UPPER_TEST_NAME)
@@ -50,10 +54,10 @@ endif()
 
 add_custom_command(
   OUTPUT lib1521.c
-  COMMAND ${PERL_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/mk-lib1521.pl < ${CMAKE_SOURCE_DIR}/include/curl/curl.h > lib1521.c
+  COMMAND ${PERL_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/mk-lib1521.pl < ${CURL_SOURCE_DIR}/include/curl/curl.h > lib1521.c
   DEPENDS
     "${CMAKE_CURRENT_SOURCE_DIR}/mk-lib1521.pl"
-    "${CMAKE_SOURCE_DIR}/include/curl/curl.h"
+    "${CURL_SOURCE_DIR}/include/curl/curl.h"
   VERBATIM)
 
 set_property(TARGET chkdecimalpoint

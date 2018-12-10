@@ -834,6 +834,10 @@ SOURCE=..\..\..\..\lib\dict.c
 # End Source File
 # Begin Source File
 
+SOURCE=..\..\..\..\lib\doh.c
+# End Source File
+# Begin Source File
+
 SOURCE=..\..\..\..\lib\dotdot.c
 # End Source File
 # Begin Source File
@@ -1146,6 +1150,10 @@ SOURCE=..\..\..\..\lib\transfer.c
 # End Source File
 # Begin Source File
 
+SOURCE=..\..\..\..\lib\urlapi.c
+# End Source File
+# Begin Source File
+
 SOURCE=..\..\..\..\lib\url.c
 # End Source File
 # Begin Source File
@@ -1235,6 +1243,10 @@ SOURCE=..\..\..\..\lib\vtls\gtls.c
 # Begin Source File
 
 SOURCE=..\..\..\..\lib\vtls\mbedtls.c
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\..\lib\vtls\mesalink.c
 # End Source File
 # Begin Source File
 
@@ -1419,6 +1431,10 @@ SOURCE=..\..\..\..\lib\curlx.h
 # Begin Source File
 
 SOURCE=..\..\..\..\lib\dict.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\..\lib\doh.h
 # End Source File
 # Begin Source File
 
@@ -1678,6 +1694,10 @@ SOURCE=..\..\..\..\lib\transfer.h
 # End Source File
 # Begin Source File
 
+SOURCE=..\..\..\..\lib\urlapi-int.h
+# End Source File
+# Begin Source File
+
 SOURCE=..\..\..\..\lib\urldata.h
 # End Source File
 # Begin Source File
@@ -1731,6 +1751,10 @@ SOURCE=..\..\..\..\lib\vtls\gtls.h
 # Begin Source File
 
 SOURCE=..\..\..\..\lib\vtls\mbedtls.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\..\lib\vtls\mesalink.h
 # End Source File
 # Begin Source File
 

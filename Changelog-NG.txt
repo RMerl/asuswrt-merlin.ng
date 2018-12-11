@@ -1,6 +1,16 @@
 Asuswrt-Merlin 384/NG Changelog
 ===============================
 
+384.9 (xx-xxx-xxxx)
+  - CHANGED: Updated wget to 1.20.
+  - CHANGED: Updated nano to 3.2.
+  - CHANGED: Updated curl to 7.62.0.
+  - CHANGED: SSH brute force protection now also protects
+             SSH access from LAN
+  - FIXED: Firmware update checks would not run at boot time
+           on the RT-AX88U.
+
+
 384.8_2 (8-Dec-2018)
   - CHANGED: Updated miniupnpd to 20181205.
   - CHANGED: Push LAN domain to OpenVPN clients as DNS suffix

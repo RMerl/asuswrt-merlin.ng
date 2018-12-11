@@ -1663,8 +1663,6 @@ define RouterOptions
 	if [ "$(HTTPS)" = "y" ]; then \
 		sed -i "/RTCONFIG_HTTPS/d" $(1); \
 		echo "RTCONFIG_HTTPS=y" >>$(1); \
-                sed -i "/RTCONFIG_FORCE_AUTO_UPGRADE/d" $(1); \
-		echo "RTCONFIG_FORCE_AUTO_UPGRADE=y" >>$(1); \
 	fi; \
 	if [ "$(USBRESET)" = "y" ]; then \
 		sed -i "/RTCONFIG_USBRESET/d" $(1); \

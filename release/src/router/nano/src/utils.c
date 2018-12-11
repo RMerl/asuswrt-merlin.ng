@@ -160,10 +160,9 @@ bool parse_line_column(const char *str, ssize_t *line, ssize_t *column)
 }
 
 /* Reduce the memory allocation of a string to what is needed. */
-void snuggly_fit(char **str)
+void snuggly_fit(char **string)
 {
-	if (*str != NULL)
-		*str = charealloc(*str, strlen(*str) + 1);
+	*string = charealloc(*string, strlen(*string) + 1);
 }
 
 /* Null a string at a certain index and align it. */
@@ -266,13 +265,6 @@ bool is_separate_word(size_t position, size_t length, const char *buf)
 const char *strstrwrapper(const char *haystack, const char *needle,
 		const char *start)
 {
-	if (*needle == '\0') {
-#ifndef NANO_TINY
-		statusline(ALERT, "Searching for nothing -- please report a bug");
-#endif
-		return (char *)start;
-	}
-
 	if (ISSET(USE_REGEXP)) {
 		if (ISSET(BACKWARDS_SEARCH)) {
 			size_t last_find, ceiling, far_end;
@@ -357,7 +349,7 @@ void *nmalloc(size_t howmuch)
 	void *r = malloc(howmuch);
 
 	if (r == NULL && howmuch != 0)
-		die(_("nano is out of memory!"));
+		die(_("Nano is out of memory!\n"));
 
 	return r;
 }
@@ -369,7 +361,7 @@ void *nrealloc(void *ptr, size_t howmuch)
 	void *r = realloc(ptr, howmuch);
 
 	if (r == NULL && howmuch != 0)
-		die(_("nano is out of memory!"));
+		die(_("Nano is out of memory!\n"));
 
 	return r;
 }

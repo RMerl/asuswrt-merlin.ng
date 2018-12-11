@@ -1,4 +1,4 @@
-# socklen.m4 serial 10
+# socklen.m4 serial 11
 dnl Copyright (C) 2005-2007, 2009-2018 Free Software Foundation, Inc.
 dnl This file is free software; the Free Software Foundation
 dnl gives unlimited permission to copy and/or distribute it,
@@ -15,8 +15,8 @@ dnl So we have to test to find something that will work.
 AC_DEFUN([gl_TYPE_SOCKLEN_T],
   [AC_REQUIRE([gl_CHECK_SOCKET_HEADERS])dnl
    AC_CHECK_TYPE([socklen_t], ,
-     [AC_MSG_CHECKING([for socklen_t equivalent])
-      AC_CACHE_VAL([gl_cv_socklen_t_equiv],
+     [AC_CACHE_CHECK([for socklen_t equivalent],
+        [gl_cv_socklen_t_equiv],
         [# Systems have either "struct sockaddr *" or
          # "void *" as the second argument to getpeername
          gl_cv_socklen_t_equiv=
@@ -34,11 +34,10 @@ AC_DEFUN([gl_TYPE_SOCKLEN_T],
            done
            test "$gl_cv_socklen_t_equiv" != "" && break
          done
-      ])
-      if test "$gl_cv_socklen_t_equiv" = ""; then
-        AC_MSG_ERROR([Cannot find a type to use in place of socklen_t])
-      fi
-      AC_MSG_RESULT([$gl_cv_socklen_t_equiv])
+         if test "$gl_cv_socklen_t_equiv" = ""; then
+           AC_MSG_ERROR([Cannot find a type to use in place of socklen_t])
+         fi
+        ])
       AC_DEFINE_UNQUOTED([socklen_t], [$gl_cv_socklen_t_equiv],
         [type to use in place of socklen_t if not defined])],
      [gl_SOCKET_HEADERS])])

@@ -1,4 +1,4 @@
-# nl_langinfo.m4 serial 5
+# nl_langinfo.m4 serial 6
 dnl Copyright (C) 2009-2018 Free Software Foundation, Inc.
 dnl This file is free software; the Free Software Foundation
 dnl gives unlimited permission to copy and/or distribute it,
@@ -36,8 +36,11 @@ AC_DEFUN([gl_FUNC_NL_LANGINFO],
     AC_DEFINE_UNQUOTED([FUNC_NL_LANGINFO_YESEXPR_WORKS],
       [$FUNC_NL_LANGINFO_YESEXPR_WORKS],
       [Define to 1 if nl_langinfo (YESEXPR) returns a non-empty string.])
-    if test $HAVE_LANGINFO_CODESET = 1 && test $HAVE_LANGINFO_ERA = 1 \
-        && test $FUNC_NL_LANGINFO_YESEXPR_WORKS = 1; then
+    if test $HAVE_LANGINFO_CODESET = 1 \
+       && test $HAVE_LANGINFO_T_FMT_AMPM = 1 \
+       && test $HAVE_LANGINFO_ALTMON = 1 \
+       && test $HAVE_LANGINFO_ERA = 1 \
+       && test $FUNC_NL_LANGINFO_YESEXPR_WORKS = 1; then
       :
     else
       REPLACE_NL_LANGINFO=1

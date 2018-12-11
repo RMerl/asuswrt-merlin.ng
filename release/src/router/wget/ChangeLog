@@ -1,3 +1,397 @@
+2018-11-13  Darshit Shah  <darnir@gnu.org>
+
+	Prepare NEWS for new release
+
+	* configure.ac: gnulib now expects autoconf >=2.63
+
+	* gnulib: Update library
+
+2018-11-13  Jay Satiro  <raysatiro@yahoo.com>
+
+	* src/init.c: Stop freeing the pointer returned by ws_mypath()
+	.. since ws_mypath() saves the address it returns in a static pointer
+	for reuse, to also be returned in later calls.
+
+2018-11-13  Darshit Shah  <darnir@gnu.org>
+
+	* src/ftp.c(ftp_retrieve_glob): Honor {accept,reject}-regex switches as well
+
+	* src/ftp.c (ftp_retrieve_glob): Refactor to prevent looping over listing multiple times
+
+2018-11-11  Tim Rühsen  <tim.ruehsen@gmx.de>
+
+	* .gitlab-ci.yml: Split into GnuTLS and OpenSSL build
+
+	* Makefile.am: dist clean po/stamp-po
+
+	Remove auto-generated files from po/
+
+	Add VPATH build
+
+2018-11-09  Tim Rühsen  <tim.ruehsen@gmx.de>
+
+	Revert "Bail out on unexpected 416 server errors"
+	This reverts commit 6f3b9959935ad7640bcf48a0a93848ed25ff8963.
+
+	The code is obviously wrong, see https://savannah.gnu.org/bugs/?54963
+	Also, the example from the original post doesn't work any more.
+	With other words, the broken server behavior has been fixed meanwhile.
+
+2018-11-09  Rosen Penev  <rosenp@gmail.com>  (tiny change)
+
+	openssl: Do not use engines when OpenSSL does not support
+	* src/openssl.c: Check for OPENSSL_NO_ENGINE before
+	 including openssl/engine.h and before calling ENGINE_load_builtin_engines()
+
+	Fixes compilation with no engines compiled.
+
+2018-11-09  Tim Rühsen  <tim.ruehsen@gmx.de>
+
+	Fix HTTPS Perl tests
+	* tests/SSLTest.pm: Rename server cert and key file
+	* tests/Test-https*.px: Fix and remove OpenSSL hard-coding
+	* tests/certs/create-certs.sh: Script to generate test files
+	* tests/certs/*-template.txt: GnuTLS template files for certs and crl
+	* tests/certs/*.pem: Keys, certs, crls
+	* tests/certs/README: Removed commands, link to create-certs.sh
+
+2018-10-28  Kapus, Timotej  <timotej.kapus13@imperial.ac.uk>  (tiny change)
+
+	Replace some loops with string.h functions
+	* src/init.c: Replace loop with strspn
+	* src/url.c: Replace loop with strrchr
+
+2018-10-26  Luiz Angelo Daros de Luca  <luizluca@gmail.com>  (tiny change)
+
+	* .gitmodules: Use https:// instead of git:// for gnulib
+	git:// does not work over http proxy
+
+	* src/host.c (sufmatch): Fix dot-prefixed domain matching
+	Current sufmatch does not match when domain is dot-prefixed.
+	The example of no_proxy in man (.mit.edu) does use a dot-prefixed
+	domain.
+
+2018-10-26  Tim Rühsen  <tim.ruehsen@gmx.de>
+
+	* src/convert.c (convert_links): Fix fallthrough
+
+2018-10-22  Darshit Shah  <darnir@gnu.org>
+
+	* bootstrap: Update script from gnulib
+
+	* gnulib: Update library
+
+2018-10-19  Tim Rühsen  <tim.ruehsen@gmx.de>
+
+	* .lgtm.yml: New file to add LGTM to Gitlab.com CI
+
+2018-10-16  Tim Rühsen  <tim.ruehsen@gmx.de>
+
+	* configure.ac: Fix build issue with libgpgme
+
+2018-10-14  Tim Rühsen  <tim.ruehsen@gmx.de>
+
+	* fuzz/*_fuzzer.in/*: Update fuzzer corpora
+
+2018-10-08  Nikos Mavrogiannopoulos  <nmav@redhat.com>
+
+	Enable post-handshake auth under gnutls on TLS1.3
+
+2018-09-20  Tim Rühsen  <tim.ruehsen@gmx.de>
+
+	* src/http.c (resp_new): Fix code to avoid false positive by clang
+
+	* src/convert.c (convert_links): Fix code to avoid false positive by clang
+
+2018-09-19  Tim Rühsen  <tim.ruehsen@gmx.de>
+
+	Add support for PCRE2 pattern matching
+	* configure.ac: Check for libpcre2-8
+	* src/init.c (choices): Test for HAVE_LIBPCRE2
+	* src/main.c (main): Set regex compile and match functions
+	* src/options.h: Test for HAVE_LIBPCRE2
+	* src/utils.c: Include pcre2.h, add functions
+	  compile_pcre2_regex() and match_pcre2_regex()
+	* src/utils.h: Declare compile_pcre2_regex() and match_pcre2_regex()
+
+	Fixes #54677
+	Reported-by: Noël Köthe
+
+2018-09-07  Tim Rühsen  <tim.ruehsen@gmx.de>
+
+	Add . to perl path for all perl tests
+	* tests/*.px: Add -I . to the shebang
+
+	This allows perl test to be run from tests/ directory, e.g. via
+	  ./Test--post-file.px
+
+2018-09-07  Tomas Hozza  <thozza@redhat.com>
+
+	Add TLS 1.3 support for GnuTLS
+	* doc/wget.texi: Add "TLSv1_3" to --secure-protocol
+	* src/gnutls.c (set_prio_default): Use GNUTLS_TLS1_3 where needed
+
+	Wget currently allows specifying "TLSv1_3" as the parameter for
+	--secure-protocol option. However it is only implemented for OpenSSL
+	and in case wget is compiled with GnuTLS, it causes wget to abort with:
+	GnuTLS: unimplemented 'secure-protocol' option value 6
+
+	GnuTLS contains TLS 1.3 implementation since version 3.6.3 [1]. However
+	currently it must be enabled explicitly in the application of it to be
+	used. This will change after the draft is finalized. [2] However for
+	the time being, I enabled it explicitly in case "TLSv1_3" is used with
+	--secure-protocol.
+
+	I also fixed man page to contain "TLSv1_3" in all listings of available
+	parameters for --secure-protocol
+
+	[1] https://lists.gnupg.org/pipermail/gnutls-devel/2018-July/008584.html
+	[2] https://nikmav.blogspot.com/2018/05/gnutls-and-tls-13.html
+
+2018-08-29  Tomas Korbar  <tkorbar@redhat.com>
+
+	Avoid creating empty wget-log when using -O and -q in background
+	* src/log.c (check_redirect_output): Check for quiet mode
+
+2018-08-27  Tomas Hozza  <thozza@redhat.com>
+
+	* src/warc.c (warc_write_cdx_record): Fix RESOURCE LEAK found by Coverity
+	Error: RESOURCE_LEAK (CWE-772): - REAL ERROR
+	wget-1.19.5/src/warc.c:1376: alloc_fn: Storage is returned from allocation function "url_escape".
+	wget-1.19.5/src/url.c:284:3: alloc_fn: Storage is returned from allocation function "url_escape_1".
+	wget-1.19.5/src/url.c:255:3: alloc_fn: Storage is returned from allocation function "xmalloc".
+	wget-1.19.5/lib/xmalloc.c:41:11: alloc_fn: Storage is returned from allocation function "malloc".
+	wget-1.19.5/lib/xmalloc.c:41:11: var_assign: Assigning: "p" = "malloc(n)".
+	wget-1.19.5/lib/xmalloc.c:44:3: return_alloc: Returning allocated memory "p".
+	wget-1.19.5/src/url.c:255:3: var_assign: Assigning: "newstr" = "xmalloc(newlen + 1)".
+	wget-1.19.5/src/url.c:258:3: var_assign: Assigning: "p2" = "newstr".
+	wget-1.19.5/src/url.c:275:3: return_alloc: Returning allocated memory "newstr".
+	wget-1.19.5/src/url.c:284:3: return_alloc_fn: Directly returning storage allocated by "url_escape_1".
+	wget-1.19.5/src/warc.c:1376: var_assign: Assigning: "redirect_location" = storage returned from "url_escape(redirect_location)".
+	wget-1.19.5/src/warc.c:1381: noescape: Resource "redirect_location" is not freed or pointed-to in "fprintf".
+	wget-1.19.5/src/warc.c:1387: leaked_storage: Returning without freeing "redirect_location" leaks the storage that it points to.
+	\# 1385|     fflush (warc_current_cdx_file);
+	\# 1386|
+	\# 1387|->   return true;
+	\# 1388|   }
+	\# 1389|
+
+	url_escape() really returns a newly allocated memory and it leaks when the warc_write_cdx_record() returns. The memory returned from url_escape() is usually stored in a temporary variable in other parts of the project and then freed. I took the same approach.
+
+2018-08-27  Tomas Hozza  <thozza@redhat.com>
+
+	* src/warc.c (warc_write_start_record): Fix potential RESOURCE LEAK
+	In warc_write_start_record() function, the reutrn value of dup() is
+	directly used in gzdopen() call and not stored anywhere. However the
+	zlib documentation says that "The duplicated descriptor should be saved
+	to avoid a leak, since gzdopen does not close fd if it fails." [1].
+	This change stores the FD in a variable and closes it in case gzopen()
+	fails.
+
+	[1] https://www.zlib.net/manual.html
+
+	Error: RESOURCE_LEAK (CWE-772):
+	wget-1.19.5/src/warc.c:217: open_fn: Returning handle opened by "dup".
+	wget-1.19.5/src/warc.c:217: leaked_handle: Failing to save or close handle opened by "dup(fileno(warc_current_file))" leaks it.
+	\#  215|
+	\#  216|         /* Start a new GZIP stream. */
+	\#  217|->       warc_current_gzfile = gzdopen (dup (fileno (warc_current_file)), "wb9");
+	\#  218|         warc_current_gzfile_uncompressed_size = 0;
+	\#  219|
+
+2018-08-27  Tomas Hozza  <thozza@redhat.com>
+
+	* src/utils.c (open_stat): Fix RESOURCE LEAK found by Coverity
+	Error: RESOURCE_LEAK (CWE-772):
+	wget-1.19.5/src/utils.c:914: open_fn: Returning handle opened by "open". [Note: The source code implementation of the function has been overridden by a user model.]
+	wget-1.19.5/src/utils.c:914: var_assign: Assigning: "fd" = handle returned from "open(fname, flags, mode)".
+	wget-1.19.5/src/utils.c:921: noescape: Resource "fd" is not freed or pointed-to in "fstat". [Note: The source code implementation of the function has been overridden by a builtin model.]
+	wget-1.19.5/src/utils.c:924: leaked_handle: Handle variable "fd" going out of scope leaks the handle.
+	\#  922|     {
+	\#  923|       logprintf (LOG_NOTQUIET, _("Failed to stat file %s, error: %s\n"), fname, strerror(errno));
+	\#  924|->     return -1;
+	\#  925|     }
+	\#  926|   #if !(defined(WINDOWS) || defined(__VMS))
+
+	This seems to be a real issue, since the opened file descriptor in "fd"
+	would leak. There is also additional check below the "fstat" call, which
+	closes the opened "fd".
+
+2018-08-27  Tomas Hozza  <thozza@redhat.com>
+
+	* src/http.c (http_loop): Fix RESOURCE LEAK found by Coverity
+	Error: RESOURCE_LEAK (CWE-772):
+	wget-1.19.5/src/http.c:4486: alloc_fn: Storage is returned from allocation function "url_string".
+	wget-1.19.5/src/url.c:2248:3: alloc_fn: Storage is returned from allocation function "xmalloc".
+	wget-1.19.5/lib/xmalloc.c:41:11: alloc_fn: Storage is returned from allocation function "malloc".
+	wget-1.19.5/lib/xmalloc.c:41:11: var_assign: Assigning: "p" = "malloc(n)".
+	wget-1.19.5/lib/xmalloc.c:44:3: return_alloc: Returning allocated memory "p".
+	wget-1.19.5/src/url.c:2248:3: var_assign: Assigning: "result" = "xmalloc(size)".
+	wget-1.19.5/src/url.c:2248:3: var_assign: Assigning: "p" = "result".
+	wget-1.19.5/src/url.c:2250:3: noescape: Resource "p" is not freed or pointed-to in function "memcpy". [Note: The source code implementation of the function has been overridden by a builtin model.]
+	wget-1.19.5/src/url.c:2253:7: noescape: Resource "p" is not freed or pointed-to in function "memcpy". [Note: The source code implementation of the function has been overridden by a builtin model.]
+	wget-1.19.5/src/url.c:2257:11: noescape: Resource "p" is not freed or pointed-to in function "memcpy". [Note: The source code implementation of the function has been overridden by a builtin model.]
+	wget-1.19.5/src/url.c:2264:3: noescape: Resource "p" is not freed or pointed-to in function "memcpy". [Note: The source code implementation of the function has been overridden by a builtin model.]
+	wget-1.19.5/src/url.c:2270:7: identity_transfer: Passing "p" as argument 1 to function "number_to_string", which returns an offset off that argument.
+	wget-1.19.5/src/utils.c:1776:11: var_assign_parm: Assigning: "p" = "buffer".
+	wget-1.19.5/src/utils.c:1847:3: return_var: Returning "p", which is a copy of a parameter.
+	wget-1.19.5/src/url.c:2270:7: noescape: Resource "p" is not freed or pointed-to in function "number_to_string".
+	wget-1.19.5/src/utils.c:1774:25: noescape: "number_to_string(char *, wgint)" does not free or save its parameter "buffer".
+	wget-1.19.5/src/url.c:2270:7: var_assign: Assigning: "p" = "number_to_string(p, url->port)".
+	wget-1.19.5/src/url.c:2273:3: noescape: Resource "p" is not freed or pointed-to in function "full_path_write".
+	wget-1.19.5/src/url.c:1078:47: noescape: "full_path_write(struct url const *, char *)" does not free or save its parameter "where".
+	wget-1.19.5/src/url.c:2287:3: return_alloc: Returning allocated memory "result".
+	wget-1.19.5/src/http.c:4486: var_assign: Assigning: "hurl" = storage returned from "url_string(u, URL_AUTH_HIDE_PASSWD)".
+	wget-1.19.5/src/http.c:4487: noescape: Resource "hurl" is not freed or pointed-to in "logprintf".
+	wget-1.19.5/src/http.c:4513: leaked_storage: Variable "hurl" going out of scope leaks the storage it points to.
+	\# 4511|               {
+	\# 4512|                 printwhat (count, opt.ntry);
+	\# 4513|->               continue;
+	\# 4514|               }
+	\# 4515|             else
+
+	There are two conditional branches, which call continue, without freeing memory potentially allocated and pointed to by"hurl" pointer. In fase "!opt.verbose" is True and some of the appropriate conditions in the following if/else if construction, in which "continue" is called, are also true, then the memory allocated to "hurl" will leak.
+
+2018-08-27  Tomas Hozza  <thozza@redhat.com>
+
+	* src/http.c (check_auth): Fix RESOURCE LEAK found by Coverity
+	Error: RESOURCE_LEAK (CWE-772):
+	wget-1.19.5/src/http.c:2434: alloc_fn: Storage is returned from allocation function "xmalloc".
+	wget-1.19.5/lib/xmalloc.c:41:11: alloc_fn: Storage is returned from allocation function "malloc".
+	wget-1.19.5/lib/xmalloc.c:41:11: var_assign: Assigning: "p" = "malloc(n)".
+	wget-1.19.5/lib/xmalloc.c:44:3: return_alloc: Returning allocated memory "p".
+	wget-1.19.5/src/http.c:2434: var_assign: Assigning: "auth_stat" = storage returned from "xmalloc(4UL)".
+	wget-1.19.5/src/http.c:2446: noescape: Resource "auth_stat" is not freed or pointed-to in "create_authorization_line".
+	wget-1.19.5/src/http.c:5203:70: noescape: "create_authorization_line(char const *, char const *, char const *, char const *, char const *, _Bool *, uerr_t *)" does not free or save its parameter "auth_err".
+	wget-1.19.5/src/http.c:2476: leaked_storage: Variable "auth_stat" going out of scope leaks the storage it points to.
+	\# 2474|                 /* Creating the Authorization header went wrong */
+	\# 2475|               }
+	\# 2476|->         }
+	\# 2477|         else
+	\# 2478|           {
+
+	Error: RESOURCE_LEAK (CWE-772):
+	wget-1.19.5/src/http.c:2431: alloc_fn: Storage is returned from allocation function "url_full_path".
+	wget-1.19.5/src/url.c:1105:19: alloc_fn: Storage is returned from allocation function "xmalloc".
+	wget-1.19.5/lib/xmalloc.c:41:11: alloc_fn: Storage is returned from allocation function "malloc".
+	wget-1.19.5/lib/xmalloc.c:41:11: var_assign: Assigning: "p" = "malloc(n)".
+	wget-1.19.5/lib/xmalloc.c:44:3: return_alloc: Returning allocated memory "p".
+	wget-1.19.5/src/url.c:1105:19: var_assign: Assigning: "full_path" = "xmalloc(length + 1)".
+	wget-1.19.5/src/url.c:1107:3: noescape: Resource "full_path" is not freed or pointed-to in function "full_path_write".
+	wget-1.19.5/src/url.c:1078:47: noescape: "full_path_write(struct url const *, char *)" does not free or save its parameter "where".
+	wget-1.19.5/src/url.c:1110:3: return_alloc: Returning allocated memory "full_path".
+	wget-1.19.5/src/http.c:2431: var_assign: Assigning: "pth" = storage returned from "url_full_path(u)".
+	wget-1.19.5/src/http.c:2446: noescape: Resource "pth" is not freed or pointed-to in "create_authorization_line".
+	wget-1.19.5/src/http.c:5203:40: noescape: "create_authorization_line(char const *, char const *, char const *, char const *, char const *, _Bool *, uerr_t *)" does not free or save its parameter "path".
+	wget-1.19.5/src/http.c:2476: leaked_storage: Variable "pth" going out of scope leaks the storage it points to.
+	\# 2474|                 /* Creating the Authorization header went wrong */
+	\# 2475|               }
+	\# 2476|->         }
+	\# 2477|         else
+	\# 2478|           {
+
+	Both "pth" and "auth_stat" are allocated in "check_auth()" function. These are used for creating the HTTP Authorization Request header via "create_authorization_line()" function. In case the creation went OK (auth_err == RETROK), then the memory previously allocated to "pth" and "auth_stat" is freed. However if the creation failed, then the memory is never freed and it leaks.
+
+2018-08-27  Tomas Hozza  <thozza@redhat.com>
+
+	* src/ftp.c (getftp): Fix RESOURCE LEAK found by Coverity
+	Error: RESOURCE_LEAK (CWE-772):
+	wget-1.19.5/src/ftp.c:1493: alloc_fn: Storage is returned from allocation function "fopen".
+	wget-1.19.5/src/ftp.c:1493: var_assign: Assigning: "fp" = storage returned from "fopen(con->target, "wb")".
+	wget-1.19.5/src/ftp.c:1811: leaked_storage: Variable "fp" going out of scope leaks the storage it points to.
+	\# 1809|     if (fp && !output_stream)
+	\# 1810|       fclose (fp);
+	\# 1811|->   return err;
+	\# 1812|   }
+	\# 1813|
+
+	It can happen, that "if (!output_stream || con->cmd & DO_LIST)" on line #1398 can be true, even though "output_stream != NULL". In this case a new file is opened to "fp". Later it may happen in the FTPS branch, that some error will occure and code will jump to label "exit_error". In "exit_error", the "fp" is closed only if "output_stream == NULL". However this may not be true as described earlier and "fp" leaks.
+
+	On line #1588, there is the following conditional free of "fp":
+
+	  /* Close the local file.  */
+	  if (!output_stream || con->cmd & DO_LIST)
+	    fclose (fp);
+
+	Therefore the conditional at the end of the function after "exit_error" label should be modified to:
+
+	  if (fp && (!output_stream || con->cmd & DO_LIST))
+	    fclose (fp);
+
+	This will ensure that "fp" does not leak in any case it sould be opened.
+
+2018-08-11  Tomas Hozza  <thozza@redhat.com>
+
+	Don't limit the test suite HTTPS server to TLSv1
+	In Fedora, we are implementing crypto policies, in order to enhance the
+	security of user systems. This is done on the system level by global
+	configuration. It may happen that due to the active policy, only
+	TLSv1.2 or higher will be available in crypto libraries. While wget as
+	a client will by default determine the minimal TLS version supported by
+	both client and server, the HTTPS server implementation in testenv/
+	hardcodes use of TLSv1. As a result all HTTPS related tests fail in
+	case a more hardened crypto policy is set on the Fedora system.
+
+	This change removes the explicit TLS version setting and leaves the
+	determination of the minimal supported TLS version on the server and
+	client.
+
+	More information about Fedora change can be found here:
+	https://fedoraproject.org/wiki/Changes/StrongCryptoSettings
+
+2018-06-13  Tim Rühsen  <tim.ruehsen@gmx.de>
+
+	* src/gnutls.c (ssl_check_certificate): Fix grammar of error msg
+	Reported-by: Nicholas Sielicki
+
+	* fuzz/Makefile.am: Remove libtool LTLIB... from LDADD
+
+	* src/http.c (http_loop): Fix --retry-on-host-error
+
+2018-06-13  ethus3h  <kolubat@gmail.com>  (tiny change)
+
+	Add new option --retry-on-host-error
+	* doc/wget.texi: Add docs for --retry-on-host-error
+	* src/http.c (http_loop): Add code for HOSTERR
+	* src/init.c: Add option --retry-on-host-error
+	* src/main.c: Likewise
+	* src/options.h: Add options.retry_on_host_error
+
+2018-05-29  Tim Rühsen  <tim.ruehsen@gmx.de>
+
+	Save original data to WARC file
+	* src/retr.c (write_data): Cleanup,
+	  (fd_read_body): Write to WARC before uncompressing
+
+	Fixes: #53968
+
+2018-05-10  Tim Rühsen  <tim.ruehsen@gmx.de>
+
+	* fuzz/get_ossfuzz_corpora: Speed up corpora download
+
+2018-05-09  Tim Rühsen  <tim.ruehsen@gmx.de>
+
+	* src/main.c (print_version): Silence UBSAN message
+
+	* src/utils.ci (file_exists_p): Fix stat(NULL,...)
+
+	* src/hsts.c (open_hsts_test_store): Fix unlink(NULL)
+
+	* src/hash.c: Silence UBSAN for hash functions
+
+	* fuzz/*_fuzzer.in: Update corpora from OSS-Fuzz
+
+	* fuzz/get_ossfuzz_corpora: Fix path
+
+2018-05-08  Tim Rühsen  <tim.ruehsen@gmx.de>
+
+	* src/hsts.h: Fix header guard
+
+	* src/version.h: Add header guard
+
+	* src/host.c (wait_ares): Remove void assignment
+	Reported-by: Josef Moellers
+
 2018-05-06  Tim Rühsen  <tim.ruehsen@gmx.de>
 
 	Update NEWS file for new release
@@ -4225,6 +4619,10 @@
 
 	Add support for older versions of flex (tiny change)
 	E.g. flex 2.5.4 (Solaris 10) does not like a space after -o.
+
+2014-12-10  Tim Rühsen  <tim.ruehsen@gmx.de>
+
+	Check for pcre.h in configure.ac
 
 2014-12-11  Tim Ruehsen <tim.ruehsen@gmx.de>
 

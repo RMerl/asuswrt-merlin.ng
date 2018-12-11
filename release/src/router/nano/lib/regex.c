@@ -18,7 +18,7 @@
    <https://www.gnu.org/licenses/>.  */
 
 #ifndef _LIBC
-# include <config.h>
+# include <libc-config.h>
 
 # if (__GNUC__ == 4 && 6 <= __GNUC_MINOR__) || 4 < __GNUC__
 #  pragma GCC diagnostic ignored "-Wsuggest-attribute=pure"

@@ -1,17 +1,10 @@
-# lib-prefix.m4 serial 11
+# lib-prefix.m4 serial 14
 dnl Copyright (C) 2001-2005, 2008-2018 Free Software Foundation, Inc.
 dnl This file is free software; the Free Software Foundation
 dnl gives unlimited permission to copy and/or distribute it,
 dnl with or without modifications, as long as this notice is preserved.
 
 dnl From Bruno Haible.
-
-dnl AC_LIB_ARG_WITH is synonymous to AC_ARG_WITH in autoconf-2.13, and
-dnl similar to AC_ARG_WITH in autoconf 2.52...2.57 except that is doesn't
-dnl require excessive bracketing.
-ifdef([AC_HELP_STRING],
-[AC_DEFUN([AC_LIB_ARG_WITH], [AC_ARG_WITH([$1],[[$2]],[$3],[$4])])],
-[AC_DEFUN([AC_][LIB_ARG_WITH], [AC_ARG_WITH([$1],[$2],[$3],[$4])])])
 
 dnl AC_LIB_PREFIX adds to the CPPFLAGS and LDFLAGS the flags that are needed
 dnl to access previously installed libraries. The basic assumption is that
@@ -32,9 +25,9 @@ AC_DEFUN([AC_LIB_PREFIX],
     eval additional_includedir=\"$includedir\"
     eval additional_libdir=\"$libdir\"
   ])
-  AC_LIB_ARG_WITH([lib-prefix],
-[  --with-lib-prefix[=DIR] search for libraries in DIR/include and DIR/lib
-  --without-lib-prefix    don't search for libraries in includedir and libdir],
+  AC_ARG_WITH([lib-prefix],
+[[  --with-lib-prefix[=DIR] search for libraries in DIR/include and DIR/lib
+  --without-lib-prefix    don't search for libraries in includedir and libdir]],
 [
     if test "X$withval" = "Xno"; then
       use_additional=no
@@ -174,7 +167,24 @@ AC_DEFUN([AC_LIB_PREPARE_MULTILIB],
   dnl $prefix/lib/64 (which is a symlink to either $prefix/lib/sparcv9 or
   dnl $prefix/lib/amd64) and 32-bit libraries go under $prefix/lib.
   AC_REQUIRE([AC_CANONICAL_HOST])
-  AC_REQUIRE([gl_HOST_CPU_C_ABI])
+  AC_REQUIRE([gl_HOST_CPU_C_ABI_32BIT])
+
+  case "$host_os" in
+    solaris*)
+      AC_CACHE_CHECK([for 64-bit host], [gl_cv_solaris_64bit],
+        [AC_COMPILE_IFELSE(
+           [AC_LANG_SOURCE(
+              [[#ifdef _LP64
+                 int ok;
+                #else
+                 error fail
+                #endif
+              ]])],
+           [gl_cv_solaris_64bit=yes],
+           [gl_cv_solaris_64bit=no])
+        ]);;
+  esac
+
   dnl Allow the user to override the result by setting acl_cv_libdirstems.
   AC_CACHE_CHECK([for the common suffixes of directories in the library search path],
     [acl_cv_libdirstems],
@@ -187,18 +197,6 @@ AC_DEFUN([AC_LIB_PREPARE_MULTILIB],
          dnl "Portable Makefiles should refer to any library directories using the 64 symbolic link."
          dnl But we want to recognize the sparcv9 or amd64 subdirectory also if the
          dnl symlink is missing, so we set acl_libdirstem2 too.
-         AC_CACHE_CHECK([for 64-bit host], [gl_cv_solaris_64bit],
-           [AC_COMPILE_IFELSE(
-              [AC_LANG_SOURCE(
-                 [[#ifdef _LP64
-                    int ok;
-                   #else
-                    error fail
-                   #endif
-                 ]])],
-              [gl_cv_solaris_64bit=yes],
-              [gl_cv_solaris_64bit=no])
-           ])
          if test $gl_cv_solaris_64bit = yes; then
            acl_libdirstem=lib/64
            case "$host_cpu" in
@@ -210,40 +208,36 @@ AC_DEFUN([AC_LIB_PREPARE_MULTILIB],
        *)
          dnl If $CC generates code for a 32-bit ABI, the libraries are
          dnl surely under $prefix/lib, not $prefix/lib64.
-         case "$gl_cv_host_cpu_c_abi" in
-           i386 | arm | armhf | arm64-ilp32 | hppa | ia64-ilp32 | mips | mipsn32 | powerpc | s390 | sparc)
-             ;;
-           *) # x86_64 | arm64 | hppa64 | ia64 | mips64 | powerpc64* | s390x | sparc64 | ...
-             dnl The result is a property of the system. However, non-system
-             dnl compilers sometimes have odd library search paths. Therefore
-             dnl prefer asking /usr/bin/gcc, if available, rather than $CC.
-             searchpath=`(if test -f /usr/bin/gcc \
-                             && LC_ALL=C /usr/bin/gcc -print-search-dirs >/dev/null 2>/dev/null; then \
-                            LC_ALL=C /usr/bin/gcc -print-search-dirs; \
-                          else \
-                            LC_ALL=C $CC -print-search-dirs; \
-                          fi) 2>/dev/null \
-                         | sed -n -e 's,^libraries: ,,p' | sed -e 's,^=,,'`
-             if test -n "$searchpath"; then
-               acl_save_IFS="${IFS= 	}"; IFS=":"
-               for searchdir in $searchpath; do
-                 if test -d "$searchdir"; then
-                   case "$searchdir" in
-                     */lib64/ | */lib64 ) acl_libdirstem=lib64 ;;
-                     */../ | */.. )
-                       # Better ignore directories of this form. They are misleading.
-                       ;;
-                     *) searchdir=`cd "$searchdir" && pwd`
-                        case "$searchdir" in
-                          */lib64 ) acl_libdirstem=lib64 ;;
-                        esac ;;
-                   esac
-                 fi
-               done
-               IFS="$acl_save_IFS"
-             fi
-             ;;
-         esac
+         if test "$HOST_CPU_C_ABI_32BIT" != yes; then
+           dnl The result is a property of the system. However, non-system
+           dnl compilers sometimes have odd library search paths. Therefore
+           dnl prefer asking /usr/bin/gcc, if available, rather than $CC.
+           searchpath=`(if test -f /usr/bin/gcc \
+                           && LC_ALL=C /usr/bin/gcc -print-search-dirs >/dev/null 2>/dev/null; then \
+                          LC_ALL=C /usr/bin/gcc -print-search-dirs; \
+                        else \
+                          LC_ALL=C $CC -print-search-dirs; \
+                        fi) 2>/dev/null \
+                       | sed -n -e 's,^libraries: ,,p' | sed -e 's,^=,,'`
+           if test -n "$searchpath"; then
+             acl_save_IFS="${IFS= 	}"; IFS=":"
+             for searchdir in $searchpath; do
+               if test -d "$searchdir"; then
+                 case "$searchdir" in
+                   */lib64/ | */lib64 ) acl_libdirstem=lib64 ;;
+                   */../ | */.. )
+                     # Better ignore directories of this form. They are misleading.
+                     ;;
+                   *) searchdir=`cd "$searchdir" && pwd`
+                      case "$searchdir" in
+                        */lib64 ) acl_libdirstem=lib64 ;;
+                      esac ;;
+                 esac
+               fi
+             done
+             IFS="$acl_save_IFS"
+           fi
+         fi
          ;;
      esac
      test -n "$acl_libdirstem2" || acl_libdirstem2="$acl_libdirstem"

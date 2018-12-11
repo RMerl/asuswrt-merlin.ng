@@ -20,7 +20,7 @@
 .\" *
 .\" **************************************************************************
 .\"
-.TH CURLOPT_URL 3 "July 24, 2018" "libcurl 7.61.1" "curl_easy_setopt options"
+.TH CURLOPT_URL 3 "July 31, 2018" "libcurl 7.62.0" "curl_easy_setopt options"
 
 .SH NAME
 CURLOPT_URL \- provide the URL to use in the request
@@ -188,7 +188,10 @@ imap://user:password@mail.example.com/INBOX - Performs a folder list on the
 user's inbox
 
 imap://user:password@mail.example.com/INBOX/;UID=1 - Selects the user's inbox
-and fetches message 1
+and fetches message with uid = 1
+
+imap://user:password@mail.example.com/INBOX/;MAILINDEX=1 - Selects the user's inbox
+and fetches the first message in the mail box
 
 imap://user:password@mail.example.com/INBOX;UIDVALIDITY=50/;UID=2 - Selects
 the user's inbox, checks the UIDVALIDITY of the mailbox is 50 and fetches

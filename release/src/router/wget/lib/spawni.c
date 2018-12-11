@@ -32,7 +32,7 @@
 #if _LIBC || HAVE_PATHS_H
 # include <paths.h>
 #else
-# define _PATH_BSHELL "/bin/sh"
+# define _PATH_BSHELL BOURNE_SHELL
 #endif
 
 #include <signal.h>
@@ -89,7 +89,7 @@
 #define SPAWN_ERROR     127
 
 
-#if (defined _WIN32 || defined __WIN32__) && ! defined __CYGWIN__
+#if defined _WIN32 && ! defined __CYGWIN__
 
 /* Native Windows API.  */
 int
@@ -282,6 +282,12 @@ __spawni (pid_t *pid, const char *file,
                         action->action.dup2_action.newfd)
                   != action->action.dup2_action.newfd)
                 /* The 'dup2' call failed.  */
+                _exit (SPAWN_ERROR);
+              break;
+
+            case spawn_do_chdir:
+              if (chdir (action->action.chdir_action.path) < 0)
+                /* The 'chdir' call failed.  */
                 _exit (SPAWN_ERROR);
               break;
             }

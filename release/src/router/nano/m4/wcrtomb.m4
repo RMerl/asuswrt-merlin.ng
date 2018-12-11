@@ -1,4 +1,4 @@
-# wcrtomb.m4 serial 12
+# wcrtomb.m4 serial 13
 dnl Copyright (C) 2008-2018 Free Software Foundation, Inc.
 dnl This file is free software; the Free Software Foundation
 dnl gives unlimited permission to copy and/or distribute it,
@@ -34,8 +34,8 @@ AC_DEFUN([gl_FUNC_WCRTOMB],
     if test $REPLACE_MBSTATE_T = 1; then
       REPLACE_WCRTOMB=1
     else
-      dnl On AIX 4.3, OSF/1 5.1 and Solaris 10, wcrtomb (NULL, 0, NULL) sometimes
-      dnl returns 0 instead of 1.
+      dnl On AIX 4.3, OSF/1 5.1 and Solaris <= 11.3, wcrtomb (NULL, 0, NULL)
+      dnl sometimes returns 0 instead of 1.
       AC_REQUIRE([AC_PROG_CC])
       AC_REQUIRE([gt_LOCALE_FR])
       AC_REQUIRE([gt_LOCALE_FR_UTF8])

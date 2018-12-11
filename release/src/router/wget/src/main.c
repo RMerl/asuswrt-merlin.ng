@@ -420,6 +420,7 @@ static struct cmdline_option option_data[] =
     { "restrict-file-names", 0, OPT_BOOLEAN, "restrictfilenames", -1 },
     { "retr-symlinks", 0, OPT_BOOLEAN, "retrsymlinks", -1 },
     { "retry-connrefused", 0, OPT_BOOLEAN, "retryconnrefused", -1 },
+    { "retry-on-host-error", 0, OPT_BOOLEAN, "retryonhosterror", -1 },
     { "retry-on-http-error", 0, OPT_VALUE, "retryonhttperror", -1 },
     { "save-cookies", 0, OPT_VALUE, "savecookies", -1 },
     { "save-headers", 0, OPT_BOOLEAN, "saveheaders", -1 },
@@ -994,7 +995,7 @@ Recursive accept/reject:\n"),
        --accept-regex=REGEX        regex matching accepted URLs\n"),
     N_("\
        --reject-regex=REGEX        regex matching rejected URLs\n"),
-#ifdef HAVE_LIBPCRE
+#if defined HAVE_LIBPCRE || defined HAVE_LIBPCRE2
     N_("\
        --regex-type=TYPE           regex type (posix|pcre)\n"),
 #else
@@ -1263,7 +1264,7 @@ print_version (void)
         {
           if (printf ("%s ", compiled_features[i]) < 0)
             exit (WGET_EXIT_IO_FAIL);
-          line_length -= strlen (compiled_features[i]) + 2;
+          line_length -= (int) strlen (compiled_features[i]) + 2;
           i++;
         }
       if (printf ("\n") < 0)
@@ -1783,6 +1784,12 @@ for details.\n\n"));
   /* Compile the regular expressions.  */
   switch (opt.regex_type)
     {
+#ifdef HAVE_LIBPCRE2
+      case regex_type_pcre:
+        opt.regex_compile_fun = compile_pcre2_regex;
+        opt.regex_match_fun = match_pcre2_regex;
+        break;
+#endif
 #ifdef HAVE_LIBPCRE
       case regex_type_pcre:
         opt.regex_compile_fun = compile_pcre_regex;

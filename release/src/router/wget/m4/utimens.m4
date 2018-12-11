@@ -3,7 +3,7 @@ dnl This file is free software; the Free Software Foundation
 dnl gives unlimited permission to copy and/or distribute it,
 dnl with or without modifications, as long as this notice is preserved.
 
-dnl serial 8
+dnl serial 9
 
 AC_DEFUN([gl_UTIMENS],
 [
@@ -31,10 +31,12 @@ AC_DEFUN([gl_UTIMENS],
         [gl_cv_func_futimesat_works=yes],
         [gl_cv_func_futimesat_works=no],
         [case "$host_os" in
-                   # Guess yes on glibc systems.
-           *-gnu*) gl_cv_func_futimesat_works="guessing yes" ;;
-                   # If we don't know, assume the worst.
-           *)      gl_cv_func_futimesat_works="guessing no" ;;
+                            # Guess yes on Linux systems.
+           linux-* | linux) gl_cv_func_futimesat_works="guessing yes" ;;
+                            # Guess yes on glibc systems.
+           *-gnu*)          gl_cv_func_futimesat_works="guessing yes" ;;
+                            # If we don't know, assume the worst.
+           *)               gl_cv_func_futimesat_works="guessing no" ;;
          esac
         ])
       rm -f conftest.file])

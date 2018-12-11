@@ -61,7 +61,7 @@ announcement.
   Figure out the CWE (Common Weakness Enumeration) number for the flaw.
 
 - Request a CVE number from
-  [distros@openwall](http://oss-security.openwall.org/wiki/mailing-lists/distros)
+  [distros@openwall](https://oss-security.openwall.org/wiki/mailing-lists/distros)
   when also informing and preparing them for the upcoming public security
   vulnerability announcement - attach the advisory draft for information. Note
   that 'distros' won't accept an embargo longer than 14 days and they do not
@@ -121,15 +121,19 @@ Publishing Security Advisories
 6. On security advisory release day, push the changes on the curl-www
    repository's remote master branch.
 
-Hackerone Internet Bug Bounty
------------------------------
+Bountygraph Bug Bounty
+----------------------
 
-The curl project does not run any bounty program on its own, but there are
-outside organizations that do. First report your issue the normal way and
-proceed as described in this document.
+The curl project runs a bug bounty program in association with
+bountygraph.com.
 
-Then, if the issue is [critical](https://hackerone.com/ibb-data), you are
-eligible to apply for a bounty from Hackerone for your find.
+After you have reported a security issue to the curl project, it has been
+deemed credible and a patch and advisory has been made public you can be
+eligible for a bounty from this program.
 
-Once your reported vulnerability has been publicly disclosed by the curl
-project, you can submit a [report to them](https://hackerone.com/ibb-data).
+See all details at [BountyGraph](https://bountygraph.com/programs/curl).
+
+This bounty is relying on funds from
+[sponsors](https://bountygraph.com/programs/curl#publicpledges). If you use
+curl professionally, consider help funding this!
+

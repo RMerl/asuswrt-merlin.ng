@@ -57,7 +57,7 @@ ul.no-bullet {list-style: none}
 <a name="Top"></a>
 <a name="SEC_Top"></a>
 
-<p>This manual documents the GNU <code>nano</code> editor, version 3.1.
+<p>This manual documents the GNU <code>nano</code> editor, version 3.2.
 </p>
 <table class="menu" border="0" cellspacing="0">
 <tr><td align="left" valign="top">&bull; <a href="#Introduction" accesskey="1">Introduction</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
@@ -239,11 +239,11 @@ Note that <code>\t</code> stands for a literal Tab character.
 <dt><samp>-R</samp></dt>
 <dt><samp>--restricted</samp></dt>
 <dd><p>Restricted mode: don&rsquo;t read or write to any file not specified on the
-command line; don&rsquo;t read any nanorc files nor history files; don&rsquo;t allow
-suspending nor spell checking; don&rsquo;t
+command line.  This means: don&rsquo;t read or write history files; don&rsquo;t allow
+suspending; don&rsquo;t allow spell checking; don&rsquo;t
 allow a file to be appended to, prepended to, or saved under a different
-name if it already has one; and don&rsquo;t use backup files.
-This restricted mode is also accessible by invoking <code>nano</code> with
+name if it already has one; and don&rsquo;t make backup files.
+Restricted mode can also be activated by invoking <code>nano</code> with
 any name beginning with <code>r</code> (e.g. <code>rnano</code>).
 </p>
 </dd>
@@ -290,6 +290,12 @@ should be considered as parts of words.  This overrides option
 See <a href="#Syntax-Highlighting">Syntax Highlighting</a> for more info.
 </p>
 </dd>
+<dt><samp>-Z</samp></dt>
+<dt><samp>--zap</samp></dt>
+<dd><p>Let an unmodified <tt class="key">Backspace</tt> or <tt class="key">Delete</tt> erase the marked region
+(instead of a single character, and without affecting the cutbuffer).
+</p>
+</dd>
 <dt><samp>-a</samp></dt>
 <dt><samp>--atblanks</samp></dt>
 <dd><p>When doing soft line wrapping, wrap lines at whitespace
@@ -312,8 +318,9 @@ acts like Delete on your system.
 </dd>
 <dt><samp>-g</samp></dt>
 <dt><samp>--showcursor</samp></dt>
-<dd><p>Make the cursor visible in the file browser, putting it on the
-highlighted item.  Useful for braille users.
+<dd><p>Make the cursor visible in the file browser (putting it on the
+highlighted item) and in the help viewer.  Useful for braille users
+and people with poor vision.
 </p>
 </dd>
 <dt><samp>-h</samp></dt>
@@ -409,9 +416,11 @@ default behavior of saving a file in the format that it had.
 </dd>
 <dt><samp>-v</samp></dt>
 <dt><samp>--view</samp></dt>
-<dd><p>Don&rsquo;t allow the contents of the file to be altered.  Note that this
-option should NOT be used in place of correct file permissions to
-implement a read-only file.
+<dd><p>Don&rsquo;t allow the contents of the file to be altered: read-only mode.
+This mode allows the user to open also other files for viewing,
+unless <samp>--restricted</samp> is given too.
+(Note that this option should NOT be used in place of correct
+file permissions to implement a read-only file.)
 </p>
 </dd>
 <dt><samp>-w</samp></dt>
@@ -982,8 +991,9 @@ See <a href="#set-functioncolor"><code>set functioncolor</code></a> for valid co
 </p>
 </dd>
 <dt><code>set showcursor</code></dt>
-<dd><p>Put the cursor on the highlighted item in the file browser, to aid
-braille users.
+<dd><p>Put the cursor on the highlighted item in the file browser, and show
+the cursor in the help viewer, to aid braille users and people with
+poor vision.
 </p>
 </dd>
 <dt><code>set smarthome</code></dt>
@@ -1047,7 +1057,9 @@ default behavior of saving a file in the format that it had.
 </p>
 </dd>
 <dt><code>set view</code></dt>
-<dd><p>Disallow file modification.
+<dd><p>Disallow file modification: read-only mode.
+This mode allows the user to open also other files for viewing,
+unless <samp>--restricted</samp> is given on the command line.
 </p>
 <a name="Whitespace"></a></dd>
 <dt><code>set whitespace &quot;<var>string</var>&quot;</code></dt>
@@ -1065,6 +1077,11 @@ characters as part of a word.
 <dd><p>Specify which other characters (besides the normal alphanumeric ones)
 should be considered as parts of words.  This overrides the option
 <code>wordbounds</code>.
+</p>
+</dd>
+<dt><code>set zap</code></dt>
+<dd><p>Let an unmodified <tt class="key">Backspace</tt> or <tt class="key">Delete</tt> erase the marked region
+(instead of a single character, and without affecting the cutbuffer).
 </p>
 </dd>
 </dl>
@@ -1310,6 +1327,11 @@ current cursor position.
 (The old form &rsquo;uncut&rsquo; is deprecated.)
 </p>
 </dd>
+<dt><code>zap</code></dt>
+<dd><p>Throw away the current line (or the marked region).
+(This function is bound by default to &lt;Meta+Delete&gt;.)
+</p>
+</dd>
 <dt><code>cutwordleft</code></dt>
 <dd><p>Cuts from the cursor position to the beginning of the preceding word.
 (This function is not bound by default.  If your terminal produces
@@ -1525,12 +1547,12 @@ the given characters.
 <dd><p>Toggles whether searching/replacing goes forward or backward.
 </p>
 </dd>
-<dt><code>prevhistory</code></dt>
-<dd><p>Retrieves the previous (older) entry at a prompt.
+<dt><code>older</code></dt>
+<dd><p>Retrieves the previous (earlier) entry at a prompt.
 </p>
 </dd>
-<dt><code>nexthistory</code></dt>
-<dd><p>Retrieves the next (newer) entry at a prompt.
+<dt><code>newer</code></dt>
+<dd><p>Retrieves the next (later) entry at a prompt.
 </p>
 </dd>
 <dt><code>flipreplace</code></dt>

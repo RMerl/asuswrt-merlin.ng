@@ -33,7 +33,7 @@ dnl
 AC_INIT([wget],
         m4_esyscmd([build-aux/git-version-gen .tarball-version]),
 	[bug-wget@gnu.org])
-AC_PREREQ(2.61)
+AC_PREREQ(2.63)
 
 dnl
 dnl What version of Wget are we building?
@@ -493,35 +493,6 @@ else
   fi
 fi
 
-dnl
-dnl Check for libmetalink
-dnl
-AS_IF([test x"$with_metalink" != xno], [
-  PKG_CHECK_MODULES([METALINK], libmetalink, [
-      LIBS="$METALINK_LIBS $LIBS"
-      CFLAGS="$METALINK_CFLAGS $CFLAGS"
-      AC_DEFINE([HAVE_METALINK], [1], [Define if using metalink.])
-      with_metalink=yes
-    ], [
-      with_metalink=no
-    ])
-
-  have_gpg=no
-  AS_IF([test x"$with_metalink" = xyes], [
-    dnl
-    dnl Check for GPGME
-    dnl
-    m4_ifdef([AM_PATH_GPGME], [
-      AM_PATH_GPGME([], [
-        LIBS="$GPGME_LIBS $LIBS"
-        CFLAGS="$GPGME_CFLAGS $CFLAGS"
-        AC_DEFINE([HAVE_GPGME], [1], [Define if GPGME is available.])
-        have_gpg=yes
-      ])
-    ])
-  ])
-])
-
 dnl **********************************************************************
 dnl Checks for IPv6
 dnl **********************************************************************
@@ -715,18 +686,39 @@ AS_IF([test "x$uuid_mode" = x1], [
 ])
 
 dnl
-dnl Check for PCRE
+dnl Check for PCRE2 / PCRE
 dnl
 
+AC_ARG_ENABLE(pcre2, AC_HELP_STRING([--disable-pcre2],
+                                   [Disable PCRE2 style regular expressions]))
 AC_ARG_ENABLE(pcre, AC_HELP_STRING([--disable-pcre],
                                    [Disable PCRE style regular expressions]))
 
-AS_IF([test "X$enable_pcre" != "Xno"],[
+AS_IF([test "X$enable_pcre2" != "Xno"],[
+  enable_pcre2=no
+  PKG_CHECK_MODULES([PCRE2], libpcre2-8, [
+    CFLAGS="$PCRE2_CFLAGS $CFLAGS"
+    LIBS="$PCRE2_LIBS $LIBS"
+    AC_DEFINE([HAVE_LIBPCRE2], [1], [Define if libpcre2 is available.])
+    enable_pcre2=yes
+  ], [
+    AC_CHECK_HEADER(pcre2.h, [
+      AC_CHECK_LIB(pcre2-8, pcre2_compile_8, [
+        LIBS="${LIBS} -lpcre2-8"
+        AC_DEFINE([HAVE_LIBPCRE2], 1, [Define if libpcre2 is available.])
+        enable_pcre2=yes
+      ])
+    ])
+  ])
+])
+
+AS_IF([test "X$enable_pcre" != "Xno" && test "X$enable_pcre2" != "Xyes"],[
   PKG_CHECK_MODULES([PCRE], libpcre, [
     CFLAGS="$PCRE_CFLAGS $CFLAGS"
     AC_CHECK_HEADER(pcre.h, [
       LIBS="$PCRE_LIBS $LIBS"
       AC_DEFINE([HAVE_LIBPCRE], [1], [Define if libpcre is available.])
+      enable_pcre=yes
     ])
   ], [
     AC_CHECK_HEADER(pcre.h, [
@@ -737,6 +729,8 @@ AS_IF([test "X$enable_pcre" != "Xno"],[
     ])
   ])
 ])
+
+AS_IF([test "X$enable_pcre2" = Xyes], [PCRE_INFO="yes, via libpcre2"], [test "X$enable_pcre" = Xyes], [PCRE_INFO="yes, via libpcre"], [PCRE_INFO=no])
 
 dnl
 dnl Check for libcares (resolver library)
@@ -761,6 +755,38 @@ AS_IF([test "X$with_cares" = "Xyes"],[
   ])
 ], [
   RESOLVER_INFO="libc, --bind-dns-address and --dns-servers not available"
+])
+
+dnl
+dnl Check for libmetalink
+dnl
+AS_IF([test x"$with_metalink" != xno], [
+  PKG_CHECK_MODULES([METALINK], libmetalink, [
+      LIBS="$METALINK_LIBS $LIBS"
+      CFLAGS="$METALINK_CFLAGS $CFLAGS"
+      AC_DEFINE([HAVE_METALINK], [1], [Define if using metalink.])
+      with_metalink=yes
+    ], [
+      with_metalink=no
+    ])
+
+  have_gpg=no
+  AS_IF([test x"$with_metalink" = xyes], [
+    dnl
+    dnl Check for GPGME
+    dnl
+    m4_ifdef([AM_PATH_GPGME], [
+      AM_PATH_GPGME([], [
+        # Put libgpgme to the end of the library list since it introduces a -L linker flags.
+        # That -L might break the build if there are two different version of
+        # a library (e.g. GnuTLS) in /usr/local and in the system directory.
+        LIBS="$LIBS $GPGME_LIBS"
+        CFLAGS="$GPGME_CFLAGS $CFLAGS"
+        AC_DEFINE([HAVE_GPGME], [1], [Define if GPGME is available.])
+        have_gpg=yes
+      ])
+    ])
+  ])
 ])
 
 dnl
@@ -817,6 +843,7 @@ AC_MSG_NOTICE([Summary of build options:
   SSL:               $with_ssl
   Zlib:              $with_zlib
   PSL:               $with_libpsl
+  PCRE:              $PCRE_INFO
   Digest:            $ENABLE_DIGEST
   NTLM:              $ENABLE_NTLM
   OPIE:              $ENABLE_OPIE

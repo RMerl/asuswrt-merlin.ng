@@ -462,10 +462,11 @@ functionptrtype parse_browser_input(int *kbinput)
 {
 	if (!meta_key) {
 		switch (*kbinput) {
-			case ' ':
-				return do_page_down;
+			case DEL_CODE:
 			case '-':
 				return do_page_up;
+			case ' ':
+				return do_page_down;
 			case '?':
 				return do_help_void;
 			case 'E':

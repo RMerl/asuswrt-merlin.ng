@@ -45,7 +45,7 @@
 /* The definition of _GL_WARN_ON_USE is copied here.  */
 
 
-#if (defined _WIN32 || defined __WIN32__) && ! defined __CYGWIN__
+#if defined _WIN32 && ! defined __CYGWIN__
 
 /* Define 'struct utimbuf' as an alias of 'struct _utimbuf'
    (or possibly, if present, 'struct __utimbuf64').  */

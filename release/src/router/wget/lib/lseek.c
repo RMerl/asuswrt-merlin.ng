@@ -19,7 +19,7 @@
 /* Specification.  */
 #include <unistd.h>
 
-#if (defined _WIN32 || defined __WIN32__) && ! defined __CYGWIN__
+#if defined _WIN32 && ! defined __CYGWIN__
 /* Windows platforms.  */
 /* Get GetFileType.  */
 # include <windows.h>
@@ -39,7 +39,7 @@
 off_t
 rpl_lseek (int fd, off_t offset, int whence)
 {
-#if (defined _WIN32 || defined __WIN32__) && ! defined __CYGWIN__
+#if defined _WIN32 && ! defined __CYGWIN__
   /* mingw lseek mistakenly succeeds on pipes, sockets, and terminals.  */
   HANDLE h = (HANDLE) _get_osfhandle (fd);
   if (h == INVALID_HANDLE_VALUE)

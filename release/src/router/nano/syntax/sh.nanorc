@@ -28,7 +28,7 @@ color brightred "\$[-0-9@*#?$!]" "\$[[:alpha:]_][[:alnum:]_]*"
 color brightred "\$\{[#!]?([-@*#?$!]|[0-9]+|[[:alpha:]_][[:alnum:]_]*)(\[([[:space:]]*[[:alnum:]_]+[[:space:]]*|@)\])?(([#%/]|:?[-=?+])[^}]*\}|\[|\})"
 
 # Comments.
-color cyan "(^|[[:space:]])#.*$"
+color cyan "(^|[[:space:]])#.*"
 
 # Strings.
 color brightyellow ""(\\.|[^"])*"" "'(\\.|[^'])*'"

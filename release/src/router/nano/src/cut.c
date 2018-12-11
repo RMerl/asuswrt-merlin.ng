@@ -33,12 +33,6 @@ void cutbuffer_reset(void)
 	keep_cutbuffer = FALSE;
 }
 
-/* Return the status of cutbuffer preservation. */
-inline bool keeping_cutbuffer(void)
-{
-	return keep_cutbuffer;
-}
-
 /* If we aren't on the last line of the file, move all the text of the
  * current line, plus the newline at the end, into the cutbuffer.  If we
  * are, move all of the text of the current line into the cutbuffer.  In
@@ -110,8 +104,9 @@ void cut_to_eof(void)
 /* Move text from the current buffer into the cutbuffer.  If
  * copy_text is TRUE, copy the text back into the buffer afterward.
  * If cut_till_eof is TRUE, move all text from the current cursor
- * position to the end of the file into the cutbuffer. */
-void do_cut_text(bool copy_text, bool marked, bool cut_till_eof)
+ * position to the end of the file into the cutbuffer.  If append
+ * is TRUE (when zapping), always append the cut to the cutbuffer. */
+void do_cut_text(bool copy_text, bool marked, bool cut_till_eof, bool append)
 {
 #ifndef NANO_TINY
 	filestruct *cb_save = NULL;
@@ -126,7 +121,7 @@ void do_cut_text(bool copy_text, bool marked, bool cut_till_eof)
 	size_t was_totsize = openfile->totsize;
 
 	/* If cuts were not continuous, or when cutting a region, clear the slate. */
-	if (!keep_cutbuffer || marked || cut_till_eof) {
+	if (!append && (!keep_cutbuffer || marked || cut_till_eof)) {
 		free_filestruct(cutbuffer);
 		cutbuffer = NULL;
 		/* After a line cut, future line cuts should add to the cutbuffer. */
@@ -193,11 +188,16 @@ void do_cut_text(bool copy_text, bool marked, bool cut_till_eof)
 void do_cut_text_void(void)
 {
 #ifndef NANO_TINY
-	add_undo(CUT);
-	do_cut_text(FALSE, openfile->mark, FALSE);
+	/* Only add a new undo item when the current item is not a CUT or when
+	 * the current cut is not contiguous with the previous cutting. */
+	if (openfile->last_action != CUT || openfile->current_undo == NULL ||
+			openfile->current_undo->mark_begin_lineno != openfile->current->lineno ||
+			!keep_cutbuffer)
+		add_undo(CUT);
+	do_cut_text(FALSE, openfile->mark, FALSE, FALSE);
 	update_undo(CUT);
 #else
-	do_cut_text(FALSE, FALSE, FALSE);
+	do_cut_text(FALSE, FALSE, FALSE, FALSE);
 #endif
 }
 
@@ -219,7 +219,7 @@ void do_copy_text(void)
 	if (mark_is_set || openfile->current != next_contiguous_line)
 		cutbuffer_reset();
 
-	do_cut_text(TRUE, mark_is_set, FALSE);
+	do_cut_text(TRUE, mark_is_set, FALSE, FALSE);
 
 	/* If the mark was set, blow away the cutbuffer on the next copy. */
 	next_contiguous_line = (mark_is_set ? NULL : openfile->current);
@@ -237,8 +237,34 @@ void do_copy_text(void)
 void do_cut_till_eof(void)
 {
 	add_undo(CUT_TO_EOF);
-	do_cut_text(FALSE, FALSE, TRUE);
+	do_cut_text(FALSE, FALSE, TRUE, FALSE);
 	update_undo(CUT_TO_EOF);
+}
+
+/* Erase text (current line or marked region), sending it into oblivion. */
+void zap_text(void)
+{
+	/* Remember the current cutbuffer so it can be restored after the zap. */
+	filestruct *was_cutbuffer = cutbuffer;
+	filestruct *was_cutbottom = cutbottom;
+
+	/* Add a new undo item only when the current item is not a ZAP or when
+	 * the current zap is not contiguous with the previous zapping. */
+	if (openfile->last_action != ZAP || openfile->current_undo == NULL ||
+			openfile->current_undo->mark_begin_lineno != openfile->current->lineno ||
+			openfile->current_undo->xflags & (MARK_WAS_SET|WAS_MARKED_FORWARD))
+		add_undo(ZAP);
+
+	/* Use the cutbuffer from the ZAP undo item, so the cut can be undone. */
+	cutbuffer = openfile->current_undo->cutbuffer;
+	cutbottom = openfile->current_undo->cutbottom;
+
+	do_cut_text(FALSE, openfile->mark, FALSE, TRUE);
+
+	update_undo(ZAP);
+
+	cutbuffer = was_cutbuffer;
+	cutbottom = was_cutbottom;
 }
 #endif /* !NANO_TINY */
 

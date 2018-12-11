@@ -1,4 +1,4 @@
-# langinfo_h.m4 serial 7
+# langinfo_h.m4 serial 8
 dnl Copyright (C) 2009-2018 Free Software Foundation, Inc.
 dnl This file is free software; the Free Software Foundation
 dnl gives unlimited permission to copy and/or distribute it,
@@ -17,6 +17,7 @@ AC_DEFUN([gl_LANGINFO_H],
   dnl Determine whether <langinfo.h> exists. It is missing on mingw and BeOS.
   HAVE_LANGINFO_CODESET=0
   HAVE_LANGINFO_T_FMT_AMPM=0
+  HAVE_LANGINFO_ALTMON=0
   HAVE_LANGINFO_ERA=0
   HAVE_LANGINFO_YESEXPR=0
   AC_CHECK_HEADERS_ONCE([langinfo.h])
@@ -24,6 +25,7 @@ AC_DEFUN([gl_LANGINFO_H],
     HAVE_LANGINFO_H=1
     dnl Determine what <langinfo.h> defines. CODESET and ERA etc. are missing
     dnl on OpenBSD 3.8. T_FMT_AMPM and YESEXPR, NOEXPR are missing on IRIX 5.3.
+    dnl ALTMON_* are missing on glibc 2.26 and many other systems.
     AC_CACHE_CHECK([whether langinfo.h defines CODESET],
       [gl_cv_header_langinfo_codeset],
       [AC_COMPILE_IFELSE(
@@ -47,6 +49,18 @@ int a = T_FMT_AMPM;
       ])
     if test $gl_cv_header_langinfo_t_fmt_ampm = yes; then
       HAVE_LANGINFO_T_FMT_AMPM=1
+    fi
+    AC_CACHE_CHECK([whether langinfo.h defines ALTMON_1],
+      [gl_cv_header_langinfo_altmon],
+      [AC_COMPILE_IFELSE(
+         [AC_LANG_PROGRAM([[#include <langinfo.h>
+int a = ALTMON_1;
+]])],
+         [gl_cv_header_langinfo_altmon=yes],
+         [gl_cv_header_langinfo_altmon=no])
+      ])
+    if test $gl_cv_header_langinfo_altmon = yes; then
+      HAVE_LANGINFO_ALTMON=1
     fi
     AC_CACHE_CHECK([whether langinfo.h defines ERA],
       [gl_cv_header_langinfo_era],
@@ -78,6 +92,7 @@ int a = YESEXPR;
   AC_SUBST([HAVE_LANGINFO_H])
   AC_SUBST([HAVE_LANGINFO_CODESET])
   AC_SUBST([HAVE_LANGINFO_T_FMT_AMPM])
+  AC_SUBST([HAVE_LANGINFO_ALTMON])
   AC_SUBST([HAVE_LANGINFO_ERA])
   AC_SUBST([HAVE_LANGINFO_YESEXPR])
 

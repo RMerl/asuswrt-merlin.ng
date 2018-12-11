@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: wget-1.11.3\n"
 "Report-Msgid-Bugs-To: bug-wget@gnu.org\n"
-"POT-Creation-Date: 2018-05-06 18:48+0200\n"
+"POT-Creation-Date: 2018-11-30 00:09+0100\n"
 "PO-Revision-Date: 2009-01-29 00:21+0200\n"
 "Last-Translator: Gintautas Miliauskas <gintas@akl.lt>\n"
 "Language-Team: Lithuanian <komp_lt@konferencijos.lt>\n"
@@ -239,17 +239,17 @@ msgstr ""
 msgid "Unmatched ) or \\)"
 msgstr ""
 
-#: lib/regcomp.c:689
+#: lib/regcomp.c:688
 msgid "No previous regular expression"
 msgstr ""
 
-#: lib/spawn-pipe.c:142 lib/spawn-pipe.c:145 lib/spawn-pipe.c:266
-#: lib/spawn-pipe.c:269
+#: lib/spawn-pipe.c:141 lib/spawn-pipe.c:144 lib/spawn-pipe.c:265
+#: lib/spawn-pipe.c:268
 #, c-format
 msgid "cannot create pipe"
 msgstr ""
 
-#: lib/spawn-pipe.c:236 lib/spawn-pipe.c:350 lib/wait-process.c:282
+#: lib/spawn-pipe.c:235 lib/spawn-pipe.c:349 lib/wait-process.c:282
 #: lib/wait-process.c:356
 #, c-format
 msgid "%s subprocess failed"
@@ -313,7 +313,7 @@ msgstr "prisijungta.\n"
 msgid "failed: %s.\n"
 msgstr "nepavyko: %s.\n"
 
-#: src/connect.c:399 src/http.c:2105
+#: src/connect.c:399 src/http.c:2108
 #, fuzzy, c-format
 msgid "%s: unable to resolve host address %s\n"
 msgstr "%s: nepavyko rasti adreso „%s“\n"
@@ -436,12 +436,12 @@ msgstr " (%s baitų)"
 msgid "Length: %s"
 msgstr "Dydis: %s"
 
-#: src/ftp.c:231 src/http.c:4037
+#: src/ftp.c:231 src/http.c:4030
 #, c-format
 msgid ", %s (%s) remaining"
 msgstr ", liko %s (%s)"
 
-#: src/ftp.c:235 src/http.c:4041
+#: src/ftp.c:235 src/http.c:4034
 #, c-format
 msgid ", %s remaining"
 msgstr ", liko %s"
@@ -612,7 +612,7 @@ msgstr ""
 "Nėra tokio failo ar aplanko „%s“.\n"
 "\n"
 
-#: src/ftp.c:1505 src/http.c:2560
+#: src/ftp.c:1505 src/http.c:2563
 #, c-format
 msgid "%s has sprung into existence.\n"
 msgstr "%s staiga susikūrė.\n"
@@ -635,17 +635,17 @@ msgstr "Valdymo prisijungimas uždarytas.\n"
 msgid "Data transfer aborted.\n"
 msgstr "Duomenų siuntimas nutrauktas.\n"
 
-#: src/ftp.c:1863 src/main.c:1681
+#: src/ftp.c:1863 src/main.c:1682
 #, fuzzy, c-format
 msgid "File %s already there; not retrieving.\n"
 msgstr "Failas „%s“ jau egzistuoja; nesiunčiama.\n"
 
-#: src/ftp.c:1948 src/http.c:4307
+#: src/ftp.c:1948 src/http.c:4300
 #, c-format
 msgid "(try:%2d)"
 msgstr "(bandymas:%2d)"
 
-#: src/ftp.c:2039 src/http.c:4723
+#: src/ftp.c:2039 src/http.c:4731
 #, fuzzy, c-format
 msgid ""
 "%s (%s) - written to stdout %s[%s]\n"
@@ -654,7 +654,7 @@ msgstr ""
 "%s (%s) - „%s“ įrašyta [%s/%s]\n"
 "\n"
 
-#: src/ftp.c:2040 src/http.c:4724
+#: src/ftp.c:2040 src/http.c:4732
 #, fuzzy, c-format
 msgid ""
 "%s (%s) - %s saved [%s]\n"
@@ -663,8 +663,8 @@ msgstr ""
 "%s (%s) - „%s“ įrašytas [%s]\n"
 "\n"
 
-#: src/ftp.c:2100 src/main.c:2165 src/metalink.c:1135 src/recur.c:511
-#: src/recur.c:749 src/retr.c:1293
+#: src/ftp.c:2100 src/main.c:2172 src/metalink.c:1135 src/recur.c:511
+#: src/recur.c:749 src/retr.c:1309
 #, c-format
 msgid "Removing %s.\n"
 msgstr "Šalinamas %s.\n"
@@ -760,164 +760,178 @@ msgstr "Aplankai nebus siunčiami, nes gylis nurodytas %d (maksimalus %d).\n"
 msgid "Not descending to %s as it is excluded/not-included.\n"
 msgstr "Nesileidžiama į „%s“, nes jis nufiltruotas/neįtrauktas.\n"
 
-#: src/ftp.c:2590 src/ftp.c:2604
+#: src/ftp.c:2613
 #, fuzzy, c-format
 msgid "Rejecting %s.\n"
 msgstr "Atmetamas „%s“.\n"
 
-#: src/ftp.c:2627
+#: src/ftp.c:2623
+#, fuzzy, c-format
+msgid "Rejecting %s (Invalid Entry).\n"
+msgstr "Atmetamas „%s“.\n"
+
+#: src/ftp.c:2631
+#, c-format
+msgid "%s is excluded/not-included through regex.\n"
+msgstr ""
+
+#: src/ftp.c:2645
 #, c-format
 msgid "Error matching %s against %s: %s\n"
 msgstr "Klaida taikant %s su %s: %s\n"
 
-#: src/ftp.c:2683
+#: src/ftp.c:2685
 #, fuzzy, c-format
 msgid "No matches on pattern %s.\n"
 msgstr "Nėra „%s“ atitikmenų.\n"
 
-#: src/ftp.c:2755
+#: src/ftp.c:2757
 #, fuzzy, c-format
 msgid "Wrote HTML-ized index to %s [%s].\n"
 msgstr "HTML formato turinys įrašytas į „%s“ [%s].\n"
 
-#: src/ftp.c:2760
+#: src/ftp.c:2762
 #, fuzzy, c-format
 msgid "Wrote HTML-ized index to %s.\n"
 msgstr "HTML formato turinys įrašytas į „%s“.\n"
 
-#: src/gnutls.c:114
+#: src/gnutls.c:119
 #, c-format
 msgid "ERROR: Cannot open directory %s.\n"
 msgstr ""
 
-#: src/gnutls.c:164
+#: src/gnutls.c:169
 #, c-format
 msgid "ERROR: Failed to open cert %s: (%d).\n"
 msgstr ""
 
-#: src/gnutls.c:169
+#: src/gnutls.c:174
 #, c-format
 msgid "Loaded CA certificate '%s'\n"
 msgstr ""
 
-#: src/gnutls.c:179
+#: src/gnutls.c:184
 #, c-format
 msgid "ERROR: Failed to load CRL file '%s': (%d)\n"
 msgstr ""
 
-#: src/gnutls.c:183
+#: src/gnutls.c:188
 #, c-format
 msgid "Loaded CRL file '%s'\n"
 msgstr ""
 
-#: src/gnutls.c:207
+#: src/gnutls.c:212
 msgid "ERROR: GnuTLS requires the key and the cert to be of the same type.\n"
 msgstr ""
 
-#: src/gnutls.c:576
+#: src/gnutls.c:664 src/gnutls.c:728
+msgid "Your GnuTLS version is too old to support TLS 1.3\n"
+msgstr ""
+
+#: src/gnutls.c:676
 #, c-format
 msgid "GnuTLS: unimplemented 'secure-protocol' option value %u\n"
 msgstr ""
 
-#: src/gnutls.c:578 src/gnutls.c:615 src/host.c:157 src/openssl.c:280
+#: src/gnutls.c:678 src/gnutls.c:734 src/host.c:157 src/openssl.c:284
 #, fuzzy
 msgid "Please report this issue to bug-wget@gnu.org\n"
 msgstr ""
 "Siųskite pranešimus apie klaidas ir pasiūlymus adresu <bug-wget@gnu.org>.\n"
 
-#: src/gnutls.c:614
+#: src/gnutls.c:733
 #, c-format
 msgid "GnuTLS: unimplemented 'secure-protocol' option value %d\n"
 msgstr ""
 
-#: src/gnutls.c:662
+#: src/gnutls.c:786
 msgid ""
 "GnuTLS: Cannot set prio string directly. Falling back to default priority.\n"
 msgstr ""
 
-#: src/gnutls.c:790 src/openssl.c:821
+#: src/gnutls.c:914 src/openssl.c:825
 msgid "ERROR"
 msgstr "KLAIDA"
 
-#: src/gnutls.c:790 src/openssl.c:821
+#: src/gnutls.c:914 src/openssl.c:825
 msgid "WARNING"
 msgstr "ĮSPĖJIMAS"
 
-#: src/gnutls.c:801 src/openssl.c:834
+#: src/gnutls.c:925 src/openssl.c:838
 #, c-format
 msgid "%s: No certificate presented by %s.\n"
 msgstr "%s: %s nepateikė sertifikato.\n"
 
-#: src/gnutls.c:807
+#: src/gnutls.c:931
 #, fuzzy, c-format
 msgid "%s: The certificate of %s is not trusted.\n"
 msgstr "%s: %s nepateikė sertifikato.\n"
 
-#: src/gnutls.c:808
+#: src/gnutls.c:932
 #, c-format
-msgid "%s: The certificate of %s hasn't got a known issuer.\n"
+msgid "%s: The certificate of %s doesn't have a known issuer.\n"
 msgstr ""
 
-#: src/gnutls.c:809
+#: src/gnutls.c:933
 #, fuzzy, c-format
 msgid "%s: The certificate of %s has been revoked.\n"
 msgstr "  Išduoto sertifikato galiojimo laikas baigėsi.\n"
 
-#: src/gnutls.c:810
+#: src/gnutls.c:934
 #, fuzzy, c-format
 msgid "%s: The certificate signer of %s was not a CA.\n"
 msgstr "%s: %s nepateikė sertifikato.\n"
 
-#: src/gnutls.c:811
+#: src/gnutls.c:935
 #, c-format
 msgid "%s: The certificate of %s was signed using an insecure algorithm.\n"
 msgstr ""
 
-#: src/gnutls.c:812
+#: src/gnutls.c:936
 #, fuzzy, c-format
 msgid "%s: The certificate of %s is not yet activated.\n"
 msgstr "  Išduotas sertifikatas dar nevalidus.\n"
 
-#: src/gnutls.c:813
+#: src/gnutls.c:937
 #, fuzzy, c-format
 msgid "%s: The certificate of %s has expired.\n"
 msgstr "  Išduoto sertifikato galiojimo laikas baigėsi.\n"
 
-#: src/gnutls.c:825
+#: src/gnutls.c:949
 #, c-format
 msgid "Error initializing X509 certificate: %s\n"
 msgstr ""
 
-#: src/gnutls.c:834
+#: src/gnutls.c:958
 #, fuzzy
 msgid "No certificate found\n"
 msgstr "%s: %s nepateikė sertifikato.\n"
 
-#: src/gnutls.c:841
+#: src/gnutls.c:965
 #, fuzzy, c-format
 msgid "Error parsing certificate: %s\n"
 msgstr "Klaida apdorojant tarpinės stoties URL %s: %s.\n"
 
-#: src/gnutls.c:848
+#: src/gnutls.c:972
 #, fuzzy
 msgid "The certificate has not yet been activated\n"
 msgstr "  Išduotas sertifikatas dar nevalidus.\n"
 
-#: src/gnutls.c:853
+#: src/gnutls.c:977
 #, fuzzy
 msgid "The certificate has expired\n"
 msgstr "  Išduoto sertifikato galiojimo laikas baigėsi.\n"
 
-#: src/gnutls.c:860
+#: src/gnutls.c:984
 #, fuzzy, c-format
 msgid "The certificate's owner does not match hostname %s\n"
 msgstr "%s: sertifikato vardas „%s“ neatitinka kompiuterio vardo „%s“.\n"
 
-#: src/gnutls.c:869 src/openssl.c:1030
+#: src/gnutls.c:993 src/openssl.c:1034
 msgid "The public key does not match pinned public key!\n"
 msgstr ""
 
-#: src/gnutls.c:878
+#: src/gnutls.c:1002
 msgid "Certificate must be X.509\n"
 msgstr ""
 
@@ -957,11 +971,11 @@ msgstr "%s: Nekorektiškas URL adresas %s: %s\n"
 msgid "Failed writing HTTP request: %s.\n"
 msgstr "Klaida rašant HTTP užklausą: %s.\n"
 
-#: src/http.c:790
+#: src/http.c:793
 msgid "No headers, assuming HTTP/0.9"
 msgstr "Nėra antraščių, bandoma kaip HTTP/0.9"
 
-#: src/http.c:1620
+#: src/http.c:1623
 #, fuzzy, c-format
 msgid ""
 "File %s already there; not retrieving.\n"
@@ -970,133 +984,133 @@ msgstr ""
 "Failas „%s“ jau egzistuoja; nesiunčiama.\n"
 "\n"
 
-#: src/http.c:1830
+#: src/http.c:1833
 msgid "gmtime failed. This is probably a bug.\n"
 msgstr ""
 
-#: src/http.c:1891
+#: src/http.c:1894
 msgid ""
 "Cannot convert timestamp to http format. Falling back to time 0 as last "
 "modification time.\n"
 msgstr ""
 
-#: src/http.c:1995
+#: src/http.c:1998
 #, fuzzy, c-format
 msgid "BODY data file %s missing: %s\n"
 msgstr "Nėra POST duomenų failo „%s“: %s\n"
 
-#: src/http.c:2087
+#: src/http.c:2090
 #, fuzzy, c-format
 msgid "Reusing existing connection to [%s]:%d.\n"
 msgstr "Naudojamas esamas prisijungimas prie %s:%d.\n"
 
-#: src/http.c:2092
+#: src/http.c:2095
 #, c-format
 msgid "Reusing existing connection to %s:%d.\n"
 msgstr "Naudojamas esamas prisijungimas prie %s:%d.\n"
 
-#: src/http.c:2158
+#: src/http.c:2161
 #, c-format
 msgid "Failed reading proxy response: %s\n"
 msgstr "Klaida skaitant tarpinės stoties atsaką: %s\n"
 
-#: src/http.c:2177 src/http.c:3416 src/http.c:4517
+#: src/http.c:2180 src/http.c:3419 src/http.c:4525
 #, c-format
 msgid "%s ERROR %d: %s.\n"
 msgstr "%s KLAIDA %d: %s.\n"
 
-#: src/http.c:2179 src/http.c:3418 src/http.c:3606
+#: src/http.c:2182 src/http.c:3421 src/http.c:3609
 msgid "Malformed status line"
 msgstr "Netinkama būsenos eilutė"
 
-#: src/http.c:2190
+#: src/http.c:2193
 #, c-format
 msgid "Proxy tunneling failed: %s"
 msgstr "Tarpinės stoties tuneliavimas nesėkmingas: %s"
 
-#: src/http.c:2426
+#: src/http.c:2429
 msgid "Unknown authentication scheme.\n"
 msgstr "Nesuprantamas autentifikavimo būdas.\n"
 
-#: src/http.c:2444
+#: src/http.c:2447
 #, fuzzy, c-format
 msgid "Authentication selected: %s\n"
 msgstr "Nesuprantamas autentifikavimo būdas.\n"
 
-#: src/http.c:2575
+#: src/http.c:2578
 #, fuzzy, c-format
 msgid "Saving to: %s\n"
 msgstr "Rašoma į: „%s“\n"
 
-#: src/http.c:2794
+#: src/http.c:2797
 #, c-format
 msgid ""
 "When downloading signature:\n"
 "%s: %s.\n"
 msgstr ""
 
-#: src/http.c:2830
+#: src/http.c:2833
 msgid "Unable to read signature content from temporary file. Skipping.\n"
 msgstr ""
 
-#: src/http.c:2853
+#: src/http.c:2856
 msgid "Could not create temporary file. Skipping signature download.\n"
 msgstr ""
 
-#: src/http.c:2887 src/http.c:2969
+#: src/http.c:2890 src/http.c:2972
 #, c-format
 msgid "Invalid pri value. Assuming %d.\n"
 msgstr ""
 
-#: src/http.c:3073
+#: src/http.c:3076
 msgid ""
 "Could not find acceptable digest for Metalink resources.\n"
 "Ignoring them.\n"
 msgstr ""
 
-#: src/http.c:3210
+#: src/http.c:3213
 msgid "Disabling SSL due to encountered errors.\n"
 msgstr "Dėl įvykusių klaidų išjungiamas SSL.\n"
 
-#: src/http.c:3352
+#: src/http.c:3355
 #, c-format
 msgid "%s request sent, awaiting response... "
 msgstr "%s užklausa išsiųsta, laukiama atsakymo..."
 
-#: src/http.c:3392
+#: src/http.c:3395
 msgid "No data received.\n"
 msgstr "Negauta duomenų.\n"
 
-#: src/http.c:3398
+#: src/http.c:3401
 #, c-format
 msgid "Read error (%s) in headers.\n"
 msgstr "Antraščių skaitymo klaida (%s).\n"
 
-#: src/http.c:3608
+#: src/http.c:3611
 msgid "(no description)"
 msgstr "(be aprašymo)"
 
-#: src/http.c:3796
+#: src/http.c:3799
 #, c-format
 msgid "Location: %s%s\n"
 msgstr "Vieta: %s%s\n"
 
-#: src/http.c:3797 src/http.c:4047
+#: src/http.c:3800 src/http.c:4040
 msgid "unspecified"
 msgstr "nenurodyta"
 
-#: src/http.c:3798
+#: src/http.c:3801
 msgid " [following]"
 msgstr " [sekama]"
 
-#: src/http.c:3880
+#: src/http.c:3883
 #, c-format
 msgid ""
 "File %s not modified on server. Omitting download.\n"
 "\n"
 msgstr ""
 
-#: src/http.c:3953
+#: src/http.c:3956
 #, c-format
 msgid ""
 "Server ignored If-Modified-Since header for file %s.\n"
@@ -1104,7 +1118,7 @@ msgid ""
 "\n"
 msgstr ""
 
-#: src/http.c:3983
+#: src/http.c:3976
 msgid ""
 "\n"
 "    The file is already fully retrieved; nothing to do.\n"
@@ -1114,81 +1128,81 @@ msgstr ""
 "    Failas jau atsiųstas iki galo; užduočių nebeliko.\n"
 "\n"
 
-#: src/http.c:4027
+#: src/http.c:4020
 msgid "Length: "
 msgstr "Dydis: "
 
-#: src/http.c:4047
+#: src/http.c:4040
 msgid "ignored"
 msgstr "ignoruojamas"
 
-#: src/http.c:4215
+#: src/http.c:4208
 msgid "Warning: wildcards not supported in HTTP.\n"
 msgstr "Perspėjimas: šablonai nesuderinami su HTTP protokolu.\n"
 
-#: src/http.c:4297
+#: src/http.c:4290
 msgid "Spider mode enabled. Check if remote file exists.\n"
 msgstr "Paieškos veiksena įjungta. Tikrinama, ar nutolęs failas egzistuoja.\n"
 
-#: src/http.c:4387
+#: src/http.c:4380
 #, fuzzy, c-format
 msgid "Cannot write to %s (%s).\n"
 msgstr "Nepavyksta rašyti į „%s“ (%s).\n"
 
-#: src/http.c:4398
+#: src/http.c:4404
 msgid "Required attribute missing from Header received.\n"
 msgstr ""
 
-#: src/http.c:4403
+#: src/http.c:4409
 msgid "Username/Password Authentication Failed.\n"
 msgstr ""
 
-#: src/http.c:4409
+#: src/http.c:4415
 #, fuzzy
 msgid "Cannot write to WARC file.\n"
 msgstr "Nepavyksta rašyti į „%s“ (%s).\n"
 
-#: src/http.c:4415
+#: src/http.c:4421
 msgid "Cannot write to temporary WARC file.\n"
 msgstr ""
 
-#: src/http.c:4420
+#: src/http.c:4426
 msgid "Unable to establish SSL connection.\n"
 msgstr "Nepavyko užmegzti SSL prisijungimo.\n"
 
-#: src/http.c:4426
+#: src/http.c:4432
 #, fuzzy, c-format
 msgid "Cannot unlink %s (%s).\n"
 msgstr "Nepavyksta rašyti į „%s“ (%s).\n"
 
-#: src/http.c:4436
+#: src/http.c:4442
 #, c-format
 msgid "ERROR: Redirection (%d) without location.\n"
 msgstr "KLAIDA: Nukreipimas (%d) niekur neveda.\n"
 
-#: src/http.c:4458
+#: src/http.c:4464
 msgid ""
 "Could not find Metalink data in HTTP response. Downloading file using HTTP "
 "GET.\n"
 msgstr ""
 
-#: src/http.c:4467
+#: src/http.c:4473
 msgid "Metalink headers found. Switching to Metalink mode.\n"
 msgstr ""
 
-#: src/http.c:4507
+#: src/http.c:4514
 msgid "Remote file does not exist -- broken link!!!\n"
 msgstr "Nutolęs failas neegzistuoja – klaidinga nuoroda!!!\n"
 
-#: src/http.c:4534
+#: src/http.c:4542
 msgid "Last-modified header missing -- time-stamps turned off.\n"
 msgstr "Trūksta paskutinio keitimo antraštės – laiko žymės išjungtos.\n"
 
-#: src/http.c:4542
+#: src/http.c:4550
 msgid "Last-modified header invalid -- time-stamp ignored.\n"
 msgstr "Paskutinio keitimo antraštė netaisyklinga – laiko žymės išjungtos.\n"
 
-#: src/http.c:4572
+#: src/http.c:4580
 #, fuzzy, c-format
 msgid ""
 "Server file no newer than local file %s -- not retrieving.\n"
@@ -1197,16 +1211,16 @@ msgstr ""
 "Serverio filas ne naujesnis negu vietinis failas „%s“ – nesiunčiama.\n"
 "\n"
 
-#: src/http.c:4580
+#: src/http.c:4588
 #, c-format
 msgid "The sizes do not match (local %s) -- retrieving.\n"
 msgstr "Nesutampa failų dydžiai (vietinis failas %s) – siunčiama.\n"
 
-#: src/http.c:4589
+#: src/http.c:4597
 msgid "Remote file is newer, retrieving.\n"
 msgstr "Nutolęs failas yra naujesnis, siunčiama.\n"
 
-#: src/http.c:4607
+#: src/http.c:4615
 msgid ""
 "Remote file exists and could contain links to other resources -- "
 "retrieving.\n"
@@ -1216,7 +1230,7 @@ msgstr ""
 "siunčiama.\n"
 "\n"
 
-#: src/http.c:4613
+#: src/http.c:4621
 msgid ""
 "Remote file exists but does not contain any link -- not retrieving.\n"
 "\n"
@@ -1224,7 +1238,7 @@ msgstr ""
 "Nutolęs failas egzistuoja, bet jame nėra nuorodų – nesiunčiama.\n"
 "\n"
 
-#: src/http.c:4622
+#: src/http.c:4630
 msgid ""
 "Remote file exists and could contain further links,\n"
 "but recursion is disabled -- not retrieving.\n"
@@ -1234,7 +1248,7 @@ msgstr ""
 "bet rekursija išjunga – nesiunčiama.\n"
 "\n"
 
-#: src/http.c:4628
+#: src/http.c:4636
 msgid ""
 "Remote file exists.\n"
 "\n"
@@ -1242,12 +1256,12 @@ msgstr ""
 "Nutolęs failas egzistuoja.\n"
 "\n"
 
-#: src/http.c:4637
+#: src/http.c:4645
 #, fuzzy, c-format
 msgid "%s URL: %s %2d %s\n"
 msgstr "%s: Nekorektiškas URL adresas %s: %s\n"
 
-#: src/http.c:4687
+#: src/http.c:4695
 #, fuzzy, c-format
 msgid ""
 "%s (%s) - written to stdout %s[%s/%s]\n"
@@ -1256,7 +1270,7 @@ msgstr ""
 "%s (%s) - „%s“ įrašyta [%s/%s]\n"
 "\n"
 
-#: src/http.c:4688
+#: src/http.c:4696
 #, fuzzy, c-format
 msgid ""
 "%s (%s) - %s saved [%s/%s]\n"
@@ -1265,58 +1279,58 @@ msgstr ""
 "%s (%s) - „%s“ įrašyta [%s/%s]\n"
 "\n"
 
-#: src/http.c:4749
+#: src/http.c:4757
 #, c-format
 msgid "%s (%s) - Connection closed at byte %s. "
 msgstr "%s (%s) - Prisijungimas užvertas ties %s baitu. "
 
-#: src/http.c:4772
+#: src/http.c:4780
 #, c-format
 msgid "%s (%s) - Read error at byte %s (%s)."
 msgstr "%s (%s) - Skaitymo klaida ties %s (%s) baitu."
 
-#: src/http.c:4781
+#: src/http.c:4789
 #, c-format
 msgid "%s (%s) - Read error at byte %s/%s (%s). "
 msgstr "%s (%s) - Skaitymo klaida ties %s/%s (%s) baitu. "
 
-#: src/http.c:5019
+#: src/http.c:5027
 #, c-format
 msgid "Unsupported quality of protection '%s'.\n"
 msgstr ""
 
-#: src/http.c:5024
+#: src/http.c:5032
 #, fuzzy, c-format
 msgid "Unsupported algorithm '%s'.\n"
 msgstr "Nepalaikoma schema"
 
-#: src/init.c:585
+#: src/init.c:583
 #, fuzzy, c-format
 msgid ""
 "%s: WGETRC points to %s, which couldn't be accessed because of error: %s.\n"
 msgstr "%s: WGETRC veda į %s, kuri neegzistuoja.\n"
 
-#: src/init.c:685 src/netrc.c:452
+#: src/init.c:682 src/netrc.c:452
 #, c-format
 msgid "%s: Cannot read %s (%s).\n"
 msgstr "%s: Nepavyksta nuskaityti %s (%s).\n"
 
-#: src/init.c:702
+#: src/init.c:699
 #, c-format
 msgid "%s: Error in %s at line %d.\n"
 msgstr "%s: Klaida %s eilutėje %d.\n"
 
-#: src/init.c:708
+#: src/init.c:705
 #, c-format
 msgid "%s: Syntax error in %s at line %d.\n"
 msgstr "%s: Sintaksės klaida %s eilutėje %d.\n"
 
-#: src/init.c:713
+#: src/init.c:710
 #, fuzzy, c-format
 msgid "%s: Unknown command %s in %s at line %d.\n"
 msgstr "%s: Faile %s nežinoma komanda „%s“ eilutėje %d.\n"
 
-#: src/init.c:752
+#: src/init.c:749
 #, c-format
 msgid ""
 "Parsing system wgetrc file (env SYSTEM_WGETRC) failed.  Please check\n"
@@ -1324,7 +1338,7 @@ msgid ""
 "or specify a different file using --config.\n"
 msgstr ""
 
-#: src/init.c:767
+#: src/init.c:764
 #, c-format
 msgid ""
 "Parsing system wgetrc file failed.  Please check\n"
@@ -1332,76 +1346,76 @@ msgid ""
 "or specify a different file using --config.\n"
 msgstr ""
 
-#: src/init.c:783
+#: src/init.c:780
 #, fuzzy, c-format
 msgid "%s: Warning: Both system and user wgetrc point to %s.\n"
 msgstr ""
 "%s: Perspėjimas: Tiek naudotojo, tiek sistemos wgetrc failas rodo į „%s“.\n"
 
-#: src/init.c:983
+#: src/init.c:981
 #, fuzzy, c-format
 msgid "%s: Invalid --execute command %s\n"
 msgstr "%s: Nekorektiška --execute komanda „%s“\n"
 
-#: src/init.c:1043
+#: src/init.c:1041
 #, fuzzy, c-format
 msgid "%s: %s: Invalid boolean %s; use `on' or `off'.\n"
 msgstr "%s: %s: Nekorektiška loginė reikšmė „%s“; naudokite „on“ arba „off“.\n"
 
-#: src/init.c:1076
+#: src/init.c:1074
 #, fuzzy, c-format
 msgid "%s: %s: Invalid %s; use `on', `off' or `quiet'.\n"
 msgstr "%s: %s: Nekorektiška loginė reikšmė „%s“; naudokite „on“ arba „off“.\n"
 
-#: src/init.c:1096
+#: src/init.c:1094
 #, fuzzy, c-format
 msgid "%s: %s: Invalid number %s.\n"
 msgstr "%s: %s: Nekorektiškas skaitmuo „%s“.\n"
 
-#: src/init.c:1178
+#: src/init.c:1176
 #, c-format
 msgid "%s: %s must only be used once\n"
 msgstr ""
 
-#: src/init.c:1333 src/init.c:1354
+#: src/init.c:1331 src/init.c:1352
 #, fuzzy, c-format
 msgid "%s: %s: Invalid byte value %s\n"
 msgstr "%s: %s: Nekorektiška baito reikšmė „%s“\n"
 
-#: src/init.c:1379
+#: src/init.c:1377
 #, fuzzy, c-format
 msgid "%s: %s: Invalid time period %s\n"
 msgstr "%s: %s: Nekorektiškas laiko periodas „%s“\n"
 
-#: src/init.c:1441 src/main.c:1905
+#: src/init.c:1439 src/main.c:1912
 #, c-format
 msgid ""
 "use-askpass requires a string or either environment variable WGET_ASKPASS or "
 "SSH_ASKPASS to be set.\n"
 msgstr ""
 
-#: src/init.c:1459 src/init.c:1481 src/init.c:1589 src/init.c:1645
-#: src/init.c:1711 src/init.c:1731 src/init.c:1756
+#: src/init.c:1457 src/init.c:1479 src/init.c:1587 src/init.c:1643
+#: src/init.c:1709 src/init.c:1729 src/init.c:1754
 #, fuzzy, c-format
 msgid "%s: %s: Invalid value %s.\n"
 msgstr "%s: %s: Nekorektiška reikšmė „%s“.\n"
 
-#: src/init.c:1515
+#: src/init.c:1513
 #, fuzzy, c-format
 msgid "%s: %s: Invalid header %s.\n"
 msgstr "%s: %s: Nekorektiška antraštė „%s“.\n"
 
-#: src/init.c:1536
+#: src/init.c:1534
 #, fuzzy, c-format
 msgid "%s: %s: Invalid WARC header %s.\n"
 msgstr "%s: %s: Nekorektiška antraštė „%s“.\n"
 
-#: src/init.c:1602
+#: src/init.c:1600
 #, fuzzy, c-format
 msgid "%s: %s: Invalid progress type %s.\n"
 msgstr "%s: %s: Nekorektiškas pažangos tipas „%s“.\n"
 
-#: src/init.c:1684
+#: src/init.c:1682
 #, fuzzy, c-format
 msgid ""
 "%s: %s: Invalid restriction %s,\n"
@@ -1415,16 +1429,16 @@ msgstr ""
 msgid "Encoding %s isn't valid\n"
 msgstr ""
 
-#: src/iri.c:139 src/url.c:1571
+#: src/iri.c:139 src/url.c:1570
 #, c-format
 msgid "Conversion from %s to %s isn't supported\n"
 msgstr ""
 
-#: src/iri.c:179 src/url.c:1601
+#: src/iri.c:179 src/url.c:1600
 msgid "Incomplete or invalid multibyte sequence encountered\n"
 msgstr ""
 
-#: src/iri.c:198 src/url.c:1618
+#: src/iri.c:198 src/url.c:1617
 #, c-format
 msgid "Unhandled errno %d\n"
 msgstr ""
@@ -1457,12 +1471,12 @@ msgstr ""
 msgid "%s: %s; disabling logging.\n"
 msgstr "%s: %s; žurnalas išjungiamas.\n"
 
-#: src/main.c:576
+#: src/main.c:577
 #, c-format
 msgid "Usage: %s [OPTION]... [URL]...\n"
 msgstr "Naudojimas: %s [PARINKTIS]... [ADRESAS]...\n"
 
-#: src/main.c:592
+#: src/main.c:593
 msgid ""
 "Mandatory arguments to long options are mandatory for short options too.\n"
 "\n"
@@ -1471,69 +1485,69 @@ msgstr ""
 "argumentams.\n"
 "\n"
 
-#: src/main.c:594
+#: src/main.c:595
 msgid "Startup:\n"
 msgstr "Pradžia:\n"
 
-#: src/main.c:596
+#: src/main.c:597
 #, fuzzy
 msgid ""
 "  -V,  --version                   display the version of Wget and exit\n"
 msgstr "  -V,  --version           parodyti Wget versiją ir išeiti.\n"
 
-#: src/main.c:598
+#: src/main.c:599
 #, fuzzy
 msgid "  -h,  --help                      print this help\n"
 msgstr "  -h,  --help              išspausdinti šią informaciją.\n"
 
-#: src/main.c:600
+#: src/main.c:601
 #, fuzzy
 msgid "  -b,  --background                go to background after startup\n"
 msgstr "  -b,  --background        veikti fone.\n"
 
-#: src/main.c:602
+#: src/main.c:603
 #, fuzzy
 msgid "  -e,  --execute=COMMAND           execute a `.wgetrc'-style command\n"
 msgstr "  -e,  --execute=COMMAND   įvykdyti „.wgetrc“ tipo komandą.\n"
 
-#: src/main.c:606
+#: src/main.c:607
 msgid "Logging and input file:\n"
 msgstr "Žurnalai ir įvedimo failas:\n"
 
-#: src/main.c:608
+#: src/main.c:609
 #, fuzzy
 msgid "  -o,  --output-file=FILE          log messages to FILE\n"
 msgstr "  -o,  --output-file=FAILAS  išvesti pranešimus į FAILĄ.\n"
 
-#: src/main.c:610
+#: src/main.c:611
 #, fuzzy
 msgid "  -a,  --append-output=FILE        append messages to FILE\n"
 msgstr "  -a, --append-output=FAILAS pridėti pranešimus FAILO pabaigoje.\n"
 
-#: src/main.c:613
+#: src/main.c:614
 #, fuzzy
 msgid ""
 "  -d,  --debug                     print lots of debugging information\n"
 msgstr "  -d, --debug                išvesti daug derinimo informacijos.\n"
 
-#: src/main.c:617
+#: src/main.c:618
 #, fuzzy
 msgid "       --wdebug                    print Watt-32 debug output\n"
 msgstr ""
 "       --wdebug              išspausdinti Watt-32 derinimo informaciją.\n"
 
-#: src/main.c:620
+#: src/main.c:621
 #, fuzzy
 msgid "  -q,  --quiet                     quiet (no output)\n"
 msgstr "  -q, --quiet                tyli veiksena (be išvesties).\n"
 
-#: src/main.c:622
+#: src/main.c:623
 #, fuzzy
 msgid "  -v,  --verbose                   be verbose (this is the default)\n"
 msgstr ""
 "  -v, --verbose              informuoti išsamiai (numatytoji reikšmė).\n"
 
-#: src/main.c:624
+#: src/main.c:625
 #, fuzzy
 msgid ""
 "  -nv, --no-verbose                turn off verboseness, without being "
@@ -1542,33 +1556,33 @@ msgstr ""
 "  -nv, --no-verbose          sumažinti informatyvumą (bet neišjungti "
 "pranešimų).\n"
 
-#: src/main.c:626
+#: src/main.c:627
 msgid ""
 "       --report-speed=TYPE         output bandwidth as TYPE.  TYPE can be "
 "bits\n"
 msgstr ""
 
-#: src/main.c:628
+#: src/main.c:629
 #, fuzzy
 msgid ""
 "  -i,  --input-file=FILE           download URLs found in local or external "
 "FILE\n"
 msgstr "  -i, --input-file=FAILAS    parsiųsti URL adresus, rastus FAILE.\n"
 
-#: src/main.c:631
+#: src/main.c:632
 #, fuzzy
 msgid ""
 "       --input-metalink=FILE       download files covered in local Metalink "
 "FILE\n"
 msgstr "  -i, --input-file=FAILAS    parsiųsti URL adresus, rastus FAILE.\n"
 
-#: src/main.c:634
+#: src/main.c:635
 #, fuzzy
 msgid "  -F,  --force-html                treat input file as HTML\n"
 msgstr ""
 "  -F, --force-html suprasti  skaityti nurodytą failą kaip HTML tipo failą.\n"
 
-#: src/main.c:636
+#: src/main.c:637
 #, fuzzy
 msgid ""
 "  -B,  --base=URL                  resolves HTML input-file links (-i -F)\n"
@@ -1577,26 +1591,26 @@ msgstr ""
 "  -N,  --timestamping            nesiųsti failų, nebent naujesni už "
 "vietinius.\n"
 
-#: src/main.c:639
+#: src/main.c:640
 #, fuzzy
 msgid "       --config=FILE               specify config file to use\n"
 msgstr "       --no-cookies            nenaudoti slapukų.\n"
 
-#: src/main.c:641
+#: src/main.c:642
 #, fuzzy
 msgid "       --no-config                 do not read any config file\n"
 msgstr "       --no-cookies            nenaudoti slapukų.\n"
 
-#: src/main.c:643
+#: src/main.c:644
 msgid ""
 "       --rejected-log=FILE         log reasons for URL rejection to FILE\n"
 msgstr ""
 
-#: src/main.c:647
+#: src/main.c:648
 msgid "Download:\n"
 msgstr "Parsiuntimas:\n"
 
-#: src/main.c:649
+#: src/main.c:650
 #, fuzzy
 msgid ""
 "  -t,  --tries=NUMBER              set number of retries to NUMBER (0 "
@@ -1605,7 +1619,7 @@ msgstr ""
 "  -t, --tries=SKAIČIUS           nustatyti bandymų parsiųsti SKAIČIŲ (0 – "
 "neriboti).\n"
 
-#: src/main.c:651
+#: src/main.c:652
 #, fuzzy
 msgid ""
 "       --retry-connrefused         retry even if connection is refused\n"
@@ -1613,7 +1627,7 @@ msgstr ""
 "       --retry-connrefused       bandyti iš naujo net jei prisijungimas "
 "atmetamas.\n"
 
-#: src/main.c:653
+#: src/main.c:654
 #, fuzzy
 msgid ""
 "       --retry-on-http-error=ERRORS    comma-separated list of HTTP errors "
@@ -1622,12 +1636,12 @@ msgstr ""
 "       --ignore-tags=SĄRAŠAS       kableliais atskirtas ignoruojamų\n"
 "                                   HTML žymių sąrašas.\n"
 
-#: src/main.c:655
+#: src/main.c:656
 #, fuzzy
 msgid "  -O,  --output-document=FILE      write documents to FILE\n"
 msgstr "  -O,  --output-document=FAILAS    rašyti dokumentus į FAILĄ.\n"
 
-#: src/main.c:657
+#: src/main.c:658
 #, fuzzy
 msgid ""
 "  -nc, --no-clobber                skip downloads that would download to\n"
@@ -1637,33 +1651,33 @@ msgstr ""
 "perrašyti\n"
 "                                 esamus failus.\n"
 
-#: src/main.c:660
+#: src/main.c:661
 #, fuzzy
 msgid ""
 "       --no-netrc                  don't try to obtain credentials from ."
 "netrc\n"
-msgstr "       --no-cookies            nenaudoti slapukų.\n"
+msgstr "  -np, --no-parent                 neiti aukštyn į tėvinį aplanką.\n"
 
-#: src/main.c:662
+#: src/main.c:663
 #, fuzzy
 msgid ""
 "  -c,  --continue                  resume getting a partially-downloaded "
 "file\n"
 msgstr "  -c,  --continue                tęsti dalinai parsiųstą failą.\n"
 
-#: src/main.c:664
+#: src/main.c:665
 msgid ""
 "       --start-pos=OFFSET          start downloading from zero-based "
 "position OFFSET\n"
 msgstr ""
 
-#: src/main.c:666
+#: src/main.c:667
 #, fuzzy
 msgid "       --progress=TYPE             select progress gauge type\n"
 msgstr ""
 "       --progress=TYPE           nurodyti progreso indikatoriaus tipą.\n"
 
-#: src/main.c:668
+#: src/main.c:669
 #, fuzzy
 msgid ""
 "       --show-progress             display the progress bar in any verbosity "
@@ -1671,7 +1685,7 @@ msgid ""
 msgstr ""
 "       --progress=TYPE           nurodyti progreso indikatoriaus tipą.\n"
 
-#: src/main.c:670
+#: src/main.c:671
 #, fuzzy
 msgid ""
 "  -N,  --timestamping              don't re-retrieve files unless newer "
@@ -1681,42 +1695,42 @@ msgstr ""
 "  -N,  --timestamping            nesiųsti failų, nebent naujesni už "
 "vietinius.\n"
 
-#: src/main.c:673
+#: src/main.c:674
 msgid ""
 "       --no-if-modified-since      don't use conditional if-modified-since "
 "get\n"
 "                                     requests in timestamping mode\n"
 msgstr ""
 
-#: src/main.c:676
+#: src/main.c:677
 msgid ""
 "       --no-use-server-timestamps  don't set the local file's timestamp by\n"
 "                                     the one on the server\n"
 msgstr ""
 
-#: src/main.c:679
+#: src/main.c:680
 #, fuzzy
 msgid "  -S,  --server-response           print server response\n"
 msgstr "  -S,  --server-response         išvesti serverio atsakymą.\n"
 
-#: src/main.c:681
+#: src/main.c:682
 #, fuzzy
 msgid "       --spider                    don't download anything\n"
 msgstr "       --spider                  nieko nesiųsti.\n"
 
-#: src/main.c:683
+#: src/main.c:684
 #, fuzzy
 msgid "  -T,  --timeout=SECONDS           set all timeout values to SECONDS\n"
 msgstr ""
 "  -T,  --timeout=SEK             nustatyti visus laukimo laikus į SEK.\n"
 
-#: src/main.c:686
+#: src/main.c:687
 msgid ""
 "       --dns-servers=ADDRESSES     list of DNS servers to query (comma "
 "separated)\n"
 msgstr ""
 
-#: src/main.c:688
+#: src/main.c:689
 #, fuzzy
 msgid ""
 "       --bind-dns-address=ADDRESS  bind DNS resolver to ADDRESS (hostname or "
@@ -1725,31 +1739,31 @@ msgstr ""
 "       --bind-address=ADRESAS    susieti su ADRESU (kompiuterio vardu ar\n"
 "                                 IP adresu) vietiniame kompiuteryje.\n"
 
-#: src/main.c:691
+#: src/main.c:692
 #, fuzzy
 msgid "       --dns-timeout=SECS          set the DNS lookup timeout to SECS\n"
 msgstr ""
 "       --dns-timeout=SEK         nustatyti DNS paieškos laukimo laiką į "
 "SEK.\n"
 
-#: src/main.c:693
+#: src/main.c:694
 #, fuzzy
 msgid "       --connect-timeout=SECS      set the connect timeout to SECS\n"
 msgstr ""
 "       --connect-timeout=SEK    nustatyti bandymo prisijungti laiką į SEK.\n"
 
-#: src/main.c:695
+#: src/main.c:696
 #, fuzzy
 msgid "       --read-timeout=SECS         set the read timeout to SECS\n"
 msgstr ""
 "       --read-timeout=SEK       nustatyti bandymo skaityti laiką į SEK.\n"
 
-#: src/main.c:697
+#: src/main.c:698
 #, fuzzy
 msgid "  -w,  --wait=SECONDS              wait SECONDS between retrievals\n"
 msgstr "  -w, --wait=SEKUNDĖS            laukti SEKUNDES tarp siuntimų.\n"
 
-#: src/main.c:699
+#: src/main.c:700
 #, fuzzy
 msgid ""
 "       --waitretry=SECONDS         wait 1..SECONDS between retries of a "
@@ -1758,7 +1772,7 @@ msgstr ""
 "       --waitretry=SEK           laukti 1..SEK tarp bandymų atsiusti iš "
 "naujo.\n"
 
-#: src/main.c:701
+#: src/main.c:702
 #, fuzzy
 msgid ""
 "       --random-wait               wait from 0.5*WAIT...1.5*WAIT secs "
@@ -1767,17 +1781,17 @@ msgstr ""
 "       --random-wait             laukti tarp 0...2*WAIT sekundžių tarp "
 "atsiuntimų.\n"
 
-#: src/main.c:703
+#: src/main.c:704
 #, fuzzy
 msgid "       --no-proxy                  explicitly turn off proxy\n"
 msgstr "       --no-proxy                būtinai išjungti tarpinę stotį.\n"
 
-#: src/main.c:705
+#: src/main.c:706
 #, fuzzy
 msgid "  -Q,  --quota=NUMBER              set retrieval quota to NUMBER\n"
 msgstr "  -Q,  --quota=SKAIČIUS          nustatyti parsiuntimo į SKAIČIŲ.\n"
 
-#: src/main.c:707
+#: src/main.c:708
 #, fuzzy
 msgid ""
 "       --bind-address=ADDRESS      bind to ADDRESS (hostname or IP) on local "
@@ -1786,18 +1800,18 @@ msgstr ""
 "       --bind-address=ADRESAS    susieti su ADRESU (kompiuterio vardu ar\n"
 "                                 IP adresu) vietiniame kompiuteryje.\n"
 
-#: src/main.c:709
+#: src/main.c:710
 #, fuzzy
 msgid "       --limit-rate=RATE           limit download rate to RATE\n"
 msgstr ""
 "       --limit-rate=GREITIS      riboti atsiuntimo greitį iki GREIČIO.\n"
 
-#: src/main.c:711
+#: src/main.c:712
 #, fuzzy
 msgid "       --no-dns-cache              disable caching DNS lookups\n"
 msgstr "       --no-dns-cache            išjungti DNS paieškų spartinimą.\n"
 
-#: src/main.c:713
+#: src/main.c:714
 #, fuzzy
 msgid ""
 "       --restrict-file-names=OS    restrict chars in file names to ones OS "
@@ -1806,7 +1820,7 @@ msgstr ""
 "       --restrict-file-names=OS  apriboti simbolius failų varduose į "
 "palaikomus OS.\n"
 
-#: src/main.c:715
+#: src/main.c:716
 #, fuzzy
 msgid ""
 "       --ignore-case               ignore case when matching files/"
@@ -1815,17 +1829,17 @@ msgstr ""
 "       --ignore-case             ignoruoti registrą filtruojant failus/"
 "aplankus.\n"
 
-#: src/main.c:718
+#: src/main.c:719
 #, fuzzy
 msgid "  -4,  --inet4-only                connect only to IPv4 addresses\n"
 msgstr "  -4,  --inet4-only              jungtis tik prie IPv4 adresų.\n"
 
-#: src/main.c:720
+#: src/main.c:721
 #, fuzzy
 msgid "  -6,  --inet6-only                connect only to IPv6 addresses\n"
 msgstr "  -6,  --inet6-only              jungtis tik prie IPv6 adresų.\n"
 
-#: src/main.c:722
+#: src/main.c:723
 #, fuzzy
 msgid ""
 "       --prefer-family=FAMILY      connect first to addresses of specified "
@@ -1836,23 +1850,23 @@ msgstr ""
 "adresų:\n"
 "                                 „IPv6“, „IPv4“ arba „none“.\n"
 
-#: src/main.c:726
+#: src/main.c:727
 #, fuzzy
 msgid "       --user=USER                 set both ftp and http user to USER\n"
 msgstr "       --user=NAUDOTOJAS         nustatyti FTP ir HTTP naudotoją.\n"
 
-#: src/main.c:728
+#: src/main.c:729
 #, fuzzy
 msgid ""
 "       --password=PASS             set both ftp and http password to PASS\n"
 msgstr "       --password=SLAPTAŽODIS    nustatyti FTP ir HTTP slaptažodį.\n"
 
-#: src/main.c:730
+#: src/main.c:731
 #, fuzzy
 msgid "       --ask-password              prompt for passwords\n"
 msgstr "       --password=SLAPTAŽODIS    nustatyti FTP ir HTTP slaptažodį.\n"
 
-#: src/main.c:732
+#: src/main.c:733
 msgid ""
 "       --use-askpass=COMMAND       specify credential handler for "
 "requesting \n"
@@ -1863,88 +1877,88 @@ msgid ""
 "                                     environment variable is used.\n"
 msgstr ""
 
-#: src/main.c:737
+#: src/main.c:738
 #, fuzzy
 msgid "       --no-iri                    turn off IRI support\n"
 msgstr "       --no-proxy                būtinai išjungti tarpinę stotį.\n"
 
-#: src/main.c:739
+#: src/main.c:740
 msgid ""
 "       --local-encoding=ENC        use ENC as the local encoding for IRIs\n"
 msgstr ""
 
-#: src/main.c:741
+#: src/main.c:742
 msgid ""
 "       --remote-encoding=ENC       use ENC as the default remote encoding\n"
 msgstr ""
 
-#: src/main.c:743
+#: src/main.c:744
 #, fuzzy
 msgid "       --unlink                    remove file before clobber\n"
 msgstr "       --no-glob               išjungti FTP failų vardų „globbing“.\n"
 
-#: src/main.c:746
+#: src/main.c:747
 msgid ""
 "       --keep-badhash              keep files with checksum mismatch "
 "(append .badhash)\n"
 msgstr ""
 
-#: src/main.c:748
+#: src/main.c:749
 msgid ""
 "       --metalink-index=NUMBER     Metalink application/metalink4+xml "
 "metaurl ordinal NUMBER\n"
 msgstr ""
 
-#: src/main.c:750
+#: src/main.c:751
 msgid ""
 "       --metalink-over-http        use Metalink metadata from HTTP response "
 "headers\n"
 msgstr ""
 
-#: src/main.c:752
+#: src/main.c:753
 msgid ""
 "       --preferred-location        preferred location for Metalink "
 "resources\n"
 msgstr ""
 
-#: src/main.c:756
+#: src/main.c:757
 msgid ""
 "       --no-xattr                  turn off storage of metadata in extended "
 "file attributes\n"
 msgstr ""
 
-#: src/main.c:761
+#: src/main.c:762
 msgid "Directories:\n"
 msgstr "Aplankai:\n"
 
-#: src/main.c:763
+#: src/main.c:764
 #, fuzzy
 msgid "  -nd, --no-directories            don't create directories\n"
 msgstr "  -nd, --no-directories           nekurti aplankų.\n"
 
-#: src/main.c:765
+#: src/main.c:766
 #, fuzzy
 msgid "  -x,  --force-directories         force creation of directories\n"
 msgstr "  -x,  --force-directories        priverstinai kurti aplankus.\n"
 
-#: src/main.c:767
+#: src/main.c:768
 #, fuzzy
 msgid "  -nH, --no-host-directories       don't create host directories\n"
 msgstr "  -nH, --no-host-directories      nekurti aplankų pagal kompiuterį.\n"
 
-#: src/main.c:769
+#: src/main.c:770
 #, fuzzy
 msgid "       --protocol-directories      use protocol name in directories\n"
 msgstr ""
 "       --protocol-directories     aplankuose naudoti protokolo vardą.\n"
 
-#: src/main.c:771
+#: src/main.c:772
 #, fuzzy
 msgid "  -P,  --directory-prefix=PREFIX   save files to PREFIX/..\n"
 msgstr ""
 "  -P,  --directory-prefix=PREFIKSAS rašyti failus aplanke PREFIKSAS/...\n"
 
-#: src/main.c:773
+#: src/main.c:774
 #, fuzzy
 msgid ""
 "       --cut-dirs=NUMBER           ignore NUMBER remote directory "
@@ -1953,32 +1967,32 @@ msgstr ""
 "       --cut-dirs=SKAIČIUS        ignoruoti SKAIČIŲ nutolusio aplanko "
 "komponentų.\n"
 
-#: src/main.c:777
+#: src/main.c:778
 msgid "HTTP options:\n"
 msgstr "HTTP parametrai:\n"
 
-#: src/main.c:779
+#: src/main.c:780
 #, fuzzy
 msgid "       --http-user=USER            set http user to USER\n"
 msgstr "       --http-user=NAUDOTOJAS  nustatyti HTTP naudotoją.\n"
 
-#: src/main.c:781
+#: src/main.c:782
 #, fuzzy
 msgid "       --http-password=PASS        set http password to PASS\n"
 msgstr "       --http-password=SLAPTAŽODIS nustatyti HTTP slaptažodį.\n"
 
-#: src/main.c:783
+#: src/main.c:784
 #, fuzzy
 msgid "       --no-cache                  disallow server-cached data\n"
 msgstr "       --no-cache              neleisti duomenų serverio kaupe.\n"
 
-#: src/main.c:785
+#: src/main.c:786
 msgid ""
 "       --default-page=NAME         change the default page name (normally\n"
 "                                     this is 'index.html'.)\n"
 msgstr ""
 
-#: src/main.c:788
+#: src/main.c:789
 #, fuzzy
 msgid ""
 "  -E,  --adjust-extension          save HTML/CSS documents with proper "
@@ -1986,44 +2000,42 @@ msgid ""
 msgstr ""
 "  -E,  --html-extension        įrašyti HTML dokumentus su „.html“ priesaga.\n"
 
-#: src/main.c:790
+#: src/main.c:791
 #, fuzzy
 msgid ""
 "       --ignore-length             ignore 'Content-Length' header field\n"
 msgstr "       --ignore-length         ignoruoti „Content-Length“ antraštę.\n"
 
-#: src/main.c:792
+#: src/main.c:793
 #, fuzzy
 msgid "       --header=STRING             insert STRING among the headers\n"
 msgstr "       --header=TEKSTAS        įterpti TEKSTĄ tarp antraščių.\n"
 
-#: src/main.c:795
-#, fuzzy
+#: src/main.c:796
 msgid ""
 "       --compression=TYPE          choose compression, one of auto, gzip and "
 "none. (default: none)\n"
 msgstr ""
-"       --progress=TYPE           nurodyti progreso indikatoriaus tipą.\n"
 
-#: src/main.c:798
+#: src/main.c:799
 #, fuzzy
 msgid ""
 "       --max-redirect              maximum redirections allowed per page\n"
 msgstr ""
 "       --max-redirect          maksimalus peradresavimų skaičius puslapiui.\n"
 
-#: src/main.c:800
+#: src/main.c:801
 #, fuzzy
 msgid "       --proxy-user=USER           set USER as proxy username\n"
 msgstr "       --proxy-user=NAUDOTOJAS nustatyti tarpinės stoties naudotoją.\n"
 
-#: src/main.c:802
+#: src/main.c:803
 #, fuzzy
 msgid "       --proxy-password=PASS       set PASS as proxy password\n"
 msgstr ""
 "       --proxy-password=SLAPTAŽODIS nustatyti tarpinės stoties slaptažodį.\n"
 
-#: src/main.c:804
+#: src/main.c:805
 #, fuzzy
 msgid ""
 "       --referer=URL               include 'Referer: URL' header in HTTP "
@@ -2032,12 +2044,12 @@ msgstr ""
 "       --referer=URL           įtraukti „Referer: URL“ antraštę HTTP "
 "užklausoje.\n"
 
-#: src/main.c:806
+#: src/main.c:807
 #, fuzzy
 msgid "       --save-headers              save the HTTP headers to file\n"
 msgstr "       --save-headers          įrašyti HTTP antraštes į failą.\n"
 
-#: src/main.c:808
+#: src/main.c:809
 #, fuzzy
 msgid ""
 "  -U,  --user-agent=AGENT          identify as AGENT instead of Wget/"
@@ -2045,7 +2057,7 @@ msgid ""
 msgstr ""
 "  -U,  --user-agent=AGENTAS    prisistatyti AGENTU vietoje „Wget/VERSIJA“.\n"
 
-#: src/main.c:810
+#: src/main.c:811
 #, fuzzy
 msgid ""
 "       --no-http-keep-alive        disable HTTP keep-alive (persistent "
@@ -2054,31 +2066,31 @@ msgstr ""
 "       --no-http-keep-alive    išjungti HTTP keep-alive (ilgalaikiai "
 "prisijungimai).\n"
 
-#: src/main.c:812
+#: src/main.c:813
 #, fuzzy
 msgid "       --no-cookies                don't use cookies\n"
 msgstr "       --no-cookies            nenaudoti slapukų.\n"
 
-#: src/main.c:814
+#: src/main.c:815
 #, fuzzy
 msgid ""
 "       --load-cookies=FILE         load cookies from FILE before session\n"
 msgstr ""
 "       --load-cookies=FAILAS   įkrauti slapukus iš FAILO prieš sesiją.\n"
 
-#: src/main.c:816
+#: src/main.c:817
 #, fuzzy
 msgid "       --save-cookies=FILE         save cookies to FILE after session\n"
 msgstr "       --save-cookies=FAILAS   įrašyti slapukus į FAILĄ po sesijos.\n"
 
-#: src/main.c:818
+#: src/main.c:819
 #, fuzzy
 msgid ""
 "       --keep-session-cookies      load and save session (non-permanent) "
 "cookies\n"
 msgstr "       --keep-session-cookies  įkrauti ir įrašyti sesijos slapukus.\n"
 
-#: src/main.c:820
+#: src/main.c:821
 #, fuzzy
 msgid ""
 "       --post-data=STRING          use the POST method; send STRING as the "
@@ -2087,7 +2099,7 @@ msgstr ""
 "       --post-data=TEKSTAS     naudoti POST metodą; siųsti TEKSTĄ kaip "
 "duomenis.\n"
 
-#: src/main.c:822
+#: src/main.c:823
 #, fuzzy
 msgid ""
 "       --post-file=FILE            use the POST method; send contents of "
@@ -2095,12 +2107,12 @@ msgid ""
 msgstr ""
 "       --post-file=FAILAS      naudoti POST metodą; siųsti FAILO turinį.\n"
 
-#: src/main.c:824
+#: src/main.c:825
 msgid ""
 "       --method=HTTPMethod         use method \"HTTPMethod\" in the request\n"
 msgstr ""
 
-#: src/main.c:826
+#: src/main.c:827
 #, fuzzy
 msgid ""
 "       --body-data=STRING          send STRING as data. --method MUST be "
@@ -2109,7 +2121,7 @@ msgstr ""
 "       --post-data=TEKSTAS     naudoti POST metodą; siųsti TEKSTĄ kaip "
 "duomenis.\n"
 
-#: src/main.c:828
+#: src/main.c:829
 #, fuzzy
 msgid ""
 "       --body-file=FILE            send contents of FILE. --method MUST be "
@@ -2117,7 +2129,7 @@ msgid ""
 msgstr ""
 "       --post-file=FAILAS      naudoti POST metodą; siųsti FAILO turinį.\n"
 
-#: src/main.c:830
+#: src/main.c:831
 #, fuzzy
 msgid ""
 "       --content-disposition       honor the Content-Disposition header "
@@ -2129,13 +2141,13 @@ msgstr ""
 "                               parenkant vietinių failų vardus "
 "(EKSPERIMENTINIS).\n"
 
-#: src/main.c:833
+#: src/main.c:834
 msgid ""
 "       --content-on-error          output the received content on server "
 "errors\n"
 msgstr ""
 
-#: src/main.c:835
+#: src/main.c:836
 #, fuzzy
 msgid ""
 "       --auth-no-challenge         send Basic HTTP authentication "
@@ -2147,11 +2159,11 @@ msgstr ""
 "informaciją\n"
 "                               nelaukiant serverio užklausimo.\n"
 
-#: src/main.c:842
+#: src/main.c:843
 msgid "HTTPS (SSL/TLS) options:\n"
 msgstr "HTTPS (SSL/TLS) parametrai:\n"
 
-#: src/main.c:844
+#: src/main.c:845
 #, fuzzy
 msgid ""
 "       --secure-protocol=PR        choose secure protocol, one of auto, "
@@ -2161,45 +2173,45 @@ msgstr ""
 "       --secure-protocol=PR     rinktis saugų protokolą: „auto“, „SSLv2“,\n"
 "                                „SSLv3“ arba „TLSv1“.\n"
 
-#: src/main.c:847
+#: src/main.c:848
 #, fuzzy
 msgid "       --https-only                only follow secure HTTPS links\n"
 msgstr "  -L,  --relative                  sekti tik reliatyvias nuorodas.\n"
 
-#: src/main.c:849
+#: src/main.c:850
 #, fuzzy
 msgid ""
 "       --no-check-certificate      don't validate the server's certificate\n"
 msgstr "       --no-check-certificate   nevaliduoti serverio sertifikato.\n"
 
-#: src/main.c:851
+#: src/main.c:852
 #, fuzzy
 msgid "       --certificate=FILE          client certificate file\n"
 msgstr "       --certificate=FAILAS     kliento sertifikato failas.\n"
 
-#: src/main.c:853
+#: src/main.c:854
 #, fuzzy
 msgid ""
 "       --certificate-type=TYPE     client certificate type, PEM or DER\n"
 msgstr ""
 "       --certificate-type=TIPAS kliento sertifikato tipas: PEM arba DER.\n"
 
-#: src/main.c:855
+#: src/main.c:856
 #, fuzzy
 msgid "       --private-key=FILE          private key file\n"
 msgstr "       --private-key=FAILAS     privataus rakto failas.\n"
 
-#: src/main.c:857
+#: src/main.c:858
 #, fuzzy
 msgid "       --private-key-type=TYPE     private key type, PEM or DER\n"
 msgstr "       --private-key-type=TIPAS privataus rakto tipas: PEM arba DER.\n"
 
-#: src/main.c:859
+#: src/main.c:860
 #, fuzzy
 msgid "       --ca-certificate=FILE       file with the bundle of CAs\n"
 msgstr "       --ca-certificate=FAILAS  failas su CA rinkiniu.\n"
 
-#: src/main.c:861
+#: src/main.c:862
 #, fuzzy
 msgid ""
 "       --ca-directory=DIR          directory where hash list of CAs is "
@@ -2208,12 +2220,12 @@ msgstr ""
 "       --ca-directory=DIR       aplankas, kuriame saugomas CA maišų "
 "sąrašas.\n"
 
-#: src/main.c:863
+#: src/main.c:864
 #, fuzzy
 msgid "       --crl-file=FILE             file with bundle of CRLs\n"
 msgstr "       --ca-certificate=FAILAS  failas su CA rinkiniu.\n"
 
-#: src/main.c:865
+#: src/main.c:866
 msgid ""
 "       --pinnedpubkey=FILE/HASHES  Public key (PEM/DER) file, or any number\n"
 "                                   of base64 encoded sha256 hashes preceded "
@@ -2223,7 +2235,7 @@ msgid ""
 "                                   peer against\n"
 msgstr ""
 
-#: src/main.c:871
+#: src/main.c:872
 #, fuzzy
 msgid ""
 "       --random-file=FILE          file with random data for seeding the SSL "
@@ -2232,7 +2244,7 @@ msgstr ""
 "       --random-file=FAILAS     failas su atsitiktiniais duomenimis SSL\n"
 "                                PRNG inicializacijai.\n"
 
-#: src/main.c:875
+#: src/main.c:876
 #, fuzzy
 msgid ""
 "       --egd-file=FILE             file naming the EGD socket with random "
@@ -2241,7 +2253,7 @@ msgstr ""
 "       --egd-file=FILE          EGD lizdo failas su atsitiktiniais "
 "duomenimis.\n"
 
-#: src/main.c:879
+#: src/main.c:880
 msgid ""
 "       --ciphers=STR           Set the priority string (GnuTLS) or cipher "
 "list string (OpenSSL) directly.\n"
@@ -2251,65 +2263,65 @@ msgid ""
 "depend on the specific SSL/TLS engine.\n"
 msgstr ""
 
-#: src/main.c:886
+#: src/main.c:887
 #, fuzzy
 msgid "HSTS options:\n"
 msgstr "HTTP parametrai:\n"
 
-#: src/main.c:888
+#: src/main.c:889
 #, fuzzy
 msgid "       --no-hsts                   disable HSTS\n"
 msgstr "       --no-cache              neleisti duomenų serverio kaupe.\n"
 
-#: src/main.c:890
+#: src/main.c:891
 msgid ""
 "       --hsts-file                 path of HSTS database (will override "
 "default)\n"
 msgstr ""
 
-#: src/main.c:895
+#: src/main.c:896
 msgid "FTP options:\n"
 msgstr "FTP parametrai:\n"
 
-#: src/main.c:898
+#: src/main.c:899
 msgid ""
 "       --ftp-stmlf                 use Stream_LF format for all binary FTP "
 "files\n"
 msgstr ""
 
-#: src/main.c:901
+#: src/main.c:902
 #, fuzzy
 msgid "       --ftp-user=USER             set ftp user to USER\n"
 msgstr "       --ftp-user=NAUDOTOJAS   nustatyti FTP naudotoją.\n"
 
-#: src/main.c:903
+#: src/main.c:904
 #, fuzzy
 msgid "       --ftp-password=PASS         set ftp password to PASS\n"
 msgstr "       --ftp-password=SLAPTAŽODIS nustatyti FTP slaptažodį.\n"
 
-#: src/main.c:905
+#: src/main.c:906
 #, fuzzy
 msgid "       --no-remove-listing         don't remove '.listing' files\n"
 msgstr "       --no-remove-listing     nešalinti „.listing“ failų.\n"
 
-#: src/main.c:907
+#: src/main.c:908
 #, fuzzy
 msgid "       --no-glob                   turn off FTP file name globbing\n"
 msgstr "       --no-glob               išjungti FTP failų vardų „globbing“.\n"
 
-#: src/main.c:909
+#: src/main.c:910
 #, fuzzy
 msgid ""
 "       --no-passive-ftp            disable the \"passive\" transfer mode\n"
 msgstr ""
 "       --no-passive-ftp        išjungti „pasyvią“ persiuntimo veikseną.\n"
 
-#: src/main.c:911
+#: src/main.c:912
 #, fuzzy
 msgid "       --preserve-permissions      preserve remote file permissions\n"
 msgstr "       --preserve-permissions  išsaugoti nutolusio failo leidimus.\n"
 
-#: src/main.c:913
+#: src/main.c:914
 #, fuzzy
 msgid ""
 "       --retr-symlinks             when recursing, get linked-to files (not "
@@ -2318,54 +2330,54 @@ msgstr ""
 "       --retr-symlinks         siunčiant rekursyviai, siųsti simbolinių\n"
 "                               nuorodų rodomus failus (ne aplankus).\n"
 
-#: src/main.c:918
+#: src/main.c:919
 #, fuzzy
 msgid "FTPS options:\n"
 msgstr "FTP parametrai:\n"
 
-#: src/main.c:920
+#: src/main.c:921
 msgid ""
 "       --ftps-implicit                 use implicit FTPS (default port is "
 "990)\n"
 msgstr ""
 
-#: src/main.c:922
+#: src/main.c:923
 msgid ""
 "       --ftps-resume-ssl               resume the SSL/TLS session started in "
 "the control connection when\n"
 "                                         opening a data connection\n"
 msgstr ""
 
-#: src/main.c:925
+#: src/main.c:926
 msgid ""
 "       --ftps-clear-data-connection    cipher the control channel only; all "
 "the data will be in plaintext\n"
 msgstr ""
 
-#: src/main.c:927
+#: src/main.c:928
 msgid ""
 "       --ftps-fallback-to-ftp          fall back to FTP if FTPS is not "
 "supported in the target server\n"
 msgstr ""
 
-#: src/main.c:931
+#: src/main.c:932
 #, fuzzy
 msgid "WARC options:\n"
 msgstr "FTP parametrai:\n"
 
-#: src/main.c:933
+#: src/main.c:934
 msgid ""
 "       --warc-file=FILENAME        save request/response data to a .warc.gz "
 "file\n"
 msgstr ""
 
-#: src/main.c:935
+#: src/main.c:936
 #, fuzzy
 msgid ""
 "       --warc-header=STRING        insert STRING into the warcinfo record\n"
 msgstr "       --header=TEKSTAS        įterpti TEKSTĄ tarp antraščių.\n"
 
-#: src/main.c:937
+#: src/main.c:938
 #, fuzzy
 msgid ""
 "       --warc-max-size=NUMBER      set maximum size of WARC files to NUMBER\n"
@@ -2373,28 +2385,28 @@ msgstr ""
 "  -t, --tries=SKAIČIUS           nustatyti bandymų parsiųsti SKAIČIŲ (0 – "
 "neriboti).\n"
 
-#: src/main.c:939
+#: src/main.c:940
 #, fuzzy
 msgid "       --warc-cdx                  write CDX index files\n"
 msgstr "       --spider                  nieko nesiųsti.\n"
 
-#: src/main.c:941
+#: src/main.c:942
 msgid ""
 "       --warc-dedup=FILENAME       do not store records listed in this CDX "
 "file\n"
 msgstr ""
 
-#: src/main.c:944
+#: src/main.c:945
 msgid ""
 "       --no-warc-compression       do not compress WARC files with GZIP\n"
 msgstr ""
 
-#: src/main.c:947
+#: src/main.c:948
 #, fuzzy
 msgid "       --no-warc-digests           do not calculate SHA1 digests\n"
 msgstr "       --no-cookies            nenaudoti slapukų.\n"
 
-#: src/main.c:949
+#: src/main.c:950
 #, fuzzy
 msgid ""
 "       --no-warc-keep-log          do not store the log file in a WARC "
@@ -2403,23 +2415,23 @@ msgstr ""
 "       --ignore-case             ignoruoti registrą filtruojant failus/"
 "aplankus.\n"
 
-#: src/main.c:951
+#: src/main.c:952
 msgid ""
 "       --warc-tempdir=DIRECTORY    location for temporary files created by "
 "the\n"
 "                                     WARC writer\n"
 msgstr ""
 
-#: src/main.c:956
+#: src/main.c:957
 msgid "Recursive download:\n"
 msgstr "Rekursyvus siuntimas:\n"
 
-#: src/main.c:958
+#: src/main.c:959
 #, fuzzy
 msgid "  -r,  --recursive                 specify recursive download\n"
 msgstr "  -r,  --recursive          siųsti failus rekursyviai.\n"
 
-#: src/main.c:960
+#: src/main.c:961
 #, fuzzy
 msgid ""
 "  -l,  --level=NUMBER              maximum recursion depth (inf or 0 for "
@@ -2428,14 +2440,14 @@ msgstr ""
 "  -l,  --level=SKAIČIUS     maksimalus rekursijos gylis (inf arba 0 "
 "begalybei).\n"
 
-#: src/main.c:962
+#: src/main.c:963
 #, fuzzy
 msgid ""
 "       --delete-after              delete files locally after downloading "
 "them\n"
 msgstr "       --delete-after       ištrinti failus juos parsiuntus.\n"
 
-#: src/main.c:964
+#: src/main.c:965
 #, fuzzy
 msgid ""
 "  -k,  --convert-links             make links in downloaded HTML or CSS "
@@ -2445,19 +2457,19 @@ msgstr ""
 "  -k,  --convert-links      pakeisti nuorodas parsiųstame HTML, kad rodytų\n"
 "                            į vietinius failus.\n"
 
-#: src/main.c:967
+#: src/main.c:968
 msgid ""
 "       --convert-file-only         convert the file part of the URLs only "
 "(usually known as the basename)\n"
 msgstr ""
 
-#: src/main.c:969
+#: src/main.c:970
 msgid ""
 "       --backups=N                 before writing file X, rotate up to N "
 "backup files\n"
 msgstr ""
 
-#: src/main.c:973
+#: src/main.c:974
 #, fuzzy
 msgid ""
 "  -K,  --backup-converted          before converting file X, back up as "
@@ -2467,7 +2479,7 @@ msgstr ""
 "atsarginę\n"
 "                            kopiją „X.orig“.\n"
 
-#: src/main.c:976
+#: src/main.c:977
 #, fuzzy
 msgid ""
 "  -K,  --backup-converted          before converting file X, back up as X."
@@ -2477,7 +2489,7 @@ msgstr ""
 "atsarginę\n"
 "                            kopiją „X.orig“.\n"
 
-#: src/main.c:979
+#: src/main.c:980
 #, fuzzy
 msgid ""
 "  -m,  --mirror                    shortcut for -N -r -l inf --no-remove-"
@@ -2485,7 +2497,7 @@ msgid ""
 msgstr ""
 "  -m,  --mirror             „-N -r -l inf --no-remove-listing“ santrumpa.\n"
 
-#: src/main.c:981
+#: src/main.c:982
 #, fuzzy
 msgid ""
 "  -p,  --page-requisites           get all images, etc. needed to display "
@@ -2494,7 +2506,7 @@ msgstr ""
 "  -p,  --page-requisites    parsiųsti visus paveikslėlius ir kt. failus,\n"
 "                            reikalingus HTML puslapiui parodyti.\n"
 
-#: src/main.c:983
+#: src/main.c:984
 #, fuzzy
 msgid ""
 "       --strict-comments           turn on strict (SGML) handling of HTML "
@@ -2503,11 +2515,11 @@ msgstr ""
 "       --strict-comments    įjungti griežtą (SGML) HTML komentarų "
 "apdorojimą.\n"
 
-#: src/main.c:987
+#: src/main.c:988
 msgid "Recursive accept/reject:\n"
 msgstr "Rekursyvus priėmimas/atmetimas:\n"
 
-#: src/main.c:989
+#: src/main.c:990
 #, fuzzy
 msgid ""
 "  -A,  --accept=LIST               comma-separated list of accepted "
@@ -2516,7 +2528,7 @@ msgstr ""
 "  -A,  --accept=SĄRAŠAS            kableliais atskirtas imamų plėtinių "
 "sąrašas.\n"
 
-#: src/main.c:991
+#: src/main.c:992
 #, fuzzy
 msgid ""
 "  -R,  --reject=LIST               comma-separated list of rejected "
@@ -2525,27 +2537,27 @@ msgstr ""
 "  -R,  --reject=SĄRAŠAS            kableliais atskirtas atmetamų plėtinių "
 "sąrašas.\n"
 
-#: src/main.c:993
+#: src/main.c:994
 msgid "       --accept-regex=REGEX        regex matching accepted URLs\n"
 msgstr ""
 
-#: src/main.c:995
+#: src/main.c:996
 msgid "       --reject-regex=REGEX        regex matching rejected URLs\n"
 msgstr ""
 
-#: src/main.c:998
+#: src/main.c:999
 #, fuzzy
 msgid "       --regex-type=TYPE           regex type (posix|pcre)\n"
 msgstr ""
 "       --progress=TYPE           nurodyti progreso indikatoriaus tipą.\n"
 
-#: src/main.c:1001
+#: src/main.c:1002
 #, fuzzy
 msgid "       --regex-type=TYPE           regex type (posix)\n"
 msgstr ""
 "       --progress=TYPE           nurodyti progreso indikatoriaus tipą.\n"
 
-#: src/main.c:1004
+#: src/main.c:1005
 #, fuzzy
 msgid ""
 "  -D,  --domains=LIST              comma-separated list of accepted domains\n"
@@ -2553,7 +2565,7 @@ msgstr ""
 "  -D,  --domains=SĄRAŠAS           kableliais atskirtas imamų domenų "
 "sąrašas.\n"
 
-#: src/main.c:1006
+#: src/main.c:1007
 #, fuzzy
 msgid ""
 "       --exclude-domains=LIST      comma-separated list of rejected domains\n"
@@ -2561,14 +2573,14 @@ msgstr ""
 "       --exclude-domains=SĄRAŠAS   kableliais atskirtas atmetamų domenų "
 "sąrašas.\n"
 
-#: src/main.c:1008
+#: src/main.c:1009
 #, fuzzy
 msgid ""
 "       --follow-ftp                follow FTP links from HTML documents\n"
 msgstr ""
 "       --follow-ftp                siųsti FTP nuorodas iš HTML dokumentų.\n"
 
-#: src/main.c:1010
+#: src/main.c:1011
 #, fuzzy
 msgid ""
 "       --follow-tags=LIST          comma-separated list of followed HTML "
@@ -2577,7 +2589,7 @@ msgstr ""
 "       --follow-tags=SĄRAŠAS       kableliais atskirtas sekamų HTML žymių "
 "sąrašas.\n"
 
-#: src/main.c:1012
+#: src/main.c:1013
 #, fuzzy
 msgid ""
 "       --ignore-tags=LIST          comma-separated list of ignored HTML "
@@ -2586,144 +2598,144 @@ msgstr ""
 "       --ignore-tags=SĄRAŠAS       kableliais atskirtas ignoruojamų\n"
 "                                   HTML žymių sąrašas.\n"
 
-#: src/main.c:1014
+#: src/main.c:1015
 #, fuzzy
 msgid "  -H,  --span-hosts                go to foreign hosts when recursive\n"
 msgstr ""
 "  -H,  --span-hosts                eiti į kitus domenus siunčiant "
 "rekursyviai.\n"
 
-#: src/main.c:1016
+#: src/main.c:1017
 #, fuzzy
 msgid "  -L,  --relative                  follow relative links only\n"
 msgstr "  -L,  --relative                  sekti tik reliatyvias nuorodas.\n"
 
-#: src/main.c:1018
+#: src/main.c:1019
 #, fuzzy
 msgid "  -I,  --include-directories=LIST  list of allowed directories\n"
 msgstr "  -I,  --include-directories=SĄRAŠAS leistinų aplankų sąrašas.\n"
 
-#: src/main.c:1020
+#: src/main.c:1021
 msgid ""
 "       --trust-server-names        use the name specified by the "
 "redirection\n"
 "                                     URL's last component\n"
 msgstr ""
 
-#: src/main.c:1023
+#: src/main.c:1024
 #, fuzzy
 msgid "  -X,  --exclude-directories=LIST  list of excluded directories\n"
 msgstr "  -X,  --exclude-directories=SĄRAŠAS atmetamų aplankų sąrašas.\n"
 
-#: src/main.c:1025
+#: src/main.c:1026
 #, fuzzy
 msgid ""
 "  -np, --no-parent                 don't ascend to the parent directory\n"
 msgstr "  -np, --no-parent                 neiti aukštyn į tėvinį aplanką.\n"
 
-#: src/main.c:1028
+#: src/main.c:1029
 #, fuzzy
 msgid "Email bug reports, questions, discussions to <bug-wget@gnu.org>\n"
 msgstr ""
 "Siųskite pranešimus apie klaidas ir pasiūlymus adresu <bug-wget@gnu.org>.\n"
 
-#: src/main.c:1029
+#: src/main.c:1030
 msgid ""
 "and/or open issues at https://savannah.gnu.org/bugs/?"
 "func=additem&group=wget.\n"
 msgstr ""
 
-#: src/main.c:1034
+#: src/main.c:1035
 #, c-format
 msgid "GNU Wget %s, a non-interactive network retriever.\n"
 msgstr "GNU Wget %s, neinteraktyvus parsiuntiklis.\n"
 
-#: src/main.c:1077
+#: src/main.c:1078
 #, c-format
 msgid "Password for user %s: "
 msgstr ""
 
-#: src/main.c:1079
+#: src/main.c:1080
 #, c-format
 msgid "Password: "
 msgstr ""
 
-#: src/main.c:1103
+#: src/main.c:1104
 #, c-format
 msgid "Cannot create pipe\n"
 msgstr ""
 
-#: src/main.c:1111
+#: src/main.c:1112
 #, c-format
 msgid "Error initializing spawn file actions for use-askpass: %d\n"
 msgstr ""
 
-#: src/main.c:1120
+#: src/main.c:1121
 #, c-format
 msgid "Error setting spawn file actions for use-askpass: %d\n"
 msgstr ""
 
-#: src/main.c:1144
+#: src/main.c:1145
 #, c-format
 msgid "Error reading response from command \"%s %s\": %s\n"
 msgstr ""
 
-#: src/main.c:1167
+#: src/main.c:1168
 #, c-format
 msgid "Username for '%s%s': "
 msgstr ""
 
-#: src/main.c:1177
+#: src/main.c:1178
 #, c-format
 msgid "Password for '%s%s@%s': "
 msgstr ""
 
-#: src/main.c:1249
+#: src/main.c:1250
 msgid "Wgetrc: "
 msgstr ""
 
-#: src/main.c:1250
+#: src/main.c:1251
 msgid "Locale: "
 msgstr ""
 
-#: src/main.c:1251
+#: src/main.c:1252
 msgid "Compile: "
 msgstr ""
 
-#: src/main.c:1252
+#: src/main.c:1253
 msgid "Link: "
 msgstr ""
 
-#: src/main.c:1256
+#: src/main.c:1257
 #, c-format
 msgid ""
 "GNU Wget %s built on %s.\n"
 "\n"
 msgstr ""
 
-#: src/main.c:1283
+#: src/main.c:1284
 #, c-format
 msgid "    %s (env)\n"
 msgstr ""
 
-#: src/main.c:1290
+#: src/main.c:1291
 #, c-format
 msgid "    %s (user)\n"
 msgstr ""
 
-#: src/main.c:1295
+#: src/main.c:1296
 #, c-format
 msgid "    %s (system)\n"
 msgstr ""
 
 #. TRANSLATORS: When available, an actual copyright character
 #. (circle-c) should be used in preference to "(C)".
-#: src/main.c:1323
+#: src/main.c:1324
 #, fuzzy, c-format
 msgid "Copyright (C) %s Free Software Foundation, Inc.\n"
 msgstr "Copyright (C) 2008 Free Software Foundation, Inc.\n"
 
-#: src/main.c:1326
+#: src/main.c:1327
 msgid ""
 "License GPLv3+: GNU GPL version 3 or later\n"
 "<http://www.gnu.org/licenses/gpl.html>.\n"
@@ -2737,7 +2749,7 @@ msgstr ""
 
 #. TRANSLATORS: When available, please use the proper diacritics for
 #. names such as this one. See en_US.po for reference.
-#: src/main.c:1334
+#: src/main.c:1335
 msgid ""
 "\n"
 "Originally written by Hrvoje Niksic <hniksic@xemacs.org>.\n"
@@ -2745,67 +2757,67 @@ msgstr ""
 "\n"
 "Parašė Hrvoje Niksic <hniksic@xemacs.org>.\n"
 
-#: src/main.c:1337
+#: src/main.c:1338
 #, fuzzy
 msgid "Please send bug reports and questions to <bug-wget@gnu.org>.\n"
 msgstr ""
 "Siųskite pranešimus apie klaidas ir pasiūlymus adresu <bug-wget@gnu.org>.\n"
 
-#: src/main.c:1390 src/main.c:1933
+#: src/main.c:1391 src/main.c:1940
 #, c-format
 msgid "Memory allocation problem\n"
 msgstr ""
 
-#: src/main.c:1441
+#: src/main.c:1442
 #, c-format
 msgid "Exiting due to error in %s\n"
 msgstr ""
 
-#: src/main.c:1471 src/main.c:1542 src/main.c:1778
+#: src/main.c:1472 src/main.c:1543 src/main.c:1779
 #, c-format
 msgid "Try `%s --help' for more options.\n"
 msgstr "Pabandykite „%s --help“, jei norite daugiau informacijos.\n"
 
-#: src/main.c:1538
+#: src/main.c:1539
 #, c-format
 msgid "%s: illegal option -- `-n%c'\n"
 msgstr "%s: netaisyklingas parametras – „-n%c“\n"
 
-#: src/main.c:1584
+#: src/main.c:1585
 #, c-format
 msgid "Debugging support not compiled in. Ignoring --debug flag.\n"
 msgstr ""
 
-#: src/main.c:1597
+#: src/main.c:1598
 #, c-format
 msgid ""
 "Both --no-clobber and --convert-links were specified, only --convert-links "
 "will be used.\n"
 msgstr ""
 
-#: src/main.c:1599
+#: src/main.c:1600
 #, c-format
 msgid ""
 "Both --no-clobber and --convert-file-only were specified, only --convert-"
 "file-only will be used.\n"
 msgstr ""
 
-#: src/main.c:1632
+#: src/main.c:1633
 #, c-format
 msgid "Can't be verbose and quiet at the same time.\n"
 msgstr "Negalima tuo pačiu metu būti informatyviam ir tyliam.\n"
 
-#: src/main.c:1638
+#: src/main.c:1639
 #, c-format
 msgid "Can't timestamp and not clobber old files at the same time.\n"
 msgstr "Negalima tuo pačiu metu dėti laiko žymes ir nekeisti senų failų.\n"
 
-#: src/main.c:1647
+#: src/main.c:1648
 #, c-format
 msgid "Cannot specify both --inet4-only and --inet6-only.\n"
 msgstr "Negalima kartu nurodyti --inet4-only ir --inet6-only.\n"
 
-#: src/main.c:1657
+#: src/main.c:1658
 #, fuzzy
 msgid ""
 "Cannot specify both -k or --convert-file-only and -O if multiple URLs are "
@@ -2817,7 +2829,7 @@ msgstr ""
 "-p arba -r. Daugiau informacijos žinyne..\n"
 "\n"
 
-#: src/main.c:1666
+#: src/main.c:1667
 msgid ""
 "WARNING: combining -O with -r or -p will mean that all downloaded content\n"
 "will be placed in the single file you specified.\n"
@@ -2827,7 +2839,7 @@ msgstr ""
 "įrašytas į vienintelį nurodytą failą.\n"
 "\n"
 
-#: src/main.c:1672
+#: src/main.c:1673
 msgid ""
 "WARNING: timestamping does nothing in combination with -O. See the manual\n"
 "for details.\n"
@@ -2837,138 +2849,138 @@ msgstr ""
 "informacijos žinyne.\n"
 "\n"
 
-#: src/main.c:1692
+#: src/main.c:1693
 #, c-format
 msgid ""
 "WARC output does not work with --no-clobber, --no-clobber will be disabled.\n"
 msgstr ""
 
-#: src/main.c:1699
+#: src/main.c:1700
 #, c-format
 msgid ""
 "WARC output does not work with timestamping, timestamping will be disabled.\n"
 msgstr ""
 
-#: src/main.c:1706
+#: src/main.c:1707
 #, c-format
 msgid "WARC output does not work with --spider.\n"
 msgstr ""
 
-#: src/main.c:1712
+#: src/main.c:1713
 #, c-format
 msgid ""
 "WARC output does not work with --continue or --start-pos, they will be "
 "disabled.\n"
 msgstr ""
 
-#: src/main.c:1720
+#: src/main.c:1721
 #, c-format
 msgid ""
 "Digests are disabled; WARC deduplication will not find duplicate records.\n"
 msgstr ""
 
-#: src/main.c:1741
+#: src/main.c:1742
 #, c-format
 msgid ""
 "Compression does not work with --continue or --start-pos, they will be "
 "disabled.\n"
 msgstr ""
 
-#: src/main.c:1752
+#: src/main.c:1753
 #, fuzzy, c-format
 msgid "Cannot specify both --ask-password and --password.\n"
 msgstr "Negalima kartu nurodyti --inet4-only ir --inet6-only.\n"
 
-#: src/main.c:1760
+#: src/main.c:1761
 #, c-format
 msgid ""
 "Specifying both --start-pos and --continue is not recommended; --continue "
 "will be disabled.\n"
 msgstr ""
 
-#: src/main.c:1773
+#: src/main.c:1774
 #, c-format
 msgid "%s: missing URL\n"
 msgstr "%s: trūksta URL\n"
 
-#: src/main.c:1815
+#: src/main.c:1822
 #, fuzzy, c-format
 msgid "You cannot specify both --post-data and --post-file.\n"
 msgstr "Negalima kartu nurodyti --inet4-only ir --inet6-only.\n"
 
-#: src/main.c:1820
+#: src/main.c:1827
 #, c-format
 msgid ""
 "You cannot use --post-data or --post-file along with --method. --method "
 "expects data through --body-data and --body-file options\n"
 msgstr ""
 
-#: src/main.c:1829
+#: src/main.c:1836
 #, c-format
 msgid ""
 "You must specify a method through --method=HTTPMethod to use with --body-"
 "data or --body-file.\n"
 msgstr ""
 
-#: src/main.c:1835
+#: src/main.c:1842
 #, fuzzy, c-format
 msgid "You cannot specify both --body-data and --body-file.\n"
 msgstr "Negalima kartu nurodyti --inet4-only ir --inet6-only.\n"
 
-#: src/main.c:1887
+#: src/main.c:1894
 #, c-format
 msgid "This version does not have support for IRIs\n"
 msgstr ""
 
-#: src/main.c:1999
+#: src/main.c:2006
 #, c-format
 msgid ""
 "-k or -r can be used together with -O only if outputting to a regular file.\n"
 msgstr ""
 
-#: src/main.c:2005
+#: src/main.c:2012
 #, c-format
 msgid ""
 "--convert-links or --convert-file-only can be used together only if "
 "outputting to a regular file.\n"
 msgstr ""
 
-#: src/main.c:2016
+#: src/main.c:2023
 #, c-format
 msgid "Failed to init libcares\n"
 msgstr ""
 
-#: src/main.c:2022
+#: src/main.c:2029
 #, c-format
 msgid "Failed to init c-ares channel\n"
 msgstr ""
 
-#: src/main.c:2045
+#: src/main.c:2052
 #, fuzzy, c-format
 msgid "Failed to parse IP address '%s'\n"
 msgstr "%s: nepavyko rasti adreso „%s“\n"
 
-#: src/main.c:2056
+#: src/main.c:2063
 #, c-format
 msgid "Failed to set DNS server(s) '%s' (%d)\n"
 msgstr ""
 
-#: src/main.c:2184
+#: src/main.c:2191
 #, c-format
 msgid "No URLs found in %s.\n"
 msgstr "%s nerasta URL adresų.\n"
 
-#: src/main.c:2200
+#: src/main.c:2207
 #, fuzzy, c-format
 msgid "Unable to parse metalink file %s.\n"
 msgstr "Nepavyko pašalinti „%s“: %s\n"
 
-#: src/main.c:2230 src/metalink.c:337
+#: src/main.c:2237 src/metalink.c:337
 #, c-format
 msgid "Could not download all resources from %s.\n"
 msgstr ""
 
-#: src/main.c:2257
+#: src/main.c:2264
 #, fuzzy, c-format
 msgid ""
 "FINISHED --%s--\n"
@@ -2978,7 +2990,7 @@ msgstr ""
 "BAIGTA --%s--\n"
 "Parsiųsta: %d failų, %s per %s (%s)\n"
 
-#: src/main.c:2271
+#: src/main.c:2278
 #, c-format
 msgid "Download quota of %s EXCEEDED!\n"
 msgstr "Parsiuntimo kvota (%s) VIRŠYTA!\n"
@@ -3144,7 +3156,7 @@ msgstr "Tęsiama fone.\n"
 msgid "Continuing in background, pid %lu.\n"
 msgstr "Tęsiama fone, proceso numeris %lu.\n"
 
-#: src/mswindows.c:291 src/utils.c:505
+#: src/mswindows.c:291 src/utils.c:508
 #, fuzzy, c-format
 msgid "Output will be written to %s.\n"
 msgstr "Išvestis bus įrašyta į „%s“.\n"
@@ -3189,76 +3201,76 @@ msgstr "Naudojimas: %s NETRC [HOSTNAME]\n"
 msgid "%s: cannot stat %s: %s\n"
 msgstr "%s: nepavyko patikrinti %s: %s\n"
 
-#: src/openssl.c:112
+#: src/openssl.c:114
 msgid "WARNING: using a weak random seed.\n"
 msgstr "DĖMESIO: naudojamas silpnas „random seed“.\n"
 
-#: src/openssl.c:190
+#: src/openssl.c:192
 msgid "Could not seed PRNG; consider using --random-file.\n"
 msgstr "Nepavyko inicializuoti PRNG; naudokite --random-file parametrą.\n"
 
-#: src/openssl.c:263
+#: src/openssl.c:267
 msgid "Your OpenSSL version is too old to support TLS 1.3\n"
 msgstr ""
 
-#: src/openssl.c:269
+#: src/openssl.c:273
 msgid "Your OpenSSL version is too old to support TLSv1.1\n"
 msgstr ""
 
-#: src/openssl.c:273
+#: src/openssl.c:277
 msgid "Your OpenSSL version is too old to support TLSv1.2\n"
 msgstr ""
 
-#: src/openssl.c:279
+#: src/openssl.c:283
 #, c-format
 msgid "OpenSSL: unimplemented 'secure-protocol' option value %d\n"
 msgstr ""
 
-#: src/openssl.c:319
+#: src/openssl.c:323
 #, fuzzy, c-format
 msgid "OpenSSL: Invalid cipher list: %s\n"
 msgstr "%s: Nekorektiškas URL adresas %s: %s\n"
 
-#: src/openssl.c:636
+#: src/openssl.c:640
 #, fuzzy
 msgid "WARNING: Could not seed PRNG. Consider using --random-file.\n"
 msgstr "Nepavyko inicializuoti PRNG; naudokite --random-file parametrą.\n"
 
-#: src/openssl.c:856
+#: src/openssl.c:860
 #, fuzzy, c-format
 msgid "%s: cannot verify %s's certificate, issued by %s:\n"
 msgstr "%s: nepavyko verifikuoti %s sertifikato, išduoto „%s“:\n"
 
-#: src/openssl.c:867
+#: src/openssl.c:871
 msgid "  Unable to locally verify the issuer's authority.\n"
 msgstr "  Nepavyko lokaliai verifikuoti išdavėjo autoriteto.\n"
 
-#: src/openssl.c:872
+#: src/openssl.c:876
 msgid "  Self-signed certificate encountered.\n"
 msgstr "  Rastas savo-pasirašytas sertifikatas.\n"
 
-#: src/openssl.c:875
+#: src/openssl.c:879
 msgid "  Issued certificate not yet valid.\n"
 msgstr "  Išduotas sertifikatas dar nevalidus.\n"
 
-#: src/openssl.c:878
+#: src/openssl.c:882
 msgid "  Issued certificate has expired.\n"
 msgstr "  Išduoto sertifikato galiojimo laikas baigėsi.\n"
 
-#: src/openssl.c:966
+#: src/openssl.c:970
 #, fuzzy, c-format
 msgid ""
 "%s: no certificate subject alternative name matches\n"
 "\trequested host name %s.\n"
 msgstr "%s: sertifikato vardas „%s“ neatitinka kompiuterio vardo „%s“.\n"
 
-#: src/openssl.c:985
+#: src/openssl.c:989
 #, fuzzy, c-format
 msgid ""
 "    %s: certificate common name %s doesn't match requested host name %s.\n"
 msgstr "%s: sertifikato vardas „%s“ neatitinka kompiuterio vardo „%s“.\n"
 
-#: src/openssl.c:1017
+#: src/openssl.c:1021
 #, c-format
 msgid ""
 "    %s: certificate common name is invalid (contains a NUL character).\n"
@@ -3266,7 +3278,7 @@ msgid ""
 "    (that is, it is not the real %s).\n"
 msgstr ""
 
-#: src/openssl.c:1042
+#: src/openssl.c:1046
 #, c-format
 msgid "To connect to %s insecurely, use `--no-check-certificate'.\n"
 msgstr ""
@@ -3317,22 +3329,22 @@ msgstr "Nepavyko atverti %s: %s"
 msgid "Loading robots.txt; please ignore errors.\n"
 msgstr "Įkeliamas robots.txt; nekreipkite dėmesio į klaidas.\n"
 
-#: src/retr.c:912
+#: src/retr.c:928
 #, c-format
 msgid "Error parsing proxy URL %s: %s.\n"
 msgstr "Klaida apdorojant tarpinės stoties URL %s: %s.\n"
 
-#: src/retr.c:924
+#: src/retr.c:940
 #, c-format
 msgid "Error in proxy URL %s: Must be HTTP.\n"
 msgstr "Klaida tarpinės stoties URL %s: Turi būti HTTP.\n"
 
-#: src/retr.c:1053
+#: src/retr.c:1069
 #, c-format
 msgid "%d redirections exceeded.\n"
 msgstr "viršyta %d peradresavimų.\n"
 
-#: src/retr.c:1317
+#: src/retr.c:1333
 msgid ""
 "Giving up.\n"
 "\n"
@@ -3340,7 +3352,7 @@ msgstr ""
 "Pasiduodama.\n"
 "\n"
 
-#: src/retr.c:1317
+#: src/retr.c:1333
 msgid ""
 "Retrying.\n"
 "\n"
@@ -3415,120 +3427,129 @@ msgstr "Netaisyklingas IPv6 skaitinis adresas"
 msgid "HTTPS support not compiled in"
 msgstr ""
 
-#: src/url.c:1604
+#: src/url.c:1603
 msgid "Unconvertable multibyte sequence encountered\n"
 msgstr ""
 
-#: src/utils.c:125
+#: src/utils.c:128
 #, fuzzy, c-format
 msgid "%s: %s: Failed to allocate enough memory; memory exhausted.\n"
 msgstr "%s: %s: Nepavyko išskirti %ld baitų; baigėsi atmintis.\n"
 
-#: src/utils.c:131
+#: src/utils.c:134
 #, c-format
 msgid "%s: %s: Failed to allocate %ld bytes; memory exhausted.\n"
 msgstr "%s: %s: Nepavyko išskirti %ld baitų; baigėsi atmintis.\n"
 
-#: src/utils.c:351
+#: src/utils.c:354
 #, c-format
 msgid "%s: aprintf: text buffer is too big (%d bytes), aborting.\n"
 msgstr ""
 
-#: src/utils.c:503
+#: src/utils.c:506
 #, c-format
 msgid "Continuing in background, pid %d.\n"
 msgstr "Tęsiama fone, pid %d.\n"
 
-#: src/utils.c:554
+#: src/utils.c:557
 #, fuzzy, c-format
 msgid "Failed to unlink symlink %s: %s\n"
 msgstr "Nepavyko ištrinti simbolinės nuorodos „%s“: %s\n"
 
-#: src/utils.c:859
-#, fuzzy, c-format
-msgid "Failed to Fopen file %s\n"
-msgstr "Nepavyko pašalinti „%s“: %s\n"
-
 #: src/utils.c:865
-#, fuzzy, c-format
-msgid "Failed to get FD for file %s\n"
-msgstr "Nepavyko pašalinti „%s“: %s\n"
+#, c-format
+msgid "Failed to Fopen file %s\n"
+msgstr ""
 
-#: src/utils.c:872
+#: src/utils.c:871
+#, c-format
+msgid "Failed to get FD for file %s\n"
+msgstr ""
+
+#: src/utils.c:878
 #, c-format
 msgid "Failed to stat file %s, (check permissions)\n"
 msgstr ""
 
-#: src/utils.c:882
+#: src/utils.c:888
 #, c-format
 msgid "File %s changed since the last check. Security check failed."
 msgstr ""
 
-#: src/utils.c:917
-#, fuzzy, c-format
-msgid "Failed to open file %s, reason :%s\n"
-msgstr "%s: nepavyko rasti adreso „%s“\n"
-
 #: src/utils.c:923
-#, fuzzy, c-format
-msgid "Failed to stat file %s, error: %s\n"
-msgstr "nepavyko prisijungti prie %s prievado %d: %s\n"
+#, c-format
+msgid "Failed to open file %s, reason :%s\n"
+msgstr ""
 
-#: src/utils.c:932
+#: src/utils.c:929
+#, c-format
+msgid "Failed to stat file %s, error: %s\n"
+msgstr ""
+
+#: src/utils.c:939
 #, c-format
 msgid ""
 "Trying to open file %s but it changed since last check. Security check "
 "failed."
 msgstr ""
 
-#: src/utils.c:2438 src/utils.c:2462
+#: src/utils.c:2445
+#, c-format
+msgid "Invalid regular expression %s, PCRE2 error %d\n"
+msgstr ""
+
+#: src/utils.c:2462 src/utils.c:2485
 #, c-format
 msgid "Invalid regular expression %s, %s\n"
 msgstr ""
 
-#: src/utils.c:2486 src/utils.c:2510
+#: src/utils.c:2515 src/utils.c:2537 src/utils.c:2561
 #, fuzzy, c-format
 msgid "Error while matching %s: %d\n"
 msgstr "Klaida rašant į „%s“: %s\n"
 
-#: src/utils.c:2803
+#: src/utils.c:2854
 #, c-format
 msgid "Skipping key with wrong size (%d/%d): %s\n"
 msgstr ""
 
-#: src/warc.c:223
+#: src/warc.c:222
+msgid "Error duplicating WARC file file descriptor.\n"
+msgstr ""
+
+#: src/warc.c:233
 msgid "Error opening GZIP stream to WARC file.\n"
 msgstr ""
 
-#: src/warc.c:798
+#: src/warc.c:809
 msgid "Error writing warcinfo record to WARC file.\n"
 msgstr ""
 
-#: src/warc.c:861
+#: src/warc.c:872
 #, c-format
 msgid ""
 "Opening WARC file %s.\n"
 "\n"
 msgstr ""
 
-#: src/warc.c:867
+#: src/warc.c:878
 #, fuzzy, c-format
 msgid "Error opening WARC file %s.\n"
 msgstr "Klaida apdorojant tarpinės stoties URL %s: %s.\n"
 
-#: src/warc.c:1064
+#: src/warc.c:1075
 msgid "CDX file does not list original urls. (Missing column 'a'.)\n"
 msgstr ""
 
-#: src/warc.c:1067
+#: src/warc.c:1078
 msgid "CDX file does not list checksums. (Missing column 'k'.)\n"
 msgstr ""
 
-#: src/warc.c:1070
+#: src/warc.c:1081
 msgid "CDX file does not list record ids. (Missing column 'u'.)\n"
 msgstr ""
 
-#: src/warc.c:1094
+#: src/warc.c:1105
 #, c-format
 msgid ""
 "Loaded %d record from CDX.\n"
@@ -3540,60 +3561,49 @@ msgstr[0] ""
 msgstr[1] ""
 msgstr[2] ""
 
-#: src/warc.c:1140
+#: src/warc.c:1151
 #, c-format
 msgid "Could not read CDX file %s for deduplication.\n"
 msgstr ""
 
-#: src/warc.c:1150
+#: src/warc.c:1161
 msgid "Could not open temporary WARC manifest file.\n"
 msgstr ""
 
-#: src/warc.c:1160
+#: src/warc.c:1171
 msgid "Could not open temporary WARC log file.\n"
 msgstr ""
 
-#: src/warc.c:1169
+#: src/warc.c:1180
 msgid "Could not open WARC file.\n"
 msgstr ""
 
-#: src/warc.c:1178
+#: src/warc.c:1189
 msgid "Could not open CDX file for output.\n"
 msgstr ""
 
-#: src/warc.c:1208
+#: src/warc.c:1219
 msgid "Could not open temporary WARC file.\n"
 msgstr ""
 
-#: src/warc.c:1482
+#: src/warc.c:1495
 msgid "Found exact match in CDX file. Saving revisit record to WARC.\n"
 msgstr ""
 
-#, fuzzy
-#~ msgid "%s: option '--%s' doesn't allow an argument\n"
+#~ msgid "%s: option `--%s' doesn't allow an argument\n"
 #~ msgstr "%s: parametras „--%s“ neleidžia argumento\n"
 
-#, fuzzy
-#~ msgid "%s: unrecognized option '--%s'\n"
+#~ msgid "%s: unrecognized option `--%s'\n"
 #~ msgstr "%s: neatpažintas parametras „--%s“\n"
-
-#, fuzzy
-#~ msgid "%s: option '-W %s' is ambiguous\n"
-#~ msgstr "%s: parametras „-W %s“ dviprasmis\n"
-
-#, fuzzy
-#~ msgid "%s: option '-W %s' doesn't allow an argument\n"
-#~ msgstr "%s: parametras „-W %s“ neleidžia argumento\n"
-
-#, fuzzy
-#~ msgid "%s: option '-W %s' requires an argument\n"
-#~ msgstr "%s: parametrui „%s“ reikia argumento\n"
-
-#~ msgid "File `%s' already there; not retrieving.\n"
-#~ msgstr "Failas „%s“ jau egzistuoja; nesiunčiama.\n"
 
 #~ msgid "%s: illegal option -- %c\n"
 #~ msgstr "%s: neleistinas pasirinkimas – %c\n"
+
+#~ msgid "%s: option `-W %s' is ambiguous\n"
+#~ msgstr "%s: parametras „-W %s“ dviprasmis\n"
+
+#~ msgid "%s: option `-W %s' doesn't allow an argument\n"
+#~ msgstr "%s: parametras „-W %s“ neleidžia argumento\n"
 
 #~ msgid "Authorization failed.\n"
 #~ msgstr "Autorizavimas nepavyko.\n"

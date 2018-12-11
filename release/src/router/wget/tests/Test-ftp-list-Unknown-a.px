@@ -1,4 +1,4 @@
-#!/usr/bin/env perl
+#!/usr/bin/env -S perl -I .
 
 # 2013-10-17 Andrea Urbani (matfanjol)
 # In this ftp test:

@@ -49,7 +49,6 @@ class HTTPSServer(StoppableHTTPServer):
                                                'server-key.pem'))
         self.socket = ssl.wrap_socket(
             sock=socket.socket(self.address_family, self.socket_type),
-            ssl_version=ssl.PROTOCOL_TLSv1,
             certfile=CERTFILE,
             keyfile=KEYFILE,
             server_side=True

@@ -1,7 +1,6 @@
 /* Definitions for data structures and routines for the regular
    expression library.
-   Copyright (C) 1985, 1989-1993, 1995-1998, 2000-2003, 2005-2018 Free Software
-   Foundation, Inc.
+   Copyright (C) 1985, 1989-2018 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
 
    The GNU C Library is free software; you can redistribute it and/or
@@ -608,28 +607,28 @@ extern int re_exec (const char *);
 # endif
 #endif
 
-/* GCC 2.95 and later have "__restrict"; C99 compilers have
+/* For plain 'restrict', use glibc's __restrict if defined.
+   Otherwise, GCC 2.95 and later have "__restrict"; C99 compilers have
    "restrict", and "configure" may have defined "restrict".
    Other compilers use __restrict, __restrict__, and _Restrict, and
    'configure' might #define 'restrict' to those words, so pick a
    different name.  */
 #ifndef _Restrict_
-# if 199901L <= __STDC_VERSION__
-#  define _Restrict_ restrict
-# elif 2 < __GNUC__ || (2 == __GNUC__ && 95 <= __GNUC_MINOR__)
+# if defined __restrict || 2 < __GNUC__ + (95 <= __GNUC_MINOR__)
 #  define _Restrict_ __restrict
+# elif 199901L <= __STDC_VERSION__ || defined restrict
+#  define _Restrict_ restrict
 # else
 #  define _Restrict_
 # endif
 #endif
-/* gcc 3.1 and up support the [restrict] syntax.  Don't trust
-   sys/cdefs.h's definition of __restrict_arr, though, as it
-   mishandles gcc -ansi -pedantic.  */
+/* For [restrict], use glibc's __restrict_arr if available.
+   Otherwise, GCC 3.1 (not in C++ mode) and C99 support [restrict].  */
 #ifndef _Restrict_arr_
-# if ((199901L <= __STDC_VERSION__					\
-       || ((3 < __GNUC__ || (3 == __GNUC__ && 1 <= __GNUC_MINOR__))	\
-	   && !defined __STRICT_ANSI__))					\
-      && !defined __GNUG__)
+# ifdef __restrict_arr
+#  define _Restrict_arr_ __restrict_arr
+# elif ((199901L <= __STDC_VERSION__ || 3 < __GNUC__ + (1 <= __GNUC_MINOR__)) \
+        && !defined __GNUG__)
 #  define _Restrict_arr_ _Restrict_
 # else
 #  define _Restrict_arr_

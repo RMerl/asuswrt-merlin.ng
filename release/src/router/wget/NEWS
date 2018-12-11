@@ -5,6 +5,27 @@ See the end for copying conditions.
 
 Please send GNU Wget bug reports to <bug-wget@gnu.org>.
 
+* Changes in Wget 1.20
+
+** Add new option `--retry-on-host-error` to treat local errors as transient
+and hence Wget will retry to download the file after a brief waiting period.
+
+** Fixed multiple potential resource leaks as found by static analysis
+
+** Wget will now not create an empty wget-log file when running with -q and -b
+switches together
+
+** When compiled using the GnuTLS >= 3.6.3, Wget now has support for TLSv1.3
+
+** Now there is support for using libpcre2 for regex pattern matching
+
+** When downloading over FTP recursively, one can now use the
+--{accept,reject}-regex switches to fine-tune the downloaded files
+
+** Building Wget from the git sources now requires autoconf 2.63 or above.
+Building from the Tarballs works as it used to.
+
+
 * Changes in Wget 1.19.5
 
 * Fix cookie injection (CVE-2018-0494)

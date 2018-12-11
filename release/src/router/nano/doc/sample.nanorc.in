@@ -136,8 +136,9 @@
 ## Do extended regular expression searches by default.
 # set regexp
 
-## Put the cursor on the highlighted item in the file browser;
-## useful for people who use a braille display.
+## Put the cursor on the highlighted item in the file browser, and show
+## the cursor in the help viewer; useful for people who use a braille
+## display and people with poor vision.
 # set showcursor
 
 ## Make the Home key smarter.  When Home is pressed anywhere but at the
@@ -193,6 +194,9 @@
 ## set, it overrides option 'set wordbounds'.
 # set wordchars "<_>."
 
+## Let an unmodified Backspace or Delete erase the marked region (instead
+## of a single character, and without affecting the cutbuffer).
+# set zap
 
 ## Paint the interface elements of nano.  These are examples;
 ## by default there are no colors, except for errorcolor.
@@ -261,10 +265,6 @@
 ## Key bindings.
 ## See nanorc(5) (section REBINDING KEYS) for more details on this.
 
-## If your Backspace key behaves as Delete (when ssh'ing in from another
-## machine, for example), set this to make it behave as Backspace again:
-# bind Del backspace all
-
 ## The <Ctrl+Delete> keystroke deletes the word to the right of the cursor.
 ## On some terminals the <Ctrl+Backspace> keystroke produces ^H, which is
 ## the ASCII character for backspace, so it is bound by default to the
@@ -273,3 +273,35 @@
 ## normally use <Backspace> for backspacing and not ^H, you can make
 ## <Ctrl+Backspace> delete the word to the left of the cursor with:
 # bind ^H cutwordleft main
+
+## If you would like nano to have keybindings that are more "usual",
+## such as ^O for Open, ^F for Find, ^H for Help, and ^Q for Quit,
+## then uncomment these:
+#bind ^Q exit all
+#bind ^H help all
+#bind ^H exit help
+#bind ^F whereis all
+#bind ^G findnext all
+#bind ^B wherewas all
+#bind ^D findprevious all
+#bind ^R replace main
+#bind ^W writeout main
+#bind ^O insert main
+#unbind ^V all
+#unbind ^Y all
+#bind M-X flipnewbuffer all
+#bind ^X cut all
+#bind ^C copy all
+#bind ^V paste all
+#bind ^P curpos main
+#bind ^T gotoline main
+#bind ^T gotodir browser
+#bind ^Y speller main
+#unbind ^K all
+#unbind ^U all
+#bind M-R redo main
+#bind ^U undo main
+#bind ^E redo main
+#unbind M-J main
+#unbind M-T main
+#set multibuffer

@@ -1248,9 +1248,8 @@ mkalldirs (const char *path)
   struct stat st;
   int res;
 
-  p = path + strlen (path);
-  for (; *p != '/' && p != path; p--)
-    ;
+  p = strrchr(path, '/');
+  p = p == NULL ? path : p;
 
   /* Don't create if it's just a file.  */
   if ((p == path) && (*p != '/'))

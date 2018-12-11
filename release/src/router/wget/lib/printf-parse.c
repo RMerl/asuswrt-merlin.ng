@@ -419,7 +419,7 @@ PRINTF_PARSE (const CHAR_T *format, DIRECTIVES *d, arguments *a)
                       cp++;
                     }
 #endif
-#if (defined _WIN32 || defined __WIN32__) && ! defined __CYGWIN__
+#if defined _WIN32 && ! defined __CYGWIN__
                   /* On native Windows, PRIdMAX is defined as "I64d".
                      We cannot change it to "lld" because PRIdMAX must also
                      be understood by the system's printf routines.  */

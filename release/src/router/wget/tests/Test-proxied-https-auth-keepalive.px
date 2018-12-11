@@ -1,4 +1,4 @@
-#!/usr/bin/env perl
+#!/usr/bin/env -S perl -I .
 # Simulate a tunneling proxy to a HTTPS URL that needs authentication.
 # Use a persistent connection (Connection: keep-alive)
 

@@ -5,7 +5,7 @@ syntax nanohelp
 
 # Key combos:
 color cyan "\^[]4-8A-Z^\_◀▶▲▼]"  "[◀▶▲▼]"  "\<M-."  "\<F1?[0-9]"
-color cyan "\<(Tab|Sh-Tab|Enter|Ins|Del|Space|Bsp|Up|Down|Left|Right|Home|End|PgUp|PgDn)\>"
+color cyan "\<((Sh-)?Tab|Enter|Ins|(Sh-\^?)?Del|Space|Bsp|Up|Down|Left|Right|Home|End|PgUp|PgDn)\>"
 
 # Quoted indicators:
 color brightred "'(\^|M-)'"

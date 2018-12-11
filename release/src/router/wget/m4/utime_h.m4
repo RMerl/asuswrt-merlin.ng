@@ -1,4 +1,4 @@
-# utime_h.m4 serial 1
+# utime_h.m4 serial 3
 dnl Copyright (C) 2017-2018 Free Software Foundation, Inc.
 dnl This file is free software; the Free Software Foundation
 dnl gives unlimited permission to copy and/or distribute it,
@@ -10,6 +10,7 @@ AC_DEFUN([gl_UTIME_H],
 [
   AC_REQUIRE([AC_CANONICAL_HOST])
   AC_REQUIRE([gl_UTIME_H_DEFAULTS])
+  m4_ifdef([gl_ANSI_CXX], [AC_REQUIRE([gl_ANSI_CXX])])
   AC_CHECK_HEADERS_ONCE([utime.h])
   gl_CHECK_NEXT_HEADERS([utime.h])
 
@@ -20,17 +21,25 @@ AC_DEFUN([gl_UTIME_H],
   fi
   AC_SUBST([HAVE_UTIME_H])
 
-  UTIME_H=''
-  if test $ac_cv_header_utime_h != yes; then
-    dnl Provide a substitute <utime.h> file.
-    UTIME_H=utime.h
-  else
-    case "$host_os" in
-      mingw*) dnl Need special handling of 'struct utimbuf'.
-        UTIME_H=utime.h
-        ;;
-    esac
-  fi
+  m4_ifdef([gl_POSIXCHECK],
+    [UTIME_H=utime.h],
+    [UTIME_H=''
+     if m4_ifdef([gl_ANSI_CXX], [test "$CXX" != no], [false]); then
+       dnl Override <utime.h> always, to support the C++ GNULIB_NAMESPACE.
+       UTIME_H=utime.h
+     else
+       if test $ac_cv_header_utime_h != yes; then
+         dnl Provide a substitute <utime.h> file.
+         UTIME_H=utime.h
+       else
+         case "$host_os" in
+           mingw*) dnl Need special handling of 'struct utimbuf'.
+             UTIME_H=utime.h
+             ;;
+         esac
+       fi
+     fi
+    ])
   AC_SUBST([UTIME_H])
   AM_CONDITIONAL([GL_GENERATE_UTIME_H], [test -n "$UTIME_H"])
 

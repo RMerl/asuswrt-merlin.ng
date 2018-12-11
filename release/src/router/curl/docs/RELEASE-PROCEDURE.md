@@ -84,13 +84,9 @@ Coming dates
 Based on the description above, here are some planned release dates (at the
 time of this writing):
 
-- July 11, 2018
-- September 5, 2018
 - October 31, 2018
-- December 26, 2018
-- February 20, 2019
-- April 17, 2019
-- June 12, 2019
-- August 7, 2019
-- October 2, 2019
-- December 27, 2019
+- December 12, 2018
+- February 6, 2019
+- April 3, 2019
+- May 29, 2019
+- July 24, 2019

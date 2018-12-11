@@ -1,4 +1,4 @@
-# asm-underscore.m4 serial 3
+# asm-underscore.m4 serial 4
 dnl Copyright (C) 2010-2018 Free Software Foundation, Inc.
 dnl This file is free software; the Free Software Foundation
 dnl gives unlimited permission to copy and/or distribute it,
@@ -14,6 +14,7 @@ dnl From Bruno Haible. Based on as-underscore.m4 in GNU clisp.
 
 AC_DEFUN([gl_ASM_SYMBOL_PREFIX],
 [
+  AC_REQUIRE([AC_PROG_EGREP])
   dnl We don't use GCC's __USER_LABEL_PREFIX__ here, because
   dnl 1. It works only for GCC.
   dnl 2. It is incorrectly defined on some platforms, in some GCC versions.
@@ -29,7 +30,7 @@ int foo(void) { return 0; }
 EOF
      # Look for the assembly language name in the .s file.
      AC_TRY_COMMAND(${CC-cc} $CFLAGS $CPPFLAGS $gl_c_asm_opt conftest.c) >/dev/null 2>&1
-     if LC_ALL=C grep -E '(^|[[^a-zA-Z0-9_]])_foo([[^a-zA-Z0-9_]]|$)' conftest.$gl_asmext >/dev/null; then
+     if LC_ALL=C $EGREP '(^|[[^a-zA-Z0-9_]])_foo([[^a-zA-Z0-9_]]|$)' conftest.$gl_asmext >/dev/null; then
        gl_cv_prog_as_underscore=yes
      else
        gl_cv_prog_as_underscore=no

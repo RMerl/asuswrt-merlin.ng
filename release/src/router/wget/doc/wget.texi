@@ -1750,6 +1750,10 @@ some few obscure servers, which never send HTTP authentication
 challenges, but accept unsolicited auth info, say, in addition to
 form-based authentication.
 
+@item --retry-on-host-error
+Consider host errors, such as ``Temporary failure in name resolution'',
+as non-fatal, transient errors.
+
 @item --retry-on-http-error=@var{code[,code,...]}
 Consider given HTTP response codes as non-fatal, transient errors.
 Supply a comma-separated list of 3-digit HTTP response codes as
@@ -1780,9 +1784,9 @@ If Wget is compiled without SSL support, none of these options are available.
 @cindex SSL protocol, choose
 @item --secure-protocol=@var{protocol}
 Choose the secure protocol to be used.  Legal values are @samp{auto},
-@samp{SSLv2}, @samp{SSLv3}, @samp{TLSv1}, @samp{TLSv1_1}, @samp{TLSv1_2}
-and @samp{PFS}.  If @samp{auto} is used, the SSL library is given the
-liberty of choosing the appropriate protocol automatically, which is
+@samp{SSLv2}, @samp{SSLv3}, @samp{TLSv1}, @samp{TLSv1_1}, @samp{TLSv1_2},
+@samp{TLSv1_3} and @samp{PFS}.  If @samp{auto} is used, the SSL library is
+given the liberty of choosing the appropriate protocol automatically, which is
 achieved by sending a TLSv1 greeting. This is the default.
 
 Specifying @samp{SSLv2}, @samp{SSLv3}, @samp{TLSv1}, @samp{TLSv1_1},

@@ -91,11 +91,11 @@ validate_timespec (struct timespec timespec[2])
   if ((timespec[0].tv_nsec != UTIME_NOW
        && timespec[0].tv_nsec != UTIME_OMIT
        && ! (0 <= timespec[0].tv_nsec
-             && timespec[0].tv_nsec < TIMESPEC_RESOLUTION))
+             && timespec[0].tv_nsec < TIMESPEC_HZ))
       || (timespec[1].tv_nsec != UTIME_NOW
           && timespec[1].tv_nsec != UTIME_OMIT
           && ! (0 <= timespec[1].tv_nsec
-                && timespec[1].tv_nsec < TIMESPEC_RESOLUTION)))
+                && timespec[1].tv_nsec < TIMESPEC_HZ)))
     {
       errno = EINVAL;
       return -1;

@@ -7,16 +7,16 @@
 .\"   Foundation, version 3 or (at your option) any later version.  You
 .\"   should have received a copy of the GNU General Public License
 .\"   along with this program.  If not, see
-.\"   <http://www.gnu.org/licenses/>.
+.\"   <https://www.gnu.org/licenses/>.
 .\"
 .\" * The GNU Free Documentation License, as published by the Free
 .\"   Software Foundation, version 1.2 or (at your option) any later
 .\"   version, with no Invariant Sections, no Front-Cover Texts, and no
 .\"   Back-Cover Texts.  You should have received a copy of the GNU Free
 .\"   Documentation License along with this program.  If not, see
-.\"   <http://www.gnu.org/licenses/>.
+.\"   <https://www.gnu.org/licenses/>.
 .\"
-.TH NANO 1 "version 3.1" "September 2018"
+.TH NANO 1 "version 3.2" "November 2018"
 
 .SH NAME
 nano \- Nano's ANOther editor, an enhanced free Pico clone
@@ -131,11 +131,11 @@ Note that \fB\\t\fP stands for an actual Tab.
 .TP
 .BR \-R ", " \-\-restricted
 Restricted mode: don't read or write to any file not specified on the
-command line; don't read any \fInanorc\fP files nor history files;
-don't allow suspending nor spell checking;
+command line.  This means: don't read or write history files;
+don't allow suspending; don't allow spell checking;
 don't allow a file to be appended to, prepended to, or saved under a
-different name if it already has one; and don't use backup files.
-This restricted mode is also accessible by invoking \fBnano\fP
+different name if it already has one; and don't make backup files.
+Restricted mode can also be activated by invoking \fBnano\fP
 with any name beginning with 'r' (e.g. "rnano").
 .TP
 .BR \-S ", " \-\-smooth
@@ -167,6 +167,10 @@ should be considered as part of a word.  This overrides option
 Specify the name of the syntax highlighting to use from among the ones
 defined in the \fInanorc\fP files.
 .TP
+.BR \-Z ", " \-\-zap
+Let an unmodified Backspace or Delete erase the marked region
+(instead of a single character, and without affecting the cutbuffer).
+.TP
 .BR \-a ", " \-\-atblanks
 When doing soft line wrapping, wrap lines at whitespace
 instead of always at the edge of the screen.
@@ -181,8 +185,9 @@ work properly.  You should only need to use this option if Backspace
 acts like Delete on your system.
 .TP
 .BR \-g ", " \-\-showcursor
-Make the cursor visible in the file browser, putting it on the
-highlighted item.  Useful for braille users.
+Make the cursor visible in the file browser (putting it on the
+highlighted item) and in the help viewer.  Useful for braille users
+and people with poor vision.
 .TP
 .BR \-h ", " \-\-help
 Show a summary of the available command-line options and exit.
@@ -244,6 +249,8 @@ default behavior of saving a file in the format that it had.
 .TP
 .BR \-v ", " \-\-view
 Just view the file and disallow editing: read-only mode.
+This mode allows the user to open also other files for viewing,
+unless \fB--restricted\fR is given too.
 .TP
 .BR \-w ", " \-\-nowrap
 Disable the hard-wrapping of long lines.  This option conflicts with

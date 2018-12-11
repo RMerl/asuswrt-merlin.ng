@@ -1,5 +1,5 @@
 <!-- Creator     : groff version 1.22.3 -->
-<!-- CreationDate: Tue Sep 18 19:32:51 2018 -->
+<!-- CreationDate: Sun Nov 11 16:47:24 2018 -->
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
 "http://www.w3.org/TR/html4/loose.dtd">
 <html>
@@ -237,14 +237,14 @@ justifying. The default value is
 <b>&minus;&minus;restricted</b></p>
 
 <p style="margin-left:22%;">Restricted mode: don&rsquo;t
-read or write to any file not specified on the command line;
-don&rsquo;t read any <i>nanorc</i> files nor history files;
-don&rsquo;t allow suspending nor spell checking; don&rsquo;t
-allow a file to be appended to, prepended to, or saved under
-a different name if it already has one; and don&rsquo;t use
-backup files. This restricted mode is also accessible by
-invoking <b>nano</b> with any name beginning with
-&rsquo;r&rsquo; (e.g. &quot;rnano&quot;).</p>
+read or write to any file not specified on the command line.
+This means: don&rsquo;t read or write history files;
+don&rsquo;t allow suspending; don&rsquo;t allow spell
+checking; don&rsquo;t allow a file to be appended to,
+prepended to, or saved under a different name if it already
+has one; and don&rsquo;t make backup files. Restricted mode
+can also be activated by invoking <b>nano</b> with any name
+beginning with &rsquo;r&rsquo; (e.g. &quot;rnano&quot;).</p>
 
 <p style="margin-left:11%;"><b>&minus;S</b>,
 <b>&minus;&minus;smooth</b></p>
@@ -299,6 +299,13 @@ as part of a word. This overrides option <b>&minus;W</b>
 highlighting to use from among the ones defined in the
 <i>nanorc</i> files.</p>
 
+<p style="margin-left:11%;"><b>&minus;Z</b>,
+<b>&minus;&minus;zap</b></p>
+
+<p style="margin-left:22%;">Let an unmodified Backspace or
+Delete erase the marked region (instead of a single
+character, and without affecting the cutbuffer).</p>
+
 <p style="margin-left:11%;"><b>&minus;a</b>,
 <b>&minus;&minus;atblanks</b></p>
 
@@ -325,8 +332,9 @@ like Delete on your system.</p>
 <b>&minus;&minus;showcursor</b></p>
 
 <p style="margin-left:22%;">Make the cursor visible in the
-file browser, putting it on the highlighted item. Useful for
-braille users.</p>
+file browser (putting it on the highlighted item) and in the
+help viewer. Useful for braille users and people with poor
+vision.</p>
 
 <p style="margin-left:11%;"><b>&minus;h</b>,
 <b>&minus;&minus;help</b></p>
@@ -438,7 +446,9 @@ effect when you also use
 <b>&minus;&minus;view</b></p>
 
 <p style="margin-left:22%;">Just view the file and disallow
-editing: read-only mode.</p>
+editing: read-only mode. This mode allows the user to open
+also other files for viewing, unless <b>--restricted</b> is
+given too.</p>
 
 <p style="margin-left:11%;"><b>&minus;w</b>,
 <b>&minus;&minus;nowrap</b></p>

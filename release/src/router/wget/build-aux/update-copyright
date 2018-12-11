@@ -3,7 +3,7 @@ eval '(exit $?0)' && eval 'exec perl -wS -0777 -pi "$0" "$@"'
     if 0;
 # Update an FSF copyright year list to include the current year.
 
-my $VERSION = '2018-01-04.14:48'; # UTC
+my $VERSION = '2018-03-07.03:47'; # UTC
 
 # Copyright (C) 2009-2018 Free Software Foundation, Inc.
 #
@@ -269,7 +269,7 @@ else
 # coding: utf-8
 # mode: perl
 # indent-tabs-mode: nil
-# eval: (add-hook 'write-file-hooks 'time-stamp)
+# eval: (add-hook 'before-save-hook 'time-stamp)
 # time-stamp-start: "my $VERSION = '"
 # time-stamp-format: "%:y-%02m-%02d.%02H:%02M"
 # time-stamp-time-zone: "UTC0"

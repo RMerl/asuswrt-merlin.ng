@@ -21,7 +21,7 @@
 #                            | (__| |_| |  _ <| |___
 #                             \___|\___/|_| \_\_____|
 #
-# Copyright (C) 1998 - 2017, Daniel Stenberg, <daniel@haxx.se>, et al.
+# Copyright (C) 1998 - 2018, Daniel Stenberg, <daniel@haxx.se>, et al.
 #
 # This software is licensed as described in the file COPYING, which
 # you should have received as part of this distribution. The terms
@@ -443,6 +443,7 @@ USE_LIBRTMP = @USE_LIBRTMP@
 USE_LIBSSH = @USE_LIBSSH@
 USE_LIBSSH2 = @USE_LIBSSH2@
 USE_MBEDTLS = @USE_MBEDTLS@
+USE_MESALINK = @USE_MESALINK@
 USE_NGHTTP2 = @USE_NGHTTP2@
 USE_NSS = @USE_NSS@
 USE_OPENLDAP = @USE_OPENLDAP@
@@ -628,18 +629,18 @@ VC_DIST = projects/README                           \
  projects/wolfssl_options.h                         \
  projects/wolfssl_override.props
 
-WINBUILD_DIST = winbuild/BUILD.WINDOWS.txt winbuild/gen_resp_file.bat	\
+WINBUILD_DIST = winbuild/BUILD.WINDOWS.txt winbuild/gen_resp_file.bat \
  winbuild/MakefileBuild.vc winbuild/Makefile.vc
 
-EXTRA_DIST = CHANGES COPYING maketgz Makefile.dist curl-config.in	\
- RELEASE-NOTES buildconf libcurl.pc.in MacOSX-Framework scripts/zsh.pl	\
- scripts/updatemanpages.pl $(CMAKE_DIST) $(VC_DIST) $(WINBUILD_DIST)	\
+EXTRA_DIST = CHANGES COPYING maketgz Makefile.dist curl-config.in \
+ RELEASE-NOTES buildconf libcurl.pc.in MacOSX-Framework scripts/zsh.pl \
+ scripts/updatemanpages.pl $(CMAKE_DIST) $(VC_DIST) $(WINBUILD_DIST) \
  lib/libcurl.vers.in buildconf.bat scripts/coverage.sh
 
-CLEANFILES = $(VC6_LIBDSP) $(VC6_SRCDSP) $(VC7_LIBVCPROJ) $(VC7_SRCVCPROJ)	\
- $(VC71_LIBVCPROJ) $(VC71_SRCVCPROJ) $(VC8_LIBVCPROJ) $(VC8_SRCVCPROJ)	\
- $(VC9_LIBVCPROJ) $(VC9_SRCVCPROJ) $(VC10_LIBVCXPROJ) $(VC10_SRCVCXPROJ)	\
- $(VC11_LIBVCXPROJ) $(VC11_SRCVCXPROJ) $(VC12_LIBVCXPROJ) $(VC12_SRCVCXPROJ)	\
+CLEANFILES = $(VC6_LIBDSP) $(VC6_SRCDSP) $(VC7_LIBVCPROJ) $(VC7_SRCVCPROJ) \
+ $(VC71_LIBVCPROJ) $(VC71_SRCVCPROJ) $(VC8_LIBVCPROJ) $(VC8_SRCVCPROJ) \
+ $(VC9_LIBVCPROJ) $(VC9_SRCVCPROJ) $(VC10_LIBVCXPROJ) $(VC10_SRCVCXPROJ) \
+ $(VC11_LIBVCXPROJ) $(VC11_SRCVCXPROJ) $(VC12_LIBVCXPROJ) $(VC12_SRCVCXPROJ) \
  $(VC14_LIBVCXPROJ) $(VC14_SRCVCXPROJ) $(VC15_LIBVCXPROJ) $(VC15_SRCVCXPROJ)
 
 bin_SCRIPTS = curl-config
@@ -656,12 +657,12 @@ LIB_VAUTH_HFILES = vauth/vauth.h vauth/digest.h vauth/ntlm.h
 LIB_VTLS_CFILES = vtls/openssl.c vtls/gtls.c vtls/vtls.c vtls/nss.c     \
   vtls/polarssl.c vtls/polarssl_threadlock.c vtls/axtls.c               \
   vtls/cyassl.c vtls/schannel.c vtls/schannel_verify.c                  \
-  vtls/darwinssl.c vtls/gskit.c vtls/mbedtls.c
+  vtls/darwinssl.c vtls/gskit.c vtls/mbedtls.c vtls/mesalink.c
 
 LIB_VTLS_HFILES = vtls/openssl.h vtls/vtls.h vtls/gtls.h                \
   vtls/nssg.h vtls/polarssl.h vtls/polarssl_threadlock.h vtls/axtls.h   \
   vtls/cyassl.h vtls/schannel.h vtls/darwinssl.h vtls/gskit.h           \
-  vtls/mbedtls.h
+  vtls/mbedtls.h vtls/mesalink.h
 
 LIB_CFILES = file.c timeval.c base64.c hostip.c progress.c formdata.c   \
   cookie.c http.c sendf.c ftp.c url.c dict.c if2ip.c speedcheck.c       \
@@ -680,7 +681,8 @@ LIB_CFILES = file.c timeval.c base64.c hostip.c progress.c formdata.c   \
   http_ntlm.c curl_ntlm_wb.c curl_ntlm_core.c curl_sasl.c rand.c        \
   curl_multibyte.c hostcheck.c conncache.c pipeline.c dotdot.c          \
   x509asn1.c http2.c smb.c curl_endian.c curl_des.c system_win32.c      \
-  mime.c sha256.c setopt.c curl_path.c curl_ctype.c curl_range.c psl.c
+  mime.c sha256.c setopt.c curl_path.c curl_ctype.c curl_range.c psl.c  \
+  doh.c urlapi.c
 
 LIB_HFILES = arpa_telnet.h netrc.h file.h timeval.h hostip.h progress.h \
   formdata.h cookie.h http.h sendf.h ftp.h url.h dict.h if2ip.h         \
@@ -700,7 +702,7 @@ LIB_HFILES = arpa_telnet.h netrc.h file.h timeval.h hostip.h progress.h \
   curl_setup_once.h multihandle.h setup-vms.h pipeline.h dotdot.h       \
   x509asn1.h http2.h sigpipe.h smb.h curl_endian.h curl_des.h           \
   curl_printf.h system_win32.h rand.h mime.h curl_sha256.h setopt.h     \
-  curl_path.h curl_ctype.h curl_range.h psl.h
+  curl_path.h curl_ctype.h curl_range.h psl.h doh.h urlapi-int.h
 
 LIB_RCFILES = libcurl.rc
 CSOURCES = $(LIB_CFILES) $(LIB_VAUTH_CFILES) $(LIB_VTLS_CFILES)
@@ -709,102 +711,102 @@ HHEADERS = $(LIB_HFILES) $(LIB_VAUTH_HFILES) $(LIB_VTLS_HFILES)
 # libcurl has sources that provide functions named curlx_* that aren't part of
 # the official API, but we re-use the code here to avoid duplication.
 CURLX_CFILES = \
-	../lib/strtoofft.c \
-	../lib/nonblock.c \
-	../lib/warnless.c \
-        ../lib/curl_ctype.c
+  ../lib/strtoofft.c \
+  ../lib/nonblock.c \
+  ../lib/warnless.c \
+  ../lib/curl_ctype.c
 
 CURLX_HFILES = \
-	../lib/curl_setup.h \
-	../lib/strtoofft.h \
-	../lib/nonblock.h \
-	../lib/warnless.h \
-        ../lib/curl_ctype.h
+  ../lib/curl_setup.h \
+  ../lib/strtoofft.h \
+  ../lib/nonblock.h \
+  ../lib/warnless.h \
+  ../lib/curl_ctype.h
 
 CURL_CFILES = \
-	slist_wc.c \
-	tool_binmode.c \
-	tool_bname.c \
-	tool_cb_dbg.c \
-	tool_cb_hdr.c \
-	tool_cb_prg.c \
-	tool_cb_rea.c \
-	tool_cb_see.c \
-	tool_cb_wrt.c \
-	tool_cfgable.c \
-	tool_convert.c \
-	tool_dirhie.c \
-	tool_doswin.c \
-	tool_easysrc.c \
-	tool_filetime.c \
-	tool_formparse.c \
-	tool_getparam.c \
-	tool_getpass.c \
-	tool_help.c \
-	tool_helpers.c \
-	tool_homedir.c \
-	tool_hugehelp.c \
-	tool_libinfo.c \
-	tool_main.c \
-	tool_metalink.c \
-	tool_msgs.c \
-	tool_operate.c \
-	tool_operhlp.c \
-	tool_panykey.c \
-	tool_paramhlp.c \
-	tool_parsecfg.c \
-	tool_strdup.c \
-	tool_setopt.c \
-	tool_sleep.c \
-	tool_urlglob.c \
-	tool_util.c \
-	tool_vms.c \
-	tool_writeout.c \
-	tool_xattr.c
+  slist_wc.c \
+  tool_binmode.c \
+  tool_bname.c \
+  tool_cb_dbg.c \
+  tool_cb_hdr.c \
+  tool_cb_prg.c \
+  tool_cb_rea.c \
+  tool_cb_see.c \
+  tool_cb_wrt.c \
+  tool_cfgable.c \
+  tool_convert.c \
+  tool_dirhie.c \
+  tool_doswin.c \
+  tool_easysrc.c \
+  tool_filetime.c \
+  tool_formparse.c \
+  tool_getparam.c \
+  tool_getpass.c \
+  tool_help.c \
+  tool_helpers.c \
+  tool_homedir.c \
+  tool_hugehelp.c \
+  tool_libinfo.c \
+  tool_main.c \
+  tool_metalink.c \
+  tool_msgs.c \
+  tool_operate.c \
+  tool_operhlp.c \
+  tool_panykey.c \
+  tool_paramhlp.c \
+  tool_parsecfg.c \
+  tool_strdup.c \
+  tool_setopt.c \
+  tool_sleep.c \
+  tool_urlglob.c \
+  tool_util.c \
+  tool_vms.c \
+  tool_writeout.c \
+  tool_xattr.c
 
 CURL_HFILES = \
-	slist_wc.h \
-	tool_binmode.h \
-	tool_bname.h \
-	tool_cb_dbg.h \
-	tool_cb_hdr.h \
-	tool_cb_prg.h \
-	tool_cb_rea.h \
-	tool_cb_see.h \
-	tool_cb_wrt.h \
-	tool_cfgable.h \
-	tool_convert.h \
-	tool_dirhie.h \
-	tool_doswin.h \
-	tool_easysrc.h \
-	tool_filetime.h \
-	tool_formparse.h \
-	tool_getparam.h \
-	tool_getpass.h \
-	tool_help.h \
-	tool_helpers.h \
-	tool_homedir.h \
-	tool_hugehelp.h \
-	tool_libinfo.h \
-	tool_main.h \
-	tool_metalink.h \
-	tool_msgs.h \
-	tool_operate.h \
-	tool_operhlp.h \
-	tool_panykey.h \
-	tool_paramhlp.h \
-	tool_parsecfg.h \
-	tool_sdecls.h \
-	tool_setopt.h \
-	tool_setup.h \
-	tool_sleep.h \
-	tool_strdup.h \
-	tool_urlglob.h \
-	tool_util.h \
-	tool_version.h \
-	tool_vms.h \
-	tool_writeout.h \
-	tool_xattr.h
+  slist_wc.h \
+  tool_binmode.h \
+  tool_bname.h \
+  tool_cb_dbg.h \
+  tool_cb_hdr.h \
+  tool_cb_prg.h \
+  tool_cb_rea.h \
+  tool_cb_see.h \
+  tool_cb_wrt.h \
+  tool_cfgable.h \
+  tool_convert.h \
+  tool_dirhie.h \
+  tool_doswin.h \
+  tool_easysrc.h \
+  tool_filetime.h \
+  tool_formparse.h \
+  tool_getparam.h \
+  tool_getpass.h \
+  tool_help.h \
+  tool_helpers.h \
+  tool_homedir.h \
+  tool_hugehelp.h \
+  tool_libinfo.h \
+  tool_main.h \
+  tool_metalink.h \
+  tool_msgs.h \
+  tool_operate.h \
+  tool_operhlp.h \
+  tool_panykey.h \
+  tool_paramhlp.h \
+  tool_parsecfg.h \
+  tool_sdecls.h \
+  tool_setopt.h \
+  tool_setup.h \
+  tool_sleep.h \
+  tool_strdup.h \
+  tool_urlglob.h \
+  tool_util.h \
+  tool_version.h \
+  tool_vms.h \
+  tool_writeout.h \
+  tool_xattr.h
 
 CURL_RCFILES = curl.rc
 
@@ -1474,12 +1476,12 @@ checksrc:
 
 .PHONY: vc-ide
 
-vc-ide: $(VC6_LIBDSP_DEPS) $(VC6_SRCDSP_DEPS) $(VC7_LIBVCPROJ_DEPS)	\
- $(VC7_SRCVCPROJ_DEPS) $(VC71_LIBVCPROJ_DEPS) $(VC71_SRCVCPROJ_DEPS)	\
- $(VC8_LIBVCPROJ_DEPS) $(VC8_SRCVCPROJ_DEPS) $(VC9_LIBVCPROJ_DEPS)	\
- $(VC9_SRCVCPROJ_DEPS) $(VC10_LIBVCXPROJ_DEPS) $(VC10_SRCVCXPROJ_DEPS)	\
- $(VC11_LIBVCXPROJ_DEPS) $(VC11_SRCVCXPROJ_DEPS) $(VC12_LIBVCXPROJ_DEPS)	\
- $(VC12_SRCVCXPROJ_DEPS) $(VC14_LIBVCXPROJ_DEPS) $(VC14_SRCVCXPROJ_DEPS)	\
+vc-ide: $(VC6_LIBDSP_DEPS) $(VC6_SRCDSP_DEPS) $(VC7_LIBVCPROJ_DEPS) \
+ $(VC7_SRCVCPROJ_DEPS) $(VC71_LIBVCPROJ_DEPS) $(VC71_SRCVCPROJ_DEPS) \
+ $(VC8_LIBVCPROJ_DEPS) $(VC8_SRCVCPROJ_DEPS) $(VC9_LIBVCPROJ_DEPS) \
+ $(VC9_SRCVCPROJ_DEPS) $(VC10_LIBVCXPROJ_DEPS) $(VC10_SRCVCXPROJ_DEPS) \
+ $(VC11_LIBVCXPROJ_DEPS) $(VC11_SRCVCXPROJ_DEPS) $(VC12_LIBVCXPROJ_DEPS) \
+ $(VC12_SRCVCXPROJ_DEPS) $(VC14_LIBVCXPROJ_DEPS) $(VC14_SRCVCXPROJ_DEPS) \
  $(VC15_LIBVCXPROJ_DEPS) $(VC15_SRCVCXPROJ_DEPS)
 	@(win32_lib_srcs='$(LIB_CFILES)'; \
 	win32_lib_hdrs='$(LIB_HFILES) config-win32.h'; \
@@ -1811,6 +1813,10 @@ function gen_element(type, dir, file)\
 		-v src_x_srcs="$$sorted_src_x_srcs" \
 		-v src_x_hdrs="$$sorted_src_x_hdrs" \
 		"$$awk_code" $(srcdir)/$(VC15_SRCTMPL) > $(VC15_SRCVCXPROJ) || { exit 1; };)
+
+tidy:
+	(cd src && $(MAKE) tidy)
+	(cd lib && $(MAKE) tidy)
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.

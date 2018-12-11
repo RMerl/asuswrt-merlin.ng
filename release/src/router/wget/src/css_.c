@@ -1,10 +1,10 @@
 #include "wget.h"
-#line 2 "css.c"
+#line 1 "css.c"
 /* config.h must precede flex's inclusion of <stdio.h>
    in order for its _GNU_SOURCE definition to take effect.  */
 #include <config.h>
 
-#line 7 "css.c"
+#line 6 "css.c"
 
 #define  YY_INT_ALIGNED short int
 
@@ -2450,8 +2450,8 @@ as that of the covered work.  */
   #endif
 #endif
 
+#line 2452 "css.c"
 #line 2453 "css.c"
-#line 2454 "css.c"
 
 #define INITIAL 0
 
@@ -2669,7 +2669,7 @@ YY_DECL
 #line 112 "css.l"
 
 
-#line 2672 "css.c"
+#line 2671 "css.c"
 
 	while ( /*CONSTCOND*/1 )		/* loops until end-of-file is reached */
 		{
@@ -2959,7 +2959,7 @@ YY_RULE_SETUP
 #line 167 "css.l"
 ECHO;
 	YY_BREAK
-#line 2962 "css.c"
+#line 2961 "css.c"
 case YY_STATE_EOF(INITIAL):
 	yyterminate();
 

@@ -634,6 +634,9 @@ hash_table_count (const struct hash_table *ht)
    this one seems to perform much better, both by being faster and by
    generating less collisions.  */
 
+#ifdef __clang__
+__attribute__((no_sanitize("integer")))
+#endif
 static unsigned long
 hash_string (const void *key)
 {
@@ -672,6 +675,9 @@ make_string_hash_table (int items)
 
 /* Like hash_string, but produce the same hash regardless of the case. */
 
+#ifdef __clang__
+__attribute__((no_sanitize("integer")))
+#endif
 static unsigned long
 hash_string_nocase (const void *key)
 {
@@ -710,6 +716,9 @@ make_nocase_string_hash_table (int items)
    Knuth's multiplication hash, this function doesn't need to know the
    hash table size to work.  */
 
+#ifdef __clang__
+__attribute__((no_sanitize("integer")))
+#endif
 unsigned long
 hash_pointer (const void *ptr)
 {

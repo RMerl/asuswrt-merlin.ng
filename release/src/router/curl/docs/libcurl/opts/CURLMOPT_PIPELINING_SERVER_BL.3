@@ -20,7 +20,7 @@
 .\" *
 .\" **************************************************************************
 .\"
-.TH CURLMOPT_PIPELINING_SERVER_BL 3 "February 03, 2016" "libcurl 7.61.1" "curl_multi_setopt options"
+.TH CURLMOPT_PIPELINING_SERVER_BL 3 "September 23, 2018" "libcurl 7.62.0" "curl_multi_setopt options"
 
 .SH NAME
 CURLMOPT_PIPELINING_SERVER_BL \- pipelining server blacklist
@@ -35,7 +35,7 @@ from pipelining, i.e server types that are known to not support HTTP
 pipelining. The array is copied by libcurl.
 
 Note that the comparison matches if the Server: header begins with the string
-in the blacklist, i.e "Server: Ninja 1.2.3" and "Server: Ninja 1.4.0" can 
+in the blacklist, i.e "Server: Ninja 1.2.3" and "Server: Ninja 1.4.0" can
 both be blacklisted by having "Ninja" in the backlist.
 
 Pass a NULL pointer to clear the blacklist.

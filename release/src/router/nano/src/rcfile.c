@@ -69,7 +69,7 @@ static const rcoption rcopts[] = {
 	{"operatingdir", 0},
 #endif
 #ifdef ENABLE_HISTORIES
-	{"positionlog", POS_HISTORY},
+	{"positionlog", POSITIONLOG},
 #endif
 	{"preserve", PRESERVE},
 #ifdef ENABLE_JUSTIFY
@@ -112,6 +112,7 @@ static const rcoption rcopts[] = {
 	{"whitespace", 0},
 	{"wordbounds", WORD_BOUNDS},
 	{"wordchars", 0},
+	{"zap", LET_THEM_ZAP},
 #endif
 #ifdef ENABLE_COLOR
 	{"titlecolor", 0},
@@ -451,7 +452,9 @@ void parse_binding(char *ptr, bool dobind)
 		menu = menu & (is_universal(newsc->func) ? MMOST : mask);
 
 		if (!menu) {
-			rcfile_error(N_("Function '%s' does not exist in menu '%s'"), funcptr, menuptr);
+			if (!ISSET(RESTRICTED))
+				rcfile_error(N_("Function '%s' does not exist in menu '%s'"),
+									funcptr, menuptr);
 			goto free_things;
 		}
 
@@ -923,8 +926,7 @@ void parse_rcfile(FILE *rcstream, bool syntax_only)
 		while (isblank((unsigned char)*ptr))
 			ptr++;
 
-		/* If we have a blank line or a comment, skip to the next
-		 * line. */
+		/* If the line is empty or a comment, skip to next line. */
 		if (*ptr == '\0' || *ptr == '#')
 			continue;
 
@@ -1102,10 +1104,10 @@ void parse_rcfile(FILE *rcstream, bool syntax_only)
 #endif
 #ifdef ENABLED_WRAPORJUSTIFY
 		if (strcasecmp(rcopts[i].name, "fill") == 0) {
-			if (!parse_num(option, &fill)) {
+			if (!parse_num(option, &wrap_at)) {
 				rcfile_error(N_("Requested fill size \"%s\" is invalid"),
 								option);
-				fill = -COLUMNS_FROM_EOL;
+				wrap_at = -COLUMNS_FROM_EOL;
 			} else
 				UNSET(NO_WRAP);
 			free(option);

@@ -28,7 +28,7 @@
  1.10 auto-detect proxy
  1.11 minimize dependencies with dynamically loaded modules
  1.12 updated DNS server while running
- 1.13 DNS-over-HTTPS
+ 1.13 c-ares and CURLOPT_OPENSOCKETFUNCTION
  1.14 Typesafe curl_easy_setopt()
  1.15 Monitor connections in the connection pool
  1.16 Try to URL encode given URL
@@ -36,7 +36,6 @@
  1.18 try next proxy if one doesn't work
  1.19 Timeout idle connections from the pool
  1.20 SRV and URI DNS records
- 1.21 API for URL parsing/splitting
  1.22 CURLINFO_PAUSE_STATE
  1.23 Offer API to flush the connection pool
  1.24 TCP Fast Open for windows
@@ -171,6 +170,7 @@
  20.4 more platforms supported
  20.5 Add support for concurrent connections
  20.6 Use the RFC6265 test suite
+ 20.7 Support LD_PRELOAD on macOS
 
  21. Next SONAME bump
  21.1 http-style HEAD output for FTP
@@ -291,14 +291,15 @@
 
  https://github.com/curl/curl/issues/2251
 
-1.13 DNS-over-HTTPS
+1.13 c-ares and CURLOPT_OPENSOCKETFUNCTION
 
- By adding support for DNS-over-HTTPS curl could resolve host names using a
- totally separate name server than the standard system resolver, while at the
- same time doing so over a communication channel that enhances privacy and
- security.
+ curl will create most sockets via the CURLOPT_OPENSOCKETFUNCTION callback and
+ close them with the CURLOPT_CLOSESOCKETFUNCTION callback. However, c-ares
+ does not use those functions and instead opens and closes the sockets
+ itself. This means that when curl passes the c-ares socket to the
+ CURLMOPT_SOCKETFUNCTION it isn't owned by the application like other sockets.
 
- https://github.com/curl/curl/wiki/DNS-over-HTTPS
+ See https://github.com/curl/curl/issues/2734
 
 1.14 Typesafe curl_easy_setopt()
 
@@ -373,13 +374,6 @@
  Offer support for resolving SRV and URI DNS records for libcurl to know which
  server to connect to for various protocols (including HTTP!).
 
-1.21 API for URL parsing/splitting
-
- libcurl has always parsed URLs internally and never exposed any API or
- features to allow applications to do it. Still most or many applications
- using libcurl need that ability. In polls to users, we've learned that many
- libcurl users would like to see and use such an API.
-
 1.22 CURLINFO_PAUSE_STATE
 
  Return information about the transfer's current pause state, in both
@@ -416,7 +410,8 @@
  used to also allow for example users to refuse libcurl to do transfers with
  HTTPS certificate checks disabled.
 
- It could also offer to refuse usernames in URLs (see TODO 1.1)
+ It could also automatically refuse usernames in URLs when set
+ (see CURLOPT_DISALLOW_USERNAME_IN_URL)
 
 1.27 hardcode the "localhost" addresses
 
@@ -531,7 +526,7 @@
 
  Some FTP servers allow STAT for listing directories instead of using LIST,
  and the response is then sent over the control connection instead of as the
- otherwise usedw data connection: http://www.nsftools.com/tips/RawFTP.htm#STAT
+ otherwise usedw data connection: https://www.nsftools.com/tips/RawFTP.htm#STAT
 
  This is not detailed in any FTP specification.
 
@@ -785,7 +780,7 @@ that doesn't exist on the server, just like --ftp-create-dirs.
 
  AIA can provide various things like CRLs but more importantly information
  about intermediate CA certificates that can allow validation path to be
- fullfilled when the HTTPS server doesn't itself provide them.
+ fulfilled when the HTTPS server doesn't itself provide them.
 
  Since AIA is about downloading certs on demand to complete a TLS handshake,
  it is probably a bit tricky to get done right.
@@ -916,7 +911,7 @@ that doesn't exist on the server, just like --ftp-create-dirs.
  server's key. MD5 is generally being deprecated so we should implement
  support for stronger hashing algorithms. libssh2 itself is what provides this
  underlying functionality and it supports at least SHA-1 as an alternative.
- SHA-1 is also being deprecated these days so we should consider workign with
+ SHA-1 is also being deprecated these days so we should consider working with
  libssh2 to instead offer support for SHA-256 or similar.
 
 17.4 Support CURLOPT_PREQUOTE
@@ -1171,6 +1166,11 @@ that doesn't exist on the server, just like --ftp-create-dirs.
  curl with that test suite and detect deviances. Ideally, that would even be
  incorporated into our regular test suite.
 
+20.7 Support LD_PRELOAD on macOS
+
+ LD_RELOAD doesn't work on macOS, but there are tests which require it to run
+ properly. Look into making the preload support in runtests.pl portable such
+ that it uses DYLD_INSERT_LIBRARIES on macOS.
 
 21. Next SONAME bump
 

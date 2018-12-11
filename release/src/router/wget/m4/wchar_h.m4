@@ -7,7 +7,7 @@ dnl with or without modifications, as long as this notice is preserved.
 
 dnl Written by Eric Blake.
 
-# wchar_h.m4 serial 42
+# wchar_h.m4 serial 43
 
 AC_DEFUN([gl_WCHAR_H],
 [
@@ -90,7 +90,8 @@ int main () { return zero(); }
      dnl that the object file has the latter name from the start.
      save_ac_compile="$ac_compile"
      ac_compile=`echo "$save_ac_compile" | sed s/conftest/conftest1/`
-     if AC_TRY_EVAL([ac_compile]); then
+     if echo '#include "conftest.c"' >conftest1.c &&
+        AC_TRY_EVAL([ac_compile]); then
        AC_LANG_CONFTEST([
          AC_LANG_SOURCE([[#define wcstod renamed_wcstod
 /* Tru64 with Desktop Toolkit C has a bug: <stdio.h> must be included before
@@ -105,7 +106,8 @@ int zero (void) { return 0; }
 ]])])
        dnl See note above about renaming object files.
        ac_compile=`echo "$save_ac_compile" | sed s/conftest/conftest2/`
-       if AC_TRY_EVAL([ac_compile]); then
+       if echo '#include "conftest.c"' >conftest2.c &&
+          AC_TRY_EVAL([ac_compile]); then
          if $CC -o conftest$ac_exeext $CFLAGS $LDFLAGS conftest1.$ac_objext conftest2.$ac_objext $LIBS >&AS_MESSAGE_LOG_FD 2>&1; then
            :
          else
@@ -114,7 +116,7 @@ int zero (void) { return 0; }
        fi
      fi
      ac_compile="$save_ac_compile"
-     rm -f conftest1.$ac_objext conftest2.$ac_objext conftest$ac_exeext
+     rm -f conftest[12].c conftest[12].$ac_objext conftest$ac_exeext
     ])
   if test $gl_cv_header_wchar_h_correct_inline = no; then
     AC_MSG_ERROR([<wchar.h> cannot be used with this compiler ($CC $CFLAGS $CPPFLAGS).

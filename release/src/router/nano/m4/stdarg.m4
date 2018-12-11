@@ -1,4 +1,4 @@
-# stdarg.m4 serial 6
+# stdarg.m4 serial 7
 dnl Copyright (C) 2006, 2008-2018 Free Software Foundation, Inc.
 dnl This file is free software; the Free Software Foundation
 dnl gives unlimited permission to copy and/or distribute it,
@@ -11,19 +11,19 @@ AC_DEFUN([gl_STDARG_H],
 [
   STDARG_H=''
   NEXT_STDARG_H='<stdarg.h>'
-  AC_MSG_CHECKING([for va_copy])
-  AC_CACHE_VAL([gl_cv_func_va_copy], [
-    AC_COMPILE_IFELSE(
-      [AC_LANG_PROGRAM(
-         [[#include <stdarg.h>]],
-         [[
+  AC_CACHE_CHECK([for va_copy],
+    [gl_cv_func_va_copy],
+    [AC_COMPILE_IFELSE(
+       [AC_LANG_PROGRAM(
+          [[#include <stdarg.h>]],
+          [[
 #ifndef va_copy
 void (*func) (va_list, va_list) = va_copy;
 #endif
-         ]])],
-      [gl_cv_func_va_copy=yes],
-      [gl_cv_func_va_copy=no])])
-  AC_MSG_RESULT([$gl_cv_func_va_copy])
+          ]])],
+       [gl_cv_func_va_copy=yes],
+       [gl_cv_func_va_copy=no])
+    ])
   if test $gl_cv_func_va_copy = no; then
     dnl Provide a substitute.
     dnl Usually a simple definition in <config.h> is enough. Not so on AIX 5

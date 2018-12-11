@@ -150,6 +150,11 @@ void xsleep (double);
 size_t wget_base64_encode (const void *, size_t, char *);
 ssize_t wget_base64_decode (const char *, void *, size_t);
 
+#ifdef HAVE_LIBPCRE2
+void *compile_pcre2_regex (const char *);
+bool match_pcre2_regex (const void *, const char *);
+#endif
+
 #ifdef HAVE_LIBPCRE
 void *compile_pcre_regex (const char *);
 bool match_pcre_regex (const void *, const char *);

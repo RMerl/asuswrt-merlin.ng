@@ -47,11 +47,14 @@
 
 /* Solaris declares getloadavg() in <sys/loadavg.h>.  */
 #if (@GNULIB_GETLOADAVG@ || defined GNULIB_POSIXCHECK) && @HAVE_SYS_LOADAVG_H@
+/* OpenIndiana has a bug: <sys/time.h> must be included before
+   <sys/loadavg.h>.  */
+# include <sys/time.h>
 # include <sys/loadavg.h>
 #endif
 
 /* Native Windows platforms declare mktemp() in <io.h>.  */
-#if 0 && ((defined _WIN32 || defined __WIN32__) && ! defined __CYGWIN__)
+#if 0 && (defined _WIN32 && ! defined __CYGWIN__)
 # include <io.h>
 #endif
 
@@ -87,9 +90,10 @@ struct random_data
 # endif
 #endif
 
-#if (@GNULIB_MKSTEMP@ || @GNULIB_MKSTEMPS@ || @GNULIB_GETSUBOPT@ || defined GNULIB_POSIXCHECK) && ! defined __GLIBC__ && !((defined _WIN32 || defined __WIN32__) && ! defined __CYGWIN__)
+#if (@GNULIB_MKSTEMP@ || @GNULIB_MKSTEMPS@ || @GNULIB_MKOSTEMP@ || @GNULIB_MKOSTEMPS@ || @GNULIB_GETSUBOPT@ || defined GNULIB_POSIXCHECK) && ! defined __GLIBC__ && !(defined _WIN32 && ! defined __CYGWIN__)
 /* On Mac OS X 10.3, only <unistd.h> declares mkstemp.  */
 /* On Mac OS X 10.5, only <unistd.h> declares mkstemps.  */
+/* On Mac OS X 10.13, only <unistd.h> declares mkostemp and mkostemps.  */
 /* On Cygwin 1.7.1, only <unistd.h> declares getsubopt.  */
 /* But avoid namespace pollution on glibc systems and native Windows.  */
 # include <unistd.h>

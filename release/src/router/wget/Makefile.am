@@ -49,6 +49,7 @@ EXTRA_DIST = MAILING-LIST \
              build-aux/build_info.pl build-aux/git-version-gen .version
 
 CLEANFILES = *~ *.bak $(DISTNAME).tar.gz
+DISTCLEANFILES = po/stamp-po
 
 BUILT_SOURCES = .version
 

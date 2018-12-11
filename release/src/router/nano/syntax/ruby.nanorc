@@ -28,8 +28,8 @@ color brightgreen "#\{[^}]*\}"
 # Strings, single-quoted.
 color green "'([^']|(\\'))*'" "%[qw]\{[^}]*\}" "%[qw]\([^)]*\)" "%[qw]<[^>]*>" "%[qw]\[[^]]*\]" "%[qw]\$[^$]*\$" "%[qw]\^[^^]*\^" "%[qw]![^!]*!"
 # Comments.
-color cyan "#[^{].*$" "#$"
-color brightcyan "##[^{].*$" "##$"
+color cyan "#[^{].*" "#$"
+color brightcyan "##[^{].*" "##$"
 # "Here" docs.
 color green start="<<-?'?EOT'?" end="^EOT"
 # Some common markers.

@@ -22,7 +22,9 @@
 #include <stddef.h>
 #include <string.h>
 
-#undef strpbrk
+#if _LIBC
+# undef strpbrk
+#endif
 
 /* Find the first occurrence in S of any character in ACCEPT.  */
 char *

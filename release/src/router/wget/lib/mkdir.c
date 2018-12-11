@@ -38,7 +38,7 @@
    Additionally, it declares _mkdir (and depending on compile flags, an
    alias mkdir), only in the nonstandard includes <direct.h> and <io.h>,
    which are included in the <sys/stat.h> override.  */
-#if (defined _WIN32 || defined __WIN32__) && ! defined __CYGWIN__
+#if defined _WIN32 && ! defined __CYGWIN__
 # define mkdir(name,mode) _mkdir (name)
 # define maybe_unused _GL_UNUSED
 #else

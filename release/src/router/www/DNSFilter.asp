@@ -179,8 +179,8 @@ function show_dnsfilter_list(){
 
 			code +='<td width="20%">'+gen_modeselect("rule_mode"+i, rule_mode, "changeRow_main(this);")+'</td>';
                         code +='<td width="15%"><input class="remove_btn" onclick="deleteRow_main(this);" value=""/></td></tr>';
-
-			clientListEventData.push({"mac" : clientMac, "name" : "", "ip" : "", "callBack" : "DNSFilter"});
+			if(validator.mac_addr(clientMac))
+				clientListEventData.push({"mac" : clientMac, "name" : "", "ip" : "", "callBack" : "DNSFilter"});
 		}
 	}
 

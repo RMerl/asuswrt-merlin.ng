@@ -40,8 +40,7 @@
 
 #define _(str) gettext (str)
 
-#if (((defined _WIN32 || defined __WIN32__) && ! defined __CYGWIN__) \
-     || defined __KLIBC__)
+#if (defined _WIN32 && ! defined __CYGWIN__) || defined __KLIBC__
 
 /* Native Windows API.  */
 # include <process.h>
@@ -72,9 +71,10 @@ nonintr_close (int fd)
 
   return retval;
 }
+#undef close /* avoid warning related to gnulib module unistd */
 #define close nonintr_close
 
-#if (defined _WIN32 || defined __WIN32__) && ! defined __CYGWIN__
+#if defined _WIN32 && ! defined __CYGWIN__
 static int
 nonintr_open (const char *pathname, int oflag, mode_t mode)
 {
@@ -115,8 +115,7 @@ create_pipe (const char *progname,
              bool slave_process, bool exit_on_error,
              int fd[2])
 {
-#if (((defined _WIN32 || defined __WIN32__) && ! defined __CYGWIN__) \
-     || defined __KLIBC__)
+#if (defined _WIN32 && ! defined __CYGWIN__) || defined __KLIBC__
 
   /* Native Windows API.
      This uses _pipe(), dup2(), and spawnv().  It could also be implemented

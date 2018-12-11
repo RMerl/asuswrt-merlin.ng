@@ -446,8 +446,7 @@ functionptrtype acquire_an_answer(int *actual, bool allow_tabs,
 	char *history = NULL;
 		/* The current history string. */
 	char *magichistory = NULL;
-		/* The temporary string typed at the bottom of the history, if
-		 * any. */
+		/* The (partial) answer that was typed at the prompt, if any. */
 #ifdef ENABLE_TABCOMP
 	int last_kbinput = ERR;
 		/* The key we pressed before the current key. */
@@ -534,9 +533,8 @@ functionptrtype acquire_an_answer(int *actual, bool allow_tabs,
 					typing_x = strlen(answer);
 				}
 
-				/* If, after scrolling down, we're at the bottom of the
-				 * history list, answer is blank, and magichistory is set,
-				 * save magichistory in answer. */
+				/* If we've reached the bottom of the history list, and answer
+				 * is blank, and magichistory is set, restore the old answer. */
 				if ((*history_list)->next == NULL &&
 						*answer == '\0' && magichistory != NULL) {
 					answer = mallocstrcpy(answer, magichistory);

@@ -1,5 +1,5 @@
 <!-- Creator     : groff version 1.22.3 -->
-<!-- CreationDate: Tue Sep 18 19:32:52 2018 -->
+<!-- CreationDate: Sun Nov 11 16:47:25 2018 -->
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
 "http://www.w3.org/TR/html4/loose.dtd">
 <html>
@@ -448,7 +448,10 @@ effect when you also use <b>set noconvert</b>.)</p>
 
 <p style="margin-left:11%;"><b>set view</b></p>
 
-<p style="margin-left:15%;">Disallow file modification.</p>
+<p style="margin-left:15%;">Disallow file modification:
+read-only mode. This mode allows the user to open also other
+files for viewing, unless <b>--restricted</b> is given on
+the command line.</p>
 
 <p style="margin-left:11%;"><b>set whitespace</b>
 <i>string</i></p>
@@ -472,6 +475,12 @@ words.</p>
 (besides the normal alphanumeric ones) should be considered
 as parts of words. This overrides the option
 <b>wordbounds</b>.</p>
+
+<p style="margin-left:11%;"><b>set zap</b></p>
+
+<p style="margin-left:15%;">Let an unmodified Backspace or
+Delete erase the marked region (instead of a single
+character, and without affecting the cutbuffer).</p>
 
 <h2>SYNTAX HIGHLIGHTING
 <a name="SYNTAX HIGHLIGHTING"></a>
@@ -800,6 +809,12 @@ marked region) without deleting it. (The old form
 text into the current buffer at the current cursor position.
 (The old form &rsquo;uncut&rsquo; is deprecated.)</p>
 
+<p style="margin-left:15%;"><b>zap</b></p>
+
+<p style="margin-left:18%;">Throw away the current line (or
+the marked region). (This function is bound by default to
+&lt;Meta+Delete&gt;.)</p>
+
 <p style="margin-left:15%;"><b>cutwordleft</b></p>
 
 <p style="margin-left:18%;">Cuts from the cursor position
@@ -1069,14 +1084,14 @@ expressions.</p>
 <p style="margin-left:18%;">Toggles whether
 searching/replacing goes forward or backward.</p>
 
-<p style="margin-left:15%;"><b>prevhistory</b></p>
+<p style="margin-left:15%;"><b>older</b></p>
 
-<p style="margin-left:18%;">Retrieves the previous (older)
-entry at a prompt.</p>
+<p style="margin-left:18%;">Retrieves the previous
+(earlier) entry at a prompt.</p>
 
-<p style="margin-left:15%;"><b>nexthistory</b></p>
+<p style="margin-left:15%;"><b>newer</b></p>
 
-<p style="margin-left:18%;">Retrieves the next (newer)
+<p style="margin-left:18%;">Retrieves the next (later)
 entry at a prompt.</p>
 
 <p style="margin-left:15%;"><b>flipreplace</b></p>

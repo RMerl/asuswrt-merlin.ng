@@ -25,7 +25,7 @@
    This file defines wrappers that turn such an invalid parameter notification
    into an error code.  */
 
-#if (defined _WIN32 || defined __WIN32__) && ! defined __CYGWIN__
+#if defined _WIN32 && ! defined __CYGWIN__
 
 /* Get original declaration of _get_osfhandle.  */
 # include <io.h>

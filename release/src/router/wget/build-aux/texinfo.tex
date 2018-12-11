@@ -3,7 +3,7 @@
 % Load plain if necessary, i.e., if running under initex.
 \expandafter\ifx\csname fmtname\endcsname\relax\input plain\fi
 %
-\def\texinfoversion{2018-01-09.11}
+\def\texinfoversion{2018-09-21.20}
 %
 % Copyright 1985, 1986, 1988, 1990, 1991, 1992, 1993, 1994, 1995,
 % 1996, 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,
@@ -1528,6 +1528,9 @@ output) for that.)}
       \startlink attr{/Border [0 0 0]}%
         user{/Subtype /Link /A << /S /URI /URI (#1) >>}%
     \endgroup}
+  % \pdfgettoks - Surround page numbers in #1 with @pdflink.  #1 may
+  % be a simple number, or a list of numbers in the case of an index
+  % entry.
   \def\pdfgettoks#1.{\setbox\boxA=\hbox{\toksA={#1.}\toksB={}\maketoks}}
   \def\addtokens#1#2{\edef\addtoks{\noexpand#1={\the#1#2}}\addtoks}
   \def\adn#1{\addtokens{\toksC}{#1}\global\countA=1\let\next=\maketoks}
@@ -8001,6 +8004,7 @@ end
   \gdef\boldbrax{\let(=\opnr\let)=\clnr\let[=\lbrb\let]=\rbrb}
   \gdef\magicamp{\let&=\amprm}
 }
+\let\ampchar\&
 
 \newcount\parencount
 
@@ -11715,7 +11719,7 @@ directory should work if nowhere else does.}
 @markupsetuprqdefault
 
 @c Local variables:
-@c eval: (add-hook 'write-file-hooks 'time-stamp)
+@c eval: (add-hook 'before-save-hook 'time-stamp)
 @c page-delimiter: "^\\\\message\\|emacs-page"
 @c time-stamp-start: "def\\\\texinfoversion{"
 @c time-stamp-format: "%:y-%02m-%02d.%02H"

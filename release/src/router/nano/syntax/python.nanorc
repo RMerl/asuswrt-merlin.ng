@@ -10,9 +10,14 @@ comment "#"
 icolor brightblue "def [0-9A-Z_]+"
 # Keywords.
 color brightcyan "\<(and|as|assert|async|await|break|class|continue)\>"
-color brightcyan "\<(def|del|elif|else|except|exec|finally|for|from)\>"
+color brightcyan "\<(def|del|elif|else|except|finally|for|from)\>"
 color brightcyan "\<(global|if|import|in|is|lambda|nonlocal|not|or)\>"
-color brightcyan "\<(pass|print|raise|return|try|while|with|yield)\>"
+color brightcyan "\<(pass|raise|return|try|while|with|yield)\>"
+
+# These two are keywords in Python 2, but functions in Python 3,
+# so only color them when they are followed by whitespace, assuming
+# that print(x) is a function invocation and print (x) is a statement.
+color brightcyan "\<(exec|print)([[:blank:]]|$)"
 
 # Special values.
 color brightmagenta "\<(False|None|True)\>"
@@ -21,7 +26,7 @@ color brightmagenta "\<(False|None|True)\>"
 color brightgreen "'([^'\]|\\.)+'"
 color brightgreen ""([^"\]|\\.)+""
 # Comments.
-color brightred "(^|[[:blank:]])#.*$"
+color brightred "(^|[[:blank:]])#.*"
 # Triple-quoted strings.
 color brightgreen    start="'''([^'),]|$)" end="(^|[^(\])'''"
 color brightgreen start="\"\"\"([^"),]|$)" end="(^|[^(\])\"\"\""

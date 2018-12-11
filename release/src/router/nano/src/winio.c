@@ -204,7 +204,7 @@ void read_keys_from(WINDOW *win)
 		 * check if errno is set to EIO ("Input/output error") and die in
 		 * that case, but it's not always set properly.  Argh. */
 		if (input == ERR && ++errcount == MAX_BUF_SIZE)
-			die(_("Too many errors from stdin"));
+			die(_("Too many errors from stdin\n"));
 	}
 
 	curs_set(0);
@@ -291,7 +291,7 @@ void unget_kbinput(int kbinput, bool metakey)
 void implant(const char *string)
 {
 	for (int i = strlen(string); i > 0; i--)
-		put_back(string[i - 1]);
+		put_back((unsigned char)string[i - 1]);
 }
 #endif
 
@@ -370,11 +370,6 @@ int parse_kbinput(WINDOW *win)
 
 	keycode = *kbinput;
 	free(kbinput);
-
-#ifdef DEBUG
-	fprintf(stderr, "before parsing:  keycode = %d, escapes = %d, digit_count = %d\n",
-		keycode, escapes, digit_count);
-#endif
 
 	if (keycode == ERR)
 		return ERR;
@@ -538,12 +533,18 @@ int parse_kbinput(WINDOW *win)
 		return CONTROL_HOME;
 	else if (retval == controlend)
 		return CONTROL_END;
+#ifndef NANO_TINY
 	else if (retval == controldelete)
 		return CONTROL_DELETE;
-#ifndef NANO_TINY
 	else if (retval == controlshiftdelete)
-		return the_code_for(do_cut_prev_word, KEY_BACKSPACE);
-	else if (retval == shiftcontrolleft) {
+		return CONTROL_SHIFT_DELETE;
+	else if (retval == shiftup) {
+		shift_held = TRUE;
+		return KEY_UP;
+	} else if (retval == shiftdown) {
+		shift_held = TRUE;
+		return KEY_DOWN;
+	} else if (retval == shiftcontrolleft) {
 		shift_held = TRUE;
 		return CONTROL_LEFT;
 	} else if (retval == shiftcontrolright) {
@@ -569,6 +570,8 @@ int parse_kbinput(WINDOW *win)
 		return ALT_UP;
 	else if (retval == altdown)
 		return ALT_DOWN;
+	else if (retval == altdelete)
+		return ALT_DELETE;
 	else if (retval == shiftaltleft) {
 		shift_held = TRUE;
 		return KEY_HOME;
@@ -589,14 +592,30 @@ int parse_kbinput(WINDOW *win)
 	 * Shift/Ctrl/Alt are being held together with them. */
 	unsigned char modifiers = 6;
 
+	/* Modifiers are: Alt (8), Ctrl (4), Shift (1). */
 	if (on_a_vt && ioctl(0, TIOCLINUX, &modifiers) >= 0) {
 #ifndef NANO_TINY
+		/* Is Delete pressed together with Shift or Shift+Ctrl? */
+		if (retval == KEY_DC) {
+			if (modifiers == 0x01)
+				return SHIFT_DELETE;
+			if (modifiers == 0x05)
+				return CONTROL_SHIFT_DELETE;
+		}
 		/* Is Shift being held? */
 		if (modifiers & 0x01) {
-			/* A shifted <Tab> is a back tab. */
 			if (retval == TAB_CODE)
 				return SHIFT_TAB;
 			shift_held = TRUE;
+		}
+		/* Is Alt being held? */
+		if (modifiers == 0x08) {
+			if (retval == KEY_DC)
+				return ALT_DELETE;
+			if (retval == KEY_UP)
+				return ALT_UP;
+			if (retval == KEY_DOWN)
+				return ALT_DOWN;
 		}
 #endif
 		/* Is Ctrl being held? */
@@ -707,7 +726,7 @@ int parse_kbinput(WINDOW *win)
 			return KEY_NPAGE;
 #ifdef KEY_SDC  /* Slang doesn't support KEY_SDC. */
 		case KEY_SDC:
-				return KEY_BACKSPACE;
+			return SHIFT_DELETE;
 #endif
 #ifdef KEY_SIC  /* Slang doesn't support KEY_SIC. */
 		case KEY_SIC:
@@ -1092,19 +1111,32 @@ int convert_sequence(const int *seq, size_t length, int *consumed)
 							return KEY_DC;
 						if (length > 4 && seq[2] == ';' && seq[4] == '~') {
 							*consumed = 5;
+#ifndef NANO_TINY
+							if (seq[3] == '2')
+								/* Esc [ 3 ; 2 ~ == Shift-Delete on xterm/Terminal. */
+								return SHIFT_DELETE;
+							if (seq[3] == '3')
+								/* Esc [ 3 ; 3 ~ == Alt-Delete on xterm/rxvt/Eterm/Terminal. */
+								return ALT_DELETE;
 							if (seq[3] == '5')
 								/* Esc [ 3 ; 5 ~ == Ctrl-Delete on xterm. */
 								return CONTROL_DELETE;
 							if (seq[3] == '6')
 								/* Esc [ 3 ; 6 ~ == Ctrl-Shift-Delete on xterm. */
 								return controlshiftdelete;
+#endif
 						}
+#ifndef NANO_TINY
+						if (length > 2 && seq[2] == '$')
+							/* Esc [ 3 $ == Shift-Delete on urxvt. */
+							return SHIFT_DELETE;
 						if (length > 2 && seq[2] == '^')
 							/* Esc [ 3 ^ == Ctrl-Delete on urxvt. */
 							return CONTROL_DELETE;
 						if (length > 2 && seq[2] == '@')
 							/* Esc [ 3 @ == Ctrl-Shift-Delete on urxvt. */
 							return controlshiftdelete;
+#endif
 						break;
 					case '4': /* Esc [ 4 ~ == End on VT220/VT320/
 							   * Linux console/xterm. */
@@ -1308,13 +1340,15 @@ int parse_escape_sequence(WINDOW *win, int kbinput)
 	/* If we got an unrecognized escape sequence, notify the user. */
 	if (retval == ERR && win == edit) {
 		/* TRANSLATORS: This refers to a sequence of escape codes
-		 * (from the keyboard) that nano does not recogize. */
+		 * (from the keyboard) that nano does not recognize. */
 		statusline(ALERT, _("Unknown sequence"));
 		suppress_cursorpos = FALSE;
 		lastmessage = HUSH;
 		if (currmenu == MMAIN) {
 			place_the_cursor();
+#ifdef __NetBSD__
 			wnoutrefresh(edit);  /* Needed for correct placement on NetBSD. */
+#endif
 			curs_set(1);
 		}
 	}
@@ -1483,10 +1517,6 @@ int get_control_kbinput(int kbinput)
 		retval = kbinput - '`';
 	else
 		retval = kbinput;
-
-#ifdef DEBUG
-	fprintf(stderr, "get_control_kbinput(): kbinput = %d, retval = %d\n", kbinput, retval);
-#endif
 
 	return retval;
 }
@@ -1754,11 +1784,6 @@ const sc *get_shortcut(int *kbinput)
 {
 	sc *s;
 
-#ifdef DEBUG
-	fprintf(stderr, "after parsing: kbinput = %d, meta_key = %s -- ",
-								*kbinput, meta_key ? "TRUE" : "FALSE");
-#endif
-
 	/* Plain characters cannot be shortcuts, so just skip those. */
 	if (!meta_key && ((*kbinput >= 0x20 && *kbinput < 0x7F) ||
 						(*kbinput >= 0xA0 && *kbinput <= 0xFF)))
@@ -1766,18 +1791,10 @@ const sc *get_shortcut(int *kbinput)
 
 	for (s = sclist; s != NULL; s = s->next) {
 		if ((s->menus & currmenu) && *kbinput == s->keycode &&
-										meta_key == s->meta) {
-#ifdef DEBUG
-			fprintf (stderr, "matched seq '%s'  (menu is %x from %x)\n",
-								s->keystr, currmenu, s->menus);
-#endif
+										meta_key == s->meta)
 			return s;
-		}
 	}
 
-#ifdef DEBUG
-	fprintf (stderr, "matched nothing\n");
-#endif
 	return NULL;
 }
 
@@ -2051,6 +2068,13 @@ void titlebar(const char *path)
 	 * then sacrifice the prefix, and only then start dottifying. */
 
 	/* Figure out the path, prefix and state strings. */
+#ifdef ENABLE_COLOR
+	if (currmenu == MLINTER) {
+		/* TRANSLATORS: The next four are "labels" in the title bar. */
+		prefix = _("Linting --");
+		path = openfile->filename;
+	} else
+#endif
 #ifdef ENABLE_BROWSER
 	if (!inhelp && path != NULL)
 		prefix = _("DIR:");
@@ -2209,7 +2233,9 @@ void statusline(message_type importance, const char *msg, ...)
 		else if (alerts < 4)
 			beep();
 		colorpair = interface_color_pair[ERROR_MESSAGE];
-	} else
+	} else if (importance == NOTICE)
+		colorpair = interface_color_pair[SELECTED_TEXT];
+	else
 		colorpair = interface_color_pair[STATUS_BAR];
 
 	lastmessage = importance;
@@ -2763,6 +2789,9 @@ int update_line(filestruct *fileptr, size_t index)
 	if (strlenpt(fileptr->data) > from_col + editwincols)
 		mvwaddch(edit, row, COLS - 1, '$');
 
+	if (spotlighted && !inhelp)
+		spotlight(light_from_col, light_to_col);
+
 	return 1;
 }
 
@@ -2828,6 +2857,9 @@ int update_softwrapped_line(filestruct *fileptr)
 
 		from_col = to_col;
 	}
+
+	if (spotlighted && !inhelp)
+		spotlight(light_from_col, light_to_col);
 
 	return (row - starting_row);
 }
@@ -3331,20 +3363,6 @@ void total_refresh(void)
 	bottombars(currmenu);
 }
 
-/* Display the main shortcut list on the last two rows of the bottom
- * portion of the window. */
-void display_main_list(void)
-{
-#if defined(ENABLE_COLOR) && defined(ENABLE_SPELLER)
-	if (openfile->syntax && openfile->syntax->linter)
-		set_linter_shortcut();
-	else
-		set_speller_shortcut();
-#endif
-
-	bottombars(MMAIN);
-}
-
 /* Show info about the current cursor position on the statusbar.
  * Do this unconditionally when force is TRUE; otherwise, only if
  * suppress_cursorpos is FALSE.  In any case, reset the latter. */
@@ -3405,9 +3423,8 @@ void enable_waiting(void)
 	nodelay(edit, FALSE);
 }
 
-/* Highlight the text between from_col and to_col when active is TRUE.
- * Remove the highlight when active is FALSE. */
-void spotlight(bool active, size_t from_col, size_t to_col)
+/* Highlight the text between from_col and to_col. */
+void spotlight(size_t from_col, size_t to_col)
 {
 	char *word;
 	size_t word_span, room;
@@ -3416,7 +3433,7 @@ void spotlight(bool active, size_t from_col, size_t to_col)
 
 #ifndef NANO_TINY
 	if (ISSET(SOFTWRAP)) {
-		spotlight_softwrapped(active, from_col, to_col);
+		spotlight_softwrapped(from_col, to_col);
 		return;
 	}
 #endif
@@ -3438,16 +3455,14 @@ void spotlight(bool active, size_t from_col, size_t to_col)
 	if (word_span > room)
 		room--;
 
-	if (active)
-		wattron(edit, interface_color_pair[SELECTED_TEXT]);
+	wattron(edit, interface_color_pair[SELECTED_TEXT]);
 
 	waddnstr(edit, word, actual_x(word, room));
 
 	if (word_span > room)
 		waddch(edit, '$');
 
-	if (active)
-		wattroff(edit, interface_color_pair[SELECTED_TEXT]);
+	wattroff(edit, interface_color_pair[SELECTED_TEXT]);
 
 	free(word);
 
@@ -3455,10 +3470,9 @@ void spotlight(bool active, size_t from_col, size_t to_col)
 }
 
 #ifndef NANO_TINY
-/* Highlight the text between from_col and to_col when active is TRUE; remove
- * the highlight when active is FALSE.  This will not highlight softwrapped
+/* Highlight the text between the given columns.  This will not highlight soft
  * line breaks, since they're not actually part of the spotlighted text. */
-void spotlight_softwrapped(bool active, size_t from_col, size_t to_col)
+void spotlight_softwrapped(size_t from_col, size_t to_col)
 {
 	ssize_t row = openfile->current_y;
 	size_t leftedge = leftedge_for(from_col, openfile->current);
@@ -3485,13 +3499,11 @@ void spotlight_softwrapped(bool active, size_t from_col, size_t to_col)
 			word = display_string(openfile->current->data, from_col,
 										break_col - from_col, FALSE);
 
-		if (active)
-			wattron(edit, interface_color_pair[SELECTED_TEXT]);
+		wattron(edit, interface_color_pair[SELECTED_TEXT]);
 
 		waddnstr(edit, word, actual_x(word, break_col));
 
-		if (active)
-			wattroff(edit, interface_color_pair[SELECTED_TEXT]);
+		wattroff(edit, interface_color_pair[SELECTED_TEXT]);
 
 		free(word);
 

@@ -1,4 +1,4 @@
-# pthread_rwlock_rdlock.m4 serial 1
+# pthread_rwlock_rdlock.m4 serial 2
 dnl Copyright (C) 2017-2018 Free Software Foundation, Inc.
 dnl This file is free software; the Free Software Foundation
 dnl gives unlimited permission to copy and/or distribute it,
@@ -23,12 +23,14 @@ dnl time, a phenomenon called "writer starvation".
 dnl Without such a guarantee, applications have a hard time avoiding writer
 dnl starvation.
 dnl
-dnl POSIX:2008 makes this requirement only for implementations that support TPS
+dnl POSIX:2017 makes this requirement only for implementations that support TPS
 dnl (Thread Priority Scheduling) and only for the scheduling policies SCHED_FIFO
 dnl and SCHED_RR, see
 dnl http://pubs.opengroup.org/onlinepubs/9699919799/functions/pthread_rwlock_rdlock.html
-dnl but test verifies the guarantee regardless of TPS and regardless of
+dnl but this test verifies the guarantee regardless of TPS and regardless of
 dnl scheduling policy.
+dnl Glibc currently does not provide this guarantee, see
+dnl https://sourceware.org/bugzilla/show_bug.cgi?id=13701
 AC_DEFUN([gl_PTHREAD_RWLOCK_RDLOCK_PREFER_WRITER],
 [
   AC_REQUIRE([gl_THREADLIB_EARLY])

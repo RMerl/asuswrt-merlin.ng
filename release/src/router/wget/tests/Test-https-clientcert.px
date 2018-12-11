@@ -1,4 +1,4 @@
-#!/usr/bin/env perl
+#!/usr/bin/env -S perl -I .
 
 use strict;
 use warnings;
@@ -19,13 +19,6 @@ my %urls = (
         content => "blabla",
     },
 );
-
-# Skip the test if openssl is not available
-my $ossl = `openssl version`;
-unless ($ossl =~ m/OpenSSL 1/)
-{
-  exit 77;
-}
 
 my $srcdir;
 if (@ARGV) {
@@ -52,34 +45,15 @@ unless (inet_ntoa($addr) =~ "127.0.0.1")
 }
 
 my $cacrt      = "$srcdir/certs/test-ca-cert.pem";
-my $cakey      = "$srcdir/certs/test-ca-key.pem";
+#my $cakey      = "$srcdir/certs/test-ca-key.pem";
 
 # Prepare server certificate
-my $servercrt  = "$srcdir/certs/server.crt";
-my $serverkey  = "$srcdir/certs/server.key";
-
-my $servercheck =`(openssl x509 -noout -modulus -in $servercrt | openssl md5 ;
-                   openssl rsa  -noout -modulus -in $serverkey | openssl md5) |
-                   uniq | wc -l`;
-# Check if certificate and key are made correctly.
-unless(-e $servercrt && -e $serverkey && $servercheck == 1)
-{
-    exit 77; # skip
-}
+my $servercrt  = "$srcdir/certs/server-cert.pem";
+my $serverkey  = "$srcdir/certs/server-key.pem";
 
 # Use client certificate
-my $clientcert     = "$srcdir/certs/client.crt";
-my $clientkey      = "$srcdir/certs/client.key";
-
-my $clientcheck=`(openssl x509 -noout -modulus -in $clientcert | openssl md5 ;
-                  openssl rsa -noout -modulus -in $clientkey | openssl md5) |
-                  uniq | wc -l`;
-
-# Check if client certificate and key are made correctly.
-unless(-e $clientcert && -e $clientkey && $clientcheck == 1)
-{
-    exit 77; # skip
-}
+my $clientcert     = "$srcdir/certs/client-cert.pem";
+my $clientkey      = "$srcdir/certs/client-key.pem";
 
 # Try Wget using SSL with mismatched client cert & key . Expect error
 my $port = 21443;

@@ -142,7 +142,6 @@ my $GOPHER6PORT;         # Gopher IPv6 server port
 my $HTTPTLSPORT;         # HTTP TLS (non-stunnel) server port
 my $HTTPTLS6PORT;        # HTTP TLS (non-stunnel) IPv6 server port
 my $HTTPPROXYPORT;       # HTTP proxy port, when using CONNECT
-my $HTTPPIPEPORT;        # HTTP pipelining port
 my $HTTPUNIXPATH;        # HTTP server Unix domain socket path
 my $HTTP2PORT;           # HTTP/2 server port
 my $DICTPORT;            # DICT server port
@@ -252,6 +251,7 @@ my $has_darwinssl;  # built with DarwinSSL (Secure Transport)
 my $has_boringssl;  # built with BoringSSL
 my $has_libressl;   # built with libressl
 my $has_mbedtls;    # built with mbedTLS
+my $has_mesalink;   # built with MesaLink
 
 my $has_sslpinning; # built with a TLS backend that supports pinning
 
@@ -717,11 +717,11 @@ sub stopserver {
     # All servers relative to the given one must be stopped also
     #
     my @killservers;
-    if($server =~ /^(ftp|http|imap|pop3|smtp|httppipe)s((\d*)(-ipv6|-unix|))$/) {
+    if($server =~ /^(ftp|http|imap|pop3|smtp)s((\d*)(-ipv6|-unix|))$/) {
         # given a stunnel based ssl server, also kill non-ssl underlying one
         push @killservers, "${1}${2}";
     }
-    elsif($server =~ /^(ftp|http|imap|pop3|smtp|httppipe)((\d*)(-ipv6|-unix|))$/) {
+    elsif($server =~ /^(ftp|http|imap|pop3|smtp)((\d*)(-ipv6|-unix|))$/) {
         # given a non-ssl server, also kill stunnel based ssl piggybacking one
         push @killservers, "${1}s${2}";
     }
@@ -1297,7 +1297,6 @@ my %protofunc = ('http' => \&verifyhttp,
                  'pop3' => \&verifyftp,
                  'imap' => \&verifyftp,
                  'smtp' => \&verifyftp,
-                 'httppipe' => \&verifyhttp,
                  'ftps' => \&verifyftp,
                  'tftp' => \&verifyftp,
                  'ssh' => \&verifyssh,
@@ -1436,12 +1435,6 @@ sub runhttpserver {
         # basically the same, but another ID
         $idnum = 2;
     }
-    elsif($alt eq "pipe") {
-        # basically the same, but another ID
-        $idnum = 3;
-        $exe = "python $srcdir/http_pipe.py";
-        $verbose_flag .= "1 ";
-    }
     elsif($alt eq "unix") {
         # IP (protocol) is mutually exclusive with Unix sockets
         $ipvnum = "unix";
@@ -1492,81 +1485,6 @@ sub runhttpserver {
 
     # Server is up. Verify that we can speak to it.
     my $pid3 = verifyserver($proto, $ipvnum, $idnum, $ip, $port_or_path);
-    if(!$pid3) {
-        logmsg "RUN: $srvrname server failed verification\n";
-        # failed to talk to it properly. Kill the server and return failure
-        stopserver($server, "$httppid $pid2");
-        displaylogs($testnumcheck);
-        $doesntrun{$pidfile} = 1;
-        return (0,0);
-    }
-    $pid2 = $pid3;
-
-    if($verbose) {
-        logmsg "RUN: $srvrname server is now running PID $httppid\n";
-    }
-
-    sleep(1);
-
-    return ($httppid, $pid2);
-}
-
-#######################################################################
-# start the http server
-#
-sub runhttp_pipeserver {
-    my ($proto, $verbose, $alt, $port) = @_;
-    my $ip = $HOSTIP;
-    my $ipvnum = 4;
-    my $idnum = 1;
-    my $server;
-    my $srvrname;
-    my $pidfile;
-    my $logfile;
-    my $flags = "";
-
-    if($alt eq "ipv6") {
-        # No IPv6
-    }
-
-    $server = servername_id($proto, $ipvnum, $idnum);
-
-    $pidfile = $serverpidfile{$server};
-
-    # don't retry if the server doesn't work
-    if ($doesntrun{$pidfile}) {
-        return (0,0);
-    }
-
-    my $pid = processexists($pidfile);
-    if($pid > 0) {
-        stopserver($server, "$pid");
-    }
-    unlink($pidfile) if(-f $pidfile);
-
-    $srvrname = servername_str($proto, $ipvnum, $idnum);
-
-    $logfile = server_logfilename($LOGDIR, $proto, $ipvnum, $idnum);
-
-    $flags .= "--verbose 1 " if($debugprotocol);
-    $flags .= "--pidfile \"$pidfile\" --logfile \"$logfile\" ";
-    $flags .= "--id $idnum " if($idnum > 1);
-    $flags .= "--port $port --srcdir \"$srcdir\"";
-
-    my $cmd = "$srcdir/http_pipe.py $flags";
-    my ($httppid, $pid2) = startnew($cmd, $pidfile, 15, 0);
-
-    if($httppid <= 0 || !pidexists($httppid)) {
-        # it is NOT alive
-        logmsg "RUN: failed to start the $srvrname server\n";
-        stopserver($server, "$pid2");
-        displaylogs($testnumcheck);
-        $doesntrun{$pidfile} = 1;
-        return (0,0);
-    }
-
-    # Server is up. Verify that we can speak to it.
-    my $pid3 = verifyserver($proto, $ipvnum, $idnum, $ip, $port);
     if(!$pid3) {
         logmsg "RUN: $srvrname server failed verification\n";
         # failed to talk to it properly. Kill the server and return failure
@@ -2764,10 +2682,10 @@ sub checksystem {
             $curl =~ s/^(.*)(libcurl.*)/$1/g;
 
             $libcurl = $2;
-            if($curl =~ /linux|bsd|solaris|darwin/) {
+            if($curl =~ /linux|bsd|solaris/) {
                 $has_ldpreload = 1;
             }
-            if($curl =~ /win32|mingw(32|64)/) {
+            if($curl =~ /win32|Windows|mingw(32|64)/) {
                 # This is a Windows MinGW build or native build, we need to use
                 # Win32-style path.
                 $pwd = pathhelp::sys_native_current_path();
@@ -2830,6 +2748,10 @@ sub checksystem {
                $has_cares=1;
                $resolver="c-ares";
            }
+           if ($libcurl =~ /mesalink/i) {
+               $has_mesalink=1;
+               $ssllib="MesaLink";
+           }
         }
         elsif($_ =~ /^Protocols: (.*)/i) {
             # these are the protocols compiled in to this libcurl
@@ -2843,9 +2765,6 @@ sub checksystem {
 
             # 'http-proxy' is used in test cases to do CONNECT through
             push @protocols, 'http-proxy';
-
-            # 'http-pipe' is the special server for testing pipelining
-            push @protocols, 'http-pipe';
 
             # 'none' is used in test cases to mean no server
             push @protocols, 'none';
@@ -3118,7 +3037,6 @@ sub checksystem {
             }
             logmsg "\n";
         }
-        logmsg sprintf("*   HTTP-PIPE/%d \n", $HTTPPIPEPORT);
 
         if($has_unix) {
             logmsg "* Unix socket paths:\n";
@@ -3155,7 +3073,6 @@ sub subVariables {
   $$thing =~ s/%HTTPSPORT/$HTTPSPORT/g;
   $$thing =~ s/%HTTP2PORT/$HTTP2PORT/g;
   $$thing =~ s/%HTTPPORT/$HTTPPORT/g;
-  $$thing =~ s/%HTTPPIPEPORT/$HTTPPIPEPORT/g;
   $$thing =~ s/%PROXYPORT/$HTTPPROXYPORT/g;
 
   $$thing =~ s/%IMAP6PORT/$IMAP6PORT/g;
@@ -4849,23 +4766,6 @@ sub startservers {
                 $run{'http-ipv6'}="$pid $pid2";
             }
         }
-        elsif($what eq "http-pipe") {
-            if($torture && $run{'http-pipe'} &&
-               !responsive_http_server("http", $verbose, "pipe",
-                                       $HTTPPIPEPORT)) {
-                stopserver('http-pipe');
-            }
-            if(!$run{'http-pipe'}) {
-                ($pid, $pid2) = runhttpserver("http", $verbose, "pipe",
-                                              $HTTPPIPEPORT);
-                if($pid <= 0) {
-                    return "failed starting HTTP-pipe server";
-                }
-                logmsg sprintf ("* pid http-pipe => %d %d\n", $pid, $pid2)
-                    if($verbose);
-                $run{'http-pipe'}="$pid $pid2";
-            }
-        }
         elsif($what eq "rtsp") {
             if($torture && $run{'rtsp'} &&
                !responsive_rtsp_server($verbose)) {
@@ -5315,6 +5215,12 @@ sub runtimestats {
     logmsg "\n";
 }
 
+# globally disabled tests
+disabledtests("$TESTDIR/DISABLED");
+
+# locally disabled tests, ignored by git etc
+disabledtests("$TESTDIR/DISABLED.local");
+
 #######################################################################
 # Check options to this test program
 #
@@ -5469,8 +5375,17 @@ EOHELP
     elsif($ARGV[0] =~ /^(\d+)/) {
         $number = $1;
         if($fromnum >= 0) {
-            for($fromnum .. $number) {
-                push @testthis, $_;
+            for my $n ($fromnum .. $number) {
+                if($disabled{$n}) {
+                    # skip disabled test cases
+                    my $why = "configured as DISABLED";
+                    $skipped++;
+                    $skipped{$why}++;
+                    $teststat[$n]=$why; # store reason for this test case
+                }
+                else {
+                    push @testthis, $n;
+                }
             }
             $fromnum = -1;
         }
@@ -5578,7 +5493,6 @@ $GOPHER6PORT     = $base++; # Gopher IPv6 server port
 $HTTPTLSPORT     = $base++; # HTTP TLS (non-stunnel) server port
 $HTTPTLS6PORT    = $base++; # HTTP TLS (non-stunnel) IPv6 server port
 $HTTPPROXYPORT   = $base++; # HTTP proxy port, when using CONNECT
-$HTTPPIPEPORT    = $base++; # HTTP pipelining port
 $HTTP2PORT       = $base++; # HTTP/2 port
 $DICTPORT        = $base++; # DICT port
 $SMBPORT         = $base++; # SMB port
@@ -5628,12 +5542,6 @@ sub disabledtests {
         close(D);
     }
 }
-
-# globally disabled tests
-disabledtests("$TESTDIR/DISABLED");
-
-# locally disabled tests, ignored by git etc
-disabledtests("$TESTDIR/DISABLED.local");
 
 #######################################################################
 # If 'all' tests are requested, find out all test numbers

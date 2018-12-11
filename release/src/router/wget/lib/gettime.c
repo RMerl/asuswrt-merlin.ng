@@ -28,21 +28,22 @@
 void
 gettime (struct timespec *ts)
 {
-#if HAVE_NANOTIME
-  nanotime (ts);
+#if defined CLOCK_REALTIME && HAVE_CLOCK_GETTIME
+  clock_gettime (CLOCK_REALTIME, ts);
 #else
-
-# if defined CLOCK_REALTIME && HAVE_CLOCK_GETTIME
-  if (clock_gettime (CLOCK_REALTIME, ts) == 0)
-    return;
-# endif
-
-  {
-    struct timeval tv;
-    gettimeofday (&tv, NULL);
-    ts->tv_sec = tv.tv_sec;
-    ts->tv_nsec = tv.tv_usec * 1000;
-  }
-
+  struct timeval tv;
+  gettimeofday (&tv, NULL);
+  ts->tv_sec = tv.tv_sec;
+  ts->tv_nsec = tv.tv_usec * 1000;
 #endif
+}
+
+/* Return the current system time as a struct timespec.  */
+
+struct timespec
+current_timespec (void)
+{
+  struct timespec ts;
+  gettime (&ts);
+  return ts;
 }

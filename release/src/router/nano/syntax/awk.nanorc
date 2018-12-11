@@ -19,8 +19,7 @@ color green "(\{|\}|\(|\)|\;|\]|\[|\\|<|>|!|=|&|\+|-|\*|%|/|\?:|\^|\|)"
 color brightyellow "\<(for|if|while|do|else|in|delete|exit)\>"
 color brightyellow "\<(break|continue|return)\>"
 # I/O statements.
-color brightgreen "\<(close|getline|next|nextfile|print|printf)\>"
-color brightgreen "\<(system|fflush)\>"
+color brightgreen "\<(close|fflush|getline|next|nextfile|print|printf|system)\>"
 # Standard functions.
 color magenta "\<(atan2|cos|exp|int|log|rand|sin|sqrt|srand)\>"
 color magenta "\<(asort|asorti|gensub|gsub|index|length|match)\>"

@@ -130,7 +130,7 @@ extern pid_t create_pipe_bidi (const char *progname,
                                int fd[2]);
 
 /* The name of the "always silent" device.  */
-#if (defined _WIN32 || defined __WIN32__) && ! defined __CYGWIN__
+#if defined _WIN32 && ! defined __CYGWIN__
 /* Native Windows API.  */
 # define DEV_NULL "NUL"
 #else

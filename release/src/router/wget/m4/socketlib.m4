@@ -1,4 +1,4 @@
-# socketlib.m4 serial 1
+# socketlib.m4 serial 2
 dnl Copyright (C) 2008-2018 Free Software Foundation, Inc.
 dnl This file is free software; the Free Software Foundation
 dnl gives unlimited permission to copy and/or distribute it,
@@ -38,6 +38,10 @@ AC_DEFUN([gl_SOCKETLIB],
     dnl Solaris has most socket functions in libsocket.
     dnl Haiku has most socket functions in libnetwork.
     dnl BeOS has most socket functions in libnet.
+    dnl On HP-UX, do NOT link with libxnet, because in 64-bit mode this would
+    dnl break code (e.g. in libraries) that invokes accept(), getpeername(),
+    dnl getsockname(), getsockopt(), or recvfrom() with a 32-bit addrlen. See
+    dnl "man xopen_networking" for details.
     AC_CACHE_CHECK([for library containing setsockopt], [gl_cv_lib_socket], [
       gl_cv_lib_socket=
       AC_LINK_IFELSE([AC_LANG_PROGRAM([[extern

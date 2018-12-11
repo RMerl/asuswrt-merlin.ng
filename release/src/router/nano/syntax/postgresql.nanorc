@@ -59,9 +59,8 @@ color green "'([^']|(\\'))*'" "%[qw]\{[^}]*\}" "%[qw]\([^)]*\)" "%[qw]<[^>]*>"
 color green "%[qw]\[[^]]*\]" "%[qw]\$[^$]*\$" "%[qw]\^[^^]*\^" "%[qw]![^!]*!"
 
 # Comments.
-color red "#[^{].*$" "#$"
-color red "--[^{].*$" "#$"
-color red "##[^{].*$" "##$"
+color red "##?[^{].*" "##?$"
+color red "--[^{].*" "--$"
 color brightblue "//.*"
 color brightblue start="/\*" end="\*/"
 

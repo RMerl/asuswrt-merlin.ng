@@ -122,7 +122,7 @@
    it before we  #define perror rpl_perror.  */
 /* But in any case avoid namespace pollution on glibc systems.  */
 #if (@GNULIB_PERROR@ || defined GNULIB_POSIXCHECK) \
-    && ((defined _WIN32 || defined __WIN32__) && ! defined __CYGWIN__) \
+    && (defined _WIN32 && ! defined __CYGWIN__) \
     && ! defined __GLIBC__
 # include <stdlib.h>
 #endif
@@ -133,7 +133,7 @@
    it before we  #define rename rpl_rename.  */
 /* But in any case avoid namespace pollution on glibc systems.  */
 #if (@GNULIB_REMOVE@ || @GNULIB_RENAME@ || defined GNULIB_POSIXCHECK) \
-    && ((defined _WIN32 || defined __WIN32__) && ! defined __CYGWIN__) \
+    && (defined _WIN32 && ! defined __CYGWIN__) \
     && ! defined __GLIBC__
 # include <io.h>
 #endif

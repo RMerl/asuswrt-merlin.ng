@@ -52,9 +52,9 @@
 # define md5_buffer __md5_buffer
 #endif
 
+#include <byteswap.h>
 #ifdef WORDS_BIGENDIAN
-# define SWAP(n)                                                        \
-    (((n) << 24) | (((n) & 0xff00) << 8) | (((n) >> 8) & 0xff00) | ((n) >> 24))
+# define SWAP(n) bswap_32 (n)
 #else
 # define SWAP(n) (n)
 #endif
@@ -134,21 +134,29 @@ md5_finish_ctx (struct md5_ctx *ctx, void *resbuf)
 }
 #endif
 
+#if defined _LIBC || defined GL_COMPILE_CRYPTO_STREAM
+
+#include "af_alg.h"
+
 /* Compute MD5 message digest for bytes read from STREAM.  The
    resulting message digest number will be written into the 16 bytes
    beginning at RESBLOCK.  */
 int
 md5_stream (FILE *stream, void *resblock)
 {
-  struct md5_ctx ctx;
-  size_t sum;
+  switch (afalg_stream (stream, "md5", resblock, MD5_DIGEST_SIZE))
+    {
+    case 0: return 0;
+    case -EIO: return 1;
+    }
 
   char *buffer = malloc (BLOCKSIZE + 72);
   if (!buffer)
     return 1;
 
-  /* Initialize the computation context.  */
+  struct md5_ctx ctx;
   md5_init_ctx (&ctx);
+  size_t sum;
 
   /* Iterate over full file contents.  */
   while (1)
@@ -162,6 +170,14 @@ md5_stream (FILE *stream, void *resblock)
       /* Read block.  Take care for partial reads.  */
       while (1)
         {
+          /* Either process a partial fread() from this loop,
+             or the fread() in afalg_stream may have gotten EOF.
+             We need to avoid a subsequent fread() as EOF may
+             not be sticky.  For details of such systems, see:
+             https://sourceware.org/bugzilla/show_bug.cgi?id=1190  */
+          if (feof (stream))
+            goto process_partial_block;
+
           n = fread (buffer + sum, 1, BLOCKSIZE - sum, stream);
 
           sum += n;
@@ -181,12 +197,6 @@ md5_stream (FILE *stream, void *resblock)
                 }
               goto process_partial_block;
             }
-
-          /* We've read at least one byte, so ignore errors.  But always
-             check for EOF, since feof may be true even though N > 0.
-             Otherwise, we could end up calling fread after EOF.  */
-          if (feof (stream))
-            goto process_partial_block;
         }
 
       /* Process buffer with BLOCKSIZE bytes.  Note that
@@ -206,6 +216,7 @@ process_partial_block:
   free (buffer);
   return 0;
 }
+#endif
 
 #if ! HAVE_OPENSSL_MD5
 /* Compute MD5 message digest for LEN bytes beginning at BUFFER.  The

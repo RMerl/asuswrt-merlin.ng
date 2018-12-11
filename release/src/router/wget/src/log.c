@@ -974,7 +974,7 @@ check_redirect_output (void)
     {
       pid_t foreground_pgrp = tcgetpgrp (STDIN_FILENO);
 
-      if (foreground_pgrp != -1 && foreground_pgrp != getpgrp ())
+      if (foreground_pgrp != -1 && foreground_pgrp != getpgrp () && !opt.quiet)
         {
           /* Process backgrounded */
           redirect_output (true,NULL);

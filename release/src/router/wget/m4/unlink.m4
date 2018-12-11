@@ -1,4 +1,4 @@
-# unlink.m4 serial 12
+# unlink.m4 serial 13
 dnl Copyright (C) 2009-2018 Free Software Foundation, Inc.
 dnl This file is free software; the Free Software Foundation
 dnl gives unlimited permission to copy and/or distribute it,
@@ -43,12 +43,14 @@ AC_DEFUN([gl_FUNC_UNLINK],
       [gl_cv_func_unlink_honors_slashes=yes],
       [gl_cv_func_unlink_honors_slashes=no],
       [case "$host_os" in
-                 # Guess yes on glibc systems.
-         *-gnu*) gl_cv_func_unlink_honors_slashes="guessing yes" ;;
-                 # Guess no on native Windows.
-         mingw*) gl_cv_func_unlink_honors_slashes="guessing no" ;;
-                 # If we don't know, assume the worst.
-         *)      gl_cv_func_unlink_honors_slashes="guessing no" ;;
+                          # Guess yes on Linux systems.
+         linux-* | linux) gl_cv_func_unlink_honors_slashes="guessing yes" ;;
+                          # Guess yes on glibc systems.
+         *-gnu*)          gl_cv_func_unlink_honors_slashes="guessing yes" ;;
+                          # Guess no on native Windows.
+         mingw*)          gl_cv_func_unlink_honors_slashes="guessing no" ;;
+                          # If we don't know, assume the worst.
+         *)               gl_cv_func_unlink_honors_slashes="guessing no" ;;
        esac
       ])
      rm -f conftest.file conftest.lnk])

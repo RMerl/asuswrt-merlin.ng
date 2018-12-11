@@ -28,6 +28,8 @@
    Macro/expression            Which gnulib module    This compilation unit
                                                       should define
 
+   _LIBC                       (glibc proper)         mktime
+
    NEED_MKTIME_WORKING         mktime                 rpl_mktime
    || NEED_MKTIME_WINDOWS
 
@@ -51,25 +53,70 @@
 
 #include <limits.h>
 #include <stdbool.h>
+#include <stdlib.h>
+#include <string.h>
 
 #include <intprops.h>
 #include <verify.h>
 
 #if DEBUG_MKTIME
 # include <stdio.h>
-# include <stdlib.h>
-# include <string.h>
 /* Make it work even if the system's libc has its own mktime routine.  */
 # undef mktime
 # define mktime my_mktime
+#endif /* DEBUG_MKTIME */
+
+#ifndef NEED_MKTIME_INTERNAL
+# define NEED_MKTIME_INTERNAL 0
+#endif
+#ifndef NEED_MKTIME_WINDOWS
+# define NEED_MKTIME_WINDOWS 0
+#endif
+#ifndef NEED_MKTIME_WORKING
+# define NEED_MKTIME_WORKING DEBUG_MKTIME
 #endif
 
-#if NEED_MKTIME_WINDOWS /* on native Windows */
-# include <stdlib.h>
-# include <string.h>
+#include "mktime-internal.h"
+
+#if !defined _LIBC && (NEED_MKTIME_WORKING || NEED_MKTIME_WINDOWS)
+static void
+my_tzset (void)
+{
+# if NEED_MKTIME_WINDOWS
+  /* Rectify the value of the environment variable TZ.
+     There are four possible kinds of such values:
+       - Traditional US time zone names, e.g. "PST8PDT".  Syntax: see
+         <https://msdn.microsoft.com/en-us/library/90s5c885.aspx>
+       - Time zone names based on geography, that contain one or more
+         slashes, e.g. "Europe/Moscow".
+       - Time zone names based on geography, without slashes, e.g.
+         "Singapore".
+       - Time zone names that contain explicit DST rules.  Syntax: see
+         <http://pubs.opengroup.org/onlinepubs/9699919799/basedefs/V1_chap08.html#tag_08_03>
+     The Microsoft CRT understands only the first kind.  It produces incorrect
+     results if the value of TZ is of the other kinds.
+     But in a Cygwin environment, /etc/profile.d/tzset.sh sets TZ to a value
+     of the second kind for most geographies, or of the first kind in a few
+     other geographies.  If it is of the second kind, neutralize it.  For the
+     Microsoft CRT, an absent or empty TZ means the time zone that the user
+     has set in the Windows Control Panel.
+     If the value of TZ is of the third or fourth kind -- Cygwin programs
+     understand these syntaxes as well --, it does not matter whether we
+     neutralize it or not, since these values occur only when a Cygwin user
+     has set TZ explicitly; this case is 1. rare and 2. under the user's
+     responsibility.  */
+  const char *tz = getenv ("TZ");
+  if (tz != NULL && strchr (tz, '/') != NULL)
+    _putenv ("TZ=");
+# elif HAVE_TZSET
+  tzset ();
+# endif
+}
+# undef __tzset
+# define __tzset() my_tzset ()
 #endif
 
-#if NEED_MKTIME_WORKING || NEED_MKTIME_INTERNAL || DEBUG_MKTIME
+#if defined _LIBC || NEED_MKTIME_WORKING || NEED_MKTIME_INTERNAL
 
 /* A signed type that can represent an integer number of years
    multiplied by three times the number of seconds in a year.  It is
@@ -149,19 +196,6 @@ const unsigned short int __mon_yday[2][13] =
     { 0, 31, 60, 91, 121, 152, 182, 213, 244, 274, 305, 335, 366 }
   };
 
-
-#ifdef _LIBC
-typedef time_t mktime_offset_t;
-#else
-/* Portable standalone applications should supply a <time.h> that
-   declares a POSIX-compliant localtime_r, for the benefit of older
-   implementations that lack localtime_r or have a nonstandard one.
-   See the gnulib time_r module for one way to implement this.  */
-# undef __localtime_r
-# define __localtime_r localtime_r
-# define __mktime_internal mktime_internal
-# include "mktime-internal.h"
-#endif
 
 /* Do the values A and B differ according to the rules for tm_isdst?
    A and B differ if one is zero and the other positive.  */
@@ -304,6 +338,7 @@ ranged_convert (struct tm *(*convert) (const time_t *, struct tm *),
   return r;
 }
 
+
 /* Convert *TP to a time_t value, inverting
    the monotonic and mostly-unit-linear conversion function CONVERT.
    Use *OFFSET to keep track of a guess at the offset of the result,
@@ -355,6 +390,7 @@ __mktime_internal (struct tm *tp,
   long_int lmday = mday;
   long_int yday = mon_yday + lmday;
 
+  mktime_offset_t off = *offset;
   int negative_offset_guess;
 
   int sec_requested = sec;
@@ -372,7 +408,7 @@ __mktime_internal (struct tm *tp,
   /* Invert CONVERT by probing.  First assume the same offset as last
      time.  */
 
-  INT_SUBTRACT_WRAPV (0, *offset, &negative_offset_guess);
+  INT_SUBTRACT_WRAPV (0, off, &negative_offset_guess);
   t0 = ydhms_diff (year, yday, hour, min, sec,
 		   EPOCH_YEAR - TM_YEAR_BASE, 0, 0, 0, negative_offset_guess);
 
@@ -478,64 +514,28 @@ __mktime_internal (struct tm *tp,
   return t;
 }
 
-#endif /* NEED_MKTIME_WORKING || NEED_MKTIME_INTERNAL || DEBUG_MKTIME */
+#endif /* _LIBC || NEED_MKTIME_WORKING || NEED_MKTIME_INTERNAL */
 
-#if NEED_MKTIME_WORKING || NEED_MKTIME_WINDOWS || DEBUG_MKTIME
-
-# if NEED_MKTIME_WORKING || DEBUG_MKTIME
-static mktime_offset_t localtime_offset;
-# endif
+#if defined _LIBC || NEED_MKTIME_WORKING || NEED_MKTIME_WINDOWS
 
 /* Convert *TP to a time_t value.  */
 time_t
 mktime (struct tm *tp)
 {
-# if NEED_MKTIME_WINDOWS
-  /* Rectify the value of the environment variable TZ.
-     There are four possible kinds of such values:
-       - Traditional US time zone names, e.g. "PST8PDT".  Syntax: see
-         <https://msdn.microsoft.com/en-us/library/90s5c885.aspx>
-       - Time zone names based on geography, that contain one or more
-         slashes, e.g. "Europe/Moscow".
-       - Time zone names based on geography, without slashes, e.g.
-         "Singapore".
-       - Time zone names that contain explicit DST rules.  Syntax: see
-         <http://pubs.opengroup.org/onlinepubs/9699919799/basedefs/V1_chap08.html#tag_08_03>
-     The Microsoft CRT understands only the first kind.  It produces incorrect
-     results if the value of TZ is of the other kinds.
-     But in a Cygwin environment, /etc/profile.d/tzset.sh sets TZ to a value
-     of the second kind for most geographies, or of the first kind in a few
-     other geographies.  If it is of the second kind, neutralize it.  For the
-     Microsoft CRT, an absent or empty TZ means the time zone that the user
-     has set in the Windows Control Panel.
-     If the value of TZ is of the third or fourth kind -- Cygwin programs
-     understand these syntaxes as well --, it does not matter whether we
-     neutralize it or not, since these values occur only when a Cygwin user
-     has set TZ explicitly; this case is 1. rare and 2. under the user's
-     responsibility.  */
-  const char *tz = getenv ("TZ");
-  if (tz != NULL && strchr (tz, '/') != NULL)
-    _putenv ("TZ=");
-# endif
-
-# if NEED_MKTIME_WORKING || DEBUG_MKTIME
-#  ifdef _LIBC
   /* POSIX.1 8.1.1 requires that whenever mktime() is called, the
      time zone names contained in the external variable 'tzname' shall
      be set as if the tzset() function had been called.  */
   __tzset ();
-#  elif HAVE_TZSET
-  tzset ();
-#  endif
 
+# if defined _LIBC || NEED_MKTIME_WORKING
+  static mktime_offset_t localtime_offset;
   return __mktime_internal (tp, __localtime_r, &localtime_offset);
 # else
 #  undef mktime
   return mktime (tp);
 # endif
 }
-
-#endif /* NEED_MKTIME_WORKING || NEED_MKTIME_WINDOWS || DEBUG_MKTIME */
+#endif /* _LIBC || NEED_MKTIME_WORKING || NEED_MKTIME_WINDOWS */
 
 #ifdef weak_alias
 weak_alias (mktime, timelocal)

@@ -36,11 +36,11 @@
 # include "unlocked-io.h"
 #endif
 
+#include <byteswap.h>
 #ifdef WORDS_BIGENDIAN
 # define SWAP(n) (n)
 #else
-# define SWAP(n) \
-    (((n) << 24) | (((n) & 0xff00) << 8) | (((n) >> 8) & 0xff00) | ((n) >> 24))
+# define SWAP(n) bswap_32 (n)
 #endif
 
 #define BLOCKSIZE 32768
@@ -91,17 +91,17 @@ sha224_init_ctx (struct sha256_ctx *ctx)
   ctx->buflen = 0;
 }
 
-/* Copy the value from v into the memory location pointed to by *cp,
-   If your architecture allows unaligned access this is equivalent to
-   * (uint32_t *) cp = v  */
+/* Copy the value from v into the memory location pointed to by *CP,
+   If your architecture allows unaligned access, this is equivalent to
+   * (__typeof__ (v) *) cp = v  */
 static void
 set_uint32 (char *cp, uint32_t v)
 {
   memcpy (cp, &v, sizeof v);
 }
 
-/* Put result from CTX in first 32 bytes following RESBUF.  The result
-   must be in little endian byte order.  */
+/* Put result from CTX in first 32 bytes following RESBUF.
+   The result must be in little endian byte order.  */
 void *
 sha256_read_ctx (const struct sha256_ctx *ctx, void *resbuf)
 {
@@ -169,152 +169,109 @@ sha224_finish_ctx (struct sha256_ctx *ctx, void *resbuf)
 }
 #endif
 
-/* Compute SHA256 message digest for bytes read from STREAM.  The
-   resulting message digest number will be written into the 32 bytes
-   beginning at RESBLOCK.  */
+#ifdef GL_COMPILE_CRYPTO_STREAM
+
+#include "af_alg.h"
+
+/* Compute message digest for bytes read from STREAM using algorithm ALG.
+   Write the message digest into RESBLOCK, which contains HASHLEN bytes.
+   The initial and finishing operations are INIT_CTX and FINISH_CTX.
+   Return zero if and only if successful.  */
+static int
+shaxxx_stream (FILE *stream, char const *alg, void *resblock,
+               ssize_t hashlen, void (*init_ctx) (struct sha256_ctx *),
+               void *(*finish_ctx) (struct sha256_ctx *, void *))
+{
+  switch (afalg_stream (stream, alg, resblock, hashlen))
+    {
+    case 0: return 0;
+    case -EIO: return 1;
+    }
+
+  char *buffer = malloc (BLOCKSIZE + 72);
+  if (!buffer)
+    return 1;
+
+  struct sha256_ctx ctx;
+  init_ctx (&ctx);
+  size_t sum;
+
+  /* Iterate over full file contents.  */
+  while (1)
+    {
+      /* We read the file in blocks of BLOCKSIZE bytes.  One call of the
+         computation function processes the whole buffer so that with the
+         next round of the loop another block can be read.  */
+      size_t n;
+      sum = 0;
+
+      /* Read block.  Take care for partial reads.  */
+      while (1)
+        {
+          /* Either process a partial fread() from this loop,
+             or the fread() in afalg_stream may have gotten EOF.
+             We need to avoid a subsequent fread() as EOF may
+             not be sticky.  For details of such systems, see:
+             https://sourceware.org/bugzilla/show_bug.cgi?id=1190  */
+          if (feof (stream))
+            goto process_partial_block;
+
+          n = fread (buffer + sum, 1, BLOCKSIZE - sum, stream);
+
+          sum += n;
+
+          if (sum == BLOCKSIZE)
+            break;
+
+          if (n == 0)
+            {
+              /* Check for the error flag IFF N == 0, so that we don't
+                 exit the loop after a partial read due to e.g., EAGAIN
+                 or EWOULDBLOCK.  */
+              if (ferror (stream))
+                {
+                  free (buffer);
+                  return 1;
+                }
+              goto process_partial_block;
+            }
+        }
+
+      /* Process buffer with BLOCKSIZE bytes.  Note that
+                        BLOCKSIZE % 64 == 0
+       */
+      sha256_process_block (buffer, BLOCKSIZE, &ctx);
+    }
+
+ process_partial_block:;
+
+  /* Process any remaining bytes.  */
+  if (sum > 0)
+    sha256_process_bytes (buffer, sum, &ctx);
+
+  /* Construct result in desired memory.  */
+  finish_ctx (&ctx, resblock);
+  free (buffer);
+  return 0;
+}
+
 int
 sha256_stream (FILE *stream, void *resblock)
 {
-  struct sha256_ctx ctx;
-  size_t sum;
-
-  char *buffer = malloc (BLOCKSIZE + 72);
-  if (!buffer)
-    return 1;
-
-  /* Initialize the computation context.  */
-  sha256_init_ctx (&ctx);
-
-  /* Iterate over full file contents.  */
-  while (1)
-    {
-      /* We read the file in blocks of BLOCKSIZE bytes.  One call of the
-         computation function processes the whole buffer so that with the
-         next round of the loop another block can be read.  */
-      size_t n;
-      sum = 0;
-
-      /* Read block.  Take care for partial reads.  */
-      while (1)
-        {
-          n = fread (buffer + sum, 1, BLOCKSIZE - sum, stream);
-
-          sum += n;
-
-          if (sum == BLOCKSIZE)
-            break;
-
-          if (n == 0)
-            {
-              /* Check for the error flag IFF N == 0, so that we don't
-                 exit the loop after a partial read due to e.g., EAGAIN
-                 or EWOULDBLOCK.  */
-              if (ferror (stream))
-                {
-                  free (buffer);
-                  return 1;
-                }
-              goto process_partial_block;
-            }
-
-          /* We've read at least one byte, so ignore errors.  But always
-             check for EOF, since feof may be true even though N > 0.
-             Otherwise, we could end up calling fread after EOF.  */
-          if (feof (stream))
-            goto process_partial_block;
-        }
-
-      /* Process buffer with BLOCKSIZE bytes.  Note that
-                        BLOCKSIZE % 64 == 0
-       */
-      sha256_process_block (buffer, BLOCKSIZE, &ctx);
-    }
-
- process_partial_block:;
-
-  /* Process any remaining bytes.  */
-  if (sum > 0)
-    sha256_process_bytes (buffer, sum, &ctx);
-
-  /* Construct result in desired memory.  */
-  sha256_finish_ctx (&ctx, resblock);
-  free (buffer);
-  return 0;
+  return shaxxx_stream (stream, "sha256", resblock, SHA256_DIGEST_SIZE,
+                        sha256_init_ctx, sha256_finish_ctx);
 }
 
-/* FIXME: Avoid code duplication */
 int
 sha224_stream (FILE *stream, void *resblock)
 {
-  struct sha256_ctx ctx;
-  size_t sum;
-
-  char *buffer = malloc (BLOCKSIZE + 72);
-  if (!buffer)
-    return 1;
-
-  /* Initialize the computation context.  */
-  sha224_init_ctx (&ctx);
-
-  /* Iterate over full file contents.  */
-  while (1)
-    {
-      /* We read the file in blocks of BLOCKSIZE bytes.  One call of the
-         computation function processes the whole buffer so that with the
-         next round of the loop another block can be read.  */
-      size_t n;
-      sum = 0;
-
-      /* Read block.  Take care for partial reads.  */
-      while (1)
-        {
-          n = fread (buffer + sum, 1, BLOCKSIZE - sum, stream);
-
-          sum += n;
-
-          if (sum == BLOCKSIZE)
-            break;
-
-          if (n == 0)
-            {
-              /* Check for the error flag IFF N == 0, so that we don't
-                 exit the loop after a partial read due to e.g., EAGAIN
-                 or EWOULDBLOCK.  */
-              if (ferror (stream))
-                {
-                  free (buffer);
-                  return 1;
-                }
-              goto process_partial_block;
-            }
-
-          /* We've read at least one byte, so ignore errors.  But always
-             check for EOF, since feof may be true even though N > 0.
-             Otherwise, we could end up calling fread after EOF.  */
-          if (feof (stream))
-            goto process_partial_block;
-        }
-
-      /* Process buffer with BLOCKSIZE bytes.  Note that
-                        BLOCKSIZE % 64 == 0
-       */
-      sha256_process_block (buffer, BLOCKSIZE, &ctx);
-    }
-
- process_partial_block:;
-
-  /* Process any remaining bytes.  */
-  if (sum > 0)
-    sha256_process_bytes (buffer, sum, &ctx);
-
-  /* Construct result in desired memory.  */
-  sha224_finish_ctx (&ctx, resblock);
-  free (buffer);
-  return 0;
+  return shaxxx_stream (stream, "sha224", resblock, SHA224_DIGEST_SIZE,
+                        sha224_init_ctx, sha224_finish_ctx);
 }
+#endif
 
 #if ! HAVE_OPENSSL_SHA256
-/* Compute SHA512 message digest for LEN bytes beginning at BUFFER.  The
+/* Compute SHA256 message digest for LEN bytes beginning at BUFFER.  The
    result is always in little endian byte order, so that a byte-wise
    output yields to the wanted ASCII representation of the message
    digest.  */

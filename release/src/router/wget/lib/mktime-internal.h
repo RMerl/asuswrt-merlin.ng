@@ -35,3 +35,19 @@ typedef int mktime_offset_t;
 time_t mktime_internal (struct tm *,
                         struct tm * (*) (time_t const *, struct tm *),
                         mktime_offset_t *);
+
+/* Although glibc source code uses leading underscores, Gnulib wants
+   ordinary names.
+
+   Portable standalone applications should supply a <time.h> that
+   declares a POSIX-compliant localtime_r, for the benefit of older
+   implementations that lack localtime_r or have a nonstandard one.
+   Similarly for gmtime_r.  See the gnulib time_r module for one way
+   to implement this.  */
+
+#undef __gmtime_r
+#undef __localtime_r
+#define __gmtime_r gmtime_r
+#define __localtime_r localtime_r
+
+#define __mktime_internal mktime_internal

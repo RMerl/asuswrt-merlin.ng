@@ -1,0 +1,20 @@
+# Template file to generate expired.pem for certtool (GnuTLS) 
+# see 'man certtool' for more options
+
+organization = "GNU"
+unit = "Wget"
+# locality =
+state = "Sunshine"
+country = Freeland
+cn = "WgetTestingServer"
+dns_name = "WgetTestingServer"
+#uid = "wget"
+#dc = "name"
+#dc = "domain"
+activation_date = "2004-02-28 16:21:42"
+expiration_date = "2005-02-28 16:24:41"
+#ca
+
+# key options
+encryption_key
+tls_www_server

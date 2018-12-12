@@ -1,0 +1,5 @@
+# Template file to generate revoked.crl for certtool (GnuTLS) 
+# see 'man certtool' for more options
+
+crl_next_update = -1
+

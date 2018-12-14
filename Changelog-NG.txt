@@ -9,6 +9,8 @@ Asuswrt-Merlin 384/NG Changelog
              SSH access from LAN
   - FIXED: Firmware update checks would not run at boot time
            on the RT-AX88U.
+  - FIXED: Name resolution for /etc/hosts entries on HND
+           models (themiron)
 
 
 384.8_2 (8-Dec-2018)

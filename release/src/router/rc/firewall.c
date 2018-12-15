@@ -1346,7 +1346,6 @@ void write_port_forwarding(FILE *fp, char *config, char *lan_ip, char *lan_if)
 
 #if !defined(RTCONFIG_MULTIWAN_CFG)
 	if (is_nat_enabled() && nvram_match("vts_enable_x", "1")) {
-		int local_ftpport = nvram_get_int("vts_ftpport");
 		nvp = nv = strdup(nvram_safe_get(config));
 		while (nv && (b = strsep(&nvp, "<")) != NULL) {
 			char *portv, *portp, *c;
@@ -1377,11 +1376,8 @@ void write_port_forwarding(FILE *fp, char *config, char *lan_ip, char *lan_if)
 				else
 					snprintf(dstips, sizeof(dstips), "--to %s", dstip);
 
-				if (strcmp(proto, "TCP") == 0 || strcmp(proto, "BOTH") == 0) {
+				if (strcmp(proto, "TCP") == 0 || strcmp(proto, "BOTH") == 0)
 					fprintf(fp, "-A %s %s -p tcp -m tcp --dport %s -j DNAT %s\n", chain, srcips, c, dstips);
-					if (local_ftpport != 0 && local_ftpport != 21 && atoi(c) == 21)
-						fprintf(fp, "-A %s %s -p tcp -m tcp --dport %d -j DNAT --to-destination %s:21\n", chain, srcips, local_ftpport, lan_ip);
-				}
 				if (strcmp(proto, "UDP") == 0 || strcmp(proto, "BOTH") == 0)
 					fprintf(fp, "-A %s %s -p udp -m udp --dport %s -j DNAT %s\n", chain, srcips, c, dstips);
 				// Handle raw protocol in port field, no val1:val2 allowed
@@ -1397,7 +1393,6 @@ void write_port_forwarding(FILE *fp, char *config, char *lan_ip, char *lan_if)
 #else
 	// Port forwarding or Virtual Server for multiple WAN configurations
 	if (is_nat_enabled() && nvram_match("vts_enable_x", "1")) {
-		int local_ftpport = nvram_get_int("vts_ftpport");
 		int i, mtwancfg = 0;
 
 		if (get_nr_wan_unit() == 2 && nvram_match("wans_mode", "lb"))
@@ -1464,13 +1459,6 @@ void write_port_forwarding(FILE *fp, char *config, char *lan_ip, char *lan_if)
 								fprintf(fp, "-A %s %s -i %s %s -p tcp -m tcp --dport %s -j DNAT %s\n",
 									chain, srcips, wan_iface[i], i? "" : dst_ip, c, dstips);
 							}
-
-							if (local_ftpport != 0 && local_ftpport != 21 && atoi(c) == 21) {
-								for (i = 0; i <= wanx_rules; ++i) {
-									fprintf(fp, "-A %s %s -i %s %s -p tcp -m tcp --dport %d -j DNAT --to-destination %s:21\n",
-										chain, srcips, wan_iface[i], i? "" : dst_ip, local_ftpport, lan_ip);
-								}
-							}
 						}
 						if (!strcmp(proto, "UDP") || !strcmp(proto, "BOTH")) {
 							for (i = 0; i <= wanx_rules; ++i) {
@@ -1526,11 +1514,6 @@ void write_port_forwarding(FILE *fp, char *config, char *lan_ip, char *lan_if)
 					if (strcmp(proto, "TCP") == 0 || strcmp(proto, "BOTH") == 0){
 						fprintf(fp, "-A %s %s -p tcp -m tcp --dport %s -j DNAT %s\n",
 							chain, srcips, c, dstips);
-
-						if (local_ftpport != 0 && local_ftpport != 21 && atoi(c) == 21) {
-							fprintf(fp, "-A %s %s -p tcp -m tcp --dport %d -j DNAT --to-destination %s:21\n",
-								chain, srcips, local_ftpport, lan_ip);
-						}
 					}
 					if (strcmp(proto, "UDP") == 0 || strcmp(proto, "BOTH") == 0)
 						fprintf(fp, "-A %s %s -p udp -m udp --dport %s -j DNAT %s\n",
@@ -1573,6 +1556,10 @@ void nat_setting(char *wan_if, char *wan_ip, char *wanx_if, char *wanx_ip, char 
 	dip = ntohl(inet_addr(lan_ip)) + 0x100;
 	gst.s_addr = htonl(dip);
 	strcpy(g_lan_ip, inet_ntoa(gst));
+#endif
+#ifdef RTCONFIG_IPSEC
+	int isakmp_port = nvram_get_int("ipsec_isakmp_port");
+	int nat_t_port = nvram_get_int("ipsec_nat_t_port");
 #endif
 
 	sprintf(name, "%s_%s_%s", NAT_RULES, wan_if, wanx_if);
@@ -1639,8 +1626,8 @@ void nat_setting(char *wan_if, char *wan_ip, char *wanx_if, char *wanx_ip, char 
 
 #ifdef RTCONFIG_IPSEC
 	if(is_nat_enabled() && dmz_enabled()) {
-		fprintf(fp, "-A PREROUTING -i %s -p udp -m udp --dport 500 -j REDIRECT --to-port 500\n", wan_if);
-		fprintf(fp, "-A PREROUTING -i %s -p udp -m udp --dport 4500 -j REDIRECT --to-port 4500\n", wan_if);
+		fprintf(fp, "-A PREROUTING -i %s -p udp -m udp --dport %d -j REDIRECT --to-port %d\n", wan_if, isakmp_port, isakmp_port);
+		fprintf(fp, "-A PREROUTING -i %s -p udp -m udp --dport %d -j REDIRECT --to-port %d\n", wan_if, nat_t_port, nat_t_port);
 	}
 #endif
 
@@ -1923,6 +1910,10 @@ void nat_setting2(char *lan_if, char *lan_ip, char *logaccept, char *logdrop)	//
 	int addr_type;
 	char *nv, *b;
 #endif
+#ifdef RTCONFIG_IPSEC
+	int isakmp_port = nvram_get_int("ipsec_isakmp_port");
+	int nat_t_port = nvram_get_int("ipsec_nat_t_port");
+#endif
 
 	ip2class(lan_ip, nvram_safe_get("lan_netmask"), lan_class);
 
@@ -1986,8 +1977,8 @@ void nat_setting2(char *lan_if, char *lan_ip, char *logaccept, char *logdrop)	//
 
 #ifdef RTCONFIG_IPSEC
 		if(is_nat_enabled() && dmz_enabled()) {
-			fprintf(fp, "-A PREROUTING -i %s -p udp -m udp --dport 500 -j REDIRECT --to-port 500\n", wan_if);
-			fprintf(fp, "-A PREROUTING -i %s -p udp -m udp --dport 4500 -j REDIRECT --to-port 4500\n", wan_if);
+			fprintf(fp, "-A PREROUTING -i %s -p udp -m udp --dport %d -j REDIRECT --to-port %d\n", wan_if, isakmp_port, isakmp_port);
+			fprintf(fp, "-A PREROUTING -i %s -p udp -m udp --dport %d -j REDIRECT --to-port %d\n", wan_if, nat_t_port, nat_t_port);
 		}
 #endif
 
@@ -2823,40 +2814,6 @@ int makeTimestr_content(char *tf, int size)
 }
 #endif
 
-int ruleHasFTPport(void)
-{
-	char *nvp, *nv, *b, *desc, *port, *srcip, *dstip, *lport, *proto;
-	char *portv, *portp, *c;
-	int cnt;
-
-	nvp = nv = strdup(nvram_safe_get("vts_rulelist"));
-	while(nv && (b = strsep(&nvp, "<")) != NULL){
-		if ((cnt = vstrsep(b, ">", &desc, &port, &dstip, &lport, &proto, &srcip)) < 5)
-			continue;
-		else if (cnt < 6)
-			srcip = "";
-
-#if 0
-		if(strstr(port, "21"))
-		{
-			return 1;
-		}
-#else
-		// Handle port1,port2,port3 format
-		portp = portv = strdup(port);
-		while(portv && (c = strsep(&portp, ",")) != NULL){
-			if(!strcmp(c, "21")){
-				free(portv);
-				free(nv);
-				return 1;
-			}
-		}
-		free(portv);
-#endif
-	}
-	free(nv);
-	return 0;
-}
 #ifdef WEBSTRFILTER
 #ifdef RTCONFIG_IPV6
 void write_UrlFilter(char *chain, char *lan_if, char *lan_ip, char *logdrop, FILE *fp, FILE *fp_ipv6)
@@ -3027,6 +2984,10 @@ filter_setting(char *wan_if, char *wan_ip, char *lan_if, char *lan_ip, char *log
 #ifdef RTCONFIG_TOR
 	char addr_new[32];
 	int addr_type;
+#endif
+#ifdef RTCONFIG_IPSEC
+	int isakmp_port = nvram_get_int("ipsec_isakmp_port");
+	int nat_t_port = nvram_get_int("ipsec_nat_t_port");
 #endif
 
 //2008.09 magic{
@@ -3212,15 +3173,19 @@ TRACE_PT("writing Parental Control\n");
 	}
 #endif
 
-#if 0 //def RTCONFIG_IPSEC
-		fprintf(fp, "-A INPUT -i %s --protocol esp -j ACCEPT\n", wan_if);
+#ifdef RTCONFIG_IPSEC
+		if(nvram_get_int("ipsec_server_enable")){ /* Drop ipsec connection port from LAN to WLAN. */
+			fprintf(fp, "-A INPUT -i %s -p udp --sport %d --dport %d -j DROP\n", lan_if, isakmp_port, isakmp_port);
+			fprintf(fp, "-A INPUT -i %s -p udp --sport %d --dport %d -j DROP\n", lan_if, nat_t_port, nat_t_port);
+		}
+		/*fprintf(fp, "-A INPUT -i %s --protocol esp -j ACCEPT\n", wan_if);
 		fprintf(fp, "-A INPUT -i %s --protocol ah -j ACCEPT\n", wan_if);
 		fprintf(fp, "-A INPUT -i %s -p udp --sport 500 --dport 500 -j ACCEPT\n", wan_if);
 		fprintf(fp, "-A INPUT -i %s -p udp --sport 4500 --dport 4500 -j ACCEPT\n", wan_if);
 		fprintf(fp, "-A OUTPUT -o %s --protocol esp -j ACCEPT\n", wan_if);
 		fprintf(fp, "-A OUTPUT -o %s --protocol ah -j ACCEPT\n", wan_if);
 		fprintf(fp, "-A OUTPUT -o %s -p udp --sport 500 --dport 500 -j ACCEPT\n", wan_if);
-		fprintf(fp, "-A OUTPUT -o %s -p udp --sport 4500 --dport 4500 -j ACCEPT\n", wan_if);
+		fprintf(fp, "-A OUTPUT -o %s -p udp --sport 4500 --dport 4500 -j ACCEPT\n", wan_if);*/
 #endif
 
 // RFC-6092, sec. 3.2.4
@@ -3390,18 +3355,12 @@ TRACE_PT("writing Parental Control\n");
 			if (passive_port)
 				fprintf(fp, "-A INPUT -p tcp -m tcp --dport %d:%d -j %s\n", passive_port, passive_port+30, logaccept);
 
-			int local_ftpport = nvram_get_int("vts_ftpport");
-			if (nvram_match("vts_enable_x", "1") && local_ftpport != 0 && local_ftpport != 21 && ruleHasFTPport())
-				fprintf(fp, "-A INPUT -p tcp -m tcp --dport %d -j %s\n", local_ftpport, logaccept);
 #ifdef RTCONFIG_IPV6
 			if (ipv6_enabled() && nvram_match("ipv6_fw_enable", "1"))
 			{
 				fprintf(fp_ipv6, "-A INPUT -p tcp -m tcp --dport 21 -j %s\n", logaccept);
 				if (passive_port)
-					fprintf(fp_ipv6, "-A INPUT -p tcp -m tcp --dport %d:%d -j %s\n", passive_port, passive_port+30, logaccept);
-
-				if (nvram_match("vts_enable_x", "1") && local_ftpport != 0 && local_ftpport != 21 && ruleHasFTPport())
-					fprintf(fp_ipv6, "-A INPUT -p tcp -m tcp --dport %d -j %s\n", local_ftpport, logaccept);
+						fprintf(fp_ipv6, "-A INPUT -p tcp -m tcp --dport %d:%d -j %s\n", passive_port, passive_port+30, logaccept);
 			}
 #endif
 		}
@@ -3410,7 +3369,6 @@ TRACE_PT("writing Parental Control\n");
 #ifdef RTCONFIG_WEBDAV
 		if (nvram_match("enable_webdav", "1"))
 		{
-			//fprintf(fp, "-A INPUT -p tcp -m tcp -d %s --dport %s -j %s\n", wan_ip, nvram_safe_get("usb_ftpport_x"), logaccept);
 			if(nvram_get_int("st_webdav_mode")!=1) {
 				fprintf(fp, "-A INPUT -p tcp -m tcp --dport %s -j DROP\n", nvram_safe_get("webdav_http_port"));	// oleg patch
 			}
@@ -4173,6 +4131,10 @@ filter_setting2(char *lan_if, char *lan_ip, char *logaccept, char *logdrop)
 #endif
 	int v4v6_ok = IPT_V4;
 	int wan_max_unit = WAN_UNIT_MAX;
+#ifdef RTCONFIG_IPSEC
+		int isakmp_port = nvram_get_int("ipsec_isakmp_port");
+		int nat_t_port = nvram_get_int("ipsec_nat_t_port");
+#endif
 
 #ifdef RTCONFIG_MULTICAST_IPTV
 	if (nvram_get_int("switch_stb_x") > 6)
@@ -4505,16 +4467,9 @@ TRACE_PT("writing Parental Control\n");
 #ifdef RTCONFIG_FTP
 		if (nvram_get_int("enable_ftp")) {
 			fprintf(fp, "-A INPUT -p tcp -m tcp --dport 21 -j %s\n", logaccept);
-			int local_ftpport = nvram_get_int("vts_ftpport");
-			if (nvram_match("vts_enable_x", "1") && local_ftpport != 0 && local_ftpport != 21 && ruleHasFTPport())
-				fprintf(fp, "-A INPUT -p tcp -m tcp --dport %d -j %s\n", local_ftpport, logaccept);
 #ifdef RTCONFIG_IPV6
 			if (ipv6_enabled() && nvram_match("ipv6_fw_enable", "1"))
-			{
 				fprintf(fp_ipv6, "-A INPUT -p tcp -m tcp --dport 21 -j %s\n", logaccept);
-				if (nvram_match("vts_enable_x", "1") && local_ftpport != 0 && local_ftpport != 21 && ruleHasFTPport())
-					fprintf(fp_ipv6, "-A INPUT -p tcp -m tcp --dport %d -j %s\n", local_ftpport, logaccept);
-			}
 #endif
 		}
 #endif
@@ -4522,7 +4477,6 @@ TRACE_PT("writing Parental Control\n");
 #ifdef RTCONFIG_WEBDAV
 		if (nvram_match("enable_webdav", "1"))
 		{
-			//fprintf(fp, "-A INPUT -p tcp -m tcp -d %s --dport %s -j %s\n", wan_ip, nvram_safe_get("usb_ftpport_x"), logaccept);
 			if(nvram_get_int("st_webdav_mode")!=1) {
 				fprintf(fp, "-A INPUT -p tcp -m tcp --dport %s -j DROP\n", nvram_safe_get("webdav_http_port"));	// oleg patch
 			}

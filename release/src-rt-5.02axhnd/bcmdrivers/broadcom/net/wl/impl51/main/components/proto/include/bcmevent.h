@@ -20,7 +20,7 @@
  *
  * <<Broadcom-WL-IPTag/Open:>>
  *
- * $Id: bcmevent.h 765980 2018-07-21 13:47:35Z $
+ * $Id: bcmevent.h 767704 2018-09-24 11:19:21Z $
  *
  */
 
@@ -419,8 +419,9 @@ typedef union bcm_event_msg_u {
 #define WLC_E_TXFAIL_TRFTHOLD		183	/* Indication of MAC tx failures */
 
 #define WLC_E_CAC_STATE_CHANGE		184     /* Indication of CAC Status change */
+#define WLC_E_REQ_BW_CHANGE		185	/* Event to request for BW change */
 
-#define WLC_E_LAST			185
+#define WLC_E_LAST			186
 
 /* define an API for getting the string name of an event */
 extern const char *bcmevent_get_name(uint event_type);
@@ -559,12 +560,13 @@ typedef struct wl_event_sdb_trans {
 #define WLC_E_SUP_WPA_PSK_M1_TMO	16	/* WPA PSK 4-way handshake M1 timeout */
 #define WLC_E_SUP_WPA_PSK_M3_TMO	17	/* WPA PSK 4-way handshake M3 timeout */
 
-/* Ucode reason codes carried in the WLC_E_MACDBG event */
+/* macdbg reason codes carried in the WLC_E_MACDBG event */
 #define WLC_E_MACDBG_LIST_PSM		0	/* Dump list update for PSM registers */
 #define WLC_E_MACDBG_LIST_PSMX		1	/* Dump list update for PSMx registers */
 #define WLC_E_MACDBG_REGALL		2	/* Dump all registers, old define will be removed */
 #define WLC_E_MACDBG_DUMPALL		2	/* Dump all registers */
 #define WLC_E_MACDBG_LISTALL		3	/* Update offsets of all registers to dump */
+#define WLC_E_MACDBG_DTRACE		4	/* Send dtrace log bytes */
 #define WLC_E_MACDBG_RATELINKMEM	5	/* Update occurred in ratelinkmem usage */
 
 /* Event data for events that include frames received over the air */
@@ -1225,5 +1227,17 @@ typedef struct wlc_rlm_event {
 	uint16 action;
 	uint16 entry;
 } wlc_rlm_event_t;
+
+/*
+ * Event data for WLC_E_REQ_BW_UPGRADE event
+ */
+typedef struct wl_event_req_bw_upgd {
+	uint16 version;
+	uint16 length;
+	uint16 flags;			/* Reserved */
+	chanspec_t upgrd_chspec;	/* Target chanspec to upgrade to 160Mhz */
+} wl_event_req_bw_upgd_t;
+#define WL_EVENT_REQ_BW_UPGD_VER_1	1
+#define WL_EVENT_REQ_BW_UPGD_LEN	8
 
 #endif /* _BCMEVENT_H_ */

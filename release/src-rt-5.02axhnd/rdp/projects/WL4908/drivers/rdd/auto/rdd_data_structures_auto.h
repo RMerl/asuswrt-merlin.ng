@@ -5042,57 +5042,75 @@ __PACKING_ATTRIBUTE_STRUCT_END__ RDD_CPU_TX_DHD_DESCRIPTOR_DTS;
 typedef struct
 {
 #ifndef FIRMWARE_LITTLE_ENDIAN
-	uint32_t	reserved0   	:32	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-	uint32_t	dhd_msg_type	:2	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-	uint32_t	radio_idx   	:2	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-	uint32_t	flow_ring_id	:10	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-	uint32_t	disabled    	:1	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-	uint32_t	reserved1   	:1	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-	uint32_t	reserved2   	:16	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	reserved0     	:32	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	dhd_msg_type  	:2	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	radio_idx     	:2	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	flow_ring_id  	:10	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	disabled      	:1	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	read_idx_valid	:1	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	read_idx      	:10	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	reserved2     	:6	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
 #else
-	uint32_t	reserved0   	:32	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-	uint32_t	reserved2   	:16	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-	uint32_t	reserved1   	:1	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-	uint32_t	disabled    	:1	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-	uint32_t	flow_ring_id	:10	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-	uint32_t	radio_idx   	:2	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-	uint32_t	dhd_msg_type	:2	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	reserved0     	:32	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	reserved2     	:6	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	read_idx      	:10	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	read_idx_valid	:1	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	disabled      	:1	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	flow_ring_id  	:10	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	radio_idx     	:2	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	dhd_msg_type  	:2	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
 #endif
 }
 __PACKING_ATTRIBUTE_STRUCT_END__ RDD_CPU_TX_DHD_MESSAGE_DESCRIPTOR_DTS;
 
-#define RDD_CPU_TX_DHD_MESSAGE_DESCRIPTOR_DHD_MSG_TYPE_READ_G(r, g, addr, idx)    GROUP_FIELD_MREAD_8(g, (uint8_t *)(addr + idx*sizeof(RDD_CPU_TX_DHD_MESSAGE_DESCRIPTOR_DTS)) + 4, 6, 2, r)
-#define RDD_CPU_TX_DHD_MESSAGE_DESCRIPTOR_DHD_MSG_TYPE_WRITE_G(v, g, addr, idx)   GROUP_FIELD_MWRITE_8(g, (uint8_t *)(addr + idx*sizeof(RDD_CPU_TX_DHD_MESSAGE_DESCRIPTOR_DTS)) + 4, 6, 2, v)
-#define RDD_CPU_TX_DHD_MESSAGE_DESCRIPTOR_DHD_MSG_TYPE_L_READ( wv )               FIELD_GET( wv, 30, 2 )
-#define RDD_CPU_TX_DHD_MESSAGE_DESCRIPTOR_DHD_MSG_TYPE_L_WRITE( v, wv )           FIELD_SET( v, 30, 2, wv )
-#define RDD_CPU_TX_DHD_MESSAGE_DESCRIPTOR_DHD_MSG_TYPE_READ(r, p)                 FIELD_MREAD_8((uint8_t *)p + 4, 6, 2, r)
-#define RDD_CPU_TX_DHD_MESSAGE_DESCRIPTOR_DHD_MSG_TYPE_WRITE(v, p)                FIELD_MWRITE_8((uint8_t *)p + 4, 6, 2, v)
-#define RDD_CPU_TX_DHD_MESSAGE_DESCRIPTOR_DHD_MSG_TYPE_L_READ( wv )               FIELD_GET( wv, 30, 2 )
-#define RDD_CPU_TX_DHD_MESSAGE_DESCRIPTOR_DHD_MSG_TYPE_L_WRITE( v, wv )           FIELD_SET( v, 30, 2, wv )
-#define RDD_CPU_TX_DHD_MESSAGE_DESCRIPTOR_RADIO_IDX_READ_G(r, g, addr, idx)       GROUP_FIELD_MREAD_8(g, (uint8_t *)(addr + idx*sizeof(RDD_CPU_TX_DHD_MESSAGE_DESCRIPTOR_DTS)) + 4, 4, 2, r)
-#define RDD_CPU_TX_DHD_MESSAGE_DESCRIPTOR_RADIO_IDX_WRITE_G(v, g, addr, idx)      GROUP_FIELD_MWRITE_8(g, (uint8_t *)(addr + idx*sizeof(RDD_CPU_TX_DHD_MESSAGE_DESCRIPTOR_DTS)) + 4, 4, 2, v)
-#define RDD_CPU_TX_DHD_MESSAGE_DESCRIPTOR_RADIO_IDX_L_READ( wv )                  FIELD_GET( wv, 28, 2 )
-#define RDD_CPU_TX_DHD_MESSAGE_DESCRIPTOR_RADIO_IDX_L_WRITE( v, wv )              FIELD_SET( v, 28, 2, wv )
-#define RDD_CPU_TX_DHD_MESSAGE_DESCRIPTOR_RADIO_IDX_READ(r, p)                    FIELD_MREAD_8((uint8_t *)p + 4, 4, 2, r)
-#define RDD_CPU_TX_DHD_MESSAGE_DESCRIPTOR_RADIO_IDX_WRITE(v, p)                   FIELD_MWRITE_8((uint8_t *)p + 4, 4, 2, v)
-#define RDD_CPU_TX_DHD_MESSAGE_DESCRIPTOR_RADIO_IDX_L_READ( wv )                  FIELD_GET( wv, 28, 2 )
-#define RDD_CPU_TX_DHD_MESSAGE_DESCRIPTOR_RADIO_IDX_L_WRITE( v, wv )              FIELD_SET( v, 28, 2, wv )
-#define RDD_CPU_TX_DHD_MESSAGE_DESCRIPTOR_FLOW_RING_ID_READ_G(r, g, addr, idx)    GROUP_FIELD_MREAD_16(g, (uint8_t *)(addr + idx*sizeof(RDD_CPU_TX_DHD_MESSAGE_DESCRIPTOR_DTS)) + 4, 2, 10, r)
-#define RDD_CPU_TX_DHD_MESSAGE_DESCRIPTOR_FLOW_RING_ID_WRITE_G(v, g, addr, idx)   GROUP_FIELD_MWRITE_16(g, (uint8_t *)(addr + idx*sizeof(RDD_CPU_TX_DHD_MESSAGE_DESCRIPTOR_DTS)) + 4, 2, 10, v)
-#define RDD_CPU_TX_DHD_MESSAGE_DESCRIPTOR_FLOW_RING_ID_L_READ( wv )               FIELD_GET( wv, 18, 10 )
-#define RDD_CPU_TX_DHD_MESSAGE_DESCRIPTOR_FLOW_RING_ID_L_WRITE( v, wv )           FIELD_SET( v, 18, 10, wv )
-#define RDD_CPU_TX_DHD_MESSAGE_DESCRIPTOR_FLOW_RING_ID_READ(r, p)                 FIELD_MREAD_16((uint8_t *)p + 4, 2, 10, r)
-#define RDD_CPU_TX_DHD_MESSAGE_DESCRIPTOR_FLOW_RING_ID_WRITE(v, p)                FIELD_MWRITE_16((uint8_t *)p + 4, 2, 10, v)
-#define RDD_CPU_TX_DHD_MESSAGE_DESCRIPTOR_FLOW_RING_ID_L_READ( wv )               FIELD_GET( wv, 18, 10 )
-#define RDD_CPU_TX_DHD_MESSAGE_DESCRIPTOR_FLOW_RING_ID_L_WRITE( v, wv )           FIELD_SET( v, 18, 10, wv )
-#define RDD_CPU_TX_DHD_MESSAGE_DESCRIPTOR_DISABLED_READ_G(r, g, addr, idx)        GROUP_FIELD_MREAD_8(g, (uint8_t *)(addr + idx*sizeof(RDD_CPU_TX_DHD_MESSAGE_DESCRIPTOR_DTS)) + 5, 1, 1, r)
-#define RDD_CPU_TX_DHD_MESSAGE_DESCRIPTOR_DISABLED_WRITE_G(v, g, addr, idx)       GROUP_FIELD_MWRITE_8(g, (uint8_t *)(addr + idx*sizeof(RDD_CPU_TX_DHD_MESSAGE_DESCRIPTOR_DTS)) + 5, 1, 1, v)
-#define RDD_CPU_TX_DHD_MESSAGE_DESCRIPTOR_DISABLED_L_READ( wv )                   FIELD_GET( wv, 17, 1 )
-#define RDD_CPU_TX_DHD_MESSAGE_DESCRIPTOR_DISABLED_L_WRITE( v, wv )               FIELD_SET( v, 17, 1, wv )
-#define RDD_CPU_TX_DHD_MESSAGE_DESCRIPTOR_DISABLED_READ(r, p)                     FIELD_MREAD_8((uint8_t *)p + 5, 1, 1, r)
-#define RDD_CPU_TX_DHD_MESSAGE_DESCRIPTOR_DISABLED_WRITE(v, p)                    FIELD_MWRITE_8((uint8_t *)p + 5, 1, 1, v)
-#define RDD_CPU_TX_DHD_MESSAGE_DESCRIPTOR_DISABLED_L_READ( wv )                   FIELD_GET( wv, 17, 1 )
-#define RDD_CPU_TX_DHD_MESSAGE_DESCRIPTOR_DISABLED_L_WRITE( v, wv )               FIELD_SET( v, 17, 1, wv )
+#define RDD_CPU_TX_DHD_MESSAGE_DESCRIPTOR_DHD_MSG_TYPE_READ_G(r, g, addr, idx)      GROUP_FIELD_MREAD_8(g, (uint8_t *)(addr + idx*sizeof(RDD_CPU_TX_DHD_MESSAGE_DESCRIPTOR_DTS)) + 4, 6, 2, r)
+#define RDD_CPU_TX_DHD_MESSAGE_DESCRIPTOR_DHD_MSG_TYPE_WRITE_G(v, g, addr, idx)     GROUP_FIELD_MWRITE_8(g, (uint8_t *)(addr + idx*sizeof(RDD_CPU_TX_DHD_MESSAGE_DESCRIPTOR_DTS)) + 4, 6, 2, v)
+#define RDD_CPU_TX_DHD_MESSAGE_DESCRIPTOR_DHD_MSG_TYPE_L_READ( wv )                 FIELD_GET( wv, 30, 2 )
+#define RDD_CPU_TX_DHD_MESSAGE_DESCRIPTOR_DHD_MSG_TYPE_L_WRITE( v, wv )             FIELD_SET( v, 30, 2, wv )
+#define RDD_CPU_TX_DHD_MESSAGE_DESCRIPTOR_DHD_MSG_TYPE_READ(r, p)                   FIELD_MREAD_8((uint8_t *)p + 4, 6, 2, r)
+#define RDD_CPU_TX_DHD_MESSAGE_DESCRIPTOR_DHD_MSG_TYPE_WRITE(v, p)                  FIELD_MWRITE_8((uint8_t *)p + 4, 6, 2, v)
+#define RDD_CPU_TX_DHD_MESSAGE_DESCRIPTOR_DHD_MSG_TYPE_L_READ( wv )                 FIELD_GET( wv, 30, 2 )
+#define RDD_CPU_TX_DHD_MESSAGE_DESCRIPTOR_DHD_MSG_TYPE_L_WRITE( v, wv )             FIELD_SET( v, 30, 2, wv )
+#define RDD_CPU_TX_DHD_MESSAGE_DESCRIPTOR_RADIO_IDX_READ_G(r, g, addr, idx)         GROUP_FIELD_MREAD_8(g, (uint8_t *)(addr + idx*sizeof(RDD_CPU_TX_DHD_MESSAGE_DESCRIPTOR_DTS)) + 4, 4, 2, r)
+#define RDD_CPU_TX_DHD_MESSAGE_DESCRIPTOR_RADIO_IDX_WRITE_G(v, g, addr, idx)        GROUP_FIELD_MWRITE_8(g, (uint8_t *)(addr + idx*sizeof(RDD_CPU_TX_DHD_MESSAGE_DESCRIPTOR_DTS)) + 4, 4, 2, v)
+#define RDD_CPU_TX_DHD_MESSAGE_DESCRIPTOR_RADIO_IDX_L_READ( wv )                    FIELD_GET( wv, 28, 2 )
+#define RDD_CPU_TX_DHD_MESSAGE_DESCRIPTOR_RADIO_IDX_L_WRITE( v, wv )                FIELD_SET( v, 28, 2, wv )
+#define RDD_CPU_TX_DHD_MESSAGE_DESCRIPTOR_RADIO_IDX_READ(r, p)                      FIELD_MREAD_8((uint8_t *)p + 4, 4, 2, r)
+#define RDD_CPU_TX_DHD_MESSAGE_DESCRIPTOR_RADIO_IDX_WRITE(v, p)                     FIELD_MWRITE_8((uint8_t *)p + 4, 4, 2, v)
+#define RDD_CPU_TX_DHD_MESSAGE_DESCRIPTOR_RADIO_IDX_L_READ( wv )                    FIELD_GET( wv, 28, 2 )
+#define RDD_CPU_TX_DHD_MESSAGE_DESCRIPTOR_RADIO_IDX_L_WRITE( v, wv )                FIELD_SET( v, 28, 2, wv )
+#define RDD_CPU_TX_DHD_MESSAGE_DESCRIPTOR_FLOW_RING_ID_READ_G(r, g, addr, idx)      GROUP_FIELD_MREAD_16(g, (uint8_t *)(addr + idx*sizeof(RDD_CPU_TX_DHD_MESSAGE_DESCRIPTOR_DTS)) + 4, 2, 10, r)
+#define RDD_CPU_TX_DHD_MESSAGE_DESCRIPTOR_FLOW_RING_ID_WRITE_G(v, g, addr, idx)     GROUP_FIELD_MWRITE_16(g, (uint8_t *)(addr + idx*sizeof(RDD_CPU_TX_DHD_MESSAGE_DESCRIPTOR_DTS)) + 4, 2, 10, v)
+#define RDD_CPU_TX_DHD_MESSAGE_DESCRIPTOR_FLOW_RING_ID_L_READ( wv )                 FIELD_GET( wv, 18, 10 )
+#define RDD_CPU_TX_DHD_MESSAGE_DESCRIPTOR_FLOW_RING_ID_L_WRITE( v, wv )             FIELD_SET( v, 18, 10, wv )
+#define RDD_CPU_TX_DHD_MESSAGE_DESCRIPTOR_FLOW_RING_ID_READ(r, p)                   FIELD_MREAD_16((uint8_t *)p + 4, 2, 10, r)
+#define RDD_CPU_TX_DHD_MESSAGE_DESCRIPTOR_FLOW_RING_ID_WRITE(v, p)                  FIELD_MWRITE_16((uint8_t *)p + 4, 2, 10, v)
+#define RDD_CPU_TX_DHD_MESSAGE_DESCRIPTOR_FLOW_RING_ID_L_READ( wv )                 FIELD_GET( wv, 18, 10 )
+#define RDD_CPU_TX_DHD_MESSAGE_DESCRIPTOR_FLOW_RING_ID_L_WRITE( v, wv )             FIELD_SET( v, 18, 10, wv )
+#define RDD_CPU_TX_DHD_MESSAGE_DESCRIPTOR_DISABLED_READ_G(r, g, addr, idx)          GROUP_FIELD_MREAD_8(g, (uint8_t *)(addr + idx*sizeof(RDD_CPU_TX_DHD_MESSAGE_DESCRIPTOR_DTS)) + 5, 1, 1, r)
+#define RDD_CPU_TX_DHD_MESSAGE_DESCRIPTOR_DISABLED_WRITE_G(v, g, addr, idx)         GROUP_FIELD_MWRITE_8(g, (uint8_t *)(addr + idx*sizeof(RDD_CPU_TX_DHD_MESSAGE_DESCRIPTOR_DTS)) + 5, 1, 1, v)
+#define RDD_CPU_TX_DHD_MESSAGE_DESCRIPTOR_DISABLED_L_READ( wv )                     FIELD_GET( wv, 17, 1 )
+#define RDD_CPU_TX_DHD_MESSAGE_DESCRIPTOR_DISABLED_L_WRITE( v, wv )                 FIELD_SET( v, 17, 1, wv )
+#define RDD_CPU_TX_DHD_MESSAGE_DESCRIPTOR_DISABLED_READ(r, p)                       FIELD_MREAD_8((uint8_t *)p + 5, 1, 1, r)
+#define RDD_CPU_TX_DHD_MESSAGE_DESCRIPTOR_DISABLED_WRITE(v, p)                      FIELD_MWRITE_8((uint8_t *)p + 5, 1, 1, v)
+#define RDD_CPU_TX_DHD_MESSAGE_DESCRIPTOR_DISABLED_L_READ( wv )                     FIELD_GET( wv, 17, 1 )
+#define RDD_CPU_TX_DHD_MESSAGE_DESCRIPTOR_DISABLED_L_WRITE( v, wv )                 FIELD_SET( v, 17, 1, wv )
+#define RDD_CPU_TX_DHD_MESSAGE_DESCRIPTOR_READ_IDX_VALID_READ_G(r, g, addr, idx)    GROUP_FIELD_MREAD_8(g, (uint8_t *)(addr + idx*sizeof(RDD_CPU_TX_DHD_MESSAGE_DESCRIPTOR_DTS)) + 5, 0, 1, r)
+#define RDD_CPU_TX_DHD_MESSAGE_DESCRIPTOR_READ_IDX_VALID_WRITE_G(v, g, addr, idx)   GROUP_FIELD_MWRITE_8(g, (uint8_t *)(addr + idx*sizeof(RDD_CPU_TX_DHD_MESSAGE_DESCRIPTOR_DTS)) + 5, 0, 1, v)
+#define RDD_CPU_TX_DHD_MESSAGE_DESCRIPTOR_READ_IDX_VALID_L_READ( wv )               FIELD_GET( wv, 16, 1 )
+#define RDD_CPU_TX_DHD_MESSAGE_DESCRIPTOR_READ_IDX_VALID_L_WRITE( v, wv )           FIELD_SET( v, 16, 1, wv )
+#define RDD_CPU_TX_DHD_MESSAGE_DESCRIPTOR_READ_IDX_VALID_READ(r, p)                 FIELD_MREAD_8((uint8_t *)p + 5, 0, 1, r)
+#define RDD_CPU_TX_DHD_MESSAGE_DESCRIPTOR_READ_IDX_VALID_WRITE(v, p)                FIELD_MWRITE_8((uint8_t *)p + 5, 0, 1, v)
+#define RDD_CPU_TX_DHD_MESSAGE_DESCRIPTOR_READ_IDX_VALID_L_READ( wv )               FIELD_GET( wv, 16, 1 )
+#define RDD_CPU_TX_DHD_MESSAGE_DESCRIPTOR_READ_IDX_VALID_L_WRITE( v, wv )           FIELD_SET( v, 16, 1, wv )
+#define RDD_CPU_TX_DHD_MESSAGE_DESCRIPTOR_READ_IDX_READ_G(r, g, addr, idx)          GROUP_FIELD_MREAD_16(g, (uint8_t *)(addr + idx*sizeof(RDD_CPU_TX_DHD_MESSAGE_DESCRIPTOR_DTS)) + 6, 6, 10, r)
+#define RDD_CPU_TX_DHD_MESSAGE_DESCRIPTOR_READ_IDX_WRITE_G(v, g, addr, idx)         GROUP_FIELD_MWRITE_16(g, (uint8_t *)(addr + idx*sizeof(RDD_CPU_TX_DHD_MESSAGE_DESCRIPTOR_DTS)) + 6, 6, 10, v)
+#define RDD_CPU_TX_DHD_MESSAGE_DESCRIPTOR_READ_IDX_L_READ( wv )                     FIELD_GET( wv, 6, 10 )
+#define RDD_CPU_TX_DHD_MESSAGE_DESCRIPTOR_READ_IDX_L_WRITE( v, wv )                 FIELD_SET( v, 6, 10, wv )
+#define RDD_CPU_TX_DHD_MESSAGE_DESCRIPTOR_READ_IDX_READ(r, p)                       FIELD_MREAD_16((uint8_t *)p + 6, 6, 10, r)
+#define RDD_CPU_TX_DHD_MESSAGE_DESCRIPTOR_READ_IDX_WRITE(v, p)                      FIELD_MWRITE_16((uint8_t *)p + 6, 6, 10, v)
+#define RDD_CPU_TX_DHD_MESSAGE_DESCRIPTOR_READ_IDX_L_READ( wv )                     FIELD_GET( wv, 6, 10 )
+#define RDD_CPU_TX_DHD_MESSAGE_DESCRIPTOR_READ_IDX_L_WRITE( v, wv )                 FIELD_SET( v, 6, 10, wv )
 
 typedef struct
 {

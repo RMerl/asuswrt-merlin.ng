@@ -331,20 +331,25 @@ function tab_reset(v){
 			document.getElementById("t3").style.display = "none";
 		}		
 	}else if(v == 1){	//Smart Connect
-		if(based_modelid == "RT-AC5300" || based_modelid == "RT-AC3200" || based_modelid == "GT-AC5300" || based_modelid == "GT-AX11000" || based_modelid == "RT-AX92U") {
-			if(isSupport("triband") && dwb_info.mode) {
-				document.getElementById("span0").innerHTML = "2.4GHz and 5GHz";
-			}
-			else
-				document.getElementById("span0").innerHTML = "2.4GHz, 5GHz-1 and 5GHz-2";
+		if(isSupport("triband") && dwb_info.mode) {
+			document.getElementById("span0").innerHTML = "2.4GHz and 5GHz-1";
+			document.getElementById("span2").innerHTML = "5GHz-2";
+			document.getElementById("t3").style.display = "none";
+			document.getElementById("t1").style.display = "none";
+			document.getElementById("t0").style.width = "142px";
+			document.getElementById("span0").style.padding = "5px 0px 0px 8px";
 		}
-		else if(based_modelid == "RT-AC88U" || based_modelid == "RT-AX88U" || based_modelid == "RT-AC86U" || based_modelid == "AC2900" || based_modelid == "RT-AC3100" || based_modelid == "BLUECAVE")
-			document.getElementById("span0").innerHTML = "2.4GHz and 5GHz";
-		
-		document.getElementById("t1").style.display = "none";
-		document.getElementById("t2").style.display = "none";				
-		document.getElementById("t3").style.display = "none";
-		document.getElementById("t0").style.width = (tab_width*parent.wl_info.wl_if_total+10) +'px';
+		else {
+			if(based_modelid == "RT-AC5300" || based_modelid == "RT-AC3200" || based_modelid == "GT-AC5300" || based_modelid == "GT-AX11000" || based_modelid == "RT-AX92U")
+				document.getElementById("span0").innerHTML = "2.4GHz, 5GHz-1 and 5GHz-2";
+			else if(based_modelid == "RT-AC88U" || based_modelid == "RT-AX88U" || based_modelid == "RT-AC86U" || based_modelid == "AC2900" || based_modelid == "RT-AC3100" || based_modelid == "BLUECAVE")
+				document.getElementById("span0").innerHTML = "2.4GHz and 5GHz";
+
+			document.getElementById("t1").style.display = "none";
+			document.getElementById("t2").style.display = "none";
+			document.getElementById("t3").style.display = "none";
+			document.getElementById("t0").style.width = (tab_width*parent.wl_info.wl_if_total+10) +'px';
+		}
 	}
 	else if(v == 2){ //5GHz Smart Connect
 		document.getElementById("span0").innerHTML = "2.4GHz";

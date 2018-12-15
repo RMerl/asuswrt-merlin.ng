@@ -3845,6 +3845,7 @@ static inline netdev_tx_t __netdev_start_xmit(const struct net_device_ops *ops,
 		const unsigned char *dest = skb->data;
 		struct net_device *txdev = NULL;
 		if ((txdev  = bcmfc_br_fdbdev_get(br, dest, 0)) != NULL) {
+			PKTCLRDEVQXMIT(skb);
 			return txdev->netdev_ops->ndo_start_xmit(skb, txdev);
 		}
 	}	

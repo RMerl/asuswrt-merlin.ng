@@ -106,11 +106,11 @@ WLLIBS += nvram bcmwlshared bshared $(WLLIB_APPS)
 ROUTER_SHARED_DIR = $(BUILD_DIR)/bcmdrivers/broadcom/net/wl/bcm9$(BRCM_CHIP)$(WL_SRC_BASE)/router/shared
 BCMCRYPTO_DIR = $(BUILD_DIR)/bcmdrivers/broadcom/net/wl/bcm9$(BRCM_CHIP)$(WL_SRC_BASE)/bcmcrypto
 
-WLANAPP_DIRS = util acsd epittcp lltd libupnp wps ses wapi ias hspot_ap bsd ssd toad eventd aspmd appeventd utils dhd_monitor
+WLANAPP_DIRS = acsd epittcp lltd libupnp wps ses wapi ias hspot_ap bsd ssd toad eventd aspmd appeventd utils dhd_monitor
 endif
 
 #WLANAPP_DIRS += wlmngr2 
-WLANAPP_DIRS += scripts
+WLANAPP_DIRS += util scripts
 #
 # We need to declare these directory names as phony targets,
 # otherwise make will think the directories themselves are

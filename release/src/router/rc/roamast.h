@@ -38,8 +38,9 @@
 #define MAX_SUBIF_NUM 4
 #define MAX_STA_COUNT 128
 #define ETHER_ADDR_STR_LEN 18
+#define MACF_UP	"%02X:%02X:%02X:%02X:%02X:%02X"
+#define MACF	"%02x:%02x:%02x:%02x:%02x:%02x"
 #if defined(RTCONFIG_RALINK)
-#define MACF    "%02x:%02x:%02x:%02x:%02x:%02x"
 #define ETHERP_TO_MACF(ea)      ((struct ether_addr *) (ea))->ether_addr_octet[0], \
                                 ((struct ether_addr *) (ea))->ether_addr_octet[1], \
                                 ((struct ether_addr *) (ea))->ether_addr_octet[2], \
@@ -53,7 +54,6 @@
                                 (ea).ether_addr_octet[4], \
                                 (ea).ether_addr_octet[5]
 #elif defined(RTCONFIG_QCA) || defined(RTCONFIG_LANTIQ)
-#define MACF	"%02x:%02x:%02x:%02x:%02x:%02x"
 #define ETHERP_TO_MACF(ea)	((struct ether_addr *) (ea))->ether_addr_octet[0], \
 				((struct ether_addr *) (ea))->ether_addr_octet[1], \
 				((struct ether_addr *) (ea))->ether_addr_octet[2], \
@@ -67,7 +67,6 @@
 				(ea).ether_addr_octet[4], \
 				(ea).ether_addr_octet[5]
 #else
-#define MACF	"%02x:%02x:%02x:%02x:%02x:%02x"
 #define ETHERP_TO_MACF(ea)	((struct ether_addr *) (ea))->octet[0], \
 				((struct ether_addr *) (ea))->octet[1], \
 				((struct ether_addr *) (ea))->octet[2], \
@@ -131,6 +130,7 @@
 #include <sys/ipc.h>
 #include <sys/shm.h>
 
+#define TG_ROAMING_LOCK		"tg_roaming"
 #define ROAMING_LOCK		"roaming"
 
 #undef MAX_STA_COUNT
@@ -138,7 +138,19 @@
 #undef MAC_LEN
 #define MAC_LEN 18
 
+#define KEY_TG_ROAMING_EVENT 34951
 #define KEY_ROAMING_EVENT 34952
+
+typedef struct _TG_ROAMING_TABLE {
+	time_t tstamp[MAX_STA_COUNT];
+	int user_low_rssi[MAX_STA_COUNT];
+	int rssi_cnt[MAX_STA_COUNT];
+	int idle_period[MAX_STA_COUNT];
+	unsigned char sta[MAX_STA_COUNT][MAC_LEN];
+	int sta_rssi[MAX_STA_COUNT];
+	int idle_start[MAX_STA_COUNT];
+	int total;
+} TG_ROAMING_TABLE, *P_TG_ROAMING_TABLE;
 
 typedef struct _ROAMING_TABLE {
 	time_t tstamp[MAX_STA_COUNT];

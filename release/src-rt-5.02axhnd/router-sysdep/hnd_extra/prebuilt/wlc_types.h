@@ -18,7 +18,7 @@
  *
  * <<Broadcom-WL-IPTag/Open:>>
  *
- * $Id: wlc_types.h 764693 2018-05-29 15:43:56Z $
+ * $Id: wlc_types.h 767431 2018-09-11 10:14:37Z $
  */
 
 #ifndef _wlc_types_h_
@@ -511,5 +511,7 @@ typedef struct wl_eventq_info wl_eventq_info_t;
 struct bme_info_s;
 typedef struct bme_info_s bme_info_t;
 #endif /* BME_INFO_T */
+
+typedef struct wlc_deauth_send_cbargs wlc_deauth_send_cbargs_t;
 
 #endif	/* _wlc_types_h_ */

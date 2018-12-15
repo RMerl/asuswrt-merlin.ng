@@ -432,7 +432,7 @@ endif
 	rm -rf $(INSTALLDIR)/www/images/New_ui/tm_logo_power.png
 	rm -rf $(INSTALLDIR)/www/images/New_ui/tm_logo_1.png
 	rm -rf $(INSTALLDIR)/www/images/New_ui/app_icons
-ifneq ($(RTCONFIG_ROG),y)
+ifneq ($(RTCONFIG_ROG_UI),y)
 	rm -rf $(INSTALLDIR)/www/images/New_ui/indicator.png
 	rm -rf $(INSTALLDIR)/www/images/New_ui/speedmeter.png
 	rm -rf $(INSTALLDIR)/www/images/New_ui/speedmeter_2.png
@@ -443,7 +443,7 @@ ifneq ($(RTCONFIG_ADBLOCK),y)
 	rm -rf $(INSTALLDIR)/www/AiProtection_AdBlock.asp
 endif
 
-ifneq ($(RTCONFIG_ROG),y)
+ifneq ($(RTCONFIG_ROG_UI),y)
 	rm -rf $(INSTALLDIR)/www/images/ROG_Logo.png
 	rm -rf $(INSTALLDIR)/www/rog.css
 	rm -rf $(INSTALLDIR)/www/AdaptiveQoS_ROG.asp
@@ -729,7 +729,7 @@ endif
 ifneq ($(RTCONFIG_DBLOG),y)
 	rm -rf $(INSTALLDIR)/www/images/New_ui/dblog_diag.gif
 endif
-ifneq ($(BUILD_NAME),$(filter $(BUILD_NAME), GT-AC9600 GT-AX96U GT-AX11000))
+ifneq ($(BUILD_NAME),$(filter $(BUILD_NAME), GT-AC9600 GX-AX6000 GT-AX11000))
 	rm -rf $(INSTALLDIR)/www/qis/QIS_tge_setting.htm
 endif
 

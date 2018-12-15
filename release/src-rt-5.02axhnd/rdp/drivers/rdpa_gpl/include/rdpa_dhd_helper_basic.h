@@ -43,6 +43,7 @@
 #define RDPA_DHD_HELPER_FEATURE_LBRAGGR_SUPPORT
 #define RDPA_DHD_HELPER_MIXED_CWI64_CWI32_MSGFORMAT_SUPPORT
 #define RDPA_DHD_HELPER_FEATURE_MSGFORMAT_SUPPORT
+#define RDPA_DHD_HELPER_FEATURE_FAST_FLOWRING_DELETE_SUPPORT
 
 
 #if !defined(__OREN__)
@@ -204,6 +205,17 @@ typedef struct
     uint32_t cpu_port;
     uint8_t exception_rxq;
 } rdpa_dhd_cpu_data_t;
+
+typedef union
+{
+    uint32_t u32;
+    struct {
+        uint32_t flowring_idx   :16;
+        uint32_t read_idx       :10;
+        uint32_t read_idx_valid :1;
+        uint32_t reserved       :5;
+    };
+} rdpa_dhd_ffd_data_t;
 
 /** @} end of dhd_heler Doxygen group */
 

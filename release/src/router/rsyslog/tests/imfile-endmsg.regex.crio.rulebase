@@ -1,0 +1,15 @@
+version=2
+rule=:%{"name":"multilinecrio", "type":"repeat",
+            "parser":[
+                       {"type":"word", "name":"time"},
+                       {"type":"literal", "text":" "},
+                       {"type":"word", "name":"stream"},
+                       {"type":"literal", "text":" "},
+                       {"type":"word", "name":"partial"},
+                       {"type":"literal", "text":" "},
+                       {"type":"char-sep", "name":"log", "extradata":"\n"}
+                     ],
+            "while":[
+                       {"type":"literal", "text":"\n"},
+                    ]
+         }%

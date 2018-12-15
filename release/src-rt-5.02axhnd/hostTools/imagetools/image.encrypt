@@ -1,0 +1,59 @@
+#!/usr/bin/env perl
+use strict;
+use warnings;
+use bytes;
+####
+#### This currently assembles images for GEN3 devices with puresqubi ONLY
+####
+unless ( $ENV{SECURE_BOOT_ARCH} eq 'GEN3' ) {
+    die "Not supported $ENV{SECURE_BOOT_ARCH}";
+}
+
+sub shell {
+    #if ( defined $_[1] ) {
+        print "$_[0]\n";
+    #}
+    my $res = `$_[0]`;
+    ( $? == 0 ) or die "ERROR: $!";
+    print "$res";
+    return $res;
+}
+
+my @args = @ARGV;
+
+##
+#
+# Redirection CFE_ROM if TK was chosen
+#
+#
+my $CFE_ROM = $ENV{WDIR}.'/'.$ENV{CFE_ROM_BN};
+
+my $AES_EK = $ENV{FLD_AES_EK};
+my $AES_IV = $ENV{FLD_AES_IV};
+my $SFX     = $ENV{FLD_ENC};
+if ( $args[0] eq "mfg" ) {
+    $AES_EK = $ENV{MFG_AES_EK};
+    $AES_IV  = $ENV{MFG_AES_IV};
+    $SFX     = $ENV{MFG_ENC};
+    if ( $ENV{SECURE_BOOT_TURNKEY} eq "y" ) {
+        $CFE_ROM = $ENV{WDIR}.'/'.$ENV{CFE_ROM_TK_BN};
+    }
+}
+$AES_EK = shell("hexdump -v -e '/1 \"%02X\"' $AES_EK");
+$AES_IV = shell("hexdump -v -e '/1 \"%02X\"' $AES_IV");
+print "--------------------- $CFE_ROM\n";
+#
+# encrypt cferom if chosen so
+#
+if ( $ENV{SECURE_BOOT_ENCRYPT_BTLDRS} eq 'y' ) {
+    #
+    # This can be done elsewhere using HSM or secure server below
+    # is an example for demo mode
+    #
+    #
+    # Encrypt CFEROM for MFG / FLD secure mode
+    #
+    shell(
+        "cat $CFE_ROM|openssl enc -aes-128-cbc -K $AES_EK -iv $AES_IV -out $CFE_ROM$SFX"
+    );
+}

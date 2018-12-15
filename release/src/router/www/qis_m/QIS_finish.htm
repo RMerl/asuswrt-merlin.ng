@@ -151,18 +151,8 @@ if(parent.yadns_support){
 }
 
 var wans_mode = '<% nvram_get("wans_mode"); %>';
-
-var get_protocol = function() {
-	var protocol = "http:";
-	if(window.location.protocol == "http:" || window.location.protocol == "https:") {
-		protocol = window.location.protocol;
-		return protocol;
-	}
-
-	return protocol;
-};
 var header_info = [<% get_header_info(); %>];
-var location_org = get_protocol() + "//" + header_info[0].host;
+var location_org = header_info[0].protocol + "://" + header_info[0].host + ":" + header_info[0].port;
 
 function yadns_apply(){
 	var enable = document.getElementById("yadns_enable").checked;

@@ -29,19 +29,19 @@
 	<div class="desktop_left_field">
 		<div>
 			<div class="titleMain">802.11ax</div>
-			<div class="titleSub">Ready</div>
+			<div class="titleSub"><#QIS_ax_Ready_Title#></div>
 		</div>
 	</div>
 	<div class="table_td">
 		<div class="pageDesc">
-			The new 802.11ax WiFi technology is now ready!
-			802.11ax routers improve both WiFi capacity and efficiency, and provide you ultrafast throughput.
+			<#QIS_ax_Ready_Desc1#>
+			<#QIS_ax_Ready_Desc2#>
 		</div>
 
 		<div class="labelContainer" id="axMode_checkbox_container">
 			<div class="ui-checkbox ui-mini">
 				<label for="axMode_checkbox" class="labelInput ui-btn ui-corner-all ui-btn-inherit ui-btn-icon-left ui-checkbox-off axMode_label">
-					Enable 802.11ax HE frame support
+					<#QIS_ax_Ready_HE_Mode#>
 				</label>
 				<input type="checkbox" id="axMode_checkbox" value="0" data-mini="false">
 			</div>
@@ -49,12 +49,8 @@
 
 		<div class="pageDesc">
 			<ul>
-				<li>
-					Since Intel wireless adapter has some connectivity issues to 802.11ax WiFi APs, please ensure you update the driver / software to the latest version on <a target='_blank' href='https://downloadcenter.intel.com'>Intel Download Center</a>.
-				</li>
-				<li style="margin-top: 15px">
-					For DFS channel and 160MHz bandwidth settings, please go to Wireless Setting page after Quick Internet Setup Wizard.
-				</li>
+				<li><#QIS_ax_Ready_note_Intel#></li>
+				<li style="margin-top: 15px"><#QIS_ax_Ready_note_DFS#></li>
 			</ul>
 		</div>
 
@@ -83,6 +79,10 @@
 <script>
 	var wl0_he_features_orig = httpApi.nvramGet(["wl0_he_features"]).wl0_he_features;
 	var enableAx = (wl0_he_features_orig == "3") ? true : false;
+
+	$("#Intel_dl_link")	//for string tag: QIS_ax_Ready_note_Intel
+		.attr('target', '_blank')
+		.attr('href', 'https://downloadcenter.intel.com');
 
 	$("#axMode_checkbox")
 		.enableCheckBox((systemVariable.isDefault) ? true : enableAx)

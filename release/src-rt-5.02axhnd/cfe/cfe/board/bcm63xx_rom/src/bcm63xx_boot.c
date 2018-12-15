@@ -133,6 +133,7 @@ void parse_boot_hashes(char *hashes, cfe_rom_media_params *media_params)
          strncpy(media_params->boot_file_name, cp + sizeof(thead), CFE_BOOT_FILE_NAME_MAX_LENGTH -1);
          // skip over name and len to sha256
          memcpy(media_params->boot_file_hash, cp + thead.length - SHA256_S_DIGEST8, SHA256_S_DIGEST8);
+         media_params->boot_file_hash_valid = 1;
          break;
       }
 

@@ -1,0 +1,18 @@
+<33>Mar  1 01:00:00 172.20.245.8 tag test1
+<33>Mar  1 01:00:00 172.20.245.8 tag test xml-ish
+<test/>
+<33>Mar  1 01:00:00 172.20.245.8 tag test2
+<33>Mar  1 01:00:00 172.20.245.8 tag multi
+line1
+<33>Mar  1 01:00:00 172.20.245.8 tag multi
+ l
+ i
+ n
+
+e2
+<33>Mar  1 01:00:00 172.20.245.8 tag test3
+<33>Mar  1 01:00:00 172.20.245.8 tag multi
+line3
+<33>Mar  1 01:00:00 172.20.245.8 tag test4
+<33>Mar  1 01:00:00 172.20.245.8 tag test end
+

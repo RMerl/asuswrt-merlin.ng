@@ -1269,6 +1269,9 @@ enum ethtool_sfeatures_retval_bits {
 #define SPEED_100		100
 #define SPEED_1000		1000
 #define SPEED_2500		2500
+#if defined(CONFIG_BCM_KF_ETHTOOL)
+#define SPEED_5000		5000
+#endif
 #define SPEED_10000		10000
 #define SPEED_20000		20000
 #define SPEED_40000		40000

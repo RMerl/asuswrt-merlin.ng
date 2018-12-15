@@ -350,13 +350,14 @@ void update_macfilter_relist()
 	struct maclist *maclist = NULL;
 	char tmp[128], prefix[] = "wlXXXXXXXXXX_";
 	char word[256], *next;
+	char mac2g[32], mac5g[32], *next_mac;
 	int unit = 0;
 	char *wlif_name = NULL;
 	struct ether_addr *ea;
 	unsigned char sta_ea[6] = {0};
 	int ret = 0;
 	char *nv, *nvp, *b;
-	char *reMac, *mac2g, *mac5g, *timestamp;
+	char *reMac, *maclist2g, *maclist5g, *timestamp;
 	char stamac2g[18] = {0};
 	char stamac5g[18] = {0};
 
@@ -367,8 +368,14 @@ void update_macfilter_relist()
 			nv = nvp = strdup(nvram_safe_get("cfg_relist"));
 			if (nv) {
 				while ((b = strsep(&nvp, "<")) != NULL) {
-					if ((vstrsep(b, ">", &reMac, &mac2g, &mac5g, &timestamp) != 4))
+					if ((vstrsep(b, ">", &reMac, &maclist2g, &maclist5g, &timestamp) != 4))
 						continue;
+					/* first mac for sta 2g of dut */
+					foreach_44 (mac2g, maclist2g, next_mac)
+						break;
+					/* first mac for sta 5g of dut */
+					foreach_44 (mac5g, maclist5g, next_mac)
+						break;
 
 					if (strcmp(reMac, get_lan_hwaddr()) == 0) {
 						snprintf(stamac2g, sizeof(stamac2g), "%s", mac2g);
@@ -423,28 +430,35 @@ void update_macfilter_relist()
 				nv = nvp = strdup(nvram_safe_get("cfg_relist"));
 				if (nv) {
 					while ((b = strsep(&nvp, "<")) != NULL) {
-						if ((vstrsep(b, ">", &reMac, &mac2g, &mac5g, &timestamp) != 4))
+						if ((vstrsep(b, ">", &reMac, &maclist2g, &maclist5g, &timestamp) != 4))
 							continue;
 
 						if (strcmp(reMac, get_lan_hwaddr()) == 0)
 							continue;
 
 						if (unit == 0) {
-							if (check_re_in_macfilter(unit, mac2g))
-								continue;
-							dbg("relist sta (%s) in %s\n", mac2g, wlif_name);
-							ether_atoe(mac2g, sta_ea);
+							foreach_44 (mac2g, maclist2g, next_mac) {
+								if (check_re_in_macfilter(unit, mac2g))
+									continue;
+								dbg("relist sta (%s) in %s\n", mac2g, wlif_name);
+								ether_atoe(mac2g, sta_ea);
+								memcpy(ea, sta_ea, sizeof(struct ether_addr));
+								maclist->count++;
+								ea++;
+							}
 						}
 						else
 						{
-							if (check_re_in_macfilter(unit, mac5g))
-								continue;
-							dbg("relist sta (%s) in %s\n", mac5g, wlif_name);
-							ether_atoe(mac5g, sta_ea);
+							foreach_44 (mac5g, maclist5g, next_mac) {
+								if (check_re_in_macfilter(unit, mac5g))
+									continue;
+								dbg("relist sta (%s) in %s\n", mac5g, wlif_name);
+								ether_atoe(mac5g, sta_ea);
+								memcpy(ea, sta_ea, sizeof(struct ether_addr));
+								maclist->count++;
+								ea++;
+							}
 						}
-						memcpy(ea, sta_ea, sizeof(struct ether_addr));
-						maclist->count++;
-						ea++;
 					}
 					free(nv);
 				}

@@ -1,0 +1,9 @@
+version=2
+rule=:%{"name":"multilinejson", "type":"repeat", "option.permitMismatchInParser": true,
+            "parser":[
+                       {"type":"json", "name":"."}
+                     ],
+            "while":[
+                       {"type":"char-sep", "extradata":"{"}
+                    ]
+         }%

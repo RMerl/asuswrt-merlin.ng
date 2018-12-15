@@ -118,6 +118,10 @@ static void do_sync_work(struct work_struct *work)
 {
 	int nowait = 0;
 
+#ifdef CONFIG_DUMP_PREV_OOPS_MSG
+	enable_oopsbuf(1);
+#endif
+
 	/*
 	 * Sync twice to reduce the possibility we skipped some inodes / pages
 	 * because they were temporarily locked

@@ -86,7 +86,11 @@ static struct kmem_cache *skbuff_cb_store_cache __read_mostly;
 #if defined(CONFIG_IMQ) || defined(CONFIG_IMQ_MODULE)
 /* Control buffer save/restore for IMQ devices */
 struct skb_cb_table {
-	char			cb[48] __aligned(8);
+#if defined(CONFIG_BCM_KF_NBUFF)
+        char                    cb[64] ____cacheline_aligned;
+#else
+        char                    cb[48] __aligned(8);
+#endif
 	void			*cb_next;
 	atomic_t		refcnt;
 };
@@ -290,6 +294,7 @@ void skb_headerinit(unsigned int headroom, unsigned int datalen,
 	// skb->mapt_id = 0; memset in _skb_headerreset
 	// skb->mapt_offset = 0; memset in skb_headerreset
 #endif
+	skb->fc_ctxt = 0;
 	skb->recycle_hook = recycle_hook;
 	skb->recycle_context = recycle_context;
 	skb->recycle_flags = SKB_RECYCLE | SKB_DATA_RECYCLE;

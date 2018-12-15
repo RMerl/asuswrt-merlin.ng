@@ -59,6 +59,7 @@ char netmask_g[32];
 char productid_g[32];
 char firmver_g[16];
 unsigned char mac[6] = { 0x00, 0x0c, 0x6e, 0xbd, 0xf3, 0xc5};
+unsigned char label_mac[6] = { 0x00, 0x0c, 0x6e, 0xbd, 0xf3, 0xc5};
 
 void sig_do_nothing(int sig)
 {
@@ -66,7 +67,7 @@ void sig_do_nothing(int sig)
 
 void load_sysparam(void)
 {
-	char *p, macstr[32];
+	char *p, macstr[32], label_macstr[32];
 #if defined(RTCONFIG_WIRELESSREPEATER) || defined(RTCONFIG_PROXYSTA)
 	char tmp[100], prefix[] = "wlXXXXXXXXXXXXXX";
 #endif
@@ -149,9 +150,13 @@ void load_sysparam(void)
 
 	snprintf(firmver_g, sizeof(firmver_g), "%s.%s", nvram_safe_get("firmver"), nvram_safe_get("buildno"));
 
-	strcpy(macstr, nvram_safe_get("lan_hwaddr"));
+	strlcpy(macstr, nvram_safe_get("lan_hwaddr"), sizeof(macstr));
 //	printf("mac: %d\n", strlen(macstr));
 	if (strlen(macstr)!=0) ether_atoe(macstr, mac);
+
+	strlcpy(label_macstr, get_label_mac(), sizeof(label_macstr));
+//	printf("label_mac: %d\n", strlen(label_macstr));
+	if (strlen(label_macstr)!=0) ether_atoe(label_macstr, label_mac);
 }
 
 int main(int argc , char* argv[])

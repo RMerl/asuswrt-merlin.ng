@@ -1,0 +1,79 @@
+CZMQ Output Plugin
+
+REQUIREMENTS:
+
+* libsodium ( https://github.com/jedisct1/libsodium )
+* zeromq built with libsodium support ( http://zeromq.org/ )
+* czmq ( http://czmq.zeromq.org/ )
+
+EXPLANATION OF OPTIONS
+
+Module
+------
+servercertpath: path to server cert if using CURVE
+clientcertpath: path to client cert(s) if using CURVE
+authtype: CURVESERVER, CURVECLIENT (omit for no auth)
+authenticator: whether to start an authenticator thread
+
+Action
+------
+type: type of action (omczmq for this plugin)
+endpoints: comma delimited list of zeromq endpoints (see zeromq documentation)
+socktype: zeromq socket type (currently supports PUSH, PUB, DEALER, RADIO, CLIENT, SCATTER)
+sendtimeout: timeout in ms before send errors
+sendhwm: number of messages to store in internal buffer before discarding (defaults to 1000)
+connecttimeout: connection timeout in ms(requires libzmq 4.2 or higher)
+heartbeativl: time in ms between sending heartbeat PING messages (requires libzmq 4.2 or higher)
+heartbeattimeout: time in milliseconds to  wait for a PING response before disconnect(libzmq 4.2 or higher)
+heartbeatttl: time remote peer should wait between PINGs before disconnect (libzmq 4.2 or higher)
+topicframe: "on" to send topic as separate frame if PUB socket
+topics: comma delimited list of topics or templates to make topics from if PUB or RADIO socket
+dynatopic: if "on" topics list is treated as list of template names
+template: template to use for message (defaults to RSYSLOG_ForwardFormat)
+
+EXAMPLE CONFIGURATION
+
+This configuration sets up an omczmq endpoint as a ZMQ_PUB socket with CURVE authentication.
+Clients whose certificates are in the '/etc/curve.d/allowed_clients/' directory will be 
+allowed to connect. Each message is published on two topics ( "hostname.programname" and
+"programname.hostname" ) which are constructed from properties of the log message.
+
+For instance, a log from sshd from host.example.com will be published on two topics:
+ * host.example.com.sshd
+ * sshd.host.example.com
+
+In this configuration, the output is configured to send each message as a two frame
+message, with the topic in the first flame and the rsyslog message in the second.
+
+-------------------------------------------------------------------------------
+module(
+  load="omczmq"
+  servercertpath="/etc/curve.d/example_server"
+  clientcertpath="/etc/curve.d/allowed_clients"
+  authtype="CURVESERVER"
+  authenticator="on"
+)
+
+template(name="host_program_topic" type="list") {
+  property(name="hostname")
+  constant(value=".")
+  property(name="programname")
+}
+
+template(name="program_host_topic" type="list") {
+  property(name="programname")
+  constant(value=".")
+  property(name="hostname")
+}
+
+
+action(
+  name="to_zeromq"
+  type="omczmq"
+  socktype="PUB"
+  endpoints="@tcp://*:31338"
+  topics="host_program_topic,program_host_topic"
+  dynatopic="on"
+  topicframe="on"
+)
+-------------------------------------------------------------------------------

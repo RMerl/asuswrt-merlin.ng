@@ -22,6 +22,7 @@
 <script type="text/javascript" src="/validator.js"></script>
 <script type="text/javascript" src="/js/jquery.js"></script>
 <script type="text/javascript" src="/switcherplugin/jquery.iphone-switch.js"></script>
+<script type="text/javascript" src="/js/httpApi.js"></script>
 <script><% wl_get_parameter(); %>
 
 $(function () {
@@ -198,12 +199,7 @@ function initial(){
 			document.form.smart_connect_t.value = smart_connect_flag_t;
 
 		enableSmartCon(smart_connect_flag_t);
-		if(isSupport("triband") && dwb_info.mode) {
-			if(wl_unit_value != document.form.wl_unit.value)
-				change_wl_unit();
-		}
 	}
-	dwb_regen_band(document.form.wl_unit, wl_unit_value);
 }
 
 function genBWTable(_unit){
@@ -574,6 +570,26 @@ function validForm(){
 		if(auth_mode != "radius" && !validator.wlKey(cur_wep_key))
 			return false;
 	}	
+
+	if(isSupport("triband") && dwb_info.mode) {
+		var jsonPara = {};
+		jsonPara["edit_wl_unit"] = wl_unit;
+		jsonPara["edit_wl_ssid"] = document.form.wl_ssid.value;
+		jsonPara["dwb_unit"] = dwb_info.band;
+		jsonPara["smart_connect"] = document.form.smart_connect_x.value;
+		var ssid_array = [];
+		ssid_array.push(httpApi.nvramGet(["wl0_ssid"]).wl0_ssid);
+		if(wl_info.band5g_support)
+			ssid_array.push(httpApi.nvramGet(["wl1_ssid"]).wl1_ssid);
+		if(wl_info.band5g_2_support)
+			ssid_array.push(httpApi.nvramGet(["wl2_ssid"]).wl2_ssid);
+		jsonPara["current_ssid"] = ssid_array;
+		if(!validator.dwb_check_wl_setting(jsonPara)) {
+			alert("The fronthaul SSID is the same as the backhaul SSID.");/* untranslated */
+			return false;
+		}
+	}
+
 	return true;
 }
 
@@ -769,7 +785,7 @@ function enableSmartCon(val){
 		}
 	}
 
-	if(val == 0 || (val == 2 && wl_unit == 0)){
+	if((val == 0 || (val == 2 && wl_unit == 0)) || (dwb_info.mode && wl_unit == dwb_info.band)){
 		document.getElementById("wl_unit_field").style.display = "";
 		document.form.wl_nmode_x.disabled = "";
 		document.getElementById("wl_optimizexbox_span").style.display = "";
@@ -795,10 +811,8 @@ function enableSmartCon(val){
 		regen_auto_option(document.form.wl_nctrlsb);			
 	}
 	
-	if(based_modelid=="RT-AC5300" || based_modelid=="GT-AC5300" || based_modelid=="RT-AC3200") {
+	if(based_modelid=="RT-AC5300" || based_modelid=="GT-AC5300" || based_modelid=="RT-AC3200")
 		_change_smart_connect(val);
-		dwb_regen_band(document.form.wl_unit, wl_unit);
-	}
 }
 
 function regen_auto_option(obj){
@@ -1020,6 +1034,7 @@ function change_wl_nmode(o){
 						<select name="wl_unit" class="input_option" onChange="_change_wl_unit(this.value);">
 							<option class="content_input_fd" value="0" <% nvram_match("wl_unit", "0","selected"); %>>2.4 GHz</option>
 							<option class="content_input_fd" value="1" <% nvram_match("wl_unit", "1","selected"); %>>5 GHz</option>
+							<option class="content_input_fd" value="1" <% nvram_match("wl_unit", "2","selected"); %>>5GHz-2</option>
 						</select>			
 					</td>
 		  	</tr>

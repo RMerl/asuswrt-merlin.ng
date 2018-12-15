@@ -502,6 +502,8 @@ var odm_support = isSupport("odm");
 var adBlock_support = isSupport("adBlock");
 var keyGuard_support = isSupport("keyGuard");
 var rog_support = isSupport("rog");
+var aura_support = isSupport("aura_rgb");
+var boostKey_support = isSupport("boostkey");
 var smart_connect_support = isSupport("smart_connect");
 if(based_modelid == "BLUECAVE"){
 	smart_connect_support = isSupport("bandstr");
@@ -589,7 +591,7 @@ if(tmo_support && isMobile()){
 		location.href = "MobileQIS_Login.asp";
 }
 	
-if(isMobile() && (based_modelid == "RT-AC88U" || based_modelid == "RT-AX8U" || based_modelid == "RT-AC86U" || based_modelid == "AC2900" || based_modelid == "RT-AC3100" || based_modelid == "RT-AC5300" || based_modelid == "GT-AC5300" || based_modelid == "GT-AC9600" || based_modelid == "GT-AX11000"))
+if(isMobile() && (based_modelid == "RT-AC88U" || based_modelid == "RT-AX88U" || based_modelid == "RT-AC86U" || based_modelid == "AC2900" || based_modelid == "RT-AC3100" || based_modelid == "RT-AC5300" || based_modelid == "GT-AC5300" || based_modelid == "GT-AC9600" || based_modelid == "GT-AX11000"))
 	QISWIZARD = "QIS_wizard_m.htm";	
 
 var stopFlag = 0;
@@ -775,7 +777,7 @@ function show_banner(L3){// L3 = The third Level of Menu
 		banner_code +='</form>\n';
 	}	
 
-	if(based_modelid == "GT-AC5300" || based_modelid == "GT-AC9600" || based_modelid == "GT-AX11000"){
+	if(rog_support){
 		if(odm_support){
 			banner_code +='<div class="banner1" align="center"><img src="images/New_ui/logo_ROG_COD.png" align="left" style="width:400px;height:96px;margin-left:45px;">\n';
 		}
@@ -810,7 +812,7 @@ function show_banner(L3){// L3 = The third Level of Menu
 	banner_code +='<tr>\n';
 	banner_code +='<td class="minup_bg" height="179" valign="top"><table width="764" border="0" cellpadding="0" cellspacing="0" height="35px" style="margin-left:230px;">\n';
 	banner_code +='<tbody><tr>\n';
- 	if((based_modelid == "GT-AC5300" || based_modelid == "GT-AC9600" || based_modelid == "GT-AX11000") && current_url.indexOf("GameDashboard") != -1){
+ 	if(rog_support && current_url.indexOf("GameDashboard") != -1){
  		banner_code +='<td valign="center" class="titledown" width="auto" style="visibility: hidden">';
  	}
  	else{
@@ -850,7 +852,7 @@ function show_banner(L3){// L3 = The third Level of Menu
 	if(cooler_support)
 		banner_code +='<td width="30"><div id="cooler_status" class="" style="display:none;"></div></td>\n';
 	
-	if(multissid_support != -1)
+	if (multissid_support != -1 && !isSwMode('mb'))
 		banner_code +='<td width="30"><div id="guestnetwork_status" style="width:30px;" class="guestnetworkstatusoff"></div></td>\n';
 
 	if(dsl_support)
@@ -862,7 +864,7 @@ function show_banner(L3){// L3 = The third Level of Menu
 	if(usb_support)
 		banner_code +='<td width="30"><div id="usb_status"></div></td>\n';
 	
-	if(based_modelid == "GT-AC5300" || based_modelid == "GT-AC9600" || based_modelid == "GT-AX11000"){
+	if(rog_support){
 		banner_code +='<td><div id="reboot_status" class="reboot_status" onclick="reboot();"></div></td>\n';
 	}
 
@@ -949,7 +951,7 @@ function show_app_table(evt){
 	var target = document.getElementById("app_link_table");
 	var evt_target = evt.target || evt.srcElement;	//evt.target for Firefox patched
 	
-	if(evt_target.id == "app_icon" || evt_target.id == "cancel_app"){
+	if(evt_target.id == "app_icon" || evt_target.id == "cancel_app" || evt_target.id == "app_span"){
 		if(target.style.display == "none"){
 			target.style.display = "";		
 		}
@@ -1093,10 +1095,7 @@ function show_menu(){
 	var cht_pppoe = wan_pppoe_username.split("@");
 	is_CHT_pppoe = (cht_pppoe[1] == "hinet.net") ? true : false;
 	is_CHT_pppoe_static = (cht_pppoe[1] == "ip.hinet.net") ? true : false;
-	if(odm_support){
-		document.body.className = "bg-odm";
-	}
-	else{
+	if (rog_support) {
 		document.body.className = "bg";
 	}
 	show_banner();
@@ -1390,6 +1389,9 @@ function showMenuTree(menuList, menuExclude){
 					document.getElementById("FormTitle").style.height = "1158px";
 				}
 			}
+			else if(isSupport("amazon_avs") && current_url.indexOf("Advanced_Smart_Home_Alexa") >= 0 && tableHeight < 890){
+				document.getElementById("FormTitle").style.height = "890px";
+			}
 			else{
 				document.getElementById("FormTitle").style.height = tableHeight - CONTENT_PADDING + "px";
 			}
@@ -1503,7 +1505,7 @@ function show_footer(){
 			footer_code +='<div style="padding-left: 30px;"><a href="'+Android_app_link+'" target="_blank"><div style="width:172px;font-size:24px;font-weight:bold;text-decoration:underline"><#WanDouJia#></div></a></div>';
 		}
 		else{
-			footer_code +='<div style="padding-left: 30px;"><a href="'+Android_app_link+'" target="_blank"><div style="width:172px;height:60px;background:url(\'images/cloudsync/googleplay.png\') no-repeat;"></div></a></div>';
+			footer_code +='<div style="padding-left: 30px;"><a href="'+Android_app_link+'" target="_blank"><div style="width:172px;height:60px;background:url(\'images/googleplay.png\') no-repeat;"></div></a></div>';
 		}
 		footer_code +='</div>';
 		footer_code +='</div>';
@@ -1513,7 +1515,7 @@ function show_footer(){
 		footer_code +='<div><img src="images/New_ui/asus_router_ios_qr.png" style="width:75px;height:75px;"></div>';
 		footer_code +='</div>';
 		footer_code +='<div style="display:table-cell;vertical-align:middle;width:100%;text-align:center">';
-		footer_code +='<div style="padding-left: 30px;"><a href="https://itunes.apple.com/tw/app/asus-router/id1033794044" target="_blank"><div style="width:172px;height:51px;background:url(\'images/cloudsync/AppStore.png\') no-repeat;"></div></a></div>';
+		footer_code +='<div style="padding-left: 30px;"><a href="https://itunes.apple.com/tw/app/asus-router/id1033794044" target="_blank"><div style="width:172px;height:51px;background:url(\'images/AppStore.png\') no-repeat;"></div></a></div>';
 		footer_code +='</div>';	
 		footer_code +='</div>';
 
@@ -1618,7 +1620,7 @@ var mouseClick = function(){
 }
 
 function show_top_status(){
-	if(!localAP_support){
+	if (!localAP_support || isSwMode('mb')){
 		document.getElementById("ssidTitle").style.display = "none";
 	}
 
@@ -1734,8 +1736,12 @@ function show_top_status(){
 		if('<% nvram_get("smart_connect_x"); %>' == '1'){
 			document.getElementById('elliptic_ssid_2g').title = "Smart Connect: \n"+ htmlEnDeCode.htmlDecode(ssid_status_2g);
 			document.getElementById('elliptic_ssid_5g').style.display = "none";
-			if(wl_info.band5g_2_support)
-				document.getElementById('elliptic_ssid_5g_2').style.display = "none";
+			if(wl_info.band5g_2_support) {
+				if(isSupport("triband") && dwb_info.mode)
+					document.getElementById('elliptic_ssid_5g_2').style.display = "";
+				else
+					document.getElementById('elliptic_ssid_5g_2').style.display = "none";
+			}
 		}else if('<% nvram_get("smart_connect_x"); %>' == '2'){
 			document.getElementById('elliptic_ssid_2g').title = "2.4 GHz: \n"+ htmlEnDeCode.htmlDecode(ssid_status_2g);
 			document.getElementById('elliptic_ssid_5g').title = "5 GHz Smart Connect: \n"+ htmlEnDeCode.htmlDecode(ssid_status_5g);
@@ -1750,17 +1756,10 @@ function show_top_status(){
 		}
 	}
 	if(isSupport("triband") && dwb_info.mode) {
-		switch(dwb_info.band) {
-			case "0" :
-				document.getElementById('elliptic_ssid_2g').style.display = "none";
-				break;
-			case "1" :
-				document.getElementById('elliptic_ssid_5g').style.display = "none";
-				break;
-			case "2" :
-				document.getElementById('elliptic_ssid_5g_2').style.display = "none";
-				break;
-		}
+		var ssid_list = ["elliptic_ssid_2g", "elliptic_ssid_5g", "elliptic_ssid_5g_2"];
+		document.getElementById(ssid_list[dwb_info.band]).style.textDecoration = "none";
+		document.getElementById(ssid_list[dwb_info.band]).style.cursor = "auto";
+		document.getElementById(ssid_list[dwb_info.band]).onclick = null;
 	}
 
 	var swpjverno = '<% nvram_get("swpjverno"); %>';
@@ -2211,21 +2210,21 @@ function blocking(obj_id, show){
 function inputCtrl(obj, flag){
 	if(flag == 0){
 		obj.disabled = true;
-		if(obj.type != "select-one" && based_modelid != "GT-AC5300" && based_modelid != "GT-AC9600" && based_modelid != "GT-AX11000")
+		if(obj.type != "select-one" && !rog_support)
 			obj.style.backgroundColor = "#CCCCCC";
 		if(obj.type == "radio" || obj.type == "checkbox")
 			obj.style.backgroundColor = "#475A5F";
 		if(obj.type == "text" || obj.type == "password")
-			if(based_modelid != "GT-AC5300" && based_modelid != "GT-AC9600" && based_modelid != "GT-AX11000"){
+			if(!rog_support){
 				obj.style.backgroundColor = "#CCCCCC";
 			}
 	}
 	else{
 		obj.disabled = false;		
-		if((obj.type == "radio" || obj.type == "checkbox") && based_modelid != "GT-AC5300" && based_modelid != "GT-AC9600" && based_modelid != "GT-AX11000") 
+		if((obj.type == "radio" || obj.type == "checkbox") && !rog_support) 
 			obj.style.backgroundColor = "#475A5F";
 		if(obj.type == "text" || obj.type == "password"){
-			if(based_modelid != "GT-AC5300" && based_modelid != "GT-AC9600" && based_modelid != "GT-AX11000"){
+			if(!rog_support){
 				obj.style.backgroundColor = "#596E74";
 			}
 		}
@@ -2530,7 +2529,7 @@ function refreshStatus(xhr){
 	}
 
 	//reboot
-	if(based_modelid == "GT-AC5300" || based_modelid == "GT-AC9600" || based_modelid == "GT-AX11000"){
+	if(rog_support){
 		document.getElementById("reboot_status").onmouseover = function(){overHint(26);}
 		document.getElementById("reboot_status").onmouseout = function(){nd();}
 	}
@@ -2688,7 +2687,7 @@ function refreshStatus(xhr){
 				}
 				document.getElementById("connect_status").className = (NM_connect_status.primary.hasInternet || NM_connect_status.secondary.hasInternet) ? "connectstatuson" : "connectstatusoff";
 				wanConnectStatus = NM_connect_status.primary.hasInternet || NM_connect_status.secondary.hasInternet;
-				if((based_modelid == "GT-AC5300" || based_modelid == "GT-AC9600" || based_modelid == "GT-AX6000" || based_modelid == "GT-AX11000") && location.pathname == "/GameDashboard.asp"){
+				if(rog_support && location.pathname == "/GameDashboard.asp"){
 					var connect_state = NM_connect_status.primary.hint;
 					if(!NM_connect_status.primary.hasInternet){
 						var connect_state = NM_connect_status.primary.hint
@@ -2730,7 +2729,7 @@ function refreshStatus(xhr){
 				document.getElementById("connect_status").className = NM_connect_status.hasInternet ? "connectstatuson" : "connectstatusoff";
 				wanConnectStatus = NM_connect_status.hasInternet;
 
-				if((based_modelid == "GT-AC5300" || based_modelid == "GT-AC9600" || based_modelid == "GT-AX11000") && location.pathname == "/GameDashboard.asp"){
+				if(rog_support && location.pathname == "/GameDashboard.asp"){
 					$("#wan_state").html(NM_connect_status.hint);
 					if(NM_connect_status.hasInternet){
 						if(!odm_support){
@@ -2852,7 +2851,7 @@ function refreshStatus(xhr){
 				document.getElementById('single_wan').className = "single_wan_disconnected";
 		}
 
-		if((based_modelid == "GT-AC5300" || based_modelid == "GT-AC9600" || based_modelid == "GT-AX11000") && location.pathname == "/GameDashboard.asp"){
+		if(rog_support && location.pathname == "/GameDashboard.asp"){
 			$("#internet_title").hide();
 			$("#wan_state_field").hide();
 		}
@@ -2988,7 +2987,7 @@ function refreshStatus(xhr){
 	}
 
 	// guest network
-	if(multissid_support != -1 && (gn_array_5g.length > 0 || (wl_info.band5g_2_support && gn_array_5g_2.length > 0))){
+	if (multissid_support != -1 && !isSwMode('mb') && (gn_array_5g.length > 0 || (wl_info.band5g_2_support && gn_array_5g_2.length > 0))){
 		if(based_modelid == "RT-AC87U"){	//workaround for RT-AC87U
 			for(var i=0; i<gn_array_2g.length; i++){
 				if(gn_array_2g[i][0] == 1){
@@ -3031,7 +3030,7 @@ function refreshStatus(xhr){
 		document.getElementById("guestnetwork_status").onmouseout = function(){nd();}
 		
 	}
-	else if(multissid_support != -1 && gn_array_5g.length == 0){
+	else if (multissid_support != -1 && !isSwMode('mb') && gn_array_5g.length == 0){
 		for(var i=0; i<gn_array_2g.length; i++){
 			if(gn_array_2g[i][0] == 1){
 				document.getElementById("guestnetwork_status").className = "guestnetworkstatuson";
@@ -3752,7 +3751,11 @@ var sort_by = function(field, reverse, primer){
 var dwb_info = {
 	mode: (function(){
 		if(amesh_support && (isSwMode("rt") || isSwMode("ap")) && (isSupport("triband") || isSupport("dualband"))) {
-			var dwb_mode = parseInt('<% nvram_get("dwb_mode"); %>');
+			var dwb_mode = '<% nvram_get("dwb_mode"); %>';
+			if(dwb_mode == "")
+				dwb_mode = 0;
+			else
+				dwb_mode = parseInt(dwb_mode);
 			return dwb_mode;
 		}
 		else
@@ -3775,25 +3778,3 @@ var dwb_info = {
 			return 0;
 	})()
 };
-function dwb_regen_band(_obj) {
-	if(amesh_support && (isSwMode("rt") || isSwMode("ap")) && isSupport("triband")) {
-		if(dwb_info.mode) {
-			var selected_value = _obj.value;
-			for(var i = 0; i < _obj.length; i++) {
-			if(_obj.options[i].value == dwb_info.band)
-				_obj.remove(i);
-			}
-
-			var wl_text = ["2.4GHz", "5GHz"];
-			for(var i = 0; i < _obj.length; i += 1) {
-				_obj[i].text = wl_text[_obj[i].value];
-			}
-
-			if(selected_value == dwb_info.band){
-				_obj.selectedIndex = 0;
-				change_wl_unit();
-			}
-		}
-	}
-}
-

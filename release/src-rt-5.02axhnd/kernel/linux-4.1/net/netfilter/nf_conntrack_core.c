@@ -520,63 +520,6 @@ static void death_by_timeout(unsigned long ul_conntrack)
 }
 
 #if defined(CONFIG_BCM_KF_BLOG) && defined(CONFIG_BCM_KF_NETFILTER) && defined(CONFIG_BLOG)
-void __nf_ct_time(struct nf_conn *ct, BlogCtTime_t *ct_time_p)
-{
-	/* Cases:
-	* a) conn has been active, prev_idle = 0, idle_jiffies = 0
-	* b) conn becomes idle,  prev_idle = 0, idle_jiffies != 0
-	* c) conn becomes idle in prev timeout and then becomes active again.
-	*    prev_idle = 0, and idle_jiffies != 0.
-	* d) conn was idle in prev timeout and is still idle.
-	*    prev_idle != 0, and idle_jiffies != 0.
-	*
-	*    In the first three cases (a) to (c), timer should be restarted
-	*    after adjustment for idle_jiffies.
-	*
-	*    In the last case (d), on expiry it is time to destroy the conn.
-	*
-	* e) the udp conntrack timeout is set to less than flow cache interval(120 sec)
-	*/
-  
-	if ( nf_ct_protonum(ct) == IPPROTO_UDP && ct->prev_idle)   /* handle case (e) */
-	{
-		if( ct_time_p->idle_jiffies < ct_time_p->extra_jiffies) 
-		{
-			unsigned long newtime_1;
-			ct->prev_timeout.expires = ct->timeout.expires;
-			newtime_1= ct->timeout.expires + (ct_time_p->extra_jiffies - ct_time_p->idle_jiffies);
-			mod_timer(&ct->timeout, newtime_1);
-			ct->prev_idle = ct_time_p->idle_jiffies;
-		} else {
-			del_timer(&ct->timeout);
-
-			death_by_timeout((unsigned long) ct);
-		}
-	} else if ((!ct->prev_idle) || (!ct_time_p->idle_jiffies)) {
-		unsigned long newtime;
-
-		ct->prev_timeout.expires = ct->timeout.expires;
-		if (ct_time_p->extra_jiffies == 0) {
-			if (ct_time_p->proto == IPPROTO_TCP && (ct->proto.tcp.state != TCP_CONNTRACK_ESTABLISHED))
-				goto DELT;
-			else {
-				if (ct_time_p->idle_jiffies == 0)
-					newtime= jiffies + BLOG_NAT_UDP_DEFAULT_IDLE_TIMEOUT;
-				else
-					goto DELT;
-			}
-		}
-		else
-			newtime= jiffies + (ct_time_p->extra_jiffies - ct_time_p->idle_jiffies);
-		mod_timer(&ct->timeout, newtime);
-		ct->prev_idle = ct_time_p->idle_jiffies;
-	} else {
-DELT:
-		del_timer(&ct->timeout);
-
-		death_by_timeout((unsigned long) ct);
-	}
-}
 
 static void blog_death_by_timeout(unsigned long ul_conntrack)
 {
@@ -596,28 +539,72 @@ static void blog_death_by_timeout(unsigned long ul_conntrack)
 	}
 	blog_unlock();
 
+	/* Normally we should delete the connection when we are here, but 
+	 * if this connection is accelerated, we may need to rearm the
+	 * timer based on how long the connection has been idle, 
+	 * in accelerator.
+	 */ 
 	if (ct_time.flags.valid && ct_blog_key)
-		__nf_ct_time(ct, &ct_time);
-	else {
-		del_timer(&ct->timeout);
-
-		death_by_timeout((unsigned long) ct);
+	{
+		unsigned long newtime;
+		/* make sure we have atleast HZ jiffies to re-arm the timer 
+		 * as sometimes extra_fiffies can be less than idle_jiffies 
+		 */
+		newtime = ct_time.extra_jiffies - ct_time.idle_jiffies;
+		if(newtime > HZ){
+			/* if newtime is a very big value, kernel treats it as timer expired
+			 * and will fire gain immediately, so add this additional check
+			 */
+			if (((signed long) newtime > 0)) {
+				/*TODO remove this prev_timeout */
+				ct->prev_timeout.expires = ct->timeout.expires;
+				newtime += jiffies;
+				mod_timer(&ct->timeout, newtime);
+				return;
+			}
+			else
+				printk(KERN_ERR "%s: bad timeout value=%lu, extra_jiffies=%lu, idle_jiffies=%lu\n",
+						__func__, newtime, ct_time.extra_jiffies, ct_time.idle_jiffies);
+		}
 	}
+
+	death_by_timeout((unsigned long) ct);
 }
 
 void __nf_ct_time_update(struct nf_conn *ct, BlogCtTime_t *ct_time_p)
 {
-	unsigned long newtime;
 
 	if (!timer_pending(&ct->timeout))
 		return;
 
 	if (ct->blog_key[BLOG_PARAM1_DIR_ORIG] != BLOG_KEY_FC_INVALID ||
-	    ct->blog_key[BLOG_PARAM1_DIR_REPLY] != BLOG_KEY_FC_INVALID) {
+			ct->blog_key[BLOG_PARAM1_DIR_REPLY] != BLOG_KEY_FC_INVALID) {
+
+		unsigned long newtime;
+
 		ct->prev_idle = 0;
 
-		newtime = jiffies + (ct_time_p->extra_jiffies - ct_time_p->idle_jiffies);
-		ct->prev_timeout.expires = jiffies;
+		/* to avoid triggering the timer immediately,
+		 * add altleast 1 HZ  when modifying the timer
+		 */
+		newtime = ct_time_p->extra_jiffies - ct_time_p->idle_jiffies;
+		if(newtime > HZ){
+
+			/* if newtime is a very big value, kernel treats it as timer expired
+			 * and will fire immediately, so add this additional check
+			 */
+			if (((signed long) newtime > 0))
+				newtime += jiffies;
+			else{
+				printk(KERN_ERR "%s: bad timeout value=%lu, extra_jiffies=%lu, idle_jiffies=%lu\n",
+						__func__, newtime, ct_time_p->extra_jiffies, ct_time_p->idle_jiffies);
+				newtime = jiffies + HZ;
+			}
+		}else
+			newtime = jiffies + HZ;
+		
+		/*TODO remove this prev_timeout */
+		ct->prev_timeout.expires = ct->timeout.expires;
 		mod_timer_pending(&ct->timeout, newtime);
 	}
 }

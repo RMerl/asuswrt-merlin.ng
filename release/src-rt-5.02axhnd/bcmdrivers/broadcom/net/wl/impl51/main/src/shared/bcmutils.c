@@ -18,7 +18,7 @@
  *
  * <<Broadcom-WL-IPTag/Open:>>
  *
- * $Id: bcmutils.c 737919 2017-12-25 07:06:01Z $
+ * $Id: bcmutils.c 767430 2018-09-11 10:09:52Z $
  */
 
 #include <bcm_cfg.h>
@@ -1482,17 +1482,6 @@ bcm_iovar_lencheck(const bcm_iovar_t *vi, void *arg, int len, bool set)
  * with savings in not having to use an indirect access, had it been dynamically
  * allocated.
  */
-#if defined(DONGLEBUILD)
-#define BCM_MWBMAP_USE_CNTSETBITS		/* runtime count set bits */
-#if defined(BCMHWA) && defined(HWA_PKT_MACRO)
-#define BCM_MWBMAP_ITEMS_MAX	(10 * 1024)
-#else
-#define BCM_MWBMAP_ITEMS_MAX	(4 * 1024)
-#endif // endif
-#else  /* ! DONGLEBUILD */
-#define BCM_MWBMAP_ITEMS_MAX    (64 * 1024)  /* May increase to 64K */
-#endif /*   DONGLEBUILD */
-
 #define BCM_MWBMAP_BITS_WORD    (NBITS(uint32))
 #define BCM_MWBMAP_WORDS_MAX    (BCM_MWBMAP_ITEMS_MAX / BCM_MWBMAP_BITS_WORD)
 #define BCM_MWBMAP_WDMAP_MAX    (BCM_MWBMAP_WORDS_MAX / BCM_MWBMAP_BITS_WORD)
@@ -1546,7 +1535,7 @@ BCMATTACHFN(bcm_mwbmap_init)(osl_t *osh, uint32 items_max)
 	/* Implementation Constraint: Uses 32bit word bitmap */
 	MWBMAP_ASSERT(BCM_MWBMAP_BITS_WORD == 32U);
 	MWBMAP_ASSERT(BCM_MWBMAP_SHIFT_OP == 5U);
-	MWBMAP_ASSERT(ISPOWEROF2(BCM_MWBMAP_ITEMS_MAX));
+	// MWBMAP_ASSERT(ISPOWEROF2(BCM_MWBMAP_ITEMS_MAX));
 	MWBMAP_ASSERT((BCM_MWBMAP_ITEMS_MAX % BCM_MWBMAP_BITS_WORD) == 0U);
 
 	ASSERT(items_max <= BCM_MWBMAP_ITEMS_MAX);

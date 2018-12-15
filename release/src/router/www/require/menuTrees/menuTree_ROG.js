@@ -43,7 +43,7 @@ define(function(){
 				]
 			}, 
 			{
-				menuName: "Game IPS",
+				menuName: "<#AiProtection_title#>",
 				index: "menu_AiProtection", 
 				tab: [
 					{url: "AiProtection_HomeSecurity.asp", tabName: "__HIDE__"},
@@ -157,7 +157,7 @@ define(function(){
 					{url: "Advanced_WSecurity_Content.asp", tabName: "<#menu5_1_5#>"},
 					{url: "Advanced_WAdvanced_Content.asp", tabName: "<#menu5_1_6#>"},
 					{url: "Advanced_WProxy_Content.asp", tabName: "<#WiFi_Proxy_item#>"},
-					{url: "Advanced_Roaming_Block_Content.asp", tabName: "Roaming Block List"},/* untranslated */
+					{url: "Advanced_Roaming_Block_Content.asp", tabName: "<#WiFi_Roaming_Block_List#>"},
 					{url: "NULL", tabName: "__INHERIT__"}
 				] 
 			},
@@ -409,6 +409,7 @@ define(function(){
 					retArray.push("menu_AccessControl");
 					retArray.push("menu_Wtfast");
 					retArray.push("menu_GameProfile");
+					retArray.push("menu_WifiRadar");
 					retArray.push("menu_TrafficAnalyzer");
 					retArray.push("menu_QoS");
 					retArray.push("menu_BandwidthMonitor");

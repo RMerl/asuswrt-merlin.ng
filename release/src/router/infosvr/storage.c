@@ -9,6 +9,7 @@
 #include <net/if.h>
 #include <bcmnvram.h>
 #include <shutils.h>
+#include <shared.h>
 #include <wlutils.h>
 #include <syslog.h>
 #include "iboxcom.h"
@@ -21,6 +22,7 @@
 #else
 #error Unknown endian
 #endif
+extern char label_mac[];
 
 int getStorageStatus(STORAGE_INFO_T *st)
 {
@@ -54,7 +56,22 @@ int getStorageStatus(STORAGE_INFO_T *st)
 	st->ExtendCap |= __cpu_to_le16(EXTEND_CAP_SWCTRL);
 
 #ifdef RTCONFIG_AMAS
-	st->ExtendCap |= __cpu_to_le16(EXTEND_CAP_AMAS);
+#ifdef RTCONFIG_SW_HW_AUTH
+	if (getAmasSupportMode() != 0)
+	{
+#endif
+		if (!repeater_mode()
+#if defined(RTCONFIG_BCMWL6) && defined(RTCONFIG_PROXYSTA)
+			&& !psr_mode()
+#endif
+#ifdef RTCONFIG_DPSTA
+			&& !(dpsta_mode() && nvram_get_int("re_mode") == 0)
+#endif
+		)
+			st->ExtendCap |= __cpu_to_le16(EXTEND_CAP_AMAS);
+#ifdef RTCONFIG_SW_HW_AUTH
+	}
+#endif
 	if (nvram_get_int("amas_bdl"))
 		st->ExtendCap |= __cpu_to_le16(EXTEND_CAP_AMAS_BDL);
 #endif
@@ -96,7 +113,7 @@ int getStorageStatus(STORAGE_INFO_T *st)
 		printf("AAE DeviceID =%s <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<\n", st->AAEDeviceID);
 	}
 #endif
-
+	memcpy(st->Label_MacAddress, label_mac, 6);
 
 	return 0;
 }

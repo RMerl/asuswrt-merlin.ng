@@ -206,7 +206,6 @@ static void bootImageFromNand(unsigned long rom_param, cfe_rom_media_params *med
     const int max_not_jffs2 = MAX_NOT_JFFS2_VALUE;
     int read_len;
     int sec_should_decrypt __attribute__((unused)) = 1;
-    int sec_use_hash  __attribute__((unused)) = 0;
     int sec_should_decompress  __attribute__((unused)) = 1;
 
     struct rootfs_info
@@ -783,7 +782,6 @@ static void bootImageFromNand(unsigned long rom_param, cfe_rom_media_params *med
                          xprintf("..success\n");
                          parse_boot_hashes((char *)&pHashes[SEC_S_MODULUS], media_params);
                          xprintf("got bootable cferam %s\n",media_params->boot_file_name);
-                         sec_use_hash = 1; 
                          sec_should_decrypt = (media_params->boot_file_flags & BOOT_FILE_FLAG_ENCRYPTED) ? 1 : 0 ; 
                          sec_should_decompress = (media_params->boot_file_flags & BOOT_FILE_FLAG_COMPRESSED) ? 1 : 0 ; 
                     }
@@ -797,11 +795,7 @@ static void bootImageFromNand(unsigned long rom_param, cfe_rom_media_params *med
             // If secure boot, compressed, encrypted CFE RAM
             // is authenticated within internal memory
             if (media_params->boot_secure)
-                if (sec_use_hash == 0) {
-                    pucDest = (unsigned char *)BTRM_INT_MEM_ENCR_COMP_CFE_RAM_ADDR;
-                } else {
-                    pucDest = (unsigned char *)BTRM_INT_MEM_ENCR_COMP_CFE_RAM_ADDR + SEC_S_MODULUS;
-                }
+                pucDest = (unsigned char *)BTRM_INT_MEM_ENCR_COMP_CFE_RAM_ADDR;
             else
 #endif
                 pucDest = pucEntry - 12;
@@ -822,7 +816,7 @@ static void bootImageFromNand(unsigned long rom_param, cfe_rom_media_params *med
 #if defined(_BCM96838_) || defined(_BCM94908_) || defined(_BCM96858_) || defined(_BCM963158_) || defined(_BCM96846_) || defined(_BCM96856_) || \
           ((INC_BTRM_BOOT==1) && (defined(_BCM963268_) || defined(_BCM963381_) || defined(_BCM963138_) || defined(_BCM963148_)))
         if (media_params->boot_secure) {
-           uint8_t *pEncrCfeRam = pucDest+SEC_S_MODULUS; 
+           uint8_t *pEncrCfeRam; 
            int ret;
            Booter1Args* sec_args = cfe_sec_get_bootrom_args();
            if (!sec_args) {
@@ -832,26 +826,28 @@ static void bootImageFromNand(unsigned long rom_param, cfe_rom_media_params *med
            /* Authenticate the CFE RAM bootloader */
            board_setleds(0x42544c3f); // BTL?
 #ifdef CONFIG_CFE_SUPPORT_HASH_BLOCK
-           if (sec_use_hash != 0) {
+           if (media_params->boot_file_hash_valid) {
+	       /* Verify that sha256 hash of cferam matches hash retreived from hash block */
                if (sec_verify_sha256((uint8_t const*)pucDest, secCfeRamSize, (const uint8_t *)media_params->boot_file_hash)) {
-			xprintf("Digest failed\n");
-                 die();
+                   xprintf("Digest failed\n");
+                   die();
                } else {
-			xprintf("Digest has been succesfully matched\n");
+                   xprintf("Digest has been succesfully matched\n");
                }
                pEncrCfeRam = pucDest; 
-               pucEntry = (unsigned char *) (unsigned long)(*(uint32_t *)pucDest);
            } else
 #endif
            {
-           if (sec_verify_signature((uint8_t const*)(pucDest+SEC_S_MODULUS), secCfeRamSize-SEC_S_MODULUS, pucDest, sec_args->authArgs.manu)) {
-               die();
-           }
+	       /* Verify the signature located right before the cferam image */
+               if (sec_verify_signature((uint8_t const*)(pucDest+SEC_S_MODULUS), secCfeRamSize-SEC_S_MODULUS, pucDest, sec_args->authArgs.manu)) {
+                   die();
+               }
+               pEncrCfeRam = pucDest+SEC_S_MODULUS; 
            }
            board_setleds(0x42544c41); // BTLA
            board_setleds(0x50415353); // PASS
 
-           /* Move pucDest to point to where the decrypted (but still compressed) CFE RAM will be put */
+           /* Move pucDest to point to where the authenticated and decrypted (but still compressed) CFE RAM will be put */
            pucDest = (unsigned char *)(BTRM_INT_MEM_COMP_CFE_RAM_ADDR);
 
            /* Get ready to decrypt the CFE RAM bootloader */
@@ -870,7 +866,6 @@ static void bootImageFromNand(unsigned long rom_param, cfe_rom_media_params *med
            /* The reference sw is done with the bek/biv at this point ... cleaning it up */
            /* Any remnants of the keys on the stack will be cleaned up when cfe_launch() runs */
            cfe_sec_reset_keys();
-
            memset((void *)origIv, 0, CIPHER_IV_LEN);
 
            /* First 12 bytes are not compressed ... First word of the 12 bytes is the address the cferam is linked to run at */
@@ -884,7 +879,7 @@ static void bootImageFromNand(unsigned long rom_param, cfe_rom_media_params *med
            ret = decompressLZMA((unsigned char *)(BTRM_INT_MEM_COMP_CFE_RAM_ADDR+12), 
                           (unsigned int)(*(uint32_t *)(BTRM_INT_MEM_COMP_CFE_RAM_ADDR + 8)),
                           pucEntry, 23*1024*1024);
-           xprintf("Decompress returns code = %d\n",ret);
+           xprintf("Decompress returns code = %d\n",ret); 
            } else {
                memcpy(pucEntry,((unsigned char *)BTRM_INT_MEM_COMP_CFE_RAM_ADDR) + 12,(unsigned int)(*(uint32_t *)(BTRM_INT_MEM_COMP_CFE_RAM_ADDR + 8)));
            xprintf("no decompress -- copied to %p \n",pucEntry); 

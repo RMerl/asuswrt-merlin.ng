@@ -14,8 +14,7 @@ var oauthCallBack = "oauth_callback.htm";
 var oauthVariable = {
 	"domainName" : (function() {
 		var header_info = [<% get_header_info(); %>][0];
-		var local_domain = '<% nvram_get("local_domain"); %>';
-		return ((header_info.host.split(":").length == 2) ? "https" : "http") + "://" + header_info.host.replace(header_info.host.split(":")[0], local_domain);
+		return header_info.protocol + "://" + header_info.host + ":" + header_info.port;
 	})(),
 	"google" : {
 		"server" : "https://accounts.google.com/o/oauth2/auth?",

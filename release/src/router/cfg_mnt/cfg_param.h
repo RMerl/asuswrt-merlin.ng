@@ -73,6 +73,9 @@ enum {
 	SUBFT_MACFILTER_2G,
 	SUBFT_MACFILTER_5G,
 	SUBFT_MACFILTER_5G1,
+	SUBFT_RADIUS_2G,
+	SUBFT_RADIUS_5G,
+	SUBFT_RADIUS_5G1,
 	SUBFT_TIMESCHED_2G,
 	SUBFT_TIMESCHED_5G,
 	SUBFT_TIMESCHED_5G1,
@@ -170,7 +173,17 @@ enum {
 	/* sub feature for WPS */
 	SUBFT_WPS,
 	/* sub feature for Reboot schedule */
-	SUBFT_REBOOT_SCHEDULE
+	SUBFT_REBOOT_SCHEDULE,
+	/* sub feature for HE ddfeatures */
+	SUBFT_HE_FEATURES_2G,
+	SUBFT_HE_FEATURES_5G,
+	SUBFT_HE_FEATURES_5G1,
+	/* sub feature for bandwidth 160 support */
+	SUBFT_BW_160_2G,
+	SUBFT_BW_160_5G,
+	SUBFT_BW_160_5G1,
+	/* sub feature for ACS include DFS */
+	SUBFT_ACS_INCLUDE_DFS,
 };
 
 struct subfeature_mapping_s subfeature_mapping_list[] = {
@@ -184,6 +197,9 @@ struct subfeature_mapping_s subfeature_mapping_list[] = {
 	{ "macfilter_2g", 	SUBFT_MACFILTER_2G,	FT_WIRELESS },
 	{ "macfilter_5g", 	SUBFT_MACFILTER_5G,	FT_WIRELESS },
 	{ "macfilter_5g1",	SUBFT_MACFILTER_5G1,	FT_WIRELESS },
+	{ "radius_2g", 	SUBFT_RADIUS_2G,	FT_WIRELESS },
+	{ "radius_5g", 	SUBFT_RADIUS_5G,	FT_WIRELESS },
+	{ "radius_5g1",	SUBFT_RADIUS_5G1,	FT_WIRELESS },
 	{ "timesched_2g", 	SUBFT_TIMESCHED_2G,	FT_WIRELESS },
 	{ "timesched_5g", 	SUBFT_TIMESCHED_5G,	FT_WIRELESS },
 	{ "timesched_5g1",	SUBFT_TIMESCHED_5G1,	FT_WIRELESS },
@@ -276,6 +292,18 @@ struct subfeature_mapping_s subfeature_mapping_list[] = {
 	{ "wps", SUBFT_WPS, FT_WIRELESS },
 	/* sub feature for Reboot schedule */
 	{ "reboot_schedule", SUBFT_REBOOT_SCHEDULE, FT_TIME },
+#ifdef RTCONFIG_HND_ROUTER_AX
+	/* HE feaure */
+	{ "he_features_2g", SUBFT_HE_FEATURES_2G, FT_WIRELESS },
+	{ "he_features_5g", SUBFT_HE_FEATURES_5G, FT_WIRELESS },
+	{ "he_features_5g1", SUBFT_HE_FEATURES_5G1, FT_WIRELESS },
+	/* sub feature for bandwidth 160 support */	
+	{ "bw_160_2g", SUBFT_BW_160_2G, FT_WIRELESS },
+	{ "bw_160_5g", SUBFT_BW_160_5G, FT_WIRELESS },
+	{ "bw_160_5g1", SUBFT_BW_160_5G1, FT_WIRELESS },
+	/* sub feature for ACS include DFS */
+	{ "acs_dfs", SUBFT_ACS_INCLUDE_DFS, FT_WIRELESS },
+#endif	
 	/* END */
 	{ NULL, 0, 0}
 };
@@ -306,6 +334,13 @@ struct param_mapping_s param_mapping_list[] = {
 	{ "wl0_channel",	FT_WIRELESS,		SUBFT_CHANNEL_2G},
 	{ "wl0_nctrlsb",	FT_WIRELESS,		SUBFT_CHANNEL_2G},
 #endif
+	{ "wl0_macmode", 	FT_WIRELESS,		SUBFT_MACFILTER_2G},
+	{ "wl0_maclist_x",	FT_WIRELESS,		SUBFT_MACFILTER_2G},
+	{ "wl0_timesched", 	FT_WIRELESS,		SUBFT_TIMESCHED_2G},
+	{ "wl0_sched",		FT_WIRELESS,		SUBFT_TIMESCHED_2G},
+	{ "wl0_radius_ipaddr",	FT_WIRELESS,		SUBFT_RADIUS_2G},
+	{ "wl0_radius_key",	FT_WIRELESS,		SUBFT_RADIUS_2G},
+	{ "wl0_radius_port",	FT_WIRELESS,		SUBFT_RADIUS_2G},
 	{ "wl1_ssid", 		FT_WIRELESS,		SUBFT_BASIC_5G},
 	{ "wl1_closed", 	FT_WIRELESS, 		SUBFT_BASIC_5G},
 	{ "wl1_wpa_psk",	FT_WIRELESS,		SUBFT_BASIC_5G},
@@ -324,6 +359,13 @@ struct param_mapping_s param_mapping_list[] = {
 	{ "wl1_channel",	FT_WIRELESS,		SUBFT_CHANNEL_5G},
 	{ "wl1_nctrlsb",	FT_WIRELESS,		SUBFT_CHANNEL_5G},
 #endif
+	{ "wl1_macmode", 	FT_WIRELESS,		SUBFT_MACFILTER_5G},
+	{ "wl1_maclist_x",	FT_WIRELESS,		SUBFT_MACFILTER_5G},
+	{ "wl1_timesched", 	FT_WIRELESS,		SUBFT_TIMESCHED_5G},
+	{ "wl1_sched",		FT_WIRELESS,		SUBFT_TIMESCHED_5G},
+	{ "wl1_radius_ipaddr",	FT_WIRELESS,		SUBFT_RADIUS_5G},
+	{ "wl1_radius_key",	FT_WIRELESS,		SUBFT_RADIUS_5G},
+	{ "wl1_radius_port",	FT_WIRELESS,		SUBFT_RADIUS_5G},
 	{ "wl2_ssid",		FT_WIRELESS,		SUBFT_BASIC_5G1},
 	{ "wl2_closed",	 	FT_WIRELESS, 		SUBFT_BASIC_5G1},
 	{ "wl2_wpa_psk",	FT_WIRELESS,		SUBFT_BASIC_5G1},
@@ -342,18 +384,13 @@ struct param_mapping_s param_mapping_list[] = {
 	{ "wl2_channel",	FT_WIRELESS,		SUBFT_CHANNEL_5G1},
 	{ "wl2_nctrlsb",	FT_WIRELESS,		SUBFT_CHANNEL_5G1},
 #endif
-	{ "wl0_macmode", 	FT_WIRELESS,		SUBFT_MACFILTER_2G},
-	{ "wl0_maclist_x",	FT_WIRELESS,		SUBFT_MACFILTER_2G},
-	{ "wl1_macmode", 	FT_WIRELESS,		SUBFT_MACFILTER_5G},
-	{ "wl1_maclist_x",	FT_WIRELESS,		SUBFT_MACFILTER_5G},
 	{ "wl2_macmode",	FT_WIRELESS,		SUBFT_MACFILTER_5G1},
 	{ "wl2_maclist_x",	FT_WIRELESS,		SUBFT_MACFILTER_5G1},
-	{ "wl0_timesched", 	FT_WIRELESS,		SUBFT_TIMESCHED_2G},
-	{ "wl0_sched",		FT_WIRELESS,		SUBFT_TIMESCHED_2G},
-	{ "wl1_timesched", 	FT_WIRELESS,		SUBFT_TIMESCHED_5G},
-	{ "wl1_sched",		FT_WIRELESS,		SUBFT_TIMESCHED_5G},
 	{ "wl2_timesched",	FT_WIRELESS,		SUBFT_TIMESCHED_5G1},
 	{ "wl2_sched",	FT_WIRELESS,		SUBFT_TIMESCHED_5G1},
+	{ "wl2_radius_ipaddr",	FT_WIRELESS,		SUBFT_RADIUS_5G1},
+	{ "wl2_radius_key",	FT_WIRELESS,		SUBFT_RADIUS_5G1},
+	{ "wl2_radius_port",	FT_WIRELESS,		SUBFT_RADIUS_5G1},
 	/* guest network */
 	{ "wl0.1_ssid", 	FT_WIRELESS, 		SUBFT_BASIC_2G_G1},
 	{ "wl0.1_wpa_psk",	FT_WIRELESS,		SUBFT_BASIC_2G_G1},
@@ -578,10 +615,6 @@ struct param_mapping_s param_mapping_list[] = {
 	{ "wl0_dtim", FT_WIRELESS, SUBFT_ADVANCED_2G },
 	{ "wl1_dtim", FT_WIRELESS, SUBFT_ADVANCED_5G },
 	{ "wl2_dtim", FT_WIRELESS, SUBFT_ADVANCED_5G1 },
-	/* Enable TX Bursting */
-	{ "wl0_frameburst", FT_WIRELESS, SUBFT_ADVANCED_2G },
-	{ "wl1_frameburst", FT_WIRELESS, SUBFT_ADVANCED_5G },
-	{ "wl2_frameburst", FT_WIRELESS, SUBFT_ADVANCED_5G1 },
 	/* Enable WMM APSD */
 	{ "wl0_wme_apsd", FT_WIRELESS, SUBFT_ADVANCED_2G },
 	{ "wl1_wme_apsd", FT_WIRELESS, SUBFT_ADVANCED_5G },
@@ -606,6 +639,17 @@ struct param_mapping_s param_mapping_list[] = {
 	{ "wl0_txpower", FT_WIRELESS, SUBFT_ADVANCED_2G },
 	{ "wl1_txpower", FT_WIRELESS, SUBFT_ADVANCED_5G },
 	{ "wl2_txpower", FT_WIRELESS, SUBFT_ADVANCED_5G1 },
+#ifdef RTCONFIG_HND_ROUTER_AX
+	{ "wl0_he_features", FT_WIRELESS, SUBFT_HE_FEATURES_2G },
+	{ "wl1_he_features", FT_WIRELESS, SUBFT_HE_FEATURES_5G },
+	{ "wl2_he_features", FT_WIRELESS, SUBFT_HE_FEATURES_5G1 },
+	/* Bandwidth 160 support */
+	{ "wl0_bw_160", FT_WIRELESS, SUBFT_BW_160_2G },
+	{ "wl1_bw_160", FT_WIRELESS, SUBFT_BW_160_5G },
+	{ "wl2_bw_160", FT_WIRELESS, SUBFT_BW_160_5G1 },
+	/* ACS include DFS channels */
+	{ "acs_dfs", FT_WIRELESS, SUBFT_ACS_INCLUDE_DFS },
+#endif	
 	/* END */
 	{ NULL, 0, 0 }
 };
@@ -629,6 +673,9 @@ struct wlcsuffix_mapping_s wlcsuffix_mapping_list[] = {
 	{ "macmode", NULL },
 	{ "maclist_x", NULL },
 	{ "closed", NULL },
+	{ "radius_ipaddr", NULL },
+	{ "radius_key", NULL },
+	{ "radius_port", NULL },
 	{ NULL, 		NULL }
 };
 

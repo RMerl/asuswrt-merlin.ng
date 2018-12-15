@@ -56,15 +56,15 @@
 
 #define	UPNP_RC_NUMBER		25
 
-#define	UPNP_INCREMENTAL_NUMBER	701
+#define	UPNP_INCREMENTAL_NUMBER	1503
 
 #define	UPNP_BUILD_NUMBER	0
 
-#define	UPNP_VERSION		17, 10, 25, 701
+#define	UPNP_VERSION		17, 10, 25, 1503
 
-#define	UPNP_VERSION_NUM	0x110a192bd
+#define	UPNP_VERSION_NUM	0x110a195df
 
 /* Driver Version String, ASCII, 32 chars max */
-#define	UPNP_VERSION_STR	"17.10.25.701"
+#define	UPNP_VERSION_STR	"17.10.25.1503"
 
 #endif /* __LIBUPNP_VERSION_H__ */

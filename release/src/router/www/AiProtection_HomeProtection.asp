@@ -818,6 +818,12 @@ function apply_alert_preference(){
 		return;
 	}
 
+	if(address_temp.indexOf("`")!=-1){
+		alert("` "+ " <#JS_validchar#>");
+		document.getElementById('mail_address').focus();
+		return;
+	}
+
 	if(authpass_temp == "") {
 		alert("Please input the mail password!");
 		return;

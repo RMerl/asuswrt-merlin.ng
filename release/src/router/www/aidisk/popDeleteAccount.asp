@@ -51,7 +51,7 @@ function clickevent(){
 	</tr>
   </tbody>	
     <tr>
-      <td height="30" align="right" bgcolor="#E6E6E6">
+      <td height="30" align="right">
 	    <input id="Submit" type="button" class="button_gen" value="<#CTL_del#>">
   	  <input id="Cancel" type="button" class="button_gen" value="<#CTL_Cancel#>">
 	  </td>

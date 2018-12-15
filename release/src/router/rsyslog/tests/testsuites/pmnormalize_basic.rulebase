@@ -1,0 +1,1 @@
+rule=:<%pri:number%> %hostname:word% %syslogtag:char-to:\x3a%: is no longer listening on %fromhost-ip:ipv4% %msg:rest%

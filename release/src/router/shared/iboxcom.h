@@ -1,5 +1,9 @@
 /************************************************************/
-/*  Version 2.4     by Edison      2016/5/16		    */
+/*  Version 2.6     by Edison      2018/11/1		    */
+/*  Add Label_MacAddress in STORAGE_INFO_T          */
+/************************************************************/
+/************************************************************/
+/*  Version 2.5     by Edison      2016/5/16		    */
 /*  Using unsigned integer for 64 bits to 32 bits           */
 /************************************************************/
 /************************************************************/
@@ -287,6 +291,7 @@ typedef struct storage_info_t {
 	BYTE AppAPILevel;	/* API level for app */
 	BYTE EnableAAE;	
 	BYTE AAEDeviceID[64];
+	BYTE Label_MacAddress[6];
 } STORAGE_INFO_T;
 
 typedef struct PktGetInfoEx1

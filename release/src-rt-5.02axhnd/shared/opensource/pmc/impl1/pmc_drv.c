@@ -1573,15 +1573,13 @@ static void dump_swregs(void)
             swr_read(i,j);
 }
 #endif /* CFG_RAMAPP */
-#endif /* _BCM96846_ */
+#endif /* defined(_BCM96846_) || defined(_BCM96856_) || defined(_BCM96858_) */
 
-#if defined(PMC_RAM_BOOT) && defined(AVS_DEBUG)
-static void pmc_log_dump(void)
+#if defined(PMC_RAM_BOOT)
+void pmc_log_dump(void)
 {
-    unsigned long phys;
+    unsigned long phys = cache_to_uncache(0x4ffc000);
     uint32_t i;
-
-    phys = 0x4ffc000;
 
     if (*((uint32_t *)(phys - 4)) != 0xc0ffee55)
     {
@@ -1603,12 +1601,6 @@ int pmc_init(void)
 	int  rc = 0;
 
 	pmc_initmode();
-#if defined(PMC_RAM_BOOT)
-#if defined(AVS_DEBUG)
-    pmc_log_dump();
-#endif
-    pmc_boot();
-#endif
 
 #if (defined (_BCM96846_) || defined(_BCM96856_) || defined(_BCM96858_)) && defined(CFG_RAMAPP)
 #if defined(_BCM96858_) && defined(CFG_RAMAPP)
@@ -1618,6 +1610,13 @@ int pmc_init(void)
 #if defined(_BCM96856_)
     pmc_patch_6856();
 #endif
+#endif
+
+#if defined(PMC_RAM_BOOT)
+#if defined(AVS_DEBUG)
+    pmc_log_dump();
+#endif
+    pmc_boot();
 #endif
 
 	printk("%s:PMC using %s mode\n", __func__,

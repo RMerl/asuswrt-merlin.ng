@@ -18,7 +18,7 @@
  *
  * <<Broadcom-WL-IPTag/Open:>>
  *
- * $Id: bcmdefs.h 764799 2018-06-04 15:22:24Z $
+ * $Id: bcmdefs.h 767388 2018-09-10 01:53:16Z $
  */
 
 #ifndef	_bcmdefs_h_
@@ -573,7 +573,7 @@ typedef struct {
 
 #ifdef ATE_BUILD
 #ifndef ATE_NVRAM_MAXSIZE
-#define ATE_NVRAM_MAXSIZE 32000
+#define ATE_NVRAM_MAXSIZE 64000
 #endif /* ATE_NVRAM_MAXSIZE */
 #endif /* ATE_BUILD */
 

@@ -1,0 +1,66 @@
+----------------------------------------------------------------------
+Version 0.1.10 2014-12-09
+- changed some functions that don't modify their arg to take const arg
+- bugfix: str2num did not convert hex values correctly
+- bugfix: problems with trailing incomplete hex sequence
+- bugfixes to StrFromNumber
+- some checks for potential overflows with giantic strings (>2GB)
+- lower autotools requirement to 2.59
+  permits to build on stock RHEL/CENTOS 5
+----------------------------------------------------------------------
+Version 0.1.9 2013-10-28
+- bugfix: invalid number string when creating string from integer 
+  Thanks to Pavel Levshin for the patch
+----------------------------------------------------------------------
+Version 0.1.8 2013-10-16
+- bugfix: previous fix for string comparisons did not work properly
+  Thanks to Tomas Heinrich for alerting us
+----------------------------------------------------------------------
+Version 0.1.7 2013-10-10
+- bugfix: invalid comparison results for different-length strings
+  es_strcmp, es_strcasecmp, es_strbufcmp, and es_strcasebufcmp
+  returned incorrect results if the first string was smaller than
+  the second. In that case, the first string was always assumed
+  to be lexially lower than the second. If the second string was
+  larger than the first, the same issue occured. This did not affect
+  equal comparisons, but LT/GT checks lead to invalid result, with
+  potentially harsh consequences (e.g. qsort() did not work properly).
+  This bug is present for a very long time, potentially down to the
+  initial implementation of libestr.
+----------------------------------------------------------------------
+Version 0.1.6 2013-09-12
+- bugfix: ascii hex code escapes did not work
+  Thanks to Rene Kalff for the patch
+----------------------------------------------------------------------
+Version 0.1.5 2013-03-19
+- bugfix: es_strncmp() did not work correctly
+  Thanks to Philippe Muller for the patch.
+  closes: http://bugzilla.adiscon.com/show_bug.cgi?id=424
+----------------------------------------------------------------------
+Version 0.1.4 2012-09-13
+- bugfix: '\\' escape was not recognized when unescaping strings
+  Thanks to Miloslav Trmač for the patch.
+----------------------------------------------------------------------
+Version 0.1.3 (rgerhards), 2012-07-04
+- bugfix: fixed some problems in build system
+  Thanks to Jan Engelhardt for the patches
+- bugfix: license doc COPYING was accidently overwritten, now LGPL
+  again (thanks to John Back for alerting me!)
+----------------------------------------------------------------------
+Version 0.1.2 (rgerhards), 2011-08-01
+- added new API functions:
+  * es_strcasebufcmp(),
+  * es_strcasecmp(),
+----------------------------------------------------------------------
+Version 0.1.1 (rgerhards), 2011-07-12
+- added new API functions:
+  * es_newStrFromNumber(),
+  * es_str2num()
+  * es_strncmp()
+  * es_strncasecmp()
+  * es_strContains()
+  * es_strCaseContains()
+  * es_tolower()
+----------------------------------------------------------------------
+Version 0.1.0 (rgerhards), 2010-12-09
+Initial public release.

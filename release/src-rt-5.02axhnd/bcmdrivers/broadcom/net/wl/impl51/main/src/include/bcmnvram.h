@@ -277,7 +277,7 @@ extern int nvram_space;
 #endif /* BCA_HNDROUTER */
 
 #ifndef NVRAM_SPACE
-#define NVRAM_SPACE		0x2000
+#define NVRAM_SPACE		0x20000
 #endif // endif
 /* For CFE builds this gets passed in thru the makefile */
 #ifndef MAX_NVRAM_SPACE

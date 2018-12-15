@@ -102,8 +102,6 @@ if(accounts.length == 0)
 
 var header_info = [<% get_header_info(); %>];
 var host_name = header_info[0].host;
-if(host_name.split(":").length > 1)
-	host_name = host_name.split(":")[0];
 if(tmo_support)
 	var theUrl = "cellspot.router";	
 else
@@ -144,8 +142,8 @@ function initial(){
 	restrict_rulelist_array = JSON.parse(JSON.stringify(orig_restrict_rulelist_array));
 
 	show_menu();
-	//	https://www.asus.com/us/support/FAQ/1034294
 	httpApi.faqURL("1034294", function(url){document.getElementById("faq").href=url;});
+	httpApi.faqURL("1037370", function(url){document.getElementById("ntp_faq").href=url;});
 	show_http_clientlist();
 	display_spec_IP(document.form.http_client.value);
 
@@ -1571,13 +1569,6 @@ function show_network_monitoring(){
 	var orig_dns_probe = httpApi.nvramGet(["dns_probe"]).dns_probe;
 	var orig_wandog_enable = httpApi.nvramGet(["wandog_enable"]).wandog_enable;
 
-	if(svc_ready == "0" || orig_dns_probe == "1" || orig_wandog_enable == "1"){
-		document.getElementById("network_monitor_tr").style.display = "";
-	}
-	else{
-		document.getElementById("network_monitor_tr").style.display = "none";
-	}
-
 	appendMonitorOption(document.form.dns_probe_chk);
 	appendMonitorOption(document.form.wandog_enable_chk);
 	setTimeout("showPingTargetList();", 500);
@@ -1823,7 +1814,21 @@ function pullPingTargetList(obj){
 						<script>
 							var needReboot = false;
 
-							if( based_modelid == "DSL-AC68U" || based_modelid == "RT-AC3200" || based_modelid == "RT-AC87U" || based_modelid == "RT-AC68U" || based_modelid == "RT-AC68A" || based_modelid == "RT-AC56S" || based_modelid == "RT-AC56U" || based_modelid == "RT-AC55U" || based_modelid == "RT-AC55UHP" || based_modelid == "RT-N18U" || based_modelid == "RT-AC88U" || based_modelid == "RT-AC86U" || based_modelid == "AC2900" || based_modelid == "RT-AC3100" || based_modelid == "RT-AC5300" || based_modelid == "RP-AC68U" || based_modelid == "RT-AC58U" || based_modelid == "RT-AC82U" || based_modelid == "MAP-AC3000" || based_modelid == "RT-AC85U" || based_modelid == "RT-AC65U" || based_modelid == "4G-AC68U" || based_modelid == "BLUECAVE" || based_modelid == "RT-AC88Q" || based_modelid == "RT-AD7200" || based_modelid == "RT-N65U" || based_modelid == "GT-AC5300" || based_modelid == "RT-AX88U" || based_modelid == "RT-AX95U" || based_modelid == "BRT-AC828"
+							if( based_modelid == "DSL-AC68U" 
+							 || based_modelid == "RT-AC3200" || based_modelid == "RT-AC87U" 
+							 || based_modelid == "RT-AC68U" || based_modelid == "RT-AC68A" 
+							 || based_modelid == "RT-AC56S" || based_modelid == "RT-AC56U" 
+							 || based_modelid == "RT-AC55U" || based_modelid == "RT-AC55UHP" 
+							 || based_modelid == "RT-N18U" 
+							 || based_modelid == "RT-AC88U" || based_modelid == "RT-AC3100" || based_modelid == "RT-AC5300" 
+							 || based_modelid == "RT-AC86U" || based_modelid == "GT-AC2900" 
+							 || based_modelid == "RP-AC68U" || based_modelid == "RT-AC58U" || based_modelid == "RT-AC82U" 
+							 || based_modelid == "MAP-AC3000" || based_modelid == "RT-AC85U" || based_modelid == "RT-AC65U" 
+							 || based_modelid == "4G-AC68U" || based_modelid == "BLUECAVE" 
+							 || based_modelid == "RT-AC88Q" || based_modelid == "RT-AD7200" 
+							 || based_modelid == "RT-N65U" || based_modelid == "BRT-AC828" 
+							 || based_modelid == "RT-AX88U" || based_modelid == "RT-AX92U" 
+							 || based_modelid == "GT-AC5300"  || based_modelid == "GT-AX11000" || based_modelid == "GX-AX6000" || based_modelid == "GX-AC5400"
 							){
 								$("#reduce_usb3_tr").show();
 							}
@@ -1917,31 +1922,31 @@ function pullPingTargetList(obj){
 						<a href="javascript:openLink('x_NTPServer1')"  name="x_NTPServer1_link" style=" margin-left:5px; text-decoration: underline;"><#LANHostConfig_x_NTPServer1_linkname#></a>
 						<div id="svc_hint_div" style="display:none;">
 							<span style="color:#FFCC00;"><#General_x_SystemTime_syncNTP#></span>
-							<a href="" target="_blank" style="margin-left:5px; color: #FFCC00; text-decoration: underline;">FAQ</a>
+							<a id="ntp_faq" href="" target="_blank" style="margin-left:5px; color: #FFCC00; text-decoration: underline;">FAQ</a>
 						</div>
 					</td>
 				</tr>
-				<tr id="network_monitor_tr" style="display: none;">
-					<th><a class="hintstyle"><div id="wandog_title">Network Monitoring</div></a></th>
+				<tr id="network_monitor_tr">
+					<th><#Network_Monitoring#></th>
 					<td>
-						<input type="checkbox" name="dns_probe_chk" value="" <% nvram_match("dns_probe", "1", "checked"); %> onClick="appendMonitorOption(this);"><div style="display: inline-block; vertical-align: middle; margin-bottom: 2px;" >DNS Query</div>
-						<input type="checkbox" name="wandog_enable_chk" value="" <% nvram_match("wandog_enable", "1", "checked"); %>  onClick="appendMonitorOption(this);"><div style="display: inline-block; vertical-align: middle; margin-bottom: 2px;">Ping</div>
+						<input type="checkbox" name="dns_probe_chk" value="" <% nvram_match("dns_probe", "1", "checked"); %> onClick="appendMonitorOption(this);"><div style="display: inline-block; vertical-align: middle; margin-bottom: 2px;" ><#DNS_Query#></div>
+						<input type="checkbox" name="wandog_enable_chk" value="" <% nvram_match("wandog_enable", "1", "checked"); %>  onClick="appendMonitorOption(this);"><div style="display: inline-block; vertical-align: middle; margin-bottom: 2px;"><#Ping#></div>
 					</td>
 				</tr>
 				<tr id="probe_host_tr" style="display: none;">
-					<th><a class="hintstyle"><div id="wandog_title">Resolved Target</div></a></th>
+					<th><#Resolved_Target#></th>
 					<td>
 							<input type="text" class="input_32_table" name="dns_probe_host" maxlength="255" autocorrect="off" autocapitalize="off" value="<% nvram_get("dns_probe_host"); %>">
 					</td>
 				</tr>
 				<tr id="probe_content_tr" style="display: none;">
-					<th><a class="hintstyle"><div id="wandog_title">Respond IP</div></a></th>
+					<th><#Respond_IP#></th>
 					<td>
 							<input type="text" class="input_32_table" name="dns_probe_content" maxlength="1024" autocorrect="off" autocapitalize="off" value="<% nvram_get("dns_probe_content"); %>">
 					</td>
 				</tr>
 				<tr id="ping_tr" style="display: none;">
-					<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(26,2);">Ping <#NetworkTools_target#></a></th>
+					<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(26,2);"><#Ping_Target#></a></th>
 					<td>
 							<input type="text" class="input_32_table" name="wandog_target" maxlength="100" value="<% nvram_get("wandog_target"); %>" placeholder="ex: www.google.com" autocorrect="off" autocapitalize="off">
 							<img id="ping_pull_arrow" class="pull_arrow" height="14px;" src="/images/arrow-down.gif" style="position:absolute;*margin-left:-3px;*margin-top:1px;" onclick="pullPingTargetList(this);" title="<#select_network_host#>">

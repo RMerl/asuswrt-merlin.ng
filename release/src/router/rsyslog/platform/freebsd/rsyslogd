@@ -1,0 +1,83 @@
+#!/bin/sh
+# Sample startup script for rsyslogd on FreeBSD.
+# It worked on my machine, but this does not necessarily
+# mean it works on all machines - it's not thouroughly
+# tested. Please note that it may also work on other
+# BSD variants, too.
+#
+# As of this writing, there was an issue with the mysql client
+# library on startup. If compiled with MySQL support, rsyslogd
+# would not necessarily start correctly but could eventually
+# die with a "mysql client libary not found" (or similar) 
+# message. I do not know its cause neither the cure. If you
+# have one, let me know.
+#
+# ATTENTION: you need also to change the /etc/rc.config file
+# and disable stock syslogd and then enable rsyslogd!
+#
+# rgerhards 2005-08-09 <rgehards@adiscon.com>
+#
+
+# PROVIDE: rsyslogd
+# REQUIRE: mountcritremote cleanvar
+# BEFORE:  SERVERS
+
+. /etc/rc.subr
+
+name="rsyslogd"
+rcvar=`set_rcvar`
+pidfile="/var/run/rsyslogd.pid"
+command="/usr/sbin/${name}"
+required_files="/etc/rsyslog.conf"
+start_precmd="rsyslogd_precmd"
+extra_commands="reload"
+
+_sockfile="/var/run/rsyslogd.sockets"
+evalargs="rc_flags=\"\`set_socketlist\` \$rc_flags\""
+altlog_proglist="named"
+
+rsyslogd_precmd()
+{
+	#	Transitional symlink for old binaries
+	#
+	if [ ! -L /dev/log ]; then
+		ln -sf /var/run/log /dev/log
+	fi
+	rm -f /var/run/log
+
+	#	Create default list of syslog sockets to watch
+	#
+	( umask 022 ; > $_sockfile )
+
+	#	If running named(8) or ntpd(8) chrooted, added appropriate
+	#	syslog socket to list of sockets to watch.
+	#
+	for _l in $altlog_proglist; do
+		eval _ldir=\$${_l}_chrootdir
+		if checkyesno `set_rcvar $_l` && [ -n "$_ldir" ]; then
+			echo "${_ldir}/var/run/log" >> $_sockfile
+		fi
+	done
+
+	#	If other sockets have been provided, change run_rc_command()'s
+	#	internal copy of $rsyslogd_flags to force use of specific
+	#	rsyslogd sockets.
+	#
+	if [ -s $_sockfile ]; then
+		echo "/var/run/log" >> $_sockfile
+		eval $evalargs
+	fi
+
+	return 0
+}
+
+set_socketlist()
+{
+	_socketargs=
+	for _s in `cat $_sockfile | tr '\n' ' '` ; do
+		_socketargs="-l $_s $_socketargs"
+	done
+	echo $_socketargs
+}
+load_rc_config $name
+run_rc_command "$1"

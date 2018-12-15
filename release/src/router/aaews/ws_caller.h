@@ -10,7 +10,7 @@ int st_UpdateProfile(const char* update_status, int nat_type, char* mac_addr, ch
 int st_UpdateProfile2(const char* update_status, int nat_type, char* mac_addr, char* tnl_sdk_version, GetServiceArea* gsa, Login* lg, char *dev_desc);
 int st_ListProfile( GetServiceArea* gsa, Login* lg, ListProfile* lp, pProfile *pP );
 int st_Logout(GetServiceArea* gsa, Login* lg);
-int st_Login(GetServiceArea* gsa, Login* lg, char* vip_id, char* vip_pwd);
+int st_Login(GetServiceArea* gsa, Login* lg, char* vip_id, char* vip_pwd, char* tnl_sdk_version, char* dev_desc);
 int st_KeepAlive_loop(int sec, int* is_terminate);
 int st_KeepAlive_threading(int sec, int* is_terminate);
 int st_KeepAlive_thread_exit();

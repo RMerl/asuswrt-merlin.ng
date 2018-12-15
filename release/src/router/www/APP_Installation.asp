@@ -537,8 +537,6 @@ function show_apps(){
 
 			var header_info = [<% get_header_info(); %>];
 			var host_name = header_info[0].host;
-			if(host_name.split(":").length > 1)
-				host_name = host_name.split(":")[0];
 			apps_array[i][6] = "http://" + host_name + ":" + dm_http_port;
 
 			if(apps_array[i][0] == "aicloud") // append URL
@@ -804,8 +802,6 @@ function divdisplayctrl(flag1, flag2, flag3, flag4){
 	else if(flag4 != "none"){ // help
 		var header_info = [<% get_header_info(); %>];
 		var host_name = header_info[0].host;
-		if(host_name.split(":").length > 1)
-			host_name = host_name.split(":")[0];
 		var _quick_dmlink = "http://" + host_name + ":" + dm_http_port;
 		
 		if(_dm_enable == "yes"){

@@ -55,7 +55,7 @@
 
 /* Numbers must not exceed 255 */
 #define BCM63XX_MAJOR   163
-#define BCM63XX_MINOR   156
+#define BCM63XX_MINOR   162
 
 #define CFE_API_VERSION_1_0 7
 #define CFE_API_VERSION_MAX 255 

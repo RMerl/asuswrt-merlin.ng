@@ -76,6 +76,7 @@
 <script type="text/javascript" src="/js/jquery.js"></script>
 <script type="text/javascript" src="/switcherplugin/jquery.iphone-switch.js"></script>
 <script type="text/javascript" language="JavaScript" src="/js/table/table.js"></script>
+<script type="text/javascript" src="/js/httpApi.js"></script>
 <script>
 
 
@@ -118,6 +119,10 @@ function initial(){
 	
 	addWANOption(document.form.wans_primary, wans_caps_primary.split(" "));
 	addWANOption(document.form.wans_second, wans_caps_secondary.split(" "));
+
+	httpApi.faqURL("1011718", function(url){document.getElementById("dualwan_faq").href=url;});
+	httpApi.faqURL("1037368", function(url){document.getElementById("network_detect_faq").href=url;});
+
    	document.form.wans_mode.value = wans_mode_orig;
 
    	//parse nvram to array
@@ -1178,10 +1183,10 @@ function remain_origins(){
 							<tbody>
 								<tr>
 								  <td bgcolor="#4D595D" valign="top">
-								  <div>&nbsp;</div>
-								  <div class="formfonttitle"><#menu5_3#> - <#dualwan#></div>
-								  <div style="margin:10px 0 10px 5px;" class="splitLine"></div>
-					  			<div class="formfontdesc"><#dualwan_desc#></div>
+									<div>&nbsp;</div>
+									<div class="formfonttitle"><#menu5_3#> - <#dualwan#></div>
+									<div style="margin:10px 0 10px 5px;" class="splitLine"></div>
+									<div class="formfontdesc"><#dualwan_desc#><a id="dualwan_faq" href="" target="_blank" style="margin-left:5px; text-decoration: underline;"><#dualwan#> FAQ</a></div>
 									<table width="100%" border="1" align="center" cellpadding="4" cellspacing="0" bordercolor="#6b8fa3"  class="FormTable">
 										
 			  						<thead>
@@ -1331,53 +1336,51 @@ function remain_origins(){
 				<table width="100%" border="1" align="center" cellpadding="4" cellspacing="0" class="FormTable" style="margin-top:8px;" id="watchdog_table">
 					<thead>
 					<tr>
-						<td colspan="2"><#dualwan_pingtime_wd2#><div style="font-weight: normal; font-style: italic; margin-top: 5px;">When configuring the auto network detection below, some detailed explanations are provided in ASUS Support Site FAQ, which might help you use this function effectively.</div></td>
+						<td colspan="2"><#dualwan_pingtime_wd2#><div style="font-weight: normal; font-style: italic; margin-top: 5px;"><#FAQ_Desc#></div></td>
 					</tr>
 					</thead>
 
 					<tr>
 						<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(26,3);"><#Retry_interval2#></a></th>
-						<td id="retry_intervale_setting"> Every $INPUT_INTERVAL seconds
+						<td id="retry_intervale_setting"><#Every_N_Seconds#>
 							<div><span id="consume_bytes_warning" style=""></span></div>
 						</td>
 					</tr>
 
 					<tr>
-						<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(26,5);"><div id="fo_detection_count_hd">Failover Trigger Condition</div></a></th>
-						<td id="wandog_maxfail_setting">When the WAN currently used fails for continuously $WANDOG_MAXFAIL times, failover to Secondary WAN.
-						</td>
+						<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(26,5);"><div id="fo_detection_count_hd"><#dualwan_failover_trigger#></div></a></th>
+						<td id="wandog_maxfail_setting"><#dualwan_failover_desc#></td>
 					</tr>
 
 					<tr id="wandog_fb_count_tr">
-						<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(26,6);"><div id="fb_detection_count_hd">Failback Trigger Condition</div></a></th>	
-						<td id="wandog_fbcount_setting">When the Primary WAN is detected to have connection to the internet with physical cable for continuously $WANDOG_FB_COUNT times, failback to the Primary WAN.
-						</td>
+						<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(26,6);"><div id="fb_detection_count_hd"><#dualwan_failback_trigger#></div></a></th>
+						<td id="wandog_fbcount_setting"><#dualwan_failback_desc2#></td>
 					</tr>
 
 					<tr>
-						<th><a class="hintstyle"><div id="wandog_title">Network Monitoring</div></a></th>
+						<th><#Network_Monitoring#></th>
 						<td>
-							<input type="checkbox" name="dns_probe_chk" value="" <% nvram_match("dns_probe", "1", "checked"); %> onClick="appendMonitorOption(this);"><div style="display: inline-block; vertical-align: middle; margin-bottom: 2px;" >DNS Query</div>
-							<input type="checkbox" name="wandog_enable_chk" value="" <% nvram_match("wandog_enable", "1", "checked"); %>  onClick="appendMonitorOption(this);"><div style="display: inline-block; vertical-align: middle; margin-bottom: 2px;">Ping</div>
+							<input type="checkbox" name="dns_probe_chk" value="" <% nvram_match("dns_probe", "1", "checked"); %> onClick="appendMonitorOption(this);"><div style="display: inline-block; vertical-align: middle; margin-bottom: 2px;" ><#DNS_Query#></div>
+							<input type="checkbox" name="wandog_enable_chk" value="" <% nvram_match("wandog_enable", "1", "checked"); %>  onClick="appendMonitorOption(this);"><div style="display: inline-block; vertical-align: middle; margin-bottom: 2px;"><#Ping#></div>
 						</td>
 					</tr>
 
 					<tr>
-						<th><a class="hintstyle"><div id="wandog_title">Resolved Target</div></a></th>
+						<th><#Resolved_Target#></th>
 				        <td>
 								<input type="text" class="input_32_table" name="dns_probe_host" maxlength="255" autocorrect="off" autocapitalize="off" value="<% nvram_get("dns_probe_host"); %>">
 						</td>
 					</tr>
 
 					<tr>
-						<th><a class="hintstyle"><div id="wandog_title">Respond IP</div></a></th>
+						<th><#Respond_IP#></th>
 						<td>
 								<input type="text" class="input_32_table" name="dns_probe_content" maxlength="1024" autocorrect="off" autocapitalize="off" value="<% nvram_get("dns_probe_content"); %>">
 						</td>
 					</tr>
 
 					<tr>
-						<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(26,2);">Ping <#NetworkTools_target#></a></th>
+						<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(26,2);"><#Ping_Target#></a></th>
 						<td>
 								<input type="text" class="input_32_table" name="wandog_target" maxlength="100" value="<% nvram_get("wandog_target"); %>" placeholder="ex: www.google.com" autocorrect="off" autocapitalize="off">
 								<img id="pull_arrow" class="pull_arrow" height="14px;" src="/images/arrow-down.gif" style="position:absolute;*margin-left:-3px;*margin-top:1px;" onclick="pullLANIPList(this);" title="<#select_network_host#>" onmouseover="over_var=1;" onmouseout="over_var=0;">

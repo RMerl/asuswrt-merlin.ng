@@ -18,7 +18,7 @@
  *
  * <<Broadcom-WL-IPTag/Open:>>
  *
- * $Id: sbpcmcia.h 705961 2017-06-20 02:56:05Z $
+ * $Id: sbpcmcia.h 766705 2018-08-10 03:13:01Z $
  */
 
 #ifndef	_SBPCMCIA_H
@@ -118,7 +118,8 @@
 
 #define CIS_SIZE_SW_1180B	1180	/* Maximum s/w sub region size for 4366B0/B1 */
 #define CIS_SIZE_SW_1628B	1628	/* Maximum s/w sub region size for 4366C0/E0 */
-#define CIS_SIZE_SW_1443B	1443	/* Maximum s/w sub region size for 43684A0 */
+#define CIS_SIZE_SW_1438B	1438	/* Maximum s/w sub region size for 43684A0 */
+#define CIS_SIZE_SW_1436B	1436	/* Maximum s/w sub region size for 43684B0 */
 
 /* CIS tuple length field max */
 #define CIS_TUPLE_LEN_MAX	0xff

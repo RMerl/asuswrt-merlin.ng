@@ -397,11 +397,11 @@ cfe$(BRCM_CHIP) cfe$(BRCM_CHIP).bin: $(CRT0OBJS) $(BSPOBJS) $(LIBCFE)
 	$(GOBJCOPY) --output-target=binary cfe$(BRCM_CHIP) cfe$(BRCM_CHIP).bin
 	$(GOBJCOPY) --output-target=srec --srec-forceS3 -R .reginfo -R .note -R .comment -R .mdebug -S cfe$(BRCM_CHIP) cfe$(BRCM_CHIP).srec
 ifeq ($(strip $(INC_NAND_FLASH_DRIVER)),1)
-	$(GOBJDUMP) -x cfe$(BRCM_CHIP) | $(HOSTTOOLS)/mkCfeHeader  cferamhdr.bin
+	LC_ALL=C $(GOBJDUMP) -x cfe$(BRCM_CHIP) | $(HOSTTOOLS)/mkCfeHeader  cferamhdr.bin
 	cat cferamhdr.bin cfe$(BRCM_CHIP).bin > cfe$(BRCM_CHIP)ram.bin
 	rm cferamhdr.bin
 else ifeq ($(strip $(INC_EMMC_FLASH_DRIVER)),1)
-	$(GOBJDUMP) -x cfe$(BRCM_CHIP) | $(HOSTTOOLS)/mkCfeHeader  cferamhdr.bin
+	LC_ALL=C $(GOBJDUMP) -x cfe$(BRCM_CHIP) | $(HOSTTOOLS)/mkCfeHeader  cferamhdr.bin
 	cat cferamhdr.bin cfe$(BRCM_CHIP).bin > cfe$(BRCM_CHIP)ram.bin
 	rm cferamhdr.bin
 endif

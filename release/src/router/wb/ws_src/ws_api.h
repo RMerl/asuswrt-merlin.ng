@@ -2,8 +2,8 @@
 #define __WS_API_H__
 
 #define TRANSFER_TYPE		"https://"
-//#define SERVER 				"aae-spweb.asus.com"
 #define SERVER 				"aae-spweb-vx.asuscloud.com"
+//#define SERVER 				"54.179.149.151"
 #define GET_SERVICE_AREA	"/aae/getservicearea"
 #define LOGIN				"/aae/login"
 #define QUERY_FRIEND		"/aae/queryfriend"
@@ -46,6 +46,7 @@ typedef struct _GetServiceArea
 	char 	servicearea[MAX_URL_LEN];
 	char	time[MAX_TIME_LEN];
 	char	srcip[MAX_IP_ADDR_LEN];
+	char	retrytime[MAX_TIME_LEN];
 }GetServiceArea, *pGetServiceArea;
 
 typedef struct _SrvInfo
@@ -56,6 +57,8 @@ typedef struct _SrvInfo
 
 typedef struct _Login{
 	char 	status[MAX_STATUS_LEN];
+	char 	apilevel_status[MAX_STATUS_LEN];
+	char 	apilevel[MAX_STATUS_LEN];
 	char	usersvclevel[MAX_USER_LEVEL_LEN];
 	char	cusid[MAX_CUSID_LEN];
 	char	userticket[MAX_TICKET_LEN]; 
@@ -70,6 +73,7 @@ typedef struct _Login{
 	pSrvInfo	relayinfoList;
 	pSrvInfo	stuninfoList;
 	pSrvInfo	turninfoList;
+	pSrvInfo	pnsinfoList;
 	char	deviceticketexpiretime[MAX_DEV_TICKET_EXP_LEN];
 	char 	time[MAX_TIME_LEN];
 } Login, *pLogin;
@@ -195,6 +199,7 @@ int send_loginbyticket_req(
 	const char*	deviceservice,
 	const char* devicetype,
 	const char*	permission,
+	const char* devicedesc,
 	Login*		pLogin
 );
 
@@ -219,6 +224,10 @@ int send_login_req(
 	const char*	deviceservice,
 	const char* devicetype,
 	const char*	permission,
+	const char* devicedesc,
+	const char* fwver, 
+	const int apilevel,
+	const char* modelname,
 	Login*		pLogin
 	);
 

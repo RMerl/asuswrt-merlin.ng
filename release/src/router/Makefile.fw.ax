@@ -26,9 +26,8 @@ PCIEFD_EMBED_HEADER		:= $(SRCBASE_DHD)/shared/rtecdc_router.h
 PCIEFD_IMAGE_DIR		:= $(SRCBASE_DHD)/dongle/bin
 
 # All firmware targets must be defined here
+PCIEFD_TARGETS_LIST		:= 43684b0
 ifneq ($(CONFIG_STBAP),y)
-PCIEFD_TARGETS_LIST		:= 43684a0
-PCIEFD_TARGETS_LIST		+= 43684b0
 #ifneq ($(CONFIG_AIRIQ),)
 #PCIEFD_TARGETS_LIST            += 4363c0
 #endif
@@ -53,21 +52,6 @@ version-pciefd			:= $(patsubst %,%-version,$(PCIEFD_TARGETS_LIST))
 ifeq ($(CONFIG_STBAP),y)
 install-pciefd			:= $(patsubst %,%,$(PCIEFD_TARGETS_LIST))
 endif # CONFIG_STBAP
-
-# ---------------------
-# 43684a0 target
-FW_43684a0_SRCBASE		:= $(abspath $(SRCBASE)/../../43684/src)
-FW_43684a0_CHIPID		:= 43684a0
-FW_43684a0_BUILD_PREFIX		:= $(FW_43684a0_CHIPID)-ram
-FW_43684a0_MAKE_PATH		:= $(FW_43684a0_SRCBASE)/dongle/make/wl
-FW_43684a0_BUILD_PATH		:= $(FW_43684a0_SRCBASE)/../build/dongle/$(FW_43684a0_BUILD_PREFIX)
-FW_43684a0_OS_PATH		:= $(FW_43684a0_SRCBASE)/../components/threadx
-
-ifeq ($(WLTEST),1)
-    FW_43684a0_TARGET		:= config_pcie_fdap_mfgtest
-else
-        FW_43684a0_TARGET	:= config_pcie_fdap_release
-endif
 
 # ---------------------
 # 43684b0 target

@@ -316,6 +316,9 @@ endif
 
 OBJS += $(if $(wildcard private.c),private.o,prebuild/private.o)
 ifeq ($(RTCONFIG_CONNDIAG),y)
+ifeq ($(RTCONFIG_BCMBSD),y)
+CFLAGS += -I$(TOP)/bsd
+endif
 OBJS += $(if $(wildcard conn_diag.c),conn_diag.o,prebuild/conn_diag.o)
 endif
 
@@ -410,14 +413,12 @@ ifeq ($(RTCONFIG_DSL_TCLINUX),y)
 OBJS += dsl_diag.o
 endif
 endif
-ifeq ($(or $(RTCONFIG_BCMWL6),$(RTCONFIG_LANTIQ),$(RTCONFIG_QCA)),y)
-ifeq ($(RTCONFIG_PROXYSTA),y)
-ifeq ($(RTCONFIG_LANTIQ),y)
-OBJS += $(if $(wildcard psta_monitor.c),psta_monitor.o,prebuild/psta_monitor.o)
-else
+
+ifeq ($(and $(RTCONFIG_BCMWL6),$(RTCONFIG_PROXYSTA)),y)
 OBJS += psta_monitor.o
 endif
-endif
+
+ifeq ($(or $(RTCONFIG_BCMWL6),$(RTCONFIG_LANTIQ),$(RTCONFIG_QCA)),y)
 ifeq ($(RTCONFIG_AMAS),y)
 ifneq ($(RTCONFIG_DISABLE_REPEATER_UI),y)
 vpath %.c sysdeps/amas
@@ -489,7 +490,7 @@ CFLAGS += -I$(TOP)/libletsencrypt
 LDFLAGS += -L$(TOP)/libletsencrypt -lletsencrypt
 endif
 
-ifeq ($(BUILD_NAME), GT-AC5300)
+ifeq ($(RTCONFIG_GAME_PROFILE),y)
 CFLAGS += -DSUPPORT_GAME_PROFILE
 endif
 
@@ -745,10 +746,12 @@ endif
 ifeq ($(RTCONFIG_FANCTRL),y)
 	@cd $(INSTALLDIR)/sbin && ln -sf rc phy_tempsense
 endif
-ifeq ($(or $(RTCONFIG_BCMWL6),$(RTCONFIG_LANTIQ),$(RTCONFIG_QCA)),y)
-ifeq ($(RTCONFIG_PROXYSTA),y)
+
+ifeq ($(and $(RTCONFIG_BCMWL6),$(RTCONFIG_PROXYSTA)),y)
 	@cd $(INSTALLDIR)/sbin && ln -sf rc psta_monitor
 endif
+
+ifeq ($(or $(RTCONFIG_BCMWL6),$(RTCONFIG_LANTIQ),$(RTCONFIG_QCA)),y)
 ifeq ($(RTCONFIG_AMAS),y)
 	@cd $(INSTALLDIR)/sbin && ln -sf rc obd
 	@cd $(INSTALLDIR)/sbin && ln -sf rc obd_eth

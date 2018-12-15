@@ -1,0 +1,308 @@
+.\" Copyright 2004-2014 Rainer Gerhards and Adiscon for the rsyslog modifications
+.\" May be distributed under the GNU General Public License
+.\"
+.TH RSYSLOGD 8 "02 Dec 2014" "Version 8.6.0" "Linux System Administration"
+.SH NAME
+rsyslogd \- reliable and extended syslogd 
+.SH SYNOPSIS
+.B rsyslogd
+.RB [ " \-d " ]
+.RB [ " \-D " ]
+.RB [ " \-f "
+.I config file
+]
+.RB [ " \-i "
+.I pid file
+]
+.RB [ " \-n " ]
+.RB [ " \-N "
+.I level
+]
+.RB [ " \-C " ]
+.RB [ " \-v " ]
+.LP
+.SH DESCRIPTION
+.B Rsyslogd
+is a system utility providing support for message logging.
+Support of both internet and
+unix domain sockets enables this utility to support both local
+and remote logging.
+
+.B Note that this version of rsyslog ships with extensive documentation in HTML format.
+This is provided in the ./doc subdirectory and probably
+in a separate package if you installed rsyslog via a packaging system.
+To use rsyslog's advanced features, you
+.B need
+to look at the HTML documentation, because the man pages only covers
+basic aspects of operation.
+.B For details and configuration examples, see the rsyslog.conf (5)
+.B man page and the online documentation at http://www.rsyslog.com/doc
+
+.BR Rsyslogd (8)
+is derived from the sysklogd package which in turn is derived from the
+stock BSD sources.
+
+.B Rsyslogd
+provides a kind of logging that many modern programs use.  Every logged
+message contains at least a time and a hostname field, normally a
+program name field, too, but that depends on how trusty the logging
+program is. The rsyslog package supports free definition of output formats
+via templates. It also supports precise timestamps and writing directly
+to databases. If the database option is used, tools like phpLogCon can
+be used to view the log data.
+
+While the
+.B rsyslogd
+sources have been heavily modified a couple of notes
+are in order.  First of all there has been a systematic attempt to
+ensure that rsyslogd follows its default, standard BSD behavior. Of course,
+some configuration file changes are necessary in order to support the
+template system. However, rsyslogd should be able to use a standard
+syslog.conf and act like the original syslogd. However, an original syslogd
+will not work correctly with a rsyslog-enhanced configuration file. At
+best, it will generate funny looking file names.
+The second important concept to note is that this version of rsyslogd
+interacts transparently with the version of syslog found in the
+standard libraries.  If a binary linked to the standard shared
+libraries fails to function correctly we would like an example of the
+anomalous behavior.
+
+The main configuration file
+.I /etc/rsyslog.conf
+or an alternative file, given with the 
+.B "\-f"
+option, is read at startup.  Any lines that begin with the hash mark
+(``#'') and empty lines are ignored.  If an error occurs during parsing
+the error element is ignored. It is tried to parse the rest of the line.
+
+.LP
+.SH OPTIONS
+.TP
+.B "\-D"
+Runs the Bison config parser in debug mode. This may help when hard to find
+syntax errors are reported. Please note that the output generated is deeply
+technical and orignally targeted towards developers.
+.TP
+.B "\-d"
+Turns on debug mode. See the DEBUGGING section for more information.
+.TP
+.BI "\-f " "config file"
+Specify an alternative configuration file instead of
+.IR /etc/rsyslog.conf ","
+which is the default.
+.TP
+.BI "\-i " "pid file"
+Specify an alternative pid file instead of the default one.
+This option must be used if multiple instances of rsyslogd should
+run on a single machine. To disable writing a pid file, use
+the reserved name "NONE" (all upper case!), so "-iNONE".
+.TP
+.B "\-n"
+Avoid auto-backgrounding.  This is needed especially if the
+.B rsyslogd
+is started and controlled by
+.BR init (8).
+.TP
+.B "\-N " "level"
+Do a config check. Do NOT run in regular mode, just check configuration
+file correctness.
+This option is meant to verify a config file. To do so, run rsyslogd
+interactively in foreground, specifying -f <config-file> and -N level.
+The level argument modifies behaviour. Currently, 0 is the same as
+not specifying the -N option at all (so this makes limited sense) and
+1 actually activates the code. Later, higher levels will mean more
+verbosity (this is a forward-compatibility option).
+.TP
+.BI "\-C"
+This prevents rsyslogd from changing to the root directory. This
+is almost never a good idea in production use. This option was introduced
+in support of the internal testbed.
+.TP
+.B "\-v"
+Print version and exit.
+.LP
+.SH SIGNALS
+.B Rsyslogd
+reacts to a set of signals.  You may easily send a signal to
+.B rsyslogd
+using the following:
+.IP
+.nf
+kill -SIGNAL $(cat /var/run/rsyslogd.pid)
+.fi
+.PP
+Note that -SIGNAL must be replaced with the actual signal
+you are trying to send, e.g. with HUP. So it then becomes:
+.IP
+.nf
+kill -HUP $(cat /var/run/rsyslogd.pid)
+.fi
+.PP
+.TP
+.B HUP
+This lets
+.B rsyslogd
+perform close all open files.
+.TP
+.B TERM ", " INT ", " QUIT
+.B Rsyslogd
+will die.
+.TP
+.B USR1
+Switch debugging on/off.  This option can only be used if
+.B rsyslogd
+is started with the
+.B "\-d"
+debug option.
+.TP
+.B CHLD
+Wait for childs if some were born, because of wall'ing messages.
+.LP
+.SH SECURITY THREATS
+There is the potential for the rsyslogd daemon to be
+used as a conduit for a denial of service attack.
+A rogue program(mer) could very easily flood the rsyslogd daemon with
+syslog messages resulting in the log files consuming all the remaining
+space on the filesystem.  Activating logging over the inet domain
+sockets will of course expose a system to risks outside of programs or
+individuals on the local machine.
+
+There are a number of methods of protecting a machine:
+.IP 1.
+Implement kernel firewalling to limit which hosts or networks have
+access to the 514/UDP socket.
+.IP 2.
+Logging can be directed to an isolated or non-root filesystem which,
+if filled, will not impair the machine.
+.IP 3.
+The ext2 filesystem can be used which can be configured to limit a
+certain percentage of a filesystem to usage by root only.  \fBNOTE\fP
+that this will require rsyslogd to be run as a non-root process.
+\fBALSO NOTE\fP that this will prevent usage of remote logging on the default port since
+rsyslogd will be unable to bind to the 514/UDP socket.
+.IP 4.
+Disabling inet domain sockets will limit risk to the local machine.
+.SS Message replay and spoofing
+If remote logging is enabled, messages can easily be spoofed and replayed.
+As the messages are transmitted in clear-text, an attacker might use
+the information obtained from the packets for malicious things. Also, an
+attacker might replay recorded messages or spoof a sender's IP address,
+which could lead to a wrong perception of system activity. These can
+be prevented by using GSS-API authentication and encryption. Be sure
+to think about syslog network security before enabling it.
+.LP
+.SH DEBUGGING
+When debugging is turned on using the
+.B "\-d"
+option,
+.B rsyslogd
+produces debugging information according to the
+.B RSYSLOG_DEBUG
+environment variable and the signals received. When run in foreground,
+the information is written to stdout. An additional output file can be
+specified using the
+.B RSYSLOG_DEBUGLOG
+environment variable.
+.SH FILES
+.PD 0
+.TP
+.I /etc/rsyslog.conf
+Configuration file for
+.BR rsyslogd .
+See
+.BR rsyslog.conf (5)
+for exact information.
+.TP
+.I /dev/log
+The Unix domain socket to from where local syslog messages are read.
+.TP
+.I /var/run/rsyslogd.pid
+The file containing the process id of 
+.BR rsyslogd .
+.TP
+.I prefix/lib/rsyslog
+Default directory for
+.B rsyslogd
+modules. The
+.I prefix
+is specified during compilation (e.g. /usr/local).
+.SH ENVIRONMENT
+.TP
+.B RSYSLOG_DEBUG
+Controls runtime debug support. It contains an option string with the
+following options possible (all are case insensitive):
+
+.RS
+.IP Debug
+Turns on debugging and prevents forking. This is processed earlier
+in the startup than command line options (i.e. -d) and as such
+enables earlier debugging output. Mutually exclusive with DebugOnDemand.
+.IP DebugOnDemand
+Enables debugging but turns off debug output. The output can be toggled
+by sending SIGUSR1. Mutually exclusive with Debug.
+.IP LogFuncFlow
+Print out the logical flow of functions (entering and exiting them)
+.IP FileTrace
+Specifies which files to trace LogFuncFlow. If not set (the
+default), a LogFuncFlow trace is provided for all files. Set to
+limit it to the files specified.FileTrace may be specified multiple
+times, one file each (e.g. export RSYSLOG_DEBUG="LogFuncFlow
+FileTrace=vm.c FileTrace=expr.c"
+.IP PrintFuncDB
+Print the content of the debug function database whenever debug
+information is printed (e.g. abort case)!
+.IP PrintAllDebugInfoOnExit
+Print all debug information immediately before rsyslogd exits
+(currently not implemented!)
+.IP PrintMutexAction
+Print mutex action as it happens. Useful for finding deadlocks and
+such.
+.IP NoLogTimeStamp
+Do not prefix log lines with a timestamp (default is to do that).
+.IP NoStdOut
+Do not emit debug messages to stdout. If RSYSLOG_DEBUGLOG is not
+set, this means no messages will be displayed at all.
+.IP Help
+Display a very short list of commands - hopefully a life saver if
+you can't access the documentation...
+.RE
+
+.TP
+.B RSYSLOG_DEBUGLOG
+If set, writes (almost) all debug message to the specified log file
+in addition to stdout.
+.TP
+.B RSYSLOG_MODDIR
+Provides the default directory in which loadable modules reside.
+.PD
+.SH BUGS
+Please review the file BUGS for up-to-date information on known
+bugs and annoyances.
+.SH Further Information
+Please visit
+.BR http://www.rsyslog.com/doc
+for additional information, tutorials and a support forum.
+.SH SEE ALSO
+.BR rsyslog.conf (5),
+.BR logger (1),
+.BR syslog (2),
+.BR syslog (3),
+.BR services (5),
+.BR savelog (8)
+.LP
+.SH COLLABORATORS
+.B rsyslogd
+is derived from sysklogd sources, which in turn was taken from
+the BSD sources. Special thanks to Greg Wettstein (greg@wind.enjellic.com)
+and Martin Schulze (joey@linux.de) for the fine sysklogd package.
+
+.PD 0
+.TP
+Rainer Gerhards
+.TP
+Adiscon GmbH
+.TP
+Grossrinderfeld, Germany
+.TP
+rgerhards@adiscon.com
+.PD

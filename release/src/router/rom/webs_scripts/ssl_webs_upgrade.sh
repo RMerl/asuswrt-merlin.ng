@@ -26,7 +26,6 @@ update_url=`cat /tmp/update_url`
 #update_url="http://192.168.123.198"
 
 # current firmware information
-firmware_path=`nvram get firmware_path`
 productid=`nvram get productid`
 if [ "$productid" == "BLUECAVE" ]; then
        rc rc_service stop_wrs_force
@@ -38,18 +37,10 @@ if [ "$odmpid_support" == "1" ]; then
 	get_productid=`nvram get odmpid`
 fi
 
-if [ "$firmware_path" = "1" ]; then
-	firmware_file=`echo $get_productid`_`nvram get webs_state_info_beta`_un.zip
-else
-	firmware_file=`echo $get_productid`_`nvram get webs_state_info`_un.zip
-fi
+firmware_file=`echo $get_productid`_`nvram get webs_state_info`_un.zip
 
 if [ "$rsa_enabled" != "" ]; then
-	if [ "$firmware_path" = "1" ]; then
-		firmware_rsasign=`echo $get_productid`_`nvram get webs_state_info_beta`_rsa.zip
-	else
-		firmware_rsasign=`echo $get_productid`_`nvram get webs_state_info`_rsa.zip
-	fi	
+	firmware_rsasign=`echo $get_productid`_`nvram get webs_state_info`_rsa.zip
 fi
 
 small_fw_update=`nvram show | grep rc_support | grep small_fw`

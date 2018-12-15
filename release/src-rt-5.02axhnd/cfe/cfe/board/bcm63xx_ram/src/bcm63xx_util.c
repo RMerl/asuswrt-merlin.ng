@@ -2559,8 +2559,10 @@ int getBootLine(int setdef)
         curPtr = strchr(curPtr, '='); 
         if (curPtr) { // found '=' and get the param.
             dPtr = strchr(curPtr, ' ');   // find param. delimiter ' '
-            memset(gBootParam[i].parameter, 0, MAX_PROMPT_LEN);
-            memcpy(gBootParam[i].parameter, curPtr+1, dPtr-curPtr-1);
+            if (dPtr) {
+                memset(gBootParam[i].parameter, 0, MAX_PROMPT_LEN);
+                memcpy(gBootParam[i].parameter, curPtr+1, dPtr-curPtr-1);
+            }
             // move to next param.
             curPtr = dPtr;  
         }
@@ -2596,8 +2598,10 @@ int getBootLine(int setdef)
         curPtr = strchr(curPtr, '='); 
         if (curPtr) { // found '=' and get the param.
             dPtr = strchr(curPtr, ' ');   // find param. deliminator ' '
-            memset(gBootParam[i].parameter, 0, MAX_PROMPT_LEN);
-            memcpy(gBootParam[i].parameter, curPtr+1, dPtr-curPtr-1);
+            if (dPtr) {
+                memset(gBootParam[i].parameter, 0, MAX_PROMPT_LEN);
+                memcpy(gBootParam[i].parameter, curPtr+1, dPtr-curPtr-1);
+            }
             // move to next param.
             curPtr = dPtr;  
         }

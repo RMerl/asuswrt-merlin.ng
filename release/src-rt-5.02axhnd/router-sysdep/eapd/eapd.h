@@ -42,7 +42,7 @@
  * OR U.S. $1, WHICHEVER IS GREATER. THESE LIMITATIONS SHALL APPLY
  * NOTWITHSTANDING ANY FAILURE OF ESSENTIAL PURPOSE OF ANY LIMITED REMEDY.
  *
- * $Id: eapd.h 762273 2018-05-11 13:41:49Z $
+ * $Id: eapd.h 766559 2018-08-07 06:36:16Z $
  */
 
 #ifndef _EAPD_H_
@@ -160,7 +160,8 @@ typedef struct eapd_wksp {
 	int			fdmax;
 	int			difSocket; /* socket to receive dynamic interface events */
 	int			foreground;
-	unsigned long s_addr;
+	unsigned long		s_addr;
+	int			psta_enabled;
 } eapd_wksp_t;
 
 typedef enum {

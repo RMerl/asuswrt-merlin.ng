@@ -125,18 +125,18 @@ devpath2=pcie/1/1/
 
 ## 160MHz PD offset: channel0 (50O), channel1(82O), channel2(114O), channel3(163O)
 ## A2 (bits 10:14), A1 (bits 5:9), A0 (bits 0:4) (1/4 dB steps per antenna)
-2:pdoffset20in160m5gb0=0
-2:pdoffset20in160m5gb1=0
-2:pdoffset20in160m5gb2=0
-2:pdoffset20in160m5gb3=0
-2:pdoffset40in160m5gb0=0
-2:pdoffset40in160m5gb1=0
-2:pdoffset40in160m5gb2=0
-2:pdoffset40in160m5gb3=0
-2:pdoffset80in160m5gb0=0
-2:pdoffset80in160m5gb1=0
-2:pdoffset80in160m5gb2=0
-2:pdoffset80in160m5gb3=0
+2:pdoffset20in160m5gc0=0
+2:pdoffset20in160m5gc1=0
+2:pdoffset20in160m5gc2=0
+2:pdoffset20in160m5gc3=0
+2:pdoffset40in160m5gc0=0
+2:pdoffset40in160m5gc1=0
+2:pdoffset40in160m5gc2=0
+2:pdoffset40in160m5gc3=0
+2:pdoffset80in160m5gc0=0
+2:pdoffset80in160m5gc1=0
+2:pdoffset80in160m5gc2=0
+2:pdoffset80in160m5gc3=0
 
 ## Rsvd bits (10:15); Core3-channel1 (82O) (bits 5:9), Core3-channel0 (50O) (bits 0:4) (1/4 dB steps per antenna)
 ## Rsvd bits (10:15); Core3-channel3 (163O) (bits 5:9), Core3-channel2 (114O) (bits 0:4) (1/4 dB steps per antenna)
@@ -516,18 +516,18 @@ devpath3=pcie/2/1/
 
 ## 160MHz PD offset: channel0 (50O), channel1(82O), channel2(114O), channel3(163O)
 ## A2 (bits 10:14), A1 (bits 5:9), A0 (bits 0:4) (1/4 dB steps per antenna)
-3:pdoffset20in160m5gb0=0
-3:pdoffset20in160m5gb1=0
-3:pdoffset20in160m5gb2=0
-3:pdoffset20in160m5gb3=0
-3:pdoffset40in160m5gb0=0
-3:pdoffset40in160m5gb1=0
-3:pdoffset40in160m5gb2=0
-3:pdoffset40in160m5gb3=0
-3:pdoffset80in160m5gb0=0
-3:pdoffset80in160m5gb1=0
-3:pdoffset80in160m5gb2=0
-3:pdoffset80in160m5gb3=0
+3:pdoffset20in160m5gc0=0
+3:pdoffset20in160m5gc1=0
+3:pdoffset20in160m5gc2=0
+3:pdoffset20in160m5gc3=0
+3:pdoffset40in160m5gc0=0
+3:pdoffset40in160m5gc1=0
+3:pdoffset40in160m5gc2=0
+3:pdoffset40in160m5gc3=0
+3:pdoffset80in160m5gc0=0
+3:pdoffset80in160m5gc1=0
+3:pdoffset80in160m5gc2=0
+3:pdoffset80in160m5gc3=0
 
 ## Rsvd bits (10:15); Core3-channel1 (82O) (bits 5:9), Core3-channel0 (50O) (bits 0:4) (1/4 dB steps per antenna)
 ## Rsvd bits (10:15); Core3-channel3 (163O) (bits 5:9), Core3-channel2 (114O) (bits 0:4) (1/4 dB steps per antenna)
@@ -1030,7 +1030,7 @@ devpath1=pcie/0/1/
 ########################################################
 
 # Bootloader version
-bl_version=1.0.0.7
+bl_version=1.0.0.8
 
 # for NAND flash
 bootflags=1

@@ -159,7 +159,7 @@ function check_folder_length(folder_name){   //Jieming added at 2013/04/16, to d
         <th><#NewFolderName#>: </th>
         <td><input class="input_25_table" type="text" name="new_folder" id="new_folder" onkeypress="return NoSubmit(event)" autocorrect="off" autocapitalize="off"></td>
       </tr>
-      <tr bgcolor="#E6E6E6">
+      <tr>
         <th colspan="2" align="right"><input id="Submit" type="button" class="button_gen" value="<#CTL_modify#>"></th>
       </tr>
 	</tbody>	  

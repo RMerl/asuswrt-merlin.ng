@@ -133,7 +133,7 @@ function check_folder_length(folder_name){   //Jieming added at 2013/04/16, to d
 				</td>
 			</tr>
 			<tr>
-				<td height="30" align="right" bgcolor="#E6E6E6">
+				<td height="30" align="right">
 					<input name="Submit" id="Submit" type="button" class="button_gen" value="<#CTL_del#>" onclick="">
 					<input name="Cancel" id="Cancel" type="button" class="button_gen" value="<#CTL_Cancel#>" onClick="parent.hidePop('OverlayMask');">
 				</td>

@@ -13,6 +13,7 @@
 <script type="text/javascript" src="/general.js"></script>
 <script type="text/javascript" src="/state.js"></script>
 <script type="text/javascript" src="/js/jquery.js"></script>
+<script type="text/javascript" src="/validator.js"></script>
 <script type="text/javascript" src="/switcherplugin/jquery.iphone-switch.js"></script>
 <style>
 .cancel{
@@ -366,7 +367,18 @@ function initial(){
 			$("#tr_wl_info").css("display", "none");
 			$("#apply_tr").css("display", "none");
 			$("#tr_dwb_info").css("display", "");
-			$("#tr_dwb_info").find(".dwb_hint").html("" + wl_nband_title[wl_unit] + " is now used as dedicated WiFi backhaul under AiMesh mode.");
+			var dwb_hint = "";
+			dwb_hint += wl_nband_title[wl_unit];
+			dwb_hint += " is now used as dedicated WiFi backhaul under AiMesh mode.";
+			dwb_hint += "<br><br>";
+			dwb_hint += "If you want to change wireless settings, please go to <span id='redirect_link'>here</span>.";/* untranslated */
+			$("#tr_dwb_info").find(".dwb_hint").html(dwb_hint);
+			$("#tr_dwb_info").find(".dwb_hint #redirect_link").css({"text-decoration":"underline", "cursor":"pointer"});
+			$("#tr_dwb_info").find(".dwb_hint #redirect_link").click(function(){
+				parent.document.titleForm.current_page.value = "Advanced_Wireless_Content.asp";
+				parent.document.titleForm.next_page.value = "Advanced_Wireless_Content.asp";
+				parent.change_wl_unit_status(2);
+			});
 		}
 	}
 }
@@ -766,6 +778,25 @@ function submitForm(){
 		}
 	}
 
+	if(isSupport("triband") && dwb_info.mode) {
+		var jsonPara = {};
+		jsonPara["edit_wl_unit"] = wl_unit;
+		jsonPara["edit_wl_ssid"] = document.form.wl_ssid.value;
+		jsonPara["dwb_unit"] = dwb_info.band;
+		jsonPara["smart_connect"] = document.form.smart_connect_x.value;
+		var ssid_array = [];
+		ssid_array.push(httpApi.nvramGet(["wl0_ssid"]).wl0_ssid);
+		if(wl_info.band5g_support)
+			ssid_array.push(httpApi.nvramGet(["wl1_ssid"]).wl1_ssid);
+		if(wl_info.band5g_2_support)
+			ssid_array.push(httpApi.nvramGet(["wl2_ssid"]).wl2_ssid);
+		jsonPara["current_ssid"] = ssid_array;
+		if(!validator.dwb_check_wl_setting(jsonPara)) {
+			alert("The fronthaul SSID is the same as the backhaul SSID.");/* untranslated */
+			return false;
+		}
+	}
+
 	parent.showLoading();
 	if(parent.based_modelid == "RT-AC87U" && "<% nvram_get("wl_unit"); %>" == "1"){
 		parent.stopFlag = '0';
@@ -842,19 +873,24 @@ function tab_reset(v){
 		}
 	}else if(v == 1){	//Smart Connect
 		if(isSupport("triband") && dwb_info.mode) {
-			document.getElementById("span0").innerHTML = "2.4GHz and 5GHz";
+			document.getElementById("span0").innerHTML = "2.4GHz and 5GHz-1";
+			document.getElementById("span0").style.padding = "5px 0px 0px 8px";
+			document.getElementById("span2").innerHTML = "5GHz-2";
+			document.getElementById("t0").style.width = "142px";
+			document.getElementById("t1").style.display = "none";
+			document.getElementById("t3").style.display = "none";
 		}
 		else {
 			if(parent.wl_info.band2g_support && parent.wl_info.band5g_support && parent.wl_info.band5g_2_support)
 				document.getElementById("span0").innerHTML = "2.4GHz, 5GHz-1 and 5GHz-2";
 			else if(parent.wl_info.band2g_support && parent.wl_info.band5g_support)
 				document.getElementById("span0").innerHTML = "2.4GHz and 5GHz";
+
+			document.getElementById("t1").style.display = "none";
+			document.getElementById("t2").style.display = "none";
+			document.getElementById("t3").style.display = "none";
+			document.getElementById("t0").style.width = (tab_width*parent.wl_info.wl_if_total+10) +'px';
 		}
-		
-		document.getElementById("t1").style.display = "none";
-		document.getElementById("t2").style.display = "none";				
-		document.getElementById("t3").style.display = "none";
-		document.getElementById("t0").style.width = (tab_width*parent.wl_info.wl_if_total+10) +'px';
 	}
 	else if(v == 2){ //5GHz Smart Connect
 		document.getElementById("span0").innerHTML = "2.4GHz";
@@ -875,10 +911,22 @@ function change_smart_connect(v){
 				tab_reset(0);	
 				break;
 		case '1': 
-				if(wl_unit != '0')
-					tabclickhandler(0);
-				else
-					tab_reset(1);
+				if(isSupport("triband") && dwb_info.mode) {
+					if(wl_unit == dwb_info.band)
+						tab_reset(1);
+					else {
+						if(wl_unit != '0')
+							tabclickhandler(0);
+						else
+							tab_reset(1);
+					}
+				}
+				else {
+					if(wl_unit != '0')
+						tabclickhandler(0);
+					else
+						tab_reset(1);
+				}
 				break;
 		case '2': 
 				if(!(wl_unit == '0' || wl_unit == '1'))
@@ -1122,7 +1170,7 @@ function checkWLReady(){
 					<table>
 						<tr>
 							<td>
-								<div style="font-family: Arial, Helvetica, sans-serif;font-weight: bolder;">LED Brightness</div>
+								<div style="font-family: Arial, Helvetica, sans-serif;font-weight: bolder;"><#LED_Brightness#></div>
 							</td>
 						</tr>
 						<tr>

@@ -718,7 +718,7 @@ static ssize_t volts_set (struct kobject *kobj, struct kobj_attribute *kattr, co
         return count;
 }
 
-#if defined(CONFIG_BCM96856)
+#if defined(CONFIG_BCM96856) || defined(CONFIG_BCM96846) 
 static ssize_t pmc_log_show(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
 {
     static unsigned long virt = 0;
@@ -727,7 +727,7 @@ static ssize_t pmc_log_show(struct kobject *kobj, struct kobj_attribute *kattr, 
 
     if (virt == 0)
     {
-        phys = 0x4ffc000;
+        phys = 0x40fc000;
         virt = (unsigned long)phys_to_virt(phys);
     }
 
@@ -748,7 +748,7 @@ static ssize_t pmc_log_show(struct kobject *kobj, struct kobj_attribute *kattr, 
 }
 #endif
 
-#if defined(CONFIG_BCM96846)
+#if 0 /*defined(CONFIG_BCM96846)*/
 #include <asm/mach/map.h>
 extern void create_mapping(struct map_desc *md);
 
@@ -768,7 +768,7 @@ static ssize_t pmc_log_show(struct kobject *kobj, struct kobj_attribute *kattr, 
         create_mapping(&desc);
     }
 
-    ch = (char *)(desc.virtual + 0xffc000);
+    ch = (char *)(desc.virtual + 0x0fc000);
 
     if (*((uint32_t *)(ch - 4)) != 0xc0ffee55)
     {

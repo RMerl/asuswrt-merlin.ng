@@ -72,8 +72,8 @@ extern uint8 osl_get_wlunit(osl_t *osh);
 typedef int (*HardStartXmitFuncP)(struct sk_buff *skb, struct net_device *dev);
 int wl_dump_pktc(wl_info_t *wl, struct bcmstrbuf *b);
 
-wl_pktc_tbl_t g_pktc_tbl[CHAIN_ENTRY_NUM];
-pktc_handle_t pktc_wldev[WLAN_DEVICE_MAX];
+wl_pktc_tbl_t g_pktc_tbl[CHAIN_ENTRY_NUM] = {0};
+pktc_handle_t pktc_wldev[WLAN_DEVICE_MAX] = {0};
 
 #if (defined(CONFIG_BCM96836) || defined(CONFIG_BCM963158)) && !defined(BCM_WFD)
 int pktc_tx_enabled = 0;
@@ -239,14 +239,12 @@ wl_start_txchain_txqwork(pktc_info_t *pktci)
 	struct sk_buff *chead_tmp, *skb, *prev_skb;
 	int cnt, fifo;
 	c_pair_t *pPktc;
-	uint16 prio_tmp;
 	uint8 *da = NULL, *prev_da = NULL;
 	int mixed_chain = 0; /* is the chain mixed with different DAs */
 
 	wl_txchain_lock(pktci);
 	pPktc = &(pktci->pktc_table[0]);
-	prio_tmp = pktci->prio_bitmap;
-	while ((fifo = get_16bitmap_pos(prio_tmp)) != -1) {
+	while ((fifo = get_16bitmap_pos(pktci->prio_bitmap)) != -1) {
 		cnt = 0;
 		prev_da = NULL;
 		mixed_chain = 0;
@@ -278,7 +276,6 @@ wl_start_txchain_txqwork(pktc_info_t *pktci)
 			/* less than threshold */
 			pPktc[fifo].chead =
 			pPktc[fifo].ctail = NULL;
-			prio_tmp &= ~(1<<fifo);
 			pktci->prio_bitmap &= ~(1<<fifo);
 		}
 
@@ -665,8 +662,9 @@ void wl_pktc_clear_entry(wl_pktc_tbl_t *pt)
 		pt->sta_assoc = 0;
 		if (pt->pktci != NULL) {
 			bzero(&pt->pktci->stats, sizeof(struct pktc_stats));
-			pt->pktci = NULL;
 		}
+		bzero(&pt->ea, sizeof(struct _mac_address));
+		bzero(&pt->chain[0], sizeof(pt->chain));
 	}
 }
 

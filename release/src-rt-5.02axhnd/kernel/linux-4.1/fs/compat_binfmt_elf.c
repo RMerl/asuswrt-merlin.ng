@@ -51,6 +51,12 @@
 #define elf_prstatus	compat_elf_prstatus
 #define elf_prpsinfo	compat_elf_prpsinfo
 
+
+#if defined(CONFIG_BCM_KF_MISC_BACKPORTS)
+static void cputime_to_compat_timeval(const cputime_t cputime,
+				      struct compat_timeval *value) __attribute__((unused));
+#endif
+
 /*
  * Compat version of cputime_to_compat_timeval, perhaps this
  * should be an inline in <linux/compat.h>.

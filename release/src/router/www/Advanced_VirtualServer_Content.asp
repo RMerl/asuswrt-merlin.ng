@@ -21,6 +21,7 @@
 <script type="text/javascript" language="JavaScript" src="/js/jquery.js"></script>
 <script type="text/javascript" src="/js/httpApi.js"></script>
 <script type="text/javascript" src="form.js"></script>
+<script type="text/javascript" src="/switcherplugin/jquery.iphone-switch.js"></script>
 <style type="text/css">
 .contentM_qis{
 	position:absolute;
@@ -41,6 +42,7 @@
 <script>
 var wItem = new Array(new Array("", "", "TCP"),
 											new Array("FTP", "20,21", "TCP"),
+											new Array("FTP_ALG", "2021", "TCP"),
 											new Array("TELNET", "23", "TCP"),
 											new Array("SMTP", "25", "TCP"),
 											new Array("DNS", "53", "UDP"),
@@ -127,10 +129,8 @@ function initial(){
 		showvts_rulelist(vts_rulelist_array[key], key);
 	});
 
-	if(!parent.usb_support){
+	if(!parent.usb_support)
 		document.getElementById('FTP_desc').style.display = "none";
-		document.form.vts_ftpport.parentNode.parentNode.style.display = "none";
-	}
 
 	//if(dualWAN_support && wans_mode == "lb")
 	//	document.getElementById("lb_note").style.display = "";
@@ -153,9 +153,6 @@ function isChange(){
 				(document.form.vts_enable_x[1].checked == true && '<% nvram_get("vts_enable_x"); %>' == '1')){
 		return true;
 	}
-	else if(document.form.vts_ftpport.value != '<% nvram_get("vts_ftpport"); %>'){
-		return true;
-	}
 	else if(document.form.vts_rulelist.value != decodeURIComponent('<% nvram_char_to_ascii("","vts_rulelist"); %>')){
 		return true;
 	}
@@ -163,35 +160,41 @@ function isChange(){
 		return false;
 }
 
-function applyRule(){
-	if(parent.usb_support){
-		if(!validator.numberRange(document.form.vts_ftpport, 1, 65535)){
-			return false;
-		}
-	}
-
+function applyRule(_status){
 	/* 2014.04 Viz: No need to reboot for ctf enable models.
 	if(ctf_disable == '0' && isChange()){
 		document.form.action_script.value = "reboot";
 		document.form.action_wait.value = "<% get_default_reboot_time(); %>";
 	}*/	
+	var obj = {
+		"action_mode": "apply",
+		"rc_service": "restart_firewall",
+	}
+	obj["vts_enable_x"] = _status;
+	httpApi.nvramSet(obj);
 
 	showLoading();
 	document.form.submit();
 }
 
 function loadAppOptions(){
+	var item_name = "";
 	free_options(document.form.KnownApps);
 	add_option(document.form.KnownApps, "<#Select_menu_default#>", 0, 1);
-	for(var i = 1; i < wItem.length; i++)
-		add_option(document.form.KnownApps, wItem[i][0], i, 0);
+	for(var i = 1; i < wItem.length; i++) {
+		item_name = wItem[i][0] + " (" + wItem[i][1] + ")";
+		add_option(document.form.KnownApps, item_name, i, 0);
+	}
 }
 
 function loadGameOptions(){
+	var item_name = "";
 	free_options(document.form.KnownGames);
 	add_option(document.form.KnownGames, "<#Select_menu_default#>", 0, 1);
-	for(var i = 1; i < wItem2.length; i++)
-		add_option(document.form.KnownGames, wItem2[i][0], i, 0);
+	for(var i = 1; i < wItem2.length; i++) {
+		item_name = wItem2[i][0] + " (" + wItem2[i][1] + ")";
+		add_option(document.form.KnownGames, item_name, i, 0);
+	}
 }
 
 function change_wizard(o, id){
@@ -401,7 +404,7 @@ function changeBgColor(obj, num){
 }
 function gen_vts_ruleTable_Block(_tableID) {
 	var html = "";
-	html += '<table width="100%" border="1" align="center" cellpadding="4" cellspacing="0" class="FormTable_table">';
+	html += '<table width="100%" border="1" align="center" cellpadding="4" cellspacing="0" class="FormTable_table" style="word-break:break-word;">';
 
 	html += '<thead>';
 	html += '<tr>';
@@ -423,9 +426,9 @@ function gen_vts_ruleTable_Block(_tableID) {
 
 	html += '<tr>';
 	html += '<th width="16%"><#BM_UserList1#></th>';
-	html += '<th width="15%">External Port</th>';/* untranslated */
-	html += '<th width="15%">Internal Port</th>';/* untranslated */
-	html += '<th width="17%">Internal IP</th>';/* untranslated */
+	html += '<th width="15%"><#IPConnection_VSList_External_Port#></th>';
+	html += '<th width="15%"><#IPConnection_VSList_Internal_Port#></th>';
+	html += '<th width="17%"><#IPConnection_VSList_Internal_IP#></th>';
 	html += '<th width="8%"><#IPConnection_VServerProto_itemname#></th>';
 	html += '<th width="17%"><#IPConnection_VSList_SourceTarget#></th>';
 	html += '<th width="6%"><#pvccfg_edit#></th>';
@@ -457,9 +460,9 @@ function parseArrayToNvram(_dataArray) {
 function editProfile(_mode, _this) {
 	if(_mode == "new") {
 		$('#wans_unit').find('option').remove().end()
-			.append('<option value="0"><#dualwan_primary#></option>')
-			.append('<option value="1"><#dualwan_secondary#></option>')
-			.append('<option value="2">BOTH</option>')
+			.append("<option value='0'><#dualwan_primary#></option>")
+			.append("<option value='1'><#dualwan_secondary#></option>")
+			.append("<option value='2'>BOTH</option>")
 			.val('0');
 
 		var upper = profileMaxNum;
@@ -713,21 +716,21 @@ function cancelProfile() {
 									</thead>
 									<tr>
 										<th><#IPConnection_VServerEnable_itemname#><input type="hidden" name="vts_num_x_0" value="<% nvram_get("vts_num_x"); %>" readonly="1" /></th>
-											<td>
-												<input type="radio" value="1" name="vts_enable_x" class="content_input_fd" onclick="return change_common_radio(this, 'IPConnection', 'vts_enable_x', '1')" <% nvram_match("vts_enable_x", "1", "checked"); %>><#checkbox_Yes#>
-												<input type="radio" value="0" name="vts_enable_x" class="content_input_fd" onclick="return change_common_radio(this, 'IPConnection', 'vts_enable_x', '0')" <% nvram_match("vts_enable_x", "0", "checked"); %>><#checkbox_No#>
-										</td>
-									</tr>
-									<tr>
-										<th><#IPConnection_VSList_ftpport#></th>
 										<td>
-											<input type="text" maxlength="5" name="vts_ftpport" class="input_6_table" value="<% nvram_get("vts_ftpport"); %>" onkeypress="return validator.isNumber(this,event);" autocorrect="off" autocapitalize="off">
+											<div align="center" class="left" style="width:94px; float:left; cursor:pointer;" id="radio_VTS_enable"></div>
+											<script type="text/javascript">
+												$('#radio_VTS_enable').iphoneSwitch('<% nvram_get("vts_enable_x"); %>',
+													function(){
+														applyRule(1);
+													},
+													function(){
+														applyRule(0);
+													}
+												);
+											</script>
 										</td>
 									</tr>
 								</table>
-								<div class="apply_gen">
-									<input name="button" type="button" class="button_gen" onclick="applyRule();" value="<#CTL_apply#>"/>
-								</div>
 								<div id="vts_rulelist_Table_0" wanUnitID="0"></div>
 								<div id="vts_rulelist_Block_0" wanUnitID="0"></div>
 
@@ -804,20 +807,20 @@ function cancelProfile() {
 			</td>
 		</tr>
 		<tr>
-			<th>External Port<!--untranslated--></th>
+			<th><#IPConnection_VSList_External_Port#></th>
 			<td>
 				<input type="text" maxlength="60" class="input_25_table" id="vts_port_x" onKeyPress="return validator.isPortRange(this, event);" autocomplete="off" autocorrect="off" autocapitalize="off"/>
 			</td>
 		</tr>
 		<tr>
-			<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(7,26);">Internal Port<!--untranslated--></a></th>
+			<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(7,26);"><#IPConnection_VSList_Internal_Port#></a></th>
 			<td>
 				<input type="text" maxlength="5" class="input_25_table" id="vts_lport_x" onKeyPress="return validator.isNumber(this,event);" autocomplete="off" autocorrect="off" autocapitalize="off"/>
 				<span><#feedback_optional#></span>
 			</td>
 		</tr>
 		<tr>
-			<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(7,25);">Internal IP<!--untranslated--></a></th>
+			<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(7,25);"><#IPConnection_VSList_Internal_IP#></a></th>
 			<td>
 				<input type="text" maxlength="15" class="input_25_table" id="vts_ipaddr_x" align="left" onkeypress="return validator.isIPAddr(this, event);" style="float:left;" onClick="hideClients_Block();" autocomplete="off" autocorrect="off" autocapitalize="off">
 				<img id="pull_arrow" class="pull_arrow" height="16px;" src="images/arrow-down.gif" align="right" onclick="pullLANIPList(this);" title="<#select_IP#>">
@@ -833,19 +836,19 @@ function cancelProfile() {
 		</tr>
 	</table>
 	<div style="color:#FC0;margin:10px 0px;">
-		* External Port<!--untranslated-->
+		* <#IPConnection_VSList_External_Port#>
 		<br>
-		External Port accepts the following formats <!--untranslated-->
+		<#IPConnection_VSList_External_Port_desc#>
 		<br>
-		1. Port range, use colon " : " between the starting and ending port, such as 300:350.<!--untranslated-->
+		<#IPConnection_VSList_External_Port_desc1#>
 		<br>
-		2. Single ports, use comma " , " between individual port, such as 566, 789. <!--untranslated-->
+		<#IPConnection_VSList_External_Port_desc2#>
 		<br>
-		3. Mix port range and single port, use colon " : " and comma " , ", such as 1015:1024, 3021.<!--untranslated-->
+		<#IPConnection_VSList_External_Port_desc3#>
 		<br><br>
-		* Source IP<!--untranslated-->
+		* <#IPConnection_VSList_SourceTarget#>
 		<br>
-		If you want to open the port to a specific IP address from the internet, input the IP address you want to specify in the Source IP field.<!--untranslated-->
+		<#IPConnection_VSList_SourceTarget_desc#>
 	</div>
 	<div style="margin-top:15px;text-align:center;">
 		<input class="button_gen" type="button" onclick="cancelProfile();" value="<#CTL_Cancel#>">

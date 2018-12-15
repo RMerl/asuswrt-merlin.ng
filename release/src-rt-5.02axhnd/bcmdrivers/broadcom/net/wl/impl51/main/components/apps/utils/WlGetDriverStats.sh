@@ -101,7 +101,9 @@ driver_info () {
 
     display_cmd_op "WLVERSION: wl -i $IFNAME ver" "$WLCMD -i $IFNAME ver"
     display_cmd_op "REVINFO: wl -i $IFNAME revinfo" "$WLCMD -i $IFNAME revinfo"
-    display_cmd_op "DHDVERSION: dhd -i $IFNAME version" "$DHDCMD -i $IFNAME version"
+	if [[ $MODE == "dhd" ]]; then
+		display_cmd_op "DHDVERSION: dhd -i $IFNAME version" "$DHDCMD -i $IFNAME version"
+	fi
     display_cmd_op "WLCAP: wl -i $IFNAME cap" "$WLCMD -i $IFNAME cap"
     display_cmd_op "UPTIME: System uptime" "uptime"
 }
@@ -170,16 +172,22 @@ dhd_stats () {
     $DHDCMD -i $IFNAME cons mu
 }
 
-$DHDCMD -i $IFNAME version > /dev/NULL 2>&1
-if [ $? -ne 0 ] ; then
-	echo -e "Bad Interface $IFNAME $?"
-	show_help
-	exit 0
+if [[ $MODE == "dhd" ]]; then
+	$DHDCMD -i $IFNAME version > /dev/NULL 2>&1
+	if [ $? -ne 0 ] ; then
+		echo -e "Bad Interface $IFNAME $?"
+		show_help
+		exit 0
+	fi
 fi
 
 $WLCMD -i $IFNAME ver > /dev/NULL 2>&1
 if [ $? -ne 0 ] ; then
+if [[ $MODE == "dhd" ]]; then
 	echo "########### Dongle trap detected on $IFNAME ################"
+else
+	echo -e "Bad Interface $IFNAME $?"
+fi
 	exit 0
 fi
 

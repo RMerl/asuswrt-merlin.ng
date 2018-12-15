@@ -552,6 +552,7 @@ osl_pktsetprio(void *pkt, uint x)
     if (IS_SKBUFF_PTR(pkt)) {
         ((struct sk_buff*)pkt)->mark &= ~(0x7 << PRIO_LOC_NFMARK);
         ((struct sk_buff*)pkt)->mark |= (x & 0x7) << PRIO_LOC_NFMARK;
+        ((struct sk_buff*)pkt)->wl.ucast.dhd.wl_prio = x;
     }
     else
     {

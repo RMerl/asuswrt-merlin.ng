@@ -3003,7 +3003,10 @@ int wanduck_main(int argc, char *argv[]){
 
 #ifdef WEB_REDIRECT
 	if(nvram_get_int("freeze_duck"))
+	{
+		if (test_log)
 		_dprintf("\n<*>freeze the duck, %ds left!\n", nvram_get_int("freeze_duck"));	// don't check conn state during inner events period
+	}
 	else
 #endif
 	if(sw_mode == SW_MODE_ROUTER && !strcmp(dualwan_mode, "lb")){
@@ -3204,7 +3207,10 @@ _dprintf("wanduck(%d)(first detect start): state %d, state_old %d, changed %d, w
 	 */
 #ifdef WEB_REDIRECT
 	if(nvram_get_int("freeze_duck"))
+	{
+		if (test_log)
 		_dprintf("\n<**>freeze the duck, %ds left!\n", nvram_get_int("freeze_duck"));	// don't check conn state during inner events period
+	}
 	else
 #endif
 	if(cross_state == DISCONN){
@@ -3294,6 +3300,7 @@ _dprintf("nat_rule: start_nat_rules 4.\n");
 
 #ifdef WEB_REDIRECT
 		if(nvram_get_int("freeze_duck")){
+			if (test_log)
 			_dprintf("\n<****>freeze the duck, %ds left!\n", nvram_get_int("freeze_duck"));	// don't check conn state during inner events period
 			goto WANDUCK_SELECT;
 		}

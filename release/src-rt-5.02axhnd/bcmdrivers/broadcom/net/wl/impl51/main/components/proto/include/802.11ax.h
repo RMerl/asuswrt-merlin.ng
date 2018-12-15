@@ -18,7 +18,7 @@
  *
  * <<Broadcom-WL-IPTag/Open:>>
  *
- * $Id: 802.11ax.h 765619 2018-07-11 01:02:08Z $
+ * $Id: 802.11ax.h 767000 2018-08-24 01:20:22Z $
  */
 
 #ifndef _802_11ax_h_
@@ -28,6 +28,8 @@
 
 /* This marks the start of a packed structure section. */
 #include <packed_section_start.h>
+
+#define HE_SPEC_3_0
 
 /* special STA-IDs (Table 28-22) */
 #define HE_STAID_BSS_BCAST		0

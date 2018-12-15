@@ -19,4 +19,27 @@
 		$("#eula_url").attr("href", "https://www.asus.com/Microsite/networks/Trend_Micro_EULA/");
 		$("#tm_eula_url").attr("href", "https://www.trendmicro.com/en_us/about/legal/privacy-policy-product.html");
 		$("#tm_disclosure_url").attr("href", "https://success.trendmicro.com/data-collection-disclosure");
+
+		httpApi.nvramGetAsync({
+			data: ["preferred_lang"],
+			success: function(resp){
+				var preferredLang = resp.preferred_lang;
+				var lang_str = (preferredLang == "EN") ? "" : preferredLang.toLowerCase();
+				var tm_url = "";
+
+				if(preferredLang == "BR")
+					lang_str = "pt";
+
+				tm_url = "https://www.asus.com/Microsite/networks/Trend_Micro_EULA/" + lang_str;
+				$.ajax({
+					url: tm_url,
+					dataType: "jsonp",
+					statusCode: {
+						200: function(response) {
+							$("#eula_url").attr("href", tm_url);
+						}
+					}
+				});
+			}
+		})
 	</script>

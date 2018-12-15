@@ -19,7 +19,7 @@
  *
  * <<Broadcom-WL-IPTag/Open:>>
  *
- * $Id: hndpmu.c 765789 2018-07-17 02:00:14Z $
+ * $Id: hndpmu.c 766312 2018-07-30 10:32:14Z $
  */
 
 /**
@@ -196,6 +196,7 @@ si_pmu_callback_t g_si_pmutmr_lock_cb = NULL, g_si_pmutmr_unlock_cb = NULL;
 #define FVCO_2907	2907005	/**< 2907 MHz */
 #define FVCO_2946	2946000	/**< 2946 MHz */
 #define FVCO_3000	3000000	/**< 3000 MHz */
+#define FVCO_3200	3200000	/**< 3200 MHz */
 #define FVCO_3300	3300000	/**< 3300 MHz */
 #define FVCO_3600	3600000	/**< 3600 MHz */
 
@@ -4844,12 +4845,14 @@ BCMINITFN(si_pmu1_cpuclk0)(si_t *sih, osl_t *osh, pmuregs_t *pmu)
 #define NDIV_INT_2000	0x251
 #define NDIV_INT_2700	0x321
 #define NDIV_INT_3000	0x371
-#define NDIV_INT_3300	0x3c1
+#define NDIV_INT_3200	0x3b1
+#define NDIV_INT_3300	0x3d1
 #define NDIV_INT_3600	0x421
 #define NDIV_FRAC_2000		0x9858
 #define NDIV_FRAC_2700		0x8e396
 #define NDIV_FRAC_3000		0x8e396
-#define NDIV_FRAC_3300		0x11e446
+#define NDIV_FRAC_3200		0x42680
+#define NDIV_FRAC_3300		0x1c746
 #define NDIV_FRAC_3600		0xab086
 
 static void
@@ -4892,6 +4895,10 @@ BCMATTACHFN(si_set_cpu_vcofreq_43684)(si_t *sih, osl_t *osh, pmuregs_t *pmu, uin
 		case FVCO_3000:
 			ndiv_int = NDIV_INT_3000;
 			ndiv_frac = NDIV_FRAC_3000;
+			break;
+		case FVCO_3200:
+			ndiv_int = NDIV_INT_3200;
+			ndiv_frac = NDIV_FRAC_3200;
 			break;
 		case FVCO_3300:
 			ndiv_int = NDIV_INT_3300;
@@ -5014,6 +5021,21 @@ BCMATTACHFN(si_set_cpu_clock_43684)(si_t *sih, osl_t *osh, pmuregs_t *pmu)
 			ratio = 3;
 			mdiv = 3;
 			vcofreq = FVCO_3600;
+			break;
+		case 1100:
+			ratio = 3;
+			mdiv = 3;
+			vcofreq = FVCO_3300;
+			break;
+		case 1066:
+			ratio = 3;
+			mdiv = 3;
+			vcofreq = FVCO_3200;
+			break;
+		case 1000:
+			ratio = 3;
+			mdiv = 3;
+			vcofreq = FVCO_3000;
 			break;
 		case 900:
 			ratio = 3;

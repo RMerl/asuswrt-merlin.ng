@@ -1,0 +1,4 @@
+<167>Mar  6 16:57:54 172.20.245.8 %PIX-7-710005: try to replace syslog and sysyslog with rsyslog
+<167>Mar  6 16:57:54 172.20.245.8 %PIX-7-710005: try to replace hello in hellolo and helhello with hello_world
+<167>Mar  6 16:57:54 172.20.245.8 %PIX-7-710005: try to foo_bar_baz in foo_bar_baz_quux and quux_foo_bar_baz with FBB
+<167>Mar  6 16:57:54 172.20.245.8 %PIX-7-710005: in the end of msg; try to not lose as_longer_this_string_as_more_probability_to_catch_the_bu

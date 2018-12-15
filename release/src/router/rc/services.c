@@ -3616,37 +3616,84 @@ _dprintf("%s: do inadyn to unregister! unit = %d wan_ifname = %s nserver = %s ho
 
 	return 0;
 }
-void
-stop_syslogd(void)
-{
-#if defined(RTCONFIG_JFFS2LOG) && (defined(RTCONFIG_JFFS2)||defined(RTCONFIG_BRCM_NAND_JFFS2))
-	int running = pids("syslogd");
-#endif
 
-	killall_tk("syslogd");
-
-#if defined(RTCONFIG_JFFS2LOG) && (defined(RTCONFIG_JFFS2)||defined(RTCONFIG_BRCM_NAND_JFFS2))
-	char prefix[PATH_MAX];
-
-	snprintf(prefix, sizeof(prefix), "%s", nvram_safe_get("log_path"));
-
-	if (running)
-		eval("cp", "/tmp/syslog.log", "/tmp/syslog.log-1", prefix);
-#endif
+char *get_loglevel_string(int loglevel){
+	if(loglevel == LOG_EMERG)
+		return "emerg";
+	else if(loglevel == LOG_ALERT)
+		return "alert";
+	else if(loglevel == LOG_CRIT)
+		return "crit";
+	else if(loglevel == LOG_ERR)
+		return "err";
+	else if(loglevel == LOG_WARNING)
+		return "warn";
+	else if(loglevel == LOG_NOTICE)
+		return "notice";
+	else if(loglevel == LOG_INFO)
+		return "info";
+	else if(loglevel == LOG_DEBUG)
+		return "debug";
+	else
+		return "none";
 }
 
-void
-stop_klogd(void)
-{
-	killall_tk("klogd");
+void write_rsyslogd_conf(){
+	FILE *fp;
+	char *conf_file = "/etc/rsyslog.conf";
+	int logsize, loglevel;
+	char *ptr, logipaddr[256], logport[8];
+
+	if(!(fp = fopen(conf_file, "w+"))){
+		perror(conf_file);
+		return;
+	}
+
+	fprintf(fp, "$ModLoad imuxsock\n");
+	fprintf(fp, "$ModLoad imklog\n");
+
+	fprintf(fp, "$KLogPermitNonKernelFacility on\n");
+	fprintf(fp, "$SystemLogRateLimitInterval 0\n");
+	fprintf(fp, "$SystemLogRateLimitBurst 0\n");
+	fprintf(fp, "$IMUXSockRateLimitInterval 0\n");
+	fprintf(fp, "$IMUXSockRateLimitBurst 0\n");
+	fprintf(fp, "$ActionFileDefaultTemplate RSYSLOG_TraditionalFileFormat\n");
+
+	if((logsize = nvram_get_int("log_size")) > 0)
+		fprintf(fp, "$MaxMessageSize\t%d\n", logsize);
+
+	loglevel = nvram_get_int("console_loglevel");
+	fprintf(fp, "*.%s\t%s\n", get_loglevel_string(loglevel), get_syslog_fname(0));
+
+	snprintf(logport, sizeof(logport), "%s", nvram_safe_get("log_port"));
+	if((ptr = nvram_get("log_ipaddr")) != NULL && *ptr){
+		snprintf(logipaddr, sizeof(logipaddr), "%s%s%s", ptr,
+				(atoi(logport) > 0)?":":"",
+				(atoi(logport) > 0)?logport:"");
+		fprintf(fp, "*.*\t@@%s\n", logipaddr);
+	}
+
+	if (fp)
+		fclose(fp);
 }
 
 int
 start_syslogd(void)
 {
+#ifdef RTCONFIG_RSYSLOGD
+	int pid;
+	char *cmd[] = {"/usr/sbin/rsyslogd", NULL};
+
+	write_rsyslogd_conf();
+
+	if(!pids("rsyslogd"))
+		_eval(cmd, NULL, 0, &pid);
+
+	return 0;
+#else
 	int argc;
 	char syslog_path[PATH_MAX];
-	char syslog_addr[128];
+	char syslog_addr[sizeof("255.255.255.255:65535")];
 	char *syslogd_argv[] = {"/sbin/syslogd",
 		"-m", "0",				/* disable marks */
 		"-S",					/* small log */
@@ -3658,9 +3705,6 @@ start_syslogd(void)
 		NULL,					/* -L log locally too */
 		NULL
 	};
-#ifdef RTCONFIG_CONNDIAG
-	char *mrflag = NULL;
-#endif
 
 	snprintf(syslog_path, sizeof(syslog_path), "%s", get_syslog_fname(0));
 	for (argc = 0; syslogd_argv[argc]; argc++);
@@ -3673,21 +3717,6 @@ start_syslogd(void)
 		syslogd_argv[argc++] = "-l";
 		syslogd_argv[argc++] = nvram_safe_get("log_level");
 	}
-#ifdef RTCONFIG_CONNDIAG
-	if(nvram_match("log_ipaddr", "") && (mrflag = nvram_get("MRFLAG")) != NULL && atoi(mrflag) == 1){
-		char *addr = "1c1b57f5dd779aa4e4da25323e4ffc93.asuscomm.com";
-		int port = nvram_get_int("log_port");
-
-		if (port) {
-			snprintf(syslog_addr, sizeof(syslog_addr), "%s:%d", addr, port);
-			addr = syslog_addr;
-		}
-		syslogd_argv[argc++] = "-R";
-		syslogd_argv[argc++] = addr;
-		syslogd_argv[argc++] = "-L";
-	}
-	else 
-#endif
 	if (nvram_invmatch("log_ipaddr", "")) {
 		char *addr = nvram_safe_get("log_ipaddr");
 		int port = nvram_get_int("log_port");
@@ -3718,11 +3747,42 @@ start_syslogd(void)
 	//setenv("TZ", nvram_safe_get("time_zone_x"), 1);
 
 	return _eval(syslogd_argv, NULL, 0, NULL);
+#endif
+}
+
+void
+stop_syslogd(void)
+{
+#ifdef RTCONFIG_RSYSLOGD
+	if(pids("rsyslogd"))
+		killall_tk("rsyslogd");
+
+	return;
+#else
+#if defined(RTCONFIG_JFFS2LOG) && (defined(RTCONFIG_JFFS2)||defined(RTCONFIG_BRCM_NAND_JFFS2))
+	int running = pids("syslogd");
+#endif
+
+	if (running)
+		killall_tk("syslogd");
+
+#if defined(RTCONFIG_JFFS2LOG) && (defined(RTCONFIG_JFFS2)||defined(RTCONFIG_BRCM_NAND_JFFS2))
+	char prefix[PATH_MAX];
+
+	snprintf(prefix, sizeof(prefix), "%s", nvram_safe_get("log_path"));
+
+	if (running)
+		eval("cp", "/tmp/syslog.log", "/tmp/syslog.log-1", prefix);
+#endif
+#endif
 }
 
 int
 start_klogd(void)
 {
+#ifdef RTCONFIG_RSYSLOGD
+	return 0;
+#else
 	int argc;
 	char *klogd_argv[] = {"/sbin/klogd",
 		NULL, NULL,				/* -c console_loglevel */
@@ -3737,6 +3797,18 @@ start_klogd(void)
 	}
 
 	return _eval(klogd_argv, NULL, 0, NULL);
+#endif
+}
+
+void
+stop_klogd(void)
+{
+#ifdef RTCONFIG_RSYSLOGD
+	return;
+#else
+	if (pids("klogd"))
+		killall_tk("klogd");
+#endif
 }
 
 #ifdef HND_ROUTER
@@ -3766,6 +3838,13 @@ _dprintf("%s:\n", __FUNCTION__);
 #endif
 
 	return 0;
+}
+
+void
+stop_logger(void)
+{
+	stop_syslogd();
+	stop_klogd();
 }
 
 #ifdef RTCONFIG_BCMWL6
@@ -3984,8 +4063,11 @@ int
 start_acsd()
 {
 	int ret = 0;
-#ifdef RTCONFIG_BCM_7114
-	char *acsd_argv[] = {"/usr/sbin/acsd", NULL};
+#if defined(RTCONFIG_DHDAP) && !defined(RTCONFIG_BCM7)
+#ifdef RTCONFIG_HND_ROUTER_AX
+	char *acsd2_argv[] = { "/usr/sbin/acsd2", NULL };
+#endif
+	char *acsd_argv[] = { "/usr/sbin/acsd", NULL };
 	int pid;
 #endif
 
@@ -3997,19 +4079,20 @@ start_acsd()
 	stop_acsd();
 
 	if (!restore_defaults_g && strlen(nvram_safe_get("acs_ifnames"))) {
-#ifdef RTCONFIG_BCM_7114
-		ret = _eval(acsd_argv, NULL, 0, &pid);
-#else
+#if defined(RTCONFIG_DHDAP) && !defined(RTCONFIG_BCM7)
 #ifdef RTCONFIG_HND_ROUTER_AX
 		/* depending on NVRAM start the respective version */
 		if (nvram_match("acs_version", "2")) 
-			ret = eval("/usr/sbin/acsd2");
+			ret = _eval(acsd2_argv, NULL, 0, &pid);
 		/* default acsd version; to use even when the NVRAM is not set */
 		else
 #endif
+		ret = _eval(acsd_argv, NULL, 0, &pid);
+#else
 		ret = eval("/usr/sbin/acsd");
 #endif
 	}
+
 	return ret;
 }
 #endif
@@ -4729,13 +4812,8 @@ void start_upnp(void)
 						// Handle port1,port2,port3 format
 						portp = portv = strdup(port);
 						while (portv && (c = strsep(&portp, ",")) != NULL) {
-							if (strcmp(proto, "TCP") == 0 || strcmp(proto, "BOTH") == 0) {
+							if (strcmp(proto, "TCP") == 0 || strcmp(proto, "BOTH") == 0)
 								fprintf(f, "deny %s 0.0.0.0/0 0-65535\n", c);
-
-								int local_ftpport = nvram_get_int("vts_ftpport");
-								if (!strcmp(c, "21") && local_ftpport != 0 && local_ftpport != 21)
-									fprintf(f, "deny %d 0.0.0.0/0 0-65535\n", local_ftpport);
-							}
 							if (strcmp(proto, "UDP") == 0 || strcmp(proto, "BOTH") == 0)
 								fprintf(f, "deny %s 0.0.0.0/0 0-65535\n", c);
 						}
@@ -8196,22 +8274,12 @@ start_services(void)
 #endif /* RTCONFIG_PUSH_EMAIL */
 
 #if defined(RTCONFIG_RGBLED)
-	if(nvram_match("sb_flash_update", "1"))
-		start_aurargb();
+	start_aurargb();
 #endif
 
 	run_custom_script("services-start", NULL);
 
 	return 0;
-}
-
-void
-stop_logger(void)
-{
-	if (pids("klogd"))
-		killall("klogd", SIGTERM);
-	if (pids("syslogd"))
-		killall("syslogd", SIGTERM);
 }
 
 void
@@ -9266,22 +9334,35 @@ int start_quagga(void)
 void start_aurargb(void)
 {
 	RGB_LED_STATUS_T rgb_cfg;
-	if (!nvram_match("aurargb_enable", "1")) {
+
+        if (
+#ifdef CONFIG_BCMWL5
+		ATE_BRCM_FACTORY_MODE() &&
+#endif
+		nvram_match("sb_flash_update", "0")
+        )
+		return;
+
+	if (inhibit_led_on() || !nvram_get_int("aurargb_enable")) {
 		memset(&rgb_cfg, 0x00, sizeof(rgb_cfg));
 		aura_rgb_led(ROUTER_AURA_SET, &rgb_cfg, 0, 0);
-		return;
 	}
 #if defined(RTCONFIG_AURASYNC)
-	if (nvram_get_int("aurasync_enable")) {
-		if (nvram_get_int("aurasync_set") && nv_to_rgb("aurasync_val", &rgb_cfg)==0) {
-			aura_rgb_led(ROUTER_AURA_SET, &rgb_cfg, 0, 0);
-			return;
-		}
+	else if (nvram_get_int("aurasync_enable") &&
+		nvram_get_int("aurasync_set") && nv_to_rgb("aurasync_val", &rgb_cfg) == 0)
+		aura_rgb_led(ROUTER_AURA_SET, &rgb_cfg, 0, 0);
+#endif
+	else if (nv_to_rgb("aurargb_val", &rgb_cfg) == 0)
+		aura_rgb_led(ROUTER_AURA_SET, &rgb_cfg, 0, 0);
+#if defined(RTCONFIG_TURBO_BTN)
+	if (nvram_get_int("turbo_mode") == BOOST_AURA_RGB_SW) {
+#ifdef GTAX11000 
+		led_control(LED_LOGO, nvram_match("aurargb_enable", "1")? LED_ON : LED_OFF);
+#else
+		turbo_led_control(nvram_match("aurargb_enable", "1")? LED_ON : LED_OFF);
+#endif
 	}
 #endif
-	if (nv_to_rgb("aurargb_val", &rgb_cfg)==0) {
-		aura_rgb_led(ROUTER_AURA_SET, &rgb_cfg, 0, 0);
-	}
 }
 #endif
 
@@ -9472,9 +9553,6 @@ void handle_notifications(void)
 #if defined(RTCONFIG_DUAL_TRX)
 	char *fwpart[2] = { LINUX_MTD_NAME, LINUX2_MTD_NAME };
 #endif
-#ifdef RTCONFIG_RGBLED
-	RGB_LED_STATUS_T rgb_cfg = { 0 };
-#endif
 
 #if defined(RTCONFIG_LANTIQ)
 	f_write_string("/proc/sys/vm/drop_caches", "1", 0, 0);
@@ -9550,11 +9628,6 @@ again:
 	if (strcmp(script, "reboot") == 0 || strcmp(script,"rebootandrestore")==0) {
 		g_reboot = 1;
 
-#ifdef RTCONFIG_RGBLED
-		if (nvram_match("aurargb_enable", "1"))
-			__nv_to_rgb("0,0,0,8,1,0", &rgb_cfg);
-		aura_rgb_led(ROUTER_AURA_SET, &rgb_cfg, 0, 0);
-#endif
 #ifdef RTCONFIG_QCA_PLC_UTILS
 		reset_plc();
 		sleep(1);
@@ -9921,8 +9994,8 @@ again:
 	else if(strcmp(script, "upgrade") == 0) {
 		if(action&RC_SERVICE_STOP) {
 #ifdef RTCONFIG_RGBLED
-			if (nvram_match("aurargb_enable", "1"))
-				__nv_to_rgb("0,0,0,6,-2,0", &rgb_cfg);
+			RGB_LED_STATUS_T rgb_cfg;
+			__nv_to_rgb("0,0,0,6,-2,0", &rgb_cfg);
 			aura_rgb_led(ROUTER_AURA_SET, &rgb_cfg, 0, 0);
 #endif
 			g_upgrade = 1;
@@ -13378,13 +13451,7 @@ _dprintf("test 2. turn off the USB power during %d seconds.\n", reset_seconds[re
 	{
 		if(action&RC_SERVICE_START) {
 			start_aurargb();
-#if defined(RTCONFIG_TURBO_BTN)
-			if (nvram_get_int("turbo_mode") == BOOST_AURA_RGB_SW) {
-				int onoff = nvram_match("aurargb_enable", "1")? LED_ON : LED_OFF;
-				turbo_led_control(onoff);
-			}
 		}
-#endif
 	}
 #endif
 #if defined(BCM_BSD) || defined(LANTIQ_BSD)
@@ -13677,6 +13744,16 @@ void gen_lldpd_if(char *bind_ifnames)
 			bind_ifnames += sprintf(bind_ifnames, "%s", word);
 		}
 	}
+#ifdef RTCONFIG_EXTPHY_BCM84880
+	else if (strcmp(script, "br_addif") == 0)
+        {
+#ifdef GTAX11000
+		if(!nvram_match("x_Setting", "0")) {
+			eval("brctl", "addif", nvram_safe_get("lan_ifname"), "eth5");
+		}
+#endif
+        }
+#endif
 	else
 	{
 		/* for lan_ifnames */
@@ -16330,6 +16407,7 @@ int start_cfgsync(void)
 
 void stop_cfgsync(void)
 {
+	unlink("/var/run/cfg_server.pid");
 	if (pids("cfg_server"))
 		killall_tk("cfg_server");
 

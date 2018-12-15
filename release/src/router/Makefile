@@ -1406,6 +1406,11 @@ obj-$(HND_ROUTER_AX) += bcm_bootstate
 obj-$(RTCONFIG_ALPINE) += qsr10g_image
 obj-$(RTCONFIG_ALPINE) += aqr107_image
 
+obj-$(RTCONFIG_RSYSLOGD) += libestr
+obj-$(RTCONFIG_RSYSLOGD) += libfastjson
+obj-$(RTCONFIG_RSYSLOGD) += rsyslog
+
+
 ifeq ($(RTCONFIG_BCMARM),y)
 obj-prelibs =$(filter busybox% nvram$(BCMEX)$(EX7) libbcmcrypto shared netconf libupnp$(BCMEX)$(EX7) libz libbcm pciefd, $(obj-y))
 obj-postlibs := $(filter-out $(obj-prelibs), $(obj-y))
@@ -7487,6 +7492,8 @@ aaews-install:
 	$(STRIP) -s $(INSTALLDIR)/wb/usr/lib/libws.so
 	install -D aaews/aaews $(INSTALLDIR)/wb/usr/sbin/aaews
 	$(STRIP) -s $(INSTALLDIR)/wb/usr/sbin/aaews
+	install -D aaews/mastiff $(INSTALLDIR)/wb/usr/sbin/mastiff
+	$(STRIP) -s $(INSTALLDIR)/wb/usr/sbin/mastiff
 ifeq ($(RTCONFIG_BCMARM),y)
 ifeq ($(HND_ROUTER),y)
 	install -D $(TOOLCHAIN)/arm-buildroot-linux-gnueabi/lib/libstdc++.so.6 $(INSTALLDIR)/ftpclient/usr/lib/libstdc++.so.6
@@ -8253,6 +8260,95 @@ define install_sysdep
 endef
 endif
 
+libestr-configure:
+	( cd $(TOP)/libestr && \
+		$(CONFIGURE) \
+		--prefix=/usr \
+		--bindir=/usr/sbin \
+		--libdir=/usr/lib \
+	)
+
+libestr-install:
+	install -D libestr/src/.libs/libestr.so.0.0.0 $(INSTALLDIR)/libestr/usr/lib/libestr.so.0.0.0
+	$(STRIP) $(INSTALLDIR)/libestr/usr/lib/libestr.so.0.0.0
+	cd $(INSTALLDIR)/libestr/usr/lib && ln -sf libestr.so.0.0.0 libestr.so.0 && ln -sf libestr.so.0.0.0 libestr.so
+
+libfastjson-configure:
+	( cd $(TOP)/libfastjson && \
+		./missing aclocal && \
+		./missing automake && \
+		$(CONFIGURE) \
+		--prefix=/usr \
+		--bindir=/usr/sbin \
+		--libdir=/usr/lib \
+	)
+
+libfastjson-install:
+	install -D libfastjson/.libs/libfastjson.so.4.2.0 $(INSTALLDIR)/libfastjson/usr/lib/libfastjson.so.4.2.0
+	$(STRIP) $(INSTALLDIR)/libfastjson/usr/lib/libfastjson.so.4.2.0
+	cd $(INSTALLDIR)/libfastjson/usr/lib && ln -sf libfastjson.so.4.2.0 libfastjson.so.4 && ln -sf libfastjson.so.4.2.0 libfastjson.so
+
+rsyslog-configure:
+	( cd $(TOP)/rsyslog && \
+		./missing aclocal && \
+		./missing automake && \
+		$(CONFIGURE) \
+		--prefix=/usr \
+		--bindir=/usr/sbin \
+		--libdir=/usr/lib \
+		LIBESTR_CFLAGS="-I$(TOP)/libestr/include" \
+		LIBESTR_LIBS="-L$(TOP)/libestr/src/.libs -lestr" \
+		LIBFASTJSON_CFLAGS="-I$(TOP)/libfastjson" \
+		LIBFASTJSON_LIBS="-L$(TOP)/libfastjson/.libs -lfastjson" \
+		ZLIB_CFLAGS="-I$(STAGEDIR)/usr/include" \
+		ZLIB_LIBS="-L$(STAGEDIR)/usr/lib -lz" \
+		LIBUUID_CFLAGS="-I$(STAGEDIR)/usr/include" \
+		LIBUUID_LIBS="-L$(STAGEDIR)/usr/lib -luuid" \
+		CURL_CFLAGS="-I$(STAGEDIR)/usr/include" \
+		CURL_LIBS="-L$(STAGEDIR)/usr/lib -lcurl" \
+		--disable-libgcrypt \
+		--disable-default-tests \
+	)
+
+rsyslog-install:
+	install -D rsyslog/tools/.libs/rsyslogd $(INSTALLDIR)/rsyslog/usr/sbin/rsyslogd
+	$(STRIP) $(INSTALLDIR)/rsyslog/usr/sbin/rsyslogd
+	install -D rsyslog/runtime/.libs/lmnet.so $(INSTALLDIR)/rsyslog/usr/lib/rsyslog/lmnet.so
+	$(STRIP) $(INSTALLDIR)/rsyslog/usr/lib/rsyslog/lmnet.so
+	install -D rsyslog/runtime/.libs/lmnetstrms.so $(INSTALLDIR)/rsyslog/usr/lib/rsyslog/lmnetstrms.so
+	$(STRIP) $(INSTALLDIR)/rsyslog/usr/lib/rsyslog/lmnetstrms.so
+	install -D rsyslog/runtime/.libs/lmnsd_ptcp.so $(INSTALLDIR)/rsyslog/usr/lib/rsyslog/lmnsd_ptcp.so
+	$(STRIP) $(INSTALLDIR)/rsyslog/usr/lib/rsyslog/lmnsd_ptcp.so
+	install -D rsyslog/runtime/.libs/lmregexp.so $(INSTALLDIR)/rsyslog/usr/lib/rsyslog/lmregexp.so
+	$(STRIP) $(INSTALLDIR)/rsyslog/usr/lib/rsyslog/lmregexp.so
+	install -D rsyslog/runtime/.libs/lmstrmsrv.so $(INSTALLDIR)/rsyslog/usr/lib/rsyslog/lmstrmsrv.so
+	$(STRIP) $(INSTALLDIR)/rsyslog/usr/lib/rsyslog/lmstrmsrv.so
+	install -D rsyslog/runtime/.libs/lmtcpclt.so $(INSTALLDIR)/rsyslog/usr/lib/rsyslog/lmtcpclt.so
+	$(STRIP) $(INSTALLDIR)/rsyslog/usr/lib/rsyslog/lmtcpclt.so
+	install -D rsyslog/runtime/.libs/lmtcpsrv.so $(INSTALLDIR)/rsyslog/usr/lib/rsyslog/lmtcpsrv.so
+	$(STRIP) $(INSTALLDIR)/rsyslog/usr/lib/rsyslog/lmtcpsrv.so
+	install -D rsyslog/runtime/.libs/lmzlibw.so $(INSTALLDIR)/rsyslog/usr/lib/rsyslog/lmzlibw.so
+	$(STRIP) $(INSTALLDIR)/rsyslog/usr/lib/rsyslog/lmzlibw.so
+	install -D rsyslog/contrib/fmhash/.libs/fmhash.so $(INSTALLDIR)/rsyslog/usr/lib/rsyslog/fmhash.so
+	$(STRIP) $(INSTALLDIR)/rsyslog/usr/lib/rsyslog/fmhash.so
+	install -D rsyslog/plugins/mmexternal/.libs/mmexternal.so $(INSTALLDIR)/rsyslog/usr/lib/rsyslog/mmexternal.so
+	$(STRIP) $(INSTALLDIR)/rsyslog/usr/lib/rsyslog/mmexternal.so
+	install -D rsyslog/plugins/imudp/.libs/imudp.so $(INSTALLDIR)/rsyslog/usr/lib/rsyslog/imudp.so
+	$(STRIP) $(INSTALLDIR)/rsyslog/usr/lib/rsyslog/imudp.so
+	install -D rsyslog/plugins/omtesting/.libs/omtesting.so $(INSTALLDIR)/rsyslog/usr/lib/rsyslog/omtesting.so
+	$(STRIP) $(INSTALLDIR)/rsyslog/usr/lib/rsyslog/omtesting.so
+	install -D rsyslog/plugins/imklog/.libs/imklog.so $(INSTALLDIR)/rsyslog/usr/lib/rsyslog/imklog.so
+	$(STRIP) $(INSTALLDIR)/rsyslog/usr/lib/rsyslog/imklog.so
+	install -D rsyslog/plugins/imuxsock/.libs/imuxsock.so $(INSTALLDIR)/rsyslog/usr/lib/rsyslog/imuxsock.so
+	$(STRIP) $(INSTALLDIR)/rsyslog/usr/lib/rsyslog/imuxsock.so
+	install -D rsyslog/plugins/immark/.libs/immark.so $(INSTALLDIR)/rsyslog/usr/lib/rsyslog/immark.so
+	$(STRIP) $(INSTALLDIR)/rsyslog/usr/lib/rsyslog/immark.so
+	install -D rsyslog/plugins/imtcp/.libs/imtcp.so $(INSTALLDIR)/rsyslog/usr/lib/rsyslog/imtcp.so
+	$(STRIP) $(INSTALLDIR)/rsyslog/usr/lib/rsyslog/imtcp.so
+	install -D rsyslog/plugins/fmhttp/.libs/fmhttp.so $(INSTALLDIR)/rsyslog/usr/lib/rsyslog/fmhttp.so
+	$(STRIP) $(INSTALLDIR)/rsyslog/usr/lib/rsyslog/fmhttp.so
+
+
 #
 # Generic rules
 #
@@ -8265,7 +8361,6 @@ endif
 %-clean:
 	@$(eval TOPX_DIR:=$(firstword $(wildcard $(TOP_PLATFORM)/$*) $(wildcard $*)))
 	-@[ ! -d $* ] || $(MAKE) -C $(TOPX_DIR) clean
-
 
 %-install: %
 	@echo $*
@@ -8295,7 +8390,7 @@ endif
 		--bindir=/usr/sbin \
 		--libdir=/usr/lib \
 	)
-	
+
 $(obj-y) $(obj-n) $(obj-clean) $(obj-install): dummy
 
 .PHONY: all clean distclean mrproper install package image

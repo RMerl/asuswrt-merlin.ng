@@ -1,0 +1,2 @@
+rsyslogd: CONFIG ERROR: there are no active actions configured. Inputs will run, but no output whatsoever is created. [try http://www.rsyslog.com/e/2103 ]
+rsyslogd: EMERGENCY CONFIGURATION ACTIVATED - fix rsyslog config file!

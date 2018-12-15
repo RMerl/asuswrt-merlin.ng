@@ -18,7 +18,7 @@
  *
  * <<Broadcom-WL-IPTag/Open:>>
  *
- * $Id: 802.11ah.h 687242 2017-02-28 08:39:14Z $
+ * $Id: 802.11ah.h 767714 2018-09-24 15:51:10Z $
  */
 
 #ifndef _802_11ah_h_
@@ -29,27 +29,14 @@
 /* This marks the start of a packed structure section. */
 #include <packed_section_start.h>
 
-/**
- * TWT IE (sec 8.4.2.196)
- */
-
-/* TWT element - top */
-BWL_PRE_PACKED_STRUCT struct twt_ie_top {
-	uint8 id;
-	uint8 len;
-	uint8 ctrl;		/* Control */
-} BWL_POST_PACKED_STRUCT;
-
-typedef struct twt_ie_top twt_ie_top_t;
-
-/* S1G Action IDs */
-#define S1G_ACTION_TWT_SETUP	6
-#define S1G_ACTION_TWT_TEARDOWN	7
-#define S1G_ACTION_TWT_INFO	11
+/* S1G Action IDs, table 9-470 */
+#define S1G_ACTION_TWT_SETUP		6
+#define S1G_ACTION_TWT_TEARDOWN		7
+#define S1G_ACTION_TWT_INFO		11
 
 /* S1G Action frame offsets */
-#define S1G_AF_CAT_OFF	0
-#define S1G_AF_ACT_OFF	1
+#define S1G_AF_CAT_OFF			0
+#define S1G_AF_ACT_OFF			1
 
 /* TWT Setup */
 #define S1G_AF_TWT_SETUP_TOKEN_OFF	2
@@ -59,34 +46,69 @@ typedef struct twt_ie_top twt_ie_top_t;
 #define S1G_AF_TWT_TEARDOWN_FLOW_OFF	2
 
 /* TWT Information */
-#define S1G_AF_TWT_INFO_OFF	2
+#define S1G_AF_TWT_INFO_OFF		2
 
-/* Control field (Table 9-262k1) */
-#define TWT_BCAST_MAX_VALID_FLOW_ID	3
+/* TWT element - top */
+BWL_PRE_PACKED_STRUCT struct twt_ie_top {
+	uint8 id;
+	uint8 len;
+	uint8 ctrl;			/* Control field */
+} BWL_POST_PACKED_STRUCT;
 
-#define TWT_BCAST_WAKE_TIME_SHIFT	4
-#define TWT_BCAST_WAKE_TIME_MASK	0xFFFF
+typedef struct twt_ie_top twt_ie_top_t;
 
-/* Control field (figure 8-557ax) */
-#define TWT_CTRL_NDP_PAGING_IND	0x01	/* NDP Paging Indication */
-#define TWT_CTRL_RESP_PM_MODE	0x02	/* Respondor PM Mode */
-#define TWT_CTRL_BCAST		0x04	/* Broadcast */
-#define TWT_CTRL_WAKE_TBTT_NEGO	0x08	/* Wake TBTT Negotiation */
+/* Control field (figure 8-557ax) 8 bits */
+#define TWT_CTRL_NDP_PAGING_IND		(1 << 0)	/* NDP Paging Indication */
+#define TWT_CTRL_RESP_PM_MODE		(1 << 1)	/* Respondor PM Mode */
+#define TWT_CTRL_NEGOTIATION_MASK	0x06		/* Negotiatio Mask */
+#define TWT_CTRL_NEGOTIATION_SHIFT	2		/* Negotiatio Shift (bit 2-3) */
 
-/* Requestor Type field (figure 8-557ay) */
-#define TWT_REQ_TYPE_REQUEST		0x0001	/* Request */
-#define TWT_REQ_TYPE_SETUP_CMD_MASK	0x000e	/* Setup Command */
-#define TWT_REQ_TYPE_SETUP_CMD_SHIFT	1
-#define TWT_REQ_TYPE_TRIGGER		0x0010	/* Trigger */
-#define TWT_REQ_TYPE_IMPLICIT		0x0020	/* Implicit */
-#define TWT_REQ_TYPE_FLOW_TYPE		0x0040	/* Flow Type */
-#define TWT_REQ_TYPE_FLOW_ID_MASK	0x0380	/* Flow Identifier */
-#define TWT_REQ_TYPE_FLOW_ID_SHIFT	7
-#define TWT_REQ_TYPE_WAKE_EXP_MASK	0x7c00	/* Wake Interval Exponent */
-#define TWT_REQ_TYPE_WAKE_EXP_SHIFT	10
-#define TWT_REQ_TYPE_PROTECTION		0x8000	/* Protection */
+/* Control Negotiation Type subfield (table 9-262j1) */
+#define TWT_CTRL_NEGO_INDV_REQ_RSP	1		/* Negotiation 1 Individual Req/Rsp */
+#define TWT_CTRL_NEGO_INDV_SCHED	2		/* Negotiation 2 Individual Scheduled */
+#define TWT_CTRL_NEGO_BCAST_BEACON	3		/* Negotiation 3 Bcast Beacon */
+#define TWT_CTRL_NEGO_BCAST_MGMT	4		/* Negotiation 4 Bcast MGMT frames */
 
-/* Setup Command field (table 8-248I) */
+/* Individual TWT parameter Set - figure 9-589av2 */
+#define TWT_INDV_REQUEST_TYPE_SZ	2		/* 2 Octets Request Type */
+#define TWT_INDV_TARGET_WAKE_TIME_SZ	8		/* (Optional) 8 Octets Target Wake Time */
+/* Then follows a TWT Group Assignment with size 0, 3 or 9, no defines for that */
+BWL_PRE_PACKED_STRUCT struct twt_ie_indv_part {
+	uint8 wake_duration;			/* Nominal Minimum TWT Wake Duration */
+	uint16 wake_intv_man;			/* TWT Wake Interval Mantissa */
+	uint8 channel;				/* TWT Channel */
+} BWL_POST_PACKED_STRUCT;
+
+/* Broadcast TWT parameter Set - figure 9-589av2 */
+BWL_PRE_PACKED_STRUCT struct twt_ie_bcast {
+	uint16 request_type;			/* Request Type */
+	uint16 twt;				/* Target Wake Time */
+	uint8 wake_duration;			/* Nominal Minimum TWT Wake Duration */
+	uint16 wake_interval_mantissa;		/* TWT Wake Interval Mantissa */
+	uint16 bcast_info;			/* Broadcast TWT Info */
+} BWL_POST_PACKED_STRUCT;
+
+typedef struct twt_ie_bcast twt_ie_bcast_t;
+
+/* Request Type field (figure 9-589ax) bit position and field width */
+#define TWT_REQ_TYPE_REQUEST_IDX	0	/* TWT Request */
+#define TWT_REQ_TYPE_REQUEST_FSZ	1
+#define TWT_REQ_TYPE_SETUP_CMD_IDX	1	/* TWT Setup Command */
+#define TWT_REQ_TYPE_SETUP_CMD_FSZ	3
+#define TWT_REQ_TYPE_TRIGGER_IDX	4	/* Trigger */
+#define TWT_REQ_TYPE_TRIGGER_FSZ	1
+#define TWT_REQ_TYPE_IMPL_LAST_IDX	5	/* Implicit/Last Broadcast Parameter Set */
+#define TWT_REQ_TYPE_IMPL_LAST_FSZ	1
+#define TWT_REQ_TYPE_FLOW_TYPE_IDX	6	/* Flow Type (Announced/Unannounced) */
+#define TWT_REQ_TYPE_FLOW_TYPE_FSZ	1
+#define TWT_REQ_TYPE_FLOW_ID_IDX	7	/* Flow Identifier/Broadcast TWT Recommendation */
+#define TWT_REQ_TYPE_FLOW_ID_FSZ	3
+#define TWT_REQ_TYPE_WAKE_EXP_IDX	10	/* Wake Interval Exponent */
+#define TWT_REQ_TYPE_WAKE_EXP_FSZ	5
+#define TWT_REQ_TYPE_PROTECTION_IDX	15	/* Protection */
+#define TWT_REQ_TYPE_PROTECTION_FSZ	1
+
+/* Setup Command field (table 9-262k) - Values, store in TWT_REQ_TYPE_SETUP_CMD */
 #define TWT_SETUP_CMD_REQUEST_TWT	0	/* Request TWT */
 #define TWT_SETUP_CMD_SUGGEST_TWT	1	/* Suggest TWT */
 #define TWT_SETUP_CMD_DEMAND_TWT	2	/* Demand TWT */
@@ -96,19 +118,13 @@ typedef struct twt_ie_top twt_ie_top_t;
 #define TWT_SETUP_CMD_DICTATE_TWT	6	/* Dictate TWT */
 #define TWT_SETUP_CMD_REJECT_TWT	7	/* Reject TWT */
 
-/* Flow Identifier field (table 8-248I1) */
-#define TWT_BCAST_FLOW_ID_NO_CONSTRAINS	0	/* No constrains on the frame transmitted during
-						 * a broadcast TWT SP.
-						 */
-#define TWT_BCAST_FLOW_ID_NO_RAND_RU	1	/* Do not contain RUs for random access */
-#define TWT_BCAST_FLOW_ID_RAND_RU	2	/* Contain RUs for random access */
-
-/* Request Type subfield - 2 octets */
-typedef uint16 twt_request_type_t;	/* 16 bit request type */
-
-/* Target Wake Time - 8 octets or 0 octet */
-typedef uint64 twt_target_wake_time_t;	/* 64 bit TSF time of TWT Responding STA */
-typedef uint16 twt_bcast_wake_time_t;	/* 16 bit Wake Time of Bcast scheduling STA */
+/* Broadcast TWT Info subfield (figure 9-589ay1) bit position and field width */
+#define TWT_BCAST_INFO_PERS_EXP_IDX	0	/* Broadcast TWT Request Persistence Exponent */
+#define TWT_BCAST_INFO_PERS_EXP_FSZ	3
+#define TWT_BCAST_INFO_ID_IDX		3	/* Broadcast TWT ID */
+#define TWT_BCAST_INFO_ID_FSZ		5
+#define TWT_BCAST_INFO_PERS_MAN_IDX	8	/* Broadcast TWT Request Persistence Mantissa */
+#define TWT_BCAST_INFO_PERS_MAN_FSZ	8
 
 /* TWT Group Assignment Info - 9 octets (long format) or 3 octets (short format) or 0 octet */
 /* Group Assignment Info field - short format - Zero Offset Preset field is 0 */
@@ -120,46 +136,34 @@ BWL_PRE_PACKED_STRUCT struct twt_grp_short {
 typedef struct twt_grp_short twt_grp_short_t;
 
 /* Group Assignment Info field - long format - Zero Offset Preset field is 1 */
-#define TWT_ZERO_OFF_GRP_LEN 6
+#define TWT_ZERO_OFF_GRP_LEN		6
+
 BWL_PRE_PACKED_STRUCT struct twt_grp_long {
-	uint8 grpid_n_0off;	/* Group ID and Zero Offset Present */
+	uint8 grpid_n_0off;			/* Group ID and Zero Offset Present */
 	uint8 grp_0off[TWT_ZERO_OFF_GRP_LEN];	/* Zero Offset of Group */
-	uint16 unit_n_off;	/* Unit and Offset */
+	uint16 unit_n_off;			/* Unit and Offset */
 } BWL_POST_PACKED_STRUCT;
 
 typedef struct twt_grp_long twt_grp_long_t;
 
 /* TWT Unit and TWT Offset field */
-#define TWT_UNIT_MASK		0x000f		/* TWT Unit */
-#define TWT_OFFSET_MASK		0xfff0		/* TWT Offset */
-#define TWT_OFFSET_SHIFT	4
+#define TWT_UNIT_MASK			0x000f		/* TWT Unit */
+#define TWT_OFFSET_MASK			0xfff0		/* TWT Offset */
+#define TWT_OFFSET_SHIFT		4
 
-/* TWT Unit field (table 8-248m) */
-#define TWT_UNIT_32us		0
-#define TWT_UNIT_256us		1
-#define TWT_UNIT_1024us		2
-#define TWT_UNIT_8ms192us	3
-#define TWT_UNIT_32ms768us	4
-#define TWT_UNIT_262ms144us	5
-#define TWT_UNIT_1s048576us	6
-#define TWT_UNIT_8s388608us	7
-#define TWT_UNIT_33s554432us	8
-#define TWT_UNIT_268s435456us	9
-#define TWT_UNIT_1073s741824us	10
-#define TWT_UNIT_8589s934592us	11
-
-/* TWT element - bottom */
-BWL_PRE_PACKED_STRUCT struct twt_ie_bottom {
-	uint8 nom_wake_dur;		/* Nominal Minimum Wake Duration */
-	uint16 wake_int_mant;		/* TWT Wake Interval Mantissa */
-	uint8 channel;			/* TWT Channel */
-	/* NDP Paging field */
-} BWL_POST_PACKED_STRUCT;
-
-typedef struct twt_ie_bottom twt_ie_bottom_t;
-
-/* Nominal Minimum Wake Duration */
-#define TWT_NOM_WAKE_DUR_UNIT	256	/* Nominal Minimum Wake Duration is in 256us units */
+/* TWT Unit field (table 9-290) */
+#define TWT_UNIT_32us			0
+#define TWT_UNIT_256us			1
+#define TWT_UNIT_1024us			2
+#define TWT_UNIT_8ms192us		3
+#define TWT_UNIT_32ms768us		4
+#define TWT_UNIT_262ms144us		5
+#define TWT_UNIT_1s048576us		6
+#define TWT_UNIT_8s388608us		7
+#define TWT_UNIT_33s554432us		8
+#define TWT_UNIT_268s435456us		9
+#define TWT_UNIT_1073s741824us		10
+#define TWT_UNIT_8589s934592us		11
 
 /* NDP Paging field - 4 octets or 0 octet */
 typedef uint32 twt_ndp_paging_t;
@@ -170,7 +174,7 @@ typedef uint32 twt_ndp_paging_t;
 #define TWT_NDP_PAGING_ACTION		0x00e00000	/* Action */
 #define TWT_NDP_PAGING_MIN_SLEEP	0x3f000000	/* Min Sleep Duration */
 
-/* Action field (table 8-248n) */
+/* Action field (table 9-291) */
 #define TWT_ACTION_SEND_PSP_TRIG	0	/* Send a PS-Poll or uplink trigger frame */
 #define TWT_ACTION_WAKE_MIN_SLEEP	1	/* Wake up at the time indicated by
 						 * Min Sleep Duration
@@ -191,18 +195,6 @@ typedef uint32 twt_ndp_paging_t;
 #define TWT_INFO_NEXT_TWT_REQ		0x10
 #define TWT_INFO_NEXT_TWT_SIZE_MASK	0x60
 #define TWT_INFO_NEXT_TWT_SIZE_SHIFT	0x5
-
-/* Next TWT Subfield Size field */
-#define TWT_INFO_NEXT_TWT_SIZE_0	0	/* 0 byte */
-#define TWT_INFO_NEXT_TWT_SIZE_32	1	/* 4 bytes */
-#define TWT_INFO_NEXT_TWT_SIZE_48	2	/* 6 bytes */
-#define TWT_INFO_NEXT_TWT_SIZE_64	3	/* 8 bytes */
-
-/* TWT IE field lengths */
-#define TWT_IE_NOM_MIN_TWT_WK_DUR_SZ	1	/* 1 byte */
-#define TWT_IE_TWT_WAKE_INT_MANT_SZ	2	/* 2 bytes */
-#define TWT_IE_BCAST_TWT_ID_SZ		1	/* 1 byte */
-#define TWT_IE_TWT_CHANNEL_SZ		1	/* 1 byte */
 
 /* This marks the end of a packed structure section. */
 #include <packed_section_end.h>

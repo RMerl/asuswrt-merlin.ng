@@ -221,6 +221,11 @@ endif
 	WLFILES_SRC += ../../shared/impl1/wl_nbuff.c
     endif
 
+    # packet chaining 16-bit chain index support
+    ifneq ($(strip $(CONFIG_BCM_WLAN_16BIT_STATION_CHAIN_IDX_SUPPORT)),)
+        EXTRA_CFLAGS += -DCONFIG_BCM_WLAN_16BIT_STATION_CHAIN_IDX_SUPPORT
+    endif
+
     ifeq ($(CMWIFI),)
         EXTRA_CFLAGS += -DBULK_PKTLIST
     endif

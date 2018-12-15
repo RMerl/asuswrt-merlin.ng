@@ -144,6 +144,55 @@ function getPAPList(siteSurveyAPList, filterType, filterValue) {
 	return papList;
 }
 
+function getAiMeshOnboardinglist(_onboardingList){
+	var jsonArray = [];
+	var profile = function(){
+		this.name = "";
+		this.signal = "";
+		this.rssi = "";
+		this.source = "";
+		this.mac = "";
+		this.pap_mac = "";
+		this.id = "";
+	};
+	var convRSSI = function(val) {
+		val = parseInt(val);
+		if(val >= -50) return 4;
+		else if(val >= -80)	return Math.ceil((24 + ((val + 80) * 26)/10)/25);
+		else if(val >= -90)	return Math.ceil((((val + 90) * 26)/10)/25);
+		else return 1;
+	};
+
+	Object.keys(_onboardingList).forEach(function(key) {
+		var papMac = key;
+		var newReMacArray = _onboardingList[papMac];
+		Object.keys(newReMacArray).forEach(function(key) {
+			var newReMac = key;
+			var node_info  = new profile();
+			node_info.name = newReMacArray[newReMac].model_name;
+			node_info.signal = convRSSI(newReMacArray[newReMac].rssi);
+			node_info.rssi = newReMacArray[newReMac].rssi;
+			node_info.source = newReMacArray[newReMac].source;
+			node_info.mac = newReMac;
+			node_info.pap_mac = papMac;
+			node_info.id = newReMac.replace(/:/g, "");
+			jsonArray.push(node_info);
+		});
+	});
+
+	return jsonArray;
+}
+
+function getProcessPercentage(_start, _current, _timeout, _percentage){
+	var percentage = 0;
+	var interval = parseInt(_current) - parseInt(_start);
+	var denominator = parseInt(_timeout) / parseInt(_percentage);
+	percentage = Math.round( interval / denominator );
+	if(percentage > 100)
+		percentage = 100;
+	return percentage;
+}
+
 function checkPasswd($obj){
 	var targetObj = $(this);
 	targetObj.toggleClass("icon_eye_close").toggleClass("icon_eye_open");
@@ -268,6 +317,58 @@ var Get_Component_SiteSurvey_List = function(papList, filterBand) {
 		siteSurveyContainer.append(apListContainer);
 	});
 	return siteSurveyContainer;
+}
+
+var Get_Component_AiMeshOnboarding_List = function(nodeInfo) {
+	var nodeContainer = $("<div>").attr({"id" : nodeInfo.id}).addClass("apListContainer apProfile");
+	var nodeDiv = $("<div>").addClass("apListDiv");
+	nodeContainer.append(nodeDiv);
+
+	var model_icon_container = $("<div>").addClass("ap_icon_container middle");
+	nodeDiv.append(model_icon_container);
+
+	var model_icon = $("<div>").addClass("aimesh_icon").attr("model_name", nodeInfo.name);
+	if(systemVariable.modelCloudIcon[nodeInfo.name])
+		model_icon.css("background-image", "url(" + systemVariable.modelCloudIcon[nodeInfo.name] + ")");
+	model_icon.appendTo(model_icon_container);
+
+	var node_name_container = $("<div>").addClass("ap_ssid");
+	var node_name = $("<div>").html(nodeInfo.name);
+	var labelMac = nodeInfo.mac;
+	httpApi.getAiMeshLabelMac(nodeInfo.name, nodeInfo.mac,
+		function(_callBackMac){
+			labelMac = _callBackMac;
+		}
+	);
+	var node_mac = $("<div>").addClass("aimesh_mac").html(labelMac);
+	node_name.appendTo(node_name_container);
+	node_mac.appendTo(node_name_container);
+
+	nodeDiv.append(node_name_container);
+	node_name_container.hover(function(){
+		$(this).addClass("ap_ssid_hover");
+		$(this).find(".aimesh_mac").addClass("ap_ssid_hover");
+	}, function(){
+		$(this).removeClass("ap_ssid_hover")
+		$(this).find(".aimesh_mac").removeClass("ap_ssid_hover");
+	})
+
+	var band_icon_container = $("<div>").addClass("ap_icon_container middle");
+	nodeDiv.append(band_icon_container);
+	var band_icon = $("<div>");
+	if(nodeInfo.source == "2")
+		band_icon.addClass("aimesh_band_icon icon_wired");
+	else
+		band_icon.addClass("icon_wifi_" + nodeInfo.signal + " aimesh_band_icon");
+	band_icon.appendTo(band_icon_container);
+
+	var ap_narrow_container = $("<div>").addClass("ap_narrow_container");
+	nodeDiv.append(ap_narrow_container);
+
+	var ap_narrow = $("<div>").addClass("icon_arrow_right ap_narrow");
+	ap_narrow.appendTo(ap_narrow_container);
+
+	return nodeContainer;
 }
 
 var Get_Component_btnLoading = function(){
@@ -454,23 +555,29 @@ function handleSysDep(){
 
 	if(!isNoWAN) $(".amasNoWAN").remove();
 	if(!isSupport("amas")) $(".amasSupport").remove();
+	if(isSupport("amas") && isSupport("amas_bdl")){
+		$("#amassearch_page").load("/mobile/pages/amassearch_page.html");
+		$("#amasonboarding_page").load("/mobile/pages/amasonboarding_page.html");
+	}
 }
 
 function handleModelIcon() {
+
 	$('#ModelPid_img').css('background-image', 'url(' + function() {
-		var modelInfo = httpApi.nvramGet(["territory_code", "productid", "odmpid", "color"], true);
+		var modelInfo = httpApi.nvramGet(["territory_code", "productid", "odmpid", "color", "rc_support"], true);
 		var ttc = modelInfo.territory_code;
 		var based_modelid = modelInfo.productid;
 		var odmpid = modelInfo.odmpid;
 		var color = modelInfo.color;
 		color = color.toUpperCase();
+		var odm_support = (modelInfo.rc_support.indexOf('odm') != -1) ? true : false;
 		var LinkCheck = function(url) {
 			var http = new XMLHttpRequest();
 			http.open('HEAD', url, false);
 			http.send();
 			return http.status!="404";
 		};
-
+	
 		var update_color = function() {
 			if(based_modelid == "RT-AC87U") { //MODELDEP: RT-AC87U
 				/* MODELDEP by Territory Code */
@@ -501,6 +608,7 @@ function handleModelIcon() {
 				return default_png_path;
 		}
 		else if(odmpid.length > 0 && odmpid != based_modelid) {
+			
 			if(odmpid == "RT-AC66U_B1" || odmpid == "RT-AC1750_B1" || odmpid == "RT-N66U_C1" || odmpid == "RT-AC1900U" || odmpid == "RT-AC67U")
 				MP_png_path = "/images/RT-AC66U_V2/Model_product.png";
 			else if(odmpid == "RP-AC1900")
@@ -515,8 +623,11 @@ function handleModelIcon() {
 					return default_png_path;
 			}
 		}
+		else if(odm_support){
+			return default_png_path = "/images/Model_product_COD.png";
+		}
 		else
-			return default_png_path;
+			return default_png_path;	
 	}() + ')');
 }
 
@@ -711,6 +822,10 @@ var getRestartService = function(){
 
 	if(qisPostData.hasOwnProperty("cfg_master")){
 		actionScript.push("restart_cfgsync");
+	}
+
+	if(isSupport("2p5G_LWAN")) {
+		actionScript.push("start_br_addif");
 	}
 
 	if(isSupport("2p5G_LWAN") || isSupport("10G_LWAN") || isSupport("10GS_LWAN")){
@@ -1174,5 +1289,11 @@ handleWLAuthModeItem = function(){
 		$("#manual_pap_setup-key").show();
 		if(crypto == "tkip")
 			$("#manual_pap_setup-nmode_hint").show();
+	}
+};
+clearIntervalStatus = function(){
+	if(systemVariable.interval_status != false){
+		clearInterval(systemVariable.interval_status);
+		systemVariable.interval_status = false;
 	}
 };

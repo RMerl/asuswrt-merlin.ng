@@ -343,7 +343,7 @@ enum {
 #define GIF_PREFIXLEN  0x0002  /* return prefix length */
 #define GIF_PREFIX     0x0004  /* return prefix, not addr */
 
-#define EXTEND_AIHOME_API_LEVEL		17
+#define EXTEND_AIHOME_API_LEVEL		19
 
 #define EXTEND_HTTPD_AIHOME_VER		0
 
@@ -609,6 +609,8 @@ extern int nvram_pf_match(char *prefix, char *name, char *match);
 extern int nvram_pf_invmatch(char *prefix, char *name, char *invmatch);
 extern double nvram_get_double(const char *key);
 extern int nvram_set_double(const char *key, double value);
+extern int nvram_get_hex(const char *key);
+extern int nvram_set_hex(const char *key, int value);
 #ifdef HND_ROUTER
 extern char *nvram_split_get(const char *key, char *buffer, int maxlen, int maxinst);
 extern int nvram_split_set(const char *key, char *value, int size, int maxinst);
@@ -1507,6 +1509,9 @@ extern void set_wpa_cli_cmd(int band, const char *cmd);
 #endif
 extern char *get_wlifname(int unit, int subunit, int subunit_x, char *buf);
 extern char *get_wlxy_ifname(int x, int y, char *buf);
+#ifdef CONFIG_BCMWL5
+extern char *wl_ifname(int unit, int subunit, char *buf);
+#endif
 #if defined(RTCONFIG_RALINK_MT7620)
 extern int get_mt7620_wan_unit_bytecount(int unit, unsigned long *tx, unsigned long *rx);
 #elif defined(RTCONFIG_RALINK_MT7621)
@@ -1680,7 +1685,6 @@ extern int with_non_dfs_chspec(char *wif);
 extern chanspec_t select_band1_chspec_with_same_bw(char *wif, chanspec_t chanspec);
 extern chanspec_t select_band4_chspec_with_same_bw(char *wif, chanspec_t chanspec);
 extern chanspec_t select_chspec_with_band_bw(char *wif, int band, int bw, chanspec_t chanspec);
-extern void wl_reset_ssid(char *wif);
 extern void wl_list_5g_chans(int unit, int band, char *buf, int len);
 #endif
 #ifdef RTCONFIG_AMAS
@@ -2439,6 +2443,7 @@ extern int detwan_set_def_vid(const char *ifname, int vid, int needTagged, int a
 extern int IPTV_ports_cnt(void);
 
 #ifdef RTCONFIG_BCMWL6
+#define	WL_5G_BAND_1	1 << (1 - 1)
 #define WL_5G_BAND_2	1 << (2 - 1)
 #define WL_5G_BAND_3	1 << (3 - 1)
 #define WL_5G_BAND_4	1 << (4 - 1)

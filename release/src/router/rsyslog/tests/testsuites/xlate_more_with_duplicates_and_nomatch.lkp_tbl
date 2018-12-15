@@ -1,0 +1,12 @@
+{
+  "nomatch": "quux",
+  "table":[
+      {"index":" msgnum:00000000:", "value":"foo_latest" },
+      {"index":" msgnum:00000002:", "value":"baz_latest" },
+      {"index":" msgnum:00000003:", "value":"foo_latest" },
+      {"index":" msgnum:00000004:", "value":"foo_latest" },
+      {"index":" msgnum:00000005:", "value":"baz_latest" },
+      {"index":" msgnum:00000006:", "value":"foo_latest" },
+      {"index":" msgnum:00000007:", "value":"baz_latest" },
+      {"index":" msgnum:00000008:", "value":"baz_latest" }]
+}

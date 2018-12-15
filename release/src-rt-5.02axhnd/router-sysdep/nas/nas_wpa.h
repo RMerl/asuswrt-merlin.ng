@@ -42,7 +42,7 @@
  * OR U.S. $1, WHICHEVER IS GREATER. THESE LIMITATIONS SHALL APPLY
  * NOTWITHSTANDING ANY FAILURE OF ESSENTIAL PURPOSE OF ANY LIMITED REMEDY.
  *
- * $Id: nas_wpa.h 742094 2018-01-19 05:58:13Z $
+ * $Id: nas_wpa.h 767470 2018-09-12 08:29:20Z $
  */
 
 #ifndef _wpa_h_
@@ -209,6 +209,7 @@ typedef struct wpa_suppl {
 #ifdef WLHOSTFBT
 	supp_ft_t ft_info;
 #endif /* WLHOSTFBT */
+	bool assoc_req_has_valid_pmkid;
 } wpa_suppl_t;
 
 /* This coalesces the WPA supplicant and RADIUS PAE structs.

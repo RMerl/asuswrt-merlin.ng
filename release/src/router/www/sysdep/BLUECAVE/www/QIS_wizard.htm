@@ -1506,7 +1506,7 @@
 				</div>
 				<div class="table_td">
 					<div id="siteSurvey_search">
-						<div class="pageDesc">Searching for WiFi network nearby...</div><!-- untranslated -->
+						<div class="pageDesc"><#Searching_WiFi_Network#></div>
 						<div id="siteSurveyLoading" class="selectorTopContainer"></div>
 					</div>
 					<div id="siteSurvey_fail">
@@ -1993,7 +1993,7 @@
 					<div class="pageDesc">	
 						<#AiMesh_Desc#>
 						<br/>
-						Do you want to add another node?
+						<#AiMesh_Add_Another_Node_confirm#>
 
 						<div class="amasIconContainer">
 							<div><img src="images\New_ui\amesh\Amesh_button_light.png"></div>
@@ -2002,17 +2002,17 @@
 						
 					<!-- Action Button -->
 					<div class="footer_desktop">
-						<div class="desktop_abortBtn" onclick='abort.amasbundle();'>I'm done</div>
-						<div class="desktop_applyBtn" onclick="apply.amasbundle();">Add another node</div>
+						<div class="desktop_abortBtn" onclick='abort.amasbundle();'><#CTL_finished#></div>
+						<div class="desktop_applyBtn" onclick="goTo.amasearch();"><#AiMesh_Add_Another_Node#></div>
 					</div>
 					<div class="footer_mobile">
 						<table style="width:100%;" cellpadding="0" cellspacing="0">
 							<tr>
 								<td class="mobileAbort" style="width:50%" onclick='abort.amasbundle();'>
-									<div class="mobile_abortBtn">I'm done</div>
+									<div class="mobile_abortBtn"><#CTL_finished#></div>
 								</td>
-								<td class="mobileApply" onclick="apply.amasbundle();">
-									<div class="mobile_applyBtn">Add another node</div>
+								<td class="mobileApply" onclick="goTo.amasearch();">
+									<div class="mobile_applyBtn"><#AiMesh_Add_Another_Node#></div>
 								</td>
 							</tr>
 						</table>
@@ -2020,6 +2020,12 @@
 				</div>
 			</div>			
 		</div>
+
+		<!-- AMAS Search -->
+		<div id="amassearch_page" data-role="page" class="qisBackground aimeshPages"></div>
+
+		<!-- AMAS Onboarding -->
+		<div id="amasonboarding_page" data-role="page" class="qisBackground aimeshPages"></div>
 
 		<!-- Err: Redirect Fail  -->
 		<div id="amaserr_connrouter_page" data-role="page" class="qisBackground aimeshPages"></div>
@@ -2048,16 +2054,16 @@
 			<div class="tableContainer">
 				<div class="desktop_left_field">
 					<div class="titleMain"><#Internet#></div>
-					<div class="titleSub">WiFi network list</div><!-- untranslated -->
+					<div class="titleSub"><#WiFi_Network_List#></div>
 				</div>
 				<div class="table_td">
-					<div class="pageDesc">We found there are some router nearby :</div><!-- untranslated -->
+					<div class="pageDesc"><#AiMesh_Find_Router#> :</div>
 
 					<div class="selectorTopContainer">
 						<div class="selectorContainer">
 							<div class="selectorContainerDiv">
 								<div id="connectAiMesh" class="selectBar">
-									Connect to AiMesh WiFi network<!-- untranslated -->
+									<#AiMesh_connect_AiMesh_WiFi#>
 								</div>
 								<div class="narrowContainer">
 									<div class="icon_arrow_right" style="width:20px;height:32px;"></div>
@@ -2067,7 +2073,7 @@
 						<div class="selectorContainer">
 							<div class="selectorContainerDiv">
 								<div id="connectOther" class="selectBar">
-									Connect to other WiFi network<!-- untranslated -->
+									<#AiMesh_connect_Other_WiFi#>
 								</div>
 								<div class="narrowContainer">
 									<div class="icon_arrow_right" style="width:20px;height:32px;"></div>

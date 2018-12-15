@@ -18,7 +18,7 @@
  *
  * <<Broadcom-WL-IPTag/Open:>>
  *
- * $Id: bcmutils.h 765948 2018-07-20 05:22:34Z $
+ * $Id: bcmutils.h 767430 2018-09-11 10:09:52Z $
  */
 
 #ifndef	_bcmutils_h_
@@ -1032,6 +1032,13 @@ bcm_nonzero_bitmap(uint8 *p, uint32 nbits)
 
 /* INTERFACE: Multiword bitmap based small id allocator. */
 struct bcm_mwbmap;	/* forward declaration for use as an opaque mwbmap handle */
+
+#if defined(DONGLEBUILD)
+#define BCM_MWBMAP_USE_CNTSETBITS       /* runtime count set bits */
+#define BCM_MWBMAP_ITEMS_MAX    (10 * 1024)
+#else  /* ! DONGLEBUILD */
+#define BCM_MWBMAP_ITEMS_MAX    (64 * 1024)  /* May increase to 64K */
+#endif /* DONGLEBUILD */
 
 #define BCM_MWBMAP_INVALID_HDL	((struct bcm_mwbmap *)NULL)
 #define BCM_MWBMAP_INVALID_IDX	((uint32)(~0U))

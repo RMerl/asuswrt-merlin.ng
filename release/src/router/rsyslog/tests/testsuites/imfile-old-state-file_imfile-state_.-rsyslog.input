@@ -1,0 +1,15 @@
+<Obj:1:strm:1:
++iCurrFNum:2:1:1:
++pszFName:1:15:./rsyslog.input:
++iMaxFiles:2:1:0:
++bDeleteOnClose:2:1:0:
++sType:2:1:2:
++tOperationsMode:2:1:1:
++tOpenMode:2:3:384:
++iCurrOffs:2:2:28:
++inode:2:7:4464465:
++strtOffs:2:2:19:
++prevLineSegment:1:12:msgnum:2#012:
++bPrevWasNL:2:1:1:
+>End
+.

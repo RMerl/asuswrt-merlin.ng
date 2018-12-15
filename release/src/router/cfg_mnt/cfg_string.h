@@ -25,6 +25,8 @@
 #define CFG_STR_NEW_FWVER		"newfwver"
 #define CFG_STR_STA2G		"sta2g"
 #define CFG_STR_STA5G		"sta5g"
+#define CFG_STR_STA2G_TRAFFIC		"sta2g_traffic"
+#define CFG_STR_STA5G_TRAFFIC		"sta5g_traffic"
 #define CFG_STR_NOTIFY_TYPE	"notify_type"
 #define CFG_STR_IP			"ip"
 #define CFG_STR_RSSI		"rssi"
@@ -60,4 +62,6 @@
 #define CFG_STR_5G 	"5G"
 #define CFG_STR_5G1 	"5G1"
 #define CFG_STR_RE_NUMBER	"re_num"
+#define CFG_STR_IS_RE	"is_re"
+#define CFG_STR_TRIBAND_RE	"triband_re"
 #endif /* __CFG_STRING_H__ */

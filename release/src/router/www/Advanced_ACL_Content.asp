@@ -56,7 +56,6 @@ function initial(){
 
 	show_menu();
 	regen_band(document.form.wl_unit);
-	dwb_regen_band(document.form.wl_unit);
 	if(lantiq_support){
 		checkWLReady();
 	}	

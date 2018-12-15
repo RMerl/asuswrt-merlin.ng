@@ -447,4 +447,5 @@ extern int wave_handle_app_flag(char *name, int wave_app_flag);
 #ifdef RTCONFIG_TCODE
 extern int change_location(char *lang);
 #endif
+extern void update_wlan_log(int sig);
 #endif /* _httpd_h_ */

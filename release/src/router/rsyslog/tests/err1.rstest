@@ -1,0 +1,7 @@
+# This test case check for an error condition
+result: -2051
+in:
+'test 1' <> == $hostname
+$$$
+out:
+$$$

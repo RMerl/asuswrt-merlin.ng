@@ -1476,6 +1476,11 @@ config HND_WL
 	bool "No HHD WL"
 	default n
 
+config DUMP_PREV_OOPS_MSG
+	bool "Dump previous kernel oops message"
+	depends on PRINTK
+	default n
+
 config BCM_ARM_CPUIDLE
 	bool "Cpuidle driver for BCM ARM and ARM64 chips"
 	depends on CPU_IDLE
@@ -1565,6 +1570,10 @@ config BCM_WLCSM_DEBUG
 
 config BCM_AIRIQ
 	bool "AirIQ support"
+	default n
+
+config BCM_HOSTAPD
+	bool "HOSTAPD support"
 	default n
 
 config BCM_NETFILTER_REGARDLESS_DROP_NO_ACCEL_FIRST

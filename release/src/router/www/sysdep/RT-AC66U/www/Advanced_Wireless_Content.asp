@@ -23,6 +23,7 @@
 <script type="text/javascript" src="/validator.js"></script>
 <script type="text/javascript" src="/js/jquery.js"></script>
 <script type="text/javascript" src="/switcherplugin/jquery.iphone-switch.js"></script>
+<script type="text/javascript" src="/js/httpApi.js"></script>
 <script>
 <% wl_get_parameter(); %>
 $(function () {
@@ -43,15 +44,6 @@ else
 
 var wl_bw_160 = '<% nvram_get("wl_bw_160"); %>';
 var enable_bw_160 = (wl_bw_160 == 1) ? true : false;
-var bw_160_support = false;
-if(band5g_11ax_support && (wl_unit == 1 || wl_unit == 2)){
-	if(based_modelid == "RT-AX92U" && wl_unit == 1){
-		bw_160_support = false;
-	}
-	else{
-		bw_160_support = true;
-	}
-}
 
 function initial(){
 	show_menu();
@@ -59,15 +51,21 @@ function initial(){
 		regen_5G_mode(document.form.wl_nmode_x, wl_unit)		
 	}
 
-	if(band5g_11ax_support || based_modelid == "GT-AC5400"){
-		$("#he_mode_field").show();
-		if(based_modelid == "GT-AC5400"){
-			$("#he_mode_text").html('HE frame support');
+	if(band5g_11ax_support || support_site_modelid == "GX-AC5400"){
+
+		if(based_modelid != 'RT-AX92U' || (wl_unit != '0' && wl_unit != '1')){
+			$("#he_mode_field").show();
 		}
-		else{
-			$("#he_mode_text").html('802.11ax HE frame support');
+
+		if(support_site_modelid == "GX-AC5400"){
+			$("#he_mode_text").html("<#WLANConfig11b_HE_Frame_Mode_itemname#>".replace('802.11ax ', ''));
+			$("#he_mode_faq").html('<#WLANConfig11b_HE_Frame_Mode_faq#>'.replace('802.11ax ', ''));
 		}
-		
+		$("#he_mode_faq_link")  //for string tag: WLANConfig11b_HE_Frame_Mode_faq
+            .attr('target', '_blank')
+            .attr('style', 'color:#FC0;text-decoration:underline;')
+            .attr('href', 'https://www.asus.com/support/FAQ/1037422/');
+
 		if(bw_160_support){
 			$("#enable_160mhz").attr("checked", enable_bw_160);
 		}
@@ -152,12 +150,15 @@ function initial(){
 			document.getElementById('acs_band3_checkbox').style.display = "";
 		}		
 	}
-	else if(band5g_11ax_support){
+	else if(based_modelid == 'RT-AX88U' || based_modelid == 'GT-AX11000' || (based_modelid == 'RT-AX92U' && wl_unit == '2') || (based_modelid == 'GT-AC2900' && wl_unit == '1')){
 		if(bw_160_support){
 			document.getElementById('enable_160_field').style.display = "";
+			if((based_modelid == 'GT-AX11000' || based_modelid == 'RT-AX92U') && wl2.channel_160m == "" && wl_unit == '2'){
+				document.getElementById('enable_160_field').style.display = "none";
+			}
 		}
 
-		if(document.form.wl_channel.value  == '0' && (wl_unit == '1' || wl_unit == '2')){
+		if(document.form.wl_channel.value  == '0' && ((wl_unit == '1' && based_modelid != 'RT-AX92U') || wl_unit == '2')){
 			document.getElementById('dfs_checkbox').style.display = "";
 			check_DFS_support(document.form.acs_dfs_checkbox);
 		}
@@ -165,7 +166,7 @@ function initial(){
 	else if(country == "EU"){		//display checkbox of DFS channel under 5GHz
 		if(based_modelid == "RT-AC68U" || based_modelid == "RT-AC68A" || based_modelid == "4G-AC68U" || based_modelid == "DSL-AC68U"
 		|| based_modelid == "RT-AC87U"
-		|| based_modelid == "RT-AC3200"
+		|| based_modelid == "RT-AX92U"
 		|| (based_modelid == "RT-AC66U" && wl1_dfs == "1")		//0: A2 not support, 1: B0 support
 		|| based_modelid == "RT-N66U"){
 			if(document.form.wl_channel.value  == '0' && wl_unit == '1'){
@@ -210,16 +211,11 @@ function initial(){
 		var smart_connect_flag_t = (flag=='')?document.form.smart_connect_x.value:flag;
 
 		document.getElementById("smartcon_enable_field").style.display = "";
-
 		if(wl_info.band2g_support && wl_info.band5g_support && wl_info.band5g_2_support)
 			inputCtrl(document.form.smart_connect_t, 1);
 
 		document.form.smart_connect_t.value = (smart_connect_flag_t == 0)?1:smart_connect_flag_t;
 		enableSmartCon(smart_connect_flag_t);
-		if(isSupport("triband") && dwb_info.mode) {
-			if(wl_unit != document.form.wl_unit.value)
-				change_wl_unit();
-		}
 	}
 
 	if(history.pushState != undefined) history.pushState("", document.title, window.location.pathname);
@@ -232,12 +228,17 @@ function initial(){
 		var temp = "";
 		if(smart_connect_flag_t == "1"){		//Tri-Band Smart Connect
 			if(isSupport("triband") && dwb_info.mode) {
-				for(var i = 0; i < cur_control_channel.length; i += 1) {
-					if(i == dwb_info.band)
-						continue;
-					if(temp != "")
-						temp += ", ";
-					temp += cur_control_channel[i];
+				if(wl_unit == dwb_info.band) {
+					temp = cur_control_channel[dwb_info.band];
+				}
+				else {
+					for(var i = 0; i < cur_control_channel.length; i += 1) {
+						if(i == dwb_info.band)
+							continue;
+						if(temp != "")
+							temp += ", ";
+						temp += cur_control_channel[i];
+					}
 				}
 			}
 			else {
@@ -257,31 +258,6 @@ function initial(){
 
 		document.getElementById("auto_channel").innerHTML = "<#wireless_control_channel#>: " + temp;
 	}
-	dwb_regen_band(document.form.wl_unit, wl_unit);
-
-}
-
-function cal_panel_block(obj){
-	var blockmarginLeft;
-	if (window.innerWidth)
-		winWidth = window.innerWidth;
-	else if ((document.body) && (document.body.clientWidth))
-		winWidth = document.body.clientWidth;
-
-	if (document.documentElement  && document.documentElement.clientHeight && document.documentElement.clientWidth){
-		winWidth = document.documentElement.clientWidth;
-	}
-
-	if(winWidth >1050){
-		winPadding = (winWidth-1050)/2;
-		winWidth = 1105;
-		blockmarginLeft= (winWidth*0.2)+winPadding;
-	}
-	else if(winWidth <=1050){
-		blockmarginLeft= (winWidth)*0.2 + document.body.scrollLeft;
-	}
-
-	document.getElementById(obj).style.marginLeft = blockmarginLeft+"px";
 }
 
 function change_wl_nmode(o){
@@ -300,21 +276,23 @@ function change_wl_nmode(o){
 			inputCtrl(document.form.wl_gmode_check, 1);
 	}
 
-	if(band5g_11ax_support || based_modelid == "GT-AC5400"){
+	if(band5g_11ax_support || support_site_modelid == "GX-AC5400"){
 		if(o.value == '0'){
-			$("#he_mode_field").show();
-			document.form.wl0_he_features.disabled = false;
-			document.form.wl1_he_features.disabled = false;
-			if (band5g2_support) {
+			if (based_modelid != 'RT-AX92U' || (wl_unit != '0' && wl_unit != '1')) {
+				$("#he_mode_field").show();
+				document.form.wl0_he_features.disabled = false;
 				document.form.wl1_he_features.disabled = false;
-			}
+				if (band5g2_support) {
+					document.form.wl2_he_features.disabled = false;
+				}
+			}		
 		}
 		else{
 			$("#he_mode_field").hide();
 			document.form.wl0_he_features.disabled = true;
 			document.form.wl1_he_features.disabled = true;
 			if (band5g2_support) {
-				document.form.wl1_he_features.disabled = true;
+				document.form.wl2_he_features.disabled = true;
 			}
 			
 		}
@@ -401,7 +379,7 @@ function genBWTable(_unit){
 				based_modelid == "RT-AC56U" || based_modelid == "RT-AC56S" || 
 				based_modelid == "RT-AC66U" || 
 				based_modelid == "RT-AC3200" || 
-				based_modelid == "RT-AC3100" || based_modelid == "RT-AC88U" || based_modelid == "RT-AX88U" || based_modelid == "RT-AC86U" || based_modelid == "AC2900" ||
+				based_modelid == "RT-AC3100" || based_modelid == "RT-AC88U" || based_modelid == "RT-AX88U" || based_modelid == "RT-AC86U" || based_modelid == "GT-AC2900" ||
 				based_modelid == "RT-AC5300" || based_modelid == "GT-AC5300" || based_modelid == "GT-AX11000" || based_modelid == "RT-AX92U" ||
 				based_modelid == "RT-AC53U") && document.form.wl_nmode_x.value == 1){		//N only
 				bws = [0, 1, 2];
@@ -612,8 +590,12 @@ function applyRule(){
 
 		if(smart_connect_support && (isSwMode("rt") || isSwMode("ap")) && document.form.smart_connect_x.value != 0){ //apply smart connect setting
 			document.form.smart_connect_x.value = document.form.smart_connect_t.value;
-			if(document.form.smart_connect_x.value == '1')
-				document.form.wl_unit.value = 0;
+			if(document.form.smart_connect_x.value == '1') {
+				if(isSupport("triband") && dwb_info.mode && (dwb_info.band == wl_unit))
+					document.form.wl_unit.value = wl_unit;
+				else
+					document.form.wl_unit.value = 0;
+			}
 		}
 
 		if (based_modelid == "RT-AC87U" && wl_unit == "1"){
@@ -671,6 +653,26 @@ function validForm(){
 		if(auth_mode != "radius" && !validator.wlKey(cur_wep_key))
 			return false;
 	}	
+
+	if(isSupport("triband") && dwb_info.mode) {
+		var jsonPara = {};
+		jsonPara["edit_wl_unit"] = wl_unit;
+		jsonPara["edit_wl_ssid"] = document.form.wl_ssid.value;
+		jsonPara["dwb_unit"] = dwb_info.band;
+		jsonPara["smart_connect"] = document.form.smart_connect_x.value;
+		var ssid_array = [];
+		ssid_array.push(httpApi.nvramGet(["wl0_ssid"]).wl0_ssid);
+		if(wl_info.band5g_support)
+			ssid_array.push(httpApi.nvramGet(["wl1_ssid"]).wl1_ssid);
+		if(wl_info.band5g_2_support)
+			ssid_array.push(httpApi.nvramGet(["wl2_ssid"]).wl2_ssid);
+		jsonPara["current_ssid"] = ssid_array;
+		if(!validator.dwb_check_wl_setting(jsonPara)) {
+			alert("The fronthaul SSID is the same as the backhaul SSID.");/* untranslated */
+			return false;
+		}
+	}
+
 	return true;
 }
 
@@ -710,9 +712,15 @@ function _change_smart_connect(val){
 		band_value = [0, 1, 2];
 		band_desc = ['2.4GHz', '5GHz-1', '5GHz-2'];
 	}else if(val == 1){
-		document.getElementById("wl_unit_field").style.display = "none";
-		band_value = [0];
-		band_desc = ['2.4GHz, 5GHz-1 and 5GHz-2'];
+		if(dwb_info.mode) {
+			band_value = [0, 2];
+			band_desc = ['2.4GHz, 5GHz-1', '5GHz-2'];
+		}
+		else {
+			document.getElementById("wl_unit_field").style.display = "none";
+			band_value = [0];
+			band_desc = ['2.4GHz, 5GHz-1 and 5GHz-2'];
+		}
 	}else if(val == 2){
 		band_value = [0, 1];
 		band_desc = ['2.4GHz', '5GHz-1 and 5GHz-2'];
@@ -891,8 +899,20 @@ function enableSmartCon(val){
 		document.getElementById("smart_connect_field").style.display = "none";
 		document.getElementById("smartcon_rule_link").style.display = "none";
 		if(wl_unit != 0){
-			$("#enable_160_field").show();
-			$("#dfs_checkbox").show();
+			if(bw_160_support){
+				$("#enable_160_field").show();
+				if((based_modelid == 'GT-AX11000' || based_modelid == 'RT-AX92U') && wl2.channel_160m == '' && wl_unit == '2'){
+					$("#enable_160_field").hide();
+				}
+			}
+
+			if(based_modelid == "RT-AC3200" || (based_modelid == "RT-AX92U" && country != "EU" && wl_unit == "1")){
+				$("#dfs_checkbox").hide();
+			}
+			else{
+				$("#dfs_checkbox").show();
+			}
+			
 		}
 	}else if(val > 0){
 		document.getElementById("smart_connect_field").style.display = "";
@@ -902,7 +922,7 @@ function enableSmartCon(val){
 		document.form.acs_dfs.value = 0;
 	}
 
-	if(val == 0 || (val == 2 && wl_unit == 0)){
+	if((val == 0 || (val == 2 && wl_unit == 0)) || (dwb_info.mode && wl_unit == dwb_info.band)){
 		document.getElementById("wl_unit_field").style.display = "";
 		document.form.wl_nmode_x.disabled = "";
 		document.getElementById("wl_optimizexbox_span").style.display = "";
@@ -928,10 +948,8 @@ function enableSmartCon(val){
 		regen_auto_option(document.form.wl_nctrlsb);			
 	}
 	
-	if(wl_info.band2g_support && wl_info.band5g_support && wl_info.band5g_2_support){
+	if(wl_info.band2g_support && wl_info.band5g_support && wl_info.band5g_2_support)
 		_change_smart_connect(val);
-		dwb_regen_band(document.form.wl_unit, wl_unit);
-	}
 }
 
 function regen_auto_option(obj){
@@ -949,8 +967,6 @@ function enable_160MHz(obj){
 		bws = [0, 1, 2, 3, 5];
 		bwsDesc = ["20/40/80/160 MHz", "20 MHz", "40 MHz", "80 MHz", "160 MHz"];
 		enable_bw_160 = true;
-		document.form.acs_dfs_checkbox.checked = true;
-		check_DFS_support(document.form.acs_dfs_checkbox);
 	}
 	else{
 		bws = [0, 1, 2, 3];
@@ -1151,6 +1167,7 @@ function he_frame_mode(obj) {
 						<select name="wl_unit" class="input_option" onChange="_change_wl_unit(this.value);">
 							<option class="content_input_fd" value="0" <% nvram_match("wl_unit", "0","selected"); %>>2.4GHz</option>
 							<option class="content_input_fd" value="1" <% nvram_match("wl_unit", "1","selected"); %>>5GHz</option>
+							<option class="content_input_fd" value="1" <% nvram_match("wl_unit", "2","selected"); %>>5GHz-2</option>
 						</select>			
 					</td>
 		  	</tr>
@@ -1200,15 +1217,15 @@ function he_frame_mode(obj) {
 			  </tr>
 			<tr id="he_mode_field" style="display:none">
 				<th>
-					<a id="he_mode_text" class="hintstyle" href="javascript:void(0);" onClick=""></a>
+					<a id="he_mode_text" class="hintstyle" href="javascript:void(0);" onClick=""><#WLANConfig11b_HE_Frame_Mode_itemname#></a>
 				</th>
 				<td>
 					<div style="display:flex;align-items: center;">
 						<select name="he_mode" class="input_option" onChange="he_frame_mode(this);">
-							<option value="3" <% nvram_match("wl0_he_features", "3","selected"); %> >Enable</option>
-							<option value="0" <% nvram_match("wl0_he_features", "0","selected"); %> >Disable</option>
+							<option value="3" <% nvram_match("wl0_he_features", "3","selected"); %> ><#WLANConfig11b_WirelessCtrl_button1name#></option>
+							<option value="0" <% nvram_match("wl0_he_features", "0","selected"); %> ><#WLANConfig11b_WirelessCtrl_buttonname#></option>
 						</select>
-						<span style="padding: 0 10px">If compatibility issue occurs when enabling 802.11ax HE frame support, please check: <a href="https://www.asus.com/support/FAQ/1037422/" target="_blank" style="color:#FC0;text-decoration: underline">FAQ</a></span>
+						<span id="he_mode_faq" style="padding: 0 10px"><#WLANConfig11b_HE_Frame_Mode_faq#></span>
 					</div>
 				</td>
 			</tr>
@@ -1220,7 +1237,7 @@ function he_frame_mode(obj) {
 						<option class="content_input_fd" value="1" <% nvram_match("wl_bw", "1","selected"); %>>20/40 MHz</option>
 						<option class="content_input_fd" value="2" <% nvram_match("wl_bw", "2","selected"); %>>40 MHz</option>
 					</select>
-					<span id="enable_160_field" style="display:none"><input type="checkbox" onClick="enable_160MHz(this);" id="enable_160mhz" >Enable 160 MHz</span>			
+					<span id="enable_160_field" style="display:none"><input type="checkbox" onClick="enable_160MHz(this);" id="enable_160mhz" ><#WLANConfig11b_ChannelBW_Enable160M#></span>
 			   	</td>
 			 	</tr>
 				<!-- ac channel -->			  

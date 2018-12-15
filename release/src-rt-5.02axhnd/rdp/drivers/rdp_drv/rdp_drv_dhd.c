@@ -99,7 +99,9 @@ static const union {
 #define IS_BRIDGE_TUNNEL(et) \
     (((et) == ETHER_TYPE_APPLE_ARP) || ((et) == ETHER_TYPE_NOVELL_IPX))
     
-    
+#define MIN_PACKET_LENGTH_WITHOUT_CRC  60
+
+
 /* Initialize skb index databases and variables */
 void rdp_drv_dhd_skb_fifo_tbl_init(void)
 {
@@ -293,9 +295,15 @@ int rdp_drv_dhd_rx_post_reinit(uint32_t radio_idx, rdpa_dhd_init_cfg_t *init_cfg
 }
 
 /* Sends message to runner via QM */
-static int rdp_drv_dhd_cpu_tx_send_message(uint32_t message_type, uint32_t radio_idx, uint32_t flow_ring_idx)
+static int rdp_drv_dhd_cpu_tx_send_message(uint32_t message_type, uint32_t radio_idx, uint32_t read_idx_flow_ring_idx)
 {
+    int rc = 0;
+    uint8_t  cpu_msg_done = 0;
+    rdpa_dhd_ffd_data_t  params = (rdpa_dhd_ffd_data_t)read_idx_flow_ring_idx;
+    
     RDD_DHD_CPU_QM_DESCRIPTOR_DTS cpu_tx_descriptor = {};
+    
+    RDD_BTRACE("message_type=%d, radio_idx=%d, flow_ring_idx=%d, read_idx=%d, read_idx_valid=%d\n", message_type, radio_idx, params.flowring_idx, params.read_idx, params.read_idx_valid);
     
     memset(&cpu_tx_descriptor, 0, sizeof(cpu_tx_descriptor));
     
@@ -303,19 +311,35 @@ static int rdp_drv_dhd_cpu_tx_send_message(uint32_t message_type, uint32_t radio
     cpu_tx_descriptor.cpu_msg = 1;
     cpu_tx_descriptor.cpu_pd =  1;  
     cpu_tx_descriptor.cpu_msg_type = message_type;
-    cpu_tx_descriptor.flow_ring_id = flow_ring_idx;
+    cpu_tx_descriptor.flow_ring_id = params.flowring_idx;
     cpu_tx_descriptor.valid = 1;
     cpu_tx_descriptor.abs = 1;
+    cpu_tx_descriptor.pkt_id_or_read_idx = params.read_idx | (params.read_idx_valid << 13);
     
-    return drv_qm_cpu_tx((uint32_t *)&cpu_tx_descriptor, QM_QUEUE_DHD_CPU_TX_POST_0 +  radio_idx*2, 0, 0);
+    /* reset msg done responce before sending message to runner */
+    RDD_DHD_POST_COMMON_RADIO_ENTRY_CPU_MSG_DONE_WRITE_G(0, RDD_DHD_POST_COMMON_RADIO_DATA_ADDRESS_ARR, radio_idx);
+    
+    rc = drv_qm_cpu_tx((uint32_t *)&cpu_tx_descriptor, QM_QUEUE_DHD_CPU_TX_POST_0 +  radio_idx*2, 0, 0);
+    
+    if (rc)
+      return rc;
+    
+    do
+    {
+        RDD_DHD_POST_COMMON_RADIO_ENTRY_CPU_MSG_DONE_READ_G(cpu_msg_done, RDD_DHD_POST_COMMON_RADIO_DATA_ADDRESS_ARR, radio_idx);
+    } while (cpu_msg_done == 0);
+    
+    return 0;
 }
 
 /* sending "flush" rings message */
-int rdp_drv_dhd_helper_flow_ring_flush(uint32_t radio_idx, uint32_t flow_ring_idx)
+int rdp_drv_dhd_helper_flow_ring_flush(uint32_t radio_idx, uint32_t read_idx_flow_ring_id)
 {
-    RDD_BTRACE("radio_idx=%d, flow_ring_idx=%d\n", radio_idx, flow_ring_idx);  
+    rdpa_dhd_ffd_data_t  params = (rdpa_dhd_ffd_data_t)read_idx_flow_ring_id;
+    
+    RDD_BTRACE("radio_idx=%d, flow_ring_idx=%d, read_idx=%d, read_idx_valid=%d\n", radio_idx, params.flowring_idx, params.read_idx, params.read_idx_valid);
      
-    return rdp_drv_dhd_cpu_tx_send_message(DHD_MSG_TYPE_FLOW_RING_FLUSH, radio_idx, flow_ring_idx);
+    return rdp_drv_dhd_cpu_tx_send_message(DHD_MSG_TYPE_FLOW_RING_FLUSH, radio_idx, read_idx_flow_ring_id);
 }
 
 /* sending "ring disable" rings message */
@@ -451,7 +475,7 @@ static void rdp_drv_dhd_cpu_tx_set_packet_descriptor(const rdpa_dhd_tx_post_info
     cpu_tx_descriptor->flow_ring_id = info->flow_ring_id;
     cpu_tx_descriptor->valid = 1;
     cpu_tx_descriptor->packet_length = pkt_length;
-    cpu_tx_descriptor->pkt_id = free_index;
+    cpu_tx_descriptor->pkt_id_or_read_idx = free_index;
     cpu_tx_descriptor->abs_ptr2 = ((addr_hi & 0xff) << (32 - DHD_CPU_QM_DESCRIPTOR_ABS_PTR1_F_WIDTH)) | (addr_lo >> (DHD_CPU_QM_DESCRIPTOR_ABS_PTR1_F_WIDTH));
     cpu_tx_descriptor->wifi_priority = wifi_priority;
     cpu_tx_descriptor->radio_idx = info->radio_idx;
@@ -476,6 +500,12 @@ int rdp_drv_dhd_cpu_tx(const rdpa_dhd_tx_post_info_t *info, void *buffer, uint32
     RDD_BTRACE("info = %p (radio_idx = %d, flow_ring_id = %d, ssid_if_idx = %d), buffer = %p, pkt_length = %d, rdp_drv_dhd_skb_free_indexes_cntr = %d\n", info,
         info->radio_idx, info->flow_ring_id, info->ssid_if_idx, buffer, pkt_length, rdp_drv_dhd_skb_free_indexes_cntr);
    
+    /* pkt padding */
+    if (pkt_length <  MIN_PACKET_LENGTH_WITHOUT_CRC)
+    {
+        pkt_length = MIN_PACKET_LENGTH_WITHOUT_CRC;
+    }
+    
     if (llcsnap_enable[info->radio_idx])
     {
         /* LLCSNAP insertion */

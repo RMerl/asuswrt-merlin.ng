@@ -394,11 +394,6 @@ wl_sysdep:
 		elif [ -f $(SRCBASE)/../../../impl51/$(DHD_DIR)/src/shared/sysdeps/$(BUILD_NAME)/rtecdc_4366c0.h ]; then \
 			cp -f $(SRCBASE)/../../../impl51/$(DHD_DIR)/src/shared/sysdeps/$(BUILD_NAME)/rtecdc_4366c0.h $(SRCBASE)/../../../impl51/$(DHD_DIR)/src/shared/. ; \
 		fi; \
-		if [ "$(HND_MFG)" = "y" ] && [ -f $(SRCBASE)/../../../impl51/$(DHD_DIR)/src/shared/sysdeps/$(BUILD_NAME)/rtecdc_43684a0_mfg.h ]; then \
-			cp -f $(SRCBASE)/../../../impl51/$(DHD_DIR)/src/shared/sysdeps/$(BUILD_NAME)/rtecdc_43684a0_mfg.h $(SRCBASE)/../../../impl51/$(DHD_DIR)/src/shared/rtecdc_43684a0.h ; \
-		elif [ -f $(SRCBASE)/../../../impl51/$(DHD_DIR)/src/shared/sysdeps/$(BUILD_NAME)/rtecdc_43684a0.h ]; then \
-			cp -f $(SRCBASE)/../../../impl51/$(DHD_DIR)/src/shared/sysdeps/$(BUILD_NAME)/rtecdc_43684a0.h $(SRCBASE)/../../../impl51/$(DHD_DIR)/src/shared/. ; \
-		fi; \
 		if [ "$(HND_MFG)" = "y" ] && [ -f $(SRCBASE)/../../../impl51/$(DHD_DIR)/src/shared/sysdeps/$(BUILD_NAME)/rtecdc_43684b0_mfg.h ]; then \
 			cp -f $(SRCBASE)/../../../impl51/$(DHD_DIR)/src/shared/sysdeps/$(BUILD_NAME)/rtecdc_43684b0_mfg.h $(SRCBASE)/../../../impl51/$(DHD_DIR)/src/shared/rtecdc_43684b0.h ; \
 		elif [ -f $(SRCBASE)/../../../impl51/$(DHD_DIR)/src/shared/sysdeps/$(BUILD_NAME)/rtecdc_43684b0.h ]; then \
@@ -408,20 +403,11 @@ wl_sysdep:
 		if [ -f $(SRCBASE)/../../../impl51/$(DHD_DIR)/src/shared/sysdeps/default/rtecdc_4366c0.h ]; then \
 			cp -f $(SRCBASE)/../../../impl51/$(DHD_DIR)/src/shared/sysdeps/default/rtecdc_4366c0.h $(SRCBASE)/../../../impl51/$(DHD_DIR)/src/shared/. ; \
 		fi; \
-		if [ -f $(SRCBASE)/../../../impl51/$(DHD_DIR)/src/shared/sysdeps/default/rtecdc_43684a0.h ]; then \
-			cp -f $(SRCBASE)/../../../impl51/$(DHD_DIR)/src/shared/sysdeps/default/rtecdc_43684a0.h $(SRCBASE)/../../../impl51/$(DHD_DIR)/src/shared/. ; \
-		fi; \
 		if [ -f $(SRCBASE)/../../../impl51/$(DHD_DIR)/src/shared/sysdeps/default/rtecdc_43684b0.h ]; then \
 			cp -f $(SRCBASE)/../../../impl51/$(DHD_DIR)/src/shared/sysdeps/default/rtecdc_43684b0.h $(SRCBASE)/../../../impl51/$(DHD_DIR)/src/shared/. ; \
 		fi; \
 	fi;
 	if [ -d $(SRCBASE)/../../../impl51/$(DHD_DIR)/src/dongle/sysdeps/$(BUILD_NAME) ]; then \
-		mkdir -p $(SRCBASE)/../../../impl51/$(DHD_DIR)/src/dongle/bin/43684a0/ ; \
-		if [ "$(HND_MFG)" = "y" ] && [ -f $(SRCBASE)/../../../impl51/$(DHD_DIR)/src/dongle/sysdeps/$(BUILD_NAME)/43684a0/rtecdc_mfg.bin ]; then \
-			cp -f $(SRCBASE)/../../../impl51/$(DHD_DIR)/src/dongle/sysdeps/$(BUILD_NAME)/43684a0/rtecdc_mfg.bin $(SRCBASE)/../../../impl51/$(DHD_DIR)/src/dongle/bin/43684a0/rtecdc.bin ; \
-		elif [ -f $(SRCBASE)/../../../impl51/$(DHD_DIR)/src/dongle/sysdeps/$(BUILD_NAME)/43684a0/rtecdc.bin ]; then \
-			cp -f $(SRCBASE)/../../../impl51/$(DHD_DIR)/src/dongle/sysdeps/$(BUILD_NAME)/43684a0/rtecdc.bin $(SRCBASE)/../../../impl51/$(DHD_DIR)/src/dongle/bin/43684a0/. ; \
-		fi; \
 		mkdir -p $(SRCBASE)/../../../impl51/$(DHD_DIR)/src/dongle/bin/43684b0/ ; \
 		if [ "$(HND_MFG)" = "y" ] && [ -f $(SRCBASE)/../../../impl51/$(DHD_DIR)/src/dongle/sysdeps/$(BUILD_NAME)/43684b0/rtecdc_mfg.bin ]; then \
 			cp -f $(SRCBASE)/../../../impl51/$(DHD_DIR)/src/dongle/sysdeps/$(BUILD_NAME)/43684b0/rtecdc_mfg.bin $(SRCBASE)/../../../impl51/$(DHD_DIR)/src/dongle/bin/43684b0/rtecdc.bin ; \
@@ -429,10 +415,6 @@ wl_sysdep:
 			cp -f $(SRCBASE)/../../../impl51/$(DHD_DIR)/src/dongle/sysdeps/$(BUILD_NAME)/43684b0/rtecdc.bin $(SRCBASE)/../../../impl51/$(DHD_DIR)/src/dongle/bin/43684b0/. ; \
 		fi; \
 	else \
-		if [ -f $(SRCBASE)/../../../impl51/$(DHD_DIR)/src/dongle/sysdeps/default/43684a0/rtecdc.bin ]; then \
-			mkdir -p $(SRCBASE)/../../../impl51/$(DHD_DIR)/src/dongle/bin/43684a0/ ; \
-			cp -f $(SRCBASE)/../../../impl51/$(DHD_DIR)/src/dongle/sysdeps/default/43684a0/rtecdc.bin $(SRCBASE)/../../../impl51/$(DHD_DIR)/src/dongle/bin/43684a0/. ; \
-		fi; \
 		if [ -f $(SRCBASE)/../../../impl51/$(DHD_DIR)/src/dongle/sysdeps/default/43684b0/rtecdc.bin ]; then \
 			mkdir -p $(SRCBASE)/../../../impl51/$(DHD_DIR)/src/dongle/bin/43684b0/ ; \
 			cp -f $(SRCBASE)/../../../impl51/$(DHD_DIR)/src/dongle/sysdeps/default/43684b0/rtecdc.bin $(SRCBASE)/../../../impl51/$(DHD_DIR)/src/dongle/bin/43684b0/. ; \
@@ -1426,6 +1408,10 @@ define RouterOptions
 		sed -i "/RTCONFIG_PUSH_EMAIL/d" $(1); \
 		echo "RTCONFIG_PUSH_EMAIL=y" >>$(1); \
 	fi; \
+	if [ "$(RSYSLOGD)" = "y" ]; then \
+		sed -i "/RTCONFIG_RSYSLOGD/d" $(1); \
+		echo "RTCONFIG_RSYSLOGD=y" >>$(1); \
+	fi; \
 	if [ "$(DBLOG)" = "y" ]; then \
 		sed -i "/RTCONFIG_DBLOG/d" $(1); \
 		echo "RTCONFIG_DBLOG=y" >>$(1); \
@@ -2013,6 +1999,12 @@ define RouterOptions
 		sed -i "/RTCONFIG_ROG/d" $(1); \
 		echo "RTCONFIG_ROG=y" >>$(1); \
 	fi; \
+	sed -i "/RTCONFIG_ROG_UI/d" $(1); \
+	if [ "$(ROG_UI)" = "y" ]; then \
+		echo "RTCONFIG_ROG_UI=y" >>$(1); \
+	else \
+		echo "# RTCONFIG_ROG_UI is not set" >>$(1); \
+	fi; \
 	if [ "$(GEOIP)" = "y" ]; then \
 		sed -i "/RTCONFIG_GEOIP/d" $(1); \
 		echo "RTCONFIG_GEOIP=y" >>$(1); \
@@ -2089,10 +2081,6 @@ define RouterOptions
 		sed -i "/RTCONFIG_HAPDEVENT/d" $(1); \
 		echo "RTCONFIG_HAPDEVENT=y" >>$(1); \
 	fi; \
-	if [ "$(ADBLOCK)" = "y" ]; then \
-		sed -i "/RTCONFIG_ADBLOCK/d" $(1); \
-		echo "RTCONFIG_ADBLOCK=y" >>$(1); \
-	fi; \
 	if [ "$(TRAFFIC_LIMITER)" = "y" ]; then \
 		sed -i "/RTCONFIG_TRAFFIC_LIMITER/d" $(1); \
 		echo "RTCONFIG_TRAFFIC_LIMITER=y" >>$(1); \
@@ -2166,6 +2154,11 @@ define RouterOptions
 			echo "RTCONFIG_DFS_US=y" >>$(1); \
 		else \
 			echo "# RTCONFIG_DFS_US is not set" >>$(1); \
+		fi; \
+		if [ "$(BW160M)" = "y" ]; then \
+			echo "RTCONFIG_BW160M=y" >>$(1); \
+		else \
+			echo "# RTCONFIG_BW160M is not set" >>$(1); \
 		fi; \
 	fi; \
 	if [ "$(HND_ROUTER_AX)" = "y" ]; then \
@@ -2757,6 +2750,10 @@ define RouterOptions
 		sed -i "/RTCONFIG_DWB/d" $(1); \
 		echo "RTCONFIG_DWB=y" >>$(1); \
 	fi; \
+	if [ "$(GAME_PROFILE)" = "y" ]; then \
+		sed -i "/RTCONFIG_GAME_PROFILE/d" $(1); \
+		echo "RTCONFIG_GAME_PROFILE=y" >>$(1); \
+	fi; \
 	)
 	$(call platformRouterOptions, $(1))
 endef
@@ -3110,6 +3107,16 @@ define BusyboxOptions
 		echo "CONFIG_IPCRM=y" >>$(1); \
 		sed -i "/CONFIG_IPCS/d" $(1); \
 		echo "CONFIG_IPCS=y" >>$(1); \
+	fi; \
+	if [ "$(RSYSLOGD)" = "y" ]; then \
+		sed -i "/CONFIG_FEATURE_SYSLOG/d" $(1); \
+		echo "# CONFIG_FEATURE_SYSLOG is not set" >>$(1); \
+		sed -i "/CONFIG_SYSLOGD/d" $(1); \
+		echo "# CONFIG_SYSLOGD is not set" >>$(1); \
+		sed -i "/CONFIG_KLOGD/d" $(1); \
+		echo "# CONFIG_KLOGD is not set" >>$(1); \
+		sed -i "/CONFIG_FEATURE_KLOGD_KLOGCTL/d" $(1); \
+		echo "# CONFIG_FEATURE_KLOGD_KLOGCTL is not set" >>$(1); \
 	fi; \
 	)
 	$(call platformBusyboxOptions, $(1))

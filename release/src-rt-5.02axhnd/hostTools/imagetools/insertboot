@@ -20,7 +20,7 @@ my $nonsecure;
 my $mfgsig;
 my $fieldsig;
 my $sig;
-my $cred_dir;
+my $cred;
 my $usage = qq[usage: $0 boot_region_file
    --cfe cfe_filename
    --encrypted 
@@ -29,7 +29,7 @@ my $usage = qq[usage: $0 boot_region_file
    --offset bytes
    --nonsecure               # mode eligible in nonsecure mode (in Gen3)
    --mfgsig file             # mfg signature in file
-   --creddir directory      # public credential files in directory
+   --cred directory          # public credential files in directory
    --fieldsig file           # field signature in file
    --output filename    # filename to place headers 
 ];
@@ -39,8 +39,8 @@ if (
         "cfe=s",      \$cfe,        "encrypted", \$is_encrypted,
         "chip=s",     \$chipfamily, "arch=s",    \$arch,
         "offset=i",   \$offset,     "nonsecure", \$nonsecure,
-        "creddir=s",  \$cred_dir,   "mfgsig:s",  \$mfgsig,
-        "fieldsig:s", \$fieldsig,   "output=s",  \$output
+        "creddir=s",  \$cred, "mfgsig:s",  \$mfgsig,
+        "fieldsig:s", \$fieldsig,   "output=s",  \$output,
     )
   )
 {
@@ -95,18 +95,10 @@ if ( $arch eq 'XIP' ) {
 }
 
 if ( $arch eq 'GEN3' ) {
-    my $sbi = new BRCM::SBI(
-        {
-            in        => $cfebin,
-            chip      => $chipfamily,
-            byteorder => 'little',
-            sec_mode  => $mode,
-            sec_opt   => '',            # can be OEM or ENCRYPT
-            cred_dir  => $cred_dir,
-            out       => 'junk',
-        }
-    );
-
+    my $sbi = new BRCM::SBI({sec_mode=>$mode, 
+			byteorder=>'little', 
+			chip=>$chipfamily, 
+			cred=>$cred});
     my $header = $sbi->prepare_header( length($cfebin) );
     if ($output) {
         open( O, ">", $output ) or die("cant open output");

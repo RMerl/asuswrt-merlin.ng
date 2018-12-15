@@ -1,19 +1,27 @@
 var country = '';
-if(<% nvram_get("wl_unit"); %> == '1')
+var wl_unit = '<% nvram_get("wl_unit"); %>';
+if (wl_unit == '1')
 	country = '<% nvram_get("wl1_country_code"); %>';
 else		
 	country = '<% nvram_get("wl0_country_code"); %>';
 
+var bw_160_support = false;
+
+if ((band5g_11ax_support && (wl_unit == 1 || wl_unit == 2)) 
+|| (based_modelid == 'GT-AC2900' && wl_unit == 1)) {
+	if (based_modelid == "RT-AX92U" && wl_unit == 1) {
+		bw_160_support = false;
+	}
+	else {
+		bw_160_support = true;
+	}
+}	
+
 var wl1 = {
 	"channel_20m": [],
-	"channel_40m": []
-}
-
-if(band5g_11ax_support){
-	wl1["channel_160m"] = new Array();
-}
-if(band5g_11ac_support){
-	wl1["channel_80m"] = new Array();
+	"channel_40m": [],
+	"channel_80m": [],
+	"channel_160m": []
 }
 
 var _chanspecs_5g =  JSON.parse('<% chanspecs_5g(); %>');
@@ -50,11 +58,8 @@ if(wl_info.band5g_2_support){
 	var wl2 = {
 		"channel_20m": [],
 		"channel_40m": [],
-		"channel_80m": []
-	}
-
-	if(band5g_11ax_support){
-		wl2["channel_160m"] = new Array();
+		"channel_80m": [],
+		"channel_160m": []
 	}
 
 	var _chanspecs_5g_2 = JSON.parse('<% chanspecs_5g_2(); %>');
@@ -121,7 +126,7 @@ function wl_chanspec_list_change(){
 		loop_auto: for(i=0; i<wl_channel_list_5g.length; i++){
 						var _cur_channel = parseInt(wl_channel_list_5g[i]);
 						
-						if(band5g_11ax_support && document.form.wl_nmode_x.value != 1 && bw_160_support && enable_bw_160){
+						if(document.form.wl_nmode_x.value != 1 && bw_160_support && enable_bw_160){
 							for(j=0;j<wl1.channel_160m.length;j++){
 								if(wl1.channel_160m[j].indexOf(_cur_channel) != -1){
 									wl_channel_list_5g[i] = _cur_channel + "/160";

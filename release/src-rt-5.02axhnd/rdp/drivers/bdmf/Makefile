@@ -68,7 +68,6 @@ else
 	bdmf-objs := bdmf$(PRBM_EXT).o
 endif
 	EXTRA_DEFINES += -DBDMF_SYSTEM_LINUX
-
 	REMOTE_SHELL_CFLAGS += -DBDMF_SYSTEM_LINUX
 	REMOTE_SHELL_CC = $(CROSS)gcc
 	REMOTE_SHELL_DEPS += $(BDMFDIR)/system/$(CONFIG_SYSTEM)/bdmf_chrdev.h

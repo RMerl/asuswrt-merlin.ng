@@ -1,0 +1,126 @@
+{
+   linux-localtime_r-apparently-modifies-TZ
+   Helgrind:Race
+   ...
+   fun:__tz_convert
+   fun:timeval2syslogTime
+   ...
+}
+
+{
+   linux-localtime_r-apparently-modifies-TZ
+   Helgrind:Race
+   fun:strlen
+   fun:__tzset_parse_tz
+   fun:__tzfile_compute
+   fun:__tz_convert
+   ...
+}
+
+{
+   linux-localtime_r-apparently-modifies-TZ
+   Helgrind:Race
+   ...
+   fun:__tzstring
+   fun:__tzfile_compute
+   fun:__tz_convert
+   ...
+}
+
+{
+   linux-localtime_r-apparently-modifies-TZ-2
+   Helgrind:Race
+   fun:__GI_strcmp
+   fun:__tzfile_compute
+   fun:__tz_convert
+   ...
+}
+
+{
+   CENTOS_6_only_report
+   Helgrind:Misc
+   fun:pthread_cond_destroy_WRK
+   fun:pthread_cond_destroy@*
+   fun:modExit
+   fun:modUnlinkAndDestroy
+   fun:Release
+   fun:ReleaseObj
+   fun:modExit
+   ...
+}
+{
+   CENTOS_6_only_report
+   Helgrind:Misc
+   fun:pthread_cond_destroy_WRK
+   fun:pthread_cond_destroy@*
+   fun:qqueueDestruct
+   fun:actionDestruct
+   fun:cnfstmtDestruct
+   fun:cnfstmtDestructLst
+   fun:cnfstmtDestruct
+   fun:cnfstmtDestructLst
+   fun:rulesetDestruct
+   fun:rulesetDestructForLinkedList
+   fun:llDestroyElt
+   fun:llDestroy
+}
+{
+   CENTOS_6_only_report
+   Helgrind:Misc
+   fun:pthread_cond_destroy_WRK
+   fun:pthread_cond_destroy@*
+   fun:modExit
+   fun:modUnlinkAndDestroy
+   fun:modUnloadAndDestructAll
+   fun:main
+}
+{
+   CENTOS_7_github_rsyslog_issue_2012
+   Helgrind:Race
+   fun:GetLocalHostIP
+   fun:logmsgInternalSubmit
+   fun:logmsgInternal
+   fun:doLogMsg.constprop.0
+   fun:LogMsg
+   fun:wtpAdviseMaxWorkers
+   fun:qqueueAdviseMaxWorkers
+   fun:qqueueMultiEnqObjNonDirect
+   fun:multiSubmitMsg2
+   fun:ratelimitAddMsg
+   fun:enqLine
+   fun:pollFileReal
+   fun:pollFile
+   fun:doPolling
+   fun:runInput
+   fun:thrdStarter
+}
+{
+   CENTOS_7_github_rsyslog_issue_2012
+   Helgrind:Race
+   fun:AddRef
+   fun:MsgSetRcvFromIP
+   fun:logmsgInternalSubmit
+   fun:logmsgInternal
+   fun:doLogMsg.constprop.0
+   fun:LogMsg
+   fun:wtpAdviseMaxWorkers
+   fun:qqueueAdviseMaxWorkers
+   fun:qqueueMultiEnqObjNonDirect
+   fun:multiSubmitMsg2
+   fun:ratelimitAddMsg
+   fun:enqLine
+   fun:pollFileReal
+   fun:pollFile
+   fun:doPolling
+   fun:runInput
+}
+{
+   CENTOS_7_github_rsyslog_issue_2012
+   Helgrind:Race
+   fun:thrdDestruct
+   fun:llDestroyElt
+   fun:llDestroy
+   fun:thrdTerminateAll
+   fun:deinitAll
+   fun:main
+}

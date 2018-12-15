@@ -18,7 +18,7 @@
  *
  * <<Broadcom-WL-IPTag/Open:>>
  *
- * $Id: osl.h 764693 2018-05-29 15:43:56Z $
+ * $Id: osl.h 767137 2018-08-29 08:29:57Z $
  */
 
 #ifndef _osl_h_
@@ -300,6 +300,9 @@ do { \
 #endif // endif
 #ifndef PKTRESETRXFRAG
 #define PKTRESETRXFRAG(osh, lb)		BCM_REFERENCE(osh)
+#endif // endif
+#ifndef PKTISPKTFETCHED
+#define PKTISPKTFETCHED(osh, lb)	(0)
 #endif // endif
 
 /* TX FRAG */

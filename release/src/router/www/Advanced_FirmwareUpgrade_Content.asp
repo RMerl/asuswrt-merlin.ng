@@ -87,6 +87,7 @@
 <script language="JavaScript" type="text/javascript" src="/js/confirm_block.js"></script>
 <script language="JavaScript" type="text/javascript" src="/switcherplugin/jquery.iphone-switch.js"></script>
 <script language="JavaScript" type="text/javascript" src="/form.js"></script>
+<script language="JavaScript" type="text/javascript" src="js/httpApi.js"></script>
 <script>
 $(function () {
 	if(amesh_support && (isSwMode("rt") || isSwMode("ap"))) {
@@ -209,6 +210,12 @@ function initial(){
 				var mac_id = mac.replace(/:/g, "");
 				var ip = get_cfg_clientlist[idx].ip;
 				var alias = "My Home";
+				var labelMac = mac;
+				httpApi.getAiMeshLabelMac(model_name, mac, 
+					function(_callBackMac){
+						labelMac = _callBackMac;
+					}
+				);
 				if("config" in get_cfg_clientlist[idx]) {
 					if("misc" in get_cfg_clientlist[idx].config) {
 						if("cfg_alias" in get_cfg_clientlist[idx].config.misc) {
@@ -225,7 +232,7 @@ function initial(){
 				}
 				html += "<tr>";
 				html += "<th>";
-				html += model_name + " ( " + mac + " )";
+				html += model_name + " ( " + labelMac + " )";
 				html += "<br>";
 				html += "<#AiMesh_NodeLocation#> : " + alias;
 				html += "</th>";

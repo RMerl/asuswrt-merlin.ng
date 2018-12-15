@@ -33,6 +33,7 @@
 #include "cfe_timer.h"
 #include "cfe.h"
 #include "bcm_map.h"
+#include "bcm63xx_auth.h"
 #include "bcm_hwdefs.h"
 #include "bcmTag.h"
 #include "dev_bcm63xx_flash.h"
@@ -132,6 +133,7 @@ static int write_nvram_data( PNVRAM_DATA pNvramData );
 static int get_nvram_offset( char * cfe_start_addr );
 static int emmc_delete_cfe_devs(int emmcPhysPartAttr, emmcflash_probe_t *femmcprobe);
 static int emmc_erase_phys_part(int emmcPhysPartAttr);
+static uint64_t emmc_get_part_size(char * flashdev);
 static int enable_emmc_flash( uint64_t *emmc_flash_size, uint8_t boot_mode );
 static uint64_t enable_emmc_logicalpartition( emmcflash_logicalpart_spec_t *EmmcPartition, emmcflash_probe_t *femmcprobe, int attr, uint8_t num_parts );
 static void ui_emmc_dumphex( unsigned char *pAddr, unsigned int offset, int nLen, int sz );
@@ -152,8 +154,11 @@ static int read_cferom_version( char * version )
     int ret = 0;
     int fh = 0;
     int cfe_ver_offset = 0;
+    uint64_t image_offset;
     char flash_dev[] = EMMC_CFE_PNAME_CFE;
 #if !defined(_BCM963138_) 
+    int i;
+    uint64_t cferom_partition_size = emmc_get_part_size(EMMC_CFE_PNAME_CFE);
     char temp_buf[sizeof(SbiAuthHdrBeginning)+BTRM_SBI_UNAUTH_HDR_MAX_SIZE];
 #endif    
 
@@ -173,17 +178,42 @@ static int read_cferom_version( char * version )
 #if defined(_BCM963138_) 
     /* Find the offset to the cfe version string, for Gen2 images offset is fixed */
     cfe_ver_offset = get_nvram_offset(0) - CFE_VERSION_REL_OFFSET;
+    image_offset = IMAGE_OFFSET;
 #else
-    /* Read full unauthhdr plus beginning of authhdr */
-    ret = cfe_readblk(fh,
-                    IMAGE_OFFSET,
+    /* Read full unauthhdr plus beginning of authhdr, search at every 1k boundary */
+    for( i=0; i < cferom_partition_size/1024; i++ )
+    {
+        ret = cfe_readblk(fh,
+                    i*1024,
                     (unsigned char*)temp_buf,
                     (sizeof(SbiAuthHdrBeginning)+BTRM_SBI_UNAUTH_HDR_MAX_SIZE));
+
+        if (ret < 0)
+            break;
+
+        if (((SbiUnauthHdrBeginning*)temp_buf)->magic_1 == BTRM_SBI_UNAUTH_MGC_NUM_1)
+        {
+           if (((SbiUnauthHdrBeginning*)temp_buf)->magic_2 == BTRM_SBI_UNAUTH_MGC_NUM_2)
+           {
+               /* We found a cferom */
+               image_offset = i*1024;
+               break;
+           }
+        }
+    }
 
     if (ret < 0)
     {
         printf("eMMC ioctl error\n");
-        ret = CFE_ERR_IOERR;
+        cfe_close(fh);
+        return(CFE_ERR_IOERR);
+    }
+    
+    if ( i==cferom_partition_size/1024 )
+    {
+        printf("eMMC could not find cferom\n");
+        cfe_close(fh);
+        return(CFE_ERR_IOERR);
     }
 
     /* Find the offset to the cfe version string */
@@ -192,7 +222,7 @@ static int read_cferom_version( char * version )
 
     /* Read the cfe version string */
     ret = cfe_readblk(fh,
-                    cfe_ver_offset + IMAGE_OFFSET,
+                    cfe_ver_offset + image_offset,
                     (unsigned char*)version,
                     (CFE_VERSION_MARK_SIZE+CFE_VERSION_SIZE));
 
@@ -201,7 +231,7 @@ static int read_cferom_version( char * version )
     if (ret < 0)
     {
         printf("eMMC ioctl error\n");
-        ret = CFE_ERR_IOERR;
+        return(CFE_ERR_IOERR);
     }
     else
         ret = CFE_OK;
@@ -1080,7 +1110,7 @@ static int emmc_check_image_size( PFILE_TAG pTag)
     int ret = CFE_ERR;
     uint64_t bootfs_partition_size = emmc_get_part_size(EMMC_CFE_PNAME_BOOTFS(1));
     uint64_t rootfs_partition_size = emmc_get_part_size(EMMC_CFE_PNAME_ROOTFS(1));
-    uint64_t cferom_partition_size = emmc_get_part_size(EMMC_CFE_PNAME_ROOTFS(1));
+    uint64_t cferom_partition_size = emmc_get_part_size(EMMC_CFE_PNAME_CFE);
     uint64_t mdata_partition_size  = emmc_get_part_size(EMMC_CFE_PNAME_MDATA(1, 1));
 
     if (   atoi(pTag->cfeLen)    <= cferom_partition_size
@@ -1415,7 +1445,7 @@ int emmc_boot_os_image(int imageNum)
     int len = 4 * emmcBlkSize;
     
     unsigned char *image = (unsigned char *) buf + len;
-    unsigned int  image_hdr_size = 0, image_sig_size = SEC_S_SIGNATURE;
+    unsigned int  image_hdr_size = 0, image_sig_size = 0, image_size;
     char          brcmMagic[] = {'B','R','C','M'};    
     int ret = -1;
     int bootImg;
@@ -1428,41 +1458,86 @@ int emmc_boot_os_image(int imageNum)
 
     memset((unsigned char *) &la, 0x0, sizeof(la));
     la.la_flags = LA_DEFAULT_FLAGS;
+#ifdef CONFIG_CFE_SUPPORT_HASH_BLOCK
+    if (load_hash_block(0,0) != 0)
+        die();
+#endif // CONFIG_CFE_SUPPORT_HASH_BLOCK
 
 #if defined(_BCM963268_) || defined(_BCM96838_) || defined(_BCM963381_) || \
 defined(_BCM963138_) || defined(_BCM963148_) || defined (_BCM963158_) || \
 defined(_BCM94908_) || defined(_BCM96858_) || defined(_BCM96856_)
+#ifndef CONFIG_CFE_SUPPORT_HASH_BLOCK
     if (bcm_otp_is_boot_secure()) {
 #if (SEC_S_SIGNATURE&3) != 0
 #error "SEC_S_SIGNATURE must be 4 byte aligned"   
 #endif  
-          if( (ret = load_file_from_next_bootfs( NAND_FLASH_BOOT_SIG_NAME, (char *)image, &bootImg, 
+          if( (image_sig_size = load_file_from_next_bootfs( NAND_FLASH_BOOT_SIG_NAME, (char *)image, &bootImg, 
                          &imageNum, &parse_emmc_bootfs )) < 0 ) {
               printf("Unable to load signature !\n");
-              return ret;
+              return image_sig_size;
           }
-          /* magically discovered size of the signature: was it difficult to return an object size?*/
+          if (SEC_S_SIGNATURE != image_sig_size) 
+          {
+              printf("Image is corrupt %s\n",NAND_FLASH_BOOT_SIG_NAME);
+              return -1;
+          }
           image += image_sig_size; 
     }
+#endif // !CONFIG_CFE_SUPPORT_HASH_BLOCK
 #endif
-    /* Try and load kernel from partition */
-    if( (ret = load_file_from_next_bootfs( fname_lz, (char *)image, &bootImg, 
-            &imageNum, &parse_emmc_bootfs )) < 0 )
-    {
-        printf("Unable to load kernel image!\n");
-        return ret;
-    }
 
+    /* Try and load kernel from partition */
+#ifdef USE_LZ4_DECOMPRESSOR
+    if( (image_size = load_file_from_next_bootfs( fname_lz4, (char *)image, &bootImg, 
+            &imageNum, &parse_emmc_bootfs )) < 0 )
+#endif        
+    {
+        if( (image_size = load_file_from_next_bootfs( fname_lz, (char *)image, &bootImg, 
+                &imageNum, &parse_emmc_bootfs )) < 0 )
+        {
+            printf("Unable to load kernel image!\n");
+            return image_size;
+        }
+    }
+#ifdef CONFIG_CFE_SUPPORT_HASH_BLOCK
+    if (hash_block_start) {
+        unsigned char hash[SHA256_S_DIGEST8];
+        int ret;
+        unsigned int content_len;
+        // printf("look for hash for %s\n",NAND_FLASH_BOOT_IMAGE_LZ);
+        // printf("start of hash block %x %x %x %x\n",hash_block_start[0],hash_block_start[1],hash_block_start[2],hash_block_start[3]);
+        ret = find_boot_hash(&content_len, hash, hash_block_start, NAND_FLASH_BOOT_IMAGE_LZ); // FIXME -- LZ4 not supported
+        if (ret == 0)  {
+            printf("failed to find hash for %s\n",NAND_FLASH_BOOT_IMAGE_LZ);
+            die();
+        } else {
+            printf("got hash for %s\n",NAND_FLASH_BOOT_IMAGE_LZ);
+           if (sec_verify_sha256((uint8_t const*)image, image_size, (const uint8_t *)hash)) {
+               printf("Kernel Digest failed\n");
+               die();
+           } else {
+               printf("Kernel Digest OK\n");
+           }
+
+        }
+
+    }
+#endif // CONFIG_CFE_SUPPORT_HASH_BLOCK
     /* If we are booting from a specified or only image
      * we store the index in a global variable. This variable
      * will be used in the dtb retrieval function to bypass 
      * the image search and speed things up */
     if( bootImg == BOOTED_ONLY_IMAGE )
         boot_only_img_idx = imageNum;
+
+    /* Suffice to mention that there's no way 
+       to tell what endianness was used for the image header...  */
     memcpy(&image_hdr, image, sizeof(image_hdr)); 
     /* leagacy adjustments:
-          new image format contains broadcom signature and uncompressed length.*/
+       new image format contains broadcom signature and uncompressed length.*/
     image_hdr_size = (image_hdr.magic == *(uint32_t*)brcmMagic)? sizeof(image_hdr) : sizeof(image_hdr)-sizeof(uint32_t);
+    image += image_hdr_size;
+
 #if defined(CONFIG_ARM) || defined(CONFIG_ARM64)
     /* ARM linux kernel compiled for virtual address at 0xc0008000,
        convert to physical address for CFE */
@@ -1472,12 +1547,12 @@ defined(_BCM94908_) || defined(_BCM96858_) || defined(_BCM96856_)
     la.la_address = (long)image_hdr.la;
     la.la_entrypt = (long)image_hdr.entrypt;
 #endif
-    image += image_hdr_size;
 
 #if defined(_BCM963268_) || defined(_BCM96838_) || defined(_BCM963381_) || \
 defined(_BCM963138_) || defined(_BCM963148_) || defined (_BCM963158_) || \
 defined(_BCM94908_) || defined(_BCM96858_) || defined(_BCM96856_)
-    if (bcm_otp_is_boot_secure()) {
+    // only use this secure boot authentication if hash_block was not already checked
+    if (!hash_block_start && (bcm_otp_is_boot_secure())) {
           char *sig_obj = NULL;
           Booter1AuthArgs authArgs;
           /* Authenticate vmlinux */
@@ -1499,13 +1574,13 @@ defined(_BCM94908_) || defined(_BCM96858_) || defined(_BCM96856_)
 
 #ifdef USE_LZ4_DECOMPRESSOR
     if (image_hdr.len_uncomp) {           
-        ret = LZ4_decompress_fast((const char *)image, (char *)la.la_address, image_hdr.len_uncomp) != image_hdr.len;
-    }
-    else
+        ret = LZ4_decompress_fast((const char *)image, (char *)(void*)la.la_address, image_hdr.len_uncomp) != image_hdr.len;
+    } else
 #endif
     {
-        ret = decompressLZMA(image, image_hdr.len, (unsigned char*)la.la_address, 23*1024*1024) < 0;
+        ret = decompressLZMA((unsigned char*)image, image_hdr.len, (unsigned char*)la.la_address, (RAMAPP_TEXT - la.la_address)) < 0;
     }
+
     if (ret) 
         printf("Failed to decompress %s image.  ret = %d Corrupted image?\n",image_hdr.len_uncomp? "LZ4":"LZMA",ret);
     else
@@ -1748,6 +1823,7 @@ int emmc_flash_image( PFILE_TAG pTag, uint8_t *imagePtr )
 {
     int cfeSize;
     uint32_t cfeAddr, rootfsAddr, bootfsAddr, mdataAddr, bootfsSize, rootfsSize;
+    uint64_t nvram_offset;
     int status = CFE_ERR; 
     int new_idx = 0;
     int update_nvram = 0;
@@ -1814,7 +1890,14 @@ int emmc_flash_image( PFILE_TAG pTag, uint8_t *imagePtr )
             goto err_out;
 
         /* Get pointer to new embedded NVRAM data - have to redo this when nvram is nolonger embedded in image */
-        tmpNvramData = (NVRAM_DATA *)((char*)imagePtr + cfeAddr + get_nvram_offset((char*)(imagePtr + cfeAddr)));
+        nvram_offset = get_nvram_offset((char*)(imagePtr + cfeAddr));
+        if( nvram_offset < cfeSize )
+            tmpNvramData = (NVRAM_DATA *)((char*)imagePtr + cfeAddr + nvram_offset);
+        else
+        {
+            printf("Error: Cannot find NVRAM in new Image!\n");
+            goto err_out;
+        }
 
         /* If current NVRAM is invalid, then this means that eMMC was erased
          * We therefore force the new image to be written to first image 

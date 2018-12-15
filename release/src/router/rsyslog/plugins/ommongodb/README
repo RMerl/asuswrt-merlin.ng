@@ -1,0 +1,48 @@
+plugin to use MongoDB as backend.
+
+tested in ubuntu 10.04, ubuntu 10.10 and FreeBSD 11.1
+
+configuration:
+
+in your /etc/rsyslog.conf, together with other modules:
+$ModLoad ommongodb # provides mongodb support
+*.*     action(type="ommongodb" db="..." collection="..." template="...")
+
+Note: if no template is specified, a default schema will be used. That schema
+contains proper data types. However, if a template is specified, only strings
+are supported. This is a restriction of the rsyslog v6 core engine. This 
+changed in v7.
+
+If templates are used, it is suggested to use list-based templates. Constants
+can ONLY be inserted with list-based templates, as only these provide the
+capability to specify a field name (outname parameter).
+
+A very basic example is:
+
+*.*     action(type="ommongodb" db="logs" collection="syslog")
+
+A more complex example:
+*.*     action(type="ommongodb" uristr="mongodb://vulture:9091,vulture2:9091/?replicaset=Vulture&ssl=true" ssl_cert="/var/db/mongodb/mongod.pem" ssl_ca="/var/db/mongodb/ca.pem" db="logs" collection="syslog" allowed_error_codes="11000")
+
+Please see the script clean-mongo-syslog for an example of how to
+purge old records from MongoDB using PyMongo.  It can be run
+daily or weekly from cron.
+
+You may also wish to index some or all of the columns in MongoDB.
+The following statements may help to create the indexes:
+
+To see the existing indexes:
+
+  db.syslog.getIndexes()
+
+To create them:
+
+  db.syslog.ensureIndex( { sys : 1 } )
+  db.syslog.ensureIndex( { time : 1 } )
+  db.syslog.ensureIndex( { syslog_fac : 1 } )
+  db.syslog.ensureIndex( { syslog_sever : 1 } )
+  db.syslog.ensureIndex( { syslog_tag : 1 } )
+  db.syslog.ensureIndex( { procid : 1 } )
+  db.syslog.ensureIndex( { pid : 1 } )
+
+

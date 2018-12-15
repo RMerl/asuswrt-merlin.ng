@@ -14,8 +14,12 @@ typedef uint32_t chinfo_t;
 typedef uint32_t bwinfo_t;
 
 extern void cm_updateChanspec(char *msg);
+extern void cm_removeChanspecByMac(char *mac);
 extern int cm_getChanspec(json_object *chanspecObj, int check);
 extern void cm_updatePrivateChanspec();
+extern int cm_loadPrivateChannel(chinfo_t *avblChannel, int channelCount);
+extern int cm_isValidChannel(int channel);
+extern void cm_resetChanspec();
 
 #endif /* __CFG_CHANSPEC_H__ */
 /* End of cfg_chanspec.h */

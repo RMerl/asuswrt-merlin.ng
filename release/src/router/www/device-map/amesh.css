@@ -484,6 +484,10 @@
 	bottom: 0px;
 	right: 5px;
 }
+.amesh_interface_icon.static_info {
+	bottom: -26px;
+	right: 0px;
+}
 .amesh_scenario_slider_bg {
 	width: 570px;
 	height: 300px;
@@ -851,10 +855,13 @@
 	margin: 15px 10px 0px 10px;
 }
 .aimesh_node_static_info_title {
-	width: 40%;
+	width: 35%;
 	float: left;
 	height: 25px;
 	line-height: 25px;
+}
+.aimesh_node_static_info_title.moreconfig{
+	width: 100%;
 }
 .aimesh_node_setting_info_title {
 	width: 35%;
@@ -862,13 +869,18 @@
 }
 .aimesh_node_static_info_content {
 	float: left;
-	width: 60%;
+	width: 65%;
 	color: #569AC7;
 	font-size: 15px;
 	font-weight: bolder;
 	font-family: monospace, Courier New, Courier;
 	height: 25px;
 	line-height: 25px;
+}
+.aimesh_node_static_info_interface_bg {
+	float: left;
+	width: 10%;
+	position: relative;
 }
 .aimesh_node_setting_info_content {
 	float: left;
@@ -922,7 +934,7 @@
 	font-size: 14px;
 	border: 1px solid #4c5355;
 	outline: none;
-	width: 90%;
+	width: 85%;
 	padding-left: 5px;
 	line-height: 21px;
 	border-right: 0px;

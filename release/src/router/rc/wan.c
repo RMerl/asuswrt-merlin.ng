@@ -518,51 +518,6 @@ del_wan_routes(char *wan_ifname)
 	return del_routes(prefix, "route", wan_ifname);
 }
 
-#ifdef QOS
-int enable_qos()
-{
-#if defined (W7_LOGO) || defined (WIFI_LOGO)
-	return 0;
-#endif
-	int qos_userspec_app_en = 0;
-	int rulenum = nvram_get_int("qos_rulenum_x"), idx_class = 0;
-
-	/* Add class for User specify, 10:20(high), 10:40(middle), 10:60(low)*/
-	if (rulenum) {
-		for (idx_class=0; idx_class < rulenum; idx_class++)
-		{
-			if (atoi(Ch_conv("qos_prio_x", idx_class)) == 1)
-			{
-				qos_userspec_app_en = 1;
-				break;
-			}
-			else if (atoi(Ch_conv("qos_prio_x", idx_class)) == 6)
-			{
-				qos_userspec_app_en = 1;
-				break;
-			}
-		}
-	}
-
-	if (	(nvram_match("qos_tos_prio", "1") ||
-		 nvram_match("qos_pshack_prio", "1") ||
-		 nvram_match("qos_service_enable", "1") ||
-		 nvram_match("qos_shortpkt_prio", "1")	) ||
-		(!nvram_match("qos_manual_ubw","0") && *nvram_safe_get("qos_manual_ubw")) ||
-		(rulenum && qos_userspec_app_en)
-	)
-	{
-		fprintf(stderr, "found QoS rulues\n");
-		return 1;
-	}
-	else
-	{
-		fprintf(stderr, "no QoS rulues\n");
-		return 0;
-	}
-}
-#endif
-
 /*
  * (1) wan[x]_ipaddr_x/wan[x]_netmask_x/wan[x]_gateway_x/...:
  *    static ip or ip get from dhcp

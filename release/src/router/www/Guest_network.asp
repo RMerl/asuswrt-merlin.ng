@@ -158,16 +158,6 @@ function initial(){
 		}
 		cookie.unset("captive_portal_gn_idx");
 	}
-
-	if(dwb_info.mode) {
-		var table_id = ["2g", "5g", "5g_2"];
-		if(isSupport("dualband"))
-			$("#gninfo_table_" + table_id[dwb_info.band] + "").find(".gninfo_table").eq((parseInt(dwb_info.guest) - 1)).html("<tfoot><tr rowspan='3'><td align='center'><div style='width:120px;color:#FC0;'>Default setting by AiMesh mode</div></td></tr></tfoot>");
-		else if(isSupport("triband")) {
-			$("#gninfo_table_" + table_id[dwb_info.band] + "").css("display", "none");
-			$("#5g_title").find("span").first().text("5GHz");
-		}
-	}
 }
 
 function change_wl_expire_radio(){

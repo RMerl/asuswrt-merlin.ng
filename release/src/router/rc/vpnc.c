@@ -84,7 +84,10 @@ start_vpnc(void)
 #ifdef HND_ROUTER
 	/* workaround for ppp packets are dropped by fc GRE learning when pptp server / client enabled  */
 	if (nvram_match("fc_disable", "0") && 
-		(nvram_match("wan_proto", "pppoe") || nvram_match("wan_proto", "pptp") || nvram_match("wan_proto", "l2tp"))) {
+		(nvram_match(strcat_r(prefix, "proto", tmp), "pppoe")) ||
+		(nvram_match(strcat_r(prefix, "proto", tmp), "pptp")) ||
+		(nvram_match(strcat_r(prefix, "proto", tmp), "l2tp")))
+	{
 		eval("fc", "config", "--gre", "0");
 	}
 #endif

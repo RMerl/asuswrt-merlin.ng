@@ -1,0 +1,16 @@
+{
+   rsyslog thread start on shutdown but not terminated
+   Memcheck:Leak
+   ...
+   fun:_dl_allocate_tls
+   fun:pthread_create@@GLIBC_2.2.5
+   fun:wtpStartWrkr
+   fun:wtpAdviseMaxWorkers
+   fun:qqueueAdviseMaxWorkers
+   fun:qqueueEnqMsg
+   fun:submitMsg2
+   fun:logmsgInternal_doWrite
+   fun:processImInternal
+   fun:mainloop
+   fun:main
+}

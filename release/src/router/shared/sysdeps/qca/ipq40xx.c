@@ -1722,11 +1722,12 @@ void update_macfilter_relist()
 	//TODO
 	char tmp[128], prefix[] = "wlXXXXXXXXXX_";
 	char word[256], *next;
+	char mac2g[32], mac5g[32], *next_mac;
 	int unit = 0;
 	char *wlif_name = NULL;
 	int ret = 0;
 	char *nv, *nvp, *b;
-	char *reMac, *mac2g, *mac5g, *timestamp;
+	char *reMac, *maclist2g, *maclist5g, *timestamp;
 	char stamac2g[18] = {0};
 	char stamac5g[18] = {0};
 	char *cfg_relist;
@@ -1741,8 +1742,14 @@ void update_macfilter_relist()
 			nv = nvp = strdup(cfg_relist);
 			if (nv) {
 				while ((b = strsep(&nvp, "<")) != NULL) {
-					if ((vstrsep(b, ">", &reMac, &mac2g, &mac5g, &timestamp) != 4))
+					if ((vstrsep(b, ">", &reMac, &maclist2g, &maclist5g, &timestamp) != 4))
 						continue;
+					/* first mac for sta 2g of dut */
+					foreach_44 (mac2g, maclist2g, next_mac)
+						break;
+					/* first mac for sta 5g of dut */
+					foreach_44 (mac5g, maclist5g, next_mac)
+						break;
 
 					if (strcmp(reMac, get_2g_hwaddr()) == 0) {
 						snprintf(stamac2g, sizeof(stamac2g), "%s", mac2g);
@@ -1776,24 +1783,28 @@ void update_macfilter_relist()
 				nv = nvp = strdup(nvram_safe_get("cfg_relist"));
 				if (nv) {
 					while ((b = strsep(&nvp, "<")) != NULL) {
-						if ((vstrsep(b, ">", &reMac, &mac2g, &mac5g, &timestamp) != 4))
+						if ((vstrsep(b, ">", &reMac, &maclist2g, &maclist5g, &timestamp) != 4))
 							continue;
 
 						if (strcmp(reMac, get_lan_hwaddr()) == 0)
 							continue;
 
 						if (unit == 0) {
-							if (check_re_in_macfilter(unit, mac2g))
-								continue;
-							printf("relist sta (%s) in %s\n", mac2g, wlif_name);
-							set_maclist_add_kick(athfix, 1, mac2g);
+							foreach_44 (mac2g, maclist2g, next_mac) {
+								if (check_re_in_macfilter(unit, mac2g))
+									continue;
+								printf("relist sta (%s) in %s\n", mac2g, wlif_name);
+								set_maclist_add_kick(athfix, 1, mac2g);
+							}
 						}
 						else
 						{
-							if (check_re_in_macfilter(unit, mac5g))
-								continue;
-							printf("relist sta (%s) in %s\n", mac5g, wlif_name);
-							set_maclist_add_kick(athfix, 1, mac5g);
+							foreach_44 (mac5g, maclist5g, next_mac) {
+								if (check_re_in_macfilter(unit, mac5g))
+									continue;
+								printf("relist sta (%s) in %s\n", mac5g, wlif_name);
+								set_maclist_add_kick(athfix, 1, mac5g);
+							}
 						}
 					}
 					free(nv);

@@ -179,10 +179,10 @@ void mac_hwapi_set_configuration(rdpa_emac emacNum,rdpa_emac_cfg_t *emac_cfg)
     /*now mac configuration can be changed */
     if(!mCfgReg.ena_ext_config) /* Change only if auto_config is not set */
     {
-        mCfgReg.eth_speed	      =	emac_cfg->rate;
-        mCfgReg.hd_ena	      = !emac_cfg->full_duplex;
+        mCfgReg.eth_speed           = emac_cfg->rate;
+        mCfgReg.hd_ena	            = !emac_cfg->full_duplex;
         mCfgReg.rx_pause_ignore     = !emac_cfg->rx_flow_control;
-        mCfgReg.tx_pause_ignore     = 0;//!emac_cfg->tx_flow_control;
+        mCfgReg.tx_pause_ignore     = !emac_cfg->tx_flow_control;
         /*set the interframe gap*/
         UNIMAC_WRITE_FIELD(emacNum,HD_BKP_CNTL,ipg_config_rx,ipgSpeedTable[emac_cfg->rate][(unsigned)emac_cfg->full_duplex]);
     }
@@ -1011,14 +1011,7 @@ void mac_hwapi_set_flow_control(rdpa_emac emacNum,S_MAC_HWAPI_FLOW_CTRL *flowCon
         return;
 
     UNIMAC_WRITE_FIELD(emacNum,CMD,rx_pause_ignore, !flowControl->rxFlowEnable);
-    if(emacNum==rdpa_emac4)
-    {
-        UNIMAC_WRITE_FIELD(emacNum,CMD,tx_pause_ignore, 0);
-    }
-    else
-    {
-        UNIMAC_WRITE_FIELD(emacNum,CMD,tx_pause_ignore, !flowControl->txFlowEnable);
-    }
+    UNIMAC_WRITE_FIELD(emacNum,CMD,tx_pause_ignore, !flowControl->txFlowEnable);
     misc_top_address = (uintptr_t)UNIMAC_TOP_UNIMAC_MISC_UNIMAC_EXT_CFG2 + ( UNIMAC_MISC_EMAC_OFFSET * emacNum );
     READ_32(misc_top_address, value);
 

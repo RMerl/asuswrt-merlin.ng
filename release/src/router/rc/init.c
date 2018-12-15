@@ -78,6 +78,7 @@
 #endif
 
 #define SHELL "/bin/sh"
+#define LOGIN "/bin/login"
 
 static int fatalsigs[] = {
 	SIGILL,
@@ -369,12 +370,10 @@ misc_ioctrl(void)
 #endif
 
 			if (is_router_mode()) {
-#ifndef RTAX92U
 				if (strcmp(nvram_safe_get("wans_dualwan"), "wan none") != 0) {
 					logmessage("DualWAN", "skip misc_ioctrl()");
 					return;
 				}
-#endif
 
 				led_control(LED_WAN, LED_ON);
 #ifndef HND_ROUTER
@@ -2054,11 +2053,17 @@ static int console_init(void)
 
 static pid_t run_shell(int timeout, int nowait)
 {
+#ifdef LOGIN
+	char *argv[] = { LOGIN, "-p", NULL };
+#else
+	char *argv[] = { SHELL, NULL };
+#endif
 	pid_t pid;
 	int sig;
 
 	/* Wait for user input */
-	if (waitfor(STDIN_FILENO, timeout) <= 0) return 0;
+	if (waitfor(STDIN_FILENO, timeout) <= 0)
+		return 0;
 
 	switch (pid = fork()) {
 	case -1:
@@ -2074,24 +2079,25 @@ static pid_t run_shell(int timeout, int nowait)
 
 		/* Now run it.  The new program will take over this PID,
 		 * so nothing further in init.c should be run. */
-		execve(SHELL, (char *[]) { SHELL, NULL }, defenv);
+		execve(argv[0], argv, defenv);
 
 		/* We're still here?  Some error happened. */
-		perror(SHELL);
-		exit(errno);
+		perror(argv[0]);
+		_exit(errno);
 	default:
-		if (nowait) {
-			return pid;
-		}
-		else {
+		if (!nowait) {
 			waitpid(pid, NULL, 0);
-			return 0;
+			pid = 0;
 		}
+		return pid;
 	}
 }
 
 int console_main(int argc, char *argv[])
 {
+	/* Reopen console */
+	console_init();
+
 	for (;;) run_shell(0, 0);
 
 	return 0;
@@ -2102,6 +2108,9 @@ static void shutdn(int rb)
 	int i;
 	int act;
 	sigset_t ss;
+#ifdef RTCONFIG_RGBLED
+	RGB_LED_STATUS_T rgb_cfg = { 0 };
+#endif
 
 	_dprintf("shutdn rb=%d\n", rb);
 
@@ -2122,6 +2131,11 @@ static void shutdn(int rb)
 
 	stop_wan();
 
+#ifdef RTCONFIG_RGBLED
+	__nv_to_rgb("0,0,0,5,2,0", &rgb_cfg);
+	aura_rgb_led(ROUTER_AURA_SET, &rgb_cfg, 0, 0);
+#endif
+
 	_dprintf("TERM\n");
 	kill(-1, SIGTERM);
 	sleep(3);
@@ -2133,7 +2147,9 @@ static void shutdn(int rb)
 	sync();
 
 	// TODO LED Status for LED
+#if	!(defined(RTCONFIG_RGBLED) && defined(HND_ROUTER))
 	setAllLedOff();
+#endif
 
 	sync(); sync(); sync();
 #ifdef HND_ROUTER
@@ -4214,6 +4230,7 @@ int init_nvram(void)
 		add_rc_support("noitunes");
 		add_rc_support("nodm");
 		add_rc_support("manual_stb");
+		add_rc_support("app");
 
 		if (nvram_get("wl_mssid") && nvram_match("wl_mssid", "1"))
 			add_rc_support("mssid");
@@ -6688,7 +6705,7 @@ int init_nvram(void)
 		nvram_set_int("btn_wltog_gpio", 4|GPIO_ACTIVE_LOW);
 #endif
 #ifdef RTCONFIG_LED_BTN
-		nvram_set_int("btn_led_gpio", 15);			// active high
+		nvram_set_int("btn_led_gpio", 15|GPIO_ACTIVE_LOW);
 #endif
 		nvram_set_int("rst_hw_gpio", 17|GPIO_ACTIVE_LOW);
 #ifdef RTCONFIG_XHCIMODE
@@ -7044,7 +7061,7 @@ int init_nvram(void)
 		nvram_set_int("btn_wltog_gpio", 28|GPIO_ACTIVE_LOW);
 		nvram_set_int("btn_wps_gpio", 29|GPIO_ACTIVE_LOW);
 		nvram_set_int("btn_rst_gpio", 30|GPIO_ACTIVE_LOW);
-		nvram_set_int("btn_led_gpio", 31);
+		nvram_set_int("btn_led_gpio", 31|GPIO_ACTIVE_LOW);
 		if(nvram_get_int("usb_usb3") == 1)
 			nvram_set("xhci_ports", "2-2 2-1");
 		else
@@ -7190,9 +7207,6 @@ int init_nvram(void)
 #endif
 		nvram_set_int("btn_wps_gpio", 29|GPIO_ACTIVE_LOW);
 		nvram_set_int("btn_rst_gpio", 4|GPIO_ACTIVE_LOW);
-#ifdef RTCONFIG_LED_BTN
-		nvram_set_int("btn_led_gpio", 31);
-#endif
 #ifdef RTCONFIG_TURBO_BTN
 		nvram_set_int("btn_turbo_gpio", 31|GPIO_ACTIVE_LOW);
 #endif
@@ -7282,6 +7296,7 @@ int init_nvram(void)
 		else
 			nvram_unset("wan1_ifname");
 #endif	// RTCONFIG_DUALWAN
+		config_bcn_stuck_watchdog();
 
 		if (!nvram_get("ct_max"))
 			nvram_set("ct_max", "300000");
@@ -7358,7 +7373,7 @@ int init_nvram(void)
 		nvram_set_int("btn_wltog_gpio", 27|GPIO_ACTIVE_LOW);
 		nvram_set_int("btn_wps_gpio", 29|GPIO_ACTIVE_LOW);
 		nvram_set_int("btn_rst_gpio", 4|GPIO_ACTIVE_LOW);
-		nvram_set_int("btn_led_gpio", 31);
+		nvram_set_int("btn_led_gpio", 31|GPIO_ACTIVE_LOW);
 
 #ifdef RTCONFIG_XHCIMODE
                 nvram_set("xhci_ports", "2-1 2-2");
@@ -7437,6 +7452,7 @@ int init_nvram(void)
 		else
 			nvram_unset("wan1_ifname");
 #endif	// RTCONFIG_DUALWAN
+		config_bcn_stuck_watchdog();
 
 		if (!nvram_get("ct_max"))
 			nvram_set("ct_max", "300000");
@@ -7496,11 +7512,7 @@ int init_nvram(void)
 		nvram_set("1:ledbh10", "0x7");
 		nvram_set("2:ledbh10", "0x7");
 		nvram_set("3:ledbh15", "0x7");
-#if 0 //RGB ctl led
-		nvram_set_int("", 16|GPIO_ACTIVE_LOW);
-		nvram_set_int("", 17|GPIO_ACTIVE_LOW);
-		nvram_set_int("", 18|GPIO_ACTIVE_LOW);
-#endif
+
 		nvram_set_int("led_pwr_gpio", 4|GPIO_ACTIVE_LOW);
 		nvram_set_int("led_wan_gpio", 20|GPIO_ACTIVE_LOW);
 		nvram_set_int("led_wan_normal_gpio", 21);
@@ -7519,25 +7531,18 @@ int init_nvram(void)
 		nvram_set("ehci_ports", "3-2 3-1");
 		nvram_set("ohci_ports", "4-2 4-1");
 #endif
-#if 0
-		if(nvram_get_int("usb_usb3") == 1)
-			nvram_set("xhci_ports", "2-1");
-		else
-			nvram_unset("xhci_ports");
-		nvram_set("ehci_ports", "1-1");
-		nvram_set("ohci_ports", "1-1");
-#endif
+
 #ifdef RTCONFIG_DUALWAN
 		if (is_router_mode()) {
 			if (get_wans_dualwan()&WANSCAP_LAN) {
 				if (nvram_match("wans_lanport", "1"))
-					set_lan_phy("eth2 eth3 eth4");
-				else if (nvram_match("wans_lanport", "2"))
-					set_lan_phy("eth1 eth3 eth4");
-				else if (nvram_match("wans_lanport", "3"))
-					set_lan_phy("eth1 eth2 eth4");
-				else if (nvram_match("wans_lanport", "4"))
 					set_lan_phy("eth1 eth2 eth3");
+				else if (nvram_match("wans_lanport", "2"))
+					set_lan_phy("eth1 eth2 eth4");
+				else if (nvram_match("wans_lanport", "3"))
+					set_lan_phy("eth1 eth3 eth4");
+				else if (nvram_match("wans_lanport", "4"))
+					set_lan_phy("eth2 eth3 eth4");
 			}
 			else
 				set_lan_phy("eth1 eth2 eth3 eth4");
@@ -7550,23 +7555,17 @@ int init_nvram(void)
 			}
 			if (nvram_get("wans_dualwan")) {
 				set_wan_phy("");
-				char prefix[8], nvram_ports[16];
 				for(unit = WAN_UNIT_FIRST; unit < WAN_UNIT_MAX; ++unit) {
-					memset(prefix, 0, 8);
-					sprintf(prefix, "%d", unit);
-					memset(nvram_ports, 0, 16);
-					sprintf(nvram_ports, "wan%sports", (unit == WAN_UNIT_FIRST)?"":prefix);
 					if (get_dualwan_by_unit(unit) == WANS_DUALWAN_IF_LAN) {
-						sprintf(wan_if, "eth%d", nvram_get_int("wans_lanport"));
-						add_wan_phy(wan_if);
 						if (nvram_match("wans_lanport", "1"))
-							nvram_set_int(nvram_ports, 0);
+							sprintf(wan_if, "eth4");
 						else if (nvram_match("wans_lanport", "2"))
-							nvram_set_int(nvram_ports, 1);
+							sprintf(wan_if, "eth3");
 						else if (nvram_match("wans_lanport", "3"))
-							nvram_set_int(nvram_ports, 2);
+							sprintf(wan_if, "eth2");
 						else if (nvram_match("wans_lanport", "4"))
-							nvram_set_int(nvram_ports, 3);
+							sprintf(wan_if, "eth1");
+						add_wan_phy(wan_if);
 					}
 					else if (get_dualwan_by_unit(unit) == WANS_DUALWAN_IF_2G)
 						add_wan_phy("eth5");
@@ -7583,7 +7582,6 @@ int init_nvram(void)
 						}
 						else
 							add_wan_phy(the_wan_phy());
-						nvram_set_int(nvram_ports, 7);
 					}
 					else if (get_dualwan_by_unit(unit) == WANS_DUALWAN_IF_USB)
 						add_wan_phy("usb");
@@ -7599,6 +7597,7 @@ int init_nvram(void)
 		else
 			nvram_unset("wan1_ifname");
 #endif	// RTCONFIG_DUALWAN
+		config_bcn_stuck_watchdog();
 
 		if (!nvram_get("ct_max"))
 			nvram_set("ct_max", "300000");
@@ -7949,7 +7948,7 @@ int init_nvram(void)
 		/* gpio */
 		/* HW reset, 2 | LOW */
 		nvram_set_int("led_pwr_gpio", 3|GPIO_ACTIVE_LOW);
-		nvram_set_int("btn_led_gpio", 4);	// active high(on)
+		nvram_set_int("btn_led_gpio", 4|GPIO_ACTIVE_LOW);
 		nvram_set_int("led_wan_gpio", 5);
 		/* MDC_4709 RGMII, 6 */
 		/* MDIO_4709 RGMII, 7 */
@@ -8697,7 +8696,7 @@ int init_nvram(void)
 		nvram_set_int("btn_wltog_gpio", 3|GPIO_ACTIVE_LOW);
 #endif
 #ifdef RTCONFIG_LED_BTN
-		nvram_set_int("btn_led_gpio", 22);
+		nvram_set_int("btn_led_gpio", 22|GPIO_ACTIVE_LOW);
 #endif
 
 #ifdef RTCONFIG_XHCIMODE
@@ -9361,10 +9360,6 @@ NO_USB_CAP:
 	add_rc_support("traffic_limiter");
 #endif
 
-#ifdef RTCONFIG_ADBLOCK
-	add_rc_support("adBlock");
-#endif
-
 #ifdef RTCONFIG_SNMPD
 	add_rc_support("snmp");
 #endif
@@ -9442,7 +9437,7 @@ NO_USB_CAP:
 	add_rc_support("bcmfa");
 #endif
 
-#ifdef RTCONFIG_ROG
+#ifdef RTCONFIG_ROG_UI
 	add_rc_support("rog");
 #endif
 
@@ -9769,8 +9764,13 @@ int init_nvram2(void)
 	nvram_set("cfg_cost", "0");
 	nvram_unset("cfg_alive");
 	nvram_unset("cfg_masterip");
+	nvram_set("cfg_rejoin", "0");
 	if (!is_router_mode())
 		nvram_unset("cfg_cost");
+#ifdef RTCONFIG_AMAS
+	if (nvram_get_int("re_mode") == 1)
+		nvram_set_int("cfg_rejoin", 1);
+#endif /* AMAS */
 #ifdef RTCONFIG_QCA
 	if (strlen(nvram_safe_get("cfg_group")) == 0) {
 		unsigned char *gid = nvram_safe_get("cfg_group_fac");
@@ -9786,7 +9786,7 @@ int init_nvram2(void)
 #endif
 
 #ifdef RTCONFIG_DWB
-	recovery_dwb_profile();
+	dwb_init_settings();
 #endif
 	
 	return 0;
@@ -11246,6 +11246,17 @@ dbg("boot/continue fail= %d/%d\n", nvram_get_int("Ate_boot_fail"),nvram_get_int(
 #ifdef RTCONFIG_BCMARM
 			misc_ioctrl();
 #endif
+
+#ifdef RTCONFIG_RGBLED
+#ifdef CONFIG_BCMWL5
+			if (ATE_BRCM_FACTORY_MODE())
+#endif
+			{
+				if (!nvram_match("sb_flash_update", "1"))
+					system("sb_flash_update; nvram set sb_flash_update=1; nvram commit");
+			}
+#endif
+
 			start_services();
 #ifdef CONFIG_BCMWL5
 			if (restore_defaults_g)
@@ -11263,8 +11274,6 @@ dbg("boot/continue fail= %d/%d\n", nvram_get_int("Ate_boot_fail"),nvram_get_int(
 			{
 				start_wl();
 				lanaccess_wl();
-				//if(!nvram_get_int("stop_lan_wl"))stop_lan_wl();
-				//if(!nvram_get_int("start_lan_wl"))start_lan_wl();
 			}
 #if defined(HND_ROUTER) || defined(BLUECAVE)
 			start_vlan();
@@ -11273,15 +11282,6 @@ dbg("boot/continue fail= %d/%d\n", nvram_get_int("Ate_boot_fail"),nvram_get_int(
 #ifdef HND_ROUTER
 			if (is_router_mode()) start_mcpd_proxy();
 #endif
-#ifdef RTCONFIG_RGBLED
-			if(!nvram_match("sb_flash_update", "1"))
-			{
-				system("sb_flash_update ; nvram set sb_flash_update=1 ; nvram commit; service start_aurargb &");
-			}
-			// set aura RGB LED, maybe default setting or end-user customized
-			start_aurargb();
-#endif
-
 #if defined(RT4GAC53U)
 			if (is_router_mode() && (get_wans_dualwan() & WANSCAP_USB))
 				set_gpio(4, 1);
@@ -11684,16 +11684,8 @@ int reboothalt_main(int argc, char *argv[])
 {
 	int reboot = (strstr(argv[0], "reboot") != NULL);
 	int def_reset_wait = 20;
-#ifdef RTCONFIG_RGBLED
-	RGB_LED_STATUS_T rgb_cfg = { 0 };
-#endif
 
 	_dprintf(reboot ? "Rebooting..." : "Shutting down...");
-#ifdef RTCONFIG_RGBLED
-	if (nvram_match("aurargb_enable", "1"))
-		__nv_to_rgb("0,0,0,8,1,0", &rgb_cfg);
-	aura_rgb_led(ROUTER_AURA_SET, &rgb_cfg, 0, 0);
-#endif
 	kill(1, reboot ? SIGTERM : SIGQUIT);
 
 #if defined(RTN14U) || defined(RTN65U) || defined(RTAC52U) || defined(RTAC51U) || defined(RTN11P) || defined(RTN300) || defined(RTN54U) || defined(RTCONFIG_QCA) || defined(RTAC1200HP) || defined(RTN56UB1) || defined(RTAC54U) || defined(RTN56UB2) || defined(RTAC85U) || defined(RTAC85P) || defined(RTN800HP)

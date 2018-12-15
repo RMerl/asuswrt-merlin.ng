@@ -555,6 +555,7 @@ static int merlin_lane_init(E_MERLIN_LANE lane_id, LPORT_PORT_MUX_SELECT prt_mux
     lane_mux[lane_id] = prt_mux_sel;
 
 #ifndef _CFE_
+    msleep(1000);
     lane_tx_enable(lane_id, prt_mux_sel != PORT_UNAVAIL);
 #endif
 

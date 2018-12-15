@@ -5,6 +5,7 @@ int 	get_web_path_len(char* trans_type, char* server, char* append);
 char* 	get_webpath(const char* trans_type, const char* server, const char* append);
 void 	free_webpath(char* webpath);
 void 	free_append_data(char* append_data);
+
 char* make_str(const char *fmt,	...);
 
 const char* getservicearea_template = 
@@ -22,6 +23,7 @@ const char* login_template =
 "<deviceservice>%s</deviceservice>\r\n"
 "<devicetype>%s</devicetype>\r\n"
 "<permission>%s</permission>\r\n"
+"<devicedesc>%s</devicedesc>\r\n"
 "</login>\r\n\r\n";
 
 const char* loginbyticket_template = 

@@ -244,7 +244,6 @@ function initial(){
 		document.getElementById("wl_unit_field").style.display = "none";
 
 	regen_band(document.form.wl_unit);
-	dwb_regen_band(document.form.wl_unit);
 
 	document.getElementById("wl_rate").style.display = "none";
 
@@ -499,6 +498,10 @@ function initial(){
 			document.getElementById("wl_MU_MIMO_field").style.display = "none";
 			document.form.wl_mumimo.disabled = true;
 		}
+		else if (based_modelid == 'RT-AX92U' && (wl_unit_value == '0' || wl_unit_value == '1')){
+			document.getElementById("wl_MU_MIMO_field").style.display = "none";
+			document.form.wl_mumimo.disabled = true;
+		}	
 	}
 	
 	/*Airtime fairness, only for Broadcom ARM platform, except RT-AC87U 5 GHz*/
@@ -696,9 +699,7 @@ function adjust_tx_power(){
 			document.getElementById('slider').children[1].style.left =  "100%";
 			document.form.wl_txpower.value = 100;
 			document.getElementById("tx_power_desc").innerHTML = power_table_desc[4];
-		}
-
-		FormActions("start_apply.htm", "apply", "reboot", "<% get_default_reboot_time(); %>");		
+		}	
 	}
 }
 
@@ -743,7 +744,7 @@ function applyRule(){
 			document.form.action_wait.value = "5";
 		}
 
-		if(no_finiwl_support &&  wl_txpower_orig != document.form.wl_txpower.value){
+		if (Bcmwifi_support && wl_txpower_orig != document.form.wl_txpower.value) {
 			FormActions("start_apply.htm", "apply", "reboot", "<% get_default_reboot_time(); %>");
 		}
 
@@ -1391,20 +1392,23 @@ function handle_mimo(value){
 }
 
 function handle_beamforming(value){
-	if(value == 0 && document.form.wl_mumimo.value == 1){
-		var string = "";
-		if(wl_unit_value == 0){
-			string = "It will disable MU-MIMO while disabling Explicit Beamforming";	/* Untranslated */
-		}
-		else{
-			string = "It will disable MU-MIMO while disabling 802.11ac Beamforming";	/* Untranslated */
-		}
-		
-		if(confirm(string)){
-			document.form.wl_mumimo.value = 0;
-		}
-		else{
-			return false;
+	if(based_modelid == 'RT-AX92U' && wl_unit_value == '2' || based_modelid != 'RT-AX92U'){
+		if (value == 0 && document.form.wl_mumimo.value == 1) {
+			var string = "";
+			if (wl_unit_value == 0) {
+				string = "It will disable MU-MIMO while disabling Explicit Beamforming";	/* Untranslated */
+			}
+			else {
+				string = "It will disable MU-MIMO while disabling 802.11ac Beamforming";	/* Untranslated */
+			}
+
+			if (confirm(string)) {
+				document.form.wl_mumimo.value = 0;
+			}
+			else {
+				document.form.wl_txbf.value = 1;
+				return false;
+			}
 		}
 	}
 }

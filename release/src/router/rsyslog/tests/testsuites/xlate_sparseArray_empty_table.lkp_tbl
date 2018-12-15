@@ -1,0 +1,6 @@
+{
+  "version": 1,
+  "nomatch": "baz_sparse_arr",
+  "type" : "sparseArray",
+  "table":[]
+}

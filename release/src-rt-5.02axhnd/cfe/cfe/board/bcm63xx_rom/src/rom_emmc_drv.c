@@ -236,6 +236,7 @@ volatile EmmcTopCfgRegs* EMMC_TOP_CFG = (volatile EmmcTopCfgRegs *) EMMC_TOP_CFG
 volatile EmmcBootRegs* EMMC_BOOT = (volatile EmmcBootRegs *) EMMC_BOOT_BASE;
 #endif
 
+static int emmc_phys_partition = PCFG_PARTITION_ACCESS_DATA;
 static int emmc_dma_enable = 0;
 static const struct cmd_info emmc_cmd_table[IDX_CMD_MAX] = {
     {
@@ -1195,10 +1196,10 @@ static int emmc_read(uint32_t dma_addr, uint32_t bfw_size, uint32_t emmc_addr)
     res = emmc_cmd6_switch_extcsd(Idx_ExtCSD_ACC_WRB,
                 Idx_ExtCSD_PARTITION_CONFIG,
                 PCFG_BOOT_ACK | PCFG_BOOT_PARTITION_ENABLE_BOOT1 |
-                PCFG_PARTITION_ACCESS_DATA);
+                emmc_phys_partition);
     //cfe_usleep(500000);
     if (res) {
-        xprintf("\n[emmc_read] Error to select DATA partition!\n");
+        xprintf("\n[emmc_read] Error to select %d partition!\n", emmc_phys_partition);
         return res;
     }
         
@@ -1292,6 +1293,12 @@ static cfe_gpt_probe_t cfe_gpt_probe;
 /* Externs */
 
 /* Functions */
+
+static void cferom_emmc_select_phys_part( int partition_sel ) 
+{
+    emmc_phys_partition = partition_sel;
+}
+
 int cferom_emmc_read_full_blocks( int handle_not_used, unsigned long long byte_offset, unsigned char * dest_buf, int length )
 {
     int res = 0;
@@ -1325,6 +1332,25 @@ int cferom_emmc_read_full_blocks( int handle_not_used, unsigned long long byte_o
     if (!res && rem_size)
         res = emmc_read(dst_addr, rem_size, emmc_addr );
     
+    return res;
+}
+
+int cferom_emmc_read_full_boot_blocks( unsigned long long byte_offset, unsigned char * dest_buf, int length )
+{
+    int res;
+    
+#if DEBUG_EMMC_BOOT    
+    xprintf("rom_emmc: Offset %d, length: %d\n", byte_offset, length);
+#endif
+    /* Select the physical BOOT partition */
+    cferom_emmc_select_phys_part( PCFG_PARTITION_ACCESS_BOOT1 ); 
+    /* Read from partition */
+    res = cferom_emmc_read_full_blocks( 0, byte_offset, dest_buf, length );
+    /* Reset partition selection to the physical DATA partition */
+    cferom_emmc_select_phys_part( PCFG_PARTITION_ACCESS_DATA ); 
+#if DEBUG_EMMC_BOOT    
+    xprintf("rom_emmc: res: %d\n", res);
+#endif
     return res;
 }
 
@@ -1424,58 +1450,111 @@ int emmc_set_boot_partition_choice(unsigned long rom_param, char * data_buffer)
     return ret;
 }
 
-int emmc_load_secure_image(char* image, int size, unsigned char** entry)
+int emmc_load_secure_image(char* image, int secCfeRamSize, unsigned char** entry, cfe_rom_media_params *media_params)
 {
-      uint8_t iv[CIPHER_IV_LEN];
-      uint8_t* dst,*la;
-      uint8_t *encr_image;
-      int ret;
-       Booter1Args* bootArgs = cfe_sec_get_bootrom_args();
-       if (!bootArgs) {
+    uint8_t iv[CIPHER_IV_LEN];
+    uint8_t* pucDest;
+    uint8_t* pucEntry;
+    uint8_t *pEncrCfeRam;
+    int ret;
+    int sec_should_decrypt;
+    int sec_should_decompress;
+#ifdef  CONFIG_CFE_SUPPORT_HASH_BLOCK
+    sec_should_decrypt = (media_params->boot_file_flags & BOOT_FILE_FLAG_ENCRYPTED) ? 1 : 0 ;
+    sec_should_decompress = (media_params->boot_file_flags & BOOT_FILE_FLAG_COMPRESSED) ? 1 : 0 ;
+#else
+    sec_should_decrypt = 1;
+    sec_should_decompress = 1;
+#endif        
+
+    /* Retrieve the security materials */
+    Booter1Args* sec_args = cfe_sec_get_bootrom_args();
+    if (!sec_args)
+        die();
+    /* If secure boot, compressed, encrypted CFE RAM
+       is authenticated within internal memory*/
+
+    pucDest = (unsigned char *)BTRM_INT_MEM_ENCR_COMP_CFE_RAM_ADDR;
+
+    memcpy(pucDest, image, secCfeRamSize);
+    
+    /* Authenticate the CFE RAM bootloader */
+    board_setleds(0x42544c3f); /* BTL? */
+    
+#ifdef  CONFIG_CFE_SUPPORT_HASH_BLOCK
+    if (media_params->boot_file_hash_valid) 
+    {
+        /* Verify that sha256 hash of cferam matches hash retreived from hash block */
+        if (sec_verify_sha256((uint8_t const*)pucDest, secCfeRamSize, (const uint8_t *)media_params->boot_file_hash)) 
+        {
+            xprintf("Digest failed\n");
             die();
-       }
-      /* If secure boot, compressed, encrypted CFE RAM
-         is authenticated within internal memory*/
-      dst = (unsigned char *)BTRM_INT_MEM_ENCR_COMP_CFE_RAM_ADDR;
-      memcpy(dst, image, size);
-      /* Retrieve the security materials */
+        } 
+        else 
+        {
+            xprintf("Digest has been succesfully matched\n");
+        }
+        pEncrCfeRam = pucDest; 
+    } 
+    else 
+#endif        
+    {
+        /* Verify the signature located right before the cferam image */
+        if (sec_verify_signature((uint8_t const*)(pucDest+SEC_S_MODULUS), secCfeRamSize-SEC_S_MODULUS, pucDest, sec_args->authArgs.manu)) {
+            die();
+        }
+        pEncrCfeRam = pucDest+SEC_S_MODULUS; 
+    }
+    board_setleds(0x42544c41); // BTLA
+    board_setleds(0x50415353); // PASS
+    
+    /* Move pucDest to point to where the authenticated and decrypted (but still compressed) CFE RAM will be put */
+    pucDest = (unsigned char *)(BTRM_INT_MEM_COMP_CFE_RAM_ADDR); 
 
-      /* Authenticate the CFE RAM bootloader */
-      board_setleds(0x42544c3f); /* BTL? */
-      /* returns pointer to the beginning of the object whose signature have been just verified  */
-      encr_image = (uint8_t *)authenticate((uint8_t *)dst, size, bootArgs->authArgs.manu);
-      board_setleds(0x42544c41); /* BTLA */
-      board_setleds(0x50415353); /* PASS */
+    /* Get ready to decrypt the CFE RAM bootloader */
+    /* decryptWithEk() will whack the content of the iv structure, therefore create a copy and pass that in */
+    memcpy((void *)iv, (void *)sec_args->encrArgs.biv, CIPHER_IV_LEN);
+    
+    /* Decrypt the CFE RAM bootloader */
+    if (sec_should_decrypt) 
+    {
+        decryptWithEk(pucDest, (uint8_t *)(&pEncrCfeRam[0]), sec_args->encrArgs.bek, (uint32_t)(secCfeRamSize-SEC_S_SIGNATURE), iv);
+    } 
+    else 
+    {
+        memcpy(pucDest, (unsigned char *)(&pEncrCfeRam[0]), secCfeRamSize);
+    }
 
-      /* Get ready to decrypt the CFE RAM bootloader */
-      /* decryptWithEk() will whack the content of the iv structure, therefore create a copy and pass that in */
-      memcpy((void *)iv, (void *)bootArgs->encrArgs.biv, CIPHER_IV_LEN);
-
-      /* Set dst to point to where the decrypted (but still compressed) CFE RAM will be put */
-      dst = (unsigned char *)(BTRM_INT_MEM_COMP_CFE_RAM_ADDR); 
-      /* Decrypt the CFE RAM bootloader */
-      decryptWithEk(dst, (uint8_t *)(&encr_image[0]), bootArgs->encrArgs.bek, (uint32_t)(size-SEC_S_SIGNATURE), iv);
-
-      /* The reference sw is done with the bek/biv at this point ... cleaning it up */
-      /* Any remnants of the keys on the stack will be cleaned up when cfe_launch() runs */
-      cfe_sec_reset_keys();
-      memset((void *)iv, 0, CIPHER_IV_LEN);
-
-      /* First 12 bytes are not compressed ... First word of the 12 bytes is the address the cferam is linked to run at */
-      /* Note: don't change the line below by adding uintptr_t to make it arch32 and arch64 compatible */
-      /* you want it to grab only the first 4 bytes of the 12 bytes in both cases */
-      la = (unsigned char *) (unsigned long)(*(uint32_t *)BTRM_INT_MEM_COMP_CFE_RAM_ADDR);
-
-      /* Decompress the image */
-      ret = decompressLZMA((unsigned char *)(BTRM_INT_MEM_COMP_CFE_RAM_ADDR+12), 
-                     (unsigned int)(*(uint32_t *)(BTRM_INT_MEM_COMP_CFE_RAM_ADDR + 8)),
-                     la, 23*1024*1024);
-      xprintf("Decompress returns code = %d\n",ret); 
-      *entry = la; 
-      return 0; 
+    /* The reference sw is done with the bek/biv at this point ... cleaning it up */
+    /* Any remnants of the keys on the stack will be cleaned up when cfe_launch() runs */
+    cfe_sec_reset_keys();
+    memset((void *)iv, 0, CIPHER_IV_LEN);
+    
+    /* First 12 bytes are not compressed ... First word of the 12 bytes is the address the cferam is linked to run at */
+    /* Note: don't change the line below by adding uintptr_t to make it arch32 and arch64 compatible */
+    /* you want it to grab only the first 4 bytes of the 12 bytes in both cases */
+    pucEntry = (unsigned char *) (unsigned long)(*(uint32_t *)BTRM_INT_MEM_COMP_CFE_RAM_ADDR);
+    
+    /* decompress or copy RAM+12 for RAM+8 bytes to Entry point , depending on flag */
+    if (sec_should_decompress ) 
+    {
+        /* Decompress the image */
+        ret = decompressLZMA((unsigned char *)(BTRM_INT_MEM_COMP_CFE_RAM_ADDR+12), 
+                             (unsigned int)(*(uint32_t *)(BTRM_INT_MEM_COMP_CFE_RAM_ADDR + 8)),
+                             pucEntry, 23*1024*1024);
+        xprintf("Decompress returns code = %d\n",ret); 
+    } 
+    else 
+    {
+        memcpy(pucEntry,((unsigned char *)BTRM_INT_MEM_COMP_CFE_RAM_ADDR) + 12,(unsigned int)(*(uint32_t *)(BTRM_INT_MEM_COMP_CFE_RAM_ADDR + 8)));
+        xprintf("no decompress -- copied to %p \n",pucEntry); 
+    }
+        
+    *entry = pucEntry; 
+    return 0; 
 }
 
-void emmc_run_image( char * loaded_image, int image_size, int boot_secure , int image_num, unsigned long rom_param)
+void emmc_run_image( char * loaded_image, int image_size, int boot_secure , int image_num, unsigned long rom_param, cfe_rom_media_params *media_params )
 {
     unsigned char *pucEntry;
     unsigned char *pucDest = NULL;
@@ -1486,17 +1565,20 @@ void emmc_run_image( char * loaded_image, int image_size, int boot_secure , int 
 
 #if defined(_BCM94908_) || defined(_BCM96858_) || defined(_BCM963158_) || \
         ((INC_BTRM_BOOT==1) && defined(_BCM963138_)) || defined(_BCM96856_)
-   if (boot_secure) {
-      emmc_load_secure_image(loaded_image, image_size, &pucEntry);
-   } else
+    if (boot_secure) 
+    {
+       emmc_load_secure_image(loaded_image, image_size, &pucEntry, media_params);
+    } 
+    else
 #endif
-   {
-      /* Copy over load address from loaded cferam image */
-      memcpy(&pucEntry, loaded_image, 4);
-      pucDest = pucEntry - 12;
-      /* Copy over loaded image to actual load address */
-      memcpy(pucDest, loaded_image, image_size);
-   }
+    {
+       /* Copy over load address from loaded cferam image */
+       memcpy(&pucEntry, loaded_image, 4);
+       pucDest = pucEntry - 12;
+       /* Copy over loaded image to actual load address */
+       memcpy(pucDest, loaded_image, image_size);
+    }
+
     if( pucEntry )
     {
         board_setleds(0x454d4d35); // EMM5
@@ -1531,10 +1613,10 @@ void emmc_run_image( char * loaded_image, int image_size, int boot_secure , int 
 #if defined(_BCM94908_) || defined(_BCM96858_) || defined(_BCM96856_) || defined(_BCM963158_) || ((INC_BTRM_BOOT==1) && defined(_BCM963138_))
         if (boot_secure)
         {
-                Booter1Args* bootArgs = cfe_sec_get_bootrom_args();
-                if (!bootArgs) {
-                        die();
-                }
+           Booter1Args* bootArgs = cfe_sec_get_bootrom_args();
+           if (!bootArgs) 
+              die();
+           
            /* Copy the authentication credentials from internal memory 
             * into ddr. Cferam on some targets (6838) uses the internal
             * memory. Therefore, linux kernel authentication has to use 
@@ -1553,9 +1635,9 @@ void emmc_run_image( char * loaded_image, int image_size, int boot_secure , int 
     if (boot_secure)
     {
        Booter1Args* bootArgs = cfe_sec_get_bootrom_args();
-       if (!bootArgs) {
-            die();
-       }
+       if (!bootArgs) 
+          die();
+       
        /* Customer should zero out the bek and the biv at this point because the CFE RAM   */
        /* was not found. Hence, the flash is toast and JTAG needs to be enabled.           */
        ek_iv_cleanup(&bootArgs->encrArgs);
@@ -1647,7 +1729,7 @@ int rom_emmc_init(void)
     }
 }
 
-int emmc_gpt_run( void )
+int rom_emmc_gpt_run( void )
 {
     /* Look for GPT partitions */
      
@@ -1701,6 +1783,37 @@ int emmc_gpt_run( void )
     return EMMC_OK;
 }
 
+#ifdef CONFIG_CFE_SUPPORT_HASH_BLOCK
+static void rom_emmc_get_hashblock( int * bootImg, int * imageNum, cfe_rom_media_params * media_params)
+{
+    int file_length = 0;
+
+    if (media_params->boot_secure)
+    {
+        const uint8_t *pHashes = (const uint8_t *)BTRM_INT_MEM_ENCR_COMP_CFE_RAM_ADDR;
+        file_length = load_file_from_next_bootfs( media_params->hash_file_name, (char*)pHashes, bootImg, imageNum, &parse_emmc_bootfs );
+    
+        if (file_length > SEC_S_MODULUS) 
+        { 
+            Booter1Args* sec_args = cfe_sec_get_bootrom_args();
+            xprintf("authenticate...");
+            // authenticate(pHashes, res, sec_args->authArgs.manu);
+            if (sec_verify_signature((uint8_t const*)(&pHashes[SEC_S_MODULUS]), file_length-SEC_S_MODULUS, &pHashes[0], sec_args->authArgs.manu)) 
+            {
+                xprintf("..FAIL\n");
+                die();
+            } 
+            else 
+            {
+                xprintf("..success\n");
+                parse_boot_hashes((char *)&pHashes[SEC_S_MODULUS], media_params);
+                xprintf("got bootable cferam %s\n",media_params->boot_file_name);
+            }
+        }
+    }
+}
+#endif
+                
 int rom_emmc_boot(unsigned char * dma_addr, unsigned long rom_param, cfe_rom_media_params *media_params)
 {
     int bootImg=0; 
@@ -1721,11 +1834,16 @@ int rom_emmc_boot(unsigned char * dma_addr, unsigned long rom_param, cfe_rom_med
     if (emmc_initialized) 
     {
         /* 2-Look for GPT partitions */
-        if( emmc_gpt_run() != EMMC_OK )
+        if( rom_emmc_gpt_run() != EMMC_OK )
             return EMMC_NG;        
 
         /* 3-Update bootinfo variable with boot partition choice from NVRAM */
         emmc_set_boot_partition_choice(rom_param, (char*)temp_data_buffer);
+
+        /* 3.1-Get hashblock if needed */
+#ifdef CONFIG_CFE_SUPPORT_HASH_BLOCK
+        rom_emmc_get_hashblock( &bootImg, &imageNum, media_params);
+#endif
 
         /* 4-Load cferam into temporary memory */
         if( (file_length = load_file_from_next_bootfs( media_params->boot_file_name, (char*)temp_data_buffer, &bootImg, &imageNum, &parse_emmc_bootfs )) < 0 )
@@ -1746,7 +1864,7 @@ int rom_emmc_boot(unsigned char * dma_addr, unsigned long rom_param, cfe_rom_med
         }
 
         /* 6-Run loaded image */
-        emmc_run_image( (char*)temp_data_buffer, file_length, media_params->boot_secure, imageNum, rom_param);
+        emmc_run_image( (char*)temp_data_buffer, file_length, media_params->boot_secure, imageNum, rom_param, media_params);
 
         /* Should never get here */
         return EMMC_OK;

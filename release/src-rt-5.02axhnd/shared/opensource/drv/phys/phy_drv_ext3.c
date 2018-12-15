@@ -40,6 +40,7 @@
 #define _ORCA_A0_
 #define _ORCA_B0_
 #define _BFIN_A0_ 
+#define _BFIN_B0_ 
 
 #include "phy_drv.h"
 
@@ -64,7 +65,7 @@ struct phy_desc_s {
 #if defined(_MAKO_A0_) || defined(_ORCA_A0_) || defined(_ORCA_B0_)
 static int load_848xx(phy_desc_t *phy);
 #endif
-#if defined(_BFIN_A0_)
+#if defined(_BFIN_A0_) || defined(_BFIN_B0_) 
 static int load_5499x(phy_desc_t *phy);
 #endif
 
@@ -83,6 +84,10 @@ firmware_t orca_b0 = { bcm8488x_b0_version, bcm8488x_b0_firmware, sizeof(bcm8488
 #ifdef _BFIN_A0_ 
 #include "bcm5499x_a0_firmware.h"
 firmware_t bfin_a0 = { bcm5499x_a0_version, bcm5499x_a0_firmware, sizeof(bcm5499x_a0_firmware), &load_5499x };
+#endif
+#ifdef _BFIN_B0_ 
+#include "bcm5499x_b0_firmware.h"
+firmware_t bfin_b0 = { bcm5499x_b0_version, bcm5499x_b0_firmware, sizeof(bcm5499x_b0_firmware), &load_5499x };
 #endif
 
 static phy_desc_t phy_desc[] = {
@@ -130,6 +135,23 @@ static phy_desc_t phy_desc[] = {
     { 0x3590, 0x50d0, "54991H  A0", &bfin_a0 },
     { 0x3590, 0x50f0, "54994H  A0", &bfin_a0 },
 #endif
+#ifdef _BFIN_B0_ 
+    { 0x3590, 0x5091, "84891   B0", &bfin_b0 },
+    { 0x3590, 0x5095, "54991   B0", &bfin_b0 },
+    { 0x3590, 0x5099, "54991E  B0", &bfin_b0 },
+    { 0x3590, 0x5081, "84891L  B0", &bfin_b0 },
+    { 0x3590, 0x5085, "54991L  B0", &bfin_b0 },
+    { 0x3590, 0x5089, "54991EL B0", &bfin_b0 },
+    { 0x3590, 0x50a1, "84892   B0", &bfin_b0 },
+    { 0x3590, 0x50a5, "54992   B0", &bfin_b0 },
+    { 0x3590, 0x50a9, "54992E  B0", &bfin_b0 },
+    { 0x3590, 0x50b1, "84894   B0", &bfin_b0 },
+    { 0x3590, 0x50b5, "54994   B0", &bfin_b0 },
+    { 0x3590, 0x50b9, "54994E  B0", &bfin_b0 },
+    { 0x3590, 0x50d1, "54991H  B0", &bfin_b0 },
+    { 0x3590, 0x50f1, "54994H  B0", &bfin_b0 },
+#endif
+
 };
 
 static uint32_t enabled_phys;
@@ -203,6 +225,13 @@ static uint32_t enabled_phys;
 #define CMD_COMPLETE_PASS                           0x0004
 #define CMD_COMPLETE_ERROR                          0x0008
 #define CMD_SYSTEM_BUSY                             0xBBBB
+
+/* Fixups for 5499x phys */
+#define ID1_5499X                                   0x35900000
+#define ID1_MASK                                    0xffff0000
+#define SUPER_I_DEFAULT                             (1<<15)
+#define SUPER_I_BLACKFIN                            (1<<8)
+#define CHANGE_STRAP_STATUS                         (1<<1)
 
 static int _wait_for_cmd_ready(phy_dev_t *phy_dev)
 { 
@@ -484,7 +513,7 @@ static int _phy_pair_swap_set(phy_dev_t *phy_dev, int enable)
     int ret;
     uint16_t data;
 
-	if (enable)
+    if (enable)
         data = 0x1b;
     else
         data = 0xe4;
@@ -932,7 +961,69 @@ static int _phy_phyid_get(phy_dev_t *phy_dev, uint32_t *phyid)
     PHY_READ(phy_dev, 0x01, 0x0003, &phyid2);
 
     *phyid = phyid1 << 16 | phyid2;
+Exit:
+    return ret;
+}
 
+static int _phy_pair_isolate_5499x(phy_dev_t *phy_dev, int isolate)
+{
+    int ret;
+    uint16_t data;
+
+    /* Read the status register */
+    PHY_READ(phy_dev, 0x1e, 0x401c, &data);
+
+    if (isolate)
+        data |= SUPER_I_BLACKFIN;
+    else
+        data &= ~SUPER_I_BLACKFIN;
+
+    PHY_WRITE(phy_dev, 0x1e, 0x401c, data);
+
+    return 0;
+Exit:
+    return ret;
+}
+static int _phy_pair_isolate_default(phy_dev_t *phy_dev, int isolate)
+{
+    int ret;
+    uint16_t data;
+
+    /* Read the status register */
+    PHY_READ(phy_dev, 0x1e, 0x401a, &data);
+
+    if (isolate)
+        data |= SUPER_I_DEFAULT;
+    else
+        data &= ~SUPER_I_DEFAULT;
+
+    PHY_WRITE(phy_dev, 0x1e, 0x401a, data);
+
+    return 0;
+Exit:
+    return ret;
+}
+static int _phy_pair_isolate(phy_dev_t *phy_dev, int isolate)
+{
+    int ret, i = 0;
+    uint16_t data;
+    uint32_t phyid;
+
+    _phy_phyid_get(phy_dev, &phyid);
+
+    if ((phyid & ID1_MASK) == ID1_5499X)
+        ret = _phy_pair_isolate_5499x(phy_dev, isolate);
+    else
+        ret = _phy_pair_isolate_default(phy_dev, isolate);
+
+    if (ret)
+        goto Exit;
+    do {
+        udelay(1000);
+        PHY_READ(phy_dev, 0x1e, 0x400e, &data);
+    } while (i-- && (data & CHANGE_STRAP_STATUS));
+
+    return 0;
 Exit:
     return ret;
 }
@@ -1244,7 +1335,7 @@ Exit:
 }
 #endif
 
-#if defined(_BFIN_A0_)
+#if defined(_BFIN_A0_) || defined(_BFIN_B0_)
 static int load_5499x(phy_desc_t *phy)
 {
     int i, cnt, step, ret;
@@ -1469,4 +1560,6 @@ phy_drv_t phy_drv_ext3 =
     .dev_add = _phy_dev_add,
     .dev_del = _phy_dev_del,
     .drv_init = _phy_drv_init,
+    .pair_swap_set = _phy_pair_swap_set,
+    .isolate_phy = _phy_pair_isolate,
 };

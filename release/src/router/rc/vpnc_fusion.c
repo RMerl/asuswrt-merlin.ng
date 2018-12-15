@@ -1769,6 +1769,17 @@ start_vpnc_by_unit(const int unit)
 	if (VPNC_PROTO_PPTP == prof->protocol || VPNC_PROTO_L2TP == prof->protocol) {
 		mask = umask(0000);
 
+#ifdef RTCONFIG_HND_ROUTER_AX
+		/* workaround for ppp packets are dropped by fc GRE learning when pptp server / client enabled  */
+		if (nvram_match("fc_disable", "0") && 
+			(nvram_match(strcat_r(wan_prefix, "proto", tmp), "pppoe")) ||
+			(nvram_match(strcat_r(wan_prefix, "proto", tmp), "pptp")) ||
+			(nvram_match(strcat_r(wan_prefix, "proto", tmp), "l2tp")))
+		{
+			eval("fc", "config", "--gre", "0");
+		}
+#endif
+
 		/* Generate options file */
 		if (!(fp = fopen(options, "w"))) {
 			perror(options);
@@ -1996,7 +2007,11 @@ stop_vpnc_by_unit(const int unit)
 		    kill_pidfile_s(pidfile, SIGTERM) == 0) {
 			usleep(3000*1000);
 			kill_pidfile_tk(pidfile);
-		}	
+		}
+#ifdef RTCONFIG_HND_ROUTER_AX
+		/* workaround for ppp packets are dropped by fc GRE learning when pptp server / client enabled  */
+		if (nvram_match("fc_disable", "0")) eval("fc", "config", "--gre", "1");
+#endif
 	}
 	else if(VPNC_PROTO_OVPN == prof->protocol)
 	{

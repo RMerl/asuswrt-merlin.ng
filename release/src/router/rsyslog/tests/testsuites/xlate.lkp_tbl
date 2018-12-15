@@ -1,0 +1,5 @@
+{
+  "table":[
+      {"index":" msgnum:00000001:", "value":"bar_old" },
+      {"index":" msgnum:00000000:", "value":"foo_old" }]
+}

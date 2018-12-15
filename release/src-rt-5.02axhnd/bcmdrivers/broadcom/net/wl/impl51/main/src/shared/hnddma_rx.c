@@ -19,7 +19,7 @@
  *
  * <<Broadcom-WL-IPTag/Open:>>
  *
- * $Id: hnddma_rx.c 765082 2018-06-18 10:33:15Z $
+ * $Id: hnddma_rx.c 767521 2018-09-14 04:12:32Z $
  */
 
 /**
@@ -54,8 +54,9 @@
 #endif // endif
 
 #if !defined(OSL_CACHE_COHERENT)
-#if defined(BCM47XX_CA9) || defined(STB) || defined(STB_SOC_WIFI)
-#define OSL_CACHE_DBL_INV_WAR
+#if defined(BCM47XX_CA9) || defined(STB) || defined(STB_SOC_WIFI) || \
+	defined(BCA_HNDROUTER)
+#define OSL_CACHE_INV_RX
 #endif // endif
 #endif  /* ! OSL_CACHE_COHERENT */
 
@@ -289,7 +290,7 @@ _dma_sts_rx(dma_info_t *di)
 			ASSERT(0);
 		}
 
-#if defined(OSL_CACHE_DBL_INV_WAR)
+#if defined(OSL_CACHE_INV_RX)
 		DMA_MAP(di->osh, STSBUF_DATA(head), STSBUF_LEN(head), DMA_RX, head, NULL);
 #endif // endif
 		prev = head;
@@ -510,7 +511,7 @@ dma_rx(hnddma_t *dmah, void **sts_head, uint nbound)
 			}
 		}
 
-#if defined(OSL_CACHE_DBL_INV_WAR)
+#if defined(OSL_CACHE_INV_RX)
 		DMA_MAP(di->osh, PKTDATA(di->osh, head), PKTLEN(di->osh, head), DMA_RX, head, NULL);
 #endif // endif
 		prev = head;
@@ -714,7 +715,7 @@ next_frame:
 	}
 
 ret:
-#if defined(OSL_CACHE_DBL_INV_WAR)
+#if defined(OSL_CACHE_INV_RX)
 	DMA_MAP(di->osh, PKTDATA(di->osh, head), PKTLEN(di->osh, head), DMA_RX, head, NULL);
 #endif // endif
 

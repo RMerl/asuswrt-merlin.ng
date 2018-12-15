@@ -13,10 +13,16 @@
 #define PMU_CORE0_SPI			9
 #define PMU_CORE1_SPI			10
 #define SDIO_EMMC_SPI           95
-	
+
+#define DEVICE_TREE
+#include "../../../shared/opensource/include/pmc/pmc_firmware_68560.h"
+#undef DEVICE_TREE
+
 /dts-v1/;
 
 /memreserve/ 0x00000000 0x00020000;
+/* For PMC3 firmware */
+/memreserve/ PMC3_RESERVED_MEM_START PMC3_RESERVED_MEM_SIZE;
 
 / {
     model = "Broadcom-v8A";

@@ -55,8 +55,7 @@
 #include <wlan_shared_defs.h>
 
 #if (defined(CONFIG_BCM_SPDSVC) || defined(CONFIG_BCM_SPDSVC_MODULE))
-#include <linux/bcm_log.h>
-#include <spdsvc_defs.h>
+#include <bcm_spdsvc.h>
 static bcmFun_t *dhd_runner_spdsvc_transmit = NULL;
 #endif
 
@@ -501,6 +500,10 @@ typedef struct dhd_runner_flowmgr
 #if defined(RDPA_DHD_HELPER_FEATURE_MSGFORMAT_SUPPORT)
 #define RNR_DHD_HLPR_MSGRINGFRMT
 #endif /* RDPA_DHD_HELPER_FEATURE_MSGFORMAT_SUPPORT */
+
+#if defined(RDPA_DHD_HELPER_FEATURE_FAST_FLOWRING_DELETE_SUPPORT)
+#define RNR_DHD_HLPR_FFRD
+#endif /*  RDPA_DHD_HELPER_FEATURE_FAST_FLOWRING_DELETE_SUPPORT */
 
 #if defined(MSGBUF_WI_COMPACT) && defined(RNR_DHD_HLPR_MSGRINGFRMT)
 /*
@@ -968,9 +971,9 @@ static int dhd_runner_skb_get(dhd_runner_hlp_t *dhd_hlp, rdpa_cpu_port port,
 {
 	int rc;
 
-#if defined(CONFIG_BCM_FCACHE_CLASSIFICATION_BYPASS)   
-    uint32_t flow_key = 0;
-    fc_class_ctx_t fc_key;
+#if defined(CONFIG_BCM_FCACHE_CLASSIFICATION_BYPASS)
+	uint32_t flow_key = 0;
+	fc_class_ctx_t fc_key;
 #endif
 
 	rc = rdpa_cpu_packet_get(port, queue, info);
@@ -2127,6 +2130,10 @@ dhd_helper_attach(dhd_runner_hlp_t *dhd_hlp, void *dhd)
 	dhd_hlp->rnr_sup_feat.hwawkup = 1;
 #endif /* RNR_DHD_HLPR_HWA_WAKEUP */
 
+#if defined(RNR_DHD_HLPR_FFRD)
+	dhd_hlp->rnr_sup_feat.ffrd = 1;
+#endif /* RNR_DHD_HLPR_FFRD */
+
 	return 0;
 }
 
@@ -3103,10 +3110,28 @@ dhd_runner_notify(struct dhd_runner_hlp *dhd_hlp,
 	        break;
 
 	    /* Host notifies Runner to flush a flowring */
-	    case H2R_FLRING_FLUSH_NOTIF: /* arg1:flowid [2..N] */
-	        DHD_TRACE(("H2R_FLRING_FLUSH_NOTIF flowring<%d>\n", (int)arg1));
+	    case H2R_FLRING_FLUSH_NOTIF: /* arg1:flowid [2..N] arg2:rd_idx [0..0xfffe, 0xffff] */
+	        DHD_TRACE(("H2R_FLRING_FLUSH_NOTIF flowring<%d> data<0x%x>\n",
+	            (int)arg1, (uint16)arg2));
 
-	        rdpa_dhd_helper_flush_set(dhd_hlp->dhd_helper_obj, arg1);
+#if defined(RNR_DHD_HLPR_FFRD)
+	        {
+	            rdpa_dhd_ffd_data_t data;
+
+	            data.flowring_idx = arg1;
+	            data.read_idx = arg2;
+	            data.read_idx_valid = (arg2 < 0xFFFF) ? 1 : 0;
+	            rc = rdpa_dhd_helper_flush_set(dhd_hlp->dhd_helper_obj, (bdmf_number)data.u32);
+	        }
+#else /* !RNR_DHD_HLPR_FFRD */
+	        rc = rdpa_dhd_helper_flush_set(dhd_hlp->dhd_helper_obj, arg1);
+#endif /* !RNR_DHD_HLPR_FFRD */
+
+	        if (rc != 0) {
+	            DHD_ERROR(("dor%d rdpa_dhd_helper_flush_set(0x%p, %d) returned %d\r\n",
+	                dhd_hlp->dhd->unit, &dhd_hlp->dhd_helper_obj, (int)arg1, rc));
+	            return BCME_ERROR;
+	        }
 	        break;
 
 	    /* Host notifies Runner to configure aggregation */
@@ -3304,6 +3329,41 @@ dhd_runner_notify(struct dhd_runner_hlp *dhd_hlp,
 	                    dhd_hlp->dhd->unit, dhd_hlp->dhd_init_cfg.flow_ring_format);
 	            }
 #endif /* RNR_DHD_HLPR_MSGRINGFRMT */
+	        }
+	        break;
+
+	    /*
+	     * Host notifies Runner of PCIE IPC Capabilities (DHD) for negotiation
+	     *
+	     * arg1 (in):     Host Capabilities1 mask (uint32)
+	     * arg2 (in/out): Pointer to DHD capabilities1 (in) DoR capabilities1 (out)
+	     *
+	     * Parse for the dependant capabilities and enable corresponding features if runner
+	     * support them. Send back all the enabled capabilities supported by DoR
+	     *
+	     * Note: Currently fast flow ring delete cap is supported, can be exteneded to others
+	     *       in future.
+	     */
+	    case H2R_PCIE_IPC_CAP1_NOTIF:
+	        DHD_TRACE(("H2R_PCIE_IPC_CAP1_NOTIF cap_mask <0x%x> cap <0x%x>\n",
+	            (uint32)arg1, *(uint32*)arg2));
+	        if (arg1) {
+	            uint32 hcap = arg1 & (*(uint32*)arg2);
+	            uint32 rcap = 0;
+
+	            if (hcap) {
+#if defined(PCIE_IPC_HCAP1_FAST_DELETE_RING)
+	                if (hcap & PCIE_IPC_HCAP1_FAST_DELETE_RING) {
+	                    if (dhd_hlp->rnr_sup_feat.ffrd) {
+	                        dhd_hlp->rnr_en_feat.ffrd = 1;
+	                        rcap |= PCIE_IPC_HCAP1_FAST_DELETE_RING;
+	                    }
+	                }
+#endif /* PCIE_IPC_HCAP1_FAST_DELETE_RING */
+	            }
+
+	            /* return the dor capabilities back */
+	            *(uint32*)arg2 = rcap;
 	        }
 	        break;
 
@@ -4499,7 +4559,7 @@ dhd_runner_iovar_dump(dhd_runner_hlp_t *dhd_hlp, char *buff,
 
 	/* Status */
 	bcm_bprintf(b, "\nDHD Runner: \n");
-	bcm_bprintf(b, "  Status     : %s %s %s %s %s %s %s %s\n",
+	bcm_bprintf(b, "  Status     : %s %s %s %s %s %s %s %s %s\n",
 	    RNR_DHD_HLPR_FEATURE_STS_STRING(dhd_hlp, txoffl),
 	    RNR_DHD_HLPR_FEATURE_STS_STRING(dhd_hlp, rxoffl),
 	    RNR_DHD_HLPR_FEATURE_STS_STRING(dhd_hlp, txcmpl2host),
@@ -4507,7 +4567,8 @@ dhd_runner_iovar_dump(dhd_runner_hlp_t *dhd_hlp, char *buff,
 	    RNR_DHD_HLPR_FEATURE_STS_STRING(dhd_hlp, lbraggr),
 	    RNR_DHD_HLPR_FEATURE_STS_STRING(dhd_hlp, msgringformat),
 	    RNR_DHD_HLPR_FEATURE_STS_STRING(dhd_hlp, bkupq),
-	    RNR_DHD_HLPR_FEATURE_STS_STRING(dhd_hlp, hwawkup));
+	    RNR_DHD_HLPR_FEATURE_STS_STRING(dhd_hlp, hwawkup),
+	    RNR_DHD_HLPR_FEATURE_STS_STRING(dhd_hlp, ffrd));
 	bcm_bprintf(b, "             : cpuqdpc %d\n", dhd_hlp->proc_cpuq_in_dpc);
 
 	/* Profile */

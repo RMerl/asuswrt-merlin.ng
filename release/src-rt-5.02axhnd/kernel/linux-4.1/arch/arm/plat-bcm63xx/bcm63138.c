@@ -297,11 +297,16 @@ void __init soc_init_clock(void)
 	const int mdiv_en = 1 << 11;
 	int mdiv = 2000 / 1000;
 
-	if(num_online_cpus() == 1) {
-		mdiv=2000/666;
+
+	//if its setup for nosmp mode, assume it has to run at a lower frequency 
+	//instead of doing this if(strstr(boot_command_line, "nosmp ") != NULL)
+	// we can just check the exported variable
+	if(setup_max_cpus == 0)
+	{
+		mdiv = 2000 / 666;
 	}
 
-	if ((policy & ~ARM_PROC_CLK_POLICY_FREQ_MASK) != pll) {
+	if ((policy & ARM_PROC_CLK_POLICY_FREQ_MASK) != pll) {
 		ARMCFG->proc_clk.pllarmc = (ARMCFG->proc_clk.pllarmc & ~0xff) | mdiv_en | mdiv;
 		ARMCFG->proc_clk.policy_freq = (policy & ~ARM_PROC_CLK_POLICY_FREQ_MASK) | pll;
 

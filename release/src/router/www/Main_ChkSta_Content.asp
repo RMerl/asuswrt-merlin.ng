@@ -7,7 +7,7 @@
 <meta HTTP-EQUIV="Expires" CONTENT="-1">
 <link rel="shortcut icon" href="images/favicon.png">
 <link rel="icon" href="images/favicon.png">
-<title><#Network_Tools#> - Check Station Status</title>
+<title><#Network_Tools#> - <#NetworkTools_ChkSta#></title>
 <link rel="stylesheet" type="text/css" href="index_style.css"> 
 <link rel="stylesheet" type="text/css" href="form_style.css">
 <link rel="stylesheet" type="text/css" href="/device-map/device-map.css">
@@ -296,9 +296,9 @@ function triggerChkSTA(){
 							<tr>
 								<td bgcolor="#4D595D" colspan="3" valign="top">
 									<div>&nbsp;</div>
-									<div class="formfonttitle"><#Network_Tools#> - Check Station Status</div>
+									<div class="formfonttitle"><#Network_Tools#> - <#NetworkTools_ChkSta#></div>
 									<div style="margin:10px 0 10px 5px;" class="splitLine"></div>
-									<div class="formfontdesc">To check station's wireless status around AiMesh nodes</div>
+									<div class="formfontdesc"><#NetworkTools_ChkSta_Desc#></div>
 									<table width="100%" border="1" align="center" cellpadding="4" cellspacing="0" class="FormTable_table" style="margin-top:8px;">
 										<thead>
 											<tr>
@@ -326,8 +326,8 @@ function triggerChkSTA(){
 						            		</td>
 						            		<td width="20%">
 												<div class="apply_gen" style="margin-top:0;background: #475A5F;"> 
-													<input id="detect_btn" type="button" class="button_gen" onClick="setSTA();" value="Detect">
-													<div id="detecting_msg" style="color: #FC0;margin: 6px 30px;display:none">Detecting...</div>
+													<input id="detect_btn" type="button" class="button_gen" onClick="setSTA();" value="<#CTL_Detect#>">
+													<div id="detecting_msg" style="color: #FC0;margin: 6px 30px;display:none"><#QKSet_detect_sanglass#>...</div>
 												</div>
 						            		</td>
 										</tr>	 			  

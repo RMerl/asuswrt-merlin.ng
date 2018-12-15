@@ -1,0 +1,6 @@
+{
+  "type" : "sparseArray",
+  "table":[
+      {"index": 3, "value":"bar_old" },
+      {"index": 1, "value":"foo_old" }]
+}

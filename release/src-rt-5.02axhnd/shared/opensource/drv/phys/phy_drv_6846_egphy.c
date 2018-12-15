@@ -45,9 +45,10 @@
 #include "boardparms.h"
 
 #define QEGPHY_CTRL_REG     QEGPHY_BASE + 0x0008
+#define CORE_SHD1C_09			0x0019 /* LED Control */
 #define CORE_SHD1C_0D			0x001d /* LED Selector 1 */
 #define CORE_SHD1C_0E			0x001e /* LED Selector 2 */
-#define CORE_SHD1C_09			0x0019 /* LED Control */
+#define CORE_EXP04              0x0034 /* Bicollor Led Selector */
 
 static uint32_t enabled_ports;
 
@@ -77,8 +78,9 @@ static int _phy_leds_init_51F1(phy_dev_t *phy_dev)
 {
     int ret = 0;
     int j;
-    uint16_t led_ctrl = 0;
-    uint16_t led_sel_1 = 0, led_sel_2 = 0;
+    uint16_t led_shd1c_09 = 0;
+    uint16_t led_core_exp_04 = 0;
+    uint16_t led_shd1c_0d = 0, led_shd1c_0e = 0;
     LEDS_ADVANCED_INFO led_info = {};
 
     ret = BpGetLedsAdvancedInfo(&led_info);
@@ -93,32 +95,89 @@ static int _phy_leds_init_51F1(phy_dev_t *phy_dev)
         uint16_t led_sel = 0;
         uint32_t led_mux = led_info.ledInfo[phy_dev->addr-1].SpeedLed[j] & BP_NET_LED_SPEED_MASK;
         uint32_t led_activity = led_info.ledInfo[phy_dev->addr-1].ActivityLed[j] & BP_NET_LED_SPEED_MASK;
-        uint16_t val;
+        uint16_t val, val2;
 
-        if (led_mux && led_activity)
+        if (led_mux == led_activity)
         {
-            val = 0x3;
-            led_ctrl = 0x18;
+            if (led_mux == BP_NET_LED_SPEED_ALL || led_mux == BP_NET_LED_SPEED_GBE)
+            {
+                val = 0x3;
+                led_shd1c_09 = 0x18;
+            }
+            else if (led_mux == (BP_NET_LED_SPEED_1G | BP_NET_LED_SPEED_100))
+            {
+                val = 0x1;
+                led_shd1c_09 = 0x108;
+            }
+            else if (led_mux == (BP_NET_LED_SPEED_1G | BP_NET_LED_SPEED_10))
+            {
+                val = 0x0;
+                led_shd1c_09 = 0x108;
+            }
+            else if (led_mux == BP_NET_LED_SPEED_1G)
+            {
+                val = 0x3;
+                led_shd1c_09 = 0x118;
+            }
+            else if (led_mux == BP_NET_LED_SPEED_100)
+            {
+                val = 0x1;
+                led_shd1c_09 = 0x118;
+            }
+            else if (led_mux == BP_NET_LED_SPEED_10)
+            {
+                val = 0x0;
+                led_shd1c_09 = 0x118;
+            }
+            else if (led_mux == (BP_NET_LED_SPEED_100 | BP_NET_LED_SPEED_10))
+            {
+                val = 0xa;
+                led_shd1c_09 = 0x118;
+                led_core_exp_04 |= (0x504);
+            }
+            else 
+            {
+                val = 0xe;
+            }
         }
-        else if (led_mux)
-            val = 0x1;
-        else if (led_activity)
-            val = 0x3;
-        else 
-            val = 0;
+        else
+        {
+            if (led_mux == BP_NET_LED_SPEED_ALL || led_mux == BP_NET_LED_SPEED_GBE)
+            {
+                val = 0xa;
+                val2 = 0x8;
+                led_core_exp_04 |= (0x100 | val2<<(4*(j%2)));
+            }
+            else if (led_activity == BP_NET_LED_ACTIVITY_ALL || led_activity == BP_NET_LED_SPEED_GBE)
+            {
+                val = 0xa;
+                val2 = 0x2;
+            }
+            else 
+            {
+                val=0xe;
+                val2 = 0x0;
+            }
+            led_core_exp_04 |= (0x100 | val2<<(4*(j%2)));
+        }
         
         led_sel = (val<<(4*((j+1)%2)));
 
         if (j < 1)
-            led_sel_1 |= led_sel;
+            led_shd1c_0d |= led_sel;
         else
-            led_sel_2 |= led_sel;
+            led_shd1c_0e |= led_sel;
     }
     
-    ret = ret ? ret : phy_dev_write(phy_dev, RDB_ACCESS | CORE_SHD1C_0D, led_sel_1);
-    ret = ret ? ret : phy_dev_write(phy_dev, RDB_ACCESS | CORE_SHD1C_0E, led_sel_2);
-    if (led_ctrl && !ret)
-        ret = phy_dev_write(phy_dev, RDB_ACCESS | CORE_SHD1C_09, led_ctrl);
+    ret = ret ? ret : phy_dev_write(phy_dev, RDB_ACCESS | CORE_SHD1C_0D, led_shd1c_0d);
+    ret = ret ? ret : phy_dev_write(phy_dev, RDB_ACCESS | CORE_SHD1C_0E, led_shd1c_0e);
+    if (led_shd1c_09 && !ret)
+        ret = phy_dev_write(phy_dev, RDB_ACCESS | CORE_SHD1C_09, led_shd1c_09);
+    if (led_core_exp_04 && !ret)
+        ret = phy_dev_write(phy_dev, RDB_ACCESS | CORE_EXP04, led_core_exp_04);
+
+    printk("CORE_SHD1C_09: 0x%x CORE_SHD1C_0D: 0x%x CORE_SHD1C_0E: 0x%x CORE_EXP04: 0x%x\n", 
+        led_shd1c_09, led_shd1c_0d, led_shd1c_0e, led_core_exp_04);
 
 Exit:
     return ret;
@@ -128,8 +187,9 @@ static int _phy_leds_init_51E1(phy_dev_t *phy_dev)
 {
     int ret = 0;
     int j;
-    uint16_t led_sel = 0;
-    uint16_t led_sel_1 = 0, led_sel_2 = 0;
+    uint16_t led_shd1c_09 = 0;
+    uint16_t led_core_exp_04 = 0;
+    uint16_t led_shd1c_0d = 0, led_shd1c_0e = 0;
     LEDS_ADVANCED_INFO led_info = {};
 
     ret = BpGetLedsAdvancedInfo(&led_info);
@@ -141,29 +201,93 @@ static int _phy_leds_init_51E1(phy_dev_t *phy_dev)
 
     for (j = 0; j < MAX_LEDS_PER_PORT; j++)
     {
+        uint16_t led_sel = 0;
         uint32_t led_mux = led_info.ledInfo[phy_dev->addr-1].SpeedLed[j] & BP_NET_LED_SPEED_MASK;
         uint32_t led_activity = led_info.ledInfo[phy_dev->addr-1].ActivityLed[j] & BP_NET_LED_SPEED_MASK;
-        uint16_t val;
+        uint16_t val, val2;
 
-        if (led_mux && led_activity)
-            val = 0xa;
-        else if (led_mux)
-            val = 0x1;
-        else if (led_activity)
-            val = 0x3;
-        else 
-            val = 0;
+        if (led_mux == led_activity)
+        {
+            if (led_mux == BP_NET_LED_SPEED_ALL || led_mux == BP_NET_LED_SPEED_GBE)
+            {
+                val = 0x3;
+                led_shd1c_09 = 0x18;
+            }
+            else if (led_mux == (BP_NET_LED_SPEED_1G | BP_NET_LED_SPEED_100))
+            {
+                val = 0x1;
+                led_shd1c_09 = 0x108;
+            }
+            else if (led_mux == (BP_NET_LED_SPEED_1G | BP_NET_LED_SPEED_10))
+            {
+                val = 0x0;
+                led_shd1c_09 = 0x108;
+            }
+            else if (led_mux == BP_NET_LED_SPEED_1G)
+            {
+                val = 0x3;
+                led_shd1c_09 = 0x118;
+            }
+            else if (led_mux == BP_NET_LED_SPEED_100)
+            {
+                val = 0x1;
+                led_shd1c_09 = 0x118;
+            }
+            else if (led_mux == BP_NET_LED_SPEED_10)
+            {
+                val = 0x0;
+                led_shd1c_09 = 0x118;
+            }
+            else if (led_mux == (BP_NET_LED_SPEED_100 | BP_NET_LED_SPEED_10))
+            {
+                val = 0xa;
+                led_shd1c_09 = 0x118;
+                led_core_exp_04 |= 0x504;
+            }
+            else 
+            {
+                val = 0xe;
+            }
+        }
+        else
+        {
+            if (led_mux == BP_NET_LED_SPEED_ALL || led_mux == BP_NET_LED_SPEED_GBE)
+            {
+                val = 0xa;
+                val2 = 0x8;
+                led_core_exp_04 |= (0x100 | val2<<(4*(j%2)));
+            }
+            else if (led_activity == BP_NET_LED_ACTIVITY_ALL || led_activity == BP_NET_LED_SPEED_GBE)
+            {
+                val = 0xa;
+                val2 = 0x2;
+            }
+            else 
+            {
+                val=0xe;
+                val2 = 0x0;
+            }
+            led_core_exp_04 |= (0x100 | val2<<(4*(j%2)));
+        }
+ 
         
         led_sel = (val<<(4*(j%2)));
 
         if (j < 2)
-            led_sel_1 |= led_sel;
+            led_shd1c_0d |= led_sel;
         else
-            led_sel_2 |= led_sel;
+            led_shd1c_0e |= led_sel;
     }
-    
-    ret = ret ? ret : phy_dev_write(phy_dev, RDB_ACCESS | CORE_SHD1C_0D, led_sel_1);
-    ret = ret ? ret : phy_dev_write(phy_dev, RDB_ACCESS | CORE_SHD1C_0E, led_sel_2);
+
+    ret = ret ? ret : phy_dev_write(phy_dev, RDB_ACCESS | CORE_SHD1C_0D, led_shd1c_0d);
+    ret = ret ? ret : phy_dev_write(phy_dev, RDB_ACCESS | CORE_SHD1C_0E, led_shd1c_0e);
+    if (led_shd1c_09 && !ret)
+        ret = phy_dev_write(phy_dev, RDB_ACCESS | CORE_SHD1C_09, led_shd1c_09);
+    if (led_core_exp_04 && !ret)
+        ret = phy_dev_write(phy_dev, RDB_ACCESS | CORE_EXP04, led_core_exp_04);
+
+    printk("CORE_SHD1C_09: 0x%x CORE_SHD1C_0D: 0x%x CORE_SHD1C_0E: 0x%x CORE_EXP04: 0x%x\n", 
+        led_shd1c_09, led_shd1c_0d, led_shd1c_0e, led_core_exp_04);
 
 Exit:
     return ret;

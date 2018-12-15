@@ -29,21 +29,21 @@
 
 #define	EPI_RC_NUMBER		25
 
-#define	EPI_INCREMENTAL_NUMBER	701
+#define	EPI_INCREMENTAL_NUMBER	1503
 
 #define	EPI_BUILD_NUMBER	0
 
-#define	EPI_VERSION		17, 10, 25, 701
+#define	EPI_VERSION		17, 10, 25, 1503
 
-#define	EPI_VERSION_NUM		0x110a192b
+#define	EPI_VERSION_NUM		0x110a195d
 
 #define EPI_VERSION_DEV		17.10.25
 
 /* Driver Version String, ASCII, 32 chars max */
 #ifdef WLTEST
-#define	EPI_VERSION_STR		"17.10.25.701 (r766690 WLTEST)"
+#define	EPI_VERSION_STR		"17.10.25.1503 (r768582 WLTEST)"
 #else
-#define	EPI_VERSION_STR		"17.10.25.701 (r766690)"
+#define	EPI_VERSION_STR		"17.10.25.1503 (r768582)"
 #endif // endif
 
 #endif /* _epivers_h_ */

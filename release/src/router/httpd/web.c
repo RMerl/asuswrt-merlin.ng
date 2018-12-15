@@ -431,6 +431,7 @@ extern char cloud_file[256];
 
 #ifdef RTCONFIG_CFGSYNC
 #define CFG_JSON_FILE           "/jffs/cfg.json"
+#define CFG_SERVER_PID		"/var/run/cfg_server.pid"
 int cfg_changed = 0;
 static void save_changed_param(json_object *cfg_root, char *param);
 static int check_cfg_changed(json_object *root);
@@ -1422,62 +1423,109 @@ ej_get_all_basic_clientlist(int eid, webs_t wp, int argc, char_t **argv)
 	return ret;
 }
 
-static int get_basic_clientlist_info(webs_t wp, int val)
+static int get_basic_clientlist_info(webs_t wp, int opt)
 {
 	int ret = 0, client_name_status = 0, wl_count = 0, wire_count = 0;
-	struct json_object *clients = NULL, *macArray = NULL, *macArray_tmp = NULL, *clients_array_obj = NULL, *client_name = NULL, *isWL = NULL;
+	struct json_object *clients = NULL, *cache_clients = NULL, *wire_clients_array_obj = NULL, *wl_clients_array_obj = NULL, *clients_array_obj = NULL;
+	struct json_object *client_tmp = NULL, *client_name = NULL, *isWL = NULL, *macArray = NULL, *macArray_tmp = NULL;
 	macArray = json_object_new_array();
 	clients_array_obj = json_object_new_array();
-	macArray_tmp = json_object_new_array();
+	wire_clients_array_obj = json_object_new_array();
+	wl_clients_array_obj = json_object_new_array();
 
-	if((nvram_match("refresh_networkmap", "1") || nvram_match("rescan_networkmap", "1")) && (check_if_file_exist(NMP_CACHE_FILE)))
+	if(opt == 3 && check_if_file_exist(NMP_CL_JSON_FILE))
 	{
-		clients = json_object_from_file(NMP_CACHE_FILE);
+		cache_clients = json_object_from_file(NMP_CL_JSON_FILE);
 	}
-	else
-	{
-		if(pids("networkmap")){
+
+	if(pids("networkmap")){
 			clients = json_object_new_object();
 			get_client_detail_info(clients, macArray, SHMKEY_LAN);
-		}
 	}
 
-	if(clients) {
-		json_object_object_foreach(clients, key, val){
-			client_name_status = json_object_object_get_ex(val, "name", &client_name);
+	if(opt == 0 || opt == 1|| opt == 2){
+		if(clients) {
+			json_object_object_foreach(clients, key, val){
+				macArray_tmp = json_object_new_array();
+				client_name_status = json_object_object_get_ex(val, "name", &client_name);
 
-			if(json_object_object_get_ex(val, "isWL", &isWL)){
-				if(atoi(json_object_get_string(isWL)) > 0){
-					json_object_array_add(macArray_tmp, json_object_new_string(key));
-					if(client_name_status)
-						json_object_array_add(macArray_tmp, client_name);
-					else
+				if(json_object_object_get_ex(val, "isWL", &isWL)){
+					if(atoi(json_object_get_string(isWL)) > 0){
 						json_object_array_add(macArray_tmp, json_object_new_string(key));
+						if(client_name_status)
+							json_object_array_add(macArray_tmp, client_name);
+						else
+							json_object_array_add(macArray_tmp, json_object_new_string(key));
 
-					json_object_array_add(clients_array_obj, macArray_tmp);
-					wl_count++;
-				}else
-					wire_count++;
+						json_object_array_add(wl_clients_array_obj, macArray_tmp);
+						wl_count++;
+					}else{
+						json_object_array_add(macArray_tmp, json_object_new_string(key));
+						if(client_name_status)
+							json_object_array_add(macArray_tmp, client_name);
+						else
+							json_object_array_add(macArray_tmp, json_object_new_string(key));
+
+						json_object_array_add(wire_clients_array_obj, macArray_tmp);
+						wire_count++;
+					}
+				}
 			}
 		}
+	}else if(opt == 3){
+		if(cache_clients && clients){
+			json_object_object_foreach(cache_clients, key, val) {
+				macArray_tmp = json_object_new_array();
+				client_name_status = json_object_object_get_ex(val, "name", &client_name);
+				if(json_object_object_get_ex(clients, key, &client_tmp))
+					if(json_object_object_get_ex(client_tmp, "isWL", &isWL))
+						if(atoi(json_object_get_string(isWL)) > 0)
+							continue;
+
+				json_object_array_add(macArray_tmp, json_object_new_string(key));
+				if(client_name_status)
+					json_object_array_add(macArray_tmp, client_name);
+				else
+					json_object_array_add(macArray_tmp, json_object_new_string(key));
+
+				json_object_array_add(clients_array_obj, macArray_tmp);
+			}
+		}
+
 	}
-	if(val == 1)
-		ret = websWrite(wp, "%s", json_object_to_json_string(clients_array_obj));
-	else if(val == 2)
+
+	if(opt == 0)	//wire client
+		ret = websWrite(wp, "%s", json_object_to_json_string(wire_clients_array_obj));
+	else if(opt == 1)	//wireless client
+		ret = websWrite(wp, "%s", json_object_to_json_string(wl_clients_array_obj));
+	else if(opt == 2)
 		ret = websWrite(wp, "{\"wireless\":\"%d\", \"wire\":\"%d\"}", wl_count, wire_count);
+	else if(opt == 3)	//wireless client
+		ret = websWrite(wp, "%s", json_object_to_json_string(clients_array_obj));
 
 	if(clients)
 		json_object_put(clients);
+	if(cache_clients)
+		json_object_put(cache_clients);
 	if(macArray)
 		json_object_put(macArray);
+	if(wl_clients_array_obj)
+		json_object_put(clients_array_obj);
+	if(wire_clients_array_obj)
+		json_object_put(wire_clients_array_obj);
 	if(clients_array_obj)
 		json_object_put(clients_array_obj);
 	if(macArray_tmp)
 		json_object_put(macArray_tmp);
-
 	return ret;
 }
 
+static int
+ej_get_wol_clientlist(int eid, webs_t wp, int argc, char_t **argv)
+{
+	get_basic_clientlist_info(wp, 3);
+	return 0;
+}
 
 static int ej_get_basic_clientlist(int eid, webs_t wp, int argc, char_t **argv)
 {
@@ -3212,7 +3260,10 @@ static int validate_apply(webs_t wp, json_object *root) {
 						wans_dualwan_usb |= NVRAM_MODIFIED_DUALWAN_REBOOT;
 				}
 #endif
-
+				if( !strcmp(name, "PM_MY_EMAIL") || !strcmp(name, "PM_SMTP_AUTH_USER")){
+					if (strpbrk(value, "`") != NULL)
+						continue;
+				}
 #ifdef RTCONFIG_CFGSYNC
 				save_changed_param(cfg_root, name);
 #endif                           
@@ -3395,7 +3446,9 @@ static int validate_apply(webs_t wp, json_object *root) {
 			nvram_set("w_Setting", "1");
 
 #ifdef RTCONFIG_CFGSYNC
-		if (nvram_match("x_Setting", "1") && pids("cfg_server")) {
+		if (nvram_match("x_Setting", "1") && pids("cfg_server") &&
+			check_if_file_exist(CFG_SERVER_PID))
+		{
 			char cfg_ver[9] = {0};
 
 			/* add action_script */
@@ -3417,7 +3470,7 @@ static int validate_apply(webs_t wp, json_object *root) {
 
 				/* trigger cfg_server to send notification */
 				if (acc_modified && strlen(real_action_script) && root) {
-					kill_pidfile_s("/var/run/cfg_server.pid", SIGUSR2);
+					kill_pidfile_s(CFG_SERVER_PID, SIGUSR2);
 					cfg_changed = 0;
 				}
 			}
@@ -4234,9 +4287,11 @@ static int ej_update_variables(int eid, webs_t wp, int argc, char_t **argv) {
 				if(strcmp(action_script, "saveNvram"))
 				{
 #ifdef RTCONFIG_CFGSYNC
-					if (nvram_match("x_Setting", "1") && cfg_changed && pids("cfg_server")) {
+					if (nvram_match("x_Setting", "1") && cfg_changed && pids("cfg_server") &&
+						check_if_file_exist(CFG_SERVER_PID))
+					{
 						/* trigger cfg_server to send notification */
-						kill_pidfile_s("/var/run/cfg_server.pid", SIGUSR2);
+						kill_pidfile_s(CFG_SERVER_PID, SIGUSR2);
 						cfg_changed = 0;
 					}
 					else
@@ -4413,73 +4468,6 @@ char *Ch_conv(char *proto_name, int idx)
 		proto=nvram_get(qos_name_x);
 		return proto;
 	}
-}
-
-static int enable_hwnat()
-{
-	int qos_userspec_app_en = 0;
-	int rulenum = nvram_get_int("qos_rulenum_x"), idx_class = 0;
-	int ret = 0;
-	int unit;
-	char tmp[100], prefix[] = "wanXXXXXXXXXX_";
-	char wan_proto[16];
-
-#if defined (W7_LOGO) || defined (WIFI_LOGO)
-		return 0;
-#endif
-
-	if(nvram_invmatch("sw_mode_ex", "1"))
-		return 0;
-
-	unit = 0;
-	wan_prefix(unit, prefix);
-	memset(wan_proto, 0, 16);
-	strcpy(wan_proto, nvram_safe_get(strcat_r(prefix, "proto", tmp)));
-
-	if(!strcmp(wan_proto, "pptp") || !strcmp(wan_proto, "l2tp"))
-		return 0;
-
-	/* Add class for User specify, 10:20(high), 10:40(middle), 10:60(low)*/
-	if (rulenum) {
-		for (idx_class=0; idx_class < rulenum; idx_class++)
-		{
-			if (atoi(Ch_conv("qos_prio_x", idx_class)) == 1)
-			{
-				qos_userspec_app_en = 1;
-				break;
-			}
-			else if (atoi(Ch_conv("qos_prio_x", idx_class)) == 6)
-			{
-				qos_userspec_app_en = 1;
-				break;
-			}
-		}
-	}
-/*
-	if (nvram_match("mr_enable_x", "1"))
-		ret += 1;
-
-	if (	nvram_match("qos_tos_prio", "1") ||
-		nvram_match("qos_pshack_prio", "1") ||
-		nvram_match("qos_service_enable", "1") ||
-		nvram_match("qos_shortpkt_prio", "1")	)
-		ret += 2;
-*/
-
-	if (	(nvram_invmatch("qos_manual_ubw","0") && nvram_invmatch("qos_manual_ubw","")) ||
-		(rulenum && qos_userspec_app_en)	)
-		ret = 1;
-
-	return ret;
-}
-
-static int check_hwnat(int eid, webs_t wp, int argc, char_t **argv){
-	if(!enable_hwnat())
-		websWrite(wp, "0");
-	else
-		websWrite(wp, "1");
-
-	return 0;
 }
 
 static int wanstate_hook(int eid, webs_t wp, int argc, char_t **argv){
@@ -10291,7 +10279,9 @@ apply_cgi(webs_t wp, char_t *urlPrefix, char_t *webDir, int arg,
 
 		if(action_para && strlen(action_para) > 0) {
 #ifdef RTCONFIG_CFGSYNC
-			if (nvram_match("x_Setting", "1") && cfg_changed && pids("cfg_server")) {
+			if (nvram_match("x_Setting", "1") && cfg_changed && pids("cfg_server") &&
+				check_if_file_exist(CFG_SERVER_PID))
+			{
 				json_object *cfg_root = NULL;
 
 				if ((cfg_root = json_object_from_file(CFG_JSON_FILE)) == NULL)
@@ -10305,7 +10295,7 @@ apply_cgi(webs_t wp, char_t *urlPrefix, char_t *webDir, int arg,
 				json_object_put(cfg_root);
 
 				/* trigger cfg_server to send notification */
-				kill_pidfile_s("/var/run/cfg_server.pid", SIGUSR2);
+				kill_pidfile_s(CFG_SERVER_PID, SIGUSR2);
 				cfg_changed = 0;
 			}
 			else
@@ -14014,10 +14004,10 @@ do_blocking_request_cgi(char *url, FILE *stream)
 	memset(filename, 0, 128);
 
 	do_json_decode(&root);
-	block_CName = get_cgi_json("CName", root);
-	block_mac = get_cgi_json("mac", root);
-	block_interval = get_cgi_json("interval", root);
-	block_timestap = get_cgi_json("timestap", root);
+	block_CName = safe_get_cgi_json("CName", root);
+	block_mac = safe_get_cgi_json("mac", root);
+	block_interval = safe_get_cgi_json("interval", root);
+	block_timestap = safe_get_cgi_json("timestap", root);
 
 
 	time_t now = uptime();
@@ -15107,6 +15097,8 @@ do_login_cgi(char *url, FILE *stream)
     login_cgi(stream, NULL, NULL, 0, url, NULL, NULL);
 }
 
+#define JSON_MARK_DQ 0
+#define JSON_MARK_CB 1
 
 static void
 app_call(char *func, FILE *stream, int first_row)
@@ -15115,6 +15107,7 @@ app_call(char *func, FILE *stream, int first_row)
 	int argc;
 	char * argv[16]={NULL};
 	struct ej_handler *handler;
+	int json_mark = -1;
 
 	/* Parse out ( args ) */
 	if (!(args = strchr(func, '(')))
@@ -15130,31 +15123,47 @@ app_call(char *func, FILE *stream, int first_row)
 
 	/* Call handler */
 	for (handler = &ej_handlers[0]; handler->pattern; handler++) {
-//		if (strncmp(handler->pattern, func, strlen(handler->pattern)) == 0)
 		if (strcmp(handler->pattern, func) == 0){
 			if(first_row == 0)
 				websWrite(stream, ",\n");
 
 			if(strcmp(func, "nvram_get") == 0 || strcmp(func, "nvram_default_get") == 0){
-				websWrite(stream,"\"%s\":", argv[0]);
-				websWrite(stream,"\"" );
+				if(check_xss_blacklist(argv[0], 0)){
+					websWrite(stream,"\"ERROR_NAME\":\"\"");
+					break;
+				}else{
+					websWrite(stream,"\"%s\":", argv[0]);
+					json_mark = JSON_MARK_DQ;
+				}
 			}else if(strcmp(func, "nvram_char_to_ascii") == 0){
-				websWrite(stream,"\"%s\":", argv[1]);
-				websWrite(stream,"\"" );
+				if(check_xss_blacklist(argv[1], 0)){
+					websWrite(stream,"\"ERROR_NAME\":\"\"");
+					break;
+				}else{
+					websWrite(stream,"\"%s\":", argv[1]);
+					json_mark = JSON_MARK_DQ;
+				}
+
 			}else if(argv[0] != NULL && strcmp(argv[0], "appobj") == 0 && strncmp(func, "get_clientlist", 14) != 0){
 				websWrite(stream,"\"%s\":", func);
-				websWrite(stream,"{" );
+				json_mark = JSON_MARK_CB;
 			}else if(argv[0] != NULL && strncmp(func, "get_clientlist", 14) != 0)
 				websWrite(stream,"\"%s-%s\":", func, argv[0]);
 			else
 				websWrite(stream,"\"%s\":", func);
 
+			if(json_mark == JSON_MARK_DQ)
+				websWrite(stream,"\"" );
+			else if(json_mark == JSON_MARK_CB)
+				websWrite(stream,"{" );
+
 			handler->output(0, stream, argc, argv);
 
-			if(strcmp(func, "nvram_get") == 0 || strcmp(func, "nvram_default_get") == 0|| strcmp(func, "nvram_char_to_ascii") == 0)
+			if(json_mark == JSON_MARK_DQ)
 				websWrite(stream,"\"" );
-			else if(argv[0] != NULL && strcmp(argv[0], "appobj") == 0 && strncmp(func, "get_clientlist", 14) != 0)
+			else if(json_mark == JSON_MARK_CB)
 				websWrite(stream,"}" );
+			break;
 		}
 	}
 }
@@ -15858,17 +15867,21 @@ do_cleanlog_cgi(char *url, FILE *stream) {
 	}
 }
 
-static void
-do_update_wlanlog_cgi(char *url, FILE *stream) {
-	int ret = 0;
+void update_wlan_log(int sig){
 	FILE *fp;
 
 	if((fp = fopen("/tmp/wlanlog.txt", "w")) != NULL) {
 		ej_wl_status_2g(0, fp, 0, NULL);
 		fclose(fp);
-		ret = 1;
+		sig = 1;
 	}
+}
 
+static void
+do_update_wlanlog_cgi(char *url, FILE *stream) {
+
+	int ret = 0;
+	update_wlan_log(ret);
 	websWrite(stream, "{\"statusCode\":\"%d\"}", (ret)?200:400);
 }
 
@@ -17147,10 +17160,14 @@ int ej_initial_account(int eid, webs_t wp, int argc, char **argv){
 	// there are file_lock(), file_unlock() in add_account().
 	// They would let the buffer of nvram_safe_get() be confused.
 	char buf1[64], buf2[64];
-	memset(buf1, 0, 64);
-	memset(buf2, 0, 64);
-	strcpy(buf1, nvram_safe_get("http_username"));
-	strcpy(buf2, nvram_safe_get("http_passwd"));
+	char *http_passwd = nvram_safe_get("http_passwd");
+#ifdef RTCONFIG_NVRAM_ENCRYPT
+	char dec_passwd[NVRAM_ENC_LEN];
+	pw_dec(http_passwd, dec_passwd);
+	http_passwd = dec_passwd;
+#endif
+	strlcpy(buf1, nvram_safe_get("http_username"), sizeof(buf1));
+	strlcpy(buf2, http_passwd , sizeof(buf2));
 
 	if(add_account(buf1, buf2) < 0)
 #endif
@@ -18969,9 +18986,19 @@ int ej_webdavInfo(int eid, webs_t wp, int argc, char **argv) {
 #ifdef RTCONFIG_AMAS
 #ifdef RTCONFIG_SW_HW_AUTH
 	if (getAmasSupportMode() != 0)
-		ExtendCap |= __cpu_to_le16(EXTEND_CAP_AMAS);
-#else
-	ExtendCap |= __cpu_to_le16(EXTEND_CAP_AMAS);
+	{
+#endif
+		if (!repeater_mode()
+#if defined(RTCONFIG_BCMWL6) && defined(RTCONFIG_PROXYSTA)
+			&& !psr_mode()
+#endif
+#ifdef RTCONFIG_DPSTA
+			&& !(dpsta_mode() && nvram_get_int("re_mode") == 0)
+#endif
+		)
+			ExtendCap |= __cpu_to_le16(EXTEND_CAP_AMAS);
+#ifdef RTCONFIG_SW_HW_AUTH
+        }
 #endif
 	if (nvram_get_int("amas_bdl"))
 		ExtendCap |= __cpu_to_le16(EXTEND_CAP_AMAS_BDL);
@@ -19010,8 +19037,9 @@ int ej_webdavInfo(int eid, webs_t wp, int argc, char **argv) {
 
 	websWrite(wp, "// toAPPInfo=['Ver','ExtendCap'];\n");
 	websWrite(wp, "toAPPInfo=['%d'", WEBDEVINFO_VER);
-	websWrite(wp, ",'%u'", ExtendCap);
-	websWrite(wp, "];\n");
+	websWrite(wp, ",'%u',", ExtendCap);
+	websWrite(wp, "'%s',", get_label_mac());
+	websWrite(wp, "''];\n");
 
 	return 0;
 }
@@ -19847,95 +19875,6 @@ int ej_backup_nvram(int eid, webs_t wp, int argc, char_t **argv)
 	return 0;
 }
 // end svg support by Viz ^^^^^^^^^^^^^^^^^^^^
-
-static int
-ej_select_list(int eid, webs_t wp, int argc, char_t **argv)
-{
-	char *id;
-	int ret = 0;
-	char out[64], out_t[64], idxstr[12], tmpstr[64], tmpstr1[64];
-	int i, curr, hit, noneFlag;
-	char *ref1, *ref2, *refnum=NULL;
-
-	if (ejArgs(argc, argv, "%s", &id) < 1) {
-		websError(wp, 400, "Insufficient args\n");
-		return -1;
-	}
-
-	if (strcmp(id, "Storage_x_SharedPath")==0)
-	{
-		ref1 = "sh_path_x";
-		ref2 = "sh_path";
-		refnum = "sh_num";
-		curr = nvram_get_int(ref1);
-		sprintf(idxstr, "%d", curr);
-		ret += websWrite(wp, nvram_safe_get(strcat_r(ref2, idxstr, tmpstr)));
-		return ret;
-	}
-	else if (strncmp(id, "Storage_x_AccUser", 17)==0)
-	{
-		sprintf(tmpstr, "sh_accuser_x%s", id + 17);
-		ref2 = "acc_username";
-		refnum = "acc_num";
-
-		curr = nvram_get_int(tmpstr);
-		noneFlag =1;
-	}
-	else if (strcmp(id, "Storage_x_AccAny")==0)
-	{
-		 ret = websWrite(wp, "<option value=\"Guest\">Guest</option>");
-		 return ret;
-	}
-	else if (strcmp(id, "Storage_AllUser_List")==0)
-	{
-
-		strcpy(out, "<option value=\"Guest\">Guest</option>");
-		ret += websWrite(wp, out);
-
-		for (i=0;i<nvram_get_int("acc_num");i++)
-		{
-			 sprintf(idxstr, "%d", i);
-			 strlcpy(tmpstr1, nvram_get(strcat_r("acc_username", idxstr, tmpstr)), sizeof(tmpstr1));
-			 snprintf(out ,sizeof(out), "<option value=\"%s\">%s</option>", tmpstr1, tmpstr1);
-			 ret += websWrite(wp, out);
-		}
-		return ret;
-	}
-	else
-	{
-		 return ret;
-	}
-
-	hit = 0;
-
-	for (i=0;i<nvram_get_int(refnum);i++)
-	{
-		sprintf(idxstr, "%d", i);
-		strcpy(tmpstr1, nvram_get(strcat_r(ref2, idxstr, tmpstr)));
-		sprintf(out, "<option value=\"%d\"", i);
-
-		if (i==curr)
-		{
-			hit = 1;
-			sprintf(out_t, "%s selected", out);
-			strlcpy(out, out_t, sizeof(out));
-		}
-		sprintf(out_t,"%s>%s</option>", out, tmpstr1);
-		strlcpy(out, out_t, sizeof(out));
-
-		ret += websWrite(wp, out);
-	}
-
-	if (noneFlag)
-	{
-		cprintf("hit : %d\n", hit);
-		if (!hit) sprintf(out, "<option value=\"99\" selected>None</option>");
-		else sprintf(out, "<option value=\"99\">None</option>");
-
-		ret += websWrite(wp, out);
-	}
-	return ret;
-}
 
 static int
 ej_radio_status(int eid, webs_t wp, int argc, char_t **argv)
@@ -22415,7 +22354,8 @@ ej_get_onboardingstatus(int eid, webs_t wp, int argc, char **argv){
 	websWrite(wp, "\"cfg_obtimeout\":\"%s\",", nvram_safe_get("cfg_obtimeout"));
 	websWrite(wp, "\"cfg_obmodel\":\"%s\",", nvram_safe_get("cfg_obmodel"));
 	websWrite(wp, "\"cfg_obrssi\":\"%s\",", nvram_safe_get("cfg_obrssi"));
-	websWrite(wp, "\"cfg_obcount\":\"%s\"", nvram_safe_get("cfg_obcount"));
+	websWrite(wp, "\"cfg_obcount\":\"%s\",", nvram_safe_get("cfg_obcount"));
+	websWrite(wp, "\"cfg_ready\":\"%d\"", check_if_file_exist(CFG_SERVER_PID) ? 1 : 0);
 	websWrite(wp, "}");
 	return 0;
 }
@@ -22935,6 +22875,7 @@ ej_get_header_info(int eid, webs_t wp, int argc, char **argv)
 
 	char host_name_temp[64];
 	char current_page_name_temp[128];
+	char *host_name_copy = NULL, *host_name_copy_temp = NULL;
 
 	memset(host_name_temp, 0, sizeof(host_name_temp));
 	memset(current_page_name_temp, 0, sizeof(current_page_name_temp));
@@ -22949,7 +22890,9 @@ ej_get_header_info(int eid, webs_t wp, int argc, char **argv)
 	}
 #endif
 	else {
-		snprintf(host_name_temp, sizeof(host_name), "%s", host_name);
+		host_name_copy = strdup(host_name);
+		host_name_copy_temp = strtok(host_name_copy,":");
+		snprintf(host_name_temp, sizeof(host_name_temp), "%s", host_name_copy_temp);
 	}
 
 	if(check_xss_blacklist(current_page_name, 1)) {
@@ -22962,8 +22905,18 @@ ej_get_header_info(int eid, webs_t wp, int argc, char **argv)
 	json_object_object_add(item,"host", json_object_new_string(host_name_temp));
 	json_object_object_add(item,"current_page", json_object_new_string(current_page_name_temp));
 
+	if(do_ssl){
+		json_object_object_add(item,"protocol", json_object_new_string("https"));
+		json_object_object_add(item,"port", json_object_new_int(nvram_get_int("https_lanport")));
+	}
+	else{
+		json_object_object_add(item,"protocol", json_object_new_string("http"));
+		json_object_object_add(item,"port", json_object_new_int(nvram_get_int("http_lanport")));
+	}
+
 	websWrite(wp, "%s", json_object_to_json_string(item));
 
+	free(host_name_copy);
 	json_object_put(item);
 
 	return 0;
@@ -23373,6 +23326,13 @@ static int ej_get_encrypt_wifi_result(int eid, webs_t wp, int argc, char **argv)
 }
 
 
+static int ej_get_label_mac(int eid, webs_t wp, int argc, char **argv){
+
+	websWrite(wp, "\"%s\"", get_label_mac());
+
+	return 0;
+}
+
 static int ej_get_lan_hwaddr(int eid, webs_t wp, int argc, char **argv){
 
 	if(check_user_agent(user_agent) == FROM_BROWSER)
@@ -23427,7 +23387,6 @@ struct ej_handler ej_handlers[] = {
 	{ "sysuptime", ej_sysuptime},
 	{ "nvram_dump", ej_dump},
 	//{ "load_script", ej_load},
-	{ "select_list", ej_select_list},
 	{ "dhcpLeaseInfo", ej_dhcpLeaseInfo},
 	{ "dhcpLeaseMacList", ej_dhcpLeaseMacList},
 	{ "IP_dhcpLeaseInfo", ej_IP_dhcpLeaseInfo},
@@ -23464,10 +23423,11 @@ struct ej_handler ej_handlers[] = {
 	{ "nvram_char_to_ascii", ej_nvram_char_to_ascii},
 //	{ "load_clientlist_char_to_ascii", ej_load_clientlist_char_to_ascii},
 	{ "get_clientlist_from_json_database", ej_get_clientlist_from_json_database},
+#endif
 	{ "get_basic_clientlist", ej_get_basic_clientlist},
 	{ "get_basic_clientlist_count", ej_get_basic_clientlist_count},
 	{ "get_all_basic_clientlist", ej_get_all_basic_clientlist},
-#endif
+	{ "get_wol_clientlist", ej_get_wol_clientlist},
 //2008.08 magic{
 	{ "update_variables", ej_update_variables},
 #ifdef RTCONFIG_ROG
@@ -23490,7 +23450,6 @@ struct ej_handler ej_handlers[] = {
 	{ "wanlink_state", wanlink_state_hook},
 	{ "wan_action", wan_action_hook},
 	{ "get_wan_unit", get_wan_unit_hook},
-	{ "check_hwnat", check_hwnat},
 	{ "get_parameter", ej_get_parameter},
 	{ "get_ascii_parameter", ej_get_ascii_parameter},
 	{ "login_state_hook", login_state_hook},
@@ -23806,6 +23765,7 @@ struct ej_handler ej_handlers[] = {
 	{ "get_wifi_probe_status", ej_get_wifi_probe_status},
 	{ "get_encrypt_wifi_result", ej_get_encrypt_wifi_result},
 	{ "get_lan_hwaddr", ej_get_lan_hwaddr},
+	{ "get_label_mac", ej_get_label_mac},
 	{ "get_ui_support", ej_get_ui_support},
 #ifdef RTCONFIG_PUSH_EMAIL
 	{ "generate_trans_id", ej_generate_trans_id},

@@ -19,7 +19,7 @@
  *
  * <<Broadcom-WL-IPTag/Open:>>
  *
- * $Id: siutils.c 765989 2018-07-23 04:12:12Z $
+ * $Id: siutils.c 767651 2018-09-20 10:36:57Z $
  */
 
 #include <bcm_cfg.h>
@@ -3287,6 +3287,17 @@ BCMATTACHFN(si_doattach)(si_info_t *sii, uint devid, osl_t *osh, volatile void *
 	/* Enable console prints */
 	si_muxenab(sii, 3);
 #endif // endif
+
+#if !defined(BCMDONGLEHOST)
+	if (BCM43684_CHIP(sih->chip)) {
+		const uint32 default_val = 0x18000800;
+		uint32 val = si_pmu_chipcontrol(sih, 0, 0, 0);
+		if (val != default_val) {
+			SI_ERROR(("PMU CC reg 0 reset (0x%x)\n", val));
+			si_pmu_chipcontrol(sih, 0, ~0, default_val);
+		}
+	}
+#endif /* !BCMDONGLEHOST */
 
 	return (sii);
 

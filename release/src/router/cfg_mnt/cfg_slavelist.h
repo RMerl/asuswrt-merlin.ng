@@ -48,6 +48,7 @@ typedef struct _CM_CLIENT_TABLE {
 	int count;
 } CM_CLIENT_TABLE, *P_CM_CLIENT_TABLE;
 
+extern int cm_checkReListExist(char *Mac);
 extern int cm_checkReListUpdate(char *newReMac, char *sta2gMac, char *sta5gMac);
 extern void cm_updateReList(char *newReMac, char *sta2gMac, char *sta5gMac, int action);
 extern void cm_handleReListUpdate(unsigned char *decodeMsg);

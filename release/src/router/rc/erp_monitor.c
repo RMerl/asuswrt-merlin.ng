@@ -260,6 +260,7 @@ static int erp_check_gphy_stat(int model)
 	{
 		while (fgets(buf, sizeof(buf), fp))
 		{
+			memset(v0, 0, sizeof(v0));
 			memset(v1, 0, sizeof(v1));
 			memset(v2, 0, sizeof(v2));
 			memset(v3, 0, sizeof(v3));
@@ -276,6 +277,18 @@ static int erp_check_gphy_stat(int model)
 				if ( (!strcmp(v0, "X") || (model==MODEL_DSLAC68U)) /* DSL-AC68U v0 always = "M" */
 					&& !strcmp(v1, "X") && !strcmp(v2, "X") && !strcmp(v3, "X") && !strcmp(v4, "X")
 					&& !strcmp(v5, "X") && !strcmp(v6, "X") && !strcmp(v7, "X") && !strcmp(v8, "X"))
+				{
+					ret = 0;
+				}
+				else if (strcmp(v0, "X") && (model!=MODEL_DSLAC68U)) /* no DSL-model */
+				{
+					ret = 2;
+				}
+			}
+			else if(len == 31) {
+				sscanf(buf, "W0=%[^;];L1=%[^;];L2=%[^;];L3=%[^;];L4=%[^;];L5=%[^;];", v0, v1, v2, v3, v4, v5);
+				if ( (!strcmp(v0, "X") || (model==MODEL_DSLAC68U)) /* DSL-AC68U v0 always = "M" */
+					&& !strcmp(v1, "X") && !strcmp(v2, "X") && !strcmp(v3, "X") && !strcmp(v4, "X") && !strcmp(v5, "X"))
 				{
 					ret = 0;
 				}

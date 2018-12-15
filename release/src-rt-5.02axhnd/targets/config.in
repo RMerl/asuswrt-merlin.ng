@@ -2137,6 +2137,8 @@ bool 'Openvswitch' BUILD_OPENVSWITCH
 
 bool 'AIRIQ support' BUILD_BRCM_AIRIQ
 
+bool 'HOSTAPD support' BUILD_BRCM_HOSTAPD
+
 if [ "$BRCM_63138" = "y" -o "$BRCM_63158" = "y" -o "$BRCM_63148" = "y" -o "$BRCM_6856" = "y" ]; then
   bool 'ASOC_Sound Card Support' BUILD_BCM_ASOC_AUDIO
   if [ "$BUILD_BCM_ASOC_AUDIO" = "y" ]; then

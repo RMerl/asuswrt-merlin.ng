@@ -252,7 +252,10 @@ var systemVariable = {
 		"wlcOrder": [],
 		"wlcStatus": {}
 	},
-	"wanOption": false
+	"wanOption": false,
+	"interval_status": false,
+	"modelCloudIcon": [],
+	"onboardingInfo": {}
 }
 
 var aimeshObj = {

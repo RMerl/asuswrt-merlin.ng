@@ -18,7 +18,7 @@
  *
  * <<Broadcom-WL-IPTag/Open:>>
  *
- * $Id: 802.11.h 765525 2018-07-06 08:24:04Z $
+ * $Id: 802.11.h 767589 2018-09-18 08:43:07Z $
  */
 
 #ifndef _802_11_H_
@@ -1338,6 +1338,8 @@ typedef struct ccx_qfl_ie ccx_qfl_ie_t;
 						 * frame policy violation
 						 */
 
+#define DOT11_SC_INSUFFICIENT_BANDWIDTH	33	/* Insufficient Bandwidth */
+#define DOT11_SC_POOR_CHAN_CONDITION	34	/* Bad channel condition */
 #define	DOT11_SC_DECLINED		37	/* request declined */
 #define	DOT11_SC_INVALID_PARAMS		38	/* One or more params have invalid values */
 #define DOT11_SC_INVALID_PAIRWISE_CIPHER	42 /* invalid pairwise cipher */
@@ -4521,6 +4523,8 @@ typedef struct vht_features_ie_hdr vht_features_ie_hdr_t;
 #define RSN_AKM_SHA256_1X	5	/* SHA256 key derivation, using 802.1X */
 #define RSN_AKM_SHA256_PSK	6	/* SHA256 key derivation, using Pre-shared Key */
 #define RSN_AKM_TPK		7	/* TPK(TDLS Peer Key) handshake */
+#define RSN_AKM_SAE_PSK		8	/* AKM for SAE with 4-way handshake */
+#define RSN_AKM_SAE_FBT		9	/* AKM for SAE with FBT */
 #define RSN_AKM_FILS_SHA256	14	/* SHA256 key derivation, using FILS */
 #define RSN_AKM_FILS_SHA384	15	/* SHA384 key derivation, using FILS */
 

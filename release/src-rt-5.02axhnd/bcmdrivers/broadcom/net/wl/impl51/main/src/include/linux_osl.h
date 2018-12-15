@@ -18,7 +18,7 @@
  *
  * <<Broadcom-WL-IPTag/Open:>>
  *
- * $Id: linux_osl.h 763331 2018-05-18 05:45:31Z $
+ * $Id: linux_osl.h 767049 2018-08-26 18:32:18Z $
  */
 
 #ifndef _linux_osl_h_
@@ -373,7 +373,15 @@ extern void osl_pcie_rreg(osl_t *osh, ulong addr, volatile void *v, uint size);
 extern int osl_error(int bcmerror);
 
 /* the largest reasonable packet buffer driver uses for ethernet MTU in bytes */
+#if defined(WL_EAP_AMSDU_CRYPTO_OFFLD)
+/* When this conditional is turned on and run-time configuration is enabled,
+ * host can receive frames larger than MTU size. Right now this is set to default size.
+ * This should be set to higher value for larger A-MSDU frame sizes.
+ */
+#define PKTBUFSZ	12248
+#else
 #define	PKTBUFSZ	2048   /* largest reasonable packet buffer, driver uses for ethernet MTU */
+#endif // endif
 
 #define OSH_NULL   NULL
 

@@ -312,6 +312,8 @@ struct fkbuff;                          /* linux/nbuff.h                      */
 #define BLOG_NAT_TCP_DEFAULT_IDLE_TIMEOUT (2400 *HZ)
 #define BLOG_NAT_UDP_DEFAULT_IDLE_TIMEOUT (300 *HZ)
 
+#define BLOG_NAT_TCP_GENERIC_IDLE_TIMEOUT (125 *HZ)
+
 extern uint32_t blog_nat_tcp_def_idle_timeout;
 extern uint32_t blog_nat_udp_def_idle_timeout;
 extern uint32_t blog_nat_udp_def_idle_timeout_stream;

@@ -192,7 +192,8 @@ optee:
 	$(MAKE) -C $(BUILD_DIR)/secureos optee_os
 ifeq ($(strip $(SECURE_BOOT_ARCH))$(strip $(BUILD_CFE_SUPPORT_HASH_BLOCK)),GEN3y)
 	@echo "############### Building final image with HASH ################";
-	$(MAKE) -f make.image nand_pureubi
+	$(MAKE) -f build/make.image nand
+	$(MAKE) -f build/make.image emmc
 else
 	@echo "############### Building final image with OPTEE ################";
 	$(MAKE) -f Makefile buildimage
@@ -254,15 +255,6 @@ endif
 #default WLBUS for wlan pci driver
 WLBUS ?="pci"
 export WLBUS                                                                              
-
-#IMAGE_VERSION:=$(BRCM_VERSION)$(BRCM_RELEASE)$(shell echo $(BRCM_EXTRAVERSION) | sed -e "s/\(0\)\([1-9]\)/\2/")$(shell echo $(PROFILE) | sed -e "s/^[0-9]*//")$(shell date '+%j%H%M')
-
-ifneq ($(IMAGE_VERSION_STRING),)
-    IMAGE_VERSION:=$(IMAGE_VERSION_STRING)
-else
-    IMAGE_VERSION:=$(BRCM_VERSION)$(BRCM_RELEASE)$(shell echo $(BRCM_EXTRAVERSION) | sed -e "s/\(0\)\([1-9]\)/\2/")$(shell echo $(PROFILE) | sed -e "s/^[0-9]*//")$(shell date '+%j%H%M')
-endif
-
 
 
 ############################################################################
@@ -962,7 +954,7 @@ endif
 
 
 ifneq ($(if $(wildcard cfe/cfe/board),$(BUILD_DYNAMIC_CFE)),)
-dynamic_cfe: build_cfe_nand build_cfe_emmc build_cfe_sec_nand build_cfe_sec_emmc build_cfe_nand_tk
+dynamic_cfe: build_cfe_nand build_cfe_emmc build_cfe_sec_nand build_cfe_sec_emmc build_cfe_nand_tk build_cfe_emmc_tk
 
 else
 dynamic_cfe:
@@ -980,8 +972,11 @@ build_cfe_nand: cfe/build/broadcom/build_cferom_nand/Makefile cfe/build/broadcom
 ifeq ($(strip $(SECURE_BOOT_TURNKEY)),y)
 build_cfe_nand_tk: cfe/build/broadcom/build_cferom_nand_tk/Makefile cfe/build/broadcom/build_cferam_nand_tk/Makefile hosttools untar_cfe rdp_link
 	$(MAKE) -C cfe/build/broadcom/build_cferom_nand_tk/ RAM_BUILD=../build_cferam_nand_tk BLD_NAND=1 BRCM_CHIP=$(BRCM_CHIP) PROFILE_FILE=$(PROFILE_FILE) BLD_SEC_TK=$(BLD_SEC_TK)
+build_cfe_emmc_tk: cfe/build/broadcom/build_cferom_emmc_tk/Makefile cfe/build/broadcom/build_cferam_emmc_tk/Makefile hosttools untar_cfe rdp_link
+	$(MAKE) -C cfe/build/broadcom/build_cferom_emmc_tk/ RAM_BUILD=../build_cferam_emmc_tk BLD_EMMC=1 BRCM_CHIP=$(BRCM_CHIP) PROFILE_FILE=$(PROFILE_FILE) BLD_SEC_TK=$(BLD_SEC_TK)
 else
 build_cfe_nand_tk:
+build_cfe_emmc_tk:
 endif
 
 ifeq ($(strip $(BUILD_EMMC_IMG)),y)
@@ -1009,8 +1004,7 @@ cfe/build/broadcom/build_cferam_%/Makefile : cfe/build/broadcom/bcm63xx_ram/Make
 	mkdir -p ${@D}
 	cat $< >  $@
 
-.PHONY: dynamic_cfe dynamic_cfe_clean build_cfe_nand build_cfe_nand_tk build_cfe_emmc build_cfe_sec_nand build_cfe_sec_emmc
-
+.PHONY: dynamic_cfe dynamic_cfe_clean build_cfe_nand build_cfe_nand_tk build_cfe_emmc_tk build_cfe_emmc build_cfe_sec_nand build_cfe_sec_emmc
 
 ifeq ($(FB),y)
 buildimage: $(DTBS) libcreduction gen_credits

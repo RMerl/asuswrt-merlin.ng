@@ -22,7 +22,7 @@ static const char *sc_basic_param[] = { "smart_connect_x", "bsd_ifnames", "bsd_b
 void cm_revertSmartConnectParameters(int bandNum);
 #endif
 
-void recovery_dwb_profile(void);
+void dwb_init_settings(void);
 
 struct connect_param_mapping_s {
 	char *param;

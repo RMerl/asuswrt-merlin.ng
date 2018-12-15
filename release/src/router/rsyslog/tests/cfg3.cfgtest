@@ -1,0 +1,5 @@
+rsyslogd: error accessing config file or directory 'file-does-not-exist': No such file or directory [try http://www.rsyslog.com/e/2040 ]
+rsyslogd: the last error occured in ./cfg3.testin, line 1
+rsyslogd: CONFIG ERROR: there are no active actions configured. Inputs will run, but no output whatsoever is created. [try http://www.rsyslog.com/e/2103 ]
+rsyslogd: EMERGENCY CONFIGURATION ACTIVATED - fix rsyslog config file!
+rsyslogd: End of config validation run. Bye.

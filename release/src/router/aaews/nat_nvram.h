@@ -7,6 +7,7 @@
 #define AAE_PWD		"aae_password"
 #define AAE_SDK_LOG_LEVEL "aae_sdk_log_level"
 #define AAE_SIP_CONNECTED	"aae_sip_connected"
+#define AAE_SUPPORT_LEVEL	"aae_level"
 #define ROUTER_MAC	"lan_hwaddr"
 #define LINK_INTERNET 	"link_internet"
 #define WAN_ACCESS "misc_http_x"
@@ -28,7 +29,7 @@
 //#define AAE_SEM_NAME "AAE_ENABLE_SEM"
 #define NV_DBG 1
 int nvram_is_aae_enable();
-int nvram_set_aae_status(const char* aae_status);
+int nvram_set_aae_status(const char* api, const int curl_status, const char* aae_status);
 int nvram_set_aae_sip_connected(const char* aae_sip_connected);
 int nvram_get_aae_pwd(char** aae_pwd);
 int nvram_get_aae_username(char** aae_username);
@@ -43,4 +44,5 @@ int nvram_get_http_enable(char* http_enable);*/
 void WatchingNVram();
 int nvram_get_mac_addr(char* mac_addr);
 int nvram_get_link_internet();
+void aae_support_check(int *is_terminate);
 #endif

@@ -88,6 +88,11 @@ config RTCONFIG_DFS_US
 	depends on RTCONFIG_HND_ROUTER
 	default n
 
+config RTCONFIG_BW160M
+	bool "Bandwidth 160MHz support"
+	depends on RTCONFIG_HND_ROUTER
+	default n
+
 config RTCONFIG_BCM9
 	bool "Bcm sdk 9_10_162_x"
 	default n
@@ -400,6 +405,10 @@ config RTCONFIG_NEW_USER_LOW_RSSI
 
 config RTCONFIG_PUSH_EMAIL
 	bool "Push Mail Service Support"
+	default n
+
+config RTCONFIG_RSYSLOGD
+	bool "rsyslogd Support"
 	default n
 
 config RTCONFIG_DBLOG
@@ -1296,10 +1305,6 @@ config RTCONFIG_BWDPI
 	bool "TrendMicro DPI engine and iQoS and Partenl Control"
 	default n
 
-config RTCONFIG_ADBLOCK
-	bool "Streaming and Pop-Up window Ad Blocking "
-	default n
-
 config RTCONFIG_TRAFFIC_LIMITER
 	bool "Traffic Limiter (data limit) for Internet traffic"
 	default n
@@ -1323,6 +1328,10 @@ config RTCONFIG_UIDEBUG
 
 config RTCONFIG_ROG
 	bool "Get APP Traffic from ROG client"
+	default n
+
+config RTCONFIG_ROG_UI
+	bool "ROG theme support"
 	default n
 
 config RTCONFIG_GEOIP
@@ -1821,5 +1830,9 @@ config RTCONFIG_DWB
 
 config RTCONFIG_CONNDIAG
 	bool "enable conn_diag in AiMesh"
+	default n
+
+config RTCONFIG_GAME_PROFILE
+	bool "enable Game Profile"
 	default n
 

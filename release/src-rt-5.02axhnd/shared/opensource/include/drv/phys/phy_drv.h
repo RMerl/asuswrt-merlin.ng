@@ -178,6 +178,7 @@ typedef struct phy_drv_s
     int (*dev_del)(phy_dev_t *phy_dev);
     int (*drv_init)(struct phy_drv_s *phy_drv);
     int (*isolate_phy)(phy_dev_t *phy_dev, int isolate);
+    int (*pair_swap_set)(phy_dev_t *phy_dev, int enable);
 } phy_drv_t;
 
 typedef struct
@@ -290,6 +291,14 @@ static inline int phy_dev_isolate_phy(phy_dev_t *phy_dev, int isolate)
         return 0;
 
     return phy_dev->phy_drv->isolate_phy(phy_dev, isolate);
+}
+
+static inline int phy_dev_pair_swap_set(phy_dev_t *phy_dev, int enable)
+{
+    if (!phy_dev->phy_drv->pair_swap_set)
+        return 0;
+
+    return phy_dev->phy_drv->pair_swap_set(phy_dev, enable);
 }
 
 static inline int phy_dev_power_get(phy_dev_t *phy_dev, int *enable)
@@ -461,6 +470,33 @@ static inline int phy_dev_caps_set(phy_dev_t *phy_dev, uint32_t caps)
         return 0;
 
     return phy_dev->phy_drv->caps_set(phy_dev, caps);
+}
+
+static inline phy_speed_t phy_caps_to_max_speed(uint32_t caps)
+{
+    int i;
+    static int speed[] = {PHY_CAP_10000, PHY_SPEED_10000, PHY_CAP_5000, PHY_SPEED_5000, PHY_CAP_2500, PHY_SPEED_2500,
+        PHY_CAP_1000_FULL, PHY_SPEED_1000, PHY_CAP_1000_HALF, PHY_SPEED_1000,
+        PHY_CAP_100_FULL, PHY_SPEED_100, PHY_CAP_100_HALF, PHY_SPEED_100,
+        PHY_CAP_10_FULL, PHY_SPEED_10, PHY_CAP_10_HALF, PHY_SPEED_10};
+
+    for (i=0; i<sizeof(speed)/sizeof(speed[0]); i+=2) {
+        if (caps & speed[i])
+            return speed[i+1];
+    }
+    return PHY_SPEED_UNKNOWN;
+}
+
+static inline uint32_t phy_speed_to_caps(phy_speed_t speed, phy_duplex_t duplex)
+{
+    static uint32_t caps[] = {PHY_CAP_AUTONEG, PHY_CAP_10_FULL, PHY_CAP_100_FULL, 
+        PHY_CAP_1000_FULL, PHY_CAP_2500, PHY_CAP_5000, PHY_CAP_10000};
+    uint32_t cap;
+
+    cap = caps[speed];
+    if (speed < PHY_SPEED_1000 && duplex != PHY_DUPLEX_FULL)
+        cap >>= 1;
+    return cap;
 }
 
 static inline int phy_dev_phyid_get(phy_dev_t *phy_dev, uint32_t *phyid)

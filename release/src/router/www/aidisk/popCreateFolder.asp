@@ -137,7 +137,7 @@ function NoSubmit(e){
       <th width="100"><#FolderName#>: </th>
       <td height="50"><input class="input_25_table" type="text" name="folder" id="folder" style="width:220px;" onkeypress="return NoSubmit(event)" autocorrect="off" autocapitalize="off"></td>
     </tr>
-    <tr bgcolor="#E6E6E6">
+    <tr>
       <th colspan="2"><input id="Submit" type="button" class="button_gen" value="<#CTL_add#>"></th>
     </tr>
   </tbody>	

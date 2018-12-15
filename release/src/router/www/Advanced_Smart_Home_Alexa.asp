@@ -34,44 +34,8 @@
 }
 
 .div_img {
-	padding: 35px 0px 50px 25px;
+	padding: 30px 0px 50px 25px;
 	position: absolute;
-}
-
-.step_1{
-	width:30px;
-	height:30px;
-	background-position:center;
-	background-attachment:fixed;
-	background:url(images/New_ui/smh_step_1.png) no-repeat center;
-	margin:auto;
-}
-
-.step_2{
-	width:30px;
-	height:30px;
-	background-position:center;
-	background-attachment:fixed;
-	background:url(images/New_ui/smh_step_2.png) no-repeat center;
-	margin:auto;
-}
-
-.step_2_text{
-	width:101px;
-	height:22px;
-	background-position:center;
-	background-attachment:fixed;
-	background:url(images/New_ui/smh_step_2_text.png) no-repeat center;
-	margin:auto 10px;
-}
-
-.step_3{
-	width:30px;
-	height:30px;
-	background-position:center;
-	background-attachment:fixed;
-	background:url(images/New_ui/smh_step_3.png) no-repeat center;
-	margin:auto;
 }
 
 .and_you_can{
@@ -94,6 +58,35 @@
 	border-radius:10px;
 	padding:10px;
 	display: none;
+}
+
+.title_num_div {
+	vertical-align:top;
+	padding-top:34px;
+}
+
+.title_num {
+	display: block;
+	width: 21px;
+	height: 21px;
+	line-height: 22px;
+	-moz-border-radius: 50%;
+	-webkit-border-radius: 50%;
+	border-radius: 50%;
+	background-color: #C0C0C0;
+	text-align: center;
+	font-weight: 700;
+	font-family: sans-serif;
+	color: #4D595D;
+	font-size: 16px;
+}
+
+.step_div {
+	vertical-align:middle;
+	padding-top:35px;
+	font-size:16px;
+	padding-left:8px;
+	color:#c0c0c0;
 }
 </style>
 <script>
@@ -134,14 +127,26 @@ var AccLinkStatus = {
 	}
 }
 
+var Amazon_URLs = [
+	{ "Region": "United States", "WebSite": "https://www.amazon.com/ASUS-ROUTER/dp/B07285G1RK" },
+	{ "Region": "United Kingdom and Ireland", "WebSite": "https://www.amazon.co.uk/ASUS-ROUTER/dp/B07285G1RK" },
+	{ "Region": "Canada", "WebSite": "https://www.amazon.ca/ASUS-ROUTER/dp/B07285G1RK" },
+	{ "Region": "Germany and Austria", "WebSite": "https://www.amazon.de/ASUS-ROUTER/dp/B07285G1RK" },
+	{ "Region": "India", "WebSite": "https://www.amazon.in/ASUS-ROUTER/dp/B07285G1RK" },
+	{ "Region": "Japan", "WebSite": "https://www.amazon.co.jp/ASUS-ROUTER/dp/B07285G1RK" },
+	{ "Region": "Australia and New Zealand", "WebSite": "https://www.amazon.com.au/ASUS-ROUTER/dp/B07285G1RK" },
+]
+
 function initial(){
 	show_menu();
-	//	https://www.asus.com/us/support/FAQ/1033393
+
 	httpApi.faqURL("1033393", function(url){document.getElementById("faq").href=url;});
+	create_AmazonRegion_select();
 
 	if(!ifttt_support){
+		$(document).attr("title","Alexa");
 		document.getElementById("divSwitchMenu").style.display = "none";
-		document.getElementById("formfonttitle").innerHTML = "Amazon Alexa";
+		document.getElementById("formfonttitle").innerHTML = "Amazon Alexa Skill";
 	}
 	if('<% nvram_get("fw_lw_enable_x"); %>' == '1')
 		document.getElementById("network_services_Remind").style.display = "";
@@ -154,6 +159,30 @@ function initial(){
 	tag_control();
 	setTimeout("get_real_ip();", 1000);
 	setTimeout("update_acc_link_status();", 1000);
+
+	if(isSupport("amazon_avs")){
+		document.getElementById("amazon_avs_div").style.display = "";
+	}
+}
+
+function create_AmazonRegion_select(){
+	var select = document.getElementById("service_region");
+	var text = "";
+	var selected = false;
+
+	if(Amazon_URLs.length > 0){
+		select.length = 0;
+		for(var i = 0; i < Amazon_URLs.length; i++){
+			text = Amazon_URLs[i].Region;
+			if(Amazon_URLs[i].Region == "United States")
+				selected = true;
+			else
+				selected = false;
+
+			var option = new Option(text, Amazon_URLs[i].WebSite, false, selected);
+			select.options.add(option);
+		}
+	}
 }
 
 function tag_control(){
@@ -406,13 +435,13 @@ function show_account_state(){
 							<tr>
 								<td bgcolor="#4D595D" valign="top">
 									<div>&nbsp;</div>
-									<div id="formfonttitle" class="formfonttitle">Alexa & IFTTT - Amazon Alexa</div>
-									<div id="divSwitchMenu" style="margin-top:-40px;float:right;"><div style="width:110px;height:30px;float:left;border-top-left-radius:8px;border-bottom-left-radius:8px;" class="block_filter_pressed"><div class="tab_font_color" style="text-align:center;padding-top:5px;font-size:14px">Amazon Alexa</div></div><div style="width:110px;height:30px;float:left;border-top-right-radius:8px;border-bottom-right-radius:8px;" class="block_filter"><a href="Advanced_Smart_Home_IFTTT.asp"><div class="block_filter_name">IFTTT</div></a></div></div>
+									<div id="formfonttitle" class="formfonttitle">Alexa & IFTTT - Amazon Alexa Skill</div>
+									<div id="divSwitchMenu" style="margin-top:-40px;float:right;"><div style="width:110px;height:30px;float:left;border-top-left-radius:8px;border-bottom-left-radius:8px;" class="block_filter_pressed"><div class="tab_font_color" style="text-align:center;padding-top:5px;font-size:14px">Amazon Alexa Skill</div></div><div style="width:110px;height:30px;float:left;border-top-right-radius:8px;border-bottom-right-radius:8px;" class="block_filter"><a href="Advanced_Smart_Home_IFTTT.asp"><div class="block_filter_name">IFTTT</div></a></div></div>
 									<div style="margin:10px 0 10px 5px;" class="splitLine"></div>
 									<div class="div_table">
 											<div class="div_tr">
 												<div class="div_td div_desc" style="width:55%">
-													<div style="font-weight:bolder;font-size:16px;padding:25px 40px"><#Alexa_Desc1#></div>
+													<div style="font-weight:bolder;font-size:16px;padding:20px 40px"><#Alexa_Desc1#></div>
 													<div style="padding:0px 40px;font-family:Arial, Helvetica, sans-serif;font-size:13px;">
 														<span><#Alexa_Desc2#></span>
 														<p style="font-size:13px;padding-top: 20px;font-style:italic;"><#Alexa_Example0#></p>
@@ -422,46 +451,46 @@ function show_account_state(){
 														<a id="faq" href="" style="font-family:Arial, Helvetica, sans-serif;font-size:13px;padding-top: 2px;padding-left: 20px;font-style:italic;text-decoration: underline;cursor:pointer;" target="_blank"><#Alexa_More_Skill#></a>
 														<p id="network_services_Remind" style="font-size:13px;padding-top: 10px;font-style:italic;color:#FFCC00;font-size:13px;display: none;">WARNING: The current network service filter policy for firewall will be overwritten once you say “Alexa, ask ASUS Router to pause the Internet</p>
 													</div>
-													<div style="text-align:center;padding-top:60px;font-family:Arial, Helvetica, sans-serif;font-style:italic;font-weight:lighter;font-size:18px;"><#Alexa_Register0#></div>
-													<div id="acc_link_status" style="text-align:center;padding-top:10px;font-size:15px;color:#FFCC00;font-weight:bolder;"></div> <!-- id="remote_control_here" -->
+													<div style="text-align:center;padding-top:35px;font-family:Arial, Helvetica, sans-serif;font-style:italic;font-weight:lighter;font-size:18px;"><#Alexa_Register0#></div>
+													<div id="acc_link_status" style="text-align:center;padding-top:10px;font-size:15px;color:#FFCC00;font-weight:bolder; height:20px;"></div>
 													<div class="div_img">
 														<table style="width:99%">
-															<div class="div_td" style="padding-top:20px">
+															<div class="div_td" style="padding-top:20px; width:45%">
 																<div class="div_tr">
-																	<div class="div_td" style="vertical-align:middle;">
-																		<div class="step_1"></div>
+																	<div class="div_td">
+																		<div class="title_num">1</div>
 																	</div>
-																	<div class="div_td" style="vertical-align:middle;">
-																		<div>
-																			<div class="div_td" style="vertical-align:middle;">
-																				<div class="step_2_text"></div>
-																			</div>
-																			<div class="div_td" style="vertical-align:middle;">
-																				<div style="text-align:right;">
-																			<input class="button_gen" type="button" onclick="window.open('https://www.amazon.com/ASUS-ROUTER/dp/B07285G1RK');" value="GO">
-																				</div>
-																			</div>
-																		</div>
+																	<div class="div_td step_div" style="padding-top:0px;">
+																		Select and go to your preferred Amazon country/region website
+																		<select class="input_option" id="service_region" name="service_region" style="margin-top: 10px;">
+																		</select>
+																		<input class="button_gen" style="margin-top: 10px;" type="button" onclick="window.open(document.form.service_region.value);" value="GO">
 																	</div>
 																</div>
 																<div class="div_tr">
-																	<div class="div_td" style="vertical-align:middle;padding-top:45px;">
-																		<div class="step_2"></div>
+																	<div class="div_td title_num_div">
+																		<div class="title_num">2</div>
 																	</div>
-																	<div class="div_td" style="vertical-align:middle;padding-top:45px;font-size:16px;padding-left:8px;">
-																		<span style="color:#c0c0c0;text-decoration:underline;cursor:pointer;" onclick="get_activation_code();"><#Get_Activation_Code#></span>
+																	<div class="div_td step_div">
+																		<span style="text-decoration:underline; cursor: pointer;" onclick="get_activation_code();"><#Get_Activation_Code#></span>
 																	</div>
 																</div>
 																<div class="div_tr">
-																	<div class="div_td" style="vertical-align:top;padding-top:45px;">
-																		<div class="step_3"></div>
+																	<div class="div_td title_num_div">
+																		<div class="title_num">3</div>
 																	</div>
-																	<div class="div_td" style="vertical-align:middle;padding-top:49px;font-size:16px;padding-left: 8px;">
-																		<span style="color:#c0c0c0;"><#Link_Amazon_and_Router#></span>
+																	<div class="div_td step_div"><#Link_Amazon_and_Router#></div>
+																	</div>
+																<div id="amazon_avs_div" class="div_tr" style="display: none;">
+																	<div class="div_td title_num_div">
+																		<div class="title_num">4</div>
+																	</div>
+																	<div class="div_td step_div">
+																		In order to use Amazon Alexa Skill, Lyra Voice needs to bind with Amazon account first. Please setup/sign-in to Amazon via <span id="app_span" style="text-decoration: underline;cursor:pointer;">ASUS Router app</span>
 																	</div>
 																</div>
 															</div>
-															<div class="div_td" style="vertical-align:middle;padding-left:23px;padding-top: 5px;">
+															<div class="div_td" style="vertical-align:middle; width: 55%;">
 																	<div class="and_you_can"></div>
 															</div>
 														</table>

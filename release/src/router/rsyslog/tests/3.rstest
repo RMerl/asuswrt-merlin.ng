@@ -1,0 +1,21 @@
+# a simple RainerScript test
+result: 0
+in:
+strlen($msg & strlen('abc')) > 20 +30 + -40 then
+$$$
+out:
+00000000: push_msgvar	msg[cstr]
+00000001: push_const	abc[cstr]
+00000002: push_const	1[nbr]
+00000003: func_call	strlen
+00000004: strconcat	
+00000005: push_const	1[nbr]
+00000006: func_call	strlen
+00000007: push_const	20[nbr]
+00000008: push_const	30[nbr]
+00000009: add	
+00000010: push_const	40[nbr]
+00000011: unary_minus	
+00000012: add	
+00000013: cmp_>	
+$$$

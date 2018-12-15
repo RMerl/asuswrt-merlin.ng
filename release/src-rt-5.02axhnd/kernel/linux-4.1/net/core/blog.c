@@ -1741,28 +1741,21 @@ uint32_t blog_cttime( struct nf_conn *ct, BlogCtTime_t *ct_time_p )
     uint32_t proto_type = ct_time_p->unknown; 
 
     ct_time_p->idle_jiffies = ct_time_p->idle*HZ;
+    ct_time_p->extra_jiffies = 0;
 
     if ( proto_type == 0 )
     {
         if ( proto == IPPROTO_TCP )
         {
-            if (ct->proto.tcp.state != TCP_CONNTRACK_ESTABLISHED)
-            {
-                /*
-                Conntrack CLOSED TCP connection entries can have 
-                large timeout, when :
-                1.	Accelerator overflows (i.e. full)
-                2.	somehow  *only* one leg of connection is
-                accelerated 
-                3.	TCP-RST is received on non-accelerated flow 
-                (i.e. conntrack will mark the connection as CLOSED)
-                4.	Accelerated leg of connection received some 
-                packets - triggering accelerator to refresh the
-                connection in conntrack with large timeout.
-                 */
-                return 0; /* Only set timeout in established state */
-            }
-            ct_time_p->extra_jiffies = blog_nat_tcp_def_idle_timeout;
+			if (ct->proto.tcp.state == TCP_CONNTRACK_ESTABLISHED)
+				ct_time_p->extra_jiffies = blog_nat_tcp_def_idle_timeout;
+			else{
+				/* just set a genreic timeout for other TCP states and most
+				 * likely packet will go through linux stack and timeouts
+				 * based on current TCP state will be set by netfilter
+				 */
+				ct_time_p->extra_jiffies = BLOG_NAT_TCP_GENERIC_IDLE_TIMEOUT;
+			}
         }
         else if ( proto == IPPROTO_UDP )
 #if defined(CONFIG_BCM_KF_NETFILTER)

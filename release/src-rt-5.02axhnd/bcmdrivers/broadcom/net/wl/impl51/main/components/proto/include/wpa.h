@@ -18,7 +18,7 @@
  *
  * <<Broadcom-WL-IPTag/Open:>>
  *
- * $Id: wpa.h 677908 2017-01-05 18:59:06Z $
+ * $Id: wpa.h 766910 2018-08-21 05:35:59Z $
  */
 
 #ifndef _proto_wpa_h_
@@ -107,6 +107,36 @@ typedef BWL_PRE_PACKED_STRUCT struct
 	} BWL_POST_PACKED_STRUCT count;
 	wpa_pmkid_t list[1];
 } BWL_POST_PACKED_STRUCT wpa_pmkid_list_t;
+
+/* WPA rsn cap */
+typedef	BWL_PRE_PACKED_STRUCT struct
+{
+	uint16 cap;
+} BWL_POST_PACKED_STRUCT wpa_rsncap_t;
+
+/* WPA akm suite and rsn cap */
+typedef BWL_PRE_PACKED_STRUCT struct
+{
+	wpa_suite_ucast_t akm;
+	wpa_rsncap_t  rsn_cap;
+} BWL_POST_PACKED_STRUCT wpa_akm_cap_t;
+
+/* WPA unicast, akm suite and rsn cap */
+typedef BWL_PRE_PACKED_STRUCT struct
+{
+	wpa_suite_ucast_t ucast;
+	wpa_suite_ucast_t akm;
+	wpa_rsncap_t  rsn_cap;
+} BWL_POST_PACKED_STRUCT wpa_ucast_akm_cap_t;
+
+/* WPA multicast, unicast, akm suite and rsn cap */
+typedef BWL_PRE_PACKED_STRUCT struct
+{
+	wpa_suite_mcast_t mcast;
+	wpa_suite_ucast_t ucast;
+	wpa_suite_ucast_t akm;
+	wpa_rsncap_t  rsn_cap;
+} BWL_POST_PACKED_STRUCT wpa_def_suite_t;
 
 /* WPA cipher suites */
 #define WPA_CIPHER_NONE		0	/* None */

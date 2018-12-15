@@ -2924,10 +2924,14 @@ void dump_RDD_CPU_TX_DHD_MESSAGE_DESCRIPTOR(bdmf_session_handle session, unsigne
 	bdmf_session_print(session, "\n");
 
 	FIELD_MREAD_8((uint8_t *)p + 5, 0, 1, r);
-	bdmf_session_print(session, "\treserved1                = 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\tread_idx_valid           = 0x%08x", (unsigned int)r);
 	bdmf_session_print(session, "\n");
 
-	MREAD_16((uint8_t *)p + 6, r);
+	FIELD_MREAD_16((uint8_t *)p + 6, 6, 10, r);
+	bdmf_session_print(session, "\tread_idx                 = 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+	FIELD_MREAD_8((uint8_t *)p + 7, 0, 6, r);
 	bdmf_session_print(session, "\treserved2                = 0x%08x", (unsigned int)r);
 	bdmf_session_print(session, "\n");
 

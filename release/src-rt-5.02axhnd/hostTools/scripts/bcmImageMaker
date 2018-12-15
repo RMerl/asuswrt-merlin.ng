@@ -7,7 +7,7 @@ use bytes;
 use FindBin qw($Bin);
 use lib "$Bin/../SecureBootUtils";
 use lib "$Bin/../PerlLib";
-use BRCM::SBI;
+use BRCM::SBI_DEP;
 use BRCM::SBI_UTIL;
 use gen_keystore;
 use File::stat;
@@ -251,8 +251,21 @@ sub gen_sec2_image  {
         # Gen1 (63268)/ Gen2 secure boot. Build the entire boot partition
 	my ($media_type, $block_size, $img, $sec_img, $bootofs_img, $out_dir, $out_img) = @_;
 	my $boot_size = $block_size;
+        my $sbi_unsec="$storedir/cfe$ENV{BRCM_CHIP}unsec_unenc.bin.$$";
         my $sbi_img = "$out_dir/cfe$ENV{BRCM_CHIP}bi_nand.bin.$$";
-	my $sbi_lib = BRCM::SBI->new( {'sec_mode' => "MFG",
+        # We know we always need an unsecure, headered cferom, so build itmy 
+	my $sbi_lib = BRCM::SBI_DEP->new({'sec_mode' => "UNSEC",
+			'chip'=>$ENV{BRCM_CHIP},
+			'sec_arch'=>"$ENV{SECURE_BOOT_ARCH}",
+			'out' => $sbi_unsec,
+			'in' => $cferom,
+			'cred_dir'=> nrmz($ENV{SEC_CRED_DIR}),
+			'byteorder' => $ENV{ARCH_ENDIAN}});
+	$sbi_lib->build();
+        if ( ! (-e $sbi_unsec) ) {
+            die("The file $sbi_unsec not successfully created. Exiting.");
+        }
+	$sbi_lib = BRCM::SBI_DEP->new( {'sec_mode' => "MFG",
 			'chip' => "$ENV{BRCM_CHIP}",
 			'sec_arch' => "$ENV{SECURE_BOOT_ARCH}",
 			'out' => "$sbi_img",
@@ -265,7 +278,7 @@ sub gen_sec2_image  {
 	}
         if ($ENV{BRCM_CHIP} == "63268") {
              print "Packaging with Gen 1 Secure boot support ...\n";
-             concat_with_expand("$bootofs_img",[$sbi_img], $boot_size);
+             concat_with_expand("$bootofs_img",[$sbi_unsec, $sbi_img], $boot_size);
         } else {
              print "Packaging with Gen 2 Secure boot support ...\n";
 		#sanity check for Gen2
@@ -276,7 +289,9 @@ sub gen_sec2_image  {
 	     }
              concat_with_expand("$out_img",["$bootofs_img", $img], $boot_size);
 	     my $i; 
-             for ($i = 1; $i < $ENV{SECURE_BOOT_NUM_BOOT_BLKS}; $i++) {
+             $boot_size += $block_size;
+             concat_with_expand("$out_img", [$sbi_unsec], $boot_size);
+             for ($i = 2; $i < $ENV{SECURE_BOOT_NUM_BOOT_BLKS}; $i++) {
                   $boot_size += $block_size;
                   if ($i <= $ENV{SECURE_BOOT_NUM_BTLDR_IMAGES}) {
                       concat_with_expand("$out_img", [$sbi_img], $boot_size);
@@ -320,7 +335,7 @@ sub gen_sbi_image_v3 {
 		$sec_args{'sec_mode'} = "MFG";
 		$sec_args{'sec_opt'} = "encrypt ".$sec_opt;
 		$sec_args{'out'} = $sbi_mfg;
-		my $sbi_lib = BRCM::SBI->new(\%sec_args);
+		my $sbi_lib = BRCM::SBI_DEP->new(\%sec_args);
 		$sbi_lib->build();
 		if ( ! (-e $sbi_mfg) ) {
 			die("The file $sbi_mfg was not successfully created. Exiting.");
@@ -332,7 +347,7 @@ sub gen_sbi_image_v3 {
 		# encrypted with either Kroe-fld or Kaes-fld
         	$sec_args{'sec_opt'} = ($ENV{SECURE_BOOT_PROCESS_FLD_OEM_COT} eq "y")?
 			"encrypt oem ".$sec_opt : "encrypt ".$sec_opt;
-		$sbi_lib = BRCM::SBI->new(\%sec_args);
+		$sbi_lib = BRCM::SBI_DEP->new(\%sec_args);
 		$sbi_lib->build();
                 if ( ! (-e $sbi_fld) ) {
                   	die("The file $sbi_fld was not successfully created. Exiting.");
@@ -347,7 +362,7 @@ sub gen_sbi_image_v3 {
 		$sec_args{'out'} = $sbi_fld;
                 $sec_args{'sec_opt'} = 
 				($ENV{SECURE_BOOT_PROCESS_FLD_OEM_COT} eq "y")? "oem":"";
-		my $sbi_lib = BRCM::SBI->new(\%sec_args);
+		my $sbi_lib = BRCM::SBI_DEP->new(\%sec_args);
 		$sbi_lib->build();
                 if ( ! (-e $sbi_fld) ) {
                     die "The file $sbi_fld was not successfully created. Exiting.";
@@ -467,7 +482,7 @@ if ( ($precferom) && (-e $precferom) ) {
 
     if( !$securehdr) {
         my $btldr = "$storedir/cfe$ENV{BRCM_CHIP}bi_nand.bin";
-	my $sbi_lib = BRCM::SBI->new( {'sec_mode' => "UNSEC",
+	my $sbi_lib = BRCM::SBI_DEP->new( {'sec_mode' => "UNSEC",
 			'chip'=>$ENV{BRCM_CHIP},
 			'sec_arch'=>"$ENV{SECURE_BOOT_ARCH}",
 			'out' => $btldr,
@@ -521,7 +536,7 @@ if ( ($unsecurehdr) || ($securehdr) ) {
         my $sbi_unsec="$storedir/cfe$ENV{BRCM_CHIP}unsec_unenc.bin.$$";
 
         # We know we always need an unsecure, headered cferom, so build itmy 
-	my $sbi_lib = BRCM::SBI->new({'sec_mode' => "UNSEC",
+	my $sbi_lib = BRCM::SBI_DEP->new({'sec_mode' => "UNSEC",
 			'chip'=>$ENV{BRCM_CHIP},
 			'sec_arch'=>"$ENV{SECURE_BOOT_ARCH}",
 			'out' => $sbi_unsec,
@@ -576,6 +591,9 @@ if ( ($unsecurehdr) || ($securehdr) ) {
        }
        e("rm -f $sbi_unsec");
     } else {
+    	if ( (defined $ENV{SECURE_BOOT_NUM_BLKS}) && 3 > $ENV{SECURE_BOOT_NUM_BOOT_BLKS}) {
+        	die("ERROR: Should have  SECURE_BOOT_NUM_BOOT_BLKS at least 3 but it was  $ENV{SECURE_BOOT_NUM_BOOT_BLKS}");
+    	}
         # gen1 (63268) or gen2 secure boot. Build the entire boot partition
 	my $block_size = $blocksize;
 	if ($mediatype eq "emmc" and $flashtype eq "Generic2048") {

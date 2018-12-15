@@ -18,7 +18,7 @@
  *
  * <<Broadcom-WL-IPTag/Open:>>
  *
- * $Id: ethernet.h 518342 2014-12-01 23:21:41Z $
+ * $Id: ethernet.h 767033 2018-08-24 16:24:40Z $
  */
 
 #ifndef _NET_ETHERNET_H_	/* use native BSD ethernet.h when available */
@@ -77,14 +77,15 @@
 #define ETHER_TYPE_ARP		0x0806		/* ARP */
 #define ETHER_TYPE_8021Q	0x8100		/* 802.1Q */
 #define	ETHER_TYPE_IPV6		0x86dd		/* IPv6 */
+#define ETHER_TYPE_PPP_SES	0x8864		/* PPPoE Session */
 #define	ETHER_TYPE_BRCM		0x886c		/* Broadcom Corp. */
+#define	ETHER_TYPE_BRCM_AIRIQ	0x88b7		/* Broadcom Corp.AiriQ */
 #define	ETHER_TYPE_802_1X	0x888e		/* 802.1x */
-#define	ETHER_TYPE_802_1X_PREAUTH 0x88c7	/* 802.1x preauthentication */
 #define ETHER_TYPE_WAI		0x88b4		/* WAI */
+#define	ETHER_TYPE_802_1X_PREAUTH 0x88c7	/* 802.1x preauthentication */
 #define ETHER_TYPE_89_0D	0x890d		/* 89-0d frame for TDLS */
 #define ETHER_TYPE_RRB		ETHER_TYPE_89_0D  /* RRB 802.11r 2008 */
-
-#define ETHER_TYPE_PPP_SES	0x8864		/* PPPoE Session */
+#define ETHER_TYPE_1905_1	0x893A		/* IEEE 1905.1 */
 
 #define ETHER_TYPE_IAPP_L2_UPDATE	0x6	/* IAPP L2 update frame */
 

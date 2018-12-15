@@ -1,0 +1,12 @@
+This directory contains a number of possibly useful things that do not
+directly relate to rsyslog. They are not actively supported, but as
+I said often helpful. Use them with some care, as they may be outdated
+in respect to the current release of rsyslog.
+
+At least some of this stuff has been found by our users and been
+included after a brief check and possibly an adapation. If you have
+something useful you would like to see in contrib, just drop us a 
+note (see http://www.rsyslog.com for how to do that at the time your
+are reading this document).
+
+rgerhards, 2007-08-08

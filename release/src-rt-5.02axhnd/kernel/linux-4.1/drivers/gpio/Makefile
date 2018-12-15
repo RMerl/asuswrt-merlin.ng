@@ -10,7 +10,11 @@ obj-$(CONFIG_GPIO_SYSFS)	+= gpiolib-sysfs.o
 obj-$(CONFIG_GPIO_ACPI)		+= gpiolib-acpi.o
 
 # Device drivers. Generally keep list sorted alphabetically
+ifdef BCM_KF
+obj-$(CONFIG_GPIO_GENERIC)	+= gpio-mmio.o
+else
 obj-$(CONFIG_GPIO_GENERIC)	+= gpio-generic.o
+endif
 
 obj-$(CONFIG_GPIO_74X164)	+= gpio-74x164.o
 obj-$(CONFIG_GPIO_74XX_MMIO)	+= gpio-74xx-mmio.o

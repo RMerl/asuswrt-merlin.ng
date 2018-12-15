@@ -1,0 +1,26 @@
+# a simple RainerScript test
+result: 0
+in:
+'test 1' <> $var or /* some comment */($SEVERITY == -4 +5 -(3 * - 2) and $fromhost == '127.0.0.1') then 
+$$$
+out:
+00000000: push_const	test 1[cstr]
+00000001: push_msgvar	var[cstr]
+00000002: cmp_!=	
+00000003: push_msgvar	severity[cstr]
+00000004: push_const	4[nbr]
+00000005: unary_minus	
+00000006: push_const	5[nbr]
+00000007: add	
+00000008: push_const	3[nbr]
+00000009: push_const	2[nbr]
+00000010: unary_minus	
+00000011: mul	
+00000012: sub	
+00000013: cmp_==	
+00000014: push_msgvar	fromhost[cstr]
+00000015: push_const	127.0.0.1[cstr]
+00000016: cmp_==	
+00000017: and	
+00000018: or	
+$$$

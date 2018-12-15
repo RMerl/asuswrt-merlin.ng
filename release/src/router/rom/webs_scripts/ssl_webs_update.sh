@@ -148,39 +148,8 @@ else
 		urlpath="$urlpath_odmpid"
 	fi
 
-	firmver_beta=`grep $model /tmp/wlan_update.txt | sed s/.*#BETAFW//;`
-	firmver_beta=`echo $firmver_beta | sed s/#.*//;`
-	buildno_beta=`echo $firmver_beta | sed s/....//;`
-	firmver_beta=`echo $firmver_beta | sed s/$buildno_beta$//;`
-	extendno_beta=`grep $model /tmp/wlan_update.txt | sed s/.*#BETAEXT//;`
-	extendno_beta=`echo $extendno_beta | sed s/#.*//;`
-	lextendno_beta=`echo $extendno_beta | sed s/-g.*//;`
-	# webs_state_info for odmpid
-        if [ "$odmpid" != "#" ]; then
-		firmver_beta_odmpid=`grep $odmpid /tmp/wlan_update.txt | sed s/.*#BETAFW//;`
-		firmver_beta_odmpid=`echo $firmver_beta_odmpid | sed s/#.*//;`
-		buildno_beta_odmpid=`echo $firmver_beta_odmpid | sed s/....//;`
-		firmver_beta_odmpid=`echo $firmver_beta_odmpid | sed s/$buildno_beta_odmpid$//;`
-		extendno_beta_odmpid=`grep $odmpid /tmp/wlan_update.txt | sed s/.*#BETAEXT//;`
-		extendno_beta_odmpid=`echo $extendno_beta_odmpid | sed s/#.*//;`
-		lextendno_beta_odmpid=`echo $extendno_beta_odmpid | sed s/-g.*//;`
-	else
-		firmver_beta_odmpid=""
-		buildno_beta_odmpid=""
-		lextendno_beta_odmpid=""
-	fi
-	echo "---- odmpid_beta : $firmver_beta_odmpid $buildno_beta_odmpid $lextendno_beta_odmpid ----" >> /tmp/webs_upgrade.log
-	echo "---- productid_beta : $firmver_beta $buildno_beta $lextendno_beta ----" >> /tmp/webs_upgrade.log
 	
 	odmpid_support=`nvram get webs_state_odm`
-	if [ "$odmpid_support" == "1" ]; then
-		nvram set webs_state_info_beta=${firmver_beta_odmpid}_${buildno_beta_odmpid}_${extendno_beta_odmpid}
-		firmver_beta="$firmver_beta_odmpid"
-		buildno_beta="$buildno_beta_odmpid"
-		lextendno_beta="$lextendno_beta_odmpid"
-	else
-		nvram set webs_state_info_beta=${firmver_beta}_${buildno_beta}_${extendno_beta}
-	fi	
 	rm -f /tmp/wlan_update.*
 fi
 
@@ -281,9 +250,6 @@ LANG="$get_preferred_lang"
 releasenote_file0=`echo $get_productid`_`nvram get webs_state_info`_"$LANG"_note.zip
 releasenote_file0_US=`echo $get_productid`_`nvram get webs_state_info`_US_note.zip
 releasenote_path0="/tmp/release_note0.txt"
-releasenote_file1=`echo $get_productid`_`nvram get webs_state_info_beta`_"$LANG"_note.zip
-releasenote_file1_US=`echo $get_productid`_`nvram get webs_state_info_beta`_US_note.zip
-releasenote_path1="/tmp/release_note1.txt"
 
 if [ "$formr" == "1" ]; then
 	echo "---- download MR1 release note for all ${dl_path_MR}1/$releasenote_file0 ----" >> /tmp/webs_upgrade.log
@@ -305,15 +271,6 @@ elif [ "$forsq" == "1" ]; then
 			echo "---- download SQ US release note ${dl_path_SQ}/$releasenote_file0_US  [Failed] ----" >> /tmp/webs_upgrade.log
 		fi
 	fi
-	echo "---- download SQ beta release note ${dl_path_SQ}/$releasenote_file1 ----" >> /tmp/webs_upgrade.log
-	wget $wget_options ${dl_path_SQ}/$releasenote_file1 -O $releasenote_path1
-	if [ "$?" != "0" ]; then
-		echo "---- download SQ beta release note ${dl_path_SQ}/$releasenote_file1_US ----" >> /tmp/webs_upgrade.log
-		wget $wget_options ${dl_path_SQ}/$releasenote_file1_US -O $releasenote_path1
-		if [ "$?" != "0" ]; then
-			echo "---- download SQ US beta release note ${dl_path_SQ}/$releasenote_file1_US  [Failed] ----" >> /tmp/webs_upgrade.log
-		fi
-	fi
 else
 	echo "---- download real release note ${dl_path_file}/$releasenote_file0 ----" >> /tmp/webs_upgrade.log
 	wget $wget_options ${dl_path_file}/$releasenote_file0 -O $releasenote_path0
@@ -322,15 +279,6 @@ else
 		wget $wget_options ${dl_path_file}/$releasenote_file0_US -O $releasenote_path0
 		if [ "$?" != "0" ]; then
 			echo "---- download real US release note ${dl_path_file}/$releasenote_file0_US  [Failed] ----" >> /tmp/webs_upgrade.log
-		fi
-	fi
-	echo "---- download real release note ${dl_path_file}/$releasenote_file1 ----" >> /tmp/webs_upgrade.log
-	wget $wget_options ${dl_path_file}/$releasenote_file1 -O $releasenote_path1
-	if [ "$?" != "0" ]; then
-		echo "---- download real release note ${dl_path_file}/$releasenote_file1_US ----" >> /tmp/webs_upgrade.log
-		wget $wget_options ${dl_path_file}/$releasenote_file1_US -O $releasenote_path1
-		if [ "$?" != "0" ]; then
-			echo "---- download real US release note ${dl_path_file}/$releasenote_file1_US  [Failed] ----" >> /tmp/webs_upgrade.log
 		fi
 	fi
 fi

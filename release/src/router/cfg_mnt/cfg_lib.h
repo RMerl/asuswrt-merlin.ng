@@ -10,6 +10,7 @@ typedef struct _avbl_chanspec_t
 	unsigned int bw5g;
 	unsigned int channelList2g[MAX_2G_CHANNEL_LIST_NUM];
 	unsigned int channelList5g[MAX_5G_CHANNEL_LIST_NUM];
+	unsigned int existTribandRe;
 }AVBL_CHANSPEC_T;
 
 extern int send_cfgmnt_event(char *msg);

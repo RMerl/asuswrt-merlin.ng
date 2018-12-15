@@ -23,7 +23,11 @@ else ifeq ($(strip $(beepPkg)), iperf)
 else ifeq ($(strip $(beepPkg)), samba)
 	$(MAKE) -j $(ACTUAL_MAX_JOBS) -C userspace gpl/apps/samba
 else ifeq ($(strip $(beepPkg)), bee)
+	$(MAKE) -j $(ACTUAL_MAX_JOBS) -C userspace private/apps/pmd
 	cd $(TARGETS_DIR); ./buildFS_BEE;
+else ifeq ($(strip $(beepPkg)), exampleEE)
+	$(MAKE) -j $(ACTUAL_MAX_JOBS) -C userspace private/apps/exampleEE
+	cd $(TARGETS_DIR); ./buildFS_EXAMPLEEE;
 else
 	$(MAKE) -j $(ACTUAL_MAX_JOBS) -C userspace private/apps/cwmpctl
 	$(MAKE) -j $(ACTUAL_MAX_JOBS) -C userspace private/apps/dad
@@ -36,7 +40,11 @@ else
 
 	$(MAKE) -j $(ACTUAL_MAX_JOBS) -C userspace gpl/apps/samba
 
+	$(MAKE) -j $(ACTUAL_MAX_JOBS) -C userspace private/apps/pmd
 	cd $(TARGETS_DIR); ./buildFS_BEE;
+
+	$(MAKE) -j $(ACTUAL_MAX_JOBS) -C userspace private/apps/exampleEE
+	cd $(TARGETS_DIR); ./buildFS_EXAMPLEEE;
 endif
 export BUILD_MODSW_BEE_PREINSTALL
 endif

@@ -250,6 +250,7 @@ static int phy_deisolate(phy_dev_t *phy_dev)
     return 0;
 }
 
+
 static void phy_pair_swap_set(phy_dev_t *phy_dev)
 {
 #define PHY_CMD_READY_MAX  5000
@@ -273,7 +274,8 @@ static void phy_pair_swap_set(phy_dev_t *phy_dev)
 static int sf2_cl45phy_read_status(phy_dev_t *phy_dev);
 static int ethsw_cl45phy_set_speed(phy_dev_t *phy_dev, phy_speed_t speed, phy_duplex_t duplex);
 static int ethsw_cl45phy_get_config_speed(phy_dev_t *phy_dev, phy_speed_t *speed, phy_duplex_t *duplex);
-static int ethsw_cl45phy_get_caps(phy_dev_t *phy_dev, int caps_type, uint32_t *caps);
+static int ethsw_cl45phy_caps_get(phy_dev_t *phy_dev, int caps_type, uint32_t *caps);
+static int ethsw_cl45phy_caps_set(phy_dev_t *phy_dev, uint32_t caps);
 #define MAX_CL45_PHYS 4
 int dsl_runner_ext3_phy_init(phy_dev_t *phy_dev)
 {
@@ -301,7 +303,8 @@ int dsl_runner_ext3_phy_init(phy_dev_t *phy_dev)
         phy_drv->initialized = _phy_drv.initialized;
         phy_drv->bus_drv = _phy_drv.bus_drv;
         phy_drv->speed_set = ethsw_cl45phy_set_speed;
-        phy_drv->caps_get = ethsw_cl45phy_get_caps;
+        phy_drv->caps_get = ethsw_cl45phy_caps_get;
+        phy_drv->caps_set = ethsw_cl45phy_caps_set;
         phy_drv->config_speed_get = ethsw_cl45phy_get_config_speed;
         phy_drv->phyid_get = _phy_drv.phyid_get;
         phy_drv->init = dsl_runner_ext3_phy_init;
@@ -551,7 +554,7 @@ static int ethsw_cl45phy_set_speed(phy_dev_t *phy_dev, phy_speed_t speed, phy_du
     return 0;
 }
 
-static int ethsw_cl45phy_get_caps(phy_dev_t *phy_dev, int caps_type, uint32_t *caps)
+static int ethsw_cl45phy_caps_get(phy_dev_t *phy_dev, int caps_type, uint32_t *caps)
 {
     u16 v16;
 
@@ -594,6 +597,18 @@ static int ethsw_cl45phy_get_caps(phy_dev_t *phy_dev, int caps_type, uint32_t *c
         *caps = 0;
     
     return 0;
+}
+
+static int ethsw_cl45phy_caps_set(phy_dev_t *phy_dev, uint32_t caps)
+{
+    phy_speed_t speed;
+    
+    if (caps & PHY_CAP_AUTONEG)
+        speed = PHY_SPEED_AUTO;
+    else
+        speed = phy_caps_to_max_speed(caps);
+
+    return ethsw_cl45phy_set_speed(phy_dev, speed, PHY_DUPLEX_FULL);
 }
 
 static int ethsw_cl45phy_get_config_speed(phy_dev_t *phy_dev, phy_speed_t *speed, phy_duplex_t *duplex)
@@ -1062,6 +1077,7 @@ static int ethsw_phy_reset(phy_dev_t *phy_dev)
     return 1;
 }
 
+static void ethsw_sfp_restore_from_power_saving(phy_dev_t *phy_dev);
 static int ethsw_powerop_serdes(phy_dev_t *phy_dev, int powerLevel)
 {
     u32 val32;
@@ -1085,6 +1101,7 @@ static int ethsw_powerop_serdes(phy_dev_t *phy_dev, int powerLevel)
 
             /* Do dummy MDIO read to work around ASIC problem */
             phy_bus_read(phy_dev, 0, &v16);
+            ethsw_sfp_restore_from_power_saving(phy_dev);
             break;
         case SERDES_POWER_STANDBY:
             if (val32 & SWITCH_REG_SERDES_IQQD) {
@@ -1109,7 +1126,9 @@ static int ethsw_powerop_serdes(phy_dev_t *phy_dev, int powerLevel)
             printk("Wrong power level request to Serdes module\n");
             return 0;
     }
-    phy_serdes->current_speed = -1;
+
+	if(powerLevel != SERDES_POWER_ON)
+    	phy_serdes->current_speed = -1;
     phy_serdes->cur_power_level = powerLevel;
     return 0;
 }
@@ -1299,11 +1318,15 @@ end:
 int ethsw_serdes_caps_get(phy_dev_t *phy_dev, int caps_type, uint32_t *caps)
 {
     phy_serdes_t *phy_serdes = phy_dev->priv;
-    if ((caps_type == CAPS_TYPE_SUPPORTED) || (caps_type == CAPS_TYPE_ADVERTISE))
+
+    if (caps_type == CAPS_TYPE_SUPPORTED)
+        *caps = phy_serdes->speed_caps;
+    else if (caps_type == CAPS_TYPE_ADVERTISE)
     {
-    mutex_lock(&serdes_mutex);
-    *caps = phy_serdes->speed_caps;
-    mutex_unlock(&serdes_mutex);
+        if (phy_serdes->config_speed == PHY_SPEED_AUTO)
+            *caps = phy_serdes->speed_caps|PHY_SPEED_AUTO;
+        else
+            *caps = phy_speed_to_caps(phy_serdes->config_speed, PHY_DUPLEX_FULL);
     }
     else
         *caps = 0;
@@ -1335,7 +1358,7 @@ static int ethsw_serdes_speed_set(phy_dev_t *phy_dev, phy_speed_t speed, phy_dup
                 ethsw_config_serdes_1kx(phy_dev);
                 break;
             case PHY_SPEED_100:
-                if (phy_dev->cascade_next && !(phy_dev->cascade_next->flag & PHY_FLAG_NOT_PRESENTED)) /* 84881 */
+                if (phy_dev->cascade_next && phy_dev->cascade_next->phy_drv->phy_type == PHY_TYPE_EXT3) /* 84881 */
                     ethsw_config_serdes_100M_forced_sgmii(phy_dev);
                 else
                     ethsw_config_serdes_100fx(phy_dev);
@@ -1382,7 +1405,7 @@ static void ethsw_sfp_restore_from_power_saving(phy_dev_t *phy_dev)
 {
     phy_serdes_t *phy_serdes = phy_dev->priv;
 
-    if (phy_serdes->sfp_module_type == SFP_NO_MODULE)
+    if(phy_dev->cascade_next->flag & PHY_FLAG_NOT_PRESENTED)   /* MODULE is not plugged in */
         return;
 
 #if defined(PHY_SERDES_2P5G_CAPABLE)
@@ -1449,10 +1472,7 @@ static int ethsw_serdes_power_mode_set(phy_dev_t *phy_dev, int mode)
         goto end;
 
     if(mode == SERDES_NO_POWER_SAVING)
-    {
         ethsw_powerup_serdes(phy_dev);
-        ethsw_sfp_restore_from_power_saving(phy_dev);
-    }
     else if (mode == SERDES_FORCE_OFF)
         ethsw_powerdown_forceoff_serdes(phy_dev);
     else
@@ -1625,6 +1645,8 @@ static int ethsw_sfp_module_detect(phy_dev_t *phy_dev)
         if(phy_serdes->sfp_module_type != SFP_NO_MODULE)
         {
             phy_serdes->sfp_module_type = SFP_NO_MODULE;
+            if (phy_dev->cascade_next)
+                phy_dev->cascade_next->flag |= PHY_FLAG_NOT_PRESENTED;
             printk("SFP module unplugged\n");
         }
         return 0;
@@ -1703,7 +1725,6 @@ sfp_module_in:
                 if(phy_serdes->power_mode == SERDES_BASIC_POWER_SAVING)
                 {
                     ethsw_powerup_serdes(phy_dev);
-                    ethsw_sfp_restore_from_power_saving(phy_dev);
                 }
                 else if (phy_serdes->power_mode == SERDES_NO_POWER_SAVING)
                 {
@@ -1968,8 +1989,7 @@ static int sf2_serdes_eee_resolution_get(phy_dev_t *phy_dev, int *enable)
     return 0;
 }
 
-static int
-sf2_serdes_cfg_speed_set(phy_dev_t *phy_dev, phy_speed_t speed,
+static int sf2_serdes_cfg_speed_set(phy_dev_t *phy_dev, phy_speed_t speed,
                 phy_duplex_t duplex)
 {
     int enabled;
@@ -1978,9 +1998,19 @@ sf2_serdes_cfg_speed_set(phy_dev_t *phy_dev, phy_speed_t speed,
     if (!enabled)
         return -1;
 
-    return ethsw_serdes_cfg_speed_set(phy_dev, speed, duplex);
+    return ethsw_serdes_cfg_speed_set(phy_dev, speed, PHY_DUPLEX_FULL);
 }
 
+static  int ethsw_serdes_caps_set(phy_dev_t *phy_dev, uint32_t caps)
+{
+    phy_speed_t speed;
+
+    if (caps & PHY_CAP_AUTONEG)
+        speed = PHY_SPEED_AUTO;
+    else
+        speed = phy_caps_to_max_speed(caps);
+    return sf2_serdes_cfg_speed_set(phy_dev, speed, PHY_DUPLEX_FULL); 
+}
 
 static int sf2_serdes_isolate_phy(phy_dev_t *phy, int isolate)
 {
@@ -2007,6 +2037,7 @@ phy_drv_t phy_drv_sf2_serdes =
     .eee_resolution_get = sf2_serdes_eee_resolution_get,
     .speed_set = sf2_serdes_cfg_speed_set,
     .caps_get = ethsw_serdes_caps_get,
+    .caps_set = ethsw_serdes_caps_set,
     .isolate_phy = sf2_serdes_isolate_phy,
     .config_speed_get = ethsw_serdes_speed_get,
 

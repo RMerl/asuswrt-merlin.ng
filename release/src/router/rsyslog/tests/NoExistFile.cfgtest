@@ -1,0 +1,2 @@
+rsyslogd: CONFIG ERROR: could not interpret master config file '/This/does/not/exist'. [try http://www.rsyslog.com/e/2013 ]
+rsyslogd: EMERGENCY CONFIGURATION ACTIVATED - fix rsyslog config file!

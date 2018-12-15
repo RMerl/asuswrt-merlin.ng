@@ -666,6 +666,8 @@ extern void hnd_cfe_check();
 #endif
 #ifdef RTCONFIG_HND_ROUTER_AX
 extern void dump_WlGetDriverStats();
+extern void config_bcn_stuck_watchdog();
+extern void dfs_cac_check(void);
 #endif
 #endif
 

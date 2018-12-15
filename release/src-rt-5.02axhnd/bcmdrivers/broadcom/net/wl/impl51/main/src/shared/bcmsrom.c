@@ -20,7 +20,7 @@
  *
  * <<Broadcom-WL-IPTag/Open:>>
  *
- * $Id: bcmsrom.c 742769 2018-01-23 15:23:27Z $
+ * $Id: bcmsrom.c 767247 2018-08-31 20:51:03Z $
  */
 
 /*
@@ -4151,8 +4151,10 @@ BCMATTACHFN(get_max_cis_size)(si_t *sih)
 	void *oh;
 
 	if (sih) {
-		if (sih->ccrev >= 61)
-			max_cis_size = CIS_SIZE_SW_1443B;
+		if (sih->ccrev >= 66)
+			max_cis_size = CIS_SIZE_SW_1436B;
+		else if (sih->ccrev >= 61)
+			max_cis_size = CIS_SIZE_SW_1438B;
 		else if (sih->ccrev >= 58)
 			max_cis_size = CIS_SIZE_SW_1628B;
 		else if (sih->ccrev >= 53)
@@ -7463,6 +7465,14 @@ BCMATTACHFN(initvars_srom_pci)(si_t *sih, void *curmap, char **vars, uint *count
 #if defined(BCMPCIEDEV_SROM_FORMAT) && defined(WLC_TXCAL)
 	uint16 cal_wordoffset;
 #endif // endif
+
+#if defined(DONGLEBUILD) && defined(BCMHOSTVARS) && defined(BCMHOSTVARS_OVERRIDE_SROM)
+	if ((_varsz != 0) && (_vars != NULL)) {
+		BS_ERROR(("%s: external nvram is present, size %d, skip SROM.\n",
+			__FUNCTION__, _varsz));
+		return err;
+	}
+#endif /* DONGLEBUILD && BCMHOSTVARS && BCMHOSTVARS_OVERRIDE_SROM */
 
 	/*
 	 * Apply CRC over SROM content regardless SROM is present or not, and use variable

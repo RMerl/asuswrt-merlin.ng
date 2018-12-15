@@ -183,6 +183,7 @@ static int ct_blog_query(struct nf_conn *ct, BlogCtTime_t *ct_time_p)
 		if (ct_time_p->intv != 0) {
 			ret = 0;
 		}
+#if 0
 		else
 		{
 			if (net_ratelimit())
@@ -191,6 +192,7 @@ static int ct_blog_query(struct nf_conn *ct, BlogCtTime_t *ct_time_p)
 					ct_time_p->intv, BLOG_PARAM1_DIR_ORIG, ct->blog_key[BLOG_PARAM1_DIR_ORIG], 
 					BLOG_PARAM1_DIR_REPLY, ct->blog_key[BLOG_PARAM1_DIR_REPLY]);
 		}
+#endif
     }
 	return ret;
 }

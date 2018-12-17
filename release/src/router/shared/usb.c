@@ -259,7 +259,9 @@ int exec_for_host(int host, int obsolete, uint flags, host_exec func)
 		    !strcmp(dp->d_name, "..")
 		   )
 			continue;
-#if LINUX_KERNEL_VERSION >= KERNEL_VERSION(3,3,0)
+#if LINUX_KERNEL_VERSION >= KERNEL_VERSION(4,1,0)
+		snprintf(device_path, sizeof(device_path), "/sys/block/%s/device", dp->d_name);
+#elif LINUX_KERNEL_VERSION >= KERNEL_VERSION(3,3,0)
 		snprintf(device_path, sizeof(device_path), "/sys/block/%s", dp->d_name);
 #else
 		snprintf(device_path, sizeof(device_path), "/sys/block/%s/device", dp->d_name);

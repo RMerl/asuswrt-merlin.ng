@@ -4463,9 +4463,32 @@ TRACE_PT("writing Parental Control\n");
 #endif
 		}
 #ifdef RTCONFIG_SSH
-		if (nvram_get_int("sshd_enable") == 1) {
-			fprintf(fp, "-A INPUT -p tcp -m tcp --dport %d -j %s\n",
-				nvram_get_int("sshd_port") ? : 22, logaccept);
+		if (nvram_get_int("sshd_enable") > 0) {
+			if (nvram_match("sshd_bfp", "1"))
+			{
+				fprintf(fp, "-N SSHBFP\n");
+				fprintf(fp, "-A SSHBFP -m recent --set --name SSH --rsource\n");
+				fprintf(fp, "-A SSHBFP -m recent --update --seconds 60 --hitcount 4 --name SSH --rsource -j %s\n", logdrop);
+				fprintf(fp, "-A SSHBFP -j %s\n", logaccept);
+				fprintf(fp, "-A INPUT -p tcp --dport %d -m state --state NEW -j SSHBFP\n",
+					nvram_get_int("sshd_port") ? : 22);
+#ifdef RTCONFIG_IPV6
+				if (ipv6_enabled())
+				{
+					fprintf(fp_ipv6, "-N SSHBFP\n");
+					fprintf(fp_ipv6, "-A SSHBFP -m recent --set --name SSH --rsource\n");
+					fprintf(fp_ipv6, "-A SSHBFP -m recent --update --seconds 60 --hitcount 4 --name SSH --rsource -j %s\n", logdrop);
+					fprintf(fp_ipv6, "-A SSHBFP -j %s\n", logaccept);
+					fprintf(fp_ipv6, "-A INPUT -p tcp --dport %d -m state --state NEW -j SSHBFP\n",
+						nvram_get_int("sshd_port") ? : 22);
+				}
+#endif
+			}
+                        else
+			{
+				fprintf(fp, "-A INPUT -p tcp -m tcp --dport %d -j %s\n",
+					nvram_get_int("sshd_port") ? : 22, logaccept);
+			}
 		}
 #endif
 

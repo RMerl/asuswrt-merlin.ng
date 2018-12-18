@@ -2,15 +2,21 @@ Asuswrt-Merlin 384/NG Changelog
 ===============================
 
 384.9 (xx-xxx-xxxx)
+  - NEW: RT-AX88U - Merged with GPL 384_5247.
   - CHANGED: Updated wget to 1.20.
   - CHANGED: Updated nano to 3.2.
   - CHANGED: Updated curl to 7.62.0.
-  - CHANGED: SSH brute force protection now also protects
-             SSH access from LAN
   - FIXED: Firmware update checks would not run at boot time
            on the RT-AX88U.
   - FIXED: Name resolution for /etc/hosts entries on HND
            models (themiron)
+  - FIXED: Syslog not properly copied to JFFS on reboot
+           (John Bacho)
+  - FIXED: Volumes not properly unmounted on HND platform
+           (John Bacho)
+  - FIXED: Added missing TEE Netfilter target on the RT-AC86U
+  - FIXED: SSH brute force protection didn't work in Dual WAN
+           load balancing mode.
 
 
 384.8_2 (8-Dec-2018)

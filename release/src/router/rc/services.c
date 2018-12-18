@@ -3843,6 +3843,9 @@ _dprintf("%s:\n", __FUNCTION__);
 void
 stop_logger(void)
 {
+#if defined(RTCONFIG_JFFS2LOG) && (defined(RTCONFIG_JFFS2)||defined(RTCONFIG_BRCM_NAND_JFFS2))
+	eval("cp", "/tmp/syslog.log", "/tmp/syslog.log-1", "/jffs");
+#endif
 	stop_syslogd();
 	stop_klogd();
 }

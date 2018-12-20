@@ -1917,12 +1917,6 @@ search_desc (pkw_t pkw, char *name)
 #endif
 #endif //TRANSLATE_ON_FLY
 
-void reapchild()	// 0527 add
-{
-	signal(SIGCHLD, reapchild);
-	wait(NULL);
-}
-
 int main(int argc, char **argv)
 {
 	usockaddr usa;
@@ -1987,8 +1981,7 @@ int main(int argc, char **argv)
 
 	/* Ignore broken pipes */
 	signal(SIGPIPE, SIG_IGN);
-	signal(SIGCHLD, reapchild);	// 0527 add
-	signal(SIGUSR1, update_wlan_log);
+	signal(SIGCHLD, chld_reap);
 
 #ifdef RTCONFIG_HTTPS
 	//if (do_ssl)

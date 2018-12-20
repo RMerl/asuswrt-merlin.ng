@@ -6593,7 +6593,7 @@ i2c-tools-2013-12-15:
 	$(MAKE) -C $@
 
 i2c-tools-2013-12-15-clean:
-	$(MAKE) -C i2c-tools-2013-12-15 clean
+	-$(MAKE) -C i2c-tools-2013-12-15 clean
 
 i2c-tools-2013-12-15-install: i2c-tools-2013-12-15
 	install -D i2c-tools-2013-12-15/tools/i2cdump $(INSTALLDIR)/i2c-tools-2013-12-15/usr/bin/i2cdump
@@ -6904,8 +6904,8 @@ libconfuse-install:
 
 libconfuse-clean:
 	@$(SEP)
-	$(MAKE) -C libconfuse distclean
-	rm libconfuse/Makefile
+	[ ! -f libconfuse/Makefile ] || $(MAKE) -C libconfuse distclean
+	@rm -f libconfuse/Makefile
 
 inadyn/Makefile:
 	cd inadyn && $(CONFIGURE) \
@@ -6927,8 +6927,8 @@ inadyn-install:
 
 inadyn-clean:
 	@$(SEP)
-	$(MAKE) -C inadyn clean
-	rm inadyn/Makefile
+	[ ! -f inadyn/Makefile ] || $(MAKE) -C inadyn distclean
+	@rm -f inadyn/Makefile
 
 ncurses-6.0/Makefile: ncurses-6.0/configure
 	cd ncurses-6.0 && $(CONFIGURE) \
@@ -7522,7 +7522,7 @@ endif
 visdcoll-clean:
 ifeq ($(RTCONFIG_VISUALIZATION),y)
 ifneq ($(wildcard $(VISDCOLL_DIR)),)
-	+$(MAKE) -C $(VISDCOLL_DIR) clean
+	-$(MAKE) -C $(VISDCOLL_DIR) clean
 endif
 endif
 
@@ -7569,7 +7569,7 @@ endif
 visdcon-clean:
 ifeq ($(RTCONFIG_VISUALIZATION),y)
 ifneq ($(wildcard $(VISDCON_DIR)),)
-	+$(MAKE) -C $(VISDCON_DIR) clean
+	-$(MAKE) -C $(VISDCON_DIR) clean
 endif
 endif
 

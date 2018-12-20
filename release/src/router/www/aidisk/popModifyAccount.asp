@@ -147,7 +147,7 @@ function validForm(){
       </td>
     </tr>
 	</tbody>	
-    <tr bgcolor="#E6E6E6">
+    <tr>
       <th colspan="2" align="right"><input id="Submit" type="button" class="button_gen" value="<#CTL_modify#>"></th>
     </tr>
   </table>

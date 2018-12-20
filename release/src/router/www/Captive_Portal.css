@@ -328,6 +328,11 @@
 	border-bottom-width: 1px;
 	padding-bottom: 5px;
 }
+.splash_template_terms_service_hyperlink {
+	color: #4A90E2;
+	text-decoration: underline;
+	cursor:pointer;
+}
 .splash_template_continue {
 	background-color: #4A90E2;
 	border-radius: 4px;

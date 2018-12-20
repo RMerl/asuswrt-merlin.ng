@@ -74,9 +74,7 @@ _get_wdm_by_usbnet(){
 			continue
 		fi
 
-		rp1_head=`echo -n $rp1 |awk 'BEGIN{FS=":"}{print $1}'`
-		rp2_head=`echo -n $rp2 |awk 'BEGIN{FS=":"}{print $1}'`
-		if [ "$rp1_head" == "$rp2_head" ]; then
+		if [ "$rp1" == "$rp2" ]; then
 			echo "/dev/cdc-wdm$i"
 			return
 		fi
@@ -510,10 +508,6 @@ if [ "$modem_type" == "tty" -o "$modem_type" == "qmi" -o "$modem_type" == "mbim"
 
 			if [ "$modem_user" != "" -o "$modem_pass" != "" ]; then
 				echo "Gobi2: Set the PPP profile."
-				#if [ "$modem_authmode" == "3" ]; then
-				#	modem_authmode=2 # When auth type is BOTH, choose CHAP.
-				#fi
-				#at_ret=`/usr/sbin/modem_at.sh '$QCPDPP=1,'$modem_authmode',"'$modem_pass'","'$modem_user'"' 2>&1`
 				at_ret=`/usr/sbin/modem_at.sh '$PPP='$modem_user','$modem_pass 2>&1`
 				ret=`echo -n $at_ret |grep "OK" 2>/dev/null`
 				if [ -z "$ret" ]; then
@@ -540,20 +534,18 @@ if [ "$modem_type" == "tty" -o "$modem_type" == "qmi" -o "$modem_type" == "mbim"
 				/usr/sbin/modem_at.sh '' # clean the output of +COPS=2.
 			fi
 
-			if [ "$modem_pdp" != "2" ]; then # IPv4
-				echo "Gobi($qcqmi): set the ISP IPv4 profile."
-				/usr/sbin/modem_at.sh '+CGDCONT=1,"IP","'$modem_apn'"'
+			# clean the profile 2 before
+			/usr/sbin/modem_at.sh '+CGDCONT=2'
+
+			pdp_str=`_get_pdp_str`
+			echo "Gobi: set the PDP be $pdp_str & APN be $modem_apn."
+			/usr/sbin/modem_at.sh '+CGDCONT=1,"'$pdp_str'","'$modem_apn'"'
+			if [ "$modem_user" != "" -o "$modem_pass" != "" ]; then
 				/usr/sbin/modem_at.sh '$QCPDPP=1,'$modem_authmode',"'$modem_pass'","'$modem_user'"'
 			fi
 
-			if [ "$modem_pdp" == "2" ] || [ "$modem_pdp" == "3" ]; then # IPv6
-				echo "Gobi($qcqmi): set the ISP IPv6 profile."
-				/usr/sbin/modem_at.sh '+CGDCONT=2,"IPV6","'$modem_apn'"'
-				/usr/sbin/modem_at.sh '$QCPDPP=2,'$modem_authmode',"'$modem_pass'","'$modem_user'"'
-			fi
-
 			echo "Reset Modem for the new profile..."
-			/usr/sbin/modem_at.sh +CMODEMRESET=1
+			/usr/sbin/modem_at.sh +CMODEMRESET=2
 		fi
 
 		echo "Gobi: Successfull to set the ISP profile."
@@ -809,6 +801,33 @@ if [ "$modem_type" == "tty" -o "$modem_type" == "qmi" -o "$modem_type" == "mbim"
 				exit 0
 			fi
 		else
+			if [ "$modem_pdp" == "2" ] || [ "$modem_pdp" == "3" ]; then
+				i=0
+				got_ip=0
+				nvram set freeze_duck=12
+				while [ $i -lt 10 ]; do
+					modem_status.sh ip
+					ipv6=`nvram get ${prefix}act_ipv6`
+					if [ -n "$ipv6" ]; then
+						prefix1_ipv6=`echo -n "$ipv6" |awk 'BEGIN{FS="."}{print $1}'`
+						prefix2_ipv6=`echo -n "$ipv6" |awk 'BEGIN{FS="."}{print $2}'`
+						if [ -n "$prefix1_ipv6" ] && [ "$prefix1_ipv6" -gt "0" ]; then
+							got_ip=`expr $got_ip + 1`
+						fi
+						if [ -n "$prefix2_ipv6" ] && [ "$prefix2_ipv6" -gt "0" ]; then
+							got_ip=`expr $got_ip + 1`
+						fi
+						if [ "$got_ip" -gt "0" ]; then
+							break
+						fi
+					fi
+
+					i=`expr $i + 1`
+					echo "Wait $i seconds for IPv6..."
+					sleep 1
+				done
+			fi
+
 			# WDS set the autoconnect & roaming
 			# autoconnect: 0, disable; 1, enable; 2, pause.
 			# roaming: 0, allow; 1, disable. Only be activated when autoconnect is enabled.
@@ -826,7 +845,8 @@ if [ "$modem_type" == "tty" -o "$modem_type" == "qmi" -o "$modem_type" == "mbim"
 
 			if [ "$modem_pdp" == "2" ] || [ "$modem_pdp" == "3" ]; then # IPv6
 				echo "StartDataSessionWith IPv6..."
-				gobi_api qcqmi0 StartDataSessionWithIPFamily 6 "$modem_apn" "$modem_authmode" "$modem_user" "$modem_pass" &
+				gobi_api qcqmi0 StartDataSessionWithIPFamily 6 &
+				sleep 2
 			fi
 		fi
 

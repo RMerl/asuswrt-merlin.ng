@@ -51,18 +51,18 @@ static void call(char *func, FILE *stream);
 
 /* Look for unquoted character within a string */
 static char *
-unqstrstr(char *haystack, char *needle)
+unqstrstr(const char *haystack, const char *needle)
 {
 	char *cur;
 	int q;
 
 	for (cur = haystack, q = 0;
-	     cur < &haystack[strlen(haystack)] && !(!q && !strncmp(needle, cur, strlen(needle)));
+	     cur < (haystack + strlen(haystack)) && !(!q && !strncmp(needle, cur, strlen(needle)));
 	     cur++) {
 		if (*cur == '"')
 			q ? q-- : q++;
 	}
-	return (cur < &haystack[strlen(haystack)]) ? cur : NULL;
+	return (cur < (haystack + strlen(haystack))) ? cur : NULL;
 }
 
 static char *
@@ -273,10 +273,12 @@ do_ej(char *path, FILE *stream)
 		if (((pattern + pattern_size) - end_pat) < frag_size)
 		{
 			len = end_pat - start_pat;
-			memcpy (pattern, start_pat, len);
-			start_pat = pattern;
-			end_pat = start_pat + len;
-			*end_pat = '\0';
+			if(len < pattern_size){
+				memcpy (pattern, start_pat, len);
+				start_pat = pattern;
+				end_pat = start_pat + len;
+				*end_pat = '\0';
+			}
 		}
 
 		read_len = (pattern + pattern_size) - end_pat;

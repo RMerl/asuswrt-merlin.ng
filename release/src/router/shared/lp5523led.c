@@ -47,17 +47,22 @@ struct lp55xx_leds_pattern lp55xx_leds_col[] = {
 	{ LP55XX_ALL_BLEDS_ON,	"ff", "00", "00" },
 	{ LP55XX_ALL_GLEDS_ON,	"00", "ff", "00" },
 	{ LP55XX_ALL_RLEDS_ON,	"00", "00", "ff" },
-	{ LP55XX_ALL_BREATH_LEDS,	"00", "00", "00" },	//100
-	{ LP55XX_ALL_DOWN_LEDS,	"00", "00", "00" },		//101
-	{ LP55XX_WHITE_LEDS,	"ff", "ff", "8c" },		//102
-	{ LP55XX_RED_LEDS,	"00", "00", "c8" },		//103
-	{ LP55XX_LIGHT_CYAN_LEDS,	"ff", "ff", "1e" },	//104
-	{ LP55XX_ORANGE_LEDS,	"00", "99", "ff" },		//105
-	{ LP55XX_PURPLE_LEDS,	"ff", "00", "5a" },		//106
-	{ LP55XX_NIAGARA_BLUE_LEDS,	"ff", "41", "0f" },	//107
-	{ LP55XX_PALE_DOGWOOD_LEDS,	"6e", "c3", "ff" },	//108
-	{ LP55XX_GREENERY_LEDS,	"41", "ff", "32" },		//109
-	{ LP55XX_PRIMROSE_YELLOW_LEDS,	"0a", "ff", "ff" },	//110
+	{ LP55XX_ALL_BREATH_LEDS,	"00", "00", "00" },
+	{ LP55XX_ALL_DOWN_LEDS,	"00", "00", "00" },		// 
+	{ LP55XX_RED_LEDS,	"00", "00", "c8" },		// RED
+	{ LP55XX_ORANGE_LEDS,	"00", "99", "ff" },		// ORANGE
+	{ LP55XX_PURPLE_LEDS,	"ff", "00", "5a" },		// PURPLE
+	{ LP55XX_NIAGARA_BLUE_LEDS,	"ff", "41", "0f" },	// NIAGARA BLUE
+	{ LP55XX_PALE_DOGWOOD_LEDS,	"6e", "c3", "ff" },	//
+	{ LP55XX_GREENERY_LEDS,	"41", "ff", "32" },		// GREEN
+	{ LP55XX_PRIMROSE_YELLOW_LEDS,	"0a", "ff", "ff" },	// YELLOW
+#if defined(VZWAC1300)
+	{ LP55XX_WHITE_LEDS,	"ff", "ff", "1e" },		// BLUE
+	{ LP55XX_LIGHT_CYAN_LEDS,	"ff", "ff", "ff" },	// WHITE
+#else
+	{ LP55XX_WHITE_LEDS,	"ff", "ff", "8c" },		// WHITE
+	{ LP55XX_LIGHT_CYAN_LEDS,	"ff", "ff", "1e" },	// BLUE
+#endif
 	{ LP55XX_END_COLOR,	"", "", "" }
 };
 

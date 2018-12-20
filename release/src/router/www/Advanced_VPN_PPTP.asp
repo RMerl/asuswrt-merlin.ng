@@ -76,8 +76,8 @@ function initial(){
 	var pptpd_clients = '<% nvram_get("pptpd_clients"); %>';
 	
 	show_menu();
-	httpApi.faqURL("faq", "114892", "https://www.asus.com", "/support/FAQ/");
-	httpApi.faqURL("faq_port_forwarding", "1033906", "https://www.asus.com", "/support/FAQ/");
+	httpApi.faqURL("114892", function(url){document.getElementById("faq").href=url;});
+	httpApi.faqURL("1033906", function(url){document.getElementById("faq_port_forwarding").href=url;});
 
 	//if support pptpd and openvpnd then show switch button
 	if(pptpd_support && openvpnd_support) {

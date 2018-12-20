@@ -141,6 +141,8 @@ function withdraw_eula(eula_type){
 					return false;
 				}
 				else{
+					document.getElementById('asus_withdraw_btn').style.display = "none";
+					document.getElementById('asus_loadingicon').style.display = "";
 					$.ajax({
 						url: "/unreg_ASUSDDNS.cgi",
 
@@ -155,6 +157,8 @@ function withdraw_eula(eula_type){
 
 		case "tm":
 			if(confirm("<#withdraw_confirm#>")){
+				document.getElementById('tm_withdraw_btn').style.display = "none";
+				document.getElementById('tm_loadingicon').style.display = "";
 				$.ajax({
 					url: "/set_TM_EULA.cgi",
 					data:{
@@ -217,8 +221,11 @@ function withdraw_eula(eula_type){
 											</ol>
 											</div>
 										</div>
-										<div>
-											<input class="button_gen" style="margin-left: 305px; margin-bottom:10px;" name="asus_withdraw_btn" onclick="withdraw_eula('asus');" type="button" value="<#withdraw_str#>"/>
+										<div style="text-align: center;">
+											<div style="margin: 0px auto 10px;">
+												<input class="button_gen" id="asus_withdraw_btn" onclick="withdraw_eula('asus');" type="button" value="<#withdraw_str#>"/>
+												<img id="asus_loadingicon" style="display:none;" src="/images/InternetScan.gif">
+											</div>
 										</div>
 									</div>
 									<div id="tm_eula" class="eula_withdraw" style="display:none;">
@@ -230,8 +237,11 @@ function withdraw_eula(eula_type){
 											<div><#TM_data_collection#></div>
 											</div>
 										</div>
-										<div>
-											<input class="button_gen" style="margin-left: 305px; margin-bottom:10px;" name="asus_withdraw_btn" onclick="withdraw_eula('tm');" type="button" value="<#withdraw_str#>"/>
+										<div style="text-align:center;">
+											<div style="margin: 0px auto 10px;">
+												<input class="button_gen" id="tm_withdraw_btn" onclick="withdraw_eula('tm');" type="button" value="<#withdraw_str#>"/>
+												<img id="tm_loadingicon" style="display:none;" src="/images/InternetScan.gif">
+											</div>
 										</div>
 									</div>
 								</td>

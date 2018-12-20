@@ -450,7 +450,6 @@ char *processPacket(int sockfd, char *pdubuf, unsigned short cli_port)
 		     strcpy(ginfo->FirmwareVersion, firmver_g); // disable for tmp
 		     memcpy(ginfo->MacAddress, mac, 6);
 		     ginfo->sw_mode = get_sw_mode();
-
 #ifdef WAVESERVER    // eric++
 	     	     // search /tmp/waveserver and get information
 	     	     wsinfo = (WS_INFO_T*) (pdubuf_res + sizeof (IBOX_COMM_PKT_RES) + sizeof (PKT_GET_INFO));

@@ -19,11 +19,9 @@ current_sig_ver=`echo $current_sig_ver | sed s/'\.'//g;`
 echo "$current_sig_ver"
 echo "$current_sig_ver" > /tmp/sig_upgrade.log
 
-#get FULL / PARTIAL signature
-dut_mem_size=`grep MemTotal /proc/meminfo | awk '{print $2}'`
-if [ "$dut_mem_size" -lt "128000" ]; then
-	sig_type="PART";
-else
+#get FULL / PARTIAL / Lite signature: FULL/PART/WRS @update_sig_type() iqos.c
+sig_type=`nvram get sig_type`
+if [ "$sig_type" == "" ]; then
 	sig_type="FULL";
 fi
 

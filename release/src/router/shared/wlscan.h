@@ -130,7 +130,7 @@ struct bss_ie_hdr {
 };
 extern struct bss_ie_hdr bss_ie;
 
-#define MAX_NUMBER_OF_APINFO	64
+#define MAX_NUMBER_OF_APINFO	128
 
 struct apinfo
 {
@@ -158,7 +158,7 @@ typedef struct apinfo apinf_t;
 //int apinfo_count=0;
 #endif
 #define WIF "eth1"
-#define WLC_SCAN_RESULT_BUF_LEN	32 * 1024
+#define WLC_SCAN_RESULT_BUF_LEN	64 * 1024
 extern char buf[WLC_IOCTL_MAXLEN];
 
 #endif

@@ -20,20 +20,5 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#include <stdlib.h>
-#define CONFIG_HARDCODED_TABLES 0
-#include "cbrt_tablegen.h"
-#include "tableprint.h"
-
-int main(void)
-{
-    cbrt_tableinit();
-
-    write_fileheader();
-
-    printf("static const uint32_t cbrt_tab[1<<13] = {\n");
-    write_uint32_array(cbrt_tab, 1 << 13);
-    printf("};\n");
-
-    return 0;
-}
+#define USE_FIXED 0
+#include "cbrt_tablegen_template.c"

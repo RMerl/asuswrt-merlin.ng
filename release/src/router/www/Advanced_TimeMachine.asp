@@ -33,7 +33,7 @@ window.onresize = function() {
 function initial(){
 	show_menu();
 	//	https://www.asus.com/support/FAQ/1004458
-	httpApi.faqURL("faq", "1004458", "https://www.asus.com", "/support/FAQ/");
+	httpApi.faqURL("1004458", function(url){document.getElementById("faq").href=url;});
 
 	if('<% nvram_get("tm_device_name"); %>' != '')
 		document.getElementById("tmPath").innerHTML = '/mnt/<% nvram_get("tm_device_name"); %>';

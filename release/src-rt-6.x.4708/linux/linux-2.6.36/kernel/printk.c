@@ -203,6 +203,9 @@ static inline void copy_char_to_oopsbuf(char c)
 
 static char local_buf[CONFIG_DUMP_PREV_OOPS_MSG_BUF_LEN];
 static int local_buf_len = 0;
+static int got_previous_oops = 0;
+module_param(got_previous_oops, int, S_IRUGO);
+MODULE_PARM_DESC(got_previous_oops, "See if there is the previous OOPS");
 
 int prepare_and_dump_previous_oops(void)
 {
@@ -229,6 +232,7 @@ int prepare_and_dump_previous_oops(void)
         if (oopsbuf->len > 32 && oopsbuf->len < MAX_PREV_OOPS_MSG_LEN) {
 		memcpy(local_buf, oopsbuf->buf, oopsbuf->len);
 		local_buf_len = oopsbuf->len;
+		got_previous_oops = 1;
 #if 0
                 /* Fix-up oops message.
                  * If message is broken by NULL character, use space character instead.

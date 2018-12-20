@@ -352,6 +352,11 @@ ip_conntrack_ipct_add(struct sk_buff *skb, u_int32_t hooknum,
 	ipc_entry.tuple.dp = tcph->dest;
 
 	ipc_entry.next = NULL;
+/* CS5006664 */
+//#if defined(CTF_PPPOE) || defined(CTF_PPTP) || defined(CTF_L2TP)
+//	if ((skb_dst(skb)->dev->flags & IFF_POINTOPOINT) && (skb->dev->flags & IFF_POINTOPOINT))
+//		return;
+//#endif /* CTF_PPPOE || CTF_PPTP || CTF_L2TP */
 
 	/* For vlan interfaces fill the vlan id and the tag/untag actions */
 	if (skb_dst(skb)->dev->priv_flags & IFF_802_1Q_VLAN) {
@@ -414,6 +419,9 @@ ip_conntrack_ipct_add(struct sk_buff *skb, u_int32_t hooknum,
 							if (rt==NULL)
 								return;
 
+							if (rt->dst.dev->flags & IFF_POINTOPOINT)
+								return;
+
 							if (skb_dst(skb)->hh == NULL) {
 								memcpy(ipc_entry.dhost.octet, rt->dst.neighbour->ha, ETH_ALEN);
 							}
@@ -453,6 +461,9 @@ ip_conntrack_ipct_add(struct sk_buff *skb, u_int32_t hooknum,
 								return;
 							}
 							if (rt==NULL)
+								return;
+
+							if (rt->dst.dev->flags & IFF_POINTOPOINT)
 								return;
 
 							if (skb_dst(skb)->hh == NULL) {

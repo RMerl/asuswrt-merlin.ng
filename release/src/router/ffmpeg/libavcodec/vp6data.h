@@ -1,7 +1,4 @@
-/**
- * @file
- * VP6 compatible video decoder
- *
+/*
  * Copyright (C) 2006  Aurelien Jacobs <aurel@gnuage.org>
  *
  * This file is part of FFmpeg.
@@ -21,10 +18,17 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
+/**
+ * @file
+ * VP6 compatible video decoder
+ */
+
 #ifndef AVCODEC_VP6DATA_H
 #define AVCODEC_VP6DATA_H
 
-#include "vp56data.h"
+#include <stdint.h>
+
+#include "vp56.h"
 
 static const uint8_t vp6_def_fdv_vector_model[2][8] = {
     { 247, 210, 135, 68, 138, 220, 239, 246 },

@@ -123,7 +123,7 @@ function initial(){
 	else
 		document.form.wl_subunit.value = -1;
 
-	if(parent.lyra_hide_support){
+	if(wifison_ready == "1" && parent.sw_mode == "1"){
 		document.getElementById("t0").style.display = "";
 		document.getElementById("span0").innerHTML = "<#tm_wireless#>";
 	}
@@ -162,7 +162,9 @@ function initial(){
 	}
 
 	detect_CPU_RAM();
-	get_ethernet_ports();
+
+	if(!lyra_hide_support)
+		get_ethernet_ports();
 
 	var table_height = document.getElementById("rt_table").clientHeight;
 	if(table_height != "0" || table_height != "")
@@ -293,7 +295,7 @@ function tab_reset(v){
 	var tab_width = Math.floor(270/(parent.wl_info.wl_if_total+1));
 	var i = 0;
 	while(i < tab_array1.length){
-		tab_array1[i].style.width=tab_width+'px';
+		tab_array1[i].style.width = tab_width + 'px';
 		tab_array1[i].style.display = "";
 		i++;
 	}
@@ -317,15 +319,25 @@ function tab_reset(v){
 			document.getElementById("t3").style.display = "none";
 		}		
 	}else if(v == 1){	//Smart Connect
-		if(based_modelid == "RT-AC5300" || based_modelid == "RT-AC3200" || based_modelid == "GT-AC5300")
-			document.getElementById("span0").innerHTML = "2.4GHz, 5GHz-1 and 5GHz-2";
-		else if(based_modelid == "RT-AC88U" || based_modelid == "RT-AC86U" || based_modelid == "AC2900" || based_modelid == "RT-AC3100" || based_modelid == "BLUECAVE")
-			document.getElementById("span0").innerHTML = "2.4GHz and 5GHz";
-		
-		document.getElementById("t1").style.display = "none";
-		document.getElementById("t2").style.display = "none";				
-		document.getElementById("t3").style.display = "none";
-		document.getElementById("t0").style.width = (tab_width*parent.wl_info.wl_if_total+10) +'px';
+		if(isSupport("triband") && dwb_info.mode) {
+			document.getElementById("span0").innerHTML = "2.4GHz and 5GHz-1";
+			document.getElementById("span2").innerHTML = "5GHz-2";
+			document.getElementById("t3").style.display = "none";
+			document.getElementById("t1").style.display = "none";
+			document.getElementById("t0").style.width = "142px";
+			document.getElementById("span0").style.padding = "5px 0px 0px 8px";
+		}
+		else {
+			if(based_modelid == "RT-AC5300" || based_modelid == "RT-AC3200" || based_modelid == "GT-AC5300")
+				document.getElementById("span0").innerHTML = "2.4GHz, 5GHz-1 and 5GHz-2";
+			else if(based_modelid == "RT-AC88U" || based_modelid == "RT-AX88U" || based_modelid == "RT-AC86U" || based_modelid == "AC2900" || based_modelid == "RT-AC3100" || based_modelid == "BLUECAVE")
+				document.getElementById("span0").innerHTML = "2.4GHz and 5GHz";
+
+			document.getElementById("t1").style.display = "none";
+			document.getElementById("t2").style.display = "none";
+			document.getElementById("t3").style.display = "none";
+			document.getElementById("t0").style.width = (tab_width*parent.wl_info.wl_if_total+10) +'px';
+		}
 	}
 	else if(v == 2){ //5GHz Smart Connect
 		document.getElementById("span0").innerHTML = "2.4GHz";

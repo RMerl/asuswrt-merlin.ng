@@ -190,7 +190,7 @@ function go_format() {
 	if(!Block_chars(document.form.disk_name, ["~", "`", "!", "#", "$", "%", "^", "&", "*", "(", ")", "+", "=", "{", "[", "}", "]", "|", "\\", ":", ";", "\"", "'", "<", ">", ",", ".", "?", "/", " "]))
 		return false;
 
-	if(!confirm("All disk activity will stop while format is in progress and multiple disk partition will reset to be the one. Do you want to run disk format now?")) { /*untranslated*/
+	if(!confirm("<#format_confirm_alert#>")) {
 		document.getElementById('scan_status_field').style.display = "";
 		document.getElementById('progressBar').style.display = "none";
 		return false;
@@ -232,9 +232,9 @@ function show_loadingBar_field(){
 
 	parent.document.getElementById('ring_USBdisk_'+diskOrder).style.display = "";
 	parent.document.getElementById('ring_USBdisk_'+diskOrder).style.backgroundImage = "url(/images/New_ui/networkmap/backgroud_move_8P_2.0.gif)";
-	if(parent.based_modelid == "GT-AC5300" || parent.based_modelid == "GT-AC9600"){
+	if(parent.rog_support){
 		parent.document.getElementById('ring_USBdisk_'+diskOrder).style.backgroundRepeat = "no-repeat";
-		parent.document.getElementById('ring_USBdisk_'+diskOrder).style.backgroundPosition = '32px -3px';
+		parent.document.getElementById('ring_USBdisk_'+diskOrder).style.backgroundPosition = '34px -3px';
 	}
 	else
 		parent.document.getElementById('ring_USBdisk_'+diskOrder).style.backgroundPosition = '-1px -1px';
@@ -284,7 +284,7 @@ function showLoadingUpdate(){
 				document.getElementById("updateProgress").style.width = progressBar + "%";
 				document.getElementById('progress_bar_no').innerHTML = progressBar + "%";
 				document.getElementById('scan_message').innerHTML = "Disk format error!";
-				if(parent.based_modelid != "GT-AC5300" && parent.based_modelid != "GT-AC9600") {
+				if(!parent.rog_support) {
 					parent.document.getElementById('ring_USBdisk_'+diskOrder).style.backgroundImage = "url(/images/New_ui/networkmap/white_04.gif)";
 					parent.document.getElementById('ring_USBdisk_'+diskOrder).style.backgroundPosition = '0px -184px';
 					parent.document.getElementById('iconUSBdisk_'+diskOrder).style.backgroundPosition = '1px -206px';
@@ -301,14 +301,14 @@ function showLoadingUpdate(){
 				document.getElementById('progressBar').style.display = "none";
 				document.getElementById('scan_status_field').style.display = "";
 				document.getElementById('btn_format').disabled = false;
-				if(parent.based_modelid != "GT-AC5300" && parent.based_modelid != "GT-AC9600") {
+				if(!parent.rog_support) {
 					parent.document.getElementById('ring_USBdisk_'+diskOrder).style.backgroundImage = "url(/images/New_ui/networkmap/white_04.gif)";
 					parent.document.getElementById('ring_USBdisk_'+diskOrder).style.backgroundPosition = '0% 0%';
 				}
 				else
 					parent.document.getElementById('ring_USBdisk_'+diskOrder).style.backgroundImage = "";
 
-				if(parent.based_modelid == "GT-AC5300" || parent.based_modelid == "GT-AC9600")
+				if(parent.rog_support)
 					parent.document.getElementById('iconUSBdisk_'+diskOrder).style.backgroundPosition = '1px -95px';
 				else
 					parent.document.getElementById('iconUSBdisk_'+diskOrder).style.backgroundPosition = '1px -105px';

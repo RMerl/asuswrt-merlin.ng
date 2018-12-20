@@ -19,6 +19,19 @@
 #ifndef AVCODEC_AVFFT_H
 #define AVCODEC_AVFFT_H
 
+/**
+ * @file
+ * @ingroup lavc_fft
+ * FFT functions
+ */
+
+/**
+ * @defgroup lavc_fft FFT functions
+ * @ingroup lavc_misc
+ *
+ * @{
+ */
+
 typedef float FFTSample;
 
 typedef struct FFTComplex {
@@ -85,15 +98,21 @@ enum DCTTransformType {
 };
 
 /**
- * Sets up DCT.
+ * Set up DCT.
+ *
  * @param nbits           size of the input array:
  *                        (1 << nbits)     for DCT-II, DCT-III and DST-I
  *                        (1 << nbits) + 1 for DCT-I
+ * @param type            the type of transform
  *
  * @note the first element of the input of DST-I is ignored
  */
 DCTContext *av_dct_init(int nbits, enum DCTTransformType type);
 void av_dct_calc(DCTContext *s, FFTSample *data);
 void av_dct_end (DCTContext *s);
+
+/**
+ * @}
+ */
 
 #endif /* AVCODEC_AVFFT_H */

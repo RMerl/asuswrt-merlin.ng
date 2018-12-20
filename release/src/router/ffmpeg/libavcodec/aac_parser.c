@@ -22,52 +22,10 @@
 
 #include "parser.h"
 #include "aac_ac3_parser.h"
-#include "aac_parser.h"
+#include "adts_header.h"
+#include "adts_parser.h"
 #include "get_bits.h"
 #include "mpeg4audio.h"
-
-int ff_aac_parse_header(GetBitContext *gbc, AACADTSHeaderInfo *hdr)
-{
-    int size, rdb, ch, sr;
-    int aot, crc_abs;
-
-    if(get_bits(gbc, 12) != 0xfff)
-        return AAC_AC3_PARSE_ERROR_SYNC;
-
-    skip_bits1(gbc);             /* id */
-    skip_bits(gbc, 2);           /* layer */
-    crc_abs = get_bits1(gbc);    /* protection_absent */
-    aot     = get_bits(gbc, 2);  /* profile_objecttype */
-    sr      = get_bits(gbc, 4);  /* sample_frequency_index */
-    if(!ff_mpeg4audio_sample_rates[sr])
-        return AAC_AC3_PARSE_ERROR_SAMPLE_RATE;
-    skip_bits1(gbc);             /* private_bit */
-    ch      = get_bits(gbc, 3);  /* channel_configuration */
-
-    skip_bits1(gbc);             /* original/copy */
-    skip_bits1(gbc);             /* home */
-
-    /* adts_variable_header */
-    skip_bits1(gbc);             /* copyright_identification_bit */
-    skip_bits1(gbc);             /* copyright_identification_start */
-    size    = get_bits(gbc, 13); /* aac_frame_length */
-    if(size < AAC_ADTS_HEADER_SIZE)
-        return AAC_AC3_PARSE_ERROR_FRAME_SIZE;
-
-    skip_bits(gbc, 11);          /* adts_buffer_fullness */
-    rdb = get_bits(gbc, 2);      /* number_of_raw_data_blocks_in_frame */
-
-    hdr->object_type    = aot + 1;
-    hdr->chan_config    = ch;
-    hdr->crc_absent     = crc_abs;
-    hdr->num_aac_frames = rdb + 1;
-    hdr->sampling_index = sr;
-    hdr->sample_rate    = ff_mpeg4audio_sample_rates[sr];
-    hdr->samples        = (rdb + 1) * 1024;
-    hdr->bit_rate       = size * 8 * hdr->sample_rate / hdr->samples;
-
-    return size;
-}
 
 static int aac_sync(uint64_t state, AACAC3ParseContext *hdr_info,
         int *need_next_header, int *new_frame_start)
@@ -77,13 +35,14 @@ static int aac_sync(uint64_t state, AACAC3ParseContext *hdr_info,
     int size;
     union {
         uint64_t u64;
-        uint8_t  u8[8];
+        uint8_t  u8[8 + AV_INPUT_BUFFER_PADDING_SIZE];
     } tmp;
 
-    tmp.u64 = be2me_64(state);
-    init_get_bits(&bits, tmp.u8+8-AAC_ADTS_HEADER_SIZE, AAC_ADTS_HEADER_SIZE * 8);
+    tmp.u64 = av_be2ne64(state);
+    init_get_bits(&bits, tmp.u8 + 8 - AV_AAC_ADTS_HEADER_SIZE,
+                  AV_AAC_ADTS_HEADER_SIZE * 8);
 
-    if ((size = ff_aac_parse_header(&bits, &hdr)) < 0)
+    if ((size = ff_adts_header_parse(&bits, &hdr)) < 0)
         return 0;
     *need_next_header = 0;
     *new_frame_start  = 1;
@@ -97,16 +56,16 @@ static int aac_sync(uint64_t state, AACAC3ParseContext *hdr_info,
 static av_cold int aac_parse_init(AVCodecParserContext *s1)
 {
     AACAC3ParseContext *s = s1->priv_data;
-    s->header_size = AAC_ADTS_HEADER_SIZE;
+    s->header_size = AV_AAC_ADTS_HEADER_SIZE;
     s->sync = aac_sync;
     return 0;
 }
 
 
-AVCodecParser aac_parser = {
-    { CODEC_ID_AAC },
-    sizeof(AACAC3ParseContext),
-    aac_parse_init,
-    ff_aac_ac3_parse,
-    ff_parse_close,
+AVCodecParser ff_aac_parser = {
+    .codec_ids      = { AV_CODEC_ID_AAC },
+    .priv_data_size = sizeof(AACAC3ParseContext),
+    .parser_init    = aac_parse_init,
+    .parser_parse   = ff_aac_ac3_parse,
+    .parser_close   = ff_parse_close,
 };

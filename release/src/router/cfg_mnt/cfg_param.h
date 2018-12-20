@@ -16,14 +16,16 @@
 #define FT_FEEDBACK		BIT(5)
 #define FT_DIAGNOSTIC	BIT(6)
 #define FT_BACKHAULCTRL	BIT(7)
-#if defined(MAPAC2200)
-#define FT_BHBLOCK	BIT(8)	/* normal client blocking in backhaul */
+
+#define FT_REGION	BIT(8)	/* system reboot */
+#define FT_CENTRAL_LED		BIT(9)
+
+#if defined(MAPAC2200) || defined(RTAC92U)
+#define FT_BHBLOCK	BIT(10)	/* normal client blocking in backhaul */
 #endif
 #ifdef RTCONFIG_WIFI_SON
-#define FT_SPCMD	BIT(9)	/* special command */
+#define FT_SPCMD	BIT(11)	/* special command */
 #endif
-#define FT_REGION	BIT(10)	/* system reboot */
-#define FT_CENTRAL_LED		BIT(11)
 
 
 struct feature_mapping_s {
@@ -41,16 +43,16 @@ struct feature_mapping_s feature_mapping_list[] = {
 	{ "feedback",	FT_FEEDBACK,	"restart_sendmail" },
 	{ "diagnostic",	FT_DIAGNOSTIC,	"restart_dblog" },
 	{ "backhalctrl", 	FT_BACKHAULCTRL,	"restart_amas_bhctrl"},
-#if defined(MAPAC2200)
-	{ "bhblock", 	FT_BHBLOCK,	"restart_bhblock" },
-#endif
-#ifdef RTCONFIG_WIFI_SON
-	{ "spcmd", 	FT_SPCMD,	"restart_spcmd" },
-#endif
 	{ "central_led",	FT_CENTRAL_LED,	"reset_led" },
 
 	/* END */
-	{ "region", FT_REGION, 	"reboot" }, 
+	{ "region", FT_REGION, 	"reboot" },
+#ifdef RTCONFIG_WIFI_SON
+#if defined(MAPAC2200) || defined(RTAC92U)
+	{ "bhblock", 	FT_BHBLOCK,	"restart_bhblock" },
+#endif
+	{ "spcmd", 	FT_SPCMD,	"restart_spcmd" },
+#endif
 	{ NULL, 0, NULL }
 };
 
@@ -73,6 +75,9 @@ enum {
 	SUBFT_MACFILTER_2G,
 	SUBFT_MACFILTER_5G,
 	SUBFT_MACFILTER_5G1,
+	SUBFT_RADIUS_2G,
+	SUBFT_RADIUS_5G,
+	SUBFT_RADIUS_5G1,
 	SUBFT_TIMESCHED_2G,
 	SUBFT_TIMESCHED_5G,
 	SUBFT_TIMESCHED_5G1,
@@ -126,7 +131,7 @@ enum {
 
 	/* sub feature for smart connect */
 	SUBFT_SMART_CONNECT,	/* smart connect */
-#if defined(MAPAC2200)
+#if defined(MAPAC2200) || defined(RTAC92U)
 	SUBFT_NCB,
 #endif
 #ifdef RTCONFIG_WIFI_SON
@@ -146,12 +151,12 @@ enum {
 	SUBFT_BSD_STEERING_POLICY_5G,
 	SUBFT_BSD_STEERING_POLICY_5G1,
 	SUBFT_BSD_STEERING_POLICY_5G_X,		// 5g only
-	SUBFT_BSD_STEERING_POLICY_5G1_X,	// 5g only 
+	SUBFT_BSD_STEERING_POLICY_5G1_X,	// 5g only
 	/* sub feature for smart connect rule (STA Selection Policy) */
-	SUBFT_BSD_STA_SELECT_POLICY_2G, 
-	SUBFT_BSD_STA_SELECT_POLICY_5G, 
+	SUBFT_BSD_STA_SELECT_POLICY_2G,
+	SUBFT_BSD_STA_SELECT_POLICY_5G,
 	SUBFT_BSD_STA_SELECT_POLICY_5G1,
-	SUBFT_BSD_STA_SELECT_POLICY_5G_X,	// 5g only 
+	SUBFT_BSD_STA_SELECT_POLICY_5G_X,	// 5g only
 	SUBFT_BSD_STA_SELECT_POLICY_5G1_X,	// 5g only
 	/* sub feature for smart connect rule (Interface Select and Qualify Procedures) */
 	SUBFT_BSD_IF_SELECT_2G,
@@ -184,6 +189,9 @@ struct subfeature_mapping_s subfeature_mapping_list[] = {
 	{ "macfilter_2g", 	SUBFT_MACFILTER_2G,	FT_WIRELESS },
 	{ "macfilter_5g", 	SUBFT_MACFILTER_5G,	FT_WIRELESS },
 	{ "macfilter_5g1",	SUBFT_MACFILTER_5G1,	FT_WIRELESS },
+	{ "radius_2g", 	SUBFT_RADIUS_2G,	FT_WIRELESS },
+	{ "radius_5g", 	SUBFT_RADIUS_5G,	FT_WIRELESS },
+	{ "radius_5g1",	SUBFT_RADIUS_5G1,	FT_WIRELESS },
 	{ "timesched_2g", 	SUBFT_TIMESCHED_2G,	FT_WIRELESS },
 	{ "timesched_5g", 	SUBFT_TIMESCHED_5G,	FT_WIRELESS },
 	{ "timesched_5g1",	SUBFT_TIMESCHED_5G1,	FT_WIRELESS },
@@ -216,7 +224,7 @@ struct subfeature_mapping_s subfeature_mapping_list[] = {
 	{ "advanced_5g_g3", 	SUBFT_ADVANCED_5G_G3, 	FT_WIRELESS },
 	{ "advanced_5g1_g1", 	SUBFT_ADVANCED_5G1_G1, 	FT_WIRELESS },
 	{ "advanced_5g1_g2", 	SUBFT_ADVANCED_5G1_G2, 	FT_WIRELESS },
-	{ "advanced_5g1_g3", 	SUBFT_ADVANCED_5G1_G3, 	FT_WIRELESS },	
+	{ "advanced_5g1_g3", 	SUBFT_ADVANCED_5G1_G3, 	FT_WIRELESS },
 	/* administration */
 	{ "router_login", 	SUBFT_ROUTER_LOGIN,	FT_LOGIN },
 	{ "time_zone",		SUBFT_TIMEZONE,		FT_TIME },
@@ -232,18 +240,12 @@ struct subfeature_mapping_s subfeature_mapping_list[] = {
 	/* backhaul ctrl */
 	{ "backhalctrl",		SUBFT_BACKHAULCTRL,	FT_BACKHAULCTRL },
 	{ "smart_connect", 	SUBFT_SMART_CONNECT, FT_WIRELESS },
-#if defined(MAPAC2200)
-	{ "ncb",		SUBFT_NCB,	FT_BHBLOCK },
-#endif
-#ifdef RTCONFIG_WIFI_SON
-	{ "spcmd",		SUBFT_SPCMD,	FT_SPCMD },
-#endif
 	{ "central_led",		SUBFT_CENTRAL_LED,	FT_CENTRAL_LED },
 	/* Roaming Assistant */
 	{ "roaming_assistant", SUBFT_ROAMING_ASSISTANT, FT_WIRELESS },
 	{ "roaming_assistant_2g", SUBFT_ROAMING_ASSISTANT_2G, FT_WIRELESS },
 	{ "roaming_assistant_5g", SUBFT_ROAMING_ASSISTANT_5G, FT_WIRELESS },
-	{ "roaming_assistant_5g1", SUBFT_ROAMING_ASSISTANT_5G1, FT_WIRELESS },	
+	{ "roaming_assistant_5g1", SUBFT_ROAMING_ASSISTANT_5G1, FT_WIRELESS },
 	/* Region */
 	{ "region", SUBFT_REGION, FT_REGION },
 	/* sub feature for smart connect rule (Steering Trigger Condition) */
@@ -274,8 +276,14 @@ struct subfeature_mapping_s subfeature_mapping_list[] = {
 	{ "bsd_bounce_detect_x", SUBFT_BSD_BOUNCE_DETECT_X, FT_WIRELESS },
 	/* sub feature for WPS enable */
 	{ "wps", SUBFT_WPS, FT_WIRELESS },
-	/* sub feature for Reboot schedule */	
+	/* sub feature for Reboot schedule */
 	{ "reboot_schedule", SUBFT_REBOOT_SCHEDULE, FT_TIME },
+#if defined(MAPAC2200) || defined(RTAC92U)
+	{ "ncb",		SUBFT_NCB,	FT_BHBLOCK },
+#endif
+#ifdef RTCONFIG_WIFI_SON
+	{ "spcmd",		SUBFT_SPCMD,	FT_SPCMD },
+#endif
 	/* END */
 	{ NULL, 0, 0}
 };
@@ -285,6 +293,7 @@ struct param_mapping_s {
 	int feature;
 	int subfeature;
 };
+
 
 struct param_mapping_s param_mapping_list[] = {
 	{ "wl0_ssid", 		FT_WIRELESS, 		SUBFT_BASIC_2G},
@@ -305,6 +314,13 @@ struct param_mapping_s param_mapping_list[] = {
 	{ "wl0_channel",	FT_WIRELESS,		SUBFT_CHANNEL_2G},
 	{ "wl0_nctrlsb",	FT_WIRELESS,		SUBFT_CHANNEL_2G},
 #endif
+	{ "wl0_macmode", 	FT_WIRELESS,		SUBFT_MACFILTER_2G},
+	{ "wl0_maclist_x",	FT_WIRELESS,		SUBFT_MACFILTER_2G},
+	{ "wl0_timesched", 	FT_WIRELESS,		SUBFT_TIMESCHED_2G},
+	{ "wl0_sched",		FT_WIRELESS,		SUBFT_TIMESCHED_2G},
+	{ "wl0_radius_ipaddr",	FT_WIRELESS,		SUBFT_RADIUS_2G},
+	{ "wl0_radius_key",	FT_WIRELESS,		SUBFT_RADIUS_2G},
+	{ "wl0_radius_port",	FT_WIRELESS,		SUBFT_RADIUS_2G},
 	{ "wl1_ssid", 		FT_WIRELESS,		SUBFT_BASIC_5G},
 	{ "wl1_closed", 	FT_WIRELESS, 		SUBFT_BASIC_5G},
 	{ "wl1_wpa_psk",	FT_WIRELESS,		SUBFT_BASIC_5G},
@@ -323,6 +339,13 @@ struct param_mapping_s param_mapping_list[] = {
 	{ "wl1_channel",	FT_WIRELESS,		SUBFT_CHANNEL_5G},
 	{ "wl1_nctrlsb",	FT_WIRELESS,		SUBFT_CHANNEL_5G},
 #endif
+	{ "wl1_macmode", 	FT_WIRELESS,		SUBFT_MACFILTER_5G},
+	{ "wl1_maclist_x",	FT_WIRELESS,		SUBFT_MACFILTER_5G},
+	{ "wl1_timesched", 	FT_WIRELESS,		SUBFT_TIMESCHED_5G},
+	{ "wl1_sched",		FT_WIRELESS,		SUBFT_TIMESCHED_5G},
+	{ "wl1_radius_ipaddr",	FT_WIRELESS,		SUBFT_RADIUS_5G},
+	{ "wl1_radius_key",	FT_WIRELESS,		SUBFT_RADIUS_5G},
+	{ "wl1_radius_port",	FT_WIRELESS,		SUBFT_RADIUS_5G},
 	{ "wl2_ssid",		FT_WIRELESS,		SUBFT_BASIC_5G1},
 	{ "wl2_closed",	 	FT_WIRELESS, 		SUBFT_BASIC_5G1},
 	{ "wl2_wpa_psk",	FT_WIRELESS,		SUBFT_BASIC_5G1},
@@ -341,18 +364,13 @@ struct param_mapping_s param_mapping_list[] = {
 	{ "wl2_channel",	FT_WIRELESS,		SUBFT_CHANNEL_5G1},
 	{ "wl2_nctrlsb",	FT_WIRELESS,		SUBFT_CHANNEL_5G1},
 #endif
-	{ "wl0_macmode", 	FT_WIRELESS,		SUBFT_MACFILTER_2G},
-	{ "wl0_maclist_x",	FT_WIRELESS,		SUBFT_MACFILTER_2G},
-	{ "wl1_macmode", 	FT_WIRELESS,		SUBFT_MACFILTER_5G},
-	{ "wl1_maclist_x",	FT_WIRELESS,		SUBFT_MACFILTER_5G},
 	{ "wl2_macmode",	FT_WIRELESS,		SUBFT_MACFILTER_5G1},
 	{ "wl2_maclist_x",	FT_WIRELESS,		SUBFT_MACFILTER_5G1},
-	{ "wl0_timesched", 	FT_WIRELESS,		SUBFT_TIMESCHED_2G},
-	{ "wl0_sched",		FT_WIRELESS,		SUBFT_TIMESCHED_2G},
-	{ "wl1_timesched", 	FT_WIRELESS,		SUBFT_TIMESCHED_5G},
-	{ "wl1_sched",		FT_WIRELESS,		SUBFT_TIMESCHED_5G},
 	{ "wl2_timesched",	FT_WIRELESS,		SUBFT_TIMESCHED_5G1},
 	{ "wl2_sched",	FT_WIRELESS,		SUBFT_TIMESCHED_5G1},
+	{ "wl2_radius_ipaddr",	FT_WIRELESS,		SUBFT_RADIUS_5G1},
+	{ "wl2_radius_key",	FT_WIRELESS,		SUBFT_RADIUS_5G1},
+	{ "wl2_radius_port",	FT_WIRELESS,		SUBFT_RADIUS_5G1},
 	/* guest network */
 	{ "wl0.1_ssid", 	FT_WIRELESS, 		SUBFT_BASIC_2G_G1},
 	{ "wl0.1_wpa_psk",	FT_WIRELESS,		SUBFT_BASIC_2G_G1},
@@ -495,16 +513,8 @@ struct param_mapping_s param_mapping_list[] = {
 	/* backhaul ctrl */
 	{ "amas_ethernet", 	FT_BACKHAULCTRL,	SUBFT_BACKHAULCTRL},
 	{ "smart_connect_x", 	FT_WIRELESS,	SUBFT_SMART_CONNECT},
-#if defined(MAPAC2200)
-	/* normal client blocking in backhaul */
-	{ "ncb_enable", 	FT_BHBLOCK,		SUBFT_NCB},
-#endif
-#ifdef RTCONFIG_WIFI_SON
-	{ "spcmd", 		FT_SPCMD,		SUBFT_SPCMD},
-#endif
 	/* led */
 	{ "bc_ledLv",	FT_CENTRAL_LED,		SUBFT_CENTRAL_LED},	/* for BLUECAVE */
-
 	/* Roaming Assistant */
 	{ "rast_static_cli_enable", FT_WIRELESS, SUBFT_ROAMING_ASSISTANT },
 	{ "wl0_rast_static_client", FT_WIRELESS, SUBFT_ROAMING_ASSISTANT_2G, },
@@ -540,71 +550,74 @@ struct param_mapping_s param_mapping_list[] = {
 	{ "bsd_bounce_detect_x", FT_WIRELESS, SUBFT_BSD_BOUNCE_DETECT_X },
 	/* sub feature for WPS enable */
 	{ "wps_enable", FT_WIRELESS, SUBFT_WPS },
-	/* sub feature for Reboot schedule */	
+	/* sub feature for Reboot schedule */
 	{ "reboot_schedule_enable", FT_TIME, SUBFT_REBOOT_SCHEDULE },
 	{ "reboot_schedule", FT_TIME, SUBFT_REBOOT_SCHEDULE },
 	/* sub feature for Wireless Professional */
 	/* isolate */
-	{ "wl0.1_ap_isolate", FT_WIRELESS, SUBFT_ADVANCED_2G_G1 },	
-	{ "wl0.2_ap_isolate", FT_WIRELESS, SUBFT_ADVANCED_2G_G2 },	
-	{ "wl0.3_ap_isolate", FT_WIRELESS, SUBFT_ADVANCED_2G_G3 },	
-	{ "wl1.1_ap_isolate", FT_WIRELESS, SUBFT_ADVANCED_5G_G1 },	
-	{ "wl1.2_ap_isolate", FT_WIRELESS, SUBFT_ADVANCED_5G_G2 },	
+	{ "wl0.1_ap_isolate", FT_WIRELESS, SUBFT_ADVANCED_2G_G1 },
+	{ "wl0.2_ap_isolate", FT_WIRELESS, SUBFT_ADVANCED_2G_G2 },
+	{ "wl0.3_ap_isolate", FT_WIRELESS, SUBFT_ADVANCED_2G_G3 },
+	{ "wl1.1_ap_isolate", FT_WIRELESS, SUBFT_ADVANCED_5G_G1 },
+	{ "wl1.2_ap_isolate", FT_WIRELESS, SUBFT_ADVANCED_5G_G2 },
 	{ "wl1.3_ap_isolate", FT_WIRELESS, SUBFT_ADVANCED_5G_G3 },
 	{ "wl2.1_ap_isolate", FT_WIRELESS, SUBFT_ADVANCED_5G1_G1 },
 	{ "wl2.2_ap_isolate", FT_WIRELESS, SUBFT_ADVANCED_5G1_G2 },
 	{ "wl2.3_ap_isolate", FT_WIRELESS, SUBFT_ADVANCED_5G1_G3 },
-	{ "wl0_ap_isolate", FT_WIRELESS, SUBFT_ADVANCED_2G },	
-	{ "wl1_ap_isolate", FT_WIRELESS, SUBFT_ADVANCED_5G },	
+	{ "wl0_ap_isolate", FT_WIRELESS, SUBFT_ADVANCED_2G },
+	{ "wl1_ap_isolate", FT_WIRELESS, SUBFT_ADVANCED_5G },
 	{ "wl2_ap_isolate", FT_WIRELESS, SUBFT_ADVANCED_5G1 },
-	/* IGMP Snooping */	
-	{ "wl0_igs", FT_WIRELESS, SUBFT_ADVANCED_2G },	
-	{ "wl1_igs", FT_WIRELESS, SUBFT_ADVANCED_5G },	
+	/* IGMP Snooping */
+	{ "wl0_igs", FT_WIRELESS, SUBFT_ADVANCED_2G },
+	{ "wl1_igs", FT_WIRELESS, SUBFT_ADVANCED_5G },
 	{ "wl2_igs", FT_WIRELESS, SUBFT_ADVANCED_5G1 },
 	/* Multicast Rate(Mbps) */
-	{ "wl0_mrate_x", FT_WIRELESS, SUBFT_ADVANCED_2G },	
-	{ "wl1_mrate_x", FT_WIRELESS, SUBFT_ADVANCED_5G },	
+	{ "wl0_mrate_x", FT_WIRELESS, SUBFT_ADVANCED_2G },
+	{ "wl1_mrate_x", FT_WIRELESS, SUBFT_ADVANCED_5G },
 	{ "wl2_mrate_x", FT_WIRELESS, SUBFT_ADVANCED_5G1 },
 	/* AMPDU RTS */
-	{ "wl0_ampdu_rts", FT_WIRELESS, SUBFT_ADVANCED_2G },	
-	{ "wl1_ampdu_rts", FT_WIRELESS, SUBFT_ADVANCED_5G },	
+	{ "wl0_ampdu_rts", FT_WIRELESS, SUBFT_ADVANCED_2G },
+	{ "wl1_ampdu_rts", FT_WIRELESS, SUBFT_ADVANCED_5G },
 	{ "wl2_ampdu_rts", FT_WIRELESS, SUBFT_ADVANCED_5G1 },
 	/* RTS Threshold */
-	{ "wl0_rts", FT_WIRELESS, SUBFT_ADVANCED_2G },	
-	{ "wl1_rts", FT_WIRELESS, SUBFT_ADVANCED_5G },	
+	{ "wl0_rts", FT_WIRELESS, SUBFT_ADVANCED_2G },
+	{ "wl1_rts", FT_WIRELESS, SUBFT_ADVANCED_5G },
 	{ "wl2_rts", FT_WIRELESS, SUBFT_ADVANCED_5G1 },
 	/* DTIM Interval */
-	{ "wl0_dtim", FT_WIRELESS, SUBFT_ADVANCED_2G },	
-	{ "wl1_dtim", FT_WIRELESS, SUBFT_ADVANCED_5G },	
-	{ "wl2_dtim", FT_WIRELESS, SUBFT_ADVANCED_5G1 },	
-	/* Enable TX Bursting */
-	{ "wl0_frameburst", FT_WIRELESS, SUBFT_ADVANCED_2G },	
-	{ "wl1_frameburst", FT_WIRELESS, SUBFT_ADVANCED_5G },	
-	{ "wl2_frameburst", FT_WIRELESS, SUBFT_ADVANCED_5G1 },	
+	{ "wl0_dtim", FT_WIRELESS, SUBFT_ADVANCED_2G },
+	{ "wl1_dtim", FT_WIRELESS, SUBFT_ADVANCED_5G },
+	{ "wl2_dtim", FT_WIRELESS, SUBFT_ADVANCED_5G1 },
 	/* Enable WMM APSD */
-	{ "wl0_wme_apsd", FT_WIRELESS, SUBFT_ADVANCED_2G },	
-	{ "wl1_wme_apsd", FT_WIRELESS, SUBFT_ADVANCED_5G },	
+	{ "wl0_wme_apsd", FT_WIRELESS, SUBFT_ADVANCED_2G },
+	{ "wl1_wme_apsd", FT_WIRELESS, SUBFT_ADVANCED_5G },
 	{ "wl2_wme_apsd", FT_WIRELESS, SUBFT_ADVANCED_5G1 },
 	/* Optimize AMPDU aggregation */
-	{ "wl0_ampdu_mpdu", FT_WIRELESS, SUBFT_ADVANCED_2G },	
-	{ "wl1_ampdu_mpdu", FT_WIRELESS, SUBFT_ADVANCED_5G },	
+	{ "wl0_ampdu_mpdu", FT_WIRELESS, SUBFT_ADVANCED_2G },
+	{ "wl1_ampdu_mpdu", FT_WIRELESS, SUBFT_ADVANCED_5G },
 	{ "wl2_ampdu_mpdu", FT_WIRELESS, SUBFT_ADVANCED_5G1 },
 	/* Enable Airtime Fairness */
-	{ "wl0_atf", FT_WIRELESS, SUBFT_ADVANCED_2G },	
-	{ "wl1_atf", FT_WIRELESS, SUBFT_ADVANCED_5G },	
+	{ "wl0_atf", FT_WIRELESS, SUBFT_ADVANCED_2G },
+	{ "wl1_atf", FT_WIRELESS, SUBFT_ADVANCED_5G },
 	{ "wl2_atf", FT_WIRELESS, SUBFT_ADVANCED_5G1 },
 	/* 802.11ac Beamforming */
-	{ "wl0_txbf", FT_WIRELESS, SUBFT_ADVANCED_2G },	
-	{ "wl1_txbf", FT_WIRELESS, SUBFT_ADVANCED_5G },	
+	{ "wl0_txbf", FT_WIRELESS, SUBFT_ADVANCED_2G },
+	{ "wl1_txbf", FT_WIRELESS, SUBFT_ADVANCED_5G },
 	{ "wl2_txbf", FT_WIRELESS, SUBFT_ADVANCED_5G1 },
-	/* Universal Beamforming */ 
-	{ "wl0_itxbf", FT_WIRELESS, SUBFT_ADVANCED_2G },	
-	{ "wl1_itxbf", FT_WIRELESS, SUBFT_ADVANCED_5G },	
+	/* Universal Beamforming */
+	{ "wl0_itxbf", FT_WIRELESS, SUBFT_ADVANCED_2G },
+	{ "wl1_itxbf", FT_WIRELESS, SUBFT_ADVANCED_5G },
 	{ "wl2_itxbf", FT_WIRELESS, SUBFT_ADVANCED_5G1 },
-	/* Tx power adjustment */	
-	{ "wl0_txpower", FT_WIRELESS, SUBFT_ADVANCED_2G },	
-	{ "wl1_txpower", FT_WIRELESS, SUBFT_ADVANCED_5G },	
-	{ "wl2_txpower", FT_WIRELESS, SUBFT_ADVANCED_5G1 },	
+	/* Tx power adjustment */
+	{ "wl0_txpower", FT_WIRELESS, SUBFT_ADVANCED_2G },
+	{ "wl1_txpower", FT_WIRELESS, SUBFT_ADVANCED_5G },
+	{ "wl2_txpower", FT_WIRELESS, SUBFT_ADVANCED_5G1 },
+#if defined(MAPAC2200) || defined(RTAC92U)
+	/* normal client blocking in backhaul */
+	{ "ncb_enable", 	FT_BHBLOCK,		SUBFT_NCB},
+#endif
+#ifdef RTCONFIG_WIFI_SON
+	{ "spcmd", 		FT_SPCMD,		SUBFT_SPCMD},
+#endif
 	/* END */
 	{ NULL, 0, 0 }
 };
@@ -627,6 +640,10 @@ struct wlcsuffix_mapping_s wlcsuffix_mapping_list[] = {
 	{ "key4",		NULL },
 	{ "macmode", NULL },
 	{ "maclist_x", NULL },
+	{ "closed", NULL },
+	{ "radius_ipaddr", NULL },
+	{ "radius_key", NULL },
+	{ "radius_port", NULL },
 	{ NULL, 		NULL }
 };
 

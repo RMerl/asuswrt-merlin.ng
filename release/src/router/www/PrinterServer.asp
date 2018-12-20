@@ -14,7 +14,7 @@
 <style type="text/css"> 
 	div.wrapper { margin: 0 auto; width: 730px;}
 	td.sidenav { width:200px;}
-	body {font-family: Verdana, Tohoma, Arial, Helvetica, sans-serif;padding:0;margin:0;}
+	body {font-family: Verdana, Tohoma, Arial, Helvetica, MS UI Gothic, MS P Gothic, sans-serif;padding:0;margin:0;}
 	.wrapperDesc { margin: 0 auto; width: 570px;}
 </style> 
 <script type="text/javascript" src="/state.js"></script>
@@ -69,11 +69,11 @@
 function initial(){
 	show_menu();
 	//id="faq" href="https://www.asus.com/US/support/FAQ/114046"
-        httpApi.faqURL("faq1", "114046", "https://www.asus.com", "/support/FAQ/");
+        httpApi.faqURL("114046", function(url){document.getElementById("faq1").href=url;});
 	//id="faq" href="https://www.asus.com/US/support/FAQ/114024"
-        httpApi.faqURL("faq2", "114024", "https://www.asus.com", "/support/FAQ/");
+        httpApi.faqURL("114024", function(url){document.getElementById("faq2").href=url;});
 	//id="faq" href="https://www.asus.com/US/support/FAQ/113661"
-        httpApi.faqURL("faq3", "113661", "https://www.asus.com", "/support/FAQ/");
+        httpApi.faqURL("113661", function(url){document.getElementById("faq3").href=url;});
 }
 
 function showMethod(flag1, flag2){

@@ -223,18 +223,8 @@ li{
 </style>
 <script type="text/javascript">
 var new_lan_ip = [<% get_next_lanip(); %>][0].next_lanip;
-
-var get_protocol = function() {
-	var protocol = "http:";
-	if(window.location.protocol == "http:" || window.location.protocol == "https:") {
-		protocol = window.location.protocol;
-		return protocol;
-	}
-
-	return protocol;
-};
 var header_info = [<% get_header_info(); %>];
-var location_org = get_protocol() + "//" + header_info[0].host;
+var location_org = header_info[0].protocol + "://" + header_info.host + ":" + header_info.port;
 
 function initial(){
 	var html_code = '';

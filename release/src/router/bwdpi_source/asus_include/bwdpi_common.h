@@ -117,8 +117,8 @@ extern void setup_vp_conf();
 
 //stat.c
 extern int stat_main(char *mode, char *name, char *dura, char *date);
-extern int device_main(char *MAC);
-extern int device_info_main(char *MAC);
+extern int device_main();
+extern int device_info_main(char *MAC, char *ipaddr);
 extern int wrs_url_main();
 extern int get_anomaly_main(char *cmd);
 extern int get_app_patrol_main();

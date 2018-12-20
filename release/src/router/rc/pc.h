@@ -7,6 +7,7 @@
 //#define BLOCKLOCAL
 
 #define iptables_chk_mac "-m mac --mac-source"
+#define iptables_chk_ip "-s"
 extern char *datestr[];
 
 typedef struct pc_event pc_event_s;
@@ -21,9 +22,19 @@ struct pc_event{
 	pc_event_s *next;
 };
 
+enum {
+	INITIAL,
+	NONBLOCK,
+	BLOCKED,
+	DTIME
+};
+
 typedef struct pc pc_s;
 struct pc{
 	int enabled;
+	char state;
+	char prev_state;
+	int dtimes;
 	char device[32];
 	char mac[18];
 	pc_event_s *events;
@@ -47,6 +58,9 @@ extern void print_pc_list(pc_s *pc_list);
 extern pc_s *match_enabled_pc_list(pc_s *pc_list, pc_s **target_list, int enabled);
 extern pc_s *match_day_pc_list(pc_s *pc_list, pc_s **target_list, int target_day);
 extern pc_s *match_daytime_pc_list(pc_s *pc_list, pc_s **target_list, int target_day, int target_hour);
-
+#ifdef RTCONFIG_CONNTRACK
+extern int cleantrack_daytime_pc_list(pc_s *pc_list, int target_day, int target_hour, int verb);
+#endif
 extern void config_daytime_string(pc_s *pc_list, FILE *fp, char *logaccept, char *logdrop, int temp);
-extern int count_pc_rules(pc_s *pc_list);
+extern void config_pause_block_string(pc_s *pc_list, FILE *fp, char *logaccept, char *logdrop, int temp);
+extern int count_pc_rules(pc_s *pc_list, int enabled);

@@ -121,6 +121,7 @@ char user_agent[1024];
 char gen_token[32];
 int do_ssl = 0; 	// use Global for HTTPS upgrade judgment in web.c
 int ssl_stream_fd; 	// use Global for HTTPS stream fd in web.c
+int json_support = 0;
 
 #ifdef TRANSLATE_ON_FLY
 char Accept_Language[16];
@@ -269,7 +270,6 @@ time_t last_login_timestamp_wan=0; // the timestamp of the current session.
 time_t auth_check_dt=0;
 unsigned int login_try_wan=0;
 int cur_login_ip_type = -1;	//0:LAN, 1:WAN, -1:ERROR
-unsigned int MAX_login;
 int lock_flag = 0;
 
 // 2008.08 magic {
@@ -388,7 +388,7 @@ page_default_redirect(int fromapp_flag, char* url)
 void
 send_login_page(int fromapp_flag, int error_status, char* url, char* file, int lock_time, int logintry)
 {
-	HTTPD_DBG("error_status = %d\n", error_status);
+	HTTPD_DBG("error_status = %d", error_status);
 	char inviteCode[256]={0};
 	char buf[128] = {0};
 	//char url_tmp[64]={0};
@@ -781,10 +781,6 @@ void set_referer_host(void)
 
 int is_firsttime(void);
 
-time_t detect_timestamp, detect_timestamp_old, signal_timestamp;
-char detect_timestampstr[32];
-
-
 #define APPLYAPPSTR 	"applyapp.cgi"
 #define GETAPPSTR 	"getapp"
 #define APPGETCGI 	"appGet.cgi"
@@ -982,7 +978,7 @@ handle_request(void)
 			cp += strspn( cp, " \t" );
 			useragent = cp;
 			cur = cp + strlen(cp) + 1;
-			HTTPD_DBG("useragent: %s\n", useragent);
+			HTTPD_DBG("useragent: %s", useragent);
 		}
 		else if ( strncasecmp( cur, "Cookie:", 7 ) == 0 )
 		{
@@ -1047,7 +1043,7 @@ handle_request(void)
 	}
 
 //2008.08 magic{
-	if (file[0] == '\0' || file[len-1] == '/'){
+	if (file[0] == '\0' || (index(file, '?') == NULL && file[len-1] == '/')){
 		if (is_firsttime()
 #ifdef RTCONFIG_FINDASUS
 		    && !isDeviceDiscovery
@@ -1063,7 +1059,6 @@ handle_request(void)
 			file = INDEXPAGE;
 	}
 
-// 2007.11 James. {
 	char *query;
 	int file_len;
 
@@ -1080,7 +1075,6 @@ handle_request(void)
 	{
 		strncpy(url, file, sizeof(url)-1);
 	}
-// 2007.11 James. }
 
 	if( (strstr(url, ".asp") || strstr(url, ".htm")) && !strstr(url, "update_networkmapd.asp") && !strstr(url, "update_clients.asp") && !strstr(url, "update_customList.asp") ) {
 		memset(current_page_name, 0, sizeof(current_page_name));
@@ -1107,6 +1101,11 @@ handle_request(void)
 
 	fromapp = check_user_agent(useragent);
 
+	if(!strcmp(url, APPGETCGI))
+		json_support = 1;
+	else
+		json_support = 0;
+
 #if defined(RTCONFIG_IFTTT) || defined(RTCONFIG_ALEXA)
 	ifttt_log(url, file);
 #endif
@@ -1123,7 +1122,7 @@ handle_request(void)
 // _dprintf("[httpd] file: %s\n", file);
         }
 #endif
-        HTTPD_DBG("file = %s\n", file);
+        HTTPD_DBG("file = %s", file);
 	mime_exception = 0;
 	do_referer = 0;
 
@@ -1210,14 +1209,8 @@ handle_request(void)
 					//skip_auth=1;
 				}
 #ifdef RTCONFIG_WIFI_SON
-				else if(!fromapp && !nvram_match("sw_mode", "1") && (nvram_match("sw_mode", "3") && !nvram_match("cfg_master", "1")) && strcmp(nvram_safe_get("hive_ui"), "") == 0){
+				else if((!fromapp && !nvram_match("sw_mode", "1") && (nvram_match("sw_mode", "3") && !nvram_match("cfg_master", "1")) && strcmp(nvram_safe_get("hive_ui"), "") == 0) && nvram_match("wifison_ready","1")){
 					snprintf(inviteCode, sizeof(inviteCode), "<meta http-equiv=\"refresh\" content=\"0; url=message.htm\">\r\n");
-					send_page( 200, "OK", (char*) 0, inviteCode, 0);
-				}
-#endif
-#if defined(VZWAC1300)
-				else if(!fromapp){
-					snprintf(inviteCode, sizeof(inviteCode), "<script>top.location.href='/message.htm';</script>");
 					send_page( 200, "OK", (char*) 0, inviteCode, 0);
 				}
 #endif
@@ -1234,7 +1227,7 @@ handle_request(void)
 				else {
 					if(do_referer&CHECK_REFERER){
 						referer_result = referer_check(referer, fromapp);
-						HTTPD_DBG("referer_result = %d\n", referer_result);
+						HTTPD_DBG("referer_result = %d", referer_result);
 						if(referer_result != 0){
 							if(strcasecmp(method, "post") == 0 && handler->input)	//response post request
 								while (cl--) (void)fgetc(conn_fp);
@@ -1246,7 +1239,7 @@ handle_request(void)
 					}
 					handler->auth(auth_userid, auth_passwd, auth_realm);
 					auth_result = auth_check(auth_realm, authorization, url, file, cookies, fromapp);
-					HTTPD_DBG("auth_result = %d\n", auth_result);
+					HTTPD_DBG("auth_result = %d", auth_result);
 					if (auth_result != 0)
 					{
 						if(strcasecmp(method, "post") == 0 && handler->input)	//response post request
@@ -1942,7 +1935,10 @@ int main(int argc, char **argv)
 	//int do_ssl = 0;
 
 	do_ssl = 0; // default
-	char log_filename[128] = {0};
+
+#if defined(RTCONFIG_UIDEBUG)
+	eval("touch", HTTPD_DEBUG);
+#endif
 
 #if defined(RTCONFIG_UIDEBUG)
 	eval("touch", HTTPD_DEBUG);
@@ -1952,7 +1948,7 @@ int main(int argc, char **argv)
 	//if(!httpd_sw_hw_check()) return 0;
 #endif
 	// usage : httpd -s -p [port]
-	while ((c = getopt(argc, argv, "sp:i:w:")) != -1) {
+	while ((c = getopt(argc, argv, "sp:i:")) != -1) {
 		switch (c) {
 		case 's':
 #ifdef RTCONFIG_HTTPS
@@ -1965,13 +1961,6 @@ int main(int argc, char **argv)
 		case 'i':
 			http_ifname = optarg;
 			break;
-		case 'w':
-			//Generate Wi-Fi log
-			snprintf(log_filename, sizeof(log_filename), "%s", optarg);
-			FILE *fp = fopen(log_filename, "w");
-			ej_wl_status_2g(0, fp, 0, NULL);
-			fclose(fp);
-			return 0;
 		default:
 			fprintf(stderr, "ERROR: unknown option %c\n", c);
 			break;
@@ -1995,17 +1984,11 @@ int main(int argc, char **argv)
 	nvram_unset("login_timestamp");
 	nvram_unset("login_ip");
 	nvram_unset("login_ip_str");
-	MAX_login = nvram_get_int("login_max_num");
-	if(MAX_login <= DEFAULT_LOGIN_MAX_NUM)
-		MAX_login = DEFAULT_LOGIN_MAX_NUM;
-
-	detect_timestamp_old = 0;
-	detect_timestamp = 0;
-	signal_timestamp = 0;
 
 	/* Ignore broken pipes */
 	signal(SIGPIPE, SIG_IGN);
 	signal(SIGCHLD, reapchild);	// 0527 add
+	signal(SIGUSR1, update_wlan_log);
 
 #ifdef RTCONFIG_HTTPS
 	//if (do_ssl)
@@ -2140,7 +2123,7 @@ int main(int argc, char **argv)
 #if defined(RTCONFIG_UIDEBUG)
 				struct in_addr req_ip;
 				req_ip.s_addr = login_ip_tmp;
-				HTTPD_DBG("Log ip address: %s\n", inet_ntoa(req_ip));
+				HTTPD_DBG("Log ip address: %s", inet_ntoa(req_ip));
 #endif
 				handle_request();
 				fflush(conn_fp);
@@ -2272,38 +2255,15 @@ void start_ssl(void)
 #endif
 
 //return value: 0: LAN,  1: WAN,  -1: ERROR
-int _check_ip_is_lan_or_wan(const char *target_ip, const char *lan_ip, const char *submask)
-{
-	char tmp1[20], tmp2[20];
-
-	if(!target_ip || !lan_ip || !submask)
-		return -1;
-
-	//Convert target ip and lan ip.
-	//ex. target ip is 168.95.10.10, lan ip is 192.168.1.1, subnet mask is 255.255.255.0. 
-	//convert them as 168.95.10.0 and 192.168.1.0. Them compare these 2 values.
-	//If they are different, the target ip would be WAN.
-	if(get_network_addr_by_ip_prefix(target_ip, submask, tmp1, sizeof(tmp1)) == -1)
-		return -1;
-
-	if(get_network_addr_by_ip_prefix(lan_ip, submask, tmp2, sizeof(tmp2)) == -1)
-		return -1;
-
-	return !strcmp(tmp1, tmp2)? 0: 1;
-}
-
-//return value: 0: LAN,  1: WAN,  -1: ERROR
 int check_current_ip_is_lan_or_wan()
 {
-	char *target_ip;
-	struct in_addr temp_ip_addr;
+	unsigned long lan=0, mask=0;
+	lan = inet_addr(nvram_safe_get("lan_ipaddr"));
+	mask = inet_addr(nvram_safe_get("lan_netmask"));
 
-	if(!login_ip_tmp)
+	if(!login_ip_tmp || lan == -1 || mask == -1)
 		return -1;
 
-	temp_ip_addr.s_addr = login_ip_tmp;
-	target_ip = inet_ntoa(temp_ip_addr);
-
-	return _check_ip_is_lan_or_wan(target_ip, nvram_safe_get("lan_ipaddr"), nvram_safe_get("lan_netmask"));
+	return (lan & mask) == (login_ip_tmp & mask);
 }
 

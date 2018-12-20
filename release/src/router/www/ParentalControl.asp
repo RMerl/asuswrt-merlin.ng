@@ -273,15 +273,28 @@ function gen_mainTable(){
 	var clientListEventData = [];
 	code +='<table width="100%" border="1" cellspacing="0" cellpadding="4" align="center" class="FormTable_table" id="mainTable_table">';
 	code +='<thead><tr><td colspan="4"><#ConnectedClient#>&nbsp;(<#List_limit#>&nbsp;16)</td></tr></thead>';
-	code +='<tr><th width="10%" height="30px" title="<#select_all#>"><input id="selAll" type=\"checkbox\" onclick=\"selectAll(this, 0);\" value=\"\"/></th>';
-	code +='<th width="50%"><#Client_Name#> (<#PPPConnection_x_MacAddressForISP_itemname#>)</th>';
+	code += '<tr><th width="15%" height="30px" title="<#select_all#>">';
+	code += '<select id="selAll" class="input_option" onchange="selectAll();">';
+	code += '<option value=""><#select_all#></option>';
+	code += '<option value="0"><#btn_disable#></option>';
+	code += '<option value="1"><#diskUtility_time#></option>';
+	code += '<option value="2"><#Block#></option>';
+	code += '</select>';
+	code += '</th>';
+	code += '<th width="45%"><#Client_Name#> (<#PPPConnection_x_MacAddressForISP_itemname#>)</th>';
 	code +='<th width="20%"><#ParentalCtrl_time#></th>';
 	code +='<th width="20%"><#list_add_delete#></th></tr>';
 
-	code +='<tr><td style="border-bottom:2px solid #000;" title="<#WLANConfig11b_WirelessCtrl_button1name#>/<#btn_disable#>"><input type=\"checkbox\" id="newrule_Enable" checked></td>';
+	code += '<tr><td style="border-bottom:2px solid #000;">';
+	code += '<select id="newrule_Enable" class="input_option">';
+	code += '<option value="0"><#btn_disable#></option>';
+	code += '<option value="1" selected><#diskUtility_time#></option>';
+	code += '<option value="2"><#Block#></option>';
+	code += '</select>';
+	code += '</td>';
 	code +='<td style="border-bottom:2px solid #000;"><input type="text" maxlength="17" style="margin-left:0px;width:255px;" class="input_20_table" name="PC_mac" onKeyPress="return validator.isHWAddr(this,event)" onClick="hideClients_Block();" autocorrect="off" autocapitalize="off" placeholder="ex: <% nvram_get("lan_hwaddr"); %>">';
 	code +='<img id="pull_arrow" height="14px;" src="/images/arrow-down.gif" style="position:absolute;" onclick="pullLANIPList(this);" title="<#select_client#>">';
-	code +='<div id="ClientList_Block_PC" style="margin:0 0 0 52px" class="clientlist_dropdown"></div></td>';
+	code +='<div id="ClientList_Block_PC" style="margin:0 0 0 32px" class="clientlist_dropdown"></div></td>';
 	code +='<td style="border-bottom:2px solid #000;">--</td>';
 	code +='<td style="border-bottom:2px solid #000;"><input class="add_btn" type="button" onClick="addRow_main(16)" value=""></td></tr>';
 	if(MULTIFILTER_DEVICENAME == "" && MULTIFILTER_MAC == "")
@@ -303,7 +316,13 @@ function gen_mainTable(){
 				deviceVender = "";
 			}
 			code += '<tr id="row'+i+'">';
-			code += '<td title="'+ MULTIFILTER_ENABLE_row[i] +'"><input type=\"checkbox\" onclick=\"genEnableArray_main('+i+',this);\" '+genChecked(MULTIFILTER_ENABLE_row[i])+'/></td>';
+			code += '<td>';
+			code += '<select class="input_option eachrule" onchange="genEnableArray_main('+i+',this);">';
+			code += '<option value="0" ' + ((MULTIFILTER_ENABLE_row[i] == 0) ? "selected" : "") + '><#btn_disable#></option>';
+			code += '<option value="1" ' + ((MULTIFILTER_ENABLE_row[i] == 1) ? "selected" : "") + '><#diskUtility_time#></option>';
+			code += '<option value="2" ' + ((MULTIFILTER_ENABLE_row[i] == 2) ? "selected" : "") + '><#Block#></option>';
+			code += '</select>';
+			code += '</td>';
 			code += '<td title="'+clientName+'">';
 		
 			code += '<table width="100%"><tr><td style="width:35%;border:0;float:right;padding-right:30px;">';
@@ -338,7 +357,8 @@ function gen_mainTable(){
 
 			code += '<td><input class=\"edit_btn\" type=\"button\" onclick=\"gen_lantowanTable('+i+');" value=\"\"/></td>';
 			code += '<td><input class=\"remove_btn\" type=\"button\" onclick=\"deleteRow_main(this, \''+MULTIFILTER_MAC_row[i]+'\');\" value=\"\"/></td></tr>';
-			clientListEventData.push({"mac" : MULTIFILTER_MAC_row[i], "name" : clientName, "ip" : "", "callBack" : "ParentalControl"});
+			if(validator.mac_addr(MULTIFILTER_MAC_row[i]))
+				clientListEventData.push({"mac" : MULTIFILTER_MAC_row[i], "name" : clientName, "ip" : "", "callBack" : "ParentalControl"});
 		}
 	}
 	code += '</table>';
@@ -359,26 +379,10 @@ function gen_mainTable(){
 	showclock();
 }
 
-function selectAll(obj, tab){
-	var tag_name= document.getElementsByTagName('input');	
-	var tag = 0;
-
-	for(var i=0;i<tag_name.length;i++){
-		if(tag_name[i].type == "checkbox"){
-			if(tab == 1){
-				tag++;
-				if(tag > 7)
-					tag_name[i].checked = obj.checked;
-			}
-			else
-				tag_name[i].checked = obj.checked;
-		}
-	}
-
-	if(obj.checked)
-		MULTIFILTER_ENABLE = MULTIFILTER_ENABLE.replace(/0/g, "1");
-	else	
-		MULTIFILTER_ENABLE = MULTIFILTER_ENABLE.replace(/1/g, "0");
+function selectAll(){
+	$(".eachrule").val($("#selAll").val());
+	MULTIFILTER_ENABLE = MULTIFILTER_ENABLE.replace(/[012]/g, $("#selAll").val());
+	$("#selAll").val("");
 }
 
 
@@ -408,13 +412,6 @@ function applyRule(_on){
 
 	showLoading();	
 	document.form.submit();
-}
-
-function genChecked(_flag){
-	if(_flag == 1)
-		return "checked";
-	else
-		return "";
 }
 
 function count_time(){		// To count system time
@@ -783,10 +780,7 @@ function addRow_main(upper){
 		MULTIFILTER_MAC += ">";
 	}
 
-	if(document.getElementById("newrule_Enable").checked)
-		MULTIFILTER_ENABLE += "1";
-	else
-		MULTIFILTER_ENABLE += "0";
+	MULTIFILTER_ENABLE += $("#newrule_Enable").val();
 
 	var clientObj = clientList[document.form.PC_mac.value.toUpperCase()];
 	var clientName = "New device";
@@ -918,24 +912,16 @@ function regen_lantowan(){
 }
 
 function genEnableArray_main(j, obj){
-        document.getElementById("selAll").checked = false;
-        MULTIFILTER_ENABLE_row = MULTIFILTER_ENABLE.split('>');
+	MULTIFILTER_ENABLE_row = MULTIFILTER_ENABLE.split('>');
 
-        if(obj.checked){
-                obj.parentNode.title = "1";
-                MULTIFILTER_ENABLE_row[j] = "1";
-        }
-        else{
-                obj.parentNode.title = "0";
-                MULTIFILTER_ENABLE_row[j] = "0";
-        }
+	MULTIFILTER_ENABLE_row[j] = obj.value;
 
-        MULTIFILTER_ENABLE = "";
-        for(i=0; i<MULTIFILTER_ENABLE_row.length; i++){
-                MULTIFILTER_ENABLE += MULTIFILTER_ENABLE_row[i];
-                if(i<MULTIFILTER_ENABLE_row.length-1)
-                        MULTIFILTER_ENABLE += ">";
-        }       
+	MULTIFILTER_ENABLE = "";
+	for(i=0; i<MULTIFILTER_ENABLE_row.length; i++){
+		MULTIFILTER_ENABLE += MULTIFILTER_ENABLE_row[i];
+		if(i<MULTIFILTER_ENABLE_row.length-1)
+			MULTIFILTER_ENABLE += ">";
+	}
 }
 
 function show_inner_tab(){

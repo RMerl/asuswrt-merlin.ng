@@ -341,7 +341,7 @@ function hide_details_window(){
 
 <div id="details_window"  class="contentM_details" style="box-shadow: 1px 5px 10px #000;">
 	<div style="margin: 15px;">
-		<textarea id="wl_log" cols="63" rows="30" class="textarea_ssh_table" style="width:99%;font-family:'Courier New', Courier, mono; font-size:13px;" readonly="readonly" wrap="off"></textarea>
+		<textarea id="wl_log" cols="63" rows="30" class="textarea_ssh_table" style="width:99%;font-family:'Courier New', Courier, mono; font-size:13px;" readonly="readonly" wrap="off"><% nvram_dump("wlan11b_2g.log",""); %></textarea>
 	</div>
 	<div style="margin-top:5px;margin-bottom:5px;width:100%;text-align:center;">
 		<input class="button_gen" type="button" onclick="hide_details_window();" value="Close">

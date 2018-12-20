@@ -250,7 +250,7 @@ revokeproc(int fd, const char *certdir,
 			continue;
 		tok += 4;
 		for (j = 0; j < altsz; j++)
-			if (0 == strcmp(tok, alts[j]))
+			if (0 == strcasecmp(tok, alts[j]))
 				break;
 		if (j == altsz) {
 			warnx("%s/%s: unknown SAN entry: %s",

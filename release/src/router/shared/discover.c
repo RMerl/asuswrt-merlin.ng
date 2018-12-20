@@ -1116,8 +1116,13 @@ int discover_interfaces(int num, const char **current_wan_ifnames, int dhcp_det,
 			}
 		}
 #endif // DHCP_DETECT
+	}
 
-
+    int try;
+    *got_inf = -1;
+    for(try = 0; try < 3; try++) {
+eprintf("------------ try %d ---\n", try);
+	for(idx = 0; idx < num; idx++) {
 		{ // send discover frame
 #ifdef DHCP_DETECT
 			if(dhcp_det) {
@@ -1128,12 +1133,11 @@ int discover_interfaces(int num, const char **current_wan_ifnames, int dhcp_det,
 		}
 	}
 
-	tv.tv_sec = 3;
+	tv.tv_sec = 1;
 	tv.tv_usec = 0;
 #ifdef DHCP_DETECT
 	int count = 0;
 #endif
-	*got_inf = -1;
 	for (;;) {
 
 		FD_ZERO(&rfds);
@@ -1152,10 +1156,10 @@ int discover_interfaces(int num, const char **current_wan_ifnames, int dhcp_det,
 		}
 
 		retval = select(max_fd + 1, &rfds, NULL, NULL, &tv);
+eprintf("--- %s(%s): tv(%d.%06d) retval(%d) ---\n", __func__, wan_ifNames, tv.tv_sec, tv.tv_usec, retval);
 
 
 		if (retval == -1) {
-eprintf("--- %s(%s): error on select! ---\n", __func__, wan_ifNames);
 			fprintf(stderr, "error on select\n");
 
 			if (errno == EINTR)	/* a signal was caught */
@@ -1191,12 +1195,10 @@ eprintf("--- %s(%s): unknown errno: %x ---\n", __func__, wan_ifNames, errno);
 			}
 		}
 		else if (retval < 0) {
-eprintf("--- %s(%s): this should not happen! ---\n", __func__, wan_ifNames);
 			fprintf(stderr, "this should not happen\n");
 			break;
 		}
 		else if (retval == 0) {
-eprintf("--- %s(%s): retval == 0. ---\n", __func__, wan_ifNames);
 			//fprintf(stderr, "timeout occur when discover dhcp or pppoe\n");
 			break;
 		}
@@ -1281,6 +1283,7 @@ eprintf("--- %s(%s): end to analyse the PPPoE's packet! ---\n", __func__, pInf[i
 eprintf("--- %s(%s): Go to next detect loop. ---\n", __func__, pInf[idx].conn.ifName);
 	}
 	}
+    }
 
 leave:
 	get_proto_via_br(0);

@@ -198,13 +198,6 @@ function applyRule(){
 }
 
 function enableWPS(){
-	if(amesh_support && (isSwMode("rt") || isSwMode("ap"))) {
-		if(!AiMesh_confirm_msg("Wireless_WPS", document.form.wps_enable.value)) {
-			document.form.wps_enable.value = "1";
-			$('#radio_wps_enable').find('.iphone_switch').animate({backgroundPosition: 0}, "slow");
-			return;
-		}
-	}
 	document.form.action_script.value = "restart_wireless";
 	document.form.action_mode.value = "apply_new";
 	document.form.action_wait.value = "3";
@@ -483,14 +476,19 @@ function show_wsc_status(wps_infos){
 	document.getElementById("wpsmethod_tr").style.display = "";
 	if(wps_enable_old == "1"){
 		inputCtrl(document.form.wps_sta_pin, 1);
-		if(wps_infos[1].firstChild.nodeValue == "Yes")
+		if(wps_infos[1].firstChild.nodeValue == "Yes"){
 			document.getElementById("Reset_OOB").style.display = "";
-		else
+			document.getElementById("Reset_OOB_desc").style.display = "";
+		}
+		else{
 			document.getElementById("Reset_OOB").style.display = "none";
+			document.getElementById("Reset_OOB_desc").style.display = "none";
+		}
 	}
 	else{
 		inputCtrl(document.form.wps_sta_pin, 0);
 		document.getElementById("Reset_OOB").style.display = "none";
+		document.getElementById("Reset_OOB_desc").style.display = "none";
 	}
 	
 	// show connecting btn
@@ -621,14 +619,19 @@ function show_wsc_status2(wps_infos0, wps_infos1){
 	document.getElementById("wpsmethod_tr").style.display = "";
 	if(wps_enable_old == "1"){
 		inputCtrl(document.form.wps_sta_pin, 1);
-		if(wps_infos0[1].firstChild.nodeValue == "Yes" || wps_infos1[1].firstChild.nodeValue == "Yes")
+		if(wps_infos0[1].firstChild.nodeValue == "Yes" || wps_infos1[1].firstChild.nodeValue == "Yes"){
 			document.getElementById("Reset_OOB").style.display = "";
-		else
+			document.getElementById("Reset_OOB_desc").style.display = "";
+		}
+		else{
 			document.getElementById("Reset_OOB").style.display = "none";
+			document.getElementById("Reset_OOB_desc").style.display = "none";
+		}
 	}
 	else{
 		inputCtrl(document.form.wps_sta_pin, 0);
 		document.getElementById("Reset_OOB").style.display = "none";
+		document.getElementById("Reset_OOB_desc").style.display = "none";
 	}
 
 	if(wps_infos0[0].firstChild.nodeValue == "Start WPS Process" || wps_infos1[0].firstChild.nodeValue == "Start WPS Process")
@@ -879,6 +882,7 @@ function checkWLReady(){
 							</td>
 							<td style="border:0px">
 								<input class="button_gen" type="button" onClick="resetWPS();" id="Reset_OOB" name="Reset_OOB" value="<#CTL_Reset_OOB#>" style="padding:0 0.3em 0 0.3em;" >
+								<br><span id="Reset_OOB_desc"><#WLANConfig11b_x_ResetWPS_desc#>Pressing the reset button resets the network name (SSID) and WPA encryption key.</span>
 							</td>
 						</tr></table>
 					</div>

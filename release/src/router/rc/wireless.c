@@ -256,7 +256,6 @@ static void wlcconnect_safeleave(int signo) {
 //	when wlc_list, then connect to it according to priority
 int wlcconnect_main(void)
 {
-_dprintf("%s: Start to run...\n", __FUNCTION__);
 	int ret, old_ret = -1;
 	int link_setup = 0, wlc_count = 0;
 	int wanduck_notify = NOTIFY_IDLE;
@@ -266,6 +265,7 @@ _dprintf("%s: Start to run...\n", __FUNCTION__);
 	char *led_gpio = get_wl_led_gpio_nv(unit);
 #endif
 
+	_dprintf("%s: Start to run...\n", __FUNCTION__);
 	signal(SIGTERM, wlcconnect_safeleave);
 
 	nvram_set_int("wlc_state", WLC_STATE_INITIALIZING);
@@ -297,7 +297,7 @@ _dprintf("%s: Start to run...\n", __FUNCTION__);
 			if(ret != WLC_STATE_CONNECTED){
 				if(wlc_count < 3){
 					wlc_count++;
-_dprintf("Ready to disconnect...%d.\n", wlc_count);
+					_dprintf("Ready to disconnect...%d.\n", wlc_count);
 #ifdef RTCONFIG_RALINK
 					sleep(1);
 #else
@@ -378,13 +378,18 @@ _dprintf("Ready to disconnect...%d.\n", wlc_count);
 void repeater_pap_disable(void)
 {
 	char word[256], *next;
+	int wlc_band = nvram_get_int("wlc_band");
 	int i;
 
 	i = 0;
 
 	foreach(word, nvram_safe_get("wl_ifnames"), next) {
 		SKIP_ABSENT_BAND_AND_INC_UNIT(i);
-		if (nvram_get_int("wlc_band") == i) {
+#if defined(RTCONFIG_REPEATER_STAALLBAND)
+		if (i != WL_60G_BAND) {
+#else
+		if (wlc_band == i) {
+#endif
 			eval("ebtables", "-t", "filter", "-I", "FORWARD", "-i", word, "-j", "DROP");
 			break;
 		}

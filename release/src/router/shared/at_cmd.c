@@ -350,6 +350,13 @@ char * Gobi_FwVersion(int unit, char *line, int size)
 	{
 		skip_space(p);
 		cut_space(p);
+
+#if defined(RT4GAC53U)
+		char *ptr = NULL;
+		if ((ptr = strstr(p, " [")))
+			*ptr = '\0';
+		sprintf(line, "WWHC%s", p);
+#endif
 	}
 	return p;
 }

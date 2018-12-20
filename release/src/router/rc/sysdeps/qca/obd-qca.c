@@ -1,14 +1,18 @@
 #include <obd.h>
+#if defined(RTCONFIG_QCA953X) || defined(RTCONFIG_QCA956X)
+#include <linux/compiler.h>
+#endif
 #include <wireless.h>
 #include <netinet/ether.h>
 
 #if defined(RTCONFIG_AMAS)
 
+static void obd_clear_all_probe_req_vsie(int unit);
+
 int obd_init()
 {
-	const char *staifname;
-	int ret;
 	if(!nvram_match("x_Setting", "1")) { /* default and need sta */
+		const char *staifname;
 		staifname = get_staifname(0);
 		create_tmp_sta(0, staifname);
 	}
@@ -17,6 +21,11 @@ int obd_init()
 
 void obd_final()
 {
+#if defined(RTCONFIG_LP5523)
+	lp55xx_leds_proc(LP55XX_ALL_LEDS_OFF, LP55XX_PREVIOUS_STATE);
+#elif defined(MAPAC1750)
+#endif
+	nvram_set("prelink_pap_status", "-1");
 	nvram_unset("wps_enrollee");
 	nvram_unset("wps_e_success");
 	nvram_unset("wps_success");
@@ -36,6 +45,10 @@ void obd_save_para()
 	nvram_set("re_mode", "1");
 	nvram_unset("cfg_group");
 
+#ifdef RTCONFIG_WIFI_SON
+	nvram_set("wifison_ready", "0");
+#endif	/* RTCONFIG_WIFI_SON */
+
 	nvram_unset("wps_e_success");
 	nvram_unset("wps_success");
 	nvram_unset("wps_enrollee");
@@ -45,13 +58,8 @@ void obd_save_para()
 
 void obd_start_active_scan()
 {
-	char cmd[300];
-	char *ifname = get_staifname(0);
-	OBD_DBG("Send probe-req %s\n\n", ifname);		
-
-	snprintf(cmd, sizeof(cmd), "usr/bin/wpa_cli -i%s scan",	ifname);
-	OBD_DBG("cmd=%s\n", cmd);
-	system(cmd);
+	OBD_DBG("Send probe-req \n\n");
+	set_wpa_cli_cmd(0, "scan", 1);
 }
 
 #define SCAN_WLIST "/tmp/scanned_iwlist"
@@ -150,7 +158,7 @@ int parse_iwlist_scan(const char *filename, int num, const char **key_str, iwlis
 	int size = sizeof(line)-1;
 	char *key;
 
-	if (!(fp= fopen(SCAN_WLIST, "r")))
+	if (!(fp= fopen(filename, "r")))
 		return -1;
 
 	line[size] = '\0';	// string end
@@ -200,6 +208,7 @@ int parse_iwlist_scan(const char *filename, int num, const char **key_str, iwlis
 	return apCount;
 }
 
+#if 0
 struct scanned_bss *obd_get_bss_scan_result()
 {
 	char *iwlist_argv[] = { "iwlist", NULL, "scanning", NULL };
@@ -208,15 +217,13 @@ struct scanned_bss *obd_get_bss_scan_result()
 	struct scanned_bss *bss_list;
 	int try;
 
-	sleep(9);
-
 	bss_list = malloc(sizeof(struct scanned_bss));
 	if(bss_list == NULL)
 		return NULL;
 
 	memset(&cb_data, 0, sizeof(cb_data));
 	cb_data.bss_temp = bss_list;
-	iwlist_argv[1] = get_wififname(0);	// ath0
+	iwlist_argv[1] = get_staifname(0);	// sta0
 
 	for(try = 3; try > 0 ; try--) {
 		_eval(iwlist_argv, ">"SCAN_WLIST, 0, NULL);
@@ -234,6 +241,90 @@ struct scanned_bss *obd_get_bss_scan_result()
 
 	return bss_list;
 }
+#else
+struct scanned_bss *obd_get_bss_scan_result()
+{
+	char line[1024];
+	char ctrl_sk[32];
+	int unit;
+	char *staifname;
+	FILE *fp;
+	struct scanned_bss *bss_list = NULL;
+	int ret;
+
+	obd_start_active_scan();	/* scan before get scan_results */
+
+	unit = 0;
+	get_wpa_ctrl_sk(unit, ctrl_sk, sizeof(ctrl_sk));
+	staifname = get_staifname(unit);
+
+	snprintf(line, sizeof(line), "/usr/bin/wpa_cli -p %s -i %s scan_results", ctrl_sk, staifname);
+	if ((fp = popen(line, "r")) != NULL) {
+		struct scanned_bss *bss;
+		char *mac, *freq, *signal, *proto, *ssid, *aimesh;
+		char *p;
+		int RSSI;
+		struct ether_addr *BSSID;
+		int vsie_len;
+		unsigned char vsie[512];
+
+		freq = NULL;
+		while(fgets(line, sizeof(line)-1, fp) != NULL) {
+			strip_new_line(line);
+
+			p = line;
+			if((mac = strsep(&p, "\t")) == NULL || *mac == '\0' || (BSSID = ether_aton(mac)) == NULL ) {
+				if(freq != NULL)
+					_dprintf("# INVALID MAC #\n");
+				continue;
+			}
+			if((freq = strsep(&p, "\t")) == NULL) {
+				_dprintf("# NO FREQ #\n");
+				continue;
+			}
+			if((signal = strsep(&p, "\t")) == NULL || !isdigit(*signal) || (RSSI = atoi(signal)) < 0) {
+				_dprintf("# INVALID SIGNAL #\n");
+				continue;
+			}
+			if((proto = strsep(&p, "\t")) == NULL) {
+				_dprintf("# NO PROTO #\n");
+				continue;
+			}
+			if((ssid = strsep(&p, "\t")) == NULL) {
+				_dprintf("# NO SSID #\n");
+				continue;
+			}
+			if((aimesh = strsep(&p, "\t")) == NULL || *aimesh == '\0' || strncmp(aimesh, "#f832e4", 7) != NULL) {
+				//_dprintf("# NO AIMESH #\n");
+				continue;
+			}
+
+			aimesh += 7;
+			vsie_len = strlen(aimesh);
+			vsie_len >>= 1;
+
+			extern int str2hex(const char *str, unsigned char *data, size_t size);
+			ret = str2hex(aimesh, vsie, vsie_len);
+			if(ret != vsie_len) {
+				OBD_DBG("str2hex fail ret(%d) vsie_len(%d) aimesh(%s)\n", ret, vsie_len, aimesh);
+				continue;
+			}
+
+			if((bss = malloc(sizeof(struct scanned_bss))) == NULL)
+				continue;
+			memset(bss, 0, sizeof(struct scanned_bss));
+			bss->vsie_len = vsie_len;
+			memcpy(bss->vsie, vsie, bss->vsie_len);
+			bss->RSSI = (unsigned char) RSSI;
+			memcpy(&bss->BSSID, BSSID, sizeof(struct ether_addr));
+			bss->next = bss_list;
+			bss_list = bss;
+		}
+		pclose(fp);
+	}
+	return bss_list;
+}
+#endif
 
 void obd_start_wps_enrollee()
 {
@@ -241,6 +332,11 @@ void obd_start_wps_enrollee()
 	nvram_unset("wps_e_success");
 	nvram_unset("wps_success");
 
+#if defined(RTCONFIG_LP5523)
+	lp55xx_leds_proc(LP55XX_GREENERY_LEDS, LP55XX_WPS_PARAM_SYNC);
+#elif defined(MAPAC1750)
+	set_rgbled(RGBLED_BLUE_3ON1OFF);
+#endif
 	void start_wsc_enrollee_band(int band);
 	start_wsc_enrollee_band(0);	/* Only active WPS on band 0 */
 }
@@ -251,16 +347,18 @@ void obd_clear_all_probe_req_vsie(int unit)
 	int pktflag = 0xE;
 	char *ifname;
 	FILE *fp;
+	char ctrl_sk[32];
 	
 	ifname = get_staifname(unit);
+	get_wpa_ctrl_sk(unit, ctrl_sk, sizeof(ctrl_sk));
 
-	snprintf(cmd, sizeof(cmd), "/usr/bin/wpa_cli vendor_elem_get -i%s %d", ifname, pktflag);
+	snprintf(cmd, sizeof(cmd), "/usr/bin/wpa_cli -p %s -i %s vendor_elem_get %d", ctrl_sk, ifname, pktflag);
 	if ((fp = popen(cmd, "r")) != NULL) {
 		char vendor_elem[MAX_VSIE_LEN];
 		vendor_elem[sizeof(vendor_elem)-1] = '\0';
 		while (fgets(vendor_elem , sizeof(vendor_elem)-1 , fp) != NULL) {
 			if(strlen(vendor_elem) > 0) {
-				snprintf(cmd, sizeof(cmd), "/usr/bin/wpa_cli vendor_elem_remove -i%s %d %s",
+				snprintf(cmd, sizeof(cmd), "/usr/bin/wpa_cli -p %s -i %s vendor_elem_remove %d %s", ctrl_sk,
 					ifname, pktflag, vendor_elem);
 				OBD_DBG("cmd=%s\n", cmd);
 				system(cmd);
@@ -280,9 +378,11 @@ void obd_add_probe_req_vsie(int unit, int len, unsigned char *ie_data)
 	int pktflag = 0xE;
 	int i, ie_len = (len - OUI_LEN);
 	char *ifname;
+	char ctrl_sk[32];
 
 	cprintf("## %s unit(%d) len(%d) ##\n", __func__, unit, len);
 	ifname = get_staifname(unit);
+	get_wpa_ctrl_sk(unit, ctrl_sk, sizeof(ctrl_sk));
 
 	for (i = 0; i < ie_len; i++)
 		sprintf(&hexdata[2 * i], "%02x", ie_data[i]);
@@ -293,7 +393,7 @@ void obd_add_probe_req_vsie(int unit, int len, unsigned char *ie_data)
 	//_dprintf("%s: wl0_ifname=%s\n", __func__, ifname);
 
 	if (ifname && strlen(ifname)) {
-		snprintf(cmd, sizeof(cmd), "/usr/bin/wpa_cli vendor_elem_add -i%s %d DD%02X%02X%02X%02X%s > /tmp/cmd_add",
+		snprintf(cmd, sizeof(cmd), "/usr/bin/wpa_cli -p %s -i %s vendor_elem_add %d DD%02X%02X%02X%02X%s > /tmp/cmd_add", ctrl_sk, 
 			ifname, pktflag, (uint8_t)len, (uint8_t)OUI_ASUS[0],  (uint8_t)OUI_ASUS[1],  (uint8_t)OUI_ASUS[2], hexdata);
 		OBD_DBG("cmd=%s\n", cmd);
 		system(cmd);
@@ -307,9 +407,11 @@ void obd_del_probe_req_vsie(int unit, int len, unsigned char *ie_data)
 	int pktflag = 0xE;
 	int i, ie_len = (len - OUI_LEN);
 	char *ifname;
+	char ctrl_sk[32];
 
 	cprintf("## %s unit(%d) len(%d) ##\n", __func__, unit, len);
 	ifname = get_staifname(unit);
+	get_wpa_ctrl_sk(unit, ctrl_sk, sizeof(ctrl_sk));
 
 	for (i = 0; i < ie_len; i++)
 		sprintf(&hexdata[2 * i], "%02x", ie_data[i]);
@@ -318,7 +420,7 @@ void obd_del_probe_req_vsie(int unit, int len, unsigned char *ie_data)
 	//_dprintf("%s: wl0_ifname=%s\n", __func__, ifname);
 
 	if (ifname && strlen(ifname)) {
-		snprintf(cmd, sizeof(cmd), "/usr/bin/wpa_cli vendor_elem_remove -i%s %d DD%02X%02X%02X%02X%s",
+		snprintf(cmd, sizeof(cmd), "/usr/bin/wpa_cli -p %s -i %s vendor_elem_remove %d DD%02X%02X%02X%02X%s", ctrl_sk, 
 			ifname, pktflag, (uint8_t)len,  (uint8_t)OUI_ASUS[0],  (uint8_t)OUI_ASUS[1],  (uint8_t)OUI_ASUS[2], hexdata);
 		OBD_DBG("cmd=%s\n", cmd);
 		system(cmd);
@@ -327,11 +429,19 @@ void obd_del_probe_req_vsie(int unit, int len, unsigned char *ie_data)
 
 void obd_led_blink()
 {
-
+#if defined(RTCONFIG_LP5523)
+	lp55xx_leds_proc(LP55XX_GREENERY_LEDS, LP55XX_WPS_PARAM_SYNC);
+#elif defined(MAPAC1750)
+	set_rgbled(RGBLED_BLUE_3ON1OFF);
+#endif
 }
 
 void obd_led_off()
 {
-	
+#if defined(RTCONFIG_LP5523)
+	lp55xx_leds_proc(LP55XX_ALL_LEDS_OFF, LP55XX_PREVIOUS_STATE);
+#elif defined(MAPAC1750)
+	nvram_set("prelink_pap_status", "-1");
+#endif
 }
 #endif //#if defined(RTCONFIG_AMAS)

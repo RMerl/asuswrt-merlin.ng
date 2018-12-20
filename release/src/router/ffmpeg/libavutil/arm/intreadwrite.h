@@ -21,14 +21,22 @@
 
 #include <stdint.h>
 #include "config.h"
+#include "libavutil/attributes.h"
 
-#if HAVE_FAST_UNALIGNED && HAVE_INLINE_ASM
+#if HAVE_FAST_UNALIGNED && HAVE_INLINE_ASM && AV_GCC_VERSION_AT_MOST(4,6)
 
 #define AV_RN16 AV_RN16
-static av_always_inline uint16_t AV_RN16(const void *p)
+static av_always_inline unsigned AV_RN16(const void *p)
 {
-    uint16_t v;
-    __asm__ ("ldrh %0, %1" : "=r"(v) : "m"(*(const uint16_t *)p));
+    const uint8_t *q = p;
+    unsigned v;
+#if AV_GCC_VERSION_AT_MOST(4,5)
+    __asm__ ("ldrh %0, %1" : "=r"(v) : "m"(*(const uint16_t *)q));
+#elif defined __thumb__
+    __asm__ ("ldrh %0, %1" : "=r"(v) : "m"(q[0]), "m"(q[1]));
+#else
+    __asm__ ("ldrh %0, %1" : "=r"(v) : "Uq"(q[0]), "m"(q[1]));
+#endif
     return v;
 }
 
@@ -41,8 +49,9 @@ static av_always_inline void AV_WN16(void *p, uint16_t v)
 #define AV_RN32 AV_RN32
 static av_always_inline uint32_t AV_RN32(const void *p)
 {
+    const struct __attribute__((packed)) { uint32_t v; } *q = p;
     uint32_t v;
-    __asm__ ("ldr  %0, %1" : "=r"(v) : "m"(*(const uint32_t *)p));
+    __asm__ ("ldr  %0, %1" : "=r"(v) : "m"(*q));
     return v;
 }
 
@@ -52,26 +61,30 @@ static av_always_inline void AV_WN32(void *p, uint32_t v)
     __asm__ ("str  %1, %0" : "=m"(*(uint32_t *)p) : "r"(v));
 }
 
+#if HAVE_ASM_MOD_Q
+
 #define AV_RN64 AV_RN64
 static av_always_inline uint64_t AV_RN64(const void *p)
 {
-    union { uint64_t v; uint32_t hl[2]; } v;
-    __asm__ ("ldr   %0, %2  \n\t"
-             "ldr   %1, %3  \n\t"
-             : "=&r"(v.hl[0]), "=r"(v.hl[1])
-             : "m"(*(const uint32_t*)p), "m"(*((const uint32_t*)p+1)));
-    return v.v;
+    const struct __attribute__((packed)) { uint32_t v; } *q = p;
+    uint64_t v;
+    __asm__ ("ldr   %Q0, %1  \n\t"
+             "ldr   %R0, %2  \n\t"
+             : "=&r"(v)
+             : "m"(q[0]), "m"(q[1]));
+    return v;
 }
 
 #define AV_WN64 AV_WN64
 static av_always_inline void AV_WN64(void *p, uint64_t v)
 {
-    union { uint64_t v; uint32_t hl[2]; } vv = { v };
-    __asm__ ("str  %2, %0  \n\t"
-             "str  %3, %1  \n\t"
+    __asm__ ("str  %Q2, %0  \n\t"
+             "str  %R2, %1  \n\t"
              : "=m"(*(uint32_t*)p), "=m"(*((uint32_t*)p+1))
-             : "r"(vv.hl[0]), "r"(vv.hl[1]));
+             : "r"(v));
 }
+
+#endif /* HAVE_ASM_MOD_Q */
 
 #endif /* HAVE_INLINE_ASM */
 

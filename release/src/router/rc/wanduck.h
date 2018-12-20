@@ -189,6 +189,10 @@ int max_wait_time[WAN_UNIT_MAX];
 int max_fb_count;
 int max_fb_wait_time;
 
+#ifdef RTCONFIG_USB_MODEM
+int modem_pdp;
+#endif
+
 int http_sock, dns_sock, maxfd;
 clients client[MAX_USER];
 fd_set rset, allset;

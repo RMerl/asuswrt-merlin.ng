@@ -35,9 +35,9 @@
 #define PADDING_COLOR 0
 
 /**
- * Encodes a single color run. At most 16 bits will be used.
- * \param len   length of the run, values > 255 mean "until end of line", may not be < 0.
- * \param color color to encode, only the lowest two bits are used and all others must be 0.
+ * Encode a single color run. At most 16 bits will be used.
+ * @param len   length of the run, values > 255 mean "until end of line", may not be < 0.
+ * @param color color to encode, only the lowest two bits are used and all others must be 0.
  */
 static void put_xsub_rle(PutBitContext *pb, int len, int color)
 {
@@ -49,7 +49,7 @@ static void put_xsub_rle(PutBitContext *pb, int len, int color)
 }
 
 /**
- * Encodes a 4-color bitmap with XSUB rle.
+ * Encode a 4-color bitmap with XSUB rle.
  *
  * The encoded bitmap may be wider than the source bitmap due to padding.
  */
@@ -90,7 +90,7 @@ static int xsub_encode_rle(PutBitContext *pb, const uint8_t *bitmap,
         if (color != PADDING_COLOR && (PADDING + (w&1)))
             put_xsub_rle(pb, PADDING + (w&1), PADDING_COLOR);
 
-        align_put_bits(pb);
+        avpriv_align_put_bits(pb);
 
         bitmap += linesize;
     }
@@ -111,9 +111,8 @@ static int make_tc(uint64_t ms, int *tc)
 }
 
 static int xsub_encode(AVCodecContext *avctx, unsigned char *buf,
-                       int bufsize, void *data)
+                       int bufsize, const AVSubtitle *h)
 {
-    AVSubtitle *h = data;
     uint64_t startTime = h->pts / 1000; // FIXME: need better solution...
     uint64_t endTime = startTime + h->end_display_time - h->start_display_time;
     int start_tc[4], end_tc[4];
@@ -129,11 +128,24 @@ static int xsub_encode(AVCodecContext *avctx, unsigned char *buf,
     }
 
     // TODO: support multiple rects
-    if (h->num_rects > 1)
+    if (h->num_rects != 1)
         av_log(avctx, AV_LOG_WARNING, "Only single rects supported (%d in subtitle.)\n", h->num_rects);
 
+#if FF_API_AVPICTURE
+FF_DISABLE_DEPRECATION_WARNINGS
+    if (!h->rects[0]->data[0]) {
+        AVSubtitleRect *rect = h->rects[0];
+        int j;
+        for (j = 0; j < 4; j++) {
+            rect->data[j] = rect->pict.data[j];
+            rect->linesize[j] = rect->pict.linesize[j];
+        }
+    }
+FF_ENABLE_DEPRECATION_WARNINGS
+#endif
+
     // TODO: render text-based subtitles into bitmaps
-    if (!h->rects[0]->pict.data[0] || !h->rects[0]->pict.data[1]) {
+    if (!h->rects[0]->data[0] || !h->rects[0]->data[1]) {
         av_log(avctx, AV_LOG_WARNING, "No subtitle bitmap available.\n");
         return -1;
     }
@@ -143,7 +155,7 @@ static int xsub_encode(AVCodecContext *avctx, unsigned char *buf,
         av_log(avctx, AV_LOG_WARNING, "No more than 4 subtitle colors supported (%d found.)\n", h->rects[0]->nb_colors);
 
     // TODO: Palette swapping if color zero is not transparent
-    if (((uint32_t *)h->rects[0]->pict.data[1])[0] & 0xff)
+    if (((uint32_t *)h->rects[0]->data[1])[0] & 0xff000000)
         av_log(avctx, AV_LOG_WARNING, "Color index 0 is not transparent. Transparency will be messed up.\n");
 
     if (make_tc(startTime, start_tc) || make_tc(endTime, end_tc)) {
@@ -167,34 +179,34 @@ static int xsub_encode(AVCodecContext *avctx, unsigned char *buf,
     bytestream_put_le16(&hdr, height);
     bytestream_put_le16(&hdr, h->rects[0]->x);
     bytestream_put_le16(&hdr, h->rects[0]->y);
-    bytestream_put_le16(&hdr, h->rects[0]->x + width);
-    bytestream_put_le16(&hdr, h->rects[0]->y + height);
+    bytestream_put_le16(&hdr, h->rects[0]->x + width -1);
+    bytestream_put_le16(&hdr, h->rects[0]->y + height -1);
 
     rlelenptr = hdr; // Will store length of first field here later.
     hdr+=2;
 
     // Palette
     for (i=0; i<4; i++)
-        bytestream_put_be24(&hdr, ((uint32_t *)h->rects[0]->pict.data[1])[i]);
+        bytestream_put_be24(&hdr, ((uint32_t *)h->rects[0]->data[1])[i]);
 
     // Bitmap
     // RLE buffer. Reserve 2 bytes for possible padding after the last row.
     init_put_bits(&pb, hdr, bufsize - (hdr - buf) - 2);
-    if (xsub_encode_rle(&pb, h->rects[0]->pict.data[0],
-                        h->rects[0]->pict.linesize[0]*2,
+    if (xsub_encode_rle(&pb, h->rects[0]->data[0],
+                        h->rects[0]->linesize[0] * 2,
                         h->rects[0]->w, (h->rects[0]->h + 1) >> 1))
         return -1;
     bytestream_put_le16(&rlelenptr, put_bits_count(&pb) >> 3); // Length of first field
 
-    if (xsub_encode_rle(&pb, h->rects[0]->pict.data[0] + h->rects[0]->pict.linesize[0],
-                        h->rects[0]->pict.linesize[0]*2,
+    if (xsub_encode_rle(&pb, h->rects[0]->data[0] + h->rects[0]->linesize[0],
+                        h->rects[0]->linesize[0] * 2,
                         h->rects[0]->w, h->rects[0]->h >> 1))
         return -1;
 
-    // Enforce total height to be be multiple of 2
+    // Enforce total height to be a multiple of 2
     if (h->rects[0]->h & 1) {
         put_xsub_rle(&pb, h->rects[0]->w, PADDING_COLOR);
-        align_put_bits(&pb);
+        avpriv_align_put_bits(&pb);
     }
 
     flush_put_bits(&pb);
@@ -207,16 +219,16 @@ static av_cold int xsub_encoder_init(AVCodecContext *avctx)
     if (!avctx->codec_tag)
         avctx->codec_tag = MKTAG('D','X','S','B');
 
+    avctx->bits_per_coded_sample = 4;
+
     return 0;
 }
 
-AVCodec xsub_encoder = {
-    "xsub",
-    AVMEDIA_TYPE_SUBTITLE,
-    CODEC_ID_XSUB,
-    0,
-    xsub_encoder_init,
-    xsub_encode,
-    NULL,
-    .long_name = NULL_IF_CONFIG_SMALL("DivX subtitles (XSUB)"),
+AVCodec ff_xsub_encoder = {
+    .name       = "xsub",
+    .long_name  = NULL_IF_CONFIG_SMALL("DivX subtitles (XSUB)"),
+    .type       = AVMEDIA_TYPE_SUBTITLE,
+    .id         = AV_CODEC_ID_XSUB,
+    .init       = xsub_encoder_init,
+    .encode_sub = xsub_encode,
 };

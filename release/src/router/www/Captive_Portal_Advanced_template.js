@@ -51,7 +51,10 @@ var template =
 "eula_terms_service_title": "Welcome%20to%20Captive%20Portal%20Wi-Fi%21",
 "eula_terms_service": "By%20using%20Captive%20Portal%20Wi-Fi%20internet%20service%2C%20you%20hereby%20expressly%20acknowledge%20and%20agree%20that%20there%20are%20significant%20security%2C%20privacy%20and%20confidentiality%20risks%20inherent%20in%20accessing%20or%20transmitting%20information%20through%20the%20internet%2C%20whether%20the%20connection%20is%20facilitated%20through%20wired%20or%20wireless%20technology.%20Security%20issues%20include%2C%20without%20limitation%2C%20interception%20of%20transmissions%2C%20loss%20of%20data%2C%20and%20the%20introduction%20or%20viruses%20and%20other%20programs%20that%20can%20corrupt%20or%20damage%20your%20computer.%3Cbr%3E%3Cbr%3EAccordingly%2C%20you%20agree%20that%20the%20owner%20and%2For%20provider%20of%20this%20network%20is%20NOT%20liable%20for%20any%20interception%20or%20transmissions%2C%20computer%20worms%20or%20viruses%2C%20loss%20of%20data%2C%20file%20corruption%2C%20hacking%20or%20damage%20to%20your%20computer%20or%20other%20devices%20that%20result%20from%20the%20transmission%20or%20download%20of%20information%20or%20materials%20through%20the%20internet%20service%20provided.%3Cbr%3E%3Cbr%3EUse%20of%20the%20wireless%20network%20is%20subject%20to%20the%20general%20restrictions%20outlined%20below.%20If%20abnormal%2C%20illegal%2C%20or%20unauthorized%20behavior%20is%20detected%2C%20including%20heavy%20consumption%20of%20bandwidth%2C%20the%20network%20provider%20reserves%20the%20right%20to%20permanently%20disconnect%20the%20offending%20device%20from%20the%20wireless%20network.",
 "eula_terms_service_font_color": "#C4C4C4",
-"eula_terms_service_background_color": "#0A618A"
+"eula_terms_service_background_color": "#0A618A",
+"eula_terms_service_text": "I%20have%20read%20and%20agree%20to",
+"eula_terms_service_hyperlink": "the%20Terms%20of%20Service",
+"eula_terms_service_hyperlink_color": "#00B0FF"
 },
 "component_account": {
 "attribute": {"style_width": "160px","style_height": "66px","style_top": "258px","style_left": "90px","style_z_index": "1","style_background_color": "rgba(0, 0, 0, 0)","style_opacity": "1","style_color": "rgb(128, 160, 175)"},
@@ -173,7 +176,10 @@ var template =
 "eula_terms_service_title": "Welcome%20to%20Captive%20Portal%20Wi-Fi%21",
 "eula_terms_service": "By%20using%20Captive%20Portal%20Wi-Fi%20internet%20service%2C%20you%20hereby%20expressly%20acknowledge%20and%20agree%20that%20there%20are%20significant%20security%2C%20privacy%20and%20confidentiality%20risks%20inherent%20in%20accessing%20or%20transmitting%20information%20through%20the%20internet%2C%20whether%20the%20connection%20is%20facilitated%20through%20wired%20or%20wireless%20technology.%20Security%20issues%20include%2C%20without%20limitation%2C%20interception%20of%20transmissions%2C%20loss%20of%20data%2C%20and%20the%20introduction%20or%20viruses%20and%20other%20programs%20that%20can%20corrupt%20or%20damage%20your%20computer.%3Cbr%3E%3Cbr%3EAccordingly%2C%20you%20agree%20that%20the%20owner%20and%2For%20provider%20of%20this%20network%20is%20NOT%20liable%20for%20any%20interception%20or%20transmissions%2C%20computer%20worms%20or%20viruses%2C%20loss%20of%20data%2C%20file%20corruption%2C%20hacking%20or%20damage%20to%20your%20computer%20or%20other%20devices%20that%20result%20from%20the%20transmission%20or%20download%20of%20information%20or%20materials%20through%20the%20internet%20service%20provided.%3Cbr%3E%3Cbr%3EUse%20of%20the%20wireless%20network%20is%20subject%20to%20the%20general%20restrictions%20outlined%20below.%20If%20abnormal%2C%20illegal%2C%20or%20unauthorized%20behavior%20is%20detected%2C%20including%20heavy%20consumption%20of%20bandwidth%2C%20the%20network%20provider%20reserves%20the%20right%20to%20permanently%20disconnect%20the%20offending%20device%20from%20the%20wireless%20network.",
 "eula_terms_service_font_color": "#CCCCCC",
-"eula_terms_service_background_color": "#005560"
+"eula_terms_service_background_color": "#005560",
+"eula_terms_service_text": "I%20have%20read%20and%20agree%20to",
+"eula_terms_service_hyperlink": "the%20Terms%20of%20Service",
+"eula_terms_service_hyperlink_color": "#00B0FF"
 },
 "component_account": {
 "attribute": {"style_width": "162px","style_height": "66px","style_top": "249px","style_left": "89px","style_z_index": "2","style_background_color": "rgba(0, 0, 0, 0)","style_opacity": "1","style_color": "rgb(0, 171, 217)"},
@@ -215,7 +221,10 @@ var template =
 "eula_terms_service_title": "Welcome%20to%20Captive%20Portal%20Wi-Fi%21",
 "eula_terms_service": "By%20using%20Captive%20Portal%20Wi-Fi%20internet%20service%2C%20you%20hereby%20expressly%20acknowledge%20and%20agree%20that%20there%20are%20significant%20security%2C%20privacy%20and%20confidentiality%20risks%20inherent%20in%20accessing%20or%20transmitting%20information%20through%20the%20internet%2C%20whether%20the%20connection%20is%20facilitated%20through%20wired%20or%20wireless%20technology.%20Security%20issues%20include%2C%20without%20limitation%2C%20interception%20of%20transmissions%2C%20loss%20of%20data%2C%20and%20the%20introduction%20or%20viruses%20and%20other%20programs%20that%20can%20corrupt%20or%20damage%20your%20computer.%3Cbr%3E%3Cbr%3EAccordingly%2C%20you%20agree%20that%20the%20owner%20and%2For%20provider%20of%20this%20network%20is%20NOT%20liable%20for%20any%20interception%20or%20transmissions%2C%20computer%20worms%20or%20viruses%2C%20loss%20of%20data%2C%20file%20corruption%2C%20hacking%20or%20damage%20to%20your%20computer%20or%20other%20devices%20that%20result%20from%20the%20transmission%20or%20download%20of%20information%20or%20materials%20through%20the%20internet%20service%20provided.%3Cbr%3E%3Cbr%3EUse%20of%20the%20wireless%20network%20is%20subject%20to%20the%20general%20restrictions%20outlined%20below.%20If%20abnormal%2C%20illegal%2C%20or%20unauthorized%20behavior%20is%20detected%2C%20including%20heavy%20consumption%20of%20bandwidth%2C%20the%20network%20provider%20reserves%20the%20right%20to%20permanently%20disconnect%20the%20offending%20device%20from%20the%20wireless%20network.",
 "eula_terms_service_font_color": "#312F38",
-"eula_terms_service_background_color": "#E5E679"
+"eula_terms_service_background_color": "#E5E679",
+"eula_terms_service_text": "I%20have%20read%20and%20agree%20to",
+"eula_terms_service_hyperlink": "the%20Terms%20of%20Service",
+"eula_terms_service_hyperlink_color": "#00B0FF"
 },
 "component_account": {
 "attribute": {"style_width": "160px","style_height": "66px","style_top": "222px","style_left": "91px","style_z_index": "1","style_background_color": "rgba(0, 0, 0, 0)","style_opacity": "1","style_color": "rgb(128, 160, 175)"},
@@ -278,7 +287,10 @@ var template =
 "eula_terms_service_title": "Welcome%20to%20Captive%20Portal%20Wi-Fi%21",
 "eula_terms_service": "By%20using%20Captive%20Portal%20Wi-Fi%20internet%20service%2C%20you%20hereby%20expressly%20acknowledge%20and%20agree%20that%20there%20are%20significant%20security%2C%20privacy%20and%20confidentiality%20risks%20inherent%20in%20accessing%20or%20transmitting%20information%20through%20the%20internet%2C%20whether%20the%20connection%20is%20facilitated%20through%20wired%20or%20wireless%20technology.%20Security%20issues%20include%2C%20without%20limitation%2C%20interception%20of%20transmissions%2C%20loss%20of%20data%2C%20and%20the%20introduction%20or%20viruses%20and%20other%20programs%20that%20can%20corrupt%20or%20damage%20your%20computer.%3Cbr%3E%3Cbr%3EAccordingly%2C%20you%20agree%20that%20the%20owner%20and%2For%20provider%20of%20this%20network%20is%20NOT%20liable%20for%20any%20interception%20or%20transmissions%2C%20computer%20worms%20or%20viruses%2C%20loss%20of%20data%2C%20file%20corruption%2C%20hacking%20or%20damage%20to%20your%20computer%20or%20other%20devices%20that%20result%20from%20the%20transmission%20or%20download%20of%20information%20or%20materials%20through%20the%20internet%20service%20provided.%3Cbr%3E%3Cbr%3EUse%20of%20the%20wireless%20network%20is%20subject%20to%20the%20general%20restrictions%20outlined%20below.%20If%20abnormal%2C%20illegal%2C%20or%20unauthorized%20behavior%20is%20detected%2C%20including%20heavy%20consumption%20of%20bandwidth%2C%20the%20network%20provider%20reserves%20the%20right%20to%20permanently%20disconnect%20the%20offending%20device%20from%20the%20wireless%20network.",
 "eula_terms_service_font_color": "#C9C9C9",
-"eula_terms_service_background_color": "#0A618A"
+"eula_terms_service_background_color": "#0A618A",
+"eula_terms_service_text": "I%20have%20read%20and%20agree%20to",
+"eula_terms_service_hyperlink": "the%20Terms%20of%20Service",
+"eula_terms_service_hyperlink_color": "#00B0FF"
 },
 "component_account": {
 "attribute": {"style_width": "160px","style_height": "66px","style_top": "258px","style_left": "90px","style_z_index": "1","style_background_color": "rgba(0, 0, 0, 0)","style_opacity": "1","style_color": "rgb(128, 160, 175)"},
@@ -338,7 +350,10 @@ var template =
 "eula_terms_service_title": "Welcome%20to%20Captive%20Portal%20Wi-Fi%21",
 "eula_terms_service": "By%20using%20Captive%20Portal%20Wi-Fi%20internet%20service%2C%20you%20hereby%20expressly%20acknowledge%20and%20agree%20that%20there%20are%20significant%20security%2C%20privacy%20and%20confidentiality%20risks%20inherent%20in%20accessing%20or%20transmitting%20information%20through%20the%20internet%2C%20whether%20the%20connection%20is%20facilitated%20through%20wired%20or%20wireless%20technology.%20Security%20issues%20include%2C%20without%20limitation%2C%20interception%20of%20transmissions%2C%20loss%20of%20data%2C%20and%20the%20introduction%20or%20viruses%20and%20other%20programs%20that%20can%20corrupt%20or%20damage%20your%20computer.%3Cbr%3E%3Cbr%3EAccordingly%2C%20you%20agree%20that%20the%20owner%20and%2For%20provider%20of%20this%20network%20is%20NOT%20liable%20for%20any%20interception%20or%20transmissions%2C%20computer%20worms%20or%20viruses%2C%20loss%20of%20data%2C%20file%20corruption%2C%20hacking%20or%20damage%20to%20your%20computer%20or%20other%20devices%20that%20result%20from%20the%20transmission%20or%20download%20of%20information%20or%20materials%20through%20the%20internet%20service%20provided.%3Cbr%3E%3Cbr%3EUse%20of%20the%20wireless%20network%20is%20subject%20to%20the%20general%20restrictions%20outlined%20below.%20If%20abnormal%2C%20illegal%2C%20or%20unauthorized%20behavior%20is%20detected%2C%20including%20heavy%20consumption%20of%20bandwidth%2C%20the%20network%20provider%20reserves%20the%20right%20to%20permanently%20disconnect%20the%20offending%20device%20from%20the%20wireless%20network.",
 "eula_terms_service_font_color": "#CFE8E8",
-"eula_terms_service_background_color": "#282E30"
+"eula_terms_service_background_color": "#282E30",
+"eula_terms_service_text": "I%20have%20read%20and%20agree%20to",
+"eula_terms_service_hyperlink": "the%20Terms%20of%20Service",
+"eula_terms_service_hyperlink_color": "#00B0FF"
 },
 "component_account": {
 "attribute": {"style_width": "162px","style_height": "66px","style_top": "249px","style_left": "89px","style_z_index": "2","style_background_color": "rgba(0, 0, 0, 0)","style_opacity": "1","style_color": "rgb(0, 171, 217)"},
@@ -398,7 +413,10 @@ var template =
 "eula_terms_service_title": "Welcome%20to%20Captive%20Portal%20Wi-Fi%21",
 "eula_terms_service": "By%20using%20Captive%20Portal%20Wi-Fi%20internet%20service%2C%20you%20hereby%20expressly%20acknowledge%20and%20agree%20that%20there%20are%20significant%20security%2C%20privacy%20and%20confidentiality%20risks%20inherent%20in%20accessing%20or%20transmitting%20information%20through%20the%20internet%2C%20whether%20the%20connection%20is%20facilitated%20through%20wired%20or%20wireless%20technology.%20Security%20issues%20include%2C%20without%20limitation%2C%20interception%20of%20transmissions%2C%20loss%20of%20data%2C%20and%20the%20introduction%20or%20viruses%20and%20other%20programs%20that%20can%20corrupt%20or%20damage%20your%20computer.%3Cbr%3E%3Cbr%3EAccordingly%2C%20you%20agree%20that%20the%20owner%20and%2For%20provider%20of%20this%20network%20is%20NOT%20liable%20for%20any%20interception%20or%20transmissions%2C%20computer%20worms%20or%20viruses%2C%20loss%20of%20data%2C%20file%20corruption%2C%20hacking%20or%20damage%20to%20your%20computer%20or%20other%20devices%20that%20result%20from%20the%20transmission%20or%20download%20of%20information%20or%20materials%20through%20the%20internet%20service%20provided.%3Cbr%3E%3Cbr%3EUse%20of%20the%20wireless%20network%20is%20subject%20to%20the%20general%20restrictions%20outlined%20below.%20If%20abnormal%2C%20illegal%2C%20or%20unauthorized%20behavior%20is%20detected%2C%20including%20heavy%20consumption%20of%20bandwidth%2C%20the%20network%20provider%20reserves%20the%20right%20to%20permanently%20disconnect%20the%20offending%20device%20from%20the%20wireless%20network.",
 "eula_terms_service_font_color": "#D8BCD0",
-"eula_terms_service_background_color": "#4D4249"
+"eula_terms_service_background_color": "#4D4249",
+"eula_terms_service_text": "I%20have%20read%20and%20agree%20to",
+"eula_terms_service_hyperlink": "the%20Terms%20of%20Service",
+"eula_terms_service_hyperlink_color": "#00B0FF"
 },
 "component_account": {
 "attribute": {"style_width": "162px","style_height": "66px","style_top": "249px","style_left": "89px","style_z_index": "2","style_background_color": "rgba(0, 0, 0, 0)","style_opacity": "1","style_color": "rgb(0, 171, 217)"},
@@ -458,7 +476,10 @@ var template =
 "eula_terms_service_title": "Welcome%20to%20Captive%20Portal%20Wi-Fi%21",
 "eula_terms_service": "By%20using%20Captive%20Portal%20Wi-Fi%20internet%20service%2C%20you%20hereby%20expressly%20acknowledge%20and%20agree%20that%20there%20are%20significant%20security%2C%20privacy%20and%20confidentiality%20risks%20inherent%20in%20accessing%20or%20transmitting%20information%20through%20the%20internet%2C%20whether%20the%20connection%20is%20facilitated%20through%20wired%20or%20wireless%20technology.%20Security%20issues%20include%2C%20without%20limitation%2C%20interception%20of%20transmissions%2C%20loss%20of%20data%2C%20and%20the%20introduction%20or%20viruses%20and%20other%20programs%20that%20can%20corrupt%20or%20damage%20your%20computer.%3Cbr%3E%3Cbr%3EAccordingly%2C%20you%20agree%20that%20the%20owner%20and%2For%20provider%20of%20this%20network%20is%20NOT%20liable%20for%20any%20interception%20or%20transmissions%2C%20computer%20worms%20or%20viruses%2C%20loss%20of%20data%2C%20file%20corruption%2C%20hacking%20or%20damage%20to%20your%20computer%20or%20other%20devices%20that%20result%20from%20the%20transmission%20or%20download%20of%20information%20or%20materials%20through%20the%20internet%20service%20provided.%3Cbr%3E%3Cbr%3EUse%20of%20the%20wireless%20network%20is%20subject%20to%20the%20general%20restrictions%20outlined%20below.%20If%20abnormal%2C%20illegal%2C%20or%20unauthorized%20behavior%20is%20detected%2C%20including%20heavy%20consumption%20of%20bandwidth%2C%20the%20network%20provider%20reserves%20the%20right%20to%20permanently%20disconnect%20the%20offending%20device%20from%20the%20wireless%20network.",
 "eula_terms_service_font_color": "#CCC6BA",
-"eula_terms_service_background_color": "#653422"
+"eula_terms_service_background_color": "#653422",
+"eula_terms_service_text": "I%20have%20read%20and%20agree%20to",
+"eula_terms_service_hyperlink": "the%20Terms%20of%20Service",
+"eula_terms_service_hyperlink_color": "#00B0FF"
 },
 "component_account": {
 "attribute": {"style_width": "162px","style_height": "66px","style_top": "249px","style_left": "89px","style_z_index": "2","style_background_color": "rgba(0, 0, 0, 0)","style_opacity": "1","style_color": "rgb(0, 171, 217)"},

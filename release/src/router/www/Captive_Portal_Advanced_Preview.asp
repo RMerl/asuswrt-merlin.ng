@@ -394,10 +394,21 @@ function gen_component_obj(_component_attr_array, _ratio_width, _ratio_height, _
 			code += '</div>';
 			break;
 		case 'eula' :
-			code += '<div style=' + _component_common_attr + 'font-size:' + font_size + ';line-height:' + _component_height + '>';
-			code += '<div style=\'text-align:left;white-space:nowrap;\'>';
+			var eula_text = 'I have read and agree to';
+			var eula_hyperlink = 'the Terms of Service';
+			var eula_hyperlink_color = '#00B0FF';
+			if(_component_attr_array.eula_terms_service_text != undefined)
+				eula_text = _component_attr_array.eula_terms_service_text;
+			if(_component_attr_array.eula_terms_service_hyperlink != undefined)
+				eula_hyperlink = _component_attr_array.eula_terms_service_hyperlink;
+			if(_component_attr_array.eula_terms_service_hyperlink_color != undefined)
+				eula_hyperlink_color = _component_attr_array.eula_terms_service_hyperlink_color;
+			code += '<div style=' + _component_common_attr + 'font-size:' + font_size + ';>';
+			code += '<div style=\'float:left;\'>';
 			code += '<input type=\'checkbox\' name=\'eula_check\' id=\'eula_check\' style=\'height:' + font_size + ';width:' + font_size + ';\' onclick=control_bt_status();>';
-			code += 'I have read and agree to <span class=\'terms_service_hyperlink\' onclick=\'open_term_service();\'>the Terms of Service</span>';
+			code += '</div>';
+			code += '<div>';
+			code += '<span>' + htmlEnDeCode.htmlEncode(decodeURIComponent(eula_text)) + '</span>&nbsp;<span class=\'terms_service_hyperlink\' style=\'color:' + eula_hyperlink_color + ';\' onclick=\'open_term_service();\'>' + htmlEnDeCode.htmlEncode(decodeURIComponent(eula_hyperlink)) + '</span>';
 			code += '</div>';
 			code += '</div>';
 			break;

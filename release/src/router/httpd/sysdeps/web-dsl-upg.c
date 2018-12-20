@@ -334,20 +334,34 @@ int check_tc_firmware_crc()
 
 	//check Annex mode
 #ifdef RTCONFIG_DSL_ANNEX_B
-	if(bBuf[read_idx+14] != 'B') {	//ASUS_Annex'B'_..
-		if(bBuf[read_idx+9] != '1') {	//check for the old ras info ASUS_1020
-			RetVal = -1;
-			cprintf("check annex failed\n");
-			goto exit;
+	if(read_idx < bBufsize - 14){
+		if(bBuf[read_idx+14] != 'B') {	//ASUS_Annex'B'_..
+			if(bBuf[read_idx+9] != '1') {	//check for the old ras info ASUS_1020
+				RetVal = -1;
+				cprintf("check annex failed\n");
+				goto exit;
+			}
 		}
 	}
+	else{
+		RetVal = -1;
+		cprintf("Failed to check annex\n");
+		goto exit;
+	}
 #else
-	if(bBuf[read_idx+14] != 'A') {	//ASUS_ANNEX'A'IJLM_..
-		if(bBuf[read_idx+9] != '1') {	//check for the old ras info ASUS_1020
-			RetVal = -1;
-			cprintf("check annex failed\n");
-			goto exit;
+	if(read_idx < bBufsize - 14){
+		if(bBuf[read_idx+14] != 'A') {	//ASUS_ANNEX'A'IJLM_..
+			if(bBuf[read_idx+9] != '1') {	//check for the old ras info ASUS_1020
+				RetVal = -1;
+				cprintf("check annex failed\n");
+				goto exit;
+			}
 		}
+	}
+	else{
+		RetVal = -1;
+		cprintf("Failed to check annex\n");
+		goto exit;
 	}
 #endif
 	//check driver release date
@@ -362,9 +376,9 @@ int check_tc_firmware_crc()
 	fpCur = fopen("/tmp/adsl/tc_ver_info.txt", "r");
 	if(fpCur != NULL) {
 		while(line_idx--)
-			fgets(ver_info_buf, 256, fpCur);
+			fgets(ver_info_buf, sizeof(ver_info_buf), fpCur);
 		fclose(fpCur);
-		while(++ver_idx < 256 - 12) {
+		while(++ver_idx < sizeof(ver_info_buf) - 12) {
 			if(ver_info_buf[ver_idx] == 0x7C) {
 				*(ver_info_buf + ver_idx + 12) = '\0';
 				cprintf("cur date: %s\n", ver_info_buf+ver_idx+2);

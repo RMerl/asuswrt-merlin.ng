@@ -273,12 +273,12 @@ function check_bonding_policy(obj){
 												</td>
 											</tr> 
 											<tr id="lacp_policy_tr" style="display:none">
-												<th>Bonding Policy</th>
+												<th><#SwitchCtrl_BondingPolicy#></th>
 												<td>
 													<select name="bonding_policy" class="input_option">
-														<option value="0">Default</option>
-														<option value="1">Source Bonding</option>
-														<option value="2">Destination Bonding</option>
+														<option value="0"><#CTL_Default#></option>
+														<option value="1"><#SwitchCtrl_BondingPolicy_src#></option>
+														<option value="2"><#SwitchCtrl_BondingPolicy_dest#></option>
 													</select>
 												</td>
 											</tr>

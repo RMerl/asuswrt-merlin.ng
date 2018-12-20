@@ -1,5 +1,5 @@
 /*
- * Atrac 1 compatible decoder data
+ * ATRAC 1 compatible decoder data
  * Copyright (c) 2009 Maxim Poliakovski
  * Copyright (c) 2009 Benjamin Larsson
  *
@@ -22,7 +22,7 @@
 
 /**
  * @file
- * Atrac 1 compatible decoder data
+ * ATRAC1 compatible decoder data
  */
 
 #ifndef AVCODEC_ATRAC1DATA_H
@@ -43,7 +43,7 @@ static const uint8_t bfu_bands_t[4]  = {0, 20, 36, 52};
  */
 static const uint8_t specs_per_bfu[52] = {
      8,  8,  8,  8,  4,  4,  4,  4,  8,  8,  8,  8,  6,  6,  6,  6, 6, 6, 6, 6, // low band
-     6,  6,  6,  6,  7,  7,  7,  7,  9,  9,  9,  9, 10, 10, 10, 10,             // midle band
+     6,  6,  6,  6,  7,  7,  7,  7,  9,  9,  9,  9, 10, 10, 10, 10,             // middle band
     12, 12, 12, 12, 12, 12, 12, 12, 20, 20, 20, 20, 20, 20, 20, 20              // high band
 };
 

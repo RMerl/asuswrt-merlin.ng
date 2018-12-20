@@ -1206,6 +1206,9 @@ cb_orphans(void *args, int argc, char **argv, char **azColName)
 	return 0;
 }
 
+extern void create_scantag(void);
+extern void remove_scantag(void);
+
 void
 start_rescan(void)
 {
@@ -1258,9 +1261,6 @@ start_rescan(void)
 	DPRINTF(E_INFO, L_SCANNER, "Rescan completed. (%s)\n", summary);
 }
 /* end rescan functions */
-
-extern void create_scantag(void);
-extern void remove_scantag(void);
 
 void
 start_scanner(void)

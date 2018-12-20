@@ -96,6 +96,7 @@ int is_wps_stopped(void)
 	int i, ret = 1;
 	char status[16], tmp[128], prefix[] = "wlXXXXXXXXXX_", word[256], *next, ifnames[128];
 	int wps_band = nvram_get_int("wps_band_x"), multiband = get_wps_multiband();
+	char tmpbuf[512];
 
 	i = 0;
 	strcpy(ifnames, nvram_safe_get("wl_ifnames"));
@@ -115,26 +116,32 @@ int is_wps_stopped(void)
 		}
 
 #ifdef RTCONFIG_WIFI_SON
-#ifndef RTCONFIG_DUAL_BACKHAUL
-		if(i==0)
-		{	
-			++i;
-			continue;
+		if(sw_mode() != SW_MODE_REPEATER && nvram_match("wifison_ready", "1")) {
+			if(i==0 || i==2)
+			{	
+				++i;
+				continue;
+			}
 		}
-#endif
-		if(i==2)
-		{
-			++i;
-			continue;
+#ifdef RTCONFIG_AMAS
+		else if(sw_mode() == SW_MODE_ROUTER && !nvram_match("wifison_ready", "1") && (
+			(nvram_match("x_Setting", "1")) ||
+			(nvram_match("x_Setting", "0") && nvram_match("wps_enrollee", "1"))
+		)) {	/* only check 2G in AiMesh mode */
+			if (i != 0) {
+				++i;
+				continue;
+			}
 		}
+#endif	/* RTCONFIG_AMAS */
 #endif
 
 #ifdef RTCONFIG_WPS_ENROLLEE
 		if (nvram_match("wps_enrollee", "1"))
-			strcpy(status, getWscStatus_enrollee(i));
+			strcpy(status, getWscStatus_enrollee(i, tmpbuf, sizeof(tmpbuf)));
 		else
 #endif
-			strcpy(status, getWscStatus(i));
+			strcpy(status, getWscStatus(i, tmpbuf, sizeof(tmpbuf)));
 
 		//dbG("band %d wps status: %s\n", i, status);
 		if (!strcmp(status, "Success") 
@@ -157,6 +164,9 @@ int is_wps_stopped(void)
 				set_wifiled(4);
 #endif
 #if defined(RTCONFIG_AMAS)
+#if defined(RTCONFIG_WIFI_SON) && defined(RTCONFIG_AMAS)
+				if(!nvram_match("wifison_ready", "1"))
+#endif
 				amas_save_wifi_para();
 #endif	/* RTCONFIG_AMAS */
 #if defined(RTCONFIG_WIFI_CLONE)

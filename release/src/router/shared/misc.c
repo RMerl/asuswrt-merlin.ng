@@ -28,6 +28,7 @@
 #include <ctype.h>
 #include <sys/socket.h>
 #include <netdb.h>
+#include <sys/un.h>
 
 #include <bcmnvram.h>
 #include <bcmdevs.h>
@@ -38,6 +39,10 @@
 
 #ifndef ETHER_ADDR_LEN
 #define	ETHER_ADDR_LEN		6
+#endif
+
+#ifndef MULTICAST_BIT
+#define MULTICAST_BIT  0x0001
 #endif
 
 #if defined(RTCONFIG_QCA)
@@ -203,6 +208,17 @@ extern char *upper_strstr(const char *const str, const char *const target){
 	free(upper_target);
 
 	return (char *)(str+len);
+}
+
+int stricmp(char const *a, char const *b, int len)
+{
+	for (;len--; a++, b++) {
+		int d = tolower(*a) - tolower(*b);
+		if (d != 0 || !*a)
+			return d;
+	}
+
+	return 0;
 }
 
 #ifdef HND_ROUTER
@@ -492,6 +508,24 @@ struct vlan_rules_s *get_vlan_rules(void)
 	return vlan_rules;
 }
 #endif
+
+/**
+ * Executed at start of config_switch()
+ */
+void pre_config_switch(void)
+{
+	if (__pre_config_switch)
+		__pre_config_switch();
+}
+
+/**
+ * Executed at end of config_switch()
+ */
+void post_config_switch(void)
+{
+	if (__post_config_switch)
+		__post_config_switch();
+}
 
 #if defined(RTCONFIG_COOVACHILLI) || \
     defined(RTCONFIG_PORT_BASED_VLAN) || defined(RTCONFIG_TAGGED_BASED_VLAN)
@@ -2196,6 +2230,19 @@ int nvram_split_set(const char *key, char *value, int size, int maxinst)
 }
 #endif
 
+int nvram_get_hex(const char *key)
+{
+	return strtol(nvram_safe_get(key), NULL, 16);
+}
+
+int nvram_set_hex(const char *key, int value)
+{
+	char nvramstr[16];
+
+	snprintf(nvramstr, sizeof(nvramstr), "%x", value);
+	return nvram_set(key, nvramstr);
+}
+
 #if defined(RTCONFIG_HTTPS)
 int nvram_get_file(const char *key, const char *fname, int max)
 {
@@ -3389,6 +3436,100 @@ int set_irq_smp_affinity(unsigned int irq, unsigned int cpu_mask)
 }
 
 /**
+ * Run "iwpriv XXX get_XXX" and return string behind colon.
+ * Expected result is shown below:
+ * ath1      get_mode:11ACVHT40
+ *                    ^^^^^^^^^ result
+ * @iface:	interface name
+ * @cmd:	get cmd
+ * @return:
+ * 	NULL	invalid parameter or error.
+ *  otherwise:	success
+ */
+char *iwpriv_get(const char *iface, char *cmd)
+{
+	char iwpriv_cmd[sizeof("iwpriv athX CCCCCCCCCCCCCCCCXXX") + IFNAMSIZ];
+	static char result[256] = { 0 };
+
+	if (!iface || !cmd)
+		return NULL;
+
+	snprintf(iwpriv_cmd, sizeof(iwpriv_cmd), "iwpriv %s %s", iface, cmd);
+	if (exec_and_parse(iwpriv_cmd, iface, "%*[^:]:%256[^\n]", 1, result))
+		return NULL;
+
+	return result;
+}
+
+/**
+ * Run "iwpriv XXX get_XXX" and return integer behind colon.
+ * Expected result is shown below:
+ * ath1      channf:-90
+ *                  ^^^ result
+ * @iface:	interface name
+ * @cmd:	get cmd
+ * @return:
+ * 	0:	success
+ *     -1:	invalid parameter;
+ *     -2:	error
+ */
+int iwpriv_get_int(const char *iface, char *cmd, int *result)
+{
+	char iwpriv_cmd[sizeof("iwpriv athX CCCCCCCCCCCCCCCCXXX") + IFNAMSIZ];
+
+	if (!iface || !cmd || !result)
+		return -1;
+
+	snprintf(iwpriv_cmd, sizeof(iwpriv_cmd), "iwpriv %s %s", iface, cmd);
+	if (exec_and_parse(iwpriv_cmd, iface, "%*[^:]:%d", 1, result))
+		return -2;
+
+	return 0;
+}
+
+/**
+ * Execute @cmd, find @keyword in output and parse it.
+ * @cmd:
+ * @keyword:	If specified, only parse line with it.
+ * @fmt:	sscanf format string
+ * @cnt:	number of parameters should be get by sscanf()
+ * @return:
+ * 	0:	success
+ *  otherwise:	fail
+ */
+int exec_and_parse(const char *cmd, const char *keyword, const char *fmt, int cnt, ...)
+{
+	int r, ret = 1;
+	char line[256];
+	FILE *fp;
+	va_list args;
+
+	if (!cmd || cnt <= 0 || !fmt)
+		return -1;
+
+	if (!(fp = popen(cmd, "r"))) {
+		dbg("%s: can't execute [%s]\n", __func__, cmd);
+		return -2;
+	}
+
+	va_start(args, cnt);
+	while (ret && fgets(line, sizeof(line), fp)) {
+		if (keyword && !strstr(line, keyword))
+			continue;
+		if ((r = vsscanf(line, fmt, args)) != cnt) {
+			dbg("%s: Unknown output: [%s] of cmd [%s], fmt [%s], cnt %d, r %d\n",
+				__func__, line, cmd, fmt, cnt, r);
+			continue;
+		}
+		ret = 0;
+	}
+	va_end(args);
+	pclose(fp);
+
+	return ret;
+}
+
+/**
  * Get prefix for QoS related nvram variables
  * If RTCONFIG_MULTIWAN_CFG is enabled, this function writes "qosX_" to @buf or internal buffer.
  * If RTCONFIG_MULTIWAN_CFG is not enabled, this function always writes "qos_" to @buf or internal buffer.
@@ -3737,7 +3878,7 @@ char *if_nametoalias(char *name, char *alias, int alias_len)
 		max_mssid = num_of_mssid_support(unit);
 		memset(prefix, 0, sizeof(prefix));
 		snprintf(prefix, sizeof(prefix), "wl%d_", unit);
-		ifname = nvram_get(strcat_r(prefix, "ifname", tmp));
+		ifname = nvram_safe_get(strcat_r(prefix, "ifname", tmp));
 		subunit = 0;
 
 		if (!strcmp(ifname, name)) {
@@ -3749,7 +3890,7 @@ char *if_nametoalias(char *name, char *alias, int alias_len)
 		for (subunit = 1; subunit < max_mssid+1; subunit++) {
 			memset(prefix, 0, sizeof(prefix));
                         snprintf(prefix, sizeof(prefix), "wl%d.%d_", unit, subunit);
-			ifname = nvram_get(strcat_r(prefix, "ifname", tmp));
+			ifname = nvram_safe_get(strcat_r(prefix, "ifname", tmp));
 
 			if (!strcmp(ifname, name)) {
 #if defined(CONFIG_BCMWL5) || defined(RTCONFIG_BCMARM)
@@ -4016,6 +4157,43 @@ int isValidMacAddress(const char* mac) {
 }
 
 /*
+ * Validate a mac address 
+ * @mac:	pointer to mac address.
+ * 	1:	Legal mac address and is not a multicast mac address
+ *  	0:	illegal mac address or a multicast mac address
+ */
+
+int isValidMacAddr_and_isNotMulticast(const char* mac)
+{
+	int sec_byte;
+	int i = 0, s = 0;
+
+	if (strlen(mac) != 17 || !strcmp("00:00:00:00:00:00", mac))
+		return 0;
+
+	while (*mac && i < 12) {
+		if (isxdigit(*mac)) {
+			if (i == 1) {
+				sec_byte= strtol(mac, NULL, 16);
+				if ((sec_byte & MULTICAST_BIT)){
+					_dprintf("isValidMacAddr 1 sec_byte %x %d %d\n",sec_byte,i,s);
+					break;
+				}
+			}
+			i++;
+		}
+		else if (*mac == ':') {
+			if (i == 0 || i/2-1 != s){
+				_dprintf("isValidMacAddr 2 %d %d\n",i,s);
+				break;
+			}
+			++s;
+		}
+		++mac;
+	}
+	return (i == 12 && s == 5);
+}
+/*
  * Validate a option input
  * @option:	pointer to  a option.
     @range:	unsigned int range.
@@ -4036,3 +4214,109 @@ int isValidEnableOption(const char *option, int range) {
 	else
 		return 0;
 }
+
+/*
+ * Validate a string is digit
+ * @string:	pointer to  a string.
+ */
+int isValid_digit_string(const char *string) {
+
+	if (!string || !*string)
+		return 0;
+
+	while (*string)
+	{
+		if (!isdigit(*string))
+			return 0;
+		else
+			++string;
+	}
+	return 1;
+}
+
+#if defined(RTCONFIG_AMAS)
+/*
+	define amas_lib trigger function
+*/
+static int SEND_AMAS_NODE_EVENT(AMASLIB_EVENT_T *event)
+{
+	struct    sockaddr_un addr;
+	int       sockfd, n;
+
+	if ((sockfd = socket(AF_UNIX, SOCK_STREAM, 0)) == -1) {
+		printf("[%s:(%d)] ERROR socket.\n", __FUNCTION__, __LINE__);
+		perror("socket error");
+		return 0;
+	}
+
+	memset(&addr, 0, sizeof(addr));
+	addr.sun_family = AF_UNIX;
+	strlcpy(addr.sun_path, AMASLIB_SOCKET_PATH, sizeof(addr.sun_path));
+
+	if (connect(sockfd, (struct sockaddr*)&addr, sizeof(addr)) == -1) {
+		printf("[%s:(%d)] ERROR connecting:%s.\n", __FUNCTION__, __LINE__, strerror(errno));
+		perror("connect error");
+		close(sockfd);
+		return 0;
+	}
+
+	n = write(sockfd, (AMASLIB_EVENT_T *)event, sizeof(AMASLIB_EVENT_T));
+
+	close(sockfd);
+
+	if (n < 0) {
+		printf("[%s:(%d)] ERROR writing:%s.\n", __FUNCTION__, __LINE__, strerror(errno));
+		perror("writing error");
+		return 0;
+	}
+
+	return 1;
+}
+
+int AMAS_EVENT_TRIGGER(char *sta2g, char *sta5g, int flag)
+{
+	AMASLIB_EVENT_T *node = NULL;
+	node = (AMASLIB_EVENT_T *)malloc(sizeof(AMASLIB_EVENT_T));
+
+	char *buf1 = sta2g;
+	char *buf2 = sta5g;
+
+	if (node == NULL) {
+		printf("[%s:(%d)] malloc(AMASLIB_EVENT_T) error:%s.\n", __FUNCTION__, __LINE__, strerror(errno));
+		return 0;
+	}
+
+	if (sta2g == NULL) buf1 = "\0";
+	if (sta5g == NULL) buf2 = "\0";
+
+	//printf("[%s:(%d)] sta2g=%s, sta5g=%s, flag=%d\n", __FUNCTION__, __LINE__, buf1, buf2, flag);
+	memset(node, 0, sizeof(AMASLIB_EVENT_T));
+	memcpy(node->sta2g, buf1, sizeof(node->sta2g));
+	memcpy(node->sta5g, buf2, sizeof(node->sta5g));
+	node->flag = flag;
+
+	/* send wlc event into wlc_nt */
+	SEND_AMAS_NODE_EVENT(node);
+
+	/* free memory */
+	if (node) free(node);
+
+	return 1;
+}
+
+/*
+	define amaslib enable function for check
+*/
+int is_amaslib_enabled()
+{
+	int ret = 0;
+	if ((nvram_get_int("wrs_enable") && nvram_get_int("wrs_app_enable")) ||
+		(nvram_get_int("qos_enable") && (nvram_get_int("qos_type") == 0 || nvram_get_int("qos_type") == 2)) ||
+		nvram_get_int("MULTIFILTER_ALL"))
+	{
+		ret = 1;
+	}
+
+	return ret;
+}
+#endif

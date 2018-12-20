@@ -113,7 +113,7 @@ OBJS += base64.o
 OBJS += nvparse.o
 OBJS += bwdpi_utils.o
 OBJS += bwdpi_utils.o
-OBJS += mac_name_tab.o
+OBJS += mac_name_tbl.o
 OBJS += stun.o
 OBJS += scripts.o
 OBJS += timer_utils.o
@@ -145,7 +145,7 @@ OBJS += flash_mtd.o api-ralink.o
 ifeq ($(RTCONFIG_RALINK_RT3052),y)
 OBJS += ra3052.o
 endif
-ifeq ($(RTN14U)$(RTAC52U)$(RTAC51U)$(RTN11P)$(RTN300)$(RTN54U)$(RTAC1200HP)$(RTN56UB1)$(RTN56UB2)$(RTAC54U)$(RTAC1200GA1)$(RTAC1200GU)$(RPAC87)$(RTAC85U)$(RTN800HP),y)
+ifeq ($(RTN14U)$(RTAC52U)$(RTAC51U)$(RTN11P)$(RTN300)$(RTN54U)$(RTAC1200HP)$(RTN56UB1)$(RTN56UB2)$(RTAC54U)$(RTAC1200GA1)$(RTAC1200GU)$(RPAC87)$(RTAC85U)$(RTAC85P)$(RTN800HP),y)
 CFLAGS += -DRA_ESW
 OBJS += mt7620.o
 else
@@ -176,6 +176,7 @@ OBJS += ipq40xx.o
 else
 OBJS += qca8337.o
 endif
+OBJS += qca.o
 else ifeq ($(RTCONFIG_ALPINE),y)
 OBJS += flash_mtd.o api-alpine.o
 ifeq ($(RTCONFIG_EXT_RTL8370MB),y)
@@ -286,6 +287,12 @@ endif
 
 ifeq ($(RTCONFIG_AMAS),y)
 CFLAGS += -I$(TOP)/shared/sysdeps/amas
+ifeq ($(RTCONFIG_DWB),y)
+ifeq ($(RTCONFIG_BCMBSD),y)
+CFLAGS += -DSMART_CONNECT
+endif
+OBJS += $(if $(wildcard sysdeps/amas/amas_dwb.c),sysdeps/amas/amas_dwb.o,prebuild/amas_dwb.o)
+endif
 endif
 
 vpath %.c sysdeps $(SRCBASE)/shared/ $(WLAN_ComponentSrcDirs)

@@ -463,7 +463,7 @@ function gen_splash_page() {
 				code += "<div id='splash_template_content' class='splash_template_content'>";
 					code += "<div class='splash_template_icon'>";
 					code += "</div>";
-					code += "<div class='splash_template_title'>Welcome to";
+					code += "<div class='splash_template_title'><#FreeWiFi_Welcome#>";
 					code += "</div>";
 					code += "<div id='splash_template_brand_name' class='splash_template_brand_name'>Brand Name";
 					code += "</div>";
@@ -473,11 +473,11 @@ function gen_splash_page() {
 							code += "<input type='checkbox' checked disabled>";
 						code += "</div>";
 						code += "<div style='width: 85%;float: left;'>";
-							code += "I have read and agree to <a style='color:#4A90E2;text-decoration:underline;cursor:pointer;'>the Terms of Service</a>";
+							code += "<#FreeWiFi_Agree_Terms_Service#>";
 						code += "</div>";
 						code += "<div style='clear:both;'></div>";
 					code += "</div>";
-					code += "<div class='splash_template_continue'>Continue</div>";
+					code += "<div class='splash_template_continue'><#FreeWiFi_Continue#></div>";
 				code += "</div>";
 			code += "</div>";
 		code += "</div>";
@@ -556,6 +556,7 @@ function gen_splash_page() {
 
 
 	$('#captive_portal_content').append(code);
+	$('#captive_portal_content').find("#terms_service_hyperlink").addClass("splash_template_terms_service_hyperlink");
 
 	//setting user upload icon attribute start.
 	//1.check rc_support
@@ -1207,6 +1208,8 @@ function save_splash_page_content() {
 			html_landing += "$('#terms_service').html(code);\n";
 
 			html_landing += "control_bt_status();\n";
+			html_landing += "document.getElementById('terms_service_hyperlink').className = 'splash_template_terms_service_hyperlink';\n";
+			html_landing += "document.getElementById('terms_service_hyperlink').onclick = open_term_service;\n";
 		}
 		html_landing += "resize_component();\n";
 		html_landing += "}\n";
@@ -1354,7 +1357,7 @@ function save_splash_page_content() {
 		html_landing += "</g>\n";
 		html_landing += "</g>\n";
 		html_landing += "</svg>\n";
-		html_landing += "<div id='splash_template_title' class='splash_template_title'>Welcome to</div>\n";
+		html_landing += "<div id='splash_template_title' class='splash_template_title'><#FreeWiFi_Welcome#></div>\n";
 		html_landing += "<div id='splash_template_brand_name' class='splash_template_brand_name'>Brand Name</div>\n";
 		if(passcode_status) {
 			html_landing += "<input id='splash_template_passcode' name='splash_template_passcode' class='splash_template_passcode' value='' placeHolder='Please enter Passcode' type='text' maxlength='64' autocorrect='off' autocapitalize='off'>\n";
@@ -1365,12 +1368,12 @@ function save_splash_page_content() {
 				html_landing += "<input type='checkbox' name='cbTermService' id='cbTermService' onclick='control_bt_status();'>\n";
 				html_landing += "</div>\n";
 			html_landing += "<div class='splash_template_terms_service_text'>\n";
-			html_landing += "I have read and agree to <a class='splash_template_terms_service_hyperlink' onclick='open_term_service();'>the Terms of Service</a>\n";
+			html_landing += "<#FreeWiFi_Agree_Terms_Service#>\n";
 			html_landing += "</div>\n";
 			html_landing += "<div style='clear:both;'></div>\n";
 			html_landing += "</div>\n";
 		}
-		html_landing += "<div id='splash_template_continue' class='splash_template_continue' onclick='continue_action();'>Continue</div>\n";
+		html_landing += "<div id='splash_template_continue' class='splash_template_continue' onclick='continue_action();'><#FreeWiFi_Continue#></div>\n";
 		html_landing += "</div>\n";
 		html_landing += "</div>\n";
 		html_landing += "</body></html>\n";

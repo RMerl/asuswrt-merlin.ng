@@ -47,6 +47,7 @@ enum
 	UDB_IOCTL_COMMON_OP_SET_WPR_ENABLE,
 	UDB_IOCTL_COMMON_OP_SET_WPR_DISABLE,
 	UDB_IOCTL_COMMON_OP_SET_REDIRECT_URL,
+	UDB_IOCTL_COMMON_OP_GET_VER,
 	UDB_IOCTL_COMMON_OP_MAX
 };
 
@@ -103,6 +104,7 @@ typedef struct udb_ioc_os
 #define UDB_ENTRY_HOST_NAME_SIZE 32
 
 #define MAX_WRS_CAT_NUM 128
+
 typedef struct udb_ioc_entry
 {
 	uint8_t uid;
@@ -217,6 +219,19 @@ int udb_ioctl_common_op_copy_in(uint8_t op, void *buf, uint32_t buf_len);
 int udb_ioctl_common_op_copy_out(uint8_t op, void *buf, uint32_t buf_len, uint32_t *buf_used_len);
 int udb_ioctl_common_op_copy_none(uint8_t op);
 #endif
+
+/*UDB version*/
+ typedef struct
+ {
+     uint16_t major;
+     uint16_t minor;
+     uint16_t rev;
+} __attribute__((packed)) udb_eng_ver_t;
+
+typedef struct ver_ioc
+{
+	udb_eng_ver_t core_ver;
+} ver_ioc_t;
 
 #endif /* _UDB_IOCTL_COMMON_H_ */
 

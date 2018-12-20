@@ -39,14 +39,6 @@
 var wl_maclist_x_array = '<% nvram_get("wl_maclist_x"); %>';
 
 var manually_maclist_list_array = new Array();
-Object.prototype.getKey = function(value) {
-	for(var key in this) {
-		if(this[key] == value) {
-			return key;
-		}
-	}
-	return null;
-};
 
 function initial(){
 	if(isSwMode("re") && concurrep_support){
@@ -147,7 +139,8 @@ function show_wl_maclist_x(){
 			code += '</td></tr></table>';
 			code += '</td>';
 			code += '<td width="20%"><input type="button" class=\"remove_btn\" onclick=\"deleteRow(this, \'' + clientMac + '\');\" value=\"\"/></td></tr>';
-			clientListEventData.push({"mac" : clientMac, "name" : "", "ip" : "", "callBack" : "ACL"});
+			if(validator.mac_addr(clientMac))
+				clientListEventData.push({"mac" : clientMac, "name" : "", "ip" : "", "callBack" : "ACL"});
 		});
 	}
 	code += '</table>';

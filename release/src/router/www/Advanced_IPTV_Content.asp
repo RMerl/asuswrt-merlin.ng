@@ -1066,9 +1066,9 @@ function change_port_settings(val, changed){
 
 function show_gaming_note(val){
 	if(val == "12")
-		document.getElementById("gaming_note").innerHTML = "Gaming Ports are set up in LAN1 and LAN2. If you would like to use Gaming Ports, please choose LAN 5/ LAN 6 for your IPTV or VoIP port.";//untranslated
+		document.getElementById("gaming_note").innerHTML = "<#RouterConfig_GW_GamingPortsNote_12#>";
 	else if(val == "56")
-		document.getElementById("gaming_note").innerHTML = "Link aggregation is configured in LAN 5 and LAN6. If you would like to use link aggregation, please choose LAN 1/ LAN 2 for your IPTV or VoIP port.";//untranslated
+		document.getElementById("gaming_note").innerHTML = "<#RouterConfig_GW_GamingPortsNote_56#>";
 	document.getElementById("gaming_note_div").style.display = "";
 }
 
@@ -1415,7 +1415,7 @@ function change_mr_enable(switch_stb_x){
 			</tr>
 		</thead>
 			<tr id="port_settings" style="display:none;">
-				<th width="30%"><a class="hintstyle" href="javascript:void(0);" onClick="openHint(7,28);">IPTV/ VoIP Port Settings</a></th>
+				<th width="30%"><a class="hintstyle" href="javascript:void(0);" onClick="openHint(7,28);"><#RouterConfig_GW_LANPort_itemname#></a></th>
 				<td>
 					<select name="iptv_port_settings" class="input_option" onChange="change_port_settings(this.value, 1);" disabled>
 						<option value="12" <% nvram_match( "iptv_port_settings", "12", "selected"); %>>LAN1/ LAN2</option>

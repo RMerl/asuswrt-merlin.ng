@@ -12,6 +12,9 @@
 #include <sys/statfs.h>
 #include <sys/reboot.h>
 #include <errno.h>
+#if defined(RTCONFIG_PSISTLOG) || defined(RTCONFIG_JFFS2LOG)
+#include <limits.h>
+#endif
 #ifndef MNT_DETACH
 #define MNT_DETACH	0x00000002
 #endif
@@ -381,10 +384,16 @@ void stop_jffs2(int stop)
 	}
 
 #if defined(RTCONFIG_PSISTLOG) || defined(RTCONFIG_JFFS2LOG)
-	if (!stop && !strncmp(get_syslog_fname(0), "/jffs/", 6)) {
+	char prefix[PATH_MAX], path1[PATH_MAX], path2[PATH_MAX];
+
+	snprintf(prefix, sizeof(prefix), "%s/", nvram_safe_get("log_path"));
+	snprintf(path1, sizeof(path1), "%ssyslog.log", prefix);
+	snprintf(path2, sizeof(path2), "%ssyslog.log-1", prefix);
+
+	if (!stop && !strncmp(get_syslog_fname(0), prefix, strlen(prefix))) {
 		restart_syslogd = 1;
 		stop_syslogd();
-		eval("cp", "/jffs/syslog.log", "/jffs/syslog.log-1", "/tmp");
+		eval("cp", path1, path2, "/tmp");
 	}
 #endif
 

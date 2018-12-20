@@ -18,6 +18,9 @@
 #include <rc.h>
 #include <wanduck.h>
 
+#if defined(RTCONFIG_HIDDEN_BACKHAUL)
+#include <qca.h>
+#endif
 
 //#define DETECT_INTERNET_MORE
 #define NO_IOS_DETECT_INTERNET
@@ -397,6 +400,10 @@ void get_related_nvram(){
 #endif
 	for(unit = WAN_UNIT_FIRST; unit < WAN_UNIT_MAX; ++unit)
 		max_wait_time[unit] = scan_interval*max_disconn_count[unit];
+
+#ifdef RTCONFIG_USB_MODEM
+	modem_pdp = nvram_get_int("modem_pdp");
+#endif
 }
 
 void get_lan_nvram(){
@@ -592,8 +599,13 @@ int do_ping_detect(int wan_unit, const char *target)
 	*/
 
 	/* Check for valid domain to avoid shell escaping */
-	if (!is_valid_domainname(target))
+	if (!is_valid_domainname(target)
+#if defined(RTCONFIG_IPV6) && defined(RTCONFIG_USB_MODEM)
+		&& !(dualwan_unit__usbif(wan_unit) && modem_pdp == 2)
+#endif
+			)
 		return -1;
+
 	if (debug)
 		_dprintf("%s: %s %s\n", __FUNCTION__, "check", target);
 
@@ -772,8 +784,10 @@ int do_dns_detect(int wan_unit)
 	int timeout, size, ret, pipefd[2];
 	int debug = nvram_get_int("dns_probe_debug");
 
-	if(dualwan_unit__usbif(wan_unit) && nvram_get_int("modem_pdp") == 2)
+#if defined(RTCONFIG_IPV6) && defined(RTCONFIG_USB_MODEM)
+	if(dualwan_unit__usbif(wan_unit) && modem_pdp == 2)
 		return 1;
+#endif
 
 	snprintf(host, sizeof(host), "%s", nvram_safe_get("dns_probe_host"));
 	snprintf(content, sizeof(content), "%s", nvram_safe_get("dns_probe_content"));
@@ -812,18 +826,46 @@ int do_dns_detect(int wan_unit)
 			ret = read(pipefd[0], &status, sizeof(status));
 		} while (ret < 0 && errno == EINTR);
 
-		/* ret > 0: status has been read, return real status
-		 * ret = 0: child timeout or dead w/o status, return 0
-		 * ret < 0: child read error, return -1 */
-		if (ret >= sizeof(status))
-			ret = status;
-		else if (ret != 0)
-			ret = -1;
+		if (nvram_match("wifison_ready", "1"))
+		{
+#ifdef RTCONFIG_WIFI_SON
+                	if(sw_mode() != SW_MODE_REPEATER && ret == 0)
+                		ret = 0;
+			else
+				ret = (ret == sizeof(status)) ? status : -1;
+#else
+			_dprintf("no wifison feature\n");
+#endif
+		}
+		else {
+			/* ret > 0: status has been read, return real status
+			 * ret = 0: child timeout or dead w/o status, return 0
+			 * ret < 0: child read error, return -1 */
+			if (ret >= sizeof(status))
+				ret = status;
+			else if (ret != 0)
+				ret = -1;
+		}
 	error:
 		close(pipefd[0]);
 
 		if (debug)
 			_dprintf("%s: %s ret %d\n", __FUNCTION__, host, ret);
+
+		if (nvram_match("wifison_ready", "1"))
+		{
+#ifdef RTCONFIG_WIFI_SON
+                	if(ret == 0)
+				logmessage("WAN Connection", "DNS probe failed");
+#else
+			_dprintf("no wifison feature\n");
+#endif
+		}
+		else
+		{
+			if (ret == 0 && debug)
+				logmessage("WAN Connection", "DNS probe failed");
+		}
 
 		return ret;
 	}
@@ -944,6 +986,7 @@ int detect_internet(int wan_unit)
 	snprintf(wan_ifname, sizeof(wan_ifname), "%s", get_wan_ifname(wan_unit));
 #endif
 
+
 	snprintf(prefix, sizeof(prefix), "wan%d_", wan_unit);
 	snprintf(wan_proto, sizeof(wan_proto), "%s", nvram_safe_get(strcat_r(prefix, "proto", tmp)));
 
@@ -957,6 +1000,11 @@ int detect_internet(int wan_unit)
 
 	dns_ret = is_ppp_demand ? -1 : delay_dns_response(wan_unit);
 
+#if defined(RTCONFIG_IPV6) && defined(RTCONFIG_INTERNAL_GOBI)
+	if(dualwan_unit__usbif(wan_unit) && modem_pdp == 2)
+		ping_ret = do_ping_detect(wan_unit, "2001:4860:4860::8888");
+	else
+#endif
 #if defined(RTCONFIG_DUALWAN)
 	if(wandog_enable)
 		ping_ret = is_ppp_demand ? -1 : wanduck_ping_detect(wan_unit);
@@ -979,6 +1027,10 @@ int detect_internet(int wan_unit)
 	else if(!get_packets_of_net_dev(wan_ifname, &rx_packets, &tx_packets) || rx_packets <= RX_THRESHOLD)
 		link_internet = DISCONN;
 	else if(!isFirstUse && (!dns_ret && !do_tcp_dns_detect(wan_unit) && !wanduck_ping_detect(wan_unit)))
+		link_internet = DISCONN;
+#endif
+#if defined(RTCONFIG_IPV6) && defined(RTCONFIG_INTERNAL_GOBI)
+	else if(dualwan_unit__usbif(wan_unit) && modem_pdp == 2 && !ping_ret)
 		link_internet = DISCONN;
 #endif
 #ifdef RTCONFIG_DUALWAN
@@ -1417,7 +1469,6 @@ int if_wan_phyconnected(int wan_unit){
 	static int got_modem_info = 0;
 	char buf[32];
 	char act_ip[32];
-	int pdp = 0;
 #endif
 
 #ifdef RTCONFIG_ALPINE
@@ -1671,9 +1722,9 @@ _dprintf("# wanduck: if_wan_phyconnected: x_Setting=%d, link_modem=%d, sim_state
 					eval("/usr/sbin/modem_status.sh", "simauth");
 
 				if(sim_state == 1){
-					pdp = nvram_get_int("modem_pdp");
-					if(pdp != 2){
-						eval("/usr/sbin/modem_status.sh", "ip");
+					eval("/usr/sbin/modem_status.sh", "ip");
+
+					if(modem_pdp != 2){
 						snprintf(act_ip, sizeof(act_ip), "%s", nvram_safe_get(strcat_r(prefix2, "act_ip", tmp2)));
 
 						snprintf(buf, sizeof(buf), "%s", nvram_safe_get(strcat_r(prefix, "ipaddr", tmp)));
@@ -1759,6 +1810,7 @@ _dprintf("# wanduck(%d): if_wan_phyconnected: x_Setting=%d, link_modem=%d, sim_s
 		if((ptr = nvram_get(wired_link_nvram)) == NULL || strlen(ptr) <= 0 || link_wan[wan_unit] != atoi(ptr)){
 			if(link_wan[wan_unit]){
 				nvram_set_int(wired_link_nvram, CONNED);
+
 				record_wan_state_nvram(wan_unit, -1, -1, WAN_AUXSTATE_NONE);
 			}
 			else{
@@ -2031,7 +2083,7 @@ int if_wan_connected(int wan_unit){
 
 	if(chk_proto(wan_unit) != CONNED) {
 #ifdef RTCONFIG_WIFI_SON
-		if ((nvram_get_int("link_internet") == 2) && (nvram_match("x_Setting", "1"))) {
+		if (((nvram_get_int("link_internet") == 2) && (nvram_match("x_Setting", "1"))) && nvram_match("wifison_ready", "1")) {
 			logmessage("WAN Connection", "WAN stopped...");
 			set_link_internet(wan_unit, 1);
 		}
@@ -2847,6 +2899,11 @@ int wanduck_main(int argc, char *argv[]){
 
 	wdbg = nvram_get_int("wdbg");
 	test_log = nvram_get_int("wanduck_debug");
+#if defined(RTCONFIG_HIDDEN_BACKHAUL)
+	char vif[15];
+	if(sw_mode() != SW_MODE_REPEATER)
+		sprintf(vif,"%s.%s",WIF_5G_BH,"55");
+#endif
 
 	signal(SIGHUP, SIG_IGN);
 	signal(SIGTERM, safe_leave);
@@ -2963,7 +3020,10 @@ int wanduck_main(int argc, char *argv[]){
 
 #ifdef WEB_REDIRECT
 	if(nvram_get_int("freeze_duck"))
+	{
+		if (test_log)
 		_dprintf("\n<*>freeze the duck, %ds left!\n", nvram_get_int("freeze_duck"));	// don't check conn state during inner events period
+	}
 	else
 #endif
 	if(sw_mode == SW_MODE_ROUTER && !strcmp(dualwan_mode, "lb")){
@@ -3108,7 +3168,15 @@ _dprintf("wanduck(%d)(first detect start): state %d, state_old %d, changed %d, w
 				// nat_rules = NAT_STATE_REDIRECT;
 			}
 #ifdef RTCONFIG_WIFI_SON
-			else if(!nvram_match("cfg_master", "1"))
+			else if(!nvram_match("cfg_master", "1") && nvram_match("wifison_ready", "1"))
+				; // do nothing.
+#endif
+#if defined(RTCONFIG_QCA) && defined(RTCONFIG_AMAS)
+			else if(nvram_match("re_mode", "1"))
+				; // do nothing.
+#endif
+#if defined(RTCONFIG_QCA) && defined(RTCONFIG_AMAS)
+			else if(nvram_match("re_mode", "1"))
 				; // do nothing.
 #endif
 			else if(cross_state == CONNED){
@@ -3117,15 +3185,18 @@ _dprintf("wanduck(%d)(first detect start): state %d, state_old %d, changed %d, w
 				eval("ebtables", "-t", "filter", "-F");
 				eval("ebtables", "-t", "broute", "-I", "BROUTING", "-p", "ipv4", "--ip-proto", "udp", "--ip-dport", "53", "-j", "redirect", "--redirect-target", "DROP");
 #ifdef RTCONFIG_WIFI_SON
-				if(sw_mode() == SW_MODE_AP && nvram_match("cfg_master", "1"))
+				if((sw_mode() == SW_MODE_AP && nvram_match("cfg_master", "1")) && nvram_match("wifison_ready", "1"))
                                 {
                                         if(nvram_get_int("wl0.1_bss_enabled"))
                                         {
+#if defined(RTCONFIG_HIDDEN_BACKHAUL)
+                                                eval("ebtables", "-t", "broute", "-I", "BROUTING","-i",vif ,"-j","ACCEPT");
+#else
                                                 eval("ebtables", "-t", "broute", "-I", "BROUTING","-i","ath1.55" ,"-j","ACCEPT");
+#endif
                                                 eval("ebtables", "-t", "broute", "-I", "BROUTING","-i",nvram_safe_get("wl0.1_ifname"),"-j","ACCEPT");
                                         }
                                 }
-
 #endif
 				redirect_nat_setting();
 				eval("iptables-restore", NAT_RULES);
@@ -3161,7 +3232,10 @@ _dprintf("wanduck(%d)(first detect start): state %d, state_old %d, changed %d, w
 	 */
 #ifdef WEB_REDIRECT
 	if(nvram_get_int("freeze_duck"))
+	{
+		if (test_log)
 		_dprintf("\n<**>freeze the duck, %ds left!\n", nvram_get_int("freeze_duck"));	// don't check conn state during inner events period
+	}
 	else
 #endif
 	if(cross_state == DISCONN){
@@ -3246,6 +3320,7 @@ _dprintf("nat_rule: start_nat_rules 4.\n");
 
 #ifdef WEB_REDIRECT
 		if(nvram_get_int("freeze_duck")){
+			if (test_log)
 			_dprintf("\n<****>freeze the duck, %ds left!\n", nvram_get_int("freeze_duck"));	// don't check conn state during inner events period
 			goto WANDUCK_SELECT;
 		}
@@ -4156,15 +4231,18 @@ _dprintf("nat_rule: stop_nat_rules 6.\n");
 #endif
 
 #ifdef RTCONFIG_WIFI_SON
-                                	if(sw_mode() == SW_MODE_AP && nvram_match("cfg_master", "1"))
+                                	if((sw_mode() == SW_MODE_AP && nvram_match("cfg_master", "1")) && nvram_match("wifison_ready", "1"))
                                 	{
                                        		if(nvram_get_int("wl0.1_bss_enabled"))
                                         	{
+#if defined(RTCONFIG_HIDDEN_BACKHAUL)
+                                                	eval("ebtables", "-t", "broute", "-I", "BROUTING","-i",vif ,"-j","ACCEPT");
+#else
                                                 	eval("ebtables", "-t", "broute", "-I", "BROUTING","-i","ath1.55" ,"-j","ACCEPT");
-                                                	eval("ebtables", "-t", "broute", "-I", "BROUTING","-i",nvram_safe_get("wl0.1_ifname"),"-j","ACCEPT");
+#endif                                                	
+							eval("ebtables", "-t", "broute", "-I", "BROUTING","-i",nvram_safe_get("wl0.1_ifname"),"-j","ACCEPT");
                                         	}
                                 	}
-
 #endif
 
 
@@ -4198,7 +4276,7 @@ _dprintf("nat_rule: start_nat_rules 6.\n");
 				// nat_rules = NAT_STATE_REDIRECT;
 			}
 #ifdef RTCONFIG_WIFI_SON
-			else if(!nvram_match("cfg_master", "1"))
+			else if(!nvram_match("cfg_master", "1") && nvram_match("wifison_ready", "1"))
 				; // do nothing.
 #endif
 			else if (conn_changed_state[current_wan_unit] == D2C) {
@@ -4207,15 +4285,18 @@ _dprintf("nat_rule: start_nat_rules 6.\n");
 				eval("ebtables", "-t", "filter", "-F");
 				eval("ebtables", "-t", "broute", "-I", "BROUTING", "-p", "ipv4", "--ip-proto", "udp", "--ip-dport", "53", "-j", "redirect", "--redirect-target", "DROP");
 #ifdef RTCONFIG_WIFI_SON
-                                if(sw_mode() == SW_MODE_AP && nvram_match("cfg_master", "1"))
+                                if((sw_mode() == SW_MODE_AP && nvram_match("cfg_master", "1"))&& nvram_match("wifison_ready", "1"))
                                 {
                                         if(nvram_get_int("wl0.1_bss_enabled"))
                                         {
+#if defined(RTCONFIG_HIDDEN_BACKHAUL)
+                                                eval("ebtables", "-t", "broute", "-I", "BROUTING","-i",vif ,"-j","ACCEPT");
+#else
                                                 eval("ebtables", "-t", "broute", "-I", "BROUTING","-i","ath1.55" ,"-j","ACCEPT");
+#endif
                                                 eval("ebtables", "-t", "broute", "-I", "BROUTING","-i",nvram_safe_get("wl0.1_ifname"),"-j","ACCEPT");
                                         }
                                 }
-
 #endif
 				redirect_nat_setting();
 				eval("iptables-restore", NAT_RULES);
@@ -4377,6 +4458,7 @@ _dprintf("nat_rule: start_nat_rules 6.\n");
 					switch_wan_line(other_wan_unit, 1);
 			}
 			else
+#endif // RTCONFIG_DUALWAN || RTCONFIG_USB_MODEM
 #ifdef RTCONFIG_AUTOCOVER_SIP
 			if(disconn_case[current_wan_unit] == CASE_THESAMESUBNET && isFirstUse && nvram_get_int("atcover_sip") == 1){
 #if 1
@@ -4402,8 +4484,7 @@ _dprintf("nat_rule: start_nat_rules 6.\n");
 #endif
 			}
 			else
-#endif
-#endif
+#endif // RTCONFIG_AUTOCOVER_SIP
 			/* recover redirect rules if overwritten by ppp+dhcp/zeroconf/etc */
 			//if(disconn_case[current_wan_unit] == CASE_PPPFAIL && nat_state == NAT_STATE_REDIRECT &&
 			//	nvram_get_int("nat_state") == NAT_STATE_NORMAL) {

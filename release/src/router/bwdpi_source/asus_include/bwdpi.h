@@ -30,6 +30,8 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <sys/ioctl.h>
+#include <sys/socket.h>
+#include <sys/un.h>
 #include <errno.h>
 #include <sys/time.h>
 #include <signal.h>
@@ -156,7 +158,6 @@ void print_group_mac(mac_g *mac_group);
 //stat.c
 extern void get_traffic_stat(char *mode, char *name, char *dura, char *date);
 extern void get_traffic_hook(char *mode, char *name, char *dura, char *date, int *retval, webs_t wp);
-extern void get_device_hook(char *MAC, int *retval, webs_t wp);
-extern void get_device_stat(char *MAC);
-extern int bwdpi_client_info(char *MAC, bwdpi_device *device);
+extern void get_device_stat();
+extern int bwdpi_client_info(char *MAC, char *ipaddr, bwdpi_device *device);
 extern void redirect_page_status(int cat_id, int *retval, webs_t wp);

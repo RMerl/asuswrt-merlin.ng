@@ -40,7 +40,7 @@ var overlib_str3 = new Array();
 function initial(){
 	show_menu();
 	//	https://www.asus.com/support/FAQ/1031610/
-	httpApi.faqURL("faq", "1031610", "https://www.asus.com", "/support/FAQ/");
+	httpApi.faqURL("1031610", function(url){document.getElementById("faq").href=url;});
 	loadAppOptions();
 	showipv6_fw_rulelist();
 	change_firewall(firewall_enable);

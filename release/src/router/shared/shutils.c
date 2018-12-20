@@ -246,15 +246,12 @@ int _eval(char *const argv[], const char *path, int timeout, int *ppid)
 	sighandler_t chld = SIG_IGN;
 	pid_t pid, w;
 	int status = 0;
-	int fd;
-	int flags;
-	int sig;
-	int n;
-	const char *p;
-	char s[256];
-	int debug_logeval = atoi(nvram_safe_get("debug_logeval"));
-	//char *cpu0_argv[32] = { "taskset", "-c", "0"};
-	//char *cpu1_argv[32] = { "taskset", "-c", "1"};
+	int fd, flags, sig, n;
+	char s[256], *p;
+#if 0
+	char *cpu = "0";
+	char *cpu_argv[32] = { "taskset", "-c", cpu, NULL};
+#endif
 
 	if (!ppid) {
 		// block SIGCHLD
@@ -268,7 +265,9 @@ int _eval(char *const argv[], const char *path, int timeout, int *ppid)
 #ifdef HND_ROUTER
 	p = nvram_safe_get("env_path");
 	snprintf(s, sizeof(s), "%s%s/sbin:/bin:/usr/sbin:/usr/bin:/opt/sbin:/opt/bin", *p ? p : "", *p ? ":" : "");
-	setenv("PATH", s, 1);
+	p = getenv("PATH");
+	if (p == NULL || strcmp(p, s) != 0)
+		setenv("PATH", s, 1);
 #endif
 	pid = fork();
 	if (pid == -1) {
@@ -304,43 +303,22 @@ EXIT:
 
 	// child
 
+	setsid();
+
 	// reset signal handlers
-	for (sig = 0; sig < (_NSIG - 1); sig++)
+	for (sig = 1; sig < _NSIG; sig++)
 		signal(sig, SIG_DFL);
 
 	// unblock signals if called from signal handler
 	sigemptyset(&set);
 	sigprocmask(SIG_SETMASK, &set, NULL);
 
-	setsid();
-
-	close(STDIN_FILENO);
-	close(STDOUT_FILENO);
-	close(STDERR_FILENO);
-	open("/dev/null", O_RDONLY);
-	open("/dev/null", O_WRONLY);
-	open("/dev/null", O_WRONLY);
-
-	if (debug_logeval == 1) {
-		pid = getpid();
-
-		cprintf("_eval +%ld pid=%d ", uptime(), pid);
-		for (n = 0; argv[n]; ++n) cprintf("%s ", argv[n]);
-		cprintf("\n");
-
-		if ((fd = open("/dev/console", O_RDWR | O_NONBLOCK)) >= 0) {
-			dup2(fd, STDIN_FILENO);
-			dup2(fd, STDOUT_FILENO);
-			dup2(fd, STDERR_FILENO);
-		}
-		else {
-			sprintf(s, "/tmp/eval.%d", pid);
-			if ((fd = open(s, O_CREAT | O_RDWR | O_NONBLOCK, 0600)) >= 0) {
-				dup2(fd, STDOUT_FILENO);
-				dup2(fd, STDERR_FILENO);
-			}
-		}
-		if (fd > STDERR_FILENO) close(fd);
+	if ((fd = open("/dev/null", O_RDWR)) >= 0) {
+		dup2(fd, STDIN_FILENO);
+		dup2(fd, STDOUT_FILENO);
+		dup2(fd, STDERR_FILENO);
+		if (fd > STDERR_FILENO)
+			close(fd);
 	}
 
 	// Redirect stdout & stderr to <path>
@@ -361,11 +339,30 @@ EXIT:
 
 		if ((fd = open(path, flags, 0644)) < 0) {
 			perror(path);
-		}
-		else {
+		} else {
 			dup2(fd, STDOUT_FILENO);
 			dup2(fd, STDERR_FILENO);
-			close(fd);
+			if (fd > STDERR_FILENO)
+				close(fd);
+		}
+	} else if (nvram_get_int("debug_logeval")) {
+		pid = getpid();
+
+		if ((fd = open("/dev/console", O_RDWR | O_NONBLOCK)) < 0) {
+			sprintf(s, "/tmp/eval.%d", pid);
+			fd = open(s, O_CREAT | O_RDWR | O_NONBLOCK, 0600);
+		} else
+			dup2(fd, STDIN_FILENO);
+
+		if (fd >= 0) {
+			dup2(fd, STDOUT_FILENO);
+			dup2(fd, STDERR_FILENO);
+			if (fd > STDERR_FILENO)
+				close(fd);
+
+			printf("_eval +%ld pid=%d ", uptime(), getpid());
+			for (n = 0; argv[n]; n++) printf("%s ", argv[n]);
+			printf("\n");
 		}
 	}
 
@@ -373,28 +370,22 @@ EXIT:
 #ifndef HND_ROUTER
 	p = nvram_safe_get("env_path");
 	snprintf(s, sizeof(s), "%s%s/sbin:/bin:/usr/sbin:/usr/bin:/opt/sbin:/opt/bin", *p ? p : "", *p ? ":" : "");
-	setenv("PATH", s, 1);
+	p = getenv("PATH");
+	if (p == NULL || strcmp(p, s) != 0)
+		setenv("PATH", s, 1);
 #endif
 
 	alarm(timeout);
+
 #if 1
 	execvp(argv[0], argv);
+#else
+	for (n = 0; argv[n]; n++) {
+		cpu_argv[n+3] = argv[n];
+	execvp(cpu_argv[0], cpu_argv);
+#endif
 
 	perror(argv[0]);
-#elif 0
-	for(n = 0; argv[n]; ++n)
-		cpu0_argv[n+3] = argv[n];
-	execvp(cpu0_argv[0], cpu0_argv);
-
-	perror(cpu0_argv[0]);
-#else
-	for(n = 0; argv[n]; ++n)
-		cpu1_argv[n+3] = argv[n];
-	execvp(cpu1_argv[0], cpu1_argv);
-
-	perror(cpu1_argv[0]);
-
-#endif
 
 	_exit(errno);
 }
@@ -423,16 +414,24 @@ int _cpu_eval(int *ppid, char *cmds[])
 #if defined (SMP) || defined(RTCONFIG_ALPINE) || defined(RTCONFIG_LANTIQ)
         cpucmd[ncmds++]="taskset";
         cpucmd[ncmds++]="-c";
-        if(!strcmp(cmds[n], CPU0) || !strcmp(cmds[n], CPU1)) {
+	if(!strcmp(cmds[n], CPU0) || !strcmp(cmds[n], CPU1)
+#if defined(GTAC5300)
+			|| !strcmp(cmds[n], CPU2) || !strcmp(cmds[n], CPU3)
+#endif
+			)
                 cpucmd[ncmds++]=cmds[n++];
-        } else
+        else
 #if defined(RTCONFIG_ALPINE) || defined(RTCONFIG_LANTIQ)
                 cpucmd[ncmds++]=cmds[n++];;
 #else
                 cpucmd[ncmds++]=CPU0;
 #endif
 #else
-        if(strcmp(cmds[n], CPU0) && strcmp(cmds[n], CPU1))
+	if(strcmp(cmds[n], CPU0) && strcmp(cmds[n], CPU1)
+#if defined(GTAC5300)
+			&& strcmp(cmds[n], CPU2) && strcmp(cmds[n], CPU3)
+#endif
+			)
                 cpucmd[ncmds++]=cmds[n++];
         else
                 n++;
@@ -2213,5 +2212,39 @@ void reset_stacksize(int newval)
 		printf("\nreset stack_size soft limit failed\n");
 	else
 		printf("\nreset stack_size soft limit as %d\n", newval);
+}
+
+#define ARP_CACHE       "/proc/net/arp"
+#define ARP_BUFFER_LEN  512
+#define IPLEN           16
+
+/* 1/4/6 */
+#define ARP_LINE_FORMAT "%20s %*s %*s %20s %*s %20s"
+
+int arpcache(char *tgmac, char *tgip)
+{
+	FILE *arpCache = fopen(ARP_CACHE, "r");
+	if (!arpCache) {
+		perror("cannot open arp cache");
+		return -1;
+	}
+
+	char header[ARP_BUFFER_LEN];
+	if (!fgets(header, sizeof(header), arpCache))
+	{
+		return -1;
+	}
+
+	char ipAddr[ARP_BUFFER_LEN], hwAddr[ARP_BUFFER_LEN], device[ARP_BUFFER_LEN];
+	while (fscanf(arpCache, ARP_LINE_FORMAT, ipAddr, hwAddr, device) == 3)
+	{
+		if(!stricmp(tgmac, hwAddr, IPLEN-1)) {
+			strncpy(tgip, ipAddr, IPLEN);
+			break;
+		}
+	}
+
+	fclose(arpCache);
+	return 0;
 }
 

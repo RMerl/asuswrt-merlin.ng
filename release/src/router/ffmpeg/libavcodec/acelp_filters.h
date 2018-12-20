@@ -25,6 +25,39 @@
 
 #include <stdint.h>
 
+typedef struct ACELPFContext {
+    /**
+    * Floating point version of ff_acelp_interpolate()
+    */
+    void (*acelp_interpolatef)(float *out, const float *in,
+                            const float *filter_coeffs, int precision,
+                            int frac_pos, int filter_length, int length);
+
+    /**
+     * Apply an order 2 rational transfer function in-place.
+     *
+     * @param out output buffer for filtered speech samples
+     * @param in input buffer containing speech data (may be the same as out)
+     * @param zero_coeffs z^-1 and z^-2 coefficients of the numerator
+     * @param pole_coeffs z^-1 and z^-2 coefficients of the denominator
+     * @param gain scale factor for final output
+     * @param mem intermediate values used by filter (should be 0 initially)
+     * @param n number of samples (should be a multiple of eight)
+     */
+    void (*acelp_apply_order_2_transfer_function)(float *out, const float *in,
+                                                  const float zero_coeffs[2],
+                                                  const float pole_coeffs[2],
+                                                  float gain,
+                                                  float mem[2], int n);
+
+}ACELPFContext;
+
+/**
+ * Initialize ACELPFContext.
+ */
+void ff_acelp_filter_init(ACELPFContext *c);
+void ff_acelp_filter_init_mips(ACELPFContext *c);
+
 /**
  * low-pass Finite Impulse Response filter coefficients.
  *
@@ -32,13 +65,13 @@
  * the coefficients are scaled by 2^15.
  * This array only contains the right half of the filter.
  * This filter is likely identical to the one used in G.729, though this
- * could not be determined from the original comments with certainity.
+ * could not be determined from the original comments with certainty.
  */
 extern const int16_t ff_acelp_interp_filter[61];
 
 /**
  * Generic FIR interpolation routine.
- * @param out [out] buffer for interpolated data
+ * @param[out] out buffer for interpolated data
  * @param in input data
  * @param filter_coeffs interpolation filter coefficients (0.15)
  * @param precision sub sample factor, that is the precision of the position
@@ -49,7 +82,6 @@ extern const int16_t ff_acelp_interp_filter[61];
  * filter_coeffs contains coefficients of the right half of the symmetric
  * interpolation filter. filter_coeffs[0] should the central (unpaired) coefficient.
  * See ff_acelp_interp_filter for an example.
- *
  */
 void ff_acelp_interpolate(int16_t* out, const int16_t* in,
                           const int16_t* filter_coeffs, int precision,
@@ -65,8 +97,8 @@ void ff_acelp_interpolatef(float *out, const float *in,
 
 /**
  * high-pass filtering and upscaling (4.2.5 of G.729).
- * @param out [out] output buffer for filtered speech data
- * @param hpf_f [in/out] past filtered data from previous (2 items long)
+ * @param[out]     out   output buffer for filtered speech data
+ * @param[in,out]  hpf_f past filtered data from previous (2 items long)
  *                       frames (-0x20000000 <= (14.13) < 0x20000000)
  * @param in speech data to process
  * @param length input data size
@@ -76,7 +108,7 @@ void ff_acelp_interpolatef(float *out, const float *in,
  *
  * The filter has a cut-off frequency of 1/80 of the sampling freq
  *
- * @note Two items before the top of the out buffer must contain two items from the
+ * @note Two items before the top of the in buffer must contain two items from the
  *       tail of the previous subframe.
  *
  * @remark It is safe to pass the same array in in and out parameters.

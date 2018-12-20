@@ -142,8 +142,10 @@ static unsigned int get_wan_port_mask(int wan_unit)
 	int sw_mode = sw_mode();
 	char nv[] = "wanXXXports_maskXXXXXX";
 
+#if !defined(RTCONFIG_AMAS)
 	if (sw_mode == SW_MODE_AP || sw_mode == SW_MODE_REPEATER)
 		return 0;
+#endif
 
 	if (wan_unit <= 0 || wan_unit >= WAN_UNIT_MAX)
 		strlcpy(nv, "wanports_mask", sizeof(nv));

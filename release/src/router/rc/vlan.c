@@ -1168,6 +1168,9 @@ void vlan_lanaccess_wl(void)
 {
 	int i;
 	int vlan_index = nvram_get_int("vlan_index");
+#ifdef RTCONFIG_WIRELESSREPEATER
+	int wlc_band = nvram_get_int("wlc_band");
+#endif
 
 	if (!vlan_enable())
 		return;
@@ -1200,7 +1203,8 @@ void vlan_lanaccess_wl(void)
 				else continue;
 
 #ifdef RTCONFIG_WIRELESSREPEATER
-				if(sw_mode()==SW_MODE_REPEATER && unit==nvram_get_int("wlc_band") && subunit==1) continue;
+
+				if(sw_mode()==SW_MODE_REPEATER && unit==wlc_band && subunit==1) continue;
 #endif
 #elif defined RTCONFIG_RALINK
 				if (!strncmp(ifname, "ra", 2) && !strchr(ifname, '0'))

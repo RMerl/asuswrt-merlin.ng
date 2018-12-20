@@ -36,7 +36,7 @@ Object.prototype.getKey = function(value) {
 function initial(){
 	show_menu();
 	//	http://www.asus.com/support/FAQ/1009775
-	httpApi.faqURL("faq3", "1009775", "https://www.asus.com", "/support/FAQ/");	// id in #smart_access3#
+	httpApi.faqURL("1009775", function(url){document.getElementById("faq3").href=url;});	// id in #smart_access3#
 
 	var wollist_row = wollist_array.split('&#60');
 	for(var i = 1; i < wollist_row.length; i += 1) {
@@ -176,7 +176,8 @@ function showwollist(){
 			code += '</td>';
 			code += '<td width="20%">';
 			code += '<input class="remove_btn" onclick="del_Row(this, \'' + clientMac + '\');" value=""/></td></tr>';
-			clientListEventData.push({"mac" : clientMac, "name" : "", "ip" : "", "callBack" : "WOL"});
+			if(validator.mac_addr(clientMac))
+				clientListEventData.push({"mac" : clientMac, "name" : "", "ip" : "", "callBack" : "WOL"});
 		});
 	}
 

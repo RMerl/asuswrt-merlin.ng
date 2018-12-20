@@ -25,7 +25,6 @@ var lan_ipaddr = '<% nvram_get("lan_ipaddr"); %>';
 var ddns_enable = '<% nvram_get("ddns_enable_x"); %>';	//0: disable, 1: enable
 var ddns_server = '<% nvram_get("ddns_server_x"); %>';	//WWW.ASUS.COM
 
-
 function initial(){
 	show_menu();
 	if(ddns_enable == 1 && ddns_server == "WWW.ASUS.COM")
@@ -35,34 +34,36 @@ function initial(){
 		document.getElementById("jffsrestore").style.display = "none";
 		document.getElementById("jffsbackup").style.display = "none";
 	}
+
+	document.form.file.onchange = function() {
+		uploadSetting();
+	};
+
+	if(!bwdpi_support){
+		$("#factorydefault_hint").attr("onclick", "").unbind("click");
+		$("#factorydefault_hint").attr("onclick", "openHint(19, 1);");
+		$("#restoreInit_div").css("display", "none");
+		$("#restoreInit").attr("disabled", "disabled");
+		$("#restoreInit").prop("checked", false);
+	}
 }
 
 function restoreRule(_flag){
 	var alert_string = "<#Setting_factorydefault_hint1#>";
-	switch(_flag) {
-		case "restore" :
-			alert_string = "<#Setting_factorydefault_hint1#>";
-			break;
-		case "initialize" :
-			alert_string = "<#Setting_initialize_hint1#>";
-			break;
-	}
+
+	if($('#restoreInit').prop("checked") && bwdpi_support)
+		alert_string = "<#Setting_initialize_hint1#>";
 
 	if(lan_ipaddr != '<% nvram_default_get("lan_ipaddr"); %>')
 		alert_string += "<#Setting_factorydefault_iphint#>\n\n".replace("192.168.1.1", '<% nvram_default_get("lan_ipaddr"); %>');
 
 	alert_string += "<#Setting_factorydefault_hint2#>";
 	if(confirm(alert_string)){
-		switch(_flag) {
-			case "restore" :
-				document.form.action1.blur();
-				document.restoreform.action_mode.value = "Restore";
-				break;
-			case "initialize" :
-				document.form.action_init.blur();
-				document.restoreform.action_mode.value = "restore_erase";
-				break;
-		}
+		document.form.action1.blur();
+		if($('#restoreInit').prop("checked") && bwdpi_support)
+			document.restoreform.action_mode.value = "restore_erase";
+		else
+			document.restoreform.action_mode.value = "Restore";
 		showtext(document.getElementById("loading_block2"), "<#SAVE_restart_desc#>");
 		document.getElementById('loading_block3').style.display = "none";
 		showLoading();
@@ -161,7 +162,9 @@ function detect_httpd(){
   			}
   		});
 }
-
+function selectSetting() {
+	document.form.file.click();
+}
 </script>
 </head>
 
@@ -243,11 +246,20 @@ function detect_httpd(){
 										</thead>
 	          								<tr>
 	            								<th width="25%" align="right">
-	            									<a class="hintstyle"  href="javascript:void(0);" onclick="openHint(19,1)"><#Setting_factorydefault_itemname#></a>
+											<a id="factorydefault_hint" class="hintstyle"  href="javascript:void(0);" onclick="openHint(19,4)"><#Setting_factorydefault_itemname#></a>
 	            								</th>
 	            								<td colspan = "4">
-													<input class="button_gen" onclick="restoreRule('restore');" type="button" value="<#CTL_restore#>" name="action1" />
-													<input class="button_gen" onclick="restoreRule('initialize');" type="button" value="<#CTL_initialize#>" name="action_init" />
+													<div style="float:left;">
+														<input class="button_gen" onclick="restoreRule('restore');" type="button" value="<#CTL_restore#>" name="action1" />
+													</div>
+													<div id="restoreInit_div">
+														<div style="float:left;margin-left:5px;">
+															<input type="checkbox" id="restoreInit">
+														</div>
+														<div style="float:left;width:65%;">
+															<span><label for="restoreInit"><#Setting_initialize_desc#></label></span>
+														</div>
+													</div>
 													<input type="hidden" name="wl_gmode_protection_x" value="<% nvram_get("wl_gmode_protection_x"); %>" />
 	              								</td>
 	          								</tr>
@@ -255,7 +267,7 @@ function detect_httpd(){
 												<th align="right" style="border-bottom:none">
 													<a class="hintstyle"  href="javascript:void(0);" onclick="openHint(19,2)"><#Setting_save_itemname#></a>
 												</th>
-												<td><input class="button_gen" onclick="saveSetting('Router');" type="button" value="<#CTL_onlysave#>" name="action2" /><span id="transfer_ddns_field" style="display:none"><input id="transfer_ddns" type="checkbox"><#DDNS_transfer#></span>
+												<td><input class="button_gen" onclick="saveSetting('Router');" type="button" value="<#CTL_onlysave#>" name="action2" /><span id="transfer_ddns_field" style="display:none;margin-left:5px;"><input id="transfer_ddns" type="checkbox"><#DDNS_transfer#></span>
 												</td>
 											</tr>
 											<tr id="transfer_ddns_field" style="display:none">
@@ -271,9 +283,9 @@ function detect_httpd(){
 														<table>
 															<tr>
 																<td style="border:0px">
-																	<input type="button" class="button_gen" onclick="uploadSetting();" value="<#CTL_upload#>"/>
+																	<input type="button" class="button_gen" onclick="selectSetting();" value="<#CTL_upload#>"/>
 																</td>
-																<td style="border:0px">
+																<td style="display:none;">
 																	<input type="file" name="file" class="input" style="color:#FFCC00;"/>
 																</td>
 															</tr>

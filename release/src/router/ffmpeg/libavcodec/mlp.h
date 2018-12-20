@@ -45,7 +45,7 @@
 /** Maximum number of substreams that can be decoded.
  *  MLP's limit is 2. TrueHD supports at least up to 3.
  */
-#define MAX_SUBSTREAMS      3
+#define MAX_SUBSTREAMS      4
 
 /** which multiple of 48000 the maximum sample rate is */
 #define MAX_RATEFACTOR      4
@@ -71,15 +71,18 @@
 #define IIR 1
 
 /** filter data */
-typedef struct {
+typedef struct FilterParams {
     uint8_t     order; ///< number of taps in filter
     uint8_t     shift; ///< Right shift to apply to output of filter.
 
     int32_t     state[MAX_FIR_ORDER];
+
+    int coeff_bits;
+    int coeff_shift;
 } FilterParams;
 
 /** sample data coding information */
-typedef struct {
+typedef struct ChannelParams {
     FilterParams filter_params[NUM_FILTERS];
     int32_t     coeff[NUM_FILTERS][MAX_FIR_ORDER];
 
@@ -95,6 +98,43 @@ typedef struct {
  *  00 or 01, but have different codes starting with 1.
  */
 extern const uint8_t ff_mlp_huffman_tables[3][18][2];
+
+typedef struct {
+    uint8_t channel_occupancy;
+    uint8_t group1_channels;
+    uint8_t group2_channels;
+    uint8_t summary_info;
+} ChannelInformation;
+
+/** Tables defining channel information.
+ *
+ *  Possible channel arrangements are:
+ *
+ *  (Group 1)   C
+ *  (Group 1)   L,  R
+ *  (Group 1)   Lf, Rf          /  (Group 2)   S
+ *  (Group 1)   Lf, Rf          /  (Group 2)   Ls, Rs
+ *  (Group 1)   Lf, Rf          /  (Group 2)   LFE
+ *  (Group 1)   Lf, Rf          /  (Group 2)   LFE, S
+ *  (Group 1)   Lf, Rf          /  (Group 2)   LFE, Ls, Rs
+ *  (Group 1)   Lf, Rf          /  (Group 2)   C
+ *  (Group 1)   Lf, Rf          /  (Group 2)   C, S
+ *  (Group 1)   Lf, Rf          /  (Group 2)   C, Ls, Rs
+ *  (Group 1)   Lf, Rf          /  (Group 2)   C, LFE
+ *  (Group 1)   Lf, Rf          /  (Group 2)   C, LFE, S
+ *  (Group 1)   Lf, Rf          /  (Group 2)   C, LFE, Ls,  Rs
+ *  (Group 1)   Lf, Rf  C       /  (Group 2)   S
+ *  (Group 1)   Lf, Rf  C       /  (Group 2)   Ls, Rs
+ *  (Group 1)   Lf, Rf  C       /  (Group 2)   LFE
+ *  (Group 1)   Lf, Rf  C       /  (Group 2)   LFE, S
+ *  (Group 1)   Lf, Rf  C       /  (Group 2)   LFE, Ls, Rs
+ *  (Group 1)   Lf, Rf  Ls  Rs  /  (Group 2)   LFE
+ *  (Group 1)   Lf, Rf  Ls  Rs  /  (Group 2)   C
+ *  (Group 1)   Lf, Rf, Ls, Rs  /  (Group 2)   C, LFE
+ */
+extern const ChannelInformation ff_mlp_ch_info[21];
+
+extern const uint64_t ff_mlp_channel_layouts[12];
 
 /** MLP uses checksums that seem to be based on the standard CRC algorithm, but
  *  are not (in implementation terms, the table lookup and XOR are reversed).
@@ -123,5 +163,15 @@ static inline uint8_t xor_32_to_8(uint32_t value)
     value ^= value >>  8;
     return value;
 }
+
+typedef enum THDChannelModifier {
+    THD_CH_MODIFIER_NOTINDICATED  = 0x0,
+    THD_CH_MODIFIER_STEREO        = 0x0, // Stereo (not Dolby Surround)
+    THD_CH_MODIFIER_LTRT          = 0x1, // Dolby Surround
+    THD_CH_MODIFIER_LBINRBIN      = 0x2, // Dolby Headphone
+    THD_CH_MODIFIER_MONO          = 0x3, // Mono or Dual Mono
+    THD_CH_MODIFIER_NOTSURROUNDEX = 0x1, // Not Dolby Digital EX
+    THD_CH_MODIFIER_SURROUNDEX    = 0x2, // Dolby Digital EX
+} THDChannelModifier;
 
 #endif /* AVCODEC_MLP_H */

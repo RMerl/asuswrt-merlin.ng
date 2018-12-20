@@ -2,6 +2,8 @@
  * Animated GIF muxer
  * Copyright (c) 2000 Fabrice Bellard
  *
+ * first version by Francois Revol <revol@free.fr>
+ *
  * This file is part of FFmpeg.
  *
  * FFmpeg is free software; you can redistribute it and/or
@@ -19,340 +21,236 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-/*
- * First version by Francois Revol revol@free.fr
- *
- * Features and limitations:
- * - currently no compression is performed,
- *   in fact the size of the data is 9/8 the size of the image in 8bpp
- * - uses only a global standard palette
- * - tested with IE 5.0, Opera for BeOS, NetPositive (BeOS), and Mozilla (BeOS).
- *
- * Reference documents:
- * http://www.goice.co.jp/member/mo/formats/gif.html
- * http://astronomy.swin.edu.au/pbourke/dataformats/gif/
- * http://www.dcs.ed.ac.uk/home/mxr/gfx/2d/GIF89a.txt
- *
- * this url claims to have an LZW algorithm not covered by Unisys patent:
- * http://www.msg.net/utility/whirlgif/gifencod.html
- * could help reduce the size of the files _a lot_...
- * some sites mentions an RLE type compression also.
- */
-
 #include "avformat.h"
+#include "internal.h"
+#include "libavutil/avassert.h"
+#include "libavutil/imgutils.h"
+#include "libavutil/log.h"
+#include "libavutil/opt.h"
 
-/* The GIF format uses reversed order for bitstreams... */
-/* at least they don't use PDP_ENDIAN :) */
-#define BITSTREAM_WRITER_LE
+/* XXX: random value that shouldn't be taken into effect if there is no
+ * transparent color in the palette (the transparency bit will be set to 0) */
+#define DEFAULT_TRANSPARENCY_INDEX 0x1f
 
-#include "libavcodec/put_bits.h"
+static int get_palette_transparency_index(const uint32_t *palette)
+{
+    int transparent_color_index = -1;
+    unsigned i, smallest_alpha = 0xff;
 
-/* bitstream minipacket size */
-#define GIF_CHUNKS 100
+    if (!palette)
+        return -1;
 
-/* slows down the decoding (and some browsers don't like it) */
-/* update on the 'some browsers don't like it issue from above: this was probably due to missing 'Data Sub-block Terminator' (byte 19) in the app_header */
-#define GIF_ADD_APP_HEADER // required to enable looping of animated gif
+    for (i = 0; i < AVPALETTE_COUNT; i++) {
+        const uint32_t v = palette[i];
+        if (v >> 24 < smallest_alpha) {
+            smallest_alpha = v >> 24;
+            transparent_color_index = i;
+        }
+    }
+    return smallest_alpha < 128 ? transparent_color_index : -1;
+}
 
-typedef struct {
-    unsigned char r;
-    unsigned char g;
-    unsigned char b;
-} rgb_triplet;
-
-/* we use the standard 216 color palette */
-
-/* this script was used to create the palette:
- * for r in 00 33 66 99 cc ff; do for g in 00 33 66 99 cc ff; do echo -n "    "; for b in 00 33 66 99 cc ff; do
- *   echo -n "{ 0x$r, 0x$g, 0x$b }, "; done; echo ""; done; done
- */
-
-static const rgb_triplet gif_clut[216] = {
-    { 0x00, 0x00, 0x00 }, { 0x00, 0x00, 0x33 }, { 0x00, 0x00, 0x66 }, { 0x00, 0x00, 0x99 }, { 0x00, 0x00, 0xcc }, { 0x00, 0x00, 0xff },
-    { 0x00, 0x33, 0x00 }, { 0x00, 0x33, 0x33 }, { 0x00, 0x33, 0x66 }, { 0x00, 0x33, 0x99 }, { 0x00, 0x33, 0xcc }, { 0x00, 0x33, 0xff },
-    { 0x00, 0x66, 0x00 }, { 0x00, 0x66, 0x33 }, { 0x00, 0x66, 0x66 }, { 0x00, 0x66, 0x99 }, { 0x00, 0x66, 0xcc }, { 0x00, 0x66, 0xff },
-    { 0x00, 0x99, 0x00 }, { 0x00, 0x99, 0x33 }, { 0x00, 0x99, 0x66 }, { 0x00, 0x99, 0x99 }, { 0x00, 0x99, 0xcc }, { 0x00, 0x99, 0xff },
-    { 0x00, 0xcc, 0x00 }, { 0x00, 0xcc, 0x33 }, { 0x00, 0xcc, 0x66 }, { 0x00, 0xcc, 0x99 }, { 0x00, 0xcc, 0xcc }, { 0x00, 0xcc, 0xff },
-    { 0x00, 0xff, 0x00 }, { 0x00, 0xff, 0x33 }, { 0x00, 0xff, 0x66 }, { 0x00, 0xff, 0x99 }, { 0x00, 0xff, 0xcc }, { 0x00, 0xff, 0xff },
-    { 0x33, 0x00, 0x00 }, { 0x33, 0x00, 0x33 }, { 0x33, 0x00, 0x66 }, { 0x33, 0x00, 0x99 }, { 0x33, 0x00, 0xcc }, { 0x33, 0x00, 0xff },
-    { 0x33, 0x33, 0x00 }, { 0x33, 0x33, 0x33 }, { 0x33, 0x33, 0x66 }, { 0x33, 0x33, 0x99 }, { 0x33, 0x33, 0xcc }, { 0x33, 0x33, 0xff },
-    { 0x33, 0x66, 0x00 }, { 0x33, 0x66, 0x33 }, { 0x33, 0x66, 0x66 }, { 0x33, 0x66, 0x99 }, { 0x33, 0x66, 0xcc }, { 0x33, 0x66, 0xff },
-    { 0x33, 0x99, 0x00 }, { 0x33, 0x99, 0x33 }, { 0x33, 0x99, 0x66 }, { 0x33, 0x99, 0x99 }, { 0x33, 0x99, 0xcc }, { 0x33, 0x99, 0xff },
-    { 0x33, 0xcc, 0x00 }, { 0x33, 0xcc, 0x33 }, { 0x33, 0xcc, 0x66 }, { 0x33, 0xcc, 0x99 }, { 0x33, 0xcc, 0xcc }, { 0x33, 0xcc, 0xff },
-    { 0x33, 0xff, 0x00 }, { 0x33, 0xff, 0x33 }, { 0x33, 0xff, 0x66 }, { 0x33, 0xff, 0x99 }, { 0x33, 0xff, 0xcc }, { 0x33, 0xff, 0xff },
-    { 0x66, 0x00, 0x00 }, { 0x66, 0x00, 0x33 }, { 0x66, 0x00, 0x66 }, { 0x66, 0x00, 0x99 }, { 0x66, 0x00, 0xcc }, { 0x66, 0x00, 0xff },
-    { 0x66, 0x33, 0x00 }, { 0x66, 0x33, 0x33 }, { 0x66, 0x33, 0x66 }, { 0x66, 0x33, 0x99 }, { 0x66, 0x33, 0xcc }, { 0x66, 0x33, 0xff },
-    { 0x66, 0x66, 0x00 }, { 0x66, 0x66, 0x33 }, { 0x66, 0x66, 0x66 }, { 0x66, 0x66, 0x99 }, { 0x66, 0x66, 0xcc }, { 0x66, 0x66, 0xff },
-    { 0x66, 0x99, 0x00 }, { 0x66, 0x99, 0x33 }, { 0x66, 0x99, 0x66 }, { 0x66, 0x99, 0x99 }, { 0x66, 0x99, 0xcc }, { 0x66, 0x99, 0xff },
-    { 0x66, 0xcc, 0x00 }, { 0x66, 0xcc, 0x33 }, { 0x66, 0xcc, 0x66 }, { 0x66, 0xcc, 0x99 }, { 0x66, 0xcc, 0xcc }, { 0x66, 0xcc, 0xff },
-    { 0x66, 0xff, 0x00 }, { 0x66, 0xff, 0x33 }, { 0x66, 0xff, 0x66 }, { 0x66, 0xff, 0x99 }, { 0x66, 0xff, 0xcc }, { 0x66, 0xff, 0xff },
-    { 0x99, 0x00, 0x00 }, { 0x99, 0x00, 0x33 }, { 0x99, 0x00, 0x66 }, { 0x99, 0x00, 0x99 }, { 0x99, 0x00, 0xcc }, { 0x99, 0x00, 0xff },
-    { 0x99, 0x33, 0x00 }, { 0x99, 0x33, 0x33 }, { 0x99, 0x33, 0x66 }, { 0x99, 0x33, 0x99 }, { 0x99, 0x33, 0xcc }, { 0x99, 0x33, 0xff },
-    { 0x99, 0x66, 0x00 }, { 0x99, 0x66, 0x33 }, { 0x99, 0x66, 0x66 }, { 0x99, 0x66, 0x99 }, { 0x99, 0x66, 0xcc }, { 0x99, 0x66, 0xff },
-    { 0x99, 0x99, 0x00 }, { 0x99, 0x99, 0x33 }, { 0x99, 0x99, 0x66 }, { 0x99, 0x99, 0x99 }, { 0x99, 0x99, 0xcc }, { 0x99, 0x99, 0xff },
-    { 0x99, 0xcc, 0x00 }, { 0x99, 0xcc, 0x33 }, { 0x99, 0xcc, 0x66 }, { 0x99, 0xcc, 0x99 }, { 0x99, 0xcc, 0xcc }, { 0x99, 0xcc, 0xff },
-    { 0x99, 0xff, 0x00 }, { 0x99, 0xff, 0x33 }, { 0x99, 0xff, 0x66 }, { 0x99, 0xff, 0x99 }, { 0x99, 0xff, 0xcc }, { 0x99, 0xff, 0xff },
-    { 0xcc, 0x00, 0x00 }, { 0xcc, 0x00, 0x33 }, { 0xcc, 0x00, 0x66 }, { 0xcc, 0x00, 0x99 }, { 0xcc, 0x00, 0xcc }, { 0xcc, 0x00, 0xff },
-    { 0xcc, 0x33, 0x00 }, { 0xcc, 0x33, 0x33 }, { 0xcc, 0x33, 0x66 }, { 0xcc, 0x33, 0x99 }, { 0xcc, 0x33, 0xcc }, { 0xcc, 0x33, 0xff },
-    { 0xcc, 0x66, 0x00 }, { 0xcc, 0x66, 0x33 }, { 0xcc, 0x66, 0x66 }, { 0xcc, 0x66, 0x99 }, { 0xcc, 0x66, 0xcc }, { 0xcc, 0x66, 0xff },
-    { 0xcc, 0x99, 0x00 }, { 0xcc, 0x99, 0x33 }, { 0xcc, 0x99, 0x66 }, { 0xcc, 0x99, 0x99 }, { 0xcc, 0x99, 0xcc }, { 0xcc, 0x99, 0xff },
-    { 0xcc, 0xcc, 0x00 }, { 0xcc, 0xcc, 0x33 }, { 0xcc, 0xcc, 0x66 }, { 0xcc, 0xcc, 0x99 }, { 0xcc, 0xcc, 0xcc }, { 0xcc, 0xcc, 0xff },
-    { 0xcc, 0xff, 0x00 }, { 0xcc, 0xff, 0x33 }, { 0xcc, 0xff, 0x66 }, { 0xcc, 0xff, 0x99 }, { 0xcc, 0xff, 0xcc }, { 0xcc, 0xff, 0xff },
-    { 0xff, 0x00, 0x00 }, { 0xff, 0x00, 0x33 }, { 0xff, 0x00, 0x66 }, { 0xff, 0x00, 0x99 }, { 0xff, 0x00, 0xcc }, { 0xff, 0x00, 0xff },
-    { 0xff, 0x33, 0x00 }, { 0xff, 0x33, 0x33 }, { 0xff, 0x33, 0x66 }, { 0xff, 0x33, 0x99 }, { 0xff, 0x33, 0xcc }, { 0xff, 0x33, 0xff },
-    { 0xff, 0x66, 0x00 }, { 0xff, 0x66, 0x33 }, { 0xff, 0x66, 0x66 }, { 0xff, 0x66, 0x99 }, { 0xff, 0x66, 0xcc }, { 0xff, 0x66, 0xff },
-    { 0xff, 0x99, 0x00 }, { 0xff, 0x99, 0x33 }, { 0xff, 0x99, 0x66 }, { 0xff, 0x99, 0x99 }, { 0xff, 0x99, 0xcc }, { 0xff, 0x99, 0xff },
-    { 0xff, 0xcc, 0x00 }, { 0xff, 0xcc, 0x33 }, { 0xff, 0xcc, 0x66 }, { 0xff, 0xcc, 0x99 }, { 0xff, 0xcc, 0xcc }, { 0xff, 0xcc, 0xff },
-    { 0xff, 0xff, 0x00 }, { 0xff, 0xff, 0x33 }, { 0xff, 0xff, 0x66 }, { 0xff, 0xff, 0x99 }, { 0xff, 0xff, 0xcc }, { 0xff, 0xff, 0xff },
-};
-
-/* GIF header */
-static int gif_image_write_header(ByteIOContext *pb,
-                                  int width, int height, int loop_count,
-                                  uint32_t *palette)
+static int gif_image_write_header(AVIOContext *pb, AVStream *st,
+                                  int loop_count, uint32_t *palette)
 {
     int i;
-    unsigned int v;
+    int64_t aspect = 0;
+    const AVRational sar = st->sample_aspect_ratio;
 
-    put_tag(pb, "GIF");
-    put_tag(pb, "89a");
-    put_le16(pb, width);
-    put_le16(pb, height);
+    if (sar.num > 0 && sar.den > 0) {
+        aspect = sar.num * 64LL / sar.den - 15;
+        if (aspect < 0 || aspect > 255)
+            aspect = 0;
+    }
 
-    put_byte(pb, 0xf7); /* flags: global clut, 256 entries */
-    put_byte(pb, 0x1f); /* background color index */
-    put_byte(pb, 0); /* aspect ratio */
+    avio_write(pb, "GIF", 3);
+    avio_write(pb, "89a", 3);
+    avio_wl16(pb, st->codecpar->width);
+    avio_wl16(pb, st->codecpar->height);
 
-    /* the global palette */
-    if (!palette) {
-        put_buffer(pb, (const unsigned char *)gif_clut, 216*3);
-        for(i=0;i<((256-216)*3);i++)
-            put_byte(pb, 0);
+    if (palette) {
+        const int bcid = get_palette_transparency_index(palette);
+
+        avio_w8(pb, 0xf7); /* flags: global clut, 256 entries */
+        avio_w8(pb, bcid < 0 ? DEFAULT_TRANSPARENCY_INDEX : bcid); /* background color index */
+        avio_w8(pb, aspect);
+        for (i = 0; i < 256; i++) {
+            const uint32_t v = palette[i] & 0xffffff;
+            avio_wb24(pb, v);
+        }
     } else {
-        for(i=0;i<256;i++) {
-            v = palette[i];
-            put_byte(pb, (v >> 16) & 0xff);
-            put_byte(pb, (v >> 8) & 0xff);
-            put_byte(pb, (v) & 0xff);
-        }
+        avio_w8(pb, 0); /* flags */
+        avio_w8(pb, 0); /* background color index */
+        avio_w8(pb, aspect);
     }
 
-        /*        update: this is the 'NETSCAPE EXTENSION' that allows for looped animated gif
-                see http://members.aol.com/royalef/gifabout.htm#net-extension
 
-                byte   1       : 33 (hex 0x21) GIF Extension code
-                byte   2       : 255 (hex 0xFF) Application Extension Label
-                byte   3       : 11 (hex (0x0B) Length of Application Block
-                                         (eleven bytes of data to follow)
-                bytes  4 to 11 : "NETSCAPE"
-                bytes 12 to 14 : "2.0"
-                byte  15       : 3 (hex 0x03) Length of Data Sub-Block
-                                         (three bytes of data to follow)
-                byte  16       : 1 (hex 0x01)
-                bytes 17 to 18 : 0 to 65535, an unsigned integer in
-                                         lo-hi byte format. This indicate the
-                                         number of iterations the loop should
-                                         be executed.
-                bytes 19       : 0 (hex 0x00) a Data Sub-block Terminator
-        */
-
-    /* application extension header */
-#ifdef GIF_ADD_APP_HEADER
-    if (loop_count >= 0 && loop_count <= 65535) {
-    put_byte(pb, 0x21);
-    put_byte(pb, 0xff);
-    put_byte(pb, 0x0b);
-        put_tag(pb, "NETSCAPE2.0");  // bytes 4 to 14
-        put_byte(pb, 0x03); // byte 15
-        put_byte(pb, 0x01); // byte 16
-        put_le16(pb, (uint16_t)loop_count);
-        put_byte(pb, 0x00); // byte 19
+    if (loop_count >= 0 ) {
+        /* "NETSCAPE EXTENSION" for looped animation GIF */
+        avio_w8(pb, 0x21); /* GIF Extension code */
+        avio_w8(pb, 0xff); /* Application Extension Label */
+        avio_w8(pb, 0x0b); /* Length of Application Block */
+        avio_write(pb, "NETSCAPE2.0", sizeof("NETSCAPE2.0") - 1);
+        avio_w8(pb, 0x03); /* Length of Data Sub-Block */
+        avio_w8(pb, 0x01);
+        avio_wl16(pb, (uint16_t)loop_count);
+        avio_w8(pb, 0x00); /* Data Sub-block Terminator */
     }
-#endif
+
+    avio_flush(pb);
     return 0;
 }
 
-/* this is maybe slow, but allows for extensions */
-static inline unsigned char gif_clut_index(uint8_t r, uint8_t g, uint8_t b)
-{
-    return (((r) / 47) % 6) * 6 * 6 + (((g) / 47) % 6) * 6 + (((b) / 47) % 6);
-}
-
-
-static int gif_image_write_image(ByteIOContext *pb,
-                                 int x1, int y1, int width, int height,
-                                 const uint8_t *buf, int linesize, int pix_fmt)
-{
-    PutBitContext p;
-    uint8_t buffer[200]; /* 100 * 9 / 8 = 113 */
-    int i, left, w, v;
-    const uint8_t *ptr;
-    /* image block */
-
-    put_byte(pb, 0x2c);
-    put_le16(pb, x1);
-    put_le16(pb, y1);
-    put_le16(pb, width);
-    put_le16(pb, height);
-    put_byte(pb, 0x00); /* flags */
-    /* no local clut */
-
-    put_byte(pb, 0x08);
-
-    left= width * height;
-
-    init_put_bits(&p, buffer, 130);
-
-/*
- * the thing here is the bitstream is written as little packets, with a size byte before
- * but it's still the same bitstream between packets (no flush !)
- */
-    ptr = buf;
-    w = width;
-    while(left>0) {
-
-        put_bits(&p, 9, 0x0100); /* clear code */
-
-        for(i=(left<GIF_CHUNKS)?left:GIF_CHUNKS;i;i--) {
-            if (pix_fmt == PIX_FMT_RGB24) {
-                v = gif_clut_index(ptr[0], ptr[1], ptr[2]);
-                ptr+=3;
-            } else {
-                v = *ptr++;
-            }
-            put_bits(&p, 9, v);
-            if (--w == 0) {
-                w = width;
-                buf += linesize;
-                ptr = buf;
-            }
-        }
-
-        if(left<=GIF_CHUNKS) {
-            put_bits(&p, 9, 0x101); /* end of stream */
-            flush_put_bits(&p);
-        }
-        if(put_bits_ptr(&p) - p.buf > 0) {
-            put_byte(pb, put_bits_ptr(&p) - p.buf); /* byte count of the packet */
-            put_buffer(pb, p.buf, put_bits_ptr(&p) - p.buf); /* the actual buffer */
-            p.buf_ptr = p.buf; /* dequeue the bytes off the bitstream */
-        }
-        left-=GIF_CHUNKS;
-    }
-    put_byte(pb, 0x00); /* end of image block */
-
-    return 0;
-}
-
-typedef struct {
-    int64_t time, file_time;
-    uint8_t buffer[100]; /* data chunks */
+typedef struct GIFContext {
+    AVClass *class;
+    int loop;
+    int last_delay;
+    AVPacket *prev_pkt;
+    int duration;
 } GIFContext;
 
 static int gif_write_header(AVFormatContext *s)
 {
     GIFContext *gif = s->priv_data;
-    ByteIOContext *pb = s->pb;
-    AVCodecContext *enc, *video_enc;
-    int i, width, height, loop_count /*, rate*/;
+    AVCodecParameters *video_par;
+    uint32_t palette[AVPALETTE_COUNT];
 
-/* XXX: do we reject audio streams or just ignore them ?
-    if(s->nb_streams > 1)
-        return -1;
-*/
-    gif->time = 0;
-    gif->file_time = 0;
-
-    video_enc = NULL;
-    for(i=0;i<s->nb_streams;i++) {
-        enc = s->streams[i]->codec;
-        if (enc->codec_type != AVMEDIA_TYPE_AUDIO)
-            video_enc = enc;
+    if (s->nb_streams != 1 ||
+        s->streams[0]->codecpar->codec_type != AVMEDIA_TYPE_VIDEO ||
+        s->streams[0]->codecpar->codec_id   != AV_CODEC_ID_GIF) {
+        av_log(s, AV_LOG_ERROR,
+               "GIF muxer supports only a single video GIF stream.\n");
+        return AVERROR(EINVAL);
     }
 
-    if (!video_enc) {
-        av_free(gif);
-        return -1;
+    video_par = s->streams[0]->codecpar;
+
+    avpriv_set_pts_info(s->streams[0], 64, 1, 100);
+    if (avpriv_set_systematic_pal2(palette, video_par->format) < 0) {
+        av_assert0(video_par->format == AV_PIX_FMT_PAL8);
+        /* delay header writing: we wait for the first palette to put it
+         * globally */
     } else {
-        width = video_enc->width;
-        height = video_enc->height;
-        loop_count = s->loop_output;
-//        rate = video_enc->time_base.den;
+        gif_image_write_header(s->pb, s->streams[0], gif->loop, palette);
     }
 
-    if (video_enc->pix_fmt != PIX_FMT_RGB24) {
-        av_log(s, AV_LOG_ERROR, "ERROR: gif only handles the rgb24 pixel format. Use -pix_fmt rgb24.\n");
-        return AVERROR(EIO);
-    }
-
-    gif_image_write_header(pb, width, height, loop_count, NULL);
-
-    put_flush_packet(s->pb);
     return 0;
 }
 
-static int gif_write_video(AVFormatContext *s,
-                           AVCodecContext *enc, const uint8_t *buf, int size)
+static int flush_packet(AVFormatContext *s, AVPacket *new)
 {
-    ByteIOContext *pb = s->pb;
     GIFContext *gif = s->priv_data;
-    int jiffies;
-    int64_t delay;
+    int size, bcid;
+    AVIOContext *pb = s->pb;
+    const uint32_t *palette;
+    AVPacket *pkt = gif->prev_pkt;
+
+    if (!pkt)
+        return 0;
+
+    /* Mark one colour as transparent if the input palette contains at least
+     * one colour that is more than 50% transparent. */
+    palette = (uint32_t*)av_packet_get_side_data(pkt, AV_PKT_DATA_PALETTE, &size);
+    if (palette && size != AVPALETTE_SIZE) {
+        av_log(s, AV_LOG_ERROR, "Invalid palette extradata\n");
+        return AVERROR_INVALIDDATA;
+    }
+    bcid = get_palette_transparency_index(palette);
+
+    if (new && new->pts != AV_NOPTS_VALUE)
+        gif->duration = av_clip_uint16(new->pts - gif->prev_pkt->pts);
+    else if (!new && gif->last_delay >= 0)
+        gif->duration = gif->last_delay;
 
     /* graphic control extension block */
-    put_byte(pb, 0x21);
-    put_byte(pb, 0xf9);
-    put_byte(pb, 0x04); /* block size */
-    put_byte(pb, 0x04); /* flags */
+    avio_w8(pb, 0x21);
+    avio_w8(pb, 0xf9);
+    avio_w8(pb, 0x04); /* block size */
+    avio_w8(pb, 1<<2 | (bcid >= 0));
+    avio_wl16(pb, gif->duration);
+    avio_w8(pb, bcid < 0 ? DEFAULT_TRANSPARENCY_INDEX : bcid);
+    avio_w8(pb, 0x00);
 
-    /* 1 jiffy is 1/70 s */
-    /* the delay_time field indicates the number of jiffies - 1 */
-    delay = gif->file_time - gif->time;
+    avio_write(pb, pkt->data, pkt->size);
 
-    /* XXX: should use delay, in order to be more accurate */
-    /* instead of using the same rounded value each time */
-    /* XXX: don't even remember if I really use it for now */
-    jiffies = (70*enc->time_base.num/enc->time_base.den) - 1;
+    av_packet_unref(gif->prev_pkt);
+    if (new)
+        av_packet_ref(gif->prev_pkt, new);
 
-    put_le16(pb, jiffies);
-
-    put_byte(pb, 0x1f); /* transparent color index */
-    put_byte(pb, 0x00);
-
-    gif_image_write_image(pb, 0, 0, enc->width, enc->height,
-                          buf, enc->width * 3, PIX_FMT_RGB24);
-
-    put_flush_packet(s->pb);
     return 0;
 }
 
 static int gif_write_packet(AVFormatContext *s, AVPacket *pkt)
 {
-    AVCodecContext *codec = s->streams[pkt->stream_index]->codec;
-    if (codec->codec_type == AVMEDIA_TYPE_AUDIO)
-        return 0; /* just ignore audio */
-    else
-        return gif_write_video(s, codec, pkt->data, pkt->size);
+    GIFContext *gif = s->priv_data;
+    AVStream *video_st = s->streams[0];
+
+    if (!gif->prev_pkt) {
+        gif->prev_pkt = av_packet_alloc();
+        if (!gif->prev_pkt)
+            return AVERROR(ENOMEM);
+
+        /* Write the first palette as global palette */
+        if (video_st->codecpar->format == AV_PIX_FMT_PAL8) {
+            int size;
+            void *palette = av_packet_get_side_data(pkt, AV_PKT_DATA_PALETTE, &size);
+
+            if (!palette) {
+                av_log(s, AV_LOG_ERROR, "PAL8 packet is missing palette in extradata\n");
+                return AVERROR_INVALIDDATA;
+            }
+            if (size != AVPALETTE_SIZE) {
+                av_log(s, AV_LOG_ERROR, "Invalid palette extradata\n");
+                return AVERROR_INVALIDDATA;
+            }
+            gif_image_write_header(s->pb, video_st, gif->loop, palette);
+        }
+
+        return av_packet_ref(gif->prev_pkt, pkt);
+    }
+    return flush_packet(s, pkt);
 }
 
 static int gif_write_trailer(AVFormatContext *s)
 {
-    ByteIOContext *pb = s->pb;
+    GIFContext *gif = s->priv_data;
+    AVIOContext *pb = s->pb;
 
-    put_byte(pb, 0x3b);
-    put_flush_packet(s->pb);
+    flush_packet(s, NULL);
+    av_freep(&gif->prev_pkt);
+    avio_w8(pb, 0x3b);
+
     return 0;
 }
 
-AVOutputFormat gif_muxer = {
-    "gif",
-    NULL_IF_CONFIG_SMALL("GIF Animation"),
-    "image/gif",
-    "gif",
-    sizeof(GIFContext),
-    CODEC_ID_NONE,
-    CODEC_ID_RAWVIDEO,
-    gif_write_header,
-    gif_write_packet,
-    gif_write_trailer,
+#define OFFSET(x) offsetof(GIFContext, x)
+#define ENC AV_OPT_FLAG_ENCODING_PARAM
+static const AVOption options[] = {
+    { "loop", "Number of times to loop the output: -1 - no loop, 0 - infinite loop", OFFSET(loop),
+      AV_OPT_TYPE_INT, { .i64 = 0 }, -1, 65535, ENC },
+    { "final_delay", "Force delay (in centiseconds) after the last frame", OFFSET(last_delay),
+      AV_OPT_TYPE_INT, { .i64 = -1 }, -1, 65535, ENC },
+    { NULL },
+};
+
+static const AVClass gif_muxer_class = {
+    .class_name = "GIF muxer",
+    .item_name  = av_default_item_name,
+    .version    = LIBAVUTIL_VERSION_INT,
+    .option     = options,
+};
+
+AVOutputFormat ff_gif_muxer = {
+    .name           = "gif",
+    .long_name      = NULL_IF_CONFIG_SMALL("GIF Animation"),
+    .mime_type      = "image/gif",
+    .extensions     = "gif",
+    .priv_data_size = sizeof(GIFContext),
+    .audio_codec    = AV_CODEC_ID_NONE,
+    .video_codec    = AV_CODEC_ID_GIF,
+    .write_header   = gif_write_header,
+    .write_packet   = gif_write_packet,
+    .write_trailer  = gif_write_trailer,
+    .priv_class     = &gif_muxer_class,
+    .flags          = AVFMT_VARIABLE_FPS,
 };

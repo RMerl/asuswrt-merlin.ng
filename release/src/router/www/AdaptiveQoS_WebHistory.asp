@@ -125,9 +125,9 @@ function parsingAjaxResult(rawData){
 
 	var code = "";
 	code += "<tr>";
-	code += "<th style='width:20%;text-align:left'>Access Time</th>";
+	code += "<th style='width:20%;text-align:left'><#Access_Time#></th>";
 	code += "<th style='width:30%;text-align:left'><#PPPConnection_x_MacAddressForISP_itemname#> / <#Client_Name#></th>";
-	code += "<th style='width:50%;text-align:left'>Domain Name</th>";
+	code += "<th style='width:50%;text-align:left'><#Domain_Name#></th>";
 	code += "</tr>";
 	for(var i=0; i<data_array.length; i++){
 		var thisLog = {

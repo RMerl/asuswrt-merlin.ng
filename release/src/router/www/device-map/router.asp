@@ -13,6 +13,7 @@
 <script type="text/javascript" src="/general.js"></script>
 <script type="text/javascript" src="/state.js"></script>
 <script type="text/javascript" src="/js/jquery.js"></script>
+<script type="text/javascript" src="/validator.js"></script>
 <style>
 .cancel{
 	border: 2px solid #898989;
@@ -112,6 +113,11 @@
 }
 
 #slider .ui-slider-handle { border-color: #3367d6; }	
+.dwb_hint {
+	color:#FC0;
+	margin-left:5px;
+	font-size:13px;
+}
 </style>
 <script>
 if(parent.location.pathname !== '<% abs_networkmap_page(); %>' && parent.location.pathname !== "/") top.location.href = "../"+'<% networkmap_page(); %>';
@@ -145,6 +151,7 @@ var color_table = ["#c6dafc", "#7baaf7", "#4285f4", "#3367d6"];
 var led_table = ["Off", "Low", "Medium", "Highest"];
 function initial(){
 	var wl_subunit = '<% nvram_get("wl_subunit"); %>';
+
 	if(parent.lantiq_support){
 		$("#led_tr").show();
 		checkWLReady();
@@ -171,13 +178,11 @@ function initial(){
 		$("#slider .ui-slider-handle").css("border-color", color_table[led.bc_ledLv]);
 	}
 
-	if(parent.lyra_hide_support){
+	if(wifison_ready == "1" && parent.sw_mode == "1"){
 		document.getElementById("t0").style.display = "";
 		document.getElementById("span0").innerHTML = "<#tm_wireless#>";
 		document.getElementById("t0").className = "tabclick_NW";
-		inputCtrl(document.form.wl_auth_mode_x, 0);
 		document.getElementById("wl_wpa_psk_title").innerHTML = "<#Network_key#>";
-		document.getElementById("t_status").style.display = "none";
 		document.getElementById("t3").style.display = "none";
 		document.getElementById("pincode").style.display = "none";
 	}
@@ -206,6 +211,7 @@ function initial(){
 			document.getElementById("t0").style.display = "";
 		}
 	}
+
 	if(parent.sw_mode == 2){
 		if(parent.wlc_express != 0){
 			if(parent.wlc_express == 1){
@@ -263,14 +269,19 @@ function initial(){
 	if(parent.smart_connect_support && (parent.isSwMode("rt") || parent.isSwMode("ap"))){
 		var value = new Array();
 		var desc = new Array();
-
-		if(wl_info.band2g_support && wl_info.band5g_support && wl_info.band5g_2_support){
-			desc = ["none", "Tri-Band Smart Connect", "5GHz Smart Connect"];
-			value = ["0", "1", "2"];
-		}
-		else if(wl_info.band2g_support && wl_info.band5g_support){
+		if(isSupport("triband") && dwb_info.mode) {
 			desc = ["none", "Dual-Band Smart Connect"];
 			value = ["0", "1"];
+		}
+		else {
+			if(wl_info.band2g_support && wl_info.band5g_support && wl_info.band5g_2_support){
+				desc = ["none", "Tri-Band Smart Connect", "5GHz Smart Connect"];
+				value = ["0", "1", "2"];
+			}
+			else if(wl_info.band2g_support && wl_info.band5g_support){
+				desc = ["none", "Dual-Band Smart Connect"];
+				value = ["0", "1"];
+			}
 		}
 		add_options_x2(document.form.smart_connect_t, desc, value, document.form.smart_connect_x.value);
 
@@ -278,7 +289,7 @@ function initial(){
 			document.getElementById("smart_connect_field").style.display = '';
 	}
 
-	if(!parent.lyra_hide_support)
+	if(wifison_ready != "1" || parent.sw_mode != "1")
 		change_tabclick();
 
 	document.form.wl_ssid.value = decodeURIComponent('<% nvram_char_to_ascii("", "wl_ssid"); %>');
@@ -347,6 +358,27 @@ function initial(){
 				errorCount++;
 			}
 		}, 10);
+	}
+
+	$("#tr_dwb_info").css("display", "none");
+	if(isSupport("triband") && dwb_info.mode) {
+		if(dwb_info.band == wl_unit) {
+			$("#tr_wl_info").css("display", "none");
+			$("#apply_tr").css("display", "none");
+			$("#tr_dwb_info").css("display", "");
+			var dwb_hint = "";
+			dwb_hint += wl_nband_title[wl_unit];
+			dwb_hint += " is now used as dedicated WiFi backhaul under AiMesh mode.";
+			dwb_hint += "<br><br>";
+			dwb_hint += "If you want to change wireless settings, please go to <span id='redirect_link'>here</span>.";/* untranslated */
+			$("#tr_dwb_info").find(".dwb_hint").html(dwb_hint);
+			$("#tr_dwb_info").find(".dwb_hint #redirect_link").css({"text-decoration":"underline", "cursor":"pointer"});
+			$("#tr_dwb_info").find(".dwb_hint #redirect_link").click(function(){
+				parent.document.titleForm.current_page.value = "Advanced_Wireless_Content.asp";
+				parent.document.titleForm.next_page.value = "Advanced_Wireless_Content.asp";
+				parent.change_wl_unit_status(2);
+			});
+		}
 	}
 }
 
@@ -445,9 +477,7 @@ function change_wpa_type(mode){
 	var new_array;
 	var cur_crypto;
 	/* enable/disable crypto algorithm */
-	if(parent.lyra_hide_support)
-		inputCtrl(document.form.wl_crypto, 0);
-	else if(mode == "wpa" || mode == "wpa2" || mode == "wpawpa2" || mode == "psk" || mode == "psk2" || mode == "pskpsk2")
+	if(mode == "wpa" || mode == "wpa2" || mode == "wpawpa2" || mode == "psk" || mode == "psk2" || mode == "pskpsk2")
 		inputCtrl(document.form.wl_crypto, 1);
 	else
 		inputCtrl(document.form.wl_crypto, 0);
@@ -742,6 +772,25 @@ function submitForm(){
 		}
 	}
 
+	if(isSupport("triband") && dwb_info.mode) {
+		var jsonPara = {};
+		jsonPara["edit_wl_unit"] = wl_unit;
+		jsonPara["edit_wl_ssid"] = document.form.wl_ssid.value;
+		jsonPara["dwb_unit"] = dwb_info.band;
+		jsonPara["smart_connect"] = document.form.smart_connect_x.value;
+		var ssid_array = [];
+		ssid_array.push(httpApi.nvramGet(["wl0_ssid"]).wl0_ssid);
+		if(wl_info.band5g_support)
+			ssid_array.push(httpApi.nvramGet(["wl1_ssid"]).wl1_ssid);
+		if(wl_info.band5g_2_support)
+			ssid_array.push(httpApi.nvramGet(["wl2_ssid"]).wl2_ssid);
+		jsonPara["current_ssid"] = ssid_array;
+		if(!validator.dwb_check_wl_setting(jsonPara)) {
+			alert("The fronthaul SSID is the same as the backhaul SSID.");/* untranslated */
+			return false;
+		}
+	}
+
 	parent.showLoading();
 	if(parent.based_modelid == "RT-AC87U" && "<% nvram_get("wl_unit"); %>" == "1"){
 		parent.stopFlag = '0';
@@ -781,14 +830,15 @@ function manualSetup(){
 function tab_reset(v){
 	var tab_array1 = document.getElementsByClassName("tab_NW");
 	var tab_array2 = document.getElementsByClassName("tabclick_NW");
-
 	var tab_width = Math.floor(270/(parent.wl_info.wl_if_total+1));
 	var i = 0;
+
 	while(i < tab_array1.length){
-		tab_array1[i].style.width=tab_width+'px';
+		tab_array1[i].style.width = tab_width + 'px';
 		tab_array1[i].style.display = "";
-	i++;
+		i++;
 	}
+
 	if(typeof tab_array2[0] != "undefined"){
 		tab_array2[0].style.width=tab_width+'px';
 		tab_array2[0].style.display = "";
@@ -807,15 +857,25 @@ function tab_reset(v){
 			document.getElementById("t3").style.display = "none";
 		}
 	}else if(v == 1){	//Smart Connect
-		if(parent.wl_info.band2g_support && parent.wl_info.band5g_support && parent.wl_info.band5g_2_support)
-			document.getElementById("span0").innerHTML = "2.4GHz, 5GHz-1 and 5GHz-2";
-		else if(parent.wl_info.band2g_support && parent.wl_info.band5g_support)
-			document.getElementById("span0").innerHTML = "2.4GHz and 5GHz";
-		
-		document.getElementById("t1").style.display = "none";
-		document.getElementById("t2").style.display = "none";				
-		document.getElementById("t3").style.display = "none";
-		document.getElementById("t0").style.width = (tab_width*parent.wl_info.wl_if_total+10) +'px';
+		if(isSupport("triband") && dwb_info.mode) {
+			document.getElementById("span0").innerHTML = "2.4GHz and 5GHz-1";
+			document.getElementById("span0").style.padding = "5px 0px 0px 8px";
+			document.getElementById("span2").innerHTML = "5GHz-2";
+			document.getElementById("t0").style.width = "142px";
+			document.getElementById("t1").style.display = "none";
+			document.getElementById("t3").style.display = "none";
+		}
+		else {
+			if(parent.wl_info.band2g_support && parent.wl_info.band5g_support && parent.wl_info.band5g_2_support)
+				document.getElementById("span0").innerHTML = "2.4GHz, 5GHz-1 and 5GHz-2";
+			else if(parent.wl_info.band2g_support && parent.wl_info.band5g_support)
+				document.getElementById("span0").innerHTML = "2.4GHz and 5GHz";
+
+			document.getElementById("t1").style.display = "none";
+			document.getElementById("t2").style.display = "none";
+			document.getElementById("t3").style.display = "none";
+			document.getElementById("t0").style.width = (tab_width*parent.wl_info.wl_if_total+10) +'px';
+		}
 	}
 	else if(v == 2){ //5GHz Smart Connect
 		document.getElementById("span0").innerHTML = "2.4GHz";
@@ -836,10 +896,22 @@ function change_smart_connect(v){
 				tab_reset(0);	
 				break;
 		case '1': 
-				if(wl_unit != '0')
-					tabclickhandler(0);
-				else
-					tab_reset(1);
+				if(isSupport("triband") && dwb_info.mode) {
+					if(wl_unit == dwb_info.band)
+						tab_reset(1);
+					else {
+						if(wl_unit != '0')
+							tabclickhandler(0);
+						else
+							tab_reset(1);
+					}
+				}
+				else {
+					if(wl_unit != '0')
+						tabclickhandler(0);
+					else
+						tab_reset(1);
+				}
 				break;
 		case '2': 
 				if(!(wl_unit == '0' || wl_unit == '1'))
@@ -936,7 +1008,7 @@ function checkWLReady(){
 	</td>
 </tr>
 
-<tr>
+<tr id="tr_wl_info">
 	<td>
 		<table width="95%" border="1" align="center" cellpadding="4" cellspacing="0" class="table1px" id="WLnetworkmap_re" style="display:none">
 		  <tr>
@@ -1067,13 +1139,18 @@ function checkWLReady(){
 					<input id="applySecurity" type="button" class="button_gen" value="<#CTL_apply#>" onclick="submitForm();" >
     			</td>
   		</tr>
+		<tr id="tr_dwb_info" style="display:none;">
+			<td style="padding:5px 10px 5px 10px;border-bottom:5px #000 solid;">
+				<div class="dwb_hint" ></div>
+			</td>
+		</tr>
 		<tr id="led_tr" style="display:none">
 			<td>
 				<div>
 					<table>
 						<tr>
 							<td>
-								<div style="font-family: Arial, Helvetica, sans-serif;font-weight: bolder;">LED Brightness</div>
+								<div style="font-family: Arial, Helvetica, sans-serif;font-weight: bolder;"><#LED_Brightness#></div>
 							</td>
 						</tr>
 						<tr>

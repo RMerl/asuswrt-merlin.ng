@@ -59,6 +59,9 @@
 					systemVariable.lanIpaddr = initNvram.lan_ipaddr;
 					systemVariable.forceChangePw = (httpApi.hookGet("check_pw") == '1') ? true : false;
 
+					$("#switchWanTagContainer").append(Get_Component_ISPSelect);
+					$("#switch_wantag").attr("class", "optionInput");
+
 					handleSysDep();
 					var getJsonFromUrl =  (function(){
 						var query = location.search.substr(1);
@@ -940,23 +943,7 @@
 							<div class="inputTitleContainer">
 								<div class="inputTitle"><#Select_ISPfile#></div>
 							</div>
-							<div class="inputContainer">
-								<select id="switch_wantag" class="optionInput">
-									<option value="none"><#wl_securitylevel_0#></option>
-									<option value="unifi_home">Unifi-Home</option>
-									<option value="unifi_biz">Unifi-Business</option>
-									<option value="singtel_mio">Singtel-MIO</option>
-									<option value="singtel_others">Singtel-Others</option>
-									<option value="m1_fiber">M1-Fiber</option>
-									<option value="maxis_fiber">Maxis-Fiber</option>
-									<option value="maxis_fiber_sp">Maxis-Fiber-Special</option>
-									<option value="movistar">Movistar Triple VLAN</option>
-									<option value="meo">Meo</option>
-									<option value="vodafone">Vodafone</option>
-									<option value="hinet">Hinet MOD</option>
-									<option value="stuff_fibre">Stuff-Fibre</option>
-									<option value="manual"><#Manual_Setting_btn#></option>
-								</select>
+							<div class="inputContainer" id="switchWanTagContainer">
 							</div>
 						</div>
 						<div id="iptv_voip">
@@ -1149,8 +1136,8 @@
 							</div>
 							<div class="inputContainer">
 								<select id="modem_autoapn" class="optionInput">
-									<option value="0">Automatic</option>
-									<option value="1"><#Manual_Setting_btn#></option>
+									<option value="1">Automatic</option>
+									<option value="0"><#Manual_Setting_btn#></option>
 								</select>
 							</div>
 						</div>
@@ -1426,8 +1413,31 @@
 					<div class="titleSub"><#WLANConfig11b_RBRList_groupitemdesc#></div>
 				</div>
 				<div class="table_td">
-					<div class="pageDesc">Searching for WiFi network nearby...</div><!-- untranslated -->
-					<div id="siteSurveyLoading" class="selectorTopContainer"></div>
+					<div id="siteSurvey_search">
+						<div class="pageDesc"><#Searching_WiFi_Network#></div>
+						<div id="siteSurveyLoading" class="selectorTopContainer"></div>
+					</div>
+					<div id="siteSurvey_fail">
+						<div class="pageDesc"><#APSurvey_action_searching_noresult#></div>
+						<div class="selectorTopContainer ">
+							<div class="cssload-bellContainer">
+								<div class="siteSurveyRescan icon_rescan" onclick="goTo.siteSurvey();" title="<#QIS_rescan#>"></div>
+							</div>
+						</div>
+						<!-- Action Button -->
+						<div class="footer_desktop">
+							<div class="desktop_abortBtn" onclick='abort.siteSurvey()'><#CTL_prev#></div>
+						</div>
+						<div class="footer_mobile">
+							<table style="width:100%;" cellpadding="0" cellspacing="0">
+								<tr>
+									<td class="mobileAbort" style="width:50%;" onclick='abort.siteSurvey()'>
+										<div class="mobile_abortBtn"><#CTL_prev#></div>
+									</td>
+								</tr>
+							</table>
+						</div>
+					</div>
 				</div>
 			</div>
 		</div>
@@ -1443,6 +1453,11 @@
 				<div class="table_td">
 					<div class="pageDesc"><#QIS_extend_AP#></div>
 					<div>
+						<div class="ap_title_container">
+							<div class="icon_rescan ap_title_icon" onclick='goTo.siteSurvey();'></div>
+							<div class="icon_sorting ap_title_icon" onclick='handleSortField();'></div>
+							<div style="clear:both;"></div>
+						</div>
 						<div id="apList" class="selectorTopContainer"></div>
 
 						<!-- Action Button -->
@@ -1464,6 +1479,66 @@
 						</div>
 					</div>
 				</div>
+			</div>
+			<div id="sort_background" class="sort_background" onclick="handleSortField();"></div>
+			<div id="sort_field" class="sort_field">
+				<table>
+					<tr>
+						<td>
+							<div class="ap_sort_text"><#QIS_RP_desc7#></div></div>
+						</td>
+						<td>
+							<div class="ap_sort_icon_background" onclick="sortAP('alpha', 'down')">
+								<div class="icon_sort_alphabet_A ap_sort_icon_container"></div>
+							</div>
+						</td>
+						<td>
+							<div class="ap_sort_icon_background" onclick="sortAP('alpha', 'top')">
+								<div class="icon_sort_alphabet_Z ap_sort_icon_container"></div>
+							</div>
+						</td>
+					</tr>
+					<tr>
+						<td colspan="3">
+							<div class="ap_sort_line"></div>
+						</td>
+					</tr>
+					<tr>
+						<td>
+							<div class="ap_sort_text"><#QIS_RP_desc8#></div></div>
+						</td>
+						<td>
+							<div class="ap_sort_icon_background" onclick="sortAP('signal', 'top')">
+								<div class="icon_sort_signal_high ap_sort_icon_container"></div>
+							</div>
+						</td>
+						<td>
+							<div class="ap_sort_icon_background" onclick="sortAP('signal', 'down')">
+								<div class="icon_sort_signal_low ap_sort_icon_container"></div>
+							</div>
+						</td>
+					</tr>
+					<tr>
+						<td colspan="3">
+							<div class="ap_sort_line"></div>
+						</td>
+					</tr>
+					<tr id="sortByBand">
+						<td>
+							<div class="ap_sort_text"><#QIS_RP_desc9#></div>
+						</td>
+						<td>
+							<div class="ap_sort_icon_background" onclick="sortAP('band', 'down')">
+								<div class="icon_sort_band_2g ap_sort_icon_container"></div>
+							</div>
+						</td>
+						<td>
+							<div class="ap_sort_icon_background" onclick="sortAP('band', 'top')">
+								<div class="icon_sort_band_5g ap_sort_icon_container"></div>
+							</div>
+						</td>
+					</tr>
+				</table>
 			</div>
 		</div>
 
@@ -1602,7 +1677,7 @@
 		  				<input type="checkbox" id="wireless_checkbox" data-mini="true"/>
 					</div>
 
-					<div class="labelContainer dualbandSupport" id="syncSSID">
+					<div class="labelContainer" id="syncSSID" style="display:none;">
 						<label for="wireless_sync_checkbox" class="labelInput"><#qis_ssid_desc#></label>
 		  				<input type="checkbox" id="wireless_sync_checkbox" data-mini="true"/>
 					</div>
@@ -1825,7 +1900,7 @@
 					<div class="pageDesc">	
 						<#AiMesh_Desc#>
 						<br/>
-						Do you want to add another node?
+						<#AiMesh_Add_Another_Node_confirm#>
 
 						<div class="amasIconContainer">
 							<div><img src="images\New_ui\amesh\Amesh_button_light.png"></div>
@@ -1834,17 +1909,17 @@
 						
 					<!-- Action Button -->
 					<div class="footer_desktop">
-						<div class="desktop_abortBtn" onclick='abort.amasbundle();'>I'm done</div>
-						<div class="desktop_applyBtn" onclick="apply.amasbundle();">Add another node</div>
+						<div class="desktop_abortBtn" onclick='abort.amasbundle();'><#CTL_finished#></div>
+						<div class="desktop_applyBtn" onclick="apply.amasbundle();"><#AiMesh_Add_Another_Node#></div>
 					</div>
 					<div class="footer_mobile">
 						<table style="width:100%;" cellpadding="0" cellspacing="0">
 							<tr>
 								<td class="mobileAbort" style="width:50%" onclick='abort.amasbundle();'>
-									<div class="mobile_abortBtn">I'm done</div>
+									<div class="mobile_abortBtn"><#CTL_finished#></div>
 								</td>
 								<td class="mobileApply" onclick="apply.amasbundle();">
-									<div class="mobile_applyBtn">Add another node</div>
+									<div class="mobile_applyBtn"><#AiMesh_Add_Another_Node#></div>
 								</td>
 							</tr>
 						</table>
@@ -1874,16 +1949,16 @@
 			<div class="tableContainer">
 				<div class="desktop_left_field">
 					<div class="titleMain"><#Internet#></div>
-					<div class="titleSub">WiFi network list</div><!-- untranslated -->
+					<div class="titleSub"><#WiFi_Network_List#></div>
 				</div>
 				<div class="table_td">
-					<div class="pageDesc">We found there are some router nearby :</div><!-- untranslated -->
+					<div class="pageDesc"><#AiMesh_Find_Router#> :</div>
 
 					<div class="selectorTopContainer">
 						<div class="selectorContainer">
 							<div class="selectorContainerDiv">
 								<div id="connectAiMesh" class="selectBar">
-									Connect to AiMesh WiFi network<!-- untranslated -->
+									<#AiMesh_connect_AiMesh_WiFi#>
 								</div>
 								<div class="narrowContainer">
 									<div class="icon_arrow_right" style="width:20px;height:32px;"></div>
@@ -1893,7 +1968,7 @@
 						<div class="selectorContainer">
 							<div class="selectorContainerDiv">
 								<div id="connectOther" class="selectBar">
-									Connect to other WiFi network<!-- untranslated -->
+									<#AiMesh_connect_Other_WiFi#>
 								</div>
 								<div class="narrowContainer">
 									<div class="icon_arrow_right" style="width:20px;height:32px;"></div>

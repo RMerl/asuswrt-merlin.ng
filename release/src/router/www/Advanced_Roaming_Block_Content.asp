@@ -9,7 +9,7 @@
 <link rel="shortcut icon" href="images/favicon.png">
 <link rel="icon" href="images/favicon.png">
 
-<title><#Web_Title#> - Roaming Block List<!-- untranslated --></title>
+<title><#Web_Title#> - <#WiFi_Roaming_Block_List#></title>
 <link rel="stylesheet" type="text/css" href="index_style.css"> 
 <link rel="stylesheet" type="text/css" href="form_style.css">
 <link rel="stylesheet" type="text/css" href="device-map/device-map.css">
@@ -102,7 +102,8 @@ function show_wl_maclist_x(){
 			code += '</td></tr></table>';
 			code += '</td>';
 			code += '<td width="20%"><input type="button" class=\"remove_btn\" onclick=\"deleteRow(this, \'' + clientMac + '\');\" value=\"\"/></td></tr>';
-			clientListEventData.push({"mac" : clientMac, "name" : "", "ip" : "", "callBack" : "RoamingBlock"});
+			if(validator.mac_addr(clientMac))
+				clientListEventData.push({"mac" : clientMac, "name" : "", "ip" : "", "callBack" : "RoamingBlock"});
 		});
 	}
 	code += '</table>';
@@ -511,9 +512,9 @@ function showWlHint(){
 							<tr>
 								<td bgcolor="#4D595D" valign="top">
 									<div>&nbsp;</div>
-									<div class="formfonttitle"><#menu5_1#> - Roaming block list</div><!-- untranslated -->
+									<div class="formfonttitle"><#menu5_1#> - <#WiFi_Roaming_Block_List#></div>
 									<div style="margin:10px 0 10px 5px;" class="splitLine"></div>
-									<div class="formfontdesc">You can add devices into roaming block list, and the devices will not be roamed between AiMesh nodes.</div><!-- untranslated -->
+									<div class="formfontdesc"><#Roaming_block_list_desc#></div>
 									<table id="MainTable1" width="100%" border="1" align="center" cellpadding="4" cellspacing="0" bordercolor="#6b8fa3"  class="FormTable">
 										<thead>
 										<tr>
@@ -521,7 +522,7 @@ function showWlHint(){
 										</tr>
 										</thead>
 										<tr>
-											<th width="30%">Enable roaming block list</th><!-- untranslated -->
+											<th width="30%"><#Roaming_block_list_enable#></th>
 											<td>
 												<label><input type="radio" name="enable_roaming" value="1" onclick="enable_roaming_block();" <% nvram_match("rast_static_cli_enable", "1","checked"); %>><#checkbox_Yes#></label>
 												<label><input type="radio" name="enable_roaming" value="0" onclick="enable_roaming_block();" <% nvram_match("rast_static_cli_enable", "0","checked"); %>><#checkbox_No#></label>
@@ -531,11 +532,11 @@ function showWlHint(){
 									<table id="MainTable2" width="100%" border="1" align="center" cellpadding="4" cellspacing="0" class="FormTable_table">
 										<thead>
 											<tr>
-												<td colspan="2">Roaming block list&nbsp;(<#List_limit#>&nbsp;64)</td><!-- untranslated -->
+												<td colspan="2"><#WiFi_Roaming_Block_List#>&nbsp;(<#List_limit#>&nbsp;64)</td>
 											</tr>
 										</thead>
 										<tr>
-											<th width="80%"><a class="hintstyle" href="javascript:void(0);" onClick="openHint(5,10);"><#Client_Name#> (<#PPPConnection_x_MacAddressForISP_itemname#>)</th> 
+											<th width="80%"><a class="hintstyle" href="javascript:void(0);" onClick="openHint(5,10);"><#Client_Name#> (<#PPPConnection_x_MacAddressForISP_itemname#>)</a></th>
 											<th width="20%"><#list_add_delete#></th>
 										</tr>
 										<tr>
@@ -545,7 +546,7 @@ function showWlHint(){
 												<div id="WL_MAC_List_Block" class="clientlist_dropdown" style="margin-left:167px;"></div>
 											</td>
 											<td width="20%">
-												<input type="button" class="add_btn" onClick="addRow(document.form.wlX_rast_static_client, 3);" value="">
+												<input type="button" class="add_btn" onClick="addRow(document.form.wlX_rast_static_client, 64);" value="">
 											</td>
 										</tr>
 									</table>

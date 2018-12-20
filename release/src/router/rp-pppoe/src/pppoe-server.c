@@ -240,7 +240,6 @@ childHandler(pid_t pid, int status, void *s)
 #endif
 
     memset(&conn, 0, sizeof(conn));
-    conn.useHostUniq = 0;
 
     syslog(LOG_INFO,
 	   "Session %u closed for client "
@@ -2110,7 +2109,6 @@ PppoeStopSession(ClientSession *ses,
     PPPoEConnection conn;
 
     memset(&conn, 0, sizeof(conn));
-    conn.useHostUniq = 0;
 
     memcpy(conn.myEth, ses->ethif->mac, ETH_ALEN);
     conn.discoverySocket = ses->ethif->sock;

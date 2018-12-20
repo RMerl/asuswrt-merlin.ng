@@ -15,9 +15,15 @@
 <script language="JavaScript" type="text/javascript" src="/help.js"></script>
 <script language="JavaScript" type="text/javascript" src="/general.js"></script>
 <script language="JavaScript" type="text/javascript" src="/popup.js"></script>
+<script language="JavaScript" type="text/javascript" src="/validator.js"></script>
 <script>function initial(){
 	show_menu();
 	update_pppoerelay_option();
+
+	if(!usb_support){
+		document.form.vts_ftpport.parentNode.parentNode.style.display = "none";
+		document.form.vts_ftpport.disabled = true;
+	}
 }
 
 function update_pppoerelay_option(){
@@ -33,6 +39,10 @@ function update_pppoerelay_option(){
 }
 
 function applyRule(){
+	if(usb_support){
+		if(!validator.numberRange(document.form.vts_ftpport, 1, 65535))
+			return false;
+	}
 	showLoading();
 	document.form.submit();	
 }
@@ -156,6 +166,12 @@ function applyRule(){
 													<option class="content_input_fd" value="1"<% nvram_match("pppoerelay_unit", "1","selected"); %>><#dualwan_secondary#></option>
 												</select>
 										</td>
+										</tr>
+										<tr>
+											<th>FTP_ALG Port<!-- untranslated --></th>
+											<td>
+												<input type="text" maxlength="5" name="vts_ftpport" class="input_6_table" value="<% nvram_get("vts_ftpport"); %>" onkeypress="return validator.isNumber(this,event);" autocorrect="off" autocapitalize="off">
+											</td>
 										</tr>
 							
 									</table>

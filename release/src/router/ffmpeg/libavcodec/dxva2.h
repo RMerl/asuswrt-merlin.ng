@@ -20,12 +20,33 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#ifndef AVCODEC_DXVA_H
-#define AVCODEC_DXVA_H
+#ifndef AVCODEC_DXVA2_H
+#define AVCODEC_DXVA2_H
+
+/**
+ * @file
+ * @ingroup lavc_codec_hwaccel_dxva2
+ * Public libavcodec DXVA2 header.
+ */
+
+#if !defined(_WIN32_WINNT) || _WIN32_WINNT < 0x0602
+#undef _WIN32_WINNT
+#define _WIN32_WINNT 0x0602
+#endif
 
 #include <stdint.h>
-
+#include <d3d9.h>
 #include <dxva2api.h>
+
+/**
+ * @defgroup lavc_codec_hwaccel_dxva2 DXVA2
+ * @ingroup lavc_codec_hwaccel
+ *
+ * @{
+ */
+
+#define FF_DXVA2_WORKAROUND_SCALING_LIST_ZIGZAG 1 ///< Work around for DXVA2 and old UVD/UVD+ ATI video cards
+#define FF_DXVA2_WORKAROUND_INTEL_CLEARVIDEO    2 ///< Work around for DXVA2 and old Intel GPUs with ClearVideo interface
 
 /**
  * This structure is used to provides the necessary configurations and data
@@ -65,4 +86,8 @@ struct dxva_context {
     unsigned report_id;
 };
 
-#endif /* AVCODEC_DXVA_H */
+/**
+ * @}
+ */
+
+#endif /* AVCODEC_DXVA2_H */

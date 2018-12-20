@@ -29,6 +29,7 @@
 #include "udb/ioctl/udb_ioctl_common.h"
 
 #define UDB_VIRTUAL_PATCH_LOG_SIZE 500
+#define UDB_RT_VIRTUAL_PATCH_LOG_SIZE 500
 
 enum
 {
@@ -39,7 +40,7 @@ enum
 	UDB_IOCTL_VP_OP_GET_LOG_RESET,
 	UDB_IOCTL_VP_OP_GET_USER_LOG,
 	UDB_IOCTL_VP_OP_GET_META,
-	UDB_IOCTL_VP_OP_RSV,
+	UDB_IOCTL_VP_OP_GET_LOG_V2,
 	UDB_IOCTL_VP_OP_MAX
 };
 
@@ -122,6 +123,34 @@ typedef struct vp_ioc_list
 	uint32_t mac_cnt;
 	vp_ioc_mac_t mac_entry[0];
 } vp_ioc_list_t;
+
+typedef struct
+{
+	uint8_t src_mac[ETH_ALEN];
+	ips_event_entry_t event;
+} vp_ioc_v2_entry_t;
+
+typedef struct
+{
+	uint8_t uid;
+	uint8_t mac[ETH_ALEN];
+	uint8_t ipv4[4];
+	uint8_t ipv6[16];
+	uint16_t ent_cnt;
+	vp_ioc_v2_entry_t entry[0];
+} vp_ioc_v2_mac_hdr_t;
+
+typedef struct
+{
+	uint32_t ent_cnt;
+	vp_ioc_v2_entry_t entry[0];
+} vp_ioc_v2_rt_hdr_t;
+
+typedef struct
+{
+	uint32_t mac_cnt;
+	vp_ioc_v2_mac_hdr_t entry[0];
+} vp_ioc_v2_hdr_t;
 
 #ifdef __KERNEL__
 int udb_ioctl_vp_op_copy_out(uint8_t op, void *buf, uint32_t buf_len, uint32_t *buf_used_len);

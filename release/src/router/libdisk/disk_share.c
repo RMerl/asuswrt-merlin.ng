@@ -2336,11 +2336,14 @@ extern int add_account(const char *const account, const char *const password){
 #ifdef RTCONFIG_NVRAM_ENCRYPT
 	int enclen = pw_enc_blen(ascii_passwd);
 	char enc_passwd[enclen];
+	char passwdbuf[NVRAM_ENC_MAXLEN];
 
-	memset(enc_passwd, 0, sizeof(enc_passwd));
-	pw_enc(ascii_passwd, enc_passwd);
-	memset(ascii_passwd, 0, sizeof(ascii_passwd));
-	strlcpy(ascii_passwd, enc_passwd, sizeof(ascii_passwd));
+	if(!pw_dec(password, passwdbuf)){
+		pw_enc(ascii_passwd, enc_passwd);
+		strlcpy(ascii_passwd, enc_passwd, sizeof(ascii_passwd));
+	}else{
+		strlcpy(ascii_passwd, password, sizeof(ascii_passwd));
+	}
 #endif
 
 	acc_num = nvram_get_int("acc_num");

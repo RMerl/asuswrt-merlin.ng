@@ -19,11 +19,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#include "asm.S"
-
-        preserve8
-
-        .text
+#include "libavutil/arm/asm.S"
 
 #define ff_fft_calc_neon X(ff_fft_calc_neon)
 
@@ -31,8 +27,8 @@ function ff_imdct_half_neon, export=1
         push            {r4-r8,lr}
 
         mov             r12, #1
-        ldr             lr,  [r0, #28]          @ mdct_bits
-        ldr             r4,  [r0, #32]          @ tcos
+        ldr             lr,  [r0, #20]          @ mdct_bits
+        ldr             r4,  [r0, #24]          @ tcos
         ldr             r3,  [r0, #8]           @ revtab
         lsl             r12, r12, lr            @ n  = 1 << nbits
         lsr             lr,  r12, #2            @ n4 = n >> 2
@@ -76,8 +72,8 @@ function ff_imdct_half_neon, export=1
         bl              ff_fft_calc_neon
 
         mov             r12, #1
-        ldr             lr,  [r4, #28]          @ mdct_bits
-        ldr             r4,  [r4, #32]          @ tcos
+        ldr             lr,  [r4, #20]          @ mdct_bits
+        ldr             r4,  [r4, #24]          @ tcos
         lsl             r12, r12, lr            @ n  = 1 << nbits
         lsr             lr,  r12, #3            @ n8 = n >> 3
 
@@ -127,13 +123,13 @@ endfunc
 function ff_imdct_calc_neon, export=1
         push            {r4-r6,lr}
 
-        ldr             r3,  [r0, #28]
+        ldr             r3,  [r0, #20]
         mov             r4,  #1
         mov             r5,  r1
         lsl             r4,  r4,  r3
         add             r1,  r1,  r4
 
-        bl              ff_imdct_half_neon
+        bl              X(ff_imdct_half_neon)
 
         add             r0,  r5,  r4,  lsl #2
         add             r1,  r5,  r4,  lsl #1
@@ -164,8 +160,8 @@ function ff_mdct_calc_neon, export=1
         push            {r4-r10,lr}
 
         mov             r12, #1
-        ldr             lr,  [r0, #28]          @ mdct_bits
-        ldr             r4,  [r0, #32]          @ tcos
+        ldr             lr,  [r0, #20]          @ mdct_bits
+        ldr             r4,  [r0, #24]          @ tcos
         ldr             r3,  [r0, #8]           @ revtab
         lsl             lr,  r12, lr            @ n  = 1 << nbits
         add             r7,  r2,  lr            @ in4u
@@ -191,7 +187,9 @@ function ff_mdct_calc_neon, export=1
         vadd.f32        d17, d17, d3            @ in2u+in1d     -I
 1:
         vmul.f32        d7,  d0,  d21           @  I*s
-        ldr             r10, [r3, lr, lsr #1]
+A       ldr             r10, [r3, lr, lsr #1]
+T       lsr             r10, lr,  #1
+T       ldr             r10, [r3, r10]
         vmul.f32        d6,  d1,  d20           @ -R*c
         ldr             r6,  [r3, #4]!
         vmul.f32        d4,  d1,  d21           @ -R*s
@@ -253,8 +251,8 @@ function ff_mdct_calc_neon, export=1
         bl              ff_fft_calc_neon
 
         mov             r12, #1
-        ldr             lr,  [r4, #28]          @ mdct_bits
-        ldr             r4,  [r4, #32]          @ tcos
+        ldr             lr,  [r4, #20]          @ mdct_bits
+        ldr             r4,  [r4, #24]          @ tcos
         lsl             r12, r12, lr            @ n  = 1 << nbits
         lsr             lr,  r12, #3            @ n8 = n >> 3
 

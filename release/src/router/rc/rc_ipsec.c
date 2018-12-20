@@ -535,6 +535,7 @@ void rc_strongswan_conf_set()
                 "  threads = %d\n"
                 "  send_vendor_id = yes\n"
                 "  duplicheck.enable = no\n"
+                "  interfaces_ignore = %s\n"
                 "  starter { load_warning = no }\n\n"
                 "  load_modular = yes\n\n"
                 "  i_dont_care_about_security_and_use_aggressive_mode_psk = yes\n\n"
@@ -544,7 +545,7 @@ void rc_strongswan_conf_set()
                 "        append = no\n        flush_line = yes\n"
                 "     }\n  }\n",
                 user,
-                nvram_get_int("ipsec_threads_num"), nvram_get_int("ipsec_log_level"));
+                nvram_get_int("ipsec_threads_num"), nvram_safe_get("lan_ifname"), nvram_get_int("ipsec_log_level"));
     if(0 != rc){
         if(('n' != samba_prof.dns1[0]) && ('\0' != samba_prof.dns1[0])){
             fprintf(fp,"\n  dns1=%s\n", samba_prof.dns1);
@@ -1153,8 +1154,8 @@ void ipsec_conf_local_set(FILE *fp, int prof_idx, ipsec_prof_type_t prof_type)
                    (prof[prof_type][prof_idx].traversal == 1)) ? "yes" : "no"
                 , prof[prof_type][prof_idx].local_public_interface
            );
-    if((0 != prof[prof_type][prof_idx].local_port) && (500 != prof[prof_type][prof_idx].local_port) &&
-       (4500 != prof[prof_type][prof_idx].local_port)){
+    if((0 != prof[prof_type][prof_idx].local_port) && (nvram_get_int("ipsec_isakmp_port") != prof[prof_type][prof_idx].local_port) &&
+       (nvram_get_int("ipsec_nat_t_port") != prof[prof_type][prof_idx].local_port)){
         fprintf(fp, "  leftprotoport=17/%d\n", prof[prof_type][prof_idx].local_port);
     }
     if(IKE_TYPE_AUTO != prof[prof_type][prof_idx].ike){
@@ -1190,8 +1191,8 @@ void ipsec_conf_remote_set(FILE *fp, int prof_idx, ipsec_prof_type_t prof_type)
         fprintf(fp, "  right=%s\n", prof[prof_type][prof_idx].remote_gateway);
     }
 
-    if((0 != prof[prof_type][prof_idx].remote_port) && (500 != prof[prof_type][prof_idx].remote_port) 
-        && (4500 != prof[prof_type][prof_idx].remote_port)){
+    if((0 != prof[prof_type][prof_idx].remote_port) && (nvram_get_int("ipsec_isakmp_port") != prof[prof_type][prof_idx].remote_port) 
+        && (nvram_get_int("ipsec_nat_t_port") != prof[prof_type][prof_idx].remote_port)){
         fprintf(fp, "  rightprotoport=17/%d\n", prof[prof_type][prof_idx].remote_port);
     }
 
@@ -1921,6 +1922,8 @@ void rc_ipsec_set(ipsec_conn_status_t conn_status, ipsec_prof_type_t prof_type)
 	char *local_subnet, *local_subnet_total;
 	int prof_i = 0, is_duplicate = 0;
 	char tmpStr[20];
+	int isakmp_port = nvram_get_int("ipsec_isakmp_port");
+	int nat_t_port = nvram_get_int("ipsec_nat_t_port");
 
 	argv[0] = "/bin/sh";
 	argv[1] = FILE_PATH_IPSEC_SH;
@@ -2017,26 +2020,27 @@ void rc_ipsec_set(ipsec_conn_status_t conn_status, ipsec_prof_type_t prof_type)
 				if(IPSEC_CONN_EN_UP == prof[prof_count][i].ipsec_conn_en){
 					if(0 != strcmp(interface,"")){
 						if(VPN_TYPE_HOST_NET == prof[prof_count][i].vpn_type){
+							/* Host to Net */
 							for(unit = WAN_UNIT_FIRST; unit < WAN_UNIT_MAX; ++unit){
 								sprintf(tmpStr,"wan%d_gw_ifname",unit);
 								if(0 != strlen(nvram_safe_get(tmpStr)))
 									strcpy(interface,nvram_safe_get(tmpStr));
 								fprintf(fp1, "iptables -D INPUT -i %s --protocol esp -j ACCEPT\n", interface);
 								fprintf(fp1, "iptables -D INPUT -i %s --protocol ah -j ACCEPT\n", interface);
-								fprintf(fp1, "iptables -D INPUT -i %s -p udp --dport 500 -j ACCEPT\n", interface);
-								fprintf(fp1, "iptables -D INPUT -i %s -p udp --dport 4500 -j ACCEPT\n", interface);
+								fprintf(fp1, "iptables -D INPUT -i %s -p udp --dport %d -j ACCEPT\n", interface, isakmp_port);
+								fprintf(fp1, "iptables -D INPUT -i %s -p udp --dport %d -j ACCEPT\n", interface, nat_t_port);
 								fprintf(fp1, "iptables -I INPUT -i %s --protocol esp -j ACCEPT\n", interface);
 								fprintf(fp1, "iptables -I INPUT -i %s --protocol ah -j ACCEPT\n", interface);
-								fprintf(fp1, "iptables -I INPUT -i %s -p udp --dport 500 -j ACCEPT\n", interface);
-								fprintf(fp1, "iptables -I INPUT -i %s -p udp --dport 4500 -j ACCEPT\n", interface);
+								fprintf(fp1, "iptables -I INPUT -i %s -p udp --dport %d -j ACCEPT\n", interface, isakmp_port);
+								fprintf(fp1, "iptables -I INPUT -i %s -p udp --dport %d -j ACCEPT\n", interface, nat_t_port);
 								fprintf(fp1, "iptables -D OUTPUT -o %s --protocol esp -j ACCEPT\n", interface);
 								fprintf(fp1, "iptables -D OUTPUT -o %s --protocol ah -j ACCEPT\n", interface);
-								fprintf(fp1, "iptables -D OUTPUT -o %s -p udp --sport 500 -j ACCEPT\n", interface);
-								fprintf(fp1, "iptables -D OUTPUT -o %s -p udp --sport 4500 -j ACCEPT\n", interface);
+								fprintf(fp1, "iptables -D OUTPUT -o %s -p udp --sport %d -j ACCEPT\n", interface, isakmp_port);
+								fprintf(fp1, "iptables -D OUTPUT -o %s -p udp --sport %d -j ACCEPT\n", interface, nat_t_port);
 								fprintf(fp1, "iptables -I OUTPUT -o %s --protocol esp -j ACCEPT\n", interface);
 								fprintf(fp1, "iptables -I OUTPUT -o %s --protocol ah -j ACCEPT\n", interface);
-								fprintf(fp1, "iptables -I OUTPUT -o %s -p udp --sport 500 -j ACCEPT\n", interface);
-								fprintf(fp1, "iptables -I OUTPUT -o %s -p udp --sport 4500 -j ACCEPT\n", interface);
+								fprintf(fp1, "iptables -I OUTPUT -o %s -p udp --sport %d -j ACCEPT\n", interface, isakmp_port);
+								fprintf(fp1, "iptables -I OUTPUT -o %s -p udp --sport %d -j ACCEPT\n", interface, nat_t_port);
 								fprintf(fp1, "iptables -D INPUT -i %s -s %s -j ACCEPT\n",interface, prof[prof_count][i].virtual_subnet);
 								fprintf(fp1, "iptables -I INPUT -i %s -s %s -j ACCEPT\n",interface, prof[prof_count][i].virtual_subnet);
 #ifdef RTCONFIG_BCMARM
@@ -2056,22 +2060,23 @@ void rc_ipsec_set(ipsec_conn_status_t conn_status, ipsec_prof_type_t prof_type)
 							fprintf(fp1, "iptables -t mangle -A FORWARD -m policy --pol ipsec --dir out -p tcp -m tcp --tcp-flags SYN,RST SYN -m tcpmss --mss 1361:1536 -j TCPMSS --set-mss 1360\n");
 						}
 						else{
+							/* Net to Net */
 							fprintf(fp1, "iptables -D INPUT -i %s --protocol esp -j ACCEPT\n", interface);
 							fprintf(fp1, "iptables -D INPUT -i %s --protocol ah -j ACCEPT\n", interface);
-							fprintf(fp1, "iptables -D INPUT -i %s -p udp --dport 500 -j ACCEPT\n", interface);
-							fprintf(fp1, "iptables -D INPUT -i %s -p udp --dport 4500 -j ACCEPT\n", interface);
+							fprintf(fp1, "iptables -D INPUT -i %s -p udp --dport %d -j ACCEPT\n", interface, isakmp_port);
+							fprintf(fp1, "iptables -D INPUT -i %s -p udp --dport %d -j ACCEPT\n", interface, nat_t_port);
 							fprintf(fp1, "iptables -I INPUT -i %s --protocol esp -j ACCEPT\n", interface);
 							fprintf(fp1, "iptables -I INPUT -i %s --protocol ah -j ACCEPT\n", interface);
-							fprintf(fp1, "iptables -I INPUT -i %s -p udp --dport 500 -j ACCEPT\n", interface);
-							fprintf(fp1, "iptables -I INPUT -i %s -p udp --dport 4500 -j ACCEPT\n", interface);
+							fprintf(fp1, "iptables -I INPUT -i %s -p udp --dport %d -j ACCEPT\n", interface, isakmp_port);
+							fprintf(fp1, "iptables -I INPUT -i %s -p udp --dport %d -j ACCEPT\n", interface, nat_t_port);
 							fprintf(fp1, "iptables -D OUTPUT -o %s --protocol esp -j ACCEPT\n", interface);
 							fprintf(fp1, "iptables -D OUTPUT -o %s --protocol ah -j ACCEPT\n", interface);
-							fprintf(fp1, "iptables -D OUTPUT -o %s -p udp --sport 500 -j ACCEPT\n", interface);
-							fprintf(fp1, "iptables -D OUTPUT -o %s -p udp --sport 4500 -j ACCEPT\n", interface);
+							fprintf(fp1, "iptables -D OUTPUT -o %s -p udp --sport %d -j ACCEPT\n", interface, isakmp_port);
+							fprintf(fp1, "iptables -D OUTPUT -o %s -p udp --sport %d -j ACCEPT\n", interface, nat_t_port);
 							fprintf(fp1, "iptables -I OUTPUT -o %s --protocol esp -j ACCEPT\n", interface);
 							fprintf(fp1, "iptables -I OUTPUT -o %s --protocol ah -j ACCEPT\n", interface);
-							fprintf(fp1, "iptables -I OUTPUT -o %s -p udp --sport 500 -j ACCEPT\n", interface);
-							fprintf(fp1, "iptables -I OUTPUT -o %s -p udp --sport 4500 -j ACCEPT\n", interface);
+							fprintf(fp1, "iptables -I OUTPUT -o %s -p udp --sport %d -j ACCEPT\n", interface, isakmp_port);
+							fprintf(fp1, "iptables -I OUTPUT -o %s -p udp --sport %d -j ACCEPT\n", interface, nat_t_port);
 							local_subnet_total = strdup(prof[prof_count][i].local_subnet);
 							while((local_subnet = strsep(&local_subnet_total, ",")) != NULL){
 								fprintf(fp1, "iptables -t nat -D POSTROUTING -s %s -m policy --dir out --pol ipsec -j ACCEPT\n", local_subnet);

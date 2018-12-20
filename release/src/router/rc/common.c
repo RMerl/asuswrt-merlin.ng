@@ -1045,20 +1045,14 @@ void killall_tk_period_wait(const char *name, int wait)
 		}
 	}
 }
-void kill_pidfile_tk(const char *pidfile)
+void kill_pid_tk(pid_t pid)
 {
-	FILE *fp;
-	char buf[256];
-	pid_t pid = 0;
 	int n;
 
-	if ((fp = fopen(pidfile, "r")) != NULL) {
-		if (fgets(buf, sizeof(buf), fp) != NULL)
-			pid = strtoul(buf, NULL, 0);
-		fclose(fp);
-	}
+	if (pid <= 1 && pid >= -1)
+		return;
 
-	if (pid > 1 && kill(pid, SIGTERM) == 0) {
+	if (kill(pid, SIGTERM) == 0) {
 		n = 10;
 		while ((kill(pid, 0) == 0) && (n-- > 0)) {
 			_dprintf("%s: waiting pid=%d n=%d\n", __FUNCTION__, pid, n);
@@ -1071,6 +1065,36 @@ void kill_pidfile_tk(const char *pidfile)
 				usleep(100 * 1000);
 			}
 		}
+	}
+}
+
+void kill_pidfile_tk(const char *pidfile)
+{
+	FILE *fp;
+	char buf[256];
+	pid_t pid = 0;
+
+	if ((fp = fopen(pidfile, "r")) != NULL) {
+		if (fgets(buf, sizeof(buf), fp) != NULL)
+			pid = strtoul(buf, NULL, 0);
+		fclose(fp);
+		kill_pid_tk(pid);
+	}
+}
+
+void kill_pidfile_tk_g(const char *pidfile)
+{
+	FILE *fp;
+	char buf[256];
+	pid_t pid = 0;
+	pid_t pgid;
+
+	if ((fp = fopen(pidfile, "r")) != NULL) {
+		if (fgets(buf, sizeof(buf), fp) != NULL)
+			pid = strtoul(buf, NULL, 0);
+		fclose(fp);
+		pgid = getpgid(pid);
+		kill_pid_tk(-pgid);
 	}
 }
 
@@ -1679,3 +1703,38 @@ int rand_seed_by_time(void)
 
 	return rand();
 }
+
+#if defined(RTCONFIG_QCA)
+char *get_wpa_supplicant_pidfile(const char *ifname, char *buf, int size)
+{
+	if(ifname == NULL || buf == NULL || size < 24)
+		return "/var/run/wifi-sta0.pid";
+
+	snprintf(buf, size, "/var/run/wifi-%s.pid", ifname);
+	return buf;
+}
+
+void kill_wifi_wpa_supplicant(int unit)
+{
+	int band, end;
+	char buf[32], *pidfile;
+
+	if (unit > MAX_NR_WL_IF)
+		return;
+	else if (unit < 0) {
+		band = 0;
+		end = MAX_NR_WL_IF;
+	}
+	else {
+		band = end = unit;
+	}
+	for(; band < end; band++) {
+		const char *ifname = get_staifname(band);
+		pidfile = get_wpa_supplicant_pidfile(ifname, buf, sizeof(buf));
+		kill_pidfile_tk(pidfile);
+		unlink(pidfile);
+		doSystem("ifconfig %s down", ifname);
+	}
+}
+#endif	/* RTCONFIG_QCA */
+

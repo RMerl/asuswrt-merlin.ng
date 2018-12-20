@@ -94,10 +94,6 @@ function AiMesh_confirm_msg(_name, _value) {
 		return confirm("By changing country code, AiMesh might not work properly.\nAre you sure to process?");/* untranslated */
 	};
 	var feature_value = {
-		"Wireless_WPS" : {
-			"value" : 1,
-			"text" : "If you disable WPS, it will affect the AiMesh wifi connectivity.\nAre you sure to process?" /* untranslated */
-		},
 		"Wireless_Radio" : {
 			"value" : 1,
 			"text" : "If you disable Radio, it will affect the AiMesh wifi connectivity.\nAre you sure to process?" /* untranslated */
@@ -120,7 +116,6 @@ function AiMesh_confirm_msg(_name, _value) {
 		case "Operation_Mode" :
 			confirm_flag = check_operation_mode(_value);
 			break;
-		case "Wireless_WPS" :
 		case "Wireless_Radio" :
 		case "Wireless_Hide" :
 		case "Wireless_Hide_WPS" :

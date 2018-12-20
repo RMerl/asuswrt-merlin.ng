@@ -90,6 +90,7 @@ const char VPHY_5G[] = "wifi1";
 const char VPHY_2G[] = "wifi0";
 const char WSUP_DRV[] = "athr";
 const char BR_GUEST[] = "brg0";
+const char WIF_5G_BH[] = "ath101";
 const char APMODE_BRGUEST_IP[]="192.168.55.1";
 #elif defined(RTCONFIG_WIFI_QCA9990_QCA9990) || defined(RTCONFIG_WIFI_QCA9994_QCA9994)
 #if defined(RTAC88N)
@@ -1233,6 +1234,7 @@ char *get_lan_mac_name(void)
         case MODEL_VZWAC1300:
         case MODEL_MAPAC1750:
         case MODEL_MAPAC2200:
+        case MODEL_RTAC92U:
 		/* Use 5G MAC address as LAN MAC address. */
 		mac_name = "et1macaddr";
 		break;
@@ -1299,6 +1301,25 @@ char *get_2g_hwaddr(void)
 #endif
 }
 
+char *get_5g_hwaddr(void)
+{
+#if defined(RTCONFIG_SOC_IPQ8064)
+	static char mac_str[sizeof("00:00:00:00:00:00XXX")];
+	unsigned char mac[ETH_ALEN];
+
+	ether_atoe(nvram_safe_get(get_lan_mac_name()), mac);
+	mac[5] &= 0xFC;
+	ether_etoa(mac, mac_str);
+	return mac_str;
+#else
+#if defined(RTCONFIG_QCA_VAP_LOCALMAC)
+        return nvram_safe_get("wl1macaddr");
+#else
+        return nvram_safe_get(get_lan_mac_name());
+#endif
+#endif
+}
+
 char *get_label_mac()
 {
 	return get_2g_hwaddr();
@@ -1348,10 +1369,11 @@ char *get_wlifname(int unit, int subunit, int subunit_x, char *buf)
 #if 1
 	char wifbuf[32];
 	char prefix[] = "wlXXXXXX_", tmp[100];
+	int wlc_band = nvram_get_int("wlc_band");
 #if defined(RTCONFIG_WIRELESSREPEATER)
 	if (sw_mode() == SW_MODE_REPEATER
 #if !defined(RTCONFIG_CONCURRENTREPEATER)
-	    && nvram_get_int("wlc_band") == unit
+	    && wlc_band == unit
 #endif
 		 && subunit == 1) {
 		strcpy(buf, get_staifname(unit));
@@ -1442,6 +1464,16 @@ char *get_vphyifname(int band)
 	return (char *) vphy[band];
 }
 
+#ifdef RTCONFIG_HAS_5G_2
+const char *get_5ghigh_ifname(int *unit)
+{
+	if(unit != NULL)
+		*unit = 1;
+	return "ath1";
+}
+#endif
+
+
 /**
  * Input @band and @ifname and return Y of wlX.Y.
  * Last digit of VAP interface name of guest is NOT always equal to Y of wlX.Y,
@@ -1479,17 +1511,6 @@ int get_wlsubnet(int band, const char *ifname)
 }
 
 #define PROC_NET_WIRELESS  "/proc/net/wireless"
-#define strip_new_line(s) ({					\
-	char *end = (s) + strlen(s) -1;				\
-	while((end >= (s)) && (*end == '\n' || *end == '\r'))	\
-		*end-- = '\0';					\
-	s;							\
-})
-
-#define skip_space(s) {						\
-	while(*s == ' ')					\
-		s++;						\
-}
 
 
 int get_wl_status_ioctl(const char *ifname, int *status, int *quality, int *signal, int *noise, unsigned int *update)
@@ -1501,6 +1522,12 @@ int get_wl_status_ioctl(const char *ifname, int *status, int *quality, int *sign
 		return -1;
 
 	*status = 0;
+	if(quality)
+		*quality = 0;
+	if(signal)
+		*signal = 0;
+	if(noise)
+		*noise = 0;
 	if(update)
 		*update = 0;
 
@@ -1704,17 +1731,11 @@ int get_ch(int freq)
 #define pow(v,e) ({double d=1; int i; for(i=0;i<e;i++) d*=v; d;})
 #endif
 
-int get_channel(const char *ifname)
+int iwfreq_to_ch(const iwfreq *fr)
 {
-	struct iwreq wrq;
-	const iwfreq *fr;
 	double frd;
 	int freq;
 
-	if(wl_ioctl(ifname, SIOCGIWFREQ, &wrq))
-		return -1;
-
-	fr = &(wrq.u.freq);
 	frd = ((double) fr->m) * pow(10,fr->e);
 	if(frd < 1e3)
 		return (int)frd;
@@ -1724,6 +1745,212 @@ int get_channel(const char *ifname)
 	freq = (int)(frd / 1e6);
 	return get_ch(freq);
 }
+
+int get_channel(const char *ifname)
+{
+	struct iwreq wrq;
+	const iwfreq *fr;
+
+	if(ifname == NULL)
+		return -1;
+
+	if(wl_ioctl(ifname, SIOCGIWFREQ, &wrq))
+		return -1;
+
+	fr = &(wrq.u.freq);
+	return iwfreq_to_ch(fr);
+}
+
+/*
+ * get_channel_list(ifname, ch_list[], size)
+ *
+ * get channel list from wifi driver via wl_ioctl(SIOCGIWRANGE)
+ * and store the channel list to ch_list[]
+ *
+ * ch_list[]: an array to save the list of channel that currently used by ifname interface.
+ *
+ * size: the number of the ch_list[] that can use.
+ *
+ * return value: a native value for error OR the count of channel in the ch_list[].
+ *
+ */
+int get_channel_list(const char *ifname, int ch_list[], int size)
+{
+	struct iwreq wrq;
+	struct iw_range *range;
+	union iw_range_raw *  range_raw;
+	unsigned char buffer[sizeof(iwrange) * 2];	/* Large enough */
+	int i;
+
+	if(wl_ioctl(ifname, SIOCGIWNAME, &wrq))		/* check wireless extensions. */
+		return -1;
+
+	memset(buffer, 0, sizeof(buffer));
+	wrq.u.data.pointer = (caddr_t) buffer;
+	wrq.u.data.length = sizeof(buffer);
+	wrq.u.data.flags = 0;
+
+	if(wl_ioctl(ifname, SIOCGIWRANGE, &wrq)) {
+		cprintf("NOT SUPPORT SIOCGIWRANGE in %s\n", ifname);
+		return -1;
+	}
+
+	range_raw = (union iw_range_raw *) buffer;
+	range = (struct iw_range *) buffer;
+	if(wrq.u.data.length < 300 || range->we_version_compiled <= 15) {
+		cprintf("Wireless Extensions is TOO OLD length(%d) ver(%d)\n", wrq.u.data.length, range->we_version_compiled);
+		return -2;
+	}
+
+	if (range->num_frequency < size)
+		size = range->num_frequency;
+
+	for(i = 0; i < size; i++) {
+		//_dprintf("# freq[%2d].i(%d) ch(%d)\n", i, range->freq[i].i, iwfreq_to_ch(&(range->freq[i])));
+		ch_list[i] = range->freq[i].i;
+	}
+	return size;
+}
+
+/* dfs channel data from radartool */
+#ifndef IEEE80211_CHAN_MAX
+#define IEEE80211_CHAN_MAX      1023
+#endif
+
+struct dfsreq_nolelem {
+    u_int16_t        nol_freq;          /* NOL channel frequency */
+    u_int16_t        nol_chwidth;
+    unsigned long    nol_start_ticks;   /* OS ticks when the NOL timer started */
+    u_int32_t        nol_timeout_ms;    /* Nol timeout value in msec */
+};
+
+struct dfsreq_nolinfo {
+    u_int32_t   ic_nchans;
+    struct      dfsreq_nolelem dfs_nol[IEEE80211_CHAN_MAX];
+};
+
+int get_radar_channel_list(const char *vphy, int radar_list[], int size)
+{
+	const char *dfs_file = "/tmp/dfsreq_nolinfo";
+	FILE *fp = NULL;
+	int freq;
+	int cnt;
+	struct dfsreq_nolinfo *nol = NULL;
+	int len;
+
+	if(vphy == NULL || radar_list == NULL || size < 0)
+		return -1;
+
+	unlink(dfs_file);
+	doSystem("radartool -i %s getnol %s", vphy, dfs_file);
+
+	if((nol = (struct dfsreq_nolinfo *) malloc(sizeof(struct dfsreq_nolinfo))) == NULL)
+		return -2;
+
+	if((fp = fopen(dfs_file, "r")) == NULL) {
+		free(nol);
+		return -3;
+	}
+
+	memset(nol, 0, sizeof(struct dfsreq_nolinfo));
+	fread(nol, sizeof(struct dfsreq_nolinfo), 1, fp);
+	fclose(fp);
+
+	for(cnt = 0; cnt < nol->ic_nchans; cnt++) {
+		radar_list[cnt] = get_ch(nol->dfs_nol[cnt].nol_freq);
+#if 0
+		nol->nol_chwidth
+		nol->nol_start_ticks
+		nol->nol_timeout_ms
+#endif
+	}
+	free(nol);
+	return cnt;
+}
+
+
+char *qca_iwpriv_one_line(const char *ifname, const char *cmd, char *line, int len)
+{
+	FILE *fp;
+	char *p;
+	char *answer = NULL;
+
+	snprintf(line, len, "iwpriv %s %s", ifname, cmd);
+	if((fp = popen(line, "r")) != NULL) {
+		while(fgets(line, len, fp)) {
+			strip_new_line(line);
+			if((p = strstr(line, cmd)) == NULL)
+				continue;
+			if(p == line || !isspace(*(p-1)) || *(p += strlen(cmd)) != ':')
+				continue;
+			answer = p+1;
+			break;
+		}
+		pclose(fp);
+	}
+	return answer;
+}
+
+/* 
+ * int get_bw_nctrlsb(const char *ifname, int *bw, int *nctrlsb)
+ *
+ * *bw: 
+ * 	return the bandwitdh value, could be 20/40/80/160.
+ *
+ * *nctrlsb:
+ * 	return the side band when in HT40 mode
+ * 	1: the control sideband is upper
+ * 	0: the control sideband is lower
+ * 	-1: invalid
+ *
+ */
+int get_bw_nctrlsb(const char *ifname, int *bw, int *nctrlsb)
+{
+	char line[256];
+	char *p;
+
+	if(ifname == NULL || bw == NULL || nctrlsb == NULL)
+		return -1;
+
+	*bw = 0;
+	*nctrlsb = -1;
+	if((p = qca_iwpriv_one_line(ifname, "get_mode", line, sizeof(line))) == NULL)
+		return -2;
+
+	if((p = strstr(p, "11")) == NULL)
+		return -3;
+	p += 2;
+
+	if((p = strstr(p, "HT")) == NULL) {	/* 11A, 11B, 11G */
+		*bw = 20;
+		return *bw;
+	}
+	p += 2;
+
+	if(memcmp(p, "20", 2) == 0)		/* 11NGHT20, 11NAHT20, 11ACVHT20 */
+		*bw = 20;
+	else if(memcmp(p, "40", 2) == 0)	/* 11NGHT40, 11NAHT40, 11ACVHT40 */
+		*bw = 40;
+	else if(memcmp(p, "80_80", 5) == 0)	/* 11ACVHT80_80 */
+		*bw = 160;
+	else if(memcmp(p, "80", 2) == 0)	/* 11ACVHT80 */
+		*bw = 80;
+	else if(memcmp(p, "160", 3) == 0)	/* 11ACVHT160 */
+		*bw = 160;
+	else					/* 11A, 11B, 11G */
+		*bw = 20;
+
+	if (*bw == 40) {
+		if(strstr(p, "MINUS") != NULL)			/* HT40MINUS */
+			*nctrlsb = 1;	//extension channel is lower,  so the control SB is higher
+		else if(strstr(p, "PLUS") != NULL)		/* HT40PLUS */
+			*nctrlsb = 0;	//extension channel is higher, so the control SB is lower
+		else
+			return -4;
+	}
+	return *bw;
+}
+
 
 #if defined(RTAC58U)
 extern char *readfile(char *fname,int *fsize);
@@ -1749,3 +1976,220 @@ int check_mid(char *mid)
 	return ret;
 }
 #endif
+
+char * get_wpa_ctrl_sk(int band, char ctrl_sk[], int size)
+{
+	char *sta;
+	if(band < 0 || band >= MAX_NR_WL_IF || ctrl_sk == NULL)
+		return NULL;
+	sta = get_staifname(band);
+	snprintf(ctrl_sk, size, "/var/run/wpa_supplicant-%s", sta);
+	return ctrl_sk;
+}
+
+#define WPA_CLI_REPLY_SIZE		32
+#define QUERY_WPA_CLI_REPLY_TIMEOUT	10
+#define QUERY_WPA_STATE_TIMEOUT		25
+char *wpa_cli_reply(const char *fcmd, char *reply)
+{
+	FILE *fp;
+	int rlen;
+
+	fp = popen(fcmd, "r");
+	if (fp) {
+		rlen = fread(reply, 1, WPA_CLI_REPLY_SIZE, fp);
+		pclose(fp);
+		if (rlen > 1) {
+			reply[rlen-1] = '\0';
+			return reply;
+		}
+	}
+
+	return "";
+}
+
+void set_wpa_cli_cmd(int band, const char *cmd, int chk_reply)
+{
+	char ctrl_sk[32];
+	char *sta;
+	char fcmd[128];
+	char reply[WPA_CLI_REPLY_SIZE];
+	int timeout = QUERY_WPA_CLI_REPLY_TIMEOUT;
+
+	if(band < 0 || band >= MAX_NR_WL_IF || cmd == NULL || cmd[0] == '\0')
+		return;
+
+	get_wpa_ctrl_sk(band, ctrl_sk, sizeof(ctrl_sk));
+	sta = get_staifname(band);
+
+	if (chk_reply) {
+		snprintf(fcmd, sizeof(fcmd), "/usr/bin/wpa_cli -p %s -i %s %s", ctrl_sk, sta, cmd);
+		while (strcmp(wpa_cli_reply(fcmd, reply), "OK") && timeout--) {
+			//dbg("%s: reply [%s] ...(%d/%d)\n", __func__, reply, timeout, QUERY_WPA_CLI_REPLY_TIMEOUT);
+			sleep(1);
+		};
+
+		if (strcmp(cmd, "scan") == 0) {
+			snprintf(fcmd, sizeof(fcmd), "/usr/bin/wpa_cli -p %s -i %s status | grep wpa_state=", ctrl_sk, sta);
+			timeout = QUERY_WPA_STATE_TIMEOUT;
+			while (strcmp(wpa_cli_reply(fcmd, reply), "wpa_state=INACTIVE") && timeout--) {
+				//dbg("%s: reply [%s] ...(%d/%d)\n", __func__, reply, timeout, QUERY_WPA_STATE_TIMEOUT);
+				sleep(1);
+			};
+		}
+	}
+	else
+		eval("/usr/bin/wpa_cli", "-p", ctrl_sk, "-i", sta, cmd);
+}
+
+void disassoc_sta(char *ifname, char *sta_addr)
+{
+	if(ifname == NULL || *ifname == '\0' || sta_addr == NULL || *sta_addr == '\0')
+		return;
+
+	eval("iwpriv", ifname, "kickmac", sta_addr);
+}
+
+
+/*
+ * mode: 0:disable, 1:allow, 2:deny
+ */
+void set_maclist_mode(char *ifname, int mode)
+{
+	char qca_maccmd[32];
+	char str_mode[16];
+	char *sec = "";
+
+	if(ifname == NULL || *ifname == '\0')
+		return;
+
+#ifdef RTCONFIG_WIFI_SON
+	if (nvram_match("wifison_ready", "1"))
+		sec = "_sec";
+#endif // WIFI_SON
+	sprintf(qca_maccmd, "%s%s", QCA_MACCMD, sec);
+
+	if (mode < 0 || mode > 3)
+		mode = 0;
+	snprintf(str_mode, sizeof(str_mode), "%d", mode);
+
+	eval("iwpriv", ifname, qca_maccmd, str_mode);
+}
+
+void set_maclist_add_kick(char *ifname, int mode, char *sta_addr)
+{
+	char qca_addmac[32];
+	char *sec = "";
+
+	if(ifname == NULL || *ifname == '\0' || sta_addr == NULL || *sta_addr == '\0')
+		return;
+
+#ifdef RTCONFIG_WIFI_SON
+	if (nvram_match("wifison_ready", "1"))
+		sec = "_sec";
+#endif // WIFI_SON
+	snprintf(qca_addmac, sizeof(qca_addmac), "%s%s", QCA_ADDMAC, sec);
+
+	eval("iwpriv", ifname, qca_addmac, sta_addr);
+
+	if(mode == 2)
+		disassoc_sta(ifname, sta_addr);
+}
+
+void set_maclist_del_kick(char *ifname, int mode, char *sta_addr)
+{
+	char qca_delmac[32];
+	char *sec = "";
+
+	if(ifname == NULL || *ifname == '\0' || sta_addr == NULL || *sta_addr == '\0')
+		return;
+
+#ifdef RTCONFIG_WIFI_SON
+	if (nvram_match("wifison_ready", "1"))
+		sec = "_sec";
+#endif // WIFI_SON
+	snprintf(qca_delmac, sizeof(qca_delmac), "%s%s", QCA_DELMAC, sec);
+
+	eval("iwpriv", ifname, qca_delmac, sta_addr);
+
+	if(mode == 1)
+		disassoc_sta(ifname, sta_addr);
+}
+
+
+void set_macfilter_unit(int unit, int subnet, FILE *fp)
+{
+	char prefix[32];
+	char tmp[32];
+	char athfix[8];
+	char *sec = "";
+	char qca_mac[32];
+	int mode;	/* 0: disable, 1: allow, 2: deny */
+	char *p;
+
+#ifdef RTCONFIG_AMAS
+	if (subnet <=0 && nvram_get_int("re_mode") == 1)
+		snprintf(prefix, sizeof(prefix), "wl%d.1_", unit);
+	else
+#endif
+	if (subnet > 0)
+		snprintf(prefix, sizeof(prefix), "wl%d.%d", unit, subnet);
+	else
+		snprintf(prefix, sizeof(prefix), "wl%d_", unit);
+
+	__get_wlifname(swap_5g_band(unit), subnet, athfix);
+
+#ifdef RTCONFIG_WIFI_SON
+	if (nvram_match("wifison_ready", "1"))
+		sec = "_sec";
+#endif // WIFI_SON
+	sprintf(qca_mac, "%s%s", QCA_MACCMD, sec);
+
+	p = nvram_get(strcat_r(prefix, "macmode", tmp));
+	/* mode: 0: disable, 1: allow, 2: deny */
+	if (p && strcmp(p, "deny") == 0)
+		mode = 2;
+	else if (p && strcmp(p, "allow") == 0)
+		mode = 1;
+	else
+		mode = 0;
+
+	fprintf(fp, "iwpriv %s %s %d\n", athfix, qca_mac, 3);	/* flush old list */
+	fprintf(fp, "iwpriv %s %s %d\n", athfix, qca_mac, mode);
+
+	if (mode) {
+		char *nv, *nvp, *mac;
+
+		nv = nvp = strdup(nvram_safe_get(strcat_r(prefix, "maclist_x", tmp)));
+		if (nv) {
+			sprintf(qca_mac, "%s%s", QCA_ADDMAC, sec);
+			while ((mac = strsep(&nvp, "<")) != NULL) {
+				if(*mac == '\0')
+					continue;
+				fprintf(fp, "iwpriv %s %s %s\n", athfix, qca_mac, mac);
+			}
+			free(nv);
+		}
+	}
+}
+
+void set_macfilter_all(FILE *fp)
+{
+	int unit;
+	char *wl_ifnames;
+	char word[16], *next;
+
+	unit = 0;
+	wl_ifnames = strdup(nvram_safe_get("wl_ifnames"));
+	if(wl_ifnames == NULL)
+		return;
+
+	foreach (word, wl_ifnames, next) {
+		SKIP_ABSENT_BAND_AND_INC_UNIT(unit);
+
+		set_macfilter_unit(unit, 0, fp);
+		unit++;
+	}
+	free(wl_ifnames);
+}
+

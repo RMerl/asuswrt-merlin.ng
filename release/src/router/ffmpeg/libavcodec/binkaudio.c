@@ -1,6 +1,6 @@
 /*
  * Bink Audio decoder
- * Copyright (c) 2007-2010 Peter Ross (pross@xvid.org)
+ * Copyright (c) 2007-2011 Peter Ross (pross@xvid.org)
  * Copyright (c) 2009 Daniel Verkamp (daniel@drv.nu)
  *
  * This file is part of FFmpeg.
@@ -28,21 +28,26 @@
  *  http://wiki.multimedia.cx/index.php?title=Bink_Audio
  */
 
-#include "avcodec.h"
-#define ALT_BITSTREAM_READER_LE
-#include "get_bits.h"
-#include "dsputil.h"
-#include "fft.h"
+#include "libavutil/channel_layout.h"
+#include "libavutil/intfloat.h"
 
-extern const uint16_t ff_wma_critical_freqs[25];
+#define BITSTREAM_READER_LE
+#include "avcodec.h"
+#include "dct.h"
+#include "decode.h"
+#include "get_bits.h"
+#include "internal.h"
+#include "rdft.h"
+#include "wma_freqs.h"
+
+static float quant_table[96];
 
 #define MAX_CHANNELS 2
 #define BINK_BLOCK_MAX_SIZE (MAX_CHANNELS << 11)
 
-typedef struct {
-    AVCodecContext *avctx;
+typedef struct BinkAudioContext {
     GetBitContext gb;
-    DSPContext dsp;
+    int version_b;          ///< Bink version 'b'
     int first;
     int channels;
     int frame_len;          ///< transform size (samples)
@@ -51,9 +56,9 @@ typedef struct {
     int num_bands;
     unsigned int *bands;
     float root;
-    DECLARE_ALIGNED(16, FFTSample, coeffs)[BINK_BLOCK_MAX_SIZE];
-    DECLARE_ALIGNED(16, short, previous)[BINK_BLOCK_MAX_SIZE / 16];  ///< coeffs from previous audio block
-    float *coeffs_ptr[MAX_CHANNELS]; ///< pointers to the coeffs arrays for float_to_int16_interleave
+    DECLARE_ALIGNED(32, FFTSample, coeffs)[BINK_BLOCK_MAX_SIZE];
+    float previous[MAX_CHANNELS][BINK_BLOCK_MAX_SIZE / 16];  ///< coeffs from previous audio block
+    AVPacket *pkt;
     union {
         RDFTContext rdft;
         DCTContext dct;
@@ -69,9 +74,6 @@ static av_cold int decode_init(AVCodecContext *avctx)
     int i;
     int frame_len_bits;
 
-    s->avctx = avctx;
-    dsputil_init(&s->dsp, avctx);
-
     /* determine frame length */
     if (avctx->sample_rate < 22050) {
         frame_len_bits = 9;
@@ -80,28 +82,40 @@ static av_cold int decode_init(AVCodecContext *avctx)
     } else {
         frame_len_bits = 11;
     }
-    s->frame_len = 1 << frame_len_bits;
 
-    if (s->channels > MAX_CHANNELS) {
-        av_log(s->avctx, AV_LOG_ERROR, "too many channels: %d\n", s->channels);
-        return -1;
+    if (avctx->channels < 1 || avctx->channels > MAX_CHANNELS) {
+        av_log(avctx, AV_LOG_ERROR, "invalid number of channels: %d\n", avctx->channels);
+        return AVERROR_INVALIDDATA;
     }
+    avctx->channel_layout = avctx->channels == 1 ? AV_CH_LAYOUT_MONO :
+                                                   AV_CH_LAYOUT_STEREO;
 
-    if (avctx->codec->id == CODEC_ID_BINKAUDIO_RDFT) {
+    s->version_b = avctx->extradata_size >= 4 && avctx->extradata[3] == 'b';
+
+    if (avctx->codec->id == AV_CODEC_ID_BINKAUDIO_RDFT) {
         // audio is already interleaved for the RDFT format variant
+        avctx->sample_fmt = AV_SAMPLE_FMT_FLT;
         sample_rate  *= avctx->channels;
-        s->frame_len *= avctx->channels;
         s->channels = 1;
-        if (avctx->channels == 2)
-            frame_len_bits++;
+        if (!s->version_b)
+            frame_len_bits += av_log2(avctx->channels);
     } else {
         s->channels = avctx->channels;
+        avctx->sample_fmt = AV_SAMPLE_FMT_FLTP;
     }
 
+    s->frame_len     = 1 << frame_len_bits;
     s->overlap_len   = s->frame_len / 16;
     s->block_size    = (s->frame_len - s->overlap_len) * s->channels;
     sample_rate_half = (sample_rate + 1) / 2;
-    s->root          = 2.0 / sqrt(s->frame_len);
+    if (avctx->codec->id == AV_CODEC_ID_BINKAUDIO_RDFT)
+        s->root = 2.0 / (sqrt(s->frame_len) * 32768.0);
+    else
+        s->root = s->frame_len / (sqrt(s->frame_len) * 32768.0);
+    for (i = 0; i < 96; i++) {
+        /* constant is result of 0.066399999/log10(M_E) */
+        quant_table[i] = expf(i * 0.15289164787221953823f) * s->root;
+    }
 
     /* calculate number of bands */
     for (s->num_bands = 1; s->num_bands < 25; s->num_bands++)
@@ -113,23 +127,23 @@ static av_cold int decode_init(AVCodecContext *avctx)
         return AVERROR(ENOMEM);
 
     /* populate bands data */
-    s->bands[0] = 1;
+    s->bands[0] = 2;
     for (i = 1; i < s->num_bands; i++)
-        s->bands[i] = ff_wma_critical_freqs[i - 1] * (s->frame_len / 2) / sample_rate_half;
-    s->bands[s->num_bands] = s->frame_len / 2;
+        s->bands[i] = (ff_wma_critical_freqs[i - 1] * s->frame_len / sample_rate_half) & ~1;
+    s->bands[s->num_bands] = s->frame_len;
 
     s->first = 1;
-    avctx->sample_fmt = SAMPLE_FMT_S16;
 
-    for (i = 0; i < s->channels; i++)
-        s->coeffs_ptr[i] = s->coeffs + i * s->frame_len;
-
-    if (CONFIG_BINKAUDIO_RDFT_DECODER && avctx->codec->id == CODEC_ID_BINKAUDIO_RDFT)
+    if (CONFIG_BINKAUDIO_RDFT_DECODER && avctx->codec->id == AV_CODEC_ID_BINKAUDIO_RDFT)
         ff_rdft_init(&s->trans.rdft, frame_len_bits, DFT_C2R);
     else if (CONFIG_BINKAUDIO_DCT_DECODER)
         ff_dct_init(&s->trans.dct, frame_len_bits, DCT_III);
     else
         return -1;
+
+    s->pkt = av_packet_alloc();
+    if (!s->pkt)
+        return AVERROR(ENOMEM);
 
     return 0;
 }
@@ -150,8 +164,9 @@ static const uint8_t rle_length_tab[16] = {
 /**
  * Decode Bink Audio block
  * @param[out] out Output buffer (must contain s->block_size elements)
+ * @return 0 on success, negative error code on failure
  */
-static void decode_block(BinkAudioContext *s, short *out, int use_dct)
+static int decode_block(BinkAudioContext *s, float **out, int use_dct)
 {
     int ch, i, j, k;
     float q, quant[25];
@@ -162,29 +177,43 @@ static void decode_block(BinkAudioContext *s, short *out, int use_dct)
         skip_bits(gb, 2);
 
     for (ch = 0; ch < s->channels; ch++) {
-        FFTSample *coeffs = s->coeffs_ptr[ch];
-        q = 0.0f;
-        coeffs[0] = get_float(gb) * s->root;
-        coeffs[1] = get_float(gb) * s->root;
+        FFTSample *coeffs = out[ch];
 
+        if (s->version_b) {
+            if (get_bits_left(gb) < 64)
+                return AVERROR_INVALIDDATA;
+            coeffs[0] = av_int2float(get_bits_long(gb, 32)) * s->root;
+            coeffs[1] = av_int2float(get_bits_long(gb, 32)) * s->root;
+        } else {
+            if (get_bits_left(gb) < 58)
+                return AVERROR_INVALIDDATA;
+            coeffs[0] = get_float(gb) * s->root;
+            coeffs[1] = get_float(gb) * s->root;
+        }
+
+        if (get_bits_left(gb) < s->num_bands * 8)
+            return AVERROR_INVALIDDATA;
         for (i = 0; i < s->num_bands; i++) {
-            /* constant is result of 0.066399999/log10(M_E) */
             int value = get_bits(gb, 8);
-            quant[i] = expf(FFMIN(value, 95) * 0.15289164787221953823f) * s->root;
+            quant[i]  = quant_table[FFMIN(value, 95)];
         }
 
-        // find band (k)
-        for (k = 0; s->bands[k] < 1; k++) {
-            q = quant[k];
-        }
+        k = 0;
+        q = quant[0];
 
         // parse coefficients
         i = 2;
         while (i < s->frame_len) {
-            if (get_bits1(gb)) {
-                j = i + rle_length_tab[get_bits(gb, 4)] * 8;
+            if (s->version_b) {
+                j = i + 16;
             } else {
-                j = i + 8;
+                int v = get_bits1(gb);
+                if (v) {
+                    v = get_bits(gb, 4);
+                    j = i + rle_length_tab[v] * 8;
+                } else {
+                    j = i + 8;
+                }
             }
 
             j = FFMIN(j, s->frame_len);
@@ -193,15 +222,17 @@ static void decode_block(BinkAudioContext *s, short *out, int use_dct)
             if (width == 0) {
                 memset(coeffs + i, 0, (j - i) * sizeof(*coeffs));
                 i = j;
-                while (s->bands[k] * 2 < i)
+                while (s->bands[k] < i)
                     q = quant[k++];
             } else {
                 while (i < j) {
-                    if (s->bands[k] * 2 == i)
+                    if (s->bands[k] == i)
                         q = quant[k++];
                     coeff = get_bits(gb, width);
                     if (coeff) {
-                        if (get_bits1(gb))
+                        int v;
+                        v = get_bits1(gb);
+                        if (v)
                             coeffs[i] = -q * coeff;
                         else
                             coeffs[i] =  q * coeff;
@@ -215,42 +246,41 @@ static void decode_block(BinkAudioContext *s, short *out, int use_dct)
 
         if (CONFIG_BINKAUDIO_DCT_DECODER && use_dct) {
             coeffs[0] /= 0.5;
-            ff_dct_calc (&s->trans.dct,  coeffs);
-            s->dsp.vector_fmul_scalar(coeffs, coeffs, s->frame_len / 2, s->frame_len);
+            s->trans.dct.dct_calc(&s->trans.dct,  coeffs);
         }
         else if (CONFIG_BINKAUDIO_RDFT_DECODER)
-            ff_rdft_calc(&s->trans.rdft, coeffs);
+            s->trans.rdft.rdft_calc(&s->trans.rdft, coeffs);
     }
 
-    if (s->dsp.float_to_int16_interleave == ff_float_to_int16_interleave_c) {
-        for (i = 0; i < s->channels; i++)
-            for (j = 0; j < s->frame_len; j++)
-                s->coeffs_ptr[i][j] = 385.0 + s->coeffs_ptr[i][j]*(1.0/32767.0);
-    }
-    s->dsp.float_to_int16_interleave(out, (const float **)s->coeffs_ptr, s->frame_len, s->channels);
-
-    if (!s->first) {
+    for (ch = 0; ch < s->channels; ch++) {
+        int j;
         int count = s->overlap_len * s->channels;
-        int shift = av_log2(count);
-        for (i = 0; i < count; i++) {
-            out[i] = (s->previous[i] * (count - i) + out[i] * i) >> shift;
+        if (!s->first) {
+            j = ch;
+            for (i = 0; i < s->overlap_len; i++, j += s->channels)
+                out[ch][i] = (s->previous[ch][i] * (count - j) +
+                                      out[ch][i] *          j) / count;
         }
+        memcpy(s->previous[ch], &out[ch][s->frame_len - s->overlap_len],
+               s->overlap_len * sizeof(*s->previous[ch]));
     }
-
-    memcpy(s->previous, out + s->block_size,
-           s->overlap_len * s->channels * sizeof(*out));
 
     s->first = 0;
+
+    return 0;
 }
 
 static av_cold int decode_end(AVCodecContext *avctx)
 {
     BinkAudioContext * s = avctx->priv_data;
     av_freep(&s->bands);
-    if (CONFIG_BINKAUDIO_RDFT_DECODER && avctx->codec->id == CODEC_ID_BINKAUDIO_RDFT)
+    if (CONFIG_BINKAUDIO_RDFT_DECODER && avctx->codec->id == AV_CODEC_ID_BINKAUDIO_RDFT)
         ff_rdft_end(&s->trans.rdft);
     else if (CONFIG_BINKAUDIO_DCT_DECODER)
         ff_dct_end(&s->trans.dct);
+
+    av_packet_free(&s->pkt);
+
     return 0;
 }
 
@@ -260,52 +290,75 @@ static void get_bits_align32(GetBitContext *s)
     if (n) skip_bits(s, n);
 }
 
-static int decode_frame(AVCodecContext *avctx,
-                        void *data, int *data_size,
-                        AVPacket *avpkt)
+static int binkaudio_receive_frame(AVCodecContext *avctx, AVFrame *frame)
 {
     BinkAudioContext *s = avctx->priv_data;
-    const uint8_t *buf  = avpkt->data;
-    int buf_size        = avpkt->size;
-    short *samples      = data;
-    short *samples_end  = (short*)((uint8_t*)data + *data_size);
-    int reported_size;
     GetBitContext *gb = &s->gb;
+    int ret;
 
-    init_get_bits(gb, buf, buf_size * 8);
+    if (!s->pkt->data) {
+        ret = ff_decode_get_packet(avctx, s->pkt);
+        if (ret < 0)
+            return ret;
 
-    reported_size = get_bits_long(gb, 32);
-    while (get_bits_count(gb) / 8 < buf_size &&
-           samples + s->block_size <= samples_end) {
-        decode_block(s, samples, avctx->codec->id == CODEC_ID_BINKAUDIO_DCT);
-        samples += s->block_size;
-        get_bits_align32(gb);
+        if (s->pkt->size < 4) {
+            av_log(avctx, AV_LOG_ERROR, "Packet is too small\n");
+            ret = AVERROR_INVALIDDATA;
+            goto fail;
+        }
+
+        ret = init_get_bits8(gb, s->pkt->data, s->pkt->size);
+        if (ret < 0)
+            goto fail;
+
+        /* skip reported size */
+        skip_bits_long(gb, 32);
     }
 
-    *data_size = FFMIN(reported_size, (uint8_t*)samples - (uint8_t*)data);
-    return buf_size;
+    /* get output buffer */
+    frame->nb_samples = s->frame_len;
+    if ((ret = ff_get_buffer(avctx, frame, 0)) < 0)
+        return ret;
+
+    if (decode_block(s, (float **)frame->extended_data,
+                     avctx->codec->id == AV_CODEC_ID_BINKAUDIO_DCT)) {
+        av_log(avctx, AV_LOG_ERROR, "Incomplete packet\n");
+        return AVERROR_INVALIDDATA;
+    }
+    get_bits_align32(gb);
+    if (!get_bits_left(gb)) {
+        memset(gb, 0, sizeof(*gb));
+        av_packet_unref(s->pkt);
+    }
+
+    frame->nb_samples = s->block_size / avctx->channels;
+
+    return 0;
+fail:
+    av_packet_unref(s->pkt);
+    return ret;
 }
 
-AVCodec binkaudio_rdft_decoder = {
-    "binkaudio_rdft",
-    AVMEDIA_TYPE_AUDIO,
-    CODEC_ID_BINKAUDIO_RDFT,
-    sizeof(BinkAudioContext),
-    decode_init,
-    NULL,
-    decode_end,
-    decode_frame,
-    .long_name = NULL_IF_CONFIG_SMALL("Bink Audio (RDFT)")
+AVCodec ff_binkaudio_rdft_decoder = {
+    .name           = "binkaudio_rdft",
+    .long_name      = NULL_IF_CONFIG_SMALL("Bink Audio (RDFT)"),
+    .type           = AVMEDIA_TYPE_AUDIO,
+    .id             = AV_CODEC_ID_BINKAUDIO_RDFT,
+    .priv_data_size = sizeof(BinkAudioContext),
+    .init           = decode_init,
+    .close          = decode_end,
+    .receive_frame  = binkaudio_receive_frame,
+    .capabilities   = AV_CODEC_CAP_DELAY | AV_CODEC_CAP_DR1,
 };
 
-AVCodec binkaudio_dct_decoder = {
-    "binkaudio_dct",
-    AVMEDIA_TYPE_AUDIO,
-    CODEC_ID_BINKAUDIO_DCT,
-    sizeof(BinkAudioContext),
-    decode_init,
-    NULL,
-    decode_end,
-    decode_frame,
-    .long_name = NULL_IF_CONFIG_SMALL("Bink Audio (DCT)")
+AVCodec ff_binkaudio_dct_decoder = {
+    .name           = "binkaudio_dct",
+    .long_name      = NULL_IF_CONFIG_SMALL("Bink Audio (DCT)"),
+    .type           = AVMEDIA_TYPE_AUDIO,
+    .id             = AV_CODEC_ID_BINKAUDIO_DCT,
+    .priv_data_size = sizeof(BinkAudioContext),
+    .init           = decode_init,
+    .close          = decode_end,
+    .receive_frame  = binkaudio_receive_frame,
+    .capabilities   = AV_CODEC_CAP_DELAY | AV_CODEC_CAP_DR1,
 };

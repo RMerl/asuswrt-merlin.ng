@@ -20,6 +20,7 @@
 
 #include "avlanguage.h"
 #include "libavutil/avstring.h"
+#include "libavutil/common.h"
 #include <stdlib.h>
 #include <stdint.h>
 #include <string.h>
@@ -732,11 +733,11 @@ static int lang_table_compare(const void *lhs, const void *rhs)
     return strcmp(lhs, ((const LangEntry *)rhs)->str);
 }
 
-const char *av_convert_lang_to(const char *lang, enum AVLangCodespace target_codespace)
+const char *ff_convert_lang_to(const char *lang, enum AVLangCodespace target_codespace)
 {
     int i;
     const LangEntry *entry = NULL;
-    const int NB_CODESPACES = sizeof(lang_table_counts)/sizeof(*lang_table_counts);
+    const int NB_CODESPACES = FF_ARRAY_ELEMS(lang_table_counts);
 
     if (target_codespace >= NB_CODESPACES)
         return NULL;
@@ -758,7 +759,14 @@ const char *av_convert_lang_to(const char *lang, enum AVLangCodespace target_cod
             entry = lang_table + entry->next_equivalent;
 
     if (target_codespace == AV_LANG_ISO639_2_TERM)
-        return av_convert_lang_to(lang, AV_LANG_ISO639_2_BIBL);
+        return ff_convert_lang_to(lang, AV_LANG_ISO639_2_BIBL);
 
     return NULL;
 }
+
+#if LIBAVFORMAT_VERSION_MAJOR < 58
+const char *av_convert_lang_to(const char *lang, enum AVLangCodespace target_codespace)
+{
+    return ff_convert_lang_to(lang, target_codespace);
+}
+#endif

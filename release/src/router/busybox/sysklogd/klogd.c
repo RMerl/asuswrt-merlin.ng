@@ -293,8 +293,15 @@ int klogd_main(int argc UNUSED_PARAM, char **argv)
 #endif
 			/* Log (only non-empty lines) */
 			if (*start)
+#if defined(MAPAC1750) /* remove annoying message: udb_ioctl_copy_out: no handler for ioctl 0x8:0x2 */
+				if ((memcmp(start, "udb_ioctl_copy_out:", 19)==0) && (memcmp(start+20, "no handler for ioctl 0x8:0x2", 28)==0))
+					; /* skip */
+				else {
+#endif
 				syslog(priority, "%s", start);
-
+#if defined(MAPAC1750) /* remove annoying message: udb_ioctl_copy_out: no handler for ioctl 0x8:0x2 */
+				}
+#endif
 			if (!newline)
 				break;
 			start = newline;

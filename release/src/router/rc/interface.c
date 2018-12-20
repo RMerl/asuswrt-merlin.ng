@@ -199,9 +199,12 @@ int _ifconfig(const char *name, int flags, const char *addr, const char *netmask
 	if(strcmp(name, "eth0_1") == 0 ||
 		strcmp(name, "eth0_2") == 0 ||
 		strcmp(name, "eth0_3") == 0 ||
-		strcmp(name, "eth0_4") == 0 ||
-		strcmp(name, "eth1") == 0){
+		strcmp(name, "eth0_4") == 0){
 		set_hwaddr(name, get_lan_hwaddr());
+		if(flags == 0) return -1;
+	}
+	if(strcmp(name, "eth1") == 0){
+		set_hwaddr(name, get_wan_hwaddr());
 		if(flags == 0) return -1;
 	}
 #endif
@@ -649,13 +652,27 @@ int start_vlan(void)
 #endif
 
 #if defined(HND_ROUTER)
-	if(!nvram_match("switch_wantag", "") && (nvram_get_int("switch_stb_x") > 0 || nvram_match("switch_wantag", "unifi_biz") || nvram_match("switch_wantag", "stuff_fibre") || nvram_match("switch_wantag", "manual"))) {
+	if(!nvram_match("switch_wantag", "") && (nvram_get_int("switch_stb_x") > 0 || nvram_match("switch_wantag", "unifi_biz") || 
+		nvram_match("switch_wantag", "stuff_fibre") || nvram_match("switch_wantag", "spark") ||
+		nvram_match("switch_wantag", "2degrees") || nvram_match("switch_wantag", "slingshot") ||
+		nvram_match("switch_wantag", "orcon") || nvram_match("switch_wantag", "voda_nz") ||
+		nvram_match("switch_wantag", "tpg") || nvram_match("switch_wantag", "iinet") ||
+		nvram_match("switch_wantag", "aapt") || nvram_match("switch_wantag", "intronode") ||
+		nvram_match("switch_wantag", "amaysim") || nvram_match("switch_wantag", "dodo") ||
+		nvram_match("switch_wantag", "iprimus") || nvram_match("switch_wantag", "manual"))) {
 		char *wan_base_if = "eth0";
 		ifconfig(wan_base_if, IFUP, NULL, NULL);
 		set_wan_tag(wan_base_if);
 	}
 #elif defined(BLUECAVE)
-	if(!nvram_match("switch_wantag", "") && (nvram_get_int("switch_stb_x") > 0 || nvram_match("switch_wantag", "unifi_biz") || nvram_match("switch_wantag", "stuff_fibre") || nvram_match("switch_wantag", "manual"))) {
+	if(!nvram_match("switch_wantag", "") && (nvram_get_int("switch_stb_x") > 0 || nvram_match("switch_wantag", "unifi_biz") || 
+		nvram_match("switch_wantag", "stuff_fibre") || nvram_match("switch_wantag", "spark") ||
+		nvram_match("switch_wantag", "2degrees") || nvram_match("switch_wantag", "slingshot") ||
+		nvram_match("switch_wantag", "orcon") || nvram_match("switch_wantag", "voda_nz") ||
+		nvram_match("switch_wantag", "tpg") || nvram_match("switch_wantag", "iinet") ||
+		nvram_match("switch_wantag", "aapt") || nvram_match("switch_wantag", "intronode") ||
+		nvram_match("switch_wantag", "amaysim") || nvram_match("switch_wantag", "dodo") ||
+		nvram_match("switch_wantag", "iprimus") || nvram_match("switch_wantag", "manual"))) {
 		char *wan_base_if = "eth1";
 		ifconfig(wan_base_if, IFUP, NULL, NULL);
 		set_wan_tag(wan_base_if);

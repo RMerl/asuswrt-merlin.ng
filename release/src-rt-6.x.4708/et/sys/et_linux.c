@@ -73,6 +73,8 @@
 #include <etc.h>
 #ifdef HNDCTF
 #include <ctf/hndctf.h>
+#include <proto/bcmtcp.h>
+#include <proto/bcmipv6.h>
 #endif /* HNDCTF */
 #if defined(PLC) || defined(ETFA)
 #include <siutils.h>
@@ -427,6 +429,9 @@ module_param(passivemode, int, 0);
 #endif /* ET_ALL_PASSIVE */
 static int txworkq = 0;
 module_param(txworkq, int, 0);
+
+static int psta = 0;
+module_param(psta, int, 0);
 
 #define ET_TXQ_THRESH	0
 static int et_txq_thresh = ET_TXQ_THRESH;
@@ -2313,6 +2318,73 @@ done:
 	return IRQ_RETVAL(events & INTR_NEW);
 }
 
+#ifdef HNDCTF
+static bool
+et_ctf_filter(etc_info_t *etc, void *p, int32 offset)
+{
+	uint8 *data;
+	struct ethervlan_header *evh;
+	struct ipv4_hdr *ip = NULL;
+	struct ipv6_hdr *ip6 = NULL;
+	uint16 ether_type;
+	struct bcmtcp_hdr *h;
+
+	data = PKTDATA(etc->osh, p) + offset;
+	evh = (struct ethervlan_header *)(data);
+	ether_type = evh->vlan_type;
+
+	switch (ether_type) {
+		case HTON16(ETHER_TYPE_8021Q):
+			if (HTON16(ETHER_TYPE_IP) == evh->ether_type)
+				ip = (struct ipv4_hdr *)(data + ETHERVLAN_HDR_LEN);
+			else if (HTON16(ETHER_TYPE_IPV6) == evh->ether_type)
+				ip6 = (struct ipv6_hdr *)(data + ETHERVLAN_HDR_LEN);
+			else
+				return FALSE;
+			break;
+		case HTON16(ETHER_TYPE_IP):
+			ip = (struct ipv4_hdr *)(data + ETHER_HDR_LEN);
+			break;
+		case HTON16(ETHER_TYPE_IPV6):
+			ip6 = (struct ipv6_hdr *)(data + ETHER_HDR_LEN);
+			break;
+		default:
+			return FALSE;
+	}
+
+	if (ip6 && (IP_VER(ip6) == IP_VER_6)) {
+		if (ip6->nexthdr == IP_PROT_UDP) {
+			h = (struct bcmtcp_hdr *)(ip6 + 1);
+			if (HTON16(h->src_port) == 546 || HTON16(h->src_port) == 547) {
+				PKTSETSKIPCT(etc->osh, p);
+				ET_ERROR(("et: IPv6_PROT_UDP and Dport 0x%x (Sport 0x%x), skip ctf!\n",
+					HTON16(h->dst_port), HTON16(h->src_port)));
+				return TRUE;
+			}
+		}
+	} else if (ip) {
+		if (IP_VER(ip) != IP_VER_4)
+			return FALSE;
+
+		/* Connections with fragmented packets are not handled by ctf */
+		if ((ip->frag & HTON16(IPV4_FRAG_MORE|IPV4_FRAG_OFFSET_MASK)) != 0)
+			return FALSE;
+
+		data = ((uint8 *)ip) + IPV4_HLEN(ip);
+		h = (struct bcmtcp_hdr *)data;
+		if (ip->prot == IP_PROT_UDP &&
+			(HTON16(h->src_port) == 67 || HTON16(h->src_port) == 68)) {
+			PKTSETSKIPCT(etc->osh, p);
+			ET_ERROR(("et: IP_PROT_UDP and Dport 0x%x (Sport 0x%x), skip ctf!\n",
+				HTON16(h->dst_port), HTON16(h->src_port)));
+			return TRUE;
+		}
+	}
+
+	return FALSE;
+}
+#endif /* HNDCTF */
+
 #ifdef PKTC
 static void
 et_sendup_chain_error_handler(et_info_t *et, struct sk_buff *skb, uint sz, int32 err)
@@ -2569,6 +2641,12 @@ et_rxevent(osl_t *osh, et_info_t *et, struct chops *chops, void *ch, int quota)
 		/* Don't chain TCP control packet */
 		chaining = (chaining && (skip_check || !PKT_IS_TCP_CTRL(et->osh, p)));
 #endif /* USBAP */
+
+#ifdef HNDCTF
+		if (psta && et_ctf_filter(et->etc, p, dataoff)) {
+			chaining = FALSE;
+		}
+#endif
 
 #ifdef ET_INGRESS_QOS
 		if (et->etc->dma_rx_policy) {

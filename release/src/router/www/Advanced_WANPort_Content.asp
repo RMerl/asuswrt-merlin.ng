@@ -76,6 +76,7 @@
 <script type="text/javascript" src="/js/jquery.js"></script>
 <script type="text/javascript" src="/switcherplugin/jquery.iphone-switch.js"></script>
 <script type="text/javascript" language="JavaScript" src="/js/table/table.js"></script>
+<script type="text/javascript" src="/js/httpApi.js"></script>
 <script>
 
 
@@ -118,6 +119,8 @@ function initial(){
 	
 	addWANOption(document.form.wans_primary, wans_caps_primary.split(" "));
 	addWANOption(document.form.wans_second, wans_caps_secondary.split(" "));
+	httpApi.faqURL("1011718", function(url){document.getElementById("dualwan_faq").href=url;});
+	httpApi.faqURL("1037368", function(url){document.getElementById("network_detect_faq").href=url;});
 
    	document.form.wans_mode.value = wans_mode_orig;
 
@@ -157,8 +160,6 @@ function initial(){
 		add_options_x2(document.form.wans_lanport2, desc, value, current_value);
 	}
 
-	update_detection_time();
-
 	if(based_modelid == "RT-AC88Q" || based_modelid == "BRT-AC828" || based_modelid == "RT-AD7200") {
 		var i;
 		var arr = new Array(), varr = new Array();
@@ -191,16 +192,11 @@ function form_show(v){
 		document.getElementById('Routing_rules_table').style.display = "none";
 		document.form.wans_primary.value = wans_dualwan_array[0];	
 		appendLANoption1(document.form.wans_primary);
-		appendModeOption2("0");
-		document.form.wandog_enable_radio[1].checked = true;		
 		document.getElementById("wans_mode_tr").style.display = "none";
 		document.getElementById("wandog_fb_count_tr").style.display = "none";	
 		document.getElementById("routing_table").style.display = "none";
 		document.getElementById("wans_standby_tr").style.display = "none";
 		inputCtrl(document.form.wans_standby, 0);
-		document.getElementById("fo_detection_count_hd").innerHTML = "<#dualwan_pingtime_detect3#>";
-		document.getElementById("sentence1").style.display = "none";
-		document.getElementById("sentence2").style.display = "none";	
 	}
 	else{ //DualWAN enabled
 		document.form.wans_primary.value = wans_dualwan_array[0];
@@ -236,6 +232,18 @@ function form_show(v){
 		appendLANoption1(document.form.wans_primary);
 		appendLANoption2(document.form.wans_second);
 
+		var replace_html = '<input type="text" name="wandog_interval" class="input_3_table" maxlength="1" value="<% nvram_get("wandog_interval"); %>" onblur="update_consume_bytes();" onKeyPress="return validator.isNumber(this, event);" placeholder="5" autocorrect="off" autocapitalize="off">';
+		var new_html_str = document.getElementById("retry_intervale_setting").innerHTML.replace("$INPUT_INTERVAL", replace_html);
+		document.getElementById("retry_intervale_setting").innerHTML = new_html_str;
+
+		replace_html = '<input type="text" name="wandog_maxfail" class="input_3_table" maxlength="2" value="<% nvram_get("wandog_maxfail"); %>" onKeyPress="return validator.isNumber(this, event);" placeholder="5" autocorrect="off" autocapitalize="off">';
+		new_html_str = document.getElementById("wandog_maxfail_setting").innerHTML.replace("$WANDOG_MAXFAIL", replace_html);
+		document.getElementById("wandog_maxfail_setting").innerHTML = new_html_str;
+
+		replace_html = '<input type="text" name="wandog_fb_count" class="input_3_table" maxlength="2" value="<% nvram_get("wandog_fb_count"); %>" onKeyPress="return validator.isNumber(this, event);" placeholder="5" autocorrect="off" autocapitalize="off">';
+		new_html_str = document.getElementById("wandog_fbcount_setting").innerHTML.replace("$WANDOG_FB_COUNT", replace_html);
+		document.getElementById("wandog_fbcount_setting").innerHTML = new_html_str;
+
 		if(gobi_support){
 			if(document.form.wans_mode.value != "lb" && (document.form.wans_primary.value == "usb" || document.form.wans_second.value == "usb")){
 				document.getElementById("wans_standby_tr").style.display = "";
@@ -250,9 +258,8 @@ function form_show(v){
 		appendModeOption(document.form.wans_mode_option.value);
 		show_wans_rules();
 		document.getElementById("wans_mode_tr").style.display = "";
-		document.getElementById("fo_detection_count_hd").innerHTML = "<#dualwan_pingtime_detect2#>";
-		document.getElementById("sentence1").style.display = "";
-		document.getElementById("sentence2").style.display = "";
+		appendMonitorOption(document.form.dns_probe_chk);
+		appendMonitorOption(document.form.wandog_enable_chk);
 	}		
 }
 
@@ -261,7 +268,7 @@ function applyRule(){
 	if(based_modelid == "RT-AC88Q" || based_modelid == "BRT-AC828" || based_modelid == "RT-AD7200") {
 		if(!noiptv_support) {
 			var original_switch_wantag = document.form.switch_wantag.value;
-			if(document.form.wans_primary.value != "lan" && original_switch_wantag != "none") {	
+			if(document.form.wans_primary.value != "lan" && original_switch_wantag != "none") {
 				var confirm_flag = confirm("If the primary WAN is not 'Ethernet LAN', IPTV function will be disable. Are you sure to process?");/*untranslated*/
 				if(confirm_flag) {
 					document.form.switch_wantag.disabled = false;
@@ -340,18 +347,24 @@ function applyRule(){
 		else{ //fo or fb
 			document.form.wans_lb_ratio.disabled = true;
 			document.form.wan0_routing_isp_enable.disabled = true;
-			document.form.wan0_routing_isp.disabled = true;	
+			document.form.wan0_routing_isp.disabled = true;
 			document.form.wan1_routing_isp_enable.disabled = true;
 			document.form.wan1_routing_isp.disabled = true;
-			document.form.wans_routing_rulelist.disabled =true;	
-			if(document.form.wandog_enable_radio[0].checked)
+			document.form.wans_routing_rulelist.disabled =true;
+
+			if(document.form.wandog_enable_chk.checked)
 				document.form.wandog_enable.value = "1";
 			else
 				document.form.wandog_enable.value = "0";
 
+			if(document.form.dns_probe_chk.checked)
+				document.form.dns_probe.value = "1";
+			else
+				document.form.dns_probe.value = "0";
+
 			if(!validator.range(document.form.wandog_interval, 1, 9))
 				return false;
-		}		
+		}
 	}
 	else{
 		document.form.wans_mode.value = "fo";
@@ -361,7 +374,7 @@ function applyRule(){
 		document.form.wan0_routing_isp.disabled = true;	
 		document.form.wan1_routing_isp_enable.disabled = true;
 		document.form.wan1_routing_isp.disabled = true;
-		document.form.wans_routing_rulelist.disabled =true;		
+		document.form.wans_routing_rulelist.disabled =true;
 		document.form.wans_dualwan.value = document.form.wans_primary.value + " none";
 		document.form.wan_unit.value = 0;
 		document.form.wandog_enable.value = "0";
@@ -436,14 +449,6 @@ function applyRule(){
 
 	if(wans_dualwan_array.indexOf("usb") == 1 && document.form.wan1_enable.value == "0"){
 		document.form.wan1_enable.value = "1";
-	}
-
-	if(document.form.wandog_enable_radio[0].checked == true){
-		if(document.form.wandog_target.value == ""){
-			alert("Target cannot be blank.");
-			document.form.wandog_target.focus();
-			return;
-		}
 	}
 
 	var reboot_time	= eval("<% get_default_reboot_time(); %>");
@@ -633,13 +638,8 @@ function appendModeOption(v){
 			else{
 				document.form.wans_routing_enable[1].checked = true;
 				document.getElementById('Routing_rules_table').style.display = "none";
-			}				
-			
-			appendModeOption2("0");
-			document.form.wandog_enable_radio[1].checked = true;
-			document.getElementById("fo_detection_count_hd").innerHTML = "<#dualwan_pingtime_detect3#>";
-			document.getElementById("sentence1").style.display = "none";
-			document.getElementById("sentence2").style.display = "none";
+			}
+
 			document.getElementById("wandog_fb_count_tr").style.display = "none";			
 			document.getElementById("routing_table").style.display = "";
 			document.getElementById("fb_span").style.display = "none";
@@ -662,16 +662,6 @@ function appendModeOption(v){
 			document.form.wans_routing_enable[1].disabled = true;
 			document.getElementById('watchdog_table').style.display = "";
 			document.getElementById('Routing_rules_table').style.display = "none";
-			
-			if(wandog_enable_orig == "1")
-				document.form.wandog_enable_radio[0].checked = true;
-			else
-				document.form.wandog_enable_radio[1].checked = true;
-			appendModeOption2(wandog_enable_orig);
-
-			document.getElementById("fo_detection_count_hd").innerHTML = "<#dualwan_pingtime_detect#>";
-			document.getElementById("sentence1").style.display = "";
-			document.getElementById("sentence2").style.display = "";
 			document.getElementById("wandog_fb_count_tr").style.display = "none";
 			document.getElementById("routing_table").style.display = "none";
 			document.getElementById("fb_span").style.display = "";
@@ -691,11 +681,24 @@ function appendModeOption(v){
 		}
 }
 
-function appendModeOption2(v){
-	if(v == "1"){
-		inputCtrl(document.form.wandog_target, 1);
-	}else{
-		inputCtrl(document.form.wandog_target, 0);
+function appendMonitorOption(obj){
+	if(obj.name == "wandog_enable_chk"){
+		if(obj.checked){
+			inputCtrl(document.form.wandog_target, 1);
+		}
+		else{
+			inputCtrl(document.form.wandog_target, 0);
+		}
+	}
+	else if(obj.name == "dns_probe_chk"){
+		if(obj.checked){
+			inputCtrl(document.form.dns_probe_host, 1);
+			inputCtrl(document.form.dns_probe_content, 1);
+		}
+		else{
+			inputCtrl(document.form.dns_probe_host, 0);
+			inputCtrl(document.form.dns_probe_content, 0);
+		}
 	}
 }
 
@@ -900,10 +903,10 @@ function hideClients_Block(){
 }
 
 function pullLANIPList(obj){
-	if(isMenuopen == 0){		
+	if(isMenuopen == 0){
 		obj.src = "/images/arrow-top.gif"
-		document.getElementById("ClientList_Block_PC").style.display = 'block';		
-		document.form.wandog_target.focus();		
+		document.getElementById("ClientList_Block_PC").style.display = 'block';
+		document.form.wandog_target.focus();
 		isMenuopen = 1;
 	}
 	else
@@ -961,12 +964,6 @@ function hotstandby_act(enable){
 			}
 		}
 	}
-}
-
-function update_detection_time(){
-	document.getElementById("fo_detection_time").innerHTML = parseInt(document.form.wandog_interval.value)*parseInt(document.form.wandog_maxfail.value);
-	if(document.form.wans_mode.value == "fb")
-		document.getElementById("fb_detection_time").innerHTML = parseInt(document.form.wandog_interval.value)*parseInt(document.form.wandog_fb_count.value);
 }
 
 function update_consume_bytes(){
@@ -1034,6 +1031,7 @@ function remain_origins(){
 <input type="hidden" name="wans_dualwan" value="<% nvram_get("wans_dualwan"); %>">
 <input type="hidden" name="wans_lanport" value="<% nvram_get("wans_lanport"); %>">
 <input type="hidden" name="wans_lb_ratio" value="<% nvram_get("wans_lb_ratio"); %>">
+<input type="hidden" name="dns_probe" value="<% nvram_get("dns_probe"); %>">
 <input type="hidden" name="wandog_enable" value="<% nvram_get("wandog_enable"); %>">
 <input type="hidden" name="wan0_routing_isp_enable" value="<% nvram_get("wan0_routing_isp_enable"); %>">
 <input type="hidden" name="wan0_routing_isp" value="<% nvram_get("wan0_routing_isp"); %>">
@@ -1090,10 +1088,10 @@ function remain_origins(){
 							<tbody>
 								<tr>
 								  <td bgcolor="#4D595D" valign="top">
-								  <div>&nbsp;</div>
-								  <div class="formfonttitle"><#menu5_3#> - <#dualwan#></div>
-								  <div style="margin:10px 0 10px 5px;" class="splitLine"></div>
-					  			<div class="formfontdesc"><#dualwan_desc#></div>
+									<div>&nbsp;</div>
+									<div class="formfonttitle"><#menu5_3#> - <#dualwan#></div>
+									<div style="margin:10px 0 10px 5px;" class="splitLine"></div>
+									<div class="formfontdesc"><#dualwan_desc#><a id="dualwan_faq" href="" target="_blank" style="margin-left:5px; text-decoration: underline;"><#dualwan#> FAQ</a></div>
 									<table width="100%" border="1" align="center" cellpadding="4" cellspacing="0" bordercolor="#6b8fa3"  class="FormTable">
 										
 			  						<thead>
@@ -1186,7 +1184,6 @@ function remain_origins(){
 										  			document.getElementById("fb_checkbox").onclick = function(){
 										  				document.form.wans_mode.value = (this.checked == true ? "fb" : "fo");
 										  				document.getElementById("wandog_fb_count_tr").style.display = (this.checked == true ? "" : "none");
-														update_detection_time();
 										  			}
 										  		</script>
 												<div id="lb_note" style="color:#FFCC00; display:none;"><#dualwan_lb_note#></div>
@@ -1244,44 +1241,55 @@ function remain_origins(){
 				<table width="100%" border="1" align="center" cellpadding="4" cellspacing="0" class="FormTable" style="margin-top:8px;" id="watchdog_table">
 					<thead>
 					<tr>
-						<td colspan="2"><#dualwan_pingtime_wd2#></td>
+						<td colspan="2"><#dualwan_pingtime_wd2#><div style="font-weight: normal; font-style: italic; margin-top: 5px;"><#FAQ_Desc#></div></td>
 					</tr>
 					</thead>
 
 					<tr>
 						<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(26,3);"><#Retry_interval2#></a></th>
-						<td>
-		        		<input type="text" name="wandog_interval" class="input_3_table" maxlength="1" value="<% nvram_get("wandog_interval"); %>" onblur="update_consume_bytes();update_detection_time();" onKeyPress="return validator.isNumber(this, event);" placeholder="5" autocorrect="off" autocapitalize="off">&nbsp;&nbsp;<#Second#><div><span id="consume_bytes_warning" style="display:none;"></span></div>
+						<td id="retry_intervale_setting"><#Every_N_Seconds#>
+							<div><span id="consume_bytes_warning" style=""></span></div>
 						</td>
 					</tr>
 
 					<tr>
-						<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(26,5);"><div id="fo_detection_count_hd"><#dualwan_pingtime_detect2#></div></a></th>
-						<td>
-							<div><span id="sentence1" style="color:#FFFFFF;"><#dualwan_pingtime_detect_continuous#>&nbsp;</span><input type="text" name="wandog_maxfail" class="input_3_table" maxlength="2" value="<% nvram_get("wandog_maxfail"); %>" onKeyPress="return validator.isNumber(this, event);" onchange="update_detection_time();" placeholder="5" autocorrect="off" autocapitalize="off">&nbsp;&nbsp;<#Times#> <span id="sentence2" style="color:#FFFFFF;">(<span id="fo_detection_time" style="color:#FFFFFF;"></span>&nbsp;&nbsp;<#Second#>)  <#dualwan_pingtime_detect_failed#></span></div>
-						</td>
+						<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(26,5);"><div id="fo_detection_count_hd"><#dualwan_failover_trigger#></div></a></th>
+						<td id="wandog_maxfail_setting"><#dualwan_failover_desc#></td>
 					</tr>
 
 					<tr id="wandog_fb_count_tr">
-						<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(26,6);"><div id="fb_detection_count_hd"><#dualwan_pingtime_fb_detect2#></div></a></th>	
+						<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(26,6);"><div id="fb_detection_count_hd"><#dualwan_failback_trigger#></div></a></th>
+						<td id="wandog_fbcount_setting"><#dualwan_failback_desc2#></td>
+					</tr>
+
+					<tr>
+						<th><#Network_Monitoring#></th>
 						<td>
-							<div style="float:left;">Continous detect Primary WAN successfully over&nbsp;<input type="text" name="wandog_fb_count" class="input_3_table" maxlength="2" value="<% nvram_get("wandog_fb_count"); %>" onKeyPress="return validator.isNumber(this, event);" onchange="update_detection_time();" placeholder="5" autocorrect="off" autocapitalize="off">&nbsp;&nbsp;times ( = <span style="color:#FFFFFF;" id="fb_detection_time"></span>&nbsp;&nbsp;<#Second#>).</div>
+							<input type="checkbox" name="dns_probe_chk" value="" <% nvram_match("dns_probe", "1", "checked"); %> onClick="appendMonitorOption(this);"><div style="display: inline-block; vertical-align: middle; margin-bottom: 2px;" ><#DNS_Query#></div>
+							<input type="checkbox" name="wandog_enable_chk" value="" <% nvram_match("wandog_enable", "1", "checked"); %>  onClick="appendMonitorOption(this);"><div style="display: inline-block; vertical-align: middle; margin-bottom: 2px;"><#Ping#></div>
 						</td>
 					</tr>
-					
+
 					<tr>
-						<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(26,1);"><div id="wandog_title"><#wandog_enable2#></div></a></th>
+						<th><#Resolved_Target#></th>
 				        <td>
-					 		<input type="radio" value="1" id="wandog_enable_radio1" name="wandog_enable_radio" class="content_input_fd" <% nvram_match("wandog_enable", "1", "checked"); %> onClick="appendModeOption2(this.value);"><label for="wandogRre_enable_radio1"><#checkbox_Yes#></label>
-	 						<input type="radio" value="0" id="wandog_enable_radio2" name="wandog_enable_radio" class="content_input_fd" <% nvram_match("wandog_enable", "0", "checked"); %> onClick="appendModeOption2(this.value);"><label for="wandog_enable_radio2"><#checkbox_No#></label>
+								<input type="text" class="input_32_table" name="dns_probe_host" maxlength="255" autocorrect="off" autocapitalize="off" value="<% nvram_get("dns_probe_host"); %>">
 						</td>
-					</tr>	
+					</tr>
+
 					<tr>
-						<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(26,2);"><#NetworkTools_target#></a></th>
+						<th><#Respond_IP#></th>
+						<td>
+								<input type="text" class="input_32_table" name="dns_probe_content" maxlength="1024" autocorrect="off" autocapitalize="off" value="<% nvram_get("dns_probe_content"); %>">
+						</td>
+					</tr>
+
+					<tr>
+						<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(26,2);"><#Ping_Target#></a></th>
 						<td>
 								<input type="text" class="input_32_table" name="wandog_target" maxlength="100" value="<% nvram_get("wandog_target"); %>" placeholder="ex: www.google.com" autocorrect="off" autocapitalize="off">
-								<img id="pull_arrow" height="14px;" src="/images/arrow-down.gif" style="position:absolute;*margin-left:-3px;*margin-top:1px;" onclick="pullLANIPList(this);" title="<#select_network_host#>" onmouseover="over_var=1;" onmouseout="over_var=0;">
-								<div id="ClientList_Block_PC" class="ClientList_Block_PC" style="display:none;"></div>
+								<img id="pull_arrow" class="pull_arrow" height="14px;" src="/images/arrow-down.gif" style="position:absolute;*margin-left:-3px;*margin-top:1px;" onclick="pullLANIPList(this);" title="<#select_network_host#>" onmouseover="over_var=1;" onmouseout="over_var=0;">
+								<div id="ClientList_Block_PC" name="ClientList_Block_PC" class="ClientList_Block_PC" style="display:none;"></div>
 						</td>
 					</tr>
 

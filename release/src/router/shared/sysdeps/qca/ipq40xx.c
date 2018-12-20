@@ -50,7 +50,7 @@ enum {
 	LAN4_PORT=1,	/* unused */
 	WAN_PORT=5,	/* unused */
 	P6_PORT=5,
-#elif defined(RTAC82U) || defined(MAPAC3000)
+#elif defined(RTAC82U)
 	CPU_PORT=0,
 	LAN1_PORT=1,
 	LAN2_PORT=2,
@@ -58,7 +58,7 @@ enum {
 	LAN4_PORT=4,
 	WAN_PORT=5,
 	P6_PORT=5,
-#elif defined(MAPAC1300) || defined(MAPAC2200) || defined(VZWAC1300)
+#elif defined(MAPAC1300) || defined(MAPAC2200) || defined(VZWAC1300) || defined(RTAC92U) 
 	CPU_PORT=0,
 	LAN1_PORT=1,
 	LAN2_PORT=2,
@@ -125,7 +125,7 @@ const int lan_id_to_port_mapping[NR_WANLAN_PORT] = {
 	LAN4_PORT,
 };
 
-#if defined(MAPAC1300) || defined(MAPAC2200) || defined(VZWAC1300) /* for Lyra */
+#if defined(MAPAC1300) || defined(MAPAC2200) || defined(VZWAC1300) || defined(RTAC92U) /* for Lyra */
 /* this table is mapping to lan_id_to_port_mapping */
 static const int skip_ports[NR_WANLAN_PORT] = {
 	0,  /* WAN_PORT */
@@ -167,8 +167,10 @@ static unsigned int get_wan_port_mask(int wan_unit)
 	int sw_mode = sw_mode();
 	char nv[] = "wanXXXports_maskXXXXXX";
 
+#if !defined(RTCONFIG_AMAS)
 	if (sw_mode == SW_MODE_AP || sw_mode == SW_MODE_REPEATER)
 		return 0;
+#endif
 
 	if (wan_unit <= 0 || wan_unit >= WAN_UNIT_MAX)
 		strcpy(nv, "wanports_mask");
@@ -241,11 +243,16 @@ int ipq40xx_vlan_set(int vid, int prio, int mbr, int untag)
 				doSystem("ssdk_sh vlan member add %d %d tagged", vid, i);
 			}
 			doSystem("ssdk_sh portVlan ingress set %d secure", i);
+			if (nvram_match("wifison_ready", "1"))
+			{
 #ifdef RTCONFIG_WIFI_SON
-			doSystem("ssdk_sh portVlan egress set %d unmodified", i);
+				doSystem("ssdk_sh portVlan egress set %d unmodified", i);
 #else
-			doSystem("ssdk_sh portVlan egress set %d untagged", i);
+				 _dprintf("no wifison feature\n");
 #endif
+			}
+			else
+				doSystem("ssdk_sh portVlan egress set %d untagged", i);
 		}
 	}
 
@@ -342,7 +349,7 @@ static int get_ipq40xx_port_info(unsigned int port, unsigned int *link, unsigned
 	buf[rlen-1] = '\0';
 	if ((pt = strstr(buf, "[Status]:")) == NULL)
 	{
-#if defined(RTAC82U) || defined(MAPAC3000) //workaround for MALIBU
+#if defined(RTAC82U) //workaround for MALIBU
 		if(link!=NULL)
 			*link=1;  //linak up
 		if(speed!=NULL)
@@ -461,22 +468,22 @@ static void build_wan_lan_mask(int stb)
 		lan_mask &= ~wans_lan_mask;
 	}
 
-#if ! defined(RTCONFIG_DETWAN)	// not to overwrite wanports_mask and lanports_mask
-	for (unit = WAN_UNIT_FIRST; unit < WAN_UNIT_MAX; ++unit) {
-		sprintf(prefix, "%d", unit);
-		sprintf(nvram_ports, "wan%sports_mask", (unit == WAN_UNIT_FIRST)?"":prefix);
+	if(!nvram_match("wifison_ready", "1")) {
+		for (unit = WAN_UNIT_FIRST; unit < WAN_UNIT_MAX; ++unit) {
+			sprintf(prefix, "%d", unit);
+			sprintf(nvram_ports, "wan%sports_mask", (unit == WAN_UNIT_FIRST)?"":prefix);
 
-		if (get_dualwan_by_unit(unit) == WANS_DUALWAN_IF_WAN) {
-			nvram_set_int(nvram_ports, wan_mask);
+			if (get_dualwan_by_unit(unit) == WANS_DUALWAN_IF_WAN) {
+				nvram_set_int(nvram_ports, wan_mask);
+			}
+			else if (get_dualwan_by_unit(unit) == WANS_DUALWAN_IF_LAN) {
+				nvram_set_int(nvram_ports, wans_lan_mask);
+			}
+			else
+				nvram_unset(nvram_ports);
 		}
-		else if (get_dualwan_by_unit(unit) == WANS_DUALWAN_IF_LAN) {
-			nvram_set_int(nvram_ports, wans_lan_mask);
-		}
-		else
-			nvram_unset(nvram_ports);
+		nvram_set_int("lanports_mask", lan_mask);
 	}
-	nvram_set_int("lanports_mask", lan_mask);
-#endif	/* RTCONFIG_DETWAN */
 }
 
 static void edma_group_mask_to_bmp(int groupid, unsigned int mask)
@@ -720,11 +727,13 @@ static void config_ipq40xx_LANWANPartition(int type)
 	reset_qca_switch();
 
 #ifdef RTCONFIG_DETWAN
-	if(lan_mask == 0 && nvram_match("detwan_phy", "eth1"))
-	{
-		int mask = lan_mask;
-		lan_mask = wan_mask;
-		wan_mask = mask;
+	if(nvram_match("wifison_ready", "1")) {
+		if(lan_mask == 0 && nvram_match("detwan_phy", "eth1"))
+		{
+			int mask = lan_mask;
+			lan_mask = wan_mask;
+			wan_mask = mask;
+		}
 	}
 #endif	/* RTCONFIG_DETWAN */
 
@@ -740,6 +749,7 @@ static void config_ipq40xx_LANWANPartition(int type)
 			ipq40xx_vlan_set(vlan++, 0, (wan_mask      | CPU_PORT_WAN_MASK), wan_mask);
 		if (wans_lan_mask)
 			ipq40xx_vlan_set(vlan++, 0, (wans_lan_mask | CPU_PORT_WAN_MASK), wans_lan_mask);
+		edma_group_mask_to_bmp(1, wan_mask);
 	}
 }
 
@@ -878,6 +888,9 @@ void reset_qca_switch(void)
 	f_write_string("/sys/class/net/eth1/queues/rx-2/rps_flow_cnt", "256", 0, 0);
 	f_write_string("/sys/class/net/eth1/queues/rx-3/rps_flow_cnt", "256", 0, 0);
 	f_write_string("/proc/sys/net/core/rps_sock_flow_entries", "1024", 0, 0);
+#if defined(VZWAC1300)
+	eval("ssdk_sh", "debug", "phy", "set", "5", "0xB", "0x000a"); // decrease PHY NOISE, Arcadyan request
+#endif
 }
 
 static void set_Vlan_VID(int vid)
@@ -906,20 +919,22 @@ static int convert_n56u_to_qca_bitmask(int orig)
 			bitmask |= (1 << switch_port_mapping[i]);
 	}
 #if defined(RTCONFIG_DETWAN)
-	if(nvram_safe_get("detwan_phy")[0] != '\0')
-	{
-		int mask = 0;
-		//iptv (VoIP & STB) use LAN3/LAN4 but only LAN1 OR WAN to be real port in LYRA
-		if((bitmask & (1 << LAN4_PORT)) || (bitmask & (1 << LAN3_PORT))) {
-			bitmask &= ~(1 << LAN4_PORT);
-			bitmask &= ~(1 << LAN3_PORT);
-			mask |= nvram_get_int("detwan_lan_mask");
+	if(nvram_match("wifison_ready", "1")) {
+		if(nvram_safe_get("detwan_phy")[0] != '\0')
+		{
+			int mask = 0;
+			//iptv (VoIP & STB) use LAN3/LAN4 but only LAN1 OR WAN to be real port in LYRA
+			if((bitmask & (1 << LAN4_PORT)) || (bitmask & (1 << LAN3_PORT))) {
+				bitmask &= ~(1 << LAN4_PORT);
+				bitmask &= ~(1 << LAN3_PORT);
+				mask |= nvram_get_int("detwan_lan_mask");
+			}
+			if(bitmask & (1<<WAN_PORT)) {
+				bitmask &= ~(1 << WAN_PORT);
+				mask |= nvram_get_int("detwan_wan_mask");
+			}
+			bitmask |= mask;
 		}
-		if(bitmask & (1<<WAN_PORT)) {
-			bitmask &= ~(1 << WAN_PORT);
-			mask |= nvram_get_int("detwan_wan_mask");
-		}
-		bitmask |= mask;
 	}
 #elif defined(VZWAC1300)
 	{
@@ -960,8 +975,10 @@ static void initialize_Vlan(int stb_bitmask)
 	build_wan_lan_mask(0);
 	stb_bitmask = convert_n56u_to_qca_bitmask(stb_bitmask);
 #if defined(RTCONFIG_DETWAN)
-	lan_mask = get_lan_port_mask();
-	wan_mask = get_wan_port_mask(0);
+	if(nvram_match("wifison_ready", "1")) {
+		lan_mask = get_lan_port_mask();
+		wan_mask = get_wan_port_mask(0);
+	}
 #endif
 	lan_mask &= ~stb_bitmask;
 	wan_mask |= stb_bitmask;
@@ -1374,7 +1391,7 @@ void ATE_port_status(void)
 #else
 	sprintf(buf, "W0=%C;L1=%C;L2=%C;L3=%C;L4=%C;",
 		(pS.link[0] == 1) ? (pS.speed[0] == 2) ? 'G' : 'M': 'X',
-#if defined(MAPAC1300) || defined(MAPAC2200) || defined(VZWAC1300)
+#if defined(MAPAC1300) || defined(MAPAC2200) || defined(VZWAC1300) || defined(RTAC92U)
 		(pS.link[4] == 1) ? (pS.speed[4] == 2) ? 'G' : 'M': 'X',
 		'X',
 		'X',
@@ -1384,7 +1401,7 @@ void ATE_port_status(void)
 		(pS.link[2] == 1) ? (pS.speed[2] == 2) ? 'G' : 'M': 'X',
 		(pS.link[3] == 1) ? (pS.speed[3] == 2) ? 'G' : 'M': 'X',
 		(pS.link[4] == 1) ? (pS.speed[4] == 2) ? 'G' : 'M': 'X'
-#endif	/* MAPAC1300 || MAPAC2200 || VZWAC1300 */
+#endif	/* MAPAC1300 || MAPAC2200 || VZWAC1300 || RTAC92U */
 		);
 #endif
 	puts(buf);
@@ -1451,12 +1468,12 @@ int detwan_set_def_vid(const char *ifname, int setVid, int needTagged, int avoid
 				int new_vid;
 				new_vid = detwan_set_def_vid(ipq40xx_net[i].ifname, 0, 0, setVid);
 
-#if defined(MAPAC1300) || defined(MAPAC2200) || defined(VZWAC1300)
+#if defined(MAPAC1300) || defined(MAPAC2200) || defined(VZWAC1300) || defined(RTAC92U)
 				if (IPTV_ports_cnt() >= 2)
 				{
 					doSystem("ssdk_sh vlan entry del %d", new_vid);	/* remove new vid (NOT USED) */
 				}
-#endif	/* MAPAC1300 || MAPAC2200 || VZWAC1300 */
+#endif	/* MAPAC1300 || MAPAC2200 || VZWAC1300 || RTAC92U */
 			}
 		}
 	}
@@ -1499,7 +1516,7 @@ int detwan_set_def_vid(const char *ifname, int setVid, int needTagged, int avoid
 		doSystem("ssdk_sh vlan entry create %d", vid);
 		doSystem("ssdk_sh vlan member add %d %d %s", vid, 0, tagged);			//CPU port
 		doSystem("ssdk_sh vlan member add %d %d %s", vid, ipq40xx_net[i].port_id, type);	//WAN port
-		doSystem("ssdk_sh portVlan defaultcvid set %d %d", ipq40xx_net[i].port_id, cvid);
+		doSystem("ssdk_sh portVlan defaultCVid set %d %d", ipq40xx_net[i].port_id, cvid);
 		ret = 0;
 		break;
 	}
@@ -1550,177 +1567,3 @@ void usage(char *cmd)
 	exit(0);
 }
 #endif
-
-#if defined(RTCONFIG_AMAS)
-void add_beacon_vsie(char *hexdata)
-{
-	// 0: Beacon
-	// 1: ProbeRequest
-	// 2: ProbeResponse
-	// 3: AuthenticationRequest
-	// 4: AuthenticationRespnse
-	// 5: AssocationRequest
-	// 6: AssociationResponse
-	// 7: ReassociationRequest
-	// 8: ReassociationResponse
-	char cmd[300];
-	int pktflag = 0x0;
-	int len = 0;
-	char *ifname = NULL;
-
-	len = 3 + strlen(hexdata)/2;	/* 3 is oui's len */
-
-	ifname = get_wififname(0); // TODO: Should we get the band from nvram?
-	
-	//_dprintf("%s: wl0_ifname=%s\n", __func__, ifname);
-
-	if (ifname && strlen(ifname)) {
-		snprintf(cmd, sizeof(cmd), "hostapd_cli set_vsie -i%s %d DD%02X%02X%02X%02X%s", 
-			ifname, pktflag, (uint8_t)len, (uint8_t)OUI_ASUS[0],  (uint8_t)OUI_ASUS[1],  (uint8_t)OUI_ASUS[2], hexdata);
-		_dprintf("%s: cmd=%s\n", __func__, cmd);
-		system(cmd);
-	}
-}
-void del_beacon_vsie(char *hexdata)
-{
-	// 0: Beacon
-	// 1: ProbeRequest
-	// 2: ProbeResponse
-	// 3: AuthenticationRequest
-	// 4: AuthenticationRespnse
-	// 5: AssocationRequest
-	// 6: AssociationResponse
-	// 7: ReassociationRequest
-	// 8: ReassociationResponse
-	char cmd[300] = {0};
-	int pktflag = 0x0;
-	int len = 0;
-	char *ifname = NULL;
-
-	len = 3 + strlen(hexdata)/2;	/* 3 is oui's len */
-
-	ifname = get_wififname(0); // TODO: Should we get the band from nvram?
-
-	//_dprintf("%s: wl0_ifname=%s\n", __func__, ifname);
-
-	if (ifname && strlen(ifname)) {
-		snprintf(cmd, sizeof(cmd), "hostapd_cli del_vsie -i%s %d DD%02X%02X%02X%02X%s",
-			ifname, pktflag, (uint8_t)len,  (uint8_t)OUI_ASUS[0],  (uint8_t)OUI_ASUS[1],  (uint8_t)OUI_ASUS[2], hexdata);
-		_dprintf("%s: cmd=%s\n", __func__, cmd);
-		system(cmd);
-	}
-}
-
-void set_wpa_cli_cmd(int band, const char *cmd)
-{
-	char ctrl_sk[32];
-	char *sta;
-
-	if(band < 0 || band >= MAX_NR_WL_IF || cmd == NULL || cmd[0] == '\0')
-		return;
-
-	sta = get_staifname(band);
-	snprintf(ctrl_sk, sizeof(ctrl_sk), "/var/run/wpa_supplicant-%s", sta);
-	eval("wpa_cli", "-p", ctrl_sk, "-i", sta, cmd);
-}
-
-/* 
- * int get_psta_status(int unit)
- *
- * return value
- * 	0: init
- * 	1:
- * 	2: connect and auth
- * 	3: stop
- */
-int get_psta_status(int unit)
-{
-	unsigned int ret;
-	const char *sta;
-	int pid;
-	pid = getpid();
-
-	sta = get_staifname(unit);
-	ret = chk_assoc(sta);
-	if(ret < 0) return WLC_STATE_STOPPED;
-	if(ret > 0) return WLC_STATE_CONNECTED;
-	return ret;
-}
-
-void Pty_stop_wlc_connect(int band)
-{
-	set_wpa_cli_cmd(band, "disconnect");
-}
-
-void Pty_start_wlc_connect(int band)
-{
-	set_wpa_cli_cmd(band, "reconnect");
-}
-
-/*
- * int Pty_get_upstream_rssi(int band)
- *
- * return value
- * 	a rssi value which is a native value. The lower the smaller signal.
- *
- * 	-91: RSSI_NO_SIGNAL
- */
-int Pty_get_upstream_rssi(int band)
-{
-	char *sta;
-	int status, quality, signal, noise, update;
-	int ret;
-
-	if(band < 0 || band > MAX_NR_WL_IF)
-		return 0;
-
-	sta = get_staifname(band);
-	extern int get_wl_status(const char *ifname, int *status, int *quality, int *signal, int *noise, unsigned int *update);
-	ret = get_wl_status(sta, &status, &quality, &signal, &noise, &update);
-	if(ret > 0 && status)
-		return signal;
-
-	return 0;
-}
-int get_wlan_service_status(int bssidx, int vifidx)
-{
-
-	return 0;
-}
-void set_wlan_service_status(int bssidx, int vifidx, int enabled)
-{
-
-}
-void set_pre_sysdep_config(int iftype)
-{
-
-}
-void set_post_sysdep_config(int iftype)
-{
-
-}
-int get_radar_status(int bssidx)
-{
-	return 0;
-}
-int Pty_procedure_check(int unit, int wlif_count)
-{
-	return 0;
-}
-char *get_pap_bssid(int unit, char bssid_str[])
-{
-	struct iwreq wrq;
-	char *sta;
-	int ret;
-	unsigned char *mac;
-
-	*bssid_str = '\0';
-	sta = get_staifname(unit);
-	if((ret = get_ap_mac(sta, &wrq)) >= 0) {
-		mac = wrq.u.ap_addr.sa_data;
-		snprintf(bssid_str, 18, "%02x:%02x:%02x:%02x:%02x:%02x", mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]);
-	}
-	return bssid_str;
-}
-#endif
-

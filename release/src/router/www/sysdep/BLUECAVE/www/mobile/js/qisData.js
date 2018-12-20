@@ -112,7 +112,7 @@ var wlcObj = {
 	"wlc_ap_mac": ""
 }
 var wlcMultiObj = {
-	"0" : {
+	"wlc0" : {
 		"wlc0_band": "",
 		"wlc0_ssid": "",
 		"wlc0_auth_mode": "",
@@ -123,7 +123,7 @@ var wlcMultiObj = {
 		"wlc0_key": "",
 		"wlc0_ap_mac": ""
 	},
-	"1" : {
+	"wlc1" : {
 		"wlc1_band": "",
 		"wlc1_ssid": "",
 		"wlc1_auth_mode": "",
@@ -134,7 +134,7 @@ var wlcMultiObj = {
 		"wlc1_key": "",
 		"wlc1_ap_mac": ""
 	},
-	"2" : {
+	"wlc2" : {
 		"wlc2_band": "",
 		"wlc2_ssid": "",
 		"wlc2_auth_mode": "",
@@ -170,16 +170,22 @@ var timeObj = {
 }
 
 var iptvObj = {
-	"wan10_proto": "",
-	"wan11_proto": "",
 	"switch_stb_x": "",
-	"switch_wantag": "",
+	"switch_wantag": ""
+}
+
+var iptvManualObj = {
 	"switch_wan0tagid": "",
 	"switch_wan0prio": "",
 	"switch_wan1tagid": "",
 	"switch_wan1prio": "",
 	"switch_wan2tagid": "",
-	"switch_wan2prio": "",
+	"switch_wan2prio": ""
+}
+
+var iptvWanSettingObj = {
+	"wan10_proto": "",
+	"wan11_proto": "",
 	"wan10_ipaddr_x": "",
 	"wan10_netmask_x": "",
 	"wan10_gateway_x": "",

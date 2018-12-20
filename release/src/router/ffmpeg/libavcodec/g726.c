@@ -22,20 +22,24 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 #include <limits.h>
+
+#include "libavutil/channel_layout.h"
+#include "libavutil/opt.h"
 #include "avcodec.h"
+#include "internal.h"
 #include "get_bits.h"
 #include "put_bits.h"
 
 /**
- * G.726 11bit float.
- * G.726 Standard uses rather odd 11bit floating point arithmentic for
- * numerous occasions. It's a mistery to me why they did it this way
- * instead of simply using 32bit integer arithmetic.
+ * G.726 11-bit float.
+ * G.726 Standard uses rather odd 11-bit floating point arithmetic for
+ * numerous occasions. It's a mystery to me why they did it this way
+ * instead of simply using 32-bit integer arithmetic.
  */
 typedef struct Float11 {
-    uint8_t sign;   /**< 1bit sign */
-    uint8_t exp;    /**< 4bit exponent */
-    uint8_t mant;   /**< 6bit mantissa */
+    uint8_t sign;   /**< 1 bit sign */
+    uint8_t exp;    /**< 4 bits exponent */
+    uint8_t mant;   /**< 6 bits mantissa */
 } Float11;
 
 static inline Float11* i2f(int i, Float11* f)
@@ -71,6 +75,7 @@ typedef struct G726Tables {
 } G726Tables;
 
 typedef struct G726Context {
+    AVClass *class;
     G726Tables tbls;    /**< static tables needed for computation */
 
     Float11 sr[2];      /**< prev. reconstructed samples */
@@ -90,9 +95,10 @@ typedef struct G726Context {
     int sez;            /**< estimated second order prediction */
     int y;              /**< quantizer scaling factor for the next iteration */
     int code_size;
+    int little_endian;  /**< little-endian bitstream as used in aiff and Sun AU */
 } G726Context;
 
-static const int quant_tbl16[] =                  /**< 16kbit/s 2bits per sample */
+static const int quant_tbl16[] =                  /**< 16kbit/s 2 bits per sample */
            { 260, INT_MAX };
 static const int16_t iquant_tbl16[] =
            { 116, 365, 365, 116 };
@@ -101,7 +107,7 @@ static const int16_t W_tbl16[] =
 static const uint8_t F_tbl16[] =
            { 0, 7, 7, 0 };
 
-static const int quant_tbl24[] =                  /**< 24kbit/s 3bits per sample */
+static const int quant_tbl24[] =                  /**< 24kbit/s 3 bits per sample */
            {  7, 217, 330, INT_MAX };
 static const int16_t iquant_tbl24[] =
            { INT16_MIN, 135, 273, 373, 373, 273, 135, INT16_MIN };
@@ -110,7 +116,7 @@ static const int16_t W_tbl24[] =
 static const uint8_t F_tbl24[] =
            { 0, 1, 2, 7, 7, 2, 1, 0 };
 
-static const int quant_tbl32[] =                  /**< 32kbit/s 4bits per sample */
+static const int quant_tbl32[] =                  /**< 32kbit/s 4 bits per sample */
            { -125,  79, 177, 245, 299, 348, 399, INT_MAX };
 static const int16_t iquant_tbl32[] =
          { INT16_MIN,   4, 135, 213, 273, 323, 373, 425,
@@ -121,7 +127,7 @@ static const int16_t W_tbl32[] =
 static const uint8_t F_tbl32[] =
            { 0, 0, 0, 1, 1, 1, 3, 7, 7, 3, 1, 1, 1, 0, 0, 0 };
 
-static const int quant_tbl40[] =                  /**< 40kbit/s 5bits per sample */
+static const int quant_tbl40[] =                  /**< 40kbit/s 5 bits per sample */
            { -122, -16,  67, 138, 197, 249, 297, 338,
               377, 412, 444, 474, 501, 527, 552, INT_MAX };
 static const int16_t iquant_tbl40[] =
@@ -146,7 +152,7 @@ static const G726Tables G726Tables_pool[] =
 
 
 /**
- * Para 4.2.2 page 18: Adaptive quantizer.
+ * Paragraph 4.2.2 page 18: Adaptive quantizer.
  */
 static inline uint8_t quant(G726Context* c, int d)
 {
@@ -172,14 +178,14 @@ static inline uint8_t quant(G726Context* c, int d)
 }
 
 /**
- * Para 4.2.3 page 22: Inverse adaptive quantizer.
+ * Paragraph 4.2.3 page 22: Inverse adaptive quantizer.
  */
 static inline int16_t inverse_quant(G726Context* c, int i)
 {
     int dql, dex, dqt;
 
     dql = c->tbls.iquant[i] + (c->y >> 2);
-    dex = (dql>>7) & 0xf;        /* 4bit exponent */
+    dex = (dql>>7) & 0xf;        /* 4-bit exponent */
     dqt = (1<<7) + (dql & 0x7f); /* log2 -> linear */
     return (dql < 0) ? 0 : ((dqt<<dex) >> 7);
 }
@@ -200,7 +206,7 @@ static int16_t g726_decode(G726Context* c, int I)
 
     if (I_sig)  /* get the sign */
         dq = -dq;
-    re_signal = c->se + dq;
+    re_signal = (int16_t)(c->se + dq);
 
     /* Update second order predictor coefficient A2 and A1 */
     pk0 = (c->sez + dq) ? sgn(c->sez + dq) : 0;
@@ -212,7 +218,7 @@ static int16_t g726_decode(G726Context* c, int I)
             c->b[i] = 0;
     } else {
         /* This is a bit crazy, but it really is +255 not +256 */
-        fa1 = av_clip((-c->a[0]*c->pk[0]*pk0)>>5, -256, 255);
+        fa1 = av_clip_intp2((-c->a[0]*c->pk[0]*pk0)>>5, 8);
 
         c->a[1] += 128*pk0*c->pk[1] + fa1 - (c->a[1]>>7);
         c->a[1] = av_clip(c->a[1], -12288, 12288);
@@ -263,14 +269,14 @@ static int16_t g726_decode(G726Context* c, int I)
         c->se += mult(i2f(c->a[i] >> 2, &f), &c->sr[i]);
     c->se >>= 1;
 
-    return av_clip(re_signal << 2, -0xffff, 0xffff);
+    return av_clip(re_signal * 4, -0xffff, 0xffff);
 }
 
-static av_cold int g726_reset(G726Context* c, int index)
+static av_cold int g726_reset(G726Context *c)
 {
     int i;
 
-    c->tbls = G726Tables_pool[index];
+    c->tbls = G726Tables_pool[c->code_size - 2];
     for (i=0; i<2; i++) {
         c->sr[i].mant = 1<<5;
         c->pk[i] = 1;
@@ -286,127 +292,241 @@ static av_cold int g726_reset(G726Context* c, int index)
     return 0;
 }
 
-#if CONFIG_ADPCM_G726_ENCODER
+#if CONFIG_ADPCM_G726_ENCODER || CONFIG_ADPCM_G726LE_ENCODER
 static int16_t g726_encode(G726Context* c, int16_t sig)
 {
     uint8_t i;
 
-    i = quant(c, sig/4 - c->se) & ((1<<c->code_size) - 1);
+    i = av_mod_uintp2(quant(c, sig/4 - c->se), c->code_size);
     g726_decode(c, i);
     return i;
 }
-#endif
 
 /* Interfacing to the libavcodec */
 
-static av_cold int g726_init(AVCodecContext * avctx)
+static av_cold int g726_encode_init(AVCodecContext *avctx)
 {
     G726Context* c = avctx->priv_data;
-    unsigned int index;
 
+    c->little_endian = !strcmp(avctx->codec->name, "g726le");
+
+    if (avctx->strict_std_compliance > FF_COMPLIANCE_UNOFFICIAL &&
+        avctx->sample_rate != 8000) {
+        av_log(avctx, AV_LOG_ERROR, "Sample rates other than 8kHz are not "
+               "allowed when the compliance level is higher than unofficial. "
+               "Resample or reduce the compliance level.\n");
+        return AVERROR(EINVAL);
+    }
     if (avctx->sample_rate <= 0) {
-        av_log(avctx, AV_LOG_ERROR, "Samplerate is invalid\n");
-        return -1;
+        av_log(avctx, AV_LOG_ERROR, "Invalid sample rate %d\n",
+               avctx->sample_rate);
+        return AVERROR(EINVAL);
     }
 
-    index = (avctx->bit_rate + avctx->sample_rate/2) / avctx->sample_rate - 2;
-
-    if (avctx->bit_rate % avctx->sample_rate && avctx->codec->encode) {
-        av_log(avctx, AV_LOG_ERROR, "Bitrate - Samplerate combination is invalid\n");
-        return -1;
-    }
     if(avctx->channels != 1){
         av_log(avctx, AV_LOG_ERROR, "Only mono is supported\n");
-        return -1;
+        return AVERROR(EINVAL);
     }
-    if(index>3){
-        av_log(avctx, AV_LOG_ERROR, "Unsupported number of bits %d\n", index+2);
-        return -1;
-    }
-    g726_reset(c, index);
-    c->code_size = index+2;
 
-    avctx->coded_frame = avcodec_alloc_frame();
-    if (!avctx->coded_frame)
-        return AVERROR(ENOMEM);
-    avctx->coded_frame->key_frame = 1;
+    if (avctx->bit_rate)
+        c->code_size = (avctx->bit_rate + avctx->sample_rate/2) / avctx->sample_rate;
 
-    if (avctx->codec->decode)
-        avctx->sample_fmt = SAMPLE_FMT_S16;
+    c->code_size = av_clip(c->code_size, 2, 5);
+    avctx->bit_rate = c->code_size * avctx->sample_rate;
+    avctx->bits_per_coded_sample = c->code_size;
+
+    g726_reset(c);
+
+    /* select a frame size that will end on a byte boundary and have a size of
+       approximately 1024 bytes */
+    avctx->frame_size = ((int[]){ 4096, 2736, 2048, 1640 })[c->code_size - 2];
 
     return 0;
 }
 
-static av_cold int g726_close(AVCodecContext *avctx)
-{
-    av_freep(&avctx->coded_frame);
-    return 0;
-}
-
-#if CONFIG_ADPCM_G726_ENCODER
-static int g726_encode_frame(AVCodecContext *avctx,
-                            uint8_t *dst, int buf_size, void *data)
+static int g726_encode_frame(AVCodecContext *avctx, AVPacket *avpkt,
+                             const AVFrame *frame, int *got_packet_ptr)
 {
     G726Context *c = avctx->priv_data;
-    short *samples = data;
+    const int16_t *samples = (const int16_t *)frame->data[0];
     PutBitContext pb;
+    int i, ret, out_size;
 
-    init_put_bits(&pb, dst, 1024*1024);
+    out_size = (frame->nb_samples * c->code_size + 7) / 8;
+    if ((ret = ff_alloc_packet2(avctx, avpkt, out_size, 0)) < 0)
+        return ret;
+    init_put_bits(&pb, avpkt->data, avpkt->size);
 
-    for (; buf_size; buf_size--)
-        put_bits(&pb, c->code_size, g726_encode(c, *samples++));
+    for (i = 0; i < frame->nb_samples; i++)
+        if (c->little_endian) {
+            put_bits_le(&pb, c->code_size, g726_encode(c, *samples++));
+        } else {
+            put_bits(&pb, c->code_size, g726_encode(c, *samples++));
+        }
 
-    flush_put_bits(&pb);
+    if (c->little_endian) {
+        flush_put_bits_le(&pb);
+    } else {
+        flush_put_bits(&pb);
+    }
 
-    return put_bits_count(&pb)>>3;
+    avpkt->size = out_size;
+    *got_packet_ptr = 1;
+    return 0;
 }
+
+#define OFFSET(x) offsetof(G726Context, x)
+#define AE AV_OPT_FLAG_AUDIO_PARAM | AV_OPT_FLAG_ENCODING_PARAM
+static const AVOption options[] = {
+    { "code_size", "Bits per code", OFFSET(code_size), AV_OPT_TYPE_INT, { .i64 = 4 }, 2, 5, AE },
+    { NULL },
+};
+
+static const AVCodecDefault defaults[] = {
+    { "b", "0" },
+    { NULL },
+};
 #endif
 
-static int g726_decode_frame(AVCodecContext *avctx,
-                             void *data, int *data_size,
-                             AVPacket *avpkt)
+#if CONFIG_ADPCM_G726_ENCODER
+static const AVClass g726_class = {
+    .class_name = "g726",
+    .item_name  = av_default_item_name,
+    .option     = options,
+    .version    = LIBAVUTIL_VERSION_INT,
+};
+
+AVCodec ff_adpcm_g726_encoder = {
+    .name           = "g726",
+    .long_name      = NULL_IF_CONFIG_SMALL("G.726 ADPCM"),
+    .type           = AVMEDIA_TYPE_AUDIO,
+    .id             = AV_CODEC_ID_ADPCM_G726,
+    .priv_data_size = sizeof(G726Context),
+    .init           = g726_encode_init,
+    .encode2        = g726_encode_frame,
+    .capabilities   = AV_CODEC_CAP_SMALL_LAST_FRAME,
+    .sample_fmts    = (const enum AVSampleFormat[]){ AV_SAMPLE_FMT_S16,
+                                                     AV_SAMPLE_FMT_NONE },
+    .priv_class     = &g726_class,
+    .defaults       = defaults,
+};
+#endif
+
+#if CONFIG_ADPCM_G726LE_ENCODER
+static const AVClass g726le_class = {
+    .class_name = "g726le",
+    .item_name  = av_default_item_name,
+    .option     = options,
+    .version    = LIBAVUTIL_VERSION_INT,
+};
+
+AVCodec ff_adpcm_g726le_encoder = {
+    .name           = "g726le",
+    .long_name      = NULL_IF_CONFIG_SMALL("G.726 little endian ADPCM (\"right-justified\")"),
+    .type           = AVMEDIA_TYPE_AUDIO,
+    .id             = AV_CODEC_ID_ADPCM_G726LE,
+    .priv_data_size = sizeof(G726Context),
+    .init           = g726_encode_init,
+    .encode2        = g726_encode_frame,
+    .capabilities   = AV_CODEC_CAP_SMALL_LAST_FRAME,
+    .sample_fmts    = (const enum AVSampleFormat[]){ AV_SAMPLE_FMT_S16,
+                                                     AV_SAMPLE_FMT_NONE },
+    .priv_class     = &g726le_class,
+    .defaults       = defaults,
+};
+#endif
+
+#if CONFIG_ADPCM_G726_DECODER || CONFIG_ADPCM_G726LE_DECODER
+static av_cold int g726_decode_init(AVCodecContext *avctx)
 {
+    G726Context* c = avctx->priv_data;
+
+    if(avctx->channels > 1){
+        avpriv_request_sample(avctx, "Decoding more than one channel");
+        return AVERROR_PATCHWELCOME;
+    }
+    avctx->channels       = 1;
+    avctx->channel_layout = AV_CH_LAYOUT_MONO;
+
+    c->little_endian = !strcmp(avctx->codec->name, "g726le");
+
+    c->code_size = avctx->bits_per_coded_sample;
+    if (c->code_size < 2 || c->code_size > 5) {
+        av_log(avctx, AV_LOG_ERROR, "Invalid number of bits %d\n", c->code_size);
+        return AVERROR(EINVAL);
+    }
+    g726_reset(c);
+
+    avctx->sample_fmt = AV_SAMPLE_FMT_S16;
+
+    return 0;
+}
+
+static int g726_decode_frame(AVCodecContext *avctx, void *data,
+                             int *got_frame_ptr, AVPacket *avpkt)
+{
+    AVFrame *frame     = data;
     const uint8_t *buf = avpkt->data;
     int buf_size = avpkt->size;
     G726Context *c = avctx->priv_data;
-    short *samples = data;
+    int16_t *samples;
     GetBitContext gb;
+    int out_samples, ret;
+
+    out_samples = buf_size * 8 / c->code_size;
+
+    /* get output buffer */
+    frame->nb_samples = out_samples;
+    if ((ret = ff_get_buffer(avctx, frame, 0)) < 0)
+        return ret;
+    samples = (int16_t *)frame->data[0];
 
     init_get_bits(&gb, buf, buf_size * 8);
 
-    while (get_bits_count(&gb) + c->code_size <= buf_size*8)
-        *samples++ = g726_decode(c, get_bits(&gb, c->code_size));
+    while (out_samples--)
+        *samples++ = g726_decode(c, c->little_endian ?
+                                    get_bits_le(&gb, c->code_size) :
+                                    get_bits(&gb, c->code_size));
 
-    if(buf_size*8 != get_bits_count(&gb))
+    if (get_bits_left(&gb) > 0)
         av_log(avctx, AV_LOG_ERROR, "Frame invalidly split, missing parser?\n");
 
-    *data_size = (uint8_t*)samples - (uint8_t*)data;
+    *got_frame_ptr = 1;
+
     return buf_size;
 }
 
-#if CONFIG_ADPCM_G726_ENCODER
-AVCodec adpcm_g726_encoder = {
-    "g726",
-    AVMEDIA_TYPE_AUDIO,
-    CODEC_ID_ADPCM_G726,
-    sizeof(G726Context),
-    g726_init,
-    g726_encode_frame,
-    g726_close,
-    NULL,
-    .sample_fmts = (const enum SampleFormat[]){SAMPLE_FMT_S16,SAMPLE_FMT_NONE},
-    .long_name = NULL_IF_CONFIG_SMALL("G.726 ADPCM"),
+static void g726_decode_flush(AVCodecContext *avctx)
+{
+    G726Context *c = avctx->priv_data;
+    g726_reset(c);
+}
+#endif
+
+#if CONFIG_ADPCM_G726_DECODER
+AVCodec ff_adpcm_g726_decoder = {
+    .name           = "g726",
+    .long_name      = NULL_IF_CONFIG_SMALL("G.726 ADPCM"),
+    .type           = AVMEDIA_TYPE_AUDIO,
+    .id             = AV_CODEC_ID_ADPCM_G726,
+    .priv_data_size = sizeof(G726Context),
+    .init           = g726_decode_init,
+    .decode         = g726_decode_frame,
+    .flush          = g726_decode_flush,
+    .capabilities   = AV_CODEC_CAP_DR1,
 };
 #endif
 
-AVCodec adpcm_g726_decoder = {
-    "g726",
-    AVMEDIA_TYPE_AUDIO,
-    CODEC_ID_ADPCM_G726,
-    sizeof(G726Context),
-    g726_init,
-    NULL,
-    g726_close,
-    g726_decode_frame,
-    .long_name = NULL_IF_CONFIG_SMALL("G.726 ADPCM"),
+#if CONFIG_ADPCM_G726LE_DECODER
+AVCodec ff_adpcm_g726le_decoder = {
+    .name           = "g726le",
+    .type           = AVMEDIA_TYPE_AUDIO,
+    .id             = AV_CODEC_ID_ADPCM_G726LE,
+    .priv_data_size = sizeof(G726Context),
+    .init           = g726_decode_init,
+    .decode         = g726_decode_frame,
+    .flush          = g726_decode_flush,
+    .capabilities   = AV_CODEC_CAP_DR1,
+    .long_name      = NULL_IF_CONFIG_SMALL("G.726 ADPCM little-endian"),
 };
+#endif

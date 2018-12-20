@@ -2200,5 +2200,36 @@ var validator = {
                         return true;
                 else
                         return false;
+	},
+
+	dwb_check_wl_setting: function(_jsonPara) {
+		var status = true;
+		var edit_wl_unit = _jsonPara["edit_wl_unit"];
+		var edit_wl_ssid = _jsonPara["edit_wl_ssid"];
+		var dwb_unit = _jsonPara["dwb_unit"];
+		var smart_connect = _jsonPara["smart_connect"];
+		var current_ssid = _jsonPara["current_ssid"];
+		if(edit_wl_unit != dwb_unit) {
+			if(edit_wl_ssid == current_ssid[dwb_unit])//compare dwb ssid
+				status = false;
+		}
+		else {
+			if(smart_connect == "1") {
+				if(edit_wl_ssid == current_ssid[0])//compare wl0 ssid
+					status = false;
+			}
+			else {
+				current_ssid.splice(dwb_unit, 1);//filter dwb ssid
+				for (var idx in current_ssid) {
+					if (current_ssid.hasOwnProperty(idx)) {
+						if(edit_wl_ssid == current_ssid[idx]) {//compare all ssid
+							status = false;
+							break;
+						}
+					}
+				}
+			}
+		}
+		return status;
         }
 };

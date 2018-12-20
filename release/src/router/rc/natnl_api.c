@@ -6,8 +6,12 @@ static int is_mesh_re_mode()
 	int re_mode = 0;
 #if defined(RTCONFIG_AMAS) // aimesh
 	re_mode |= nvram_get_int("re_mode");
-#elif defined(MAPAC1300) || defined(MAPAC2200) || defined(VZWAC1300) || defined(MAPAC1750) // Lyra
-	re_mode |= !nvram_get_int("cfg_master");
+#endif
+#if defined(RTCONFIG_WIFI_SON) // Lyra
+	if(nvram_match("wifison_ready", "1")) {
+		re_mode = 0; /* overwrite AMAS */
+		re_mode |= !nvram_get_int("cfg_master");
+	}
 #endif
 	return re_mode;
 }

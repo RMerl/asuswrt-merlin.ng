@@ -24,8 +24,7 @@
 			char *tmp = NULL; \
 			GET_JSON_STRING_FIELD_EX(json_obj, name, tmp); \
 			if (tmp) { \
-	            memset(dest, 0, sizeof(dest)); \
-	            my_memcpy(dest, tmp, sizeof(dest), strlen(tmp)); \
+				snprintf(dest, sizeof(dest), "%s", tmp); \
         	} \
 		}
 

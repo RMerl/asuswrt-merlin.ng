@@ -518,51 +518,6 @@ del_wan_routes(char *wan_ifname)
 	return del_routes(prefix, "route", wan_ifname);
 }
 
-#ifdef QOS
-int enable_qos()
-{
-#if defined (W7_LOGO) || defined (WIFI_LOGO)
-	return 0;
-#endif
-	int qos_userspec_app_en = 0;
-	int rulenum = nvram_get_int("qos_rulenum_x"), idx_class = 0;
-
-	/* Add class for User specify, 10:20(high), 10:40(middle), 10:60(low)*/
-	if (rulenum) {
-		for (idx_class=0; idx_class < rulenum; idx_class++)
-		{
-			if (atoi(Ch_conv("qos_prio_x", idx_class)) == 1)
-			{
-				qos_userspec_app_en = 1;
-				break;
-			}
-			else if (atoi(Ch_conv("qos_prio_x", idx_class)) == 6)
-			{
-				qos_userspec_app_en = 1;
-				break;
-			}
-		}
-	}
-
-	if (	(nvram_match("qos_tos_prio", "1") ||
-		 nvram_match("qos_pshack_prio", "1") ||
-		 nvram_match("qos_service_enable", "1") ||
-		 nvram_match("qos_shortpkt_prio", "1")	) ||
-		(!nvram_match("qos_manual_ubw","0") && *nvram_safe_get("qos_manual_ubw")) ||
-		(rulenum && qos_userspec_app_en)
-	)
-	{
-		fprintf(stderr, "found QoS rulues\n");
-		return 1;
-	}
-	else
-	{
-		fprintf(stderr, "no QoS rulues\n");
-		return 0;
-	}
-}
-#endif
-
 /*
  * (1) wan[x]_ipaddr_x/wan[x]_netmask_x/wan[x]_gateway_x/...:
  *    static ip or ip get from dhcp
@@ -1047,6 +1002,9 @@ start_wan_if(int unit)
 	/* variable should exist? */
 	if (nvram_match(strcat_r(prefix, "enable", tmp), "0")) {
 		update_wan_state(prefix, WAN_STATE_DISABLED, 0);
+#ifdef RTCONFIG_WIFI_SON
+		nvram_set_int("link_internet", 0);
+#endif
 		return;
 	}
 #if defined(RTCONFIG_JFFS2) || defined(RTCONFIG_BRCM_NAND_JFFS2) || defined(RTCONFIG_UBIFS)
@@ -1197,7 +1155,7 @@ _dprintf("start_wan_if: USB modem is scanning...\n");
 			nvram_set(strcat_r(prefix, "dnsenable_x", tmp), "1");
 #endif
 
-			char *pppd_argv[] = { "/usr/sbin/pppd", "call", "3g", "nochecktime", NULL};
+			char *pppd_argv[] = { "/usr/sbin/pppd", "call", "3g", NULL};
 
 			if(nvram_get_int("stop_conn_3g") != 1)
 				_eval(pppd_argv, NULL, 0, NULL);
@@ -1303,8 +1261,18 @@ TRACE_PT("3g begin with %s.\n", wan_ifname);
 						sleep(2);
 					}
 #endif
-					dbG("start udhcpc(%d): %s.\n", unit, wan_ifname);
-					start_udhcpc(wan_ifname, unit, &pid);
+#ifdef RTCONFIG_INTERNAL_GOBI
+					/* Skip dhcp for IPv6-only USB modem */
+					if (nvram_get_int("modem_pdp") == 2) {
+						//wan_ifname = get_wan6face();
+						ifconfig(wan_ifname, IFUP, "0.0.0.0", NULL);
+						wan_up(wan_ifname);
+					} else
+#endif
+					{
+						dbG("start udhcpc(%d): %s.\n", unit, wan_ifname);
+						start_udhcpc(wan_ifname, unit, &pid);
+					}
 				}
 				else
 					TRACE_PT("stop_conn_3g was set.\n");
@@ -1449,12 +1417,13 @@ TRACE_PT("3g begin with %s.\n", wan_ifname);
 				}
 				nvram_set(strcat_r(prefix, "hwaddr", tmp), ether_etoa((unsigned char *) ifr.ifr_hwaddr.sa_data, eabuf));
 			}
-#if !(defined(RTCONFIG_DETWAN) && defined(RTCONFIG_ETHBACKHAUL))		// not to change MAC
 			else {
 				ifr.ifr_hwaddr.sa_family = ARPHRD_ETHER;
+#if defined(RTCONFIG_DETWAN)
+				if (strcmp(prefix, "wan0_")) // do not change MAC for ethX
+#endif	/* RTCONFIG_DETWAN */
 				ioctl(s, SIOCSIFHWADDR, &ifr);
 			}
-#endif	/* ! RTCONFIG_ETHBACKHAUL */
 
 			/* Bring up i/f */
 			ifconfig(wan_ifname, IFUP, NULL, NULL);
@@ -1472,6 +1441,24 @@ TRACE_PT("3g begin with %s.\n", wan_ifname);
 		/* Set initial QoS mode again now that WAN port is ready. */
 #ifdef CONFIG_BCMWL5
 		set_et_qos_mode();
+#endif
+
+#ifdef RTCONFIG_DUMP4000
+#define	WANCAP_FILE1	"/tmp/wan1.pcap"
+#define	WANCAP_FILE2	"/tmp/wan2.pcap"
+		if (!f_exists(WANCAP_FILE1)) { /* first time, detection period  */
+			char *tcpdump_argv[] = { "/usr/sbin/tcpdump", "-i", wan_ifname, "-c", "4000", "-nn", "-w", WANCAP_FILE1, NULL};
+			_dprintf("[DDDDD] run tcpdump 1st on %s!!\n", wan_ifname);
+			_eval(tcpdump_argv, NULL, 0, &pid);
+			sleep(1);
+		} else if (!f_exists(WANCAP_FILE2)) { /* second time, QIS finished */
+			char *tcpdump_argv[] = { "/usr/sbin/tcpdump", "-i", wan_ifname, "-c", "4000", "-nn", "-w", WANCAP_FILE2, NULL};
+			killall("tcpdump", SIGTERM); // kill first one if still alive
+			sleep(1);
+			_dprintf("[DDDDD] run tcpdump 2nd on %s!!\n", wan_ifname);
+			_eval(tcpdump_argv, NULL, 0, &pid);
+			sleep(1);
+		}
 #endif
 
 #ifdef RTCONFIG_DUALWAN
@@ -2881,6 +2868,12 @@ wan_up(const char *pwan_ifname)
 	start_ovpn_eas();
 #endif
 
+#ifdef RTCONFIG_AMAS
+	if (is_amaslib_enabled()) {
+		// force to trigger amaslib to do static scan
+		AMAS_EVENT_TRIGGER(NULL, NULL, 3);
+	}
+#endif
 _dprintf("%s(%s): done.\n", __FUNCTION__, wan_ifname);
 }
 
@@ -3340,7 +3333,8 @@ start_wan(void)
 		return;
 
 #ifdef RTCONFIG_WIFI_SON
-	nvram_set("start_wan", "1");
+	if (nvram_match("wifison_ready", "1"))
+		nvram_set("start_wan", "1");
 #endif
 
 	/* Create links */
@@ -3451,14 +3445,21 @@ stop_wan(void)
 {
 	int unit;
 
+	if (nvram_match("wifison_ready", "1"))
+	{
 #ifdef RTCONFIG_WIFI_SON
-	if (nvram_get("start_wan") == NULL)
-		return;
-	nvram_unset("start_wan");
+		if (nvram_get("start_wan") == NULL)
+			return;
+		nvram_unset("start_wan");
 #else
-	if (!is_routing_enabled())
-		return;
+	_dprintf("no wifison feature\n");
 #endif
+	}	
+	else
+	{
+		if (!is_routing_enabled())
+			return;
+	}
 
 #ifdef RTCONFIG_RALINK
 	if (module_loaded("hw_nat"))
@@ -4102,6 +4103,79 @@ int detwan_check(char *ifname, unsigned int *wan_mask)
 	return state;
 }
 
+static void detwan_preinit(void)
+{
+	char lan[128];
+	char defwan[32];
+
+	strcpy(defwan, nvram_safe_get("wan0_ifname"));
+
+	nvram_unset("wan0_gw_ifname");
+	nvram_unset("wan0_ifname");
+	nvram_unset("detwan_phy");
+	nvram_unset("detwan_ifname");
+	nvram_unset("wan_ifnames");
+	strcpy(lan, nvram_safe_get("lan_ifnames"));
+	if (string_add(lan, defwan, 1))
+		nvram_set("lan_ifnames", lan);
+
+	stop_wanduck();
+	// Only MAP-AC2200 && MAC-AC1300 support DETWAN 
+	// following configs are same in both products
+	nvram_set("detwan_proto", "-1");
+	nvram_set("wanports_mask", "0");
+	nvram_set("lanports_mask", "48");
+	nvram_set("detwan_max", "2");
+	nvram_set("detwan_name_0", "eth0");
+	nvram_set("detwan_mask_0", "32");
+	nvram_set("detwan_name_1", "eth1");
+	nvram_set("detwan_mask_1", "16");
+
+	ifconfig(defwan, 0, NULL, NULL);
+	eval("ifconfig", defwan, "hw", "ether", get_lan_hwaddr());
+	ifconfig(defwan, IFUP | IFF_ALLMULTI, "0.0.0.0", NULL);
+	eval("brctl", "addif", nvram_safe_get("lan_ifname"), defwan);
+	start_wanduck();
+}
+
+extern void set_defwan(char *wan, char *wanmask, char *lanmask);
+static void detwan_reset(void)
+{
+	char lan[128];
+	char *defwan;
+
+#if defined(MAPAC1300)
+	defwan = "eth1";
+	set_defwan(defwan, "16", "32");
+#elif defined(MAPAC2200)
+	defwan = "eth0";
+	set_defwan(defwan, "32", "16");
+#else
+#error are you DETWAN product?
+#endif
+	strcpy(lan, nvram_safe_get("lan_ifnames"));
+	if (string_remove(lan, defwan))
+		nvram_set("lan_ifnames", lan);
+
+	stop_wanduck();
+
+	nvram_unset("detwan_proto");
+	nvram_unset("detwan_max");
+	nvram_unset("detwan_name_0");
+	nvram_unset("detwan_mask_0");
+	nvram_unset("detwan_name_1");
+	nvram_unset("detwan_mask_1");
+
+	ifconfig(defwan, 0, NULL, NULL);
+	eval("ifconfig", defwan, "hw", "ether", get_wan_hwaddr());
+	ifconfig(defwan, IFUP | IFF_ALLMULTI, "0.0.0.0", NULL);
+	eval("brctl", "delif", nvram_safe_get("lan_ifname"), defwan);
+	eval("killall", "-SIGUSR2", "udhcpc");
+	sleep(1);
+	eval("killall", "-SIGUSR1", "udhcpc");
+	start_wanduck();
+}
+
 int detwan_main(int argc, char *argv[]){
 	int max_inf;
 	unsigned int allmask;
@@ -4111,10 +4185,22 @@ int detwan_main(int argc, char *argv[]){
 	unsigned int wan_mask;
 
 	sw_mode = nvram_get_int("sw_mode");
+
+	if (sw_mode != SW_MODE_ROUTER)
+		return -1;
+
+	if (argc >=2) {
+		if (strncmp(argv[1], "init", 4) == 0)
+			detwan_preinit();
+		else if (strncmp(argv[1], "reset", 5) == 0)
+			detwan_reset();
+		return 0;
+	}
+
 	allmask = detwan_allmask();
 
 	logmessage(__func__, "0: sw_mode(%d) wan0_ifname(%s) allmask(%08x)", sw_mode, nvram_get("wan0_ifname"), allmask);
-	if (sw_mode != SW_MODE_ROUTER || allmask == 0)
+	if (allmask == 0)
 		return -1;
 
 	if(nvram_match("detwan_apply", "yes"))

@@ -60,7 +60,7 @@
 .FormTitle{
 	line-height:160%;
 	font-size:12px;
-	font-family:Arial, Verdana, Arial, Helvetica, sans-serif;
+	font-family:Arial, Verdana, Helvetica, MS UI Gothic, MS P Gothic, sans-serif;
 	border:1px solid #4D595D;
 	color:white;
 	position:relative;
@@ -82,12 +82,12 @@
 }
 .FormTable{
 	font-size:12px;
-	font-family:Arial, Helvetica, sans-serif;
+	font-family:Arial, Helvetica, MS UI Gothic, MS P Gothic, sans-serif;
 	border: 1px solid #000000;
 	border-collapse: collapse;
 }
 .FormTable th{
-	font-family:Arial, Helvetica, sans-serif;
+	font-family:Arial, Helvetica, MS UI Gothic, MS P Gothic, sans-serif;
 	background-color:#1F2D35;
 	color:#FFFFFF	;	/*Viz add*/
 	font-weight:normal;
@@ -145,12 +145,12 @@
 .FormTable_table{
 	margin-top:10px;
 	font-size:12px;
-	font-family:Arial, Helvetica, sans-serif;
+	font-family:Arial, Helvetica, MS UI Gothic, MS P Gothic, sans-serif;
 	border: 1px solid #222;
 	border-collapse: collapse;
 }
 .FormTable_table th{
-	font-family:Arial, Helvetica, sans-serif;
+	font-family:Arial, Helvetica, MS UI Gothic, MS P Gothic, sans-serif;
 	background-color:#1f2d35;
 	font-weight:normal;
 	text-align:center;
@@ -214,12 +214,12 @@
 .FormTable_NWM{
 	/*margin-top:10px;*/
 	font-size:12px;
-	font-family:Arial, Helvetica, sans-serif;
+	font-family:Arial, Helvetica, MS UI Gothic, MS P Gothic, sans-serif;
 	border: 1px solid #222;
 	border-collapse: collapse;
 }
 .FormTable_NWM th{
-	font-family:Arial, Helvetica, sans-serif;
+	font-family:Arial, Helvetica, MS UI Gothic, MS P Gothic, sans-serif;
 	background-color:#1f2d35;
 	font-weight:normal;
 	text-align:center;
@@ -283,13 +283,13 @@
 
  .table_text{
  	color:#FFFFFF;
-	font-family:Arial, Helvetica, sans-serif;
+	font-family:Arial, Helvetica, MS UI Gothic, MS P Gothic, sans-serif;
 	text-decoration:none;
  }
 /* for Table */
 .input{
 	color:#FFFFFF;
-	font-family: Arial, Helvetica, sans-serif;
+	font-family: Arial, Helvetica, MS UI Gothic, MS P Gothic, sans-serif;
 	font-size:12px;
 	padding-left:2px;
 }
@@ -476,7 +476,7 @@
   border:0;
   color: #FFFFFF;
 	height:33px;
-	font-family:Verdana;
+	font-family: Verdana, MS UI Gothic, MS P Gothic, sans-serif;
 	font-size:12px;
   padding:0 .70em 0 .70em;
   	width: auto;
@@ -506,7 +506,7 @@
   border:0;
   color: #333333;
 	height:33px;
-	font-family:Verdana,Bold;
+	font-family: Verdana, Bold, MS UI Gothic, MS P Gothic, sans-serif;
 	font-size:12px;
   padding:0 .70em 0 .70em;
     width: auto;
@@ -553,7 +553,7 @@ form{
 
 .short_btn {
 	width: 105px;
-	font-family:Verdana ;
+	font-family: Verdana;
 	font-size : 13px;
 	text-align:center;
 	line-height:25px;
@@ -567,7 +567,7 @@ form{
 
 .upnp_btn {
 	width: 150px;
-	font-family:Verdana ;
+	font-family: Verdana;
 	font-size : 13px;
 	text-align:center;
 	line-height:25px;
@@ -616,7 +616,7 @@ form{
 }
 .popTable tbody td{
 	color: #666666;
-	font-family: Verdana, Arial, Helvetica, sans-serif;
+	font-family: Verdana, Arial, Helvetica, MS UI Gothic, MS P Gothic, sans-serif;
 	font-size:10pt;
 	padding:4px;
 }
@@ -669,7 +669,7 @@ form{
 	background-color:#EFEFEF;
 	color:#FFF;
 	font-size:12px;
-	font-family:Arial, Helvetica, sans-serif;
+	font-family:Arial, Helvetica, MS UI Gothic, MS P Gothic, sans-serif;
 }
 #QoSList_Block div:hover {
 	background-color:#3366FF;
@@ -890,7 +890,7 @@ form{
 /* CSS Document */
 body{
 color:#FFFFFF;
-font-family:Arial, Helvetica, sans-serif;
+font-family:Arial, Helvetica, MS UI Gothic, MS P Gothic, sans-serif;
 font-size:13px;
 color:#FFFFFF;
 }
@@ -1003,7 +1003,7 @@ color:#FFFFFF;
 	display: block;
 	padding: 5px 5px 0 12px;
 	line-height: 20px;
-	font-family: Arial, Helvetica, sans-serif;
+	font-family: Arial, Helvetica, MS UI Gothic, MS P Gothic, sans-serif;
 	font-size: 13px;
 	background: #333E42;
 	border-radius: 5px 5px 0 0;
@@ -1017,7 +1017,7 @@ color:#FFFFFF;
 
 .tabclick_NW {
 	font-weight: bolder;
-	font-family: Verdana;
+	font-family: Verdana, MS UI Gothic, MS P Gothic, sans-serif;
     color: White;
     display: block;
     float: left;
@@ -1035,7 +1035,7 @@ color:#FFFFFF;
 	font-weight: bolder;
 	white-space:nowrap;
 	font-weight: bolder;
-	font-family: Arial, Helvetica, sans-serif;
+	font-family: Arial, Helvetica, MS UI Gothic, MS P Gothic, sans-serif;
     display: block;
     padding: 5px 5px 0 12px;
     line-height: 20px;
@@ -1090,7 +1090,7 @@ color:#FFFFFF;
 }
 
 .formfont{
-font:Arial, Helvetica, sans-serif;
+font:Arial, Helvetica, MS UI Gothic, MS P Gothic, sans-serif;
 font-size:16px;
 color:#FFFFFF;
 padding-left:10px;
@@ -1100,7 +1100,7 @@ margin-top:5px;
 
 .formfonttitle{
 text-shadow: 1px 1px 0px black;
-font-family:Arial, Helvetica, sans-serif;
+font-family:Arial, Helvetica, MS UI Gothic, MS P Gothic, sans-serif;
 font-size:16px;
 color:#FFFFFF;
 margin-left:5px;
@@ -1108,7 +1108,7 @@ margin-bottom:10px;
 font-weight: bolder;
 }
 .formfonttitle_nwm{
-font-family:Arial, Helvetica, sans-serif;
+font-family:Arial, Helvetica, MS UI Gothic, MS P Gothic, sans-serif;
 font-size:12px;
 color:#FFFFFF;
 margin-left:5px;
@@ -1117,14 +1117,14 @@ font-weight: bolder;
 }
 
 .formfontcontent{
-font-family:Arial, Helvetica, sans-serif;
+font-family:Arial, Helvetica, MS UI Gothic, MS P Gothic, sans-serif;
 font-size:12px;
 color:#FFFFFF;
 padding-top:1px;
 }
 
 .formfontdesc{
-	font-family: Arial, Helvetica, sans-serif;
+	font-family: Arial, Helvetica, MS UI Gothic, MS P Gothic, sans-serif;
 	font-size:13px;
 	color:#FFFFFF;
 	margin-left:5px;
@@ -1132,7 +1132,7 @@ padding-top:1px;
 }
 
 .formlinkfont{
-	font-family: Arial, Helvetica, sans-serif;
+	font-family: Arial, Helvetica, MS UI Gothic, MS P Gothic, sans-serif;
 	font-size:13px;
 	color:#FFFFFF;
 	text-decoration:underline;
@@ -1707,7 +1707,7 @@ padding-top:1px;
 }
 
 .panel_folder{
-	font-family:Courier ;
+	font-family: Courier, MS UI Gothic, MS P Gothic, sans-serif;
 	width:500px;
 	position:absolute;
 	z-index:2000;

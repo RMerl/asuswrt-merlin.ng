@@ -88,6 +88,9 @@ time_day = uptimeStr.substring(5,7);//Mon, 01 Aug 2011 16:25:44 +0800(1467 secs 
 time_mon = uptimeStr.substring(9,12);
 time_time = uptimeStr.substring(18,20);
 dstoffset = '<% nvram_get("time_zone_dstoff"); %>';
+cfg_master = '<% nvram_get("cfg_master"); %>';
+ncb_enable = '<% nvram_get("ncb_enable"); %>';
+wifison = '<% nvram_get("wifison_ready"); %>';
 
 var orig_shell_timeout_x = Math.floor(parseInt("<% nvram_get("shell_timeout"); %>")/60);
 var orig_enable_acc_restriction = '<% nvram_get("enable_acc_restriction"); %>';
@@ -102,8 +105,6 @@ if(accounts.length == 0)
 
 var header_info = [<% get_header_info(); %>];
 var host_name = header_info[0].host;
-if(host_name.split(":").length > 1)
-	host_name = host_name.split(":")[0];
 if(tmo_support)
 	var theUrl = "cellspot.router";	
 else
@@ -144,8 +145,8 @@ function initial(){
 	restrict_rulelist_array = JSON.parse(JSON.stringify(orig_restrict_rulelist_array));
 
 	show_menu();
-	//	https://www.asus.com/us/support/FAQ/1034294
-	httpApi.faqURL("faq", "1034294", "https://www.asus.com", "/support/FAQ/");
+	httpApi.faqURL("1034294", function(url){document.getElementById("faq").href=url;});
+	httpApi.faqURL("1037370", function(url){document.getElementById("ntp_faq").href=url;});
 	show_http_clientlist();
 	display_spec_IP(document.form.http_client.value);
 
@@ -175,6 +176,8 @@ function initial(){
 	
 	if(svc_ready == "0")
 		document.getElementById('svc_hint_div').style.display = "";
+
+	show_network_monitoring();
 
 	if(!HTTPS_support){
 		document.getElementById("http_auth_table").style.display = "none";
@@ -232,6 +235,12 @@ function initial(){
 		document.form.btn_ez_radiotoggle[1].disabled = true;
 		document.form.btn_ez_radiotoggle[2].disabled = true;
 		document.getElementById('btn_ez_radiotoggle_tr').style.display = "none";
+	}
+	else if(wifison == 1){
+		if(sw_mode == 1 || (sw_mode == 3 && cfg_master == 1))
+			document.getElementById("sw_mode_radio_tr").style.display = "";
+		if (based_modelid == "MAP-AC2200" || based_modelid == "RT-AC92U")
+			document.getElementById("ncb_enable_option_tr").style.display = "";
 	}
 	
 	if(sw_mode != 1){
@@ -337,6 +346,8 @@ function applyRule(){
 
 		var restart_firewall_flag = false;
 		var restart_httpd_flag = false;
+		var ncb_enable_option_flag = false;
+		var sw_mode_radio_flag = false;
 	
 		//parse array to nvram
 		var old_fw_tmp_value = ""; //for old version fw
@@ -399,7 +410,7 @@ function applyRule(){
 		}
 
 		// shell_timeout save min to sec
-		document.form.shell_timeout.value = parseInt(document.form.shell_timeout_x.value)*60;		
+		document.form.shell_timeout.value = parseInt(document.form.shell_timeout_x.value)*60;
 		
 		if(document.form.misc_http_x[1].checked == true){
 				document.form.misc_httpport_x.disabled = true;
@@ -457,7 +468,20 @@ function applyRule(){
 				}
 			}
 		}
-		
+
+		if(document.form.ncb_enable_option.value != ncb_enable){
+			document.form.ncb_enable.value = document.form.ncb_enable_option.value;
+			ncb_enable_option_flag = true;
+		}
+
+		if((document.form.sw_mode_radio.value==1 && sw_mode!=3) ||
+			(document.form.sw_mode_radio.value==0 && sw_mode==3) ){
+			if (sw_mode == 1) document.form.sw_mode.value = 3;
+			else if (sw_mode == 3) document.form.sw_mode.value = 1;
+
+			sw_mode_radio_flag = true;
+		}
+
 		if(document.form.btn_ez_radiotoggle[1].disabled == false && document.form.btn_ez_radiotoggle[1].checked == true){
 				document.form.btn_ez_radiotoggle.value=1;
 				document.form.btn_ez_mode.value=0;
@@ -501,6 +525,16 @@ function applyRule(){
 			action_script_tmp += "restart_usb_idle;";
 		}
 
+		if(document.form.wandog_enable_chk.checked)
+			document.form.wandog_enable.value = "1";
+		else
+			document.form.wandog_enable.value = "0";
+
+		if(document.form.dns_probe_chk.checked)
+			document.form.dns_probe.value = "1";
+		else
+			document.form.dns_probe.value = "0";
+
 		showLoading();
 
 		var action_script_tmp = "restart_time;restart_upnp;";
@@ -520,8 +554,14 @@ function applyRule(){
 		if(restart_firewall_flag)
 			action_script_tmp += "restart_firewall;";
 
-		if(pwrsave_support)
-			action_script_tmp += "pwrsave;";
+
+		if(ncb_enable_option_flag)
+			action_script_tmp += "restart_bhblock;";
+
+		if(sw_mode_radio_flag) {
+			action_script_tmp += "restart_chg_swmode;";
+			document.form.action_wait.value = 210;
+		}
 
 		if(needReboot){
 			action_script_tmp = "reboot";
@@ -1558,6 +1598,90 @@ function warn_jffs_format(){
 	alert(msg);
 }
 
+function show_network_monitoring(){
+	var orig_dns_probe = httpApi.nvramGet(["dns_probe"]).dns_probe;
+	var orig_wandog_enable = httpApi.nvramGet(["wandog_enable"]).wandog_enable;
+
+	appendMonitorOption(document.form.dns_probe_chk);
+	appendMonitorOption(document.form.wandog_enable_chk);
+	setTimeout("showPingTargetList();", 500);
+}
+
+function appendMonitorOption(obj){
+	if(obj.name == "wandog_enable_chk"){
+		if(obj.checked){
+			document.getElementById("ping_tr").style.display = "";
+			inputCtrl(document.form.wandog_target, 1);
+		}
+		else{
+			document.getElementById("ping_tr").style.display = "none";
+			inputCtrl(document.form.wandog_target, 0);
+		}
+	}
+	else if(obj.name == "dns_probe_chk"){
+		if(obj.checked){
+			document.getElementById("probe_host_tr").style.display = "";
+			document.getElementById("probe_content_tr").style.display = "";
+			inputCtrl(document.form.dns_probe_host, 1);
+			inputCtrl(document.form.dns_probe_content, 1);
+		}
+		else{
+			document.getElementById("probe_host_tr").style.display = "none";
+			document.getElementById("probe_content_tr").style.display = "none";
+			inputCtrl(document.form.dns_probe_host, 0);
+			inputCtrl(document.form.dns_probe_content, 0);
+		}
+	}
+}
+
+var isPingListOpen = 0;
+function showPingTargetList(){
+	var ttc = httpApi.nvramGet(["territory_code"]).territory_code;
+	if(ttc.search("CN") >= 0){
+		var APPListArray = [
+			["Baidu", "www.baidu.com"], ["QQ", "www.qq.com"], ["Taobao", "www.taobao.com"]
+		];
+	}
+	else{
+		var APPListArray = [
+			["Google ", "www.google.com"], ["Facebook", "www.facebook.com"], ["Youtube", "www.youtube.com"], ["Yahoo", "www.yahoo.com"],
+			["Baidu", "www.baidu.com"], ["Wikipedia", "www.wikipedia.org"], ["Windows Live", "www.live.com"], ["QQ", "www.qq.com"],
+			["Amazon", "www.amazon.com"], ["Twitter", "www.twitter.com"], ["Taobao", "www.taobao.com"], ["Blogspot", "www.blogspot.com"],
+			["Linkedin", "www.linkedin.com"], ["Sina", "www.sina.com"], ["eBay", "www.ebay.com"], ["MSN", "msn.com"], ["Bing", "www.bing.com"],
+			["Яндекс", "www.yandex.ru"], ["WordPress", "www.wordpress.com"], ["ВКонтакте", "www.vk.com"]
+		];
+	}
+
+	var code = "";
+	for(var i = 0; i < APPListArray.length; i++){
+		code += '<a><div onclick="setPingTarget(\''+APPListArray[i][1]+'\');"><strong>'+APPListArray[i][0]+'</strong></div></a>';
+	}
+	code +='<!--[if lte IE 6.5]><iframe class="hackiframe2"></iframe><![endif]-->';
+	document.getElementById("TargetList_Block_PC").innerHTML = code;
+}
+
+function setPingTarget(ipaddr){
+	document.form.wandog_target.value = ipaddr;
+	hidePingTargetList();
+}
+
+function hidePingTargetList(){
+	document.getElementById("ping_pull_arrow").src = "/images/arrow-down.gif";
+	document.getElementById('TargetList_Block_PC').style.display='none';
+	isPingListOpen = 0;
+}
+
+function pullPingTargetList(obj){
+	if(isPingListOpen == 0){
+		obj.src = "/images/arrow-top.gif"
+		document.getElementById("TargetList_Block_PC").style.display = 'block';
+		document.form.wandog_target.focus();
+		isPingListOpen = 1;
+	}
+	else
+		hidePingTargetList();
+}
+
 </script>
 </head>
 
@@ -1721,7 +1845,7 @@ function warn_jffs_format(){
 						<script>
 							var needReboot = false;
 
-							if( based_modelid == "DSL-AC68U" || based_modelid == "RT-AC3200" || based_modelid == "RT-AC87U" || based_modelid == "RT-AC68U" || based_modelid == "RT-AC68A" || based_modelid == "RT-AC56S" || based_modelid == "RT-AC56U" || based_modelid == "RT-AC55U" || based_modelid == "RT-AC55UHP" || based_modelid == "RT-N18U" || based_modelid == "RT-AC88U" || based_modelid == "RT-AC86U" || based_modelid == "AC2900" || based_modelid == "RT-AC3100" || based_modelid == "RT-AC5300" || based_modelid == "RP-AC68U" || based_modelid == "RT-AC58U" || based_modelid == "RT-AC82U" || based_modelid == "MAP-AC3000" || based_modelid == "RT-AC85U" || based_modelid == "RT-AC65U" || based_modelid == "4G-AC68U" || based_modelid == "BLUECAVE" || based_modelid == "RT-AC88Q" || based_modelid == "RT-AD7200" || based_modelid == "RT-N65U" || based_modelid == "GT-AC5300" || based_modelid == "RT-AX88U" || based_modelid == "RT-AX95U" || based_modelid == "BRT-AC828"
+							if( based_modelid == "DSL-AC68U" || based_modelid == "RT-AC3200" || based_modelid == "RT-AC87U" || based_modelid == "RT-AC68U" || based_modelid == "RT-AC68A" || based_modelid == "RT-AC56S" || based_modelid == "RT-AC56U" || based_modelid == "RT-AC55U" || based_modelid == "RT-AC55UHP" || based_modelid == "RT-N18U" || based_modelid == "RT-AC88U" || based_modelid == "RT-AC86U" || based_modelid == "AC2900" || based_modelid == "RT-AC3100" || based_modelid == "RT-AC5300" || based_modelid == "RP-AC68U" || based_modelid == "RT-AC58U" || based_modelid == "RT-AC82U" || based_modelid == "RT-AC92U" || based_modelid == "RT-AC85U" || based_modelid == "RT-AC65U" || based_modelid == "4G-AC68U" || based_modelid == "BLUECAVE" || based_modelid == "RT-AC88Q" || based_modelid == "RT-AD7200" || based_modelid == "RT-N65U" || based_modelid == "GT-AC5300" || based_modelid == "RT-AX88U" || based_modelid == "RT-AX95U" || based_modelid == "BRT-AC828"
 							){
 								$("#reduce_usb3_tr").show();
 							}
@@ -1813,7 +1937,37 @@ function warn_jffs_format(){
 					<td>
 						<input type="text" maxlength="256" class="input_32_table" name="ntp_server0" value="<% nvram_get("ntp_server0"); %>" onKeyPress="return validator.isString(this, event);" autocorrect="off" autocapitalize="off">
 						<a href="javascript:openLink('x_NTPServer1')"  name="x_NTPServer1_link" style=" margin-left:5px; text-decoration: underline;"><#LANHostConfig_x_NTPServer1_linkname#></a>
-						<div id="svc_hint_div" style="display:none;"><span style="color:#FFCC00;"><#General_x_SystemTime_syncNTP#></span></div>
+						<div id="svc_hint_div" style="display:none;">
+							<span style="color:#FFCC00;"><#General_x_SystemTime_syncNTP#></span>
+							<a id="ntp_faq" href="" target="_blank" style="margin-left:5px; color: #FFCC00; text-decoration: underline;">FAQ</a>
+						</div>
+					</td>
+				</tr>
+				<tr id="network_monitor_tr">
+					<th><#Network_Monitoring#></th>
+					<td>
+						<input type="checkbox" name="dns_probe_chk" value="" <% nvram_match("dns_probe", "1", "checked"); %> onClick="appendMonitorOption(this);"><div style="display: inline-block; vertical-align: middle; margin-bottom: 2px;" ><#DNS_Query#></div>
+						<input type="checkbox" name="wandog_enable_chk" value="" <% nvram_match("wandog_enable", "1", "checked"); %>  onClick="appendMonitorOption(this);"><div style="display: inline-block; vertical-align: middle; margin-bottom: 2px;"><#Ping#></div>
+					</td>
+				</tr>
+				<tr id="probe_host_tr" style="display: none;">
+					<th><#Resolved_Target#></th>
+					<td>
+							<input type="text" class="input_32_table" name="dns_probe_host" maxlength="255" autocorrect="off" autocapitalize="off" value="<% nvram_get("dns_probe_host"); %>">
+					</td>
+				</tr>
+				<tr id="probe_content_tr" style="display: none;">
+					<th><#Respond_IP#></th>
+					<td>
+							<input type="text" class="input_32_table" name="dns_probe_content" maxlength="1024" autocorrect="off" autocapitalize="off" value="<% nvram_get("dns_probe_content"); %>">
+					</td>
+				</tr>
+				<tr id="ping_tr" style="display: none;">
+					<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(26,2);"><#Ping_Target#></a></th>
+					<td>
+							<input type="text" class="input_32_table" name="wandog_target" maxlength="100" value="<% nvram_get("wandog_target"); %>" placeholder="ex: www.google.com" autocorrect="off" autocapitalize="off">
+							<img id="ping_pull_arrow" class="pull_arrow" height="14px;" src="/images/arrow-down.gif" style="position:absolute;*margin-left:-3px;*margin-top:1px;" onclick="pullPingTargetList(this);" title="<#select_network_host#>">
+							<div id="TargetList_Block_PC" name="TargetList_Block_PC" class="clientlist_dropdown" style="margin-left: 2px; width: 348px;display: none;"></div>
 					</td>
 				</tr>
 				<tr>
@@ -1880,6 +2034,24 @@ function warn_jffs_format(){
 					<td>
 						<input type="text" maxlength="2" class="input_3_table" name="reboot_time_x_hour" onKeyPress="return validator.isNumber(this,event);" onblur="validator.timeRange(this, 0);" autocorrect="off" autocapitalize="off"> :
 						<input type="text" maxlength="2" class="input_3_table" name="reboot_time_x_min" onKeyPress="return validator.isNumber(this,event);" onblur="validator.timeRange(this, 1);" autocorrect="off" autocapitalize="off">
+					</td>
+				</tr>
+				<tr id="ncb_enable_option_tr" style="display:none">
+					<th><#Enable_ncb_notice#></th>
+					<td>
+						<select name="ncb_enable_option" class="input_option">
+							<option value="0" <% nvram_match("ncb_enable", "0", "selected"); %>>All Non-Block</option>
+							<option value="1" <% nvram_match("ncb_enable", "1", "selected"); %>>Limited Block</option>
+							<option value="2" <% nvram_match("ncb_enable", "2", "selected"); %>>All Block</option>
+						</select>
+					</td>
+				</tr>
+
+				<tr id="sw_mode_radio_tr" style="display:none">
+					<th><#OP_AP_item#></th>
+					<td>
+						<input type="radio" name="sw_mode_radio" value="1" <% nvram_match_x("","sw_mode","3", "checked"); %> ><#checkbox_Yes#>
+						<input type="radio" name="sw_mode_radio" value="0" <% nvram_match_x("","sw_mode","1", "checked"); %> ><#checkbox_No#>
 					</td>
 				</tr>
 			</table>

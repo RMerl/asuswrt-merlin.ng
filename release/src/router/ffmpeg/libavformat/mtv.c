@@ -27,13 +27,13 @@
 #include "libavutil/bswap.h"
 #include "libavutil/intreadwrite.h"
 #include "avformat.h"
+#include "internal.h"
 
 #define MTV_ASUBCHUNK_DATA_SIZE 500
 #define MTV_HEADER_SIZE 512
 #define MTV_AUDIO_PADDING_SIZE 12
-#define AUDIO_SAMPLING_RATE 44100
-#define VIDEO_SID 0
-#define AUDIO_SID 1
+#define MTV_IMAGE_DEFAULT_BPP 16
+#define MTV_AUDIO_SAMPLING_RATE 44100
 
 typedef struct MTVDemuxContext {
 
@@ -43,18 +43,28 @@ typedef struct MTVDemuxContext {
     unsigned int audio_br;          ///< bitrate of audio channel (mp3)
     unsigned int img_colorfmt;      ///< frame colorfmt rgb 565/555
     unsigned int img_bpp;           ///< frame bits per pixel
-    unsigned int img_width;         //
-    unsigned int img_height;        //
+    unsigned int img_width;
+    unsigned int img_height;
     unsigned int img_segment_size;  ///< size of image segment
-    unsigned int video_fps;         //
+    unsigned int video_fps;
     unsigned int full_segment_size;
 
 } MTVDemuxContext;
 
 static int mtv_probe(AVProbeData *p)
 {
+    /* we need at least 57 bytes from the header
+     * to try parsing all required fields
+     */
+    if (p->buf_size < 57)
+        return 0;
+
     /* Magic is 'AMV' */
-    if(*(p->buf) != 'A' || *(p->buf+1) != 'M' || *(p->buf+2) != 'V')
+    if (*p->buf != 'A' || *(p->buf + 1) != 'M' || *(p->buf + 2) != 'V')
+        return 0;
+
+    /* Audio magic is always MP3 */
+    if (p->buf[43] != 'M' || p->buf[44] != 'P' || p->buf[45] != '3')
         return 0;
 
     /* Check for nonzero in bpp and (width|height) header fields */
@@ -65,48 +75,80 @@ static int mtv_probe(AVProbeData *p)
     if(!AV_RL16(&p->buf[52]) || !AV_RL16(&p->buf[54]))
     {
         if(!!AV_RL16(&p->buf[56]))
-            return AVPROBE_SCORE_MAX/2;
+            return AVPROBE_SCORE_EXTENSION;
         else
             return 0;
     }
 
-    if(p->buf[51] != 16)
-        return AVPROBE_SCORE_MAX/4; // But we are going to assume 16bpp anyway ..
+    /* Image bpp is not an absolutely required
+     * field as we latter claim it should be 16
+     * no matter what. All samples in the wild
+     * are RGB565/555.
+     */
+    if(p->buf[51] != MTV_IMAGE_DEFAULT_BPP)
+        return AVPROBE_SCORE_EXTENSION / 2;
+
+    /* We had enough data to parse header values
+     * but we expect to be able to get 512 bytes
+     * of header to be sure.
+     */
+    if (p->buf_size < MTV_HEADER_SIZE)
+        return AVPROBE_SCORE_EXTENSION;
 
     return AVPROBE_SCORE_MAX;
 }
 
-static int mtv_read_header(AVFormatContext *s, AVFormatParameters *ap)
+static int mtv_read_header(AVFormatContext *s)
 {
     MTVDemuxContext *mtv = s->priv_data;
-    ByteIOContext   *pb  = s->pb;
+    AVIOContext   *pb  = s->pb;
     AVStream        *st;
     unsigned int    audio_subsegments;
 
-    url_fskip(pb, 3);
-    mtv->file_size         = get_le32(pb);
-    mtv->segments          = get_le32(pb);
-    url_fskip(pb, 32);
-    mtv->audio_identifier  = get_le24(pb);
-    mtv->audio_br          = get_le16(pb);
-    mtv->img_colorfmt      = get_le24(pb);
-    mtv->img_bpp           = get_byte(pb);
-    mtv->img_width         = get_le16(pb);
-    mtv->img_height        = get_le16(pb);
-    mtv->img_segment_size  = get_le16(pb);
+    avio_skip(pb, 3);
+    mtv->file_size         = avio_rl32(pb);
+    mtv->segments          = avio_rl32(pb);
+    avio_skip(pb, 32);
+    mtv->audio_identifier  = avio_rl24(pb);
+    mtv->audio_br          = avio_rl16(pb);
+    mtv->img_colorfmt      = avio_rl24(pb);
+    mtv->img_bpp           = avio_r8(pb);
+    mtv->img_width         = avio_rl16(pb);
+    mtv->img_height        = avio_rl16(pb);
+    mtv->img_segment_size  = avio_rl16(pb);
+
+    /* Assume 16bpp even if claimed otherwise.
+     * We know its going to be RGBG565/555 anyway
+     */
+    if (mtv->img_bpp != MTV_IMAGE_DEFAULT_BPP) {
+        av_log (s, AV_LOG_WARNING, "Header claims %dbpp (!= 16). Ignoring\n",
+                mtv->img_bpp);
+        mtv->img_bpp = MTV_IMAGE_DEFAULT_BPP;
+    }
 
     /* Calculate width and height if missing from header */
 
-    if(!mtv->img_width)
+    if (!mtv->img_width && mtv->img_height > 0 && mtv->img_bpp >= 8)
         mtv->img_width=mtv->img_segment_size / (mtv->img_bpp>>3)
                         / mtv->img_height;
 
-    if(!mtv->img_height)
+    if (!mtv->img_height && mtv->img_width > 0 && mtv->img_bpp >= 8)
         mtv->img_height=mtv->img_segment_size / (mtv->img_bpp>>3)
                         / mtv->img_width;
 
-    url_fskip(pb, 4);
-    audio_subsegments = get_le16(pb);
+    if(!mtv->img_height || !mtv->img_width || !mtv->img_segment_size){
+        av_log(s, AV_LOG_ERROR, "width or height or segment_size is invalid and I cannot calculate them from other information\n");
+        return AVERROR_INVALIDDATA;
+    }
+
+    avio_skip(pb, 4);
+    audio_subsegments = avio_rl16(pb);
+
+    if (audio_subsegments == 0) {
+        avpriv_request_sample(s, "MTV files without audio");
+        return AVERROR_PATCHWELCOME;
+    }
+
     mtv->full_segment_size =
         audio_subsegments * (MTV_AUDIO_PADDING_SIZE + MTV_ASUBCHUNK_DATA_SIZE) +
         mtv->img_segment_size;
@@ -118,35 +160,34 @@ static int mtv_read_header(AVFormatContext *s, AVFormatParameters *ap)
 
     // video - raw rgb565
 
-    st = av_new_stream(s, VIDEO_SID);
+    st = avformat_new_stream(s, NULL);
     if(!st)
         return AVERROR(ENOMEM);
 
-    av_set_pts_info(st, 64, 1, mtv->video_fps);
-    st->codec->codec_type      = AVMEDIA_TYPE_VIDEO;
-    st->codec->codec_id        = CODEC_ID_RAWVIDEO;
-    st->codec->pix_fmt         = PIX_FMT_RGB565;
-    st->codec->width           = mtv->img_width;
-    st->codec->height          = mtv->img_height;
-    st->codec->sample_rate     = mtv->video_fps;
-    st->codec->extradata       = av_strdup("BottomUp");
-    st->codec->extradata_size  = 9;
+    avpriv_set_pts_info(st, 64, 1, mtv->video_fps);
+    st->codecpar->codec_type      = AVMEDIA_TYPE_VIDEO;
+    st->codecpar->codec_id        = AV_CODEC_ID_RAWVIDEO;
+    st->codecpar->format          = AV_PIX_FMT_RGB565BE;
+    st->codecpar->width           = mtv->img_width;
+    st->codecpar->height          = mtv->img_height;
+    st->codecpar->extradata       = av_strdup("BottomUp");
+    st->codecpar->extradata_size  = 9;
 
     // audio - mp3
 
-    st = av_new_stream(s, AUDIO_SID);
+    st = avformat_new_stream(s, NULL);
     if(!st)
         return AVERROR(ENOMEM);
 
-    av_set_pts_info(st, 64, 1, AUDIO_SAMPLING_RATE);
-    st->codec->codec_type      = AVMEDIA_TYPE_AUDIO;
-    st->codec->codec_id        = CODEC_ID_MP3;
-    st->codec->bit_rate        = mtv->audio_br;
-    st->need_parsing           = AVSTREAM_PARSE_FULL;
+    avpriv_set_pts_info(st, 64, 1, MTV_AUDIO_SAMPLING_RATE);
+    st->codecpar->codec_type      = AVMEDIA_TYPE_AUDIO;
+    st->codecpar->codec_id        = AV_CODEC_ID_MP3;
+    st->codecpar->bit_rate        = mtv->audio_br;
+    st->need_parsing              = AVSTREAM_PARSE_FULL;
 
     // Jump over header
 
-    if(url_fseek(pb, MTV_HEADER_SIZE, SEEK_SET) != MTV_HEADER_SIZE)
+    if(avio_seek(pb, MTV_HEADER_SIZE, SEEK_SET) != MTV_HEADER_SIZE)
         return AVERROR(EIO);
 
     return 0;
@@ -156,22 +197,19 @@ static int mtv_read_header(AVFormatContext *s, AVFormatParameters *ap)
 static int mtv_read_packet(AVFormatContext *s, AVPacket *pkt)
 {
     MTVDemuxContext *mtv = s->priv_data;
-    ByteIOContext *pb = s->pb;
+    AVIOContext *pb = s->pb;
     int ret;
-#if !HAVE_BIGENDIAN
-    int i;
-#endif
 
-    if((url_ftell(pb) - s->data_offset + mtv->img_segment_size) % mtv->full_segment_size)
+    if((avio_tell(pb) - s->internal->data_offset + mtv->img_segment_size) % mtv->full_segment_size)
     {
-        url_fskip(pb, MTV_AUDIO_PADDING_SIZE);
+        avio_skip(pb, MTV_AUDIO_PADDING_SIZE);
 
         ret = av_get_packet(pb, pkt, MTV_ASUBCHUNK_DATA_SIZE);
         if(ret < 0)
             return ret;
 
         pkt->pos -= MTV_AUDIO_PADDING_SIZE;
-        pkt->stream_index = AUDIO_SID;
+        pkt->stream_index = 1;
 
     }else
     {
@@ -179,28 +217,17 @@ static int mtv_read_packet(AVFormatContext *s, AVPacket *pkt)
         if(ret < 0)
             return ret;
 
-#if !HAVE_BIGENDIAN
-
-        /* pkt->data is GGGRRRR BBBBBGGG
-         * and we need RRRRRGGG GGGBBBBB
-         * for PIX_FMT_RGB565 so here we
-         * just swap bytes as they come
-         */
-
-        for(i=0;i<mtv->img_segment_size/2;i++)
-            *((uint16_t *)pkt->data+i) = bswap_16(*((uint16_t *)pkt->data+i));
-#endif
-        pkt->stream_index = VIDEO_SID;
+        pkt->stream_index = 0;
     }
 
     return ret;
 }
 
-AVInputFormat mtv_demuxer = {
-    "MTV",
-    NULL_IF_CONFIG_SMALL("MTV format"),
-    sizeof(MTVDemuxContext),
-    mtv_probe,
-    mtv_read_header,
-    mtv_read_packet,
+AVInputFormat ff_mtv_demuxer = {
+    .name           = "mtv",
+    .long_name      = NULL_IF_CONFIG_SMALL("MTV"),
+    .priv_data_size = sizeof(MTVDemuxContext),
+    .read_probe     = mtv_probe,
+    .read_header    = mtv_read_header,
+    .read_packet    = mtv_read_packet,
 };

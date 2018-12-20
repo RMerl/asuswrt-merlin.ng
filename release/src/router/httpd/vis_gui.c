@@ -77,7 +77,7 @@ static int vis_debug_level = 0;
 #define VIS_MAX_REQ_LEN			50
 /* MAC address from WEB has %3A for every : character so length as 30 */
 #define VIS_MAX_MAC_LEN			30
-#define VIS_MAX_BAND_LEN		2
+#define VIS_MAX_BAND_LEN		3
 #define VIS_MAX_IP_LEN			16
 #define VIS_MAX_NVRAM_LEN		100
 
@@ -273,7 +273,7 @@ recv_data(int sockfd, unsigned char *read_buf, uint32 size)
 				return INVALID_SOCKET;
 			}
 		}
-		nbytes = read(sockfd, &(read_buf[totalread]), size);
+		nbytes = read(sockfd, read_buf, size);
 
 		if (nbytes <= 0) {
 			VIS_WARNING("Failed to read data error : %s\n", strerror(errno));
@@ -281,9 +281,10 @@ recv_data(int sockfd, unsigned char *read_buf, uint32 size)
 		}
 
 		totalread += nbytes;
+		read_buf += totalread;
 	}
 
-	read_buf[totalread] = '\0';
+	*read_buf = '\0';
 
 	return totalread;
 }

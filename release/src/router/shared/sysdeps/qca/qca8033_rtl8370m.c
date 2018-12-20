@@ -435,3 +435,67 @@ void usage(char *cmd)
 	exit(0);
 }
 #endif
+
+void __pre_config_switch(void)
+{
+	int wanscap_wanlan = get_wans_dualwan() & (WANSCAP_WAN | WANSCAP_LAN);
+	int wans_lanport = nvram_get_int("wans_lanport");
+	int wan_mask, unit, type, vid;
+	char cmd[64], vid_str[6];
+	char prefix[8], nvram_ports[20], bif[IFNAMSIZ], vif[IFNAMSIZ];
+	char *add_upst_viface[] = { "ip", "link", "add", "link", bif,
+		"name", vif, "type", "vlan", "id", vid_str, NULL };
+#if defined(RTCONFIG_SWITCH_RTL8370M_PHY_QCA8033_X2)
+	char *wan_if[2] = { "eth2", "eth3" };
+#elif defined(RTCONFIG_SWITCH_RTL8370MB_PHY_QCA8033_X2)
+	char *wan_if[2] = { "eth0", "eth3" };
+#endif
+
+	if (!is_routing_enabled())
+		return;
+
+	if ((wanscap_wanlan & WANSCAP_LAN) && (wans_lanport < 0 || wans_lanport > 8)) {
+		_dprintf("%s: invalid wans_lanport %d!\n", __func__, wans_lanport);
+		wanscap_wanlan &= ~WANSCAP_LAN;
+	}
+
+	if ((strlen(nvram_safe_get("switch_wantag")) > 0 && !nvram_match("switch_wantag", "none")) ||
+	    (nvram_match("switch_wantag", "none") && (nvram_get_int("switch_stb_x") > 0 && nvram_get_int("switch_stb_x") <= 6))) {
+		/* IPTV enabled */
+		wan_mask = 0;
+		if(wanscap_wanlan & WANSCAP_WAN)
+			wan_mask |= 0x1 << 0;
+		if(wanscap_wanlan & WANSCAP_LAN)
+			wan_mask |= 0x1 << wans_lanport;
+		snprintf(cmd, sizeof(cmd), "rtkswitch 44 0x%08x", wan_mask);
+		system(cmd);
+
+		for (unit = WAN_UNIT_FIRST; unit < WAN_UNIT_MAX; ++unit) {
+			snprintf(prefix, sizeof(prefix), "%d", unit);
+			snprintf(nvram_ports, sizeof(nvram_ports), "wan%sports_mask", (unit == WAN_UNIT_FIRST)? "" : prefix);
+			nvram_unset(nvram_ports);
+			if (get_dualwan_by_unit(unit) == WANS_DUALWAN_IF_LAN) {
+				/* BRT-AC828 LAN1 = P0, LAN2 = P1, etc */
+				nvram_set_int(nvram_ports, (1 << (wans_lanport - 1)));
+			}
+		}
+	} else {
+		/* IPTV disabled, if VLAN is enabled on WANx ports, create ethX.VLAN interfaces. */
+		for (unit = 0; unit < 2; ++unit) {
+			type = get_dualwan_by_unit(unit);
+			if (type != WANS_DUALWAN_IF_WAN && type != WANS_DUALWAN_IF_WAN2)
+				continue;
+			snprintf(prefix, sizeof(prefix), "wan%d_", unit);
+			if (!nvram_pf_match(prefix, "dot1q", "1"))
+				continue;
+			vid = nvram_pf_get_int(prefix, "vid");
+			if (vid < 2 || vid > 4094)
+				continue;
+			strlcpy(bif, wan_if[unit], sizeof(bif));
+			snprintf(vif, sizeof(vif), "%s.%d", bif, vid);
+			snprintf(vid_str, sizeof(vid_str), "%d", vid);
+			_eval(add_upst_viface, NULL, 0, NULL);
+			eval("ifconfig", bif, "up");
+		}
+	}
+}

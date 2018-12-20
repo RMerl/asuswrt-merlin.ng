@@ -21,9 +21,11 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#include "avformat.h"
 #include "libavutil/avstring.h"
 #include "libavutil/mem.h"
+
+#include "avformat.h"
+#include "url.h"
 
 #define AV_CAT_SEPARATOR "|"
 
@@ -46,43 +48,41 @@ static av_cold int concat_close(URLContext *h)
     struct concat_nodes *nodes = data->nodes;
 
     for (i = 0; i != data->length; i++)
-        err |= url_close(nodes[i].uc);
+        err |= ffurl_close(nodes[i].uc);
 
     av_freep(&data->nodes);
-    av_freep(&h->priv_data);
 
     return err < 0 ? -1 : 0;
 }
 
 static av_cold int concat_open(URLContext *h, const char *uri, int flags)
 {
-    char *node_uri = NULL, *tmp_uri;
+    char *node_uri = NULL;
     int err = 0;
     int64_t size;
-    size_t  len, i;
+    size_t len, i;
     URLContext *uc;
-    struct concat_data  *data;
+    struct concat_data  *data = h->priv_data;
     struct concat_nodes *nodes;
 
-    av_strstart(uri, "concat:", &uri);
+    if (!av_strstart(uri, "concat:", &uri)) {
+        av_log(h, AV_LOG_ERROR, "URL %s lacks prefix\n", uri);
+        return AVERROR(EINVAL);
+    }
 
-    /* creating data */
-    if (!(data = av_mallocz(sizeof(*data))))
-        return AVERROR(ENOMEM);
-    h->priv_data = data;
-
-    for (i = 0, len = 1; uri[i]; i++)
-        if (uri[i] == *AV_CAT_SEPARATOR)
+    for (i = 0, len = 1; uri[i]; i++) {
+        if (uri[i] == *AV_CAT_SEPARATOR) {
             /* integer overflow */
             if (++len == UINT_MAX / sizeof(*nodes)) {
                 av_freep(&h->priv_data);
                 return AVERROR(ENAMETOOLONG);
             }
+        }
+    }
 
-    if (!(nodes = av_malloc(sizeof(*nodes) * len))) {
-        av_freep(&h->priv_data);
+    if (!(nodes = av_realloc(NULL, sizeof(*nodes) * len)))
         return AVERROR(ENOMEM);
-    } else
+    else
         data->nodes = nodes;
 
     /* handle input */
@@ -91,21 +91,20 @@ static av_cold int concat_open(URLContext *h, const char *uri, int flags)
     for (i = 0; *uri; i++) {
         /* parsing uri */
         len = strcspn(uri, AV_CAT_SEPARATOR);
-        if (!(tmp_uri = av_realloc(node_uri, len+1))) {
-            err = AVERROR(ENOMEM);
+        if ((err = av_reallocp(&node_uri, len + 1)) < 0)
             break;
-        } else
-            node_uri = tmp_uri;
-        av_strlcpy(node_uri, uri, len+1);
-        uri += len + strspn(uri+len, AV_CAT_SEPARATOR);
+        av_strlcpy(node_uri, uri, len + 1);
+        uri += len + strspn(uri + len, AV_CAT_SEPARATOR);
 
         /* creating URLContext */
-        if ((err = url_open(&uc, node_uri, flags)) < 0)
+        err = ffurl_open_whitelist(&uc, node_uri, flags,
+                                   &h->interrupt_callback, NULL, h->protocol_whitelist, h->protocol_blacklist, h);
+        if (err < 0)
             break;
 
         /* creating size */
-        if ((size = url_filesize(uc)) < 0) {
-            url_close(uc);
+        if ((size = ffurl_size(uc)) < 0) {
+            ffurl_close(uc);
             err = AVERROR(ENOSYS);
             break;
         }
@@ -132,22 +131,24 @@ static int concat_read(URLContext *h, unsigned char *buf, int size)
     int result, total = 0;
     struct concat_data  *data  = h->priv_data;
     struct concat_nodes *nodes = data->nodes;
-    size_t i = data->current;
+    size_t i                   = data->current;
 
     while (size > 0) {
-        result = url_read(nodes[i].uc, buf, size);
+        result = ffurl_read(nodes[i].uc, buf, size);
+        if (result == AVERROR_EOF) {
+            if (i + 1 == data->length ||
+                ffurl_seek(nodes[++i].uc, 0, SEEK_SET) < 0)
+                break;
+            result = 0;
+        }
         if (result < 0)
             return total ? total : result;
-        if (!result)
-            if (i + 1 == data->length ||
-                url_seek(nodes[++i].uc, 0, SEEK_SET) < 0)
-                break;
         total += result;
         buf   += result;
         size  -= result;
     }
     data->current = i;
-    return total;
+    return total ? total : result;
 }
 
 static int64_t concat_seek(URLContext *h, int64_t pos, int whence)
@@ -159,16 +160,14 @@ static int64_t concat_seek(URLContext *h, int64_t pos, int whence)
 
     switch (whence) {
     case SEEK_END:
-        for (i = data->length - 1;
-             i && pos < -nodes[i].size;
-             i--)
+        for (i = data->length - 1; i && pos < -nodes[i].size; i--)
             pos += nodes[i].size;
         break;
     case SEEK_CUR:
         /* get the absolute position */
         for (i = 0; i != data->current; i++)
             pos += nodes[i].size;
-        pos += url_seek(nodes[i].uc, 0, SEEK_CUR);
+        pos += ffurl_seek(nodes[i].uc, 0, SEEK_CUR);
         whence = SEEK_SET;
         /* fall through with the absolute position */
     case SEEK_SET:
@@ -179,7 +178,7 @@ static int64_t concat_seek(URLContext *h, int64_t pos, int whence)
         return AVERROR(EINVAL);
     }
 
-    result = url_seek(nodes[i].uc, pos, whence);
+    result = ffurl_seek(nodes[i].uc, pos, whence);
     if (result >= 0) {
         data->current = i;
         while (i)
@@ -188,11 +187,12 @@ static int64_t concat_seek(URLContext *h, int64_t pos, int whence)
     return result;
 }
 
-URLProtocol concat_protocol = {
-    "concat",
-    concat_open,
-    concat_read,
-    NULL,
-    concat_seek,
-    concat_close,
+const URLProtocol ff_concat_protocol = {
+    .name           = "concat",
+    .url_open       = concat_open,
+    .url_read       = concat_read,
+    .url_seek       = concat_seek,
+    .url_close      = concat_close,
+    .priv_data_size = sizeof(struct concat_data),
+    .default_whitelist = "concat,file,subfile",
 };

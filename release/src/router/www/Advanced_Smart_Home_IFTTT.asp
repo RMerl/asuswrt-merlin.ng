@@ -121,7 +121,7 @@ var flag = '<% get_parameter("flag"); %>';
 var realip_state = "";
 
 var StatusList = {
-	"NoInetrnet": "Internet is disconnected. Please check your WAN connection for remote control",
+	"NoInetrnet": "<#Alexa_Status_Disconnect#>",
 	"SvrFail": "Server connection failed",
 	"StepAccount": "<#Alexa_Status_Account#>",
 	"EnableRemoteCtrl": "<#Alexa_Register1#>",

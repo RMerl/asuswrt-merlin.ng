@@ -41,7 +41,7 @@ typedef struct RDTDemuxContext RDTDemuxContext;
 RDTDemuxContext *ff_rdt_parse_open(AVFormatContext *ic,
                                    int first_stream_of_set_idx,
                                    void *priv_data,
-                                   RTPDynamicProtocolHandler *handler);
+                                   const RTPDynamicProtocolHandler *handler);
 void ff_rdt_parse_close(RDTDemuxContext *s);
 
 /**
@@ -60,11 +60,6 @@ void ff_rdt_calc_response_and_checksum(char response[41], char chksum[9],
                                        const char *challenge);
 
 /**
- * Register RDT-related dynamic payload handlers with our cache.
- */
-void av_register_rdt_dynamic_payload_handlers(void);
-
-/**
  * Add subscription information to Subscribe parameter string.
  *
  * @param cmd string to write the subscription information into.
@@ -80,23 +75,23 @@ void ff_rdt_subscribe_rule(char *cmd, int size,
  *
  * @param buf input buffer
  * @param len length of input buffer
- * @param set_id will be set to the set ID this packet belongs to
- * @param seq_no will be set to the sequence number of the packet
- * @param stream_id will be set to the stream ID this packet belongs to
- * @param is_keyframe will be whether this packet belongs to a keyframe
- * @param timestamp will be set to the timestamp of the packet
- * @return the amount of bytes consumed, or <0 on error
+ * @param pset_id will be set to the set ID this packet belongs to
+ * @param pseq_no will be set to the sequence number of the packet
+ * @param pstream_id will be set to the stream ID this packet belongs to
+ * @param pis_keyframe will be whether this packet belongs to a keyframe
+ * @param ptimestamp will be set to the timestamp of the packet
+ * @return the amount of bytes consumed, or negative on error
  */
 int ff_rdt_parse_header(const uint8_t *buf, int len,
-                        int *set_id, int *seq_no, int *stream_id,
-                        int *is_keyframe, uint32_t *timestamp);
+                        int *pset_id, int *pseq_no, int *pstream_id,
+                        int *pis_keyframe, uint32_t *ptimestamp);
 
 /**
  * Parse RDT-style packet data (header + media data).
  * Usage similar to rtp_parse_packet().
  */
 int ff_rdt_parse_packet(RDTDemuxContext *s, AVPacket *pkt,
-                        const uint8_t *buf, int len);
+                        uint8_t **buf, int len);
 
 /**
  * Parse a server-related SDP line.

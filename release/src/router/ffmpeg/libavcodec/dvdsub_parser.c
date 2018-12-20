@@ -1,5 +1,5 @@
 /*
- * DVD subtitle decoding for ffmpeg
+ * DVD subtitle decoding
  * Copyright (c) 2005 Fabrice Bellard
  *
  * This file is part of FFmpeg.
@@ -19,7 +19,10 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
+#include <string.h>
+
 #include "libavutil/intreadwrite.h"
+#include "libavutil/mem.h"
 #include "avcodec.h"
 
 /* parser definition */
@@ -41,14 +44,24 @@ static int dvdsub_parse(AVCodecParserContext *s,
 {
     DVDSubParseContext *pc = s->priv_data;
 
+    *poutbuf      = buf;
+    *poutbuf_size = buf_size;
+
     if (pc->packet_index == 0) {
-        if (buf_size < 2)
-            return 0;
+        if (buf_size < 2 || AV_RB16(buf) && buf_size < 6) {
+            if (buf_size)
+                av_log(avctx, AV_LOG_DEBUG, "Parser input %d too small\n", buf_size);
+            return buf_size;
+        }
         pc->packet_len = AV_RB16(buf);
         if (pc->packet_len == 0) /* HD-DVD subpicture packet */
             pc->packet_len = AV_RB32(buf+2);
         av_freep(&pc->packet);
-        pc->packet = av_malloc(pc->packet_len);
+        if ((unsigned)pc->packet_len > INT_MAX - AV_INPUT_BUFFER_PADDING_SIZE) {
+            av_log(avctx, AV_LOG_ERROR, "packet length %d is invalid\n", pc->packet_len);
+            return buf_size;
+        }
+        pc->packet = av_malloc(pc->packet_len + AV_INPUT_BUFFER_PADDING_SIZE);
     }
     if (pc->packet) {
         if (pc->packet_index + buf_size <= pc->packet_len) {
@@ -76,10 +89,10 @@ static av_cold void dvdsub_parse_close(AVCodecParserContext *s)
     av_freep(&pc->packet);
 }
 
-AVCodecParser dvdsub_parser = {
-    { CODEC_ID_DVD_SUBTITLE },
-    sizeof(DVDSubParseContext),
-    dvdsub_parse_init,
-    dvdsub_parse,
-    dvdsub_parse_close,
+AVCodecParser ff_dvdsub_parser = {
+    .codec_ids      = { AV_CODEC_ID_DVD_SUBTITLE },
+    .priv_data_size = sizeof(DVDSubParseContext),
+    .parser_init    = dvdsub_parse_init,
+    .parser_parse   = dvdsub_parse,
+    .parser_close   = dvdsub_parse_close,
 };

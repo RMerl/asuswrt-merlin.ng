@@ -218,9 +218,7 @@ var httpApi ={
 			url: '/applyapp.cgi',
 			dataType: 'json',
 			data: postData,
-			error: function(response){
-				if(handler) handler.call(response);
-			},
+			error: function(){},
 			success: function(response){
 				if(handler) handler.call(response);
 			}
@@ -470,8 +468,9 @@ var httpApi ={
 		}
 	},
 
-	"faqURL": function(_Objid, _faqNum, _URL1, _URL2){
+	"faqURL": function(_faqNum, handler){
 		var pLang = httpApi.nvramGet(["preferred_lang"]).preferred_lang;
+
 		var faqLang = {
 			EN : "",
 			TW : "/tw",
@@ -499,16 +498,17 @@ var httpApi ={
 			TR : "/tr",
 			UK : "/ua"
 		}
-		var temp_URL_lang = _URL1+faqLang[pLang]+_URL2+_faqNum;
-		var temp_URL_global = _URL1+_URL2+_faqNum;
-		document.getElementById(_Objid).href = temp_URL_global;
+
+		var temp_URL_lang = "https://www.asus.com" + faqLang[pLang] + "/support/FAQ/" + _faqNum;
+		if(handler) handler(temp_URL_lang.replace(faqLang[pLang], ""));
+
 
 		$.ajax({
 			url: temp_URL_lang,
 			dataType: "jsonp",
 			statusCode: {
 				200: function(response) {
-					document.getElementById(_Objid).href =  temp_URL_lang;
+					if(handler) handler(temp_URL_lang);
 				}
 			}
 		});
@@ -629,5 +629,129 @@ var httpApi ={
 
 		}
 		return papStatus;
+	},
+
+	"getISPProfile": function(isp){
+		var isp_profiles = httpApi.hookGet("get_iptvSettings").isp_profiles;
+		var specified_profile = [];
+
+		$.each(isp_profiles, function(i, isp_profile) {
+			if(isp_profile.switch_wantag == isp){
+				specified_profile = isp_profile;
+			}
+		});
+
+		return specified_profile;
+	},
+
+	"checkCloudModelIcon": function(modelName, callBackSuccess, callBackError){
+		var getCloudModelIconSrc = function(modelName){
+			var handle_cloud_icon_model_name = function(_modelName) {
+				var transformName = _modelName;
+				if(transformName == "RT-AC66U_B1" || transformName == "RT-AC1750_B1" || transformName == "RT-N66U_C1" || transformName == "RT-AC1900U" || transformName == "RT-AC67U")
+					transformName = "RT-AC66U_V2";
+				else if(transformName == "BLUE_CAVE")
+					transformName = "BLUECAVE";
+				else if(transformName == "Lyra")
+					transformName = "MAP-AC2200";
+				else if(transformName == "Lyra_Mini" || transformName == "LyraMini")
+					transformName = "MAP-AC1300";
+				else if(transformName == "Lyra_Trio")
+					transformName = "MAP-AC1750";
+				else if(transformName == "LYRA_VOICE")
+					transformName = "MAP-AC2200V";
+				return transformName;
+			};
+			var server = "http://nw-dlcdnet.asus.com";
+			var fileName = "/plugin/productIcons/" + handle_cloud_icon_model_name(modelName) + ".png";
+
+			return server + fileName;
+		};
+
+		$("<img>")
+			.attr('src', getCloudModelIconSrc(modelName))
+			.on("load", function(e){
+				if(callBackSuccess) callBackSuccess($(this).attr("src"));
+				$(this).remove();
+			})
+			.on("error", function(e){
+				if(callBackError) callBackError();
+				$(this).remove();
+			});
+	},
+
+	"getAiMeshLabelMac": function(modelName, macAddr, callBackSuccess, callBackError){
+		var _modelName = modelName.trim();
+		var _macAddr = macAddr.trim().toUpperCase();
+		if(_modelName == "" || _macAddr == ""){
+			if(callBackError)
+				callBackError();
+			return;
+		}
+
+		if(modelName != "Lyra" && modelName != "Lyra_Mini" && modelName != "LyraMini" && modelName != "LYRA_VOICE" && modelName != "Lyra_Trio")
+			return;
+
+		var isMac = function(_mac){
+			var hwaddr = new RegExp("(([a-fA-F0-9]{2}(\:|$)){6})", "gi");
+			if(hwaddr.test(_mac))
+				return true;
+			else
+				return false;
+		};
+
+		if(!isMac(_macAddr)){
+			if(callBackError)
+				callBackError();
+			return;
+		}
+
+		var macToHex = function(_mac){
+			return _mac.replace(/:/g, "").toString(16);
+		};
+		var hexToDec = function(_hex){
+			return parseInt(_hex, 16);
+		};
+		var decToHex = function(_dec){
+			if(_dec < 0)
+				_dec = 0xFFFFFFFFFFFF + _dec + 1;
+			return _dec.toString(16).toUpperCase();
+		};
+		var hexToMac = function(_hex){
+			var add_char_before = function(_value, _length, _char) {
+				_char = _char || "0";
+				_value = _value + "";
+				return _value.length >= _length ? _value : new Array(_length - _value.length + 1).join(_char) + _value;
+			};
+			if(_hex.length < 12)
+				_hex = add_char_before(_hex, 12, 0);
+			return _hex.match(/.{1,2}/g).join(":").toUpperCase();
+		};
+		var returnMacAddr = "";
+		var offset = 0;
+		switch(modelName){
+			case "LYRA_VOICE":
+			case "Lyra":
+			case "Lyra_Mini":
+			case "LyraMini":
+				offset = -3;
+				break;
+			case "Lyra_Trio":
+				offset = -1;
+				break;
+			default:
+				offset = 0;
+				break;
+		}
+
+		returnMacAddr = hexToMac(decToHex((hexToDec(macToHex(_macAddr)) + offset)));
+		if(isMac(returnMacAddr)){
+			if(callBackSuccess)
+				callBackSuccess(returnMacAddr);
+		}
+		else{
+			if(callBackError)
+				callBackError();
+		}
 	}
 }

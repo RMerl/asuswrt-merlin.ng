@@ -23,6 +23,7 @@
 <script type="text/javascript" src="/validator.js"></script>
 <script type="text/javascript" src="/js/jquery.js"></script>
 <script type="text/javascript" src="/switcherplugin/jquery.iphone-switch.js"></script>
+<script type="text/javascript" src="/js/httpApi.js"></script>
 <script>
 <% wl_get_parameter(); %>
 $(function () {
@@ -121,7 +122,9 @@ function initial(){
 		document.form.wl_subunit.value = (wl_unit == '<% nvram_get("wlc_band"); %>') ? 1 : -1;
 				
 	change_wl_nmode(document.form.wl_nmode_x);
-	if(is_UA_sku && !Qcawifi_support && !Rawifi_support && !sdk_5){
+
+	var is_RU_sku = ('<% nvram_get("location_code"); %>'.indexOf("RU") != -1);
+	if((is_UA_sku || is_RU_sku) && !Qcawifi_support && !Rawifi_support && !sdk_5){
 		if(document.form.wl_channel.value  == '0' && wl_unit == '1'){
 			document.getElementById('acs_band3_checkbox').style.display = "";
 		}		
@@ -191,9 +194,25 @@ function initial(){
 		document.getElementById("auto_channel").style.display = "";
 		var temp = "";
 		if(smart_connect_flag_t == "1"){		//Tri-Band Smart Connect
-			temp = cur_control_channel[0] + ", " + cur_control_channel[1];
-			if(wl_info.band5g_2_support)
-				temp += ", " + cur_control_channel[2];
+			if(isSupport("triband") && dwb_info.mode) {
+				if(wl_unit == dwb_info.band) {
+					temp = cur_control_channel[dwb_info.band];
+				}
+				else {
+					for(var i = 0; i < cur_control_channel.length; i += 1) {
+						if(i == dwb_info.band)
+							continue;
+						if(temp != "")
+							temp += ", ";
+						temp += cur_control_channel[i];
+					}
+				}
+			}
+			else {
+				temp = cur_control_channel[0] + ", " + cur_control_channel[1];
+				if(wl_info.band5g_2_support)
+					temp += ", " + cur_control_channel[2];
+			}
 		}
 		else if(smart_connect_flag_t == "2"){		//5 GHz Smart Connect
 			if(wl_unit == "0")
@@ -498,10 +517,13 @@ function applyRule(){
 
 		if(smart_connect_support && (isSwMode("rt") || isSwMode("ap")) && document.form.smart_connect_x.value != 0){ //apply smart connect setting
 				document.form.smart_connect_x.value = document.form.smart_connect_t.value;
-				if(document.form.smart_connect_x.value == '1')
-					document.form.wl_unit.value = 0;
+				if(document.form.smart_connect_x.value == '1') {
+					if(isSupport("triband") && dwb_info.mode && (dwb_info.band == wl_unit))
+						document.form.wl_unit.value = wl_unit;
+					else
+						document.form.wl_unit.value = 0;
+				}
 		}
-
 
 		if (based_modelid == "RT-AC87U" && wl_unit == "1")
 			detect_qtn_ready();
@@ -556,6 +578,26 @@ function validForm(){
 		if(auth_mode != "radius" && !validator.wlKey(cur_wep_key))
 			return false;
 	}	
+
+	if(isSupport("triband") && dwb_info.mode) {
+		var jsonPara = {};
+		jsonPara["edit_wl_unit"] = wl_unit;
+		jsonPara["edit_wl_ssid"] = document.form.wl_ssid.value;
+		jsonPara["dwb_unit"] = dwb_info.band;
+		jsonPara["smart_connect"] = document.form.smart_connect_x.value;
+		var ssid_array = [];
+		ssid_array.push(httpApi.nvramGet(["wl0_ssid"]).wl0_ssid);
+		if(wl_info.band5g_support)
+			ssid_array.push(httpApi.nvramGet(["wl1_ssid"]).wl1_ssid);
+		if(wl_info.band5g_2_support)
+			ssid_array.push(httpApi.nvramGet(["wl2_ssid"]).wl2_ssid);
+		jsonPara["current_ssid"] = ssid_array;
+		if(!validator.dwb_check_wl_setting(jsonPara)) {
+			alert("The fronthaul SSID is the same as the backhaul SSID.");/* untranslated */
+			return false;
+		}
+	}
+
 	return true;
 }
 
@@ -595,9 +637,15 @@ function _change_smart_connect(val){
 		band_value = [0, 1, 2];
 		band_desc = ['2.4GHz', '5GHz-1', '5GHz-2'];
 	}else if(val == 1){
-		document.getElementById("wl_unit_field").style.display = "none";
-		band_value = [0];
-		band_desc = ['2.4GHz, 5GHz-1 and 5GHz-2'];
+		if(dwb_info.mode) {
+			band_value = [0, 2];
+			band_desc = ['2.4GHz, 5GHz-1', '5GHz-2'];
+		}
+		else {
+			document.getElementById("wl_unit_field").style.display = "none";
+			band_value = [0];
+			band_desc = ['2.4GHz, 5GHz-1 and 5GHz-2'];
+		}
 	}else if(val == 2){
 		band_value = [0, 1];
 		band_desc = ['2.4GHz', '5GHz-1 and 5GHz-2'];
@@ -746,13 +794,19 @@ function enableSmartCon(val){
 	var value = new Array();
 	var desc = new Array();
 
-	if(wl_info.band2g_support && wl_info.band5g_support && wl_info.band5g_2_support){
-		desc = ["Tri-Band Smart Connect (2.4GHz, 5GHz-1 and 5GHz-2)", "5GHz Smart Connect (5GHz-1 and 5GHz-2)"];
-		value = ["1", "2"];
-	}
-	else if(wl_info.band2g_support && wl_info.band5g_support){
+	if(isSupport("triband") && dwb_info.mode) {
 		desc = ["Dual-Band Smart Connect (2.4GHz and 5GHz)"];
 		value = ["1"];
+	}
+	else {
+		if(wl_info.band2g_support && wl_info.band5g_support && wl_info.band5g_2_support){
+			desc = ["Tri-Band Smart Connect (2.4GHz, 5GHz-1 and 5GHz-2)", "5GHz Smart Connect (5GHz-1 and 5GHz-2)"];
+			value = ["1", "2"];
+		}
+		else if(wl_info.band2g_support && wl_info.band5g_support){
+			desc = ["Dual-Band Smart Connect (2.4GHz and 5GHz)"];
+			value = ["1"];
+		}
 	}
 	add_options_x2(document.form.smart_connect_t, desc, value, val);
 	
@@ -764,7 +818,7 @@ function enableSmartCon(val){
 		document.getElementById("smartcon_rule_link").style.display = "table-cell";
 	}
 
-	if(val == 0 || (val == 2 && wl_unit == 0)){
+	if((val == 0 || (val == 2 && wl_unit == 0)) || (dwb_info.mode && wl_unit == dwb_info.band)){
 		document.getElementById("wl_unit_field").style.display = "";
 		document.form.wl_nmode_x.disabled = "";
 		document.getElementById("wl_optimizexbox_span").style.display = "";
@@ -958,6 +1012,7 @@ function regen_auto_option(obj){
 						<select name="wl_unit" class="input_option" onChange="_change_wl_unit(this.value);">
 							<option class="content_input_fd" value="0" <% nvram_match("wl_unit", "0","selected"); %>>2.4GHz</option>
 							<option class="content_input_fd" value="1" <% nvram_match("wl_unit", "1","selected"); %>>5GHz</option>
+							<option class="content_input_fd" value="1" <% nvram_match("wl_unit", "2","selected"); %>>5GHz-2</option>
 						</select>			
 					</td>
 		  	</tr>
@@ -1008,11 +1063,12 @@ function regen_auto_option(obj){
 			 	<tr id="wl_bw_field">
 			   	<th><#WLANConfig11b_ChannelBW_itemname#></th>
 			   	<td>				    			
-						<select name="wl_bw" class="input_option" onChange="wl_chanspec_list_change();">
-							<option class="content_input_fd" value="0" <% nvram_match("wl_bw", "0","selected"); %>>20 MHz</option>
-							<option class="content_input_fd" value="1" <% nvram_match("wl_bw", "1","selected"); %>>20/40 MHz</option>
-							<option class="content_input_fd" value="2" <% nvram_match("wl_bw", "2","selected"); %>>40 MHz</option>
-						</select>				
+					<select name="wl_bw" class="input_option" style="width:150px;" onChange="wl_chanspec_list_change();">
+						<option class="content_input_fd" value="0" <% nvram_match("wl_bw", "0","selected"); %>>20 MHz</option>
+						<option class="content_input_fd" value="1" <% nvram_match("wl_bw", "1","selected"); %>>20/40 MHz</option>
+						<option class="content_input_fd" value="2" <% nvram_match("wl_bw", "2","selected"); %>>40 MHz</option>
+					</select>
+					<span id="enable_160_field" style="display:none"><input type="checkbox" onClick="enable_160MHz(this);" id="enable_160mhz" ><#WLANConfig11b_ChannelBW_Enable160M#></span>
 			   	</td>
 			 	</tr>
 				<!-- ac channel -->			  

@@ -1082,6 +1082,11 @@ char *get_default_ssid(int unit, int subunit)
 	ether_atoe(macp, mac_binary);
 #if defined(RTCONFIG_SSID_AMAPS)
 	sprintf((char *)ssidbase, "%s_%02X_AMAPS", SSID_PREFIX, mac_binary[5]);
+#elif defined(VZWAC1300)
+	if (nvram_match("odmpid", "ASUSMESH-AC1300"))
+		sprintf((char *)ssidbase, "ASUS_%02X_MESH", mac_binary[5]);
+	else
+		sprintf((char *)ssidbase, "%s_%02X", SSID_PREFIX, mac_binary[5]);
 #else
 	sprintf((char *)ssidbase, "%s_%02X", SSID_PREFIX, mac_binary[5]);
 #endif /* RTCONFIG_SSID_AMAPS */
@@ -1154,6 +1159,11 @@ char *get_default_ssid(int unit, int subunit)
 #if defined(RTCONFIG_SSID_AMAPS)
 		/* RTCONFIG_SSID_AMAPS use the same guest network SSID rule as SINGLE_SSID */
 		snprintf(ssid, sizeof(ssid), "%s_AMAPS_Guest", SSID_PREFIX);
+#elif defined(VZWAC1300)
+	if (nvram_match("odmpid", "ASUSMESH-AC1300"))
+		snprintf(ssid, sizeof(ssid), "ASUS_MESH_Guest");
+	else
+		strlcat(ssid, post_guest, sizeof(ssid));
 #else
 		strlcat(ssid, post_guest, sizeof(ssid));
 #endif

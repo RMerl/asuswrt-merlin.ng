@@ -38,6 +38,7 @@
 #define DPSTA_POLICY_AUTO	0
 #define DPSTA_POLICY_SAMEBAND	1
 #define DPSTA_POLICY_CROSSBAND	2
+#define DPSTA_POLICY_AUTO_5G    3
 
 #define DPSTA_LAN_UIF_AUTO	0	/* UIF is not assigned/fixed for LAN traffic (default 2G)*/
 #define DPSTA_LAN_UIF_2G	1	/* Use 2G as UIF for LAN traffic */

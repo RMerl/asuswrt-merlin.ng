@@ -78,6 +78,7 @@ int is_wps_stopped(void)
 	int i, ret = 1;
 	char status[16], tmp[128], prefix[] = "wlXXXXXXXXXX_", word[256], *next, ifnames[128];
 	int wps_band = nvram_get_int("wps_band_x"), multiband = get_wps_multiband();
+	char tmpbuf[512];
 
 	i = 0;
 	strcpy(ifnames, nvram_safe_get("wl_ifnames"));
@@ -97,10 +98,10 @@ int is_wps_stopped(void)
 
 #ifdef RTCONFIG_WPS_ENROLLEE
 		if (nvram_match("wps_enrollee", "1"))
-			strcpy(status, getWscStatus_enrollee(i));
+			strcpy(status, getWscStatus_enrollee(i, tmpbuf, sizeof(tmpbuf)));
 		else
 #endif
-			strcpy(status, getWscStatus(i));
+			strcpy(status, getWscStatus(i, tmpbuf, sizeof(tmpbuf)));
 
 		//dbG("band %d wps status: %s\n", i, status);
 		if (!strcmp(status, "Success") 

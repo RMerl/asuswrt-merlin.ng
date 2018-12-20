@@ -35,22 +35,9 @@
 #define MAX_SUBIF_NUM 4
 #define MAX_STA_COUNT 128
 #define ETHER_ADDR_STR_LEN 18
-#if defined(RTCONFIG_RALINK)
-#define MACF    "%02x:%02x:%02x:%02x:%02x:%02x"
-#define ETHERP_TO_MACF(ea)      ((struct ether_addr *) (ea))->ether_addr_octet[0], \
-                                ((struct ether_addr *) (ea))->ether_addr_octet[1], \
-                                ((struct ether_addr *) (ea))->ether_addr_octet[2], \
-                                ((struct ether_addr *) (ea))->ether_addr_octet[3], \
-                                ((struct ether_addr *) (ea))->ether_addr_octet[4], \
-                                ((struct ether_addr *) (ea))->ether_addr_octet[5]
-#define ETHER_TO_MACF(ea)       (ea).ether_addr_octet[0], \
-                                (ea).ether_addr_octet[1], \
-                                (ea).ether_addr_octet[2], \
-                                (ea).ether_addr_octet[3], \
-                                (ea).ether_addr_octet[4], \
-                                (ea).ether_addr_octet[5]
-#elif defined(RTCONFIG_QCA) || defined(RTCONFIG_LANTIQ)
+#define MACF_UP	"%02X:%02X:%02X:%02X:%02X:%02X"
 #define MACF	"%02x:%02x:%02x:%02x:%02x:%02x"
+#if defined(RTCONFIG_RALINK) || defined(RTCONFIG_QCA) || defined(RTCONFIG_LANTIQ)
 #define ETHERP_TO_MACF(ea)	((struct ether_addr *) (ea))->ether_addr_octet[0], \
 				((struct ether_addr *) (ea))->ether_addr_octet[1], \
 				((struct ether_addr *) (ea))->ether_addr_octet[2], \
@@ -64,7 +51,6 @@
 				(ea).ether_addr_octet[4], \
 				(ea).ether_addr_octet[5]
 #else
-#define MACF	"%02x:%02x:%02x:%02x:%02x:%02x"
 #define ETHERP_TO_MACF(ea)	((struct ether_addr *) (ea))->octet[0], \
 				((struct ether_addr *) (ea))->octet[1], \
 				((struct ether_addr *) (ea))->octet[2], \
@@ -124,6 +110,43 @@
         } while (0)
 #endif
 
+#ifdef RTCONFIG_CONNDIAG
+#include <sys/ipc.h>
+#include <sys/shm.h>
+
+#define TG_ROAMING_LOCK		"tg_roaming"
+#define ROAMING_LOCK		"roaming"
+
+#undef MAX_STA_COUNT
+#define MAX_STA_COUNT 128
+#undef MAC_LEN
+#define MAC_LEN 18
+
+#define KEY_TG_ROAMING_EVENT 34951
+#define KEY_ROAMING_EVENT 34952
+
+typedef struct _TG_ROAMING_TABLE {
+	time_t tstamp[MAX_STA_COUNT];
+	int user_low_rssi[MAX_STA_COUNT];
+	int rssi_cnt[MAX_STA_COUNT];
+	int idle_period[MAX_STA_COUNT];
+	unsigned char sta[MAX_STA_COUNT][MAC_LEN];
+	int sta_rssi[MAX_STA_COUNT];
+	int idle_start[MAX_STA_COUNT];
+	int total;
+} TG_ROAMING_TABLE, *P_TG_ROAMING_TABLE;
+
+typedef struct _ROAMING_TABLE {
+	time_t tstamp[MAX_STA_COUNT];
+	unsigned char sta[MAX_STA_COUNT][MAC_LEN];
+	int sta_rssi[MAX_STA_COUNT];
+	int candidate_rssi_criteria[MAX_STA_COUNT];
+	unsigned char candidate[MAX_STA_COUNT][MAC_LEN];
+	int candidate_rssi[MAX_STA_COUNT];
+	int total;
+} ROAMING_TABLE, *P_ROAMING_TABLE;
+#endif
+
 #if defined(RTCONFIG_RALINK)
 #define xR_MAX  4
 extern int xTxR;
@@ -135,17 +158,23 @@ typedef struct _WLANCONFIG_LIST {
          char txrate[6];
          char rxrate[6];
          unsigned int rssi;
+         unsigned int rssi_min;
+         unsigned int rssi_max;
          unsigned int idle;
          unsigned int txseq;
-         unsigned int rcseq;
+         unsigned int rxseq;
          char caps[12];
          char acaps[10];
          char erp[7];
-         char state_maxrate[20];
-         char wps[4];
-         char rsn[4];
-         char wme[4];
-         char mode[31];
+         char state[20];
+         unsigned int maxrate;
+         char htcaps[8];
+         char assoctime[12];
+         char Ies[32];
+         char mode[32];
+         unsigned int psmode;
+         unsigned int rxnss;
+         unsigned int txnss;
 } WLANCONFIG_LIST;
 #endif
 
@@ -169,7 +198,7 @@ typedef struct rast_sta_info {
 	unsigned long long last_txrx_bytes;
 #else //BRCM
 #ifndef RTCONFIG_BCMARM
-        uint32 prepkts;
+	uint32 prepkts;
 #endif
 #endif
 
@@ -178,10 +207,12 @@ typedef struct rast_sta_info {
 	int next_trigger_interval;	/* interval of next STAMON event trigger */
 	int stamon_event_count;		/* counter of STAMON event trigger */
 	int32 previous_rssi;		/* save previous rssi for detecting sticky sta */
-#endif        
+#endif
 #if defined(RTCONFIG_LANTIQ)
 	unsigned long last_txrx_bytes;
 #endif
+	int32 tx_rate;
+	int32 rx_rate;
 }rast_sta_info_t;
 
 
@@ -207,27 +238,25 @@ typedef struct rast_bss_info {
 	rast_sta_info_t *assoclist[MAX_SUBIF_NUM];
 	int upstream_if;
 #ifdef RTCONFIG_ADV_RAST
-        int rast_mode;
-        rast_maclist_t *maclist[MAX_SUBIF_NUM];
-        struct maclist *static_maclist[MAX_SUBIF_NUM];
-        int static_macmode[MAX_SUBIF_NUM];
+	int rast_mode;
+	rast_maclist_t *maclist[MAX_SUBIF_NUM];
+	struct maclist *static_maclist[MAX_SUBIF_NUM];
+	int static_macmode[MAX_SUBIF_NUM];
 	int static_cli_enable;
-        rast_maclist_t *static_client;
+	rast_maclist_t *static_client;
 	char tmp_static_client_path[32];
 #endif
 }rast_bss_info_t;
 
 #ifdef RTCONFIG_ADV_RAST
 typedef enum {
-        RAST_MODE_RSSI =0,
-        RAST_MODE_LEGACY
+	RAST_MODE_RSSI =0,
+	RAST_MODE_LEGACY
 } rast_mode_t;
 
-
 typedef struct rast_adv_conf {
-        uint32 aclist_timeout;
+	uint32 aclist_timeout;
 } rast_adv_conf_t;
-
 #endif
 
 rast_bss_info_t bssinfo[MAX_IF_NUM];
@@ -239,8 +268,6 @@ rast_adv_conf_t adv_conf;
 extern int alarm_count;
 char maclist_buf[4096];
 #endif
-
-extern rast_sta_info_t *rast_add_to_assoclist(int bssidx, int vifidx, struct ether_addr *addr);
 
 #if defined(RTCONFIG_RALINK)
 
@@ -279,13 +306,15 @@ struct maclist {
 };
 #endif
 
-#if defined(RTCONFIG_RALINK) || defined(CONFIG_BCMWL5)
+extern char *strcat_safe(const char *s1, const char *s2);
+extern void rast_init_bssinfo(void);
+extern rast_sta_info_t *rast_add_to_assoclist(int bssidx, int vifidx, struct ether_addr *addr);
+
+extern void get_wifi_ifname(char *wlif_name, int len, int bssidx, int vifidx);
 extern void get_stainfo(int bssidx, int vifidx);
 extern int rast_stamon_get_rssi(int bssidx, struct ether_addr *addr);
-extern void rast_set_maclist(int bssidx, int vifidx);
-//extern void rast_add_to_maclist(int bssidx, int vifidx, struct ether_addr *addr);
 extern void rast_retrieve_static_maclist(int bssidx, int vifidx);
-#endif
+extern void rast_set_maclist(int bssidx, int vifidx);
 
 #if defined(CONFIG_BCMWL5)
 extern sta_info_t *wl_sta_info(char *ifname, struct ether_addr *ea);
@@ -293,11 +322,7 @@ extern int rast_send_bsstrans_req(int bssidx, int vifidx, struct ether_addr *sta
 #endif
 
 #if defined(RTCONFIG_BCMARM) || defined(RTCONFIG_BCMWL6)
-extern void rast_retrieve_bs_data(int bssidx, int vifidx);
-#endif
-
-#if defined(RTCONFIG_LANTIQ)
-extern void get_stainfo(int bssidx, int vifidx);
+extern void rast_retrieve_bs_data(int bssidx, int vifidx, int interval);
 #endif
 
 #ifndef CONFIG_BCMWL5

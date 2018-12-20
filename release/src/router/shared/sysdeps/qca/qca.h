@@ -19,12 +19,15 @@
 
 #include <iwlib.h>
 
+#include "rtconfig.h"
+
 #define NAWDS_SH_FMT	"/etc/Wireless/sh/nawds_%s.sh"
 
 
 extern const char WIF_2G[];
 extern const char WIF_5G[];
 extern const char BR_GUEST[];
+extern const char WIF_5G_BH[];
 extern const char APMODE_BRGUEST_IP[];
 extern const char WDSIF_5G[];
 extern const char STA_2G[];
@@ -390,7 +393,7 @@ enum ASUS_IOCTL_SUBCMD {
 #define OFFSET_DEF_GROUPID		(MTD_FACTORY_BASE_ADDRESS + 0x0D1B0)	// CFGSYNC_GROUPID_LEN (32 bytes)
 #endif
 
-#if defined(MAPAC1300) || defined(MAPAC2200) || defined(VZWAC1300) || defined(MAPAC3000) /* for Lyra */
+#if defined(MAPAC1300) || defined(MAPAC2200) || defined(VZWAC1300) || defined(RTAC92U) /* for Lyra */
 #define OFFSET_DISABLE_WIFI_DRV		(MTD_FACTORY_BASE_ADDRESS + 0x0D1F2)	// 1 byte
 #endif
 
@@ -399,10 +402,9 @@ enum ASUS_IOCTL_SUBCMD {
 
 #define OFFSET_DEV_FLAGS		(MTD_FACTORY_BASE_ADDRESS + 0x0ffa0)	//device dependent flags
 #ifdef RTCONFIG_32BYTES_ODMPID
-#define OFFSET_ODMPID			(MTD_FACTORY_BASE_ADDRESS + 0x0ff70)	/* 32 bytes */
-#else
-#define OFFSET_ODMPID			(MTD_FACTORY_BASE_ADDRESS + 0x0ffb0)	//the shown model name (for Bestbuy and others)
+#define OFFSET_32BYTES_ODMPID		(MTD_FACTORY_BASE_ADDRESS + 0x0ff70)	/* 32 bytes */
 #endif
+#define OFFSET_ODMPID			(MTD_FACTORY_BASE_ADDRESS + 0x0ffb0)	//the shown model name (for Bestbuy and others)
 #define OFFSET_FAIL_RET			(MTD_FACTORY_BASE_ADDRESS + 0x0ffc0)
 #define OFFSET_FAIL_BOOT_LOG		(MTD_FACTORY_BASE_ADDRESS + 0x0ffd0)	//bit operation for max 100
 #define OFFSET_FAIL_DEV_LOG		(MTD_FACTORY_BASE_ADDRESS + 0x0ffe0)	//bit operation for max 100
@@ -491,7 +493,7 @@ typedef struct {
 #define BD_2G_HW_DIR	"hw.1"
 #define BD_5G_CHIP_DIR	"IPQ4019"
 #define BD_5G_HW_DIR	"hw.1"
-#elif defined(MAPAC2200)
+#elif defined(MAPAC2200) || defined(RTAC92U)
 #define BD_2G_PREFIX	"boardData_1_0_IPQ4019_DK04_2G"
 #define BD_5G_PREFIX	"boardData_1_0_IPQ4019_DK04_5G"
 #define BD_5G2_PREFIX	"boardData_2_0_QCA9888_5G_Y9484"
@@ -501,19 +503,24 @@ typedef struct {
 #define BD_5G_HW_DIR	"hw.1"
 #define BD_5G2_CHIP_DIR	"QCA9888"
 #define BD_5G2_HW_DIR	"hw.2"
-#elif defined(MAPAC3000)
-#define BD_2G_PREFIX	"boardData_1_0_IPQ4019_DK04_2G"
-#define BD_5G_PREFIX	"boardData_1_0_IPQ4019_DK04_5G"
-#define BD_5G2_PREFIX	"boardData_QCA9984_CUS239_5G_v1_001"
-#define BD_2G_CHIP_DIR	"IPQ4019"
-#define BD_2G_HW_DIR	"hw.1"
-#define BD_5G_CHIP_DIR	"IPQ4019"
-#define BD_5G_HW_DIR	"hw.1"
-#define BD_5G2_CHIP_DIR	"QCA9984"
-#define BD_5G2_HW_DIR	"hw.1"
 #elif defined(RPAC51)
 #define BD_5G_PREFIX	"boardData_2_0_QCA9888_5G_Y9484"
 #define BD_5G_CHIP_DIR	"QCA9888"
 #define BD_5G_HW_DIR	"hw.2"
 #endif
+
+#define	QCA_MACCMD	"maccmd"
+#define	QCA_GETCMD	"get_maccmd"
+#define	QCA_ADDMAC	"addmac"
+#define	QCA_DELMAC	"delmac"
+#define	QCA_GETMAC	"getmac"
+
+#define QCA_DEFAULT_NOISE_FLOOR (-96)	/* via QCA case #03626623 */
+
+#if defined(RTCONFIG_LYRA_5G_SWAP)
+extern int swap_5g_band(int band);
+#else
+#define swap_5g_band(b) (b)
+#endif
+
 #endif	/* _QCA_H_ */

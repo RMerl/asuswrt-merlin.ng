@@ -30,14 +30,16 @@
 
 #include "avcodec.h"
 #include "bytestream.h"
+#include "internal.h"
 
 #include "ulti_cb.h"
 
 typedef struct UltimotionDecodeContext {
     AVCodecContext *avctx;
     int width, height, blocks;
-    AVFrame frame;
+    AVFrame *frame;
     const uint8_t *ulti_codebook;
+    GetByteContext gb;
 } UltimotionDecodeContext;
 
 static av_cold int ulti_decode_init(AVCodecContext *avctx)
@@ -48,19 +50,22 @@ static av_cold int ulti_decode_init(AVCodecContext *avctx)
     s->width = avctx->width;
     s->height = avctx->height;
     s->blocks = (s->width / 8) * (s->height / 8);
-    avctx->pix_fmt = PIX_FMT_YUV410P;
-    avctx->coded_frame = (AVFrame*) &s->frame;
+    if (s->blocks == 0)
+        return AVERROR_INVALIDDATA;
+    avctx->pix_fmt = AV_PIX_FMT_YUV410P;
     s->ulti_codebook = ulti_codebook;
+
+    s->frame = av_frame_alloc();
+    if (!s->frame)
+        return AVERROR(ENOMEM);
 
     return 0;
 }
 
 static av_cold int ulti_decode_end(AVCodecContext *avctx){
     UltimotionDecodeContext *s = avctx->priv_data;
-    AVFrame *pic = &s->frame;
 
-    if (pic->data[0])
-        avctx->release_buffer(avctx, pic);
+    av_frame_free(&s->frame);
 
     return 0;
 }
@@ -208,7 +213,7 @@ static void ulti_grad(AVFrame *frame, int x, int y, uint8_t *Y, int chroma, int 
 }
 
 static int ulti_decode_frame(AVCodecContext *avctx,
-                             void *data, int *data_size,
+                             void *data, int *got_frame,
                              AVPacket *avpkt)
 {
     const uint8_t *buf = avpkt->data;
@@ -220,30 +225,27 @@ static int ulti_decode_frame(AVCodecContext *avctx,
     int blocks = 0;
     int done = 0;
     int x = 0, y = 0;
-    int i;
+    int i, ret;
     int skip;
     int tmp;
 
-    if(s->frame.data[0])
-        avctx->release_buffer(avctx, &s->frame);
+    if ((ret = ff_reget_buffer(avctx, s->frame)) < 0)
+        return ret;
 
-    s->frame.reference = 1;
-    s->frame.buffer_hints = FF_BUFFER_HINTS_VALID | FF_BUFFER_HINTS_PRESERVE | FF_BUFFER_HINTS_REUSABLE;
-    if(avctx->get_buffer(avctx, &s->frame) < 0) {
-        av_log(avctx, AV_LOG_ERROR, "get_buffer() failed\n");
-        return -1;
-    }
+    bytestream2_init(&s->gb, buf, buf_size);
 
     while(!done) {
         int idx;
         if(blocks >= s->blocks || y >= s->height)
             break;//all blocks decoded
 
-        idx = *buf++;
+        if (bytestream2_get_bytes_left(&s->gb) < 1)
+            goto err;
+        idx = bytestream2_get_byteu(&s->gb);
         if((idx & 0xF8) == 0x70) {
             switch(idx) {
             case 0x70: //change modifier
-                modifier = *buf++;
+                modifier = bytestream2_get_byte(&s->gb);
                 if(modifier>1)
                     av_log(avctx, AV_LOG_INFO, "warning: modifier must be 0 or 1, got %i\n", modifier);
                 break;
@@ -257,7 +259,7 @@ static int ulti_decode_frame(AVCodecContext *avctx,
                 done = 1;
                 break;
             case 0x74: //skip some blocks
-                skip = *buf++;
+                skip = bytestream2_get_byte(&s->gb);
                 if ((blocks + skip) >= s->blocks)
                     break;
                 blocks += skip;
@@ -283,20 +285,22 @@ static int ulti_decode_frame(AVCodecContext *avctx,
                 chroma = 0;
             } else {
                 cf = 0;
-                if (idx)
-                    chroma = *buf++;
+                if (idx) {
+                    chroma = bytestream2_get_byte(&s->gb);
+                }
             }
             for (i = 0; i < 4; i++) { // for every subblock
                 code = (idx >> (6 - i*2)) & 3; //extract 2 bits
                 if(!code) //skip subblock
                     continue;
-                if(cf)
-                    chroma = *buf++;
+                if(cf) {
+                    chroma = bytestream2_get_byte(&s->gb);
+                }
                 tx = x + block_coords[i * 2];
                 ty = y + block_coords[(i * 2) + 1];
                 switch(code) {
                 case 1:
-                    tmp = *buf++;
+                    tmp = bytestream2_get_byte(&s->gb);
 
                     angle = angle_by_index[(tmp >> 6) & 0x3];
 
@@ -316,7 +320,7 @@ static int ulti_decode_frame(AVCodecContext *avctx,
 
                 case 2:
                     if (modifier) { // unpack four luma samples
-                        tmp = bytestream_get_be24(&buf);
+                        tmp = bytestream2_get_be24(&s->gb);
 
                         Y[0] = (tmp >> 18) & 0x3F;
                         Y[1] = (tmp >> 12) & 0x3F;
@@ -324,7 +328,7 @@ static int ulti_decode_frame(AVCodecContext *avctx,
                         Y[3] = tmp & 0x3F;
                         angle = 16;
                     } else { // retrieve luma samples from codebook
-                        tmp = bytestream_get_be16(&buf);
+                        tmp = bytestream2_get_be16(&s->gb);
 
                         angle = (tmp >> 12) & 0xF;
                         tmp &= 0xFFF;
@@ -340,54 +344,57 @@ static int ulti_decode_frame(AVCodecContext *avctx,
                     if (modifier) { // all 16 luma samples
                         uint8_t Luma[16];
 
-                        tmp = bytestream_get_be24(&buf);
+                        if (bytestream2_get_bytes_left(&s->gb) < 12)
+                            goto err;
+                        tmp = bytestream2_get_be24u(&s->gb);
                         Luma[0] = (tmp >> 18) & 0x3F;
                         Luma[1] = (tmp >> 12) & 0x3F;
                         Luma[2] = (tmp >> 6) & 0x3F;
                         Luma[3] = tmp & 0x3F;
 
-                        tmp = bytestream_get_be24(&buf);
+                        tmp = bytestream2_get_be24u(&s->gb);
                         Luma[4] = (tmp >> 18) & 0x3F;
                         Luma[5] = (tmp >> 12) & 0x3F;
                         Luma[6] = (tmp >> 6) & 0x3F;
                         Luma[7] = tmp & 0x3F;
 
-                        tmp = bytestream_get_be24(&buf);
+                        tmp = bytestream2_get_be24u(&s->gb);
                         Luma[8] = (tmp >> 18) & 0x3F;
                         Luma[9] = (tmp >> 12) & 0x3F;
                         Luma[10] = (tmp >> 6) & 0x3F;
                         Luma[11] = tmp & 0x3F;
 
-                        tmp = bytestream_get_be24(&buf);
+                        tmp = bytestream2_get_be24u(&s->gb);
                         Luma[12] = (tmp >> 18) & 0x3F;
                         Luma[13] = (tmp >> 12) & 0x3F;
                         Luma[14] = (tmp >> 6) & 0x3F;
                         Luma[15] = tmp & 0x3F;
 
-                        ulti_convert_yuv(&s->frame, tx, ty, Luma, chroma);
+                        ulti_convert_yuv(s->frame, tx, ty, Luma, chroma);
                     } else {
-                        tmp = *buf++;
+                        if (bytestream2_get_bytes_left(&s->gb) < 4)
+                            goto err;
+                        tmp = bytestream2_get_byteu(&s->gb);
                         if(tmp & 0x80) {
                             angle = (tmp >> 4) & 0x7;
-                            tmp = (tmp << 8) + *buf++;
+                            tmp = (tmp << 8) + bytestream2_get_byteu(&s->gb);
                             Y[0] = (tmp >> 6) & 0x3F;
                             Y[1] = tmp & 0x3F;
-                            Y[2] = (*buf++) & 0x3F;
-                            Y[3] = (*buf++) & 0x3F;
-                            ulti_grad(&s->frame, tx, ty, Y, chroma, angle); //draw block
+                            Y[2] = bytestream2_get_byteu(&s->gb) & 0x3F;
+                            Y[3] = bytestream2_get_byteu(&s->gb) & 0x3F;
+                            ulti_grad(s->frame, tx, ty, Y, chroma, angle); //draw block
                         } else { // some patterns
-                            int f0, f1;
-                            f0 = *buf++;
-                            f1 = tmp;
-                            Y[0] = (*buf++) & 0x3F;
-                            Y[1] = (*buf++) & 0x3F;
-                            ulti_pattern(&s->frame, tx, ty, f1, f0, Y[0], Y[1], chroma);
+                            int f0 = tmp;
+                            int f1 = bytestream2_get_byteu(&s->gb);
+                            Y[0] = bytestream2_get_byteu(&s->gb) & 0x3F;
+                            Y[1] = bytestream2_get_byteu(&s->gb) & 0x3F;
+                            ulti_pattern(s->frame, tx, ty, f0, f1, Y[0], Y[1], chroma);
                         }
                     }
                     break;
                 }
                 if(code != 3)
-                    ulti_grad(&s->frame, tx, ty, Y, chroma, angle); // draw block
+                    ulti_grad(s->frame, tx, ty, Y, chroma, angle); // draw block
             }
             blocks++;
                 x += 8;
@@ -398,23 +405,26 @@ static int ulti_decode_frame(AVCodecContext *avctx,
         }
     }
 
-    *data_size=sizeof(AVFrame);
-    *(AVFrame*)data= s->frame;
+    *got_frame = 1;
+    if ((ret = av_frame_ref(data, s->frame)) < 0)
+        return ret;
 
     return buf_size;
+
+err:
+    av_log(avctx, AV_LOG_ERROR,
+           "Insufficient data\n");
+    return AVERROR_INVALIDDATA;
 }
 
-AVCodec ulti_decoder = {
-    "ultimotion",
-    AVMEDIA_TYPE_VIDEO,
-    CODEC_ID_ULTI,
-    sizeof(UltimotionDecodeContext),
-    ulti_decode_init,
-    NULL,
-    ulti_decode_end,
-    ulti_decode_frame,
-    CODEC_CAP_DR1,
-    NULL,
-    .long_name = NULL_IF_CONFIG_SMALL("IBM UltiMotion"),
+AVCodec ff_ulti_decoder = {
+    .name           = "ultimotion",
+    .long_name      = NULL_IF_CONFIG_SMALL("IBM UltiMotion"),
+    .type           = AVMEDIA_TYPE_VIDEO,
+    .id             = AV_CODEC_ID_ULTI,
+    .priv_data_size = sizeof(UltimotionDecodeContext),
+    .init           = ulti_decode_init,
+    .close          = ulti_decode_end,
+    .decode         = ulti_decode_frame,
+    .capabilities   = AV_CODEC_CAP_DR1,
 };
-

@@ -504,6 +504,13 @@ int mtd_write_main(int argc, char *argv[])
 #else
 	unit_len = ROUNDUP(filelen, mi.erasesize);
 #endif
+
+#if defined(RTCONFIG_SOC_IPQ40XX)
+	if (mi.type != MTD_UBIVOLUME) {
+		_dprintf("Non UBI, unit_len set to erasesize!\n");
+		unit_len = mi.erasesize;
+	}
+#endif
 	if (unit_len > mi.size) {
 		error = "File is too big to fit in MTD";
 		goto ERROR;

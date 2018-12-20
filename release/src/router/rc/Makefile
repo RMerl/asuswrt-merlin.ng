@@ -107,6 +107,8 @@ endif
 
 ifeq ($(RTCONFIG_BWDPI),y)
 CFLAGS += -I$(TOP)/bwdpi_source/asus_include
+CFLAGS += -I$(TOP)/bwdpi_source/src/tdts_udb_sample
+CFLAGS += -I$(TOP)/bwdpi_source/include
 CFLAGS += -I$(TOP)/httpd/
 CFLAGS += -I$(TOP)/util-linux/include
 LDFLAGS += -L$(TOP)/bwdpi_source/asus -lbwdpi
@@ -197,7 +199,7 @@ ifeq ($(or $(RTAC68A),$(RT4GAC68U)),y)
 CFLAGS += -DRTAC68U
 endif
 
-ifeq ($(or $(RTAC85U)),y)
+ifeq ($(or $(RTAC85U),$(RTAC85P)),y)
 TARGET_MODEL = $(subst -,,$(subst +,P,$(BUILD_NAME)))
 CFLAGS += -D$(TARGET_MODEL)
 endif
@@ -236,6 +238,9 @@ OBJS := rc.o init.o interface.o lan.o wireless.o wan.o pppd.o auth.o services.o
 OBJS += firewall.o ppp.o services.o common.o
 OBJS += watchdog.o ntp.o $(if $(RTCONFIG_MULTIWAN_CFG),qos_multiwan.o,qos.o) udhcpc.o ate.o
 OBJS += format.o
+ifeq ($(RTCONFIG_CONNTRACK),y)
+OBJS += pctime.o
+endif
 
 ifeq ($(RTCONFIG_NETOOL),y)
 OBJS += netool.o linklist.o
@@ -307,7 +312,12 @@ endif
 endif
 
 OBJS += $(if $(wildcard private.c),private.o,prebuild/private.o)
+ifeq ($(RTCONFIG_CONNDIAG),y)
+ifeq ($(RTCONFIG_BCMBSD),y)
+CFLAGS += -I$(TOP)/bsd
+endif
 OBJS += $(if $(wildcard conn_diag.c),conn_diag.o,prebuild/conn_diag.o)
+endif
 
 # TODO, speedtest
 ifeq ($(RTCONFIG_SPEEDTEST),y)
@@ -400,14 +410,12 @@ ifeq ($(RTCONFIG_DSL_TCLINUX),y)
 OBJS += dsl_diag.o
 endif
 endif
-ifeq ($(or $(RTCONFIG_BCMWL6),$(RTCONFIG_LANTIQ),$(RTCONFIG_QCA)),y)
-ifeq ($(RTCONFIG_PROXYSTA),y)
-ifeq ($(RTCONFIG_LANTIQ),y)
-OBJS += $(if $(wildcard psta_monitor.c),psta_monitor.o,prebuild/psta_monitor.o)
-else
+
+ifeq ($(and $(RTCONFIG_BCMWL6),$(RTCONFIG_PROXYSTA)),y)
 OBJS += psta_monitor.o
 endif
-endif
+
+ifeq ($(or $(RTCONFIG_BCMWL6),$(RTCONFIG_LANTIQ),$(RTCONFIG_QCA)),y)
 ifeq ($(RTCONFIG_AMAS),y)
 ifneq ($(RTCONFIG_DISABLE_REPEATER_UI),y)
 vpath %.c sysdeps/amas
@@ -500,6 +508,11 @@ OBJS += bwdpi_wred_alive.o
 OBJS += bwdpi_db_10.o
 endif
 
+ifeq ($(RTCONFIG_AMAS),y)
+OBJS += amas_lib.o
+OBJS += linklist.o
+endif
+
 OBJS += hour_monitor.o
 
 ifeq ($(RTCONFIG_TRAFFIC_LIMITER),y)
@@ -545,6 +558,9 @@ OBJS += roamast-ralink.o
 endif
 ifeq ($(CONFIG_BCMWL5),y)
 OBJS += roamast-broadcom.o
+ifeq ($(RTCONFIG_CONNDIAG),y)
+OBJS += conn_diag-broadcom.o
+endif
 endif
 ifeq ($(RTCONFIG_REALTEK),y)
 OBJS += roamast-realtek.o
@@ -650,6 +666,9 @@ LDFLAGS += -L$(TOP)/libasuslog -lasuslog
 CFLAGS += -I$(TOP)/libasuslog
 endif
 
+CFLAGS += -I$(TOP)/wlceventd
+
+
 all: rc init.prep
 
 rc: $(OBJS)
@@ -701,6 +720,9 @@ endif
 endif
 #	@cd $(INSTALLDIR)/sbin && ln -sf rc ots
 	@cd $(INSTALLDIR)/sbin && ln -sf rc watchdog
+ifeq ($(RTCONFIG_CONNTRACK),y)
+	@cd $(INSTALLDIR)/sbin && ln -sf rc pctime
+endif
 	@cd $(INSTALLDIR)/sbin && ln -sf rc wave_monitor
 ifeq ($(RTCONFIG_LANTIQ),y)
 	@cd $(INSTALLDIR)/sbin && ln -sf rc restart_bluetoothd
@@ -721,10 +743,12 @@ endif
 ifeq ($(RTCONFIG_FANCTRL),y)
 	@cd $(INSTALLDIR)/sbin && ln -sf rc phy_tempsense
 endif
-ifeq ($(or $(RTCONFIG_BCMWL6),$(RTCONFIG_LANTIQ),$(RTCONFIG_QCA)),y)
-ifeq ($(RTCONFIG_PROXYSTA),y)
+
+ifeq ($(and $(RTCONFIG_BCMWL6),$(RTCONFIG_PROXYSTA)),y)
 	@cd $(INSTALLDIR)/sbin && ln -sf rc psta_monitor
 endif
+
+ifeq ($(or $(RTCONFIG_BCMWL6),$(RTCONFIG_LANTIQ),$(RTCONFIG_QCA)),y)
 ifeq ($(RTCONFIG_AMAS),y)
 	@cd $(INSTALLDIR)/sbin && ln -sf rc obd
 	@cd $(INSTALLDIR)/sbin && ln -sf rc obd_eth
@@ -810,7 +834,9 @@ endif
 	@cd $(INSTALLDIR)/sbin && ln -sf rc delay_exec
 
 	@cd $(INSTALLDIR)/sbin && ln -sf rc wanduck
+ifeq ($(RTCONFIG_CONNDIAG),y)
 	@cd $(INSTALLDIR)/sbin && ln -sf rc conn_diag
+endif
 ifeq ($(and $(CONFIG_BCMWL5),$(RTCONFIG_DUALWAN)),y)
 	@cd $(INSTALLDIR)/sbin && ln -sf rc dualwan
 endif
@@ -947,6 +973,9 @@ ifeq ($(RTCONFIG_BWDPI),y)
 	@cd $(INSTALLDIR)/sbin && ln -sf rc bwdpi_wred_alive
 	@cd $(INSTALLDIR)/sbin && ln -sf rc bwdpi_db_10
 endif
+ifeq ($(RTCONFIG_AMAS),y)
+	@cd $(INSTALLDIR)/sbin && ln -sf rc amas_lib
+endif
 	@cd $(INSTALLDIR)/sbin && ln -sf rc hour_monitor
 ifeq ($(RTCONFIG_SPEEDTEST),y)
 	@cd $(INSTALLDIR)/sbin && ln -sf rc speedtest
@@ -965,7 +994,7 @@ endif
 ifeq ($(RTCONFIG_INTERNAL_GOBI),y)
 	@cd $(INSTALLDIR)/sbin && ln -sf rc lteled
 endif
-ifeq ($(RTCONFIG_TR069),y)
+ifneq (,$(filter y,$(RTCONFIG_TR069) $(RTCONFIG_AMAS)))
 	@cd $(INSTALLDIR)/sbin && ln -sf rc dhcpc_lease
 endif
 
@@ -1016,7 +1045,7 @@ ifeq ($(RTCONFIG_ADTBW),y)
 	@cd $(INSTALLDIR)/sbin && ln -sf rc adtbw
 endif
 
-ifeq ($(RTAC68U),y)
+ifeq ($(or $(RTAC68U),$(RT4GAC68U)),y)
 	@cd $(INSTALLDIR)/sbin && ln -sf rc firmware_enc_crc
 	@cd $(INSTALLDIR)/sbin && ln -sf rc fw_check
 endif
@@ -1106,7 +1135,7 @@ ifneq ($(wildcard ./prebuild/ate.o),)
 ate.o:
 	@-cp -f ./prebuild/ate.o .
 endif
-ifeq ($(BUILD_NAME),$(filter $(BUILD_NAME),RT-AC68U RT-AC3200))
+ifeq ($(BUILD_NAME),$(filter $(BUILD_NAME),RT-AC68U RT-AC3200 4G-AC68U))
 ifneq ($(wildcard ./prebuild/cfe.o),)
 cfe.o:
 	@-cp -f ./prebuild/cfe.o .
@@ -1298,6 +1327,12 @@ ifneq ($(wildcard ./prebuild/roamast-lantiq.o),)
 roamast-lantiq.o:
 	@-cp -f ./prebuild/roamast-lantiq.o .
 endif
+ifeq ($(RTCONFIG_CONNDIAG),y)
+ifneq ($(wildcard ./prebuild/conn_diag-broadcom.o),)
+conn_diag-broadcom.o:
+	@-cp -f ./prebuild/conn_diag-broadcom.o .
+endif
+endif
 endif
 
 ifeq ($(RTCONFIG_TR069),y)
@@ -1319,6 +1354,10 @@ endif
 ifneq ($(wildcard ./prebuild/amas_wlcconnect.o),)
 amas_wlcconnect.o:
 	@-cp -f ./prebuild/amas_wlcconnect.o .
+endif
+ifneq ($(wildcard ./prebuild/amas_lib.o),)
+amas_lib.o:
+	@-cp -f ./prebuild/amas_lib.o .
 endif
 endif
 

@@ -8,13 +8,13 @@ MODELS_HAVE_USB3 = AC2900 \
 	DSL-AC68U \
 	RT-AC5300 GT-AC5300 GT-AC9600 RT-AC95U RT-AC3100 RT-AC3200 \
 	RT-AC55U RT-AC55UHP RT-AC58U 4G-AC53U RT-AC82U RT-AC88Q \
-	RT-AC86U RT-AC88U RT-AC87U RT-AC85U RT-AC68U RT-AC68A 4G-AC68U RT-AC65U RT-AC56S RT-AC56U \
+	RT-AC86U RT-AC88U RT-AC87U RT-AC85U RT-AC85P RT-AC68U RT-AC68A 4G-AC68U RT-AC65U RT-AC56S RT-AC56U \
 	RT-N65U \
 	RT-N18U \
 	RP-AC68U
 
 MODELS_HAVE_TRAFFIC_ANALYZER = RT-AC3200 RT-AC87U RT-AC88U RT-AC86U AC2900 RT-AC3100 RT-AC5300 GT-AC5300 GT-AC9600 DSL-AC68U RT-AC68U \
-	4G-AC68U RT-AC68R RT-AC68W RT-AC68RW RT-AC1900P RT-AC67U RT-AC56U RT-AC56R RT-AC85U RT-AC65U BRT-AC828 BLUECAVE
+	4G-AC68U RT-AC68R RT-AC68W RT-AC68RW RT-AC1900P RT-AC67U RT-AC56U RT-AC56R RT-AC85U RT-AC85P RT-AC65U BRT-AC828 BLUECAVE
 
 all:
 ifeq ($(and $(HND_ROUTER),$(RTCONFIG_VISUALIZATION)),y)
@@ -51,6 +51,12 @@ ifeq ($(and $(HND_ROUTER),$(RTCONFIG_VISUALIZATION)),y)
 	install -m 644 $(VISPAGES) $(INSTALLDIR)/www
 endif # CONFIG_VISUALIZATION
 	# INSTALL MODEL DEPENDENT files
+ifeq ($(and $(RTCONFIG_AMAS),$(RTCONFIG_WIFI_SON)),y)
+	mkdir -p $(INSTALLDIR)/www/www-sys
+	cp ../www/sysdep/$(BUILD_NAME)/www/* $(INSTALLDIR)/www/www-sys -rfL || true
+	rm -rf $(INSTALLDIR)/www/www-sys/images
+	cp ../www/sysdep/$(BUILD_NAME)/www/images $(INSTALLDIR)/www/. -rfL || true
+endif
 	cp ../www/sysdep/$(BUILD_NAME)/www $(INSTALLDIR)/. -rfL || true
 	rm -rf $(INSTALLDIR)/www/Makefile
 	rm -rf $(INSTALLDIR)/www/sysdep
@@ -69,7 +75,9 @@ ifneq ($(RTCONFIG_DSL),y)
 	cp $(TOP)/www/sysdep/BLUECAVE/www/QIS_wizard.htm $(INSTALLDIR)/www/QIS_wizard.htm
 	cp $(TOP)/www/sysdep/BLUECAVE/www/mobile $(INSTALLDIR)/www/mobile -rf
 	cp $(TOP)/www/sysdep/BLUECAVE/www/require/modules/modem.js $(INSTALLDIR)/www/require/modules/ -rf
+ifneq ($(RTCONFIG_WIFI_SON),y)
 	rm -rf $(INSTALLDIR)/www/images/qis
+endif
 	rm -rf $(INSTALLDIR)/www/qis
 	rm -rf $(INSTALLDIR)/www/qis_m
 	rm -rf $(INSTALLDIR)/www/QIS_wizard_m.htm
@@ -494,7 +502,7 @@ ifneq ($(BUILD_NAME),$(filter $(BUILD_NAME), RT-AC88U RT-AC3100 RT-AC5300 GT-AC5
 	rm -rf $(INSTALLDIR)/www/qis_m
 	rm -rf $(INSTALLDIR)/www/images/qis/icon_MAC_clone.svg
 	rm -rf $(INSTALLDIR)/www/images/qis/logo.png
-ifneq ($(BUILD_NAME),$(filter $(BUILD_NAME), RP-AC66 RP-AC68U RP-AC51 MAP-AC1300 MAP-AC2200 VZW-AC1300 MAP-AC1750))
+ifneq ($(BUILD_NAME),$(filter $(BUILD_NAME), RP-AC66 RP-AC68U RP-AC51 MAP-AC1300 MAP-AC2200 VZW-AC1300 MAP-AC1750 RT-AC92U))
 	rm -rf $(INSTALLDIR)/www/css/icon-qis.css
 	rm -rf $(INSTALLDIR)/www/images/qis/loading.gif
 	rm -rf $(INSTALLDIR)/www/images/qis/mainimage_img4.png
@@ -503,7 +511,7 @@ ifneq ($(BUILD_NAME),$(filter $(BUILD_NAME), RP-AC66 RP-AC68U RP-AC51 MAP-AC1300
 endif
 endif
 
-ifneq ($(BUILD_NAME),$(filter $(BUILD_NAME), MAP-AC1300 MAP-AC2200 VZW-AC1300 MAP-AC1750))
+ifneq ($(BUILD_NAME),$(filter $(BUILD_NAME), MAP-AC1300 MAP-AC2200 VZW-AC1300 MAP-AC1750 RT-AC92U))
 	rm -rf $(INSTALLDIR)/www/images/New_ui/asus_hive_block_internet_web.png
 endif
 ifneq ($(BUILD_NAME),$(filter $(BUILD_NAME), MAP-AC1300 MAP-AC2200 MAP-AC1750))
@@ -592,7 +600,6 @@ ifneq ($(RTCONFIG_IFTTT), y)
 endif
 ifneq ($(RTCONFIG_ALEXA), y)
 	rm -rf $(INSTALLDIR)/www/Advanced_Smart_Home_Alexa.asp
-	rm -rf $(INSTALLDIR)/www/images/New_ui/smh_asus_router.png
 endif
 ifneq ($(or $(RTCONFIG_IFTTT),$(RTCONFIG_ALEXA)),y)
 	rm -rf $(INSTALLDIR)/www/images/New_ui/smh_step_1.png
@@ -600,7 +607,7 @@ ifneq ($(or $(RTCONFIG_IFTTT),$(RTCONFIG_ALEXA)),y)
 	rm -rf $(INSTALLDIR)/www/images/New_ui/smh_step_2_text.png
 	rm -rf $(INSTALLDIR)/www/images/New_ui/smh_step_3.png
 	rm -rf $(INSTALLDIR)/www/images/New_ui/smh_step_3_acclink.png
-	rm -rf $(INSTALLDIR)/www/images/New_ui/smh_step_4_flow.png
+	rm -rf $(INSTALLDIR)/www/images/New_ui/smh_step_4_flow.svg
 	rm -rf $(INSTALLDIR)/www/ifttt_style.css
 endif
 
@@ -640,6 +647,8 @@ else ifeq ($(BUILD_NAME),AC2900)
 	cd $(INSTALLDIR)/www/require && mv menuTrees/menuTree_AC2900.js modules/menuTree.js
 else ifeq ($(BUILD_NAME),RT-AC85U)
 	cd $(INSTALLDIR)/www/require && mv menuTrees/menuTree_RT-AC85U.js modules/menuTree.js
+else ifeq ($(BUILD_NAME),RT-AC85P)
+	cd $(INSTALLDIR)/www/require && mv menuTrees/menuTree_RT-AC85P.js modules/menuTree.js
 else ifeq ($(BUILD_NAME),RT-AC65U)
 	cd $(INSTALLDIR)/www/require && mv menuTrees/menuTree_RT-AC65U.js modules/menuTree.js
 else ifeq ($(BUILD_NAME),$(filter $(BUILD_NAME), GT-AC5300 GT-AC9600))
@@ -648,8 +657,10 @@ else ifeq ($(BUILD_NAME),BRT-AC828)
 	cd $(INSTALLDIR)/www/require && mv menuTrees/menuTree_BRTAC828.js modules/menuTree.js
 else ifeq ($(BUILD_NAME),BLUECAVE)
 	cd $(INSTALLDIR)/www/require && mv menuTrees/menuTree_BLUECAVE.js modules/menuTree.js
-else ifeq ($(BUILD_NAME),$(filter $(BUILD_NAME), MAP-AC1300 MAP-AC2200 VZW-AC1300 MAP-AC1750))
+else ifeq ($(BUILD_NAME),$(filter $(BUILD_NAME), MAP-AC1300 MAP-AC2200 MAP-AC1750 RT-AC92U))
 	cd $(INSTALLDIR)/www/require && mv menuTrees/menuTree_LYRA.js modules/menuTree.js
+else ifeq ($(BUILD_NAME),VZW-AC1300)
+	cd $(INSTALLDIR)/www/require && mv menuTrees/menuTree_VZW-AC1300.js modules/menuTree.js
 else ifeq ($(RTCONFIG_BWDPI),y)
 ifeq ($(findstring $(BUILD_NAME),$(MODELS_HAVE_TRAFFIC_ANALYZER)),)
 	cd $(INSTALLDIR)/www/require && mv menuTrees/menuTree_bwdpi_no_traffic_analyzer.js modules/menuTree.js
@@ -685,6 +696,8 @@ else
 	cd $(INSTALLDIR)/www/ && mv Advanced_VPNClientFusion_Content.asp Advanced_VPNClient_Content.asp
 endif
 
+	ln -sf /tmp/fb_data.tgz.gz $(INSTALLDIR)/www/fb_data.tgz.gz
+
 ifneq ($(RTCONFIG_AMAS), y)
 	rm -rf $(INSTALLDIR)/www/device-map/amesh.asp
 	rm -rf $(INSTALLDIR)/www/device-map/amesh.css
@@ -697,14 +710,24 @@ ifneq ($(RTCONFIG_AMAS), y)
 	rm -rf $(INSTALLDIR)/www/AiMesh_Node_FirmwareUpgrade.asp
 	rm -rf $(INSTALLDIR)/www/Advanced_Roaming_Block_Content.asp
 endif
-
+	rm -rf $(INSTALLDIR)/www/Main_ChkSta_Content.asp
+	rm -rf $(INSTALLDIR)/www/ajax_chk_sta.asp
 ifeq ($(RTCONFIG_TCPDUMP),y)
 ifeq ($(RTCONFIG_SOC_IPQ40XX)$(RTCONFIG_PSISTLOG),yy)
 	ln -fs /jffs/pppoe.pcap $(INSTALLDIR)/www/pppoe.pcap
 	ln -fs /jffs/discover.pcap $(INSTALLDIR)/www/discover.pcap
 endif
 endif
+ifeq ($(RTCONFIG_DUMP4000),y)
+	ln -fs /tmp/wan1.pcap $(INSTALLDIR)/www/wan1.pcap
+	ln -fs /tmp/wan2.pcap $(INSTALLDIR)/www/wan2.pcap
+endif
 
 ifneq ($(RTCONFIG_DBLOG),y)
 	rm -rf $(INSTALLDIR)/www/images/New_ui/dblog_diag.gif
 endif
+ifeq ($(and $(RTCONFIG_AMAS),$(RTCONFIG_WIFI_SON)),y)
+	rm -rf $(INSTALLDIR)/www-sys
+	mv $(INSTALLDIR)/www/www-sys $(INSTALLDIR)/www-sys
+endif
+	mkdir -p $(INSTALLDIR)/www

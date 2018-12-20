@@ -21,19 +21,29 @@
 #ifndef AVCODEC_XVMC_H
 #define AVCODEC_XVMC_H
 
+/**
+ * @file
+ * @ingroup lavc_codec_hwaccel_xvmc
+ * Public libavcodec XvMC header.
+ */
+
 #include <X11/extensions/XvMC.h>
 
+#include "libavutil/attributes.h"
+#include "version.h"
 #include "avcodec.h"
 
-#if LIBAVCODEC_VERSION_MAJOR < 53
-#define AV_XVMC_STATE_DISPLAY_PENDING          1  /**  the surface should be shown, the video driver manipulates this */
-#define AV_XVMC_STATE_PREDICTION               2  /**  the surface is needed for prediction, the codec manipulates this */
-#define AV_XVMC_STATE_OSD_SOURCE               4  /**  the surface is needed for subpicture rendering */
-#endif
+/**
+ * @defgroup lavc_codec_hwaccel_xvmc XvMC
+ * @ingroup lavc_codec_hwaccel
+ *
+ * @{
+ */
+
 #define AV_XVMC_ID                    0x1DC711C0  /**< special value to ensure that regular pixel routines haven't corrupted the struct
                                                        the number is 1337 speak for the letters IDCT MCo (motion compensation) */
 
-struct xvmc_pix_fmt {
+struct attribute_deprecated xvmc_pix_fmt {
     /** The field contains the special constant value AV_XVMC_ID.
         It is used as a test that the application correctly uses the API,
         and that there is no corruption caused by pixel routines.
@@ -71,7 +81,7 @@ struct xvmc_pix_fmt {
     */
     int             allocated_data_blocks;
 
-    /** Indicates that the hardware would interpret data_blocks as IDCT
+    /** Indicate that the hardware would interpret data_blocks as IDCT
         coefficients and perform IDCT on them.
         - application - set during initialization
         - libavcodec  - unchanged
@@ -139,7 +149,7 @@ struct xvmc_pix_fmt {
     */
     int             filled_mv_blocks_num;
 
-    /** Number of the the next free data block; one data block consists of
+    /** Number of the next free data block; one data block consists of
         64 short values in the data_blocks array.
         All blocks before this one have already been claimed by placing their
         position into the corresponding block description structure field,
@@ -151,22 +161,10 @@ struct xvmc_pix_fmt {
                         of coded blocks it contains.
     */
     int             next_free_data_block_num;
-
-/** extensions may be placed here */
-#if LIBAVCODEC_VERSION_MAJOR < 53
-//@{
-    /** State flags used to work around limitations in the MPlayer video system.
-        0   - Surface is not used.
-        1   - Surface is still held in application to be displayed or is
-              still visible.
-        2   - Surface is still held in libavcodec buffer for prediction.
-    */
-    int             state;
-
-    /** pointer to the surface where the subpicture is rendered */
-    void*           p_osd_target_surface_render;
-//}@
-#endif
 };
+
+/**
+ * @}
+ */
 
 #endif /* AVCODEC_XVMC_H */

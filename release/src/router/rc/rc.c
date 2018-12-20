@@ -483,7 +483,7 @@ static int rctest_main(int argc, char *argv[])
 					f_write_string("/proc/sys/net/ipv4/conf/all/force_igmp_version", "2", 0, 0);
 #endif
 
-#if defined(RTN14U) || defined(RTAC52U) || defined(RTAC51U) || defined(RTN11P) || defined(RTN300) || defined(RTN54U) || defined(RTAC1200HP) || defined(RTN56UB1) || defined(RTAC54U) || defined(RTN56UB2) || defined(RTAC1200GA1) || defined (RTAC1200GU) || defined(RTAC85U) || defined(RTAC51UP) || defined(RTAC53) || defined(RTN800HP)
+#if defined(RTN14U) || defined(RTAC52U) || defined(RTAC51U) || defined(RTN11P) || defined(RTN300) || defined(RTN54U) || defined(RTAC1200HP) || defined(RTN56UB1) || defined(RTAC54U) || defined(RTN56UB2) || defined(RTAC1200GA1) || defined (RTAC1200GU) || defined(RTAC85U) || defined(RTAC85P) || defined(RTAC51UP) || defined(RTAC53) || defined(RTN800HP)
 					if (!(!nvram_match("switch_wantag", "none")&&!nvram_match("switch_wantag", "")))
 #endif
 					{
@@ -756,6 +756,9 @@ static const applets_t applets[] = {
 #endif
 #endif
 	{ "watchdog",			watchdog_main			},
+#ifdef RTCONFIG_CONNTRACK
+	{ "pctime",                     pctime_main                     },
+#endif
 #if ! (defined(RTCONFIG_QCA) || defined(RTCONFIG_RALINK))
 	{ "watchdog02",			watchdog02_main			},
 #endif  /* ! (RTCONFIG_QCA || RTCONFIG_RALINK) */
@@ -772,10 +775,10 @@ static const applets_t applets[] = {
 	{ "psta_monitor",		psta_monitor_main		},
 #endif
 #if defined(RTCONFIG_AMAS) && (defined(RTCONFIG_BCMWL6) || defined(RTCONFIG_LANTIQ) || defined(RTCONFIG_QCA)) && !defined(RTCONFIG_DISABLE_REPEATER_UI)
-	{ "obd",			obd_main					},
+	{ "obd",			obd_main			},
 #endif
 #if defined(RTCONFIG_AMAS) && defined(RTCONFIG_ETHOBD)
-	{ "obd_eth",		obdeth_main					},
+	{ "obd_eth",		obdeth_main				},
 	{ "obd_monitor",	obd_monitor_main			},
 #endif
 #ifdef RTCONFIG_IPERF
@@ -831,7 +834,9 @@ static const applets_t applets[] = {
 	{ "delay_exec",			delay_main			},
 
 	{ "wanduck",			wanduck_main			},
+#ifdef RTCONFIG_CONNDIAG
 	{ "conn_diag",			conn_diag_main			},
+#endif
 #if defined(CONFIG_BCMWL5) && !defined(HND_ROUTER) && defined(RTCONFIG_DUALWAN)
 	{ "dualwan",			dualwan_control			},
 #endif
@@ -876,6 +881,9 @@ static const applets_t applets[] = {
 	{ "bwdpi_db_10",		bwdpi_db_10_main		},
 	{ "rsasign_sig_check",		rsasign_sig_check_main		},
 #endif
+#ifdef RTCONFIG_AMAS
+	{ "amas_lib",		        amas_lib_main			},
+#endif
 	{ "hour_monitor",		hour_monitor_main		},
 #ifdef RTCONFIG_USB_MODEM
 #ifdef RTCONFIG_INTERNAL_GOBI
@@ -885,8 +893,8 @@ static const applets_t applets[] = {
 #endif
 #endif
 #endif
-#ifdef RTCONFIG_TR069
-	{ "dhcpc_lease",		dhcpc_lease_main		},
+#if defined(RTCONFIG_TR069) || defined(RTCONFIG_AMAS)
+	{ "dhcpc_lease",		dnsmasq_script_main		},
 #endif
 #ifdef RTCONFIG_NEW_USER_LOW_RSSI
 	{ "roamast",			roam_assistant_main		},
@@ -1010,6 +1018,10 @@ int main(int argc, char **argv)
                                 start_cap(1);
                         else if (argv[1] && (!strcmp(argv[1], "restart")))
                                 start_cap(2);
+#if defined(RTCONFIG_HIDDEN_BACKHAUL)
+                        else if (argv[1] && (!strcmp(argv[1], "renew_bh")))
+                                renew_bh();
+#endif
                         else
                                 printf("error command.\n");
                 }
@@ -1029,6 +1041,10 @@ int main(int argc, char **argv)
                                 start_re(2);
                         else if (argv[1] && (!strcmp(argv[1], "waitimeout")))
                                 start_re(3);
+#if defined(RTCONFIG_HIDDEN_BACKHAUL)
+                        else if (argv[1] && (!strcmp(argv[1], "renew_bh")))
+                                renew_bh();
+#endif
                         else
                                 printf("error command.\n");
                 }

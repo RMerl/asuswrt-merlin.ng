@@ -1289,6 +1289,11 @@ char *get_wlifname(int unit, int subunit, int subunit_x, char *buf)
 	return buf;
 }
 
+char *wl_ifname(int unit, int subunit, char *buf)
+{
+	return get_wlifname(unit, subunit, -1, buf);
+}
+
 /**
  * Generate VAP interface name of wlX.Y for Guest network, Free Wi-Fi, and Facebook Wi-Fi
  * @x:		X of wlX.Y, aka unit

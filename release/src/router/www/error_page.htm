@@ -242,6 +242,7 @@ var wanauxstate = -1;
 var isSupport = function(_ptn){return ('<% nvram_get("rc_support"); %>'.search(_ptn) == -1) ? false : true;}
 var tmo_support = isSupport("tmo");
 var dsl_support = isSupport("dsl");
+var gobi_support = isSupport("gobi");
 
 //Dual WAN unit
 var wans_dualwan_orig = '<% nvram_get("wans_dualwan"); %>';
@@ -250,18 +251,8 @@ if(wans_dualwan_orig.search(" ") == -1)
 	wans_flag = 0;
 
 var new_lan_ip = [<% get_next_lanip(); %>][0].next_lanip;
-
-var get_protocol = function() {
-	var protocol = "http:";
-	if(window.location.protocol == "http:" || window.location.protocol == "https:") {
-		protocol = window.location.protocol;
-		return protocol;
-	}
-
-	return protocol;
-};
 var header_info = [<% get_header_info(); %>];
-var location_org = get_protocol() + "//" + header_info[0].host;
+var location_org = header_info[0].protocol + "://" + header_info[0].host + ":" + header_info[0].port;
 
 function initial(){
 	var is_logined = [<% is_logined_hook(); %>][0];
@@ -524,10 +515,13 @@ function detect_router(){
 
 function detect_general(){
 	if(wans_flag){		//Dual WAN
-		if(wans_dualwan_orig.split(" ")[0].toUpperCase == "USB"){
-			top.location.href = '/Advanced_Modem_Content.asp';
+		if(wans_dualwan_orig.split(" ")[0].toUpperCase() == "USB"){
+			if(gobi_support)
+				top.location.href = '/Advanced_MobileBroadband_Content.asp';
+			else
+				top.location.href = '/Advanced_Modem_Content.asp';
 		}else if(dsl_support){
-			if(wans_dualwan_orig.split(" ")[0].toUpperCase == "WAN" || wans_dualwan_orig.split(" ")[0].toUpperCase == "LAN")
+			if(wans_dualwan_orig.split(" ")[0].toUpperCase() == "WAN" || wans_dualwan_orig.split(" ")[0].toUpperCase() == "LAN")
 				top.location.href = '/Advanced_WAN_Content.asp';
 			else
 				top.location.href = '/Advanced_DSL_Content.asp';
@@ -538,6 +532,8 @@ function detect_general(){
 	else{		//Single WAN
 		if(dsl_support)                 
 			top.location.href = '/Advanced_DSL_Content.asp';
+		else if(wans_dualwan_orig.split(" ")[0].toUpperCase() == "USB")
+			top.location.href = '/Advanced_MobileBroadband_Content.asp';
 		else if(sw_mode == 3)
 			top.location.href = '/';
 		else

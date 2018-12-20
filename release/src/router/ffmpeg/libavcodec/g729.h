@@ -1,5 +1,5 @@
 /*
- * G.729 decoder
+ * G.729, G729 Annex D decoders
  * Copyright (c) 2008 Vladimir Voroshilov
  *
  * This file is part of FFmpeg.
@@ -25,5 +25,9 @@
  * subframe size
  */
 #define SUBFRAME_SIZE 40
+
+/* bytes per block */
+#define G729_8K_BLOCK_SIZE     10
+#define G729D_6K4_BLOCK_SIZE   8
 
 #endif // AVCODEC_G729_H

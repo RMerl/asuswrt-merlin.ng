@@ -27,8 +27,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#include "libavutil/common.h"
 #include "libavutil/intreadwrite.h"
 #include "avcodec.h"
+#include "internal.h"
 
 #include <zlib.h>
 
@@ -42,7 +44,6 @@
  */
 typedef struct ZmbvEncContext {
     AVCodecContext *avctx;
-    AVFrame pic;
 
     int range;
     uint8_t *comp_buf, *work_buf;
@@ -53,16 +54,18 @@ typedef struct ZmbvEncContext {
     int comp_size;
     int keyint, curfrm;
     z_stream zstream;
+
+    int score_tab[256];
 } ZmbvEncContext;
 
-static int score_tab[256];
 
 /** Block comparing function
  * XXX should be optimized and moved to DSPContext
  * TODO handle out of edge ME
  */
-static inline int block_cmp(uint8_t *src, int stride, uint8_t *src2, int stride2,
-                            int bw, int bh, int *xored)
+static inline int block_cmp(ZmbvEncContext *c, uint8_t *src, int stride,
+                            uint8_t *src2, int stride2, int bw, int bh,
+                            int *xored)
 {
     int sum = 0;
     int i, j;
@@ -80,7 +83,7 @@ static inline int block_cmp(uint8_t *src, int stride, uint8_t *src2, int stride2
     }
 
     for(i = 1; i < 256; i++)
-        sum += score_tab[histogram[i]];
+        sum += c->score_tab[histogram[i]];
 
     return sum;
 }
@@ -96,14 +99,14 @@ static int zmbv_me(ZmbvEncContext *c, uint8_t *src, int sstride, uint8_t *prev,
     *mx = *my = 0;
     bw = FFMIN(ZMBV_BLOCK, c->avctx->width - x);
     bh = FFMIN(ZMBV_BLOCK, c->avctx->height - y);
-    bv = block_cmp(src, sstride, prev, pstride, bw, bh, xored);
+    bv = block_cmp(c, src, sstride, prev, pstride, bw, bh, xored);
     if(!bv) return 0;
     for(ty = FFMAX(y - c->range, 0); ty < FFMIN(y + c->range, c->avctx->height - bh); ty++){
         for(tx = FFMAX(x - c->range, 0); tx < FFMIN(x + c->range, c->avctx->width - bw); tx++){
             if(tx == x && ty == y) continue; // we already tested this block
             dx = tx - x;
             dy = ty - y;
-            tv = block_cmp(src, sstride, prev + dx + dy*pstride, pstride, bw, bh, xored);
+            tv = block_cmp(c, src, sstride, prev + dx + dy * pstride, pstride, bw, bh, xored);
             if(tv < bv){
                  bv = tv;
                  *mx = dx;
@@ -115,40 +118,31 @@ static int zmbv_me(ZmbvEncContext *c, uint8_t *src, int sstride, uint8_t *prev,
     return bv;
 }
 
-static int encode_frame(AVCodecContext *avctx, uint8_t *buf, int buf_size, void *data)
+static int encode_frame(AVCodecContext *avctx, AVPacket *pkt,
+                        const AVFrame *pict, int *got_packet)
 {
     ZmbvEncContext * const c = avctx->priv_data;
-    AVFrame *pict = data;
-    AVFrame * const p = &c->pic;
-    uint8_t *src, *prev;
+    const AVFrame * const p = pict;
+    uint8_t *src, *prev, *buf;
     uint32_t *palptr;
-    int len = 0;
     int keyframe, chpal;
     int fl;
-    int work_size = 0;
+    int work_size = 0, pkt_size;
     int bw, bh;
-    int i, j;
+    int i, j, ret;
 
     keyframe = !c->curfrm;
     c->curfrm++;
     if(c->curfrm == c->keyint)
         c->curfrm = 0;
-    *p = *pict;
-    p->pict_type= keyframe ? FF_I_TYPE : FF_P_TYPE;
-    p->key_frame= keyframe;
+#if FF_API_CODED_FRAME
+FF_DISABLE_DEPRECATION_WARNINGS
+    avctx->coded_frame->pict_type = keyframe ? AV_PICTURE_TYPE_I : AV_PICTURE_TYPE_P;
+    avctx->coded_frame->key_frame = keyframe;
+FF_ENABLE_DEPRECATION_WARNINGS
+#endif
     chpal = !keyframe && memcmp(p->data[1], c->pal2, 1024);
 
-    fl = (keyframe ? ZMBV_KEYFRAME : 0) | (chpal ? ZMBV_DELTAPAL : 0);
-    *buf++ = fl; len++;
-    if(keyframe){
-        deflateReset(&c->zstream);
-        *buf++ = 0; len++; // hi ver
-        *buf++ = 1; len++; // lo ver
-        *buf++ = 1; len++; // comp
-        *buf++ = 4; len++; // format - 8bpp
-        *buf++ = ZMBV_BLOCK; len++; // block width
-        *buf++ = ZMBV_BLOCK; len++; // block height
-    }
     palptr = (uint32_t*)p->data[1];
     src = p->data[0];
     prev = c->prev;
@@ -181,7 +175,7 @@ static int encode_frame(AVCodecContext *avctx, uint8_t *buf, int buf_size, void 
         int x, y, bh2, bw2, xored;
         uint8_t *tsrc, *tprev;
         uint8_t *mv;
-        int mx, my, bv;
+        int mx, my;
 
         bw = (avctx->width + ZMBV_BLOCK - 1) / ZMBV_BLOCK;
         bh = (avctx->height + ZMBV_BLOCK - 1) / ZMBV_BLOCK;
@@ -197,7 +191,7 @@ static int encode_frame(AVCodecContext *avctx, uint8_t *buf, int buf_size, void 
                 tsrc = src + x;
                 tprev = prev + x;
 
-                bv = zmbv_me(c, tsrc, p->linesize[0], tprev, c->pstride, x, y, &mx, &my, &xored);
+                zmbv_me(c, tsrc, p->linesize[0], tprev, c->pstride, x, y, &mx, &my, &xored);
                 mv[0] = (mx << 1) | !!xored;
                 mv[1] = my << 1;
                 tprev += mx + my * c->pstride;
@@ -223,6 +217,9 @@ static int encode_frame(AVCodecContext *avctx, uint8_t *buf, int buf_size, void 
         src += p->linesize[0];
     }
 
+    if (keyframe)
+        deflateReset(&c->zstream);
+
     c->zstream.next_in = c->work_buf;
     c->zstream.avail_in = work_size;
     c->zstream.total_in = 0;
@@ -235,10 +232,41 @@ static int encode_frame(AVCodecContext *avctx, uint8_t *buf, int buf_size, void 
         return -1;
     }
 
+    pkt_size = c->zstream.total_out + 1 + 6*keyframe;
+    if ((ret = ff_alloc_packet2(avctx, pkt, pkt_size, 0)) < 0)
+        return ret;
+    buf = pkt->data;
+
+    fl = (keyframe ? ZMBV_KEYFRAME : 0) | (chpal ? ZMBV_DELTAPAL : 0);
+    *buf++ = fl;
+    if (keyframe) {
+        *buf++ = 0; // hi ver
+        *buf++ = 1; // lo ver
+        *buf++ = 1; // comp
+        *buf++ = 4; // format - 8bpp
+        *buf++ = ZMBV_BLOCK; // block width
+        *buf++ = ZMBV_BLOCK; // block height
+    }
     memcpy(buf, c->comp_buf, c->zstream.total_out);
-    return len + c->zstream.total_out;
+
+    pkt->flags |= AV_PKT_FLAG_KEY*keyframe;
+    *got_packet = 1;
+
+    return 0;
 }
 
+static av_cold int encode_end(AVCodecContext *avctx)
+{
+    ZmbvEncContext * const c = avctx->priv_data;
+
+    av_freep(&c->comp_buf);
+    av_freep(&c->work_buf);
+
+    deflateEnd(&c->zstream);
+    av_freep(&c->prev);
+
+    return 0;
+}
 
 /**
  * Init zmbv encoder
@@ -251,7 +279,7 @@ static av_cold int encode_init(AVCodecContext *avctx)
     int lvl = 9;
 
     for(i=1; i<256; i++)
-        score_tab[i]= -i * log(i/(double)(ZMBV_BLOCK*ZMBV_BLOCK)) * (256/M_LN2);
+        c->score_tab[i] = -i * log2(i / (double)(ZMBV_BLOCK * ZMBV_BLOCK)) * 256;
 
     c->avctx = avctx;
 
@@ -265,72 +293,52 @@ static av_cold int encode_init(AVCodecContext *avctx)
         lvl = avctx->compression_level;
     if(lvl < 0 || lvl > 9){
         av_log(avctx, AV_LOG_ERROR, "Compression level should be 0-9, not %i\n", lvl);
-        return -1;
+        return AVERROR(EINVAL);
     }
 
     // Needed if zlib unused or init aborted before deflateInit
-    memset(&(c->zstream), 0, sizeof(z_stream));
+    memset(&c->zstream, 0, sizeof(z_stream));
     c->comp_size = avctx->width * avctx->height + 1024 +
         ((avctx->width + ZMBV_BLOCK - 1) / ZMBV_BLOCK) * ((avctx->height + ZMBV_BLOCK - 1) / ZMBV_BLOCK) * 2 + 4;
-    if ((c->work_buf = av_malloc(c->comp_size)) == NULL) {
+    if (!(c->work_buf = av_malloc(c->comp_size))) {
         av_log(avctx, AV_LOG_ERROR, "Can't allocate work buffer.\n");
-        return -1;
+        return AVERROR(ENOMEM);
     }
     /* Conservative upper bound taken from zlib v1.2.1 source via lcl.c */
     c->comp_size = c->comp_size + ((c->comp_size + 7) >> 3) +
                            ((c->comp_size + 63) >> 6) + 11;
 
     /* Allocate compression buffer */
-    if ((c->comp_buf = av_malloc(c->comp_size)) == NULL) {
+    if (!(c->comp_buf = av_malloc(c->comp_size))) {
         av_log(avctx, AV_LOG_ERROR, "Can't allocate compression buffer.\n");
-        return -1;
+        return AVERROR(ENOMEM);
     }
     c->pstride = FFALIGN(avctx->width, 16);
-    if ((c->prev = av_malloc(c->pstride * avctx->height)) == NULL) {
+    if (!(c->prev = av_malloc(c->pstride * avctx->height))) {
         av_log(avctx, AV_LOG_ERROR, "Can't allocate picture.\n");
-        return -1;
+        return AVERROR(ENOMEM);
     }
 
     c->zstream.zalloc = Z_NULL;
     c->zstream.zfree = Z_NULL;
     c->zstream.opaque = Z_NULL;
-    zret = deflateInit(&(c->zstream), lvl);
+    zret = deflateInit(&c->zstream, lvl);
     if (zret != Z_OK) {
         av_log(avctx, AV_LOG_ERROR, "Inflate init error: %d\n", zret);
         return -1;
     }
 
-    avctx->coded_frame = (AVFrame*)&c->pic;
-
     return 0;
 }
 
-
-
-/**
- * Uninit zmbv encoder
- */
-static av_cold int encode_end(AVCodecContext *avctx)
-{
-    ZmbvEncContext * const c = avctx->priv_data;
-
-    av_freep(&c->comp_buf);
-    av_freep(&c->work_buf);
-
-    deflateEnd(&(c->zstream));
-    av_freep(&c->prev);
-
-    return 0;
-}
-
-AVCodec zmbv_encoder = {
-    "zmbv",
-    AVMEDIA_TYPE_VIDEO,
-    CODEC_ID_ZMBV,
-    sizeof(ZmbvEncContext),
-    encode_init,
-    encode_frame,
-    encode_end,
-    .pix_fmts = (const enum PixelFormat[]){PIX_FMT_PAL8, PIX_FMT_NONE},
-    .long_name = NULL_IF_CONFIG_SMALL("Zip Motion Blocks Video"),
+AVCodec ff_zmbv_encoder = {
+    .name           = "zmbv",
+    .long_name      = NULL_IF_CONFIG_SMALL("Zip Motion Blocks Video"),
+    .type           = AVMEDIA_TYPE_VIDEO,
+    .id             = AV_CODEC_ID_ZMBV,
+    .priv_data_size = sizeof(ZmbvEncContext),
+    .init           = encode_init,
+    .encode2        = encode_frame,
+    .close          = encode_end,
+    .pix_fmts       = (const enum AVPixelFormat[]){ AV_PIX_FMT_PAL8, AV_PIX_FMT_NONE },
 };

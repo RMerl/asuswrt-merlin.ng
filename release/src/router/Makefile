@@ -6288,12 +6288,12 @@ wget/Makefile.in: wget/Makefile.am
 
 wget/Makefile: wget/Makefile.in
 	cd wget && $(CONFIGURE) \
-		--with-ssl=openssl --with-libssl-prefix=$(TOP)/openssl --sysconfdir=/etc \
+		--with-ssl=openssl --prefix=/usr --sysconfdir=/etc \
 		--disable-opie --disable-ntlm --disable-debug --disable-nls --disable-rpath \
 		$(if $(RTCONFIG_IPV6),,--disable-ipv6) --disable-iri --without-included-regex  \
 		--disable-dependency-tracking \
-		CFLAGS="-Os -Wall $(EXTRACFLAGS) -ffunction-sections -fdata-sections -I$(TOP)/openssl/include -I$(TOP)/zlib" \
-		LDFLAGS="$(EXTRALDFLAGS) -Wl,--gc-sections -L$(TOP)/openssl -lssl -lcrypto -L$(TOP)/zlib -lz"
+		CFLAGS="-Os -Wall $(EXTRACFLAGS) -ffunction-sections -fdata-sections -I$(STAGEDIR)/usr/include" \
+		LDFLAGS="$(EXTRALDFLAGS) -Wl,--gc-sections -L$(STAGEDIR)/usr/lib"
 
 wget: openssl zlib wget/Makefile
 	$(MAKE) -C $@

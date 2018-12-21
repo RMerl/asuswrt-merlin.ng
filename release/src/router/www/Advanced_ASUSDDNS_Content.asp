@@ -667,7 +667,11 @@ function save_cert_key(){
 				<div class="formfontdesc" id="lb_note" style="color:#FFCC00; display:none;"><#lb_note_ddns#></div>
 				<div class="formfontdesc" id="ddns_state" style="color:#FFCC00; display:none;"></div>
 				<table width="100%" border="1" align="center" cellpadding="4" cellspacing="0" bordercolor="#6b8fa3"  class="FormTable">
-				<input type="hidden" name="wl_gmode_protection_x" value="<% nvram_get("wl_gmode_protection_x"); %>">
+	                        <thead>
+	                        <tr>
+	                                <td colspan="2">DDNS Service</td>
+	                        </tr>
+	                        </thead>
 			<tr>
 				<th><#LANHostConfig_x_DDNSEnable_itemname#></th>
 				<td>
@@ -777,6 +781,14 @@ function save_cert_key(){
 					<input type="hidden" maxlength="15" class="button_gen" size="12" name="" value="<% nvram_get("DDNSStatus"); %>">
 				  	<input type="submit" maxlength="15" class="button_gen" onclick="showLoading();return onSubmitApply('ddnsclient');" size="12" name="LANHostConfig_x_DDNSStatus_button" value="<#LANHostConfig_x_DDNSStatus_buttonname#>" /></td>
 			</tr>
+		</table>
+
+		<table width="100%" border="1" align="center" cellpadding="4" cellspacing="0" bordercolor="#6b8fa3"  class="FormTable">
+		<thead>
+		<tr>
+			<td colspan="2">Webui SSL Certificate</td>
+		</tr>
+		</thead>
 			<tr id="https_cert" style="display:none;">
 				<th>HTTPS/SSL Certificate</th> <!--untranslated-->
 				<td>

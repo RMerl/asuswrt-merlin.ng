@@ -165,7 +165,146 @@ enum {
     ETHSWPORTSTORMCTRL,
     ETHSWOAMIDXMAPPING,
     ETHSWBONDINGPORTS,
+    ETHSWCFP,
 };
+
+typedef struct cfpArg_s {
+    unsigned int rc;
+    unsigned int argFlag;
+    unsigned int unit;
+    unsigned int priority;
+    unsigned int index;
+    unsigned int l2_framing;
+    unsigned int l3_framing;
+    unsigned int chg_fpmap_ib;
+    unsigned int fpmap_ib;
+    unsigned int spmap;
+    unsigned int pppoe;
+    unsigned int etype_sap;
+    unsigned int etype_sap_mask;
+    unsigned int svtag;
+    unsigned int svtag_mask;
+    unsigned int cvtag;
+    unsigned int cvtag_mask;
+    unsigned int ip_protocol;
+    unsigned int ip_protocol_mask;
+    unsigned int ipsa;
+    unsigned int ipsa_mask;
+    unsigned int ipda;
+    unsigned int ipda_mask;
+    unsigned int tcpudp_sport;
+    unsigned int tcpudp_sport_mask;
+    unsigned int tcpudp_dport;
+    unsigned int tcpudp_dport_mask;
+    unsigned int dscp;
+    unsigned int dscp_mask;
+    unsigned int new_dscp_ib;
+    unsigned int op;
+    unsigned long long da;
+    unsigned long long da_mask;
+    unsigned long long sa;
+    unsigned long long sa_mask;
+} cfpArg_t;
+enum {
+    CFP_RC_SUCCESS,
+    CFP_RC_NON_EXISTING_INDEX,
+    CFP_RC_CFP_FULL,
+    CFP_RC_UDF_FULL,
+};
+
+enum {CfpL3Ipv4, CfpL3Ipv6, CfpL3NoIP};
+enum {CfpL2EtherII, CfpL2SnapPublic, CfpL2LLC, CfpL2SnapPrivate};
+
+enum {
+    CFPOP_READ,
+    CFPOP_READ_NEXT,
+    CFPOP_ADD,
+    CFPOP_INSERT,
+    CFPOP_APPEND,
+    CFPOP_DELETE,
+    CFPOP_DELETE_ALL,
+};
+
+enum {
+    OPT_READ,
+    OPT_ADD,
+    OPT_APPEND,
+    OPT_INSERT,
+    OPT_DELETE,
+    OPT_DELETE_ALL,
+
+    OPT_PRIORITY,
+    OPT_INDEX,
+    OPT_SPMAP,
+    OPT_DA,
+
+    OPT_SA,
+    OPT_SVLAN_VID,
+    OPT_SVLAN_PCP,
+    OPT_SVLAN_TAG,
+
+    OPT_CVLAN_VID,
+    OPT_CVLAN_PCP,
+    OPT_CVLAN_TAG,
+    OPT_L2,
+
+    OPT_PPPOE,
+    OPT_ETYPE,
+    OPT_L3,
+    OPT_DSCP,
+
+    OPT_IP_PROTOCOL,
+    OPT_IPSA,
+    OPT_IPDA,
+    OPT_TCPUDP_SPORT,
+
+    OPT_TCPUDP_DPORT,
+    OPT_NEW_DSCP_IB,
+    OPT_CHANGE_FPMAP_IB,
+    OPT_FPMAP_IB,
+};
+
+enum {
+    CFP_ARG_SPMAP_M =    (1<<0),
+    CFP_ARG_DA_M  =      (1<<1),
+    CFP_ARG_SA_M  =      (1<<2),
+    CFP_ARG_IP_PROTOCOL_M =  (1<<3),
+
+    CFP_ARG_L2_FRAMING_M = (1<<4),
+    CFP_ARG_L3_FRAMING_M = (1<<5),
+    CFP_ARG_DSCP_M = (1<<6),
+    CFP_ARG_PRIORITY_M = (1<<7),
+
+    CFP_ARG_INDEX_M = (1<<8),
+    CFP_ARG_IPSA_M = (1<<9),
+    CFP_ARG_IPDA_M = (1<<10),
+    CFP_ARG_TCPUDP_SPORT_M = (1<<11),
+
+    CFP_ARG_TCPUDP_DPORT_M = (1<<12),
+    CFP_ARG_NEW_DSCP_IB_M = (1<<13),
+    CFP_ARG_CHG_FPMAP_IB_M = (1<<14),
+    CFP_ARG_FPMAP_IB_M = (1<<15),
+
+    CFP_ARG_SVLAN_TAG_M = (1<<16),
+    CFP_ARG_CVLAN_TAG_M = (1<<17),
+    CFP_ARG_PPPOE_M     = (1<<18),
+    CFP_ARG_ETYPE_SAP_M = (1<<19),
+
+    CFP_ARG_OP_M =        (1<<20),
+};
+
+#define CFP_ARG_MUST_ARGS_M (CFP_ARG_OP_M|CFP_ARG_NEW_DSCP_IB_M|CFP_ARG_CHG_FPMAP_IB_M)
+#define CFP_ARG_IP_FLAGS (CFP_ARG_DSCP_M|CFP_ARG_IPSA_M|CFP_ARG_IPDA_M|CFP_ARG_TCPUDP_SPORT_M|CFP_ARG_TCPUDP_DPORT_M)
+#define CFP_ARG_NON_IP_FLAGS CFP_ARG_ETYPE_SAP_M
+
+enum {
+    CFP_CHG_FPMAP_NO_CHG = 0,
+    CFP_CHG_FPMAP_RMV_ARL,
+    CFP_CHG_FPMAP_RPL_ARL,
+    CFP_CHG_FPMAP_ADD_ARL,
+};
+
+#define OPT_UDF_MASK = (CFP_ARG_DA_M | CFP_ARG_SA_M)
 
 #define BMCR_SPEED2500      0x0080  /* Command Parameter definition */
 
@@ -188,7 +327,7 @@ enum {
     QUE_CONGESTED_STATUS,
     QUE_TOTAL_CONGESTED_STATUS,
 
-    QUE_MON_MAX_TYPES
+    QUE_MON_MAX_TYPES,
 };
 
     
@@ -248,11 +387,12 @@ struct ethswctl_data
     /* Action type */
     int type;
 
+    /* NOTE : Do not add new params to this structure above for
+       new command - this is kept for backward compatibility.
+       Define a new structure for new command within union below. */
     union
     {
-        /* NOTE : Do not add new params to this structure for
-           new command - this is kept for backward compatibility.
-           Define a new structure for new command within this union. */
+        cfpArg_t cfpArgs;
         struct
         {
 #define TYPE_SUBSET  0

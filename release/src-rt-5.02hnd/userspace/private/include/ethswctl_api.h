@@ -1476,6 +1476,7 @@ int bcm_port_trunk_set(int unit,unsigned int hash_sel);
 int bcm_port_trunk_get(int unit,int *enbl,unsigned int *hash_sel,unsigned int *grp0_pmap,unsigned int *grp1_pmap);
 int bcm_enet_map_phys_port_to_rdpa_if(int unit, bcm_port_t port);
 int bcm_enet_get_rdpa_if_from_if_name(const char* ifname, int* rdpaIf_p);
+int bcm_cfp_op(cfpArg_t *cfpArg);
 
 
 int bcm_phy_apd_get(unsigned int* apd_en);

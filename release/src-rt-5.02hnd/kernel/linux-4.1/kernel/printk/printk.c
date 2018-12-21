@@ -275,6 +275,9 @@ static u32 log_buf_len = __LOG_BUF_LEN;
 #ifdef CONFIG_DUMP_PREV_OOPS_MSG
 #define IS_FILE_OPEN_ERR(_fd)	((_fd == NULL) || IS_ERR((_fd)))
 static int save_oopsmsg = 0;
+static int got_previous_oops = 0;
+module_param(got_previous_oops, int, S_IRUGO);
+MODULE_PARM_DESC(got_previous_oops, "See if there is the previous OOPS");
 
 struct file* file_open(const char* path, int flags, int rights) {
 	struct file* filp = NULL;
@@ -343,6 +346,7 @@ static void copy_to_oopsbuf(const char *text, u16 text_len)
         }
         else
         {
+		got_previous_oops = 1;
 		file_write(file, 0, (unsigned char*) text, text_len);
 	}
 

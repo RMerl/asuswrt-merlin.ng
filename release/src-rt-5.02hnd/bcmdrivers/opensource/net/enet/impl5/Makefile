@@ -10,6 +10,7 @@ else
 bcm_enet-objs += bcmenet.o
 bcm_enet-objs += ethsw.o
 bcm_enet-objs += bcmsw.o
+bcm_enet-objs += bcmsw_cfp.o
 bcm_enet-objs += ../shared/bcmswaccess.o
 bcm_enet-objs += eth_pwrmngt.o
 bcm_enet-objs += ethsw_phy.o

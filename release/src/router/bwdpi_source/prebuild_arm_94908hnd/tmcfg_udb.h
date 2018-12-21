@@ -25,7 +25,7 @@
 
 /*
  * Automatically generated make config: don't edit
- * Date: Mon Aug 21 18:20:35 2017
+ * Date: Thu Jul 19 13:55:16 2018
  */
 #ifndef __TMCFG__UDB_AUTOCONF_OUTPUT_H_
 #define __TMCFG__UDB_AUTOCONF_OUTPUT_H_
@@ -109,7 +109,7 @@
 #define TMCFG_CPU_64BITS 1 // y
 #define TMCFG_CPU_BIG_ENDIAN 0 // n
 #define TMCFG_CPU_LITTLE_ENDIAN 1 // y
-#define TMCFG_KERN_DIR "/opt/ASUS/asuswgt_AC5300_GPL_382_8165_fc/release/src-rt-5.02hnd/kernel/linux-4.1"
+#define TMCFG_KERN_DIR "/opt/ASUS/asuswgt_AC5300_GPL_384_20648/release/src-rt-5.02hnd/kernel/linux-4.1"
 #define TMCFG_KERN_ARCH "arm64"
 
 /*
@@ -152,14 +152,16 @@
 #define TMCFG_E_UDB_CORE 1 // y
 #define TMCFG_E_UDB_CORE_MAJ_VER 0
 #define TMCFG_E_UDB_CORE_MIN_VER 2
-#define TMCFG_E_UDB_CORE_REV_VER 14
-#define TMCFG_E_UDB_CORE_SHN_REV_NUM 3529123
+#define TMCFG_E_UDB_CORE_REV_VER 18
+#define TMCFG_E_UDB_CORE_SHN_REV_NUM 0
 #define TMCFG_E_UDB_CORE_USE_KBUILD 1 // y
 #define TMCFG_E_UDB_CORE_EXTRA_CFLAGS ""
 #define TMCFG_E_UDB_CORE_CONN_EXTRA 1 // y
 #define TMCFG_E_UDB_CORE_RULE_FORMAT_V2 0 // n
+#define TMCFG_E_UDB_CORE_MESH 1 // y
 #define TMCFG_E_UDB_CORE_URL_QUERY 1 // y
 #define TMCFG_E_UDB_CORE_SHN_QUERY 0 // n
+#define TMCFG_E_UDB_CORE_APP_WBL 0 // n
 #define TMCFG_E_UDB_CORE_WBL 1 // y
 #define TMCFG_E_UDB_CORE_WBL_MAJ_VER 2
 #define TMCFG_E_UDB_CORE_WBL_MIN_VER 2
@@ -181,6 +183,7 @@
 #define TMCFG_E_UDB_CORE_SWNAT 0 // n
 #define TMCFG_E_UDB_CORE_IQOS_SUPPORT 1 // y
 #define TMCFG_E_UDB_CORE_IQOS_RSV_DEF_CLS 0 // n
+#define TMCFG_E_UDB_CORE_GCTRL_SUPPORT 0 // n
 #define TMCFG_E_UDB_CORE_HWNAT 0 // n
 #define TMCFG_E_UDB_CORE_HWQOS 0 // n
 #define TMCFG_E_UDB_CORE_APP_PATROL 1 // y
@@ -195,6 +198,7 @@
 #define TMCFG_E_UDB_CORE_WPR_PAGE 1 // y
 #define TMCFG_E_UDB_CORE_TMDBG 0 // n
 #define TMCFG_E_UDB_CORE_MEMTRACK 0 // n
+#define TMCFG_E_UDB_CORE_HTTP_REFER 0 // n
 #define TMCFG_E_UDB_SHELL 1 // y
 #define TMCFG_E_UDB_SHELL_EXTRA_CFLAGS ""
 #define TMCFG_E_UDB_SHELL_KMOD_NAME "tdts_udb"
@@ -208,7 +212,7 @@
 #define TMCFG_E_REL_PKG_MAJ_VER 2
 #define TMCFG_E_REL_PKG_MIN_VER 0
 #define TMCFG_E_REL_PKG_REV_VER 1
-#define TMCFG_E_REL_PKG_LOCAL_VER "3529123"
+#define TMCFG_E_REL_PKG_LOCAL_VER "890c91d"
 
 /*
  * Accompany applications or modules
@@ -217,7 +221,7 @@
 /*
  * Kernel
  */
-#define TMCFG_APP_K_EXTRA_CFLAGS "-I/opt/ASUS/asuswgt_AC5300_GPL_382_8165_fc/release/src-rt-5.02hnd/shared/opensource/include/bcm963xx -I/opt/ASUS/asuswgt_AC5300_GPL_382_8165_fc/release/src-rt-5.02hnd/bcmdrivers/broadcom/include/bcm963xx -I/opt/ASUS/asuswgt_AC5300_GPL_382_8165_fc/release/src-rt-5.02hnd/bcmdrivers/opensource/include/bcm963xx"
+#define TMCFG_APP_K_EXTRA_CFLAGS "-I/opt/ASUS/asuswgt_AC5300_GPL_384_20648/release/src-rt-5.02hnd/shared/opensource/include/bcm963xx -I/opt/ASUS/asuswgt_AC5300_GPL_384_20648/release/src-rt-5.02hnd/bcmdrivers/broadcom/include/bcm963xx -I/opt/ASUS/asuswgt_AC5300_GPL_384_20648/release/src-rt-5.02hnd/bcmdrivers/opensource/include/bcm963xx"
 #define TMCFG_APP_K_TDTS_NFFW 0 // n
 #define TMCFG_APP_K_TDTS_UDBFW 1 // y
 #define TMCFG_APP_K_TDTS_UDBFW_EXTRA_SYMBOLS ""
@@ -297,6 +301,7 @@
 #define TMCFG_APP_U_UDB_SAMPLE 1 // y
 #define TMCFG_APP_U_TC_DAEMON 1 // y
 #define TMCFG_APP_U_MTK 0 // n
+#define TMCFG_APP_U_MTK_V2 0 // n
 #define TMCFG_APP_U_PROG_CTRL 1 // y
 #define TMCFG_APP_U_DEMO_GUI 0 // n
 #define TMCFG_APP_U_DEMO_GUI_V22 0 // n

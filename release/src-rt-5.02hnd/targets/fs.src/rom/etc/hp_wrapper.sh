@@ -1,6 +1,9 @@
 #!/bin/sh
 
 case "$ACTION" in
+    "change")
+		/sbin/hotplug $1
+		;;
     "add")
         /sbin/mdev $1
         if [ -x "/sbin/hotplug" ]; then 

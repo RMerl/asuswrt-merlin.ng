@@ -6502,12 +6502,12 @@ wget/Makefile.in: wget/Makefile.am
 
 wget/Makefile: wget/Makefile.in
 	cd wget && $(CONFIGURE) \
-		--with-ssl=openssl --with-libssl-prefix=$(TOP)/openssl --sysconfdir=/etc \
+		--with-ssl=openssl --prefix=/usr --sysconfdir=/etc \
 		--disable-opie --disable-ntlm --disable-debug --disable-nls --disable-rpath \
 		$(if $(RTCONFIG_IPV6),,--disable-ipv6) --disable-iri --without-included-regex  \
 		--disable-dependency-tracking \
-		CFLAGS="-Os -Wall $(EXTRACFLAGS) -ffunction-sections -fdata-sections -I$(TOP)/openssl/include -I$(TOP)/zlib" \
-		LDFLAGS="$(EXTRALDFLAGS) -Wl,--gc-sections -L$(TOP)/openssl -lssl -lcrypto -L$(TOP)/zlib -lz"
+		CFLAGS="-Os -Wall $(EXTRACFLAGS) -ffunction-sections -fdata-sections -I$(STAGEDIR)/usr/include" \
+		LDFLAGS="$(EXTRALDFLAGS) -Wl,--gc-sections -L$(STAGEDIR)/usr/lib"
 
 wget: openssl zlib wget/Makefile
 	$(MAKE) -C $@
@@ -6807,7 +6807,7 @@ i2c-tools-2013-12-15:
 	$(MAKE) -C $@
 
 i2c-tools-2013-12-15-clean:
-	$(MAKE) -C i2c-tools-2013-12-15 clean
+	-$(MAKE) -C i2c-tools-2013-12-15 clean
 
 i2c-tools-2013-12-15-install: i2c-tools-2013-12-15
 	install -D i2c-tools-2013-12-15/tools/i2cdump $(INSTALLDIR)/i2c-tools-2013-12-15/usr/bin/i2cdump
@@ -7100,8 +7100,8 @@ libconfuse-install:
 
 libconfuse-clean:
 	@$(SEP)
-	$(MAKE) -C libconfuse distclean
-	rm libconfuse/Makefile
+	[ ! -f libconfuse/Makefile ] || $(MAKE) -C libconfuse distclean
+	@rm -f libconfuse/Makefile
 
 inadyn/Makefile:
 	cd inadyn && $(CONFIGURE) \
@@ -7123,8 +7123,8 @@ inadyn-install:
 
 inadyn-clean:
 	@$(SEP)
-	$(MAKE) -C inadyn clean
-	rm inadyn/Makefile
+	[ ! -f inadyn/Makefile ] || $(MAKE) -C inadyn distclean
+	@rm -f inadyn/Makefile
 
 ncurses-6.0/Makefile: ncurses-6.0/configure
 	cd ncurses-6.0 && $(CONFIGURE) \
@@ -7671,7 +7671,7 @@ endif
 visdcoll-clean:
 ifeq ($(RTCONFIG_VISUALIZATION),y)
 ifneq ($(wildcard $(VISDCOLL_DIR)),)
-	+$(MAKE) -C $(VISDCOLL_DIR) clean
+	-$(MAKE) -C $(VISDCOLL_DIR) clean
 endif
 endif
 
@@ -7722,7 +7722,7 @@ endif
 visdcon-clean:
 ifeq ($(RTCONFIG_VISUALIZATION),y)
 ifneq ($(wildcard $(VISDCON_DIR)),)
-	+$(MAKE) -C $(VISDCON_DIR) clean
+	-$(MAKE) -C $(VISDCON_DIR) clean
 endif
 endif
 

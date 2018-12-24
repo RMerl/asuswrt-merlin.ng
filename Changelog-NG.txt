@@ -3,13 +3,19 @@ Asuswrt-Merlin 384/NG Changelog
 
 384.9 (xx-xxx-xxxx)
   - NEW: RT-AX88U - Merged with GPL 384_5247.
+  - NEW: RT-AC68U, RT-AC86U - Merged with GPL 384_45149.
+  - NEW: Added NFS client support (V2 and V3) to the
+         RT-AC86U and RT-AX88U (already present in
+         older models)
   - CHANGED: Updated wget to 1.20.
   - CHANGED: Updated nano to 3.2.
   - CHANGED: Updated curl to 7.62.0.
+  - CHANGED: Updated Chart.js to 2.7.3.
+  - CHANGED: Optimized some JS files to reduce theri size
   - FIXED: Firmware update checks would not run at boot time
            on the RT-AX88U.
-  - FIXED: Name resolution for /etc/hosts entries on HND
-           models (themiron)
+  - FIXED: Name resolution issues for /etc/hosts entries on
+           HND models (themiron)
   - FIXED: Syslog not properly copied to JFFS on reboot
            (John Bacho)
   - FIXED: Volumes not properly unmounted on HND platform
@@ -17,6 +23,7 @@ Asuswrt-Merlin 384/NG Changelog
   - FIXED: Added missing TEE Netfilter target on the RT-AC86U
   - FIXED: SSH brute force protection didn't work in Dual WAN
            load balancing mode.
+  - FIXED: httpd crashes on RT-AC86U (themiron)
 
 
 384.8_2 (8-Dec-2018)

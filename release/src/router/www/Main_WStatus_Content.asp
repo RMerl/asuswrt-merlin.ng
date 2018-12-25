@@ -139,7 +139,7 @@ function display_clients(clientsarray, obj) {
 				nmapentry = true;
 
 			hostname = client[2];	// Name
-			if (nmapentry && hostname == "<unknown>") {
+			if (nmapentry && (hostname == "*" || hostname == "<unknown>")) {
 				if (clientList[mac].nickName != "")
 					hostname = clientList[mac].nickName;
 				else if (clientList[mac].name != "")

@@ -2,16 +2,26 @@ Asuswrt-Merlin 384/NG Changelog
 ===============================
 
 384.9 (xx-xxx-xxxx)
-  - NEW: RT-AX88U - Merged with GPL 384_5247.
-  - NEW: RT-AC68U, RT-AC86U - Merged with GPL 384_45149.
+  - NEW: TemporarilY reorganized code in separate branches, to handle
+         Asus's currently scattered firmware source code releases.
+         The GPL situation for this release is as follow:
+     o RT-AX88U: Merged GPL 384_5247
+     o RT-AC68U, RT-AC86U: Merged GPL 384_45149
+     o RT-AC3200: GPL 384_45149 + updated binary blobs from Asus
+     o RT-AC88U, RT-AC3100, RT-AC5300: GPL 384_32799
+
   - NEW: Added NFS client support (V2 and V3) to the
-         RT-AC86U and RT-AX88U (already present in
-         older models)
+         RT-AC86U and RT-AX88U (already present in older models)
   - CHANGED: Updated wget to 1.20.
   - CHANGED: Updated nano to 3.2.
   - CHANGED: Updated curl to 7.62.0.
   - CHANGED: Updated Chart.js to 2.7.3.
-  - CHANGED: Optimized some JS files to reduce theri size
+  - CHANGED: Optimized some JS files to reduce their size
+  - CHANGED: OpenVPN clients can now accept CNs up to 255 chars
+             when using it to validate the certificate.
+  - CHANGED: No longer reset the OpenVPN client's description,
+             policy mode and existing rules when uploading an
+             .ovpn config file.
   - FIXED: Firmware update checks would not run at boot time
            on the RT-AX88U.
   - FIXED: Name resolution issues for /etc/hosts entries on

@@ -140,6 +140,7 @@ function show_conns() {
 										<div class="formfonttitle"><#System_Log#> - <#System_act_connections#></div>
 										<div style="margin:10px 0 10px 5px;" class="splitLine"></div>
 										<div class="formfontdesc"><#System_log_connections#></div>
+										<div class="formfontdesc">Click on a column header to sort by that field.</div>
 
                                                                                 <div style="margin-top:8px">
 											<div id="connblock"></div>

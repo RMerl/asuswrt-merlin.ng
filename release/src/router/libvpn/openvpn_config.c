@@ -48,7 +48,7 @@
 extern struct nvram_tuple router_defaults[];
 
 
-void reset_ovpn_setting(ovpn_type_t type, int unit){
+void reset_ovpn_setting(ovpn_type_t type, int unit, int full){
         struct nvram_tuple *t;
         char prefix[]="vpn_serverX_", tmp[100];
 	char service[7];
@@ -87,7 +87,14 @@ void reset_ovpn_setting(ovpn_type_t type, int unit){
 	snprintf(prefix, sizeof(prefix), "vpn_%s%d_", service, unit);
 
 	for (t = router_defaults; t->name; t++) {
-		if (strncmp(t->name, prefix, 12)==0) {
+		if (strncmp(t->name, prefix, 12)==0)
+		{
+			// Don't reset these settings unless asked to
+			if (!full && (!strcmp(t->name + 12, "desc") ||
+				      !strncmp(t->name + 12, "clientlist", 10) ||	/* handle clientlist1 through 5 */
+				      !strcmp(t->name + 12, "rgw") ||
+				      !strcmp(t->name + 12, "enforce")))
+				continue;
 			nvram_set(t->name, t->value);
 		}
 	}

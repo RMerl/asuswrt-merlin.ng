@@ -12324,7 +12324,7 @@ do_vpnupload_cgi(char *url, FILE *stream)
 		//websApply(stream, "OvpnChecking.asp");
 
 		if(!strcmp(filetype, "ovpn")) {
-			reset_ovpn_setting(OVPN_TYPE_CLIENT, unit);
+			reset_ovpn_setting(OVPN_TYPE_CLIENT, unit, 0);
 			ret = read_config_file(VPN_CLIENT_UPLOAD, unit);
 			nvram_set_int("vpn_upload_state", ret);
 			nvram_commit();

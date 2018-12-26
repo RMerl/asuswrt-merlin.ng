@@ -12444,11 +12444,11 @@ retry_wps_enr:
  	}
 	else if (strncmp(script, "clearvpnserver", 14) == 0)
 	{
-		reset_ovpn_setting(OVPN_TYPE_SERVER, nvram_get_int("vpn_server_unit"));
+		reset_ovpn_setting(OVPN_TYPE_SERVER, nvram_get_int("vpn_server_unit"), 1);
 	}
         else if (strncmp(script, "clearvpnclient", 14) == 0)
 	{
-                reset_ovpn_setting(OVPN_TYPE_CLIENT, nvram_get_int("vpn_client_unit"));
+                reset_ovpn_setting(OVPN_TYPE_CLIENT, nvram_get_int("vpn_client_unit"), 1);
 	}
 #endif
 #ifdef RTCONFIG_YANDEXDNS

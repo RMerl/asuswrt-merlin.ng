@@ -63,7 +63,7 @@ extern char *get_ovpn_filename(ovpn_type_t type, int unit, ovpn_key_t key_type, 
 extern char *get_ovpn_key(ovpn_type_t type, int unit, ovpn_key_t key_type, char *buf, size_t len);
 extern char *get_parsed_crt(const char *name, char *buf, size_t buf_len);
 extern void update_ovpn_status(ovpn_type_t type, int unit, ovpn_status_t status_type);
-extern void reset_ovpn_setting(ovpn_type_t type, int unit);
+extern void reset_ovpn_setting(ovpn_type_t type, int unit, int full);
 extern int ovpn_key_exists(ovpn_type_t type, int unit, ovpn_key_t key_type);
 extern int ovpn_crt_is_empty(const char *name);
 extern char *get_ovpn_custom(ovpn_type_t type, int unit, char* buffer, int bufferlen);

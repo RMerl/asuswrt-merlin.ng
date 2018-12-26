@@ -11033,13 +11033,12 @@ _dprintf("multipath(%s): unit_now: (%d, %d, %s), unit_next: (%d, %d, %s).\n", mo
 			start_ecoguard(); //for app eco mode
 
 #ifdef RTCONFIG_AMAS
-			start_amas_wlcconnect();
-#endif
-#ifdef RTCONFIG_WIRELESSREPEATER
 			if (nvram_get_int("re_mode") == 1)
 				start_amas_wlcconnect();
 #endif
-
+#ifdef RTCONFIG_WIRELESSREPEATER
+			start_wlcconnect();
+#endif
 		}
 		setup_leds();
 		nvram_set("restart_wifi", "0");

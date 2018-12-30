@@ -428,7 +428,7 @@ generic_rndis_bind(struct usbnet *dev, struct usb_interface *intf, int flags)
 	/* ASUS: better to keep it permanent */
 	/* if (bp[0] & 0x02) */
 	if (!is_valid_ether_addr(bp))
-		random_ether_addr(dev->net->dev_addr);
+		random_ether_addr(net->dev_addr);
 	else
 		memcpy(net->dev_addr, bp, ETH_ALEN);
 	memcpy(net->perm_addr, net->dev_addr, ETH_ALEN);

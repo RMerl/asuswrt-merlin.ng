@@ -104,11 +104,6 @@ function initial() {
 		if (!hnd_support) showhide("memory_mgmt_tr" ,1);
 	}
 
-	if (document.form.dns_probe_content.value == "")
-		setRadioValue(document.form.dns_probe, 0);
-	else
-		setRadioValue(document.form.dns_probe, 1);
-
 	document.aidiskForm.protocol.value = PROTOCOL;
 	initial_dir();
 }
@@ -570,11 +565,6 @@ function applyRule(){
 		}
 	}
 
-	if (getRadioValue(document.form.dns_probe) == 0)
-		document.form.dns_probe_content.value = "";
-	else if ("<% nvram_get("dns_probe_content"); %>" != "1" )	// We just enabled it
-		document.form.dns_probe_content.value = "<% nvram_default_get("dns_probe_content"); %>";
-
 	document.form.submit();
 }
 
@@ -665,7 +655,6 @@ function done_validating(action){
 <input type="hidden" name="firmver" value="<% nvram_get("firmver"); %>">
 <input type="hidden" name="ct_tcp_timeout" value="<% nvram_get("ct_tcp_timeout"); %>">
 <input type="hidden" name="ct_udp_timeout" value="<% nvram_get("ct_udp_timeout"); %>">
-<input type="hidden" name="dns_probe_content" value="<% nvram_get("dns_probe_content"); %>">
 
 <table class="content" align="center" cellpadding="0" cellspacing="0">
   <tr>
@@ -912,13 +901,6 @@ function done_validating(action){
 						<td>
 							<input type="radio" name="ipv6_ns_drop" class="input" value="1" <% nvram_match_x("", "ipv6_ns_drop", "1", "checked"); %>><#checkbox_Yes#>
 							<input type="radio" name="ipv6_ns_drop" class="input" value="0" <% nvram_match_x("", "ipv6_ns_drop", "0", "checked"); %>><#checkbox_No#>
-						</td>
-					</tr>
-					<tr>
-						<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(50,18);">Wan: Use DNS probes to determine if WAN is up (default: Yes)</a></th>
-						<td>
-							<input type="radio" name="dns_probe" class="input" value="1"><#checkbox_Yes#>
-							<input type="radio" name="dns_probe" class="input" value="0"><#checkbox_No#>
 						</td>
 					</tr>
 					<tr>

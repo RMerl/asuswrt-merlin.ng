@@ -118,8 +118,10 @@ function display_clients(clientsarray, obj) {
 	code = '<table width="100%" border="1" align="center" cellpadding="4" cellspacing="0" bordercolor="#6b8fa3" class="FormTable">';
 	code += '<thead><tr>';
 	code += '<td width="25%">Device</td>';
-	code += '<td width="37%">IP Address</td>';
-	code += '<td width="16%">Rx/Tx & RSSI</td><td width="12%">Connected</td>';
+	code += '<td width="29%">IP Address</td>';
+	code += '<td width="16%">Rx/Tx & RSSI</td><td width="10%">Connected</td>';
+	if (clientsarray.length > 1 && clientsarray[0][8] != "")
+		code += '<td width="10%">Streams</td>';
 	code += '<td width="10%">Flags</td>';
 	code += '</tr></thead>';
 
@@ -158,13 +160,19 @@ function display_clients(clientsarray, obj) {
 					ipaddr = clientList[mac].ip;
 			}
 			code += '<td style="vertical-align: top;">' + htmlEnDeCode.htmlEncode(ipaddr);	// IPv4
-			code += '<br><span style="margin-top:-15px; color: cyan;">'+ client[3] +'</span></td>';	// IPv6
-
+			if(client[3].length >30){
+				overlib_str = client[3];
+				client[3] = "..."+client[3].substring(client[3].length-28);
+				code += '<br><span style="margin-top:-15px; color: cyan;" title="'+overlib_str+'">'+ client[3] +'</span></td>';
+			}else
+				code += '<br><span style="margin-top:-15px; color: cyan;">'+ client[3] +'</span></td>';	// IPv6
 
 			code += '<td style="text-align: right;">' + client[5] + ' / ' + client[6] +' Mbps';	// Rate
 			code += '<br><span style="margin-top:-15px; color: cyan;">' + client[4] + ' dBm</td>';	// RSSI
 			code += '<td style="text-align: right;">' + client[7] + '</td>';	// Time
-			code += '<td>' + client[8] + '</td>';	// Flags
+			if (client[8] != "")
+				code += '<td>' + client[8] + '</td>';	// NSS
+			code += '<td>' + client[9] + '</td>';	// Flags
 			code += '</tr>';
 		}
 	} else {

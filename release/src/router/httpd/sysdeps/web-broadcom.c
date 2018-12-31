@@ -6129,6 +6129,13 @@ sta_list:
 			sec = sta->in - hr * 3600 - min * 60;
 			ret += websWrite(wp, "\"%3d:%02d:%02d\",", hr, min, sec);
 
+// NSS
+#if (WL_STA_VER >= 5)
+			ret += websWrite(wp, "\"%d\",", wl_sta_info_nss(sta, unit));
+#else
+			ret += websWrite(wp, "\"\",");
+#endif
+
 // Flags
 #ifdef RTCONFIG_BCMARM
 			ret += websWrite(wp, "\"%s%s%s",
@@ -6273,6 +6280,13 @@ sta_list:
 					min = (sta->in % 3600) / 60;
 					sec = sta->in - hr * 3600 - min * 60;
 					ret += websWrite(wp, "\"%3d:%02d:%02d\",", hr, min, sec);
+
+// NSS
+#if (WL_STA_VER >= 5)
+					ret += websWrite(wp, "\"%d\",", wl_sta_info_nss(sta, unit));
+#else
+					ret += websWrite(wp, "\"\",");
+#endif
 
 // Flags
 #ifdef RTCONFIG_BCMARM

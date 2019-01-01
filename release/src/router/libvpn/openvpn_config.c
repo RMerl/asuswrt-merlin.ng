@@ -51,16 +51,16 @@ extern struct nvram_tuple router_defaults[];
 void reset_ovpn_setting(ovpn_type_t type, int unit, int full){
         struct nvram_tuple *t;
         char prefix[]="vpn_serverX_", tmp[100];
-	char service[7];
+	char *service;
 	char start[12], remove[2];
 	char *cur;
 
 	if (type == OVPN_TYPE_SERVER) {
-		strcpy(service, "server");
+		service = "server";
 		strlcpy(start, nvram_safe_get("vpn_serverx_start"), sizeof(start));
 	}
 	else if (type == OVPN_TYPE_CLIENT) {
-		strcpy(service, "client");
+		service = "client";
 		strlcpy(start, nvram_safe_get("vpn_clientx_eas"), sizeof(start));
 	}
 	else
@@ -127,30 +127,25 @@ void reset_ovpn_setting(ovpn_type_t type, int unit, int full){
 	system(tmp);
 
 #else	// Delete
-	if (type == OVPN_TYPE_SERVER)  // server-only files
-	{
-		sprintf(tmp, "%s/vpn_crt_%s%d_ca_key", OVPN_FS_PATH, service, unit);
-		unlink(tmp);
-		sprintf(tmp, "%s/vpn_crt_%s%d_client_crt", OVPN_FS_PATH, service, unit);
-		unlink(tmp);
-		sprintf(tmp, "%s/vpn_crt_%s%d_client_key", OVPN_FS_PATH, service, unit);
-		unlink(tmp);
-		sprintf(tmp, "%s/vpn_crt_%s%d_dh", OVPN_FS_PATH, service, unit);
-		unlink(tmp);
+        if (type == OVPN_TYPE_SERVER)  // server-only files
+        {
+		set_ovpn_key(type, unit, OVPN_SERVER_CA_KEY, NULL, NULL);
+		set_ovpn_key(type, unit, OVPN_SERVER_CLIENT_CERT, NULL, NULL);
+		set_ovpn_key(type, unit, OVPN_SERVER_CLIENT_KEY, NULL, NULL);
+		set_ovpn_key(type, unit, OVPN_SERVER_DH, NULL, NULL);
+		set_ovpn_key(type, unit, OVPN_SERVER_STATIC, NULL, NULL);
+		set_ovpn_key(type, unit, OVPN_SERVER_CA, NULL, NULL);
+		set_ovpn_key(type, unit, OVPN_SERVER_CA_EXTRA, NULL, NULL);
+		set_ovpn_key(type, unit, OVPN_SERVER_CERT, NULL, NULL);
+		set_ovpn_key(type, unit, OVPN_SERVER_KEY, NULL, NULL);
+		set_ovpn_key(type, unit, OVPN_SERVER_CRL, NULL, NULL);
+	} else {
+		set_ovpn_key(type, unit, OVPN_CLIENT_STATIC, NULL, NULL);
+		set_ovpn_key(type, unit, OVPN_CLIENT_CA, NULL, NULL);
+		set_ovpn_key(type, unit, OVPN_CLIENT_CERT, NULL, NULL);
+		set_ovpn_key(type, unit, OVPN_CLIENT_KEY, NULL, NULL);
+		set_ovpn_key(type, unit, OVPN_CLIENT_CRL, NULL, NULL);
 	}
-
-	sprintf(tmp, "%s/vpn_crt_%s%d_ca", OVPN_FS_PATH, service, unit);
-	unlink(tmp);
-	sprintf(tmp, "%s/vpn_crt_%s%d_crt", OVPN_FS_PATH, service, unit);
-	unlink(tmp);
-	sprintf(tmp, "%s/vpn_crt_%s%d_key", OVPN_FS_PATH, service, unit);
-	unlink(tmp);
-	sprintf(tmp, "%s/vpn_crt_%s%d_crl", OVPN_FS_PATH, service, unit);
-	unlink(tmp);
-	sprintf(tmp, "%s/vpn_crt_%s%d_static", OVPN_FS_PATH, service, unit);
-	unlink(tmp);
-	sprintf(tmp, "%s/vpn_crt_%s%d_extra", OVPN_FS_PATH, service, unit);
-	unlink(tmp);
 #endif
 
 	nvram_commit();
@@ -269,10 +264,12 @@ int set_ovpn_key(ovpn_type_t type, int unit, ovpn_key_t key_type, char *buf, cha
 	FILE *fp;
 
 	get_ovpn_filename(type, unit, key_type, varname, sizeof (varname));
+	snprintf(filename, sizeof(filename), "%s/%s", OVPN_FS_PATH, varname);
 
 	if (path) {
 		return _set_crt_parsed(varname, path);
 	} else if (!buf) {
+		unlink(filename);
 		return -1;
 	}
 
@@ -285,7 +282,7 @@ int set_ovpn_key(ovpn_type_t type, int unit, ovpn_key_t key_type, char *buf, cha
 
 	if(!d_exists(OVPN_FS_PATH))
 		mkdir(OVPN_FS_PATH, S_IRWXU);
-	snprintf(filename, sizeof(filename), "%s/%s", OVPN_FS_PATH, varname);
+
 	fp = fopen(filename, "w");
 	if(fp) {
 		chmod(filename, S_IRUSR|S_IWUSR);

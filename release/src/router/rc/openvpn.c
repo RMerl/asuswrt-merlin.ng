@@ -272,11 +272,11 @@ void start_ovpn_client(int clientNum)
 		fprintf(fp, "auth %s\n", buffer);
 
 	nvi = nvram_pf_get_int(prefix, "rgw");
-	if (nvi == 1) {
+	if (nvi == OVPN_RGW_ALL) {
 		if ( ifType == TAP && nvram_pf_safe_get(prefix, "gw")[0] != '\0' )
 			fprintf(fp, "route-gateway %s\n", nvram_pf_safe_get(prefix, "gw"));
 		fprintf(fp, "redirect-gateway def1\n");
-	} else if (nvi == 3) {
+	} else if (nvi == OVPN_RGW_POLICY_STRICT) {
 		fprintf(fp, "route-noexec\n");
 	}
 
@@ -466,7 +466,7 @@ void start_ovpn_client(int clientNum)
 		        ip[0]&nm[0], ip[1]&nm[1], ip[2]&nm[2], ip[3]&nm[3], nvram_safe_get("lan_netmask"), iface);
 	}
 	// Disable rp_filter when in policy mode - firewall restart would re-enable it
-	if (nvram_pf_get_int(prefix, "rgw") > 1) {
+	if (nvram_pf_get_int(prefix, "rgw") >= OVPN_RGW_POLICY) {
 		fprintf(fp, "for i in /proc/sys/net/ipv4/conf/*/rp_filter ; do\n"); /* */
 		fprintf(fp, "echo 0 > $i\n");
 		fprintf(fp, "done\n");
@@ -1799,7 +1799,7 @@ int write_ovpn_resolv(FILE* fresolv, FILE* f)
 			level = nvram_pf_get_int(buf, "adns");
 
 			// Don't modify dnsmasq if policy routing is enabled and dns mode set to "Exclusive"
-			if ((nvram_pf_get_int(buf, "rgw") >= 2 ) && (level == 3))
+			if ((nvram_pf_get_int(buf, "rgw") >= OVPN_RGW_POLICY ) && (level == 3))
 				continue;
 
 			if ( (dnsf = fopen(fn, "r")) == NULL )

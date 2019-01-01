@@ -53,6 +53,13 @@ typedef enum ovpn_status{
 	OVPN_STS_STOPPING,
 }ovpn_status_t;
 
+// OpenVPN routing policy modes (rgw)
+enum {
+	OVPN_RGW_NONE = 0,
+	OVPN_RGW_ALL = 1,
+	OVPN_RGW_POLICY = 2,
+	OVPN_RGW_POLICY_STRICT = 3
+};
 
 #define OVPN_ACCNT_MAX	15
 

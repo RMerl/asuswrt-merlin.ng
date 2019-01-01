@@ -272,11 +272,12 @@ void start_ovpn_client(int clientNum)
 		fprintf(fp, "auth %s\n", buffer);
 
 	nvi = nvram_pf_get_int(prefix, "rgw");
-	if (nvi == 1)
-	{
+	if (nvi == 1) {
 		if ( ifType == TAP && nvram_pf_safe_get(prefix, "gw")[0] != '\0' )
 			fprintf(fp, "route-gateway %s\n", nvram_pf_safe_get(prefix, "gw"));
 		fprintf(fp, "redirect-gateway def1\n");
+	} else if (nvi == 3) {
+		fprintf(fp, "route-noexec\n");
 	}
 
 	// For selective routing

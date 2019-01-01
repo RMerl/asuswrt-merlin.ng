@@ -391,7 +391,10 @@ char *get_ovpn_custom(ovpn_type_t type, int unit, char* buffer, int bufferlen)
 
 #ifdef HND_ROUTER
 	nvcontent = malloc(255 * 3 + 1);
-	if (nvcontent) nvram_split_get(varname, nvcontent, 255 * 3 + 1, 2);
+	if (nvcontent)
+		nvram_split_get(varname, nvcontent, 255 * 3 + 1, 2);
+	else
+		return buffer;
 #else
 	nvcontent = strdup(nvram_safe_get(varname));
 #endif

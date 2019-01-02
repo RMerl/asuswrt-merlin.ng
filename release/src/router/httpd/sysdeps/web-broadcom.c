@@ -6131,10 +6131,12 @@ sta_list:
 
 // NSS
 #if (WL_STA_VER >= 5)
-			ret += websWrite(wp, "\"%d\",", wl_sta_info_nss(sta, unit));
-#else
-			ret += websWrite(wp, "\"\",");
+			val =  wl_sta_info_nss(sta, unit);
+			if (val > 0)
+				ret += websWrite(wp, "\"%d\",", val);
+			else
 #endif
+			ret += websWrite(wp, "\"\",");
 
 // Flags
 #ifdef RTCONFIG_BCMARM
@@ -6283,10 +6285,12 @@ sta_list:
 
 // NSS
 #if (WL_STA_VER >= 5)
-					ret += websWrite(wp, "\"%d\",", wl_sta_info_nss(sta, unit));
-#else
-					ret += websWrite(wp, "\"\",");
+					val =  wl_sta_info_nss(sta, unit);
+					if (val > 0)
+						ret += websWrite(wp, "\"%d\",", val);
+					else
 #endif
+						ret += websWrite(wp, "\"\",");
 
 // Flags
 #ifdef RTCONFIG_BCMARM

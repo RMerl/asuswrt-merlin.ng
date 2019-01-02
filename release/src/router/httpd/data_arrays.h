@@ -38,4 +38,8 @@ extern void iptraffic_conntrack_init();
 extern void ctvbuf(FILE *f);
 #endif
 
+#ifdef RTCONFIG_BWDPI
+extern int ej_bwdpi_conntrack(int eid, webs_t wp, int argc, char **argv_);
+#endif
+
 int ej_connlist_array(int eid, webs_t wp, int argc, char **argv);

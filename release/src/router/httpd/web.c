@@ -23123,7 +23123,9 @@ struct ej_handler ej_handlers[] = {
 	{ "iptmon", ej_iptmon},
 	{ "ipt_bandwidth", ej_ipt_bandwidth},
 #endif
-
+#ifdef RTCONFIG_BWDPI
+	{ "bwdpi_conntrack", ej_bwdpi_conntrack},
+#endif
 	{ "bandwidth", ej_bandwidth},
 #ifdef RTCONFIG_DSL
 	{ "spectrum", ej_spectrum}, //Ren

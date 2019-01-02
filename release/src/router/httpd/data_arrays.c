@@ -58,6 +58,10 @@
 
 #include <net/route.h>
 
+#ifdef RTCONFIG_BWDPI
+#include "bwdpi_common.h"
+#endif
+
 int
 ej_get_leases_array(int eid, webs_t wp, int argc, char_t **argv)
 {
@@ -1070,3 +1074,87 @@ int ej_connlist_array(int eid, webs_t wp, int argc, char **argv) {
 
 	return ret;
 }
+
+#ifdef RTCONFIG_BWDPI
+int ej_bwdpi_conntrack(int eid, webs_t wp, int argc, char **argv_) {
+	char comma;
+	char line[128];
+	FILE *fp;
+	char src_ip[16], dst_ip[16], prot[4];
+	int index, dport, sport;
+	int ret;
+	unsigned long mark;
+        static char appdb[32][256][64];
+	static char catdb[32][32];
+	static int parsed = 0;
+        int id, cat;
+        char desc[65];
+//        int count = 0;
+
+// Parse App database
+	if (!parsed) {
+		fp = fopen(APPDB, "r");
+		if (!fp) {
+//			_dprintf("Error opening DB file!\n");
+			return websWrite(wp, "\nbwdpi_conntrack=[];");
+		}
+
+		while (fgets(line, sizeof(line), fp) != NULL)
+		{
+			if (sscanf(line,"%d,%d,%*d,%63[^\n]", &id, &cat, desc) == 3) {
+				strcpy(appdb[id][cat], desc);
+//				count++;
+			}
+		}
+		fclose(fp);
+//		_dprintf("Parsed %d entries (%ld bytes)\n", count, sizeof(db));
+// Parse categories
+
+		fp = fopen(CATDB, "r");
+		if (!fp) {
+//			_dprintf("Error opening Cat file!\n");
+			return websWrite(wp, "\nbwdpi_conntrack=[];");
+		}
+
+		while (fgets(line, sizeof(line), fp) != NULL)
+		{
+			if (sscanf(line,"%d,%31[^\n]", &cat, desc) == 2) {
+				strcpy(catdb[cat], desc);
+			}
+		}
+		fclose(fp);
+		parsed = 1;
+	}
+
+// Parse tracked connections
+	if ((fp = fopen("/proc/bw_cte_dump", "r")) == NULL)
+		return websWrite(wp, "\nbwdpi_conntrack=[];");
+
+	ret = websWrite(wp, "\nbwdpi_conntrack=[");
+	comma = ' ';
+
+	while (fgets(line, sizeof(line), fp)) {
+		// ipv4 tcp src=192.168.10.156 dst=172.217.13.110 sport=8248 dport=443 index=8510 mark=3cd000f
+		if (sscanf(line, "ipv4 %3s src=%15s dst=%15s sport=%d dport=%d index=%d mark=%lx",
+		                  prot, src_ip, dst_ip, &sport, &dport, &index, &mark) != 7 ) continue;
+
+		id = (mark & 0x3F0000)/0xFFFF;
+		cat = mark & 0xFFFF;
+		if ((cat == 0) && (id == 0))
+			sprintf(desc, "Untracked");
+		else if ((appdb[id][cat][0] == '\0') || (cat > 256) || (id > 32))
+			sprintf(desc, "unknown (AppID=%d, Cat=%d)", id, cat);
+		else
+			strcpy(desc, appdb[id][cat]);
+
+		ret += websWrite(wp, "%c[\"%s\", \"%s\", \"%d\", \"%s\", \"%d\", \"%s\", \"%d\", \"%d\"]",
+		                      comma, prot, src_ip, sport, dst_ip, dport, desc, cat, id);
+		comma = ',';
+	}
+
+	fclose(fp);
+	ret += websWrite(wp, "];\n");
+	return ret;
+}
+#endif
+

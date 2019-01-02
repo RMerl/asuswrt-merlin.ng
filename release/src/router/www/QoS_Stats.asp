@@ -12,12 +12,14 @@
 <link rel="stylesheet" type="text/css" href="index_style.css"> 
 <link rel="stylesheet" type="text/css" href="form_style.css">
 <link rel="stylesheet" type="text/css" href="usp_style.css">
+<link rel="stylesheet" type="text/css" href="/js/table/table.css">
 <script type="text/javascript" src="/js/jquery.js"></script>
 <script type="text/javascript" src="/js/chart.min.js"></script>
 <script type="text/javascript" src="/state.js"></script>
 <script type="text/javascript" src="/help.js"></script>
 <script type="text/javascript" src="/general.js"></script>
 <script type="text/javascript" src="/popup.js"></script>
+<script type="text/javascript" src="/js/table/table.js"></script>
 <script>
 
 var qos_type ="<% nvram_get("qos_type"); %>";
@@ -36,6 +38,7 @@ if ("<% nvram_get("qos_enable"); %>" == 0) {	// QoS disabled
 
 
 if (qos_mode == 2) {
+	var bwdpi_app_rulelist = "<% nvram_get("bwdpi_app_rulelist"); %>".replace(/&#60/g, "<");
 	var category_title = ["Net Control Packets", "<#Adaptive_Game#>", "<#Adaptive_Stream#>","<#Adaptive_Message#>", "<#Adaptive_WebSurf#>","<#Adaptive_FileTransfer#>", "<#Adaptive_Others#>", "Default"];
 	var cat_id_array = [[9,20], [8], [4], [0,5,6,15,17], [13,24], [1,3,14], [7,10,11,21,23], []];
 
@@ -56,6 +59,7 @@ var timedEvent = 0;
 var color = ["#B3645B","#B98F53","#C6B36A","#849E75","#2B6692","#7C637A","#4C8FC0", "#6C604F"];
 
 <% get_tcclass_array(); %>;
+<% bwdpi_conntrack(); %>;
 
 var pieOptions = {
         segmentShowStroke : false,
@@ -103,6 +107,96 @@ function initial(){
 	show_menu();
 	refreshRate = document.getElementById('refreshrate').value
 	get_data();
+	draw_conntrack_table();
+}
+
+
+
+function get_qos_class(category, appid){
+	var i, j, catlist, rules;
+
+	if (category == 0 && appid == 0)
+		return 7;
+
+	for (i=0; i < bwdpi_app_rulelist_row.length-2; i++){
+		rules = bwdpi_app_rulelist_row[i];
+
+		// Add categories missing from nvram but always found in qosd.conf
+		if (i == 0)
+			rules += ",18,19";
+		else if (i == 4)
+			rules += ",28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43";
+		else if (i == 5)
+			rules += ",12";
+
+		catlist = rules.split(",");
+		for (j=0; j < catlist.length; j++) {
+			if (catlist[j] == category){
+				return i;
+			}
+		}
+	}
+	return 7;
+}
+
+
+function draw_conntrack_table(){
+	var i, label;
+
+	if (qos_mode !=2) return;
+
+	for (i=0; i < bwdpi_conntrack.length; i++) {
+		label = bwdpi_conntrack[i][5];
+		bwdpi_conntrack[i][5] = "<span style=\"padding: 4px 8px 4px 8px; color: white; background-color: " + color[get_qos_class(bwdpi_conntrack[i][7], bwdpi_conntrack[i][6])] + ";\">"+label +"</span>";
+	}
+
+	// Remove cat and appid cols
+	var tabledata = bwdpi_conntrack.map(function(val){
+		return val.slice(0, -2);
+	});
+
+	var tableStruct = {
+		data: tabledata,
+		container: "tableContainer",
+		title: "Tracked connections",
+		header: [
+			{
+				"title" : "Proto",
+				"sort" : "str",
+				"width" : "8%"
+			},
+			{
+				"title" : "Source",
+				"sort" : "ip",
+				"width" : "25%"
+			},
+			{
+				"title" : "SPort",
+				"sort" : "num",
+				"width" : "8%"
+			},
+			{
+				"title" : "Destination",
+				"sort" : "ip",
+				"width" : "25%"
+			},
+			{
+				"title" : "DPort",
+				"sort" : "num",
+				"width" : "8%"
+			},
+			{
+				"title" : "Application",
+				"sort" : "str",
+				"width" : "26%"
+			}
+                ]
+        }
+
+        if(tableStruct.data.length) {
+                tableApi.genTableAPI(tableStruct);
+        }
+
 }
 
 
@@ -159,7 +253,7 @@ function get_data() {
 			get_data();
 		},
 		success: function(response){
-			redraw();
+			redraw();draw_conntrack_table();
 			if (refreshRate > 0)
 				timedEvent = setTimeout("get_data();", refreshRate * 1000);
 		}
@@ -311,6 +405,9 @@ function draw_chart(data_array, ctx, pie) {
                                         <td><span id="legend_ul"></span></td>
                                 </tr>
 			</table>
+			<br>
+			<div id="tableContainer" style="margin-top:-10px;"></div>
+			<br>
 			<div class="apply_gen" style="padding-top: 25px;"><input type="button" onClick="location.href=location.href" value="<#CTL_refresh#>" class="button_gen"></div>
 		</td>
 		</tr>

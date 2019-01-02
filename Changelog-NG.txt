@@ -6,12 +6,14 @@ Asuswrt-Merlin 384/NG Changelog
          Asus's currently scattered firmware source code releases.
          The GPL situation for this release is as follow:
      o RT-AX88U: Merged GPL 384_5247
-     o RT-AC68U, RT-AC86U: Merged GPL 384_45149
      o RT-AC3200: GPL 384_45149 + updated binary blobs from Asus
-     o RT-AC88U, RT-AC3100, RT-AC5300: GPL 384_32799
+     o RT-AC87U: not supported in this release
+     o Other models: 384_45149
 
   - NEW: Added NFS client support (V2 and V3) to the
          RT-AC86U and RT-AX88U (already present in older models)
+  - NEW: Report the number of spatial streams used by
+         wireless clients for models supporting it
   - CHANGED: Updated wget to 1.20.
   - CHANGED: Updated nano to 3.2.
   - CHANGED: Updated curl to 7.62.0.
@@ -22,6 +24,12 @@ Asuswrt-Merlin 384/NG Changelog
   - CHANGED: No longer reset the OpenVPN client's description,
              policy mode and existing rules when uploading an
              .ovpn config file.
+  - CHANGED: No longer accept any server-provided route
+             when OpenVPN client set to Policy (Strict).
+  - CHANGED: Clients bound to DNSFilter rules will no longer
+             bypass it by using DoT.  DNSFilter servers that
+             support DoT (like Quad9) will only allow filtered
+             clients to use that server
   - FIXED: Firmware update checks would not run at boot time
            on the RT-AX88U.
   - FIXED: Name resolution issues for /etc/hosts entries on
@@ -34,6 +42,8 @@ Asuswrt-Merlin 384/NG Changelog
   - FIXED: SSH brute force protection didn't work in Dual WAN
            load balancing mode.
   - FIXED: httpd crashes on RT-AC86U (themiron)
+  - FIXED: DNSFilter clients could use a different nameserver
+           when using an IPv6 connection
 
 
 384.8_2 (8-Dec-2018)

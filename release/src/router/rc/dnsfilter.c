@@ -199,7 +199,6 @@ void dnsfilter6_settings(FILE *fp, char *lan_if, char *lan_ip) {
 					mac, mac, mac);
 		} else {	// Filtered
 			count = get_dns_filter(AF_INET6, dnsmode, server);
-			fprintf(fp, "-A DNSFILTERI -m mac --mac-source %s -j DROP\n", mac);
 			if (count) {
 				fprintf(fp, "-A DNSFILTERF -m mac --mac-source %s -d %s -j ACCEPT\n", mac, server[0]);
 				if (dnsfilter_support_dot(dnsmode))
@@ -207,7 +206,14 @@ void dnsfilter6_settings(FILE *fp, char *lan_if, char *lan_ip) {
 			}
 			if (count == 2) {
 				fprintf(fp, "-A DNSFILTERF -m mac --mac-source %s -d %s -j ACCEPT\n", mac, server[1]);
+				if (dnsfilter_support_dot(dnsmode))
+					fprintf(fp, "-A DNSFILTER_DOT -m mac --mac-source %s -d %s -j ACCEPT\n", mac, server[1]);
 			}
+			// Reject other servers for that client
+			fprintf(fp, "-A DNSFILTERI -m mac --mac-source %s -j DROP\n"
+			            "-A DNSFILTERF -m mac --mac-source %s -j DROP\n"
+			            "-A DNSFILTER_DOT -m mac --mac-source %s -j DROP\n",
+			            mac, mac, mac);
 		}
 	}
 	free(nv);

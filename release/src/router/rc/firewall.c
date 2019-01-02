@@ -3065,6 +3065,9 @@ filter_setting(char *wan_if, char *wan_ip, char *lan_if, char *lan_ip, char *log
 #ifdef RTCONFIG_OPENVPN
 	    ":OVPN - [0:0]\n"
 #endif
+#ifdef RTCONFIG_DNSFILTER
+	    ":DNSFILTER_DOT - [0:0]\n"
+#endif
 #ifdef RTCONFIG_PARENTALCTRL
 	    ":PControls - [0:0]\n"
 #endif
@@ -4090,6 +4093,10 @@ TRACE_PT("write wl filter\n");
 	}
 #endif
 
+#ifdef RTCONFIG_DNSFILTER
+	dnsfilter_dot_rules(fp, lan_if);
+#endif
+
 	fprintf(fp, "-A FORWARD -i %s -j %s\n", lan_if, logaccept);
 
 	fprintf(fp, "COMMIT\n\n");
@@ -4173,6 +4180,9 @@ filter_setting2(char *lan_if, char *lan_ip, char *logaccept, char *logdrop)
 	    ":ACCESS_RESTRICTION - [0:0]\n"
 #ifdef RTCONFIG_OPENVPN
 	    ":OVPN - [0:0]\n"
+#endif
+#ifdef RTCONFIG_DNSFILTER
+	   ":DNSFILTER_DOT - [0:0]\n"
 #endif
 	   ":other2wan - [0:0]\n"
 #ifdef RTCONFIG_PARENTALCTRL
@@ -5234,6 +5244,10 @@ TRACE_PT("write wl filter\n");
 	}
 #endif
 
+#ifdef RTCONFIG_DNSFILTER
+	dnsfilter_dot_rules(fp, lan_if);
+#endif
+
 	fprintf(fp, "COMMIT\n\n");
 	if(fp) fclose(fp);
 
@@ -5404,7 +5418,8 @@ mangle_setting(char *wan_if, char *wan_ip, char *lan_if, char *lan_ip, char *log
 		if (fp != NULL) {
 			fprintf(fp, "*mangle\n"
 			    ":DNSFILTERI - [0:0]\n"
-			    ":DNSFILTERF - [0:0]\n");
+			    ":DNSFILTERF - [0:0]\n"
+			    ":DNSFILTER_DOT - [0:0]\n");
 
 			dnsfilter6_settings(fp, lan_if, lan_ip);
 
@@ -5590,7 +5605,8 @@ mangle_setting2(char *lan_if, char *lan_ip, char *logaccept, char *logdrop)
 		if (fp != NULL) {
 			fprintf(fp, "*mangle\n"
 				":DNSFILTERI - [0:0]\n"
-				":DNSFILTERF - [0:0]\n");
+				":DNSFILTERF - [0:0]\n"
+				":DNSFILTER_DOT - [0:0]\n");
 
 			dnsfilter6_settings(fp, lan_if, lan_ip);
 

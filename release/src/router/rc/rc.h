@@ -1622,6 +1622,7 @@ extern void dnsfilter_settings(FILE *fp, char *lan_ip);
 extern void dnsfilter6_settings(FILE *fp, char *lan_if, char *lan_ip);
 extern void dnsfilter_setup_dnsmasq(FILE *fp);
 #endif
+extern void dnsfilter_dot_rules(FILE *fp, char *lan_if);
 
 // lan.c
 #ifdef RTCONFIG_TIMEMACHINE

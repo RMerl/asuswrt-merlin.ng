@@ -383,9 +383,6 @@ define(function(){
 				if(!rrsut_support)
 					retArray.push("cloud_router_sync.asp");
 
-				if(!amesh_support)
-					retArray.push("Advanced_Roaming_Block_Content.asp");
-
 				/* Operation Mode */
 				if(isSwMode("re")){
 					retArray.push("menu_GuestNetwork");
@@ -649,6 +646,9 @@ define(function(){
 //				if(!cooler_support){
 //					retArray.push("Advanced_PerformanceTuning_Content.asp");
 //				}
+
+				if(!amesh_support)
+					retArray.push("Advanced_Roaming_Block_Content.asp");
 
 				/* Operation Mode */
 				if(isSwMode("re")){

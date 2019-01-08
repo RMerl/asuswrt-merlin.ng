@@ -475,6 +475,10 @@ function applyRule(){
 			updateDateTime();
 		}
 
+		showLoading();
+
+		var action_script_tmp = "restart_time;restart_upnp;";
+
 		if(hdspindown_support) {
 			var excluded = "";
 			if (document.form.usb_idle_exclude_a.checked)
@@ -500,10 +504,6 @@ function applyRule(){
 
 			action_script_tmp += "restart_usb_idle;";
 		}
-
-		showLoading();
-
-		var action_script_tmp = "restart_time;restart_upnp;";
 
 		if(restart_httpd_flag) {
 			action_script_tmp += "restart_httpd;";

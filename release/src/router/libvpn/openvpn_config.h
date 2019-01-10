@@ -1,23 +1,42 @@
+#include <syslog.h>
+
 #ifndef _OPENVPN_CONFIG_H
 #define _OPENVPN_CONFIG_H
 
 #define OVPN_SERVER_MAX	2
+
 #if defined(RTCONFIG_JFFS2) || defined(RTCONFIG_BRCM_NAND_JFFS2) || defined(RTCONFIG_UBIFS)
-
 #define OVPN_CLIENT_MAX	5
-
 #else
 #define OVPN_CLIENT_MAX	1
 #endif
 
 #define OVPN_CCD_MAX	16
 
-#define OVPN_CLIENT_BASE 10
-#define OVPN_SERVER_BASE 20
+// interfaces
+#define OVPN_CLIENT_BASEIF 10
+#define OVPN_SERVER_BASEIF 20
 
 #if defined(RTCONFIG_JFFS2) || defined(RTCONFIG_BRCM_NAND_JFFS2) || defined(RTCONFIG_UBIFS)
 #define OVPN_DIR_SAVE	"/jffs/openvpn"
 #endif
+
+// Line number as text string
+#define __LINE_T__ __LINE_T_(__LINE__)
+#define __LINE_T_(x) __LINE_T(x)
+#define __LINE_T(x) # x
+
+#define VPN_LOG_ERROR -1
+#define VPN_LOG_NOTE 0
+#define VPN_LOG_INFO 1
+#define VPN_LOG_EXTRA 2
+#define vpnlog(level,x...) if(nvram_get_int("vpn_debug")>=level) syslog(LOG_INFO, #level ": " __LINE_T__ ": " x)
+
+// client_access
+#define OVPN_CLT_ACCESS_LAN 0
+#define OVPN_CLT_ACCESS_WAN 1
+#define OVPN_CLT_ACCESS_BOTH 2
+
 
 #define PEM_START_TAG "-----BEGIN"
 
@@ -75,5 +94,7 @@ extern int ovpn_key_exists(ovpn_type_t type, int unit, ovpn_key_t key_type);
 extern int ovpn_crt_is_empty(const char *name);
 extern char *get_ovpn_custom(ovpn_type_t type, int unit, char* buffer, int bufferlen);
 extern int set_ovpn_custom(ovpn_type_t type, int unit, char* buffer);
-
+extern int get_max_dnsmode(void);
+extern void write_ovpn_dns(FILE* dnsmasq_conf);
+extern void write_ovpn_dnsmasq_config(FILE* dnsmasq_conf);
 #endif

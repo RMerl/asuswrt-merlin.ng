@@ -25,25 +25,6 @@
 #include <openssl/x509.h>
 #include <openssl/x509_vfy.h>
 
-// Line number as text string
-#define __LINE_T__ __LINE_T_(__LINE__)
-#define __LINE_T_(x) __LINE_T(x)
-#define __LINE_T(x) # x
-
-#define VPN_LOG_ERROR -1
-#define VPN_LOG_NOTE 0
-#define VPN_LOG_INFO 1
-#define VPN_LOG_EXTRA 2
-#define vpnlog(level,x...) if(nvram_get_int("vpn_debug")>=level) syslog(LOG_INFO, #level ": " __LINE_T__ ": " x)
-
-#define CLIENT_IF_START 10
-#define SERVER_IF_START 20
-
-// client_access
-#define CLIENT_ACCESS_LAN 0
-#define CLIENT_ACCESS_WAN 1
-#define CLIENT_ACCESS_WAN_LAN 2
-
 extern struct nvram_tuple router_defaults[];
 
 #define PUSH_LAN_METRIC 500
@@ -122,7 +103,7 @@ void start_ovpn_client(int clientNum)
 	}
 
 	// Build interface name
-	snprintf(iface, sizeof (iface), "%s%d", buffer, clientNum+CLIENT_IF_START);
+	snprintf(iface, sizeof (iface), "%s%d", buffer, clientNum+OVPN_CLIENT_BASEIF);
 
 	// Determine encryption mode
 	strlcpy(buffer, nvram_pf_safe_get(prefix, "crypt"), sizeof(buffer) );
@@ -573,11 +554,11 @@ void stop_ovpn_client(int clientNum)
 
 	// NVRAM setting for device type could have changed, just try to remove both
 	vpnlog(VPN_LOG_EXTRA,"Removing VPN device.");
-	sprintf(buffer, "openvpn --rmtun --dev tap%d", clientNum+CLIENT_IF_START);
+	sprintf(buffer, "openvpn --rmtun --dev tap%d", clientNum+OVPN_CLIENT_BASEIF);
 	for (argv[argc=0] = strtok(buffer, " "); argv[argc] != NULL; argv[++argc] = strtok(NULL, " "));
 	_eval(argv, NULL, 0, NULL);
 
-	sprintf(buffer, "openvpn --rmtun --dev tun%d", clientNum+CLIENT_IF_START);
+	sprintf(buffer, "openvpn --rmtun --dev tun%d", clientNum+OVPN_CLIENT_BASEIF);
 	for (argv[argc=0] = strtok(buffer, " "); argv[argc] != NULL; argv[++argc] = strtok(NULL, " "));
 	_eval(argv, NULL, 0, NULL);
 	vpnlog(VPN_LOG_EXTRA,"VPN device removed.");
@@ -681,7 +662,7 @@ void start_ovpn_server(int serverNum)
 	}
 
 	// Build interface name
-	snprintf(iface, sizeof (iface), "%s%d", buffer, serverNum+SERVER_IF_START);
+	snprintf(iface, sizeof (iface), "%s%d", buffer, serverNum+OVPN_SERVER_BASEIF);
 
 	if(is_intf_up(iface) > 0 && ifType == TAP) {
 		eval("brctl", "delif", nvram_safe_get("lan_ifname"), iface);
@@ -899,7 +880,7 @@ void start_ovpn_server(int serverNum)
 
 	if ( cryptMode == TLS )
 	{
-		if ( (ifType == TUN) && (nvram_pf_get_int(prefix, "client_access") != CLIENT_ACCESS_WAN) )
+		if ( (ifType == TUN) && (nvram_pf_get_int(prefix, "client_access") != OVPN_CLT_ACCESS_WAN) )
 		{
 			sscanf(nvram_safe_get("lan_ipaddr"), "%d.%d.%d.%d", &ip[0], &ip[1], &ip[2], &ip[3]);
 			sscanf(nvram_safe_get("lan_netmask"), "%d.%d.%d.%d", &nm[0], &nm[1], &nm[2], &nm[3]);
@@ -1004,7 +985,7 @@ void start_ovpn_server(int serverNum)
 			fprintf(fp, "push \"dhcp-option DNS %s\"\n", nvram_safe_get("lan_ipaddr"));
 		}
 
-		if ( nvram_pf_get_int(prefix, "client_access") != CLIENT_ACCESS_LAN )
+		if ( nvram_pf_get_int(prefix, "client_access") != OVPN_CLT_ACCESS_LAN )
 		{
 			if ( ifType == TAP )
 				fprintf(fp, "push \"route-gateway %s\"\n", nvram_safe_get("lan_ipaddr"));
@@ -1385,11 +1366,11 @@ void start_ovpn_server(int serverNum)
 	fprintf(fp, "iptables -I INPUT -p %s ", strtok(buffer, "-"));
 	fprintf(fp, "--dport %d -j ACCEPT\n", nvram_pf_get_int(prefix, "port"));
 
-	if (nvram_pf_get_int(prefix, "client_access") == CLIENT_ACCESS_WAN)
+	if (nvram_pf_get_int(prefix, "client_access") == OVPN_CLT_ACCESS_WAN)
 	{
 		ip2class(nvram_safe_get("lan_ipaddr"), nvram_safe_get("lan_netmask"), buffer);
 		fprintf(fp, "iptables -I OVPN -i %s ! -d %s -j ACCEPT\n", iface, buffer);
-	} else	if (nvram_pf_get_int(prefix, "client_access") == CLIENT_ACCESS_LAN)
+	} else	if (nvram_pf_get_int(prefix, "client_access") == OVPN_CLT_ACCESS_LAN)
 	{
 		ip2class(nvram_safe_get("lan_ipaddr"), nvram_safe_get("lan_netmask"), buffer);
 		fprintf(fp, "iptables -I OVPN -i %s -d %s -j ACCEPT\n", iface, buffer);
@@ -1511,11 +1492,11 @@ void stop_ovpn_server(int serverNum)
 
 	// NVRAM setting for device type could have changed, just try to remove both
 	vpnlog(VPN_LOG_EXTRA,"Removing VPN device.");
-	sprintf(buffer, "openvpn --rmtun --dev tap%d", serverNum+SERVER_IF_START);
+	sprintf(buffer, "openvpn --rmtun --dev tap%d", serverNum+OVPN_SERVER_BASEIF);
 	for (argv[argc=0] = strtok(buffer, " "); argv[argc] != NULL; argv[++argc] = strtok(NULL, " "));
 	_eval(argv, NULL, 0, NULL);
 
-	sprintf(buffer, "openvpn --rmtun --dev tun%d", serverNum+SERVER_IF_START);
+	sprintf(buffer, "openvpn --rmtun --dev tun%d", serverNum+OVPN_SERVER_BASEIF);
 	for (argv[argc=0] = strtok(buffer, " "); argv[argc] != NULL; argv[++argc] = strtok(NULL, " "));
 	_eval(argv, NULL, 0, NULL);
 	vpnlog(VPN_LOG_EXTRA,"VPN device removed.");
@@ -1714,119 +1695,6 @@ void run_ovpn_fw_script()
 	closedir(dir);
 }
 
-void write_ovpn_dnsmasq_config(FILE* f)
-{
-	char nv[16];
-	char buf[24];
-	char ch;
-	int unit, ch2;	DIR *dir;
-	struct dirent *file;
-	FILE *dnsf;
-
-	for (unit = 1; unit <= OVPN_SERVER_MAX; unit++) {
-	{
-		sprintf(buf, "vpn_server%d_pdns", unit);
-		if (nvram_get_int(buf) )
-			vpnlog(VPN_LOG_EXTRA, "Adding server %d interface to dns config", unit);
-			snprintf(nv, sizeof(nv), "vpn_server%d_if", unit);
-			fprintf(f, "interface=%s%d\n", nvram_safe_get(nv), SERVER_IF_START + unit);
-		}
-	}
-
-	if ( (dir = opendir("/etc/openvpn/dns")) != NULL )
-	{
-		while ( (file = readdir(dir)) != NULL )
-		{
-			if ( file->d_name[0] == '.' )
-				continue;
-
-			if ( sscanf(file->d_name, "client%d.resol%c", &unit, &ch) == 2 )
-			{
-				vpnlog(VPN_LOG_EXTRA, "Checking ADNS settings for client %d", unit);
-				snprintf(buf, sizeof(buf), "vpn_client%d_adns", unit);
-				if ( nvram_get_int(buf) == 2 )
-				{
-					vpnlog(VPN_LOG_INFO, "Adding strict-order to dnsmasq config for client %d", unit);
-					fprintf(f, "strict-order\n");
-					break;
-				}
-			}
-
-			if ( sscanf(file->d_name, "client%d.con%c", &unit, &ch) == 2 )
-			{
-				if ( (dnsf = fopen(file->d_name, "r")) != NULL )
-				{
-					vpnlog(VPN_LOG_INFO, "Adding Dnsmasq config from %s", file->d_name);
-
-					while( !feof(dnsf) )
-					{
-						ch2 = fgetc(dnsf);
-						fputc(ch2==EOF?'\n':ch2, f);
-					}
-
-					fclose(dnsf);
-				}
-			}
-		}
-	}
-}
-
-int write_ovpn_resolv(FILE* fresolv, FILE* f)
-{
-	DIR *dir;
-	struct dirent *file;
-	char *fn, ch, num, buf[24];
-	FILE *dnsf;
-	int strictlevel = 0, ch2, level;
-
-	if ( chdir("/etc/openvpn/dns") )
-		return 0;
-
-	dir = opendir("/etc/openvpn/dns");
-
-	vpnlog(VPN_LOG_EXTRA, "Adding DNS entries...");
-	while ( (file = readdir(dir)) != NULL )
-	{
-		fn = file->d_name;
-
-		if ( fn[0] == '.' )
-			continue;
-
-		if ( sscanf(fn, "client%c.resol%c", &num, &ch) == 2 )
-		{
-			snprintf(buf, sizeof(buf), "vpn_client%c_", num);
-
-			level = nvram_pf_get_int(buf, "adns");
-
-			// Don't modify dnsmasq if policy routing is enabled and dns mode set to "Exclusive"
-			if ((nvram_pf_get_int(buf, "rgw") >= OVPN_RGW_POLICY ) && (level == 3))
-				continue;
-
-			if ( (dnsf = fopen(fn, "r")) == NULL )
-				continue;
-
-			vpnlog(VPN_LOG_INFO,"Adding DNS entries from %s", fn);
-
-			while( !feof(dnsf) )
-			{
-				ch2 = fgetc(dnsf);
-				fputc(ch2==EOF?'\n':ch2, f);
-			}
-
-			fclose(dnsf);
-
-			// Only return the highest active level, so one exclusive client
-			// will override a relaxed client.
-			if (level > strictlevel)
-				strictlevel = level;
-		}
-	}
-	vpnlog(VPN_LOG_EXTRA, "Done with DNS entries...");
-
-	closedir(dir);
-
-	return strictlevel;
-}
 
 void create_ovpn_passwd()
 {

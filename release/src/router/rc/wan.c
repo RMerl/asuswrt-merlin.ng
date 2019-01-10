@@ -2042,7 +2042,7 @@ int update_resolvconf(void)
 	int yadns_mode = nvram_get_int("yadns_enable_x") ? nvram_get_int("yadns_mode") : YADNS_DISABLED;
 #endif
 #ifdef RTCONFIG_OPENVPN
-        int dnsstrict = 0;
+        int dnsmode;
 #endif
 #ifdef RTCONFIG_DUALWAN
 	int primary_unit = wan_primary_ifunit();
@@ -2060,11 +2060,10 @@ int update_resolvconf(void)
 		goto error;
 	}
 
-/* Add DNS from VPN clients, others if non-exclusive */
+/* Add DNS if no VPN client is globally set to exclusive */
 #ifdef RTCONFIG_OPENVPN
-	dnsstrict = write_ovpn_resolv(fp, fp_servers);
-	// If dns not set to exclusive
-	if (dnsstrict != 3)
+	dnsmode = get_max_dnsmode();
+	if (dnsmode != 3)
 #endif
 	{
 		for (unit = WAN_UNIT_FIRST; unit < WAN_UNIT_MAX; unit++) {
@@ -2128,6 +2127,11 @@ int update_resolvconf(void)
 			}
 		}
 	}
+
+/* Add DNS from VPN clients - add at the end since config is read backward by dnsmasq */
+#ifdef RTCONFIG_OPENVPN
+	write_ovpn_dns(fp_servers);
+#endif
 
 #ifdef RTCONFIG_YANDEXDNS
 	if (yadns_mode != YADNS_DISABLED) {
@@ -2200,7 +2204,7 @@ int update_resolvconf(void)
 	file_unlock(lock);
 
 #ifdef RTCONFIG_OPENVPN
-	if (dnsstrict == 2)
+	if (dnsmode == 2)
 		start_dnsmasq();	// add strict-order
 	else
 #endif

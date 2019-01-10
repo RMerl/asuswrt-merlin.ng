@@ -449,3 +449,102 @@ int set_ovpn_custom(ovpn_type_t type, int unit, char* buffer)
 
 	return -1;
 }
+
+// Determine how to handle dnsmasq server list based on
+// highest active dnsmode
+int get_max_dnsmode() {
+	int unit, maxlevel = 0, level;
+	char filename[40];
+	char varname[32];
+
+	for( unit = 1; unit <= OVPN_CLIENT_MAX; unit++ ) {
+		sprintf(filename, "/etc/openvpn/dns/client%d.resolv", unit);
+		if (f_exists(filename)) {
+			sprintf(varname, "vpn_client%d_", unit);
+			level = nvram_pf_get_int(varname, "adns");
+
+			// Ignore exclusive mode if policy mode is also enabled
+			if ((nvram_pf_get_int(varname, "rgw") >= OVPN_RGW_POLICY ) && (level == 3))
+				continue;
+
+			// Only return the highest active level, so one exclusive client
+			// will override a relaxed client.
+			if (level > maxlevel) maxlevel = level;
+		}
+	}
+	return maxlevel;
+}
+
+
+void write_ovpn_dns(FILE* dnsmasq_conf) {
+	int unit;
+	char filename[40], prefix[16];
+	char *buffer;
+
+	vpnlog(VPN_LOG_EXTRA, "Adding DNS entries...");
+
+	for (unit = 1; unit <= OVPN_CLIENT_MAX; unit++) {
+		sprintf(filename, "/etc/openvpn/dns/client%d.resolv", unit);
+		if (f_exists(filename)) {
+			sprintf(prefix, "vpn_client%d_", unit);
+
+			// Don't add servers if policy routing is enabled and dns mode set to "Exclusive"
+			// Handled by iptables on a case-by-case basis
+			if ((nvram_pf_get_int(prefix, "rgw") >= OVPN_RGW_POLICY ) && (nvram_pf_get_int(prefix, "adns") == 3))
+				continue;
+
+			vpnlog(VPN_LOG_INFO,"Adding DNS entries from %s", filename);
+
+			buffer = read_whole_file(filename);
+			if (buffer) {
+				fwrite(buffer, 1, strlen(buffer),dnsmasq_conf);
+				free(buffer);
+			}
+		}
+	}
+	vpnlog(VPN_LOG_EXTRA, "Done with DNS entries...");
+}
+
+
+void write_ovpn_dnsmasq_config(FILE* dnsmasq_conf) {
+	char prefix[16], filename[40], varname[32];
+	int unit, modeset = 0;
+	char *buffer;
+
+	// Add interfaces for servers that provide DNS services
+	for (unit = 1; unit <= OVPN_SERVER_MAX; unit++) {
+		sprintf(prefix, "vpn_server%d_", unit);
+		if (nvram_pf_get_int(prefix, "pdns") ) {
+			vpnlog(VPN_LOG_EXTRA, "Adding server %d interface to dns config", unit);
+			fprintf(dnsmasq_conf, "interface=%s%d\n", nvram_pf_safe_get(prefix, "if"), OVPN_SERVER_BASEIF + unit);
+		}
+	}
+
+	for (unit = 1; unit <= OVPN_CLIENT_MAX; unit++) {
+		// Add strict-order if any client is set to "strict" and we haven't done so yet
+		if (!modeset) {
+			sprintf(filename, "/etc/openvpn/dns/client%d.resolv", unit);
+			if (f_exists(filename)) {
+				vpnlog(VPN_LOG_EXTRA, "Checking ADNS settings for client %d", unit);
+				snprintf(varname, sizeof(varname), "vpn_client%d_adns", unit);
+				if (nvram_get_int(varname) == 2) {
+					vpnlog(VPN_LOG_INFO, "Adding strict-order to dnsmasq config for client %d", unit);
+					fprintf(dnsmasq_conf, "strict-order\n");
+					modeset = 1;
+				}
+			}
+
+		}
+
+		// Add WINS entries if any client provides it
+		sprintf(filename, "/etc/openvpn/dns/client%d.conf", unit);
+		if (f_exists(filename)) {
+			vpnlog(VPN_LOG_INFO, "Adding Dnsmasq config from %s", filename);
+			buffer = read_whole_file(filename);
+			if (buffer) {
+				fwrite(buffer, 1, strlen(buffer),dnsmasq_conf);
+				free(buffer);
+			}
+		}
+	}
+}

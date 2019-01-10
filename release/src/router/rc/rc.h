@@ -1303,10 +1303,6 @@ extern void stop_ovpn_server(int serverNum);
 extern void start_ovpn_eas(void);
 extern void stop_ovpn_eas(void);
 extern void run_ovpn_fw_script();
-extern void write_ovpn_dnsmasq_config(FILE*);
-extern int write_ovpn_resolv(FILE*, FILE*);
-//static inline void start_ovpn_eas() { }
-//#define write_ovpn_resolv(f) (0)
 extern void create_ovpn_passwd();
 extern void stop_ovpn_all();
 extern void update_ovpn_profie_remote();

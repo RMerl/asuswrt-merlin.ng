@@ -14,6 +14,9 @@ Asuswrt-Merlin 384/NG Changelog
          RT-AC86U and RT-AX88U (already present in older models)
   - NEW: Report the number of spatial streams used by
          wireless clients for models supporting it
+  - NEW: Display tracked connections on the QoS Stats page (Adaptive QoS).
+         Thanks to FreshJr for his help in deciphering the packet mark
+         values.
   - CHANGED: Updated wget to 1.20.
   - CHANGED: Updated nano to 3.2.
   - CHANGED: Updated curl to 7.62.0.
@@ -44,6 +47,10 @@ Asuswrt-Merlin 384/NG Changelog
   - FIXED: httpd crashes on RT-AC86U (themiron)
   - FIXED: DNSFilter clients could use a different nameserver
            when using an IPv6 connection
+  - FIXED: USB disk idle config changes not applying without a
+           reboot.
+  - FIXED: "Strict" DNS mode wasn't working properly with OpenVPN
+           clients
 
 
 384.8_2 (8-Dec-2018)

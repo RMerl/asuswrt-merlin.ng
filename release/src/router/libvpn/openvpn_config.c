@@ -310,7 +310,7 @@ int _set_crt_parsed(const char *name, char *file_path)
 
 		data = strstr(buffer, PEM_START_TAG);
 		if (data) {
-			result = f_write(target_file_path, data, strlen(data), NULL, S_IRUSR|S_IWUSR);
+			result = f_write(target_file_path, data, strlen(data), 0, S_IRUSR|S_IWUSR);
 		} else {
 			result = -1;
 		}

@@ -276,7 +276,7 @@ void start_ovpn_client(int clientNum)
 		if ( (nvl = atol(nvram_pf_safe_get(prefix, "reneg"))) >= 0 )
 			fprintf(fp, "reneg-sec %ld\n", nvl);
 
-		if ( nvram_pf_get_int(prefix, "adns") > 0 )
+		if ( nvram_pf_get_int(prefix, "adns") != OVPN_DNSMODE_IGNORE )
 		{
 			sprintf(buffer, "/etc/openvpn/client%d/updown.sh", clientNum);
 			symlink("/usr/sbin/updown.sh", buffer);

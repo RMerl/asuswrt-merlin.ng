@@ -464,7 +464,7 @@ int get_max_dnsmode() {
 			level = nvram_pf_get_int(varname, "adns");
 
 			// Ignore exclusive mode if policy mode is also enabled
-			if ((nvram_pf_get_int(varname, "rgw") >= OVPN_RGW_POLICY ) && (level == 3))
+			if ((nvram_pf_get_int(varname, "rgw") >= OVPN_RGW_POLICY ) && (level == OVPN_DNSMODE_EXCLUSIVE))
 				continue;
 
 			// Only return the highest active level, so one exclusive client
@@ -490,7 +490,7 @@ void write_ovpn_dns(FILE* dnsmasq_conf) {
 
 			// Don't add servers if policy routing is enabled and dns mode set to "Exclusive"
 			// Handled by iptables on a case-by-case basis
-			if ((nvram_pf_get_int(prefix, "rgw") >= OVPN_RGW_POLICY ) && (nvram_pf_get_int(prefix, "adns") == 3))
+			if ((nvram_pf_get_int(prefix, "rgw") >= OVPN_RGW_POLICY ) && (nvram_pf_get_int(prefix, "adns") == OVPN_DNSMODE_EXCLUSIVE))
 				continue;
 
 			vpnlog(VPN_LOG_INFO,"Adding DNS entries from %s", filename);
@@ -527,7 +527,7 @@ void write_ovpn_dnsmasq_config(FILE* dnsmasq_conf) {
 			if (f_exists(filename)) {
 				vpnlog(VPN_LOG_EXTRA, "Checking ADNS settings for client %d", unit);
 				snprintf(varname, sizeof(varname), "vpn_client%d_adns", unit);
-				if (nvram_get_int(varname) == 2) {
+				if (nvram_get_int(varname) == OVPN_DNSMODE_STRICT) {
 					vpnlog(VPN_LOG_INFO, "Adding strict-order to dnsmasq config for client %d", unit);
 					fprintf(dnsmasq_conf, "strict-order\n");
 					modeset = 1;

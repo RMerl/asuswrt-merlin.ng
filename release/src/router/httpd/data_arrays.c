@@ -1078,9 +1078,9 @@ int ej_connlist_array(int eid, webs_t wp, int argc, char **argv) {
 #ifdef RTCONFIG_BWDPI
 int ej_bwdpi_conntrack(int eid, webs_t wp, int argc, char **argv_) {
 	char comma;
-	char line[128];
+	char line[256];
 	FILE *fp;
-	char src_ip[16], dst_ip[16], prot[4];
+	char src_ip[64], dst_ip[64], prot[4];
 	int index, dport, sport;
 	int ret;
 	unsigned long mark;
@@ -1089,32 +1089,24 @@ int ej_bwdpi_conntrack(int eid, webs_t wp, int argc, char **argv_) {
 	static int parsed = 0;
         int id, cat;
         char desc[65];
-//        int count = 0;
+	char ipversion;
 
 // Parse App database
 	if (!parsed) {
 		fp = fopen(APPDB, "r");
-		if (!fp) {
-//			_dprintf("Error opening DB file!\n");
-			return websWrite(wp, "\nbwdpi_conntrack=[];");
-		}
+		if (!fp) return websWrite(wp, "\nbwdpi_conntrack=[];");
 
 		while (fgets(line, sizeof(line), fp) != NULL)
 		{
 			if (sscanf(line,"%d,%d,%*d,%63[^\n]", &id, &cat, desc) == 3) {
 				strcpy(appdb[id][cat], desc);
-//				count++;
 			}
 		}
 		fclose(fp);
-//		_dprintf("Parsed %d entries (%ld bytes)\n", count, sizeof(db));
-// Parse categories
 
+// Parse categories
 		fp = fopen(CATDB, "r");
-		if (!fp) {
-//			_dprintf("Error opening Cat file!\n");
-			return websWrite(wp, "\nbwdpi_conntrack=[];");
-		}
+		if (!fp) return websWrite(wp, "\nbwdpi_conntrack=[];");
 
 		while (fgets(line, sizeof(line), fp) != NULL)
 		{
@@ -1135,8 +1127,8 @@ int ej_bwdpi_conntrack(int eid, webs_t wp, int argc, char **argv_) {
 
 	while (fgets(line, sizeof(line), fp)) {
 		// ipv4 tcp src=192.168.10.156 dst=172.217.13.110 sport=8248 dport=443 index=8510 mark=3cd000f
-		if (sscanf(line, "ipv4 %3s src=%15s dst=%15s sport=%d dport=%d index=%d mark=%lx",
-		                  prot, src_ip, dst_ip, &sport, &dport, &index, &mark) != 7 ) continue;
+		if (sscanf(line, "ipv%c %3s src=%63s dst=%63s sport=%d dport=%d index=%d mark=%lx",
+			           &ipversion, prot, src_ip, dst_ip, &sport, &dport, &index, &mark) != 8 ) continue;
 
 		id = (mark & 0x3F0000)/0xFFFF;
 		cat = mark & 0xFFFF;
@@ -1147,6 +1139,11 @@ int ej_bwdpi_conntrack(int eid, webs_t wp, int argc, char **argv_) {
 		else
 			strcpy(desc, appdb[id][cat]);
 
+		if (ipversion == '6') {
+			_fix_TM_ipv6(src_ip, ':');
+			_fix_TM_ipv6(dst_ip, ':');
+		}
+
 		ret += websWrite(wp, "%c[\"%s\", \"%s\", \"%d\", \"%s\", \"%d\", \"%s\", \"%d\", \"%d\"]",
 		                      comma, prot, src_ip, sport, dst_ip, dport, desc, cat, id);
 		comma = ',';
@@ -1156,5 +1153,29 @@ int ej_bwdpi_conntrack(int eid, webs_t wp, int argc, char **argv_) {
 	ret += websWrite(wp, "];\n");
 	return ret;
 }
+
+// TM puts columns between every octet pairs
+// Reformat that into quads rather than pairs
+// Also TM is missing the last two octets, so pad
+// with arbitrary "00" octets to get a valid IPv6
+void _fix_TM_ipv6(char* str, char c) {
+	char *pr = str, *pw = str;
+	int found=0;
+
+	while (*pr) {
+		*pw = *pr++;
+		if (*pw == c) {
+			found++;
+			if (found % 2)
+				continue;
+		}
+		pw++;
+	}
+	*pw = '\0';
+
+	if (strlen(str) == 37)
+		strcat(str,"00");
+}
+
 #endif
 

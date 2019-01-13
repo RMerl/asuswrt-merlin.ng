@@ -139,6 +139,11 @@ function get_qos_class(category, appid){
 	return 7;
 }
 
+function compIPV6(input) {
+	input = input.replace(/\b(?:0+:){2,}/, ':');
+	return input.replace(/(^|:)0{1,4}/g, ':');
+}
+
 
 function draw_conntrack_table(){
 	var i, label;
@@ -148,6 +153,14 @@ function draw_conntrack_table(){
 	for (i=0; i < bwdpi_conntrack.length; i++) {
 		label = bwdpi_conntrack[i][5];
 		bwdpi_conntrack[i][5] = "<span style=\"padding: 4px 8px 4px 8px; color: white; background-color: " + color[get_qos_class(bwdpi_conntrack[i][7], bwdpi_conntrack[i][6])] + ";\">"+label +"</span>";
+
+		if (bwdpi_conntrack[i][1].indexOf(":") >= 0) {
+			bwdpi_conntrack[i][1] = compIPV6(bwdpi_conntrack[i][1]);
+		}
+		if (bwdpi_conntrack[i][3].indexOf(":") >= 0) {
+			bwdpi_conntrack[i][3] = compIPV6(bwdpi_conntrack[i][3]);
+		}
+
 	}
 
 	// Remove cat and appid cols
@@ -163,7 +176,7 @@ function draw_conntrack_table(){
 			{
 				"title" : "Proto",
 				"sort" : "str",
-				"width" : "8%"
+				"width" : "6%"
 			},
 			{
 				"title" : "Source",
@@ -188,7 +201,7 @@ function draw_conntrack_table(){
 			{
 				"title" : "Application",
 				"sort" : "str",
-				"width" : "26%"
+				"width" : "28%"
 			}
                 ]
         }

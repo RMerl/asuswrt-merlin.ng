@@ -562,6 +562,7 @@ void rc_strongswan_conf_set()
     fprintf(fp, "\n}#the end of the Charon {\n\n");
     if(NULL != fp){
         fclose(fp);
+        run_postconf("strongswan","/etc/strongswan.conf");
     }
 /*DBG(("[%d]strongswan.conf:\n dns1:%s\n dns2:%s\n wins1=%s\n wins2=%s\n",
       rc, samba_prof.dns1, samba_prof.dns2, samba_prof.nbios1, samba_prof.nbios2));*/
@@ -1420,6 +1421,7 @@ void rc_ipsec_topology_set()
 	}
     if(NULL != fp){
         fclose(fp);
+        run_postconf("ipsec","/etc/ipsec.conf");
     }
     return;
 }

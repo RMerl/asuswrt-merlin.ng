@@ -47,7 +47,7 @@ var tableStruct = {
 	{
 		title : Necessary, title text
 		width : Optional, defalut is average
-		sort : Optional, sort type, value is str/num/ip, the default define at tableSorter
+		sort : Optional, sort type, value is str/num/ip/ipport, the default define at tableSorter
 		defaultSort : Optional, default sort index, this attribure is only, if not define will find fist define sort item
 	}
 	ex: 
@@ -219,6 +219,22 @@ var tableSorter = {
 		else return 1;
 	},
 	"ip_increase" : function(a, b) {
+		var aa = full_IPv6(a[tableSorter.indexFlag].toString().toUpperCase());
+		var bb = full_IPv6(b[tableSorter.indexFlag].toString().toUpperCase());
+
+		if (aa == bb) return 0;
+		else if (aa > bb) return 1;
+		else return -1;
+	},
+	"ip_decrease" : function(a, b) {
+		var aa = full_IPv6(a[tableSorter.indexFlag].toString().toUpperCase());
+		var bb = full_IPv6(b[tableSorter.indexFlag].toString().toUpperCase());
+
+		if (aa == bb) return 0;
+		else if (aa > bb) return -1;
+		else return 1;
+	},
+	"ipport_increase" : function(a, b) {
 		var aa = a[tableSorter.indexFlag].split(":")[0].split(".");
 		var bb = b[tableSorter.indexFlag].split(":")[0].split(".");
 
@@ -227,7 +243,7 @@ var tableSorter = {
 
 		return parseInt(resulta) - parseInt(resultb);
 	},
-	"ip_decrease" : function(a, b) {
+	"ipport_decrease" : function(a, b) {
 		var aa = a[tableSorter.indexFlag].split(":")[0].split(".");
 		var bb = b[tableSorter.indexFlag].split(":")[0].split(".");
 
@@ -1430,4 +1446,38 @@ var tableApi = {
 	}
 }
 
+
+function full_IPv6(ip_string) {
+	// Embed IPv4 into IPv6 format
+	var ipv4 = ip_string.split(".");
+	if (ipv4.length == 4) {
+		for (var i = 0;i < 4;i++) {
+			var byte = parseInt(ipv4[i],10);
+			ipv4[i] = ("0" + byte.toString(16)).substr(-2);
+		}
+		ip_string = "::" + ipv4[0] + ipv4[1] + ':' + ipv4[2] + ipv4[3];
+	}
+
+	// take care of leading and trailing ::
+	ip_string = ip_string.replace(/^:|:$/g, '');
+
+	var ipv6 = ip_string.split(':');
+	for (var i = 0; i < ipv6.length; i ++) {
+		var hex = ipv6[i];
+		if (hex != "") {
+			// normalize leading zeros
+			ipv6[i] = ("0000" + hex).substr(-4);
+		}
+		else {
+			// normalize grouped zeros ::
+			hex = [];
+			for (var j = ipv6.length; j <= 8; j ++) {
+				hex.push('0000');
+			}
+			ipv6[i] = hex.join(':');
+		}
+	}
+
+	return ipv6.join(':');
+}
 

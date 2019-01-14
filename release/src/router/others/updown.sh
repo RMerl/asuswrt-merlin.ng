@@ -124,8 +124,12 @@ then
 		/sbin/service updateresolv
 	elif [ $script_type == 'down' ]; then
 		rm $dnsscript
-		/sbin/service updateresolv # also restarts or reloads dnsmasq as necessary
-#		/sbin/service restart_dnsmasq
+		if [ $(nvram get vpn_client$(echo $instance)_adns) == 2 ]
+		then
+			/sbin/service restart_dnsmasq
+		else
+			/sbin/service updateresolv
+		fi
 	fi
 fi
 

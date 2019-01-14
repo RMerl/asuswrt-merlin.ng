@@ -157,6 +157,7 @@ switch (openvpn_unit) {
 
 enforce_ori = "<% nvram_get("vpn_client_enforce"); %>";
 policy_ori = "<% nvram_get("vpn_client_rgw"); %>";
+dnsmode_ori = "<% nvram_get("vpn_client_adns"); %>";
 
 ciphersarray = [
 		["AES-128-CBC"],
@@ -619,6 +620,9 @@ function applyRule(manual_switch){
 	     (policy_ori != document.form.vpn_client_rgw.value)) &&
 	    (client_state == 0) && (manual_switch == 0))
 		document.form.action_script.value += "start_vpnrouting"+openvpn_unit;
+
+	if ((dnsmode_ori != document.form.vpn_client_adns.value) && (client_state != 0))
+		document.form.action_script.value += ";restart_dnsmasq"
 
 	document.form.submit();
 }

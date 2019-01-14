@@ -55,15 +55,17 @@ overlib.isOut = true;
 function initial(){
 	show_menu();
 
+	if (band5g_support) {
+		document.getElementById("wifi5_clients_tr").style.display = "";
+	}
 	if (wl_info.band5g_2_support) {
 		document.getElementById("wifi51_clients_th").innerHTML = "Wireless Clients (5 GHz-1)";
 		document.getElementById("wifi5_2_clients_tr").style.display = "";
-        } else if (based_modelid == "RT-AC87U") {
-                document.getElementById("wifi5_clients_tr_qtn").style.display = "";
-                document.getElementById("qtn_version").style.display = "";
-        } else if (band5g_support) {
-                document.getElementById("wifi5_clients_tr").style.display = "";
-        }
+	}
+	if (based_modelid == "RT-AC87U") {
+		document.getElementById("wifi5_clients_tr_qtn").style.display = "";
+		document.getElementById("qtn_version").style.display = "";
+	}
 
 	showbootTime();
 
@@ -620,7 +622,7 @@ function update_sysinfo(e){
 						</td>
 					</tr>
 					<tr>
-						<th>Wireless clients (2.4 GHz)</th>
+						<th>Wireless Clients (2.4 GHz)</th>
 						<td id="wlc_24_td"></td>
 					</tr>
 					<tr id="wifi5_clients_tr" style="display:none;">
@@ -628,11 +630,11 @@ function update_sysinfo(e){
 						<td id="wlc_51_td"></td>
 					</tr>
 					<tr id="wifi5_2_clients_tr" style="display:none;">
-						<th>Wireless clients (5 GHz-2)</th>
+						<th>Wireless Clients (5 GHz-2)</th>
 						<td id="wlc_52_td"></td>
 					</tr>
 					<tr id="wifi5_clients_tr_qtn" style="display:none;">
-						<th>Wireless clients (5 GHz)</th>
+						<th>Wireless Clients (5 GHz)</th>
 						<td id="wlc_5qtn_td"></td>
 					</tr>
 				</table>

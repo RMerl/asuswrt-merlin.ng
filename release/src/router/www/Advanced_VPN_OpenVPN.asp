@@ -259,7 +259,7 @@ function formShowAndHide(server_enable, server_type) {
 	if(server_enable == 1){
 		document.getElementById("trVPNServerMode").style.display = "";
 		document.getElementById("selSwitchMode").value = "1";
-		document.getElementById("trRSAEncryptionBasic").style.display = ("<% nvram_get("vpn_server_crypt"); %>" == "secret")?"none":"";
+		document.getElementById("trRSAEncryptionBasic").style.display = (("<% nvram_get("vpn_server_crypt"); %>" == "secret") || (service_state == 2)) ?"none":"";
 		document.getElementById("trClientWillUseVPNToAccess").style.display = "";
 		document.getElementById('openvpn_export').style.display = "";	
 		document.getElementById('OpenVPN_setting').style.display = "";

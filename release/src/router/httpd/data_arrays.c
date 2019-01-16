@@ -1084,17 +1084,17 @@ int ej_bwdpi_conntrack(int eid, webs_t wp, int argc, char **argv_) {
 	int index, dport, sport;
 	int ret;
 	unsigned long mark;
-        static char appdb[32][256][64];
+	static char appdb[32][256][64];
 	static char catdb[32][32];
 	static int parsed = 0;
-        int id, cat;
-        char desc[65];
+	int id, cat;
+	char desc[64];
 	char ipversion;
 
 // Parse App database
 	if (!parsed) {
 		fp = fopen(APPDB, "r");
-		if (!fp) return websWrite(wp, "\nbwdpi_conntrack=[];");
+		if (!fp) return websWrite(wp, "bwdpi_conntrack=[];");
 
 		while (fgets(line, sizeof(line), fp) != NULL)
 		{
@@ -1120,36 +1120,36 @@ int ej_bwdpi_conntrack(int eid, webs_t wp, int argc, char **argv_) {
 
 // Parse tracked connections
 	if ((fp = fopen("/proc/bw_cte_dump", "r")) == NULL)
-		return websWrite(wp, "\nbwdpi_conntrack=[];");
+		return websWrite(wp, "bwdpi_conntrack=[];");
 
-	ret = websWrite(wp, "\nbwdpi_conntrack=[");
+	ret = websWrite(wp, "bwdpi_conntrack=[");
 	comma = ' ';
 
 	while (fgets(line, sizeof(line), fp)) {
 		// ipv4 tcp src=192.168.10.156 dst=172.217.13.110 sport=8248 dport=443 index=8510 mark=3cd000f
 		if (sscanf(line, "ipv%c %3s src=%63s dst=%63s sport=%d dport=%d index=%d mark=%lx",
-			           &ipversion, prot, src_ip, dst_ip, &sport, &dport, &index, &mark) != 8 ) continue;
+			          &ipversion, prot, src_ip, dst_ip, &sport, &dport, &index, &mark) != 8 ) continue;
 
 		id = (mark & 0x3F0000)/0xFFFF;
 		cat = mark & 0xFFFF;
 		if ((cat == 0) && (id == 0))
-			sprintf(desc, "Untracked");
+			strcpy(desc, "Untracked");
 		else if ((appdb[id][cat][0] == '\0') || (cat > 256) || (id > 32))
 			sprintf(desc, "unknown (AppID=%d, Cat=%d)", id, cat);
 		else
 			strcpy(desc, appdb[id][cat]);
 
 		if (ipversion == '6') {
-			_fix_TM_ipv6(src_ip, ':');
-			_fix_TM_ipv6(dst_ip, ':');
+			_fix_TM_ipv6(src_ip);
+			_fix_TM_ipv6(dst_ip);
 		}
 
 		ret += websWrite(wp, "%c[\"%s\", \"%s\", \"%d\", \"%s\", \"%d\", \"%s\", \"%d\", \"%d\"]",
 		                      comma, prot, src_ip, sport, dst_ip, dport, desc, cat, id);
 		comma = ',';
 	}
-
 	fclose(fp);
+
 	ret += websWrite(wp, "];\n");
 	return ret;
 }
@@ -1158,13 +1158,13 @@ int ej_bwdpi_conntrack(int eid, webs_t wp, int argc, char **argv_) {
 // Reformat that into quads rather than pairs
 // Also TM is missing the last two octets, so pad
 // with arbitrary "00" octets to get a valid IPv6
-void _fix_TM_ipv6(char* str, char c) {
+void _fix_TM_ipv6(char* str) {
 	char *pr = str, *pw = str;
 	int found=0;
 
 	while (*pr) {
 		*pw = *pr++;
-		if (*pw == c) {
+		if (*pw == ':') {
 			found++;
 			if (found % 2)
 				continue;
@@ -1176,6 +1176,4 @@ void _fix_TM_ipv6(char* str, char c) {
 	if (strlen(str) == 37)
 		strcat(str,"00");
 }
-
 #endif
-

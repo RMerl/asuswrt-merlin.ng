@@ -55,9 +55,6 @@ overlib.isOut = true;
 function initial(){
 	show_menu();
 
-	if (band5g_support) {
-		document.getElementById("wifi5_clients_tr").style.display = "";
-	}
 	if (wl_info.band5g_2_support) {
 		document.getElementById("wifi51_clients_th").innerHTML = "Wireless Clients (5 GHz-1)";
 		document.getElementById("wifi5_2_clients_tr").style.display = "";
@@ -65,6 +62,8 @@ function initial(){
 	if (based_modelid == "RT-AC87U") {
 		document.getElementById("wifi5_clients_tr_qtn").style.display = "";
 		document.getElementById("qtn_version").style.display = "";
+	} else if (band5g_support) {
+		document.getElementById("wifi5_clients_tr").style.display = "";
 	}
 
 	showbootTime();

@@ -6,16 +6,16 @@ Asuswrt-Merlin 384/NG Changelog
          Asus's currently scattered firmware source code releases.
          The GPL situation for this release is as follow:
      o RT-AX88U: Merged GPL 384_5247
-     o RT-AC3200: GPL 384_45149 + updated binary blobs from Asus
-     o RT-AC87U: not supported in this release
-     o Other models: 384_45149
+     o Other models: Merged GPL 384_45149.
+     o Special binary blobs provided by Asus for the RT-AC87U
+       and RT-AC3200 (compatible with 384_45149).
 
   - NEW: Added NFS client support (V2 and V3) to the
          RT-AC86U and RT-AX88U (already present in older models)
   - NEW: Report the number of spatial streams used by
          wireless clients for models supporting it
-  - NEW: Display tracked connections on the QoS Stats page (Adaptive
-         QoS).
+  - NEW: Display tracked connections on the QoS Stats page (now
+         relabeled "Classification").
          Fields can be sorted by clicking on the column headers.
          Note that due to a bug in the Trend Micro modules, the
          last two octets of IPv6 addresses are missing, so for now

@@ -25,7 +25,7 @@
 
 /*
  * Automatically generated make config: don't edit
- * Date: Mon Aug 21 18:02:06 2017
+ * Date: Mon Aug 21 18:11:49 2017
  */
 #ifndef __TMCFG__UDB_AUTOCONF_OUTPUT_H_
 #define __TMCFG__UDB_AUTOCONF_OUTPUT_H_
@@ -93,8 +93,8 @@
 
 #define TMCFG_BRAND_ASUS 1 // y
 #define TMCFG_BRAND "asus"
-#define TMCFG_MODEL_RT_AC3200 1 // y
-#define TMCFG_MODEL "rt-ac3200"
+#define TMCFG_MODEL_RT_AC3100 1 // y
+#define TMCFG_MODEL "rt-ac3100"
 #define TMCFG_OEM_SRC 1 // y
 #define TMCFG_OEM_SRC_BRCM 1 // y
 
@@ -109,13 +109,13 @@
 #define TMCFG_CPU_64BITS 0 // n
 #define TMCFG_CPU_BIG_ENDIAN 0 // n
 #define TMCFG_CPU_LITTLE_ENDIAN 1 // y
-#define TMCFG_KERN_DIR "/opt/ASUS/asuswrt_AC3200_GPL_382_11683/release/src-rt-7.x.main/src/linux/linux-2.6.36"
+#define TMCFG_KERN_DIR "/opt/ASUS/asuswrt_AC3100_GPL_382_11683/release/src-rt-7.14.114.x/src/linux/linux-2.6.36"
 #define TMCFG_KERN_ARCH "arm"
 
 /*
  * Toolchain (TC) configurations
  */
-#define TMCFG_TC_PFX "/opt/ASUS/toolchains/asus-toolchain-arm-rt_ac3200/bin/arm-brcm-linux-uclibcgnueabi-"
+#define TMCFG_TC_PFX "/opt/ASUS/toolchains/asus-toolchain-arm-rt_ac3100/bin/arm-brcm-linux-uclibcgnueabi-"
 
 /*
  * Advanced Build Options
@@ -217,7 +217,7 @@
 /*
  * Kernel
  */
-#define TMCFG_APP_K_EXTRA_CFLAGS "-I/opt/ASUS/asuswrt_AC3200_GPL_382_11683/release/src-rt-7.x.main/src/include -I/opt/ASUS/asuswrt_AC3200_GPL_382_11683/release/src-rt-7.x.main/src/common/include"
+#define TMCFG_APP_K_EXTRA_CFLAGS "-I/opt/ASUS/asuswrt_AC3100_GPL_382_11683/release/src-rt-7.14.114.x/src/include -I/opt/ASUS/asuswrt_AC3100_GPL_382_11683/release/src-rt-7.14.114.x/src/common/include"
 #define TMCFG_APP_K_TDTS_NFFW 0 // n
 #define TMCFG_APP_K_TDTS_UDBFW 1 // y
 #define TMCFG_APP_K_TDTS_UDBFW_EXTRA_SYMBOLS ""

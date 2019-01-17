@@ -1092,29 +1092,55 @@ int ej_bwdpi_conntrack(int eid, webs_t wp, int argc, char **argv_) {
 	char ipversion;
 	static struct hsearch_data *htab;
 	ENTRY entry, *resultp;
+	struct stat dbattrib;
+	static unsigned long lastupd = 0;
+	static char **alloctable;
+	int allocptr = 0;
+
+	if (stat(APPDB, &dbattrib))
+		return websWrite(wp, "bwdpi_conntrack=[];");
+
+	if ((lastupd) && (lastupd != dbattrib.st_ctime)) {
+		// free all nodes (2 entries per item)
+		while (allocptr <= count * 2) {
+			free(alloctable[allocptr++]);
+		}
+		hdestroy_r(htab);
+		count = allocptr = lastupd = 0;
+		free(alloctable);
+	}
 
 // Init hash table
-	if (!count) {
+	if (!lastupd) {
+		lastupd = dbattrib.st_ctime;
+
 		fp = fopen(APPDB, "r");
 		if (!fp) return websWrite(wp, "bwdpi_conntrack=[];");
 
 		while (fgets(line, sizeof(line), fp) != NULL) {
 			count++;
 		}
-		rewind(fp);
 
-		count = (unsigned int)count * 1.3;	// Reduce collision chances
+		alloctable = calloc(count * 2, sizeof(long));
 		htab = calloc(1, sizeof(struct hsearch_data));
-		if (!hcreate_r(count,htab)) return websWrite(wp, "bwdpi_conntrack=[];");
+
+		if ((!alloctable) || (!htab) || (!hcreate_r((unsigned int)count * 1.3, htab))) {
+			fclose(fp);
+			return websWrite(wp, "bwdpi_conntrack=[];");
+		}
 
 // Parse App database
+		rewind(fp);
 		while (fgets(line, sizeof(line), fp) != NULL) {
 			if (sscanf(line,"%d,%d,%*d,%63[^\n]", &id, &cat, desc) == 3) {
 				snprintf(key, sizeof(key), "%d-%d",id, cat);
 				entry.key = strdup(key);
 				entry.data = strdup(desc);
-				if (entry.key && entry.data)
+				if (entry.key && entry.data) {
+					alloctable[allocptr++] = entry.key;
+					alloctable[allocptr++] = entry.data;
 					hsearch_r(entry, ENTER, &resultp, htab);
+				}
 			}
 		}
 		fclose(fp);

@@ -59,7 +59,9 @@
 #include <net/route.h>
 
 #ifdef RTCONFIG_BWDPI
+#define __USE_GNU
 #include "bwdpi_common.h"
+#include <search.h>
 #endif
 
 int
@@ -1080,42 +1082,42 @@ int ej_bwdpi_conntrack(int eid, webs_t wp, int argc, char **argv_) {
 	char comma;
 	char line[256];
 	FILE *fp;
+	static unsigned int count = 0;
 	char src_ip[64], dst_ip[64], prot[4];
 	int index, dport, sport;
 	int ret;
 	unsigned long mark;
-	static char appdb[32][256][64];
-	static char catdb[32][32];
-	static int parsed = 0;
 	int id, cat;
-	char desc[64];
+	char desc[64], key[9];
 	char ipversion;
+	static struct hsearch_data *htab;
+	ENTRY entry, *resultp;
 
-// Parse App database
-	if (!parsed) {
+// Init hash table
+	if (!count) {
 		fp = fopen(APPDB, "r");
 		if (!fp) return websWrite(wp, "bwdpi_conntrack=[];");
 
-		while (fgets(line, sizeof(line), fp) != NULL)
-		{
+		while (fgets(line, sizeof(line), fp) != NULL) {
+			count++;
+		}
+		rewind(fp);
+
+		count = (unsigned int)count * 1.3;	// Reduce collision chances
+		htab = calloc(1, sizeof(struct hsearch_data));
+		if (!hcreate_r(count,htab)) return websWrite(wp, "bwdpi_conntrack=[];");
+
+// Parse App database
+		while (fgets(line, sizeof(line), fp) != NULL) {
 			if (sscanf(line,"%d,%d,%*d,%63[^\n]", &id, &cat, desc) == 3) {
-				strcpy(appdb[id][cat], desc);
+				snprintf(key, sizeof(key), "%d-%d",id, cat);
+				entry.key = strdup(key);
+				entry.data = strdup(desc);
+				if (entry.key && entry.data)
+					hsearch_r(entry, ENTER, &resultp, htab);
 			}
 		}
 		fclose(fp);
-
-// Parse categories
-		fp = fopen(CATDB, "r");
-		if (!fp) return websWrite(wp, "\nbwdpi_conntrack=[];");
-
-		while (fgets(line, sizeof(line), fp) != NULL)
-		{
-			if (sscanf(line,"%d,%31[^\n]", &cat, desc) == 2) {
-				strcpy(catdb[cat], desc);
-			}
-		}
-		fclose(fp);
-		parsed = 1;
 	}
 
 // Parse tracked connections
@@ -1132,12 +1134,18 @@ int ej_bwdpi_conntrack(int eid, webs_t wp, int argc, char **argv_) {
 
 		id = (mark & 0x3F0000)/0xFFFF;
 		cat = mark & 0xFFFF;
+
 		if ((cat == 0) && (id == 0))
 			strcpy(desc, "Untracked");
-		else if ((appdb[id][cat][0] == '\0') || (cat > 256) || (id > 32))
-			sprintf(desc, "unknown (AppID=%d, Cat=%d)", id, cat);
-		else
-			strcpy(desc, appdb[id][cat]);
+		else {
+
+			snprintf(key, sizeof(key), "%d-%d", id, cat);
+			entry.key = key;
+			if (!hsearch_r(entry, FIND, &resultp, htab))
+				sprintf(desc, "unknown (AppID=%d, Cat=%d)", id, cat);
+			else
+				strlcpy(desc, (char *)resultp->data, sizeof(desc));
+		}
 
 		if (ipversion == '6') {
 			_fix_TM_ipv6(src_ip);

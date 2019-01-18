@@ -42,7 +42,7 @@
 
 #ifdef HAVE_BSD_NETWORK
 static int del_family = 0;
-static struct all_addr del_addr;
+static union all_addr del_addr;
 #endif
 
 #if defined(HAVE_BSD_NETWORK) && !defined(__APPLE__)
@@ -139,7 +139,7 @@ int iface_enumerate(int family, void *parm, int (*callback)())
 	      struct in_addr addr, netmask, broadcast;
 	      addr = ((struct sockaddr_in *) addrs->ifa_addr)->sin_addr;
 #ifdef HAVE_BSD_NETWORK
-	      if (del_family == AF_INET && del_addr.addr.addr4.s_addr == addr.s_addr)
+	      if (del_family == AF_INET && del_addr.addr4.s_addr == addr.s_addr)
 		continue;
 #endif
 	      netmask = ((struct sockaddr_in *) addrs->ifa_netmask)->sin_addr;
@@ -159,7 +159,7 @@ int iface_enumerate(int family, void *parm, int (*callback)())
 	      u32 valid = 0xffffffff, preferred = 0xffffffff;
 	      int flags = 0;
 #ifdef HAVE_BSD_NETWORK
-	      if (del_family == AF_INET6 && IN6_ARE_ADDR_EQUAL(&del_addr.addr.addr6, addr))
+	      if (del_family == AF_INET6 && IN6_ARE_ADDR_EQUAL(&del_addr.addr6, addr))
 		continue;
 #endif
 #if defined(HAVE_BSD_NETWORK) && !defined(__APPLE__)
@@ -422,9 +422,9 @@ void route_sock(void)
 	       {
 		 del_family = sa->sa_family;
 		 if (del_family == AF_INET)
-		   del_addr.addr.addr4 = ((struct sockaddr_in *)sa)->sin_addr;
+		   del_addr.addr4 = ((struct sockaddr_in *)sa)->sin_addr;
 		 else if (del_family == AF_INET6)
-		   del_addr.addr.addr6 = ((struct sockaddr_in6 *)sa)->sin6_addr;
+		   del_addr.addr6 = ((struct sockaddr_in6 *)sa)->sin6_addr;
 		 else
 		   del_family = 0;
 	       }

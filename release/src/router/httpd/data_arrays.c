@@ -1102,7 +1102,7 @@ int ej_bwdpi_conntrack(int eid, webs_t wp, int argc, char **argv_) {
 
 	if ((lastupd) && (lastupd != dbattrib.st_ctime)) {
 		// free all nodes (2 entries per item)
-		while (allocptr <= count * 2) {
+		while (allocptr < count * 2) {
 			free(alloctable[allocptr++]);
 		}
 		hdestroy_r(htab);

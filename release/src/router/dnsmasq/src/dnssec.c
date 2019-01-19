@@ -655,7 +655,7 @@ int dnssec_validate_by_ds(time_t now, struct dns_header *header, size_t plen, ch
   struct crec *crecp, *recp1;
   int rc, j, qtype, qclass, ttl, rdlen, flags, algo, valid, keytag;
   struct blockdata *key;
-  struct all_addr a;
+  union all_addr a;
 
   if (ntohs(header->qdcount) != 1 ||
       !extract_name(header, plen, &p, name, 1, 4))
@@ -747,7 +747,7 @@ int dnssec_validate_by_ds(time_t now, struct dns_header *header, size_t plen, ch
 	      
 	      if (!(recp1->flags & F_NEG) &&
 		  recp1->addr.ds.keylen == (int)hash->digest_size &&
-		  (ds_digest = blockdata_retrieve(recp1->addr.key.keydata, recp1->addr.ds.keylen, NULL)) &&
+		  (ds_digest = blockdata_retrieve(recp1->addr.ds.keydata, recp1->addr.ds.keylen, NULL)) &&
 		  memcmp(ds_digest, digest, recp1->addr.ds.keylen) == 0 &&
 		  explore_rrset(header, plen, class, T_DNSKEY, name, keyname, &sigcnt, &rrcnt) &&
 		  sigcnt != 0 && rrcnt != 0 &&
@@ -798,30 +798,27 @@ int dnssec_validate_by_ds(time_t now, struct dns_header *header, size_t plen, ch
 		  algo = *p++;
 		  keytag = dnskey_keytag(algo, flags, p, rdlen - 4);
 		  
-		  /* Cache needs to known class for DNSSEC stuff */
-		  a.addr.dnssec.class = class;
-		  
 		  if ((key = blockdata_alloc((char*)p, rdlen - 4)))
 		    {
-		      if (!(recp1 = cache_insert(name, &a, now, ttl, F_FORWARD | F_DNSKEY | F_DNSSECOK)))
+		      a.key.keylen = rdlen - 4;
+		      a.key.keydata = key;
+		      a.key.algo = algo;
+		      a.key.keytag = keytag;
+		      a.key.flags = flags;
+		      
+		      if (!cache_insert(name, &a, class, now, ttl, F_FORWARD | F_DNSKEY | F_DNSSECOK))
 			{
 			  blockdata_free(key);
 			  return STAT_BOGUS;
 			}
 		      else
 			{
-			  a.addr.log.keytag = keytag;
-			  a.addr.log.algo = algo;
+			  a.log.keytag = keytag;
+			  a.log.algo = algo;
 			  if (algo_digest_name(algo))
 			    log_query(F_NOEXTRA | F_KEYTAG | F_UPSTREAM, name, &a, "DNSKEY keytag %hu, algo %hu");
 			  else
 			    log_query(F_NOEXTRA | F_KEYTAG | F_UPSTREAM, name, &a, "DNSKEY keytag %hu, algo %hu (not supported)");
-			  
-			  recp1->addr.key.keylen = rdlen - 4;
-			  recp1->addr.key.keydata = key;
-			  recp1->addr.key.algo = algo;
-			  recp1->addr.key.keytag = keytag;
-			  recp1->addr.key.flags = flags;
 			}
 		    }
 		}
@@ -860,7 +857,7 @@ int dnssec_validate_ds(time_t now, struct dns_header *header, size_t plen, char 
   int qtype, qclass, rc, i, neganswer, nons;
   int aclass, atype, rdlen;
   unsigned long ttl;
-  struct all_addr a;
+  union all_addr a;
 
   if (ntohs(header->qdcount) != 1 ||
       !(p = skip_name(p, header, plen, 4)))
@@ -918,8 +915,7 @@ int dnssec_validate_ds(time_t now, struct dns_header *header, size_t plen, char 
 	      int algo, digest, keytag;
 	      unsigned char *psave = p;
 	      struct blockdata *key;
-	      struct crec *crecp;
-
+	   
 	      if (rdlen < 4)
 		return STAT_BOGUS; /* bad packet */
 	      
@@ -927,31 +923,28 @@ int dnssec_validate_ds(time_t now, struct dns_header *header, size_t plen, char 
 	      algo = *p++;
 	      digest = *p++;
 	      
-	      /* Cache needs to known class for DNSSEC stuff */
-	      a.addr.dnssec.class = class;
-	      
 	      if ((key = blockdata_alloc((char*)p, rdlen - 4)))
 		{
-		  if (!(crecp = cache_insert(name, &a, now, ttl, F_FORWARD | F_DS | F_DNSSECOK)))
+		  a.ds.digest = digest;
+		  a.ds.keydata = key;
+		  a.ds.algo = algo;
+		  a.ds.keytag = keytag;
+		  a.ds.keylen = rdlen - 4;
+
+		  if (!cache_insert(name, &a, class, now, ttl, F_FORWARD | F_DS | F_DNSSECOK))
 		    {
 		      blockdata_free(key);
 		      return STAT_BOGUS;
 		    }
 		  else
 		    {
-		      a.addr.log.keytag = keytag;
-		      a.addr.log.algo = algo;
-		      a.addr.log.digest = digest;
+		      a.log.keytag = keytag;
+		      a.log.algo = algo;
+		      a.log.digest = digest;
 		      if (ds_digest_name(digest) && algo_digest_name(algo))
 			log_query(F_NOEXTRA | F_KEYTAG | F_UPSTREAM, name, &a, "DS keytag %hu, algo %hu, digest %hu");
 		      else
 			log_query(F_NOEXTRA | F_KEYTAG | F_UPSTREAM, name, &a, "DS keytag %hu, algo %hu, digest %hu (not supported)");
-		      
-		      crecp->addr.ds.digest = digest;
-		      crecp->addr.ds.keydata = key;
-		      crecp->addr.ds.algo = algo;
-		      crecp->addr.ds.keytag = keytag;
-		      crecp->addr.ds.keylen = rdlen - 4; 
 		    } 
 		}
 	      
@@ -1021,8 +1014,7 @@ int dnssec_validate_ds(time_t now, struct dns_header *header, size_t plen, char 
 	{
 	  cache_start_insert();
 	  
-	  a.addr.dnssec.class = class;
-	  if (!cache_insert(name, &a, now, ttl, flags))
+	  if (!cache_insert(name, NULL, class, now, ttl, flags))
 	    return STAT_BOGUS;
 	  
 	  cache_end_insert();  

@@ -24,7 +24,7 @@ static int dns_dirty, file_dirty, leases_left;
 static int read_leases(time_t now, FILE *leasestream)
 {
   unsigned long ei;
-  struct all_addr addr;
+  union all_addr addr;
   struct dhcp_lease *lease;
   int clid_len, hw_len, hw_type;
   int items;
@@ -60,11 +60,16 @@ static int read_leases(time_t now, FILE *leasestream)
 	
 	if (fscanf(leasestream, " %64s %255s %764s",
 		   daemon->namebuff, daemon->dhcp_buff, daemon->packet) != 3)
-	  return 0;
-	
-	if (inet_pton(AF_INET, daemon->namebuff, &addr.addr.addr4))
 	  {
-	    if ((lease = lease4_allocate(addr.addr.addr4)))
+	    my_syslog(MS_DHCP | LOG_WARNING, _("ignoring invalid line in lease database: %s %s %s %s ..."),
+		      daemon->dhcp_buff3, daemon->dhcp_buff2,
+		      daemon->namebuff, daemon->dhcp_buff);
+	    continue;
+	  }
+		
+	if (inet_pton(AF_INET, daemon->namebuff, &addr.addr4))
+	  {
+	    if ((lease = lease4_allocate(addr.addr4)))
 	      domain = get_domain(lease->addr);
 	    
 	    hw_len = parse_hex(daemon->dhcp_buff2, (unsigned char *)daemon->dhcp_buff2, DHCP_CHADDR_MAX, NULL, &hw_type);
@@ -73,7 +78,7 @@ static int read_leases(time_t now, FILE *leasestream)
 	      hw_type = ARPHRD_ETHER; 
 	  }
 #ifdef HAVE_DHCP6
-	else if (inet_pton(AF_INET6, daemon->namebuff, &addr.addr.addr6))
+	else if (inet_pton(AF_INET6, daemon->namebuff, &addr.addr6))
 	  {
 	    char *s = daemon->dhcp_buff2;
 	    int lease_type = LEASE_NA;
@@ -84,7 +89,7 @@ static int read_leases(time_t now, FILE *leasestream)
 		s++;
 	      }
 	    
-	    if ((lease = lease6_allocate(&addr.addr.addr6, lease_type)))
+	    if ((lease = lease6_allocate(&addr.addr6, lease_type)))
 	      {
 		lease_set_iaid(lease, strtoul(s, NULL, 10));
 		domain = get_domain6(&lease->addr6);
@@ -92,7 +97,12 @@ static int read_leases(time_t now, FILE *leasestream)
 	  }
 #endif
 	else
-	  return 0;
+	  {
+	    my_syslog(MS_DHCP | LOG_WARNING, _("ignoring invalid line in lease database, bad address: %s"),
+		      daemon->namebuff);
+	    continue;
+	  }
+	
 
 	if (!lease)
 	  die (_("too many stored leases"), NULL, EC_MISC);
@@ -174,10 +184,8 @@ void lease_init(time_t now)
   if (leasestream)
     {
       if (!read_leases(now, leasestream))
-	my_syslog(MS_DHCP | LOG_ERR, _("failed to parse lease database, invalid line: %s %s %s %s ..."),
-		  daemon->dhcp_buff3, daemon->dhcp_buff2,
-		  daemon->namebuff, daemon->dhcp_buff);
-
+	my_syslog(MS_DHCP | LOG_ERR, _("failed to parse lease database cleanly"));
+      
       if (ferror(leasestream))
 	die(_("failed to read lease file %s: %s"), daemon->lease_file, EC_FILE);
     }
@@ -548,28 +556,28 @@ void lease_update_dns(int force)
 		if (slaac->backoff == 0)
 		  {
 		    if (lease->fqdn)
-		      cache_add_dhcp_entry(lease->fqdn, AF_INET6, (struct all_addr *)&slaac->addr, lease->expires);
+		      cache_add_dhcp_entry(lease->fqdn, AF_INET6, (union all_addr *)&slaac->addr, lease->expires);
 		    if (!option_bool(OPT_DHCP_FQDN) && lease->hostname)
-		      cache_add_dhcp_entry(lease->hostname, AF_INET6, (struct all_addr *)&slaac->addr, lease->expires);
+		      cache_add_dhcp_entry(lease->hostname, AF_INET6, (union all_addr *)&slaac->addr, lease->expires);
 		  }
 	    }
 	  
 	  if (lease->fqdn)
 	    cache_add_dhcp_entry(lease->fqdn, prot, 
-				 prot == AF_INET ? (struct all_addr *)&lease->addr : (struct all_addr *)&lease->addr6,
+				 prot == AF_INET ? (union all_addr *)&lease->addr : (union all_addr *)&lease->addr6,
 				 lease->expires);
 	     
 	  if (!option_bool(OPT_DHCP_FQDN) && lease->hostname)
 	    cache_add_dhcp_entry(lease->hostname, prot, 
-				 prot == AF_INET ? (struct all_addr *)&lease->addr : (struct all_addr *)&lease->addr6, 
+				 prot == AF_INET ? (union all_addr *)&lease->addr : (union all_addr *)&lease->addr6, 
 				 lease->expires);
        
 #else
 	  if (lease->fqdn)
-	    cache_add_dhcp_entry(lease->fqdn, prot, (struct all_addr *)&lease->addr, lease->expires);
+	    cache_add_dhcp_entry(lease->fqdn, prot, (union all_addr *)&lease->addr, lease->expires);
 	  
 	  if (!option_bool(OPT_DHCP_FQDN) && lease->hostname)
-	    cache_add_dhcp_entry(lease->hostname, prot, (struct all_addr *)&lease->addr, lease->expires);
+	    cache_add_dhcp_entry(lease->hostname, prot, (union all_addr *)&lease->addr, lease->expires);
 #endif
 	}
       

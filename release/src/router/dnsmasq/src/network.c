@@ -109,7 +109,7 @@ int indextoname(int fd, int index, char *name)
 
 #endif
 
-int iface_check(int family, struct all_addr *addr, char *name, int *auth)
+int iface_check(int family, union all_addr *addr, char *name, int *auth)
 {
   struct iname *tmp;
   int ret = 1, match_addr = 0;
@@ -135,11 +135,11 @@ int iface_check(int family, struct all_addr *addr, char *name, int *auth)
 	  if (tmp->addr.sa.sa_family == family)
 	    {
 	      if (family == AF_INET &&
-		  tmp->addr.in.sin_addr.s_addr == addr->addr.addr4.s_addr)
+		  tmp->addr.in.sin_addr.s_addr == addr->addr4.s_addr)
 		ret = match_addr = tmp->used = 1;
 	      else if (family == AF_INET6 &&
 		       IN6_ARE_ADDR_EQUAL(&tmp->addr.in6.sin6_addr, 
-					  &addr->addr.addr6))
+					  &addr->addr6))
 		ret = match_addr = tmp->used = 1;
 	    }          
     }
@@ -158,10 +158,10 @@ int iface_check(int family, struct all_addr *addr, char *name, int *auth)
 	  break;
       }
     else if (addr && tmp->addr.sa.sa_family == AF_INET && family == AF_INET &&
-	     tmp->addr.in.sin_addr.s_addr == addr->addr.addr4.s_addr)
+	     tmp->addr.in.sin_addr.s_addr == addr->addr4.s_addr)
       break;
     else if (addr && tmp->addr.sa.sa_family == AF_INET6 && family == AF_INET6 &&
-	     IN6_ARE_ADDR_EQUAL(&tmp->addr.in6.sin6_addr, &addr->addr.addr6))
+	     IN6_ARE_ADDR_EQUAL(&tmp->addr.in6.sin6_addr, &addr->addr6))
       break;
 
   if (tmp && auth) 
@@ -179,7 +179,7 @@ int iface_check(int family, struct all_addr *addr, char *name, int *auth)
    an interface other than the loopback. Accept packet if it arrived via a loopback 
    interface, even when we're not accepting packets that way, as long as the destination
    address is one we're believing. Interface list must be up-to-date before calling. */
-int loopback_exception(int fd, int family, struct all_addr *addr, char *name)    
+int loopback_exception(int fd, int family, union all_addr *addr, char *name)    
 {
   struct ifreq ifr;
   struct irec *iface;
@@ -193,10 +193,10 @@ int loopback_exception(int fd, int family, struct all_addr *addr, char *name)
 	  {
 	    if (family == AF_INET)
 	      {
-		if (iface->addr.in.sin_addr.s_addr == addr->addr.addr4.s_addr)
+		if (iface->addr.in.sin_addr.s_addr == addr->addr4.s_addr)
 		  return 1;
 	      }
-	    else if (IN6_ARE_ADDR_EQUAL(&iface->addr.in6.sin6_addr, &addr->addr.addr6))
+	    else if (IN6_ARE_ADDR_EQUAL(&iface->addr.in6.sin6_addr, &addr->addr6))
 	      return 1;
 	  }
     }
@@ -207,7 +207,7 @@ int loopback_exception(int fd, int family, struct all_addr *addr, char *name)
    on the relevant address, but the name of the arrival interface, derived from the
    index won't match the config. Check that we found an interface address for the arrival 
    interface: daemon->interfaces must be up-to-date. */
-int label_exception(int index, int family, struct all_addr *addr)
+int label_exception(int index, int family, union all_addr *addr)
 {
   struct irec *iface;
 
@@ -217,7 +217,7 @@ int label_exception(int index, int family, struct all_addr *addr)
 
   for (iface = daemon->interfaces; iface; iface = iface->next)
     if (iface->index == index && iface->addr.sa.sa_family == AF_INET &&
-	iface->addr.in.sin_addr.s_addr == addr->addr.addr4.s_addr)
+	iface->addr.in.sin_addr.s_addr == addr->addr4.s_addr)
       return 1;
 
   return 0;
@@ -282,12 +282,12 @@ static int iface_allowed(struct iface_param *param, int if_index, char *label,
 	  
 	  if (addr->sa.sa_family == AF_INET)
 	    {
-	      al->addr.addr.addr4 = addr->in.sin_addr;
+	      al->addr.addr4 = addr->in.sin_addr;
 	      al->flags = 0;
 	    }
 	  else
 	    {
-	      al->addr.addr.addr6 = addr->in6.sin6_addr;
+	      al->addr.addr6 = addr->in6.sin6_addr;
 	      al->flags = ADDRLIST_IPV6;
 	    } 
 	}
@@ -321,7 +321,7 @@ static int iface_allowed(struct iface_param *param, int if_index, char *label,
 		      al->next = zone->subnet;
 		      zone->subnet = al;
 		      al->prefixlen = prefixlen;
-		      al->addr.addr.addr4 = addr->in.sin_addr;
+		      al->addr.addr4 = addr->in.sin_addr;
 		      al->flags = 0;
 		    }
 		}
@@ -341,7 +341,7 @@ static int iface_allowed(struct iface_param *param, int if_index, char *label,
 		      al->next = zone->subnet;
 		      zone->subnet = al;
 		      al->prefixlen = prefixlen;
-		      al->addr.addr.addr6 = addr->in6.sin6_addr;
+		      al->addr.addr6 = addr->in6.sin6_addr;
 		      al->flags = ADDRLIST_IPV6;
 		    }
 		} 
@@ -369,12 +369,12 @@ static int iface_allowed(struct iface_param *param, int if_index, char *label,
 		
 		if (addr->sa.sa_family == AF_INET)
 		  {
-		    al->addr.addr.addr4 = addr->in.sin_addr;
+		    al->addr.addr4 = addr->in.sin_addr;
 		    al->flags = 0;
 		  }
 		else
 		 {
-		    al->addr.addr.addr6 = addr->in6.sin6_addr;
+		    al->addr.addr6 = addr->in6.sin6_addr;
 		    al->flags = ADDRLIST_IPV6;
 		    /* Privacy addresses and addresses still undergoing DAD and deprecated addresses
 		       don't appear in forward queries, but will in reverse ones. */
@@ -419,11 +419,11 @@ static int iface_allowed(struct iface_param *param, int if_index, char *label,
     }
   
   if (addr->sa.sa_family == AF_INET &&
-      !iface_check(AF_INET, (struct all_addr *)&addr->in.sin_addr, label, &auth_dns))
+      !iface_check(AF_INET, (union all_addr *)&addr->in.sin_addr, label, &auth_dns))
     return 1;
 
   if (addr->sa.sa_family == AF_INET6 &&
-      !iface_check(AF_INET6, (struct all_addr *)&addr->in6.sin6_addr, label, &auth_dns))
+      !iface_check(AF_INET6, (union all_addr *)&addr->in6.sin6_addr, label, &auth_dns))
     return 1;
     
 #ifdef HAVE_DHCP

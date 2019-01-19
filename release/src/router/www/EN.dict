@@ -2461,7 +2461,7 @@ RebootSystem=Reboot the System
 reconnect_internet=Reconnect to the Internet
 remove_usb_hint=To remove the hard disk from the router, click the USB icon at the upper right corner of your screen.
 Remote_access_config=Remote Access Config
-Resolved_Target=Resvolved Target
+Resolved_Target=Resolved Target
 Respond_IP=Respond IP
 restart_auto_detect=To restore the system to its factory default settings and enable the auto-detection of your connection type, please click <a href="" onclick="gotoRestoreSetting();">here</a>.
 RHELP_desc4=It stands for the destination network or host of a route rule. So it could be a host address, such as '192.168.123.11' or a network address, such as '192.168.0.0'.

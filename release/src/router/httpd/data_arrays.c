@@ -1121,7 +1121,7 @@ int ej_bwdpi_conntrack(int eid, webs_t wp, int argc, char **argv_) {
 			count++;
 		}
 
-		alloctable = calloc(count * 2, sizeof(long));
+		alloctable = calloc(count * 2, sizeof(char *));
 		htab = calloc(1, sizeof(struct hsearch_data));
 
 		if ((!alloctable) || (!htab) || (!hcreate_r((unsigned int)count * 1.3, htab))) {

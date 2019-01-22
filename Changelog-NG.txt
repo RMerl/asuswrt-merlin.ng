@@ -17,13 +17,20 @@ Asuswrt-Merlin 384/NG Changelog
   - NEW: Display tracked connections on the QoS Stats page (now
          relabeled "Classification").
          Fields can be sorted by clicking on the column headers.
-         Note that due to a bug in the Trend Micro modules, the
-         last two octets of IPv6 addresses are missing, so for now
-         they are replaced by "00".
-         Thanks to FreshJr for his help in deciphering the packet mark
-         values.
+         Thanks to FreshJr for his help in deciphering the packet
+         mark values.
 
   - NEW: Implemented ipsec.postconf and strongswan.postconf scripts.
+  - KNOWN ISSUE: dcd process crashing on RT-AC86U (bug in Trend
+                 Micro's code, outside of my control).
+  - KNOWN ISSUE: IPv6s on Tracked Connections have their last
+                 two bytes set to 00 (bug in Trend Micro's
+                 code truncating the last two bytes).
+  - KNOWN ISSUE: No IPS events logged (bug in Asus's code,
+                 IPS should work, just fails to log hits)
+  - KNOWN ISSUE: Users failing to read changelogs will
+                 probably complain about the above issues.
+                 (Outside of my control).
   - CHANGED: Updated wget to 1.20.
   - CHANGED: Updated nano to 3.2.
   - CHANGED: Updated curl to 7.62.0.

@@ -59,7 +59,7 @@ void tftp_request(struct listener *listen, time_t now)
   char *name = NULL;
   char *prefix = daemon->tftp_prefix;
   struct tftp_prefix *pref;
-  struct all_addr addra;
+  union all_addr addra;
   /* Can always get recvd interface for IPv6 */
   int check_dest = !option_bool(OPT_NOWILD) || listen->family == AF_INET6;
   union {
@@ -189,10 +189,10 @@ void tftp_request(struct listener *listen, time_t now)
 
       name = namebuff;
       
-      addra.addr.addr4 = addr.in.sin_addr;
+      addra.addr4 = addr.in.sin_addr;
 
       if (listen->family == AF_INET6)
-	addra.addr.addr6 = addr.in6.sin6_addr;
+	addra.addr6 = addr.in6.sin6_addr;
 
       if (daemon->tftp_interfaces)
 	{
@@ -212,7 +212,7 @@ void tftp_request(struct listener *listen, time_t now)
 	      if (!option_bool(OPT_CLEVERBIND))
 		enumerate_interfaces(0); 
 	      if (!loopback_exception(listen->tftpfd, listen->family, &addra, name) &&
-		  !label_exception(if_index, listen->family, &addra) )
+		  !label_exception(if_index, listen->family, &addra))
 		return;
 	    }
 	  

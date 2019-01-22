@@ -114,13 +114,13 @@ void ipset_init(void)
   die (_("failed to create IPset control socket: %s"), NULL, EC_MISC);
 }
 
-static int new_add_to_ipset(const char *setname, const struct all_addr *ipaddr, int af, int remove)
+static int new_add_to_ipset(const char *setname, const union all_addr *ipaddr, int af, int remove)
 {
   struct nlmsghdr *nlh;
   struct my_nfgenmsg *nfg;
   struct my_nlattr *nested[2];
   uint8_t proto;
-  int addrsz = (af == AF_INET6) ? INADDRSZ : IN6ADDRSZ;
+  int addrsz = (af == AF_INET6) ? IN6ADDRSZ : INADDRSZ;
 
   if (strlen(setname) >= IPSET_MAXNAMELEN) 
     {
@@ -152,7 +152,7 @@ static int new_add_to_ipset(const char *setname, const struct all_addr *ipaddr, 
   nested[1]->nla_type = NLA_F_NESTED | IPSET_ATTR_IP;
   add_attr(nlh, 
 	   (af == AF_INET ? IPSET_ATTR_IPADDR_IPV4 : IPSET_ATTR_IPADDR_IPV6) | NLA_F_NET_BYTEORDER,
-	   addrsz, &ipaddr->addr);
+	   addrsz, ipaddr);
   nested[1]->nla_len = (void *)buffer + NL_ALIGN(nlh->nlmsg_len) - (void *)nested[1];
   nested[0]->nla_len = (void *)buffer + NL_ALIGN(nlh->nlmsg_len) - (void *)nested[0];
 	
@@ -163,7 +163,7 @@ static int new_add_to_ipset(const char *setname, const struct all_addr *ipaddr, 
 }
 
 
-static int old_add_to_ipset(const char *setname, const struct all_addr *ipaddr, int remove)
+static int old_add_to_ipset(const char *setname, const union all_addr *ipaddr, int remove)
 {
   socklen_t size;
   struct ip_set_req_adt_get {
@@ -195,7 +195,7 @@ static int old_add_to_ipset(const char *setname, const struct all_addr *ipaddr, 
     return -1;
   req_adt.op = remove ? 0x102 : 0x101;
   req_adt.index = req_adt_get.set.index;
-  req_adt.ip = ntohl(ipaddr->addr.addr4.s_addr);
+  req_adt.ip = ntohl(ipaddr->addr4.s_addr);
   if (setsockopt(ipset_sock, SOL_IP, 83, &req_adt, sizeof(req_adt)) < 0)
     return -1;
   
@@ -204,7 +204,7 @@ static int old_add_to_ipset(const char *setname, const struct all_addr *ipaddr, 
 
 
 
-int add_to_ipset(const char *setname, const struct all_addr *ipaddr, int flags, int remove)
+int add_to_ipset(const char *setname, const union all_addr *ipaddr, int flags, int remove)
 {
   int ret = 0, af = AF_INET;
 

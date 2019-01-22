@@ -28,7 +28,7 @@ struct arp_record {
   unsigned short hwlen, status;
   int family;
   unsigned char hwaddr[DHCP_CHADDR_MAX]; 
-  struct all_addr addr;
+  union all_addr addr;
   struct arp_record *next;
 };
 
@@ -52,12 +52,12 @@ static int filter_mac(int family, char *addrp, char *mac, size_t maclen, void *p
       
       if (family == AF_INET)
 	{
-	  if (arp->addr.addr.addr4.s_addr != ((struct in_addr *)addrp)->s_addr)
+	  if (arp->addr.addr4.s_addr != ((struct in_addr *)addrp)->s_addr)
 	    continue;
 	}
       else
 	{
-	  if (!IN6_ARE_ADDR_EQUAL(&arp->addr.addr.addr6, (struct in6_addr *)addrp))
+	  if (!IN6_ARE_ADDR_EQUAL(&arp->addr.addr6, (struct in6_addr *)addrp))
 	    continue;
 	}
 
@@ -95,9 +95,9 @@ static int filter_mac(int family, char *addrp, char *mac, size_t maclen, void *p
       arp->family = family;
       memcpy(arp->hwaddr, mac, maclen);
       if (family == AF_INET)
-	arp->addr.addr.addr4.s_addr = ((struct in_addr *)addrp)->s_addr;
+	arp->addr.addr4.s_addr = ((struct in_addr *)addrp)->s_addr;
       else
-	memcpy(&arp->addr.addr.addr6, addrp, IN6ADDRSZ);
+	memcpy(&arp->addr.addr6, addrp, IN6ADDRSZ);
     }
   
   return 1;
@@ -124,11 +124,11 @@ int find_mac(union mysockaddr *addr, unsigned char *mac, int lazy, time_t now)
 	    continue;
 	    
 	  if (arp->family == AF_INET &&
-	      arp->addr.addr.addr4.s_addr != addr->in.sin_addr.s_addr)
+	      arp->addr.addr4.s_addr != addr->in.sin_addr.s_addr)
 	    continue;
 	    
 	  if (arp->family == AF_INET6 && 
-	      !IN6_ARE_ADDR_EQUAL(&arp->addr.addr.addr6, &addr->in6.sin6_addr))
+	      !IN6_ARE_ADDR_EQUAL(&arp->addr.addr6, &addr->in6.sin6_addr))
 	    continue;
 	  
 	  /* Only accept positive entries unless in lazy mode. */
@@ -191,9 +191,9 @@ int find_mac(union mysockaddr *addr, unsigned char *mac, int lazy, time_t now)
       arp->hwlen = 0;
 
       if (addr->sa.sa_family == AF_INET)
-	arp->addr.addr.addr4.s_addr = addr->in.sin_addr.s_addr;
+	arp->addr.addr4.s_addr = addr->in.sin_addr.s_addr;
       else
-	memcpy(&arp->addr.addr.addr6, &addr->in6.sin6_addr, IN6ADDRSZ);
+	memcpy(&arp->addr.addr6, &addr->in6.sin6_addr, IN6ADDRSZ);
     }
 	  
    return 0;

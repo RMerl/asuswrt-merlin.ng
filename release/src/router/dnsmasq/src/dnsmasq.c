@@ -366,9 +366,7 @@ int main (int argc, char **argv)
     {
       cache_init();
 
-#ifdef HAVE_DNSSEC
       blockdata_init();
-#endif
     }
 
 #ifdef HAVE_INOTIFY
@@ -1729,12 +1727,12 @@ static void check_dns_listeners(time_t now)
 	      if ((if_index = tcp_interface(confd, tcp_addr.sa.sa_family)) != 0 &&
 		  indextoname(listener->tcpfd, if_index, intr_name))
 		{
-		  struct all_addr addr;
+		  union all_addr addr;
 		  
 		  if (tcp_addr.sa.sa_family == AF_INET6)
-		    addr.addr.addr6 = tcp_addr.in6.sin6_addr;
+		    addr.addr6 = tcp_addr.in6.sin6_addr;
 		  else
-		    addr.addr.addr4 = tcp_addr.in.sin_addr;
+		    addr.addr4 = tcp_addr.in.sin_addr;
 		  
 		  for (iface = daemon->interfaces; iface; iface = iface->next)
 		    if (iface->index == if_index)

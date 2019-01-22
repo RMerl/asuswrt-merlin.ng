@@ -21,17 +21,17 @@
 }
 .title_name {
 	font-family:Arial;
-	font-size: 40pt;
+	font-size: 30pt;
 	color:#93d2d9;
 }
 .prod_madelName{
 	font-family: Arial;
-	font-size: 26pt;
+	font-size: 20pt;
 	color:#fff;
 }
 .p1{
 	font-family: Arial;
-	font-size: 16pt;
+	font-size: 12pt;
 	color:#fff;
 }
 .button{
@@ -39,17 +39,17 @@
 	border: 0px;
 	border-radius: 4px ;
 	transition: visibility 0s linear 0.218s,opacity 0.218s,background-color 0.218s;
-	height: 68px;
-	width: 300px;
+	height: 48px;
+	width: 200px;
 	font-family: Arial;
-	font-size: 28pt;
+	font-size: 14pt;
 	color:#fff;
 	text-align:center;
 	vertical-align:center
 }
 .button_text{
 	font-family: Arial;
-	font-size: 28pt;
+	font-size: 14pt;
 	color:#fff;
 	text-align:center;
 	vertical-align:center
@@ -58,16 +58,16 @@
 	background-color:rgba(255,255,255,0.2);
 	background-color:#576D73\9;
 	border-radius: 4px;
-	padding:26px 22px;
-	width: 480px;
+	padding:13px 11px;
+	width: 380px;
 	border: 0;
 	height:25px;
 	color:#fff;
-	font-size:28px
+	font-size:16px
 }
 .form_input_text{
 	font-family: Arial;
-	font-size: 28pt;
+	font-size: 16pt;
 	color:#a9a9a9;
 }
 .p2{

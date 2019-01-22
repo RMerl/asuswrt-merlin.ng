@@ -197,6 +197,7 @@ tableApi.genTableAPI(tableStruct);
 
 document.write('<script type="text/javascript" src="/js/table/tableValidator.js"></script>');
 var tableSorter = {
+	"UserSorted" : false,
 	"sortFlag" : false,
 	"indexFlag" : 0, // defalut sort index is 0
 	"sortingType" : "str", // defalut sort type is str
@@ -277,6 +278,7 @@ var tableSorter = {
 		tableSorter.sortData(tableSorter.indexFlag, tableSorter.sortingType, "tableApi._jsonObj.data");
 		tableApi.genTable(tableApi._jsonObj);
 		tableSorter.drawBorder(tableSorter.indexFlag);
+		tableSorter.UserSorted = true;
 	}
 }
 var tableApi = {
@@ -343,13 +345,14 @@ var tableApi = {
 							tableSorter.sortFlag = true;
 						}
 						
-						if(headItemTmp[opt].hasOwnProperty("defaultSort")) {
+						if(headItemTmp[opt].hasOwnProperty("defaultSort") && (tableSorter.UserSorted == false)) {
 							//if define defaultSort, update value
 							tableSorter.sortingMethod = headItemTmp[opt]["defaultSort"];
 							tableSorter.sortingType = headItemTmp[opt]["sort"];
 							tableSorter.indexFlag = opt;
 							break;
 						}
+
 					}
 				}
 			}

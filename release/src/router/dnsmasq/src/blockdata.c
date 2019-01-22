@@ -16,8 +16,6 @@
 
 #include "dnsmasq.h"
 
-#ifdef HAVE_DNSSEC
-
 static struct blockdata *keyblock_free;
 static unsigned int blockdata_count, blockdata_hwm, blockdata_alloced;
 
@@ -54,11 +52,10 @@ void blockdata_init(void)
 
 void blockdata_report(void)
 {
-  if (option_bool(OPT_DNSSEC_VALID))
-    my_syslog(LOG_INFO, _("DNSSEC memory in use %u, max %u, allocated %u"), 
-	      blockdata_count * sizeof(struct blockdata),  
-	      blockdata_hwm * sizeof(struct blockdata),  
-	      blockdata_alloced * sizeof(struct blockdata));
+  my_syslog(LOG_INFO, _("pool memory in use %u, max %u, allocated %u"), 
+	    blockdata_count * sizeof(struct blockdata),  
+	    blockdata_hwm * sizeof(struct blockdata),  
+	    blockdata_alloced * sizeof(struct blockdata));
 } 
 
 static struct blockdata *blockdata_alloc_real(int fd, char *data, size_t len)
@@ -178,4 +175,3 @@ struct blockdata *blockdata_read(int fd, size_t len)
   return blockdata_alloc_real(fd, NULL, len);
 }
 
-#endif

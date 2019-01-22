@@ -23791,11 +23791,13 @@ do_jffsupload_cgi(char *url, FILE *stream)
 				shutdown(fileno(stream), SHUT_RDWR);
 		} else {
 			logmessage("httpd", "Error while restoring JFFS backup - no change made");
+			unlink(JFFS_BACKUP_FILE);
 		}
 	}
 	else
 	{
 		websApply(stream, "UploadError.asp");
+		unlink(JFFS_BACKUP_FILE);
 	}
 }
 

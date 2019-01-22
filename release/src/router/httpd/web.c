@@ -23803,31 +23803,30 @@ static void
 do_jffsupload_post(char *url, FILE *stream, int len, char *boundary)
 {
 	FILE *fifo = NULL;
-	char buf[1024];
 	int count, ret = EINVAL, ch;
 	long filelen = 0;
 
 	/* Look for our part */
 	while (len > 0) {
-		if (!fgets(buf, MIN(len + 1, sizeof(buf)), stream)) {
+		if (!fgets(post_buf, MIN(len + 1, sizeof(post_buf)), stream)) {
 			goto err;
 		}
 
-		len -= strlen(buf);
+		len -= strlen(post_buf);
 
-		if (!strncasecmp(buf, "Content-Disposition:", 20)
-				&& strstr(buf, "name=\"file2\""))
+		if (!strncasecmp(post_buf, "Content-Disposition:", 20)
+				&& strstr(post_buf, "name=\"file2\""))
 			break;
 	}
 
 	/* Skip boundary and headers */
 	while (len > 0) {
-		if (!fgets(buf, MIN(len + 1, sizeof(buf)), stream)) {
+		if (!fgets(post_buf, MIN(len + 1, sizeof(post_buf)), stream)) {
 			goto err;
 		}
 
-		len -= strlen(buf);
-		if (!strcmp(buf, "\n") || !strcmp(buf, "\r\n")) {
+		len -= strlen(post_buf);
+		if (!strcmp(post_buf, "\n") || !strcmp(post_buf, "\r\n")) {
 			break;
 		}
 	}
@@ -23836,15 +23835,16 @@ do_jffsupload_post(char *url, FILE *stream, int len, char *boundary)
 		goto err;
 
 	while (len > 0) {
-		count = fread(buf, 1, MIN(len, sizeof(buf)), stream);
+		count = fread(post_buf, 1, MIN(len, sizeof(post_buf)), stream);
 		if(count <= 0)
 			goto err;
 
 		len -= count;
 		filelen += count;
-		fwrite(buf, 1, count, fifo);
+		fwrite(post_buf, 1, count, fifo);
 	}
 
+	ret = 0;
 	fclose(fifo);
 	fifo = NULL;
 

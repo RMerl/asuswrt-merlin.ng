@@ -22,45 +22,44 @@
 <script type="text/javascript" src="/js/table/table.js"></script>
 
 <style>
+.tableApi_table th {
+        height: 22px;
+        text-align: left;
+}
+.tableApi_table td {
+        text-align: left;
+}
+.data_tr {
+        height: 32px;
+}
 span.cat0{
-padding: 4px 8px 4px 8px; color: white !important; background-color:#B3645B;
-border-radius: 5px; border: 1px #2C2E2F solid;
-white-space: nowrap;
+	background-color:#B3645B;
 }
 span.cat1{
-padding: 4px 8px 4px 8px; color: white !important; background-color:#B98F53;
-border-radius: 5px; border: 1px #2C2E2F solid;
-white-space: nowrap;
+	background-color:#B98F53;
 }
 span.cat2{
-padding: 4px 8px 4px 8px; color: white !important; background-color:#C6B36A;
-border-radius: 5px; border: 1px #2C2E2F solid;
-white-space: nowrap;
+	background-color:#C6B36A;
 }
 span.cat3{
-padding: 4px 8px 4px 8px; color: white !important; background-color:#849E75;
-border-radius: 5px; border: 1px #2C2E2F solid;
-white-space: nowrap;
+	background-color:#849E75;
 }
 span.cat4{
-padding: 4px 8px 4px 8px; color: white !important; background-color:#2B6692;
-border-radius: 5px; border: 1px #2C2E2F solid;
-white-space: nowrap;
+	background-color:#2B6692;
 }
 span.cat5{
-padding: 4px 8px 4px 8px; color: white !important; background-color:#7C637A;
-border-radius: 5px; border: 1px #2C2E2F solid;
-white-space: nowrap;
+	background-color:#7C637A;
 }
 span.cat6{
-padding: 4px 8px 4px 8px; color: white !important; background-color:#4C8FC0;
-border-radius: 5px; border: 1px #2C2E2F solid;
-white-space: nowrap;
+	background-color:#4C8FC0;
 }
 span.cat7{
-padding: 4px 8px 4px 8px; color: white !important; background-color:#6C604F;
-border-radius: 5px; border: 1px #2C2E2F solid;
-white-space: nowrap;
+	background-color:#6C604F;
+}
+span.catrow{
+	padding: 4px 8px 4px 8px; color: white !important;
+	border-radius: 5px; border: 1px #2C2E2F solid;
+	white-space: nowrap;
 }
 </style>
 
@@ -196,7 +195,7 @@ function draw_conntrack_table(){
 		else
 			size = "";
 
-		bwdpi_conntrack[i][5] = "<span title=\"" + label +"\" class=\"cat" + get_qos_class(bwdpi_conntrack[i][7], bwdpi_conntrack[i][6]) + "\"" + size + ">" + label + "</span>";
+		bwdpi_conntrack[i][5] = "<span title=\"" + label +"\" class=\"catrow cat" + get_qos_class(bwdpi_conntrack[i][7], bwdpi_conntrack[i][6]) + "\"" + size + ">" + label + "</span>";
 		if (bwdpi_conntrack[i][1].indexOf(":") >= 0) {
 			bwdpi_conntrack[i][1] = compIPV6(bwdpi_conntrack[i][1]);
 		}
@@ -244,6 +243,7 @@ function draw_conntrack_table(){
 			{
 				"title" : "Application",
 				"sort" : "str",
+				"defaultSort" : "increase",
 				"width" : "27%"
 			}
                 ]

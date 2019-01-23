@@ -24,7 +24,7 @@ static int gotit = 0; /* yuck */
 
 static int callback(enum nf_conntrack_msg_type type, struct nf_conntrack *ct, void *data);
 
-int get_incoming_mark(union mysockaddr *peer_addr, struct all_addr *local_addr, int istcp, unsigned int *markp)
+int get_incoming_mark(union mysockaddr *peer_addr, union all_addr *local_addr, int istcp, unsigned int *markp)
 {
   struct nf_conntrack *ct;
   struct nfct_handle *h;
@@ -41,14 +41,14 @@ int get_incoming_mark(union mysockaddr *peer_addr, struct all_addr *local_addr, 
 	  nfct_set_attr_u8(ct, ATTR_L3PROTO, AF_INET6);
 	  nfct_set_attr(ct, ATTR_IPV6_SRC, peer_addr->in6.sin6_addr.s6_addr);
 	  nfct_set_attr_u16(ct, ATTR_PORT_SRC, peer_addr->in6.sin6_port);
-	  nfct_set_attr(ct, ATTR_IPV6_DST, local_addr->addr.addr6.s6_addr);
+	  nfct_set_attr(ct, ATTR_IPV6_DST, local_addr->addr6.s6_addr);
 	}
       else
 	{
 	  nfct_set_attr_u8(ct, ATTR_L3PROTO, AF_INET);
 	  nfct_set_attr_u32(ct, ATTR_IPV4_SRC, peer_addr->in.sin_addr.s_addr);
 	  nfct_set_attr_u16(ct, ATTR_PORT_SRC, peer_addr->in.sin_port);
-	  nfct_set_attr_u32(ct, ATTR_IPV4_DST, local_addr->addr.addr4.s_addr);
+	  nfct_set_attr_u32(ct, ATTR_IPV4_DST, local_addr->addr4.s_addr);
 	}
       
       

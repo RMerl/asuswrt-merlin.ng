@@ -831,7 +831,7 @@ void queue_tftp(off_t file_len, char *filename, union mysockaddr *peer)
 }
 #endif
 
-void queue_arp(int action, unsigned char *mac, int maclen, int family, struct all_addr *addr)
+void queue_arp(int action, unsigned char *mac, int maclen, int family, union all_addr *addr)
 {
   /* no script */
   if (daemon->helperfd == -1)
@@ -844,9 +844,9 @@ void queue_arp(int action, unsigned char *mac, int maclen, int family, struct al
   buf->hwaddr_len = maclen;
   buf->hwaddr_type =  ARPHRD_ETHER; 
   if ((buf->flags = family) == AF_INET)
-    buf->addr = addr->addr.addr4;
+    buf->addr = addr->addr4;
   else
-    buf->addr6 = addr->addr.addr6;
+    buf->addr6 = addr->addr6;
   
   memcpy(buf->hwaddr, mac, maclen);
   

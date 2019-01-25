@@ -144,7 +144,7 @@ log_err(int level, enum _log_facility facility, char *fname, int lineno, char *f
 	{
 		time_t t;
 		struct tm *tm;
-		t = uptime();
+		t = time(NULL);
 		tm = localtime(&t);
 		fprintf(log_fp, "[%04d/%02d/%02d %02d:%02d:%02d] ",
 		        tm->tm_year+1900, tm->tm_mon+1, tm->tm_mday,

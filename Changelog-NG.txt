@@ -5,15 +5,15 @@ Asuswrt-Merlin 384/NG Changelog
   - NEW: Temporarily reorganized code in separate branches, to handle
          Asus's currently scattered firmware source code releases.
          The GPL situation for this release is as follow:
-     o RT-AX88U: Merged GPL 384_5247
+     o RT-AX88U: Merged GPL 384_5329
      o Other models: Merged GPL 384_45149.
      o Special binary blobs provided by Asus for the RT-AC87U
        and RT-AC3200 (compatible with 384_45149).
 
   - NEW: Added NFS client support (V2 and V3) to the
          RT-AC86U and RT-AX88U (already present in older models)
-  - NEW: Report the number of spatial streams used by
-         wireless clients for models supporting it
+  - NEW: Report the number of spatial streams and the PHY type
+         used by wireless clients for models supporting it
   - NEW: Display tracked connections on the QoS Stats page (now
          relabeled "Classification").
          Fields can be sorted by clicking on the column headers.
@@ -28,6 +28,8 @@ Asuswrt-Merlin 384/NG Changelog
                  code truncating the last two bytes).
   - KNOWN ISSUE: No IPS events logged (bug in Asus's code,
                  IPS should work, just fails to log hits)
+  - KNOWN ISSUE: Networkmap listing may be unreliable.
+                 (Bug in Asus's code)
   - KNOWN ISSUE: Users failing to read changelogs will
                  probably complain about the above issues.
                  (Outside of my control).

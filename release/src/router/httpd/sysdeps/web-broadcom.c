@@ -6217,6 +6217,9 @@ sta_list:
 #endif
 			ret += websWrite(wp, "\"\",");
 
+// PHY
+			ret += websWrite(wp, "\"%s\",", phy_type_str[wl_sta_info_phy(sta, unit)]);
+
 // Flags
 #ifdef RTCONFIG_BCMARM
 			ret += websWrite(wp, "\"%s%s%s",
@@ -6370,6 +6373,9 @@ sta_list:
 					else
 #endif
 						ret += websWrite(wp, "\"\",");
+
+// PHY
+					ret += websWrite(wp, "\"%s\",", phy_type_str[wl_sta_info_phy(sta, unit)]);
 
 // Flags
 #ifdef RTCONFIG_BCMARM

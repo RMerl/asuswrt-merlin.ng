@@ -123,7 +123,7 @@ function display_clients(clientsarray, obj) {
 	if (clientsarray.length > 1) {
 		if (clientsarray[0][8] != "")
 			code += '<td width="10%">Streams</td>';
-		else
+		else if (clientsarray[0][9] != "")
 			code += '<td width="10%">PHY</td>';
 	}
 	code += '<td width="10%">Flags</td>';
@@ -177,7 +177,7 @@ function display_clients(clientsarray, obj) {
 
 			if (client[8] != "") {
 				code += '<td>' + client[8] + ' ('+ client[9] +')';	// NSS + PHY
-			} else {
+			} else if (client[9] != "") {
 				code += '<td>' + client[9] + '</td>';	// PHY
 			}
 

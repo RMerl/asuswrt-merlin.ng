@@ -1588,6 +1588,58 @@ wl_sta_info_nss(void *buf, int unit)
 }
 #endif
 
+#define PHY_TYPE_A	0
+#define PHY_TYPE_B	1
+#define PHY_TYPE_G	2
+#define PHY_TYPE_N	3
+#define PHY_TYPE_AC	4
+#define PHY_TYPE_AX	5
+#define PHY_TYPE_MAX	6
+
+const char *phy_type_str[PHY_TYPE_MAX] = {
+	"a",
+	"b",
+	"g",
+	"n",
+	"ac",
+	"ax"
+};
+
+int wl_sta_info_phy(void *buf, int unit)
+{
+	sta_info_t *sta = (sta_info_t *) buf;
+	uint i;
+	uint r;
+
+#if (WL_STA_VER >= 7)
+	if (sta->flags & WL_STA_HE_CAP)
+		return 5;
+#endif
+#if (WL_STA_VER >= 4)
+	if (sta->flags & WL_STA_VHT_CAP)
+		return 4;
+#endif
+	if (sta->flags & WL_STA_N_CAP)
+		return 3;
+
+	/* parse rate set */
+	for (i = 0; i < sta->rateset.count; i++) {
+		r = sta->rateset.rates[i] & 0x7f;
+
+		if (r == 0)
+			break;
+
+		if ((r/2) >= 12) {
+			if (unit)
+				return PHY_TYPE_A;
+			else
+				return PHY_TYPE_G;
+		}
+	}
+
+	return PHY_TYPE_B;
+}
+
 static int
 wl_status(int eid, webs_t wp, int argc, char_t **argv, int unit)
 {

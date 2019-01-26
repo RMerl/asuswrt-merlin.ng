@@ -120,8 +120,12 @@ function display_clients(clientsarray, obj) {
 	code += '<td width="25%">Device</td>';
 	code += '<td width="29%">IP Address</td>';
 	code += '<td width="16%">Rx/Tx & RSSI</td><td width="10%">Connected</td>';
-	if (clientsarray.length > 1 && clientsarray[0][8] != "")
-		code += '<td width="10%">Streams</td>';
+	if (clientsarray.length > 1) {
+		if (clientsarray[0][8] != "")
+			code += '<td width="10%">Streams</td>';
+		else
+			code += '<td width="10%">PHY</td>';
+	}
 	code += '<td width="10%">Flags</td>';
 	code += '</tr></thead>';
 
@@ -170,9 +174,14 @@ function display_clients(clientsarray, obj) {
 			code += '<td style="text-align: right;">' + client[5] + ' / ' + client[6] +' Mbps';	// Rate
 			code += '<br><span style="margin-top:-15px; color: cyan;">' + client[4] + ' dBm</td>';	// RSSI
 			code += '<td style="text-align: right;">' + client[7] + '</td>';	// Time
-			if (client[8] != "")
-				code += '<td>' + client[8] + '</td>';	// NSS
-			code += '<td>' + client[9] + '</td>';	// Flags
+
+			if (client[8] != "") {
+				code += '<td>' + client[8] + ' ('+ client[9] +')';	// NSS + PHY
+			} else {
+				code += '<td>' + client[9] + '</td>';	// PHY
+			}
+
+			code += '<td>' + client[10] + '</td>';	// Flags
 			code += '</tr>';
 		}
 	} else {

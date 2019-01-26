@@ -214,11 +214,10 @@ addr_loop:
 	msr	ELR_EL3, x1
 	mov	x2, #(AARCH64_SPSR_EL2h|AARCH64_SPSR_F|AARCH64_SPSR_I|AARCH64_SPSR_A|AARCH64_SPSR_D)
 	msr	SPSR_EL3, x2
+	wfe	/* wait for linux startup, must be put before eret to avoid racing */
 	eret
 1:
 	wfe	/* consume the event from eret */
-
-	wfe	/* wait for linux startup */
 
 	adr	x0, rel_addr
 	ldr	x0, [x0]

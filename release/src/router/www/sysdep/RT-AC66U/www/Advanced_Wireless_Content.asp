@@ -305,6 +305,7 @@ function change_wl_nmode(o){
 
 	wl_chanspec_list_change();
 	genBWTable(wl_unit);
+	change_channel(document.form.wl_channel);
 }
 
 function genBWTable(_unit){
@@ -392,8 +393,14 @@ function genBWTable(_unit){
 				}
 				else if(band5g_11ax_support){
 					if(enable_bw_160){
-						bws = [0, 1, 2, 3, 5];
-						bwsDesc = ["20/40/80/160 MHz", "20 MHz", "40 MHz", "80 MHz", "160 MHz"];
+						if( (wl_unit == 1 && wl1.channel_160m == '') ||(wl_unit == 2 && wl2.channel_160m == '')){
+							bws = [0, 1, 2, 3];
+							bwsDesc = ["20/40/80 MHz", "20 MHz", "40 MHz", "80 MHz"];
+						}
+						else{
+							bws = [0, 1, 2, 3, 5];
+							bwsDesc = ["20/40/80/160 MHz", "20 MHz", "40 MHz", "80 MHz", "160 MHz"];
+						}	
 					}
 					else{
 						bws = [0, 1, 2, 3];
@@ -920,6 +927,12 @@ function enableSmartCon(val){
 		$("#enable_160_field").hide();
 		$("#dfs_checkbox").hide();
 		document.form.acs_dfs.value = 0;
+		if(dwb_info.mode && wl_unit == dwb_info.band && wl_unit != 0 && bw_160_support) {
+			$("#enable_160_field").show();
+			if((based_modelid == 'GT-AX11000' || based_modelid == 'RT-AX92U') && wl2.channel_160m == '' && wl_unit == '2'){
+				$("#enable_160_field").hide();
+			}
+		}
 	}
 
 	if((val == 0 || (val == 2 && wl_unit == 0)) || (dwb_info.mode && wl_unit == dwb_info.band)){

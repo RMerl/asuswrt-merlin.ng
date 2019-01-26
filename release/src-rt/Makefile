@@ -2155,11 +2155,6 @@ define RouterOptions
 		else \
 			echo "# RTCONFIG_DFS_US is not set" >>$(1); \
 		fi; \
-		if [ "$(BW160M)" = "y" ]; then \
-			echo "RTCONFIG_BW160M=y" >>$(1); \
-		else \
-			echo "# RTCONFIG_BW160M is not set" >>$(1); \
-		fi; \
 	fi; \
 	if [ "$(HND_ROUTER_AX)" = "y" ]; then \
 		sed -i "/RTCONFIG_HND_ROUTER_AX/d" $(1); \
@@ -2188,6 +2183,11 @@ define RouterOptions
 	if [ "$(DHDAP)" = "y" ]; then \
 		sed -i "/RTCONFIG_DHDAP/d" $(1); \
 		echo "RTCONFIG_DHDAP=y" >>$(1); \
+		if [ "$(BW160M)" = "y" ]; then \
+			echo "RTCONFIG_BW160M=y" >>$(1); \
+		else \
+			echo "# RTCONFIG_BW160M is not set" >>$(1); \
+		fi; \
 	fi; \
 	if [ "$(DPSTA)" = "y" ]; then \
 		sed -i "/RTCONFIG_DPSTA/d" $(1); \

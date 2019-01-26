@@ -259,6 +259,7 @@ extern void wl_driver_mode_update(void);
 #ifdef RTCONFIG_EXTPHY_BCM84880
 void config_ext_wan_port();
 #endif
+extern void reset_phy(char *port);
 #endif
 #ifdef BLUECAVE
 extern int setCentralLedLv(int lv);

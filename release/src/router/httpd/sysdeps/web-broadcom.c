@@ -1680,6 +1680,59 @@ wl_sta_info_nss(void *buf, int unit)
 }
 #endif
 
+
+#define PHY_TYPE_A	0
+#define PHY_TYPE_B	1
+#define PHY_TYPE_G	2
+#define PHY_TYPE_N	3
+#define PHY_TYPE_AC	4
+#define PHY_TYPE_AX	5
+#define PHY_TYPE_MAX	6
+
+const char *phy_type_str[PHY_TYPE_MAX] = {
+	"a",
+	"b",
+	"g",
+	"n",
+	"ac",
+	"ax"
+};
+
+int wl_sta_info_phy(void *buf, int unit)
+{
+	sta_info_t *sta = (sta_info_t *) buf;
+	uint i;
+	uint r;
+
+#if (WL_STA_VER >= 7)
+	if (sta->flags & WL_STA_HE_CAP)
+		return 5;
+#endif
+#if (WL_STA_VER >= 4)
+	if (sta->flags & WL_STA_VHT_CAP)
+		return 4;
+#endif
+	if (sta->flags & WL_STA_N_CAP)
+		return 3;
+
+	/* parse rate set */
+	for (i = 0; i < sta->rateset.count; i++) {
+		r = sta->rateset.rates[i] & 0x7f;
+
+		if (r == 0)
+			break;
+
+		if ((r/2) >= 12) {
+			if (unit)
+				return PHY_TYPE_A;
+			else
+				return PHY_TYPE_G;
+		}
+	}
+
+	return PHY_TYPE_B;
+}
+
 static int
 wl_status(int eid, webs_t wp, int argc, char_t **argv, int unit)
 {
@@ -1687,7 +1740,7 @@ wl_status(int eid, webs_t wp, int argc, char_t **argv, int unit)
 	struct ether_addr bssid;
 	wlc_ssid_t ssid;
 	char ssidbuf[SSID_FMT_BUF_LEN];
-        wl_bss_info_t *bi;
+	wl_bss_info_t *bi;
 	int retval = 0;
 	char tmp[128], prefix[] = "wlXXXXXXXXXX_";
 	char *name;
@@ -2101,8 +2154,8 @@ wds_list:
 	ret += websWrite(wp, "\n");
 	ret += websWrite(wp, "Stations List                           \n");
 	ret += websWrite(wp, "----------------------------------------\n");
-	ret += websWrite(wp, "%-4s%-18s%-11s%-11s%-8s%-4s",
-				"idx", "MAC", "Associated", "Authorized", "   RSSI", "PSM");
+	ret += websWrite(wp, "%-4s%-18s%-11s%-11s%-8s%-4s%-4s",
+				"idx", "MAC", "Associated", "Authorized", "   RSSI", "PHY", "PSM");
 #ifndef RTCONFIG_QTN
 #if (WL_STA_VER >= 4)
 	ret += websWrite(wp, "%-4s%-5s",
@@ -2134,30 +2187,34 @@ wds_list:
 		else
 			ret += websWrite(wp, "%4ddBm ", scb_val.val);
 
-		if (sta->flags & WL_STA_SCBSTATS)
-		{
-			ret += websWrite(wp, "%-4s",
-				(sta->flags & WL_STA_PS) ? "Yes" : "No");
+		ret += websWrite(wp, "%-4s", phy_type_str[wl_sta_info_phy(sta, unit)]);
+
+		ret += websWrite(wp, "%-4s",
+			(sta->flags & WL_STA_PS) ? "Yes" : "No");
 #ifndef RTCONFIG_QTN
 #if (WL_STA_VER >= 4)
-			ret += websWrite(wp, "%-4s%-5s",
-				((sta->ht_capabilities & WL_STA_CAP_SHORT_GI_20) || (sta->ht_capabilities & WL_STA_CAP_SHORT_GI_40)) ? "Yes" : "No",
-				((sta->ht_capabilities & WL_STA_CAP_TX_STBC) || (sta->ht_capabilities & WL_STA_CAP_RX_STBC_MASK)) ? "Yes" : "No");
+		ret += websWrite(wp, "%-4s%-5s",
+			((sta->ht_capabilities & WL_STA_CAP_SHORT_GI_20) || (sta->ht_capabilities & WL_STA_CAP_SHORT_GI_40)) ? "Yes" : "No",
+			((sta->ht_capabilities & WL_STA_CAP_TX_STBC) || (sta->ht_capabilities & WL_STA_CAP_RX_STBC_MASK)) ? "Yes" : "No");
 #if (WL_STA_VER >= 5)
-			ret += websWrite(wp, "%-5s",
-				((sta->vht_flags & WL_STA_MU_BEAMFORMER) || (sta->vht_flags & WL_STA_MU_BEAMFORMEE)) ? "Yes" : "No");
-			ret += websWrite(wp, "%3d ", wl_sta_info_nss(sta, unit));
+		ret += websWrite(wp, "%-5s",
+			((sta->vht_flags & WL_STA_MU_BEAMFORMER) || (sta->vht_flags & WL_STA_MU_BEAMFORMEE)) ? "Yes" : "No");
+		ret += websWrite(wp, "%3d ", wl_sta_info_nss(sta, unit));
 #endif
 #endif
 #endif
+		if (sta->flags & WL_STA_SCBSTATS)
+		{
 			ret += websWrite(wp, "%s", print_rate_buf(sta->tx_rate, rate_buf));
 			ret += websWrite(wp, "%s", print_rate_buf(sta->rx_rate, rate_buf));
-
-			hr = sta->in / 3600;
-			min = (sta->in % 3600) / 60;
-			sec = sta->in - hr * 3600 - min * 60;
-			ret += websWrite(wp, "%02d:%02d:%02d", hr, min, sec);
 		}
+		else
+			ret += websWrite(wp, "%-16s", "");
+
+		hr = sta->in / 3600;
+		min = (sta->in % 3600) / 60;
+		sec = sta->in - hr * 3600 - min * 60;
+		ret += websWrite(wp, "%02d:%02d:%02d", hr, min, sec);
 
 		ret += websWrite(wp, "\n");
 	}
@@ -2197,30 +2254,34 @@ wds_list:
 				else
 					ret += websWrite(wp, "%4ddBm ", scb_val.val);
 
-				if (sta->flags & WL_STA_SCBSTATS)
-				{
-					ret += websWrite(wp, "%-4s",
-                                                (sta->flags & WL_STA_PS) ? "Yes" : "No");
+				ret += websWrite(wp, "%-4s", phy_type_str[wl_sta_info_phy(sta, unit)]);
+
+				ret += websWrite(wp, "%-4s",
+					(sta->flags & WL_STA_PS) ? "Yes" : "No");
 #ifndef RTCONFIG_QTN
 #if (WL_STA_VER >= 4)
-					ret += websWrite(wp, "%-4s%-5s",
-						((sta->ht_capabilities & WL_STA_CAP_SHORT_GI_20) || (sta->ht_capabilities & WL_STA_CAP_SHORT_GI_40)) ? "Yes" : "No",
-						((sta->ht_capabilities & WL_STA_CAP_TX_STBC) || (sta->ht_capabilities & WL_STA_CAP_RX_STBC_MASK)) ? "Yes" : "No");
+				ret += websWrite(wp, "%-4s%-5s",
+					((sta->ht_capabilities & WL_STA_CAP_SHORT_GI_20) || (sta->ht_capabilities & WL_STA_CAP_SHORT_GI_40)) ? "Yes" : "No",
+					((sta->ht_capabilities & WL_STA_CAP_TX_STBC) || (sta->ht_capabilities & WL_STA_CAP_RX_STBC_MASK)) ? "Yes" : "No");
 #if (WL_STA_VER >= 5)
-					ret += websWrite(wp, "%-5s",
-                                                ((sta->vht_flags & WL_STA_MU_BEAMFORMER) || (sta->vht_flags & WL_STA_MU_BEAMFORMEE)) ? "Yes" : "No");
-					ret += websWrite(wp, "%3d ", wl_sta_info_nss(sta, unit));
+				ret += websWrite(wp, "%-5s",
+					((sta->vht_flags & WL_STA_MU_BEAMFORMER) || (sta->vht_flags & WL_STA_MU_BEAMFORMEE)) ? "Yes" : "No");
+				ret += websWrite(wp, "%3d ", wl_sta_info_nss(sta, unit));
 #endif
 #endif
 #endif
+				if (sta->flags & WL_STA_SCBSTATS)
+				{
 					ret += websWrite(wp, "%s", print_rate_buf(sta->tx_rate, rate_buf));
 					ret += websWrite(wp, "%s", print_rate_buf(sta->rx_rate, rate_buf));
-
-					hr = sta->in / 3600;
-					min = (sta->in % 3600) / 60;
-					sec = sta->in - hr * 3600 - min * 60;
-					ret += websWrite(wp, "%02d:%02d:%02d", hr, min, sec);
 				}
+				else
+					ret += websWrite(wp, "%-16s", "");
+
+				hr = sta->in / 3600;
+				min = (sta->in % 3600) / 60;
+				sec = sta->in - hr * 3600 - min * 60;
+				ret += websWrite(wp, "%02d:%02d:%02d", hr, min, sec);
 
 				ret += websWrite(wp, "\n");
 			}
@@ -3668,6 +3729,8 @@ ej_SiteSurvey(int eid, webs_t wp, int argc, char_t **argv)
 	wl_scan_params_t *params;
 	int params_size = WL_SCAN_PARAMS_FIXED_SIZE + NUMCHANS * sizeof(uint16);
 	int org_scan_time = 20, scan_time = 40;
+	int unit;
+	char tmp[128], prefix[] = "wlXXXXXXXXXX_";
 
 #ifdef RTN12
 	if (nvram_invmatch("sw_mode_ex", "2"))
@@ -3678,14 +3741,19 @@ ej_SiteSurvey(int eid, webs_t wp, int argc, char_t **argv)
 	}
 #endif
 
+	if (wl_ioctl(WIF, WLC_GET_INSTANCE, &unit, sizeof(unit)))
+		return NULL;
+
 	params = (wl_scan_params_t*)malloc(params_size);
 	if (params == NULL)
 		return retval;
 
+	snprintf(prefix, sizeof(prefix), "wl%d_", unit);
+
 	memset(params, 0, params_size);
 	params->bss_type = DOT11_BSSTYPE_INFRASTRUCTURE;
 	memcpy(&params->bssid, &ether_bcast, ETHER_ADDR_LEN);
-	params->scan_type = -1;
+	params->scan_type = nvram_match(strcat_r(prefix, "reg_mode", tmp), "h") ? WL_SCANFLAGS_PASSIVE : 0;
 	params->nprobes = -1;
 	params->active_time = -1;
 	params->passive_time = -1;
@@ -4820,8 +4888,8 @@ escan_wksp_t *d_info;
 bool escan_inprogress;
 
 struct escan_bss {
-        struct escan_bss *next;
-        wl_bss_info_t bss[1];
+	struct escan_bss *next;
+	wl_bss_info_t bss[1];
 };
 
 struct escan_bss *escan_bss_head; /* raw escan results */
@@ -5149,7 +5217,7 @@ get_scan_escan(char *scan_buf, uint buf_len)
 }
 
 static char *
-wl_get_scan_results_escan(char *ifname, chanspec_t chanspec)
+wl_get_scan_results_escan(char *ifname, chanspec_t chanspec, int ctl_ch)
 {
 	int ret, retry_times = 0;
 	wl_escan_params_t *params = NULL;
@@ -5180,7 +5248,7 @@ wl_get_scan_results_escan(char *ifname, chanspec_t chanspec)
 	memset(params, 0, params_size);
 	params->params.bss_type = DOT11_BSSTYPE_INFRASTRUCTURE;
 	memcpy(&params->params.bssid, &ether_bcast, ETHER_ADDR_LEN);
-	params->params.scan_type = nvram_match(strcat_r(prefix, "reg_mode", tmp), "h") ? -1 : 0;
+	params->params.scan_type = nvram_match(strcat_r(prefix, "reg_mode", tmp), "h") ? WL_SCANFLAGS_PASSIVE : 0;
 	params->params.nprobes = -1;
 	params->params.active_time = -1;
 	params->params.passive_time = -1;
@@ -5239,11 +5307,13 @@ wl_get_scan_results_escan(char *ifname, chanspec_t chanspec)
 	if (chanspec != 0) {
 		dbg("restore original chanspec: %s (0x%x)\n", wf_chspec_ntoa(chanspec, chanbuf), chanspec);
 #ifndef RTCONFIG_BCM7
-		wl_iovar_setint(ifname, "dfs_ap_move", chanspec);
-#else
-		wl_iovar_setint(ifname, "chanspec", chanspec);
-		wl_iovar_setint(ifname, "acs_update", -1);
+                if (ctl_ch > 64)
+			wl_iovar_setint(ifname, "dfs_ap_move", chanspec);
 #endif
+		{
+			wl_iovar_setint(ifname, "chanspec", chanspec);
+			wl_iovar_setint(ifname, "acs_update", -1);
+		}
 	}
 
 	if (ret < 0)
@@ -5254,7 +5324,7 @@ wl_get_scan_results_escan(char *ifname, chanspec_t chanspec)
 #endif
 
 static char *
-wl_get_scan_results(char *ifname, chanspec_t chanspec)
+wl_get_scan_results(char *ifname, chanspec_t chanspec, int ctl_ch)
 {
 	int ret, retry_times = 0;
 	wl_scan_params_t *params;
@@ -5262,16 +5332,23 @@ wl_get_scan_results(char *ifname, chanspec_t chanspec)
 	int params_size = WL_SCAN_PARAMS_FIXED_SIZE + NUMCHANS * sizeof(uint16);
 	int org_scan_time = 20, scan_time = 40;
 	char chanbuf[CHANSPEC_STR_LEN];
+	int unit;
+	char tmp[128], prefix[] = "wlXXXXXXXXXX_";
+
+	if (wl_ioctl(ifname, WLC_GET_INSTANCE, &unit, sizeof(unit)))
+		return NULL;
 
 	params = (wl_scan_params_t*)malloc(params_size);
 	if (params == NULL) {
 		return NULL;
 	}
 
+	snprintf(prefix, sizeof(prefix), "wl%d_", unit);
+
 	memset(params, 0, params_size);
 	params->bss_type = DOT11_BSSTYPE_INFRASTRUCTURE;
 	memcpy(&params->bssid, &ether_bcast, ETHER_ADDR_LEN);
-	params->scan_type = -1;
+	params->scan_type = nvram_match(strcat_r(prefix, "reg_mode", tmp), "h") ? WL_SCANFLAGS_PASSIVE : 0;
 	params->nprobes = -1;
 	params->active_time = -1;
 	params->passive_time = -1;
@@ -5306,11 +5383,13 @@ wl_get_scan_results(char *ifname, chanspec_t chanspec)
 	if (chanspec != 0) {
 		dbg("restore original chanspec: %s (0x%x)\n", wf_chspec_ntoa(chanspec, chanbuf), chanspec);
 #if defined(RTCONFIG_DHDAP) && !defined(RTCONFIG_BCM7)
-		wl_iovar_setint(ifname, "dfs_ap_move", chanspec);
-#else
-		wl_iovar_setint(ifname, "chanspec", chanspec);
-		wl_iovar_setint(ifname, "acs_update", -1);
+		if (ctl_ch > 64)
+			wl_iovar_setint(ifname, "dfs_ap_move", chanspec);
 #endif
+		{
+			wl_iovar_setint(ifname, "chanspec", chanspec);
+			wl_iovar_setint(ifname, "acs_update", -1);
+		}
 	}
 
 	if (ret < 0)
@@ -5403,13 +5482,13 @@ wl_scan(int eid, webs_t wp, int argc, char_t **argv, int unit)
 
 #if defined(RTCONFIG_BCM7) || defined(RTCONFIG_BCM_7114) || defined(HND_ROUTER) || defined(RTCONFIG_HND_ROUTER_AX)
 	if (!nvram_match(strcat_r(prefix, "mode", tmp), "wds")) {
-		if (wl_get_scan_results_escan(name, chanspec) == NULL) {
+		if (wl_get_scan_results_escan(name, chanspec, ctl_ch) == NULL) {
 			return 0;
 		}
 	}
 	else
 #endif
-	if (wl_get_scan_results(name, chanspec) == NULL) {
+	if (wl_get_scan_results(name, chanspec, ctl_ch) == NULL) {
 		return 0;
 	}
 

@@ -4066,10 +4066,7 @@ int
 start_acsd()
 {
 	int ret = 0;
-#if defined(RTCONFIG_DHDAP) && !defined(RTCONFIG_BCM7)
-#ifdef RTCONFIG_HND_ROUTER_AX
-	char *acsd2_argv[] = { "/usr/sbin/acsd2", NULL };
-#endif
+#ifdef RTCONFIG_BCM_7114
 	char *acsd_argv[] = { "/usr/sbin/acsd", NULL };
 	int pid;
 #endif
@@ -4082,16 +4079,16 @@ start_acsd()
 	stop_acsd();
 
 	if (!restore_defaults_g && strlen(nvram_safe_get("acs_ifnames"))) {
-#if defined(RTCONFIG_DHDAP) && !defined(RTCONFIG_BCM7)
+#ifdef RTCONFIG_BCM_7114
+		ret = _eval(acsd_argv, NULL, 0, &pid);
+#else
 #ifdef RTCONFIG_HND_ROUTER_AX
 		/* depending on NVRAM start the respective version */
-		if (nvram_match("acs_version", "2")) 
-			ret = _eval(acsd2_argv, NULL, 0, &pid);
+		if (nvram_match("acs_version", "2"))
+			ret = eval("/usr/sbin/acsd2");
 		/* default acsd version; to use even when the NVRAM is not set */
 		else
 #endif
-		ret = _eval(acsd_argv, NULL, 0, &pid);
-#else
 		ret = eval("/usr/sbin/acsd");
 #endif
 	}
@@ -8306,7 +8303,7 @@ stop_services(void)
 #if defined(RTCONFIG_BWDPI)
 	stop_bwdpi_wred_alive();
 	stop_bwdpi_check();
-	stop_dpi_engine_service(1);
+	stop_dpi_engine_service(2); // reboot case
 #endif
 #ifdef RTCONFIG_IXIAEP
 	stop_ixia_endpoint();
@@ -9359,7 +9356,7 @@ void start_aurargb(void)
 		aura_rgb_led(ROUTER_AURA_SET, &rgb_cfg, 0, 0);
 #if defined(RTCONFIG_TURBO_BTN)
 	if (nvram_get_int("turbo_mode") == BOOST_AURA_RGB_SW) {
-#ifdef GTAX11000 
+#ifdef GTAX11000
 		led_control(LED_LOGO, nvram_match("aurargb_enable", "1")? LED_ON : LED_OFF);
 #else
 		turbo_led_control(nvram_match("aurargb_enable", "1")? LED_ON : LED_OFF);
@@ -10024,7 +10021,7 @@ again:
 			// to avoid affecting upgrade
 #ifdef RTCONFIG_BWDPI
 			/* dpi engine needs 40-50MB memory, it will make some platform run out of memory before upgrade, so stop it to release memory */
-			stop_dpi_engine_service(1);
+			stop_dpi_engine_service(2); // reboot case
 #endif
 			stop_misc();
 			stop_all_webdav();
@@ -13747,16 +13744,6 @@ void gen_lldpd_if(char *bind_ifnames)
 			bind_ifnames += sprintf(bind_ifnames, "%s", word);
 		}
 	}
-#ifdef RTCONFIG_EXTPHY_BCM84880
-	else if (strcmp(script, "br_addif") == 0)
-        {
-#ifdef GTAX11000
-		if(!nvram_match("x_Setting", "0")) {
-			eval("brctl", "addif", nvram_safe_get("lan_ifname"), "eth5");
-		}
-#endif
-        }
-#endif
 	else
 	{
 		/* for lan_ifnames */

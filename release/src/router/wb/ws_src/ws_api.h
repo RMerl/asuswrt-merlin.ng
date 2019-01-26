@@ -4,6 +4,7 @@
 #define TRANSFER_TYPE		"https://"
 #define SERVER 				"aae-spweb-vx.asuscloud.com"
 //#define SERVER 				"54.179.149.151"
+#define LOGIN_SERVER 		"aae-sgweb001-1.asuscomm.com"
 #define GET_SERVICE_AREA	"/aae/getservicearea"
 #define LOGIN				"/aae/login"
 #define QUERY_FRIEND		"/aae/queryfriend"

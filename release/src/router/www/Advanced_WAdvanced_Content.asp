@@ -340,8 +340,15 @@ function initial(){
 			}
 			
 			$("#turbo_qam_title").html("<#WLANConfig11b_x_ModulationScheme#>");
-			var desc =  ["Up to MCS 9 (802.11ac)", "Up to MCS 11 (NitroQAM/1024-QAM)"];
-			var value = ["1", "2"];
+			if(based_modelid == "RT-AX92U" && wl_unit_value == '1'){
+				var desc = ["Up to MCS 9 (802.11ac)"];
+				var value = ["1"];
+			}
+			else{
+				var desc = ["Up to MCS 9 (802.11ac)", "Up to MCS 11 (NitroQAM/1024-QAM)"];
+				var value = ["1", "2"];
+			}
+			
 			add_options_x2(document.form.wl_turbo_qam, desc, value, '<% nvram_get("wl_turbo_qam"); %>');
 			$('#turbo_qam_hint').click(function(){openHint(3,33);});
 		}
@@ -390,8 +397,15 @@ function initial(){
 				if(	based_modelid == "RT-AC88U" || based_modelid == "RT-AX88U" || based_modelid == "RT-AC86U" || based_modelid == "AC2900" || based_modelid == "RT-AC3100" ||
 					based_modelid == "RT-AC5300" || based_modelid == "GT-AC5300" || based_modelid == "GT-AX11000" || based_modelid == "RT-AX92U"){
 					$("#turbo_qam_title").html("<#WLANConfig11b_x_ModulationScheme#>");
-					var desc = ["Up to MCS 7 (802.11n)", "Up to MCS 9 (TurboQAM/256-QAM)", "Up to MCS 11 (NitroQAM/1024-QAM)"];
-					var value = ["0", "1", "2"];
+					if(based_modelid == "RT-AX92U"){
+						var desc = ["Up to MCS 7 (802.11n)", "Up to MCS 9 (TurboQAM/256-QAM)"];
+						var value = ["0", "1"];
+					}
+					else{
+						var desc = ["Up to MCS 7 (802.11n)", "Up to MCS 9 (TurboQAM/256-QAM)", "Up to MCS 11 (NitroQAM/1024-QAM)"];
+						var value = ["0", "1", "2"];
+					}
+				
 					add_options_x2(document.form.wl_turbo_qam, desc, value, '<% nvram_get("wl_turbo_qam"); %>');
 					$('#turbo_qam_hint').click(function(){openHint(3,33);});
 				}				

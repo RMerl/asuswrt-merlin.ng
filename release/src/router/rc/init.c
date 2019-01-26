@@ -7514,6 +7514,7 @@ int init_nvram(void)
 		nvram_set("3:ledbh15", "0x7");
 
 		nvram_set_int("led_pwr_gpio", 4|GPIO_ACTIVE_LOW);
+		nvram_set_int("led_wps_gpio", 4|GPIO_ACTIVE_LOW);
 		nvram_set_int("led_wan_gpio", 20|GPIO_ACTIVE_LOW);
 		nvram_set_int("led_wan_normal_gpio", 21);
 		nvram_set_int("led_lan_gpio", 16);
@@ -9768,8 +9769,10 @@ int init_nvram2(void)
 	if (!is_router_mode())
 		nvram_unset("cfg_cost");
 #ifdef RTCONFIG_AMAS
-	if (nvram_get_int("re_mode") == 1)
+	if (nvram_get_int("re_mode") == 1) {
 		nvram_set_int("cfg_rejoin", 1);
+		nvram_set_int("amas_path_stat", -1);
+	}
 #endif /* AMAS */
 #ifdef RTCONFIG_QCA
 	if (strlen(nvram_safe_get("cfg_group")) == 0) {
@@ -10799,6 +10802,9 @@ static void sysinit(void)
 #ifdef RTCONFIG_EXTPHY_BCM84880
 	config_ext_wan_port();
 #endif
+#ifdef RTCONFIG_HND_ROUTER_AX
+	reset_phy("eth0");
+#endif
 	init_switch(); // for system dependent part
 	init_switch_misc();
 
@@ -10891,6 +10897,7 @@ static void sysinit(void)
 #ifdef HND_ROUTER
 	reset_stacksize(ASUSRT_STACKSIZE);
 #endif
+
 }
 
 #if defined(RTCONFIG_TEMPROOTFS)

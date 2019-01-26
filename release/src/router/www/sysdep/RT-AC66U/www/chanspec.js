@@ -92,6 +92,7 @@ function wl_chanspec_list_change(){
 	var extend_channel = new Array();
 	var cur_extend_channel = 0;			//current extension channel
 	var channel_ori = '<% nvram_get("wl_chanspec"); %>';
+	var smart_connect = document.form.smart_connect_x.value;
 
 	if(country == ""){
 		country = prompt("The Country Code is not exist! Please enter Country Code.", "");
@@ -467,6 +468,7 @@ function wl_chanspec_list_change(){
 	else{
 		document.form.acs_dfs_checkbox.disabled = false;
 	}
+	dwbMode_control_dfs({"band": band, "smart_connect": smart_connect});
 }
 
 function wlextchannel_fourty(v){
@@ -494,6 +496,7 @@ function change_channel(obj){
 	var selected_channel = obj.value;
 	var channel_length =obj.length;
 	var band = document.form.wl_unit.value;
+	var smart_connect = document.form.smart_connect_x.value;
 	if(document.form.wl_bw.value != 1){   // 20/40 MHz or 40MHz
 		if(channel_length == 12){    // 1 ~ 11
 			if(selected_channel >= 1 && selected_channel <= 4){
@@ -560,20 +563,18 @@ function change_channel(obj){
 					document.form.acs_dfs.disabled = true;
 				}
 		}
-		else if(country == "EU"){		// for DFS channel
-			if(based_modelid == "RT-AC68U" || based_modelid == "RT-AC68A" || based_modelid == "4G-AC68U" || based_modelid == "DSL-AC68U"
-			|| (based_modelid == "RT-AC66U" && wl1_dfs == "1")
-			|| based_modelid == "RT-N66U"){
-				if(document.form.wl_channel.value  == 0){
-					document.getElementById('dfs_checkbox').style.display = "";
-					document.form.acs_dfs.disabled = false;
-				}	
-				else{
-					document.getElementById('dfs_checkbox').style.display = "none";
-					document.form.acs_dfs.disabled = true;
-				}
+		else if (country == 'EU' && (based_modelid == "RT-AC66U" && wl1_dfs == "1")) {
+			if (document.form.wl_channel.value == 0) {
+				document.getElementById('dfs_checkbox').style.display = "";
+				document.form.acs_dfs.disabled = false;
 			}
-			else if(based_modelid == "RT-AC87U"){
+			else {
+				document.getElementById('dfs_checkbox').style.display = "none";
+				document.form.acs_dfs.disabled = true;
+			}
+		}
+		else if(country == "EU" || country == "E0"){		// for DFS channel
+			if(based_modelid == "RT-AC87U"){
 				if(document.form.wl_channel.value  == "0"){
 					if(document.form.wl_bw.value == "1"){
 						document.getElementById('dfs_checkbox').style.display = "none";
@@ -588,6 +589,16 @@ function change_channel(obj){
 					document.getElementById('dfs_checkbox').style.display = "none";
 					document.form.acs_dfs.disabled = true;
 				}				
+			}
+			else{
+				if (document.form.wl_channel.value == 0) {
+					document.getElementById('dfs_checkbox').style.display = "";
+					document.form.acs_dfs.disabled = false;
+				}
+				else {
+					document.getElementById('dfs_checkbox').style.display = "none";
+					document.form.acs_dfs.disabled = true;
+				}
 			}
 		}
 		else if(country == "US" && dfs_US_support){
@@ -616,6 +627,7 @@ function change_channel(obj){
 				}
 			}
 		}
+		dwbMode_control_dfs({"band": band, "smart_connect": smart_connect});
 	}
 	else if(band == 0){
 		if(country == "EU" || country == "JP" || country == "SG" || country == "CN" || country == "UA" || country == "KR"){
@@ -631,4 +643,13 @@ function change_channel(obj){
 			}
 		}
 	}	
+}
+
+function dwbMode_control_dfs(_parm) {
+	if(dwb_info.mode && _parm.band == dwb_info.band && _parm.band != 0 && _parm.smart_connect == "1" && bw_160_support) {
+		document.getElementById('dfs_checkbox').style.display = "none";
+		document.form.acs_dfs_checkbox.checked = false;
+		check_DFS_support(document.form.acs_dfs_checkbox);
+		document.form.acs_dfs_checkbox.disabled = true;
+	}
 }

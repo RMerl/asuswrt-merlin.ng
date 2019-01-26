@@ -88,11 +88,6 @@ config RTCONFIG_DFS_US
 	depends on RTCONFIG_HND_ROUTER
 	default n
 
-config RTCONFIG_BW160M
-	bool "Bandwidth 160MHz support"
-	depends on RTCONFIG_HND_ROUTER
-	default n
-
 config RTCONFIG_BCM9
 	bool "Bcm sdk 9_10_162_x"
 	default n
@@ -119,6 +114,11 @@ config RTCONFIG_NVRAM_SIZE
 
 config RTCONFIG_DHDAP
 	bool "Bcm7 dhdap"
+	default n
+
+config RTCONFIG_BW160M
+	bool "Bandwidth 160MHz support"
+	depends on RTCONFIG_DHDAP
 	default n
 
 config RTCONFIG_WLEXE

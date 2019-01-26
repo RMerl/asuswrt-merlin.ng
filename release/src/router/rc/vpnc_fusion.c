@@ -1776,6 +1776,7 @@ start_vpnc_by_unit(const int unit)
 			(nvram_match(strcat_r(wan_prefix, "proto", tmp), "pptp")) ||
 			(nvram_match(strcat_r(wan_prefix, "proto", tmp), "l2tp")))
 		{
+			_dprintf("[%s, %d] Disable GRE learning\n", __FUNCTION__, __LINE__);
 			eval("fc", "config", "--gre", "0");
 		}
 #endif

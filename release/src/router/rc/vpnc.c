@@ -81,13 +81,14 @@ start_vpnc(void)
 	/* shut down previous instance if any */
 	stop_vpnc();
 
-#ifdef HND_ROUTER
+#ifdef RTCONFIG_HND_ROUTER_AX
 	/* workaround for ppp packets are dropped by fc GRE learning when pptp server / client enabled  */
 	if (nvram_match("fc_disable", "0") && 
-		(nvram_match(strcat_r(prefix, "proto", tmp), "pppoe")) ||
-		(nvram_match(strcat_r(prefix, "proto", tmp), "pptp")) ||
-		(nvram_match(strcat_r(prefix, "proto", tmp), "l2tp")))
+		(nvram_match(strcat_r(wan_prefix, "proto", tmp), "pppoe")) ||
+		(nvram_match(strcat_r(wan_prefix, "proto", tmp), "pptp")) ||
+		(nvram_match(strcat_r(wan_prefix, "proto", tmp), "l2tp")))
 	{
+		_dprintf("[%s, %d] Disable GRE learning\n", __FUNCTION__, __LINE__);
 		eval("fc", "config", "--gre", "0");
 	}
 #endif
@@ -307,7 +308,8 @@ stop_vpnc(void)
 		usleep(3000*1000);
 		kill_pidfile_tk(pidfile);
 	}
-#ifdef HND_ROUTER
+
+#ifdef RTCONFIG_HND_ROUTER_AX
 	/* workaround for ppp packets are dropped by fc GRE learning when pptp server / client enabled  */
 	if (nvram_match("fc_disable", "0")) eval("fc", "config", "--gre", "1");
 #endif

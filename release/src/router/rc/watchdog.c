@@ -3001,9 +3001,6 @@ void btn_check(void)
 	if (!nvram_get_int("wlready")) return;
 #endif
 
-	if (!nvram_match("x_Setting", "1"))
-		goto dowps;
-
 #if defined(RTCONFIG_WIRELESS_SWITCH) && defined(RTCONFIG_QCA)
 	if (wifi_sw_old != button_pressed(BTN_WIFI_SW))
 	{
@@ -3366,7 +3363,6 @@ void btn_check(void)
 #endif
 #endif	/* RTCONFIG_LED_BTN */
 
-dowps:
 #if defined(RTCONFIG_BCMWL6) && defined(RTCONFIG_PROXYSTA)
 	if ((psta_exist() || psr_exist())
 		&& !dpsr_mode()

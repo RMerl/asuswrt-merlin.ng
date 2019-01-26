@@ -12,6 +12,10 @@
 <link rel="stylesheet" type="text/css" href="qis/qis_style.css">
 <link rel="stylesheet" type="text/css" href="index_style.css">
 <style>
+body{
+	background: #21333e !important;
+}
+
 p{
 	font-weight: bolder;
 }

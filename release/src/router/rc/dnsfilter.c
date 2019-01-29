@@ -37,6 +37,9 @@ int dnsfilter_support_dot(int mode)
 		case 10:	// Custom 1, 2 and 3 - assume they might support it
 		case 13:	// Quad9
 		case 11:	// Router (in case end-user implements it locally)
+		case 14:
+		case 15:
+		case 16:	// CleanBrowsing 1-3
 			return 1;
 		default:
 			return 0;

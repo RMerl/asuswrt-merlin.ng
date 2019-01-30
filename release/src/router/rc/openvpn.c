@@ -774,9 +774,7 @@ void start_ovpn_server(int serverNum)
 			fprintf(fp_client, "dev tap\n");
 			fprintf(fp_client, "# Windows needs the TAP-Win32 adapter name\n");
 			fprintf(fp_client, "# from the Network Connections panel\n");
-			fprintf(fp_client, "# if you have more than one.  On XP SP2,\n");
-			fprintf(fp_client, "# you may need to disable the firewall\n");
-			fprintf(fp_client, "# for the TAP adapter.\n");
+			fprintf(fp_client, "# if you have more than one.\n");
 			fprintf(fp_client, ";dev-node MyTap\n");
 		}
 	}

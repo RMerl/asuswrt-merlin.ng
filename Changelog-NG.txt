@@ -1,7 +1,7 @@
 Asuswrt-Merlin 384/NG Changelog
 ===============================
 
-384.9 (xx-xxx-xxxx)
+384.9 (2-Feb-2019)
   - NEW: Temporarily reorganized code in separate branches, to handle
          Asus's currently scattered firmware source code releases.
          The GPL situation for this release is as follow:

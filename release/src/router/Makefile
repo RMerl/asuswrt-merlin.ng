@@ -3616,12 +3616,12 @@ quagga-clean:
 
 quagga-install:
 	install -d $(INSTALLDIR)/quagga/usr/lib
-	libtool --mode=install install -c quagga/lib/libzebra.la $(INSTALLDIR)/quagga/usr/lib
+#	libtool --mode=install install -c quagga/lib/libzebra.la $(INSTALLDIR)/quagga/usr/lib
 	libtool --finish $(INSTALLDIR)/quagga/usr/lib
-ifneq ($(HND_ROUTER),y)
+#ifneq ($(HND_ROUTER),y)
 	rm -f $(INSTALLDIR)/quagga/usr/lib/libzebra.a
 	rm -f $(INSTALLDIR)/quagga/usr/lib/libzebra.la
-endif
+#endif
 	install -d $(INSTALLDIR)/quagga/usr/sbin
 	install -d $(INSTALLDIR)/quagga/usr/local/etc
 	libtool --mode=install install -c quagga/zebra/zebra $(INSTALLDIR)/quagga/usr/sbin
@@ -5293,6 +5293,8 @@ strongswan-5.2.1-install: strongswan-5.2.1
 	@rm -rf $(INSTALLDIR)/strongswan-5.2.1/usr/etc
 	@rm -f $(INSTALLDIR)/strongswan-5.2.1/usr/lib/ipsec/*.la
 	@rm -f $(INSTALLDIR)/strongswan-5.2.1/usr/lib/ipsec/plugins/*.la
+	@rm -f $(INSTALLDIR)/strongswan-5.2.1/usr/lib/ipsec/*.a
+	@rm -f $(INSTALLDIR)/strongswan-5.2.1/usr/lib/ipsec/plugins/*.a
 ifeq ($(HND_ROUTER),y)
 	$(STRIP_64) $(INSTALLDIR)/strongswan-5.2.1/usr/lib/ipsec/*.so
 	$(STRIP_64) $(INSTALLDIR)/strongswan-5.2.1/usr/lib/ipsec/starter

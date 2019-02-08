@@ -145,7 +145,7 @@ function comma(n){
 
 function initial(){
 	show_menu();
-	refreshRate = document.getElementById('refreshrate').value
+	refreshRate = document.getElementById('refreshrate').value;
 	get_data();
 	draw_conntrack_table();
 }
@@ -187,8 +187,18 @@ function compIPV6(input) {
 
 function draw_conntrack_table(){
 	var i, label;
+	var tracklen;
 
-	for (i=0; i < bwdpi_conntrack.length; i++) {
+	tracklen = bwdpi_conntrack.length;
+
+	if (tracklen > 300) {
+		document.getElementById('refreshrate').value = "0";
+		refreshRate = 0;
+		document.getElementById('toomanyconns').style.display = "";
+		document.getElementById('refreshrate').disabled = true;
+	}
+
+	for (i=0; i < tracklen; i++) {
 		label = bwdpi_conntrack[i][5];
 		if (label.length > 27)
 			size = "style=\"font-size: 75%;\"";
@@ -442,6 +452,7 @@ function draw_chart(data_array, ctx, pie) {
 							<option value="5">5 seconds</option>
 							<option value="10">10 seconds</option>
 						</select>
+						<span id="toomanyconns" style="display:none; color:#FFCC00;">Disabled - too many tracked connections.</span>
 					</td>
 				</tr>
 			</table>

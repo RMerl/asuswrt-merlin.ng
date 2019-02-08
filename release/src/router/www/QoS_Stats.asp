@@ -223,7 +223,7 @@ function draw_conntrack_table(){
 	var tableStruct = {
 		data: tabledata,
 		container: "tableContainer",
-		title: "Tracked connections",
+		title: "Tracked connections (total: "+tracklen+")",
 		header: [
 			{
 				"title" : "Proto",

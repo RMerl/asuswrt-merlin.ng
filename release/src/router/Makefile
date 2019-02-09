@@ -6896,7 +6896,7 @@ inadyn/Makefile:
 		OpenSSL_CFLAGS="-I$(TOP)/openssl" \
 		OpenSSL_LIBS="-L$(TOP)/openssl -lcrypto" \
 		CFLAGS="$(EXTRACFLAGS) -Os -I$(TOP)/shared -I$(SRCBASE)/include -I$(SRCBASE)/shared/bcmwifi/include -DTYPEDEF_FLOAT_T -I$(STAGEDIR)/usr/include -ffunction-sections -fdata-sections -fPIC -DASUSWRT $(if $(RTCONFIG_LETSENCRYPT),-DASUS_LE,)" \
-		LDFLAGS="$(LDFLAGS) $(shell if [[ "$(HND_ROUTER)" = "y" ]] ; then echo "-L$(TOP)/wlcsm -lwlcsm"; else echo ""; fi) -L$(TOP)/nvram$(BCMEX)$(EX7) -lnvram -L$(TOP)/shared -lshared $(if $(RTCONFIG_QTN),-L$(TOP)/libqcsapi_client -lqcsapi_client) -ffunction-sections -fdata-sections -Wl,--gc-sections" \
+		LDFLAGS="$(LDFLAGS) $(EXTRA_NV_LDFLAGS) -L$(TOP)/nvram$(BCMEX)$(EX7) -lnvram -L$(TOP)/shared -lshared $(if $(RTCONFIG_QTN),-L$(TOP)/libqcsapi_client -lqcsapi_client) -ffunction-sections -fdata-sections -Wl,--gc-sections" \
 		--prefix="" --enable-openssl
 
 inadyn: shared nvram${BCMEX}$(EX7) libconfuse inadyn/Makefile
@@ -6916,7 +6916,7 @@ ncurses-6.0/Makefile: ncurses-6.0/configure
 	cd ncurses-6.0 && $(CONFIGURE) \
 		CFLAGS="$(EXTRACFLAGS) -Os -I$(STAGEDIR)/usr/include -ffunction-sections -fdata-sections -fPIC" \
 		LDFLAGS="$(LDFLAGS) -ffunction-sections -fdata-sections -Wl,--gc-sections -L$(STAGEDIR)/usr/lib" \
-		$(if $(HND_ROUTER),CPPFLAGS="-P",) \
+		CPPFLAGS="-P" \
 		--prefix=/usr --without-cxx --without-cxx-binding \
 		--enable-echo --enable-const --enable-overwrite --disable-rpath --without-ada \
 		$(if $(RTCONFIG_BCMARM),--enable-widec,) \
@@ -7055,7 +7055,7 @@ ipset_arm/stamp-h1: libmnl
 	LDFLAGS="-ffunction-sections -fdata-sections -Wl,--gc-sections" \
 	libmnl_CFLAGS="-I$(TOP)/libmnl/staged/usr/include" \
 	libmnl_LIBS="-L$(TOP)/libmnl/staged/usr/lib -lmnl" \
-	$(CONFIGURE) --prefix=/usr --with-kmod=$(if $(HND_ROUTER),no,yes) --with-kbuild=$(LINUXDIR)
+	$(CONFIGURE) --prefix=/usr --with-kmod=no --with-kbuild=$(LINUXDIR)
 	touch ipset_arm/stamp-h1
 
 ipset_arm: ipset_arm/stamp-h1

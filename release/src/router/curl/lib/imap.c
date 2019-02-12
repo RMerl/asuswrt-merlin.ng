@@ -5,7 +5,7 @@
  *                            | (__| |_| |  _ <| |___
  *                             \___|\___/|_| \_\_____|
  *
- * Copyright (C) 1998 - 2018, Daniel Stenberg, <daniel@haxx.se>, et al.
+ * Copyright (C) 1998 - 2019, Daniel Stenberg, <daniel@haxx.se>, et al.
  *
  * This software is licensed as described in the file COPYING, which
  * you should have received as part of this distribution. The terms
@@ -316,7 +316,7 @@ static bool imap_endofresp(struct connectdata *conn, char *line, size_t len,
      a space and optionally some text as per RFC-3501 for the AUTHENTICATE and
      APPEND commands and as outlined in Section 4. Examples of RFC-4959 but
      some e-mail servers ignore this and only send a single + instead. */
-  if(imap && !imap->custom && ((len == 3 && !memcmp("+", line, 1)) ||
+  if(imap && !imap->custom && ((len == 3 && line[0] == '+') ||
      (len >= 2 && !memcmp("+ ", line, 2)))) {
     switch(imapc->state) {
       /* States which are interested in continuation responses */
@@ -1362,19 +1362,20 @@ static CURLcode imap_multi_statemach(struct connectdata *conn, bool *done)
       return result;
   }
 
-  result = Curl_pp_statemach(&imapc->pp, FALSE);
+  result = Curl_pp_statemach(&imapc->pp, FALSE, FALSE);
   *done = (imapc->state == IMAP_STOP) ? TRUE : FALSE;
 
   return result;
 }
 
-static CURLcode imap_block_statemach(struct connectdata *conn)
+static CURLcode imap_block_statemach(struct connectdata *conn,
+                                     bool disconnecting)
 {
   CURLcode result = CURLE_OK;
   struct imap_conn *imapc = &conn->proto.imapc;
 
   while(imapc->state != IMAP_STOP && !result)
-    result = Curl_pp_statemach(&imapc->pp, TRUE);
+    result = Curl_pp_statemach(&imapc->pp, TRUE, disconnecting);
 
   return result;
 }
@@ -1497,7 +1498,7 @@ static CURLcode imap_done(struct connectdata *conn, CURLcode status,
        non-blocking DONE operations!
     */
     if(!result)
-      result = imap_block_statemach(conn);
+      result = imap_block_statemach(conn, FALSE);
   }
 
   /* Cleanup our per-request based variables */
@@ -1635,7 +1636,7 @@ static CURLcode imap_disconnect(struct connectdata *conn, bool dead_connection)
      point! */
   if(!dead_connection && imapc->pp.conn && imapc->pp.conn->bits.protoconnstart)
     if(!imap_perform_logout(conn))
-      (void)imap_block_statemach(conn); /* ignore errors on LOGOUT */
+      (void)imap_block_statemach(conn, TRUE); /* ignore errors on LOGOUT */
 
   /* Disconnect from the server */
   Curl_pp_disconnect(&imapc->pp);
@@ -1749,8 +1750,8 @@ static CURLcode imap_sendf(struct connectdata *conn, const char *fmt, ...)
   imapc->cmdid = (imapc->cmdid + 1) % 1000;
 
   /* Calculate the tag based on the connection ID and command ID */
-  snprintf(imapc->resptag, sizeof(imapc->resptag), "%c%03d",
-           'A' + curlx_sltosi(conn->connection_id % 26), imapc->cmdid);
+  msnprintf(imapc->resptag, sizeof(imapc->resptag), "%c%03d",
+            'A' + curlx_sltosi(conn->connection_id % 26), imapc->cmdid);
 
   /* Prefix the format with the tag */
   taggedfmt = aprintf("%s %s", imapc->resptag, fmt);

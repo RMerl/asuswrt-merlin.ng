@@ -700,7 +700,7 @@ CURLcode Curl_ssl_push_certinfo_len(struct Curl_easy *data,
     return CURLE_OUT_OF_MEMORY;
 
   /* sprintf the label and colon */
-  snprintf(output, outlen, "%s:", label);
+  msnprintf(output, outlen, "%s:", label);
 
   /* memcpy the value (it might not be zero terminated) */
   memcpy(&output[labellen + 1], value, valuelen);
@@ -1170,8 +1170,6 @@ static const struct Curl_ssl Curl_ssl_multi = {
 const struct Curl_ssl *Curl_ssl =
 #if defined(CURL_WITH_MULTI_SSL)
   &Curl_ssl_multi;
-#elif defined(USE_AXTLS)
-  &Curl_ssl_axtls;
 #elif defined(USE_CYASSL)
   &Curl_ssl_cyassl;
 #elif defined(USE_DARWINSSL)
@@ -1197,9 +1195,6 @@ const struct Curl_ssl *Curl_ssl =
 #endif
 
 static const struct Curl_ssl *available_backends[] = {
-#if defined(USE_AXTLS)
-  &Curl_ssl_axtls,
-#endif
 #if defined(USE_CYASSL)
   &Curl_ssl_cyassl,
 #endif
@@ -1318,7 +1313,14 @@ CURLsslset curl_global_sslset(curl_sslbackend id, const char *name,
     *avail = (const curl_ssl_backend **)&available_backends;
 
   if(Curl_ssl != &Curl_ssl_multi)
-    return id == Curl_ssl->info.id ? CURLSSLSET_OK : CURLSSLSET_TOO_LATE;
+    return id == Curl_ssl->info.id ||
+           (name && strcasecompare(name, Curl_ssl->info.name)) ?
+           CURLSSLSET_OK :
+#if defined(CURL_WITH_MULTI_SSL)
+           CURLSSLSET_TOO_LATE;
+#else
+           CURLSSLSET_UNKNOWN_BACKEND;
+#endif
 
   for(i = 0; available_backends[i]; i++) {
     if(available_backends[i]->info.id == id ||

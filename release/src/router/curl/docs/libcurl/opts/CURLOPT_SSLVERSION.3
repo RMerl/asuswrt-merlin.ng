@@ -20,7 +20,7 @@
 .\" *
 .\" **************************************************************************
 .\"
-.TH CURLOPT_SSLVERSION 3 "October 10, 2018" "libcurl 7.62.0" "curl_easy_setopt options"
+.TH CURLOPT_SSLVERSION 3 "October 30, 2018" "libcurl 7.64.0" "curl_easy_setopt options"
 
 .SH NAME
 CURLOPT_SSLVERSION \- set preferred TLS/SSL version
@@ -60,7 +60,7 @@ TLS v1.3 or later (Added in 7.52.0)
 The maximum TLS version can be set by using \fIone\fP of the
 CURL_SSLVERSION_MAX_ macros below. It is also possible to OR \fIone\fP of the
 CURL_SSLVERSION_ macros with \fIone\fP of the CURL_SSLVERSION_MAX_ macros.
-The MAX macros are not supported for SSL backends axTLS or wolfSSL.
+The MAX macros are not supported for WolfSSL.
 .RS
 .IP CURL_SSLVERSION_MAX_DEFAULT
 The flag defines the maximum supported TLS version by libcurl, or the default

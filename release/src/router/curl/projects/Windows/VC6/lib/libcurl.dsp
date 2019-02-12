@@ -1222,10 +1222,6 @@ SOURCE=..\..\..\..\lib\vauth\vauth.c
 # End Source File
 # Begin Source File
 
-SOURCE=..\..\..\..\lib\vtls\axtls.c
-# End Source File
-# Begin Source File
-
 SOURCE=..\..\..\..\lib\vtls\cyassl.c
 # End Source File
 # Begin Source File
@@ -1727,10 +1723,6 @@ SOURCE=..\..\..\..\lib\vauth\ntlm.h
 # Begin Source File
 
 SOURCE=..\..\..\..\lib\vauth\vauth.h
-# End Source File
-# Begin Source File
-
-SOURCE=..\..\..\..\lib\vtls\axtls.h
 # End Source File
 # Begin Source File
 

@@ -3601,7 +3601,8 @@ quagga/stamp-h1:
 	CC=$(CC) AR=$(AR) RANLIB=$(RANLIB) LD=$(LD) \
 	CFLAGS="$(CFLAGS) -Os -Wall -ffunction-sections -fdata-sections -fPIC" \
 	LDFLAGS="-ffunction-sections -fdata-sections -Wl,--gc-sections" \
-	$(CONFIGURE) --enable-shared=lib --disable-ripngd --disable-ospfd --disable-doc --disable-ospfclient \
+	$(CONFIGURE) --prefix=/usr --sysconfdir=/etc --enable-shared --disable-static \
+	--disable-ripngd --disable-ospfd --disable-doc --disable-ospfclient \
 	--disable-ospf6d --disable-bgpd --disable-bgp-announce --disable-babeld \
 	--disable-silent-rules \
 	--disable-isisd
@@ -3616,22 +3617,20 @@ quagga-clean:
 
 quagga-install:
 	install -d $(INSTALLDIR)/quagga/usr/lib
-#	libtool --mode=install install -c quagga/lib/libzebra.la $(INSTALLDIR)/quagga/usr/lib
+	libtool --mode=install install -c quagga/lib/libzebra.la $(INSTALLDIR)/quagga/usr/lib
 	libtool --finish $(INSTALLDIR)/quagga/usr/lib
-#ifneq ($(HND_ROUTER),y)
-	rm -f $(INSTALLDIR)/quagga/usr/lib/libzebra.a
 	rm -f $(INSTALLDIR)/quagga/usr/lib/libzebra.la
-#endif
+	$(STRIP)  $(INSTALLDIR)/quagga/usr/lib/libzebra.so
 	install -d $(INSTALLDIR)/quagga/usr/sbin
-	install -d $(INSTALLDIR)/quagga/usr/local/etc
 	libtool --mode=install install -c quagga/zebra/zebra $(INSTALLDIR)/quagga/usr/sbin
-	install -c -m 777 quagga/zebra/zebra.conf.sample $(INSTALLDIR)/quagga/usr/local/etc/zebra.conf
 	libtool --mode=install install -c quagga/ripd/ripd $(INSTALLDIR)/quagga/usr/sbin
-	install -c -m 777 quagga/ripd/ripd.conf.sample $(INSTALLDIR)/quagga/usr/local/etc/ripd.conf
 	libtool --mode=install install -c quagga/watchquagga/watchquagga $(INSTALLDIR)/quagga/usr/sbin
 	$(STRIP) $(INSTALLDIR)/quagga/usr/sbin/zebra
 	$(STRIP) $(INSTALLDIR)/quagga/usr/sbin/ripd
 	$(STRIP) $(INSTALLDIR)/quagga/usr/sbin/watchquagga
+	install -d $(INSTALLDIR)/quagga/rom/etc
+	install -c -m 600 quagga/zebra/zebra.conf.sample $(INSTALLDIR)/quagga/rom/etc/zebra.conf
+	install -c -m 600 quagga/ripd/ripd.conf.sample $(INSTALLDIR)/quagga/rom/etc/ripd.conf
 ifneq ($(HND_ROUTER),y)
 	install -D $(shell dirname $(shell which $(CXX)))/../lib/librt.so.0 $(TARGETDIR)/lib/librt.so.0
 else

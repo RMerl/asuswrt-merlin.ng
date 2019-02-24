@@ -1214,7 +1214,7 @@ obj-y += asm1042
 endif
 
 obj-$(RTCONFIG_QUICKSEC) += quicksec-7.0
-obj-$(RTCONFIG_STRONGSWAN) += strongswan-5.2.1
+obj-$(RTCONFIG_STRONGSWAN) += strongswan
 
 ifneq ($(RTCONFIG_4M_SFP),y)
 obj-y += netstat-nat
@@ -5248,8 +5248,8 @@ usbclient-clean:
 	rm -rf usbclient/stamp-h1
 
 ##strongswan/IPSEC
-strongswan-5.2.1/stamp-h1:
-	cd strongswan-5.2.1 && autoreconf -i -f && \
+strongswan/stamp-h1: $(OPENSSLDIR)
+	cd strongswan && autoreconf -i -f && \
 	$(CONFIGURE) \
 	--prefix=/usr/ --sysconfdir=/etc/ --localstatedir=/var/ \
 	--bindir=/usr/sbin --libdir=/usr/lib \
@@ -5258,46 +5258,37 @@ strongswan-5.2.1/stamp-h1:
 	--enable-eap-md5 --enable-eap-mschapv2 --enable-eap-identity \
 	--with-strongswan-conf=/etc/strongswan.conf --enable-md4 --enable-acert \
 	--enable-cmd --enable-eap-tls --enable-libipsec \
-	CFLAGS="-O3 -I$(STAGEDIR)/usr/include -I$(TOP)/openssl/include $(if $(RTCONFIG_HND_ROUTER),-DHND_ROUTER,)" \
-	LDFLAGS="-L$(STAGEDIR)/usr/lib -L$(TOP)/openssl" \
+	CFLAGS="-O3 -I$(TOP)/$(OPENSSLDIR)/include $(if $(RTCONFIG_HND_ROUTER),-DHND_ROUTER,)" \
+	LDFLAGS="-L$(TOP)/$(OPENSSLDIR) -L$(STAGEDIR)/usr/lib" \
 	LIBS="-lssl -lcrypto -lpthread -ldl -lm"
 	touch $@
 
-strongswan-5.2.1: strongswan-5.2.1/stamp-h1
-	$(MAKE) $(PARALLEL_BUILD) -C strongswan-5.2.1
+strongswan: strongswan/stamp-h1
+	$(MAKE) $(PARALLEL_BUILD) -C strongswan
 
-strongswan-5.2.1-install: strongswan-5.2.1
+strongswan-install: strongswan
 	@$(SEP)
-	@$(MAKE) -C strongswan-5.2.1 install DESTDIR=$(INSTALLDIR)/strongswan-5.2.1/ ; chmod 755 $(INSTALLDIR)/strongswan-5.2.1/usr/lib
-	@rm -rf $(INSTALLDIR)/strongswan-5.2.1/usr/etc
-	@rm -f $(INSTALLDIR)/strongswan-5.2.1/usr/lib/ipsec/*.la
-	@rm -f $(INSTALLDIR)/strongswan-5.2.1/usr/lib/ipsec/plugins/*.la
-	@rm -f $(INSTALLDIR)/strongswan-5.2.1/usr/lib/ipsec/*.a
-	@rm -f $(INSTALLDIR)/strongswan-5.2.1/usr/lib/ipsec/plugins/*.a
-ifeq ($(HND_ROUTER),y)
-	$(STRIP_64) $(INSTALLDIR)/strongswan-5.2.1/usr/lib/ipsec/*.so
-	$(STRIP_64) $(INSTALLDIR)/strongswan-5.2.1/usr/lib/ipsec/starter
-	$(STRIP_64) $(INSTALLDIR)/strongswan-5.2.1/usr/lib/ipsec/stroke
-	$(STRIP_64) $(INSTALLDIR)/strongswan-5.2.1/usr/lib/ipsec/scepclient
-	$(STRIP_64) $(INSTALLDIR)/strongswan-5.2.1/usr/lib/ipsec/charon
-	$(STRIP_64) $(INSTALLDIR)/strongswan-5.2.1/usr/lib/ipsec/plugins/*.so
-else
-	$(STRIP) $(INSTALLDIR)/strongswan-5.2.1/usr/lib/ipsec/*.so
-	$(STRIP) $(INSTALLDIR)/strongswan-5.2.1/usr/lib/ipsec/starter
-	$(STRIP) $(INSTALLDIR)/strongswan-5.2.1/usr/lib/ipsec/stroke
-	$(STRIP) $(INSTALLDIR)/strongswan-5.2.1/usr/lib/ipsec/scepclient
-	$(STRIP) $(INSTALLDIR)/strongswan-5.2.1/usr/lib/ipsec/charon
-	$(STRIP) $(INSTALLDIR)/strongswan-5.2.1/usr/lib/ipsec/plugins/*.so
-endif
+	@$(MAKE) -C strongswan install DESTDIR=$(INSTALLDIR)/strongswan/ ; chmod 755 $(INSTALLDIR)/strongswan/usr/lib
+	@rm -rf $(INSTALLDIR)/strongswan/usr/etc
+	@rm -f $(INSTALLDIR)/strongswan/usr/lib/ipsec/*.la
+	@rm -f $(INSTALLDIR)/strongswan/usr/lib/ipsec/plugins/*.la
+	@rm -f $(INSTALLDIR)/strongswan/usr/lib/ipsec/*.a
+	@rm -f $(INSTALLDIR)/strongswan/usr/lib/ipsec/plugins/*.a
+	$(STRIP) $(INSTALLDIR)/strongswan/usr/lib/ipsec/*.so
+	$(STRIP) $(INSTALLDIR)/strongswan/usr/lib/ipsec/starter
+	$(STRIP) $(INSTALLDIR)/strongswan/usr/lib/ipsec/stroke
+	$(STRIP) $(INSTALLDIR)/strongswan/usr/lib/ipsec/scepclient
+	$(STRIP) $(INSTALLDIR)/strongswan/usr/lib/ipsec/charon
+	$(STRIP) $(INSTALLDIR)/strongswan/usr/lib/ipsec/plugins/*.so
 
-	mv $(INSTALLDIR)/strongswan-5.2.1/etc $(INSTALLDIR)/strongswan-5.2.1/usr/
+	mv $(INSTALLDIR)/strongswan/etc $(INSTALLDIR)/strongswan/usr/
 
-strongswan-5.2.1-clean:
-	-@$(MAKE) -C strongswan-5.2.1 clean
-	@rm -f strongswan-5.2.1/stamp-h1
-	@rm -rf $(INSTALLDIR)/strongswan-5.2.1/
-	@rm -rf $(TARGETDIR)/usr/sbin/strongswan-5.2.1/*
-	@rm -rf $(TARGETDIR)/usr/lib/strongswan-5.2.1/*
+strongswan-clean:
+	-@$(MAKE) -C strongswan clean
+	@rm -f strongswan/stamp-h1
+	@rm -rf $(INSTALLDIR)/strongswan/
+	@rm -rf $(TARGETDIR)/usr/sbin/strongswan/*
+	@rm -rf $(TARGETDIR)/usr/lib/strongswan/*
 
 sw-hw-auth:
 	cd sw-hw-auth && \

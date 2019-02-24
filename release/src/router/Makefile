@@ -6150,19 +6150,19 @@ norton${BCMEX}-clean:
 .PHONY : email-3.1.3 email-3.1.3-clean
 
 ifeq ($(RTCONFIG_NOTIFICATION_CENTER),y)
-email-3.1.3/stamp-h1: openssl
+email-3.1.3/stamp-h1: $(OPENSSLDIR)
 	cd $(TOP)/email-3.1.3 && \
 	$(CONFIGURE) --with-ssl --sysconfdir=/etc \
-		CFLAGS="-I$(SRCBASE)/router/openssl/include -I$(TOP)/nt_center/lib -I$(TOP)/sqlite -DRTCONFIG_NOTIFICATION_CENTER" \
-		LDFLAGS="-L$(SRCBASE)/router/openssl -L$(TOP)/nt_center/lib -L$(TOP)/sqlite/.libs" \
+		CFLAGS="-I$(SRCBASE)/router/$(OPENSSLDIR)/include -I$(TOP)/nt_center/lib -I$(TOP)/sqlite -DRTCONFIG_NOTIFICATION_CENTER" \
+		LDFLAGS="-L$(SRCBASE)/router/$(OPENSSLDIR) -L$(TOP)/nt_center/lib -L$(TOP)/sqlite/.libs" \
 		LIBS="-lnt -lsqlite3 -lpthread -lcrypto -lssl $(if $(RTCONFIG_QCA), -ldl)"
 	touch $@
 else
-email-3.1.3/stamp-h1: openssl
+email-3.1.3/stamp-h1: $(OPENSSLDIR)
 	cd $(TOP)/email-3.1.3 && \
 	$(CONFIGURE) --with-ssl --sysconfdir=/etc \
-		CFLAGS=-I$(SRCBASE)/router/openssl/include \
-		LDFLAGS="-L$(SRCBASE)/router/openssl" \
+		CFLAGS=-I$(SRCBASE)/router/$(OPENSSLDIR)/include \
+		LDFLAGS="-L$(SRCBASE)/router/$(OPENSSLDIR)" \
 		LIBS="-lcrypto -lssl $(if $(RTCONFIG_QCA), -ldl)"
 	touch $@
 endif

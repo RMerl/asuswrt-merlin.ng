@@ -1,0 +1,8 @@
+carol::swanctl --terminate --ike home
+alice::swanctl --terminate --ike home
+carol::systemctl stop strongswan-swanctl
+alice::systemctl stop strongswan-swanctl
+moon::systemctl stop strongswan-swanctl
+moon::iptables-restore < /etc/iptables.flush
+carol::iptables-restore < /etc/iptables.flush
+alice::iptables-restore < /etc/iptables.flush

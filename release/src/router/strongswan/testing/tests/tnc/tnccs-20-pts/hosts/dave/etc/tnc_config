@@ -1,0 +1,4 @@
+#IMC configuration file for strongSwan client 
+
+IMC "OS"          /usr/local/lib/ipsec/imcvs/imc-os.so
+IMC "Attestation" /usr/local/lib/ipsec/imcvs/imc-attestation.so

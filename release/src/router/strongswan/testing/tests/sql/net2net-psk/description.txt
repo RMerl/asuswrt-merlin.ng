@@ -1,0 +1,5 @@
+A connection between the subnets behind the gateways <b>moon</b> and <b>sun</b> is set up.
+The authentication is based on <b>Preshared Keys</b> (PSK). Upon the successful
+establishment of the IPsec tunnel, automatically inserted iptables-based firewall rules
+let pass the tunneled traffic. In order to test both tunnel and firewall, client <b>alice</b>
+behind gateway <b>moon</b> pings client <b>bob</b> located behind gateway <b>sun</b>.

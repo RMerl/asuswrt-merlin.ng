@@ -1,0 +1,9 @@
+The roadwarrior <b>carol</b> sets up a connection to gateway <b>moon</b>
+using EAP-TTLS authentication only with the gateway presenting a server certificate and
+the client doing EAP-MD5 password-based authentication.
+In a next step the EAP-TNC protocol is used within the EAP-TTLS tunnel to determine the
+health of <b>carol</b> via the <b>TNCCS 2.0 </b> client-server interface
+compliant with <b>RFC 5793 PB-TNC</b>.
+<p/>
+Unfortunately <b>moon</b> sends his first PB-TNC batch with a wrong version number .
+Therefore the connection setup fails due to a fatal PB-TNC error.

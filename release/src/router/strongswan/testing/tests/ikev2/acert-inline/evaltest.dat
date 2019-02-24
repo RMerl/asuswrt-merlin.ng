@@ -1,0 +1,15 @@
+carol::ipsec status 2> /dev/null::home.*ESTABLISHED.*carol@strongswan.org.*moon.strongswan.org::YES
+dave:: ipsec status 2> /dev/null::home.*ESTABLISHED.*dave@strongswan.org.*moon.strongswan.org::NO
+moon:: ipsec status 2> /dev/null::rw\[1]: ESTABLISHED.*moon.strongswan.org.*carol@strongswan.org::YES
+moon:: ipsec status 2> /dev/null::rw\[2]: ESTABLISHED.*moon.strongswan.org.*dave@strongswan.org::NO
+moon::cat /var/log/daemon.log::constraint check failed: group membership to 'sales' required::YES
+carol::cat /var/log/daemon.log::sending attribute certificate issued by \"C=CH, O=Linux strongSwan, CN=strongSwan AA\"::YES
+dave::cat /var/log/daemon.log::sending attribute certificate issued by \"C=CH, O=Linux strongSwan, CN=strongSwan AA\"::YES
+dave::cat /var/log/daemon.log::sending attribute certificate issued by \"C=CH, O=Linux strongSwan, CN=expired AA\"::YES
+dave::cat /var/log/daemon.log::received AUTHENTICATION_FAILED notify error::YES
+carol::ping -c 1 PH_IP_ALICE::64 bytes from PH_IP_ALICE: icmp_.eq=1::YES
+dave:: ping -c 1 -W 1 PH_IP_ALICE::64 bytes from PH_IP_ALICE: icmp_.eq=1::NO
+moon::tcpdump::IP carol.strongswan.org > moon.strongswan.org: ESP::YES
+moon::tcpdump::IP moon.strongswan.org > carol.strongswan.org: ESP::YES
+moon::tcpdump::IP dave.strongswan.org > moon.strongswan.org: ESP::NO
+moon::tcpdump::IP moon.strongswan.org > dave.strongswan.org: ESP::NO

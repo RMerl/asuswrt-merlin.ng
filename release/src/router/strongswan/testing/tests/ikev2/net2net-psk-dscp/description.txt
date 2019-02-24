@@ -1,0 +1,13 @@
+In order to support <b>Differentiated Services</b> (DiffServ), two parallel IPsec
+connections between the subnets behind the gateways <b>moon</b> and <b>sun</b> are
+set up. Using <b>XFRM marks</b> one IPsec SA is designated for <b>Best Effort</b> (BE)
+traffic and the second SA for <b>Expedited Forwarding</b> (EF) traffic.
+<p/>
+The authentication is based on a <b>pre-shared key</b> (PSK). In order to guarantee that
+the CHILD_SA with the correct mark is selected on the responder side, each CHILD_SA is
+bound to an IKE_SA of its own with a distinct IKEv2 ID but sharing the same PSK.
+<p/>
+Upon the successful establishment of the IPsec tunnel, <b>leftfirewall=yes</b> automatically
+inserts iptables-based firewall rules that let pass the tunneled traffic.
+In order to test both tunnel and firewall, client <b>alice</b> behind gateway <b>moon</b>
+pings client <b>bob</b> located behind gateway <b>sun</b>.

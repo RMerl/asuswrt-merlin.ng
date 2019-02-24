@@ -1,0 +1,14 @@
+carol::ipsec status 2> /dev/null::home.*ESTABLISHED.*\[192.168.0.100].*\[192.168.0.1]::YES
+dave:: ipsec status 2> /dev/null::home.*ESTABLISHED.*\[192.168.0.200].*\[192.168.0.1]::YES
+moon:: ipsec status 2> /dev/null::rw-carol.*ESTABLISHED.*\[192.168.0.1].*\[192.168.0.100]::YES
+moon:: ipsec status 2> /dev/null::rw-dave.*ESTABLISHED.*\[192.168.0.1].*\[192.168.0.200]::YES
+carol::ipsec status 2> /dev/null::home.*INSTALLED, TUNNEL::YES
+dave:: ipsec status 2> /dev/null::home.*INSTALLED, TUNNEL::YES
+moon:: ipsec status 2> /dev/null::rw-carol.*INSTALLED, TUNNEL::YES
+moon:: ipsec status 2> /dev/null::rw-dave.*INSTALLED, TUNNEL::YES
+carol::ping -c 1 PH_IP_ALICE::64 bytes from PH_IP_ALICE: icmp_.eq=1::YES
+dave:: ping -c 1 PH_IP_ALICE::64 bytes from PH_IP_ALICE: icmp_.eq=1::YES
+moon::tcpdump::IP carol.strongswan.org > moon.strongswan.org: ESP::YES
+moon::tcpdump::IP moon.strongswan.org > carol.strongswan.org: ESP::YES
+moon::tcpdump::IP dave.strongswan.org > moon.strongswan.org: ESP::YES
+moon::tcpdump::IP moon.strongswan.org > dave.strongswan.org: ESP::YES

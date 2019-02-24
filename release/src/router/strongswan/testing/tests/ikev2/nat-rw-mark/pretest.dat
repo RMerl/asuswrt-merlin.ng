@@ -1,0 +1,21 @@
+sun::iptables-restore < /etc/iptables.rules
+alice::iptables-restore < /etc/iptables.rules
+venus::iptables-restore < /etc/iptables.rules
+moon::iptables -t nat -A POSTROUTING -o eth0 -s 10.1.0.0/16 -p tcp -j SNAT --to PH_IP_MOON
+moon::iptables -t nat -A POSTROUTING -o eth0 -s PH_IP_ALICE -p udp --sport 500  -j SNAT --to PH_IP_MOON:510
+moon::iptables -t nat -A POSTROUTING -o eth0 -s PH_IP_VENUS -p udp --sport 500  -j SNAT --to PH_IP_MOON:520
+moon::iptables -t nat -A POSTROUTING -o eth0 -s PH_IP_ALICE -p udp --sport 4500 -j SNAT --to PH_IP_MOON:4510
+moon::iptables -t nat -A POSTROUTING -o eth0 -s PH_IP_VENUS -p udp --sport 4500 -j SNAT --to PH_IP_MOON:4520
+sun::iptables -t nat -A POSTROUTING -o eth1 -m mark --mark 10 -j SNAT --to PH_IP_CAROL10
+sun::iptables -t nat -A POSTROUTING -o eth1 -m mark --mark 20 -j SNAT --to PH_IP_DAVE10
+sun::iptables -t mangle -A PREROUTING -d PH_IP_CAROL10 -j MARK --set-mark 10
+sun::iptables -t mangle -A PREROUTING -d PH_IP_DAVE10 -j MARK --set-mark 20
+sun::ipsec start
+alice::ipsec start
+venus::ipsec start
+sun::expect-connection alice
+sun::expect-connection venus
+alice::expect-connection nat-t
+alice::ipsec up nat-t
+venus::expect-connection nat-t
+venus::ipsec up nat-t

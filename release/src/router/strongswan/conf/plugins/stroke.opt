@@ -1,0 +1,23 @@
+charon.plugins.stroke.allow_swap = yes
+	Analyze addresses/hostnames in _left|right_ to detect which side is local
+	and swap configuration options if necessary. If disabled _left_ is always
+	_local_.
+
+charon.plugins.stroke.ignore_missing_ca_basic_constraint = no
+	Treat certificates in ipsec.d/cacerts and ipsec.conf ca sections as CA
+	certificates even if they don't contain a CA basic constraint.
+
+charon.plugins.stroke.max_concurrent = 4
+	Maximum number of stroke messages handled concurrently.
+
+charon.plugins.stroke.prevent_loglevel_changes = no
+	If enabled log level changes via stroke socket are not allowed.
+
+charon.plugins.stroke.secrets_file = ${sysconfdir}/ipsec.secrets
+	Location of the ipsec.secrets file
+
+charon.plugins.stroke.socket = unix://${piddir}/charon.ctl
+	Socket provided by the stroke plugin.
+
+charon.plugins.stroke.timeout = 0
+	Timeout in ms for any stroke command. Use 0 to disable the timeout.

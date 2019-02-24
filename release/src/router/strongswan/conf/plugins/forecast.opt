@@ -1,0 +1,29 @@
+charon.plugins.forecast.interface =
+	Local interface to listen for broadcasts to forward.
+
+	Name of the local interface to listen for broadcasts messages to forward.
+	If no interface is configured, the first usable interface is used, which
+	is usually just fine for single-homed hosts. If your host has multiple
+	interfaces, set this option to the local LAN interface you want to forward
+	broadcasts from/to.
+
+charon.plugins.forecast.reinject =
+	CHILD_SA configurations names to perform multi/broadcast reinjection.
+
+	Comma separated list of CHILD_SA configuration names for which to perform
+	multi/broadcast reinjection. For clients connecting over such a
+	configuration, any multi/broadcast received over the tunnel gets reinjected
+	to all active tunnels. This makes the broadcasts visible to other peers,
+	and for examples allows clients to see others shares. If disabled,
+	multi/broadcast messages received over a tunnel are injected to the local
+	network only, but not to other IPsec clients.
+
+charon.plugins.forecast.groups = 224.0.0.1,224.0.0.22,224.0.0.251,224.0.0.252,239.255.255.250
+	Multicast groups to join locally, allowing forwarding of them.
+
+	Comma separated list of multicast groups to join locally. The local host
+	receives and forwards packets in the local LAN for joined multicast groups
+	only. Packets matching the list of multicast groups get forwarded to
+	connected clients. The default group includes host multicasts, IGMP, mDNS,
+	LLMNR and SSDP/WS-Discovery, and is usually a good choice for Windows
+	clients.

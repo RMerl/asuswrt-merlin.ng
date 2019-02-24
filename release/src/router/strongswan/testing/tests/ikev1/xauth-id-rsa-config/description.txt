@@ -1,0 +1,12 @@
+The roadwarriors <b>carol</b> and <b>dave</b> set up a connection to gateway <b>moon</b>.
+The authentication is based on RSA signatures (<b>RSASIG</b>) using X.509 certificates
+followed by extended authentication (<b>XAUTH</b>) of <b>carol</b> and <b>dave</b>
+based on user names defined by the <b>xauth_identity</b> parameter (<b>carol</b> and <b>dave</b>,
+respectively) and corresponding user passwords defined and stored in ipsec.secrets.
+Next both <b>carol</b> and <b>dave</b> request a <b>virtual IP</b> via the IKE Mode Config
+protocol by using the <b>leftsourceip=%config</b> parameter.
+<p>
+Upon the successful establishment of the IPsec tunnel, leftfirewall=yes automatically
+inserts iptables-based firewall rules that let pass the tunneled traffic.
+In order to test both tunnel and firewall, <b>carol</b> and <b>dave</b> ping the client
+<b>alice</b> behind the gateway <b>moon</b>.

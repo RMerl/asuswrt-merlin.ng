@@ -1,0 +1,9 @@
+charon.plugins.xauth-pam.pam_service = login
+	PAM service to be used for authentication.
+
+charon.plugins.xauth-pam.session = no
+	Open/close a PAM session for each active IKE_SA.
+
+charon.plugins.xauth-pam.trim_email = yes
+	If an email address is received as an XAuth username, trim it to just the
+	username part.

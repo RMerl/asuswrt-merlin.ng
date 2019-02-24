@@ -1,0 +1,6 @@
+The peers <b>alice</b> and <b>venus</b> are hidden behind the same NAT router <b>moon</b>
+but both are not aware of this fact. Thus they try to resolve the apparent double-NAT
+situation with the help of the mediation server <b>carol</b> where they register under
+the pseudonyms <b>6cu1UTVw@medsrv.org</b> and <b>F1ubAio8@medsrv.org</b>, respectively.
+Based on the set of endpoints relayed to them by the mediation server, the peers find out
+that they can communicate directly with each other without a NAT router in between.

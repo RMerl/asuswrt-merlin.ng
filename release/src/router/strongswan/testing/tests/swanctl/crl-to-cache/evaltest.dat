@@ -1,0 +1,8 @@
+carol::swanctl --list-sas --raw 2> /dev/null::home.*version=2 state=ESTABLISHED local-host=192.168.0.100 local-port=4500 local-id=carol@strongswan.org remote-host=192.168.0.1 remote-port=4500 remote-id=moon.strongswan.org::NO
+moon:: swanctl --list-sas --ike-id 1 --raw 2> /dev/null::rw.*version=2 state=ESTABLISHED local-host=192.168.0.1 local-port=4500 local-id=moon.strongswan.org remote-host=192.168.0.100 remote-port=4500 remote-id=carol@strongswan.org::NO
+moon:: cat /var/log/daemon.log::written crl .*/etc/swanctl/x509crl/5da7dd700651327ee7b66db3b5e5e060ea2e4def.crl::YES
+moon:: cat /var/log/daemon.log::written crl .*/etc/swanctl/x509crl/5da7dd700651327ee7b66db3b5e5e060ea2e4def_delta.crl::YES
+carol::cat /var/log/daemon.log::written crl .*/etc/swanctl/x509crl/5da7dd700651327ee7b66db3b5e5e060ea2e4def.crl::YES
+carol::cat /var/log/daemon.log::written crl .*/etc/swanctl/x509crl/5da7dd700651327ee7b66db3b5e5e060ea2e4def_delta.crl::YES
+carol::cat /var/log/daemon.log::certificate was revoked::YES
+carol::cat /var/log/daemon.log::no trusted RSA public key found for.*moon.strongswan.org::YES

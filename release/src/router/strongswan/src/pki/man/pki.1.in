@@ -1,0 +1,164 @@
+.TH PKI 1 "2015-08-06" "@PACKAGE_VERSION@" "strongSwan"
+.
+.SH "NAME"
+.
+pki \- Simple public key infrastructure (PKI) management tool
+.
+.SH "SYNOPSIS"
+.
+.SY "pki"
+.I command
+.RI [ option\~ .\|.\|.]
+.YS
+.
+.SY "pki"
+.B \-h
+|
+.B \-\-help
+.YS
+.
+.SH "DESCRIPTION"
+.
+.B pki
+is a suite of commands that allow you to manage a simple public key
+infrastructure (PKI).
+.P
+Generate RSA and ECDSA key pairs, create PKCS#10 certificate requests
+containing subjectAltNames, create X.509 self-signed end-entity and root CA
+certificates, issue end-entity and intermediate CA certificates signed by the
+private key of a CA and containing subjectAltNames, CRL distribution points
+and URIs of OCSP servers. You can also extract raw public keys from private
+keys, certificate requests and certificates and compute two kinds of SHA-1-based
+key IDs.
+.
+.SH "COMMANDS"
+.
+.TP
+.B "\-h, \-\-help"
+Prints usage information and a short summary of the available commands.
+.TP
+.B "\-g, \-\-gen"
+Generate a new private key.
+.TP
+.B "\-s, \-\-self"
+Create a self-signed certificate.
+.TP
+.B "\-i, \-\-issue"
+Issue a certificate using a CA certificate and key.
+.TP
+.B "\-c, \-\-signcrl"
+Issue a CRL using a CA certificate and key.
+.TP
+.B "\-z, \-\-acert"
+Issue an attribute certificate.
+.TP
+.B "\-r, \-\-req"
+Create a PKCS#10 certificate request.
+.TP
+.B "\-7, \-\-pkcs7"
+Provides PKCS#7 wrap/unwrap functions.
+.TP
+.B "\-k, \-\-keyid"
+Calculate key identifiers of a key or certificate.
+.TP
+.B "\-a, \-\-print"
+Print a credential (key, certificate etc.) in human readable form.
+.TP
+.B "\-d, \-\-dn"
+Extract the subject DN of an X.509 certificate.
+.TP
+.B "\-p, \-\-pub"
+Extract a public key from a private key or certificate.
+.TP
+.B "\-v, \-\-verify"
+Verify a certificate using a CA certificate.
+.
+.SH "EXAMPLES"
+.
+.SS "Generating a CA Certificate"
+.
+The first step is to generate a private key using the
+.B \-\-gen
+command. By default this generates a 2048-bit RSA key.
+.PP
+.EX
+  pki \-\-gen > ca_key.der
+.EE
+.PP
+This key is used to create the self-signed CA certificate, using the
+.B \-\-self
+command. The distinguished name should be adjusted to your needs.
+.PP
+.EX
+  pki \-\-self \-\-ca \-\-in ca_key.der \\
+      \-\-dn "C=CH, O=strongSwan, CN=strongSwan CA" > ca_cert.der
+.EE
+.PP
+.
+.SS "Generating End-Entity Certificates"
+.
+With the root CA certificate and key at hand end-entity certificates for clients
+and servers can be issued. Similarly intermediate CA certificates can be issued,
+which in turn can issue other certificates.
+To generate a certificate for a server, we start by generating a private key.
+.PP
+.EX
+  pki \-\-gen > server_key.der
+.EE
+.PP
+The public key will be included in the certificate so lets extract that from the
+private key.
+.PP
+.EX
+  pki \-\-pub \-\-in server_key.der > server_pub.der
+.EE
+.PP
+The following command will use the CA certificate and private key to issue the
+certificate for this server. Adjust the distinguished name, subjectAltName(s)
+and flags as needed (check
+.BR pki\ \-\-issue (8)
+for more options).
+.PP
+.EX
+  pki \-\-issue \-\-in server_pub.der \-\-cacert ca_cert.der \\
+      \-\-cakey ca_key.der \-\-dn "C=CH, O=strongSwan, CN=VPN Server" \\
+      \-\-san vpn.strongswan.org \-\-flag serverAuth > server_cert.der
+.EE
+.PP
+Instead of storing the public key in a separate
+file, the output of
+.B \-\-pub
+may also be piped directly into the above command.
+.
+.SS "Generating Certificate Revocation Lists (CRL)"
+.
+If end-entity certificates have to be revoked, CRLs may be generated using
+the
+.B \-\-signcrl
+command.
+.PP
+.EX
+  pki \-\-signcrl \-\-cacert ca_cert.der \-\-cakey ca_key.der \\
+      \-\-reason superseded \-\-cert server_cert.der > crl.der
+.EE
+.PP
+The certificate given with \-\-cacert must be either a CA certificate or a
+certificate with the
+.I crlSign
+extended key usage (\-\-flag crlSign). URIs to CRLs may be included in issued
+certificates with the \-\-crl option.
+.
+.SH "SEE ALSO"
+.
+.BR pki\ \-\-gen (1),
+.BR pki\ \-\-self (1),
+.BR pki\ \-\-issue (1),
+.BR pki\ \-\-signcrl (1),
+.BR pki\ \-\-acert (1),
+.BR pki\ \-\-req (1),
+.BR pki\ \-\-pkcs7 (1),
+.BR pki\ \-\-keyid (1),
+.BR pki\ \-\-print (1),
+.BR pki\ \-\-dn (1),
+.BR pki\ \-\-pub (1),
+.BR pki\ \-\-verify (1)

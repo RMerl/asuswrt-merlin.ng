@@ -1,0 +1,6 @@
+By setting <b>cachecrls=yes</b> in ipsec.conf, a copy of the CRL fetched
+via http from the web server <b>winnetou</b> is saved locally in the
+directory <b>/etc/ipsec.d/crls</b> on both the roadwarrior <b>carol</b>
+and the gateway <b>moon</b> when the IPsec connection is set up. The
+<b>subjectKeyIdentifier</b> of the issuing CA plus the suffix <b>.crl</b>
+is used as a unique filename for the cached CRL. 

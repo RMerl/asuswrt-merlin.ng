@@ -1,0 +1,11 @@
+The roadwarriors <b>carol</b> and <b>dave</b> set up a connection to gateway <b>moon</b>.
+At the outset the gateway authenticates itself to the clients by sending
+an IKEv2 <b>RSA signature</b> accompanied by a certificate.
+The roadwarrios then use the <i>Extensible Authentication Protocol</i>
+in association with an  <i>MD5</i> challenge and response protocol
+(<b>EAP-MD5</b>) to authenticate against the gateway <b>moon</b> and includes
+a <b>Postquantum Preshared Key (PPK)</b> that's also mixed into the
+derived key material. The PPK_ID used by <b>dave</b> is unknown to <b>moon</b>
+but since both peers don't enforce the use of a PPK they fall back to regular
+authentication by use of the authentication data provided in the NO_PPK_AUTH
+notify.

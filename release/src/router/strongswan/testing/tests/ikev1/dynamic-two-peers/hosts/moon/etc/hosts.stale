@@ -1,0 +1,67 @@
+# /etc/hosts:  This file describes a number of hostname-to-address
+#              mappings for the TCP/IP subsystem.  It is mostly
+#              used at boot time, when no name servers are running.
+#              On small systems, this file can be used instead of a
+#              "named" name server.  Just add the names, addresses
+#              and any aliases to this file...
+#
+
+127.0.0.1	localhost
+
+192.168.0.254	uml0.strongswan.org	uml0
+10.1.0.254	uml1.strongswan.org	uml1
+10.2.0.254	uml1.strongswan.org	uml2
+
+10.1.0.10	alice.strongswan.org	alice
+10.1.0.20	venus.strongswan.org	venus
+10.1.0.1	moon1.strongswan.org	moon1
+192.168.0.1	moon.strongswan.org	moon
+192.168.0.110	carol.strongswan.org	carol
+10.3.0.1	carol1.strongswan.org	carol1
+192.168.0.150	winnetou.strongswan.org	winnetou crl.strongswan.org ocsp.strongswan.org ldap.strongswan.org
+192.168.0.220	dave.strongswan.org	dave
+10.3.0.2	dave1.strongswan.org	dave1
+192.168.0.2	sun.strongswan.org	sun
+10.2.0.1	sun1.strongswan.org	sun1
+10.2.0.10	bob.strongswan.org	bob
+
+# IPv6 versions of localhost and co
+::1 ip6-localhost ip6-loopback
+fe00::0 ip6-localnet
+ff00::0 ip6-mcastprefix
+ff02::1 ip6-allnodes
+ff02::2 ip6-allrouters
+ff02::3 ip6-allhosts
+
+# IPv6 solicited-node multicast addresses
+ff02::1:ff00:1	ip6-mcast-1
+ff02::1:ff00:2	ip6-mcast-2
+ff02::1:ff00:10	ip6-mcast-10
+ff02::1:ff00:15	ip6-mcast-15
+ff02::1:ff00:20	ip6-mcast-20
+
+# IPv6 site-local addresses
+fec1::10	ip6-alice.strongswan.org    ip6-alice
+fec1::20	ip6-venus.strongswan.org    ip6-venus
+fec1::1 	ip6-moon1.strongswan.org    ip6-moon1
+fec0::1 	ip6-moon.strongswan.org     ip6-moon
+fec0::10	ip6-carol.strongswan.org    ip6-carol
+fec3::1 	ip6-carol1.strongswan.org   ip6-carol1
+fec0::15	ip6-winnetou.strongswan.org ip6-winnetou 
+fec0::20	ip6-dave.strongswan.org     ip6-dave
+fec3::2 	ip6-dave1.strongswan.org    ip6-dave1
+fec0::2 	ip6-sun.strongswan.org      ip6-sun
+fec2::1 	ip6-sun1.strongswan.org     ip6-sun1
+fec2::10	ip6-bob.strongswan.org      ip6-bob
+
+# IPv6 link-local HW derived addresses
+fe80::fcfd:0aff:fe01:14	ip6-hw-venus.strongswan.org    ip6-hw-venus
+fe80::fcfd:0aff:fe01:0a	ip6-hw-alice.strongswan.org    ip6-hw-alice
+fe80::fcfd:0aff:fe01:01	ip6-hw-moon1.strongswan.org    ip6-hw-moon1
+fe80::fcfd:c0ff:fea8:01 ip6-hw-moon.strongswan.org     ip6-hw-moon
+fe80::fcfd:c0ff:fea8:64	ip6-hw-carol.strongswan.org    ip6-hw-carol
+fe80::fcfd:c0ff:fea8:96 ip6-hw-winnetou.strongswan.org ip6-hw-winnetou
+fe80::fcfd:c0ff:fea8:c8	ip6-hw-dave.strongswan.org     ip6-hw-dave
+fe80::fcfd:c0ff:fea8:02	ip6-hw-sun.strongswan.org      ip6-hw-sun
+fe80::fcfd:0aff:fe02:01	ip6-hw-sun1.strongswan.org     ip6-hw-sun1
+fe80::fcfd:0aff:fe02:0a ip6-hw-bob.strongswan.org      ip6-hw-bob

@@ -1,0 +1,12 @@
+The roadwarriors <b>carol</b> and <b>dave</b> set up a connection each to
+gateway <b>moon</b>. Both <b>carol</b> and <b>dave</b> request a <b>virtual
+IP</b> via the IKEv2 configuration payload.
+<p/>
+The gateway <b>moon</b> uses <b>route-based forwarding</b> with <b>VTI
+tunnels</b>, with firewall rules to allow traffic to pass. The IKE daemon is
+configured to not install routes with <em>charon.install_routes=0</em>, and a
+static route is installed for the virtual IP subnet on the VTI device.
+<p/>
+Both <b>carol</b> and <b>dave</b> ping the client <b>alice</b> behind the
+gateway <b>moon</b>. The source IP addresses of the two pings will be the
+virtual IPs <b>carol1</b> and <b>dave1</b>, respectively.

@@ -1,0 +1,113 @@
+.TH "PKI \-\-GEN" 1 "2016-12-13" "@PACKAGE_VERSION@" "strongSwan"
+.
+.SH "NAME"
+.
+pki \-\-gen \- Generate a new RSA or ECDSA private key
+.
+.SH "SYNOPSIS"
+.
+.SY pki\ \-\-gen
+.OP \-\-type type
+.OP \-\-size bits
+.OP \-\-safe\-primes
+.OP \-\-shares n
+.OP \-\-threshold l
+.OP \-\-outform encoding
+.OP \-\-debug level
+.YS
+.
+.SY pki\ \-\-gen
+.BI \-\-options\~ file
+.YS
+.
+.SY "pki \-\-gen"
+.B \-h
+|
+.B \-\-help
+.YS
+.
+.SH "DESCRIPTION"
+.
+This sub-command of
+.BR pki (1)
+is used to generate a new RSA or ECDSA private key.
+.
+.SH "OPTIONS"
+.
+.TP
+.B "\-h, \-\-help"
+Print usage information with a summary of the available options.
+.TP
+.BI "\-v, \-\-debug " level
+Set debug level, default: 1.
+.TP
+.BI "\-+, \-\-options " file
+Read command line options from \fIfile\fR.
+.TP
+.BI "\-t, \-\-type " type
+Type of key to generate. Either \fIrsa\fR, \fIecdsa\fR, \fIed25519\fR or
+\fIbliss\fR, defaults to \fIrsa\fR.
+.TP
+.BI "\-s, \-\-size " bits
+Key length in bits. Defaults to 2048 for \fIrsa\fR and 384 for \fIecdsa\fR.
+For \fIecdsa\fR only three values are currently supported: 256, 384 and 521.
+.TP
+.BI "\-p, \-\-safe\-primes"
+Generate RSA safe primes.
+.TP
+.BI "\-f, \-\-outform " encoding
+Encoding of the generated private key. Either \fIder\fR (ASN.1 DER) or \fIpem\fR
+(Base64 PEM), defaults
+to \fIder\fR.
+.PP
+.SS "RSA Threshold Cryptography"
+.TP
+.BI "\-n, \-\-shares " <n>
+Number of private RSA key shares.
+.TP
+.BI "\-l, \-\-threshold " <l>
+Minimum number of participating RSA key shares.
+.
+.SH "PROBLEMS ON HOSTS WITH LOW ENTROPY"
+.
+If the
+.I gmp
+plugin is used to generate RSA private keys the key material is read from
+.I /dev/random
+(via the
+.I random
+plugin). Therefore, the command may block if the system's entropy pool is empty.
+To avoid this, either use a hardware random number generator to feed
+.I /dev/random
+or use OpenSSL (via the
+.I openssl
+plugin or the command line) which is not as strict in regards to the quality of
+the key material (it reads from
+.I /dev/urandom
+if necessary). It is also possible to configure the devices used by the
+.I random
+plugin in
+.BR strongswan.conf (5).
+Setting
+.B libstrongswan.plugins.random.random
+to
+.I /dev/urandom
+forces the plugin to treat bytes read from
+.I /dev/urandom
+as high grade random data, thus avoiding the blocking. Of
+course, this doesn't change the fact that the key material generated this way is
+of lower quality.
+.
+.SH "EXAMPLES"
+.
+.TP
+.B pki \-\-gen \-\-size 3072 > rsa_key.der
+Generates a 3072-bit RSA private key.
+.
+.TP
+.B pki \-\-gen \-\-type ecdsa \-\-size 256 > ecdsa_key.der
+Generates a 256-bit ECDSA private key.
+.
+.SH "SEE ALSO"
+.
+.BR pki (1)

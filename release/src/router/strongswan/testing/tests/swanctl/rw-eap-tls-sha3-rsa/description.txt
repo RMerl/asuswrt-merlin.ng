@@ -1,0 +1,8 @@
+The roadwarriors <b>carol</b> and <b>dave</b> set up a connection each 
+to gateway <b>moon</b>. The authentication is based on <b>EAP-TLS</b> only using
+<b>X.509 certificates</b> with signatures consisting of <b>RSA-encrypted SHA-3 hashes</b>. 
+<p/>
+Upon the successful establishment of the IPsec tunnels, the updown script
+automatically inserts iptables-based firewall rules that let pass the tunneled traffic.
+In order to test both tunnel and firewall, both <b>carol</b> and <b>dave</b> ping
+the client <b>alice</b> behind the gateway <b>moon</b>.

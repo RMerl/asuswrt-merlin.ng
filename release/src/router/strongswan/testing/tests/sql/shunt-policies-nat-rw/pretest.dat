@@ -1,0 +1,20 @@
+alice::cat /usr/local/share/strongswan/templates/database/sql/sqlite.sql /etc/ipsec.d/data.sql > /etc/db.d/ipsec.sql
+venus::cat /usr/local/share/strongswan/templates/database/sql/sqlite.sql /etc/ipsec.d/data.sql > /etc/db.d/ipsec.sql
+sun::cat /usr/local/share/strongswan/templates/database/sql/sqlite.sql /etc/ipsec.d/data.sql > /etc/db.d/ipsec.sql
+alice::cat /etc/db.d/ipsec.sql | sqlite3 /etc/db.d/ipsec.db
+venus::cat /etc/db.d/ipsec.sql | sqlite3 /etc/db.d/ipsec.db
+sun::cat /etc/db.d/ipsec.sql | sqlite3 /etc/db.d/ipsec.db
+alice::cd /etc/swanctl; rm -r rsa/* x509/* x509ca/*
+venus::cd /etc/swanctl; rm -r rsa/* x509/* x509ca/*
+sun::cd /etc/swanctl; rm -r rsa/* x509/* x509ca/*
+sun::iptables-restore < /etc/iptables.rules
+moon::iptables -t nat -A POSTROUTING -o eth0 -s 10.1.0.0/16 -p udp -j SNAT --to-source PH_IP_MOON:1024-1100
+moon::iptables -t nat -A POSTROUTING -o eth0 -s 10.1.0.0/16 -p tcp -j SNAT --to-source PH_IP_MOON:2000-2100
+sun::systemctl start strongswan-swanctl
+alice::systemctl start strongswan-swanctl
+venus::systemctl start strongswan-swanctl
+sun::expect-connection nat-t
+alice::expect-connection nat-t
+alice::swanctl --initiate --child nat-t 2> /dev/null
+venus::expect-connection nat-t
+venus::swanctl --initiate --child nat-t 2> /dev/null

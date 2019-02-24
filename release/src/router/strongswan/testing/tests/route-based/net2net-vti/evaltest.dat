@@ -1,0 +1,5 @@
+moon::swanctl --list-sas --ike-id 1 --raw 2> /dev/null::gw.*version=2 state=ESTABLISHED local-host=PH_IP_MOON local-port=4500 local-id=moon.strongswan.org remote-host=PH_IP_SUN remote-port=4500 remote-id=sun.strongswan.org.*child-sas.*net.*reqid=1 state=INSTALLED mode=TUNNEL.*ESP.*local-ts=\[0.0.0.0/0] remote-ts=\[0.0.0.0/0]::YES
+sun::swanctl --list-sas --ike-id 1 --raw 2> /dev/null::gw.*version=2 state=ESTABLISHED local-host=PH_IP_SUN local-port=4500 local-id=sun.strongswan.org remote-host=PH_IP_MOON remote-port=4500 remote-id=moon.strongswan.org.*child-sas.*net.*reqid=1 state=INSTALLED mode=TUNNEL.*ESP.*local-ts=\[0.0.0.0/0] remote-ts=\[0.0.0.0/0]::YES
+alice::ping -c 1 PH_IP_BOB::64 bytes from PH_IP_BOB: icmp_.eq=1::YES
+sun::tcpdump::IP moon.strongswan.org > sun.strongswan.org: ESP::YES
+sun::tcpdump::IP sun.strongswan.org > moon.strongswan.org: ESP::YES

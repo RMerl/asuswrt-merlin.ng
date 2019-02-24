@@ -1,0 +1,9 @@
+Changes
+Makefile.PL
+MANIFEST
+README.pod
+t/Vici-Session.t
+lib/Vici/Session.pm
+lib/Vici/Message.pm
+lib/Vici/Packet.pm
+lib/Vici/Transport.pm

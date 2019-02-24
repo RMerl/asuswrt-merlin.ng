@@ -1,0 +1,664 @@
+
+=head1 NAME
+
+Vici::Session - Perl binding for the strongSwan VICI configuration interface
+
+=head1 DESCRIPTION
+
+The Vici::Session module allows a Perl script to communicate with the open
+source strongSwan IPsec daemon (https://www.strongswan.org) via the documented
+Versatile IKE Configuration Interface (VICI). VICI allows the configuration,
+management and monitoring of multiple IPsec connections.
+
+=head1 INSTALLATION
+
+To install this module type the following:
+
+  perl Makefile.PL
+  make
+  make install
+
+=head1 DEPENDENCIES
+
+This module requires the standard networking module:
+
+  IO::Socket::UNIX
+
+=head1 METHODS
+
+The following examples show the use of the Vici::Session interface in a
+a "net-net" connection between the VPN gateways "moon" and "sun".
+
+=cut
+
+use strict;
+use warnings;
+use IO::Socket::UNIX;
+use Vici::Message;
+use Vici::Session;
+
+my $moon_key = "-----BEGIN RSA PRIVATE KEY-----\n" .
+    "MIIEowIBAAKCAQEApHwF+sUXQdH+WwYzdPMzpjuwhGGvHgsmBah1IQsPsddL9gZy" .
+    "gerzpTM1vvQ4kbRuvE3SZWLf9uKEbiQV9IABr87L9JAva56EHIAiUMuG8WizVbIK" .
+    "IhQlZc8S2mIwAW0Jc6EmnoJv9j6F/tVD9+6xvMJbwHLi0h7BUO9tBVLPy72YeGNB" .
+    "Y6Cob4CrOuFOJyACezJ7i9vZ+XzOfnXpu7qL0DgYP/n2maPEJGEivTFunkJD/mJ8" .
+    "DecyLTQcchsCj2118BMuf2qjVn4UWPCBBuhyYK5wsATB1ANeAtlFfgH+wsuHjZwt" .
+    "TJru05lGHBZ3F2hZ9PO68hVHbIZZj6SB8X47nwIDAQABAoIBAAQDXqX6rxGVDQ6t" .
+    "fQ3qbSUuKaVhOMOT5A6ZSJpQycY+CYVsLNkMoXszX6lUDhlH/Letcme03OAKMM77" .
+    "JGn9wYzHj+RcrDuE95Y2bh/oh1dWhaGeoW6pbSwpvD0FzkQKpANlOCr/5bltVxmb" .
+    "nHftI/sGBvUQGIal53ORE+jgV1+SK6I0oAIWiCpU2oZpYMAtp7WxOngsAJaGtk//" .
+    "m2ckH+T8uVHwe9gJ9HZnEk+Io6BXScMNNrsbd2J+pQ75wQXfzHEzHAj+ElhWzhtc" .
+    "5XefqHw/DfpPDX/lby3VoSoagqzsVuUx7LylgzIDxTsb9HQVOLjDzOQ+vn22Xj7g" .
+    "UCEjwLkCgYEA2EZguuzJdxRIWBSnIyzpCzfqm0EgybpeLuJVfzWla0yKWI6AeLhW" .
+    "cr+7o9UE8nCQHVffIrgjWksjc/S5FhzC9TYSHpPa8TPgebTQK4VxnP9Qkh/XRpJj" .
+    "CqgJ8k2MYleHYxa+AKQv/25yNhLdowkNR0iU1kbiaYRJMP0WigAmdAUCgYEAwrJe" .
+    "Y3LAawOkalJFMFTtLXsqZE91TFwMt9TQnzysGH3Q6+9N+qypS5KCes650+qgrwBV" .
+    "RmRNc1ixylToP3B0BKY5OD/BwMx1L/zSO3x7I4ZDasCu33y2ukGLcVSxrxTPTGdd" .
+    "8fhEiVO1CDXcM08/kSeQa049J8ziY3M+4NDchlMCgYEAw2VCO1923Tjb64gtQOBw" .
+    "ZAxOz5nVz6urL9yYted33is2yq9kbqzMnbuQAYKRh6Ae9APRuwJ2HjvIehjdp5aw" .
+    "pO4HDM00f7sI0ayEbu2PKfKZjotp6X6UMKqE4f8iGC9QSDvhyZ6NJs9YLHZ6+7NP" .
+    "5dkzbyx3njFAFxxxYpikJSkCgYByShB8YlUvvKCcRRUWbRQZWa6l2brqizJwCz43" .
+    "636+lcS5au2klAyBL0zm2Elfa+DNOe3U93Y7mrorIrJ+4v1H6We3bD3JdnvoIooq" .
+    "n0UNsngKx3cf++6r4WQAsA3pz9ZsbFVKgEmDL58aZbuQZxnSlJ4DT5c4sN3IMVOc" .
+    "1x5MvwKBgHudAaLvioIopBpYzOsK2OtEn6NQ7SwH0BLEUulHysaHqan5oExmM1bm" .
+    "YeivMDc9hj0YLXA47ryQHTx4vB5Nv3TI/LoUG6VrCvZvocQOXe/n7TguwAjJj7ef" .
+    "E55Gy8lXDRENyJMP1vif3N2iH8eQ1ASf8k/+gnBNkjSlYSSQUDfV\n" .
+    "-----END RSA PRIVATE KEY-----\n";
+ 
+my $moon_cert = "-----BEGIN CERTIFICATE-----\n" .
+    "MIIEIjCCAwqgAwIBAgIBKzANBgkqhkiG9w0BAQsFADBFMQswCQYDVQQGEwJDSDEZ" .
+    "MBcGA1UEChMQTGludXggc3Ryb25nU3dhbjEbMBkGA1UEAxMSc3Ryb25nU3dhbiBS" .
+    "b290IENBMB4XDTE0MDgyNzE0NDQ1NloXDTE5MDgyNjE0NDQ1NlowRjELMAkGA1UE" .
+    "BhMCQ0gxGTAXBgNVBAoTEExpbnV4IHN0cm9uZ1N3YW4xHDAaBgNVBAMTE21vb24u" .
+    "c3Ryb25nc3dhbi5vcmcwggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEKAoIBAQCk" .
+    "fAX6xRdB0f5bBjN08zOmO7CEYa8eCyYFqHUhCw+x10v2BnKB6vOlMzW+9DiRtG68" .
+    "TdJlYt/24oRuJBX0gAGvzsv0kC9rnoQcgCJQy4bxaLNVsgoiFCVlzxLaYjABbQlz" .
+    "oSaegm/2PoX+1UP37rG8wlvAcuLSHsFQ720FUs/LvZh4Y0FjoKhvgKs64U4nIAJ7" .
+    "MnuL29n5fM5+dem7uovQOBg/+faZo8QkYSK9MW6eQkP+YnwN5zItNBxyGwKPbXXw" .
+    "Ey5/aqNWfhRY8IEG6HJgrnCwBMHUA14C2UV+Af7Cy4eNnC1Mmu7TmUYcFncXaFn0" .
+    "87ryFUdshlmPpIHxfjufAgMBAAGjggEaMIIBFjAJBgNVHRMEAjAAMAsGA1UdDwQE" .
+    "AwIDqDAdBgNVHQ4EFgQU2CY9Iex8275aOQxbcMsDgCHerhMwbQYDVR0jBGYwZIAU" .
+    "XafdcAZRMn7ntm2zteXgYOouTe+hSaRHMEUxCzAJBgNVBAYTAkNIMRkwFwYDVQQK" .
+    "ExBMaW51eCBzdHJvbmdTd2FuMRswGQYDVQQDExJzdHJvbmdTd2FuIFJvb3QgQ0GC" .
+    "AQAwHgYDVR0RBBcwFYITbW9vbi5zdHJvbmdzd2FuLm9yZzATBgNVHSUEDDAKBggr" .
+    "BgEFBQcDATA5BgNVHR8EMjAwMC6gLKAqhihodHRwOi8vY3JsLnN0cm9uZ3N3YW4u" .
+    "b3JnL3N0cm9uZ3N3YW4uY3JsMA0GCSqGSIb3DQEBCwUAA4IBAQCpnj6Nc+PuPLPi" .
+    "4E3g5hyJkr5VZy7SSglcs1uyVP2mfwj6JR9SLd5+JOsL1aCTm0y9qLcqdbHBxG8i" .
+    "LNLtwVKU3s1hV4EIO3saHe4XUEjxN9bDtLWEoeq5ipmYX8RJ/fXKR8/8vurBARP2" .
+    "xu1+wqwEhymp4jBmF0LVovT1+o+GhH66zIJnx3zR9BtfMkaeL6804hrx2ygeopeo" .
+    "buGvMDQ8HcnMB9OU7Y8fK0oY1kULl6hf36K5ApPA6766sRRKRvBSKlmViKSQTq5a" .
+    "4c8gCWAZbtdT+N/fa8hKDlZt5q10EgjTqDfGTj50xKvAneq7XdfKmYYGnIWoNLY9" .
+    "ga8NOzX8\n" .
+    "-----END CERTIFICATE-----\n";
+
+my $ca_cert = "-----BEGIN CERTIFICATE-----\n" .
+    "MIIDuDCCAqCgAwIBAgIBADANBgkqhkiG9w0BAQsFADBFMQswCQYDVQQGEwJDSDEZ" .
+    "MBcGA1UEChMQTGludXggc3Ryb25nU3dhbjEbMBkGA1UEAxMSc3Ryb25nU3dhbiBS" .
+    "b290IENBMB4XDTA0MDkxMDEwMDExOFoXDTE5MDkwNzEwMDExOFowRTELMAkGA1UE" .
+    "BhMCQ0gxGTAXBgNVBAoTEExpbnV4IHN0cm9uZ1N3YW4xGzAZBgNVBAMTEnN0cm9u" .
+    "Z1N3YW4gUm9vdCBDQTCCASIwDQYJKoZIhvcNAQEBBQADggEPADCCAQoCggEBAL/y" .
+    "X2LqPVZuWLPIeknK86xhz6ljd3NNhC2z+P1uoCP3sBMuZiZQEjFzhnKcbXxCeo2f" .
+    "FnvhOOjrrisSuVkzuu82oxXD3fIkzuS7m9V4E10EZzgmKWIf+WuNRfbgAuUINmLc" .
+    "4YGAXBQLPyzpP4Ou48hhz/YQo58Bics6PHy5v34qCVROIXDvqhj91P8g+pS+F21/" .
+    "7P+CH2jRcVIEHZtG8M/PweTPQ95dPzpYd2Ov6SZ/U7EWmbMmT8VcUYn1aChxFmy5" .
+    "gweVBWlkH6MP+1DeE0/tL5c87xo5KCeGK8Tdqpe7sBRC4pPEEHDQciTUvkeuJ1Pr" .
+    "K+1LwdqRxo7HgMRiDw8CAwEAAaOBsjCBrzASBgNVHRMBAf8ECDAGAQH/AgEBMAsG" .
+    "A1UdDwQEAwIBBjAdBgNVHQ4EFgQUXafdcAZRMn7ntm2zteXgYOouTe8wbQYDVR0j" .
+    "BGYwZIAUXafdcAZRMn7ntm2zteXgYOouTe+hSaRHMEUxCzAJBgNVBAYTAkNIMRkw" .
+    "FwYDVQQKExBMaW51eCBzdHJvbmdTd2FuMRswGQYDVQQDExJzdHJvbmdTd2FuIFJv" .
+    "b3QgQ0GCAQAwDQYJKoZIhvcNAQELBQADggEBACOSmqEBtBLR9aV3UyCI8gmzR5in" .
+    "Lte9aUXXS+qis6F2h2Stf4sN+Nl6Gj7REC6SpfEH4wWdwiUL5J0CJhyoOjQuDl3n" .
+    "1Dw3dE4/zqMZdyDKEYTU75TmvusNJBdGsLkrf7EATAjoi/nrTOYPPhSUZvPp/D+Y" .
+    "vORJ9Ej51GXlK1nwEB5iA8+tDYniNQn6BD1MEgIejzK+fbiy7braZB1kqhoEr2Si" .
+    "7luBSnU912sw494E88a2EWbmMvg2TVHPNzCpVkpNk7kifCiwmw9VldkqYy9y/lCa" .
+    "Epyp7lTfKw7cbD04Vk8QJW782L6Csuxkl346b17wmOqn8AZips3tFsuAY3w=\n" .
+    "-----END CERTIFICATE-----\n" ;
+
+=pod
+
+The VICI interface requires a UNIX socket in order to communicate with the
+strongSwan charon daemon:
+
+  use IO::Socket::UNIX;
+
+  my $socket = IO::Socket::UNIX->new(
+          Type => SOCK_STREAM,
+          Peer => '/var/run/charon.vici',
+  ) or die "Vici socket: $!";
+
+=cut
+
+my $socket = IO::Socket::UNIX->new(
+            Type => SOCK_STREAM,
+            Peer => '/var/run/charon.vici',
+) or die "Vici socket: $!";
+
+=over
+
+=item new()
+
+creates a new Vici::Session object.
+
+  use Vici::Session;
+  use Vici::Message;
+
+  my $session = Vici::Session->new($socket);
+
+=cut
+
+my $session = Vici::Session->new($socket);
+
+=item version()
+
+returns daemon and system specific version information.
+
+  my $version = $session->version();
+
+=cut
+
+print "----- version -----\n";
+my $version = $session->version();
+print $version->raw(), "\n";
+
+=item load_cert()
+
+loads a certificate into the daemon.
+
+  my %vars = ( type => 'X509', flag => 'CA', data => $ca_cert );
+  my ($res, $errmsg) = $session->load_cert(Vici::Message->new(\%vars));
+
+=cut
+
+print "----- load-cert -----\n";
+my %vars = ( type => 'X509', flag => 'CA', data => $ca_cert );
+my ($res, $errmsg) = $session->load_cert(Vici::Message->new(\%vars));
+print $res ? "ok\n" : "failed: $errmsg\n";
+
+=item load_key()
+
+loads a private key into the daemon.
+
+  my %vars = ( type => 'RSA', data => $moon_key );
+  my ($res, $errmsg) = $session->load_key(Vici::Message->new(\%vars));
+
+=cut
+
+print "----- load-key -----\n";
+%vars = ( type => 'RSA', data => $moon_key );
+($res, $errmsg) = $session->load_key(Vici::Message->new(\%vars));
+print $res ? "ok\n" : "failed: $errmsg\n";
+
+=item load_shared()
+
+loads a shared IKE PSK, EAP or XAuth secret into the daemon.
+
+  my @owners = ( 'carol' );
+  my %vars = ( type => 'EAP', data => 'Ar3etTnp', owners => \@owners );
+  my ($res, $errmsg) = $session->load_shared(Vici::Message->new(\%vars));
+
+=cut
+
+print "----- load-shared -----\n";
+my @owners = ( 'carol' );
+%vars = ( type => 'EAP', data => 'Ar3etTnp', owners => \@owners );
+($res, $errmsg) = $session->load_shared(Vici::Message->new(\%vars));
+print $res ? "ok\n" : "failed: $errmsg\n";
+
+=item load_authority()
+
+loads a single certification authority definition into the daemon. An existing
+authority with the same name gets replaced.
+
+  my @crl_uris  = ( 'http://crl.strongswan.org/strongswan.crl' );
+  my @ocsp_uris = ( 'http://ocsp.strongswan.org:8880' );
+
+  my %auth = (
+      cacert => $ca_cert,
+      crl_uris  => \@crl_uris,
+      ocsp_uris => \@ocsp_uris
+  );
+
+  my %vars = ( strongswan => \%auth );
+  my ($res, $errmsg) = $session->load_authority(Vici::Message->new(\%vars));
+
+=cut
+
+print "----- load-authority -----\n";
+my @crl_uris  = ( 'http://crl.strongswan.org/strongswan.crl' );
+my @ocsp_uris = ( 'http://ocsp.strongswan.org:8880' );
+my %auth = (
+    cacert => $ca_cert,
+    crl_uris  => \@crl_uris,
+    ocsp_uris => \@ocsp_uris
+);
+%vars = ( strongswan => \%auth );
+($res, $errmsg) = $session->load_authority(Vici::Message->new(\%vars));
+print $res ? "ok\n" : "failed: $errmsg\n";
+
+=item load_conn()
+
+loads a single connection definition into the daemon. An existing connection
+with the same name gets updated or replaced.
+
+  my @l_ts = ( '10.1.0.0/16' );
+  my @r_ts = ( '10.2.0.0/16' );
+  my @esp  = ( 'aes128gcm128-modp3072' );
+
+  my %child = (
+      local_ts  => \@l_ts,
+      remote_ts => \@r_ts,
+      esp_proposals => \@esp,
+  );
+  my %children = ( 'net-net' => \%child );
+
+  my @l_addrs = ( '192.168.0.1' );
+  my @r_addrs = ( '192.168.0.2' );
+  my @l_certs = ( $moon_cert );
+  my %l = ( auth => 'pubkey', id => 'moon.strongswan.org',
+            certs => \@l_certs );
+  my %r = ( auth => 'pubkey', id => 'sun.strongswan.org');
+  my @ike = ( 'aes128-sha256-modp3072' );
+
+  my %gw = (
+      version => 2,
+      mobike => 'no',
+      proposals => \@ike,
+      local_addrs  => \@l_addrs,
+      remote_addrs => \@r_addrs,
+      local  => \%l,
+      remote => \%r,
+      children => \%children,
+  );
+
+  my %vars = ( 'gw-gw' => \%gw);
+  my ($res, $errmsg) = $session->load_conn(Vici::Message->new(\%vars));
+
+=cut
+
+print "----- load-conn -----\n";
+my @l_ts = ( '10.1.0.0/16' );
+my @r_ts = ( '10.2.0.0/16' );
+my @esp  = ( 'aes128gcm128-modp3072' );
+my %child = (
+    local_ts  => \@l_ts,
+    remote_ts => \@r_ts,
+    esp_proposals => \@esp,
+);  
+my %children = ( 'net-net' => \%child );
+my @l_addrs = ( '192.168.0.1' );
+my @r_addrs = ( '192.168.0.2' );
+my @l_certs = ( $moon_cert );
+my %l = ( auth => 'pubkey', id => 'moon.strongswan.org', certs => \@l_certs );
+my %r = ( auth => 'pubkey', id => 'sun.strongswan.org');
+my @ike = ( 'aes128-sha256-modp3072' );
+my %gw = (
+    version => 2,
+    mobike => 'no',
+    proposals => \@ike,
+    local_addrs  => \@l_addrs,
+    remote_addrs => \@r_addrs,
+    local  => \%l,
+    remote => \%r,
+    children => \%children,
+);
+%vars = ( 'gw-gw' => \%gw);
+($res, $errmsg) = $session->load_conn(Vici::Message->new(\%vars));
+print $res ? "ok\n" : "failed: $errmsg\n";
+
+=item get_algorithms()
+
+lists all currently loaded algorithms and their implementation.
+
+  my $algs = $session->get_algorithms();
+
+=cut
+
+print "----- get-algorithms -----\n";
+my $algs = $session->get_algorithms();
+print $algs->raw(), "\n";
+
+=item get_conns()
+
+returns a list of connection names loaded exclusively over VICI, not including
+connections found in other backends.
+
+  my $conns = $session->get_conns();
+
+=cut
+
+print "----- get-conns -----\n";
+my $conns = $session->get_conns();
+print $conns->raw(), "\n";
+
+=item list_conns()
+
+lists currently loaded connections by streaming list-conn events. This
+call includes all connections known by the daemon, not only those loaded
+over VICI.
+
+  my $conns = $session->list_conns();
+
+  foreach my $conn (@$conns)
+  {
+      print $conn->raw(), "\n";
+  }
+
+=cut
+
+print "----- list-conns -----\n";
+$conns = $session->list_conns();
+foreach my $conn (@$conns)
+{
+    print $conn->raw(), "\n";
+}
+
+=item initiate()
+
+initiates a CHILD_SA.
+
+  my %vars = ( child => 'net-net' );
+  my($res, $errmsg) = $session->initiate(Vici::Message->new(\%vars));
+
+=cut
+
+print "----- initiate -----\n";
+%vars = ( child => 'net-net' );
+($res, $errmsg) = $session->initiate(Vici::Message->new(\%vars));
+print $res ? "ok\n" : "failed: $errmsg\n";
+
+=item list_sas()
+
+lists currently active IKE_SAs and associated CHILD_SAs by streaming list-sa
+events.
+
+  my $sas = $session->list_sas();
+
+  foreach my $sa (@$sas)
+  {
+      print $sa->raw(), "\n";
+  }
+
+=cut
+
+print "----- list-sas -----\n";
+my $sas = $session->list_sas();
+foreach my $sa (@$sas)
+{
+    print $sa->raw(), "\n";
+}
+
+=item get_authorities()
+
+returns a list of currently loaded certification authority names.
+
+  my $auths = $session->get_authorities();
+
+=cut
+
+print "----- get-authorities -----\n";
+my $auths = $session->get_authorities();
+print $auths->raw(), "\n";
+
+=item list-authorities()
+
+lists currently loaded certification authority information by streaming
+list-authority events.
+
+  my $auths = $session->list_authorities();
+
+  foreach my $auth (@$auths)
+  {
+      print $auth->raw(), "\n";
+  }
+
+=cut
+
+print "----- list-authorities -----\n";
+$auths = $session->list_authorities();
+foreach my $auth (@$auths)
+{
+    print $auth->raw(), "\n";
+}
+
+=item list_certs()
+
+lists currently loaded certificates by streaming list-cert events. This
+call includes all certificates known by the daemon, not only those loaded
+over VICI.
+
+  my %vars = ( subject => 'C=CH, O=Linux strongSwan, CN=moon.strongswan.org' );
+  my $certs = $session->list_certs(Vici::Message->new(\%vars));
+
+=cut
+
+print "----- list-certs -----\n";
+%vars = ( subject => 'C=CH, O=Linux strongSwan, CN=moon.strongswan.org' );
+my $certs = $session->list_certs(Vici::Message->new(\%vars));
+foreach my $cert (@$certs)
+{
+    my $hash = $cert->hash();
+    print $hash->{'type'}, ": ", length($hash->{'data'}), ' bytes',
+          $hash->{'has_privkey'} ? ', has private key' : '', "\n";
+}
+
+=item stats()
+
+returns IKE daemon statistics and load information.
+
+  my $stats = $session->stats();
+
+=cut
+
+print "----- stats -----\n";
+my $stats = $session->stats();
+print $stats->raw(), "\n";
+
+=item terminate()
+
+terminates an IKE_SA or CHILD_SA.
+
+  my %vars = ( ike => 'gw-gw' );
+  my ($res, $errmsg) = $session->terminate(Vici::Message->new(\%vars));
+
+=cut
+
+print "----- terminate -----\n";
+%vars = ( ike => 'gw-gw' );
+($res, $errmsg) = $session->terminate(Vici::Message->new(\%vars));
+print $res ? "ok\n" : "failed: $errmsg\n";
+
+=item install()
+
+installs a trap, drop or bypass policy defined by a CHILD_SA config.
+
+  my %vars = ( child => 'net-net' );
+  my ($res, $errmsg) = $session->install(Vici::Message->new(\%vars));
+
+=cut
+
+print "----- install -----\n";
+%vars = ( child => 'net-net' );
+($res, $errmsg) = $session->install(Vici::Message->new(\%vars));
+print $res ? "ok\n" : "failed: $errmsg\n";
+
+=item list_policies()
+
+lists currently installed trap, drop and bypass policies by streaming
+list-policy events.
+
+  my %vars = ( trap => 'yes' );
+  my $pols = $session->list_policies(Vici::Message->new(\%vars));
+
+  foreach my $pol (@$pols)
+  {
+      print $pol->raw(), "\n";
+  }
+
+=cut
+
+print "----- list-policies -----\n";
+%vars = ( trap => 'yes' );
+my $pols = $session->list_policies(Vici::Message->new(\%vars));
+foreach my $pol (@$pols)
+{
+    print $pol->raw(), "\n";
+}
+
+=item uninstall()
+
+uninstalls a trap, drop or bypass policy defined by a CHILD_SA config.
+
+  my %vars = ( child => 'net-net' );
+  my ($res, $errmsg) = $session->uninstall(Vici::Message->new(\%vars));
+
+=cut
+
+print "----- uninstall -----\n";
+%vars = ( child => 'net-net' );
+($res, $errmsg) = $session->uninstall(Vici::Message->new(\%vars));
+print $res ? "ok\n" : "failed: $errmsg\n";
+
+=item reload_settings()
+
+reloads strongswan.conf settings and all plugins supporting configuration
+reload.
+
+  my ($res, $errmsg) = $session->reload_settings();
+  print $res ? "ok\n" : "failed: $errmsg\n";
+
+=cut
+
+print "----- reload-settings -----\n";
+($res, $errmsg) = $session->reload_settings();
+print $res ? "ok\n" : "failed: $errmsg\n";
+
+=item unload_conn()
+
+unloads a previously loaded connection definition by name.
+
+  my %vars = ( name => 'gw-gw' );
+  my ($res, $errmsg) = $session->unload_conn(Vici::Message->new(\%vars));
+
+=cut
+
+print "----- unload-conn -----\n";
+%vars = ( name => 'gw-gw' );
+($res, $errmsg) = $session->unload_conn(Vici::Message->new(\%vars));
+print $res ? "ok\n" : "failed: $errmsg\n";
+
+=item unload_authority()
+
+unloads a previously loaded certification authority definition by name.
+
+  my %vars = ( name => 'strongswan' );
+  my ($res, $errmsg) = $session->unload_authority(Vici::Message->new(\%vars));
+
+=cut
+
+print "----- unload-authority -----\n";
+%vars = ( name => 'strongswan' );
+($res, $errmsg) = $session->unload_authority(Vici::Message->new(\%vars));
+print $res ? "ok\n" : "failed: $errmsg\n";
+
+=item flush_certs()
+
+flushes the volatile certificate cache. Optionally only a given certificate
+type is flushed.
+
+  my %vars = ( type => 'x509_crl' );
+  my ($res, $errmsg) = $session->flush_certs(Vici::Message->new(\%vars));
+
+=cut
+
+print "----- flush-certs -----\n";
+%vars = ( type => 'x509_crl' );
+($res, $errmsg) = $session->flush_certs(Vici::Message->new(\%vars));
+print $res ? "ok\n" : "failed: $errmsg\n";
+
+=item clear_creds()
+
+clears all loaded certificate, private key and shared key credentials. This
+affects only credentials loaded over vici, but additionally flushes the
+credential cache.
+
+  my ($res, $errmsg) = $session->clear_creds();
+
+=cut
+
+print "----- clear-creds -----\n";
+($res, $errmsg) = $session->clear_creds();
+print $res ? "ok\n" : "failed: $errmsg\n";
+
+=item load_pool()
+
+loads an in-memory virtual IP and configuration attribute pool. Existing
+pools with the same name get updated, if possible.
+
+  my %pool = ( addrs => '10.3.0.0/23' );
+  my %vars = ( my_pool => \%pool );
+  my ($res, $errmsg) = $session->load_pool(Vici::Message->new(\%vars));
+
+=cut
+
+print "----- load-pool -----\n";
+my %pool = ( addrs => '10.3.0.0/23' );
+%vars = ( my_pool => \%pool );
+($res, $errmsg) = $session->load_pool(Vici::Message->new(\%vars));
+print $res ? "ok\n" : "failed: $errmsg\n";
+
+=item get_pools()
+
+lists the currently loaded pools.
+
+  my $pools = $session->get_pools();
+
+=cut
+
+print "----- get-pools -----\n";
+my $pools = $session->get_pools();
+print $pools->raw(), "\n";
+
+=item unload_pool()
+
+unloads a previously loaded virtual IP and configuration attribute pool.
+Unloading fails for pools with leases currently online.
+
+  my %vars = ( name => 'my_pool' );
+  my ($res, $errmsg) = $session->unload_pool(Vici::Message->new(\%vars));
+
+=cut
+
+print "----- unload-pool -----\n";
+%vars = ( name => 'my_pool' );
+($res, $errmsg) = $session->unload_pool(Vici::Message->new(\%vars));
+print $res ? "ok\n" : "failed: $errmsg\n";
+
+=back
+
+=cut
+
+# close vici socket
+close($socket);
+
+=head1 COPYRIGHT AND LICENCE
+
+Copyright (c) 2015 Andreas Steffen
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.
+

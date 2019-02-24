@@ -1,0 +1,9 @@
+moon::iptables-restore < /etc/iptables.rules
+carol::iptables-restore < /etc/iptables.rules
+carol::cd /etc/ipsec.d; cat tables.sql data.sql > ipsec.sql; cat ipsec.sql | sqlite3 ipsec.db
+moon::cd /etc/ipsec.d; cat tables.sql data.sql > ipsec.sql; cat ipsec.sql | sqlite3 ipsec.db
+moon::ipsec start
+carol::ipsec start
+moon::expect-connection rw-eap
+carol::expect-connection home
+carol::ipsec up home

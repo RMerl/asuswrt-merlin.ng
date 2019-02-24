@@ -1,0 +1,12 @@
+A connection between the subnets behind the gateways <b>moon</b> and <b>sun</b>
+is set up using GRE interfaces.
+<p/>
+The gateways use <b>route-based forwarding</b> with <b>GRE tunnels</b>, with
+firewall rules to allow traffic to pass. The IPsec traffic selector is limited
+to the GRE protocol, specific routing is achieved with routes on the GRE
+interfaces. The IKE daemon is configured to not install routes with
+<em>charon.install_routes=0</em>, and static routes are installed for the
+target subnets on the VTI interfaces.
+<p/>
+Client <b>alice</b> behind gateway <b>moon</b> pings client <b>bob</b> located
+behind gateway <b>sun</b>.

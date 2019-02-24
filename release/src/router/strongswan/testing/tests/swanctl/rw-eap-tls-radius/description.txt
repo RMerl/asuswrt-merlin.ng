@@ -1,0 +1,7 @@
+The roadwarrior <b>carol</b> sets up a connection to gateway <b>moon</b>.
+At the outset the gateway authenticates itself to the client by sending
+an IKEv2 <b>digital signature</b> accompanied by an X.509 certificate.
+<p/>
+Next <b>carol</b> uses a mutual <b>EAP-TLS</b> authentication based
+on X.509 certificates. The gateway forwards all EAP messages to the
+AAA RADIUS server <b>alice</b>.

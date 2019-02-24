@@ -1,0 +1,2 @@
+charon.plugins.tnccs-11.max_message_size = 45000
+	Maximum size of a PA-TNC message (XML & Base64 encoding).

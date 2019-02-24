@@ -1,0 +1,12 @@
+The roadwarriors <b>carol</b> and <b>dave</b> set up a connection each to gateway <b>moon</b>,
+both ends doing certificate-based EAP-TLS authentication only.
+<p/>
+In a next step the <b>RFC 7171 PT-EAP</b> transport protocol is used within the EAP-TTLS
+tunnel to determine the health of <b>carol</b> and <b>dave</b> via the <b>IF-TNCCS 2.0 </b>
+client-server interface compliant with <b>RFC 5793 PB-TNC</b>. The IMCs and IMVs exchange
+messages over the <b>IF-M</b> protocol defined by <b>RFC 5792 PA-TNC</b>.
+<p>
+<b>carol</b> passes the health test and <b>dave</b> fails. Based on these measurements the
+clients are connected by gateway <b>moon</b> to the "rw-allow" and "rw-isolate" subnets,
+respectively.
+</p>

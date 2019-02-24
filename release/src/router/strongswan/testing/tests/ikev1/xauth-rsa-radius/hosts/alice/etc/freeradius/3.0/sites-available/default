@@ -1,0 +1,53 @@
+server default {
+
+listen {
+  type = auth
+  ipaddr = 10.1.0.10
+  port = 0
+}
+
+authorize {
+  suffix
+  files
+  pap
+}
+
+authenticate {
+  Auth-Type PAP {
+    pap
+  }
+}
+
+preacct {
+  preprocess
+  acct_unique
+  suffix
+  files
+}
+
+accounting {
+  detail
+  unix
+  radutmp
+  exec
+  attr_filter.accounting_response
+}
+
+session {
+  radutmp
+}
+
+post-auth {
+  exec
+  Post-Auth-Type REJECT {
+    attr_filter.access_reject
+  }
+}
+
+pre-proxy {
+}
+
+post-proxy {
+}
+
+}

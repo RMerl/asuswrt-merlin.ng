@@ -1,0 +1,15 @@
+A connection between two identical <b>10.0.0.0/14</b> networks behind the gateways <b>moon</b>
+and <b>sun</b> is set up. In order to make network routing work, the subnet behind <b>moon</b>
+sees the subnet behind <b>sun</b> as <b>10.4.0.0/14</b> whereas the subnet behind <b>sun</b>
+sees the subnet behind <b>moon</b> as <b>10.8.0.0/14</b>. The necessary network mappings are
+done on gateway <b>sun</b> using the iptables <b>MARK</b> and <b>NETMAP</b> targets.
+<p/>
+Upon the successful establishment of the IPsec tunnel, on gateway <b>moon</b> the directive
+<b>leftfirewall=yes</b> automatically inserts iptables-based firewall rules that let pass
+the tunneled traffic whereas on gateway <b>sun</b> the script indicated by
+<b>leftupdown=/etc/mark_updown</b> inserts iptables rules that set marks defined in the
+connection definition of <b>ipsec.conf</b> both on the inbound and outbound traffic, create
+the necessary NETMAP operations and forward the tunneled traffic.
+<p/>
+In order to test both tunnel and firewall, client <b>alice</b> behind gateway <b>moon</b>
+pings client <b>bob</b> located behind gateway <b>sun</b> and vice versa.

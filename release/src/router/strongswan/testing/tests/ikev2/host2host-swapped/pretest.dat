@@ -1,0 +1,7 @@
+moon::iptables-restore < /etc/iptables.rules
+sun::iptables-restore < /etc/iptables.rules
+sun::ipsec start
+moon::ipsec start
+sun::expect-connection host-host
+moon::expect-connection host-host
+moon::ipsec up host-host

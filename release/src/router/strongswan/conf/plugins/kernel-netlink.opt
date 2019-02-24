@@ -1,0 +1,125 @@
+charon.plugins.kernel-netlink.buflen = <min(PAGE_SIZE, 8192)>
+	Buffer size for received Netlink messages.
+
+charon.plugins.kernel-netlink.force_receive_buffer_size = no
+	Force maximum Netlink receive buffer on Netlink socket.
+
+	If the maximum Netlink socket receive buffer in bytes set by
+	_receive_buffer_size_ exceeds the system-wide maximum from
+	/proc/sys/net/core/rmem_max, this option can be used to override the limit.
+	Enabling this option requires special privileges (CAP_NET_ADMIN).
+
+charon.plugins.kernel-netlink.fwmark =
+	Firewall mark to set on the routing rule that directs traffic to our routing
+	table.
+
+	Firewall mark to set on the routing rule that directs traffic to our routing
+	table. The format is [!]mark[/mask], where the optional exclamation mark
+	inverts the meaning (i.e. the rule only applies to packets that don't match
+	the mark).
+
+charon.plugins.kernel-netlink.mss = 0
+	MSS to set on installed routes, 0 to disable.
+
+charon.plugins.kernel-netlink.mtu = 0
+	MTU to set on installed routes, 0 to disable.
+
+charon.plugins.kernel-netlink.parallel_route = no
+	Whether to perform concurrent Netlink ROUTE queries on a single socket.
+
+	Whether to perform concurrent Netlink ROUTE queries on a single socket.
+	While parallel queries can improve throughput, it has more overhead. On
+	vanilla Linux, DUMP queries fail with EBUSY and must be retried, further
+	decreasing performance.
+
+charon.plugins.kernel-netlink.parallel_xfrm = no
+	Whether to perform concurrent Netlink XFRM queries on a single socket.
+
+charon.plugins.kernel-netlink.policy_update = no
+	Whether to always use XFRM_MSG_UPDPOLICY to install policies.
+
+charon.plugins.kernel-netlink.port_bypass = no
+	Whether to use port or socket based IKE XFRM bypass policies.
+
+	Whether to use port or socket based IKE XFRM bypass policies.
+	IKE bypass policies are used to exempt IKE traffic from XFRM processing.
+	The default socket based policies are directly tied to the IKE UDP sockets,
+	port based policies use global XFRM bypass policies for the used IKE UDP
+	ports.
+
+charon.plugins.kernel-netlink.process_rules = no
+	Whether to process changes in routing rules to trigger roam events.
+
+	Whether to process changes in routing rules to trigger roam events. This is
+	currently only useful if the kernel based route lookup is used (i.e. if
+	route installation is disabled or an inverted fwmark match is configured).
+
+charon.plugins.kernel-netlink.receive_buffer_size = 0
+	Maximum Netlink socket receive buffer in bytes.
+
+	Maximum Netlink socket receive buffer in bytes. This value controls how many
+	bytes of Netlink messages can be received on a Netlink socket. The default
+	value is set by /proc/sys/net/core/rmem_default. The specified value cannot
+	exceed the system-wide maximum from /proc/sys/net/core/rmem_max, unless
+	_force_receive_buffer_size_	is enabled.
+
+charon.plugins.kernel-netlink.roam_events = yes
+	Whether to trigger roam events when interfaces, addresses or routes change.
+
+charon.plugins.kernel-netlink.set_proto_port_transport_sa = no
+	Whether to set protocol and ports in the selector installed on transport
+	mode IPsec SAs in the kernel.
+
+	Whether to set protocol and ports in the selector installed on transport
+	mode IPsec SAs in the kernel. While doing so enforces policies for inbound
+	traffic, it also prevents the use of a single IPsec SA by more than one
+	traffic selector.
+
+charon.plugins.kernel-netlink.spdh_thresh {}
+	XFRM policy hashing threshold configuration for IPv4 and IPv6.
+
+	XFRM policy hashing threshold configuration for IPv4 and IPv6.
+
+	The section defines hashing thresholds to configure in the kernel during
+	daemon startup. Each address family takes a threshold for the local subnet
+	of an IPsec policy (src in out-policies, dst in in- and forward-policies)
+	and the remote subnet (dst in out-policies, src in in- and
+	forward-policies).
+
+	If the subnet has more or equal net bits than the threshold, the first
+	threshold bits are used to calculate a hash to lookup the policy.
+
+	Policy hashing thresholds are not supported before Linux 3.18 and might
+	conflict with socket policies before Linux 4.8.
+
+charon.plugins.kernel-netlink.spdh_thresh.ipv4.lbits = 32
+	Local subnet XFRM policy hashing threshold for IPv4.
+
+charon.plugins.kernel-netlink.spdh_thresh.ipv4.rbits = 32
+	Remote subnet XFRM policy hashing threshold for IPv4.
+
+charon.plugins.kernel-netlink.spdh_thresh.ipv6.lbits = 128
+	Local subnet XFRM policy hashing threshold for IPv6.
+
+charon.plugins.kernel-netlink.spdh_thresh.ipv6.rbits = 128
+	Remote subnet XFRM policy hashing threshold for IPv6.
+
+charon.plugins.kernel-netlink.retries = 0
+	Number of Netlink message retransmissions to send on timeout.
+
+charon.plugins.kernel-netlink.timeout = 0
+	Netlink message retransmission timeout, 0 to disable retransmissions.
+
+charon.plugins.kernel-netlink.ignore_retransmit_errors = no
+	Whether to ignore errors potentially resulting from a retransmission.
+
+charon.plugins.kernel-netlink.xfrm_acq_expires = 165
+	Lifetime of XFRM acquire state and allocated SPIs in kernel.
+
+	Lifetime of XFRM acquire state created by the kernel when traffic matches a
+	trap policy. The value gets written to /proc/sys/net/core/xfrm_acq_expires.
+	Indirectly controls the delay between XFRM acquire messages triggered by the
+	kernel for a trap policy. The same value is used as timeout for SPIs
+	allocated by the kernel. The default value equals the total	retransmission
+	timeout for IKE messages, see IKEv2 RETRANSMISSION in
+	**strongswan.conf**(5).

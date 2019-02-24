@@ -1,0 +1,9 @@
+alice::ipsec status 2> /dev/null::nat-t.*INSTALLED, TUNNEL.*ESP in UDP::YES
+venus::ipsec status 2> /dev/null::nat-t.*INSTALLED. TUNNEL.*ESP in UDP::YES
+sun::  ipsec status 2> /dev/null::nat-t.*INSTALLED, TUNNEL.*ESP in UDP::YES
+sun::  ipsec status 2> /dev/null::nat-t.*\[PH_IP_ALICE\]::YES
+sun::  ipsec status 2> /dev/null::nat-t.*\[PH_IP_VENUS\]::YES
+alice::ping -c 1 PH_IP_BOB::64 bytes from PH_IP_BOB: icmp_.eq=1::YES
+venus::ping -c 1 PH_IP_BOB::64 bytes from PH_IP_BOB: icmp_.eq=1::YES
+moon::tcpdump::IP moon.strongswan.org.* > sun.strongswan.org.\(4500\|ipsec-nat-t\): UDP::YES
+moon::tcpdump::IP sun.strongswan.org.\(4500\|ipsec-nat-t\) > moon.strongswan.org.*: UDP::YES

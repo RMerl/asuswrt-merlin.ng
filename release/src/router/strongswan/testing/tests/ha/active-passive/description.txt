@@ -1,0 +1,8 @@
+The roadwarriors <b>carol</b> and <b>dave</b> set up a connection each 
+to the virtual gateway <b>mars</b> implemented by the two real gateways
+<b>alice</b> and <b>moon</b> in a <b>High Availability</b> (HA) setup 
+based on <b>ClusterIP</b>. The HA synchronisation link between the two
+gatways is secured by an IPsec transport connection. At the outset
+<b>alice</b> is the active and <b>moon</b> is the passive gateway.
+After <b>alice</b> gets killed <b>moon</b> automatically takes over
+all existing IKE_SAs and CHILD_SAs.

@@ -1,0 +1,9 @@
+The roadwarriors <b>carol</b> and <b>dave</b> set up a connection to gateway <b>moon</b>.
+The authentication is based on RSA public key signatures (<b>pubkey</b>) using X.509 certificates
+in the first round followed by extended authentication (<b>xauth</b>) of <b>carol</b> and <b>dave</b>
+based on user names equal to the <b>IKEv1 identity</b> (<b>carol@strongswan.org</b> and
+<b>dave@strongswan.org</b>, respectively) and corresponding <b>XAuth</b> user passwords.
+<p>
+Upon the successful establishment of the IPsec tunnel, automatically inserted iptables-based
+firewall rules let pass the tunneled traffic. In order to test both tunnel and firewall,
+<b>carol</b> and <b>dave</b> ping the client <b>alice</b> behind the gateway <b>moon</b>.

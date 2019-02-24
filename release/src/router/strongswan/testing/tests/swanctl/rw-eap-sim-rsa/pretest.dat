@@ -1,0 +1,8 @@
+moon::iptables-restore < /etc/iptables.rules
+carol::iptables-restore < /etc/iptables.rules
+carol::cd /etc/swanctl; rm rsa/* x509/*
+moon::systemctl start strongswan-swanctl
+carol::systemctl start strongswan-swanctl
+moon::expect-connection rw-eap
+carol::expect-connection home
+carol::swanctl --initiate --child home 2> /dev/null

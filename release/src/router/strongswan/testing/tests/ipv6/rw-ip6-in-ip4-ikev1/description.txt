@@ -1,0 +1,10 @@
+The roadwarriors <b>carol</b> and <b>dave</b> set up an IPv6-in-IPv4 tunnel
+connection each to gateway <b>moon</b>. The authentication is based on <b>X.509
+certificates</b>. Both <b>carol</b> and <b>dave</b> request a virtual IPv6
+address from <b>moon</b> via the IKEv1 mode config payload.
+<p/>
+Upon the successful establishment of the ESP tunnels, automatically inserted
+ip6tables-based firewall rules let pass the tunneled traffic. In order to test
+both tunnel and firewall, both <b>carol</b> and <b>dave</b> send an IPv6 ICMP
+request to the client <b>alice</b> behind the gateway <b>moon</b> using the
+ping6 command.

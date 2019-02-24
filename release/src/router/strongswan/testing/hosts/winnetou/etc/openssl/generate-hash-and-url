@@ -1,0 +1,13 @@
+#! /bin/bash
+#
+# generates the SHA-1 hash required by the RFC 4306 
+# HASH_AND_URL certificate fetching scheme
+#
+
+for cert in $@
+do
+  openssl x509 -in $cert -outform der -out cert.der
+  hash=`sha1sum cert.der | awk '{ print $1 }'`
+  cp cert.der "$hash"
+done
+rm cert.der

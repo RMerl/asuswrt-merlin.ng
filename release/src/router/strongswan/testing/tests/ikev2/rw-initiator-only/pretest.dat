@@ -1,0 +1,11 @@
+moon::iptables-restore < /etc/iptables.rules
+carol::iptables-restore < /etc/iptables.rules
+dave::iptables-restore < /etc/iptables.rules
+moon::ipsec start
+carol::ipsec start
+dave::ipsec start
+moon::expect-connection rw
+dave::expect-connection peer
+dave::ipsec up peer
+carol::expect-connection home
+carol::ipsec up home

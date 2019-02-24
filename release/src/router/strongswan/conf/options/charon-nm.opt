@@ -1,0 +1,3 @@
+charon-nm.ca_dir = <default>
+	Directory from which to load CA certificates if no certificate is
+	configured.

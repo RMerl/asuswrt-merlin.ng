@@ -1,0 +1,4 @@
+sun::systemctl start strongswan-swanctl
+moon::cat /etc/pts/options
+moon::sleep 1
+moon::/usr/local/bin/pt-tls-client --optionsfrom /etc/pts/options

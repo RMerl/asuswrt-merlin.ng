@@ -1,0 +1,6 @@
+The roadwarriors <b>carol</b> and <b>dave</b> set up a connection each to gateway <b>moon</b>
+and request a <b>virtual IP</b> via the IKEv2 configuration payload by using the <b>leftsourceip=%config</b>
+parameter. The virtual addresses assigned to the clients by gateway <b>moon</b> belong to the
+subnet 10.1.0.0/16 hidden behind the gateway so that <b>carol</b> and <b>dave</b> become full members of
+this network. And this thanks to the <b>farp</b> plugin through which <b>moon</b> acts as a proxy
+for ARP requests e.g. from <b>alice</b> who wants to ping <b>carol</b> and <b>dave</b>. 

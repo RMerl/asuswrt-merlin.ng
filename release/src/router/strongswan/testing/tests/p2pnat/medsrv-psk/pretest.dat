@@ -1,0 +1,19 @@
+alice::iptables-restore < /etc/iptables.rules
+carol::iptables-restore < /etc/iptables.rules
+bob::iptables-restore < /etc/iptables.rules
+moon::iptables-restore < /etc/iptables.rules
+sun::iptables-restore < /etc/iptables.rules
+moon::iptables -t nat -A POSTROUTING -o eth0 -s 10.1.0.0/16 -p udp -j SNAT --to-source PH_IP_MOON:1100-1200
+moon::iptables -t nat -A POSTROUTING -o eth0 -s 10.1.0.0/16 -p tcp -j SNAT --to-source PH_IP_MOON:2000-2100
+moon::iptables -A FORWARD -i eth1 -o eth0 -s 10.1.0.0/16  -j ACCEPT
+moon::iptables -A FORWARD -i eth0 -o eth1 -d 10.1.0.0/16  -j ACCEPT
+sun::iptables -t nat -A POSTROUTING -o eth0 -s 10.2.0.0/16 -p udp -j SNAT --to-source PH_IP_SUN:1200-1300
+sun::iptables -t nat -A POSTROUTING -o eth0 -s 10.2.0.0/16 -p tcp -j SNAT --to-source PH_IP_SUN:2000-2100
+sun::iptables -A FORWARD -i eth1 -o eth0 -s 10.2.0.0/16 -j ACCEPT
+sun::iptables -A FORWARD -i eth0 -o eth1 -d 10.2.0.0/16 -j ACCEPT
+carol::ipsec start
+carol::expect-connection medsrv
+bob::ipsec start
+bob::sleep 1
+alice::ipsec start
+alice::sleep 2

@@ -1,0 +1,5 @@
+By setting <b>strictcrlpolicy=yes</b>, a <b>strict</b> CRL policy is enforced on
+both roadwarrior <b>carol</b> and gateway <b>moon</b>. The online certificate status
+is checked via the OCSP server <b>winnetou</b> which is sending a normal host
+certificate not containing an OCSPSigning extended key usage flag. As a consequence
+the OCSP signing certificate is not accepted and the connection setup is aborted.

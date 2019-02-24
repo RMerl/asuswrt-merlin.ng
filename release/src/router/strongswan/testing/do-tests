@@ -1,0 +1,1009 @@
+#!/bin/bash
+# Automatically execute the strongSwan test cases
+#
+# Copyright (C) 2004  Eric Marchionni, Patrik Rayo
+# Zuercher Hochschule Winterthur
+#
+# This program is free software; you can redistribute it and/or modify it
+# under the terms of the GNU General Public License as published by the
+# Free Software Foundation; either version 2 of the License, or (at your
+# option) any later version.  See <http://www.fsf.org/copyleft/gpl.txt>.
+#
+# This program is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+# or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+# for more details.
+
+DIR=$(dirname `readlink -f $0`)
+. $DIR/testing.conf
+. $DIR/scripts/function.sh
+SSHCONF="-F $DIR/ssh_config"
+
+[ -d $DIR/hosts ] || die "Directory 'hosts' not found"
+[ -d $DIR/tests ] || die "Directory 'tests' not found"
+[ -d $BUILDDIR ] ||
+	die "Directory '$BUILDDIR' does not exist, please run make-testing first"
+running_any $STRONGSWANHOSTS || die "Please start test environment before running $0"
+
+ln -sfT $DIR $TESTDIR/testing
+
+##############################################################################
+# take care of new path and file variables
+#
+
+[ -d $TESTRESULTSDIR ] || mkdir $TESTRESULTSDIR
+
+TESTDATE=`date +%Y%m%d-%H%M-%S`
+
+TODAYDIR=$TESTRESULTSDIR/$TESTDATE
+mkdir $TODAYDIR
+TESTRESULTSHTML=$TODAYDIR/all.html
+INDEX=$TODAYDIR/index.html
+DEFAULTTESTSDIR=$TESTDIR/testing/tests
+
+SOURCEIP_ROUTING_TABLE=220
+
+testnumber="0"
+failed_cnt="0"
+passed_cnt="0"
+subdir_cnt="0"
+
+##############################################################################
+# parse optional arguments
+#
+while getopts "vt" opt
+do
+	case "$opt" in
+	v)
+		verbose=YES
+		timestamps=YES
+		;;
+	t)
+		timestamps=YES
+		;;
+	esac
+done
+shift $((OPTIND-1))
+
+
+function print_time()
+{
+	[ "$timestamps" == "YES" ] && echo "$(date +%T.%N) ~ "
+}
+
+##############################################################################
+# copy default tests to $BUILDDIR
+#
+
+TESTSDIR=$BUILDDIR/tests
+[ -d $TESTSDIR ] || mkdir $TESTSDIR
+
+##############################################################################
+# assign IP for each host to hostname
+#
+
+for host in $STRONGSWANHOSTS
+do
+    eval ipv4_${host}="`echo $HOSTNAMEIPV4 | sed -n -e "s/^.*${host},//gp" | awk -F, '{ print $1 }' | awk '{ print $1 }'`"
+    eval ipv6_${host}="`echo $HOSTNAMEIPV6 | sed -n -e "s/^.*${host},//gp" | awk -F, '{ print $1 }' | awk '{ print $1 }'`"
+
+    case $host in
+    moon)
+        eval ipv4_moon1="`echo $HOSTNAMEIPV4 | sed -n -e "s/^.*${host},//gp" | awk -F, '{ print $2 }' | awk '{ print $1 }'`"
+        eval ipv6_moon1="`echo $HOSTNAMEIPV6 | sed -n -e "s/^.*${host},//gp" | awk -F, '{ print $2 }' | awk '{ print $1 }'`"
+        ;;
+    sun)
+        eval ipv4_sun1="`echo $HOSTNAMEIPV4 | sed -n -e "s/^.*${host},//gp" | awk -F, '{ print $2 }' | awk '{ print $1 }'`"
+        eval ipv6_sun1="`echo $HOSTNAMEIPV6 | sed -n -e "s/^.*${host},//gp" | awk -F, '{ print $2 }' | awk '{ print $1 }'`"
+        ;;
+    alice)
+        eval ipv4_alice1="`echo $HOSTNAMEIPV4 | sed -n -e "s/^.*${host},//gp" | awk -F, '{ print $2 }' | awk '{ print $1 }'`"
+        eval ipv6_alice1="`echo $HOSTNAMEIPV6 | sed -n -e "s/^.*${host},//gp" | awk -F, '{ print $2 }' | awk '{ print $1 }'`"
+        ;;
+    venus)
+        ;;
+    bob)
+        ;;
+    carol)
+        eval ipv4_carol1="`echo $HOSTNAMEIPV4 | sed -n -e "s/^.*${host},//gp" | awk -F, '{ print $2 }' | awk '{ print $1 }'`"
+        eval ipv6_carol1="`echo $HOSTNAMEIPV6 | sed -n -e "s/^.*${host},//gp" | awk -F, '{ print $2 }' | awk '{ print $1 }'`"
+         ;;
+    dave)
+        eval ipv4_dave1="`echo $HOSTNAMEIPV4 | sed -n -e "s/^.*${host},//gp" | awk -F, '{ print $2 }' | awk '{ print $1 }'`"
+        eval ipv6_dave1="`echo $HOSTNAMEIPV6 | sed -n -e "s/^.*${host},//gp" | awk -F, '{ print $2 }' | awk '{ print $1 }'`"
+        ;;
+    winnetou)
+        ;;
+    esac
+done
+
+
+##############################################################################
+# open ssh sessions
+#
+for host in $STRONGSWANHOSTS
+do
+    ssh $SSHCONF -N root@`eval echo \\\$ipv4_$host` >/dev/null 2>&1 &
+    eval ssh_pid_$host="`echo $!`"
+    do_on_exit kill `eval echo \\\$ssh_pid_$host`
+done
+
+##############################################################################
+# determine actual software versions
+#
+
+[ -f $SHAREDDIR/.strongswan-version ] && SWANVERSION=`cat $SHAREDDIR/.strongswan-version`
+KERNELVERSION=`ssh $SSHCONF root@\$ipv4_winnetou uname -r 2>/dev/null`
+
+# check if tcpdump supports --immediate-mode
+ssh $SSHCONF root@$ipv4_winnetou tcpdump --immediate-mode -c 1 >/dev/null 2>&1
+if [ $? -eq 0 ]
+then
+	TCPDUMP_IM=--immediate-mode
+fi
+
+##############################################################################
+# create header for the results html file
+#
+
+ENVIRONMENT_HEADER=$(cat <<@EOF
+  <table border="0" cellspacing="2" cellpadding="2">
+    <tr valign="top">
+      <td><b>Host</b></td>
+      <td colspan="3">`uname -a`</td>
+    </tr>
+    <tr valign="top">
+      <td><b>Guest kernel</b></td>
+      <td colspan="3">$KERNELVERSION</td>
+    </tr>
+    <tr valign="top">
+      <td><b>strongSwan</b></td>
+      <td colspan="3">$SWANVERSION</td>
+    </tr>
+    <tr valign="top">
+      <td><b>Date</b></td>
+      <td colspan="3">$TESTDATE</td>
+    </tr>
+    <tr>
+      <td width="100">&nbsp;</td>
+      <td width="300">&nbsp;</td>
+      <td width=" 80">&nbsp;</td>
+      <td >&nbsp;</td>
+    </tr>
+@EOF
+)
+
+cat > $INDEX <<@EOF
+<html>
+<head>
+  <title>strongSwan KVM Tests</title>
+</head>
+<body>
+  <h2>strongSwan KVM Tests</h2>
+  $ENVIRONMENT_HEADER
+@EOF
+
+cat > $TESTRESULTSHTML <<@EOF
+<html>
+<head>
+  <title>strongSwan KVM Tests - All Tests</title>
+</head>
+<body>
+  <div><a href="index.html">strongSwan KVM Tests</a> / All Tests</div>
+  <h2>All Tests</h2>
+  $ENVIRONMENT_HEADER
+    <tr align="left">
+      <th>Number</th>
+      <th>Test</th>
+      <th align="right">Time [s]</th>
+      <th>Result</th>
+    </tr>
+@EOF
+
+echo "Guest kernel : $KERNELVERSION"
+echo "strongSwan   : $SWANVERSION"
+echo "Date         : $TESTDATE"
+echo
+
+##############################################################################
+# trap CTRL-C to properly terminate a long run
+#
+
+function abort_tests()
+{
+	echo -n "...aborting..." > /dev/tty
+	aborted=YES
+}
+trap abort_tests INT
+
+##############################################################################
+# enter specific test directory
+#
+if [ $# -gt 0 ]
+then
+    TESTS=$(printf "%s\n" $* | sort -u)
+else
+    TESTS=$(ls $DEFAULTTESTSDIR)
+fi
+
+for SUBDIR in $TESTS
+do
+    SUBTESTS="`basename $SUBDIR`"
+
+	if [ $SUBTESTS = $SUBDIR ]
+	then
+		SUBTESTS="`ls $DEFAULTTESTSDIR/$SUBDIR`"
+	else
+		if [[ $SUBTESTS == *'*'* ]]
+		then
+			SUBTESTS="`basename -a $DEFAULTTESTSDIR/$SUBDIR`"
+		fi
+		SUBDIR="`dirname $SUBDIR`"
+	fi
+
+    if [ ! -d $TODAYDIR/$SUBDIR ]
+    then
+	mkdir $TODAYDIR/$SUBDIR
+	if [ $testnumber == 0 ]
+	then
+	    FIRST="<b>Category</b>"
+	else
+	    FIRST="&nbsp;"
+	fi
+
+	if [ $subdir_cnt != 0 ]
+	then
+	    echo "      <td align=\"right\">$subdir_cnt</td>" >> $INDEX
+	    echo "      <td>&nbsp;</td>" >> $INDEX
+	    echo "    </tr>" >> $INDEX
+	    subdir_cnt="0"
+	fi
+	echo "    <tr>" >> $INDEX
+    echo "      <td>$FIRST</td>">> $INDEX
+    echo "      <td><a href=\"$SUBDIR/index.html\">$SUBDIR</a></td>" >> $INDEX
+
+	SUBTESTSINDEX=$TODAYDIR/$SUBDIR/index.html
+	cat > $SUBTESTSINDEX <<@EOF
+<html>
+<head>
+  <title>strongSwan $SUBDIR Tests</title>
+</head>
+<body>
+  <div><a href="../index.html">strongSwan KVM Tests</a> / $SUBDIR</div>
+  <h2>strongSwan $SUBDIR Tests</h2>
+  <table border="0" cellspacing="2" cellpadding="2">
+    <tr valign="top">
+      <td><b>Guest kernel</b></td>
+      <td colspan="3">$KERNELVERSION</td>
+    </tr>
+    <tr valign="top">
+      <td><b>strongSwan</b></td>
+      <td colspan="3">$SWANVERSION</td>
+    </tr>
+    <tr valign="top">
+      <td><b>Date</b></td>
+      <td colspan="3">$TESTDATE</td>
+    </tr>
+    <tr>
+      <td width="100">&nbsp;</td>
+      <td width="300">&nbsp;</td>
+      <td width=" 50">&nbsp;</td>
+      <td >&nbsp;</td>
+    </tr>
+    <tr align="left">
+       <th>Number</th>
+       <th>Test</th>
+       <th colspan="2">Result</th>
+    </tr>
+@EOF
+    fi
+
+    for name in $SUBTESTS
+    do
+	let "testnumber += 1"
+	let "subdir_cnt += 1"
+	testname=$SUBDIR/$name
+	log_action " $testnumber $testname:"
+
+	teststart=$(date +%s)
+
+	if [ ! -d $DEFAULTTESTSDIR/${testname} ]
+	then
+	    echo "is missing..skipped"
+	    continue
+	fi
+
+	[ -f $DEFAULTTESTSDIR/${testname}/description.txt ] || die "!! File 'description.txt' is missing"
+	[ -f $DEFAULTTESTSDIR/${testname}/test.conf ]       || die "!! File 'test.conf' is missing"
+	[ -f $DEFAULTTESTSDIR/${testname}/pretest.dat ]     || die "!! File 'pretest.dat' is missing"
+	[ -f $DEFAULTTESTSDIR/${testname}/posttest.dat ]    || die "!! File 'posttest.dat' is missing"
+	[ -f $DEFAULTTESTSDIR/${testname}/evaltest.dat ]    || die "!! File 'evaltest.dat' is missing"
+
+	TESTRESULTDIR=$TODAYDIR/$testname
+	mkdir -p $TESTRESULTDIR
+	CONSOLE_LOG=$TESTRESULTDIR/console.log
+	touch $CONSOLE_LOG
+
+	TESTDIR=$TESTSDIR/${testname}
+
+	##########################################################################
+	# copy test specific configurations to hosts and clear log files
+	#
+
+	DBDIR=/etc/db.d
+
+	$DIR/scripts/load-testconfig $testname
+	unset RADIUSHOSTS
+	unset DBHOSTS
+	unset IPV6
+	unset SWANCTL
+	source $TESTDIR/test.conf
+
+
+	##########################################################################
+	# run tcpdump in the background
+	#
+
+	if [ "$TCPDUMPHOSTS" != "" ]
+	then
+	    echo -e "TCPDUMP\n" >> $CONSOLE_LOG 2>&1
+
+	    for host_iface in $TCPDUMPHOSTS
+	    do
+		host=`echo $host_iface | awk -F ":" '{print $1}'`
+		iface=`echo $host_iface | awk -F ":" '{if ($2 != "") { print $2 } else { printf("eth0") }}'`
+		tcpdump_cmd="tcpdump -l $TCPDUMP_IM -i $iface not port ssh and not port domain >/tmp/tcpdump.log 2>/tmp/tcpdump.err.log &"
+		echo "$(print_time)${host}# $tcpdump_cmd" >> $CONSOLE_LOG
+		ssh $SSHCONF root@`eval echo \\\$ipv4_$host '$tcpdump_cmd'`
+		eval TDUP_${host}="true"
+	    done
+	fi
+
+	##########################################################################
+	# create database directory in RAM
+	#
+
+	for host in $DBHOSTS
+	do
+		eval HOSTLOGIN=root@\$ipv4_${host}
+	    ssh $SSHCONF $HOSTLOGIN "mkdir -p $DBDIR; mount -t ramfs -o size=5m ramfs $DBDIR" >/dev/null 2>&1
+	    ssh $SSHCONF $HOSTLOGIN "chgrp www-data $DBDIR; chmod g+w $DBDIR" >/dev/null 2>&1
+	done
+
+	##########################################################################
+	# flush conntrack table on all hosts
+	#
+
+	for host in $STRONGSWANHOSTS
+	do
+		ssh $SSHCONF root@`eval echo \\\$ipv4_$host` 'conntrack -F' >/dev/null 2>&1
+	done
+
+	##########################################################################
+	# remove leak detective log on all hosts
+	#
+
+	export LEAK_DETECTIVE_LOG=/var/log/leak-detective.log
+	for host in $STRONGSWANHOSTS
+	do
+		ssh $SSHCONF root@`eval echo \\\$ipv4_$host` 'rm -f $LEAK_DETECTIVE_LOG' >/dev/null 2>&1
+	done
+
+	##########################################################################
+	# flush IPsec state on all hosts
+	#
+
+	for host in $STRONGSWANHOSTS
+	do
+		ssh $SSHCONF root@`eval echo \\\$ipv4_$host` 'ip xfrm state flush; ip xfrm policy flush' >/dev/null 2>&1
+	done
+
+	##########################################################################
+	# execute pre-test commands
+	#
+
+	echo -n "pre.."
+	echo -e "\nPRE-TEST\n" >> $CONSOLE_LOG 2>&1
+
+	eval `awk -F "::" '{
+	    if ($1 !~ /^#.*/ && $2 != "")
+	    {
+		printf("echo \"$(print_time)%s# %s\"; ", $1, $2)
+		printf("ssh \044SSHCONF root@\044ipv4_%s \"%s\"; ", $1, $2)
+		printf("echo;\n")
+	    }
+	}' $TESTDIR/pretest.dat` >> $CONSOLE_LOG 2>&1
+
+
+	##########################################################################
+	# stop tcpdump
+	#
+
+	function stop_tcpdump {
+	    # wait for packets to get processed, but don't wait longer than 1s
+	    eval ssh $SSHCONF root@\$ipv4_${1} "\"i=100; while [ \\\$i -gt 0 ]; do pkill -USR1 tcpdump; tail -1 /tmp/tcpdump.err.log | perl -n -e '/(\\d+).*?(\\d+)/; exit (\\\$1 == \\\$2)' || break; sleep 0.01; i=\\\$((\\\$i-1)); done;\""
+	    echo "$(print_time)${1}# killall tcpdump" >> $CONSOLE_LOG
+	    eval ssh $SSHCONF root@\$ipv4_${1} "\"killall tcpdump; while true; do killall -q -0 tcpdump || break; sleep 0.01; done;\""
+	    eval TDUP_${1}="false"
+	    echo "" >> $CONSOLE_LOG
+	}
+
+
+	##########################################################################
+	# get and evaluate test results
+	#
+
+	echo -n "test.."
+	echo -e "\nTEST\n" >> $CONSOLE_LOG 2>&1
+
+	STATUS="passed"
+
+	eval `awk -F "::" '{
+		host=$1
+		command=$2
+		pattern=$3
+		hit=$4
+		if (host ~ /^#.*/ || command == "")
+		{
+			next
+		}
+		printf("cmd_err=\044(tempfile -p test -s err); ")
+		printf("cmd_out=\044(tempfile -p test -s out); ")
+		if (command == "tcpdump")
+		{
+			printf("if [ \044TDUP_%s == \"true\" ]; then stop_tcpdump %s; fi; \n", host, host)
+			printf("ssh \044SSHCONF root@\044ipv4_%s cat /tmp/tcpdump.log > \044cmd_out; ", host)
+		}
+		else
+		{
+			printf("ssh \044SSHCONF root@\044ipv4_%s %s >\044cmd_out 2>\044cmd_err; ",  host, command)
+		}
+		printf("cmd_res=\044(cat \044cmd_out | grep \"%s\"); ", pattern)
+		printf("cmd_exit=\044?; ")
+		printf("cmd_fail=0; ")
+		if (hit ~ /^[0-9]+$/)
+		{
+			printf("if [ \044(echo \"\044cmd_res\" | wc -l) -ne %d ] ", hit)
+		}
+		else
+		{
+			printf("if [ \044cmd_exit -eq 0 -a \"%s\" = \"NO\"  ] ", hit)
+			printf("|| [ \044cmd_exit -ne 0 -a \"%s\" = \"YES\" ] ", hit)
+		}
+		printf("; then STATUS=\"failed\"; cmd_fail=1; fi; \n")
+
+		printf("if [ \044cmd_fail -ne 0 ]; then echo \"~~~~~~~ FAIL ~~~~~~~\"; fi; \n")
+		if (command == "tcpdump")
+		{
+			printf("echo \"$(print_time)%s# cat /tmp/tcpdump.log | grep \047%s\047  [%s]\"; ", host, pattern, hit)
+		}
+		else
+		{
+			printf("echo \"$(print_time)%s# %s | grep \047%s\047  [%s]\"; ", host, command, pattern, hit)
+		}
+		printf("if [ -n \"\044cmd_res\" ]; then echo \"\044cmd_res\"; fi; \n")
+		printf("cat \044cmd_err; \n")
+		printf("if [ \044cmd_fail -ne 0 ]; then \n")
+		printf("if [ -s \044cmd_out ]; then echo \"~~ output ~~~~~~~~~~\"; \n")
+		printf("if [ \"\044verbose\" == \"YES\" ]; then cat \044cmd_out;\n")
+		printf("else cat \044cmd_out | head; fi; fi; \n")
+		printf("echo \"~~~~~~~~~~~~~~~~~~~~\"; fi; \n")
+		printf("rm -f -- \044cmd_out \044cmd_err; \n")
+		printf("echo; ")
+	}' $TESTDIR/evaltest.dat` >> $CONSOLE_LOG 2>&1
+
+
+	##########################################################################
+	# log statusall and listall output
+	# get copies of ipsec.conf, ipsec.secrets
+	# create index.html for the given test case
+
+	cat > $TESTRESULTDIR/index.html <<@EOF
+<html>
+<head>
+  <title>Test $testname</title>
+</head>
+<body>
+<table border="0" cellpadding="0" cellspacing="0" width="600">
+  <tr><td>
+    <div><a href="../../index.html">strongSwan KVM Tests</a> / <a href="../index.html">$SUBDIR</a> / $name</div>
+    <h2>Test $testname</h2>
+    <h3>Description</h3>
+@EOF
+
+	cat $TESTDIR/description.txt >> $TESTRESULTDIR/index.html
+
+	cat >> $TESTRESULTDIR/index.html <<@EOF
+    <ul>
+      <li><a href="console.log">console.log</a></li>
+    </ul>
+    <img src="../../images/$DIAGRAM" alt="$VIRTHOSTS">
+@EOF
+
+	IPTABLES_CMD_V4="echo -e '=== filter table ==='; iptables  -v -n -L; echo -e '\n=== nat table ==='; iptables  -v -n -t nat -L; echo -e '\n=== mangle table ==='; iptables  -v -n -t mangle -L"
+	IPTABLES_CMD_V6="echo -e '=== filter table ==='; ip6tables -v -n -L; echo -e '\n=== nat table ==='; ip6tables -v -n -t nat -L; echo -e '\n=== mangle table ==='; ip6tables -v -n -t mangle -L"
+
+	if [ -n "$IPV6" ]
+	then
+	    IPROUTE_CMD="ip -6 route list table $SOURCEIP_ROUTING_TABLE"
+	    IPROUTE_DSP=$IPROUTE_CMD
+	    IPTABLES_CMD="$IPTABLES_CMD_V6"
+	    IPTABLES_DSP="ip6tables -L"
+	    IPTABLES_SAVE_CMD="ip6tables-save"
+	    IPTABLES_SAVE_DSP="ip6tables-save"
+	else
+	    IPROUTE_CMD="ip route list table $SOURCEIP_ROUTING_TABLE"
+	    IPROUTE_DSP=$IPROUTE_CMD
+	    IPTABLES_CMD="$IPTABLES_CMD_V4"
+	    IPTABLES_DSP="iptables -L"
+	    IPTABLES_SAVE_CMD="iptables-save"
+	    IPTABLES_SAVE_DSP="iptables-save"
+	fi
+
+	if [ $name = "net2net-ip4-in-ip6-ikev2" -o $name = "net2net-ip6-in-ip4-ikev2" ]
+	then
+	    IPROUTE_CMD="ip route list table $SOURCEIP_ROUTING_TABLE; echo; ip -6 route list table $SOURCEIP_ROUTING_TABLE"
+	    IPROUTE_DSP="ip (-6) route list table $SOURCEIP_ROUTING_TABLE"
+	    IPTABLES_CMD="$IPTABLES_CMD_V4; echo; $IPTABLES_CMD_V6"
+	    IPTABLES_DSP="iptables -L ; ip6tables -L"
+	    IPTABLES_SAVE_CMD="iptables-save; echo; ip6tables-save"
+	    IPTABLES_SAVE_DSP="iptables-save ; ip6tables-save"
+	fi
+
+	for host in $DBHOSTS
+	do
+	    eval HOSTLOGIN=root@\$ipv4_${host}
+
+		scp $SSHCONF $HOSTLOGIN:/etc/db.d/ipsec.sql \
+		    $TESTRESULTDIR/${host}.ipsec.sql  > /dev/null 2>&1
+	done
+
+	for host in $IPSECHOSTS
+	do
+	    eval HOSTLOGIN=root@\$ipv4_${host}
+
+		scp $SSHCONF $HOSTLOGIN:/etc/strongswan.conf \
+		    $TESTRESULTDIR/${host}.strongswan.conf  > /dev/null 2>&1
+		if [  -n "$SWANCTL" ]
+		then
+			scp $SSHCONF $HOSTLOGIN:/etc/swanctl/swanctl.conf \
+			$TESTRESULTDIR/${host}.swanctl.conf  > /dev/null 2>&1
+
+			for subsys in conns algs certs pools authorities sas pols
+			do
+				ssh $SSHCONF $HOSTLOGIN swanctl --list-$subsys \
+					> $TESTRESULTDIR/${host}.swanctl.$subsys 2>/dev/null
+			done
+
+			ssh $SSHCONF $HOSTLOGIN swanctl --stats \
+				> $TESTRESULTDIR/${host}.swanctl.stats 2>/dev/null
+
+			echo "" >> $TESTRESULTDIR/${host}.swanctl.sas
+			cat $TESTRESULTDIR/${host}.swanctl.pols >> \
+				$TESTRESULTDIR/${host}.swanctl.sas
+			cat $TESTRESULTDIR/${host}.swanctl.algs >> \
+				$TESTRESULTDIR/${host}.swanctl.stats
+		else
+		    for file in ipsec.conf ipsec.secrets
+		    do
+				scp $SSHCONF $HOSTLOGIN:/etc/$file \
+			    $TESTRESULTDIR/${host}.$file  > /dev/null 2>&1
+		    done
+
+		    for command in statusall listall
+		    do
+				ssh $SSHCONF $HOSTLOGIN ipsec $command \
+			    > $TESTRESULTDIR/${host}.$command 2>/dev/null
+		    done
+		fi
+
+		if (! [ -f $TESTRESULTDIR/${host}.ipsec.sql ] ) then
+			scp $SSHCONF $HOSTLOGIN:/etc/ipsec.d/ipsec.sql \
+				$TESTRESULTDIR/${host}.ipsec.sql  > /dev/null 2>&1
+		fi
+
+	    ssh $SSHCONF $HOSTLOGIN ip -s xfrm policy \
+		    > $TESTRESULTDIR/${host}.ip.policy 2>/dev/null
+	    ssh $SSHCONF $HOSTLOGIN ip -s xfrm state \
+		    > $TESTRESULTDIR/${host}.ip.state 2>/dev/null
+	    ssh $SSHCONF $HOSTLOGIN $IPROUTE_CMD \
+		    > $TESTRESULTDIR/${host}.ip.route 2>/dev/null
+	    ssh $SSHCONF $HOSTLOGIN $IPTABLES_CMD \
+		    > $TESTRESULTDIR/${host}.iptables 2>/dev/null
+		ssh $SSHCONF $HOSTLOGIN $IPTABLES_SAVE_CMD \
+		    > $TESTRESULTDIR/${host}.iptables-save 2>/dev/null
+	    chmod a+r $TESTRESULTDIR/*
+
+		if [ -n "$SWANCTL" ]
+		then
+		    cat >> $TESTRESULTDIR/index.html <<@EOF
+    <h3>$host</h3>
+      <table border="0" cellspacing="0" width="600">
+      <tr>
+	<td valign="top">
+	  <ul>
+	    <li><a href="$host.swanctl.conf">swanctl.conf</a></li>
+	    <li><a href="$host.swanctl.conns">swanctl --list-conns</a></li>
+	    <li><a href="$host.swanctl.certs">swanctl --list-certs</a></li>
+	    <li><a href="$host.strongswan.conf">strongswan.conf</a></li>
+	    <li><a href="$host.ipsec.sql">ipsec.sql</a></li>
+	  </ul>
+	</td>
+	<td valign="top">
+	  <ul>
+	    <li><a href="$host.swanctl.sas">swanctl --list-sas|--list-pols</a></li>
+	    <li><a href="$host.swanctl.pools">swanctl --list-pools</a></li>
+	    <li><a href="$host.swanctl.authorities">swanctl --list-authorities</a></li>
+	    <li><a href="$host.swanctl.stats">swanctl --stats|--list-algs</a></li>
+	    <li><a href="$host.auth.log">auth.log</a></li>
+	    <li><a href="$host.daemon.log">daemon.log</a></li>
+	  </ul>
+      </td>
+	<td valign="top">
+	  <ul>
+	    <li><a href="$host.ip.policy">ip -s xfrm policy</a></li>
+	    <li><a href="$host.ip.state">ip -s xfrm state</a></li>
+	    <li><a href="$host.ip.route">$IPROUTE_DSP</a></li>
+	    <li><a href="$host.iptables">$IPTABLES_DSP</a></li>
+	    <li><a href="$host.iptables-save">$IPTABLES_SAVE_DSP</a></li>
+	  </ul>
+	  &nbsp;
+      </td>
+    </tr>
+    </table>
+@EOF
+
+		else
+		    cat >> $TESTRESULTDIR/index.html <<@EOF
+    <h3>$host</h3>
+      <table border="0" cellspacing="0" width="600">
+      <tr>
+	<td valign="top">
+	  <ul>
+	    <li><a href="$host.ipsec.conf">ipsec.conf</a></li>
+	    <li><a href="$host.ipsec.secrets">ipsec.secrets</a></li>
+	    <li><a href="$host.ipsec.sql">ipsec.sql</a></li>
+	    <li><a href="$host.strongswan.conf">strongswan.conf</a></li>
+	  </ul>
+	</td>
+	<td valign="top">
+	  <ul>
+	    <li><a href="$host.statusall">ipsec statusall</a></li>
+	    <li><a href="$host.listall">ipsec listall</a></li>
+	    <li><a href="$host.auth.log">auth.log</a></li>
+	    <li><a href="$host.daemon.log">daemon.log</a></li>
+	  </ul>
+      </td>
+	<td valign="top">
+	  <ul>
+	    <li><a href="$host.ip.policy">ip -s xfrm policy</a></li>
+	    <li><a href="$host.ip.state">ip -s xfrm state</a></li>
+	    <li><a href="$host.ip.route">$IPROUTE_DSP</a></li>
+	    <li><a href="$host.iptables">$IPTABLES_DSP</a></li>
+	    <li><a href="$host.iptables-save">$IPTABLES_SAVE_DSP</a></li>
+	  </ul>
+      </td>
+    </tr>
+    </table>
+@EOF
+		fi
+	done
+
+	for host in $RADIUSHOSTS
+	do
+	    eval HOSTLOGIN=root@\$ipv4_${host}
+
+		RADIUS_DIR=/etc/freeradius/3.0
+		RADIUS_EAP_FILE=mods-enabled/eap
+		RADIUS_EAP_NAME=eap
+		if [ "$BASEIMGSUITE" == "jessie" ]
+		then
+			RADIUS_DIR=/etc/freeradius
+			RADIUS_EAP_FILE=eap.conf
+			RADIUS_EAP_NAME=eap.conf
+		fi
+
+		for file in clients.conf radiusd.conf proxy.conf users sites-enabled/default sites-enabled/inner-tunnel $RADIUS_EAP_FILE
+	    do
+		scp $SSHCONF $HOSTLOGIN:$RADIUS_DIR/$file \
+		    $TESTRESULTDIR/${host}.$(basename $file) > /dev/null 2>&1
+	    done
+
+	    scp $SSHCONF $HOSTLOGIN:/var/log/freeradius/radius.log \
+		$TESTRESULTDIR/${host}.radius.log  > /dev/null 2>&1
+
+	    chmod a+r $TESTRESULTDIR/*
+	    cat >> $TESTRESULTDIR/index.html <<@EOF
+    <h3>$host</h3>
+      <table border="0" cellspacing="0" width="600">
+      <tr>
+	<td valign="top">
+	  <ul>
+	    <li><a href="$host.clients.conf">clients.conf</a></li>
+	    <li><a href="$host.radiusd.conf">radiusd.conf</a></li>
+	    <li><a href="$host.$RADIUS_EAP_NAME">$RADIUS_EAP_NAME</a></li>
+	  </ul>
+	</td>
+	<td valign="top">
+	  <ul>
+	    <li><a href="$host.default">sites-enabled/default</a></li>
+	    <li><a href="$host.inner-tunnel">sites-enabled/inner-tunnel</a></li>
+	    <li><a href="$host.radius.log">radius.log</a></li>
+	  </ul>
+      </td>
+	<td valign="top">
+	  <ul>
+	    <li><a href="$host.proxy.conf">proxy.conf</a></li>
+	    <li><a href="$host.users">users</a></li>
+	  </ul>
+      </td>
+    </tr>
+    </table>
+@EOF
+
+	done
+
+	cat >> $TESTRESULTDIR/index.html <<@EOF
+	<h3>tcpdump</h3>
+	<ul>
+@EOF
+
+	for host in $TCPDUMPHOSTS
+	do
+	    cat >> $TESTRESULTDIR/index.html <<@EOF
+	    <li><a href="$host.tcpdump.log">$host tcpdump.log</a></li>
+@EOF
+	done
+
+	cat >> $TESTRESULTDIR/index.html <<@EOF
+	</ul>
+@EOF
+
+	cat >> $TESTRESULTDIR/index.html <<@EOF
+  </td></tr>
+</table>
+</body>
+</html>
+@EOF
+
+
+	##########################################################################
+	# execute post-test commands
+	#
+
+	echo -n "post"
+	echo -e "\nPOST-TEST\n" >> $CONSOLE_LOG 2>&1
+
+	eval `awk -F "::" '{
+	    if ($1 !~ /^#.*/ && $2 != "")
+	    {
+		printf("echo \"$(print_time)%s# %s\"; ", $1, $2)
+		printf("ssh \044SSHCONF root@\044ipv4_%s \"%s\"; ", $1, $2)
+		printf("echo;\n")
+	    }
+	}' $TESTDIR/posttest.dat` >> $CONSOLE_LOG 2>&1
+
+	##########################################################################
+	# check that IPsec state was cleaned up properly
+	#
+
+	for host in $IPSECHOSTS
+	do
+		eval HOSTLOGIN=root@\$ipv4_${host}
+		IPSECSTATE=`ssh $SSHCONF $HOSTLOGIN 'ip xfrm state'`
+		# ignore IPv4/v6 states created with IPComp SAs
+		IPSECSTATEISSUE=`echo "$IPSECSTATE" | grep 'proto.*spi' | grep -v 'proto 4'`
+		IPSECPOLICY=`ssh $SSHCONF $HOSTLOGIN 'ip xfrm policy'`
+		if [ -n "$IPSECSTATEISSUE" -o -n "$IPSECPOLICY" ]
+		then
+			echo -e "\n$host# ip xfrm state [NO]" >> $CONSOLE_LOG
+			echo "$IPSECSTATE" >> $CONSOLE_LOG
+			echo -e "\n$host# ip xfrm policy [NO]" >> $CONSOLE_LOG
+			echo "$IPSECPOLICY" >> $CONSOLE_LOG
+			STATUS="failed"
+		fi
+	done
+
+
+	##########################################################################
+	# make sure there were no leaks
+	#
+
+	for host in $STRONGSWANHOSTS
+	do
+		eval HOSTLOGIN=root@\$ipv4_${host}
+		LEAKS=`ssh $SSHCONF $HOSTLOGIN 'cat $LEAK_DETECTIVE_LOG 2>/dev/null | grep -v "No leaks detected.*"'`
+		if [ -n "$LEAKS" ]
+		then
+			echo -e "\n$host# cat $LEAK_DETECTIVE_LOG [NO]" >> $CONSOLE_LOG
+			echo "$LEAKS" >> $CONSOLE_LOG
+			echo "<<< $host $LEAK_DETECTIVE_LOG >>>" >> $CONSOLE_LOG
+			STATUS="failed"
+		fi
+	done
+
+
+	##########################################################################
+	# get a copy of /var/log/auth.log
+	#
+
+	for host in $IPSECHOSTS
+	do
+	    eval HOSTLOGIN=root@\$ipv4_${host}
+	    ssh $SSHCONF $HOSTLOGIN "grep -s -E 'charon|last message repeated|imcv|pt-tls-client' \
+		/var/log/auth.log" >> $TESTRESULTDIR/${host}.auth.log
+	done
+
+
+	##########################################################################
+	# get a copy of /var/log/daemon.log
+	#
+
+	for host in $IPSECHOSTS
+	do
+	    eval HOSTLOGIN=root@\$ipv4_${host}
+	    ssh $SSHCONF $HOSTLOGIN "grep -s -E 'systemd|swanctl|charon|last message repeated|imcv' \
+		/var/log/daemon.log" >> $TESTRESULTDIR/${host}.daemon.log
+	done
+
+
+	##########################################################################
+	# stop tcpdump if necessary
+	#
+
+	for host in $TCPDUMPHOSTS
+	do
+	    if [ "`eval echo \\\$TDUP_${host}`" = "true" ]
+	    then
+			stop_tcpdump $host
+	    fi
+	    eval HOSTLOGIN=root@\$ipv4_${host}
+		scp $SSHCONF $HOSTLOGIN:/tmp/tcpdump.log \
+			$TESTRESULTDIR/${host}.tcpdump.log > /dev/null 2>&1
+	done
+
+	##########################################################################
+	# remove database directory if needed
+	#
+
+	for host in $DBHOSTS
+	do
+		eval HOSTLOGIN=root@\$ipv4_${host}
+	    ssh $SSHCONF $HOSTLOGIN "umount $DBDIR; rm -r $DBDIR" > /dev/null 2>&1
+	done
+
+	##########################################################################
+	# copy default host config back if necessary
+	#
+
+	$DIR/scripts/restore-defaults $testname
+
+
+	##########################################################################
+	# set counters
+	#
+
+	if [ $STATUS = "failed" ]
+	then
+	    let "failed_cnt += 1"
+	else
+	    let "passed_cnt += 1"
+	fi
+
+
+	##########################################################################
+	# write test status to html file
+	#
+	testend=$(date +%s)
+	let "testend -= teststart"
+	let "timetotal += testend"
+
+	if [ $STATUS = "passed" ]
+	then
+		COLOR="green"
+		log_status 0
+	else
+		COLOR="red"
+		log_status 1
+	fi
+
+	cat >> $TESTRESULTSHTML << @EOF
+  <tr>
+    <td>$testnumber</td>
+    <td><a href="$testname/index.html">$testname</a></td>
+    <td align="right">$testend</td>
+    <td><a href="$testname/console.log"><font color="$COLOR">$STATUS</font></a></td>
+  </tr>
+@EOF
+	cat >> $SUBTESTSINDEX << @EOF
+  <tr>
+    <td>$testnumber</td>
+    <td><a href="$name/index.html">$name</a></td>
+    <td><a href="$name/console.log"><font color="$COLOR">$STATUS</font></a></td>
+    <td>&nbsp;</td>
+  </tr>
+@EOF
+
+
+	##########################################################################
+	# remove any charon.pid files that still may exist
+	#
+
+	for host in $IPSECHOSTS
+	do
+	    eval HOSTLOGIN=root@\$ipv4_${host}
+	    ssh $SSHCONF $HOSTLOGIN 'if [ -f /var/run/charon.pid ]; then rm /var/run/charon.pid; echo "    removed charon.pid on `hostname`"; fi'
+	done
+
+	if [ -n "$aborted" ]
+	then
+	    break 2
+	fi
+
+    done
+
+done
+
+
+##############################################################################
+# finish the results html file
+#
+
+cat >> $TESTRESULTSHTML << @EOF
+    <tr>
+      <td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td>
+    </tr>
+    <tr>
+      <td><b>Passed</b></td><td><b><font color="green">$passed_cnt</font></b></td><td>&nbsp;</td><td>&nbsp;</td>
+    </tr>
+    <tr>
+      <td><b>Failed</b></td><td><b><font color="red">$failed_cnt</font></b></td><td>&nbsp;</td><td>&nbsp;</td>
+    </tr>
+    <tr>
+      <td><b>Time [s]</b></td><td><b><font color="blue">$timetotal</font></b></td><td>&nbsp;</td><td>&nbsp;</td>
+    </tr>
+  </table>
+</body>
+</html>
+@EOF
+
+if [ $subdir_cnt != 0 ]
+then
+cat >> $INDEX << @EOF
+      <td align="right">$subdir_cnt</td>
+      <td>&nbsp;</td>
+    </tr>
+@EOF
+fi
+
+let "all_cnt = $passed_cnt + $failed_cnt"
+
+cat >> $INDEX << @EOF
+    <tr>
+      <td>&nbsp;</td>
+      <td><a href="all.html"><b>all</b></a></td>
+      <td align="right"><b>$all_cnt</b></td>
+      <td>&nbsp;</td>
+    </tr>
+    <tr>
+      <td><b>Failed</b></td>
+      <td>&nbsp;</td>
+      <td align="right"><b><font color="red">$failed_cnt</font></b></td>
+      <td>&nbsp;</td>
+    </tr>
+  </table>
+</body>
+</html>
+@EOF
+
+echo
+echo_ok     "Passed : $passed_cnt"
+echo_failed "Failed : $failed_cnt"
+
+echo
+echo "The results are available in $TODAYDIR"
+echo "or via the link http://$ipv4_winnetou/testresults/$TESTDATE"
+
+ENDDATE=`date +%Y%m%d-%H%M-%S`
+echo
+echo "Finished : $ENDDATE"

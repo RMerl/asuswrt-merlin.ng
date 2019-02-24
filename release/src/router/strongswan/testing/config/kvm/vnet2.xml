@@ -1,0 +1,11 @@
+<network>
+  <name>vnet2</name>
+  <uuid>b5147a7d-e184-5c9e-3838-4621796ba95c</uuid>
+  <forward dev='lo' mode='route'>
+    <interface dev='lo'/>
+  </forward>
+  <bridge name='test-br1' stp='on' delay='0' />
+  <mac address='52:54:00:05:F3:34'/>
+  <ip address='10.1.0.254' netmask='255.255.0.0'>
+  </ip>
+</network>

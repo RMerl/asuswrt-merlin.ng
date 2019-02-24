@@ -1,0 +1,25 @@
+.TH SWANCTL.CONF 5 "" "@PACKAGE_VERSION@" "strongSwan"
+.SH NAME
+swanctl.conf \- swanctl configuration file
+.SH DESCRIPTION
+swanctl.conf is the configuration file used by the
+.BR swanctl (8)
+tool to load configurations and credentials into the strongSwan IKE daemon.
+
+For a description of the basic file syntax, including how to reference sections
+or split the configuration in multiple files by including other files, refer to
+.BR strongswan.conf (5).
+
+.SH TIME FORMATS
+For all options that define a time, the time is specified in seconds. The
+.RI "" "s" ","
+.RI "" "m" ","
+.RI "" "h" ""
+and
+.RI "" "d" ""
+suffixes explicitly define the units for seconds, minutes, hours and days,
+respectively.
+
+.SH SETTINGS
+The following settings can be used to configure connections, credentials and
+pools.

@@ -1,0 +1,18 @@
+carol::systemctl stop strongswan-swanctl
+dave::systemctl stop strongswan-swanctl
+alice::systemctl stop strongswan-swanctl
+venus::systemctl stop strongswan-swanctl
+moon::systemctl stop strongswan-swanctl
+moon::iptables-restore < /etc/iptables.flush
+carol::iptables-restore < /etc/iptables.flush
+dave::iptables-restore < /etc/iptables.flush
+alice::iptables-restore < /etc/iptables.flush
+venus::iptables-restore < /etc/iptables.flush
+moon::ip route del 10.3.0.0/16 via PH_IP_MOON
+moon::ip route del 10.4.0.0/16 via PH_IP_MOON1
+moon::ipsec pool --del extpool 2> /dev/null
+moon::ipsec pool --del intpool 2> /dev/null
+moon::ipsec pool --delattr dns --server PH_IP_VENUS --pool intpool --identity venus.strongswan.org 2> /dev/null
+moon::ipsec pool --delattr dns --server PH_IP_ALICE --pool intpool --identity alice@strongswan.org 2> /dev/null
+moon::ipsec pool --delattr dns --server PH_IP_WINNETOU --pool extpool 2> /dev/null
+

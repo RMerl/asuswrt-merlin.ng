@@ -1,0 +1,9 @@
+charon.plugins.radattr.dir =
+	Directory where RADIUS attributes are stored in client-ID specific files.
+
+charon.plugins.radattr.message_id = -1
+	Add attributes to all IKE_AUTH messages (-1) or only to the one with the
+	given message ID.
+
+	Attributes are added to all IKE_AUTH messages by default (-1), or only to
+	the IKE_AUTH message with the given IKEv2 message ID.

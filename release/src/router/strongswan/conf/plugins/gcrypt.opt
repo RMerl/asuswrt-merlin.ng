@@ -1,0 +1,2 @@
+charon.plugins.gcrypt.quick_random = no
+	Use faster random numbers in gcrypt; for testing only, produces weak keys!

@@ -1,0 +1,16 @@
+alice::ifup eth1
+alice::ip addr add 192.168.0.5/24 dev eth1
+moon::iptables-restore < /etc/iptables.rules
+alice::iptables-restore < /etc/iptables.rules
+carol::iptables-restore < /etc/iptables.rules
+dave::iptables-restore < /etc/iptables.rules
+moon::ipsec start
+alice::ipsec start
+carol::ipsec start
+dave::ipsec start
+moon::expect-connection rw
+alice::expect-connection rw
+carol::expect-connection home
+carol::ipsec up home
+dave::expect-connection home
+dave::ipsec up home

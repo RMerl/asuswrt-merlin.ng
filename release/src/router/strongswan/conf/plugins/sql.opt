@@ -1,0 +1,6 @@
+charon.plugins.sql.database =
+	Database URI for charon's SQL plugin. If it contains a password, make
+	sure to adjust the permissions of the config file accordingly.
+
+charon.plugins.sql.loglevel = -1
+	Loglevel for logging to SQL database.

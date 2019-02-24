@@ -1,0 +1,9 @@
+The roadwarriors <b>carol</b> and <b>dave</b> set up a connection each to gateway <b>moon</b>.
+At the outset the gateway authenticates itself to the client by sending
+an IKEv2 <b>digital signature</b> accompanied by an X.509 certificate.
+<p/>
+Next <b>carol</b> and <b>dave</b> et up an <b>EAP-TTLS</b> tunnel each via
+gateway <b>moon</b> to the RADIUS server <b>alice</b> authenticated by an X.509
+AAA certificate. The strong EAP-TTLS tunnel protects the ensuing weak client
+authentication based on <b>EAP-MD5</b>. <b>carol</b> presents the correct MD5 password
+and succeeds whereas <b>dave</b> chooses the wrong password and fails.

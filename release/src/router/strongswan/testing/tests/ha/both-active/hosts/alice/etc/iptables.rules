@@ -1,0 +1,50 @@
+*filter
+
+# default policy is DROP
+-P INPUT DROP
+-P OUTPUT DROP
+-P FORWARD DROP
+
+# forward ESP-tunneled traffic
+-A FORWARD -i eth1 -m policy --dir in  --pol ipsec --proto esp -s PH_IP_CAROL -j ACCEPT
+-A FORWARD -i eth1 -m policy --dir in  --pol ipsec --proto esp -s PH_IP_DAVE  -j ACCEPT
+-A FORWARD -o eth1 -m policy --dir out --pol ipsec --proto esp -j ACCEPT
+
+# clusterip rules
+-A INPUT -i eth1 -d 192.168.0.5 -j CLUSTERIP --new --hashmode sourceip --clustermac 01:00:c0:a8:00:05 --total-nodes 2 --local-node 0 
+-A INPUT -i eth0 -d 10.1.0.5    -j CLUSTERIP --new --hashmode sourceip --clustermac 01:00:0a:01:00:05 --total-nodes 2 --local-node 0 
+
+# allow esp
+-A INPUT  -p 50 -j ACCEPT
+-A OUTPUT -p 50 -d PH_IP_CAROL -j ACCEPT
+-A OUTPUT -p 50 -d PH_IP_DAVE -j ACCEPT
+
+# allow IKE
+-A INPUT  -i eth1 -p udp --sport 500 --dport 500 -j ACCEPT
+-A OUTPUT -o eth1 -p udp --dport 500 --sport 500 -j ACCEPT
+
+# allow MobIKE
+-A INPUT  -i eth1 -p udp --sport 4500 --dport 4500 -j ACCEPT
+-A OUTPUT -o eth1 -p udp --dport 4500 --sport 4500 -j ACCEPT
+
+# allow crl fetch from winnetou
+-A INPUT  -i eth1 -p tcp --sport 80 -s PH_IP_WINNETOU -j ACCEPT
+-A OUTPUT -o eth1 -p tcp --dport 80 -d PH_IP_WINNETOU -j ACCEPT
+
+# allow heartbeat
+-A INPUT  -i eth0 -d PH_IP_ALICE -s PH_IP_MOON1 -p udp --dport 4510 --sport 4510 -j ACCEPT
+-A OUTPUT -o eth0 -s PH_IP_ALICE -d PH_IP_MOON1 -p udp --dport 4510 --sport 4510 -j ACCEPT
+
+# allow ICMP type 3
+-A INPUT  -i eth0 -d PH_IP_ALICE -s PH_IP_MOON1 -p icmp --icmp-type 3 -j ACCEPT
+-A OUTPUT -o eth0 -s PH_IP_ALICE -d PH_IP_MOON1 -p icmp --icmp-type 3 -j ACCEPT
+
+# allow IGMP multicasts
+-A INPUT  -d 224.0.0.1 -p igmp -j ACCEPT
+-A OUTPUT -s 224.0.0.1 -p igmp -j ACCEPT
+
+# allow ssh
+-A INPUT  -p tcp --dport 22 -j ACCEPT
+-A OUTPUT -p tcp --sport 22 -j ACCEPT
+
+COMMIT

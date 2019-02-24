@@ -1,0 +1,7 @@
+The roadwarriors <b>carol</b> and <b>dave</b> both set up a connection to gateway <b>moon</b>.
+The roadwarriors each unilaterally define a static virtual IP using the <b>leftsourceip</b>
+parameter. In order to detect potential address conflicts, the roadwarriors send
+their virtual IPs embedded in a configuration payload to <b>moon</b> for verification.
+In our scenario <b>carol</b> and <b>dave</b> both request the same IP address.
+These requests are overridden by gateway <b>moon</b> which assigns a
+distinct virtual IP to each road warrior.

@@ -1,0 +1,3 @@
+charon.plugins.@PLUGIN_NAME@.load := yes
+	Whether to load the plugin. Can also be an integer to increase the priority
+	of this plugin.

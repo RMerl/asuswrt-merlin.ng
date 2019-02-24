@@ -1,0 +1,18 @@
+with "build_common";
+
+project Build_Tests is
+
+   for Languages use ("Ada", "C");
+   for Source_Dirs use ("src/ees", "src/ehandler", "src/tkm", "tests");
+   for Main use ("tests");
+   for Object_Dir use Build_Common.Obj_Dir;
+
+   package Compiler is
+      for Default_Switches ("c") use Build_Common.C_Compiler_Switches;
+   end Compiler;
+
+   package Binder is
+      for Default_Switches ("ada") use Build_Common.Ada_Binder_Switches;
+   end Binder;
+
+end Build_Tests;

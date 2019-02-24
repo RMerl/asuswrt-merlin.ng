@@ -1,0 +1,3 @@
+Roadwarrior <b>carol</b> proposes to gateway <b>moon</b> the IKE cipher suite <b>camellia256-sha512-modp3072</b>
+well as the ESP cipher suite <b>camellia192-sha384</b>.  A ping from <b>carol</b> to <b>alice</b> successfully
+checks the established tunnel.

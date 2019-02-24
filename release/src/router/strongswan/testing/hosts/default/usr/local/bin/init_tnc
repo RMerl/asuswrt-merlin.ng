@@ -1,0 +1,15 @@
+#!/bin/sh
+
+cd /var/www/tnc
+
+if [ -f django.db ]
+then
+	exit 0 
+fi
+
+./manage.py migrate --database meta
+./manage.py setpassword strongSwan strongSwan
+./manage.py collectstatic --noinput
+
+chmod g+w django.db
+exit 0

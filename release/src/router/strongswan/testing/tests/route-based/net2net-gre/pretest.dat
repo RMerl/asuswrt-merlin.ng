@@ -1,0 +1,17 @@
+moon::iptables-restore < /etc/iptables.rules
+sun::iptables-restore < /etc/iptables.rules
+moon::ip tunnel add gre-moon local PH_IP_MOON remote PH_IP_SUN mode gre key 42
+moon::ip link set gre-moon up
+moon::ip route add 10.2.0.0/16 dev gre-moon
+moon::iptables -A FORWARD -i gre-moon -j ACCEPT
+moon::iptables -A FORWARD -o gre-moon -j ACCEPT
+sun::ip tunnel add gre-sun local PH_IP_SUN remote PH_IP_MOON mode gre key 42
+sun::ip link set gre-sun up
+sun::ip route add 10.1.0.0/16 dev gre-sun
+sun::iptables -A FORWARD -i gre-sun -j ACCEPT
+sun::iptables -A FORWARD -o gre-sun -j ACCEPT
+moon::systemctl start strongswan-swanctl
+sun::systemctl start strongswan-swanctl
+moon::expect-connection gw-gw
+sun::expect-connection gw-gw
+moon::swanctl --initiate --child gre

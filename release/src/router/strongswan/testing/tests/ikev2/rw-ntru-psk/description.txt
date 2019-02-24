@@ -1,0 +1,13 @@
+The roadwarriors <b>carol</b> and <b>dave</b> set up a connection each to gateway <b>moon</b>.
+The key exchange is based on NTRU encryption with a cryptographical strength of 128 bit and
+192 bit for <b>carol</b> and <b>dave</b>, respectively. Authentication is based on strong
+preshared keys (PSKs).
+Both <b>carol</b> and <b>dave</b> request a <b>virtual IP</b> via the IKEv2 configuration payload
+by using the <b>leftsourceip=%config</b> parameter. The gateway <b>moon</b> assigns virtual
+IP addresses from a simple pool defined by <b>rightsourceip=10.3.0.0/28</b> in a monotonously
+increasing order. 
+<p>
+<b>leftfirewall=yes</b> automatically inserts iptables-based firewall rules that let pass
+the tunneled traffic. In order to test the tunnels, <b>carol</b> and <b>dave</b> then ping
+the client <b>alice</b> behind the gateway <b>moon</b>. The source IP addresses of the two
+pings will be the virtual IPs <b>carol1</b> and <b>dave1</b>, respectively.

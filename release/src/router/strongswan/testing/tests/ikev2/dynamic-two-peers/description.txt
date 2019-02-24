@@ -1,0 +1,14 @@
+The peers <b>carol</b>, <b>dave</b>, and <b>moon</b> all have dynamic IP addresses,
+so that the remote end is defined symbolically by <b>right=%&lt;hostname&gt;</b>.
+The ipsec starter resolves the fully-qualified hostname into the current IP address
+via a DNS lookup (simulated by an /etc/hosts entry). Since the peer IP addresses are
+expected to change over time, the prefix '%' is used as an implicit alternative to the
+explicit <b>rightallowany=yes</b> option which will allow an IKE_SA rekeying to arrive
+from an arbitrary IP address under the condition that the peer identity remains unchanged.
+When this happens the old tunnel is replaced by an IPsec connection to the new origin.
+<p>
+In this scenario both <b>carol</b> and <b>dave</b> initiate a tunnel to
+<b>moon</b> which has a named connection definition for each peer. Although
+the IP addresses of both <b>carol</b> and <b>dave</b> are stale, thanks to
+the '%' prefix <b>moon</b> will accept the IKE negotiations from the actual IP addresses.
+

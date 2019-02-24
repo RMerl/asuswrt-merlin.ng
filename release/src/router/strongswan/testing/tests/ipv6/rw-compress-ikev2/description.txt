@@ -1,0 +1,10 @@
+This scenario enables IPComp compression between roadwarrior <b>carol</b> and
+gateway <b>moon</b>. Two IPv6 ICMP requests from <b>carol</b> to <b>alice</b>
+check the established tunnel with compression. The packet sizes are different
+because the kernel does not compress small packets.<br/>
+<b>Note:</b> The kernel applies IPComp after fragmenting the original packet
+according to the MTU. Also, because <b>alice</b> does not know about the IPsec
+tunnel between <b>moon</b> and <b>carol</b> the response to the first ICMP
+request is fragmented in too large fragments and <b>moon</b> sends back ICMPs
+with type 2 to notify <b>alice</b> about this (Path MTU Discovery).
+The second ping is then answered successfully.

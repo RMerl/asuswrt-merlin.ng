@@ -1,0 +1,10 @@
+A connection between the subnets behind the gateways <b>moon</b> and <b>sun</b> is set up.
+The authentication is based on <b>X.509 certificates</b> and <b>RSA private keys</b> stored
+in <b>PEM format</b> in an <b>SQLite database</b>. The IKE_SA configuration details and the 
+traffic selectors of three CHILD_SAs are also stored in the database and are marked to be
+automatically started by gateway <b>moon</b> via the <b>start_action</b> field in the
+<b>child_configs</b> table.
+<p/> 
+In order to test both tunnel and firewall, client <b>alice</b>
+behind gateway <b>moon</b> pings client <b>bob</b> located behind gateway <b>sun</b> and
+<b>bob</b> in turn ping client <b>venus</b> behind gateway <b>moon</b>.

@@ -1,0 +1,9 @@
+carol::ipsec stop
+dave::ipsec stop
+moon::ipsec stop
+moon::iptables-restore < /etc/iptables.flush
+carol::iptables-restore < /etc/iptables.flush
+dave::iptables-restore < /etc/iptables.flush
+moon::rm /etc/ipsec.d/cacerts/strongswan_blissCert.der
+carol::rm /etc/ipsec.d/cacerts/strongswan_blissCert.der
+dave::rm /etc/ipsec.d/cacerts/strongswan_blissCert.der

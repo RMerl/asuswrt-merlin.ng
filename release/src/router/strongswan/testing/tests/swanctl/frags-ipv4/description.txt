@@ -1,0 +1,13 @@
+The roadwarriors <b>carol</b> and <b>dave</b> set up an IPv4 connection each to
+gateway <b>moon</b> using the <b>IKEv1</b> and <b>IKEv2</b> key exchange protocol,
+respectively. The authentication is based on <b>X.509 certificates</b>. <b>dave</b>
+advertises the support of the IKEv2 fragmentation protocol defined in <b>RFC 7383</b> 
+which prevents the IP fragmentation of the IKEv2 messages carrying large X.509 
+certificates whereas <b>carol</b> announces support of non-standardized
+IKEv1 fragmentation.
+
+<p/>
+Upon the successful establishment of the IPsec tunnels, the updown script
+automatically inserts iptables-based firewall rules that let pass the tunneled traffic.
+In order to test both tunnel and firewall, both <b>carol</b> and <b>dave</b> ping
+the client <b>alice</b> behind the gateway <b>moon</b>.

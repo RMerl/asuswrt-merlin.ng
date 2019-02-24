@@ -1,0 +1,17 @@
+moon::iptables-restore < /etc/iptables.rules
+carol::iptables-restore < /etc/iptables.rules
+dave::iptables-restore < /etc/iptables.rules
+moon::ip tunnel add vti0 local PH_IP_MOON remote 0.0.0.0 mode vti key 42
+moon::sysctl -w net.ipv4.conf.vti0.disable_policy=1
+moon::ip link set vti0 up
+moon::ip route add 10.3.0.0/28 dev vti0
+moon::iptables -A FORWARD -i vti0 -j ACCEPT
+moon::iptables -A FORWARD -o vti0 -j ACCEPT
+moon::systemctl start strongswan-swanctl
+carol::systemctl start strongswan-swanctl
+dave::systemctl start strongswan-swanctl
+moon::expect-connection rw
+carol::expect-connection home
+carol::swanctl --initiate --child home
+dave::expect-connection home
+dave::swanctl --initiate --child home

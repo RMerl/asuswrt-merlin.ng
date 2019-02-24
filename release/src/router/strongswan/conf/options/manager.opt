@@ -1,0 +1,18 @@
+manager.database =
+	Credential database URI for manager. If it contains a password, make
+	sure to adjust the permissions of the config file accordingly.
+
+manager.debug = no
+	Enable debugging in manager.
+
+manager.load =
+	Plugins to load in manager.
+
+manager.socket =
+	FastCGI socket of manager, to run it statically.
+
+manager.threads = 10
+	Threads to use for request handling.
+
+manager.timeout = 15m
+	Session timeout for manager.

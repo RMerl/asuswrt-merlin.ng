@@ -1,0 +1,5 @@
+libimcv.plugins.imv-swima.rest_api.uri =
+	HTTP URI of the SWID REST API.
+
+libimcv.plugins.imv-swima.rest_api.timeout = 120
+	Timeout of SWID REST API HTTP POST transaction.

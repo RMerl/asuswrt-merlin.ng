@@ -1,0 +1,8 @@
+The roadwarrior <b>carol</b> sets up a connection to gateway <b>moon</b>.
+At the outset the gateway authenticates itself to the client by sending
+an IKEv2 <b>digital signature</b> accompanied by an X.509 certificate.
+<p/>
+Next <b>carol</b> uses the <i>Authentication and Key Agreement</i> (<b>EAP-AKA</b>)
+method of the <i>Extensible Authentication Protocol</i> to authenticate herself.
+This EAP method used in UMTS, but here a secret defined in <b>swanctl.conf</b>
+is used instead of a USIM/(R)UIM device.

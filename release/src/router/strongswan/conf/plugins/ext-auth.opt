@@ -1,0 +1,15 @@
+charon.plugins.ext-auth.script =
+	Shell script to invoke for peer authorization.
+
+	Command to pass to the system shell for peer authorization. Authorization
+	is considered successful if the command executes normally with an exit code
+	of zero. For all other exit codes IKE_SA authorization is rejected.
+
+	The following environment variables get passed to the script:
+	_IKE_UNIQUE_ID_: The IKE_SA numerical unique identifier.
+	_IKE_NAME_: The peer configuration connection name.
+	_IKE_LOCAL_HOST_: Local IKE IP address.
+	_IKE_REMOTE_HOST_: Remote IKE IP address.
+	_IKE_LOCAL_ID_: Local IKE identity.
+	_IKE_REMOTE_ID_: Remote IKE identity.
+	_IKE_REMOTE_EAP_ID_: Remote EAP or XAuth identity, if used.

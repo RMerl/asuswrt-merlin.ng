@@ -1,0 +1,5 @@
+Roadwarrior <b>carol</b> proposes to gateway <b>moon</b> the cipher suite
+<b>CHACHA20_POLY1305</b> both for IKE and ESP by defining
+<b>ike=chacha20poly1305-prfsha256-ntru256</b> and
+<b>esp=chacha20poly1305-ntru256</b> in ipsec.conf, respectively.
+A ping from <b>carol</b> to <b>alice</b> successfully checks the established tunnel.

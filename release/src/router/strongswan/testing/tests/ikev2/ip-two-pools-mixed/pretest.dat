@@ -1,0 +1,15 @@
+moon::cat /usr/local/share/strongswan/templates/database/sql/sqlite.sql > /etc/db.d/ipsec.sql
+moon::cat /etc/db.d/ipsec.sql | sqlite3 /etc/db.d/ipsec.db
+moon::ipsec pool --add intpool --start 10.4.0.1 --end 10.4.1.244 --timeout  0 2> /dev/null
+moon::iptables-restore < /etc/iptables.rules
+carol::iptables-restore < /etc/iptables.rules
+alice::iptables-restore < /etc/iptables.rules
+moon::ipsec start
+carol::ipsec start
+alice::ipsec start
+moon::expect-connection int
+moon::expect-connection ext
+carol::expect-connection home
+carol::ipsec up home
+alice::expect-connection home
+alice::ipsec up home

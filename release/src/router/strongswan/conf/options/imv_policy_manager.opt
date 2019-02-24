@@ -1,0 +1,13 @@
+imv_policy_manager.database =
+	Database URI for the database that stores the package information. If it
+	contains a password, make sure to adjust the permissions of the config file
+	accordingly.
+
+imv_policy_manager.load = sqlite
+	Plugins to load in IMV policy manager.
+
+imv_policy_manager.command_allow =
+	Shell command to be executed with recommendation allow.
+
+imv_policy_manager.command_block =
+	Shell command to be executed with all other recommendations. 

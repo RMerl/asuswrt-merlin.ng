@@ -1,0 +1,15 @@
+moon:: ipsec status 2> /dev/null::net-net.*ESTABLISHED.*moon.strongswan.org.*sun.strongswan.org::YES
+sun::  ipsec status 2> /dev/null::net-net.*ESTABLISHED.*sun.strongswan.org.*moon.strongswan.org::YES
+moon:: cat /var/log/daemon.log::subject address block 10.2.0.0/16 is contained in issuer address block 10.1.0.0..10.2.255.255::YES 
+moon:: cat /var/log/daemon.log::subject address block PH_IP_SUN/32 is contained in issuer address block 192.168.0.0/24::YES
+moon:: cat /var/log/daemon.log::subject address block fec0:\:2/128 is contained in issuer address block fec0:\:..fec2:ffff:ffff:ffff:ffff:ffff:ffff:ffff::YES 
+moon:: cat /var/log/daemon.log::subject address block fec2:\:/16 is contained in issuer address block fec0:\:..fec2:ffff:ffff:ffff:ffff:ffff:ffff:ffff::YES 
+sun::  cat /var/log/daemon.log::subject address block 10.1.0.0/16 is contained in issuer address block 10.1.0.0..10.2.255.255::YES 
+sun::  cat /var/log/daemon.log::subject address block PH_IP_MOON/32 is contained in issuer address block 192.168.0.0/24::YES
+sun::  cat /var/log/daemon.log::subject address block fec0:\:1/128 is contained in issuer address block fec0:\:..fec2:ffff:ffff:ffff:ffff:ffff:ffff:ffff::YES 
+sun::  cat /var/log/daemon.log::subject address block fec1:\:/16 is contained in issuer address block fec0:\:..fec2:ffff:ffff:ffff:ffff:ffff:ffff:ffff::YES 
+moon:: cat /var/log/daemon.log::TS 10.2.0.0/16 is contained in address block constraint 10.2.0.0/16::YES
+sun::  cat /var/log/daemon.log::TS 10.1.0.0/16 is contained in address block constraint 10.1.0.0/16::YES
+alice::ping -c 1 PH_IP_BOB::64 bytes from PH_IP_BOB: icmp_.eq=1::YES
+sun::tcpdump::IP moon.strongswan.org > sun.strongswan.org: ESP::YES
+sun::tcpdump::IP sun.strongswan.org > moon.strongswan.org: ESP::YES

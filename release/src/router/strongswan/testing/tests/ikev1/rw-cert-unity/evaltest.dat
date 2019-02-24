@@ -1,0 +1,8 @@
+carol::ipsec status 2> /dev/null::home.*ESTABLISHED.*carol@strongswan.org.*moon.strongswan.org::YES
+moon:: ipsec status 2> /dev/null::rw\[1]: ESTABLISHED.*moon.strongswan.org.*carol@strongswan.org::YES
+carol::ipsec status 2> /dev/null::10.2.1.1/32 === 192.168.0.0/24 PASS::YES
+carol::ipsec status 2> /dev/null::home.*10.2.1.1/32 === 10.1.0.0/16 10.2.1.0/24::YES
+moon:: ipsec status 2> /dev/null::rw[{]1}.*10.1.0.0/16 10.2.1.0/24 === 10.2.1.1/32::YES
+carol::ping -c 1 PH_IP_ALICE::64 bytes from PH_IP_ALICE: icmp_.eq=1::YES
+moon::tcpdump::IP carol.strongswan.org > moon.strongswan.org: ESP::YES
+moon::tcpdump::IP moon.strongswan.org > carol.strongswan.org: ESP::YES

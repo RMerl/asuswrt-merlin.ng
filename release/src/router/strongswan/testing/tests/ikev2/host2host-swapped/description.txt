@@ -1,0 +1,3 @@
+Same scenario as test <a href="../host2host-cert/"><b>host2host-cert</b></a> but with
+swapped end definitions:  <b>right</b> denotes the <b>local</b> side whereas
+<b>left</b> stands for the <b>remote</b> peer.

@@ -1,0 +1,11 @@
+carol::cat /etc/ipsec.d/triplets.dat
+dave::cat /etc/ipsec.d/triplets.dat
+alice::freeradius
+moon::systemctl start strongswan-swanctl
+carol::systemctl start strongswan-swanctl
+dave::systemctl start strongswan-swanctl
+moon::expect-connection rw
+carol::expect-connection home
+carol::swanctl --initiate --child home 2> /dev/null
+dave::expect-connection home
+dave::swanctl --initiate --child home 2> /dev/null

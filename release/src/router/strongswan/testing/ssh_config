@@ -1,0 +1,11 @@
+Host *
+	LogLevel QUIET
+	# debian default
+	SendEnv LANG LC_*
+	SendEnv LEAK_DETECTIVE_LOG
+	StrictHostKeyChecking no
+	UserKnownHostsFile /dev/null
+	GSSAPIAuthentication yes
+	# share multiple sessions
+	ControlMaster auto
+	ControlPath /tmp/ssh-uml-%r@%h:%p

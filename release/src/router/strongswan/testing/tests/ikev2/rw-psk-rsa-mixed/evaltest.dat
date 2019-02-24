@@ -1,0 +1,14 @@
+moon:: cat /var/log/daemon.log::authentication of 'carol@strongswan.org' with pre-shared key successful::YES
+moon:: cat /var/log/daemon.log::authentication of 'PH_IP_MOON' (myself) with pre-shared key::YES
+moon:: ipsec status 2> /dev/null::rw-psk.*INSTALLED, TUNNEL::YES
+carol::ipsec status 2> /dev/null::home.*ESTABLISHED.*carol@strongswan.org.*\[PH_IP_MOON]::YES
+moon:: cat /var/log/daemon.log::authentication of 'dave@strongswan.org' with RSA.* successful::YES
+moon:: cat /var/log/daemon.log::authentication of 'moon.strongswan.org' (myself) with RSA.* successful::YES
+moon:: ipsec status 2> /dev/null::rw-rsasig.*INSTALLED, TUNNEL::YES
+dave:: ipsec status 2> /dev/null::home.*ESTABLISHED.*dave@strongswan.org.*moon.strongswan.org::YES
+carol::ping -c 1 PH_IP_ALICE::64 bytes from PH_IP_ALICE: icmp_.eq=1::YES
+dave:: ping -c 1 PH_IP_ALICE::64 bytes from PH_IP_ALICE: icmp_.eq=1::YES
+moon::tcpdump::IP carol.strongswan.org > moon.strongswan.org: ESP::YES
+moon::tcpdump::IP moon.strongswan.org > carol.strongswan.org: ESP::YES
+moon::tcpdump::IP dave.strongswan.org > moon.strongswan.org: ESP::YES
+moon::tcpdump::IP moon.strongswan.org > dave.strongswan.org: ESP::YES

@@ -1,0 +1,4 @@
+A connection between the gateways <b>moon</b> and <b>sun</b> is set up.
+The authentication is based on <b>Preshared Keys</b> (PSK), but gateway <b>moon</b>
+uses a wrong PSK. Therefore the connection setup is aborted by gateway <b>sun</b>
+by sending an <b>AUTHENTICATION_FAILED</b> notify error.

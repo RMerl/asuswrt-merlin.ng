@@ -1,0 +1,2 @@
+charon.plugins.eap-gtc.backend = pam
+	XAuth backend to be used for credential verification.

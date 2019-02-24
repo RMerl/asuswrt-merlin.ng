@@ -1,0 +1,6 @@
+The roadwarriors <b>carol</b> and <b>dave</b> set up a connection each 
+to gateway <b>moon</b>. The authentication is based on <b>X.509 certificates</b>
+containing <b>Ed25519</b> keys. The CA defines two certificate policies
+<b>1.3.6.1.4.1.36906.1.1.1</b> and <b>1.3.6.1.4.1.36906.1.1.2</b>, the former one
+contained in <b>carol</b>'s certificate. Since gateway <b>moon</b> enforces this
+certificate policy, <b>carol</b> is accepted whereas <b>dave</b> is rejected.

@@ -1,0 +1,39 @@
+*filter
+
+# default policy is DROP
+-P INPUT DROP
+-P OUTPUT DROP
+-P FORWARD DROP
+
+# allow esp
+-A INPUT  -i eth0 -p 50 -j ACCEPT
+-A OUTPUT -o eth0 -p 50 -j ACCEPT
+
+# allow IKE
+-A INPUT  -i eth0 -p udp --sport 500 --dport 500 -j ACCEPT
+-A OUTPUT -o eth0 -p udp --dport 500 --sport 500 -j ACCEPT
+
+# allow MobIKE
+-A INPUT  -i eth0 -p udp --sport 4500 --dport 4500 -j ACCEPT
+-A OUTPUT -o eth0 -p udp --dport 4500 --sport 4500 -j ACCEPT
+
+# allow last UDP fragment
+-A INPUT -i eth0 -p udp -m frag --fraglast -j ACCEPT
+
+# allow ICMPv6 neighbor-solicitations
+-A INPUT  -p icmpv6 --icmpv6-type neighbor-solicitation -j ACCEPT
+-A OUTPUT -p icmpv6 --icmpv6-type neighbor-solicitation -j ACCEPT
+
+# allow ICMPv6 neighbor-advertisements
+-A INPUT  -p icmpv6 --icmpv6-type neighbor-advertisement -j ACCEPT
+-A OUTPUT -p icmpv6 --icmpv6-type neighbor-advertisement -j ACCEPT
+
+# allow crl and certificate fetch from winnetou
+-A INPUT  -i eth0 -p tcp --sport 80 -s fec0::15 -j ACCEPT
+-A OUTPUT -o eth0 -p tcp --dport 80 -d fec0::15 -j ACCEPT
+
+# log dropped packets
+-A INPUT  -j LOG --log-prefix " IN: "
+-A OUTPUT -j LOG --log-prefix " OUT: "
+
+COMMIT

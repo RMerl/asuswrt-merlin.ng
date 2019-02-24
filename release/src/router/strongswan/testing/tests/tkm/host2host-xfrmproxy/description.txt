@@ -1,0 +1,5 @@
+A transport connection between the hosts <b>moon</b> and <b>sun</b> is set up.
+The host <b>moon</b> starts the Trusted Key Manager (TKM) and the Ada XFRM
+proxy, which relays XFRM kernel messages to charon. The authentication is based
+on X.509 certificates. The connection is initiated by a ping from <b>moon</b> to
+<b>sun</b>.

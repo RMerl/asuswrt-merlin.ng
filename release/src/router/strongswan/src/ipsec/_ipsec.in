@@ -1,0 +1,349 @@
+#! @IPSEC_SHELL@
+# prefix command to run stuff from our programs directory
+# Copyright (C) 1998-2002  Henry Spencer.
+# Copyright (C) 2006-2014 Andreas Steffen
+# Copyright (C) 2006 Martin Willi
+#
+# This program is free software; you can redistribute it and/or modify it
+# under the terms of the GNU General Public License as published by the
+# Free Software Foundation; either version 2 of the License, or (at your
+# option) any later version.  See <http://www.fsf.org/copyleft/gpl.txt>.
+#
+# This program is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+# or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+# for more details.
+
+# define a minimum PATH environment in case it is not set
+PATH=${PATH:-"/sbin:/bin:/usr/sbin:/usr/bin"}
+export PATH
+
+# set daemon name
+[ -z "$DAEMON_NAME" ] && DAEMON_NAME="charon"
+
+# name and version of the ipsec implementation
+OS_NAME=`uname -s`
+IPSEC_NAME="@IPSEC_NAME@"
+IPSEC_VERSION="U@IPSEC_VERSION@/K`uname -r`"
+
+# where the private directory and the config files are
+IPSEC_DIR="@IPSEC_DIR@"
+IPSEC_BINDIR="@IPSEC_BINDIR@"
+IPSEC_SBINDIR="@IPSEC_SBINDIR@"
+IPSEC_CONFDIR="@IPSEC_CONFDIR@"
+IPSEC_PIDDIR="@IPSEC_PIDDIR@"
+IPSEC_SCRIPT="@IPSEC_SCRIPT@"
+
+IPSEC_STARTER_PID="${IPSEC_PIDDIR}/starter.${DAEMON_NAME}.pid"
+IPSEC_CHARON_PID="${IPSEC_PIDDIR}/${DAEMON_NAME}.pid"
+
+IPSEC_STROKE="${IPSEC_DIR}/stroke"
+IPSEC_STARTER="${IPSEC_DIR}/starter"
+
+export IPSEC_DIR IPSEC_BINDIR IPSEC_SBINDIR IPSEC_CONFDIR IPSEC_PIDDIR IPSEC_SCRIPT IPSEC_VERSION IPSEC_NAME IPSEC_STARTER_PID IPSEC_CHARON_PID
+
+IPSEC_DISTRO="University of Applied Sciences Rapperswil, Switzerland"
+
+command_dir="$IPSEC_DIR"
+
+case "$1" in
+'')
+	echo "$IPSEC_SCRIPT command [arguments]"
+	echo
+	echo "Use --help for a list of commands, or refer to the $IPSEC_SCRIPT(8) man page."
+	echo "See <http://www.strongswan.org> for more general information."
+	exit 0
+	;;
+--help)
+	echo "$IPSEC_SCRIPT command [arguments]"
+	echo
+	echo "Commands:"
+	echo "	start|restart [arguments]"
+	echo "	update|reload|stop"
+	echo "	up|down|route|unroute <connectionname>"
+	echo "	down-srcip <start> [<end>]"
+	echo "	status|statusall [<connectionname>]"
+	echo "	listalgs|listpubkeys|listcerts [--utc]"
+	echo "	listcacerts|listaacerts|listocspcerts [--utc]"
+	echo "	listacerts|listgroups|listcainfos [--utc]"
+	echo "	listcrls|listocsp|listplugins|listall [--utc]"
+	echo "	listcounters|resetcounters [name]"
+	echo "	leases [<poolname> [<address>]]"
+	echo "	rereadsecrets|rereadcacerts|rereadaacerts"
+	echo "	rereadocspcerts|rereadacerts|rereadcrls|rereadall"
+	echo "	purgecerts|purgecrls|purgeike|purgeocsp"
+	echo "	scepclient|pki"
+	echo "	stroke"
+	echo "	version"
+	echo
+	echo "Refer to the $IPSEC_SCRIPT(8) man page for details."
+	echo "Some commands have their own man pages, e.g. pki(1) or scepclient(8)."
+	exit 0
+	;;
+--versioncode)
+	echo "$IPSEC_VERSION"
+	exit 0
+	;;
+--directory)
+	echo "$IPSEC_DIR"
+	exit 0
+	;;
+--confdir)
+	echo "$IPSEC_CONFDIR"
+	exit 0
+	;;
+--piddir)
+	echo "$IPSEC_PIDDIR"
+	exit 0
+	;;
+down)
+	shift
+	if [ "$#" -ne 1 ]
+	then
+	    echo "Usage: $IPSEC_SCRIPT down <connection name>"
+	    exit 2
+	fi
+	rc=7
+	if [ -e $IPSEC_CHARON_PID ]
+	then
+		$IPSEC_STROKE down "$1"
+		rc="$?"
+	fi
+	exit "$rc"
+	;;
+down-srcip)
+	shift
+	if [ "$#" -lt 1 ]
+	then
+	    echo "Usage: $IPSEC_SCRIPT down-srcip <start> [<end>]"
+	    exit 2
+	fi
+	rc=7
+	if [ -e $IPSEC_CHARON_PID ]
+	then
+		$IPSEC_STROKE down-srcip $*
+		rc="$?"
+	fi
+	exit "$rc"
+	;;
+leases)
+	op="$1"
+	rc=7
+	shift
+	if [ -e $IPSEC_CHARON_PID ]
+	then
+		case "$#" in
+		0) $IPSEC_STROKE "$op" ;;
+		1) $IPSEC_STROKE "$op" "$1" ;;
+		*) $IPSEC_STROKE "$op" "$1" "$2" ;;
+		esac
+		rc="$?"
+	fi
+	exit "$rc"
+	;;
+listalgs|listpubkeys|listplugins|\
+listcerts|listcacerts|listaacerts|\
+listacerts|listgroups|listocspcerts|\
+listcainfos|listcrls|listocsp|listall|\
+rereadsecrets|rereadcacerts|rereadaacerts|\
+rereadacerts|rereadocspcerts|rereadcrls|\
+rereadall|purgeocsp|listcounters|resetcounters)
+	op="$1"
+	rc=7
+	shift
+	if [ -e $IPSEC_CHARON_PID ]
+	then
+		$IPSEC_STROKE "$op" "$@"
+		rc="$?"
+	fi
+	exit "$rc"
+	;;
+purgeike|purgecrls|purgecerts)
+	rc=7
+	if [ -e $IPSEC_CHARON_PID ]
+	then
+		$IPSEC_STROKE "$1"
+		rc="$?"
+	fi
+	exit "$rc"
+	;;
+reload)
+	rc=7
+	if [ -e $IPSEC_STARTER_PID ]
+	then
+		echo "Reloading strongSwan IPsec configuration..." >&2
+		kill -USR1 `cat $IPSEC_STARTER_PID` 2>/dev/null && rc=0
+	else
+		echo "Reloading strongSwan IPsec failed: starter is not running" >&2
+	fi
+	exit "$rc"
+	;;
+restart)
+	$IPSEC_SBINDIR/$IPSEC_SCRIPT stop
+	sleep 2
+	shift
+	exec $IPSEC_SBINDIR/$IPSEC_SCRIPT start "$@"
+	;;
+route|unroute)
+	op="$1"
+	rc=7
+	shift
+	if [ "$#" -ne 1 ]
+	then
+		echo "Usage: $IPSEC_SCRIPT $op <connection name>"
+		exit 2
+	fi
+	if [ -e $IPSEC_CHARON_PID ]
+	then
+		$IPSEC_STROKE "$op" "$1"
+		rc="$?"
+	fi
+	exit "$rc"
+	;;
+secrets)
+	rc=7
+	if [ -e $IPSEC_CHARON_PID ]
+	then
+		$IPSEC_STROKE rereadsecrets
+		rc="$?"
+	fi
+	exit "$rc"
+	;;
+start)
+	shift
+	if [ -d /var/lock/subsys ]; then
+		touch /var/lock/subsys/ipsec
+	fi
+	exec $IPSEC_STARTER --daemon $DAEMON_NAME "$@"
+	;;
+status|statusall)
+	op="$1"
+	# Return value is slightly different for the status command:
+	# 0 - service up and running
+	# 1 - service dead, but /var/run/  pid  file exists
+	# 2 - service dead, but /var/lock/ lock file exists
+	# 3 - service not running (unused)
+	# 4 - service status unknown :-(
+	# 5--199 reserved (5--99 LSB, 100--149 distro, 150--199 appl.)
+	shift
+	if [ $# -eq 0 ]
+	then
+		if [ -e $IPSEC_CHARON_PID ]
+		then
+			$IPSEC_STROKE "$op"
+		fi
+	else
+		if [ -e $IPSEC_CHARON_PID ]
+		then
+			$IPSEC_STROKE "$op" "$1"
+		fi
+	fi
+	if [ -e $IPSEC_STARTER_PID ]
+	then
+		kill -0 `cat $IPSEC_STARTER_PID` 2>/dev/null
+		exit $?
+	fi
+	exit 3
+	;;
+stop)
+	# stopping a not-running service is considered as success
+	if [ -e $IPSEC_STARTER_PID ]
+	then
+		echo "Stopping strongSwan IPsec..." >&2
+		spid=`cat $IPSEC_STARTER_PID`
+		if [ -n "$spid" ]
+		then
+			kill $spid 2>/dev/null
+			loop=110
+			while [ $loop -gt 0 ] ; do
+				kill -0 $spid 2>/dev/null || break
+				sleep 0.1 2>/dev/null
+				if [ $? -ne 0 ]
+				then
+					sleep 1
+					loop=$(($loop - 9))
+				fi
+				loop=$(($loop - 1))
+			done
+			if [ $loop -le 0 ]
+			then
+				kill -KILL $spid 2>/dev/null
+				rm -f $IPSEC_STARTER_PID
+			fi
+		fi
+	else
+		echo "Stopping strongSwan IPsec failed: starter is not running" >&2
+	fi
+	if [ -d /var/lock/subsys ]; then
+		rm -f /var/lock/subsys/ipsec
+	fi
+	exit 0
+	;;
+up)
+	shift
+	if [ "$#" -ne 1 ]
+	then
+	    echo "Usage: $IPSEC_SCRIPT up <connection name>"
+	    exit 2
+	fi
+	rc=7
+	if [ -e $IPSEC_CHARON_PID ]
+	then
+		$IPSEC_STROKE up "$1"
+		rc="$?"
+	fi
+	exit "$rc"
+	;;
+update)
+	if [ -e $IPSEC_STARTER_PID ]
+	then
+		echo "Updating strongSwan IPsec configuration..." >&2
+		kill -HUP `cat $IPSEC_STARTER_PID`
+		exit 0
+	else
+		echo "Updating strongSwan IPsec failed: starter is not running" >&2
+		exit 7
+	fi
+	;;
+aikgen|pki)
+	# programs in BINDIR may be called directly, these two are listed for legacy reasons
+	command_dir="$IPSEC_BINDIR"
+	# fall through
+	;;
+attest|conftest|dumm|irdumm|pool|pt-tls-client|scepclient|stroke|\
+duplicheck|error-notify|imv_policy_manager|load-tester|lookip|whitelist|\
+_updown|_imv_policy)
+	# fall through
+	;;
+copyright|--copyright)
+	set _copyright
+	# fall through
+	;;
+version|--version)
+	printf "$OS_NAME $IPSEC_NAME $IPSEC_VERSION\n"
+	printf "$IPSEC_DISTRO\n"
+	printf "See '$IPSEC_SCRIPT --copyright' for copyright information.\n"
+	exit 0
+	;;
+--*)
+	echo "$0: unknown option \`$1' (perhaps command name was omitted?)" >&2
+	exit 2
+	;;
+*)
+	echo "$0: unknown command \`$1' (\`$IPSEC_SCRIPT --help' for list)" >&2
+	exit 2
+	;;
+esac
+
+cmd="$1"
+shift
+
+path="$command_dir/$cmd"
+
+if [ ! -x "$path" ]
+then
+	echo "$0: unknown command \`$cmd' (\`$IPSEC_SCRIPT --help' for list)" >&2
+	exit 2
+fi
+
+exec $path "$@"

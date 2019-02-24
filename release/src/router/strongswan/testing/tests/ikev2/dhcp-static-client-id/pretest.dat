@@ -1,0 +1,13 @@
+moon::iptables-restore < /etc/iptables.rules
+carol::iptables-restore < /etc/iptables.rules
+dave::iptables-restore < /etc/iptables.rules
+venus::cat /etc/dhcp/dhcpd.conf
+venus::service isc-dhcp-server start 2> /dev/null
+moon::ipsec start
+carol::ipsec start
+dave::ipsec start
+moon::expect-connection rw
+carol::expect-connection home
+carol::ipsec up home
+dave::expect-connection home
+dave::ipsec up home

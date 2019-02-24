@@ -1,0 +1,6 @@
+alice::ipsec stop
+moon::ipsec stop
+sun::ipsec stop
+bob::ipsec stop
+winnetou::ip route del 10.1.0.0/16 via PH_IP_MOON
+winnetou::ip route del 10.2.0.0/16 via PH_IP_SUN

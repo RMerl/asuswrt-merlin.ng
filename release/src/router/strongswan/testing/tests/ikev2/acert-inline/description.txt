@@ -1,0 +1,12 @@
+<p>The roadwarriors <b>carol</b> and <b>dave</b> set up a connection each
+to gateway <b>moon</b>. The authentication is based on <b>X.509 certificates</b>.
+To authorize clients, <b>moon</b> expects attribute certificates sent inline in
+IKEv2 CERT payloads. <b>Carol</b> provides a valid attribute certificate for
+the group <i>sales</i>, but <b>dave</b> offers two invalid attribute
+certificates: One is not for the <i>sales</i> group, and the other is issued by
+an AA that has been expired.</p>
+<p>Upon the successful establishment of the IPsec tunnels, <b>leftfirewall=yes</b>
+automatically inserts iptables-based firewall rules that let pass the tunneled traffic.
+In order to test both tunnel and firewall, both <b>carol</b> and <b>dave</b> try
+to ping the client <b>alice</b> behind the gateway <b>moon</b>, but dave fails
+to do so.</p>

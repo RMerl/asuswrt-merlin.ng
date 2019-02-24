@@ -1,0 +1,14 @@
+The hosts <b>alice</b>, <b>venus</b>, <b>carol</b>, and <b>dave</b> set up tunnel connections
+to gateway <b>moon</b> in a <b>hub-and-spoke</b> fashion. Each host requests a <b>virtual IP</b> 
+with the <b>leftsourceip=%config</b> parameter. Gateway <b>moon</b> assigns virtual
+IP addresses from a pool named <b>extpool</b> [10.3.0.1..10.3.1.244] to hosts connecting
+to the <b>eth0</b> (PH_IP_MOON) interface and virtual IP addresses from a pool named <b>intpool</b>
+[10.4.0.1..10.4.1.244] to hosts connecting to the <b>eth1</b> (PH_IP_MOON1) interface.
+Thus <b>carol</b> and <b>dave</b> are assigned <b>PH_IP_CAROL1</b> and <b>PH_IP_DAVE1</b>,
+respectively, whereas <b>alice</b> and <b>venus</b> get <b>10.4.0.1</b> and <b>10.4.0.2</b>,
+respectively.
+<p> 
+By defining the composite IPsec SA: <b>rightsubnet=10.3.0.0/16,10.4.0.0/16</b>, each of the four
+spokes can securely reach any other spoke via the central hub <b>moon</b>. This is
+demonstrated by <b>alice</b> and <b>dave</b> pinging the assigned virtual IP addresses
+of <b>carol</b> and <b>venus</b>.

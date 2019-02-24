@@ -1,0 +1,8 @@
+R	141222133356Z	141227062317Z,superseded	01	unknown	/C=CH/O=Linux strongSwan/OU=RFC3779/CN=moon.strongswan.org
+R	141222133521Z	141227062321Z,superseded	02	unknown	/C=CH/O=Linux strongSwan/OU=RFC3779/CN=sun.strongswan.org
+R	141222133612Z	141227062326Z,superseded	03	unknown	/C=CH/O=Linux strongSwan/OU=RFC3779/CN=carol@strongswan.org
+R	141222133736Z	141227062335Z,superseded	04	unknown	/C=CH/O=Linux strongSwan/OU=RFC3779/CN=dave@strongswan.org
+V	191221064542Z		05	unknown	/C=CH/O=Linux strongSwan/OU=RFC3779/CN=moon.strongswan.org
+V	191221064900Z		06	unknown	/C=CH/O=Linux strongSwan/OU=RFC3779/CN=sun.strongswan.org
+V	191221085130Z		07	unknown	/C=CH/O=Linux strongSwan/OU=RFC3779/CN=carol@strongswan.org
+V	191221085457Z		08	unknown	/C=CH/O=Linux strongSwan/OU=RFC3779/CN=dave@strongswan.org

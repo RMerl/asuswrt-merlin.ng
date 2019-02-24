@@ -1,0 +1,7 @@
+charon.plugins.revocation.enable_ocsp = yes
+	Whether OCSP validation should be enabled.
+
+charon.plugins.revocation.enable_crl = yes
+	Whether CRL validation should be enabled.
+
+

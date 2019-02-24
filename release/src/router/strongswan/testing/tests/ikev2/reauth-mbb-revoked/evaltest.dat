@@ -1,0 +1,10 @@
+winnetou::cp /var/www/strongswan.crl /var/www/strongswan.crl.bak
+winnetou::cp /var/www/strongswan_moon_revoked.crl /var/www/strongswan.crl
+carol::ipsec purgecrls
+moon:: ipsec status 2> /dev/null::rw\[1]: ESTABLISHED.*moon.strongswan.org.*carol@strongswan.org::YES
+carol::ipsec status 2> /dev/null::home\[1]: ESTABLISHED.*carol@strongswan.org.*moon.strongswan.org::YES
+carol::sleep 6
+carol::cat /var/log/daemon.log::certificate was revoked.*key compromise::YES
+carol::cat /var/log/daemon.log::peer certificate verification failed, deleting SA::YES
+moon:: ipsec status 2> /dev/null::rw\[2]: ESTABLISHED.*moon.strongswan.org.*carol@strongswan.org::NO
+carol::ipsec status 2> /dev/null::home\[2]: ESTABLISHED.*carol@strongswan.org.*moon.strongswan.org::NO

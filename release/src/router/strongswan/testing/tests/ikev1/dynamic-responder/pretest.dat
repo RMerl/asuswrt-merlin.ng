@@ -1,0 +1,13 @@
+carol::iptables-restore < /etc/iptables.rules
+carol::ipsec start
+dave::ipsec start
+moon::ipsec start
+carol::expect-connection moon
+moon::expect-connection carol
+moon::ipsec up carol
+moon::sleep 0.5
+carol::iptables -D INPUT  -i eth0 -p udp --dport 500 --sport 500 -j ACCEPT
+carol::iptables -D OUTPUT -o eth0 -p udp --dport 500 --sport 500 -j ACCEPT
+dave::expect-connection moon
+dave::ipsec up moon
+moon::sleep 0.5

@@ -261,27 +261,6 @@ static kernel_algorithm_t compression_algs[] = {
 };
 
 /**
- * IPsec HW offload state in kernel
- */
-typedef enum {
-	NL_OFFLOAD_UNKNOWN,
-	NL_OFFLOAD_UNSUPPORTED,
-	NL_OFFLOAD_SUPPORTED
-} nl_offload_state_t;
-
-/**
- * Global metadata used for IPsec HW offload
- */
-static struct {
-	/** bit in feature set */
-	u_int bit;
-	/** total number of device feature blocks */
-	u_int total_blocks;
-	/** determined HW offload state */
-	nl_offload_state_t state;
-} netlink_hw_offload;
-
-/**
  * Look up a kernel algorithm name and its key size
  */
 static const char* lookup_algorithm(transform_type_t type, int ikev2)
@@ -1352,6 +1331,31 @@ static bool add_uint32(struct nlmsghdr *hdr, int buflen,
 	return TRUE;
 }
 
+/* ETHTOOL_GSSET_INFO is available since 2.6.34 and ETH_SS_FEATURES (enum) and
+ * ETHTOOL_GFEATURES since 2.6.39, so check for the latter */
+#ifdef ETHTOOL_GFEATURES
+
+/**
+ * IPsec HW offload state in kernel
+ */
+typedef enum {
+	NL_OFFLOAD_UNKNOWN,
+	NL_OFFLOAD_UNSUPPORTED,
+	NL_OFFLOAD_SUPPORTED
+} nl_offload_state_t;
+
+/**
+ * Global metadata used for IPsec HW offload
+ */
+static struct {
+	/** bit in feature set */
+	u_int bit;
+	/** total number of device feature blocks */
+	u_int total_blocks;
+	/** determined HW offload state */
+	nl_offload_state_t state;
+} netlink_hw_offload;
+
 /**
  * Check if kernel supports HW offload
  */
@@ -1478,6 +1482,15 @@ out:
 	close(query_socket);
 	return ret;
 }
+
+#else
+
+static bool netlink_detect_offload(const char *ifname)
+{
+	return FALSE;
+}
+
+#endif
 
 /**
  * There are 3 HW offload configuration values:

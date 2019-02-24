@@ -1,0 +1,18 @@
+
+noinst_LIBRARIES += \
+	src/lib/libtor-trace.a
+
+TRACEHEADERS = \
+	src/lib/trace/trace.h \
+	src/lib/trace/events.h
+
+if USE_EVENT_TRACING_DEBUG
+TRACEHEADERS += \
+	src/lib/trace/debug.h
+endif
+
+# Library source files.
+src_lib_libtor_trace_a_SOURCES = \
+	src/lib/trace/trace.c
+
+noinst_HEADERS+= $(TRACEHEADERS)

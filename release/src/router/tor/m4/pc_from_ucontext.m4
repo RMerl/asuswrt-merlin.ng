@@ -79,29 +79,29 @@ AC_DEFUN([AC_PC_FROM_UCONTEXT],
      if ! $pc_field_found; then
        # Prefer sys/ucontext.h to ucontext.h, for OS X's sake.
        if test "x$ac_cv_header_cygwin_signal_h" = xyes; then
-         AC_TRY_COMPILE([#include <cygwin/signal.h>],
-                        [ucontext_t u; return u.$pc_field == 0;],
+         AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[#include <cygwin/signal.h>]],
+                        [[ucontext_t u; return u.$pc_field == 0;]])],
                         AC_DEFINE_UNQUOTED(PC_FROM_UCONTEXT, $pc_field,
                                            How to access the PC from a struct ucontext)
                         AC_MSG_RESULT([$pc_field])
                         pc_field_found=true)
        elif test "x$ac_cv_header_sys_ucontext_h" = xyes; then
-         AC_TRY_COMPILE([#include <sys/ucontext.h>],
-                        [ucontext_t u; return u.$pc_field == 0;],
+         AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[#include <sys/ucontext.h>]],
+                        [[ucontext_t u; return u.$pc_field == 0;]])],
                         AC_DEFINE_UNQUOTED(PC_FROM_UCONTEXT, $pc_field,
                                            How to access the PC from a struct ucontext)
                         AC_MSG_RESULT([$pc_field])
                         pc_field_found=true)
        elif test "x$ac_cv_header_ucontext_h" = xyes; then
-         AC_TRY_COMPILE([#include <ucontext.h>],
-                        [ucontext_t u; return u.$pc_field == 0;],
+         AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[#include <ucontext.h>]],
+                        [[ucontext_t u; return u.$pc_field == 0;]])],
                         AC_DEFINE_UNQUOTED(PC_FROM_UCONTEXT, $pc_field,
                                            How to access the PC from a struct ucontext)
                         AC_MSG_RESULT([$pc_field])
                         pc_field_found=true)
        else     # hope some standard header gives it to us
-         AC_TRY_COMPILE([],
-                        [ucontext_t u; return u.$pc_field == 0;],
+         AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[]],
+                        [[ucontext_t u; return u.$pc_field == 0;]])],
                         AC_DEFINE_UNQUOTED(PC_FROM_UCONTEXT, $pc_field,
                                            How to access the PC from a struct ucontext)
                         AC_MSG_RESULT([$pc_field])
@@ -114,8 +114,8 @@ AC_DEFUN([AC_PC_FROM_UCONTEXT],
      pc_fields="$pc_fields sc_rip"  # OpenBSD (x86_64)
      for pc_field in $pc_fields; do
        if ! $pc_field_found; then
-         AC_TRY_COMPILE([#include <signal.h>],
-                        [ucontext_t u; return u.$pc_field == 0;],
+         AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[#include <signal.h>]],
+                        [[ucontext_t u; return u.$pc_field == 0;]])],
                         AC_DEFINE_UNQUOTED(PC_FROM_UCONTEXT, $pc_field,
                                            How to access the PC from a struct ucontext)
                         AC_MSG_RESULT([$pc_field])

@@ -1,0 +1,37 @@
+
+noinst_LIBRARIES += src/lib/libtor-fs.a
+
+if UNITTESTS_ENABLED
+noinst_LIBRARIES += src/lib/libtor-fs-testing.a
+endif
+
+src_lib_libtor_fs_a_SOURCES =			\
+	src/lib/fs/conffile.c			\
+	src/lib/fs/dir.c			\
+	src/lib/fs/files.c			\
+	src/lib/fs/freespace.c			\
+	src/lib/fs/lockfile.c			\
+	src/lib/fs/mmap.c			\
+	src/lib/fs/path.c			\
+	src/lib/fs/storagedir.c			\
+	src/lib/fs/userdb.c
+
+if WIN32
+src_lib_libtor_fs_a_SOURCES += src/lib/fs/winlib.c
+endif
+
+src_lib_libtor_fs_testing_a_SOURCES = \
+	$(src_lib_libtor_fs_a_SOURCES)
+src_lib_libtor_fs_testing_a_CPPFLAGS = $(AM_CPPFLAGS) $(TEST_CPPFLAGS)
+src_lib_libtor_fs_testing_a_CFLAGS = $(AM_CFLAGS) $(TEST_CFLAGS)
+
+noinst_HEADERS +=					\
+	src/lib/fs/conffile.h				\
+	src/lib/fs/dir.h				\
+	src/lib/fs/files.h				\
+	src/lib/fs/lockfile.h				\
+	src/lib/fs/mmap.h				\
+	src/lib/fs/path.h				\
+	src/lib/fs/storagedir.h				\
+	src/lib/fs/userdb.h				\
+	src/lib/fs/winlib.h

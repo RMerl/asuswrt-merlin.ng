@@ -1,0 +1,5 @@
+
+noinst_HEADERS += 			\
+	src/lib/defs/dh_sizes.h 	\
+	src/lib/defs/digest_sizes.h	\
+	src/lib/defs/x25519_sizes.h

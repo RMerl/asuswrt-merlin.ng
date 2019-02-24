@@ -1,6 +1,6 @@
 /* Copyright (c) 2001-2003, Roger Dingledine.
  * Copyright (c) 2004-2006, Roger Dingledine, Nick Mathewson.
- * Copyright (c) 2007-2016, The Tor Project, Inc. */
+ * Copyright (c) 2007-2019, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 #ifndef TOR_TEST_H
@@ -11,7 +11,8 @@
  * \brief Macros and functions used by unit tests.
  */
 
-#include "compat.h"
+#define DEBUG_SMARTLIST 1
+
 #include "tinytest.h"
 #define TT_EXIT_TEST_FUNCTION STMT_BEGIN goto done; STMT_END
 #include "tinytest_macros.h"
@@ -45,36 +46,38 @@
  * you're doing. */
 #define tt_double_eq(a,b)     \
   STMT_BEGIN                  \
-  tt_double_op((a), >=, (b)); \
-  tt_double_op((a), <=, (b)); \
+  tt_double_op((a), OP_GE, (b)); \
+  tt_double_op((a), OP_LE, (b)); \
   STMT_END
-
-#ifdef _MSC_VER
-#define U64_PRINTF_TYPE uint64_t
-#define I64_PRINTF_TYPE int64_t
-#else
-#define U64_PRINTF_TYPE unsigned long long
-#define I64_PRINTF_TYPE long long
-#endif
 
 #define tt_size_op(a,op,b)                                              \
   tt_assert_test_fmt_type(a,b,#a" "#op" "#b,size_t,(val1_ op val2_),    \
-    U64_PRINTF_TYPE, U64_FORMAT,                                        \
-    {print_ = (U64_PRINTF_TYPE) value_;}, {}, TT_EXIT_TEST_FUNCTION)
+    size_t, "%"TOR_PRIuSZ,                                              \
+    {print_ = (size_t) value_;}, {}, TT_EXIT_TEST_FUNCTION)
 
 #define tt_u64_op(a,op,b)                                              \
   tt_assert_test_fmt_type(a,b,#a" "#op" "#b,uint64_t,(val1_ op val2_), \
-    U64_PRINTF_TYPE, U64_FORMAT,                                       \
-    {print_ = (U64_PRINTF_TYPE) value_;}, {}, TT_EXIT_TEST_FUNCTION)
+    uint64_t, "%"PRIu64,                                               \
+    {print_ = (uint64_t) value_;}, {}, TT_EXIT_TEST_FUNCTION)
 
 #define tt_i64_op(a,op,b)                                              \
-  tt_assert_test_fmt_type(a,b,#a" "#op" "#b,int64_t,(val1_ op val2_), \
-    I64_PRINTF_TYPE, I64_FORMAT,                                       \
-    {print_ = (I64_PRINTF_TYPE) value_;}, {}, TT_EXIT_TEST_FUNCTION)
+  tt_assert_test_fmt_type(a,b,#a" "#op" "#b,int64_t,(val1_ op val2_),  \
+    int64_t, "%"PRId64,                                                \
+    {print_ = (int64_t) value_;}, {}, TT_EXIT_TEST_FUNCTION)
+
+/**
+ * Declare that the test is done, even though no tt___op() calls were made.
+ *
+ * For use when you only want to test calling something, but not check
+ * any values/pointers/etc afterwards.
+ */
+#define tt_finished() TT_EXIT_TEST_FUNCTION
 
 const char *get_fname(const char *name);
 const char *get_fname_rnd(const char *name);
 struct crypto_pk_t *pk_generate(int idx);
+void init_pregenerated_keys(void);
+void free_pregenerated_keys(void);
 
 #define US2_CONCAT_2__(a, b) a ## __ ## b
 #define US_CONCAT_2__(a, b) a ## _ ## b
@@ -175,44 +178,73 @@ extern const struct testcase_setup_t ed25519_test_setup;
 extern struct testcase_t accounting_tests[];
 extern struct testcase_t addr_tests[];
 extern struct testcase_t address_tests[];
+extern struct testcase_t address_set_tests[];
+extern struct testcase_t bridges_tests[];
+extern struct testcase_t bwmgt_tests[];
 extern struct testcase_t buffer_tests[];
 extern struct testcase_t cell_format_tests[];
 extern struct testcase_t cell_queue_tests[];
 extern struct testcase_t channel_tests[];
+extern struct testcase_t channelpadding_tests[];
 extern struct testcase_t channeltls_tests[];
 extern struct testcase_t checkdir_tests[];
+extern struct testcase_t circuitbuild_tests[];
 extern struct testcase_t circuitlist_tests[];
 extern struct testcase_t circuitmux_tests[];
+extern struct testcase_t circuituse_tests[];
+extern struct testcase_t circuitstats_tests[];
 extern struct testcase_t compat_libevent_tests[];
 extern struct testcase_t config_tests[];
 extern struct testcase_t connection_tests[];
+extern struct testcase_t conscache_tests[];
+extern struct testcase_t consdiff_tests[];
+extern struct testcase_t consdiffmgr_tests[];
 extern struct testcase_t container_tests[];
 extern struct testcase_t controller_tests[];
 extern struct testcase_t controller_event_tests[];
 extern struct testcase_t crypto_tests[];
+extern struct testcase_t crypto_ope_tests[];
+extern struct testcase_t crypto_openssl_tests[];
 extern struct testcase_t dir_tests[];
 extern struct testcase_t dir_handle_get_tests[];
+extern struct testcase_t dos_tests[];
 extern struct testcase_t entryconn_tests[];
 extern struct testcase_t entrynodes_tests[];
 extern struct testcase_t guardfraction_tests[];
 extern struct testcase_t extorport_tests[];
+extern struct testcase_t geoip_tests[];
 extern struct testcase_t hs_tests[];
+extern struct testcase_t hs_cache[];
+extern struct testcase_t hs_cell_tests[];
+extern struct testcase_t hs_common_tests[];
+extern struct testcase_t hs_config_tests[];
+extern struct testcase_t hs_control_tests[];
+extern struct testcase_t hs_descriptor[];
+extern struct testcase_t hs_ntor_tests[];
+extern struct testcase_t hs_service_tests[];
+extern struct testcase_t hs_client_tests[];
+extern struct testcase_t hs_intropoint_tests[];
 extern struct testcase_t introduce_tests[];
 extern struct testcase_t keypin_tests[];
 extern struct testcase_t link_handshake_tests[];
 extern struct testcase_t logging_tests[];
+extern struct testcase_t mainloop_tests[];
 extern struct testcase_t microdesc_tests[];
 extern struct testcase_t nodelist_tests[];
 extern struct testcase_t oom_tests[];
 extern struct testcase_t oos_tests[];
 extern struct testcase_t options_tests[];
+extern struct testcase_t pem_tests[];
+extern struct testcase_t periodic_event_tests[];
 extern struct testcase_t policy_tests[];
 extern struct testcase_t procmon_tests[];
+extern struct testcase_t proto_http_tests[];
+extern struct testcase_t proto_misc_tests[];
 extern struct testcase_t protover_tests[];
-extern struct testcase_t pubsub_tests[];
 extern struct testcase_t pt_tests[];
 extern struct testcase_t relay_tests[];
 extern struct testcase_t relaycell_tests[];
+extern struct testcase_t relaycrypt_tests[];
 extern struct testcase_t rend_cache_tests[];
 extern struct testcase_t replaycache_tests[];
 extern struct testcase_t router_tests[];
@@ -220,16 +252,20 @@ extern struct testcase_t routerkeys_tests[];
 extern struct testcase_t routerlist_tests[];
 extern struct testcase_t routerset_tests[];
 extern struct testcase_t scheduler_tests[];
+extern struct testcase_t storagedir_tests[];
 extern struct testcase_t socks_tests[];
 extern struct testcase_t status_tests[];
 extern struct testcase_t thread_tests[];
 extern struct testcase_t tortls_tests[];
+extern struct testcase_t tortls_openssl_tests[];
 extern struct testcase_t util_tests[];
 extern struct testcase_t util_format_tests[];
 extern struct testcase_t util_process_tests[];
+extern struct testcase_t voting_schedule_tests[];
 extern struct testcase_t dns_tests[];
 extern struct testcase_t handle_tests[];
 extern struct testcase_t sr_tests[];
+extern struct testcase_t x509_tests[];
 
 extern struct testcase_t slow_crypto_tests[];
 extern struct testcase_t slow_util_tests[];
@@ -249,5 +285,4 @@ extern const char AUTHORITY_SIGNKEY_3[];
 extern const char AUTHORITY_SIGNKEY_C_DIGEST[];
 extern const char AUTHORITY_SIGNKEY_C_DIGEST256[];
 
-#endif
-
+#endif /* !defined(TOR_TEST_H) */

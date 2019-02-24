@@ -48,7 +48,7 @@
 #include "orconfig.h"
 
 #include <string.h>
-#include "torint.h"
+#include "lib/cc/torint.h"
 
 typedef uint8_t u8;
 typedef int32_t s32;

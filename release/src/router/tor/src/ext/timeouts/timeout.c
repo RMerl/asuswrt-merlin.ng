@@ -150,7 +150,7 @@
 #else
 #define ctz(n) ctz32(n)
 #define clz(n) clz32(n)
-#define fls(n) ((int)(32 - clz32(n)))
+#define fls(n) ((int)(32 - clz32((uint32_t)n)))
 #endif
 
 #if WHEEL_BIT == 6
@@ -432,7 +432,7 @@ TIMEOUT_PUBLIC void timeouts_update(struct timeouts *T, abstime_t curtime) {
 			 * or can be replaced with a simpler operation.
 			 */
 			oslot = WHEEL_MASK & (T->curtime >> (wheel * WHEEL_BIT));
-			pending = rotl(((UINT64_C(1) << _elapsed) - 1), oslot);
+			pending = rotl(((WHEEL_C(1) << _elapsed) - 1), oslot);
 
 			nslot = WHEEL_MASK & (curtime >> (wheel * WHEEL_BIT));
 			pending |= rotr(rotl(((WHEEL_C(1) << _elapsed) - 1), nslot), (int)_elapsed);

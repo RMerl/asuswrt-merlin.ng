@@ -1,12 +1,17 @@
-/* Copyright (c) 2013-2016, The Tor Project, Inc. */
+/* Copyright (c) 2013-2019, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 #define CIRCUITLIST_PRIVATE
 #define RELAY_PRIVATE
-#include "or.h"
-#include "circuitlist.h"
-#include "relay.h"
-#include "test.h"
+#include "core/or/or.h"
+#include "core/or/circuitlist.h"
+#include "core/or/relay.h"
+#include "test/test.h"
+
+#include "core/or/cell_st.h"
+#include "core/or/cell_queue_st.h"
+#include "core/or/or_circuit_st.h"
+#include "core/or/origin_circuit_st.h"
 
 static void
 test_cq_manip(void *arg)
@@ -130,8 +135,8 @@ test_circuit_n_cells(void *arg)
   tt_int_op(n_cells_in_circ_queues(TO_CIRCUIT(origin_c)), OP_EQ, 2);
 
  done:
-  circuit_free(TO_CIRCUIT(or_c));
-  circuit_free(TO_CIRCUIT(origin_c));
+  circuit_free_(TO_CIRCUIT(or_c));
+  circuit_free_(TO_CIRCUIT(origin_c));
 }
 
 struct testcase_t cell_queue_tests[] = {

@@ -1,0 +1,17 @@
+
+noinst_LIBRARIES += src/lib/libtor-fdio.a
+
+if UNITTESTS_ENABLED
+noinst_LIBRARIES += src/lib/libtor-fdio-testing.a
+endif
+
+src_lib_libtor_fdio_a_SOURCES =			\
+	src/lib/fdio/fdio.c
+
+src_lib_libtor_fdio_testing_a_SOURCES = \
+	$(src_lib_libtor_fdio_a_SOURCES)
+src_lib_libtor_fdio_testing_a_CPPFLAGS = $(AM_CPPFLAGS) $(TEST_CPPFLAGS)
+src_lib_libtor_fdio_testing_a_CFLAGS = $(AM_CFLAGS) $(TEST_CFLAGS)
+
+noinst_HEADERS +=					\
+	src/lib/fdio/fdio.h

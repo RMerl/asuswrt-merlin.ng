@@ -1,0 +1,29 @@
+
+noinst_LIBRARIES += src/lib/libtor-process.a
+
+if UNITTESTS_ENABLED
+noinst_LIBRARIES += src/lib/libtor-process-testing.a
+endif
+
+src_lib_libtor_process_a_SOURCES =		\
+	src/lib/process/daemon.c		\
+	src/lib/process/env.c			\
+	src/lib/process/pidfile.c		\
+	src/lib/process/restrict.c		\
+	src/lib/process/setuid.c		\
+	src/lib/process/subprocess.c		\
+	src/lib/process/waitpid.c
+
+src_lib_libtor_process_testing_a_SOURCES = \
+	$(src_lib_libtor_process_a_SOURCES)
+src_lib_libtor_process_testing_a_CPPFLAGS = $(AM_CPPFLAGS) $(TEST_CPPFLAGS)
+src_lib_libtor_process_testing_a_CFLAGS = $(AM_CFLAGS) $(TEST_CFLAGS)
+
+noinst_HEADERS +=				\
+	src/lib/process/daemon.h		\
+	src/lib/process/env.h			\
+	src/lib/process/pidfile.h		\
+	src/lib/process/restrict.h		\
+	src/lib/process/setuid.h		\
+	src/lib/process/subprocess.h		\
+	src/lib/process/waitpid.h

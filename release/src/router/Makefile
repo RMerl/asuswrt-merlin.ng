@@ -3966,19 +3966,20 @@ libevent-2.0.21-clean:
 	[ ! -f libevent-2.0.21/Makefile ] || $(MAKE) -C libevent-2.0.21 clean
 	@rm -f libevent-2.0.21/Makefile
 
-tor: openssl zlib libevent-2.0.21 tor/Makefile
+tor: $(OPENSSLDIR) zlib libevent-2.0.21 tor/Makefile
 	@$(SEP)
 	$(MAKE) -C $@ $(PARALLEL_BUILD)
 
 tor/Makefile:
-	(cd tor ; $(CONFIGURE) --enable-static-libevent --with-libevent-dir=$(STAGEDIR)/usr \
-					--with-openssl-dir=$(TOP)/openssl \
-					--with-zlib-dir=$(TOP)/zlib \
-					--disable-asciidoc --disable-unittests \
-					--disable-tool-name-check)
+	(cd tor ; $(CONFIGURE) --with-libevent-dir=$(STAGEDIR)/usr \
+		--with-openssl-dir=$(TOP)/$(OPENSSLDIR) --with-zlib-dir=$(TOP)/zlib \
+		--disable-asciidoc --disable-unittests \
+		--disable-tool-name-check --disable-unittests \
+		CFLAGS="-I$(TOP)/$(OPENSSLDIR)/include" \
+		CPPFLAGS="-I$(TOP)/$(OPENSSLDIR)/include")
 
 tor-install:
-	install -D tor/src/or/tor $(INSTALLDIR)/tor/usr/sbin/Tor
+	install -D tor/src/app/tor $(INSTALLDIR)/tor/usr/sbin/Tor
 	$(STRIP) $(INSTALLDIR)/tor/usr/sbin/Tor
 
 tor-clean:

@@ -1,6 +1,6 @@
 /* Copyright (c) 2001-2004, Roger Dingledine.
  * Copyright (c) 2004-2006, Roger Dingledine, Nick Mathewson.
- * Copyright (c) 2007-2016, The Tor Project, Inc. */
+ * Copyright (c) 2007-2019, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 #include "orconfig.h"
@@ -8,42 +8,59 @@
 #define CONFIG_PRIVATE
 #define PT_PRIVATE
 #define ROUTERSET_PRIVATE
-#include "or.h"
-#include "address.h"
-#include "addressmap.h"
-#include "circuitmux_ewma.h"
-#include "circuitbuild.h"
-#include "config.h"
-#include "confparse.h"
-#include "connection.h"
-#include "connection_edge.h"
-#include "test.h"
-#include "util.h"
-#include "address.h"
-#include "connection_or.h"
-#include "control.h"
-#include "cpuworker.h"
-#include "dirserv.h"
-#include "dirvote.h"
-#include "dns.h"
-#include "entrynodes.h"
-#include "transports.h"
-#include "ext_orport.h"
-#include "geoip.h"
-#include "hibernate.h"
-#include "main.h"
-#include "networkstatus.h"
-#include "nodelist.h"
-#include "policies.h"
-#include "rendclient.h"
-#include "rendservice.h"
-#include "router.h"
-#include "routerlist.h"
-#include "routerset.h"
-#include "statefile.h"
-#include "test.h"
-#include "transports.h"
-#include "util.h"
+#include "core/or/or.h"
+#include "lib/net/address.h"
+#include "lib/net/resolve.h"
+#include "feature/client/addressmap.h"
+#include "feature/client/bridges.h"
+#include "core/or/circuitmux_ewma.h"
+#include "core/or/circuitbuild.h"
+#include "app/config/config.h"
+#include "app/config/confparse.h"
+#include "core/mainloop/connection.h"
+#include "core/or/connection_edge.h"
+#include "test/test.h"
+#include "core/or/connection_or.h"
+#include "feature/control/control.h"
+#include "core/mainloop/cpuworker.h"
+#include "feature/dircache/dirserv.h"
+#include "feature/dirauth/dirvote.h"
+#include "feature/relay/dns.h"
+#include "feature/client/entrynodes.h"
+#include "feature/client/transports.h"
+#include "feature/relay/ext_orport.h"
+#include "lib/geoip/geoip.h"
+#include "feature/hibernate/hibernate.h"
+#include "core/mainloop/mainloop.h"
+#include "feature/nodelist/networkstatus.h"
+#include "feature/nodelist/nodelist.h"
+#include "core/or/policies.h"
+#include "feature/rend/rendclient.h"
+#include "feature/rend/rendservice.h"
+#include "feature/relay/router.h"
+#include "feature/relay/routermode.h"
+#include "feature/nodelist/dirlist.h"
+#include "feature/nodelist/routerlist.h"
+#include "feature/nodelist/routerset.h"
+#include "app/config/statefile.h"
+
+#include "test/test_helpers.h"
+
+#include "feature/dirclient/dir_server_st.h"
+#include "core/or/port_cfg_st.h"
+#include "feature/nodelist/routerinfo_st.h"
+
+#include "lib/fs/conffile.h"
+#include "lib/meminfo/meminfo.h"
+#include "lib/net/gethostname.h"
+#include "lib/encoding/confline.h"
+
+#ifdef HAVE_UNISTD_H
+#include <unistd.h>
+#endif
+#ifdef HAVE_SYS_STAT_H
+#include <sys/stat.h>
+#endif
 
 static void
 test_config_addressmap(void *arg)
@@ -276,7 +293,7 @@ test_config_check_or_create_data_subdir(void *arg)
   tt_assert(!is_private_dir(subpath));
   tt_assert(!check_or_create_data_subdir(subdir));
   tt_assert(is_private_dir(subpath));
-#endif
+#endif /* !defined (_WIN32) */
 
  done:
   rmdir(subpath);
@@ -320,7 +337,7 @@ test_config_write_to_data_subdir(void *arg)
   tt_int_op(mkdir(options->DataDirectory, 0700), OP_EQ, 0);
 #endif
 
-  // Write attempt shoudl fail, if subdirectory doesn't exist.
+  // Write attempt should fail, if subdirectory doesn't exist.
   tt_assert(write_to_data_subdir(subdir, fname, str, NULL));
   tt_assert(! check_or_create_data_subdir(subdir));
 
@@ -365,12 +382,12 @@ good_bridge_line_test(const char *string, const char *test_addrport,
   /* If we were asked to validate a digest, but we did not get a
      digest after parsing, we failed. */
   if (test_digest && tor_digest_is_zero(bridge_line->digest))
-    tt_assert(0);
+    tt_abort();
 
   /* If we were not asked to validate a digest, and we got a digest
      after parsing, we failed again. */
   if (!test_digest && !tor_digest_is_zero(bridge_line->digest))
-    tt_assert(0);
+    tt_abort();
 
   /* If we were asked to validate a digest, and we got a digest after
      parsing, make sure it's correct. */
@@ -384,17 +401,17 @@ good_bridge_line_test(const char *string, const char *test_addrport,
   /* If we were asked to validate a transport name, make sure tha it
      matches with the transport name that was parsed. */
   if (test_transport && !bridge_line->transport_name)
-    tt_assert(0);
+    tt_abort();
   if (!test_transport && bridge_line->transport_name)
-    tt_assert(0);
+    tt_abort();
   if (test_transport)
     tt_str_op(test_transport,OP_EQ, bridge_line->transport_name);
 
   /* Validate the SOCKS argument smartlist. */
   if (test_socks_args && !bridge_line->socks_args)
-    tt_assert(0);
+    tt_abort();
   if (!test_socks_args && bridge_line->socks_args)
-    tt_assert(0);
+    tt_abort();
   if (test_socks_args)
     tt_assert(smartlist_strings_eq(test_socks_args,
                                      bridge_line->socks_args));
@@ -412,7 +429,7 @@ bad_bridge_line_test(const char *string)
   bridge_line_t *bridge_line = parse_bridge_line(string);
   if (bridge_line)
     TT_FAIL(("%s was supposed to fail, but it didn't.", string));
-  tt_assert(!bridge_line);
+  tt_ptr_op(bridge_line, OP_EQ, NULL);
 
  done:
   bridge_line_free(bridge_line);
@@ -520,18 +537,18 @@ test_config_parse_transport_options_line(void *arg)
 
   { /* too small line */
     options_sl = get_options_from_transport_options_line("valley", NULL);
-    tt_assert(!options_sl);
+    tt_ptr_op(options_sl, OP_EQ, NULL);
   }
 
   { /* no k=v values */
     options_sl = get_options_from_transport_options_line("hit it!", NULL);
-    tt_assert(!options_sl);
+    tt_ptr_op(options_sl, OP_EQ, NULL);
   }
 
   { /* correct line, but wrong transport specified */
     options_sl =
       get_options_from_transport_options_line("trebuchet k=v", "rook");
-    tt_assert(!options_sl);
+    tt_ptr_op(options_sl, OP_EQ, NULL);
   }
 
   { /* correct -- no transport specified */
@@ -580,6 +597,22 @@ test_config_parse_transport_options_line(void *arg)
     SMARTLIST_FOREACH(sl_tmp, char *, s, tor_free(s));
     smartlist_free(sl_tmp);
   }
+}
+
+/* Mocks needed for the compute_max_mem_in_queues test */
+static int get_total_system_memory_mock(size_t *mem_out);
+
+static size_t total_system_memory_output = 0;
+static int total_system_memory_return = 0;
+
+static int
+get_total_system_memory_mock(size_t *mem_out)
+{
+  if (! mem_out)
+    return -1;
+
+  *mem_out = total_system_memory_output;
+  return total_system_memory_return;
 }
 
 /* Mocks needed for the transport plugin line test */
@@ -655,84 +688,85 @@ test_config_parse_transport_plugin_line(void *arg)
 
   /* Bad transport lines - too short */
   r = parse_transport_line(options, "bad", 1, 0);
-  tt_assert(r < 0);
+  tt_int_op(r, OP_LT, 0);
   r = parse_transport_line(options, "bad", 1, 1);
-  tt_assert(r < 0);
+  tt_int_op(r, OP_LT, 0);
   r = parse_transport_line(options, "bad bad", 1, 0);
-  tt_assert(r < 0);
+  tt_int_op(r, OP_LT, 0);
   r = parse_transport_line(options, "bad bad", 1, 1);
-  tt_assert(r < 0);
+  tt_int_op(r, OP_LT, 0);
 
   /* Test transport list parsing */
   r = parse_transport_line(options,
       "transport_1 exec /usr/bin/fake-transport", 1, 0);
-  tt_assert(r == 0);
+  tt_int_op(r, OP_EQ, 0);
   r = parse_transport_line(options,
    "transport_1 exec /usr/bin/fake-transport", 1, 1);
-  tt_assert(r == 0);
+  tt_int_op(r, OP_EQ, 0);
   r = parse_transport_line(options,
       "transport_1,transport_2 exec /usr/bin/fake-transport", 1, 0);
-  tt_assert(r == 0);
+  tt_int_op(r, OP_EQ, 0);
   r = parse_transport_line(options,
       "transport_1,transport_2 exec /usr/bin/fake-transport", 1, 1);
-  tt_assert(r == 0);
+  tt_int_op(r, OP_EQ, 0);
   /* Bad transport identifiers */
   r = parse_transport_line(options,
       "transport_* exec /usr/bin/fake-transport", 1, 0);
-  tt_assert(r < 0);
+  tt_int_op(r, OP_LT, 0);
   r = parse_transport_line(options,
       "transport_* exec /usr/bin/fake-transport", 1, 1);
-  tt_assert(r < 0);
+  tt_int_op(r, OP_LT, 0);
 
   /* Check SOCKS cases for client transport */
   r = parse_transport_line(options,
       "transport_1 socks4 1.2.3.4:567", 1, 0);
-  tt_assert(r == 0);
+  tt_int_op(r, OP_EQ, 0);
   r = parse_transport_line(options,
       "transport_1 socks5 1.2.3.4:567", 1, 0);
-  tt_assert(r == 0);
+  tt_int_op(r, OP_EQ, 0);
   /* Proxy case for server transport */
   r = parse_transport_line(options,
       "transport_1 proxy 1.2.3.4:567", 1, 1);
-  tt_assert(r == 0);
+  tt_int_op(r, OP_EQ, 0);
   /* Multiple-transport error exit */
   r = parse_transport_line(options,
       "transport_1,transport_2 socks5 1.2.3.4:567", 1, 0);
-  tt_assert(r < 0);
+  tt_int_op(r, OP_LT, 0);
   r = parse_transport_line(options,
       "transport_1,transport_2 proxy 1.2.3.4:567", 1, 1);
+  tt_int_op(r, OP_LT, 0);
   /* No port error exit */
   r = parse_transport_line(options,
       "transport_1 socks5 1.2.3.4", 1, 0);
-  tt_assert(r < 0);
+  tt_int_op(r, OP_LT, 0);
   r = parse_transport_line(options,
      "transport_1 proxy 1.2.3.4", 1, 1);
-  tt_assert(r < 0);
+  tt_int_op(r, OP_LT, 0);
   /* Unparsable address error exit */
   r = parse_transport_line(options,
       "transport_1 socks5 1.2.3:6x7", 1, 0);
-  tt_assert(r < 0);
+  tt_int_op(r, OP_LT, 0);
   r = parse_transport_line(options,
       "transport_1 proxy 1.2.3:6x7", 1, 1);
-  tt_assert(r < 0);
+  tt_int_op(r, OP_LT, 0);
 
   /* "Strange {Client|Server}TransportPlugin field" error exit */
   r = parse_transport_line(options,
       "transport_1 foo bar", 1, 0);
-  tt_assert(r < 0);
+  tt_int_op(r, OP_LT, 0);
   r = parse_transport_line(options,
       "transport_1 foo bar", 1, 1);
-  tt_assert(r < 0);
+  tt_int_op(r, OP_LT, 0);
 
   /* No sandbox mode error exit */
   tmp = options->Sandbox;
   options->Sandbox = 1;
   r = parse_transport_line(options,
       "transport_1 exec /usr/bin/fake-transport", 1, 0);
-  tt_assert(r < 0);
+  tt_int_op(r, OP_LT, 0);
   r = parse_transport_line(options,
       "transport_1 exec /usr/bin/fake-transport", 1, 1);
-  tt_assert(r < 0);
+  tt_int_op(r, OP_LT, 0);
   options->Sandbox = tmp;
 
   /*
@@ -744,7 +778,7 @@ test_config_parse_transport_plugin_line(void *arg)
     pt_kickstart_proxy_mock_call_count;
   r = parse_transport_line(options,
       "transport_1 exec /usr/bin/fake-transport", 0, 1);
-  tt_assert(r == 0);
+  tt_int_op(r, OP_EQ, 0);
   tt_assert(pt_kickstart_proxy_mock_call_count ==
       old_pt_kickstart_proxy_mock_call_count + 1);
   UNMOCK(pt_kickstart_proxy);
@@ -752,7 +786,7 @@ test_config_parse_transport_plugin_line(void *arg)
   /* This one hits a log line in the !validate_only case only */
   r = parse_transport_line(options,
       "transport_1 proxy 1.2.3.4:567", 0, 1);
-  tt_assert(r == 0);
+  tt_int_op(r, OP_EQ, 0);
 
   /* Check mocked client transport cases */
   MOCK(pt_kickstart_proxy, pt_kickstart_proxy_mock);
@@ -770,7 +804,7 @@ test_config_parse_transport_plugin_line(void *arg)
   r = parse_transport_line(options,
       "transport_1 exec /usr/bin/fake-transport", 0, 0);
   /* Should have succeeded */
-  tt_assert(r == 0);
+  tt_int_op(r, OP_EQ, 0);
   /* transport_is_needed() should have been called */
   tt_assert(transport_is_needed_mock_call_count ==
       old_transport_is_needed_mock_call_count + 1);
@@ -794,7 +828,7 @@ test_config_parse_transport_plugin_line(void *arg)
   r = parse_transport_line(options,
       "transport_1 exec /usr/bin/fake-transport", 0, 0);
   /* Should have succeeded */
-  tt_assert(r == 0);
+  tt_int_op(r, OP_EQ, 0);
   /*
    * transport_is_needed() and pt_kickstart_proxy() should have been
    * called.
@@ -818,7 +852,7 @@ test_config_parse_transport_plugin_line(void *arg)
   r = parse_transport_line(options,
       "transport_1 socks5 1.2.3.4:567", 0, 0);
   /* Should have succeeded */
-  tt_assert(r == 0);
+  tt_int_op(r, OP_EQ, 0);
   /*
    * transport_is_needed() and transport_add_from_config() should have
    * been called.
@@ -851,9 +885,23 @@ static void
 test_config_fix_my_family(void *arg)
 {
   char *err = NULL;
-  const char *family = "$1111111111111111111111111111111111111111, "
-                       "1111111111111111111111111111111111111112, "
-                       "$1111111111111111111111111111111111111113";
+  config_line_t *family = tor_malloc_zero(sizeof(config_line_t));
+  family->key = tor_strdup("MyFamily");
+  family->value = tor_strdup("$1111111111111111111111111111111111111111, "
+                             "1111111111111111111111111111111111111112, "
+                             "$1111111111111111111111111111111111111113");
+
+  config_line_t *family2 = tor_malloc_zero(sizeof(config_line_t));
+  family2->key = tor_strdup("MyFamily");
+  family2->value = tor_strdup("1111111111111111111111111111111111111114");
+
+  config_line_t *family3 = tor_malloc_zero(sizeof(config_line_t));
+  family3->key = tor_strdup("MyFamily");
+  family3->value = tor_strdup("$1111111111111111111111111111111111111115");
+
+  family->next = family2;
+  family2->next = family3;
+  family3->next = NULL;
 
   or_options_t* options = options_new();
   or_options_t* defaults = options_new();
@@ -861,7 +909,7 @@ test_config_fix_my_family(void *arg)
 
   options_init(options);
   options_init(defaults);
-  options->MyFamily = tor_strdup(family);
+  options->MyFamily_lines = family;
 
   options_validate(NULL, options, defaults, 0, &err) ;
 
@@ -869,18 +917,23 @@ test_config_fix_my_family(void *arg)
     TT_FAIL(("options_validate failed: %s", err));
   }
 
-  tt_str_op(options->MyFamily,OP_EQ,
-                                "$1111111111111111111111111111111111111111, "
-                                "$1111111111111111111111111111111111111112, "
-                                "$1111111111111111111111111111111111111113");
+  const char *valid[] = { "$1111111111111111111111111111111111111111",
+                          "$1111111111111111111111111111111111111112",
+                          "$1111111111111111111111111111111111111113",
+                          "$1111111111111111111111111111111111111114",
+                          "$1111111111111111111111111111111111111115" };
+  int ret_size = 0;
+  config_line_t *ret;
+  for (ret = options->MyFamily; ret && ret_size < 5; ret = ret->next) {
+    tt_str_op(ret->value, OP_EQ, valid[ret_size]);
+    ret_size++;
+  }
+  tt_int_op(ret_size, OP_EQ, 5);
 
-  done:
-    if (err != NULL) {
-      tor_free(err);
-    }
-
-    or_options_free(options);
-    or_options_free(defaults);
+ done:
+  tor_free(err);
+  or_options_free(options);
+  or_options_free(defaults);
 }
 
 static int n_hostname_01010101 = 0;
@@ -1117,7 +1170,7 @@ test_config_resolve_my_address(void *arg)
                               &method_used,&hostname_out);
 
   tt_want(retval == 0);
-  tt_want_str_op(method_used,==,"CONFIGURED");
+  tt_want_str_op(method_used,OP_EQ,"CONFIGURED");
   tt_want(hostname_out == NULL);
   tt_assert(resolved_addr == 0x80348069);
 
@@ -1142,8 +1195,8 @@ test_config_resolve_my_address(void *arg)
 
   tt_want(retval == 0);
   tt_want(n_hostname_01010101 == prev_n_hostname_01010101 + 1);
-  tt_want_str_op(method_used,==,"RESOLVED");
-  tt_want_str_op(hostname_out,==,"www.torproject.org");
+  tt_want_str_op(method_used,OP_EQ,"RESOLVED");
+  tt_want_str_op(hostname_out,OP_EQ,"www.torproject.org");
   tt_assert(resolved_addr == 0x01010101);
 
   UNMOCK(tor_lookup_hostname);
@@ -1174,8 +1227,8 @@ test_config_resolve_my_address(void *arg)
   tt_want(retval == 0);
   tt_want(n_gethostname_replacement == prev_n_gethostname_replacement + 1);
   tt_want(n_hostname_01010101 == prev_n_hostname_01010101 + 1);
-  tt_want_str_op(method_used,==,"GETHOSTNAME");
-  tt_want_str_op(hostname_out,==,"onionrouter!");
+  tt_want_str_op(method_used,OP_EQ,"GETHOSTNAME");
+  tt_want_str_op(hostname_out,OP_EQ,"onionrouter!");
   tt_assert(resolved_addr == 0x01010101);
 
   UNMOCK(tor_gethostname);
@@ -1197,7 +1250,7 @@ test_config_resolve_my_address(void *arg)
                               &method_used,&hostname_out);
 
   tt_want(resolved_addr == 0);
-  tt_assert(retval == -1);
+  tt_int_op(retval, OP_EQ, -1);
 
   tor_free(options->Address);
   tor_free(hostname_out);
@@ -1219,7 +1272,7 @@ test_config_resolve_my_address(void *arg)
                               &method_used,&hostname_out);
 
   tt_want(n_hostname_failure == prev_n_hostname_failure + 1);
-  tt_assert(retval == -1);
+  tt_int_op(retval, OP_EQ, -1);
 
   UNMOCK(tor_lookup_hostname);
 
@@ -1240,7 +1293,7 @@ test_config_resolve_my_address(void *arg)
                               &method_used,&hostname_out);
 
   tt_want(n_gethostname_failure == prev_n_gethostname_failure + 1);
-  tt_assert(retval == -1);
+  tt_int_op(retval, OP_EQ, -1);
 
   UNMOCK(tor_gethostname);
   tor_free(hostname_out);
@@ -1263,11 +1316,11 @@ test_config_resolve_my_address(void *arg)
                               &method_used,&hostname_out);
 
   tt_want(retval == 0);
-  tt_want_int_op(n_gethostname_replacement, ==,
+  tt_want_int_op(n_gethostname_replacement, OP_EQ,
                  prev_n_gethostname_replacement + 1);
-  tt_want_int_op(n_get_interface_address, ==,
+  tt_want_int_op(n_get_interface_address, OP_EQ,
                  prev_n_get_interface_address + 1);
-  tt_want_str_op(method_used,==,"INTERFACE");
+  tt_want_str_op(method_used,OP_EQ,"INTERFACE");
   tt_want(hostname_out == NULL);
   tt_assert(resolved_addr == 0x08080808);
 
@@ -1293,7 +1346,7 @@ test_config_resolve_my_address(void *arg)
           prev_n_get_interface_address_failure + 1);
   tt_want(n_gethostname_replacement ==
           prev_n_gethostname_replacement + 1);
-  tt_assert(retval == -1);
+  tt_int_op(retval, OP_EQ, -1);
 
   UNMOCK(get_interface_address);
   tor_free(hostname_out);
@@ -1323,7 +1376,7 @@ test_config_resolve_my_address(void *arg)
   tt_want(n_hostname_failure == prev_n_hostname_failure + 1);
   tt_want(n_gethostname_replacement == prev_n_gethostname_replacement + 1);
   tt_want(retval == 0);
-  tt_want_str_op(method_used,==,"INTERFACE");
+  tt_want_str_op(method_used,OP_EQ,"INTERFACE");
   tt_assert(resolved_addr == 0x09090909);
 
   UNMOCK(tor_lookup_hostname);
@@ -1353,7 +1406,7 @@ test_config_resolve_my_address(void *arg)
                               &method_used,&hostname_out);
 
   tt_want(n_hostname_failure == prev_n_hostname_failure + 1);
-  tt_assert(retval == -1);
+  tt_int_op(retval, OP_EQ, -1);
 
   UNMOCK(tor_gethostname);
   UNMOCK(tor_lookup_hostname);
@@ -1368,7 +1421,7 @@ test_config_resolve_my_address(void *arg)
    *      if running on.
    *   3. Hostname from previous step cannot be converted to
    *      address by using tor_inet_aton() function.
-   *   4. However, tor_lookup_hostname() succeds in resolving the
+   *   4. However, tor_lookup_hostname() succeeds in resolving the
    *      hostname from step 2.
    *   5. Unfortunately, tor_addr_is_internal() deems this address
    *      to be internal.
@@ -1397,9 +1450,9 @@ test_config_resolve_my_address(void *arg)
   tt_want(n_hostname_localhost == prev_n_hostname_localhost + 1);
   tt_want(n_get_interface_address6 == prev_n_get_interface_address6 + 1);
 
-  tt_str_op(method_used,==,"INTERFACE");
-  tt_assert(!hostname_out);
-  tt_assert(retval == 0);
+  tt_str_op(method_used,OP_EQ,"INTERFACE");
+  tt_ptr_op(hostname_out, OP_EQ, NULL);
+  tt_int_op(retval, OP_EQ, 0);
 
   /*
    * CASE 11b:
@@ -1424,7 +1477,7 @@ test_config_resolve_my_address(void *arg)
   tt_want(n_get_interface_address6_failure ==
           prev_n_get_interface_address6_failure + 1);
 
-  tt_assert(retval == -1);
+  tt_int_op(retval, OP_EQ, -1);
 
   UNMOCK(tor_gethostname);
   UNMOCK(tor_lookup_hostname);
@@ -1453,7 +1506,7 @@ test_config_resolve_my_address(void *arg)
                               &method_used,&hostname_out);
 
   tt_want(n_gethostname_localhost == prev_n_gethostname_localhost + 1);
-  tt_assert(retval == -1);
+  tt_int_op(retval, OP_EQ, -1);
 
   UNMOCK(tor_gethostname);
 
@@ -1488,18 +1541,18 @@ test_config_adding_trusted_dir_server(void *arg)
                               NULL, V3_DIRINFO, 1.0);
   tt_assert(ds);
   dir_server_add(ds);
-  tt_assert(get_n_authorities(V3_DIRINFO) == 1);
-  tt_assert(smartlist_len(router_get_fallback_dir_servers()) == 1);
+  tt_int_op(get_n_authorities(V3_DIRINFO), OP_EQ, 1);
+  tt_int_op(smartlist_len(router_get_fallback_dir_servers()), OP_EQ, 1);
 
   /* create a trusted ds with an IPv6 address and port */
   rv = tor_addr_port_parse(LOG_WARN, "[::1]:9061", &ipv6.addr, &ipv6.port, -1);
-  tt_assert(rv == 0);
+  tt_int_op(rv, OP_EQ, 0);
   ds = trusted_dir_server_new("ds", "127.0.0.1", 9059, 9060, &ipv6, digest,
                               NULL, V3_DIRINFO, 1.0);
   tt_assert(ds);
   dir_server_add(ds);
-  tt_assert(get_n_authorities(V3_DIRINFO) == 2);
-  tt_assert(smartlist_len(router_get_fallback_dir_servers()) == 2);
+  tt_int_op(get_n_authorities(V3_DIRINFO), OP_EQ, 2);
+  tt_int_op(smartlist_len(router_get_fallback_dir_servers()), OP_EQ, 2);
 
  done:
   clear_dir_servers();
@@ -1521,21 +1574,21 @@ test_config_adding_fallback_dir_server(void *arg)
   routerlist_free_all();
 
   rv = tor_addr_parse(&ipv4, "127.0.0.1");
-  tt_assert(rv == AF_INET);
+  tt_int_op(rv, OP_EQ, AF_INET);
 
   /* create a trusted ds without an IPv6 address and port */
   ds = fallback_dir_server_new(&ipv4, 9059, 9060, NULL, digest, 1.0);
   tt_assert(ds);
   dir_server_add(ds);
-  tt_assert(smartlist_len(router_get_fallback_dir_servers()) == 1);
+  tt_int_op(smartlist_len(router_get_fallback_dir_servers()), OP_EQ, 1);
 
   /* create a trusted ds with an IPv6 address and port */
   rv = tor_addr_port_parse(LOG_WARN, "[::1]:9061", &ipv6.addr, &ipv6.port, -1);
-  tt_assert(rv == 0);
+  tt_int_op(rv, OP_EQ, 0);
   ds = fallback_dir_server_new(&ipv4, 9059, 9060, &ipv6, digest, 1.0);
   tt_assert(ds);
   dir_server_add(ds);
-  tt_assert(smartlist_len(router_get_fallback_dir_servers()) == 2);
+  tt_int_op(smartlist_len(router_get_fallback_dir_servers()), OP_EQ, 2);
 
  done:
   clear_dir_servers();
@@ -1566,14 +1619,14 @@ test_config_parsing_trusted_dir_server(void *arg)
   rv = parse_dir_authority_line(TEST_DIR_AUTH_LINE_START
                                 TEST_DIR_AUTH_LINE_END,
                                 V3_DIRINFO, 1);
-  tt_assert(rv == 0);
+  tt_int_op(rv, OP_EQ, 0);
 
   /* parse a trusted dir server with an IPv6 address and port */
   rv = parse_dir_authority_line(TEST_DIR_AUTH_LINE_START
                                 TEST_DIR_AUTH_IPV6_FLAG
                                 TEST_DIR_AUTH_LINE_END,
                                 V3_DIRINFO, 1);
-  tt_assert(rv == 0);
+  tt_int_op(rv, OP_EQ, 0);
 
   /* Since we are only validating, there is no cleanup. */
  done:
@@ -1583,6 +1636,40 @@ test_config_parsing_trusted_dir_server(void *arg)
 #undef TEST_DIR_AUTH_LINE_START
 #undef TEST_DIR_AUTH_LINE_END
 #undef TEST_DIR_AUTH_IPV6_FLAG
+
+#define TEST_DIR_AUTH_LINE_START                                        \
+                    "foobar orport=12345 "                              \
+                    "v3ident=14C131DFC5C6F93646BE72FA1401C02A8DF2E8B4 "
+#define TEST_DIR_AUTH_LINE_END_BAD_IP                                   \
+                    "0.256.3.4:54321 "                                  \
+                    "FDB2 FBD2 AAA5 25FA 2999 E617 5091 5A32 C777 3B17"
+#define TEST_DIR_AUTH_LINE_END_WITH_DNS_ADDR                            \
+                    "torproject.org:54321 "                             \
+                    "FDB2 FBD2 AAA5 25FA 2999 E617 5091 5A32 C777 3B17"
+
+static void
+test_config_parsing_invalid_dir_address(void *arg)
+{
+  (void)arg;
+  int rv;
+
+  rv = parse_dir_authority_line(TEST_DIR_AUTH_LINE_START
+                                TEST_DIR_AUTH_LINE_END_BAD_IP,
+                                V3_DIRINFO, 1);
+  tt_int_op(rv, OP_EQ, -1);
+
+  rv = parse_dir_authority_line(TEST_DIR_AUTH_LINE_START
+                                TEST_DIR_AUTH_LINE_END_WITH_DNS_ADDR,
+                                V3_DIRINFO, 1);
+  tt_int_op(rv, OP_EQ, -1);
+
+  done:
+  return;
+}
+
+#undef TEST_DIR_AUTH_LINE_START
+#undef TEST_DIR_AUTH_LINE_END_BAD_IP
+#undef TEST_DIR_AUTH_LINE_END_WITH_DNS_ADDR
 
 /* No secrets here:
  * id is `echo "syn-propanethial-S-oxide" | shasum | cut -d" " -f1`
@@ -1601,13 +1688,13 @@ test_config_parsing_fallback_dir_server(void *arg)
 
   /* parse a trusted dir server without an IPv6 address and port */
   rv = parse_dir_fallback_line(TEST_DIR_FALLBACK_LINE, 1);
-  tt_assert(rv == 0);
+  tt_int_op(rv, OP_EQ, 0);
 
   /* parse a trusted dir server with an IPv6 address and port */
   rv = parse_dir_fallback_line(TEST_DIR_FALLBACK_LINE
                                TEST_DIR_FALLBACK_IPV6_FLAG,
                                1);
-  tt_assert(rv == 0);
+  tt_int_op(rv, OP_EQ, 0);
 
   /* Since we are only validating, there is no cleanup. */
  done:
@@ -1627,8 +1714,8 @@ test_config_adding_default_trusted_dir_servers(void *arg)
 
   /* Assume we only have one bridge authority */
   add_default_trusted_dir_authorities(BRIDGE_DIRINFO);
-  tt_assert(get_n_authorities(BRIDGE_DIRINFO) == 1);
-  tt_assert(smartlist_len(router_get_fallback_dir_servers()) == 1);
+  tt_int_op(get_n_authorities(BRIDGE_DIRINFO), OP_EQ, 1);
+  tt_int_op(smartlist_len(router_get_fallback_dir_servers()), OP_EQ, 1);
 
   /* Assume we have eight V3 authorities */
   add_default_trusted_dir_authorities(V3_DIRINFO);
@@ -1816,7 +1903,7 @@ test_config_adding_dir_servers(void *arg)
     /* check outcome */
 
     /* we must have added the default fallback dirs */
-    tt_assert(n_add_default_fallback_dir_servers_known_default == 1);
+    tt_int_op(n_add_default_fallback_dir_servers_known_default, OP_EQ, 1);
 
     /* we have more fallbacks than just the authorities */
     tt_assert(networkstatus_consensus_can_use_extra_fallbacks(options) == 1);
@@ -1835,7 +1922,7 @@ test_config_adding_dir_servers(void *arg)
                          1 : 0)
                         );
       /* If we have no default bridge authority, something has gone wrong */
-      tt_assert(n_default_alt_bridge_authority >= 1);
+      tt_int_op(n_default_alt_bridge_authority, OP_GE, 1);
 
       /* Count v3 Authorities */
       SMARTLIST_FOREACH(fallback_servers,
@@ -1847,7 +1934,7 @@ test_config_adding_dir_servers(void *arg)
                          1 : 0)
                         );
       /* If we have no default authorities, something has gone really wrong */
-      tt_assert(n_default_alt_dir_authority >= 1);
+      tt_int_op(n_default_alt_dir_authority, OP_GE, 1);
 
       /* Calculate Fallback Directory Count */
       n_default_fallback_dir = (smartlist_len(fallback_servers) -
@@ -1857,7 +1944,7 @@ test_config_adding_dir_servers(void *arg)
        * or some authorities aren't being added as fallback directories.
        * (networkstatus_consensus_can_use_extra_fallbacks depends on all
        * authorities being fallback directories.) */
-      tt_assert(n_default_fallback_dir >= 0);
+      tt_int_op(n_default_fallback_dir, OP_GE, 0);
     }
   }
 
@@ -1898,7 +1985,7 @@ test_config_adding_dir_servers(void *arg)
     /* check outcome */
 
     /* we must not have added the default fallback dirs */
-    tt_assert(n_add_default_fallback_dir_servers_known_default == 0);
+    tt_int_op(n_add_default_fallback_dir_servers_known_default, OP_EQ, 0);
 
     /* we have more fallbacks than just the authorities */
     tt_assert(networkstatus_consensus_can_use_extra_fallbacks(options) == 1);
@@ -1907,7 +1994,7 @@ test_config_adding_dir_servers(void *arg)
       /* trusted_dir_servers */
       const smartlist_t *dir_servers = router_get_trusted_dir_servers();
       /* D0, (No B1), (No A2) */
-      tt_assert(smartlist_len(dir_servers) == 1);
+      tt_int_op(smartlist_len(dir_servers), OP_EQ, 1);
 
       /* DirAuthority - D0 - dir_port: 60090 */
       int found_D0 = 0;
@@ -1919,7 +2006,7 @@ test_config_adding_dir_servers(void *arg)
                         (ds->dir_port == 60090 ?
                          1 : 0)
                         );
-      tt_assert(found_D0 == 1);
+      tt_int_op(found_D0, OP_EQ, 1);
 
       /* (No AlternateBridgeAuthority) - B1 - dir_port: 60091 */
       int found_B1 = 0;
@@ -1931,7 +2018,7 @@ test_config_adding_dir_servers(void *arg)
                         (ds->dir_port == 60091 ?
                          1 : 0)
                         );
-      tt_assert(found_B1 == 0);
+      tt_int_op(found_B1, OP_EQ, 0);
 
       /* (No AlternateDirAuthority) - A2 - dir_port: 60092 */
       int found_A2 = 0;
@@ -1943,14 +2030,14 @@ test_config_adding_dir_servers(void *arg)
                         (ds->dir_port == 60092 ?
                          1 : 0)
                         );
-      tt_assert(found_A2 == 0);
+      tt_int_op(found_A2, OP_EQ, 0);
     }
 
     {
       /* fallback_dir_servers */
       const smartlist_t *fallback_servers = router_get_fallback_dir_servers();
       /* D0, (No B1), (No A2), Custom Fallback */
-      tt_assert(smartlist_len(fallback_servers) == 2);
+      tt_int_op(smartlist_len(fallback_servers), OP_EQ, 2);
 
       /* DirAuthority - D0 - dir_port: 60090 */
       int found_D0 = 0;
@@ -1962,7 +2049,7 @@ test_config_adding_dir_servers(void *arg)
                         (ds->dir_port == 60090 ?
                          1 : 0)
                         );
-      tt_assert(found_D0 == 1);
+      tt_int_op(found_D0, OP_EQ, 1);
 
       /* (No AlternateBridgeAuthority) - B1 - dir_port: 60091 */
       int found_B1 = 0;
@@ -1974,7 +2061,7 @@ test_config_adding_dir_servers(void *arg)
                         (ds->dir_port == 60091 ?
                          1 : 0)
                         );
-      tt_assert(found_B1 == 0);
+      tt_int_op(found_B1, OP_EQ, 0);
 
       /* (No AlternateDirAuthority) - A2 - dir_port: 60092 */
       int found_A2 = 0;
@@ -1986,7 +2073,7 @@ test_config_adding_dir_servers(void *arg)
                         (ds->dir_port == 60092 ?
                          1 : 0)
                         );
-      tt_assert(found_A2 == 0);
+      tt_int_op(found_A2, OP_EQ, 0);
 
       /* Custom FallbackDir - No Nickname - dir_port: 60093 */
       int found_non_default_fallback = 0;
@@ -1998,7 +2085,7 @@ test_config_adding_dir_servers(void *arg)
                         (ds->dir_port == 60093 ?
                          1 : 0)
                         );
-      tt_assert(found_non_default_fallback == 1);
+      tt_int_op(found_non_default_fallback, OP_EQ, 1);
 
       /* (No Default FallbackDir) - No Nickname - dir_port: 60099 */
       int found_default_fallback = 0;
@@ -2010,7 +2097,7 @@ test_config_adding_dir_servers(void *arg)
                         (ds->dir_port == 60099 ?
                          1 : 0)
                         );
-      tt_assert(found_default_fallback == 0);
+      tt_int_op(found_default_fallback, OP_EQ, 0);
     }
   }
 
@@ -2039,7 +2126,7 @@ test_config_adding_dir_servers(void *arg)
     /* check outcome */
 
     /* we must not have added the default fallback dirs */
-    tt_assert(n_add_default_fallback_dir_servers_known_default == 0);
+    tt_int_op(n_add_default_fallback_dir_servers_known_default, OP_EQ, 0);
 
     /* we just have the authorities */
     tt_assert(networkstatus_consensus_can_use_extra_fallbacks(options) == 0);
@@ -2048,7 +2135,7 @@ test_config_adding_dir_servers(void *arg)
       /* trusted_dir_servers */
       const smartlist_t *dir_servers = router_get_trusted_dir_servers();
       /* D0, (No B1), (No A2) */
-      tt_assert(smartlist_len(dir_servers) == 1);
+      tt_int_op(smartlist_len(dir_servers), OP_EQ, 1);
 
       /* DirAuthority - D0 - dir_port: 60090 */
       int found_D0 = 0;
@@ -2060,7 +2147,7 @@ test_config_adding_dir_servers(void *arg)
                         (ds->dir_port == 60090 ?
                          1 : 0)
                         );
-      tt_assert(found_D0 == 1);
+      tt_int_op(found_D0, OP_EQ, 1);
 
       /* (No AlternateBridgeAuthority) - B1 - dir_port: 60091 */
       int found_B1 = 0;
@@ -2072,7 +2159,7 @@ test_config_adding_dir_servers(void *arg)
                         (ds->dir_port == 60091 ?
                          1 : 0)
                         );
-      tt_assert(found_B1 == 0);
+      tt_int_op(found_B1, OP_EQ, 0);
 
       /* (No AlternateDirAuthority) - A2 - dir_port: 60092 */
       int found_A2 = 0;
@@ -2084,14 +2171,14 @@ test_config_adding_dir_servers(void *arg)
                         (ds->dir_port == 60092 ?
                          1 : 0)
                         );
-      tt_assert(found_A2 == 0);
+      tt_int_op(found_A2, OP_EQ, 0);
     }
 
     {
       /* fallback_dir_servers */
       const smartlist_t *fallback_servers = router_get_fallback_dir_servers();
       /* D0, (No B1), (No A2), (No Fallback) */
-      tt_assert(smartlist_len(fallback_servers) == 1);
+      tt_int_op(smartlist_len(fallback_servers), OP_EQ, 1);
 
       /* DirAuthority - D0 - dir_port: 60090 */
       int found_D0 = 0;
@@ -2103,7 +2190,7 @@ test_config_adding_dir_servers(void *arg)
                         (ds->dir_port == 60090 ?
                          1 : 0)
                         );
-      tt_assert(found_D0 == 1);
+      tt_int_op(found_D0, OP_EQ, 1);
 
       /* (No AlternateBridgeAuthority) - B1 - dir_port: 60091 */
       int found_B1 = 0;
@@ -2115,7 +2202,7 @@ test_config_adding_dir_servers(void *arg)
                         (ds->dir_port == 60091 ?
                          1 : 0)
                         );
-      tt_assert(found_B1 == 0);
+      tt_int_op(found_B1, OP_EQ, 0);
 
       /* (No AlternateDirAuthority) - A2 - dir_port: 60092 */
       int found_A2 = 0;
@@ -2127,7 +2214,7 @@ test_config_adding_dir_servers(void *arg)
                         (ds->dir_port == 60092 ?
                          1 : 0)
                         );
-      tt_assert(found_A2 == 0);
+      tt_int_op(found_A2, OP_EQ, 0);
 
       /* (No Custom FallbackDir) - No Nickname - dir_port: 60093 */
       int found_non_default_fallback = 0;
@@ -2139,7 +2226,7 @@ test_config_adding_dir_servers(void *arg)
                         (ds->dir_port == 60093 ?
                          1 : 0)
                         );
-      tt_assert(found_non_default_fallback == 0);
+      tt_int_op(found_non_default_fallback, OP_EQ, 0);
 
       /* (No Default FallbackDir) - No Nickname - dir_port: 60099 */
       int found_default_fallback = 0;
@@ -2151,7 +2238,7 @@ test_config_adding_dir_servers(void *arg)
                         (ds->dir_port == 60099 ?
                          1 : 0)
                         );
-      tt_assert(found_default_fallback == 0);
+      tt_int_op(found_default_fallback, OP_EQ, 0);
     }
   }
 
@@ -2180,7 +2267,7 @@ test_config_adding_dir_servers(void *arg)
     /* check outcome */
 
     /* we must not have added the default fallback dirs */
-    tt_assert(n_add_default_fallback_dir_servers_known_default == 0);
+    tt_int_op(n_add_default_fallback_dir_servers_known_default, OP_EQ, 0);
 
     /* we have more fallbacks than just the authorities */
     tt_assert(networkstatus_consensus_can_use_extra_fallbacks(options) == 1);
@@ -2189,7 +2276,7 @@ test_config_adding_dir_servers(void *arg)
       /* trusted_dir_servers */
       const smartlist_t *dir_servers = router_get_trusted_dir_servers();
       /* (No D0), B1, A2 */
-      tt_assert(smartlist_len(dir_servers) == 2);
+      tt_int_op(smartlist_len(dir_servers), OP_EQ, 2);
 
       /* (No DirAuthority) - D0 - dir_port: 60090 */
       int found_D0 = 0;
@@ -2201,7 +2288,7 @@ test_config_adding_dir_servers(void *arg)
                         (ds->dir_port == 60090 ?
                          1 : 0)
                         );
-      tt_assert(found_D0 == 0);
+      tt_int_op(found_D0, OP_EQ, 0);
 
       /* AlternateBridgeAuthority - B1 - dir_port: 60091 */
       int found_B1 = 0;
@@ -2213,7 +2300,7 @@ test_config_adding_dir_servers(void *arg)
                         (ds->dir_port == 60091 ?
                          1 : 0)
                         );
-      tt_assert(found_B1 == 1);
+      tt_int_op(found_B1, OP_EQ, 1);
 
       /* AlternateDirAuthority - A2 - dir_port: 60092 */
       int found_A2 = 0;
@@ -2225,14 +2312,14 @@ test_config_adding_dir_servers(void *arg)
                         (ds->dir_port == 60092 ?
                          1 : 0)
                         );
-      tt_assert(found_A2 == 1);
+      tt_int_op(found_A2, OP_EQ, 1);
     }
 
     {
       /* fallback_dir_servers */
       const smartlist_t *fallback_servers = router_get_fallback_dir_servers();
       /* (No D0), B1, A2, Custom Fallback */
-      tt_assert(smartlist_len(fallback_servers) == 3);
+      tt_int_op(smartlist_len(fallback_servers), OP_EQ, 3);
 
       /* (No DirAuthority) - D0 - dir_port: 60090 */
       int found_D0 = 0;
@@ -2244,7 +2331,7 @@ test_config_adding_dir_servers(void *arg)
                         (ds->dir_port == 60090 ?
                          1 : 0)
                         );
-      tt_assert(found_D0 == 0);
+      tt_int_op(found_D0, OP_EQ, 0);
 
       /* AlternateBridgeAuthority - B1 - dir_port: 60091 */
       int found_B1 = 0;
@@ -2256,7 +2343,7 @@ test_config_adding_dir_servers(void *arg)
                         (ds->dir_port == 60091 ?
                          1 : 0)
                         );
-      tt_assert(found_B1 == 1);
+      tt_int_op(found_B1, OP_EQ, 1);
 
       /* AlternateDirAuthority - A2 - dir_port: 60092 */
       int found_A2 = 0;
@@ -2268,7 +2355,7 @@ test_config_adding_dir_servers(void *arg)
                         (ds->dir_port == 60092 ?
                          1 : 0)
                         );
-      tt_assert(found_A2 == 1);
+      tt_int_op(found_A2, OP_EQ, 1);
 
       /* Custom FallbackDir - No Nickname - dir_port: 60093 */
       int found_non_default_fallback = 0;
@@ -2280,7 +2367,7 @@ test_config_adding_dir_servers(void *arg)
                         (ds->dir_port == 60093 ?
                          1 : 0)
                         );
-      tt_assert(found_non_default_fallback == 1);
+      tt_int_op(found_non_default_fallback, OP_EQ, 1);
 
       /* (No Default FallbackDir) - No Nickname - dir_port: 60099 */
       int found_default_fallback = 0;
@@ -2292,7 +2379,7 @@ test_config_adding_dir_servers(void *arg)
                         (ds->dir_port == 60099 ?
                          1 : 0)
                         );
-      tt_assert(found_default_fallback == 0);
+      tt_int_op(found_default_fallback, OP_EQ, 0);
     }
   }
 
@@ -2322,7 +2409,7 @@ test_config_adding_dir_servers(void *arg)
     /* check outcome */
 
     /* we must not have added the default fallback dirs */
-    tt_assert(n_add_default_fallback_dir_servers_known_default == 0);
+    tt_int_op(n_add_default_fallback_dir_servers_known_default, OP_EQ, 0);
 
     /* we have more fallbacks than just the authorities */
     tt_assert(networkstatus_consensus_can_use_extra_fallbacks(options) == 0);
@@ -2331,7 +2418,7 @@ test_config_adding_dir_servers(void *arg)
       /* trusted_dir_servers */
       const smartlist_t *dir_servers = router_get_trusted_dir_servers();
       /* (No D0), B1, A2 */
-      tt_assert(smartlist_len(dir_servers) == 2);
+      tt_int_op(smartlist_len(dir_servers), OP_EQ, 2);
 
       /* (No DirAuthority) - D0 - dir_port: 60090 */
       int found_D0 = 0;
@@ -2343,7 +2430,7 @@ test_config_adding_dir_servers(void *arg)
                         (ds->dir_port == 60090 ?
                          1 : 0)
                         );
-      tt_assert(found_D0 == 0);
+      tt_int_op(found_D0, OP_EQ, 0);
 
       /* AlternateBridgeAuthority - B1 - dir_port: 60091 */
       int found_B1 = 0;
@@ -2355,7 +2442,7 @@ test_config_adding_dir_servers(void *arg)
                         (ds->dir_port == 60091 ?
                          1 : 0)
                         );
-      tt_assert(found_B1 == 1);
+      tt_int_op(found_B1, OP_EQ, 1);
 
       /* AlternateDirAuthority - A2 - dir_port: 60092 */
       int found_A2 = 0;
@@ -2367,14 +2454,14 @@ test_config_adding_dir_servers(void *arg)
                         (ds->dir_port == 60092 ?
                          1 : 0)
                         );
-      tt_assert(found_A2 == 1);
+      tt_int_op(found_A2, OP_EQ, 1);
     }
 
     {
       /* fallback_dir_servers */
       const smartlist_t *fallback_servers = router_get_fallback_dir_servers();
       /* (No D0), B1, A2, (No Fallback) */
-      tt_assert(smartlist_len(fallback_servers) == 2);
+      tt_int_op(smartlist_len(fallback_servers), OP_EQ, 2);
 
       /* (No DirAuthority) - D0 - dir_port: 60090 */
       int found_D0 = 0;
@@ -2386,7 +2473,7 @@ test_config_adding_dir_servers(void *arg)
                         (ds->dir_port == 60090 ?
                          1 : 0)
                         );
-      tt_assert(found_D0 == 0);
+      tt_int_op(found_D0, OP_EQ, 0);
 
       /* AlternateBridgeAuthority - B1 - dir_port: 60091 */
       int found_B1 = 0;
@@ -2398,7 +2485,7 @@ test_config_adding_dir_servers(void *arg)
                         (ds->dir_port == 60091 ?
                          1 : 0)
                         );
-      tt_assert(found_B1 == 1);
+      tt_int_op(found_B1, OP_EQ, 1);
 
       /* AlternateDirAuthority - A2 - dir_port: 60092 */
       int found_A2 = 0;
@@ -2410,7 +2497,7 @@ test_config_adding_dir_servers(void *arg)
                         (ds->dir_port == 60092 ?
                          1 : 0)
                         );
-      tt_assert(found_A2 == 1);
+      tt_int_op(found_A2, OP_EQ, 1);
 
       /* (No Custom FallbackDir) - No Nickname - dir_port: 60093 */
       int found_non_default_fallback = 0;
@@ -2422,7 +2509,7 @@ test_config_adding_dir_servers(void *arg)
                         (ds->dir_port == 60093 ?
                          1 : 0)
                         );
-      tt_assert(found_non_default_fallback == 0);
+      tt_int_op(found_non_default_fallback, OP_EQ, 0);
 
       /* (No Default FallbackDir) - No Nickname - dir_port: 60099 */
       int found_default_fallback = 0;
@@ -2434,7 +2521,7 @@ test_config_adding_dir_servers(void *arg)
                         (ds->dir_port == 60099 ?
                          1 : 0)
                         );
-      tt_assert(found_default_fallback == 0);
+      tt_int_op(found_default_fallback, OP_EQ, 0);
     }
   }
 
@@ -2474,7 +2561,7 @@ test_config_adding_dir_servers(void *arg)
     /* check outcome */
 
     /* we must not have added the default fallback dirs */
-    tt_assert(n_add_default_fallback_dir_servers_known_default == 0);
+    tt_int_op(n_add_default_fallback_dir_servers_known_default, OP_EQ, 0);
 
     /* we have more fallbacks than just the authorities */
     tt_assert(networkstatus_consensus_can_use_extra_fallbacks(options) == 1);
@@ -2495,7 +2582,7 @@ test_config_adding_dir_servers(void *arg)
                         (ds->dir_port == 60090 ?
                          1 : 0)
                         );
-      tt_assert(found_D0 == 0);
+      tt_int_op(found_D0, OP_EQ, 0);
 
       /* AlternateBridgeAuthority - B1 - dir_port: 60091 */
       int found_B1 = 0;
@@ -2507,7 +2594,7 @@ test_config_adding_dir_servers(void *arg)
                         (ds->dir_port == 60091 ?
                          1 : 0)
                         );
-      tt_assert(found_B1 == 1);
+      tt_int_op(found_B1, OP_EQ, 1);
 
       /* (No AlternateDirAuthority) - A2 - dir_port: 60092 */
       int found_A2 = 0;
@@ -2519,7 +2606,7 @@ test_config_adding_dir_servers(void *arg)
                         (ds->dir_port == 60092 ?
                          1 : 0)
                         );
-      tt_assert(found_A2 == 0);
+      tt_int_op(found_A2, OP_EQ, 0);
 
       /* There's no easy way of checking that we have included all the
        * default v3 non-Bridge directory authorities, so let's assume that
@@ -2545,7 +2632,7 @@ test_config_adding_dir_servers(void *arg)
                         (ds->dir_port == 60090 ?
                          1 : 0)
                         );
-      tt_assert(found_D0 == 0);
+      tt_int_op(found_D0, OP_EQ, 0);
 
       /* AlternateBridgeAuthority - B1 - dir_port: 60091 */
       int found_B1 = 0;
@@ -2557,7 +2644,7 @@ test_config_adding_dir_servers(void *arg)
                         (ds->dir_port == 60091 ?
                          1 : 0)
                         );
-      tt_assert(found_B1 == 1);
+      tt_int_op(found_B1, OP_EQ, 1);
 
       /* (No AlternateDirAuthority) - A2 - dir_port: 60092 */
       int found_A2 = 0;
@@ -2569,7 +2656,7 @@ test_config_adding_dir_servers(void *arg)
                         (ds->dir_port == 60092 ?
                          1 : 0)
                         );
-      tt_assert(found_A2 == 0);
+      tt_int_op(found_A2, OP_EQ, 0);
 
       /* Custom FallbackDir - No Nickname - dir_port: 60093 */
       int found_non_default_fallback = 0;
@@ -2581,7 +2668,7 @@ test_config_adding_dir_servers(void *arg)
                         (ds->dir_port == 60093 ?
                          1 : 0)
                         );
-      tt_assert(found_non_default_fallback == 1);
+      tt_int_op(found_non_default_fallback, OP_EQ, 1);
 
       /* (No Default FallbackDir) - No Nickname - dir_port: 60099 */
       int found_default_fallback = 0;
@@ -2593,7 +2680,7 @@ test_config_adding_dir_servers(void *arg)
                         (ds->dir_port == 60099 ?
                          1 : 0)
                         );
-      tt_assert(found_default_fallback == 0);
+      tt_int_op(found_default_fallback, OP_EQ, 0);
 
       /* There's no easy way of checking that we have included all the
        * default v3 non-Bridge directory authorities, so let's assume that
@@ -2628,7 +2715,7 @@ test_config_adding_dir_servers(void *arg)
     /* check outcome */
 
     /* we must have added the default fallback dirs */
-    tt_assert(n_add_default_fallback_dir_servers_known_default == 1);
+    tt_int_op(n_add_default_fallback_dir_servers_known_default, OP_EQ, 1);
 
     /* we have more fallbacks than just the authorities */
     tt_assert(networkstatus_consensus_can_use_extra_fallbacks(options) == 1);
@@ -2649,7 +2736,7 @@ test_config_adding_dir_servers(void *arg)
                         (ds->dir_port == 60090 ?
                          1 : 0)
                         );
-      tt_assert(found_D0 == 0);
+      tt_int_op(found_D0, OP_EQ, 0);
 
       /* AlternateBridgeAuthority - B1 - dir_port: 60091 */
       int found_B1 = 0;
@@ -2661,7 +2748,7 @@ test_config_adding_dir_servers(void *arg)
                         (ds->dir_port == 60091 ?
                          1 : 0)
                         );
-      tt_assert(found_B1 == 1);
+      tt_int_op(found_B1, OP_EQ, 1);
 
       /* (No AlternateDirAuthority) - A2 - dir_port: 60092 */
       int found_A2 = 0;
@@ -2673,7 +2760,7 @@ test_config_adding_dir_servers(void *arg)
                         (ds->dir_port == 60092 ?
                          1 : 0)
                         );
-      tt_assert(found_A2 == 0);
+      tt_int_op(found_A2, OP_EQ, 0);
 
       /* There's no easy way of checking that we have included all the
        * default v3 non-Bridge directory authorities, so let's assume that
@@ -2699,7 +2786,7 @@ test_config_adding_dir_servers(void *arg)
                         (ds->dir_port == 60090 ?
                          1 : 0)
                         );
-      tt_assert(found_D0 == 0);
+      tt_int_op(found_D0, OP_EQ, 0);
 
       /* AlternateBridgeAuthority - B1 - dir_port: 60091 */
       int found_B1 = 0;
@@ -2711,7 +2798,7 @@ test_config_adding_dir_servers(void *arg)
                         (ds->dir_port == 60091 ?
                          1 : 0)
                         );
-      tt_assert(found_B1 == 1);
+      tt_int_op(found_B1, OP_EQ, 1);
 
       /* (No AlternateDirAuthority) - A2 - dir_port: 60092 */
       int found_A2 = 0;
@@ -2723,7 +2810,7 @@ test_config_adding_dir_servers(void *arg)
                         (ds->dir_port == 60092 ?
                          1 : 0)
                         );
-      tt_assert(found_A2 == 0);
+      tt_int_op(found_A2, OP_EQ, 0);
 
       /* (No Custom FallbackDir) - No Nickname - dir_port: 60093 */
       int found_non_default_fallback = 0;
@@ -2735,7 +2822,7 @@ test_config_adding_dir_servers(void *arg)
                         (ds->dir_port == 60093 ?
                          1 : 0)
                         );
-      tt_assert(found_non_default_fallback == 0);
+      tt_int_op(found_non_default_fallback, OP_EQ, 0);
 
       /* Default FallbackDir - No Nickname - dir_port: 60099 */
       int found_default_fallback = 0;
@@ -2747,7 +2834,7 @@ test_config_adding_dir_servers(void *arg)
                         (ds->dir_port == 60099 ?
                          1 : 0)
                         );
-      tt_assert(found_default_fallback == 1);
+      tt_int_op(found_default_fallback, OP_EQ, 1);
 
       /* There's no easy way of checking that we have included all the
        * default v3 non-Bridge directory authorities, so let's assume that
@@ -2791,7 +2878,7 @@ test_config_adding_dir_servers(void *arg)
     /* check outcome */
 
     /* we must not have added the default fallback dirs */
-    tt_assert(n_add_default_fallback_dir_servers_known_default == 0);
+    tt_int_op(n_add_default_fallback_dir_servers_known_default, OP_EQ, 0);
 
     /* we have more fallbacks than just the authorities */
     tt_assert(networkstatus_consensus_can_use_extra_fallbacks(options) == 1);
@@ -2813,7 +2900,7 @@ test_config_adding_dir_servers(void *arg)
                         (ds->dir_port == 60090 ?
                          1 : 0)
                         );
-      tt_assert(found_D0 == 0);
+      tt_int_op(found_D0, OP_EQ, 0);
 
       /* (No AlternateBridgeAuthority) - B1 - dir_port: 60091 */
       int found_B1 = 0;
@@ -2825,7 +2912,7 @@ test_config_adding_dir_servers(void *arg)
                         (ds->dir_port == 60091 ?
                          1 : 0)
                         );
-      tt_assert(found_B1 == 0);
+      tt_int_op(found_B1, OP_EQ, 0);
 
       /* AlternateDirAuthority - A2 - dir_port: 60092 */
       int found_A2 = 0;
@@ -2837,7 +2924,7 @@ test_config_adding_dir_servers(void *arg)
                         (ds->dir_port == 60092 ?
                          1 : 0)
                         );
-      tt_assert(found_A2 == 1);
+      tt_int_op(found_A2, OP_EQ, 1);
 
       /* There's no easy way of checking that we have included all the
        * default Bridge authorities (except for hard-coding tonga's details),
@@ -2864,7 +2951,7 @@ test_config_adding_dir_servers(void *arg)
                         (ds->dir_port == 60090 ?
                          1 : 0)
                         );
-      tt_assert(found_D0 == 0);
+      tt_int_op(found_D0, OP_EQ, 0);
 
       /* (No AlternateBridgeAuthority) - B1 - dir_port: 60091 */
       int found_B1 = 0;
@@ -2876,7 +2963,7 @@ test_config_adding_dir_servers(void *arg)
                         (ds->dir_port == 60091 ?
                          1 : 0)
                         );
-      tt_assert(found_B1 == 0);
+      tt_int_op(found_B1, OP_EQ, 0);
 
       /* AlternateDirAuthority - A2 - dir_port: 60092 */
       int found_A2 = 0;
@@ -2888,7 +2975,7 @@ test_config_adding_dir_servers(void *arg)
                         (ds->dir_port == 60092 ?
                          1 : 0)
                         );
-      tt_assert(found_A2 == 1);
+      tt_int_op(found_A2, OP_EQ, 1);
 
       /* Custom FallbackDir - No Nickname - dir_port: 60093 */
       int found_non_default_fallback = 0;
@@ -2900,7 +2987,7 @@ test_config_adding_dir_servers(void *arg)
                         (ds->dir_port == 60093 ?
                          1 : 0)
                         );
-      tt_assert(found_non_default_fallback == 1);
+      tt_int_op(found_non_default_fallback, OP_EQ, 1);
 
       /* (No Default FallbackDir) - No Nickname - dir_port: 60099 */
       int found_default_fallback = 0;
@@ -2912,7 +2999,7 @@ test_config_adding_dir_servers(void *arg)
                         (ds->dir_port == 60099 ?
                          1 : 0)
                         );
-      tt_assert(found_default_fallback == 0);
+      tt_int_op(found_default_fallback, OP_EQ, 0);
 
       /* There's no easy way of checking that we have included all the
        * default Bridge authorities (except for hard-coding tonga's details),
@@ -2948,7 +3035,7 @@ test_config_adding_dir_servers(void *arg)
     /* check outcome */
 
     /* we must not have added the default fallback dirs */
-    tt_assert(n_add_default_fallback_dir_servers_known_default == 0);
+    tt_int_op(n_add_default_fallback_dir_servers_known_default, OP_EQ, 0);
 
     /* we just have the authorities */
     tt_assert(networkstatus_consensus_can_use_extra_fallbacks(options) == 0);
@@ -2971,7 +3058,7 @@ test_config_adding_dir_servers(void *arg)
                         (ds->dir_port == 60090 ?
                          1 : 0)
                         );
-      tt_assert(found_D0 == 0);
+      tt_int_op(found_D0, OP_EQ, 0);
 
       /* (No AlternateBridgeAuthority) - B1 - dir_port: 60091 */
       int found_B1 = 0;
@@ -2983,7 +3070,7 @@ test_config_adding_dir_servers(void *arg)
                         (ds->dir_port == 60091 ?
                          1 : 0)
                         );
-      tt_assert(found_B1 == 0);
+      tt_int_op(found_B1, OP_EQ, 0);
 
       /* AlternateDirAuthority - A2 - dir_port: 60092 */
       int found_A2 = 0;
@@ -2995,7 +3082,7 @@ test_config_adding_dir_servers(void *arg)
                         (ds->dir_port == 60092 ?
                          1 : 0)
                         );
-      tt_assert(found_A2 == 1);
+      tt_int_op(found_A2, OP_EQ, 1);
 
       /* There's no easy way of checking that we have included all the
        * default Bridge authorities (except for hard-coding tonga's details),
@@ -3022,7 +3109,7 @@ test_config_adding_dir_servers(void *arg)
                         (ds->dir_port == 60090 ?
                          1 : 0)
                         );
-      tt_assert(found_D0 == 0);
+      tt_int_op(found_D0, OP_EQ, 0);
 
       /* (No AlternateBridgeAuthority) - B1 - dir_port: 60091 */
       int found_B1 = 0;
@@ -3034,7 +3121,7 @@ test_config_adding_dir_servers(void *arg)
                         (ds->dir_port == 60091 ?
                          1 : 0)
                         );
-      tt_assert(found_B1 == 0);
+      tt_int_op(found_B1, OP_EQ, 0);
 
       /* AlternateDirAuthority - A2 - dir_port: 60092 */
       int found_A2 = 0;
@@ -3046,7 +3133,7 @@ test_config_adding_dir_servers(void *arg)
                         (ds->dir_port == 60092 ?
                          1 : 0)
                         );
-      tt_assert(found_A2 == 1);
+      tt_int_op(found_A2, OP_EQ, 1);
 
       /* (No Custom FallbackDir) - No Nickname - dir_port: 60093 */
       int found_non_default_fallback = 0;
@@ -3058,7 +3145,7 @@ test_config_adding_dir_servers(void *arg)
                         (ds->dir_port == 60093 ?
                          1 : 0)
                         );
-      tt_assert(found_non_default_fallback == 0);
+      tt_int_op(found_non_default_fallback, OP_EQ, 0);
 
       /* (No Default FallbackDir) - No Nickname - dir_port: 60099 */
       int found_default_fallback = 0;
@@ -3070,7 +3157,7 @@ test_config_adding_dir_servers(void *arg)
                         (ds->dir_port == 60099 ?
                          1 : 0)
                         );
-      tt_assert(found_default_fallback == 0);
+      tt_int_op(found_default_fallback, OP_EQ, 0);
 
       /* There's no easy way of checking that we have included all the
        * default Bridge authorities (except for hard-coding tonga's details),
@@ -3114,7 +3201,7 @@ test_config_adding_dir_servers(void *arg)
     /* check outcome */
 
     /* we must not have added the default fallback dirs */
-    tt_assert(n_add_default_fallback_dir_servers_known_default == 0);
+    tt_int_op(n_add_default_fallback_dir_servers_known_default, OP_EQ, 0);
 
     /* we have more fallbacks than just the authorities */
     tt_assert(networkstatus_consensus_can_use_extra_fallbacks(options) == 1);
@@ -3136,7 +3223,7 @@ test_config_adding_dir_servers(void *arg)
                         (ds->dir_port == 60090 ?
                          1 : 0)
                         );
-      tt_assert(found_D0 == 0);
+      tt_int_op(found_D0, OP_EQ, 0);
 
       /* (No AlternateBridgeAuthority) - B1 - dir_port: 60091 */
       int found_B1 = 0;
@@ -3148,7 +3235,7 @@ test_config_adding_dir_servers(void *arg)
                         (ds->dir_port == 60091 ?
                          1 : 0)
                         );
-      tt_assert(found_B1 == 0);
+      tt_int_op(found_B1, OP_EQ, 0);
 
       /* (No AlternateDirAuthority) - A2 - dir_port: 60092 */
       int found_A2 = 0;
@@ -3160,7 +3247,7 @@ test_config_adding_dir_servers(void *arg)
                         (ds->dir_port == 60092 ?
                          1 : 0)
                         );
-      tt_assert(found_A2 == 0);
+      tt_int_op(found_A2, OP_EQ, 0);
 
       /* There's no easy way of checking that we have included all the
        * default Bridge & V3 Directory authorities, so let's assume that
@@ -3187,7 +3274,7 @@ test_config_adding_dir_servers(void *arg)
                         (ds->dir_port == 60090 ?
                          1 : 0)
                         );
-      tt_assert(found_D0 == 0);
+      tt_int_op(found_D0, OP_EQ, 0);
 
       /* (No AlternateBridgeAuthority) - B1 - dir_port: 60091 */
       int found_B1 = 0;
@@ -3199,7 +3286,7 @@ test_config_adding_dir_servers(void *arg)
                         (ds->dir_port == 60091 ?
                          1 : 0)
                         );
-      tt_assert(found_B1 == 0);
+      tt_int_op(found_B1, OP_EQ, 0);
 
       /* (No AlternateDirAuthority) - A2 - dir_port: 60092 */
       int found_A2 = 0;
@@ -3211,7 +3298,7 @@ test_config_adding_dir_servers(void *arg)
                         (ds->dir_port == 60092 ?
                          1 : 0)
                         );
-      tt_assert(found_A2 == 0);
+      tt_int_op(found_A2, OP_EQ, 0);
 
       /* Custom FallbackDir - No Nickname - dir_port: 60093 */
       int found_non_default_fallback = 0;
@@ -3223,7 +3310,7 @@ test_config_adding_dir_servers(void *arg)
                         (ds->dir_port == 60093 ?
                          1 : 0)
                         );
-      tt_assert(found_non_default_fallback == 1);
+      tt_int_op(found_non_default_fallback, OP_EQ, 1);
 
       /* (No Default FallbackDir) - No Nickname - dir_port: 60099 */
       int found_default_fallback = 0;
@@ -3235,7 +3322,7 @@ test_config_adding_dir_servers(void *arg)
                         (ds->dir_port == 60099 ?
                          1 : 0)
                         );
-      tt_assert(found_default_fallback == 0);
+      tt_int_op(found_default_fallback, OP_EQ, 0);
 
       /* There's no easy way of checking that we have included all the
        * default Bridge & V3 Directory authorities, so let's assume that
@@ -3277,7 +3364,7 @@ test_config_adding_dir_servers(void *arg)
     /* check outcome */
 
     /* we must have added the default fallback dirs */
-    tt_assert(n_add_default_fallback_dir_servers_known_default == 1);
+    tt_int_op(n_add_default_fallback_dir_servers_known_default, OP_EQ, 1);
 
     /* we have more fallbacks than just the authorities */
     tt_assert(networkstatus_consensus_can_use_extra_fallbacks(options) == 1);
@@ -3299,7 +3386,7 @@ test_config_adding_dir_servers(void *arg)
                         (ds->dir_port == 60090 ?
                          1 : 0)
                         );
-      tt_assert(found_D0 == 0);
+      tt_int_op(found_D0, OP_EQ, 0);
 
       /* (No AlternateBridgeAuthority) - B1 - dir_port: 60091 */
       int found_B1 = 0;
@@ -3311,7 +3398,7 @@ test_config_adding_dir_servers(void *arg)
                         (ds->dir_port == 60091 ?
                          1 : 0)
                         );
-      tt_assert(found_B1 == 0);
+      tt_int_op(found_B1, OP_EQ, 0);
 
       /* (No AlternateDirAuthority) - A2 - dir_port: 60092 */
       int found_A2 = 0;
@@ -3323,7 +3410,7 @@ test_config_adding_dir_servers(void *arg)
                         (ds->dir_port == 60092 ?
                          1 : 0)
                         );
-      tt_assert(found_A2 == 0);
+      tt_int_op(found_A2, OP_EQ, 0);
 
       /* There's no easy way of checking that we have included all the
        * default Bridge & V3 Directory authorities, so let's assume that
@@ -3350,7 +3437,7 @@ test_config_adding_dir_servers(void *arg)
                         (ds->dir_port == 60090 ?
                          1 : 0)
                         );
-      tt_assert(found_D0 == 0);
+      tt_int_op(found_D0, OP_EQ, 0);
 
       /* (No AlternateBridgeAuthority) - B1 - dir_port: 60091 */
       int found_B1 = 0;
@@ -3362,7 +3449,7 @@ test_config_adding_dir_servers(void *arg)
                         (ds->dir_port == 60091 ?
                          1 : 0)
                         );
-      tt_assert(found_B1 == 0);
+      tt_int_op(found_B1, OP_EQ, 0);
 
       /* (No AlternateDirAuthority) - A2 - dir_port: 60092 */
       int found_A2 = 0;
@@ -3374,7 +3461,7 @@ test_config_adding_dir_servers(void *arg)
                         (ds->dir_port == 60092 ?
                          1 : 0)
                         );
-      tt_assert(found_A2 == 0);
+      tt_int_op(found_A2, OP_EQ, 0);
 
       /* Custom FallbackDir - No Nickname - dir_port: 60093 */
       int found_non_default_fallback = 0;
@@ -3386,7 +3473,7 @@ test_config_adding_dir_servers(void *arg)
                         (ds->dir_port == 60093 ?
                          1 : 0)
                         );
-      tt_assert(found_non_default_fallback == 0);
+      tt_int_op(found_non_default_fallback, OP_EQ, 0);
 
       /* (No Default FallbackDir) - No Nickname - dir_port: 60099 */
       int found_default_fallback = 0;
@@ -3398,7 +3485,7 @@ test_config_adding_dir_servers(void *arg)
                         (ds->dir_port == 60099 ?
                          1 : 0)
                         );
-      tt_assert(found_default_fallback == 1);
+      tt_int_op(found_default_fallback, OP_EQ, 1);
 
       /* There's no easy way of checking that we have included all the
        * default Bridge & V3 Directory authorities, and the default
@@ -3455,7 +3542,7 @@ test_config_default_dir_servers(void *arg)
   opts = NULL;
 
   /* assume a release will never go out with less than 7 authorities */
-  tt_assert(trusted_count >= 7);
+  tt_int_op(trusted_count, OP_GE, 7);
   /* if we disable the default fallbacks, there must not be any extra */
   tt_assert(fallback_count == trusted_count);
 
@@ -3468,7 +3555,7 @@ test_config_default_dir_servers(void *arg)
   opts = NULL;
 
   /* assume a release will never go out with less than 7 authorities */
-  tt_assert(trusted_count >= 7);
+  tt_int_op(trusted_count, OP_GE, 7);
   /* XX/teor - allow for default fallbacks to be added without breaking
    * the unit tests. Set a minimum fallback count once the list is stable. */
   tt_assert(fallback_count >= trusted_count);
@@ -3537,18 +3624,18 @@ test_config_directory_fetch(void *arg)
   options->ClientOnly = 1;
   tt_assert(server_mode(options) == 0);
   tt_assert(public_server_mode(options) == 0);
-  tt_assert(directory_fetches_from_authorities(options) == 0);
-  tt_assert(networkstatus_consensus_can_use_multiple_directories(options)
-            == 1);
+  tt_int_op(directory_fetches_from_authorities(options), OP_EQ, 0);
+  tt_int_op(networkstatus_consensus_can_use_multiple_directories(options),
+            OP_EQ, 1);
 
   /* Bridge Clients can use multiple directory mirrors for bootstrap */
   memset(options, 0, sizeof(or_options_t));
   options->UseBridges = 1;
   tt_assert(server_mode(options) == 0);
   tt_assert(public_server_mode(options) == 0);
-  tt_assert(directory_fetches_from_authorities(options) == 0);
-  tt_assert(networkstatus_consensus_can_use_multiple_directories(options)
-            == 1);
+  tt_int_op(directory_fetches_from_authorities(options), OP_EQ, 0);
+  tt_int_op(networkstatus_consensus_can_use_multiple_directories(options),
+            OP_EQ, 1);
 
   /* Bridge Relays (Bridges) must act like clients, and use multiple
    * directory mirrors for bootstrap */
@@ -3557,9 +3644,9 @@ test_config_directory_fetch(void *arg)
   options->ORPort_set = 1;
   tt_assert(server_mode(options) == 1);
   tt_assert(public_server_mode(options) == 0);
-  tt_assert(directory_fetches_from_authorities(options) == 0);
-  tt_assert(networkstatus_consensus_can_use_multiple_directories(options)
-            == 1);
+  tt_int_op(directory_fetches_from_authorities(options), OP_EQ, 0);
+  tt_int_op(networkstatus_consensus_can_use_multiple_directories(options),
+            OP_EQ, 1);
 
   /* Clients set to FetchDirInfoEarly must fetch it from the authorities,
    * but can use multiple authorities for bootstrap */
@@ -3567,9 +3654,9 @@ test_config_directory_fetch(void *arg)
   options->FetchDirInfoEarly = 1;
   tt_assert(server_mode(options) == 0);
   tt_assert(public_server_mode(options) == 0);
-  tt_assert(directory_fetches_from_authorities(options) == 1);
-  tt_assert(networkstatus_consensus_can_use_multiple_directories(options)
-            == 1);
+  tt_int_op(directory_fetches_from_authorities(options), OP_EQ, 1);
+  tt_int_op(networkstatus_consensus_can_use_multiple_directories(options),
+            OP_EQ, 1);
 
   /* OR servers only fetch the consensus from the authorities when they don't
    * know their own address, but never use multiple directories for bootstrap
@@ -3580,16 +3667,16 @@ test_config_directory_fetch(void *arg)
   mock_router_pick_published_address_result = -1;
   tt_assert(server_mode(options) == 1);
   tt_assert(public_server_mode(options) == 1);
-  tt_assert(directory_fetches_from_authorities(options) == 1);
-  tt_assert(networkstatus_consensus_can_use_multiple_directories(options)
-            == 0);
+  tt_int_op(directory_fetches_from_authorities(options), OP_EQ, 1);
+  tt_int_op(networkstatus_consensus_can_use_multiple_directories(options),
+            OP_EQ, 0);
 
   mock_router_pick_published_address_result = 0;
   tt_assert(server_mode(options) == 1);
   tt_assert(public_server_mode(options) == 1);
-  tt_assert(directory_fetches_from_authorities(options) == 0);
-  tt_assert(networkstatus_consensus_can_use_multiple_directories(options)
-            == 0);
+  tt_int_op(directory_fetches_from_authorities(options), OP_EQ, 0);
+  tt_int_op(networkstatus_consensus_can_use_multiple_directories(options),
+            OP_EQ, 0);
 
   /* Exit OR servers only fetch the consensus from the authorities when they
    * refuse unknown exits, but never use multiple directories for bootstrap
@@ -3607,17 +3694,17 @@ test_config_directory_fetch(void *arg)
   options->RefuseUnknownExits = 1;
   tt_assert(server_mode(options) == 1);
   tt_assert(public_server_mode(options) == 1);
-  tt_assert(directory_fetches_from_authorities(options) == 1);
-  tt_assert(networkstatus_consensus_can_use_multiple_directories(options)
-            == 0);
+  tt_int_op(directory_fetches_from_authorities(options), OP_EQ, 1);
+  tt_int_op(networkstatus_consensus_can_use_multiple_directories(options),
+            OP_EQ, 0);
 
   options->RefuseUnknownExits = 0;
   mock_router_pick_published_address_result = 0;
   tt_assert(server_mode(options) == 1);
   tt_assert(public_server_mode(options) == 1);
-  tt_assert(directory_fetches_from_authorities(options) == 0);
-  tt_assert(networkstatus_consensus_can_use_multiple_directories(options)
-            == 0);
+  tt_int_op(directory_fetches_from_authorities(options), OP_EQ, 0);
+  tt_int_op(networkstatus_consensus_can_use_multiple_directories(options),
+            OP_EQ, 0);
 
   /* Dir servers fetch the consensus from the authorities, unless they are not
    * advertising themselves (hibernating) or have no routerinfo or are not
@@ -3636,26 +3723,26 @@ test_config_directory_fetch(void *arg)
   mock_router_get_my_routerinfo_result = &routerinfo;
   tt_assert(server_mode(options) == 1);
   tt_assert(public_server_mode(options) == 1);
-  tt_assert(directory_fetches_from_authorities(options) == 1);
-  tt_assert(networkstatus_consensus_can_use_multiple_directories(options)
-            == 0);
+  tt_int_op(directory_fetches_from_authorities(options), OP_EQ, 1);
+  tt_int_op(networkstatus_consensus_can_use_multiple_directories(options),
+            OP_EQ, 0);
 
   mock_advertised_server_mode_result = 0;
   routerinfo.dir_port = 1;
   mock_router_get_my_routerinfo_result = &routerinfo;
   tt_assert(server_mode(options) == 1);
   tt_assert(public_server_mode(options) == 1);
-  tt_assert(directory_fetches_from_authorities(options) == 0);
-  tt_assert(networkstatus_consensus_can_use_multiple_directories(options)
-            == 0);
+  tt_int_op(directory_fetches_from_authorities(options), OP_EQ, 0);
+  tt_int_op(networkstatus_consensus_can_use_multiple_directories(options),
+            OP_EQ, 0);
 
   mock_advertised_server_mode_result = 1;
   mock_router_get_my_routerinfo_result = NULL;
   tt_assert(server_mode(options) == 1);
   tt_assert(public_server_mode(options) == 1);
-  tt_assert(directory_fetches_from_authorities(options) == 0);
-  tt_assert(networkstatus_consensus_can_use_multiple_directories(options)
-            == 0);
+  tt_int_op(directory_fetches_from_authorities(options), OP_EQ, 0);
+  tt_int_op(networkstatus_consensus_can_use_multiple_directories(options),
+            OP_EQ, 0);
 
   mock_advertised_server_mode_result = 1;
   routerinfo.dir_port = 0;
@@ -3663,9 +3750,9 @@ test_config_directory_fetch(void *arg)
   mock_router_get_my_routerinfo_result = &routerinfo;
   tt_assert(server_mode(options) == 1);
   tt_assert(public_server_mode(options) == 1);
-  tt_assert(directory_fetches_from_authorities(options) == 0);
-  tt_assert(networkstatus_consensus_can_use_multiple_directories(options)
-            == 0);
+  tt_int_op(directory_fetches_from_authorities(options), OP_EQ, 0);
+  tt_int_op(networkstatus_consensus_can_use_multiple_directories(options),
+            OP_EQ, 0);
 
   mock_advertised_server_mode_result = 1;
   routerinfo.dir_port = 1;
@@ -3673,9 +3760,9 @@ test_config_directory_fetch(void *arg)
   mock_router_get_my_routerinfo_result = &routerinfo;
   tt_assert(server_mode(options) == 1);
   tt_assert(public_server_mode(options) == 1);
-  tt_assert(directory_fetches_from_authorities(options) == 1);
-  tt_assert(networkstatus_consensus_can_use_multiple_directories(options)
-            == 0);
+  tt_int_op(directory_fetches_from_authorities(options), OP_EQ, 1);
+  tt_int_op(networkstatus_consensus_can_use_multiple_directories(options),
+            OP_EQ, 0);
 
  done:
   tor_free(options);
@@ -3689,7 +3776,7 @@ static void
 test_config_default_fallback_dirs(void *arg)
 {
   const char *fallback[] = {
-#include "../or/fallback_dirs.inc"
+#include "app/config/fallback_dirs.inc"
     NULL
   };
 
@@ -3722,119 +3809,119 @@ test_config_port_cfg_line_extract_addrport(void *arg)
 
   tt_int_op(port_cfg_line_extract_addrport("", &a, &unixy, &rest), OP_EQ, 0);
   tt_int_op(unixy, OP_EQ, 0);
-  tt_str_op(a, OP_EQ, "");;
+  tt_str_op(a, OP_EQ, "");
   tt_str_op(rest, OP_EQ, "");
   tor_free(a);
 
   tt_int_op(port_cfg_line_extract_addrport("hello", &a, &unixy, &rest),
             OP_EQ, 0);
   tt_int_op(unixy, OP_EQ, 0);
-  tt_str_op(a, OP_EQ, "hello");;
+  tt_str_op(a, OP_EQ, "hello");
   tt_str_op(rest, OP_EQ, "");
   tor_free(a);
 
   tt_int_op(port_cfg_line_extract_addrport(" flipperwalt gersplut",
                                            &a, &unixy, &rest), OP_EQ, 0);
   tt_int_op(unixy, OP_EQ, 0);
-  tt_str_op(a, OP_EQ, "flipperwalt");;
+  tt_str_op(a, OP_EQ, "flipperwalt");
   tt_str_op(rest, OP_EQ, "gersplut");
   tor_free(a);
 
   tt_int_op(port_cfg_line_extract_addrport(" flipperwalt \t gersplut",
                                            &a, &unixy, &rest), OP_EQ, 0);
   tt_int_op(unixy, OP_EQ, 0);
-  tt_str_op(a, OP_EQ, "flipperwalt");;
+  tt_str_op(a, OP_EQ, "flipperwalt");
   tt_str_op(rest, OP_EQ, "gersplut");
   tor_free(a);
 
   tt_int_op(port_cfg_line_extract_addrport("flipperwalt \t gersplut",
                                            &a, &unixy, &rest), OP_EQ, 0);
   tt_int_op(unixy, OP_EQ, 0);
-  tt_str_op(a, OP_EQ, "flipperwalt");;
+  tt_str_op(a, OP_EQ, "flipperwalt");
   tt_str_op(rest, OP_EQ, "gersplut");
   tor_free(a);
 
   tt_int_op(port_cfg_line_extract_addrport("unix:flipperwalt \t gersplut",
                                            &a, &unixy, &rest), OP_EQ, 0);
   tt_int_op(unixy, OP_EQ, 1);
-  tt_str_op(a, OP_EQ, "flipperwalt");;
+  tt_str_op(a, OP_EQ, "flipperwalt");
   tt_str_op(rest, OP_EQ, "gersplut");
   tor_free(a);
 
   tt_int_op(port_cfg_line_extract_addrport("lolol",
                                            &a, &unixy, &rest), OP_EQ, 0);
   tt_int_op(unixy, OP_EQ, 0);
-  tt_str_op(a, OP_EQ, "lolol");;
+  tt_str_op(a, OP_EQ, "lolol");
   tt_str_op(rest, OP_EQ, "");
   tor_free(a);
 
   tt_int_op(port_cfg_line_extract_addrport("unix:lolol",
                                            &a, &unixy, &rest), OP_EQ, 0);
   tt_int_op(unixy, OP_EQ, 1);
-  tt_str_op(a, OP_EQ, "lolol");;
+  tt_str_op(a, OP_EQ, "lolol");
   tt_str_op(rest, OP_EQ, "");
   tor_free(a);
 
   tt_int_op(port_cfg_line_extract_addrport("unix:lolol ",
                                            &a, &unixy, &rest), OP_EQ, 0);
   tt_int_op(unixy, OP_EQ, 1);
-  tt_str_op(a, OP_EQ, "lolol");;
+  tt_str_op(a, OP_EQ, "lolol");
   tt_str_op(rest, OP_EQ, "");
   tor_free(a);
 
   tt_int_op(port_cfg_line_extract_addrport(" unix:lolol",
                                            &a, &unixy, &rest), OP_EQ, 0);
   tt_int_op(unixy, OP_EQ, 1);
-  tt_str_op(a, OP_EQ, "lolol");;
+  tt_str_op(a, OP_EQ, "lolol");
   tt_str_op(rest, OP_EQ, "");
   tor_free(a);
 
   tt_int_op(port_cfg_line_extract_addrport("foobar:lolol",
                                            &a, &unixy, &rest), OP_EQ, 0);
   tt_int_op(unixy, OP_EQ, 0);
-  tt_str_op(a, OP_EQ, "foobar:lolol");;
+  tt_str_op(a, OP_EQ, "foobar:lolol");
   tt_str_op(rest, OP_EQ, "");
   tor_free(a);
 
   tt_int_op(port_cfg_line_extract_addrport(":lolol",
                                            &a, &unixy, &rest), OP_EQ, 0);
   tt_int_op(unixy, OP_EQ, 0);
-  tt_str_op(a, OP_EQ, ":lolol");;
+  tt_str_op(a, OP_EQ, ":lolol");
   tt_str_op(rest, OP_EQ, "");
   tor_free(a);
 
   tt_int_op(port_cfg_line_extract_addrport("unix:\"lolol\"",
                                            &a, &unixy, &rest), OP_EQ, 0);
   tt_int_op(unixy, OP_EQ, 1);
-  tt_str_op(a, OP_EQ, "lolol");;
+  tt_str_op(a, OP_EQ, "lolol");
   tt_str_op(rest, OP_EQ, "");
   tor_free(a);
 
   tt_int_op(port_cfg_line_extract_addrport("unix:\"lolol\" ",
                                            &a, &unixy, &rest), OP_EQ, 0);
   tt_int_op(unixy, OP_EQ, 1);
-  tt_str_op(a, OP_EQ, "lolol");;
+  tt_str_op(a, OP_EQ, "lolol");
   tt_str_op(rest, OP_EQ, "");
   tor_free(a);
 
   tt_int_op(port_cfg_line_extract_addrport("unix:\"lolol\" foo ",
                                            &a, &unixy, &rest), OP_EQ, 0);
   tt_int_op(unixy, OP_EQ, 1);
-  tt_str_op(a, OP_EQ, "lolol");;
+  tt_str_op(a, OP_EQ, "lolol");
   tt_str_op(rest, OP_EQ, "foo ");
   tor_free(a);
 
   tt_int_op(port_cfg_line_extract_addrport("unix:\"lol ol\" foo ",
                                            &a, &unixy, &rest), OP_EQ, 0);
   tt_int_op(unixy, OP_EQ, 1);
-  tt_str_op(a, OP_EQ, "lol ol");;
+  tt_str_op(a, OP_EQ, "lol ol");
   tt_str_op(rest, OP_EQ, "foo ");
   tor_free(a);
 
   tt_int_op(port_cfg_line_extract_addrport("unix:\"lol\\\" ol\" foo ",
                                            &a, &unixy, &rest), OP_EQ, 0);
   tt_int_op(unixy, OP_EQ, 1);
-  tt_str_op(a, OP_EQ, "lol\" ol");;
+  tt_str_op(a, OP_EQ, "lol\" ol");
   tt_str_op(rest, OP_EQ, "foo ");
   tor_free(a);
 
@@ -3861,144 +3948,6 @@ mock_config_line(const char *key, const char *val)
 }
 
 static void
-test_config_parse_port_config__listenaddress(void *data)
-{
-  (void)data;
-  int ret;
-  config_line_t *config_listen_address = NULL, *config_listen_address2 = NULL,
-    *config_listen_address3 = NULL;
-  config_line_t *config_port1 = NULL, *config_port2 = NULL,
-    *config_port3 = NULL, *config_port4 = NULL, *config_port5 = NULL;
-  smartlist_t *slout = NULL;
-  port_cfg_t *port_cfg = NULL;
-
-  // Test basic invocation with no arguments
-  ret = parse_port_config(NULL, NULL, NULL, NULL, 0, NULL, 0, 0);
-  tt_int_op(ret, OP_EQ, 0);
-
-  // Setup some test data
-  config_listen_address = mock_config_line("DNSListenAddress", "127.0.0.1");
-  config_listen_address2 = mock_config_line("DNSListenAddress", "x$$$:::345");
-  config_listen_address3 = mock_config_line("DNSListenAddress",
-                                            "127.0.0.1:1442");
-  config_port1 = mock_config_line("DNSPort", "42");
-  config_port2 = mock_config_line("DNSPort", "43");
-  config_port1->next = config_port2;
-  config_port3 = mock_config_line("DNSPort", "auto");
-  config_port4 = mock_config_line("DNSPort", "55542");
-  config_port5 = mock_config_line("DNSPort", "666777");
-
-  // Test failure when we have a ListenAddress line and several
-  // Port lines for the same portname
-  ret = parse_port_config(NULL, config_port1, config_listen_address, "DNS", 0,
-                          NULL, 0, 0);
-
-  tt_int_op(ret, OP_EQ, -1);
-
-  // Test case when we have a listen address, no default port and allow
-  // spurious listen address lines
-  ret = parse_port_config(NULL, NULL, config_listen_address, "DNS", 0, NULL,
-                          0, CL_PORT_ALLOW_EXTRA_LISTENADDR);
-  tt_int_op(ret, OP_EQ, 1);
-
-  // Test case when we have a listen address, no default port but doesn't
-  // allow spurious listen address lines
-  ret = parse_port_config(NULL, NULL, config_listen_address, "DNS", 0, NULL,
-                          0, 0);
-  tt_int_op(ret, OP_EQ, -1);
-
-  // Test case when we have a listen address, and a port that points to auto,
-  // should use the AUTO port
-  slout = smartlist_new();
-  ret = parse_port_config(slout, config_port3, config_listen_address, "DNS",
-                          0, NULL, 0, 0);
-  tt_int_op(ret, OP_EQ, 0);
-  tt_int_op(smartlist_len(slout), OP_EQ, 1);
-  port_cfg = (port_cfg_t *)smartlist_get(slout, 0);
-  tt_int_op(port_cfg->port, OP_EQ, CFG_AUTO_PORT);
-
-  // Test when we have a listen address and a custom port
-  ret = parse_port_config(slout, config_port4, config_listen_address, "DNS",
-                          0, NULL, 0, 0);
-  tt_int_op(ret, OP_EQ, 0);
-  tt_int_op(smartlist_len(slout), OP_EQ, 2);
-  port_cfg = (port_cfg_t *)smartlist_get(slout, 1);
-  tt_int_op(port_cfg->port, OP_EQ, 55542);
-
-  // Test when we have a listen address and an invalid custom port
-  ret = parse_port_config(slout, config_port5, config_listen_address, "DNS",
-                          0, NULL, 0, 0);
-  tt_int_op(ret, OP_EQ, -1);
-
-  // Test we get a server port configuration when asked for it
-  ret = parse_port_config(slout, NULL, config_listen_address, "DNS", 0, NULL,
-                          123, CL_PORT_SERVER_OPTIONS);
-  tt_int_op(ret, OP_EQ, 0);
-  tt_int_op(smartlist_len(slout), OP_EQ, 4);
-  port_cfg = (port_cfg_t *)smartlist_get(slout, 2);
-  tt_int_op(port_cfg->port, OP_EQ, 123);
-  tt_int_op(port_cfg->server_cfg.no_listen, OP_EQ, 1);
-  tt_int_op(port_cfg->server_cfg.bind_ipv4_only, OP_EQ, 1);
-
-  // Test an invalid ListenAddress configuration
-  ret = parse_port_config(NULL, NULL, config_listen_address2, "DNS", 0, NULL,
-                          222, 0);
-  tt_int_op(ret, OP_EQ, -1);
-
-  // Test default to the port in the listen address if available
-  ret = parse_port_config(slout, config_port2, config_listen_address3, "DNS",
-                          0, NULL, 0, 0);
-  tt_int_op(ret, OP_EQ, 0);
-  tt_int_op(smartlist_len(slout), OP_EQ, 5);
-  port_cfg = (port_cfg_t *)smartlist_get(slout, 4);
-  tt_int_op(port_cfg->port, OP_EQ, 1442);
-
-  // Test we work correctly without an out, but with a listen address
-  // and a port
-  ret = parse_port_config(NULL, config_port2, config_listen_address, "DNS",
-                          0, NULL, 0, 0);
-  tt_int_op(ret, OP_EQ, 0);
-
-  // Test warning nonlocal control
-  ret = parse_port_config(slout, config_port2, config_listen_address, "DNS",
-                          CONN_TYPE_CONTROL_LISTENER, NULL, 0,
-                          CL_PORT_WARN_NONLOCAL);
-  tt_int_op(ret, OP_EQ, 0);
-
-  // Test warning nonlocal ext or listener
-  ret = parse_port_config(slout, config_port2, config_listen_address, "DNS",
-                          CONN_TYPE_EXT_OR_LISTENER, NULL, 0,
-                          CL_PORT_WARN_NONLOCAL);
-  tt_int_op(ret, OP_EQ, 0);
-
-  // Test warning nonlocal other
-  SMARTLIST_FOREACH(slout,port_cfg_t *,pf,port_cfg_free(pf));
-  smartlist_clear(slout);
-  ret = parse_port_config(slout, config_port2, config_listen_address, "DNS",
-                          0, NULL, 0, CL_PORT_WARN_NONLOCAL);
-  tt_int_op(ret, OP_EQ, 0);
-
-  // Test warning nonlocal control without an out
-  ret = parse_port_config(NULL, config_port2, config_listen_address, "DNS",
-                          CONN_TYPE_CONTROL_LISTENER, NULL, 0,
-                          CL_PORT_WARN_NONLOCAL);
-  tt_int_op(ret, OP_EQ, 0);
-
- done:
-  config_free_lines(config_listen_address);
-  config_free_lines(config_listen_address2);
-  config_free_lines(config_listen_address3);
-  config_free_lines(config_port1);
-  /* 2 was linked from 1. */
-  config_free_lines(config_port3);
-  config_free_lines(config_port4);
-  config_free_lines(config_port5);
-  if (slout)
-    SMARTLIST_FOREACH(slout,port_cfg_t *,pf,port_cfg_free(pf));
-  smartlist_free(slout);
-}
-
-static void
 test_config_parse_port_config__ports__no_ports_given(void *data)
 {
   (void)data;
@@ -4009,40 +3958,40 @@ test_config_parse_port_config__ports__no_ports_given(void *data)
   slout = smartlist_new();
 
   // Test no defaultport, no defaultaddress and no out
-  ret = parse_port_config(NULL, NULL, NULL, "DNS", 0, NULL, 0, 0);
+  ret = parse_port_config(NULL, NULL, "DNS", 0, NULL, 0, 0);
   tt_int_op(ret, OP_EQ, 0);
 
   // Test with defaultport, no defaultaddress and no out
-  ret = parse_port_config(NULL, NULL, NULL, "DNS", 0, NULL, 42, 0);
+  ret = parse_port_config(NULL, NULL, "DNS", 0, NULL, 42, 0);
   tt_int_op(ret, OP_EQ, 0);
 
   // Test no defaultport, with defaultaddress and no out
-  ret = parse_port_config(NULL, NULL, NULL, "DNS", 0, "127.0.0.2", 0, 0);
+  ret = parse_port_config(NULL, NULL, "DNS", 0, "127.0.0.2", 0, 0);
   tt_int_op(ret, OP_EQ, 0);
 
   // Test with defaultport, with defaultaddress and no out
-  ret = parse_port_config(NULL, NULL, NULL, "DNS", 0, "127.0.0.2", 42, 0);
+  ret = parse_port_config(NULL, NULL, "DNS", 0, "127.0.0.2", 42, 0);
   tt_int_op(ret, OP_EQ, 0);
 
   // Test no defaultport, no defaultaddress and with out
-  ret = parse_port_config(slout, NULL, NULL, "DNS", 0, NULL, 0, 0);
+  ret = parse_port_config(slout, NULL, "DNS", 0, NULL, 0, 0);
   tt_int_op(ret, OP_EQ, 0);
   tt_int_op(smartlist_len(slout), OP_EQ, 0);
 
   // Test with defaultport, no defaultaddress and with out
-  ret = parse_port_config(slout, NULL, NULL, "DNS", 0, NULL, 42, 0);
+  ret = parse_port_config(slout, NULL, "DNS", 0, NULL, 42, 0);
   tt_int_op(ret, OP_EQ, 0);
   tt_int_op(smartlist_len(slout), OP_EQ, 0);
 
   // Test no defaultport, with defaultaddress and with out
-  ret = parse_port_config(slout, NULL, NULL, "DNS", 0, "127.0.0.2", 0, 0);
+  ret = parse_port_config(slout, NULL, "DNS", 0, "127.0.0.2", 0, 0);
   tt_int_op(ret, OP_EQ, 0);
   tt_int_op(smartlist_len(slout), OP_EQ, 0);
 
   // Test with defaultport, with defaultaddress and out, adds a new port cfg
   SMARTLIST_FOREACH(slout,port_cfg_t *,pf,port_cfg_free(pf));
   smartlist_clear(slout);
-  ret = parse_port_config(slout, NULL, NULL, "DNS", 0, "127.0.0.2", 42, 0);
+  ret = parse_port_config(slout, NULL, "DNS", 0, "127.0.0.2", 42, 0);
   tt_int_op(ret, OP_EQ, 0);
   tt_int_op(smartlist_len(slout), OP_EQ, 1);
   port_cfg = (port_cfg_t *)smartlist_get(slout, 0);
@@ -4053,7 +4002,7 @@ test_config_parse_port_config__ports__no_ports_given(void *data)
   // for a unix address
   SMARTLIST_FOREACH(slout,port_cfg_t *,pf,port_cfg_free(pf));
   smartlist_clear(slout);
-  ret = parse_port_config(slout, NULL, NULL, "DNS", 0, "/foo/bar/unixdomain",
+  ret = parse_port_config(slout, NULL, "DNS", 0, "/foo/bar/unixdomain",
                           42, CL_PORT_IS_UNIXSOCKET);
   tt_int_op(ret, OP_EQ, 0);
   tt_int_op(smartlist_len(slout), OP_EQ, 1);
@@ -4082,28 +4031,28 @@ test_config_parse_port_config__ports__ports_given(void *data)
 
   // Test error when encounters an invalid Port specification
   config_port_invalid = mock_config_line("DNSPort", "");
-  ret = parse_port_config(NULL, config_port_invalid, NULL, "DNS", 0, NULL,
+  ret = parse_port_config(NULL, config_port_invalid, "DNS", 0, NULL,
                           0, 0);
   tt_int_op(ret, OP_EQ, -1);
 
   // Test error when encounters an empty unix domain specification
   config_free_lines(config_port_invalid); config_port_invalid = NULL;
   config_port_invalid = mock_config_line("DNSPort", "unix:");
-  ret = parse_port_config(NULL, config_port_invalid, NULL, "DNS", 0, NULL,
+  ret = parse_port_config(NULL, config_port_invalid, "DNS", 0, NULL,
                           0, 0);
   tt_int_op(ret, OP_EQ, -1);
 
   // Test error when encounters a unix domain specification but the listener
   // doesn't support domain sockets
   config_port_valid = mock_config_line("DNSPort", "unix:/tmp/foo/bar");
-  ret = parse_port_config(NULL, config_port_valid, NULL, "DNS",
+  ret = parse_port_config(NULL, config_port_valid, "DNS",
                           CONN_TYPE_AP_DNS_LISTENER, NULL, 0, 0);
   tt_int_op(ret, OP_EQ, -1);
 
   // Test valid unix domain
   SMARTLIST_FOREACH(slout,port_cfg_t *,pf,port_cfg_free(pf));
   smartlist_clear(slout);
-  ret = parse_port_config(slout, config_port_valid, NULL, "SOCKS",
+  ret = parse_port_config(slout, config_port_valid, "SOCKS",
                           CONN_TYPE_AP_LISTENER, NULL, 0, 0);
 #ifdef _WIN32
   tt_int_op(ret, OP_EQ, -1);
@@ -4118,16 +4067,17 @@ test_config_parse_port_config__ports__ports_given(void *data)
   tt_int_op(port_cfg->entry_cfg.dns_request, OP_EQ, 1);
   tt_int_op(port_cfg->entry_cfg.ipv4_traffic, OP_EQ, 1);
   tt_int_op(port_cfg->entry_cfg.onion_traffic, OP_EQ, 1);
-  tt_int_op(port_cfg->entry_cfg.cache_ipv4_answers, OP_EQ, 1);
+  tt_int_op(port_cfg->entry_cfg.cache_ipv4_answers, OP_EQ, 0);
   tt_int_op(port_cfg->entry_cfg.prefer_ipv6_virtaddr, OP_EQ, 1);
-#endif
+#endif /* defined(_WIN32) */
 
   // Test failure if we have no ipv4 and no ipv6 and no onion (DNS only)
   config_free_lines(config_port_invalid); config_port_invalid = NULL;
   config_port_invalid = mock_config_line("SOCKSPort",
                                          "unix:/tmp/foo/bar NoIPv4Traffic "
+                                         "NoIPv6Traffic "
                                          "NoOnionTraffic");
-  ret = parse_port_config(NULL, config_port_invalid, NULL, "SOCKS",
+  ret = parse_port_config(NULL, config_port_invalid, "SOCKS",
                           CONN_TYPE_AP_LISTENER, NULL, 0,
                           CL_PORT_TAKES_HOSTNAMES);
   tt_int_op(ret, OP_EQ, -1);
@@ -4136,7 +4086,7 @@ test_config_parse_port_config__ports__ports_given(void *data)
   config_free_lines(config_port_invalid); config_port_invalid = NULL;
   config_port_invalid = mock_config_line("DNSPort",
                                          "127.0.0.1:80 NoDNSRequest");
-  ret = parse_port_config(NULL, config_port_invalid, NULL, "DNS",
+  ret = parse_port_config(NULL, config_port_invalid, "DNS",
                           CONN_TYPE_AP_DNS_LISTENER, NULL, 0,
                           CL_PORT_TAKES_HOSTNAMES);
   tt_int_op(ret, OP_EQ, -1);
@@ -4147,8 +4097,9 @@ test_config_parse_port_config__ports__ports_given(void *data)
   SMARTLIST_FOREACH(slout,port_cfg_t *,pf,port_cfg_free(pf));
   smartlist_clear(slout);
   config_port_valid = mock_config_line("DNSPort", "127.0.0.1:80 "
+                                       "NoIPv6Traffic "
                                        "NoIPv4Traffic NoOnionTraffic");
-  ret = parse_port_config(slout, config_port_valid, NULL, "DNS",
+  ret = parse_port_config(slout, config_port_valid, "DNS",
                           CONN_TYPE_AP_DNS_LISTENER, NULL, 0,
                           CL_PORT_TAKES_HOSTNAMES);
   tt_int_op(ret, OP_EQ, 0);
@@ -4162,8 +4113,9 @@ test_config_parse_port_config__ports__ports_given(void *data)
   // Test failure if we have DNS but no ipv4 and no ipv6
   config_free_lines(config_port_invalid); config_port_invalid = NULL;
   config_port_invalid = mock_config_line("SOCKSPort",
+                                         "NoIPv6Traffic "
                                          "unix:/tmp/foo/bar NoIPv4Traffic");
-  ret = parse_port_config(NULL, config_port_invalid, NULL, "SOCKS",
+  ret = parse_port_config(NULL, config_port_invalid, "SOCKS",
                           CONN_TYPE_AP_LISTENER, NULL, 0,
                           CL_PORT_TAKES_HOSTNAMES);
   tt_int_op(ret, OP_EQ, -1);
@@ -4174,8 +4126,9 @@ test_config_parse_port_config__ports__ports_given(void *data)
   SMARTLIST_FOREACH(slout,port_cfg_t *,pf,port_cfg_free(pf));
   smartlist_clear(slout);
   config_port_valid = mock_config_line("SOCKSPort", "unix:/tmp/foo/bar "
+                                       "NoIPv6Traffic "
                                        "NoDNSRequest NoIPv4Traffic");
-  ret = parse_port_config(slout, config_port_valid, NULL, "SOCKS",
+  ret = parse_port_config(slout, config_port_valid, "SOCKS",
                           CONN_TYPE_AP_LISTENER, NULL, 0,
                           CL_PORT_TAKES_HOSTNAMES);
 #ifdef _WIN32
@@ -4188,15 +4141,16 @@ test_config_parse_port_config__ports__ports_given(void *data)
   tt_int_op(port_cfg->entry_cfg.ipv4_traffic, OP_EQ, 0);
   tt_int_op(port_cfg->entry_cfg.ipv6_traffic, OP_EQ, 0);
   tt_int_op(port_cfg->entry_cfg.onion_traffic, OP_EQ, 1);
-#endif
+#endif /* defined(_WIN32) */
 
   // Test success with quoted unix: address.
   config_free_lines(config_port_valid); config_port_valid = NULL;
   SMARTLIST_FOREACH(slout,port_cfg_t *,pf,port_cfg_free(pf));
   smartlist_clear(slout);
   config_port_valid = mock_config_line("SOCKSPort", "unix:\"/tmp/foo/ bar\" "
+                                       "NoIPv6Traffic "
                                        "NoDNSRequest NoIPv4Traffic");
-  ret = parse_port_config(slout, config_port_valid, NULL, "SOCKS",
+  ret = parse_port_config(slout, config_port_valid, "SOCKS",
                           CONN_TYPE_AP_LISTENER, NULL, 0,
                           CL_PORT_TAKES_HOSTNAMES);
 #ifdef _WIN32
@@ -4209,15 +4163,16 @@ test_config_parse_port_config__ports__ports_given(void *data)
   tt_int_op(port_cfg->entry_cfg.ipv4_traffic, OP_EQ, 0);
   tt_int_op(port_cfg->entry_cfg.ipv6_traffic, OP_EQ, 0);
   tt_int_op(port_cfg->entry_cfg.onion_traffic, OP_EQ, 1);
-#endif
+#endif /* defined(_WIN32) */
 
   // Test failure with broken quoted unix: address.
   config_free_lines(config_port_valid); config_port_valid = NULL;
   SMARTLIST_FOREACH(slout,port_cfg_t *,pf,port_cfg_free(pf));
   smartlist_clear(slout);
   config_port_valid = mock_config_line("SOCKSPort", "unix:\"/tmp/foo/ bar "
+                                       "NoIPv6Traffic "
                                        "NoDNSRequest NoIPv4Traffic");
-  ret = parse_port_config(slout, config_port_valid, NULL, "SOCKS",
+  ret = parse_port_config(slout, config_port_valid, "SOCKS",
                           CONN_TYPE_AP_LISTENER, NULL, 0,
                           CL_PORT_TAKES_HOSTNAMES);
   tt_int_op(ret, OP_EQ, -1);
@@ -4227,8 +4182,9 @@ test_config_parse_port_config__ports__ports_given(void *data)
   SMARTLIST_FOREACH(slout,port_cfg_t *,pf,port_cfg_free(pf));
   smartlist_clear(slout);
   config_port_valid = mock_config_line("SOCKSPort", "unix:\"\" "
+                                       "NoIPv6Traffic "
                                        "NoDNSRequest NoIPv4Traffic");
-  ret = parse_port_config(slout, config_port_valid, NULL, "SOCKS",
+  ret = parse_port_config(slout, config_port_valid, "SOCKS",
                           CONN_TYPE_AP_LISTENER, NULL, 0,
                           CL_PORT_TAKES_HOSTNAMES);
   tt_int_op(ret, OP_EQ, -1);
@@ -4239,7 +4195,7 @@ test_config_parse_port_config__ports__ports_given(void *data)
   smartlist_clear(slout);
   config_port_valid = mock_config_line("SOCKSPort", "unix:/tmp/foo/bar "
                                        "OnionTrafficOnly");
-  ret = parse_port_config(slout, config_port_valid, NULL, "SOCKS",
+  ret = parse_port_config(slout, config_port_valid, "SOCKS",
                           CONN_TYPE_AP_LISTENER, NULL, 0,
                           CL_PORT_TAKES_HOSTNAMES);
 #ifdef _WIN32
@@ -4252,7 +4208,7 @@ test_config_parse_port_config__ports__ports_given(void *data)
   tt_int_op(port_cfg->entry_cfg.ipv4_traffic, OP_EQ, 0);
   tt_int_op(port_cfg->entry_cfg.ipv6_traffic, OP_EQ, 0);
   tt_int_op(port_cfg->entry_cfg.onion_traffic, OP_EQ, 1);
-#endif
+#endif /* defined(_WIN32) */
 
   // Test success with no ipv4 but take ipv6
   config_free_lines(config_port_valid); config_port_valid = NULL;
@@ -4260,7 +4216,7 @@ test_config_parse_port_config__ports__ports_given(void *data)
   smartlist_clear(slout);
   config_port_valid = mock_config_line("SOCKSPort", "unix:/tmp/foo/bar "
                                        "NoIPv4Traffic IPv6Traffic");
-  ret = parse_port_config(slout, config_port_valid, NULL, "SOCKS",
+  ret = parse_port_config(slout, config_port_valid, "SOCKS",
                           CONN_TYPE_AP_LISTENER, NULL, 0,
                           CL_PORT_TAKES_HOSTNAMES);
 #ifdef _WIN32
@@ -4271,7 +4227,7 @@ test_config_parse_port_config__ports__ports_given(void *data)
   port_cfg = (port_cfg_t *)smartlist_get(slout, 0);
   tt_int_op(port_cfg->entry_cfg.ipv4_traffic, OP_EQ, 0);
   tt_int_op(port_cfg->entry_cfg.ipv6_traffic, OP_EQ, 1);
-#endif
+#endif /* defined(_WIN32) */
 
   // Test success with both ipv4 and ipv6
   config_free_lines(config_port_valid); config_port_valid = NULL;
@@ -4279,7 +4235,7 @@ test_config_parse_port_config__ports__ports_given(void *data)
   smartlist_clear(slout);
   config_port_valid = mock_config_line("SOCKSPort", "unix:/tmp/foo/bar "
                                        "IPv4Traffic IPv6Traffic");
-  ret = parse_port_config(slout, config_port_valid, NULL, "SOCKS",
+  ret = parse_port_config(slout, config_port_valid, "SOCKS",
                           CONN_TYPE_AP_LISTENER, NULL, 0,
                           CL_PORT_TAKES_HOSTNAMES);
 #ifdef _WIN32
@@ -4290,33 +4246,33 @@ test_config_parse_port_config__ports__ports_given(void *data)
   port_cfg = (port_cfg_t *)smartlist_get(slout, 0);
   tt_int_op(port_cfg->entry_cfg.ipv4_traffic, OP_EQ, 1);
   tt_int_op(port_cfg->entry_cfg.ipv6_traffic, OP_EQ, 1);
-#endif
+#endif /* defined(_WIN32) */
 
   // Test failure if we specify world writable for an IP Port
   config_free_lines(config_port_invalid); config_port_invalid = NULL;
   config_port_invalid = mock_config_line("DNSPort", "42 WorldWritable");
-  ret = parse_port_config(NULL, config_port_invalid, NULL, "DNS", 0,
+  ret = parse_port_config(NULL, config_port_invalid, "DNS", 0,
                           "127.0.0.3", 0, 0);
   tt_int_op(ret, OP_EQ, -1);
 
   // Test failure if we specify group writable for an IP Port
   config_free_lines(config_port_invalid); config_port_invalid = NULL;
   config_port_invalid = mock_config_line("DNSPort", "42 GroupWritable");
-  ret = parse_port_config(NULL, config_port_invalid, NULL, "DNS", 0,
+  ret = parse_port_config(NULL, config_port_invalid, "DNS", 0,
                           "127.0.0.3", 0, 0);
   tt_int_op(ret, OP_EQ, -1);
 
   // Test failure if we specify group writable for an IP Port
   config_free_lines(config_port_invalid); config_port_invalid = NULL;
   config_port_invalid = mock_config_line("DNSPort", "42 RelaxDirModeCheck");
-  ret = parse_port_config(NULL, config_port_invalid, NULL, "DNS", 0,
+  ret = parse_port_config(NULL, config_port_invalid, "DNS", 0,
                           "127.0.0.3", 0, 0);
   tt_int_op(ret, OP_EQ, -1);
 
   // Test success with only a port (this will fail without a default address)
   config_free_lines(config_port_valid); config_port_valid = NULL;
   config_port_valid = mock_config_line("DNSPort", "42");
-  ret = parse_port_config(NULL, config_port_valid, NULL, "DNS", 0,
+  ret = parse_port_config(NULL, config_port_valid, "DNS", 0,
                           "127.0.0.3", 0, 0);
   tt_int_op(ret, OP_EQ, 0);
 
@@ -4325,7 +4281,7 @@ test_config_parse_port_config__ports__ports_given(void *data)
   SMARTLIST_FOREACH(slout,port_cfg_t *,pf,port_cfg_free(pf));
   smartlist_clear(slout);
   config_port_valid = mock_config_line("DNSPort", "42 IsolateDestPort");
-  ret = parse_port_config(slout, config_port_valid, NULL, "DNS", 0,
+  ret = parse_port_config(slout, config_port_valid, "DNS", 0,
                           "127.0.0.3", 0, 0);
   tt_int_op(ret, OP_EQ, 0);
   tt_int_op(smartlist_len(slout), OP_EQ, 1);
@@ -4338,7 +4294,7 @@ test_config_parse_port_config__ports__ports_given(void *data)
   SMARTLIST_FOREACH(slout,port_cfg_t *,pf,port_cfg_free(pf));
   smartlist_clear(slout);
   config_port_valid = mock_config_line("DNSPort", "42 NoIsolateDestPorts");
-  ret = parse_port_config(slout, config_port_valid, NULL, "DNS", 0,
+  ret = parse_port_config(slout, config_port_valid, "DNS", 0,
                           "127.0.0.3", 0, 0);
   tt_int_op(ret, OP_EQ, 0);
   tt_int_op(smartlist_len(slout), OP_EQ, 1);
@@ -4351,7 +4307,7 @@ test_config_parse_port_config__ports__ports_given(void *data)
   SMARTLIST_FOREACH(slout,port_cfg_t *,pf,port_cfg_free(pf));
   smartlist_clear(slout);
   config_port_valid = mock_config_line("DNSPort", "42 IsolateDestAddr");
-  ret = parse_port_config(slout, config_port_valid, NULL, "DNS", 0,
+  ret = parse_port_config(slout, config_port_valid, "DNS", 0,
                           "127.0.0.3", 0, 0);
   tt_int_op(ret, OP_EQ, 0);
   tt_int_op(smartlist_len(slout), OP_EQ, 1);
@@ -4364,7 +4320,7 @@ test_config_parse_port_config__ports__ports_given(void *data)
   SMARTLIST_FOREACH(slout,port_cfg_t *,pf,port_cfg_free(pf));
   smartlist_clear(slout);
   config_port_valid = mock_config_line("DNSPort", "42 IsolateSOCKSAuth");
-  ret = parse_port_config(slout, config_port_valid, NULL, "DNS", 0,
+  ret = parse_port_config(slout, config_port_valid, "DNS", 0,
                           "127.0.0.3", 0, 0);
   tt_int_op(ret, OP_EQ, 0);
   tt_int_op(smartlist_len(slout), OP_EQ, 1);
@@ -4377,7 +4333,7 @@ test_config_parse_port_config__ports__ports_given(void *data)
   SMARTLIST_FOREACH(slout,port_cfg_t *,pf,port_cfg_free(pf));
   smartlist_clear(slout);
   config_port_valid = mock_config_line("DNSPort", "42 IsolateClientProtocol");
-  ret = parse_port_config(slout, config_port_valid, NULL, "DNS", 0,
+  ret = parse_port_config(slout, config_port_valid, "DNS", 0,
                           "127.0.0.3", 0, 0);
   tt_int_op(ret, OP_EQ, 0);
   tt_int_op(smartlist_len(slout), OP_EQ, 1);
@@ -4390,7 +4346,7 @@ test_config_parse_port_config__ports__ports_given(void *data)
   SMARTLIST_FOREACH(slout,port_cfg_t *,pf,port_cfg_free(pf));
   smartlist_clear(slout);
   config_port_valid = mock_config_line("DNSPort", "42 IsolateClientAddr");
-  ret = parse_port_config(slout, config_port_valid, NULL, "DNS", 0,
+  ret = parse_port_config(slout, config_port_valid, "DNS", 0,
                           "127.0.0.3", 0, 0);
   tt_int_op(ret, OP_EQ, 0);
   tt_int_op(smartlist_len(slout), OP_EQ, 1);
@@ -4401,7 +4357,7 @@ test_config_parse_port_config__ports__ports_given(void *data)
   // Test success with ignored unknown options
   config_free_lines(config_port_valid); config_port_valid = NULL;
   config_port_valid = mock_config_line("DNSPort", "42 ThisOptionDoesntExist");
-  ret = parse_port_config(NULL, config_port_valid, NULL, "DNS", 0,
+  ret = parse_port_config(NULL, config_port_valid, "DNS", 0,
                           "127.0.0.3", 0, 0);
   tt_int_op(ret, OP_EQ, 0);
 
@@ -4410,7 +4366,7 @@ test_config_parse_port_config__ports__ports_given(void *data)
   SMARTLIST_FOREACH(slout,port_cfg_t *,pf,port_cfg_free(pf));
   smartlist_clear(slout);
   config_port_valid = mock_config_line("DNSPort", "42 NoIsolateSOCKSAuth");
-  ret = parse_port_config(slout, config_port_valid, NULL, "DNS", 0,
+  ret = parse_port_config(slout, config_port_valid, "DNS", 0,
                           "127.0.0.3", 0, 0);
   tt_int_op(ret, OP_EQ, 0);
   tt_int_op(smartlist_len(slout), OP_EQ, 1);
@@ -4423,7 +4379,7 @@ test_config_parse_port_config__ports__ports_given(void *data)
   smartlist_clear(slout);
   config_port_valid = mock_config_line("SOCKSPort",
                                        "42 IPv6Traffic PreferIPv6");
-  ret = parse_port_config(slout, config_port_valid, NULL, "SOCKS",
+  ret = parse_port_config(slout, config_port_valid, "SOCKS",
                           CONN_TYPE_AP_LISTENER, "127.0.0.42", 0,
                           CL_PORT_TAKES_HOSTNAMES);
   tt_int_op(ret, OP_EQ, 0);
@@ -4436,7 +4392,7 @@ test_config_parse_port_config__ports__ports_given(void *data)
   SMARTLIST_FOREACH(slout,port_cfg_t *,pf,port_cfg_free(pf));
   smartlist_clear(slout);
   config_port_valid = mock_config_line("DNSPort", "42 CacheIPv4DNS");
-  ret = parse_port_config(slout, config_port_valid, NULL, "DNS", 0,
+  ret = parse_port_config(slout, config_port_valid, "DNS", 0,
                           "127.0.0.42", 0, 0);
   tt_int_op(ret, OP_EQ, 0);
   tt_int_op(smartlist_len(slout), OP_EQ, 1);
@@ -4449,12 +4405,12 @@ test_config_parse_port_config__ports__ports_given(void *data)
   SMARTLIST_FOREACH(slout,port_cfg_t *,pf,port_cfg_free(pf));
   smartlist_clear(slout);
   config_port_valid = mock_config_line("DNSPort", "42 CacheIPv6DNS");
-  ret = parse_port_config(slout, config_port_valid, NULL, "DNS", 0,
+  ret = parse_port_config(slout, config_port_valid, "DNS", 0,
                           "127.0.0.42", 0, 0);
   tt_int_op(ret, OP_EQ, 0);
   tt_int_op(smartlist_len(slout), OP_EQ, 1);
   port_cfg = (port_cfg_t *)smartlist_get(slout, 0);
-  tt_int_op(port_cfg->entry_cfg.cache_ipv4_answers, OP_EQ, 1);
+  tt_int_op(port_cfg->entry_cfg.cache_ipv4_answers, OP_EQ, 0);
   tt_int_op(port_cfg->entry_cfg.cache_ipv6_answers, OP_EQ, 1);
 
   // Test success with no cache ipv4 DNS
@@ -4462,7 +4418,7 @@ test_config_parse_port_config__ports__ports_given(void *data)
   SMARTLIST_FOREACH(slout,port_cfg_t *,pf,port_cfg_free(pf));
   smartlist_clear(slout);
   config_port_valid = mock_config_line("DNSPort", "42 NoCacheIPv4DNS");
-  ret = parse_port_config(slout, config_port_valid, NULL, "DNS", 0,
+  ret = parse_port_config(slout, config_port_valid, "DNS", 0,
                           "127.0.0.42", 0, 0);
   tt_int_op(ret, OP_EQ, 0);
   tt_int_op(smartlist_len(slout), OP_EQ, 1);
@@ -4475,7 +4431,7 @@ test_config_parse_port_config__ports__ports_given(void *data)
   SMARTLIST_FOREACH(slout,port_cfg_t *,pf,port_cfg_free(pf));
   smartlist_clear(slout);
   config_port_valid = mock_config_line("DNSPort", "42 CacheDNS");
-  ret = parse_port_config(slout, config_port_valid, NULL, "DNS", 0,
+  ret = parse_port_config(slout, config_port_valid, "DNS", 0,
                           "127.0.0.42", 0, CL_PORT_TAKES_HOSTNAMES);
   tt_int_op(ret, OP_EQ, 0);
   tt_int_op(smartlist_len(slout), OP_EQ, 1);
@@ -4488,7 +4444,7 @@ test_config_parse_port_config__ports__ports_given(void *data)
   SMARTLIST_FOREACH(slout,port_cfg_t *,pf,port_cfg_free(pf));
   smartlist_clear(slout);
   config_port_valid = mock_config_line("DNSPort", "42 UseIPv4Cache");
-  ret = parse_port_config(slout, config_port_valid, NULL, "DNS", 0,
+  ret = parse_port_config(slout, config_port_valid, "DNS", 0,
                           "127.0.0.42", 0, 0);
   tt_int_op(ret, OP_EQ, 0);
   tt_int_op(smartlist_len(slout), OP_EQ, 1);
@@ -4501,7 +4457,7 @@ test_config_parse_port_config__ports__ports_given(void *data)
   SMARTLIST_FOREACH(slout,port_cfg_t *,pf,port_cfg_free(pf));
   smartlist_clear(slout);
   config_port_valid = mock_config_line("DNSPort", "42 UseIPv6Cache");
-  ret = parse_port_config(slout, config_port_valid, NULL, "DNS", 0,
+  ret = parse_port_config(slout, config_port_valid, "DNS", 0,
                           "127.0.0.42", 0, 0);
   tt_int_op(ret, OP_EQ, 0);
   tt_int_op(smartlist_len(slout), OP_EQ, 1);
@@ -4514,7 +4470,7 @@ test_config_parse_port_config__ports__ports_given(void *data)
   SMARTLIST_FOREACH(slout,port_cfg_t *,pf,port_cfg_free(pf));
   smartlist_clear(slout);
   config_port_valid = mock_config_line("DNSPort", "42 UseDNSCache");
-  ret = parse_port_config(slout, config_port_valid, NULL, "DNS", 0,
+  ret = parse_port_config(slout, config_port_valid, "DNS", 0,
                           "127.0.0.42", 0, 0);
   tt_int_op(ret, OP_EQ, 0);
   tt_int_op(smartlist_len(slout), OP_EQ, 1);
@@ -4527,7 +4483,7 @@ test_config_parse_port_config__ports__ports_given(void *data)
   SMARTLIST_FOREACH(slout,port_cfg_t *,pf,port_cfg_free(pf));
   smartlist_clear(slout);
   config_port_valid = mock_config_line("DNSPort", "42 NoPreferIPv6Automap");
-  ret = parse_port_config(slout, config_port_valid, NULL, "DNS", 0,
+  ret = parse_port_config(slout, config_port_valid, "DNS", 0,
                           "127.0.0.42", 0, 0);
   tt_int_op(ret, OP_EQ, 0);
   tt_int_op(smartlist_len(slout), OP_EQ, 1);
@@ -4539,7 +4495,7 @@ test_config_parse_port_config__ports__ports_given(void *data)
   SMARTLIST_FOREACH(slout,port_cfg_t *,pf,port_cfg_free(pf));
   smartlist_clear(slout);
   config_port_valid = mock_config_line("DNSPort", "42 PreferSOCKSNoAuth");
-  ret = parse_port_config(slout, config_port_valid, NULL, "DNS", 0,
+  ret = parse_port_config(slout, config_port_valid, "DNS", 0,
                           "127.0.0.42", 0, 0);
   tt_int_op(ret, OP_EQ, 0);
   tt_int_op(smartlist_len(slout), OP_EQ, 1);
@@ -4554,14 +4510,14 @@ test_config_parse_port_config__ports__ports_given(void *data)
   config_port_invalid = mock_config_line("DNSPort", "0");
   config_port_valid = mock_config_line("DNSPort", "42");
   config_port_invalid->next = config_port_valid;
-  ret = parse_port_config(slout, config_port_invalid, NULL, "DNS", 0,
+  ret = parse_port_config(slout, config_port_invalid, "DNS", 0,
                           "127.0.0.42", 0, 0);
   tt_int_op(ret, OP_EQ, -1);
 
   // Test success with warn non-local control
   SMARTLIST_FOREACH(slout,port_cfg_t *,pf,port_cfg_free(pf));
   smartlist_clear(slout);
-  ret = parse_port_config(slout, config_port_valid, NULL, "Control",
+  ret = parse_port_config(slout, config_port_valid, "Control",
                           CONN_TYPE_CONTROL_LISTENER, "127.0.0.42", 0,
                           CL_PORT_WARN_NONLOCAL);
   tt_int_op(ret, OP_EQ, 0);
@@ -4569,7 +4525,7 @@ test_config_parse_port_config__ports__ports_given(void *data)
   // Test success with warn non-local listener
   SMARTLIST_FOREACH(slout,port_cfg_t *,pf,port_cfg_free(pf));
   smartlist_clear(slout);
-  ret = parse_port_config(slout, config_port_valid, NULL, "ExtOR",
+  ret = parse_port_config(slout, config_port_valid, "ExtOR",
                           CONN_TYPE_EXT_OR_LISTENER, "127.0.0.42", 0,
                           CL_PORT_WARN_NONLOCAL);
   tt_int_op(ret, OP_EQ, 0);
@@ -4577,12 +4533,12 @@ test_config_parse_port_config__ports__ports_given(void *data)
   // Test success with warn non-local other
   SMARTLIST_FOREACH(slout,port_cfg_t *,pf,port_cfg_free(pf));
   smartlist_clear(slout);
-  ret = parse_port_config(slout, config_port_valid, NULL, "DNS", 0,
+  ret = parse_port_config(slout, config_port_valid, "DNS", 0,
                           "127.0.0.42", 0, CL_PORT_WARN_NONLOCAL);
   tt_int_op(ret, OP_EQ, 0);
 
   // Test success with warn non-local other without out
-  ret = parse_port_config(NULL, config_port_valid, NULL, "DNS", 0,
+  ret = parse_port_config(NULL, config_port_valid, "DNS", 0,
                           "127.0.0.42", 0, CL_PORT_WARN_NONLOCAL);
   tt_int_op(ret, OP_EQ, 0);
 
@@ -4593,7 +4549,7 @@ test_config_parse_port_config__ports__ports_given(void *data)
   smartlist_clear(slout);
   config_port_valid = mock_config_line("DNSPort", "42 IPv4Traffic "
                                        "IPv6Traffic");
-  ret = parse_port_config(slout, config_port_valid, NULL, "DNS", 0,
+  ret = parse_port_config(slout, config_port_valid, "DNS", 0,
                           "127.0.0.44", 0,
                           CL_PORT_TAKES_HOSTNAMES |
                           CL_PORT_NO_STREAM_OPTIONS);
@@ -4601,14 +4557,14 @@ test_config_parse_port_config__ports__ports_given(void *data)
   tt_int_op(smartlist_len(slout), OP_EQ, 1);
   port_cfg = (port_cfg_t *)smartlist_get(slout, 0);
   tt_int_op(port_cfg->entry_cfg.ipv4_traffic, OP_EQ, 1);
-  tt_int_op(port_cfg->entry_cfg.ipv6_traffic, OP_EQ, 0);
+  tt_int_op(port_cfg->entry_cfg.ipv6_traffic, OP_EQ, 1);
 
   // Test failure for a SessionGroup argument with invalid value
   config_free_lines(config_port_invalid); config_port_invalid = NULL;
   SMARTLIST_FOREACH(slout,port_cfg_t *,pf,port_cfg_free(pf));
   smartlist_clear(slout);
   config_port_invalid = mock_config_line("DNSPort", "42 SessionGroup=invalid");
-  ret = parse_port_config(slout, config_port_invalid, NULL, "DNS", 0,
+  ret = parse_port_config(slout, config_port_invalid, "DNS", 0,
                           "127.0.0.44", 0, CL_PORT_NO_STREAM_OPTIONS);
   tt_int_op(ret, OP_EQ, -1);
 
@@ -4620,7 +4576,7 @@ test_config_parse_port_config__ports__ports_given(void *data)
   SMARTLIST_FOREACH(slout,port_cfg_t *,pf,port_cfg_free(pf));
   smartlist_clear(slout);
   config_port_invalid = mock_config_line("DNSPort", "42 SessionGroup=123");
-  ret = parse_port_config(slout, config_port_invalid, NULL, "DNS", 0,
+  ret = parse_port_config(slout, config_port_invalid, "DNS", 0,
                           "127.0.0.44", 0, 0);
   tt_int_op(ret, OP_EQ, -1);
 
@@ -4630,7 +4586,7 @@ test_config_parse_port_config__ports__ports_given(void *data)
   smartlist_clear(slout);
   config_port_invalid = mock_config_line("DNSPort", "42 SessionGroup=123 "
                                          "SessionGroup=321");
-  ret = parse_port_config(slout, config_port_invalid, NULL, "DNS", 0,
+  ret = parse_port_config(slout, config_port_invalid, "DNS", 0,
                           "127.0.0.44", 0, CL_PORT_NO_STREAM_OPTIONS);
   tt_int_op(ret, OP_EQ, -1);
 
@@ -4639,7 +4595,7 @@ test_config_parse_port_config__ports__ports_given(void *data)
   SMARTLIST_FOREACH(slout,port_cfg_t *,pf,port_cfg_free(pf));
   smartlist_clear(slout);
   config_port_valid = mock_config_line("DNSPort", "42 SessionGroup=1111122");
-  ret = parse_port_config(slout, config_port_valid, NULL, "DNS", 0,
+  ret = parse_port_config(slout, config_port_valid, "DNS", 0,
                           "127.0.0.44", 0, CL_PORT_NO_STREAM_OPTIONS);
   tt_int_op(ret, OP_EQ, 0);
   tt_int_op(smartlist_len(slout), OP_EQ, 1);
@@ -4651,7 +4607,7 @@ test_config_parse_port_config__ports__ports_given(void *data)
   SMARTLIST_FOREACH(slout,port_cfg_t *,pf,port_cfg_free(pf));
   smartlist_clear(slout);
   config_port_valid = mock_config_line("DNSPort", "0");
-  ret = parse_port_config(slout, config_port_valid, NULL, "DNS", 0,
+  ret = parse_port_config(slout, config_port_valid, "DNS", 0,
                           "127.0.0.45", 0, CL_PORT_IS_UNIXSOCKET);
   tt_int_op(ret, OP_EQ, 0);
   tt_int_op(smartlist_len(slout), OP_EQ, 0);
@@ -4661,7 +4617,7 @@ test_config_parse_port_config__ports__ports_given(void *data)
   SMARTLIST_FOREACH(slout,port_cfg_t *,pf,port_cfg_free(pf));
   smartlist_clear(slout);
   config_port_valid = mock_config_line("DNSPort", "something");
-  ret = parse_port_config(slout, config_port_valid, NULL, "DNS", 0,
+  ret = parse_port_config(slout, config_port_valid, "DNS", 0,
                           "127.0.0.45", 0, CL_PORT_IS_UNIXSOCKET);
   tt_int_op(ret, OP_EQ, 0);
   tt_int_op(smartlist_len(slout), OP_EQ, 1);
@@ -4674,7 +4630,21 @@ test_config_parse_port_config__ports__ports_given(void *data)
   SMARTLIST_FOREACH(slout,port_cfg_t *,pf,port_cfg_free(pf));
   smartlist_clear(slout);
   config_port_valid = mock_config_line("DNSPort", "auto");
-  ret = parse_port_config(slout, config_port_valid, NULL, "DNS", 0,
+  ret = parse_port_config(slout, config_port_valid, "DNS", 0,
+                          "127.0.0.46", 0, 0);
+  tt_int_op(ret, OP_EQ, 0);
+  tt_int_op(smartlist_len(slout), OP_EQ, 1);
+  port_cfg = (port_cfg_t *)smartlist_get(slout, 0);
+  tt_int_op(port_cfg->port, OP_EQ, CFG_AUTO_PORT);
+  tor_addr_parse(&addr, "127.0.0.46");
+  tt_assert(tor_addr_eq(&port_cfg->addr, &addr))
+
+  // Test success with a port of auto in mixed case
+  config_free_lines(config_port_valid); config_port_valid = NULL;
+  SMARTLIST_FOREACH(slout,port_cfg_t *,pf,port_cfg_free(pf));
+  smartlist_clear(slout);
+  config_port_valid = mock_config_line("DNSPort", "AuTo");
+  ret = parse_port_config(slout, config_port_valid, "DNS", 0,
                           "127.0.0.46", 0, 0);
   tt_int_op(ret, OP_EQ, 0);
   tt_int_op(smartlist_len(slout), OP_EQ, 1);
@@ -4688,7 +4658,7 @@ test_config_parse_port_config__ports__ports_given(void *data)
   SMARTLIST_FOREACH(slout,port_cfg_t *,pf,port_cfg_free(pf));
   smartlist_clear(slout);
   config_port_valid = mock_config_line("DNSPort", "127.0.0.122:auto");
-  ret = parse_port_config(slout, config_port_valid, NULL, "DNS", 0,
+  ret = parse_port_config(slout, config_port_valid, "DNS", 0,
                           "127.0.0.46", 0, 0);
   tt_int_op(ret, OP_EQ, 0);
   tt_int_op(smartlist_len(slout), OP_EQ, 1);
@@ -4700,8 +4670,10 @@ test_config_parse_port_config__ports__ports_given(void *data)
   // Test failure when asked to parse an invalid address followed by auto
   config_free_lines(config_port_invalid); config_port_invalid = NULL;
   config_port_invalid = mock_config_line("DNSPort", "invalidstuff!!:auto");
-  ret = parse_port_config(NULL, config_port_invalid, NULL, "DNS", 0,
+  MOCK(tor_addr_lookup, mock_tor_addr_lookup__fail_on_bad_addrs);
+  ret = parse_port_config(NULL, config_port_invalid, "DNS", 0,
                           "127.0.0.46", 0, 0);
+  UNMOCK(tor_addr_lookup);
   tt_int_op(ret, OP_EQ, -1);
 
   // Test success with parsing both an address and a real port
@@ -4709,7 +4681,7 @@ test_config_parse_port_config__ports__ports_given(void *data)
   SMARTLIST_FOREACH(slout,port_cfg_t *,pf,port_cfg_free(pf));
   smartlist_clear(slout);
   config_port_valid = mock_config_line("DNSPort", "127.0.0.123:656");
-  ret = parse_port_config(slout, config_port_valid, NULL, "DNS", 0,
+  ret = parse_port_config(slout, config_port_valid, "DNS", 0,
                           "127.0.0.46", 0, 0);
   tt_int_op(ret, OP_EQ, 0);
   tt_int_op(smartlist_len(slout), OP_EQ, 1);
@@ -4723,7 +4695,7 @@ test_config_parse_port_config__ports__ports_given(void *data)
   SMARTLIST_FOREACH(slout,port_cfg_t *,pf,port_cfg_free(pf));
   smartlist_clear(slout);
   config_port_invalid = mock_config_line("DNSPort", "something wrong");
-  ret = parse_port_config(slout, config_port_invalid, NULL, "DNS", 0,
+  ret = parse_port_config(slout, config_port_invalid, "DNS", 0,
                           "127.0.0.46", 0, 0);
   tt_int_op(ret, OP_EQ, -1);
 
@@ -4732,7 +4704,7 @@ test_config_parse_port_config__ports__ports_given(void *data)
   SMARTLIST_FOREACH(slout,port_cfg_t *,pf,port_cfg_free(pf));
   smartlist_clear(slout);
   config_port_invalid = mock_config_line("DNSPort", "127.0.1.0:123:auto");
-  ret = parse_port_config(slout, config_port_invalid, NULL, "DNS", 0,
+  ret = parse_port_config(slout, config_port_invalid, "DNS", 0,
                           "127.0.0.46", 0, 0);
   tt_int_op(ret, OP_EQ, -1);
 
@@ -4742,7 +4714,7 @@ test_config_parse_port_config__ports__ports_given(void *data)
   SMARTLIST_FOREACH(slout,port_cfg_t *,pf,port_cfg_free(pf));
   smartlist_clear(slout);
   config_port_valid = mock_config_line("SOCKSPort", "unix:/tmp/somewhere");
-  ret = parse_port_config(slout, config_port_valid, NULL, "SOCKS",
+  ret = parse_port_config(slout, config_port_valid, "SOCKS",
                           CONN_TYPE_AP_LISTENER, "127.0.0.46", 0,
                           CL_PORT_DFLT_GROUP_WRITABLE);
 #ifdef _WIN32
@@ -4752,7 +4724,7 @@ test_config_parse_port_config__ports__ports_given(void *data)
   tt_int_op(smartlist_len(slout), OP_EQ, 1);
   port_cfg = (port_cfg_t *)smartlist_get(slout, 0);
   tt_int_op(port_cfg->is_group_writable, OP_EQ, 1);
-#endif
+#endif /* defined(_WIN32) */
 
  done:
   if (slout)
@@ -4777,7 +4749,7 @@ test_config_parse_port_config__ports__server_options(void *data)
   config_free_lines(config_port_valid); config_port_valid = NULL;
   config_port_valid = mock_config_line("DNSPort",
                                        "127.0.0.124:656 NoAdvertise");
-  ret = parse_port_config(slout, config_port_valid, NULL, "DNS", 0, NULL, 0,
+  ret = parse_port_config(slout, config_port_valid, "DNS", 0, NULL, 0,
                           CL_PORT_SERVER_OPTIONS);
   tt_int_op(ret, OP_EQ, 0);
   tt_int_op(smartlist_len(slout), OP_EQ, 1);
@@ -4790,7 +4762,7 @@ test_config_parse_port_config__ports__server_options(void *data)
   SMARTLIST_FOREACH(slout,port_cfg_t *,pf,port_cfg_free(pf));
   smartlist_clear(slout);
   config_port_valid = mock_config_line("DNSPort", "127.0.0.124:656 NoListen");
-  ret = parse_port_config(slout, config_port_valid, NULL, "DNS", 0, NULL, 0,
+  ret = parse_port_config(slout, config_port_valid, "DNS", 0, NULL, 0,
                           CL_PORT_SERVER_OPTIONS);
   tt_int_op(ret, OP_EQ, 0);
   tt_int_op(smartlist_len(slout), OP_EQ, 1);
@@ -4804,7 +4776,7 @@ test_config_parse_port_config__ports__server_options(void *data)
   smartlist_clear(slout);
   config_port_invalid = mock_config_line("DNSPort", "127.0.0.124:656 NoListen "
                                          "NoAdvertise");
-  ret = parse_port_config(slout, config_port_invalid, NULL, "DNS", 0, NULL,
+  ret = parse_port_config(slout, config_port_invalid, "DNS", 0, NULL,
                           0, CL_PORT_SERVER_OPTIONS);
   tt_int_op(ret, OP_EQ, -1);
 
@@ -4813,7 +4785,7 @@ test_config_parse_port_config__ports__server_options(void *data)
   SMARTLIST_FOREACH(slout,port_cfg_t *,pf,port_cfg_free(pf));
   smartlist_clear(slout);
   config_port_valid = mock_config_line("DNSPort", "127.0.0.124:656 IPv4Only");
-  ret = parse_port_config(slout, config_port_valid, NULL, "DNS", 0, NULL, 0,
+  ret = parse_port_config(slout, config_port_valid, "DNS", 0, NULL, 0,
                           CL_PORT_SERVER_OPTIONS);
   tt_int_op(ret, OP_EQ, 0);
   tt_int_op(smartlist_len(slout), OP_EQ, 1);
@@ -4826,7 +4798,7 @@ test_config_parse_port_config__ports__server_options(void *data)
   SMARTLIST_FOREACH(slout,port_cfg_t *,pf,port_cfg_free(pf));
   smartlist_clear(slout);
   config_port_valid = mock_config_line("DNSPort", "[::1]:656 IPv6Only");
-  ret = parse_port_config(slout, config_port_valid, NULL, "DNS", 0, NULL, 0,
+  ret = parse_port_config(slout, config_port_valid, "DNS", 0, NULL, 0,
                           CL_PORT_SERVER_OPTIONS);
   tt_int_op(ret, OP_EQ, 0);
   tt_int_op(smartlist_len(slout), OP_EQ, 1);
@@ -4840,7 +4812,7 @@ test_config_parse_port_config__ports__server_options(void *data)
   smartlist_clear(slout);
   config_port_invalid = mock_config_line("DNSPort", "127.0.0.124:656 IPv6Only "
                                          "IPv4Only");
-  ret = parse_port_config(slout, config_port_invalid, NULL, "DNS", 0, NULL,
+  ret = parse_port_config(slout, config_port_invalid, "DNS", 0, NULL,
                           0, CL_PORT_SERVER_OPTIONS);
   tt_int_op(ret, OP_EQ, -1);
 
@@ -4849,7 +4821,7 @@ test_config_parse_port_config__ports__server_options(void *data)
   SMARTLIST_FOREACH(slout,port_cfg_t *,pf,port_cfg_free(pf));
   smartlist_clear(slout);
   config_port_valid = mock_config_line("DNSPort", "127.0.0.124:656 unknown");
-  ret = parse_port_config(slout, config_port_valid, NULL, "DNS", 0, NULL, 0,
+  ret = parse_port_config(slout, config_port_valid, "DNS", 0, NULL, 0,
                           CL_PORT_SERVER_OPTIONS);
   tt_int_op(ret, OP_EQ, 0);
   tt_int_op(smartlist_len(slout), OP_EQ, 1);
@@ -4860,7 +4832,7 @@ test_config_parse_port_config__ports__server_options(void *data)
   smartlist_clear(slout);
   config_port_invalid = mock_config_line("DNSPort",
                                          "127.0.0.124:656 IPv6Only");
-  ret = parse_port_config(slout, config_port_invalid, NULL, "DNS", 0, NULL,
+  ret = parse_port_config(slout, config_port_invalid, "DNS", 0, NULL,
                           0, CL_PORT_SERVER_OPTIONS);
   tt_int_op(ret, OP_EQ, -1);
 
@@ -4869,7 +4841,7 @@ test_config_parse_port_config__ports__server_options(void *data)
   SMARTLIST_FOREACH(slout,port_cfg_t *,pf,port_cfg_free(pf));
   smartlist_clear(slout);
   config_port_invalid = mock_config_line("DNSPort", "[::1]:656 IPv4Only");
-  ret = parse_port_config(slout, config_port_invalid, NULL, "DNS", 0, NULL,
+  ret = parse_port_config(slout, config_port_invalid, "DNS", 0, NULL,
                           0, CL_PORT_SERVER_OPTIONS);
   tt_int_op(ret, OP_EQ, -1);
 
@@ -4878,7 +4850,7 @@ test_config_parse_port_config__ports__server_options(void *data)
   SMARTLIST_FOREACH(slout,port_cfg_t *,pf,port_cfg_free(pf));
   smartlist_clear(slout);
   config_port_invalid = mock_config_line("ORPort", "unix:\"\"");
-  ret = parse_port_config(slout, config_port_invalid, NULL, "ORPort", 0, NULL,
+  ret = parse_port_config(slout, config_port_invalid, "ORPort", 0, NULL,
                           0, CL_PORT_SERVER_OPTIONS);
   tt_int_op(ret, OP_EQ, -1);
 
@@ -4890,6 +4862,957 @@ test_config_parse_port_config__ports__server_options(void *data)
   config_free_lines(config_port_valid); config_port_valid = NULL;
 }
 
+static void
+test_config_parse_log_severity(void *data)
+{
+  int ret;
+  const char *severity_log_lines[] = {
+    "debug file /tmp/debug.log",
+    "debug\tfile /tmp/debug.log",
+    "[handshake]debug [~net,~mm]info notice stdout",
+    "[handshake]debug\t[~net,~mm]info\tnotice\tstdout",
+    NULL
+  };
+  int i;
+  log_severity_list_t *severity;
+
+  (void) data;
+
+  severity = tor_malloc(sizeof(log_severity_list_t));
+  for (i = 0; severity_log_lines[i]; i++) {
+    memset(severity, 0, sizeof(log_severity_list_t));
+    ret = parse_log_severity_config(&severity_log_lines[i], severity);
+    tt_int_op(ret, OP_EQ, 0);
+  }
+
+ done:
+  tor_free(severity);
+}
+
+static void
+test_config_include_limit(void *data)
+{
+  (void)data;
+
+  config_line_t *result = NULL;
+  char *torrc_path = NULL;
+  char *dir = tor_strdup(get_fname("test_include_limit"));
+  tt_ptr_op(dir, OP_NE, NULL);
+
+#ifdef _WIN32
+  tt_int_op(mkdir(dir), OP_EQ, 0);
+#else
+  tt_int_op(mkdir(dir, 0700), OP_EQ, 0);
+#endif
+
+  tor_asprintf(&torrc_path, "%s"PATH_SEPARATOR"torrc", dir);
+  char torrc_contents[1000];
+  tor_snprintf(torrc_contents, sizeof(torrc_contents), "%%include %s",
+               torrc_path);
+  tt_int_op(write_str_to_file(torrc_path, torrc_contents, 0), OP_EQ, 0);
+
+  tt_int_op(config_get_lines_include(torrc_contents, &result, 0, NULL, NULL),
+            OP_EQ, -1);
+
+ done:
+  config_free_lines(result);
+  tor_free(torrc_path);
+  tor_free(dir);
+}
+
+static void
+test_config_include_does_not_exist(void *data)
+{
+  (void)data;
+
+  config_line_t *result = NULL;
+  char *dir = tor_strdup(get_fname("test_include_does_not_exist"));
+  char *missing_path = NULL;
+  tt_ptr_op(dir, OP_NE, NULL);
+
+#ifdef _WIN32
+  tt_int_op(mkdir(dir), OP_EQ, 0);
+#else
+  tt_int_op(mkdir(dir, 0700), OP_EQ, 0);
+#endif
+
+  tor_asprintf(&missing_path, "%s"PATH_SEPARATOR"missing", dir);
+  char torrc_contents[1000];
+  tor_snprintf(torrc_contents, sizeof(torrc_contents), "%%include %s",
+               missing_path);
+
+  tt_int_op(config_get_lines_include(torrc_contents, &result, 0, NULL, NULL),
+            OP_EQ, -1);
+
+ done:
+  config_free_lines(result);
+  tor_free(dir);
+  tor_free(missing_path);
+}
+
+static void
+test_config_include_error_in_included_file(void *data)
+{
+  (void)data;
+  config_line_t *result = NULL;
+
+  char *dir = tor_strdup(get_fname("test_error_in_included_file"));
+  char *invalid_path = NULL;
+  tt_ptr_op(dir, OP_NE, NULL);
+
+#ifdef _WIN32
+  tt_int_op(mkdir(dir), OP_EQ, 0);
+#else
+  tt_int_op(mkdir(dir, 0700), OP_EQ, 0);
+#endif
+
+  tor_asprintf(&invalid_path, "%s"PATH_SEPARATOR"invalid", dir);
+  tt_int_op(write_str_to_file(invalid_path, "unclosed \"", 0), OP_EQ, 0);
+
+  char torrc_contents[1000];
+  tor_snprintf(torrc_contents, sizeof(torrc_contents), "%%include %s",
+               invalid_path);
+
+  tt_int_op(config_get_lines_include(torrc_contents, &result, 0, NULL, NULL),
+            OP_EQ, -1);
+
+ done:
+  config_free_lines(result);
+  tor_free(dir);
+  tor_free(invalid_path);
+}
+
+static void
+test_config_include_empty_file_folder(void *data)
+{
+  (void)data;
+  config_line_t *result = NULL;
+
+  char *folder_path = NULL;
+  char *file_path = NULL;
+  char *dir = tor_strdup(get_fname("test_include_empty_file_folder"));
+  tt_ptr_op(dir, OP_NE, NULL);
+
+#ifdef _WIN32
+  tt_int_op(mkdir(dir), OP_EQ, 0);
+#else
+  tt_int_op(mkdir(dir, 0700), OP_EQ, 0);
+#endif
+
+  tor_asprintf(&folder_path, "%s"PATH_SEPARATOR"empty_dir", dir);
+#ifdef _WIN32
+  tt_int_op(mkdir(folder_path), OP_EQ, 0);
+#else
+  tt_int_op(mkdir(folder_path, 0700), OP_EQ, 0);
+#endif
+  tor_asprintf(&file_path, "%s"PATH_SEPARATOR"empty_file", dir);
+  tt_int_op(write_str_to_file(file_path, "", 0), OP_EQ, 0);
+
+  char torrc_contents[1000];
+  tor_snprintf(torrc_contents, sizeof(torrc_contents),
+               "%%include %s\n"
+               "%%include %s\n",
+               folder_path, file_path);
+
+  int include_used;
+  tt_int_op(config_get_lines_include(torrc_contents, &result, 0,&include_used,
+            NULL), OP_EQ, 0);
+  tt_ptr_op(result, OP_EQ, NULL);
+  tt_int_op(include_used, OP_EQ, 1);
+
+ done:
+  config_free_lines(result);
+  tor_free(folder_path);
+  tor_free(file_path);
+  tor_free(dir);
+}
+
+#ifndef _WIN32
+static void
+test_config_include_no_permission(void *data)
+{
+  (void)data;
+  config_line_t *result = NULL;
+
+  char *folder_path = NULL;
+  char *dir = NULL;
+  if (geteuid() == 0)
+    tt_skip();
+
+  dir = tor_strdup(get_fname("test_include_forbidden_folder"));
+  tt_ptr_op(dir, OP_NE, NULL);
+
+  tt_int_op(mkdir(dir, 0700), OP_EQ, 0);
+
+  tor_asprintf(&folder_path, "%s"PATH_SEPARATOR"forbidden_dir", dir);
+  tt_int_op(mkdir(folder_path, 0100), OP_EQ, 0);
+
+  char torrc_contents[1000];
+  tor_snprintf(torrc_contents, sizeof(torrc_contents),
+               "%%include %s\n",
+               folder_path);
+
+  int include_used;
+  tt_int_op(config_get_lines_include(torrc_contents, &result, 0,
+                                     &include_used, NULL),
+            OP_EQ, -1);
+  tt_ptr_op(result, OP_EQ, NULL);
+
+ done:
+  config_free_lines(result);
+  tor_free(folder_path);
+  if (dir)
+    chmod(dir, 0700);
+  tor_free(dir);
+}
+#endif
+
+static void
+test_config_include_recursion_before_after(void *data)
+{
+  (void)data;
+
+  config_line_t *result = NULL;
+  char *torrc_path = NULL;
+  char *dir = tor_strdup(get_fname("test_include_recursion_before_after"));
+  tt_ptr_op(dir, OP_NE, NULL);
+
+#ifdef _WIN32
+  tt_int_op(mkdir(dir), OP_EQ, 0);
+#else
+  tt_int_op(mkdir(dir, 0700), OP_EQ, 0);
+#endif
+
+  tor_asprintf(&torrc_path, "%s"PATH_SEPARATOR"torrc", dir);
+
+  char file_contents[1000];
+  const int limit = MAX_INCLUDE_RECURSION_LEVEL;
+  int i;
+  // Loop backwards so file_contents has the contents of the first file by the
+  // end of the loop
+  for (i = limit; i > 0; i--) {
+    if (i < limit) {
+      tor_snprintf(file_contents, sizeof(file_contents),
+                   "Test %d\n"
+                   "%%include %s%d\n"
+                   "Test %d\n",
+                   i, torrc_path, i + 1, 2 * limit - i);
+    } else {
+      tor_snprintf(file_contents, sizeof(file_contents), "Test %d\n", i);
+    }
+
+    if (i > 1) {
+      char *file_path = NULL;
+      tor_asprintf(&file_path, "%s%d", torrc_path, i);
+      tt_int_op(write_str_to_file(file_path, file_contents, 0), OP_EQ, 0);
+      tor_free(file_path);
+    }
+  }
+
+  int include_used;
+  tt_int_op(config_get_lines_include(file_contents, &result, 0, &include_used,
+            NULL), OP_EQ, 0);
+  tt_ptr_op(result, OP_NE, NULL);
+  tt_int_op(include_used, OP_EQ, 1);
+
+  int len = 0;
+  config_line_t *next;
+  for (next = result; next != NULL; next = next->next) {
+    char expected[10];
+    tor_snprintf(expected, sizeof(expected), "%d", len + 1);
+    tt_str_op(next->key, OP_EQ, "Test");
+    tt_str_op(next->value, OP_EQ, expected);
+    len++;
+  }
+  tt_int_op(len, OP_EQ, 2 * limit - 1);
+
+ done:
+  config_free_lines(result);
+  tor_free(dir);
+  tor_free(torrc_path);
+}
+
+static void
+test_config_include_recursion_after_only(void *data)
+{
+  (void)data;
+
+  config_line_t *result = NULL;
+  char *torrc_path = NULL;
+  char *dir = tor_strdup(get_fname("test_include_recursion_after_only"));
+  tt_ptr_op(dir, OP_NE, NULL);
+
+#ifdef _WIN32
+  tt_int_op(mkdir(dir), OP_EQ, 0);
+#else
+  tt_int_op(mkdir(dir, 0700), OP_EQ, 0);
+#endif
+
+  tor_asprintf(&torrc_path, "%s"PATH_SEPARATOR"torrc", dir);
+
+  char file_contents[1000];
+  const int limit = MAX_INCLUDE_RECURSION_LEVEL;
+  int i;
+  // Loop backwards so file_contents has the contents of the first file by the
+  // end of the loop
+  for (i = limit; i > 0; i--) {
+    int n = (i - limit - 1) * -1;
+    if (i < limit) {
+      tor_snprintf(file_contents, sizeof(file_contents),
+                   "%%include %s%d\n"
+                   "Test %d\n",
+                   torrc_path, i + 1, n);
+    } else {
+      tor_snprintf(file_contents, sizeof(file_contents), "Test %d\n", n);
+    }
+
+    if (i > 1) {
+      char *file_path = NULL;
+      tor_asprintf(&file_path, "%s%d", torrc_path, i);
+      tt_int_op(write_str_to_file(file_path, file_contents, 0), OP_EQ, 0);
+      tor_free(file_path);
+    }
+  }
+
+  int include_used;
+  tt_int_op(config_get_lines_include(file_contents, &result, 0, &include_used,
+            NULL), OP_EQ, 0);
+  tt_ptr_op(result, OP_NE, NULL);
+  tt_int_op(include_used, OP_EQ, 1);
+
+  int len = 0;
+  config_line_t *next;
+  for (next = result; next != NULL; next = next->next) {
+    char expected[10];
+    tor_snprintf(expected, sizeof(expected), "%d", len + 1);
+    tt_str_op(next->key, OP_EQ, "Test");
+    tt_str_op(next->value, OP_EQ, expected);
+    len++;
+  }
+  tt_int_op(len, OP_EQ, limit);
+
+ done:
+  config_free_lines(result);
+  tor_free(dir);
+  tor_free(torrc_path);
+}
+
+static void
+test_config_include_folder_order(void *data)
+{
+  (void)data;
+
+  config_line_t *result = NULL;
+  char *torrcd = NULL;
+  char *path = NULL;
+  char *path2 = NULL;
+  char *dir = tor_strdup(get_fname("test_include_folder_order"));
+  tt_ptr_op(dir, OP_NE, NULL);
+
+#ifdef _WIN32
+  tt_int_op(mkdir(dir), OP_EQ, 0);
+#else
+  tt_int_op(mkdir(dir, 0700), OP_EQ, 0);
+#endif
+
+  tor_asprintf(&torrcd, "%s"PATH_SEPARATOR"%s", dir, "torrc.d");
+
+#ifdef _WIN32
+  tt_int_op(mkdir(torrcd), OP_EQ, 0);
+#else
+  tt_int_op(mkdir(torrcd, 0700), OP_EQ, 0);
+#endif
+
+  // test that files in subfolders are ignored
+  tor_asprintf(&path, "%s"PATH_SEPARATOR"%s", torrcd, "subfolder");
+
+#ifdef _WIN32
+  tt_int_op(mkdir(path), OP_EQ, 0);
+#else
+  tt_int_op(mkdir(path, 0700), OP_EQ, 0);
+#endif
+
+  tor_asprintf(&path2, "%s"PATH_SEPARATOR"%s", path, "01_ignore");
+  tt_int_op(write_str_to_file(path2, "ShouldNotSee 1\n", 0), OP_EQ, 0);
+  tor_free(path);
+
+  // test that files starting with . are ignored
+  tor_asprintf(&path, "%s"PATH_SEPARATOR"%s", torrcd, ".dot");
+  tt_int_op(write_str_to_file(path, "ShouldNotSee 2\n", 0), OP_EQ, 0);
+  tor_free(path);
+
+  // test file order
+  tor_asprintf(&path, "%s"PATH_SEPARATOR"%s", torrcd, "01_1st");
+  tt_int_op(write_str_to_file(path, "Test 1\n", 0), OP_EQ, 0);
+  tor_free(path);
+
+  tor_asprintf(&path, "%s"PATH_SEPARATOR"%s", torrcd, "02_2nd");
+  tt_int_op(write_str_to_file(path, "Test 2\n", 0), OP_EQ, 0);
+  tor_free(path);
+
+  tor_asprintf(&path, "%s"PATH_SEPARATOR"%s", torrcd, "aa_3rd");
+  tt_int_op(write_str_to_file(path, "Test 3\n", 0), OP_EQ, 0);
+  tor_free(path);
+
+  tor_asprintf(&path, "%s"PATH_SEPARATOR"%s", torrcd, "ab_4th");
+  tt_int_op(write_str_to_file(path, "Test 4\n", 0), OP_EQ, 0);
+  tor_free(path);
+
+  char torrc_contents[1000];
+  tor_snprintf(torrc_contents, sizeof(torrc_contents),
+               "%%include %s\n",
+               torrcd);
+
+  int include_used;
+  tt_int_op(config_get_lines_include(torrc_contents, &result, 0, &include_used,
+            NULL), OP_EQ, 0);
+  tt_ptr_op(result, OP_NE, NULL);
+  tt_int_op(include_used, OP_EQ, 1);
+
+  int len = 0;
+  config_line_t *next;
+  for (next = result; next != NULL; next = next->next) {
+    char expected[10];
+    tor_snprintf(expected, sizeof(expected), "%d", len + 1);
+    tt_str_op(next->key, OP_EQ, "Test");
+    tt_str_op(next->value, OP_EQ, expected);
+    len++;
+  }
+  tt_int_op(len, OP_EQ, 4);
+
+ done:
+  config_free_lines(result);
+  tor_free(torrcd);
+  tor_free(path);
+  tor_free(path2);
+  tor_free(dir);
+}
+
+static void
+test_config_include_path_syntax(void *data)
+{
+  (void)data;
+
+  config_line_t *result = NULL;
+  char *dir = tor_strdup(get_fname("test_include_path_syntax"));
+  char *esc_dir = NULL, *dir_with_pathsep = NULL,
+    *esc_dir_with_pathsep = NULL, *torrc_contents = NULL;
+  tt_ptr_op(dir, OP_NE, NULL);
+
+#ifdef _WIN32
+  tt_int_op(mkdir(dir), OP_EQ, 0);
+#else
+  tt_int_op(mkdir(dir, 0700), OP_EQ, 0);
+#endif
+
+  esc_dir = esc_for_log(dir);
+  tor_asprintf(&dir_with_pathsep, "%s%s", dir, PATH_SEPARATOR);
+  esc_dir_with_pathsep = esc_for_log(dir_with_pathsep);
+
+  tor_asprintf(&torrc_contents,
+               "%%include %s\n"
+               "%%include %s%s \n" // space to avoid suppressing newline
+               "%%include %s\n",
+               esc_dir,
+               dir, PATH_SEPARATOR,
+               esc_dir_with_pathsep);
+
+  int include_used;
+  tt_int_op(config_get_lines_include(torrc_contents, &result, 0,&include_used,
+            NULL), OP_EQ, 0);
+  tt_ptr_op(result, OP_EQ, NULL);
+  tt_int_op(include_used, OP_EQ, 1);
+
+ done:
+  config_free_lines(result);
+  tor_free(dir);
+  tor_free(torrc_contents);
+  tor_free(esc_dir);
+  tor_free(dir_with_pathsep);
+  tor_free(esc_dir_with_pathsep);
+}
+
+static void
+test_config_include_not_processed(void *data)
+{
+  (void)data;
+
+  char torrc_contents[1000] = "%include does_not_exist\n";
+  config_line_t *result = NULL;
+  tt_int_op(config_get_lines(torrc_contents, &result, 0),OP_EQ, 0);
+  tt_ptr_op(result, OP_NE, NULL);
+
+  int len = 0;
+  config_line_t *next;
+  for (next = result; next != NULL; next = next->next) {
+    tt_str_op(next->key, OP_EQ, "%include");
+    tt_str_op(next->value, OP_EQ, "does_not_exist");
+    len++;
+  }
+  tt_int_op(len, OP_EQ, 1);
+
+ done:
+  config_free_lines(result);
+}
+
+static void
+test_config_include_has_include(void *data)
+{
+  (void)data;
+
+  config_line_t *result = NULL;
+  char *dir = tor_strdup(get_fname("test_include_has_include"));
+  tt_ptr_op(dir, OP_NE, NULL);
+
+#ifdef _WIN32
+  tt_int_op(mkdir(dir), OP_EQ, 0);
+#else
+  tt_int_op(mkdir(dir, 0700), OP_EQ, 0);
+#endif
+
+  char torrc_contents[1000] = "Test 1\n";
+  int include_used;
+
+  tt_int_op(config_get_lines_include(torrc_contents, &result, 0,&include_used,
+            NULL), OP_EQ, 0);
+  tt_int_op(include_used, OP_EQ, 0);
+  config_free_lines(result);
+
+  tor_snprintf(torrc_contents, sizeof(torrc_contents), "%%include %s\n", dir);
+  tt_int_op(config_get_lines_include(torrc_contents, &result, 0,&include_used,
+            NULL), OP_EQ, 0);
+  tt_int_op(include_used, OP_EQ, 1);
+
+ done:
+  config_free_lines(result);
+  tor_free(dir);
+}
+
+static void
+test_config_include_flag_both_without(void *data)
+{
+  (void)data;
+
+  char *errmsg = NULL;
+  char conf_empty[1000];
+  tor_snprintf(conf_empty, sizeof(conf_empty),
+               "DataDirectory %s\n",
+               get_fname(NULL));
+  // test with defaults-torrc and torrc without include
+  int ret = options_init_from_string(conf_empty, conf_empty, CMD_RUN_UNITTESTS,
+                                     NULL, &errmsg);
+  tt_int_op(ret, OP_EQ, 0);
+
+  const or_options_t *options = get_options();
+  tt_int_op(options->IncludeUsed, OP_EQ, 0);
+
+ done:
+  tor_free(errmsg);
+}
+
+static void
+test_config_include_flag_torrc_only(void *data)
+{
+  (void)data;
+
+  char *errmsg = NULL;
+  char *path = NULL;
+  char *dir = tor_strdup(get_fname("test_include_flag_torrc_only"));
+  tt_ptr_op(dir, OP_NE, NULL);
+
+#ifdef _WIN32
+  tt_int_op(mkdir(dir), OP_EQ, 0);
+#else
+  tt_int_op(mkdir(dir, 0700), OP_EQ, 0);
+#endif
+
+  tor_asprintf(&path, "%s"PATH_SEPARATOR"%s", dir, "dummy");
+  tt_int_op(write_str_to_file(path, "\n", 0), OP_EQ, 0);
+
+  char conf_empty[1000];
+  tor_snprintf(conf_empty, sizeof(conf_empty),
+               "DataDirectory %s\n",
+               get_fname(NULL));
+  char conf_include[1000];
+  tor_snprintf(conf_include, sizeof(conf_include), "%%include %s", path);
+
+  // test with defaults-torrc without include and torrc with include
+  int ret = options_init_from_string(conf_empty, conf_include,
+                                     CMD_RUN_UNITTESTS, NULL, &errmsg);
+  tt_int_op(ret, OP_EQ, 0);
+
+  const or_options_t *options = get_options();
+  tt_int_op(options->IncludeUsed, OP_EQ, 1);
+
+ done:
+  tor_free(errmsg);
+  tor_free(path);
+  tor_free(dir);
+}
+
+static void
+test_config_include_flag_defaults_only(void *data)
+{
+  (void)data;
+
+  char *errmsg = NULL;
+  char *path = NULL;
+  char *dir = tor_strdup(get_fname("test_include_flag_defaults_only"));
+  tt_ptr_op(dir, OP_NE, NULL);
+
+#ifdef _WIN32
+  tt_int_op(mkdir(dir), OP_EQ, 0);
+#else
+  tt_int_op(mkdir(dir, 0700), OP_EQ, 0);
+#endif
+
+  tor_asprintf(&path, "%s"PATH_SEPARATOR"%s", dir, "dummy");
+  tt_int_op(write_str_to_file(path, "\n", 0), OP_EQ, 0);
+
+  char conf_empty[1000];
+  tor_snprintf(conf_empty, sizeof(conf_empty),
+               "DataDirectory %s\n",
+               get_fname(NULL));
+  char conf_include[1000];
+  tor_snprintf(conf_include, sizeof(conf_include), "%%include %s", path);
+
+  // test with defaults-torrc with include and torrc without include
+  int ret = options_init_from_string(conf_include, conf_empty,
+                                     CMD_RUN_UNITTESTS, NULL, &errmsg);
+  tt_int_op(ret, OP_EQ, 0);
+
+  const or_options_t *options = get_options();
+  tt_int_op(options->IncludeUsed, OP_EQ, 0);
+
+ done:
+  tor_free(errmsg);
+  tor_free(path);
+  tor_free(dir);
+}
+
+static void
+test_config_dup_and_filter(void *arg)
+{
+  (void)arg;
+  /* Test normal input. */
+  config_line_t *line = NULL;
+  config_line_append(&line, "abc", "def");
+  config_line_append(&line, "ghi", "jkl");
+  config_line_append(&line, "ABCD", "mno");
+
+  config_line_t *line_dup = config_lines_dup_and_filter(line, "aBc");
+  tt_ptr_op(line_dup, OP_NE, NULL);
+  tt_ptr_op(line_dup->next, OP_NE, NULL);
+  tt_ptr_op(line_dup->next->next, OP_EQ, NULL);
+
+  tt_str_op(line_dup->key, OP_EQ, "abc");
+  tt_str_op(line_dup->value, OP_EQ, "def");
+  tt_str_op(line_dup->next->key, OP_EQ, "ABCD");
+  tt_str_op(line_dup->next->value, OP_EQ, "mno");
+
+  /* empty output */
+  config_free_lines(line_dup);
+  line_dup = config_lines_dup_and_filter(line, "skdjfsdkljf");
+  tt_ptr_op(line_dup, OP_EQ, NULL);
+
+  /* empty input */
+  config_free_lines(line_dup);
+  line_dup = config_lines_dup_and_filter(NULL, "abc");
+  tt_ptr_op(line_dup, OP_EQ, NULL);
+
+ done:
+  config_free_lines(line);
+  config_free_lines(line_dup);
+}
+
+/* If we're not configured to be a bridge, but we set
+ * BridgeDistribution, then options_validate () should return -1. */
+static void
+test_config_check_bridge_distribution_setting_not_a_bridge(void *arg)
+{
+  or_options_t* options = get_options_mutable();
+  or_options_t* old_options = options;
+  or_options_t* default_options = options;
+  char* message = NULL;
+  int ret;
+
+  (void)arg;
+
+  options->BridgeRelay = 0;
+  options->BridgeDistribution = (char*)("https");
+
+  ret = options_validate(old_options, options, default_options, 0, &message);
+
+  tt_int_op(ret, OP_EQ, -1);
+  tt_str_op(message, OP_EQ, "You set BridgeDistribution, but you "
+            "didn't set BridgeRelay!");
+ done:
+  tor_free(message);
+  options->BridgeDistribution = NULL;
+}
+
+/* If the BridgeDistribution setting was valid, 0 should be returned. */
+static void
+test_config_check_bridge_distribution_setting_valid(void *arg)
+{
+  int ret = check_bridge_distribution_setting("https");
+
+  (void)arg;
+
+  tt_int_op(ret, OP_EQ, 0);
+ done:
+  return;
+}
+
+/* If the BridgeDistribution setting was invalid, -1 should be returned. */
+static void
+test_config_check_bridge_distribution_setting_invalid(void *arg)
+{
+  int ret = check_bridge_distribution_setting("hyphens-are-allowed");
+
+  (void)arg;
+
+  tt_int_op(ret, OP_EQ, 0);
+
+  ret = check_bridge_distribution_setting("asterisks*are*forbidden");
+
+  tt_int_op(ret, OP_EQ, -1);
+ done:
+  return;
+}
+
+/* If the BridgeDistribution setting was unrecognised, a warning should be
+ * logged and 0 should be returned. */
+static void
+test_config_check_bridge_distribution_setting_unrecognised(void *arg)
+{
+  int ret = check_bridge_distribution_setting("unicorn");
+
+  (void)arg;
+
+  tt_int_op(ret, OP_EQ, 0);
+ done:
+  return;
+}
+
+static void
+test_config_include_opened_file_list(void *data)
+{
+  (void)data;
+
+  config_line_t *result = NULL;
+  smartlist_t *opened_files = smartlist_new();
+  char *torrcd = NULL;
+  char *subfolder = NULL;
+  char *path = NULL;
+  char *empty = NULL;
+  char *file = NULL;
+  char *dot = NULL;
+  char *dir = tor_strdup(get_fname("test_include_opened_file_list"));
+  tt_ptr_op(dir, OP_NE, NULL);
+
+#ifdef _WIN32
+  tt_int_op(mkdir(dir), OP_EQ, 0);
+#else
+  tt_int_op(mkdir(dir, 0700), OP_EQ, 0);
+#endif
+
+  tor_asprintf(&torrcd, "%s"PATH_SEPARATOR"%s", dir, "torrc.d");
+
+#ifdef _WIN32
+  tt_int_op(mkdir(torrcd), OP_EQ, 0);
+#else
+  tt_int_op(mkdir(torrcd, 0700), OP_EQ, 0);
+#endif
+
+  tor_asprintf(&subfolder, "%s"PATH_SEPARATOR"%s", torrcd, "subfolder");
+
+#ifdef _WIN32
+  tt_int_op(mkdir(subfolder), OP_EQ, 0);
+#else
+  tt_int_op(mkdir(subfolder, 0700), OP_EQ, 0);
+#endif
+
+  tor_asprintf(&path, "%s"PATH_SEPARATOR"%s", subfolder,
+               "01_file_in_subfolder");
+  tt_int_op(write_str_to_file(path, "Test 1\n", 0), OP_EQ, 0);
+
+  tor_asprintf(&empty, "%s"PATH_SEPARATOR"%s", torrcd, "empty");
+  tt_int_op(write_str_to_file(empty, "", 0), OP_EQ, 0);
+
+  tor_asprintf(&file, "%s"PATH_SEPARATOR"%s", torrcd, "file");
+  tt_int_op(write_str_to_file(file, "Test 2\n", 0), OP_EQ, 0);
+
+  tor_asprintf(&dot, "%s"PATH_SEPARATOR"%s", torrcd, ".dot");
+  tt_int_op(write_str_to_file(dot, "Test 3\n", 0), OP_EQ, 0);
+
+  char torrc_contents[1000];
+  tor_snprintf(torrc_contents, sizeof(torrc_contents),
+               "%%include %s\n",
+               torrcd);
+
+  int include_used;
+  tt_int_op(config_get_lines_include(torrc_contents, &result, 0, &include_used,
+            opened_files), OP_EQ, 0);
+  tt_ptr_op(result, OP_NE, NULL);
+  tt_int_op(include_used, OP_EQ, 1);
+
+  tt_int_op(smartlist_len(opened_files), OP_EQ, 4);
+  tt_int_op(smartlist_contains_string(opened_files, torrcd), OP_EQ, 1);
+  tt_int_op(smartlist_contains_string(opened_files, subfolder), OP_EQ, 1);
+  // files inside subfolders are not opended, only the subfolder is opened
+  tt_int_op(smartlist_contains_string(opened_files, empty), OP_EQ, 1);
+  tt_int_op(smartlist_contains_string(opened_files, file), OP_EQ, 1);
+  // dot files are not opened as we ignore them when we get their name from
+  // their parent folder
+
+ done:
+  SMARTLIST_FOREACH(opened_files, char *, f, tor_free(f));
+  smartlist_free(opened_files);
+  config_free_lines(result);
+  tor_free(torrcd);
+  tor_free(subfolder);
+  tor_free(path);
+  tor_free(empty);
+  tor_free(file);
+  tor_free(dot);
+  tor_free(dir);
+}
+
+static void
+test_config_compute_max_mem_in_queues(void *data)
+{
+#define GIGABYTE(x) (UINT64_C(x) << 30)
+#define MEGABYTE(x) (UINT64_C(x) << 20)
+  (void)data;
+  MOCK(get_total_system_memory, get_total_system_memory_mock);
+
+  /* We are unable to detect the amount of memory on the system. Tor will try
+   * to use some sensible default values for 64-bit and 32-bit systems. */
+  total_system_memory_return = -1;
+
+#if SIZEOF_VOID_P >= 8
+  /* We are on a 64-bit system. */
+  tt_u64_op(compute_real_max_mem_in_queues(0, 0), OP_EQ, GIGABYTE(8));
+#else
+  /* We are on a 32-bit system. */
+  tt_u64_op(compute_real_max_mem_in_queues(0, 0), OP_EQ, GIGABYTE(1));
+#endif
+
+  /* We are able to detect the amount of RAM on the system. */
+  total_system_memory_return = 0;
+
+  /* We are running on a system with one gigabyte of RAM. */
+  total_system_memory_output = GIGABYTE(1);
+
+  /* We have 0.75 * RAM available. */
+  tt_u64_op(compute_real_max_mem_in_queues(0, 0), OP_EQ,
+            3 * (GIGABYTE(1) / 4));
+
+  /* We are running on a tiny machine with 256 MB of RAM. */
+  total_system_memory_output = MEGABYTE(256);
+
+  /* We will now enforce a minimum of 256 MB of RAM available for the
+   * MaxMemInQueues here, even though we should only have had 0.75 * 256 = 192
+   * MB available. */
+  tt_u64_op(compute_real_max_mem_in_queues(0, 0), OP_EQ, MEGABYTE(256));
+
+#if SIZEOF_SIZE_T > 4
+  /* We are running on a machine with 8 GB of RAM. */
+  total_system_memory_output = GIGABYTE(8);
+
+  /* We will have 0.4 * RAM available. */
+  tt_u64_op(compute_real_max_mem_in_queues(0, 0), OP_EQ,
+            2 * (GIGABYTE(8) / 5));
+
+  /* We are running on a machine with 16 GB of RAM. */
+  total_system_memory_output = GIGABYTE(16);
+
+  /* We will have 0.4 * RAM available. */
+  tt_u64_op(compute_real_max_mem_in_queues(0, 0), OP_EQ,
+            2 * (GIGABYTE(16) / 5));
+
+  /* We are running on a machine with 32 GB of RAM. */
+  total_system_memory_output = GIGABYTE(32);
+
+  /* We will at maximum get MAX_DEFAULT_MEMORY_QUEUE_SIZE here. */
+  tt_u64_op(compute_real_max_mem_in_queues(0, 0), OP_EQ,
+            MAX_DEFAULT_MEMORY_QUEUE_SIZE);
+#endif
+
+ done:
+  UNMOCK(get_total_system_memory);
+
+#undef GIGABYTE
+#undef MEGABYTE
+}
+
+static void
+test_config_extended_fmt(void *arg)
+{
+  (void)arg;
+  config_line_t *lines = NULL, *lp;
+  const char string1[] =
+    "thing1 is here\n"
+    "+thing2 is over here\n"
+    "/thing3\n"
+    "/thing4 is back here\n";
+
+  /* Try with the "extended" flag disabled. */
+  int r = config_get_lines(string1, &lines, 0);
+  tt_int_op(r, OP_EQ, 0);
+  lp = lines;
+  tt_ptr_op(lp, OP_NE, NULL);
+  tt_str_op(lp->key, OP_EQ, "thing1");
+  tt_str_op(lp->value, OP_EQ, "is here");
+  tt_int_op(lp->command, OP_EQ, CONFIG_LINE_NORMAL);
+  lp = lp->next;
+  tt_ptr_op(lp, OP_NE, NULL);
+  tt_str_op(lp->key, OP_EQ, "+thing2");
+  tt_str_op(lp->value, OP_EQ, "is over here");
+  tt_int_op(lp->command, OP_EQ, CONFIG_LINE_NORMAL);
+  lp = lp->next;
+  tt_ptr_op(lp, OP_NE, NULL);
+  tt_str_op(lp->key, OP_EQ, "/thing3");
+  tt_str_op(lp->value, OP_EQ, "");
+  tt_int_op(lp->command, OP_EQ, CONFIG_LINE_NORMAL);
+  lp = lp->next;
+  tt_ptr_op(lp, OP_NE, NULL);
+  tt_str_op(lp->key, OP_EQ, "/thing4");
+  tt_str_op(lp->value, OP_EQ, "is back here");
+  tt_int_op(lp->command, OP_EQ, CONFIG_LINE_NORMAL);
+  lp = lp->next;
+  config_free_lines(lines);
+
+  /* Try with the "extended" flag enabled. */
+  r = config_get_lines(string1, &lines, 1);
+  tt_int_op(r, OP_EQ, 0);
+  lp = lines;
+  tt_ptr_op(lp, OP_NE, NULL);
+  tt_str_op(lp->key, OP_EQ, "thing1");
+  tt_str_op(lp->value, OP_EQ, "is here");
+  tt_int_op(lp->command, OP_EQ, CONFIG_LINE_NORMAL);
+  lp = lp->next;
+  tt_ptr_op(lp, OP_NE, NULL);
+  tt_str_op(lp->key, OP_EQ, "thing2");
+  tt_str_op(lp->value, OP_EQ, "is over here");
+  tt_int_op(lp->command, OP_EQ, CONFIG_LINE_APPEND);
+  lp = lp->next;
+  tt_ptr_op(lp, OP_NE, NULL);
+  tt_str_op(lp->key, OP_EQ, "thing3");
+  tt_str_op(lp->value, OP_EQ, "");
+  tt_int_op(lp->command, OP_EQ, CONFIG_LINE_CLEAR);
+  lp = lp->next;
+  tt_ptr_op(lp, OP_NE, NULL);
+  tt_str_op(lp->key, OP_EQ, "thing4");
+  tt_str_op(lp->value, OP_EQ, "");
+  tt_int_op(lp->command, OP_EQ, CONFIG_LINE_CLEAR);
+  lp = lp->next;
+
+ done:
+  config_free_lines(lines);
+}
+
 #define CONFIG_TEST(name, flags)                          \
   { #name, test_config_ ## name, flags, NULL, NULL }
 
@@ -4897,6 +5820,7 @@ struct testcase_t config_tests[] = {
   CONFIG_TEST(adding_trusted_dir_server, TT_FORK),
   CONFIG_TEST(adding_fallback_dir_server, TT_FORK),
   CONFIG_TEST(parsing_trusted_dir_server, 0),
+  CONFIG_TEST(parsing_invalid_dir_address, 0),
   CONFIG_TEST(parsing_fallback_dir_server, 0),
   CONFIG_TEST(adding_default_trusted_dir_servers, TT_FORK),
   CONFIG_TEST(adding_dir_servers, TT_FORK),
@@ -4912,10 +5836,33 @@ struct testcase_t config_tests[] = {
   CONFIG_TEST(fix_my_family, 0),
   CONFIG_TEST(directory_fetch, 0),
   CONFIG_TEST(port_cfg_line_extract_addrport, 0),
-  CONFIG_TEST(parse_port_config__listenaddress, 0),
   CONFIG_TEST(parse_port_config__ports__no_ports_given, 0),
   CONFIG_TEST(parse_port_config__ports__server_options, 0),
   CONFIG_TEST(parse_port_config__ports__ports_given, 0),
+  CONFIG_TEST(parse_log_severity, 0),
+  CONFIG_TEST(include_limit, 0),
+  CONFIG_TEST(include_does_not_exist, 0),
+  CONFIG_TEST(include_error_in_included_file, 0),
+  CONFIG_TEST(include_empty_file_folder, 0),
+#ifndef _WIN32
+  CONFIG_TEST(include_no_permission, 0),
+#endif
+  CONFIG_TEST(include_recursion_before_after, 0),
+  CONFIG_TEST(include_recursion_after_only, 0),
+  CONFIG_TEST(include_folder_order, 0),
+  CONFIG_TEST(include_path_syntax, 0),
+  CONFIG_TEST(include_not_processed, 0),
+  CONFIG_TEST(include_has_include, 0),
+  CONFIG_TEST(include_flag_both_without, TT_FORK),
+  CONFIG_TEST(include_flag_torrc_only, TT_FORK),
+  CONFIG_TEST(include_flag_defaults_only, TT_FORK),
+  CONFIG_TEST(dup_and_filter, 0),
+  CONFIG_TEST(check_bridge_distribution_setting_not_a_bridge, TT_FORK),
+  CONFIG_TEST(check_bridge_distribution_setting_valid, 0),
+  CONFIG_TEST(check_bridge_distribution_setting_invalid, 0),
+  CONFIG_TEST(check_bridge_distribution_setting_unrecognised, 0),
+  CONFIG_TEST(include_opened_file_list, 0),
+  CONFIG_TEST(compute_max_mem_in_queues, 0),
+  CONFIG_TEST(extended_fmt, 0),
   END_OF_TESTCASES
 };
-

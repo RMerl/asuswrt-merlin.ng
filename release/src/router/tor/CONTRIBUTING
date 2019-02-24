@@ -1,0 +1,39 @@
+Contributing to Tor
+-------------------
+
+### Getting started
+
+Welcome!
+
+We have a bunch of documentation about how to develop Tor in the
+doc/HACKING/ directory.  We recommend that you start with
+doc/HACKING/README.1st.md , and then go from there.  It will tell
+you how to find your way around the source code, how to get
+involved with the Tor community, how to write patches, and much
+more!
+
+You don't have to be a C developer to help with Tor: have a look
+at https://www.torproject.org/getinvolved/volunteer !
+
+The Tor Project is committed to fostering a inclusive community
+where people feel safe to engage, share their points of view, and
+participate. For the latest version of our Code of Conduct, please
+see
+
+https://gitweb.torproject.org/community/policies.git/plain/code_of_conduct.txt
+
+
+
+### License issues
+
+Tor is distributed under the license terms in the LICENSE -- in
+brief, the "3-clause BSD license".  If you send us code to
+distribute with Tor, it needs to be code that we can distribute
+under those terms.  Please don't send us patches unless you agree
+to allow this.
+
+Some compatible licenses include:
+
+  - 3-clause BSD
+  - 2-clause BSD
+  - CC0 Public Domain Dedication

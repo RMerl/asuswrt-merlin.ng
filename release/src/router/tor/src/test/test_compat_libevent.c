@@ -1,18 +1,17 @@
-/* Copyright (c) 2010-2016, The Tor Project, Inc. */
+/* Copyright (c) 2010-2019, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 #define COMPAT_LIBEVENT_PRIVATE
 #include "orconfig.h"
-#include "or.h"
+#include "core/or/or.h"
 
-#include "test.h"
+#include "test/test.h"
 
-#include "compat_libevent.h"
+#include "lib/evloop/compat_libevent.h"
 
 #include <event2/event.h>
-#include <event2/thread.h>
 
-#include "log_test_helpers.h"
+#include "test/log_test_helpers.h"
 
 #define NS_MODULE compat_libevent
 
@@ -122,10 +121,70 @@ test_compat_libevent_header_version(void *ignored)
   (void)0;
 }
 
+/* Test for postloop events */
+
+/* Event callback to increment a counter. */
+static void
+increment_int_counter_cb(periodic_timer_t *timer, void *arg)
+{
+  (void)timer;
+  int *ctr = arg;
+  ++*ctr;
+}
+
+static int activated_counter = 0;
+
+/* Mainloop event callback to activate another mainloop event */
+static void
+activate_event_cb(mainloop_event_t *ev, void *arg)
+{
+  (void)ev;
+  mainloop_event_t **other_event = arg;
+  mainloop_event_activate(*other_event);
+  ++activated_counter;
+}
+
+static void
+test_compat_libevent_postloop_events(void *arg)
+{
+  (void)arg;
+  mainloop_event_t *a = NULL, *b = NULL;
+  periodic_timer_t *timed = NULL;
+
+  tor_libevent_postfork();
+
+  /* If postloop events don't work, then these events will activate one
+   * another ad infinitum and, and the periodic event will never occur. */
+  b = mainloop_event_postloop_new(activate_event_cb, &a);
+  a = mainloop_event_postloop_new(activate_event_cb, &b);
+
+  int counter = 0;
+  struct timeval fifty_ms = { 0, 10 * 1000 };
+  timed = periodic_timer_new(tor_libevent_get_base(), &fifty_ms,
+                             increment_int_counter_cb, &counter);
+
+  mainloop_event_activate(a);
+  int r;
+  do {
+    r = tor_libevent_run_event_loop(tor_libevent_get_base(), 0);
+    if (r == -1)
+      break;
+  } while (counter < 5);
+
+  tt_int_op(activated_counter, OP_GE, 2);
+
+ done:
+  mainloop_event_free(a);
+  mainloop_event_free(b);
+  periodic_timer_free(timed);
+}
+
 struct testcase_t compat_libevent_tests[] = {
   { "logging_callback", test_compat_libevent_logging_callback,
     TT_FORK, NULL, NULL },
   { "header_version", test_compat_libevent_header_version, 0, NULL, NULL },
+  { "postloop_events", test_compat_libevent_postloop_events,
+    TT_FORK, NULL, NULL },
   END_OF_TESTCASES
 };
 

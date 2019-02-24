@@ -17,25 +17,23 @@ SYNOPSIS
 
 DESCRIPTION
 -----------
-**torify** is a simple wrapper that attempts to find the best underlying Tor
-wrapper available on a system. It calls torsocks with a tor specific
-configuration file. +
+**torify** is a simple wrapper that calls torsocks with a tor-specific
+configuration file.
 
-torsocks is an improved wrapper that explicitly rejects UDP, safely resolves DNS
-lookups and properly socksifies your TCP connections. +
-
-Please note that since both method use LD_PRELOAD, torify cannot be applied to
-suid binaries.
+It is provided for backward compatibility; instead you should use torsocks.
 
 WARNING
 -------
-When used with torsocks, torify should not leak DNS requests or UDP data. +
+When used with torsocks, torify should not leak DNS requests or UDP data.
 
-Both will leak ICMP data.
+torify can leak ICMP data.
+
+torify will not ensure that different requests are processed on
+different circuits.
 
 SEE ALSO
 --------
-**tor**(1), **tor-resolve**(1), **torsocks**(1)
+**tor**(1), **torsocks**(1)
 
 AUTHORS
 -------

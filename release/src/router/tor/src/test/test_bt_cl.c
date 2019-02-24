@@ -1,4 +1,4 @@
-/* Copyright (c) 2012-2016, The Tor Project, Inc. */
+/* Copyright (c) 2012-2019, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 #include "orconfig.h"
@@ -7,10 +7,13 @@
 
 /* To prevent 'assert' from going away. */
 #undef TOR_COVERAGE
-#include "or.h"
-#include "util.h"
-#include "backtrace.h"
-#include "torlog.h"
+#include "core/or/or.h"
+#include "lib/err/backtrace.h"
+#include "lib/log/log.h"
+
+#ifdef HAVE_UNISTD_H
+#include <unistd.h>
+#endif
 
 /* -1: no crash.
  *  0: crash with a segmentation fault.
@@ -19,14 +22,12 @@ static int crashtype = 0;
 
 #ifdef __GNUC__
 #define NOINLINE __attribute__((noinline))
-#define NORETURN __attribute__((noreturn))
 #endif
 
 int crash(int x) NOINLINE;
 int oh_what(int x) NOINLINE;
 int a_tangled_web(int x) NOINLINE;
 int we_weave(int x) NOINLINE;
-static void abort_handler(int s) NORETURN;
 
 #ifdef HAVE_CFLAG_WNULL_DEREFERENCE
 DISABLE_GCC_WARNING(null-dereference)
@@ -40,7 +41,7 @@ crash(int x)
                          * don't need to see us dereference NULL. */
 #else
     *(volatile int *)0 = 0;
-#endif
+#endif /* defined(__clang_analyzer__) || defined(__COVERITY__) */
   } else if (crashtype == 1) {
     tor_assert(1 == 0);
   } else if (crashtype == -1) {
@@ -74,13 +75,6 @@ int
 we_weave(int x)
 {
   return a_tangled_web(x) + a_tangled_web(x+1);
-}
-
-static void
-abort_handler(int s)
-{
-  (void)s;
-  exit(0);
 }
 
 int
@@ -120,8 +114,6 @@ main(int argc, char **argv)
 
   configure_backtrace_handler(NULL);
 
-  signal(SIGABRT, abort_handler);
-
   printf("%d\n", we_weave(2));
 
   clean_up_backtrace_handler();
@@ -129,4 +121,3 @@ main(int argc, char **argv)
 
   return 0;
 }
-

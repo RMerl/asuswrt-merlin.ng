@@ -1,0 +1,27 @@
+
+noinst_LIBRARIES += src/lib/libtor-thread.a
+
+if UNITTESTS_ENABLED
+noinst_LIBRARIES += src/lib/libtor-thread-testing.a
+endif
+
+if THREADS_PTHREADS
+threads_impl_source=src/lib/thread/compat_pthreads.c
+endif
+if THREADS_WIN32
+threads_impl_source=src/lib/thread/compat_winthreads.c
+endif
+
+src_lib_libtor_thread_a_SOURCES =			\
+	src/lib/thread/compat_threads.c			\
+	src/lib/thread/numcpus.c			\
+	$(threads_impl_source)
+
+src_lib_libtor_thread_testing_a_SOURCES = \
+	$(src_lib_libtor_thread_a_SOURCES)
+src_lib_libtor_thread_testing_a_CPPFLAGS = $(AM_CPPFLAGS) $(TEST_CPPFLAGS)
+src_lib_libtor_thread_testing_a_CFLAGS = $(AM_CFLAGS) $(TEST_CFLAGS)
+
+noinst_HEADERS +=					\
+	src/lib/thread/threads.h			\
+	src/lib/thread/numcpus.h

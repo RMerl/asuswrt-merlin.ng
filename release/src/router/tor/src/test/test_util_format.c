@@ -1,27 +1,16 @@
-/* Copyright (c) 2010-2016, The Tor Project, Inc. */
+/* Copyright (c) 2010-2019, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 #include "orconfig.h"
-#include "or.h"
+#include "core/or/or.h"
 
-#include "test.h"
+#include "test/test.h"
 
+#include "lib/crypt_ops/crypto_rand.h"
 #define UTIL_FORMAT_PRIVATE
-#include "util_format.h"
+#include "lib/encoding/binascii.h"
 
 #define NS_MODULE util_format
-
-#if !defined(HAVE_HTONLL) && !defined(htonll)
-#ifdef WORDS_BIGENDIAN
-#define htonll(x) (x)
-#else
-static uint64_t
-htonll(uint64_t a)
-{
-  return htonl((uint32_t)(a>>32)) | (((uint64_t)htonl((uint32_t)a))<<32);
-}
-#endif
-#endif
 
 static void
 test_util_format_unaligned_accessors(void *ignored)
@@ -29,7 +18,8 @@ test_util_format_unaligned_accessors(void *ignored)
   (void)ignored;
   char buf[9] = "onionsoup"; // 6f6e696f6e736f7570
 
-  tt_u64_op(get_uint64(buf+1), OP_EQ, htonll(U64_LITERAL(0x6e696f6e736f7570)));
+  tt_u64_op(get_uint64(buf+1), OP_EQ,
+      tor_htonll(UINT64_C(0x6e696f6e736f7570)));
   tt_uint_op(get_uint32(buf+1), OP_EQ, htonl(0x6e696f6e));
   tt_uint_op(get_uint16(buf+1), OP_EQ, htons(0x6e69));
   tt_uint_op(get_uint8(buf+1), OP_EQ, 0x6e);
@@ -43,7 +33,7 @@ test_util_format_unaligned_accessors(void *ignored)
   set_uint32(buf+1, htonl(0x78696465));
   tt_mem_op(buf, OP_EQ, "oxidestop", 9);
 
-  set_uint64(buf+1, htonll(U64_LITERAL(0x6266757363617465)));
+  set_uint64(buf+1, tor_htonll(UINT64_C(0x6266757363617465)));
   tt_mem_op(buf, OP_EQ, "obfuscate", 9);
  done:
   ;
@@ -144,48 +134,54 @@ test_util_format_base64_encode(void *ignored)
 }
 
 static void
-test_util_format_base64_decode_nopad(void *ignored)
+test_util_format_base64_decode_oddsize(void *ignored)
 {
   (void)ignored;
   int res;
   int i;
   char *src;
-  uint8_t *dst, *real_dst;
-  uint8_t expected[] = {0x65, 0x78, 0x61, 0x6D, 0x70, 0x6C, 0x65};
+  char *dst, real_dst[7];
+  char expected[] = {0x65, 0x78, 0x61, 0x6D, 0x70, 0x6C, 0x65};
   char real_src[] = "ZXhhbXBsZQ";
+  char expected40[] = "testing40characteroddsizebase64encoding!";
+  char src40[] = "dGVzdGluZzQwY2hhcmFjdGVyb2Rkc2l6ZWJhc2U2NGVuY29kaW5nIQ";
+  char pad40[] = "dGVzdGluZzQwY2hhcmFjdGVyb2Rkc2l6ZWJhc2U2NGVuY29kaW5nIQ==";
 
   src = tor_malloc_zero(256);
   dst = tor_malloc_zero(1000);
-  real_dst = tor_malloc_zero(10);
 
   for (i=0;i<256;i++) {
     src[i] = (char)i;
   }
 
-  res = base64_decode_nopad(dst, 1, src, SIZE_T_CEILING);
-  tt_int_op(res, OP_EQ, -1);
-
-  res = base64_decode_nopad(dst, 1, src, 5);
+  res = base64_decode(dst, 1, src, 5);
   tt_int_op(res, OP_EQ, -1);
 
   const char *s = "SGVsbG8gd29ybGQ";
-  res = base64_decode_nopad(dst, 1000, s, strlen(s));
+  res = base64_decode(dst, 1000, s, strlen(s));
   tt_int_op(res, OP_EQ, 11);
   tt_mem_op(dst, OP_EQ, "Hello world", 11);
 
   s = "T3BhIG11bmRv";
-  res = base64_decode_nopad(dst, 9, s, strlen(s));
+  res = base64_decode(dst, 9, s, strlen(s));
   tt_int_op(res, OP_EQ, 9);
   tt_mem_op(dst, OP_EQ, "Opa mundo", 9);
 
-  res = base64_decode_nopad(real_dst, 10, real_src, 10);
+  res = base64_decode(real_dst, sizeof(real_dst), real_src, 10);
   tt_int_op(res, OP_EQ, 7);
   tt_mem_op(real_dst, OP_EQ, expected, 7);
+
+  res = base64_decode(dst, 40, src40, strlen(src40));
+  tt_int_op(res, OP_EQ, 40);
+  tt_mem_op(dst, OP_EQ, expected40, 40);
+
+  res = base64_decode(dst, 40, pad40, strlen(pad40));
+  tt_int_op(res, OP_EQ, 40);
+  tt_mem_op(dst, OP_EQ, expected40, 40);
 
  done:
   tor_free(src);
   tor_free(dst);
-  tor_free(real_dst);
 }
 
 static void
@@ -207,10 +203,10 @@ test_util_format_base64_decode(void *ignored)
     src[i] = (char)i;
   }
 
-  res = base64_decode(dst, 1, src, SIZE_T_CEILING);
+  res = base64_decode(dst, 1, src, 100);
   tt_int_op(res, OP_EQ, -1);
 
-  res = base64_decode(dst, SIZE_T_CEILING+1, src, 10);
+  res = base64_decode(dst, 1, real_src, 10);
   tt_int_op(res, OP_EQ, -1);
 
   const char *s = "T3BhIG11bmRv";
@@ -350,7 +346,7 @@ test_util_format_base32_decode(void *arg)
     const char *src = "mjwgc2dcnrswqmjs";
 
     ret = base32_decode(dst, strlen(expected), src, strlen(src));
-    tt_int_op(ret, ==, 0);
+    tt_int_op(ret, OP_EQ, 0);
     tt_str_op(expected, OP_EQ, dst);
   }
 
@@ -361,7 +357,7 @@ test_util_format_base32_decode(void *arg)
     const char *src = "mjwgc2dcnrswq";
 
     ret = base32_decode(dst, strlen(expected), src, strlen(src));
-    tt_int_op(ret, ==, 0);
+    tt_int_op(ret, OP_EQ, 0);
     tt_mem_op(expected, OP_EQ, dst, strlen(expected));
   }
 
@@ -369,20 +365,48 @@ test_util_format_base32_decode(void *arg)
   {
     /* Invalid character '#'. */
     ret = base32_decode(dst, real_dstlen, "#abcde", 6);
-    tt_int_op(ret, ==, -1);
+    tt_int_op(ret, OP_EQ, -1);
     /* Make sure the destination buffer has been zeroed even on error. */
-    tt_int_op(tor_mem_is_zero(dst, real_dstlen), ==, 1);
+    tt_int_op(tor_mem_is_zero(dst, real_dstlen), OP_EQ, 1);
   }
 
  done:
   tor_free(dst);
 }
 
+static void
+test_util_format_encoded_size(void *arg)
+{
+  (void)arg;
+  uint8_t inbuf[256];
+  char outbuf[1024];
+  unsigned i;
+
+  crypto_rand((char *)inbuf, sizeof(inbuf));
+  for (i = 0; i <= sizeof(inbuf); ++i) {
+    /* XXXX (Once the return values are consistent, check them too.) */
+
+    base32_encode(outbuf, sizeof(outbuf), (char *)inbuf, i);
+    /* The "+ 1" below is an API inconsistency. */
+    tt_int_op(strlen(outbuf) + 1, OP_EQ, base32_encoded_size(i));
+
+    base64_encode(outbuf, sizeof(outbuf), (char *)inbuf, i, 0);
+    tt_int_op(strlen(outbuf), OP_EQ, base64_encode_size(i, 0));
+    base64_encode(outbuf, sizeof(outbuf), (char *)inbuf, i,
+                  BASE64_ENCODE_MULTILINE);
+    tt_int_op(strlen(outbuf), OP_EQ,
+              base64_encode_size(i, BASE64_ENCODE_MULTILINE));
+  }
+
+ done:
+  ;
+}
+
 struct testcase_t util_format_tests[] = {
   { "unaligned_accessors", test_util_format_unaligned_accessors, 0,
     NULL, NULL },
   { "base64_encode", test_util_format_base64_encode, 0, NULL, NULL },
-  { "base64_decode_nopad", test_util_format_base64_decode_nopad, 0,
+  { "base64_decode_oddsize", test_util_format_base64_decode_oddsize, 0,
     NULL, NULL },
   { "base64_decode", test_util_format_base64_decode, 0, NULL, NULL },
   { "base16_decode", test_util_format_base16_decode, 0, NULL, NULL },
@@ -390,6 +414,7 @@ struct testcase_t util_format_tests[] = {
     NULL, NULL },
   { "base32_decode", test_util_format_base32_decode, 0,
     NULL, NULL },
+  { "encoded_size", test_util_format_encoded_size, 0, NULL, NULL },
   END_OF_TESTCASES
 };
 

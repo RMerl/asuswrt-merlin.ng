@@ -40,7 +40,7 @@ static __inline int clz32(unsigned long val)
 {
 	DWORD zeros = 0;
 	_BitScanReverse(&zeros, val);
-	return zeros;
+	return 31 - zeros;
 }
 #ifdef _WIN64
 /* According to the documentation, these only exist on Win64. */
@@ -54,7 +54,7 @@ static __inline int clz64(uint64_t val)
 {
 	DWORD zeros = 0;
 	_BitScanReverse64(&zeros, val);
-	return zeros;
+	return 63 - zeros;
 }
 #else
 static __inline int ctz64(uint64_t val)
@@ -231,7 +231,8 @@ main(int c, char **v)
 	int result = 0;
 
 	for (i = 0; i <= 63; ++i) {
-		uint64_t x = 1 << i;
+		uint64_t x = 1;
+		x <<= i;
 		if (!check(x))
 			result = 1;
 		--x;

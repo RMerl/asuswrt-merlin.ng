@@ -7,7 +7,7 @@ my %torrcSampleOptions = ();
 my %manPageOptions = ();
 
 # Load the canonical list as actually accepted by Tor.
-open(F, "@abs_top_builddir@/src/or/tor --list-torrc-options |") or die;
+open(F, "@abs_top_builddir@/src/app/tor --list-torrc-options |") or die;
 while (<F>) {
     next if m!\[notice\] Tor v0\.!;
     if (m!^([A-Za-z0-9_]+)!) {

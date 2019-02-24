@@ -1,6 +1,6 @@
 /* Copyright (c) 2001-2004, Roger Dingledine.
  * Copyright (c) 2004-2006, Roger Dingledine, Nick Mathewson.
- * Copyright (c) 2007-2016, The Tor Project, Inc. */
+ * Copyright (c) 2007-2019, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 /**
@@ -15,8 +15,8 @@
 #include <fcntl.h>
 #endif
 
-#include "or.h"
-#include "test.h"
+#include "core/or/or.h"
+#include "test/test.h"
 
 struct testgroup_t testgroups[] = {
   { "slow/crypto/", slow_crypto_tests },

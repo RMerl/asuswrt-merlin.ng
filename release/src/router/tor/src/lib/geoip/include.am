@@ -1,0 +1,17 @@
+noinst_LIBRARIES += src/lib/libtor-geoip.a
+
+if UNITTESTS_ENABLED
+noinst_LIBRARIES += src/lib/libtor-geoip-testing.a
+endif
+
+src_lib_libtor_geoip_a_SOURCES =			\
+	src/lib/geoip/geoip.c
+
+src_lib_libtor_geoip_testing_a_SOURCES = \
+	$(src_lib_libtor_geoip_a_SOURCES)
+src_lib_libtor_geoip_testing_a_CPPFLAGS = $(AM_CPPFLAGS) $(TEST_CPPFLAGS)
+src_lib_libtor_geoip_testing_a_CFLAGS = $(AM_CFLAGS) $(TEST_CFLAGS)
+
+noinst_HEADERS +=					\
+	src/lib/geoip/geoip.h   			\
+	src/lib/geoip/country.h

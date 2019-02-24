@@ -1,0 +1,35 @@
+
+bin_PROGRAMS+= src/app/tor
+
+if COVERAGE_ENABLED
+noinst_PROGRAMS+= src/app/tor-cov
+endif
+
+noinst_HEADERS += \
+	src/app/main/ntmain.h
+
+src_app_tor_SOURCES = src/app/main/tor_main.c
+
+# -L flags need to go in LDFLAGS. -l flags need to go in LDADD.
+# This seems to matter nowhere but on windows, but I assure you that it
+# matters a lot there, and is quite hard to debug if you forget to do it.
+
+src_app_tor_LDFLAGS = @TOR_LDFLAGS_zlib@ $(TOR_LDFLAGS_CRYPTLIB) @TOR_LDFLAGS_libevent@
+src_app_tor_LDADD = $(TOR_INTERNAL_LIBS) \
+	$(rust_ldadd) \
+	@TOR_ZLIB_LIBS@ @TOR_LIB_MATH@ @TOR_LIBEVENT_LIBS@ $(TOR_LIBS_CRYPTLIB) \
+	@TOR_LIB_WS32@ @TOR_LIB_IPHLPAPI@ @TOR_LIB_GDI@ @TOR_LIB_USERENV@ \
+	@CURVE25519_LIBS@ @TOR_SYSTEMD_LIBS@ \
+	@TOR_LZMA_LIBS@ @TOR_ZSTD_LIBS@
+
+if COVERAGE_ENABLED
+src_app_tor_cov_SOURCES = $(src_app_tor_SOURCES)
+src_app_tor_cov_CPPFLAGS = $(AM_CPPFLAGS) $(TEST_CPPFLAGS)
+src_app_tor_cov_CFLAGS = $(AM_CFLAGS) $(TEST_CFLAGS)
+src_app_tor_cov_LDFLAGS = @TOR_LDFLAGS_zlib@ $(TOR_LDFLAGS_CRYPTLIB) @TOR_LDFLAGS_libevent@
+src_app_tor_cov_LDADD = $(TOR_INTERNAL_TESTING_LIBS) \
+	@TOR_ZLIB_LIBS@ @TOR_LIB_MATH@ @TOR_LIBEVENT_LIBS@ $(TOR_LIBS_CRYPTLIB) \
+	@TOR_LIB_WS32@ @TOR_LIB_IPHLPAPI@ @TOR_LIB_GDI@ \
+	@CURVE25519_LIBS@ @TOR_SYSTEMD_LIBS@ \
+	@TOR_LZMA_LIBS@ @TOR_ZSTD_LIBS@
+endif

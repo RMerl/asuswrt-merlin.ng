@@ -1464,11 +1464,29 @@ STACK_OF(SSL_CIPHER) *ssl_create_cipher_list(const SSL_METHOD *ssl_method,
     ssl_cipher_apply_rule(0, SSL_kECDHE, 0, 0, 0, 0, 0, CIPHER_DEL, -1, &head,
                           &tail);
 
+    /*
+     * If OPENSSL_PREFER_CHACHA_OVER_GCM is defined, ChaCha20_Poly1305
+     * will be placed before AES-256.  Otherwise, the default behavior of
+     * preferring GCM over CHACHA is used.
+     * This is useful for systems that do not have AES-specific CPU
+     * instructions, where ChaCha20-Poly1305 is 3 times faster than AES.
+     * Note that this does not have the same effect as the SSL_OP_PRIORITIZE_CHACHA
+     * option, which prioritizes ChaCha20-Poly1305 only when the client has it on top
+     * of its ciphersuite preference.
+     */
+
+#ifdef OPENSSL_PREFER_CHACHA_OVER_GCM
+    ssl_cipher_apply_rule(0, 0, 0, SSL_CHACHA20, 0, 0, 0, CIPHER_ADD, -1,
+                          &head, &tail);
+    ssl_cipher_apply_rule(0, 0, 0, SSL_AESGCM, 0, 0, 0, CIPHER_ADD, -1,
+                          &head, &tail);
+#else
     /* Within each strength group, we prefer GCM over CHACHA... */
     ssl_cipher_apply_rule(0, 0, 0, SSL_AESGCM, 0, 0, 0, CIPHER_ADD, -1,
                           &head, &tail);
     ssl_cipher_apply_rule(0, 0, 0, SSL_CHACHA20, 0, 0, 0, CIPHER_ADD, -1,
                           &head, &tail);
+#endif
 
     /*
      * ...and generally, our preferred cipher is AES.
@@ -1524,7 +1542,7 @@ STACK_OF(SSL_CIPHER) *ssl_create_cipher_list(const SSL_METHOD *ssl_method,
      * Within each group, ciphers remain sorted by strength and previous
      * preference, i.e.,
      * 1) ECDHE > DHE
-     * 2) GCM > CHACHA
+     * 2) GCM > CHACHA, reversed if OPENSSL_PREFER_CHACHA_OVER_GCM is defined
      * 3) AES > rest
      * 4) TLS 1.2 > legacy
      *

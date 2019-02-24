@@ -34,8 +34,13 @@ USE_OPENSSL=y
 ifeq ($(USE_OPENSSL), y)
 
 CFLAGS	+= -DOPSSL
+ifeq ($(RTCONFIG_OPENSSL),y)
+CFLAGS  += -I$(TOP)/openssl-1.1.x/include
+LDFLAGS += -L$(TOP)/openssl-1.1.x
+else
 CFLAGS	+= -I$(TOP)/openssl/include
 LDFLAGS += -L$(TOP)/openssl
+endif
 
 OBJS	+= util-portable.o
 OBJS	+= sandbox-null.o

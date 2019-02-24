@@ -1347,7 +1347,7 @@ void rc_ipsec_topology_set()
 
     memset(p_tmp, 0, sizeof(char) * SZ_MIN);
     fp = fopen("/tmp/etc/ipsec.conf", "w");
-    fprintf(fp,"conn %%default\n  keyexchange=ikev1\n  authby=secret\n\n");
+    fprintf(fp,"conn %%default\n  keyexchange=ikev1\n  authby=secret\n  ike=aes256-sha1-modp1024\n");
 
 	for(prof_count = PROF_CLI; prof_count < PROF_ALL; prof_count++){
 	    for(i = 0; i < MAX_PROF_NUM; i++){

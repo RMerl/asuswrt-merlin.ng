@@ -1240,7 +1240,12 @@ obj-$(RTCONFIG_SAMBA36X) += libiconv-1.14
 obj-$(RTCONFIG_TELENET) += lanauth
 obj-y += inadyn
 obj-y += libconfuse
+ifeq ($(RTCONFIG_OPENSSL11),y)
 obj-$(RTCONFIG_OPENSSL11) += openssl-1.1.x
+OPENSSLDIR=openssl-1.1.x
+else
+OPENSSLDIR=openssl
+endif
 
 ifneq ($(HND_ROUTER),y)
 obj-y += cstats
@@ -2563,7 +2568,7 @@ endif
 openssl-stage:
 	$(MAKE) -C openssl install_sw INSTALL_PREFIX=$(STAGEDIR)
 
-mssl: openssl
+mssl: $(OPENSSLDIR)
 
 mssl-install:
 	$(MAKE) -C mssl INSTALLDIR=$(INSTALLDIR)/mssl install
@@ -4879,15 +4884,15 @@ openpam-clean:
 	[ ! -f openpam/Makefile ] || $(MAKE) -C openpam distclean
 	@rm -f openpam/Makefile
 
-openvpn: shared openssl lzo openpam zlib openvpn/Makefile
+openvpn: shared $(OPENSSLDIR) lzo openpam zlib openvpn/Makefile
 	$(MAKE) -C $@ $(PARALLEL_BUILD)
 
 openvpn/Makefile:
-	( cd openvpn ; ./autogen.sh && OPENSSL_CFLAGS="-I$(TOP)/openssl/include" \
-		OPENSSL_LIBS="-L$(TOP)/openssl -lcrypto -lssl" \
+	( cd openvpn ; ./autogen.sh && OPENSSL_CFLAGS="-I$(TOP)/$(OPENSSLDIR)/include" \
+		OPENSSL_LIBS="-L$(TOP)/$(OPENSSLDIR) -lcrypto -lssl" \
 		CFLAGS="-O3 -Wall $(EXTRACFLAGS) -ffunction-sections -fdata-sections $(if $(RTCONFIG_BCMARM),-I$(SRCBASE)/shared/bcmwifi/include)" \
 		LDFLAGS="$(EXTRALDFLAGS) -L$(TOP)/nvram$(BCMEX)${EX7} ${EXTRA_NV_LDFLAGS} -lnvram -L$(TOP)/shared -lshared $(if $(RTCONFIG_QTN),-L$(TOP)/libqcsapi_client -lqcsapi_client) -L$(TOP)/zlib -lz -lpthread -ldl -L$(TOP)/lzo/src/.libs -L$(TOP)/openpam/lib/libpam/.libs -ffunction-sections -fdata-sections -Wl,--gc-sections" \
-		CPPFLAGS="-I$(TOP)/lzo/include -I$(TOP)/openssl/include  -I$(TOP)/openpam/include -I$(TOP)/shared -I$(SRCBASE)/include" \
+		CPPFLAGS="-I$(TOP)/lzo/include -I$(TOP)/$(OPENSSLDIR)/include  -I$(TOP)/openpam/include -I$(TOP)/shared -I$(SRCBASE)/include" \
 		IPROUTE="$(if $(RTCONFIG_HND_ROUTER),/bin/ip,/usr/sbin/ip)" IFCONFIG="/sbin/ifconfig" ROUTE="/sbin/route" \
 		$(CONFIGURE) --prefix=/usr --bindir=/usr/sbin --libdir=/usr/lib \
 			--disable-debug --enable-management --enable-plugin-auth-pam --enable-iproute2 \
@@ -6274,10 +6279,14 @@ wget/Makefile: wget/Makefile.in
 		--disable-opie --disable-ntlm --disable-debug --disable-nls --disable-rpath \
 		$(if $(RTCONFIG_IPV6),,--disable-ipv6) --disable-iri --without-included-regex  \
 		--disable-dependency-tracking \
+		OPENSSL_LIBS="-L$(TOP)/$(OPENSSLDIR) -lcrypto -lssl" \
+		OPENSSL_CFLAGS="-I$(TOP)/$(OPENSSLDIR)/include" \
+		ZLIB_CFLAGS="-I$(TOP)zlib" \
+		ZLIB_LIBS="-L$(TOP)/zlib -lz "\
 		CFLAGS="-Os -Wall $(EXTRACFLAGS) -ffunction-sections -fdata-sections -I$(STAGEDIR)/usr/include" \
-		LDFLAGS="$(EXTRALDFLAGS) -Wl,--gc-sections -L$(STAGEDIR)/usr/lib"
+		LDFLAGS="$(EXTRALDFLAGS) -Wl,--gc-sections -pthread"
 
-wget: openssl zlib wget/Makefile
+wget: $(OPENSSLDIR) zlib wget/Makefile
 	$(MAKE) -C $@
 
 wget-clean:
@@ -6893,10 +6902,10 @@ inadyn/Makefile:
 	cd inadyn && $(CONFIGURE) \
 		confuse_CFLAGS="-I$(TOP)/libconfuse/src" \
 		confuse_LIBS="-L$(TOP)/libconfuse/src/.libs -lconfuse" \
-		OpenSSL_CFLAGS="-I$(TOP)/openssl" \
-		OpenSSL_LIBS="-L$(TOP)/openssl -lcrypto" \
+		OpenSSL_CFLAGS="-I$(TOP)/$(OPENSSLDIR)/include" \
+		OpenSSL_LIBS="-L$(TOP)/$(OPENSSLDIR) -lcrypto" \
 		CFLAGS="$(EXTRACFLAGS) -Os -I$(TOP)/shared -I$(SRCBASE)/include -I$(SRCBASE)/shared/bcmwifi/include -DTYPEDEF_FLOAT_T -I$(STAGEDIR)/usr/include -ffunction-sections -fdata-sections -fPIC -DASUSWRT $(if $(RTCONFIG_LETSENCRYPT),-DASUS_LE,)" \
-		LDFLAGS="$(LDFLAGS) $(EXTRA_NV_LDFLAGS) -L$(TOP)/nvram$(BCMEX)$(EX7) -lnvram -L$(TOP)/shared -lshared $(if $(RTCONFIG_QTN),-L$(TOP)/libqcsapi_client -lqcsapi_client) -ffunction-sections -fdata-sections -Wl,--gc-sections" \
+		LDFLAGS="$(LDFLAGS) $(EXTRA_NV_LDFLAGS) -L$(TOP)/nvram$(BCMEX)$(EX7) -lnvram -L$(TOP)/shared -lshared $(if $(RTCONFIG_QTN),-L$(TOP)/libqcsapi_client -lqcsapi_client) -ffunction-sections -fdata-sections -Wl,--gc-sections -pthread" \
 		--prefix="" --enable-openssl
 
 inadyn: shared nvram${BCMEX}$(EX7) libconfuse inadyn/Makefile
@@ -7158,6 +7167,10 @@ openssl-1.1.x-install:
 
 openssl-1.1.x-stage:
 	 $(MAKE) -C openssl-1.1.x install_sw INSTALL_PREFIX=$(STAGEDIR)
+
+libvpn: $(OPENSSLDIR) shared nvram$(BCMEX)$(EX7)
+	@$(SEP)
+	$(MAKE) -C libvpn
 # End merlin components
 
 readline-6.2/Makefile: readline-6.2/configure

@@ -1,6 +1,14 @@
 Asuswrt-Merlin 384/NG Changelog
 ===============================
 
+384.10 (xx-xxx-2019)
+  - CHANGED: Updated curl to 7.64.0.
+  - CHANGED: Updated OpenVPN to 2.4.7.
+  - CHANGED: Removed CFB and OFB ciphers from OpenVPN clients
+  - CHANGED: limit Classification entries to 300 max, to prevent
+             major performance issues with many connections.
+
+
 384.9 (2-Feb-2019)
   - NEW: Temporarily reorganized code in separate branches, to handle
          Asus's currently scattered firmware source code releases.

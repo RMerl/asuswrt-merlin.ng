@@ -1,5 +1,0 @@
-sun::DAEMON_NAME=charon-tkm ipsec stop
-sun::killall tkm_keymanager
-sun::rm -f /tmp/tkm.rpc.ike /tmp/tkm.rpc.ees /tmp/tkm.log
-carol::ipsec stop
-dave::ipsec stop

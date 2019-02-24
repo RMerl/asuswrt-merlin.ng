@@ -1,5 +1,0 @@
-The roadwarrior <b>carol</b> sets up a connection to gateway <b>moon</b>.
-The strong mutual authentication of both peers is based on <b>EAP-TLS</b> only
-(without a separate IKEv2 authentication), using TLS client and server certificates,
-respectively. Large certificates and a multi-level trust hierarchy with a path length
-of 3 force a fragmentation of the TLS handshake message into two TLS records. 

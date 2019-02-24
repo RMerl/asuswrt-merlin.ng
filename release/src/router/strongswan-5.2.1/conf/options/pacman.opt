@@ -1,7 +1,0 @@
-pacman.database =
-	Database URI for the database that stores the package information. If it
-	contains a password, make sure to adjust the permissions of the config file
-	accordingly.
-
-pacman.load =
-	Plugins to load in package manager.

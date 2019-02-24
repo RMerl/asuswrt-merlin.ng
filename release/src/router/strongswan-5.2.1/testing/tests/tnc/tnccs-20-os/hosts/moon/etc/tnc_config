@@ -1,3 +1,0 @@
-#IMV configuration file for strongSwan client 
-
-IMV "OS" /usr/local/lib/ipsec/imcvs/imv-os.so

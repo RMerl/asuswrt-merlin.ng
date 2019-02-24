@@ -1,5 +1,0 @@
-charon.plugins.openssl.engine_id = pkcs11
-	ENGINE ID to use in the OpenSSL plugin.
-
-charon.plugins.openssl.fips_mode = 0
-	Set OpenSSL FIPS mode: disabled(0), enabled(1), Suite B enabled(2).

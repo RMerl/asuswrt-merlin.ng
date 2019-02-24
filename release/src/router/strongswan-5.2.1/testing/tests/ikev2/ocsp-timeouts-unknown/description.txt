@@ -1,7 +1,0 @@
-This scenario is based on <a href="../ocsp-signer-cert">ikev2/ocsp-signer-cert</a>
-and tests the timeouts of the <b>libcurl</b> library used for http-based OCSP fetching
-by adding an ocspuri1 in <b>moon</b>'s strongswan ca section on which no OCSP
-server is listening and an ocspuri2 that cannot be resolved by <b>DNS</b>.
-Since the certificate status is <b>unknown</b> the connection setup is aborted by
-<b>moon</b> with an <b>AUTHORIZATION_FAILED</b> notification sent to <b>carol</b>.
-

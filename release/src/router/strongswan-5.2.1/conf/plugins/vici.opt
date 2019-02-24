@@ -1,2 +1,0 @@
-charon.plugins.vici.socket = unix://${piddir}/charon.vici
-	Socket the vici plugin serves clients.

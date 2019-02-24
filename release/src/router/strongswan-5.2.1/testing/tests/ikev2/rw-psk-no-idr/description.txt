@@ -1,6 +1,0 @@
-The roadwarriors <b>carol</b> and <b>dave</b> set up a connection each 
-to gateway <b>moon</b>. The authentication is based on distinct <b>pre-shared keys</b>
-and fully qualified domain names. By setting the wildcard <b>rightid=@*.strongswan.org</b>
-on <b>carol</b> and <b>dave</b>, no <b>IDr</b> payloads are sent by the roadwarriors.
-In order to test the tunnel,
-both <b>carol</b> and <b>dave</b> ping the client <b>alice</b> behind the gateway <b>moon</b>.

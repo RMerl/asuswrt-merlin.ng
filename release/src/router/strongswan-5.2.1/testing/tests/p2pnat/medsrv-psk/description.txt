@@ -1,7 +1,0 @@
-The peers <b>alice</b> and <b>bob</b> are hidden behind the NAT routers <b>moon</b> and <b>sun</b>,
-respectively. Due to this double-NAT situation they cannot set up an IPsec tunnel directly 
-but need the assistance from the mediation server <b>carol</b> with which they register under
-the pseudonyms <b>6cu1UTVw@medsrv.org</b> and <b>av9oEPMz@medsrv.org</b>, respectively,
-authenticating by means of individual pre-shared keys. Using the set of endpoints relayed 
-to them by the mediation server, the peers are able to set up a direct IPsec connection..
-In order to test the double NAT-ed IPsec tunnel both peers ping each other.

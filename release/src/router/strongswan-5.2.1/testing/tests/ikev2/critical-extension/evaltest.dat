@@ -1,8 +1,0 @@
-moon::ipsec status 2> /dev/null::net-net.*ESTABLISHED::NO
-sun:: ipsec status 2> /dev/null::net-net.*ESTABLISHED::NO
-moon::cat /var/log/daemon.log::sending end entity cert::YES
-moon::cat /var/log/daemon.log::received AUTHENTICATION_FAILED notify error::YES
-sun:: cat /var/log/daemon.log::critical 'strongSwan' extension not supported::YES
-sun:: cat /var/log/daemon.log::building CRED_CERTIFICATE - ANY failed::YES
-sun:: cat /var/log/daemon.log::loading certificate from 'sunCert.der' failed::YES
-sun:: cat /var/log/daemon.log::building CRED_CERTIFICATE - X509 failed::YES

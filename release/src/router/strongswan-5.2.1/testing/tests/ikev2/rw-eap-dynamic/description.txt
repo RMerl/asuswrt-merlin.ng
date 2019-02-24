@@ -1,5 +1,0 @@
-The roadwarriors <b>carol</b> and <b>dave</b> set up a connection each to gateway <b>moon</b>.
-<b>carol</b> uses the default <i>EAP-MD5</i> password-based client authentication
-method as proposed by EAP server <b>moon</b> whereas <b>dave</b> requests an <i>EAP-TLS</i>
-certificate-based client authentication by sending this proposal in an <i>EAP-NAK</i> message
-back to the EAP server.

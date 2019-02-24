@@ -1,5 +1,0 @@
-charon.plugins.tnc-imv.dlclose = yes
-	Unload IMV after use.
-
-charon.plugins.tnc-imv.recommendation_policy = default
-	TNC recommendation policy, one of _default_, _any_, or _all_.

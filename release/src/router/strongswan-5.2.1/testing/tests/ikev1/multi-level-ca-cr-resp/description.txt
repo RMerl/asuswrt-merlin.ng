@@ -1,6 +1,0 @@
-The VPN gateway <b>moon</b> grants access to the hosts <b>alice</b> and
-<b>venus</b> to anyone presenting a certificate belonging to a trust chain anchored
-in the strongSwan Root CA.  The hosts <b>carol</b> and <b>dave</b> have certificates from
-the intermediate Research CA and Sales CA, respectively. Responder <b>moon</b> does not possess
-copies of the Research and Sales CA certificates and must therefore request them from
-the initiators <b>carol</b> and <b>dave</b>, respectively.

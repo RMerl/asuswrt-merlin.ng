@@ -1,5 +1,0 @@
-Two transport connections to gateway <b>sun</b> are set up, one from client
-<b>carol</b> and the other from client <b>dave</b>. The gateway <b>sun</b> uses
-the Trusted Key Manager (TKM) and is the responder for both connections. The
-authentication is based on X.509 certificates. In order to test the connections,
-both <b>carol</b> and <b>dave</b> ping gateway <b>sun</b>.

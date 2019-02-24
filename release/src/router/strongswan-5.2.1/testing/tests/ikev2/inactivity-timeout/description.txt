@@ -1,3 +1,0 @@
-Roadwarrior <b>carol</b> establishes an IPsec tunnel to gateway <b>moon</b> and sets
-an inactivity timeout of 10 seconds. Thus after 10 seconds of inactivity the CHILD_SA
-is automatically deleted by <b>carol</b>.

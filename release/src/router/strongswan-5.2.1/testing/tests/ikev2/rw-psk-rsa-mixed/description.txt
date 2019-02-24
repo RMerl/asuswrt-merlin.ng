@@ -1,6 +1,0 @@
-The roadwarriors <b>carol</b> and <b>dave</b> each set up a connection to gateway <b>moon</b>.
-<b>carol</b>'s authentication is based on a Pre-Shared Key (<b>PSK</b>) whereas <b>dave</b>'s
-is based on an RSA signature (<b>RSASIG</b>). Gateway <b>moon</b> supports both authentication modes
-and selects the correct roadwarrior connection definition based on the gateway ID
-requested by the roadwarrior.
-

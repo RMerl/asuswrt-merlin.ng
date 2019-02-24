@@ -1,6 +1,0 @@
-moon::ipsec stop
-sun::ipsec stop
-moon::iptables-restore < /etc/iptables.flush
-sun::iptables-restore < /etc/iptables.flush
-moon::sysctl --pattern net.ipv4.conf.all.rp_filter --system
-sun::sysctl --pattern net.ipv4.conf.all.rp_filter --system

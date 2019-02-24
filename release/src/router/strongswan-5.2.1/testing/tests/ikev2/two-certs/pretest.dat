@@ -1,8 +1,0 @@
-moon::iptables-restore < /etc/iptables.rules
-carol::iptables-restore < /etc/iptables.rules
-moon::ipsec start
-carol::ipsec start
-carol::sleep 1
-carol::ipsec up alice
-carol::ipsec up venus
-carol::sleep 1

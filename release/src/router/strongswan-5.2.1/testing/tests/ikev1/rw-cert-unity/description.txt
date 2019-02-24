@@ -1,6 +1,0 @@
-The roadwarrior <b>carol</b> sets up a connection to gateway <b>moon</b>.
-The authentication is based on <b>X.509 certificates</b>. <b>carol</b>
-requests a virtual IP using <b>leftsourceip=%config</b> and indicates
-support for the Cisco Unity extension. Gateway <b>moon</b> responds with
-two Split-Include subnets configured in the <b>leftsubnet</b> definition and a
-global Local-LAN exclude option defined in strongswan.conf.

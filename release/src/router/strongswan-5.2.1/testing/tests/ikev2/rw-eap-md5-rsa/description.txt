@@ -1,7 +1,0 @@
-The roadwarrior <b>carol</b> sets up a connection to gateway <b>moon</b>.
-<b>carol</b> uses the <i>Extensible Authentication Protocol</i>
-in association with an  <i>MD5</i> challenge and response protocol
-(<b>EAP-MD5</b>) to authenticate against the gateway. The user password
-is kept in <b>ipsec.secrets</b> on both gateway and client 
-Gateway <b>moon</b> additionally uses an <b>RSA signature</b> to authenticate itself
-against <b>carol</b>.

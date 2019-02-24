@@ -1,8 +1,0 @@
-charon.plugins.coupling.file
-	File to store coupling list to.
-
-charon.plugins.coupling.hash = sha1
-	Hashing algorithm to fingerprint coupled certificates.
-
-charon.plugins.coupling.max = 1
-	Maximum number of coupling entries to create.

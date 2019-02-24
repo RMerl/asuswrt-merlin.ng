@@ -1,4 +1,0 @@
-Roadwarrior <b>carol</b> proposes  to gateway <b>moon</b> the strong cipher suite
-<b>SERPENT_CBC_256 / HMAC_SHA2_512 / MODP_4096</b> for the IKE protocol and 
-<b>SERPENT_CBC_256 / HMAC_SHA2_512_256 </b> for ESP packets. A ping from <b>carol</b> to
-<b>alice</b> successfully checks the established tunnel.

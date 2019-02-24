@@ -1,3 +1,0 @@
-charon.plugins.eap-simaka-sql.database =
-
-charon.plugins.eap-simaka-sql.remove_used = no

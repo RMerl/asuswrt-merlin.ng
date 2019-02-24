@@ -1,3 +1,0 @@
-This scenario enables IPCOMP compression between roadwarrior <b>carol</b> and
-gateway <b>moon</b>. Two pings from <b>carol</b> to <b>alice</b> checks
-the established tunnel with compression.

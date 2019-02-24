@@ -1,1 +1,0 @@
-V	141103162335Z		01	unknown	/C=CH/O=Linux strongSwan/OU=Duck Research/CN=carol@strongswan.org

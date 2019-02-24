@@ -1,4 +1,0 @@
-carol::ipsec start
-moon::ipsec start
-carol::sleep 2
-carol::ipsec up home

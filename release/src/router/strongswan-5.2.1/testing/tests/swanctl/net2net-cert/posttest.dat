@@ -1,5 +1,0 @@
-moon::swanctl --terminate --ike gw-gw 2> /dev/null
-moon::service charon stop 2> /dev/null
-sun::service charon stop 2> /dev/null
-moon::iptables-restore < /etc/iptables.flush
-sun::iptables-restore < /etc/iptables.flush

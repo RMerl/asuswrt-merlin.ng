@@ -1,7 +1,0 @@
-The roadwarrior <b>carol</b> possesses two different X.509 certificates plus
-matching RSA private keys. With the first certificate <b>carol</b> authenticates
-a tunnel connection to gateway <b>moon</b> in order to reach client <b>alice</b>
-and presents the second certificate in order to reach client <b>venus</b> using
-the identity <b>carol@strongswan.org</b> for both IKE security associations.
-Therefore the RSA signature verification process on <b>moon</b> tries all
-candidate peer certificates until it finds the correct RSA public key.

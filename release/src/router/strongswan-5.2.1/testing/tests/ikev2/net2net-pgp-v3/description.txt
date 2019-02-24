@@ -1,6 +1,0 @@
-A connection between the subnets behind the gateways <b>moon</b> and <b>sun</b> is set up.
-The authentication is based on <b>OpenPGP V3 keys</b>. Upon the successful
-establishment of the IPsec tunnel, <b>leftfirewall=yes</b> automatically
-inserts iptables-based firewall rules that let pass the tunneled traffic.
-In order to test both tunnel and firewall, client <b>alice</b> behind gateway <b>moon</b>
-pings client <b>bob</b> located behind gateway <b>sun</b>.

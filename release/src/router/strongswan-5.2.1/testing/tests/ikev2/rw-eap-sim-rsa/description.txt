@@ -1,7 +1,0 @@
-The roadwarrior <b>carol</b> sets up a connection to gateway <b>moon</b>.
-<b>carol</b> uses the <i>Extensible Authentication Protocol</i>
-in association with a GSM <i>Subscriber Identity Module</i> (<b>EAP-SIM</b>)
-to authenticate against the gateway. In this scenario triplets from the file
-<b>/etc/ipsec.d/triplets.dat</b> are used instead of a physical SIM card.
-Gateway <b>moon</b> additionally uses an <b>RSA signature</b> to authenticate
-itself against <b>carol</b>.

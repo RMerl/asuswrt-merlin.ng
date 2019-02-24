@@ -1,6 +1,0 @@
-By setting <b>strictcrlpolicy=yes</b> a <b>strict CRL policy</b> is enforced on
-both roadwarrior <b>carol</b> and gateway <b>moon</b>. Thus when <b>carol</b> initiates
-the connection and only an expired CRL cache file in <b>/etc/ipsec.d/crls</b> is
-available, an ldap fetch to get the CRL from the LDAP server <b>winnetou</b> is
-successfully started and the IKE authentication completes. The new CRL is again
-cached locally as a file in <b>/etc/ipsec.d/crls</b> due to the <b>cachecrls=yes</b> option.

@@ -1,6 +1,0 @@
-Using the <b>left|rightprotoport</b> selectors, two IPsec tunnels 
-between the roadwarrior <b>carol</b> and the gateway <b>moon</b> are
-defined. The first IPsec SA is restricted to ICMP packets and the second
-covers TCP-based SSH connections. The established tunnels are tested
-by <b>carol</b> by first pinging <b>alice</b> behind <b>moon</b> and
-then setting up an SSH session to the same client.

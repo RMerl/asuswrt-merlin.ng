@@ -1,7 +1,0 @@
-moon::ipsec stop
-carol::ipsec stop
-dave::ipsec stop
-moon::rm /etc/ipsec.d/cacerts/*
-winnetou::/etc/init.d/slapd stop
-moon::iptables-restore < /etc/iptables.flush
-

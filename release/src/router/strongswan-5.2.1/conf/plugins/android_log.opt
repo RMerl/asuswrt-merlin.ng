@@ -1,2 +1,0 @@
-charon.plugins.android_log.loglevel = 1
-	Loglevel for logging to Android specific logger.

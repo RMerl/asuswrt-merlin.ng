@@ -1,6 +1,0 @@
-moon:: cat /var/log/daemon.log::requesting ocsp status from::YES
-moon:: cat /var/log/daemon.log::ocsp response verification failed, no signer certificate::YES
-moon:: cat /var/log/daemon.log::certificate status is not available::YES
-moon:: cat /var/log/daemon.log::constraint check failed: RULE_CRL_VALIDATION is FAILED, but requires at least GOOD::YES
-moon:: ipsec status 2> /dev/null::rw.*ESTABLISHED::NO
-carol::ipsec status 2> /dev/null::home.*ESTABLISHED::NO

@@ -1,7 +1,0 @@
-A connection between the subnets behind the gateways <b>moon</b> and <b>sun</b>
-is set up using the IKEv2 key exchange protocol whereas the roadwarrior <b>carol</b>
-negotiates the connection via the IKEv1 protocol.
-In order to test the established tunnels, client <b>alice</b> behind gateway <b>moon</b>
-pings client <b>bob</b> located behind gateway <b>sun</b> and roadwarrior <b>carol</b>
-pings the client <b>alice</b> behind <b>moon</b>.
-.

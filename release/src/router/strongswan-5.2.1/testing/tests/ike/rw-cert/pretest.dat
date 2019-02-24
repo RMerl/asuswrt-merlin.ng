@@ -1,7 +1,0 @@
-moon::ipsec start
-carol::ipsec start
-dave::ipsec start
-carol::sleep 1 
-carol::ipsec up home
-dave::ipsec up home
-dave::sleep 1

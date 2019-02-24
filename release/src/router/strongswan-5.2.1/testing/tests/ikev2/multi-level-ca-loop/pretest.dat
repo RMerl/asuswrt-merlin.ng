@@ -1,5 +1,0 @@
-moon::rm /etc/ipsec.d/cacerts/strongswanCert.pem
-carol::ipsec start
-moon::ipsec start
-carol::sleep 2
-carol::ipsec up alice

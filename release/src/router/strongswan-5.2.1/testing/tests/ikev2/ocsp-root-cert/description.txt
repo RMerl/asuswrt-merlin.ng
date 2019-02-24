@@ -1,8 +1,0 @@
-By setting <b>strictcrlpolicy=yes</b>, a <b>strict</b> CRL policy is enforced on
-both roadwarrior <b>carol</b> and gateway <b>moon</b>. The online certificate status
-is checked via the OCSP server <b>winnetou</b> which uses the <b>strongSwan CA</b>'s
-private key to sign OCSP responses. A <b>strongswan ca</b> section in ipsec.conf
-defines an <b>OCSP URI</b> pointing to <b>winnetou</b>.
-<p>
-<b>carol</b> can successfully initiate an IPsec connection to <b>moon</b> since
-the status of both certificates is <b>good</b>.

@@ -1,7 +1,0 @@
-moon::ipsec stop
-carol::ipsec stop
-moon::iptables-restore < /etc/iptables.flush
-carol::iptables-restore < /etc/iptables.flush
-moon::rm /etc/ipsec.d/ipsec.*
-carol::rm /etc/ipsec.d/ipsec.*
-~

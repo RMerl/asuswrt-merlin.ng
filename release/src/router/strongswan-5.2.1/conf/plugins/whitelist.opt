@@ -1,6 +1,0 @@
-charon.plugins.whitelist.enable = yes
-	Enable loaded whitelist plugin.
-
-charon.plugins.whitelist.socket = unix://${piddir}/charon.wlst
-	Socket provided by the whitelist plugin.
-

@@ -1,7 +1,0 @@
-pool.database
-	Database URI for the database that stores IP pools and configuration
-	attributes. If it contains a password, make	sure to adjust the permissions
-	of the config file accordingly.
-
-pool.load =
-	Plugins to load in ipsec pool tool.

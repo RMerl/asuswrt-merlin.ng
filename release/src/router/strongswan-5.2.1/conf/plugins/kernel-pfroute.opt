@@ -1,3 +1,0 @@
-charon.plugins.kernel-pfroute.vip_wait = 1000
-	Time in ms to wait until virtual IP addresses appear/disappear before
-	failing.

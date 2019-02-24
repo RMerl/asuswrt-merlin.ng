@@ -1,7 +1,0 @@
-charon.plugins.kernel-libipsec.allow_peer_ts = no
-	Allow that the remote traffic selector equals the IKE peer.
-
-	Allow that the remote traffic selector equals the IKE peer. The route
-	installed for such traffic (via TUN device) usually prevents further IKE
-	traffic. The fwmark options for the _kernel-netlink_ and _socket-default_
-	plugins can be used to circumvent that problem.

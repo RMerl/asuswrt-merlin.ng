@@ -1,4 +1,0 @@
-moon:: ipsec status 2> /dev/null::rw.*ESTABLISHED.*moon.strongswan.org.*carol@strongswan.org::YES
-carol::ipsec status 2> /dev/null::home.*ESTABLISHED.*carol@strongswan.org.*moon.strongswan.org::YES
-moon:: cat /var/log/daemon.log::written crl .*/etc/ipsec.d/crls/5da7dd700651327ee7b66db3b5e5e060ea2e4def.crl::YES
-carol::cat /var/log/daemon.log::written crl .*/etc/ipsec.d/crls/5da7dd700651327ee7b66db3b5e5e060ea2e4def.crl::YES

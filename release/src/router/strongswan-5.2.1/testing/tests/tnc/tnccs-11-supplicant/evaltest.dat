@@ -1,2 +1,0 @@
-carol::cat /var/log/daemon.log::IMC.*changed state.*Allowed::YES
-dave:: cat /var/log/daemon.log::IMC.*changed state.*Isolate::YES

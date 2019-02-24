@@ -1,9 +1,0 @@
-carol::ipsec status 2> /dev/null::home.*ESTABLISHED.*carol@strongswan.org.*moon.strongswan.org::YES
-moon:: ipsec status 2> /dev/null::rw.*ESTABLISHED.*moon.strongswan.org.*carol@strongswan.org::YES
-carol::ipsec status 2> /dev/null::home.*INSTALLED, TUNNEL.*IPCOMP::YES
-moon:: ipsec status 2> /dev/null::rw.*INSTALLED, TUNNEL.*IPCOMP::YES
-moon:: ip xfrm state::proto comp spi::YES
-carol::ip xfrm state::proto comp spi::YES
-carol::ping -n -c 2 -s 8184 -p deadbeef PH_IP_ALICE::8192 bytes from PH_IP_ALICE::YES
-moon::tcpdump::carol.strongswan.org > moon.strongswan.org: ESP::YES
-moon::tcpdump::moon.strongswan.org >  carol.strongswan.org: ESP::YES

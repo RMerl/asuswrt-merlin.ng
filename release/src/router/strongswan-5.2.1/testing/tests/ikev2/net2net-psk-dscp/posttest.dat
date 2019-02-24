@@ -1,8 +1,0 @@
-moon::ipsec stop
-sun::ipsec stop
-moon::iptables-restore < /etc/iptables.flush
-sun::iptables-restore < /etc/iptables.flush
-alice::iptables -t mangle -F OUTPUT
-venus::iptables -t mangle -F OUTPUT
-bob::iptables -t mangle -F OUTPUT
-

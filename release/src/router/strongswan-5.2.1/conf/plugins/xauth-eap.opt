@@ -1,2 +1,0 @@
-charon.plugins.xauth-eap.backend = radius
-	EAP plugin to be used as backend for XAuth credential verification.

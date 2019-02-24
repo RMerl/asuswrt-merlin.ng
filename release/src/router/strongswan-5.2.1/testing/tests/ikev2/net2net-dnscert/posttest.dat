@@ -1,8 +1,0 @@
-moon::ipsec stop
-sun::ipsec stop
-moon::iptables-restore < /etc/iptables.flush
-sun::iptables-restore < /etc/iptables.flush
-moon::rm /etc/resolv.conf
-sun::rm /etc/resolv.conf
-moon::rm /etc/ipsec.d/dnssec.keys
-sun::rm /etc/ipsec.d/dnssec.keys

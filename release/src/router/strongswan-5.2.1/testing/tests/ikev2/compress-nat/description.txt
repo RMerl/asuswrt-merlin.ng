@@ -1,3 +1,0 @@
-The peers <b>alice</b> and <b>bob</b> are located behind the NAT routers <b>moon</b> and <b>sun</b>,
-respectively. They both connect to a central gateway <b>carol</b> using IPComp.
-In order to test the IPsec tunnel both peers ping each other and gateway <b>carol</b>.

@@ -1,6 +1,0 @@
-sun::iptables -t mangle -n -v -L PREROUTING
-sun::iptables -t nat -n -v -L
-moon::ipsec stop
-sun::ipsec stop
-moon::iptables-restore < /etc/iptables.flush
-sun::iptables-restore < /etc/iptables.flush

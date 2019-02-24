@@ -1,6 +1,0 @@
-The router <b>moon</b> sets up a connection to gateway <b>sun</b> in order
-to reach the subnet hidden behind <b>sun</b>. The gateway <b>sun</b> assigns a
-virtual IP address to router <b>moon</b>. A special updown script on <b>moon</b>
-specified by <b>leftupdown=/etc/nat_updown</b> dynamically inserts a source NAT rule
-which maps the IP address of client <b>alice</b> to the virtual IP of <b>moon</b>.
-This allows <b>alice</b> to access client <b>bob</b> via the established IPsec tunnel.

@@ -1,5 +1,0 @@
-An IPsec <b>AH transport-mode</b> connection using HMAC_SHA256 between the hosts
-<b>moon</b> and <b>sun</b> is successfully set up using IKEv1. <b>leftfirewall=yes</b>
-automatically inserts iptables-based firewall rules that let pass the decrypted
-IP packets. In order to test the host-to-host connection <b>moon</b> pings
-<b>sun</b>.

@@ -1,8 +1,0 @@
-The VPN gateway <b>moon</b> controls the access to the hosts <b>alice</b> and
-<b>venus</b> by means of wildcard parameters that must match the subject
-<b>Distinguished Name</b> contained in the peer's X.509 certificate. Access to
-<b>alice</b> is granted for DNs containing a OU=Research field whereas <b>venus</b>
-can only be reached with a DN containing OU=Accounting. The roadwarriors
-<b>carol</b> and <b>dave</b> belong to the departments 'Research' and 'Accounting',
-respectively. Therefore <b>carol</b> can access <b>alice</b> and <b>dave</b>
-can reach <b>venus</b>.

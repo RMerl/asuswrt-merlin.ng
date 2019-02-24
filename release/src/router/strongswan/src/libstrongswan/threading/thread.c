@@ -39,6 +39,13 @@ static inline pid_t gettid()
 
 #include "thread.h"
 
+#if defined(HND_ROUTER)
+pthread_attr_t attr;
+pthread_attr_t *attrp = NULL;
+#define DEFAULT_PTHREAD_BLOCK_SIZE 0x20000
+static int pthread_block_size = DEFAULT_PTHREAD_BLOCK_SIZE;
+#endif
+
 typedef struct private_thread_t private_thread_t;
 
 struct private_thread_t {
@@ -146,6 +153,10 @@ static void cancel_signal_handler(int sig)
  */
 static void thread_destroy(private_thread_t *this)
 {
+#if defined(HND_ROUTER)
+	if (attrp != NULL) pthread_attr_destroy(attrp);
+#endif
+
 	if (!this->terminated || !this->detached_or_joined)
 	{
 		this->mutex->unlock(this->mutex);
@@ -344,7 +355,11 @@ thread_t *thread_create(thread_main_t main, void *arg)
 	this->main = main;
 	this->arg = arg;
 
+#if defined(HND_ROUTER)
+	if (pthread_create(&this->thread_id, attrp, (void*)thread_main, this) != 0)
+#else
 	if (pthread_create(&this->thread_id, NULL, (void*)thread_main, this) != 0)
+#endif
 	{
 		DBG1(DBG_LIB, "failed to create thread!");
 		this->mutex->lock(this->mutex);
@@ -486,7 +501,24 @@ static thread_value_t *dummy1;
  * Described in header.
  */
 void threads_init()
-{
+{ 
+#if defined(HND_ROUTER)
+	FILE *fp = fopen("/tmp/ipsec_stack_block_size", "r");
+	char buf[64];
+
+	memset(buf, 0, sizeof(buf));
+	attrp = &attr;
+
+	if(fp != NULL){
+		fgets(buf, sizeof(buf), fp);
+		pthread_block_size = strtol(buf, NULL, 16);
+		fclose(fp);
+	}
+
+	/* change the default stack size of pthread */
+	pthread_attr_init(&attr);
+	pthread_attr_setstacksize(&attr, pthread_block_size);
+#endif	
 	private_thread_t *main_thread = thread_create_internal();
 
 	dummy1 = thread_value_create(NULL);

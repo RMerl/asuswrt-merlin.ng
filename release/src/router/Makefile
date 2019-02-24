@@ -7132,7 +7132,8 @@ openssl-1.1.x/Makefile:
 	cd openssl-1.1.x && \
 	./Configure $(HOSTCONFIG) --prefix=/usr --openssldir=/etc --cross-compile-prefix=' ' \
 	-ffunction-sections -fdata-sections -Wl,--gc-sections \
-	shared $(OPENSSL_CIPHERS) no-ssl3 no-err no-async --api=1.0.0
+	shared $(OPENSSL_CIPHERS) no-ssl3 no-err no-async --api=1.0.0 \
+	$(if $(filter y,$(HND_ROUTER)),,-DOPENSSL_PREFER_CHACHA_OVER_GCM)
 	-@$(MAKE) -C openssl-1.1.x depend clean
 	@touch $@
 

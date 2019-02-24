@@ -400,6 +400,7 @@ pem_password_callback(char *buf, int size, int rwflag, void *u)
 
 static bool auth_user_pass_enabled;     /* GLOBAL */
 static struct user_pass auth_user_pass; /* GLOBAL */
+static struct user_pass auth_token;     /* GLOBAL */
 
 #ifdef ENABLE_CLIENT_CR
 static char *auth_challenge; /* GLOBAL */
@@ -409,7 +410,7 @@ void
 auth_user_pass_setup(const char *auth_file, const struct static_challenge_info *sci)
 {
     auth_user_pass_enabled = true;
-    if (!auth_user_pass.defined)
+    if (!auth_user_pass.defined && !auth_token.defined)
     {
 #if AUTO_USERID
         get_user_pass_auto_userid(&auth_user_pass, auth_file);
@@ -451,7 +452,7 @@ ssl_set_auth_nocache(void)
 {
     passbuf.nocache = true;
     auth_user_pass.nocache = true;
-    /* wait for push-reply, because auth-token may invert nocache */
+    /* wait for push-reply, because auth-token may still need the username */
     auth_user_pass.wait_for_push = true;
 }
 
@@ -461,15 +462,18 @@ ssl_set_auth_nocache(void)
 void
 ssl_set_auth_token(const char *token)
 {
-    if (auth_user_pass.nocache)
-    {
-        msg(M_INFO,
-            "auth-token received, disabling auth-nocache for the "
-            "authentication token");
-        auth_user_pass.nocache = false;
-    }
+    set_auth_token(&auth_user_pass, &auth_token, token);
+}
 
-    set_auth_token(&auth_user_pass, token);
+/*
+ * Cleans an auth token and checks if it was active
+ */
+bool
+ssl_clean_auth_token (void)
+{
+    bool wasdefined = auth_token.defined;
+    purge_user_pass(&auth_token, true);
+    return wasdefined;
 }
 
 /*
@@ -624,9 +628,10 @@ init_ssl(const struct options *options, struct tls_root_ctx *new_ctx)
     tls_ctx_set_cert_profile(new_ctx, options->tls_cert_profile);
 
     /* Allowable ciphers */
-    /* Since @SECLEVEL also influces loading of certificates, set the
+    /* Since @SECLEVEL also influences loading of certificates, set the
      * cipher restrictions before loading certificates */
     tls_ctx_restrict_ciphers(new_ctx, options->cipher_list);
+    tls_ctx_restrict_ciphers_tls13(new_ctx, options->cipher_list_tls13);
 
     if (!tls_ctx_set_options(new_ctx, options->ssl_flags))
     {
@@ -1993,7 +1998,7 @@ tls_session_update_crypto_params(struct tls_session *session,
     }
 
     /* Update frame parameters: undo worst-case overhead, add actual overhead */
-    frame_add_to_extra_frame(frame, -(crypto_max_overhead()));
+    frame_remove_from_extra_frame(frame, crypto_max_overhead());
     crypto_adjust_frame_parameters(frame, &session->opt->key_type,
                                    options->use_iv, options->replay, packet_id_long_form);
     frame_finalize(frame, options->ce.link_mtu_defined, options->ce.link_mtu,
@@ -2381,19 +2386,26 @@ key_method_2_write(struct buffer *buf, struct tls_session *session)
 #else
         auth_user_pass_setup(session->opt->auth_user_pass_file, NULL);
 #endif
-        if (!write_string(buf, auth_user_pass.username, -1))
+        struct user_pass *up = &auth_user_pass;
+
+        /*
+         * If we have a valid auth-token, send that instead of real
+         * username/password
+         */
+        if (auth_token.defined)
+            up = &auth_token;
+
+        if (!write_string(buf, up->username, -1))
         {
             goto error;
         }
-        if (!write_string(buf, auth_user_pass.password, -1))
+        else if (!write_string(buf, up->password, -1))
         {
             goto error;
         }
         /* if auth-nocache was specified, the auth_user_pass object reaches
          * a "complete" state only after having received the push-reply
          * message.
-         * This is the case because auth-token statement in a push-reply would
-         * invert its nocache.
          *
          * For this reason, skip the purge operation here if no push-reply
          * message has been received yet.
@@ -3664,8 +3676,8 @@ tls_pre_decrypt(struct tls_multi *multi,
             }
 
             /*
-             * We have an authenticated packet (if --tls-auth was set).
-             * Now pass to our reliability level which deals with
+             * We have an authenticated control channel packet (if --tls-auth was set).
+             * Now pass to our reliability layer which deals with
              * packet acknowledgements, retransmits, sequencing, etc.
              */
             {
@@ -4125,6 +4137,30 @@ tls_check_ncp_cipher_list(const char *list)
     free(tmp_ciphers);
 
     return 0 < strlen(list) && !unsupported_cipher_found;
+}
+
+void
+show_available_tls_ciphers(const char *cipher_list,
+                           const char *cipher_list_tls13,
+                           const char *tls_cert_profile)
+{
+    printf("Available TLS Ciphers, listed in order of preference:\n");
+
+#if (ENABLE_CRYPTO_OPENSSL && OPENSSL_VERSION_NUMBER >= 0x1010100fL)
+    printf("\nFor TLS 1.3 and newer (--tls-ciphersuites):\n\n");
+    show_available_tls_ciphers_list(cipher_list_tls13, tls_cert_profile, true);
+#else
+    (void) cipher_list_tls13;  /* Avoid unused warning */
+#endif
+
+    printf("\nFor TLS 1.2 and older (--tls-cipher):\n\n");
+    show_available_tls_ciphers_list(cipher_list, tls_cert_profile, false);
+
+    printf("\n"
+    "Be aware that that whether a cipher suite in this list can actually work\n"
+    "depends on the specific setup of both peers. See the man page entries of\n"
+    "--tls-cipher and --show-tls for more details.\n\n"
+    );
 }
 
 /*

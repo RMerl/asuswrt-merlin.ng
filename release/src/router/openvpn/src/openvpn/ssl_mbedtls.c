@@ -232,6 +232,19 @@ tls_translate_cipher_name(const char *cipher_name)
 }
 
 void
+tls_ctx_restrict_ciphers_tls13(struct tls_root_ctx *ctx, const char *ciphers)
+{
+    if (ciphers == NULL)
+    {
+        /* Nothing to do, return without warning message */
+        return;
+    }
+
+    msg(M_WARN, "mbed TLS does not support setting tls-ciphersuites. "
+                "Ignoring TLS 1.3 cipher list: %s", ciphers);
+}
+
+void
 tls_ctx_restrict_ciphers(struct tls_root_ctx *ctx, const char *ciphers)
 {
     char *tmp_ciphers, *tmp_ciphers_orig, *token;
@@ -853,7 +866,7 @@ tls_ctx_personalise_random(struct tls_root_ctx *ctx)
         const md_kt_t *sha256_kt = md_kt_get("SHA256");
         mbedtls_x509_crt *cert = ctx->crt_chain;
 
-        if (0 != md_full(sha256_kt, cert->tbs.p, cert->tbs.len, sha256_hash))
+        if (!md_full(sha256_kt, cert->tbs.p, cert->tbs.len, sha256_hash))
         {
             msg(M_WARN, "WARNING: failed to personalise random");
         }
@@ -1327,9 +1340,15 @@ print_details(struct key_state_ssl *ks_ssl, const char *prefix)
 }
 
 void
-show_available_tls_ciphers(const char *cipher_list,
-                           const char *tls_cert_profile)
+show_available_tls_ciphers_list(const char *cipher_list,
+                                const char *tls_cert_profile,
+                                bool tls13)
 {
+    if (tls13)
+    {
+        /* mbed TLS has no TLS 1.3 support currently */
+        return;
+    }
     struct tls_root_ctx tls_ctx;
     const int *ciphers = mbedtls_ssl_list_ciphersuites();
 
@@ -1342,18 +1361,11 @@ show_available_tls_ciphers(const char *cipher_list,
         ciphers = tls_ctx.allowed_ciphers;
     }
 
-#ifndef ENABLE_SMALL
-    printf("Available TLS Ciphers,\n");
-    printf("listed in order of preference:\n\n");
-#endif
-
     while (*ciphers != 0)
     {
         printf("%s\n", mbedtls_ssl_get_ciphersuite_name(*ciphers));
         ciphers++;
     }
-    printf("\n" SHOW_TLS_CIPHER_LIST_WARNING);
-
     tls_ctx_free(&tls_ctx);
 }
 

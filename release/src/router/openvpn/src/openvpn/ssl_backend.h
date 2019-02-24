@@ -171,13 +171,24 @@ bool tls_ctx_initialised(struct tls_root_ctx *ctx);
 bool tls_ctx_set_options(struct tls_root_ctx *ctx, unsigned int ssl_flags);
 
 /**
- * Restrict the list of ciphers that can be used within the TLS context.
+ * Restrict the list of ciphers that can be used within the TLS context for TLS 1.2
+ * and below
  *
  * @param ctx           TLS context to restrict, must be valid.
  * @param ciphers       String containing : delimited cipher names, or NULL to use
  *                                      sane defaults.
  */
 void tls_ctx_restrict_ciphers(struct tls_root_ctx *ctx, const char *ciphers);
+
+/**
+ * Restrict the list of ciphers that can be used within the TLS context for TLS 1.3
+ * and higher
+ *
+ * @param ctx           TLS context to restrict, must be valid.
+ * @param ciphers       String containing : delimited cipher names, or NULL to use
+ *                                      sane defaults.
+ */
+void tls_ctx_restrict_ciphers_tls13(struct tls_root_ctx *ctx, const char *ciphers);
 
 /**
  * Set the TLS certificate profile.  The profile defines which crypto
@@ -515,15 +526,19 @@ int key_state_read_plaintext(struct key_state_ssl *ks_ssl, struct buffer *buf,
 void print_details(struct key_state_ssl *ks_ssl, const char *prefix);
 
 /*
- * Show the TLS ciphers that are available for us to use in the OpenSSL
- * library.
+ * Show the TLS ciphers that are available for us to use in the
+ * library depending on the TLS version. This function prints
+ * a list of ciphers without headers/footers.
  *
  * @param cipher_list       list of allowed TLS cipher, or NULL.
  * @param tls_cert_profile  TLS certificate crypto profile name.
+ * @param tls13             Select if <=TLS1.2 or TLS1.3+ ciphers
+ *                          should be shown
  */
 void
-show_available_tls_ciphers(const char *cipher_list,
-                           const char *tls_cert_profile);
+show_available_tls_ciphers_list(const char *cipher_list,
+                                const char *tls_cert_profile,
+                                bool tls13);
 
 /*
  * Show the available elliptic curves in the crypto library

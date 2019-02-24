@@ -1181,7 +1181,7 @@ Option flags:
 .B local \-\-
 Add the
 .B local
-flag if both OpenVPN servers are directly connected via a common subnet,
+flag if both OpenVPN peers are directly connected via a common subnet,
 such as with wireless.  The
 .B local
 flag will cause step
@@ -2516,6 +2516,16 @@ If the
 parameter is empty, compression will be turned off, but the packet
 framing for compression will still be enabled, allowing a different
 setting to be pushed later.
+
+.B Security Considerations
+
+Compression and encryption is a tricky combination.  If an attacker knows or is
+able to control (parts of) the plaintext of packets that contain secrets, the
+attacker might be able to extract the secret if compression is enabled.  See
+e.g. the CRIME and BREACH attacks on TLS which also leverage compression to
+break encryption.  If you are not entirely sure that the above does not apply
+to your traffic, you are advised to *not* enable compression.
+
 .\"*********************************************************
 .TP
 .B \-\-comp\-lzo [mode]
@@ -3057,7 +3067,7 @@ IV_NCP=2 \-\- negotiable ciphers, client supports
 pushed by the server, a value of 2 or greater indicates client
 supports AES\-GCM\-128 and AES\-GCM\-256.
 
-IV_UI_VER=<gui_id> <version> \-\- the UI version of a UI if one is
+IV_GUI_VER=<gui_id> <version> \-\- the UI version of a UI if one is
 running, for example "de.blinkt.openvpn 0.5.47" for the
 Android app.
 
@@ -4920,11 +4930,13 @@ determines the derivation of the tunnel session keys.
 .\"*********************************************************
 .TP
 .B \-\-tls\-cipher l
+.TQ
+.B \-\-tls\-ciphersuites l
 A list
 .B l
 of allowable TLS ciphers delimited by a colon (":").
 
-This setting can be used to ensure that certain cipher suites are used (or
+These setting can be used to ensure that certain cipher suites are used (or
 not used) for the TLS connection.  OpenVPN uses TLS to secure the control
 channel, over which the keys that are used to protect the actual VPN traffic
 are exchanged.
@@ -4933,20 +4945,32 @@ The supplied list of ciphers is (after potential OpenSSL/IANA name translation)
 simply supplied to the crypto library.  Please see the OpenSSL and/or mbed TLS
 documentation for details on the cipher list interpretation.
 
+For OpenSSL, the
+.B \-\-tls-cipher
+is used for TLS 1.2 and below. For TLS 1.3 and up, the
+.B \-\-tls\-ciphersuites
+setting is used. mbed TLS has no TLS 1.3 support yet and only the
+.B \-\-tls-cipher
+setting is used.
+
 Use
 .B \-\-show\-tls
 to see a list of TLS ciphers supported by your crypto library.
 
 Warning!
 .B \-\-tls\-cipher
-is an expert feature, which \- if used correcly \- can improve the security of
-your VPN connection.  But it is also easy to unwittingly use it to carefully
+and
+.B \-\-tls\-ciphersuites
+are expert features, which \- if used correcly \- can improve the security of
+your VPN connection.  But it is also easy to unwittingly use them to carefully
 align a gun with your foot, or just break your connection.  Use with care!
 
 The default for \-\-tls\-cipher is to use mbed TLS's default cipher list
 when using mbed TLS or
 "DEFAULT:!EXP:!LOW:!MEDIUM:!kDH:!kECDH:!DSS:!PSK:!SRP:!kRSA" when using
 OpenSSL.
+
+The default for \-\-tls\-ciphersuites is to use the crypto library's default.
 .\"*********************************************************
 .TP
 .B \-\-tls\-cert\-profile profile
@@ -5314,6 +5338,12 @@ into the file/buffer for dynamic configuration data.  This
 will then make the OpenVPN server to push this value to the
 client, which replaces the local password with the
 UNIQUE_TOKEN_VALUE.
+
+Newer clients (2.4.7+) will fall back to the original password method
+after a failed auth. Older clients will keep using the token value
+and react acording to
+.B \-\-auth-retry
+.
 .\"*********************************************************
 .TP
 .B \-\-tls\-verify cmd

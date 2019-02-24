@@ -7,6 +7,12 @@
  * passed into the kernel from userspace via netlink sockets.
  */
 
+#if !defined(__KERNEL__) && defined(HND_ROUTER) && !defined(__aarch64__)
+#define XFRM_KERNEL_ALIGN __attribute__((aligned(8)))
+#else
+#define XFRM_KERNEL_ALIGN
+#endif
+
 /* Structure to encapsulate addresses. I do not want to use
  * "standard" structure. My apologies.
  */
@@ -363,7 +369,7 @@ struct xfrm_usersa_info {
 #define XFRM_STATE_AF_UNSPEC	32
 #define XFRM_STATE_ALIGN4	64
 #define XFRM_STATE_ESN		128
-};
+} XFRM_KERNEL_ALIGN;
 
 struct xfrm_usersa_id {
 	xfrm_address_t			daddr;
@@ -400,7 +406,7 @@ struct xfrm_userpolicy_info {
 	/* Automatically expand selector to include matching ICMP payloads. */
 #define XFRM_POLICY_ICMP	2
 	__u8				share;
-};
+} XFRM_KERNEL_ALIGN;
 
 struct xfrm_userpolicy_id {
 	struct xfrm_selector		sel;

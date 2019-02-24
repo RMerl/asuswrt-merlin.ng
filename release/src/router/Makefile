@@ -5250,7 +5250,7 @@ usbclient-clean:
 ##strongswan/IPSEC
 strongswan-5.2.1/stamp-h1:
 	cd strongswan-5.2.1 && autoreconf -i -f && \
-	$(if $(RTCONFIG_HND_ROUTER),$(CONFIGURE_64) CC=$(CROSS_COMPILE_64)gcc RANLIB=$(CROSS_COMPILE_64)ranlib, $(CONFIGURE) CC=$(CC)) \
+	$(CONFIGURE) \
 	--prefix=/usr/ --sysconfdir=/etc/ --localstatedir=/var/ \
 	--bindir=/usr/sbin --libdir=/usr/lib \
 	--libexecdir=/usr/lib --with-ipsecdir=/usr/lib/ipsec --with-user=admin \
@@ -5259,7 +5259,7 @@ strongswan-5.2.1/stamp-h1:
 	--with-strongswan-conf=/etc/strongswan.conf --enable-md4 --enable-acert \
 	--enable-cmd --enable-eap-tls --enable-libipsec \
 	CFLAGS="-O3 -I$(STAGEDIR)/usr/include -I$(TOP)/openssl/include $(if $(RTCONFIG_HND_ROUTER),-DHND_ROUTER,)" \
-	LDFLAGS="$(if $(RTCONFIG_HND_ROUTER), -L$(TOP)/strongswan-5.2.1, -L$(STAGEDIR)/usr/lib -L$(TOP)/openssl)" \
+	LDFLAGS="-L$(STAGEDIR)/usr/lib -L$(TOP)/openssl" \
 	LIBS="-lssl -lcrypto -lpthread -ldl -lm"
 	touch $@
 

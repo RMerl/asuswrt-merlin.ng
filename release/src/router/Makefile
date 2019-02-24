@@ -5416,8 +5416,8 @@ net-snmp-5.7.2/stamp-h1:
 	cd $(TOP)/net-snmp-5.7.2 && $(CONFIGURE) --prefix=$(INSTALLDIR)/net-snmp-5.7.2/usr \
 		--disable-embedded-perl --with-perl-modules=no --disable-debugging --enable-mini-agent \
 		--with-transports=UDP --without-kmem-usage --disable-applications --disable-mib-loading \
-		--disable-scripts --disable-mibs --disable-manuals --with-openssl=$(TOP)/openssl \
-		--with-ldflags="-L$(TOP)/openssl" --with-libs="$(EXTRA_FLAG)" \
+		--disable-scripts --disable-mibs --disable-manuals --with-openssl=$(TOP)/$(OPENSSLDIR) \
+		--with-ldflags="-L$(TOP)/$(OPENSSLDIR)" --with-libs="$(EXTRA_FLAG) -pthread" \
 		--with-cflags="$(SNMPD_CFLAGS)" --with-default-snmp-version="3" \
 		--with-sys-location=Unknown --with-logfile=/var/log/snmpd.log \
 		--with-persistent-directory=/var/net-snmp --with-sys-contact=root@localhost \

@@ -2,11 +2,49 @@ Asuswrt-Merlin 384/NG Changelog
 ===============================
 
 384.10 (xx-xxx-2019)
+  - NEW: Added OpenSSL 1.1.1a in parallel to 1.0.2.  Some services
+         are still linked against 1.0.2 because only Asus can
+         recompile these (like AiCloud).
+
+         Services that currently use OpenSSL 1.1.1:
+         httpd (webui), OpenVPN, wget, net-snmp,
+         Tor, Strongswan (IPSEC server), inadyn, vsftpd.
+
+         Note that 1.1.x is slightly slower than 1.0.2, however
+         some services can benefit from the TLS 1.3 support (faster
+         connection estalishing).
+
+         Models that lack AES acceleration will priorize the use
+         of CHACHA20 over AES-256-GCM, for a small performance
+         improvement (for instance with the webui).
+
+         Note that OpenVPN 2.4.7's support is still limited.
+         TLS 1.3 should be supported, but CHACHA20 support is
+         only expected with OpenVPN 2.5.0.
+
+         The 1.0.2 userspace tool is still named "openssl", while
+         the 1.1.x version is named "openssl11".
+
+  - CHANGED: Some firmware cleanups to regain flash space (for
+             use with the parallel OpeNSSL 1.1.x install)
+             (RMerlin, Themiron)
   - CHANGED: Updated curl to 7.64.0.
   - CHANGED: Updated OpenVPN to 2.4.7.
-  - CHANGED: Removed CFB and OFB ciphers from OpenVPN clients
-  - CHANGED: limit Classification entries to 300 max, to prevent
+  - CHANGED: Updated Tor to 0.3.5.8.
+  - CHANGED: Updated strongswan to 5.7.2.
+  - CHANGED: Removed CFB and OFB ciphers from OpenVPN client
+  - CHANGED: Limit Classification entries to 300 max, to prevent
              major performance issues with many connections.
+  - CHANGED: Strongswan is no longer compiled 64-bit
+             on HND, allowing it to use a shared openssl library
+             instead of a static one.  This should significantly
+             reduce the memory usage of Strongswan as well as
+             flash usage.  (Themiron)
+  - FIXED: IPSEC log display wasn't properly formatted (showed
+                 entirely on a single line)
+  - REMOVED: Beceem Wimax driver.  This is deprecated, and was
+             already removed from the HND models.  This allows
+             to reclaim close to 2 MB of flash space.
 
 
 384.9 (2-Feb-2019)

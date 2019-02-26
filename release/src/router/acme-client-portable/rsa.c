@@ -26,6 +26,8 @@
 #include <openssl/pem.h>
 #include <openssl/rsa.h>
 
+#include "compat-openssl.h"
+
 #include "rsa.h"
 
 /*
@@ -87,7 +89,7 @@ rsa_key_load(FILE *f, const char *fname)
 	if (NULL == pkey) {
 		warnx("%s: PEM_read_PrivateKey", fname);
 		return (NULL);
-	} else if (EVP_PKEY_RSA == EVP_PKEY_type(pkey->type))
+	} else if (EVP_PKEY_RSA == EVP_PKEY_base_id(pkey))
 		return (pkey);
 
 	warnx("%s: unsupported key type", fname);
@@ -109,8 +111,8 @@ key_load(FILE *f, const char *fname)
 		return (NULL);
 	} 
 	
-	if (EVP_PKEY_RSA == EVP_PKEY_type(pkey->type) ||
-	    EVP_PKEY_EC == EVP_PKEY_type(pkey->type))
+	if (EVP_PKEY_RSA == EVP_PKEY_base_id(pkey) ||
+	    EVP_PKEY_EC == EVP_PKEY_base_id(pkey))
 		return (pkey);
 
 	warnx("%s: unsupported key type", fname);

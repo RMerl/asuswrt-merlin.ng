@@ -6356,29 +6356,29 @@ norton${BCMEX}-clean:
 .PHONY : email-3.1.3 email-3.1.3-clean
 
 ifeq ($(RTCONFIG_NOTIFICATION_CENTER),y)
-email-3.1.3/stamp-h1: $(OPENSSLDIR)
+email-3.1.3/Makefile: $(OPENSSLDIR)
 	cd $(TOP)/email-3.1.3 && \
 	$(CONFIGURE) --with-ssl --sysconfdir=/etc \
-		CFLAGS="-I$(SRCBASE)/router/$(OPENSSLDIR)/include -I$(TOP)/nt_center/lib -I$(TOP)/sqlite -DRTCONFIG_NOTIFICATION_CENTER" \
+		CFLAGS="-Os -Wall -I$(SRCBASE)/router/$(OPENSSLDIR)/include -I$(TOP)/nt_center/lib -I$(TOP)/sqlite -DRTCONFIG_NOTIFICATION_CENTER" \
 		LDFLAGS="-L$(SRCBASE)/router/$(OPENSSLDIR) -L$(TOP)/nt_center/lib -L$(TOP)/sqlite/.libs" \
 		LIBS="-lnt -lsqlite3 -lpthread -lcrypto -lssl $(if $(RTCONFIG_QCA), -ldl)"
 	touch $@
 else
-email-3.1.3/stamp-h1: $(OPENSSLDIR)
+email-3.1.3/Makefile: $(OPENSSLDIR)
 	cd $(TOP)/email-3.1.3 && \
 	$(CONFIGURE) --with-ssl --sysconfdir=/etc \
-		CFLAGS=-I$(SRCBASE)/router/$(OPENSSLDIR)/include \
+		CFLAGS="-Os -Wall -I$(SRCBASE)/router/$(OPENSSLDIR)/include" \
 		LDFLAGS="-L$(SRCBASE)/router/$(OPENSSLDIR)" \
 		LIBS="-lcrypto -lssl $(if $(RTCONFIG_QCA), -ldl)"
 	touch $@
 endif
 
-email-3.1.3: email-3.1.3/stamp-h1
+email-3.1.3: email-3.1.3/Makefile
 	$(MAKE) -C email-3.1.3
 
 email-3.1.3-clean:
-	-@$(MAKE) -C email-3.1.3 clean
-	@rm -f email-3.1.3/stamp-h1
+	-[ ! -f email-3.1.3/Makefile ] || $(MAKE) -C email-3.1.3 distclean
+	@rm -f email-3.1.3/Makefile
 
 email-3.1.3-install:
 	if [ -f email-3.1.3/Makefile ] ; then \
@@ -7298,7 +7298,7 @@ openssl-1.1.x-install:
 openssl-1.1.x-stage:
 	 $(MAKE) -C openssl-1.1.x install_sw INSTALL_PREFIX=$(STAGEDIR)
 
-libvpn: $(OPENSSLDIR) shared nvram$(BCMEX)$(EX7)
+libvpn: shared nvram$(BCMEX)$(EX7)
 	@$(SEP)
 	$(MAKE) -C libvpn
 # End merlin components

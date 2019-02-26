@@ -25,7 +25,7 @@ AC_CHECK_LIB(socket, socket)
 AC_CHECK_LIB(m, sqrt)
 AC_CHECK_LIB(nsl, gethostbyname)
 if test -z "$use_ssl" -o "$use_ssl" = "yes"; then
-	AC_CHECK_LIB(ssl, SSL_library_init)
+	AC_CHECK_LIB(ssl, SSL_new)
 	AC_CHECK_LIB(crypto, X509_free)
 	AC_CHECK_LIB(crypto, RAND_seed)
 fi

@@ -29,6 +29,8 @@
 #include <openssl/x509v3.h>
 #include <openssl/err.h>
 
+#include "compat-openssl.h"
+
 #include "extern.h"
 
 #define MARKER "-----BEGIN CERTIFICATE-----"
@@ -61,14 +63,14 @@ x509buf(X509 *x, size_t *sz)
 	 * Make into nil-terminated, just in case.
 	 */
 
-	if (NULL == (p = calloc(1, bio->num_write + 1))) {
+	if (NULL == (p = calloc(1, BIO_number_written(bio) + 1))) {
 		warn("calloc");
 		BIO_free(bio);
 		return (NULL);
 	}
 
-	ssz = BIO_read(bio, p, bio->num_write);
-	if (ssz < 0 || (unsigned)ssz != bio->num_write) {
+	ssz = BIO_read(bio, p, BIO_number_written(bio));
+	if (ssz < 0 || (unsigned)ssz != BIO_number_written(bio)) {
 		warnx("BIO_read");
 		BIO_free(bio);
 		return (NULL);

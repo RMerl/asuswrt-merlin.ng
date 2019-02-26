@@ -167,15 +167,28 @@ dnetUseTls(dsocket *sd)
 		return ERROR;
 	}
 
+#if OPENSSL_API_COMPAT >= 0x10100000L
+	OPENSSL_init_ssl(0, NULL);
+#else
 	SSL_load_error_strings();
 	if (SSL_library_init() == -1) {
 		return ERROR;
 	}
+#endif
 	_genRandomSeed();
-	sd->ctx = SSL_CTX_new(TLSv1_client_method());
+#if OPENSSL_VERSION_NUMBER >= 0x10100000L
+	sd->ctx = SSL_CTX_new(TLS_client_method());
+#else
+	sd->ctx = SSL_CTX_new(SSLv23_client_method());
+#endif
 	if (!sd->ctx) {
 		return ERROR;
 	}
+#if OPENSSL_VERSION_NUMBER >= 0x10100000L
+	SSL_CTX_set_min_proto_version(sd->ctx, TLS1_VERSION);
+#else
+	SSL_CTX_set_options(sd->ctx, SSL_OP_NO_SSLv2 | SSL_OP_NO_SSLv3);
+#endif
 	sd->ssl = SSL_new(sd->ctx);
 	if (!sd->ssl) {
 		SSL_CTX_free(sd->ctx);
@@ -233,9 +246,9 @@ dnetClose(dsocket *sd)
 		if (sd->ssl) {
 			SSL_shutdown(sd->ssl);
 			SSL_free(sd->ssl);
-			if (sd->ctx) {
-				SSL_CTX_free(sd->ctx);
-			}
+		}
+		if (sd->ctx) {
+			SSL_CTX_free(sd->ctx);
 		}
 #endif
 		if (sd->buf) {

@@ -38,3 +38,5 @@ dhashtest:
 clean:
 	rm -f src/*.o *.so *.a test
 
+clean-all:
+	rm -f Makefile src/*.o *.so *.a test

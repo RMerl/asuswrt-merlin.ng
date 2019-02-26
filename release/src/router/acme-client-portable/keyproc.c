@@ -32,6 +32,8 @@
 #include <openssl/x509.h>
 #include <openssl/x509v3.h>
 
+#include "compat-openssl.h"
+
 #include "extern.h"
 #include "rsa.h"
 
@@ -152,7 +154,7 @@ keyproc(int netsock, const char *keyfile,
 		if (NULL == (pkey = key_load(f, keyfile)))
 			goto out;
 		doddbg("%s: loaded %s domain key", keyfile, 
-			EVP_PKEY_RSA == EVP_PKEY_type(pkey->type) ?
+			EVP_PKEY_RSA == EVP_PKEY_base_id(pkey) ?
 			"RSA" : "ECSDA");
 
 	}

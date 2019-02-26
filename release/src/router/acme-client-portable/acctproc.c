@@ -31,6 +31,8 @@
 #include <openssl/rand.h>
 #include <openssl/err.h>
 
+#include "compat-openssl.h"
+
 #include "extern.h"
 #include "rsa.h"
 
@@ -81,9 +83,9 @@ op_thumb_rsa(EVP_PKEY *pkey)
 
 	if (NULL == (r = EVP_PKEY_get1_RSA(pkey)))
 		warnx("EVP_PKEY_get1_RSA");
-	else if (NULL == (mod = bn2string(r->n)))
+	else if (NULL == (mod = bn2string(RSA_get0_n(r))))
 		warnx("bn2string");
-	else if (NULL == (exp = bn2string(r->e)))
+	else if (NULL == (exp = bn2string(RSA_get0_e(r))))
 		warnx("bn2string");
 	else if (NULL == (json = json_fmt_thumb_rsa(exp, mod)))
 		warnx("json_fmt_thumb_rsa");
@@ -107,7 +109,7 @@ op_thumbprint(int fd, EVP_PKEY *pkey)
 
 	/* Construct the thumbprint input itself. */
 
-	switch (EVP_PKEY_type(pkey->type)) {
+	switch (EVP_PKEY_base_id(pkey)) {
 	case EVP_PKEY_RSA:
 		if (NULL != (thumb = op_thumb_rsa(pkey)))
 			break;
@@ -163,6 +165,7 @@ op_sign_rsa(char **head, char **prot, EVP_PKEY *pkey, const char *nonce)
 	int	rc = 0;
 	RSA	*r;
 
+
 	*head = NULL;
 	*prot = NULL;
 
@@ -174,9 +177,9 @@ op_sign_rsa(char **head, char **prot, EVP_PKEY *pkey, const char *nonce)
 
 	if (NULL == (r = EVP_PKEY_get1_RSA(pkey)))
 		warnx("EVP_PKEY_get1_RSA");
-	else if (NULL == (mod = bn2string(r->n)))
+	else if (NULL == (mod = bn2string(RSA_get0_n(r))))
 		warnx("bn2string");
-	else if (NULL == (exp = bn2string(r->e)))
+	else if (NULL == (exp = bn2string(RSA_get0_e(r))))
 		warnx("bn2string");
 	else if (NULL == (*head = json_fmt_header_rsa(exp, mod)))
 		warnx("json_fmt_header_rsa");
@@ -219,7 +222,7 @@ op_sign(int fd, EVP_PKEY *pkey)
 		goto out;
 	}
 
-	switch (EVP_PKEY_type(pkey->type)) {
+	switch (EVP_PKEY_base_id(pkey)) {
 	case EVP_PKEY_RSA:
 		if ( ! op_sign_rsa(&head, &prot, pkey, nonce))
 			goto out;

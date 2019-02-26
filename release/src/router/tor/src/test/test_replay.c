@@ -1,12 +1,12 @@
-/* Copyright (c) 2012-2016, The Tor Project, Inc. */
+/* Copyright (c) 2012-2019, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 #define REPLAYCACHE_PRIVATE
 
 #include "orconfig.h"
-#include "or.h"
-#include "replaycache.h"
-#include "test.h"
+#include "core/or/or.h"
+#include "feature/hs_common/replaycache.h"
+#include "test/test.h"
 
 static const char *test_buffer =
   "Lorem ipsum dolor sit amet, consectetur adipisici elit, sed do eiusmod"
@@ -38,7 +38,7 @@ test_replaycache_alloc(void *arg)
 
   (void)arg;
   r = replaycache_new(600, 300);
-  tt_assert(r != NULL);
+  tt_ptr_op(r, OP_NE, NULL);
 
  done:
   if (r) replaycache_free(r);
@@ -54,15 +54,15 @@ test_replaycache_badalloc(void *arg)
   /* Negative horizon should fail */
   (void)arg;
   r = replaycache_new(-600, 300);
-  tt_assert(r == NULL);
+  tt_ptr_op(r, OP_EQ, NULL);
   /* Negative interval should get adjusted to zero */
   r = replaycache_new(600, -300);
-  tt_assert(r != NULL);
+  tt_ptr_op(r, OP_NE, NULL);
   tt_int_op(r->scrub_interval,OP_EQ, 0);
   replaycache_free(r);
   /* Negative horizon and negative interval should still fail */
   r = replaycache_new(-600, -300);
-  tt_assert(r == NULL);
+  tt_ptr_op(r, OP_EQ, NULL);
 
  done:
   if (r) replaycache_free(r);
@@ -74,7 +74,7 @@ static void
 test_replaycache_free_null(void *arg)
 {
   (void)arg;
-  replaycache_free(NULL);
+  replaycache_free_(NULL);
   /* Assert that we're here without horrible death */
   tt_assert(1);
 
@@ -90,7 +90,7 @@ test_replaycache_miss(void *arg)
 
   (void)arg;
   r = replaycache_new(600, 300);
-  tt_assert(r != NULL);
+  tt_ptr_op(r, OP_NE, NULL);
 
   result =
     replaycache_add_and_test_internal(1200, r, test_buffer,
@@ -123,7 +123,7 @@ test_replaycache_hit(void *arg)
 
   (void)arg;
   r = replaycache_new(600, 300);
-  tt_assert(r != NULL);
+  tt_ptr_op(r, OP_NE, NULL);
 
   result =
     replaycache_add_and_test_internal(1200, r, test_buffer,
@@ -161,7 +161,7 @@ test_replaycache_age(void *arg)
 
   (void)arg;
   r = replaycache_new(600, 300);
-  tt_assert(r != NULL);
+  tt_ptr_op(r, OP_NE, NULL);
 
   result =
     replaycache_add_and_test_internal(1200, r, test_buffer,
@@ -193,7 +193,7 @@ test_replaycache_elapsed(void *arg)
 
   (void)arg;
   r = replaycache_new(600, 300);
-  tt_assert(r != NULL);
+  tt_ptr_op(r, OP_NE, NULL);
 
   result =
     replaycache_add_and_test_internal(1200, r, test_buffer,
@@ -220,7 +220,7 @@ test_replaycache_noexpire(void *arg)
 
   (void)arg;
   r = replaycache_new(0, 0);
-  tt_assert(r != NULL);
+  tt_ptr_op(r, OP_NE, NULL);
 
   result =
     replaycache_add_and_test_internal(1200, r, test_buffer,
@@ -251,7 +251,7 @@ test_replaycache_scrub(void *arg)
 
   (void)arg;
   r = replaycache_new(600, 300);
-  tt_assert(r != NULL);
+  tt_ptr_op(r, OP_NE, NULL);
 
   /* Set up like in test_replaycache_hit() */
   result =
@@ -294,7 +294,7 @@ test_replaycache_future(void *arg)
 
   (void)arg;
   r = replaycache_new(600, 300);
-  tt_assert(r != NULL);
+  tt_ptr_op(r, OP_NE, NULL);
 
   /* Set up like in test_replaycache_hit() */
   result =
@@ -343,7 +343,7 @@ test_replaycache_realtime(void *arg)
   /* Test the realtime as well as *_internal() entry points */
   (void)arg;
   r = replaycache_new(600, 300);
-  tt_assert(r != NULL);
+  tt_ptr_op(r, OP_NE, NULL);
 
   /* This should miss */
   result =

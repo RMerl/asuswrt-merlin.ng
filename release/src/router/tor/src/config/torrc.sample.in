@@ -1,5 +1,5 @@
 ## Configuration file for a typical Tor user
-## Last updated 22 September 2015 for Tor 0.2.7.3-alpha.
+## Last updated 22 December 2017 for Tor 0.3.2.8-rc.
 ## (may or may not work for much older or much newer versions of Tor.)
 ##
 ## Lines that begin with "## " try to explain what's going on. Lines
@@ -95,11 +95,18 @@
 
 ## If you have multiple network interfaces, you can specify one for
 ## outgoing traffic to use.
-# OutboundBindAddress 10.0.0.5
+## OutboundBindAddressExit will be used for all exit traffic, while
+## OutboundBindAddressOR will be used for all OR and Dir connections
+## (DNS connections ignore OutboundBindAddress).
+## If you do not wish to differentiate, use OutboundBindAddress to
+## specify the same address for both in a single line.
+#OutboundBindAddressExit 10.0.0.4
+#OutboundBindAddressOR 10.0.0.5
 
 ## A handle for your relay, so people don't have to refer to it by key.
 ## Nicknames must be between 1 and 19 characters inclusive, and must
 ## contain only the characters [a-zA-Z0-9].
+## If not set, "Unnamed" will be used.
 #Nickname ididnteditheconfig
 
 ## Define these to limit how much relayed traffic you will allow. Your
@@ -130,6 +137,9 @@
 ## descriptors containing these lines and that Google indexes them, so
 ## spammers might also collect them. You may want to obscure the fact that
 ## it's an email address and/or generate a new address for this purpose.
+##
+## If you are running multiple relays, you MUST set this option.
+##
 #ContactInfo Random Person <nobody AT example dot com>
 ## You might also include your PGP or GPG fingerprint if you have one:
 #ContactInfo 0xFFFFFFFF Random Person <nobody AT example dot com>
@@ -156,7 +166,19 @@
 ## https://www.torproject.org/docs/faq#MultipleRelays
 ## However, you should never include a bridge's fingerprint here, as it would
 ## break its concealability and potentially reveal its IP/TCP address.
+##
+## If you are running multiple relays, you MUST set this option.
+##
+## Note: do not use MyFamily on bridge relays.
 #MyFamily $keyid,$keyid,...
+
+## Uncomment this if you do *not* want your relay to allow any exit traffic.
+## (Relays allow exit traffic by default.)
+#ExitRelay 0
+
+## Uncomment this if you want your relay to allow IPv6 exit traffic.
+## (Relays only allow IPv4 exit traffic by default.)
+#IPv6Exit 1
 
 ## A comma-separated list of exit policies. They're considered first
 ## to last, and the first match wins.
@@ -197,10 +219,22 @@
 ## won't be able to block all the bridges. Also, websites won't treat you
 ## differently because they won't know you're running Tor. If you can
 ## be a real relay, please do; but if not, be a bridge!
+##
+## Warning: when running your Tor as a bridge, make sure than MyFamily is
+## NOT configured.
 #BridgeRelay 1
 ## By default, Tor will advertise your bridge to users through various
 ## mechanisms like https://bridges.torproject.org/. If you want to run
 ## a private bridge, for example because you'll give out your bridge
 ## address manually to your friends, uncomment this line:
 #PublishServerDescriptor 0
+
+## Configuration options can be imported from files or folders using the %include
+## option with the value being a path. If the path is a file, the options from the
+## file will be parsed as if they were written where the %include option is. If
+## the path is a folder, all files on that folder will be parsed following lexical
+## order. Files starting with a dot are ignored. Files on subfolders are ignored.
+## The %include option can be used recursively.
+#%include /etc/torrc.d/
+#%include /etc/torrc.custom
 

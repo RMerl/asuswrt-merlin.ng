@@ -1,0 +1,2 @@
+charon.plugins.bliss.use_bliss_b = yes
+	Use the enhanced BLISS-B key generation and signature algorithm.

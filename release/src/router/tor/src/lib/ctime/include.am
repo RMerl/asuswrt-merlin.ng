@@ -1,0 +1,25 @@
+
+noinst_LIBRARIES += src/lib/libtor-ctime.a
+
+if UNITTESTS_ENABLED
+noinst_LIBRARIES += src/lib/libtor-ctime-testing.a
+endif
+
+if ADD_MULODI4
+mulodi4_source=src/ext/mulodi/mulodi4.c
+else
+mulodi4_source=
+endif
+
+src_lib_libtor_ctime_a_SOURCES =			\
+	$(mulodi4_source) 				\
+	src/ext/csiphash.c   				\
+	src/lib/ctime/di_ops.c
+
+src_lib_libtor_ctime_testing_a_SOURCES = \
+	$(src_lib_libtor_ctime_a_SOURCES)
+src_lib_libtor_ctime_a_CFLAGS = @CFLAGS_CONSTTIME@
+src_lib_libtor_ctime_testing_a_CFLAGS = @CFLAGS_CONSTTIME@ $(TEST_CFLAGS)
+
+noinst_HEADERS += \
+	src/lib/ctime/di_ops.h

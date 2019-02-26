@@ -1,12 +1,20 @@
+/* Copyright (c) 2015-2019, The Tor Project, Inc. */
+/* See LICENSE for licensing information */
+
 #include "orconfig.h"
+#include "lib/crypt_ops/crypto_util.h"
+
+#include "lib/intmath/cmp.h"
+#include "lib/malloc/malloc.h"
+
 #include <string.h>
 #include <stdio.h>
 #include <sys/types.h>
 #include <stdlib.h>
 
-#include "crypto.h"
-#include "compat.h"
-#include "util.h"
+#ifdef HAVE_SYS_PARAM_H
+#include <sys/param.h>
+#endif
 
 static unsigned fill_a_buffer_memset(void) __attribute__((noinline));
 static unsigned fill_a_buffer_memwipe(void) __attribute__((noinline));
@@ -36,7 +44,7 @@ const char *s = NULL;
     sum += (unsigned char)buf[i];                                       \
   }
 
-#ifdef __OpenBSD__
+#ifdef OpenBSD
 /* Disable some of OpenBSD's malloc protections for this test. This helps
  * us do bad things, such as access freed buffers, without crashing. */
 const char *malloc_options="sufjj";
@@ -212,4 +220,3 @@ main(int argc, char **argv)
     return 0;
   }
 }
-

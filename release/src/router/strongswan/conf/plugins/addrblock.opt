@@ -1,0 +1,8 @@
+charon.plugins.addrblock.strict = yes
+	Whether to strictly require addrblock extension in subject certificates.
+
+	If set to yes, a subject certificate without an addrblock extension is
+	rejected if the issuer certificate has such an addrblock extension. If set
+	to no, subject certificates issued without the addrblock extension are
+	accepted without any traffic selector checks and no policy is enforced
+	by the plugin.

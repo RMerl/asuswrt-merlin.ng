@@ -1,0 +1,10 @@
+moon::iptables-restore < /etc/iptables.rules
+carol::iptables-restore < /etc/iptables.rules
+moon::ipsec start
+carol::ipsec start
+moon::expect-connection rw-icmp
+moon::expect-connection rw-ssh
+carol::expect-connection home-icmp
+carol::expect-connection home-ssh
+carol::ssh PH_IP_ALICE hostname
+carol::ping -c 1 -W 1 PH_IP_ALICE > /dev/null

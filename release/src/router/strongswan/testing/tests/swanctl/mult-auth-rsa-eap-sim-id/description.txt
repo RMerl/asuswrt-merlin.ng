@@ -1,0 +1,17 @@
+The roadwarrior <b>carol</b> sets up a connection to gateway <b>moon</b>
+using multiple authentication exchanges (RFC 4739). In a first round 
+both <b>carol</b> and <b>moon</b> authenticate themselves by sending 
+an IKEv2 <b>RSA signature</b> accompanied by a certificate.
+<p>
+In a second round <b>carol</b> then uses the <i>Extensible Authentication Protocol</i>
+in association with a <i>GSM Subscriber Identity Module</i> (<b>EAP-SIM</b>) to
+authenticate herself against the remote RADIUS server <b>alice</b>. 
+In this scenario, triplets from the file <b>/etc/ipsec.d/triplets.dat</b>
+are used instead of a physical SIM card on the client <b>carol</b>.
+The gateway forwards all EAP messages to the RADIUS server <b>alice</b>
+which also uses a static triplets file.
+<p>
+The roadwarrior <b>dave</b> also uses multiple authentication and succeeds
+in the first round but sends wrong EAP-SIM triplets in the second round.
+As a consequence the radius server <b>alice</b> returns an <b>Access-Reject</b>
+message and the gateway <b>moon</b> sends back an <b>EAP_FAILURE</b>. 	

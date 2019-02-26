@@ -1,0 +1,44 @@
+libimcv.plugins.imc-attestation.aik_blob =
+	AIK encrypted private key blob file.
+
+libimcv.plugins.imc-attestation.aik_cert =
+	AIK certificate file.
+
+libimcv.plugins.imc-attestation.aik_pubkey =
+	AIK public key file.
+
+libimcv.plugins.imc-attestation.aik_handle =
+	AIK object handle.
+
+libimcv.plugins.imc-attestation.mandatory_dh_groups = yes
+	Enforce mandatory Diffie-Hellman groups.
+
+libimcv.plugins.imc-attestation.nonce_len = 20
+	DH nonce length.
+
+libimcv.plugins.imc-attestation.use_quote2 = yes
+	Use Quote2 AIK signature instead of Quote signature.
+
+libimcv.plugins.imc-attestation.use_version_info = no
+	Version Info is included in Quote2 signature.
+
+libimcv.plugins.imc-attestation.pcr_info = no
+	Whether to send pcr_before and pcr_after info.
+
+libimcv.plugins.imc-attestation.pcr17_before =
+        PCR17 value before measurement.
+
+libimcv.plugins.imc-attestation.pcr17_meas =
+        Dummy measurement value extended into PCR17 if the TBOOT log is not available.
+
+libimcv.plugins.imc-attestation.pcr17_after =
+        PCR17 value after measurement.
+
+libimcv.plugins.imc-attestation.pcr18_before =
+        PCR18 value before measurement.
+
+libimcv.plugins.imc-attestation.pcr18_meas =
+       Dummy measurement value extended into PCR17 if the TBOOT log is not available. 
+
+libimcv.plugins.imc-attestation.pcr18_after =
+        PCR18 value after measurement.

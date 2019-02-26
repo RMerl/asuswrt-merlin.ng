@@ -1,0 +1,10 @@
+moon::systemctl stop strongswan-swanctl
+carol::systemctl stop strongswan-swanctl
+dave::systemctl stop strongswan-swanctl
+alice::systemctl stop strongswan-swanctl
+alice::systemctl stop apache2
+alice::rm /etc/swanctl/x509/aaaCert.pem
+alice::rm /etc/swanctl/rsa/aaaKey.pem
+moon::iptables-restore < /etc/iptables.flush
+carol::iptables-restore < /etc/iptables.flush
+dave::iptables-restore < /etc/iptables.flush

@@ -6385,7 +6385,7 @@ sta_list:
 						((sta->ht_capabilities & WL_STA_CAP_TX_STBC) || (sta->ht_capabilities & WL_STA_CAP_RX_STBC_MASK)) ? "T" : "_");
 #ifdef RTCONFIG_MUMIMO
 					ret += websWrite(wp, "%s",
-						((sta->vht_flags & WL_STA_MU_BEAMFORMER) || (sta->vht_flags & WL_STA_MU_BEAMFORMEE)) ? "M" : " ");
+						((sta->vht_flags & WL_STA_MU_BEAMFORMER) || (sta->vht_flags & WL_STA_MU_BEAMFORMEE)) ? "M" : "_");
 #endif
 #else
 					ret += websWrite(wp, "\"%s",

@@ -1,0 +1,19 @@
+moon::iptables-restore < /etc/iptables.rules
+sun::iptables-restore < /etc/iptables.rules
+moon::ip tunnel add vti-moon local PH_IP_MOON remote PH_IP_SUN mode vti key 42
+moon::sysctl -w net.ipv4.conf.vti-moon.disable_policy=1
+moon::ip link set vti-moon up
+moon::ip route add 10.2.0.0/16 dev vti-moon
+moon::iptables -A FORWARD -i vti-moon -j ACCEPT
+moon::iptables -A FORWARD -o vti-moon -j ACCEPT
+sun::ip tunnel add vti-sun local PH_IP_SUN remote PH_IP_MOON mode vti key 1337
+sun::sysctl -w net.ipv4.conf.vti-sun.disable_policy=1
+sun::ip link set vti-sun up
+sun::ip route add 10.1.0.0/16 dev vti-sun
+sun::iptables -A FORWARD -i vti-sun -j ACCEPT
+sun::iptables -A FORWARD -o vti-sun -j ACCEPT
+moon::systemctl start strongswan-swanctl
+sun::systemctl start strongswan-swanctl
+moon::expect-connection gw-gw
+sun::expect-connection gw-gw
+moon::swanctl --initiate --child net-net

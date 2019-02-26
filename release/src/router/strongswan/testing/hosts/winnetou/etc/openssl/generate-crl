@@ -1,0 +1,68 @@
+#! /bin/sh
+# generate a certificate revocation list (CRL) for the strongswan CA.
+#
+# Copyright (C) 2004  Andreas Steffen
+# Zuercher Hochschule Winterthur
+#
+# This program is free software; you can redistribute it and/or modify it
+# under the terms of the GNU General Public License as published by the
+# Free Software Foundation; either version 2 of the License, or (at your
+# option) any later version.  See <http://www.fsf.org/copyleft/gpl.txt>.
+#
+# This program is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+# or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+# for more details.
+
+# libgnutls, if pulled in by libcurl, does not properly cleanup all memory,
+# which causes invalid frees during shutdown when leak detective is used
+export LEAK_DETECTIVE_DISABLE=1
+
+export COMMON_NAME=strongSwan
+
+ROOT=/var/www
+
+cd /etc/openssl
+openssl ca -gencrl -crldays 30 -config /etc/openssl/openssl.cnf -out crl.pem
+openssl crl -in crl.pem -outform der -out strongswan.crl
+cp strongswan.crl     ${ROOT}
+cp strongswanCert.pem ${ROOT}
+cp index.html         ${ROOT}
+# revoke moon's current CERT
+pki --signcrl --cacert strongswanCert.pem --cakey strongswanKey.pem --lifetime 30 --reason key-compromise --cert newcerts/2B.pem --lastcrl strongswan.crl > strongswan_moon_revoked.crl
+cp strongswan_moon_revoked.crl ${ROOT}
+# generate a base CRL
+pki --signcrl --lastcrl strongswan.crl --cacert strongswanCert.der --cakey strongswanKey.pem --lifetime 30 --crluri http://crl.strongswan.org/strongswan_delta.crl --digest sha256 > strongswan_base.crl
+cp strongswan_base.crl ${ROOT}
+# generate a delta CRL revoking moon's current cert
+pki --signcrl --basecrl strongswan_base.crl --reason key-compromise --cert newcerts/2B.pem --cacert strongswanCert.der --cakey strongswanKey.pem --lifetime 10 --digest sha256 > strongswan_delta.crl
+cp strongswan_delta.crl ${ROOT}
+cd /etc/openssl/research
+openssl ca -gencrl -crldays 15 -config /etc/openssl/research/openssl.cnf -out crl.pem
+openssl crl -in crl.pem -outform der -out research.crl
+cp research.crl       ${ROOT}
+cd /etc/openssl/sales
+openssl ca -gencrl -crldays 15 -config /etc/openssl/sales/openssl.cnf -out crl.pem
+openssl crl -in crl.pem -outform der -out sales.crl
+cp sales.crl         ${ROOT}
+cd /etc/openssl/ecdsa
+openssl ca -gencrl -crldays 15 -config /etc/openssl/ecdsa/openssl.cnf -out crl.pem
+openssl crl -in crl.pem -outform der -out strongswan_ec.crl
+cp strongswan_ec.crl ${ROOT}
+cd /etc/openssl/monster
+openssl ca -gencrl -crldays 15 -config /etc/openssl/monster/openssl.cnf -out crl.pem
+openssl crl -in crl.pem -outform der -out strongswan-monster.crl
+cp strongswan-monster.crl ${ROOT}
+cd /etc/openssl/rfc3779
+openssl ca -gencrl -crldays 15 -config /etc/openssl/rfc3779/openssl.cnf -out crl.pem
+openssl crl -in crl.pem -outform der -out strongswan_rfc3779.crl
+cp strongswan_rfc3779.crl ${ROOT}
+cd /etc/openssl/bliss
+pki --signcrl --cacert strongswan_blissCert.der --cakey strongswan_blissKey.der --lifetime 30 --digest sha3_512 > strongswan_bliss.crl
+cp strongswan_bliss.crl ${ROOT}
+cd /etc/openssl/sha3-rsa
+pki --signcrl --cacert strongswanCert.pem --cakey strongswanKey.pem --lifetime 30 --digest sha3_256 > strongswan-sha3-rsa.crl
+cp strongswan-sha3-rsa.crl ${ROOT}
+cd /etc/openssl/ed25519
+pki --signcrl --cacert strongswan_ed25519Cert.pem --cakey strongswan_ed25519Key.pem --lifetime 30 > strongswan_ed25519.crl
+cp strongswan_ed25519.crl ${ROOT}

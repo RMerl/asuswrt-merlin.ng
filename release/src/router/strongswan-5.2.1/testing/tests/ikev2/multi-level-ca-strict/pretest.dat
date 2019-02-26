@@ -1,8 +1,0 @@
-carol::ipsec start
-dave::ipsec start
-moon::ipsec start
-carol::sleep 2
-carol::ipsec up alice
-carol::ipsec up venus
-dave::ipsec up venus
-dave::ipsec up alice

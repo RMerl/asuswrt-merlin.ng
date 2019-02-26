@@ -1,0 +1,7 @@
+moon::cat /var/log/daemon.log::activating mutual PB-TNC half duplex protocol::YES
+sun:: cat /var/log/daemon.log::activating mutual PB-TNC half duplex protocol::YES
+moon::cat /var/log/daemon.log::final recommendation is.*no access::YES
+sun:: cat /var/log/daemon.log::final recommendation is.*allow::YES
+moon::swanctl --list-sas --raw 2> /dev/null::mutual.*version=2 state=ESTABLISHED local-host=192.168.0.1 local-port=500 local-id=moon.strongswan.org remote-host=192.168.0.2 remote-port=500 remote-id=sun.strongswan.org initiator=yes.*encr-alg=AES_CBC encr-keysize=128 integ-alg=HMAC_SHA2_256_128 prf-alg=PRF_HMAC_SHA2_256 dh-group=ECP_256.*child-sas.*mutual.*state=INSTALLED mode=TUNNEL protocol=ESP.*encr-alg=AES_GCM_16 encr-keysize=128.*local-ts=\[192.168.0.1/32] remote-ts=\[192.168.0.2/32]::NO
+sun::swanctl --list-sas --raw 2> /dev/null::mutual.*version=2 state=ESTABLISHED local-host=192.168.0.2 local-port=500 local-id=sun.strongswan.org remote-host=192.168.0.1 remote-port=500 remote-id=moon.strongswan.org.*encr-alg=AES_CBC encr-keysize=128 integ-alg=HMAC_SHA2_256_128 prf-alg=PRF_HMAC_SHA2_256 dh-group=ECP_256.*child-sas.*mutual.*state=INSTALLED mode=TUNNEL protocol=ESP.*encr-alg=AES_GCM_16 encr-keysize=128.*local-ts=\[192.168.0.2/32] remote-ts=\[192.168.0.1/32]::NO
+moon::ping -c 1 -W 1 192.168.0.2::64 bytes from 192.168.0.2: icmp_.eq=1::NO

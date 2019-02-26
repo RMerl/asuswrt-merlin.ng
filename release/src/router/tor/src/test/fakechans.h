@@ -1,4 +1,4 @@
- /* Copyright (c) 2014-2016, The Tor Project, Inc. */
+ /* Copyright (c) 2014-2019, The Tor Project, Inc. */
  /* See LICENSE for licensing information */
 
 #ifndef TOR_FAKECHANS_H
@@ -20,7 +20,6 @@ void scheduler_release_channel_mock(channel_t *ch);
 
 /* Query some counters used by the exposed mocks */
 int get_mock_scheduler_has_waiting_cells_count(void);
-int get_mock_scheduler_release_channel_count(void);
 
 #endif /* !defined(TOR_FAKECHANS_H) */
 

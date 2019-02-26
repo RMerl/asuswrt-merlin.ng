@@ -1,0 +1,8 @@
+sun:: ipsec status 2> /dev/null::nat-t.*ESTABLISHED.*sun.strongswan.org.*venus.strongswan.org::YES
+sun:: ipsec status 2> /dev/null::nat-t.*ESTABLISHED.*sun.strongswan.org.*alice@strongswan.org::YES
+alice::ipsec status 2> /dev/null::nat-t.*INSTALLED, TRANSPORT, reqid 1::YES
+venus::ipsec status 2> /dev/null::nat-t.*INSTALLED, TRANSPORT, reqid 1::YES
+alice::ssh 192.168.0.2 'echo alice-echo && exit'::alice-echo::YES
+venus::ssh 192.168.0.2 'echo venus-echo && exit'::venus-echo::YES
+sun::iptables -t mangle -L -n -v
+sun::conntrack -L

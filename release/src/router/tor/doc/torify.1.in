@@ -1,13 +1,13 @@
 '\" t
 .\"     Title: torify
 .\"    Author: [see the "AUTHORS" section]
-.\" Generator: DocBook XSL Stylesheets v1.79.1 <http://docbook.sf.net/>
-.\"      Date: 06/08/2017
+.\" Generator: DocBook XSL Stylesheets vsnapshot <http://docbook.sf.net/>
+.\"      Date: 11/07/2018
 .\"    Manual: Tor Manual
 .\"    Source: Tor
 .\"  Language: English
 .\"
-.TH "TORIFY" "1" "06/08/2017" "Tor" "Tor Manual"
+.TH "TORIFY" "1" "11/07/2018" "Tor" "Tor Manual"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -34,19 +34,19 @@ torify \- wrapper for torsocks and tor
 \fBtorify\fR \fIapplication\fR [\fIapplication\(cqs\fR \fIarguments\fR]
 .SH "DESCRIPTION"
 .sp
-\fBtorify\fR is a simple wrapper that attempts to find the best underlying Tor wrapper available on a system\&. It calls torsocks with a tor specific configuration file\&.
+\fBtorify\fR is a simple wrapper that calls torsocks with a tor\-specific configuration file\&.
 .sp
-torsocks is an improved wrapper that explicitly rejects UDP, safely resolves DNS lookups and properly socksifies your TCP connections\&.
-.sp
-Please note that since both method use LD_PRELOAD, torify cannot be applied to suid binaries\&.
+It is provided for backward compatibility; instead you should use torsocks\&.
 .SH "WARNING"
 .sp
 When used with torsocks, torify should not leak DNS requests or UDP data\&.
 .sp
-Both will leak ICMP data\&.
+torify can leak ICMP data\&.
+.sp
+torify will not ensure that different requests are processed on different circuits\&.
 .SH "SEE ALSO"
 .sp
-\fBtor\fR(1), \fBtor\-resolve\fR(1), \fBtorsocks\fR(1)
+\fBtor\fR(1), \fBtorsocks\fR(1)
 .SH "AUTHORS"
 .sp
 Peter Palfrader and Jacob Appelbaum wrote this manual\&.

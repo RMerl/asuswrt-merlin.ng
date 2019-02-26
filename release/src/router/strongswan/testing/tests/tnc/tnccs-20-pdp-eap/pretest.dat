@@ -1,0 +1,31 @@
+moon::iptables-restore < /etc/iptables.rules
+carol::iptables-restore < /etc/iptables.rules
+dave::iptables-restore < /etc/iptables.rules
+alice::rm /etc/swanctl/x509/aliceCert.pem
+alice::rm /etc/swanctl/rsa/aliceKey.pem
+carol::rm /etc/swanctl/x509/carolCert.pem
+carol::rm /etc/swanctl/rsa/carolKey.pem
+dave::rm /etc/swanctl/x509/daveCert.pem
+dave::rm /etc/swanctl/rsa/daveKey.pem
+alice::cat /etc/tnc_config
+carol::cat /etc/tnc_config
+dave::cat /etc/tnc_config
+carol::echo 0 > /proc/sys/net/ipv4/ip_forward
+dave::echo aabbccddeeff11223344556677889900 > /var/lib/dbus/machine-id
+alice::sed -i "s/NOW/`date +%s`/g" /etc/pts/data1.sql
+alice::sed -i "s:DEBIAN_VERSION:\`cat /etc/debian_version\`:" /etc/pts/data1.sql
+alice::cd /usr/local/share/strongswan/templates/database/imv; cat tables.sql data.sql /etc/pts/data1.sql | sqlite3 /etc/db.d/config.db
+alice::chgrp -R www-data /etc/db.d/config.db; chmod -R g+w /etc/db.d/config.db
+alice::/usr/local/bin/init_tnc
+alice::systemctl start apache2
+alice::systemctl start strongswan-swanctl
+moon::systemctl start strongswan-swanctl
+dave::systemctl start strongswan-swanctl
+carol::systemctl start strongswan-swanctl
+moon::expect-connection rw-allow
+moon::expect-connection rw-isolate
+dave::expect-connection home
+dave::swanctl --initiate --child home 2> /dev/null
+carol::expect-connection home
+carol::swanctl --initiate --child home 2> /dev/null
+carol::sleep 1

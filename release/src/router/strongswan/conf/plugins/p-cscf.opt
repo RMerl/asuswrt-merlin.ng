@@ -1,0 +1,11 @@
+charon.plugins.p-cscf.enable {}
+	Section to enable requesting P-CSCF server addresses for individual
+	connections.
+
+charon.plugins.p-cscf.enable.<conn> = no
+	<conn> is the name of a connection with an ePDG from which to request
+	P-CSCF server addresses.
+
+	<conn> is the name of a connection with an ePDG from which to request
+	P-CSCF server addresses.  Requests will be sent for addresses of the same
+	families for which internal IPs are requested.

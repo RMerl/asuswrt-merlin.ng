@@ -1,0 +1,6 @@
+moon::systemctl stop strongswan-swanctl
+sun::systemctl stop strongswan-swanctl
+moon::iptables-restore < /etc/iptables.flush
+sun::iptables-restore < /etc/iptables.flush
+moon::rm /etc/swanctl/pkcs12/moonCert.p12
+sun::rm /etc/swanctl/pkcs12/sunCert.p12

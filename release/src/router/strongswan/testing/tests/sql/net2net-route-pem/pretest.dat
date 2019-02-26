@@ -1,0 +1,13 @@
+moon::cat /usr/local/share/strongswan/templates/database/sql/sqlite.sql /etc/ipsec.d/data.sql > /etc/db.d/ipsec.sql
+sun::cat /usr/local/share/strongswan/templates/database/sql/sqlite.sql /etc/ipsec.d/data.sql > /etc/db.d/ipsec.sql
+moon::cat /etc/db.d/ipsec.sql | sqlite3 /etc/db.d/ipsec.db
+sun::cat /etc/db.d/ipsec.sql | sqlite3 /etc/db.d/ipsec.db
+moon::cd /etc/swanctl; rm -r rsa/* x509/* x509ca/*
+sun::cd /etc/swanctl; rm -r rsa/* x509/* x509ca/*
+moon::iptables-restore < /etc/iptables.rules
+sun::iptables-restore < /etc/iptables.rules
+moon::systemctl start strongswan-swanctl
+sun::systemctl start strongswan-swanctl
+moon::expect-connection net-net
+alice::ping -c 1 -W 1 10.2.0.10
+bob::ping -c 1 -W 1 10.1.0.20

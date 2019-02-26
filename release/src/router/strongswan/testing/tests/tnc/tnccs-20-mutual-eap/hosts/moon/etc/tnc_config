@@ -1,0 +1,4 @@
+#IMC/IMV configuration file for strongSwan endpoint 
+
+IMC "Test" /usr/local/lib/ipsec/imcvs/imc-test.so
+IMV "Test" /usr/local/lib/ipsec/imcvs/imv-test.so

@@ -1,30 +1,40 @@
 /* Copyright (c) 2001-2004, Roger Dingledine.
  * Copyright (c) 2004-2006, Roger Dingledine, Nick Mathewson.
- * Copyright (c) 2007-2016, The Tor Project, Inc. */
+ * Copyright (c) 2007-2019, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
-
-extern const char tor_git_revision[];
-
-/* Ordinarily defined in tor_main.c; this bit is just here to provide one
- * since we're not linking to tor_main.c */
-const char tor_git_revision[] = "";
 
 /**
  * \file test_common.c
  * \brief Common pieces to implement unit tests.
  **/
 
+#define MAINLOOP_PRIVATE
 #include "orconfig.h"
-#include "or.h"
-#include "control.h"
-#include "config.h"
-#include "rephist.h"
-#include "backtrace.h"
-#include "test.h"
+#include "core/or/or.h"
+#include "feature/control/control.h"
+#include "app/config/config.h"
+#include "lib/crypt_ops/crypto_dh.h"
+#include "lib/crypt_ops/crypto_ed25519.h"
+#include "lib/crypt_ops/crypto_rand.h"
+#include "feature/stats/predict_ports.h"
+#include "feature/stats/rephist.h"
+#include "lib/err/backtrace.h"
+#include "test/test.h"
+#include "core/or/channelpadding.h"
+#include "core/mainloop/mainloop.h"
+#include "lib/compress/compress.h"
+#include "lib/evloop/compat_libevent.h"
+#include "lib/crypt_ops/crypto_init.h"
 
 #include <stdio.h>
 #ifdef HAVE_FCNTL_H
 #include <fcntl.h>
+#endif
+#ifdef HAVE_UNISTD_H
+#include <unistd.h>
+#endif
+#ifdef HAVE_SYS_STAT_H
+#include <sys/stat.h>
 #endif
 
 #ifdef _WIN32
@@ -32,15 +42,7 @@ const char tor_git_revision[] = "";
 #include <direct.h>
 #else
 #include <dirent.h>
-#endif
-
-#include "or.h"
-
-#ifdef USE_DMALLOC
-#include <dmalloc.h>
-#include <openssl/crypto.h>
-#include "main.h"
-#endif
+#endif /* defined(_WIN32) */
 
 /** Temporary directory (set up by setup_directory) under which we store all
  * our files during testing. */
@@ -84,7 +86,7 @@ setup_directory(void)
                  (int)getpid(), rnd32);
     r = mkdir(temp_dir);
   }
-#else
+#else /* !(defined(_WIN32)) */
   tor_snprintf(temp_dir, sizeof(temp_dir), "/tmp/tor_test_%d_%s",
                (int) getpid(), rnd32);
   r = mkdir(temp_dir, 0700);
@@ -92,7 +94,7 @@ setup_directory(void)
     /* undo sticky bit so tests don't get confused. */
     r = chown(temp_dir, getuid(), getgid());
   }
-#endif
+#endif /* defined(_WIN32) */
   if (r) {
     fprintf(stderr, "Can't create directory %s:", temp_dir);
     perror("");
@@ -112,8 +114,8 @@ get_fname_suffix(const char *name, const char *suffix)
   setup_directory();
   if (!name)
     return temp_dir;
-  tor_snprintf(buf,sizeof(buf),"%s/%s%s%s",temp_dir,name,suffix ? "_" : "",
-               suffix ? suffix : "");
+  tor_snprintf(buf,sizeof(buf),"%s%s%s%s%s", temp_dir, PATH_SEPARATOR, name,
+               suffix ? "_" : "", suffix ? suffix : "");
   return buf;
 }
 
@@ -178,65 +180,6 @@ remove_directory(void)
   rm_rf(temp_dir);
 }
 
-/** Define this if unit tests spend too much time generating public keys*/
-#define CACHE_GENERATED_KEYS
-
-#define N_PREGEN_KEYS 11
-static crypto_pk_t *pregen_keys[N_PREGEN_KEYS];
-static int next_key_idx;
-
-/** Generate and return a new keypair for use in unit tests.  If we're using
- * the key cache optimization, we might reuse keys. "idx" is ignored.
- * Our only guarantee is that we won't reuse a key till this function has been
- * called several times. The order in which keys are returned is slightly
- * randomized, so that tests that depend on a particular order will not be
- * reliable. */
-crypto_pk_t *
-pk_generate(int idx)
-{
-  (void) idx;
-#ifdef CACHE_GENERATED_KEYS
-  /* Either skip 1 or 2 keys. */
-  next_key_idx += crypto_rand_int_range(1,3);
-  next_key_idx %= N_PREGEN_KEYS;
-  return crypto_pk_dup_key(pregen_keys[next_key_idx]);
-#else
-  crypto_pk_t *result;
-  int res;
-  result = crypto_pk_new();
-  res = crypto_pk_generate_key__real(result);
-  tor_assert(!res);
-  return result;
-#endif
-}
-
-#ifdef CACHE_GENERATED_KEYS
-static int
-crypto_pk_generate_key_with_bits__get_cached(crypto_pk_t *env, int bits)
-{
-  if (bits != 1024)
-    return crypto_pk_generate_key_with_bits__real(env, bits);
-
-  crypto_pk_t *newkey = pk_generate(0);
-  crypto_pk_assign_(env, newkey);
-  crypto_pk_free(newkey);
-  return 0;
-}
-#endif
-
-/** Free all storage used for the cached key optimization. */
-static void
-free_pregenerated_keys(void)
-{
-  unsigned idx;
-  for (idx = 0; idx < N_PREGEN_KEYS; ++idx) {
-    if (pregen_keys[idx]) {
-      crypto_pk_free(pregen_keys[idx]);
-      pregen_keys[idx] = NULL;
-    }
-  }
-}
-
 static void *
 passthrough_test_setup(const struct testcase_t *testcase)
 {
@@ -281,6 +224,30 @@ an_assertion_failed(void)
   tinytest_set_test_failed_();
 }
 
+void tinytest_prefork(void);
+void tinytest_postfork(void);
+void
+tinytest_prefork(void)
+{
+  free_pregenerated_keys();
+  crypto_prefork();
+}
+void
+tinytest_postfork(void)
+{
+  crypto_postfork();
+  init_pregenerated_keys();
+}
+
+static void
+log_callback_failure(int severity, uint32_t domain, const char *msg)
+{
+  (void)msg;
+  if (severity == LOG_ERR || (domain & LD_BUG)) {
+    tinytest_set_test_failed_();
+  }
+}
+
 /** Main entry point for unit test code: parse the command line, and run
  * some unit tests. */
 int
@@ -295,16 +262,10 @@ main(int c, const char **v)
   /* We must initialise logs before we call tor_assert() */
   init_logging(1);
 
-#ifdef USE_DMALLOC
-  {
-    int r = CRYPTO_set_mem_ex_functions(tor_malloc_, tor_realloc_, tor_free_);
-    tor_assert(r);
-  }
-#endif
-
   update_approx_time(time(NULL));
   options = options_new();
   tor_threads_init();
+  tor_compress_init();
 
   network_init();
 
@@ -335,6 +296,7 @@ main(int c, const char **v)
   c = i_out;
 
   {
+    /* setup logs to stdout */
     log_severity_list_t s;
     memset(&s, 0, sizeof(s));
     set_log_severity_config(loglevel, LOG_ERR, &s);
@@ -342,48 +304,54 @@ main(int c, const char **v)
     s.masks[LOG_WARN-LOG_ERR] |= LD_BUG;
     add_stream_log(&s, "", fileno(stdout));
   }
+  {
+    /* Setup logs that cause failure. */
+    log_severity_list_t s;
+    memset(&s, 0, sizeof(s));
+    set_log_severity_config(LOG_ERR, LOG_ERR, &s);
+    s.masks[LOG_WARN-LOG_ERR] |= LD_BUG;
+    add_callback_log(&s, log_callback_failure);
+  }
+  init_protocol_warning_severity_level();
 
   options->command = CMD_RUN_UNITTESTS;
   if (crypto_global_init(accel_crypto, NULL, NULL)) {
     printf("Can't initialize crypto subsystem; exiting.\n");
     return 1;
   }
-  crypto_set_tls_dh_prime();
   if (crypto_seed_rng() < 0) {
     printf("Couldn't seed RNG; exiting.\n");
     return 1;
   }
   rep_hist_init();
   setup_directory();
+  initialize_mainloop_events();
   options_init(options);
   options->DataDirectory = tor_strdup(temp_dir);
+  tor_asprintf(&options->KeyDirectory, "%s"PATH_SEPARATOR"keys",
+               options->DataDirectory);
+  options->CacheDirectory = tor_strdup(temp_dir);
   options->EntryStatistics = 1;
   if (set_options(options, &errmsg) < 0) {
     printf("Failed to set initial options: %s\n", errmsg);
     tor_free(errmsg);
     return 1;
   }
+
   tor_set_failed_assertion_callback(an_assertion_failed);
 
-#ifdef CACHE_GENERATED_KEYS
-  for (i = 0; i < N_PREGEN_KEYS; ++i) {
-    pregen_keys[i] = crypto_pk_new();
-    int r = crypto_pk_generate_key(pregen_keys[i]);
-    tor_assert(r == 0);
-  }
-  MOCK(crypto_pk_generate_key_with_bits,
-       crypto_pk_generate_key_with_bits__get_cached);
-#endif
+  init_pregenerated_keys();
+
+  channelpadding_new_consensus_params(NULL);
+
+  predicted_ports_init();
 
   atexit(remove_directory);
 
   int have_failed = (tinytest_main(c, v, testgroups) != 0);
 
   free_pregenerated_keys();
-#ifdef USE_DMALLOC
-  tor_free_all(0);
-  dmalloc_log_unfreed();
-#endif
+
   crypto_global_cleanup();
 
   if (have_failed)
@@ -391,4 +359,3 @@ main(int c, const char **v)
   else
     return 0;
 }
-

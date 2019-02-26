@@ -1,0 +1,11 @@
+A connection between the subnets behind the gateways <b>moon</b> and <b>sun</b> is set up.
+The authentication is based on <b>X.509 certificates</b> and the <b>kernel-libipsec</b>
+plugin is used for userland IPsec ESP encryption. The negotiated encryption and authentication
+algorithms are <b>NULL</b> and <b>SHA-256</b>, respectively.<br/>
+Just by way of example, <b>NULL</b> encryption is also configured for the IKEv2 connection,
+using the NULL-crypter provided by the OpenSSL library.
+<p/>
+Upon the successful establishment of the IPsec tunnel, an updown script automatically
+inserts iptables-based firewall rules that let pass the traffic tunneled via the
+<b>ipsec0</b> tun interface. In order to test both tunnel and firewall, client <b>alice</b>
+behind gateway <b>moon</b> pings client <b>bob</b> located behind gateway <b>sun</b>.

@@ -5,7 +5,7 @@
 .\" *                            | (__| |_| |  _ <| |___
 .\" *                             \___|\___/|_| \_\_____|
 .\" *
-.\" * Copyright (C) 1998 - 2018, Daniel Stenberg, <daniel@haxx.se>, et al.
+.\" * Copyright (C) 1998 - 2019, Daniel Stenberg, <daniel@haxx.se>, et al.
 .\" *
 .\" * This software is licensed as described in the file COPYING, which
 .\" * you should have received as part of this distribution. The terms
@@ -19,7 +19,7 @@
 .\" * KIND, either express or implied.
 .\" *
 .\" **************************************************************************
-.TH libcurl-symbols 3 "okt 31, 2018" "libcurl 7.41.0" "libcurl symbols"
+.TH libcurl-symbols 3 "feb  6, 2019" "libcurl 7.41.0" "libcurl symbols"
 .SH NAME
 libcurl-symbols \- libcurl symbol version information
 .SH "libcurl symbols"
@@ -780,8 +780,6 @@ Deprecated since 7.16.1
 Introduced in 7.21.7
 .IP CURLOPT_CLOSESOCKETFUNCTION
 Introduced in 7.21.7
-.IP CURLOPT_UPKEEP_INTERVAL_MS
-Introduced in 7.62.0
 .IP CURLOPT_CONNECTTIMEOUT
 Introduced in 7.7
 .IP CURLOPT_CONNECTTIMEOUT_MS
@@ -812,6 +810,8 @@ Introduced in 7.17.1
 Introduced in 7.1
 .IP CURLOPT_CRLFILE
 Introduced in 7.19.0
+.IP CURLOPT_CURLU
+Introduced in 7.63.0
 .IP CURLOPT_CUSTOMREQUEST
 Introduced in 7.1
 .IP CURLOPT_DEBUGDATA
@@ -917,6 +917,8 @@ Introduced in 7.10
 Introduced in 7.7.2
 .IP CURLOPT_HEADEROPT
 Introduced in 7.37.0
+.IP CURLOPT_HTTP09_ALLOWED
+Introduced in 7.64.0
 .IP CURLOPT_HTTP200ALIASES
 Introduced in 7.10.3
 .IP CURLOPT_HTTPAUTH
@@ -938,6 +940,10 @@ Introduced in 7.16.2
 Introduced in 7.16.2
 .IP CURLOPT_HTTP_VERSION
 Introduced in 7.9.1
+.IP CURLOPT_TRAILERFUNCTION
+Introduced in 7.64.0
+.IP CURLOPT_TRAILERDATA
+Introduced in 7.64.0
 .IP CURLOPT_IGNORE_CONTENT_LENGTH
 Introduced in 7.14.1
 .IP CURLOPT_INFILE
@@ -1325,6 +1331,8 @@ Introduced in 7.21.6
 Introduced in 7.40.0
 .IP CURLOPT_UNRESTRICTED_AUTH
 Introduced in 7.10.4
+.IP CURLOPT_UPKEEP_INTERVAL_MS
+Introduced in 7.62.0
 .IP CURLOPT_UPLOAD
 Introduced in 7.1
 .IP CURLOPT_UPLOAD_BUFFERSIZE
@@ -1495,6 +1503,7 @@ Introduced in 7.16.1
 Introduced in 7.16.1
 .IP CURLSSLBACKEND_AXTLS
 Introduced in 7.38.0
+Deprecated since 7.61.0
 .IP CURLSSLBACKEND_BORINGSSL
 Introduced in 7.49.0
 .IP CURLSSLBACKEND_CYASSL
@@ -1537,26 +1546,6 @@ Introduced in 7.56.0
 Introduced in 7.56.0
 .IP CURLSSLSET_UNKNOWN_BACKEND
 Introduced in 7.56.0
-.IP CURLUPART_FRAGMENT
-Introduced in 7.62.0
-.IP CURLUPART_HOST
-Introduced in 7.62.0
-.IP CURLUPART_OPTIONS
-Introduced in 7.62.0
-.IP CURLUPART_PASSWORD
-Introduced in 7.62.0
-.IP CURLUPART_PATH
-Introduced in 7.62.0
-.IP CURLUPART_PORT
-Introduced in 7.62.0
-.IP CURLUPART_QUERY
-Introduced in 7.62.0
-.IP CURLUPART_SCHEME
-Introduced in 7.62.0
-.IP CURLUPART_URL
-Introduced in 7.62.0
-.IP CURLUPART_USER
-Introduced in 7.62.0
 .IP CURLUE_BAD_HANDLE
 Introduced in 7.62.0
 .IP CURLUE_BAD_PARTPOINTER
@@ -1593,6 +1582,26 @@ Introduced in 7.62.0
 Introduced in 7.62.0
 .IP CURLUE_USER_NOT_ALLOWED
 Introduced in 7.62.0
+.IP CURLUPART_FRAGMENT
+Introduced in 7.62.0
+.IP CURLUPART_HOST
+Introduced in 7.62.0
+.IP CURLUPART_OPTIONS
+Introduced in 7.62.0
+.IP CURLUPART_PASSWORD
+Introduced in 7.62.0
+.IP CURLUPART_PATH
+Introduced in 7.62.0
+.IP CURLUPART_PORT
+Introduced in 7.62.0
+.IP CURLUPART_QUERY
+Introduced in 7.62.0
+.IP CURLUPART_SCHEME
+Introduced in 7.62.0
+.IP CURLUPART_URL
+Introduced in 7.62.0
+.IP CURLUPART_USER
+Introduced in 7.62.0
 .IP CURLUSESSL_ALL
 Introduced in 7.17.0
 .IP CURLUSESSL_CONTROL
@@ -1601,6 +1610,26 @@ Introduced in 7.17.0
 Introduced in 7.17.0
 .IP CURLUSESSL_TRY
 Introduced in 7.17.0
+.IP CURLU_APPENDQUERY
+Introduced in 7.62.0
+.IP CURLU_DEFAULT_PORT
+Introduced in 7.62.0
+.IP CURLU_DEFAULT_SCHEME
+Introduced in 7.62.0
+.IP CURLU_DISALLOW_USER
+Introduced in 7.62.0
+.IP CURLU_GUESS_SCHEME
+Introduced in 7.62.0
+.IP CURLU_NON_SUPPORT_SCHEME
+Introduced in 7.62.0
+.IP CURLU_NO_DEFAULT_PORT
+Introduced in 7.62.0
+.IP CURLU_PATH_AS_IS
+Introduced in 7.62.0
+.IP CURLU_URLDECODE
+Introduced in 7.62.0
+.IP CURLU_URLENCODE
+Introduced in 7.62.0
 .IP CURLVERSION_FIFTH
 Introduced in 7.57.0
 .IP CURLVERSION_FIRST
@@ -1781,6 +1810,10 @@ Introduced in 7.44.0
 Introduced in 7.12.1
 .IP CURL_READFUNC_PAUSE
 Introduced in 7.18.0
+.IP CURL_TRAILERFUNC_OK
+Introduced in 7.64.0
+.IP CURL_TRAILERFUNC_ABORT
+Introduced in 7.64.0
 .IP CURL_REDIR_GET_ALL
 Introduced in 7.19.1
 .IP CURL_REDIR_POST_301

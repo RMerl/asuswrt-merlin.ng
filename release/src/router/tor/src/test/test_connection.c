@@ -1,24 +1,36 @@
-/* Copyright (c) 2015-2016, The Tor Project, Inc. */
+/* Copyright (c) 2015-2019, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 #include "orconfig.h"
 
 #define CONNECTION_PRIVATE
-#define MAIN_PRIVATE
+#define MAINLOOP_PRIVATE
+#define CONNECTION_OR_PRIVATE
 
-#include "or.h"
-#include "test.h"
+#include "core/or/or.h"
+#include "test/test.h"
 
-#include "connection.h"
-#include "main.h"
-#include "microdesc.h"
-#include "networkstatus.h"
-#include "rendcache.h"
-#include "directory.h"
+#include "core/mainloop/connection.h"
+#include "core/or/connection_edge.h"
+#include "feature/hs/hs_common.h"
+#include "core/mainloop/mainloop.h"
+#include "feature/nodelist/microdesc.h"
+#include "feature/nodelist/nodelist.h"
+#include "feature/nodelist/networkstatus.h"
+#include "feature/rend/rendcache.h"
+#include "feature/dircommon/directory.h"
+#include "core/or/connection_or.h"
+#include "lib/net/resolve.h"
 
-static void test_conn_lookup_addr_helper(const char *address,
-                                         int family,
-                                         tor_addr_t *addr);
+#include "test/test_connection.h"
+#include "test/test_helpers.h"
+
+#include "feature/dircommon/dir_connection_st.h"
+#include "core/or/entry_connection_st.h"
+#include "feature/nodelist/node_st.h"
+#include "core/or/or_connection_st.h"
+#include "feature/nodelist/routerinfo_st.h"
+#include "core/or/socks_request_st.h"
 
 static void * test_conn_get_basic_setup(const struct testcase_t *tc);
 static int test_conn_get_basic_teardown(const struct testcase_t *tc,
@@ -61,48 +73,7 @@ static int test_conn_get_rsrc_teardown(const struct testcase_t *tc,
 #define TEST_CONN_UNATTACHED_STATE (AP_CONN_STATE_CIRCUIT_WAIT)
 #define TEST_CONN_ATTACHED_STATE   (AP_CONN_STATE_CONNECT_WAIT)
 
-#define TEST_CONN_FD_INIT 50
-static int mock_connection_connect_sockaddr_called = 0;
-static int fake_socket_number = TEST_CONN_FD_INIT;
-
-static int
-mock_connection_connect_sockaddr(connection_t *conn,
-                                 const struct sockaddr *sa,
-                                 socklen_t sa_len,
-                                 const struct sockaddr *bindaddr,
-                                 socklen_t bindaddr_len,
-                                 int *socket_error)
-{
-  (void)sa_len;
-  (void)bindaddr;
-  (void)bindaddr_len;
-
-  tor_assert(conn);
-  tor_assert(sa);
-  tor_assert(socket_error);
-
-  mock_connection_connect_sockaddr_called++;
-
-  conn->s = fake_socket_number++;
-  tt_assert(SOCKET_OK(conn->s));
-  /* We really should call tor_libevent_initialize() here. Because we don't,
-   * we are relying on other parts of the code not checking if the_event_base
-   * (and therefore event->ev_base) is NULL.  */
-  tt_assert(connection_add_connecting(conn) == 0);
-
- done:
-  /* Fake "connected" status */
-  return 1;
-}
-
-static int
-fake_close_socket(evutil_socket_t sock)
-{
-  (void)sock;
-  return 0;
-}
-
-static void
+void
 test_conn_lookup_addr_helper(const char *address, int family, tor_addr_t *addr)
 {
   int rv = 0;
@@ -111,7 +82,7 @@ test_conn_lookup_addr_helper(const char *address, int family, tor_addr_t *addr)
 
   rv = tor_addr_lookup(address, family, addr);
   /* XXXX - should we retry on transient failure? */
-  tt_assert(rv == 0);
+  tt_int_op(rv, OP_EQ, 0);
   tt_assert(tor_addr_is_loopback(addr));
   tt_assert(tor_addr_is_v4(addr));
 
@@ -119,51 +90,6 @@ test_conn_lookup_addr_helper(const char *address, int family, tor_addr_t *addr)
 
  done:
   tor_addr_make_null(addr, TEST_CONN_FAMILY);
-}
-
-static connection_t *
-test_conn_get_connection(uint8_t state, uint8_t type, uint8_t purpose)
-{
-  connection_t *conn = NULL;
-  tor_addr_t addr;
-  int socket_err = 0;
-  int in_progress = 0;
-
-  MOCK(connection_connect_sockaddr,
-       mock_connection_connect_sockaddr);
-  MOCK(tor_close_socket, fake_close_socket);
-
-  init_connection_lists();
-
-  conn = connection_new(type, TEST_CONN_FAMILY);
-  tt_assert(conn);
-
-  test_conn_lookup_addr_helper(TEST_CONN_ADDRESS, TEST_CONN_FAMILY, &addr);
-  tt_assert(!tor_addr_is_null(&addr));
-
-  tor_addr_copy_tight(&conn->addr, &addr);
-  conn->port = TEST_CONN_PORT;
-  mock_connection_connect_sockaddr_called = 0;
-  in_progress = connection_connect(conn, TEST_CONN_ADDRESS_PORT, &addr,
-                                   TEST_CONN_PORT, &socket_err);
-  tt_assert(mock_connection_connect_sockaddr_called == 1);
-  tt_assert(!socket_err);
-  tt_assert(in_progress == 0 || in_progress == 1);
-
-  /* fake some of the attributes so the connection looks OK */
-  conn->state = state;
-  conn->purpose = purpose;
-  assert_connection_ok(conn, time(NULL));
-
-  UNMOCK(connection_connect_sockaddr);
-  UNMOCK(tor_close_socket);
-  return conn;
-
-  /* On failure */
- done:
-  UNMOCK(connection_connect_sockaddr);
-  UNMOCK(tor_close_socket);
-  return NULL;
 }
 
 static void *
@@ -264,14 +190,10 @@ test_conn_get_rend_setup(const struct testcase_t *tc)
 
   rend_cache_init();
 
-  /* TODO: use directory_initiate_command_rend() to do this - maybe? */
-  conn->rend_data = tor_malloc_zero(sizeof(rend_data_t));
+  /* TODO: use directory_initiate_request() to do this - maybe? */
   tor_assert(strlen(TEST_CONN_REND_ADDR) == REND_SERVICE_ID_LEN_BASE32);
-  memcpy(conn->rend_data->onion_address,
-         TEST_CONN_REND_ADDR,
-         REND_SERVICE_ID_LEN_BASE32+1);
-  conn->rend_data->hsdirs_fp = smartlist_new();
-
+  conn->rend_data = rend_data_client_create(TEST_CONN_REND_ADDR, NULL, NULL,
+                                            REND_NO_AUTH);
   assert_connection_ok(&conn->base_, time(NULL));
   return conn;
 
@@ -382,7 +304,7 @@ test_conn_download_status_teardown(const struct testcase_t *tc, void *arg)
 
       /* connection_free_() cleans up requested_resource */
       rv = test_conn_get_rsrc_teardown(tc, conn);
-      tt_assert(rv == 1);
+      tt_int_op(rv, OP_EQ, 1);
     }
   } SMARTLIST_FOREACH_END(conn);
 
@@ -456,12 +378,13 @@ test_conn_get_basic(void *arg)
    * its attributes, but get NULL when we supply a different value. */
 
   tt_assert(connection_get_by_global_id(conn->global_identifier) == conn);
-  tt_assert(connection_get_by_global_id(!conn->global_identifier) == NULL);
+  tt_ptr_op(connection_get_by_global_id(!conn->global_identifier), OP_EQ,
+            NULL);
 
   tt_assert(connection_get_by_type(conn->type) == conn);
   tt_assert(connection_get_by_type(TEST_CONN_TYPE) == conn);
-  tt_assert(connection_get_by_type(!conn->type) == NULL);
-  tt_assert(connection_get_by_type(!TEST_CONN_TYPE) == NULL);
+  tt_ptr_op(connection_get_by_type(!conn->type), OP_EQ, NULL);
+  tt_ptr_op(connection_get_by_type(!TEST_CONN_TYPE), OP_EQ, NULL);
 
   tt_assert(connection_get_by_type_state(conn->type, conn->state)
             == conn);
@@ -551,7 +474,8 @@ test_conn_get_rend(void *arg)
   tt_assert(connection_get_by_type_state_rendquery(
                                             conn->base_.type,
                                             conn->base_.state,
-                                            conn->rend_data->onion_address)
+                                            rend_data_get_address(
+                                                      conn->rend_data))
             == TO_CONN(conn));
   tt_assert(connection_get_by_type_state_rendquery(
                                             TEST_CONN_TYPE,
@@ -574,7 +498,7 @@ test_conn_get_rend(void *arg)
 #define sl_is_conn_assert(sl_input, conn) \
   do {                                               \
     the_sl = (sl_input);                             \
-    tt_assert(smartlist_len((the_sl)) == 1);         \
+    tt_int_op(smartlist_len((the_sl)), OP_EQ, 1);         \
     tt_assert(smartlist_get((the_sl), 0) == (conn)); \
     smartlist_free(the_sl); the_sl = NULL;           \
   } while (0)
@@ -582,7 +506,7 @@ test_conn_get_rend(void *arg)
 #define sl_no_conn_assert(sl_input)          \
   do {                                       \
     the_sl = (sl_input);                     \
-    tt_assert(smartlist_len((the_sl)) == 0); \
+    tt_int_op(smartlist_len((the_sl)), OP_EQ, 0); \
     smartlist_free(the_sl); the_sl = NULL;   \
   } while (0)
 
@@ -628,43 +552,32 @@ test_conn_get_rsrc(void *arg)
                                                     TEST_CONN_RSRC_2,
                                                     !TEST_CONN_STATE));
 
-  tt_assert(connection_dir_count_by_purpose_and_resource(
-                                                    conn->base_.purpose,
-                                                    conn->requested_resource)
-            == 1);
-  tt_assert(connection_dir_count_by_purpose_and_resource(
-                                                    TEST_CONN_RSRC_PURPOSE,
-                                                    TEST_CONN_RSRC)
-            == 1);
-  tt_assert(connection_dir_count_by_purpose_and_resource(
-                                                    !conn->base_.purpose,
-                                                    "")
-            == 0);
-  tt_assert(connection_dir_count_by_purpose_and_resource(
-                                                    !TEST_CONN_RSRC_PURPOSE,
-                                                    TEST_CONN_RSRC_2)
-            == 0);
+  tt_int_op(connection_dir_count_by_purpose_and_resource(
+                 conn->base_.purpose, conn->requested_resource),
+            OP_EQ, 1);
+  tt_int_op(connection_dir_count_by_purpose_and_resource(
+                 TEST_CONN_RSRC_PURPOSE, TEST_CONN_RSRC),
+            OP_EQ, 1);
+  tt_int_op(connection_dir_count_by_purpose_and_resource(
+                 !conn->base_.purpose, ""),
+            OP_EQ, 0);
+  tt_int_op(connection_dir_count_by_purpose_and_resource(
+                 !TEST_CONN_RSRC_PURPOSE, TEST_CONN_RSRC_2),
+            OP_EQ, 0);
 
-  tt_assert(connection_dir_count_by_purpose_resource_and_state(
-                                                    conn->base_.purpose,
-                                                    conn->requested_resource,
-                                                    conn->base_.state)
-            == 1);
-  tt_assert(connection_dir_count_by_purpose_resource_and_state(
-                                                    TEST_CONN_RSRC_PURPOSE,
-                                                    TEST_CONN_RSRC,
-                                                    TEST_CONN_STATE)
-            == 1);
-  tt_assert(connection_dir_count_by_purpose_resource_and_state(
-                                                    !conn->base_.purpose,
-                                                    "",
-                                                    !conn->base_.state)
-            == 0);
-  tt_assert(connection_dir_count_by_purpose_resource_and_state(
-                                                    !TEST_CONN_RSRC_PURPOSE,
-                                                    TEST_CONN_RSRC_2,
-                                                    !TEST_CONN_STATE)
-            == 0);
+  tt_int_op(connection_dir_count_by_purpose_resource_and_state(
+                 conn->base_.purpose, conn->requested_resource,
+                 conn->base_.state),
+            OP_EQ, 1);
+  tt_int_op(connection_dir_count_by_purpose_resource_and_state(
+                 TEST_CONN_RSRC_PURPOSE, TEST_CONN_RSRC, TEST_CONN_STATE),
+            OP_EQ, 1);
+  tt_int_op(connection_dir_count_by_purpose_resource_and_state(
+                 !conn->base_.purpose, "", !conn->base_.state),
+            OP_EQ, 0);
+  tt_int_op(connection_dir_count_by_purpose_resource_and_state(
+                 !TEST_CONN_RSRC_PURPOSE, TEST_CONN_RSRC_2, !TEST_CONN_STATE),
+            OP_EQ, 0);
 
  done:
   smartlist_free(the_sl);
@@ -690,117 +603,127 @@ test_conn_download_status(void *arg)
   const char *other_res = networkstatus_get_flavor_name(other_flavor);
 
   /* no connections */
-  tt_assert(networkstatus_consensus_is_already_downloading(res) == 0);
-  tt_assert(networkstatus_consensus_is_already_downloading(other_res) == 0);
-  tt_assert(connection_dir_count_by_purpose_and_resource(
-                                                        TEST_CONN_RSRC_PURPOSE,
-                                                        res) == 0);
-  tt_assert(connection_dir_count_by_purpose_and_resource(
-                                                        TEST_CONN_RSRC_PURPOSE,
-                                                         other_res) == 0);
+  tt_int_op(networkstatus_consensus_is_already_downloading(res), OP_EQ, 0);
+  tt_int_op(networkstatus_consensus_is_already_downloading(other_res), OP_EQ,
+            0);
+  tt_int_op(connection_dir_count_by_purpose_and_resource(
+                                           TEST_CONN_RSRC_PURPOSE, res),
+            OP_EQ, 0);
+  tt_int_op(connection_dir_count_by_purpose_and_resource(
+                                           TEST_CONN_RSRC_PURPOSE, other_res),
+            OP_EQ, 0);
 
   /* one connection, not downloading */
   conn = test_conn_download_status_add_a_connection(res);
-  tt_assert(networkstatus_consensus_is_already_downloading(res) == 0);
-  tt_assert(networkstatus_consensus_is_already_downloading(other_res) == 0);
-  tt_assert(connection_dir_count_by_purpose_and_resource(
-                                                        TEST_CONN_RSRC_PURPOSE,
-                                                        res) == 1);
-  tt_assert(connection_dir_count_by_purpose_and_resource(
-                                                        TEST_CONN_RSRC_PURPOSE,
-                                                         other_res) == 0);
+  tt_int_op(networkstatus_consensus_is_already_downloading(res), OP_EQ, 0);
+  tt_int_op(networkstatus_consensus_is_already_downloading(other_res), OP_EQ,
+            0);
+  tt_int_op(connection_dir_count_by_purpose_and_resource(
+                                           TEST_CONN_RSRC_PURPOSE, res),
+            OP_EQ, 1);
+  tt_int_op(connection_dir_count_by_purpose_and_resource(
+                                           TEST_CONN_RSRC_PURPOSE, other_res),
+            OP_EQ, 0);
 
   /* one connection, downloading but not linked (not possible on a client,
    * but possible on a relay) */
   conn->base_.state = TEST_CONN_DL_STATE;
-  tt_assert(networkstatus_consensus_is_already_downloading(res) == 0);
-  tt_assert(networkstatus_consensus_is_already_downloading(other_res) == 0);
-  tt_assert(connection_dir_count_by_purpose_and_resource(
-                                                        TEST_CONN_RSRC_PURPOSE,
-                                                        res) == 1);
-  tt_assert(connection_dir_count_by_purpose_and_resource(
-                                                        TEST_CONN_RSRC_PURPOSE,
-                                                         other_res) == 0);
+  tt_int_op(networkstatus_consensus_is_already_downloading(res), OP_EQ, 0);
+  tt_int_op(networkstatus_consensus_is_already_downloading(other_res), OP_EQ,
+            0);
+  tt_int_op(connection_dir_count_by_purpose_and_resource(
+                                           TEST_CONN_RSRC_PURPOSE, res),
+            OP_EQ, 1);
+  tt_int_op(connection_dir_count_by_purpose_and_resource(
+                                           TEST_CONN_RSRC_PURPOSE, other_res),
+            OP_EQ, 0);
 
   /* one connection, downloading and linked, but not yet attached */
   ap_conn = test_conn_get_linked_connection(TO_CONN(conn),
                                             TEST_CONN_UNATTACHED_STATE);
-  tt_assert(networkstatus_consensus_is_already_downloading(res) == 0);
-  tt_assert(networkstatus_consensus_is_already_downloading(other_res) == 0);
-  tt_assert(connection_dir_count_by_purpose_and_resource(
-                                                        TEST_CONN_RSRC_PURPOSE,
-                                                        res) == 1);
-  tt_assert(connection_dir_count_by_purpose_and_resource(
-                                                        TEST_CONN_RSRC_PURPOSE,
-                                                         other_res) == 0);
+  tt_int_op(networkstatus_consensus_is_already_downloading(res), OP_EQ, 0);
+  tt_int_op(networkstatus_consensus_is_already_downloading(other_res), OP_EQ,
+            0);
+  tt_int_op(connection_dir_count_by_purpose_and_resource(
+                                           TEST_CONN_RSRC_PURPOSE, res),
+            OP_EQ, 1);
+  tt_int_op(connection_dir_count_by_purpose_and_resource(
+                                           TEST_CONN_RSRC_PURPOSE, other_res),
+            OP_EQ, 0);
 
     /* one connection, downloading and linked and attached */
   ap_conn->state = TEST_CONN_ATTACHED_STATE;
-  tt_assert(networkstatus_consensus_is_already_downloading(res) == 1);
-  tt_assert(networkstatus_consensus_is_already_downloading(other_res) == 0);
-  tt_assert(connection_dir_count_by_purpose_and_resource(
-                                                        TEST_CONN_RSRC_PURPOSE,
-                                                        res) == 1);
-  tt_assert(connection_dir_count_by_purpose_and_resource(
-                                                        TEST_CONN_RSRC_PURPOSE,
-                                                         other_res) == 0);
+  tt_int_op(networkstatus_consensus_is_already_downloading(res), OP_EQ, 1);
+  tt_int_op(networkstatus_consensus_is_already_downloading(other_res), OP_EQ,
+            0);
+  tt_int_op(connection_dir_count_by_purpose_and_resource(
+                                           TEST_CONN_RSRC_PURPOSE, res),
+            OP_EQ, 1);
+  tt_int_op(connection_dir_count_by_purpose_and_resource(
+                                           TEST_CONN_RSRC_PURPOSE, other_res),
+            OP_EQ, 0);
 
   /* one connection, linked and attached but not downloading */
   conn->base_.state = TEST_CONN_STATE;
-  tt_assert(networkstatus_consensus_is_already_downloading(res) == 0);
-  tt_assert(networkstatus_consensus_is_already_downloading(other_res) == 0);
-  tt_assert(connection_dir_count_by_purpose_and_resource(
-                                                        TEST_CONN_RSRC_PURPOSE,
-                                                        res) == 1);
-  tt_assert(connection_dir_count_by_purpose_and_resource(
-                                                        TEST_CONN_RSRC_PURPOSE,
-                                                         other_res) == 0);
+  tt_int_op(networkstatus_consensus_is_already_downloading(res), OP_EQ, 0);
+  tt_int_op(networkstatus_consensus_is_already_downloading(other_res), OP_EQ,
+            0);
+  tt_int_op(connection_dir_count_by_purpose_and_resource(
+                                           TEST_CONN_RSRC_PURPOSE, res),
+            OP_EQ, 1);
+  tt_int_op(connection_dir_count_by_purpose_and_resource(
+                                           TEST_CONN_RSRC_PURPOSE, other_res),
+            OP_EQ, 0);
 
   /* two connections, both not downloading */
   conn2 = test_conn_download_status_add_a_connection(res);
-  tt_assert(networkstatus_consensus_is_already_downloading(res) == 0);
-  tt_assert(networkstatus_consensus_is_already_downloading(other_res) == 0);
-  tt_assert(connection_dir_count_by_purpose_and_resource(
-                                                        TEST_CONN_RSRC_PURPOSE,
-                                                        res) == 2);
-  tt_assert(connection_dir_count_by_purpose_and_resource(
-                                                        TEST_CONN_RSRC_PURPOSE,
-                                                         other_res) == 0);
+  tt_int_op(networkstatus_consensus_is_already_downloading(res), OP_EQ, 0);
+  tt_int_op(networkstatus_consensus_is_already_downloading(other_res), OP_EQ,
+            0);
+  tt_int_op(connection_dir_count_by_purpose_and_resource(
+                                           TEST_CONN_RSRC_PURPOSE, res),
+            OP_EQ, 2);
+  tt_int_op(connection_dir_count_by_purpose_and_resource(
+                                           TEST_CONN_RSRC_PURPOSE, other_res),
+            OP_EQ, 0);
 
   /* two connections, one downloading */
   conn->base_.state = TEST_CONN_DL_STATE;
-  tt_assert(networkstatus_consensus_is_already_downloading(res) == 1);
-  tt_assert(networkstatus_consensus_is_already_downloading(other_res) == 0);
-  tt_assert(connection_dir_count_by_purpose_and_resource(
-                                                        TEST_CONN_RSRC_PURPOSE,
-                                                        res) == 2);
-  tt_assert(connection_dir_count_by_purpose_and_resource(
-                                                        TEST_CONN_RSRC_PURPOSE,
-                                                         other_res) == 0);
+  tt_int_op(networkstatus_consensus_is_already_downloading(res), OP_EQ, 1);
+  tt_int_op(networkstatus_consensus_is_already_downloading(other_res), OP_EQ,
+            0);
+  tt_int_op(connection_dir_count_by_purpose_and_resource(
+                                           TEST_CONN_RSRC_PURPOSE, res),
+            OP_EQ, 2);
+  tt_int_op(connection_dir_count_by_purpose_and_resource(
+                                           TEST_CONN_RSRC_PURPOSE, other_res),
+            OP_EQ, 0);
   conn->base_.state = TEST_CONN_STATE;
 
   /* more connections, all not downloading */
   /* ignore the return value, it's free'd using the connection list */
   (void)test_conn_download_status_add_a_connection(res);
-  tt_assert(networkstatus_consensus_is_already_downloading(res) == 0);
-  tt_assert(networkstatus_consensus_is_already_downloading(other_res) == 0);
-  tt_assert(connection_dir_count_by_purpose_and_resource(
-                                                        TEST_CONN_RSRC_PURPOSE,
-                                                        res) == 3);
-  tt_assert(connection_dir_count_by_purpose_and_resource(
-                                                        TEST_CONN_RSRC_PURPOSE,
-                                                         other_res) == 0);
+  tt_int_op(networkstatus_consensus_is_already_downloading(res), OP_EQ, 0);
+  tt_int_op(networkstatus_consensus_is_already_downloading(other_res), OP_EQ,
+            0);
+  tt_int_op(connection_dir_count_by_purpose_and_resource(
+                                           TEST_CONN_RSRC_PURPOSE, res),
+            OP_EQ, 3);
+  tt_int_op(connection_dir_count_by_purpose_and_resource(
+                                           TEST_CONN_RSRC_PURPOSE, other_res),
+            OP_EQ, 0);
 
   /* more connections, one downloading */
   conn->base_.state = TEST_CONN_DL_STATE;
-  tt_assert(networkstatus_consensus_is_already_downloading(res) == 1);
-  tt_assert(networkstatus_consensus_is_already_downloading(other_res) == 0);
-  tt_assert(connection_dir_count_by_purpose_and_resource(
-                                                        TEST_CONN_RSRC_PURPOSE,
-                                                        res) == 3);
-  tt_assert(connection_dir_count_by_purpose_and_resource(
-                                                        TEST_CONN_RSRC_PURPOSE,
-                                                         other_res) == 0);
+  tt_int_op(networkstatus_consensus_is_already_downloading(res), OP_EQ, 1);
+  tt_int_op(networkstatus_consensus_is_already_downloading(other_res), OP_EQ,
+            0);
+  tt_int_op(connection_dir_count_by_purpose_and_resource(
+                                           TEST_CONN_RSRC_PURPOSE, res),
+            OP_EQ, 3);
+  tt_int_op(connection_dir_count_by_purpose_and_resource(
+                                           TEST_CONN_RSRC_PURPOSE, other_res),
+            OP_EQ, 0);
 
   /* more connections, two downloading (should never happen, but needs
    * to be tested for completeness) */
@@ -808,38 +731,41 @@ test_conn_download_status(void *arg)
   /* ignore the return value, it's free'd using the connection list */
   (void)test_conn_get_linked_connection(TO_CONN(conn2),
                                         TEST_CONN_ATTACHED_STATE);
-  tt_assert(networkstatus_consensus_is_already_downloading(res) == 1);
-  tt_assert(networkstatus_consensus_is_already_downloading(other_res) == 0);
-  tt_assert(connection_dir_count_by_purpose_and_resource(
-                                                        TEST_CONN_RSRC_PURPOSE,
-                                                        res) == 3);
-  tt_assert(connection_dir_count_by_purpose_and_resource(
-                                                        TEST_CONN_RSRC_PURPOSE,
-                                                         other_res) == 0);
+  tt_int_op(networkstatus_consensus_is_already_downloading(res), OP_EQ, 1);
+  tt_int_op(networkstatus_consensus_is_already_downloading(other_res), OP_EQ,
+            0);
+  tt_int_op(connection_dir_count_by_purpose_and_resource(
+                                           TEST_CONN_RSRC_PURPOSE, res),
+            OP_EQ, 3);
+  tt_int_op(connection_dir_count_by_purpose_and_resource(
+                                           TEST_CONN_RSRC_PURPOSE, other_res),
+            OP_EQ, 0);
   conn->base_.state = TEST_CONN_STATE;
 
   /* more connections, a different one downloading */
-  tt_assert(networkstatus_consensus_is_already_downloading(res) == 1);
-  tt_assert(networkstatus_consensus_is_already_downloading(other_res) == 0);
-  tt_assert(connection_dir_count_by_purpose_and_resource(
-                                                        TEST_CONN_RSRC_PURPOSE,
-                                                        res) == 3);
-  tt_assert(connection_dir_count_by_purpose_and_resource(
-                                                        TEST_CONN_RSRC_PURPOSE,
-                                                         other_res) == 0);
+  tt_int_op(networkstatus_consensus_is_already_downloading(res), OP_EQ, 1);
+  tt_int_op(networkstatus_consensus_is_already_downloading(other_res), OP_EQ,
+            0);
+  tt_int_op(connection_dir_count_by_purpose_and_resource(
+                                           TEST_CONN_RSRC_PURPOSE, res),
+            OP_EQ, 3);
+  tt_int_op(connection_dir_count_by_purpose_and_resource(
+                                           TEST_CONN_RSRC_PURPOSE, other_res),
+            OP_EQ, 0);
 
   /* a connection for the other flavor (could happen if a client is set to
    * cache directory documents), one preferred flavor downloading
    */
   conn4 = test_conn_download_status_add_a_connection(other_res);
-  tt_assert(networkstatus_consensus_is_already_downloading(res) == 1);
-  tt_assert(networkstatus_consensus_is_already_downloading(other_res) == 0);
-  tt_assert(connection_dir_count_by_purpose_and_resource(
-                                                        TEST_CONN_RSRC_PURPOSE,
-                                                        res) == 3);
-  tt_assert(connection_dir_count_by_purpose_and_resource(
-                                                        TEST_CONN_RSRC_PURPOSE,
-                                                        other_res) == 1);
+  tt_int_op(networkstatus_consensus_is_already_downloading(res), OP_EQ, 1);
+  tt_int_op(networkstatus_consensus_is_already_downloading(other_res), OP_EQ,
+            0);
+  tt_int_op(connection_dir_count_by_purpose_and_resource(
+                                   TEST_CONN_RSRC_PURPOSE, res),
+            OP_EQ, 3);
+  tt_int_op(connection_dir_count_by_purpose_and_resource(
+                                   TEST_CONN_RSRC_PURPOSE, other_res),
+            OP_EQ, 1);
 
   /* a connection for the other flavor (could happen if a client is set to
    * cache directory documents), both flavors downloading
@@ -848,23 +774,117 @@ test_conn_download_status(void *arg)
   /* ignore the return value, it's free'd using the connection list */
   (void)test_conn_get_linked_connection(TO_CONN(conn4),
                                         TEST_CONN_ATTACHED_STATE);
-  tt_assert(networkstatus_consensus_is_already_downloading(res) == 1);
-  tt_assert(networkstatus_consensus_is_already_downloading(other_res) == 1);
-  tt_assert(connection_dir_count_by_purpose_and_resource(
-                                                        TEST_CONN_RSRC_PURPOSE,
-                                                        res) == 3);
-  tt_assert(connection_dir_count_by_purpose_and_resource(
-                                                        TEST_CONN_RSRC_PURPOSE,
-                                                        other_res) == 1);
+  tt_int_op(networkstatus_consensus_is_already_downloading(res), OP_EQ, 1);
+  tt_int_op(networkstatus_consensus_is_already_downloading(other_res), OP_EQ,
+            1);
+  tt_int_op(connection_dir_count_by_purpose_and_resource(
+                                   TEST_CONN_RSRC_PURPOSE, res),
+            OP_EQ, 3);
+  tt_int_op(connection_dir_count_by_purpose_and_resource(
+                                   TEST_CONN_RSRC_PURPOSE, other_res),
+            OP_EQ, 1);
 
  done:
   /* the teardown function removes all the connections in the global list*/;
 }
 
+static node_t test_node;
+
+static node_t *
+mock_node_get_mutable_by_id(const char *digest)
+{
+  (void) digest;
+  static routerinfo_t node_ri;
+  memset(&node_ri, 0, sizeof(node_ri));
+
+  test_node.ri = &node_ri;
+  memset(test_node.identity, 'c', sizeof(test_node.identity));
+
+  tor_addr_t ipv4_addr;
+  tor_addr_parse(&ipv4_addr, "18.0.0.1");
+  node_ri.addr = tor_addr_to_ipv4h(&ipv4_addr);
+  node_ri.or_port = 1;
+
+  return &test_node;
+}
+
+static const node_t *
+mock_node_get_by_id(const char *digest)
+{
+  (void) digest;
+  memset(test_node.identity, 'c', sizeof(test_node.identity));
+  return &test_node;
+}
+
+/* Test whether we correctly track failed connections between relays. */
+static void
+test_failed_orconn_tracker(void *arg)
+{
+  (void) arg;
+
+  int can_connect;
+  time_t now = 1281533250; /* 2010-08-11 13:27:30 UTC */
+  (void) now;
+
+  update_approx_time(now);
+
+  /* Prepare the OR connection that will be used in this test */
+  or_connection_t or_conn;
+  tt_int_op(AF_INET,OP_EQ, tor_addr_parse(&or_conn.real_addr, "18.0.0.1"));
+  tt_int_op(AF_INET,OP_EQ, tor_addr_parse(&or_conn.base_.addr, "18.0.0.1"));
+  or_conn.base_.port = 1;
+  memset(or_conn.identity_digest, 'c', sizeof(or_conn.identity_digest));
+
+  /* Check whether we can connect with an empty failure cache:
+   * this should succeed */
+  can_connect = should_connect_to_relay(&or_conn);
+  tt_int_op(can_connect, OP_EQ, 1);
+
+  /* Now add the destination to the failure cache */
+  note_or_connect_failed(&or_conn);
+
+  /* Check again: now it shouldn't connect */
+  can_connect = should_connect_to_relay(&or_conn);
+  tt_int_op(can_connect, OP_EQ, 0);
+
+  /* Move time forward and check again: the cache should have been cleared and
+   * now it should connect */
+  now += 3600;
+  update_approx_time(now);
+  can_connect = should_connect_to_relay(&or_conn);
+  tt_int_op(can_connect, OP_EQ, 1);
+
+  /* Now mock the node_get_*by_id() functions to start using the node subsystem
+   * optimization. */
+  MOCK(node_get_by_id, mock_node_get_by_id);
+  MOCK(node_get_mutable_by_id, mock_node_get_mutable_by_id);
+
+  /* Since we just started using the node subsystem it will allow connections
+   * now */
+  can_connect = should_connect_to_relay(&or_conn);
+  tt_int_op(can_connect, OP_EQ, 1);
+
+  /* Mark it as failed */
+  note_or_connect_failed(&or_conn);
+
+  /* Check that it shouldn't connect now */
+  can_connect = should_connect_to_relay(&or_conn);
+  tt_int_op(can_connect, OP_EQ, 0);
+
+  /* Move time forward and check again: now it should connect  */
+  now += 3600;
+  update_approx_time(now);
+  can_connect = should_connect_to_relay(&or_conn);
+  tt_int_op(can_connect, OP_EQ, 1);
+
+ done:
+  ;
+}
+
 #define CONNECTION_TESTCASE(name, fork, setup)                           \
   { #name, test_conn_##name, fork, &setup, NULL }
 
-/* where arg is an expression (constant, varaible, compound expression) */
+/* where arg is an expression (constant, variable, compound expression) */
 #define CONNECTION_TESTCASE_ARG(name, fork, setup, arg)                  \
   { #name "_" #arg, test_conn_##name, fork, &setup, (void *)arg }
 
@@ -877,6 +897,6 @@ struct testcase_t connection_tests[] = {
   CONNECTION_TESTCASE_ARG(download_status,  TT_FORK,
                           test_conn_download_status_st, FLAV_NS),
 //CONNECTION_TESTCASE(func_suffix, TT_FORK, setup_func_pair),
+  { "failed_orconn_tracker", test_failed_orconn_tracker, TT_FORK, NULL, NULL },
   END_OF_TESTCASES
 };
-

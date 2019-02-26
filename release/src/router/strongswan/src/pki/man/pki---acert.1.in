@@ -1,0 +1,136 @@
+.TH "PKI \-\-ACERT" 1 "2014-02-05" "@PACKAGE_VERSION@" "strongSwan"
+.
+.SH "NAME"
+.
+pki \-\-acert \- Issue an attribute certificate
+.
+.SH "SYNOPSIS"
+.
+.SY pki\ \-\-acert
+.OP \-\-in file
+.OP \-\-group membership
+.BI \-\-issuerkey\~ file |\-\-issuerkeyid\~ hex
+.BI \-\-issuercert\~ file
+.OP \-\-lifetime hours
+.OP \-\-not-before datetime
+.OP \-\-not-after datetime
+.OP \-\-serial hex
+.OP \-\-digest digest
+.OP \-\-rsa\-padding padding
+.OP \-\-outform encoding
+.OP \-\-debug level
+.YS
+.
+.SY pki\ \-\-acert
+.BI \-\-options\~ file
+.YS
+.
+.SY "pki \-\-acert"
+.B \-h
+|
+.B \-\-help
+.YS
+.
+.SH "DESCRIPTION"
+.
+This sub-command of
+.BR pki (1)
+is used to issue an attribute certificate using an issuer certificate with its
+private key and the holder certificate.
+.
+.SH "OPTIONS"
+.
+.TP
+.B "\-h, \-\-help"
+Print usage information with a summary of the available options.
+.TP
+.BI "\-v, \-\-debug " level
+Set debug level, default: 1.
+.TP
+.BI "\-+, \-\-options " file
+Read command line options from \fIfile\fR.
+.TP
+.BI "\-i, \-\-in " file
+Holder certificate to issue an attribute certificate for. If not given the
+certificate is read from \fISTDIN\fR.
+.TP
+.BI "\-m, \-\-group " membership
+Group membership the attribute certificate shall certify. The specified group
+is included as a string. To include multiple groups, the option can be repeated.
+.TP
+.BI "\-k, \-\-issuerkey " file
+Issuer private key file. Either this or
+.B \-\-issuerkeyid
+is required.
+.TP
+.BI "\-x, \-\-issuerkeyid " hex
+Smartcard or TPM issuer private key object handle in hex format with an optional
+h0x prefix. Either this or
+.B \-\-issuerkey
+is required.
+.TP
+.BI "\-c, \-\-issuercert " file
+Issuer certificate file. Required.
+.TP
+.BI "\-l, \-\-lifetime " hours
+Hours the attribute certificate is valid, default: 24. Ignored if both
+an absolute start and end time are given.
+.TP
+.BI "\-F, \-\-not-before " datetime
+Absolute time when the validity of the AC begins. The datetime format is
+defined by the
+.B \-\-dateform
+option.
+.TP
+.BI "\-T, \-\-not-after " datetime
+Absolute time when the validity of the AC ends. The datetime format is
+defined by the
+.B \-\-dateform
+option.
+.TP
+.BI "\-D, \-\-dateform " form
+strptime(3) format for the
+.B \-\-not\-before
+and
+.B \-\-not\-after
+options, default:
+.B %d.%m.%y %T
+.TP
+.BI "\-s, \-\-serial " hex
+Serial number in hex. It is randomly allocated by default.
+.TP
+.BI "\-g, \-\-digest " digest
+Digest to use for signature creation. One of \fImd5\fR, \fIsha1\fR,
+\fIsha224\fR, \fIsha256\fR, \fIsha384\fR, or \fIsha512\fR. The default is
+determined based on the type and size of the signature key.
+.TP
+.BI "\-R, \-\-rsa\-padding " padding
+Padding to use for RSA signatures. Either \fIpkcs1\fR or \fIpss\fR, defaults
+to \fIpkcs1\fR.
+.TP
+.BI "\-f, \-\-outform " encoding
+Encoding of the created certificate file. Either \fIder\fR (ASN.1 DER) or
+\fIpem\fR (Base64 PEM), defaults to \fIder\fR.
+.
+.SH "EXAMPLES"
+.
+To save repetitive typing, command line options can be stored in files.
+Lets assume
+.I acert.opt
+contains the following contents:
+.PP
+.EX
+  --issuercert aacert.der --issuerkey aakey.der --digest sha256 --lifetime 4
+.EE
+.PP
+Then the following command can be used to issue an attribute certificate based
+on a holder certificate and the options above:
+.PP
+.EX
+  pki --acert --options acert.opt --in holder.der --group sales --group finance -f pem
+.EE
+.PP
+.
+.SH "SEE ALSO"
+.
+.BR pki (1)

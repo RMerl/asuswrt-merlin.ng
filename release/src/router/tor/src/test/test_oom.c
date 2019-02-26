@@ -1,4 +1,4 @@
-/* Copyright (c) 2014-2016, The Tor Project, Inc. */
+/* Copyright (c) 2014-2019, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 /* Unit tests for OOM handling logic */
@@ -7,14 +7,21 @@
 #define BUFFERS_PRIVATE
 #define CIRCUITLIST_PRIVATE
 #define CONNECTION_PRIVATE
-#include "or.h"
-#include "buffers.h"
-#include "circuitlist.h"
-#include "compat_libevent.h"
-#include "connection.h"
-#include "config.h"
-#include "relay.h"
-#include "test.h"
+#include "core/or/or.h"
+#include "lib/container/buffers.h"
+#include "core/or/circuitlist.h"
+#include "lib/evloop/compat_libevent.h"
+#include "core/mainloop/connection.h"
+#include "app/config/config.h"
+#include "lib/crypt_ops/crypto_rand.h"
+#include "core/or/relay.h"
+#include "test/test.h"
+#include "test/test_helpers.h"
+
+#include "core/or/cell_st.h"
+#include "core/or/entry_connection_st.h"
+#include "core/or/or_circuit_st.h"
+#include "core/or/origin_circuit_st.h"
 
 /* small replacement mock for circuit_mark_for_close_ to avoid doing all
  * the other bookkeeping that comes with marking circuits. */
@@ -58,24 +65,6 @@ dummy_or_circuit_new(int n_p_cells, int n_n_cells)
   return TO_CIRCUIT(circ);
 }
 
-static circuit_t *
-dummy_origin_circuit_new(int n_cells)
-{
-  origin_circuit_t *circ = origin_circuit_new();
-  int i;
-  cell_t cell;
-
-  for (i=0; i < n_cells; ++i) {
-    crypto_rand((void*)&cell, sizeof(cell));
-    cell_queue_append_packed_copy(TO_CIRCUIT(circ),
-                                  &TO_CIRCUIT(circ)->n_chan_cells,
-                                  1, &cell, 1, 0);
-  }
-
-  TO_CIRCUIT(circ)->purpose = CIRCUIT_PURPOSE_C_GENERAL;
-  return TO_CIRCUIT(circ);
-}
-
 static void
 add_bytes_to_buf(buf_t *buf, size_t n_bytes)
 {
@@ -84,7 +73,7 @@ add_bytes_to_buf(buf_t *buf, size_t n_bytes)
   while (n_bytes) {
     size_t this_add = n_bytes > sizeof(b) ? sizeof(b) : n_bytes;
     crypto_rand(b, this_add);
-    write_to_buf(b, this_add, buf);
+    buf_add(buf, b, this_add);
     n_bytes -= this_add;
   }
 }
@@ -219,7 +208,7 @@ test_oom_streambuf(void *arg)
 {
   or_options_t *options = get_options_mutable();
   circuit_t *c1 = NULL, *c2 = NULL, *c3 = NULL, *c4 = NULL, *c5 = NULL;
-  uint32_t tvms;
+  uint32_t tvts;
   int i;
   smartlist_t *edgeconns = smartlist_new();
   const uint64_t start_ns = 1389641159 * (uint64_t)1000000000;
@@ -287,22 +276,28 @@ test_oom_streambuf(void *arg)
   now_ns -= now_ns % 1000000000;
   now_ns += 1000000000;
   monotime_coarse_set_mock_time_nsec(now_ns);
-  tvms = (uint32_t) monotime_coarse_absolute_msec();
+  tvts = monotime_coarse_get_stamp();
 
-  tt_int_op(circuit_max_queued_cell_age(c1, tvms), OP_EQ, 500);
-  tt_int_op(circuit_max_queued_cell_age(c2, tvms), OP_EQ, 490);
-  tt_int_op(circuit_max_queued_cell_age(c3, tvms), OP_EQ, 480);
-  tt_int_op(circuit_max_queued_cell_age(c4, tvms), OP_EQ, 0);
+#define ts_is_approx(ts, val) do {                                   \
+    uint32_t x_ = (uint32_t) monotime_coarse_stamp_units_to_approx_msec(ts); \
+    tt_int_op(x_, OP_GE, val - 5);                                      \
+    tt_int_op(x_, OP_LE, val + 5);                                      \
+  } while (0)
 
-  tt_int_op(circuit_max_queued_data_age(c1, tvms), OP_EQ, 390);
-  tt_int_op(circuit_max_queued_data_age(c2, tvms), OP_EQ, 380);
-  tt_int_op(circuit_max_queued_data_age(c3, tvms), OP_EQ, 0);
-  tt_int_op(circuit_max_queued_data_age(c4, tvms), OP_EQ, 370);
+  ts_is_approx(circuit_max_queued_cell_age(c1, tvts), 500);
+  ts_is_approx(circuit_max_queued_cell_age(c2, tvts), 490);
+  ts_is_approx(circuit_max_queued_cell_age(c3, tvts), 480);
+  ts_is_approx(circuit_max_queued_cell_age(c4, tvts), 0);
 
-  tt_int_op(circuit_max_queued_item_age(c1, tvms), OP_EQ, 500);
-  tt_int_op(circuit_max_queued_item_age(c2, tvms), OP_EQ, 490);
-  tt_int_op(circuit_max_queued_item_age(c3, tvms), OP_EQ, 480);
-  tt_int_op(circuit_max_queued_item_age(c4, tvms), OP_EQ, 370);
+  ts_is_approx(circuit_max_queued_data_age(c1, tvts), 390);
+  ts_is_approx(circuit_max_queued_data_age(c2, tvts), 380);
+  ts_is_approx(circuit_max_queued_data_age(c3, tvts), 0);
+  ts_is_approx(circuit_max_queued_data_age(c4, tvts), 370);
+
+  ts_is_approx(circuit_max_queued_item_age(c1, tvts), 500);
+  ts_is_approx(circuit_max_queued_item_age(c2, tvts), 490);
+  ts_is_approx(circuit_max_queued_item_age(c3, tvts), 480);
+  ts_is_approx(circuit_max_queued_item_age(c4, tvts), 370);
 
   tt_int_op(cell_queues_get_total_allocation(), OP_EQ,
             packed_cell_mem_cost() * 80);
@@ -318,7 +313,7 @@ test_oom_streambuf(void *arg)
     smartlist_add(edgeconns, ec);
   }
   tt_int_op(buf_get_total_allocation(), OP_EQ, 4096*17*2);
-  tt_int_op(circuit_max_queued_item_age(c4, tvms), OP_EQ, 1000);
+  ts_is_approx(circuit_max_queued_item_age(c4, tvts), 1000);
 
   tt_int_op(cell_queues_check_size(), OP_EQ, 0);
 
@@ -352,7 +347,7 @@ test_oom_streambuf(void *arg)
   circuit_free(c5);
 
   SMARTLIST_FOREACH(edgeconns, edge_connection_t *, ec,
-                    connection_free_(TO_CONN(ec)));
+                    connection_free_minimal(TO_CONN(ec)));
   smartlist_free(edgeconns);
 
   UNMOCK(circuit_mark_for_close_);

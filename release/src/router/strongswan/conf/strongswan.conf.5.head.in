@@ -1,0 +1,191 @@
+.TH STRONGSWAN.CONF 5 "" "@PACKAGE_VERSION@" "strongSwan"
+.SH NAME
+strongswan.conf \- strongSwan configuration file
+.SH DESCRIPTION
+While the
+.IR ipsec.conf (5)
+configuration file is well suited to define IPsec related configuration
+parameters, it is not useful for other strongSwan applications to read options
+from this file.
+The file is hard to parse and only
+.I ipsec starter
+is capable of doing so. As the number of components of the strongSwan project
+is continually growing, a more flexible configuration file was needed, one that
+is easy to extend and can be used by all components. With strongSwan 4.2.1
+.IR strongswan.conf (5)
+was introduced which meets these requirements.
+
+.SH SYNTAX
+The format of the strongswan.conf file consists of hierarchical
+.B sections
+and a list of
+.B key/value pairs
+in each section. Each section has a name, followed by C-Style curly brackets
+defining the section body. Each section body contains a set of subsections
+and key/value pairs:
+.PP
+.EX
+	settings := (section|keyvalue)*
+	section  := name { settings }
+	keyvalue := key = value\\n
+.EE
+.PP
+Values must be terminated by a newline.
+.PP
+Comments are possible using the \fB#\fP-character.
+.PP
+Section names and keys may contain any printable character except:
+.PP
+.EX
+	. , : { } = " # \\n \\t space
+.EE
+.PP
+An example file in this format might look like this:
+.PP
+.EX
+	a = b
+	section-one {
+		somevalue = asdf
+		subsection {
+			othervalue = xxx
+		}
+		# yei, a comment
+		yetanother = zz
+	}
+	section-two {
+		x = 12
+	}
+.EE
+.PP
+Indentation is optional, you may use tabs or spaces.
+
+
+.SH REFERENCING OTHER SECTIONS
+It is possible to inherit settings and sections from another section. This
+feature is mainly useful in swanctl.conf (which uses the same file format).
+The syntax is as follows:
+.PP
+.EX
+	section    := name : references { settings }
+	references := absname[, absname]*
+	absname    := name[.name]*
+.EE
+.PP
+All key/value pairs and all subsections of the referenced sections will be
+inherited by the section that references them via their absolute name. Values
+may be overridden in the section or any of its sub-sections (use an empty
+assignment to clear a value so its default value, if any, will apply). It is
+currently not possible to limit the inclusion level or clear/remove inherited
+sub-sections.
+
+If the order is important (e.g. for auth rounds in a connection, if \fIround\fR
+is not used), it should be noted that inherited settings/sections will follow
+those defined in the current section (if multiple sections are referenced, their
+settings are enumerated left to right).
+
+References are evaluated dynamically at runtime, so referring to sections later
+in the config file or included via other files is no problem.
+
+Here is an example of how this might look like:
+.PP
+.EX
+	conn-defaults {
+		# default settings for all conns (e.g. a cert, or IP pools)
+	}
+	eap-defaults {
+		# defaults if eap is used (e.g. a remote auth round)
+	}
+	child-defaults {
+		# defaults for child configs (e.g. traffic selectors)
+	}
+	connections {
+		conn-a : conn-defaults, eap-defaults {
+			# set/override stuff specific to this connection
+			children {
+				child-a : child-defaults {
+					# set/override stuff specific to this child
+				}
+			}
+		}
+		conn-b : conn-defaults {
+			# set/override stuff specific to this connection
+			children {
+				child-b : child-defaults {
+					# set/override stuff specific to this child
+				}
+			}
+		}
+		conn-c : connections.conn-a {
+			# everything is inherited, including everything conn-a
+			# already inherits from the sections it and its
+			# sub-section reference
+		}
+	}
+.EE
+.PP
+
+.SH INCLUDING FILES
+Using the
+.B include
+statement it is possible to include other files into strongswan.conf, e.g.
+.PP
+.EX
+	include /some/path/*.conf
+.EE
+.PP
+If the file name is not an absolute path, it is considered to be relative
+to the directory of the file containing the include statement. The file name
+may include shell wildcards (see
+.IR sh (1)).
+Also, such inclusions can be nested.
+.PP
+Sections loaded from included files
+.I extend
+previously loaded sections; already existing values are
+.IR replaced .
+It is important to note that settings are added relative to the section the
+include statement is in.
+.PP
+As an example, the following three files result in the same final
+config as the one given above:
+.PP
+.EX
+	a = b
+	section-one {
+		somevalue = before include
+		include include.conf
+	}
+	include other.conf
+
+include.conf:
+	# settings loaded from this file are added to section-one
+	# the following replaces the previous value
+	somevalue = asdf
+	subsection {
+		othervalue = yyy
+	}
+	yetanother = zz
+
+other.conf:
+	# this extends section-one and subsection
+	section-one {
+		subsection {
+			# this replaces the previous value
+			othervalue = xxx
+		}
+	}
+	section-two {
+		x = 12
+	}
+.EE
+
+.SH READING VALUES
+Values are accessed using a dot-separated section list and a key.
+With reference to the example above, accessing
+.B section-one.subsection.othervalue
+will return
+.BR xxx .
+
+.SH DEFINED KEYS
+The following keys are currently defined (using dot notation). The default
+value (if any) is listed in brackets after the key.

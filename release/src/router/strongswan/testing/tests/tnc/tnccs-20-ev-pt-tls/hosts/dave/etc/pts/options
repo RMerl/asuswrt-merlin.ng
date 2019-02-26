@@ -1,0 +1,7 @@
+--connect aaa.strongswan.org
+--client dave@strongswan.org
+--key  /etc/swanctl/rsa/daveKey.pem
+--cert /etc/swanctl/x509/daveCert.pem
+--cert /etc/swanctl/x509ca/strongswanCert.pem
+--quiet
+--debug 2

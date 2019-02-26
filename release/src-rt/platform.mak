@@ -28,7 +28,7 @@ endif
 export CROSS_COMPILER := $(CROSS_COMPILE)
 export CONFIGURE := ./configure LD=$(CROSS_COMPILE)ld --host=arm-buildroot-linux-gnueabi
 export CONFIGURE_64 := ./configure LD=$(CROSS_COMPILE_64)ld --host=aarch64-buildroot-linux-gnu 
-export HOSTCONFIG := linux-armv4 -DOPENSSL_NO_HEARTBEATS -DL_ENDIAN -march=armv7-a -fomit-frame-pointer -mabi=aapcs-linux -marm -ffixed-r8 -msoft-float -D__ARM_ARCH_7A__
+export HOSTCONFIG := linux-armv4 -DOPENSSL_NO_HEARTBEATS -DL_ENDIAN -O2 -march=armv8-a -fomit-frame-pointer -mabi=aapcs-linux -marm -ffixed-r8 -msoft-float -D__ARM_ARCH_8A__
 export HOSTCONFIG_64 := linux-aarch64 -DOPENSSL_NO_HEARTBEATS -DL_ENDIAN no-engine -Os -march=armv8-a -fomit-frame-pointer -mabi=lp64 -ffixed-r8 -D__ARM_ARCH_8A__ no-asm
  ifeq ($(HND_ROUTER_AX),y)
 export TOP_PLATFORM := $(SRCBASE)/router-sysdep
@@ -54,7 +54,7 @@ export PLATFORM_ARCH := arm-uclibc
 export CROSS_COMPILE := arm-brcm-linux-uclibcgnueabi-
 export CROSS_COMPILER := $(CROSS_COMPILE)
 export CONFIGURE := ./configure --host=arm-linux --build=$(BUILD)
-export HOSTCONFIG := linux-armv4
+export HOSTCONFIG := linux-armv4 -O2
 export BCMEX := _arm
 export EXTRA_FLAG := -lgcc_s
 export ARCH := arm

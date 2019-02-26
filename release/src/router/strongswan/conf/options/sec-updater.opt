@@ -1,0 +1,29 @@
+sec-updater {}
+	Options for the sec-updater tool.
+
+	Options for the sec-updater tool.
+
+sec-updater.database =
+	Global IMV policy database URI. If it contains a password, make	sure to
+	adjust the permissions of the config file accordingly.
+
+sec-updater.swid_gen.command = /usr/local/bin/swid_generator
+	SWID generator command to be executed.
+
+sec-updater.swid_gen.tag_creator.name = strongSwan Project
+	Name of the tagCreator entity.
+
+sec-updater.swid_gen.tag_creator.regid = strongswan.org
+	regid of the tagCreator entity.
+
+sec-updater.tnc_manage_command = /var/www/tnc/manage.py
+	strongTNC manage.py command used to import SWID tags.
+
+sec-updater.tmp.deb_file = /tmp/sec-updater.deb
+	Temporary storage for downloaded deb package file.
+
+sec-updater.tmp.tag_file = /tmp/sec-updater.tag
+	Temporary storage for generated SWID tags.
+
+sec-updater.load =
+	Plugins to load in sec-updater tool.

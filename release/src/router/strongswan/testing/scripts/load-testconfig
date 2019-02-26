@@ -1,0 +1,170 @@
+#!/bin/bash
+# Load test specific host configurations
+#
+# Copyright (C) 2004  Eric Marchionni, Patrik Rayo
+# Zuercher Hochschule Winterthur
+#
+# This program is free software; you can redistribute it and/or modify it
+# under the terms of the GNU General Public License as published by the
+# Free Software Foundation; either version 2 of the License, or (at your
+# option) any later version.  See <http://www.fsf.org/copyleft/gpl.txt>.
+#
+# This program is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+# or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+# for more details.
+
+DIR=$(dirname `readlink -f $0`)
+. $DIR/../testing.conf
+. $DIR/function.sh
+SSHCONF="-F $DIR/../ssh_config"
+
+##########################################################################
+# load-testconfig requires a testname as an argument
+#
+
+testname=$1
+
+DEFAULTTESTSDIR=$DIR/../tests
+
+[ -d $DEFAULTTESTSDIR ] || die "Directory 'tests' not found"
+[ -d $DEFAULTTESTSDIR/$testname ] || die "Test '$testname' not found"
+[ -f $DEFAULTTESTSDIR/$testname/test.conf ] || die "File 'test.conf' is missing"
+
+TESTSDIR=$BUILDDIR/tests
+[ -d $TESTSDIR ] || mkdir $TESTSDIR
+
+TESTDIR=$TESTSDIR/${testname}
+rm -rf $TESTDIR
+mkdir -p $TESTDIR
+cp -rfp $DEFAULTTESTSDIR/${testname}/* $TESTDIR
+
+##############################################################################
+# assign IP for each host to hostname
+#
+
+for host in $STRONGSWANHOSTS
+do
+    eval ipv4_${host}="`echo $HOSTNAMEIPV4 | sed -n -e "s/^.*${host},//gp" | awk -F, '{ print $1 }' | awk '{ print $1 }'`"
+    eval ipv6_${host}="`echo $HOSTNAMEIPV6 | sed -n -e "s/^.*${host},//gp" | awk -F, '{ print $1 }' | awk '{ print $1 }'`"
+
+    case $host in
+    moon)
+        eval ipv4_moon1="`echo $HOSTNAMEIPV4 | sed -n -e "s/^.*${host},//gp" | awk -F, '{ print $2 }' | awk '{ print $1 }'`"
+        eval ipv6_moon1="`echo $HOSTNAMEIPV6 | sed -n -e "s/^.*${host},//gp" | awk -F, '{ print $2 }' | awk '{ print $1 }'`"
+        ;;
+    sun)
+        eval ipv4_sun1="`echo $HOSTNAMEIPV4 | sed -n -e "s/^.*${host},//gp" | awk -F, '{ print $2 }' | awk '{ print $1 }'`"
+        eval ipv6_sun1="`echo $HOSTNAMEIPV6 | sed -n -e "s/^.*${host},//gp" | awk -F, '{ print $2 }' | awk '{ print $1 }'`"
+        ;;
+    alice)
+        eval ipv4_alice1="`echo $HOSTNAMEIPV4 | sed -n -e "s/^.*${host},//gp" | awk -F, '{ print $2 }' | awk '{ print $1 }'`"
+        eval ipv6_alice1="`echo $HOSTNAMEIPV6 | sed -n -e "s/^.*${host},//gp" | awk -F, '{ print $2 }' | awk '{ print $1 }'`"
+        ;;
+    venus)
+        ;;
+    bob)
+        ;;
+    carol)
+        eval ipv4_carol1="`echo $HOSTNAMEIPV4 | sed -n -e "s/^.*${host},//gp" | awk -F, '{ print $2 }' | awk '{ print $1 }'`"
+        eval ipv6_carol1="`echo $HOSTNAMEIPV6 | sed -n -e "s/^.*${host},//gp" | awk -F, '{ print $2 }' | awk '{ print $1 }'`"
+         ;;
+    dave)
+        eval ipv4_dave1="`echo $HOSTNAMEIPV4 | sed -n -e "s/^.*${host},//gp" | awk -F, '{ print $2 }' | awk '{ print $1 }'`"
+        eval ipv6_dave1="`echo $HOSTNAMEIPV6 | sed -n -e "s/^.*${host},//gp" | awk -F, '{ print $2 }' | awk '{ print $1 }'`"
+        ;;
+    winnetou)
+        ;;
+    esac
+done
+
+##############################################################################
+# replace IP wildcards with actual IPv4 and IPv6 addresses
+#
+
+for host in $STRONGSWANHOSTS
+do
+    case $host in
+    moon)
+    searchandreplace PH_IP_MOON1     $ipv4_moon1 $TESTDIR
+    searchandreplace PH_IP_MOON      $ipv4_moon  $TESTDIR
+    searchandreplace PH_IP6_MOON1    $ipv6_moon1 $TESTDIR
+    searchandreplace PH_IP6_MOON     $ipv6_moon  $TESTDIR
+    ;;
+    sun)
+    searchandreplace PH_IP_SUN1      $ipv4_sun1 $TESTDIR
+    searchandreplace PH_IP_SUN       $ipv4_sun  $TESTDIR
+    searchandreplace PH_IP6_SUN1     $ipv6_sun1 $TESTDIR
+    searchandreplace PH_IP6_SUN      $ipv6_sun  $TESTDIR
+    ;;
+    alice)
+    searchandreplace PH_IP_ALICE1    $ipv4_alice1 $TESTDIR
+    searchandreplace PH_IP_ALICE     $ipv4_alice  $TESTDIR
+    searchandreplace PH_IP6_ALICE1   $ipv6_alice1 $TESTDIR
+    searchandreplace PH_IP6_ALICE    $ipv6_alice  $TESTDIR
+    ;;
+    venus)
+    searchandreplace PH_IP_VENUS     $ipv4_venus $TESTDIR
+    searchandreplace PH_IP6_VENUS    $ipv6_venus $TESTDIR
+    ;;
+    bob)
+    searchandreplace PH_IP_BOB       $ipv4_bob $TESTDIR
+    searchandreplace PH_IPV6_BOB     $ipv6_bob $TESTDIR
+    ;;
+    carol)
+    searchandreplace PH_IP_CAROL1    $ipv4_carol1 $TESTDIR
+    searchandreplace PH_IP_CAROL     $ipv4_carol  $TESTDIR
+    searchandreplace PH_IP6_CAROL1   $ipv6_carol1 $TESTDIR
+    searchandreplace PH_IP6_CAROL    $ipv6_carol  $TESTDIR
+    ;;
+    dave)
+    searchandreplace PH_IP_DAVE1     $ipv4_dave1 $TESTDIR
+    searchandreplace PH_IP_DAVE      $ipv4_dave  $TESTDIR
+    searchandreplace PH_IP6_DAVE1    $ipv6_dave1 $TESTDIR
+    searchandreplace PH_IP6_DAVE     $ipv6_dave  $TESTDIR
+    ;;
+    winnetou)
+    searchandreplace PH_IP_WINNETOU  $ipv4_winnetou $TESTDIR
+    searchandreplace PH_IP6_WINNETOU $ipv6_winnetou $TESTDIR
+    ;;
+    esac
+done
+
+source $TESTDIR/test.conf
+
+##########################################################################
+# copy test specific configurations to uml hosts
+#
+
+if [ -d $TESTDIR/hosts ]
+then
+    for host in `ls $TESTDIR/hosts`
+    do
+	eval HOSTLOGIN=root@\$ipv4_${host}
+	scp $SSHCONF -r $TESTDIR/hosts/$host/etc $HOSTLOGIN:/ > /dev/null 2>&1
+    done
+fi
+
+
+##########################################################################
+# clear auth.log and daemon.log where IKE messages are logged
+#
+
+for host in $IPSECHOSTS
+do
+    eval HOSTLOGIN=root@\$ipv4_${host}
+    ssh $SSHCONF $HOSTLOGIN 'rm -f /var/log/auth.log /var/log/daemon.log; \
+		    kill -SIGHUP `cat /var/run/rsyslogd.pid`' > /dev/null 2>&1
+done
+
+
+##########################################################################
+# clear daemon.log and radius.log on FreeRadius servers
+#
+
+for host in $RADIUSHOSTS
+do
+    eval HOSTLOGIN=root@\$ipv4_${host}
+    ssh $SSHCONF $HOSTLOGIN 'rm -f /var/log/daemon.log /var/log/freeradius/radius.log; \
+		    kill -SIGHUP `cat /var/run/rsyslogd.pid`' > /dev/null 2>&1
+done

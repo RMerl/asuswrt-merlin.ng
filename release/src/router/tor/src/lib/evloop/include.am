@@ -1,0 +1,26 @@
+
+noinst_LIBRARIES += src/lib/libtor-evloop.a
+
+if UNITTESTS_ENABLED
+noinst_LIBRARIES += src/lib/libtor-evloop-testing.a
+endif
+
+src_lib_libtor_evloop_a_SOURCES =			\
+	src/lib/evloop/compat_libevent.c		\
+	src/lib/evloop/procmon.c			\
+	src/lib/evloop/timers.c				\
+	src/lib/evloop/token_bucket.c			\
+	src/lib/evloop/workqueue.c
+
+
+src_lib_libtor_evloop_testing_a_SOURCES = \
+	$(src_lib_libtor_evloop_a_SOURCES)
+src_lib_libtor_evloop_testing_a_CPPFLAGS = $(AM_CPPFLAGS) $(TEST_CPPFLAGS)
+src_lib_libtor_evloop_testing_a_CFLAGS = $(AM_CFLAGS) $(TEST_CFLAGS)
+
+noinst_HEADERS +=					\
+	src/lib/evloop/compat_libevent.h		\
+	src/lib/evloop/procmon.h			\
+	src/lib/evloop/timers.h				\
+	src/lib/evloop/token_bucket.h			\
+	src/lib/evloop/workqueue.h

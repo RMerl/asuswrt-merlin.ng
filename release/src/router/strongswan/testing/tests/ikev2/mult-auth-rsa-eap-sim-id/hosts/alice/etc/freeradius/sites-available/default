@@ -1,0 +1,71 @@
+authorize {
+  preprocess
+  chap
+  mschap
+  suffix
+  files
+  update reply {
+    EAP-Sim-Rand1 := "%{control:EAP-Sim-Rand1}"
+    EAP-Sim-Rand2 := "%{control:EAP-Sim-Rand2}"
+    EAP-Sim-Rand3 := "%{control:EAP-Sim-Rand3}"
+    EAP-Sim-SRES1 := "%{control:EAP-Sim-SRES1}"
+    EAP-Sim-SRES2 := "%{control:EAP-Sim-SRES2}"
+    EAP-Sim-SRES3 := "%{control:EAP-Sim-SRES3}"
+    EAP-Sim-KC1   := "%{control:EAP-Sim-KC1}"
+    EAP-Sim-KC2   := "%{control:EAP-Sim-KC2}"
+    EAP-Sim-KC3   := "%{control:EAP-Sim-KC3}"
+  }
+  eap {
+    ok = return
+  }
+  unix
+  expiration
+  logintime
+  pap
+}
+
+authenticate {
+  Auth-Type PAP {
+    pap
+  }
+  Auth-Type CHAP {
+    chap
+  }
+  Auth-Type MS-CHAP {
+    mschap
+  }
+  unix
+  eap
+}
+
+preacct {
+  preprocess
+  acct_unique
+  suffix
+  files
+}
+
+accounting {
+  detail
+  unix
+  radutmp
+  attr_filter.accounting_response
+}
+
+session {
+  radutmp
+}
+
+post-auth {
+  exec
+  Post-Auth-Type REJECT {
+    attr_filter.access_reject
+  }
+}
+
+pre-proxy {
+}
+
+post-proxy {
+  eap
+}

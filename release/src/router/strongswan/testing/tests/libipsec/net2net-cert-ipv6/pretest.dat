@@ -1,0 +1,11 @@
+moon::iptables-restore < /etc/iptables.rules
+sun::iptables-restore < /etc/iptables.rules
+alice::"ip route add fec2:\:/16 via fec1:\:1"
+moon::"ip route add fec2:\:/16 via fec0:\:2"
+sun::"ip route add fec1:\:/16 via fec0:\:1"
+bob::"ip route add fec1:\:/16 via fec2:\:1"
+moon::systemctl start strongswan-swanctl
+sun::systemctl start strongswan-swanctl
+moon::expect-connection gw-gw
+sun::expect-connection gw-gw
+moon::swanctl --initiate --child net-net 2> /dev/null

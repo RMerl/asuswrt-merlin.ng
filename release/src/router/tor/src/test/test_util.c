@@ -1,6 +1,6 @@
 /* Copyright (c) 2001-2004, Roger Dingledine.
  * Copyright (c) 2004-2006, Roger Dingledine, Nick Mathewson.
- * Copyright (c) 2007-2016, The Tor Project, Inc. */
+ * Copyright (c) 2007-2019, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 #include "orconfig.h"
@@ -8,13 +8,37 @@
 #define COMPAT_TIME_PRIVATE
 #define CONTROL_PRIVATE
 #define UTIL_PRIVATE
-#include "or.h"
-#include "config.h"
-#include "control.h"
-#include "test.h"
-#include "memarea.h"
-#include "util_process.h"
-#include "log_test_helpers.h"
+#define UTIL_MALLOC_PRIVATE
+#define SOCKET_PRIVATE
+#define SUBPROCESS_PRIVATE
+#include "lib/testsupport/testsupport.h"
+#include "core/or/or.h"
+#include "lib/container/buffers.h"
+#include "app/config/config.h"
+#include "feature/control/control.h"
+#include "feature/client/transports.h"
+#include "lib/crypt_ops/crypto_format.h"
+#include "lib/crypt_ops/crypto_rand.h"
+#include "test/test.h"
+#include "lib/memarea/memarea.h"
+#include "lib/process/waitpid.h"
+#include "test/log_test_helpers.h"
+#include "lib/compress/compress.h"
+#include "lib/compress/compress_zstd.h"
+#include "lib/encoding/keyval.h"
+#include "lib/fdio/fdio.h"
+#include "lib/fs/winlib.h"
+#include "lib/process/env.h"
+#include "lib/process/pidfile.h"
+#include "lib/process/subprocess.h"
+#include "lib/intmath/weakrng.h"
+#include "lib/thread/numcpus.h"
+#include "lib/math/fp.h"
+#include "lib/math/laplace.h"
+#include "lib/meminfo/meminfo.h"
+#include "lib/time/tvdiff.h"
+#include "lib/encoding/confline.h"
+#include "lib/net/socketpair.h"
 
 #ifdef HAVE_PWD_H
 #include <pwd.h>
@@ -25,6 +49,16 @@
 #ifdef HAVE_UTIME_H
 #include <utime.h>
 #endif
+#ifdef HAVE_SYS_STAT_H
+#include <sys/stat.h>
+#endif
+#ifdef HAVE_FCNTL_H
+#include <fcntl.h>
+#endif
+#ifdef HAVE_UNISTD_H
+#include <unistd.h>
+#endif
+
 #ifdef _WIN32
 #include <tchar.h>
 #endif
@@ -69,7 +103,7 @@ test_util_read_until_eof_impl(const char *fname, size_t file_len,
   fd = open(fifo_name, O_RDONLY|O_BINARY);
   tt_int_op(fd, OP_GE, 0);
   str = read_file_to_str_until_eof(fd, read_limit, &sz);
-  tt_assert(str != NULL);
+  tt_ptr_op(str, OP_NE, NULL);
 
   if (read_limit < file_len)
     tt_int_op(sz, OP_EQ, read_limit);
@@ -366,7 +400,7 @@ test_util_time(void *arg)
    * calculations internally, then catches the overflow. */
 #define TV_SEC_MAX TIME_MAX
 #define TV_SEC_MIN TIME_MIN
-#endif
+#endif /* defined(_WIN32) */
 
 /* Assume tv_usec is an unsigned integer until proven otherwise */
 #define TV_USEC_MAX UINT_MAX
@@ -634,13 +668,16 @@ test_util_time(void *arg)
    * time_t */
   a_time.tm_year = 2039-1900;
 #if SIZEOF_TIME_T == 4
+  setup_full_capture_of_logs(LOG_WARN);
   tt_int_op((time_t) -1,OP_EQ, tor_timegm(&a_time));
+  expect_single_log_msg_containing("Result does not fit in tor_timegm");
+  teardown_capture_of_logs();
 #elif SIZEOF_TIME_T == 8
   t_res = 2178252895UL;
   tt_int_op(t_res, OP_EQ, tor_timegm(&a_time));
   tor_gmtime_r(&t_res, &b_time);
   TM_EQUAL(a_time, b_time);
-#endif
+#endif /* SIZEOF_TIME_T == 4 || ... */
 
   /* Test tor_timegm out of range */
 
@@ -650,9 +687,14 @@ test_util_time(void *arg)
     setup_full_capture_of_logs(LOG_WARN);                       \
   } while (0)
 #define CHECK_TIMEGM_WARNING(msg) do { \
-    expect_log_msg_containing(msg);                                     \
-    tt_int_op(1, OP_EQ, smartlist_len(mock_saved_logs()));              \
+    expect_single_log_msg_containing(msg);                              \
     teardown_capture_of_logs();                                         \
+  } while (0)
+#define CHECK_POSSIBLE_EINVAL() do {                            \
+    if (mock_saved_log_n_entries()) {                           \
+      expect_single_log_msg_containing("Invalid argument");     \
+    }                                                           \
+    teardown_capture_of_logs();                                 \
   } while (0)
 
 #define CHECK_TIMEGM_ARG_OUT_OF_RANGE(msg) \
@@ -688,7 +730,7 @@ test_util_time(void *arg)
     CAPTURE();
     tt_int_op((time_t) -1,OP_EQ, tor_timegm(&a_time));
     CHECK_TIMEGM_ARG_OUT_OF_RANGE();
-#endif
+#endif /* SIZEOF_INT == 4 || SIZEOF_INT == 8 */
 
 #if SIZEOF_INT == 8
     a_time.tm_year = -1*(1 << 48);
@@ -700,7 +742,7 @@ test_util_time(void *arg)
      * a "correct" retrospective gregorian negative year value,
      * which I'm pretty sure is:
      * -1*(2^63)/60/60/24*2000/730485 + 1970 = -292277022657
-     * 730485 is the number of days in two millenia, including leap days */
+     * 730485 is the number of days in two millennia, including leap days */
     a_time.tm_year = -292277022657-1900;
     CAPTURE();
     tt_int_op((time_t) -1,OP_EQ, tor_timegm(&a_time));
@@ -710,7 +752,7 @@ test_util_time(void *arg)
     CAPTURE();
     tt_int_op((time_t) -1,OP_EQ, tor_timegm(&a_time));
     CHECK_TIMEGM_ARG_OUT_OF_RANGE();
-#endif
+#endif /* SIZEOF_INT == 8 */
 
   /* Wrong year >= INT32_MAX - 1900 */
 #if SIZEOF_INT == 4 || SIZEOF_INT == 8
@@ -723,7 +765,7 @@ test_util_time(void *arg)
     CAPTURE();
     tt_int_op((time_t) -1,OP_EQ, tor_timegm(&a_time));
     CHECK_TIMEGM_ARG_OUT_OF_RANGE();
-#endif
+#endif /* SIZEOF_INT == 4 || SIZEOF_INT == 8 */
 
 #if SIZEOF_INT == 8
     /* one of the largest tm_year values my 64 bit system supports */
@@ -736,7 +778,7 @@ test_util_time(void *arg)
      * a "correct" proleptic gregorian year value,
      * which I'm pretty sure is:
      * (2^63-1)/60/60/24*2000/730485 + 1970 = 292277026596
-     * 730485 is the number of days in two millenia, including leap days */
+     * 730485 is the number of days in two millennia, including leap days */
     a_time.tm_year = 292277026596-1900;
     CAPTURE();
     tt_int_op((time_t) -1,OP_EQ, tor_timegm(&a_time));
@@ -751,7 +793,7 @@ test_util_time(void *arg)
     CAPTURE();
     tt_int_op((time_t) -1,OP_EQ, tor_timegm(&a_time));
     CHECK_TIMEGM_ARG_OUT_OF_RANGE();
-#endif
+#endif /* SIZEOF_INT == 8 */
 
   /* month */
   a_time.tm_year = 2007-1900;  /* restore valid year */
@@ -849,12 +891,16 @@ test_util_time(void *arg)
 
   if (sizeof(time_t) == 4 || sizeof(time_t) == 8) {
     t_res = -1*(1 << 30);
+    CAPTURE();
     tor_gmtime_r(&t_res, &b_time);
+    CHECK_POSSIBLE_EINVAL();
     tt_assert(b_time.tm_year == (1970-1900) ||
               b_time.tm_year == (1935-1900));
 
     t_res = INT32_MIN;
+    CAPTURE();
     tor_gmtime_r(&t_res, &b_time);
+    CHECK_POSSIBLE_EINVAL();
     tt_assert(b_time.tm_year == (1970-1900) ||
               b_time.tm_year == (1901-1900));
   }
@@ -864,7 +910,9 @@ test_util_time(void *arg)
     /* one of the smallest tm_year values my 64 bit system supports:
      * b_time.tm_year == (-292275055LL-1900LL) without clamping */
     t_res = -9223372036854775LL;
+    CAPTURE();
     tor_gmtime_r(&t_res, &b_time);
+    CHECK_POSSIBLE_EINVAL();
     tt_assert(b_time.tm_year == (1970-1900) ||
               b_time.tm_year == (1-1900));
 
@@ -872,7 +920,7 @@ test_util_time(void *arg)
      * a "correct" retrospective gregorian negative year value,
      * which I'm pretty sure is:
      * -1*(2^63)/60/60/24*2000/730485 + 1970 = -292277022657
-     * 730485 is the number of days in two millenia, including leap days
+     * 730485 is the number of days in two millennia, including leap days
      * (int64_t)b_time.tm_year == (-292277022657LL-1900LL) without clamping */
     t_res = INT64_MIN;
     CAPTURE();
@@ -887,7 +935,35 @@ test_util_time(void *arg)
       teardown_capture_of_logs();
     }
   }
-#endif
+  {
+    /* As above, but with localtime. */
+    t_res = -9223372036854775LL;
+    CAPTURE();
+    tor_localtime_r(&t_res, &b_time);
+    CHECK_POSSIBLE_EINVAL();
+    tt_assert(b_time.tm_year == (1970-1900) ||
+              b_time.tm_year == (1-1900));
+
+    /* while unlikely, the system's gmtime(_r) could return
+     * a "correct" retrospective gregorian negative year value,
+     * which I'm pretty sure is:
+     * -1*(2^63)/60/60/24*2000/730485 + 1970 = -292277022657
+     * 730485 is the number of days in two millennia, including leap days
+     * (int64_t)b_time.tm_year == (-292277022657LL-1900LL) without clamping */
+    t_res = INT64_MIN;
+    CAPTURE();
+    tor_localtime_r(&t_res, &b_time);
+    if (! (b_time.tm_year == (1970-1900) ||
+           b_time.tm_year == (1-1900))) {
+      tt_int_op(b_time.tm_year, OP_EQ, 1970-1900);
+    }
+    if (b_time.tm_year != 1970-1900) {
+      CHECK_TIMEGM_WARNING("Rounding up to ");
+    } else {
+      teardown_capture_of_logs();
+    }
+  }
+#endif /* SIZEOF_TIME_T == 8 */
 
   /* time_t >= INT_MAX yields a year clamped to 2037 or 9999,
    * depending on whether the implementation of the system gmtime(_r)
@@ -903,14 +979,27 @@ test_util_time(void *arg)
     tt_assert(b_time.tm_year == (2037-1900) ||
               b_time.tm_year == (2038-1900));
   }
-#endif
+  {
+    /* as above but with localtime. */
+    t_res = 3*(1 << 29);
+    tor_localtime_r(&t_res, &b_time);
+    tt_assert(b_time.tm_year == (2021-1900));
+
+    t_res = INT32_MAX;
+    tor_localtime_r(&t_res, &b_time);
+    tt_assert(b_time.tm_year == (2037-1900) ||
+              b_time.tm_year == (2038-1900));
+  }
+#endif /* SIZEOF_TIME_T == 4 || SIZEOF_TIME_T == 8 */
 
 #if SIZEOF_TIME_T == 8
   {
     /* one of the largest tm_year values my 64 bit system supports:
      * b_time.tm_year == (292278994L-1900L) without clamping */
     t_res = 9223372036854775LL;
+    CAPTURE();
     tor_gmtime_r(&t_res, &b_time);
+    CHECK_POSSIBLE_EINVAL();
     tt_assert(b_time.tm_year == (2037-1900) ||
               b_time.tm_year == (9999-1900));
 
@@ -918,7 +1007,7 @@ test_util_time(void *arg)
      * a "correct" proleptic gregorian year value,
      * which I'm pretty sure is:
      * (2^63-1)/60/60/24*2000/730485 + 1970 = 292277026596
-     * 730485 is the number of days in two millenia, including leap days
+     * 730485 is the number of days in two millennia, including leap days
      * (int64_t)b_time.tm_year == (292277026596L-1900L) without clamping */
     t_res = INT64_MAX;
     CAPTURE();
@@ -928,7 +1017,30 @@ test_util_time(void *arg)
     tt_assert(b_time.tm_year == (2037-1900) ||
               b_time.tm_year == (9999-1900));
   }
-#endif
+  {
+    /* As above but with localtime. */
+    t_res = 9223372036854775LL;
+    CAPTURE();
+    tor_localtime_r(&t_res, &b_time);
+    CHECK_POSSIBLE_EINVAL();
+    tt_assert(b_time.tm_year == (2037-1900) ||
+              b_time.tm_year == (9999-1900));
+
+    /* while unlikely, the system's gmtime(_r) could return
+     * a "correct" proleptic gregorian year value,
+     * which I'm pretty sure is:
+     * (2^63-1)/60/60/24*2000/730485 + 1970 = 292277026596
+     * 730485 is the number of days in two millennia, including leap days
+     * (int64_t)b_time.tm_year == (292277026596L-1900L) without clamping */
+    t_res = INT64_MAX;
+    CAPTURE();
+    tor_localtime_r(&t_res, &b_time);
+    CHECK_TIMEGM_WARNING("Rounding down to ");
+
+    tt_assert(b_time.tm_year == (2037-1900) ||
+              b_time.tm_year == (9999-1900));
+  }
+#endif /* SIZEOF_TIME_T == 8 */
 
   /* Test {format,parse}_rfc1123_time */
 
@@ -953,7 +1065,10 @@ test_util_time(void *arg)
 
   /* This value is out of range with 32 bit time_t, but in range for 64 bit
    * time_t */
+  CAPTURE();
   format_rfc1123_time(timestr, (time_t)2150000000UL);
+  CHECK_POSSIBLE_EINVAL();
+
 #if SIZEOF_TIME_T == 4
 #if 0
   /* Wrapping around will have made it this. */
@@ -964,7 +1079,9 @@ test_util_time(void *arg)
   strlcpy(timestr, "Wed, 17 Feb 2038 06:13:20 GMT", sizeof(timestr));
 
   t_res = 0;
+  CAPTURE();
   i = parse_rfc1123_time(timestr, &t_res);
+  CHECK_TIMEGM_WARNING("does not fit in tor_timegm");
   tt_int_op(-1,OP_EQ, i);
 #elif SIZEOF_TIME_T == 8
   tt_str_op("Wed, 17 Feb 2038 06:13:20 GMT",OP_EQ, timestr);
@@ -973,7 +1090,7 @@ test_util_time(void *arg)
   i = parse_rfc1123_time(timestr, &t_res);
   tt_int_op(0,OP_EQ, i);
   tt_int_op(t_res,OP_EQ, (time_t)2150000000UL);
-#endif
+#endif /* SIZEOF_TIME_T == 4 || ... */
 
   /* The timezone doesn't matter */
   t_res = 0;
@@ -1039,13 +1156,16 @@ test_util_time(void *arg)
   /* This value is out of range with 32 bit time_t, but in range for 64 bit
    * time_t */
   t_res = 0;
-  i = parse_iso_time("2038-02-17 06:13:20", &t_res);
 #if SIZEOF_TIME_T == 4
+  CAPTURE();
+  i = parse_iso_time("2038-02-17 06:13:20", &t_res);
   tt_int_op(-1,OP_EQ, i);
+  CHECK_TIMEGM_WARNING("does not fit in tor_timegm");
 #elif SIZEOF_TIME_T == 8
+  i = parse_iso_time("2038-02-17 06:13:20", &t_res);
   tt_int_op(0,OP_EQ, i);
   tt_int_op(t_res,OP_EQ, (time_t)2150000000UL);
-#endif
+#endif /* SIZEOF_TIME_T == 4 || ... */
 
   tt_int_op(-1,OP_EQ, parse_iso_time("2004-08-zz 99-99x99", &t_res));
   tt_int_op(-1,OP_EQ, parse_iso_time("2011-03-32 00:00:00", &t_res));
@@ -1058,6 +1178,23 @@ test_util_time(void *arg)
   tt_int_op(-1,OP_EQ, parse_iso_time("2011-03-30 23:59", &t_res));
   tt_int_op(-1,OP_EQ, parse_iso_time("2004-08-04 00:48:22.100", &t_res));
   tt_int_op(-1,OP_EQ, parse_iso_time("2004-08-04 00:48:22XYZ", &t_res));
+
+  /* but... that _is_ acceptable if we aren't being strict. */
+  t_res = 0;
+  i = parse_iso_time_("2004-08-04 00:48:22XYZ", &t_res, 0, 0);
+  tt_int_op(0,OP_EQ, i);
+  tt_int_op(t_res,OP_EQ, (time_t)1091580502UL);
+
+  /* try nospace variant. */
+  t_res = 0;
+  i = parse_iso_time_nospace("2004-08-04T00:48:22", &t_res);
+  tt_int_op(0,OP_EQ, i);
+  tt_int_op(t_res,OP_EQ, (time_t)1091580502UL);
+
+  tt_int_op(-1,OP_EQ, parse_iso_time("2004-08-04T00:48:22", &t_res));
+  tt_int_op(-1,OP_EQ, parse_iso_time_nospace("2004-08-04 00:48:22", &t_res));
+  tt_int_op(-1,OP_EQ, parse_iso_time("2004-08-04x00:48:22", &t_res));
+  tt_int_op(-1,OP_EQ, parse_iso_time_nospace("2004-08-04x00:48:22", &t_res));
 
   /* Test tor_gettimeofday */
 
@@ -1100,7 +1237,9 @@ test_util_time(void *arg)
   /* This value is out of range with 32 bit time_t, but in range for 64 bit
    * time_t */
   tv.tv_sec = (time_t)2150000000UL;
+  CAPTURE();
   format_iso_time(timestr, (time_t)tv.tv_sec);
+  CHECK_POSSIBLE_EINVAL();
 #if SIZEOF_TIME_T == 4
   /* format_iso_time should indicate failure on overflow, but it doesn't yet.
    * Hopefully #18480 will improve the failure semantics in this case.
@@ -1111,10 +1250,11 @@ test_util_time(void *arg)
   /* This SHOULD work on windows too; see bug #18665 */
   tt_str_op("2038-02-17 06:13:20",OP_EQ, timestr);
 #endif
-#endif
+#endif /* SIZEOF_TIME_T == 4 || ... */
 
 #undef CAPTURE
 #undef CHECK_TIMEGM_ARG_OUT_OF_RANGE
+#undef CHECK_POSSIBLE_EINVAL
 
  done:
   teardown_capture_of_logs();
@@ -1200,13 +1340,16 @@ test_util_parse_http_time(void *arg)
 #if SIZEOF_TIME_T == 4
   /* parse_http_time should indicate failure on overflow, but it doesn't yet.
    * Hopefully #18480 will improve the failure semantics in this case. */
+  setup_full_capture_of_logs(LOG_WARN);
   tt_int_op(0,OP_EQ,parse_http_time("Wed, 17 Feb 2038 06:13:20 GMT", &a_time));
   tt_int_op((time_t)-1,OP_EQ, tor_timegm(&a_time));
+  expect_single_log_msg_containing("does not fit in tor_timegm");
+  teardown_capture_of_logs();
 #elif SIZEOF_TIME_T == 8
   tt_int_op(0,OP_EQ,parse_http_time("Wed, 17 Feb 2038 06:13:20 GMT", &a_time));
   tt_int_op((time_t)2150000000UL,OP_EQ, tor_timegm(&a_time));
   T("2038-02-17 06:13:20");
-#endif
+#endif /* SIZEOF_TIME_T == 4 || ... */
 
   tt_int_op(-1,OP_EQ, parse_http_time("2004-08-zz 99-99x99 GMT", &a_time));
   tt_int_op(-1,OP_EQ, parse_http_time("2011-03-32 00:00:00 GMT", &a_time));
@@ -1219,7 +1362,7 @@ test_util_parse_http_time(void *arg)
 
 #undef T
  done:
-  ;
+  teardown_capture_of_logs();
 }
 
 static void
@@ -1453,7 +1596,7 @@ test_util_config_line_comment_character(void *arg)
   tor_free(k); tor_free(v);
 
   test_streq(str, "");
-#endif
+#endif /* 0 */
 
  done:
   tor_free(k);
@@ -1584,7 +1727,7 @@ test_util_config_line_escaped_content(void *arg)
   str = parse_config_line_from_str_verbose(str, &k, &v, NULL);
   tt_ptr_op(str, OP_EQ, NULL);
   tor_free(k); tor_free(v);
-#endif
+#endif /* 0 */
 
   str = buf6;
 
@@ -1656,14 +1799,14 @@ test_util_config_line_crlf(void *arg)
   tt_assert(str);
   tt_str_op(k,OP_EQ,"Hello");
   tt_str_op(v,OP_EQ,"world");
-  tt_assert(!err);
+  tt_ptr_op(err, OP_EQ, NULL);
   tor_free(k); tor_free(v);
 
   str = parse_config_line_from_str_verbose(str, &k, &v, &err);
   tt_assert(str);
   tt_str_op(k,OP_EQ,"Hello");
   tt_str_op(v,OP_EQ,"nice big world");
-  tt_assert(!err);
+  tt_ptr_op(err, OP_EQ, NULL);
   tor_free(k); tor_free(v);
   tt_str_op(str,OP_EQ, "");
 
@@ -1768,7 +1911,7 @@ test_util_expand_filename(void *arg)
  done:
   tor_free(str);
 }
-#endif
+#endif /* !defined(_WIN32) */
 
 /** Test tor_escape_str_for_pt_args(). */
 static void
@@ -1871,8 +2014,8 @@ test_util_strmisc(void *arg)
   tor_snprintf(buf, 10, "abcdef");
   tt_int_op(0,OP_EQ, buf[6]);
   /* uint64 */
-  tor_snprintf(buf, sizeof(buf), "x!"U64_FORMAT"!x",
-               U64_PRINTF_ARG(U64_LITERAL(12345678901)));
+  tor_snprintf(buf, sizeof(buf), "x!%"PRIu64"!x",
+               (UINT64_C(12345678901)));
   tt_str_op("x!12345678901!x",OP_EQ, buf);
 
   /* Test str{,case}cmpstart */
@@ -1923,7 +2066,7 @@ test_util_strmisc(void *arg)
   tt_assert(!tor_mem_is_zero(buf, 10));
 
   /* Test 'escaped' */
-  tt_assert(NULL == escaped(NULL));
+  tt_ptr_op(escaped(NULL), OP_EQ, NULL);
   tt_str_op("\"\"",OP_EQ, escaped(""));
   tt_str_op("\"abcd\"",OP_EQ, escaped("abcd"));
   tt_str_op("\"\\\\ \\n\\r\\t\\\"\\'\"",OP_EQ, escaped("\\ \n\r\t\"'"));
@@ -1981,23 +2124,23 @@ test_util_strmisc(void *arg)
   /* Test memmem and memstr */
   {
     const char *haystack = "abcde";
-    tt_assert(!tor_memmem(haystack, 5, "ef", 2));
+    tt_ptr_op(tor_memmem(haystack, 5, "ef", 2), OP_EQ, NULL);
     tt_ptr_op(tor_memmem(haystack, 5, "cd", 2),OP_EQ, haystack + 2);
     tt_ptr_op(tor_memmem(haystack, 5, "cde", 3),OP_EQ, haystack + 2);
-    tt_assert(!tor_memmem(haystack, 4, "cde", 3));
+    tt_ptr_op(tor_memmem(haystack, 4, "cde", 3), OP_EQ, NULL);
     haystack = "ababcad";
     tt_ptr_op(tor_memmem(haystack, 7, "abc", 3),OP_EQ, haystack + 2);
     tt_ptr_op(tor_memmem(haystack, 7, "ad", 2),OP_EQ, haystack + 5);
     tt_ptr_op(tor_memmem(haystack, 7, "cad", 3),OP_EQ, haystack + 4);
-    tt_assert(!tor_memmem(haystack, 7, "dadad", 5));
-    tt_assert(!tor_memmem(haystack, 7, "abcdefghij", 10));
+    tt_ptr_op(tor_memmem(haystack, 7, "dadad", 5), OP_EQ, NULL);
+    tt_ptr_op(tor_memmem(haystack, 7, "abcdefghij", 10), OP_EQ, NULL);
     /* memstr */
     tt_ptr_op(tor_memstr(haystack, 7, "abc"),OP_EQ, haystack + 2);
     tt_ptr_op(tor_memstr(haystack, 7, "cad"),OP_EQ, haystack + 4);
-    tt_assert(!tor_memstr(haystack, 6, "cad"));
-    tt_assert(!tor_memstr(haystack, 7, "cadd"));
-    tt_assert(!tor_memstr(haystack, 7, "fe"));
-    tt_assert(!tor_memstr(haystack, 7, "ababcade"));
+    tt_ptr_op(tor_memstr(haystack, 6, "cad"), OP_EQ, NULL);
+    tt_ptr_op(tor_memstr(haystack, 7, "cadd"), OP_EQ, NULL);
+    tt_ptr_op(tor_memstr(haystack, 7, "fe"), OP_EQ, NULL);
+    tt_ptr_op(tor_memstr(haystack, 7, "ababcade"), OP_EQ, NULL);
   }
 
   /* Test hex_str */
@@ -2085,20 +2228,10 @@ test_util_parse_integer(void *arg)
   tt_int_op(1,OP_EQ, i);
   tt_str_op(cp,OP_EQ, " plus garbage");
   /* Illogical min max */
-  tor_capture_bugs_(1);
   tt_int_op(0L,OP_EQ,  tor_parse_long("10",10,50,4,&i,NULL));
   tt_int_op(0,OP_EQ, i);
-  tt_int_op(1, OP_EQ, smartlist_len(tor_get_captured_bug_log_()));
-  tt_str_op("!(max < min)", OP_EQ,
-            smartlist_get(tor_get_captured_bug_log_(), 0));
-  tor_end_capture_bugs_();
-  tor_capture_bugs_(1);
   tt_int_op(0L,OP_EQ,   tor_parse_long("-50",10,100,-100,&i,NULL));
   tt_int_op(0,OP_EQ, i);
-  tt_int_op(1, OP_EQ, smartlist_len(tor_get_captured_bug_log_()));
-  tt_str_op("!(max < min)", OP_EQ,
-            smartlist_get(tor_get_captured_bug_log_(), 0));
-  tor_end_capture_bugs_();
   /* Out of bounds */
   tt_int_op(0L,OP_EQ,  tor_parse_long("10",10,50,100,&i,NULL));
   tt_int_op(0,OP_EQ, i);
@@ -2107,9 +2240,9 @@ test_util_parse_integer(void *arg)
   /* Base different than 10 */
   tt_int_op(2L,OP_EQ,   tor_parse_long("10",2,0,100,NULL,NULL));
   tt_int_op(0L,OP_EQ,   tor_parse_long("2",2,0,100,NULL,NULL));
-  tt_int_op(0L,OP_EQ,   tor_parse_long("10",-2,0,100,NULL,NULL));
   tt_int_op(68284L,OP_EQ, tor_parse_long("10abc",16,0,70000,NULL,NULL));
   tt_int_op(68284L,OP_EQ, tor_parse_long("10ABC",16,0,70000,NULL,NULL));
+  tt_int_op(0L,OP_EQ,   tor_parse_long("10",-2,0,100,NULL,NULL));
   tt_int_op(0,OP_EQ, tor_parse_long("10ABC",-1,0,70000,&i,NULL));
   tt_int_op(i,OP_EQ, 0);
 
@@ -2129,17 +2262,17 @@ test_util_parse_integer(void *arg)
   tt_int_op(0,OP_EQ, i);
 
   /* Test parse_uint64 */
-  tt_assert(U64_LITERAL(10) == tor_parse_uint64("10 x",10,0,100, &i, &cp));
+  tt_assert(UINT64_C(10) == tor_parse_uint64("10 x",10,0,100, &i, &cp));
   tt_int_op(1,OP_EQ, i);
   tt_str_op(cp,OP_EQ, " x");
-  tt_assert(U64_LITERAL(12345678901) ==
+  tt_assert(UINT64_C(12345678901) ==
               tor_parse_uint64("12345678901",10,0,UINT64_MAX, &i, &cp));
   tt_int_op(1,OP_EQ, i);
   tt_str_op(cp,OP_EQ, "");
-  tt_assert(U64_LITERAL(0) ==
+  tt_assert(UINT64_C(0) ==
               tor_parse_uint64("12345678901",10,500,INT32_MAX, &i, &cp));
   tt_int_op(0,OP_EQ, i);
-  tt_assert(U64_LITERAL(0) ==
+  tt_assert(UINT64_C(0) ==
               tor_parse_uint64("123",-1,0,INT32_MAX, &i, &cp));
   tt_int_op(0,OP_EQ, i);
 
@@ -2147,19 +2280,22 @@ test_util_parse_integer(void *arg)
   /* Test parse_double */
   double d = tor_parse_double("10", 0, (double)UINT64_MAX,&i,NULL);
   tt_int_op(1,OP_EQ, i);
-  tt_assert(DBL_TO_U64(d) == 10);
+  tt_assert(((uint64_t)d) == 10);
   d = tor_parse_double("0", 0, (double)UINT64_MAX,&i,NULL);
   tt_int_op(1,OP_EQ, i);
-  tt_assert(DBL_TO_U64(d) == 0);
+  tt_assert(((uint64_t)d) == 0);
   d = tor_parse_double(" ", 0, (double)UINT64_MAX,&i,NULL);
+  tt_double_op(fabs(d), OP_LT, 1e-10);
   tt_int_op(0,OP_EQ, i);
   d = tor_parse_double(".0a", 0, (double)UINT64_MAX,&i,NULL);
+  tt_double_op(fabs(d), OP_LT, 1e-10);
   tt_int_op(0,OP_EQ, i);
   d = tor_parse_double(".0a", 0, (double)UINT64_MAX,&i,&cp);
+  tt_double_op(fabs(d), OP_LT, 1e-10);
   tt_int_op(1,OP_EQ, i);
   d = tor_parse_double("-.0", 0, (double)UINT64_MAX,&i,NULL);
   tt_int_op(1,OP_EQ, i);
-  tt_assert(DBL_TO_U64(d) == 0);
+  tt_assert(((uint64_t)d) == 0);
   d = tor_parse_double("-10", -100.0, 100.0,&i,NULL);
   tt_int_op(1,OP_EQ, i);
   tt_double_op(fabs(d - -10.0),OP_LT, 1E-12);
@@ -2177,12 +2313,12 @@ test_util_parse_integer(void *arg)
     tt_int_op(i,OP_EQ, 0);
     tt_int_op(0UL,OP_EQ, tor_parse_ulong(TOOBIG, 10, 0, ULONG_MAX, &i, NULL));
     tt_int_op(i,OP_EQ, 0);
-    tt_u64_op(U64_LITERAL(0), OP_EQ, tor_parse_uint64(TOOBIG, 10,
+    tt_u64_op(UINT64_C(0), OP_EQ, tor_parse_uint64(TOOBIG, 10,
                                              0, UINT64_MAX, &i, NULL));
     tt_int_op(i,OP_EQ, 0);
   }
  done:
-  tor_end_capture_bugs_();
+  ;
 }
 
 static void
@@ -2200,17 +2336,17 @@ test_util_pow2(void *arg)
   tt_int_op(tor_log2(3),OP_EQ, 1);
   tt_int_op(tor_log2(4),OP_EQ, 2);
   tt_int_op(tor_log2(5),OP_EQ, 2);
-  tt_int_op(tor_log2(U64_LITERAL(40000000000000000)),OP_EQ, 55);
+  tt_int_op(tor_log2(UINT64_C(40000000000000000)),OP_EQ, 55);
   tt_int_op(tor_log2(UINT64_MAX),OP_EQ, 63);
 
   /* Test round_to_power_of_2 */
   tt_u64_op(round_to_power_of_2(120), OP_EQ, 128);
   tt_u64_op(round_to_power_of_2(128), OP_EQ, 128);
   tt_u64_op(round_to_power_of_2(130), OP_EQ, 128);
-  tt_u64_op(round_to_power_of_2(U64_LITERAL(40000000000000000)), OP_EQ,
-            U64_LITERAL(1)<<55);
-  tt_u64_op(round_to_power_of_2(U64_LITERAL(0xffffffffffffffff)), OP_EQ,
-          U64_LITERAL(1)<<63);
+  tt_u64_op(round_to_power_of_2(UINT64_C(40000000000000000)), OP_EQ,
+            UINT64_C(1)<<55);
+  tt_u64_op(round_to_power_of_2(UINT64_C(0xffffffffffffffff)), OP_EQ,
+          UINT64_C(1)<<63);
   tt_u64_op(round_to_power_of_2(0), OP_EQ, 1);
   tt_u64_op(round_to_power_of_2(1), OP_EQ, 1);
   tt_u64_op(round_to_power_of_2(2), OP_EQ, 2);
@@ -2224,114 +2360,371 @@ test_util_pow2(void *arg)
   ;
 }
 
-/** Run unit tests for compression functions */
 static void
-test_util_gzip(void *arg)
+test_util_compress_impl(compress_method_t method)
 {
-  char *buf1=NULL, *buf2=NULL, *buf3=NULL, *cp1, *cp2;
-  const char *ccp2;
+  char *buf1=NULL, *buf2=NULL, *buf3=NULL;
   size_t len1, len2;
-  tor_zlib_state_t *state = NULL;
 
-  (void)arg;
+  tt_assert(tor_compress_supports_method(method));
+
+  if (method != NO_METHOD) {
+    tt_ptr_op(tor_compress_version_str(method), OP_NE, NULL);
+    tt_ptr_op(tor_compress_header_version_str(method), OP_NE, NULL);
+  }
+
   buf1 = tor_strdup("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAZAAAAAAAAAAAAAAAAAAAZ");
   tt_assert(detect_compression_method(buf1, strlen(buf1)) == UNKNOWN_METHOD);
 
-  tt_assert(!tor_gzip_compress(&buf2, &len1, buf1, strlen(buf1)+1,
-                               GZIP_METHOD));
-  tt_assert(buf2);
-  tt_assert(len1 < strlen(buf1));
-  tt_assert(detect_compression_method(buf2, len1) == GZIP_METHOD);
+  tt_assert(!tor_compress(&buf2, &len1, buf1, strlen(buf1)+1, method));
+  tt_ptr_op(buf2, OP_NE, NULL);
+  if (method == NO_METHOD) {
+    // The identity transform doesn't actually compress, and it isn't
+    // detectable as "the identity transform."
+    tt_int_op(len1, OP_EQ, strlen(buf1)+1);
+    tt_int_op(detect_compression_method(buf2, len1), OP_EQ, UNKNOWN_METHOD);
+  } else {
+    tt_int_op(len1, OP_LT, strlen(buf1));
+    tt_int_op(detect_compression_method(buf2, len1), OP_EQ, method);
+  }
 
-  tt_assert(!tor_gzip_uncompress(&buf3, &len2, buf2, len1,
-                                 GZIP_METHOD, 1, LOG_INFO));
-  tt_assert(buf3);
-  tt_int_op(strlen(buf1) + 1,OP_EQ, len2);
-  tt_str_op(buf1,OP_EQ, buf3);
-
-  tor_free(buf2);
-  tor_free(buf3);
-
-  tt_assert(!tor_gzip_compress(&buf2, &len1, buf1, strlen(buf1)+1,
-                                 ZLIB_METHOD));
-  tt_assert(buf2);
-  tt_assert(detect_compression_method(buf2, len1) == ZLIB_METHOD);
-
-  tt_assert(!tor_gzip_uncompress(&buf3, &len2, buf2, len1,
-                                   ZLIB_METHOD, 1, LOG_INFO));
-  tt_assert(buf3);
-  tt_int_op(strlen(buf1) + 1,OP_EQ, len2);
-  tt_str_op(buf1,OP_EQ, buf3);
+  tt_assert(!tor_uncompress(&buf3, &len2, buf2, len1, method, 1, LOG_INFO));
+  tt_ptr_op(buf3, OP_NE, NULL);
+  tt_int_op(strlen(buf1) + 1, OP_EQ, len2);
+  tt_str_op(buf1, OP_EQ, buf3);
+  tt_int_op(buf3[len2], OP_EQ, 0);
 
   /* Check whether we can uncompress concatenated, compressed strings. */
   tor_free(buf3);
   buf2 = tor_reallocarray(buf2, len1, 2);
   memcpy(buf2+len1, buf2, len1);
-  tt_assert(!tor_gzip_uncompress(&buf3, &len2, buf2, len1*2,
-                                   ZLIB_METHOD, 1, LOG_INFO));
-  tt_int_op((strlen(buf1)+1)*2,OP_EQ, len2);
-  tt_mem_op(buf3,OP_EQ,
+  tt_assert(!tor_uncompress(&buf3, &len2, buf2, len1*2, method, 1, LOG_INFO));
+  tt_int_op((strlen(buf1)+1)*2, OP_EQ, len2);
+  tt_mem_op(buf3, OP_EQ,
              "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAZAAAAAAAAAAAAAAAAAAAZ\0"
              "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAZAAAAAAAAAAAAAAAAAAAZ\0",
              (strlen(buf1)+1)*2);
+  tt_int_op(buf3[len2], OP_EQ, 0);
+
+  /* Check whether we can uncompress partial strings */
 
   tor_free(buf1);
   tor_free(buf2);
   tor_free(buf3);
 
-  /* Check whether we can uncompress partial strings. */
-  buf1 =
-    tor_strdup("String with low redundancy that won't be compressed much.");
-  tt_assert(!tor_gzip_compress(&buf2, &len1, buf1, strlen(buf1)+1,
-                                 ZLIB_METHOD));
-  tt_assert(len1>16);
-  /* when we allow an incomplete string, we should succeed.*/
-  tt_assert(!tor_gzip_uncompress(&buf3, &len2, buf2, len1-16,
-                                  ZLIB_METHOD, 0, LOG_INFO));
-  tt_assert(len2 > 5);
-  buf3[len2]='\0';
-  tt_assert(!strcmpstart(buf1, buf3));
+  size_t b1len = 1<<10;
+  if (method == ZSTD_METHOD) {
+    // zstd needs a big input before it starts generating output that it
+    // can partially decompress.
+    b1len = 1<<18;
+  }
+  buf1 = tor_malloc(b1len);
+  crypto_rand(buf1, b1len);
+  tt_assert(!tor_compress(&buf2, &len1, buf1, b1len, method));
+  tt_int_op(len1, OP_GT, 16);
+  /* when we allow an incomplete output we should succeed.*/
+  tt_assert(!tor_uncompress(&buf3, &len2, buf2, len1-16,
+                            method, 0, LOG_INFO));
+  tt_int_op(len2, OP_GT, 5);
+  tt_int_op(len2, OP_LE, len1);
+  tt_assert(fast_memeq(buf1, buf3, len2));
+  tt_int_op(buf3[len2], OP_EQ, 0);
 
-  /* when we demand a complete string, this must fail. */
+  /* when we demand a complete output from a real compression method, this
+   * must fail. */
   tor_free(buf3);
-  tt_assert(tor_gzip_uncompress(&buf3, &len2, buf2, len1-16,
-                                 ZLIB_METHOD, 1, LOG_INFO));
-  tt_assert(!buf3);
+  if (method != NO_METHOD) {
+    tt_assert(tor_uncompress(&buf3, &len2, buf2, len1-16,
+                             method, 1, LOG_INFO));
+    tt_ptr_op(buf3, OP_EQ, NULL);
+  }
 
-  /* Now, try streaming compression. */
+ done:
   tor_free(buf1);
   tor_free(buf2);
   tor_free(buf3);
-  state = tor_zlib_new(1, ZLIB_METHOD, HIGH_COMPRESSION);
+}
+
+static void
+test_util_compress_stream_impl(compress_method_t method,
+                               compression_level_t level)
+{
+  char *buf1=NULL, *buf2=NULL, *buf3=NULL, *cp1, *cp2;
+  const char *ccp2;
+  size_t len1, len2;
+
+  tor_compress_state_t *state = NULL;
+  state = tor_compress_new(1, method, level);
   tt_assert(state);
   cp1 = buf1 = tor_malloc(1024);
   len1 = 1024;
   ccp2 = "ABCDEFGHIJABCDEFGHIJ";
   len2 = 21;
-  tt_assert(tor_zlib_process(state, &cp1, &len1, &ccp2, &len2, 0)
-              == TOR_ZLIB_OK);
-  tt_int_op(0,OP_EQ, len2); /* Make sure we compressed it all. */
+  tt_int_op(tor_compress_process(state, &cp1, &len1, &ccp2, &len2, 0),
+            OP_EQ, TOR_COMPRESS_OK);
+  tt_int_op(0, OP_EQ, len2); /* Make sure we compressed it all. */
   tt_assert(cp1 > buf1);
 
   len2 = 0;
   cp2 = cp1;
-  tt_assert(tor_zlib_process(state, &cp1, &len1, &ccp2, &len2, 1)
-              == TOR_ZLIB_DONE);
-  tt_int_op(0,OP_EQ, len2);
-  tt_assert(cp1 > cp2); /* Make sure we really added something. */
+  tt_int_op(tor_compress_process(state, &cp1, &len1, &ccp2, &len2, 1),
+            OP_EQ, TOR_COMPRESS_DONE);
+  tt_int_op(0, OP_EQ, len2);
+  if (method == NO_METHOD) {
+    tt_ptr_op(cp1, OP_EQ, cp2);
+  } else {
+    tt_assert(cp1 > cp2); /* Make sure we really added something. */
+  }
 
-  tt_assert(!tor_gzip_uncompress(&buf3, &len2, buf1, 1024-len1,
-                                  ZLIB_METHOD, 1, LOG_WARN));
+  tt_int_op(tor_compress_state_size(state), OP_GT, 0);
+
+  tt_assert(!tor_uncompress(&buf3, &len2, buf1, 1024-len1,
+                            method, 1, LOG_WARN));
   /* Make sure it compressed right. */
   tt_str_op(buf3, OP_EQ, "ABCDEFGHIJABCDEFGHIJ");
-  tt_int_op(21,OP_EQ, len2);
+  tt_int_op(21, OP_EQ, len2);
 
  done:
   if (state)
-    tor_zlib_free(state);
+    tor_compress_free(state);
+  tor_free(buf1);
   tor_free(buf2);
   tor_free(buf3);
-  tor_free(buf1);
+}
+
+/** Setup function for compression tests: handles x-zstd:nostatic
+ */
+static void *
+compression_test_setup(const struct testcase_t *testcase)
+{
+  tor_assert(testcase->setup_data);
+  tor_assert(testcase->setup_data != (void*)TT_SKIP);
+  const char *methodname = testcase->setup_data;
+
+  if (!strcmp(methodname, "x-zstd:nostatic")) {
+    methodname = "x-zstd";
+    tor_zstd_set_static_apis_disabled_for_testing(1);
+  }
+
+  return (void *)methodname;
+}
+
+/** Cleanup for compression tests: disables nostatic */
+static int
+compression_test_cleanup(const struct testcase_t *testcase, void *ptr)
+{
+  (void)testcase;
+  (void)ptr;
+  tor_zstd_set_static_apis_disabled_for_testing(0);
+  return 1;
+}
+
+static const struct testcase_setup_t compress_setup = {
+  compression_test_setup, compression_test_cleanup
+};
+
+/** Run unit tests for compression functions */
+static void
+test_util_compress(void *arg)
+{
+  const char *methodname = arg;
+  tt_assert(methodname);
+
+  compress_method_t method = compression_method_get_by_name(methodname);
+  tt_int_op(method, OP_NE, UNKNOWN_METHOD);
+
+  if (! tor_compress_supports_method(method)) {
+    tt_skip();
+  }
+
+  compression_level_t levels[] = {
+    BEST_COMPRESSION,
+    HIGH_COMPRESSION,
+    MEDIUM_COMPRESSION,
+    LOW_COMPRESSION
+  };
+
+  test_util_compress_impl(method);
+
+  for (unsigned l = 0; l < ARRAY_LENGTH(levels); ++l) {
+    compression_level_t level = levels[l];
+    test_util_compress_stream_impl(method, level);
+  }
+ done:
+  ;
+}
+
+static void
+test_util_decompress_concatenated_impl(compress_method_t method)
+{
+  char input[4096];
+  char *c1 = NULL, *c2 = NULL, *c3 = NULL;
+  char *result = NULL;
+  size_t sz1, sz2, sz3, szr;
+  int r;
+
+  crypto_rand(input, sizeof(input));
+
+  /* Compress the input in two chunks. */
+  r = tor_compress(&c1, &sz1, input, 2048, method);
+  tt_int_op(r, OP_EQ, 0);
+  r = tor_compress(&c2, &sz2, input+2048, 2048, method);
+  tt_int_op(r, OP_EQ, 0);
+
+  /* concatenate the chunks. */
+  sz3 = sz1 + sz2;
+  c3 = tor_malloc(sz3);
+  memcpy(c3, c1, sz1);
+  memcpy(c3+sz1, c2, sz2);
+
+  /* decompress the concatenated result */
+  r = tor_uncompress(&result, &szr, c3, sz3, method, 0, LOG_WARN);
+  tt_int_op(r, OP_EQ, 0);
+  tt_int_op(szr, OP_EQ, sizeof(input));
+  tt_mem_op(result, OP_EQ, input, sizeof(input));
+
+ done:
+  tor_free(c1);
+  tor_free(c2);
+  tor_free(c3);
+  tor_free(result);
+}
+
+static void
+test_util_decompress_concatenated(void *arg)
+{
+  const char *methodname = arg;
+  tt_assert(methodname);
+
+  compress_method_t method = compression_method_get_by_name(methodname);
+  tt_int_op(method, OP_NE, UNKNOWN_METHOD);
+  if (! tor_compress_supports_method(method)) {
+    tt_skip();
+  }
+
+  test_util_decompress_concatenated_impl(method);
+ done:
+  ;
+}
+
+static void
+test_util_decompress_junk_impl(compress_method_t method)
+{
+  char input[4096];
+  char *result = NULL, *result2 = NULL;
+  size_t szr, szr2, sz;
+  int r;
+
+  /* This shouldn't be a compressed string according to any method. */
+  strlcpy(input, "This shouldn't be a compressed string by any means.",
+          sizeof(input));
+  sz = strlen(input);
+  setup_capture_of_logs(LOG_WARN);
+  r = tor_uncompress(&result, &szr, input, sz, method, 0, LOG_WARN);
+  tt_int_op(r, OP_EQ, -1);
+  tt_ptr_op(result, OP_EQ, NULL);
+  expect_log_msg_containing("Error while uncompressing data: bad input?");
+  mock_clean_saved_logs();
+
+  /* Now try again, with a compressed object that starts out good and turns to
+     junk. */
+  crypto_rand(input, sizeof(input));
+  r = tor_compress(&result, &szr, input, sizeof(input), method);
+  tt_int_op(r, OP_EQ, 0);
+  crypto_rand(result+szr/2, szr-(szr/2)); // trash the 2nd half of the result
+  r = tor_uncompress(&result2, &szr2, result, szr, method, 0, LOG_WARN);
+  tt_int_op(r, OP_EQ, -1);
+  expect_log_msg_containing("Error while uncompressing data: bad input?");
+
+ done:
+  teardown_capture_of_logs();
+  tor_free(result);
+  tor_free(result2);
+}
+
+static void
+test_util_decompress_junk(void *arg)
+{
+  const char *methodname = arg;
+  tt_assert(methodname);
+
+  compress_method_t method = compression_method_get_by_name(methodname);
+  tt_int_op(method, OP_NE, UNKNOWN_METHOD);
+  if (! tor_compress_supports_method(method)) {
+    tt_skip();
+  }
+
+  test_util_decompress_junk_impl(method);
+ done:
+  ;
+}
+
+/* mock replacement for tor_compress_is_compression_bomb that doesn't
+ * believe in compression bombs. */
+static int
+mock_is_never_compression_bomb(size_t in, size_t out)
+{
+  (void)in;
+  (void) out;
+  return 0;
+}
+
+static void
+test_util_decompress_dos_impl(compress_method_t method)
+{
+  char *input;
+  char *result = NULL, *result2 = NULL;
+  size_t szr, szr2;
+  int r;
+
+  const size_t big = 1024*1024;
+  /* one megabyte of 0s. */
+  input = tor_malloc_zero(big);
+
+  /* Compress it into "result": it should fail. */
+  setup_full_capture_of_logs(LOG_WARN);
+  r = tor_compress(&result, &szr, input, big, method);
+  tt_int_op(r, OP_EQ, -1);
+  expect_log_msg_containing(
+                 "other Tors would think this was a compression bomb");
+  teardown_capture_of_logs();
+
+  /* Try again, but this time suppress compression-bomb detection */
+  MOCK(tor_compress_is_compression_bomb, mock_is_never_compression_bomb);
+  r = tor_compress(&result, &szr, input, big, method);
+  UNMOCK(tor_compress_is_compression_bomb);
+  tt_int_op(r, OP_EQ, 0);
+  tt_ptr_op(result, OP_NE, NULL);
+
+  /* We should refuse to uncomrpess it again, since it looks like a
+   * compression bomb. */
+  setup_capture_of_logs(LOG_WARN);
+  r = tor_uncompress(&result2, &szr2, result, szr, method, 0, LOG_WARN);
+  tt_int_op(r, OP_EQ, -1);
+  expect_log_msg_containing("bomb; abandoning stream");
+
+ done:
+  teardown_capture_of_logs();
+  tor_free(input);
+  tor_free(result);
+  tor_free(result2);
+}
+
+static void
+test_util_decompress_dos(void *arg)
+{
+  const char *methodname = arg;
+  tt_assert(methodname);
+
+  compress_method_t method = compression_method_get_by_name(methodname);
+  tt_int_op(method, OP_NE, UNKNOWN_METHOD);
+  if (! tor_compress_supports_method(method)) {
+    tt_skip();
+  }
+
+  test_util_decompress_dos_impl(method);
+ done:
+  ;
 }
 
 static void
@@ -2346,44 +2739,44 @@ test_util_gzip_compression_bomb(void *arg)
   char *one_mb = tor_malloc_zero(one_million);
   char *result = NULL;
   size_t result_len = 0;
-  tor_zlib_state_t *state = NULL;
+  tor_compress_state_t *state = NULL;
 
   /* Make sure we can't produce a compression bomb */
   setup_full_capture_of_logs(LOG_WARN);
-  tt_int_op(-1, OP_EQ, tor_gzip_compress(&result, &result_len,
-                                         one_mb, one_million,
-                                         ZLIB_METHOD));
+  tt_int_op(-1, OP_EQ, tor_compress(&result, &result_len,
+                                    one_mb, one_million,
+                                    ZLIB_METHOD));
   expect_single_log_msg_containing(
          "We compressed something and got an insanely high "
          "compression factor; other Tors would think this "
-         "was a zlib bomb.");
+         "was a compression bomb.");
   teardown_capture_of_logs();
 
   /* Here's a compression bomb that we made manually. */
   const char compression_bomb[1039] =
     { 0x78, 0xDA, 0xED, 0xC1, 0x31, 0x01, 0x00, 0x00, 0x00, 0xC2,
       0xA0, 0xF5, 0x4F, 0x6D, 0x08, 0x5F, 0xA0 /* .... */ };
-  tt_int_op(-1, OP_EQ, tor_gzip_uncompress(&result, &result_len,
-                                           compression_bomb, 1039,
-                                           ZLIB_METHOD, 0, LOG_WARN));
+  tt_int_op(-1, OP_EQ, tor_uncompress(&result, &result_len,
+                                      compression_bomb, 1039,
+                                      ZLIB_METHOD, 0, LOG_WARN));
 
   /* Now try streaming that. */
-  state = tor_zlib_new(0, ZLIB_METHOD, HIGH_COMPRESSION);
-  tor_zlib_output_t r;
+  state = tor_compress_new(0, ZLIB_METHOD, HIGH_COMPRESSION);
+  tor_compress_output_t r;
   const char *inp = compression_bomb;
   size_t inlen = 1039;
   do {
     char *outp = one_mb;
     size_t outleft = 4096; /* small on purpose */
-    r = tor_zlib_process(state, &outp, &outleft, &inp, &inlen, 0);
+    r = tor_compress_process(state, &outp, &outleft, &inp, &inlen, 0);
     tt_int_op(inlen, OP_NE, 0);
-  } while (r == TOR_ZLIB_BUF_FULL);
+  } while (r == TOR_COMPRESS_BUFFER_FULL);
 
-  tt_int_op(r, OP_EQ, TOR_ZLIB_ERR);
+  tt_int_op(r, OP_EQ, TOR_COMPRESS_ERROR);
 
  done:
   tor_free(one_mb);
-  tor_zlib_free(state);
+  tor_compress_free(state);
 }
 
 /** Run unit tests for mmap() wrapper functionality. */
@@ -2401,7 +2794,7 @@ test_util_mmap(void *arg)
   crypto_rand(buf, buflen);
 
   mapping = tor_mmap_file(fname1);
-  tt_assert(! mapping);
+  tt_ptr_op(mapping, OP_EQ, NULL);
 
   write_str_to_file(fname1, "Short file.", 1);
 
@@ -2419,7 +2812,7 @@ test_util_mmap(void *arg)
   tt_str_op(mapping->data,OP_EQ, "Short file.");
   tt_int_op(0, OP_EQ, tor_munmap_file(mapping));
   mapping = NULL;
-#endif
+#endif /* defined(_WIN32) */
 
   /* Now a zero-length file. */
   write_str_to_file(fname1, "", 1);
@@ -2430,7 +2823,7 @@ test_util_mmap(void *arg)
 
   /* Make sure that we fail to map a no-longer-existent file. */
   mapping = tor_mmap_file(fname1);
-  tt_assert(! mapping);
+  tt_ptr_op(mapping, OP_EQ, NULL);
 
   /* Now try a big file that stretches across a few pages and isn't aligned */
   write_bytes_to_file(fname2, buf, buflen, 1);
@@ -2748,7 +3141,7 @@ test_util_sscanf(void *arg)
   r = tor_sscanf("9223372036854775808. -9223372036854775809.",
                  "%d. %d.", &int1, &int2);
   tt_int_op(r,OP_EQ, 0);
-#endif
+#endif /* SIZEOF_INT == 4 || ... */
 
 #if SIZEOF_LONG == 4
   /* %lu */
@@ -2843,7 +3236,7 @@ test_util_sscanf(void *arg)
   r = tor_sscanf("9223372036854775808. -9223372036854775809.",
                  "%ld. %ld.", &lng1, &lng2);
   tt_int_op(r,OP_EQ, 0);
-#endif
+#endif /* SIZEOF_LONG == 4 || ... */
 
   r = tor_sscanf("123.456 .000007 -900123123.2000787 00003.2",
                  "%lf %lf %lf %lf", &d1,&d2,&d3,&d4);
@@ -2852,6 +3245,21 @@ test_util_sscanf(void *arg)
   test_feq(d2, .000007);
   test_feq(d3, -900123123.2000787);
   test_feq(d4, 3.2);
+
+  /* missing float */
+  r = tor_sscanf("3 ", "%d %lf", &int1, &d1);
+  tt_int_op(r, OP_EQ, 1);
+  tt_int_op(int1, OP_EQ, 3);
+
+  /* not a float */
+  r = tor_sscanf("999 notafloat", "%d %lf", &int1, &d1);
+  tt_int_op(r, OP_EQ, 1);
+  tt_int_op(int1, OP_EQ, 999);
+
+  /* %s but no buffer. */
+  char *nullbuf = NULL;
+  r = tor_sscanf("hello", "%3s", nullbuf);
+  tt_int_op(r, OP_EQ, 0);
 
  done:
   tor_free(huge);
@@ -2870,7 +3278,7 @@ strnlen(const char *s, size_t len)
     return len;
   return p - s;
 }
-#endif
+#endif /* !defined(HAVE_STRNLEN) */
 
 static void
 test_util_format_time_interval(void *arg)
@@ -3237,7 +3645,7 @@ test_util_format_time_interval(void *arg)
   tt_ci_char_op(label_m[0],OP_EQ, 'm');
   /* and 7 or 8 seconds - ignored */
 
-#endif
+#endif /* SIZEOF_LONG == 4 || SIZEOF_LONG == 8 */
 
 #if SIZEOF_LONG == 8
 
@@ -3275,7 +3683,7 @@ test_util_format_time_interval(void *arg)
   tt_ci_char_op(label_m[0],OP_EQ, 'm');
   /* and 7 or 8 seconds - ignored */
 
-#endif
+#endif /* SIZEOF_LONG == 8 */
 
  done:
   ;
@@ -3318,7 +3726,7 @@ test_util_path_is_relative(void *arg)
   tt_int_op(0,OP_EQ, path_is_relative("\\dir"));
   tt_int_op(0,OP_EQ, path_is_relative("a:\\dir"));
   tt_int_op(0,OP_EQ, path_is_relative("z:\\dir"));
-#endif
+#endif /* defined(_WIN32) */
 
  done:
   ;
@@ -3332,6 +3740,13 @@ test_util_memarea(void *arg)
   char *p1, *p2, *p3, *p1_orig;
   void *malloced_ptr = NULL;
   int i;
+
+#ifdef DISABLE_MEMORY_SENTINELS
+  /* If memory sentinels are disabled, this whole module is just an alias for
+     malloc(), which is free to lay out memory most any way it wants. */
+  if (1)
+    tt_skip();
+#endif /* defined(DISABLE_MEMORY_SENTINELS) */
 
   (void)arg;
   tt_assert(area);
@@ -3502,8 +3917,8 @@ test_util_strtok(void *arg)
     }
     tor_snprintf(buf, sizeof(buf), "%s", pad1);
     tor_snprintf(buf2, sizeof(buf2), "%s", pad2);
-    tt_assert(NULL == tor_strtok_r_impl(buf, " ", &cp1));
-    tt_assert(NULL == tor_strtok_r_impl(buf2, ".!..;!", &cp2));
+    tt_ptr_op(tor_strtok_r_impl(buf, " ", &cp1), OP_EQ, NULL);
+    tt_ptr_op(tor_strtok_r_impl(buf2, ".!..;!", &cp2), OP_EQ, NULL);
 
     tor_snprintf(buf, sizeof(buf),
                  "%sGraved on the dark  in gestures of descent%s", pad1, pad1);
@@ -3616,6 +4031,53 @@ test_util_string_is_C_identifier(void *ptr)
   tt_int_op(0,OP_EQ, string_is_C_identifier("_;"));
   tt_int_op(0,OP_EQ, string_is_C_identifier("í"));
   tt_int_op(0,OP_EQ, string_is_C_identifier("ñ"));
+
+ done:
+  ;
+}
+
+static void
+test_util_string_is_utf8(void *ptr)
+{
+  (void)ptr;
+
+  tt_int_op(1, OP_EQ, string_is_utf8(NULL, 0));
+  tt_int_op(1, OP_EQ, string_is_utf8("", 1));
+  tt_int_op(1, OP_EQ, string_is_utf8("\uFEFF", 3));
+  tt_int_op(1, OP_EQ, string_is_utf8("\uFFFE", 3));
+  tt_int_op(1, OP_EQ, string_is_utf8("ascii\x7f\n", 7));
+  tt_int_op(1, OP_EQ, string_is_utf8("Risqu\u00e9=1", 9));
+
+  // Validate exactly 'len' bytes.
+  tt_int_op(0, OP_EQ, string_is_utf8("\0\x80", 2));
+  tt_int_op(0, OP_EQ, string_is_utf8("Risqu\u00e9=1", 6));
+
+  // Reject sequences with missing bytes.
+  tt_int_op(0, OP_EQ, string_is_utf8("\x80", 1));
+  tt_int_op(0, OP_EQ, string_is_utf8("\xc2", 1));
+  tt_int_op(0, OP_EQ, string_is_utf8("\xc2 ", 2));
+  tt_int_op(0, OP_EQ, string_is_utf8("\xe1\x80", 2));
+  tt_int_op(0, OP_EQ, string_is_utf8("\xe1\x80 ", 3));
+  tt_int_op(0, OP_EQ, string_is_utf8("\xf1\x80\x80", 3));
+  tt_int_op(0, OP_EQ, string_is_utf8("\xf1\x80\x80 ", 4));
+
+  // Reject encodings that are overly long.
+  tt_int_op(0, OP_EQ, string_is_utf8("\xc1\xbf", 2));
+  tt_int_op(1, OP_EQ, string_is_utf8("\xc2\x80", 2));
+  tt_int_op(0, OP_EQ, string_is_utf8("\xe0\x9f\xbf", 3));
+  tt_int_op(1, OP_EQ, string_is_utf8("\xe0\xa0\x80", 3));
+  tt_int_op(0, OP_EQ, string_is_utf8("\xf0\x8f\xbf\xbf", 4));
+  tt_int_op(1, OP_EQ, string_is_utf8("\xf0\x90\x80\x80", 4));
+
+  // Reject UTF-16 surrogate halves.
+  tt_int_op(1, OP_EQ, string_is_utf8("\xed\x9f\xbf", 3));
+  tt_int_op(0, OP_EQ, string_is_utf8("\xed\xa0\x80", 3));
+  tt_int_op(0, OP_EQ, string_is_utf8("\xed\xbf\xbf", 3));
+  tt_int_op(1, OP_EQ, string_is_utf8("\xee\x80\x80", 3));
+
+  // The maximum legal codepoint, 10FFFF.
+  tt_int_op(1, OP_EQ, string_is_utf8("\xf4\x8f\xbf\xbf", 4));
+  tt_int_op(0, OP_EQ, string_is_utf8("\xf4\x90\x80\x80", 4));
 
  done:
   ;
@@ -3796,7 +4258,8 @@ test_util_ftruncate(void *ptr)
   tt_int_op(fd, OP_GE, 0);
 
   /* Make the file be there. */
-  tt_int_op(strlen(message), OP_EQ, write_all(fd, message, strlen(message),0));
+  tt_int_op(strlen(message), OP_EQ,
+            write_all_to_fd(fd, message, strlen(message)));
   tt_int_op((int)tor_fd_getpos(fd), OP_EQ, strlen(message));
   tt_int_op(0, OP_EQ, fstat(fd, &st));
   tt_int_op((int)st.st_size, OP_EQ, strlen(message));
@@ -3809,7 +4272,7 @@ test_util_ftruncate(void *ptr)
 
   /* Replace, and see if it got replaced */
   tt_int_op(strlen(message2), OP_EQ,
-            write_all(fd, message2, strlen(message2), 0));
+            write_all_to_fd(fd, message2, strlen(message2)));
   tt_int_op((int)tor_fd_getpos(fd), OP_EQ, strlen(message2));
   tt_int_op(0, OP_EQ, fstat(fd, &st));
   tt_int_op((int)st.st_size, OP_EQ, strlen(message2));
@@ -3853,7 +4316,7 @@ test_util_load_win_lib(void *ptr)
   if (h)
     FreeLibrary(h);
 }
-#endif
+#endif /* defined(_WIN32) */
 
 #ifndef _WIN32
 static void
@@ -3905,7 +4368,7 @@ test_util_exit_status(void *ptr)
   tt_int_op(n,OP_EQ, strlen(hex_errno));
   tt_int_op(n,OP_EQ, HEX_ERRNO_SIZE);
 
-#endif
+#endif /* SIZEOF_INT == 4 || ... */
 
   clear_hex_errno(hex_errno);
   n = format_helper_exit_status(0x7F, 0, hex_errno);
@@ -3923,20 +4386,16 @@ test_util_exit_status(void *ptr)
  done:
   ;
 }
-#endif
+#endif /* !defined(_WIN32) */
 
 #ifndef _WIN32
-/* Check that fgets with a non-blocking pipe returns partial lines and sets
- * EAGAIN, returns full lines and sets no error, and returns NULL on EOF and
- * sets no error */
 static void
-test_util_fgets_eagain(void *ptr)
+test_util_string_from_pipe(void *ptr)
 {
   int test_pipe[2] = {-1, -1};
-  int retval;
+  int retval = 0;
+  enum stream_status status = IO_STREAM_TERM;
   ssize_t retlen;
-  char *retptr;
-  FILE *test_stream = NULL;
   char buf[4] = { 0 };
 
   (void)ptr;
@@ -3947,91 +4406,115 @@ test_util_fgets_eagain(void *ptr)
   retval = pipe(test_pipe);
   tt_int_op(retval, OP_EQ, 0);
 
-  /* Set up the read-end to be non-blocking */
-  retval = fcntl(test_pipe[0], F_SETFL, O_NONBLOCK);
-  tt_int_op(retval, OP_EQ, 0);
-
-  /* Open it as a stdio stream */
-  test_stream = fdopen(test_pipe[0], "r");
-  tt_ptr_op(test_stream, OP_NE, NULL);
-
-  /* Send in a partial line */
-  retlen = write(test_pipe[1], "A", 1);
-  tt_int_op(retlen, OP_EQ, 1);
-  retptr = fgets(buf, sizeof(buf), test_stream);
-  tt_int_op(errno, OP_EQ, EAGAIN);
-  tt_ptr_op(retptr, OP_EQ, buf);
-  tt_str_op(buf, OP_EQ, "A");
-  errno = 0;
-
-  /* Send in the rest */
-  retlen = write(test_pipe[1], "B\n", 2);
-  tt_int_op(retlen, OP_EQ, 2);
-  retptr = fgets(buf, sizeof(buf), test_stream);
-  tt_int_op(errno, OP_EQ, 0);
-  tt_ptr_op(retptr, OP_EQ, buf);
-  tt_str_op(buf, OP_EQ, "B\n");
-  errno = 0;
-
-  /* Send in a full line */
-  retlen = write(test_pipe[1], "CD\n", 3);
+  /* Send in a string. */
+  retlen = write(test_pipe[1], "ABC", 3);
   tt_int_op(retlen, OP_EQ, 3);
-  retptr = fgets(buf, sizeof(buf), test_stream);
+
+  status = get_string_from_pipe(test_pipe[0], buf, sizeof(buf)-1);
   tt_int_op(errno, OP_EQ, 0);
-  tt_ptr_op(retptr, OP_EQ, buf);
-  tt_str_op(buf, OP_EQ, "CD\n");
+  tt_int_op(status, OP_EQ, IO_STREAM_OKAY);
+  tt_str_op(buf, OP_EQ, "ABC");
   errno = 0;
 
-  /* Send in a partial line */
-  retlen = write(test_pipe[1], "E", 1);
+  /* Send in a string that contains a nul. */
+  retlen = write(test_pipe[1], "AB\0", 3);
+  tt_int_op(retlen, OP_EQ, 3);
+
+  status = get_string_from_pipe(test_pipe[0], buf, sizeof(buf)-1);
+  tt_int_op(errno, OP_EQ, 0);
+  tt_int_op(status, OP_EQ, IO_STREAM_OKAY);
+  tt_str_op(buf, OP_EQ, "AB");
+  errno = 0;
+
+  /* Send in a string that contains a nul only. */
+  retlen = write(test_pipe[1], "\0", 1);
   tt_int_op(retlen, OP_EQ, 1);
-  retptr = fgets(buf, sizeof(buf), test_stream);
-  tt_int_op(errno, OP_EQ, EAGAIN);
-  tt_ptr_op(retptr, OP_EQ, buf);
-  tt_str_op(buf, OP_EQ, "E");
-  errno = 0;
 
-  /* Send in the rest */
-  retlen = write(test_pipe[1], "F\n", 2);
-  tt_int_op(retlen, OP_EQ, 2);
-  retptr = fgets(buf, sizeof(buf), test_stream);
+  status = get_string_from_pipe(test_pipe[0], buf, sizeof(buf)-1);
   tt_int_op(errno, OP_EQ, 0);
-  tt_ptr_op(retptr, OP_EQ, buf);
-  tt_str_op(buf, OP_EQ, "F\n");
+  tt_int_op(status, OP_EQ, IO_STREAM_OKAY);
+  tt_str_op(buf, OP_EQ, "");
   errno = 0;
 
-  /* Send in a full line and close */
-  retlen = write(test_pipe[1], "GH", 2);
+  /* Send in a string that contains a trailing newline. */
+  retlen = write(test_pipe[1], "AB\n", 3);
+  tt_int_op(retlen, OP_EQ, 3);
+
+  status = get_string_from_pipe(test_pipe[0], buf, sizeof(buf)-1);
+  tt_int_op(errno, OP_EQ, 0);
+  tt_int_op(status, OP_EQ, IO_STREAM_OKAY);
+  tt_str_op(buf, OP_EQ, "AB");
+  errno = 0;
+
+  /* Send in a string that contains a newline only. */
+  retlen = write(test_pipe[1], "\n", 1);
+  tt_int_op(retlen, OP_EQ, 1);
+
+  status = get_string_from_pipe(test_pipe[0], buf, sizeof(buf)-1);
+  tt_int_op(errno, OP_EQ, 0);
+  tt_int_op(status, OP_EQ, IO_STREAM_OKAY);
+  tt_str_op(buf, OP_EQ, "");
+  errno = 0;
+
+  /* Send in a string and check that we nul terminate return values. */
+  retlen = write(test_pipe[1], "AAA", 3);
+  tt_int_op(retlen, OP_EQ, 3);
+
+  status = get_string_from_pipe(test_pipe[0], buf, sizeof(buf)-1);
+  tt_int_op(errno, OP_EQ, 0);
+  tt_int_op(status, OP_EQ, IO_STREAM_OKAY);
+  tt_str_op(buf, OP_EQ, "AAA");
+  tt_mem_op(buf, OP_EQ, "AAA\0", sizeof(buf));
+  errno = 0;
+
+  retlen = write(test_pipe[1], "B", 1);
+  tt_int_op(retlen, OP_EQ, 1);
+
+  memset(buf, '\xff', sizeof(buf));
+  status = get_string_from_pipe(test_pipe[0], buf, sizeof(buf)-1);
+  tt_int_op(errno, OP_EQ, 0);
+  tt_int_op(status, OP_EQ, IO_STREAM_OKAY);
+  tt_str_op(buf, OP_EQ, "B");
+  tt_mem_op(buf, OP_EQ, "B\0\xff\xff", sizeof(buf));
+  errno = 0;
+
+  /* Send in multiple lines. */
+  retlen = write(test_pipe[1], "A\nB", 3);
+  tt_int_op(retlen, OP_EQ, 3);
+
+  status = get_string_from_pipe(test_pipe[0], buf, sizeof(buf)-1);
+  tt_int_op(errno, OP_EQ, 0);
+  tt_int_op(status, OP_EQ, IO_STREAM_OKAY);
+  tt_str_op(buf, OP_EQ, "A\nB");
+  errno = 0;
+
+  /* Send in a line and close */
+  retlen = write(test_pipe[1], "AB", 2);
   tt_int_op(retlen, OP_EQ, 2);
   retval = close(test_pipe[1]);
   tt_int_op(retval, OP_EQ, 0);
   test_pipe[1] = -1;
-  retptr = fgets(buf, sizeof(buf), test_stream);
+
+  status = get_string_from_pipe(test_pipe[0], buf, sizeof(buf)-1);
   tt_int_op(errno, OP_EQ, 0);
-  tt_ptr_op(retptr, OP_EQ, buf);
-  tt_str_op(buf, OP_EQ, "GH");
+  tt_int_op(status, OP_EQ, IO_STREAM_OKAY);
+  tt_str_op(buf, OP_EQ, "AB");
   errno = 0;
 
   /* Check for EOF */
-  retptr = fgets(buf, sizeof(buf), test_stream);
+  status = get_string_from_pipe(test_pipe[0], buf, sizeof(buf)-1);
   tt_int_op(errno, OP_EQ, 0);
-  tt_ptr_op(retptr, OP_EQ, NULL);
-  retval = feof(test_stream);
-  tt_int_op(retval, OP_NE, 0);
+  tt_int_op(status, OP_EQ, IO_STREAM_CLOSED);
   errno = 0;
 
-  /* Check that buf is unchanged according to C99 and C11 */
-  tt_str_op(buf, OP_EQ, "GH");
-
  done:
-  if (test_stream != NULL)
-    fclose(test_stream);
   if (test_pipe[0] != -1)
     close(test_pipe[0]);
   if (test_pipe[1] != -1)
     close(test_pipe[1]);
 }
-#endif
+
+#endif /* !defined(_WIN32) */
 
 /**
  * Test for format_hex_number_sigsafe()
@@ -4227,7 +4710,7 @@ test_util_split_lines(void *ptr)
       /* Check we have not got too many lines */
       tt_int_op(MAX_SPLIT_LINE_COUNT, OP_GT, j);
       /* Check that there actually should be a line here */
-      tt_assert(tests[i].split_line[j] != NULL);
+      tt_ptr_op(tests[i].split_line[j], OP_NE, NULL);
       log_info(LD_GENERAL, "Line %d of test %d, should be <%s>",
                j, i, tests[i].split_line[j]);
       /* Check that the line is as expected */
@@ -4343,11 +4826,11 @@ test_util_di_map(void *arg)
 
   char dflt_entry[] = "'You have made a good beginning', but no more";
 
-  tt_int_op(32, ==, sizeof(key1));
-  tt_int_op(32, ==, sizeof(key2));
-  tt_int_op(32, ==, sizeof(key3));
+  tt_int_op(32, OP_EQ, sizeof(key1));
+  tt_int_op(32, OP_EQ, sizeof(key2));
+  tt_int_op(32, OP_EQ, sizeof(key3));
 
-  tt_ptr_op(dflt_entry, ==, dimap_search(dimap, key1, dflt_entry));
+  tt_ptr_op(dflt_entry, OP_EQ, dimap_search(dimap, key1, dflt_entry));
 
   char *str1 = tor_strdup("You are precisely as big as what you love"
                           " and precisely as small as what you allow"
@@ -4365,10 +4848,10 @@ test_util_di_map(void *arg)
   dimap_add_entry(&dimap, key2, str2);
   dimap_add_entry(&dimap, key3, str3);
 
-  tt_ptr_op(str1, ==, dimap_search(dimap, key1, dflt_entry));
-  tt_ptr_op(str3, ==, dimap_search(dimap, key3, dflt_entry));
-  tt_ptr_op(str2, ==, dimap_search(dimap, key2, dflt_entry));
-  tt_ptr_op(dflt_entry, ==, dimap_search(dimap, key4, dflt_entry));
+  tt_ptr_op(str1, OP_EQ, dimap_search(dimap, key1, dflt_entry));
+  tt_ptr_op(str3, OP_EQ, dimap_search(dimap, key3, dflt_entry));
+  tt_ptr_op(str2, OP_EQ, dimap_search(dimap, key2, dflt_entry));
+  tt_ptr_op(dflt_entry, OP_EQ, dimap_search(dimap, key4, dflt_entry));
 
  done:
   dimap_free(dimap, tor_free_);
@@ -4835,34 +5318,34 @@ test_util_round_to_next_multiple_of(void *arg)
 {
   (void)arg;
 
-  tt_u64_op(round_uint64_to_next_multiple_of(0,1), ==, 0);
-  tt_u64_op(round_uint64_to_next_multiple_of(0,7), ==, 0);
+  tt_u64_op(round_uint64_to_next_multiple_of(0,1), OP_EQ, 0);
+  tt_u64_op(round_uint64_to_next_multiple_of(0,7), OP_EQ, 0);
 
-  tt_u64_op(round_uint64_to_next_multiple_of(99,1), ==, 99);
-  tt_u64_op(round_uint64_to_next_multiple_of(99,7), ==, 105);
-  tt_u64_op(round_uint64_to_next_multiple_of(99,9), ==, 99);
+  tt_u64_op(round_uint64_to_next_multiple_of(99,1), OP_EQ, 99);
+  tt_u64_op(round_uint64_to_next_multiple_of(99,7), OP_EQ, 105);
+  tt_u64_op(round_uint64_to_next_multiple_of(99,9), OP_EQ, 99);
 
-  tt_u64_op(round_uint64_to_next_multiple_of(UINT64_MAX,2), ==,
+  tt_u64_op(round_uint64_to_next_multiple_of(UINT64_MAX,2), OP_EQ,
             UINT64_MAX);
 
-  tt_int_op(round_uint32_to_next_multiple_of(0,1), ==, 0);
-  tt_int_op(round_uint32_to_next_multiple_of(0,7), ==, 0);
+  tt_int_op(round_uint32_to_next_multiple_of(0,1), OP_EQ, 0);
+  tt_int_op(round_uint32_to_next_multiple_of(0,7), OP_EQ, 0);
 
-  tt_int_op(round_uint32_to_next_multiple_of(99,1), ==, 99);
-  tt_int_op(round_uint32_to_next_multiple_of(99,7), ==, 105);
-  tt_int_op(round_uint32_to_next_multiple_of(99,9), ==, 99);
+  tt_int_op(round_uint32_to_next_multiple_of(99,1), OP_EQ, 99);
+  tt_int_op(round_uint32_to_next_multiple_of(99,7), OP_EQ, 105);
+  tt_int_op(round_uint32_to_next_multiple_of(99,9), OP_EQ, 99);
 
-  tt_int_op(round_uint32_to_next_multiple_of(UINT32_MAX,2), ==,
+  tt_int_op(round_uint32_to_next_multiple_of(UINT32_MAX,2), OP_EQ,
             UINT32_MAX);
 
-  tt_uint_op(round_to_next_multiple_of(0,1), ==, 0);
-  tt_uint_op(round_to_next_multiple_of(0,7), ==, 0);
+  tt_uint_op(round_to_next_multiple_of(0,1), OP_EQ, 0);
+  tt_uint_op(round_to_next_multiple_of(0,7), OP_EQ, 0);
 
-  tt_uint_op(round_to_next_multiple_of(99,1), ==, 99);
-  tt_uint_op(round_to_next_multiple_of(99,7), ==, 105);
-  tt_uint_op(round_to_next_multiple_of(99,9), ==, 99);
+  tt_uint_op(round_to_next_multiple_of(99,1), OP_EQ, 99);
+  tt_uint_op(round_to_next_multiple_of(99,7), OP_EQ, 105);
+  tt_uint_op(round_to_next_multiple_of(99,9), OP_EQ, 99);
 
-  tt_uint_op(round_to_next_multiple_of(UINT_MAX,2), ==,
+  tt_uint_op(round_to_next_multiple_of(UINT_MAX,2), OP_EQ,
             UINT_MAX);
  done:
   ;
@@ -4883,26 +5366,26 @@ test_util_laplace(void *arg)
   const double delta_f = 15.0, epsilon = 0.3; /* b = 15.0 / 0.3 = 50.0 */
   (void)arg;
 
-  tt_i64_op(INT64_MIN, ==, sample_laplace_distribution(mu, b, 0.0));
-  tt_i64_op(-69, ==, sample_laplace_distribution(mu, b, 0.01));
-  tt_i64_op(24, ==, sample_laplace_distribution(mu, b, 0.5));
-  tt_i64_op(24, ==, sample_laplace_distribution(mu, b, 0.51));
-  tt_i64_op(117, ==, sample_laplace_distribution(mu, b, 0.99));
+  tt_i64_op(INT64_MIN, OP_EQ, sample_laplace_distribution(mu, b, 0.0));
+  tt_i64_op(-69, OP_EQ, sample_laplace_distribution(mu, b, 0.01));
+  tt_i64_op(24, OP_EQ, sample_laplace_distribution(mu, b, 0.5));
+  tt_i64_op(24, OP_EQ, sample_laplace_distribution(mu, b, 0.51));
+  tt_i64_op(117, OP_EQ, sample_laplace_distribution(mu, b, 0.99));
 
   /* >>> laplace.ppf([0.0, 0.1, 0.25, 0.5, 0.75, 0.9, 0.99],
    * ...             loc = 0, scale = 50)
    * array([         -inf,  -80.47189562,  -34.65735903,    0.        ,
    *          34.65735903,   80.47189562,  195.60115027])
    */
-  tt_i64_op(INT64_MIN + 20, ==,
+  tt_i64_op(INT64_MIN + 20, OP_EQ,
             add_laplace_noise(20, 0.0, delta_f, epsilon));
 
-  tt_i64_op(-60, ==, add_laplace_noise(20, 0.1, delta_f, epsilon));
-  tt_i64_op(-14, ==, add_laplace_noise(20, 0.25, delta_f, epsilon));
-  tt_i64_op(20, ==, add_laplace_noise(20, 0.5, delta_f, epsilon));
-  tt_i64_op(54, ==, add_laplace_noise(20, 0.75, delta_f, epsilon));
-  tt_i64_op(100, ==, add_laplace_noise(20, 0.9, delta_f, epsilon));
-  tt_i64_op(215, ==, add_laplace_noise(20, 0.99, delta_f, epsilon));
+  tt_i64_op(-60, OP_EQ, add_laplace_noise(20, 0.1, delta_f, epsilon));
+  tt_i64_op(-14, OP_EQ, add_laplace_noise(20, 0.25, delta_f, epsilon));
+  tt_i64_op(20, OP_EQ, add_laplace_noise(20, 0.5, delta_f, epsilon));
+  tt_i64_op(54, OP_EQ, add_laplace_noise(20, 0.75, delta_f, epsilon));
+  tt_i64_op(100, OP_EQ, add_laplace_noise(20, 0.9, delta_f, epsilon));
+  tt_i64_op(215, OP_EQ, add_laplace_noise(20, 0.99, delta_f, epsilon));
 
   /* Test extreme values of signal with maximally negative values of noise
    * 1.0000000000000002 is the smallest number > 1
@@ -4915,54 +5398,54 @@ test_util_laplace(void *arg)
    */
   const double noscale_df = 1.0, noscale_eps = 1.0;
 
-  tt_i64_op(INT64_MIN, ==,
+  tt_i64_op(INT64_MIN, OP_EQ,
             add_laplace_noise(0, 0.0, noscale_df, noscale_eps));
 
   /* is it clipped to INT64_MIN? */
-  tt_i64_op(INT64_MIN, ==,
+  tt_i64_op(INT64_MIN, OP_EQ,
             add_laplace_noise(-1, 0.0, noscale_df, noscale_eps));
-  tt_i64_op(INT64_MIN, ==,
+  tt_i64_op(INT64_MIN, OP_EQ,
             add_laplace_noise(INT64_MIN, 0.0,
                               noscale_df, noscale_eps));
   /* ... even when scaled? */
-  tt_i64_op(INT64_MIN, ==,
+  tt_i64_op(INT64_MIN, OP_EQ,
             add_laplace_noise(0, 0.0, delta_f, epsilon));
-  tt_i64_op(INT64_MIN, ==,
+  tt_i64_op(INT64_MIN, OP_EQ,
             add_laplace_noise(0, 0.0,
                               DBL_MAX, 1));
-  tt_i64_op(INT64_MIN, ==,
+  tt_i64_op(INT64_MIN, OP_EQ,
             add_laplace_noise(INT64_MIN, 0.0,
                               DBL_MAX, 1));
 
   /* does it play nice with INT64_MAX? */
-  tt_i64_op((INT64_MIN + INT64_MAX), ==,
+  tt_i64_op((INT64_MIN + INT64_MAX), OP_EQ,
             add_laplace_noise(INT64_MAX, 0.0,
                               noscale_df, noscale_eps));
 
   /* do near-zero fractional values work? */
   const double min_dbl_error = 0.0000000000000002;
 
-  tt_i64_op(-35, ==,
+  tt_i64_op(-35, OP_EQ,
             add_laplace_noise(0, min_dbl_error,
                               noscale_df, noscale_eps));
-  tt_i64_op(INT64_MIN, ==,
+  tt_i64_op(INT64_MIN, OP_EQ,
             add_laplace_noise(INT64_MIN, min_dbl_error,
                               noscale_df, noscale_eps));
-  tt_i64_op((-35 + INT64_MAX), ==,
+  tt_i64_op((-35 + INT64_MAX), OP_EQ,
             add_laplace_noise(INT64_MAX, min_dbl_error,
                               noscale_df, noscale_eps));
-  tt_i64_op(INT64_MIN, ==,
+  tt_i64_op(INT64_MIN, OP_EQ,
             add_laplace_noise(0, min_dbl_error,
                               DBL_MAX, 1));
-  tt_i64_op((INT64_MAX + INT64_MIN), ==,
+  tt_i64_op((INT64_MAX + INT64_MIN), OP_EQ,
             add_laplace_noise(INT64_MAX, min_dbl_error,
                               DBL_MAX, 1));
-  tt_i64_op(INT64_MIN, ==,
+  tt_i64_op(INT64_MIN, OP_EQ,
             add_laplace_noise(INT64_MIN, min_dbl_error,
                               DBL_MAX, 1));
 
   /* does it play nice with INT64_MAX? */
-  tt_i64_op((INT64_MAX - 35), ==,
+  tt_i64_op((INT64_MAX - 35), OP_EQ,
             add_laplace_noise(INT64_MAX, min_dbl_error,
                               noscale_df, noscale_eps));
 
@@ -4977,31 +5460,31 @@ test_util_laplace(void *arg)
   const double max_dbl_lt_one = 0.9999999999999998;
 
   /* do near-one fractional values work? */
-  tt_i64_op(35, ==,
+  tt_i64_op(35, OP_EQ,
             add_laplace_noise(0, max_dbl_lt_one, noscale_df, noscale_eps));
 
   /* is it clipped to INT64_MAX? */
-  tt_i64_op(INT64_MAX, ==,
+  tt_i64_op(INT64_MAX, OP_EQ,
             add_laplace_noise(INT64_MAX - 35, max_dbl_lt_one,
                               noscale_df, noscale_eps));
-  tt_i64_op(INT64_MAX, ==,
+  tt_i64_op(INT64_MAX, OP_EQ,
             add_laplace_noise(INT64_MAX - 34, max_dbl_lt_one,
                               noscale_df, noscale_eps));
-  tt_i64_op(INT64_MAX, ==,
+  tt_i64_op(INT64_MAX, OP_EQ,
             add_laplace_noise(INT64_MAX, max_dbl_lt_one,
                               noscale_df, noscale_eps));
   /* ... even when scaled? */
-  tt_i64_op(INT64_MAX, ==,
+  tt_i64_op(INT64_MAX, OP_EQ,
             add_laplace_noise(INT64_MAX, max_dbl_lt_one,
                               delta_f, epsilon));
-  tt_i64_op((INT64_MIN + INT64_MAX), ==,
+  tt_i64_op((INT64_MIN + INT64_MAX), OP_EQ,
             add_laplace_noise(INT64_MIN, max_dbl_lt_one,
                               DBL_MAX, 1));
-  tt_i64_op(INT64_MAX, ==,
+  tt_i64_op(INT64_MAX, OP_EQ,
             add_laplace_noise(INT64_MAX, max_dbl_lt_one,
                               DBL_MAX, 1));
   /* does it play nice with INT64_MIN? */
-  tt_i64_op((INT64_MIN + 35), ==,
+  tt_i64_op((INT64_MIN + 35), OP_EQ,
             add_laplace_noise(INT64_MIN, max_dbl_lt_one,
                               noscale_df, noscale_eps));
 
@@ -5014,32 +5497,32 @@ test_util_clamp_double_to_int64(void *arg)
 {
   (void)arg;
 
-  tt_i64_op(INT64_MIN, ==, clamp_double_to_int64(-INFINITY_DBL));
-  tt_i64_op(INT64_MIN, ==,
+  tt_i64_op(INT64_MIN, OP_EQ, clamp_double_to_int64(-INFINITY_DBL));
+  tt_i64_op(INT64_MIN, OP_EQ,
             clamp_double_to_int64(-1.0 * pow(2.0, 64.0) - 1.0));
-  tt_i64_op(INT64_MIN, ==,
+  tt_i64_op(INT64_MIN, OP_EQ,
             clamp_double_to_int64(-1.0 * pow(2.0, 63.0) - 1.0));
-  tt_i64_op(((uint64_t) -1) << 53, ==,
+  tt_i64_op(((uint64_t) -1) << 53, OP_EQ,
             clamp_double_to_int64(-1.0 * pow(2.0, 53.0)));
-  tt_i64_op((((uint64_t) -1) << 53) + 1, ==,
+  tt_i64_op((((uint64_t) -1) << 53) + 1, OP_EQ,
             clamp_double_to_int64(-1.0 * pow(2.0, 53.0) + 1.0));
-  tt_i64_op(-1, ==, clamp_double_to_int64(-1.0));
-  tt_i64_op(0, ==, clamp_double_to_int64(-0.9));
-  tt_i64_op(0, ==, clamp_double_to_int64(-0.1));
-  tt_i64_op(0, ==, clamp_double_to_int64(0.0));
-  tt_i64_op(0, ==, clamp_double_to_int64(NAN_DBL));
-  tt_i64_op(0, ==, clamp_double_to_int64(0.1));
-  tt_i64_op(0, ==, clamp_double_to_int64(0.9));
-  tt_i64_op(1, ==, clamp_double_to_int64(1.0));
-  tt_i64_op((((int64_t) 1) << 53) - 1, ==,
+  tt_i64_op(-1, OP_EQ, clamp_double_to_int64(-1.0));
+  tt_i64_op(0, OP_EQ, clamp_double_to_int64(-0.9));
+  tt_i64_op(0, OP_EQ, clamp_double_to_int64(-0.1));
+  tt_i64_op(0, OP_EQ, clamp_double_to_int64(0.0));
+  tt_i64_op(0, OP_EQ, clamp_double_to_int64(NAN_DBL));
+  tt_i64_op(0, OP_EQ, clamp_double_to_int64(0.1));
+  tt_i64_op(0, OP_EQ, clamp_double_to_int64(0.9));
+  tt_i64_op(1, OP_EQ, clamp_double_to_int64(1.0));
+  tt_i64_op((((int64_t) 1) << 53) - 1, OP_EQ,
             clamp_double_to_int64(pow(2.0, 53.0) - 1.0));
-  tt_i64_op(((int64_t) 1) << 53, ==,
+  tt_i64_op(((int64_t) 1) << 53, OP_EQ,
             clamp_double_to_int64(pow(2.0, 53.0)));
-  tt_i64_op(INT64_MAX, ==,
+  tt_i64_op(INT64_MAX, OP_EQ,
             clamp_double_to_int64(pow(2.0, 63.0)));
-  tt_i64_op(INT64_MAX, ==,
+  tt_i64_op(INT64_MAX, OP_EQ,
             clamp_double_to_int64(pow(2.0, 64.0)));
-  tt_i64_op(INT64_MAX, ==, clamp_double_to_int64(INFINITY_DBL));
+  tt_i64_op(INT64_MAX, OP_EQ, clamp_double_to_int64(INFINITY_DBL));
 
  done:
   ;
@@ -5053,7 +5536,7 @@ fd_is_cloexec(tor_socket_t fd)
   int flags = fcntl(fd, F_GETFD, 0);
   return (flags & FD_CLOEXEC) == FD_CLOEXEC;
 }
-#endif
+#endif /* defined(FD_CLOEXEC) */
 
 #ifndef _WIN32
 #define CAN_CHECK_NONBLOCK
@@ -5063,7 +5546,7 @@ fd_is_nonblocking(tor_socket_t fd)
   int flags = fcntl(fd, F_GETFL, 0);
   return (flags & O_NONBLOCK) == O_NONBLOCK;
 }
-#endif
+#endif /* !defined(_WIN32) */
 
 #define ERRNO_IS_EPROTO(e)    (e == SOCK_ERRNO(EPROTONOSUPPORT))
 #define SOCK_ERR_IS_EPROTO(s) ERRNO_IS_EPROTO(tor_socket_errno(s))
@@ -5085,7 +5568,8 @@ test_util_socket(void *arg)
 
   fd1 = tor_open_socket_with_extensions(domain, SOCK_STREAM, 0, 0, 0);
   int err = tor_socket_errno(fd1);
-  if (fd1 < 0 && err == SOCK_ERRNO(EPROTONOSUPPORT)) {
+  if (fd1 < 0 && (err == SOCK_ERRNO(EPROTONOSUPPORT) ||
+                  err == SOCK_ERRNO(EAFNOSUPPORT))) {
     /* Assume we're on an IPv4-only or IPv6-only system, and give up now. */
     goto done;
   }
@@ -5106,13 +5590,13 @@ test_util_socket(void *arg)
   tt_int_op(fd_is_cloexec(fd2), OP_EQ, 0);
   tt_int_op(fd_is_cloexec(fd3), OP_EQ, 1);
   tt_int_op(fd_is_cloexec(fd4), OP_EQ, 1);
-#endif
+#endif /* defined(CAN_CHECK_CLOEXEC) */
 #ifdef CAN_CHECK_NONBLOCK
   tt_int_op(fd_is_nonblocking(fd1), OP_EQ, 0);
   tt_int_op(fd_is_nonblocking(fd2), OP_EQ, 1);
   tt_int_op(fd_is_nonblocking(fd3), OP_EQ, 0);
   tt_int_op(fd_is_nonblocking(fd4), OP_EQ, 1);
-#endif
+#endif /* defined(CAN_CHECK_NONBLOCK) */
 
   tor_assert(tor_close_socket == tor_close_socket__real);
 
@@ -5168,10 +5652,10 @@ is_there_a_localhost(int family)
 
   return result;
 }
-#endif
+#endif /* 0 */
 
 /* Test for socketpair and ersatz_socketpair().  We test them both, since
- * the latter is a tolerably good way to exersize tor_accept_socket(). */
+ * the latter is a tolerably good way to exercise tor_accept_socket(). */
 static void
 test_util_socketpair(void *arg)
 {
@@ -5195,15 +5679,18 @@ test_util_socketpair(void *arg)
      * Assume we're on a machine without 127.0.0.1 or ::1 and give up now. */
     tt_skip();
   }
-#endif
+#endif /* defined(__FreeBSD__) */
   tt_int_op(0, OP_EQ, socketpair_result);
 
   tt_assert(SOCKET_OK(fds[0]));
   tt_assert(SOCKET_OK(fds[1]));
-  tt_int_op(get_n_open_sockets(), OP_EQ, n + 2);
+  if (ersatz)
+    tt_int_op(get_n_open_sockets(), OP_EQ, n);
+  else
+    tt_int_op(get_n_open_sockets(), OP_EQ, n + 2);
 #ifdef CAN_CHECK_CLOEXEC
-  tt_int_op(fd_is_cloexec(fds[0]), OP_EQ, 1);
-  tt_int_op(fd_is_cloexec(fds[1]), OP_EQ, 1);
+  tt_int_op(fd_is_cloexec(fds[0]), OP_EQ, !ersatz);
+  tt_int_op(fd_is_cloexec(fds[1]), OP_EQ, !ersatz);
 #endif
 #ifdef CAN_CHECK_NONBLOCK
   tt_int_op(fd_is_nonblocking(fds[0]), OP_EQ, 0);
@@ -5211,10 +5698,17 @@ test_util_socketpair(void *arg)
 #endif
 
  done:
-  if (SOCKET_OK(fds[0]))
-    tor_close_socket(fds[0]);
-  if (SOCKET_OK(fds[1]))
-    tor_close_socket(fds[1]);
+  if (ersatz) {
+    if (SOCKET_OK(fds[0]))
+      tor_close_socket_simple(fds[0]);
+    if (SOCKET_OK(fds[1]))
+      tor_close_socket_simple(fds[1]);
+  } else {
+    if (SOCKET_OK(fds[0]))
+      tor_close_socket(fds[0]);
+    if (SOCKET_OK(fds[1]))
+      tor_close_socket(fds[1]);
+  }
 }
 
 #undef SOCKET_EPROTO
@@ -5231,15 +5725,15 @@ test_util_max_mem(void *arg)
   tt_int_op(r, OP_EQ, r2);
   tt_uint_op(memory2, OP_EQ, memory1);
 
-  TT_BLATHER(("System memory: "U64_FORMAT, U64_PRINTF_ARG(memory1)));
+  TT_BLATHER(("System memory: %"TOR_PRIuSZ, (memory1)));
 
   if (r==0) {
     /* You have at least a megabyte. */
     tt_uint_op(memory1, OP_GT, (1<<20));
   } else {
     /* You do not have a petabyte. */
-#if SIZEOF_SIZE_T == SIZEOF_UINT64_T
-    tt_u64_op(memory1, OP_LT, (U64_LITERAL(1)<<50));
+#if SIZEOF_SIZE_T >= 8
+    tt_u64_op(memory1, OP_LT, (UINT64_C(1)<<50));
 #endif
   }
 
@@ -5248,47 +5742,74 @@ test_util_max_mem(void *arg)
 }
 
 static void
+test_util_dest_validation_edgecase(void *arg)
+{
+  (void)arg;
+
+  tt_assert(!string_is_valid_dest(NULL));
+  tt_assert(!string_is_valid_dest(""));
+
+  done:
+  return;
+}
+
+static void
 test_util_hostname_validation(void *arg)
 {
   (void)arg;
 
   // Lets try valid hostnames first.
-  tt_assert(string_is_valid_hostname("torproject.org"));
-  tt_assert(string_is_valid_hostname("ocw.mit.edu"));
-  tt_assert(string_is_valid_hostname("i.4cdn.org"));
-  tt_assert(string_is_valid_hostname("stanford.edu"));
-  tt_assert(string_is_valid_hostname("multiple-words-with-hypens.jp"));
+  tt_assert(string_is_valid_nonrfc_hostname("torproject.org"));
+  tt_assert(string_is_valid_nonrfc_hostname("ocw.mit.edu"));
+  tt_assert(string_is_valid_nonrfc_hostname("i.4cdn.org"));
+  tt_assert(string_is_valid_nonrfc_hostname("stanford.edu"));
+  tt_assert(string_is_valid_nonrfc_hostname("multiple-words-with-hypens.jp"));
 
   // Subdomain name cannot start with '-' or '_'.
-  tt_assert(!string_is_valid_hostname("-torproject.org"));
-  tt_assert(!string_is_valid_hostname("subdomain.-domain.org"));
-  tt_assert(!string_is_valid_hostname("-subdomain.domain.org"));
-  tt_assert(!string_is_valid_hostname("___abc.org"));
+  tt_assert(!string_is_valid_nonrfc_hostname("-torproject.org"));
+  tt_assert(!string_is_valid_nonrfc_hostname("subdomain.-domain.org"));
+  tt_assert(!string_is_valid_nonrfc_hostname("-subdomain.domain.org"));
+  tt_assert(!string_is_valid_nonrfc_hostname("___abc.org"));
 
   // Hostnames cannot contain non-alphanumeric characters.
-  tt_assert(!string_is_valid_hostname("%%domain.\\org."));
-  tt_assert(!string_is_valid_hostname("***x.net"));
-  tt_assert(!string_is_valid_hostname("\xff\xffxyz.org"));
-  tt_assert(!string_is_valid_hostname("word1 word2.net"));
+  tt_assert(!string_is_valid_nonrfc_hostname("%%domain.\\org."));
+  tt_assert(!string_is_valid_nonrfc_hostname("***x.net"));
+  tt_assert(!string_is_valid_nonrfc_hostname("\xff\xffxyz.org"));
+  tt_assert(!string_is_valid_nonrfc_hostname("word1 word2.net"));
 
   // Test workaround for nytimes.com stupidity, technically invalid,
   // but we allow it since they are big, even though they are failing to
   // comply with a ~30 year old standard.
-  tt_assert(string_is_valid_hostname("core3_euw1.fabrik.nytimes.com"));
+  tt_assert(string_is_valid_nonrfc_hostname("core3_euw1.fabrik.nytimes.com"));
 
   // Firefox passes FQDNs with trailing '.'s  directly to the SOCKS proxy,
   // which is redundant since the spec states DOMAINNAME addresses are fully
   // qualified.  While unusual, this should be tollerated.
-  tt_assert(string_is_valid_hostname("core9_euw1.fabrik.nytimes.com."));
-  tt_assert(!string_is_valid_hostname("..washingtonpost.is.better.com"));
-  tt_assert(!string_is_valid_hostname("so.is..ft.com"));
-  tt_assert(!string_is_valid_hostname("..."));
+  tt_assert(string_is_valid_nonrfc_hostname("core9_euw1.fabrik.nytimes.com."));
+  tt_assert(!string_is_valid_nonrfc_hostname(
+                                         "..washingtonpost.is.better.com"));
+  tt_assert(!string_is_valid_nonrfc_hostname("so.is..ft.com"));
+  tt_assert(!string_is_valid_nonrfc_hostname("..."));
 
   // XXX: do we allow single-label DNS names?
   // We shouldn't for SOCKS (spec says "contains a fully-qualified domain name"
   // but only test pathologically malformed traling '.' cases for now.
-  tt_assert(!string_is_valid_hostname("."));
-  tt_assert(!string_is_valid_hostname(".."));
+  tt_assert(!string_is_valid_nonrfc_hostname("."));
+  tt_assert(!string_is_valid_nonrfc_hostname(".."));
+
+  // IP address strings are not hostnames.
+  tt_assert(!string_is_valid_nonrfc_hostname("8.8.8.8"));
+  tt_assert(!string_is_valid_nonrfc_hostname("[2a00:1450:401b:800::200e]"));
+  tt_assert(!string_is_valid_nonrfc_hostname("2a00:1450:401b:800::200e"));
+
+  // We allow alphanumeric TLDs. For discussion, see ticket #25055.
+  tt_assert(string_is_valid_nonrfc_hostname("lucky.13"));
+  tt_assert(string_is_valid_nonrfc_hostname("luck.y13"));
+  tt_assert(string_is_valid_nonrfc_hostname("luck.y13."));
+
+  // We allow punycode TLDs. For examples, see
+  // http://data.iana.org/TLD/tlds-alpha-by-domain.txt
+  tt_assert(string_is_valid_nonrfc_hostname("example.xn--l1acc"));
 
   done:
   return;
@@ -5356,7 +5877,7 @@ test_util_get_avail_disk_space(void *arg)
 #else
   tt_i64_op(val, OP_GT, 0); /* You have some space. */
   tt_i64_op(val, OP_LT, ((int64_t)1)<<56); /* You don't have a zebibyte */
-#endif
+#endif /* !defined(HAVE_STATVFS) && !defined(_WIN32) */
 
  done:
   ;
@@ -5406,25 +5927,25 @@ test_util_pwdb(void *arg)
   /* Uncached case. */
   /* Let's assume that we exist. */
   me = tor_getpwuid(getuid());
-  tt_assert(me != NULL);
+  tt_ptr_op(me, OP_NE, NULL);
   name = tor_strdup(me->pw_name);
 
   /* Uncached case */
   me2 = tor_getpwnam(name);
-  tt_assert(me2 != NULL);
+  tt_ptr_op(me2, OP_NE, NULL);
   tt_int_op(me2->pw_uid, OP_EQ, getuid());
 
   /* Cached case */
   me3 = tor_getpwuid(getuid());
-  tt_assert(me3 != NULL);
+  tt_ptr_op(me3, OP_NE, NULL);
   tt_str_op(me3->pw_name, OP_EQ, name);
 
   me3 = tor_getpwnam(name);
-  tt_assert(me3 != NULL);
+  tt_ptr_op(me3, OP_NE, NULL);
   tt_int_op(me3->pw_uid, OP_EQ, getuid());
 
   dir = get_user_homedir(name);
-  tt_assert(dir != NULL);
+  tt_ptr_op(dir, OP_NE, NULL);
 
   /* Try failing cases.  First find a user that doesn't exist by name */
   char randbytes[4];
@@ -5444,7 +5965,7 @@ test_util_pwdb(void *arg)
   /* We should do a LOG_ERR */
   setup_full_capture_of_logs(LOG_ERR);
   dir = get_user_homedir(badname);
-  tt_assert(dir == NULL);
+  tt_ptr_op(dir, OP_EQ, NULL);
   expect_log_msg_containing("not found");
   tt_int_op(smartlist_len(mock_saved_logs()), OP_EQ, 1);
   teardown_capture_of_logs();
@@ -5466,33 +5987,33 @@ test_util_pwdb(void *arg)
   tor_free(dir);
   teardown_capture_of_logs();
 }
-#endif
+#endif /* !defined(_WIN32) */
 
 static void
 test_util_calloc_check(void *arg)
 {
   (void) arg;
   /* Easy cases that are good. */
-  tt_assert(size_mul_check__(0,0));
-  tt_assert(size_mul_check__(0,100));
-  tt_assert(size_mul_check__(100,0));
-  tt_assert(size_mul_check__(100,100));
+  tt_assert(size_mul_check(0,0));
+  tt_assert(size_mul_check(0,100));
+  tt_assert(size_mul_check(100,0));
+  tt_assert(size_mul_check(100,100));
 
   /* Harder cases that are still good. */
-  tt_assert(size_mul_check__(SIZE_MAX, 1));
-  tt_assert(size_mul_check__(1, SIZE_MAX));
-  tt_assert(size_mul_check__(SIZE_MAX / 10, 9));
-  tt_assert(size_mul_check__(11, SIZE_MAX / 12));
+  tt_assert(size_mul_check(SIZE_MAX, 1));
+  tt_assert(size_mul_check(1, SIZE_MAX));
+  tt_assert(size_mul_check(SIZE_MAX / 10, 9));
+  tt_assert(size_mul_check(11, SIZE_MAX / 12));
   const size_t sqrt_size_max_p1 = ((size_t)1) << (sizeof(size_t) * 4);
-  tt_assert(size_mul_check__(sqrt_size_max_p1, sqrt_size_max_p1 - 1));
+  tt_assert(size_mul_check(sqrt_size_max_p1, sqrt_size_max_p1 - 1));
 
   /* Cases that overflow */
-  tt_assert(! size_mul_check__(SIZE_MAX, 2));
-  tt_assert(! size_mul_check__(2, SIZE_MAX));
-  tt_assert(! size_mul_check__(SIZE_MAX / 10, 11));
-  tt_assert(! size_mul_check__(11, SIZE_MAX / 10));
-  tt_assert(! size_mul_check__(SIZE_MAX / 8, 9));
-  tt_assert(! size_mul_check__(sqrt_size_max_p1, sqrt_size_max_p1));
+  tt_assert(! size_mul_check(SIZE_MAX, 2));
+  tt_assert(! size_mul_check(2, SIZE_MAX));
+  tt_assert(! size_mul_check(SIZE_MAX / 10, 11));
+  tt_assert(! size_mul_check(11, SIZE_MAX / 10));
+  tt_assert(! size_mul_check(SIZE_MAX / 8, 9));
+  tt_assert(! size_mul_check(sqrt_size_max_p1, sqrt_size_max_p1));
 
  done:
   ;
@@ -5507,6 +6028,7 @@ test_util_monotonic_time(void *arg)
   monotime_coarse_t mtc1, mtc2;
   uint64_t nsec1, nsec2, usec1, msec1;
   uint64_t nsecc1, nsecc2, usecc1, msecc1;
+  uint32_t stamp1, stamp2;
 
   monotime_init();
 
@@ -5518,6 +6040,7 @@ test_util_monotonic_time(void *arg)
   nsecc1 = monotime_coarse_absolute_nsec();
   usecc1 = monotime_coarse_absolute_usec();
   msecc1 = monotime_coarse_absolute_msec();
+  stamp1 = monotime_coarse_to_stamp(&mtc1);
 
   tor_sleep_msec(200);
 
@@ -5525,6 +6048,7 @@ test_util_monotonic_time(void *arg)
   monotime_coarse_get(&mtc2);
   nsec2 = monotime_absolute_nsec();
   nsecc2 = monotime_coarse_absolute_nsec();
+  stamp2 = monotime_coarse_to_stamp(&mtc2);
 
   /* We need to be a little careful here since we don't know the system load.
    */
@@ -5541,10 +6065,22 @@ test_util_monotonic_time(void *arg)
   tt_u64_op(usec1, OP_GE, nsec1 / 1000);
   tt_u64_op(msecc1, OP_GE, nsecc1 / 1000000);
   tt_u64_op(usecc1, OP_GE, nsecc1 / 1000);
-  tt_u64_op(msec1, OP_LE, nsec1 / 1000000 + 1);
-  tt_u64_op(usec1, OP_LE, nsec1 / 1000 + 1000);
-  tt_u64_op(msecc1, OP_LE, nsecc1 / 1000000 + 1);
-  tt_u64_op(usecc1, OP_LE, nsecc1 / 1000 + 1000);
+  tt_u64_op(msec1, OP_LE, nsec1 / 1000000 + 10);
+  tt_u64_op(usec1, OP_LE, nsec1 / 1000 + 10000);
+  tt_u64_op(msecc1, OP_LE, nsecc1 / 1000000 + 10);
+  tt_u64_op(usecc1, OP_LE, nsecc1 / 1000 + 10000);
+
+  uint64_t coarse_stamp_diff =
+    monotime_coarse_stamp_units_to_approx_msec(stamp2-stamp1);
+  tt_u64_op(coarse_stamp_diff, OP_GE, 120);
+  tt_u64_op(coarse_stamp_diff, OP_LE, 1200);
+
+  {
+    uint64_t units = monotime_msec_to_approx_coarse_stamp_units(5000);
+    uint64_t ms = monotime_coarse_stamp_units_to_approx_msec(units);
+    tt_u64_op(ms, OP_GE, 4950);
+    tt_u64_op(ms, OP_LT, 5050);
+  }
 
  done:
   ;
@@ -5623,11 +6159,266 @@ test_util_monotonic_time_ratchet(void *arg)
   ;
 }
 
+static void
+test_util_monotonic_time_zero(void *arg)
+{
+  (void) arg;
+  monotime_t t1;
+  monotime_coarse_t ct1;
+  monotime_init();
+  /* Check 1: The current time is not zero. */
+  monotime_get(&t1);
+  monotime_coarse_get(&ct1);
+  tt_assert(!monotime_is_zero(&t1));
+  tt_assert(!monotime_coarse_is_zero(&ct1));
+
+  /* Check 2: The _zero() makes the time zero. */
+  monotime_zero(&t1);
+  monotime_coarse_zero(&ct1);
+  tt_assert(monotime_is_zero(&t1));
+  tt_assert(monotime_coarse_is_zero(&ct1));
+ done:
+  ;
+}
+
+static void
+test_util_monotonic_time_add_msec(void *arg)
+{
+  (void) arg;
+  monotime_t t1, t2;
+  monotime_coarse_t ct1, ct2;
+  monotime_init();
+
+  monotime_get(&t1);
+  monotime_coarse_get(&ct1);
+
+  /* adding zero does nothing */
+  monotime_add_msec(&t2, &t1, 0);
+  monotime_coarse_add_msec(&ct2, &ct1, 0);
+  tt_i64_op(monotime_diff_msec(&t1, &t2), OP_EQ, 0);
+  tt_i64_op(monotime_coarse_diff_msec(&ct1, &ct2), OP_EQ, 0);
+
+  /* Add 1337 msec; see if the diff function agree */
+  monotime_add_msec(&t2, &t1, 1337);
+  monotime_coarse_add_msec(&ct2, &ct1, 1337);
+  tt_i64_op(monotime_diff_msec(&t1, &t2), OP_EQ, 1337);
+  tt_i64_op(monotime_coarse_diff_msec(&ct1, &ct2), OP_EQ, 1337);
+  // The 32-bit variant must be within 1% of the regular one.
+  tt_int_op(monotime_coarse_diff_msec32_(&ct1, &ct2), OP_GT, 1323);
+  tt_int_op(monotime_coarse_diff_msec32_(&ct1, &ct2), OP_LT, 1350);
+
+  /* Add 1337 msec twice more; make sure that any second rollover issues
+   * worked. */
+  monotime_add_msec(&t2, &t2, 1337);
+  monotime_coarse_add_msec(&ct2, &ct2, 1337);
+  monotime_add_msec(&t2, &t2, 1337);
+  monotime_coarse_add_msec(&ct2, &ct2, 1337);
+  tt_i64_op(monotime_diff_msec(&t1, &t2), OP_EQ, 1337*3);
+  tt_i64_op(monotime_coarse_diff_msec(&ct1, &ct2), OP_EQ, 1337*3);
+  tt_int_op(monotime_coarse_diff_msec32_(&ct1, &ct2), OP_GT, 3970);
+  tt_int_op(monotime_coarse_diff_msec32_(&ct1, &ct2), OP_LT, 4051);
+
+ done:
+  ;
+}
+
+static void
+test_util_nowrap_math(void *arg)
+{
+  (void)arg;
+
+  tt_u64_op(0, OP_EQ, tor_add_u32_nowrap(0, 0));
+  tt_u64_op(1, OP_EQ, tor_add_u32_nowrap(0, 1));
+  tt_u64_op(1, OP_EQ, tor_add_u32_nowrap(1, 0));
+  tt_u64_op(4, OP_EQ, tor_add_u32_nowrap(2, 2));
+  tt_u64_op(UINT32_MAX, OP_EQ, tor_add_u32_nowrap(UINT32_MAX-1, 2));
+  tt_u64_op(UINT32_MAX, OP_EQ, tor_add_u32_nowrap(2, UINT32_MAX-1));
+  tt_u64_op(UINT32_MAX, OP_EQ, tor_add_u32_nowrap(UINT32_MAX, UINT32_MAX));
+
+ done:
+  ;
+}
+
+static void
+test_util_htonll(void *arg)
+{
+  (void)arg;
+#ifdef WORDS_BIGENDIAN
+  const uint64_t res_be = 0x8877665544332211;
+#else
+  const uint64_t res_le = 0x1122334455667788;
+#endif
+
+  tt_u64_op(0, OP_EQ, tor_htonll(0));
+  tt_u64_op(0, OP_EQ, tor_ntohll(0));
+  tt_u64_op(UINT64_MAX, OP_EQ, tor_htonll(UINT64_MAX));
+  tt_u64_op(UINT64_MAX, OP_EQ, tor_ntohll(UINT64_MAX));
+
+#ifdef WORDS_BIGENDIAN
+  tt_u64_op(res_be, OP_EQ, tor_htonll(0x8877665544332211));
+  tt_u64_op(res_be, OP_EQ, tor_ntohll(0x8877665544332211));
+#else
+  tt_u64_op(res_le, OP_EQ, tor_htonll(0x8877665544332211));
+  tt_u64_op(res_le, OP_EQ, tor_ntohll(0x8877665544332211));
+#endif /* defined(WORDS_BIGENDIAN) */
+
+ done:
+  ;
+}
+
+static void
+test_util_get_unquoted_path(void *arg)
+{
+  (void)arg;
+
+  char *r = NULL;
+
+  r = get_unquoted_path("\""); // "
+  tt_ptr_op(r, OP_EQ, NULL);
+  tor_free(r);
+
+  r = get_unquoted_path("\"\"\""); // """
+  tt_ptr_op(r, OP_EQ, NULL);
+  tor_free(r);
+
+  r = get_unquoted_path("\\\""); // \"
+  tt_ptr_op(r, OP_EQ, NULL);
+  tor_free(r);
+
+  r = get_unquoted_path("\\\"\\\""); // \"\"
+  tt_ptr_op(r, OP_EQ, NULL);
+  tor_free(r);
+
+  r = get_unquoted_path("A\\B\\C\""); // A\B\C"
+  tt_ptr_op(r, OP_EQ, NULL);
+  tor_free(r);
+
+  r = get_unquoted_path("\"A\\B\\C"); // "A\B\C
+  tt_ptr_op(r, OP_EQ, NULL);
+  tor_free(r);
+
+  r = get_unquoted_path("\"A\\B\"C\""); // "A\B"C"
+  tt_ptr_op(r, OP_EQ, NULL);
+  tor_free(r);
+
+  r = get_unquoted_path("A\\B\"C"); // A\B"C
+  tt_ptr_op(r, OP_EQ, NULL);
+  tor_free(r);
+
+  r = get_unquoted_path("");
+  tt_str_op(r, OP_EQ, "");
+  tor_free(r);
+
+  r = get_unquoted_path("\"\""); // ""
+  tt_str_op(r, OP_EQ, "");
+  tor_free(r);
+
+  r = get_unquoted_path("A\\B\\C"); // A\B\C
+  tt_str_op(r, OP_EQ, "A\\B\\C"); // A\B\C
+  tor_free(r);
+
+  r = get_unquoted_path("\"A\\B\\C\""); // "A\B\C"
+  tt_str_op(r, OP_EQ, "A\\B\\C"); // A\B\C
+  tor_free(r);
+
+  r = get_unquoted_path("\"\\\""); // "\"
+  tt_str_op(r, OP_EQ, "\\"); // \ /* comment to prevent line continuation */
+  tor_free(r);
+
+  r = get_unquoted_path("\"\\\"\""); // "\""
+  tt_str_op(r, OP_EQ, "\""); // "
+  tor_free(r);
+
+  r = get_unquoted_path("\"A\\B\\C\\\"\""); // "A\B\C\""
+  tt_str_op(r, OP_EQ, "A\\B\\C\""); // A\B\C"
+  tor_free(r);
+
+  r = get_unquoted_path("A\\B\\\"C"); // A\B\"C
+  tt_str_op(r, OP_EQ, "A\\B\"C"); // A\B"C
+  tor_free(r);
+
+  r = get_unquoted_path("\"A\\B\\\"C\""); // "A\B\"C"
+  tt_str_op(r, OP_EQ, "A\\B\"C"); // A\B"C
+
+ done:
+  tor_free(r);
+}
+
+static void
+test_util_log_mallinfo(void *arg)
+{
+  (void)arg;
+  char *log1 = NULL, *log2 = NULL, *mem = NULL;
+#ifdef HAVE_MALLINFO
+  setup_capture_of_logs(LOG_INFO);
+  tor_log_mallinfo(LOG_INFO);
+  expect_single_log_msg_containing("mallinfo() said: ");
+  mock_saved_log_entry_t *lg = smartlist_get(mock_saved_logs(), 0);
+  log1 = tor_strdup(lg->generated_msg);
+
+  mock_clean_saved_logs();
+  mem = tor_malloc(8192);
+  tor_log_mallinfo(LOG_INFO);
+  expect_single_log_msg_containing("mallinfo() said: ");
+  lg = smartlist_get(mock_saved_logs(), 0);
+  log2 = tor_strdup(lg->generated_msg);
+
+  /* Make sure that the amount of used memory increased. */
+  const char *used1 = strstr(log1, "uordblks=");
+  const char *used2 = strstr(log2, "uordblks=");
+  tt_assert(used1);
+  tt_assert(used2);
+  used1 += strlen("uordblks=");
+  used2 += strlen("uordblks=");
+
+  int ok1, ok2;
+  char *next1 = NULL, *next2 = NULL;
+  uint64_t mem1 = tor_parse_uint64(used1, 10, 0, UINT64_MAX, &ok1, &next1);
+  uint64_t mem2 = tor_parse_uint64(used2, 10, 0, UINT64_MAX, &ok2, &next2);
+  tt_assert(ok1);
+  tt_assert(ok2);
+  tt_assert(next1);
+  tt_assert(next2);
+  if (mem2 == 0) {
+    /* This is a fake mallinfo that doesn't actually fill in its outputs. */
+    tt_u64_op(mem1, OP_EQ, 0);
+  } else {
+    tt_u64_op(mem1, OP_LT, mem2);
+  }
+#else
+  tt_skip();
+#endif
+ done:
+  teardown_capture_of_logs();
+  tor_free(log1);
+  tor_free(log2);
+  tor_free(mem);
+}
+
 #define UTIL_LEGACY(name)                                               \
   { #name, test_util_ ## name , 0, NULL, NULL }
 
 #define UTIL_TEST(name, flags)                          \
   { #name, test_util_ ## name, flags, NULL, NULL }
+
+#define COMPRESS(name, identifier)              \
+  { "compress/" #name, test_util_compress, 0, &compress_setup,          \
+    (char*)(identifier) }
+
+#define COMPRESS_CONCAT(name, identifier)                               \
+  { "compress_concat/" #name, test_util_decompress_concatenated, 0,     \
+    &compress_setup,                                                    \
+    (char*)(identifier) }
+
+#define COMPRESS_JUNK(name, identifier)                                 \
+  { "compress_junk/" #name, test_util_decompress_junk, 0,               \
+    &compress_setup,                                                    \
+    (char*)(identifier) }
+
+#define COMPRESS_DOS(name, identifier)                                  \
+  { "compress_dos/" #name, test_util_decompress_dos, 0,                 \
+    &compress_setup,                                                    \
+    (char*)(identifier) }
 
 #ifdef _WIN32
 #define UTIL_TEST_NO_WIN(n, f) { #n, NULL, TT_SKIP, NULL, NULL }
@@ -5637,7 +6428,7 @@ test_util_monotonic_time_ratchet(void *arg)
 #define UTIL_TEST_NO_WIN(n, f) UTIL_TEST(n, (f))
 #define UTIL_TEST_WIN_ONLY(n, f) { #n, NULL, TT_SKIP, NULL, NULL }
 #define UTIL_LEGACY_NO_WIN(n) UTIL_LEGACY(n)
-#endif
+#endif /* defined(_WIN32) */
 
 struct testcase_t util_tests[] = {
   UTIL_LEGACY(time),
@@ -5653,7 +6444,26 @@ struct testcase_t util_tests[] = {
   UTIL_LEGACY(strmisc),
   UTIL_TEST(parse_integer, 0),
   UTIL_LEGACY(pow2),
-  UTIL_LEGACY(gzip),
+  COMPRESS(zlib, "deflate"),
+  COMPRESS(gzip, "gzip"),
+  COMPRESS(lzma, "x-tor-lzma"),
+  COMPRESS(zstd, "x-zstd"),
+  COMPRESS(zstd_nostatic, "x-zstd:nostatic"),
+  COMPRESS(none, "identity"),
+  COMPRESS_CONCAT(zlib, "deflate"),
+  COMPRESS_CONCAT(gzip, "gzip"),
+  COMPRESS_CONCAT(lzma, "x-tor-lzma"),
+  COMPRESS_CONCAT(zstd, "x-zstd"),
+  COMPRESS_CONCAT(zstd_nostatic, "x-zstd:nostatic"),
+  COMPRESS_CONCAT(none, "identity"),
+  COMPRESS_JUNK(zlib, "deflate"),
+  COMPRESS_JUNK(gzip, "gzip"),
+  COMPRESS_JUNK(lzma, "x-tor-lzma"),
+  COMPRESS_DOS(zlib, "deflate"),
+  COMPRESS_DOS(gzip, "gzip"),
+  COMPRESS_DOS(lzma, "x-tor-lzma"),
+  COMPRESS_DOS(zstd, "x-zstd"),
+  COMPRESS_DOS(zstd_nostatic, "x-zstd:nostatic"),
   UTIL_TEST(gzip_compression_bomb, TT_FORK),
   UTIL_LEGACY(datadir),
   UTIL_LEGACY(memarea),
@@ -5670,14 +6480,16 @@ struct testcase_t util_tests[] = {
   UTIL_TEST(clamp_double_to_int64, 0),
   UTIL_TEST(find_str_at_start_of_line, 0),
   UTIL_TEST(string_is_C_identifier, 0),
+  UTIL_TEST(string_is_utf8, 0),
   UTIL_TEST(asprintf, 0),
   UTIL_TEST(listdir, 0),
   UTIL_TEST(parent_dir, 0),
   UTIL_TEST(ftruncate, 0),
+  UTIL_TEST(nowrap_math, 0),
   UTIL_TEST(num_cpus, 0),
   UTIL_TEST_WIN_ONLY(load_win_lib, 0),
   UTIL_TEST_NO_WIN(exit_status, 0),
-  UTIL_TEST_NO_WIN(fgets_eagain, 0),
+  UTIL_TEST_NO_WIN(string_from_pipe, 0),
   UTIL_TEST(format_hex_number, 0),
   UTIL_TEST(format_dec_number, 0),
   UTIL_TEST(join_win_cmdline, 0),
@@ -5708,6 +6520,7 @@ struct testcase_t util_tests[] = {
     &passthrough_setup, (void*)"1" },
   UTIL_TEST(max_mem, 0),
   UTIL_TEST(hostname_validation, 0),
+  UTIL_TEST(dest_validation_edgecase, 0),
   UTIL_TEST(ipv4_validation, 0),
   UTIL_TEST(writepid, 0),
   UTIL_TEST(get_avail_disk_space, 0),
@@ -5716,6 +6529,10 @@ struct testcase_t util_tests[] = {
   UTIL_TEST(calloc_check, 0),
   UTIL_TEST(monotonic_time, 0),
   UTIL_TEST(monotonic_time_ratchet, TT_FORK),
+  UTIL_TEST(monotonic_time_zero, 0),
+  UTIL_TEST(monotonic_time_add_msec, 0),
+  UTIL_TEST(htonll, 0),
+  UTIL_TEST(get_unquoted_path, 0),
+  UTIL_TEST(log_mallinfo, 0),
   END_OF_TESTCASES
 };
-

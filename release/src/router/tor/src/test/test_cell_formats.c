@@ -1,22 +1,29 @@
 /* Copyright (c) 2001-2004, Roger Dingledine.
  * Copyright (c) 2004-2006, Roger Dingledine, Nick Mathewson.
- * Copyright (c) 2007-2016, The Tor Project, Inc. */
+ * Copyright (c) 2007-2019, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 #include "orconfig.h"
 
 #define CONNECTION_EDGE_PRIVATE
 #define RELAY_PRIVATE
-#include "or.h"
-#include "channel.h"
-#include "connection_edge.h"
-#include "connection_or.h"
-#include "onion.h"
-#include "onion_tap.h"
-#include "onion_fast.h"
-#include "onion_ntor.h"
-#include "relay.h"
-#include "test.h"
+#include "core/or/or.h"
+#include "core/or/channel.h"
+#include "core/or/connection_edge.h"
+#include "core/or/connection_or.h"
+#include "app/config/config.h"
+#include "lib/crypt_ops/crypto_rand.h"
+#include "core/or/onion.h"
+#include "core/crypto/onion_tap.h"
+#include "core/crypto/onion_fast.h"
+#include "core/crypto/onion_ntor.h"
+#include "core/or/relay.h"
+
+#include "core/or/cell_st.h"
+#include "core/or/cell_queue_st.h"
+#include "core/or/var_cell_st.h"
+
+#include "test/test.h"
 
 #include <stdlib.h>
 #include <string.h>
@@ -476,7 +483,7 @@ test_cfmt_create_cells(void *arg)
   cell.command = CELL_CREATED;
   tt_int_op(-1, OP_EQ, create_cell_parse(&cc, &cell));
 
-  /* You can't acutally make an unparseable CREATE or CREATE_FAST cell. */
+  /* You can't actually make an unparseable CREATE or CREATE_FAST cell. */
 
   /* Try some CREATE2 cells.  First with a bad type. */
   cell.command = CELL_CREATE2;
@@ -698,6 +705,7 @@ test_cfmt_extend_cells(void *arg)
   tt_int_op(61681, OP_EQ, ec.orport_ipv4.port);
   tt_str_op("2002::f0:c51e", OP_EQ, fmt_addr(&ec.orport_ipv6.addr));
   tt_int_op(4370, OP_EQ, ec.orport_ipv6.port);
+  tt_assert(ed25519_public_key_is_zero(&ec.ed_pubkey));
   tt_mem_op(ec.node_id,OP_EQ, "anthropomorphization", 20);
   tt_int_op(cc->cell_type, OP_EQ, CELL_CREATE2);
   tt_int_op(cc->handshake_type, OP_EQ, 0x105);
@@ -716,6 +724,37 @@ test_cfmt_extend_cells(void *arg)
                  "01050063");
   tt_mem_op(p2+1+8+22+4,OP_EQ, b, 99+20);
   tt_int_op(0, OP_EQ, create_cell_format_relayed(&cell, cc));
+
+  /* Now let's add an ed25519 key to that extend2 cell. */
+  memcpy(ec.ed_pubkey.pubkey,
+         "brownshoesdontmakeit/brownshoesd", 32);
+
+  /* As before, since we aren't extending by ed25519. */
+  get_options_mutable()->ExtendByEd25519ID = 0;
+  tt_int_op(0, OP_EQ, extend_cell_format(&p2_cmd, &p2_len, p2, &ec));
+  tt_int_op(p2_len, OP_EQ, 89+99-34-20);
+  test_memeq_hex(p2,
+                 "02000612F40001F0F1"
+                 "0214616e7468726f706f6d6f727068697a6174696f6e"
+                 "01050063");
+
+  /* Now try with the ed25519 ID. */
+  get_options_mutable()->ExtendByEd25519ID = 1;
+  tt_int_op(0, OP_EQ, extend_cell_format(&p2_cmd, &p2_len, p2, &ec));
+  tt_int_op(p2_len, OP_EQ, 89+99-34-20 + 34);
+  test_memeq_hex(p2,
+                 "03000612F40001F0F1"
+                 "0214616e7468726f706f6d6f727068697a6174696f6e"
+                 // ed digest follows:
+                 "0320" "62726f776e73686f6573646f6e746d616b656"
+                        "9742f62726f776e73686f657364"
+                 "01050063");
+  /* Can we parse that? Did the key come through right? */
+  memset(&ec, 0, sizeof(ec));
+  tt_int_op(0, OP_EQ, extend_cell_parse(&ec, RELAY_COMMAND_EXTEND2,
+                                        p2, p2_len));
+  tt_mem_op("brownshoesdontmakeit/brownshoesd", OP_EQ,
+            ec.ed_pubkey.pubkey, 32);
 
   /* == Now try parsing some junk */
 
@@ -1257,10 +1296,9 @@ struct testcase_t cell_format_tests[] = {
   TEST(connected_cells, 0),
   TEST(create_cells, 0),
   TEST(created_cells, 0),
-  TEST(extend_cells, 0),
+  TEST(extend_cells, TT_FORK),
   TEST(extended_cells, 0),
   TEST(resolved_cells, 0),
   TEST(is_destroy, 0),
   END_OF_TESTCASES
 };
-

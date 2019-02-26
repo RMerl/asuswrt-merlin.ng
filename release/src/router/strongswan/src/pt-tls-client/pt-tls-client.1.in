@@ -1,0 +1,135 @@
+.TH PT-TLS-CLIENT 1 "2018-11-20" "@PACKAGE_VERSION@" "strongSwan"
+.
+.SH "NAME"
+.
+pt-tls-client \- Simple client using PT-TLS to collect integrity information
+.
+.SH "SYNOPSIS"
+.
+.SY "pt-tls-client"
+.BI \-\-connect
+.IR hostname |\fIaddress
+.OP \-\-port port
+.RB [ \-\-certid
+.IR hex |\fB\-\-cert
+.IR file ]+
+.RB [ \-\-keyid
+.IR hex |\fB\-\-key
+.IR file ]
+.RB [ \-\-key-type
+.BR rsa |\fBecdsa\fR]
+.OP \-\-client client-id
+.OP \-\-secret password
+.OP \-\-mutual
+.OP \-\-options filename
+.OP \-\-quiet
+.OP \-\-debug level
+.YS
+.
+.SY "pt-tls-client"
+.B \-h
+|
+.B \-\-help
+.YS
+.
+.SH "DESCRIPTION"
+.
+.B pt-tls-client
+is a simple client using the PT-TLS (RFC 6876) transport protocol to collect
+integrity measurements on the client platform. PT-TLS does an initial TLS
+handshake with certificate-based server authentication and optional
+certificate-based client authentication.  Alternatively simple password-based
+SASL client authentication protected by TLS can be used.
+.P
+Attribute requests and integrity measurements are exchanged via the PA-TNC (RFC
+5792) message protocol between any number of Integrity Measurement Verifiers
+(IMVs) residing on the remote PT-TLS server and multiple Integrity Measurement
+Collectors (IMCs) loaded dynamically by the PT-TLS client according to a list
+defined by \fI/etc/tnc_config\fR. PA-TNC messages that contain one or several
+PA-TNC attributes are multiplexed into PB-TNC (RFC 5793) client or server data
+batches which in turn are transported via PT-TLS.
+.
+.SH "OPTIONS"
+.
+.TP
+.B "\-h, \-\-help"
+Prints usage information and a short summary of the available commands.
+.TP
+.BI "\-c, \-\-connect " hostname\fR|\fIaddress
+Set the hostname or IP address of the PT-TLS server.
+.TP
+.BI "\-p, \-\-port " port
+Set the port of the PT-TLS server, default: 271.
+.TP
+.BI "\-x, \-\-cert " file
+Set the path to an X.509 certificate file. This option can be repeated to load
+multiple client and CA certificates.
+.TP
+.BI "\-X, \-\-certid " hex
+Set the handle of the certificate stored in a smartcard or a TPM 2.0 Trusted
+Platform Module.
+.TP
+.BI "\-k, \-\-key " file
+Set the path to the client's PKCS#1 or PKCS#8 private key file
+.TP
+.BI "\-t, \-\-key\-type " type
+Define the type of the private key if stored in PKCS#1 format. Can be omitted
+with PKCS#8 keys.
+.TP
+.BI "\-K, \-\-keyid " hex
+Set the keyid of the private key stored in a smartcard or a TPM 2.0 Trusted
+Platform Module.
+.TP
+.BI "\-i, \-\-client " client-id
+Set the username or client ID of the client required for password-based SASL
+authentication.
+.TP
+.BI "\-s, \-\-secret " password
+Set the preshared secret or client password required for password-based SASL
+authentication.
+.TP
+.B "\-q, \-\-mutual
+Enable mutual attestation between PT-TLS client and PT-TLS server.
+.TP
+.BI "\-v, \-\-debug " level
+Set debug level, default: 1.
+.TP
+.B "\-q, \-\-quiet
+Disable debug output to stderr.
+.TP
+.BI "\-+, \-\-options " file
+Read command line options from \fIfile\fR.
+.
+.SH "EXAMPLES"
+.
+Connect to a PT-TLS server using certificate-based authentication,
+storing the private ECDSA key in a file:
+.PP
+.EX
+  pt-tls-client \-\-connect pdp.example.com \-\-cert ca.crt \\
+                \-\-cert client.crt \-\-key client.key \-\-key\-type ecdsa
+.EE
+.PP
+Connect to a PT-TLS server using certificate-based authentication,
+storing the private key in a smartcard or a TPM 2.0 Trusted Platform Module:
+.PP
+.EX
+  pt-tls-client \-\-connect pdp.example.com \-\-cert ca.crt \\
+                \-\-cert client.crt \-\-keyid 0x81010002
+.EE
+.PP
+Connect to a PT-TLS server listening on port 443, using SASL password-based
+authentication:
+.PP
+.EX
+  pt-tls-client \-\-connect pdp.example.com --port 443 \-\-cert ca.crt \\
+                \-\-client jane \-\-password p2Nl9trKlb
+.EE
+.SH FILES
+.TP
+/etc/tnc_config
+.
+.SH "SEE ALSO"
+.
+.BR strongswan.conf (5)
+

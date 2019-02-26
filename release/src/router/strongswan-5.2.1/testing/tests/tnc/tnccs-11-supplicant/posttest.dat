@@ -1,5 +1,0 @@
-carol::killall wpa_supplicant
-dave::killall wpa_supplicant
-moon::killall hostapd
-alice::killall radiusd
-alice::rm /etc/freeradius/sites-enabled/inner-tunnel-second

@@ -1,0 +1,4 @@
+The hosts <b>moon</b> and <b>sun</b> do mutual TNC measurements over IKEv2-EAP
+using the PA-TNC, PB-TNC and PT-EAP protocols. The IKEv2 EAP-TTLS authentication
+is based on X.509 certificates. The TNC measurements of both <b>moon</b> and
+<b>sun</b> are successful and the IPsec connection gets established.

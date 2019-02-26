@@ -1,6 +1,0 @@
-moon::iptables-restore < /etc/iptables.rules
-sun::iptables-restore < /etc/iptables.rules
-moon::ipsec start
-sun::ipsec start
-moon::sleep 1 
-moon::ipsec up net-net

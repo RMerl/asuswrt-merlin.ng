@@ -1,0 +1,4 @@
+Roadwarrior <b>carol</b> proposes to gateway <b>moon</b> the ESP cipher suite
+<b>AES_CBC_192 / HMAC_SHA2_384_192</b> by defining <b>esp=aes192-sha384-curve25519!</b>
+in ipsec.conf. The same cipher suite is used for IKE.
+A ping from <b>carol</b> to <b>alice</b> successfully checks the established tunnel.

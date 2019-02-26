@@ -1,12 +1,7 @@
 /* Copyright (c) 2001-2004, Roger Dingledine.
  * Copyright (c) 2004-2006, Roger Dingledine, Nick Mathewson.
- * Copyright (c) 2007-2016, The Tor Project, Inc. */
+ * Copyright (c) 2007-2019, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
-
-extern const char tor_git_revision[];
-/* Ordinarily defined in tor_main.c; this bit is just here to provide one
- * since we're not linking to tor_main.c */
-const char tor_git_revision[] = "";
 
 /**
  * \file bench.c
@@ -15,19 +10,33 @@ const char tor_git_revision[] = "";
 
 #include "orconfig.h"
 
-#include "or.h"
-#include "onion_tap.h"
-#include "relay.h"
+#include "core/or/or.h"
+#include "core/crypto/onion_tap.h"
+#include "core/crypto/relay_crypto.h"
+
+#ifdef ENABLE_OPENSSL
 #include <openssl/opensslv.h>
 #include <openssl/evp.h>
 #include <openssl/ec.h>
 #include <openssl/ecdh.h>
 #include <openssl/obj_mac.h>
+#endif
 
-#include "config.h"
-#include "crypto_curve25519.h"
-#include "onion_ntor.h"
-#include "crypto_ed25519.h"
+#include "core/or/circuitlist.h"
+#include "app/config/config.h"
+#include "lib/crypt_ops/crypto_curve25519.h"
+#include "lib/crypt_ops/crypto_dh.h"
+#include "core/crypto/onion_ntor.h"
+#include "lib/crypt_ops/crypto_ed25519.h"
+#include "lib/crypt_ops/crypto_rand.h"
+#include "feature/dircommon/consdiff.h"
+#include "lib/compress/compress.h"
+
+#include "core/or/cell_st.h"
+#include "core/or/or_circuit_st.h"
+
+#include "lib/crypt_ops/digestset.h"
+#include "lib/crypt_ops/crypto_init.h"
 
 #if defined(HAVE_CLOCK_GETTIME) && defined(CLOCK_PROCESS_CPUTIME_ID)
 static uint64_t nanostart;
@@ -57,7 +66,7 @@ perftime(void)
   return timespec_to_nsec(&ts) - nanostart;
 }
 
-#else
+#else /* !(defined(HAVE_CLOCK_GETTIME) && defined(CLOCK_PROCESS_CPUTIME_ID)) */
 static struct timeval tv_start = { 0, 0 };
 static void
 reset_perftime(void)
@@ -72,7 +81,7 @@ perftime(void)
   timersub(&now, &tv_start, &out);
   return ((uint64_t)out.tv_sec)*1000000000 + out.tv_usec*1000;
 }
-#endif
+#endif /* defined(HAVE_CLOCK_GETTIME) && defined(CLOCK_PROCESS_CPUTIME_ID) */
 
 #define NANOCOUNT(start,end,iters) \
   ( ((double)((end)-(start))) / (iters) )
@@ -120,7 +129,7 @@ bench_onion_TAP(void)
   uint64_t start, end;
   char os[TAP_ONIONSKIN_CHALLENGE_LEN];
   char or[TAP_ONIONSKIN_REPLY_LEN];
-  crypto_dh_t *dh_out;
+  crypto_dh_t *dh_out = NULL;
 
   key = crypto_pk_new();
   key2 = crypto_pk_new();
@@ -175,6 +184,7 @@ bench_onion_TAP(void)
          NANOCOUNT(start, end, iters)/1e3);
 
  done:
+  crypto_dh_free(dh_out);
   crypto_pk_free(key);
   crypto_pk_free(key2);
 }
@@ -198,6 +208,7 @@ bench_onion_ntor_impl(void)
   curve25519_public_key_generate(&keypair2.pubkey, &keypair2.seckey);
   dimap_add_entry(&keymap, keypair1.pubkey.public_key, &keypair1);
   dimap_add_entry(&keymap, keypair2.pubkey.public_key, &keypair2);
+  crypto_rand((char *)nodeid, sizeof(nodeid));
 
   reset_perftime();
   start = perftime();
@@ -372,7 +383,7 @@ bench_dmap(void)
     crypto_rand(d, 20);
     smartlist_add(sl2, tor_memdup(d, 20));
   }
-  printf("nbits=%d\n", ds->mask+1);
+  //printf("nbits=%d\n", ds->mask+1);
 
   reset_perftime();
 
@@ -400,18 +411,20 @@ bench_dmap(void)
          NANOCOUNT(pt3, pt4, iters*elts));
 
   for (i = 0; i < iters; ++i) {
-    SMARTLIST_FOREACH(sl, const char *, cp, n += digestset_contains(ds, cp));
-    SMARTLIST_FOREACH(sl2, const char *, cp, n += digestset_contains(ds, cp));
+    SMARTLIST_FOREACH(sl, const char *, cp,
+                      n += digestset_probably_contains(ds, cp));
+    SMARTLIST_FOREACH(sl2, const char *, cp,
+                      n += digestset_probably_contains(ds, cp));
   }
   end = perftime();
-  printf("digestset_contains: %.2f ns per element.\n",
+  printf("digestset_probably_contains: %.2f ns per element.\n",
          NANOCOUNT(pt4, end, iters*elts*2));
   /* We need to use this, or else the whole loop gets optimized out. */
   printf("Hits == %d\n", n);
 
   for (i = 0; i < fpostests; ++i) {
     crypto_rand(d, 20);
-    if (digestset_contains(ds, d)) ++fp;
+    if (digestset_probably_contains(ds, d)) ++fp;
   }
   printf("False positive rate on digestset: %.2f%%\n",
          (fp/(double)fpostests)*100);
@@ -460,18 +473,19 @@ bench_digest(void)
     for (int i = 0; lens[i] > 0; ++i) {
       reset_perftime();
       start = perftime();
+      int failures = 0;
       for (int j = 0; j < N; ++j) {
         switch (alg) {
           case DIGEST_SHA1:
-            crypto_digest(out, buf, lens[i]);
+            failures += crypto_digest(out, buf, lens[i]) < 0;
             break;
           case DIGEST_SHA256:
           case DIGEST_SHA3_256:
-            crypto_digest256(out, buf, lens[i], alg);
+            failures += crypto_digest256(out, buf, lens[i], alg) < 0;
             break;
           case DIGEST_SHA512:
           case DIGEST_SHA3_512:
-            crypto_digest512(out, buf, lens[i], alg);
+            failures += crypto_digest512(out, buf, lens[i], alg) < 0;
             break;
           default:
             tor_assert(0);
@@ -481,6 +495,8 @@ bench_digest(void)
       printf("%s(%d): %.2f ns per call\n",
              crypto_digest_algorithm_get_name(alg),
              lens[i], NANOCOUNT(start,end,N));
+      if (failures)
+        printf("ERROR: crypto_digest failed %d times.\n", failures);
     }
   }
 }
@@ -507,10 +523,10 @@ bench_cell_ops(void)
   char key1[CIPHER_KEY_LEN], key2[CIPHER_KEY_LEN];
   crypto_rand(key1, sizeof(key1));
   crypto_rand(key2, sizeof(key2));
-  or_circ->p_crypto = crypto_cipher_new(key1);
-  or_circ->n_crypto = crypto_cipher_new(key2);
-  or_circ->p_digest = crypto_digest_new();
-  or_circ->n_digest = crypto_digest_new();
+  or_circ->crypto.f_crypto = crypto_cipher_new(key1);
+  or_circ->crypto.b_crypto = crypto_cipher_new(key2);
+  or_circ->crypto.f_digest = crypto_digest_new();
+  or_circ->crypto.b_digest = crypto_digest_new();
 
   reset_perftime();
 
@@ -520,7 +536,8 @@ bench_cell_ops(void)
     for (i = 0; i < iters; ++i) {
       char recognized = 0;
       crypt_path_t *layer_hint = NULL;
-      relay_crypt(TO_CIRCUIT(or_circ), cell, d, &layer_hint, &recognized);
+      relay_decrypt_cell(TO_CIRCUIT(or_circ), cell, d,
+                         &layer_hint, &recognized);
     }
     end = perftime();
     printf("%sbound cells: %.2f ns per cell. (%.2f ns per byte of payload)\n",
@@ -529,10 +546,7 @@ bench_cell_ops(void)
            NANOCOUNT(start,end,iters*CELL_PAYLOAD_SIZE));
   }
 
-  crypto_digest_free(or_circ->p_digest);
-  crypto_digest_free(or_circ->n_digest);
-  crypto_cipher_free(or_circ->p_crypto);
-  crypto_cipher_free(or_circ->n_crypto);
+  relay_crypto_clear(&or_circ->crypto);
   tor_free(or_circ);
   tor_free(cell);
 }
@@ -547,8 +561,8 @@ bench_dh(void)
   reset_perftime();
   start = perftime();
   for (i = 0; i < iters; ++i) {
-    char dh_pubkey_a[DH_BYTES], dh_pubkey_b[DH_BYTES];
-    char secret_a[DH_BYTES], secret_b[DH_BYTES];
+    char dh_pubkey_a[DH1024_KEY_LEN], dh_pubkey_b[DH1024_KEY_LEN];
+    char secret_a[DH1024_KEY_LEN], secret_b[DH1024_KEY_LEN];
     ssize_t slen_a, slen_b;
     crypto_dh_t *dh_a = crypto_dh_new(DH_TYPE_TLS);
     crypto_dh_t *dh_b = crypto_dh_new(DH_TYPE_TLS);
@@ -572,6 +586,7 @@ bench_dh(void)
          "      %f millisec each.\n", NANOCOUNT(start, end, iters)/1e6);
 }
 
+#ifdef ENABLE_OPENSSL
 static void
 bench_ecdh_impl(int nid, const char *name)
 {
@@ -582,7 +597,7 @@ bench_ecdh_impl(int nid, const char *name)
   reset_perftime();
   start = perftime();
   for (i = 0; i < iters; ++i) {
-    char secret_a[DH_BYTES], secret_b[DH_BYTES];
+    char secret_a[DH1024_KEY_LEN], secret_b[DH1024_KEY_LEN];
     ssize_t slen_a, slen_b;
     EC_KEY *dh_a = EC_KEY_new_by_curve_name(nid);
     EC_KEY *dh_b = EC_KEY_new_by_curve_name(nid);
@@ -593,10 +608,10 @@ bench_ecdh_impl(int nid, const char *name)
 
     EC_KEY_generate_key(dh_a);
     EC_KEY_generate_key(dh_b);
-    slen_a = ECDH_compute_key(secret_a, DH_BYTES,
+    slen_a = ECDH_compute_key(secret_a, DH1024_KEY_LEN,
                               EC_KEY_get0_public_key(dh_b), dh_a,
                               NULL);
-    slen_b = ECDH_compute_key(secret_b, DH_BYTES,
+    slen_b = ECDH_compute_key(secret_b, DH1024_KEY_LEN,
                               EC_KEY_get0_public_key(dh_a), dh_b,
                               NULL);
 
@@ -621,6 +636,7 @@ bench_ecdh_p224(void)
 {
   bench_ecdh_impl(NID_secp224r1, "P-224");
 }
+#endif
 
 typedef void (*bench_fn)(void);
 
@@ -644,8 +660,11 @@ static struct benchmark_t benchmarks[] = {
   ENT(cell_aes),
   ENT(cell_ops),
   ENT(dh),
+
+#ifdef ENABLE_OPENSSL
   ENT(ecdh_p256),
   ENT(ecdh_p224),
+#endif
   {NULL,NULL,0}
 };
 
@@ -672,6 +691,28 @@ main(int argc, const char **argv)
   or_options_t *options;
 
   tor_threads_init();
+  tor_compress_init();
+  init_logging(1);
+
+  if (argc == 4 && !strcmp(argv[1], "diff")) {
+    const int N = 200;
+    char *f1 = read_file_to_str(argv[2], RFTS_BIN, NULL);
+    char *f2 = read_file_to_str(argv[3], RFTS_BIN, NULL);
+    if (! f1 || ! f2) {
+      perror("X");
+      return 1;
+    }
+    for (i = 0; i < N; ++i) {
+      char *diff = consensus_diff_generate(f1, f2);
+      tor_free(diff);
+    }
+    char *diff = consensus_diff_generate(f1, f2);
+    printf("%s", diff);
+    tor_free(f1);
+    tor_free(f2);
+    tor_free(diff);
+    return 0;
+  }
 
   for (i = 1; i < argc; ++i) {
     if (!strcmp(argv[i], "--list")) {
@@ -689,15 +730,18 @@ main(int argc, const char **argv)
 
   reset_perftime();
 
-  if (crypto_seed_rng() < 0) {
+  if (crypto_global_init(0, NULL, NULL) < 0) {
     printf("Couldn't seed RNG; exiting.\n");
     return 1;
   }
-  crypto_init_siphash_key();
+
+  init_protocol_warning_severity_level();
   options = options_new();
   init_logging(1);
   options->command = CMD_RUN_UNITTESTS;
   options->DataDirectory = tor_strdup("");
+  options->KeyDirectory = tor_strdup("");
+  options->CacheDirectory = tor_strdup("");
   options_init(options);
   if (set_options(options, &errmsg) < 0) {
     printf("Failed to set initial options: %s\n", errmsg);
@@ -715,4 +759,3 @@ main(int argc, const char **argv)
 
   return 0;
 }
-

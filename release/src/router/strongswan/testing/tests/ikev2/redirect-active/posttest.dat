@@ -1,0 +1,10 @@
+carol::ipsec stop
+dave::ipsec stop
+moon::ipsec stop
+alice::ipsec stop
+moon::iptables-restore < /etc/iptables.flush
+alice::iptables-restore < /etc/iptables.flush
+carol::iptables-restore < /etc/iptables.flush
+dave::iptables-restore < /etc/iptables.flush
+alice::ip addr del 192.168.0.5/24 dev eth1
+alice::ifdown eth1

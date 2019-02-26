@@ -1,0 +1,10 @@
+charon.plugins.attr-sql.crash_recovery = yes
+	Release all online leases during startup.  Disable this to share the DB
+	between multiple VPN gateways.
+
+charon.plugins.attr-sql.database
+	Database URI for attr-sql plugin used by charon. If it contains a password,
+	make sure to adjust the permissions of the config file accordingly.
+
+charon.plugins.attr-sql.lease_history = yes
+	Enable logging of SQL IP pool leases.

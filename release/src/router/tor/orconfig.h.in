@@ -9,6 +9,12 @@
 /* tor's configuration directory */
 #undef CONFDIR
 
+/* Enable smartlist debugging */
+#undef DEBUG_SMARTLIST
+
+/* Defined if we're turning off memory safety code to look for bugs */
+#undef DISABLE_MEMORY_SENTINELS
+
 /* Defined if we're not going to look for a torrc in SYSCONF */
 #undef DISABLE_SYSTEM_TORRC
 
@@ -17,6 +23,18 @@
 
 /* Defined if we default to host local appdata paths on Windows */
 #undef ENABLE_LOCAL_APPDATA
+
+/* Defined if we're building with NSS. */
+#undef ENABLE_NSS
+
+/* Defined if we're building with OpenSSL or LibreSSL */
+#undef ENABLE_OPENSSL
+
+/* Defined if we're building with support for in-process restart debugging. */
+#undef ENABLE_RESTART_DEBUGGING
+
+/* Defined if we're going to try to use zstd's "static-only" APIs. */
+#undef ENABLE_ZSTD_ADVANCED_APIS
 
 /* Define if enum is always signed */
 #undef ENUM_VALS_ARE_SIGNED
@@ -33,11 +51,11 @@
 /* Define to 1 if you have the `accept4' function. */
 #undef HAVE_ACCEPT4
 
+/* Define to 1 if you have the <android/log.h> header file. */
+#undef HAVE_ANDROID_LOG_H
+
 /* Define to 1 if you have the <arpa/inet.h> header file. */
 #undef HAVE_ARPA_INET_H
-
-/* Define to 1 if you have the <assert.h> header file. */
-#undef HAVE_ASSERT_H
 
 /* Define to 1 if you have the `backtrace' function. */
 #undef HAVE_BACKTRACE
@@ -53,6 +71,9 @@
 
 /* True if we have -Woverlength-strings */
 #undef HAVE_CFLAG_WOVERLENGTH_STRINGS
+
+/* True if we have -Wunused-const-variable */
+#undef HAVE_CFLAG_WUNUSED_CONST_VARIABLE
 
 /* Define to 1 if you have the `clock_gettime' function. */
 #undef HAVE_CLOCK_GETTIME
@@ -79,17 +100,11 @@
    don't. */
 #undef HAVE_DECL__GETWCH
 
-/* Define to 1 if you have the <dmalloc.h> header file. */
-#undef HAVE_DMALLOC_H
-
-/* Define to 1 if you have the `dmalloc_strdup' function. */
-#undef HAVE_DMALLOC_STRDUP
-
-/* Define to 1 if you have the `dmalloc_strndup' function. */
-#undef HAVE_DMALLOC_STRNDUP
-
 /* Define to 1 if you have the <errno.h> header file. */
 #undef HAVE_ERRNO_H
+
+/* Define to 1 if you have the `ERR_load_KDF_strings' function. */
+#undef HAVE_ERR_LOAD_KDF_STRINGS
 
 /* Define to 1 if you have the <event2/bufferevent_ssl.h> header file. */
 #undef HAVE_EVENT2_BUFFEREVENT_SSL_H
@@ -134,6 +149,9 @@
 /* Define to 1 if you have the `getaddrinfo' function. */
 #undef HAVE_GETADDRINFO
 
+/* Define to 1 if you have the `getdelim' function. */
+#undef HAVE_GETDELIM
+
 /* Define to 1 if you have the `getentropy' function. */
 #undef HAVE_GETENTROPY
 
@@ -152,6 +170,9 @@
 /* Define to 1 if you have the `getifaddrs' function. */
 #undef HAVE_GETIFADDRS
 
+/* Define to 1 if you have the `getline' function. */
+#undef HAVE_GETLINE
+
 /* Define to 1 if you have the `getpass' function. */
 #undef HAVE_GETPASS
 
@@ -167,8 +188,17 @@
 /* Define to 1 if you have the `gettimeofday' function. */
 #undef HAVE_GETTIMEOFDAY
 
+/* Define to 1 if you have the `get_current_dir_name' function. */
+#undef HAVE_GET_CURRENT_DIR_NAME
+
 /* Define to 1 if you have the `gmtime_r' function. */
 #undef HAVE_GMTIME_R
+
+/* Define to 1 if you have the `gnu_get_libc_version' function. */
+#undef HAVE_GNU_GET_LIBC_VERSION
+
+/* Define to 1 if you have the <gnu/libc-version.h> header file. */
+#undef HAVE_GNU_LIBC_VERSION_H
 
 /* Define to 1 if you have the <grp.h> header file. */
 #undef HAVE_GRP_H
@@ -190,6 +220,9 @@
 
 /* Define to 1 if you have the `issetugid' function. */
 #undef HAVE_ISSETUGID
+
+/* Defined if KIST scheduler is supported on this system */
+#undef HAVE_KIST_SUPPORT
 
 /* Define to 1 if you have the `cap' library (-lcap). */
 #undef HAVE_LIBCAP
@@ -225,8 +258,14 @@
 /* Define to 1 if you have the `lround' function. */
 #undef HAVE_LROUND
 
+/* Have LZMA */
+#undef HAVE_LZMA
+
 /* Define to 1 if you have the <machine/limits.h> header file. */
 #undef HAVE_MACHINE_LIMITS_H
+
+/* Define to 1 if you have the `mach_approximate_time' function. */
+#undef HAVE_MACH_APPROXIMATE_TIME
 
 /* Defined if the compiler supports __FUNCTION__ */
 #undef HAVE_MACRO__FUNCTION__
@@ -260,6 +299,12 @@
 
 /* Define to 1 if you have the `mlockall' function. */
 #undef HAVE_MLOCKALL
+
+/* Define to 1 if you have the `mmap' function. */
+#undef HAVE_MMAP
+
+/* Compile with Directory Authority feature support */
+#undef HAVE_MODULE_DIRAUTH
 
 /* Define to 1 if you have the <nacl/crypto_scalarmult_curve25519.h> header
    file. */
@@ -295,9 +340,6 @@
 /* Define to 1 if you have the `pthread_create' function. */
 #undef HAVE_PTHREAD_CREATE
 
-/* Define to 1 if you have the `pthread_condattr_setclock' function. */
-#undef HAVE_PTHREAD_CONDATTR_SETCLOCK
-
 /* Define to 1 if you have the <pthread.h> header file. */
 #undef HAVE_PTHREAD_H
 
@@ -318,6 +360,9 @@
 
 /* Define to 1 if you have the `RtlSecureZeroMemory' function. */
 #undef HAVE_RTLSECUREZEROMEMORY
+
+/* have Rust */
+#undef HAVE_RUST
 
 /* Define to 1 if the system has the type `sa_family_t'. */
 #undef HAVE_SA_FAMILY_T
@@ -343,6 +388,12 @@
 /* Define to 1 if you have the `SSL_CIPHER_find' function. */
 #undef HAVE_SSL_CIPHER_FIND
 
+/* Define to 1 if you have the `SSL_CTX_set1_groups_list' function. */
+#undef HAVE_SSL_CTX_SET1_GROUPS_LIST
+
+/* Define to 1 if you have the `SSL_CTX_set_security_level' function. */
+#undef HAVE_SSL_CTX_SET_SECURITY_LEVEL
+
 /* Define to 1 if you have the `SSL_get_client_ciphers' function. */
 #undef HAVE_SSL_GET_CLIENT_CIPHERS
 
@@ -361,11 +412,17 @@
 /* Define to 1 if you have the `statvfs' function. */
 #undef HAVE_STATVFS
 
+/* Define to 1 if you have the <stdatomic.h> header file. */
+#undef HAVE_STDATOMIC_H
+
 /* Define to 1 if you have the <stdint.h> header file. */
 #undef HAVE_STDINT_H
 
 /* Define to 1 if you have the <stdlib.h> header file. */
 #undef HAVE_STDLIB_H
+
+/* Define to 1 if you have the `strcasecmp' function. */
+#undef HAVE_STRCASECMP
 
 /* Define to 1 if you have the <strings.h> header file. */
 #undef HAVE_STRINGS_H
@@ -378,6 +435,9 @@
 
 /* Define to 1 if you have the `strlcpy' function. */
 #undef HAVE_STRLCPY
+
+/* Define to 1 if you have the `strncasecmp' function. */
+#undef HAVE_STRNCASECMP
 
 /* Define to 1 if you have the `strnlen' function. */
 #undef HAVE_STRNLEN
@@ -412,6 +472,12 @@
 /* Define to 1 if `get_cipher_by_char' is a member of `struct ssl_method_st'.
    */
 #undef HAVE_STRUCT_SSL_METHOD_ST_GET_CIPHER_BY_CHAR
+
+/* Define to 1 if `tcpi_snd_mss' is a member of `struct tcp_info'. */
+#undef HAVE_STRUCT_TCP_INFO_TCPI_SND_MSS
+
+/* Define to 1 if `tcpi_unacked' is a member of `struct tcp_info'. */
+#undef HAVE_STRUCT_TCP_INFO_TCPI_UNACKED
 
 /* Define to 1 if `tv_sec' is a member of `struct timeval'. */
 #undef HAVE_STRUCT_TIMEVAL_TV_SEC
@@ -539,6 +605,15 @@
 /* Define to 1 if you have the `vasprintf' function. */
 #undef HAVE_VASPRINTF
 
+/* Have Zstd */
+#undef HAVE_ZSTD
+
+/* Define to 1 if you have the `ZSTD_estimateCStreamSize' function. */
+#undef HAVE_ZSTD_ESTIMATECSTREAMSIZE
+
+/* Define to 1 if you have the `ZSTD_estimateDCtxSize' function. */
+#undef HAVE_ZSTD_ESTIMATEDCTXSIZE
+
 /* Define to 1 if you have the `_NSGetEnviron' function. */
 #undef HAVE__NSGETENVIRON
 
@@ -551,14 +626,8 @@
 /* Define to 1 iff malloc(0) returns a pointer */
 #undef MALLOC_ZERO_WORKS
 
-/* Define to 1 if your C compiler doesn't accept -c and -o together. */
-#undef NO_MINUS_C_MINUS_O
-
 /* Define to 1 iff memset(0) sets pointers to NULL */
 #undef NULL_REP_IS_ZERO_BYTES
-
-/* "Define to handle pf on OpenBSD properly" */
-#undef OPENBSD
 
 /* Name of package */
 #undef PACKAGE
@@ -596,21 +665,6 @@
 /* The size of `int', as computed by sizeof. */
 #undef SIZEOF_INT
 
-/* The size of `int16_t', as computed by sizeof. */
-#undef SIZEOF_INT16_T
-
-/* The size of `int32_t', as computed by sizeof. */
-#undef SIZEOF_INT32_T
-
-/* The size of `int64_t', as computed by sizeof. */
-#undef SIZEOF_INT64_T
-
-/* The size of `int8_t', as computed by sizeof. */
-#undef SIZEOF_INT8_T
-
-/* The size of `intptr_t', as computed by sizeof. */
-#undef SIZEOF_INTPTR_T
-
 /* The size of `long', as computed by sizeof. */
 #undef SIZEOF_LONG
 
@@ -619,6 +673,9 @@
 
 /* The size of `pid_t', as computed by sizeof. */
 #undef SIZEOF_PID_T
+
+/* The size of `SHA_CTX', as computed by sizeof. */
+#undef SIZEOF_SHA_CTX
 
 /* The size of `short', as computed by sizeof. */
 #undef SIZEOF_SHORT
@@ -632,29 +689,26 @@
 /* The size of `time_t', as computed by sizeof. */
 #undef SIZEOF_TIME_T
 
-/* The size of `uint16_t', as computed by sizeof. */
-#undef SIZEOF_UINT16_T
-
-/* The size of `uint32_t', as computed by sizeof. */
-#undef SIZEOF_UINT32_T
-
-/* The size of `uint64_t', as computed by sizeof. */
-#undef SIZEOF_UINT64_T
-
-/* The size of `uint8_t', as computed by sizeof. */
-#undef SIZEOF_UINT8_T
-
-/* The size of `uintptr_t', as computed by sizeof. */
-#undef SIZEOF_UINTPTR_T
-
 /* The size of `void *', as computed by sizeof. */
 #undef SIZEOF_VOID_P
 
 /* The size of `__int64', as computed by sizeof. */
 #undef SIZEOF___INT64
 
+/* tor's sourcedir directory */
+#undef SRCDIR
+
+/* Set to 1 if we can compile a simple stdatomic example. */
+#undef STDATOMIC_WORKS
+
 /* Define to 1 if you have the ANSI C header files. */
 #undef STDC_HEADERS
+
+/* Compile the event tracing instrumentation */
+#undef TOR_EVENT_TRACING_ENABLED
+
+/* Compile with Android specific features enabled */
+#undef USE_ANDROID
 
 /* Defined if we should use an internal curve25519_donna{,_c64} implementation
    */
@@ -663,8 +717,8 @@
 /* Defined if we should use a curve25519 from nacl */
 #undef USE_CURVE25519_NACL
 
-/* Debug memory allocation library */
-#undef USE_DMALLOC
+/* Tracing framework to log debug */
+#undef USE_EVENT_TRACING_DEBUG
 
 /* Enable extensions on AIX 3, Interix.  */
 #ifndef _ALL_SOURCE
@@ -707,6 +761,11 @@
 # ifndef WORDS_BIGENDIAN
 #  undef WORDS_BIGENDIAN
 # endif
+#endif
+
+/* Enable large inode numbers on Mac OS X 10.5.  */
+#ifndef _DARWIN_USE_64_BIT_INODE
+# define _DARWIN_USE_64_BIT_INODE 1
 #endif
 
 /* Number of bits in a file offset, on hosts where this is settable. */

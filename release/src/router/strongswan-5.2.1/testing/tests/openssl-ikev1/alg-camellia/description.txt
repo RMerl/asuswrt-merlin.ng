@@ -1,4 +1,0 @@
-Roadwarrior <b>carol</b> proposes to gateway <b>moon</b> the IKE cipher suite <b>CAMELLIA_CBC_256 /
-HMAC_SHA2_512_256 / MODP_2048</b> by defining <b>ike=camellia256-sha256-modp2048</b> as well as
-the ESP cipher suite <b>CAMELLIA_CBC_192 / HMAC_SHA1_96</b> by defining <b>esp=camellia192-sha1</b>
-in ipsec.conf. A ping from <b>carol</b> to <b>alice</b> successfully checks the established tunnel.

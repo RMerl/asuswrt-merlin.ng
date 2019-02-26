@@ -1,0 +1,25 @@
+alice::iptables-restore < /etc/iptables.rules
+carol::iptables-restore < /etc/iptables.rules
+dave::iptables-restore < /etc/iptables.rules
+alice::cat /etc/tnc_config
+carol::cat /etc/tnc_config
+carol::echo 0 > /proc/sys/net/ipv4/ip_forward
+dave::echo aabbccddeeff11223344556677889900 > /var/lib/dbus/machine-id
+dave::cat /etc/tnc_config
+alice::sed -i "s/NOW/`date +%s`/g" /etc/pts/data1.sql
+alice::sed -i "s:DEBIAN_VERSION:\`cat /etc/debian_version\`:" /etc/pts/data1.sql
+alice::cd /usr/local/share/strongswan/templates/database/imv; cat tables.sql data.sql /etc/pts/data1.sql | sqlite3 /etc/db.d/config.db
+alice::chgrp -R www-data /etc/db.d/config.db; chmod -R g+w /etc/db.d/config.db
+alice::/usr/local/bin/init_tnc
+alice::rm /etc/swanctl/x509/aliceCert.pem
+alice::rm /etc/swanctl/rsa/aliceKey.pem
+alice::systemctl start apache2
+alice::systemctl start strongswan-swanctl
+alice::swanctl --load-creds
+winnetou::ip route add 10.1.0.0/16 via 192.168.0.1
+dave::ip route add 10.1.0.0/16 via 192.168.0.1
+dave::cat /etc/pts/options
+dave::/usr/local/bin/pt-tls-client --optionsfrom /etc/pts/options
+carol::ip route add 10.1.0.0/16 via 192.168.0.1
+carol::cat /etc/pts/options
+carol::/usr/local/bin/pt-tls-client --optionsfrom /etc/pts/options

@@ -1,0 +1,33 @@
+moon::ping -c 2 -W 1 -i 0.4 PH_IP_SUN::64 bytes from PH_IP_SUN: icmp_.eq=2::YES
+moon::ping -c 2 -W 1 -i 0.4 PH_IP_CAROL::64 bytes from PH_IP_CAROL: icmp_.eq=2::YES
+sun::ping -c 2 -W 1 -i 0.4 PH_IP_CAROL::64 bytes from PH_IP_CAROL: icmp_.eq=2::YES
+dave::ping -c 2 -W 1 -i 0.4 PH_IP_MOON::64 bytes from PH_IP_MOON: icmp_.eq=2::YES
+dave::ping -c 2 -W 1 -i 0.4 PH_IP_SUN::64 bytes from PH_IP_SUN: icmp_.eq=2::YES
+dave::ping -c 1 PH_IP_CAROL::64 bytes from PH_IP_CAROL: icmp_.eq=1::YES
+moon::ipsec status 2> /dev/null::trap-any.*ESTABLISHED.*PH_IP_MOON.*PH_IP_SUN::YES
+moon::ipsec status 2> /dev/null::trap-any.*ESTABLISHED.*PH_IP_MOON.*PH_IP_CAROL::YES
+moon::ipsec status 2> /dev/null::trap-any.*ESTABLISHED.*PH_IP_MOON.*PH_IP_DAVE::YES
+sun:: ipsec status 2> /dev/null::trap-any.*ESTABLISHED.*PH_IP_SUN.*PH_IP_MOON::YES
+sun:: ipsec status 2> /dev/null::trap-any.*ESTABLISHED.*PH_IP_SUN.*PH_IP_DAVE::YES
+sun:: ipsec status 2> /dev/null::trap-any.*ESTABLISHED.*PH_IP_SUN.*PH_IP_CAROL::YES
+dave:: ipsec status 2> /dev/null::trap-any.*ESTABLISHED.*PH_IP_DAVE.*PH_IP_MOON::YES
+dave:: ipsec status 2> /dev/null::trap-any.*ESTABLISHED.*PH_IP_DAVE.*PH_IP_SUN::YES
+carol:: ipsec status 2> /dev/null::trap-any.*ESTABLISHED.*PH_IP_CAROL.*PH_IP_MOON::YES
+carol:: ipsec status 2> /dev/null::trap-any.*ESTABLISHED.*PH_IP_CAROL.*PH_IP_SUN::YES
+carol:: ipsec status 2> /dev/null::trap-any.*ESTABLISHED.*PH_IP_CAROL.*PH_IP_DAVE::NO
+moon::ipsec status 2> /dev/null::trap-any.*INSTALLED, TRANSPORT::YES
+sun:: ipsec status 2> /dev/null::trap-any.*INSTALLED, TRANSPORT::YES
+dave:: ipsec status 2> /dev/null::trap-any.*INSTALLED, TRANSPORT::YES
+carol:: ipsec status 2> /dev/null::trap-any.*INSTALLED, TRANSPORT::YES
+sun::tcpdump::IP moon.strongswan.org > sun.strongswan.org: ESP::YES
+sun::tcpdump::IP sun.strongswan.org > moon.strongswan.org: ESP::YES
+sun::tcpdump::IP carol.strongswan.org > sun.strongswan.org: ESP::YES
+sun::tcpdump::IP sun.strongswan.org > carol.strongswan.org: ESP::YES
+sun::tcpdump::IP dave.strongswan.org > sun.strongswan.org: ESP::YES
+sun::tcpdump::IP sun.strongswan.org > dave.strongswan.org: ESP::YES
+carol::tcpdump::IP moon.strongswan.org > carol.strongswan.org: ESP::YES
+carol::tcpdump::IP carol.strongswan.org > moon.strongswan.org: ESP::YES
+carol::tcpdump::IP sun.strongswan.org > carol.strongswan.org: ESP::YES
+carol::tcpdump::IP carol.strongswan.org > sun.strongswan.org: ESP::YES
+carol::tcpdump::IP dave.strongswan.org > carol.strongswan.org: ICMP echo request::YES
+carol::tcpdump::IP carol.strongswan.org > dave.strongswan.org: ICMP echo reply::YES

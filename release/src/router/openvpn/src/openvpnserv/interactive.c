@@ -934,11 +934,10 @@ RegisterDNS(LPVOID unused)
 {
     DWORD err;
     DWORD i;
-    WCHAR sys_path[MAX_PATH];
     DWORD timeout = RDNS_TIMEOUT * 1000; /* in milliseconds */
 
-    /* default path of ipconfig command */
-    WCHAR ipcfg[MAX_PATH] = L"C:\\Windows\\system32\\ipconfig.exe";
+    /* path of ipconfig command */
+    WCHAR ipcfg[MAX_PATH];
 
     struct
     {
@@ -953,11 +952,8 @@ RegisterDNS(LPVOID unused)
 
     HANDLE wait_handles[2] = {rdns_semaphore, exit_event};
 
-    if (GetSystemDirectory(sys_path, MAX_PATH))
-    {
-        swprintf(ipcfg, MAX_PATH, L"%s\\%s", sys_path, L"ipconfig.exe");
-        ipcfg[MAX_PATH-1] = L'\0';
-    }
+    swprintf(ipcfg, _countof(ipcfg), L"%s\\%s", get_win_sys_path(), L"ipconfig.exe");
+    ipcfg[_countof(ipcfg) - 1] = L'\0';
 
     if (WaitForMultipleObjects(2, wait_handles, FALSE, timeout) == WAIT_OBJECT_0)
     {
@@ -1021,6 +1017,7 @@ netsh_dns_cmd(const wchar_t *action, const wchar_t *proto, const wchar_t *if_nam
     DWORD err = 0;
     int timeout = 30000; /* in msec */
     wchar_t argv0[MAX_PATH];
+    wchar_t *cmdline = NULL;
 
     if (!addr)
     {
@@ -1035,15 +1032,8 @@ netsh_dns_cmd(const wchar_t *action, const wchar_t *proto, const wchar_t *if_nam
     }
 
     /* Path of netsh */
-    int n = GetSystemDirectory(argv0, MAX_PATH);
-    if (n > 0 && n < MAX_PATH) /* got system directory */
-    {
-        wcsncat(argv0, L"\\netsh.exe", MAX_PATH - n - 1);
-    }
-    else
-    {
-        wcsncpy(argv0, L"C:\\Windows\\system32\\netsh.exe", MAX_PATH);
-    }
+    swprintf(argv0, _countof(argv0), L"%s\\%s", get_win_sys_path(), L"netsh.exe");
+    argv0[_countof(argv0) - 1] = L'\0';
 
     /* cmd template:
      * netsh interface $proto $action dns $if_name $addr [validate=no]
@@ -1052,7 +1042,7 @@ netsh_dns_cmd(const wchar_t *action, const wchar_t *proto, const wchar_t *if_nam
 
     /* max cmdline length in wchars -- include room for worst case and some */
     int ncmdline = wcslen(fmt) + wcslen(if_name) + wcslen(addr) + 32 + 1;
-    wchar_t *cmdline = malloc(ncmdline*sizeof(wchar_t));
+    cmdline = malloc(ncmdline*sizeof(wchar_t));
     if (!cmdline)
     {
         err = ERROR_OUTOFMEMORY;
@@ -1176,6 +1166,45 @@ out:
     return err;
 }
 
+static DWORD
+HandleEnableDHCPMessage(const enable_dhcp_message_t *dhcp)
+{
+    DWORD err = 0;
+    DWORD timeout = 5000; /* in milli seconds */
+    wchar_t argv0[MAX_PATH];
+
+    /* Path of netsh */
+    swprintf(argv0, _countof(argv0), L"%s\\%s", get_win_sys_path(), L"netsh.exe");
+    argv0[_countof(argv0) - 1] = L'\0';
+
+    /* cmd template:
+     * netsh interface ipv4 set address name=$if_index source=dhcp
+     */
+    const wchar_t *fmt = L"netsh interface ipv4 set address name=\"%d\" source=dhcp";
+
+    /* max cmdline length in wchars -- include room for if index:
+     * 10 chars for 32 bit int in decimal and +1 for NUL
+     */
+    size_t ncmdline = wcslen(fmt) + 10 + 1;
+    wchar_t *cmdline = malloc(ncmdline*sizeof(wchar_t));
+    if (!cmdline)
+    {
+        err = ERROR_OUTOFMEMORY;
+        return err;
+    }
+
+    openvpn_sntprintf(cmdline, ncmdline, fmt, dhcp->iface.index);
+
+    err = ExecCommand(argv0, cmdline, timeout);
+
+    /* Note: This could fail if dhcp is already enabled, so the caller
+     * may not want to treat errors as FATAL.
+     */
+
+    free(cmdline);
+    return err;
+}
+
 static VOID
 HandleMessage(HANDLE pipe, DWORD bytes, DWORD count, LPHANDLE events, undo_lists_t *lists)
 {
@@ -1187,6 +1216,7 @@ HandleMessage(HANDLE pipe, DWORD bytes, DWORD count, LPHANDLE events, undo_lists
         flush_neighbors_message_t flush_neighbors;
         block_dns_message_t block_dns;
         dns_cfg_message_t dns;
+        enable_dhcp_message_t dhcp;
     } msg;
     ack_message_t ack = {
         .header = {
@@ -1245,6 +1275,13 @@ HandleMessage(HANDLE pipe, DWORD bytes, DWORD count, LPHANDLE events, undo_lists
         case msg_add_dns_cfg:
         case msg_del_dns_cfg:
             ack.error_number = HandleDNSConfigMessage(&msg.dns, lists);
+            break;
+
+        case msg_enable_dhcp:
+            if (msg.header.size == sizeof(msg.dhcp))
+            {
+                ack.error_number = HandleEnableDHCPMessage(&msg.dhcp);
+            }
             break;
 
         default:
@@ -1316,7 +1353,7 @@ RunOpenvpn(LPVOID p)
 {
     HANDLE pipe = p;
     HANDLE ovpn_pipe, svc_pipe;
-    PTOKEN_USER svc_user, ovpn_user;
+    PTOKEN_USER svc_user = NULL, ovpn_user = NULL;
     HANDLE svc_token = NULL, imp_token = NULL, pri_token = NULL;
     HANDLE stdin_read = NULL, stdin_write = NULL;
     HANDLE stdout_write = NULL;
@@ -1369,7 +1406,6 @@ RunOpenvpn(LPVOID p)
         goto out;
     }
     len = 0;
-    svc_user = NULL;
     while (!GetTokenInformation(svc_token, TokenUser, svc_user, len, &len))
     {
         if (GetLastError() != ERROR_INSUFFICIENT_BUFFER)
@@ -1402,7 +1438,6 @@ RunOpenvpn(LPVOID p)
         goto out;
     }
     len = 0;
-    ovpn_user = NULL;
     while (!GetTokenInformation(imp_token, TokenUser, ovpn_user, len, &len))
     {
         if (GetLastError() != ERROR_INSUFFICIENT_BUFFER)

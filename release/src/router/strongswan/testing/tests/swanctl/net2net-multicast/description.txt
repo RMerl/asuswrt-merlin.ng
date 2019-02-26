@@ -1,0 +1,7 @@
+A connection between the subnets behind the gateways <b>moon</b> and <b>sun</b> is set up.
+Using the <b>forecast</b> plugin additionally all 224.0.0.251 mDNS multicasts are going
+to be tunneled.
+The authentication is based on <b>X.509 certificates</b>. Upon the successful
+establishment of the IPsec tunnel, mDNS multicasts sent by <b>alice</b> are
+received by <b>bob</b> and vice versa whereas unfortunately multicasts originating
+from the gateways <b>moon</b> and <b>sun</b> themselves are not tunneled.

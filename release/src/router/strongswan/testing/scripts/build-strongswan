@@ -1,0 +1,92 @@
+#!/bin/bash
+
+DIR=$(dirname `readlink -f $0`)
+. $DIR/../testing.conf
+. $DIR/function.sh
+
+SWANDIR=${1:+$(readlink -f $1)}
+: ${SWANDIR:=$(readlink -f $DIR/../..)}
+
+[ `id -u` -eq 0 ] || die "You must be root to run $0"
+[ -f "$BASEIMG" ] || die "Base image $BASEIMG not found"
+[ -f "$ROOTIMG" ] || die "Root image $ROOTIMG not found"
+running_any $STRONGSWANHOSTS && die "Please stop test environment before running $0"
+
+[ -f $SWANDIR/src/libstrongswan/asn1/oid.txt ] || die "strongSwan not found in $SWANDIR"
+
+SRCUID=${SUDO_UID:-$(id -u)}
+SRCGID=${SUDO_GID:-$(id -g)}
+
+check_commands partprobe qemu-img qemu-nbd bindfs
+
+load_qemu_nbd
+
+mkdir -p $LOOPDIR
+mkdir -p $IMGDIR
+
+case "$2" in
+"")
+	log_action "Connecting root image to NBD device $NBDEV"
+	execute "qemu-nbd -c $NBDEV $ROOTIMG"
+	;;
+*)
+	echo $STRONGSWANHOSTS | grep -q "\b$2\b" || die "Guest $2 not found"
+	GUESTIMG="$IMGDIR/$2.$IMGEXT"
+	[ -f "$GUESTIMG" ] || die "Guest image $GUESTIMG not found"
+	log_action "Connecting guest image to NBD device $NBDEV"
+	execute "qemu-nbd -c $NBDEV $GUESTIMG"
+	;;
+esac
+
+do_on_exit qemu-nbd -d $NBDEV
+partprobe $NBDEV
+
+log_action "Mounting $NBDPARTITION to $LOOPDIR"
+execute "mount $NBDPARTITION $LOOPDIR"
+do_on_exit umount $LOOPDIR
+
+log_action "Mounting proc filesystem to $LOOPDIR/proc"
+execute "mount -t proc none $LOOPDIR/proc"
+do_on_exit umount $LOOPDIR/proc
+
+mkdir -p $LOOPDIR/root/shared
+log_action "Mounting $SHAREDDIR as /root/shared"
+execute "mount -o bind $SHAREDDIR $LOOPDIR/root/shared"
+do_on_exit umount $LOOPDIR/root/shared
+
+mkdir -p $LOOPDIR/root/strongswan
+log_action "Mounting $SWANDIR as /root/strongswan"
+execute "bindfs -u $SRCUID -g $SRCGID $SWANDIR $LOOPDIR/root/strongswan"
+do_on_exit umount $LOOPDIR/root/strongswan
+
+log_action "Remove SWID tags of previous versions"
+execute_chroot "find /usr/local/share -path '*strongswan*' -name *.swidtag -delete"
+
+echo "Building and installing strongSwan"
+
+log_action "Determine strongSwan version"
+desc=`git -C $SWANDIR describe --dirty`
+if [ $? -eq 0 ]; then
+	SWANVERSION="$desc (`git -C $SWANDIR rev-parse --abbrev-ref HEAD`)"
+else
+	SWANVERSION="`cat $SWANDIR/configure.ac | sed -n '/^AC_INIT/{ s/.*,\[\(.*\)\])$/\1/p }'`"
+fi
+echo "$SWANVERSION" > $SHAREDDIR/.strongswan-version
+log_status 0
+
+log_action "Preparing source tree"
+execute_chroot 'autoreconf -i /root/strongswan'
+
+RECPDIR=$DIR/recipes
+RECIPE=`ls $RECPDIR/*strongswan.mk | xargs -n1 basename`
+mkdir -p $SHAREDDIR/build-strongswan
+cp $RECPDIR/$RECIPE $SHAREDDIR/build-strongswan
+log_action "Installing from recipe $RECIPE"
+execute_chroot "make SRCDIR=/root/strongswan BUILDDIR=/root/shared/build-strongswan -f /root/shared/build-strongswan/$RECIPE"
+
+# requild the guest images if we modified the root image
+if [ -z "$2" ]; then
+	# cleanup before mounting guest images
+	on_exit
+	$DIR/build-guestimages
+fi

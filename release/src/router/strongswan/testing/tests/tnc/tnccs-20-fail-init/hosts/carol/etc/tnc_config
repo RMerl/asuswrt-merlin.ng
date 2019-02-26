@@ -1,0 +1,3 @@
+#IMC configuration file for strongSwan client 
+
+IMC "Test"	/usr/local/lib/ipsec/imcvs/imc-test.so

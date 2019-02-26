@@ -5,10 +5,12 @@ EXTRA_DIST += src/ext/README
 
 EXTHEADERS = \
   src/ext/ht.h		\
+  src/ext/byteorder.h   \
   src/ext/tinytest.h	\
   src/ext/tor_readpassphrase.h \
   src/ext/strlcat.c	\
   src/ext/strlcpy.c	\
+  src/ext/getdelim.c    \
   src/ext/tinytest_macros.h \
   src/ext/tor_queue.h	\
   src/ext/siphash.h \
@@ -100,6 +102,7 @@ noinst_LIBRARIES += $(LIBED25519_REF10)
 src_ext_ed25519_donna_libed25519_donna_a_CFLAGS=\
   @CFLAGS_CONSTTIME@ \
   -DED25519_CUSTOMRANDOM \
+  -DED25519_CUSTOMHASH \
   -DED25519_SUFFIX=_donna
 
 src_ext_ed25519_donna_libed25519_donna_a_SOURCES= \
@@ -171,4 +174,3 @@ EXTRA_DIST += \
 	src/ext/timeouts/Makefile			\
 	src/ext/timeouts/Rules.shrc			\
 	src/ext/timeouts/test-timeout.c
-

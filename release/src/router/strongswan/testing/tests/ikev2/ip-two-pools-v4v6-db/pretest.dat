@@ -1,0 +1,10 @@
+moon::cat /usr/local/share/strongswan/templates/database/sql/sqlite.sql > /etc/db.d/ipsec.sql
+moon::cat /etc/db.d/ipsec.sql | sqlite3 /etc/db.d/ipsec.db
+moon::ipsec pool --add v4_pool --start 10.3.0.1 --end 10.3.1.244 --timeout 48 2> /dev/null
+moon::ipsec pool --add v6_pool --start fec3:\:1 --end fec3:\:fe --timeout  48 2> /dev/null
+alice::ip -6 route add default via fec1:\:1
+moon::ipsec start
+carol::ipsec start
+moon::expect-connection rw
+carol::expect-connection home
+carol::ipsec up home

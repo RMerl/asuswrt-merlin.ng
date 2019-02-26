@@ -1,0 +1,134 @@
+#!/bin/bash
+
+echo "Building base image"
+
+DIR=$(dirname `readlink -f $0`)
+. $DIR/../testing.conf
+. $DIR/function.sh
+
+[ `id -u` -eq 0 ] || die "You must be root to run $0"
+running_any $STRONGSWANHOSTS && die "Please stop test environment before running $0"
+
+check_commands debootstrap mkfs.ext3 partprobe qemu-img qemu-nbd sfdisk
+
+# package includes/excludes
+INC=automake,autoconf,libtool,bison,flex,gperf,pkg-config,gettext,less,locales
+INC=$INC,build-essential,libgmp-dev,libldap2-dev,libcurl4-openssl-dev,ethtool
+INC=$INC,libxml2-dev,libtspi-dev,libsqlite3-dev,openssh-server,tcpdump,psmisc
+INC=$INC,openssl,vim,sqlite3,conntrack,gdb,cmake,libltdl-dev,liblog4cxx10-dev
+INC=$INC,libboost-thread-dev,libboost-system-dev,git-core,iperf,htop
+INC=$INC,gnat,gprbuild,acpid,acpi-support-base,libldns-dev,libunbound-dev
+INC=$INC,dnsutils,libsoup2.4-dev,ca-certificates,unzip,libsystemd-dev
+INC=$INC,python,python-setuptools,python-dev,python-pip,apt-transport-https
+INC=$INC,libjson-c-dev,libxslt1-dev,libapache2-mod-wsgi,iptables-dev
+INC=$INC,libxerces-c-dev,libgcrypt20-dev,traceroute
+case "$BASEIMGSUITE" in
+jessie)
+	INC=$INC,libahven4-dev,libxmlada5-dev,libgmpada5-dev
+	INC=$INC,libalog1-dev
+	;;
+stretch)
+	INC=$INC,libahven5-dev,libxmlada-schema6-dev,libgmpada6-dev
+	INC=$INC,libalog2-dev
+	;;
+*)
+	echo_warn "Package list for '$BASEIMGSUITE' might has to be updated"
+esac
+SERVICES="apache2 dbus isc-dhcp-server slapd bind9 freeradius"
+INC=$INC,${SERVICES// /,}
+# packages to install via APT, for SWIMA tests
+APT="tmux"
+# additional services to disable
+SERVICES="$SERVICES systemd-timesyncd.service"
+
+CACHEDIR=$BUILDDIR/cache
+APTCACHE=$LOOPDIR/var/cache/apt/archives
+
+mkdir -p $LOOPDIR
+mkdir -p $CACHEDIR
+mkdir -p $IMGDIR
+rm -f $BASEIMG
+
+echo "`date`, building $BASEIMG" >>$LOGFILE
+
+load_qemu_nbd
+
+log_action "Creating base image $BASEIMG"
+execute "qemu-img create -f $IMGEXT $BASEIMG ${BASEIMGSIZE}M"
+
+log_action "Connecting image to NBD device $NBDEV"
+execute "qemu-nbd -c $NBDEV $BASEIMG"
+do_on_exit qemu-nbd -d $NBDEV
+
+log_action "Partitioning disk"
+sfdisk /dev/nbd0 >>$LOGFILE 2>&1 << EOF
+;
+EOF
+if [ $? != 0 ]
+then
+	log_status 1
+	exit 1
+else
+	log_status 0
+fi
+partprobe $NBDEV
+
+log_action "Creating ext3 filesystem"
+execute "mkfs.ext3 $NBDPARTITION"
+
+log_action "Mounting $NBDPARTITION to $LOOPDIR"
+execute "mount $NBDPARTITION $LOOPDIR"
+do_on_exit graceful_umount $LOOPDIR
+
+log_action "Using $CACHEDIR as archive for apt"
+mkdir -p $APTCACHE
+execute "mount -o bind $CACHEDIR $APTCACHE"
+do_on_exit graceful_umount $APTCACHE
+
+log_action "Running debootstrap ($BASEIMGSUITE, $BASEIMGARCH)"
+execute "debootstrap --arch=$BASEIMGARCH --include=$INC $BASEIMGSUITE $LOOPDIR $BASEIMGMIRROR"
+
+execute "mount -t proc none $LOOPDIR/proc" 0
+do_on_exit graceful_umount $LOOPDIR/proc
+
+log_action "Generating locales"
+cat > $LOOPDIR/etc/locale.gen << EOF
+de_CH.UTF-8 UTF-8
+en_US.UTF-8 UTF-8
+EOF
+execute_chroot "locale-gen"
+
+log_action "Downloading signing key for custom apt repo"
+execute_chroot "wget -q $BASEIMGEXTKEY -O /tmp/key"
+log_action "Installing signing key for custom apt repo"
+execute_chroot "apt-key add /tmp/key"
+
+log_action "Enabling custom apt repo"
+cat > $LOOPDIR/etc/apt/sources.list.d/strongswan.list << EOF
+deb $BASEIMGEXTREPO $BASEIMGSUITE main
+EOF
+log_status $?
+
+log_action "Prioritize custom apt repo"
+cat > $LOOPDIR/etc/apt/preferences.d/strongswan.pref << EOF
+Package: *
+Pin: origin "$BASEIMGEXTREPOHOST"
+Pin-Priority: 1001
+EOF
+log_status $?
+
+log_action "Update package sources"
+execute_chroot "apt-get update"
+log_action "Install packages via APT"
+execute_chroot "apt-get -y install $APT"
+log_action "Install packages from custom repo"
+execute_chroot "apt-get -y upgrade"
+
+for service in $SERVICES
+do
+	log_action "Disabling service $service"
+	execute_chroot "systemctl disable $service"
+done
+
+log_action "Disabling root password"
+execute_chroot "passwd -d root"

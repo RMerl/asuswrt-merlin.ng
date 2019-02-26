@@ -5,7 +5,7 @@
 #                            | (__| |_| |  _ <| |___
 #                             \___|\___/|_| \_\_____|
 #
-# Copyright (C) 1998 - 2018, Daniel Stenberg, <daniel@haxx.se>, et al.
+# Copyright (C) 1998 - 2019, Daniel Stenberg, <daniel@haxx.se>, et al.
 #
 # This software is licensed as described in the file COPYING, which
 # you should have received as part of this distribution. The terms
@@ -31,7 +31,7 @@ XC_OVR_ZZ60
 CURL_OVERRIDE_AUTOCONF
 
 dnl configure script copyright
-AC_COPYRIGHT([Copyright (c) 1998 - 2017 Daniel Stenberg, <daniel@haxx.se>
+AC_COPYRIGHT([Copyright (c) 1998 - 2019 Daniel Stenberg, <daniel@haxx.se>
 This configure script may be copied, distributed and modified under the
 terms of the curl license; see COPYING for more details])
 
@@ -131,11 +131,8 @@ dnl figure out the libcurl version
 CURLVERSION=`$SED -ne 's/^#define LIBCURL_VERSION "\(.*\)".*/\1/p' ${srcdir}/include/curl/curlver.h`
 XC_CHECK_PROG_CC
 
-dnl Check if gcc is being used before adding AX_CODE_COVERAGE
-AS_IF([ test "$GCC" = "yes" ], [AX_CODE_COVERAGE],
-  # not using GCC so pass a test below - CODE_COVERAGE_ENABLED_TRUE is not zero length
-  CODE_COVERAGE_ENABLED_TRUE='#'
-)
+dnl for --enable-code-coverage
+CURL_COVERAGE
 
 XC_AUTOMAKE
 AC_MSG_CHECKING([curl version])
@@ -158,7 +155,7 @@ AC_SUBST(PKGADD_VENDOR)
 
 dnl
 dnl initialize all the info variables
-    curl_ssl_msg="no      (--with-{ssl,gnutls,nss,polarssl,mbedtls,cyassl,axtls,winssl,darwinssl,mesalink} )"
+    curl_ssl_msg="no      (--with-{ssl,gnutls,nss,polarssl,mbedtls,cyassl,winssl,darwinssl,mesalink} )"
     curl_ssh_msg="no      (--with-libssh2)"
    curl_zlib_msg="no      (--with-zlib)"
  curl_brotli_msg="no      (--with-brotli)"
@@ -1483,6 +1480,11 @@ AC_HELP_STRING([--with-winssl],[enable Windows native SSL/TLS])
 AC_HELP_STRING([--without-winssl], [disable Windows native SSL/TLS]),
   OPT_WINSSL=$withval)
 
+AC_ARG_WITH(schannel,dnl
+AC_HELP_STRING([--with-schannel],[enable Windows native SSL/TLS])
+AC_HELP_STRING([--without-schannel], [disable Windows native SSL/TLS]),
+  OPT_WINSSL=$withval)
+
 AC_MSG_CHECKING([whether to enable Windows native SSL/TLS (Windows native builds only)])
 if test -z "$ssl_backends" -o "x$OPT_WINSSL" != xno; then
   ssl_msg=
@@ -1623,7 +1625,7 @@ if test -z "$ssl_backends" -o "x$OPT_SSL" != xno &&
 
     if test "$PKGCONFIG" != "no" ; then
       SSL_LIBS=`CURL_EXPORT_PCDIR([$OPENSSL_PCDIR]) dnl
-        $PKGCONFIG --libs-only-l openssl 2>/dev/null`
+        $PKGCONFIG --libs-only-l --libs-only-other openssl 2>/dev/null`
 
       SSL_LDFLAGS=`CURL_EXPORT_PCDIR([$OPENSSL_PCDIR]) dnl
         $PKGCONFIG --libs-only-L openssl 2>/dev/null`
@@ -1770,11 +1772,12 @@ if test -z "$ssl_backends" -o "x$OPT_SSL" != xno &&
     dnl Older versions of Cyassl (some time before 2.9.4) don't have
     dnl SSL_get_shutdown (but this check won't actually detect it there
     dnl as it's a macro that needs the header files be included)
+    dnl OpenSSL_version is introduced in 3.0.0
 
     AC_CHECK_FUNCS( RAND_egd \
-                    ENGINE_cleanup \
                     SSL_get_shutdown \
-                    SSLv2_client_method )
+                    SSLv2_client_method \
+                    OpenSSL_version )
 
     AC_MSG_CHECKING([for BoringSSL])
     AC_COMPILE_IFELSE([
@@ -2631,70 +2634,10 @@ if test -z "$ssl_backends" -o "x$OPT_NSS" != xno; then
   test -z "$ssl_msg" || ssl_backends="${ssl_backends:+$ssl_backends, }$ssl_msg"
 fi
 
-OPT_AXTLS=off
-
-AC_ARG_WITH(axtls,dnl
-AC_HELP_STRING([--with-axtls=PATH],[Where to look for axTLS, PATH points to the axTLS installation prefix (default: /usr/local).  Ignored if another SSL engine is selected.])
-AC_HELP_STRING([--without-axtls], [disable axTLS]),
-  OPT_AXTLS=$withval)
-
-if test -z "$ssl_backends" -o "x$OPT_AXTLS" != xno; then
-  ssl_msg=
-  if test X"$OPT_AXTLS" != Xno; then
-    dnl backup the pre-axtls variables
-    CLEANLDFLAGS="$LDFLAGS"
-    CLEANCPPFLAGS="$CPPFLAGS"
-    CLEANLIBS="$LIBS"
-
-    case "$OPT_AXTLS" in
-    yes)
-      dnl --with-axtls (without path) used
-      PREFIX_AXTLS=/usr/local
-      LIB_AXTLS="$PREFIX_AXTLS/lib"
-      LDFLAGS="$LDFLAGS -L$LIB_AXTLS"
-      CPPFLAGS="$CPPFLAGS -I$PREFIX_AXTLS/include"
-      ;;
-    off)
-      dnl no --with-axtls option given, just check default places
-      PREFIX_AXTLS=
-      ;;
-    *)
-      dnl check the given --with-axtls spot
-      PREFIX_AXTLS=$OPT_AXTLS
-      LIB_AXTLS="$PREFIX_AXTLS/lib"
-      LDFLAGS="$LDFLAGS -L$LIB_AXTLS"
-      CPPFLAGS="$CPPFLAGS -I$PREFIX_AXTLS/include"
-      ;;
-    esac
-
-    AC_CHECK_LIB(axtls, ssl_version,[
-      LIBS="-laxtls $LIBS"
-      AC_DEFINE(USE_AXTLS, 1, [if axTLS is enabled])
-      AC_SUBST(USE_AXTLS, [1])
-      AXTLS_ENABLED=1
-      check_for_ca_bundle=1
-      USE_AXTLS="yes"
-      ssl_msg="axTLS"
-      test axtls != "$DEFAULT_SSL_BACKEND" || VALID_DEFAULT_SSL_BACKEND=yes
-
-      if test "x$cross_compiling" != "xyes"; then
-        CURL_LIBRARY_PATH="$CURL_LIBRARY_PATH:$LIB_AXTLS"
-        export CURL_LIBRARY_PATH
-        AC_MSG_NOTICE([Added $LIB_AXTLS to CURL_LIBRARY_PATH])
-      fi
-      ],[
-      LDFLAGS="$CLEANLDFLAGS"
-      CPPFLAGS="$CLEANCPPFLAGS"
-      LIBS="$CLEANLIBS"
-    ])
-  fi
-  test -z "$ssl_msg" || ssl_backends="${ssl_backends:+$ssl_backends, }$ssl_msg"
-fi
-
-case "x$OPENSSL_ENABLED$GNUTLS_ENABLED$NSS_ENABLED$POLARSSL_ENABLED$MBEDTLS_ENABLED$AXTLS_ENABLED$CYASSL_ENABLED$WINSSL_ENABLED$DARWINSSL_ENABLED$MESALINK_ENABLED" in
+case "x$OPENSSL_ENABLED$GNUTLS_ENABLED$NSS_ENABLED$POLARSSL_ENABLED$MBEDTLS_ENABLED$CYASSL_ENABLED$WINSSL_ENABLED$DARWINSSL_ENABLED$MESALINK_ENABLED" in
 x)
   AC_MSG_WARN([SSL disabled, you will not be able to use HTTPS, FTPS, NTLM and more.])
-  AC_MSG_WARN([Use --with-ssl, --with-gnutls, --with-polarssl, --with-cyassl, --with-nss, --with-axtls, --with-winssl, --with-darwinssl, or --with-mesalink to address this.])
+  AC_MSG_WARN([Use --with-ssl, --with-gnutls, --with-polarssl, --with-cyassl, --with-nss, --with-winssl, --with-darwinssl, or --with-mesalink to address this.])
   ;;
 x1)
   # one SSL backend is enabled
@@ -3122,8 +3065,6 @@ AC_HELP_STRING([--disable-versioned-symbols], [Disable versioned symbols in shar
           versioned_symbols_flavour="POLARSSL_"
         elif test "x$CYASSL_ENABLED" = "x1"; then
           versioned_symbols_flavour="CYASSL_"
-        elif test "x$AXTLS_ENABLED" = "x1"; then
-          versioned_symbols_flavour="AXTLS_"
         elif test "x$WINSSL_ENABLED" = "x1"; then
           versioned_symbols_flavour="WINSSL_"
         elif test "x$DARWINSSL_ENABLED" = "x1"; then
@@ -4340,17 +4281,7 @@ AC_CONFIG_FILES([Makefile \
            tests/libtest/Makefile \
            tests/unit/Makefile \
            packages/Makefile \
-           packages/Win32/Makefile \
-           packages/Win32/cygwin/Makefile \
-           packages/Linux/Makefile \
-           packages/Linux/RPM/Makefile \
-           packages/Linux/RPM/curl.spec \
-           packages/Linux/RPM/curl-ssl.spec \
-           packages/Solaris/Makefile \
            packages/vms/Makefile \
-           packages/AIX/Makefile \
-           packages/AIX/RPM/Makefile \
-           packages/AIX/RPM/curl.spec \
            curl-config \
            libcurl.pc
 ])
@@ -4362,10 +4293,15 @@ XC_AMEND_DISTCLEAN([lib src tests/unit tests/server tests/libtest docs/examples]
 
 AC_MSG_NOTICE([Configured to build curl/libcurl:
 
-  curl version:     ${CURLVERSION}
   Host setup:       ${host}
   Install prefix:   ${prefix}
   Compiler:         ${CC}
+   CFLAGS:          ${CFLAGS}
+   CPPFLAGS:        ${CPPFLAGS}
+   LDFLAGS:         ${LDFLAGS}
+   LIBS:            ${LIBS}
+
+  curl version:     ${CURLVERSION}
   SSL support:      ${curl_ssl_msg}
   SSH support:      ${curl_ssh_msg}
   zlib support:     ${curl_zlib_msg}
@@ -4380,6 +4316,7 @@ AC_MSG_NOTICE([Configured to build curl/libcurl:
   Built-in manual:  ${curl_manual_msg}
   --libcurl option: ${curl_libcurl_msg}
   Verbose errors:   ${curl_verbose_msg}
+  Code coverage:    ${curl_coverage_msg}
   SSPI support:     ${curl_sspi_msg}
   ca cert bundle:   ${ca}${ca_warning}
   ca cert path:     ${capath}${capath_warning}

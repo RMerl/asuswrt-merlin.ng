@@ -1,0 +1,9 @@
+The PT-TLS (RFC 6876) clients <b>carol</b> and <b>dave</b> set up a connection each to the policy decision 
+point (PDP) <b>alice</b>. Endpoint <b>carol</b> uses password-based SASL PLAIN client authentication during the
+<b>PT-TLS negotiation phase</b> whereas endpoint <b>dave</b> uses certificate-based TLS client authentication
+during the <b>TLS setup phase</b>.
+<p/>
+During the ensuing <b>PT-TLS data transport phase</b> the <b>OS</b> and <b>SWIMA</b> IMC/IMV pairs
+loaded by the PT-TLS clients and PDP, respectively, exchange PA-TNC (RFC 5792) messages
+embedded in PB-TNC (RFC 5793) batches. The <b>SWIMA</b> IMC on <b>carol</b> is requested to deliver
+a concise <b>Software ID Inventory</b> whereas <b>dave</b> must send a full <b>Software Inventory</b>.

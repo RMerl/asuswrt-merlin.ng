@@ -1,0 +1,10 @@
+This scenario is based on <a href="../ocsp-signer-cert">ikev2/ocsp-signer-cert</a>
+and tests the timeouts of the <b>libcurl</b> library used for http-based OCSP fetching
+by adding an ocspuri2 in <b>moon</b>'s strongswan ca section that cannot be resolved by
+<b>DNS</b> and an ocspuri2 in <b>carol</b>'s strongswan ca section on which no
+OCSP server is listening. Thanks to timeouts the connection can nevertheless
+be established successfully by contacting a valid OCSP URI contained in
+<b>carol</b>'s certificate.
+<p>
+As an additional test the OCSP response is delayed by a few seconds in order to check
+the correct handling of retransmitted IKE_AUTH messages.

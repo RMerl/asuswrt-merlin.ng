@@ -1,12 +1,22 @@
+/* Copyright (c) 2014-2019, The Tor Project, Inc. */
+/* See LICENSE for licensing information */
+
 #define ROUTERSET_PRIVATE
 
-#include "or.h"
-#include "geoip.h"
-#include "routerset.h"
-#include "routerparse.h"
-#include "policies.h"
-#include "nodelist.h"
-#include "test.h"
+#include "core/or/or.h"
+#include "core/or/policies.h"
+#include "feature/dirparse/policy_parse.h"
+#include "feature/nodelist/nodelist.h"
+#include "feature/nodelist/routerset.h"
+#include "lib/geoip/geoip.h"
+
+#include "core/or/addr_policy_st.h"
+#include "core/or/extend_info_st.h"
+#include "feature/nodelist/node_st.h"
+#include "feature/nodelist/routerinfo_st.h"
+#include "feature/nodelist/routerstatus_st.h"
+
+#include "test/test.h"
 
 #define NS_MODULE routerset
 
@@ -623,7 +633,7 @@ NS(test_main)(void *arg)
   (void)arg;
 
   tgt = routerset_new();
-  smartlist_add(src->list, tor_strdup("{xx}"));
+  smartlist_add_strdup(src->list, "{xx}");
   routerset_union(tgt, src);
 
   tt_int_op(smartlist_len(tgt->list), OP_NE, 0);
@@ -696,7 +706,7 @@ NS(test_main)(void *arg)
 static void
 NS(test_main)(void *arg)
 {
-  const routerset_t *set;
+  routerset_t *set;
   int needs_geoip;
   (void)arg;
 
@@ -706,14 +716,14 @@ NS(test_main)(void *arg)
 
   set = routerset_new();
   needs_geoip = routerset_needs_geoip(set);
-  routerset_free((routerset_t *)set);
+  routerset_free(set);
   tt_int_op(needs_geoip, OP_EQ, 0);
   set = NULL;
 
   set = routerset_new();
   smartlist_add(set->country_names, tor_strndup("xx", 2));
   needs_geoip = routerset_needs_geoip(set);
-  routerset_free((routerset_t *)set);
+  routerset_free(set);
   set = NULL;
   tt_int_op(needs_geoip, OP_NE, 0);
 
@@ -745,7 +755,7 @@ NS(test_main)(void *arg)
   tt_int_op(is_empty, OP_NE, 0);
 
   set = routerset_new();
-  smartlist_add(set->list, tor_strdup("{xx}"));
+  smartlist_add_strdup(set->list, "{xx}");
   is_empty = routerset_is_empty(set);
   routerset_free(set);
   set = NULL;
@@ -1486,6 +1496,7 @@ NS(test_main)(void *arg)
   int r;
   (void)arg;
 
+  memset(&NS(mock_node), 0, sizeof(NS(mock_node)));
   NS(mock_node).ri = NULL;
   NS(mock_node).rs = NULL;
 
@@ -1519,6 +1530,7 @@ NS(test_main)(void *arg)
 
   strncpy(rs.nickname, nickname, sizeof(rs.nickname) - 1);
   rs.nickname[sizeof(rs.nickname) - 1] = '\0';
+  memset(&NS(mock_node), 0, sizeof(NS(mock_node)));
   NS(mock_node).ri = NULL;
   NS(mock_node).rs = &rs;
 
@@ -1550,6 +1562,7 @@ NS(test_main)(void *arg)
   strmap_set_lc(set->names, nickname, (void *)1);
 
   ri.nickname = (char *)nickname;
+  memset(&mock_node, 0, sizeof(mock_node));
   mock_node.ri = &ri;
   mock_node.rs = NULL;
 
@@ -1602,7 +1615,7 @@ NS(test_main)(void *arg)
  */
 
 NS_DECL(const node_t *, node_get_by_nickname,
-    (const char *nickname, int warn_if_unused));
+    (const char *nickname, unsigned flags));
 static const char *NS(mock_nickname);
 
 static void
@@ -1616,7 +1629,7 @@ NS(test_main)(void *arg)
   NS_MOCK(node_get_by_nickname);
 
   NS(mock_nickname) = "foo";
-  smartlist_add(set->list, tor_strdup(NS(mock_nickname)));
+  smartlist_add_strdup(set->list, NS(mock_nickname));
 
   routerset_get_all_nodes(out, set, NULL, 0);
   out_len = smartlist_len(out);
@@ -1632,11 +1645,11 @@ NS(test_main)(void *arg)
 }
 
 const node_t *
-NS(node_get_by_nickname)(const char *nickname, int warn_if_unused)
+NS(node_get_by_nickname)(const char *nickname, unsigned flags)
 {
   CALLED(node_get_by_nickname)++;
   tt_str_op(nickname, OP_EQ, NS(mock_nickname));
-  tt_int_op(warn_if_unused, OP_EQ, 1);
+  tt_uint_op(flags, OP_EQ, 0);
 
   done:
     return NULL;
@@ -1651,7 +1664,7 @@ NS(node_get_by_nickname)(const char *nickname, int warn_if_unused)
  */
 
 NS_DECL(const node_t *, node_get_by_nickname,
-    (const char *nickname, int warn_if_unused));
+    (const char *nickname, unsigned flags));
 static const char *NS(mock_nickname);
 static node_t NS(mock_node);
 
@@ -1667,7 +1680,7 @@ NS(test_main)(void *arg)
 
   NS(mock_node).is_running = 0;
   NS(mock_nickname) = "foo";
-  smartlist_add(set->list, tor_strdup(NS(mock_nickname)));
+  smartlist_add_strdup(set->list, NS(mock_nickname));
 
   routerset_get_all_nodes(out, set, NULL, 1);
   out_len = smartlist_len(out);
@@ -1683,11 +1696,11 @@ NS(test_main)(void *arg)
 }
 
 const node_t *
-NS(node_get_by_nickname)(const char *nickname, int warn_if_unused)
+NS(node_get_by_nickname)(const char *nickname, unsigned flags)
 {
   CALLED(node_get_by_nickname)++;
   tt_str_op(nickname, OP_EQ, NS(mock_nickname));
-  tt_int_op(warn_if_unused, OP_EQ, 1);
+  tt_int_op(flags, OP_EQ, 0);
 
   done:
     return &NS(mock_node);
@@ -1701,7 +1714,7 @@ NS(node_get_by_nickname)(const char *nickname, int warn_if_unused)
  */
 
 NS_DECL(const node_t *, node_get_by_nickname,
-    (const char *nickname, int warn_if_unused));
+    (const char *nickname, unsigned flags));
 static char *NS(mock_nickname);
 static node_t NS(mock_node);
 
@@ -1735,11 +1748,11 @@ NS(test_main)(void *arg)
 }
 
 const node_t *
-NS(node_get_by_nickname)(const char *nickname, int warn_if_unused)
+NS(node_get_by_nickname)(const char *nickname, unsigned flags)
 {
   CALLED(node_get_by_nickname)++;
   tt_str_op(nickname, OP_EQ, NS(mock_nickname));
-  tt_int_op(warn_if_unused, OP_EQ, 1);
+  tt_int_op(flags, OP_EQ, 0);
 
   done:
     return &NS(mock_node);
@@ -1766,7 +1779,7 @@ NS(test_main)(void *arg)
 
   NS_MOCK(nodelist_get_list);
 
-  smartlist_add(set->country_names, tor_strdup("{xx}"));
+  smartlist_add_strdup(set->country_names, "{xx}");
   NS(mock_smartlist) = smartlist_new();
 
   routerset_get_all_nodes(out, set, NULL, 1);
@@ -1813,7 +1826,7 @@ NS(test_main)(void *arg)
 
   NS_MOCK(nodelist_get_list);
 
-  smartlist_add(set->country_names, tor_strdup("{xx}"));
+  smartlist_add_strdup(set->country_names, "{xx}");
   NS(mock_smartlist) = smartlist_new();
   NS(mock_node).is_running = 0;
   smartlist_add(NS(mock_smartlist), (void *)&NS(mock_node));
@@ -1944,7 +1957,7 @@ NS(test_main)(void *arg)
 
  done:
   tor_free(s);
-  routerset_free((routerset_t *)set);
+  routerset_free(set);
 }
 
 #undef NS_SUBMODULE
@@ -1985,7 +1998,7 @@ NS(test_main)(void *arg)
   int r;
   (void)arg;
 
-  smartlist_add(b->list, tor_strdup("{xx}"));
+  smartlist_add_strdup(b->list, "{xx}");
   r = routerset_equal(a, b);
   routerset_free(a);
   routerset_free(b);
@@ -2010,9 +2023,9 @@ NS(test_main)(void *arg)
   int r;
   (void)arg;
 
-  smartlist_add(a->list, tor_strdup("{aa}"));
-  smartlist_add(b->list, tor_strdup("{b1}"));
-  smartlist_add(b->list, tor_strdup("{b2}"));
+  smartlist_add_strdup(a->list, "{aa}");
+  smartlist_add_strdup(b->list, "{b1}");
+  smartlist_add_strdup(b->list, "{b2}");
   r = routerset_equal(a, b);
   routerset_free(a);
   routerset_free(b);
@@ -2037,8 +2050,8 @@ NS(test_main)(void *arg)
   int r;
   (void)arg;
 
-  smartlist_add(a->list, tor_strdup("foo"));
-  smartlist_add(b->list, tor_strdup("bar"));
+  smartlist_add_strdup(a->list, "foo");
+  smartlist_add_strdup(b->list, "bar");
   r = routerset_equal(a, b);
   routerset_free(a);
   routerset_free(b);
@@ -2063,8 +2076,8 @@ NS(test_main)(void *arg)
   int r;
   (void)arg;
 
-  smartlist_add(a->list, tor_strdup("foo"));
-  smartlist_add(b->list, tor_strdup("foo"));
+  smartlist_add_strdup(a->list, "foo");
+  smartlist_add_strdup(b->list, "foo");
   r = routerset_equal(a, b);
   routerset_free(a);
   routerset_free(b);
@@ -2081,28 +2094,28 @@ NS(test_main)(void *arg)
  * Structural test for routerset_free, where the routerset is NULL.
  */
 
-NS_DECL(void, smartlist_free, (smartlist_t *sl));
+NS_DECL(void, smartlist_free_, (smartlist_t *sl));
 
 static void
 NS(test_main)(void *arg)
 {
   (void)arg;
 
-  NS_MOCK(smartlist_free);
+  NS_MOCK(smartlist_free_);
 
-  routerset_free(NULL);
+  routerset_free_(NULL);
 
-  tt_int_op(CALLED(smartlist_free), OP_EQ, 0);
+  tt_int_op(CALLED(smartlist_free_), OP_EQ, 0);
 
   done:
     ;
 }
 
 void
-NS(smartlist_free)(smartlist_t *s)
+NS(smartlist_free_)(smartlist_t *s)
 {
   (void)s;
-  CALLED(smartlist_free)++;
+  CALLED(smartlist_free_)++;
 }
 
 #undef NS_SUBMODULE
@@ -2112,9 +2125,9 @@ NS(smartlist_free)(smartlist_t *s)
  * Structural test for routerset_free.
  */
 
-NS_DECL(void, smartlist_free, (smartlist_t *sl));
-NS_DECL(void, strmap_free,(strmap_t *map, void (*free_val)(void*)));
-NS_DECL(void, digestmap_free, (digestmap_t *map, void (*free_val)(void*)));
+NS_DECL(void, smartlist_free_, (smartlist_t *sl));
+NS_DECL(void, strmap_free_,(strmap_t *map, void (*free_val)(void*)));
+NS_DECL(void, digestmap_free_, (digestmap_t *map, void (*free_val)(void*)));
 
 static void
 NS(test_main)(void *arg)
@@ -2122,39 +2135,39 @@ NS(test_main)(void *arg)
   routerset_t *routerset = routerset_new();
   (void)arg;
 
-  NS_MOCK(smartlist_free);
-  NS_MOCK(strmap_free);
-  NS_MOCK(digestmap_free);
+  NS_MOCK(smartlist_free_);
+  NS_MOCK(strmap_free_);
+  NS_MOCK(digestmap_free_);
 
   routerset_free(routerset);
 
-  tt_int_op(CALLED(smartlist_free), OP_NE, 0);
-  tt_int_op(CALLED(strmap_free), OP_NE, 0);
-  tt_int_op(CALLED(digestmap_free), OP_NE, 0);
+  tt_int_op(CALLED(smartlist_free_), OP_NE, 0);
+  tt_int_op(CALLED(strmap_free_), OP_NE, 0);
+  tt_int_op(CALLED(digestmap_free_), OP_NE, 0);
 
   done:
     ;
 }
 
 void
-NS(smartlist_free)(smartlist_t *s)
+NS(smartlist_free_)(smartlist_t *s)
 {
-  CALLED(smartlist_free)++;
-  smartlist_free__real(s);
+  CALLED(smartlist_free_)++;
+  smartlist_free___real(s);
 }
 
 void
-NS(strmap_free)(strmap_t *map, void (*free_val)(void*))
+NS(strmap_free_)(strmap_t *map, void (*free_val)(void*))
 {
-  CALLED(strmap_free)++;
-  strmap_free__real(map, free_val);
+  CALLED(strmap_free_)++;
+  strmap_free___real(map, free_val);
 }
 
 void
-NS(digestmap_free)(digestmap_t *map, void (*free_val)(void*))
+NS(digestmap_free_)(digestmap_t *map, void (*free_val)(void*))
 {
-  CALLED(digestmap_free)++;
-  digestmap_free__real(map, free_val);
+  CALLED(digestmap_free_)++;
+  digestmap_free___real(map, free_val);
 }
 
 #undef NS_SUBMODULE
@@ -2218,4 +2231,3 @@ struct testcase_t routerset_tests[] = {
   TEST_CASE(routerset_free),
   END_OF_TESTCASES
 };
-

@@ -11,7 +11,7 @@
 # This configure script is free software; the Free Software Foundation
 # gives unlimited permission to copy, distribute and modify it.
 #
-# Copyright (c) 1998 - 2017 Daniel Stenberg, <daniel@haxx.se>
+# Copyright (c) 1998 - 2019 Daniel Stenberg, <daniel@haxx.se>
 # This configure script may be copied, distributed and modified under the
 # terms of the curl license; see COPYING for more details
 
@@ -920,7 +920,6 @@ USE_LIBPSL_TRUE
 CURL_CA_BUNDLE
 CURL_WITH_MULTI_SSL
 SSL_ENABLED
-USE_AXTLS
 NSS_LIBS
 USE_NSS
 USE_MESALINK
@@ -1042,18 +1041,8 @@ VERSION
 PACKAGE
 CYGPATH_W
 am__isrc
-CODE_COVERAGE_RULES
-CODE_COVERAGE_LDFLAGS
-CODE_COVERAGE_LIBS
-CODE_COVERAGE_CXXFLAGS
-CODE_COVERAGE_CFLAGS
-CODE_COVERAGE_CPPFLAGS
-GENHTML
 LCOV
 GCOV
-CODE_COVERAGE_ENABLED
-CODE_COVERAGE_ENABLED_FALSE
-CODE_COVERAGE_ENABLED_TRUE
 CPP
 OBJEXT
 EXEEXT
@@ -1133,7 +1122,6 @@ enable_symbol_hiding
 enable_hidden_symbols
 enable_ares
 enable_rt
-with_gcov
 enable_code_coverage
 enable_dependency_tracking
 enable_largefile
@@ -1173,6 +1161,7 @@ with_gssapi_libs
 with_gssapi
 with_default_ssl_backend
 with_winssl
+with_schannel
 with_darwinssl
 with_ssl
 with_egd_socket
@@ -1185,7 +1174,6 @@ with_cyassl
 with_wolfssl
 with_mesalink
 with_nss
-with_axtls
 with_ca_bundle
 with_ca_path
 with_ca_fallback
@@ -1871,7 +1859,7 @@ Optional Features:
   --enable-ares[=PATH]    Enable c-ares for DNS lookups
   --disable-ares          Disable c-ares for DNS lookups
   --disable-rt            disable dependency on -lrt
-  --enable-code-coverage  Whether to enable code coverage support
+  --enable-code-coverage  Provide code coverage
   --enable-dependency-tracking
                           do not reject slow dependency extractors
   --disable-dependency-tracking
@@ -1955,7 +1943,6 @@ Optional Features:
 Optional Packages:
   --with-PACKAGE[=ARG]    use PACKAGE [ARG=yes]
   --without-PACKAGE       do not use PACKAGE (same as --with-PACKAGE=no)
-  --with-gcov=GCOV        use given GCOV for coverage (GCOV=gcov).
   --with-pic[=PKGS]       try to use only PIC/non-PIC objects [default=use
                           both]
   --with-aix-soname=aix|svr4|both
@@ -1982,6 +1969,8 @@ Optional Packages:
                           Use implicit default SSL backend
   --with-winssl           enable Windows native SSL/TLS
   --without-winssl        disable Windows native SSL/TLS
+  --with-schannel         enable Windows native SSL/TLS
+  --without-schannel      disable Windows native SSL/TLS
   --with-darwinssl        enable Apple OS native SSL/TLS
   --without-darwinssl     disable Apple OS native SSL/TLS
   --with-ssl=PATH         Where to look for OpenSSL, PATH points to the SSL
@@ -2012,10 +2001,6 @@ Optional Packages:
   --with-nss=PATH         where to look for NSS, PATH points to the
                           installation root
   --without-nss           disable NSS detection
-  --with-axtls=PATH       Where to look for axTLS, PATH points to the axTLS
-                          installation prefix (default: /usr/local). Ignored
-                          if another SSL engine is selected.
-  --without-axtls         disable axTLS
   --with-ca-bundle=FILE   Path to a file containing CA certificates (example:
                           /etc/ca-bundle.crt)
   --without-ca-bundle     Don't use a default CA bundle
@@ -2142,7 +2127,7 @@ Copyright (C) 2012 Free Software Foundation, Inc.
 This configure script is free software; the Free Software Foundation
 gives unlimited permission to copy, distribute and modify it.
 
-Copyright (c) 1998 - 2017 Daniel Stenberg, <daniel@haxx.se>
+Copyright (c) 1998 - 2019 Daniel Stenberg, <daniel@haxx.se>
 This configure script may be copied, distributed and modified under the
 terms of the curl license; see COPYING for more details
 _ACEOF
@@ -4969,49 +4954,34 @@ $as_echo "$ac_cv_path_SED" >&6; }
  SED="$ac_cv_path_SED"
   rm -f conftest.sed
 
-if  test "$GCC" = "yes" ; then :
 
 
 
-	# allow to override gcov location
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for code coverage support" >&5
+$as_echo_n "checking for code coverage support... " >&6; }
+  coverage="no"
+  curl_coverage_msg="disabled"
 
-# Check whether --with-gcov was given.
-if test "${with_gcov+set}" = set; then :
-  withval=$with_gcov; _AX_CODE_COVERAGE_GCOV_PROG_WITH=$with_gcov
-else
-  _AX_CODE_COVERAGE_GCOV_PROG_WITH=gcov
-fi
-
-
-	{ $as_echo "$as_me:${as_lineno-$LINENO}: checking whether to build with code coverage support" >&5
-$as_echo_n "checking whether to build with code coverage support... " >&6; }
-	# Check whether --enable-code-coverage was given.
+    # Check whether --enable-code-coverage was given.
 if test "${enable_code_coverage+set}" = set; then :
-  enableval=$enable_code_coverage;
+  enableval=$enable_code_coverage; coverage="yes"
 else
-  enable_code_coverage=no
+  coverage="no"
 fi
 
 
-	 if test x$enable_code_coverage = xyes; then
-  CODE_COVERAGE_ENABLED_TRUE=
-  CODE_COVERAGE_ENABLED_FALSE='#'
-else
-  CODE_COVERAGE_ENABLED_TRUE='#'
-  CODE_COVERAGE_ENABLED_FALSE=
+    if  test "$GCC" != "yes" ; then :
+  coverage="no"
 fi
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $coverage" >&5
+$as_echo "$coverage" >&6; }
 
-	CODE_COVERAGE_ENABLED=$enable_code_coverage
+  if test "x$coverage" = "xyes"; then
+    curl_coverage_msg="enabled"
 
-	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $enable_code_coverage" >&5
-$as_echo "$enable_code_coverage" >&6; }
-
-	if  test "$enable_code_coverage" = "yes" ; then :
-
-		# check for gcov
-		if test -n "$ac_tool_prefix"; then
-  # Extract the first word of "${ac_tool_prefix}$_AX_CODE_COVERAGE_GCOV_PROG_WITH", so it can be a program name with args.
-set dummy ${ac_tool_prefix}$_AX_CODE_COVERAGE_GCOV_PROG_WITH; ac_word=$2
+    if test -n "$ac_tool_prefix"; then
+  # Extract the first word of "${ac_tool_prefix}gcov", so it can be a program name with args.
+set dummy ${ac_tool_prefix}gcov; ac_word=$2
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
 $as_echo_n "checking for $ac_word... " >&6; }
 if ${ac_cv_prog_GCOV+:} false; then :
@@ -5027,7 +4997,7 @@ do
   test -z "$as_dir" && as_dir=.
     for ac_exec_ext in '' $ac_executable_extensions; do
   if as_fn_executable_p "$as_dir/$ac_word$ac_exec_ext"; then
-    ac_cv_prog_GCOV="${ac_tool_prefix}$_AX_CODE_COVERAGE_GCOV_PROG_WITH"
+    ac_cv_prog_GCOV="${ac_tool_prefix}gcov"
     $as_echo "$as_me:${as_lineno-$LINENO}: found $as_dir/$ac_word$ac_exec_ext" >&5
     break 2
   fi
@@ -5050,8 +5020,8 @@ fi
 fi
 if test -z "$ac_cv_prog_GCOV"; then
   ac_ct_GCOV=$GCOV
-  # Extract the first word of "$_AX_CODE_COVERAGE_GCOV_PROG_WITH", so it can be a program name with args.
-set dummy $_AX_CODE_COVERAGE_GCOV_PROG_WITH; ac_word=$2
+  # Extract the first word of "gcov", so it can be a program name with args.
+set dummy gcov; ac_word=$2
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
 $as_echo_n "checking for $ac_word... " >&6; }
 if ${ac_cv_prog_ac_ct_GCOV+:} false; then :
@@ -5067,7 +5037,7 @@ do
   test -z "$as_dir" && as_dir=.
     for ac_exec_ext in '' $ac_executable_extensions; do
   if as_fn_executable_p "$as_dir/$ac_word$ac_exec_ext"; then
-    ac_cv_prog_ac_ct_GCOV="$_AX_CODE_COVERAGE_GCOV_PROG_WITH"
+    ac_cv_prog_ac_ct_GCOV="gcov"
     $as_echo "$as_me:${as_lineno-$LINENO}: found $as_dir/$ac_word$ac_exec_ext" >&5
     break 2
   fi
@@ -5087,7 +5057,7 @@ $as_echo "no" >&6; }
 fi
 
   if test "x$ac_ct_GCOV" = x; then
-    GCOV=":"
+    GCOV="gcov"
   else
     case $cross_compiling:$ac_tool_warned in
 yes:)
@@ -5101,18 +5071,10 @@ else
   GCOV="$ac_cv_prog_GCOV"
 fi
 
-		if test "X$GCOV" = "X:"; then :
-  as_fn_error $? "gcov is needed to do coverage" "$LINENO" 5
-fi
-
-
-				if  test "$GCC" = "no" ; then :
-
-			as_fn_error $? "not compiling with gcc, which is required for gcov code coverage" "$LINENO" 5
-
-fi
-
-		# Extract the first word of "lcov", so it can be a program name with args.
+    if test -z "$GCOV"; then
+      as_fn_error $? "needs gcov for code coverage" "$LINENO" 5
+    fi
+    # Extract the first word of "lcov", so it can be a program name with args.
 set dummy lcov; ac_word=$2
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
 $as_echo_n "checking for $ac_word... " >&6; }
@@ -5149,202 +5111,15 @@ $as_echo "no" >&6; }
 fi
 
 
-		# Extract the first word of "genhtml", so it can be a program name with args.
-set dummy genhtml; ac_word=$2
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
-$as_echo_n "checking for $ac_word... " >&6; }
-if ${ac_cv_prog_GENHTML+:} false; then :
-  $as_echo_n "(cached) " >&6
-else
-  if test -n "$GENHTML"; then
-  ac_cv_prog_GENHTML="$GENHTML" # Let the user override the test.
-else
-as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
-for as_dir in $PATH
-do
-  IFS=$as_save_IFS
-  test -z "$as_dir" && as_dir=.
-    for ac_exec_ext in '' $ac_executable_extensions; do
-  if as_fn_executable_p "$as_dir/$ac_word$ac_exec_ext"; then
-    ac_cv_prog_GENHTML="genhtml"
-    $as_echo "$as_me:${as_lineno-$LINENO}: found $as_dir/$ac_word$ac_exec_ext" >&5
-    break 2
+    if test -z "$LCOV"; then
+      as_fn_error $? "needs lcov for code coverage" "$LINENO" 5
+    fi
+
+    CPPFLAGS="$CPPFLAGS -DNDEBUG"
+    CFLAGS="$CLAGS -O0 -g -fprofile-arcs -ftest-coverage"
+    LIBS="$LIBS -lgcov"
   fi
-done
-  done
-IFS=$as_save_IFS
 
-fi
-fi
-GENHTML=$ac_cv_prog_GENHTML
-if test -n "$GENHTML"; then
-  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $GENHTML" >&5
-$as_echo "$GENHTML" >&6; }
-else
-  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
-$as_echo "no" >&6; }
-fi
-
-
-
-		if  test -z "$LCOV" ; then :
-
-			as_fn_error $? "To enable code coverage reporting you must have lcov installed" "$LINENO" 5
-
-fi
-
-		if  test -z "$GENHTML" ; then :
-
-			as_fn_error $? "Could not find genhtml from the lcov package" "$LINENO" 5
-
-fi
-
-						CODE_COVERAGE_CPPFLAGS="-DNDEBUG"
-		CODE_COVERAGE_CFLAGS="-O0 -g -fprofile-arcs -ftest-coverage"
-		CODE_COVERAGE_CXXFLAGS="-O0 -g -fprofile-arcs -ftest-coverage"
-		CODE_COVERAGE_LIBS="-lgcov"
-		CODE_COVERAGE_LDFLAGS="$CODE_COVERAGE_LIBS"
-
-
-
-
-
-
-
-		CODE_COVERAGE_RULES_CHECK='
-	-$(A''M_V_at)$(MAKE) $(AM_MAKEFLAGS) -k check
-	$(A''M_V_at)$(MAKE) $(AM_MAKEFLAGS) code-coverage-capture
-'
-		CODE_COVERAGE_RULES_CAPTURE='
-	$(code_coverage_v_lcov_cap)$(LCOV) $(code_coverage_quiet) $(addprefix --directory ,$(CODE_COVERAGE_DIRECTORY)) --capture --output-file "$(CODE_COVERAGE_OUTPUT_FILE).tmp" --test-name "$(call code_coverage_sanitize,$(PACKAGE_NAME)-$(PACKAGE_VERSION))" --no-checksum --compat-libtool $(CODE_COVERAGE_LCOV_SHOPTS) $(CODE_COVERAGE_LCOV_OPTIONS)
-	$(code_coverage_v_lcov_ign)$(LCOV) $(code_coverage_quiet) $(addprefix --directory ,$(CODE_COVERAGE_DIRECTORY)) --remove "$(CODE_COVERAGE_OUTPUT_FILE).tmp" "/tmp/*" $(CODE_COVERAGE_IGNORE_PATTERN) --output-file "$(CODE_COVERAGE_OUTPUT_FILE)" $(CODE_COVERAGE_LCOV_SHOPTS) $(CODE_COVERAGE_LCOV_RMOPTS)
-	-@rm -f $(CODE_COVERAGE_OUTPUT_FILE).tmp
-	$(code_coverage_v_genhtml)LANG=C $(GENHTML) $(code_coverage_quiet) $(addprefix --prefix ,$(CODE_COVERAGE_DIRECTORY)) --output-directory "$(CODE_COVERAGE_OUTPUT_DIRECTORY)" --title "$(PACKAGE_NAME)-$(PACKAGE_VERSION) Code Coverage" --legend --show-details "$(CODE_COVERAGE_OUTPUT_FILE)" $(CODE_COVERAGE_GENHTML_OPTIONS)
-	@echo "file://$(abs_builddir)/$(CODE_COVERAGE_OUTPUT_DIRECTORY)/index.html"
-'
-		CODE_COVERAGE_RULES_CLEAN='
-clean: code-coverage-clean
-distclean: code-coverage-clean
-code-coverage-clean:
-	-$(LCOV) --directory $(top_builddir) -z
-	-rm -rf $(CODE_COVERAGE_OUTPUT_FILE) $(CODE_COVERAGE_OUTPUT_FILE).tmp $(CODE_COVERAGE_OUTPUT_DIRECTORY)
-	-find . \( -name "*.gcda" -o -name "*.gcno" -o -name "*.gcov" \) -delete
-'
-
-else
-
-		CODE_COVERAGE_RULES_CHECK='
-	@echo "Need to reconfigure with --enable-code-coverage"
-'
-		CODE_COVERAGE_RULES_CAPTURE="$CODE_COVERAGE_RULES_CHECK"
-		CODE_COVERAGE_RULES_CLEAN=''
-
-fi
-
-CODE_COVERAGE_RULES='
-# Code coverage
-#
-# Optional:
-#  - CODE_COVERAGE_DIRECTORY: Top-level directory for code coverage reporting.
-#    Multiple directories may be specified, separated by whitespace.
-#    (Default: $(top_builddir))
-#  - CODE_COVERAGE_OUTPUT_FILE: Filename and path for the .info file generated
-#    by lcov for code coverage. (Default:
-#    $(PACKAGE_NAME)-$(PACKAGE_VERSION)-coverage.info)
-#  - CODE_COVERAGE_OUTPUT_DIRECTORY: Directory for generated code coverage
-#    reports to be created. (Default:
-#    $(PACKAGE_NAME)-$(PACKAGE_VERSION)-coverage)
-#  - CODE_COVERAGE_BRANCH_COVERAGE: Set to 1 to enforce branch coverage,
-#    set to 0 to disable it and leave empty to stay with the default.
-#    (Default: empty)
-#  - CODE_COVERAGE_LCOV_SHOPTS_DEFAULT: Extra options shared between both lcov
-#    instances. (Default: based on $CODE_COVERAGE_BRANCH_COVERAGE)
-#  - CODE_COVERAGE_LCOV_SHOPTS: Extra options to shared between both lcov
-#    instances. (Default: $CODE_COVERAGE_LCOV_SHOPTS_DEFAULT)
-#  - CODE_COVERAGE_LCOV_OPTIONS_GCOVPATH: --gcov-tool pathtogcov
-#  - CODE_COVERAGE_LCOV_OPTIONS_DEFAULT: Extra options to pass to the
-#    collecting lcov instance. (Default: $CODE_COVERAGE_LCOV_OPTIONS_GCOVPATH)
-#  - CODE_COVERAGE_LCOV_OPTIONS: Extra options to pass to the collecting lcov
-#    instance. (Default: $CODE_COVERAGE_LCOV_OPTIONS_DEFAULT)
-#  - CODE_COVERAGE_LCOV_RMOPTS_DEFAULT: Extra options to pass to the filtering
-#    lcov instance. (Default: empty)
-#  - CODE_COVERAGE_LCOV_RMOPTS: Extra options to pass to the filtering lcov
-#    instance. (Default: $CODE_COVERAGE_LCOV_RMOPTS_DEFAULT)
-#  - CODE_COVERAGE_GENHTML_OPTIONS_DEFAULT: Extra options to pass to the
-#    genhtml instance. (Default: based on $CODE_COVERAGE_BRANCH_COVERAGE)
-#  - CODE_COVERAGE_GENHTML_OPTIONS: Extra options to pass to the genhtml
-#    instance. (Default: $CODE_COVERAGE_GENHTML_OPTIONS_DEFAULT)
-#  - CODE_COVERAGE_IGNORE_PATTERN: Extra glob pattern of files to ignore
-#
-# The generated report will be titled using the $(PACKAGE_NAME) and
-# $(PACKAGE_VERSION). In order to add the current git hash to the title,
-# use the git-version-gen script, available online.
-
-# Optional variables
-CODE_COVERAGE_DIRECTORY ?= $(top_builddir)
-CODE_COVERAGE_OUTPUT_FILE ?= $(PACKAGE_NAME)-$(PACKAGE_VERSION)-coverage.info
-CODE_COVERAGE_OUTPUT_DIRECTORY ?= $(PACKAGE_NAME)-$(PACKAGE_VERSION)-coverage
-CODE_COVERAGE_BRANCH_COVERAGE ?=
-CODE_COVERAGE_LCOV_SHOPTS_DEFAULT ?= $(if $(CODE_COVERAGE_BRANCH_COVERAGE),\
---rc lcov_branch_coverage=$(CODE_COVERAGE_BRANCH_COVERAGE))
-CODE_COVERAGE_LCOV_SHOPTS ?= $(CODE_COVERAGE_LCOV_SHOPTS_DEFAULT)
-CODE_COVERAGE_LCOV_OPTIONS_GCOVPATH ?= --gcov-tool "$(GCOV)"
-CODE_COVERAGE_LCOV_OPTIONS_DEFAULT ?= $(CODE_COVERAGE_LCOV_OPTIONS_GCOVPATH)
-CODE_COVERAGE_LCOV_OPTIONS ?= $(CODE_COVERAGE_LCOV_OPTIONS_DEFAULT)
-CODE_COVERAGE_LCOV_RMOPTS_DEFAULT ?=
-CODE_COVERAGE_LCOV_RMOPTS ?= $(CODE_COVERAGE_LCOV_RMOPTS_DEFAULT)
-CODE_COVERAGE_GENHTML_OPTIONS_DEFAULT ?=\
-$(if $(CODE_COVERAGE_BRANCH_COVERAGE),\
---rc genhtml_branch_coverage=$(CODE_COVERAGE_BRANCH_COVERAGE))
-CODE_COVERAGE_GENHTML_OPTIONS ?= $(CODE_COVERAGE_GENHTML_OPTIONS_DEFAULT)
-CODE_COVERAGE_IGNORE_PATTERN ?=
-
-GITIGNOREFILES ?=
-GITIGNOREFILES += $(CODE_COVERAGE_OUTPUT_FILE) $(CODE_COVERAGE_OUTPUT_DIRECTORY)
-
-code_coverage_v_lcov_cap = $(code_coverage_v_lcov_cap_$(V))
-code_coverage_v_lcov_cap_ = $(code_coverage_v_lcov_cap_$(AM_DEFAULT_VERBOSITY))
-code_coverage_v_lcov_cap_0 = @echo "  LCOV   --capture"\
- $(CODE_COVERAGE_OUTPUT_FILE);
-code_coverage_v_lcov_ign = $(code_coverage_v_lcov_ign_$(V))
-code_coverage_v_lcov_ign_ = $(code_coverage_v_lcov_ign_$(AM_DEFAULT_VERBOSITY))
-code_coverage_v_lcov_ign_0 = @echo "  LCOV   --remove /tmp/*"\
- $(CODE_COVERAGE_IGNORE_PATTERN);
-code_coverage_v_genhtml = $(code_coverage_v_genhtml_$(V))
-code_coverage_v_genhtml_ = $(code_coverage_v_genhtml_$(AM_DEFAULT_VERBOSITY))
-code_coverage_v_genhtml_0 = @echo "  GEN   " $(CODE_COVERAGE_OUTPUT_DIRECTORY);
-code_coverage_quiet = $(code_coverage_quiet_$(V))
-code_coverage_quiet_ = $(code_coverage_quiet_$(AM_DEFAULT_VERBOSITY))
-code_coverage_quiet_0 = --quiet
-
-# sanitizes the test-name: replaces with underscores: dashes and dots
-code_coverage_sanitize = $(subst -,_,$(subst .,_,$(1)))
-
-# Use recursive makes in order to ignore errors during check
-check-code-coverage:'"$CODE_COVERAGE_RULES_CHECK"'
-
-# Capture code coverage data
-code-coverage-capture: code-coverage-capture-hook'"$CODE_COVERAGE_RULES_CAPTURE"'
-
-# Hook rule executed before code-coverage-capture, overridable by the user
-code-coverage-capture-hook:
-
-'"$CODE_COVERAGE_RULES_CLEAN"'
-
-A''M_DISTCHECK_CONFIGURE_FLAGS ?=
-A''M_DISTCHECK_CONFIGURE_FLAGS += --disable-code-coverage
-
-.PHONY: check-code-coverage code-coverage-capture code-coverage-capture-hook code-coverage-clean
-'
-
-
-
-
-else
-  # not using GCC so pass a test below - CODE_COVERAGE_ENABLED_TRUE is not zero length
-  CODE_COVERAGE_ENABLED_TRUE='#'
-
-fi
 
 am__api_version='1.16'
 
@@ -6007,7 +5782,7 @@ PKGADD_VENDOR="curl.haxx.se"
 
 
 
-    curl_ssl_msg="no      (--with-{ssl,gnutls,nss,polarssl,mbedtls,cyassl,axtls,winssl,darwinssl,mesalink} )"
+    curl_ssl_msg="no      (--with-{ssl,gnutls,nss,polarssl,mbedtls,cyassl,winssl,darwinssl,mesalink} )"
     curl_ssh_msg="no      (--with-libssh2)"
    curl_zlib_msg="no      (--with-zlib)"
  curl_brotli_msg="no      (--with-brotli)"
@@ -16334,7 +16109,61 @@ rm -f conftest.err conftest.i conftest.$ac_ext
   if test "$curl_cv_have_def___clang__" = "yes"; then
     { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
 $as_echo "yes" >&6; }
-    compiler_id="CLANG"
+    { $as_echo "$as_me:${as_lineno-$LINENO}: checking if compiler is xlclang" >&5
+$as_echo_n "checking if compiler is xlclang... " >&6; }
+
+    OLDCPPFLAGS=$CPPFLAGS
+  # CPPPFLAG comes from CURL_CPP_P
+  CPPFLAGS="$CPPFLAGS $CPPPFLAG"
+      if test -z "$SED"; then
+    as_fn_error $? "SED not set. Cannot continue without SED being set." "$LINENO" 5
+  fi
+  if test -z "$GREP"; then
+    as_fn_error $? "GREP not set. Cannot continue without GREP being set." "$LINENO" 5
+  fi
+
+  tmp_exp=""
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+
+#ifdef __ibmxl__
+CURL_DEF_TOKEN __ibmxl__
+#endif
+
+
+_ACEOF
+if ac_fn_c_try_cpp "$LINENO"; then :
+
+    tmp_exp=`eval "$ac_cpp conftest.$ac_ext" 2>/dev/null | \
+      "$GREP" CURL_DEF_TOKEN 2>/dev/null | \
+      "$SED" 's/.*CURL_DEF_TOKEN[ ][ ]*//' 2>/dev/null | \
+      "$SED" 's/["][ ]*["]//g' 2>/dev/null`
+    if test -z "$tmp_exp" || test "$tmp_exp" = "__ibmxl__"; then
+      tmp_exp=""
+    fi
+
+fi
+rm -f conftest.err conftest.i conftest.$ac_ext
+  if test -z "$tmp_exp"; then
+    curl_cv_have_def___ibmxl__=no
+
+  else
+    curl_cv_have_def___ibmxl__=yes
+    curl_cv_def___ibmxl__=$tmp_exp
+
+  fi
+      CPPFLAGS=$OLDCPPFLAGS
+
+    if test "$curl_cv_have_def___ibmxl__" = "yes" ; then
+            { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
+      compiler_id="XLCLANG"
+    else
+      { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+      compiler_id="CLANG"
+    fi
     fullclangver=`$CC -v 2>&1 | grep version`
     clangver=`echo $fullclangver | grep "based on LLVM " | "$SED" 's/.*(based on LLVM \([0-9]*\.[0-9]*\).*)/\1/'`
     if test -z "$clangver"; then
@@ -22239,6 +22068,13 @@ if test "${with_winssl+set}" = set; then :
 fi
 
 
+
+# Check whether --with-schannel was given.
+if test "${with_schannel+set}" = set; then :
+  withval=$with_schannel; OPT_WINSSL=$withval
+fi
+
+
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether to enable Windows native SSL/TLS (Windows native builds only)" >&5
 $as_echo_n "checking whether to enable Windows native SSL/TLS (Windows native builds only)... " >&6; }
 if test -z "$ssl_backends" -o "x$OPT_WINSSL" != xno; then
@@ -22527,7 +22363,7 @@ $as_echo "found" >&6; }
       PKG_CONFIG_LIBDIR="$OPENSSL_PCDIR"
       export PKG_CONFIG_LIBDIR
     fi
-         $PKGCONFIG --libs-only-l openssl 2>/dev/null`
+         $PKGCONFIG --libs-only-l --libs-only-other openssl 2>/dev/null`
 
       SSL_LDFLAGS=`
     if test -n "$OPENSSL_PCDIR"; then
@@ -22881,9 +22717,9 @@ done
   if test X"$OPENSSL_ENABLED" = X"1"; then
 
     for ac_func in RAND_egd \
-                    ENGINE_cleanup \
                     SSL_get_shutdown \
-                    SSLv2_client_method
+                    SSLv2_client_method \
+                    OpenSSL_version
 do :
   as_ac_var=`$as_echo "ac_cv_func_$ac_func" | $as_tr_sh`
 ac_fn_c_check_func "$LINENO" "$ac_func" "$as_ac_var"
@@ -25534,112 +25370,12 @@ $as_echo "$as_me: Added $nssprefix/lib$libsuff to CURL_LIBRARY_PATH" >&6;}
   test -z "$ssl_msg" || ssl_backends="${ssl_backends:+$ssl_backends, }$ssl_msg"
 fi
 
-OPT_AXTLS=off
-
-
-# Check whether --with-axtls was given.
-if test "${with_axtls+set}" = set; then :
-  withval=$with_axtls; OPT_AXTLS=$withval
-fi
-
-
-if test -z "$ssl_backends" -o "x$OPT_AXTLS" != xno; then
-  ssl_msg=
-  if test X"$OPT_AXTLS" != Xno; then
-        CLEANLDFLAGS="$LDFLAGS"
-    CLEANCPPFLAGS="$CPPFLAGS"
-    CLEANLIBS="$LIBS"
-
-    case "$OPT_AXTLS" in
-    yes)
-            PREFIX_AXTLS=/usr/local
-      LIB_AXTLS="$PREFIX_AXTLS/lib"
-      LDFLAGS="$LDFLAGS -L$LIB_AXTLS"
-      CPPFLAGS="$CPPFLAGS -I$PREFIX_AXTLS/include"
-      ;;
-    off)
-            PREFIX_AXTLS=
-      ;;
-    *)
-            PREFIX_AXTLS=$OPT_AXTLS
-      LIB_AXTLS="$PREFIX_AXTLS/lib"
-      LDFLAGS="$LDFLAGS -L$LIB_AXTLS"
-      CPPFLAGS="$CPPFLAGS -I$PREFIX_AXTLS/include"
-      ;;
-    esac
-
-    { $as_echo "$as_me:${as_lineno-$LINENO}: checking for ssl_version in -laxtls" >&5
-$as_echo_n "checking for ssl_version in -laxtls... " >&6; }
-if ${ac_cv_lib_axtls_ssl_version+:} false; then :
-  $as_echo_n "(cached) " >&6
-else
-  ac_check_lib_save_LIBS=$LIBS
-LIBS="-laxtls  $LIBS"
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-
-
-#ifdef __cplusplus
-extern "C"
-#endif
-char ssl_version ();
-int main (void)
-{
-return ssl_version ();
- ;
- return 0;
-}
-_ACEOF
-if ac_fn_c_try_link "$LINENO"; then :
-  ac_cv_lib_axtls_ssl_version=yes
-else
-  ac_cv_lib_axtls_ssl_version=no
-fi
-rm -f core conftest.err conftest.$ac_objext \
-    conftest$ac_exeext conftest.$ac_ext
-LIBS=$ac_check_lib_save_LIBS
-fi
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_axtls_ssl_version" >&5
-$as_echo "$ac_cv_lib_axtls_ssl_version" >&6; }
-if test "x$ac_cv_lib_axtls_ssl_version" = xyes; then :
-
-      LIBS="-laxtls $LIBS"
-
-$as_echo "#define USE_AXTLS 1" >>confdefs.h
-
-      USE_AXTLS=1
-
-      AXTLS_ENABLED=1
-      check_for_ca_bundle=1
-      USE_AXTLS="yes"
-      ssl_msg="axTLS"
-      test axtls != "$DEFAULT_SSL_BACKEND" || VALID_DEFAULT_SSL_BACKEND=yes
-
-      if test "x$cross_compiling" != "xyes"; then
-        CURL_LIBRARY_PATH="$CURL_LIBRARY_PATH:$LIB_AXTLS"
-        export CURL_LIBRARY_PATH
-        { $as_echo "$as_me:${as_lineno-$LINENO}: Added $LIB_AXTLS to CURL_LIBRARY_PATH" >&5
-$as_echo "$as_me: Added $LIB_AXTLS to CURL_LIBRARY_PATH" >&6;}
-      fi
-
-else
-
-      LDFLAGS="$CLEANLDFLAGS"
-      CPPFLAGS="$CLEANCPPFLAGS"
-      LIBS="$CLEANLIBS"
-
-fi
-
-  fi
-  test -z "$ssl_msg" || ssl_backends="${ssl_backends:+$ssl_backends, }$ssl_msg"
-fi
-
-case "x$OPENSSL_ENABLED$GNUTLS_ENABLED$NSS_ENABLED$POLARSSL_ENABLED$MBEDTLS_ENABLED$AXTLS_ENABLED$CYASSL_ENABLED$WINSSL_ENABLED$DARWINSSL_ENABLED$MESALINK_ENABLED" in
+case "x$OPENSSL_ENABLED$GNUTLS_ENABLED$NSS_ENABLED$POLARSSL_ENABLED$MBEDTLS_ENABLED$CYASSL_ENABLED$WINSSL_ENABLED$DARWINSSL_ENABLED$MESALINK_ENABLED" in
 x)
   { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: SSL disabled, you will not be able to use HTTPS, FTPS, NTLM and more." >&5
 $as_echo "$as_me: WARNING: SSL disabled, you will not be able to use HTTPS, FTPS, NTLM and more." >&2;}
-  { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: Use --with-ssl, --with-gnutls, --with-polarssl, --with-cyassl, --with-nss, --with-axtls, --with-winssl, --with-darwinssl, or --with-mesalink to address this." >&5
-$as_echo "$as_me: WARNING: Use --with-ssl, --with-gnutls, --with-polarssl, --with-cyassl, --with-nss, --with-axtls, --with-winssl, --with-darwinssl, or --with-mesalink to address this." >&2;}
+  { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: Use --with-ssl, --with-gnutls, --with-polarssl, --with-cyassl, --with-nss, --with-winssl, --with-darwinssl, or --with-mesalink to address this." >&5
+$as_echo "$as_me: WARNING: Use --with-ssl, --with-gnutls, --with-polarssl, --with-cyassl, --with-nss, --with-winssl, --with-darwinssl, or --with-mesalink to address this." >&2;}
   ;;
 x1)
   # one SSL backend is enabled
@@ -27089,8 +26825,6 @@ $as_echo "yes" >&6; }
           versioned_symbols_flavour="POLARSSL_"
         elif test "x$CYASSL_ENABLED" = "x1"; then
           versioned_symbols_flavour="CYASSL_"
-        elif test "x$AXTLS_ENABLED" = "x1"; then
-          versioned_symbols_flavour="AXTLS_"
         elif test "x$WINSSL_ENABLED" = "x1"; then
           versioned_symbols_flavour="WINSSL_"
         elif test "x$DARWINSSL_ENABLED" = "x1"; then
@@ -29604,10 +29338,7 @@ else
                     };
 #endif
                     extern $sel_retv SELECTCALLCONV
-#ifdef __ANDROID__
-__attribute__((overloadable))
-#endif
-			select($sel_arg1,
+				select($sel_arg1,
 					$sel_arg234,
 					$sel_arg234,
 					$sel_arg234,
@@ -29832,9 +29563,6 @@ else
 #define RECVCALLCONV
 #endif
                       extern $recv_retv RECVCALLCONV
-#ifdef __ANDROID__
-__attribute__((overloadable))
-#endif
                       recv($recv_arg1, $recv_arg2, $recv_arg3, $recv_arg4);
 
 int main (void)
@@ -30023,9 +29751,6 @@ else
 #define SENDCALLCONV
 #endif
                       extern $send_retv SENDCALLCONV
-#ifdef __ANDROID__
-__attribute__((overloadable))
-#endif
                       send($send_arg1, $send_arg2, $send_arg3, $send_arg4);
 
 int main (void)
@@ -41587,7 +41312,7 @@ if test "x$want_curldebug_assumed" = "xyes" &&
   ac_configure_args="$ac_configure_args --enable-curldebug"
 fi
 
-ac_config_files="$ac_config_files Makefile docs/Makefile docs/examples/Makefile docs/libcurl/Makefile docs/libcurl/opts/Makefile docs/cmdline-opts/Makefile include/Makefile include/curl/Makefile src/Makefile lib/Makefile scripts/Makefile lib/libcurl.vers tests/Makefile tests/certs/Makefile tests/certs/scripts/Makefile tests/data/Makefile tests/server/Makefile tests/libtest/Makefile tests/unit/Makefile packages/Makefile packages/Win32/Makefile packages/Win32/cygwin/Makefile packages/Linux/Makefile packages/Linux/RPM/Makefile packages/Linux/RPM/curl.spec packages/Linux/RPM/curl-ssl.spec packages/Solaris/Makefile packages/vms/Makefile packages/AIX/Makefile packages/AIX/RPM/Makefile packages/AIX/RPM/curl.spec curl-config libcurl.pc"
+ac_config_files="$ac_config_files Makefile docs/Makefile docs/examples/Makefile docs/libcurl/Makefile docs/libcurl/opts/Makefile docs/cmdline-opts/Makefile include/Makefile include/curl/Makefile src/Makefile lib/Makefile scripts/Makefile lib/libcurl.vers tests/Makefile tests/certs/Makefile tests/certs/scripts/Makefile tests/data/Makefile tests/server/Makefile tests/libtest/Makefile tests/unit/Makefile packages/Makefile packages/vms/Makefile curl-config libcurl.pc"
 
 cat >confcache <<\_ACEOF
 # This file is a shell script that caches the results of configure
@@ -41700,10 +41425,6 @@ LTLIBOBJS=$ac_ltlibobjs
 
 if test -z "${MAINTAINER_MODE_TRUE}" && test -z "${MAINTAINER_MODE_FALSE}"; then
   as_fn_error $? "conditional \"MAINTAINER_MODE\" was never defined.
-Usually this means the macro was only invoked conditionally." "$LINENO" 5
-fi
-if test -z "${CODE_COVERAGE_ENABLED_TRUE}" && test -z "${CODE_COVERAGE_ENABLED_FALSE}"; then
-  as_fn_error $? "conditional \"CODE_COVERAGE_ENABLED\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking that generated files are newer than configure" >&5
@@ -42690,17 +42411,7 @@ do
     "tests/libtest/Makefile") CONFIG_FILES="$CONFIG_FILES tests/libtest/Makefile" ;;
     "tests/unit/Makefile") CONFIG_FILES="$CONFIG_FILES tests/unit/Makefile" ;;
     "packages/Makefile") CONFIG_FILES="$CONFIG_FILES packages/Makefile" ;;
-    "packages/Win32/Makefile") CONFIG_FILES="$CONFIG_FILES packages/Win32/Makefile" ;;
-    "packages/Win32/cygwin/Makefile") CONFIG_FILES="$CONFIG_FILES packages/Win32/cygwin/Makefile" ;;
-    "packages/Linux/Makefile") CONFIG_FILES="$CONFIG_FILES packages/Linux/Makefile" ;;
-    "packages/Linux/RPM/Makefile") CONFIG_FILES="$CONFIG_FILES packages/Linux/RPM/Makefile" ;;
-    "packages/Linux/RPM/curl.spec") CONFIG_FILES="$CONFIG_FILES packages/Linux/RPM/curl.spec" ;;
-    "packages/Linux/RPM/curl-ssl.spec") CONFIG_FILES="$CONFIG_FILES packages/Linux/RPM/curl-ssl.spec" ;;
-    "packages/Solaris/Makefile") CONFIG_FILES="$CONFIG_FILES packages/Solaris/Makefile" ;;
     "packages/vms/Makefile") CONFIG_FILES="$CONFIG_FILES packages/vms/Makefile" ;;
-    "packages/AIX/Makefile") CONFIG_FILES="$CONFIG_FILES packages/AIX/Makefile" ;;
-    "packages/AIX/RPM/Makefile") CONFIG_FILES="$CONFIG_FILES packages/AIX/RPM/Makefile" ;;
-    "packages/AIX/RPM/curl.spec") CONFIG_FILES="$CONFIG_FILES packages/AIX/RPM/curl.spec" ;;
     "curl-config") CONFIG_FILES="$CONFIG_FILES curl-config" ;;
     "libcurl.pc") CONFIG_FILES="$CONFIG_FILES libcurl.pc" ;;
 
@@ -44260,10 +43971,15 @@ done
 
 { $as_echo "$as_me:${as_lineno-$LINENO}: Configured to build curl/libcurl:
 
-  curl version:     ${CURLVERSION}
   Host setup:       ${host}
   Install prefix:   ${prefix}
   Compiler:         ${CC}
+   CFLAGS:          ${CFLAGS}
+   CPPFLAGS:        ${CPPFLAGS}
+   LDFLAGS:         ${LDFLAGS}
+   LIBS:            ${LIBS}
+
+  curl version:     ${CURLVERSION}
   SSL support:      ${curl_ssl_msg}
   SSH support:      ${curl_ssh_msg}
   zlib support:     ${curl_zlib_msg}
@@ -44278,6 +43994,7 @@ done
   Built-in manual:  ${curl_manual_msg}
   --libcurl option: ${curl_libcurl_msg}
   Verbose errors:   ${curl_verbose_msg}
+  Code coverage:    ${curl_coverage_msg}
   SSPI support:     ${curl_sspi_msg}
   ca cert bundle:   ${ca}${ca_warning}
   ca cert path:     ${capath}${capath_warning}
@@ -44293,10 +44010,15 @@ done
 " >&5
 $as_echo "$as_me: Configured to build curl/libcurl:
 
-  curl version:     ${CURLVERSION}
   Host setup:       ${host}
   Install prefix:   ${prefix}
   Compiler:         ${CC}
+   CFLAGS:          ${CFLAGS}
+   CPPFLAGS:        ${CPPFLAGS}
+   LDFLAGS:         ${LDFLAGS}
+   LIBS:            ${LIBS}
+
+  curl version:     ${CURLVERSION}
   SSL support:      ${curl_ssl_msg}
   SSH support:      ${curl_ssh_msg}
   zlib support:     ${curl_zlib_msg}
@@ -44311,6 +44033,7 @@ $as_echo "$as_me: Configured to build curl/libcurl:
   Built-in manual:  ${curl_manual_msg}
   --libcurl option: ${curl_libcurl_msg}
   Verbose errors:   ${curl_verbose_msg}
+  Code coverage:    ${curl_coverage_msg}
   SSPI support:     ${curl_sspi_msg}
   ca cert bundle:   ${ca}${ca_warning}
   ca cert path:     ${capath}${capath_warning}

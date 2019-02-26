@@ -1,0 +1,3 @@
+# explicitly set an interface to avoid having to configure and run DHCPv6
+INTERFACESv4="eth0"
+INTERFACESv6=""

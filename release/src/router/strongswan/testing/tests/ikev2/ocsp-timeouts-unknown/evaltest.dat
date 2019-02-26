@@ -1,0 +1,7 @@
+moon:: cat /var/log/daemon.log::libcurl request failed::YES
+moon:: cat /var/log/daemon.log::certificate status is not available::YES
+moon:: cat /var/log/daemon.log::constraint check failed::YES
+carol::cat /var/log/daemon.log::received AUTHENTICATION_FAILED::YES
+moon:: ipsec status 2> /dev/null::rw.*ESTABLISHED::NO
+carol::ipsec status 2> /dev/null::home.*ESTABLISHED::NO
+

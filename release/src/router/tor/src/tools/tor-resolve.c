@@ -1,20 +1,25 @@
 /* Copyright (c) 2004-2006, Roger Dingledine, Nick Mathewson
- * Copyright (c) 2007-2015, The Tor Project, Inc.
+ * Copyright (c) 2007-2019, The Tor Project, Inc.
  */
 /* See LICENSE for licensing information */
 
 #include "orconfig.h"
-#include "compat.h"
-#include "util.h"
-#include "address.h"
-#include "torlog.h"
-#include "sandbox.h"
+
+#include "lib/arch/bytes.h"
+#include "lib/log/log.h"
+#include "lib/malloc/malloc.h"
+#include "lib/net/address.h"
+#include "lib/net/resolve.h"
+#include "lib/net/socket.h"
+#include "lib/sandbox/sandbox.h"
+#include "lib/string/util_string.h"
+
+#include "lib/net/socks5_status.h"
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdarg.h>
 #include <string.h>
-#include <assert.h>
 
 #ifdef HAVE_NETINET_IN_H
 #include <netinet/in.h>
@@ -192,12 +197,14 @@ socks5_reason_to_string(char reason)
  * address (in host order) into *<b>result_addr</b>.
  */
 static int
-do_resolve(const char *hostname, uint32_t sockshost, uint16_t socksport,
+do_resolve(const char *hostname,
+           const tor_addr_t *sockshost, uint16_t socksport,
            int reverse, int version,
            tor_addr_t *result_addr, char **result_hostname)
 {
   int s = -1;
-  struct sockaddr_in socksaddr;
+  struct sockaddr_storage ss;
+  socklen_t socklen;
   char *req = NULL;
   ssize_t len = 0;
 
@@ -214,22 +221,21 @@ do_resolve(const char *hostname, uint32_t sockshost, uint16_t socksport,
     return -1;
   }
 
-  memset(&socksaddr, 0, sizeof(socksaddr));
-  socksaddr.sin_family = AF_INET;
-  socksaddr.sin_port = htons(socksport);
-  socksaddr.sin_addr.s_addr = htonl(sockshost);
-  if (connect(s, (struct sockaddr*)&socksaddr, sizeof(socksaddr))) {
+  socklen = tor_addr_to_sockaddr(sockshost, socksport,
+                                 (struct sockaddr *)&ss, sizeof(ss));
+
+  if (connect(s, (struct sockaddr*)&ss, socklen)) {
     log_sock_error("connecting to SOCKS host", s);
     goto err;
   }
 
   if (version == 5) {
     char method_buf[2];
-    if (write_all(s, "\x05\x01\x00", 3, 1) != 3) {
+    if (write_all_to_socket(s, "\x05\x01\x00", 3) != 3) {
       log_err(LD_NET, "Error sending SOCKS5 method list.");
       goto err;
     }
-    if (read_all(s, method_buf, 2, 1) != 2) {
+    if (read_all_from_socket(s, method_buf, 2) != 2) {
       log_err(LD_NET, "Error reading SOCKS5 methods.");
       goto err;
     }
@@ -251,7 +257,7 @@ do_resolve(const char *hostname, uint32_t sockshost, uint16_t socksport,
     tor_assert(!req);
     goto err;
   }
-  if (write_all(s, req, len, 1) != len) {
+  if (write_all_to_socket(s, req, len) != len) {
     log_sock_error("sending SOCKS request", s);
     tor_free(req);
     goto err;
@@ -260,7 +266,7 @@ do_resolve(const char *hostname, uint32_t sockshost, uint16_t socksport,
 
   if (version == 4) {
     char reply_buf[RESPONSE_LEN_4];
-    if (read_all(s, reply_buf, RESPONSE_LEN_4, 1) != RESPONSE_LEN_4) {
+    if (read_all_from_socket(s, reply_buf, RESPONSE_LEN_4) != RESPONSE_LEN_4) {
       log_err(LD_NET, "Error reading SOCKS4 response.");
       goto err;
     }
@@ -271,7 +277,7 @@ do_resolve(const char *hostname, uint32_t sockshost, uint16_t socksport,
     }
   } else {
     char reply_buf[16];
-    if (read_all(s, reply_buf, 4, 1) != 4) {
+    if (read_all_from_socket(s, reply_buf, 4) != 4) {
       log_err(LD_NET, "Error reading SOCKS5 response.");
       goto err;
     }
@@ -291,14 +297,14 @@ do_resolve(const char *hostname, uint32_t sockshost, uint16_t socksport,
     }
     if (reply_buf[3] == 1) {
       /* IPv4 address */
-      if (read_all(s, reply_buf, 4, 1) != 4) {
+      if (read_all_from_socket(s, reply_buf, 4) != 4) {
         log_err(LD_NET, "Error reading address in socks5 response.");
         goto err;
       }
       tor_addr_from_ipv4n(result_addr, get_uint32(reply_buf));
     } else if (reply_buf[3] == 4) {
       /* IPv6 address */
-      if (read_all(s, reply_buf, 16, 1) != 16) {
+      if (read_all_from_socket(s, reply_buf, 16) != 16) {
         log_err(LD_NET, "Error reading address in socks5 response.");
         goto err;
       }
@@ -306,13 +312,14 @@ do_resolve(const char *hostname, uint32_t sockshost, uint16_t socksport,
     } else if (reply_buf[3] == 3) {
       /* Domain name */
       size_t result_len;
-      if (read_all(s, reply_buf, 1, 1) != 1) {
+      if (read_all_from_socket(s, reply_buf, 1) != 1) {
         log_err(LD_NET, "Error reading address_length in socks5 response.");
         goto err;
       }
       result_len = *(uint8_t*)(reply_buf);
       *result_hostname = tor_malloc(result_len+1);
-      if (read_all(s, *result_hostname, result_len, 1) != (int) result_len) {
+      if (read_all_from_socket(s, *result_hostname, result_len)
+          != (int) result_len) {
         log_err(LD_NET, "Error reading hostname in socks5 response.");
         goto err;
       }
@@ -340,14 +347,13 @@ usage(void)
 int
 main(int argc, char **argv)
 {
-  uint32_t sockshost;
+  tor_addr_t sockshost;
   uint16_t socksport = 0, port_option = 0;
   int isSocks4 = 0, isVerbose = 0, isReverse = 0;
   char **arg;
   int n_args;
   tor_addr_t result;
   char *result_hostname = NULL;
-  log_severity_list_t *s = tor_malloc_zero(sizeof(log_severity_list_t));
 
   init_logging(1);
   sandbox_disable_getaddrinfo_cache();
@@ -398,15 +404,18 @@ main(int argc, char **argv)
     usage();
   }
 
+  log_severity_list_t *severities =
+    tor_malloc_zero(sizeof(log_severity_list_t));
   if (isVerbose)
-    set_log_severity_config(LOG_DEBUG, LOG_ERR, s);
+    set_log_severity_config(LOG_DEBUG, LOG_ERR, severities);
   else
-    set_log_severity_config(LOG_WARN, LOG_ERR, s);
-  add_stream_log(s, "<stderr>", fileno(stderr));
+    set_log_severity_config(LOG_WARN, LOG_ERR, severities);
+  add_stream_log(severities, "<stderr>", fileno(stderr));
+  tor_free(severities);
 
   if (n_args == 1) {
     log_debug(LD_CONFIG, "defaulting to localhost");
-    sockshost = 0x7f000001u; /* localhost */
+    tor_addr_from_ipv4h(&sockshost, 0x7f000001u); /* localhost */
     if (port_option) {
       log_debug(LD_CONFIG, "Using port %d", (int)port_option);
       socksport = port_option;
@@ -415,7 +424,7 @@ main(int argc, char **argv)
       socksport = 9050; /* 9050 */
     }
   } else if (n_args == 2) {
-    if (addr_port_lookup(LOG_WARN, arg[1], NULL, &sockshost, &socksport)<0) {
+    if (tor_addr_port_lookup(arg[1], &sockshost, &socksport)<0) {
       fprintf(stderr, "Couldn't parse/resolve address %s", arg[1]);
       return 1;
     }
@@ -437,7 +446,7 @@ main(int argc, char **argv)
     return 1;
   }
 
-  if (do_resolve(arg[0], sockshost, socksport, isReverse,
+  if (do_resolve(arg[0], &sockshost, socksport, isReverse,
                  isSocks4 ? 4 : 5, &result,
                  &result_hostname))
     return 1;
@@ -449,4 +458,3 @@ main(int argc, char **argv)
   }
   return 0;
 }
-

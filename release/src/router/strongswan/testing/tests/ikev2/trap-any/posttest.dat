@@ -1,0 +1,4 @@
+moon::ipsec stop
+sun::ipsec stop
+carol::ipsec stop
+dave::ipsec stop

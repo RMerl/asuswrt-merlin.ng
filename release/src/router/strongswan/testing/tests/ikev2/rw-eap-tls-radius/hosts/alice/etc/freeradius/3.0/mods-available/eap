@@ -1,0 +1,16 @@
+eap {
+  default_eap_type = tls
+
+  tls-config tls-common {
+    private_key_file = ${certdir}/aaaKey.pem
+    certificate_file = ${certdir}/aaaCert.pem
+    ca_file = ${cadir}/strongswanCert.pem
+    cipher_list = "DEFAULT"
+    dh_file = ${certdir}/dh
+    random_file = ${certdir}/random
+  }
+
+  tls {
+    tls = tls-common
+  }
+}

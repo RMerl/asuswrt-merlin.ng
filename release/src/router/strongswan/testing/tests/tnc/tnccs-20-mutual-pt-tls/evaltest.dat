@@ -1,0 +1,6 @@
+moon::cat /var/log/auth.log::PT-TLS authentication complete::YES
+sun:: cat /var/log/daemon.log::skipping SASL, client already authenticated by TLS certificate::YES
+moon::cat /var/log/auth.log::activating mutual PB-TNC half duplex protocol::YES
+sun:: cat /var/log/daemon.log::activating mutual PB-TNC half duplex protocol::YES
+moon::cat /var/log/auth.log::PB-TNC access recommendation is.*Access Allowed::YES
+sun:: cat /var/log/daemon.log::PB-TNC access recommendation is.*Access Allowed::YES

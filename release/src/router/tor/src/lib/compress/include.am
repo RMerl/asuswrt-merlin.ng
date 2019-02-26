@@ -1,0 +1,26 @@
+
+noinst_LIBRARIES += src/lib/libtor-compress.a
+
+if UNITTESTS_ENABLED
+noinst_LIBRARIES += src/lib/libtor-compress-testing.a
+endif
+
+src_lib_libtor_compress_a_SOURCES =		\
+	src/lib/compress/compress.c		\
+	src/lib/compress/compress_buf.c		\
+	src/lib/compress/compress_lzma.c	\
+	src/lib/compress/compress_none.c	\
+	src/lib/compress/compress_zlib.c	\
+	src/lib/compress/compress_zstd.c
+
+src_lib_libtor_compress_testing_a_SOURCES = \
+	$(src_lib_libtor_compress_a_SOURCES)
+src_lib_libtor_compress_testing_a_CPPFLAGS = $(AM_CPPFLAGS) $(TEST_CPPFLAGS)
+src_lib_libtor_compress_testing_a_CFLAGS = $(AM_CFLAGS) $(TEST_CFLAGS)
+
+noinst_HEADERS	+=				\
+	src/lib/compress/compress.h		\
+	src/lib/compress/compress_lzma.h	\
+	src/lib/compress/compress_none.h	\
+	src/lib/compress/compress_zlib.h	\
+	src/lib/compress/compress_zstd.h

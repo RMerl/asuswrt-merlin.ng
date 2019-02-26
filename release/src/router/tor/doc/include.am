@@ -12,17 +12,11 @@
 # part of the source distribution, so that people without asciidoc can
 # just use the .1 and .html files.
 
-base_mans = doc/tor doc/tor-gencert doc/tor-resolve doc/torify
-all_mans = $(base_mans)
-if USE_FW_HELPER
-install_mans = $(all_mans)
-else
-install_mans = $(base_mans)
-endif
+all_mans = doc/tor doc/tor-gencert doc/tor-resolve doc/torify doc/tor-print-ed-signing-cert
 
 if USE_ASCIIDOC
-nodist_man1_MANS = $(install_mans:=.1)
-doc_DATA = $(install_mans:=.html)
+nodist_man1_MANS = $(all_mans:=.1)
+doc_DATA = $(all_mans:=.html)
 html_in = $(all_mans:=.html.in)
 man_in = $(all_mans:=.1.in)
 txt_in = $(all_mans:=.1.txt)
@@ -35,16 +29,22 @@ doc_DATA =
 endif
 
 EXTRA_DIST+= doc/asciidoc-helper.sh			\
-             $(html_in) $(man_in) $(txt_in)			\
-             doc/state-contents.txt				\
-             doc/torrc_format.txt 				\
+	     $(html_in) $(man_in) $(txt_in)			\
+	     doc/state-contents.txt				\
+	     doc/torrc_format.txt 				\
 	     doc/TUNING						\
 	     doc/HACKING/README.1st.md				\
 	     doc/HACKING/CodingStandards.md 			\
+	     doc/HACKING/CodingStandardsRust.md			\
+	     doc/HACKING/CodeStructure.md			\
+	     doc/HACKING/Fuzzing.md				\
 	     doc/HACKING/GettingStarted.md 			\
+	     doc/HACKING/GettingStartedRust.md 			\
 	     doc/HACKING/HelpfulTools.md 			\
 	     doc/HACKING/HowToReview.md  			\
+	     doc/HACKING/Module.md				\
 	     doc/HACKING/ReleasingTor.md                        \
+	     doc/HACKING/Tracing.md				\
 	     doc/HACKING/WritingTests.md
 
 docdir = @docdir@
@@ -65,11 +65,13 @@ doc/tor.1.in: doc/tor.1.txt
 doc/torify.1.in: doc/torify.1.txt
 doc/tor-gencert.1.in: doc/tor-gencert.1.txt
 doc/tor-resolve.1.in: doc/tor-resolve.1.txt
+doc/tor-print-ed-signing-cert.1.in: doc/tor-print-ed-signing-cert.1.txt
 
 doc/tor.html.in: doc/tor.1.txt
 doc/torify.html.in: doc/torify.1.txt
 doc/tor-gencert.html.in: doc/tor-gencert.1.txt
 doc/tor-resolve.html.in: doc/tor-resolve.1.txt
+doc/tor-print-ed-signing-cert.html.in: doc/tor-print-ed-signing-cert.1.txt
 
 # use config.status to swap all machine-specific magic strings
 # in the asciidoc with their replacements.
@@ -83,11 +85,13 @@ $(asciidoc_product) :
 doc/tor.html: doc/tor.html.in
 doc/tor-gencert.html: doc/tor-gencert.html.in
 doc/tor-resolve.html: doc/tor-resolve.html.in
+doc/tor-print-ed-signing-cert.html: doc/tor-print-ed-signing-cert.html.in
 doc/torify.html: doc/torify.html.in
 
 doc/tor.1: doc/tor.1.in
 doc/tor-gencert.1: doc/tor-gencert.1.in
 doc/tor-resolve.1: doc/tor-resolve.1.in
+doc/tor-print-ed-signing-cert.1: doc/tor-print-ed-signing-cert.1.in
 doc/torify.1: doc/torify.1.in
 
 CLEANFILES+= $(asciidoc_product)

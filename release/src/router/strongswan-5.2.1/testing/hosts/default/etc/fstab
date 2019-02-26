@@ -1,1 +1,0 @@
-/hostshare /root/shared 9p trans=virtio,version=9p2000.L 0 0

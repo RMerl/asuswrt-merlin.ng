@@ -1,0 +1,8 @@
+moon:: cat /var/log/daemon.log::authentication of.*carol.*successful::YES
+moon:: cat /var/log/daemon.log::libcurl request failed::YES
+moon:: cat /var/log/daemon.log::certificate status is not available::YES
+moon:: cat /var/log/daemon.log::constraint check failed: RULE_CRL_VALIDATION is FAILED, but requires at least SKIPPED::YES
+moon:: ipsec status 2> /dev/null::ESTABLISHED.*moon.strongswan.org.*carol@strongswan.org::YES
+moon:: ipsec status 2> /dev/null::ESTABLISHED.*moon.strongswan.org.*dave@strongswan.org::NO
+carol::ipsec status 2> /dev/null::ESTABLISHED.*carol@strongswan.org.*moon.strongswan.org::YES
+dave:: ipsec status 2> /dev/null::ESTABLISHED::NO

@@ -1,0 +1,58 @@
+#!/bin/bash
+
+DIR=$(dirname `readlink -f $0`)
+. $DIR/testing.conf
+. $DIR/scripts/function.sh
+
+NETWORKS="vnet1 vnet2 vnet3"
+CONFDIR=$DIR/config/kvm
+KNLSRC=$BUILDDIR/$KERNEL/arch/x86/boot/bzImage
+KNLTARGET=/var/run/kvm-swan-kernel
+HOSTFSTARGET=/var/run/kvm-swan-hostfs
+TESTRESTULSTARGET=/var/run/kvm-swan-testresults
+MCASTBRS="test-br0 test-br1"
+
+echo "Starting test environment"
+
+[ `id -u` -eq 0 ] || die "You must be root to run $0"
+running_any $STRONGSWANHOSTS && die "Please stop test environment before running $0"
+
+check_commands kvm virsh
+
+[ -f $KNLSRC ] || die "Kernel $KNLSRC not found"
+log_action "Deploying kernel $KERNEL"
+execute "ln -fs $KNLSRC $KNLTARGET"
+
+log_action "Deploying $SHAREDDIR as hostfs"
+execute "chown -R $KVMUSER:$KVMGROUP $SHAREDDIR" 0
+execute "ln -Tfs $SHAREDDIR $HOSTFSTARGET"
+
+[ -d $TESTRESULTSDIR ] || mkdir $TESTRESULTSDIR
+log_action "Deploying $TESTRESULTSDIR as hostfs"
+execute "ln -Tfs $TESTRESULTSDIR $TESTRESTULSTARGET"
+
+for net in $NETWORKS
+do
+	log_action "Network $net"
+	execute "virsh net-create $CONFDIR/$net.xml"
+done
+
+for host in $STRONGSWANHOSTS
+do
+	ln -fs $IMGDIR/$host.$IMGEXT $VIRTIMGSTORE/$host.$IMGEXT
+	log_action "Guest $host"
+	execute "virsh create $CONFDIR/$host.xml"
+done
+
+# Enforce reception of multicast traffic on bridges
+for br in $MCASTBRS
+do
+	cd /sys/devices/virtual/net/$br/brif
+	for vnet in `find . -name "*eth?"`
+	do
+		echo 2 > $vnet/multicast_router
+	done
+done
+
+echo 0x08 > /sys/devices/virtual/net/test-br0/bridge/group_fwd_mask
+

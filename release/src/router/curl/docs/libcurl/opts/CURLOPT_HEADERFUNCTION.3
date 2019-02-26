@@ -20,7 +20,7 @@
 .\" *
 .\" **************************************************************************
 .\"
-.TH CURLOPT_HEADERFUNCTION 3 "August 11, 2018" "libcurl 7.62.0" "curl_easy_setopt options"
+.TH CURLOPT_HEADERFUNCTION 3 "November 22, 2018" "libcurl 7.64.0" "curl_easy_setopt options"
 
 .SH NAME
 CURLOPT_HEADERFUNCTION \- callback that receives header data
@@ -41,7 +41,7 @@ This function gets called by libcurl as soon as it has received header
 data. The header callback will be called once for each header and only
 complete header lines are passed on to the callback. Parsing headers is very
 easy using this. The size of the data pointed to by \fIbuffer\fP is \fIsize\fP
-multiplied with \fInmemb\fP. Do not assume that the header line is zero
+multiplied with \fInitems\fP. Do not assume that the header line is zero
 terminated!
 
 The pointer named \fIuserdata\fP is the one you set with the

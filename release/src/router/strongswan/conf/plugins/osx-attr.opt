@@ -1,0 +1,3 @@
+charon.plugins.osx-attr.append = yes
+	Whether DNS servers are appended to existing entries, instead of replacing
+	them.

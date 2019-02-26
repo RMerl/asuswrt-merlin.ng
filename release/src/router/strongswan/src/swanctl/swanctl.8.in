@@ -1,0 +1,109 @@
+.TH SWANCTL 8 "2015-11-20" "@PACKAGE_VERSION@" "strongSwan"
+.SH NAME
+swanctl \- strongSwan configuration, control and monitoring command line interface.
+.SH SYNOPSIS
+.SY "swanctl"
+.I command
+.RI [ option\~ .\|.\|.]
+.YS
+.
+.SY "swanctl"
+.B \-h
+|
+.B \-\-help
+.YS
+.
+.SH DESCRIPTION
+swanctl is a cross-platform command line utility to configure, control and
+monitor the strongSwan IKE daemon. It is a replacement for the aging
+.BR starter ,
+.B ipsec
+and
+.B stroke
+tools.
+
+swanctl uses a configuration file called
+.BR swanctl.conf (5)
+to parse configurations and credentials. Private keys, certificates and other
+PKI related credentials are read from specific directories.
+
+To communicate with the IKE daemon, swanctl uses the VICI protocol, the
+Versatile IKE Configuration Interface. This stable interface is usable by
+other tools and is often preferable than scripting swanctl and parsing its
+output.
+
+.SH COMMANDS
+.TP
+.B "\-i, \-\-initiate"
+initiate a connection
+.TP
+.B "\-t, \-\-terminate"
+terminate a connection
+.TP
+.B "\-R, \-\-rekey"
+rekey an SA
+.TP
+.B "\-d, \-\-redirect"
+redirect an IKE_SA
+.TP
+.B "\-p, \-\-install"
+install a trap or shunt policy
+.TP
+.B "\-u, \-\-uninstall"
+uninstall a trap or shunt policy
+.TP
+.B "\-l, \-\-list\-sas"
+list currently active IKE_SAs
+.TP
+.B "\-P, \-\-list\-pols"
+list currently installed policies
+.TP
+.B "\-b, \-\-load\-authorities"
+(re\-)load certification authorities information
+.TP
+.B "\-L, \-\-list\-conns"
+list loaded configurations
+.TP
+.B "\-B, \-\-list\-authorities"
+list loaded certification authorities information
+.TP
+.B "\-x, \-\-list\-certs"
+list stored certificates
+.TP
+.B "\-A, \-\-list\-pools"
+list loaded pool configurations
+.TP
+.B "\-g, \-\-list\-algs"
+list loaded algorithms and their implementation
+.TP
+.B "\-q, \-\-load\-all"
+(re\-)load credentials, pools, authorities and connections
+.TP
+.B "\-c, \-\-load\-conns"
+(re\-)load connection configuration
+.TP
+.B "\-s, \-\-load\-creds"
+(re\-)load credentials
+.TP
+.B "\-a, \-\-load\-pools"
+(re\-)load pool configuration
+.TP
+.B "\-T, \-\-log"
+trace logging output
+.TP
+.B "\-S, \-\-stats"
+show daemon infos and statistics
+.TP
+.B "\-f, \-\-flush\-certs"
+flush cached certificates
+.TP
+.B "\-r, \-\-reload\-settings"
+reload strongswan.conf(5) configuration
+.TP
+.B "\-v, \-\-version"
+show daemon version information
+.TP
+.B "\-h, \-\-help"
+show usage information
+.SH SEE ALSO
+.BR swanctl.conf (5)

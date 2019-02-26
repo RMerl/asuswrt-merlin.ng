@@ -1,0 +1,15 @@
+carol::cat /var/log/daemon.log::configured EAP-Identity carol::YES
+carol::cat /var/log/daemon.log::added EAP secret for carol moon.strongswan.org::YES
+carol::cat /var/log/daemon.log::authentication of 'moon.strongswan.org' with RSA.* successful::YES
+carol::cat /var/log/daemon.log::authentication of 'moon.strongswan.org' with EAP successful::YES
+moon:: cat /var/log/daemon.log::authentication of 'PH_IP_CAROL' with EAP successful::YES
+moon:: cat /var/log/daemon.log::received EAP identity.*carol::YES
+moon:: ipsec status 2> /dev/null::rw-eap.*ESTABLISHED.*moon.strongswan.org.*\[PH_IP_CAROL]::YES
+carol::ipsec status 2> /dev/null::home.*ESTABLISHED.*\[PH_IP_CAROL].*moon.strongswan.org::YES
+moon:: ipsec status 2> /dev/null::rw-eap.*INSTALLED, TUNNEL::YES
+carol::ipsec status 2> /dev/null::home.*INSTALLED, TUNNEL::YES
+carol::ping -c 1 PH_IP_ALICE::64 bytes from PH_IP_ALICE: icmp_.eq=1::YES
+moon::tcpdump::IP carol.strongswan.org > moon.strongswan.org: ESP::YES
+moon::tcpdump::IP moon.strongswan.org > carol.strongswan.org: ESP::YES
+
+

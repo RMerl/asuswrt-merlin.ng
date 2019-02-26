@@ -1,0 +1,3 @@
+moon::swanctl --terminate --ike gw-gw 2> /dev/null
+moon::systemctl stop strongswan-swanctl
+sun::systemctl stop strongswan-swanctl

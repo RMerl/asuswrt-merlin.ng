@@ -1,0 +1,7 @@
+moon::iptables-restore < /etc/iptables.rules
+sun::iptables-restore < /etc/iptables.rules
+moon::systemctl start strongswan-swanctl
+sun::systemctl start strongswan-swanctl
+sun::expect-connection mutual
+moon::expect-connection mutual
+moon::swanctl --initiate --child mutual

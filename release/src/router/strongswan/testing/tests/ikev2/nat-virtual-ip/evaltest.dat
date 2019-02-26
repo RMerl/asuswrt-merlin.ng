@@ -1,0 +1,8 @@
+moon:: ipsec status 2> /dev/null::net-net.*ESTABLISHED.*moon.strongswan.org.*sun.strongswan.org::YES
+sun::  ipsec status 2> /dev/null::net-net.*ESTABLISHED.*sun.strongswan.org.*moon.strongswan.org::YES
+moon:: cat /var/log/daemon.log::inserted NAT rule mapping PH_IP_ALICE to virtual IP::YES
+alice::ping -c 1 PH_IP_BOB::64 bytes from PH_IP_BOB: icmp_.eq=1::YES
+sun::tcpdump::IP moon.strongswan.org > sun.strongswan.org: ESP::YES
+sun::tcpdump::IP sun.strongswan.org > moon.strongswan.org: ESP::YES
+bob::tcpdump::IP alice2.strongswan.org > bob.strongswan.org: ICMP::YES
+bob::tcpdump::IP bob.strongswan.org > alice2.strongswan.org: ICMP::YES

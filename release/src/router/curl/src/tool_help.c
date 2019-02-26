@@ -5,7 +5,7 @@
  *                            | (__| |_| |  _ <| |___
  *                             \___|\___/|_| \_\_____|
  *
- * Copyright (C) 1998 - 2018, Daniel Stenberg, <daniel@haxx.se>, et al.
+ * Copyright (C) 1998 - 2019, Daniel Stenberg, <daniel@haxx.se>, et al.
  *
  * This software is licensed as described in the file COPYING, which
  * you should have received as part of this distribution. The terms
@@ -176,6 +176,8 @@ static const struct helptxt helptext[] = {
    "This help text"},
   {"    --hostpubmd5 <md5>",
    "Acceptable MD5 hash of the host public key"},
+  {"    --http0.9",
+   "Allow HTTP 0.9 responses"},
   {"-0, --http1.0",
    "Use HTTP 1.0"},
   {"    --http1.1",
@@ -411,7 +413,7 @@ static const struct helptxt helptext[] = {
   {"    --ssl-allow-beast",
    "Allow security flaw to improve interop"},
   {"    --ssl-no-revoke",
-   "Disable cert revocation checks (WinSSL)"},
+   "Disable cert revocation checks (Schannel)"},
   {"    --ssl-reqd",
    "Require SSL/TLS"},
   {"-2, --sslv2",
@@ -437,7 +439,7 @@ static const struct helptxt helptext[] = {
   {"-z, --time-cond <time>",
    "Transfer based on a time condition"},
   {"    --tls-max <VERSION>",
-   "Use TLSv1.0 or greater"},
+   "Set maximum allowed TLS version"},
   {"    --tls13-ciphers <list of TLS 1.3 ciphersuites>",
    "TLS 1.3 cipher suites to use"},
   {"    --tlsauthtype <type>",

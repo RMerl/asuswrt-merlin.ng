@@ -1,0 +1,7 @@
+moon::ipsec start
+moon::iptables-restore < /etc/iptables.rules
+carol::iptables-restore < /etc/iptables.rules
+moon::expect-connection rw
+carol::ipsec start
+carol::expect-connection home
+carol::ipsec up home

@@ -1,0 +1,8 @@
+--connect sun.strongswan.org
+--client moon.strongswan.org
+--key /etc/swanctl/rsa/moonKey.pem
+--cert /etc/swanctl/x509/moonCert.pem
+--cert /etc/swanctl/x509ca/strongswanCert.pem
+--mutual
+--quiet
+--debug 2

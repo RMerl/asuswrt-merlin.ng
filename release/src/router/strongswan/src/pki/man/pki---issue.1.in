@@ -1,0 +1,231 @@
+.TH "PKI \-\-ISSUE" 1 "2016-12-13" "@PACKAGE_VERSION@" "strongSwan"
+.
+.SH "NAME"
+.
+pki \-\-issue \- Issue a certificate using a CA certificate and key
+.
+.SH "SYNOPSIS"
+.
+.SY pki\ \-\-issue
+.OP \-\-in file
+.OP \-\-type type
+.BI \-\-cakey\~ file |\-\-cakeyid\~ hex
+.BI \-\-cacert\~ file
+.OP \-\-dn subject-dn
+.OP \-\-san subjectAltName
+.OP \-\-lifetime days
+.OP \-\-not-before datetime
+.OP \-\-not-after datetime
+.OP \-\-serial hex
+.OP \-\-flag flag
+.OP \-\-digest digest
+.OP \-\-rsa\-padding padding
+.OP \-\-ca
+.OP \-\-crl uri\ \fR[\fB\-\-crlissuer\ \fIissuer\fR]
+.OP \-\-ocsp uri
+.OP \-\-pathlen len
+.OP \-\-nc-permitted name
+.OP \-\-addrblock block
+.OP \-\-nc-excluded name
+.OP \-\-policy\-mapping mapping
+.OP \-\-policy\-explicit len
+.OP \-\-policy\-inhibit len
+.OP \-\-policy\-any len
+.OP \-\-cert\-policy oid\ \fR[\fB\-\-cps\-uri\ \fIuri\fR]\ \fR[\fB\-\-user\-notice\ \fItext\fR]
+.OP \-\-outform encoding
+.OP \-\-debug level
+.YS
+.
+.SY pki\ \-\-issue
+.BI \-\-options\~ file
+.YS
+.
+.SY "pki \-\-issue"
+.B \-h
+|
+.B \-\-help
+.YS
+.
+.SH "DESCRIPTION"
+.
+This sub-command of
+.BR pki (1)
+is used to issue a certificate using a CA certificate and private key.
+.
+.SH "OPTIONS"
+.
+.TP
+.B "\-h, \-\-help"
+Print usage information with a summary of the available options.
+.TP
+.BI "\-v, \-\-debug " level
+Set debug level, default: 1.
+.TP
+.BI "\-+, \-\-options " file
+Read command line options from \fIfile\fR.
+.TP
+.BI "\-i, \-\-in " file
+Public key or PKCS#10 certificate request file to issue. If not given the
+key/request is read from \fISTDIN\fR.
+.TP
+.BI "\-t, \-\-type " type
+Type of the input. One of \fIpub\fR (public key), \fIpriv\fR (private key),
+\fIrsa\fR (RSA private key), \fIecdsa\fR (ECDSA private key),
+\fIed25519\fR (Ed25519 private key) \fIbliss\fR (BLISS private key) or
+\fIpkcs10\fR (PKCS#10 certificate request), defaults to \fIpub\fR.
+.TP
+.BI "\-k, \-\-cakey " file
+CA private key file. Either this or
+.B \-\-cakeyid
+is required.
+.TP
+.BI "\-x, \-\-cakeyid " hex
+Smartcard or TPM CA private key object handle in hex format with an optional
+0x prefix. Either this or
+.B \-\-cakey
+is required.
+.TP
+.BI "\-c, \-\-cacert " file
+CA certificate file. Required.
+.TP
+.BI "\-d, \-\-dn " subject-dn
+Subject distinguished name (DN) of the issued certificate.
+.TP
+.BI "\-a, \-\-san " subjectAltName
+subjectAltName extension to include in certificate. Can be used multiple times.
+.TP
+.BI "\-l, \-\-lifetime " days
+Days the certificate is valid, default: 1095. Ignored if both
+an absolute start and end time are given.
+.TP
+.BI "\-F, \-\-not-before " datetime
+Absolute time when the validity of the certificate begins. The datetime format
+is defined by the
+.B \-\-dateform
+option.
+.TP
+.BI "\-T, \-\-not-after " datetime
+Absolute time when the validity of the certificate ends. The datetime format is
+defined by the
+.B \-\-dateform
+option.
+.TP
+.BI "\-D, \-\-dateform " form
+strptime(3) format for the
+.B \-\-not\-before
+and
+.B \-\-not\-after
+options, default:
+.B %d.%m.%y %T
+.TP
+.BI "\-s, \-\-serial " hex
+Serial number in hex. It is randomly allocated by default.
+.TP
+.BI "\-e, \-\-flag " flag
+Add extendedKeyUsage flag. One of \fIserverAuth\fR, \fIclientAuth\fR,
+\fIcrlSign\fR, or \fIocspSigning\fR. Can be used multiple times.
+.TP
+.BI "\-g, \-\-digest " digest
+Digest to use for signature creation. One of \fImd5\fR, \fIsha1\fR,
+\fIsha224\fR, \fIsha256\fR, \fIsha384\fR, or \fIsha512\fR.  The default is
+determined based on the type and size of the signature key.
+.TP
+.BI "\-R, \-\-rsa\-padding " padding
+Padding to use for RSA signatures. Either \fIpkcs1\fR or \fIpss\fR, defaults
+to \fIpkcs1\fR.
+.TP
+.BI "\-f, \-\-outform " encoding
+Encoding of the created certificate file. Either \fIder\fR (ASN.1 DER) or
+\fIpem\fR (Base64 PEM), defaults to \fIder\fR.
+.TP
+.BI "\-b, \-\-ca"
+Include CA basicConstraint extension in certificate.
+.TP
+.BI "\-u, \-\-crl " uri
+CRL distribution point URI to include in certificate. Can be used multiple
+times.
+.TP
+.BI "\-I, \-\-crlissuer " issuer
+Optional CRL issuer for the CRL at the preceding distribution point.
+.TP
+.BI "\-o, \-\-ocsp " uri
+OCSP AuthorityInfoAccess URI to include in certificate. Can be used multiple
+times.
+.TP
+.BI "\-p, \-\-pathlen " len
+Set path length constraint.
+.TP
+.BI "\-B, \-\-addrblock " block
+RFC 3779 address block to include in certificate. \fIblock\fR is either a
+CIDR subnet (such as \fI10.0.0.0/8\fR) or an arbitrary address range
+(\fI192.168.1.7-192.168.1.13\fR). Can be repeated to include multiple blocks.
+Please note that the supplied blocks are included in the certificate as is,
+so for standards compliance, multiple blocks must be supplied in correct
+order and adjacent blocks must be combined. Refer to RFC 3779 for details.
+.TP
+.BI "\-n, \-\-nc-permitted " name
+Add permitted NameConstraint extension to certificate. For DNS or email
+constraints, the identity type is not always detectable by the given name. Use
+the
+.B dns:
+or
+.B email:
+prefix to force a constraint type.
+.TP
+.BI "\-N, \-\-nc-excluded " name
+Add excluded NameConstraint extension to certificate. For DNS or email
+constraints, the identity type is not always detectable by the given name. Use
+the
+.B dns:
+or
+.B email:
+prefix to force a constraint type.
+.TP
+.BI "\-M, \-\-policy-mapping " issuer-oid:subject-oid
+Add policyMapping from issuer to subject OID.
+.TP
+.BI "\-E, \-\-policy-explicit " len
+Add requireExplicitPolicy constraint.
+.TP
+.BI "\-H, \-\-policy-inhibit " len
+Add inhibitPolicyMapping constraint.
+.TP
+.BI "\-A, \-\-policy-any " len
+Add inhibitAnyPolicy constraint.
+.PP
+.SS "Certificate Policy"
+Multiple certificatePolicy extensions can be added. Each with the following
+information:
+.TP
+.BI "\-P, \-\-cert-policy " oid
+OID to include in certificatePolicy extension. Required.
+.TP
+.BI "\-C, \-\-cps-uri " uri
+Certification Practice statement URI for certificatePolicy.
+.TP
+.BI "\-U, \-\-user-notice " text
+User notice for certificatePolicy.
+.
+.SH "EXAMPLES"
+.
+To save repetitive typing, command line options can be stored in files.
+Lets assume
+.I pki.opt
+contains the following contents:
+.PP
+.EX
+  --cacert ca_cert.der --cakey ca_key.der --digest sha256
+  --flag serverAuth --lifetime 1460 --type pkcs10
+.EE
+.PP
+Then the following command can be used to issue a certificate based on a
+given PKCS#10 certificate request and the options above:
+.PP
+.EX
+  pki --issue --options pki.opt --in req.der > cert.der
+.EE
+.PP
+.
+.SH "SEE ALSO"
+.
+.BR pki (1)

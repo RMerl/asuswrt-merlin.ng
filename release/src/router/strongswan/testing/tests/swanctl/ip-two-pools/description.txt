@@ -1,0 +1,9 @@
+The hosts <b>alice</b> and <b>carol</b> set up a tunnel connection each to gateway <b>moon</b>.
+Both hosts request a <b>virtual IP</b> via the IKEv2 configuration payload.
+Gateway <b>moon</b> assigns virtual IP addresses from <b>pool1</b> with an address range of
+<b>10.3.0.0/28</b> to hosts connecting to the <b>eth0</b> (192.168.0.1) interface and
+virtual IP addresses from  <b>pool2</b> with an address range of <b>10.4.0.0/28</b> to hosts
+connecting to the <b>eth1</b> (10.1.0.1) interface.
+<p>
+Thus <b>carol</b> is assigned <b>PH_IP_CAROL1</b> whereas <b>alice</b> gets <b>10.4.0.1</b> and
+both ping the gateway <b>moon</b>.

@@ -189,6 +189,12 @@ static void do_jffsupload_post(char *url, FILE *stream, int len, char *boundary)
 #include <openssl/x509.h>
 #include <openssl/x509v3.h>
 #include <openssl/pem.h>
+#include <openssl/opensslconf.h>
+#include <openssl/opensslv.h>
+#if OPENSSL_VERSION_NUMBER < 0x10100000L
+#define X509_getm_notBefore X509_get_notBefore
+#define X509_getm_notAfter X509_get_notAfter
+#endif
 #ifdef RTCONFIG_LETSENCRYPT
 #include <letsencrypt_config.h>
 #endif
@@ -22791,11 +22797,9 @@ ej_httpd_cert_info(int eid, webs_t wp, int argc, char **argv)
 	_get_common_name(buf, issuer, sizeof(issuer));
 	X509_NAME_oneline(X509_get_subject_name(x509data), buf, sizeof(buf));
 	_get_common_name(buf, subject, sizeof(subject));
-	//strptime(x509data->cert_info->validity->notBefore->data, "%y%m%d%H%M%SZ", &tm, NULL);
-	ASN1_TimeToTM(x509data->cert_info->validity->notBefore, &tm);
+	ASN1_TimeToTM(X509_getm_notBefore(x509data), &tm);
 	snprintf(notBefore, sizeof(notBefore), "%d/%d/%d", tm.tm_year+1900, tm.tm_mon+1, tm.tm_mday);
-	//strptime(x509data->cert_info->validity->notAfter->data, "%y%m%d%H%M%SZ", &tm, NULL);
-	ASN1_TimeToTM(x509data->cert_info->validity->notAfter, &tm);
+	ASN1_TimeToTM(X509_getm_notAfter(x509data), &tm);
 	snprintf(notAfter, sizeof(notAfter), "%d/%d/%d", tm.tm_year+1900, tm.tm_mon+1, tm.tm_mday);
 
 	websWrite(wp, "{");

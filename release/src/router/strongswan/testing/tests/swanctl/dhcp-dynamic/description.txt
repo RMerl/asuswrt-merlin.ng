@@ -1,0 +1,8 @@
+The roadwarriors <b>carol</b> and <b>dave</b> set up a connection each to gateway <b>moon</b>
+and request a <b>virtual IP</b> via the IKEv2 configuration payload by using the <b>vips=0.0.0.0</b>
+parameter. The <b>dhcp</b> plugin on gateway <b>moon</b> then requests an IP address and DNS server
+information from DHCP server <b>venus</b> using the DHCP protocol. The IP addresses are assigned dynamically
+by <b>venus</b> from the pool 10.1.0.50..10.1.0.60 so that <b>carol</b> and <b>dave</b> become full members
+of the subnet 10.1.0.0/16 hidden behind gateway <b>moon</b>. And this thanks to the <b>farp</b> plugin
+through which <b>moon</b> acts as a proxy for ARP requests e.g. from <b>alice</b> who wants to ping
+<b>carol</b> and <b>dave</b>. 

@@ -1,0 +1,32 @@
+alice::cat /var/log/daemon.log::HA segment 1 was not handled, taking::YES
+moon:: cat /var/log/daemon.log::remote node takes segment 1::YES
+alice::ipsec status 2> /dev/null::ha.*ESTABLISHED.*10.1.0.10.*10.1.0.1::YES
+alice::ipsec status 2> /dev/null::rw.*ESTABLISHED.*mars.strongswan.org.*carol@strongswan.org::YES
+alice::ipsec status 2> /dev/null::rw.*ESTABLISHED.*mars.strongswan.org.*dave@strongswan.org::YES
+moon:: ipsec status 2> /dev/null::ha.*ESTABLISHED.*10.1.0.1.*10.1.0.10::YES
+moon:: ipsec status 2> /dev/null::rw.*PASSIVE.*mars.strongswan.org.*carol@strongswan.org::YES
+moon:: ipsec status 2> /dev/null::rw.*PASSIVE.*mars.strongswan.org.*dave@strongswan.org::YES
+carol::ipsec status 2> /dev/null::home.*ESTABLISHED.*carol@strongswan.org.*mars.strongswan.org::YES
+dave:: ipsec status 2> /dev/null::home.*ESTABLISHED.*dave@strongswan.org.*mars.strongswan.org::YES
+alice::cat /var/log/daemon.log::HA segment 1 activated::YES
+alice::cat /var/log/daemon.log::handling HA CHILD_SA::YES
+moon:: cat /var/log/daemon.log::installed HA CHILD_SA::YES
+carol::ping -c 1 PH_IP_VENUS::64 bytes from PH_IP_VENUS: icmp_.eq=1::YES
+dave:: ping -c 1 PH_IP_VENUS::64 bytes from PH_IP_VENUS: icmp_.eq=1::YES
+alice::ip xfrm policy flush::no output expected::NO
+alice::ip xfrm state flush::no output expected::NO
+alice::killall -9 starter charon::no output expected::NO
+carol::sleep 2::no output expected::NO
+moon:: cat /var/log/daemon.log::no heartbeat received, taking all segments::YES
+moon:: ipsec status 2> /dev/null::rw.*ESTABLISHED.*mars.strongswan.org.*carol@strongswan.org::YES
+moon:: ipsec status 2> /dev/null::rw.*ESTABLISHED.*mars.strongswan.org.*dave@strongswan.org::YES
+carol::ping -c 1 PH_IP_VENUS::64 bytes from PH_IP_VENUS: icmp_.eq=1::YES
+dave:: ping -c 1 PH_IP_VENUS::64 bytes from PH_IP_VENUS: icmp_.eq=1::YES
+carol::tcpdump::IP carol.strongswan.org > mars.strongswan.org: ESP::YES
+carol::tcpdump::IP mars.strongswan.org > carol.strongswan.org: ESP::YES
+dave::tcpdump::IP dave.strongswan.org > mars.strongswan.org: ESP::YES
+dave::tcpdump::IP mars.strongswan.org > dave.strongswan.org: ESP::YES
+venus::tcpdump::IP carol.strongswan.org > venus.strongswan.org: ICMP echo request::YES
+venus::tcpdump::IP venus.strongswan.org > carol.strongswan.org: ICMP echo reply::YES
+venus::tcpdump::IP dave.strongswan.org > venus.strongswan.org: ICMP echo request::YES
+venus::tcpdump::IP venus.strongswan.org > dave.strongswan.org: ICMP echo reply::YES

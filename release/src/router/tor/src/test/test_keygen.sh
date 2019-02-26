@@ -13,6 +13,14 @@ if [ $# -eq 0 ] || [ ! -f ${1} ] || [ ! -x ${1} ]; then
   fi
 fi
 
+UNAME_OS=`uname -s | cut -d_ -f1`
+if test "$UNAME_OS" = 'CYGWIN' || \
+   test "$UNAME_OS" = 'MSYS' || \
+   test "$UNAME_OS" = 'MINGW'; then
+  echo "This test is unreliable on Windows. See trac #26076. Skipping." >&2
+  exit 77
+fi
+
 if [ $# -ge 1 ]; then
   TOR_BINARY="${1}"
   shift
@@ -40,6 +48,12 @@ fi
   CASE8=$dflt
   CASE9=$dflt
   CASE10=$dflt
+  CASE11A=$dflt
+  CASE11B=$dflt
+  CASE11C=$dflt
+  CASE11D=$dflt
+  CASE11E=$dflt
+  CASE11F=$dflt
 
   if [ $# -ge 1 ]; then
      eval "CASE${1}"=1
@@ -360,6 +374,109 @@ ${TOR} --DataDirectory "${ME}" --list-fingerprint >"${ME}/stdout" && die "Succes
 grep "public_key does not match.*secret_key" "${ME}/stdout" >/dev/null || die "Tor didn't declare that there was a key mismatch"
 
 echo "==== Case 10 ok"
+
+fi
+
+# Case 11a: -passphrase-fd without --keygen
+
+if [ "$CASE11A" = 1 ]; then
+
+ME="${DATA_DIR}/case11a"
+
+mkdir -p "${ME}/keys"
+
+${TOR} --DataDirectory "${ME}" --passphrase-fd 1 > "${ME}/stdout" && die "Successfully started with passphrase-fd but no keygen?" || true
+
+grep "passphrase-fd specified without --keygen" "${ME}/stdout" >/dev/null || die "Tor didn't declare that there was a problem with the arguments."
+
+echo "==== Case 11A ok"
+
+fi
+
+# Case 11b: --no-passphrase without --keygen
+
+if [ "$CASE11B" = 1 ]; then
+
+ME="${DATA_DIR}/case11b"
+
+mkdir -p "${ME}/keys"
+
+${TOR} --DataDirectory "${ME}" --no-passphrase > "${ME}/stdout" && die "Successfully started with no-passphrase but no keygen?" || true
+
+grep "no-passphrase specified without --keygen" "${ME}/stdout" >/dev/null || die "Tor didn't declare that there was a problem with the arguments."
+
+echo "==== Case 11B ok"
+
+fi
+
+# Case 11c: --newpass without --keygen
+
+if [ "$CASE11C" = 1 ]; then
+
+ME="${DATA_DIR}/case11C"
+
+mkdir -p "${ME}/keys"
+
+${TOR} --DataDirectory "${ME}" --newpass > "${ME}/stdout" && die "Successfully started with newpass but no keygen?" || true
+
+grep "newpass specified without --keygen" "${ME}/stdout" >/dev/null || die "Tor didn't declare that there was a problem with the arguments."
+
+echo "==== Case 11C ok"
+
+fi
+
+######## --master-key does not work yet, but this will test the error case
+########  when it does.
+#
+# Case 11d: --master-key without --keygen
+#
+if [ "$CASE11D" = 1 ]; then
+#
+# ME="${DATA_DIR}/case11d"
+#
+# mkdir -p "${ME}/keys"
+#
+# ${TOR} --DataDirectory "${ME}" --master-key "${ME}/foobar" > "${ME}/stdout" && die "Successfully started with master-key but no keygen?" || true
+#
+# cat "${ME}/stdout"
+#
+# grep "master-key without --keygen" "${ME}/stdout" >/dev/null || die "Tor didn't declare that there was a problem with the arguments."
+
+    echo "==== Case 11D skipped"
+
+fi
+
+
+# Case 11E: Silly passphrase-fd
+
+if [ "$CASE11E" = 1 ]; then
+
+ME="${DATA_DIR}/case11E"
+
+mkdir -p "${ME}/keys"
+
+${TOR} --DataDirectory "${ME}" --keygen --passphrase-fd ewigeblumenkraft > "${ME}/stdout" && die "Successfully started with bogus passphrase-fd?" || true
+
+grep "Invalid --passphrase-fd value" "${ME}/stdout" >/dev/null || die "Tor didn't declare that there was a problem with the arguments."
+
+echo "==== Case 11E ok"
+
+fi
+
+
+# Case 11F: --no-passphrase with --passphrase-fd
+
+if [ "$CASE11F" = 1 ]; then
+
+ME="${DATA_DIR}/case11F"
+
+mkdir -p "${ME}/keys"
+
+${TOR} --DataDirectory "${ME}" --keygen --passphrase-fd 1 --no-passphrase > "${ME}/stdout" && die "Successfully started with bogus passphrase-fd combination?" || true
+
+grep "no-passphrase specified with --passphrase-fd" "${ME}/stdout" >/dev/null || die "Tor didn't declare that there was a problem with the arguments."
+
+echo "==== Case 11F ok"
 
 fi
 

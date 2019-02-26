@@ -1,0 +1,21 @@
+moon::iptables-restore < /etc/iptables.rules
+carol::iptables-restore < /etc/iptables.rules
+dave::iptables-restore < /etc/iptables.rules
+winnetou::ip route add 10.1.0.0/16 via 192.168.0.1
+alice::cat /etc/tnc_config
+carol::cat /etc/tnc_config
+dave::cat /etc/tnc_config
+carol::echo 0 > /proc/sys/net/ipv4/ip_forward
+dave::echo aabbccddeeff11223344556677889900 > /var/lib/dbus/machine-id
+alice::rm /etc/swanctl/rsa/aliceKey.pem
+alice::rm /etc/swanctl/x509/aliceCert.pem
+alice::systemctl start strongswan-swanctl
+moon::systemctl start strongswan-swanctl
+carol::systemctl start strongswan-swanctl
+dave::systemctl start strongswan-swanctl
+moon::expect-connection rw-allow
+moon::expect-connection rw-isolate
+carol::expect-connection home
+carol::swanctl --initiate --child home 2> /dev/null
+dave::expect-connection home
+dave::swanctl --initiate --child home 2> /dev/null

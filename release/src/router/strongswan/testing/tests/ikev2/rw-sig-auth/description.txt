@@ -1,0 +1,10 @@
+The roadwarriors <b>carol</b> an <b>dave</b> set up a connection to gateway
+<b>moon</b>. They authenticate themselves using <b>RSA signatures</b> but
+they use different hash algorithms. <b>moon</b> uses signature scheme constraints
+to only allow access to the <b>research</b> and <b>accounting</b> subnets if
+specific algorithms are used. <b>Note:</b> Because the client certificate's are signed
+with SHA-256 we have to accept that algorithm too because signature schemes in
+<b>rightauth</b> are also used as constraints for the whole certificate chain.
+Therefore, <b>carol</b> obtains access to the <b>research</b> subnet behind gateway
+<b>moon</b> whereas <b>dave</b> has access to the <b>accounting</b> subnet, but not
+vice-versa.

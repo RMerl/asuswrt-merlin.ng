@@ -1,0 +1,134 @@
+.TH SW-COLLECTOR 8 "2017-08-25" "@PACKAGE_VERSION@" "strongSwan"
+.
+.SH "NAME"
+.
+sw-collector \- Extracts software installation events from dpkg history log
+.
+.SH "SYNOPSIS"
+.
+.SY "sw-collector"
+.OP \-\-debug level
+.OP \-\-quiet
+.OP \-\-count event-count
+.YS
+.
+.SY "sw-collector"
+.OP \-\-debug level
+.OP \-\-quiet
+.OP \-\-installed\fR|\fB\--removed
+.BR \-\-list |\fB\-\-unregistered
+.YS
+.
+.SY "sw-collector"
+.OP \-\-debug level
+.OP \-\-quiet
+.OP \-\-installed\fR|\fB\--removed
+.OP \-\-full
+.BR \-\-generate
+.YS
+.
+.SY "sw-collector"
+.OP \-\-debug level
+.OP \-\-quiet
+.BR \-\-migrate
+.YS
+.
+.SY "sw-collector"
+.OP \-\-debug level
+.OP \-\-quiet
+.BR \-\-check
+.YS
+.
+.SY "sw-collector"
+.B \-h
+|
+.B \-\-help
+.YS
+.
+.SH "DESCRIPTION"
+.
+.B sw-collector
+extracts information about software package installation, update or removal
+events from the apt history log and stores the software events in an SQLite
+database. The retrieved history information is then merged and made consistent
+with the actual list of installed software packages obtained with dpkg-query.
+.
+.SH "OPTIONS"
+.
+.TP
+.B "\-h, \-\-help"
+Prints usage information and a short summary of the available commands.
+.TP
+.BI "\-v, \-\-debug " level
+Set debug level, default: 2.
+.TP
+.B "\-q, \-\-quiet"
+Disable debug output to stderr.
+.TP
+.B "\-i, \-\-installed"
+Apply command to installed software packages, only.
+.TP
+.B "\-r, \-\-removed"
+Apply command to removed software packages, only.
+.TP
+.B "\-f, \-\-full"
+Generate ISO 19770-2:2015 SWID tags with full file information (possible for
+installed software packages, only).
+.TP
+.B "\-l, \-\-list"
+Lists all software packages stored in the collector database showing their
+installation status.
+.TP
+.B "\-u, \-\-unregistered"
+Lists all software packages residing in the local collector database but for
+which no SWID tags exist yet in a central collector database reachable via a
+REST interface.
+.TP
+.B "\-g, \-\-generate"
+Generates ISO 19770-2:2015 SWID tags for all software packages residing in the
+local collector database but for which no SWID tags exist in a central collector
+database reachable via a REST interface.
+.TP
+.B "\-m, \-\-migrate"
+Can be used to migrate collector database versions. Currently all architecture
+suffixes are removed from dpkg package names.
+.TP
+.B "\-C, \-\-check"
+Checks the integrity of the collector database against the actual list of
+installed packages obtained with dpkg-query.
+.
+.SH "CONFIGURATION"
+.
+The following parameters can be configured in strongswan.conf:
+.P
+ sw-collector {
+    database = sqlite:///etc/pts/collector.db
+    history = /var/log/apt/history.log
+    first_time = 2016-04-22T20:55:14Z
+    rest_api {
+       uri = https://admin-user:ietf99hackathon@tnc.strongswan.org/api/
+       timeout = 120
+    }
+ }
+.P
+The parameters of the swid_generator used with the \-\-generate command can
+be changed in the libimcv section of strongswan.conf:
+.P
+ libimcv {
+    swid_gen {
+       command = /usr/local/bin/swid_generator
+       tag_creator {
+          name = strongSwan Project
+          regid = strongswan.org
+       }
+    }
+ }
+.
+.SH "FILES"
+.
+@PKGDATADIR@/templates/database/sw-collector/sw_collector_tables.sql
+.
+.SH "SEE ALSO"
+.
+.BR strongswan.conf (5)
+

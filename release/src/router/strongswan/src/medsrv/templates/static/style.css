@@ -1,0 +1,128 @@
+
+body {
+    font-family: Verdana, Arial, Helvetica, sans-serif;
+    color: #230100;
+    background-color: #f7f4d3;
+    margin: 0;
+}
+
+.content {
+}
+
+.content > * {
+    background-color: #e5bf5e;
+    border: solid 2px;
+    padding: 1em 1em 1em 1em;
+    margin: 1em;
+    text-align: left;
+}
+
+textarea, select, input {
+	background-color: #ffec9e;
+	border: 1px solid;
+	padding: 1px 3px 1px 3px;
+}
+
+table.user input[type="text"], table.user input[type="password"] {
+	width: 15em;
+}
+
+table.peer textarea {
+	height: 20em;
+	width: 42.3em;
+
+}
+
+table.peer input[type="text"] {
+	width: 38em;
+}
+
+.menu {
+	text-align: right;
+    background-color: #e5bf5e;
+    padding: 3px;
+    border-bottom: solid 2px;
+}
+
+a {
+	color: black;
+	text-decoration: none;
+}
+
+a:hover {
+	text-decoration: underline;
+}
+
+h1 {
+	margin-top: 1.5em;
+	font-size: 2.1em;
+	white-space: nowrap;
+}
+
+hr {
+	border: solid 1px;
+}
+
+a img {
+	border: none;
+}
+
+.center {
+	text-align: center;
+}
+
+.left {
+	text-align: left;
+}
+
+.right {
+	text-align: right;
+}
+
+.fleft {
+	margin-right: 2em;
+	float: left;
+}
+
+.fright {
+	float: left;
+}
+
+.cleft {
+	clear:left;
+}
+
+.cright {
+	clear:right;
+}
+
+.both {
+	clear:both;
+}
+
+.error {
+	color: #dd0000;
+}
+
+table.list * {
+	padding: 0px 1em 0px 0.2em;
+}
+
+table.list tr td, table.list tr th {
+	border: solid 1px;
+	border-color: black;
+}
+
+table.list tr th {
+	background-color: #ffec9e;
+}
+
+table.list tr:nth-child(odd) td {
+	background-color: #f2cd6f;
+}
+
+table.list tr td a {
+	text-decoration: none;
+	display: inline-block;
+	width: 100%;
+}

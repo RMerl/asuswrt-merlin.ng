@@ -1,0 +1,7 @@
+A connection between the subnets behind the gateways <b>moon</b> and <b>sun</b> is set up.
+With <b>esp=aes128-sha256-esn!</b> gateway <b>moon</b> proposes the use of
+<b>Extended Sequence Numbers</b>. Gateway <b>sun</b> defines <b>esp=aes128-sha256-esn-noesn!</b>,
+accepting proposals with and without ESN.
+<p/>
+Upon the successful establishment of the CHILD SA with ESN, client <b>alice</b> behind
+gateway <b>moon</b> pings client <b>bob</b> located behind gateway <b>sun</b> 10 times.

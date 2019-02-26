@@ -9,29 +9,22 @@
 #include "keccak-tiny.h"
 
 #include <string.h>
-#include "crypto.h"
+#include "lib/crypt_ops/crypto_util.h"
+#include "byteorder.h"
 
 /******** Endianness conversion helpers ********/
 
 static inline uint64_t
 loadu64le(const unsigned char *x) {
-  uint64_t r = 0;
-  size_t i;
-
-  for (i = 0; i < 8; ++i) {
-    r |= (uint64_t)x[i] << 8 * i;
-  }
-  return r;
+  uint64_t r;
+  memcpy(&r, x, sizeof(r));
+  return _le64toh(r);
 }
 
 static inline void
 storeu64le(uint8_t *x, uint64_t u) {
-  size_t i;
-
-  for(i=0; i<8; ++i) {
-    x[i] = u;
-    u >>= 8;
-  }
+  uint64_t val = _le64toh(u);
+  memcpy(x, &val, sizeof(u));
 }
 
 /******** The Keccak-f[1600] permutation ********/

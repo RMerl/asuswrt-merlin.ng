@@ -1,0 +1,10 @@
+moon::iptables-restore < /etc/iptables.rules
+carol::iptables-restore < /etc/iptables.rules
+moon::systemctl start strongswan-swanctl
+carol::systemctl start strongswan-swanctl
+moon::expect-connection icmp
+moon::expect-connection ssh
+carol::expect-connection icmp
+carol::expect-connection ssh
+carol::swanctl --initiate --child icmp 2> /dev/null
+carol::swanctl --initiate --child ssh 2> /dev/null

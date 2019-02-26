@@ -1,0 +1,20 @@
+dave:: cat /var/log/daemon.log::PB-TNC access recommendation is 'Quarantined'::YES
+dave:: cat /var/log/daemon.log::EAP method EAP_TTLS succeeded, MSK established::YES
+dave:: cat /var/log/daemon.log::authentication of 'moon.strongswan.org' with EAP successful::YES
+carol::cat /var/log/daemon.log::PB-TNC access recommendation is 'Access Allowed'::YES
+carol::cat /var/log/daemon.log::EAP method EAP_TTLS succeeded, MSK established::YES
+carol::cat /var/log/daemon.log::authentication of 'moon.strongswan.org' with EAP successful::YES
+moon:: ipsec attest --session 2> /dev/null::Debian.*x86_64.*carol@strongswan.org - allow::YES
+moon:: cat /var/log/daemon.log::added group membership 'allow'::YES
+moon:: cat /var/log/daemon.log::authentication of 'carol@strongswan.org' with EAP successful::YES
+moon:: ipsec attest --session 2> /dev/null::Debian.*x86_64.*dave@strongswan.org - isolate::YES
+moon:: cat /var/log/daemon.log::added group membership 'isolate'::YES
+moon:: cat /var/log/daemon.log::authentication of 'dave@strongswan.org' with EAP successful::YES
+dave:: swanctl --list-sas --raw 2> /dev/null::home.*version=2 state=ESTABLISHED local-host=192.168.0.200 local-port=4500 local-id=dave@strongswan.org remote-host=192.168.0.1 remote-port=4500 remote-id=moon.strongswan.org initiator=yes.*encr-alg=AES_CBC encr-keysize=128 integ-alg=HMAC_SHA2_256_128 prf-alg=PRF_HMAC_SHA2_256 dh-group=MODP_3072.*child-sas.*home.*state=INSTALLED mode=TUNNEL protocol=ESP.*encr-alg=AES_GCM_16 encr-keysize=128.*local-ts=\[192.168.0.200/32] remote-ts=\[10.1.0.16/28]::YES
+carol::swanctl --list-sas --raw 2> /dev/null::home.*version=2 state=ESTABLISHED local-host=192.168.0.100 local-port=4500 local-id=carol@strongswan.org remote-host=192.168.0.1 remote-port=4500 remote-id=moon.strongswan.org initiator=yes.*encr-alg=AES_CBC encr-keysize=128 integ-alg=HMAC_SHA2_256_128 prf-alg=PRF_HMAC_SHA2_256 dh-group=MODP_3072.*child-sas.*home.*state=INSTALLED mode=TUNNEL protocol=ESP.*encr-alg=AES_GCM_16 encr-keysize=128.*local-ts=\[192.168.0.100/32] remote-ts=\[10.1.0.0/28]::YES
+moon:: swanctl --list-sas --ike-id 1 --raw  2> /dev/null::rw-isolate.*version=2 state=ESTABLISHED local-host=192.168.0.1 local-port=4500 local-id=moon.strongswan.org remote-host=192.168.0.200 remote-port=4500 remote-id=dave@strongswan.org.*encr-alg=AES_CBC encr-keysize=128 integ-alg=HMAC_SHA2_256_128 prf-alg=PRF_HMAC_SHA2_256 dh-group=MODP_3072.*child-sas.*rw-isolate.*state=INSTALLED mode=TUNNEL protocol=ESP.*encr-alg=AES_GCM_16 encr-keysize=128.*local-ts=\[10.1.0.16/28] remote-ts=\[192.168.0.200/32]::YES
+moon:: swanctl --list-sas --ike-id 2 --raw  2> /dev/null::rw-allow.*version=2 state=ESTABLISHED local-host=192.168.0.1 local-port=4500 local-id=moon.strongswan.org remote-host=192.168.0.100 remote-port=4500 remote-id=carol@strongswan.org.*encr-alg=AES_CBC encr-keysize=128 integ-alg=HMAC_SHA2_256_128 prf-alg=PRF_HMAC_SHA2_256 dh-group=MODP_3072.*child-sas.*rw-allow.*state=INSTALLED mode=TUNNEL protocol=ESP.*encr-alg=AES_GCM_16 encr-keysize=128.*local-ts=\[10.1.0.0/28] remote-ts=\[192.168.0.100/32]::YES
+carol::ping -c 1 PH_IP_ALICE::64 bytes from PH_IP_ALICE: icmp_.eq=1::YES
+carol::ping -c 1 -W 1 PH_IP_VENUS::64 bytes from PH_IP_VENUS: icmp_.eq=1::NO
+dave:: ping -c 1 PH_IP_VENUS::64 bytes from PH_IP_VENUS: icmp_.eq=1::YES
+dave:: ping -c 1 -W 1 PH_IP_ALICE::64 bytes from PH_IP_ALICE: icmp_.eq=1::NO

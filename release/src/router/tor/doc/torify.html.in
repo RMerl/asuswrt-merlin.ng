@@ -1,9 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN"
     "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
 <head>
 <meta http-equiv="Content-Type" content="application/xhtml+xml; charset=UTF-8" />
-<meta name="generator" content="AsciiDoc 8.6.8" />
+<meta name="generator" content="AsciiDoc 8.6.10" />
 <title>torify(1)</title>
 <style type="text/css">
 /* Shared CSS for AsciiDoc xhtml11 and html5 backends */
@@ -94,7 +95,9 @@ ul > li > * { color: black; }
   padding: 0;
   margin: 0;
 }
-
+pre {
+  white-space: pre-wrap;
+}
 
 #author {
   color: #527bbd;
@@ -223,7 +226,7 @@ div.exampleblock > div.content {
 }
 
 div.imageblock div.content { padding-left: 0; }
-span.image img { border-style: none; }
+span.image img { border-style: none; vertical-align: text-bottom; }
 a.image:visited { color: white; }
 
 dl {
@@ -751,26 +754,24 @@ torify(1) Manual Page
 <div class="sect1">
 <h2 id="_description">DESCRIPTION</h2>
 <div class="sectionbody">
-<div class="paragraph"><p><strong>torify</strong> is a simple wrapper that attempts to find the best underlying Tor
-wrapper available on a system. It calls torsocks with a tor specific
-configuration file.<br /></p></div>
-<div class="paragraph"><p>torsocks is an improved wrapper that explicitly rejects UDP, safely resolves DNS
-lookups and properly socksifies your TCP connections.<br /></p></div>
-<div class="paragraph"><p>Please note that since both method use LD_PRELOAD, torify cannot be applied to
-suid binaries.</p></div>
+<div class="paragraph"><p><strong>torify</strong> is a simple wrapper that calls torsocks with a tor-specific
+configuration file.</p></div>
+<div class="paragraph"><p>It is provided for backward compatibility; instead you should use torsocks.</p></div>
 </div>
 </div>
 <div class="sect1">
 <h2 id="_warning">WARNING</h2>
 <div class="sectionbody">
-<div class="paragraph"><p>When used with torsocks, torify should not leak DNS requests or UDP data.<br /></p></div>
-<div class="paragraph"><p>Both will leak ICMP data.</p></div>
+<div class="paragraph"><p>When used with torsocks, torify should not leak DNS requests or UDP data.</p></div>
+<div class="paragraph"><p>torify can leak ICMP data.</p></div>
+<div class="paragraph"><p>torify will not ensure that different requests are processed on
+different circuits.</p></div>
 </div>
 </div>
 <div class="sect1">
 <h2 id="_see_also">SEE ALSO</h2>
 <div class="sectionbody">
-<div class="paragraph"><p><strong>tor</strong>(1), <strong>tor-resolve</strong>(1), <strong>torsocks</strong>(1)</p></div>
+<div class="paragraph"><p><strong>tor</strong>(1), <strong>torsocks</strong>(1)</p></div>
 </div>
 </div>
 <div class="sect1">
@@ -783,7 +784,8 @@ suid binaries.</p></div>
 <div id="footnotes"><hr /></div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2017-03-05 00:44:19 UTC
+Last updated
+ 2018-10-17 18:44:07 UTC
 </div>
 </div>
 </body>

@@ -1,0 +1,6 @@
+Revision history for Perl extension Vici::Session.
+
+0.9  Tue Nov 17 11:45:21 2015
+	- original version; created by h2xs 1.23 with options
+		-X -n Vici::Session
+

@@ -1,0 +1,20 @@
+moon::ip addr add 192.168.0.5/24 dev eth0
+moon::ip addr add 10.1.0.5/16 dev eth1
+alice::ifup eth1
+alice::ip addr add 192.168.0.5/24 dev eth1
+alice::ip addr add 10.1.0.5/16 dev eth0
+venus::ip route del default via 10.1.0.1 dev eth0
+venus::ip route add default via 10.1.0.5 dev eth0
+moon::iptables-restore < /etc/iptables.rules
+alice::iptables-restore < /etc/iptables.rules
+carol::iptables-restore < /etc/iptables.rules
+dave::iptables-restore < /etc/iptables.rules
+moon::ipsec start
+alice::ipsec start
+alice::sleep 1
+carol::ipsec start
+dave::ipsec start
+carol::expect-connection home
+dave::expect-connection home
+carol::ipsec up home
+dave::ipsec up home

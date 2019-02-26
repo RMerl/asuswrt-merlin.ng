@@ -1,0 +1,26 @@
+carol::cat /var/log/daemon.log::installing new virtual IP PH_IP_CAROL1::YES
+carol::ip addr list dev eth0::PH_IP_CAROL1::YES
+carol::ip route list table 220::10.1.0.0/16.*src PH_IP_CAROL1::YES
+carol::ping -c 1 PH_IP_ALICE::64 bytes from PH_IP_ALICE: icmp_.eq=1::YES
+carol::swanctl --list-sas --raw 2> /dev/null::home.*version=2 state=ESTABLISHED local-host=192.168.0.100 local-port=4500 local-id=carol@strongswan.org remote-host=192.168.0.1 remote-port=4500 remote-id=moon.strongswan.org initiator=yes.*encr-alg=AES_CBC encr-keysize=128 integ-alg=HMAC_SHA2_256_128 prf-alg=PRF_HMAC_SHA2_256 dh-group=MODP_3072.*local-vips=\[10.3.0.1] child-sas.*home.*state=INSTALLED mode=TUNNEL protocol=ESP.*encr-alg=AES_CBC encr-keysize=128 integ-alg=HMAC_SHA2_256_128.*local-ts=\[10.3.0.1/32] remote-ts=\[10.1.0.0/16]::YES
+dave:: cat /var/log/daemon.log::installing new virtual IP PH_IP_DAVE1::YES
+dave:: ip addr list dev eth0::PH_IP_DAVE1::YES
+dave:: ip route list table 220::10.1.0.0/16.*src PH_IP_DAVE1::YES
+dave:: ping -c 1 PH_IP_ALICE::64 bytes from PH_IP_ALICE: icmp_.eq=1::YES
+dave:: swanctl --list-sas --raw 2> /dev/null::home.*version=2 state=ESTABLISHED local-host=192.168.0.200 local-port=4500 local-id=dave@strongswan.org remote-host=192.168.0.1 remote-port=4500 remote-id=moon.strongswan.org initiator=yes.*encr-alg=AES_CBC encr-keysize=128 integ-alg=HMAC_SHA2_256_128 prf-alg=PRF_HMAC_SHA2_256 dh-group=MODP_3072.*local-vips=\[10.3.0.2] child-sas.*home.*state=INSTALLED mode=TUNNEL protocol=ESP.*encr-alg=AES_CBC encr-keysize=128 integ-alg=HMAC_SHA2_256_128.*local-ts=\[10.3.0.2/32] remote-ts=\[10.1.0.0/16]::YES
+moon:: cat /var/log/daemon.log::peer requested virtual IP %any::YES
+moon:: cat /var/log/daemon.log::acquired existing lease for address.*in pool.*bigpool::YES
+moon:: cat /var/log/daemon.log::assigning virtual IP::YES
+moon:: swanctl --list-sas --ike-id 2 --raw 2> /dev/null::rw.*version=2 state=ESTABLISHED local-host=192.168.0.1 local-port=4500 local-id=moon.strongswan.org remote-host=192.168.0.100 remote-port=4500 remote-id=carol@strongswan.org.*encr-alg=AES_CBC encr-keysize=128 integ-alg=HMAC_SHA2_256_128 prf-alg=PRF_HMAC_SHA2_256 dh-group=MODP_3072.*remote-vips=\[10.3.0.1] child-sas.*rw.*state=INSTALLED mode=TUNNEL protocol=ESP.*encr-alg=AES_CBC encr-keysize=128 integ-alg=HMAC_SHA2_256_128.*local-ts=\[10.1.0.0/16] remote-ts=\[10.3.0.1/32]::YES
+moon:: swanctl --list-sas --ike-id 1 --raw 2> /dev/null::rw.*version=2 state=ESTABLISHED local-host=192.168.0.1 local-port=4500 local-id=moon.strongswan.org remote-host=192.168.0.200 remote-port=4500 remote-id=dave@strongswan.org.*encr-alg=AES_CBC encr-keysize=128 integ-alg=HMAC_SHA2_256_128 prf-alg=PRF_HMAC_SHA2_256 dh-group=MODP_3072.*remote-vips=\[10.3.0.2] child-sas.*rw.*state=INSTALLED mode=TUNNEL protocol=ESP.*encr-alg=AES_CBC encr-keysize=128 integ-alg=HMAC_SHA2_256_128.*local-ts=\[10.1.0.0/16] remote-ts=\[10.3.0.2/32]::YES
+moon:: ipsec pool --status 2> /dev/null::bigpool.*10.3.0.1.*10.3.0.6.*static.*2::YES
+moon:: ipsec pool --leases --filter pool=bigpool,addr=10.3.0.1,id=carol@strongswan.org 2> /dev/null::online::YES
+moon:: ipsec pool --leases --filter pool=bigpool,addr=10.3.0.2,id=dave@strongswan.org 2> /dev/null::online::YES
+moon::tcpdump::IP carol.strongswan.org > moon.strongswan.org: ESP::YES
+moon::tcpdump::IP moon.strongswan.org > carol.strongswan.org: ESP::YES
+moon::tcpdump::IP dave.strongswan.org > moon.strongswan.org: ESP::YES
+moon::tcpdump::IP moon.strongswan.org > dave.strongswan.org: ESP::YES
+alice::tcpdump::IP carol1.strongswan.org > alice.strongswan.org: ICMP echo request::YES
+alice::tcpdump::IP alice.strongswan.org > carol1.strongswan.org: ICMP echo reply::YES
+alice::tcpdump::IP dave1.strongswan.org > alice.strongswan.org: ICMP echo request::YES
+alice::tcpdump::IP alice.strongswan.org > dave1.strongswan.org: ICMP echo reply::YES

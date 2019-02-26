@@ -1,0 +1,9 @@
+moon::iptables-restore < /etc/iptables.drop
+sun::iptables-restore < /etc/iptables.drop
+moon::ip6tables-restore < /etc/ip6tables.rules
+sun::ip6tables-restore < /etc/ip6tables.rules
+moon::systemctl start strongswan-swanctl
+sun::systemctl start strongswan-swanctl
+moon::expect-connection net-net
+sun::expect-connection net-net
+moon::swanctl --initiate --child net-net

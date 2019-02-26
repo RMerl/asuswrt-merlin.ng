@@ -1,0 +1,34 @@
+
+noinst_LIBRARIES += src/lib/libtor-net.a
+
+if UNITTESTS_ENABLED
+noinst_LIBRARIES += src/lib/libtor-net-testing.a
+endif
+
+src_lib_libtor_net_a_SOURCES =			\
+	src/lib/net/address.c			\
+	src/lib/net/alertsock.c                 \
+	src/lib/net/buffers_net.c		\
+	src/lib/net/gethostname.c		\
+	src/lib/net/inaddr.c			\
+	src/lib/net/resolve.c			\
+	src/lib/net/socket.c			\
+	src/lib/net/socketpair.c
+
+src_lib_libtor_net_testing_a_SOURCES = \
+	$(src_lib_libtor_net_a_SOURCES)
+src_lib_libtor_net_testing_a_CPPFLAGS = $(AM_CPPFLAGS) $(TEST_CPPFLAGS)
+src_lib_libtor_net_testing_a_CFLAGS = $(AM_CFLAGS) $(TEST_CFLAGS)
+
+noinst_HEADERS +=				\
+	src/lib/net/address.h			\
+	src/lib/net/alertsock.h                 \
+	src/lib/net/buffers_net.h		\
+	src/lib/net/gethostname.h		\
+	src/lib/net/inaddr.h			\
+	src/lib/net/inaddr_st.h			\
+	src/lib/net/nettypes.h			\
+	src/lib/net/resolve.h			\
+	src/lib/net/socket.h			\
+	src/lib/net/socketpair.h		\
+	src/lib/net/socks5_status.h

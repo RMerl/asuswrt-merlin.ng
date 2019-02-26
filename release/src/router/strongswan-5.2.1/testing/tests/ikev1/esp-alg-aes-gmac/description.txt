@@ -1,4 +1,0 @@
-Roadwarrior <b>carol</b> proposes to gateway <b>moon</b> the authentication-only
-ESP cipher suite <b>NULL_AES_GMAC_256</b> by defining <b>esp=aes256gmac-modp2048!</b>
-in ipsec.conf. A ping from <b>carol</b> to <b>alice</b> successfully checks
-the established tunnel.

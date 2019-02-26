@@ -1,8 +1,0 @@
-moon::ipsec stop
-carol::ipsec stop
-dave::ipsec stop
-moon::iptables-restore < /etc/iptables.flush
-carol::iptables-restore < /etc/iptables.flush
-dave::iptables-restore < /etc/iptables.flush
-carol::echo 1 > /proc/sys/net/ipv4/ip_forward
-moon::rm /etc/pts/config.db

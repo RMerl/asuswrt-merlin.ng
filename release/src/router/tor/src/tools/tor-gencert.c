@@ -1,4 +1,4 @@
-/* Copyright (c) 2007-2015, The Tor Project, Inc. */
+/* Copyright (c) 2007-2019, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 #include "orconfig.h"
@@ -13,8 +13,11 @@
 #include <unistd.h>
 #endif
 
-#include "compat.h"
+#include "lib/cc/compat_compiler.h"
+#include "lib/crypt_ops/crypto_init.h"
+#include "lib/crypt_ops/crypto_openssl_mgt.h"
 
+#ifdef ENABLE_OPENSSL
 /* Some versions of OpenSSL declare X509_STORE_CTX_set_verify_cb twice in
  * x509.h and x509_vfy.h. Suppress the GCC warning so we can build with
  * -Wredundant-decl. */
@@ -28,20 +31,24 @@ DISABLE_GCC_WARNING(redundant-decls)
 #include <openssl/err.h>
 
 ENABLE_GCC_WARNING(redundant-decls)
-
-#include <errno.h>
-#if 0
-#include <stdlib.h>
-#include <stdarg.h>
-#include <assert.h>
 #endif
 
-#include "compat.h"
-#include "util.h"
-#include "torlog.h"
-#include "crypto.h"
-#include "address.h"
-#include "util_format.h"
+#include <errno.h>
+
+#include "lib/crypt_ops/crypto_digest.h"
+#include "lib/crypt_ops/crypto_rand.h"
+#include "lib/crypt_ops/crypto_rsa.h"
+#include "lib/crypt_ops/crypto_util.h"
+#include "lib/encoding/binascii.h"
+#include "lib/encoding/time_fmt.h"
+#include "lib/fs/files.h"
+#include "lib/log/log.h"
+#include "lib/malloc/malloc.h"
+#include "lib/net/address.h"
+#include "lib/net/inaddr.h"
+#include "lib/net/resolve.h"
+#include "lib/string/compat_string.h"
+#include "lib/string/printf.h"
 
 #define IDENTITY_KEY_BITS 3072
 #define SIGNING_KEY_BITS 2048
@@ -76,29 +83,6 @@ show_help(void)
           "[--passphrase-fd <fd>]\n");
 }
 
-/* XXXX copied from crypto.c */
-static void
-crypto_log_errors(int severity, const char *doing)
-{
-  unsigned long err;
-  const char *msg, *lib, *func;
-  while ((err = ERR_get_error()) != 0) {
-    msg = (const char*)ERR_reason_error_string(err);
-    lib = (const char*)ERR_lib_error_string(err);
-    func = (const char*)ERR_func_error_string(err);
-    if (!msg) msg = "(null)";
-    if (!lib) lib = "(null)";
-    if (!func) func = "(null)";
-    if (doing) {
-      tor_log(severity, LD_CRYPTO, "crypto error while %s: %s (in %s:%s)",
-              doing, msg, lib, func);
-    } else {
-      tor_log(severity, LD_CRYPTO, "crypto error: %s (in %s:%s)",
-              msg, lib, func);
-    }
-  }
-}
-
 /** Read the passphrase from the passphrase fd. */
 static int
 load_passphrase(void)
@@ -106,7 +90,7 @@ load_passphrase(void)
   char *cp;
   char buf[1024]; /* "Ought to be enough for anybody." */
   memset(buf, 0, sizeof(buf)); /* should be needless */
-  ssize_t n = read_all(passphrase_fd, buf, sizeof(buf), 0);
+  ssize_t n = read_all_from_fd(passphrase_fd, buf, sizeof(buf));
   if (n < 0) {
     log_err(LD_GENERAL, "Couldn't read from passphrase fd: %s",
             strerror(errno));
@@ -191,19 +175,23 @@ parse_commandline(int argc, char **argv)
     } else if (!strcmp(argv[i], "-v")) {
       verbose = 1;
     } else if (!strcmp(argv[i], "-a")) {
-      uint32_t addr;
+      tor_addr_t addr;
       uint16_t port;
-      char b[INET_NTOA_BUF_LEN];
-      struct in_addr in;
       if (i+1>=argc) {
         fprintf(stderr, "No argument to -a\n");
         return 1;
       }
-      if (addr_port_lookup(LOG_ERR, argv[++i], NULL, &addr, &port)<0)
+      const char *addr_arg = argv[++i];
+      if (tor_addr_port_lookup(addr_arg, &addr, &port)<0) {
+        fprintf(stderr, "Can't resolve address/port for %s", addr_arg);
         return 1;
-      in.s_addr = htonl(addr);
-      tor_inet_ntoa(&in, b, sizeof(b));
-      tor_asprintf(&address, "%s:%d", b, (int)port);
+      }
+      if (tor_addr_family(&addr) != AF_INET) {
+        fprintf(stderr, "%s must resolve to an IPv4 address", addr_arg);
+        return 1;
+      }
+      tor_free(address);
+      address = tor_strdup(fmt_addrport(&addr, port));
     } else if (!strcmp(argv[i], "--create-identity-key")) {
       make_new_id = 1;
     } else if (!strcmp(argv[i], "--passphrase-fd")) {
@@ -254,8 +242,7 @@ generate_key(int bits)
   crypto_pk_t *env = crypto_pk_new();
   if (crypto_pk_generate_key_with_bits(env,bits)<0)
     goto done;
-  rsa = crypto_pk_get_rsa_(env);
-  rsa = RSAPrivateKey_dup(rsa);
+  rsa = crypto_pk_get_openssl_rsa_(env);
  done:
   crypto_pk_free(env);
   return rsa;
@@ -283,7 +270,7 @@ load_identity_key(void)
                IDENTITY_KEY_BITS);
     if (!(key = generate_key(IDENTITY_KEY_BITS))) {
       log_err(LD_GENERAL, "Couldn't generate identity key.");
-      crypto_log_errors(LOG_ERR, "Generating identity key");
+      crypto_openssl_log_errors(LOG_ERR, "Generating identity key");
       return 1;
     }
     identity_key = EVP_PKEY_new();
@@ -305,7 +292,7 @@ load_identity_key(void)
                                        NULL, NULL)) {
       log_err(LD_GENERAL, "Couldn't write identity key to %s",
               identity_key_file);
-      crypto_log_errors(LOG_ERR, "Writing identity key");
+      crypto_openssl_log_errors(LOG_ERR, "Writing identity key");
       abort_writing_to_file(open_file);
       return 1;
     }
@@ -370,7 +357,7 @@ generate_signing_key(void)
              SIGNING_KEY_BITS);
   if (!(key = generate_key(SIGNING_KEY_BITS))) {
     log_err(LD_GENERAL, "Couldn't generate signing key.");
-    crypto_log_errors(LOG_ERR, "Generating signing key");
+    crypto_openssl_log_errors(LOG_ERR, "Generating signing key");
     return 1;
   }
   signing_key = EVP_PKEY_new();
@@ -386,7 +373,7 @@ generate_signing_key(void)
 
   /* Write signing key with no encryption. */
   if (!PEM_write_RSAPrivateKey(f, key, NULL, NULL, 0, NULL, NULL)) {
-    crypto_log_errors(LOG_WARN, "writing signing key");
+    crypto_openssl_log_errors(LOG_WARN, "writing signing key");
     abort_writing_to_file(open_file);
     return 1;
   }
@@ -410,7 +397,7 @@ key_to_string(EVP_PKEY *key)
 
   b = BIO_new(BIO_s_mem());
   if (!PEM_write_bio_RSAPublicKey(b, rsa)) {
-    crypto_log_errors(LOG_WARN, "writing public key to string");
+    crypto_openssl_log_errors(LOG_WARN, "writing public key to string");
     RSA_free(rsa);
     return NULL;
   }
@@ -430,8 +417,8 @@ key_to_string(EVP_PKEY *key)
 static int
 get_fingerprint(EVP_PKEY *pkey, char *out)
 {
-  int r = 1;
-  crypto_pk_t *pk = crypto_new_pk_from_rsa_(EVP_PKEY_get1_RSA(pkey));
+  int r = -1;
+  crypto_pk_t *pk = crypto_new_pk_from_openssl_rsa_(EVP_PKEY_get1_RSA(pkey));
   if (pk) {
     r = crypto_pk_get_fingerprint(pk, out, 0);
     crypto_pk_free(pk);
@@ -443,8 +430,8 @@ get_fingerprint(EVP_PKEY *pkey, char *out)
 static int
 get_digest(EVP_PKEY *pkey, char *out)
 {
-  int r = 1;
-  crypto_pk_t *pk = crypto_new_pk_from_rsa_(EVP_PKEY_get1_RSA(pkey));
+  int r = -1;
+  crypto_pk_t *pk = crypto_new_pk_from_openssl_rsa_(EVP_PKEY_get1_RSA(pkey));
   if (pk) {
     r = crypto_pk_get_digest(pk, out);
     crypto_pk_free(pk);
@@ -464,16 +451,20 @@ generate_certificate(void)
   char expires[ISO_TIME_LEN+1];
   char id_digest[DIGEST_LEN];
   char fingerprint[FINGERPRINT_LEN+1];
-  char *ident = key_to_string(identity_key);
-  char *signing = key_to_string(signing_key);
   FILE *f;
   size_t signed_len;
   char digest[DIGEST_LEN];
   char signature[1024]; /* handles up to 8192-bit keys. */
   int r;
 
-  get_fingerprint(identity_key, fingerprint);
-  get_digest(identity_key, id_digest);
+  if (get_fingerprint(identity_key, fingerprint) < 0) {
+    return -1;
+  }
+  if (get_digest(identity_key, id_digest)) {
+    return -1;
+  }
+  char *ident = key_to_string(identity_key);
+  char *signing = key_to_string(signing_key);
 
   tor_localtime_r(&now, &tm);
   tm.tm_mon += months_lifetime;
@@ -593,4 +584,3 @@ main(int argc, char **argv)
   crypto_global_cleanup();
   return r;
 }
-

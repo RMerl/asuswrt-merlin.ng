@@ -2446,7 +2446,6 @@
     <ClCompile Include="..\..\..\..\lib\vauth\spnego_gssapi.c" />
     <ClCompile Include="..\..\..\..\lib\vauth\spnego_sspi.c" />
     <ClCompile Include="..\..\..\..\lib\vauth\vauth.c" />
-    <ClCompile Include="..\..\..\..\lib\vtls\axtls.c" />
     <ClCompile Include="..\..\..\..\lib\vtls\cyassl.c" />
     <ClCompile Include="..\..\..\..\lib\vtls\darwinssl.c" />
     <ClCompile Include="..\..\..\..\lib\vtls\gskit.c" />
@@ -2574,7 +2573,6 @@
     <ClInclude Include="..\..\..\..\lib\vauth\digest.h" />
     <ClInclude Include="..\..\..\..\lib\vauth\ntlm.h" />
     <ClInclude Include="..\..\..\..\lib\vauth\vauth.h" />
-    <ClInclude Include="..\..\..\..\lib\vtls\axtls.h" />
     <ClInclude Include="..\..\..\..\lib\vtls\cyassl.h" />
     <ClInclude Include="..\..\..\..\lib\vtls\darwinssl.h" />
     <ClInclude Include="..\..\..\..\lib\vtls\gskit.h" />

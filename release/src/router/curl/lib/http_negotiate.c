@@ -5,7 +5,7 @@
  *                            | (__| |_| |  _ <| |___
  *                             \___|\___/|_| \_\_____|
  *
- * Copyright (C) 1998 - 2016, Daniel Stenberg, <daniel@haxx.se>, et al.
+ * Copyright (C) 1998 - 2019, Daniel Stenberg, <daniel@haxx.se>, et al.
  *
  * This software is licensed as described in the file COPYING, which
  * you should have received as part of this distribution. The terms
@@ -88,6 +88,11 @@ CURLcode Curl_input_negotiate(struct connectdata *conn, bool proxy,
       return CURLE_LOGIN_DENIED;
     }
   }
+
+  /* Supports SSL channel binding for Windows ISS extended protection */
+#if defined(USE_WINDOWS_SSPI) && defined(SECPKG_ATTR_ENDPOINT_BINDINGS)
+  neg_ctx->sslContext = conn->sslContext;
+#endif
 
   /* Initialize the security context and decode our challenge */
   result = Curl_auth_decode_spnego_message(data, userp, passwdp, service,

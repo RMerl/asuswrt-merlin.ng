@@ -423,6 +423,62 @@ tls_ctx_restrict_ciphers(struct tls_root_ctx *ctx, const char *ciphers)
 }
 
 void
+convert_tls13_list_to_openssl(char *openssl_ciphers, size_t len,
+                              const char *ciphers)
+{
+    /*
+     * OpenSSL (and official IANA) cipher names have _ in them. We
+     * historically used names with - in them. Silently convert names
+     * with - to names with _ to support both
+     */
+    if (strlen(ciphers) >= (len - 1))
+    {
+        msg(M_FATAL,
+            "Failed to set restricted TLS 1.3 cipher list, too long (>%d).",
+            (int) (len - 1));
+    }
+
+    strncpy(openssl_ciphers, ciphers, len);
+
+    for (size_t i = 0; i < strlen(openssl_ciphers); i++)
+    {
+        if (openssl_ciphers[i] == '-')
+        {
+            openssl_ciphers[i] = '_';
+        }
+    }
+}
+
+void
+tls_ctx_restrict_ciphers_tls13(struct tls_root_ctx *ctx, const char *ciphers)
+{
+    if (ciphers == NULL)
+    {
+        /* default cipher list of OpenSSL 1.1.1 is sane, do not set own
+         * default as we do with tls-cipher */
+        return;
+    }
+
+#if (OPENSSL_VERSION_NUMBER < 0x1010100fL)
+        crypto_msg(M_WARN, "Not compiled with OpenSSL 1.1.1 or higher. "
+                       "Ignoring TLS 1.3 only tls-ciphersuites '%s' setting.",
+                        ciphers);
+#else
+    ASSERT(NULL != ctx);
+
+    char openssl_ciphers[4096];
+    convert_tls13_list_to_openssl(openssl_ciphers, sizeof(openssl_ciphers),
+                                  ciphers);
+
+    if (!SSL_CTX_set_ciphersuites(ctx->ctx, openssl_ciphers))
+    {
+        crypto_msg(M_FATAL, "Failed to set restricted TLS 1.3 cipher list: %s",
+                   openssl_ciphers);
+    }
+#endif
+}
+
+void
 tls_ctx_set_cert_profile(struct tls_root_ctx *ctx, const char *profile)
 {
 #ifdef HAVE_SSL_CTX_SET_SECURITY_LEVEL
@@ -627,7 +683,7 @@ tls_ctx_load_ecdh_params(struct tls_root_ctx *ctx, const char *curve_name
 
     EC_KEY_free(ecdh);
 #else  /* ifndef OPENSSL_NO_EC */
-    msg(M_DEBUG, "Your OpenSSL library was built without elliptic curve support."
+    msg(D_LOW, "Your OpenSSL library was built without elliptic curve support."
         " Skipping ECDH parameter loading.");
 #endif /* OPENSSL_NO_EC */
 }
@@ -1778,14 +1834,11 @@ print_details(struct key_state_ssl *ks_ssl, const char *prefix)
 }
 
 void
-show_available_tls_ciphers(const char *cipher_list,
-                           const char *tls_cert_profile)
+show_available_tls_ciphers_list(const char *cipher_list,
+                                const char *tls_cert_profile,
+                                const bool tls13)
 {
     struct tls_root_ctx tls_ctx;
-    SSL *ssl;
-    const char *cipher_name;
-    const tls_cipher_name_pair *pair;
-    int priority = 0;
 
     tls_ctx.ctx = SSL_CTX_new(SSLv23_method());
     if (!tls_ctx.ctx)
@@ -1793,34 +1846,59 @@ show_available_tls_ciphers(const char *cipher_list,
         crypto_msg(M_FATAL, "Cannot create SSL_CTX object");
     }
 
-    ssl = SSL_new(tls_ctx.ctx);
+#if (OPENSSL_VERSION_NUMBER >= 0x1010100fL)
+    if (tls13)
+    {
+        SSL_CTX_set_min_proto_version(tls_ctx.ctx, TLS1_3_VERSION);
+        tls_ctx_restrict_ciphers_tls13(&tls_ctx, cipher_list);
+    }
+    else
+#endif
+    {
+        SSL_CTX_set_max_proto_version(tls_ctx.ctx, TLS1_2_VERSION);
+        tls_ctx_restrict_ciphers(&tls_ctx, cipher_list);
+    }
+
+    tls_ctx_set_cert_profile(&tls_ctx, tls_cert_profile);
+
+    SSL *ssl = SSL_new(tls_ctx.ctx);
     if (!ssl)
     {
         crypto_msg(M_FATAL, "Cannot create SSL object");
     }
 
-    tls_ctx_set_cert_profile(&tls_ctx, tls_cert_profile);
-    tls_ctx_restrict_ciphers(&tls_ctx, cipher_list);
-
-    printf("Available TLS Ciphers,\n");
-    printf("listed in order of preference:\n\n");
-    while ((cipher_name = SSL_get_cipher_list(ssl, priority++)))
+#if (OPENSSL_VERSION_NUMBER < 0x1010000fL)
+    STACK_OF(SSL_CIPHER) *sk = SSL_get_ciphers(ssl);
+#else
+    STACK_OF(SSL_CIPHER) *sk = SSL_get1_supported_ciphers(ssl);
+#endif
+    for (int i=0;i < sk_SSL_CIPHER_num(sk);i++)
     {
-        pair = tls_get_cipher_name_pair(cipher_name, strlen(cipher_name));
+        const SSL_CIPHER *c = sk_SSL_CIPHER_value(sk, i);
 
-        if (NULL == pair)
+        const char *cipher_name = SSL_CIPHER_get_name(c);
+
+        const tls_cipher_name_pair *pair =
+            tls_get_cipher_name_pair(cipher_name, strlen(cipher_name));
+
+        if (tls13)
+        {
+              printf("%s\n", cipher_name);
+        }
+        else if (NULL == pair)
         {
             /* No translation found, print warning */
-            printf("%s (No IANA name known to OpenVPN, use OpenSSL name.)\n", cipher_name);
+            printf("%s (No IANA name known to OpenVPN, use OpenSSL name.)\n",
+                   cipher_name);
         }
         else
         {
             printf("%s\n", pair->iana_name);
         }
-
     }
-    printf("\n" SHOW_TLS_CIPHER_LIST_WARNING);
-
+#if (OPENSSL_VERSION_NUMBER >= 0x1010000fL)
+    sk_SSL_CIPHER_free(sk);
+#endif
     SSL_free(ssl);
     SSL_CTX_free(tls_ctx.ctx);
 }

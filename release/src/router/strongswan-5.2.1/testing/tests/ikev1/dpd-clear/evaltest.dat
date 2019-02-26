@@ -1,7 +1,0 @@
-carol::ipsec status 2> /dev/null::home.*INSTALLED, TUNNEL::YES
-moon:: ipsec status 2> /dev/null::rw.*INSTALLED, TUNNEL::YES
-carol::iptables -A INPUT -i eth0 -s PH_IP_MOON -j DROP::no output expected::NO
-moon:: sleep 60::no output expected::NO
-moon:: cat /var/log/daemon.log::sending DPD request::YES
-moon::cat /var/log/daemon.log::DPD check timed out, enforcing DPD action::YES
-moon:: ipsec status 2> /dev/null::rw.*INSTALLED::NO

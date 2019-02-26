@@ -1,0 +1,13 @@
+carol::swanctl --terminate --ike home
+dave::swanctl --terminate --ike home
+carol::systemctl stop strongswan-swanctl
+dave::systemctl stop strongswan-swanctl
+moon::systemctl stop strongswan-swanctl
+venus::cat /var/lib/dhcp/dhcpd.leases
+venus::service isc-dhcp-server stop 2> /dev/null
+venus::rm /var/lib/dhcp/dhcpd.leases*; touch /var/lib/dhcp/dhcpd.leases
+moon::iptables-restore < /etc/iptables.flush
+carol::iptables-restore < /etc/iptables.flush
+dave::iptables-restore < /etc/iptables.flush
+alice::arp -d 10.1.0.50
+alice::arp -d 10.1.0.51

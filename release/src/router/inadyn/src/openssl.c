@@ -25,17 +25,21 @@
 
 int ssl_init(void)
 {
+#if OPENSSL_VERSION_NUMBER < 0x10100000L
 	SSL_library_init();
 	SSL_load_error_strings();
 	OpenSSL_add_all_algorithms();
-
+#endif
+	
 	return 0;
 }
 
 void ssl_exit(void)
 {
+#if OPENSSL_VERSION_NUMBER < 0x10100000L
 	ERR_free_strings();
 	EVP_cleanup();
+#endif
 }
 
 static int verify_callback(int preverify_ok, X509_STORE_CTX *ctx)

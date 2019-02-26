@@ -1,0 +1,12 @@
+moon::iptables-restore < /etc/iptables.rules
+sun::iptables-restore < /etc/iptables.rules
+carol::iptables-restore < /etc/iptables.rules
+moon::systemctl start strongswan-swanctl
+sun::systemctl start strongswan-swanctl
+carol::systemctl start strongswan-swanctl
+carol::expect-connection gw-moon
+carol::expect-connection gw-sun
+moon::expect-connection gw-gw
+moon::swanctl --initiate --child net-net 2> /dev/null
+sun::expect-connection gw-gw
+sun::swanctl --initiate --child net-net 2> /dev/null

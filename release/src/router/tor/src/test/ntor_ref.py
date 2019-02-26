@@ -1,5 +1,5 @@
 #!/usr/bin/python
-# Copyright 2012-2015, The Tor Project, Inc
+# Copyright 2012-2019, The Tor Project, Inc
 # See LICENSE for licensing information
 
 """
@@ -336,13 +336,16 @@ def test_tor():
        Call the test-ntor-cl command-line program to make sure we can
        interoperate with Tor's ntor program
     """
-    enhex=lambda s: binascii.b2a_hex(s)
+    if sys.version_info[0] >= 3:
+        enhex=lambda s: binascii.b2a_hex(s).decode("ascii")
+    else:
+        enhex=lambda s: binascii.b2a_hex(s)
     dehex=lambda s: binascii.a2b_hex(s.strip())
 
-    PROG = b"./src/test/test-ntor-cl"
+    PROG = "./src/test/test-ntor-cl"
     def tor_client1(node_id, pubkey_B):
         " returns (msg, state) "
-        p = subprocess.Popen([PROG, b"client1", enhex(node_id),
+        p = subprocess.Popen([PROG, "client1", enhex(node_id),
                               enhex(pubkey_B.serialize())],
                              stdout=subprocess.PIPE)
         return map(dehex, p.stdout.readlines())

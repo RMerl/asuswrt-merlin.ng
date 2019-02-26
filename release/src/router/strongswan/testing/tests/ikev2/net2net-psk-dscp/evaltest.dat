@@ -1,0 +1,8 @@
+moon:: ipsec status 2> /dev/null::dscp-be.*ESTABLISHED.*moon-be.*sun-be::YES
+moon:: ipsec status 2> /dev/null::dscp-ef.*ESTABLISHED.*moon-ef.*sun-ef::YES
+sun::  ipsec status 2> /dev/null::dscp-be.*ESTABLISHED.*sun-be.*moon-be::YES
+sun::  ipsec status 2> /dev/null::dscp-ef.*ESTABLISHED.*sun-ef.*moon-ef::YES
+alice::ping -c 1 PH_IP_BOB::64 bytes from PH_IP_BOB: icmp_.eq=1::YES
+venus::ping -c 1 PH_IP_BOB::64 bytes from PH_IP_BOB: icmp_.eq=1::YES
+sun::tcpdump::IP moon.strongswan.org > sun.strongswan.org: ESP::YES
+sun::tcpdump::IP sun.strongswan.org > moon.strongswan.org: ESP::YES

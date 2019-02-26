@@ -1,0 +1,9 @@
+R	100322071017Z	100407093948Z,superseded	01	unknown	/C=CH/O=Linux strongSwan/OU=Sales/CN=dave@strongswan.org
+R	100615195536Z	100703150410Z,superseded	02	unknown	/C=CH/O=Linux strongSwan/OU=Research/CN=Research CA
+R	120323211811Z	140324141327Z,superseded	03	unknown	/C=CH/O=Linux strongSwan/OU=Sales OCSP Signing Authority/CN=ocsp.sales.strongswan.org
+R	140323211053Z	140324141726Z,superseded	04	unknown	/C=CH/O=Linux strongSwan/OU=Sales no CDP/CN=dave@strongswan.org
+R	150406094241Z	150426095935Z,superseded	05	unknown	/C=CH/O=Linux strongSwan/OU=Sales/CN=dave@strongswan.org
+R	150702152829Z	150722132042Z,superseded	06	unknown	/C=CH/O=Linux strongSwan/OU=Research/CN=Research CA
+V	190323141524Z		07	unknown	/C=CH/O=Linux strongSwan/OU=Sales OCSP Signing Authority/CN=ocsp.sales.strongswan.org
+V	190323152702Z		08	unknown	/C=CH/O=Linux strongSwan/OU=Sales no CDP/CN=dave@strongswan.org
+V	190403102220Z		09	unknown	/C=CH/O=Linux strongSwan/OU=Sales/CN=dave@strongswan.org

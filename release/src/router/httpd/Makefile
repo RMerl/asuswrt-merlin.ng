@@ -159,8 +159,13 @@ endif
 LIBS += -lm
 
 ifeq ($(RTCONFIG_PUSH_EMAIL),y)
-CFLAGS += -L$(TOP)/openssl/include
-LIBS += -L$(TOP)/openssl -lcrypto -lssl -ldl
+ifeq ($(RTCONFIG_OPENSSL11),y)
+CFLAGS += -I$(TOP)/openssl-1.1.x/include
+LIBS += -L$(TOP)/openssl-1.1.x -lssl -lcrypto -ldl
+else
+CFLAGS += -I$(TOP)/openssl/include
+LIBS += -L$(TOP)/openssl -lssl -lcrypto -ldl
+endif
 endif
 
 ifeq ($(RTCONFIG_BCMARM),y)
@@ -194,16 +199,25 @@ endif
 
 ifeq ($(RTCONFIG_HTTPS),y)
 CFLAGS += -I$(TOP)/mssl
-CFLAGS += -I$(TOP)/openssl/include
 LIBS += -L$(TOP)/mssl -lmssl
+ifeq ($(RTCONFIG_OPENSSL11),y)
+CFLAGS += -I$(TOP)/openssl-1.1.x/include
+LIBS += -L$(TOP)/openssl-1.1.x -lssl -lcrypto -ldl
+else
+CFLAGS += -I$(TOP)/openssl/include
 LIBS += -L$(TOP)/openssl -lssl -lcrypto -ldl
+endif
 endif
 
 ifeq ($(RTCONFIG_OPENVPN),y)
 OBJS += openvpn_options.o
 CFLAGS += -I$(TOP)/libvpn
 LIBS += -L$(TOP)/libvpn -lvpn
+ifeq ($(RTCONFIG_OPENSSL11),y)
+LIBS += -L$(TOP)/openssl-1.1.x -lssl -lcrypto -ldl
+else
 LIBS += -L$(TOP)/openssl -lssl -lcrypto -ldl
+endif
 endif
 
 CFLAGS += -I$(TOP)/json-c

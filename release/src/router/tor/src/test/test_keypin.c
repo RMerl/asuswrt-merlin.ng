@@ -1,13 +1,12 @@
-/* Copyright (c) 2014-2016, The Tor Project, Inc. */
+/* Copyright (c) 2014-2019, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 #include "orconfig.h"
 #define KEYPIN_PRIVATE
-#include "or.h"
-#include "keypin.h"
-#include "util.h"
+#include "core/or/or.h"
+#include "feature/dirauth/keypin.h"
 
-#include "test.h"
+#include "test/test.h"
 
 static void
 test_keypin_parse_line(void *arg)
@@ -20,8 +19,8 @@ test_keypin_parse_line(void *arg)
                 "aGVyZSBpcyBhIGdvb2Qgc2hhMSE "
                 "VGhpcyBlZDI1NTE5IHNjb2ZmcyBhdCB0aGUgc2hhMS4");
   tt_assert(ent);
-  tt_mem_op(ent->rsa_id, ==, "here is a good sha1!", 20);
-  tt_mem_op(ent->ed25519_key, ==, "This ed25519 scoffs at the sha1.", 32);
+  tt_mem_op(ent->rsa_id, OP_EQ, "here is a good sha1!", 20);
+  tt_mem_op(ent->ed25519_key, OP_EQ, "This ed25519 scoffs at the sha1.", 32);
   tor_free(ent); ent = NULL;
 
   /* Good line with extra stuff we will ignore. */
@@ -29,27 +28,27 @@ test_keypin_parse_line(void *arg)
                 "aGVyZSBpcyBhIGdvb2Qgc2hhMSE "
                 "VGhpcyBlZDI1NTE5IHNjb2ZmcyBhdCB0aGUgc2hhMS4helloworld");
   tt_assert(ent);
-  tt_mem_op(ent->rsa_id, ==, "here is a good sha1!", 20);
-  tt_mem_op(ent->ed25519_key, ==, "This ed25519 scoffs at the sha1.", 32);
+  tt_mem_op(ent->rsa_id, OP_EQ, "here is a good sha1!", 20);
+  tt_mem_op(ent->ed25519_key, OP_EQ, "This ed25519 scoffs at the sha1.", 32);
   tor_free(ent); ent = NULL;
 
   /* Bad line: no space in the middle. */
   ent = keypin_parse_journal_line(
                 "aGVyZSBpcyBhIGdvb2Qgc2hhMSE?"
                 "VGhpcyBlZDI1NTE5IHNjb2ZmcyBhdCB0aGUgc2hhMS4");
-  tt_assert(! ent);
+  tt_ptr_op(ent, OP_EQ, NULL);
 
   /* Bad line: bad base64 in RSA ID */
   ent = keypin_parse_journal_line(
                 "aGVyZSBpcyBhIGdv!2Qgc2hhMSE "
                 "VGhpcyBlZDI1NTE5IHNjb2ZmcyBhdCB0aGUgc2hhMS4");
-  tt_assert(! ent);
+  tt_ptr_op(ent, OP_EQ, NULL);
 
   /* Bad line: bad base64 in Ed25519 */
   ent = keypin_parse_journal_line(
                 "aGVyZSBpcyBhIGdvb2Qgc2hhMSE "
                 "VGhpcyBlZDI1NTE5IHNjb2ZmcyB!dCB0aGUgc2hhMS4");
-  tt_assert(! ent);
+  tt_ptr_op(ent, OP_EQ, NULL);
 
  done:
   tor_free(ent);
@@ -82,11 +81,11 @@ test_keypin_parse_file(void *arg)
 "Z2dsZSBpbiBzd29tZWVzd2FucyA aW4gdm9sdXB0YXRlIGF4ZS1oYWNrZXIgZXNzZSByaXA\n"
 "cHVsdXMgY3J1bW1paSBldSBtb28 ZiBudWxsYSBzbnV2di5QTFVHSFBMT1ZFUlhZWlpZLi4\n";
 
-  tt_int_op(0, ==, keypin_load_journal_impl(data1, strlen(data1)));
-  tt_int_op(8, ==, smartlist_len(mock_addent_got));
+  tt_int_op(0, OP_EQ, keypin_load_journal_impl(data1, strlen(data1)));
+  tt_int_op(8, OP_EQ, smartlist_len(mock_addent_got));
   keypin_ent_t *ent = smartlist_get(mock_addent_got, 2);
-  tt_mem_op(ent->rsa_id, ==, "r lerkim, sed do bar", 20);
-  tt_mem_op(ent->ed25519_key, ==, "baloot tempor gluppitus ut labor", 32);
+  tt_mem_op(ent->rsa_id, OP_EQ, "r lerkim, sed do bar", 20);
+  tt_mem_op(ent->ed25519_key, OP_EQ, "baloot tempor gluppitus ut labor", 32);
 
   /* More complex example: weird lines, bogus lines,
      duplicate/conflicting lines */
@@ -107,24 +106,25 @@ test_keypin_parse_file(void *arg)
     "ZHMgc3BlYWsgdHJ1dGgsIGFuZCA aXQgd2FzIHRydaUgdGhhdCBhbGwgdGhlIG1hc3Rlcgo\n"
     ;
 
-  tt_int_op(0, ==, keypin_load_journal_impl(data2, strlen(data2)));
-  tt_int_op(13, ==, smartlist_len(mock_addent_got));
+  tt_int_op(0, OP_EQ, keypin_load_journal_impl(data2, strlen(data2)));
+  tt_int_op(13, OP_EQ, smartlist_len(mock_addent_got));
   ent = smartlist_get(mock_addent_got, 9);
-  tt_mem_op(ent->rsa_id, ==, "\"You have made a goo", 20);
-  tt_mem_op(ent->ed25519_key, ==, "d beginning.\" But no more. Wizar", 32);
+  tt_mem_op(ent->rsa_id, OP_EQ, "\"You have made a goo", 20);
+  tt_mem_op(ent->ed25519_key, OP_EQ, "d beginning.\" But no more. Wizar", 32);
 
   ent = smartlist_get(mock_addent_got, 12);
-  tt_mem_op(ent->rsa_id, ==, "ds speak truth, and ", 20);
-  tt_mem_op(ent->ed25519_key, ==, "it was tru\xa5 that all the master\n", 32);
+  tt_mem_op(ent->rsa_id, OP_EQ, "ds speak truth, and ", 20);
+  tt_mem_op(ent->ed25519_key, OP_EQ,
+            "it was tru\xa5 that all the master\n", 32);
 
   /* File truncated before NL */
   const char data3[] =
     "Tm8gZHJhZ29uIGNhbiByZXNpc3Q IHRoZSBmYXNjaW5hdGlvbiBvZiByaWRkbGluZyB0YWw";
-  tt_int_op(0, ==, keypin_load_journal_impl(data3, strlen(data3)));
-  tt_int_op(14, ==, smartlist_len(mock_addent_got));
+  tt_int_op(0, OP_EQ, keypin_load_journal_impl(data3, strlen(data3)));
+  tt_int_op(14, OP_EQ, smartlist_len(mock_addent_got));
   ent = smartlist_get(mock_addent_got, 13);
-  tt_mem_op(ent->rsa_id, ==, "No dragon can resist", 20);
-  tt_mem_op(ent->ed25519_key, ==, " the fascination of riddling tal", 32);
+  tt_mem_op(ent->rsa_id, OP_EQ, "No dragon can resist", 20);
+  tt_mem_op(ent->ed25519_key, OP_EQ, " the fascination of riddling tal", 32);
 
  done:
   keypin_clear();
@@ -141,32 +141,32 @@ test_keypin_add_entry(void *arg)
   (void)arg;
   keypin_clear();
 
-  tt_int_op(KEYPIN_ADDED, ==, ADD("ambassadors-at-large",
+  tt_int_op(KEYPIN_ADDED, OP_EQ, ADD("ambassadors-at-large",
                                   "bread-and-butter thing-in-itself"));
-  tt_int_op(KEYPIN_ADDED, ==, ADD("gentleman-adventurer",
+  tt_int_op(KEYPIN_ADDED, OP_EQ, ADD("gentleman-adventurer",
                                   "cloak-and-dagger what's-his-face"));
 
-  tt_int_op(KEYPIN_FOUND, ==, ADD("ambassadors-at-large",
+  tt_int_op(KEYPIN_FOUND, OP_EQ, ADD("ambassadors-at-large",
                                   "bread-and-butter thing-in-itself"));
-  tt_int_op(KEYPIN_FOUND, ==, ADD("ambassadors-at-large",
+  tt_int_op(KEYPIN_FOUND, OP_EQ, ADD("ambassadors-at-large",
                                   "bread-and-butter thing-in-itself"));
-  tt_int_op(KEYPIN_FOUND, ==, ADD("gentleman-adventurer",
+  tt_int_op(KEYPIN_FOUND, OP_EQ, ADD("gentleman-adventurer",
                                   "cloak-and-dagger what's-his-face"));
 
-  tt_int_op(KEYPIN_ADDED, ==, ADD("Johnnies-come-lately",
+  tt_int_op(KEYPIN_ADDED, OP_EQ, ADD("Johnnies-come-lately",
                                   "run-of-the-mill root-mean-square"));
 
-  tt_int_op(KEYPIN_MISMATCH, ==, ADD("gentleman-adventurer",
+  tt_int_op(KEYPIN_MISMATCH, OP_EQ, ADD("gentleman-adventurer",
                                      "hypersentimental closefistedness"));
 
-  tt_int_op(KEYPIN_MISMATCH, ==, ADD("disestablismentarian",
+  tt_int_op(KEYPIN_MISMATCH, OP_EQ, ADD("disestablismentarian",
                                      "cloak-and-dagger what's-his-face"));
 
-  tt_int_op(KEYPIN_FOUND, ==, ADD("gentleman-adventurer",
+  tt_int_op(KEYPIN_FOUND, OP_EQ, ADD("gentleman-adventurer",
                                   "cloak-and-dagger what's-his-face"));
 
-  tt_int_op(KEYPIN_NOT_FOUND, ==, LONE_RSA("Llanfairpwllgwyngyll"));
-  tt_int_op(KEYPIN_MISMATCH, ==, LONE_RSA("Johnnies-come-lately"));
+  tt_int_op(KEYPIN_NOT_FOUND, OP_EQ, LONE_RSA("Llanfairpwllgwyngyll"));
+  tt_int_op(KEYPIN_MISMATCH, OP_EQ, LONE_RSA("Johnnies-come-lately"));
 
  done:
   keypin_clear();
@@ -179,51 +179,51 @@ test_keypin_journal(void *arg)
   char *contents = NULL;
   const char *fname = get_fname("keypin-journal");
 
-  tt_int_op(0, ==, keypin_load_journal(fname)); /* ENOENT is okay */
+  tt_int_op(0, OP_EQ, keypin_load_journal(fname)); /* ENOENT is okay */
   update_approx_time(1217709000);
-  tt_int_op(0, ==, keypin_open_journal(fname));
+  tt_int_op(0, OP_EQ, keypin_open_journal(fname));
 
-  tt_int_op(KEYPIN_ADDED, ==, ADD("king-of-the-herrings",
+  tt_int_op(KEYPIN_ADDED, OP_EQ, ADD("king-of-the-herrings",
                                   "good-for-nothing attorney-at-law"));
-  tt_int_op(KEYPIN_ADDED, ==, ADD("yellowish-red-yellow",
+  tt_int_op(KEYPIN_ADDED, OP_EQ, ADD("yellowish-red-yellow",
                                   "salt-and-pepper high-muck-a-muck"));
-  tt_int_op(KEYPIN_FOUND, ==, ADD("yellowish-red-yellow",
+  tt_int_op(KEYPIN_FOUND, OP_EQ, ADD("yellowish-red-yellow",
                                   "salt-and-pepper high-muck-a-muck"));
   keypin_close_journal();
   keypin_clear();
 
-  tt_int_op(0, ==, keypin_load_journal(fname));
+  tt_int_op(0, OP_EQ, keypin_load_journal(fname));
   update_approx_time(1231041600);
-  tt_int_op(0, ==, keypin_open_journal(fname));
-  tt_int_op(KEYPIN_FOUND, ==, ADD("yellowish-red-yellow",
+  tt_int_op(0, OP_EQ, keypin_open_journal(fname));
+  tt_int_op(KEYPIN_FOUND, OP_EQ, ADD("yellowish-red-yellow",
                                   "salt-and-pepper high-muck-a-muck"));
-  tt_int_op(KEYPIN_ADDED, ==, ADD("theatre-in-the-round",
+  tt_int_op(KEYPIN_ADDED, OP_EQ, ADD("theatre-in-the-round",
                                   "holier-than-thou jack-in-the-box"));
-  tt_int_op(KEYPIN_ADDED, ==, ADD("no-deposit-no-return",
+  tt_int_op(KEYPIN_ADDED, OP_EQ, ADD("no-deposit-no-return",
                                   "across-the-board will-o-the-wisp"));
-  tt_int_op(KEYPIN_MISMATCH, ==, ADD("intellectualizations",
+  tt_int_op(KEYPIN_MISMATCH, OP_EQ, ADD("intellectualizations",
                                      "salt-and-pepper high-muck-a-muck"));
   keypin_close_journal();
   keypin_clear();
 
-  tt_int_op(0, ==, keypin_load_journal(fname));
+  tt_int_op(0, OP_EQ, keypin_load_journal(fname));
   update_approx_time(1412278354);
-  tt_int_op(0, ==, keypin_open_journal(fname));
-  tt_int_op(KEYPIN_FOUND, ==, ADD("yellowish-red-yellow",
+  tt_int_op(0, OP_EQ, keypin_open_journal(fname));
+  tt_int_op(KEYPIN_FOUND, OP_EQ, ADD("yellowish-red-yellow",
                                   "salt-and-pepper high-muck-a-muck"));
-  tt_int_op(KEYPIN_MISMATCH, ==, ADD("intellectualizations",
+  tt_int_op(KEYPIN_MISMATCH, OP_EQ, ADD("intellectualizations",
                                      "salt-and-pepper high-muck-a-muck"));
-  tt_int_op(KEYPIN_FOUND, ==, ADD("theatre-in-the-round",
+  tt_int_op(KEYPIN_FOUND, OP_EQ, ADD("theatre-in-the-round",
                                   "holier-than-thou jack-in-the-box"));
-  tt_int_op(KEYPIN_MISMATCH, ==, ADD("counterrevolutionary",
+  tt_int_op(KEYPIN_MISMATCH, OP_EQ, ADD("counterrevolutionary",
                                      "holier-than-thou jack-in-the-box"));
-  tt_int_op(KEYPIN_MISMATCH, ==, ADD("no-deposit-no-return",
+  tt_int_op(KEYPIN_MISMATCH, OP_EQ, ADD("no-deposit-no-return",
                                      "floccinaucinihilipilificationism"));
   keypin_close_journal();
 
   contents = read_file_to_str(fname, RFTS_BIN, NULL);
   tt_assert(contents);
-  tt_str_op(contents,==,
+  tt_str_op(contents,OP_EQ,
     "\n"
     "@opened-at 2008-08-02 20:30:00\n"
     "a2luZy1vZi10aGUtaGVycmluZ3M Z29vZC1mb3Itbm90aGluZyBhdHRvcm5leS1hdC1sYXc\n"

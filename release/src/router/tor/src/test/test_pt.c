@@ -1,6 +1,6 @@
 /* Copyright (c) 2001-2004, Roger Dingledine.
  * Copyright (c) 2004-2006, Roger Dingledine, Nick Mathewson.
- * Copyright (c) 2007-2016, The Tor Project, Inc. */
+ * Copyright (c) 2007-2019, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 #include "orconfig.h"
@@ -8,15 +8,20 @@
 #define UTIL_PRIVATE
 #define STATEFILE_PRIVATE
 #define CONTROL_PRIVATE
-#include "or.h"
-#include "config.h"
-#include "confparse.h"
-#include "control.h"
-#include "transports.h"
-#include "circuitbuild.h"
-#include "util.h"
-#include "statefile.h"
-#include "test.h"
+#define SUBPROCESS_PRIVATE
+#include "core/or/or.h"
+#include "app/config/config.h"
+#include "app/config/confparse.h"
+#include "feature/control/control.h"
+#include "feature/client/transports.h"
+#include "core/or/circuitbuild.h"
+#include "app/config/statefile.h"
+#include "test/test.h"
+#include "lib/process/subprocess.h"
+#include "lib/encoding/confline.h"
+#include "lib/net/resolve.h"
+
+#include "app/config/or_state_st.h"
 
 static void
 reset_mp(managed_proxy_t *mp)
@@ -40,34 +45,34 @@ test_pt_parsing(void *arg)
 
   /* incomplete cmethod */
   strlcpy(line,"CMETHOD trebuchet",sizeof(line));
-  tt_assert(parse_cmethod_line(line, mp) < 0);
+  tt_int_op(parse_cmethod_line(line, mp), OP_LT, 0);
 
   reset_mp(mp);
 
   /* wrong proxy type */
   strlcpy(line,"CMETHOD trebuchet dog 127.0.0.1:1999",sizeof(line));
-  tt_assert(parse_cmethod_line(line, mp) < 0);
+  tt_int_op(parse_cmethod_line(line, mp), OP_LT, 0);
 
   reset_mp(mp);
 
   /* wrong addrport */
   strlcpy(line,"CMETHOD trebuchet socks4 abcd",sizeof(line));
-  tt_assert(parse_cmethod_line(line, mp) < 0);
+  tt_int_op(parse_cmethod_line(line, mp), OP_LT, 0);
 
   reset_mp(mp);
 
   /* correct line */
   strlcpy(line,"CMETHOD trebuchet socks5 127.0.0.1:1999",sizeof(line));
-  tt_assert(parse_cmethod_line(line, mp) == 0);
-  tt_assert(smartlist_len(mp->transports) == 1);
+  tt_int_op(parse_cmethod_line(line, mp), OP_EQ, 0);
+  tt_int_op(smartlist_len(mp->transports), OP_EQ, 1);
   transport = smartlist_get(mp->transports, 0);
   /* test registered address of transport */
   tor_addr_parse(&test_addr, "127.0.0.1");
   tt_assert(tor_addr_eq(&test_addr, &transport->addr));
   /* test registered port of transport */
-  tt_assert(transport->port == 1999);
+  tt_uint_op(transport->port, OP_EQ, 1999);
   /* test registered SOCKS version of transport */
-  tt_assert(transport->socks_version == PROXY_SOCKS5);
+  tt_int_op(transport->socks_version, OP_EQ, PROXY_SOCKS5);
   /* test registered name of transport */
   tt_str_op(transport->name,OP_EQ, "trebuchet");
 
@@ -75,26 +80,26 @@ test_pt_parsing(void *arg)
 
   /* incomplete smethod */
   strlcpy(line,"SMETHOD trebuchet",sizeof(line));
-  tt_assert(parse_smethod_line(line, mp) < 0);
+  tt_int_op(parse_smethod_line(line, mp), OP_LT, 0);
 
   reset_mp(mp);
 
   /* wrong addr type */
   strlcpy(line,"SMETHOD trebuchet abcd",sizeof(line));
-  tt_assert(parse_smethod_line(line, mp) < 0);
+  tt_int_op(parse_smethod_line(line, mp), OP_LT, 0);
 
   reset_mp(mp);
 
   /* cowwect */
   strlcpy(line,"SMETHOD trebuchy 127.0.0.2:2999",sizeof(line));
-  tt_assert(parse_smethod_line(line, mp) == 0);
-  tt_assert(smartlist_len(mp->transports) == 1);
+  tt_int_op(parse_smethod_line(line, mp), OP_EQ, 0);
+  tt_int_op(smartlist_len(mp->transports), OP_EQ, 1);
   transport = smartlist_get(mp->transports, 0);
   /* test registered address of transport */
   tor_addr_parse(&test_addr, "127.0.0.2");
   tt_assert(tor_addr_eq(&test_addr, &transport->addr));
   /* test registered port of transport */
-  tt_assert(transport->port == 2999);
+  tt_uint_op(transport->port, OP_EQ, 2999);
   /* test registered name of transport */
   tt_str_op(transport->name,OP_EQ, "trebuchy");
 
@@ -104,7 +109,7 @@ test_pt_parsing(void *arg)
   strlcpy(line,"SMETHOD trebuchet 127.0.0.1:9999 "
           "ARGS:counterweight=3,sling=snappy",
           sizeof(line));
-  tt_assert(parse_smethod_line(line, mp) == 0);
+  tt_int_op(parse_smethod_line(line, mp), OP_EQ, 0);
   tt_int_op(1, OP_EQ, smartlist_len(mp->transports));
   {
     const transport_t *transport_ = smartlist_get(mp->transports, 0);
@@ -119,15 +124,15 @@ test_pt_parsing(void *arg)
 
   /* unsupported version */
   strlcpy(line,"VERSION 666",sizeof(line));
-  tt_assert(parse_version(line, mp) < 0);
+  tt_int_op(parse_version(line, mp), OP_LT, 0);
 
   /* incomplete VERSION */
   strlcpy(line,"VERSION ",sizeof(line));
-  tt_assert(parse_version(line, mp) < 0);
+  tt_int_op(parse_version(line, mp), OP_LT, 0);
 
   /* correct VERSION */
   strlcpy(line,"VERSION 1",sizeof(line));
-  tt_assert(parse_version(line, mp) == 0);
+  tt_int_op(parse_version(line, mp), OP_EQ, 0);
 
  done:
   reset_mp(mp);
@@ -155,9 +160,9 @@ test_pt_get_transport_options(void *arg)
   opt_str = get_transport_options_for_server_proxy(mp);
   tt_ptr_op(opt_str, OP_EQ, NULL);
 
-  smartlist_add(mp->transports_to_launch, tor_strdup("gruyere"));
-  smartlist_add(mp->transports_to_launch, tor_strdup("roquefort"));
-  smartlist_add(mp->transports_to_launch, tor_strdup("stnectaire"));
+  smartlist_add_strdup(mp->transports_to_launch, "gruyere");
+  smartlist_add_strdup(mp->transports_to_launch, "roquefort");
+  smartlist_add_strdup(mp->transports_to_launch, "stnectaire");
 
   tt_assert(options);
 
@@ -284,13 +289,13 @@ test_pt_get_extrainfo_string(void *arg)
 }
 
 #ifdef _WIN32
-#define STDIN_HANDLE HANDLE
+#define STDIN_HANDLE HANDLE*
 #else
-#define STDIN_HANDLE FILE
+#define STDIN_HANDLE int
 #endif
 
 static smartlist_t *
-tor_get_lines_from_handle_replacement(STDIN_HANDLE *handle,
+tor_get_lines_from_handle_replacement(STDIN_HANDLE handle,
                                       enum stream_status *stream_status_out)
 {
   static int times_called = 0;
@@ -305,7 +310,7 @@ tor_get_lines_from_handle_replacement(STDIN_HANDLE *handle,
     smartlist_add_asprintf(retval_sl, "SMETHOD mock%d 127.0.0.1:555%d",
                            times_called, times_called);
   } else {
-    smartlist_add(retval_sl, tor_strdup("SMETHODS DONE"));
+    smartlist_add_strdup(retval_sl, "SMETHODS DONE");
   }
 
   return retval_sl;
@@ -461,7 +466,7 @@ test_get_pt_proxy_uri(void *arg)
 
   /* Test with no proxy. */
   uri = get_pt_proxy_uri();
-  tt_assert(uri == NULL);
+  tt_ptr_op(uri, OP_EQ, NULL);
 
   /* Test with a SOCKS4 proxy. */
   options->Socks4Proxy = tor_strdup("192.0.2.1:1080");
@@ -544,4 +549,3 @@ struct testcase_t pt_tests[] = {
     NULL, NULL },
   END_OF_TESTCASES
 };
-

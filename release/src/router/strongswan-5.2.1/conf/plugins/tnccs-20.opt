@@ -1,5 +1,0 @@
-charon.plugins.tnccs-20.max_batch_size = 65522
-	Maximum size of a PB-TNC batch (upper limit via PT-EAP = 65529).
-
-charon.plugins.tnccs-20.max_message_size = 65490
-	Maximum size of a PA-TNC message (upper limit via PT-EAP = 65497).

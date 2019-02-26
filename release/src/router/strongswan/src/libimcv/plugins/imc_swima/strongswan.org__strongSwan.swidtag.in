@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<SoftwareIdentity
+  name="strongSwan"
+  tagId="strongSwan-@VERSION_MAJOR@-@VERSION_MINOR@-@VERSION_BUILD@@VERSION_REVIEW@"
+  version="@VERSION_MAJOR@.@VERSION_MINOR@.@VERSION_BUILD@@VERSION_REVIEW@" versionScheme="alphanumeric"
+  xmlns="http://standards.iso.org/iso/19770/-2/2015/schema.xsd">
+  <Entity
+    name="strongSwan Project"
+    regid="strongswan.org"
+    role="softwareCreator licensor tagCreator"/>
+</SoftwareIdentity>

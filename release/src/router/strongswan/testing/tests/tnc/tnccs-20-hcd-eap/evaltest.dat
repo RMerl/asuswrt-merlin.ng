@@ -1,0 +1,18 @@
+carol::cat /var/log/daemon.log::authentication of 'moon.strongswan.org' with RSA.* successful::YES
+carol::cat /var/log/daemon.log::PDP server.*aaa.strongswan.org.*is listening on port 271::YES
+carol:: cat /var/log/daemon.log::PB-TNC assessment result is.*non-compliant major::YES
+carol:: cat /var/log/daemon.log::PB-TNC access recommendation is .*Access Denied::YES
+carol:: cat /var/log/daemon.log::reason string is.*Mandatory HCD attributes are missing::YES
+carol:: cat /var/log/daemon.log::received EAP_FAILURE, EAP authentication failed::YES
+dave:: cat /var/log/daemon.log::authentication of 'moon.strongswan.org' with RSA.* successful::YES
+dave:: cat /var/log/daemon.log::PDP server.*aaa.strongswan.org.*is listening on port 271::YES
+dave:: cat /var/log/daemon.log::PB-TNC assessment result is.*non-compliant major::YES
+dave:: cat /var/log/daemon.log::PB-TNC access recommendation is .*Access Denied::YES
+dave:: cat /var/log/daemon.log::reason string is.*Mandatory HCD attributes are missing::YES
+dave:: cat /var/log/daemon.log::received EAP_FAILURE, EAP authentication failed::YES
+alice::cat /var/log/daemon.log::user AR identity.*dave.*authenticated by certificate::YES
+alice::cat /var/log/daemon.log::user AR identity.*carol.*authenticated by certificate::YES
+alice::cat /var/log/daemon.log::policy enforced on peer.*carol@strongswan.org.*is.*no access::YES
+alice::cat /var/log/daemon.log::policy enforced on peer.*dave@strongswan.org.*is.*no access::YES
+moon:: cat /var/log/daemon.log::RADIUS authentication of.*dave@strongswan.org.*failed::YES
+moon:: cat /var/log/daemon.log::RADIUS authentication of.*dave@strongswan.org.*failed::YES

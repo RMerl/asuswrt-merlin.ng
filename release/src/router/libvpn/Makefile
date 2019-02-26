@@ -3,13 +3,20 @@ include $(SRCBASE)/.config
 
 CFLAGS += -Os -Wall $(EXTRACFLAGS) -fPIC
 CFLAGS += -I. -I$(TOP)/shared -I$(SRCBASE)/include
+
+ifeq ($(RTCONFIG_OPENSSL11),y)
+CFLAGS += -I$(TOP)/openssl-1.1.x/include
+LDFLAGS += -L$(TOP)/openssl-1.1.x -lcrypto -lssl
+else
 CFLAGS += -I$(TOP)/openssl/include
+LDFLAGS += -L$(TOP)/openssl -lcrypto -lssl
+endif
+
 ifeq ($(RTCONFIG_BCMARM),y)
 CFLAGS += -I$(SRCBASE)/shared/bcmwifi/include -DTYPEDEF_FLOAT_T
 endif
 LDFLAGS += $(EXTRALDFLAGS) -L$(TOP_PLATFORM)/nvram${BCMEX}${EX7} -lnvram -L$(TOP)/shared -lshared
 LDFLAGS += -lcrypt
-LDFLAGS += -L$(TOP)/openssl -lcrypto -lssl
 
 INSTALL = install
 

@@ -1,0 +1,12 @@
+
+carol::ping6 -c 1 ip6-alice.strongswan.org::64 bytes from ip6-alice.strongswan.org.*: icmp_seq=1::YES
+dave:: ping6 -c 1 ip6-alice.strongswan.org::64 bytes from ip6-alice.strongswan.org.*: icmp_seq=1::YES
+carol::swanctl --list-sas --raw 2> /dev/null::home.*version=1 state=ESTABLISHED local-host=fec0:\:10 local-port=500 local-id=fec0:\:10 remote-host=fec0:\:1 remote-port=500 remote-id=fec0:\:1 initiator=yes.*encr-alg=AES_CBC encr-keysize=128 integ-alg=HMAC_SHA2_256_128 prf-alg=PRF_HMAC_SHA2_256 dh-group=CURVE_25519.*child-sas.*home.*state=INSTALLED mode=TUNNEL.*ESP.*encr-alg=AES_CBC encr-keysize=128 integ-alg=HMAC_SHA2_256_128 dh-group=CURVE_25519.*local-ts=\[fec0:\:10/128] remote-ts=\[fec1:\:/16]::YES
+dave:: swanctl --list-sas --raw 2> /dev/null::home.*version=1 state=ESTABLISHED local-host=fec0:\:20 local-port=500 local-id=fec0:\:20 remote-host=fec0:\:1 remote-port=500 remote-id=fec0:\:1 initiator=yes.*encr-alg=AES_CBC encr-keysize=128 integ-alg=HMAC_SHA2_256_128 prf-alg=PRF_HMAC_SHA2_256 dh-group=CURVE_25519.*child-sas.*home.*state=INSTALLED mode=TUNNEL.*ESP..*encr-alg=AES_CBC encr-keysize=128 integ-alg=HMAC_SHA2_256_128 dh-group=CURVE_25519.*local-ts=\[fec0:\:20/128] remote-ts=\[fec1:\:/16]::YES
+moon:: swanctl --list-sas --ike-id 1 --raw 2> /dev/null::rw.*version=1 state=ESTABLISHED local-host=fec0:\:1 local-port=500 local-id=fec0:\:1 remote-host=fec0:\:10 remote-port=500 remote-id=fec0:\:10.*encr-alg=AES_CBC encr-keysize=128 integ-alg=HMAC_SHA2_256_128 prf-alg=PRF_HMAC_SHA2_256 dh-group=CURVE_25519.*child-sas.*net.*reqid=1 state=INSTALLED mode=TUNNEL.*ESP.*encr-alg=AES_CBC encr-keysize=128 integ-alg=HMAC_SHA2_256_128 dh-group=CURVE_25519.*local-ts=\[fec1:\:/16] remote-ts=\[fec0:\:10/128]::YES
+moon:: swanctl --list-sas --ike-id 2 --raw 2> /dev/null::rw.*version=1 state=ESTABLISHED local-host=fec0:\:1 local-port=500 local-id=fec0:\:1 remote-host=fec0:\:20 remote-port=500 remote-id=fec0:\:20.*encr-alg=AES_CBC encr-keysize=128 integ-alg=HMAC_SHA2_256_128 prf-alg=PRF_HMAC_SHA2_256 dh-group=CURVE_25519.*child-sas.*net.*reqid=2 state=INSTALLED mode=TUNNEL.*ESP.*encr-alg=AES_CBC encr-keysize=128 integ-alg=HMAC_SHA2_256_128 dh-group=CURVE_25519.*local-ts=\[fec1:\:/16] remote-ts=\[fec0:\:20/128]::YES
+moon::tcpdump::IP6 ip6-carol.strongswan.org > ip6-moon.strongswan.org: ESP::YES
+moon::tcpdump::IP6 ip6-moon.strongswan.org > ip6-carol.strongswan.org: ESP::YES
+moon::tcpdump::IP6 ip6-dave.strongswan.org > ip6-moon.strongswan.org: ESP::YES
+moon::tcpdump::IP6 ip6-moon.strongswan.org > ip6-dave.strongswan.org: ESP::YES
+

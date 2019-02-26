@@ -1,0 +1,14 @@
+An IPsec <b>transport-mode</b> connection between the natted host <b>alice</b> and gateway <b>sun</b>
+is successfully set up. <b>leftfirewall=yes</b> automatically inserts iptables-based firewall
+rules that let pass the decrypted IP packets. In order to test the host-to-host connection
+<b>alice</b> pings <b>sun</b>.<br/>
+<b>Note:</b> This scenario also demonstrates two problems with transport-mode and NAT traversal:
+<ol>
+<li>The client <b>venus</b> behind the same NAT as client <b>alice</b> is not able to ping <b>sun</b>
+(even with ICMP explicitly allowed there) because the request arrives unencrypted and thus gets
+dropped when the IPsec policies are consulted (increases the <em>XfrmInTmplMismatch</em> counter
+in <em>/proc/net/xfrm_stat</em>).</li>
+<li>A similar issue arises when <b>venus</b> also establishes an IPsec <b>transport-mode</b> connection to
+<b>sun</b>. Due to the conflicting IPsec policies <b>sun</b> will use the newer SA from
+<b>venus</b> to send traffic to the common transport mode address.</li>
+</ol>

@@ -1,0 +1,25 @@
+moon::iptables-restore < /etc/iptables.rules
+carol::iptables-restore < /etc/iptables.rules
+dave::iptables-restore < /etc/iptables.rules
+carol::echo 0 > /proc/sys/net/ipv4/ip_forward
+dave::echo aabbccddeeff11223344556677889900 > /var/lib/dbus/machine-id
+moon::sed -i "s:DEBIAN_VERSION:\`cat /etc/debian_version\`:" /etc/pts/data1.sql
+moon::cd /usr/local/share/strongswan/templates/database/imv; cat tables.sql data.sql /etc/pts/data1.sql | sqlite3 /etc/db.d/config.db
+moon::cat /etc/tnc_config
+carol::cat /etc/tnc_config
+dave::cat /etc/tnc_config
+carol::rm /etc/swanctl/rsa/*
+dave::rm /etc/swanctl/rsa/*
+carol::rm /etc/swanctl/x509/*
+dave::rm /etc/swanctl/x509/*
+moon::systemctl start strongswan-swanctl
+dave::systemctl start strongswan-swanctl
+carol::systemctl start strongswan-swanctl
+moon::expect-connection rw-allow
+moon::expect-connection rw-isolate
+dave::expect-connection home
+dave::swanctl --initiate --child home 2> /dev/null
+carol::expect-connection home
+carol::swanctl --initiate --child home 2> /dev/null
+moon::ipsec attest --sessions
+moon::ipsec attest --devices

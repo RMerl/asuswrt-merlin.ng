@@ -1,0 +1,11 @@
+The roadwarriors <b>carol</b> and <b>dave</b> set up an IPv6-in-IPv4 connection each to
+gateway <b>moon</b>. Both <b>carol</b> and <b>dave</b> request an IPv6 <b>virtual
+IP</b> via the IKEv2 configuration payload.
+<p/>
+The gateway <b>moon</b> uses <b>route-based forwarding</b> with <b>VTI
+tunnels</b>, with firewall rules to allow traffic to pass. The IKE daemon is
+configured to not install routes with <em>charon.install_routes=0</em>, and a
+static route is installed for the IPv6 virtual IP subnet on the VTI device.
+<p/>
+Both <b>carol</b> and <b>dave</b> ping the client <b>alice</b> behind the
+gateway <b>moon</b>.

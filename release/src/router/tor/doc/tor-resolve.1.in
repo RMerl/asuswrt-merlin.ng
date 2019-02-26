@@ -1,13 +1,13 @@
 '\" t
 .\"     Title: tor-resolve
 .\"    Author: Peter Palfrader
-.\" Generator: DocBook XSL Stylesheets v1.79.1 <http://docbook.sf.net/>
-.\"      Date: 06/08/2017
+.\" Generator: DocBook XSL Stylesheets vsnapshot <http://docbook.sf.net/>
+.\"      Date: 11/07/2018
 .\"    Manual: Tor Manual
 .\"    Source: Tor
 .\"  Language: English
 .\"
-.TH "TOR\-RESOLVE" "1" "06/08/2017" "Tor" "Tor Manual"
+.TH "TOR\-RESOLVE" "1" "11/07/2018" "Tor" "Tor Manual"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -67,7 +67,7 @@ Override the default SOCKS port without setting the hostname\&.
 .sp
 \fBtor\fR(1), \fBtorify\fR(1)\&.
 .sp
-See doc/socks\-extensions\&.txt in the Tor package for protocol details\&.
+For protocol details, see: https://spec\&.torproject\&.org/socks\-extensions
 .SH "AUTHORS"
 .sp
 Roger Dingledine <arma@mit\&.edu>, Nick Mathewson <nickm@alum\&.mit\&.edu>\&.

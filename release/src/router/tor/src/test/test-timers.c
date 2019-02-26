@@ -1,4 +1,4 @@
-/* Copyright 2016, The Tor Project, Inc. */
+/* Copyright 2016-2019, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 #include "orconfig.h"
@@ -7,13 +7,13 @@
 #include <stdio.h>
 #include <string.h>
 
-#include <event2/event.h>
-
-#include "compat.h"
-#include "compat_libevent.h"
-#include "crypto.h"
-#include "timers.h"
-#include "util.h"
+#include "lib/evloop/compat_libevent.h"
+#include "lib/evloop/timers.h"
+#include "lib/crypt_ops/crypto_init.h"
+#include "lib/crypt_ops/crypto_rand.h"
+#include "lib/log/util_bug.h"
+#include "lib/time/compat_time.h"
+#include "lib/wallclock/timeval.h"
 
 #define N_TIMERS 1000
 #define MAX_DURATION 30
@@ -50,7 +50,7 @@ timer_cb(tor_timer_t *t, void *arg, const monotime_t *now_mono)
 
   // printf("%d / %d\n",n_fired, N_TIMERS);
   if (n_fired == n_active_timers) {
-    event_base_loopbreak(tor_libevent_get_base());
+    tor_libevent_exit_loop_after_callback(tor_libevent_get_base());
   }
 }
 
@@ -63,6 +63,10 @@ main(int argc, char **argv)
   memset(&cfg, 0, sizeof(cfg));
   tor_libevent_initialize(&cfg);
   timers_initialize();
+  init_logging(1);
+
+  if (crypto_global_init(0, NULL, NULL) < 0)
+    return 1;
 
   int i;
   int ret;
@@ -90,7 +94,7 @@ main(int argc, char **argv)
     --n_active_timers;
   }
 
-  event_base_loop(tor_libevent_get_base(), 0);
+  tor_libevent_run_event_loop(tor_libevent_get_base(), 0);
 
   int64_t total_difference = 0;
   uint64_t total_square_difference = 0;
@@ -107,8 +111,8 @@ main(int argc, char **argv)
     total_square_difference += diff*diff;
   }
   const int64_t mean_diff = total_difference / n_active_timers;
-  printf("mean difference: "I64_FORMAT" usec\n",
-         I64_PRINTF_ARG(mean_diff));
+  printf("mean difference: %"PRId64" usec\n",
+         (mean_diff));
 
   const double mean_sq = ((double)total_square_difference)/ n_active_timers;
   const double sq_mean = mean_diff * mean_diff;
@@ -133,7 +137,7 @@ main(int argc, char **argv)
     ret = 0;
   }
 
-  timer_free(NULL);
+  timer_free_(NULL);
 
   for (i = 0; i < N_TIMERS; ++i) {
     timer_free(timers[i]);
@@ -141,4 +145,3 @@ main(int argc, char **argv)
   timers_shutdown();
   return ret;
 }
-

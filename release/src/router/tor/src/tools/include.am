@@ -1,56 +1,68 @@
-bin_PROGRAMS+= src/tools/tor-resolve src/tools/tor-gencert
-noinst_PROGRAMS+=  src/tools/tor-checkkey
+bin_PROGRAMS+= src/tools/tor-resolve src/tools/tor-print-ed-signing-cert
 
 if COVERAGE_ENABLED
-noinst_PROGRAMS+= src/tools/tor-cov-resolve src/tools/tor-cov-gencert
+noinst_PROGRAMS+= src/tools/tor-cov-resolve
 endif
 
 src_tools_tor_resolve_SOURCES = src/tools/tor-resolve.c
 src_tools_tor_resolve_LDFLAGS =
-src_tools_tor_resolve_LDADD = src/common/libor.a \
-	src/common/libor-ctime.a \
-	@TOR_LIB_MATH@ @TOR_LIB_WS32@
+src_tools_tor_resolve_LDADD = \
+	$(TOR_UTIL_LIBS) \
+	$(rust_ldadd) \
+	@TOR_LIB_MATH@ @TOR_LIB_WS32@ @TOR_LIB_IPHLPAPI@ @TOR_LIB_USERENV@
 
 if COVERAGE_ENABLED
 src_tools_tor_cov_resolve_SOURCES = src/tools/tor-resolve.c
 src_tools_tor_cov_resolve_CPPFLAGS = $(AM_CPPFLAGS) $(TEST_CPPFLAGS)
 src_tools_tor_cov_resolve_CFLAGS = $(AM_CFLAGS) $(TEST_CFLAGS)
-src_tools_tor_cov_resolve_LDADD = src/common/libor-testing.a \
-	src/common/libor-ctime-testing.a \
+src_tools_tor_cov_resolve_LDADD = \
+	$(TOR_UTIL_TESTING_LIBS) \
 	@TOR_LIB_MATH@ @TOR_LIB_WS32@
 endif
 
+if USE_NSS
+# ...
+else
+bin_PROGRAMS += src/tools/tor-gencert
 src_tools_tor_gencert_SOURCES = src/tools/tor-gencert.c
-src_tools_tor_gencert_LDFLAGS = @TOR_LDFLAGS_zlib@ @TOR_LDFLAGS_openssl@
-src_tools_tor_gencert_LDADD = src/common/libor.a src/common/libor-crypto.a \
-    src/common/libor-ctime.a \
-    $(LIBKECCAK_TINY) \
-    $(LIBDONNA) \
-    @TOR_LIB_MATH@ @TOR_ZLIB_LIBS@ @TOR_OPENSSL_LIBS@ \
-    @TOR_LIB_WS32@ @TOR_LIB_GDI@ @CURVE25519_LIBS@
+src_tools_tor_gencert_LDFLAGS = @TOR_LDFLAGS_zlib@ $(TOR_LDFLAGS_CRYPTLIB)
+src_tools_tor_gencert_LDADD = \
+	$(TOR_CRYPTO_LIBS) \
+	$(TOR_UTIL_LIBS) \
+	$(rust_ldadd) \
+	@TOR_LIB_MATH@ @TOR_ZLIB_LIBS@ $(TOR_LIBS_CRYPTLIB) \
+	@TOR_LIB_WS32@ @TOR_LIB_IPHLPAPI@ @TOR_LIB_GDI@ @TOR_LIB_USERENV@ @CURVE25519_LIBS@
+endif
 
+src_tools_tor_print_ed_signing_cert_SOURCES = src/tools/tor-print-ed-signing-cert.c
+src_tools_tor_print_ed_signing_cert_LDFLAGS = @TOR_LDFLAGS_zlib@ @TOR_LDFLAGS_openssl@
+src_tools_tor_print_ed_signing_cert_LDADD = \
+	src/trunnel/libor-trunnel.a \
+        $(TOR_CRYPTO_LIBS) \
+        $(TOR_UTIL_LIBS) \
+	@TOR_LIB_MATH@ $(TOR_LIBS_CRYPTLIB) \
+	@TOR_LIB_WS32@ @TOR_LIB_USERENV@ @TOR_LIB_GDI@
+
+if USE_NSS
+# ...
+else
 if COVERAGE_ENABLED
+noinst_PROGRAMS += src/tools/tor-cov-gencert
 src_tools_tor_cov_gencert_SOURCES = src/tools/tor-gencert.c
 src_tools_tor_cov_gencert_CPPFLAGS = $(AM_CPPFLAGS) $(TEST_CPPFLAGS)
 src_tools_tor_cov_gencert_CFLAGS = $(AM_CFLAGS) $(TEST_CFLAGS)
-src_tools_tor_cov_gencert_LDFLAGS = @TOR_LDFLAGS_zlib@ @TOR_LDFLAGS_openssl@
-src_tools_tor_cov_gencert_LDADD = src/common/libor-testing.a \
-    src/common/libor-crypto-testing.a \
-    src/common/libor-ctime-testing.a \
-    $(LIBKECCAK_TINY) \
-    $(LIBDONNA) \
-    @TOR_LIB_MATH@ @TOR_ZLIB_LIBS@ @TOR_OPENSSL_LIBS@ \
-    @TOR_LIB_WS32@ @TOR_LIB_GDI@ @CURVE25519_LIBS@
+src_tools_tor_cov_gencert_LDFLAGS = @TOR_LDFLAGS_zlib@ $(TOR_LDFLAGS_CRYPTLIB)
+src_tools_tor_cov_gencert_LDADD = \
+    $(TOR_CRYPTO_TESTING_LIBS) \
+    $(TOR_UTIL_TESTING_LIBS) \
+    @TOR_LIB_MATH@ @TOR_ZLIB_LIBS@ $(TOR_LIBS_CRYPTLIB) \
+    @TOR_LIB_WS32@ @TOR_LIB_IPHLPAPI@ @TOR_LIB_GDI@ @CURVE25519_LIBS@
+endif
 endif
 
-src_tools_tor_checkkey_SOURCES = src/tools/tor-checkkey.c
-src_tools_tor_checkkey_LDFLAGS = @TOR_LDFLAGS_zlib@ @TOR_LDFLAGS_openssl@
-src_tools_tor_checkkey_LDADD = src/common/libor.a \
-    src/common/libor-ctime.a \
-    src/common/libor-crypto.a \
-    $(LIBKECCAK_TINY) \
-    $(LIBDONNA) \
-    @TOR_LIB_MATH@ @TOR_ZLIB_LIBS@ @TOR_OPENSSL_LIBS@ \
-    @TOR_LIB_WS32@ @TOR_LIB_GDI@ @CURVE25519_LIBS@
-
-EXTRA_DIST += src/tools/tor-fw-helper/README
+if BUILD_LIBTORRUNNER
+noinst_LIBRARIES += src/tools/libtorrunner.a
+src_tools_libtorrunner_a_SOURCES = \
+        src/tools/tor_runner.c \
+        src/feature/api/tor_api.c
+endif

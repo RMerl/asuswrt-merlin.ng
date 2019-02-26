@@ -1,0 +1,5 @@
+Roadwarrior <b>carol</b> proposes to gateway <b>moon</b> the cipher suite
+<b>AES_GCM_16_256</b> both for IKE and ESP by defining <b>ike=aes256gcm16-aesxcbc-curve25519</b>
+(or alternatively <b>aes256gcm128</b>) and <b>esp=aes256gcm16-curve25519</b> in ipsec.conf,
+respectively.
+A ping from <b>carol</b> to <b>alice</b> successfully checks the established tunnel.

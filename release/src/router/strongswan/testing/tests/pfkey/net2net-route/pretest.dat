@@ -1,0 +1,7 @@
+moon::iptables-restore < /etc/iptables.rules
+sun::iptables-restore < /etc/iptables.rules
+moon::ipsec start
+sun::ipsec start
+sun::expect-connection net-net
+moon::expect-connection net-net
+alice::ping -c 3 -W 1 -i 0.2 PH_IP_BOB

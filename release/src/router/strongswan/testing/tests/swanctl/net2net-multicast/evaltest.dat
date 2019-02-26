@@ -1,0 +1,14 @@
+alice::traceroute -p 5353 -w 1 -q 1 -m 1 224.0.0.251::traceroute::YES
+bob::  traceroute -p 5353 -w 1 -q 1 -m 1 224.0.0.251::traceroute::YES
+moon:: traceroute -p 5353 -w 1 -q 1 -m 1 224.0.0.251::traceroute::YES
+sun::  traceroute -p 5353 -w 1 -q 1 -m 1 224.0.0.251::traceroute::YES
+moon::swanctl --list-sas --raw 2> /dev/null::gw-gw.*version=2 state=ESTABLISHED local-host=192.168.0.1 local-port=500 local-id=moon.strongswan.org remote-host=192.168.0.2 remote-port=500 remote-id=sun.strongswan.org initiator=yes.*encr-alg=AES_CBC encr-keysize=128 integ-alg=HMAC_SHA2_256_128 prf-alg=PRF_HMAC_SHA2_256 dh-group=CURVE_25519.*child-sas.*net-net.*state=INSTALLED mode=TUNNEL.*ESP.*encr-alg=AES_GCM_16 encr-keysize=128.*local-ts=\[10.1.0.0/16 224.0.0.251/32] remote-ts=\[10.2.0.0/16 224.0.0.251/32]::YES
+sun:: swanctl --list-sas --raw 2> /dev/null::gw-gw.*version=2 state=ESTABLISHED local-host=192.168.0.2 local-port=500 local-id=sun.strongswan.org remote-host=192.168.0.1 remote-port=500 remote-id=moon.strongswan.org.*encr-alg=AES_CBC encr-keysize=128 integ-alg=HMAC_SHA2_256_128 prf-alg=PRF_HMAC_SHA2_256 dh-group=CURVE_25519.*child-sas.*net-net.*state=INSTALLED mode=TUNNEL.*ESP.*encr-alg=AES_GCM_16 encr-keysize=128.*local-ts=\[10.2.0.0/16 224.0.0.251/32] remote-ts=\[10.1.0.0/16 224.0.0.251/32]::YES
+sun::tcpdump::IP moon.strongswan.org > sun.strongswan.org: ESP::YES
+sun::tcpdump::IP sun.strongswan.org > moon.strongswan.org: ESP::YES
+alice::tcpdump::IP bob.strongswan.org.*224.0.0.251::YES
+alice::tcpdump::IP moon1.strongswan.org.*224.0.0.251::YES
+alice::tcpdump::IP sun1.strongswan.org.*224.0.0.251::NO
+bob::tcpdump::IP alice.strongswan.org.*224.0.0.251::YES
+bob::tcpdump::IP sun1.strongswan.org.*224.0.0.251::YES
+bob::tcpdump::IP moon1.strongswan.org.*224.0.0.251::NO

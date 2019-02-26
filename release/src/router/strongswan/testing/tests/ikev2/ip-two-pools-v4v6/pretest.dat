@@ -1,0 +1,6 @@
+alice::ip -6 route add default via fec1:\:1
+moon::ipsec start
+carol::ipsec start
+moon::expect-connection rw
+carol::expect-connection home
+carol::ipsec up home

@@ -55,7 +55,7 @@ extern "C" {
  */
 #define OPENVPN_VERSION_MAJOR 2
 #define OPENVPN_VERSION_MINOR 4
-#define OPENVPN_VERSION_PATCH ".6"
+#define OPENVPN_VERSION_PATCH ".7"
 
 /*
  * Plug-in types.  These types correspond to the set of script callbacks
@@ -222,8 +222,11 @@ struct openvpn_plugin_string_list
  *           OpenVPN to plug-ins.
  *
  *    4      Exported secure_memzero() as plugin_secure_memzero()
+ *
+ *    5      Exported openvpn_base64_encode() as plugin_base64_encode()
+ *           Exported openvpn_base64_decode() as plugin_base64_decode()
  */
-#define OPENVPN_PLUGINv3_STRUCTVER 4
+#define OPENVPN_PLUGINv3_STRUCTVER 5
 
 /**
  * Definitions needed for the plug-in callback functions.
@@ -270,6 +273,33 @@ typedef void (*plugin_vlog_t)(openvpn_plugin_log_flags_t flags,
  */
 typedef void (*plugin_secure_memzero_t)(void *data, size_t len);
 
+/**
+ *  Export of openvpn_base64_encode() to be used inside plug-ins
+ *
+ *  @param data   Pointer to data to BASE64 encode
+ *  @param size   Length of data, in bytes
+ *  @param *str   Pointer to the return buffer.  This needed memory is
+ *                allocated by openvpn_base64_encode() and needs to be free()d
+ *                after use.
+ *
+ *  @return int   Returns the length of the buffer created, or -1 on error.
+ *
+ */
+typedef int (*plugin_base64_encode_t)(const void *data, int size, char **str);
+
+/**
+ *  Export of openvpn_base64_decode() to be used inside plug-ins
+ *
+ *  @param str    Pointer to the BASE64 encoded data
+ *  @param data   Pointer to the buffer where save the decoded data
+ *  @param size   Size of the destination buffer
+ *
+ *  @return int   Returns the length of the decoded data, or -1 on error or
+ *                if the destination buffer is too small.
+ *
+ */
+typedef int (*plugin_base64_decode_t)(const char *str, void *data, int size);
+
 
 /**
  * Used by the openvpn_plugin_open_v3() function to pass callback
@@ -292,6 +322,8 @@ struct openvpn_plugin_callbacks
     plugin_log_t plugin_log;
     plugin_vlog_t plugin_vlog;
     plugin_secure_memzero_t plugin_secure_memzero;
+    plugin_base64_encode_t plugin_base64_encode;
+    plugin_base64_decode_t plugin_base64_decode;
 };
 
 /**
@@ -356,7 +388,7 @@ struct openvpn_plugin_args_open_in
  *              type_mask = OPENVPN_PLUGIN_MASK(OPENVPN_PLUGIN_CLIENT_CONNECT)
  *                         | OPENVPN_PLUGIN_MASK(OPENVPN_PLUGIN_CLIENT_DISCONNECT)
  *
- * *handle :    Pointer to a global plug-in context, created by the plug-in.  This pointer
+ * handle :     Pointer to a global plug-in context, created by the plug-in.  This pointer
  *              is passed on to the other plug-in calls.
  *
  * return_list : used to return data back to OpenVPN.
@@ -365,7 +397,7 @@ struct openvpn_plugin_args_open_in
 struct openvpn_plugin_args_open_return
 {
     int type_mask;
-    openvpn_plugin_handle_t *handle;
+    openvpn_plugin_handle_t handle;
     struct openvpn_plugin_string_list **return_list;
 };
 
@@ -387,9 +419,9 @@ struct openvpn_plugin_args_open_return
  *        these variables are not actually written to the "official"
  *        environmental variable store of the process.
  *
- * *handle : Pointer to a global plug-in context, created by the plug-in's openvpn_plugin_open_v3().
+ * handle : Pointer to a global plug-in context, created by the plug-in's openvpn_plugin_open_v3().
  *
- * *per_client_context : the per-client context pointer which was returned by
+ * per_client_context : the per-client context pointer which was returned by
  *        openvpn_plugin_client_constructor_v1, if defined.
  *
  * current_cert_depth : Certificate depth of the certificate being passed over (only if compiled with ENABLE_CRYPTO defined)

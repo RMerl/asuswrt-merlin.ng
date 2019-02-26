@@ -1,0 +1,14 @@
+libimcv.plugins.imv-attestation.cadir =
+	Path to directory with AIK cacerts.
+
+libimcv.plugins.imv-attestation.mandatory_dh_groups = yes
+	Enforce mandatory Diffie-Hellman groups.
+
+libimcv.plugins.imv-attestation.dh_group = ecp256
+	Preferred Diffie-Hellman group.
+
+libimcv.plugins.imv-attestation.hash_algorithm = sha256
+	Preferred measurement hash algorithm.
+
+libimcv.plugins.imv-attestation.min_nonce_len = 0
+	DH minimum nonce length.

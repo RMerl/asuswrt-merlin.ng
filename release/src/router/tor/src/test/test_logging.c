@@ -1,10 +1,19 @@
-/* Copyright (c) 2013-2016, The Tor Project, Inc. */
+/* Copyright (c) 2013-2019, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
+#define CONFIG_PRIVATE
+
 #include "orconfig.h"
-#include "or.h"
-#include "torlog.h"
-#include "test.h"
+#include "core/or/or.h"
+#include "app/config/config.h"
+#include "lib/err/torerr.h"
+#include "lib/log/log.h"
+#include "test/test.h"
+#include "lib/process/subprocess.h"
+
+#ifdef HAVE_UNISTD_H
+#include <unistd.h>
+#endif
 
 static void
 dummy_cb_fn(int severity, uint32_t domain, const char *msg)
@@ -89,7 +98,7 @@ test_sigsafe_err(void *arg)
 
   init_logging(1);
   mark_logs_temp();
-  add_file_log(&include_bug, fn, 0);
+  open_and_add_file_log(&include_bug, fn, 0);
   tor_log_update_sigsafe_err_fds();
   close_temp_logs();
 
@@ -107,7 +116,7 @@ test_sigsafe_err(void *arg)
   close(STDERR_FILENO);
   content = read_file_to_str(fn, 0, NULL);
 
-  tt_assert(content != NULL);
+  tt_ptr_op(content, OP_NE, NULL);
   tor_split_lines(lines, content, (int)strlen(content));
   tt_int_op(smartlist_len(lines), OP_GE, 5);
 
@@ -140,7 +149,7 @@ test_ratelim(void *arg)
   char *msg = NULL;
 
   msg = rate_limit_log(&ten_min, now);
-  tt_assert(msg != NULL);
+  tt_ptr_op(msg, OP_NE, NULL);
   tt_str_op(msg, OP_EQ, ""); /* nothing was suppressed. */
 
   tt_int_op(ten_min.last_allowed, OP_EQ, now);
@@ -150,14 +159,14 @@ test_ratelim(void *arg)
   for (i = 0; i < 9; ++i) {
     now += 60; /* one minute has passed. */
     msg = rate_limit_log(&ten_min, now);
-    tt_assert(msg == NULL);
+    tt_ptr_op(msg, OP_EQ, NULL);
     tt_int_op(ten_min.last_allowed, OP_EQ, start);
     tt_int_op(ten_min.n_calls_since_last_time, OP_EQ, i + 1);
   }
 
   now += 240; /* Okay, we can be done. */
   msg = rate_limit_log(&ten_min, now);
-  tt_assert(msg != NULL);
+  tt_ptr_op(msg, OP_NE, NULL);
   tt_str_op(msg, OP_EQ,
             " [9 similar message(s) suppressed in last 600 seconds]");
  done:
@@ -170,4 +179,3 @@ struct testcase_t logging_tests[] = {
   { "ratelim", test_ratelim, 0, NULL, NULL },
   END_OF_TESTCASES
 };
-

@@ -151,7 +151,7 @@ my $NEGTELNETPORT;       # TELNET server port with negotiation
 
 my $srcdir = $ENV{'srcdir'} || '.';
 my $CURL="../src/curl".exe_ext(); # what curl executable to run on the tests
-my $VCURL="curl";   # what curl binary to use to verify the servers with
+my $VCURL=$CURL;   # what curl binary to use to verify the servers with
                    # VCURL is handy to set to the system one when the one you
                    # just built hangs or crashes and thus prevent verification
 my $DBGCURL=$CURL; #"../src/.libs/curl";  # alternative for debugging
@@ -245,7 +245,6 @@ my $has_gnutls;     # built with GnuTLS
 my $has_nss;        # built with NSS
 my $has_yassl;      # built with yassl
 my $has_polarssl;   # built with polarssl
-my $has_axtls;      # built with axTLS
 my $has_winssl;     # built with WinSSL    (Secure Channel aka Schannel)
 my $has_darwinssl;  # built with DarwinSSL (Secure Transport)
 my $has_boringssl;  # built with BoringSSL
@@ -793,7 +792,6 @@ sub verifyhttp {
     $flags .= "--verbose ";
     $flags .= "--globoff ";
     $flags .= "--unix-socket '$port_or_path' " if $ipvnum eq "unix";
-    $flags .= "-1 "         if($has_axtls);
     $flags .= "--insecure " if($proto eq 'https');
     $flags .= "\"$proto://$ip:$port/${bonus}verifiedserver\"";
 
@@ -2720,10 +2718,6 @@ sub checksystem {
                $has_sslpinning=1;
                $ssllib="polarssl";
            }
-           elsif ($libcurl =~ /axtls/i) {
-               $has_axtls=1;
-               $ssllib="axTLS";
-           }
            elsif ($libcurl =~ /securetransport/i) {
                $has_darwinssl=1;
                $has_sslpinning=1;
@@ -3119,6 +3113,13 @@ sub subVariables {
   $$thing =~ s/%CURL/$CURL/g;
   $$thing =~ s/%PWD/$pwd/g;
   $$thing =~ s/%POSIX_PWD/$posix_pwd/g;
+
+  my $file_pwd = $pwd;
+  if($file_pwd !~ /^\//) {
+      $file_pwd = "/$file_pwd";
+  }
+
+  $$thing =~ s/%FILE_PWD/$file_pwd/g;
   $$thing =~ s/%SRCDIR/$srcdir/g;
   $$thing =~ s/%USER/$USER/g;
 
@@ -3275,11 +3276,6 @@ sub singletest {
             }
             elsif($1 eq "NSS") {
                 if($has_nss) {
-                    next;
-                }
-            }
-            elsif($1 eq "axTLS") {
-                if($has_axtls) {
                     next;
                 }
             }
@@ -3453,11 +3449,6 @@ sub singletest {
                 }
                 elsif($1 eq "NSS") {
                     if(!$has_nss) {
-                        next;
-                    }
-                }
-                elsif($1 eq "axTLS") {
-                    if(!$has_axtls) {
                         next;
                     }
                 }
@@ -3874,7 +3865,7 @@ sub singletest {
     if($cmdtype eq "perl") {
         # run the command line prepended with "perl"
         $cmdargs ="$cmd";
-        $CMDLINE = "perl ";
+        $CMDLINE = "$perl ";
         $tool=$CMDLINE;
         $disablevalgrind=1;
     }
@@ -3887,8 +3878,6 @@ sub singletest {
     }
     elsif(!$tool) {
         # run curl, add suitable command line options
-        $cmd = "-1 ".$cmd if(exists $feature{"SSL"} && ($has_axtls));
-
         my $inc="";
         if((!$cmdhash{'option'}) || ($cmdhash{'option'} !~ /no-include/)) {
             $inc = " --include";

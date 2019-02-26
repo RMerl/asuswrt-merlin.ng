@@ -1,0 +1,20 @@
+moon::iptables-restore < /etc/iptables.drop
+carol::iptables-restore < /etc/iptables.drop
+dave::iptables-restore < /etc/iptables.drop
+moon::ip6tables-restore < /etc/ip6tables.rules
+carol::ip6tables-restore < /etc/ip6tables.rules
+dave::ip6tables-restore < /etc/ip6tables.rules
+alice::"ip route add fec0:\:/16 via fec1:\:1"
+carol::"ip route add fec1:\:/16 via fec0:\:1"
+dave::"ip route add fec1:\:/16 via fec0:\:1"
+moon::cd /etc/swanctl; rm rsa/* x509/* x509ca/*
+carol::cd /etc/swanctl; rm rsa/* x509/* x509ca/*
+dave::cd /etc/swanctl; rm rsa/* x509/* x509ca/*
+moon::systemctl start strongswan-swanctl
+carol::systemctl start strongswan-swanctl
+dave::systemctl start strongswan-swanctl
+moon::expect-connection rw
+carol::expect-connection home
+dave::expect-connection home
+carol::swanctl --initiate --child home
+dave::swanctl --initiate --child home

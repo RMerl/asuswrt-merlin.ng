@@ -1,4 +1,4 @@
-/* Copyright (c) 2011-2016, The Tor Project, Inc. */
+/* Copyright (c) 2011-2019, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 #include "orconfig.h"
@@ -8,7 +8,7 @@
 #include <windows.h>
 #else
 #include <unistd.h>
-#endif
+#endif /* defined(_WIN32) */
 #include <string.h>
 
 #ifdef _WIN32

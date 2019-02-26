@@ -78,7 +78,7 @@
 /*
  * Define number of buffers for send and receive in the reliability layer.
  */
-#define TLS_RELIABLE_N_SEND_BUFFERS  4 /* also window size for reliablity layer */
+#define TLS_RELIABLE_N_SEND_BUFFERS  4 /* also window size for reliability layer */
 #define TLS_RELIABLE_N_REC_BUFFERS   8
 
 /*
@@ -438,6 +438,8 @@ void ssl_set_auth_token(const char *token);
  */
 void ssl_purge_auth_challenge(void);
 
+bool ssl_clean_auth_token(void);
+
 void ssl_put_auth_challenge(const char *cr_str);
 
 #endif
@@ -600,6 +602,19 @@ bool is_hard_reset(int op, int key_method);
 
 void delayed_auth_pass_purge(void);
 
+
+/*
+ * Show the TLS ciphers that are available for us to use in the SSL
+ * library with headers hinting their usage and warnings about usage.
+ *
+ * @param cipher_list       list of allowed TLS cipher, or NULL.
+ * @param cipher_list_tls13 list of allowed TLS 1.3+ cipher, or NULL
+ * @param tls_cert_profile  TLS certificate crypto profile name.
+ */
+void
+show_available_tls_ciphers(const char *cipher_list,
+                           const char *cipher_list_tls13,
+                           const char *tls_cert_profile);
 #endif /* ENABLE_CRYPTO */
 
 #endif /* ifndef OPENVPN_SSL_H */

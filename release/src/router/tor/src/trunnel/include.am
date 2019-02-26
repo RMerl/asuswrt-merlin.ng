@@ -1,4 +1,3 @@
-
 noinst_LIBRARIES += \
 	src/trunnel/libor-trunnel.a
 
@@ -7,31 +6,49 @@ noinst_LIBRARIES += \
 	src/trunnel/libor-trunnel-testing.a
 endif
 
-AM_CPPFLAGS += -I$(srcdir)/src/ext/trunnel -I$(srcdir)/src/trunnel
-
 TRUNNELINPUTS = \
 	src/trunnel/ed25519_cert.trunnel \
 	src/trunnel/link_handshake.trunnel \
-	src/trunnel/pwbox.trunnel
+	src/trunnel/pwbox.trunnel \
+	src/trunnel/channelpadding_negotiation.trunnel \
+	src/trunner/socks5.trunnel
 
 TRUNNELSOURCES = \
 	src/ext/trunnel/trunnel.c \
 	src/trunnel/ed25519_cert.c \
 	src/trunnel/link_handshake.c \
-	src/trunnel/pwbox.c
+	src/trunnel/pwbox.c			\
+	src/trunnel/hs/cell_common.c            \
+	src/trunnel/hs/cell_establish_intro.c	\
+	src/trunnel/hs/cell_introduce1.c \
+	src/trunnel/hs/cell_rendezvous.c \
+	src/trunnel/channelpadding_negotiation.c \
+	src/trunnel/socks5.c
 
 TRUNNELHEADERS = \
 	src/ext/trunnel/trunnel.h		\
 	src/ext/trunnel/trunnel-impl.h		\
-	src/trunnel/trunnel-local.h 		\
+	src/trunnel/trunnel-local.h		\
 	src/trunnel/ed25519_cert.h		\
-	src/trunnel/link_handshake.h	 	\
-	src/trunnel/pwbox.h
+	src/trunnel/link_handshake.h		\
+	src/trunnel/pwbox.h			\
+	src/trunnel/hs/cell_common.h            \
+	src/trunnel/hs/cell_establish_intro.h	\
+	src/trunnel/hs/cell_introduce1.h \
+	src/trunnel/hs/cell_rendezvous.h \
+	src/trunnel/channelpadding_negotiation.h \
+	src/trunnel/socks5.h
 
 src_trunnel_libor_trunnel_a_SOURCES = $(TRUNNELSOURCES)
-src_trunnel_libor_trunnel_a_CPPFLAGS = -DTRUNNEL_LOCAL_H $(AM_CPPFLAGS)
+src_trunnel_libor_trunnel_a_CPPFLAGS = \
+	-DTRUNNEL_LOCAL_H $(AM_CPPFLAGS) -I$(top_srcdir)/src/trunnel
 
+if UNITTESTS_ENABLED
 src_trunnel_libor_trunnel_testing_a_SOURCES = $(TRUNNELSOURCES)
+else
+src_trunnel_libor_trunnel_testing_a_SOURCES =
+endif
+
 src_trunnel_libor_trunnel_testing_a_CPPFLAGS = -DTRUNNEL_LOCAL_H $(AM_CPPFLAGS) $(TEST_CPPFLAGS)
 src_trunnel_libor_trunnel_testing_a_CFLAGS = $(AM_CFLAGS) $(TEST_CFLAGS)
 
@@ -39,4 +56,3 @@ noinst_HEADERS+= $(TRUNNELHEADERS)
 
 EXTRA_DIST += \
 	src/trunnel/README
-

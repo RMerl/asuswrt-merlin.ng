@@ -1,5 +1,0 @@
-Roadwarrior <b>carol</b> proposes to gateway <b>moon</b> the ESP cipher suite
-<b>AES_CBC_128 / HMAC_SHA2_256_96</b> which uses 96 bit instead of the 
-standard 128 bit truncation, allowing compatibility with Linux kernels older than 2.6.33 
-by defining <b>esp=aes128-sha256_96-modp2048!</b> in ipsec.conf.
-A ping from <b>carol</b> to <b>alice</b> successfully checks the established tunnel.

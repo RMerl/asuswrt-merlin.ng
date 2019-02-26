@@ -1,11 +1,11 @@
-/* trunnel.h -- copied from Trunnel v1.4.6
+/* trunnel.h -- copied from Trunnel v1.5.2
  * https://gitweb.torproject.org/trunnel.git
  * You probably shouldn't edit this file.
  */
 /* trunnel.h -- Public declarations for trunnel, to be included
  * in trunnel header files.
 
- * Copyright 2014-2015, The Tor Project, Inc.
+ * Copyright 2014-2019, The Tor Project, Inc.
  * See license at the end of this file for copying information.
  */
 

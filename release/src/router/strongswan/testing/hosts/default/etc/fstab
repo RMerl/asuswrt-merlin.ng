@@ -1,0 +1,2 @@
+/dev/vda1	/			ext3	defaults,relatime,barrier=1	0	1
+/hostshare /root/shared 9p trans=virtio,version=9p2000.L 0 0

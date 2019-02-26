@@ -1,0 +1,13 @@
+moon::iptables-restore < /etc/iptables.rules
+carol::iptables-restore < /etc/iptables.rules
+moon::systemctl start strongswan-swanctl
+carol::systemctl start strongswan-swanctl
+moon::expect-connection icmp-req
+moon::expect-connection icmp-rep
+moon::expect-connection ftp-ssh
+carol::expect-connection icmp-req
+carol::expect-connection icmp-rep
+carol::expect-connection ftp-ssh
+carol::swanctl --initiate --child icmp-req 2> /dev/null
+carol::swanctl --initiate --child icmp-rep 2> /dev/null
+carol::swanctl --initiate --child ftp-ssh 2> /dev/null

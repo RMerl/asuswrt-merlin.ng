@@ -1,4 +1,0 @@
-#IMC configuration file for strongSwan client 
-
-IMC "OS" 	/usr/local/lib/ipsec/imcvs/imc-os.so
-IMC "SWID"	/usr/local/lib/ipsec/imcvs/imc-swid.so

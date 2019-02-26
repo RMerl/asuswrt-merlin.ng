@@ -5,10 +5,18 @@ TESTS_ENVIRONMENT = \
 	export PYTHON="$(PYTHON)"; \
 	export SHELL="$(SHELL)"; \
 	export abs_top_srcdir="$(abs_top_srcdir)"; \
+	export abs_top_builddir="$(abs_top_builddir)"; \
 	export builddir="$(builddir)"; \
-	export TESTING_TOR_BINARY="$(TESTING_TOR_BINARY)";
+	export TESTING_TOR_BINARY="$(TESTING_TOR_BINARY)"; \
+	export CARGO="$(CARGO)"; \
+	export EXTRA_CARGO_OPTIONS="$(EXTRA_CARGO_OPTIONS)"; \
+	export CARGO_ONLINE="$(CARGO_ONLINE)"; \
+	export CCLD="$(CCLD)"; \
+	export RUSTFLAGS="-C linker=`echo '$(CC)' | cut -d' ' -f 1` $(RUST_LINKER_OPTIONS)";
 
-TESTSCRIPTS = src/test/test_zero_length_keys.sh \
+TESTSCRIPTS = \
+	src/test/fuzz_static_testcases.sh \
+	src/test/test_zero_length_keys.sh \
 	src/test/test_workqueue_cancel.sh \
 	src/test/test_workqueue_efd.sh \
 	src/test/test_workqueue_efd2.sh \
@@ -17,23 +25,33 @@ TESTSCRIPTS = src/test/test_zero_length_keys.sh \
 	src/test/test_workqueue_socketpair.sh \
 	src/test/test_switch_id.sh
 
+if USE_RUST
+TESTSCRIPTS += \
+	src/test/test_rust.sh
+endif
+
 if USEPYTHON
-TESTSCRIPTS += src/test/test_ntor.sh src/test/test_bt.sh
+TESTSCRIPTS += src/test/test_ntor.sh src/test/test_hs_ntor.sh src/test/test_bt.sh
+TESTSCRIPTS += src/test/test_rebind.sh
 endif
 
 TESTS += src/test/test src/test/test-slow src/test/test-memwipe \
 	src/test/test_workqueue \
 	src/test/test_keygen.sh \
+	src/test/test_key_expiration.sh \
 	src/test/test-timers \
 	$(TESTSCRIPTS)
 
 # These flavors are run using automake's test-driver and test-network.sh
-TEST_CHUTNEY_FLAVORS = basic-min bridges-min hs-min single-onion
+TEST_CHUTNEY_FLAVORS = basic-min bridges-min hs-v2-min hs-v3-min \
+	single-onion-v23
 # only run if we can ping6 ::1 (localhost)
-TEST_CHUTNEY_FLAVORS_IPV6 = bridges+ipv6-min ipv6-exit-min hs-ipv6 \
-	single-onion-ipv6
+# IPv6-only v3 single onion services don't work yet, so we don't test the
+# single-onion-v23-ipv6-md flavor
+TEST_CHUTNEY_FLAVORS_IPV6 = bridges+ipv6-min ipv6-exit-min hs-v23-ipv6-md \
+	single-onion-ipv6-md
 # only run if we can find a stable (or simply another) version of tor
-TEST_CHUTNEY_FLAVORS_MIXED = mixed
+TEST_CHUTNEY_FLAVORS_MIXED = mixed+hs-v2
 
 ### This is a lovely feature, but it requires automake >= 1.12, and Tor
 ###  doesn't require that yet.
@@ -54,67 +72,98 @@ noinst_PROGRAMS+= \
 endif
 
 src_test_AM_CPPFLAGS = -DSHARE_DATADIR="\"$(datadir)\"" \
-        -DLOCALSTATEDIR="\"$(localstatedir)\"" \
-        -DBINDIR="\"$(bindir)\""	       \
-	-I"$(top_srcdir)/src/or" -I"$(top_srcdir)/src/ext" \
-	-I"$(top_srcdir)/src/trunnel" \
-	-I"$(top_srcdir)/src/ext/trunnel" \
-	-DTOR_UNIT_TESTS
+	-DLOCALSTATEDIR="\"$(localstatedir)\"" \
+	-DBINDIR="\"$(bindir)\""	       \
+	-DTOR_UNIT_TESTS                       \
+	$(AM_CPPFLAGS)
 
 # -L flags need to go in LDFLAGS. -l flags need to go in LDADD.
 # This seems to matter nowhere but on Windows, but I assure you that it
 # matters a lot there, and is quite hard to debug if you forget to do it.
 
-src_test_test_SOURCES = \
+src_test_test_SOURCES =
+
+if UNITTESTS_ENABLED
+src_test_test_SOURCES += \
 	src/test/log_test_helpers.c \
+	src/test/hs_test_helpers.c \
 	src/test/rend_test_helpers.c \
 	src/test/test.c \
 	src/test/test_accounting.c \
 	src/test/test_addr.c \
 	src/test/test_address.c \
+	src/test/test_address_set.c \
+	src/test/test_bridges.c \
 	src/test/test_buffers.c \
+	src/test/test_bwmgt.c \
 	src/test/test_cell_formats.c \
 	src/test/test_cell_queue.c \
 	src/test/test_channel.c \
+	src/test/test_channelpadding.c \
 	src/test/test_channeltls.c \
 	src/test/test_checkdir.c \
 	src/test/test_circuitlist.c \
 	src/test/test_circuitmux.c \
+	src/test/test_circuitbuild.c \
+	src/test/test_circuituse.c \
+	src/test/test_circuitstats.c \
 	src/test/test_compat_libevent.c \
 	src/test/test_config.c \
 	src/test/test_connection.c \
+	src/test/test_conscache.c \
+	src/test/test_consdiff.c \
+	src/test/test_consdiffmgr.c \
 	src/test/test_containers.c \
 	src/test/test_controller.c \
 	src/test/test_controller_events.c \
 	src/test/test_crypto.c \
+	src/test/test_crypto_ope.c \
 	src/test/test_data.c \
 	src/test/test_dir.c \
 	src/test/test_dir_common.c \
 	src/test/test_dir_handle_get.c \
+	src/test/test_dos.c \
 	src/test/test_entryconn.c \
 	src/test/test_entrynodes.c \
+	src/test/test_geoip.c \
 	src/test/test_guardfraction.c \
 	src/test/test_extorport.c \
 	src/test/test_hs.c \
+	src/test/test_hs_common.c \
+	src/test/test_hs_config.c \
+	src/test/test_hs_cell.c \
+	src/test/test_hs_ntor.c \
+	src/test/test_hs_service.c \
+	src/test/test_hs_client.c  \
+	src/test/test_hs_intropoint.c \
+	src/test/test_hs_control.c \
 	src/test/test_handles.c \
+	src/test/test_hs_cache.c \
+	src/test/test_hs_descriptor.c \
 	src/test/test_introduce.c \
 	src/test/test_keypin.c \
 	src/test/test_link_handshake.c \
 	src/test/test_logging.c \
+	src/test/test_mainloop.c \
 	src/test/test_microdesc.c \
 	src/test/test_nodelist.c \
 	src/test/test_oom.c \
 	src/test/test_oos.c \
 	src/test/test_options.c \
+	src/test/test_pem.c \
+	src/test/test_periodic_event.c \
 	src/test/test_policy.c \
 	src/test/test_procmon.c \
+	src/test/test_proto_http.c \
+	src/test/test_proto_misc.c \
 	src/test/test_protover.c \
 	src/test/test_pt.c \
-	src/test/test_pubsub.c \
 	src/test/test_relay.c \
 	src/test/test_relaycell.c \
+	src/test/test_relaycrypt.c \
 	src/test/test_rendcache.c \
 	src/test/test_replay.c \
+	src/test/test_router.c \
 	src/test/test_routerkeys.c \
 	src/test/test_routerlist.c \
 	src/test/test_routerset.c \
@@ -122,22 +171,40 @@ src_test_test_SOURCES = \
 	src/test/test_shared_random.c \
 	src/test/test_socks.c \
 	src/test/test_status.c \
+	src/test/test_storagedir.c \
 	src/test/test_threads.c \
 	src/test/test_tortls.c \
 	src/test/test_util.c \
 	src/test/test_util_format.c \
 	src/test/test_util_process.c \
+	src/test/test_voting_schedule.c \
+	src/test/test_x509.c \
 	src/test/test_helpers.c \
 	src/test/test_dns.c \
 	src/test/testing_common.c \
+	src/test/testing_rsakeys.c \
 	src/ext/tinytest.c
 
-src_test_test_slow_SOURCES = \
+if USE_NSS
+# ...
+else
+src_test_test_SOURCES += \
+	src/test/test_crypto_openssl.c \
+	src/test/test_tortls_openssl.c
+endif
+
+endif
+
+src_test_test_slow_SOURCES =
+if UNITTESTS_ENABLED
+src_test_test_slow_SOURCES += \
 	src/test/test_slow.c \
 	src/test/test_crypto_slow.c \
 	src/test/test_util_slow.c \
 	src/test/testing_common.c \
+	src/test/testing_rsakeys.c \
 	src/ext/tinytest.c
+endif
 
 src_test_test_memwipe_SOURCES = \
 	src/test/test-memwipe.c
@@ -163,23 +230,21 @@ src_test_test_switch_id_CPPFLAGS= $(src_test_AM_CPPFLAGS)
 src_test_test_switch_id_CFLAGS = $(AM_CFLAGS) $(TEST_CFLAGS)
 src_test_test_switch_id_LDFLAGS = @TOR_LDFLAGS_zlib@
 src_test_test_switch_id_LDADD = \
-	src/common/libor-testing.a \
-	src/common/libor-ctime-testing.a \
-	@TOR_ZLIB_LIBS@ @TOR_LIB_MATH@
+	$(TOR_UTIL_TESTING_LIBS) \
+	$(rust_ldadd) \
+	@TOR_ZLIB_LIBS@ @TOR_LIB_MATH@ \
+	@TOR_LIB_WS32@ @TOR_LIB_IPHLPAPI@ @TOR_LIB_USERENV@ \
+	@TOR_LZMA_LIBS@ @TOR_ZSTD_LIBS@
 
-src_test_test_LDFLAGS = @TOR_LDFLAGS_zlib@ @TOR_LDFLAGS_openssl@ \
-        @TOR_LDFLAGS_libevent@
-src_test_test_LDADD = src/or/libtor-testing.a \
-	src/common/libor-crypto-testing.a \
-	$(LIBKECCAK_TINY) \
-	$(LIBDONNA) \
-	src/common/libor-testing.a \
-	src/common/libor-ctime-testing.a \
-	src/common/libor-event-testing.a \
-	src/trunnel/libor-trunnel-testing.a \
+src_test_test_LDFLAGS = @TOR_LDFLAGS_zlib@ $(TOR_LDFLAGS_CRYPTLIB) \
+	@TOR_LDFLAGS_libevent@
+src_test_test_LDADD = \
+	$(TOR_INTERNAL_TESTING_LIBS) \
+	$(rust_ldadd) \
 	@TOR_ZLIB_LIBS@ @TOR_LIB_MATH@ @TOR_LIBEVENT_LIBS@ \
-	@TOR_OPENSSL_LIBS@ @TOR_LIB_WS32@ @TOR_LIB_GDI@ @CURVE25519_LIBS@ \
-	@TOR_SYSTEMD_LIBS@
+	$(TOR_LIBS_CRYPTLIB) @TOR_LIB_WS32@ @TOR_LIB_IPHLPAPI@ @TOR_LIB_GDI@ @TOR_LIB_USERENV@ \
+	@CURVE25519_LIBS@ \
+	@TOR_SYSTEMD_LIBS@ @TOR_LZMA_LIBS@ @TOR_ZSTD_LIBS@
 
 src_test_test_slow_CPPFLAGS = $(src_test_test_CPPFLAGS)
 src_test_test_slow_CFLAGS = $(src_test_test_CFLAGS)
@@ -194,80 +259,110 @@ src_test_test_memwipe_LDADD = $(src_test_test_LDADD)
 # successfully with the libraries built with them.
 src_test_test_memwipe_LDFLAGS = $(src_test_test_LDFLAGS) @CFLAGS_BUGTRAP@
 
-src_test_bench_LDFLAGS = @TOR_LDFLAGS_zlib@ @TOR_LDFLAGS_openssl@ \
-        @TOR_LDFLAGS_libevent@
-src_test_bench_LDADD = src/or/libtor.a src/common/libor.a \
-	src/common/libor-ctime.a \
-	src/common/libor-crypto.a $(LIBKECCAK_TINY) $(LIBDONNA) \
-	src/common/libor-event.a src/trunnel/libor-trunnel.a \
+src_test_bench_LDFLAGS = @TOR_LDFLAGS_zlib@ $(TOR_LDFLAGS_CRYPTLIB) \
+	@TOR_LDFLAGS_libevent@
+src_test_bench_LDADD = \
+	$(TOR_INTERNAL_LIBS) \
+	$(rust_ldadd) \
 	@TOR_ZLIB_LIBS@ @TOR_LIB_MATH@ @TOR_LIBEVENT_LIBS@ \
-	@TOR_OPENSSL_LIBS@ @TOR_LIB_WS32@ @TOR_LIB_GDI@ @CURVE25519_LIBS@ \
-	@TOR_SYSTEMD_LIBS@
+	$(TOR_LIBS_CRYPTLIB) @TOR_LIB_WS32@ @TOR_LIB_IPHLPAPI@ @TOR_LIB_GDI@ @TOR_LIB_USERENV@ \
+	@CURVE25519_LIBS@ \
+	@TOR_SYSTEMD_LIBS@ @TOR_LZMA_LIBS@ @TOR_ZSTD_LIBS@
 
-src_test_test_workqueue_LDFLAGS = @TOR_LDFLAGS_zlib@ @TOR_LDFLAGS_openssl@ \
-        @TOR_LDFLAGS_libevent@
-src_test_test_workqueue_LDADD = src/or/libtor-testing.a \
-	src/common/libor-testing.a \
-	src/common/libor-ctime-testing.a \
-	src/common/libor-crypto-testing.a $(LIBKECCAK_TINY) $(LIBDONNA) \
-	src/common/libor-event-testing.a \
+src_test_test_workqueue_LDFLAGS = @TOR_LDFLAGS_zlib@ $(TOR_LDFLAGS_CRYPTLIB) \
+	@TOR_LDFLAGS_libevent@
+src_test_test_workqueue_LDADD = \
+	$(TOR_INTERNAL_TESTING_LIBS) \
+	$(rust_ldadd) \
 	@TOR_ZLIB_LIBS@ @TOR_LIB_MATH@ @TOR_LIBEVENT_LIBS@ \
-	@TOR_OPENSSL_LIBS@ @TOR_LIB_WS32@ @TOR_LIB_GDI@ @CURVE25519_LIBS@
+	$(TOR_LIBS_CRYPTLIB) @TOR_LIB_WS32@ @TOR_LIB_IPHLPAPI@ @TOR_LIB_GDI@ @TOR_LIB_USERENV@ \
+	@CURVE25519_LIBS@ \
+	@TOR_LZMA_LIBS@ @TOR_ZSTD_LIBS@
 
 src_test_test_timers_CPPFLAGS = $(src_test_test_CPPFLAGS)
 src_test_test_timers_CFLAGS = $(src_test_test_CFLAGS)
 src_test_test_timers_LDADD = \
-	src/common/libor-testing.a \
-	src/common/libor-ctime-testing.a \
-	src/common/libor-event-testing.a \
-	src/common/libor-crypto-testing.a $(LIBKECCAK_TINY) $(LIBDONNA) \
+	src/lib/libtor-evloop-testing.a \
+	$(TOR_CRYPTO_TESTING_LIBS) \
+	$(TOR_UTIL_TESTING_LIBS) \
+	$(rust_ldadd) \
 	@TOR_ZLIB_LIBS@ @TOR_LIB_MATH@ @TOR_LIBEVENT_LIBS@ \
-	@TOR_OPENSSL_LIBS@ @TOR_LIB_WS32@ @TOR_LIB_GDI@ @CURVE25519_LIBS@
+	$(TOR_LIBS_CRYPTLIB) @TOR_LIB_WS32@ @TOR_LIB_IPHLPAPI@ @TOR_LIB_GDI@ @TOR_LIB_USERENV@ \
+	@CURVE25519_LIBS@ \
+	@TOR_LZMA_LIBS@
 src_test_test_timers_LDFLAGS = $(src_test_test_LDFLAGS)
 
 noinst_HEADERS+= \
 	src/test/fakechans.h \
+	src/test/hs_test_helpers.h \
 	src/test/log_test_helpers.h \
 	src/test/rend_test_helpers.h \
 	src/test/test.h \
 	src/test/test_helpers.h \
 	src/test/test_dir_common.h \
+	src/test/test_connection.h \
+	src/test/test_tortls.h \
 	src/test/test_descriptors.inc \
 	src/test/example_extrainfo.inc \
 	src/test/failing_routerdescs.inc \
 	src/test/ed25519_vectors.inc \
 	src/test/test_descriptors.inc \
+	src/test/test_hs_descriptor.inc \
 	src/test/vote_descriptors.inc
 
 noinst_PROGRAMS+= src/test/test-ntor-cl
+noinst_PROGRAMS+= src/test/test-hs-ntor-cl
 src_test_test_ntor_cl_SOURCES  = src/test/test_ntor_cl.c
-src_test_test_ntor_cl_LDFLAGS = @TOR_LDFLAGS_zlib@ @TOR_LDFLAGS_openssl@
-src_test_test_ntor_cl_LDADD = src/or/libtor.a src/common/libor.a \
-	src/common/libor-ctime.a \
-	src/common/libor-crypto.a $(LIBKECCAK_TINY) $(LIBDONNA) \
+src_test_test_ntor_cl_LDFLAGS = @TOR_LDFLAGS_zlib@ $(TOR_LDFLAGS_CRYPTLIB)
+src_test_test_ntor_cl_LDADD = \
+	$(TOR_INTERNAL_LIBS) \
+	$(rust_ldadd) \
 	@TOR_ZLIB_LIBS@ @TOR_LIB_MATH@ \
-	@TOR_OPENSSL_LIBS@ @TOR_LIB_WS32@ @TOR_LIB_GDI@ @CURVE25519_LIBS@
+	$(TOR_LIBS_CRYPTLIB) @TOR_LIB_WS32@ @TOR_LIB_IPHLPAPI@ @TOR_LIB_GDI@ @TOR_LIB_USERENV@ \
+	@CURVE25519_LIBS@ @TOR_LZMA_LIBS@
 src_test_test_ntor_cl_AM_CPPFLAGS =	       \
-	-I"$(top_srcdir)/src/or"
+	$(AM_CPPFLAGS)
 
+src_test_test_hs_ntor_cl_SOURCES  = src/test/test_hs_ntor_cl.c
+src_test_test_hs_ntor_cl_LDFLAGS = @TOR_LDFLAGS_zlib@ $(TOR_LDFLAGS_CRYPTLIB)
+src_test_test_hs_ntor_cl_LDADD = \
+	$(TOR_INTERNAL_LIBS) \
+	@TOR_ZLIB_LIBS@ @TOR_LIB_MATH@ \
+	$(TOR_LIBS_CRYPTLIB) @TOR_LIB_WS32@ @TOR_LIB_IPHLPAPI@ @TOR_LIB_GDI@ @CURVE25519_LIBS@
+src_test_test_hs_ntor_cl_AM_CPPFLAGS =	       \
+	$(AM_CPPFLAGS)
+
+
+if UNITTESTS_ENABLED
 noinst_PROGRAMS += src/test/test-bt-cl
 src_test_test_bt_cl_SOURCES = src/test/test_bt_cl.c
-src_test_test_bt_cl_LDADD = src/common/libor-testing.a \
-	src/common/libor-ctime-testing.a \
+src_test_test_bt_cl_LDADD = \
+	$(TOR_UTIL_TESTING_LIBS) \
+	$(rust_ldadd) \
 	@TOR_LIB_MATH@ \
-	@TOR_LIB_WS32@ @TOR_LIB_GDI@
+	@TOR_LIB_WS32@ @TOR_LIB_IPHLPAPI@ @TOR_LIB_GDI@ @TOR_LIB_USERENV@
 src_test_test_bt_cl_CFLAGS = $(AM_CFLAGS) $(TEST_CFLAGS)
 src_test_test_bt_cl_CPPFLAGS= $(src_test_AM_CPPFLAGS) $(TEST_CPPFLAGS)
+endif
 
 EXTRA_DIST += \
 	src/test/bt_test.py \
 	src/test/ntor_ref.py \
+	src/test/hs_ntor_ref.py \
+	src/test/hs_build_address.py \
+	src/test/hs_indexes.py \
+	src/test/fuzz_static_testcases.sh \
 	src/test/slownacl_curve25519.py \
+	src/test/test_rebind.sh \
+	src/test/test_rebind.py \
 	src/test/zero_length_keys.sh \
+	src/test/rust_supp.txt \
 	src/test/test_keygen.sh \
+	src/test/test_key_expiration.sh \
 	src/test/test_zero_length_keys.sh \
-	src/test/test_ntor.sh src/test/test_bt.sh \
+	src/test/test_ntor.sh src/test/test_hs_ntor.sh src/test/test_bt.sh \
 	src/test/test-network.sh \
+	src/test/test_rust.sh \
 	src/test/test_switch_id.sh \
 	src/test/test_workqueue_cancel.sh \
 	src/test/test_workqueue_efd.sh \
@@ -276,3 +371,5 @@ EXTRA_DIST += \
 	src/test/test_workqueue_pipe2.sh \
 	src/test/test_workqueue_socketpair.sh
 
+test-rust:
+	$(TESTS_ENVIRONMENT) "$(abs_top_srcdir)/src/test/test_rust.sh"

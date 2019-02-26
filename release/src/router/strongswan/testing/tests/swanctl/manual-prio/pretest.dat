@@ -1,0 +1,11 @@
+winnetou::ip route add 10.1.0.0/16 via 192.168.0.1
+carol::ip route add 10.1.0.0/16 via 192.168.0.1
+dave::ip route add 10.1.0.0/16 via 192.168.0.1
+moon::systemctl start strongswan-swanctl
+carol::systemctl start strongswan-swanctl
+dave::systemctl start strongswan-swanctl
+moon::expect-connection rw
+carol::expect-connection home
+carol::swanctl --initiate --child home 2> /dev/null
+dave::expect-connection home
+dave::swanctl --initiate --child home 2> /dev/null

@@ -38,6 +38,7 @@
 
 #include "tool_cfgable.h"
 #include "tool_convert.h"
+#include "tool_doswin.h"
 #include "tool_msgs.h"
 #include "tool_operate.h"
 #include "tool_panykey.h"
@@ -191,7 +192,7 @@ static CURLcode main_init(struct GlobalConfig *config)
   return result;
 }
 
-static void free_config_fields(struct GlobalConfig *config)
+static void free_globalconfig(struct GlobalConfig *config)
 {
   Curl_safefree(config->trace_dump);
 
@@ -228,7 +229,7 @@ static void main_free(struct GlobalConfig *config)
     PR_Cleanup();
   }
 #endif
-  free_config_fields(config);
+  free_globalconfig(config);
 
   /* Free the config structures */
   config_free(config->last);
@@ -241,13 +242,12 @@ static void main_free(struct GlobalConfig *config)
 static struct TerminalSettings {
   HANDLE hStdOut;
   DWORD dwOutputMode;
-  UINT nCodepage;
 } TerminalSettings;
 
 static void configure_terminal(void)
 {
   /*
-   * If we're running Windows, enable VT output & set codepage to UTF-8.
+   * If we're running Windows, enable VT output.
    * Note: VT mode flag can be set on any version of Windows, but VT
    * processing only performed on Win10 >= Creators Update)
    */
@@ -257,10 +257,7 @@ static void configure_terminal(void)
     #define ENABLE_VIRTUAL_TERMINAL_PROCESSING 0x0004
 #endif
 
-  /* Cache current codepage (will restore on exit) & set codepage to UTF-8 */
   memset(&TerminalSettings, 0, sizeof(TerminalSettings));
-  TerminalSettings.nCodepage = GetConsoleOutputCP();
-  SetConsoleOutputCP(65001);
 
   /* Enable VT output */
   TerminalSettings.hStdOut = GetStdHandle(STD_OUTPUT_HANDLE);
@@ -282,7 +279,6 @@ static void restore_terminal(void)
   /* Restore Console output mode and codepage to whatever they were
    * when Curl started */
   SetConsoleMode(TerminalSettings.hStdOut, TerminalSettings.dwOutputMode);
-  SetConsoleOutputCP(TerminalSettings.nCodepage);
 #endif
 }
 
@@ -310,6 +306,21 @@ int main(int argc, char *argv[])
   /* Initialize the curl library - do not call any libcurl functions before
      this point */
   result = main_init(&global);
+
+#ifdef WIN32
+  /* Undocumented diagnostic option to list the full paths of all loaded
+     modules, regardless of whether or not initialization succeeded. */
+  if(argc == 2 && !strcmp(argv[1], "--dump-module-paths")) {
+    struct curl_slist *item, *head = GetLoadedModulePaths();
+    for(item = head; item; item = item->next) {
+      printf("%s\n", item->data);
+    }
+    curl_slist_free_all(head);
+    if(!result)
+      main_free(&global);
+  }
+  else
+#endif /* WIN32 */
   if(!result) {
     /* Start our curl operation */
     result = operate(&global, argc, argv);

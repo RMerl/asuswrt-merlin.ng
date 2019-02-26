@@ -1,0 +1,8 @@
+An IPsec <b>transport-mode</b> connection between the natted host <b>alice</b>
+and gateway <b>sun</b> is successfully set up. The client <b>venus</b> behind
+the same NAT as client <b>alice</b> also establishes the same <b>transport-mode</b>
+connection. <b>sun</b> uses the connmark plugin and a <b>%unique</b> mark on
+the CHILD_SAs to select the correct return path SA using connection tracking.
+This allows <b>sun</b> to talk to both nodes for client initiated flows, even
+if the SAs are actually both over <b>moon</b>.<br/>
+To test the connection, both hosts establish an SSH connection to <b>sun</b>.

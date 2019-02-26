@@ -1,0 +1,8 @@
+The roadwarriors <b>carol</b> and <b>dave</b> set up a connection each
+to gateway <b>alice</b>, which identifies itself as <b>mars</b>.
+Host <b>venus</b> in the subnet behind this gateway uses gateway <b>moon</b> as
+default gateway, so it is not fully reachable by the two roadwarriors.
+Then both SAs are actively redirected with the <em>swanctl --redirect</em>
+command to gateway <b>moon</b> (also identified as <b>mars</b>) using the
+mechanism described in <b>RFC 5685</b> enabling the roadwarriors to
+ping <b>venus</b>.

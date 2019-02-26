@@ -1,0 +1,7 @@
+The hosts <b>moon</b>, <b>sun</b> and <b>dave</b> install <b>transport-mode</b> trap
+policies with <b>right=%any</b>.  The remote host is dynamically determined based on
+the acquires received from the kernel.  Host <b>dave</b> additionally limits the remote
+hosts to <b>moon</b> and <b>sun</b> with <b>rightsubnet</b>.  This is tested by
+pinging <b>sun</b> and <b>carol</b> from <b>moon</b>, <b>carol</b> from <b>sun</b>, and
+<b>sun</b> and <b>moon</b> from <b>dave</b>. The latter also pings <b>carol</b>, which
+is not going to be encrypted as <b>carol</b> is not part of the configured <b>rightsubnet</b>.

@@ -1,0 +1,21 @@
+eap {
+  md5 {
+  }
+  default_eap_type = ttls
+
+  tls-config tls-common {
+    private_key_file = ${certdir}/aaaKey.pem
+    certificate_file = ${certdir}/aaaCert.pem
+    ca_file = ${cadir}/strongswanCert.pem
+    cipher_list = "DEFAULT"
+    dh_file = ${certdir}/dh
+    random_file = ${certdir}/random
+  }
+
+  ttls {
+    tls = tls-common
+    default_eap_type = md5
+    use_tunneled_reply = yes
+    virtual_server = "inner-tunnel"
+  }
+}

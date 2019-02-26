@@ -1,8 +1,0 @@
-Because of the missing <b>/etc/ipsec.secrets</b> file, roadwarrior <b>carol</b>
-and gateway <b>moon</b> each automatically generate a PKCS#1 RSA private key
-and a self-signed X.509 certificate. Because the virtual testing environment
-does not offer enough entropy, the non-blocking /dev/urandom device is used in
-place of /dev/random for generating the random primes.
-<p>
-The self-signed certificates are then distributed to the peers via scp
-and are used to set up a road warrior connection initiated by <b>carol</b> 

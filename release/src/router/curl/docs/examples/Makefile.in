@@ -163,11 +163,10 @@ check_PROGRAMS = 10-at-a-time$(EXEEXT) anyauthput$(EXEEXT) \
 	sslbackend$(EXEEXT) postit2-formadd$(EXEEXT) \
 	multi-formadd$(EXEEXT) shared-connection-cache$(EXEEXT) \
 	sftpuploadresume$(EXEEXT) http2-pushinmemory$(EXEEXT) \
-	parseurl$(EXEEXT)
+	parseurl$(EXEEXT) urlapi$(EXEEXT)
 subdir = docs/examples
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
-am__aclocal_m4_deps = $(top_srcdir)/m4/ax_code_coverage.m4 \
-	$(top_srcdir)/m4/ax_compile_check_sizeof.m4 \
+am__aclocal_m4_deps = $(top_srcdir)/m4/ax_compile_check_sizeof.m4 \
 	$(top_srcdir)/m4/curl-compilers.m4 \
 	$(top_srcdir)/m4/curl-confopts.m4 \
 	$(top_srcdir)/m4/curl-functions.m4 \
@@ -779,6 +778,13 @@ url2file_LDADD = $(LDADD)
 @USE_EXPLICIT_LIB_DEPS_FALSE@	$(LIBDIR)/libcurl.la
 @USE_EXPLICIT_LIB_DEPS_TRUE@url2file_DEPENDENCIES =  \
 @USE_EXPLICIT_LIB_DEPS_TRUE@	$(LIBDIR)/libcurl.la
+urlapi_SOURCES = urlapi.c
+urlapi_OBJECTS = urlapi.$(OBJEXT)
+urlapi_LDADD = $(LDADD)
+@USE_EXPLICIT_LIB_DEPS_FALSE@urlapi_DEPENDENCIES =  \
+@USE_EXPLICIT_LIB_DEPS_FALSE@	$(LIBDIR)/libcurl.la
+@USE_EXPLICIT_LIB_DEPS_TRUE@urlapi_DEPENDENCIES =  \
+@USE_EXPLICIT_LIB_DEPS_TRUE@	$(LIBDIR)/libcurl.la
 AM_V_P = $(am__v_P_@AM_V@)
 am__v_P_ = $(am__v_P_@AM_DEFAULT_V@)
 am__v_P_0 = false
@@ -837,7 +843,7 @@ am__depfiles_remade = ./$(DEPDIR)/10-at-a-time.Po \
 	./$(DEPDIR)/smtp-mime.Po ./$(DEPDIR)/smtp-multi.Po \
 	./$(DEPDIR)/smtp-ssl.Po ./$(DEPDIR)/smtp-tls.Po \
 	./$(DEPDIR)/smtp-vrfy.Po ./$(DEPDIR)/sslbackend.Po \
-	./$(DEPDIR)/url2file.Po
+	./$(DEPDIR)/url2file.Po ./$(DEPDIR)/urlapi.Po
 am__mv = mv -f
 COMPILE = $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) \
 	$(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
@@ -876,7 +882,7 @@ SOURCES = 10-at-a-time.c anyauthput.c certinfo.c chkspeed.c \
 	sepheaders.c sftpget.c sftpuploadresume.c \
 	shared-connection-cache.c simple.c simplepost.c simplessl.c \
 	smtp-expn.c smtp-mail.c smtp-mime.c smtp-multi.c smtp-ssl.c \
-	smtp-tls.c smtp-vrfy.c sslbackend.c url2file.c
+	smtp-tls.c smtp-vrfy.c sslbackend.c url2file.c urlapi.c
 DIST_SOURCES = 10-at-a-time.c anyauthput.c certinfo.c chkspeed.c \
 	cookie_interface.c debug.c externalsocket.c fileupload.c \
 	fopen.c ftp-wildcard.c ftpget.c ftpgetinfo.c ftpgetresp.c \
@@ -896,7 +902,7 @@ DIST_SOURCES = 10-at-a-time.c anyauthput.c certinfo.c chkspeed.c \
 	sepheaders.c sftpget.c sftpuploadresume.c \
 	shared-connection-cache.c simple.c simplepost.c simplessl.c \
 	smtp-expn.c smtp-mail.c smtp-mime.c smtp-multi.c smtp-ssl.c \
-	smtp-tls.c smtp-vrfy.c sslbackend.c url2file.c
+	smtp-tls.c smtp-vrfy.c sslbackend.c url2file.c urlapi.c
 am__can_run_installinfo = \
   case $$AM_UPDATE_INFO_DIR in \
     n|no|NO) false;; \
@@ -941,12 +947,6 @@ CCDEPMODE = @CCDEPMODE@
 # This might hold -Werror
 CFLAGS = @CFLAGS@ @CURL_CFLAG_EXTRAS@
 CFLAG_CURL_SYMBOL_HIDING = @CFLAG_CURL_SYMBOL_HIDING@
-CODE_COVERAGE_CFLAGS = @CODE_COVERAGE_CFLAGS@
-CODE_COVERAGE_CPPFLAGS = @CODE_COVERAGE_CPPFLAGS@
-CODE_COVERAGE_CXXFLAGS = @CODE_COVERAGE_CXXFLAGS@
-CODE_COVERAGE_ENABLED = @CODE_COVERAGE_ENABLED@
-CODE_COVERAGE_LDFLAGS = @CODE_COVERAGE_LDFLAGS@
-CODE_COVERAGE_LIBS = @CODE_COVERAGE_LIBS@
 CONFIGURE_OPTIONS = @CONFIGURE_OPTIONS@
 CPP = @CPP@
 CPPFLAGS = @CPPFLAGS@
@@ -989,7 +989,6 @@ ENABLE_STATIC = @ENABLE_STATIC@
 EXEEXT = @EXEEXT@
 FGREP = @FGREP@
 GCOV = @GCOV@
-GENHTML = @GENHTML@
 GREP = @GREP@
 HAVE_BROTLI = @HAVE_BROTLI@
 HAVE_GNUTLS_SRP = @HAVE_GNUTLS_SRP@
@@ -1058,7 +1057,6 @@ STRIP = @STRIP@
 SUPPORT_FEATURES = @SUPPORT_FEATURES@
 SUPPORT_PROTOCOLS = @SUPPORT_PROTOCOLS@
 USE_ARES = @USE_ARES@
-USE_AXTLS = @USE_AXTLS@
 USE_CYASSL = @USE_CYASSL@
 USE_DARWINSSL = @USE_DARWINSSL@
 USE_GNUTLS = @USE_GNUTLS@
@@ -1543,6 +1541,10 @@ url2file$(EXEEXT): $(url2file_OBJECTS) $(url2file_DEPENDENCIES) $(EXTRA_url2file
 	@rm -f url2file$(EXEEXT)
 	$(AM_V_CCLD)$(LINK) $(url2file_OBJECTS) $(url2file_LDADD) $(LIBS)
 
+urlapi$(EXEEXT): $(urlapi_OBJECTS) $(urlapi_DEPENDENCIES) $(EXTRA_urlapi_DEPENDENCIES) 
+	@rm -f urlapi$(EXEEXT)
+	$(AM_V_CCLD)$(LINK) $(urlapi_OBJECTS) $(urlapi_LDADD) $(LIBS)
+
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT)
 
@@ -1633,6 +1635,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/smtp-vrfy.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sslbackend.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/url2file.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/urlapi.Po@am__quote@ # am--include-marker
 
 $(am__depfiles_remade):
 	@$(MKDIR_P) $(@D)
@@ -1880,6 +1883,7 @@ distclean: distclean-am
 	-rm -f ./$(DEPDIR)/smtp-vrfy.Po
 	-rm -f ./$(DEPDIR)/sslbackend.Po
 	-rm -f ./$(DEPDIR)/url2file.Po
+	-rm -f ./$(DEPDIR)/urlapi.Po
 	-rm -f Makefile
 distclean-am: clean-am distclean-compile distclean-generic \
 	distclean-tags
@@ -2009,6 +2013,7 @@ maintainer-clean: maintainer-clean-am
 	-rm -f ./$(DEPDIR)/smtp-vrfy.Po
 	-rm -f ./$(DEPDIR)/sslbackend.Po
 	-rm -f ./$(DEPDIR)/url2file.Po
+	-rm -f ./$(DEPDIR)/urlapi.Po
 	-rm -f Makefile
 maintainer-clean-am: distclean-am maintainer-clean-generic
 
@@ -2051,7 +2056,7 @@ uninstall-am:
 all: $(check_PROGRAMS)
 
 checksrc:
-	@PERL@ $(top_srcdir)/lib/checksrc.pl $(srcdir)/*.c
+	@PERL@ $(top_srcdir)/lib/checksrc.pl -ASNPRINTF $(srcdir)/*.c
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.

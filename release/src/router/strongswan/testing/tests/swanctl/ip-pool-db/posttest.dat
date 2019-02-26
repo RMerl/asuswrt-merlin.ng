@@ -1,0 +1,11 @@
+carol::swanctl --terminate --ike home
+dave::swanctl --terminate --ike home
+carol::systemctl stop strongswan-swanctl
+dave::systemctl stop strongswan-swanctl
+moon::systemctl stop strongswan-swanctl
+moon::iptables-restore < /etc/iptables.flush
+carol::iptables-restore < /etc/iptables.flush
+dave::iptables-restore < /etc/iptables.flush
+moon::ipsec pool --del big_pool 2> /dev/null
+moon::ipsec pool --del dns 2> /dev/null
+moon::ipsec pool --del nbns 2> /dev/null

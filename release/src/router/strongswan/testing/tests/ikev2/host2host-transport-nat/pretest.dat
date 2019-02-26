@@ -1,0 +1,14 @@
+alice::iptables-restore < /etc/iptables.rules
+moon::iptables-restore < /etc/iptables.rules
+sun::iptables-restore < /etc/iptables.rules
+moon::iptables -t nat -A POSTROUTING -o eth0 -s 10.1.0.0/16 -j MASQUERADE
+moon::iptables -A FORWARD -i eth1 -o eth0 -s 10.1.0.0/16  -j ACCEPT
+moon::iptables -A FORWARD -i eth0 -o eth1 -d 10.1.0.0/16  -j ACCEPT
+sun::ipsec start
+alice::ipsec start
+venus::ipsec start
+sun::expect-connection nat-t
+alice::expect-connection nat-t
+alice::ipsec up nat-t
+venus::expect-connection nat-t
+venus::ipsec up nat-t

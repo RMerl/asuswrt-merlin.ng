@@ -1,0 +1,18 @@
+moon::iptables-restore < /etc/iptables.rules
+carol::iptables-restore < /etc/iptables.rules
+dave::iptables-restore < /etc/iptables.rules
+moon::cat /etc/tnc_config
+carol::cat /etc/tnc_config
+dave::cat /etc/tnc_config
+carol::rm /etc/swanctl/rsa/*
+dave::rm /etc/swanctl/rsa/*
+carol::rm /etc/swanctl/x509/*
+dave::rm /etc/swanctl/x509/*
+moon::systemctl start strongswan-swanctl
+carol::systemctl start strongswan-swanctl
+dave::systemctl start strongswan-swanctl
+moon::expect-connection rw
+carol::expect-connection home
+carol::swanctl --initiate --child home 2> /dev/null
+dave::expect-connection home
+dave::swanctl --initiate --child home 2> /dev/null

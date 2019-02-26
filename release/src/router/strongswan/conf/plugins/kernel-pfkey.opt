@@ -1,0 +1,17 @@
+charon.plugins.kernel-pfkey.events_buffer_size = 0
+	Size of the receive buffer for the event socket (0 for default size).
+
+	Size of the receive buffer for the event socket (0 for default size).
+	Because events are received asynchronously installing e.g. lots of policies
+	may require a larger buffer than the default on certain platforms in order
+	to receive all messages.
+
+charon.plugins.kernel-pfkey.route_via_internal = no
+	Whether to use the internal or external interface in installed routes.
+
+	Whether to use the internal or external interface in installed routes.
+	The internal interface is the one where the IP address contained in the
+	local traffic selector is located, the external interface is the one over
+	which the destination address of the IPsec tunnel can be reached.
+	This is not relevant if virtual IPs are used, for which a TUN device is
+	created that's used in the routes.

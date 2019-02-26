@@ -1,6 +1,0 @@
-carol::ipsec stop
-moon::ipsec stop
-alice::killall radiusd
-alice::cat /var/log/freeradius/radacct/PH_IP_MOON1/*
-carol::iptables-restore < /etc/iptables.flush
-moon::iptables-restore < /etc/iptables.flush

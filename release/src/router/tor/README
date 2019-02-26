@@ -27,3 +27,6 @@ Frequently Asked Questions:
 
 To get started working on Tor development:
         See the doc/HACKING directory.
+
+Release timeline:
+         https://trac.torproject.org/projects/tor/wiki/org/teams/NetworkTeam/CoreTorReleases

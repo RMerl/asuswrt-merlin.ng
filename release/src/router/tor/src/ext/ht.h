@@ -1,6 +1,6 @@
 /* Copyright (c) 2002, Christopher Clark.
  * Copyright (c) 2005-2006, Nick Mathewson.
- * Copyright (c) 2007-2015, The Tor Project, Inc. */
+ * Copyright (c) 2007-2019, The Tor Project, Inc. */
 /* See license at end. */
 
 /* Based on ideas by Christopher Clark and interfaces from Niels Provos. */
@@ -150,6 +150,8 @@
 #define HT_CLEAR(name, head)         name##_HT_CLEAR(head)
 #define HT_INIT(name, head)          name##_HT_INIT(head)
 #define HT_REP_IS_BAD_(name, head)    name##_HT_REP_IS_BAD_(head)
+#define HT_FOREACH_FN(name, head, fn, data) \
+   name##_HT_FOREACH_FN((head), (fn), (data))
 /* Helper: */
 static inline unsigned
 ht_improve_hash(unsigned h)

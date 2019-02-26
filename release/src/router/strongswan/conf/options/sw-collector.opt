@@ -1,0 +1,31 @@
+sw-collector {}
+	Options for the sw-collector tool.
+
+	Options for the sw-collector tool.
+
+sw-collector.database =
+	URI to software collector database containing event timestamps, software
+	creation and deletion events and collected software identifiers.
+
+	URI to software collector database containing event timestamps,	software
+	creation and deletion events and collected software identifiers.
+	If it contains a password, make sure to adjust the permissions of the config
+	file accordingly.
+
+sw-collector.first_file = /var/log/bootstrap.log
+	Path pointing to file created when the Linux OS was installed.
+
+sw-collector.first_time = 0000-00-00T00:00:00Z
+	Time in UTC when the Linux OS was installed.
+
+sw-collector.history =
+	Path pointing to apt history.log file.
+
+sw-collector.rest_api.uri =
+	HTTP URI of the central collector's REST API.
+
+sw-collector.rest_api.timeout = 120
+	Timeout of REST API HTTP POST transaction.
+
+sw-collector.load =
+	Plugins to load in sw-collector tool.

@@ -1,6 +1,0 @@
-charon.plugins.attr-sql.database
-	Database URI for attr-sql plugin used by charon. If it contains a password,
-	make sure to adjust the permissions of the config file accordingly.
-
-charon.plugins.attr-sql.lease_history = yes
-	Enable logging of SQL IP pool leases.

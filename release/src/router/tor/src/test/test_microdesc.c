@@ -1,31 +1,36 @@
-/* Copyright (c) 2010-2016, The Tor Project, Inc. */
+/* Copyright (c) 2010-2019, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 #include "orconfig.h"
-#include "or.h"
+#include "core/or/or.h"
 
-#include "config.h"
-#include "dirvote.h"
-#include "microdesc.h"
-#include "networkstatus.h"
-#include "routerlist.h"
-#include "routerparse.h"
-#include "torcert.h"
+#define DIRVOTE_PRIVATE
+#include "app/config/config.h"
+#include "feature/dirauth/dirvote.h"
+#include "feature/dirparse/microdesc_parse.h"
+#include "feature/dirparse/routerparse.h"
+#include "feature/nodelist/microdesc.h"
+#include "feature/nodelist/networkstatus.h"
+#include "feature/nodelist/routerlist.h"
+#include "feature/nodelist/torcert.h"
 
-#include "test.h"
+#include "feature/nodelist/microdesc_st.h"
+#include "feature/nodelist/networkstatus_st.h"
+#include "feature/nodelist/routerinfo_st.h"
+#include "feature/nodelist/routerstatus_st.h"
 
-DISABLE_GCC_WARNING(redundant-decls)
-#include <openssl/rsa.h>
-#include <openssl/bn.h>
-#include <openssl/pem.h>
-ENABLE_GCC_WARNING(redundant-decls)
+#include "test/test.h"
+
+#ifdef HAVE_SYS_STAT_H
+#include <sys/stat.h>
+#endif
 
 #ifdef _WIN32
 /* For mkdir() */
 #include <direct.h>
 #else
 #include <dirent.h>
-#endif
+#endif /* defined(_WIN32) */
 
 static const char test_md1[] =
   "onion-key\n"
@@ -75,12 +80,12 @@ test_md_cache(void *data)
   time3 = time(NULL) - 15*24*60*60;
 
   /* Possibly, turn this into a test setup/cleanup pair */
-  tor_free(options->DataDirectory);
-  options->DataDirectory = tor_strdup(get_fname("md_datadir_test"));
+  tor_free(options->CacheDirectory);
+  options->CacheDirectory = tor_strdup(get_fname("md_datadir_test"));
 #ifdef _WIN32
-  tt_int_op(0, OP_EQ, mkdir(options->DataDirectory));
+  tt_int_op(0, OP_EQ, mkdir(options->CacheDirectory));
 #else
-  tt_int_op(0, OP_EQ, mkdir(options->DataDirectory, 0700));
+  tt_int_op(0, OP_EQ, mkdir(options->CacheDirectory, 0700));
 #endif
 
   tt_assert(!strcmpstart(test_md3_noannotation, "onion-key"));
@@ -158,7 +163,7 @@ test_md_cache(void *data)
               strlen(test_md3_noannotation));
 
   tor_asprintf(&fn, "%s"PATH_SEPARATOR"cached-microdescs.new",
-               options->DataDirectory);
+               options->CacheDirectory);
   s = read_file_to_str(fn, RFTS_BIN, NULL);
   tt_assert(s);
   tt_mem_op(md1->body, OP_EQ, s + md1->off, md1->bodylen);
@@ -186,7 +191,7 @@ test_md_cache(void *data)
 
   /* read the cache. */
   tor_asprintf(&fn, "%s"PATH_SEPARATOR"cached-microdescs",
-               options->DataDirectory);
+               options->CacheDirectory);
   s = read_file_to_str(fn, RFTS_BIN, NULL);
   tt_mem_op(md1->body, OP_EQ, s + md1->off, strlen(test_md1));
   tt_mem_op(md2->body, OP_EQ, s + md2->off, strlen(test_md2));
@@ -240,7 +245,7 @@ test_md_cache(void *data)
 
  done:
   if (options)
-    tor_free(options->DataDirectory);
+    tor_free(options->CacheDirectory);
   microdesc_free_all();
 
   smartlist_free(added);
@@ -272,17 +277,17 @@ test_md_cache_broken(void *data)
 
   options = get_options_mutable();
   tt_assert(options);
-  tor_free(options->DataDirectory);
-  options->DataDirectory = tor_strdup(get_fname("md_datadir_test2"));
+  tor_free(options->CacheDirectory);
+  options->CacheDirectory = tor_strdup(get_fname("md_datadir_test2"));
 
 #ifdef _WIN32
-  tt_int_op(0, OP_EQ, mkdir(options->DataDirectory));
+  tt_int_op(0, OP_EQ, mkdir(options->CacheDirectory));
 #else
-  tt_int_op(0, OP_EQ, mkdir(options->DataDirectory, 0700));
+  tt_int_op(0, OP_EQ, mkdir(options->CacheDirectory, 0700));
 #endif
 
   tor_asprintf(&fn, "%s"PATH_SEPARATOR"cached-microdescs",
-               options->DataDirectory);
+               options->CacheDirectory);
 
   write_str_to_file(fn, truncated_md, 1);
 
@@ -291,7 +296,7 @@ test_md_cache_broken(void *data)
 
  done:
   if (options)
-    tor_free(options->DataDirectory);
+    tor_free(options->CacheDirectory);
   tor_free(fn);
   microdesc_free_all();
 }
@@ -391,25 +396,6 @@ static const char test_ri2[] =
   "cf34GXHv61XReJF3AlzNHFpbrPOYmowmhrTULKyMqow=\n"
   "-----END SIGNATURE-----\n";
 
-static const char test_md_8[] =
-  "onion-key\n"
-  "-----BEGIN RSA PUBLIC KEY-----\n"
-  "MIGJAoGBANBJz8Vldl12aFeSMPLiA4nOetLDN0oxU8bB1SDhO7Uu2zdWYVYAF5J0\n"
-  "st7WvrVy/jA9v/fsezNAPskBanecHRSkdMTpkcgRPMHE7CTGEwIy1Yp1X4bPgDlC\n"
-  "VCnbs5Pcts5HnWEYNK7qHDAUn+IlmjOO+pTUY8uyq+GQVz6H9wFlAgMBAAE=\n"
-  "-----END RSA PUBLIC KEY-----\n"
-  "p reject 25,119,135-139,445,563,1214,4661-4666,6346-6429,6699,6881-6999\n";
-
-static const char test_md_16[] =
-  "onion-key\n"
-  "-----BEGIN RSA PUBLIC KEY-----\n"
-  "MIGJAoGBANBJz8Vldl12aFeSMPLiA4nOetLDN0oxU8bB1SDhO7Uu2zdWYVYAF5J0\n"
-  "st7WvrVy/jA9v/fsezNAPskBanecHRSkdMTpkcgRPMHE7CTGEwIy1Yp1X4bPgDlC\n"
-  "VCnbs5Pcts5HnWEYNK7qHDAUn+IlmjOO+pTUY8uyq+GQVz6H9wFlAgMBAAE=\n"
-  "-----END RSA PUBLIC KEY-----\n"
-  "ntor-onion-key Gg73xH7+kTfT6bi1uNVx9gwQdQas9pROIfmc4NpAdC4=\n"
-  "p reject 25,119,135-139,445,563,1214,4661-4666,6346-6429,6699,6881-6999\n";
-
 static const char test_md_18[] =
   "onion-key\n"
   "-----BEGIN RSA PUBLIC KEY-----\n"
@@ -420,16 +406,6 @@ static const char test_md_18[] =
   "ntor-onion-key Gg73xH7+kTfT6bi1uNVx9gwQdQas9pROIfmc4NpAdC4=\n"
   "p reject 25,119,135-139,445,563,1214,4661-4666,6346-6429,6699,6881-6999\n"
   "id rsa1024 Cd47okjCHD83YGzThGBDptXs9Z4\n";
-
-static const char test_md2_18[] =
-  "onion-key\n"
-  "-----BEGIN RSA PUBLIC KEY-----\n"
-  "MIGJAoGBAL2R8EfubUcahxha4u02P4VAR0llQIMwFAmrHPjzcK7apcQgDOf2ovOA\n"
-  "+YQnJFxlpBmCoCZC6ssCi+9G0mqo650lFuTMP5I90BdtjotfzESfTykHLiChyvhd\n"
-  "l0dlqclb2SU/GKem/fLRXH16aNi72CdSUu/1slKs/70ILi34QixRAgMBAAE=\n"
-  "-----END RSA PUBLIC KEY-----\n"
-  "ntor-onion-key hbxdRnfVUJJY7+KcT4E3Rs7/zuClbN3hJrjSBiEGMgI=\n"
-  "id rsa1024 t+J/EEITw28T5+mCkYKEXklZl6A\n";
 
 static const char test_md2_21[] =
   "onion-key\n"
@@ -450,17 +426,6 @@ test_md_generate(void *arg)
 
   ri = router_parse_entry_from_string(test_ri, NULL, 0, 0, NULL, NULL);
   tt_assert(ri);
-  md = dirvote_create_microdescriptor(ri, 8);
-  tt_str_op(md->body, OP_EQ, test_md_8);
-
-  /* XXXX test family lines. */
-  /* XXXX test method 14 for A lines. */
-  /* XXXX test method 15 for P6 lines. */
-
-  microdesc_free(md);
-  md = NULL;
-  md = dirvote_create_microdescriptor(ri, 16);
-  tt_str_op(md->body, OP_EQ, test_md_16);
 
   microdesc_free(md);
   md = NULL;
@@ -470,20 +435,15 @@ test_md_generate(void *arg)
   microdesc_free(md);
   md = NULL;
   md = dirvote_create_microdescriptor(ri, 21);
-  tt_str_op(md->body, ==, test_md_18);
+  tt_str_op(md->body, OP_EQ, test_md_18);
 
   routerinfo_free(ri);
   ri = router_parse_entry_from_string(test_ri2, NULL, 0, 0, NULL, NULL);
 
   microdesc_free(md);
   md = NULL;
-  md = dirvote_create_microdescriptor(ri, 18);
-  tt_str_op(md->body, ==, test_md2_18);
-
-  microdesc_free(md);
-  md = NULL;
   md = dirvote_create_microdescriptor(ri, 21);
-  tt_str_op(md->body, ==, test_md2_21);
+  tt_str_op(md->body, OP_EQ, test_md2_21);
   tt_assert(ed25519_pubkey_eq(md->ed25519_identity_pkey,
                               &ri->cache_info.signing_key_cert->signing_key));
 
@@ -760,8 +720,8 @@ test_md_reject_cache(void *arg)
   or_options_t *options = get_options_mutable();
   char buf[DIGEST256_LEN];
 
-  tor_free(options->DataDirectory);
-  options->DataDirectory = tor_strdup(get_fname("md_datadir_test_rej"));
+  tor_free(options->CacheDirectory);
+  options->CacheDirectory = tor_strdup(get_fname("md_datadir_test_rej"));
   mock_rgsbd_val_a = tor_malloc_zero(sizeof(routerstatus_t));
   mock_rgsbd_val_b = tor_malloc_zero(sizeof(routerstatus_t));
   mock_ns_val = tor_malloc_zero(sizeof(networkstatus_t));
@@ -771,9 +731,9 @@ test_md_reject_cache(void *arg)
   mock_ns_val->flavor = FLAV_MICRODESC;
 
 #ifdef _WIN32
-  tt_int_op(0, OP_EQ, mkdir(options->DataDirectory));
+  tt_int_op(0, OP_EQ, mkdir(options->CacheDirectory));
 #else
-  tt_int_op(0, OP_EQ, mkdir(options->DataDirectory, 0700));
+  tt_int_op(0, OP_EQ, mkdir(options->CacheDirectory, 0700));
 #endif
 
   MOCK(router_get_mutable_consensus_status_by_descriptor_digest,
@@ -808,7 +768,7 @@ test_md_reject_cache(void *arg)
  done:
   UNMOCK(networkstatus_get_latest_consensus_by_flavor);
   UNMOCK(router_get_mutable_consensus_status_by_descriptor_digest);
-  tor_free(options->DataDirectory);
+  tor_free(options->CacheDirectory);
   microdesc_free_all();
   smartlist_free(added);
   SMARTLIST_FOREACH(wanted, char *, cp, tor_free(cp));
@@ -829,14 +789,14 @@ test_md_corrupt_desc(void *arg)
                                "@last-listed 2015-06-22 10:00:00\n"
                                "onion-k\n",
                                NULL, SAVED_IN_JOURNAL, 0, time(NULL), NULL);
-  tt_int_op(smartlist_len(sl), ==, 0);
+  tt_int_op(smartlist_len(sl), OP_EQ, 0);
   smartlist_free(sl);
 
   sl = microdescs_add_to_cache(get_microdesc_cache(),
                                "@last-listed 2015-06-22 10:00:00\n"
                                "wiggly\n",
                                NULL, SAVED_IN_JOURNAL, 0, time(NULL), NULL);
-  tt_int_op(smartlist_len(sl), ==, 0);
+  tt_int_op(smartlist_len(sl), OP_EQ, 0);
   smartlist_free(sl);
 
   tor_asprintf(&cp, "%s\n%s", test_md1, "@foobar\nonion-wobble\n");
@@ -844,7 +804,7 @@ test_md_corrupt_desc(void *arg)
   sl = microdescs_add_to_cache(get_microdesc_cache(),
                                cp, cp+strlen(cp),
                                SAVED_IN_JOURNAL, 0, time(NULL), NULL);
-  tt_int_op(smartlist_len(sl), ==, 0);
+  tt_int_op(smartlist_len(sl), OP_EQ, 0);
 
  done:
   tor_free(cp);
@@ -860,4 +820,3 @@ struct testcase_t microdesc_tests[] = {
   { "corrupt_desc", test_md_corrupt_desc, TT_FORK, NULL, NULL },
   END_OF_TESTCASES
 };
-

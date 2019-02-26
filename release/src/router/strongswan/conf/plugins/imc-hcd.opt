@@ -1,0 +1,71 @@
+libimcv.plugins.imc-hcd.push_info = yes
+	Send quadruple info without being prompted.
+
+libimcv.plugins.imc-hcd.subtypes
+	Section to define PWG HCD PA subtypes.
+
+libimcv.plugins.imc-hcd.subtypes.<section>
+	Defines a PWG HCD PA subtype section. Recognized subtype section names are
+    _system_, _control_, _marker_, _finisher_, _interface_ and _scanner_.
+
+libimcv.plugins.imc-hcd.subtypes.<section>.attributes_natural_language = en
+	Variable length natural language tag conforming to RFC 5646 specifies
+	the language to be used in the health assessment message of a given subtype.
+
+libimcv.plugins.imc-hcd.subtypes.<section>.<sw_type>
+	Defines a software type section. Recognized software type section names are
+	_firmware_, _resident_application_ and _user_application_.
+
+libimcv.plugins.imc-hcd.subtypes.<section>.<sw_type>.<software>
+	Defines a software section having an arbitrary name.
+
+libimcv.plugins.imc-hcd.subtypes.<section>.<sw_type>.<software>.name
+	Name of the software installed on the hardcopy device.
+
+libimcv.plugins.imc-hcd.subtypes.<section>.<sw_type>.<software>.patches
+	String describing all patches applied to the given software on this
+	hardcopy device. The individual patches are separated by a newline
+	character '\\n'.
+
+libimcv.plugins.imc-hcd.subtypes.<section>.<sw_type>.<software>.string_version
+	String describing the version of the given software on this hardcopy device.
+
+libimcv.plugins.imc-hcd.subtypes.<section>.<sw_type>.<software>.version
+	Hex-encoded version string with a length of 16 octets consisting of the
+	fields major version number (4 octets), minor version number (4 octets),
+	build number (4 octets), service pack major number (2 octets) and service
+	pack minor number (2 octets).
+
+libimcv.plugins.imc-hcd.subtypes.system.certification_state
+	Hex-encoded certification state.
+
+libimcv.plugins.imc-hcd.subtypes.system.configuration_state
+	Hex-encoded configuration state.
+
+libimcv.plugins.imc-hcd.subtypes.system.machine_type_model
+	String specifying the machine type and model of the hardcopy device.
+
+libimcv.plugins.imc-hcd.subtypes.system.pstn_fax_enabled = no
+	Specifies if a PSTN facsimile interface is installed and enabled on the
+	hardcopy device.
+
+libimcv.plugins.imc-hcd.subtypes.system.time_source
+	String specifying the hostname of the network time server used by the
+	hardcopy device.
+
+libimcv.plugins.imc-hcd.subtypes.system.user_application_enabled = no
+	Specifies if users can dynamically download and execute applications on
+	the hardcopy device.
+
+libimcv.plugins.imc-hcd.subtypes.system.user_application_persistence_enabled = no
+	Specifies if user dynamically downloaded applications can persist outside
+	the boundaries of a single job on the hardcopy device.
+
+libimcv.plugins.imc-hcd.subtypes.system.vendor_name
+	String specifying the manufacturer of the hardcopy device.
+
+libimcv.plugins.imc-hcd.subtypes.system.vendor_smi_code
+	Integer specifying the globally unique 24-bit SMI code assigned to the
+	manufacturer of the hardcopy device.
+
+

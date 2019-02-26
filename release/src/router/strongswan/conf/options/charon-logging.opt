@@ -1,0 +1,66 @@
+charon.filelog {}
+	Section to define file loggers, see LOGGER CONFIGURATION in
+	**strongswan.conf**(5).
+
+charon.filelog.<name> { # }
+	<name> may be the full path to the log file if it only contains
+	characters permitted in section names. Is ignored if _path_ is specified.
+
+charon.filelog.<name>.path =
+	Optional path to the log file. Overrides the section name. Must be used
+	if the path contains characters that aren't allowed in section names.
+
+charon.filelog.<name>.default = 1
+	Default loglevel.
+
+	Specifies the default loglevel to be used for subsystems for which no
+	specific loglevel is defined.
+
+charon.filelog.<name>.<subsystem> = <default>
+	Loglevel for a specific subsystem.
+
+charon.filelog.<name>.append = yes
+	If this option is enabled log entries are appended to the existing file.
+
+charon.filelog.<name>.flush_line = no
+	Enabling this option disables block buffering and enables line buffering.
+
+charon.filelog.<name>.ike_name = no
+	Prefix each log entry with the connection name and a unique numerical
+	identifier for each IKE_SA.
+
+charon.filelog.<name>.time_format
+	Prefix each log entry with a timestamp. The option accepts a format string
+	as passed to **strftime**(3).
+
+charon.filelog.<name>.time_add_ms = no
+	Adds the milliseconds within the current second after the timestamp
+	(separated by a dot, so _time_format_ should end with %S or %T).
+
+charon.syslog {}
+	Section to define syslog loggers, see LOGGER CONFIGURATION in
+	**strongswan.conf**(5).
+
+charon.syslog.identifier
+	Identifier for use with openlog(3).
+
+	Global identifier used for an **openlog**(3) call, prepended to each log
+	message by syslog.  If not configured, **openlog**(3) is not called, so the
+	value will depend on system defaults (often the program name).
+
+charon.syslog.<facility> { # }
+	<facility> is one of the supported syslog facilities, see LOGGER
+	CONFIGURATION in **strongswan.conf**(5).
+
+charon.syslog.<facility>.default = 1
+	Default loglevel.
+
+	Specifies the default loglevel to be used for subsystems for which no
+	specific loglevel is defined.
+
+charon.syslog.<facility>.<subsystem> = <default>
+	Loglevel for a specific subsystem.
+
+charon.syslog.<facility>.ike_name = no
+	Prefix each log entry with the connection name and a unique numerical
+	identifier for each IKE_SA.

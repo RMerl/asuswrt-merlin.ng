@@ -1,15 +1,15 @@
-/* Copyright (c) 2010-2016, The Tor Project, Inc. */
+/* Copyright (c) 2010-2019, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 #define UTIL_PROCESS_PRIVATE
 #include "orconfig.h"
-#include "or.h"
+#include "core/or/or.h"
 
-#include "test.h"
+#include "test/test.h"
 
-#include "util_process.h"
+#include "lib/process/waitpid.h"
 
-#include "log_test_helpers.h"
+#include "test/log_test_helpers.h"
 
 #ifndef _WIN32
 #define NS_MODULE util_process
@@ -67,7 +67,7 @@ test_util_process_clear_waitpid_callback(void *ignored)
  done:
   teardown_capture_of_logs();
 }
-#endif /* _WIN32 */
+#endif /* !defined(_WIN32) */
 
 #ifndef _WIN32
 #define TEST(name) { #name, test_util_process_##name, 0, NULL, NULL }

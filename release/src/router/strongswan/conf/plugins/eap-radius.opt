@@ -1,0 +1,132 @@
+charon.plugins.eap-radius.accounting = no
+	Send RADIUS accounting information to RADIUS servers.
+
+charon.plugins.eap-radius.accounting_close_on_timeout = yes
+	Close the IKE_SA if there is a timeout during interim RADIUS accounting
+	updates.
+
+charon.plugins.eap-radius.accounting_interval = 0
+	Interval in seconds for interim RADIUS accounting updates, if not specified
+	by the RADIUS server in the Access-Accept message.
+
+charon.plugins.eap-radius.accounting_requires_vip = no
+	If enabled, accounting is disabled unless an IKE_SA has at least one
+	virtual IP. Only for IKEv2, for IKEv1 a virtual IP is strictly necessary.
+
+charon.plugins.eap-radius.accounting_send_class = no
+	If enabled, adds the Class attributes received in Access-Accept message to
+	the RADIUS accounting messages.
+
+charon.plugins.eap-radius.class_group = no
+	Use class attributes in Access-Accept messages as group membership
+	information.
+
+	Use the _class_ attribute sent in the RADIUS-Accept message as group
+	membership information that is compared to the groups specified in the
+	**rightgroups** option in **ipsec.conf**(5).
+
+charon.plugins.eap-radius.close_all_on_timeout = no
+	Closes all IKE_SAs if communication with the RADIUS server times out. If it
+	is not set only the current IKE_SA is closed.
+
+charon.plugins.eap-radius.dae.enable = no
+	Enables support for the Dynamic Authorization Extension (RFC 5176).
+
+charon.plugins.eap-radius.dae.listen = 0.0.0.0
+	Address to listen for DAE messages from the RADIUS server.
+
+charon.plugins.eap-radius.dae.port = 3799
+	Port to listen for DAE requests.
+
+charon.plugins.eap-radius.dae.secret
+	Shared secret used to verify/sign DAE messages. If set, make sure to adjust
+	the permissions of the config file accordingly.
+
+charon.plugins.eap-radius.eap_start = no
+	Send EAP-Start instead of EAP-Identity to start RADIUS conversation.
+
+charon.plugins.eap-radius.filter_id = no
+	Use filter_id attribute as group membership information.
+
+	If the RADIUS _tunnel_type_ attribute with value **ESP** is received, use
+	the _filter_id_ attribute sent in the RADIUS-Accept message as group
+	membership information that is compared to the groups specified in the
+	**rightgroups** option in **ipsec.conf**(5).
+
+charon.plugins.eap-radius.forward.ike_to_radius
+	RADIUS attributes to be forwarded from IKEv2 to RADIUS.
+
+	RADIUS attributes to be forwarded from IKEv2 to RADIUS (can be defined by
+	name or attribute number, a colon can be used to specify vendor-specific
+	attributes, e.g. Reply-Message, or 11, or 36906:12).
+
+charon.plugins.eap-radius.forward.radius_to_ike =
+	Same as ike_to_radius but from RADIUS to IKEv2.
+
+	Same as _charon.plugins.eap-radius.forward.ike_to_radius_ but from RADIUS to
+	IKEv2, a strongSwan specific private notify (40969) is used to transmit the
+	attributes.
+
+charon.plugins.eap-radius.id_prefix
+	Prefix to EAP-Identity, some AAA servers use a IMSI prefix to select the
+	EAP method.
+
+charon.plugins.eap-radius.nas_identifier = strongSwan
+	NAS-Identifier to include in RADIUS messages.
+
+charon.plugins.eap-radius.port = 1812
+	Port of RADIUS server (authentication).
+
+charon.plugins.eap-radius.secret =
+	Shared secret between RADIUS and NAS. If set, make sure to adjust the
+	permissions of the config file accordingly.
+
+charon.plugins.eap-radius.server =
+	IP/Hostname of RADIUS server.
+
+charon.plugins.eap-radius.retransmit_base = 1.4
+	Base to use for calculating exponential back off.
+
+charon.plugins.eap-radius.retransmit_timeout = 2.0
+	Timeout in seconds before sending first retransmit.
+
+charon.plugins.eap-radius.retransmit_tries = 4
+	Number of times to retransmit a packet before giving up.
+
+charon.plugins.eap-radius.servers {}
+	Section to specify multiple RADIUS servers.
+
+	Section to specify multiple RADIUS servers. The **nas_identifier**,
+	**secret**, **sockets** and **port** (or **auth_port**) options can be
+	specified for each server. A server's IP/Hostname can be configured using
+	the **address** option. The **acct_port** [1813] option can be used to
+	specify the port used for RADIUS accounting. For each RADIUS server a
+	priority can be specified using the **preference** [0] option. The
+	retransmission time for each server can set set using **retransmit_base**,
+	**retransmit_timeout** and **retransmit_tries**.
+
+charon.plugins.eap-radius.sockets = 1
+	Number of sockets (ports) to use, increase for high load.
+
+charon.plugins.eap-radius.station_id_with_port = yes
+	Whether to include the UDP port in the Called- and Calling-Station-Id
+	RADIUS attributes.
+
+charon.plugins.eap-radius.xauth {}
+	Section to configure multiple XAuth authentication rounds via RADIUS.
+
+	Section to configure multiple XAuth authentication rounds via RADIUS.
+	The subsections define so called authentication profiles with arbitrary
+	names. In each profile section one or more XAuth types can be configured,
+	with an assigned message. For each type a separate XAuth exchange will be
+	initiated and all replies get concatenated into the User-Password attribute,
+	which then gets verified over RADIUS.
+
+	Available XAuth types are **password**, **passcode**, **nextpin**, and
+	**answer**. This type is not relevant to strongSwan or the AAA server, but
+	the client may show a different dialog (along with the configured message).
+
+	To use the configured profiles, they have to be configured in the respective
+	connection in **ipsec.conf**(5) by appending the profile name, separated by
+	a colon, to the **xauth-radius** XAauth backend configuration in _rightauth_
+	or _rightauth2_, for instance, _rightauth2=xauth-radius:profile_.

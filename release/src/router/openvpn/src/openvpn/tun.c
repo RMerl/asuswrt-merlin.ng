@@ -851,7 +851,7 @@ delete_route_connected_v6_net(struct tuntap *tt,
 #endif /* if defined(_WIN32) || defined(TARGET_DARWIN) || defined(TARGET_NETBSD) || defined(TARGET_OPENBSD) */
 
 #if defined(TARGET_FREEBSD) || defined(TARGET_DRAGONFLY)  \
-    || defined(TARGET_OPENBSD)
+    || defined(TARGET_NETBSD) || defined(TARGET_OPENBSD)
 /* we can't use true subnet mode on tun on all platforms, as that
  * conflicts with IPv6 (wants to use ND then, which we don't do),
  * but the OSes want "a remote address that is different from ours"
@@ -896,7 +896,7 @@ do_ifconfig(struct tuntap *tt,
         bool do_ipv6 = false;
         struct argv argv = argv_new();
 
-        msg( M_DEBUG, "do_ifconfig, tt->did_ifconfig_ipv6_setup=%d",
+        msg( D_LOW, "do_ifconfig, tt->did_ifconfig_ipv6_setup=%d",
              tt->did_ifconfig_ipv6_setup );
 
         /*
@@ -1104,7 +1104,7 @@ do_ifconfig(struct tuntap *tt,
                         actual
                         );
         }
-        else if (tt->topology == TOP_SUBNET)
+        else if (tt->type == DEV_TYPE_TUN && tt->topology == TOP_SUBNET)
         {
             argv_printf(&argv,
                         "%s %s %s %s netmask %s mtu %d up",
@@ -1186,7 +1186,7 @@ do_ifconfig(struct tuntap *tt,
             }
         }
 
-        if (!tun && tt->topology == TOP_SUBNET)
+        if (!tun && tt->type == DEV_TYPE_TUN && tt->topology == TOP_SUBNET)
         {
             /* Add a network route for the local tun interface */
             struct route_ipv4 r;
@@ -1223,7 +1223,7 @@ do_ifconfig(struct tuntap *tt,
                         tun_mtu
                         );
         }
-        else if (tt->topology == TOP_SUBNET)
+        else if (tt->type == DEV_TYPE_TUN && tt->topology == TOP_SUBNET)
         {
             remote_end = create_arbitrary_remote( tt );
             argv_printf(&argv,
@@ -1252,7 +1252,7 @@ do_ifconfig(struct tuntap *tt,
         openvpn_execve_check(&argv, es, S_FATAL, "OpenBSD ifconfig failed");
 
         /* Add a network route for the local tun interface */
-        if (!tun && tt->topology == TOP_SUBNET)
+        if (!tun && tt->type == DEV_TYPE_TUN && tt->topology == TOP_SUBNET)
         {
             struct route_ipv4 r;
             CLEAR(r);
@@ -1282,6 +1282,8 @@ do_ifconfig(struct tuntap *tt,
 
 #elif defined(TARGET_NETBSD)
 
+        in_addr_t remote_end;           /* for "virtual" subnet topology */
+
         if (tun)
         {
             argv_printf(&argv,
@@ -1293,14 +1295,15 @@ do_ifconfig(struct tuntap *tt,
                         tun_mtu
                         );
         }
-        else if (tt->topology == TOP_SUBNET)
+        else if (tt->type == DEV_TYPE_TUN && tt->topology == TOP_SUBNET)
         {
+            remote_end = create_arbitrary_remote( tt );
             argv_printf(&argv,
                         "%s %s %s %s mtu %d netmask %s up",
                         IFCONFIG_PATH,
                         actual,
                         ifconfig_local,
-                        ifconfig_local,
+                        print_in_addr_t(remote_end, 0, &gc),
                         tun_mtu,
                         ifconfig_remote_netmask
                         );
@@ -1324,6 +1327,18 @@ do_ifconfig(struct tuntap *tt,
         }
         argv_msg(M_INFO, &argv);
         openvpn_execve_check(&argv, es, S_FATAL, "NetBSD ifconfig failed");
+
+        /* Add a network route for the local tun interface */
+        if (!tun && tt->type == DEV_TYPE_TUN && tt->topology == TOP_SUBNET)
+        {
+            struct route_ipv4 r;
+            CLEAR(r);
+            r.flags = RT_DEFINED;
+            r.network = tt->local & tt->remote_netmask;
+            r.netmask = tt->remote_netmask;
+            r.gateway = remote_end;
+            add_route(&r, tt, 0, NULL, es);
+        }
 
         if (do_ipv6)
         {
@@ -1370,7 +1385,7 @@ do_ifconfig(struct tuntap *tt,
         }
         else
         {
-            if (tt->topology == TOP_SUBNET)
+            if (tt->type == DEV_TYPE_TUN && tt->topology == TOP_SUBNET)
             {
                 argv_printf(&argv,
                             "%s %s %s %s netmask %s mtu %d up",
@@ -1400,7 +1415,7 @@ do_ifconfig(struct tuntap *tt,
         tt->did_ifconfig = true;
 
         /* Add a network route for the local tun interface */
-        if (!tun && tt->topology == TOP_SUBNET)
+        if (!tun && tt->type == DEV_TYPE_TUN && tt->topology == TOP_SUBNET)
         {
             struct route_ipv4 r;
             CLEAR(r);
@@ -1443,7 +1458,7 @@ do_ifconfig(struct tuntap *tt,
                         tun_mtu
                         );
         }
-        else if (tt->topology == TOP_SUBNET)
+        else if (tt->type == DEV_TYPE_TUN && tt->topology == TOP_SUBNET)
         {
             remote_end = create_arbitrary_remote( tt );
             argv_printf(&argv,
@@ -1473,7 +1488,7 @@ do_ifconfig(struct tuntap *tt,
         tt->did_ifconfig = true;
 
         /* Add a network route for the local tun interface */
-        if (!tun && tt->topology == TOP_SUBNET)
+        if (!tun && tt->type == DEV_TYPE_TUN && tt->topology == TOP_SUBNET)
         {
             struct route_ipv4 r;
             CLEAR(r);
@@ -3698,7 +3713,8 @@ get_tap_reg(struct gc_arena *gc)
 
                 if (status == ERROR_SUCCESS && data_type == REG_SZ)
                 {
-                    if (!strcmp(component_id, TAP_WIN_COMPONENT_ID))
+                    if (!strcmp(component_id, TAP_WIN_COMPONENT_ID) ||
+                        !strcmp(component_id, "root\\" TAP_WIN_COMPONENT_ID))
                     {
                         struct tap_reg *reg;
                         ALLOC_OBJ_CLEAR_GC(reg, struct tap_reg, gc);
@@ -5369,6 +5385,49 @@ netsh_enable_dhcp(const struct tuntap_options *to,
     argv_reset(&argv);
 }
 
+/* Enable dhcp on tap adapter using iservice */
+static bool
+service_enable_dhcp(const struct tuntap *tt)
+{
+    DWORD len;
+    bool ret = false;
+    ack_message_t ack;
+    struct gc_arena gc = gc_new();
+    HANDLE pipe = tt->options.msg_channel;
+
+    enable_dhcp_message_t dhcp = {
+        .header = {
+            msg_enable_dhcp,
+            sizeof(enable_dhcp_message_t),
+            0
+        },
+        .iface = { .index = tt->adapter_index, .name = "" }
+    };
+
+    if (!WriteFile(pipe, &dhcp, sizeof(dhcp), &len, NULL)
+        || !ReadFile(pipe, &ack, sizeof(ack), &len, NULL))
+    {
+        msg(M_WARN, "Enable_dhcp: could not talk to service: %s [%lu]",
+            strerror_win32(GetLastError(), &gc), GetLastError());
+        goto out;
+    }
+
+    if (ack.error_number != NO_ERROR)
+    {
+        msg(M_NONFATAL, "TUN: enabling dhcp using service failed: %s [status=%u if_index=%d]",
+            strerror_win32(ack.error_number, &gc), ack.error_number, dhcp.iface.index);
+    }
+    else
+    {
+        msg(M_INFO, "DHCP enabled on interface %d using service", dhcp.iface.index);
+        ret = true;
+    }
+
+out:
+    gc_free(&gc);
+    return ret;
+}
+
 /*
  * Return a TAP name for netsh commands.
  */
@@ -5849,7 +5908,15 @@ open_tun(const char *dev, const char *dev_type, const char *dev_node, struct tun
              */
             if (dhcp_status(tt->adapter_index) == DHCP_STATUS_DISABLED)
             {
-                netsh_enable_dhcp(&tt->options, tt->actual_name);
+                /* try using the service if available, else directly execute netsh */
+                if (tt->options.msg_channel)
+                {
+                    service_enable_dhcp(tt);
+                }
+                else
+                {
+                    netsh_enable_dhcp(&tt->options, tt->actual_name);
+                }
             }
             dhcp_masq = true;
             dhcp_masq_post = true;

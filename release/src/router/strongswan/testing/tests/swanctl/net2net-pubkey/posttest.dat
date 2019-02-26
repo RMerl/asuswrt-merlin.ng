@@ -1,0 +1,7 @@
+moon::swanctl --terminate --ike gw-gw 2> /dev/null
+moon::systemctl stop strongswan-swanctl
+sun::systemctl stop strongswan-swanctl
+moon::iptables-restore < /etc/iptables.flush
+sun::iptables-restore < /etc/iptables.flush
+moon::rm /etc/swanctl/pubkey/*
+sun::rm /etc/swanctl/pubkey/*

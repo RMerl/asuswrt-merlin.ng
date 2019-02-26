@@ -1,10 +1,15 @@
-/* Copyright (c) 2014-2016, The Tor Project, Inc. */
+/* Copyright (c) 2014-2019, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
-#include "or.h"
-#include "test.h"
-#include "rendcommon.h"
-#include "rend_test_helpers.h"
+#include "core/or/or.h"
+#include "lib/crypt_ops/crypto_rand.h"
+#include "test/test.h"
+#include "feature/rend/rendcommon.h"
+#include "test/rend_test_helpers.h"
+
+#include "core/or/extend_info_st.h"
+#include "feature/rend/rend_intro_point_st.h"
+#include "feature/rend/rend_service_descriptor_st.h"
 
 void
 generate_desc(int time_diff, rend_encoded_v2_service_descriptor_t **desc,
@@ -69,5 +74,21 @@ create_descriptor(rend_service_descriptor_t **generated, char **service_id,
 
   crypto_pk_free(pk1);
   crypto_pk_free(pk2);
+}
+
+rend_data_t *
+mock_rend_data(const char *onion_address)
+{
+  rend_data_v2_t *v2_data = tor_malloc_zero(sizeof(*v2_data));
+  rend_data_t *rend_query = &v2_data->base_;
+  rend_query->version = 2;
+
+  strlcpy(v2_data->onion_address, onion_address,
+          sizeof(v2_data->onion_address));
+  v2_data->auth_type = REND_NO_AUTH;
+  rend_query->hsdirs_fp = smartlist_new();
+  smartlist_add(rend_query->hsdirs_fp, tor_memdup("aaaaaaaaaaaaaaaaaaaaaaaa",
+                                                 DIGEST_LEN));
+  return rend_query;
 }
 

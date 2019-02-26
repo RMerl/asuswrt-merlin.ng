@@ -1,0 +1,5 @@
+moon::ipsec start
+sun::ipsec start
+carol::ipsec start
+dave::ipsec start
+moon::sleep 1

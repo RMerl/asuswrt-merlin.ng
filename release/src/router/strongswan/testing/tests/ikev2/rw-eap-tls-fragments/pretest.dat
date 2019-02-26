@@ -1,0 +1,9 @@
+moon::rm /etc/ipsec.d/cacerts/strongswanCert.pem
+carol::rm /etc/ipsec.d/cacerts/strongswanCert.pem
+moon::iptables-restore < /etc/iptables.rules
+carol::iptables-restore < /etc/iptables.rules
+moon::ipsec start
+carol::ipsec start
+moon::expect-connection rw-eap
+carol::expect-connection home
+carol::ipsec up home

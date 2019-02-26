@@ -1,0 +1,14 @@
+carol::ipsec status 2> /dev/null::home.*INSTALLED, TUNNEL::YES
+moon:: ipsec status 2> /dev/null::rw.*INSTALLED, TUNNEL::YES
+moon:: iptables -A INPUT -i eth0 -s PH_IP_CAROL -j DROP::no output expected::NO
+carol::iptables -A INPUT -i eth0 -s PH_IP_MOON -j DROP::no output expected::NO
+carol::sleep 13::no output expected::NO
+carol::cat /var/log/daemon.log::sending DPD request::YES
+carol::cat /var/log/daemon.log::retransmit.*of request::YES
+carol::cat /var/log/daemon.log::giving up after.*retransmits::YES
+carol::iptables -D INPUT -i eth0 -s PH_IP_MOON -j DROP::no output expected::NO
+moon:: iptables -D INPUT -i eth0 -s PH_IP_CAROL -j DROP::no output expected::NO
+carol::ping -c 1 -W 1 PH_IP_ALICE::trigger route::NO
+carol::sleep 1::no output expected::NO
+carol::ipsec status 2> /dev/null::home.*INSTALLED, TUNNEL::YES
+moon:: ipsec status 2> /dev/null::rw.*INSTALLED, TUNNEL::YES

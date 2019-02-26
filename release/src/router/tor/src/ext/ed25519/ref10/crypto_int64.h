@@ -3,7 +3,7 @@
 #ifndef CRYPTO_INT64_H
 #define CRYPTO_INT64_H
 
-#include "torint.h"
+#include "lib/cc/torint.h"
 #define crypto_int64 int64_t
 #define crypto_uint64 uint64_t
 

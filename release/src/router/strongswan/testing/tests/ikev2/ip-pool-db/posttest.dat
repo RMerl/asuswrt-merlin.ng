@@ -1,0 +1,9 @@
+carol::ipsec stop
+dave::ipsec stop
+moon::ipsec stop
+moon::iptables-restore < /etc/iptables.flush
+carol::iptables-restore < /etc/iptables.flush
+dave::iptables-restore < /etc/iptables.flush
+moon::ipsec pool --del bigpool 2> /dev/null
+moon::ipsec pool --del dns 2> /dev/null
+moon::ipsec pool --del nbns 2> /dev/null

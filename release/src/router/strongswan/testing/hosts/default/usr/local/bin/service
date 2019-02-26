@@ -1,0 +1,22 @@
+#!/bin/bash
+#
+# LEAK_DETECTIVE_LOG is set for automated runs, however, `service` strips
+# the environment. This wrapper is used to set the variable for the charon
+# init script.
+
+ORIG=/usr/sbin/service
+CONF=/etc/default/charon
+
+if [[ "$1" != "charon" ]]; then
+	$ORIG "$@"
+fi
+
+if [[ "$2" == "start" && -n $LEAK_DETECTIVE_LOG ]]; then
+	echo "export LEAK_DETECTIVE_LOG=$LEAK_DETECTIVE_LOG" >> $CONF
+fi
+
+$ORIG "$@"
+
+if [[ "$2" == "stop" ]]; then
+	sed -i '/LEAK_DETECTIVE_LOG/d' $CONF 2>/dev/null
+fi

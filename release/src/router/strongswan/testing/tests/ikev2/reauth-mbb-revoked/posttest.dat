@@ -1,0 +1,3 @@
+winnetou::cp /var/www/strongswan.crl.bak /var/www/strongswan.crl
+moon::ipsec stop
+carol::ipsec stop

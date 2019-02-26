@@ -1,0 +1,4 @@
+The roadwarriors <b>carol</b> and <b>dave</b> set up a connection each 
+to gateway <b>moon</b>. The authentication is based on <b>X.509 certificates</b>.
+High priority passthrough rules cause ssh connections to be exempted from both
+ESP encryption and a general drop rule for <b>moon</b>'s external eth0 interface.

@@ -1,0 +1,9 @@
+The roadwarrior <b>carol</b> sets up a connection to gateway <b>moon</b>.
+At the outset the gateway authenticates itself to the client by sending
+an IKEv2 <b>RSA signature</b> accompanied by a certificate.
+<b>carol</b> then uses the <i>Extensible Authentication Protocol</i>
+in association with an  <i>MD5</i> challenge and response protocol
+(<b>EAP-MD5</b>) to authenticate against the gateway <b>moon</b>.
+In addition to her IKEv2 identity which defaults to her IP address,
+roadwarrior <b>carol</b> uses the EAP identity <b>carol</b>.
+

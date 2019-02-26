@@ -1,0 +1,416 @@
+charon {}
+	Options for the charon IKE daemon.
+
+	Options for the charon IKE daemon.
+
+	**Note**: Many of the options in this section also apply to **charon-cmd**
+	and other **charon** derivatives.  Just use their respective name (e.g.
+	**charon-cmd** instead of **charon**). For many options defaults can be
+	defined in the **libstrongswan** section.
+
+charon.accept_unencrypted_mainmode_messages = no
+	Accept unencrypted ID and HASH payloads in IKEv1 Main Mode.
+
+	Accept unencrypted ID and HASH payloads in IKEv1 Main Mode.
+
+	Some implementations send the third Main Mode message unencrypted, probably
+	to find the PSKs for the specified ID for authentication. This is very
+	similar to Aggressive Mode, and has the same security implications: A
+	passive attacker can sniff the negotiated Identity, and start brute forcing
+	the PSK using the HASH payload.
+
+	It is recommended to keep this option to no, unless you know exactly
+	what the implications are and require compatibility to such devices (for
+	example, some SonicWall boxes).
+
+charon.block_threshold = 5
+	Maximum number of half-open IKE_SAs for a single peer IP.
+
+charon.cert_cache = yes
+	Whether relations in validated certificate chains should be cached in
+	memory.
+
+charon.cache_crls = no
+	Whether Certificate Revocation Lists (CRLs) fetched via HTTP or LDAP should
+	be saved under a unique file name derived from the public key of the
+	Certification Authority (CA) to **/etc/ipsec.d/crls** (stroke) or
+	**/etc/swanctl/x509crl** (vici), respectively.
+
+charon.cisco_unity = no
+	Send Cisco Unity vendor ID payload (IKEv1 only).
+
+charon.close_ike_on_child_failure = no
+	Close the IKE_SA if setup of the CHILD_SA along with IKE_AUTH failed.
+
+charon.cookie_threshold = 10
+	Number of half-open IKE_SAs that activate the cookie mechanism.
+
+charon.crypto_test.bench = no
+	Benchmark crypto algorithms and order them by efficiency.
+
+charon.crypto_test.bench_size = 1024
+	Buffer size used for crypto benchmark.
+
+charon.crypto_test.bench_time = 50
+	Time in ms during which crypto algorithm performance is measured.
+
+charon.crypto_test.on_add = no
+	Test crypto algorithms during registration (requires test vectors provided
+	by the _test-vectors_ plugin).
+
+charon.crypto_test.on_create = no
+	Test crypto algorithms on each crypto primitive instantiation.
+
+charon.crypto_test.required = no
+	Strictly require at least one test vector to enable an algorithm.
+
+charon.crypto_test.rng_true = no
+	Whether to test RNG with TRUE quality; requires a lot of entropy.
+
+charon.delete_rekeyed = no
+	Delete CHILD_SAs right after they got successfully rekeyed (IKEv1 only).
+
+	Delete CHILD_SAs right after they got successfully rekeyed (IKEv1 only).
+	Reduces the number of stale CHILD_SAs in scenarios with a lot of rekeyings.
+	However, this might cause problems with implementations that continue to
+	use rekeyed SAs until they expire.
+
+charon.delete_rekeyed_delay = 5
+	Delay in seconds until inbound IPsec SAs are deleted after rekeyings (IKEv2
+	only).
+
+	Delay in seconds until inbound IPsec SAs are deleted after rekeyings (IKEv2
+	only). To process delayed packets the inbound part of a CHILD_SA is kept
+	installed up to the configured number of seconds after it got replaced
+	during a rekeying. If set to 0 the CHILD_SA will be kept installed until it
+	expires (if no lifetime is set it will be destroyed immediately).
+
+charon.dh_exponent_ansi_x9_42 = yes
+	Use ANSI X9.42 DH exponent size or optimum size matched to cryptographic
+	strength.
+
+charon.dlopen_use_rtld_now = no
+	Use RTLD_NOW with dlopen when loading plugins and IMV/IMCs to reveal missing
+	symbols immediately.
+
+charon.dns1
+	DNS server assigned to peer via configuration payload (CP).
+
+charon.dns2
+	DNS server assigned to peer via configuration payload (CP).
+
+charon.dos_protection = yes
+	Enable Denial of Service protection using cookies and aggressiveness checks.
+
+charon.ecp_x_coordinate_only = yes
+	Compliance with the errata for RFC 4753.
+
+charon.flush_auth_cfg = no
+	Free objects during authentication (might conflict with plugins).
+
+	If enabled objects used during authentication (certificates, identities
+	etc.) are released to free memory once an IKE_SA is established. Enabling
+	this might conflict with plugins that later need access to e.g. the used
+	certificates.
+
+charon.follow_redirects = yes
+	Whether to follow IKEv2 redirects (RFC 5685).
+
+charon.fragment_size = 1280
+	Maximum size (complete IP datagram size in bytes) of a sent IKE fragment
+	when using proprietary IKEv1 or standardized IKEv2 fragmentation, defaults
+	to 1280 (use 0 for address family specific default values, which uses a
+	lower value for IPv4).  If specified this limit is used for both IPv4 and
+	IPv6.
+
+charon.group
+	Name of the group the daemon changes to after startup.
+
+charon.half_open_timeout = 30
+	Timeout in seconds for connecting IKE_SAs (also see IKE_SA_INIT DROPPING).
+
+charon.hash_and_url = no
+	Enable hash and URL support.
+
+charon.host_resolver.max_threads = 3
+	Maximum number of concurrent resolver threads (they are terminated if
+	unused).
+
+charon.host_resolver.min_threads = 0
+	Minimum number of resolver threads to keep around.
+
+charon.i_dont_care_about_security_and_use_aggressive_mode_psk = no
+	Allow IKEv1 Aggressive Mode with pre-shared keys as responder.
+
+	If enabled responders are allowed to use IKEv1 Aggressive Mode with
+	pre-shared keys, which is discouraged due to security concerns (offline
+	attacks on the openly transmitted hash of the PSK).
+
+charon.ignore_routing_tables
+	A space-separated list of routing tables to be excluded from route lookups.
+
+charon.ignore_acquire_ts = no
+	Whether to ignore the traffic selectors from the kernel's acquire events for
+	IKEv2 connections (they are not used for IKEv1).
+
+	If this is disabled the traffic selectors from the kernel's acquire events,
+	which are derived from the triggering packet, are prepended to the traffic
+	selectors from the configuration for IKEv2 connection. By enabling this,
+	such specific traffic selectors will be ignored and only the ones in the
+	config will	be sent. This always happens for IKEv1 connections as the
+	protocol only supports one set of traffic selectors per CHILD_SA.
+
+charon.ikesa_limit = 0
+	Maximum number of IKE_SAs that can be established at the same time before
+	new connection attempts are blocked.
+
+charon.ikesa_table_segments = 1
+	Number of exclusively locked segments in the hash table.
+
+charon.ikesa_table_size = 1
+	Size of the IKE_SA hash table.
+
+charon.inactivity_close_ike = no
+	Whether to close IKE_SA if the only CHILD_SA closed due to inactivity.
+
+charon.init_limit_half_open = 0
+	Limit new connections based on the current number of half open IKE_SAs, see
+	IKE_SA_INIT DROPPING in **strongswan.conf**(5).
+
+charon.init_limit_job_load = 0
+	Limit new connections based on the number of queued jobs.
+
+	Limit new connections based on the number of jobs currently queued for
+	processing (see IKE_SA_INIT DROPPING).
+
+charon.initiator_only = no
+	Causes charon daemon to ignore IKE initiation requests.
+
+charon.install_routes = yes
+	Install routes into a separate routing table for established IPsec tunnels.
+
+charon.install_virtual_ip = yes
+	Install virtual IP addresses.
+
+charon.install_virtual_ip_on
+	The name of the interface on which virtual IP addresses should be installed.
+
+	The name of the interface on which virtual IP addresses should be installed.
+	If not specified the addresses will be installed on the outbound interface.
+
+charon.integrity_test = no
+	Check daemon, libstrongswan and plugin integrity at startup.
+
+charon.interfaces_ignore
+	A comma-separated list of network interfaces that should be ignored, if
+	**interfaces_use** is specified this option has no effect.
+
+charon.interfaces_use
+	A comma-separated list of network interfaces that should be used by charon.
+	All other interfaces are ignored.
+
+charon.keep_alive = 20s
+	NAT keep alive interval.
+
+charon.leak_detective.detailed = yes
+	Includes source file names and line numbers in leak detective output.
+
+charon.leak_detective.usage_threshold = 10240
+	Threshold in bytes for leaks to be reported (0 to report all).
+
+charon.leak_detective.usage_threshold_count = 0
+	Threshold in number of allocations for leaks to be reported (0 to report
+	all).
+
+charon.load
+	Plugins to load in the IKE daemon charon.
+
+charon.load_modular = no
+	Determine plugins to load via each plugin's load option.
+
+	If enabled, the list of plugins to load is determined via the value of the
+	_charon.plugins.<name>.load_ options.  In addition to a simple boolean flag
+	that option may take an integer value indicating the priority of a plugin,
+	which would influence the order of a plugin in the plugin list (the default
+	is 1). If two plugins have the same priority their order in the default
+	plugin list is preserved. Enabled plugins not found in that list are ordered
+	alphabetically before other plugins with the same priority.
+
+charon.max_ikev1_exchanges = 3
+	Maximum number of IKEv1 phase 2 exchanges per IKE_SA to keep state about and
+	track concurrently.
+
+charon.max_packet = 10000
+	Maximum packet size accepted by charon.
+
+charon.make_before_break = no
+	Initiate IKEv2 reauthentication with a make-before-break scheme.
+
+	Initiate IKEv2 reauthentication with a make-before-break instead of a
+	break-before-make scheme. Make-before-break uses overlapping IKE and
+	CHILD_SA during reauthentication by first recreating all new SAs before
+	deleting the old ones. This behavior can be beneficial to avoid connectivity
+	gaps during reauthentication, but requires support for overlapping SAs by
+	the peer. strongSwan can handle such overlapping SAs since version 5.3.0.
+
+charon.multiple_authentication = yes
+	Enable multiple authentication exchanges (RFC 4739).
+
+charon.nbns1
+	WINS servers assigned to peer via configuration payload (CP).
+
+charon.nbns2
+	WINS servers assigned to peer via configuration payload (CP).
+
+charon.port = 500
+	UDP port used locally. If set to 0 a random port will be allocated.
+
+charon.port_nat_t = 4500
+	UDP port used locally in case of NAT-T. If set to 0 a random port will be
+	allocated.  Has to be different from **charon.port**, otherwise a random
+	port will be allocated.
+
+charon.prefer_best_path = no
+	Whether to prefer updating SAs to the path with the best route.
+
+	By default, charon keeps SAs on the routing path with addresses it
+	previously used if that path is still usable. By setting this option to
+	yes, it tries more aggressively to update SAs with MOBIKE on routing
+	priority changes using the cheapest path. This adds more noise, but allows
+	to dynamically adapt SAs to routing priority changes. This option has no
+	effect if MOBIKE is not supported or disabled.
+
+charon.prefer_configured_proposals = yes
+	Prefer locally configured proposals for	IKE/IPsec over supplied ones as
+	responder (disabling this can avoid keying retries due to INVALID_KE_PAYLOAD
+	notifies).
+
+charon.prefer_temporary_addrs = no
+	By default public IPv6 addresses are preferred over temporary ones (RFC
+	4941), to make connections more stable. Enable this option to reverse this.
+
+charon.process_route = yes
+	Process RTM_NEWROUTE and RTM_DELROUTE events.
+
+charon.processor.priority_threads {}
+	Section to configure the number of reserved threads per priority class
+	see JOB PRIORITY MANAGEMENT in **strongswan.conf**(5).
+
+charon.receive_delay = 0
+	Delay in ms for receiving packets, to simulate larger RTT.
+
+charon.receive_delay_response = yes
+	Delay response messages.
+
+charon.receive_delay_request = yes
+	Delay request messages.
+
+charon.receive_delay_type = 0
+	Specific IKEv2 message type to delay, 0 for any.
+
+charon.replay_window = 32
+	Size of the AH/ESP replay window, in packets.
+
+charon.retransmit_base = 1.8
+	Base to use for calculating exponential back off, see IKEv2 RETRANSMISSION
+	in **strongswan.conf**(5).
+
+charon.retransmit_timeout = 4.0
+	Timeout in seconds before sending first retransmit.
+
+charon.retransmit_tries = 5
+	Number of times to retransmit a packet before giving up.
+
+charon.retransmit_jitter = 0
+	Maximum jitter in percent to apply randomly to calculated retransmission
+	timeout (0 to disable).
+
+charon.retransmit_limit = 0
+	Upper limit in seconds for calculated retransmission timeout (0 to disable).
+
+charon.retry_initiate_interval = 0
+	Interval in seconds to use when retrying to initiate an IKE_SA (e.g. if DNS
+	resolution failed), 0 to disable retries.
+
+charon.reuse_ikesa = yes
+	Initiate CHILD_SA within existing IKE_SAs (always enabled for IKEv1).
+
+charon.routing_table
+	Numerical routing table to install routes to.
+
+charon.routing_table_prio
+	Priority of the routing table.
+
+charon.rsa_pss = no
+	Whether to use RSA with PSS padding instead of PKCS#1 padding by default.
+
+charon.send_delay = 0
+	Delay in ms for sending packets, to simulate larger RTT.
+
+charon.send_delay_response = yes
+	Delay response messages.
+
+charon.send_delay_request = yes
+	Delay request messages.
+
+charon.send_delay_type = 0
+	Specific IKEv2 message type to delay, 0 for any.
+
+charon.send_vendor_id = no
+	Send strongSwan vendor ID payload
+
+charon.signature_authentication = yes
+	Whether to enable Signature Authentication as per RFC 7427.
+
+charon.signature_authentication_constraints = yes
+	Whether to enable constraints against IKEv2 signature schemes.
+
+	If enabled, signature schemes configured in _rightauth_, in addition to
+	getting used as constraints against signature schemes employed in the
+	certificate chain, are also used as constraints against the signature scheme
+	used by peers during IKEv2.
+
+charon.spi_min = 0xc0000000
+	The lower limit for SPIs requested from the kernel for IPsec SAs.
+
+	The lower limit for SPIs requested from the kernel for IPsec SAs. Should not
+	be set lower than 0x00000100 (256), as SPIs between 1 and 255 are reserved
+	by IANA.
+
+charon.spi_max = 0xcfffffff
+	The upper limit for SPIs requested from the kernel for IPsec SAs.
+
+charon.start-scripts {}
+	Section containing a list of scripts (name = path) that are executed when
+	the daemon is started.
+
+charon.stop-scripts {}
+	Section containing a list of scripts (name = path) that are executed when
+	the daemon is terminated.
+
+charon.threads = 16
+	Number of worker threads in charon.
+
+	Number of worker threads in charon. Several of these are reserved for long
+	running tasks in internal modules and plugins. Therefore, make sure you
+	don't set this value too low. The number of idle worker threads listed in
+	_ipsec statusall_ might be used as indicator on the number of reserved
+	threads.
+
+charon.tls.cipher
+	List of TLS encryption ciphers.
+
+charon.tls.key_exchange
+	List of TLS key exchange methods.
+
+charon.tls.mac
+	List of TLS MAC algorithms.
+
+charon.tls.suites
+	List of TLS cipher suites.
+
+charon.user
+	Name of the user the daemon changes to after startup.
+
+charon.x509.enforce_critical = yes
+	Discard certificates with unsupported or unknown critical extensions.

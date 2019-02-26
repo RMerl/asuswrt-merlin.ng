@@ -1,4 +1,4 @@
-# Copyright 2013-2015, The Tor Project, Inc
+# Copyright 2013-2019, The Tor Project, Inc
 # See LICENSE for licensing information
 
 """
@@ -44,10 +44,12 @@ print("BAD")
 for l in LINES:
     print("{}".format(l), end="")
 
-if sys.platform.startswith('freebsd'):
-    # See bug #17808 if you know how to fix this.
-    print("Test failed; but FreeBSD is known to have backtrace problems.\n"
-          "Treating as 'SKIP'.")
+if (sys.platform.startswith('freebsd') or sys.platform.startswith('netbsd') or
+    sys.platform.startswith('openbsd') or sys.platform.startswith('darwin')):
+    # See bug #17808 if you know how to fix backtraces on BSD-derived systems
+    print("Test failed; but {} is known to have backtrace problems."
+          .format(sys.platform))
+    print("Treating as 'SKIP'.")
     sys.exit(77)
 
 sys.exit(1)

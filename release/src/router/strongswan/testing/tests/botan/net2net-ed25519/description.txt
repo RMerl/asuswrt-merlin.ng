@@ -1,0 +1,10 @@
+A connection between the subnets behind the gateways <b>moon</b> and <b>sun</b> is set up.
+The authentication is based on <b>X.509 certificates</b> containing <b>Ed25519</b> keys.
+<b>moon</b> uses the botan plugin based on the Botan library for all
+cryptographical functions whereas <b>sun</b> uses the default strongSwan
+cryptographical plugins.
+<p/>
+Upon the successful establishment of the IPsec tunnel, the updown script automatically
+inserts iptables-based firewall rules that let pass the tunneled traffic.
+In order to test both tunnel and firewall, client <b>alice</b> behind gateway <b>moon</b>
+pings client <b>bob</b> located behind gateway <b>sun</b>.

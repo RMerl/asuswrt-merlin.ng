@@ -1,0 +1,22 @@
+
+noinst_LIBRARIES += src/lib/libtor-wallclock.a
+
+if UNITTESTS_ENABLED
+noinst_LIBRARIES += src/lib/libtor-wallclock-testing.a
+endif
+
+src_lib_libtor_wallclock_a_SOURCES =			\
+	src/lib/wallclock/approx_time.c			\
+	src/lib/wallclock/time_to_tm.c			\
+	src/lib/wallclock/tor_gettimeofday.c
+
+src_lib_libtor_wallclock_testing_a_SOURCES = \
+	$(src_lib_libtor_wallclock_a_SOURCES)
+src_lib_libtor_wallclock_testing_a_CPPFLAGS = $(AM_CPPFLAGS) $(TEST_CPPFLAGS)
+src_lib_libtor_wallclock_testing_a_CFLAGS = $(AM_CFLAGS) $(TEST_CFLAGS)
+
+noinst_HEADERS +=					\
+	src/lib/wallclock/approx_time.h			\
+	src/lib/wallclock/timeval.h			\
+	src/lib/wallclock/time_to_tm.h			\
+	src/lib/wallclock/tor_gettimeofday.h

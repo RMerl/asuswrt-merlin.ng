@@ -1,0 +1,9 @@
+carol::cat /var/log/daemon.log::authentication of 'moon.strongswan.org' with RSA_EMSA_PKCS1_NULL successful::YES
+moon:: cat /var/log/daemon.log::XAuth authentication of 'carol@strongswan.org' successful::YES
+moon:: ipsec status 2> /dev/null::rw.*ESTABLISHED.*moon.strongswan.org.*carol@strongswan.org::YES
+carol::ipsec status 2> /dev/null::home.*ESTABLISHED.*carol@strongswan.org.*moon.strongswan.org::YES
+moon:: ipsec status 2> /dev/null::rw.*INSTALLED, TUNNEL::YES
+carol::ipsec status 2> /dev/null::home.*INSTALLED, TUNNEL::YES
+carol::ping -c 1 PH_IP_ALICE::64 bytes from PH_IP_ALICE: icmp_.eq=1::YES
+moon::tcpdump::IP carol.strongswan.org > moon.strongswan.org: ESP::YES
+moon::tcpdump::IP moon.strongswan.org > carol.strongswan.org: ESP::YES

@@ -1,0 +1,8 @@
+carol::swanctl --terminate --ike home 2> /dev/null
+dave::swanctl --terminate --ike home 2> /dev/null
+carol::systemctl stop strongswan-swanctl
+dave::systemctl stop strongswan-swanctl
+moon::systemctl stop strongswan-swanctl
+moon::iptables-restore < /etc/iptables.flush
+carol::iptables-restore < /etc/iptables.flush
+dave::iptables-restore < /etc/iptables.flush

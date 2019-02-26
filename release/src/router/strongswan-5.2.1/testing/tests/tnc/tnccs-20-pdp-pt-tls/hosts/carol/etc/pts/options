@@ -1,6 +1,0 @@
---connect aaa.strongswan.org
---client carol
---secret "Ar3etTnp"
---cert /etc/ipsec.d/cacerts/strongswanCert.pem
---quiet
---debug 2

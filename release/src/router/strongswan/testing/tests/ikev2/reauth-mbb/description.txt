@@ -1,0 +1,7 @@
+This scenario tests <b>make-before-break reauthentication</b> using overlapping
+IKE_SAs by setting the <i>make_before_break</i> strongswan.conf option. The
+initiator <b>carol</b> reauthenticates the IKE_SA with host <b>moon</b> using
+<b>ikelifetime=10s</b>, but does not close the old IKE_SA before the replacement
+CHILD_SA is in place. A constant ping from <b>carol</b> to client <b>alice</b>
+hiding in the subnet behind <b>moon</b> tests if the CHILD_SA works during the
+whole procedure.

@@ -1,0 +1,5 @@
+starter.config_file = ${sysconfdir}/ipsec.conf
+	Location of the ipsec.conf file
+
+starter.load_warning = yes
+	Disable charon plugin load option warning.

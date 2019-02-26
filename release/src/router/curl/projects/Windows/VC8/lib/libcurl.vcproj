@@ -4588,10 +4588,6 @@
 				Name="Source Files"
 				>
 				<File
-					RelativePath="..\..\..\..\lib\vtls\axtls.c"
-				>
-				</File>
-				<File
 					RelativePath="..\..\..\..\lib\vtls\cyassl.c"
 				>
 				</File>
@@ -4647,10 +4643,6 @@
 			<Filter
 				Name="Header Files"
 				>
-				<File
-					RelativePath="..\..\..\..\lib\vtls\axtls.h"
-				>
-				</File>
 				<File
 					RelativePath="..\..\..\..\lib\vtls\cyassl.h"
 				>

@@ -1,0 +1,4 @@
+The roadwarrior <b>carol</b> possesses a certificate issued by the Research CA.
+The CRL for the root CA can't be fetched and thus the status of the certificate
+of the Research CA is unknown and the authentication is rejected due to the
+strict CRL policy enforced by the gateway <b>moon</b>.

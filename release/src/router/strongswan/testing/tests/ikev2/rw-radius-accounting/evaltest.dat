@@ -1,0 +1,14 @@
+carol::cat /var/log/daemon.log::authentication of .*moon.strongswan.org.* with RSA.* successful::YES
+moon:: cat /var/log/daemon.log::received EAP identity .*carol::YES
+carol::cat /var/log/daemon.log::server requested EAP_MD5 authentication::YES
+carol::cat /var/log/daemon.log::authentication of .*moon.strongswan.org.* with EAP successful::YES
+moon:: cat /var/log/daemon.log::authentication of .*carol@strongswan.org.* with EAP successful::YES
+moon:: ipsec status 2> /dev/null::rw-eap.*ESTABLISHED.*moon.strongswan.org.*carol@strongswan.org::YES
+carol::ipsec status 2> /dev/null::home.*ESTABLISHED.*carol@strongswan.org.*moon.strongswan.org::YES
+carol::ping -c 5 -s 1392 PH_IP_ALICE::1400 bytes from PH_IP_ALICE::YES
+carol::ipsec down home 2> /dev/null::no output expected::NO
+moon::tcpdump::IP carol.strongswan.org > moon.strongswan.org: ESP::YES
+moon::tcpdump::IP moon.strongswan.org > carol.strongswan.org: ESP::YES
+alice::cat /var/log/freeradius/radacct/PH_IP_MOON1/*::User-Name =.*carol::YES
+alice::cat /var/log/freeradius/radacct/PH_IP_MOON1/*::Acct-Output-Octets = 7100::YES
+alice::cat /var/log/freeradius/radacct/PH_IP_MOON1/*::Acct-Input-Octets = 7100::YES

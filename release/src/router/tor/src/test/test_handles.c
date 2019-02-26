@@ -1,11 +1,13 @@
-/* Copyright (c) 2016, The Tor Project, Inc. */
+/* Copyright (c) 2016-2019, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 #include "orconfig.h"
-#include "test.h"
+#include "test/test.h"
 
-#include "util.h"
-#include "handles.h"
+#include "lib/container/handles.h"
+#include "lib/log/util_bug.h"
+
+#include <stdio.h>
 
 typedef struct demo_t {
   HANDLE_ENTRY(demo, demo_t);
@@ -13,6 +15,8 @@ typedef struct demo_t {
 } demo_t;
 
 HANDLE_DECL(demo, demo_t, static)
+#define demo_handle_free(h)    \
+  FREE_AND_NULL(demo_handle_t, demo_handle_free_, (h))
 HANDLE_IMPL(demo, demo_t, static)
 
 static demo_t *
@@ -92,4 +96,3 @@ struct testcase_t handle_tests[] = {
   HANDLE_TEST(basic, 0),
   END_OF_TESTCASES
 };
-

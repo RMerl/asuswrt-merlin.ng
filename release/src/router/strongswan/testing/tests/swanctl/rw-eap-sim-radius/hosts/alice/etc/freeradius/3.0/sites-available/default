@@ -1,0 +1,59 @@
+server default {
+
+listen {
+  type = auth
+  ipaddr = 10.1.0.10
+  port = 0
+}
+
+authorize {
+  preprocess
+  suffix
+  files
+  eap {
+    ok = return
+  }
+  expiration
+  logintime
+}
+
+authenticate {
+  eap
+}
+
+preacct {
+  preprocess
+  acct_unique
+  suffix
+  files
+}
+
+accounting {
+  detail
+  unix
+  radutmp
+  exec
+  attr_filter.accounting_response
+}
+
+session {
+  radutmp
+}
+
+post-auth {
+  exec
+  Post-Auth-Type REJECT {
+    attr_filter.access_reject
+    eap
+    remove_reply_message_if_eap
+  }
+}
+
+pre-proxy {
+}
+
+post-proxy {
+  eap
+}
+
+}

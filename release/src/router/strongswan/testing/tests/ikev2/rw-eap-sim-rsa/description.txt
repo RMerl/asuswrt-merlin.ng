@@ -1,0 +1,8 @@
+The roadwarrior <b>carol</b> sets up a connection to gateway <b>moon</b>.
+At the outset the gateway authenticates itself to the client by sending
+an IKEv2 <b>digital signature</b> accompanied by an X.509 certificate.
+<p/>
+Next <b>carol</b> uses the GSM <i>Subscriber Identity Module</i> (<b>EAP-SIM</b>)
+method of the <i>Extensible Authentication Protocol</i> to authenticate herself.
+In this scenario triplets from the file <b>/etc/ipsec.d/triplets.dat</b> are used
+instead of a physical SIM card.

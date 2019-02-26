@@ -534,13 +534,13 @@ void rc_strongswan_conf_set()
                 "  user = %s\n"
                 "  threads = %d\n"
                 "  send_vendor_id = yes\n"
-                "  duplicheck.enable = no\n"
                 "  interfaces_ignore = %s\n"
                 "  starter { load_warning = no }\n\n"
                 "  load_modular = yes\n\n"
                 "  i_dont_care_about_security_and_use_aggressive_mode_psk = yes\n\n"
                 "  plugins {\n    include strongswan.d/charon/*.conf\n  }\n"
-                "  filelog {\n      /var/log/strongswan.charon.log {\n"
+                "  filelog {\n      charon {\n"
+		"        path = /var/log/strongswan.charon.log\n"
                 "        time_format = %%b %%e %%T\n        default = %d\n"
                 "        append = no\n        flush_line = yes\n"
                 "     }\n  }\n",
@@ -1348,7 +1348,7 @@ void rc_ipsec_topology_set()
 
     memset(p_tmp, 0, sizeof(char) * SZ_MIN);
     fp = fopen("/tmp/etc/ipsec.conf", "w");
-    fprintf(fp,"conn %%default\n  keyexchange=ikev1\n  authby=secret\n\n");
+    fprintf(fp,"conn %%default\n  keyexchange=ikev1\n  authby=secret\n  ike=aes256-sha1-modp1024\n");
 
 	for(prof_count = PROF_CLI; prof_count < PROF_ALL; prof_count++){
 	    for(i = 0; i < MAX_PROF_NUM; i++){

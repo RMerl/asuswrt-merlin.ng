@@ -1,4 +1,4 @@
-/* Copyright (c) 2012-2016, The Tor Project, Inc. */
+/* Copyright (c) 2012-2019, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 #include "orconfig.h"
@@ -6,12 +6,11 @@
 #include <stdlib.h>
 
 #define ONION_NTOR_PRIVATE
-#include "or.h"
-#include "util.h"
-#include "compat.h"
-#include "crypto.h"
-#include "crypto_curve25519.h"
-#include "onion_ntor.h"
+#include "core/or/or.h"
+#include "lib/crypt_ops/crypto_cipher.h"
+#include "lib/crypt_ops/crypto_curve25519.h"
+#include "lib/crypt_ops/crypto_init.h"
+#include "core/crypto/onion_ntor.h"
 
 #define N_ARGS(n) STMT_BEGIN {                                  \
     if (argc < (n)) {                                           \
@@ -155,7 +154,11 @@ main(int argc, char **argv)
     return 1;
   }
 
+  init_logging(1);
   curve25519_init();
+  if (crypto_global_init(0, NULL, NULL) < 0)
+    return 1;
+
   if (!strcmp(argv[1], "client1")) {
     return client1(argc, argv);
   } else if (!strcmp(argv[1], "server1")) {
@@ -167,4 +170,3 @@ main(int argc, char **argv)
     return 1;
   }
 }
-

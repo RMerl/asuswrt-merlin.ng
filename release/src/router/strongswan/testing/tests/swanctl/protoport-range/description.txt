@@ -1,0 +1,7 @@
+Using <b>[&lt;protocol&gt;/&lt;port&gt;]</b> selectors in the
+<b>local_ts</b> and <b>remote_ts</b> child parameters, three IPsec tunnels
+between the roadwarrior <b>carol</b> and the gateway <b>moon</b> are defined.
+The first CHILD_SA is restricted to ICMP request packets, the second
+covers ICMP reply pachets and the third TCP-based FTP and SSH connections.
+The established tunnels are tested by <b>carol</b> by first pinging <b>alice</b>
+behind <b>moon</b> and then setting up an SSH session to the same client.

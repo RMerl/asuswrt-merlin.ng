@@ -1,0 +1,11 @@
+The roadwarriors <b>carol</b> and <b>dave</b> set up a connection each
+to gateway <b>moon</b>. The authentication is based on <b>X.509 certificates</b>
+and includes a <b>Postquantum Preshared Key (PPK)</b> that's also mixed into the
+derived key material. The PPK_ID used by <b>dave</b> is unknown to <b>moon</b>
+but since both peers don't enforce the use of a PPK they fall back to regular
+authentication by use of the authentication data provided in the NO_PPK_AUTH
+notify.
+Upon the successful establishment of the IPsec tunnels, the updown script
+automatically inserts iptables-based firewall rules that let pass the tunneled traffic.
+In order to test both tunnel and firewall, both <b>carol</b> and <b>dave</b> ping
+the client <b>alice</b> behind the gateway <b>moon</b>.

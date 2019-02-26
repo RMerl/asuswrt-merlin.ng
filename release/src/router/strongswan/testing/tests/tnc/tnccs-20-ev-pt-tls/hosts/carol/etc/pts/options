@@ -1,0 +1,6 @@
+--connect aaa.strongswan.org
+--client carol
+--secret "Ar3etTnp"
+--cert /etc/swanctl/x509ca/strongswanCert.pem
+--quiet
+--debug 2

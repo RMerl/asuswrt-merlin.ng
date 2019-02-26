@@ -1,0 +1,15 @@
+The roadwarriors <b>carol</b> and <b>dave</b> set up a connection to gateway <b>moon</b>.
+At the outset the gateway does not send an AUTH payload thus signalling
+a mutual <b>EAP-only</b> authentication.
+<p/>
+Next the clients use the GSM <i>Subscriber Identity Module</i> (<b>EAP-SIM</b>)
+method of the <i>Extensible Authentication Protocol</i> to authenticate themselves.
+In this scenario triplets from the file <b>/etc/ipsec.d/triplets.dat</b> are used
+instead of a physical SIM card.
+<p/>
+The gateway forwards all EAP messages to the RADIUS server <b>alice</b>
+which also uses static triplets.
+<p/>
+The roadwarrior <b>dave</b> sends wrong EAP-SIM triplets. As a consequence
+the RADIUS server <b>alice</b> returns an <b>Access-Reject</b> message
+and the gateway <b>moon</b> sends back <b>EAP_FAILURE</b>.

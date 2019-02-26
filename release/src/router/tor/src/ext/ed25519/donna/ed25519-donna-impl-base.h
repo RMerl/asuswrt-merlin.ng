@@ -6,15 +6,15 @@ DONNA_INLINE static void
 ge25519_p1p1_to_partial(ge25519 *r, const ge25519_p1p1 *p) {
 	curve25519_mul(r->x, p->x, p->t);
 	curve25519_mul(r->y, p->y, p->z);
-	curve25519_mul(r->z, p->z, p->t); 
+	curve25519_mul(r->z, p->z, p->t);
 }
 
 DONNA_INLINE static void
 ge25519_p1p1_to_full(ge25519 *r, const ge25519_p1p1 *p) {
 	curve25519_mul(r->x, p->x, p->t);
 	curve25519_mul(r->y, p->y, p->z);
-	curve25519_mul(r->z, p->z, p->t); 
-	curve25519_mul(r->t, p->x, p->y); 
+	curve25519_mul(r->z, p->z, p->t);
+	curve25519_mul(r->t, p->x, p->y);
 }
 
 static void
@@ -249,7 +249,7 @@ ge25519_unpack_negative_vartime(ge25519 *r, const unsigned char p[32]) {
 #define S2_TABLE_SIZE (1<<(S2_SWINDOWSIZE-2))
 
 /* computes [s1]p1 + [s2]basepoint */
-static void 
+static void
 ge25519_double_scalarmult_vartime(ge25519 *r, const ge25519 *p1, const bignum256modm s1, const bignum256modm s2) {
 	signed char slide1[256], slide2[256];
 	ge25519_pniels pre1[S1_TABLE_SIZE];
@@ -336,6 +336,7 @@ ge25519_scalarmult_base_niels(ge25519 *r, const uint8_t basepoint_table[256][96]
 	signed char b[64];
 	uint32_t i;
 	ge25519_niels t;
+        memset(&t, 0, sizeof(t));
 
 	contract256_window4_modm(b, s);
 
@@ -344,7 +345,7 @@ ge25519_scalarmult_base_niels(ge25519 *r, const uint8_t basepoint_table[256][96]
 	curve25519_add_reduce(r->y, t.xaddy, t.ysubx);
 	memset(r->z, 0, sizeof(bignum25519));
 	curve25519_copy(r->t, t.t2d);
-	r->z[0] = 2;	
+	r->z[0] = 2;
 	for (i = 3; i < 64; i += 2) {
 		ge25519_scalarmult_base_choose_niels(&t, basepoint_table, i / 2, b[i]);
 		ge25519_nielsadd2(r, &t);
@@ -361,4 +362,3 @@ ge25519_scalarmult_base_niels(ge25519 *r, const uint8_t basepoint_table[256][96]
 		ge25519_nielsadd2(r, &t);
 	}
 }
-

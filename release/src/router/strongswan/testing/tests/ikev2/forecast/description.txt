@@ -1,0 +1,8 @@
+The roadwarriors <b>carol</b> and <b>dave</b> set up a connection each to
+gateway <b>moon</b> and request a <b>virtual IP</b>. <b>moon</b> negotiates
+broadcast and multicast traffic selectors with the clients, and uses
+<i>%unique</i> marks to avoid any policy conflicts. The enabled <i>forecast</i>
+plugin on <b>moon</b> installs the required Netfilter rules to make use of these
+policies, and additionally starts forwarding broadcast and multicast packets
+between the clients.<br/>
+To test forwarding, the hosts send multicast and broadcast ping messages.

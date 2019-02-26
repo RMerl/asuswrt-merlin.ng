@@ -1,0 +1,14 @@
+dave::cat /var/log/daemon.log::updown approximates remote TS 10.1.0.17..10.1.0.20 by next larger subnet::YES
+moon::cat /var/log/daemon.log::updown approximates local TS 10.1.0.17..10.1.0.20 by next larger subnet::YES
+alice::ping -c 1 192.168.0.100::64 bytes from 192.168.0.100: icmp_.eq=1::YES
+venus::ping -c 1 192.168.0.200::64 bytes from 192.168.0.200: icmp_.eq=1::YES
+alice::ping -c 1 -W 1 192.168.0.200::64 bytes from 192.168.0.200: icmp_.eq=1::NO
+venus::ping -c 1 -W 1 192.168.0.100::64 bytes from 192.168.0.100: icmp_.eq=1::NO
+carol::swanctl --list-sas --raw 2> /dev/null::home.*version=1 state=ESTABLISHED local-host=192.168.0.100 local-port=500 local-id=192.168.0.100 remote-host=192.168.0.1 remote-port=500 remote-id=192.168.0.1 initiator=yes.*encr-alg=AES_CBC encr-keysize=128 integ-alg=HMAC_SHA2_256_128 prf-alg=PRF_HMAC_SHA2_256 dh-group=CURVE_25519.*child-sas.*home.*state=INSTALLED mode=TUNNEL.*ESP.*encr-alg=AES_GCM_16 encr-keysize=128.*local-ts=\[192.168.0.100/32] remote-ts=\[10.1.0.0/28]::YES
+dave:: swanctl --list-sas --raw 2> /dev/null::home.*version=1 state=ESTABLISHED local-host=192.168.0.200 local-port=500 local-id=192.168.0.200 remote-host=192.168.0.1 remote-port=500 remote-id=192.168.0.1 initiator=yes.*encr-alg=AES_CBC encr-keysize=192 integ-alg=HMAC_SHA2_384_192 prf-alg=PRF_HMAC_SHA2_384 dh-group=MODP_4096.*child-sas.*home.*state=INSTALLED mode=TUNNEL.*ESP.*encr-alg=AES_GCM_16 encr-keysize=192.*local-ts=\[192.168.0.200/32] remote-ts=\[10.1.0.17..10.1.0.20]::YES
+moon:: swanctl --list-sas --ike-id 1 --raw 2> /dev/null::rw-1.*version=1 state=ESTABLISHED local-host=192.168.0.1 local-port=500 local-id=192.168.0.1 remote-host=192.168.0.100 remote-port=500 remote-id=192.168.0.100.*encr-alg=AES_CBC encr-keysize=128 integ-alg=HMAC_SHA2_256_128 prf-alg=PRF_HMAC_SHA2_256 dh-group=CURVE_25519.*child-sas.*net-1.*reqid=1 state=INSTALLED mode=TUNNEL.*ESP.*encr-alg=AES_GCM_16 encr-keysize=128.*local-ts=\[10.1.0.0/28] remote-ts=\[192.168.0.100/32]::YES
+moon:: swanctl --list-sas --ike-id 2 --raw 2> /dev/null::rw-2.*version=1 state=ESTABLISHED local-host=192.168.0.1 local-port=500 local-id=192.168.0.1 remote-host=192.168.0.200 remote-port=500 remote-id=192.168.0.200.*encr-alg=AES_CBC encr-keysize=192 integ-alg=HMAC_SHA2_384_192 prf-alg=PRF_HMAC_SHA2_384 dh-group=MODP_4096.*child-sas.*net-2.*state=INSTALLED mode=TUNNEL.*ESP.*encr-alg=AES_GCM_16 encr-keysize=192.*local-ts=\[10.1.0.17..10.1.0.20] remote-ts=\[192.168.0.200/32]::YES
+moon::tcpdump::IP moon.strongswan.org > carol.strongswan.org: ESP::YES
+moon::tcpdump::IP carol.strongswan.org > moon.strongswan.org: ESP::YES
+moon::tcpdump::IP moon.strongswan.org > dave.strongswan.org: ESP::YES
+moon::tcpdump::IP dave.strongswan.org > moon.strongswan.org: ESP::YES

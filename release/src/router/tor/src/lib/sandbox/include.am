@@ -1,0 +1,18 @@
+
+noinst_LIBRARIES += src/lib/libtor-sandbox.a
+
+if UNITTESTS_ENABLED
+noinst_LIBRARIES += src/lib/libtor-sandbox-testing.a
+endif
+
+src_lib_libtor_sandbox_a_SOURCES =			\
+	src/lib/sandbox/sandbox.c
+
+src_lib_libtor_sandbox_testing_a_SOURCES = \
+	$(src_lib_libtor_sandbox_a_SOURCES)
+src_lib_libtor_sandbox_testing_a_CPPFLAGS = $(AM_CPPFLAGS) $(TEST_CPPFLAGS)
+src_lib_libtor_sandbox_testing_a_CFLAGS = $(AM_CFLAGS) $(TEST_CFLAGS)
+
+noinst_HEADERS +=					\
+	src/lib/sandbox/linux_syscalls.inc		\
+	src/lib/sandbox/sandbox.h

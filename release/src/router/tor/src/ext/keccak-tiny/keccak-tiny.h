@@ -2,7 +2,7 @@
 #define KECCAK_FIPS202_H
 
 #include <stddef.h>
-#include "torint.h"
+#include "lib/cc/torint.h"
 
 #define KECCAK_MAX_RATE 200
 

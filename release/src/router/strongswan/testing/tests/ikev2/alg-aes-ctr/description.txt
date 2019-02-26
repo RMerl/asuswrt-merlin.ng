@@ -1,0 +1,4 @@
+Roadwarrior <b>carol</b> proposes to gateway <b>moon</b> the cipher suite
+<b>AES_CTR_128</b> both for IKE and ESP by defining <b>ike=aes128ctr-aesxcbc-curve25519</b>
+and <b>esp=aes128ctr-aesxcbc-curve25519</b> in ipsec.conf, respectively.
+A ping from <b>carol</b> to <b>alice</b> successfully checks the established tunnel.

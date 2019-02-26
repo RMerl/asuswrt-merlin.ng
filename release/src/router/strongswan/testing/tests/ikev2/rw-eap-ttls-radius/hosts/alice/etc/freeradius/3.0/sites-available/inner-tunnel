@@ -1,0 +1,38 @@
+server inner-tunnel {
+
+authorize {
+  filter_username
+  suffix
+  eap {
+    ok = return
+  }
+  files
+  expiration
+  logintime
+}
+
+authenticate {
+  eap
+}
+
+session {
+  radutmp
+}
+
+post-auth {
+  Post-Auth-Type REJECT {
+    attr_filter.access_reject
+    update outer.session-state {
+      &Module-Failure-Message := &request:Module-Failure-Message
+    }
+  }
+}
+
+pre-proxy {
+}
+
+post-proxy {
+  eap
+}
+
+} # inner-tunnel server block

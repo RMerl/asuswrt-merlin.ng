@@ -1,6 +1,0 @@
-carol::ipsec stop
-dave::ipsec stop
-moon::ipsec stop
-moon::ipsec pool --del pool0 2> /dev/null
-moon::ipsec pool --del pool1 2> /dev/null
-moon::rm /etc/ipsec.d/ipsec.*

@@ -1,0 +1,26 @@
+with "tkmrpc_client";
+with "tkmrpc_server-ees";
+
+project Build_Common is
+
+   for Source_Dirs use ();
+
+   Obj_Dir := external ("OBJ_DIR", "obj");
+
+   C_Compiler_Switches   := ("-W",
+                             "-Wall",
+                             "-Wno-unused-parameter",
+                             "-g");
+   Ada_Compiler_Switches := ("-gnatwale",
+                             "-gnatygAdISuxo",
+                             "-gnata",
+                             "-gnatVa",
+                             "-gnat05",
+                             "-gnatf",
+                             "-fstack-check",
+                             "-gnato",
+                             "-g");
+
+   Ada_Binder_Switches   := ("-E");
+
+end Build_Common;

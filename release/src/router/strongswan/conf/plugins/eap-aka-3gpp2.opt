@@ -1,0 +1,4 @@
+charon.plugins.eap-aka-3gpp2.seq_check =
+	Enable to activate sequence check of the AKA SQN values in order to trigger
+	resync cycles.
+

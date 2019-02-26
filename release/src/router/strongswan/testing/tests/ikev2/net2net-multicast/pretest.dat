@@ -1,0 +1,7 @@
+moon::echo 1 > /proc/sys/net/ipv4/igmp_max_memberships
+sun::echo 1 > /proc/sys/net/ipv4/igmp_max_memberships
+sun::ipsec start
+moon::ipsec start
+sun::expect-connection net-net
+moon::expect-connection net-net
+moon::ipsec up net-net

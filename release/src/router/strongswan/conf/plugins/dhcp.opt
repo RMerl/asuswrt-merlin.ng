@@ -1,0 +1,38 @@
+charon.plugins.dhcp.force_server_address = no
+	Always use the configured server address.
+
+	Always use the configured server address. This might be helpful if the DHCP
+	server runs on the same host as strongSwan, and the DHCP daemon does not
+	listen on the loopback interface.  In that case the server cannot be reached
+	via unicast (or even 255.255.255.255) as that would be routed via loopback.
+	Setting this option to yes and configuring the local broadcast address (e.g.
+	192.168.0.255) as server address might work.
+
+charon.plugins.dhcp.identity_lease = no
+	Derive user-defined MAC address from hash of IKE identity and send client
+	identity DHCP option.
+
+charon.plugins.dhcp.server = 255.255.255.255
+	DHCP server unicast or broadcast IP address.
+
+charon.plugins.dhcp.use_server_port = no
+	Use the DHCP server port (67) as source port when a unicast server address
+	is configured.
+
+	Use the DHCP server port (67) as source port, instead of the DHCP client
+	port (68), when a unicast server address is configured and the plugin acts
+	as relay agent.  When replying in this mode the DHCP server will always send
+	packets to the DHCP server port and if no process binds that port an ICMP
+	port unreachables will be sent back, which might be problematic for some
+	DHCP servers.  To avoid that, enabling this option will cause the plugin to
+	bind the DHCP server port to send its requests when acting as relay agent.
+	This is not necessary if a DHCP server is already running on the same host
+	and might even cause conflicts (and since the server port is already bound,
+	ICMPs should not be an issue).
+
+charon.plugins.dhcp.interface
+	Interface name the plugin uses for address allocation.
+
+	Interface name the plugin uses for address allocation. The default is to
+	bind to any (0.0.0.0) and let the system decide which way to route the
+	packets to the DHCP server.

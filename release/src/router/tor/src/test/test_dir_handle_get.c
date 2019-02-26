@@ -1,6 +1,6 @@
 /* Copyright (c) 2001-2004, Roger Dingledine.
  * Copyright (c) 2004-2006, Roger Dingledine, Nick Mathewson.
- * Copyright (c) 2007-2016, The Tor Project, Inc. */
+ * Copyright (c) 2007-2019, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 #define RENDCOMMON_PRIVATE
@@ -8,35 +8,50 @@
 #define CONNECTION_PRIVATE
 #define CONFIG_PRIVATE
 #define RENDCACHE_PRIVATE
+#define DIRCACHE_PRIVATE
 
-#include "or.h"
-#include "config.h"
-#include "connection.h"
-#include "directory.h"
-#include "test.h"
-#include "connection.h"
-#include "rendcommon.h"
-#include "rendcache.h"
-#include "router.h"
-#include "routerlist.h"
-#include "rend_test_helpers.h"
-#include "microdesc.h"
-#include "test_helpers.h"
-#include "nodelist.h"
-#include "entrynodes.h"
-#include "routerparse.h"
-#include "networkstatus.h"
-#include "geoip.h"
-#include "dirserv.h"
-#include "torgzip.h"
-#include "dirvote.h"
+#include "core/or/or.h"
+#include "app/config/config.h"
+#include "core/mainloop/connection.h"
+#include "feature/dircache/consdiffmgr.h"
+#include "feature/dircommon/directory.h"
+#include "feature/dircache/dircache.h"
+#include "test/test.h"
+#include "lib/compress/compress.h"
+#include "feature/rend/rendcommon.h"
+#include "feature/rend/rendcache.h"
+#include "feature/relay/router.h"
+#include "feature/nodelist/authcert.h"
+#include "feature/nodelist/dirlist.h"
+#include "feature/nodelist/routerlist.h"
+#include "test/rend_test_helpers.h"
+#include "feature/nodelist/microdesc.h"
+#include "test/test_helpers.h"
+#include "feature/nodelist/nodelist.h"
+#include "feature/client/entrynodes.h"
+#include "feature/dirparse/authcert_parse.h"
+#include "feature/nodelist/networkstatus.h"
+#include "core/proto/proto_http.h"
+#include "lib/geoip/geoip.h"
+#include "feature/stats/geoip_stats.h"
+#include "feature/dircache/dirserv.h"
+#include "feature/dirauth/dirvote.h"
+#include "test/log_test_helpers.h"
+#include "feature/dircommon/voting_schedule.h"
+
+#include "feature/dircommon/dir_connection_st.h"
+#include "feature/dirclient/dir_server_st.h"
+#include "feature/nodelist/networkstatus_st.h"
+#include "feature/rend/rend_encoded_v2_service_descriptor_st.h"
+#include "feature/nodelist/routerinfo_st.h"
+#include "feature/nodelist/routerlist_st.h"
 
 #ifdef _WIN32
 /* For mkdir() */
 #include <direct.h>
 #else
 #include <dirent.h>
-#endif
+#endif /* defined(_WIN32) */
 
 #ifdef HAVE_CFLAG_WOVERLENGTH_STRINGS
 DISABLE_GCC_WARNING(overlength-strings)
@@ -50,22 +65,10 @@ ENABLE_GCC_WARNING(overlength-strings)
 
 #define NS_MODULE dir_handle_get
 
-static void
-connection_write_to_buf_mock(const char *string, size_t len,
-                             connection_t *conn, int zlib)
-{
-  (void) zlib;
-
-  tor_assert(string);
-  tor_assert(conn);
-
-  write_to_buf(string, len, conn->outbuf);
-}
-
-#define GET(path) "GET " path " HTTP/1.0\r\n\r\n"
 #define NOT_FOUND "HTTP/1.0 404 Not found\r\n\r\n"
 #define BAD_REQUEST "HTTP/1.0 400 Bad request\r\n\r\n"
 #define SERVER_BUSY "HTTP/1.0 503 Directory busy, try again later\r\n\r\n"
+#define TOO_OLD "HTTP/1.0 404 Consensus is too old\r\n\r\n"
 #define NOT_ENOUGH_CONSENSUS_SIGNATURES "HTTP/1.0 404 " \
   "Consensus not signed by sufficient number of requested authorities\r\n\r\n"
 
@@ -74,6 +77,7 @@ new_dir_conn(void)
 {
   dir_connection_t *conn = dir_connection_new(AF_INET);
   tor_addr_from_ipv4h(&conn->base_.addr, 0x7f000001);
+  TO_CONN(conn)->address = tor_strdup("127.0.0.1");
   return conn;
 }
 
@@ -96,7 +100,7 @@ test_dir_handle_get_bad_request(void *data)
 
   done:
     UNMOCK(connection_write_to_buf_impl_);
-    connection_free_(TO_CONN(conn));
+    connection_free_minimal(TO_CONN(conn));
     tor_free(header);
 }
 
@@ -125,7 +129,7 @@ test_dir_handle_get_v1_command_not_found(void *data)
 
   done:
     UNMOCK(connection_write_to_buf_impl_);
-    connection_free_(TO_CONN(conn));
+    connection_free_minimal(TO_CONN(conn));
     tor_free(header);
 }
 
@@ -172,7 +176,7 @@ test_dir_handle_get_v1_command(void *data)
   done:
     UNMOCK(connection_write_to_buf_impl_);
     UNMOCK(get_dirportfrontpage);
-    connection_free_(TO_CONN(conn));
+    connection_free_minimal(TO_CONN(conn));
     tor_free(header);
     tor_free(body);
 }
@@ -198,7 +202,7 @@ test_dir_handle_get_not_found(void *data)
 
   done:
     UNMOCK(connection_write_to_buf_impl_);
-    connection_free_(TO_CONN(conn));
+    connection_free_minimal(TO_CONN(conn));
     tor_free(header);
 }
 
@@ -233,7 +237,7 @@ test_dir_handle_get_robots_txt(void *data)
 
   done:
     UNMOCK(connection_write_to_buf_impl_);
-    connection_free_(TO_CONN(conn));
+    connection_free_minimal(TO_CONN(conn));
     tor_free(header);
     tor_free(body);
 }
@@ -262,7 +266,7 @@ test_dir_handle_get_rendezvous2_not_found_if_not_encrypted(void *data)
 
   done:
     UNMOCK(connection_write_to_buf_impl_);
-    connection_free_(TO_CONN(conn));
+    connection_free_minimal(TO_CONN(conn));
     tor_free(header);
 }
 
@@ -290,7 +294,7 @@ test_dir_handle_get_rendezvous2_on_encrypted_conn_with_invalid_desc_id(
 
   done:
     UNMOCK(connection_write_to_buf_impl_);
-    connection_free_(TO_CONN(conn));
+    connection_free_minimal(TO_CONN(conn));
     tor_free(header);
 }
 
@@ -323,7 +327,7 @@ test_dir_handle_get_rendezvous2_on_encrypted_conn_not_well_formed(void *data)
 
   done:
     UNMOCK(connection_write_to_buf_impl_);
-    connection_free_(TO_CONN(conn));
+    connection_free_minimal(TO_CONN(conn));
     tor_free(header);
 }
 
@@ -352,7 +356,7 @@ test_dir_handle_get_rendezvous2_not_found(void *data)
 
   done:
     UNMOCK(connection_write_to_buf_impl_);
-    connection_free_(TO_CONN(conn));
+    connection_free_minimal(TO_CONN(conn));
     tor_free(header);
     rend_cache_free_all();
 }
@@ -432,7 +436,7 @@ test_dir_handle_get_rendezvous2_on_encrypted_conn_success(void *data)
     UNMOCK(connection_write_to_buf_impl_);
     NS_UNMOCK(router_get_my_routerinfo);
 
-    connection_free_(TO_CONN(conn));
+    connection_free_minimal(TO_CONN(conn));
     tor_free(header);
     tor_free(body);
     rend_encoded_v2_service_descriptor_free(desc_holder);
@@ -465,7 +469,7 @@ test_dir_handle_get_micro_d_not_found(void *data)
   done:
     UNMOCK(connection_write_to_buf_impl_);
 
-    connection_free_(TO_CONN(conn));
+    connection_free_minimal(TO_CONN(conn));
     tor_free(header);
 }
 
@@ -476,6 +480,9 @@ init_mock_options(void)
   mock_options = tor_malloc(sizeof(or_options_t));
   memset(mock_options, 0, sizeof(or_options_t));
   mock_options->TestingTorNetwork = 1;
+  mock_options->DataDirectory = tor_strdup(get_fname_rnd("datadir_tmp"));
+  mock_options->CacheDirectory = tor_strdup(mock_options->DataDirectory);
+  check_private_dir(mock_options->DataDirectory, CPD_CREATE, NULL);
 }
 
 static const or_options_t *
@@ -512,14 +519,6 @@ test_dir_handle_get_micro_d(void *data)
 
   /* SETUP */
   init_mock_options();
-  const char *fn = get_fname("dir_handle_datadir_test1");
-  mock_options->DataDirectory = tor_strdup(fn);
-
-#ifdef _WIN32
-  tt_int_op(0, OP_EQ, mkdir(mock_options->DataDirectory));
-#else
-  tt_int_op(0, OP_EQ, mkdir(mock_options->DataDirectory, 0700));
-#endif
 
   /* Add microdesc to cache */
   crypto_digest256(digest, microdesc, strlen(microdesc), DIGEST_SHA256);
@@ -555,7 +554,7 @@ test_dir_handle_get_micro_d(void *data)
     UNMOCK(connection_write_to_buf_impl_);
 
     or_options_free(mock_options); mock_options = NULL;
-    connection_free_(TO_CONN(conn));
+    connection_free_minimal(TO_CONN(conn));
     tor_free(header);
     tor_free(body);
     smartlist_free(list);
@@ -579,14 +578,6 @@ test_dir_handle_get_micro_d_server_busy(void *data)
 
   /* SETUP */
   init_mock_options();
-  const char *fn = get_fname("dir_handle_datadir_test2");
-  mock_options->DataDirectory = tor_strdup(fn);
-
-#ifdef _WIN32
-  tt_int_op(0, OP_EQ, mkdir(mock_options->DataDirectory));
-#else
-  tt_int_op(0, OP_EQ, mkdir(mock_options->DataDirectory, 0700));
-#endif
 
   /* Add microdesc to cache */
   crypto_digest256(digest, microdesc, strlen(microdesc), DIGEST_SHA256);
@@ -617,7 +608,7 @@ test_dir_handle_get_micro_d_server_busy(void *data)
     UNMOCK(connection_write_to_buf_impl_);
 
     or_options_free(mock_options); mock_options = NULL;
-    connection_free_(TO_CONN(conn));
+    connection_free_minimal(TO_CONN(conn));
     tor_free(header);
     smartlist_free(list);
     microdesc_free_all();
@@ -654,7 +645,7 @@ test_dir_handle_get_networkstatus_bridges_not_found_without_auth(void *data)
     UNMOCK(get_options);
     UNMOCK(connection_write_to_buf_impl_);
     or_options_free(mock_options); mock_options = NULL;
-    connection_free_(TO_CONN(conn));
+    connection_free_minimal(TO_CONN(conn));
     tor_free(header);
 }
 
@@ -694,7 +685,7 @@ test_dir_handle_get_networkstatus_bridges(void *data)
     UNMOCK(get_options);
     UNMOCK(connection_write_to_buf_impl_);
     or_options_free(mock_options); mock_options = NULL;
-    connection_free_(TO_CONN(conn));
+    connection_free_minimal(TO_CONN(conn));
     tor_free(header);
 }
 
@@ -731,7 +722,7 @@ test_dir_handle_get_networkstatus_bridges_not_found_wrong_auth(void *data)
     UNMOCK(get_options);
     UNMOCK(connection_write_to_buf_impl_);
     or_options_free(mock_options); mock_options = NULL;
-    connection_free_(TO_CONN(conn));
+    connection_free_minimal(TO_CONN(conn));
     tor_free(header);
 }
 
@@ -754,12 +745,12 @@ test_dir_handle_get_server_descriptors_not_found(void* data)
                       NULL, NULL, 1, 0);
 
   tt_str_op(NOT_FOUND, OP_EQ, header);
-  tt_int_op(conn->dir_spool_src, OP_EQ, DIR_SPOOL_SERVER_BY_FP);
+  tt_ptr_op(conn->spool, OP_EQ, NULL);
 
   done:
     UNMOCK(connection_write_to_buf_impl_);
     or_options_free(mock_options); mock_options = NULL;
-    connection_free_(TO_CONN(conn));
+    connection_free_minimal(TO_CONN(conn));
     tor_free(header);
 }
 
@@ -784,6 +775,7 @@ test_dir_handle_get_server_descriptors_all(void* data)
   tt_int_op(smartlist_len(our_routerlist->routers), OP_GE, 1);
   mock_routerinfo = smartlist_get(our_routerlist->routers, 0);
   set_server_identity_key(mock_routerinfo->identity_pkey);
+  mock_routerinfo->cache_info.published_on = time(NULL);
 
   /* Treat "all" requests as if they were unencrypted */
   mock_routerinfo->cache_info.send_unencrypted = 1;
@@ -798,7 +790,7 @@ test_dir_handle_get_server_descriptors_all(void* data)
   //which is smaller than that by annotation_len bytes
   fetch_from_buf_http(TO_CONN(conn)->outbuf, &header, MAX_HEADERS_SIZE,
                       &body, &body_used,
-                      mock_routerinfo->cache_info.signed_descriptor_len+1, 0);
+                      1024*1024, 0);
 
   tt_assert(header);
   tt_assert(body);
@@ -814,12 +806,12 @@ test_dir_handle_get_server_descriptors_all(void* data)
 
   tt_str_op(body, OP_EQ, mock_routerinfo->cache_info.signed_descriptor_body +
                          mock_routerinfo->cache_info.annotations_len);
-  tt_int_op(conn->dir_spool_src, OP_EQ, DIR_SPOOL_NONE);
+  tt_ptr_op(conn->spool, OP_EQ, NULL);
 
   done:
     NS_UNMOCK(router_get_my_routerinfo);
     UNMOCK(connection_write_to_buf_impl_);
-    connection_free_(TO_CONN(conn));
+    connection_free_minimal(TO_CONN(conn));
     tor_free(header);
     tor_free(body);
 
@@ -891,8 +883,9 @@ test_dir_handle_get_server_descriptors_authority(void* data)
   mock_routerinfo->cache_info.signed_descriptor_body =
     tor_strdup(TEST_DESCRIPTOR);
   mock_routerinfo->cache_info.signed_descriptor_len =
-    strlen(TEST_DESCRIPTOR) - annotation_len;;
+    strlen(TEST_DESCRIPTOR) - annotation_len;
   mock_routerinfo->cache_info.annotations_len = annotation_len;
+  mock_routerinfo->cache_info.published_on = time(NULL);
 
   conn = new_dir_conn();
 
@@ -915,14 +908,14 @@ test_dir_handle_get_server_descriptors_authority(void* data)
   tt_int_op(body_used, OP_EQ, strlen(body));
 
   tt_str_op(body, OP_EQ, TEST_DESCRIPTOR + annotation_len);
-  tt_int_op(conn->dir_spool_src, OP_EQ, DIR_SPOOL_NONE);
+  tt_ptr_op(conn->spool, OP_EQ, NULL);
 
   done:
     NS_UNMOCK(router_get_my_routerinfo);
     UNMOCK(connection_write_to_buf_impl_);
     tor_free(mock_routerinfo->cache_info.signed_descriptor_body);
     tor_free(mock_routerinfo);
-    connection_free_(TO_CONN(conn));
+    connection_free_minimal(TO_CONN(conn));
     tor_free(header);
     tor_free(body);
     crypto_pk_free(identity_pkey);
@@ -957,6 +950,7 @@ test_dir_handle_get_server_descriptors_fp(void* data)
   mock_routerinfo->cache_info.signed_descriptor_len =
     strlen(TEST_DESCRIPTOR) - annotation_len;
   mock_routerinfo->cache_info.annotations_len = annotation_len;
+  mock_routerinfo->cache_info.published_on = time(NULL);
 
   conn = new_dir_conn();
 
@@ -986,14 +980,14 @@ test_dir_handle_get_server_descriptors_fp(void* data)
   tt_int_op(body_used, OP_EQ, strlen(body));
 
   tt_str_op(body, OP_EQ, TEST_DESCRIPTOR + annotation_len);
-  tt_int_op(conn->dir_spool_src, OP_EQ, DIR_SPOOL_NONE);
+  tt_ptr_op(conn->spool, OP_EQ, NULL);
 
   done:
     NS_UNMOCK(router_get_my_routerinfo);
     UNMOCK(connection_write_to_buf_impl_);
     tor_free(mock_routerinfo->cache_info.signed_descriptor_body);
     tor_free(mock_routerinfo);
-    connection_free_(TO_CONN(conn));
+    connection_free_minimal(TO_CONN(conn));
     tor_free(header);
     tor_free(body);
     crypto_pk_free(identity_pkey);
@@ -1052,12 +1046,12 @@ test_dir_handle_get_server_descriptors_d(void* data)
 
   tt_str_op(body, OP_EQ, router->cache_info.signed_descriptor_body +
                          router->cache_info.annotations_len);
-  tt_int_op(conn->dir_spool_src, OP_EQ, DIR_SPOOL_NONE);
+  tt_ptr_op(conn->spool, OP_EQ, NULL);
 
   done:
     UNMOCK(connection_write_to_buf_impl_);
     tor_free(mock_routerinfo);
-    connection_free_(TO_CONN(conn));
+    connection_free_minimal(TO_CONN(conn));
     tor_free(header);
     tor_free(body);
     crypto_pk_free(identity_pkey);
@@ -1107,13 +1101,13 @@ test_dir_handle_get_server_descriptors_busy(void* data)
   tt_assert(header);
   tt_str_op(SERVER_BUSY, OP_EQ, header);
 
-  tt_int_op(conn->dir_spool_src, OP_EQ, DIR_SPOOL_NONE);
+  tt_ptr_op(conn->spool, OP_EQ, NULL);
 
   done:
     UNMOCK(get_options);
     UNMOCK(connection_write_to_buf_impl_);
     tor_free(mock_routerinfo);
-    connection_free_(TO_CONN(conn));
+    connection_free_minimal(TO_CONN(conn));
     tor_free(header);
     crypto_pk_free(identity_pkey);
 
@@ -1144,7 +1138,7 @@ test_dir_handle_get_server_keys_bad_req(void* data)
 
   done:
     UNMOCK(connection_write_to_buf_impl_);
-    connection_free_(TO_CONN(conn));
+    connection_free_minimal(TO_CONN(conn));
     tor_free(header);
 }
 
@@ -1170,7 +1164,7 @@ test_dir_handle_get_server_keys_all_not_found(void* data)
 
   done:
     UNMOCK(connection_write_to_buf_impl_);
-    connection_free_(TO_CONN(conn));
+    connection_free_minimal(TO_CONN(conn));
     tor_free(header);
 }
 
@@ -1229,7 +1223,7 @@ test_dir_handle_get_server_keys_all(void* data)
 
   done:
     UNMOCK(connection_write_to_buf_impl_);
-    connection_free_(TO_CONN(conn));
+    connection_free_minimal(TO_CONN(conn));
     tor_free(header);
     tor_free(body);
 
@@ -1259,7 +1253,7 @@ test_dir_handle_get_server_keys_authority_not_found(void* data)
 
   done:
     UNMOCK(connection_write_to_buf_impl_);
-    connection_free_(TO_CONN(conn));
+    connection_free_minimal(TO_CONN(conn));
     tor_free(header);
 }
 
@@ -1307,7 +1301,7 @@ test_dir_handle_get_server_keys_authority(void* data)
   done:
     UNMOCK(get_my_v3_authority_cert);
     UNMOCK(connection_write_to_buf_impl_);
-    connection_free_(TO_CONN(conn));
+    connection_free_minimal(TO_CONN(conn));
     tor_free(header);
     tor_free(body);
     authority_cert_free(mock_cert); mock_cert = NULL;
@@ -1335,7 +1329,7 @@ test_dir_handle_get_server_keys_fp_not_found(void* data)
 
   done:
     UNMOCK(connection_write_to_buf_impl_);
-    connection_free_(TO_CONN(conn));
+    connection_free_minimal(TO_CONN(conn));
     tor_free(header);
 }
 
@@ -1389,7 +1383,7 @@ test_dir_handle_get_server_keys_fp(void* data)
 
   done:
     UNMOCK(connection_write_to_buf_impl_);
-    connection_free_(TO_CONN(conn));
+    connection_free_minimal(TO_CONN(conn));
     tor_free(header);
     tor_free(body);
     clear_dir_servers();
@@ -1418,7 +1412,7 @@ test_dir_handle_get_server_keys_sk_not_found(void* data)
 
   done:
     UNMOCK(connection_write_to_buf_impl_);
-    connection_free_(TO_CONN(conn));
+    connection_free_minimal(TO_CONN(conn));
     tor_free(header);
 }
 
@@ -1463,7 +1457,7 @@ test_dir_handle_get_server_keys_sk(void* data)
   done:
     UNMOCK(get_my_v3_authority_cert);
     UNMOCK(connection_write_to_buf_impl_);
-    connection_free_(TO_CONN(conn));
+    connection_free_minimal(TO_CONN(conn));
     authority_cert_free(mock_cert); mock_cert = NULL;
     tor_free(header);
     tor_free(body);
@@ -1491,7 +1485,7 @@ test_dir_handle_get_server_keys_fpsk_not_found(void* data)
 
   done:
     UNMOCK(connection_write_to_buf_impl_);
-    connection_free_(TO_CONN(conn));
+    connection_free_minimal(TO_CONN(conn));
     tor_free(header);
 }
 
@@ -1548,7 +1542,7 @@ test_dir_handle_get_server_keys_fpsk(void* data)
 
   done:
     UNMOCK(connection_write_to_buf_impl_);
-    connection_free_(TO_CONN(conn));
+    connection_free_minimal(TO_CONN(conn));
     tor_free(header);
     tor_free(body);
 
@@ -1602,7 +1596,7 @@ test_dir_handle_get_server_keys_busy(void* data)
   done:
     UNMOCK(get_options);
     UNMOCK(connection_write_to_buf_impl_);
-    connection_free_(TO_CONN(conn));
+    connection_free_minimal(TO_CONN(conn));
     tor_free(header);
     or_options_free(mock_options); mock_options = NULL;
 
@@ -1629,7 +1623,13 @@ test_dir_handle_get_status_vote_current_consensus_ns_not_enough_sigs(void* d)
   /* init mock */
   mock_ns_val = tor_malloc_zero(sizeof(networkstatus_t));
   mock_ns_val->flavor = FLAV_NS;
+  mock_ns_val->type = NS_TYPE_CONSENSUS;
   mock_ns_val->voters = smartlist_new();
+  mock_ns_val->valid_after = time(NULL) - 1800;
+  mock_ns_val->valid_until = time(NULL) - 60;
+
+  #define NETWORK_STATUS "some network status string"
+  consdiffmgr_add_consensus(NETWORK_STATUS, mock_ns_val);
 
   /* init mock */
   init_mock_options();
@@ -1662,7 +1662,7 @@ test_dir_handle_get_status_vote_current_consensus_ns_not_enough_sigs(void* d)
     UNMOCK(connection_write_to_buf_impl_);
     UNMOCK(get_options);
 
-    connection_free_(TO_CONN(conn));
+    connection_free_minimal(TO_CONN(conn));
     tor_free(header);
     tor_free(stats);
     smartlist_free(mock_ns_val->voters);
@@ -1703,9 +1703,83 @@ test_dir_handle_get_status_vote_current_consensus_ns_not_found(void* data)
   done:
     UNMOCK(connection_write_to_buf_impl_);
     UNMOCK(get_options);
-    connection_free_(TO_CONN(conn));
+    connection_free_minimal(TO_CONN(conn));
     tor_free(header);
     tor_free(stats);
+    or_options_free(mock_options); mock_options = NULL;
+}
+
+static void
+test_dir_handle_get_status_vote_current_consensus_too_old(void *data)
+{
+  dir_connection_t *conn = NULL;
+  char *header = NULL;
+  (void)data;
+
+  mock_ns_val = tor_malloc_zero(sizeof(networkstatus_t));
+  mock_ns_val->type = NS_TYPE_CONSENSUS;
+  mock_ns_val->flavor = FLAV_MICRODESC;
+  mock_ns_val->valid_after = time(NULL) - (24 * 60 * 60 + 1800);
+  mock_ns_val->fresh_until = time(NULL) - (24 * 60 * 60 + 900);
+  mock_ns_val->valid_until = time(NULL) - (24 * 60 * 60 + 20);
+
+  #define NETWORK_STATUS "some network status string"
+  consdiffmgr_add_consensus(NETWORK_STATUS, mock_ns_val);
+
+  init_mock_options();
+
+  MOCK(get_options, mock_get_options);
+  MOCK(connection_write_to_buf_impl_, connection_write_to_buf_mock);
+  MOCK(networkstatus_get_latest_consensus_by_flavor, mock_ns_get_by_flavor);
+
+  conn = new_dir_conn();
+
+  setup_capture_of_logs(LOG_WARN);
+
+  tt_int_op(0, OP_EQ, directory_handle_command_get(conn,
+    GET("/tor/status-vote/current/consensus-microdesc"), NULL, 0));
+
+  fetch_from_buf_http(TO_CONN(conn)->outbuf, &header, MAX_HEADERS_SIZE,
+                      NULL, NULL, 1, 0);
+  tt_assert(header);
+  tt_str_op(TOO_OLD, OP_EQ, header);
+
+  expect_log_msg_containing("too old");
+
+  tor_free(header);
+  teardown_capture_of_logs();
+  tor_free(mock_ns_val);
+
+  mock_ns_val = tor_malloc_zero(sizeof(networkstatus_t));
+  mock_ns_val->type = NS_TYPE_CONSENSUS;
+  mock_ns_val->flavor = FLAV_NS;
+  mock_ns_val->valid_after = time(NULL) - (24 * 60 * 60 + 1800);
+  mock_ns_val->fresh_until = time(NULL) - (24 * 60 * 60 + 900);
+  mock_ns_val->valid_until = time(NULL) - (24 * 60 * 60 + 20);
+
+  #define NETWORK_STATUS "some network status string"
+  consdiffmgr_add_consensus(NETWORK_STATUS, mock_ns_val);
+
+  setup_capture_of_logs(LOG_WARN);
+
+  tt_int_op(0, OP_EQ, directory_handle_command_get(conn,
+    GET("/tor/status-vote/current/consensus"), NULL, 0));
+
+  fetch_from_buf_http(TO_CONN(conn)->outbuf, &header, MAX_HEADERS_SIZE,
+                      NULL, NULL, 1, 0);
+  tt_assert(header);
+  tt_str_op(TOO_OLD, OP_EQ, header);
+
+  expect_no_log_entry();
+
+  done:
+    teardown_capture_of_logs();
+    UNMOCK(networkstatus_get_latest_consensus_by_flavor);
+    UNMOCK(connection_write_to_buf_impl_);
+    UNMOCK(get_options);
+    connection_free_minimal(TO_CONN(conn));
+    tor_free(header);
+    tor_free(mock_ns_val);
     or_options_free(mock_options); mock_options = NULL;
 }
 
@@ -1723,12 +1797,26 @@ static void
 status_vote_current_consensus_ns_test(char **header, char **body,
                                       size_t *body_len)
 {
-  common_digests_t digests;
   dir_connection_t *conn = NULL;
 
   #define NETWORK_STATUS "some network status string"
+#if 0
+  common_digests_t digests;
+  uint8_t sha3[DIGEST256_LEN];
+  memset(&digests, 0x60, sizeof(digests));
+  memset(sha3, 0x06, sizeof(sha3));
   dirserv_set_cached_consensus_networkstatus(NETWORK_STATUS, "ns", &digests,
+                                             sha3,
                                              time(NULL));
+#endif /* 0 */
+  networkstatus_t *ns = tor_malloc_zero(sizeof(networkstatus_t));
+  ns->type = NS_TYPE_CONSENSUS;
+  ns->flavor = FLAV_NS;
+  ns->valid_after = time(NULL) - 1800;
+  ns->fresh_until = time(NULL) - 900;
+  ns->valid_until = time(NULL) - 60;
+  consdiffmgr_add_consensus(NETWORK_STATUS, ns);
+  networkstatus_vote_free(ns);
 
   MOCK(connection_write_to_buf_impl_, connection_write_to_buf_mock);
 
@@ -1741,7 +1829,6 @@ status_vote_current_consensus_ns_test(char **header, char **body,
   tt_str_op("ab", OP_EQ, geoip_get_country_name(1));
 
   conn = new_dir_conn();
-  TO_CONN(conn)->address = tor_strdup("127.0.0.1");
 
   tt_int_op(0, OP_EQ, directory_handle_command_get(conn,
     GET("/tor/status-vote/current/consensus-ns"), NULL, 0));
@@ -1751,7 +1838,7 @@ status_vote_current_consensus_ns_test(char **header, char **body,
 
   done:
     UNMOCK(connection_write_to_buf_impl_);
-    connection_free_(TO_CONN(conn));
+    connection_free_minimal(TO_CONN(conn));
 }
 
 static void
@@ -1783,8 +1870,8 @@ test_dir_handle_get_status_vote_current_consensus_ns(void* data)
                                                             comp_body_used);
   tt_int_op(ZLIB_METHOD, OP_EQ, compression);
 
-  tor_gzip_uncompress(&body, &body_used, comp_body, comp_body_used,
-                      compression, 0, LOG_PROTOCOL_WARN);
+  tor_uncompress(&body, &body_used, comp_body, comp_body_used,
+                 compression, 0, LOG_PROTOCOL_WARN);
 
   tt_str_op(NETWORK_STATUS, OP_EQ, body);
   tt_int_op(strlen(NETWORK_STATUS), OP_EQ, body_used);
@@ -1874,7 +1961,7 @@ test_dir_handle_get_status_vote_current_not_found(void* data)
 
   done:
     UNMOCK(connection_write_to_buf_impl_);
-    connection_free_(TO_CONN(conn));
+    connection_free_minimal(TO_CONN(conn));
     tor_free(header);
 }
 
@@ -1897,7 +1984,7 @@ status_vote_current_d_test(char **header, char **body, size_t *body_l)
 
   done:
     UNMOCK(connection_write_to_buf_impl_);
-    connection_free_(TO_CONN(conn));
+    connection_free_minimal(TO_CONN(conn));
 }
 
 static void
@@ -1917,7 +2004,7 @@ status_vote_next_d_test(char **header, char **body, size_t *body_l)
 
   done:
     UNMOCK(connection_write_to_buf_impl_);
-    connection_free_(TO_CONN(conn));
+    connection_free_minimal(TO_CONN(conn));
 }
 
 static void
@@ -1982,7 +2069,7 @@ test_dir_handle_get_status_vote_d(void* data)
   mock_options->TestingV3AuthInitialDistDelay = 1;
 
   time_t now = 1441223455 -1;
-  dirvote_recalculate_timing(mock_options, now);
+  voting_schedule_recalculate_timing(mock_options, now);
 
   const char *msg_out = NULL;
   int status_out = 0;
@@ -2020,6 +2107,7 @@ test_dir_handle_get_status_vote_d(void* data)
 
     clear_dir_servers();
     dirvote_free_all();
+    routerlist_free_all();
 }
 
 static void
@@ -2042,7 +2130,7 @@ test_dir_handle_get_status_vote_next_not_found(void* data)
 
   done:
     UNMOCK(connection_write_to_buf_impl_);
-    connection_free_(TO_CONN(conn));
+    connection_free_minimal(TO_CONN(conn));
     tor_free(header);
 }
 
@@ -2061,7 +2149,7 @@ status_vote_next_consensus_test(char **header, char **body, size_t *body_used)
                       body, body_used, 18, 0);
   done:
     UNMOCK(connection_write_to_buf_impl_);
-    connection_free_(TO_CONN(conn));
+    connection_free_minimal(TO_CONN(conn));
 }
 
 static void
@@ -2101,7 +2189,7 @@ test_dir_handle_get_status_vote_current_authority_not_found(void* data)
 
   done:
     UNMOCK(connection_write_to_buf_impl_);
-    connection_free_(TO_CONN(conn));
+    connection_free_minimal(TO_CONN(conn));
     tor_free(header);
 }
 
@@ -2125,7 +2213,7 @@ test_dir_handle_get_status_vote_next_authority_not_found(void* data)
 
   done:
     UNMOCK(connection_write_to_buf_impl_);
-    connection_free_(TO_CONN(conn));
+    connection_free_minimal(TO_CONN(conn));
     tor_free(header);
 }
 
@@ -2207,7 +2295,7 @@ status_vote_next_consensus_signatures_test(char **header, char **body,
                       body, body_used, 22, 0);
 
   done:
-    connection_free_(TO_CONN(conn));
+    connection_free_minimal(TO_CONN(conn));
     UNMOCK(connection_write_to_buf_impl_);
 }
 
@@ -2328,7 +2416,7 @@ test_dir_handle_get_status_vote_next_authority(void* data)
   mock_options->TestingV3AuthInitialDistDelay = 1;
 
   time_t now = 1441223455 -1;
-  dirvote_recalculate_timing(mock_options, now);
+  voting_schedule_recalculate_timing(mock_options, now);
 
   struct pending_vote_t *vote = dirvote_add_vote(VOTE_BODY_V3, &msg_out,
                                                  &status_out);
@@ -2355,7 +2443,7 @@ test_dir_handle_get_status_vote_next_authority(void* data)
   done:
     UNMOCK(connection_write_to_buf_impl_);
     UNMOCK(get_my_v3_authority_cert);
-    connection_free_(TO_CONN(conn));
+    connection_free_minimal(TO_CONN(conn));
     tor_free(header);
     tor_free(body);
     authority_cert_free(mock_cert); mock_cert = NULL;
@@ -2407,7 +2495,7 @@ test_dir_handle_get_status_vote_current_authority(void* data)
   mock_options->TestingV3AuthInitialDistDelay = 1;
 
   time_t now = 1441223455;
-  dirvote_recalculate_timing(mock_options, now-1);
+  voting_schedule_recalculate_timing(mock_options, now-1);
 
   struct pending_vote_t *vote = dirvote_add_vote(VOTE_BODY_V3, &msg_out,
                                                  &status_out);
@@ -2437,7 +2525,7 @@ test_dir_handle_get_status_vote_current_authority(void* data)
   done:
     UNMOCK(connection_write_to_buf_impl_);
     UNMOCK(get_my_v3_authority_cert);
-    connection_free_(TO_CONN(conn));
+    connection_free_minimal(TO_CONN(conn));
     tor_free(header);
     tor_free(body);
     authority_cert_free(mock_cert); mock_cert = NULL;
@@ -2446,6 +2534,53 @@ test_dir_handle_get_status_vote_current_authority(void* data)
     clear_dir_servers();
     routerlist_free_all();
     dirvote_free_all();
+}
+
+static void
+test_dir_handle_get_parse_accept_encoding(void *arg)
+{
+  (void)arg;
+  const unsigned B_NONE = 1u << NO_METHOD;
+  const unsigned B_ZLIB = 1u << ZLIB_METHOD;
+  const unsigned B_GZIP = 1u << GZIP_METHOD;
+  const unsigned B_LZMA = 1u << LZMA_METHOD;
+  const unsigned B_ZSTD = 1u << ZSTD_METHOD;
+
+  unsigned encodings;
+
+  encodings = parse_accept_encoding_header("");
+  tt_uint_op(B_NONE, OP_EQ, encodings);
+
+  encodings = parse_accept_encoding_header("  ");
+  tt_uint_op(B_NONE, OP_EQ, encodings);
+
+  encodings = parse_accept_encoding_header("dewey, cheatham, and howe ");
+  tt_uint_op(B_NONE, OP_EQ, encodings);
+
+  encodings = parse_accept_encoding_header("dewey, cheatham, and gzip");
+  tt_uint_op(B_NONE, OP_EQ, encodings);
+
+  encodings = parse_accept_encoding_header("dewey, cheatham, and, gzip");
+  tt_uint_op(B_NONE|B_GZIP, OP_EQ, encodings);
+
+  encodings = parse_accept_encoding_header(" gzip");
+  tt_uint_op(B_NONE|B_GZIP, OP_EQ, encodings);
+
+  encodings = parse_accept_encoding_header("gzip");
+  tt_uint_op(B_NONE|B_GZIP, OP_EQ, encodings);
+
+  encodings = parse_accept_encoding_header("x-zstd, deflate, x-tor-lzma");
+  tt_uint_op(B_NONE|B_ZLIB|B_ZSTD|B_LZMA, OP_EQ, encodings);
+
+  encodings = parse_accept_encoding_header(
+                                        "x-zstd, deflate, x-tor-lzma, gzip");
+  tt_uint_op(B_NONE|B_ZLIB|B_ZSTD|B_LZMA|B_GZIP, OP_EQ, encodings);
+
+  encodings = parse_accept_encoding_header("x-zstd,deflate,x-tor-lzma,gzip");
+  tt_uint_op(B_NONE|B_ZLIB|B_ZSTD|B_LZMA|B_GZIP, OP_EQ, encodings);
+
+ done:
+  ;
 }
 
 #define DIR_HANDLE_CMD(name,flags) \
@@ -2492,10 +2627,11 @@ struct testcase_t dir_handle_get_tests[] = {
   DIR_HANDLE_CMD(status_vote_current_authority, 0),
   DIR_HANDLE_CMD(status_vote_next_authority_not_found, 0),
   DIR_HANDLE_CMD(status_vote_next_authority, 0),
-  DIR_HANDLE_CMD(status_vote_current_consensus_ns_not_enough_sigs, 0),
-  DIR_HANDLE_CMD(status_vote_current_consensus_ns_not_found, 0),
-  DIR_HANDLE_CMD(status_vote_current_consensus_ns_busy, 0),
-  DIR_HANDLE_CMD(status_vote_current_consensus_ns, 0),
+  DIR_HANDLE_CMD(status_vote_current_consensus_ns_not_enough_sigs, TT_FORK),
+  DIR_HANDLE_CMD(status_vote_current_consensus_ns_not_found, TT_FORK),
+  DIR_HANDLE_CMD(status_vote_current_consensus_too_old, TT_FORK),
+  DIR_HANDLE_CMD(status_vote_current_consensus_ns_busy, TT_FORK),
+  DIR_HANDLE_CMD(status_vote_current_consensus_ns, TT_FORK),
   DIR_HANDLE_CMD(status_vote_current_d_not_found, 0),
   DIR_HANDLE_CMD(status_vote_next_d_not_found, 0),
   DIR_HANDLE_CMD(status_vote_d, 0),
@@ -2505,6 +2641,6 @@ struct testcase_t dir_handle_get_tests[] = {
   DIR_HANDLE_CMD(status_vote_next_consensus_signatures_not_found, 0),
   DIR_HANDLE_CMD(status_vote_next_consensus_signatures_busy, 0),
   DIR_HANDLE_CMD(status_vote_next_consensus_signatures, 0),
+  DIR_HANDLE_CMD(parse_accept_encoding, 0),
   END_OF_TESTCASES
 };
-

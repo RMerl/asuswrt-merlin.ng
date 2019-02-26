@@ -1,0 +1,10 @@
+moon:: cat /var/log/daemon.log::unsupported TNCCS batch version 0x03::YES
+carol::cat /var/log/daemon.log::received fatal PB-TNC error.*Version Not Supported.*caused by bad version 0x03::YES
+carol::cat /var/log/daemon.log::EAP_PT_EAP method failed::YES
+moon:: cat /var/log/daemon.log::EAP method EAP_TTLS failed for peer carol@strongswan.org::YES
+carol::cat /var/log/daemon.log::received EAP_FAILURE, EAP authentication failed::YES
+moon:: cat /var/log/daemon.log::reject PB-TNC message (0x00902a/0x00000000)::YES
+dave:: cat /var/log/daemon.log::received fatal PB-TNC error.*Unsupported Mandatory Message::YES
+dave::cat /var/log/daemon.log::EAP_PT_EAP method failed::YES
+moon:: cat /var/log/daemon.log::EAP method EAP_TTLS failed for peer dave@strongswan.org::YES
+dave::cat /var/log/daemon.log::received EAP_FAILURE, EAP authentication failed::YES

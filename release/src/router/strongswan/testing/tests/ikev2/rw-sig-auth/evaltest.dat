@@ -1,0 +1,20 @@
+carol::cat /var/log/daemon.log::authentication of .*moon.strongswan.org.* with RSA.* successful::YES
+moon ::cat /var/log/daemon.log::authentication of .*carol@strongswan.org.* with RSA_EMSA_PKCS1_SHA2_384 successful::YES
+moon ::ipsec status 2> /dev/null::research.*ESTABLISHED.*moon.strongswan.org.*PH_IP_CAROL::YES
+carol::ipsec status 2> /dev/null::alice.*ESTABLISHED.*PH_IP_CAROL.*moon.strongswan.org::YES
+moon ::ipsec status 2> /dev/null::research.*INSTALLED, TUNNEL::YES
+carol::ipsec status 2> /dev/null::alice.*INSTALLED, TUNNEL::YES
+carol::ipsec status 2> /dev/null::venus.*INSTALLED, TUNNEL::NO
+dave ::cat /var/log/daemon.log::authentication of .*moon.strongswan.org.* with RSA.* successful::YES
+moon ::cat /var/log/daemon.log::authentication of .*dave@strongswan.org.* with RSA_EMSA_PKCS1_SHA2_512 successful::YES
+moon ::ipsec status 2> /dev/null::accounting.*ESTABLISHED.*moon.strongswan.org.*PH_IP_DAVE::YES
+dave ::ipsec status 2> /dev/null::alice.*ESTABLISHED.*PH_IP_DAVE.*moon.strongswan.org::YES
+moon ::ipsec status 2> /dev/null::accounting.*INSTALLED, TUNNEL::YES
+dave ::ipsec status 2> /dev/null::alice.*INSTALLED, TUNNEL::NO
+dave ::ipsec status 2> /dev/null::venus.*INSTALLED, TUNNEL::YES
+carol::ping -c 1 PH_IP_ALICE::64 bytes from PH_IP_ALICE: icmp_.eq=1::YES
+dave::ping -c 1 PH_IP_VENUS::64 bytes from PH_IP_VENUS: icmp_.eq=1::YES
+moon::tcpdump::IP carol.strongswan.org > moon.strongswan.org: ESP::YES
+moon::tcpdump::IP moon.strongswan.org > carol.strongswan.org: ESP::YES
+moon::tcpdump::IP dave.strongswan.org > moon.strongswan.org: ESP::YES
+moon::tcpdump::IP moon.strongswan.org > dave.strongswan.org: ESP::YES

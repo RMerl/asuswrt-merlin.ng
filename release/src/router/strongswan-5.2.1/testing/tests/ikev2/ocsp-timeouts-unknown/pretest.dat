@@ -1,6 +1,0 @@
-moon::iptables -I OUTPUT -d PH_IP_WINNETOU -p tcp --dport 80 -j DROP
-carol::iptables -I OUTPUT -d PH_IP_WINNETOU -p tcp --dport 80 -j DROP
-moon::ipsec start
-carol::ipsec start
-carol::sleep 2
-carol::ipsec up home

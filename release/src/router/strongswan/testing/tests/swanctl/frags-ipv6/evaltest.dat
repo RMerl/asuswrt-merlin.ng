@@ -1,0 +1,19 @@
+carol:: cat /var/log/daemon.log::splitting IKE message (.*bytes) into 2 fragments::YES
+dave:: cat /var/log/daemon.log::splitting IKE message (.*bytes) into 2 fragments::YES
+moon:: cat /var/log/daemon.log::splitting IKE message (.*bytes) into 2 fragments::YES
+carol:: cat /var/log/daemon.log::received fragment #1, waiting for complete IKE message::YES
+carol:: cat /var/log/daemon.log::received fragment #2, reassembled fragmented IKE message::YES
+dave:: cat /var/log/daemon.log::received fragment #1 of 2, waiting for complete IKE message::YES
+dave:: cat /var/log/daemon.log::received fragment #2 of 2, reassembled fragmented IKE message::YES
+moon:: cat /var/log/daemon.log::received fragment #1 of 2, waiting for complete IKE message::YES
+moon:: cat /var/log/daemon.log::received fragment #2 of 2, reassembled fragmented IKE message::YES
+carol::swanctl --list-sas --raw 2> /dev/null::home.*version=1 state=ESTABLISHED local-host=fec0:\:10 local-port=500 local-id=carol@strongswan.org remote-host=fec0:\:1 remote-port=500 remote-id=moon.strongswan.org initiator=yes.*encr-alg=AES_CBC encr-keysize=128 integ-alg=HMAC_SHA2_256_128 prf-alg=PRF_HMAC_SHA2_256 dh-group=ECP_256.*child-sas.*home.*state=INSTALLED mode=TUNNEL.*ESP.*encr-alg=AES_CBC encr-keysize=128 integ-alg=HMAC_SHA2_256_128.*local-ts=\[fec0:\:10/128] remote-ts=\[fec1:\:/16]::YES
+dave:: swanctl --list-sas --raw 2> /dev/null::home.*version=2 state=ESTABLISHED local-host=fec0:\:20 local-port=500 local-id=dave@strongswan.org remote-host=fec0:\:1 remote-port=500 remote-id=moon.strongswan.org initiator=yes.*encr-alg=AES_CBC encr-keysize=128 integ-alg=HMAC_SHA2_256_128 prf-alg=PRF_HMAC_SHA2_256 dh-group=ECP_256.*child-sas.*home.*state=INSTALLED mode=TUNNEL.*ESP.*encr-alg=AES_CBC encr-keysize=128 integ-alg=HMAC_SHA2_256_128.*local-ts=\[fec0:\:20/128] remote-ts=\[fec1:\:/16]::YES
+moon:: swanctl --list-sas --ike-id 1 --raw 2> /dev/null::rw.*version=1 state=ESTABLISHED local-host=fec0:\:1 local-port=500 local-id=moon.strongswan.org remote-host=fec0:\:10 remote-port=500 remote-id=carol@strongswan.org.*encr-alg=AES_CBC encr-keysize=128 integ-alg=HMAC_SHA2_256_128 prf-alg=PRF_HMAC_SHA2_256 dh-group=ECP_256.*child-sas.*net.*reqid=1 state=INSTALLED mode=TUNNEL.*ESP.*encr-alg=AES_CBC encr-keysize=128 integ-alg=HMAC_SHA2_256_128.*local-ts=\[fec1:\:/16] remote-ts=\[fec0:\:10/128]::YES
+moon:: swanctl --list-sas --ike-id 2 --raw 2> /dev/null::rw.*version=2 state=ESTABLISHED local-host=fec0:\:1 local-port=500 local-id=moon.strongswan.org remote-host=fec0:\:20 remote-port=500 remote-id=dave@strongswan.org.*encr-alg=AES_CBC encr-keysize=128 integ-alg=HMAC_SHA2_256_128 prf-alg=PRF_HMAC_SHA2_256 dh-group=ECP_256.*child-sas.*net.*reqid=2 state=INSTALLED mode=TUNNEL.*ESP.*encr-alg=AES_CBC encr-keysize=128 integ-alg=HMAC_SHA2_256_128.*local-ts=\[fec1:\:/16] remote-ts=\[fec0:\:20/128]::YES
+alice::ping6 -c 1 ip6-carol.strongswan.org::64 bytes from ip6-carol.strongswan.org.*: icmp_seq=1::YES
+alice::ping6 -c 1 ip6-dave.strongswan.org::64 bytes from ip6-dave.strongswan.org.*: icmp_seq=1::YES
+moon::tcpdump::IP6 ip6-moon.strongswan.org > ip6-carol.strongswan.org: ESP::YES
+moon::tcpdump::IP6 ip6-carol.strongswan.org > ip6-moon.strongswan.org: ESP::YES
+moon::tcpdump::IP6 ip6-moon.strongswan.org > ip6-dave.strongswan.org: ESP::YES
+moon::tcpdump::IP6 ip6-dave.strongswan.org > ip6-moon.strongswan.org: ESP::YES

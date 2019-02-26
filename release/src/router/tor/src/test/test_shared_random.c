@@ -1,20 +1,40 @@
+/* Copyright (c) 2016-2019, The Tor Project, Inc. */
+/* See LICENSE for licensing information */
+
 #define SHARED_RANDOM_PRIVATE
 #define SHARED_RANDOM_STATE_PRIVATE
 #define CONFIG_PRIVATE
 #define DIRVOTE_PRIVATE
 
-#include "or.h"
-#include "test.h"
-#include "config.h"
-#include "dirvote.h"
-#include "shared_random.h"
-#include "shared_random_state.h"
-#include "routerkeys.h"
-#include "routerlist.h"
-#include "router.h"
-#include "routerparse.h"
-#include "networkstatus.h"
-#include "log_test_helpers.h"
+#include "core/or/or.h"
+#include "test/test.h"
+#include "app/config/config.h"
+#include "lib/crypt_ops/crypto_rand.h"
+#include "feature/dirauth/dirvote.h"
+#include "feature/dirauth/shared_random.h"
+#include "feature/dirauth/shared_random_state.h"
+#include "test/log_test_helpers.h"
+#include "feature/nodelist/networkstatus.h"
+#include "feature/relay/router.h"
+#include "feature/relay/routerkeys.h"
+#include "feature/nodelist/authcert.h"
+#include "feature/nodelist/dirlist.h"
+#include "feature/dirparse/authcert_parse.h"
+#include "feature/hs_common/shared_random_client.h"
+#include "feature/dircommon/voting_schedule.h"
+
+#include "feature/dirclient/dir_server_st.h"
+#include "feature/nodelist/networkstatus_st.h"
+#include "app/config/or_state_st.h"
+
+#ifdef HAVE_SYS_STAT_H
+#include <sys/stat.h>
+#endif
+
+#ifdef _WIN32
+/* For mkdir */
+#include <direct.h>
+#endif
 
 static authority_cert_t *mock_cert;
 
@@ -48,7 +68,7 @@ init_authority_state(void)
   mock_cert = authority_cert_parse_from_string(AUTHORITY_CERT_1, NULL);
   tt_assert(mock_cert);
   options->AuthoritativeDir = 1;
-  tt_int_op(0, ==, load_ed_keys(options, time(NULL)));
+  tt_int_op(load_ed_keys(options, time(NULL)), OP_GE, 0);
   sr_state_init(0, 0);
   /* It's possible a commit has been generated in our state depending on
    * the phase we are currently in which uses "now" as the starting
@@ -73,65 +93,73 @@ test_get_sr_protocol_phase(void *arg)
 
   {
     retval = parse_rfc1123_time("Wed, 20 Apr 2015 23:59:00 UTC", &the_time);
-    tt_int_op(retval, ==, 0);
+    tt_int_op(retval, OP_EQ, 0);
 
     phase = get_sr_protocol_phase(the_time);
-    tt_int_op(phase, ==, SR_PHASE_REVEAL);
+    tt_int_op(phase, OP_EQ, SR_PHASE_REVEAL);
   }
 
   {
     retval = parse_rfc1123_time("Wed, 20 Apr 2015 00:00:00 UTC", &the_time);
-    tt_int_op(retval, ==, 0);
+    tt_int_op(retval, OP_EQ, 0);
 
     phase = get_sr_protocol_phase(the_time);
-    tt_int_op(phase, ==, SR_PHASE_COMMIT);
+    tt_int_op(phase, OP_EQ, SR_PHASE_COMMIT);
   }
 
   {
     retval = parse_rfc1123_time("Wed, 20 Apr 2015 00:00:01 UTC", &the_time);
-    tt_int_op(retval, ==, 0);
+    tt_int_op(retval, OP_EQ, 0);
 
     phase = get_sr_protocol_phase(the_time);
-    tt_int_op(phase, ==, SR_PHASE_COMMIT);
+    tt_int_op(phase, OP_EQ, SR_PHASE_COMMIT);
   }
 
   {
     retval = parse_rfc1123_time("Wed, 20 Apr 2015 11:59:00 UTC", &the_time);
-    tt_int_op(retval, ==, 0);
+    tt_int_op(retval, OP_EQ, 0);
 
     phase = get_sr_protocol_phase(the_time);
-    tt_int_op(phase, ==, SR_PHASE_COMMIT);
+    tt_int_op(phase, OP_EQ, SR_PHASE_COMMIT);
   }
 
   {
     retval = parse_rfc1123_time("Wed, 20 Apr 2015 12:00:00 UTC", &the_time);
-    tt_int_op(retval, ==, 0);
+    tt_int_op(retval, OP_EQ, 0);
 
     phase = get_sr_protocol_phase(the_time);
-    tt_int_op(phase, ==, SR_PHASE_REVEAL);
+    tt_int_op(phase, OP_EQ, SR_PHASE_REVEAL);
   }
 
   {
     retval = parse_rfc1123_time("Wed, 20 Apr 2015 12:00:01 UTC", &the_time);
-    tt_int_op(retval, ==, 0);
+    tt_int_op(retval, OP_EQ, 0);
 
     phase = get_sr_protocol_phase(the_time);
-    tt_int_op(phase, ==, SR_PHASE_REVEAL);
+    tt_int_op(phase, OP_EQ, SR_PHASE_REVEAL);
   }
 
   {
     retval = parse_rfc1123_time("Wed, 20 Apr 2015 13:00:00 UTC", &the_time);
-    tt_int_op(retval, ==, 0);
+    tt_int_op(retval, OP_EQ, 0);
 
     phase = get_sr_protocol_phase(the_time);
-    tt_int_op(phase, ==, SR_PHASE_REVEAL);
+    tt_int_op(phase, OP_EQ, SR_PHASE_REVEAL);
   }
 
  done:
   ;
 }
 
-static networkstatus_t *mock_consensus = NULL;
+static networkstatus_t mock_consensus;
+
+/* Mock function to immediately return our local 'mock_consensus'. */
+static networkstatus_t *
+mock_networkstatus_get_live_consensus(time_t now)
+{
+  (void) now;
+  return &mock_consensus;
+}
 
 static void
 test_get_state_valid_until_time(void *arg)
@@ -143,11 +171,23 @@ test_get_state_valid_until_time(void *arg)
 
   (void) arg;
 
+  MOCK(networkstatus_get_live_consensus,
+       mock_networkstatus_get_live_consensus);
+
+  retval = parse_rfc1123_time("Mon, 20 Apr 2015 01:00:00 UTC",
+                              &mock_consensus.fresh_until);
+  tt_int_op(retval, OP_EQ, 0);
+
+  retval = parse_rfc1123_time("Mon, 20 Apr 2015 00:00:00 UTC",
+                              &mock_consensus.valid_after);
+  tt_int_op(retval, OP_EQ, 0);
+
   {
     /* Get the valid until time if called at 00:00:01 */
     retval = parse_rfc1123_time("Mon, 20 Apr 2015 00:00:01 UTC",
                                 &current_time);
-    tt_int_op(retval, ==, 0);
+    tt_int_op(retval, OP_EQ, 0);
+    voting_schedule_recalculate_timing(get_options(), current_time);
     valid_until_time = get_state_valid_until_time(current_time);
 
     /* Compare it with the correct result */
@@ -158,7 +198,8 @@ test_get_state_valid_until_time(void *arg)
   {
     retval = parse_rfc1123_time("Mon, 20 Apr 2015 19:22:00 UTC",
                                 &current_time);
-    tt_int_op(retval, ==, 0);
+    tt_int_op(retval, OP_EQ, 0);
+    voting_schedule_recalculate_timing(get_options(), current_time);
     valid_until_time = get_state_valid_until_time(current_time);
 
     format_iso_time(tbuf, valid_until_time);
@@ -168,7 +209,8 @@ test_get_state_valid_until_time(void *arg)
   {
     retval = parse_rfc1123_time("Mon, 20 Apr 2015 23:59:00 UTC",
                                 &current_time);
-    tt_int_op(retval, ==, 0);
+    tt_int_op(retval, OP_EQ, 0);
+    voting_schedule_recalculate_timing(get_options(), current_time);
     valid_until_time = get_state_valid_until_time(current_time);
 
     format_iso_time(tbuf, valid_until_time);
@@ -178,90 +220,187 @@ test_get_state_valid_until_time(void *arg)
   {
     retval = parse_rfc1123_time("Mon, 20 Apr 2015 00:00:00 UTC",
                                 &current_time);
-    tt_int_op(retval, ==, 0);
+    tt_int_op(retval, OP_EQ, 0);
+    voting_schedule_recalculate_timing(get_options(), current_time);
     valid_until_time = get_state_valid_until_time(current_time);
 
     format_iso_time(tbuf, valid_until_time);
     tt_str_op("2015-04-21 00:00:00", OP_EQ, tbuf);
+  }
+
+ done:
+  UNMOCK(networkstatus_get_live_consensus);
+}
+
+/** Test the function that calculates the start time of the current SRV
+ *  protocol run. */
+static void
+test_get_start_time_of_current_run(void *arg)
+{
+  int retval;
+  char tbuf[ISO_TIME_LEN + 1];
+  time_t current_time, run_start_time;
+
+  (void) arg;
+
+  MOCK(networkstatus_get_live_consensus,
+       mock_networkstatus_get_live_consensus);
+
+  retval = parse_rfc1123_time("Mon, 20 Apr 2015 01:00:00 UTC",
+                              &mock_consensus.fresh_until);
+  tt_int_op(retval, OP_EQ, 0);
+
+  retval = parse_rfc1123_time("Mon, 20 Apr 2015 00:00:00 UTC",
+                              &mock_consensus.valid_after);
+  tt_int_op(retval, OP_EQ, 0);
+
+  {
+    /* Get start time if called at 00:00:01 */
+    retval = parse_rfc1123_time("Mon, 20 Apr 2015 00:00:01 UTC",
+                                &current_time);
+    tt_int_op(retval, OP_EQ, 0);
+    voting_schedule_recalculate_timing(get_options(), current_time);
+    run_start_time = sr_state_get_start_time_of_current_protocol_run();
+
+    /* Compare it with the correct result */
+    format_iso_time(tbuf, run_start_time);
+    tt_str_op("2015-04-20 00:00:00", OP_EQ, tbuf);
+  }
+
+  {
+    retval = parse_rfc1123_time("Mon, 20 Apr 2015 23:59:59 UTC",
+                                &current_time);
+    tt_int_op(retval, OP_EQ, 0);
+    voting_schedule_recalculate_timing(get_options(), current_time);
+    run_start_time = sr_state_get_start_time_of_current_protocol_run();
+
+    /* Compare it with the correct result */
+    format_iso_time(tbuf, run_start_time);
+    tt_str_op("2015-04-20 00:00:00", OP_EQ, tbuf);
+  }
+
+  {
+    retval = parse_rfc1123_time("Mon, 20 Apr 2015 00:00:00 UTC",
+                                &current_time);
+    tt_int_op(retval, OP_EQ, 0);
+    voting_schedule_recalculate_timing(get_options(), current_time);
+    run_start_time = sr_state_get_start_time_of_current_protocol_run();
+
+    /* Compare it with the correct result */
+    format_iso_time(tbuf, run_start_time);
+    tt_str_op("2015-04-20 00:00:00", OP_EQ, tbuf);
+  }
+
+  {
+    /* We want the local time to be past midnight, but the current consensus to
+     * have valid-after 23:00 (e.g. this can happen if we fetch a new consensus
+     * at 00:08 before dircaches have a chance to get the midnight consensus).
+     *
+     * Basically, we want to cause a desynch between ns->valid_after (23:00)
+     * and the voting_schedule.interval_starts (01:00), to make sure that
+     * sr_state_get_start_time_of_current_protocol_run() handles it gracefully:
+     * It should actually follow the local consensus time and not the voting
+     * schedule (which is designed for authority voting purposes). */
+    retval = parse_rfc1123_time("Mon, 20 Apr 2015 00:00:00 UTC",
+                                &mock_consensus.fresh_until);
+    tt_int_op(retval, OP_EQ, 0);
+
+    retval = parse_rfc1123_time("Mon, 19 Apr 2015 23:00:00 UTC",
+                                &mock_consensus.valid_after);
+
+    retval = parse_rfc1123_time("Mon, 20 Apr 2015 00:08:00 UTC",
+                                &current_time);
+    tt_int_op(retval, OP_EQ, 0);
+    update_approx_time(current_time);
+    voting_schedule_recalculate_timing(get_options(), current_time);
+
+    run_start_time = sr_state_get_start_time_of_current_protocol_run();
+
+    /* Compare it with the correct result */
+    format_iso_time(tbuf, run_start_time);
+    tt_str_op("2015-04-19 00:00:00", OP_EQ, tbuf);
+    /* Check that voting_schedule.interval_starts is at 01:00 (see above) */
+    time_t interval_starts = voting_schedule_get_next_valid_after_time();
+    format_iso_time(tbuf, interval_starts);
+    tt_str_op("2015-04-20 01:00:00", OP_EQ, tbuf);
+  }
+
+  /* Next test is testing it without a consensus to use the testing voting
+   * interval . */
+  UNMOCK(networkstatus_get_live_consensus);
+
+  /* Now let's alter the voting schedule and check the correctness of the
+   * function. Voting interval of 10 seconds, means that an SRV protocol run
+   * takes 10 seconds * 24 rounds = 4 mins */
+  {
+    or_options_t *options = get_options_mutable();
+    options->V3AuthVotingInterval = 10;
+    options->TestingV3AuthInitialVotingInterval = 10;
+    retval = parse_rfc1123_time("Mon, 20 Apr 2015 00:15:32 UTC",
+                                &current_time);
+    tt_int_op(retval, OP_EQ, 0);
+    voting_schedule_recalculate_timing(get_options(), current_time);
+    run_start_time = sr_state_get_start_time_of_current_protocol_run();
+
+    /* Compare it with the correct result */
+    format_iso_time(tbuf, run_start_time);
+    tt_str_op("2015-04-20 00:12:00", OP_EQ, tbuf);
   }
 
  done:
   ;
 }
 
-/* Mock function to immediately return our local 'mock_consensus'. */
-static networkstatus_t *
-mock_networkstatus_get_live_consensus(time_t now)
-{
-  (void) now;
-  return mock_consensus;
-}
-
-/** Test the get_next_valid_after_time() function. */
+/** Do some rudimentary consistency checks between the functions that
+ *  understand the shared random protocol schedule */
 static void
-test_get_next_valid_after_time(void *arg)
+test_get_start_time_functions(void *arg)
 {
-  time_t current_time;
-  time_t valid_after_time;
-  char tbuf[ISO_TIME_LEN + 1];
+  (void) arg;
   int retval;
 
-  (void) arg;
+  MOCK(networkstatus_get_live_consensus,
+       mock_networkstatus_get_live_consensus);
 
-  {
-    /* Setup a fake consensus just to get the times out of it, since
-       get_next_valid_after_time() needs them. */
-    mock_consensus = tor_malloc_zero(sizeof(networkstatus_t));
+  retval = parse_rfc1123_time("Mon, 20 Apr 2015 01:00:00 UTC",
+                              &mock_consensus.fresh_until);
+  tt_int_op(retval, OP_EQ, 0);
 
-    retval = parse_rfc1123_time("Mon, 13 Jan 2016 16:00:00 UTC",
-                                &mock_consensus->fresh_until);
-    tt_int_op(retval, ==, 0);
+  retval = parse_rfc1123_time("Mon, 20 Apr 2015 00:00:00 UTC",
+                              &mock_consensus.valid_after);
+  tt_int_op(retval, OP_EQ, 0);
+  time_t now = mock_consensus.valid_after;
 
-    retval = parse_rfc1123_time("Mon, 13 Jan 2016 15:00:00 UTC",
-                                &mock_consensus->valid_after);
-    tt_int_op(retval, ==, 0);
+  voting_schedule_recalculate_timing(get_options(), now);
+  time_t start_time_of_protocol_run =
+    sr_state_get_start_time_of_current_protocol_run();
+  tt_assert(start_time_of_protocol_run);
 
-    MOCK(networkstatus_get_live_consensus,
-         mock_networkstatus_get_live_consensus);
-  }
-
-  {
-    /* Get the valid after time if called at 00:00:00 */
-    retval = parse_rfc1123_time("Mon, 20 Apr 2015 00:00:00 UTC",
-                                &current_time);
-    tt_int_op(retval, ==, 0);
-    valid_after_time = get_next_valid_after_time(current_time);
-
-    /* Compare it with the correct result */
-    format_iso_time(tbuf, valid_after_time);
-    tt_str_op("2015-04-20 01:00:00", OP_EQ, tbuf);
-  }
-
-  {
-    /* Get the valid until time if called at 00:00:01 */
-    retval = parse_rfc1123_time("Mon, 20 Apr 2015 00:00:01 UTC",
-                                &current_time);
-    tt_int_op(retval, ==, 0);
-    valid_after_time = get_next_valid_after_time(current_time);
-
-    /* Compare it with the correct result */
-    format_iso_time(tbuf, valid_after_time);
-    tt_str_op("2015-04-20 01:00:00", OP_EQ, tbuf);
- }
-
-  {
-    retval = parse_rfc1123_time("Mon, 20 Apr 2015 23:30:01 UTC",
-                                &current_time);
-    tt_int_op(retval, ==, 0);
-    valid_after_time = get_next_valid_after_time(current_time);
-
-    /* Compare it with the correct result */
-    format_iso_time(tbuf, valid_after_time);
-    tt_str_op("2015-04-21 00:00:00", OP_EQ, tbuf);
- }
+  /* Check that the round start time of the beginning of the run, is itself */
+  tt_int_op(get_start_time_of_current_round(), OP_EQ,
+            start_time_of_protocol_run);
 
  done:
-  networkstatus_vote_free(mock_consensus);
+  UNMOCK(networkstatus_get_live_consensus);
+}
+
+static void
+test_get_sr_protocol_duration(void *arg)
+{
+  (void) arg;
+
+  /* Check that by default an SR phase is 12 hours */
+  tt_int_op(sr_state_get_phase_duration(), OP_EQ, 12*60*60);
+  tt_int_op(sr_state_get_protocol_run_duration(), OP_EQ, 24*60*60);
+
+  /* Now alter the voting interval and check that the SR phase is 2 mins long
+   * if voting happens every 10 seconds (10*12 seconds = 2 mins) */
+  or_options_t *options = get_options_mutable();
+  options->V3AuthVotingInterval = 10;
+  tt_int_op(sr_state_get_phase_duration(), OP_EQ, 2*60);
+  tt_int_op(sr_state_get_protocol_run_duration(), OP_EQ, 4*60);
+
+ done: ;
 }
 
 /* In this test we are going to generate a sr_commit_t object and validate
@@ -286,7 +425,7 @@ test_sr_commit(void *arg)
     tt_assert(auth_cert);
 
     options->AuthoritativeDir = 1;
-    tt_int_op(0, ==, load_ed_keys(options, now));
+    tt_int_op(load_ed_keys(options, time(NULL)), OP_GE, 0);
   }
 
   /* Generate our commit object and validate it has the appropriate field
@@ -304,18 +443,18 @@ test_sr_commit(void *arg)
     tt_assert(!tor_mem_is_zero((char *) our_commit->random_number,
                                sizeof(our_commit->random_number)));
     /* Commit and reveal timestamp should be the same. */
-    tt_u64_op(our_commit->commit_ts, ==, our_commit->reveal_ts);
+    tt_u64_op(our_commit->commit_ts, OP_EQ, our_commit->reveal_ts);
     /* We should have a hashed reveal. */
     tt_assert(!tor_mem_is_zero(our_commit->hashed_reveal,
                                sizeof(our_commit->hashed_reveal)));
     /* Do we have a valid encoded commit and reveal. Note the following only
      * tests if the generated values are correct. Their could be a bug in
-     * the decode function but we test them seperately. */
-    tt_int_op(0, ==, reveal_decode(our_commit->encoded_reveal,
+     * the decode function but we test them separately. */
+    tt_int_op(0, OP_EQ, reveal_decode(our_commit->encoded_reveal,
                                    &test_commit));
-    tt_int_op(0, ==, commit_decode(our_commit->encoded_commit,
+    tt_int_op(0, OP_EQ, commit_decode(our_commit->encoded_commit,
                                    &test_commit));
-    tt_int_op(0, ==, verify_commit_and_reveal(our_commit));
+    tt_int_op(0, OP_EQ, verify_commit_and_reveal(our_commit));
   }
 
   /* Let's make sure our verify commit and reveal function works. We'll
@@ -328,32 +467,32 @@ test_sr_commit(void *arg)
     /* Timestamp MUST match. */
     test_commit.commit_ts = test_commit.reveal_ts - 42;
     setup_full_capture_of_logs(LOG_WARN);
-    tt_int_op(-1, ==, verify_commit_and_reveal(&test_commit));
+    tt_int_op(-1, OP_EQ, verify_commit_and_reveal(&test_commit));
     expect_log_msg_containing("doesn't match reveal timestamp");
     teardown_capture_of_logs();
     memcpy(&test_commit, our_commit, sizeof(test_commit));
-    tt_int_op(0, ==, verify_commit_and_reveal(&test_commit));
+    tt_int_op(0, OP_EQ, verify_commit_and_reveal(&test_commit));
 
     /* Hashed reveal must match the H(encoded_reveal). */
     memset(test_commit.hashed_reveal, 'X',
            sizeof(test_commit.hashed_reveal));
     setup_full_capture_of_logs(LOG_WARN);
-    tt_int_op(-1, ==, verify_commit_and_reveal(&test_commit));
+    tt_int_op(-1, OP_EQ, verify_commit_and_reveal(&test_commit));
     expect_single_log_msg_containing("doesn't match the commit value");
     teardown_capture_of_logs();
     memcpy(&test_commit, our_commit, sizeof(test_commit));
-    tt_int_op(0, ==, verify_commit_and_reveal(&test_commit));
+    tt_int_op(0, OP_EQ, verify_commit_and_reveal(&test_commit));
   }
 
   /* We'll build a list of values from our commit that our parsing function
    * takes from a vote line and see if we can parse it correctly. */
   {
-    smartlist_add(args, tor_strdup("1"));
-    smartlist_add(args,
-               tor_strdup(crypto_digest_algorithm_get_name(our_commit->alg)));
-    smartlist_add(args, tor_strdup(sr_commit_get_rsa_fpr(our_commit)));
-    smartlist_add(args, tor_strdup(our_commit->encoded_commit));
-    smartlist_add(args, tor_strdup(our_commit->encoded_reveal));
+    smartlist_add_strdup(args, "1");
+    smartlist_add_strdup(args,
+               crypto_digest_algorithm_get_name(our_commit->alg));
+    smartlist_add_strdup(args, sr_commit_get_rsa_fpr(our_commit));
+    smartlist_add_strdup(args, our_commit->encoded_commit);
+    smartlist_add_strdup(args, our_commit->encoded_reveal);
     parsed_commit = sr_parse_commit(args);
     tt_assert(parsed_commit);
     /* That parsed commit should be _EXACTLY_ like our original commit (we
@@ -396,26 +535,26 @@ test_encoding(void *arg)
   /* Hash random number because we don't expose bytes of the RNG. */
   ret = crypto_digest256(hashed_rand, raw_rand,
                          sizeof(raw_rand), SR_DIGEST_ALG);
-  tt_int_op(0, ==, ret);
+  tt_int_op(0, OP_EQ, ret);
   /* Hash reveal value. */
-  tt_int_op(SR_REVEAL_BASE64_LEN, ==, strlen(encoded_reveal));
+  tt_int_op(SR_REVEAL_BASE64_LEN, OP_EQ, strlen(encoded_reveal));
   ret = crypto_digest256(hashed_reveal, encoded_reveal,
                          strlen(encoded_reveal), SR_DIGEST_ALG);
-  tt_int_op(0, ==, ret);
-  tt_int_op(SR_COMMIT_BASE64_LEN, ==, strlen(encoded_commit));
+  tt_int_op(0, OP_EQ, ret);
+  tt_int_op(SR_COMMIT_BASE64_LEN, OP_EQ, strlen(encoded_commit));
 
   /* Test our commit/reveal decode functions. */
   {
     /* Test the reveal encoded value. */
-    tt_int_op(0, ==, reveal_decode(encoded_reveal, &parsed_commit));
-    tt_u64_op(ts, ==, parsed_commit.reveal_ts);
+    tt_int_op(0, OP_EQ, reveal_decode(encoded_reveal, &parsed_commit));
+    tt_u64_op(ts, OP_EQ, parsed_commit.reveal_ts);
     tt_mem_op(hashed_rand, OP_EQ, parsed_commit.random_number,
               sizeof(hashed_rand));
 
     /* Test the commit encoded value. */
     memset(&parsed_commit, 0, sizeof(parsed_commit));
-    tt_int_op(0, ==, commit_decode(encoded_commit, &parsed_commit));
-    tt_u64_op(ts, ==, parsed_commit.commit_ts);
+    tt_int_op(0, OP_EQ, commit_decode(encoded_commit, &parsed_commit));
+    tt_u64_op(ts, OP_EQ, parsed_commit.commit_ts);
     tt_mem_op(encoded_commit, OP_EQ, parsed_commit.encoded_commit,
               sizeof(parsed_commit.encoded_commit));
     tt_mem_op(hashed_reveal, OP_EQ, parsed_commit.hashed_reveal,
@@ -430,7 +569,7 @@ test_encoding(void *arg)
     memcpy(parsed_commit.random_number, hashed_rand,
            sizeof(parsed_commit.random_number));
     ret = reveal_encode(&parsed_commit, encoded, sizeof(encoded));
-    tt_int_op(SR_REVEAL_BASE64_LEN, ==, ret);
+    tt_int_op(SR_REVEAL_BASE64_LEN, OP_EQ, ret);
     tt_mem_op(encoded_reveal, OP_EQ, encoded, strlen(encoded_reveal));
   }
 
@@ -441,7 +580,7 @@ test_encoding(void *arg)
     memcpy(parsed_commit.hashed_reveal, hashed_reveal,
            sizeof(parsed_commit.hashed_reveal));
     ret = commit_encode(&parsed_commit, encoded, sizeof(encoded));
-    tt_int_op(SR_COMMIT_BASE64_LEN, ==, ret);
+    tt_int_op(SR_COMMIT_BASE64_LEN, OP_EQ, ret);
     tt_mem_op(encoded_commit, OP_EQ, encoded, strlen(encoded_commit));
   }
 
@@ -518,9 +657,9 @@ test_vote(void *arg)
     tt_assert(lines);
     /* Split the lines. We expect 2 here. */
     ret = smartlist_split_string(chunks, lines, "\n", SPLIT_IGNORE_BLANK, 0);
-    tt_int_op(ret, ==, 4);
+    tt_int_op(ret, OP_EQ, 4);
     tt_str_op(smartlist_get(chunks, 0), OP_EQ, "shared-rand-participate");
-    /* Get our commitment line and will validate it agains our commit. The
+    /* Get our commitment line and will validate it against our commit. The
      * format is as follow:
      * "shared-rand-commitment" SP version SP algname SP identity
      *                          SP COMMIT [SP REVEAL] NL
@@ -528,7 +667,7 @@ test_vote(void *arg)
     char *commit_line = smartlist_get(chunks, 1);
     tt_assert(commit_line);
     ret = smartlist_split_string(tokens, commit_line, " ", 0, 0);
-    tt_int_op(ret, ==, 6);
+    tt_int_op(ret, OP_EQ, 6);
     tt_str_op(smartlist_get(tokens, 0), OP_EQ, "shared-rand-commit");
     tt_str_op(smartlist_get(tokens, 1), OP_EQ, "1");
     tt_str_op(smartlist_get(tokens, 2), OP_EQ,
@@ -536,7 +675,7 @@ test_vote(void *arg)
     char digest[DIGEST_LEN];
     base16_decode(digest, sizeof(digest), smartlist_get(tokens, 3),
                   HEX_DIGEST_LEN);
-    tt_mem_op(digest, ==, our_commit->rsa_identity, sizeof(digest));
+    tt_mem_op(digest, OP_EQ, our_commit->rsa_identity, sizeof(digest));
     tt_str_op(smartlist_get(tokens, 4), OP_EQ, our_commit->encoded_commit);
     tt_str_op(smartlist_get(tokens, 5), OP_EQ, our_commit->encoded_reveal)
 ;
@@ -552,7 +691,7 @@ test_vote(void *arg)
     /* Set valid flag explicitly here to compare since it's not set by
      * simply parsing the commit. */
     parsed_commit->valid = 1;
-    tt_mem_op(parsed_commit, ==, our_commit, sizeof(*our_commit));
+    tt_mem_op(parsed_commit, OP_EQ, our_commit, sizeof(*our_commit));
 
     /* minor cleanup */
     SMARTLIST_FOREACH(tokens, char *, s, tor_free(s));
@@ -562,7 +701,7 @@ test_vote(void *arg)
     char *prev_srv_line = smartlist_get(chunks, 2);
     tt_assert(prev_srv_line);
     ret = smartlist_split_string(tokens, prev_srv_line, " ", 0, 0);
-    tt_int_op(ret, ==, 3);
+    tt_int_op(ret, OP_EQ, 3);
     tt_str_op(smartlist_get(tokens, 0), OP_EQ, "shared-rand-previous-value");
     tt_str_op(smartlist_get(tokens, 1), OP_EQ, "42");
     tt_str_op(smartlist_get(tokens, 2), OP_EQ,
@@ -576,7 +715,7 @@ test_vote(void *arg)
     char *current_srv_line = smartlist_get(chunks, 3);
     tt_assert(current_srv_line);
     ret = smartlist_split_string(tokens, current_srv_line, " ", 0, 0);
-    tt_int_op(ret, ==, 3);
+    tt_int_op(ret, OP_EQ, 3);
     tt_str_op(smartlist_get(tokens, 0), OP_EQ, "shared-rand-current-value");
     tt_str_op(smartlist_get(tokens, 1), OP_EQ, "128");
     tt_str_op(smartlist_get(tokens, 2), OP_EQ,
@@ -629,7 +768,7 @@ test_state_load_from_disk(void *arg)
 
   /* First try with a nonexistent path. */
   ret = disk_state_load_from_disk_impl("NONEXISTENTNONEXISTENT");
-  tt_assert(ret == -ENOENT);
+  tt_int_op(ret, OP_EQ, -ENOENT);
 
   /* Now create a mock state directory and state file */
 #ifdef _WIN32
@@ -637,9 +776,9 @@ test_state_load_from_disk(void *arg)
 #else
   ret = mkdir(dir, 0700);
 #endif
-  tt_assert(ret == 0);
+  tt_int_op(ret, OP_EQ, 0);
   ret = write_str_to_file(sr_state_path, sr_state_str, 0);
-  tt_assert(ret == 0);
+  tt_int_op(ret, OP_EQ, 0);
 
   /* Try to load the directory itself. Should fail. */
   ret = disk_state_load_from_disk_impl(dir);
@@ -647,11 +786,11 @@ test_state_load_from_disk(void *arg)
 
   /* State should be non-existent at this point. */
   the_sr_state = get_sr_state();
-  tt_assert(!the_sr_state);
+  tt_ptr_op(the_sr_state, OP_EQ, NULL);
 
   /* Now try to load the correct file! */
   ret = disk_state_load_from_disk_impl(sr_state_path);
-  tt_assert(ret == 0);
+  tt_int_op(ret, OP_EQ, 0);
 
   /* Check the content of the state */
   /* XXX check more deeply!!! */
@@ -689,7 +828,7 @@ test_sr_setup_commits(void)
     tt_assert(auth_cert);
 
     options->AuthoritativeDir = 1;
-    tt_int_op(0, ==, load_ed_keys(options, now));
+    tt_int_op(0, OP_EQ, load_ed_keys(options, now));
   }
 
   /* Generate three dummy commits according to sr_srv_calc_ref.py .  Then
@@ -775,11 +914,12 @@ test_sr_setup_commits(void)
   save_commit_to_state(commit_b);
   save_commit_to_state(commit_c);
   save_commit_to_state(commit_d);
-  tt_int_op(digestmap_size(get_sr_state()->commits), ==, 4);
+  tt_int_op(digestmap_size(get_sr_state()->commits), OP_EQ, 4);
 
   /* Now during REVEAL phase save commit D by restoring its reveal. */
   set_sr_phase(SR_PHASE_REVEAL);
   save_commit_to_state(place_holder);
+  place_holder = NULL;
   tt_str_op(commit_d->encoded_reveal, OP_EQ,
             "DDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD");
   /* Go back to an empty encoded reveal value. */
@@ -788,6 +928,7 @@ test_sr_setup_commits(void)
   tt_assert(!commit_has_reveal_value(commit_d));
 
  done:
+  tor_free(place_holder);
   authority_cert_free(auth_cert);
 }
 
@@ -820,9 +961,9 @@ test_sr_compute_srv(void *arg)
   /* Check the result against the test vector */
   current_srv = sr_state_get_current_srv();
   tt_assert(current_srv);
-  tt_u64_op(current_srv->num_reveals, ==, 3);
+  tt_u64_op(current_srv->num_reveals, OP_EQ, 3);
   tt_str_op(hex_str((char*)current_srv->value, 32),
-            ==,
+            OP_EQ,
             SRV_TEST_VECTOR);
 
  done:
@@ -878,7 +1019,7 @@ test_sr_get_majority_srv_from_votes(void *arg)
   /* Since it's only one vote with an SRV, it should not achieve majority and
      hence no SRV will be returned. */
   chosen_srv = get_majority_srv_from_votes(votes, 1);
-  tt_assert(!chosen_srv);
+  tt_ptr_op(chosen_srv, OP_EQ, NULL);
 
   { /* Now put in 8 more votes. Let SRV_1 have majority. */
     int i;
@@ -897,21 +1038,21 @@ test_sr_get_majority_srv_from_votes(void *arg)
       smartlist_add(votes, vote);
     }
 
-    tt_int_op(smartlist_len(votes), ==, 9);
+    tt_int_op(smartlist_len(votes), OP_EQ, 9);
   }
 
   /* Now we achieve majority for SRV_1, but not the AuthDirNumSRVAgreements
      requirement. So still not picking an SRV. */
   set_num_srv_agreements(8);
   chosen_srv = get_majority_srv_from_votes(votes, 1);
-  tt_assert(!chosen_srv);
+  tt_ptr_op(chosen_srv, OP_EQ, NULL);
 
   /* We will now lower the AuthDirNumSRVAgreements requirement by tweaking the
    * consensus parameter and we will try again. This time it should work. */
   set_num_srv_agreements(7);
   chosen_srv = get_majority_srv_from_votes(votes, 1);
   tt_assert(chosen_srv);
-  tt_u64_op(chosen_srv->num_reveals, ==, 42);
+  tt_u64_op(chosen_srv->num_reveals, OP_EQ, 42);
   tt_mem_op(chosen_srv->value, OP_EQ, SRV_1, sizeof(chosen_srv->value));
 
  done:
@@ -935,7 +1076,7 @@ test_utils(void *arg)
     memcpy(srv->value, srv_value, sizeof(srv->value));
     dup_srv = srv_dup(srv);
     tt_assert(dup_srv);
-    tt_u64_op(dup_srv->num_reveals, ==, srv->num_reveals);
+    tt_u64_op(dup_srv->num_reveals, OP_EQ, srv->num_reveals);
     tt_mem_op(dup_srv->value, OP_EQ, srv->value, sizeof(srv->value));
     tor_free(srv);
     tor_free(dup_srv);
@@ -955,10 +1096,10 @@ test_utils(void *arg)
     sr_commit_t commit1, commit2;
     memcpy(commit1.encoded_commit, payload, sizeof(commit1.encoded_commit));
     memcpy(commit2.encoded_commit, payload, sizeof(commit2.encoded_commit));
-    tt_int_op(commitments_are_the_same(&commit1, &commit2), ==, 1);
+    tt_int_op(commitments_are_the_same(&commit1, &commit2), OP_EQ, 1);
     /* Let's corrupt one of them. */
     memset(commit1.encoded_commit, 'A', sizeof(commit1.encoded_commit));
-    tt_int_op(commitments_are_the_same(&commit1, &commit2), ==, 0);
+    tt_int_op(commitments_are_the_same(&commit1, &commit2), OP_EQ, 0);
   }
 
   /* Testing commit_is_authoritative(). */
@@ -969,32 +1110,32 @@ test_utils(void *arg)
 
     tt_assert(!crypto_pk_generate_key(k));
 
-    tt_int_op(0, ==, crypto_pk_get_digest(k, digest));
+    tt_int_op(0, OP_EQ, crypto_pk_get_digest(k, digest));
     memcpy(commit.rsa_identity, digest, sizeof(commit.rsa_identity));
-    tt_int_op(commit_is_authoritative(&commit, digest), ==, 1);
+    tt_int_op(commit_is_authoritative(&commit, digest), OP_EQ, 1);
     /* Change the pubkey. */
     memset(commit.rsa_identity, 0, sizeof(commit.rsa_identity));
-    tt_int_op(commit_is_authoritative(&commit, digest), ==, 0);
+    tt_int_op(commit_is_authoritative(&commit, digest), OP_EQ, 0);
     crypto_pk_free(k);
   }
 
   /* Testing get_phase_str(). */
   {
-    tt_str_op(get_phase_str(SR_PHASE_REVEAL), ==, "reveal");
-    tt_str_op(get_phase_str(SR_PHASE_COMMIT), ==, "commit");
+    tt_str_op(get_phase_str(SR_PHASE_REVEAL), OP_EQ, "reveal");
+    tt_str_op(get_phase_str(SR_PHASE_COMMIT), OP_EQ, "commit");
   }
 
   /* Testing phase transition */
   {
     init_authority_state();
     set_sr_phase(SR_PHASE_COMMIT);
-    tt_int_op(is_phase_transition(SR_PHASE_REVEAL), ==, 1);
-    tt_int_op(is_phase_transition(SR_PHASE_COMMIT), ==, 0);
+    tt_int_op(is_phase_transition(SR_PHASE_REVEAL), OP_EQ, 1);
+    tt_int_op(is_phase_transition(SR_PHASE_COMMIT), OP_EQ, 0);
     set_sr_phase(SR_PHASE_REVEAL);
-    tt_int_op(is_phase_transition(SR_PHASE_REVEAL), ==, 0);
-    tt_int_op(is_phase_transition(SR_PHASE_COMMIT), ==, 1);
+    tt_int_op(is_phase_transition(SR_PHASE_REVEAL), OP_EQ, 0);
+    tt_int_op(is_phase_transition(SR_PHASE_COMMIT), OP_EQ, 1);
     /* Junk. */
-    tt_int_op(is_phase_transition(42), ==, 1);
+    tt_int_op(is_phase_transition(42), OP_EQ, 1);
   }
 
  done:
@@ -1022,24 +1163,24 @@ test_state_transition(void *arg)
     sr_commit_t *commit = sr_generate_our_commit(now, mock_cert);
     tt_assert(commit);
     sr_state_add_commit(commit);
-    tt_int_op(digestmap_size(state->commits), ==, 1);
+    tt_int_op(digestmap_size(state->commits), OP_EQ, 1);
     /* Let's test our delete feature. */
     sr_state_delete_commits();
-    tt_int_op(digestmap_size(state->commits), ==, 0);
+    tt_int_op(digestmap_size(state->commits), OP_EQ, 0);
     /* Add it back so we can continue the rest of the test because after
      * deletiong our commit will be freed so generate a new one. */
     commit = sr_generate_our_commit(now, mock_cert);
     tt_assert(commit);
     sr_state_add_commit(commit);
-    tt_int_op(digestmap_size(state->commits), ==, 1);
+    tt_int_op(digestmap_size(state->commits), OP_EQ, 1);
     state->n_reveal_rounds = 42;
     state->n_commit_rounds = 43;
     state->n_protocol_runs = 44;
     reset_state_for_new_protocol_run(now);
-    tt_int_op(state->n_reveal_rounds, ==, 0);
-    tt_int_op(state->n_commit_rounds, ==, 0);
-    tt_u64_op(state->n_protocol_runs, ==, 45);
-    tt_int_op(digestmap_size(state->commits), ==, 0);
+    tt_int_op(state->n_reveal_rounds, OP_EQ, 0);
+    tt_int_op(state->n_commit_rounds, OP_EQ, 0);
+    tt_u64_op(state->n_protocol_runs, OP_EQ, 45);
+    tt_int_op(digestmap_size(state->commits), OP_EQ, 0);
   }
 
   /* Test SRV rotation in our state. */
@@ -1052,7 +1193,7 @@ test_state_transition(void *arg)
     state_rotate_srv();
     prev = sr_state_get_previous_srv();
     tt_assert(prev == cur);
-    tt_assert(!sr_state_get_current_srv());
+    tt_ptr_op(sr_state_get_current_srv(), OP_EQ, NULL);
     sr_state_clean_srvs();
   }
 
@@ -1077,18 +1218,18 @@ test_state_transition(void *arg)
     /* Also, make sure we did change the current. */
     tt_assert(sr_state_get_current_srv() != cur);
     /* We should have our commitment alone. */
-    tt_int_op(digestmap_size(state->commits), ==, 1);
-    tt_int_op(state->n_reveal_rounds, ==, 0);
-    tt_int_op(state->n_commit_rounds, ==, 0);
+    tt_int_op(digestmap_size(state->commits), OP_EQ, 1);
+    tt_int_op(state->n_reveal_rounds, OP_EQ, 0);
+    tt_int_op(state->n_commit_rounds, OP_EQ, 0);
     /* 46 here since we were at 45 just before. */
-    tt_u64_op(state->n_protocol_runs, ==, 46);
+    tt_u64_op(state->n_protocol_runs, OP_EQ, 46);
   }
 
   /* Cleanup of SRVs. */
   {
     sr_state_clean_srvs();
-    tt_assert(!sr_state_get_current_srv());
-    tt_assert(!sr_state_get_previous_srv());
+    tt_ptr_op(sr_state_get_current_srv(), OP_EQ, NULL);
+    tt_ptr_op(sr_state_get_previous_srv(), OP_EQ, NULL);
   }
 
  done:
@@ -1117,6 +1258,8 @@ test_keep_commit(void *arg)
     state = get_sr_state();
   }
 
+  crypto_rand((char*)fp, sizeof(fp));
+
   /* Test this very important function that tells us if we should keep a
    * commit or not in our state. Most of it depends on the phase and what's
    * in the commit so we'll change the commit as we go. */
@@ -1125,21 +1268,21 @@ test_keep_commit(void *arg)
   /* Set us in COMMIT phase for starter. */
   set_sr_phase(SR_PHASE_COMMIT);
   /* We should never keep a commit from a non authoritative authority. */
-  tt_int_op(should_keep_commit(commit, fp, SR_PHASE_COMMIT), ==, 0);
+  tt_int_op(should_keep_commit(commit, fp, SR_PHASE_COMMIT), OP_EQ, 0);
   /* This should NOT be kept because it has a reveal value in it. */
   tt_assert(commit_has_reveal_value(commit));
   tt_int_op(should_keep_commit(commit, commit->rsa_identity,
-                               SR_PHASE_COMMIT), ==, 0);
+                               SR_PHASE_COMMIT), OP_EQ, 0);
   /* Add it to the state which should return to not keep it. */
   sr_state_add_commit(commit);
   tt_int_op(should_keep_commit(commit, commit->rsa_identity,
-                               SR_PHASE_COMMIT), ==, 0);
+                               SR_PHASE_COMMIT), OP_EQ, 0);
   /* Remove it from state so we can continue our testing. */
   digestmap_remove(state->commits, commit->rsa_identity);
   /* Let's remove our reveal value which should make it OK to keep it. */
   memset(commit->encoded_reveal, 0, sizeof(commit->encoded_reveal));
   tt_int_op(should_keep_commit(commit, commit->rsa_identity,
-                               SR_PHASE_COMMIT), ==, 1);
+                               SR_PHASE_COMMIT), OP_EQ, 1);
 
   /* Let's reset our commit and go into REVEAL phase. */
   sr_commit_free(commit);
@@ -1151,17 +1294,17 @@ test_keep_commit(void *arg)
   memset(dup_commit->encoded_reveal, 0, sizeof(dup_commit->encoded_reveal));
   set_sr_phase(SR_PHASE_REVEAL);
   /* We should never keep a commit from a non authoritative authority. */
-  tt_int_op(should_keep_commit(commit, fp, SR_PHASE_REVEAL), ==, 0);
+  tt_int_op(should_keep_commit(commit, fp, SR_PHASE_REVEAL), OP_EQ, 0);
   /* We shouldn't accept a commit that is not in our state. */
   tt_int_op(should_keep_commit(commit, commit->rsa_identity,
-                               SR_PHASE_REVEAL), ==, 0);
+                               SR_PHASE_REVEAL), OP_EQ, 0);
   /* Important to add the commit _without_ the reveal here. */
   sr_state_add_commit(dup_commit);
-  tt_int_op(digestmap_size(state->commits), ==, 1);
+  tt_int_op(digestmap_size(state->commits), OP_EQ, 1);
   /* Our commit should be valid that is authoritative, contains a reveal, be
    * in the state and commitment and reveal values match. */
   tt_int_op(should_keep_commit(commit, commit->rsa_identity,
-                               SR_PHASE_REVEAL), ==, 1);
+                               SR_PHASE_REVEAL), OP_EQ, 1);
   /* The commit shouldn't be kept if it's not verified that is no matchin
    * hashed reveal. */
   {
@@ -1172,22 +1315,22 @@ test_keep_commit(void *arg)
     memset(commit->hashed_reveal, 0, sizeof(commit->hashed_reveal));
     setup_full_capture_of_logs(LOG_WARN);
     tt_int_op(should_keep_commit(commit, commit->rsa_identity,
-                                 SR_PHASE_REVEAL), ==, 0);
+                                 SR_PHASE_REVEAL), OP_EQ, 0);
     expect_log_msg_containing("doesn't match the commit value.");
     expect_log_msg_containing("has an invalid reveal value.");
     assert_log_predicate(mock_saved_log_n_entries() == 2,
-                         "expected 2 log entries");
+                         ("expected 2 log entries"));
     teardown_capture_of_logs();
     memcpy(commit->hashed_reveal, place_holder.hashed_reveal,
            sizeof(commit->hashed_reveal));
   }
   /* We shouldn't keep a commit that has no reveal. */
   tt_int_op(should_keep_commit(dup_commit, dup_commit->rsa_identity,
-                               SR_PHASE_REVEAL), ==, 0);
+                               SR_PHASE_REVEAL), OP_EQ, 0);
   /* We must not keep a commit that is not the same from the commit phase. */
   memset(commit->encoded_commit, 0, sizeof(commit->encoded_commit));
   tt_int_op(should_keep_commit(commit, commit->rsa_identity,
-                               SR_PHASE_REVEAL), ==, 0);
+                               SR_PHASE_REVEAL), OP_EQ, 0);
 
  done:
   teardown_capture_of_logs();
@@ -1225,39 +1368,39 @@ test_state_update(void *arg)
   /* We are in COMMIT phase here and we'll trigger a state update but no
    * transition. */
   sr_state_update(commit_phase_time);
-  tt_int_op(state->valid_after, ==, commit_phase_time);
-  tt_int_op(state->n_commit_rounds, ==, 1);
-  tt_int_op(state->phase, ==, SR_PHASE_COMMIT);
-  tt_int_op(digestmap_size(state->commits), ==, 1);
+  tt_int_op(state->valid_after, OP_EQ, commit_phase_time);
+  tt_int_op(state->n_commit_rounds, OP_EQ, 1);
+  tt_int_op(state->phase, OP_EQ, SR_PHASE_COMMIT);
+  tt_int_op(digestmap_size(state->commits), OP_EQ, 1);
 
   /* We are still in the COMMIT phase here but we'll trigger a state
    * transition to the REVEAL phase. */
   sr_state_update(reveal_phase_time);
-  tt_int_op(state->phase, ==, SR_PHASE_REVEAL);
-  tt_int_op(state->valid_after, ==, reveal_phase_time);
+  tt_int_op(state->phase, OP_EQ, SR_PHASE_REVEAL);
+  tt_int_op(state->valid_after, OP_EQ, reveal_phase_time);
   /* Only our commit should be in there. */
-  tt_int_op(digestmap_size(state->commits), ==, 1);
-  tt_int_op(state->n_reveal_rounds, ==, 1);
+  tt_int_op(digestmap_size(state->commits), OP_EQ, 1);
+  tt_int_op(state->n_reveal_rounds, OP_EQ, 1);
 
   /* We can't update a state with a valid after _lower_ than the creation
    * time so here it is. */
   sr_state_update(commit_phase_time);
-  tt_int_op(state->valid_after, ==, reveal_phase_time);
+  tt_int_op(state->valid_after, OP_EQ, reveal_phase_time);
 
   /* Finally, let's go back in COMMIT phase so we can test the state update
    * of a new protocol run. */
   state->valid_after = 0;
   sr_state_update(commit_phase_time);
-  tt_int_op(state->valid_after, ==, commit_phase_time);
-  tt_int_op(state->n_commit_rounds, ==, 1);
-  tt_int_op(state->n_reveal_rounds, ==, 0);
-  tt_u64_op(state->n_protocol_runs, ==, 1);
-  tt_int_op(state->phase, ==, SR_PHASE_COMMIT);
-  tt_int_op(digestmap_size(state->commits), ==, 1);
+  tt_int_op(state->valid_after, OP_EQ, commit_phase_time);
+  tt_int_op(state->n_commit_rounds, OP_EQ, 1);
+  tt_int_op(state->n_reveal_rounds, OP_EQ, 0);
+  tt_u64_op(state->n_protocol_runs, OP_EQ, 1);
+  tt_int_op(state->phase, OP_EQ, SR_PHASE_COMMIT);
+  tt_int_op(digestmap_size(state->commits), OP_EQ, 1);
   tt_assert(state->current_srv);
 
  done:
-  sr_state_free();
+  sr_state_free_all();
   UNMOCK(get_my_v3_authority_cert);
 }
 
@@ -1270,7 +1413,11 @@ struct testcase_t sr_tests[] = {
     NULL, NULL },
   { "encoding", test_encoding, TT_FORK,
     NULL, NULL },
-  { "get_next_valid_after_time", test_get_next_valid_after_time, TT_FORK,
+  { "get_start_time_of_current_run", test_get_start_time_of_current_run,
+    TT_FORK, NULL, NULL },
+  { "get_start_time_functions", test_get_start_time_functions,
+    TT_FORK, NULL, NULL },
+  { "get_sr_protocol_duration", test_get_sr_protocol_duration, TT_FORK,
     NULL, NULL },
   { "get_state_valid_until_time", test_get_state_valid_until_time, TT_FORK,
     NULL, NULL },
@@ -1287,4 +1434,3 @@ struct testcase_t sr_tests[] = {
     NULL, NULL },
   END_OF_TESTCASES
 };
-

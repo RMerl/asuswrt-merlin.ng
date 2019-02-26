@@ -1,0 +1,8 @@
+By setting <b>cache_crls = yes</b> in <b>/etc/strongswan.conf</b>, a copy of
+both the <b>base CRL</b> and the latest <b>delta CRL</b> fetched via http from
+the web server <b>winnetou</b> is saved locally in the directory
+<b>/etc/swanctl/x509crl</b> on both the roadwarrior <b>carol</b> and the
+gateway <b>moon</b> when the IPsec connection is set up.
+The <b>subjectKeyIdentifier</b> of the issuing CA plus the suffixes
+<b>.crl</b> and <b>_delta.crl</b> are used as unique filename for the
+cached <b>base CRL</b> and <b>delta CRL</b>, respectively.

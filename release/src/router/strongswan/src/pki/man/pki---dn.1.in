@@ -1,0 +1,56 @@
+.TH "PKI \-\-DN" 1 "2015-08-06" "@PACKAGE_VERSION@" "strongSwan"
+.
+.SH "NAME"
+.
+pki \-\-dn \- Extract the subject DN of an X.509 certificate
+.
+.SH "SYNOPSIS"
+.
+.SY pki\ \-\-dn
+.OP \-\-in file
+.OP \-\-format format
+.OP \-\-debug level
+.YS
+.
+.SY pki\ \-\-dn
+.BI \-\-options\~ file
+.YS
+.
+.SY "pki \-\-dn"
+.B \-h
+|
+.B \-\-help
+.YS
+.
+.SH "DESCRIPTION"
+.
+This sub-command of
+.BR pki (1)
+extracts the ASN.1-encoded subject DistinguishedName (DN) of an X.509
+certificate and exports it in different formats.  This may be useful when
+strongSwan's identity parser is unable to produce the correct binary encoding
+from a string.
+.
+.SH "OPTIONS"
+.
+.TP
+.B "\-h, \-\-help"
+Print usage information with a summary of the available options.
+.TP
+.BI "\-v, \-\-debug " level
+Set debug level, default: 1.
+.TP
+.BI "\-+, \-\-options " file
+Read command line options from \fIfile\fR.
+.TP
+.BI "\-i, \-\-in " file
+Input file. If not given the input is read from \fISTDIN\fR.
+.TP
+.BI "\-t, \-\-format " format
+Output format. One of \fIconfig\fR (strongSwan configuration compatible),
+\fIhex\fR (hexadecimal encoding, no prefix), \fIbase64\fR (Base64 encoding,
+no prefix), \fIbin\fR (raw binary data), defaults to \fIconfig\fR.
+.
+.SH "SEE ALSO"
+.
+.BR pki (1)

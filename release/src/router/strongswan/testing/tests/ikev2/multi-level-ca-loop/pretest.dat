@@ -1,0 +1,6 @@
+moon::rm /etc/ipsec.d/cacerts/strongswanCert.pem
+carol::ipsec start
+moon::ipsec start
+moon::expect-connection alice
+carol::expect-connection alice
+carol::ipsec up alice

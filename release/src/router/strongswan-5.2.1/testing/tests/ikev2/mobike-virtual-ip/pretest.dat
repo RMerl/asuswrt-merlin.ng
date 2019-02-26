@@ -1,9 +1,0 @@
-alice::ifup eth1
-alice::iptables-restore < /etc/iptables.rules
-sun::iptables-restore < /etc/iptables.rules
-sun::ip route add 10.1.0.0/16 via PH_IP_MOON
-alice::ipsec start
-sun::ipsec start
-alice::sleep 2
-alice::ipsec up mobike
-alice::sleep 1

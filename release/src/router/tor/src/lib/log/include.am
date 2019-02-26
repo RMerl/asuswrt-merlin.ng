@@ -1,0 +1,36 @@
+
+noinst_LIBRARIES += src/lib/libtor-log.a
+
+if UNITTESTS_ENABLED
+noinst_LIBRARIES += src/lib/libtor-log-testing.a
+endif
+
+src_lib_libtor_log_a_SOURCES =			\
+	src/lib/log/escape.c			\
+        src/lib/log/git_revision.c              \
+	src/lib/log/ratelim.c			\
+	src/lib/log/log.c			\
+	src/lib/log/util_bug.c
+
+if WIN32
+src_lib_libtor_log_a_SOURCES += src/lib/log/win32err.c
+endif
+
+src_lib_libtor_log_testing_a_SOURCES = \
+	$(src_lib_libtor_log_a_SOURCES)
+src_lib_libtor_log_testing_a_CPPFLAGS = $(AM_CPPFLAGS) $(TEST_CPPFLAGS)
+src_lib_libtor_log_testing_a_CFLAGS = $(AM_CFLAGS) $(TEST_CFLAGS)
+
+# Declare that these object files depend on micro-revision.i.  Without this
+# rule, we could try to build them before micro-revision.i was created.
+src/lib/log/git_revision.$(OBJEXT) \
+  src/lib/log/src_lib_libtor_log_testing_a-git_revision.$(OBJEXT): \
+	micro-revision.i
+
+noinst_HEADERS +=					\
+	src/lib/log/escape.h				\
+        src/lib/log/git_revision.h                      \
+	src/lib/log/ratelim.h				\
+	src/lib/log/log.h				\
+	src/lib/log/util_bug.h				\
+	src/lib/log/win32err.h

@@ -1,0 +1,3 @@
+
+noinst_HEADERS += \
+	src/lib/testsupport/testsupport.h

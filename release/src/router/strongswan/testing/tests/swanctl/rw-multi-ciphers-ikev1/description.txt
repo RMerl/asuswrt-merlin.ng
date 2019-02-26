@@ -1,0 +1,15 @@
+The roadwarriors <b>carol</b> and <b>dave</b> set up a connection each 
+to gateway <b>moon</b>. The IKEv1 main mode authentication is based on
+<b>X.509 certificates</b>.
+On the gateway two connections with differing parameters are defined:
+One for <b>carol</b> using the IKE proposal <b>aes128-sha256-modp3072</b>
+allowing to reach host <b>alice</b> and one for <b>dave</b> using
+the IKE proposal <b>3des-sha1-modp2048</b> allowing to reach host <b>venus</b>.
+<p/>
+Since the IP addresses of <b>carol</b> and <b>dave</b> are not known
+to <b>moon</b> the matching connection definition can only be determined
+by <b>moon</b> after the peer identities have been received.
+<p/>
+Upon the successful establishment of the IPsec tunnels, <b>carol</b> pings the
+client <b>alice</b> and <b>dave</b> the client <b>venus</b> lying in two different
+subnets behind the gateway <b>moon</b>.

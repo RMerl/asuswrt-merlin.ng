@@ -65,7 +65,7 @@ static uint16_t parse_port(const char *protocol, const char *name)
 		    (service = getservbyname(name, protocol)) != NULL)
 			return ntohs(service->s_port);
 	}
-	else if (port >= 0 || port <= 0xFFFF) {
+	else if (port >= 0 && port <= 0xFFFF) {
 		return port;
 	}
 	ebt_print_error("Problem with specified %s port '%s'", 

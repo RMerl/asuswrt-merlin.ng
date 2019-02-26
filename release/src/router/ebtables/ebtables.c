@@ -515,7 +515,7 @@ static int parse_change_counters_rule(int argc, char **argv, int *rule_nr, int *
 	int ret = 0;
 
 	if (optind + 1 >= argc || (argv[optind][0] == '-' && (argv[optind][1] < '0' || argv[optind][1] > '9')) ||
-	    (argv[optind + 1][0] == '-' && (argv[optind + 1][1] < '0'  && argv[optind + 1][1] > '9')))
+	    (argv[optind + 1][0] == '-' && (argv[optind + 1][1] < '0' || argv[optind + 1][1] > '9')))
 		ebt_print_error2("The command -C needs at least 2 arguments");
 	if (optind + 2 < argc && (argv[optind + 2][0] != '-' || (argv[optind + 2][1] >= '0' && argv[optind + 2][1] <= '9'))) {
 		if (optind + 3 != argc)

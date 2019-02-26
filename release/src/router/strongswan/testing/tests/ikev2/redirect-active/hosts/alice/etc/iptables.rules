@@ -1,0 +1,34 @@
+*filter
+
+# default policy is DROP
+-P INPUT DROP
+-P OUTPUT DROP
+-P FORWARD DROP
+
+# forward ESP-tunneled traffic
+-A FORWARD -i eth1 -m policy --dir in  --pol ipsec --proto esp -s PH_IP_CAROL -j ACCEPT
+-A FORWARD -i eth1 -m policy --dir in  --pol ipsec --proto esp -s PH_IP_DAVE  -j ACCEPT
+-A FORWARD -o eth1 -m policy --dir out --pol ipsec --proto esp -j ACCEPT
+
+# allow esp
+-A INPUT  -p 50 -j ACCEPT
+-A OUTPUT -p 50 -d PH_IP_CAROL -j ACCEPT
+-A OUTPUT -p 50 -d PH_IP_DAVE -j ACCEPT
+
+# allow IKE
+-A INPUT  -i eth1 -p udp --sport 500 --dport 500 -j ACCEPT
+-A OUTPUT -o eth1 -p udp --dport 500 --sport 500 -j ACCEPT
+
+# allow MobIKE
+-A INPUT  -i eth1 -p udp --sport 4500 --dport 4500 -j ACCEPT
+-A OUTPUT -o eth1 -p udp --dport 4500 --sport 4500 -j ACCEPT
+
+# allow crl fetch from winnetou
+-A INPUT  -i eth1 -p tcp --sport 80 -s PH_IP_WINNETOU -j ACCEPT
+-A OUTPUT -o eth1 -p tcp --dport 80 -d PH_IP_WINNETOU -j ACCEPT
+
+# allow ssh
+-A INPUT  -p tcp --dport 22 -j ACCEPT
+-A OUTPUT -p tcp --sport 22 -j ACCEPT
+
+COMMIT

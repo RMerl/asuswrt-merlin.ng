@@ -1,0 +1,5 @@
+sun::iptables-restore < /etc/iptables.rules
+moon::iptables-restore < /etc/iptables.rules
+sun::systemctl start strongswan-swanctl
+moon::systemctl start strongswan-swanctl
+moon::sleep 0.5

@@ -2,7 +2,7 @@ dnl Helper macros for Tor configure.ac
 dnl Copyright (c) 2001-2004, Roger Dingledine
 dnl Copyright (c) 2004-2006, Roger Dingledine, Nick Mathewson
 dnl Copyright (c) 2007-2008, Roger Dingledine, Nick Mathewson
-dnl Copyright (c) 2007-2015, The Tor Project, Inc.
+dnl Copyright (c) 2007-2019, The Tor Project, Inc.
 dnl See LICENSE for licensing information
 
 AC_DEFUN([TOR_EXTEND_CODEPATH],
@@ -51,12 +51,12 @@ AC_DEFUN([TOR_TRY_COMPILE_WITH_CFLAGS], [
   AC_CACHE_CHECK([whether the compiler accepts $1], VAR, [
     tor_saved_CFLAGS="$CFLAGS"
     CFLAGS="$CFLAGS -pedantic -Werror $1"
-    AC_TRY_COMPILE([], [return 0;],
+    AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[]], [[]])],
                    [AS_VAR_SET(VAR,yes)],
                    [AS_VAR_SET(VAR,no)])
     if test x$2 != x; then
       AS_VAR_PUSHDEF([can_link],[tor_can_link_$1])
-      AC_TRY_LINK([], [return 0;],
+      AC_LINK_IFELSE([AC_LANG_PROGRAM([[]], [[]])],
                   [AS_VAR_SET(can_link,yes)],
                   [AS_VAR_SET(can_link,no)])
       AS_VAR_POPDEF([can_link])
@@ -93,7 +93,7 @@ AC_DEFUN([TOR_CHECK_LDFLAGS], [
     AC_RUN_IFELSE([AC_LANG_PROGRAM([#include <stdio.h>], [fputs("", stdout)])],
                   [AS_VAR_SET(VAR,yes)],
                   [AS_VAR_SET(VAR,no)],
-	          [AC_TRY_LINK([], [return 0;],
+                  [AC_LINK_IFELSE([AC_LANG_PROGRAM([[]], [[]])],
                                    [AS_VAR_SET(VAR,yes)],
                                    [AS_VAR_SET(VAR,no)])])
     CFLAGS="$tor_saved_CFLAGS"
@@ -113,21 +113,21 @@ if test x$2 = xdevpkg; then
   h=" headers for"
 fi
 if test -f /etc/debian_version && test x"$tor_$1_$2_debian" != x; then
-  AC_WARN([On Debian, you can install$h $1 using "apt-get install $tor_$1_$2_debian"])
+  AC_MSG_WARN([On Debian, you can install$h $1 using "apt-get install $tor_$1_$2_debian"])
   if test x"$tor_$1_$2_debian" != x"$tor_$1_devpkg_debian"; then 
-    AC_WARN([   You will probably need $tor_$1_devpkg_debian too.])
+    AC_MSG_WARN([   You will probably need $tor_$1_devpkg_debian too.])
   fi 
 fi
 if test -f /etc/fedora-release && test x"$tor_$1_$2_redhat" != x; then
-  AC_WARN([On Fedora, you can install$h $1 using "dnf install $tor_$1_$2_redhat"])
+  AC_MSG_WARN([On Fedora, you can install$h $1 using "dnf install $tor_$1_$2_redhat"])
   if test x"$tor_$1_$2_redhat" != x"$tor_$1_devpkg_redhat"; then 
-    AC_WARN([   You will probably need to install $tor_$1_devpkg_redhat too.])
+    AC_MSG_WARN([   You will probably need to install $tor_$1_devpkg_redhat too.])
   fi 
 else
   if test -f /etc/redhat-release && test x"$tor_$1_$2_redhat" != x; then
-    AC_WARN([On most Redhat-based systems, you can get$h $1 by installing the $tor_$1_$2_redhat RPM package])
+    AC_MSG_WARN([On most Redhat-based systems, you can get$h $1 by installing the $tor_$1_$2_redhat RPM package])
     if test x"$tor_$1_$2_redhat" != x"$tor_$1_devpkg_redhat"; then 
-      AC_WARN([   You will probably need to install $tor_$1_devpkg_redhat too.])
+      AC_MSG_WARN([   You will probably need to install $tor_$1_devpkg_redhat too.])
     fi 
   fi
 fi
@@ -245,7 +245,10 @@ if test "$cross_compiling" != yes; then
        LDFLAGS="$tor_tryextra $orig_LDFLAGS"
      fi
      AC_RUN_IFELSE([AC_LANG_PROGRAM([$5], [$6])],
-                   [runnable=yes], [runnable=no])
+                   [runnable=yes], [runnable=no],
+                   [AC_LINK_IFELSE([AC_LANG_PROGRAM([[]], [[]])],
+                                   [runnable=yes],
+                                   [runnable=no])])
      if test "$runnable" = yes; then
         tor_cv_library_$1_linker_option=$tor_tryextra
         break

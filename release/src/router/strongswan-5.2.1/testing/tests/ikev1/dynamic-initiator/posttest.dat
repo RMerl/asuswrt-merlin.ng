@@ -1,7 +1,0 @@
-dave::ipsec stop
-carol::ipsec stop
-dave::sleep 1
-moon::ipsec stop
-carol::iptables-restore < /etc/iptables.flush
-dave::rm /etc/ipsec.d/certs/*
-dave::rm /etc/ipsec.d/private/*

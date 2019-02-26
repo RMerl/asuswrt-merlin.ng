@@ -87,7 +87,7 @@ RATE_UP=5000
 # machine does any other network activity. That is not very fun.
 RATE_UP_TOR=1500
 
-# RATE_UP_TOR_CEIL is the maximum rate allowed for all Tor trafic in
+# RATE_UP_TOR_CEIL is the maximum rate allowed for all Tor traffic in
 # kbits/sec.
 RATE_UP_TOR_CEIL=5000
 

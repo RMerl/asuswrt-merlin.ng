@@ -1,0 +1,6 @@
+An IPsec <b>transport-mode</b> connection between the hosts <b>moon</b> and <b>sun</b>
+is successfully set up. The authentication is based on X.509 certificates.
+<p/>
+Upon the successful establishment of the IPsec connection, the updown script automatically
+inserts iptables-based firewall rules that let pass the protected traffic.
+In order to test the host-to-host tunnel <b>moon</b> pings <b>sun</b>.

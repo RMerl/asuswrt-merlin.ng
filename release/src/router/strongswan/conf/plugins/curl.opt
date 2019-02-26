@@ -1,0 +1,3 @@
+charon.plugins.curl.redir = -1
+	Maximum number of redirects followed by the plugin, set to 0 to disable
+	following redirects, set to -1 for no limit.

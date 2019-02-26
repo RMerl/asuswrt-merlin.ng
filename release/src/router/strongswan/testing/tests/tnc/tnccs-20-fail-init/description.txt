@@ -1,0 +1,10 @@
+The roadwarriors <b>carol</b> and <b>dave</b> set up a connection each to gateway <b>moon</b>
+using EAP-TTLS authentication only with the gateway presenting a server certificate and
+the clients doing EAP-MD5 password-based authentication.
+In a next step the EAP-TNC protocol is used within the EAP-TTLS tunnel to determine the
+health of <b>carol</b> and <b>dave</b> via the <b>TNCCS 2.0 </b> client-server interface
+compliant with <b>RFC 5793 PB-TNC</b>.
+<p/>
+Unfortunately <b>carol</b> sends her first PB-TNC batch with a wrong version number and
+<b>dave</b> sends a PB-TNC message not supported by <b>moon</b> with the NOSKIP flag set.
+Therefore both connection setups fail due to fatal PB-TNC errors.

@@ -1,0 +1,4 @@
+carol::systemctl stop strongswan-swanctl
+moon::systemctl stop strongswan-swanctl
+moon::rm /etc/swanctl/x509crl/*
+carol::rm /etc/swanctl/x509crl/*

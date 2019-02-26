@@ -1,0 +1,24 @@
+libimcv.plugins.imc-swima.eid_epoch = 0x11223344
+	Set 32 bit epoch value for event IDs manually if software collector database
+	is not available.
+
+libimcv.plugins.imc-swima.swid_database =
+	URI to software collector database containing event timestamps,	software
+	creation and deletion events and collected software identifiers.
+
+	URI to software collector database containing event timestamps,	software
+	creation and deletion events and collected software identifiers.
+	If it contains a password, make sure to adjust the permissions of the config
+	file accordingly.
+
+libimcv.plugins.imc-swima.swid_directory = ${prefix}/share
+	Directory where SWID tags are located.
+
+libimcv.plugins.imc-swima.swid_pretty = no
+	Generate XML-encoded SWID tags with pretty indentation.
+
+libimcv.plugins.imc-swima.swid_full = no
+	Include file information in the XML-encoded SWID tags.
+
+libimcv.plugins.imc-swima.subscriptions = no
+	Accept SW Inventory or SW Events subscriptions.

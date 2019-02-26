@@ -1,0 +1,3 @@
+The hosts <b>moon</b> and <b>sun</b> do mutual TNC measurements using the
+PA-TNC, PB-TNC and PT-TLS protocols. The authentication is based on
+X.509 certificates.

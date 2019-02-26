@@ -1,0 +1,6 @@
+#! /bin/sh
+
+cat /usr/local/share/strongswan/templates/database/sw-collector/sw_collector_tables.sql | sqlite3 /etc/db.d/collector.db
+sed -i "s:DEBIAN_VERSION:`cat /etc/debian_version`:" /etc/pts/collector.sql
+cat /etc/pts/collector.sql | sqlite3 /etc/db.d/collector.db
+LEAK_DETECTIVE_DISABLE=1 /usr/local/sbin/sw-collector

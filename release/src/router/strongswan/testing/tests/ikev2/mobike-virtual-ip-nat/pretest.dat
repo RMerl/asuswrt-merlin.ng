@@ -1,0 +1,10 @@
+alice::ifup eth1
+alice::iptables-restore < /etc/iptables.rules
+sun::iptables-restore < /etc/iptables.rules
+moon::iptables -t nat -A POSTROUTING -o eth0 -s 10.1.0.0/16 -p udp -j SNAT --to-source PH_IP_MOON:1024-1100
+moon::iptables -t nat -A POSTROUTING -o eth0 -s 10.1.0.0/16 -p tcp -j SNAT --to-source PH_IP_MOON:2000-2100
+alice::ipsec start
+sun::ipsec start
+alice::expect-connection mobike
+sun::expect-connection mobike
+alice::ipsec up mobike

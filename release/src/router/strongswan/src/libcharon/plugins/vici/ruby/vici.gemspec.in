@@ -1,0 +1,16 @@
+Gem::Specification.new do |s|
+  s.name          = "vici"
+  s.version       = "@GEM_VERSION@"
+  s.authors       = ["Martin Willi"]
+  s.email         = ["martin@strongswan.org"]
+  s.description   = %q{
+     The strongSwan VICI protocol allows external application to monitor,
+     configure and control the IKE daemon charon. This ruby gem provides a
+     native client side implementation of the VICI protocol, well suited to
+     script automated tasks in a relaible way.
+  }
+  s.summary       = "Native ruby interface for strongSwan VICI"
+  s.homepage      = "https://wiki.strongswan.org/projects/strongswan/wiki/Vici"
+  s.license       = "MIT"
+  s.files         = "lib/vici.rb"
+end

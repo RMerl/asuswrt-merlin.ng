@@ -1,0 +1,10 @@
+The roadwarrior <b>carol</b> sets up a connection to gateway <b>moon</b>.
+At the outset the gateway authenticates itself to the client by sending
+an IKEv2 <b>digital signature</b> accompanied by an X.509 certificate.
+<p/>
+Next <b>carol</b> uses the <i>MD5</i> (<b>EAP-MD5</b>) method of the
+<i>Extensible Authentication Protocol</i> to authenticate herself.
+<p/>
+The gateway forwards all EAP messages to the RADIUS server <b>alice</b>.
+In addition to her IKEv2 identity<b>carol@strongswan.org</b>, roadwarrior
+<b>carol</b> uses the EAP identity <b>carol</b>.

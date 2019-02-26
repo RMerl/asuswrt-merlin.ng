@@ -1,0 +1,20 @@
+carol::ipsec status 2> /dev/null::home.*ESTABLISHED.*carol@strongswan.org.*moon.strongswan.org::YES
+carol::ipsec status 2> /dev/null::home.*INSTALLED, TUNNEL::YES
+dave:: ipsec status 2> /dev/null::home.*ESTABLISHED.*dave@strongswan.org.*moon.strongswan.org::YES
+dave:: ipsec status 2> /dev/null::home.*INSTALLED, TUNNEL::YES
+moon:: ipsec status 2> /dev/null::rw.*ESTABLISHED.*moon.strongswan.org.*carol@strongswan.org::YES
+moon:: ipsec status 2> /dev/null::rw.*ESTABLISHED.*moon.strongswan.org.*dave@strongswan.org::YES
+moon:: ipsec status 2> /dev/null::rw.*INSTALLED, TUNNEL, reqid 1::YES
+moon:: ipsec status 2> /dev/null::rw.*INSTALLED, TUNNEL, reqid 2::YES
+alice::ping -W 1 -c 1 239.0.0.1 2>&1> /dev/null
+carol::ping -W 1 -c 1 239.0.0.2 2>&1> /dev/null
+dave::ping -W 1 -c 1 239.0.0.3 2>&1> /dev/null
+carol::ping -W 1 -c 1 -b 10.1.255.255 2>&1> /dev/null
+dave::ping -W 1 -c 1 -b 10.1.255.255 2>&1> /dev/null
+moon::iptables -t mangle -L -n -v
+carol::tcpdump::IP alice.strongswan.org > 239.0.0.1: ICMP echo request::YES
+dave::tcpdump::IP alice.strongswan.org > 239.0.0.1: ICMP echo request::YES
+carol::tcpdump::IP 10.1.0.130 > 239.0.0.3: ICMP echo request::YES
+dave::tcpdump::IP 10.1.0.129 > 239.0.0.2: ICMP echo request::YES
+carol::tcpdump::IP 10.1.0.130 > 10.1.255.255: ICMP echo request::YES
+dave::tcpdump::IP 10.1.0.129 > 10.1.255.255: ICMP echo request::YES

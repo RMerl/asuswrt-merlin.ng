@@ -1,0 +1,62 @@
+.TH "PKI \-\-PKCS12" 1 "2014-10-17" "@PACKAGE_VERSION@" "strongSwan"
+.
+.SH "NAME"
+.
+pki \-\-pkcs12 \- Provides PKCS#12 functions
+.
+.SH "SYNOPSIS"
+.
+.SY pki\ \-\-pkcs12
+.BR \-\-list
+.OP \-\-in file
+.OP \-\-debug level
+.YS
+.
+.SY pki\ \-\-pkcs12
+.BI \-\-export\~ index
+.OP \-\-in file
+.OP \-\-outform encoding
+.OP \-\-debug level
+.YS
+.
+.SY pki\ \-\-pkcs12
+.BI \-\-options\~ file
+.YS
+.
+.SY "pki \-\-pkcs12"
+.B \-h
+|
+.B \-\-help
+.YS
+.
+.SH "DESCRIPTION"
+.
+This sub-command of
+.BR pki (1)
+provides functions to work with PKCS#12 containers.
+.
+.SH "OPTIONS"
+.
+.TP
+.B "\-h, \-\-help"
+Print usage information with a summary of the available options.
+.TP
+.BI "\-v, \-\-debug " level
+Set debug level, default: 1.
+.TP
+.BI "\-+, \-\-options " file
+Read command line options from \fIfile\fR.
+.TP
+.BI "\-l, \-\-list"
+List certificates and keys contained in a PKCS#12 container.
+.TP
+.BI "\-e, \-\-export " index
+Export the credential with the given \fIindex\fR.  Use \fI\-\-list\fR to
+determine the index of certificates and keys.
+.TP
+.BI "\-i, \-\-in " file
+PKCS#12 input file. If not given the input is read from \fISTDIN\fR.
+.
+.SH "SEE ALSO"
+.
+.BR pki (1)

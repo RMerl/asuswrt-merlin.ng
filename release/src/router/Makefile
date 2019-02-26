@@ -7160,7 +7160,7 @@ openssl-1.1.x-install:
 openssl-1.1.x-stage:
 	 $(MAKE) -C openssl-1.1.x install_sw INSTALL_PREFIX=$(STAGEDIR)
 
-libvpn: $(OPENSSLDIR) shared nvram$(BCMEX)$(EX7)
+libvpn: shared nvram$(BCMEX)$(EX7)
 	@$(SEP)
 	$(MAKE) -C libvpn
 # End merlin components

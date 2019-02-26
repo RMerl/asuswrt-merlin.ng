@@ -31,6 +31,7 @@ install:
         --docdir "$(DESTDIR)$(docdir)"
 
 distclean:
+	cd $(DLIB) && $(MAKE) clean-all
 	cd $(SRCDIR) && $(MAKE) clean-all
 	rm -rf Makefile config.status VERSION email.help email.1
 
@@ -39,9 +40,10 @@ clean:
 	cd $(DLIB) && $(MAKE) clean
 
 clean-all:
+	cd $(DLIB) && $(MAKE) clean-all
 	cd $(SRCDIR) && $(MAKE) clean-all
 	rm -rf autom4* Makefile config.status VERSION email.help email.1 configure \
-    config.log configure.in
+	config.log configure.in
 
 uninstall:
 	./uninstall.sh --bindir "$(DEST_DIR)$(bindir)" --sysconfdir "$(DEST_DIR)$(sysconfdir)" \

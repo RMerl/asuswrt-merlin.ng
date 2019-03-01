@@ -5515,8 +5515,8 @@ void start_nfsd(void)
 	eval("/usr/sbin/statd");
 
 	if (nvram_match("nfsd_enable_v2", "1")) {
-		eval("/usr/sbin/nfsd" "-V 2"");
-		eval("/usr/sbin/mountd" "-V 2");
+		eval("/usr/sbin/nfsd", "-V 2");
+		eval("/usr/sbin/mountd", "-V 2");
 	} else {
 		eval("/usr/sbin/nfsd", "-N 2");
 		eval("/usr/sbin/mountd", "-N 2");

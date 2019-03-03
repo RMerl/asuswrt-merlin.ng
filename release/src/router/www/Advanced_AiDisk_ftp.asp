@@ -692,7 +692,7 @@ function applyRule(){
 }
 
 function validForm(){
-	if(!validator.range(document.form.st_max_user, 1, 10)){
+	if(!validator.range(document.form.st_max_user, 1, 9)){
 		document.form.st_max_user.focus();
 		document.form.st_max_user.select();
 		return false;
@@ -856,7 +856,7 @@ function switchUserType(flag){
 						<a class="hintstyle" href="javascript:void(0);" onClick="openHint(17,1);"><#ShareNode_MaximumLoginUser_itemname#></a>
 					</th>
 					<td>
-						<input type="text" name="st_max_user" class="input_3_table" maxlength="2" value="<% nvram_get("st_max_user"); %>" onKeyPress="return validator.isNumber(this, event);" autocorrect="off" autocapitalize="off">
+						<input type="text" name="st_max_user" class="input_3_table" maxlength="1" value="<% nvram_get("st_max_user"); %>" onKeyPress="return validator.isNumber(this, event);" autocorrect="off" autocapitalize="off">
 					</td>
 				</tr>
 				<tr>

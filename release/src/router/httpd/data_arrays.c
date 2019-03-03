@@ -1084,7 +1084,7 @@ int ej_bwdpi_conntrack(int eid, webs_t wp, int argc, char **argv_) {
 	FILE *fp;
 	static unsigned int count = 0;
 	char src_ip[64], dst_ip[64], prot[4];
-	int index, dport, sport;
+	int dport, sport;
 	int ret;
 	unsigned long mark;
 	int id, cat;
@@ -1155,8 +1155,8 @@ int ej_bwdpi_conntrack(int eid, webs_t wp, int argc, char **argv_) {
 
 	while (fgets(line, sizeof(line), fp)) {
 		// ipv4 tcp src=192.168.10.156 dst=172.217.13.110 sport=8248 dport=443 index=8510 mark=3cd000f
-		if (sscanf(line, "ipv%c %3s src=%63s dst=%63s sport=%d dport=%d index=%d mark=%lx",
-			          &ipversion, prot, src_ip, dst_ip, &sport, &dport, &index, &mark) != 8 ) continue;
+		if (sscanf(line, "ipv%c %3s src=%63s dst=%63s sport=%d dport=%d index=%*d mark=%lx",
+			          &ipversion, prot, src_ip, dst_ip, &sport, &dport, &mark) != 7 ) continue;
 
 		id = (mark & 0x3F0000)/0xFFFF;
 		cat = mark & 0xFFFF;

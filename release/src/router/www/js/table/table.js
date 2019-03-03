@@ -210,26 +210,32 @@ var tableSorter = {
 		return parseInt(b[tableSorter.indexFlag]) - parseInt(a[tableSorter.indexFlag]);
 	},
 	"str_increase" : function(a, b) {
-		if(a[tableSorter.indexFlag].toString().toUpperCase() == b[tableSorter.indexFlag].toString().toUpperCase()) return 0;
-		else if(a[tableSorter.indexFlag].toString().toUpperCase() > b[tableSorter.indexFlag].toString().toUpperCase()) return 1;
+		var aa = a[tableSorter.indexFlag].toString().toUpperCase();
+		var bb = b[tableSorter.indexFlag].toString().toUpperCase();
+
+		if(aa == bb) return 0;
+		else if(aa > bb) return 1;
 		else return -1;
 	},
 	"str_decrease" : function(a, b) {
-		if(a[tableSorter.indexFlag].toString().toUpperCase() == b[tableSorter.indexFlag].toString().toUpperCase()) return 0;
-		else if(a[tableSorter.indexFlag].toString().toUpperCase() > b[tableSorter.indexFlag].toString().toUpperCase()) return -1;
+		var aa = a[tableSorter.indexFlag].toString().toUpperCase();
+		var bb = b[tableSorter.indexFlag].toString().toUpperCase();
+
+		if(aa == bb) return 0;
+		else if(aa > bb) return -1;
 		else return 1;
 	},
 	"ip_increase" : function(a, b) {
-		var aa = full_IPv6(a[tableSorter.indexFlag].toString().toUpperCase());
-		var bb = full_IPv6(b[tableSorter.indexFlag].toString().toUpperCase());
+		var aa = full_IPv6(a[tableSorter.indexFlag].toString());
+		var bb = full_IPv6(b[tableSorter.indexFlag].toString());
 
 		if (aa == bb) return 0;
 		else if (aa > bb) return 1;
 		else return -1;
 	},
 	"ip_decrease" : function(a, b) {
-		var aa = full_IPv6(a[tableSorter.indexFlag].toString().toUpperCase());
-		var bb = full_IPv6(b[tableSorter.indexFlag].toString().toUpperCase());
+		var aa = full_IPv6(a[tableSorter.indexFlag].toString());
+		var bb = full_IPv6(b[tableSorter.indexFlag].toString());
 
 		if (aa == bb) return 0;
 		else if (aa > bb) return -1;

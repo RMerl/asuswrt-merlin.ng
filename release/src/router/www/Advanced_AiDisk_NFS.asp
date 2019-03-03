@@ -82,9 +82,6 @@ function initial(){
 
 	shownfsd_exportlist();
 
-	if (hnd_support)
-		document.getElementById("nfsd_v2_tr").style.display="none";
-
 	document.aidiskForm.protocol.value = PROTOCOL;
 	initial_dir();
 	check_dir_path();

@@ -17,6 +17,15 @@ version 2.81
 	combinatorial explosion of compile-time options. Thanks to
 	Kevin Darbyshire-Bryant for the patch.
 
+	Fix line-counting when reading /etc/hosts and friends; for
+	correct error messages. Thanks to Christian Rosentreter
+	for reporting this.
+
+	Fix bug in DNS non-terminal code, added in 2.80, which could
+	sometimes cause a NODATA rather than an NXDOMAIN reply.
+	Thanks to Norman Rasmussen, Sven Mueller and Maciej Żenczykowski
+	for spotting and diagnosing the bug and providing patches.
+
 
 version 2.80
 	Add support for RFC 4039 DHCP rapid commit. Thanks to Ashram Method

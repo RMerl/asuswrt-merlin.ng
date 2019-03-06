@@ -592,7 +592,7 @@ void lease_prune(struct dhcp_lease *target, time_t now)
   for (lease = leases, up = &leases; lease; lease = tmp)
     {
       tmp = lease->next;
-      if ((lease->expires != 0 && difftime(now, lease->expires) > 0) || lease == target)
+      if ((lease->expires != 0 && difftime(now, lease->expires) >= 0) || lease == target)
 	{
 	  file_dirty = 1;
 	  if (lease->hostname)

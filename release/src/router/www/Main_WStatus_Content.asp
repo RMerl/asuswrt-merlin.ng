@@ -164,9 +164,9 @@ function display_clients(clientsarray, obj) {
 					ipaddr = clientList[mac].ip;
 			}
 			code += '<td style="vertical-align: top;">' + htmlEnDeCode.htmlEncode(ipaddr);	// IPv4
-			if(client[3].length >30){
+			if(client[3].length >34){
 				overlib_str = client[3];
-				client[3] = "..."+client[3].substring(client[3].length-28);
+				client[3] = "..."+client[3].substring(client[3].length-32);
 				code += '<br><span style="margin-top:-15px; color: cyan;" title="'+overlib_str+'">'+ client[3] +'</span></td>';
 			}else
 				code += '<br><span style="margin-top:-15px; color: cyan;">'+ client[3] +'</span></td>';	// IPv6

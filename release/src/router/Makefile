@@ -5621,7 +5621,7 @@ db-4.8.30-clean:
 	-@$(MAKE) -C db-4.8.30/build_unix clean
 	@rm -f db-4.8.30/build_unix/stamp-h1
 
-netatalk-3.0.5-dep: openssl libgcrypt-1.5.1 db-4.8.30
+netatalk-3.0.5-dep: $(OPENSSLDIR) libgcrypt-1.5.1 db-4.8.30
 
 netaconfig netatalk-3.0.5/stamp-h1:
 	if [ ! -f netatalk-3.0.5/stamp-h1 ] ; then \
@@ -5636,7 +5636,7 @@ netaconfig netatalk-3.0.5/stamp-h1:
 		--with-bdb=$(TOP)/db-4.8.30/build_unix \
 		--prefix=/usr \
 		--with-dtrace=no \
-		--with-ssl-dir=$(TOP)/openssl \
+		--with-ssl-dir=$(TOP)/$(OPENSSLDIR) \
 		--with-libgcrypt-dir=$(TOP)/libgcrypt-1.5.1 \
 		--with-ld-library-path=$(SRCBASE)/toolchains/hndtools-arm-linux-2.6.36-uclibc-4.5.3/lib ; \
 		touch stamp-h1 ; \

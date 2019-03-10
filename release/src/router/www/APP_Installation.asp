@@ -102,8 +102,8 @@ var wan_unit_orig = '<% nvram_get("wan_unit"); %>';
 
 function initial(){
 	show_menu();
-	//	http://www.asus.com/support/FAQ/1009773/
-	httpApi.faqURL("1009773", function(url){document.getElementById("faq").href=url;});
+	//	http://www.asus.com/support/FAQ/114001/
+	httpApi.faqURL("114001", function(url){document.getElementById("faq").href=url;});
 	//	http://www.asus.com/support/FAQ/1016385/
 	httpApi.faqURL("1016385", function(url){document.getElementById("faq2").href=url;});
 

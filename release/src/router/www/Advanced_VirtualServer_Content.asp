@@ -86,8 +86,8 @@ if(support_dual_wan_unit_flag){
 var profileMaxNum = 64;
 function initial(){
 	show_menu();
-	// https://www.asus.com/support/FAQ/114093/
-	httpApi.faqURL("114093", function(url){document.getElementById("faq").href=url;});
+	// https://www.asus.com/support/FAQ/1037906/
+	httpApi.faqURL("1037906", function(url){document.getElementById("faq").href=url;});
 	//parse nvram to array
 	var parseNvramToArray = function(oriNvram) {
 		var parseArray = [];

@@ -379,7 +379,7 @@ int main(int argc, char *argv[])
 	fprintf(fp, "map hidden = no\n");
 	fprintf(fp, "map read only = no\n");
 	fprintf(fp, "map system = no\n");
-	fprintf(fp, "store dos attributes = yes\n");
+	fprintf(fp, "store dos attributes = no\n");
 	fprintf(fp, "dos filemode = yes\n");
 	fprintf(fp, "oplocks = yes\n");
 	fprintf(fp, "level2 oplocks = yes\n");

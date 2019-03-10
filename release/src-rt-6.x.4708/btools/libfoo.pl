@@ -154,6 +154,7 @@ sub fixDyn
 	fixDynDep("pppd", "pptp.so");
 	fixDynDep("pppd", "rp-pppoe.so");
 	fixDynDep("libcrypto.so.1.0.0", "libssl.so.1.0.0");
+	fixDynDep("libcrypto.so.1.1", "libssl.so.1.1");
 ## charles add
 #	    fixDynDep("libsmbclient.so.0", "libpthread.so.0");
 	fixDynDep("mod_smbdav.so", "libshared.so");
@@ -166,8 +167,8 @@ sub fixDyn
 	   fixDynDep("lighttpd-arpping", "libpthread.so.0");
 	   fixDynDep("lighttpd-arpping", "libsmbclient.so.0");
 
-	fixDynDep("lighttpd", "libcrypto.so.1.0.0");
-	fixDynDep("lighttpd", "libssl.so.1.0.0");
+#	fixDynDep("lighttpd", "libcrypto.so.1.0.0");
+#	fixDynDep("lighttpd", "libssl.so.1.0.0");
         fixDynDep("lighttpd", "libpcre.so.0.0.1");
         fixDynDep("lighttpd", "mod_accesslog.so");
         fixDynDep("lighttpd", "mod_alias.so");
@@ -494,8 +495,10 @@ genSO("${root}/lib/libutil.so.0", "${uclibc}/lib/libutil.a", "${stripshared}");
 #  genSO("${root}/lib/libdl.so.0", "${uclibc}/lib/libdl.a", "${stripshared}");
 #  genSO("${root}/lib/libnsl.so.0", "${uclibc}/lib/libnsl.a", "${stripshared}");
 
-genSO("${root}/usr/lib/libcrypto.so.1.0.0", "${router}/openssl/libcrypto.a");
-genSO("${root}/usr/lib/libssl.so.1.0.0", "${router}/openssl/libssl.a", "", "-L${router}/openssl");
+#	genSO("${root}/usr/lib/libcrypto.so.1.0.0", "${router}/openssl/libcrypto.a");
+#	genSO("${root}/usr/lib/libssl.so.1.0.0", "${router}/openssl/libssl.a", "", "-L${router}/openssl");
+#	genSO("${root}/usr/lib/libcrypto.so.1.1", "${router}/openssl-1.1.x/libcrypto.a");
+#	genSO("${root}/usr/lib/libssl.so.1.1", "${router}/openssl-1.1.x/libssl.a", "", "-L${router}/openssl-1.1.x");
 
 genSO("${root}/usr/lib/libzebra.so", "${router}/zebra/lib/libzebra.a");
 genSO("${root}/usr/lib/libz.so.1", "${router}/zlib/libz.a");

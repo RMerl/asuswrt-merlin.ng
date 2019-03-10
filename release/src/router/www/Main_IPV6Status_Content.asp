@@ -11,6 +11,7 @@
 <title><#Web_Title#> - <#ipv6_info#></title>
 <link rel="stylesheet" type="text/css" href="index_style.css"> 
 <link rel="stylesheet" type="text/css" href="form_style.css">
+<link rel="stylesheet" type="text/css" href="/js/table/table.css">
 
 <script language="JavaScript" type="text/javascript" src="/state.js"></script>
 <script language="JavaScript" type="text/javascript" src="/general.js"></script>
@@ -18,10 +19,23 @@
 <script language="JavaScript" type="text/javascript" src="/help.js"></script>
 <script language="JavaScript" type="text/javascript" src="/client_function.js"></script>
 <script language="JavaScript" type="text/javascript" src="/js/jquery.js"></script>
+<script type="text/javascript" src="/js/table/table.js"></script>
 
 <style>
 p{
 	font-weight: bolder;
+}
+.tableApi_table th {
+	height: 20px;
+	text-align:left;
+	padding-left:20px;
+}
+.tableApi_table td {
+	text-align: left;
+	padding-left:20px;
+}
+.data_tr {
+	height: 30px;
 }
 </style>
 
@@ -38,7 +52,10 @@ function initial() {
 	show_menu();
 
 	show_ipv6config();
-	show_ipv6clients();
+	if (ipv6cfgarray.length > 1)
+	{
+		show_ipv6clients();
+	}
 
 	if (igd2_support)
 	{
@@ -71,32 +88,44 @@ function show_ipv6config() {
 
 
 function show_ipv6clients() {
-	var code, i, line
+	var i, tableStruct;
 
-	code = '<table width="100%" id="ipv6clients" border="1" align="center" cellpadding="4" cellspacing="0" bordercolor="#6b8fa3" class="FormTable_table">';
-	code += '<thead><tr><td colspan="3">IPv6 Clients</td></tr></thead>';
-
-	code += '<tr><th width="25%">Hostname</th>';
-	code += '<th width="25%">MAC</th>';
-	code += '<th width="50%">IP Address</th>';
-	code += '</tr>';
+	ipv6clientarray.pop();	// Remove last empty element
 
 	if (ipv6clientarray.length > 1) {
-		for (i = 0; i < ipv6clientarray.length-1; ++i) {
-			line = ipv6clientarray[i];
-			code += '<tr><td>' + htmlEnDeCode.htmlEncode(line[0]) + '</td>';
+		for (i = 0; i < ipv6clientarray.length; ++i) {
+			ipv6clientarray[i][0] = htmlEnDeCode.htmlEncode(ipv6clientarray[i][0]);
+			overlib_str = "<p><#MAC_Address#>:</p>" + ipv6clientarray[i][1];
+			ipv6clientarray[i][1] = '<span class="ClientName" onclick="oui_query_full_vendor(\'' + ipv6clientarray[i][1].toUpperCase() +'\');overlib_str_tmp=\''+ overlib_str +'\';return overlib(\''+ overlib_str +'\');" onmouseout="nd();" style="cursor:pointer; text-decoration:underline;">'+ ipv6clientarray[i][1].toUpperCase() +'</span>';
+		}
 
-			overlib_str = "<p><#MAC_Address#>:</p>" + line[1];
-			code += '<td><span class="ClientName" onclick="oui_query_full_vendor(\'' + line[1].toUpperCase() +'\');;overlib_str_tmp=\''+ overlib_str +'\';return overlib(\''+ overlib_str +'\');" onmouseout="nd();" style="cursor:pointer; text-decoration:underline;">'+ line[1].toUpperCase() +'</span></td>';
-
-			code += '<td>' + line[2] + '</td>';
-			code += '</tr>';
-                }
+		tableStruct = {
+			data: ipv6clientarray,
+			container: "ipv6clientsblock",
+			title: "IPv6 Clients",
+			header: [
+				{
+					"title" : "Hostname",
+					"width" : "30%",
+					"sort" : "str",
+					"defaultSort" : "increase"
+				},
+				{
+					"title" : "MAC Address",
+					"width" : "20%",
+					"sort" : "str"
+				},
+				{
+					"title" : "IP Address",
+					"width" : "50%",
+					"sort" : "str"
+				}
+				]
+		}
+		tableApi.genTableAPI(tableStruct);
 	} else {
-		code += '<tr><td colspan="3"><span>No IPv6 clients.</span></td></tr>';
+		document.getElementById("ipv6clientsblock").innerHTML = '<span style="color:#FFCC00;padding-left:12;">No IPv6 clients.</span>';
 	}
-	code += '</table>';
-	document.getElementById("ipv6clientsblock").innerHTML = code;
 }
 
 

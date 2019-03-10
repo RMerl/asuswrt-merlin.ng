@@ -1181,7 +1181,7 @@ static int parse_dhcp_opt(char *errstr, char *arg, int flags)
     {
       /* characterise the value */
       char c;
-      int found_dig = 0;
+      int found_dig = 0, found_colon = 0;
       is_addr = is_addr6 = is_hex = is_dec = is_string = 1;
       addrs = digs = 1;
       dots = 0;
@@ -1195,6 +1195,7 @@ static int parse_dhcp_opt(char *errstr, char *arg, int flags)
 	  {
 	    digs++;
 	    is_dec = is_addr = 0;
+	    found_colon = 1;
 	  }
 	else if (c == '/') 
 	  {
@@ -1236,6 +1237,9 @@ static int parse_dhcp_opt(char *errstr, char *arg, int flags)
      
       if (!found_dig)
 	is_dec = is_addr = 0;
+
+      if (!found_colon)
+	is_addr6 = 0;
      
       /* We know that some options take addresses */
       if (opt_len & OT_ADDR_LIST)

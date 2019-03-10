@@ -34,6 +34,7 @@
 #include <openssl/dh.h>
 #include <openssl/cast.h>
 #include <openssl/err.h>
+#include "openssl_compat.h"
 #else /* OPENSSL_DHX */
 #include <bn.h>
 #include <dh.h>
@@ -193,6 +194,7 @@ static int dhx_setup(void *obj, char *ibuf, size_t ibuflen _U_,
     uint16_t sessid;
     size_t i;
     BIGNUM *bn, *gbn, *pbn;
+    const BIGNUM *pub_key;
     DH *dh;
 
     /* get the client's public key */
@@ -236,9 +238,16 @@ static int dhx_setup(void *obj, char *ibuf, size_t ibuflen _U_,
       return AFPERR_PARAM;
     }
 
+    if (!DH_set0_pqg(dh, pbn, NULL, gbn)) {
+      BN_free(pbn);
+      BN_free(gbn);
+    /* Log Entry */
+        LOG(log_info, logtype_uams, "uams_dhx_pam.c :PAM DH_set0_pqg() mysteriously failed  -- %s", strerror(errno));
+    /* Log Entry */
+      goto pam_fail;
+    }
+
     /* generate key and make sure that we have enough space */
-    dh->p = pbn;
-    dh->g = gbn;
     if (DH_generate_key(dh) == 0) {
 	unsigned long dherror;
 	char errbuf[256];
@@ -252,9 +261,10 @@ static int dhx_setup(void *obj, char *ibuf, size_t ibuflen _U_,
 	ERR_free_strings();
 	goto pam_fail;
     }
-    if (BN_num_bytes(dh->pub_key) > KEYSIZE) {
-	LOG(log_info, logtype_uams, "uams_dhx_pam.c :PAM: Err Generating Key -- Not enough Space? -- %s", strerror(errno));
-	goto pam_fail;
+	DH_get0_key(dh, &pub_key, NULL);
+    if (BN_num_bytes(pub_key) > KEYSIZE) {
+      LOG(log_info, logtype_uams, "uams_dhx_pam.c :PAM: Err Generating Key -- Not enough Space? -- %s", strerror(errno));
+      goto pam_fail;
     }
 
     /* figure out the key. store the key in rbuf for now. */
@@ -270,7 +280,7 @@ static int dhx_setup(void *obj, char *ibuf, size_t ibuflen _U_,
     *rbuflen += sizeof(sessid);
     
     /* public key */
-    BN_bn2bin(dh->pub_key, (unsigned char *)rbuf); 
+    BN_bn2bin(pub_key, (unsigned char *)rbuf);
     rbuf += KEYSIZE;
     *rbuflen += KEYSIZE;
 

@@ -1535,7 +1535,7 @@ void check_servers(void)
 		{
 		  count--;
 		  if (++locals <= LOCALS_LOGGED)
-			my_syslog(LOG_INFO, _("using local addresses only for %s %s"), s1, s2);
+			my_syslog(LOG_INFO, _("using only locally-known addresses for %s %s"), s1, s2);
 	        }
 	      else if (serv->flags & SERV_USE_RESOLV)
 		my_syslog(LOG_INFO, _("using standard nameservers for %s %s"), s1, s2);

@@ -12,7 +12,7 @@ _quote() {
 pc_insert() {
 	PATTERN=$(_quote "$1")
 	CONTENT=$(_quote "$2")
-	sed -i "/$PATTERN/a\\\$CONTENT" $3
+	sed -i "/$PATTERN/a$CONTENT" $3
 }
 
 # This function looks for a string, and replace it with a different string inside a given file

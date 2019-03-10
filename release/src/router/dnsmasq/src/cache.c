@@ -790,6 +790,7 @@ int cache_find_non_terminal(char *name, time_t now)
     if (!is_outdated_cname_pointer(crecp) &&
 	!is_expired(now, crecp) &&
 	(crecp->flags & F_FORWARD) &&
+	!(crecp->flags & F_NXDOMAIN) && 
 	hostname_isequal(name, cache_get_name(crecp)))
       return 1;
 
@@ -1062,7 +1063,7 @@ static int eatspace(FILE *f)
 	}
 
       if (c == '\n')
-	nl = 1;
+	nl++;
     }
 }
 	 
@@ -1073,7 +1074,7 @@ static int gettok(FILE *f, char *token)
   while (1)
     {
       if ((c = getc(f)) == EOF)
-	return (count == 0) ? EOF : 1;
+	return (count == 0) ? -1 : 1;
 
       if (isspace(c) || c == '#')
 	{
@@ -1093,7 +1094,7 @@ int read_hostsfile(char *filename, unsigned int index, int cache_size, struct cr
 {  
   FILE *f = fopen(filename, "r");
   char *token = daemon->namebuff, *domain_suffix = NULL;
-  int addr_count = 0, name_count = cache_size, lineno = 0;
+  int addr_count = 0, name_count = cache_size, lineno = 1;
   unsigned int flags = 0;
   union all_addr addr;
   int atnl, addrlen = 0;
@@ -1104,12 +1105,10 @@ int read_hostsfile(char *filename, unsigned int index, int cache_size, struct cr
       return cache_size;
     }
   
-  eatspace(f);
+  lineno += eatspace(f);
   
-  while ((atnl = gettok(f, token)) != EOF)
+  while ((atnl = gettok(f, token)) != -1)
     {
-      lineno++;
-      
       if (inet_pton(AF_INET, token, &addr) > 0)
 	{
 	  flags = F_HOSTS | F_IMMORTAL | F_FORWARD | F_REVERSE | F_IPV4;
@@ -1127,6 +1126,7 @@ int read_hostsfile(char *filename, unsigned int index, int cache_size, struct cr
 	  my_syslog(LOG_ERR, _("bad address at %s line %d"), filename, lineno); 
 	  while (atnl == 0)
 	    atnl = gettok(f, token);
+	  lineno += atnl;
 	  continue;
 	}
       
@@ -1145,7 +1145,7 @@ int read_hostsfile(char *filename, unsigned int index, int cache_size, struct cr
 	  int fqdn, nomem;
 	  char *canon;
 	  
-	  if ((atnl = gettok(f, token)) == EOF)
+	  if ((atnl = gettok(f, token)) == -1)
 	    break;
 
 	  fqdn = !!strchr(token, '.');
@@ -1178,6 +1178,8 @@ int read_hostsfile(char *filename, unsigned int index, int cache_size, struct cr
 	  else if (!nomem)
 	    my_syslog(LOG_ERR, _("bad name at %s line %d"), filename, lineno); 
 	}
+
+      lineno += atnl;
     } 
 
   fclose(f);

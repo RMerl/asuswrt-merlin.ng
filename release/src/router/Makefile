@@ -2567,7 +2567,7 @@ cyassl-install:
 	@true
 
 ifeq ($(RTCONFIG_OPENVPN),y)
-OPENSSL_CIPHERS:=enable-rc5 no-rc4
+OPENSSL_CIPHERS:=enable-rc5 no-rc4 no-ssl3
 else
 #OPENSSL_CIPHERS:=no-dh no-idea no-rc2 no-rc5 no-aes no-aes192 no-cast no-des no-modes no-tls1 no-tlsext
 OPENSSL_CIPHERS:=no-rc4
@@ -2613,9 +2613,9 @@ openssl-1.0.0q-stage:
 
 openssl/Makefile:
 	cd openssl && \
-	./Configure $(HOSTCONFIG) -DOPENSSL_NO_BUF_FREELISTS --prefix=/usr --openssldir=/etc --cross-compile-prefix=' ' \
+	./Configure $(HOSTCONFIG) -O2 -DOPENSSL_NO_BUF_FREELISTS --prefix=/usr --openssldir=/etc --cross-compile-prefix=' ' \
 	-ffunction-sections -fdata-sections -Wl,--gc-sections \
-	shared $(OPENSSL_CIPHERS) no-ssl2 no-ssl3 no-err
+	shared $(OPENSSL_CIPHERS) no-ssl2 no-err
 #	no-sha0 no-smime no-camellia no-krb5 no-rmd160 no-ripemd \
 #	no-seed no-capieng no-cms no-gms no-gmp no-rfc3779 \
 #	no-ec no-ecdh no-ecdsa no-err no-hw no-jpake no-threads \
@@ -2625,6 +2625,7 @@ openssl/Makefile:
 	-@$(MAKE) -C openssl depend clean
 	@touch $@
 
+ifeq ($(HND_ROUTER),y)
 fsbuild:
 	-mkdir -p $(BCM_FSBUILD_DIR)/public/lib
 	-mkdir -p $(BCM_FSBUILD_DIR)/public/bin
@@ -2648,13 +2649,11 @@ fsbuild:
 	-mkdir -p $(INSTALL_DIR)/www
 	#-cp $(TOOLCHAIN)/arm-buildroot-linux-gnueabi/lib/libgcc_s* $(INSTALL_DIR)/lib/public
 	#-cd $(INSTALL_DIR)/lib/public && rm -f libgcc_s.so && ln -sf libgcc_s.so.1 libgcc_s.so
-
-
-ifeq ($(HND_ROUTER),y)
-openssl: openssl/Makefile fsbuild
-else
-openssl: openssl/Makefile
 endif
+
+
+openssl: openssl/Makefile $(if $(filter y,$(HND_ROUTER)),fsbuild,)
+	@$(SEP)
 	$(MAKE) -C openssl && $(MAKE) $@-stage
 
 openssl-clean:
@@ -5714,7 +5713,7 @@ db-4.8.30-clean:
 	-@$(MAKE) -C db-4.8.30/build_unix clean
 	@rm -f db-4.8.30/build_unix/stamp-h1
 
-netatalk-3.0.5-dep: openssl libgcrypt-1.5.1 db-4.8.30
+netatalk-3.0.5-dep: $(OPENSSLDIR) libgcrypt-1.5.1 db-4.8.30
 
 netaconfig netatalk-3.0.5/stamp-h1:
 	if [ ! -f netatalk-3.0.5/stamp-h1 ] ; then \
@@ -5729,7 +5728,7 @@ netaconfig netatalk-3.0.5/stamp-h1:
 		--with-bdb=$(TOP)/db-4.8.30/build_unix \
 		--prefix=/usr \
 		--with-dtrace=no \
-		--with-ssl-dir=$(TOP)/openssl \
+		--with-ssl-dir=$(TOP)/$(OPENSSLDIR) \
 		--with-libgcrypt-dir=$(TOP)/libgcrypt-1.5.1 \
 		--with-ld-library-path=$(SRCBASE)/toolchains/hndtools-arm-linux-2.6.36-uclibc-4.5.3/lib ; \
 		touch stamp-h1 ; \
@@ -7212,14 +7211,15 @@ portmap-install:
 openssl-1.1.x/Makefile:
 	cd openssl-1.1.x && \
 	./Configure $(HOSTCONFIG) --prefix=/usr --openssldir=/etc --cross-compile-prefix=' ' \
-	-ffunction-sections -fdata-sections -Wl,--gc-sections \
-	shared $(OPENSSL_CIPHERS) no-ssl3 no-err no-async --api=1.0.0 \
+	-O2 -ffunction-sections -fdata-sections -Wl,--gc-sections \
+	shared $(OPENSSL_CIPHERS) no-err no-async --api=1.0.0 \
+	no-aria no-sm2 no-sm3 no-sm4 \
 	$(if $(filter y,$(HND_ROUTER)),,-DOPENSSL_PREFER_CHACHA_OVER_GCM)
 	-@$(MAKE) -C openssl-1.1.x depend clean
 	@touch $@
 
 openssl-1.1.x: openssl-1.1.x/Makefile
-	$(MAKE) -C openssl-1.1.x
+	$(MAKE) -C openssl-1.1.x $(PARALLEL_BUILD)
 
 openssl-1.1.x-clean:
 	[ ! -f openssl-1.1.x/Makefile ] || $(MAKE) -C openssl-1.1.x clean

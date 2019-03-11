@@ -7111,7 +7111,7 @@ nfs-utils-1.3.4: nfs-utils-1.3.4/stamp-h1
 	$(MAKE) -C $@
 
 nfs-utils-1.3.4-clean:
-	-@$(MAKE) -C nfs-utils distclean
+	-@$(MAKE) -C nfs-utils-1.3.4 distclean
 	@rm -f nfs-utils-1.3.4/stamp-h1
 
 nfs-utils-1.3.4-install:

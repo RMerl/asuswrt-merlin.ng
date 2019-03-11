@@ -1,0 +1,8 @@
+*.o
+*.lo
+*.la
+Makefile
+#Makefile.in
+.deps
+.libs
+glib-watch-test

@@ -1,0 +1,10 @@
+*.o
+*.lo
+Makefile
+#Makefile.in
+.deps
+.libs
+avahi-browse
+avahi-publish
+avahi-resolve
+avahi-set-host-name

@@ -1,0 +1,8 @@
+*.1
+*.8
+*.5
+*.1.xml
+*.8.xml
+*.5.xml
+Makefile
+#Makefile.in

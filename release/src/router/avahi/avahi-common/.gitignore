@@ -1,0 +1,14 @@
+*.o
+*.lo
+*.la
+Makefile
+#Makefile.in
+.deps
+.libs
+alternative-test
+domain-test
+strlst-test
+timeval-test
+utf8-test
+watch-test
+watch-test-thread

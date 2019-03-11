@@ -1,0 +1,17 @@
+*.o
+*.lo
+*.la
+Makefile
+#Makefile.in
+.deps
+.libs
+avahi-reflector
+avahi-test
+conformance-test
+dns-spin-test
+dns-test
+hashmap-test
+prioq-test
+querier-test
+timeeventq-test
+update-test

@@ -1,0 +1,12 @@
+*.o
+*.lo
+*.la
+Makefile
+#Makefile.in
+.deps
+.libs
+client-browse-services
+client-publish-service
+core-browse-services
+core-publish-service
+glib-integration

@@ -1635,6 +1635,8 @@ static int tcp_key_recurse(time_t now, int status, struct dns_header *header, si
 	
       while (1)
 	{
+	  int data_sent = 0;
+	  
 	  if (!firstsendto)
 	    firstsendto = server;
 	  else
@@ -1667,8 +1669,22 @@ static int tcp_key_recurse(time_t now, int status, struct dns_header *header, si
 		setsockopt(server->tcpfd, SOL_SOCKET, SO_MARK, &mark, sizeof(unsigned int));
 #endif	
 	      
-	      if (!local_bind(server->tcpfd,  &server->source_addr, server->interface, 0, 1) ||
-		  connect(server->tcpfd, &server->addr.sa, sa_len(&server->addr)) == -1)
+	      if (!local_bind(server->tcpfd,  &server->source_addr, server->interface, 0, 1))
+		{
+		  close(server->tcpfd);
+		  server->tcpfd = -1;
+		  continue; /* No good, next server */
+		}
+	      
+#ifdef MSG_FASTOPEN
+	      while(retry_send(sendto(server->tcpfd, packet, m + sizeof(u16),
+				      MSG_FASTOPEN, &server->addr.sa, sa_len(&server->addr))));
+	      
+	      if (errno == 0)
+		data_sent = 1;
+#endif
+	      
+	      if (!data_sent && connect(server->tcpfd, &server->addr.sa, sa_len(&server->addr)) == -1)
 		{
 		  close(server->tcpfd);
 		  server->tcpfd = -1;
@@ -1678,7 +1694,7 @@ static int tcp_key_recurse(time_t now, int status, struct dns_header *header, si
 	      server->flags &= ~SERV_GOT_TCP;
 	    }
 	  
-	  if (!read_write(server->tcpfd, packet, m + sizeof(u16), 0) ||
+	  if ((!data_sent && !read_write(server->tcpfd, packet, m + sizeof(u16), 0)) ||
 	      !read_write(server->tcpfd, &c1, 1, 1) ||
 	      !read_write(server->tcpfd, &c2, 1, 1) ||
 	      !read_write(server->tcpfd, payload, (c1 << 8) | c2, 1))
@@ -1951,6 +1967,8 @@ unsigned char *tcp_request(int confd, time_t now,
 		     which can go to the same server, do so. */
 		  while (1) 
 		    {
+		      int data_sent = 0;
+
 		      if (!firstsendto)
 			firstsendto = last_server;
 		      else
@@ -1969,6 +1987,8 @@ unsigned char *tcp_request(int confd, time_t now,
 			continue;
 
 		    retry:
+		      *length = htons(size);
+
 		      if (last_server->tcpfd == -1)
 			{
 			  if ((last_server->tcpfd = socket(last_server->addr.sa.sa_family, SOCK_STREAM, 0)) == -1)
@@ -1978,10 +1998,24 @@ unsigned char *tcp_request(int confd, time_t now,
 			  /* Copy connection mark of incoming query to outgoing connection. */
 			  if (have_mark)
 			    setsockopt(last_server->tcpfd, SOL_SOCKET, SO_MARK, &mark, sizeof(unsigned int));
-#endif	
+#endif			  
 		      
-			  if ((!local_bind(last_server->tcpfd,  &last_server->source_addr, last_server->interface, 0, 1) ||
-			       connect(last_server->tcpfd, &last_server->addr.sa, sa_len(&last_server->addr)) == -1))
+			  if ((!local_bind(last_server->tcpfd,  &last_server->source_addr, last_server->interface, 0, 1)))
+			    {
+			      close(last_server->tcpfd);
+			      last_server->tcpfd = -1;
+			      continue;
+			    }
+			  
+#ifdef MSG_FASTOPEN
+			    while(retry_send(sendto(last_server->tcpfd, packet, size + sizeof(u16),
+						    MSG_FASTOPEN, &last_server->addr.sa, sa_len(&last_server->addr))));
+			    
+			    if (errno == 0)
+			      data_sent = 1;
+#endif
+			    
+			    if (!data_sent && connect(last_server->tcpfd, &last_server->addr.sa, sa_len(&last_server->addr)) == -1)
 			    {
 			      close(last_server->tcpfd);
 			      last_server->tcpfd = -1;
@@ -1991,13 +2025,11 @@ unsigned char *tcp_request(int confd, time_t now,
 			  last_server->flags &= ~SERV_GOT_TCP;
 			}
 		      
-		      *length = htons(size);
-
 		      /* get query name again for logging - may have been overwritten */
 		      if (!(gotname = extract_request(header, (unsigned int)size, daemon->namebuff, &qtype)))
 			strcpy(daemon->namebuff, "query");
 		      
-		      if (!read_write(last_server->tcpfd, packet, size + sizeof(u16), 0) ||
+		      if ((!data_sent && !read_write(last_server->tcpfd, packet, size + sizeof(u16), 0)) ||
 			  !read_write(last_server->tcpfd, &c1, 1, 1) ||
 			  !read_write(last_server->tcpfd, &c2, 1, 1) ||
 			  !read_write(last_server->tcpfd, payload, (c1 << 8) | c2, 1))

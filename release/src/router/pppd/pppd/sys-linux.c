@@ -2994,3 +2994,34 @@ ether_to_eui64(eui64_t *p_eui64)
     return 1;
 }
 #endif
+
+/********************************************************************
+ *
+ * get_time - Get current time, monotonic if possible.
+ */
+int
+get_time(struct timeval *tv)
+{
+#ifdef CLOCK_MONOTONIC
+    static int monotonic = -1;
+    struct timespec ts;
+    int ret;
+
+    if (monotonic) {
+	ret = clock_gettime(CLOCK_MONOTONIC, &ts);
+	if (tv && ret == 0) {
+	    tv->tv_sec = ts.tv_sec;
+	    tv->tv_usec = ts.tv_nsec / 1000;
+	}
+
+	if (monotonic < 0)
+	    monotonic = (ret == 0);
+	if (monotonic)
+	    return ret;
+
+	warn("Couldn't use monotonic clock source: %m");
+    }
+#endif
+
+    return gettimeofday(tv, NULL);
+}

@@ -91,7 +91,6 @@ struct option_value {
 /*
  * Option variables and default values.
  */
-bool	nochecktime = 0;	/* Don't check time */
 int	debug = 0;		/* Debug flag */
 int	kdebugflag = 0;		/* Tell kernel to print debug messages */
 int	default_device = 1;	/* Using /dev/tty or equivalent */
@@ -199,8 +198,6 @@ static struct option_list *extra_options = NULL;
  * Valid arguments.
  */
 option_t general_options[] = {
-    { "nochecktime", o_bool, &nochecktime,
-      "Don't check time", OPT_PRIO | 1 },
     { "debug", o_int, &debug,
       "Increase debugging level", OPT_INC | OPT_NOARG | 1 },
     { "-d", o_int, &debug,

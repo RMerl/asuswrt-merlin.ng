@@ -202,6 +202,9 @@ ifdef MAXOCTETS
      CFLAGS += -DMAXOCTETS
 endif
 
+# For monotonic time
+LIBS += -Wl,--as-needed -lrt
+
 INSTALL= install
 
 all: $(TARGETS)

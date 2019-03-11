@@ -16,6 +16,9 @@
 static char const RCSID[] =
 "$Id$";
 
+/* For vsnprintf prototype */
+#define _ISOC99_SOURCE 1
+
 /* For clock_gettime & CLOCK_* prototype */
 #define _POSIX_C_SOURCE 200809L
 
@@ -449,6 +452,7 @@ main(int argc, char *argv[])
     FILE *pidfile;
     unsigned int discoveryType, sessionType;
     char const *options;
+    char pidbuf[5];
 
     PPPoEConnection conn;
 
@@ -565,24 +569,22 @@ main(int argc, char *argv[])
 	    conn.synchronous = 1;
 	    break;
 	case 'U':
-	    conn->useHostUniq = 1;
-	    if(conn->hostUniq.length) {
+	    if (conn.hostUniq.length) {
 		fprintf(stderr, "-U and -W are mutually exclusive\n");
 		exit(EXIT_FAILURE);
 	    }
-            char pidbuf[5];
-            snprintf(pidbuf, sizeof(pidbuf), "%04x", getpid());
-            parseHostUniq(pidbuf, &conn->hostUniq);
+	    snprintf(pidbuf, sizeof(pidbuf), "%04x", getpid());
+	    parseHostUniq(pidbuf, &conn.hostUniq);
 	    break;
 	case 'W':
-	    if(conn->hostUniq.length) {
+	    if (conn.hostUniq.length) {
 		fprintf(stderr, "-U and -W are mutually exclusive\n");
 		exit(EXIT_FAILURE);
 	    }
-	    if (!parseHostUniq(optarg, &conn->hostUniq)) {
-                fprintf(stderr, "Invalid host-uniq argument: %s\n", optarg);
-                exit(EXIT_FAILURE);
-            }
+	    if (!parseHostUniq(optarg, &conn.hostUniq)) {
+		fprintf(stderr, "Invalid host-uniq argument: %s\n", optarg);
+		exit(EXIT_FAILURE);
+	    }
 #ifdef DEBUGGING_ENABLED
 	case 'D':
 	    switchToRealID();

@@ -7045,7 +7045,8 @@ libmnl-install: libmnl
 		ln -sf libmnl.so.0.1.0 libmnl.so
 
 libmnl-clean:
-	-@$(MAKE) -C libmnl clean
+	-@$(MAKE) -C libmnl distclean
+	-@rm -rf libmnl/stamp-h1
 	-@rm -rf libmnl/staged
 
 ipset_arm/stamp-h1: libmnl

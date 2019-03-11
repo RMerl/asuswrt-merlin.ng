@@ -16,6 +16,9 @@
 static char const RCSID[] =
 "$Id$";
 
+/* For clock_gettime & CLOCK_* prototype */
+#define _POSIX_C_SOURCE 200809L
+
 #include "pppoe.h"
 
 #ifdef HAVE_SYSLOG_H
@@ -33,6 +36,8 @@ static char const RCSID[] =
 #ifdef HAVE_SYS_TIME_H
 #include <sys/time.h>
 #endif
+
+#include <time.h>
 
 #ifdef HAVE_SYS_UIO_H
 #include <sys/uio.h>
@@ -69,6 +74,44 @@ int optFloodDiscovery    = 0;   /* Flood server with discovery requests.
 
 PPPoEConnection *Connection = NULL; /* Must be global -- used
 				       in signal handler */
+
+/***********************************************************************
+*%FUNCTION: get_time
+*%ARGUMENTS:
+* tv -- timeval
+*%RETURNS:
+* 0 if time was obtained; -1 otherwise.
+*%DESCRIPTION:
+* Get current time, monotonic if possible.
+***********************************************************************/
+int
+get_time(struct timeval *tv)
+{
+#ifdef CLOCK_MONOTONIC
+    static int monotonic = -1;
+    struct timespec ts;
+    int ret;
+
+    if (monotonic) {
+	ret = clock_gettime(CLOCK_MONOTONIC, &ts);
+	if (tv && ret == 0) {
+	    tv->tv_sec = ts.tv_sec;
+	    tv->tv_usec = ts.tv_nsec / 1000;
+	}
+
+	if (monotonic < 0)
+	    monotonic = (ret == 0);
+	if (monotonic)
+	    return ret;
+
+	syslog(LOG_WARNING,
+	    "Couldn't use monotonic clock source: %s",
+	    strerror(errno));
+    }
+#endif
+
+    return gettimeofday(tv, NULL);
+}
 
 /***********************************************************************
 *%FUNCTION: sendSessionPacket

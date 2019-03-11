@@ -392,7 +392,7 @@ waitForPADO(PPPoEConnection *conn, int timeout)
     conn->seenMaxPayload = 0;
 #endif
 
-    if (gettimeofday(&expire_at, NULL) < 0) {
+    if (get_time(&expire_at) < 0) {
 	fatalSys("gettimeofday (waitForPADO)");
     }
     expire_at.tv_sec += timeout;
@@ -402,7 +402,7 @@ waitForPADO(PPPoEConnection *conn, int timeout)
 	if (got_sigterm || got_sighup) return;
 #endif
 	if (BPF_BUFFER_IS_EMPTY) {
-	    if (gettimeofday(&now, NULL) < 0) {
+	    if (get_time(&now) < 0) {
 		fatalSys("gettimeofday (waitForPADO)");
 	    }
 	    tv.tv_sec = expire_at.tv_sec - now.tv_sec;
@@ -632,7 +632,7 @@ waitForPADS(PPPoEConnection *conn, int timeout)
     PPPoEPacket packet;
     int len;
 
-    if (gettimeofday(&expire_at, NULL) < 0) {
+    if (get_time(&expire_at) < 0) {
 	fatalSys("gettimeofday (waitForPADS)");
     }
     expire_at.tv_sec += timeout;
@@ -642,7 +642,7 @@ waitForPADS(PPPoEConnection *conn, int timeout)
 	if (got_sigterm || got_sighup) return;
 #endif
 	if (BPF_BUFFER_IS_EMPTY) {
-	    if (gettimeofday(&now, NULL) < 0) {
+	    if (get_time(&now) < 0) {
 		fatalSys("gettimeofday (waitForPADS)");
 	    }
 	    tv.tv_sec = expire_at.tv_sec - now.tv_sec;

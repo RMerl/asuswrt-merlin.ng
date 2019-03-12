@@ -98,9 +98,6 @@ var timedEvent = 0;
 
 var color = ["#B3645B","#B98F53","#C6B36A","#849E75","#2B6692","#7C637A","#4C8FC0", "#6C604F"];
 
-<% get_tcclass_array(); %>;
-<% bwdpi_conntrack(); %>;
-
 var pieOptions = {
         segmentShowStroke : false,
         segmentStrokeColor : "#000",
@@ -147,7 +144,6 @@ function initial(){
 	show_menu();
 	refreshRate = document.getElementById('refreshrate').value;
 	get_data();
-	draw_conntrack_table();
 }
 
 
@@ -191,7 +187,7 @@ function draw_conntrack_table(){
 
 	tracklen = bwdpi_conntrack.length;
 
-	if (tracklen > 300) {
+	if (tracklen > 500) {
 		document.getElementById('refreshrate').value = "0";
 		refreshRate = 0;
 		document.getElementById('toomanyconns').style.display = "";

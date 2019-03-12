@@ -19,12 +19,15 @@ Asuswrt-Merlin 384/NG Changelog
          improvement (for instance with the webui).
 
          Note that OpenVPN 2.4.7's support is still limited.
-         TLS 1.3 should be supported, but CHACHA20 support is
+         TLS 1.3 is supported, but CHACHA20 support is
          only expected with OpenVPN 2.5.0.
 
          The 1.0.2 userspace tool is still named "openssl", while
          the 1.1.x version is named "openssl11".
 
+  - NEW: Implemented lcp-ident option in PPP (required by some ISPs)
+         (Themiron).
+  - NEW: Added NFSv2 support to HND models.
   - CHANGED: Some firmware cleanups to regain flash space (for
              use with the parallel OpeNSSL 1.1.x install)
              (RMerlin, Themiron)
@@ -33,7 +36,7 @@ Asuswrt-Merlin 384/NG Changelog
   - CHANGED: Updated Tor to 0.3.5.8.
   - CHANGED: Updated strongswan to 5.7.2.
   - CHANGED: Updated OpenSSL 1.0.x to 1.0.2r.
-  - CHANGED: Updated dnsmasq to 2.81-g6799320.
+  - CHANGED: Updated dnsmasq to 2.80-44-g608aa9f (Themiron)
   - CHANGED: Removed CFB and OFB ciphers from OpenVPN client
   - CHANGED: Limit Classification entries to 300 max, to prevent
              major performance issues with many connections.
@@ -42,11 +45,14 @@ Asuswrt-Merlin 384/NG Changelog
              instead of a static one.  This should significantly
              reduce the memory usage of Strongswan as well as
              flash usage.  (Themiron)
+  - CHANGED: Reworked DNS WAN probe implementation (Themiron)
   - FIXED: IPSEC log display wasn't properly formatted (showed
                  entirely on a single line)
   - FIXED: Compatibility issues between recent Tuxera NTFS driver
            and Samba
   - FIXED: NFSv2 support
+  - FIXED: PPP host-uniq support (Themiron)
+  - FIXED: AiCloud not working on the RT-AX88U
   - REMOVED: Beceem Wimax driver.  This is deprecated, and was
              already removed from the HND models.  This allows
              to reclaim close to 2 MB of flash space.

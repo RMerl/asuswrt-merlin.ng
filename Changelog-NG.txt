@@ -28,6 +28,12 @@ Asuswrt-Merlin 384/NG Changelog
   - NEW: Implemented lcp-ident option in PPP (required by some ISPs)
          (Themiron).
   - NEW: Added NFSv2 support to HND models.
+  - NEW: You can now choose between having your router do internal
+         DNS queries locally (through dnsmasq) or with your WAN
+         configured DNS (like stock firmware).  This does not
+         affect DNS lookups from your clients, only those made
+         by the router itself.  The option is under Tools ->
+         Other Settings.  (Themiron)
   - CHANGED: Some firmware cleanups to regain flash space (for
              use with the parallel OpeNSSL 1.1.x install)
              (RMerlin, Themiron)
@@ -37,9 +43,11 @@ Asuswrt-Merlin 384/NG Changelog
   - CHANGED: Updated strongswan to 5.7.2.
   - CHANGED: Updated OpenSSL 1.0.x to 1.0.2r.
   - CHANGED: Updated dnsmasq to 2.80-44-g608aa9f (Themiron)
-  - CHANGED: Removed CFB and OFB ciphers from OpenVPN client
-  - CHANGED: Limit Classification entries to 300 max, to prevent
-             major performance issues with many connections.
+  - CHANGED: Re-worked the Classification page.  New design
+             is much faster, allows filtering, and shows
+             additional info when hovering on a field.  Thanks
+             to FreshJr for giving me the motivation to
+             spend more time on it.
   - CHANGED: Strongswan is no longer compiled 64-bit
              on HND, allowing it to use a shared openssl library
              instead of a static one.  This should significantly
@@ -56,6 +64,7 @@ Asuswrt-Merlin 384/NG Changelog
   - REMOVED: Beceem Wimax driver.  This is deprecated, and was
              already removed from the HND models.  This allows
              to reclaim close to 2 MB of flash space.
+  - REMOVED: CFB and OFB ciphers from OpenVPN client
 
 
 384.9 (2-Feb-2019)

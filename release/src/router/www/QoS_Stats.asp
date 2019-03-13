@@ -87,6 +87,9 @@ var refreshRate;
 var timedEvent = 0;
 var sortdir = 0;
 var sortfield = 5;
+var filter = Array(6);
+const maxshown = 500;
+const maxrendered = 750;
 
 var color = ["#B3645B","#B98F53","#C6B36A","#849E75","#2B6692","#7C637A","#4C8FC0", "#6C604F"];
 
@@ -172,10 +175,14 @@ function compIPV6(input) {
 	return input.replace(/(^|:)0{1,4}/g, ':');
 }
 
+function set_filter(field, o) {
+	filter[field] = o.value.toLowerCase();
+	draw_conntrack_table();
+}
 
 function draw_conntrack_table(){
-	var i, qosclass;
-	var tracklen;
+	var i, j, qosclass;
+	var tracklen, shownlen = 0;
 	var code;
 	var clientObj, clientName, clientName2;
 
@@ -191,7 +198,7 @@ function draw_conntrack_table(){
 		'<th width="6%" id="track_header_4" style="cursor: pointer;" onclick="setsort(4); draw_conntrack_table()">Port</th>' +
 		'<th width="27%" id="track_header_5" style="cursor: pointer;" onclick="setsort(5); draw_conntrack_table()">Application</th></tr>';
 
-	if (tracklen > 500) {
+	if (tracklen > maxrendered) {
 		document.getElementById('refreshrate').value = "0";
 		refreshRate = 0;
 		document.getElementById('toomanyconns').style.display = "";
@@ -201,7 +208,19 @@ function draw_conntrack_table(){
 	bwdpi_conntrack.sort(table_sort);
 
 	// Generate table
-	for (i = 0; i < tracklen; i++){
+	for (i = 0; (i < tracklen && shownlen < maxshown); i++){
+
+		// Filter in place?
+		var filtered = 0;
+		for (j = 0; j < 6; j++) {
+			if ((filter[j]) && (bwdpi_conntrack[i][j].toLowerCase().indexOf(filter[j]) < 0)) {
+				filtered = 1;
+				continue;
+			}
+		}
+		if (filtered) continue;
+
+		shownlen++;
 
 		// Compress IPv6
 		if (bwdpi_conntrack[i][1].indexOf(":") >= 0)
@@ -242,6 +261,9 @@ function draw_conntrack_table(){
 	                  qosclass + "\"" + (bwdpi_conntrack[i][5].length > 27 ? "style=\"font-size: 75%;\"" : "") + ">" +
 	                  bwdpi_conntrack[i][5] + "</span></td></tr>";
 	}
+
+	if (shownlen == maxshown)
+		code += '<tr><td colspan="6"><span style="text-align: center;">List truncated to ' + maxshown + ' elements - use a filter</td></tr>';
 
 	code += "</tbody></table>";
 
@@ -456,7 +478,7 @@ function draw_chart(data_array, ctx, pie) {
 <form method="post" name="form" action="/start_apply.htm" target="hidden_frame">
 <input type="hidden" name="preferred_lang" id="preferred_lang" value="<% nvram_get("preferred_lang"); %>">
 <input type="hidden" name="firmver" value="<% nvram_get("firmver"); %>">
-<input type="hidden" name="current_page" value="/QoS_stats.asp">
+<input type="hidden" name="current_page" value="/QoS_Stats.asp">
 <input type="hidden" name="next_page" value="/QoS_Stats.asp">
 <input type="hidden" name="action_mode" value="apply">
 <input type="hidden" name="action_script" value="">
@@ -515,6 +537,24 @@ function draw_chart(data_array, ctx, pie) {
                                 </tr>
 			</table>
 			<br>
+			<table cellpadding="4" class="FormTable_table"><thead><tr><td colspan="6">Filter connections</td></tr></thead>
+				<tr>
+					<th width="5%">Proto</th>
+					<th width="28%">Local IP</th>
+					<th width="6%">Port</th>
+					<th width="28%">Remote IP</th>
+					<th width="6%">Port</th>
+					<th width="27%">Application</th>
+				</tr>
+				<tr>
+					<td><input type="text" class="input_3_table" maxlength="3" oninput="set_filter(0, this);"></input></td>
+					<td><input type="text" class="input_15_table" maxlength="39" oninput="set_filter(1, this);"></input></td>
+					<td><input type="text" class="input_6_table" maxlength="5" oninput="set_filter(2, this);"></input></td>
+					<td><input type="text" class="input_15_table" maxlength="39" oninput="set_filter(3, this);"></input></td>
+					<td><input type="text" class="input_6_table" maxlength="5" oninput="set_filter(4, this);"></input></td>
+					<td><input type="text" class="input_18_table" maxlength="48" oninput="set_filter(5, this);"></input></td>
+				</tr>
+			</table>
 			<div id="tracked_connections">
 			<br>
 			<div class="apply_gen" style="padding-top: 25px;"><input type="button" onClick="location.href=location.href" value="<#CTL_refresh#>" class="button_gen"></div>

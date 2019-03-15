@@ -1,0 +1,11 @@
+avahi-daemon.service
+avahi-daemon.socket
+avahi-daemon
+avahi-dbus.conf
+ini-file-parser-test
+*.o
+*.lo
+Makefile
+#Makefile.in
+.deps
+.libs

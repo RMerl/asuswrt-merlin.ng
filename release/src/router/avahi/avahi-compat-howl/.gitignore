@@ -1,0 +1,11 @@
+address-test
+browse-domain-test
+samples/resolve
+text-test
+*.o
+*.lo
+*.la
+Makefile
+#Makefile.in
+.deps
+.libs

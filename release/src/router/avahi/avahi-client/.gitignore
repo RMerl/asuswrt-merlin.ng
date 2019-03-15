@@ -1,0 +1,12 @@
+*.o
+*.lo
+*.la
+Makefile
+#Makefile.in
+.deps
+.libs
+check-nss-test
+client-test
+rr-test
+srv-test
+xdg-config-test

@@ -1190,6 +1190,8 @@ void start_dnsmasq(void)
 	int unit;
 	char tmpStr[20];
 #endif
+	char buf[sizeof("/rom/etc/resolv.conf")], *path;
+	int n;
 
 	TRACE_PT("begin\n");
 
@@ -1794,15 +1796,30 @@ void start_dnsmasq(void)
 	eval("dnsmasq", "--log-async");
 #endif
 
-	for ( i = 1; i < 4; i++ ) {
-                if (!pids("dnsmasq")) {
-			sleep(i);
-		} else {
-			// Make the router use dnsmasq for its own local resolution if it did start
-			unlink("/etc/resolv.conf");
-			symlink("/rom/etc/resolv.conf", "/etc/resolv.conf");	// nameserver 127.0.0.1
-			i = 4;
+	/* Update local resolving mode */
+	n = readlink("/etc/resolv.conf", buf, sizeof(buf));
+	if (nvram_get_int("dns_local")) {
+		/* Use dnsmasq for local resolving if it did start,
+		 * fallback to wan dns otherwise */
+		path = (char *)dmresolv;
+		for (i = 4; i > 0; i--) {
+			if (pids("dnsmasq")) {
+				/* nameserver 127.0.0.1 */
+				path = "/rom/etc/resolv.conf"; 
+			} else if (i)
+				sleep(1);
 		}
+	} else
+	if (n == sizeof("/rom/etc/resolv.conf") - 1 &&
+	    strncmp(buf, "/rom/etc/resolv.conf", n) == 0) {
+		/* Use WAN DNS for local resolving only if
+		 * nameservers were not changed externally */
+		path = (char *)dmresolv;
+	} else
+		path = NULL;
+	if (path && !(n == strlen(path) && strncmp(buf, path, n) == 0)) {
+		unlink("/etc/resolv.conf");
+		symlink(path, "/etc/resolv.conf");
 	}
 
 	TRACE_PT("end\n");

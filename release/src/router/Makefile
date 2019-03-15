@@ -7125,7 +7125,8 @@ libmnl-install: libmnl
 		ln -sf libmnl.so.0.1.0 libmnl.so
 
 libmnl-clean:
-	-@$(MAKE) -C libmnl clean
+	-@$(MAKE) -C libmnl distclean
+	-@rm -rf libmnl/stamp-h1
 	-@rm -rf libmnl/staged
 
 ipset_arm/stamp-h1: libmnl
@@ -7190,7 +7191,7 @@ nfs-utils-1.3.4: nfs-utils-1.3.4/stamp-h1
 	$(MAKE) -C $@
 
 nfs-utils-1.3.4-clean:
-	-@$(MAKE) -C nfs-utils distclean
+	-@$(MAKE) -C nfs-utils-1.3.4 distclean
 	@rm -f nfs-utils-1.3.4/stamp-h1
 
 nfs-utils-1.3.4-install:

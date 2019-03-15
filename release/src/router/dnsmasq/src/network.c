@@ -726,6 +726,11 @@ static int make_sock(union mysockaddr *addr, int type, int dienow)
   
   if (type == SOCK_STREAM)
     {
+#ifdef TCP_FASTOPEN
+      int qlen = 5;                           
+      setsockopt(fd, SOL_TCP, TCP_FASTOPEN, &qlen, sizeof(qlen));
+#endif
+      
       if (listen(fd, TCP_BACKLOG) == -1)
 	goto err;
     }

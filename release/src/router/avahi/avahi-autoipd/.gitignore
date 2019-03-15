@@ -1,0 +1,9 @@
+*.o
+*.lo
+*.la
+Makefile
+#Makefile.in
+.deps
+.libs
+avahi-autoipd
+avahi-autoipd.action

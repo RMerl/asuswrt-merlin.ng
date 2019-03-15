@@ -26,7 +26,10 @@ version 2.81
 	Thanks to Norman Rasmussen, Sven Mueller and Maciej Żenczykowski
 	for spotting and diagnosing the bug and providing patches.
 
-
+	Support TCP-fastopen (RFC-7413) on both incoming and
+	outgoing TCP connections, if supported and enabled in the OS.
+	
+	
 version 2.80
 	Add support for RFC 4039 DHCP rapid commit. Thanks to Ashram Method
 	for the initial patch and motivation.

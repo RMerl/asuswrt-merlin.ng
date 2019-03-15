@@ -79,6 +79,9 @@ bool	noendpoint = 0;		/* don't send/accept endpoint discriminator */
 
 static int noopt __P((char **));
 
+static struct wordlist *ident_msgs;
+static int set_ident __P((char **));
+
 #ifdef HAVE_MULTILINK
 static int setendpoint __P((char **));
 static void printendpoint __P((option_t *, void (*)(void *, char *, ...),
@@ -186,6 +189,9 @@ static option_t lcp_option_list[] = {
     { "noendpoint", o_bool, &noendpoint,
       "Don't send or accept multilink endpoint discriminator", 1 },
 
+    { "lcp-ident", o_special, (void *)set_ident,
+      "Set LCP Identification message", OPT_PRIO | OPT_PRIV | OPT_A2LIST },
+
     {NULL}
 };
 
@@ -230,6 +236,11 @@ static void lcp_received_echo_reply __P((fsm *, int, u_char *, int));
 static void LcpSendEchoRequest __P((fsm *));
 static void LcpLinkFailure __P((fsm *));
 static void LcpEchoCheck __P((fsm *));
+
+/*
+ * routine to send LCP Identification to peer
+ */
+static void lcp_send_ident __P((int));
 
 static fsm_callbacks lcp_callbacks = {	/* LCP callback routines */
     lcp_resetci,		/* Reset our Configuration Information */
@@ -1936,6 +1947,9 @@ lcp_up(f)
     if (ho->neg_mru)
 	peer_mru[f->unit] = ho->mru;
 
+    if (ident_msgs)
+	lcp_send_ident(f->unit);
+
     lcp_echo_lowerup(f->unit);  /* Enable echo messages */
 
     link_established(f->unit);
@@ -2398,5 +2412,64 @@ lcp_echo_lowerdown (unit)
     if (lcp_echo_timer_running != 0) {
         UNTIMEOUT (LcpEchoTimeout, f);
         lcp_echo_timer_running = 0;
+    }
+}
+
+/*
+ * set_ident - Set LCP Identification message
+ */
+
+static int
+set_ident (argv)
+    char **argv;
+{
+    char *msg = *argv;
+    int l = strlen(msg) + 1;
+    struct wordlist *wp, *lp;
+
+    wp = (struct wordlist *) malloc(sizeof(struct wordlist) + l);
+    if (wp == NULL)
+	novm("lcp-ident argument");
+    wp->word = (char *) (wp + 1);
+    wp->next = NULL;
+    BCOPY(msg, wp->word, l);
+
+    if (ident_msgs) {
+	for (lp = ident_msgs; lp->next != NULL; lp = lp->next)
+	    ;
+	lp->next = wp;
+    } else
+	ident_msgs = wp;
+
+    return 1;
+}
+
+/*
+ * lcp_send_ident - Send LCP Identification frames to the peer
+ */
+
+static void
+lcp_send_ident (unit)
+    int unit;
+{
+    fsm *f = &lcp_fsm[unit];
+    u_int32_t lcp_magic;
+    struct wordlist *wp;
+    u_char *p;
+    int l;
+
+    if (f->state != OPENED)
+        return;
+
+    lcp_magic = lcp_gotoptions[f->unit].magicnumber;
+    wp = ident_msgs;
+    while (wp) {
+	p = nak_buffer;
+	l = strlen(wp->word);
+	PUTLONG(lcp_magic, p);
+	BCOPY(wp->word, p, l);
+	INCPTR(l, p);
+	fsm_sdata(f, IDENTIF, ++f->id, nak_buffer, p - nak_buffer);
+	wp = wp->next;
     }
 }

@@ -12,7 +12,6 @@
 <link rel="stylesheet" type="text/css" href="index_style.css"> 
 <link rel="stylesheet" type="text/css" href="form_style.css">
 <link rel="stylesheet" type="text/css" href="usp_style.css">
-<link rel="stylesheet" type="text/css" href="/js/table/table.css">
 <script type="text/javascript" src="/js/jquery.js"></script>
 <script type="text/javascript" src="/js/chart.min.js"></script>
 <script type="text/javascript" src="/state.js"></script>
@@ -20,18 +19,9 @@
 <script type="text/javascript" src="/general.js"></script>
 <script type="text/javascript" src="/popup.js"></script>
 <script type="text/javascript" src="/js/table/table.js"></script>
+<script type="text/javascript" src="/client_function.js"></script>
 
 <style>
-.tableApi_table th {
-        height: 22px;
-        text-align: left;
-}
-.tableApi_table td {
-        text-align: left;
-}
-.data_tr {
-        height: 32px;
-}
 span.cat0{
 	background-color:#B3645B;
 }
@@ -95,11 +85,13 @@ if (qos_mode == 2) {
 var pie_obj_ul, pie_obj_dl;
 var refreshRate;
 var timedEvent = 0;
+var sortdir = 0;
+var sortfield = 5;
+var filter = Array(6);
+const maxshown = 500;
+const maxrendered = 750;
 
 var color = ["#B3645B","#B98F53","#C6B36A","#849E75","#2B6692","#7C637A","#4C8FC0", "#6C604F"];
-
-<% get_tcclass_array(); %>;
-<% bwdpi_conntrack(); %>;
 
 var pieOptions = {
         segmentShowStroke : false,
@@ -147,7 +139,6 @@ function initial(){
 	show_menu();
 	refreshRate = document.getElementById('refreshrate').value;
 	get_data();
-	draw_conntrack_table();
 }
 
 
@@ -184,85 +175,158 @@ function compIPV6(input) {
 	return input.replace(/(^|:)0{1,4}/g, ':');
 }
 
+function set_filter(field, o) {
+	filter[field] = o.value.toLowerCase();
+	draw_conntrack_table();
+}
 
 function draw_conntrack_table(){
-	var i, label;
-	var tracklen;
+	var i, j, qosclass;
+	var tracklen, shownlen = 0;
+	var code;
+	var clientObj, clientName, clientName2;
+
+	genClientList();
 
 	tracklen = bwdpi_conntrack.length;
 
-	if (tracklen > 300) {
+	code = '<table cellpadding="4" class="FormTable_table"><thead><tr><td colspan="6">Tracked connections (total: ' + tracklen + ')</td></tr></thead>' +
+		'<tr><th width="5%" id="track_header_0" style="cursor: pointer;" onclick="setsort(0); draw_conntrack_table()">Proto</th>' +
+		'<th width="28%" id="track_header_1" style="cursor: pointer;" onclick="setsort(1); draw_conntrack_table()">Local IP</th>' +
+		'<th width="6%" id="track_header_2" style="cursor: pointer;" onclick="setsort(2); draw_conntrack_table()">Port</th>' +
+		'<th width="28%" id="track_header_3" style="cursor: pointer;" onclick="setsort(3); draw_conntrack_table()">Remote IP</th>' +
+		'<th width="6%" id="track_header_4" style="cursor: pointer;" onclick="setsort(4); draw_conntrack_table()">Port</th>' +
+		'<th width="27%" id="track_header_5" style="cursor: pointer;" onclick="setsort(5); draw_conntrack_table()">Application</th></tr>';
+
+	if (tracklen > maxrendered) {
 		document.getElementById('refreshrate').value = "0";
 		refreshRate = 0;
 		document.getElementById('toomanyconns').style.display = "";
 		document.getElementById('refreshrate').disabled = true;
 	}
 
-	for (i=0; i < tracklen; i++) {
-		label = bwdpi_conntrack[i][5];
-		if (label.length > 27)
-			size = "style=\"font-size: 75%;\"";
-		else
-			size = "";
+	bwdpi_conntrack.sort(table_sort);
 
-		bwdpi_conntrack[i][5] = "<span title=\"" + label +"\" class=\"catrow cat" + get_qos_class(bwdpi_conntrack[i][7], bwdpi_conntrack[i][6]) + "\"" + size + ">" + label + "</span>";
-		if (bwdpi_conntrack[i][1].indexOf(":") >= 0) {
+	// Generate table
+	for (i = 0; (i < tracklen && shownlen < maxshown); i++){
+
+		// Filter in place?
+		var filtered = 0;
+		for (j = 0; j < 6; j++) {
+			if ((filter[j]) && (bwdpi_conntrack[i][j].toLowerCase().indexOf(filter[j]) < 0)) {
+				filtered = 1;
+				continue;
+			}
+		}
+		if (filtered) continue;
+
+		shownlen++;
+
+		// Compress IPv6
+		if (bwdpi_conntrack[i][1].indexOf(":") >= 0)
 			bwdpi_conntrack[i][1] = compIPV6(bwdpi_conntrack[i][1]);
-		}
-		if (bwdpi_conntrack[i][3].indexOf(":") >= 0) {
-			bwdpi_conntrack[i][3] = compIPV6(bwdpi_conntrack[i][3]);
-		}
+		else
+			bwdpi_conntrack[i][1] = bwdpi_conntrack[i][1];
 
+		if (bwdpi_conntrack[i][3].indexOf(":") >= 0)
+			bwdpi_conntrack[i][3] = compIPV6(bwdpi_conntrack[i][3]);
+		else
+			bwdpi_conntrack[i][3] = bwdpi_conntrack[i][3];
+
+		// Get QoS Class for popup
+		qosclass = get_qos_class(bwdpi_conntrack[i][7], bwdpi_conntrack[i][6]);
+
+		// Retrieve hostname from networkmap
+		clientObj = clientFromIP(bwdpi_conntrack[i][1]);
+		if (clientObj)
+			clientName = (clientObj.nickName == "") ? clientObj.hostname : clientObj.nickName;
+		else
+			clientName = bwdpi_conntrack[i][1];
+
+		clientObj = clientFromIP(bwdpi_conntrack[i][3]);
+		if (clientObj)
+			clientName2 = (clientObj.nickName == "") ? clientObj.hostname : clientObj.nickName;
+		else
+			clientName2 = bwdpi_conntrack[i][3];
+
+		// Output row
+		code += "<tr><td>" + bwdpi_conntrack[i][0] + "</td>";
+		code += "<td title=\"" + clientName + "\"" + (bwdpi_conntrack[i][1].length > 36 ? "style=\"font-size: 80%;\"" : "") +">" +
+	                  bwdpi_conntrack[i][1] + "</td>";
+		code += "<td>" + bwdpi_conntrack[i][2] + "</td>";
+		code += "<td title=\"" + clientName2 + "\"" + (bwdpi_conntrack[i][3].length > 36 ? "style=\"font-size: 80%;\"" : "") + ">" +
+		          bwdpi_conntrack[i][3] + "</td>";
+		code += "<td>" + bwdpi_conntrack[i][4] + "</td>";
+		code += "<td><span title=\"" + category_title[qosclass] + "\" class=\"catrow cat" +
+	                  qosclass + "\"" + (bwdpi_conntrack[i][5].length > 27 ? "style=\"font-size: 75%;\"" : "") + ">" +
+	                  bwdpi_conntrack[i][5] + "</span></td></tr>";
 	}
 
-	// Remove cat and appid cols
-	var tabledata = bwdpi_conntrack.map(function(val){
-		return val.slice(0, -2);
-	});
+	if (shownlen == maxshown)
+		code += '<tr><td colspan="6"><span style="text-align: center;">List truncated to ' + maxshown + ' elements - use a filter</td></tr>';
 
-	var tableStruct = {
-		data: tabledata,
-		container: "tableContainer",
-		title: "Tracked connections (total: "+tracklen+")",
-		header: [
-			{
-				"title" : "Proto",
-				"sort" : "str",
-				"width" : "5%"
-			},
-			{
-				"title" : "Source",
-				"sort" : "ip",
-				"width" : "28%"
-			},
-			{
-				"title" : "SPort",
-				"sort" : "num",
-				"width" : "6%"
-			},
-			{
-				"title" : "Destination",
-				"sort" : "ip",
-				"width" : "28%"
-			},
-			{
-				"title" : "DPort",
-				"sort" : "num",
-				"width" : "6%"
-			},
-			{
-				"title" : "Application",
-				"sort" : "str",
-				"defaultSort" : "increase",
-				"width" : "27%"
+	code += "</tbody></table>";
+
+	document.getElementById('tracked_connections').innerHTML = code;
+	document.getElementById('track_header_' + sortfield).style.boxShadow = "rgb(255, 204, 0) 0px " + (sortdir == 1 ? "1" : "-1") + "px 0px 0px inset";
+}
+
+
+function setsort(newfield) {
+	if (newfield != sortfield) {
+		sortdir = 0;
+		sortfield = newfield;
+	 } else {
+		sortdir = (sortdir ? 0 : 1);
+	}
+}
+
+
+
+function table_sort(a, b){
+	var aa, bb;
+
+	switch (sortfield) {
+		case 0:		// Proto
+		case 1:		// Local IP
+		case 3:		// Remote IP
+			if (sortdir) {
+				aa = full_IPv6(a[sortfield].toString());
+				bb = full_IPv6(b[sortfield].toString());
+				if (aa == bb) return 0;
+				else if (aa > bb) return -1;
+				else return 1;
+			} else {
+				aa = full_IPv6(a[sortfield].toString());
+				bb = full_IPv6(b[sortfield].toString());
+				if (aa == bb) return 0;
+				else if (aa > bb) return 1;
+				else return -1;
 			}
-                ]
-        }
-
-        if(tableStruct.data.length) {
-                tableApi.genTableAPI(tableStruct);
-        }
-
+			break;
+		case 2:		// Local Port
+		case 4:		// Remote Port
+			if (sortdir)
+				return parseInt(b[sortfield]) - parseInt(a[sortfield]);
+			else
+				return parseInt(a[sortfield]) - parseInt(b[sortfield]);
+			break;
+		case 5:		// Label
+			if (sortdir) {
+		                aa = a[sortfield];
+			        bb = b[sortfield];
+				if(aa == bb) return 0;
+				else if(aa > bb) return -1;
+				else return 1;
+			} else {
+				aa = a[sortfield];
+				bb = b[sortfield];
+				if(aa == bb) return 0;
+				else if(aa > bb) return 1;
+				else return -1;
+			}
+			break;
+	}
 }
 
 
@@ -414,7 +478,7 @@ function draw_chart(data_array, ctx, pie) {
 <form method="post" name="form" action="/start_apply.htm" target="hidden_frame">
 <input type="hidden" name="preferred_lang" id="preferred_lang" value="<% nvram_get("preferred_lang"); %>">
 <input type="hidden" name="firmver" value="<% nvram_get("firmver"); %>">
-<input type="hidden" name="current_page" value="/QoS_stats.asp">
+<input type="hidden" name="current_page" value="/QoS_Stats.asp">
 <input type="hidden" name="next_page" value="/QoS_Stats.asp">
 <input type="hidden" name="action_mode" value="apply">
 <input type="hidden" name="action_script" value="">
@@ -473,7 +537,25 @@ function draw_chart(data_array, ctx, pie) {
                                 </tr>
 			</table>
 			<br>
-			<div id="tableContainer" style="margin-top:-10px;"></div>
+			<table cellpadding="4" class="FormTable_table"><thead><tr><td colspan="6">Filter connections</td></tr></thead>
+				<tr>
+					<th width="5%">Proto</th>
+					<th width="28%">Local IP</th>
+					<th width="6%">Port</th>
+					<th width="28%">Remote IP</th>
+					<th width="6%">Port</th>
+					<th width="27%">Application</th>
+				</tr>
+				<tr>
+					<td><input type="text" class="input_3_table" maxlength="3" oninput="set_filter(0, this);"></input></td>
+					<td><input type="text" class="input_15_table" maxlength="39" oninput="set_filter(1, this);"></input></td>
+					<td><input type="text" class="input_6_table" maxlength="5" oninput="set_filter(2, this);"></input></td>
+					<td><input type="text" class="input_15_table" maxlength="39" oninput="set_filter(3, this);"></input></td>
+					<td><input type="text" class="input_6_table" maxlength="5" oninput="set_filter(4, this);"></input></td>
+					<td><input type="text" class="input_18_table" maxlength="48" oninput="set_filter(5, this);"></input></td>
+				</tr>
+			</table>
+			<div id="tracked_connections">
 			<br>
 			<div class="apply_gen" style="padding-top: 25px;"><input type="button" onClick="location.href=location.href" value="<#CTL_refresh#>" class="button_gen"></div>
 		</td>

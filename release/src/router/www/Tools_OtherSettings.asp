@@ -565,6 +565,9 @@ function applyRule(){
 		}
 	}
 
+	if (getRadioValue(document.form.dns_local) != "<% nvram_get("dns_local"); %>")
+		document.form.action_script.value += ";restart_dnsmasq";
+
 	document.form.submit();
 }
 
@@ -901,6 +904,13 @@ function done_validating(action){
 						<td>
 							<input type="radio" name="ipv6_ns_drop" class="input" value="1" <% nvram_match_x("", "ipv6_ns_drop", "1", "checked"); %>><#checkbox_Yes#>
 							<input type="radio" name="ipv6_ns_drop" class="input" value="0" <% nvram_match_x("", "ipv6_ns_drop", "0", "checked"); %>><#checkbox_No#>
+						</td>
+					</tr>
+					<tr>
+						<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(50,27);">Wan: Use local caching DNS server as system resolver (default: Yes)</a></th>
+						<td>
+							<input type="radio" name="dns_local" class="input" value="1" <% nvram_match_x("", "dns_local", "1", "checked"); %>><#checkbox_Yes#>
+							<input type="radio" name="dns_local" class="input" value="0" <% nvram_match_x("", "dns_local", "0", "checked"); %>><#checkbox_No#>
 						</td>
 					</tr>
 					<tr>

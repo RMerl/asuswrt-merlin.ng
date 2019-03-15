@@ -1,0 +1,4 @@
+Makefile
+#Makefile.in
+service-types.db
+build-db

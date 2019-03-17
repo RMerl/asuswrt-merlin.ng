@@ -210,6 +210,17 @@ function draw_conntrack_table(){
 	// Generate table
 	for (i = 0; (i < tracklen && shownlen < maxshown); i++){
 
+		// Compress IPv6
+		if (bwdpi_conntrack[i][1].indexOf(":") >= 0)
+			bwdpi_conntrack[i][1] = compIPV6(bwdpi_conntrack[i][1]);
+		else
+			bwdpi_conntrack[i][1] = bwdpi_conntrack[i][1];
+
+		if (bwdpi_conntrack[i][3].indexOf(":") >= 0)
+			bwdpi_conntrack[i][3] = compIPV6(bwdpi_conntrack[i][3]);
+		else
+			bwdpi_conntrack[i][3] = bwdpi_conntrack[i][3];
+
 		// Filter in place?
 		var filtered = 0;
 		for (j = 0; j < 6; j++) {
@@ -221,17 +232,6 @@ function draw_conntrack_table(){
 		if (filtered) continue;
 
 		shownlen++;
-
-		// Compress IPv6
-		if (bwdpi_conntrack[i][1].indexOf(":") >= 0)
-			bwdpi_conntrack[i][1] = compIPV6(bwdpi_conntrack[i][1]);
-		else
-			bwdpi_conntrack[i][1] = bwdpi_conntrack[i][1];
-
-		if (bwdpi_conntrack[i][3].indexOf(":") >= 0)
-			bwdpi_conntrack[i][3] = compIPV6(bwdpi_conntrack[i][3]);
-		else
-			bwdpi_conntrack[i][3] = bwdpi_conntrack[i][3];
 
 		// Get QoS Class for popup
 		qosclass = get_qos_class(bwdpi_conntrack[i][7], bwdpi_conntrack[i][6]);

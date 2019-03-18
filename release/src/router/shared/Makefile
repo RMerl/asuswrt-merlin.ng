@@ -310,6 +310,9 @@ CFLAGS += -DSMART_CONNECT
 endif
 OBJS += $(if $(wildcard sysdeps/amas/amas_dwb.c),sysdeps/amas/amas_dwb.o,prebuild/amas_dwb.o)
 endif
+ifeq ($(RTCONFIG_AMASDB),y)
+CFLAGS += -DAMASDB
+endif
 endif
 
 vpath %.c sysdeps $(SRCBASE)/shared/ $(WLAN_ComponentSrcDirs)

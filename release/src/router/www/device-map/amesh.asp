@@ -40,6 +40,69 @@ var aimesh_node_client_upload_icon = new Array();
 var aimesh_select_new_re_mac = "";
 var AUTOLOGOUT_MAX_MINUTE_ORI = 0;
 var restore_autologout = false;
+var led_control = {
+	"status": function(_node_info){
+		var result = {"support": 0, "value": 0};
+		var firstCheck = false;
+		var secondCheck = false;
+
+		if("capability" in _node_info) {
+			if("1" in _node_info.capability) {
+				result.support = _node_info.capability["1"];
+				firstCheck = true;
+			}
+		}
+
+		if("config" in _node_info) {
+			if("central_led" in _node_info.config) {
+				if("bc_ledLv" in _node_info.config.central_led) {
+					result.value = parseInt(_node_info.config.central_led.bc_ledLv);
+					secondCheck = true;
+				}
+			}
+			else if("lp55xx_led" in _node_info.config) {
+				if("lp55xx_lp5523_user_enable" in _node_info.config.lp55xx_led) {
+					result.value = parseInt(_node_info.config.lp55xx_led.lp55xx_lp5523_user_enable);
+					secondCheck = true;
+				}
+			}
+		}
+
+		if(isNaN(result.value))
+			result.value = 0;
+		if(!firstCheck || !secondCheck) {
+			result.support = 0;
+			result.value = 0;
+		}
+		return result;
+	},
+	"component": function(_supportType) {
+		var html = "";
+		switch(parseInt(_supportType)) {
+			case 1 :
+				html += "<div style='margin-top:10px;'>";
+				html += "<div class='aimesh_node_setting_info_title'><#LED_Brightness#></div>";
+				html += "<div class='aimesh_node_setting_info_content'>";
+				html += "<div id='led_slider' class='led_slider'></div>";
+				html += "<div id='led_text'></div>";
+				html += "</div>";
+				html += "<div class='clear_both'></div>";
+				html += "</div>";
+				break;
+			case 2 :
+				html += "<div style='margin-top:10px;'>";
+				html += "<div class='aimesh_node_setting_info_title'>LED</div>";
+				html += "<div class='aimesh_node_setting_info_content'>";
+				html += "<div align='center' style='float:left;cursor:pointer;' id='led_radio'></div>";
+				html += "</div>";
+				html += "<div class='clear_both'></div>";
+				html += "</div>";
+				break;
+		}
+		return html;
+	}
+};
+
 function initial(){
 	if(parent.$('link[rel=stylesheet][href~="/device-map/amesh.css"]').length > 0)
 		parent.$('link[rel=stylesheet][href~="/device-map/amesh.css"]').remove();
@@ -411,17 +474,18 @@ function gen_current_onboardinglist(_onboardingList, _wclientlist, _wiredclientl
 						}
 					}
 				}
-				if(model_name == "BLUE_CAVE"){
-					if("config" in _onboardingList[idx]) {
-						if("central_led" in _onboardingList[idx].config) {
-							if("bc_ledLv" in _onboardingList[idx].config.central_led) {
-								if(parent.$("script[src='/calendar/jquery-ui.js']").length == 0)
-									parent.addNewScript("/calendar/jquery-ui.js");
-								if($("script[src='../calendar/jquery-ui.js']").length == 0)
-									addNewScript("../calendar/jquery-ui.js");
-							}
-						}
-					}
+
+				if($("script[src='../calendar/jquery-ui.js']").length == 0) {
+					if(led_control.status(_onboardingList[idx]).support == 1)
+						addNewScript("../calendar/jquery-ui.js");
+				}
+				if(parent.$("script[src='/calendar/jquery-ui.js']").length == 0) {
+					if(led_control.status(_onboardingList[idx]).support == 1)
+						parent.addNewScript("/calendar/jquery-ui.js");
+				}
+				if($("script[src='../switcherplugin/jquery.iphone-switch.js']").length == 0) {
+					if(led_control.status(_onboardingList[idx]).support == 2)
+						addNewScript("../switcherplugin/jquery.iphone-switch.js");
 				}
 
 				if(connect_type == "1")
@@ -704,7 +768,7 @@ function scenario() {
 	description += "<br>";
 	description += "<#AiMesh_Desc32#>";
 	description += "<br>";
-	description += "<a style='font-weight:bolder;text-decoration:underline;color:#FC0;' href='http://www.asus.com/support/' target='_blank'><#AiMesh_Desc3_note#></a>";
+	description += "<a style='font-weight:bolder;text-decoration:underline;color:#FC0;' href='https://www.asus.com/support/' target='_blank'><#AiMesh_Desc3_note#></a>";
 	gen_each_step_content(description, 3);
 
 	interval = setInterval(set_slider, 15000);
@@ -1416,16 +1480,10 @@ function popAMeshClientListEditTable(event) {
 	code += "<div class='clear_both'></div>";
 	code += "</div>";
 
-	if(node_info.model_name == "BLUE_CAVE") {
-		code += "<div style='margin-top:10px;'>";
-		code += "<div class='aimesh_node_setting_info_title'><#LED_Brightness#></div>";
-		code += "<div class='aimesh_node_setting_info_content'>";
-		code += "<div id='led_slider' class='led_slider'></div>";
-		code += "<div id='led_text'></div>";
-		code += "</div>";
-		code += "<div class='clear_both'></div>";
-		code += "</div>";
-	}
+	var led_status = led_control.status(node_info);
+	if(led_status.support)
+		code += led_control.component(led_status.support);
+
 	code += "</div>";
 
 	code += "<div class='clientList_line aimesh_node_line_bg'></div>";
@@ -1624,34 +1682,51 @@ function popAMeshClientListEditTable(event) {
 			re_sort_AiMesh_node_client("rssi", "num", "client_interface");
 		}
 	);
-	if(node_info.model_name == "BLUE_CAVE"){
-		var central_led_bc_ledLv = 3;
-		if("config" in node_info) {
-			if("central_led" in node_info.config) {
-				if("bc_ledLv" in node_info.config.central_led)
-					central_led_bc_ledLv = parseInt(node_info.config.central_led.bc_ledLv);
-			}
+
+	if(led_status.support) {
+		switch(led_status.support) {
+			case 1:
+				var color_table = ["#c6dafc", "#7baaf7", "#4285f4", "#3367d6"];
+				var led_table = ["<#CTL_close#>", "<#Low#>", "<#Medium#>", "<#High#>"];
+				parent.$("#edit_amesh_client_block").find("#led_text").html(led_table[led_status.value]);
+				parent.$("#edit_amesh_client_block").find("#led_slider").slider({
+					orientation: "horizontal",
+					range: "min",
+					min: 1,
+					max: 4,
+					value: (led_status.value + 1),
+					slide: function(event, ui) {
+						parent.$("#edit_amesh_client_block").find("#led_text").html(led_table[ui.value-1]);
+						parent.$("#edit_amesh_client_block").find("#led_slider .ui-slider-range").css("background-color", color_table[ui.value-1]);
+						parent.$("#edit_amesh_client_block").find("#led_slider .ui-slider-handle").css("border-color", color_table[ui.value-1]);
+					},
+					stop: function(event, ui) {
+						var data = new Object();
+						data.bc_ledLv = (ui.value - 1);
+						set_AiMesh_node_config(data, node_info.mac);
+					}
+				});
+				break;
+			case 2:
+				var led_status = (led_status.value == "0") ? 1 : 0;
+				parent.$("#edit_amesh_client_block").find('#led_radio').iphoneSwitch(led_status,
+					function(){
+						var data = new Object();
+						data.lp55xx_lp5523_user_enable = 0;
+						data.lp55xx_lp5523_user_col = 0;
+						data.lp55xx_lp5523_user_beh = 0;
+						set_AiMesh_node_config(data, node_info.mac);
+					},
+					function(){
+						var data = new Object();
+						data.lp55xx_lp5523_user_enable = 1;
+						data.lp55xx_lp5523_user_col = 101;
+						data.lp55xx_lp5523_user_beh = 300;
+						set_AiMesh_node_config(data, node_info.mac);
+					}
+				);
+				break;
 		}
-		var color_table = ["#c6dafc", "#7baaf7", "#4285f4", "#3367d6"];
-		var led_table = ["<#CTL_close#>", "<#Low#>", "<#Medium#>", "<#High#>"];
-		$popupBgHtml.find("#led_text").html(led_table[central_led_bc_ledLv]);
-		parent.$("#edit_amesh_client_block").find( "#led_slider" ).slider({
-			orientation: "horizontal",
-			range: "min",
-			min: 1,
-			max: 4,
-			value: (central_led_bc_ledLv + 1),
-			slide: function(event, ui) {
-				$popupBgHtml.find("#led_text").html(led_table[ui.value-1]);
-				$popupBgHtml.find("#led_slider .ui-slider-range").css("background-color", color_table[ui.value-1]);
-				$popupBgHtml.find("#led_slider .ui-slider-handle").css("border-color", color_table[ui.value-1]);
-			},
-			stop: function(event, ui) {
-				var data = new Object();
-				data.bc_ledLv = (ui.value - 1);
-				set_AiMesh_node_config(data, node_info.mac);
-			}
-		});
 	}
 	/* set event end */
 

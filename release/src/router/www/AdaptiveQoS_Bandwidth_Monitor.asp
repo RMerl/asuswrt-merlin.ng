@@ -168,9 +168,29 @@ function initial(){
 	}
 
 	show_menu();
-	// http://www.asus.com/support/FAQ/1010934/
+	// https://www.asus.com/support/FAQ/1010934/
 	httpApi.faqURL("1010934", function(url){document.getElementById("faq").href=url;});
-	show_clients();
+
+	if(totalClientNum.online == 0) {
+		var loop_count = 0;
+		httpApi.updateClientList();
+		setTimeout(function(){
+			if(loop_count >= 60) {
+				$("#sortable").html("<div style='text-align:center;color:#FFCC00'><#IPConnection_VSList_Norule#></div>");
+				return false;
+			}
+			if(totalClientNum.online != 0)
+				show_clients();
+			else {
+				loop_count++;
+				originData.fromNetworkmapd[0] = httpApi.hookGet("get_clientlist", true);
+				genClientList();
+				setTimeout(arguments.callee, 1000);
+			}
+		}, 1000);
+	}
+	else
+		show_clients();
 }
 
 
@@ -364,11 +384,6 @@ function show_clients(priority_type){
 	var short_name = "";
 	//user icon
 	var userIconBase64 = "NoIcon";
-
-	if(clientList.length == 0){
-		setTimeout("show_clients();", 500);
-		return false;
-	}
 
 	if(typeof(priority_type) != "undefined"){
 		document.getElementById('block_all').style.visibility = "visible";

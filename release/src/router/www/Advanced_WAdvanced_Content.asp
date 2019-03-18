@@ -244,9 +244,6 @@ function initial(){
 		document.getElementById("wl_unit_field").style.display = "none";
 
 	regen_band(document.form.wl_unit);
-
-	document.getElementById("wl_rate").style.display = "none";
-
 	if(Rawifi_support){
 		inputCtrl(document.form.wl_noisemitigation, 0);
 	}
@@ -283,7 +280,7 @@ function initial(){
 			// for BRCM new SDK 6.x
 			inputCtrl(document.form.wl_ampdu_mpdu, 1);
 			inputCtrl(document.form.wl_ack_ratio, 1);
-		}else if(sdk_7){
+		}else if(sdk_7 || sdk_version_array[0] == '17'){
 			// for BRCM new SDK 7.x
 			inputCtrl(document.form.wl_ampdu_mpdu, 1);
 			inputCtrl(document.form.wl_ack_ratio, 0);
@@ -438,7 +435,7 @@ function initial(){
 	else
 		HtTxStream = '<% nvram_get("wl0_HT_TxStream"); %>';
 	for (var i = 0; i < mcast_rates.length; i++) {
-		if (mcast_unit == '1' && mcast_rates[i][2]) // 5Ghz && CCK
+		if ((mcast_unit == '1' || mcast_unit == '2') && mcast_rates[i][2]) // 5Ghz && CCK
 			continue;
 		if (!Rawifi_support && !Qcawifi_support && mcast_rates[i][3]) // BCM && HTMIX
 			continue;
@@ -1555,28 +1552,6 @@ function checkWLReady(){
 							<input type="radio" value="0" name="wl_ap_isolate" class="input" onClick="return change_common_radio(this, 'WLANConfig11b', 'wl_ap_isolate', '0')" <% nvram_match("wl_ap_isolate", "0", "checked"); %>><#checkbox_No#>
 			  			</td>
 					</tr>
-					
-					<tr id="wl_rate">
-			  			<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(3, 6);"><#WLANConfig11b_DataRateAll_itemname#></a></th>
-			  			<td>
-							<select name="wl_rate" class="input_option">
-				  				<option value="0" <% nvram_match("wl_rate", "0","selected"); %>><#Auto#></option>
-				  				<option value="1000000" <% nvram_match("wl_rate", "1000000","selected"); %>>1</option>
-				  				<option value="2000000" <% nvram_match("wl_rate", "2000000","selected"); %>>2</option>
-				  				<option value="5500000" <% nvram_match("wl_rate", "5500000","selected"); %>>5.5</option>
-				  				<option value="6000000" <% nvram_match("wl_rate", "6000000","selected"); %>>6</option>
-				  				<option value="9000000" <% nvram_match("wl_rate", "9000000","selected"); %>>9</option>
-				  				<option value="11000000" <% nvram_match("wl_rate", "11000000","selected"); %>>11</option>
-				  				<option value="12000000" <% nvram_match("wl_rate", "12000000","selected"); %>>12</option>
-				  				<option value="18000000" <% nvram_match("wl_rate", "18000000","selected"); %>>18</option>
-				  				<option value="24000000" <% nvram_match("wl_rate", "24000000","selected"); %>>24</option>
-				  				<option value="36000000" <% nvram_match("wl_rate", "36000000","selected"); %>>36</option>
-				  				<option value="48000000" <% nvram_match("wl_rate", "48000000","selected"); %>>48</option>
-				  				<option value="54000000" <% nvram_match("wl_rate", "54000000","selected"); %>>54</option>
-							</div>
-			  			</td>
-					</tr>
-
 					<tr id="rssiTr" class="rept ew">
 		  			<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(3, 31);"><#Roaming_assistant#></a></th>
 						<td>
@@ -1618,16 +1593,6 @@ function checkWLReady(){
 						<td>
 							<select name="wl_mrate_x" class="input_option">
 								<option value="0" <% nvram_match("wl_mrate_x", "0", "selected"); %>><#Auto#></option>
-							</select>
-						</td>
-					</tr>
-					<tr style="display:none;">
-			  			<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(3, 8);"><#WLANConfig11b_DataRate_itemname#></a></th>
-			  			<td>
-			  				<select name="wl_rateset" class="input_option">
-				  				<option value="default" <% nvram_match("wl_rateset", "default","selected"); %>><#Setting_factorydefault_value#></option>
-				  				<option value="all" <% nvram_match("wl_rateset", "all","selected"); %>><#All#></option>
-				  				<option value="12" <% nvram_match("wl_rateset", "12","selected"); %>>1, 2 Mbps</option>
 							</select>
 						</td>
 					</tr>

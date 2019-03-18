@@ -28,6 +28,7 @@
 #include <ctype.h>
 #include <sys/socket.h>
 #include <netdb.h>
+#include <sys/un.h>
 
 #include <bcmnvram.h>
 #include <bcmdevs.h>
@@ -4169,4 +4170,99 @@ int isValidEnableOption(const char *option, int range) {
 		return 1;
 	else
 		return 0;
+}
+
+#if defined(RTCONFIG_AMAS)
+/*
+	define amas_lib trigger function
+*/
+static int SEND_AMAS_NODE_EVENT(AMASLIB_EVENT_T *event)
+{
+	struct    sockaddr_un addr;
+	int       sockfd, n;
+
+	if ((sockfd = socket(AF_UNIX, SOCK_STREAM, 0)) == -1) {
+		printf("[%s:(%d)] ERROR socket.\n", __FUNCTION__, __LINE__);
+		perror("socket error");
+		return 0;
+	}
+
+	memset(&addr, 0, sizeof(addr));
+	addr.sun_family = AF_UNIX;
+	strlcpy(addr.sun_path, AMASLIB_SOCKET_PATH, sizeof(addr.sun_path));
+
+	if (connect(sockfd, (struct sockaddr*)&addr, sizeof(addr)) == -1) {
+		printf("[%s:(%d)] ERROR connecting:%s.\n", __FUNCTION__, __LINE__, strerror(errno));
+		perror("connect error");
+		close(sockfd);
+		return 0;
+	}
+
+	n = write(sockfd, (AMASLIB_EVENT_T *)event, sizeof(AMASLIB_EVENT_T));
+
+	close(sockfd);
+
+	if (n < 0) {
+		printf("[%s:(%d)] ERROR writing:%s.\n", __FUNCTION__, __LINE__, strerror(errno));
+		perror("writing error");
+		return 0;
+	}
+
+	return 1;
+}
+
+int AMAS_EVENT_TRIGGER(char *sta2g, char *sta5g, int flag)
+{
+	AMASLIB_EVENT_T *node = NULL;
+	node = (AMASLIB_EVENT_T *)malloc(sizeof(AMASLIB_EVENT_T));
+
+	char *buf1 = sta2g;
+	char *buf2 = sta5g;
+
+	if (node == NULL) {
+		printf("[%s:(%d)] malloc(AMASLIB_EVENT_T) error:%s.\n", __FUNCTION__, __LINE__, strerror(errno));
+		return 0;
+	}
+
+	if (sta2g == NULL) buf1 = "\0";
+	if (sta5g == NULL) buf2 = "\0";
+
+	//printf("[%s:(%d)] sta2g=%s, sta5g=%s, flag=%d\n", __FUNCTION__, __LINE__, buf1, buf2, flag);
+	memset(node, 0, sizeof(AMASLIB_EVENT_T));
+	memcpy(node->sta2g, buf1, sizeof(node->sta2g));
+	memcpy(node->sta5g, buf2, sizeof(node->sta5g));
+	node->flag = flag;
+
+	/* send wlc event into wlc_nt */
+	SEND_AMAS_NODE_EVENT(node);
+
+	/* free memory */
+	if (node) free(node);
+
+	return 1;
+}
+
+/*
+	define amaslib enable function for check
+*/
+int is_amaslib_enabled()
+{
+	int ret = 0;
+	if ((nvram_get_int("wrs_enable") && nvram_get_int("wrs_app_enable")) ||
+		(nvram_get_int("qos_enable") && (nvram_get_int("qos_type") == 0 || nvram_get_int("qos_type") == 2)) ||
+		nvram_get_int("MULTIFILTER_ALL"))
+	{
+		ret = 1;
+	}
+
+	return ret;
+}
+#endif
+
+int get_index_page(char *page, int size)
+{
+	if(check_if_file_exist("/www/GameDashboard.asp"))
+		strlcpy(page, "GameDashboard.asp", size);
+	else
+		strlcpy(page, "index.asp", size);
 }

@@ -16,6 +16,9 @@ LDFLAGS += -lm
 ifeq ($(RTCONFIG_AMAS),y)
 CFLAGS += -I$(TOP)/amas-utils -I$(TOP)/shared/sysdeps/amas -DUPDATECOST
 LDFLAGS += -L$(TOP)/amas-utils -lamas-utils
+ifeq ($(RTCONFIG_AVBLCHAN),y)
+CFLAGS += -DAVBLCHAN
+endif
 endif
 
 ifeq ($(HND_ROUTER),y)
@@ -25,6 +28,16 @@ endif
 
 ifeq ($(RTCONFIG_HND_ROUTER_AX),y)
 CFLAGS +=-I$(SRCBASE)/../components/wlioctl/include -I$(SRCBASE)/../components/proto/include -I$(SRCBASE)/wl/sys
+endif
+
+ifeq ($(RTCONFIG_NOTIFICATION_CENTER),y)
+CFLAGS  += -I$(TOP)/sqlite
+CFLAGS  += -I$(TOP)/nt_center/lib
+CFLAGS  += -I$(TOP)/nt_center/actMail
+CFLAGS  += -I$(TOP)/wlc_nt
+CFLAGS  += -DASUSWRT_SDK
+LDFLAGS += -L$(TOP)/sqlite/.libs -lsqlite3 -lpthread -L$(TOP)/nt_center/lib -lnt
+LDFLAGS += -L$(TOP)/wlc_nt -lwlc_nt_client
 endif
 
 ifeq ($(RTCONFIG_DHDAP), y)
@@ -85,15 +98,13 @@ COMMON_OBJS += cfg_dwb.o
 endif
 COMMON_OBJS += cfg_chanspec.o
 COMMON_OBJS += cfg_parammgnt.o
-SERVER_OBJS += $(COMMON_OBJS) cfg_mnt.o
+SERVER_OBJS += $(COMMON_OBJS) cfg_eventnotify.o cfg_mnt.o
 CLIENT_OBJS += $(COMMON_OBJS) cfg_capability.o cfg_client.o
 REPORTSTATUS_OBJS += cfg_common.o cfg_reportstatus.o
 
 ifeq ($(RTCONFIG_WIFI_SON),y)
 CFLAGS += -DREPORT_PAP_INFO
-#COMMON_OBJS += cfg_onboarding.o
-#CFLAGS += -DONBOARDING
-else
+endif
 ifneq ($(RTCONFIG_REALTEK),y)
 COMMON_OBJS += cfg_roaming.o
 CFLAGS += -DLEGACY_ROAMING
@@ -111,14 +122,18 @@ COMMON_OBJS += cfg_radardet.o
 CFLAGS += -DRADAR_DET
 COMMON_OBJS += cfg_conndiag.o
 CFLAGS += -DCONN_DIAG
+endif
+
+ifeq ($(RTCONFIG_AMASDB),y)
+CFLAGS += -DDUAL_BAND_DETECTION
+COMMON_OBJS += cfg_dualbandlist.o
+endif
 # for sending re join event
 #ifeq ($(HND_ROUTER_AX),y)
 #CFLAGS += -DNOTIFY_RE_JOIN_EVENT
 #endif
-endif
-endif
 
-ifeq ($(BUILD_NAME), $(filter $(BUILD_NAME), RT-AC5300 GT-AC5300 RT-AX92U GT-AX11000))
+ifeq ($(BUILD_NAME), $(filter $(BUILD_NAME), RT-AC5300 GT-AC5300 MAP-AC2200 RT-AC92U RT-AX92U GT-AX11000))
 CFLAGS += -DSUPPORT_TRI_BAND
 endif
 
@@ -140,7 +155,6 @@ endif
 ifeq ($(RTCONFIG_BCMBSD),y)
 CFLAGS += -DSMART_CONNECT
 endif
-
 
 ifeq ($(wildcard $(SRCBASE)/router/cfg_mnt/*.c),)
 all:

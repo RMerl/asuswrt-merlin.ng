@@ -35,7 +35,7 @@ Object.prototype.getKey = function(value) {
 };
 function initial(){
 	show_menu();
-	//	http://www.asus.com/support/FAQ/1009775
+	//	https://www.asus.com/support/FAQ/1009775
 	httpApi.faqURL("1009775", function(url){document.getElementById("faq3").href=url;});	// id in #smart_access3#
 
 	var wollist_row = wollist_array.split('&#60');

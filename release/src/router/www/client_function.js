@@ -173,9 +173,14 @@ function genClientList(){
 			}
 			else{
 				clientList[thisClientMacAddr].macRepeat++;
-				totalClientNum.online++;
+				if(clientList[thisClientMacAddr].isOnline)
+					totalClientNum.online++;
 				continue;
 			}
+
+			clientList[thisClientMacAddr].isOnline = (thisClient.isOnline == "1") ? true : false;
+			if(clientList[thisClientMacAddr].isOnline)
+				totalClientNum.online++;
 
 			if(!downsize_4m_support) {
 				clientList[thisClientMacAddr].type = thisClient.type;
@@ -198,29 +203,23 @@ function genClientList(){
 			clientList[thisClientMacAddr].vendor = thisClient.vendor;
 			clientList[thisClientMacAddr].rssi = parseInt(thisClient.rssi);
 			clientList[thisClientMacAddr].isWL = parseInt(thisClient.isWL);
-			if(clientList[thisClientMacAddr].isWL > 0) {
-				totalClientNum.wireless += clientList[thisClientMacAddr].macRepeat;
-				totalClientNum.wireless_ifnames[clientList[thisClientMacAddr].isWL-1] += clientList[thisClientMacAddr].macRepeat;
-			}
-			else {
-				totalClientNum.wired += clientList[thisClientMacAddr].macRepeat;
+			if(clientList[thisClientMacAddr].isOnline) {
+				if(clientList[thisClientMacAddr].isWL > 0) {
+					totalClientNum.wireless += clientList[thisClientMacAddr].macRepeat;
+					totalClientNum.wireless_ifnames[clientList[thisClientMacAddr].isWL-1] += clientList[thisClientMacAddr].macRepeat;
+				}
+				else {
+					totalClientNum.wired += clientList[thisClientMacAddr].macRepeat;
+				}
 			}
 
 			clientList[thisClientMacAddr].opMode = parseInt(thisClient.opMode); //0:unknow, 1: router, 2: repeater, 3: AP, 4: Media Bridge
-
 			clientList[thisClientMacAddr].isLogin = (thisClient.isLogin == "1");
-
-			clientList[thisClientMacAddr].isOnline = true;
-			totalClientNum.online++;
-
 			clientList[thisClientMacAddr].group = thisClient.group;
 			clientList[thisClientMacAddr].callback = thisClient.callback;
 			clientList[thisClientMacAddr].keeparp = thisClient.keeparp;
-
 			clientList[thisClientMacAddr].ipMethod = thisClient.ipMethod;
-
 			clientList[thisClientMacAddr].qosLevel = thisClient.qosLevel;
-
 			clientList[thisClientMacAddr].wtfast = parseInt(thisClient.wtfast);
 			clientList[thisClientMacAddr].internetMode = thisClient.internetMode;
 			clientList[thisClientMacAddr].internetState = thisClient.internetState;
@@ -233,7 +232,7 @@ function genClientList(){
 			if(amesh_support) {
 				if(thisClient.amesh_isRe != undefined) {
 					clientList[thisClientMacAddr].amesh_isRe = (thisClient.amesh_isRe == "1") ? true : false;
-					if(clientList[thisClientMacAddr].amesh_isRe) { // re set amesh re device to offline
+					if(clientList[thisClientMacAddr].amesh_isRe && clientList[thisClientMacAddr].isOnline) { // re set amesh re device to offline
 						clientList[thisClientMacAddr].isOnline = false;
 						totalClientNum.online--;
 						if(clientList[thisClientMacAddr].isWL > 0) {

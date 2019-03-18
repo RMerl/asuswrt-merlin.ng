@@ -3006,6 +3006,28 @@ int init_nvram(void)
 
 	nvram_unset("wanduck_start_detect");
 
+#if defined(RTCONFIG_WIFI_SON)
+	if (nvram_match("x_Setting", "1") && !nvram_match("wifison_ready", "1")) {
+		if (nvram_get_int("hyd_cfg_time") && nvram_safe_get("wl0_wpa_psk")[0] != '\0') { /* old Lyra firmware */
+			_dprintf("##### upgrade from pure Lyra firmware!!!\n");
+			nvram_set("wifison_ready", "1");
+			nvram_commit();
+		}
+	}
+#ifdef RTCONFIG_AMAS
+	else if (nvram_match("x_Setting", "0")) {
+		if (!nvram_get("bt_turn_off_service")) /* check if the trigger coming from BLE */
+			nvram_set("wifison_ready", "0");
+	}
+#endif	/* RTCONFIG_AMAS */
+#endif
+
+	if (nvram_match("x_Setting", "0")) {
+		char ver[64];
+		snprintf(ver, sizeof(ver), "%s.%s_%s", nvram_safe_get("firmver"), nvram_safe_get("buildno"), nvram_safe_get("extendno"));
+		nvram_set("innerver", ver);
+	}
+
 	switch (model) {
 #ifdef RTCONFIG_RALINK
 	case MODEL_EAN66:
@@ -6598,12 +6620,6 @@ int init_nvram(void)
 			nvram_set("1:ed_thresh5g", "-72");
 		}
 
-		if (nvram_match("x_Setting", "0")) {
-			char ver[64];
-			snprintf(ver, sizeof(ver), "%s.%s_%s", nvram_safe_get("firmver"), nvram_safe_get("buildno"), nvram_safe_get("extendno"));
-			nvram_set("innerver", ver);
-		}
-
 		if (nvram_match("dslx_vd1q0", "2")) {
 			nvram_set("dsl8_dot1q", "1");
 			nvram_set("dsl8_vid", "0");
@@ -7151,6 +7167,7 @@ int init_nvram(void)
 
 #if defined(GTAX11000)
 	case MODEL_GTAX11000:
+		update_43684_tempthresh();
 		nvram_set("lan_ifname", "br0");
 		if (is_router_mode()) {
 			nvram_set("lan_ifnames", "eth1 eth2 eth3 eth4 eth5 eth6 eth7 eth8");
@@ -7308,6 +7325,8 @@ int init_nvram(void)
 		add_rc_support("WIFI_LOGO");
 		add_rc_support("nandflash");
 		add_rc_support("smart_connect");
+		add_rc_support("movistarTriple");
+		add_rc_support("wifi2017");
 #ifdef RTCONFIG_EXTPHY_BCM84880
                 add_rc_support("2p5G_LWAN");
 #endif
@@ -7319,7 +7338,8 @@ int init_nvram(void)
 
 #if defined(RTAX88U)
 	case MODEL_RTAX88U:
-		update_rf_para_ax88u();
+		update_rf_para();
+		update_43684_tempthresh();
 		nvram_set("lan_ifname", "br0");
 		if (is_router_mode()) {
 			nvram_set("lan_ifnames", "eth1 eth2 eth3 eth4 eth5 eth6 eth7");
@@ -7460,10 +7480,12 @@ int init_nvram(void)
 		add_rc_support("switchctrl"); // broadcom: for jumbo frame only
 		add_rc_support("manual_stb");
 		add_rc_support("11AX");
-//		add_rc_support("pwrctrl");
+		add_rc_support("pwrctrl");
 		add_rc_support("WIFI_LOGO");
 		add_rc_support("nandflash");
 		add_rc_support("smart_connect");
+		add_rc_support("movistarTriple");
+		add_rc_support("wifi2017");
 		add_rc_support("app");
 
 		break;
@@ -7471,6 +7493,8 @@ int init_nvram(void)
 
 #if defined(RTAX92U)
 	case MODEL_RTAX92U:
+		update_rf_para();
+		update_43684_tempthresh();
 		nvram_set("lan_ifname", "br0");
 		if (is_router_mode()) {
 			nvram_set("lan_ifnames", "eth1 eth2 eth3 eth4 eth5 eth6 eth7");
@@ -7610,6 +7634,8 @@ int init_nvram(void)
 		add_rc_support("WIFI_LOGO");
 		add_rc_support("nandflash");
 		add_rc_support("smart_connect");
+		add_rc_support("movistarTriple");
+		add_rc_support("wifi2017");
 
 		break;
 #endif
@@ -7769,6 +7795,7 @@ int init_nvram(void)
 		add_rc_support("WIFI_LOGO");
 		add_rc_support("nandflash");
 		add_rc_support("smart_connect");
+		add_rc_support("movistarTriple");
 		add_rc_support("wifi2017");
 		add_rc_support("meoVoda");
 #if defined(RTAC86U)
@@ -7945,7 +7972,6 @@ int init_nvram(void)
 			nvram_set("sta_ifnames", "eth1 eth2");
 		}
 #endif
-
 		/* gpio */
 		/* HW reset, 2 | LOW */
 		nvram_set_int("led_pwr_gpio", 3|GPIO_ACTIVE_LOW);
@@ -8975,6 +9001,22 @@ int init_nvram(void)
 			nvram_set_int(strcat_r(prefix, "unit", tmp), unit);
 			nvram_set(strcat_r(prefix, "ifname", tmp), word);
 
+			unit++;
+		}
+	}
+#endif
+
+#if defined(RTCONFIG_BCMARM) && defined(RTCONFIG_AMAS) && defined(RTCONFIG_BCN_RPT)
+	{
+		unit = 0;
+		char word[256], *next;
+		char tmp[16];
+		foreach (word, nvram_safe_get("wl_ifnames"), next) {
+			if(nvram_match("re_mode", "1"))
+				snprintf(tmp, sizeof(tmp), "wl%d.1_rrm", unit);
+			else
+				snprintf(tmp, sizeof(tmp), "wl%d_rrm", unit);
+			nvram_set(tmp, "0x20");
 			unit++;
 		}
 	}
@@ -10698,6 +10740,10 @@ static void sysinit(void)
 	f_write_string("/proc/sys/net/unix/max_dgram_qlen", "150", 0, 0);
 #endif
 
+#ifdef RTCONFIG_BCM_HND_CRASHLOG
+	f_write_string("/proc/sys/kernel/crashlog_mtd", "misc3", 0, 0);
+#endif
+
 	for (i = 0; i < sizeof(fatalsigs) / sizeof(fatalsigs[0]); i++) {
 		signal(fatalsigs[i], handle_fatalsigs);
 	}
@@ -11056,6 +11102,14 @@ int init_main(int argc, char *argv[])
 		}
 #endif
 
+#ifdef RTCONFIG_BCM_HND_CRASHLOG
+#if defined(RTCONFIG_JFFS2) || defined(RTCONFIG_BRCM_NAND_JFFS2)
+	f_write_string("/proc/sys/kernel/crashlog_filename", "/jffs/crashlog.log", 0, 0);
+#else
+	f_write_string("/proc/sys/kernel/crashlog_filename", "/tmp/crashlog.log", 0, 0);
+#endif
+#endif
+
 #ifdef RTN65U
 		asm1042_upgrade(1);	// check whether upgrade firmware of ASM1042
 #endif
@@ -11231,6 +11285,8 @@ dbg("boot/continue fail= %d/%d\n", nvram_get_int("Ate_boot_fail"),nvram_get_int(
 #ifdef RTCONFIG_IPV6
 			if ( !(ipv6_enabled() && is_routing_enabled()) )
 				f_write_string("/proc/sys/net/ipv6/conf/all/disable_ipv6", "1", 0, 0);
+			else
+				set_default_accept_ra(0);
 #endif
 
 #if defined(RTCONFIG_RALINK_MT7628)

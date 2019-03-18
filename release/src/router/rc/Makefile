@@ -112,6 +112,8 @@ endif
 
 ifeq ($(RTCONFIG_BWDPI),y)
 CFLAGS += -I$(TOP)/bwdpi_source/asus_include
+CFLAGS += -I$(TOP)/bwdpi_source/src/tdts_udb_sample
+CFLAGS += -I$(TOP)/bwdpi_source/include
 CFLAGS += -I$(TOP)/httpd/
 CFLAGS += -I$(TOP)/util-linux/include
 LDFLAGS += -L$(TOP)/bwdpi_source/asus -lbwdpi
@@ -514,6 +516,11 @@ OBJS += bwdpi.o
 OBJS += bwdpi_check.o
 OBJS += bwdpi_wred_alive.o
 OBJS += bwdpi_db_10.o
+endif
+
+ifeq ($(RTCONFIG_AMAS),y)
+OBJS += amas_lib.o
+OBJS += linklist.o
 endif
 
 OBJS += hour_monitor.o
@@ -976,6 +983,9 @@ ifeq ($(RTCONFIG_BWDPI),y)
 	@cd $(INSTALLDIR)/sbin && ln -sf rc bwdpi_wred_alive
 	@cd $(INSTALLDIR)/sbin && ln -sf rc bwdpi_db_10
 endif
+ifeq ($(RTCONFIG_AMAS),y)
+	@cd $(INSTALLDIR)/sbin && ln -sf rc amas_lib
+endif
 	@cd $(INSTALLDIR)/sbin && ln -sf rc hour_monitor
 ifeq ($(RTCONFIG_SPEEDTEST),y)
 	@cd $(INSTALLDIR)/sbin && ln -sf rc speedtest
@@ -994,7 +1004,7 @@ endif
 ifeq ($(RTCONFIG_INTERNAL_GOBI),y)
 	@cd $(INSTALLDIR)/sbin && ln -sf rc lteled
 endif
-ifeq ($(RTCONFIG_TR069),y)
+ifneq (,$(filter y,$(RTCONFIG_TR069) $(RTCONFIG_AMAS)))
 	@cd $(INSTALLDIR)/sbin && ln -sf rc dhcpc_lease
 endif
 
@@ -1363,6 +1373,10 @@ endif
 ifneq ($(wildcard ./prebuild/amas_wlcconnect.o),)
 amas_wlcconnect.o:
 	@-cp -f ./prebuild/amas_wlcconnect.o .
+endif
+ifneq ($(wildcard ./prebuild/amas_lib.o),)
+amas_lib.o:
+	@-cp -f ./prebuild/amas_lib.o .
 endif
 endif
 

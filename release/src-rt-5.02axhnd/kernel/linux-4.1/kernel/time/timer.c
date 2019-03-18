@@ -52,6 +52,10 @@
 #define CREATE_TRACE_POINTS
 #include <trace/events/timer.h>
 
+#if defined(CONFIG_BCM_KF_NETFILTER) && defined(CONFIG_BLOG)
+#include <linux/blog.h>
+#endif /* CONFIG_BCM_KF_NETFILTER && CONFIG_BLOG */
+
 __visible u64 jiffies_64 __cacheline_aligned_in_smp = INITIAL_JIFFIES;
 
 EXPORT_SYMBOL(jiffies_64);
@@ -1125,11 +1129,33 @@ static int cascade(struct tvec_base *base, struct tvec *tv, int index)
 	return index;
 }
 
+#ifdef TIMER_FUNCTION_TIMEOUT
+static void (*monitor_timer_fn)(unsigned long) = NULL;
+static unsigned long timer_function_timeout = TIMER_FUNCTION_TIMEOUT;
+
+void monitor_timer_fn_register(void (*fn)(unsigned long))
+{
+	monitor_timer_fn = fn;
+}
+EXPORT_SYMBOL(monitor_timer_fn_register);
+
+static void call_timer_fn(struct timer_list *timer, void (*fn)(unsigned long),
+			  unsigned long data, unsigned long expire)
+#else /* ! TIMER_FUNCTION_TIMEOUT */
 static void call_timer_fn(struct timer_list *timer, void (*fn)(unsigned long),
 			  unsigned long data)
+#endif /* ! TIMER_FUNCTION_TIMEOUT */
 {
 	int count = preempt_count();
-
+#ifdef TIMER_FUNCTION_TIMEOUT
+	struct _timer_function_timeout to;
+	if (fn == monitor_timer_fn) {
+		to.magic = TIMER_FUNCTION_TIMEOUT_MAGIC;
+		to.expire = expire;
+		to.data = data;
+		data = (unsigned long)&to;
+	}
+#endif /* TIMER_FUNCTION_TIMEOUT */
 #ifdef CONFIG_LOCKDEP
 	/*
 	 * It is permissible to free the timer from inside the
@@ -1181,6 +1207,9 @@ static inline void __run_timers(struct tvec_base *base)
 {
 	struct timer_list *timer;
 
+#ifdef TIMER_FUNCTION_TIMEOUT
+	unsigned long expire = 0;
+#endif /* TIMER_FUNCTION_TIMEOUT */
 	spin_lock_irq(&base->lock);
 	if (catchup_timer_jiffies(base)) {
 		spin_unlock_irq(&base->lock);
@@ -1199,6 +1228,10 @@ static inline void __run_timers(struct tvec_base *base)
 				(!cascade(base, &base->tv3, INDEX(1))) &&
 					!cascade(base, &base->tv4, INDEX(2)))
 			cascade(base, &base->tv5, INDEX(3));
+#ifdef TIMER_FUNCTION_TIMEOUT
+		if (timer_function_timeout)
+			expire = jiffies + timer_function_timeout;
+#endif /* TIMER_FUNCTION_TIMEOUT */
 		++base->timer_jiffies;
 		list_replace_init(base->tv1.vec + index, head);
 		while (!list_empty(head)) {
@@ -1218,11 +1251,19 @@ static inline void __run_timers(struct tvec_base *base)
 
 			if (irqsafe) {
 				spin_unlock(&base->lock);
+#ifdef TIMER_FUNCTION_TIMEOUT
+				call_timer_fn(timer, fn, data, expire);
+#else /* ! TIMER_FUNCTION_TIMEOUT */
 				call_timer_fn(timer, fn, data);
+#endif /* ! TIMER_FUNCTION_TIMEOUT */
 				spin_lock(&base->lock);
 			} else {
 				spin_unlock_irq(&base->lock);
+#ifdef TIMER_FUNCTION_TIMEOUT
+				call_timer_fn(timer, fn, data, expire);
+#else /* ! TIMER_FUNCTION_TIMEOUT */
 				call_timer_fn(timer, fn, data);
+#endif /* ! TIMER_FUNCTION_TIMEOUT */
 				spin_lock_irq(&base->lock);
 			}
 		}
@@ -1666,6 +1707,10 @@ void __init init_timers(void)
 	init_timer_stats();
 	timer_register_cpu_notifier();
 	open_softirq(TIMER_SOFTIRQ, run_timer_softirq);
+#ifdef TIMER_FUNCTION_TIMEOUT
+	printk("%s: timer_function_timeout virt addr 0x%p\n",
+		__FUNCTION__, &timer_function_timeout);	
+#endif /* TIMER_ACTION_TIMEOUT */
 }
 
 /**

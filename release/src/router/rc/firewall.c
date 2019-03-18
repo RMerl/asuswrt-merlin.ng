@@ -2213,6 +2213,13 @@ void nat_setting2(char *lan_if, char *lan_ip, char *logaccept, char *logdrop)	//
 #endif
 
 		for(unit = WAN_UNIT_FIRST; unit < wan_max_unit; ++unit){
+#ifdef RTCONFIG_MULTICAST_IPTV
+			// avoid Movistar vlan interface skip by no link_wan nvram
+			if (nvram_get_int("switch_stb_x") > 6 && (unit == WAN_UNIT_IPTV || unit == WAN_UNIT_VOIP)) {
+				if (get_wan_state(unit) != WAN_STATE_CONNECTED) continue;
+			}
+			else
+#endif
 			if(!is_wan_connect(unit))
 				continue;
 
@@ -3422,6 +3429,7 @@ TRACE_PT("writing Parental Control\n");
 				fprintf(fp, "-A INPUT -i %s -s 172.16.0.0/255.255.15.0 -j DROP\n", movistar_wan);
 				fprintf(fp, "-A INPUT -i vlan2 -s 172.16.0.0/255.255.15.0 -j ACCEPT\n");
 				fprintf(fp, "-A INPUT -i vlan3 -s 10.31.255.134/255.255.255.255 -j ACCEPT\n");
+				fprintf(fp, "-A INPUT -p udp --dport 520 -j %s\n", "ACCEPT");
 			}
 		}
 #endif
@@ -4427,9 +4435,11 @@ TRACE_PT("writing Parental Control\n");
 				fprintf(fp, "-A INPUT -i %s -s 172.16.0.0/255.255.15.0 -j DROP\n", movistar_wan);
 				fprintf(fp, "-A INPUT -i vlan2 -s 172.16.0.0/255.255.15.0 -j ACCEPT\n");
 				fprintf(fp, "-A INPUT -i vlan3 -s 10.31.255.134/255.255.255.255 -j ACCEPT\n");
+				fprintf(fp, "-A INPUT -p udp --dport 520 -j %s\n", "ACCEPT");
 			}
 		}
 //#endif
+
 
 		/* enable incoming packets from broken dhcp servers, which are sending replies
 		 * from addresses other than used for query, this could lead to lower level

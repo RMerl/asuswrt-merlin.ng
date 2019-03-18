@@ -1431,6 +1431,10 @@ define RouterOptions
 		sed -i "/RTCONFIG_ADV_RAST/d" $(1); \
 		echo "RTCONFIG_ADV_RAST=y" >>$(1); \
 	fi; \
+	if [ "$(BCN_RPT)" = "y" ]; then \
+		sed -i "/RTCONFIG_BCN_RPT/d" $(1); \
+		echo "RTCONFIG_BCN_RPT=y" >>$(1); \
+	fi; \
 	if [ "$(NEW_USER_LOW_RSSI)" = "y" ]; then \
 		sed -i "/RTCONFIG_NEW_USER_LOW_RSSI/d" $(1); \
 		echo "RTCONFIG_NEW_USER_LOW_RSSI=y" >>$(1); \
@@ -2266,6 +2270,10 @@ define RouterOptions
 		sed -i "/RTCONFIG_EXTPHY_BCM84880/d" $(1); \
 		echo "RTCONFIG_EXTPHY_BCM84880=y" >>$(1); \
 	fi; \
+	if [ "$(CRASHLOG)" = "y" ]; then \
+		sed -i "/RTCONFIG_BCM_HND_CRASHLOG/d" $(1); \
+		echo "RTCONFIG_BCM_HND_CRASHLOG=y" >>$(1); \
+	fi; \
 	if [ "$(TOR)" = "y" ]; then \
 		sed -i "/RTCONFIG_TOR/d" $(1); \
 		echo "RTCONFIG_TOR=y" >>$(1); \
@@ -2666,6 +2674,8 @@ define RouterOptions
 	if [ "$(AMAS)" = "y" ]; then \
 		sed -i "/RTCONFIG_AMAS/d" $(1); \
 		echo "RTCONFIG_AMAS=y" >>$(1); \
+		sed -i "/RTCONFIG_DBLOG/d" $(1); \
+		echo "RTCONFIG_DBLOG=y" >>$(1); \
 		if [ "$(DISABLE_REPEATER_UI)" = "y" ] ; then \
 			sed -i "/RTCONFIG_DISABLE_REPEATER_UI/d" $(1); \
 			echo "# RTCONFIG_DISABLE_REPEATER_UI is not set" >>$(1); \
@@ -2694,6 +2704,18 @@ define RouterOptions
 		fi; \
 		sed -i "/RTCONFIG_LIBASUSLOG/d" $(1); \
 		echo "RTCONFIG_LIBASUSLOG=y" >>$(1); \
+		sed -i "/RTCONFIG_AMASDB/d" $(1); \
+		if [ "$(AMASDB)" = "y" ]; then \
+			echo "RTCONFIG_AMASDB=y" >>$(1); \
+		else \
+			echo "# RTCONFIG_AMASDB is not set" >>$(1); \
+		fi; \
+	fi; \
+	sed -i "/RTCONFIG_WATCH_WLREINIT/d" $(1); \
+	if [ "$(WATCH_REINIT)" = "y" ]; then \
+		echo "RTCONFIG_WATCH_WLREINIT=y" >>$(1); \
+	else \
+		echo "# RTCONFIG_WATCH_WLREINIT is not set" >>$(1); \
 	fi; \
 	if [ "$(NO_SELECT_CHANNEL)" = "y" ]; then \
 		sed -i "/RTCONFIG_NO_SELECT_CHANNEL/d" $(1); \
@@ -3105,6 +3127,8 @@ define BusyboxOptions
 		echo "CONFIG_FEATURE_BASH_IS_ASH=y" >>$(1); \
 		sed -i "/CONFIG_FEATURE_BASH_IS_NONE/d" $(1); \
 		echo "# CONFIG_FEATURE_BASH_IS_NONE is not set" >>$(1); \
+		sed -i "/CONFIG_SPLIT/d" $(1); \
+		echo "CONFIG_SPLIT=y" >>$(1); \
 	fi; \
 	if [ "$(CONNDIAG)" = "y" ]; then \
 		sed -i "/CONFIG_IPCRM/d" $(1); \

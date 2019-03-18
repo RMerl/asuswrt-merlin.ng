@@ -220,7 +220,7 @@ function show_warning_message(){
 			if(validator.isPrivateIP(wanlink_ipaddr())){
 				document.getElementById("privateIP_notes").innerHTML = "<#vpn_privateIP_hint#>";
 				document.getElementById("privateIP_notes").style.display = "";
-				//      http://www.asus.com/support/FAQ/1033906
+				//      https://www.asus.com/support/FAQ/1033906
 				httpApi.faqURL("1033906", function(url){document.getElementById("faq_port_forwarding").href=url;});      //this id is include in string : #vpn_privateIP_hint#
 			}
 		}
@@ -228,7 +228,7 @@ function show_warning_message(){
 			if(!external_ip){
 				document.getElementById("privateIP_notes").innerHTML = "<#vpn_privateIP_hint#>";
 				document.getElementById("privateIP_notes").style.display = "";
-				//      http://www.asus.com/support/FAQ/1033906
+				//      https://www.asus.com/support/FAQ/1033906
 				httpApi.faqURL("1033906", function(url){document.getElementById("faq_port_forwarding").href=url;});	//this id is include in string : #vpn_privateIP_hint#
 			}
 		}
@@ -236,7 +236,7 @@ function show_warning_message(){
 	else if(validator.isPrivateIP(wanlink_ipaddr())){
 		document.getElementById("privateIP_notes").innerHTML = "<#vpn_privateIP_hint#>";
 		document.getElementById("privateIP_notes").style.display = "";
-		//      http://www.asus.com/support/FAQ/1033906
+		//      https://www.asus.com/support/FAQ/1033906
 		httpApi.faqURL("1033906", function(url){document.getElementById("faq_port_forwarding").href=url;});	//this id is include in string : #vpn_privateIP_hint#
 	}
 }

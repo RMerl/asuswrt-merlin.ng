@@ -255,6 +255,14 @@ static void address_format_checker(int *type, char *old, char *new, int len)
 	// mac format
 	g = buf = strdup(old);
 	if (sscanf(g, "%02X:%02X:%02X:%02X:%02X:%02X",&s[0],&s[1],&s[2],&s[3],&s[4],&s[5]) == 6) {
+#ifdef RTCONFIG_AMAS
+		QOSLOG("address_format_checker");
+		if (amas_lib_device_ip_query(old, new)) {
+			*type = TYPE_IP;
+			QOSLOG("is_ip=%d, is_mac=%d, is_range=%d, type=%d, new=%s", is_ip, is_mac, is_range, *type, new);
+			return;
+		} else
+#endif
 		is_mac = 1;
 		goto end;
 	}

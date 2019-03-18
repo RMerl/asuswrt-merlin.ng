@@ -6634,6 +6634,61 @@ void rssi_check()
 	}
 }
 #endif
+#ifdef RTCONFIG_WATCH_WLREINIT
+void wlcnt_chk()
+{
+	char cmdbuf[64], buf[16], rbuf[16];
+        int i, unit = 0;
+        char nv_param[NVRAM_MAX_PARAM_LEN];
+        char temp[16], wlif[16];
+        char tmp[64], prefix[] = "wlXXXXXXXXXX_";
+        static unsigned int pre_val = 0, watch_prd = 1;
+	unsigned int val = 0, tmp_val = 0;
+	int fd;
+	int wlshoot = nvram_get_int("reinits")?:9;
+	int wlshoot_period = nvram_get_int("ws_prd")?:200;
+
+	if(nvram_match("nocnt", "1") || !nvram_get_int("wlready"))
+		return;
+
+	memset(cmdbuf, 0, sizeof(cmdbuf));
+        for (unit = 0; unit < DEV_NUMIFS; unit++) {
+                snprintf(nv_param, sizeof(nv_param), "wl%d_unit", unit);
+                snprintf(temp, sizeof(temp), "%s", nvram_safe_get(nv_param));
+
+                if(strlen(temp) > 0){
+                        snprintf(prefix, sizeof(prefix), "wl%d_", unit);
+                        snprintf(wlif, sizeof(wlif), "%s", nvram_safe_get(strcat_r(prefix, "ifname", tmp)));
+			snprintf(cmdbuf, sizeof(cmdbuf), "wl -i %s counters | grep reinit > /tmp/.wlcnts", wlif);
+			system(cmdbuf);
+
+			for(i=0; i<3; ++i) {
+				if((fd = open("/tmp/.wlcnts", O_RDONLY)) < 0) {
+					usleep(30*1000);
+					continue;
+				}
+			}
+			if(i == 3 && fd < 0) {
+				printf("failed to open %s wlreinit file.\n", wlif);
+				continue;
+			}
+
+			read(fd, rbuf, sizeof(rbuf));
+			sscanf(rbuf, "%s %d", buf, &tmp_val);
+
+			if(tmp_val > 0) val += tmp_val;
+			close(fd);
+		}
+	}
+	if(watch_prd++ % wlshoot_period) {
+		if(val - pre_val > wlshoot) {
+			printf("\nWL go insanity! calm down it\n");
+			reboot(RB_AUTOBOOT);
+		}
+	} else
+		pre_val = val;
+}
+#endif
 
 #if 0 //#ifdef RTCONFIG_TOR
 #if (defined(RTCONFIG_JFFS2)||defined(RTCONFIG_BRCM_NAND_JFFS2))
@@ -7458,6 +7513,9 @@ wdp:
 #ifdef RTCONFIG_USER_LOW_RSSI
 	rssi_check();
 #endif
+#ifdef RTCONFIG_WATCH_WLREINIT
+	wlcnt_chk();
+#endif
 
 	/* check for time-related services */
 	timecheck();
@@ -7550,6 +7608,9 @@ wdp:
 #ifdef RTCONFIG_TUNNEL
 	if(!nvram_get_int("aae_disable_force"))
 		mastiff_check();
+#endif
+#if defined(RTCONFIG_AMAS)
+	amaslib_check();
 #endif
 }
 

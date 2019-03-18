@@ -2198,6 +2198,7 @@ void send_page(int wan_unit, int sfd, char *file_dest, char *url){
 	char dut_proto[16];
 	char dut_port[5];
 	char redirection[100];
+	char indexpage[128];
 	int i=0, wl_url_hit=0;
 
 	memset(buf, 0, sizeof(buf));
@@ -2286,8 +2287,10 @@ void send_page(int wan_unit, int sfd, char *file_dest, char *url){
 			snprintf(buf+strlen(buf), sizeof(buf)-strlen(buf), "%s%s%s%d%s", "Connection: close\r\n", redirection, "/error_page.htm?flag=", disconn_case[wan_unit], "\r\nContent-Type: text/html\r\n");
 	}
 #ifdef RTCONFIG_WIRELESSREPEATER
-	else
-		snprintf(buf+strlen(buf), sizeof(buf)-strlen(buf), "%s%s%s/%s", "Connection: close\r\n", redirection, INDEXPAGE, "\r\nContent-Type: text/html\r\n");
+	else{
+		get_index_page(indexpage, sizeof(indexpage));
+		snprintf(buf+strlen(buf), sizeof(buf)-strlen(buf), "%s%s%s/%s", "Connection: close\r\n", redirection, indexpage, "\r\nContent-Type: text/html\r\n");
+	}
 #endif
 
 	}

@@ -39,6 +39,12 @@ int panic_on_warn __read_mostly;
 int panic_timeout = CONFIG_PANIC_TIMEOUT;
 EXPORT_SYMBOL_GPL(panic_timeout);
 
+#ifdef CRASHLOG
+int crashlog_enable = 0;
+char crashlog_filename[SYSCTL_CRASHLOG_FILENAME_LEN] = {0};
+char crashlog_mtd[SYSCTL_CRASHLOG_MTD_LEN] = {0};
+#endif
+
 ATOMIC_NOTIFIER_HEAD(panic_notifier_list);
 
 EXPORT_SYMBOL(panic_notifier_list);
@@ -69,6 +75,7 @@ void __weak panic_smp_self_stop(void)
  *
  *	This function never returns.
  */
+
 void panic(const char *fmt, ...)
 {
 	static DEFINE_SPINLOCK(panic_lock);
@@ -76,6 +83,11 @@ void panic(const char *fmt, ...)
 	va_list args;
 	long i, i_next = 0;
 	int state = 0;
+#ifdef CRASHLOG
+	sprintf(buf, "%s", "CRASH LOG BEGINNING...\n");
+	crashLogText(buf, strlen(buf));
+	crashlog_enable = 1;
+#endif
 
 	/*
 	 * Disable local interrupts. This will prevent panic_smp_self_stop
@@ -160,7 +172,10 @@ void panic(const char *fmt, ...)
 	 */
 	debug_locks_off();
 	console_flush_on_panic();
-
+#ifdef CRASHLOG
+	crashlog_enable = 0;
+	crashLogCommit();
+#endif
 	if (!panic_blink)
 		panic_blink = no_blink;
 

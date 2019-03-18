@@ -403,6 +403,10 @@ config RTCONFIG_NEW_USER_LOW_RSSI
 	bool "User specified accepted min rssi"
 	default n
 
++config RTCONFIG_WATCH_WLREINIT
+	bool "reboot when wlreinit cannot save wl"
+	default n
+
 config RTCONFIG_PUSH_EMAIL
 	bool "Push Mail Service Support"
 	default n
@@ -1367,6 +1371,10 @@ config RTCONFIG_EXT_BCM53134
 config RTCONFIG_EXTPHY_BCM84880
 	bool "BCM84880 external 2.5Gbps PHY"
 
+config RTCONFIG_BCM_HND_CRASHLOG
+	bool "BRCM HND crashlog"
+	default n
+
 config RTCONFIG_TOR
 	bool "The orion router function"
 	default n
@@ -1725,6 +1733,10 @@ config RTCONFIG_ADV_RAST
 	bool "enable advanced roaming assistant"
 	default n
 
+config RTCONFIG_BCN_RPT
+	bool "enable 802.11k beacon request/report for roaming"
+	default n
+
 config RTCONFIG_CFGSYNC
 	bool "Sync config"
 
@@ -1767,6 +1779,10 @@ config RTCONFIG_DBG_BLUECAVE_OBD
 
 config RTCONFIG_AMAS
 	bool "AMAS architecture."
+	default n
+
+config RTCONFIG_AMASDB
+	bool "AMAS DB-sta collection."
 	default n
 
 config RTCONFIG_NO_SELECT_CHANNEL

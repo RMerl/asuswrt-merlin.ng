@@ -360,7 +360,7 @@ if(pm_support) {
 
 function initial(){
 	show_menu();
-	// http://www.asus.com/support/FAQ/1008718/
+	// https://www.asus.com/support/FAQ/1008718/
 	httpApi.faqURL("1008718", function(url){document.getElementById("faq").href=url;});
 
 	if(downsize_4m_support || downsize_8m_support)

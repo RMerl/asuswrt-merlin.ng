@@ -163,14 +163,9 @@ var httpApi ={
 			return _nvrams.map(function(elem){return "nvram_char_to_ascii(" + elem + "," + elem + ")";}).join("%3B");
 		};
 
-		if(forceUpdate) cachedData.clear(objItems);
-
 		objItems.forEach(function(key){
-			if(cachedData.get.hasOwnProperty(key)){
-				retData[key] = cachedData.get[key];
-			}
-			else if(asyncData.get.hasOwnProperty(key)){
-				retData[key] = cachedData.get[key] = asyncData.get[key];
+			if(asyncData.get.hasOwnProperty(key)){
+				retData[key] = asyncData.get[key];
 				if(forceUpdate) delete asyncData.get[key];
 			}
 			else{
@@ -199,7 +194,7 @@ var httpApi ={
 					});
 				},
 				success: function(response){
-					Object.keys(response).forEach(function(key){retData[key] = cachedData.get[key] = response[key];})
+					Object.keys(response).forEach(function(key){retData[key] = response[key];})
 					retData.isError = false;
 				}
 			});
@@ -800,5 +795,9 @@ var httpApi ={
 			if(callBackError)
 				callBackError();
 		}
+	},
+
+	"updateClientList": function(){
+		$.post("/applyapp.cgi?action_mode=update_client_list");
 	}
 }

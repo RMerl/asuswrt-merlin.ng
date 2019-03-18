@@ -9,6 +9,7 @@ apply.welcome = function(){
 		}
 	}
 
+	systemVariable.manualWanSetup = false;
 	systemVariable.advSetting = false;
 
 	if(!systemVariable.forceChangePw){
@@ -169,6 +170,13 @@ apply.login = function(){
 
 apply.manual = function(){
 	systemVariable.manualWanSetup = true;
+
+	if(isSupport("IPTV") && systemVariable.manualWanSetup){
+		if($("#wan_iptv_checkbox").html().indexOf("iptv_check_container") == -1){
+			$("#iptv_check_container").detach().appendTo($("#wan_iptv_checkbox"));
+		}
+	}
+
 	if(isSupport("2p5G_LWAN") || isSupport("10G_LWAN") || isSupport("10GS_LWAN")){
 		goTo.WANOption();
 	}
@@ -503,7 +511,7 @@ apply.wireless = function(){
 		qisPostData.wl2_crypto = "aes";
 	}
 
-	if(isSupport("11AX")){
+	if(isSupport("11AX") && isSupport("qis_he_features")){
 		goTo.axMode();
 	}
 	else if(isSupport("boostkey")){
@@ -718,7 +726,7 @@ apply.amaonboarding = function(){
 				result_text += "<li><#AiMesh_info_unabled4#></li>";
 				result_text += "<li><#AiMesh_FindNode_Not_advA3#></li>";
 				result_text += "</ol>";
-				$("#amasonboarding_page").find(".resultBtn").html("Choose another node");/* untranslated */
+				$("#amasonboarding_page").find(".resultBtn").html("<#AiMesh_Choose_Another_Node#>");
 			}
 			$("#amasonboarding_page").find("#result").html(result_text);
 			$("#amasonboarding_page").find("#result").find(".amesh_device_info").html(_model_name + " (" + labelMac + ")");
@@ -768,7 +776,7 @@ abort.login = function(){
 	if(isSupport("boostkey")){
 		goTo.loadPage("boostKey_page", true);
 	}
-	else if(isSupport("11AX")){
+	else if(isSupport("11AX") && isSupport("qis_he_features")){
 		goTo.loadPage("axMode_page", true);
 	}
 	else if(systemVariable.forceChangePwInTheEnd){
@@ -839,6 +847,10 @@ abort.wan = function(){
 abort.wanType = function(){
 	postDataModel.remove(wanObj.all);
 	delete systemVariable.manualWanType;
+	if(systemVariable.advSetting && isSwModeChanged() && isSwMode("RT")){
+		postDataModel.remove(lanObj.general);
+		postDataModel.remove(lanObj.staticIp);
+	}
 
 	if(qisPostData.hasOwnProperty("sw_mode") && !systemVariable.meshRole){
 		goTo.loadPage("opMode_page", true);
@@ -1481,6 +1493,19 @@ goTo.rtMode = function(){
 		qisPostData.cfg_master = "1";
 	}
 
+	if(systemVariable.advSetting && isSwModeChanged()){
+		postDataModel.insert(lanObj.general);
+		postDataModel.insert(lanObj.staticIp);
+		qisPostData.lan_proto = "static";
+		qisPostData.lan_dnsenable_x = "1";
+		var lan_info_rt = httpApi.nvramGet(["lan_ipaddr_rt", "lan_netmask_rt"],true);
+		qisPostData.lan_ipaddr = lan_info_rt.lan_ipaddr_rt;
+		qisPostData.lan_netmask = lan_info_rt.lan_netmask_rt;
+		qisPostData.lan_gateway = lan_info_rt.lan_ipaddr_rt;
+		qisPostData.lan_dns1_x = "";
+		qisPostData.lan_dns2_x = "";
+	}
+
 	apply.manual();
 };
 
@@ -1603,6 +1628,11 @@ goTo.PPPoE = function(){
 
 	if(systemVariable.manualWanSetup){
 		systemVariable.manualWanType = 'PPPoE';
+	}
+
+	if(isSupport("IPTV") && !systemVariable.manualWanSetup){
+		if($("#pppoe_iptv_checkbox").html().indexOf("iptv_check_container") == -1)
+			$("#iptv_check_container").detach().appendTo($("#pppoe_iptv_checkbox"));
 	}
 
 	var pppoeInfo = httpApi.nvramGet(["wan0_pppoe_username", "wan0_pppoe_passwd"]);
@@ -1835,13 +1865,17 @@ goTo.IPTV = function(){
 			var isp = $("#switch_wantag").val();
 			var isp_profile = httpApi.getISPProfile(isp);
 
-			if(isp_profile.iptv_port != "")
+			if(isp_profile.iptv_port != "" && isp != "manual"){
+				$("#iptv_stb_port").attr("value", isp_profile.iptv_port);
 				$("#iptv_stb").show();
+			}
 			else
 				$("#iptv_stb").hide();
 
-			if(isp_profile.voip_port != "")
+			if(isp_profile.voip_port != "" && isp != "manual"){
+				$("#iptv_voip_port").attr("value", isp_profile.voip_port);
 				$("#iptv_voip").show();
+			}
 			else
 				$("#iptv_voip").hide();
 
@@ -1859,6 +1893,34 @@ goTo.IPTV = function(){
 			}
 
 			if(isp == "manual"){
+				if(isp_profile.iptv_port != ""){
+					$("#manual_iptv_port").html(function(){
+						var port_str = "";
+						if(isp_profile.iptv_port.substr(0, 3) == "LAN")
+							port_str = "LAN Port " + isp_profile.iptv_port.substr(3);
+						else
+							port_str = isp_profile.iptv_port;
+
+						return port_str;
+					});
+				}
+				else
+					$("#manual_iptv_settings").hide();
+
+				if(isp_profile.voip_port != ""){
+					$("#manual_voip_port").html(function(){
+						var port_str = "";
+						if(isp_profile.voip_port.substr(0, 3) == "LAN")
+							port_str = "LAN Port " + isp_profile.voip_port.substr(3);
+						else
+							port_str = isp_profile.voip_port;
+
+						return port_str;
+					});
+				}
+				else
+					$("#manual_voip_settings").hide();
+
 				$("#iptv_manual").show();
 				postDataModel.insert(iptvManualObj);
 			}
@@ -2400,10 +2462,12 @@ goTo.Upload = function(){
 }
 
 goTo.Finish = function(){
+	var restartService = getRestartService();
 	if(
-		!(getRestartService().indexOf("restart_wireless") != -1 && isWlUser) &&
-		getRestartService().indexOf("restart_subnet") == -1 &&
-		getRestartService().indexOf("reboot") == -1 &&
+		!(restartService.indexOf("restart_wireless") != -1 && isWlUser) &&
+		restartService.indexOf("restart_subnet") == -1 &&
+		restartService.indexOf("reboot") == -1 &&
+		restartService.indexOf("restart_all") == -1 &&
 		systemVariable.isNewFw == 0 &&
 		!isSupport("lantiq")
 	){

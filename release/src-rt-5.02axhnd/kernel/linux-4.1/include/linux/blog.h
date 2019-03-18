@@ -9,6 +9,21 @@
 
 #define CATHY_PPTP_DL_ACC
 
+#if defined(CONFIG_BCM_KF_NETFILTER) && defined(CONFIG_BLOG)
+#define TIMER_FUNCTION_TIMEOUT (2 * HZ)
+#endif /* CONFIG_BCM_KF_NETFILTER && CONFIG_BLOG */
+
+#ifdef TIMER_FUNCTION_TIMEOUT
+#define TIMER_FUNCTION_TIMEOUT_MAGIC (0x1234abcd)
+#define BLOG_TIMEOUT_DEFER_PERIOD (5 * HZ)
+
+struct _timer_function_timeout {
+	unsigned int magic;
+	unsigned long expire;
+	unsigned long data;
+};
+#endif /* TIMER_FUNCTION_TIMEOUT */
+
 /* 
 * <:copyright-BRCM:2003:DUAL/GPL:standard
 * 

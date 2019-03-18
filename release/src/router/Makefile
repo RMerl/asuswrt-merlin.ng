@@ -396,7 +396,7 @@ export PLC_WBD := 1
 endif # PLC_WBD
 endif # WBD
 
-ifeq ($(RTCONFIG_BCMEVENTD),y)
+ifeq ($(or $(RTCONFIG_BCMEVENTD),$(RTCONFIG_BCN_RPT)),y)
 export CFLAGS += -DBCM_EVENTD
 endif
 
@@ -853,6 +853,7 @@ endif
 
 ifeq ($(RTCONFIG_AMAS),y)
 obj-y  += jansson-2.7
+obj-y  += libevent-2.0.21
 obj-y  += lldpd-0.9.8
 endif
 
@@ -1243,6 +1244,9 @@ obj-$(RTCONFIG_IPERF) += iperf
 
 obj-$(RTCONFIG_PUSH_EMAIL) += openssl
 obj-$(RTCONFIG_PUSH_EMAIL) += email-3.1.3
+ifeq ($(RTCONFIG_PUSH_EMAIL),y)
+obj-$(RTCONFIG_DBLOG) += dblog
+endif
 
 obj-$(RTCONFIG_NORTON) += norton${BCMEX}
 
@@ -1332,7 +1336,7 @@ obj-$(RTCONFIG_CLOUDCHECK) += cloudcheck
 
 obj-$(RTCONFIG_GETREALIP) += ministun
 
-CFGSYNC_PKG := openssl libevent-2.0.21 cfg_mnt
+CFGSYNC_PKG := openssl cfg_mnt
 obj-$(RTCONFIG_CFGSYNC) += $(CFGSYNC_PKG)
 ifeq ($(RTCONFIG_CFGSYNC),y)
 ifeq ($(RTCONFIG_QCA),y)
@@ -1641,7 +1645,7 @@ ifeq ($(RTCONFIG_REALTEK), y)
 
 KERNELRELEASE=$(shell cat $(LINUXDIR)/.kernelrelease 2> /dev/null)
 endif
-
+#	@$(SEP)
 
 ifeq ($(HND_ROUTER),y)
 %-rebuild: %
@@ -4176,7 +4180,7 @@ iperf-clean:
 	[ ! -f iperf/Makefile ] || $(MAKE) -C iperf distclean
 	@rm -f iperf/Makefile
 
-lldpd-0.9.8: $(if $(RTCONFIG_AMAS),json-c,) jansson-2.7 lldpd-0.9.8/Makefile
+lldpd-0.9.8: $(if $(RTCONFIG_AMAS),json-c libevent-2.0.21) jansson-2.7 lldpd-0.9.8/Makefile
 	$(MAKE) -C $@
 
 lldpd-0.9.8/Makefile:
@@ -6385,6 +6389,19 @@ email-3.1.3-install:
 		$(STRIP) $(INSTALLDIR)/email-3.1.3/usr/sbin/email ; \
 	fi
 
+dblog:
+	@$(SEP)
+	echo "build dblog"
+	$(MAKE) -C dblog
+
+dblog-clean:
+	echo "clean dblog"
+	$(MAKE) -C dblog clean
+
+dblog-install:
+	echo "install dblog"
+	$(MAKE) -C dblog install
+
 #diskdev_cmds-332.14
 diskdev_cmds-332.14: openssl
 	@$(SEP)
@@ -6516,7 +6533,7 @@ iwinfo-stage:
 qca-backports: qca-nss30-drv
 	$(MAKE) -C $@ && $(MAKE) $@-stage
 
-cfg_mnt : libevent-2.0.21 $(if $(RTCONFIG_AMAS), amas-utils) $(if $(RTCONFIG_LANTIQ),libfapi-0.1)
+cfg_mnt: $(if $(RTCONFIG_NOTIFICATION_CENTER),nt_center sqlite wlc_nt) $(if $(RTCONFIG_AMAS), amas-utils) $(if $(RTCONFIG_LANTIQ),libfapi-0.1)
 
 qca-wifi-assoc-eventd: $(if $(IPQ40XX),cfg_mnt)
 
@@ -6956,6 +6973,8 @@ jansson-2.7/Makefile:
 
 jansson-2.7: jansson-2.7/Makefile
 	@$(MAKE) -C $@ && $(MAKE) $@-stage
+	## a workaround to avoid libtool error
+	sed 's|/usr/lib|$(STAGEDIR)/usr/lib|g' -i $(STAGEDIR)/usr/lib/libjansson.la
 
 jansson-2.7-install: jansson-2.7
 	install -D jansson-2.7/src/.libs/libjansson.so $(INSTALLDIR)/jansson-2.7/usr/lib/libjansson.so

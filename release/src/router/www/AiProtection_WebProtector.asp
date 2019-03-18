@@ -66,7 +66,7 @@ var curState = '<% nvram_get("wrs_enable"); %>';
 
 function initial(){
 	show_menu();
-	//	http://www.asus.com/support/FAQ/1008720/
+	//	https://www.asus.com/support/FAQ/1008720/
 	httpApi.faqURL("1008720", function(url){document.getElementById("faq").href=url;});
 	translate_category_id();
 	genMain_table();
@@ -638,6 +638,8 @@ function applyRule(){
 	}
 
 	document.form.action_script.value = "restart_wrs;restart_firewall";
+	if(amesh_support && isSwMode("rt"))
+		document.form.action_script.value += ";apply_amaslib";
 	document.form.wrs_rulelist.value = wrs_rulelist;
 	document.form.wrs_app_rulelist.value = apps_rulelist;
 	if(ctf_disable == 0 && ctf_fa_mode == 2){

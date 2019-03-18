@@ -1663,7 +1663,11 @@ int rdd_context_entry_modify ( rdd_fc_context_t *context_entry,
                                bdmf_index       flow_entry_index )
 {
     uint32_t entry_index;
+    unsigned long flags;
 
+#if 1 /* debug code to see if this function executes during the test */
+    printk("=====> %s: function entry\n", __FUNCTION__);
+#endif
     if ((g_free_flow_entries[flow_entry_index] & RDD_FLOW_ENTRY_VALID) == RDD_FLOW_ENTRY_VALID)
     {
         entry_index = g_free_flow_entries[flow_entry_index] & ~RDD_FLOW_ENTRY_VALID;
@@ -1686,14 +1690,14 @@ int rdd_context_entry_modify ( rdd_fc_context_t *context_entry,
 #if !defined(FIRMWARE_INIT)
     f_rdd_nat_cache_entry_flush (context_entry, flow_entry_index);
 
-    bdmf_fastlock_lock ( &int_lock );
+    bdmf_fastlock_lock_irq ( &int_lock_irq, flags );
     f_rdd_cpu_tx_send_message( LILAC_RDD_CPU_TX_MESSAGE_INVALIDATE_CONTEXT_INDEX_CACHE_ENTRY,
                                (context_entry->fc_ucast_flow_context_entry.connection_direction == rdpa_dir_ds) ?
                                FAST_RUNNER_A : FAST_RUNNER_B,
                                (context_entry->fc_ucast_flow_context_entry.connection_direction == rdpa_dir_ds) ?
                                RUNNER_PRIVATE_0_OFFSET : RUNNER_PRIVATE_1_OFFSET,
                                flow_entry_index, 0, 0, BL_LILAC_RDD_WAIT );
-    bdmf_fastlock_unlock ( &int_lock );
+    bdmf_fastlock_unlock_irq ( &int_lock_irq, flags );
 #endif
     return BDMF_ERR_OK;
 }

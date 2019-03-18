@@ -342,8 +342,8 @@ function initial(){
 	*/
 
 	if(based_modelid == "RT-AC68R"){	//MODELDEP	//id: asus_link is in string tag #FW_desc0#
-		document.getElementById("asus_link").href = "http://www.asus.com/us/supportonly/RT-AC68R/";
-		document.getElementById("asus_link").innerHTML = "http://www.asus.com/us/supportonly/RT-AC68R/";
+		document.getElementById("asus_link").href = "https://www.asus.com/us/supportonly/RT-AC68R/";
+		document.getElementById("asus_link").innerHTML = "https://www.asus.com/us/supportonly/RT-AC68R/";
 	}
 
 	if(based_modelid == "RT-AC68A"){        //MODELDEP : Spec special fine tune

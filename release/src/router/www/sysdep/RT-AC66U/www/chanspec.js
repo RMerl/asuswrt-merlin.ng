@@ -547,16 +547,24 @@ function change_channel(obj){
 	if(band == 1 || band == 2){
 		if(band5g_11ax_support){
 				if(document.form.wl_channel.value  == 0){
-					document.getElementById('dfs_checkbox').style.display = "";
-					document.form.acs_dfs.disabled = false;
-					if(document.form.wl_bw.value == 5){
-						document.form.acs_dfs_checkbox.checked = true;
-						check_DFS_support(document.form.acs_dfs_checkbox);
-						document.form.acs_dfs_checkbox.disabled = true;
+					if ((band == 1 && _chanspecs_5g.indexOf('56') == -1 && _chanspecs_5g.indexOf('100') == -1)
+					 || (band == 2 && _chanspecs_5g_2.indexOf('100') == -1)){
+						document.getElementById('dfs_checkbox').style.display = "none";
+						document.form.acs_dfs.disabled = true;
 					}
 					else{
-						document.form.acs_dfs_checkbox.disabled = false;
+						document.getElementById('dfs_checkbox').style.display = "";
+						document.form.acs_dfs.disabled = false;
+						if (document.form.wl_bw.value == 5) {
+							document.form.acs_dfs_checkbox.checked = true;
+							check_DFS_support(document.form.acs_dfs_checkbox);
+							document.form.acs_dfs_checkbox.disabled = true;
+						}
+						else {
+							document.form.acs_dfs_checkbox.disabled = false;
+						}
 					}
+	
 				}	
 				else{
 					document.getElementById('dfs_checkbox').style.display = "none";

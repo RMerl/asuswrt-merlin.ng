@@ -78,7 +78,7 @@ enum
 #define NMP_DEBUG_FUNCTION_FILE		"/tmp/NMP_DEBUG_FUNCTION"
 
 #define NEWORKMAP_OUI_FILE		"/usr/networkmap/networkmap.oui.js"
-#if (defined(RTCONFIG_JFFS2) || defined(RTCONFIG_JFFSV1) || defined(RTCONFIG_BRCM_NAND_JFFS2))
+#if (defined(RTCONFIG_JFFS2) || defined(RTCONFIG_JFFSV1) || defined(RTCONFIG_BRCM_NAND_JFFS2) || defined(RTCONFIG_UBIFS))
 #define NMP_CL_JSON_FILE		"/jffs/nmp_cl_json.js"
 #else
 #define NMP_CL_JSON_FILE		"/tmp/nmp_cl_json.js"

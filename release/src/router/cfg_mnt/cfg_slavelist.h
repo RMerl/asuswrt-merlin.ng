@@ -44,6 +44,7 @@ typedef struct _CM_CLIENT_TABLE {
 	char modelName[CFG_CLIENT_NUM][MODEL_NAME_LEN];
 	char territoryCode[CFG_CLIENT_NUM][TERRITORY_CODE_LEN];
 	int activePath[CFG_CLIENT_NUM];
+	int bandnum[CFG_CLIENT_NUM];
 	int maxLevel;
 	int count;
 } CM_CLIENT_TABLE, *P_CM_CLIENT_TABLE;
@@ -56,6 +57,9 @@ extern int cm_prepareReListMsg(char *msg, int msgLen);
 extern void cm_generateReList();
 extern void cm_updateReListTimestamp(unsigned char *decodeMsg);
 extern int cm_isSlaveOnline(time_t startTime);
+#ifdef RTCONFIG_BCN_RPT
+extern void cm_handleAPListUpdate(unsigned char *decodeMsg);
+#endif
 
 #endif /* __CFG_SLAVELIST_H__ */
 /* End of cfg_slavelist.h */

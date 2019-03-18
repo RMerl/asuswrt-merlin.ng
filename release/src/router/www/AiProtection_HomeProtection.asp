@@ -157,7 +157,7 @@ var safe_count = 0;
 
 function initial(){
 	show_menu();
-	//	http://www.asus.com/support/FAQ/1008719/
+	//	https://www.asus.com/support/FAQ/1008719/
 	httpApi.faqURL("1008719", function(url){document.getElementById("faq").href=url;});
 	if(lyra_hide_support){
 		$("#scenario_tr").css({"visibility":"hidden"});

@@ -2197,12 +2197,15 @@ void wan6_up(const char *wan_ifname)
 
 	switch (service) {
 	case IPV6_NATIVE_DHCP:
-#ifdef RTCONFIG_6RELAYD
-	case IPV6_PASSTHROUGH:
-#endif
-		ipv6_sysconf(wan_ifname, "accept_ra", 1);
+		ipv6_sysconf(wan_ifname, "accept_ra", nvram_get_int(ipv6_nvname("ipv6_accept_ra")) ? 1 : 0);
 		ipv6_sysconf(wan_ifname, "forwarding", 0);
 		break;
+#ifdef RTCONFIG_6RELAYD
+	case IPV6_PASSTHROUGH:
+		ipv6_sysconf(wan_ifname, "accept_ra", 0);
+		ipv6_sysconf(wan_ifname, "forwarding", 0);
+		break;
+#endif
 	case IPV6_MANUAL:
 		ipv6_sysconf(wan_ifname, "accept_ra", 0);
 		ipv6_sysconf(wan_ifname, "forwarding", 1);
@@ -2778,6 +2781,14 @@ wan_up(const char *pwan_ifname)
 #else
 	start_iQos();
 #endif
+
+#ifdef RTCONFIG_AMAS
+	if (is_amaslib_enabled()) {
+		// force to trigger amaslib to do static scan
+		AMAS_EVENT_TRIGGER(NULL, NULL, 3);
+	}
+#endif
+
 #if defined(RTCONFIG_HND_ROUTER_AX)
 	if (strcmp(wan_proto, "pptp") == 0) {
 		eval("fc", "config", "--tcp-ack-mflows", "0");

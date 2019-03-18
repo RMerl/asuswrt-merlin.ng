@@ -276,7 +276,7 @@ function initial(){
 	if( sVer!= -1 || rv == 11)
   		document.getElementById("pull_arrow").style.marginLeft = "-4px";
 
-  	if(based_modelid === "GT-AC5300" || based_modelid == "GT-AC9600"){ 
+	if(rog_support){
   		$("#goBackBtn").hide();
   		$("#goBackBtn_M").hide();
   		document.getElementById("WTFast_login_div").style.top = "150px";

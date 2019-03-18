@@ -121,6 +121,7 @@ char user_agent[1024];
 char gen_token[32];
 int do_ssl = 0; 	// use Global for HTTPS upgrade judgment in web.c
 int ssl_stream_fd; 	// use Global for HTTPS stream fd in web.c
+char indexpage[128];
 
 #ifdef TRANSLATE_ON_FLY
 char Accept_Language[16];
@@ -378,7 +379,7 @@ page_default_redirect(int fromapp_flag, char* url)
 	char inviteCode[256]={0};
 
 	if(check_xss_blacklist(url, 1))
-		strncpy(login_url, INDEXPAGE, sizeof(login_url));
+		strncpy(login_url, indexpage, sizeof(login_url));
 	else
 		strncpy(login_url, url, sizeof(login_url));
 
@@ -413,7 +414,7 @@ send_login_page(int fromapp_flag, int error_status, char* url, char* file, int l
 	}
 
 	if(url == NULL)
-		strncpy(login_url, INDEXPAGE, sizeof(login_url));
+		strncpy(login_url, indexpage, sizeof(login_url));
 	else
 		strncpy(login_url, url, sizeof(login_url));
 
@@ -1063,7 +1064,7 @@ handle_request(void)
 			file = "find_device.asp";
 #endif
 		else
-			file = INDEXPAGE;
+			file = indexpage;
 	}
 
 // 2007.11 James. {
@@ -1940,6 +1941,8 @@ int main(int argc, char **argv)
 
 	do_ssl = 0; // default
 	char log_filename[128] = {0};
+
+	get_index_page(indexpage, sizeof(indexpage));
 
 #if defined(RTCONFIG_UIDEBUG)
 	eval("touch", HTTPD_DEBUG);

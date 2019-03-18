@@ -261,6 +261,18 @@ the following mount options:
     Usage:
         -o codepage=852
 
+    inode32|inode64
+    On 32-bit systems, inode numbers are always 32-bit but on 64-bit systems
+    inode numbers can normally be 64-bit which can cause problems with 32-bit
+    user space applications.  The option inode32 will force the driver to only
+    use 32-bit inode numbers which should make broken 32-bit user space
+    applications work.  The option inode64 will allow the driver to return
+    64-bit inode numbers on 64-bit systems.
+    Usage (for forcing 32-bit inode numbers):
+        -o inode32
+    Usage (for allowing 64-bit inode numbers):
+        -o inode64
+
     sloppy=[0|1]
     If set, the driver ignores any unrecognized mount option(s) and continues to
     go about mounting the device on the specified mount point with other given

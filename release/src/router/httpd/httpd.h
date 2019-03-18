@@ -392,6 +392,7 @@ extern char referer_host[64];
 extern char host_name[64];
 extern char user_agent[1024];
 extern char gen_token[32];
+extern char indexpage[128];
 extern unsigned int login_ip_tmp;
 extern int check_user_agent(char* user_agent);
 #if defined(RTCONFIG_IFTTT) || defined(RTCONFIG_ALEXA)

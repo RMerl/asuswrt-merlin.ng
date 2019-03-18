@@ -1480,11 +1480,13 @@ void config_ipv6(int enable, int incl_wan)
 		service = get_ipv6_service();
 		switch (service) {
 		case IPV6_NATIVE_DHCP:
+			set_default_accept_ra(nvram_get_int(ipv6_nvname("ipv6_accept_ra")) ? 1 : 0);
+			break;
 #ifdef RTCONFIG_6RELAYD
 		case IPV6_PASSTHROUGH:
-#endif
 			set_default_accept_ra(1);
 			break;
+#endif
 		case IPV6_6IN4:
 		case IPV6_6TO4:
 		case IPV6_6RD:

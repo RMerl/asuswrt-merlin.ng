@@ -7,6 +7,7 @@
 //#define BLOCKLOCAL
 
 #define iptables_chk_mac "-m mac --mac-source"
+#define iptables_chk_ip "-s"
 extern char *datestr[];
 
 typedef struct pc_event pc_event_s;

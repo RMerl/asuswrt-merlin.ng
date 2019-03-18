@@ -606,9 +606,20 @@ void config_daytime_string(pc_s *pc_list, FILE *fp, char *logaccept, char *logdr
 	}
 
 	for(follow_pc = enabled_list; follow_pc != NULL; follow_pc = follow_pc->next){
-		const char *chk_mac = iptables_chk_mac;
-		if(!follow_pc->mac[0])
-			chk_mac = "";
+		const char *chk_type;
+		char follow_addr[18] = {0};
+#ifdef RTCONFIG_AMAS
+		_dprintf("config_daytime_string\n");
+		if (strlen(follow_pc->mac) && amas_lib_device_ip_query(follow_pc->mac, follow_addr)) {
+			chk_type = iptables_chk_ip;
+		} else
+#endif
+		{
+			chk_type = iptables_chk_mac;
+			snprintf(follow_addr, sizeof(follow_addr), "%s", follow_pc->mac);
+		}
+		if(!follow_addr[0])
+			chk_type = "";
 
 //_dprintf("[PC] mac=%s\n", follow_pc->mac);
 #ifdef RTCONFIG_PERMISSION_MANAGEMENT
@@ -622,9 +633,9 @@ void config_daytime_string(pc_s *pc_list, FILE *fp, char *logaccept, char *logdr
 			if(follow_e->start_day == follow_e->end_day){
 				if(follow_e->start_hour == follow_e->end_hour && follow_e->start_min == follow_e->end_min){ // whole week.
 #ifdef BLOCKLOCAL
-					fprintf(fp, "-A FORWARD -i %s %s %s -j %s\n", lan_if, chk_mac, follow_pc->mac, ftype);
+					fprintf(fp, "-A FORWARD -i %s %s %s -j %s\n", lan_if, chk_type, follow_addr, ftype);
 #endif
-					fprintf(fp, "-A FORWARD -i %s %s %s -j %s\n", lan_if, chk_mac, follow_pc->mac, fftype);
+					fprintf(fp, "-A FORWARD -i %s %s %s -j %s\n", lan_if, chk_type, follow_addr, fftype);
 				}
 				else{
 #ifdef BLOCKLOCAL
@@ -633,14 +644,28 @@ void config_daytime_string(pc_s *pc_list, FILE *fp, char *logaccept, char *logdr
 						fprintf(fp, " --timestart %d:%d", follow_e->start_hour, follow_e->start_min);
 					if(follow_e->end_hour > 0 || follow_e->end_min > 0)
 						fprintf(fp, " --timestop %d:%d", follow_e->end_hour, follow_e->end_min);
-					fprintf(fp, DAYS_PARAM "%s %s %s -j %s\n", datestr[follow_e->start_day], chk_mac, follow_pc->mac, ftype);
+					fprintf(fp, DAYS_PARAM "%s %s %s -j %s\n", datestr[follow_e->start_day], chk_type, follow_addr, ftype);
 #endif
 					fprintf(fp, "-A FORWARD -i %s -m time", lan_if);
 					if(follow_e->start_hour > 0 || follow_e->start_min > 0)
 						fprintf(fp, " --timestart %d:%d", follow_e->start_hour, follow_e->start_min);
 					if(follow_e->end_hour > 0 || follow_e->end_min > 0)
 						fprintf(fp, " --timestop %d:%d", follow_e->end_hour, follow_e->end_min);
-					fprintf(fp, DAYS_PARAM "%s %s %s -j %s\n", datestr[follow_e->start_day], chk_mac, follow_pc->mac, fftype);
+					fprintf(fp, DAYS_PARAM "%s %s %s -j %s\n", datestr[follow_e->start_day], chk_type, follow_addr, fftype);
+
+					if(follow_e->start_hour > follow_e->end_hour){
+#ifdef BLOCKLOCAL
+						fprintf(fp, "-A INPUT -i %s -m time" DAYS_PARAM, lan_if);
+						for(i = follow_e->start_day+1; i < follow_e->start_day+7; ++i)
+							fprintf(fp, "%s%s", (i == follow_e->start_day+1)?"":",", datestr[i%7]);
+						fprintf(fp, " %s %s -j %s\n", chk_type, follow_addr, ftype);
+#endif
+
+						fprintf(fp, "-A FORWARD -i %s -m time" DAYS_PARAM, lan_if);
+						for(i = follow_e->start_day+1; i < follow_e->start_day+7; ++i)
+							fprintf(fp, "%s%s", (i == follow_e->start_day+1)?"":",", datestr[i%7]);
+						fprintf(fp, " %s %s -j %s\n", chk_type, follow_addr, fftype);
+					}
 				}
 			}
 			else if(follow_e->start_day < follow_e->end_day){
@@ -649,12 +674,12 @@ void config_daytime_string(pc_s *pc_list, FILE *fp, char *logaccept, char *logdr
 				fprintf(fp, "-A INPUT -i %s -m time", lan_if);
 				if(follow_e->start_hour > 0 || follow_e->start_min > 0)
 					fprintf(fp, " --timestart %d:%d", follow_e->start_hour, follow_e->start_min);
-				fprintf(fp, DAYS_PARAM "%s %s %s -j %s\n", datestr[follow_e->start_day], chk_mac, follow_pc->mac, ftype);
+				fprintf(fp, DAYS_PARAM "%s %s %s -j %s\n", datestr[follow_e->start_day], chk_type, follow_addr, ftype);
 #endif
 				fprintf(fp, "-A FORWARD -i %s -m time", lan_if);
 				if(follow_e->start_hour > 0 || follow_e->start_min > 0)
 					fprintf(fp, " --timestart %d:%d", follow_e->start_hour, follow_e->start_min);
-				fprintf(fp, DAYS_PARAM "%s %s %s -j %s\n", datestr[follow_e->start_day], chk_mac, follow_pc->mac, fftype);
+				fprintf(fp, DAYS_PARAM "%s %s %s -j %s\n", datestr[follow_e->start_day], chk_type, follow_addr, fftype);
 
 				// middle interval.
 				if(follow_e->end_day-follow_e->start_day > 1){
@@ -662,13 +687,13 @@ void config_daytime_string(pc_s *pc_list, FILE *fp, char *logaccept, char *logdr
 					fprintf(fp, "-A INPUT -i %s -m time" DAYS_PARAM, lan_if);
 					for(i = follow_e->start_day+1; i < follow_e->end_day; ++i)
 						fprintf(fp, "%s%s", (i == follow_e->start_day+1)?"":",", datestr[i]);
-					fprintf(fp, " %s %s -j %s\n", chk_mac, follow_pc->mac, ftype);
+					fprintf(fp, " %s %s -j %s\n", chk_type, follow_addr, ftype);
 #endif
 
 					fprintf(fp, "-A FORWARD -i %s -m time" DAYS_PARAM, lan_if);
 					for(i = follow_e->start_day+1; i < follow_e->end_day; ++i)
 						fprintf(fp, "%s%s", (i == follow_e->start_day+1)?"":",", datestr[i]);
-					fprintf(fp, " %s %s -j %s\n", chk_mac, follow_pc->mac, fftype);
+					fprintf(fp, " %s %s -j %s\n", chk_type, follow_addr, fftype);
 				}
 
 				// end interval.
@@ -677,11 +702,11 @@ void config_daytime_string(pc_s *pc_list, FILE *fp, char *logaccept, char *logdr
 					fprintf(fp, "-A INPUT -i %s -m time", lan_if);
 
 					fprintf(fp, " --timestop %d:%d", follow_e->end_hour, follow_e->end_min);
-					fprintf(fp, DAYS_PARAM "%s %s %s -j %s\n", datestr[follow_e->end_day], chk_mac, follow_pc->mac, ftype);
+					fprintf(fp, DAYS_PARAM "%s %s %s -j %s\n", datestr[follow_e->end_day], chk_type, follow_addr, ftype);
 #endif
 					fprintf(fp, "-A FORWARD -i %s -m time", lan_if);
 					fprintf(fp, " --timestop %d:%d", follow_e->end_hour, follow_e->end_min);
-					fprintf(fp, DAYS_PARAM "%s %s %s -j %s\n", datestr[follow_e->end_day], chk_mac, follow_pc->mac, fftype);
+					fprintf(fp, DAYS_PARAM "%s %s %s -j %s\n", datestr[follow_e->end_day], chk_type, follow_addr, fftype);
 				}
 			}
 			else
@@ -691,9 +716,9 @@ void config_daytime_string(pc_s *pc_list, FILE *fp, char *logaccept, char *logdr
 		// MAC address in list and not in time period -> DROP.
 		if(!temp){
 #ifdef BLOCKLOCAL
-			fprintf(fp, "-A INPUT -i %s %s %s -j DROP\n", lan_if, chk_mac, follow_pc->mac);
+			fprintf(fp, "-A INPUT -i %s %s %s -j DROP\n", lan_if, chk_type, follow_addr);
 #endif
-			fprintf(fp, "-A FORWARD -i %s %s %s -j DROP\n", lan_if, chk_mac, follow_pc->mac);
+			fprintf(fp, "-A FORWARD -i %s %s %s -j DROP\n", lan_if, chk_type, follow_addr);
 		}
 	}
 

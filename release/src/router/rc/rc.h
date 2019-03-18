@@ -65,6 +65,11 @@
 #include "pc.h"
 #endif
 
+#ifdef RTCONFIG_AMAS
+#include <amas_lib.h>
+#endif
+
+
 #define IFUP (IFF_UP | IFF_RUNNING | IFF_BROADCAST | IFF_MULTICAST)
 
 #if LINUX_KERNEL_VERSION >= KERNEL_VERSION(3,2,0)
@@ -1425,6 +1430,9 @@ extern int restart_dnsmasq(int need_link_DownUp);
 extern void start_dnsmasq(void);
 extern void stop_dnsmasq(void);
 extern void reload_dnsmasq(void);
+#if defined(RTCONFIG_TR069) || defined(RTCONFIG_AMAS)
+extern int dnsmasq_script_main(int argc, char **argv);
+#endif
 extern int ddns_updated_main(int argc, char *argv[]);
 #ifdef RTCONFIG_IPV6
 extern void add_ip6_lanaddr(void);
@@ -1888,6 +1896,15 @@ extern void web_history_save();
 extern void AiProtectionMonitor_mail_log();
 #endif
 
+/* amas_lib.c */
+#ifdef RTCONFIG_AMAS
+extern int amas_lib_main(int argc, char **argv);
+extern void stop_amas_lib();
+extern void start_amas_lib();
+extern int amaslib_lease_main(int argc, char **argv);
+extern void amaslib_check();
+#endif
+
 // tcode_rc.c
 extern int config_tcode(int type);
 
@@ -1970,7 +1987,7 @@ extern int monitor_main(int argc, char *argv[]);
 #ifdef RTCONFIG_TR069
 extern int start_tr(void);
 extern void stop_tr(void);
-extern int dhcpc_lease_main(int argc, char *argv[]);
+extern int tr_lease_main(int argc, char *argv[]);
 #endif
 
 #ifdef RTCONFIG_NEW_USER_LOW_RSSI

@@ -27,6 +27,10 @@ endif
 CFLAGS	+= -DBCMDBG
 #endif
 
+ifeq ($(RTCONFIG_AMASDB),y)
+CFLAGS += -DAMASDB
+endif
+
 vpath %.c $(SRCBASE)/shared $(WLAN_ComponentSrcDirs)
 ifeq ($(HND_ROUTER_AX), y)
 vpath %.c $(SRCBASE)/shared/bcmwifi/src

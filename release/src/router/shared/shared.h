@@ -213,13 +213,6 @@
 #define OLD_DUT_DOMAIN_NAME1 "www.asusnetwork.net"
 #define OLD_DUT_DOMAIN_NAME2 "www.asusrouter.com"
 
-/* index page defined for httpd and wanduck */
-#if defined(GTAC5300)
-#define INDEXPAGE "GameDashboard.asp"
-#else
-#define INDEXPAGE "index.asp"
-#endif
-
 #define NETWORKMAP_PAGE "index.asp"
 
 #if defined(RTCONFIG_SAVEJFFS)
@@ -394,6 +387,9 @@ enum conndiagEvent {
 #define RAST_DATA       "DATA"
 #define RAST_MODE       "MODE"
 #define RAST_SERVED_AP_BSSID	"SERVED_AP_BSSID"
+#define RAST_RCPI       "RCPI"
+#define RAST_STA_RCPI	"STA_RCPI"
+#define RAST_CANDIDATE_AP_RCPI	"AP_RCPI"
 
 #define RAST_JVALUE_BAND_2G "2"
 #define RAST_JVALUE_BAND_5G "1"
@@ -1534,6 +1530,8 @@ extern int get_wl_sta_list(void);
 //extern int get_maxassoc(char *ifname);
 extern int get_psta_status(int unit);
 #endif
+extern int wl_get_bw(int unit);
+
 #if defined(RTCONFIG_BCMWL6) && defined(RTCONFIG_PROXYSTA)
 extern int get_psta_status(int unit);
 #endif
@@ -1686,6 +1684,7 @@ extern chanspec_t select_band1_chspec_with_same_bw(char *wif, chanspec_t chanspe
 extern chanspec_t select_band4_chspec_with_same_bw(char *wif, chanspec_t chanspec);
 extern chanspec_t select_chspec_with_band_bw(char *wif, int band, int bw, chanspec_t chanspec);
 extern void wl_list_5g_chans(int unit, int band, char *buf, int len);
+extern int wl_cap(int unit, char *cap_check);
 #endif
 #ifdef RTCONFIG_AMAS
 //extern char *get_pap_bssid(int unit, char bssid_str[]);
@@ -2513,4 +2512,40 @@ extern int getAmasSupportMode();
 
 #endif  /* defined(RTCONFIG_SW_HW_AUTH) && defined(RTCONFIG_AMAS) */
 
+#if defined(RTCONFIG_AMAS)
+
+typedef enum __amaslib_action__t_
+{
+	AMASLIB_ACTION_NODE_MAC_UPDATE = 0,
+	AMASLIB_ACTION_DEVICE_IP_QUERY
+} AMASLIB_ACTION_T;
+/*
+	AMAS_LIB define for event and socket
+*/
+typedef struct __amaslib_notification__t_
+{
+	AMASLIB_ACTION_T action;
+	char sta2g[18];     /* Node 2G MAC */
+	char sta5g[18];     /* Node 5G MAC */
+	int  flag;          /* Node status */
+	char ip[16];        /* Device IP */
+} AMASLIB_EVENT_T;
+
+#define AMASLIB_PID_PATH           "/var/run/amas_lib.pid"
+#define AMASLIB_SOCKET_PATH        "/etc/amas_lib_socket"
+#define MAX_AMASLIB_SOCKET_CLIENT  5
+
+/* DEBUG DEFINE */
+#define AMASLIB_DEBUG             "/tmp/AMASLIB_DEBUG"
+#define AMASLIB_DBG(fmt,args...) \
+	if(f_exists(AMASLIB_DEBUG) > 0) { \
+		_dprintf("[AMASLIB][%s:(%d)]"fmt, __FUNCTION__, __LINE__, ##args); \
+	}
+
+extern int AMAS_EVENT_TRIGGER(char *sta2g, char *sta5g, int flag);
+extern int is_amaslib_enabled();
+
+#endif /* defined(RTCONFIG_AMAS) */
+
+extern int get_index_page(char *page, int size);
 #endif	/* !__SHARED_H__ */

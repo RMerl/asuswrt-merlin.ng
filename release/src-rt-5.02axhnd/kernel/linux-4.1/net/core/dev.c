@@ -151,6 +151,11 @@
 #include "linux/bcm_log.h"
 #endif
 
+#define PROCESS_BACKLOG_TIMEOUT (2 * HZ)
+#ifdef PROCESS_BACKLOG_TIMEOUT
+static unsigned long process_backlog_timeout = PROCESS_BACKLOG_TIMEOUT;
+#endif /* PROCESS_BACKLOG_TIMEOUT */
+
 int bcm_iqos_enable_g = 0;
 EXPORT_SYMBOL(bcm_iqos_enable_g);
 
@@ -1998,7 +2003,7 @@ again:
 
 		if (skb_network_header(skb2) < skb2->data ||
 		    skb_network_header(skb2) > skb_tail_pointer(skb2)) {
-			net_crit_ratelimited("protocol %04x is buggy, dev %s\n",
+			net_info_ratelimited("protocol %04x is buggy, dev %s\n",
 					     ntohs(skb2->protocol),
 					     dev->name);
 			skb_reset_network_header(skb2);
@@ -4956,6 +4961,9 @@ static int process_backlog(struct napi_struct *napi, int quota)
 	int work = 0;
 	struct softnet_data *sd = container_of(napi, struct softnet_data, backlog);
 
+#ifdef PROCESS_BACKLOG_TIMEOUT
+	unsigned long expire = jiffies + process_backlog_timeout;
+#endif /* PROCESS_BACKLOG_TIMEOUT */
 	/* Check if we have pending ipi, its better to send them now,
 	 * not waiting net_rx_action() end.
 	 */
@@ -4976,6 +4984,14 @@ static int process_backlog(struct napi_struct *napi, int quota)
 			rcu_read_unlock();
 			local_irq_disable();
 			input_queue_head_incr(sd);
+
+#ifdef PROCESS_BACKLOG_TIMEOUT
+			if (process_backlog_timeout && time_after(jiffies, expire)) {
+				local_irq_enable();
+				return quota;
+			}
+#endif /* PROCESS_BACKLOG_TIMEOUT */
+
 			if (++work >= quota) {
 				local_irq_enable();
 				return work;
@@ -8243,6 +8259,11 @@ static int __init net_dev_init(void)
 #if (defined(CONFIG_BCM_KF_FAP_GSO_LOOPBACK) && defined(CONFIG_BCM_FAP_GSO_LOOPBACK))
 	bcm_gso_loopback_devs_init();
 #endif
+
+#ifdef PROCESS_BACKLOG_TIMEOUT
+	printk("%s: process_backlog_timeout virt addr 0x%p\n",
+		__FUNCTION__, &process_backlog_timeout);
+#endif /* PROCESS_BACKLOG_TIMEOUT */
 	rc = 0;
 out:
 	return rc;

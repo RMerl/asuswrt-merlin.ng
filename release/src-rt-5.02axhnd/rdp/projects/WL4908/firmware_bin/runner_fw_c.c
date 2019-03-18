@@ -27,7 +27,7 @@
 :>
 */
 
-/* Firmware version: 2.5.0.199368 */
+/* Firmware version: 2.5.0.200974 */
 
 
 uint32_t firmware_binary_C[] = {

@@ -888,6 +888,9 @@ static const applets_t applets[] = {
 	{ "bwdpi_db_10",		bwdpi_db_10_main		},
 	{ "rsasign_sig_check",		rsasign_sig_check_main		},
 #endif
+#ifdef RTCONFIG_AMAS
+	{ "amas_lib",		        amas_lib_main			},
+#endif
 	{ "hour_monitor",		hour_monitor_main		},
 #ifdef RTCONFIG_USB_MODEM
 #ifdef RTCONFIG_INTERNAL_GOBI
@@ -897,8 +900,8 @@ static const applets_t applets[] = {
 #endif
 #endif
 #endif
-#ifdef RTCONFIG_TR069
-	{ "dhcpc_lease",		dhcpc_lease_main		},
+#if defined(RTCONFIG_TR069) || defined(RTCONFIG_AMAS)
+	{ "dhcpc_lease",		dnsmasq_script_main		},
 #endif
 #ifdef RTCONFIG_NEW_USER_LOW_RSSI
 	{ "roamast",			roam_assistant_main		},

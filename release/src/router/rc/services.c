@@ -1748,6 +1748,16 @@ void start_dnsmasq(void)
 		write_static_leases(fp);
 	}
 
+#if (defined(RTCONFIG_TR069) && !defined(RTCONFIG_TR181)) || \
+    (defined(RTCONFIG_AMAS))
+	/* dhcp-script */
+	fprintf(fp, "dhcp-script=/sbin/dhcpc_lease\n");
+#if defined(RTCONFIG_AMAS)
+	fprintf(fp, "script-arp\n");
+#endif
+#endif
+
+
 	/* Don't log DHCP queries */
 	if (nvram_match("dhcpd_querylog","0")) {
 		fprintf(fp,"quiet-dhcp\n");
@@ -1779,6 +1789,8 @@ void start_dnsmasq(void)
 		   "dhcp-ignore-names=tag:wpad-ignore\n");
 
 	append_custom_config("dnsmasq.conf",fp);
+
+	/* close fp move to the last */
 	fclose(fp);
 
 	use_custom_config("dnsmasq.conf","/etc/dnsmasq.conf");
@@ -1848,6 +1860,21 @@ void reload_dnsmasq(void)
 	/* notify dnsmasq */
 	kill_pidfile_s("/var/run/dnsmasq.pid", SIGHUP);
 }
+
+#if defined(RTCONFIG_TR069) ||  defined(RTCONFIG_AMAS)
+int dnsmasq_script_main(int argc, char **argv)
+{
+	// TODO : call function directly
+#if defined(RTCONFIG_TR069) && !defined(RTCONFIG_TR181)
+	tr_lease_main(argc, argv);
+#endif
+
+#if defined(RTCONFIG_AMAS)
+	amaslib_lease_main(argc, argv);
+#endif
+	return 0;
+}
+#endif
 
 #ifdef RTCONFIG_IPV6
 void add_ip6_lanaddr(void)
@@ -5992,6 +6019,17 @@ void start_ethbl_lldpd(void)
 
 void start_hyfi_process(void)
 {
+#ifdef RTCONFIG_AMAS
+#if defined(RTCONFIG_WIFI_SON)
+	if(nvram_match("wifison_ready","1"))
+	{
+		stop_amas_lib();
+#ifdef RTCONFIG_NEW_USER_LOW_RSSI
+		stop_roamast();
+#endif
+	}
+#endif
+#endif
 	hyfi_process();
 }
 
@@ -8290,6 +8328,9 @@ start_services(void)
 #endif /* RTCONFIG_DBLOG */
 #endif /* RTCONFIG_PUSH_EMAIL */
 
+#if defined(RTCONFIG_AMAS)
+	start_amas_lib();
+#endif
 #if defined(RTCONFIG_RGBLED)
 	start_aurargb();
 #endif
@@ -8304,6 +8345,9 @@ stop_services(void)
 {
 	run_custom_script("services-stop", NULL);
 
+#if defined(RTCONFIG_AMAS)
+	stop_amas_lib();
+#endif
 #ifdef RTCONFIG_ADTBW
 	stop_adtbw();
 #endif
@@ -10501,6 +10545,9 @@ script_allnet:
 			start_conn_diag();
 #endif
 #endif
+#if defined(RTCONFIG_AMAS)
+			start_amas_lib();
+#endif
 		}
 	}
 	else if (strcmp(script, "net") == 0) {
@@ -10688,6 +10735,9 @@ script_allnet:
 			start_conn_diag();
 #endif
 #endif
+#if defined(RTCONFIG_AMAS)
+			start_amas_lib();
+#endif
 		}
 	}
 	else if (strcmp(script, "net_and_phy") == 0) {
@@ -10805,6 +10855,17 @@ script_allnet:
 			//stop_vlan();
 			stop_lan_port();
 
+#if defined(RTCONFIG_AMAS)
+#if defined(RTCONFIG_WIFI_SON)
+			if(nvram_match("wifison_ready","1"))
+			{
+				stop_amas_lib();
+#ifdef RTCONFIG_NEW_USER_LOW_RSSI
+				stop_roamast();
+#endif
+			}
+#endif
+#endif
 			// free memory here
 		}
 #ifdef RTCONFIG_LANTIQ
@@ -10937,6 +10998,9 @@ script_allnet:
 #ifdef RTCONFIG_CONNDIAG
 			start_conn_diag();
 #endif
+#endif
+#if defined(RTCONFIG_AMAS)
+			start_amas_lib();
 #endif
 #ifdef RTCONFIG_LANTIQ
 			if(client_mode()){
@@ -12695,6 +12759,9 @@ retry_wps_enr:
 #endif
 			stop_cfgsync();
 #endif
+#if defined(RTCONFIG_AMAS)
+			stop_amas_lib();
+#endif
 			stop_dnsmasq();
 			stop_lan_wlc();
 			stop_lan_port();
@@ -13447,6 +13514,10 @@ _dprintf("test 2. turn off the USB power during %d seconds.\n", reset_seconds[re
 		if(action&RC_SERVICE_START) start_conn_diag();
 	}
 #endif
+	else if (strcmp(script, "apply_amaslib") == 0)
+	{
+		AMAS_EVENT_TRIGGER(NULL, NULL, 0);
+	}
 #endif
 #ifdef RTCONFIG_HD_SPINDOWN
 #ifdef LINUX26
@@ -14150,14 +14221,15 @@ int start_bsd(void)
 
 	stop_bsd();
 
+#ifndef RTCONFIG_AMASDB
 	if (!nvram_get_int("smart_connect_x"))
 		ret = -1;
 	else {
-#if 0
-		nvram_unset("bsd_ifnames");
 #endif
 		ret = eval("/usr/sbin/bsd");
+#ifndef RTCONFIG_AMASDB
 	}
+#endif
 
 	return ret;
 }

@@ -852,7 +852,7 @@ function show_banner(L3){// L3 = The third Level of Menu
 	if(cooler_support)
 		banner_code +='<td width="30"><div id="cooler_status" class="" style="display:none;"></div></td>\n';
 	
-	if (multissid_support != -1 && !isSwMode('mb'))
+	if (multissid_support != -1 && !isSwMode('mb') && !isSwMode('re'))
 		banner_code +='<td width="30"><div id="guestnetwork_status" style="width:30px;" class="guestnetworkstatusoff"></div></td>\n';
 
 	if(dsl_support)
@@ -1120,6 +1120,7 @@ function show_menu(){
 		Session.set("menuList", menuList);
 		Session.set("menuExclude", menuExclude);
 		showMenuTree(menuList, menuExclude);
+		
 	});
 
 	if(nt_center_support){
@@ -1703,8 +1704,8 @@ function show_top_status(){
 		}
 	}
 
-	if(ssid_status_2g.length >18){
-		document.getElementById('elliptic_ssid_2g').innerHTML = extend_display_ssid(ssid_status_2g)+"...";
+	if(htmlEnDeCode.htmlDecode(ssid_status_2g).length >18){
+		document.getElementById('elliptic_ssid_2g').innerHTML = htmlEnDeCode.htmlEncode((htmlEnDeCode.htmlDecode(ssid_status_2g)).substring(0,15)) + "...";
 	}
 	else{
 		document.getElementById('elliptic_ssid_2g').innerHTML = ssid_status_2g;
@@ -1713,8 +1714,8 @@ function show_top_status(){
 	if(!lyra_hide_support)
 		document.getElementById('elliptic_ssid_2g').title = "2.4 GHz: \n"+ htmlEnDeCode.htmlDecode(ssid_status_2g);
 
-	if(ssid_status_5g.length >18){
-		document.getElementById('elliptic_ssid_5g').innerHTML = extend_display_ssid(ssid_status_5g)+"...";
+	if(htmlEnDeCode.htmlDecode(ssid_status_5g).length >18){
+		document.getElementById('elliptic_ssid_5g').innerHTML = htmlEnDeCode.htmlEncode((htmlEnDeCode.htmlDecode(ssid_status_5g)).substring(0,15)) + "...";
 	}
 	else{
 		document.getElementById('elliptic_ssid_5g').innerHTML = ssid_status_5g;
@@ -1723,8 +1724,8 @@ function show_top_status(){
 	document.getElementById('elliptic_ssid_5g').title = "5 GHz: \n"+ htmlEnDeCode.htmlDecode(ssid_status_5g);
 
 	if(wl_info.band5g_2_support){
-		if(ssid_status_5g_2.length >18){
-			document.getElementById('elliptic_ssid_5g_2').innerHTML = extend_display_ssid(ssid_status_5g_2)+"...";
+		if(htmlEnDeCode.htmlDecode(ssid_status_5g_2).length >18){
+			document.getElementById('elliptic_ssid_5g_2').innerHTML = htmlEnDeCode.htmlEncode((htmlEnDeCode.htmlDecode(ssid_status_5g_2)).substring(0,15)) + "...";
 		}
 		else{
 			document.getElementById('elliptic_ssid_5g_2').innerHTML = ssid_status_5g_2;
@@ -1809,84 +1810,6 @@ function show_top_status(){
 			document.getElementById("op_link").style.cursor= "auto";			
 		}
 	}
-}
-
-function extend_display_ssid(ssid){		//"&amp;"5&; "&lt;"4< ; "&gt;"4> ; "&nbsp;"6space
-		//alert(ssid.substring(0,35)+" : "+ssid.substring(0,35).lastIndexOf("&nbsp;")+" <&nbsp>");
-		if(ssid.substring(0,35).lastIndexOf("&nbsp;") >=30 || ssid.substring(0,35).lastIndexOf("&nbsp;") < 25 ){
-			//alert(ssid.substring(0,34)+" : "+ssid.substring(0,34).lastIndexOf("&amp;")+" <&amp>");
-			if(ssid.substring(0,34).lastIndexOf("&amp;") >=30 || ssid.substring(0,34).lastIndexOf("&amp;") < 26 ){
-				//alert(ssid.substring(0,33)+" : "+ssid.substring(0,33).lastIndexOf("&lt;")+" <&lt>");
-				if(ssid.substring(0,33).lastIndexOf("&lt;") >=30 || ssid.substring(0,34).lastIndexOf("&lt;") < 27 ){
-					//alert(ssid.substring(0,33)+" : "+ssid.substring(0,33).lastIndexOf("&gt;")+" <&gt>");
-					if(ssid.substring(0,33).lastIndexOf("&gt;") >=30 || ssid.substring(0,34).lastIndexOf("&gt;") < 27 ){
-						//alert(ssid.substring(0,30));
-						return ssid.substring(0,30);
-					}
-					else{
-						switch(ssid.substring(0,33).lastIndexOf("&gt;")){
-							case 27:
-								return ssid.substring(0,31);
-								break;
-							case 28:
-								return ssid.substring(0,32);	
-								break;
-							case 29:
-								return ssid.substring(0,33);		
-								break;	
-						}
-					}
-				}
-				else{
-					switch(ssid.substring(0,33).lastIndexOf("&lt;")){
-						case 27:
-							return ssid.substring(0,31);
-							break;
-						case 28:
-							return ssid.substring(0,32);
-							break;
-						case 29:
-							return ssid.substring(0,33);
-							break;
-					}			
-				}
-			}
-			else{
-				switch (ssid.substring(0,34).lastIndexOf("&amp;")){
-					case 26:
-						return ssid.substring(0,31);
-						break;
-					case 27:
-						return ssid.substring(0,32);
-						break;
-					case 28:
-						return ssid.substring(0,33);
-						break;
-					case 29:
-						return ssid.substring(0,34);
-						break;
-				}
-			}
-		}
-		else{
-			switch (ssid.substring(0,35).lastIndexOf("&nbsp;")){
-				case 25:			
-					return ssid.substring(0,31);
-					break;			
-				case 26:
-					return ssid.substring(0,32);
-					break;
-				case 27:
-					return ssid.substring(0,33);
-					break;
-				case 28:
-					return ssid.substring(0,34);
-					break;
-				case 29:
-					return ssid.substring(0,35);
-					break;					
-			}
-		}
 }
 
 function go_setting(page){
@@ -1994,6 +1917,21 @@ function logout(){
 
 function reboot(){
 	if(confirm("<#Main_content_Login_Item7#>")){
+		var win_time = window.setTimeout(function() {}, 0);
+		while (win_time--)
+			window.clearTimeout(win_time);
+		var win_inter = window.setInterval(function() {}, 0);
+		while (win_inter--)
+			window.clearInterval(win_inter);
+		var iframe_len = frames.length;
+		for(var i = 0; i < iframe_len; i += 1) {
+			var ifr_time = frames[i].window.setTimeout(function() {}, 0);
+			while (ifr_time--)
+				frames[i].window.clearTimeout(ifr_time);
+			var ifr_inter = frames[i].window.setInterval(function() {}, 0);
+			while (ifr_inter--)
+				frames[i].window.clearInterval(ifr_inter);
+		}
 		document.rebootForm.submit();
 	}
 }
@@ -2844,7 +2782,7 @@ function refreshStatus(xhr){
 		}	
 	}
 	else if(sw_mode == 3){
-		if(document.getElementById("single_wan")){
+		if(dhcp_override_support && document.getElementById("single_wan")){
 			if(dnsqmode == "1")
 				document.getElementById('single_wan').className = "single_wan_connected";
 			else
@@ -2987,7 +2925,7 @@ function refreshStatus(xhr){
 	}
 
 	// guest network
-	if (multissid_support != -1 && !isSwMode('mb') && (gn_array_5g.length > 0 || (wl_info.band5g_2_support && gn_array_5g_2.length > 0))){
+	if (multissid_support != -1 && !isSwMode('mb') && !isSwMode('re') && (gn_array_5g.length > 0 || (wl_info.band5g_2_support && gn_array_5g_2.length > 0))){
 		if(based_modelid == "RT-AC87U"){	//workaround for RT-AC87U
 			for(var i=0; i<gn_array_2g.length; i++){
 				if(gn_array_2g[i][0] == 1){
@@ -3030,7 +2968,7 @@ function refreshStatus(xhr){
 		document.getElementById("guestnetwork_status").onmouseout = function(){nd();}
 		
 	}
-	else if (multissid_support != -1 && !isSwMode('mb') && gn_array_5g.length == 0){
+	else if (multissid_support != -1 && !isSwMode('mb') && !isSwMode('re') && gn_array_5g.length == 0){
 		for(var i=0; i<gn_array_2g.length; i++){
 			if(gn_array_2g[i][0] == 1){
 				document.getElementById("guestnetwork_status").className = "guestnetworkstatuson";

@@ -16,14 +16,16 @@
 #define FT_FEEDBACK		BIT(5)
 #define FT_DIAGNOSTIC	BIT(6)
 #define FT_BACKHAULCTRL	BIT(7)
-#if defined(MAPAC2200)
-#define FT_BHBLOCK	BIT(8)	/* normal client blocking in backhaul */
+
+#define FT_REGION	BIT(8)	/* system reboot */
+#define FT_CENTRAL_LED		BIT(9)
+
+#if defined(MAPAC2200) || defined(RTAC92U)
+#define FT_BHBLOCK	BIT(10)	/* normal client blocking in backhaul */
 #endif
 #ifdef RTCONFIG_WIFI_SON
-#define FT_SPCMD	BIT(9)	/* special command */
+#define FT_SPCMD	BIT(11)	/* special command */
 #endif
-#define FT_REGION	BIT(10)	/* system reboot */
-#define FT_CENTRAL_LED		BIT(11)
 
 
 struct feature_mapping_s {
@@ -41,16 +43,16 @@ struct feature_mapping_s feature_mapping_list[] = {
 	{ "feedback",	FT_FEEDBACK,	"restart_sendmail" },
 	{ "diagnostic",	FT_DIAGNOSTIC,	"restart_dblog" },
 	{ "backhalctrl", 	FT_BACKHAULCTRL,	"restart_amas_bhctrl"},
-#if defined(MAPAC2200)
-	{ "bhblock", 	FT_BHBLOCK,	"restart_bhblock" },
-#endif
-#ifdef RTCONFIG_WIFI_SON
-	{ "spcmd", 	FT_SPCMD,	"restart_spcmd" },
-#endif
 	{ "central_led",	FT_CENTRAL_LED,	"reset_led" },
 
 	/* END */
 	{ "region", FT_REGION, 	"reboot" },
+#ifdef RTCONFIG_WIFI_SON
+#if defined(MAPAC2200) || defined(RTAC92U)
+	{ "bhblock", 	FT_BHBLOCK,	"restart_bhblock" },
+#endif
+	{ "spcmd", 	FT_SPCMD,	"restart_spcmd" },
+#endif
 	{ NULL, 0, NULL }
 };
 
@@ -129,7 +131,7 @@ enum {
 
 	/* sub feature for smart connect */
 	SUBFT_SMART_CONNECT,	/* smart connect */
-#if defined(MAPAC2200)
+#if defined(MAPAC2200) || defined(RTAC92U)
 	SUBFT_NCB,
 #endif
 #ifdef RTCONFIG_WIFI_SON
@@ -248,12 +250,6 @@ struct subfeature_mapping_s subfeature_mapping_list[] = {
 	/* backhaul ctrl */
 	{ "backhalctrl",		SUBFT_BACKHAULCTRL,	FT_BACKHAULCTRL },
 	{ "smart_connect", 	SUBFT_SMART_CONNECT, FT_WIRELESS },
-#if defined(MAPAC2200)
-	{ "ncb",		SUBFT_NCB,	FT_BHBLOCK },
-#endif
-#ifdef RTCONFIG_WIFI_SON
-	{ "spcmd",		SUBFT_SPCMD,	FT_SPCMD },
-#endif
 	{ "central_led",		SUBFT_CENTRAL_LED,	FT_CENTRAL_LED },
 	/* Roaming Assistant */
 	{ "roaming_assistant", SUBFT_ROAMING_ASSISTANT, FT_WIRELESS },
@@ -292,6 +288,12 @@ struct subfeature_mapping_s subfeature_mapping_list[] = {
 	{ "wps", SUBFT_WPS, FT_WIRELESS },
 	/* sub feature for Reboot schedule */
 	{ "reboot_schedule", SUBFT_REBOOT_SCHEDULE, FT_TIME },
+#if defined(MAPAC2200) || defined(RTAC92U)
+	{ "ncb",		SUBFT_NCB,	FT_BHBLOCK },
+#endif
+#ifdef RTCONFIG_WIFI_SON
+	{ "spcmd",		SUBFT_SPCMD,	FT_SPCMD },
+#endif
 #ifdef RTCONFIG_HND_ROUTER_AX
 	/* HE feaure */
 	{ "he_features_2g", SUBFT_HE_FEATURES_2G, FT_WIRELESS },
@@ -533,16 +535,8 @@ struct param_mapping_s param_mapping_list[] = {
 	/* backhaul ctrl */
 	{ "amas_ethernet", 	FT_BACKHAULCTRL,	SUBFT_BACKHAULCTRL},
 	{ "smart_connect_x", 	FT_WIRELESS,	SUBFT_SMART_CONNECT},
-#if defined(MAPAC2200)
-	/* normal client blocking in backhaul */
-	{ "ncb_enable", 	FT_BHBLOCK,		SUBFT_NCB},
-#endif
-#ifdef RTCONFIG_WIFI_SON
-	{ "spcmd", 		FT_SPCMD,		SUBFT_SPCMD},
-#endif
 	/* led */
 	{ "bc_ledLv",	FT_CENTRAL_LED,		SUBFT_CENTRAL_LED},	/* for BLUECAVE */
-
 	/* Roaming Assistant */
 	{ "rast_static_cli_enable", FT_WIRELESS, SUBFT_ROAMING_ASSISTANT },
 	{ "wl0_rast_static_client", FT_WIRELESS, SUBFT_ROAMING_ASSISTANT_2G, },
@@ -639,6 +633,13 @@ struct param_mapping_s param_mapping_list[] = {
 	{ "wl0_txpower", FT_WIRELESS, SUBFT_ADVANCED_2G },
 	{ "wl1_txpower", FT_WIRELESS, SUBFT_ADVANCED_5G },
 	{ "wl2_txpower", FT_WIRELESS, SUBFT_ADVANCED_5G1 },
+#if defined(MAPAC2200) || defined(RTAC92U)
+	/* normal client blocking in backhaul */
+	{ "ncb_enable", 	FT_BHBLOCK,		SUBFT_NCB},
+#endif
+#ifdef RTCONFIG_WIFI_SON
+	{ "spcmd", 		FT_SPCMD,		SUBFT_SPCMD},
+#endif
 #ifdef RTCONFIG_HND_ROUTER_AX
 	{ "wl0_he_features", FT_WIRELESS, SUBFT_HE_FEATURES_2G },
 	{ "wl1_he_features", FT_WIRELESS, SUBFT_HE_FEATURES_5G },

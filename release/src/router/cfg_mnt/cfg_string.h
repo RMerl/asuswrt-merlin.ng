@@ -62,6 +62,9 @@
 #define CFG_STR_5G 	"5G"
 #define CFG_STR_5G1 	"5G1"
 #define CFG_STR_RE_NUMBER	"re_num"
+#define CFG_STR_APLIST "aplist"
+#define CFG_STR_DUAL_BAND_LIST	"db_list"
+#define CFG_STR_DUAL_BAND_CAP		"db_cap"
 #define CFG_STR_IS_RE	"is_re"
 #define CFG_STR_TRIBAND_RE	"triband_re"
 #endif /* __CFG_STRING_H__ */

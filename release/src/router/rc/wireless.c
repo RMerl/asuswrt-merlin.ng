@@ -163,8 +163,9 @@ int wlcscan_main(void)
 	CLIENT *clnt;
 	char host[18];
 #endif
-#if defined(RTCONFIG_BCM7) || defined(RTCONFIG_BCM_7114) || defined(HND_ROUTER) || defined(RTCONFIG_HND_ROUTER_AX)
+#ifdef __CONFIG_DHDAP__
 	char tmp[100], prefix[]="wlXXXXXXX_";
+	int is_dhd = 0;
 #endif
 
 	signal(SIGTERM, wlcscan_safeleave);
@@ -207,9 +208,10 @@ int wlcscan_main(void)
 #endif
 	{	
 		SKIP_ABSENT_BAND_AND_INC_UNIT(i);
-#if defined(RTCONFIG_BCM7) || defined(RTCONFIG_BCM_7114) || defined(HND_ROUTER) || defined(RTCONFIG_HND_ROUTER_AX)
+#ifdef __CONFIG_DHDAP__
+		is_dhd = !dhd_probe(word);
 		snprintf(prefix, sizeof(prefix), "wl%d_", i);
-		if (!nvram_match(strcat_r(prefix, "mode", tmp), "wds"))
+		if (is_dhd && !nvram_match(strcat_r(prefix, "mode", tmp), "wds"))
 			wlcscan_core_escan(APSCAN_INFO, word);
 		else
 #endif

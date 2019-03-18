@@ -520,12 +520,29 @@ static void death_by_timeout(unsigned long ul_conntrack)
 }
 
 #if defined(CONFIG_BCM_KF_BLOG) && defined(CONFIG_BCM_KF_NETFILTER) && defined(CONFIG_BLOG)
+#ifdef TIMER_FUNCTION_TIMEOUT
+extern void monitor_timer_fn_register(void (*fn)(unsigned long));
+#endif /* TIMER_FUNCTION_TIMEOUT */
 
 static void blog_death_by_timeout(unsigned long ul_conntrack)
 {
 	struct nf_conn *ct = (void *)ul_conntrack;
 	BlogCtTime_t ct_time;
 	uint32_t ct_blog_key = 0;
+#ifdef TIMER_FUNCTION_TIMEOUT
+	static unsigned long defer = BLOG_TIMEOUT_DEFER_PERIOD;
+	struct _timer_function_timeout *to = (void *)ul_conntrack;
+
+	if (to->magic == TIMER_FUNCTION_TIMEOUT_MAGIC) {
+		ct = (void *)(to->data);
+
+		if ((to->expire > 0) && time_after(jiffies, to->expire)) {
+			defer = (defer + HZ) % BLOG_TIMEOUT_DEFER_PERIOD;
+			mod_timer(&ct->timeout, (jiffies + HZ + defer));
+			return;
+		}
+	}
+#endif /* TIMER_FUNCTION_TIMEOUT */
 
 	memset(&ct_time, 0, sizeof(ct_time));
 	blog_lock();
@@ -546,25 +563,14 @@ static void blog_death_by_timeout(unsigned long ul_conntrack)
 	 */ 
 	if (ct_time.flags.valid && ct_blog_key)
 	{
-		unsigned long newtime;
+		signed long newtime = ct_time.extra_jiffies - ct_time.idle_jiffies;
 		/* make sure we have atleast HZ jiffies to re-arm the timer 
 		 * as sometimes extra_fiffies can be less than idle_jiffies 
 		 */
-		newtime = ct_time.extra_jiffies - ct_time.idle_jiffies;
 		if(newtime > HZ){
-			/* if newtime is a very big value, kernel treats it as timer expired
-			 * and will fire gain immediately, so add this additional check
-			 */
-			if (((signed long) newtime > 0)) {
-				/*TODO remove this prev_timeout */
-				ct->prev_timeout.expires = ct->timeout.expires;
-				newtime += jiffies;
-				mod_timer(&ct->timeout, newtime);
-				return;
-			}
-			else
-				printk(KERN_ERR "%s: bad timeout value=%lu, extra_jiffies=%lu, idle_jiffies=%lu\n",
-						__func__, newtime, ct_time.extra_jiffies, ct_time.idle_jiffies);
+			ct->prev_timeout.expires = ct->timeout.expires;
+			mod_timer(&ct->timeout, jiffies + newtime);
+			return;
 		}
 	}
 
@@ -580,32 +586,19 @@ void __nf_ct_time_update(struct nf_conn *ct, BlogCtTime_t *ct_time_p)
 	if (ct->blog_key[BLOG_PARAM1_DIR_ORIG] != BLOG_KEY_FC_INVALID ||
 			ct->blog_key[BLOG_PARAM1_DIR_REPLY] != BLOG_KEY_FC_INVALID) {
 
-		unsigned long newtime;
+		signed long newtime = ct_time_p->extra_jiffies - ct_time_p->idle_jiffies;
 
 		ct->prev_idle = 0;
 
 		/* to avoid triggering the timer immediately,
 		 * add altleast 1 HZ  when modifying the timer
 		 */
-		newtime = ct_time_p->extra_jiffies - ct_time_p->idle_jiffies;
-		if(newtime > HZ){
-
-			/* if newtime is a very big value, kernel treats it as timer expired
-			 * and will fire immediately, so add this additional check
-			 */
-			if (((signed long) newtime > 0))
-				newtime += jiffies;
-			else{
-				printk(KERN_ERR "%s: bad timeout value=%lu, extra_jiffies=%lu, idle_jiffies=%lu\n",
-						__func__, newtime, ct_time_p->extra_jiffies, ct_time_p->idle_jiffies);
-				newtime = jiffies + HZ;
-			}
-		}else
-			newtime = jiffies + HZ;
-		
+		if(newtime < HZ)
+			newtime = HZ;
+	
 		/*TODO remove this prev_timeout */
 		ct->prev_timeout.expires = ct->timeout.expires;
-		mod_timer_pending(&ct->timeout, newtime);
+		mod_timer_pending(&ct->timeout, jiffies + newtime);
 	}
 }
 #endif
@@ -1357,6 +1350,9 @@ __nf_conntrack_alloc(struct net *net, u16 zone,
 	}
 	ct->prev_timeout.expires = jiffies;
 
+#ifdef TIMER_FUNCTION_TIMEOUT
+	monitor_timer_fn_register(blog_death_by_timeout);
+#endif /* TIMER_FUNCTION_TIMEOUT */
 	/* Don't set timer yet: wait for confirmation */
 	setup_timer(&ct->timeout, blog_death_by_timeout, (unsigned long)ct);
 #else

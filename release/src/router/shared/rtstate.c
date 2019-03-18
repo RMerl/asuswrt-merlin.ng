@@ -1112,6 +1112,7 @@ char *get_default_ssid(int unit, int subunit)
 #endif
 
 	strlcpy(ssid, ssidbase, sizeof(ssid));
+#if !defined(RTAX92U)
 #if !defined(RTCONFIG_SINGLE_SSID)	/* including RTCONFIG_NEWSSID_REV2 */
 	switch (unit) {
 	case WL_2G_BAND:
@@ -1143,6 +1144,7 @@ char *get_default_ssid(int unit, int subunit)
 		dbg("%s: Unknown wl_unit (%d)\n", __func__, unit);
 		strlcat(ssid, "_UNKNOWN", sizeof(ssid));
 	}
+#endif
 #endif
 
 	/* Handle guest network SSID. */

@@ -13362,6 +13362,17 @@ typedef enum
 } rdd_resolution_context;
 typedef enum
 {
+	FFI_FIRST =        3,
+	FFI_8_LOG2_SIZE     = 3,
+	FFI_16_LOG2_SIZE    = 4,
+	FFI_32_LOG2_SIZE    = 5,
+	FFI_8_SIZE          = 8,
+	FFI_16_SIZE         = 16,
+	FFI_32_SIZE         = 32,
+	FFI_LAST =         32
+} rdd_ffi;
+typedef enum
+{
 	FR_FORMAT_FIRST =     0,
 	FR_FORMAT_WI_WI64      = 0,
 	FR_FORMAT_WI_CWI32     = 1,

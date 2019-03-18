@@ -1640,6 +1640,38 @@ int wl_sta_info_phy(void *buf, int unit)
 	return PHY_TYPE_B;
 }
 
+#define WL_BW_UNDEFINED                0
+#define WL_BW_20M              1
+#define WL_BW_40M              2
+#define WL_BW_80M              3
+#define WL_BW_160M             4
+#define WL_BW_MAX              5
+
+const char *wl_bw_str[WL_BW_MAX] = {
+       "",
+       "20M",
+       "40M",
+       "80M",
+       "160M",
+};
+
+int wl_sta_info_bw(void *buf)
+{
+#if (WL_STA_VER >= 7)
+       sta_info_t *sta = (sta_info_t *) buf;
+       uint32 tx_rspec = sta->tx_rspec;
+       uint32 rx_rspec = sta->rx_rspec;
+       uint bw_tx = 0, bw_rx = 0;
+
+       bw_tx = ((tx_rspec & WL_RSPEC_BW_MASK) >> WL_RSPEC_BW_SHIFT);
+       bw_rx = ((rx_rspec & WL_RSPEC_BW_MASK) >> WL_RSPEC_BW_SHIFT);
+
+       return max(bw_tx, bw_rx);
+#else
+       return 0;
+#endif
+}
+
 static int
 wl_status(int eid, webs_t wp, int argc, char_t **argv, int unit)
 {

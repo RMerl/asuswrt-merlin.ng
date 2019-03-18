@@ -264,7 +264,9 @@ endif
 
 ifeq ($(RTCONFIG_LETSENCRYPT),y)
 CFLAGS  += -I$(TOP)/libletsencrypt
+ifneq ($(RTCONFIG_OPENSSL11),y) # Kludge, library still uses 1.0.2
 LIBS += -L$(TOP)/libletsencrypt -lletsencrypt
+endif
 endif
 
 ifeq ($(RTCONFIG_PERMISSION_MANAGEMENT),y)

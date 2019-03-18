@@ -6124,6 +6124,14 @@ sta_list:
 // PHY
 			ret += websWrite(wp, "\"%s\",", phy_type_str[wl_sta_info_phy(sta, unit)]);
 
+// Bandwidth
+#if (WL_STA_VER >= 7)
+			if (sta->flags & WL_STA_SCBSTATS)
+				ret += websWrite(wp, "\"%s\",", wl_bw_str[wl_sta_info_bw(sta)]);
+			else
+#endif
+				ret += websWrite(wp, "\"\",");
+
 // Flags
 #ifdef RTCONFIG_BCMARM
 			ret += websWrite(wp, "\"%s%s%s",
@@ -6280,6 +6288,14 @@ sta_list:
 
 // PHY
 					ret += websWrite(wp, "\"%s\",", phy_type_str[wl_sta_info_phy(sta, unit)]);
+
+// Bandwidth
+#if (WL_STA_VER >= 7)
+					if (sta->flags & WL_STA_SCBSTATS)
+						ret += websWrite(wp, "\"%s\",", wl_bw_str[wl_sta_info_bw(sta)]);
+					else
+#endif
+						ret += websWrite(wp, "\"\",");
 
 // Flags
 #ifdef RTCONFIG_BCMARM

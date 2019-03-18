@@ -173,15 +173,21 @@ function display_clients(clientsarray, obj) {
 
 			code += '<td style="text-align: right;">' + client[5] + ' / ' + client[6] +' Mbps';	// Rate
 			code += '<br><span style="margin-top:-15px; color: cyan;">' + client[4] + ' dBm</td>';	// RSSI
-			code += '<td style="text-align: right;">' + client[7] + '</td>';	// Time
+			code += '<td style="text-align: right;vertical-align:top;">' + client[7] + '</td>';	// Time
 
 			if (client[8] != "") {
-				code += '<td>' + client[8] + ' ('+ client[9] +')';	// NSS + PHY
+				code += '<td style="vertical-align:top;">' + client[8] + ' ('+ client[9] +')';	// NSS + PHY
 			} else if (client[9] != "") {
-				code += '<td>' + client[9] + '</td>';	// PHY
+				code += '<td style="vertical-align:top;">' + client[9];	// PHY
+			} else {
+				code += '<td>';
 			}
-
-			code += '<td>' + client[10] + '</td>';	// Flags
+			if (client[10] != "") {
+				code += '<br><span style="margin-top:-15px; color: cyan;">' + client[10] + '</td>';  // BW
+			} else {
+				code += '</td>';
+			}
+			code += '<td style="vertical-align:top;">' + client[11] + '</td>';	// Flags
 			code += '</tr>';
 		}
 	} else {

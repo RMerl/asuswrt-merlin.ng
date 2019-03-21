@@ -145,6 +145,7 @@ void reset_ovpn_setting(ovpn_type_t type, int unit, int full){
 		set_ovpn_key(type, unit, OVPN_CLIENT_CERT, NULL, NULL);
 		set_ovpn_key(type, unit, OVPN_CLIENT_KEY, NULL, NULL);
 		set_ovpn_key(type, unit, OVPN_CLIENT_CRL, NULL, NULL);
+		set_ovpn_key(type, unit, OVPN_CLIENT_CA_EXTRA, NULL, NULL);
 	}
 #endif
 

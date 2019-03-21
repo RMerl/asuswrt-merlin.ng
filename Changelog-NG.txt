@@ -10,10 +10,6 @@ Asuswrt-Merlin 384/NG Changelog
          httpd (webui), OpenVPN, wget, net-snmp, Tor,
          Strongswan (IPSEC server), inadyn, vsftpd, avahi.
 
-         Note that 1.1.x is slightly slower than 1.0.2, however
-         some services can benefit from the TLS 1.3 support (faster
-         connection establishing).
-
          Models that lack AES acceleration will prioritize the use
          of CHACHA20 over AES-256-GCM, for a small performance
          improvement (for instance with the webui).
@@ -25,6 +21,7 @@ Asuswrt-Merlin 384/NG Changelog
          The 1.0.2 userspace tool is still named "openssl", while
          the 1.1.x version is named "openssl11".
 
+  - NEW: Updated RT-AX88U to GPL 384_5640.
   - NEW: Implemented lcp-ident option in PPP (required by some ISPs)
          (Themiron).
   - NEW: Added NFSv2 support to HND models.

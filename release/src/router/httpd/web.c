@@ -23098,7 +23098,11 @@ ej_httpd_cert_info(int eid, webs_t wp, int argc, char **argv)
 	if(http_enable == 0)    //http only
 	{
 		if(le_enable == 1)
+#ifdef RTCONFIG_OPENSSL11      // Kludge as we can't link against libletsencrypt due to different OpenSSL versions
+			snprintf(cert_path, sizeof(cert_path), "/jffs/.le/%s/cert.pem", nvram_safe_get("ddns_hostname_x"));
+#else
 			get_path_le_domain_cert(cert_path, sizeof(cert_path));
+#endif
 		else if(le_enable == 2)
 			snprintf(cert_path, sizeof(cert_path), "%s", UPLOAD_CERT);
 		else

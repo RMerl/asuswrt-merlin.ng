@@ -30,6 +30,8 @@ then
 		echo "$I.commonName_value=$CN" >> $OPENSSLCNF
 		echo "$I.organizationName=O" >> $OPENSSLCNF
 		echo "$I.organizationName_value=$(uname -o)" >> $OPENSSLCNF
+		echo "$I.emailAddress=E" >> $OPENSSLCNF
+		echo "$I.emailAddress_value=root@localhost" >> $OPENSSLCNF
 		I=$(($I + 1))
 	done
 else
@@ -37,6 +39,8 @@ else
 	echo "0.commonName_value=$LANIP" >> $OPENSSLCNF
 	echo "0.organizationName=O" >> $OPENSSLCNF
 	echo "0.organizationName_value=$(uname -o)" >> $OPENSSLCNF
+	echo "0.emailAddress=E" >> $OPENSSLCNF
+	echo "0.emailAddress_value=root@localhost" >> $OPENSSLCNF
 fi
 
 I=0

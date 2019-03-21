@@ -269,7 +269,7 @@ int set_ovpn_key(ovpn_type_t type, int unit, ovpn_key_t key_type, char *buf, cha
 
 	if (path) {
 		return _set_crt_parsed(varname, path);
-	} else if (!buf) {
+	} else if ((!buf) || (!*buf)) {
 		unlink(filename);
 		return -1;
 	}

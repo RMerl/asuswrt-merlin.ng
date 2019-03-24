@@ -1,7 +1,7 @@
 Asuswrt-Merlin 384/NG Changelog
 ===============================
 
-384.10 (xx-xxx-2019)
+384.10 (24-March-2019)
   - NEW: Added OpenSSL 1.1.1b in parallel to 1.0.2.  Some services
          like AiCloud are still linked against 1.0.2 because they
          would require Asus to recompile them against 1.1.1.

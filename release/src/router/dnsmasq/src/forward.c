@@ -93,7 +93,7 @@ int send_from(int fd, int nowild, char *packet, size_t len,
   /* If interface is still in DAD, EINVAL results - ignore that. */
   if (errno != 0 && errno != EINVAL)
     {
-      my_syslog(LOG_ERR, _("failed to send packet: %s"), strerror(errno));
+      my_syslog(LOG_DEBUG, _("failed to send packet: %s"), strerror(errno));
       return 0;
     }
   

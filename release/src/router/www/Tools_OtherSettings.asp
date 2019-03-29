@@ -94,11 +94,6 @@ function initial() {
 		hide_cstats_ip(getRadioValue(document.form.cstats_all));
 	}
 
-	if(!live_update_support) {
-		document.getElementById("fwcheck").style.display="none";
-		document.getElementById("beta_firmware_path").style.display="none";
-	}
-
 	if ((machine_name.search("arm") != -1) || hnd_support) {
 		document.getElementById("ct_established_default").innerHTML = "Default: 2400";
 		if (!hnd_support) showhide("memory_mgmt_tr" ,1);
@@ -774,20 +769,6 @@ function done_validating(action){
 						<td>
 							<input type="radio" name="led_disable" class="input" value="1" <% nvram_match_x("", "led_disable", "1", "checked"); %>><#checkbox_Yes#>
 							<input type="radio" name="led_disable" class="input" value="0" <% nvram_match_x("", "led_disable", "0", "checked"); %>><#checkbox_No#>
-						</td>
-					</tr>
-					<tr id="fwcheck">
-						<th><a name="fwcheck" id="fwcheck"></a><a class="hintstyle" href="javascript:void(0);" onClick="openHint(50,15);">New firmware version check</a></th>
-						<td>
-							<input type="radio" name="firmware_check_enable" class="input" value="1" <% nvram_match("firmware_check_enable", "1", "checked"); %>><#checkbox_Yes#>
-							<input type="radio" name="firmware_check_enable" class="input" value="0" <% nvram_match("firmware_check_enable", "0", "checked"); %>><#checkbox_No#>
-						</td>
-					</tr>
-					<tr id="beta_firmware_path">
-						<th>Check for new beta firmware releases</th>
-						<td>
-							<input type="radio" name="firmware_path" class="input" value="1" <% nvram_match("firmware_path", "1", "checked"); %>><#checkbox_Yes#>
-							<input type="radio" name="firmware_path" class="input" value="0" <% nvram_match("firmware_path", "0", "checked"); %><% nvram_match("firmware_path", "", "checked"); %>><#checkbox_No#>
 						</td>
 					</tr>
 				</table>

@@ -477,7 +477,7 @@ function applyRule(){
 
 		showLoading();
 
-		var action_script_tmp = "restart_time;restart_upnp;";
+		var action_script_tmp = "restart_time;restart_upnp;restart_leds;";
 
 		if(hdspindown_support) {
 			var excluded = "";
@@ -1844,6 +1844,13 @@ function warn_jffs_format(){
 						<input type="radio" name="btn_ez_radiotoggle" id="turn_WPS" class="input" style="display:none;" value="0"><label for="turn_WPS"><#WPS_btn_actWPS#></label>
 						<input type="radio" name="btn_ez_radiotoggle" id="turn_WiFi" class="input" style="display:none;" value="1" <% nvram_match_x("", "btn_ez_radiotoggle", "1", "checked"); %>><label for="turn_WiFi" id="turn_WiFi_str"><#WPS_btn_toggle#></label>
 						<input type="radio" name="btn_ez_radiotoggle" id="turn_LED" class="input" style="display:none;" value="0" <% nvram_match_x("", "btn_ez_mode", "1", "checked"); %>><label for="turn_LED" id="turn_LED_str">Turn LED On/Off</label>
+					</td>
+				</tr>
+				<tr>
+					<th>Disable LEDs</th>
+					<td>
+						<input type="radio" name="led_disable" class="input" value="1" <% nvram_match_x("", "led_disable", "1", "checked"); %>><#checkbox_Yes#>
+						<input type="radio" name="led_disable" class="input" value="0" <% nvram_match_x("", "led_disable", "0", "checked"); %>><#checkbox_No#>
 					</td>
 				</tr>
 				<tr id="pwrsave_tr">

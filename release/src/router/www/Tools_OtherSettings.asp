@@ -645,7 +645,7 @@ function done_validating(action){
 <input type="hidden" name="next_page" value="Tools_OtherSettings.asp">
 <input type="hidden" name="modified" value="0">
 <input type="hidden" name="action_mode" value="apply">
-<input type="hidden" name="action_script" value="restart_rstats;restart_conntrack;restart_leds">
+<input type="hidden" name="action_script" value="restart_rstats;restart_conntrack">
 <input type="hidden" name="action_wait" value="5">
 <input type="hidden" name="first_time" value="">
 <input type="hidden" name="SystemCmd" value="">
@@ -755,22 +755,6 @@ function done_validating(action){
 						</td>
 					</tr>
 
-				</table>
-
-				<table width="100%" border="1" align="center" cellpadding="4" cellspacing="0" bordercolor="#6b8fa3"  class="FormTable">
-                                        <thead>
-						<tr>
-							<td colspan="2">Miscellaneous Options</td>
-						</tr>
-					</thead>
-
-					<tr>
-						<th>Stealth Mode (disable all LEDs)</th>
-						<td>
-							<input type="radio" name="led_disable" class="input" value="1" <% nvram_match_x("", "led_disable", "1", "checked"); %>><#checkbox_Yes#>
-							<input type="radio" name="led_disable" class="input" value="0" <% nvram_match_x("", "led_disable", "0", "checked"); %>><#checkbox_No#>
-						</td>
-					</tr>
 				</table>
 
 				<table width="100%" border="1" align="center" cellpadding="4" cellspacing="0" bordercolor="#6b8fa3"  class="FormTable">

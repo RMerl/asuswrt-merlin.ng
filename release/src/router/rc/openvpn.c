@@ -193,6 +193,7 @@ void start_ovpn_client(int clientNum)
 	if ( cryptMode == TLS )
 		fprintf(fp, "client\n");
 	fprintf(fp, "dev %s\n", iface);
+	fprintf(fp, "txqueuelen 1000\n");
 	fprintf(fp, "proto %s\n", nvram_pf_safe_get(prefix, "proto"));
 	fprintf(fp, "remote %s ", nvram_pf_safe_get(prefix, "addr"));
 	fprintf(fp, "%d\n", nvram_pf_get_int(prefix, "port"));
@@ -823,6 +824,7 @@ void start_ovpn_server(int serverNum)
 	}
 	fprintf(fp_client, "float\n");
 	fprintf(fp, "dev %s\n", iface);
+	fprintf(fp, "txqueuelen 1000\n");
 
 	//cipher
 	if ( cryptMode == TLS ) {

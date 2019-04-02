@@ -574,7 +574,7 @@ void websRedirect(webs_t wp, char_t *url)
 
 	websWrite(wp, T("<html><head>\r\n"));
 
-	if(strchr(url, '>') || strchr(url, '<'))
+	if(strchr(url_str, '>') || strchr(url_str, '<'))
 	{
 		websWrite(wp,"<script>parent.location.href='/%s';</script>\n", indexpage);
 	}
@@ -610,7 +610,7 @@ void websRedirect_iframe(webs_t wp, char_t *url)
 
 	websWrite(wp, T("<html><head>\r\n"));
 
-	if(strchr(url, '>') || strchr(url, '<'))
+	if(strchr(url_str, '>') || strchr(url_str, '<'))
 	{
 		websWrite(wp,"<script>parent.location.href='/%s';</script>\n", indexpage);
 	}

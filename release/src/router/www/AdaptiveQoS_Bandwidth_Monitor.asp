@@ -168,8 +168,8 @@ function initial(){
 	}
 
 	show_menu();
-	// https://www.asus.com/support/FAQ/1010934/
-	httpApi.faqURL("1010934", function(url){document.getElementById("faq").href=url;});
+	// https://www.asus.com/support/FAQ/1008717/
+	httpApi.faqURL("1008717", function(url){document.getElementById("faq").href=url;});
 
 	if(totalClientNum.online == 0) {
 		var loop_count = 0;

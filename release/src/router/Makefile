@@ -3757,9 +3757,9 @@ quagga-install:
 	$(STRIP) $(INSTALLDIR)/quagga/usr/sbin/zebra
 	$(STRIP) $(INSTALLDIR)/quagga/usr/sbin/ripd
 	$(STRIP) $(INSTALLDIR)/quagga/usr/sbin/watchquagga
-	install -d $(INSTALLDIR)/quagga/rom/etc
-	install -c -m 600 quagga/zebra/zebra.conf.sample $(INSTALLDIR)/quagga/rom/etc/zebra.conf
-	install -c -m 600 quagga/ripd/ripd.conf.sample $(INSTALLDIR)/quagga/rom/etc/ripd.conf
+#	install -d $(INSTALLDIR)/quagga/rom/etc
+#	install -c -m 600 quagga/zebra/zebra.conf.sample $(INSTALLDIR)/quagga/rom/etc/zebra.conf
+#	install -c -m 600 quagga/ripd/ripd.conf.sample $(INSTALLDIR)/quagga/rom/etc/ripd.conf
 ifneq ($(HND_ROUTER),y)
 	install -D $(shell dirname $(shell which $(CXX)))/../lib/librt.so.0 $(TARGETDIR)/lib/librt.so.0
 else

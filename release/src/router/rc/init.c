@@ -9215,9 +9215,10 @@ int init_nvram2(void)
 	nvram_set("vpn_upload_state", "");
 #endif
 
-/* Remove potentially obsolete data, especially if coming from 380.xx */
+/* Remove potentially outdated data */
 	nvram_unset("webs_state_info");
 	nvram_unset("webs_state_info_beta");
+	nvram_set("webs_state_flag","0");
 
 	if (restore_defaults_g)
 	{

@@ -2,6 +2,9 @@ Asuswrt-Merlin 384/NG Changelog
 ===============================
 
 384.10_2 (xx-xxx-2019)
+  - CHANGED: Increased OpenVPN interface queue length from 100
+             to 1000 bytes, to reduce the amount of dropped
+             packets if router can't keep up.
   - FIXED: Moviestar VLAN routes weren't properly configured
            (broken quagga configuration)
   - FIXED: Layout issues on the Wireless Log page for some
@@ -10,6 +13,8 @@ Asuswrt-Merlin 384/NG Changelog
            resolution setting on the Tweak page
   - FIXED: FAQ URL on Bandwidth Monitor points to a non-existing
            page on Asus's servers (point to old page for now)
+  - FIXEDL OpenVPN CA would be overwritten if there was no
+           server key and cert present
 
 
 384.10 (24-March-2019)

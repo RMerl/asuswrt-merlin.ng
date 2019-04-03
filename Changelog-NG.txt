@@ -2,6 +2,10 @@ Asuswrt-Merlin 384/NG Changelog
 ===============================
 
 384.10_2 (xx-xxx-2019)
+  - CHANGED: Increased OpenVPN interface queue length from 100
+             to 1000 bytes, to reduce the amount of dropped
+             packets if router can't keep up.
+  - CHANGED: Updated CA bundle to January 23rd version
   - FIXED: Moviestar VLAN routes weren't properly configured
            (broken quagga configuration)
   - FIXED: Layout issues on the Wireless Log page for some
@@ -10,6 +14,11 @@ Asuswrt-Merlin 384/NG Changelog
            resolution setting on the Tweak page
   - FIXED: FAQ URL on Bandwidth Monitor points to a non-existing
            page on Asus's servers (point to old page for now)
+  - FIXED: OpenVPN CA would be overwritten if there was no
+           server key or cert present - only generate them
+           if all three are missing.
+  - FIXED: Bandwidth Limiter not working properly in some
+           cases, as it failed to disable hardware acceleration
 
 
 384.10 (24-March-2019)
@@ -185,7 +194,7 @@ Asuswrt-Merlin 384/NG Changelog
          (more effective at handling already compressed
          data)
   - NEW: Added "extend" support to SNMP.
-  - NEW: Added CleanBrowsing to DNSFilter supported services.
+ - NEW: Added CleanBrowsing to DNSFilter supported services.
   - NEW: Webui HTTP LAN port can now be changed from the default 80.
   - NEW: Added support for the Netfilter TEE target.
   - CHANGED: Removed watchdog from OpenVPN clients, to avoid

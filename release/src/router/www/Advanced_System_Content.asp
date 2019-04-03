@@ -528,6 +528,9 @@ function applyRule(){
 			document.form.action_wait.value = httpApi.hookGet("get_default_reboot_time");
 		}
 
+		if (getRadioItemCheck(document.form.ntpd_enable) != '<% nvram_get("ntpd_enable"); %>')
+			action_script_tmp += "restart_dnsmasq;";
+
 		document.form.action_script.value = action_script_tmp;
 		document.form.submit();
 	}
@@ -1745,6 +1748,13 @@ function warn_jffs_format(){
 					  <td colspan="2"><#t2BC#></td>
 					</tr>
 				</thead>
+				<tr>
+					<th>Enable local NTP server</th>
+					<td>
+						<input type="radio" name="ntpd_enable" value="1" <% nvram_match_x("","ntpd_enable","1", "checked"); %> ><#checkbox_Yes#>
+						<input type="radio" name="ntpd_enable" value="0" <% nvram_match_x("","ntpd_enable","0", "checked"); %> ><#checkbox_No#>
+					</td>
+				</tr>
 				<tr>
 					<th><a class="hintstyle"  href="javascript:void(0);" onClick="openHint(11,2)"><#LANHostConfig_x_TimeZone_itemname#></a></th>
 					<td>

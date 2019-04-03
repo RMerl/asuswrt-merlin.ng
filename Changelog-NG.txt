@@ -1,7 +1,7 @@
 Asuswrt-Merlin 384/NG Changelog
 ===============================
 
-384.10_2 (xx-xxx-2019)
+384.10_2 (3-Apr-2019)
   - CHANGED: Increased OpenVPN interface queue length from 100
              to 1000 bytes, to reduce the amount of dropped
              packets if router can't keep up.

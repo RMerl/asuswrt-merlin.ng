@@ -1847,7 +1847,7 @@ void init_switch()
 #ifdef CONFIG_BCMWL5
 	// ctf should be disabled when some functions are enabled
 	if ((nvram_get_int("qos_enable") == 1 && nvram_get_int("qos_type") == 0) ||
-	    (check_wl_guest_bw_enable()  && (nvram_get_int("qos_enable") && nvram_get_int("qos_type") == 2)) ||
+	    (check_wl_guest_bw_enable()  || (nvram_get_int("qos_enable") && nvram_get_int("qos_type") == 2)) ||
 	    nvram_get_int("ctf_disable_force")
 #ifndef RTCONFIG_BCMARM
 	|| sw_mode() == SW_MODE_REPEATER

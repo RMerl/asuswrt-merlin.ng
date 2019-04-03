@@ -1069,7 +1069,9 @@ void start_ovpn_server(int serverNum)
 	{
 		//generate certification and key
 
-		if ( !ovpn_key_exists(OVPN_TYPE_SERVER, serverNum, OVPN_SERVER_CA))
+		if ( !ovpn_key_exists(OVPN_TYPE_SERVER, serverNum, OVPN_SERVER_CA) &&
+		     !ovpn_key_exists(OVPN_TYPE_SERVER, serverNum, OVPN_SERVER_KEY) &&
+		     !ovpn_key_exists(OVPN_TYPE_SERVER, serverNum, OVPN_SERVER_CERT))
 		{
 
 			sprintf(buffer, "/tmp/genvpncert.sh");

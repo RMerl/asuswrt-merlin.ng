@@ -1,3 +1,238 @@
+Changes between v3.2 and v4.0:
+------------------------------
+
+Benno Schulenberg (190):
+      bindings: change the action of <Alt+Up>/<Alt+Down> to 'scroll linewise'
+      bindings: hard-bind ASCII code 0x08 (BS) to the backspace function
+      bindings: make the normal scrolling keystrokes work also in help viewer
+      bindings: provide usable shortcuts for prevword/nextword in tiny version
+      bindings: rename 'cutwordleft' to 'chopwordleft', and similar for right
+      browser, help: make <Bsp> page up also when terminfo mismatches terminal
+      browser: say "Close" instead of "Exit" for the ^X shortcut
+      browser: show the ^G item again in the help lines
+      build: eradicate the --disable-wrapping-as-root configure option
+      build: fix compilation when configured with --disable-utf8
+      build: use wget over https (instead of plain rsync) to fetch PO files
+      build: verify that 'pkg.m4' is available when building from git
+      bump version numbers and add a news item for the 4.0 release
+      copyright: update the years for significantly changed files
+      copyright: update the years for the FSF
+      copyright: update the years for the FSF in the documentation too
+      cutting: cover the corner cases where cut commands do not cut anything
+      cutting: give feedback when otherwise nothing happens
+      cutting: when ^K does not actually cut anything, do not add an undo item
+      display: account for horizontal scrolling when drawing the guide stripe
+      display: account for zero-width characters when reserving space for '>'
+      display: change the "$" continuation character to ">" and "<"
+      display: dot the stripe when it's in the last column, to defeat a VTE bug
+      display: ensure that spotlighted text is not treated as a prompt answer
+      display: highlight the ">"/"<" continuation characters in reverse video
+      display: represent half of a double-width character with "[" and "]"
+      display: scroll horizontally one column earlier
+      display: show "[" for half of two-column character also when softwrapping
+      display: show it in title bar when starting up in restricted mode
+      display: use non-breaking space instead of dot for VTE-bug workaround
+      docs: add notes to draw attention to the changed defaults
+      docs: adjust and extend the Pico-compatibility section in the manual
+      docs: adjust for the enhancement of the default quoting regex
+      docs: correct the descriptions of 'speller' and 'linter' functions
+      docs: deprecate the use of morespace, smooth, nonewlines, and nowrap
+      docs: describe breaklonglines, emptyline, finalnewline, jumpyscrolling
+      docs: describe the four new options (-b, -f, -j, -e)
+      docs: describe the new options -J, --guidestripe, and 'set stripecolor'
+      docs: harmonize the style of bindable-function descriptions
+      docs: mention nano's major features directly instead of referring
+      docs: mention that 'cutwordleft' is bound to <Shift+Ctrl+Delete>
+      docs: mention that --morespace and --smooth are obsolete and ignored
+      docs: mention that 'quotestr' enables the rewrapping of comment blocks
+      docs: mention three features in their proper place
+      docs: remove from the FAQ some items that are no longer relevant
+      docs: remove the mentioning of --disable-wrapping-as-root from the FAQ
+      docs: reword and reshuffle the description of --rawsequences
+      docs: say that --rebinddelete can correct both <Backspace> and <Delete>
+      docs: stop implying that nano wants to be fully compatible with Pico
+      docs: stop saying that --fill switches on automatic hard-wrapping
+      docs: suggest a setting for 'stripecolor' in the sample nanorc
+      docs: update the links in the FAQ to the mailing-list info pages
+      feedback: complete the removal of some superfluous words
+      feedback: make two error messages better match the option
+      feedback: remove some superfluous words from Undid/Redid messages
+      files: retain a Shift-selected region when switching between buffers
+      gnulib: update to its current upstream state
+      help, docs: say "Delete" when things don't go into the cutbuffer
+      help: don't advertise ^S and ^Q when --preserve is used
+      help: don't list the obsoleted -O and -S options in the --help output
+      help: don't list the unbound <Alt+Up> and <Alt+Down> in the tiny version
+      help: in the tiny version, don't list an option that is the default
+      help: reword the description of ^U to avoid the impression of "Undo"
+      help: reword the tags for deleting a word left and right
+      justify: correctly detect when we've reached end of buffer
+      justify: extend the quoting regex, to cover more types of comments
+      justify: move the check for a bad quoting regex to a better place
+      menus: don't show ^S and ^Q in the help lines in the tiny version
+      menus: move the paragraph-jumping functions from Search to Goto-Line
+      menus: put the ^T toggle in Search in the same position as in Goto-Line
+      menus: remove the ^Y and ^V shortcuts from the Search menus
+      new feature: option --guidestripe that shows a vertical guiding bar
+      options: actually rename --rebindkeypad to --rawsequences (-K)
+      options: add -b, --breaklonglines, the counterpart of --nowrap
+      options: add -e, --emptyline, the counterpart of --morespace
+      options: add -f, --finalnewline, the counterpart of --nonewlines
+      options: add -j, --jumpyscrolling, the counterpart of --smooth
+      options: disable hard-wrapping and automatic newlines by default
+      options: let --fill no longer imply automatic hard-wrapping
+      options: make -d (--rebinddelete) work without -K (--rebindkeypad)
+      options: make --rawsequences disable --mouse, to prevent entering junk
+      options: rename long version of -K from --rebindkeypad to --rawsequences
+      options: stop recognizing and ignoring -b, -e, -f, -j, and -q
+      options: stop recognizing and mentioning --quiet and 'set quiet'
+      options: warn when option -O or -S is given, and ignore them
+      prompt: trim a double-width character at the screen's edge
+      rcfile: add 'stripecolor' for changing the color of the guiding stripe
+      rcfile: add the options that correspond to -b, -f, -j, and -e
+      rcfile, docs: remove deprecated forms of two options and five bindables
+      rcfile: don't report an error when the globbing pattern matches nothing
+      rcfile: reject an attempt to bind ^[
+      rcfile: when a keystroke is rebound, don't bother unbinding it
+      rcfile: when an old flag is unset, set the corresponding new flag
+      rcfile: when rebound, DO unbind a keystroke from its earlier function
+      startup: check again for a Linux console after reading all files
+      startup: check that a backup directory is valid also when backups are off
+      startup: improve two error messages by mentioning the invalid operand
+      syntax: nanorc: stop coloring 'unset fill ...' as if it were valid
+      syntax: tcl: colorize comments normally, not with a background hue
+      text: turn the mark off when justifying, to not confuse an undo
+      tweaks: add a consistency check plus a corresponding warning
+      tweaks: add an alias for a string variable, so the code makes more sense
+      tweaks: add deprecation comments to the four superseded options
+      tweaks: add two comments, and reduce the scope of another variable
+      tweaks: adjust indentation after previous change, and rename a parameter
+      tweaks: adjust the indentation after the previous change
+      tweaks: avoid parsing the same character twice
+      tweaks: calculate the length of a completion word in a more direct way
+      tweaks: change do_para_end() to not step beyond end of paragraph
+      tweaks: condense a comment, and drop two others
+      tweaks: condense a couple of comments and rewrap a few lines
+      tweaks: condense a handful of comments
+      tweaks: condense and correct a comment
+      tweaks: condense and improve a couple of comments
+      tweaks: condense and improve a handful of comments, and rewrap two lines
+      tweaks: condense the logic of find_paragraph()
+      tweaks: condense two regexes in the Tcl syntax, and add a comment
+      tweaks: correct a comment typo, and trim a few other comments
+      tweaks: don't bother executing two functions that are empty
+      tweaks: don't bother special-casing non-UTF8 when checking for a blank
+      tweaks: don't bother trying to draw characters beyond the screen's edge
+      tweaks: don't bother zeroing the x position when doing a full justify
+      tweaks: don't pass a pointer when a boolean is expected
+      tweaks: elide a function that is called just once
+      tweaks: elide an unneeded intermediate variable
+      tweaks: elide a one-line function that is used just twice
+      tweaks: elide a parameter -- do the NULL checks in the caller
+      tweaks: elide a parameter that is always TRUE
+      tweaks: elide a tiny function by making a variable global
+      tweaks: elide a variable that is a copy of another
+      tweaks: elide two unneeded intermediate variables
+      tweaks: escape hyphens that must be hard hyphens in the man pages
+      tweaks: exclude the guide-stripe code from the tiny version
+      tweaks: hard-bind ASCII DEL in a slightly more economical way
+      tweaks: improve a comment, and add an intermediate variable for clarity
+      tweaks: improve a comment, to better match the changed code
+      tweaks: improve and condense some comments, and remove an unneeded one
+      tweaks: make an assignment only when the option is valid, like elsewhere
+      tweaks: move declaration of variable that does not need to be global
+      tweaks: move the character/word-deletion functions to a better location
+      tweaks: move the check for beginning-of-paragraph to a better place
+      tweaks: move the checks for git and gettext to a far earlier point
+      tweaks: reduce a bunch of repetitious comments to their essence
+      tweaks: reduce the scope of a variable, and rename it
+      tweaks: reduce the scope of two variables, and rename one of them
+      tweaks: reduce two parameters to a single one by summing them
+      tweaks: refer to the magic line as "magic line", not as "magicline"
+      tweaks: remove a superfluous check for a special case
+      tweaks: remove a superfluous incrementing and decrementing of a variable
+      tweaks: remove a variable that is no longer used
+      tweaks: remove two tag definitions that are no longer needed
+      tweaks: rename a function for aptness, and two variables for shortness
+      tweaks: rename a function, to be simpler and more accurate
+      tweaks: rename and invert a function, to avoid double negatives
+      tweaks: rename an overlooked variable from a single letter to a word
+      tweaks: rename a parameter plus a variable, and reshuffle an assignment
+      tweaks: rename a struct element, to make sense
+      tweaks: rename a symbol, to match its corresponding option
+      tweaks: rename a type, to make more sense
+      tweaks: rename a variable, because it also serves as "last line"
+      tweaks: rename a variable, elide another, and adjust two comments
+      tweaks: rename a variable, to be more distinct
+      tweaks: rename four functions, to make more sense
+      tweaks: rename some variables from a single letter to meaningful word
+      tweaks: rename some variables, to match others that have the same task
+      tweaks: rename three functions and two symbols, to match the new wording
+      tweaks: rename three variables, and reshuffle two declarations
+      tweaks: rename two parameters to be more descriptive
+      tweaks: rename two variables, to be less confusing
+      tweaks: rename two variables, to be more descriptive
+      tweaks: rename two variables, to indicate better what they mean
+      tweaks: renumber some FAQ items, to compensate for the deleted ones
+      tweaks: reorder some ifs, to reduce the average number of comparisons
+      tweaks: reshuffle a bit of code, to have the exit point near the end
+      tweaks: reshuffle a few lines, and condense some comments
+      tweaks: reshuffle and frob a couple of comments, and reindent two lines
+      tweaks: reshuffle some code, to require two fewer ifs
+      tweaks: reword the description of the disadvantages of Pico
+      tweaks: rewrap a line and improve a few comments
+      tweaks: schedule a call of edit_refresh() instead calling it directly
+      tweaks: slightly indent warnings and errors during the configure phase
+      tweaks: slightly reword, for esthetics of the resulting Info document
+      tweaks: split a variable into two, as they have different roles
+      tweaks: switch from checking MORE_SPACE to checking EMPTY_LINE
+      tweaks: switch from checking SMOOTH_SCROLL to checking JUMPY_SCROLLING
+      tweaks: switch from referencing NO_NEWLINES to referencing FINAL_NEWLINE
+      tweaks: switch from referencing NO_WRAP to referencing BREAK_LONG_LINES
+      tweaks: word some comments more concisely
+      undo: set the correct file size for a redo of a character deletion
+      utils: retire the fixbounds() function -- it is no longer needed
+
+Brand Huntsman (1):
+      history: use an unfreed 'position_history' to avoid a possible crash
+
+David Lawrence Ramsey (34):
+      display: correctly trim an overshooting character from a prompt answer
+      display: correct the logic for making room for the ">" character
+      display: properly handle double-width characters when spotlighting
+      display: properly trim double-width characters at the edit window's edge
+      display: show the guide stripe for double-width/multi-byte characters
+      docs: remove references to not being able to undo justifications
+      input: properly handle <Escape>s followed by a shifted Meta+letter
+      justify: handle the leading part when justifying a marked region
+      justify: initialize a variable before making use of its value
+      justify: put a mid-line marked region onto separate lines
+      justify: when justifying a marked region, strip whitespace after the lead
+      moving: make the generic paragraph movement functions work on any buffer
+      new feature: marked text gets justified into a single, new paragraph
+      options: exit on a bad quoting regex, instead of crashing later
+      text: hook the new justify mechanism up to the undo system
+      text: make do_justify() use the cutbuffer
+      text: make find_paragraph() work on any buffer
+      text: make justify_format() work on any buffer
+      text: make justify_paragraph() work on any buffer
+      text: prepare to make find_paragraph() work on any buffer
+      text: properly check again for no paragraphs after the current line
+      text: remove the old unjustify mechanism, to prepare for the new justify
+      tweaks: adapt find_paragraph()/justify_paragraph() for multiple quotes
+      tweaks: adjust indentation after the previous commit
+      tweaks: adjust some indentation after the previous change
+      tweaks: normalize the indentation, and remove unneeded braces
+      tweaks: remove unnecessary variable initializations
+      tweaks: rename a variable, to prepare for its new role
+      tweaks: split justify_paragraph() into three separate functions
+      tweaks: swap the names of the variables 'wrap_at' and 'fill'
+      tweaks: use proper variable types in the word-completion functions
+      undo: after undoing a cut, don't remove the magicline if we're on it
+      undo: set and check 'xflags' in a bitwise manner
+      undo: when undoing a cut, remove also the magicline if it added one
+
+
 Changes between v3.1 and v3.2:
 ------------------------------
 

@@ -1,5 +1,5 @@
-# memchr.m4 serial 13
-dnl Copyright (C) 2002-2004, 2009-2018 Free Software Foundation, Inc.
+# memchr.m4 serial 14
+dnl Copyright (C) 2002-2004, 2009-2019 Free Software Foundation, Inc.
 dnl This file is free software; the Free Software Foundation
 dnl gives unlimited permission to copy and/or distribute it,
 dnl with or without modifications, as long as this notice is preserved.
@@ -29,6 +29,8 @@ AC_DEFUN_ONCE([gl_FUNC_MEMCHR],
     # memchr should not dereference overestimated length after a match
     #   https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=521737
     #   https://sourceware.org/bugzilla/show_bug.cgi?id=10162
+    # memchr should cast the second argument to 'unsigned char'.
+    #   This bug exists in Android 4.3.
     # Assume that memchr works on platforms that lack mprotect.
     AC_CACHE_CHECK([whether memchr works], [gl_cv_func_memchr_works],
       [AC_RUN_IFELSE([AC_LANG_PROGRAM([[
@@ -74,15 +76,26 @@ AC_DEFUN_ONCE([gl_FUNC_MEMCHR],
       if (memchr (fence - 1, 0, 3) != fence - 1)
         result |= 4;
     }
+  /* Test against bug on Android 4.3.  */
+  {
+    char input[3];
+    input[0] = 'a';
+    input[1] = 'b';
+    input[2] = 'c';
+    if (memchr (input, 0x789abc00 | 'b', 3) != input + 1)
+      result |= 8;
+  }
   return result;
 ]])],
          [gl_cv_func_memchr_works=yes],
          [gl_cv_func_memchr_works=no],
          [case "$host_os" in
-                    # Guess yes on native Windows.
-            mingw*) gl_cv_func_memchr_works="guessing yes" ;;
-                    # Be pessimistic for now.
-            *)      gl_cv_func_memchr_works="guessing no" ;;
+                             # Guess no on Android.
+            linux*-android*) gl_cv_func_memchr_works="guessing no" ;;
+                             # Guess yes on native Windows.
+            mingw*)          gl_cv_func_memchr_works="guessing yes" ;;
+                             # Be pessimistic for now.
+            *)               gl_cv_func_memchr_works="guessing no" ;;
           esac
          ])
       ])

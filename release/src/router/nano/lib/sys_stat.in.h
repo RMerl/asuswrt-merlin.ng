@@ -1,5 +1,5 @@
 /* Provide a more complete sys/stat.h header file.
-   Copyright (C) 2005-2018 Free Software Foundation, Inc.
+   Copyright (C) 2005-2019 Free Software Foundation, Inc.
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -54,9 +54,16 @@
 
 /* The definition of _GL_WARN_ON_USE is copied here.  */
 
+/* Before doing "#define mknod rpl_mknod" below, we need to include all
+   headers that may declare mknod().  OS/2 kLIBC declares mknod() in
+   <unistd.h>, not in <sys/stat.h>.  */
+#ifdef __KLIBC__
+# include <unistd.h>
+#endif
+
 /* Before doing "#define mkdir rpl_mkdir" below, we need to include all
    headers that may declare mkdir().  Native Windows platforms declare mkdir
-   in <io.h> and/or <direct.h>, not in <unistd.h>.  */
+   in <io.h> and/or <direct.h>, not in <sys/stat.h>.  */
 #if defined _WIN32 && ! defined __CYGWIN__
 # include <io.h>     /* mingw32, mingw64 */
 # include <direct.h> /* mingw64, MSVC 9 */

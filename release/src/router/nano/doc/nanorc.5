@@ -1,4 +1,4 @@
-.\" Copyright (C) 2003-2011, 2013-2017 Free Software Foundation, Inc.
+.\" Copyright (C) 2003-2011, 2013-2019 Free Software Foundation, Inc.
 .\"
 .\" This document is dual-licensed.  You may distribute and/or modify it
 .\" under the terms of either of the following licenses:
@@ -16,10 +16,19 @@
 .\"   Documentation License along with this program.  If not, see
 .\"   <https://www.gnu.org/licenses/>.
 .\"
-.TH NANORC 5 "version 3.2" "November 2018"
+.TH NANORC 5 "version 4.0" "March 2019"
 
 .SH NAME
 nanorc \- GNU nano's configuration file
+
+.SH NOTE
+Starting with version 4.0, \fBnano\fR no longer hard-wraps an overlong
+line by default, and no longer automatically adds a newline at the end
+of the text if one is missing.  Furthermore, it uses smooth scrolling
+by default and makes use of the line below the title bar.
+.sp
+If you want the old, Pico behavior back, you can use \fBset breaklonglines\fR,
+\fBset finalnewline\fR, \fBset jumpyscrolling\fR, and \fBset emptyline\fR.
 
 .SH DESCRIPTION
 The \fInanorc\fP file contains the default settings for \fBnano\fP, a
@@ -92,6 +101,9 @@ paragraphs.  This may not include blank characters.  Only closing
 punctuation (see \fBset punct\fP), optionally followed by the specified
 closing brackets, can end sentences.  The default value is "\fB"')>]}\fP".
 .TP
+.B set breaklonglines
+Automatically hard-wrap the current line when it becomes overlong.
+.TP
 .B set casesensitive
 Do case-sensitive searches by default.
 .TP
@@ -101,17 +113,23 @@ This overrides the option \fBquickblank\fR.
 .TP
 .B set cutfromcursor
 Use cut-from-cursor-to-end-of-line by default, instead of cutting the whole line.
-(The old form of this option, '\fBset cut\fR', is deprecated.)
+.TP
+.B set emptyline
+Do not use the line below the title bar, leaving it entirely blank.
 .TP
 .B set errorcolor \fIfgcolor\fR,\fIbgcolor\fR
 Use this color combination for the status bar when an error message is displayed.
 See \fBset titlecolor\fR for valid color names.
 .TP
+.B set finalnewline
+If the buffer is not empty, ensure that it ends with a newline character.
+.TP
 .B set fill \fInumber\fR
-Hard-wrap lines at column number \fInumber\fR.  If \fInumber\fR is 0 or less,
-the maximum line length will be the screen width less \fInumber\fP columns.
-The default value is \fB\-8\fR.  This option conflicts with
-\fBnowrap\fR -- the last one given takes effect.
+Set the target width for justifying and automatic hard-wrapping at this
+\fInumber\fR of columns.  If the value is 0 or less, wrapping will occur
+at the width of the screen minus \fInumber\fR columns, allowing the wrap
+point to vary along with the width of the screen if the screen is resized.
+The default value is \-8.
 .TP
 .B set functioncolor \fIfgcolor\fR,\fIbgcolor\fR
 Specify the color combination to use for the function descriptions
@@ -121,6 +139,9 @@ See \fBset titlecolor\fR for more details.
 .B set historylog
 Save the last hundred search strings and replacement strings and
 executed commands, so they can be easily reused in later sessions.
+.TP
+.B set jumpyscrolling
+Scroll the buffer contents per half-screen instead of per line.
 .TP
 .B set keycolor \fIfgcolor\fR,\fIbgcolor\fR
 Specify the color combination to use for the shortcut key combos
@@ -133,6 +154,10 @@ Display line numbers to the left of the text area.
 .B set locking
 Enable vim-style lock-files for when editing files.
 .TP
+.B set guidestripe \fInumber
+Draw a vertical stripe at the given column, to help judge the width of the
+text.  (The color of the stripe can be changed with \fBset stripecolor\fR.)
+.TP
 .B set matchbrackets "\fIstring\fP"
 Set the opening and closing brackets that can be found by bracket
 searches.  This may not include blank characters.  The opening set must
@@ -140,7 +165,8 @@ come before the closing set, and the two sets must be in the same order.
 The default value is "\fB(<[{)>]}\fP".
 .TP
 .B set morespace
-Use the blank line below the title bar as extra editing space.
+Deprecated option since it has become the default setting.
+When needed, use \fBunset emptyline\fR instead.
 .TP
 .B set mouse
 Enable mouse support, if available for your system.  When enabled, mouse
@@ -159,15 +185,16 @@ Don't convert files from DOS/Mac format.
 Don't display the two help lines at the bottom of the screen.
 .TP
 .B set nonewlines
-When a file does not end with a newline, don't automatically add one.
+Deprecated option since it has become the default setting.
+When needed, use \fBunset finalnewline\fR instead.
 .TP
 .B set nopauses
 Don't pause between warnings at startup.  This means that only
 the last one will be visible (when there are multiple ones).
 .TP
 .B set nowrap
-Don't hard-wrap text at all.  This option conflicts with
-\fBfill\fR -- the last one given takes effect.
+Deprecated option since it has become the default setting.
+When needed, use \fBunset breaklonglines\fR instead.
 .TP
 .B set numbercolor \fIfgcolor\fR,\fIbgcolor\fR
 Specify the color combination to use for line numbers.
@@ -196,24 +223,23 @@ specfified closing punctuation, optionally followed by closing brackets
 Do quick status-bar blanking: status-bar messages will disappear after 1
 keystroke instead of 25.  The option \fBconstantshow\fR overrides this.
 .TP
-.B set quiet
-Obsolete option.  Recognized but ignored.
-.TP
 .B set quotestr "\fIregex\fP"
-The email-quote string, used to justify email-quoted paragraphs.  This
-is an extended regular expression.  The default value is
-"\fB^([\ \\t]*([#:>|}]|//))+\fP".  Note that \fB\\t\fR stands for an actual
-Tab character.
+Set the regular expression for matching the quoting part of a line.
+The default value is "\fB^([\ \\t]*([!#%:;>|}]|//|\-\-))+\fP".
+(Note that \fB\\t\fR stands for an actual Tab character.)
+This makes it possible to rejustify blocks of quoted text when composing
+email, and to rewrap blocks of line comments when writing source code.
+.TP
+.B set rawsequences
+Interpret escape sequences directly (instead of asking \fBncurses\fR to
+translate them).  If you need this option to get your keyboard to work
+properly, please report a bug.  Using this option disables \fBnano\fR's
+mouse support.
 .TP
 .B set rebinddelete
-Interpret the Delete key differently so that both Backspace and Delete
-work properly.  You should only need to use this option if Backspace
-acts like Delete on your system.
-.TP
-.B set rebindkeypad
-Interpret the numeric keypad keys so that they all work properly.  You
-should only need to use this option if they don't, as mouse support
-won't work properly with this option enabled.
+Interpret the Delete and Backspace keys differently so that both Backspace
+and Delete work properly.  You should only use this option when on your
+system either Backspace acts like Delete or Delete acts like Backspace.
 .TP
 .B set regexp
 Do extended regular expression searches by default.
@@ -234,7 +260,8 @@ already at that position, it will jump to the true beginning of the
 line.
 .TP
 .B set smooth
-Use smooth scrolling by default.
+Deprecated option since it has become the default setting.
+When needed, use \fBunset jumpyscrolling\fR instead.
 .TP
 .B set softwrap
 Enable soft line wrapping for easier viewing of very long lines.
@@ -245,6 +272,10 @@ instead of the built-in corrector that calls \fBspell\fR.
 .TP
 .B set statuscolor \fIfgcolor\fR,\fIbgcolor\fR
 Specify the color combination to use for the status bar.
+See \fBset titlecolor\fR for more details.
+.TP
+.B set stripecolor \fIfgcolor\fR,\fIbgcolor\fR
+Specify the color combination to use for the vertical guiding stripe.
 See \fBset titlecolor\fR for more details.
 .TP
 .B set suspend
@@ -272,7 +303,6 @@ And either "\fIfgcolor\fR" or ",\fIbgcolor\fR" may be left out.
 .B set trimblanks
 Remove trailing whitespace from wrapped lines when automatic
 hard-wrapping occurs or when text is justified.
-(The old form of this option, '\fBset justifytrim\fR', is deprecated.)
 .TP
 .B set unix
 Save a file by default in Unix format.  This overrides nano's
@@ -282,7 +312,7 @@ default behavior of saving a file in the format that it had.
 .B set view
 Disallow file modification: read-only mode.
 This mode allows the user to open also other files for viewing,
-unless \fB--restricted\fR is given on the command line.
+unless \fB\-\-restricted\fR is given on the command line.
 .TP
 .B set whitespace "\fIstring\fP"
 Set the two characters used to indicate the presence of tabs and
@@ -322,7 +352,7 @@ command is encountered.
 When \fBnano\fR is run, this syntax will be automatically
 activated if the current filename matches the extended regular
 expression \fIfileregex\fR.  Or the syntax can be explicitly
-activated by using the \fB-Y\fR or \fB\-\-syntax\fR
+activated by using the \fB\-Y\fR or \fB\-\-syntax\fR
 command-line option followed by the \fIname\fR.
 
 The syntax \fBdefault\fP is special: it takes no \fIfileregex\fR,
@@ -345,7 +375,6 @@ system and will be silently ignored otherwise.)
 .TP
 .BI linter " program " \fR[ "arg " \fR...]
 Use the given \fIprogram\fR to run a syntax check on the current buffer.
-(This overrides the speller function.)
 .TP
 .BI "comment """ string """
 Use the given \fIstring\fR for commenting and uncommenting lines.
@@ -414,7 +443,7 @@ series of keystrokes to a single key in your nanorc:
 .RE
 .PP
 (Note that the \fB^R\fR, \fB^X\fR, and \fB^M\fR are each a single, literal
-control character.  You can enter them by preceding each with \fBM-V\fR.)
+control character.  You can enter them by preceding each with \fBM\-V\fR.)
 
 .SH REBINDING KEYS
 Key bindings can be changed via the following three commands:
@@ -430,7 +459,7 @@ Makes the given \fIkey\fR produce the given \fIstring\fR in the given
 \fImenu\fR (or in all menus where the key exists when \fBall\fR is used).
 The \fIstring\fR can consist of text or commands or a mix of them.
 (To enter a command into the \fIstring\fR, precede its keystroke
-with \fBM-V\fR.)
+with \fBM\-V\fR.)
 
 .TP
 .BI unbind " key menu"
@@ -447,9 +476,9 @@ followed by a Latin letter, by one of several ASCII characters
 (@, ], \\, ^, or _), or by the word "Space".
 Example: ^C.
 .TP
-.B M-
+.B M\-
 followed by any ASCII character except [, or by the word "Space".
-Example: M-C.
+Example: M\-C.
 .TP
 .B F
 followed by a numeric value from 1 to 16.
@@ -503,25 +532,23 @@ Cuts and stores the current line (or the marked region).
 .TP
 .B copy
 Copies the current line (or the marked region) without deleting it.
-(The old form 'copytext' is deprecated.)
 .TP
 .B paste
 Pastes the currently stored text into the current buffer at the
 current cursor position.
-(The old form 'uncut' is deprecated.)
 .TP
 .B zap
-Throw away the current line (or the marked region).
+Throws away the current line (or the marked region).
 (This function is bound by default to <Meta+Delete>.)
 .TP
-.B cutwordleft
-Cuts from the cursor position to the beginning of the preceding word.
-(This function is not bound by default.  If your terminal produces
-\fB^H\fR for <Ctrl+Backspace>, you can make <Ctrl+Backspace> delete
+.B chopwordleft
+Deletes from the cursor position to the beginning of the preceding word.
+(This function is bound by default to <Shift+Ctrl+Delete>.  If your terminal
+produces \fB^H\fR for <Ctrl+Backspace>, you can make <Ctrl+Backspace> delete
 the word to the left of the cursor by rebinding ^H to this function.)
 .TP
-.B cutwordright
-Cuts from the cursor position to the beginning of the next word.
+.B chopwordright
+Deletes from the cursor position to the beginning of the next word.
 (This function is bound by default to <Ctrl+Delete>.)
 .TP
 .B cutrestoffile
@@ -538,11 +565,11 @@ Shows the current cursor position: the line, column, and character positions.
 Counts the number of words, lines and characters in the current buffer.
 .TP
 .B speller
-Invokes a spell-checking program (or linting program,
-if the active syntax defines such a thing).
+Invokes a spell-checking program, either the default one, or the one
+defined by \fB\-\-speller\fR or \fBset speller\fR.
 .TP
 .B linter
-A synonym of \fBspeller\fR (for when the speller has not been configured).
+Invokes a syntax-checking program (if the active syntax defines one).
 .TP
 .B justify
 Justifies the current paragraph.  A paragraph is a group of contiguous lines
@@ -694,7 +721,6 @@ Toggles between searching for something and replacing something.
 .TP
 .B flipgoto
 Toggles between searching for text and targeting a line number.
-(The form 'gototext' is deprecated.)
 .TP
 .B flipexecute
 Toggles between inserting a file and executing a command.
@@ -749,7 +775,6 @@ Toggles the presence of the two-line list of key bindings at the bottom of the s
 .TP
 .B constantshow
 Toggles the constant display of the current line, column, and character positions.
-(The form 'constupdate' is deprecated.)
 .TP
 .B smoothscroll
 Toggles smooth scrolling (when moving around with the arrow keys).
@@ -777,7 +802,6 @@ is the beginning of a paragraph.
 .B cutfromcursor
 Toggles whether cutting text will cut the whole line or just from the current cursor
 position to the end of the line.
-(The form 'cuttoend' is deprecated.)
 .TP
 .B nowrap
 Toggles whether long lines will be hard-wrapped to the next line.

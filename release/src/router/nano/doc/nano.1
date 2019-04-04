@@ -1,4 +1,4 @@
-.\" Copyright (C) 1999-2011, 2013-2017 Free Software Foundation, Inc.
+.\" Copyright (C) 1999-2011, 2013-2019 Free Software Foundation, Inc.
 .\"
 .\" This document is dual-licensed.  You may distribute and/or modify it
 .\" under the terms of either of the following licenses:
@@ -16,14 +16,24 @@
 .\"   Documentation License along with this program.  If not, see
 .\"   <https://www.gnu.org/licenses/>.
 .\"
-.TH NANO 1 "version 3.2" "November 2018"
+.TH NANO 1 "version 4.0" "March 2019"
 
 .SH NAME
-nano \- Nano's ANOther editor, an enhanced free Pico clone
+nano \- Nano's ANOther editor, inspired by Pico
 
 .SH SYNOPSIS
 .B nano
 .RI [ options "] [[+" line [, column "]]\ " file "]..."
+
+.SH NOTE
+Starting with version 4.0, \fBnano\fR no longer hard-wraps an overlong
+line by default, and no longer automatically adds a newline at the end
+of the text if one is missing.  Furthermore, it uses smooth scrolling
+by default and makes use of the line below the title bar.
+.sp
+If you want the old, Pico behavior back, you can use \fB\-\-breaklonglines\fR,
+\fB\-\-finalnewline\fR, \fB\-\-jumpyscrolling\fR, and \fB\-\-emptyline\fR
+(or \fB\-bfje\fR for short).
 
 .SH DESCRIPTION
 \fBnano\fP is a small and friendly editor.  It copies the look and feel
@@ -101,13 +111,20 @@ executed commands, so they can be easily reused in later sessions.
 .BR \-I ", " \-\-ignorercfiles
 Don't look at the system's \fInanorc\fR nor at the user's \fInanorc\fR.
 .TP
-.BR \-K ", " \-\-rebindkeypad
-Interpret the numeric keypad keys so that they all work properly.  You
-should only need to use this option if they don't, as mouse support
-won't work properly with this option enabled.
+.BR \-J\ \fInumber ", " \-\-guidestripe= \fInumber
+Draw a vertical stripe at the given column, to help judge the width of the
+text.  (The color of the stripe can be changed with \fBset stripecolor\fR
+in your \fInanorc\fR file.)
+.TP
+.BR \-K ", " \-\-rawsequences
+Interpret escape sequences directly (instead of asking \fBncurses\fR to
+translate them).  If you need this option to get your keyboard to work
+properly, please report a bug.  Using this option disables \fBnano\fR's
+mouse support.
 .TP
 .BR \-L ", " \-\-nonewlines
 Don't automatically add a newline when a file does not end with one.
+(This is the default.)
 .TP
 .BR \-M ", " \-\-trimblanks
 Snip trailing whitespace from the wrapped line when automatic
@@ -117,7 +134,9 @@ hard-wrapping occurs or when text is justified.
 Disable automatic conversion of files from DOS/Mac format.
 .TP
 .BR \-O ", " \-\-morespace
-Use the blank line below the title bar as extra editing space.
+Obsolete and ignored option, since the line below the title bar is included
+into the editing space by default.  If you prefer to keep this line blank,
+use \fB\-e\fR or \fB\-\-emptyline\fR.
 .TP
 .BR \-P ", " \-\-positionlog
 For the 200 most recent files, log the last position of the cursor,
@@ -125,9 +144,10 @@ and place it at that position again upon reopening such a file.
 .TP
 .BR "\-Q ""\fIregex\fB""" ", " "\-\-quotestr=""" \fIregex """
 Set the regular expression for matching the quoting part of a line.
-This is used when justifying.
-The default value is \fB"^([\ \\t]*([#:>|}]|//))+"\fP.
-Note that \fB\\t\fP stands for an actual Tab.
+The default value is \fB"^([\ \\t]*([!#%:;>|}]|//|\-\-))+"\fP.
+(Note that \fB\\t\fP stands for an actual Tab.)
+This makes it possible to rejustify blocks of quoted text when composing
+email, and to rewrap blocks of line comments when writing source code.
 .TP
 .BR \-R ", " \-\-restricted
 Restricted mode: don't read or write to any file not specified on the
@@ -139,8 +159,9 @@ Restricted mode can also be activated by invoking \fBnano\fP
 with any name beginning with 'r' (e.g. "rnano").
 .TP
 .BR \-S ", " \-\-smooth
-Use smooth scrolling: text will scroll line-by-line, instead of the
-usual chunk-by-chunk behavior.
+Obsolete and ignored option, since smooth scrolling has become the default.
+If you prefer the chunk-by-chunk scrolling behavior,
+use \fB\-j\fR or \fB\-\-jumpyscrolling\fR.
 .TP
 .BR \-T\ \fInumber ", " \-\-tabsize= \fInumber
 Set the size (width) of a tab to \fInumber\fP columns.  The value of
@@ -175,14 +196,27 @@ Let an unmodified Backspace or Delete erase the marked region
 When doing soft line wrapping, wrap lines at whitespace
 instead of always at the edge of the screen.
 .TP
+.BR \-b ", " \-\-breaklonglines
+Automatically hard-wrap the current line when it becomes overlong.
+(This option is the opposite of \fB\-w\fR (\fB\-\-nowrap\fR) --
+the last one given takes effect.)
+.TP
 .BR \-c ", " \-\-constantshow
 Constantly show the cursor position on the status bar.
 Note that this overrides option \fB\-U\fR (\fB\-\-quickblank\fR).
 .TP
 .BR \-d ", " \-\-rebinddelete
-Interpret the Delete key differently so that both Backspace and Delete
-work properly.  You should only need to use this option if Backspace
-acts like Delete on your system.
+Interpret the Delete and Backspace keys differently so that both Backspace
+and Delete work properly.  You should only use this option when on your
+system either Backspace acts like Delete or Delete acts like Backspace.
+.TP
+.BR \-e ", " \-\-emptyline
+Do not use the line below the title bar, leaving it entirely blank.
+.TP
+.BR \-f ", " \-\-finalnewline
+If the buffer is not empty, ensure that it ends with a newline character.
+(This option is the opposite of \fB\-L\fR (\fB\-\-nonewlines\fR) --
+the last one given takes effect.)
 .TP
 .BR \-g ", " \-\-showcursor
 Make the cursor visible in the file browser (putting it on the
@@ -196,6 +230,9 @@ Show a summary of the available command-line options and exit.
 Automatically indent a newly created line to the same number of tabs
 and/or spaces as the previous line (or as the next line if the previous
 line is the beginning of a paragraph).
+.TP
+.BR \-j ", " \-\-jumpyscrolling
+Scroll the buffer contents per half-screen instead of per line.
 .TP
 .BR \-k ", " \-\-cutfromcursor
 Make the 'Cut Text' command (normally \fB^K\fR) cut from the current cursor
@@ -226,15 +263,12 @@ similar to a chroot.
 Preserve the XON and XOFF sequences (^Q and ^S) so they will be caught
 by the terminal.
 .TP
-.BR \-q ", " \-\-quiet
-Obsolete option.  Recognized but ignored.
-.TP
 .BR \-r\ \fInumber ", " \-\-fill= \fInumber
-Hard-wrap lines at column \fInumber\fP.  If this value is 0 or less, wrapping
-will occur at the width of the screen less \fInumber\fP columns, allowing
-the wrap point to vary along with the width of the screen if the screen
-is resized.  The default value is \-8.  This option conflicts with
-\fB\-w\fR (\fB\-\-nowrap\fR) -- the last one given takes effect.
+Set the target width for justifying and automatic hard-wrapping at this
+\fInumber\fR of columns.  If the value is 0 or less, wrapping will occur
+at the width of the screen minus \fInumber\fR columns, allowing the wrap
+point to vary along with the width of the screen if the screen is resized.
+The default value is \-8.
 .TP
 .BR \-s\ \fIprogram ", " \-\-speller= \fIprogram
 Use this alternative spell checker command.
@@ -250,11 +284,11 @@ default behavior of saving a file in the format that it had.
 .BR \-v ", " \-\-view
 Just view the file and disallow editing: read-only mode.
 This mode allows the user to open also other files for viewing,
-unless \fB--restricted\fR is given too.
+unless \fB\-\-restricted\fR is given too.
 .TP
 .BR \-w ", " \-\-nowrap
-Disable the hard-wrapping of long lines.  This option conflicts with
-\fB\-r\fR (\fB\-\-fill\fR) -- the last one given takes effect.
+Do not automatically hard-wrap the current line when it becomes overlong.
+(This is the default.)
 .TP
 .BR \-x ", " \-\-nohelp
 Don't show the two help lines at the bottom of the screen.
@@ -272,9 +306,6 @@ continuing it over multiple screen lines.  Since
 \&'$' normally refers to a variable in the Unix shell, you should specify
 this option last when using other options (e.g.\& 'nano \-wS$') or pass it
 separately (e.g.\& 'nano \-wS \-$').
-.TP
-.BR \-b ", " \-e ", " \-f ", " \-j
-Ignored, for compatibility with Pico.
 
 .SH TOGGLES
 Several of the above options can be switched on and off also while
@@ -308,12 +339,6 @@ it unique.  In multibuffer mode, \fBnano\fP will write all the open
 buffers to their respective emergency files.
 
 .SH BUGS
-Justifications (\fB^J\fR)
-are not yet covered by the general undo system.  So after a justification
-that is not immediately undone, earlier edits
-cannot be undone any more.  The workaround is, of course, to exit without
-saving.
-.sp
 The recording and playback of keyboard macros works correctly only on a
 terminal emulator, not on a Linux console (VT), because the latter does
 not by default distinguish modified from unmodified arrow keys.
@@ -327,7 +352,7 @@ If you are able to reproduce the crash and you want to get a backtrace, define
 the environment variable \fBNANO_NOCATCH\fR.
 
 .SH HOMEPAGE
-\fIhttps://nano-editor.org/\fR
+\fIhttps://nano\-editor.org/\fR
 
 .SH SEE ALSO
 .BR nanorc (5)

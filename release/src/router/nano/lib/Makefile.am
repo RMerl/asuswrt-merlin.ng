@@ -1,6 +1,6 @@
 ## DO NOT EDIT! GENERATED AUTOMATICALLY!
 ## Process this file with automake to produce Makefile.in.
-# Copyright (C) 2002-2018 Free Software Foundation, Inc.
+# Copyright (C) 2002-2019 Free Software Foundation, Inc.
 #
 # This file is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -110,7 +110,7 @@ if GL_GENERATE_ALLOCA_H
 alloca.h: alloca.in.h $(top_builddir)/config.status
 	$(AM_V_GEN)rm -f $@-t $@ && \
 	{ echo '/* DO NOT EDIT! GENERATED AUTOMATICALLY! */'; \
-	  cat $(srcdir)/alloca.in.h; \
+	  sed -e 's|@''HAVE_ALLOCA_H''@|$(HAVE_ALLOCA_H)|g' < $(srcdir)/alloca.in.h; \
 	} > $@-t && \
 	mv -f $@-t $@
 else
@@ -1016,8 +1016,10 @@ math.h: math.in.h $(top_builddir)/config.status $(CXXDEFS_H) $(ARG_NONNULL_H) $(
 	      -e 's|@''REPLACE_COSF''@|$(REPLACE_COSF)|g' \
 	      -e 's|@''REPLACE_COSHF''@|$(REPLACE_COSHF)|g' \
 	      -e 's|@''REPLACE_EXPF''@|$(REPLACE_EXPF)|g' \
+	      -e 's|@''REPLACE_EXPL''@|$(REPLACE_EXPL)|g' \
 	      -e 's|@''REPLACE_EXPM1''@|$(REPLACE_EXPM1)|g' \
 	      -e 's|@''REPLACE_EXPM1F''@|$(REPLACE_EXPM1F)|g' \
+	      -e 's|@''REPLACE_EXPM1L''@|$(REPLACE_EXPM1L)|g' \
 	      -e 's|@''REPLACE_EXP2''@|$(REPLACE_EXP2)|g' \
 	      -e 's|@''REPLACE_EXP2L''@|$(REPLACE_EXP2L)|g' \
 	      -e 's|@''REPLACE_FABSL''@|$(REPLACE_FABSL)|g' \
@@ -1067,6 +1069,7 @@ math.h: math.in.h $(top_builddir)/config.status $(CXXDEFS_H) $(ARG_NONNULL_H) $(
 	      -e 's|@''REPLACE_REMAINDER''@|$(REPLACE_REMAINDER)|g' \
 	      -e 's|@''REPLACE_REMAINDERF''@|$(REPLACE_REMAINDERF)|g' \
 	      -e 's|@''REPLACE_REMAINDERL''@|$(REPLACE_REMAINDERL)|g' \
+	      -e 's|@''REPLACE_RINTL''@|$(REPLACE_RINTL)|g' \
 	      -e 's|@''REPLACE_ROUND''@|$(REPLACE_ROUND)|g' \
 	      -e 's|@''REPLACE_ROUNDF''@|$(REPLACE_ROUNDF)|g' \
 	      -e 's|@''REPLACE_ROUNDL''@|$(REPLACE_ROUNDL)|g' \
@@ -1697,6 +1700,7 @@ stdlib.h: stdlib.in.h $(top_builddir)/config.status $(CXXDEFS_H) \
 	      -e 's/@''GNULIB_SECURE_GETENV''@/$(GNULIB_SECURE_GETENV)/g' \
 	      -e 's/@''GNULIB_SETENV''@/$(GNULIB_SETENV)/g' \
 	      -e 's/@''GNULIB_STRTOD''@/$(GNULIB_STRTOD)/g' \
+	      -e 's/@''GNULIB_STRTOLD''@/$(GNULIB_STRTOLD)/g' \
 	      -e 's/@''GNULIB_STRTOLL''@/$(GNULIB_STRTOLL)/g' \
 	      -e 's/@''GNULIB_STRTOULL''@/$(GNULIB_STRTOULL)/g' \
 	      -e 's/@''GNULIB_SYSTEM_POSIX''@/$(GNULIB_SYSTEM_POSIX)/g' \
@@ -1710,7 +1714,9 @@ stdlib.h: stdlib.in.h $(top_builddir)/config.status $(CXXDEFS_H) \
 	      -e 's|@''HAVE_DECL_GETLOADAVG''@|$(HAVE_DECL_GETLOADAVG)|g' \
 	      -e 's|@''HAVE_GETSUBOPT''@|$(HAVE_GETSUBOPT)|g' \
 	      -e 's|@''HAVE_GRANTPT''@|$(HAVE_GRANTPT)|g' \
+	      -e 's|@''HAVE_INITSTATE''@|$(HAVE_INITSTATE)|g' \
 	      -e 's|@''HAVE_DECL_INITSTATE''@|$(HAVE_DECL_INITSTATE)|g' \
+	      -e 's|@''HAVE_MBTOWC''@|$(HAVE_MBTOWC)|g' \
 	      -e 's|@''HAVE_MKDTEMP''@|$(HAVE_MKDTEMP)|g' \
 	      -e 's|@''HAVE_MKOSTEMP''@|$(HAVE_MKOSTEMP)|g' \
 	      -e 's|@''HAVE_MKOSTEMPS''@|$(HAVE_MKOSTEMPS)|g' \
@@ -1728,8 +1734,10 @@ stdlib.h: stdlib.in.h $(top_builddir)/config.status $(CXXDEFS_H) \
 	      -e 's|@''HAVE_RPMATCH''@|$(HAVE_RPMATCH)|g' \
 	      -e 's|@''HAVE_SECURE_GETENV''@|$(HAVE_SECURE_GETENV)|g' \
 	      -e 's|@''HAVE_DECL_SETENV''@|$(HAVE_DECL_SETENV)|g' \
+	      -e 's|@''HAVE_SETSTATE''@|$(HAVE_SETSTATE)|g' \
 	      -e 's|@''HAVE_DECL_SETSTATE''@|$(HAVE_DECL_SETSTATE)|g' \
 	      -e 's|@''HAVE_STRTOD''@|$(HAVE_STRTOD)|g' \
+	      -e 's|@''HAVE_STRTOLD''@|$(HAVE_STRTOLD)|g' \
 	      -e 's|@''HAVE_STRTOLL''@|$(HAVE_STRTOLL)|g' \
 	      -e 's|@''HAVE_STRTOULL''@|$(HAVE_STRTOULL)|g' \
 	      -e 's|@''HAVE_STRUCT_RANDOM_DATA''@|$(HAVE_STRUCT_RANDOM_DATA)|g' \
@@ -1738,6 +1746,7 @@ stdlib.h: stdlib.in.h $(top_builddir)/config.status $(CXXDEFS_H) \
 	      -e 's|@''HAVE_DECL_UNSETENV''@|$(HAVE_DECL_UNSETENV)|g' \
 	      -e 's|@''REPLACE_CALLOC''@|$(REPLACE_CALLOC)|g' \
 	      -e 's|@''REPLACE_CANONICALIZE_FILE_NAME''@|$(REPLACE_CANONICALIZE_FILE_NAME)|g' \
+	      -e 's|@''REPLACE_INITSTATE''@|$(REPLACE_INITSTATE)|g' \
 	      -e 's|@''REPLACE_MALLOC''@|$(REPLACE_MALLOC)|g' \
 	      -e 's|@''REPLACE_MBTOWC''@|$(REPLACE_MBTOWC)|g' \
 	      -e 's|@''REPLACE_MKSTEMP''@|$(REPLACE_MKSTEMP)|g' \
@@ -1745,11 +1754,14 @@ stdlib.h: stdlib.in.h $(top_builddir)/config.status $(CXXDEFS_H) \
 	      -e 's|@''REPLACE_PTSNAME_R''@|$(REPLACE_PTSNAME_R)|g' \
 	      -e 's|@''REPLACE_PUTENV''@|$(REPLACE_PUTENV)|g' \
 	      -e 's|@''REPLACE_QSORT_R''@|$(REPLACE_QSORT_R)|g' \
+	      -e 's|@''REPLACE_RANDOM''@|$(REPLACE_RANDOM)|g' \
 	      -e 's|@''REPLACE_RANDOM_R''@|$(REPLACE_RANDOM_R)|g' \
 	      -e 's|@''REPLACE_REALLOC''@|$(REPLACE_REALLOC)|g' \
 	      -e 's|@''REPLACE_REALPATH''@|$(REPLACE_REALPATH)|g' \
 	      -e 's|@''REPLACE_SETENV''@|$(REPLACE_SETENV)|g' \
+	      -e 's|@''REPLACE_SETSTATE''@|$(REPLACE_SETSTATE)|g' \
 	      -e 's|@''REPLACE_STRTOD''@|$(REPLACE_STRTOD)|g' \
+	      -e 's|@''REPLACE_STRTOLD''@|$(REPLACE_STRTOLD)|g' \
 	      -e 's|@''REPLACE_UNSETENV''@|$(REPLACE_UNSETENV)|g' \
 	      -e 's|@''REPLACE_WCTOMB''@|$(REPLACE_WCTOMB)|g' \
 	      -e '/definitions of _GL_FUNCDECL_RPL/r $(CXXDEFS_H)' \

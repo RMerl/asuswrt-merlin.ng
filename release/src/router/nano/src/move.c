@@ -1,7 +1,7 @@
 /**************************************************************************
  *   move.c  --  This file is part of GNU nano.                           *
  *                                                                        *
- *   Copyright (C) 1999-2011, 2013-2018 Free Software Foundation, Inc.    *
+ *   Copyright (C) 1999-2011, 2013-2019 Free Software Foundation, Inc.    *
  *   Copyright (C) 2014-2018 Benno Schulenberg                            *
  *                                                                        *
  *   GNU nano is free software: you can redistribute it and/or modify     *
@@ -26,7 +26,7 @@
 /* Move to the first line of the file. */
 void to_first_line(void)
 {
-	openfile->current = openfile->fileage;
+	openfile->current = openfile->filetop;
 	openfile->current_x = 0;
 	openfile->placewewant = 0;
 
@@ -68,7 +68,7 @@ void get_edge_and_target(size_t *leftedge, size_t *target_column)
  * chunk that starts at the given leftedge.  If the target column has landed
  * on a tab, prevent the cursor from falling back a row when moving forward,
  * or from skipping a row when moving backward, by incrementing the index. */
-size_t proper_x(filestruct *line, size_t *leftedge, bool forward,
+size_t proper_x(linestruct *line, size_t *leftedge, bool forward,
 				size_t column, bool *shifted)
 {
 	size_t index = actual_x(line->data, column);
@@ -117,7 +117,7 @@ void do_page_up(void)
 
 	/* If we're not in smooth scrolling mode, put the cursor at the
 	 * beginning of the top line of the edit window, as Pico does. */
-	if (!ISSET(SMOOTH_SCROLL)) {
+	if (ISSET(JUMPY_SCROLLING)) {
 		openfile->current = openfile->edittop;
 		leftedge = openfile->firstcolumn;
 		openfile->current_y = 0;
@@ -147,7 +147,7 @@ void do_page_down(void)
 
 	/* If we're not in smooth scrolling mode, put the cursor at the
 	 * beginning of the top line of the edit window, as Pico does. */
-	if (!ISSET(SMOOTH_SCROLL)) {
+	if (ISSET(JUMPY_SCROLLING)) {
 		openfile->current = openfile->edittop;
 		leftedge = openfile->firstcolumn;
 		openfile->current_y = 0;
@@ -170,59 +170,52 @@ void do_page_down(void)
 }
 
 #ifdef ENABLE_JUSTIFY
-/* Move to the beginning of the first-found beginning-of-paragraph line
- * before the current line. */
-void do_para_begin(void)
+/* Move to the first beginning of a paragraph before the current line. */
+void do_para_begin(linestruct **line)
 {
-	if (openfile->current != openfile->fileage)
-		openfile->current = openfile->current->prev;
+	if ((*line)->prev != NULL)
+		*line = (*line)->prev;
 
-	while (!begpar(openfile->current, 0))
-		openfile->current = openfile->current->prev;
-
-	openfile->current_x = 0;
+	while (!begpar(*line, 0))
+		*line = (*line)->prev;
 }
 
-/* Move down to the beginning of the last line of the current paragraph.
- * Then move down one line farther if there is such a line, or to the
- * end of the current line if not.  A line is the last line of a paragraph
- * if it is in a paragraph, and the next line either is the beginning line
- * of a paragraph or isn't in a paragraph. */
-void do_para_end(void)
+/* Move down to the last line of the first found paragraph. */
+void do_para_end(linestruct **line)
 {
-	while (openfile->current != openfile->filebot &&
-				!inpar(openfile->current))
-		openfile->current = openfile->current->next;
+	while ((*line)->next != NULL && !inpar(*line))
+		*line = (*line)->next;
 
-	while (openfile->current != openfile->filebot &&
-				inpar(openfile->current->next) &&
-				!begpar(openfile->current->next, 0)) {
-		openfile->current = openfile->current->next;
-	}
-
-	if (openfile->current != openfile->filebot) {
-		openfile->current = openfile->current->next;
-		openfile->current_x = 0;
-	} else
-		openfile->current_x = strlen(openfile->current->data);
+	while ((*line)->next != NULL && inpar((*line)->next) &&
+									!begpar((*line)->next, 0))
+		*line = (*line)->next;
 }
 
 /* Move up to first start of a paragraph before the current line. */
 void do_para_begin_void(void)
 {
-	filestruct *was_current = openfile->current;
+	linestruct *was_current = openfile->current;
 
-	do_para_begin();
+	do_para_begin(&openfile->current);
+	openfile->current_x = 0;
 
 	edit_redraw(was_current, CENTERING);
 }
 
-/* Move down to just after the first end of a paragraph. */
+/* Move down to just after the first found end of a paragraph. */
 void do_para_end_void(void)
 {
-	filestruct *was_current = openfile->current;
+	linestruct *was_current = openfile->current;
 
-	do_para_end();
+	do_para_end(&openfile->current);
+
+	/* Step beyond the last line of the paragraph, if possible;
+	 * otherwise, move to the end of the line. */
+	if (openfile->current->next != NULL) {
+		openfile->current = openfile->current->next;
+		openfile->current_x = 0;
+	} else
+		openfile->current_x = strlen(openfile->current->data);
 
 	edit_redraw(was_current, CENTERING);
 }
@@ -231,7 +224,7 @@ void do_para_end_void(void)
 /* Move to the preceding block of text. */
 void do_prev_block(void)
 {
-	filestruct *was_current = openfile->current;
+	linestruct *was_current = openfile->current;
 	bool is_text = FALSE, seen_text = FALSE;
 
 	/* Skip backward until first blank line after some nonblank line(s). */
@@ -253,7 +246,7 @@ void do_prev_block(void)
 /* Move to the next block of text. */
 void do_next_block(void)
 {
-	filestruct *was_current = openfile->current;
+	linestruct *was_current = openfile->current;
 	bool is_white = white_string(openfile->current->data);
 	bool seen_white = is_white;
 
@@ -364,7 +357,7 @@ bool do_next_word(bool after_ends, bool allow_punct)
  * word if the WORD_BOUNDS flag is set, and update the screen afterwards. */
 void do_prev_word_void(void)
 {
-	filestruct *was_current = openfile->current;
+	linestruct *was_current = openfile->current;
 
 	do_prev_word(ISSET(WORD_BOUNDS));
 
@@ -376,7 +369,7 @@ void do_prev_word_void(void)
  * punctuation as part of a word.  Update the screen afterwards. */
 void do_next_word_void(void)
 {
-	filestruct *was_current = openfile->current;
+	linestruct *was_current = openfile->current;
 
 	do_next_word(ISSET(AFTER_ENDS), ISSET(WORD_BOUNDS));
 
@@ -388,7 +381,7 @@ void do_next_word_void(void)
  * of the full line when already at the start of a chunk. */
 void do_home(void)
 {
-	filestruct *was_current = openfile->current;
+	linestruct *was_current = openfile->current;
 	size_t was_column = xplustabs();
 	bool moved_off_chunk = TRUE;
 #ifndef NANO_TINY
@@ -448,7 +441,7 @@ void do_home(void)
  * end of the full line. */
 void do_end(void)
 {
-	filestruct *was_current = openfile->current;
+	linestruct *was_current = openfile->current;
 	size_t was_column = xplustabs();
 	size_t line_len = strlen(openfile->current->data);
 	bool moved_off_chunk = TRUE;
@@ -497,7 +490,7 @@ void do_end(void)
 /* Move the cursor to the preceding line or chunk. */
 void do_up(void)
 {
-	filestruct *was_current = openfile->current;
+	linestruct *was_current = openfile->current;
 	size_t leftedge, target_column;
 
 	get_edge_and_target(&leftedge, &target_column);
@@ -508,7 +501,7 @@ void do_up(void)
 
 	set_proper_index_and_pww(&leftedge, target_column, FALSE);
 
-	if (openfile->current_y == 0 && ISSET(SMOOTH_SCROLL))
+	if (openfile->current_y == 0 && !ISSET(JUMPY_SCROLLING))
 		edit_scroll(BACKWARD);
 	else
 		edit_redraw(was_current, FLOWING);
@@ -520,7 +513,7 @@ void do_up(void)
 /* Move the cursor to next line or chunk. */
 void do_down(void)
 {
-	filestruct *was_current = openfile->current;
+	linestruct *was_current = openfile->current;
 	size_t leftedge, target_column;
 
 	get_edge_and_target(&leftedge, &target_column);
@@ -531,7 +524,7 @@ void do_down(void)
 
 	set_proper_index_and_pww(&leftedge, target_column, TRUE);
 
-	if (openfile->current_y == editwinrows - 1 && ISSET(SMOOTH_SCROLL))
+	if (openfile->current_y == editwinrows - 1 && !ISSET(JUMPY_SCROLLING))
 		edit_scroll(FORWARD);
 	else
 		edit_redraw(was_current, FLOWING);
@@ -574,12 +567,12 @@ void do_scroll_down(void)
 /* Move left one character. */
 void do_left(void)
 {
-	filestruct *was_current = openfile->current;
+	linestruct *was_current = openfile->current;
 
 	if (openfile->current_x > 0)
 		openfile->current_x = move_mbleft(openfile->current->data,
 												openfile->current_x);
-	else if (openfile->current != openfile->fileage) {
+	else if (openfile->current != openfile->filetop) {
 		openfile->current = openfile->current->prev;
 		openfile->current_x = strlen(openfile->current->data);
 	}
@@ -590,7 +583,7 @@ void do_left(void)
 /* Move right one character. */
 void do_right(void)
 {
-	filestruct *was_current = openfile->current;
+	linestruct *was_current = openfile->current;
 
 	if (openfile->current->data[openfile->current_x] != '\0')
 		openfile->current_x = move_mbright(openfile->current->data,

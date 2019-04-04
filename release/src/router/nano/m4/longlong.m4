@@ -1,5 +1,5 @@
 # longlong.m4 serial 18
-dnl Copyright (C) 1999-2007, 2009-2018 Free Software Foundation, Inc.
+dnl Copyright (C) 1999-2007, 2009-2019 Free Software Foundation, Inc.
 dnl This file is free software; the Free Software Foundation
 dnl gives unlimited permission to copy and/or distribute it,
 dnl with or without modifications, as long as this notice is preserved.
@@ -57,7 +57,7 @@ AC_DEFUN([AC_TYPE_LONG_LONG_INT],
 ])
 
 # Define HAVE_UNSIGNED_LONG_LONG_INT if 'unsigned long long int' works.
-# This fixes can be faster than what's in Autoconf 2.62 through 2.68.
+# This can be faster than what's in Autoconf 2.62 through 2.68.
 
 # Note: If the type 'unsigned long long int' exists but is only 32 bits
 # large (as on some very old compilers), AC_TYPE_UNSIGNED_LONG_LONG_INT

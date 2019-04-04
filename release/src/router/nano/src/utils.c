@@ -1,7 +1,7 @@
 /**************************************************************************
  *   utils.c  --  This file is part of GNU nano.                          *
  *                                                                        *
- *   Copyright (C) 1999-2011, 2013-2018 Free Software Foundation, Inc.    *
+ *   Copyright (C) 1999-2011, 2013-2019 Free Software Foundation, Inc.    *
  *   Copyright (C) 2016-2017 Benno Schulenberg                            *
  *                                                                        *
  *   GNU nano is free software: you can redistribute it and/or modify     *
@@ -159,12 +159,6 @@ bool parse_line_column(const char *str, ssize_t *line, ssize_t *column)
 	return retval;
 }
 
-/* Reduce the memory allocation of a string to what is needed. */
-void snuggly_fit(char **string)
-{
-	*string = charealloc(*string, strlen(*string) + 1);
-}
-
 /* Null a string at a certain index and align it. */
 void null_at(char **data, size_t index)
 {
@@ -205,37 +199,6 @@ void free_chararray(char **array, size_t len)
 	free(array);
 }
 #endif
-
-/* Fix the regex if we're on platforms which require an adjustment
- * from GNU-style to BSD-style word boundaries. */
-const char *fixbounds(const char *r)
-{
-#ifndef GNU_WORDBOUNDS
-	int i, j = 0;
-	char *r2 = charalloc(strlen(r) * 5);
-	char *r3;
-
-	for (i = 0; i < strlen(r); i++) {
-		if (r[i] != '\0' && r[i] == '\\' && (r[i + 1] == '>' || r[i + 1] == '<')) {
-			strcpy(&r2[j], "[[:");
-			r2[j + 3] = r[i + 1];
-			strcpy(&r2[j + 4], ":]]");
-			i++;
-			j += 6;
-		} else
-			r2[j] = r[i];
-		j++;
-	}
-
-	r2[j] = '\0';
-	r3 = mallocstrcpy(NULL, r2);
-	free(r2);
-
-	return (const char *) r3;
-#endif /* !GNU_WORDBOUNDS */
-
-	return r;
-}
 
 #ifdef ENABLE_SPELLER
 /* Is the word starting at the given position in buf and of the given length
@@ -404,10 +367,10 @@ char *free_and_assign(char *dest, char *src)
  * get_page_start(column) < COLS). */
 size_t get_page_start(size_t column)
 {
-	if (column < editwincols - 1 || ISSET(SOFTWRAP) || column == 0)
+	if (column + 2 < editwincols || ISSET(SOFTWRAP) || column == 0)
 		return 0;
 	else if (editwincols > 8)
-		return column - 7 - (column - 7) % (editwincols - 8);
+		return column - 6 - (column - 6) % (editwincols - 8);
 	else
 		return column - (editwincols - 2);
 }
@@ -474,7 +437,7 @@ size_t strlenpt(const char *text)
 	return span;
 }
 
-/* Append a new magicline to the end of the buffer. */
+/* Append a new magic line to the end of the buffer. */
 void new_magicline(void)
 {
 	openfile->filebot->next = make_new_node(openfile->filebot);
@@ -484,14 +447,14 @@ void new_magicline(void)
 }
 
 #if !defined(NANO_TINY) || defined(ENABLE_HELP)
-/* Remove the magicline from the end of the buffer, if there is one and
+/* Remove the magic line from the end of the buffer, if there is one and
  * it isn't the only line in the file. */
 void remove_magicline(void)
 {
 	if (openfile->filebot->data[0] == '\0' &&
-				openfile->filebot != openfile->fileage) {
+				openfile->filebot != openfile->filetop) {
 		openfile->filebot = openfile->filebot->prev;
-		free_filestruct(openfile->filebot->next);
+		free_lines(openfile->filebot->next);
 		openfile->filebot->next = NULL;
 		openfile->totsize--;
 	}
@@ -502,8 +465,8 @@ void remove_magicline(void)
 /* Set (top, top_x) and (bot, bot_x) to the start and end "coordinates" of
  * the marked region.  If right_side_up isn't NULL, set it to TRUE when the
  * mark is at the top of the marked region, and to FALSE otherwise. */
-void mark_order(const filestruct **top, size_t *top_x,
-		const filestruct **bot, size_t *bot_x, bool *right_side_up)
+void mark_order(const linestruct **top, size_t *top_x,
+		const linestruct **bot, size_t *bot_x, bool *right_side_up)
 {
 	if ((openfile->current->lineno == openfile->mark->lineno &&
 				openfile->current_x > openfile->mark_x) ||
@@ -527,7 +490,7 @@ void mark_order(const filestruct **top, size_t *top_x,
 /* Get the set of lines to work on -- either just the current line, or the
  * first to last lines of the marked region.  When the cursor (or mark) is
  * at the start of the last line of the region, exclude that line. */
-void get_range(const filestruct **top, const filestruct **bot)
+void get_range(const linestruct **top, const linestruct **bot)
 {
 	if (!openfile->mark) {
 		*top = openfile->current;
@@ -545,9 +508,9 @@ void get_range(const filestruct **top, const filestruct **bot)
 }
 
 /* Given a line number, return a pointer to the corresponding struct. */
-filestruct *fsfromline(ssize_t lineno)
+linestruct *fsfromline(ssize_t lineno)
 {
-	filestruct *f = openfile->current;
+	linestruct *f = openfile->current;
 
 	if (lineno <= openfile->current->lineno)
 		while (f->lineno != lineno && f->prev != NULL)
@@ -566,9 +529,9 @@ filestruct *fsfromline(ssize_t lineno)
 #endif /* !NANO_TINY */
 
 /* Count the number of characters from begin to end, and return it. */
-size_t get_totsize(const filestruct *begin, const filestruct *end)
+size_t get_totsize(const linestruct *begin, const linestruct *end)
 {
-	const filestruct *line;
+	const linestruct *line;
 	size_t totsize = 0;
 
 	/* Sum the number of characters (plus a newline) in each line. */

@@ -1,3 +1,28 @@
+2019.03.24 - GNU nano 4.0 "Thy Rope of Sands"
+• An overlong line is no longer automatically hard-wrapped.
+• Smooth scrolling (one line at a time) has become the default.
+• A newline character is no longer automatically added at end of buffer.
+• The line below the title bar is by default part of the editing space.
+• Option --breaklonglines (-b) turns automatic hard-wrapping back on.
+• Option --jumpyscrolling (-j) gives the chunky, half-screen scrolling.
+• Option --finalnewline (-f) brings back the automatic newline at EOF.
+• Option --emptyline (-e) leaves the line below the title bar unused.
+• <Alt+Up> and <Alt+Down> now do a linewise scroll instead of a findnext.
+• Any number of justifications can be undone (like all other operations).
+• When marked text is justified, it becomes a single, separate paragraph.
+• Option --guidestripe=<number> draws a vertical bar at the given column.
+• Option --fill=<number> no longer turns on automatic hard-wrapping.
+• When a line continues offscreen, it now ends with a highlighted ">".
+• The halfs of a split two-column character are shown as "[" and "]".
+• A line now scrolls horizontally one column earlier.
+• The bindable functions 'cutwordleft' and 'cutwordright' were renamed
+  to 'chopwordleft' and 'chopwordright' as they don't use the cutbuffer.
+• The paragraph-jumping functions were moved from Search to Go-to-Line.
+• Option --rebinddelete is able to compensate for more misbindings.
+• Options --morespace and --smooth are obsolete and thus ignored.
+• The --disable-wrapping-as-root configure option was removed.
+
+
 2018.11.11 - GNU nano 3.2 "Het kromme hout" changes the default binding
              for the linter to M-B so that the spell checker (^T) can
              always be used, and changes (when linting) the text in the

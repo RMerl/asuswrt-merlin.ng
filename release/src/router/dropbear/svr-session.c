@@ -40,6 +40,7 @@
 #include "auth.h"
 #include "runopts.h"
 #include "crypto_desc.h"
+#include "fuzz.h"
 
 static void svr_remoteclosed(void);
 static void svr_algos_initialise(void);
@@ -184,6 +185,13 @@ void svr_dropbear_exit(int exitcode, const char* format, va_list param) {
 		session_cleanup();
 	}
 
+#if DROPBEAR_FUZZ
+	/* longjmp before cleaning up svr_opts */
+    if (fuzz.do_jmp) {
+        longjmp(fuzz.jmp, 1);
+    }
+#endif
+
 	if (svr_opts.hostkey) {
 		sign_key_free(svr_opts.hostkey);
 		svr_opts.hostkey = NULL;
@@ -193,6 +201,7 @@ void svr_dropbear_exit(int exitcode, const char* format, va_list param) {
 		m_free(svr_opts.ports[i]);
 	}
 
+    
 	exit(exitcode);
 
 }
@@ -238,7 +247,9 @@ void svr_dropbear_log(int priority, const char* format, va_list param) {
 static void svr_remoteclosed() {
 
 	m_close(ses.sock_in);
-	m_close(ses.sock_out);
+	if (ses.sock_in != ses.sock_out) {
+		m_close(ses.sock_out);
+	}
 	ses.sock_in = -1;
 	ses.sock_out = -1;
 	dropbear_close("Exited normally");

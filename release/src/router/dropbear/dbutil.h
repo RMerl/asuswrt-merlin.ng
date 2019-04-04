@@ -30,6 +30,7 @@
 #include "buffer.h"
 #include "queue.h"
 #include "dbhelpers.h"
+#include "dbmalloc.h"
 
 #ifndef DISABLE_SYSLOG
 void startsyslog(const char *ident);
@@ -66,10 +67,6 @@ int buf_readfile(buffer* buf, const char* filename);
 int buf_getline(buffer * line, FILE * authfile);
 
 void m_close(int fd);
-void * m_malloc(size_t size);
-void * m_strdup(const char * str);
-void * m_realloc(void* ptr, size_t size);
-#define m_free(X) do {free(X); (X) = NULL;} while (0)
 void setnonblocking(int fd);
 void disallow_core(void);
 int m_str_to_uint(const char* str, unsigned int *val);
@@ -86,9 +83,18 @@ int constant_time_memcmp(const void* a, const void *b, size_t n);
 /* Returns a time in seconds that doesn't go backwards - does not correspond to
 a real-world clock */
 time_t monotonic_now(void);
+/* Higher resolution clock_gettime(CLOCK_MONOTONIC) wrapper */
+void gettime_wrapper(struct timespec *now);
 
 char * expand_homedir_path(const char *inpath);
 
 void fsync_parent_dir(const char* fn);
+
+#if DROPBEAR_MSAN
+/* FD_ZERO seems to leave some memory uninitialized. clear it to avoid false positives */
+#define DROPBEAR_FD_ZERO(fds) do { memset((fds), 0x0, sizeof(fd_set)); FD_ZERO(fds); } while(0)
+#else
+#define DROPBEAR_FD_ZERO(fds) FD_ZERO(fds)
+#endif
 
 #endif /* DROPBEAR_DBUTIL_H_ */

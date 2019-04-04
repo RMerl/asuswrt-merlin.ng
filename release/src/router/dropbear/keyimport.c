@@ -1097,7 +1097,9 @@ static int openssh_write(const char *filename, sign_key *key,
 		buf_putbytes(seq_buf, curve_oid, curve_oid_len);
 
 		buf_incrwritepos(seq_buf,
-			ber_write_id_len(buf_getwriteptr(seq_buf, 10), 1, 2+1+pubkey_size, 0xa0));
+			ber_write_id_len(buf_getwriteptr(seq_buf, 10), 1,
+			(pubkey_size +1 < 128 ? 2 : 3 ) +1 +pubkey_size, 0xa0));
+
 		buf_incrwritepos(seq_buf,
 			ber_write_id_len(buf_getwriteptr(seq_buf, 10), 3, 1+pubkey_size, 0));
 		buf_putbyte(seq_buf, 0);

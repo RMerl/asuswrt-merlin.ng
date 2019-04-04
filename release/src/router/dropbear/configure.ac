@@ -9,6 +9,13 @@ AC_PREREQ(2.59)
 AC_INIT
 AC_CONFIG_SRCDIR(buffer.c)
 
+# Record which revision is being built
+if test -s "`which hg`" && test -d "$srcdir/.hg"; then
+	hgrev=`hg id -i -R "$srcdir"`
+	AC_MSG_NOTICE([Source directory Mercurial base revision $hgrev])
+fi
+
+ORIGCFLAGS="$CFLAGS"
 # Checks for programs.
 AC_PROG_CC
 
@@ -29,7 +36,7 @@ AC_DEFUN(DB_TRYADDCFLAGS,
 }])
 
 # set compile flags prior to other tests
-if test -z "$OLDCFLAGS" && test "$GCC" = "yes"; then
+if test -z "$ORIGCFLAGS" && test "$GCC" = "yes"; then
 	AC_MSG_NOTICE(No \$CFLAGS set... using "-Os -W -Wall" for GCC)
 	CFLAGS="-Os -W -Wall"
 fi
@@ -315,7 +322,24 @@ AC_ARG_ENABLE(shadow,
 		AC_MSG_NOTICE(Using shadow passwords if available)
 	]
 )
-			
+
+AC_ARG_ENABLE(fuzz,
+	[  --enable-fuzz           Build fuzzing. Not recommended for deployment.],
+	[
+		AC_DEFINE(DROPBEAR_FUZZ, 1, Fuzzing)
+		AC_MSG_NOTICE(Enabling fuzzing)
+		DROPBEAR_FUZZ=1
+		# libfuzzer needs linking with c++ libraries
+		AC_PROG_CXX
+	],
+	[
+		AC_DEFINE(DROPBEAR_FUZZ, 0, Fuzzing)
+		DROPBEAR_FUZZ=0
+	]
+
+)
+AC_SUBST(DROPBEAR_FUZZ)
+AC_SUBST(CXX)
 
 # Checks for header files.
 AC_HEADER_STDC
@@ -472,6 +496,9 @@ AC_CHECK_FUNCS(utmpname)
 AC_CHECK_FUNCS(endutxent getutxent getutxid getutxline pututxline )
 AC_CHECK_FUNCS(setutxent utmpxname)
 AC_CHECK_FUNCS(logout updwtmp logwtmp)
+
+# POSIX monotonic time
+AC_CHECK_FUNCS(clock_gettime)
 
 # OS X monotonic time
 AC_CHECK_HEADERS([mach/mach_time.h])

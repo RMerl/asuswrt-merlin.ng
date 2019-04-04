@@ -38,7 +38,7 @@ rm "$RELDIR/.hgtags"
 (cd "$RELDIR/.." && tar cjf $ARCHIVE `basename "$RELDIR"`) || exit 2
 
 ls -l $ARCHIVE
-openssl sha -sha256 $ARCHIVE
+openssl sha256 $ARCHIVE
 echo Done to
 echo "$ARCHIVE"
 echo Sign it with

@@ -179,6 +179,13 @@ static void send_msg_kexdh_reply(mp_int *dh_e, buffer *ecdh_qs) {
 	}
 #endif
 
+#if DROPBEAR_FUZZ
+	if (fuzz.fuzzing && fuzz.skip_kexmaths) {
+		fuzz_fake_send_kexdh_reply();
+		return;
+	}
+#endif
+
 	buf_putbyte(ses.writepayload, SSH_MSG_KEXDH_REPLY);
 	buf_put_pub_key(ses.writepayload, svr_opts.hostkey,
 			ses.newkeys->algo_hostkey);

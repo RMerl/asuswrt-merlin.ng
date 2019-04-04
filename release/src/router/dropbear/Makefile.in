@@ -36,6 +36,7 @@ COMMONOBJS=dbutil.o buffer.o dbhelpers.o \
 		queue.o \
 		atomicio.o compat.o fake-rfc2553.o \
 		ltc_prng.o ecc.o ecdsa.o crypto_desc.o \
+		dbmalloc.o \
 		gensignkey.o gendss.o genrsa.o
 
 SVROBJS=svr-kex.o svr-auth.o sshpty.o \
@@ -59,11 +60,25 @@ CONVERTOBJS=dropbearconvert.o keyimport.o
 
 SCPOBJS=scp.o progressmeter.o atomicio.o scpmisc.o compat.o
 
-dropbearobjs=$(COMMONOBJS) $(CLISVROBJS) $(SVROBJS)
-dbclientobjs=$(COMMONOBJS) $(CLISVROBJS) $(CLIOBJS)
-dropbearkeyobjs=$(COMMONOBJS) $(KEYOBJS)
-dropbearconvertobjs=$(COMMONOBJS) $(CONVERTOBJS)
-scpobjs=$(SCPOBJS)
+ifeq (@DROPBEAR_FUZZ@, 1)
+	allobjs = $(COMMONOBJS) fuzz-common.o  fuzz-wrapfd.o $(CLISVROBJS) $(CLIOBJS) $(SVROBJS) @CRYPTLIB@
+	allobjs:=$(subst svr-main.o, ,$(allobjs))
+	allobjs:=$(subst cli-main.o, ,$(allobjs))
+	allobjs:=$(sort $(allobjs))
+
+	dropbearobjs=$(allobjs) svr-main.o
+	dbclientobjs=$(allobjs) cli-main.o
+	dropbearkeyobjs=$(allobjs) $(KEYOBJS)
+	dropbearconvertobjs=$(allobjs) $(CONVERTOBJS)
+	# CXX only set when fuzzing
+	CXX=@CXX@
+else
+	dropbearobjs=$(COMMONOBJS) $(CLISVROBJS) $(SVROBJS)
+	dbclientobjs=$(COMMONOBJS) $(CLISVROBJS) $(CLIOBJS)
+	dropbearkeyobjs=$(COMMONOBJS) $(KEYOBJS)
+	dropbearconvertobjs=$(COMMONOBJS) $(CONVERTOBJS)
+	scpobjs=$(SCPOBJS)
+endif
 
 VPATH=@srcdir@
 srcdir=@srcdir@
@@ -180,7 +195,7 @@ dbclient: $(HEADERS) $(LIBTOM_DEPS) Makefile
 	$(CC) $(LDFLAGS) -o $@$(EXEEXT) $($@objs) $(LIBTOM_LIBS) $(LIBS)
 
 dropbearkey dropbearconvert: $(HEADERS) $(LIBTOM_DEPS) Makefile
-	$(CC) $(LDFLAGS) -o $@$(EXEEXT) $($@objs) $(LIBTOM_LIBS)
+	$(CC) $(LDFLAGS) -o $@$(EXEEXT) $($@objs) $(LIBTOM_LIBS) $(LIBS)
 
 # scp doesn't use the libs so is special.
 scp: $(SCPOBJS)  $(HEADERS) Makefile
@@ -236,3 +251,58 @@ distclean: clean tidy
 
 tidy:
 	-rm -f *~ *.gcov */*~
+
+## Fuzzing targets
+
+# list of fuzz targets
+FUZZ_TARGETS=fuzzer-preauth fuzzer-pubkey fuzzer-verify fuzzer-preauth_nomaths fuzzer-kexdh fuzzer-kexecdh
+
+FUZZER_OPTIONS = $(addsuffix .options, $(FUZZ_TARGETS))
+
+list-fuzz-targets:
+	@echo $(FUZZ_TARGETS)
+
+# fuzzers that don't use libfuzzer, just a standalone harness that feeds inputs
+fuzzstandalone: FUZZLIB=fuzz-harness.o
+fuzzstandalone: fuzz-harness.o fuzz-targets
+
+# exclude svr-main.o to avoid duplicate main
+svrfuzzobjs=$(subst svr-main.o, ,$(dropbearobjs))
+
+# build all the fuzzers. This will require fail to link unless built with
+# make fuzz-targets FUZZLIB=-lFuzzer.a 
+# or similar - the library provides main().
+fuzz-targets: $(FUZZ_TARGETS) $(FUZZER_OPTIONS)
+
+fuzzer-preauth: fuzzer-preauth.o $(HEADERS) $(LIBTOM_DEPS) Makefile $(svrfuzzobjs)
+	$(CXX) $(CXXFLAGS) $@.o $(LDFLAGS) $(svrfuzzobjs) -o $@$(EXEEXT) $(LIBTOM_LIBS) $(LIBS) $(FUZZLIB) @CRYPTLIB@
+
+fuzzer-preauth_nomaths: fuzzer-preauth_nomaths.o $(HEADERS) $(LIBTOM_DEPS) Makefile $(svrfuzzobjs)
+	$(CXX) $(CXXFLAGS) $@.o $(LDFLAGS) $(svrfuzzobjs) -o $@$(EXEEXT) $(LIBTOM_LIBS) $(LIBS) $(FUZZLIB) @CRYPTLIB@
+
+fuzzer-pubkey: fuzzer-pubkey.o $(HEADERS) $(LIBTOM_DEPS) Makefile $(svrfuzzobjs)
+	$(CXX) $(CXXFLAGS) $@.o $(LDFLAGS) $(svrfuzzobjs) -o $@$(EXEEXT) $(LIBTOM_LIBS) $(LIBS) $(FUZZLIB) @CRYPTLIB@
+
+fuzzer-verify: fuzzer-verify.o $(HEADERS) $(LIBTOM_DEPS) Makefile $(svrfuzzobjs)
+	$(CXX) $(CXXFLAGS) $@.o $(LDFLAGS) $(svrfuzzobjs) -o $@$(EXEEXT) $(LIBTOM_LIBS) $(LIBS) $(FUZZLIB) @CRYPTLIB@
+
+fuzzer-kexdh: fuzzer-kexdh.o $(HEADERS) $(LIBTOM_DEPS) Makefile $(svrfuzzobjs)
+	$(CXX) $(CXXFLAGS) $@.o $(LDFLAGS) $(svrfuzzobjs) -o $@$(EXEEXT) $(LIBTOM_LIBS) $(LIBS) $(FUZZLIB) @CRYPTLIB@
+
+fuzzer-kexecdh: fuzzer-kexecdh.o $(HEADERS) $(LIBTOM_DEPS) Makefile $(svrfuzzobjs)
+	$(CXX) $(CXXFLAGS) $@.o $(LDFLAGS) $(svrfuzzobjs) -o $@$(EXEEXT) $(LIBTOM_LIBS) $(LIBS) $(FUZZLIB) @CRYPTLIB@
+
+fuzzer-%.options: Makefile
+	echo "[libfuzzer]"               > $@
+	echo "max_len = 50000"          >> $@
+
+# run this to update hardcoded hostkeys for for fuzzing. 
+# hostkeys.c is checked in to hg.
+fuzz-hostkeys:
+	dropbearkey -t rsa -f keyr
+	dropbearkey -t dss -f keyd
+	dropbearkey -t ecdsa -size 256 -f keye
+	echo > hostkeys.c
+	/usr/bin/xxd -i -a keyr >> hostkeys.c
+	/usr/bin/xxd -i -a keye >> hostkeys.c
+	/usr/bin/xxd -i -a keyd >> hostkeys.c

@@ -24,7 +24,7 @@
 #include <bcmnvram.h>
 #include <shutils.h>
 
-#define NTPD_PIDFILE "/var/run/rc-ntpd.pid"
+#define NTPD_PIDFILE "/var/run/ntpd.pid"
 
 void start_ntpd(void) {
 	FILE *fp;
@@ -61,13 +61,8 @@ void start_ntpd(void) {
 
 	_eval(argv, NULL, 0, &pid);
 
-	if (pid) {
+	if (pid)
 		logmessage("ntpd", "Started ntpd");
-		if ((fp = fopen(NTPD_PIDFILE, "w")) != NULL) {
-			fprintf(fp, "%d", pid);
-			fclose(fp);
-		}
-	}
 }
 
 
@@ -75,7 +70,6 @@ void stop_ntpd(void) {
 	if (f_exists(NTPD_PIDFILE)) {
 		kill_pidfile_tk(NTPD_PIDFILE);
 		logmessage("ntpd", "Stopped ntpd");
-		unlink(NTPD_PIDFILE);
 	}
 }
 

@@ -26,50 +26,50 @@
 
 #define NTPD_PIDFILE "/var/run/ntpd.pid"
 
-void start_ntpd(void) {
-	FILE *fp;
-	char server[32], server2[32];
-	int parm = 5;
-	pid_t pid;
+int start_ntpd(void)
+{
+	char *ntpd_argv[] = { "/usr/sbin/ntpd",
+		"-I", nvram_safe_get("lan_ifname"),
+		"-l", "-t",
+		"-p", "pool.ntp.org",
+		NULL, NULL,		/* -p second_server */
+		NULL };
+	int ret, index = 7;
 
-	char *argv[] = {"/usr/sbin/ntpd",
-			"-I",
-			nvram_safe_get("lan_ifname"),
-			"-l",
-			"-p",
-			NULL,
-			NULL,	// second -p
-			NULL,	// second server
-			NULL};
+	if (!nvram_get_int("ntpd_enable"))
+		return 0;
 
-	if (!nvram_get_int("ntpd_enable")) return;
+	//if (!nvram_get_int("ntp_ready"))
+	//	return;
 
-	//if (!nvram_get_int("ntp_ready")) return;
-
-	strlcpy(server, nvram_safe_get("ntp_server0"), sizeof(server));
-	strlcpy(server2, nvram_safe_get("ntp_server1"), sizeof(server2));
-
-	if (!*server)
-		strcpy(server, "pool.ntp.org");
-
-	argv[parm++] = server;
-
-	if (*server2) {
-		argv[parm++] = "-p";
-		argv[parm++] = server2;
+	if (getpid() != 1) {
+		notify_rc("start_ntpd");
+		return 0;
 	}
 
-	_eval(argv, NULL, 0, &pid);
+	if (!nvram_match("ntp_server0", ""))
+		ntpd_argv[index - 1] = nvram_safe_get("ntp_server0");
+	if (!nvram_match("ntp_server1", "")) {
+		ntpd_argv[index++] = "-p";
+		ntpd_argv[index++] = nvram_safe_get("ntp_server1");
+	}
 
-	if (pid)
+	ret = _eval(ntpd_argv, NULL, 0, NULL);
+	if (ret == 0)
 		logmessage("ntpd", "Started ntpd");
+
+	return ret;
 }
 
+void stop_ntpd(void)
+{
+	if (getpid() != 1) {
+		notify_rc("stop_ntpd");
+		return;
+	}
 
-void stop_ntpd(void) {
 	if (f_exists(NTPD_PIDFILE)) {
 		kill_pidfile_tk(NTPD_PIDFILE);
 		logmessage("ntpd", "Stopped ntpd");
 	}
 }
-

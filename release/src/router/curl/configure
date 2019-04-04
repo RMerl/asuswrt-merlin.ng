@@ -903,6 +903,7 @@ MANOPT
 NROFF
 PERL
 IPV6_ENABLED
+FISH_FUNCTIONS_DIR
 ZSH_FUNCTIONS_DIR
 USE_NGHTTP2
 IDN_ENABLED
@@ -932,7 +933,7 @@ USE_GNUTLS
 HAVE_OPENSSL_SRP
 RANDOM_FILE
 SSL_LIBS
-USE_DARWINSSL
+USE_SECTRANSP
 USE_WINDOWS_SSPI
 USE_SCHANNEL
 DEFAULT_SSL_BACKEND
@@ -945,6 +946,7 @@ HAVE_LIBZ_FALSE
 HAVE_LIBZ_TRUE
 HAVE_LIBZ
 PKGCONFIG
+HAVE_PROTO_BSDSOCKET_H
 CURL_DISABLE_GOPHER
 CURL_DISABLE_SMTP
 CURL_DISABLE_SMB
@@ -1163,6 +1165,8 @@ with_default_ssl_backend
 with_winssl
 with_schannel
 with_darwinssl
+with_secure_transport
+with_amissl
 with_ssl
 with_egd_socket
 with_random
@@ -1187,6 +1191,7 @@ with_winidn
 with_libidn2
 with_nghttp2
 with_zsh_functions_dir
+with_fish_functions_dir
 enable_threaded_resolver
 enable_pthreads
 enable_verbose
@@ -1196,6 +1201,7 @@ enable_ntlm_wb
 enable_tls_srp
 enable_unix_sockets
 enable_cookies
+enable_alt_svc
 '
       ac_precious_vars='build_alias
 host_alias
@@ -1939,6 +1945,8 @@ Optional Features:
   --disable-unix-sockets  Disable Unix domain sockets
   --enable-cookies        Enable cookies support
   --disable-cookies       Disable cookies support
+  --enable-alt-svc        Enable alt-svc support
+  --disable-alt-svc       Disable alt-svc support
 
 Optional Packages:
   --with-PACKAGE[=ARG]    use PACKAGE [ARG=yes]
@@ -1973,6 +1981,11 @@ Optional Packages:
   --without-schannel      disable Windows native SSL/TLS
   --with-darwinssl        enable Apple OS native SSL/TLS
   --without-darwinssl     disable Apple OS native SSL/TLS
+  --with-secure-transport enable Apple OS native SSL/TLS
+  --without-secure-transport
+                          disable Apple OS native SSL/TLS
+  --with-amissl           enable Amiga native SSL/TLS (AmiSSL)
+  --without-amissl        disable Amiga native SSL/TLS (AmiSSL)
   --with-ssl=PATH         Where to look for OpenSSL, PATH points to the SSL
                           installation (default: /usr/local/ssl); when
                           possible, set the PKG_CONFIG_PATH environment
@@ -2041,6 +2054,10 @@ Optional Packages:
                           Install zsh completions to PATH
   --without-zsh-functions-dir
                           Do not install zsh completions
+  --with-fish-functions-dir=PATH
+                          Install fish completions to PATH
+  --without-fish-functions-dir
+                          Do not install fish completions
 
 Some influential environment variables:
   CC          C compiler command
@@ -5782,7 +5799,7 @@ PKGADD_VENDOR="curl.haxx.se"
 
 
 
-    curl_ssl_msg="no      (--with-{ssl,gnutls,nss,polarssl,mbedtls,cyassl,winssl,darwinssl,mesalink} )"
+    curl_ssl_msg="no      (--with-{ssl,gnutls,nss,polarssl,mbedtls,cyassl,schannel,secure-transport,mesalink,amissl} )"
     curl_ssh_msg="no      (--with-libssh2)"
    curl_zlib_msg="no      (--with-zlib)"
  curl_brotli_msg="no      (--with-brotli)"
@@ -11801,6 +11818,12 @@ lt_prog_compiler_static=
       ecc*)
 	lt_prog_compiler_wl='-Wl,'
 	lt_prog_compiler_pic='-KPIC'
+	lt_prog_compiler_static='-static'
+        ;;
+      # flang / f18. f95 an alias for gfortran or flang on Debian
+      flang* | f18* | f95*)
+	lt_prog_compiler_wl='-Wl,'
+	lt_prog_compiler_pic='-fPIC'
 	lt_prog_compiler_static='-static'
         ;;
       # icc used to be incompatible with GCC.
@@ -18999,6 +19022,7 @@ fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
 
 
+
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether to support http" >&5
 $as_echo_n "checking whether to support http... " >&6; }
 # Check whether --enable-http was given.
@@ -19843,6 +19867,49 @@ fi
 
 if test "$HAVE_GETHOSTBYNAME" != "1"
 then
+    { $as_echo "$as_me:${as_lineno-$LINENO}: checking for gethostbyname for AmigaOS bsdsocket.library" >&5
+$as_echo_n "checking for gethostbyname for AmigaOS bsdsocket.library... " >&6; }
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+
+#include <proto/bsdsocket.h>
+struct Library *SocketBase = NULL;
+
+int main (void)
+{
+
+      gethostbyname("www.dummysite.com");
+
+ ;
+ return 0;
+}
+
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+
+    { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
+    HAVE_GETHOSTBYNAME="1"
+    HAVE_PROTO_BSDSOCKET_H="1"
+
+$as_echo "#define HAVE_PROTO_BSDSOCKET_H 1" >>confdefs.h
+
+    HAVE_PROTO_BSDSOCKET_H=1
+
+
+else
+
+    { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+fi
+
+if test "$HAVE_GETHOSTBYNAME" != "1"
+then
     { $as_echo "$as_me:${as_lineno-$LINENO}: checking for gethostbyname in -lnetwork" >&5
 $as_echo_n "checking for gethostbyname in -lnetwork... " >&6; }
 if ${ac_cv_lib_network_gethostbyname+:} false; then :
@@ -20118,7 +20185,29 @@ _ACEOF
 
 
 
-    { $as_echo "$as_me:${as_lineno-$LINENO}: checking for connect in libraries" >&5
+curl_includes_bsdsocket="\
+/* includes start */
+#ifdef HAVE_PROTO_BSDSOCKET_H
+#  include <proto/bsdsocket.h>
+  struct Library *SocketBase = NULL;
+#endif
+/* includes end */"
+  for ac_header in proto/bsdsocket.h
+do :
+  ac_fn_c_check_header_compile "$LINENO" "proto/bsdsocket.h" "ac_cv_header_proto_bsdsocket_h" "      $curl_includes_bsdsocket
+"
+if test "x$ac_cv_header_proto_bsdsocket_h" = xyes; then :
+  cat >>confdefs.h <<_ACEOF
+#define HAVE_PROTO_BSDSOCKET_H 1
+_ACEOF
+
+fi
+
+done
+
+
+
+      { $as_echo "$as_me:${as_lineno-$LINENO}: checking for connect in libraries" >&5
 $as_echo_n "checking for connect in libraries... " >&6; }
   tst_connect_save_LIBS="$LIBS"
   tst_connect_need_LIBS="unknown"
@@ -20130,7 +20219,8 @@ $as_echo_n "checking for connect in libraries... " >&6; }
 
 
           $curl_includes_winsock2
-          #ifndef HAVE_WINDOWS_H
+          $curl_includes_bsdsocket
+          #if !defined(HAVE_WINDOWS_H) && !defined(HAVE_PROTO_BSDSOCKET_H)
             int connect(int, void*, int);
           #endif
 
@@ -21435,7 +21525,9 @@ $as_echo_n "checking for LDAP libraries... " >&6; }
     '-lldap -llber' \
     '-llber -lldap' \
     '-lldapssl -lldapx -lldapsdk' \
-    '-lldapsdk -lldapx -lldapssl' ; do
+    '-lldapsdk -lldapx -lldapssl' \
+    '-lldap -llber -lssl -lcrypto' ; do
+
     if test "$curl_cv_ldap_LIBS" = "unknown"; then
       if test -z "$x_nlibs"; then
         LIBS="$curl_cv_save_LIBS"
@@ -22109,35 +22201,82 @@ else
 $as_echo "no" >&6; }
 fi
 
-OPT_DARWINSSL=no
+OPT_SECURETRANSPORT=no
 
 # Check whether --with-darwinssl was given.
 if test "${with_darwinssl+set}" = set; then :
-  withval=$with_darwinssl; OPT_DARWINSSL=$withval
+  withval=$with_darwinssl; OPT_SECURETRANSPORT=$withval
 fi
 
 
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking whether to enable Apple OS native SSL/TLS" >&5
-$as_echo_n "checking whether to enable Apple OS native SSL/TLS... " >&6; }
-if test -z "$ssl_backends" -o "x$OPT_DARWINSSL" != xno; then
-  if test "x$OPT_DARWINSSL" != "xno" &&
+
+# Check whether --with-secure-transport was given.
+if test "${with_secure_transport+set}" = set; then :
+  withval=$with_secure_transport; OPT_SECURETRANSPORT=$withval
+fi
+
+
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking whether to enable Secure Transport" >&5
+$as_echo_n "checking whether to enable Secure Transport... " >&6; }
+if test -z "$ssl_backends" -o "x$OPT_SECURETRANSPORT" != xno; then
+  if test "x$OPT_SECURETRANSPORT" != "xno" &&
      test -d "/System/Library/Frameworks/Security.framework"; then
     { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
 $as_echo "yes" >&6; }
 
-$as_echo "#define USE_DARWINSSL 1" >>confdefs.h
+$as_echo "#define USE_SECTRANSP 1" >>confdefs.h
 
-    USE_DARWINSSL=1
+    USE_SECTRANSP=1
 
-    ssl_msg="Apple OS-native"
-    test darwinssl != "$DEFAULT_SSL_BACKEND" || VALID_DEFAULT_SSL_BACKEND=yes
-    DARWINSSL_ENABLED=1
+    ssl_msg="Secure Transport"
+    test secure-transport != "$DEFAULT_SSL_BACKEND" || VALID_DEFAULT_SSL_BACKEND=yes
+    SECURETRANSPORT_ENABLED=1
     LDFLAGS="$LDFLAGS -framework CoreFoundation -framework Security"
   else
     { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
 $as_echo "no" >&6; }
   fi
   test -z "$ssl_msg" || ssl_backends="${ssl_backends:+$ssl_backends, }$ssl_msg"
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+fi
+
+OPT_AMISSL=no
+
+# Check whether --with-amissl was given.
+if test "${with_amissl+set}" = set; then :
+  withval=$with_amissl; OPT_AMISSL=$withval
+fi
+
+
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking whether to enable Amiga native SSL/TLS (AmiSSL)" >&5
+$as_echo_n "checking whether to enable Amiga native SSL/TLS (AmiSSL)... " >&6; }
+if test "$HAVE_PROTO_BSDSOCKET_H" == "1"; then
+  if test -z "$ssl_backends" -o "x$OPT_AMISSL" != xno; then
+    ssl_msg=
+    if test "x$OPT_AMISSL" != "xno"; then
+      { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
+      ssl_msg="AmiSSL"
+      test amissl != "$DEFAULT_SSL_BACKEND" || VALID_DEFAULT_SSL_BACKEND=yes
+      AMISSL_ENABLED=1
+      LIBS="-lamisslauto $LIBS"
+
+$as_echo "#define USE_AMISSL 1" >>confdefs.h
+
+
+$as_echo "#define USE_OPENSSL 1" >>confdefs.h
+
+    else
+      { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+    fi
+    test -z "$ssl_msg" || ssl_backends="${ssl_backends:+$ssl_backends, }$ssl_msg"
+  else
+    { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+  fi
 else
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
 $as_echo "no" >&6; }
@@ -24727,7 +24866,6 @@ done
 
       if test "x$cyassllibname" = "xwolfssl"; then
                         for ac_func in wolfSSLv3_client_method \
-                       wolfSSL_CTX_UseSupportedCurve \
                        wolfSSL_get_peer_certificate \
                        wolfSSL_UseALPN
 do :
@@ -25370,12 +25508,12 @@ $as_echo "$as_me: Added $nssprefix/lib$libsuff to CURL_LIBRARY_PATH" >&6;}
   test -z "$ssl_msg" || ssl_backends="${ssl_backends:+$ssl_backends, }$ssl_msg"
 fi
 
-case "x$OPENSSL_ENABLED$GNUTLS_ENABLED$NSS_ENABLED$POLARSSL_ENABLED$MBEDTLS_ENABLED$CYASSL_ENABLED$WINSSL_ENABLED$DARWINSSL_ENABLED$MESALINK_ENABLED" in
+case "x$OPENSSL_ENABLED$GNUTLS_ENABLED$NSS_ENABLED$POLARSSL_ENABLED$MBEDTLS_ENABLED$CYASSL_ENABLED$WINSSL_ENABLED$SECURETRANSPORT_ENABLED$MESALINK_ENABLED$AMISSL_ENABLED" in
 x)
   { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: SSL disabled, you will not be able to use HTTPS, FTPS, NTLM and more." >&5
 $as_echo "$as_me: WARNING: SSL disabled, you will not be able to use HTTPS, FTPS, NTLM and more." >&2;}
-  { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: Use --with-ssl, --with-gnutls, --with-polarssl, --with-cyassl, --with-nss, --with-winssl, --with-darwinssl, or --with-mesalink to address this." >&5
-$as_echo "$as_me: WARNING: Use --with-ssl, --with-gnutls, --with-polarssl, --with-cyassl, --with-nss, --with-winssl, --with-darwinssl, or --with-mesalink to address this." >&2;}
+  { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: Use --with-ssl, --with-gnutls, --with-polarssl, --with-cyassl, --with-nss, --with-schannel, --with-secure-transport, --with-mesalink or --with-amissl to address this." >&5
+$as_echo "$as_me: WARNING: Use --with-ssl, --with-gnutls, --with-polarssl, --with-cyassl, --with-nss, --with-schannel, --with-secure-transport, --with-mesalink or --with-amissl to address this." >&2;}
   ;;
 x1)
   # one SSL backend is enabled
@@ -25642,7 +25780,7 @@ $as_echo "$ac_cv_search_psl_builtin" >&6; }
 ac_res=$ac_cv_search_psl_builtin
 if test "$ac_res" != no; then :
   test "$ac_res" = "none required" || LIBS="$ac_res $LIBS"
-  curl_psl_msg="yes";
+  curl_psl_msg="enabled";
 
 $as_echo "#define USE_LIBPSL 1" >>confdefs.h
 
@@ -25656,7 +25794,7 @@ $as_echo "$as_me: WARNING: libpsl was not found" >&2;}
 fi
 
 fi
- if test "$curl_psl_msg" = "yes"; then
+ if test "$curl_psl_msg" = "enabled"; then
   USE_LIBPSL_TRUE=
   USE_LIBPSL_FALSE='#'
 else
@@ -26826,9 +26964,9 @@ $as_echo "yes" >&6; }
         elif test "x$CYASSL_ENABLED" = "x1"; then
           versioned_symbols_flavour="CYASSL_"
         elif test "x$WINSSL_ENABLED" = "x1"; then
-          versioned_symbols_flavour="WINSSL_"
-        elif test "x$DARWINSSL_ENABLED" = "x1"; then
-          versioned_symbols_flavour="DARWINSSL_"
+          versioned_symbols_flavour="SCHANNEL_"
+        elif test "x$SECURETRANSPORT_ENABLED" = "x1"; then
+          versioned_symbols_flavour="SECURE_TRANSPORT_"
         else
           versioned_symbols_flavour=""
         fi
@@ -27693,6 +27831,27 @@ case "$OPT_ZSH_FPATH" in
 esac
 
 
+OPT_FISH_FPATH=default
+
+# Check whether --with-fish-functions-dir was given.
+if test "${with_fish_functions_dir+set}" = set; then :
+  withval=$with_fish_functions_dir; OPT_FISH_FPATH=$withval
+fi
+
+case "$OPT_FISH_FPATH" in
+  no)
+        ;;
+  default|yes)
+        FISH_FUNCTIONS_DIR="$datarootdir/fish/completions"
+
+    ;;
+  *)
+        FISH_FUNCTIONS_DIR="$withval"
+
+    ;;
+esac
+
+
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking for ANSI C header files" >&5
 $as_echo_n "checking for ANSI C header files... " >&6; }
 if ${ac_cv_header_stdc+:} false; then :
@@ -28059,6 +28218,7 @@ _ACEOF
 fi
 
 done
+
 
 
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking for an ANSI C-conforming const" >&5
@@ -29243,6 +29403,11 @@ $as_echo_n "checking for select... " >&6; }
 #endif
 #endif
 #ifndef HAVE_WINDOWS_H
+#ifdef HAVE_PROTO_BSDSOCKET_H
+#include <proto/bsdsocket.h>
+struct Library *SocketBase = NULL;
+#define select(a,b,c,d,e) WaitSelect(a,b,c,d,e,0)
+#endif
 #ifdef HAVE_SYS_SELECT_H
 #include <sys/select.h>
 #endif
@@ -29323,6 +29488,11 @@ else
 #endif
 #endif
 #ifndef HAVE_WINDOWS_H
+#ifdef HAVE_PROTO_BSDSOCKET_H
+#include <proto/bsdsocket.h>
+struct Library *SocketBase = NULL;
+#define select(a,b,c,d,e) WaitSelect(a,b,c,d,e,0)
+#endif
 #ifdef HAVE_SYS_SELECT_H
 #include <sys/select.h>
 #endif
@@ -29337,12 +29507,14 @@ else
                       long tv_usec;
                     };
 #endif
+#ifndef HAVE_PROTO_BSDSOCKET_H
                     extern $sel_retv SELECTCALLCONV
 				select($sel_arg1,
 					$sel_arg234,
 					$sel_arg234,
 					$sel_arg234,
 					$sel_arg5);
+#endif
 
 int main (void)
 {
@@ -29487,6 +29659,10 @@ $as_echo_n "checking for recv... " >&6; }
 #endif
 #endif
 #else
+#ifdef HAVE_PROTO_BSDSOCKET_H
+#include <proto/bsdsocket.h>
+struct Library *SocketBase = NULL;
+#endif
 #ifdef HAVE_SYS_TYPES_H
 #include <sys/types.h>
 #endif
@@ -29554,6 +29730,10 @@ else
 #endif
 #define RECVCALLCONV PASCAL
 #else
+#ifdef HAVE_PROTO_BSDSOCKET_H
+#include <proto/bsdsocket.h>
+struct Library *SocketBase = NULL;
+#endif
 #ifdef HAVE_SYS_TYPES_H
 #include <sys/types.h>
 #endif
@@ -29562,8 +29742,10 @@ else
 #endif
 #define RECVCALLCONV
 #endif
+#ifndef HAVE_PROTO_BSDSOCKET_H
                       extern $recv_retv RECVCALLCONV
                       recv($recv_arg1, $recv_arg2, $recv_arg3, $recv_arg4);
+#endif
 
 int main (void)
 {
@@ -29675,6 +29857,10 @@ $as_echo_n "checking for send... " >&6; }
 #endif
 #endif
 #else
+#ifdef HAVE_PROTO_BSDSOCKET_H
+#include <proto/bsdsocket.h>
+struct Library *SocketBase = NULL;
+#endif
 #ifdef HAVE_SYS_TYPES_H
 #include <sys/types.h>
 #endif
@@ -29742,6 +29928,10 @@ else
 #endif
 #define SENDCALLCONV PASCAL
 #else
+#ifdef HAVE_PROTO_BSDSOCKET_H
+#include <proto/bsdsocket.h>
+struct Library *SocketBase = NULL;
+#endif
 #ifdef HAVE_SYS_TYPES_H
 #include <sys/types.h>
 #endif
@@ -29750,8 +29940,10 @@ else
 #endif
 #define SENDCALLCONV
 #endif
+#ifndef HAVE_PROTO_BSDSOCKET_H
                       extern $send_retv SENDCALLCONV
                       send($send_arg1, $send_arg2, $send_arg3, $send_arg4);
+#endif
 
 int main (void)
 {
@@ -29902,6 +30094,10 @@ else
 #endif
 #endif
 #else
+#ifdef HAVE_PROTO_BSDSOCKET_H
+#include <proto/bsdsocket.h>
+struct Library *SocketBase = NULL;
+#endif
 #ifdef HAVE_SYS_TYPES_H
 #include <sys/types.h>
 #endif
@@ -30364,6 +30560,7 @@ $as_echo_n "checking if closesocket can be linked... " >&6; }
 
 
       $curl_includes_winsock2
+      $curl_includes_bsdsocket
       $curl_includes_socket
 
 int main (void)
@@ -30400,6 +30597,7 @@ $as_echo_n "checking if closesocket is prototyped... " >&6; }
 /* end confdefs.h.  */
 
       $curl_includes_winsock2
+      $curl_includes_bsdsocket
       $curl_includes_socket
 
 _ACEOF
@@ -30429,6 +30627,7 @@ $as_echo_n "checking if closesocket is compilable... " >&6; }
 
 
         $curl_includes_winsock2
+      $curl_includes_bsdsocket
         $curl_includes_socket
 
 int main (void)
@@ -30670,6 +30869,7 @@ $as_echo_n "checking if connect can be linked... " >&6; }
 
 
       $curl_includes_winsock2
+      $curl_includes_bsdsocket
       $curl_includes_sys_socket
       $curl_includes_socket
 
@@ -30707,6 +30907,7 @@ $as_echo_n "checking if connect is prototyped... " >&6; }
 /* end confdefs.h.  */
 
       $curl_includes_winsock2
+      $curl_includes_bsdsocket
       $curl_includes_sys_socket
       $curl_includes_socket
 
@@ -30737,6 +30938,7 @@ $as_echo_n "checking if connect is compilable... " >&6; }
 
 
         $curl_includes_winsock2
+      $curl_includes_bsdsocket
         $curl_includes_sys_socket
         $curl_includes_socket
 
@@ -31056,180 +31258,6 @@ $as_echo "no" >&6; }
     { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
 $as_echo "no" >&6; }
     curl_cv_func_fcntl="no"
-  fi
-
-
-curl_includes_stdio="\
-/* includes start */
-#ifdef HAVE_SYS_TYPES_H
-#  include <sys/types.h>
-#endif
-#ifdef HAVE_STDIO_H
-#  include <stdio.h>
-#endif
-/* includes end */"
-  for ac_header in sys/types.h stdio.h
-do :
-  as_ac_Header=`$as_echo "ac_cv_header_$ac_header" | $as_tr_sh`
-ac_fn_c_check_header_compile "$LINENO" "$ac_header" "$as_ac_Header" "$curl_includes_stdio
-"
-if eval test \"x\$"$as_ac_Header"\" = x"yes"; then :
-  cat >>confdefs.h <<_ACEOF
-#define `$as_echo "HAVE_$ac_header" | $as_tr_cpp` 1
-_ACEOF
-
-fi
-
-done
-
-
-
-    #
-  tst_links_fdopen="unknown"
-  tst_proto_fdopen="unknown"
-  tst_compi_fdopen="unknown"
-  tst_allow_fdopen="unknown"
-  #
-  { $as_echo "$as_me:${as_lineno-$LINENO}: checking if fdopen can be linked" >&5
-$as_echo_n "checking if fdopen can be linked... " >&6; }
-  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-
-
-#define fdopen innocuous_fdopen
-#ifdef __STDC__
-# include <limits.h>
-#else
-# include <assert.h>
-#endif
-#undef fdopen
-#ifdef __cplusplus
-extern "C"
-#endif
-char fdopen ();
-#if defined __stub_fdopen || defined __stub___fdopen
-choke me
-#endif
-
-int main (void)
-{
-return fdopen ();
- ;
- return 0;
-}
-
-_ACEOF
-if ac_fn_c_try_link "$LINENO"; then :
-
-    { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
-$as_echo "yes" >&6; }
-    tst_links_fdopen="yes"
-
-else
-
-    { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
-$as_echo "no" >&6; }
-    tst_links_fdopen="no"
-
-fi
-rm -f core conftest.err conftest.$ac_objext \
-    conftest$ac_exeext conftest.$ac_ext
-  #
-  if test "$tst_links_fdopen" = "yes"; then
-    { $as_echo "$as_me:${as_lineno-$LINENO}: checking if fdopen is prototyped" >&5
-$as_echo_n "checking if fdopen is prototyped... " >&6; }
-    cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-
-      $curl_includes_stdio
-
-_ACEOF
-if (eval "$ac_cpp conftest.$ac_ext") 2>&5 |
-  $EGREP "fdopen" >/dev/null 2>&1; then :
-
-      { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
-$as_echo "yes" >&6; }
-      tst_proto_fdopen="yes"
-
-else
-
-      { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
-$as_echo "no" >&6; }
-      tst_proto_fdopen="no"
-
-fi
-rm -f conftest*
-
-  fi
-  #
-  if test "$tst_proto_fdopen" = "yes"; then
-    { $as_echo "$as_me:${as_lineno-$LINENO}: checking if fdopen is compilable" >&5
-$as_echo_n "checking if fdopen is compilable... " >&6; }
-    cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-
-
-        $curl_includes_stdio
-
-int main (void)
-{
-
-        if(0 != fdopen(0, 0))
-          return 1;
-
- ;
- return 0;
-}
-
-_ACEOF
-if ac_fn_c_try_compile "$LINENO"; then :
-
-      { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
-$as_echo "yes" >&6; }
-      tst_compi_fdopen="yes"
-
-else
-
-      { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
-$as_echo "no" >&6; }
-      tst_compi_fdopen="no"
-
-fi
-rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
-  fi
-  #
-  if test "$tst_compi_fdopen" = "yes"; then
-    { $as_echo "$as_me:${as_lineno-$LINENO}: checking if fdopen usage allowed" >&5
-$as_echo_n "checking if fdopen usage allowed... " >&6; }
-    if test "x$curl_disallow_fdopen" != "xyes"; then
-      { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
-$as_echo "yes" >&6; }
-      tst_allow_fdopen="yes"
-    else
-      { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
-$as_echo "no" >&6; }
-      tst_allow_fdopen="no"
-    fi
-  fi
-  #
-  { $as_echo "$as_me:${as_lineno-$LINENO}: checking if fdopen might be used" >&5
-$as_echo_n "checking if fdopen might be used... " >&6; }
-  if test "$tst_links_fdopen" = "yes" &&
-     test "$tst_proto_fdopen" = "yes" &&
-     test "$tst_compi_fdopen" = "yes" &&
-     test "$tst_allow_fdopen" = "yes"; then
-    { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
-$as_echo "yes" >&6; }
-
-cat >>confdefs.h <<_ACEOF
-#define HAVE_FDOPEN 1
-_ACEOF
-
-    curl_cv_func_fdopen="yes"
-  else
-    { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
-$as_echo "no" >&6; }
-    curl_cv_func_fdopen="no"
   fi
 
 
@@ -32579,6 +32607,7 @@ $as_echo_n "checking if gai_strerror can be linked... " >&6; }
 
 
       $curl_includes_winsock2
+      $curl_includes_bsdsocket
       $curl_includes_netdb
 
 int main (void)
@@ -32615,6 +32644,7 @@ $as_echo_n "checking if gai_strerror is prototyped... " >&6; }
 /* end confdefs.h.  */
 
       $curl_includes_winsock2
+      $curl_includes_bsdsocket
       $curl_includes_netdb
 
 _ACEOF
@@ -32644,6 +32674,7 @@ $as_echo_n "checking if gai_strerror is compilable... " >&6; }
 
 
         $curl_includes_winsock2
+      $curl_includes_bsdsocket
         $curl_includes_netdb
 
 int main (void)
@@ -32721,6 +32752,7 @@ $as_echo_n "checking if gethostbyaddr can be linked... " >&6; }
 
 
       $curl_includes_winsock2
+      $curl_includes_bsdsocket
       $curl_includes_netdb
 
 int main (void)
@@ -32757,6 +32789,7 @@ $as_echo_n "checking if gethostbyaddr is prototyped... " >&6; }
 /* end confdefs.h.  */
 
       $curl_includes_winsock2
+      $curl_includes_bsdsocket
       $curl_includes_netdb
 
 _ACEOF
@@ -32786,6 +32819,7 @@ $as_echo_n "checking if gethostbyaddr is compilable... " >&6; }
 
 
         $curl_includes_winsock2
+      $curl_includes_bsdsocket
         $curl_includes_netdb
 
 int main (void)
@@ -33112,6 +33146,7 @@ $as_echo_n "checking if gethostbyname can be linked... " >&6; }
 
 
       $curl_includes_winsock2
+      $curl_includes_bsdsocket
       $curl_includes_netdb
 
 int main (void)
@@ -33148,6 +33183,7 @@ $as_echo_n "checking if gethostbyname is prototyped... " >&6; }
 /* end confdefs.h.  */
 
       $curl_includes_winsock2
+      $curl_includes_bsdsocket
       $curl_includes_netdb
 
 _ACEOF
@@ -33177,6 +33213,7 @@ $as_echo_n "checking if gethostbyname is compilable... " >&6; }
 
 
         $curl_includes_winsock2
+      $curl_includes_bsdsocket
         $curl_includes_netdb
 
 int main (void)
@@ -33500,7 +33537,7 @@ curl_preprocess_callconv="\
 /* preprocess end */"
 
 
-        #
+          #
   tst_links_gethostname="unknown"
   tst_proto_gethostname="unknown"
   tst_compi_gethostname="unknown"
@@ -33513,6 +33550,7 @@ $as_echo_n "checking if gethostname can be linked... " >&6; }
 
 
       $curl_includes_winsock2
+      $curl_includes_bsdsocket
       $curl_includes_unistd
 
 int main (void)
@@ -33549,6 +33587,7 @@ $as_echo_n "checking if gethostname is prototyped... " >&6; }
 /* end confdefs.h.  */
 
       $curl_includes_winsock2
+      $curl_includes_bsdsocket
       $curl_includes_unistd
 
 _ACEOF
@@ -33578,6 +33617,7 @@ $as_echo_n "checking if gethostname is compilable... " >&6; }
 
 
         $curl_includes_winsock2
+      $curl_includes_bsdsocket
         $curl_includes_unistd
 
 int main (void)
@@ -33619,6 +33659,7 @@ $as_echo_n "checking for gethostname arg 2 data type... " >&6; }
 
 
               $curl_includes_winsock2
+      $curl_includes_bsdsocket
               $curl_includes_unistd
               $curl_preprocess_callconv
               extern int FUNCALLCONV gethostname($tst_arg1, $tst_arg2);
@@ -35477,6 +35518,7 @@ $as_echo_n "checking if ioctlsocket can be linked... " >&6; }
 
 
       $curl_includes_winsock2
+      $curl_includes_bsdsocket
 
 int main (void)
 {
@@ -35512,6 +35554,7 @@ $as_echo_n "checking if ioctlsocket is prototyped... " >&6; }
 /* end confdefs.h.  */
 
       $curl_includes_winsock2
+      $curl_includes_bsdsocket
 
 _ACEOF
 if (eval "$ac_cpp conftest.$ac_ext") 2>&5 |
@@ -35540,6 +35583,7 @@ $as_echo_n "checking if ioctlsocket is compilable... " >&6; }
 
 
         $curl_includes_winsock2
+      $curl_includes_bsdsocket
 
 int main (void)
 {
@@ -35609,6 +35653,7 @@ $as_echo_n "checking if ioctlsocket FIONBIO is compilable... " >&6; }
 
 
         $curl_includes_winsock2
+      $curl_includes_bsdsocket
 
 int main (void)
 {
@@ -36535,6 +36580,7 @@ $as_echo_n "checking if setsockopt can be linked... " >&6; }
 
 
       $curl_includes_winsock2
+      $curl_includes_bsdsocket
       $curl_includes_sys_socket
 
 int main (void)
@@ -36571,6 +36617,7 @@ $as_echo_n "checking if setsockopt is prototyped... " >&6; }
 /* end confdefs.h.  */
 
       $curl_includes_winsock2
+      $curl_includes_bsdsocket
       $curl_includes_sys_socket
 
 _ACEOF
@@ -36600,6 +36647,7 @@ $as_echo_n "checking if setsockopt is compilable... " >&6; }
 
 
         $curl_includes_winsock2
+      $curl_includes_bsdsocket
         $curl_includes_sys_socket
 
 int main (void)
@@ -36670,6 +36718,7 @@ $as_echo_n "checking if setsockopt SO_NONBLOCK is compilable... " >&6; }
 
 
         $curl_includes_winsock2
+      $curl_includes_bsdsocket
         $curl_includes_sys_socket
 
 int main (void)
@@ -37438,6 +37487,7 @@ $as_echo_n "checking if socket can be linked... " >&6; }
 
 
       $curl_includes_winsock2
+      $curl_includes_bsdsocket
       $curl_includes_sys_socket
       $curl_includes_socket
 
@@ -37475,6 +37525,7 @@ $as_echo_n "checking if socket is prototyped... " >&6; }
 /* end confdefs.h.  */
 
       $curl_includes_winsock2
+      $curl_includes_bsdsocket
       $curl_includes_sys_socket
       $curl_includes_socket
 
@@ -37505,6 +37556,7 @@ $as_echo_n "checking if socket is compilable... " >&6; }
 
 
         $curl_includes_winsock2
+      $curl_includes_bsdsocket
         $curl_includes_sys_socket
         $curl_includes_socket
 
@@ -40903,6 +40955,37 @@ $as_echo "yes" >&6; }
 fi
 
 
+curl_altsvc_msg="no      (--enable-alt-svc)";
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking whether to support alt-svc" >&5
+$as_echo_n "checking whether to support alt-svc... " >&6; }
+# Check whether --enable-alt-svc was given.
+if test "${enable_alt_svc+set}" = set; then :
+  enableval=$enable_alt_svc;  case "$enableval" in
+  no)
+       { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+       ;;
+  *) { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
+       curl_altsvc_msg="enabled";
+       enable_altsvc="yes"
+       experimental="alt-svc"
+       ;;
+  esac
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+
+fi
+
+
+if test "$enable_altsvc" = "yes"; then
+
+$as_echo "#define USE_ALTSVC 1" >>confdefs.h
+
+  experimental="alt-svc"
+fi
+
 
   { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether hiding of library internal symbols will actually happen" >&5
 $as_echo_n "checking whether hiding of library internal symbols will actually happen... " >&6; }
@@ -40993,8 +41076,12 @@ if test "x$HAVE_GSSAPI" = "x1"; then
   SUPPORT_FEATURES="$SUPPORT_FEATURES GSS-API"
 fi
 
-if test "x$curl_psl_msg" = "xyes"; then
+if test "x$curl_psl_msg" = "xenabled"; then
   SUPPORT_FEATURES="$SUPPORT_FEATURES PSL"
+fi
+
+if test "x$enable_altsvc" = "xyes"; then
+  SUPPORT_FEATURES="$SUPPORT_FEATURES alt-svc"
 fi
 
 if test "x$CURL_DISABLE_CRYPTO_AUTH" != "x1" -a \
@@ -41010,7 +41097,7 @@ fi
 if test "x$CURL_DISABLE_CRYPTO_AUTH" != "x1"; then
   if test "x$OPENSSL_ENABLED" = "x1" -o "x$USE_WINDOWS_SSPI" = "x1" \
       -o "x$GNUTLS_ENABLED" = "x1" -o "x$MBEDTLS_ENABLED" = "x1" \
-      -o "x$NSS_ENABLED" = "x1" -o "x$DARWINSSL_ENABLED" = "x1"; then
+      -o "x$NSS_ENABLED" = "x1" -o "x$SECURETRANSPORT_ENABLED" = "x1"; then
     SUPPORT_FEATURES="$SUPPORT_FEATURES NTLM"
 
     if test "x$CURL_DISABLE_HTTP" != "x1" -a \
@@ -41091,7 +41178,7 @@ if test "x$CURL_DISABLE_SMB" != "x1" \
     -a "x$CURL_DISABLE_CRYPTO_AUTH" != "x1" \
     -a \( "x$OPENSSL_ENABLED" = "x1" -o "x$USE_WINDOWS_SSPI" = "x1" \
       -o "x$GNUTLS_ENABLED" = "x1" -o "x$MBEDTLS_ENABLED" = "x1" \
-      -o "x$NSS_ENABLED" = "x1" -o "x$DARWINSSL_ENABLED" = "x1" \); then
+      -o "x$NSS_ENABLED" = "x1" -o "x$SECURETRANSPORT_ENABLED" = "x1" \); then
   SUPPORT_PROTOCOLS="$SUPPORT_PROTOCOLS SMB"
   if test "x$SSL_ENABLED" = "x1"; then
     SUPPORT_PROTOCOLS="$SUPPORT_PROTOCOLS SMBS"
@@ -43980,33 +44067,35 @@ done
    LIBS:            ${LIBS}
 
   curl version:     ${CURLVERSION}
-  SSL support:      ${curl_ssl_msg}
-  SSH support:      ${curl_ssh_msg}
-  zlib support:     ${curl_zlib_msg}
-  brotli support:   ${curl_brotli_msg}
-  GSS-API support:  ${curl_gss_msg}
-  TLS-SRP support:  ${curl_tls_srp_msg}
+  SSL:              ${curl_ssl_msg}
+  SSH:              ${curl_ssh_msg}
+  zlib:             ${curl_zlib_msg}
+  brotli:           ${curl_brotli_msg}
+  GSS-API:          ${curl_gss_msg}
+  TLS-SRP:          ${curl_tls_srp_msg}
   resolver:         ${curl_res_msg}
-  IPv6 support:     ${curl_ipv6_msg}
-  Unix sockets support: ${curl_unix_sockets_msg}
-  IDN support:      ${curl_idn_msg}
+  IPv6:             ${curl_ipv6_msg}
+  Unix sockets:     ${curl_unix_sockets_msg}
+  IDN:              ${curl_idn_msg}
   Build libcurl:    Shared=${enable_shared}, Static=${enable_static}
   Built-in manual:  ${curl_manual_msg}
   --libcurl option: ${curl_libcurl_msg}
   Verbose errors:   ${curl_verbose_msg}
   Code coverage:    ${curl_coverage_msg}
-  SSPI support:     ${curl_sspi_msg}
+  SSPI:             ${curl_sspi_msg}
   ca cert bundle:   ${ca}${ca_warning}
   ca cert path:     ${capath}${capath_warning}
   ca fallback:      ${with_ca_fallback}
-  LDAP support:     ${curl_ldap_msg}
-  LDAPS support:    ${curl_ldaps_msg}
-  RTSP support:     ${curl_rtsp_msg}
-  RTMP support:     ${curl_rtmp_msg}
-  metalink support: ${curl_mtlnk_msg}
-  PSL support:      ${curl_psl_msg}
-  HTTP2 support:    ${curl_h2_msg}
+  LDAP:             ${curl_ldap_msg}
+  LDAPS:            ${curl_ldaps_msg}
+  RTSP:             ${curl_rtsp_msg}
+  RTMP:             ${curl_rtmp_msg}
+  Metalink:         ${curl_mtlnk_msg}
+  PSL:              ${curl_psl_msg}
+  Alt-svc:          ${curl_altsvc_msg}
+  HTTP2:            ${curl_h2_msg}
   Protocols:        ${SUPPORT_PROTOCOLS}
+  Features:         ${SUPPORT_FEATURES}
 " >&5
 $as_echo "$as_me: Configured to build curl/libcurl:
 
@@ -44019,31 +44108,38 @@ $as_echo "$as_me: Configured to build curl/libcurl:
    LIBS:            ${LIBS}
 
   curl version:     ${CURLVERSION}
-  SSL support:      ${curl_ssl_msg}
-  SSH support:      ${curl_ssh_msg}
-  zlib support:     ${curl_zlib_msg}
-  brotli support:   ${curl_brotli_msg}
-  GSS-API support:  ${curl_gss_msg}
-  TLS-SRP support:  ${curl_tls_srp_msg}
+  SSL:              ${curl_ssl_msg}
+  SSH:              ${curl_ssh_msg}
+  zlib:             ${curl_zlib_msg}
+  brotli:           ${curl_brotli_msg}
+  GSS-API:          ${curl_gss_msg}
+  TLS-SRP:          ${curl_tls_srp_msg}
   resolver:         ${curl_res_msg}
-  IPv6 support:     ${curl_ipv6_msg}
-  Unix sockets support: ${curl_unix_sockets_msg}
-  IDN support:      ${curl_idn_msg}
+  IPv6:             ${curl_ipv6_msg}
+  Unix sockets:     ${curl_unix_sockets_msg}
+  IDN:              ${curl_idn_msg}
   Build libcurl:    Shared=${enable_shared}, Static=${enable_static}
   Built-in manual:  ${curl_manual_msg}
   --libcurl option: ${curl_libcurl_msg}
   Verbose errors:   ${curl_verbose_msg}
   Code coverage:    ${curl_coverage_msg}
-  SSPI support:     ${curl_sspi_msg}
+  SSPI:             ${curl_sspi_msg}
   ca cert bundle:   ${ca}${ca_warning}
   ca cert path:     ${capath}${capath_warning}
   ca fallback:      ${with_ca_fallback}
-  LDAP support:     ${curl_ldap_msg}
-  LDAPS support:    ${curl_ldaps_msg}
-  RTSP support:     ${curl_rtsp_msg}
-  RTMP support:     ${curl_rtmp_msg}
-  metalink support: ${curl_mtlnk_msg}
-  PSL support:      ${curl_psl_msg}
-  HTTP2 support:    ${curl_h2_msg}
+  LDAP:             ${curl_ldap_msg}
+  LDAPS:            ${curl_ldaps_msg}
+  RTSP:             ${curl_rtsp_msg}
+  RTMP:             ${curl_rtmp_msg}
+  Metalink:         ${curl_mtlnk_msg}
+  PSL:              ${curl_psl_msg}
+  Alt-svc:          ${curl_altsvc_msg}
+  HTTP2:            ${curl_h2_msg}
   Protocols:        ${SUPPORT_PROTOCOLS}
+  Features:         ${SUPPORT_FEATURES}
 " >&6;}
+if test -n "$experimental"; then
+ cat >&2 << _EOF
+  WARNING: $experimental is enabled but marked EXPERIMENTAL. Use with caution!
+_EOF
+fi

@@ -248,8 +248,9 @@ CURLcode Curl_auth_decode_spnego_message(struct Curl_easy *data,
   free(chlg);
 
   if(GSS_ERROR(nego->status)) {
+    char buffer[STRERROR_LEN];
     failf(data, "InitializeSecurityContext failed: %s",
-          Curl_sspi_strerror(data->conn, nego->status));
+          Curl_sspi_strerror(nego->status, buffer, sizeof(buffer)));
     return CURLE_OUT_OF_MEMORY;
   }
 
@@ -342,6 +343,11 @@ void Curl_auth_spnego_cleanup(struct negotiatedata *nego)
   /* Reset any variables */
   nego->status = 0;
   nego->token_max = 0;
+  nego->state = GSS_AUTHNONE;
+  nego->noauthpersist = FALSE;
+  nego->havenoauthpersist = FALSE;
+  nego->havenegdata = FALSE;
+  nego->havemultiplerequests = FALSE;
 }
 
 #endif /* USE_WINDOWS_SSPI && USE_SPNEGO */

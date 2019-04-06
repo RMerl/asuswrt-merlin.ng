@@ -241,7 +241,7 @@ var notification = {
 			if(webs_state_flag == 1 || webs_state_flag == 2){
 				notification.array[1] = 'noti_upgrade';
 				notification.upgrade = 1;
-				notification.desc[1] = '<#ASUSGATE_note2#>';
+				notification.desc[1] = 'A new firmware version ('+webs_state_info.replace('_','.').replace('_0','')+') is now available.';
 				if(!live_update_support || !HTTPS_support){
 					notification.action_desc[1] = '<a id="link_to_downlodpage" target="_blank" href="'+get_helplink()+'" style="color:#FFCC00;"><#ASUSGATE_act_update#></a>';
 					notification.clickCallBack[1] = "";

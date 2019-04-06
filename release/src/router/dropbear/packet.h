@@ -35,7 +35,7 @@ void read_packet(void);
 void decrypt_packet(void);
 void encrypt_packet(void);
 
-void writebuf_enqueue(buffer * writebuf, unsigned char packet_type);
+void writebuf_enqueue(buffer * writebuf);
 
 void process_packet(void);
 

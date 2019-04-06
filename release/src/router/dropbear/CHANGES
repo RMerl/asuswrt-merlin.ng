@@ -1,13 +1,58 @@
+2019.78 - 27 March 2019
+
+- Fix dbclient regression in 2019.77. After exiting the terminal would be left
+  in a bad state. Reported by Ryan Woodsmall
+  
+2019.77 - 23 March 2019
+
+- Fix server -R option with ECDSA - only advertise one key size which will be accepted.
+  Reported by Peter Krefting, 2018.76 regression.
+
+- Fix server regression in 2018.76 where multiple client -R forwards were all forwarded 
+  to the first destination. Reported by Iddo Samet.
+
+- Make failure delay more consistent to avoid revealing valid usernames, set server password 
+  limit of 100 characters. Problem reported by usd responsible disclosure team
+
+- Change handling of failed authentication to avoid disclosing valid usernames,
+  CVE-2018-15599. 
+
+- Fix dbclient to reliably return the exit code from the remote server.
+  Reported by W. Mike Petullo
+
+- Fix export of 521-bit ECDSA keys, from Christian Hohnstädt
+
+- Add -o Port=xxx option to work with sshfs, from xcko
+
+- Merged fuzzing code, see FUZZER-NOTES.md
+
+- Add a DROPBEAR_SVR_MULTIUSER=0 compile option to run on 
+  single-user Linux kernels (CONFIG_MULTIUSER disabled). From Patrick Stewart
+
+- Increase allowed username to 100 characters, reported by W. Mike Petullo
+
+- Update config.sub and config.guess, should now work with RISC-V
+
+- Cygwin compile fix from karel-m
+
+- Don't require GNU sed (accidentally in 2018.76), reported by Samuel Hsu
+
+- Fix for IRIX and writev(), reported by Kazuo Kuroi
+
+- Other fixes and cleanups from François Perrad, Andre McCurdy, Konstantin Demin,
+  Michael Jones, Pawel Rapkiewicz
+
+
 2018.76 - 27 February 2018
 
 > > > Configuration/compatibility changes
   IMPORTANT
-  Custom configuration is now specified in local_options.h rather than options.h
+  Custom configuration is now specified in localoptions.h rather than options.h
   Available options and defaults can be seen in default_options.h
 
   To migrate your configuration, compare your customised options.h against the
   upstream options.h from your relevant version. Any customised options should
-  be put in localoptions.h
+  be put in localoptions.h in the build directory.
 
 - "configure --enable-static" should now be used instead of "make STATIC=1"
   This will avoid 'hardened build' flags that conflict with static binaries

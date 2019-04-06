@@ -1,9 +1,9 @@
 /**************************************************************************
  *   help.c  --  This file is part of GNU nano.                           *
  *                                                                        *
- *   Copyright (C) 2000-2011, 2013-2018 Free Software Foundation, Inc.    *
+ *   Copyright (C) 2000-2011, 2013-2019 Free Software Foundation, Inc.    *
  *   Copyright (C) 2017 Rishabh Dave                                      *
- *   Copyright (C) 2014-2017 Benno Schulenberg                            *
+ *   Copyright (C) 2014-2018 Benno Schulenberg                            *
  *                                                                        *
  *   GNU nano is free software: you can redistribute it and/or modify     *
  *   it under the terms of the GNU General Public License as published    *
@@ -110,7 +110,7 @@ void do_help(void)
 		/* The current answer when the user invokes help at the prompt. */
 	unsigned stash[sizeof(flags) / sizeof(flags[0])];
 		/* A storage place for the current flag settings. */
-	filestruct *line;
+	linestruct *line;
 	int length;
 	FILE *fp;
 
@@ -193,9 +193,9 @@ void do_help(void)
 		} else if (ISSET(SHOW_CURSOR) && (func == do_left || func == do_right ||
 											func == do_up || func == do_down)) {
 			func();
-		} else if (func == do_up) {
+		} else if (func == do_up || func == do_scroll_up) {
 			do_scroll_up();
-		} else if (func == do_down) {
+		} else if (func == do_down || func == do_scroll_down) {
 			if (openfile->edittop->lineno + editwinrows - 1 <
 								openfile->filebot->lineno)
 				do_scroll_down();
@@ -231,7 +231,7 @@ void do_help(void)
 		edit_refresh();
 
 		location = 0;
-		line = openfile->fileage;
+		line = openfile->filetop;
 
 		/* Count how far (in bytes) edittop is into the file. */
 		while (line != openfile->edittop) {
@@ -567,7 +567,7 @@ functionptrtype parse_help_input(int *kbinput)
 {
 	if (!meta_key) {
 		switch (*kbinput) {
-			case DEL_CODE:
+			case BS_CODE:
 			case '-':
 				return do_page_up;
 			case ' ':

@@ -9,16 +9,9 @@ void m_burn(void *data, unsigned int len) {
 #elif defined(HAVE_EXPLICIT_BZERO)
 	explicit_bzero(data, len);
 #else
-/* Based on the method in David Wheeler's
- * "Secure Programming for Linux and Unix HOWTO". May not be safe
- * against link-time optimisation. */
-	volatile char *p = data;
-
-	if (data == NULL)
-		return;
-	while (len--) {
-		*p++ = 0x0;
-	}
+	/* This must be volatile to avoid compiler optimisation */
+	volatile void *p = data;
+	memset((void*)p, 0x0, len);
 #endif
 }
 

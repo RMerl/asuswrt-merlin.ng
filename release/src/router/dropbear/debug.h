@@ -39,7 +39,9 @@
 /*#define CHECKCLEARTOWRITE() assert(ses.writepayload->len == 0 && \
 		ses.writepayload->pos == 0)*/
 
+#ifndef CHECKCLEARTOWRITE
 #define CHECKCLEARTOWRITE()
+#endif
 
 /* Define this, compile with -pg and set GMON_OUT_PREFIX=gmon to get gmon
  * output when Dropbear forks. This will allow it gprof to be used.
@@ -54,6 +56,7 @@
 
 /* you don't need to touch this block */
 #if DEBUG_TRACE
+extern int debug_trace;
 #define TRACE(X) dropbear_trace X;
 #define TRACE2(X) dropbear_trace2 X;
 #else /*DEBUG_TRACE*/

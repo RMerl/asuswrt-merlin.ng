@@ -1,3 +1,15 @@
+dropbear (2019.78-0.1) unstable; urgency=low
+
+  * New upstream release.
+
+ -- Matt Johnston <matt@ucc.asn.au>  Wed, 27 Mar 2019 22:51:57 +0800
+
+dropbear (2019.77-0.1) unstable; urgency=low
+
+  * New upstream release.
+
+ -- Matt Johnston <matt@ucc.asn.au>  Sat, 23 Mar 2019 22:51:57 +0800
+
 dropbear (2018.76-0.1) unstable; urgency=low
 
   * New upstream release.

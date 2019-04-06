@@ -468,6 +468,7 @@ ENABLE_SHARED = @ENABLE_SHARED@
 ENABLE_STATIC = @ENABLE_STATIC@
 EXEEXT = @EXEEXT@
 FGREP = @FGREP@
+FISH_FUNCTIONS_DIR = @FISH_FUNCTIONS_DIR@
 GCOV = @GCOV@
 GREP = @GREP@
 HAVE_BROTLI = @HAVE_BROTLI@
@@ -475,6 +476,7 @@ HAVE_GNUTLS_SRP = @HAVE_GNUTLS_SRP@
 HAVE_LDAP_SSL = @HAVE_LDAP_SSL@
 HAVE_LIBZ = @HAVE_LIBZ@
 HAVE_OPENSSL_SRP = @HAVE_OPENSSL_SRP@
+HAVE_PROTO_BSDSOCKET_H = @HAVE_PROTO_BSDSOCKET_H@
 IDN_ENABLED = @IDN_ENABLED@
 INSTALL = @INSTALL@
 INSTALL_DATA = @INSTALL_DATA@
@@ -540,7 +542,6 @@ SUPPORT_FEATURES = @SUPPORT_FEATURES@
 SUPPORT_PROTOCOLS = @SUPPORT_PROTOCOLS@
 USE_ARES = @USE_ARES@
 USE_CYASSL = @USE_CYASSL@
-USE_DARWINSSL = @USE_DARWINSSL@
 USE_GNUTLS = @USE_GNUTLS@
 USE_GNUTLS_NETTLE = @USE_GNUTLS_NETTLE@
 USE_LIBRTMP = @USE_LIBRTMP@
@@ -553,6 +554,7 @@ USE_NSS = @USE_NSS@
 USE_OPENLDAP = @USE_OPENLDAP@
 USE_POLARSSL = @USE_POLARSSL@
 USE_SCHANNEL = @USE_SCHANNEL@
+USE_SECTRANSP = @USE_SECTRANSP@
 USE_UNIX_SOCKETS = @USE_UNIX_SOCKETS@
 USE_WINDOWS_SSPI = @USE_WINDOWS_SSPI@
 VERSION = @VERSION@
@@ -782,9 +784,16 @@ EXTRA_DIST = mkhelp.pl makefile.dj                                     \
 
 # Use absolute directory to disable VPATH
 MANPAGE = $(abs_top_builddir)/docs/curl.1
-README = $(top_srcdir)/docs/MANUAL
 MKHELP = $(top_srcdir)/src/mkhelp.pl
 HUGE = tool_hugehelp.c
+HUGECMD = $(HUGEIT_$(V))
+HUGEIT_0 = @echo "  HUGE    " $@;
+HUGEIT_1 = 
+HUGEIT_ = $(HUGEIT_0)
+CHECKSRC = $(CS_$(V))
+CS_0 = @echo "  RUN     " $@;
+CS_1 = 
+CS_ = $(CS_0)
 
 # disable the tests that are mostly causing false positives
 TIDYFLAGS = -checks=-clang-analyzer-security.insecureAPI.strcpy,-clang-analyzer-optin.performance.Padding,-clang-analyzer-valist.Uninitialized,-clang-analyzer-core.NonNullParamChecker,-clang-analyzer-core.NullDereference
@@ -2419,29 +2428,29 @@ uninstall-am: uninstall-binPROGRAMS
 
 # This generates the tool_hugehelp.c file in both uncompressed and
 # compressed formats.
-@HAVE_LIBZ_TRUE@@USE_MANUAL_TRUE@$(HUGE): $(MANPAGE) $(README) $(MKHELP)
-@HAVE_LIBZ_TRUE@@USE_MANUAL_TRUE@	echo '#include "tool_setup.h"' > $(HUGE)
-@HAVE_LIBZ_TRUE@@USE_MANUAL_TRUE@	echo '#ifndef HAVE_LIBZ' >> $(HUGE)
-@HAVE_LIBZ_TRUE@@USE_MANUAL_TRUE@	$(NROFF) $(MANPAGE) | $(PERL) $(MKHELP) $(README) >> $(HUGE)
-@HAVE_LIBZ_TRUE@@USE_MANUAL_TRUE@	echo '#else' >> $(HUGE)
-@HAVE_LIBZ_TRUE@@USE_MANUAL_TRUE@	$(NROFF) $(MANPAGE) | $(PERL) $(MKHELP) -c $(README) >> $(HUGE)
-@HAVE_LIBZ_TRUE@@USE_MANUAL_TRUE@	echo '#endif /* HAVE_LIBZ */' >> $(HUGE)
+@HAVE_LIBZ_TRUE@@USE_MANUAL_TRUE@$(HUGE): $(MANPAGE) $(MKHELP)
+@HAVE_LIBZ_TRUE@@USE_MANUAL_TRUE@	$(HUGECMD) (echo '#include "tool_setup.h"' > $(HUGE);   \
+@HAVE_LIBZ_TRUE@@USE_MANUAL_TRUE@	echo '#ifndef HAVE_LIBZ' >> $(HUGE);                    \
+@HAVE_LIBZ_TRUE@@USE_MANUAL_TRUE@	$(NROFF) $(MANPAGE) | $(PERL) $(MKHELP) >> $(HUGE);     \
+@HAVE_LIBZ_TRUE@@USE_MANUAL_TRUE@	echo '#else' >> $(HUGE);                                \
+@HAVE_LIBZ_TRUE@@USE_MANUAL_TRUE@	$(NROFF) $(MANPAGE) | $(PERL) $(MKHELP) -c >> $(HUGE);  \
+@HAVE_LIBZ_TRUE@@USE_MANUAL_TRUE@	echo '#endif /* HAVE_LIBZ */' >> $(HUGE) )
 # This generates the tool_hugehelp.c file uncompressed only
-@HAVE_LIBZ_FALSE@@USE_MANUAL_TRUE@$(HUGE): $(MANPAGE) $(README) $(MKHELP)
-@HAVE_LIBZ_FALSE@@USE_MANUAL_TRUE@	echo '#include "tool_setup.h"' > $(HUGE)
-@HAVE_LIBZ_FALSE@@USE_MANUAL_TRUE@	$(NROFF) $(MANPAGE) | $(PERL) $(MKHELP) $(README) >> $(HUGE)
+@HAVE_LIBZ_FALSE@@USE_MANUAL_TRUE@$(HUGE): $(MANPAGE) $(MKHELP)
+@HAVE_LIBZ_FALSE@@USE_MANUAL_TRUE@	$(HUGECMD)(echo '#include "tool_setup.h"' > $(HUGE):    \
+@HAVE_LIBZ_FALSE@@USE_MANUAL_TRUE@	$(NROFF) $(MANPAGE) | $(PERL) $(MKHELP) >> $(HUGE) )
 
 # built-in manual has been disabled, make a blank file
 @USE_MANUAL_FALSE@$(HUGE):
-@USE_MANUAL_FALSE@	echo "/* built-in manual is disabled, blank function */" > $(HUGE)
-@USE_MANUAL_FALSE@	echo '#include "tool_hugehelp.h"' >> $(HUGE)
-@USE_MANUAL_FALSE@	echo "void hugehelp(void) {}" >>$(HUGE)
+@USE_MANUAL_FALSE@	$(HUGECMD)(echo "/* built-in manual is disabled, blank function */" > $(HUGE); \
+@USE_MANUAL_FALSE@	echo '#include "tool_hugehelp.h"' >> $(HUGE); \
+@USE_MANUAL_FALSE@	echo "void hugehelp(void) {}" >>$(HUGE) )
 
 # ignore tool_hugehelp.c since it is generated source code and it plays
 # by slightly different rules!
 checksrc:
-	@PERL@ $(top_srcdir)/lib/checksrc.pl -D$(srcdir)        \
-	-W$(srcdir)/tool_hugehelp.c $(srcdir)/*.[ch]
+	$(CHECKSRC)(@PERL@ $(top_srcdir)/lib/checksrc.pl -D$(srcdir)        \
+	-W$(srcdir)/tool_hugehelp.c $(srcdir)/*.[ch])
 
 # for debug builds, we scan the sources on all regular make invokes
 @CURLDEBUG_TRUE@all-local: checksrc

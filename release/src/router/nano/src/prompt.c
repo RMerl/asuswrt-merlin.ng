@@ -1,7 +1,7 @@
 /**************************************************************************
  *   prompt.c  --  This file is part of GNU nano.                         *
  *                                                                        *
- *   Copyright (C) 1999-2011, 2013-2018 Free Software Foundation, Inc.    *
+ *   Copyright (C) 1999-2011, 2013-2019 Free Software Foundation, Inc.    *
  *   Copyright (C) 2016, 2018 Benno Schulenberg                           *
  *                                                                        *
  *   GNU nano is free software: you can redistribute it and/or modify     *
@@ -126,6 +126,11 @@ int do_statusbar_input(bool *finished)
 	if (shortcut) {
 		if (shortcut->func == do_tab || shortcut->func == do_enter)
 			;
+#ifdef ENABLE_HISTORIES
+		else if (shortcut->func == get_history_older_void ||
+					shortcut->func == get_history_newer_void)
+			;
+#endif
 		else if (shortcut->func == do_left)
 			do_statusbar_left();
 		else if (shortcut->func == do_right)
@@ -395,11 +400,12 @@ void draw_the_promptbar(void)
 	waddch(bottomwin, ':');
 	waddch(bottomwin, (the_page == 0) ? ' ' : '<');
 
-	expanded = display_string(answer, the_page, COLS - base - 1, FALSE);
+	expanded = display_string(answer, the_page, COLS - base, FALSE, TRUE);
 	waddstr(bottomwin, expanded);
 	free(expanded);
 
-	waddch(bottomwin, (the_page >= end_page) ? ' ' : '>');
+	if (base + strlenpt(answer) != COLS && the_page < end_page)
+		mvwaddch(bottomwin, 0, COLS - 1, '>');
 
 	wattroff(bottomwin, interface_color_pair[TITLE_BAR]);
 
@@ -432,7 +438,7 @@ void add_or_remove_pipe_symbol_from_answer(void)
 
 /* Get a string of input at the statusbar prompt. */
 functionptrtype acquire_an_answer(int *actual, bool allow_tabs,
-		bool allow_files, bool *listed, filestruct **history_list,
+		bool allow_files, bool *listed, linestruct **history_list,
 		void (*refresh_func)(void))
 {
 	int kbinput = ERR;
@@ -517,12 +523,6 @@ functionptrtype acquire_an_answer(int *actual, bool allow_tabs,
 					answer = mallocstrcpy(answer, history);
 					typing_x = strlen(answer);
 				}
-
-				/* This key has a shortcut-list entry when it's used to
-				 * move to an older search, which means that finished has
-				 * been set to TRUE.  Set it back to FALSE here, so that
-				 * we aren't kicked out of the statusbar prompt. */
-				finished = FALSE;
 			}
 		} else if (func == get_history_newer_void) {
 			if (history_list != NULL) {
@@ -540,12 +540,6 @@ functionptrtype acquire_an_answer(int *actual, bool allow_tabs,
 					answer = mallocstrcpy(answer, magichistory);
 					typing_x = strlen(answer);
 				}
-
-				/* This key has a shortcut-list entry when it's used to
-				 * move to a newer search, which means that finished has
-				 * been set to TRUE.  Set it back to FALSE here, so that
-				 * we aren't kicked out of the statusbar prompt. */
-				finished = FALSE;
 			}
 		} else
 #endif /* ENABLE_HISTORIES */
@@ -581,19 +575,16 @@ functionptrtype acquire_an_answer(int *actual, bool allow_tabs,
 	return func;
 }
 
-/* Ask a question on the statusbar.  The prompt will be stored in the
- * static prompt, which should be NULL initially, and the answer will be
- * stored in the answer global.  Returns -1 on aborted enter, -2 on a
- * blank string, and 0 otherwise, the valid shortcut key caught.
- * curranswer is any editable text that we want to put up by default,
- * and refresh_func is the function we want to call to refresh the edit
- * window.
+/* Ask a question on the statusbar.  Return 0 when text was entered,
+ * -1 for a cancelled entry, -2 for a blank string, and the relevant
+ * keycode when a valid shortcut key was pressed.
  *
- * The allow_tabs parameter indicates whether we should allow tabs to be
- * interpreted.  The allow_files parameter indicates whether we should
- * allow all files (as opposed to just directories) to be tab completed. */
+ * The allow_tabs parameter indicates whether tab completion is allowed,
+ * and allow_files indicates whether all files (and not just directories)
+ * can be tab completed.  The curranswer parameter is the default answer
+ * for when simply Enter is typed. */
 int do_prompt(bool allow_tabs, bool allow_files,
-		int menu, const char *curranswer, filestruct **history_list,
+		int menu, const char *curranswer, linestruct **history_list,
 		void (*refresh_func)(void), const char *msg, ...)
 {
 	va_list ap;
@@ -658,7 +649,7 @@ int do_prompt(bool allow_tabs, bool allow_files,
  * TRUE when passed in), and -1 for Cancel. */
 int do_yesno_prompt(bool all, const char *msg)
 {
-	int response = -2, width = 16;
+	int choice = -2, width = 16;
 	/* TRANSLATORS: For the next three strings, specify the starting letters
 	 * of the translations for "Yes"/"No"/"All".  The first letter of each of
 	 * these strings MUST be a single-byte letter; others may be multi-byte. */
@@ -666,7 +657,7 @@ int do_yesno_prompt(bool all, const char *msg)
 	const char *nostr = _("Nn");
 	const char *allstr = _("Aa");
 
-	while (response == -2) {
+	while (choice == -2) {
 #ifdef ENABLE_NLS
 		char letter[MAXCHARLEN + 1];
 		int index = 0;
@@ -732,21 +723,21 @@ int do_yesno_prompt(bool all, const char *msg)
 
 		/* See if the typed letter is in the Yes, No, or All strings. */
 		if (strstr(yesstr, letter) != NULL)
-			response = 1;
+			choice = 1;
 		else if (strstr(nostr, letter) != NULL)
-			response = 0;
+			choice = 0;
 		else if (all && strstr(allstr, letter) != NULL)
-			response = 2;
+			choice = 2;
 		else
 #endif /* ENABLE_NLS */
 		if (strchr("Yy", kbinput) != NULL)
-			response = 1;
+			choice = 1;
 		else if (strchr("Nn", kbinput) != NULL)
-			response = 0;
+			choice = 0;
 		else if (all && strchr("Aa", kbinput) != NULL)
-			response = 2;
+			choice = 2;
 		else if (func_from_key(&kbinput) == do_cancel)
-			response = -1;
+			choice = -1;
 #ifdef ENABLE_MOUSE
 		else if (kbinput == KEY_MOUSE) {
 			int mouse_x, mouse_y;
@@ -758,14 +749,14 @@ int do_yesno_prompt(bool all, const char *msg)
 				int y = mouse_y - 1;
 
 				/* x == 0 means Yes or No, y == 0 means Yes or All. */
-				response = -2 * x * y + x - y + 1;
+				choice = -2 * x * y + x - y + 1;
 
-				if (response == 2 && !all)
-					response = -2;
+				if (choice == 2 && !all)
+					choice = -2;
 			}
 		}
 #endif /* ENABLE_MOUSE */
 	}
 
-	return response;
+	return choice;
 }

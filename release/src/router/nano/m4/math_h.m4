@@ -1,5 +1,5 @@
-# math_h.m4 serial 116
-dnl Copyright (C) 2007-2018 Free Software Foundation, Inc.
+# math_h.m4 serial 119
+dnl Copyright (C) 2007-2019 Free Software Foundation, Inc.
 dnl This file is free software; the Free Software Foundation
 dnl gives unlimited permission to copy and/or distribute it,
 dnl with or without modifications, as long as this notice is preserved.
@@ -268,8 +268,10 @@ AC_DEFUN([gl_MATH_H_DEFAULTS],
   REPLACE_COSF=0;              AC_SUBST([REPLACE_COSF])
   REPLACE_COSHF=0;             AC_SUBST([REPLACE_COSHF])
   REPLACE_EXPF=0;              AC_SUBST([REPLACE_EXPF])
+  REPLACE_EXPL=0;              AC_SUBST([REPLACE_EXPL])
   REPLACE_EXPM1=0;             AC_SUBST([REPLACE_EXPM1])
   REPLACE_EXPM1F=0;            AC_SUBST([REPLACE_EXPM1F])
+  REPLACE_EXPM1L=0;            AC_SUBST([REPLACE_EXPM1L])
   REPLACE_EXP2=0;              AC_SUBST([REPLACE_EXP2])
   REPLACE_EXP2L=0;             AC_SUBST([REPLACE_EXP2L])
   REPLACE_FABSL=0;             AC_SUBST([REPLACE_FABSL])
@@ -318,6 +320,7 @@ AC_DEFUN([gl_MATH_H_DEFAULTS],
   REPLACE_REMAINDER=0;         AC_SUBST([REPLACE_REMAINDER])
   REPLACE_REMAINDERF=0;        AC_SUBST([REPLACE_REMAINDERF])
   REPLACE_REMAINDERL=0;        AC_SUBST([REPLACE_REMAINDERL])
+  REPLACE_RINTL=0;             AC_SUBST([REPLACE_RINTL])
   REPLACE_ROUND=0;             AC_SUBST([REPLACE_ROUND])
   REPLACE_ROUNDF=0;            AC_SUBST([REPLACE_ROUNDF])
   REPLACE_ROUNDL=0;            AC_SUBST([REPLACE_ROUNDL])

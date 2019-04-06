@@ -1,5 +1,5 @@
 /* Extended regular expression matching and search library.
-   Copyright (C) 2002-2018 Free Software Foundation, Inc.
+   Copyright (C) 2002-2019 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
    Contributed by Isamu Hasegawa <isamu@yamato.ibm.com>.
 
@@ -189,7 +189,7 @@ static reg_errcode_t extend_buffers (re_match_context_t *mctx, int min_len);
    We return 0 if we find a match and REG_NOMATCH if not.  */
 
 int
-regexec (const regex_t *_Restrict_ preg, const char *_Restrict_ string,
+regexec (const regex_t *__restrict preg, const char *__restrict string,
 	 size_t nmatch, regmatch_t pmatch[], int eflags)
 {
   reg_errcode_t err;
@@ -232,8 +232,8 @@ __typeof__ (__regexec) __compat_regexec;
 
 int
 attribute_compat_text_section
-__compat_regexec (const regex_t *_Restrict_ preg,
-		  const char *_Restrict_ string, size_t nmatch,
+__compat_regexec (const regex_t *__restrict preg,
+		  const char *__restrict string, size_t nmatch,
 		  regmatch_t pmatch[], int eflags)
 {
   return regexec (preg, string, nmatch, pmatch,
@@ -1293,8 +1293,10 @@ proceed_next_node (const re_match_context_t *mctx, Idx nregs, regmatch_t *regs,
 	      else if (naccepted)
 		{
 		  char *buf = (char *) re_string_get_buffer (&mctx->input);
-		  if (memcmp (buf + regs[subexp_idx].rm_so, buf + *pidx,
-			      naccepted) != 0)
+		  if (mctx->input.valid_len - *pidx < naccepted
+		      || (memcmp (buf + regs[subexp_idx].rm_so, buf + *pidx,
+				  naccepted)
+			  != 0))
 		    return -1;
 		}
 	    }
@@ -2207,7 +2209,7 @@ sift_states_iter_mb (const re_match_context_t *mctx, re_sift_context_t *sctx,
 			    dfa->nexts[node_idx]))
     /* The node can't accept the "multi byte", or the
        destination was already thrown away, then the node
-       could't accept the current input "multi byte".   */
+       couldn't accept the current input "multi byte".   */
     naccepted = 0;
   /* Otherwise, it is sure that the node could accept
      'naccepted' bytes input.  */
@@ -2783,8 +2785,11 @@ get_subexp (re_match_context_t *mctx, Idx bkref_node, Idx bkref_str_idx)
 	    return REG_ESPACE;
 	  err = get_subexp_sub (mctx, sub_top, sub_last, bkref_node,
 				bkref_str_idx);
+	  buf = (const char *) re_string_get_buffer (&mctx->input);
 	  if (err == REG_NOMATCH)
 	    continue;
+	  if (__glibc_unlikely (err != REG_NOERROR))
+	    return err;
 	}
     }
   return REG_NOERROR;

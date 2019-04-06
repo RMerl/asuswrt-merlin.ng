@@ -1,5 +1,5 @@
 /* Convert wide character to multibyte character.
-   Copyright (C) 2008-2018 Free Software Foundation, Inc.
+   Copyright (C) 2008-2019 Free Software Foundation, Inc.
    Written by Bruno Haible <bruno@clisp.org>, 2008.
 
    This program is free software: you can redistribute it and/or modify
@@ -27,8 +27,8 @@
 size_t
 wcrtomb (char *s, wchar_t wc, mbstate_t *ps)
 {
-  /* This implementation of wcrtomb on top of wctomb() supports only
-     stateless encodings.  ps must be in the initial state.  */
+  /* This implementation of wcrtomb supports only stateless encodings.
+     ps must be in the initial state.  */
   if (ps != NULL && !mbsinit (ps))
     {
       errno = EINVAL;
@@ -40,10 +40,21 @@ wcrtomb (char *s, wchar_t wc, mbstate_t *ps)
     return 1;
   else
     {
+#if defined __ANDROID__
+      /* Implement consistently with mbrtowc(): through a 1:1 correspondence,
+         as in ISO-8859-1.  */
+      if (wc >= 0 && wc <= 0xff)
+        {
+          *s = (unsigned char) wc;
+          return 1;
+        }
+#else
+      /* Implement on top of wctomb().  */
       int ret = wctomb (s, wc);
 
       if (ret >= 0)
         return ret;
+#endif
       else
         {
           errno = EILSEQ;

@@ -1110,6 +1110,9 @@
 			Name="Source Files"
 			Filter="">
 			<File
+				RelativePath="..\..\..\..\lib\altsvc.c">
+			</File>
+			<File
 				RelativePath="..\..\..\..\lib\amigaos.c">
 			</File>
 			<File
@@ -1446,6 +1449,9 @@
 		<Filter
 			Name="Header Files"
 			Filter="">
+			<File
+				RelativePath="..\..\..\..\lib\altsvc.h">
+			</File>
 			<File
 				RelativePath="..\..\..\..\lib\amigaos.h">
 			</File>
@@ -1848,9 +1854,6 @@
 					RelativePath="..\..\..\..\lib\vtls\cyassl.c">
 				</File>
 				<File
-					RelativePath="..\..\..\..\lib\vtls\darwinssl.c">
-				</File>
-				<File
 					RelativePath="..\..\..\..\lib\vtls\gskit.c">
 				</File>
 				<File
@@ -1881,6 +1884,9 @@
 					RelativePath="..\..\..\..\lib\vtls\schannel_verify.c">
 				</File>
 				<File
+					RelativePath="..\..\..\..\lib\vtls\sectransp.c">
+				</File>
+				<File
 					RelativePath="..\..\..\..\lib\vtls\vtls.c">
 				</File>
 			</Filter>
@@ -1889,9 +1895,6 @@
 				Filter="">
 				<File
 					RelativePath="..\..\..\..\lib\vtls\cyassl.h">
-				</File>
-				<File
-					RelativePath="..\..\..\..\lib\vtls\darwinssl.h">
 				</File>
 				<File
 					RelativePath="..\..\..\..\lib\vtls\gskit.h">
@@ -1919,6 +1922,9 @@
 				</File>
 				<File
 					RelativePath="..\..\..\..\lib\vtls\schannel.h">
+				</File>
+				<File
+					RelativePath="..\..\..\..\lib\vtls\sectransp.h">
 				</File>
 				<File
 					RelativePath="..\..\..\..\lib\vtls\vtls.h">

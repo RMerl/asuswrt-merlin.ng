@@ -1,5 +1,5 @@
 /* Substitute for and wrapper around <unistd.h>.
-   Copyright (C) 2003-2018 Free Software Foundation, Inc.
+   Copyright (C) 2003-2019 Free Software Foundation, Inc.
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -68,9 +68,11 @@
 # include <stdio.h>
 #endif
 
-/* Cygwin 1.7.1 declares unlinkat in <fcntl.h>, not in <unistd.h>.  */
+/* Cygwin 1.7.1 and Android 4.3 declare unlinkat in <fcntl.h>, not in
+   <unistd.h>.  */
 /* But avoid namespace pollution on glibc systems.  */
-#if (@GNULIB_UNLINKAT@ || defined GNULIB_POSIXCHECK) && defined __CYGWIN__ \
+#if (@GNULIB_UNLINKAT@ || defined GNULIB_POSIXCHECK) \
+    && (defined __CYGWIN__ || defined __ANDROID__) \
     && ! defined __GLIBC__
 # include <fcntl.h>
 #endif
@@ -111,6 +113,13 @@
      || (@GNULIB_GETHOSTNAME@ && defined __TANDEM)) \
     && !defined __GLIBC__
 # include <netdb.h>
+#endif
+
+/* Android 4.3 declares fchownat in <sys/stat.h>, not in <unistd.h>.  */
+/* But avoid namespace pollution on glibc systems.  */
+#if (@GNULIB_FCHOWNAT@ || defined GNULIB_POSIXCHECK) && defined __ANDROID__ \
+    && !defined __GLIBC__
+# include <sys/stat.h>
 #endif
 
 /* MSVC defines off_t in <sys/types.h>.

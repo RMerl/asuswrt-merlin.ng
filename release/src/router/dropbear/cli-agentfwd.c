@@ -52,6 +52,7 @@ const struct ChanType cli_chan_agent = {
 	new_agent_chan,
 	NULL,
 	NULL,
+	NULL,
 	NULL
 };
 

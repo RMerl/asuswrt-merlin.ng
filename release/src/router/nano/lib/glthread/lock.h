@@ -1,5 +1,5 @@
 /* Locking in multithreaded situations.
-   Copyright (C) 2005-2018 Free Software Foundation, Inc.
+   Copyright (C) 2005-2019 Free Software Foundation, Inc.
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -416,6 +416,9 @@ extern "C" {
 #  pragma weak pth_rwlock_acquire
 #  pragma weak pth_rwlock_release
 #  pragma weak pth_once
+#  pragma weak pth_cond_init
+#  pragma weak pth_cond_await
+#  pragma weak pth_cond_notify
 
 #  pragma weak pth_cancel
 #  define pth_in_use() (pth_cancel != NULL)

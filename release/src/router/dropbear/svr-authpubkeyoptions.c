@@ -113,7 +113,6 @@ void svr_pubkey_options_cleanup() {
 			m_free(ses.authstate.pubkey_options->forced_command);
 		}
 		m_free(ses.authstate.pubkey_options);
-		ses.authstate.pubkey_options = NULL;
 	}
 }
 
@@ -169,6 +168,12 @@ int svr_add_pubkey_options(buffer *options_buf, int line_num, const char* filena
 		if (match_option(options_buf, "command=\"") == DROPBEAR_SUCCESS) {
 			int escaped = 0;
 			const unsigned char* command_start = buf_getptr(options_buf, 0);
+
+			if (ses.authstate.pubkey_options->forced_command) {
+				/* multiple command= options */
+				goto bad_option;
+			}
+
 			while (options_buf->pos < options_buf->len) {
 				const char c = buf_getbyte(options_buf);
 				if (!escaped && c == '"') {

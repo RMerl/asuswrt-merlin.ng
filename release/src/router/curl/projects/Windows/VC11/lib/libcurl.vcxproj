@@ -2379,6 +2379,7 @@
     </Lib>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\..\..\lib\altsvc.c" />
     <ClCompile Include="..\..\..\..\lib\amigaos.c" />
     <ClCompile Include="..\..\..\..\lib\asyn-ares.c" />
     <ClCompile Include="..\..\..\..\lib\asyn-thread.c" />
@@ -2503,7 +2504,6 @@
     <ClCompile Include="..\..\..\..\lib\vauth\spnego_sspi.c" />
     <ClCompile Include="..\..\..\..\lib\vauth\vauth.c" />
     <ClCompile Include="..\..\..\..\lib\vtls\cyassl.c" />
-    <ClCompile Include="..\..\..\..\lib\vtls\darwinssl.c" />
     <ClCompile Include="..\..\..\..\lib\vtls\gskit.c" />
     <ClCompile Include="..\..\..\..\lib\vtls\gtls.c" />
     <ClCompile Include="..\..\..\..\lib\vtls\mbedtls.c" />
@@ -2514,9 +2514,11 @@
     <ClCompile Include="..\..\..\..\lib\vtls\polarssl_threadlock.c" />
     <ClCompile Include="..\..\..\..\lib\vtls\schannel.c" />
     <ClCompile Include="..\..\..\..\lib\vtls\schannel_verify.c" />
+    <ClCompile Include="..\..\..\..\lib\vtls\sectransp.c" />
     <ClCompile Include="..\..\..\..\lib\vtls\vtls.c" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\..\..\lib\altsvc.h" />
     <ClInclude Include="..\..\..\..\lib\amigaos.h" />
     <ClInclude Include="..\..\..\..\lib\arpa_telnet.h" />
     <ClInclude Include="..\..\..\..\lib\asyn.h" />
@@ -2630,7 +2632,6 @@
     <ClInclude Include="..\..\..\..\lib\vauth\ntlm.h" />
     <ClInclude Include="..\..\..\..\lib\vauth\vauth.h" />
     <ClInclude Include="..\..\..\..\lib\vtls\cyassl.h" />
-    <ClInclude Include="..\..\..\..\lib\vtls\darwinssl.h" />
     <ClInclude Include="..\..\..\..\lib\vtls\gskit.h" />
     <ClInclude Include="..\..\..\..\lib\vtls\gtls.h" />
     <ClInclude Include="..\..\..\..\lib\vtls\mbedtls.h" />
@@ -2640,6 +2641,7 @@
     <ClInclude Include="..\..\..\..\lib\vtls\polarssl.h" />
     <ClInclude Include="..\..\..\..\lib\vtls\polarssl_threadlock.h" />
     <ClInclude Include="..\..\..\..\lib\vtls\schannel.h" />
+    <ClInclude Include="..\..\..\..\lib\vtls\sectransp.h" />
     <ClInclude Include="..\..\..\..\lib\vtls\vtls.h" />
   </ItemGroup>
   <ItemGroup>

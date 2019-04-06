@@ -1,8 +1,8 @@
 /**************************************************************************
  *   chars.c  --  This file is part of GNU nano.                          *
  *                                                                        *
- *   Copyright (C) 2001-2011, 2013-2018 Free Software Foundation, Inc.    *
- *   Copyright (C) 2016-2017 Benno Schulenberg                            *
+ *   Copyright (C) 2001-2011, 2013-2019 Free Software Foundation, Inc.    *
+ *   Copyright (C) 2016-2018 Benno Schulenberg                            *
  *                                                                        *
  *   GNU nano is free software: you can redistribute it and/or modify     *
  *   it under the terms of the GNU General Public License as published    *
@@ -636,37 +636,20 @@ char *mbrevstrpbrk(const char *head, const char *accept, const char *pointer)
 #endif /* !NANO_TINY */
 
 #if defined(ENABLE_NANORC) && (!defined(NANO_TINY) || defined(ENABLE_JUSTIFY))
-/* Return TRUE if the string s contains one or more blank characters,
+/* Return TRUE if the given string contains at least one blank character,
  * and FALSE otherwise. */
-bool has_blank_chars(const char *s)
+bool has_blank_char(const char *string)
 {
-	for (; *s != '\0'; s++) {
-		if (isblank((unsigned char)*s))
+	char symbol[MAXCHARLEN];
+
+	while (*string != '\0') {
+		string += parse_mbchar(string, symbol, NULL);
+
+		if (is_blank_mbchar(symbol))
 			return TRUE;
 	}
 
 	return FALSE;
-}
-
-/* Return TRUE if the multibyte string s contains one or more blank
- * multibyte characters, and FALSE otherwise. */
-bool has_blank_mbchars(const char *s)
-{
-#ifdef ENABLE_UTF8
-	if (use_utf8) {
-		char symbol[MAXCHARLEN];
-
-		for (; *s != '\0'; s += move_mbright(s, 0)) {
-			parse_mbchar(s, symbol, NULL);
-
-			if (is_blank_mbchar(symbol))
-				return TRUE;
-		}
-
-		return FALSE;
-	} else
-#endif
-		return has_blank_chars(s);
 }
 #endif /* ENABLE_NANORC && (!NANO_TINY || ENABLE_JUSTIFY) */
 

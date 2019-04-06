@@ -1,7 +1,7 @@
 /**************************************************************************
  *   proto.h  --  This file is part of GNU nano.                          *
  *                                                                        *
- *   Copyright (C) 1999-2011, 2013-2018 Free Software Foundation, Inc.    *
+ *   Copyright (C) 1999-2011, 2013-2019 Free Software Foundation, Inc.    *
  *                                                                        *
  *   GNU nano is free software: you can redistribute it and/or modify     *
  *   it under the terms of the GNU General Public License as published    *
@@ -44,7 +44,7 @@ extern bool suppress_cursorpos;
 
 extern message_type lastmessage;
 
-extern filestruct *pletion_line;
+extern linestruct *pletion_line;
 
 extern bool inhelp;
 extern char *title;
@@ -73,7 +73,7 @@ extern int shiftaltup, shiftaltdown;
 #endif
 
 #ifdef ENABLED_WRAPORJUSTIFY
-extern ssize_t wrap_at, fill;
+extern ssize_t fill, wrap_at;
 #endif
 
 extern char *last_search;
@@ -88,9 +88,14 @@ extern WINDOW *bottomwin;
 extern int editwinrows;
 extern int editwincols;
 extern int margin;
+#ifndef NANO_TINY
+extern ssize_t stripe_column;
+#endif
 
-extern filestruct *cutbuffer;
-extern filestruct *cutbottom;
+extern linestruct *cutbuffer;
+extern linestruct *cutbottom;
+extern bool keep_cutbuffer;
+
 extern partition *filepart;
 extern openfilestruct *openfile;
 extern openfilestruct *firstfile;
@@ -98,20 +103,16 @@ extern openfilestruct *firstfile;
 #ifndef NANO_TINY
 extern char *matchbrackets;
 extern char *whitespace;
-extern int whitespace_len[2];
+extern int whitelen[2];
 #endif
 
 extern const char *exit_tag;
 extern const char *close_tag;
-extern const char *uncut_tag;
 #ifdef ENABLE_JUSTIFY
-extern const char *unjust_tag;
 extern char *punct;
 extern char *brackets;
 extern char *quotestr;
 extern regex_t quotereg;
-extern int quoterc;
-extern char *quoteerr;
 #endif
 
 extern char *word_chars;
@@ -145,19 +146,17 @@ extern int currmenu;
 extern sc *sclist;
 extern subnfunc *allfuncs;
 extern subnfunc *exitfunc;
-extern subnfunc *uncutfunc;
 
-extern filestruct *search_history;
-extern filestruct *replace_history;
-extern filestruct *execute_history;
+extern linestruct *search_history;
+extern linestruct *replace_history;
+extern linestruct *execute_history;
 #ifdef ENABLE_HISTORIES
-extern filestruct *searchtop;
-extern filestruct *searchbot;
-extern filestruct *replacetop;
-extern filestruct *replacebot;
-extern filestruct *executetop;
-extern filestruct *executebot;
-extern poshiststruct *position_history;
+extern linestruct *searchtop;
+extern linestruct *searchbot;
+extern linestruct *replacetop;
+extern linestruct *replacebot;
+extern linestruct *executetop;
+extern linestruct *executebot;
 #endif
 
 extern regex_t search_regexp;
@@ -229,7 +228,7 @@ char *revstrpbrk(const char *head, const char *accept, const char *index);
 char *mbrevstrpbrk(const char *head, const char *accept, const char *index);
 #endif
 #if defined(ENABLE_NANORC) && (!defined(NANO_TINY) || defined(ENABLE_JUSTIFY))
-bool has_blank_mbchars(const char *s);
+bool has_blank_char(const char *s);
 #endif
 #ifdef ENABLE_UTF8
 bool is_valid_unicode(wchar_t wc);
@@ -240,17 +239,21 @@ bool is_valid_unicode(wchar_t wc);
 void set_colorpairs(void);
 void color_init(void);
 void color_update(void);
-void check_the_multis(filestruct *line);
-void alloc_multidata_if_needed(filestruct *fileptr);
+void check_the_multis(linestruct *line);
+void alloc_multidata_if_needed(linestruct *fileptr);
 void precalc_multicolorinfo(void);
 #endif
 
 /* Most functions in cut.c. */
-void cutbuffer_reset(void);
+void do_delete(void);
+void do_backspace(void);
 #ifndef NANO_TINY
+void chop_previous_word(void);
+void chop_next_word(void);
 void cut_marked(bool *right_side_up);
 #endif
 void do_cut_text(bool copy_text, bool marked, bool cut_till_eof, bool append);
+bool is_cuttable(bool test_cliff);
 void do_cut_text_void(void);
 #ifndef NANO_TINY
 void do_copy_text(void);
@@ -340,14 +343,14 @@ void do_help_void(void);
 /* Most functions in history.c. */
 #ifdef ENABLE_HISTORIES
 void history_init(void);
-void history_reset(const filestruct *h);
-void update_history(filestruct **h, const char *s);
-char *get_history_older(filestruct **h);
-char *get_history_newer(filestruct **h);
+void history_reset(const linestruct *h);
+void update_history(linestruct **h, const char *s);
+char *get_history_older(linestruct **h);
+char *get_history_newer(linestruct **h);
 void get_history_older_void(void);
 void get_history_newer_void(void);
 #ifdef ENABLE_TABCOMP
-char *get_history_completion(filestruct **h, char *s, size_t len);
+char *get_history_completion(linestruct **h, char *s, size_t len);
 #endif
 bool have_statedir(void);
 void load_history(void);
@@ -363,8 +366,8 @@ void to_last_line(void);
 void do_page_up(void);
 void do_page_down(void);
 #ifdef ENABLE_JUSTIFY
-void do_para_begin(void);
-void do_para_end(void);
+void do_para_begin(linestruct **line);
+void do_para_end(linestruct **line);
 void do_para_begin_void(void);
 void do_para_end_void(void);
 #endif
@@ -386,20 +389,20 @@ void do_left(void);
 void do_right(void);
 
 /* Most functions in nano.c. */
-filestruct *make_new_node(filestruct *prevnode);
-void splice_node(filestruct *afterthis, filestruct *newnode);
-void unlink_node(filestruct *fileptr);
-void delete_node(filestruct *fileptr);
-filestruct *copy_filestruct(const filestruct *src);
-void free_filestruct(filestruct *src);
-void renumber(filestruct *line);
-partition *partition_filestruct(filestruct *top, size_t top_x,
-		filestruct *bot, size_t bot_x);
-void unpartition_filestruct(partition **p);
-void extract_buffer(filestruct **file_top, filestruct **file_bot,
-		filestruct *top, size_t top_x, filestruct *bot, size_t bot_x);
-void ingraft_buffer(filestruct *somebuffer);
-void copy_from_buffer(filestruct *somebuffer);
+linestruct *make_new_node(linestruct *prevnode);
+void splice_node(linestruct *afterthis, linestruct *newnode);
+void unlink_node(linestruct *fileptr);
+void delete_node(linestruct *fileptr);
+linestruct *copy_buffer(const linestruct *src);
+void free_lines(linestruct *src);
+void renumber(linestruct *line);
+partition *partition_buffer(linestruct *top, size_t top_x,
+		linestruct *bot, size_t bot_x);
+void unpartition_buffer(partition **p);
+void extract_buffer(linestruct **file_top, linestruct **file_bot,
+		linestruct *top, size_t top_x, linestruct *bot, size_t bot_x);
+void ingraft_buffer(linestruct *somebuffer);
+void copy_from_buffer(linestruct *somebuffer);
 #ifdef ENABLE_MULTIBUFFER
 void unlink_opennode(openfilestruct *fileptr);
 void delete_opennode(openfilestruct *fileptr);
@@ -435,7 +438,6 @@ void confirm_margin(void);
 #endif
 void unbound_key(int code);
 bool okay_for_view(const sc *shortcut);
-int do_input(bool allow_funcs);
 void do_output(char *output, size_t output_len, bool allow_cntrls);
 
 /* Most functions in prompt.c. */
@@ -457,7 +459,7 @@ size_t get_statusbar_page_start(size_t start_col, size_t column);
 void put_cursor_at_end_of_answer(void);
 void add_or_remove_pipe_symbol_from_answer(void);
 int do_prompt(bool allow_tabs, bool allow_files,
-		int menu, const char *curranswer, filestruct **history_list,
+		int menu, const char *curranswer, linestruct **history_list,
 		void (*refresh_func)(void), const char *msg, ...);
 int do_yesno_prompt(bool all, const char *msg);
 
@@ -473,7 +475,7 @@ void do_rcfiles(void);
 /* Most functions in search.c. */
 void tidy_up_after_search(void);
 int findnextstr(const char *needle, bool whole_word_only, int modus,
-		size_t *match_len, bool skipone, const filestruct *begin, size_t begin_x);
+		size_t *match_len, bool skipone, const linestruct *begin, size_t begin_x);
 void do_search(void);
 void do_search_forward(void);
 void do_search_backward(void);
@@ -482,7 +484,7 @@ void do_findnext(void);
 void not_found_msg(const char *str);
 void go_looking(void);
 ssize_t do_replace_loop(const char *needle, bool whole_word_only,
-		const filestruct *real_current, size_t *real_current_x);
+		const linestruct *real_current, size_t *real_current_x);
 void do_replace(void);
 void ask_for_replacement(void);
 void goto_line_posx(ssize_t line, size_t pos_x);
@@ -496,12 +498,6 @@ void do_find_bracket(void);
 /* Most functions in text.c. */
 #ifndef NANO_TINY
 void do_mark(void);
-#endif
-void do_delete(void);
-void do_backspace(void);
-#ifndef NANO_TINY
-void do_cut_prev_word(void);
-void do_cut_next_word(void);
 #endif
 void do_tab(void);
 #ifndef NANO_TINY
@@ -525,7 +521,7 @@ void update_undo(undo_type action);
 #endif /* !NANO_TINY */
 #ifdef ENABLE_WRAPPING
 void wrap_reset(void);
-bool do_wrap(filestruct *line);
+bool do_wrap(linestruct *line);
 #endif
 #if defined(ENABLE_HELP) || defined(ENABLED_WRAPORJUSTIFY)
 ssize_t break_line(const char *line, ssize_t goal, bool snap_at_nl);
@@ -534,9 +530,8 @@ ssize_t break_line(const char *line, ssize_t goal, bool snap_at_nl);
 size_t indent_length(const char *line);
 #endif
 #ifdef ENABLE_JUSTIFY
-void justify_format(filestruct *paragraph, size_t skip);
-bool begpar(const filestruct *const foo, int depth);
-bool inpar(const filestruct *const foo);
+bool begpar(const linestruct *const foo, int depth);
+bool inpar(const linestruct *const foo);
 void do_justify(bool full_justify);
 void do_justify_void(void);
 void do_full_justify(void);
@@ -562,14 +557,12 @@ int digits(ssize_t n);
 #endif
 bool parse_num(const char *str, ssize_t *val);
 bool parse_line_column(const char *str, ssize_t *line, ssize_t *column);
-void snuggly_fit(char **str);
 void null_at(char **data, size_t index);
 void unsunder(char *str, size_t true_len);
 void sunder(char *str);
 #if !defined(ENABLE_TINY) || defined(ENABLE_TABCOMP) || defined(ENABLE_BROWSER)
 void free_chararray(char **array, size_t len);
 #endif
-const char *fixbounds(const char *r);
 #ifdef ENABLE_SPELLER
 bool is_separate_word(size_t position, size_t length, const char *buf);
 #endif
@@ -591,13 +584,13 @@ void new_magicline(void);
 void remove_magicline(void);
 #endif
 #ifndef NANO_TINY
-void mark_order(const filestruct **top, size_t *top_x,
-		const filestruct **bot, size_t *bot_x, bool *right_side_up);
-void get_range(const filestruct **top, const filestruct **bot);
+void mark_order(const linestruct **top, size_t *top_x,
+		const linestruct **bot, size_t *bot_x, bool *right_side_up);
+void get_range(const linestruct **top, const linestruct **bot);
 #endif
-size_t get_totsize(const filestruct *begin, const filestruct *end);
+size_t get_totsize(const linestruct *begin, const linestruct *end);
 #ifndef NANO_TINY
-filestruct *fsfromline(ssize_t lineno);
+linestruct *fsfromline(ssize_t lineno);
 #endif
 
 /* Most functions in winio.c. */
@@ -627,7 +620,8 @@ void blank_statusbar(void);
 void wipe_statusbar(void);
 void blank_bottombars(void);
 void check_statusblank(void);
-char *display_string(const char *buf, size_t column, size_t span, bool isdata);
+char *display_string(const char *buf, size_t column, size_t span,
+						bool isdata, bool isprompt);
 void titlebar(const char *path);
 void statusbar(const char *msg);
 void warn_and_shortly_pause(const char *msg);
@@ -635,28 +629,28 @@ void statusline(message_type importance, const char *msg, ...);
 void bottombars(int menu);
 void post_one_key(const char *keystroke, const char *tag, int width);
 void place_the_cursor(void);
-void edit_draw(filestruct *fileptr, const char *converted,
+void edit_draw(linestruct *fileptr, const char *converted,
 		int line, size_t from_col);
-int update_line(filestruct *fileptr, size_t index);
+int update_line(linestruct *fileptr, size_t index);
 #ifndef NANO_TINY
-int update_softwrapped_line(filestruct *fileptr);
+int update_softwrapped_line(linestruct *fileptr);
 #endif
 bool line_needs_update(const size_t old_column, const size_t new_column);
-int go_back_chunks(int nrows, filestruct **line, size_t *leftedge);
-int go_forward_chunks(int nrows, filestruct **line, size_t *leftedge);
+int go_back_chunks(int nrows, linestruct **line, size_t *leftedge);
+int go_forward_chunks(int nrows, linestruct **line, size_t *leftedge);
 bool less_than_a_screenful(size_t was_lineno, size_t was_leftedge);
 void edit_scroll(bool direction);
 #ifndef NANO_TINY
 size_t get_softwrap_breakpoint(const char *text, size_t leftedge,
 								bool *end_of_line);
-size_t get_chunk_and_edge(size_t column, filestruct *line, size_t *leftedge);
-size_t chunk_for(size_t column, filestruct *line);
-size_t leftedge_for(size_t column, filestruct *line);
-size_t number_of_chunks_in(filestruct *line);
+size_t get_chunk_and_edge(size_t column, linestruct *line, size_t *leftedge);
+size_t chunk_for(size_t column, linestruct *line);
+size_t leftedge_for(size_t column, linestruct *line);
+size_t number_of_chunks_in(linestruct *line);
 void ensure_firstcolumn_is_aligned(void);
 #endif
 size_t actual_last_column(size_t leftedge, size_t column);
-void edit_redraw(filestruct *old_current, update_type manner);
+void edit_redraw(linestruct *old_current, update_type manner);
 void edit_refresh(void);
 void adjust_viewport(update_type location);
 void total_redraw(void);

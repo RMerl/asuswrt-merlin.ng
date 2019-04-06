@@ -1,6 +1,6 @@
 /* A GNU-like <math.h>.
 
-   Copyright (C) 2002-2003, 2007-2018 Free Software Foundation, Inc.
+   Copyright (C) 2002-2003, 2007-2019 Free Software Foundation, Inc.
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -627,11 +627,20 @@ _GL_WARN_ON_USE (expf, "expf is unportable - "
 #endif
 
 #if @GNULIB_EXPL@
-# if !@HAVE_EXPL@ || !@HAVE_DECL_EXPL@
-#  undef expl
+# if @REPLACE_EXPL@
+#  if !(defined __cplusplus && defined GNULIB_NAMESPACE)
+#   undef expl
+#   define expl rpl_expl
+#  endif
+_GL_FUNCDECL_RPL (expl, long double, (long double x));
+_GL_CXXALIAS_RPL (expl, long double, (long double x));
+# else
+#  if !@HAVE_EXPL@ || !@HAVE_DECL_EXPL@
+#   undef expl
 _GL_FUNCDECL_SYS (expl, long double, (long double x));
-# endif
+#  endif
 _GL_CXXALIAS_SYS (expl, long double, (long double x));
+# endif
 _GL_CXXALIASWARN (expl);
 #elif defined GNULIB_POSIXCHECK
 # undef expl
@@ -751,11 +760,20 @@ _GL_WARN_ON_USE (expm1, "expm1 is unportable - "
 #endif
 
 #if @GNULIB_EXPM1L@
-# if !@HAVE_DECL_EXPM1L@
-#  undef expm1l
+# if @REPLACE_EXPM1L@
+#  if !(defined __cplusplus && defined GNULIB_NAMESPACE)
+#   undef expm1l
+#   define expm1l rpl_expm1l
+#  endif
+_GL_FUNCDECL_RPL (expm1l, long double, (long double x));
+_GL_CXXALIAS_RPL (expm1l, long double, (long double x));
+# else
+#  if !@HAVE_DECL_EXPM1L@
+#   undef expm1l
 _GL_FUNCDECL_SYS (expm1l, long double, (long double x));
-# endif
+#  endif
 _GL_CXXALIAS_SYS (expm1l, long double, (long double x));
+# endif
 _GL_CXXALIASWARN (expm1l);
 #elif defined GNULIB_POSIXCHECK
 # undef expm1l
@@ -1827,10 +1845,19 @@ _GL_WARN_ON_USE (rint, "rint is unportable - "
 #endif
 
 #if @GNULIB_RINTL@
-# if !@HAVE_RINTL@
+# if @REPLACE_RINTL@
+#  if !(defined __cplusplus && defined GNULIB_NAMESPACE)
+#   undef rintl
+#   define rintl rpl_rintl
+#  endif
+_GL_FUNCDECL_RPL (rintl, long double, (long double x));
+_GL_CXXALIAS_RPL (rintl, long double, (long double x));
+# else
+#  if !@HAVE_RINTL@
 _GL_FUNCDECL_SYS (rintl, long double, (long double x));
-# endif
+#  endif
 _GL_CXXALIAS_SYS (rintl, long double, (long double x));
+# endif
 _GL_CXXALIASWARN (rintl);
 #elif defined GNULIB_POSIXCHECK
 # undef rintl

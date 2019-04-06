@@ -144,7 +144,6 @@ static struct Channel* newchannel(unsigned int remotechan,
 	newchan->index = i;
 	newchan->sent_close = newchan->recv_close = 0;
 	newchan->sent_eof = newchan->recv_eof = 0;
-	newchan->close_handler_done = 0;
 
 	newchan->remotechan = remotechan;
 	newchan->transwindow = transwindow;
@@ -286,7 +285,7 @@ static void check_close(struct Channel *channel) {
 				channel->extrabuf ? cbuf_getused(channel->extrabuf) : 0))
 
 	if (!channel->flushing 
-		&& !channel->close_handler_done
+		&& !channel->sent_close
 		&& channel->type->check_close
 		&& channel->type->check_close(channel))
 	{
@@ -298,7 +297,7 @@ static void check_close(struct Channel *channel) {
 	   channel, to ensure that the shell has exited (and the exit status 
 	   retrieved) before we close things up. */
 	if (!channel->type->check_close	
-		|| channel->close_handler_done
+		|| channel->sent_close
 		|| channel->type->check_close(channel)) {
 		close_allowed = 1;
 	}
@@ -385,10 +384,8 @@ void channel_connect_done(int result, int sock, void* user_data, const char* UNU
 static void send_msg_channel_close(struct Channel *channel) {
 
 	TRACE(("enter send_msg_channel_close %p", (void*)channel))
-	if (channel->type->closehandler 
-			&& !channel->close_handler_done) {
+	if (channel->type->closehandler) {
 		channel->type->closehandler(channel);
-		channel->close_handler_done = 1;
 	}
 	
 	CHECKCLEARTOWRITE();
@@ -661,10 +658,8 @@ static void remove_channel(struct Channel * channel) {
 		m_close(channel->errfd);
 	}
 
-	if (!channel->close_handler_done
-		&& channel->type->closehandler) {
-		channel->type->closehandler(channel);
-		channel->close_handler_done = 1;
+	if (channel->type->cleanup) {
+		channel->type->cleanup(channel);
 	}
 
 	if (channel->conn_pending) {
@@ -690,13 +685,7 @@ void recv_msg_channel_request() {
 
 	TRACE(("enter recv_msg_channel_request %p", (void*)channel))
 
-	if (channel->sent_close) {
-		TRACE(("leave recv_msg_channel_request: already closed channel"))
-		return;
-	}
-
-	if (channel->type->reqhandler 
-			&& !channel->close_handler_done) {
+	if (channel->type->reqhandler) {
 		channel->type->reqhandler(channel);
 	} else {
 		int wantreply;
@@ -1011,6 +1000,11 @@ cleanup:
 void send_msg_channel_failure(const struct Channel *channel) {
 
 	TRACE(("enter send_msg_channel_failure"))
+
+	if (channel->sent_close) {
+		TRACE(("Skipping sending msg_channel_failure for closed channel"))
+		return;
+	}
 	CHECKCLEARTOWRITE();
 
 	buf_putbyte(ses.writepayload, SSH_MSG_CHANNEL_FAILURE);
@@ -1024,6 +1018,10 @@ void send_msg_channel_failure(const struct Channel *channel) {
 void send_msg_channel_success(const struct Channel *channel) {
 
 	TRACE(("enter send_msg_channel_success"))
+	if (channel->sent_close) {
+		TRACE(("Skipping sending msg_channel_success for closed channel"))
+		return;
+	}
 	CHECKCLEARTOWRITE();
 
 	buf_putbyte(ses.writepayload, SSH_MSG_CHANNEL_SUCCESS);

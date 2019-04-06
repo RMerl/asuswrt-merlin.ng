@@ -6,8 +6,8 @@
 default_options.h  documents compile-time options, and provides default values.
 
 Local customisation should be added to localoptions.h which is
-used if it exists. Options defined there will override any options in this
-file.
+used if it exists in the build directory. Options defined there will override 
+any options in this file.
 
 Options can also be defined with -DDROPBEAR_XXX=[0,1] in Makefile CFLAGS
 
@@ -195,6 +195,11 @@ group1 in Dropbear server too */
 /* Whether to take public key options in 
  * authorized_keys file into account */
 #define DROPBEAR_SVR_PUBKEY_OPTIONS 1
+
+/* Set this to 0 if your system does not have multiple user support.
+   (Linux kernel CONFIG_MULTIUSER option)
+   The resulting binary will not run on a normal system. */
+#define DROPBEAR_SVR_MULTIUSER 1
 
 /* Client authentication options */
 #define DROPBEAR_CLI_PASSWORD_AUTH 1

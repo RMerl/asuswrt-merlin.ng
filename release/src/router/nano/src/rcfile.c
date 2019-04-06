@@ -1,9 +1,9 @@
 /**************************************************************************
  *   rcfile.c  --  This file is part of GNU nano.                         *
  *                                                                        *
- *   Copyright (C) 2001-2011, 2013-2018 Free Software Foundation, Inc.    *
+ *   Copyright (C) 2001-2011, 2013-2019 Free Software Foundation, Inc.    *
  *   Copyright (C) 2014 Mike Frysinger                                    *
- *   Copyright (C) 2014-2018 Benno Schulenberg                            *
+ *   Copyright (C) 2014-2019 Benno Schulenberg                            *
  *                                                                        *
  *   GNU nano is free software: you can redistribute it and/or modify     *
  *   it under the terms of the GNU General Public License as published    *
@@ -42,17 +42,23 @@ static const rcoption rcopts[] = {
 #ifdef ENABLE_JUSTIFY
 	{"brackets", 0},
 #endif
+#ifdef ENABLE_WRAPPING
+	{"breaklonglines", BREAK_LONG_LINES},
+#endif
 	{"constantshow", CONSTANT_SHOW},
+	{"emptyline", EMPTY_LINE},
 #ifdef ENABLED_WRAPORJUSTIFY
 	{"fill", 0},
 #endif
+	{"finalnewline", FINAL_NEWLINE},
 #ifdef ENABLE_HISTORIES
 	{"historylog", HISTORYLOG},
 #endif
+	{"jumpyscrolling", JUMPY_SCROLLING},
 #ifdef ENABLE_LINENUMBERS
 	{"linenumbers", LINE_NUMBERS},
 #endif
-	{"morespace", MORE_SPACE},
+	{"morespace", MORE_SPACE},  /* Deprecated; remove in 2021. */
 #ifdef ENABLE_MOUSE
 	{"mouse", USE_MOUSE},
 #endif
@@ -60,10 +66,10 @@ static const rcoption rcopts[] = {
 	{"multibuffer", MULTIBUFFER},
 #endif
 	{"nohelp", NO_HELP},
-	{"nonewlines", NO_NEWLINES},
+	{"nonewlines", NO_NEWLINES},  /* Deprecated; remove in 2021. */
 	{"nopauses", NO_PAUSES},
 #ifdef ENABLE_WRAPPING
-	{"nowrap", NO_WRAP},
+	{"nowrap", NO_WRAP},  /* Deprecated; remove in 2021. */
 #endif
 #ifdef ENABLE_OPERATINGDIR
 	{"operatingdir", 0},
@@ -77,8 +83,8 @@ static const rcoption rcopts[] = {
 	{"quotestr", 0},
 #endif
 	{"quickblank", QUICK_BLANK},
+	{"rawsequences", RAW_SEQUENCES},
 	{"rebinddelete", REBIND_DELETE},
-	{"rebindkeypad", REBIND_KEYPAD},
 	{"regexp", USE_REGEXP},
 #ifdef ENABLE_SPELLER
 	{"speller", 0},
@@ -95,16 +101,14 @@ static const rcoption rcopts[] = {
 	{"backup", BACKUP_FILE},
 	{"backupdir", 0},
 	{"casesensitive", CASE_SENSITIVE},
-	{"cut", CUT_FROM_CURSOR},  /* deprecated form, remove end of 2018 */
 	{"cutfromcursor", CUT_FROM_CURSOR},
-	{"justifytrim", TRIM_BLANKS},  /* deprecated form, remove end of 2018 */
+	{"guidestripe", 0},
 	{"locking", LOCKING},
 	{"matchbrackets", 0},
 	{"noconvert", NO_CONVERT},
-	{"quiet", QUIET},
 	{"showcursor", SHOW_CURSOR},
 	{"smarthome", SMART_HOME},
-	{"smooth", SMOOTH_SCROLL},
+	{"smooth", SMOOTH_SCROLL},  /* Deprecated; remove in 2021. */
 	{"softwrap", SOFTWRAP},
 	{"tabstospaces", TABS_TO_SPACES},
 	{"trimblanks", TRIM_BLANKS},
@@ -117,6 +121,7 @@ static const rcoption rcopts[] = {
 #ifdef ENABLE_COLOR
 	{"titlecolor", 0},
 	{"numbercolor", 0},
+	{"stripecolor", 0},
 	{"selectedcolor", 0},
 	{"statuscolor", 0},
 	{"errorcolor", 0},
@@ -243,15 +248,14 @@ char *parse_next_regex(char *ptr)
 bool nregcomp(const char *regex, int compile_flags)
 {
 	regex_t preg;
-	const char *r = fixbounds(regex);
-	int rc = regcomp(&preg, r, compile_flags);
+	int rc = regcomp(&preg, regex, compile_flags);
 
 	if (rc != 0) {
 		size_t len = regerror(rc, &preg, NULL, 0);
 		char *str = charalloc(len);
 
 		regerror(rc, &preg, str, len);
-		rcfile_error(N_("Bad regex \"%s\": %s"), r, str);
+		rcfile_error(N_("Bad regex \"%s\": %s"), regex, str);
 		free(str);
 	}
 
@@ -344,7 +348,8 @@ void parse_binding(char *ptr, bool dobind)
 {
 	char *keyptr = NULL, *keycopy = NULL, *funcptr = NULL, *menuptr = NULL;
 	sc *s, *newsc = NULL;
-	int menu;
+	int menu, mask = 0;
+	subnfunc *f;
 
 	if (*ptr == '\0') {
 		rcfile_error(N_("Missing key name"));
@@ -429,70 +434,65 @@ void parse_binding(char *ptr, bool dobind)
 		goto free_things;
 	}
 
-	if (dobind) {
-		subnfunc *f;
-		int mask = 0;
+	/* Wipe the given shortcut from the given menu. */
+	for (s = sclist; s != NULL; s = s->next)
+		if ((s->menus & menu) && strcmp(s->keystr, keycopy) == 0)
+			s->menus &= ~menu;
 
-		/* Tally up the menus where the function exists. */
-		for (f = allfuncs; f != NULL; f = f->next)
-			if (f->func == newsc->func)
-				mask = mask | f->menus;
+	/* When unbinding, we are done now. */
+	if (!dobind)
+		goto free_things;
+
+	/* Tally up the menus where the function exists. */
+	for (f = allfuncs; f != NULL; f = f->next)
+		if (f->func == newsc->func)
+			mask = mask | f->menus;
 
 #ifndef NANO_TINY
-		/* Handle the special case of the toggles. */
-		if (newsc->func == do_toggle_void)
-			mask = MMAIN;
+	/* Handle the special case of the toggles. */
+	if (newsc->func == do_toggle_void)
+		mask = MMAIN;
 #endif
 #ifdef ENABLE_NANORC
-		/* Handle the special case of a key defined as a string. */
-		if (newsc->func == (functionptrtype)implant)
-			mask = MMOST | MHELP;
+	/* Handle the special case of a key defined as a string. */
+	if (newsc->func == (functionptrtype)implant)
+		mask = MMOST | MHELP;
 #endif
-		/* Now limit the given menu to those where the function exists. */
-		menu = menu & (is_universal(newsc->func) ? MMOST : mask);
+	/* Now limit the given menu to those where the function exists. */
+	menu = menu & (is_universal(newsc->func) ? MMOST : mask);
 
-		if (!menu) {
-			if (!ISSET(RESTRICTED))
-				rcfile_error(N_("Function '%s' does not exist in menu '%s'"),
-									funcptr, menuptr);
-			goto free_things;
-		}
-
-		newsc->menus = menu;
-		assign_keyinfo(newsc, keycopy, 0);
-
-		/* Do not allow rebinding a frequent escape-sequence starter: Esc [. */
-		if (newsc->meta && newsc->keycode == 91) {
-			rcfile_error(N_("Sorry, keystroke \"%s\" may not be rebound"), newsc->keystr);
-			goto free_things;
-		}
+	if (!menu) {
+		if (!ISSET(RESTRICTED))
+			rcfile_error(N_("Function '%s' does not exist in menu '%s'"),
+								funcptr, menuptr);
+		goto free_things;
 	}
 
-	/* Now find and delete any existing same shortcut in the menu(s). */
-	for (s = sclist; s != NULL; s = s->next) {
-		if ((s->menus & menu) && !strcmp(s->keystr, keycopy))
-			s->menus &= ~menu;
-	}
+	newsc->menus = menu;
+	assign_keyinfo(newsc, keycopy, 0);
 
-	if (dobind) {
-#ifndef NANO_TINY
-		/* If this is a toggle, copy its sequence number. */
-		if (newsc->func == do_toggle_void) {
-			for (s = sclist; s != NULL; s = s->next)
-				if (s->func == do_toggle_void && s->toggle == newsc->toggle)
-					newsc->ordinal = s->ordinal;
-		} else
-			newsc->ordinal = 0;
-#endif
-		/* Add the new shortcut at the start of the list. */
-		newsc->next = sclist;
-		sclist = newsc;
+	/* Disallow rebinding ^[ and frequent escape-sequence starter "Esc [". */
+	if ((!newsc->meta && newsc->keycode == ESC_CODE) ||
+				(newsc->meta && newsc->keycode == '[')) {
+		rcfile_error(N_("Keystroke %s may not be rebound"), keycopy);
+  free_things:
+		free(keycopy);
+		free(newsc);
 		return;
 	}
 
-  free_things:
-	free(newsc);
-	free(keycopy);
+#ifndef NANO_TINY
+	/* If this is a toggle, find and copy its sequence number. */
+	if (newsc->func == do_toggle_void) {
+		for (s = sclist; s != NULL; s = s->next)
+			if (s->func == do_toggle_void && s->toggle == newsc->toggle)
+				newsc->ordinal = s->ordinal;
+	} else
+		newsc->ordinal = 0;
+#endif
+	/* Add the new shortcut at the start of the list. */
+	newsc->next = sclist;
+	sclist = newsc;
 }
 
 /* Verify that the given file exists, is not a folder nor a device. */
@@ -543,31 +543,36 @@ static void parse_one_include(char *file)
 /* Expand globs in the passed name, and parse the resultant files. */
 void parse_includes(char *ptr)
 {
-	char *option, *nanorc_save = nanorc, *expanded;
-	size_t lineno_save = lineno, i;
+	char *pattern, *expanded;
+	char *was_nanorc = nanorc;
+	size_t was_lineno = lineno;
 	glob_t files;
+	int result;
 
-	option = ptr;
-	if (*option == '"')
-		option++;
+	pattern = ptr;
+	if (*pattern == '"')
+		pattern++;
 	ptr = parse_argument(ptr);
 
-	/* Expand tildes first, then the globs. */
-	expanded = real_dir_from_tilde(option);
+	/* Expand a tilde first, then try to match the globbing pattern. */
+	expanded = real_dir_from_tilde(pattern);
+	result = glob(expanded, GLOB_ERR|GLOB_NOSORT, NULL, &files);
 
-	if (glob(expanded, GLOB_ERR|GLOB_NOSORT, NULL, &files) == 0) {
-		for (i = 0; i < files.gl_pathc; ++i)
+	/* If there are matches, process each of them.  Otherwise, only
+	 * report an error if it's something other than zero matches. */
+	if (result == 0) {
+		for (size_t i = 0; i < files.gl_pathc; ++i)
 			parse_one_include(files.gl_pathv[i]);
-	} else
-		rcfile_error(_("Error expanding %s: %s"), option, strerror(errno));
+	} else if (result != GLOB_NOMATCH)
+		rcfile_error(_("Error expanding %s: %s"), pattern, strerror(errno));
 
 	globfree(&files);
 	free(expanded);
 
 	/* We're done with the included file(s).  Restore the original
 	 * filename and line number position. */
-	nanorc = nanorc_save;
-	lineno = lineno_save;
+	nanorc = was_nanorc;
+	lineno = was_lineno;
 }
 
 /* Return the short value corresponding to the color named in colorname,
@@ -1085,6 +1090,8 @@ void parse_rcfile(FILE *rcstream, bool syntax_only)
 			color_combo[TITLE_BAR] = parse_interface_color(option);
 		else if (strcasecmp(rcopts[i].name, "numbercolor") == 0)
 			color_combo[LINE_NUMBER] = parse_interface_color(option);
+		else if (strcasecmp(rcopts[i].name, "stripecolor") == 0)
+			color_combo[GUIDE_STRIPE] = parse_interface_color(option);
 		else if (strcasecmp(rcopts[i].name, "selectedcolor") == 0)
 			color_combo[SELECTED_TEXT] = parse_interface_color(option);
 		else if (strcasecmp(rcopts[i].name, "statuscolor") == 0)
@@ -1104,45 +1111,48 @@ void parse_rcfile(FILE *rcstream, bool syntax_only)
 #endif
 #ifdef ENABLED_WRAPORJUSTIFY
 		if (strcasecmp(rcopts[i].name, "fill") == 0) {
-			if (!parse_num(option, &wrap_at)) {
+			if (!parse_num(option, &fill)) {
 				rcfile_error(N_("Requested fill size \"%s\" is invalid"),
 								option);
-				wrap_at = -COLUMNS_FROM_EOL;
-			} else
-				UNSET(NO_WRAP);
+				fill = -COLUMNS_FROM_EOL;
+			}
 			free(option);
 		} else
 #endif
 #ifndef NANO_TINY
-		if (strcasecmp(rcopts[i].name, "matchbrackets") == 0) {
-			matchbrackets = option;
-			if (has_blank_mbchars(matchbrackets)) {
-				rcfile_error(N_("Non-blank characters required"));
-				free(matchbrackets);
-				matchbrackets = NULL;
+		if (strcasecmp(rcopts[i].name, "guidestripe") == 0) {
+			if (!parse_num(option, &stripe_column) || stripe_column <= 0) {
+				rcfile_error(N_("Guide column \"%s\" is invalid"), option);
+				stripe_column = 0;
 			}
+			free(option);
+		}
+		if (strcasecmp(rcopts[i].name, "matchbrackets") == 0) {
+			if (has_blank_char(option)) {
+				rcfile_error(N_("Non-blank characters required"));
+				free(option);
+			} else
+				matchbrackets = option;
 		} else if (strcasecmp(rcopts[i].name, "whitespace") == 0) {
-			whitespace = option;
-			if (mbstrlen(whitespace) != 2 || strlenpt(whitespace) != 2) {
+			if (mbstrlen(option) != 2 || strlenpt(option) != 2) {
 				rcfile_error(N_("Two single-column characters required"));
-				free(whitespace);
-				whitespace = NULL;
+				free(option);
 			} else {
-				whitespace_len[0] = parse_mbchar(whitespace, NULL, NULL);
-				whitespace_len[1] = parse_mbchar(whitespace +
-										whitespace_len[0], NULL, NULL);
+				whitespace = option;
+				whitelen[0] = parse_mbchar(whitespace, NULL, NULL);
+				whitelen[1] = parse_mbchar(whitespace + whitelen[0], NULL, NULL);
 			}
 		} else
 #endif
 #ifdef ENABLE_JUSTIFY
 		if (strcasecmp(rcopts[i].name, "punct") == 0) {
-			if (has_blank_mbchars(option)) {
+			if (has_blank_char(option)) {
 				rcfile_error(N_("Non-blank characters required"));
 				free(option);
 			} else
 				punct = option;
 		} else if (strcasecmp(rcopts[i].name, "brackets") == 0) {
-			if (has_blank_mbchars(option)) {
+			if (has_blank_char(option)) {
 				rcfile_error(N_("Non-blank characters required"));
 				free(option);
 			} else
@@ -1227,13 +1237,6 @@ void do_rcfiles(void)
 	/* First process the system-wide nanorc, if there is one. */
 	nanorc = mallocstrcpy(nanorc, SYSCONFDIR "/nanorc");
 	parse_one_nanorc();
-
-	/* When configured with --disable-wrapping-as-root, turn wrapping off
-	 * for root, so that only root's .nanorc or --fill can turn it on. */
-#ifdef DISABLE_ROOTWRAPPING
-	if (geteuid() == NANO_ROOT_UID)
-		SET(NO_WRAP);
-#endif
 
 	get_homedir();
 	xdgconfdir = getenv("XDG_CONFIG_HOME");

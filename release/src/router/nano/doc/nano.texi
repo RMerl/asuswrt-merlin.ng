@@ -8,8 +8,8 @@
 
 @smallbook
 @set EDITION 0.5
-@set VERSION 3.2
-@set UPDATED November 2018
+@set VERSION 4.0
+@set UPDATED March 2019
 
 @dircategory Editors
 @direntry
@@ -23,7 +23,7 @@
 @titlepage
 @title GNU @command{nano}
 @subtitle a small and friendly text editor
-@subtitle version 3.2
+@subtitle version 4.0
 
 @author Chris Allegretta
 @page
@@ -33,7 +33,7 @@ This manual documents the GNU @command{nano} editor.
 This manual is part of the GNU @command{nano} distribution.@*
 
 @sp 4
-Copyright @copyright{} 1999-2009, 2014-2017 Free Software Foundation, Inc.
+Copyright @copyright{} 1999-2009, 2014-2019 Free Software Foundation, Inc.
 
 @sp 1
 This document is dual-licensed.  You may distribute and/or modify it
@@ -63,7 +63,7 @@ e-mail: @email{chrisa@@asty.org}@*
 @node Top
 @top
 
-This manual documents the GNU @command{nano} editor, version 3.2.
+This manual documents the GNU @command{nano} editor, version 4.0.
 
 @menu
 * Introduction::
@@ -84,17 +84,27 @@ This manual documents the GNU @command{nano} editor, version 3.2.
 @node Introduction
 @chapter Introduction
 
-GNU @command{nano} is a small and friendly text editor.  Besides basic text
-editing, @command{nano} offers many extra features, such as an interactive
-search-and-replace, undo/redo, syntax coloring, smooth scrolling,
-auto-indentation, go-to-line-and-column-number, feature toggles,
-file locking, backup files, and internationalization support.
+GNU @command{nano} is a small and friendly text editor.  Besides
+basic text editing, @command{nano} offers features like undo/redo,
+syntax coloring, interactive search-and-replace, auto-indentation,
+line numbers, word completion, file locking, backup files, and
+internationalization support.
 
 The original goal for @command{nano} was to be a complete bug-for-bug
 emulation of Pico.  But currently the goal is to be as compatible
-as possible while offering a superset of Pico's functionality.
+as is reasonable while offering a superset of Pico's functionality.
 @xref{Pico Compatibility} for more details on how @command{nano} and
 Pico differ.
+
+Starting with version 4.0, @command{nano} no longer hard-wraps an overlong
+line by default, and no longer automatically adds a newline at the end
+of the text if one is missing.  Furthermore, it uses smooth scrolling
+by default and makes use of the line below the title bar.
+
+If you want the old, Pico behavior back, you can use the
+following options: @option{--breaklonglines}, @option{--finalnewline},
+@option{--jumpyscrolling}, and @option{--emptyline}
+(or @option{-bfje} for short).
 
 Please report bugs via @url{https://savannah.gnu.org/bugs/?group=nano}.
 
@@ -190,15 +200,23 @@ executed commands, so they can be easily reused in later sessions.
 @itemx --ignorercfiles
 Don't look at the system's nanorc file nor at the user's nanorc.
 
+@item -J
+@itemx --guidestripe
+Draw a vertical stripe at the given column, to help judge the width of the
+text.  (The color of the stripe can be changed with @code{set stripecolor}
+in your nanorc file.)
+
 @item -K
-@itemx --rebindkeypad
-Interpret the numeric keypad keys so that they all work properly.  You
-should only need to use this option if they don't, as mouse support
-won't work properly with this option enabled.
+@itemx --rawsequences
+Interpret escape sequences directly (instead of asking @code{ncurses} to
+translate them).  If you need this option to get your keyboard to work
+properly, please report a bug.  Using this option disables @command{nano}'s
+mouse support.
 
 @item -L
 @itemx --nonewlines
 Don't automatically add a newline when a file does not end with one.
+(This is the default.)
 
 @item -M
 @itemx --trimblanks
@@ -211,7 +229,9 @@ Disable automatic conversion of files from DOS/Mac format.
 
 @item -O
 @itemx --morespace
-Use the blank line below the title bar as extra editing space.
+Obsolete and ignored option, since the line below the title bar is included
+into the editing space by default.  If you prefer to keep this line blank,
+use @option{-e} or @option{--emptyline}.
 
 @item -P
 @itemx --positionlog
@@ -220,9 +240,11 @@ and place it at that position again upon reopening such a file.
 
 @item -Q "@var{regex}"
 @itemx --quotestr="@var{regex}"
-Set the regular expression for matching the quoting part of a line, used
-when justifying.  The default value is @t{"^([@w{ }\t]*([#:>|@}]|//))+"}.
-Note that @code{\t} stands for a literal Tab character.
+Set the regular expression for matching the quoting part of a line.
+The default value is @t{"^([@w{ }\t]*([!#%:;>|@}]|//|--))+"}.
+(Note that @code{\t} stands for a literal Tab character.)
+This makes it possible to rejustify blocks of quoted text when composing
+email, and to rewrap blocks of line comments when writing source code.
 
 @item -R
 @itemx --restricted
@@ -236,8 +258,9 @@ any name beginning with @code{r} (e.g.@: @command{rnano}).
 
 @item -S
 @itemx --smooth
-Enable smooth scrolling.  Text will scroll line-by-line, instead of the
-usual chunk-by-chunk behavior.
+Obsolete and ignored option, since smooth scrolling has become the default.
+If you prefer the chunk-by-chunk scrolling behavior,
+use @option{-j} or @option{--jumpyscrolling}.
 
 @item -T @var{number}
 @itemx --tabsize=@var{number}
@@ -280,6 +303,12 @@ Let an unmodified @key{Backspace} or @key{Delete} erase the marked region
 When doing soft line wrapping, wrap lines at whitespace
 instead of always at the edge of the screen.
 
+@item -b
+@itemx --breaklonglines
+Automatically hard-wrap the current line when it becomes overlong.
+(This option is the opposite of @option{-w} (@option{--nowrap}) ---
+the last one given takes effect.)
+
 @item -c
 @itemx --constantshow
 Constantly display the cursor position (line number, column number,
@@ -288,9 +317,19 @@ Note that this overrides option @option{-U} (@option{--quickblank}).
 
 @item -d
 @itemx --rebinddelete
-Interpret the Delete key differently so that both Backspace and Delete
-work properly.  You should only need to use this option if Backspace
-acts like Delete on your system.
+Interpret the Delete and Backspace keys differently so that both Backspace
+and Delete work properly.  You should only use this option when on your
+system either Backspace acts like Delete or Delete acts like Backspace.
+
+@item -e
+@itemx --emptyline
+Do not use the line below the title bar, leaving it entirely blank.
+
+@item -f
+@itemx --finalnewline
+If the buffer is not empty, ensure that it ends with a newline character.
+(This option is the opposite of @option{-L} (@option{--nonewlines}) ---
+the last one given takes effect.)
 
 @item -g
 @itemx --showcursor
@@ -307,6 +346,10 @@ Show a summary of command-line options and exit.
 Automatically indent a newly created line to the same number of tabs
 and/or spaces as the previous line (or as the next line if the previous
 line is the beginning of a paragraph).
+
+@item -j
+@itemx --jumpyscrolling
+Scroll the buffer contents per half-screen instead of per line.
 
 @item -k
 @itemx --cutfromcursor
@@ -343,18 +386,13 @@ similar to a chroot.
 Preserve the @kbd{^Q} (XON) and @kbd{^S} (XOFF) sequences so data being
 sent to the editor can be stopped and started.
 
-@item -q
-@itemx --quiet
-Obsolete option.  Recognized but ignored.
-
 @item -r @var{number}
 @itemx --fill=@var{number}
-Hard-wrap lines at column @var{number} (by inserting a newline character).
-If the given value is 0 or less, wrapping will occur at the width of
-the screen minus the given amount, allowing the wrapping width to
-vary along with the width of the screen if and when it is resized.
-The default value is @t{-8}.  This option conflicts with @option{-w}
-(@option{--nowrap}); the last one given takes effect.
+Set the target width for justifying and automatic hard-wrapping at this
+@var{number} of columns.  If the value is 0 or less, wrapping will occur
+at the width of the screen minus @var{number} columns, allowing the wrap
+point to vary along with the width of the screen if the screen is resized.
+The default value is @t{-8}.
 
 @anchor{@option{--speller}}
 @item -s @var{program}
@@ -387,8 +425,8 @@ file permissions to implement a read-only file.)
 
 @item -w
 @itemx --nowrap
-Don't hard-wrap long lines at any length.  This option conflicts with
-@option{-r} (@option{--fill}); the last one given takes effect.
+Do not automatically hard-wrap the current line when it becomes overlong.
+(This is the default.)
 
 @anchor{Expert Mode}
 @item -x
@@ -417,12 +455,6 @@ continuing it over multiple screen lines.  Since
 @code{$} normally refers to a variable in the Unix shell, you should specify
 this option last when using other options (e.g.@: @code{nano -wS$}) or pass it
 separately (e.g.@: @code{nano -wS -$}).
-
-@item -b
-@itemx -e
-@itemx -f
-@itemx -j
-Ignored, for compatibility with Pico.
 
 @end table
 
@@ -575,12 +607,6 @@ is running.
 @node Limitations
 @section Limitations
 
-Justifications (@kbd{^J})
-are not yet covered by the general undo system.  So after a justification
-that is not immediately undone, earlier edits
-cannot be undone any more.  The workaround is, of course, to exit without
-saving.
-
 The recording and playback of keyboard macros works correctly only on a
 terminal emulator, not on a Linux console (VT), because the latter does
 not by default distinguish modified from unmodified arrow keys.
@@ -730,6 +756,9 @@ punctuation (see @code{set punct}), optionally followed by the specified
 closing brackets, can end sentences.  The default value is
 @t{""')>]@}"}.
 
+@item set breaklonglines
+Automatically hard-wrap the current line when it becomes overlong.
+
 @item set casesensitive
 Do case-sensitive searches by default.
 
@@ -739,17 +768,23 @@ Note that this overrides @option{quickblank}.
 
 @item set cutfromcursor
 Use cut-from-cursor-to-end-of-line by default, instead of cutting the whole line.
-(The old form of this option, @code{set cut}, is deprecated.)
+
+@item set emptyline
+Do not use the line below the title bar, leaving it entirely blank.
 
 @item set errorcolor @var{fgcolor},@var{bgcolor}
 Use this color combination for the status bar when an error message is displayed.
 @xref{@code{set functioncolor}} for valid color names.
 
+@item set finalnewline
+If the buffer is not empty, ensure that it ends with a newline character.
+
 @item set fill @var{number}
-Hard-wrap lines at column number @var{number}.  If @var{number} is 0 or less,
-the maximum line length will be the screen width less @var{number} columns.
-The default value is @t{-8}.  This option conflicts with
-@option{nowrap}; the last one given takes effect.
+Set the target width for justifying and automatic hard-wrapping at this
+@var{number} of columns.  If the value is 0 or less, wrapping will occur
+at the width of the screen minus @var{number} columns, allowing the wrap
+point to vary along with the width of the screen if the screen is resized.
+The default value is @t{-8}.
 
 @anchor{@code{set functioncolor}}
 @item set functioncolor @var{fgcolor},@var{bgcolor}
@@ -766,6 +801,9 @@ And either @var{fgcolor} or ,@var{bgcolor} may be left out.
 Save the last hundred search strings and replacement strings and
 executed commands, so they can be easily reused in later sessions.
 
+@item set jumpyscrolling
+Scroll the buffer contents per half-screen instead of per line.
+
 @item set keycolor @var{fgcolor},@var{bgcolor}
 Use this color combination for the shortcut key combos
 in the two help lines at the bottom of the screen.
@@ -777,6 +815,10 @@ Display line numbers to the left of the text area.
 @item set locking
 Enable vim-style lock-files for when editing files.
 
+@item set guidestripe @var{number}
+Draw a vertical stripe at the given column, to help judge the width of the
+text.  (The color of the stripe can be changed with @code{set stripecolor}.)
+
 @item set matchbrackets "@var{string}"
 Set the opening and closing brackets that can be found by bracket
 searches.  This may not include blank characters.  The opening set must
@@ -784,7 +826,8 @@ come before the closing set, and the two sets must be in the same order.
 The default value is @t{"(<[@{)>]@}"}.
 
 @item set morespace
-Use the blank line below the title bar as extra editing space.
+Deprecated option since it has become the default setting.
+When needed, use @code{unset emptyline} instead.
 
 @item set mouse
 Enable mouse support, so that mouse clicks can be used to place the
@@ -800,15 +843,16 @@ Don't convert files from DOS/Mac format.
 Don't display the help lists at the bottom of the screen.
 
 @item set nonewlines
-When a file does not end with a newline, don't automatically add one.
+Deprecated option since it has become the default setting.
+When needed, use @code{unset finalnewline} instead.
 
 @item set nopauses
 Don't pause between warnings at startup.  This means that only
 the last one will be visible (when there are multiple ones).
 
 @item set nowrap
-Don't hard-wrap text at all.  This option conflicts with
-@option{fill}; the last one given takes effect.
+Deprecated option since it has become the default setting.
+When needed, use @code{unset breaklonglines} instead.
 
 @item set numbercolor @var{fgcolor},@var{bgcolor}
 Use this color combination for line numbers.
@@ -838,24 +882,23 @@ The default value is @t{"!.?"}.
 Do quick status-bar blanking: status-bar messages will disappear after 1
 keystroke instead of 25.  Note that @option{constantshow} overrides this.
 
-@item set quiet
-Obsolete option.  Recognized but ignored.
-
 @item set quotestr "@var{regex}"
-The email-quote string, used to justify email-quoted paragraphs.  This
-is an extended regular expression.  The default value is
-@t{"^([@w{ }\t]*([#:>|@}]|//))+"}.
-Note that @code{\t} stands for a literal Tab character.
+Set the regular expression for matching the quoting part of a line.
+The default value is @t{"^([@w{ }\t]*([!#%:;>|@}]|//|--))+"}.
+(Note that @code{\t} stands for a literal Tab character.)
+This makes it possible to rejustify blocks of quoted text when composing
+email, and to rewrap blocks of line comments when writing source code.
+
+@item set rawsequences
+Interpret escape sequences directly (instead of asking @code{ncurses} to
+translate them).  If you need this option to get your keyboard to work
+properly, please report a bug.  Using this option disables @command{nano}'s
+mouse support.
 
 @item set rebinddelete
-Interpret the Delete key differently so that both Backspace and Delete
-work properly.  You should only need to use this option if Backspace
-acts like Delete on your system.
-
-@item set rebindkeypad
-Interpret the numeric keypad keys so that they all work properly.  You
-should only need to use this option if they don't, as mouse support
-won't work properly with this option enabled.
+Interpret the Delete and Backspace keys differently so that both Backspace
+and Delete work properly.  You should only use this option when on your
+system either Backspace acts like Delete or Delete acts like Backspace.
 
 @item set regexp
 Do extended regular expression searches by default.
@@ -877,7 +920,8 @@ already at that position, it will jump to the true beginning of the
 line.
 
 @item set smooth
-Use smooth scrolling by default.
+Deprecated option since it has become the default setting.
+When needed, use @code{unset jumpyscrolling} instead.
 
 @item set softwrap
 Enable soft line wrapping for easier viewing of very long lines.
@@ -888,6 +932,10 @@ Use the given program to do spell checking and correcting.
 
 @item set statuscolor @var{fgcolor},@var{bgcolor}
 Use this color combination for the status bar.
+@xref{@code{set functioncolor}} for valid color names.
+
+@item set stripecolor @var{fgcolor},@var{bgcolor}
+Use this color combination for the vertical guiding stripe.
 @xref{@code{set functioncolor}} for valid color names.
 
 @item set suspend
@@ -910,7 +958,6 @@ Use this color combination for the title bar.
 @item set trimblanks
 Remove trailing whitespace from wrapped lines when automatic
 hard-wrapping occurs or when text is justified.
-(The old form of this option, @code{set justifytrim}, is deprecated.)
 
 @item set unix
 Save a file by default in Unix format.  This overrides nano's
@@ -990,7 +1037,6 @@ on the system and will be silently ignored otherwise.)
 
 @item linter @var{program} [@var{arg} @dots{}]
 Use the given @var{program} to do a syntax check on the current buffer.
-(This overrides the speller function.)
 
 @item comment "@var{string}"
 Use the given string for commenting and uncommenting lines.
@@ -1152,25 +1198,23 @@ Cuts and stores the current line (or the marked region).
 
 @item copy
 Copies the current line (or the marked region) without deleting it.
-(The old form 'copytext' is deprecated.)
 
 @item paste
 Pastes the currently stored text into the current buffer at the
 current cursor position.
-(The old form 'uncut' is deprecated.)
 
 @item zap
-Throw away the current line (or the marked region).
+Throws away the current line (or the marked region).
 (This function is bound by default to <Meta+Delete>.)
 
-@item cutwordleft
-Cuts from the cursor position to the beginning of the preceding word.
-(This function is not bound by default.  If your terminal produces
-@code{^H} for <Ctrl+Backspace>, you can make <Ctrl+Backspace> delete
+@item chopwordleft
+Deletes from the cursor position to the beginning of the preceding word.
+(This function is bound by default to <Shift+Ctrl+Delete>.  If your terminal
+produces @code{^H} for <Ctrl+Backspace>, you can make <Ctrl+Backspace> delete
 the word to the left of the cursor by rebinding ^H to this function.)
 
-@item cutwordright
-Cuts from the cursor position to the beginning of the next word.
+@item chopwordright
+Deletes from the cursor position to the beginning of the next word.
 (This function is bound by default to <Ctrl+Delete>.)
 
 @item cutrestoffile
@@ -1187,8 +1231,11 @@ Shows the current cursor position: the line, column, and character positions.
 Counts the number of words, lines and characters in the current buffer.
 
 @item speller
-Invokes a spell-checking program (or linting program,
-if the active syntax defines such a thing).
+Invokes a spell-checking program, either the default one, or the one
+defined by @option{--speller} or @code{set speller}.
+
+@item linter
+Invokes a syntax-checking program (if the active syntax defines one).
 
 @item justify
 Justifies the current paragraph.  A paragraph is a group of contiguous lines
@@ -1340,7 +1387,6 @@ Toggles between searching for something and replacing something.
 
 @item flipgoto
 Toggles between searching for text and targeting a line number.
-(The form @code{gototext} is deprecated.)
 
 @item flipexecute
 Toggles between inserting a file and executing a command.
@@ -1395,7 +1441,6 @@ Toggles the presence of the two-line list of key bindings at the bottom of the s
 
 @item constantshow
 Toggles the constant display of the current line, column, and character positions.
-(The form @code{constupdate} is deprecated.)
 
 @item smoothscroll
 Toggles smooth scrolling (when moving around with the arrow keys).
@@ -1423,7 +1468,6 @@ is the beginning of a paragraph.
 @item cutfromcursor
 Toggles whether cutting text will cut the whole line or just from the current cursor
 position to the end of the line.
-(The form @code{cuttoend} is deprecated.)
 
 @item nowrap
 Toggles whether long lines will be hard-wrapped to the next line.
@@ -1519,10 +1563,39 @@ browser exits.
 @node Pico Compatibility
 @chapter Pico Compatibility
 
-@command{nano} attempts to emulate Pico as closely as possible, but there
-are some differences between the editors:
+@command{nano} emulates Pico quite closely, but there
+are some differences between the two editors:
 
 @table @code
+
+@item Hard-Wrapping
+Unlike Pico, @command{nano} does not automatically hard-wrap the current
+line when it becomes overlong during typing.  This hard-wrapping can be
+switched on with the @option{--breaklonglines} option.  With that option,
+@command{nano} by default breaks lines at screen width minus eight columns,
+whereas Pico does it at screen width minus six columns. You can make
+@command{nano} do as Pico by using @option{--fill=-6}.
+
+@item Magic Newline
+Pico ensures that any text always ends with a newline character.
+Nano does not do this by default: the user is left in full control
+of the formatting. You can get the automatic newline by using the
+@option{--finalnewline} option.
+
+@item Scrolling
+By default, @command{nano} will scroll just one line (instead of half
+a screen) when the cursor is moved to a line that is just out of view.
+And when paging up or down, @command{nano} keeps the cursor in the same
+screen position as much as possible, instead always placing it on the
+first line of the viewport.  The Pico-like behavior can be obtained
+with the @option{--jumpyscrolling} option.
+
+@item Edit Area
+Pico never uses the line directly below the title bar, leaving it always
+blank.  @command{nano} includes this line in the editing area, in order
+to not waste space, and because in this way it is slightly clearer where
+the text starts.  If you are accustomed to this line being empty, you can
+get it back with the @option{--emptyline} option.
 
 @item Interactive Replace
 Instead of allowing you to replace either just one occurrence of a search
@@ -1548,11 +1621,6 @@ again when you later reopen the file.
 The output of the "Display Cursor Position" command (@kbd{^C}) displays
 not only the current line and character position of the cursor,
 but also (between the two) the current column position.
-
-@item Hard-Wrapping
-By default, @command{nano} hard-wraps lines at screen width minus eight
-columns, whereas Pico does it at screen width minus six columns.  You can
-make @command{nano} do the same as Pico by using @option{--fill=-6}.
 
 @item Spell Checking
 In the internal spell checker misspelled words are sorted alphabetically
@@ -1701,10 +1769,6 @@ chances are you only want this feature when you're working on the nano source.
 @item --disable-nls
 Disables Native Language support.  This will disable the use of any
 available GNU @command{nano} translations.
-
-@item --disable-wrapping-as-root
-Disable hard-wrapping of overlong lines by default when @command{nano}
-is run as root.
 
 @item --enable-utf8
 Enable support for reading and writing Unicode files.  This will require

@@ -350,16 +350,16 @@ i00afunc (long *address)
   /* There must be at least one stack segment.  Therefore it is
      a fatal error if "trailer" is null.  */
 
-  if (trailer == 0)
+  if (trailer == NULL)
     abort ();
 
   /* Discard segments that do not contain our argument address.  */
 
-  while (trailer != 0)
+  while (trailer != NULL)
     {
       block = (long *) trailer->this_address;
       size = trailer->this_size;
-      if (block == 0 || size == 0)
+      if (block == NULL || size == 0)
         abort ();
       trailer = (struct stk_trailer *) trailer->link;
       if ((block <= address) && (address < (block + size)))
@@ -371,7 +371,7 @@ i00afunc (long *address)
 
   result = address - block;
 
-  if (trailer == 0)
+  if (trailer == NULL)
     {
       return result;
     }
@@ -383,7 +383,7 @@ i00afunc (long *address)
       result += trailer->this_size;
       trailer = (struct stk_trailer *) trailer->link;
     }
-  while (trailer != 0);
+  while (trailer != NULL);
 
   /* We are done.  Note that if you present a bogus address (one
      not in any segment), you will get a different number back, formed

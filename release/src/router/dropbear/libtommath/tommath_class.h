@@ -1062,6 +1062,12 @@
 #undef BN_MP_TOOM_MUL_C
 #undef BN_MP_TOOM_SQR_C
 
+#include "dbmalloc.h"
+#define XMALLOC m_malloc
+#define XFREE m_free_direct
+#define XREALLOC m_realloc
+#define XCALLOC m_calloc
+
 /* $Source$ */
 /* $Revision$ */
 /* $Date$ */

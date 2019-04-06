@@ -102,7 +102,7 @@ xstrdup(const char *str)
 
 	len = strlen(str) + 1;
 	cp = xmalloc(len);
-	strncpy(cp, str, len);
+	strlcpy(cp, str, len);
 	return cp;
 }
 

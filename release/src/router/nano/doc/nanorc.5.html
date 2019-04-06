@@ -1,5 +1,5 @@
 <!-- Creator     : groff version 1.22.3 -->
-<!-- CreationDate: Sun Nov 11 16:47:25 2018 -->
+<!-- CreationDate: Sun Mar 24 12:17:14 2019 -->
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
 "http://www.w3.org/TR/html4/loose.dtd">
 <html>
@@ -21,6 +21,7 @@
 <h1 align="center">NANORC</h1>
 
 <a href="#NAME">NAME</a><br>
+<a href="#NOTE">NOTE</a><br>
 <a href="#DESCRIPTION">DESCRIPTION</a><br>
 <a href="#OPTIONS">OPTIONS</a><br>
 <a href="#SYNTAX HIGHLIGHTING">SYNTAX HIGHLIGHTING</a><br>
@@ -39,6 +40,23 @@
 
 <p style="margin-left:11%; margin-top: 1em">nanorc &minus;
 GNU nano&rsquo;s configuration file</p>
+
+<h2>NOTE
+<a name="NOTE"></a>
+</h2>
+
+
+<p style="margin-left:11%; margin-top: 1em">Starting with
+version 4.0, <b>nano</b> no longer hard-wraps an overlong
+line by default, and no longer automatically adds a newline
+at the end of the text if one is missing. Furthermore, it
+uses smooth scrolling by default and makes use of the line
+below the title bar.</p>
+
+<p style="margin-left:11%; margin-top: 1em">If you want the
+old, Pico behavior back, you can use <b>set
+breaklonglines</b>, <b>set finalnewline</b>, <b>set
+jumpyscrolling</b>, and <b>set emptyline</b>.</p>
 
 <h2>DESCRIPTION
 <a name="DESCRIPTION"></a>
@@ -152,6 +170,11 @@ include blank characters. Only closing punctuation (see
 closing brackets, can end sentences. The default value is
 &quot;<b>&quot;&rsquo;)&gt;]}</b>&quot;.</p>
 
+<p style="margin-left:11%;"><b>set breaklonglines</b></p>
+
+<p style="margin-left:15%;">Automatically hard-wrap the
+current line when it becomes overlong.</p>
+
 <p style="margin-left:11%;"><b>set casesensitive</b></p>
 
 <p style="margin-left:15%;">Do case-sensitive searches by
@@ -167,8 +190,12 @@ position in the status bar. This overrides the option
 
 <p style="margin-left:15%;">Use
 cut-from-cursor-to-end-of-line by default, instead of
-cutting the whole line. (The old form of this option,
-&rsquo;<b>set cut</b>&rsquo;, is deprecated.)</p>
+cutting the whole line.</p>
+
+<p style="margin-left:11%;"><b>set emptyline</b></p>
+
+<p style="margin-left:15%;">Do not use the line below the
+title bar, leaving it entirely blank.</p>
 
 <p style="margin-left:11%;"><b>set errorcolor</b>
 <i>fgcolor</i>,<i>bgcolor</i></p>
@@ -177,15 +204,21 @@ cutting the whole line. (The old form of this option,
 the status bar when an error message is displayed. See
 <b>set titlecolor</b> for valid color names.</p>
 
+<p style="margin-left:11%;"><b>set finalnewline</b></p>
+
+<p style="margin-left:15%;">If the buffer is not empty,
+ensure that it ends with a newline character.</p>
+
 <p style="margin-left:11%;"><b>set fill</b>
 <i>number</i></p>
 
-<p style="margin-left:15%;">Hard-wrap lines at column
-number <i>number</i>. If <i>number</i> is 0 or less, the
-maximum line length will be the screen width less
-<i>number</i> columns. The default value is <b>&minus;8</b>.
-This option conflicts with <b>nowrap</b> -- the last one
-given takes effect.</p>
+<p style="margin-left:15%;">Set the target width for
+justifying and automatic hard-wrapping at this <i>number</i>
+of columns. If the value is 0 or less, wrapping will occur
+at the width of the screen minus <i>number</i> columns,
+allowing the wrap point to vary along with the width of the
+screen if the screen is resized. The default value is
+&minus;8.</p>
 
 <p style="margin-left:11%;"><b>set functioncolor</b>
 <i>fgcolor</i>,<i>bgcolor</i></p>
@@ -200,6 +233,11 @@ more details.</p>
 <p style="margin-left:15%;">Save the last hundred search
 strings and replacement strings and executed commands, so
 they can be easily reused in later sessions.</p>
+
+<p style="margin-left:11%;"><b>set jumpyscrolling</b></p>
+
+<p style="margin-left:15%;">Scroll the buffer contents per
+half-screen instead of per line.</p>
 
 <p style="margin-left:11%;"><b>set keycolor</b>
 <i>fgcolor</i>,<i>bgcolor</i></p>
@@ -219,6 +257,14 @@ left of the text area.</p>
 <p style="margin-left:15%;">Enable vim-style lock-files for
 when editing files.</p>
 
+<p style="margin-left:11%;"><b>set guidestripe</b>
+<i>number</i></p>
+
+<p style="margin-left:15%;">Draw a vertical stripe at the
+given column, to help judge the width of the text. (The
+color of the stripe can be changed with <b>set
+stripecolor</b>.)</p>
+
 <p style="margin-left:11%;"><b>set matchbrackets</b>
 <i>string</i></p>
 
@@ -230,8 +276,9 @@ The default value is &quot;<b>(&lt;[{)&gt;]}</b>&quot;.</p>
 
 <p style="margin-left:11%;"><b>set morespace</b></p>
 
-<p style="margin-left:15%;">Use the blank line below the
-title bar as extra editing space.</p>
+<p style="margin-left:15%;">Deprecated option since it has
+become the default setting. When needed, use <b>unset
+emptyline</b> instead.</p>
 
 <p style="margin-left:11%;"><b>set mouse</b></p>
 
@@ -260,8 +307,9 @@ help lines at the bottom of the screen.</p>
 
 <p style="margin-left:11%;"><b>set nonewlines</b></p>
 
-<p style="margin-left:15%;">When a file does not end with a
-newline, don&rsquo;t automatically add one.</p>
+<p style="margin-left:15%;">Deprecated option since it has
+become the default setting. When needed, use <b>unset
+finalnewline</b> instead.</p>
 
 <p style="margin-left:11%;"><b>set nopauses</b></p>
 
@@ -271,9 +319,9 @@ be visible (when there are multiple ones).</p>
 
 <p style="margin-left:11%;"><b>set nowrap</b></p>
 
-<p style="margin-left:15%;">Don&rsquo;t hard-wrap text at
-all. This option conflicts with <b>fill</b> -- the last one
-given takes effect.</p>
+<p style="margin-left:15%;">Deprecated option since it has
+become the default setting. When needed, use <b>unset
+breaklonglines</b> instead.</p>
 
 <p style="margin-left:11%;"><b>set numbercolor</b>
 <i>fgcolor</i>,<i>bgcolor</i></p>
@@ -318,33 +366,32 @@ punctuation, optionally followed by closing brackets (see
 status-bar messages will disappear after 1 keystroke instead
 of 25. The option <b>constantshow</b> overrides this.</p>
 
-<p style="margin-left:11%;"><b>set quiet</b></p>
-
-<p style="margin-left:15%;">Obsolete option. Recognized but
-ignored.</p>
-
 <p style="margin-left:11%;"><b>set quotestr</b>
 <i>regex</i></p>
 
-<p style="margin-left:15%;">The email-quote string, used to
-justify email-quoted paragraphs. This is an extended regular
-expression. The default value is
-&quot;<b>^([&nbsp;\t]*([#:&gt;|}]|//))+</b>&quot;. Note that
-<b>\t</b> stands for an actual Tab character.</p>
+<p style="margin-left:15%;">Set the regular expression for
+matching the quoting part of a line. The default value is
+&quot;<b>^([&nbsp;\t]*([!#%:;&gt;|}]|//|&minus;&minus;))+</b>&quot;.
+(Note that <b>\t</b> stands for an actual Tab character.)
+This makes it possible to rejustify blocks of quoted text
+when composing email, and to rewrap blocks of line comments
+when writing source code.</p>
+
+<p style="margin-left:11%;"><b>set rawsequences</b></p>
+
+<p style="margin-left:15%;">Interpret escape sequences
+directly (instead of asking <b>ncurses</b> to translate
+them). If you need this option to get your keyboard to work
+properly, please report a bug. Using this option disables
+<b>nano</b>&rsquo;s mouse support.</p>
 
 <p style="margin-left:11%;"><b>set rebinddelete</b></p>
 
-<p style="margin-left:15%;">Interpret the Delete key
-differently so that both Backspace and Delete work properly.
-You should only need to use this option if Backspace acts
-like Delete on your system.</p>
-
-<p style="margin-left:11%;"><b>set rebindkeypad</b></p>
-
-<p style="margin-left:15%;">Interpret the numeric keypad
-keys so that they all work properly. You should only need to
-use this option if they don&rsquo;t, as mouse support
-won&rsquo;t work properly with this option enabled.</p>
+<p style="margin-left:15%;">Interpret the Delete and
+Backspace keys differently so that both Backspace and Delete
+work properly. You should only use this option when on your
+system either Backspace acts like Delete or Delete acts like
+Backspace.</p>
 
 <p style="margin-left:11%;"><b>set regexp</b></p>
 
@@ -375,8 +422,9 @@ beginning of the line.</p>
 
 <p style="margin-left:11%;"><b>set smooth</b></p>
 
-<p style="margin-left:15%;">Use smooth scrolling by
-default.</p>
+<p style="margin-left:15%;">Deprecated option since it has
+become the default setting. When needed, use <b>unset
+jumpyscrolling</b> instead.</p>
 
 <p style="margin-left:11%;"><b>set softwrap</b></p>
 
@@ -396,6 +444,13 @@ corrector that calls <b>spell</b>.</p>
 <p style="margin-left:15%;">Specify the color combination
 to use for the status bar. See <b>set titlecolor</b> for
 more details.</p>
+
+<p style="margin-left:11%;"><b>set stripecolor</b>
+<i>fgcolor</i>,<i>bgcolor</i></p>
+
+<p style="margin-left:15%;">Specify the color combination
+to use for the vertical guiding stripe. See <b>set
+titlecolor</b> for more details.</p>
 
 <p style="margin-left:11%;"><b>set suspend</b></p>
 
@@ -436,8 +491,7 @@ color. The name of the foreground color may be prefixed with
 
 <p style="margin-left:15%;">Remove trailing whitespace from
 wrapped lines when automatic hard-wrapping occurs or when
-text is justified. (The old form of this option,
-&rsquo;<b>set justifytrim</b>&rsquo;, is deprecated.)</p>
+text is justified.</p>
 
 <p style="margin-left:11%;"><b>set unix</b></p>
 
@@ -450,8 +504,8 @@ effect when you also use <b>set noconvert</b>.)</p>
 
 <p style="margin-left:15%;">Disallow file modification:
 read-only mode. This mode allows the user to open also other
-files for viewing, unless <b>--restricted</b> is given on
-the command line.</p>
+files for viewing, unless <b>&minus;&minus;restricted</b> is
+given on the command line.</p>
 
 <p style="margin-left:11%;"><b>set whitespace</b>
 <i>string</i></p>
@@ -510,7 +564,7 @@ a new <b>syntax</b> command is encountered.</p>
 <b>nano</b> is run, this syntax will be automatically
 activated if the current filename matches the extended
 regular expression <i>fileregex</i>. Or the syntax can be
-explicitly activated by using the <b>-Y</b> or
+explicitly activated by using the <b>&minus;Y</b> or
 <b>&minus;&minus;syntax</b> command-line option followed by
 the <i>name</i>.</p>
 
@@ -544,8 +598,7 @@ on the system and will be silently ignored otherwise.)</p>
 [<i>arg</i> ...]</p>
 
 <p style="margin-left:22%;">Use the given <i>program</i> to
-run a syntax check on the current buffer. (This overrides
-the speller function.)</p>
+run a syntax check on the current buffer.</p>
 
 <p style="margin-left:11%;"><b>comment
 &quot;</b><i>string</i><b>&quot;</b></p>
@@ -650,7 +703,7 @@ M&minus;F &quot;^R^X|yourformatcommand^M&quot; main</b></p>
 <p style="margin-left:11%; margin-top: 1em">(Note that the
 <b>^R</b>, <b>^X</b>, and <b>^M</b> are each a single,
 literal control character. You can enter them by preceding
-each with <b>M-V</b>.)</p>
+each with <b>M&minus;V</b>.)</p>
 
 <h2>REBINDING KEYS
 <a name="REBINDING KEYS"></a>
@@ -676,7 +729,7 @@ produce the given <i>string</i> in the given <i>menu</i> (or
 in all menus where the key exists when <b>all</b> is used).
 The <i>string</i> can consist of text or commands or a mix
 of them. (To enter a command into the <i>string</i>, precede
-its keystroke with <b>M-V</b>.)</p>
+its keystroke with <b>M&minus;V</b>.)</p>
 
 <p style="margin-left:15%;"><b>unbind</b> <i>key
 menu</i></p>
@@ -708,13 +761,13 @@ characters (@, ], \, ^, or _), or by the word
 <td width="3%">
 
 
-<p><b>M-</b></p></td>
+<p><b>M&minus;</b></p></td>
 <td width="2%"></td>
 <td width="80%">
 
 
 <p>followed by any ASCII character except [, or by the word
-&quot;Space&quot;. Example: M-C.</p></td></tr>
+&quot;Space&quot;. Example: M&minus;C.</p></td></tr>
 <tr valign="top" align="left">
 <td width="15%"></td>
 <td width="3%">
@@ -800,35 +853,35 @@ line (or the marked region).</p>
 <p style="margin-left:15%;"><b>copy</b></p>
 
 <p style="margin-left:18%;">Copies the current line (or the
-marked region) without deleting it. (The old form
-&rsquo;copytext&rsquo; is deprecated.)</p>
+marked region) without deleting it.</p>
 
 <p style="margin-left:15%;"><b>paste</b></p>
 
 <p style="margin-left:18%;">Pastes the currently stored
-text into the current buffer at the current cursor position.
-(The old form &rsquo;uncut&rsquo; is deprecated.)</p>
+text into the current buffer at the current cursor
+position.</p>
 
 <p style="margin-left:15%;"><b>zap</b></p>
 
-<p style="margin-left:18%;">Throw away the current line (or
-the marked region). (This function is bound by default to
-&lt;Meta+Delete&gt;.)</p>
+<p style="margin-left:18%;">Throws away the current line
+(or the marked region). (This function is bound by default
+to &lt;Meta+Delete&gt;.)</p>
 
-<p style="margin-left:15%;"><b>cutwordleft</b></p>
+<p style="margin-left:15%;"><b>chopwordleft</b></p>
 
-<p style="margin-left:18%;">Cuts from the cursor position
-to the beginning of the preceding word. (This function is
-not bound by default. If your terminal produces <b>^H</b>
-for &lt;Ctrl+Backspace&gt;, you can make
-&lt;Ctrl+Backspace&gt; delete the word to the left of the
-cursor by rebinding ^H to this function.)</p>
+<p style="margin-left:18%;">Deletes from the cursor
+position to the beginning of the preceding word. (This
+function is bound by default to &lt;Shift+Ctrl+Delete&gt;.
+If your terminal produces <b>^H</b> for
+&lt;Ctrl+Backspace&gt;, you can make &lt;Ctrl+Backspace&gt;
+delete the word to the left of the cursor by rebinding ^H to
+this function.)</p>
 
-<p style="margin-left:15%;"><b>cutwordright</b></p>
+<p style="margin-left:15%;"><b>chopwordright</b></p>
 
-<p style="margin-left:18%;">Cuts from the cursor position
-to the beginning of the next word. (This function is bound
-by default to &lt;Ctrl+Delete&gt;.)</p>
+<p style="margin-left:18%;">Deletes from the cursor
+position to the beginning of the next word. (This function
+is bound by default to &lt;Ctrl+Delete&gt;.)</p>
 
 <p style="margin-left:15%;"><b>cutrestoffile</b></p>
 
@@ -854,13 +907,13 @@ lines and characters in the current buffer.</p>
 <p style="margin-left:15%;"><b>speller</b></p>
 
 <p style="margin-left:18%;">Invokes a spell-checking
-program (or linting program, if the active syntax defines
-such a thing).</p>
+program, either the default one, or the one defined by
+<b>&minus;&minus;speller</b> or <b>set speller</b>.</p>
 
 <p style="margin-left:15%;"><b>linter</b></p>
 
-<p style="margin-left:18%;">A synonym of <b>speller</b>
-(for when the speller has not been configured).</p>
+<p style="margin-left:18%;">Invokes a syntax-checking
+program (if the active syntax defines one).</p>
 
 <p style="margin-left:15%;"><b>justify</b></p>
 
@@ -1102,8 +1155,7 @@ something and replacing something.</p>
 <p style="margin-left:15%;"><b>flipgoto</b></p>
 
 <p style="margin-left:18%;">Toggles between searching for
-text and targeting a line number. (The form
-&rsquo;gototext&rsquo; is deprecated.)</p>
+text and targeting a line number.</p>
 
 <p style="margin-left:15%;"><b>flipexecute</b></p>
 
@@ -1190,8 +1242,7 @@ screen.</p>
 <p style="margin-left:15%;"><b>constantshow</b></p>
 
 <p style="margin-left:18%;">Toggles the constant display of
-the current line, column, and character positions. (The form
-&rsquo;constupdate&rsquo; is deprecated.)</p>
+the current line, column, and character positions.</p>
 
 <p style="margin-left:15%;"><b>smoothscroll</b></p>
 
@@ -1234,8 +1285,7 @@ line is the beginning of a paragraph.</p>
 
 <p style="margin-left:18%;">Toggles whether cutting text
 will cut the whole line or just from the current cursor
-position to the end of the line. (The form
-&rsquo;cuttoend&rsquo; is deprecated.)</p>
+position to the end of the line.</p>
 
 <p style="margin-left:15%;"><b>nowrap</b></p>
 

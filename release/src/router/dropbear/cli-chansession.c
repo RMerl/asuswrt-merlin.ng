@@ -52,6 +52,7 @@ const struct ChanType clichansess = {
 	NULL, /* checkclosehandler */
 	cli_chansessreq, /* reqhandler */
 	cli_closechansess, /* closehandler */
+	NULL, /* cleanup */
 };
 
 static void cli_chansessreq(struct Channel *channel) {
@@ -387,7 +388,8 @@ static const struct ChanType cli_chan_netcat = {
 	cli_init_netcat, /* inithandler */
 	NULL,
 	NULL,
-	cli_closechansess
+	cli_closechansess,
+	NULL,
 };
 
 void cli_send_netcat_request() {

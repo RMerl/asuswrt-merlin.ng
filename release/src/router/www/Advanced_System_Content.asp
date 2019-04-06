@@ -477,7 +477,7 @@ function applyRule(){
 
 		showLoading();
 
-		var action_script_tmp = "restart_time;restart_upnp;";
+		var action_script_tmp = "restart_time;restart_upnp;restart_leds;";
 
 		if(hdspindown_support) {
 			var excluded = "";
@@ -538,6 +538,9 @@ function applyRule(){
 			action_script_tmp = "reboot";
 			document.form.action_wait.value = httpApi.hookGet("get_default_reboot_time");
 		}
+
+		if (getRadioItemCheck(document.form.ntpd_enable) != '<% nvram_get("ntpd_enable"); %>')
+			action_script_tmp += "restart_dnsmasq;";
 
 		document.form.action_script.value = action_script_tmp;
 		document.form.submit();
@@ -1857,6 +1860,13 @@ function pullPingTargetList(obj){
 					</tr>
 				</thead>
 				<tr>
+					<th>Enable local NTP server</th>
+					<td>
+						<input type="radio" name="ntpd_enable" value="1" <% nvram_match_x("","ntpd_enable","1", "checked"); %> ><#checkbox_Yes#>
+						<input type="radio" name="ntpd_enable" value="0" <% nvram_match_x("","ntpd_enable","0", "checked"); %> ><#checkbox_No#>
+					</td>
+				</tr>
+				<tr>
 					<th><a class="hintstyle"  href="javascript:void(0);" onClick="openHint(11,2)"><#LANHostConfig_x_TimeZone_itemname#></a></th>
 					<td>
 						<select name="time_zone_select" class="input_option" onchange="select_time_zone();autofill_dst();"></select>
@@ -1922,7 +1932,7 @@ function pullPingTargetList(obj){
 				<tr>
 					<th><a class="hintstyle"  href="javascript:void(0);" onClick="openHint(11,3)"><#LANHostConfig_x_NTPServer_itemname#></a></th>
 					<td>
-						<input type="text" maxlength="256" class="input_32_table" name="ntp_server0" value="<% nvram_get("ntp_server0"); %>" onKeyPress="return validator.isString(this, event);" autocorrect="off" autocapitalize="off">
+						<input type="text" maxlength="31" class="input_32_table" name="ntp_server0" value="<% nvram_get("ntp_server0"); %>" onKeyPress="return validator.isString(this, event);" autocorrect="off" autocapitalize="off">
 						<a href="javascript:openLink('x_NTPServer1')"  name="x_NTPServer1_link" style=" margin-left:5px; text-decoration: underline;"><#LANHostConfig_x_NTPServer1_linkname#></a>
 						<div id="svc_hint_div" style="display:none;">
 							<span style="color:#FFCC00;"><#General_x_SystemTime_syncNTP#></span>
@@ -1958,6 +1968,12 @@ function pullPingTargetList(obj){
 					</td>
 				</tr>
 				<tr>
+					<th>Secondary NTP Server</th>
+					<td>
+						<input type="text" maxlength="31" class="input_32_table" name="ntp_server1" value="<% nvram_get("ntp_server1"); %>" onKeyPress="return validator.isString(this, event);" autocorrect="off" autocapitalize="off">
+					</td>
+				</tr>
+				<tr>
 					<th><#System_AutoLogout#></th>
 					<td>
 						<input type="text" class="input_3_table" maxlength="3" name="http_autologout" value='<% nvram_get("http_autologout"); %>' onKeyPress="return validator.isNumber(this,event);" autocorrect="off" autocapitalize="off"> <#Minute#>
@@ -1985,6 +2001,13 @@ function pullPingTargetList(obj){
 						<input type="radio" name="btn_ez_radiotoggle" id="turn_WPS" class="input" style="display:none;" value="0"><label for="turn_WPS"><#WPS_btn_actWPS#></label>
 						<input type="radio" name="btn_ez_radiotoggle" id="turn_WiFi" class="input" style="display:none;" value="1" <% nvram_match_x("", "btn_ez_radiotoggle", "1", "checked"); %>><label for="turn_WiFi" id="turn_WiFi_str"><#WPS_btn_toggle#></label>
 						<input type="radio" name="btn_ez_radiotoggle" id="turn_LED" class="input" style="display:none;" value="0" <% nvram_match_x("", "btn_ez_mode", "1", "checked"); %>><label for="turn_LED" id="turn_LED_str">Turn LED On/Off</label>
+					</td>
+				</tr>
+				<tr>
+					<th>Disable LEDs</th>
+					<td>
+						<input type="radio" name="led_disable" class="input" value="1" <% nvram_match_x("", "led_disable", "1", "checked"); %>><#checkbox_Yes#>
+						<input type="radio" name="led_disable" class="input" value="0" <% nvram_match_x("", "led_disable", "0", "checked"); %>><#checkbox_No#>
 					</td>
 				</tr>
 				<tr id="pwrsave_tr">

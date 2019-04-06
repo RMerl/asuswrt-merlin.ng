@@ -1764,6 +1764,9 @@ void start_dnsmasq(void)
 	if (nvram_match("dns_norebind", "1"))
 		fprintf(fp, "stop-dns-rebind\n");
 
+	if (nvram_match("ntpd_enable", "1"))
+		fprintf(fp, "dhcp-option=option:ntp-server,%s\n", lan_ipaddr);
+
 	/* Protect against VU#598349 */
 	fprintf(fp,"dhcp-name-match=set:wpad-ignore,wpad\n"
 		   "dhcp-ignore-names=tag:wpad-ignore\n");
@@ -8314,6 +8317,7 @@ start_services(void)
 #if defined(RTCONFIG_RGBLED)
 	start_aurargb();
 #endif
+	start_ntpd();
 
 	run_custom_script("services-start", NULL);
 
@@ -8328,6 +8332,8 @@ stop_services(void)
 #if defined(RTCONFIG_AMAS)
 	stop_amas_lib();
 #endif
+	stop_ntpd();
+
 #ifdef RTCONFIG_ADTBW
 	stop_adtbw();
 #endif
@@ -12597,6 +12603,7 @@ check_ddr_done:
 	else if (strcmp(script, "time") == 0)
 	{
 		if(action & RC_SERVICE_STOP) {
+			stop_ntpd();
 			stop_hour_monitor_service();
 			stop_telnetd();
 #ifdef RTCONFIG_SSH
@@ -12616,6 +12623,7 @@ check_ddr_done:
 			//start_httpd();
 			start_firewall(wan_primary_ifunit(), 0);
 			start_hour_monitor_service();
+			start_ntpd();
 		}
 	}
 	else if (strcmp(script, "wps_method")==0)
@@ -13089,6 +13097,11 @@ retry_wps_enr:
 	}
 	else if (strcmp(script, "leds") == 0) {
 		setup_leds();
+	}
+	else if (strcmp(script, "ntpd") == 0)
+	{
+		if(action & RC_SERVICE_STOP) stop_ntpd();
+		if(action & RC_SERVICE_START) start_ntpd();
 	}
 	else if (strcmp(script, "updateresolv") == 0) {
 		update_resolvconf();

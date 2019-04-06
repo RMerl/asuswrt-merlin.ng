@@ -67,4 +67,7 @@
   <wan>link_internet=<% nvram_get("link_internet"); %></wan>
   <diag>diag_dblog_enable=<% nvram_get("dblog_enable"); %></diag>
   <diag>diag_dblog_remaining=<% nvram_get("dblog_remaining"); %></diag>
+  <wanbonding>wan_bonding_speed=<% wan_bonding_speed(); %></wanbonding>
+  <wanbonding>wan_bonding_p1_status=<% wan_bonding_p1_status(); %></wanbonding>
+  <wanbonding>wan_bonding_p2_status=<% wan_bonding_p2_status(); %></wanbonding>
 </devicemap>

@@ -44,6 +44,7 @@
 	#gameListWrap{
 		width: 90%;		
 		overflow-x: scroll;
+		margin-top: 12px;
 	}
 	#gameListWrap::-webkit-scrollbar-track {
 		border: 6px solid #000;
@@ -297,6 +298,7 @@
 			if(!netoolApi.queueList[obj.serverIp]) return false;
 
 			breath.stop($(".s"+obj.pointId));
+			setTimeout(function(){$(".s"+obj.pointId).fadeIn(100)}, 500);
 			netoolApi.queueList[obj.serverIp].finish = true;
 			netoolApi.queue();
 

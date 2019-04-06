@@ -1408,6 +1408,7 @@ obj-$(HND_ROUTER) += mcpd
 #obj-$(HND_ROUTER) += jqplot
 #obj-$(HND_ROUTER) += jquery
 #obj-$(HND_ROUTER) += tablesorter
+obj-$(HND_ROUTER) += memaccess
 obj-$(HND_ROUTER_AX) += bdmf_lib
 obj-$(HND_ROUTER_AX) += mdkshell
 obj-$(HND_ROUTER_AX) += bcm_bootstate
@@ -1628,6 +1629,7 @@ lzma-loader-install: lzma-loader
 	@$(SEP)
 endif
 endif
+	@$(SEP)
 
 kmod: dummy
 	$(MAKE) -C $(LINUXDIR) modules CC=$(KERNELCC)
@@ -2478,7 +2480,7 @@ conntrack: libnfnetlink-1.0.1 libmnl-1.0.4 libnetfilter_conntrack-1.0.7 libnetfi
 	$(MAKE) -C conntrack
 
 conntrack/Makefile:
-	(cd conntrack && touch aclocal.m4  configure Makefile.in m4)
+	(cd conntrack && autoreconf -i -f)
 	$(MAKE) conntrack-configure
 
 conntrack-configure:
@@ -2513,7 +2515,7 @@ libnfnetlink-1.0.1/Makefile:
 	$(MAKE) libnfnetlink-1.0.1-configure
 
 libnfnetlink-1.0.1-configure:
-	( cd libnfnetlink-1.0.1 ; \
+	( cd libnfnetlink-1.0.1 && autoreconf -i -f ; \
 		$(CONFIGURE) \
 		--prefix=/usr \
 		--bindir=/usr/sbin \
@@ -2531,6 +2533,7 @@ libmnl-1.0.4: libmnl-1.0.4/Makefile
 	$(MAKE) -C libmnl-1.0.4
 
 libmnl-1.0.4/Makefile:
+	(cd libmnl-1.0.4 && autoreconf -i -f)
 	$(MAKE) libmnl-1.0.4-configure
 
 libmnl-1.0.4-configure:
@@ -2553,7 +2556,7 @@ libnetfilter_conntrack-1.0.7: libnfnetlink-1.0.1 libmnl-1.0.4 libnetfilter_connt
 	$(MAKE) -C libnetfilter_conntrack-1.0.7
 
 libnetfilter_conntrack-1.0.7/Makefile:
-	(cd libnetfilter_conntrack-1.0.7 && touch configure aclocal.m4  m4 Makefile.in config.h.in)
+	(cd libnetfilter_conntrack-1.0.7 && autoreconf -i -f)
 	$(MAKE) libnetfilter_conntrack-1.0.7-configure
 
 libnetfilter_conntrack-1.0.7-configure:
@@ -2580,6 +2583,7 @@ libnetfilter_cttimeout-1.0.0: libnetfilter_cttimeout-1.0.0/Makefile
 	$(MAKE) -C libnetfilter_cttimeout-1.0.0
 
 libnetfilter_cttimeout-1.0.0/Makefile:
+	(cd libnetfilter_cttimeout-1.0.0 && autoreconf -i -f)
 	$(MAKE) libnetfilter_cttimeout-1.0.0-configure
 
 libnetfilter_cttimeout-1.0.0-configure:

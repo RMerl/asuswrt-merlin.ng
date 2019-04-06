@@ -436,7 +436,6 @@ ifneq ($(RTCONFIG_ROG_UI),y)
 	rm -rf $(INSTALLDIR)/www/images/New_ui/indicator.png
 	rm -rf $(INSTALLDIR)/www/images/New_ui/speedmeter.png
 	rm -rf $(INSTALLDIR)/www/images/New_ui/speedmeter_2.png
-	rm -rf $(INSTALLDIR)/www/ROG_Fonts-Regular.otf
 endif
 endif
 ifneq ($(RTCONFIG_ADBLOCK),y)
@@ -738,6 +737,15 @@ ifneq ($(BUILD_NAME),$(filter $(BUILD_NAME), GT-AC9600 GX-AX6000 GT-AX11000))
 endif
 
 ifneq ($(BUILD_NAME),$(filter $(BUILD_NAME),  GT-AX11000))
-	rm -rf $(INSTALLDIR)/www/New_ui/img-aurasync-logo.png
-	rm -rf $(INSTALLDIR)/www/New_ui/img-aurasync-rog-logo-mask.png
+	rm -rf $(INSTALLDIR)/www/images/New_ui/img-aurasync-logo.png
+	rm -rf $(INSTALLDIR)/www/images/New_ui/img-aurasync-rog-logo-mask.png
+	rm -rf $(INSTALLDIR)/www/images/aura
+endif
+
+ifneq ($(RTCONFIG_ROG_UI),y)
+	rm -rf $(INSTALLDIR)/www/fonts
+	rm -rf $(INSTALLDIR)/www/css/basic.css
+	rm -rf $(INSTALLDIR)/www/images/triLvGameAcceleration
+	rm -rf $(INSTALLDIR)/www/css/triLvGameAcceleration.css
+	rm -rf $(INSTALLDIR)/www/ajax_wanlink.asp
 endif

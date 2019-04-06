@@ -110,6 +110,9 @@ var curState = (wans_dualwan_array[1] != "none")? "1":"0";
 var lacp_support = isSupport("lacp");
 var lacp_enabled = '<% nvram_get("lacp_enabled"); %>';
 var wans_lanport_orig = '<% nvram_get("wans_lanport"); %>';
+if(wan_bonding_support)
+	var orig_bond_wan = httpApi.nvramGet(["bond_wan"], true).bond_wan;
+
 
 function initial(){
 	show_menu();
@@ -1138,6 +1141,7 @@ function remain_origins(){
 <input type="hidden" name="switch_wantag" value="<% nvram_get("switch_wantag"); %>" disabled>
 <input type="hidden" name="switch_stb_x" value="<% nvram_get("switch_stb_x"); %>" disabled>
 <input type="hidden" name="lacp_enabled" value="<% nvram_get("lacp_enabled"); %>" disabled>
+<input type="hidden" name="bond_wan" value="<% nvram_get("bond_wan"); %>" disabled>
 <!--===================================Beginning of Detection Time Confirm===========================================-->
 <div id="detect_time_confirm" style="display:none;">
 		<!--div style="margin:20px 30px 20px;"-->
@@ -1187,6 +1191,7 @@ function remain_origins(){
 									<div class="formfonttitle"><#menu5_3#> - <#dualwan#></div>
 									<div style="margin:10px 0 10px 5px;" class="splitLine"></div>
 									<div class="formfontdesc"><#dualwan_desc#><a id="dualwan_faq" href="" target="_blank" style="margin-left:5px; text-decoration: underline;"><#dualwan#> FAQ</a></div>
+									<div class="formfontdesc" style="color:#FFCC00;"><#WANAggregation_goto_WAN#></div>
 									<table width="100%" border="1" align="center" cellpadding="4" cellspacing="0" bordercolor="#6b8fa3"  class="FormTable">
 										
 			  						<thead>
@@ -1202,8 +1207,20 @@ function remain_origins(){
 												<div class="iphone_switch_container" style="height:32px; width:74px; position: relative; overflow: hidden">
 												<script type="text/javascript">
 													$('#ad_radio_dualwan_enable').iphoneSwitch(wans_dualwan_array[1] != 'none',
-														 function() {
-														 	curState = "1";
+														function() {
+															if(wan_bonding_support && orig_bond_wan == "1"){
+																var msg = "<#WANAggregation_disable_WANAggregation#>";
+																if(confirm(msg)){
+																	document.form.bond_wan.disabled = false;
+																	document.form.bond_wan.value = "0";
+																}
+																else{
+																	$('#ad_radio_dualwan_enable').find('.iphone_switch').animate({backgroundPosition: "-38px"}, "slow");
+																	return false;
+																}
+															}
+
+															curState = "1";
 															wans_flag = 1;
 															inputCtrl(document.form.wans_second, 1);
 															if(wans_caps.search("wan2") >= 0)
@@ -1212,6 +1229,7 @@ function remain_origins(){
 																document.form.wans_mode.value = "fo";
 															addWANOption(document.form.wans_primary, wans_caps_primary.split(" "));
 															form_show(wans_flag);
+
 														 },
 														 function() {
 															if(wans_caps_primary.indexOf("wan") >= 0 && wans_dualwan_array[0] == "lan"){
@@ -1233,6 +1251,10 @@ function remain_origins(){
 															document.form.wans_mode.value = "fo";
 															addWANOption(document.form.wans_primary, wans_caps_primary.split(" "));
 															form_show(wans_flag);
+															if(wan_bonding_support){
+																document.form.bond_wan.disabled = false;
+																document.form.bond_wan.value = orig_bond_wan;
+															}
 														}
 													);
 												</script>

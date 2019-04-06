@@ -151,7 +151,10 @@
 #include "linux/bcm_log.h"
 #endif
 
+#if defined(CONFIG_BCM_KF_NETFILTER) && defined(CONFIG_BLOG)
 #define PROCESS_BACKLOG_TIMEOUT (2 * HZ)
+#endif /* CONFIG_BCM_KF_NETFILTER && CONFIG_BLOG*/
+
 #ifdef PROCESS_BACKLOG_TIMEOUT
 static unsigned long process_backlog_timeout = PROCESS_BACKLOG_TIMEOUT;
 #endif /* PROCESS_BACKLOG_TIMEOUT */

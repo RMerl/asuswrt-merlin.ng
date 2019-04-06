@@ -924,26 +924,6 @@ void start_hour_monitor_service()
 	}
 }
 
-#ifdef RTCONFIG_CONNTRACK
-void stop_pctime_service()
-{
-	killall("pctime", SIGTERM);
-}
-
-void start_pctime_service()
-{
-	char *cmd[] = {"pctime", NULL};
-	int pid;
-
-	if (!is_router_mode())
-		return;
-
-	if (!pids("pctime")) {
-		_eval(cmd, NULL, 0, &pid);
-	}
-}
-#endif
-
 void check_hour_monitor_service()
 {
 	if(hour_monitor_function_check()) start_hour_monitor_service();
@@ -9499,7 +9479,8 @@ void check_services(void)
 #endif
 #ifdef RTCONFIG_AMAS
 	if(init_x_Setting == 0 && nvram_get_int("x_Setting") == 1) {
-		notify_rc("restart_amas_lldpd");
+		// To avoid deadlock, no need to use notify_rc("restart_amas_lldpd") here because the current function is called by process "init".
+		start_amas_lldpd();
 		init_x_Setting = 1;
 	}
 #endif
@@ -10444,6 +10425,10 @@ script_allnet:
 			start_dsl();
 #endif
 			start_lan();
+#ifdef CONFIG_BCMWL5
+			start_wl();
+			lanaccess_wl();
+#endif
 #if defined(RTCONFIG_RALINK) && defined(RTCONFIG_WLMODULE_MT7615E_AP)
 			start_wds_ra();
 #endif
@@ -10526,8 +10511,10 @@ script_allnet:
 #if defined(RTCONFIG_USB) && defined(RTCONFIG_USB_PRINTER)
 			start_usblpsrv();
 #endif
+#ifndef CONFIG_BCMWL5
 			start_wl();
 			lanaccess_wl();
+#endif
 #ifdef RTCONFIG_CAPTIVE_PORTAL
 			start_chilli();
 			start_CP();
@@ -10635,6 +10622,10 @@ script_allnet:
 		if(action & RC_SERVICE_START) {
 			//start_vlan();
 			start_lan();
+#ifdef CONFIG_BCMWL5
+			start_wl();
+			lanaccess_wl();
+#endif
 #if defined(RTCONFIG_RALINK) && defined(RTCONFIG_WLMODULE_MT7615E_AP)
 			start_wds_ra();
 #endif
@@ -10722,8 +10713,10 @@ script_allnet:
 			setup_passwd();
 			start_uam_srv();
 #endif
+#ifndef CONFIG_BCMWL5
 			start_wl();
 			lanaccess_wl();
+#endif
 #ifdef RTCONFIG_BCMWL6
 #ifdef RTCONFIG_HSPOT
 			start_hspotap();
@@ -10880,6 +10873,10 @@ script_allnet:
 			config_lacp();
 #endif
 			start_lan();
+#ifdef CONFIG_BCMWL5
+			start_wl();
+			lanaccess_wl();
+#endif
 			start_dnsmasq();
 #ifdef RTCONFIG_DHCP_OVERRIDE
 			start_detectWAN_arp();
@@ -10973,8 +10970,10 @@ script_allnet:
 			start_samba();
 			start_ftpd();
 #endif
+#ifndef CONFIG_BCMWL5
 			start_wl();
 			lanaccess_wl();
+#endif
 #ifdef RTCONFIG_CAPTIVE_PORTAL
 			start_chilli();
 			start_CP();
@@ -11462,6 +11461,8 @@ check_ddr_done:
 	else if (strcmp(script, "nas") == 0) {
 		if(action & RC_SERVICE_STOP) stop_nas();
 		if(action & RC_SERVICE_START) {
+			start_wl();
+			lanaccess_wl();
 			start_eapd();
 			start_nas();
 			start_wps();
@@ -11496,8 +11497,6 @@ check_ddr_done:
 			start_aspmd();
 #endif
 #endif
-			start_wl();
-			lanaccess_wl();
 #ifdef RTCONFIG_BCMWL6
 #ifdef RTCONFIG_HSPOT
 			start_hspotap();
@@ -11662,6 +11661,17 @@ check_ddr_done:
 		if(action&RC_SERVICE_START) start_radiusd();
 	}
 #endif
+#ifdef RTCONFIG_BCMWL6
+	else if (strcmp(script, "acsd") == 0)
+	{
+		if(action & RC_SERVICE_STOP){
+			stop_acsd();
+		}
+		if(action & RC_SERVICE_START) {
+			start_acsd();
+		}
+	}
+#endif  /* RTCONFIG_BCMWL6 */
 #ifdef RTCONFIG_WEBDAV
 	else if (strcmp(script, "webdav") == 0)
 	{
@@ -12423,12 +12433,10 @@ check_ddr_done:
 	{
 		if(action & RC_SERVICE_START){
 			char *sig_update_argv[] = {"sig_update.sh", NULL};
-			pid_t pid;
-			_eval(sig_update_argv, NULL, 0, &pid);
+			_eval(sig_update_argv, NULL, 0, NULL);
 			if(nvram_get_int("sig_state_flag")){
 				char *sig_upgrade_argv[] = {"sig_upgrade.sh", NULL};
-				pid_t pid1;
-				_eval(sig_upgrade_argv, NULL, 0, &pid1);
+				_eval(sig_upgrade_argv, NULL, 0, NULL);
 			}
 			stop_dpi_engine_service(0);
 			start_dpi_engine_service();
@@ -13923,6 +13931,11 @@ void start_amas_lldpd(void)
 
 	if(nvram_match("stop_amas_lldpd", "1")) {
 		_dprintf("stop_amas_lldpd = 1, don't start amas lldpd.\n");
+		return;
+	}
+
+	if(getpid()!=1) {
+		notify_rc("start_amas_lldpd");
 		return;
 	}
 

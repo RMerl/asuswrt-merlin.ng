@@ -26,6 +26,7 @@ rm -rf etc && ln -sf tmp/etc etc
 echo "/lib/aarch64" > rom/etc/ld.so.conf
 echo "/lib" >> rom/etc/ld.so.conf
 echo "/usr/lib" >> rom/etc/ld.so.conf
+echo "/lib/aarch64" >> rom/etc/ld.so.conf
 #/sbin/ldconfig -r $ROOTDIR
 mv tmp/etc/* rom/etc
 rm -f etc/ld.so.conf etc/ld.so.cache

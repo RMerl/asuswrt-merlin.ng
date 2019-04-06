@@ -85,6 +85,12 @@ enum
 #endif
 #define ARP_PATH			"/proc/net/arp"
 
+#define NMP_CONSOLE_DEBUG(fmt, args...) do{ \
+	if(nvram_match("nmp_debug", "1")) { \
+		cprintf(fmt, ## args); \
+	} \
+}while(0)
+
 #if !defined(RTCONFIG_RALINK) && !defined(HND_ROUTER)
 #define NMP_DEBUG(fmt, args...) \
 	if(f_exists(NMP_DEBUG_FILE)) { \
@@ -203,5 +209,6 @@ typedef struct
 } ARP_HEADER;
 
 int FindHostname(P_CLIENT_DETAIL_INFO_TABLE p_client_detail_info_tab);
+int FindDeviceMac(unsigned char *pIP, unsigned char *pMac);
 void find_wireless_device(P_CLIENT_DETAIL_INFO_TABLE p_client_detail_info_tab, int offline);
 #endif

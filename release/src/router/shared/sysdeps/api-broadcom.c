@@ -1443,3 +1443,90 @@ char *get_wlxy_ifname(int x, int y, char *buf)
 #endif
 	return get_wlifname(x, y, y, buf);
 }
+
+#ifdef RTCONFIG_BONDING
+#ifdef RTCONFIG_HND_ROUTER_AX
+/*
+	LAN bond_if = bond0
+	WAN bond_if = bond1
+*/
+int get_bonding_speed(char *bond_if)
+{
+	char confbuf[64] = {0};
+	char cmdbuf[64] = {0};
+	char buf[32];
+
+	snprintf(confbuf, sizeof(confbuf),
+			"/sys/class/net/%s/speed", bond_if);
+	f_read_string(confbuf, buf, sizeof(buf));
+
+	if(strcmp(buf, "2000\n")==0) return 2000;
+	else if(strcmp(buf, "1000\n") == 0) return 1000;
+	else return 0;
+}
+
+/*
+	WAN port: port = 0
+	LAN4: port = 4
+*/
+int get_bonding_port_status(int port)
+{
+#ifdef RTCONFIG_BONDING_WAN
+	int port_status = 0;
+	int ret;
+	int extra_p0=0;
+	unsigned int regv=0, pmdv=0, regv2=0, pmdv2=0;
+#ifdef RTCONFIG_EXT_BCM53134 /* RT-AX88U */
+	int lan_ports=4;
+	int ports[lan_ports+1];
+	ports[0]=7; ports[1]=3; ports[2]=2; ports[3]=1; ports[4]=0;
+#elif defined(RTCONFIG_EXTPHY_BCM84880) /* GT-AX11000 */
+	int lan_ports=5;
+	int ports[lan_ports+1];
+	/*
+		7 4 3 2 1 0 	L5(2.5G) W0 L1 L2 L3 L4
+	*/
+	ports[0]=4; ports[1]=3; ports[2]=2; ports[3]=1; ports[4]=0;
+	ports[5]=7;
+#endif
+
+#ifdef RTCONFIG_EXT_BCM53134
+	extra_p0 = S_53134;
+#endif
+
+#ifdef HND_ROUTER
+		regv = hnd_ethswctl(REGACCESS, 0x0100, 2, 0, 0);
+#ifdef RTCONFIG_EXT_BCM53134
+		pmdv = hnd_ethswctl(PMDIOACCESS, 0x0100, 2, 0, 0);
+#endif
+		regv2 = hnd_ethswctl(REGACCESS, 0x0104, 4, 0, 0);
+#ifdef RTCONFIG_EXT_BCM53134
+		pmdv2 = hnd_ethswctl(PMDIOACCESS, 0x0104, 4, 0, 0);
+#endif
+#endif
+
+	/* WAN port */
+	if (hnd_get_phy_status(ports[port], extra_p0, regv, pmdv)==0) {/*Disconnect*/
+		port_status = 0;
+	}else{
+		ret = hnd_get_phy_speed(ports[port], extra_p0, regv2, pmdv2);
+		port_status =
+#ifdef RTCONFIG_EXTPHY_BCM84880
+                 (ret & 4)? 2500 :
+#endif
+					(ret & 2)? 1000:100;
+	}
+
+/*
+	port_status = 0 : disconnect
+	port_status = 100 : connect and phy speed 100Mbps
+	port_status = 1000 : connect and phy speed 1000Mbps
+	port_status = 2500 : connect and phy speed 2500Mbps
+*/
+	return port_status;
+#else
+	return 0;
+#endif
+}
+#endif
+#endif

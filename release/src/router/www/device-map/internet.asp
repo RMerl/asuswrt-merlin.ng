@@ -4,6 +4,7 @@
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 <meta HTTP-EQUIV="Pragma" CONTENT="no-cache">
 <meta HTTP-EQUIV="Expires" CONTENT="-1">
+<meta name="format-detection" content="telephone=no,email=no,address=no">
 <link rel="shortcut icon" href="images/favicon.png">
 <link rel="icon" href="images/favicon.png">
 <title></title>
@@ -66,6 +67,9 @@ var wan0_primary = '<% nvram_get("wan0_primary"); %>';
 var wans_mode = '<%nvram_get("wans_mode");%>';
 var loadBalance_Ratio = '<%nvram_get("wans_lb_ratio");%>';
 var wlc_express = '<% nvram_get("wlc_express"); %>';
+var curState = (wans_dualwan_array[1] != "none")? "1":"0";
+if(wan_bonding_support)
+	var orig_bond_wan = httpApi.nvramGet(["bond_wan"], true).bond_wan;
 
 <% wan_get_parameter(); %>
 
@@ -685,6 +689,7 @@ function manualSetup(){
 <input type="hidden" name="wan_unit" value="<% get_wan_unit(); %>">
 <input type="hidden" name="dslx_link_enable" value="" disabled>
 <input type="hidden" name="wans_mode" value='<% nvram_get("wans_mode"); %>'>
+<input type="hidden" name="bond_wan" value='<% nvram_get("bond_wan"); %>' disabled>
 <table border="0" cellpadding="0" cellspacing="0">
 	<tr>
 		<td>
@@ -758,35 +763,56 @@ function manualSetup(){
 <tr id="dualwan_enable_button">
     <td height="50" style="padding:10px 15px 0px 15px;">
     		<p class="formfonttitle_nwm" style="float:left;width:98px;"><#dualwan_enable#></p>
-    		<div class="left" style="width:94px; float:right;" id="radio_dualwan_enable"></div>
+			<div class="left" style="width:94px; float:right;" id="nm_radio_dualwan_enable"></div>
 				<div class="clear"></div>
 				<script type="text/javascript">
-						$('#radio_dualwan_enable').iphoneSwitch(parent.wans_flag, 
+						$('#nm_radio_dualwan_enable').iphoneSwitch(parent.wans_flag,
 							 function() {
-								if(wans_dualwan.split(" ")[0] == "usb" || wans_dualwan.split(" ")[0] == "lan"){
-									document.internetForm.wans_dualwan.value = wans_dualwan.split(" ")[0]+" wan";
-									document.internetForm.action_wait.value = '<% get_default_reboot_time(); %>';
-									document.internetForm.action_script.value = "reboot";
-								}
-								else if(wans_dualwan.split(" ")[0] == "wan2"){
-									document.internetForm.wans_dualwan.value = wans_dualwan.split(" ")[0]+" wan";
-									document.internetForm.action_wait.value = '<% get_default_reboot_time(); %>';
-									document.internetForm.action_script.value = "reboot";
-									document.internetForm.flag.value = "Internet";
-								}
-								else{
-									if(wans_caps.search("wan2") >= 0) {
-										document.internetForm.wans_dualwan.value = wans_dualwan.split(" ")[0]+" wan2";
+								if(wan_bonding_support && orig_bond_wan == "1"){
+									var msg = "Your router is enabling WAN Aggregation. If you want to enable Dual WAN, WAN Aggregation will be disabled. Are you sure you want to continue?";
+									if(confirm(msg)){
+										document.internetForm.bond_wan.disabled = false;
+										document.internetForm.bond_wan.value = "0";
+										if(wans_dualwan.split(" ")[0] == "usb" || wans_dualwan.split(" ")[0] == "lan" || wans_dualwan.split(" ")[0] == "wan2"){
+												document.internetForm.wans_dualwan.value = wans_dualwan.split(" ")[0]+" wan";
+										}
+										else{
+											if(wans_caps.search("wan2") >= 0)
+												document.internetForm.wans_dualwan.value = wans_dualwan.split(" ")[0]+" wan2";
+											else
+												document.internetForm.wans_dualwan.value = wans_dualwan.split(" ")[0]+" usb";
+										}
+										document.internetForm.flag.value = "";
 										document.internetForm.action_wait.value = '<% get_default_reboot_time(); %>';
 										document.internetForm.action_script.value = "reboot";
-									}else{
-										document.internetForm.wans_dualwan.value = wans_dualwan.split(" ")[0]+" usb";
-										document.internetForm.action_wait.value = '2';
-										document.internetForm.action_script.value = "start_multipath";
-										setTimeout(parent.refreshpage, 1000);
+									}
+									else{
+										$('#nm_radio_dualwan_enable').find('.iphone_switch').animate({backgroundPosition: "-38px"}, "slow");
+										return false;
 									}
 								}
-
+								else{
+									if(wans_dualwan.split(" ")[0] == "usb" || wans_dualwan.split(" ")[0] == "lan" || wans_dualwan.split(" ")[0] == "wan2"){
+										document.internetForm.wans_dualwan.value = wans_dualwan.split(" ")[0]+" wan";
+										document.internetForm.action_wait.value = '<% get_default_reboot_time(); %>';
+										document.internetForm.action_script.value = "reboot";
+										document.internetForm.flag.value = "";
+									}
+									else{
+										if(wans_caps.search("wan2") >= 0) {
+											document.internetForm.wans_dualwan.value = wans_dualwan.split(" ")[0]+" wan2";
+											document.internetForm.action_wait.value = '<% get_default_reboot_time(); %>';
+											document.internetForm.action_script.value = "reboot";
+											document.internetForm.flag.value = "";
+										}else{
+											document.internetForm.wans_dualwan.value = wans_dualwan.split(" ")[0]+" usb";
+											document.internetForm.action_wait.value = '2';
+											document.internetForm.action_script.value = "start_multipath";
+											setTimeout(parent.refreshpage, 1000);
+										}
+									}
+								}
+								curState = "1";
 								document.internetForm.submit();
 								return true;
 							 },
@@ -795,16 +821,16 @@ function manualSetup(){
 									document.internetForm.action_wait.value = '2';
 									document.internetForm.action_script.value = "start_multipath";
 									setTimeout(parent.refreshpage, 1000);
-								}							 	
+								}
 								else{
 									document.internetForm.action_wait.value = '<% get_default_reboot_time(); %>';
 									document.internetForm.action_script.value = "reboot";
 									document.internetForm.flag.value = "Internet";
-								}	 	
+								}
+								curState = "0";
 								document.internetForm.wans_dualwan.value = wans_dualwan.split(" ")[0]+" none";
 								document.internetForm.wan_unit.value = 0;
 								document.internetForm.wans_mode.value = "fo";
-
 								document.internetForm.submit();
 								return true;
 							 }

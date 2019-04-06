@@ -451,8 +451,15 @@ static int check_wired_client_connected_node(char *nodeMac, char *wiredMac, json
 	if(f_exists(CLIENT_DEBUG) > 0) { \
 		_dprintf("[CLIENT][%s]"fmt, __FUNCTION__, __LINE__, ##args); \
 	}
+
+#define AVLBL_BW20 1
+#define AVLBL_BW40 2
+#define AVLBL_BW80 4
+#define AVLBL_BW160 8
+
 static int get_client_detail_info(struct json_object *clients, struct json_object *macArray, key_t shmkey);
 static int get_custom_clientlist_info(struct json_object *json_object_ptr);
+#define CLIENTAPILEVEL "1"
 
 void not_ej_initial_folder_var_file();
 
@@ -1292,6 +1299,7 @@ ej_get_clientlist_from_json_database(int eid, webs_t wp, int argc, char_t **argv
 	if(!clients) {
 		clients = json_object_new_object();
 		json_object_object_add(clients, "maclist", macArray);
+		//json_object_object_add(clients, "ClientAPILevel", json_object_new_string(CLIENTAPILEVEL));
 		ret = websWrite(wp, "%s", json_object_to_json_string(clients));
 
 		json_object_put(clients);
@@ -1370,6 +1378,7 @@ ej_get_clientlist_from_json_database(int eid, webs_t wp, int argc, char_t **argv
 	}
 
 	json_object_object_add(clients, "maclist", macArray);
+	//json_object_object_add(clients, "ClientAPILevel", json_object_new_string(CLIENTAPILEVEL));
 	ret = websWrite(wp, "%s", json_object_to_json_string(clients));
 
 	if(customList)
@@ -1631,15 +1640,20 @@ websWriteCh(webs_t wp, char *ch, int count)
    return (ret);
 }
 
-#ifdef RTCONFIG_LANTIQ
+#if defined(RTCONFIG_LANTIQ) || defined(RTCONFIG_HND_ROUTER_AX)
 int skip_log(char *message)
 {
+#ifdef RTCONFIG_LANTIQ
 	if(strstr(message, "drvhlpr") != NULL) return 1;
 	if(strstr(message, "mtlk") != NULL) return 1;
 	if(strstr(message, "libhelper") != NULL) return 1;
 	if(strstr(message, "mtdump") != NULL) return 1;
 	if(strstr(message, "hostapd") != NULL) return 1;
 	if(strstr(message, "mcastd") != NULL) return 1;
+#endif
+#ifdef RTCONFIG_HND_ROUTER_AX
+	if(strstr(message, "own address as source") != NULL) return 1;
+#endif
 	return 0;
 }
 #endif
@@ -1664,7 +1678,7 @@ static int dump_file(webs_t wp, char *filename)
 	{
 	    int len;
 	    len = strlen(buf); // fgets() would fill the '\0' at the last character in buffer.
-#ifdef RTCONFIG_LANTIQ
+#if defined(RTCONFIG_LANTIQ) || defined(RTCONFIG_HND_ROUTER_AX)
 		if(skip_log(buf) == 0)
 #endif
 	    ret += websWriteData(wp, buf, len);
@@ -7466,7 +7480,7 @@ static int get_amas_re_client_info(struct json_object *json_object_ptr) { //get 
 		char sta2g_buf[32] = {0};
 		char sta5g_buf[32] = {0};
 		char papMac_buf[32] = {0};
-		char band_buf[4] = {0};
+		char band_buf[16] = {0};
 
 		lock = file_lock(CFG_FILE_LOCK);
 		shm_client_tbl_id = shmget((key_t)KEY_SHM_CFG, sizeof(CM_CLIENT_TABLE), 0666|IPC_CREAT);
@@ -7689,20 +7703,31 @@ static int get_amas_re_client_detail_info(struct json_object *json_object_ptr) {
 					struct json_object *amas_re_get_rssi = NULL;
 					json_object_object_get_ex(val, "rssi", &amas_re_get_rssi);
 					if(amas_re_get_rssi != NULL) {
+						int isWL = 0;
+						char client_key[40] = {0};
+						memset(client_key, 0, sizeof(client_key));
 						amas_re_client_detail_attr = json_object_new_object();
-						if(!strcmp(band_buf, "2G") || !strcmp(band_buf, "2G_1") || !strcmp(band_buf, "2G_2") || !strcmp(band_buf, "2G_3"))
+						if(!strcmp(band_buf, "2G") || !strcmp(band_buf, "2G_1") || !strcmp(band_buf, "2G_2") || !strcmp(band_buf, "2G_3")) {
 							json_object_object_add(amas_re_client_detail_attr, "isWL", json_object_new_string("1"));
-						else if(!strcmp(band_buf, "5G") || !strcmp(band_buf, "5G_1") || !strcmp(band_buf, "5G_2") || !strcmp(band_buf, "5G_3"))
+							isWL = 1;
+						}
+						else if(!strcmp(band_buf, "5G") || !strcmp(band_buf, "5G_1") || !strcmp(band_buf, "5G_2") || !strcmp(band_buf, "5G_3")) {
 							json_object_object_add(amas_re_client_detail_attr, "isWL", json_object_new_string("2"));
-						else if(!strcmp(band_buf, "5G1")|| !strcmp(band_buf, "5G1_1") || !strcmp(band_buf, "5G1_2") || !strcmp(band_buf, "5G1_3"))
+							isWL = 2;
+						}
+						else if(!strcmp(band_buf, "5G1")|| !strcmp(band_buf, "5G1_1") || !strcmp(band_buf, "5G1_2") || !strcmp(band_buf, "5G1_3")) {
 							json_object_object_add(amas_re_client_detail_attr, "isWL", json_object_new_string("3"));
-						else
+							isWL = 3;
+						}
+						else {
 							json_object_object_add(amas_re_client_detail_attr, "isWL", json_object_new_string("0"));
+							isWL = 0;
+						}
 
 						json_object_object_add(amas_re_client_detail_attr, "rssi", json_object_new_string(json_object_get_string(amas_re_get_rssi)));
 						json_object_object_add(amas_re_client_detail_attr, "papMac", json_object_new_string(papMac_buf));
-
-						json_object_object_add(json_object_ptr, key, amas_re_client_detail_attr);
+						snprintf(client_key, sizeof(client_key), "%s_%d_%s", key, isWL, papMac_buf);//mac_band_papMac
+						json_object_object_add(json_object_ptr, client_key, amas_re_client_detail_attr);
 					}
 				}
 			}
@@ -8030,7 +8055,15 @@ static int get_client_detail_info(struct json_object *clients, struct json_objec
 #ifndef RTCONFIG_AMAS
 			json_object_object_add(client, "isOnline", json_object_new_string("1"));
 #else
-			json_object_object_add(client, "isOnline", json_object_new_string("0"));
+			//check nmp shm on RP/MB mode(no CFG)
+			if(!nvram_match("re_mode", "1") && nvram_get_int("sw_mode") != SW_MODE_ROUTER) {
+				if(p_client_info_tab->device_flag[i]&(1<<FLAG_EXIST))
+					json_object_object_add(client, "isOnline", json_object_new_string("1"));
+				else
+					json_object_object_add(client, "isOnline", json_object_new_string("0"));
+			}
+			else
+				json_object_object_add(client, "isOnline", json_object_new_string("0"));
 #endif
 			json_object_object_add(client, "ssid", json_object_new_string(p_client_info_tab->ssid[i]));
 			if(!strcmp(ipaddr, nvram_safe_get("login_ip_str"))){
@@ -8234,14 +8267,29 @@ static int get_client_detail_info(struct json_object *clients, struct json_objec
 						}
 					}
 				}
+#ifdef RTCONFIG_LACP
+				//search nmp shm for bonding devices
+				else if (nvram_match("lacp_enabled", "1")) {
+					if(p_client_info_tab->device_flag[i]&(1<<FLAG_EXIST))
+						json_object_object_add(client, "isOnline", json_object_new_string("1"));
+				}
+#endif
 				CLIENT_DPRINTF("amasWiredClientList finish\n");
 			}
 			if(amasReClientDetailList_status) {
-				json_object_object_get_ex(amasReClientDetailList, mac_buf, &custom_attr_get);
-				if(custom_attr_get != NULL) {
-					struct json_object *amas_re_get_rssi = NULL;
-					json_object_object_get_ex(custom_attr_get, "rssi", &amas_re_get_rssi);
-					json_object_object_add(client, "rssi", json_object_new_string(json_object_get_string(amas_re_get_rssi)));
+				struct json_object *amas_re_get_isWL = NULL, *amas_re_get_amesh_papMac = NULL;
+				json_object_object_get_ex(client, "isWL", &amas_re_get_isWL);
+				json_object_object_get_ex(client, "amesh_papMac", &amas_re_get_amesh_papMac);
+				if(amas_re_get_amesh_papMac != NULL && strcmp(json_object_get_string(amas_re_get_isWL), "0")) {
+					char client_key[40] = {0};
+					memset(client_key, 0, sizeof(client_key));
+					snprintf(client_key, sizeof(client_key), "%s_%s_%s", mac_buf, json_object_get_string(amas_re_get_isWL), json_object_get_string(amas_re_get_amesh_papMac));//mac_band_papMac
+					json_object_object_get_ex(amasReClientDetailList, client_key, &custom_attr_get);
+					if(custom_attr_get != NULL) {
+						struct json_object *amas_re_get_rssi = NULL;
+						json_object_object_get_ex(custom_attr_get, "rssi", &amas_re_get_rssi);
+						json_object_object_add(client, "rssi", json_object_new_string(json_object_get_string(amas_re_get_rssi)));
+					}
 				}
 				CLIENT_DPRINTF("amasReClientDetailList finish\n");
 			}
@@ -8458,10 +8506,11 @@ static int ej_get_clientlist(int eid, webs_t wp, int argc, char_t **argv)
 		return 0;
 	}
 	
-        if(!pids("networkmap")){
-                websWrite(wp, "{\"maclist\": []}");
-                return 0;
-        }
+	if(!pids("networkmap")){
+		//websWrite(wp, "{\"maclist\": [], \"ClientAPILevel\":\"%s\"}", CLIENTAPILEVEL);
+		websWrite(wp, "{\"maclist\": []}");
+		return 0;
+	}
 
 	clients = json_object_new_object();
 
@@ -8520,6 +8569,7 @@ static int ej_get_clientlist(int eid, webs_t wp, int argc, char_t **argv)
 #endif
 
 	json_object_object_add(clients, "maclist", macArray);
+	//json_object_object_add(clients, "ClientAPILevel", json_object_new_string(CLIENTAPILEVEL));
 	websWrite(wp, "%s", json_object_to_json_string(clients));
 
 	//strcat(maclist_buf,brackets_d);
@@ -9232,18 +9282,15 @@ static int ej_get_usb_info(int eid, webs_t wp, int argc, char_t **argv){
 	/*** get_printer_info ***/
 	int printer_num, got_printer;
 	char printer_array[MAX_USB_PRINTER_NUM][4][64];
-	char usb_node[32];
+	char dev[8], usb_node[32];
 
 	memset(printer_array, 0, MAX_USB_PRINTER_NUM*4*64);
 
 	for(printer_num = 0, got_printer = 0; printer_num < MAX_USB_PRINTER_NUM; ++printer_num){
-		snprintf(prefix, 32, "usb_path_lp%d", printer_num);
-		memset(usb_node, 0, 32);
-		strncpy(usb_node, nvram_safe_get(prefix), 32);
-
-		if(strlen(usb_node) > 0){
+		snprintf(dev, sizeof(dev), "lp%d", printer_num);
+		if(get_usb_node_by_device(dev, usb_node, sizeof(usb_node)) && strlen(usb_node) > 0){
 			if(get_path_by_node(usb_node, port_path, 8) != NULL){
-				snprintf(prefix, 32, "usb_path%s", port_path);
+				snprintf(prefix, sizeof(prefix), "usb_path%s", port_path);
 
 				strncpy(printer_array[got_printer][0], nvram_safe_get(strcat_r(prefix, "_manufacturer", tmp)), 64);
 				strncpy(printer_array[got_printer][1], nvram_safe_get(strcat_r(prefix, "_product", tmp)), 64);
@@ -9579,19 +9626,16 @@ static int ej_get_printer_info(int eid, webs_t wp, int argc, char_t **argv){
 	int printer_num, got_printer;
 	char tmp[100], prefix[32];
 	char printer_array[MAX_USB_PRINTER_NUM][4][64];
-	char usb_node[32];
+	char dev[8], usb_node[32];
 	char port_path[8];
 
 	memset(printer_array, 0, MAX_USB_PRINTER_NUM*4*64);
 
 	for(printer_num = 0, got_printer = 0; printer_num < MAX_USB_PRINTER_NUM; ++printer_num){
-		snprintf(prefix, 32, "usb_path_lp%d", printer_num);
-		memset(usb_node, 0, 32);
-		strncpy(usb_node, nvram_safe_get(prefix), 32);
-
-		if(strlen(usb_node) > 0){
+		snprintf(dev, sizeof(dev), "lp%d", printer_num);
+		if(get_usb_node_by_device(dev, usb_node, sizeof(usb_node)) && strlen(usb_node) > 0){
 			if(get_path_by_node(usb_node, port_path, 8) != NULL){
-				snprintf(prefix, 32, "usb_path%s", port_path);
+				snprintf(prefix, sizeof(prefix), "usb_path%s", port_path);
 
 				strncpy(printer_array[got_printer][0], nvram_safe_get(strcat_r(prefix, "_manufacturer", tmp)), 64);
 				strncpy(printer_array[got_printer][1], nvram_safe_get(strcat_r(prefix, "_product", tmp)), 64);
@@ -16091,6 +16135,7 @@ void update_wlan_log(int sig){
 		ej_wl_status_2g(0, fp, 0, NULL);
 		fclose(fp);
 		sig = 1;
+		nvram_set("fb_wlanlog_done", "1");
 	}
 }
 
@@ -16267,7 +16312,8 @@ struct mime_handler mime_handlers[] = {
 	{ "WAN_info.asp", "text/html", no_cache_IE7, do_html_post_and_get, do_ej, NULL },
 	{ "detwan.cgi*", "text/html", no_cache_IE7, do_html_post_and_get, do_detwan_cgi, do_auth },
 	{ "message.htm", "text/html", no_cache_IE7, do_html_post_and_get, do_ej, NULL },
-	{ "ROG_Fonts-Regular.otf", "application/x-font-otf", no_cache_IE7, NULL, do_file, NULL },
+	{ "fonts/*.ttf", "application/x-font-ttf", no_cache_IE7, NULL, do_file, NULL },
+	{ "fonts/*.otf", "application/x-font-otf", no_cache_IE7, NULL, do_file, NULL },
 #ifdef RTCONFIG_FINDASUS
 	{ "findasus.cgi", "text/html", no_cache_IE7, do_html_post_and_get, do_findasus_cgi, do_auth },
 	{ "find_device.asp", "text/html", no_cache_IE7, do_html_post_and_get, do_ej, do_auth },
@@ -23710,10 +23756,448 @@ ej_generate_trans_id(int eid, webs_t wp, int argc, char **argv) {
 }
 #endif
 
+static int filter_5g_channel_by_bw(struct json_object *output_channel_array, struct json_object *channel_array, int bw){
+
+	int i=0, j=0;
+	int del=0, d=0, nr_ch=0, cn_len=0, channel_tmp_int=0;
+	int ch[12]={0}, cnt[12]={0};
+	struct json_object *channel_tmp=NULL;
+
+	if(bw == 160){
+		int ch_t[2]={36,100};
+		d = 28;
+		nr_ch=8;
+		cn_len = sizeof(ch_t)/sizeof(int);
+		for(i=0;i<cn_len;i++) ch[i] = ch_t[i];
+	}else if(bw == 80){
+		int ch_t[6]={36,52,100,116,132,149};
+		d=12;
+		nr_ch=4;
+		cn_len = sizeof(ch_t)/sizeof(int);
+		for(i=0;i<cn_len;i++) ch[i] = ch_t[i];
+	}else if(bw == 40){
+		int ch_t[12]={36,44,52,60,100,108,116,124,132,140,149,157};
+		d=4;
+		nr_ch=2;
+		cn_len = sizeof(ch_t)/sizeof(int);
+		for(i=0;i<cn_len;i++) ch[i] = ch_t[i];
+	}else{
+		for (i = 0; i < json_object_array_length(channel_array); i++){
+			channel_tmp = json_object_array_get_idx(channel_array, i);
+			json_object_array_add(output_channel_array, channel_tmp);
+		}
+	}
+
+	//ary = ch_ary.slice();
+	for (i = 0; i < json_object_array_length(channel_array); i++){
+		channel_tmp = json_object_array_get_idx(channel_array, i);
+		channel_tmp_int = safe_atoi(json_object_get_string(channel_tmp));
+		for(j=0; j<cn_len; j++){
+			if((channel_tmp_int - ch[j]) >= 0 && (channel_tmp_int - ch[j]) <= d)
+				cnt[j]++;
+		}
+	}
+
+	for (i = 0; i < json_object_array_length(channel_array); i++){
+		del=1;
+		channel_tmp = json_object_array_get_idx(channel_array, i);
+		channel_tmp_int = safe_atoi(json_object_get_string(channel_tmp));
+		for(j=0; j<cn_len; j++){
+			if((channel_tmp_int - ch[j]) >= 0 && (channel_tmp_int - ch[j]) <= d && cnt[j] == nr_ch)
+				del=0;
+		}
+		if(!del){
+			json_object_array_add(output_channel_array, channel_tmp);
+		}
+	}
+	dbg("%d: output_channel_array: %s\n", bw, json_object_to_json_string(output_channel_array));
+	return 0;
+}
+
+static int is_avaiable_channel(struct json_object *filter_channel, struct json_object *chan_compare_tmp){
+
+	int i=0, ret=0;
+	struct json_object *avaiable_channel=NULL;
+
+	for (i = 0; i < json_object_array_length(filter_channel); i++){
+		avaiable_channel = json_object_array_get_idx(filter_channel, i);
+		if (!strcmp(json_object_get_string(avaiable_channel), json_object_get_string(chan_compare_tmp))){
+			ret=1;
+			break;
+		}
+	}
+
+	return ret;
+}
+
+static int
+ej_get_wl_channel_list(int eid, webs_t wp, int argc, char **argv, int unit) {
+
+	int i=0, j=0;
+	int avlbl_bw=1, avlbl_bw20=1, avlbl_bw40=1, avlbl_bw80=1, avlbl_bw160=1;
+	char word[256]={0}, *next=NULL;
+	char chanspec_buf[8]={0},  chanspec_auto_buf[8]={0}, *chanspec=NULL;
+	char *wl_chansps = NULL;
+	char tmp[1024], prefix[] = "wlXXXXXXXXXX_";
+#ifdef RTCONFIG_CFGSYNC
+	AVBL_CHANSPEC_T avbl_chanspec;
+	int cfg_rejoin = 0;
+	char buf[8];
+#ifdef RTCONFIG_AVBLCHAN
+	int count_wl_if = 0;
+	foreach (word, nvram_safe_get("wl_ifnames"), next)
+		count_wl_if++;
+#endif
+#endif
+	snprintf(prefix, sizeof(prefix), "wl%d_", unit);
+	wl_chansps = nvram_safe_get(strcat_r(prefix, "chansps", tmp));
+	if(!strcmp(wl_chansps, "")){
+		websWrite(wp,"{}");
+		return 0;
+	}
+
+	struct json_object *chan_tmp=NULL, *chan_compare_tmp=NULL;
+	struct json_object *chan_above_array = json_object_new_array();
+	struct json_object *chan_below_array = json_object_new_array();
+	struct json_object *chan_80m_tmp = json_object_new_array();
+	struct json_object *chan_160m_tmp = json_object_new_array();
+	struct json_object *chan_20m_array = json_object_new_array();
+	struct json_object *chan_40m_array = json_object_new_array();
+	struct json_object *chan_80m_array = json_object_new_array();
+	struct json_object *chan_160m_array = json_object_new_array();
+	struct json_object *chan_auto_array = json_object_new_array();
+	struct json_object *chanspec_40m_array = json_object_new_array();
+	struct json_object *chanspec_80m_array = json_object_new_array();
+	struct json_object *chanspec_160m_array = json_object_new_array();
+	struct json_object *chanspec_auto_array = json_object_new_array();
+	struct json_object *chan_160m_cfg_tmp = json_object_new_array();
+	struct json_object *filter_channel_40 = json_object_new_array();
+	struct json_object *filter_channel_80 = json_object_new_array();
+	struct json_object *filter_channel_160 = json_object_new_array();
+	struct json_object *chan_20m_obj = json_object_new_object();
+	struct json_object *chan_40m_obj = json_object_new_object();
+	struct json_object *chan_80m_obj = json_object_new_object();
+	struct json_object *chan_160m_obj = json_object_new_object();
+	struct json_object *chan_auto_obj = json_object_new_object();
+	struct json_object *chanspec_obj = json_object_new_object();
+
+	json_object_array_add(chan_20m_array, json_object_new_string("0"));
+	json_object_array_add(chan_40m_array, json_object_new_string("0"));
+	json_object_array_add(chanspec_40m_array, json_object_new_string("0"));
+	json_object_array_add(chan_80m_array, json_object_new_string("0"));
+	json_object_array_add(chanspec_80m_array, json_object_new_string("0"));
+	json_object_array_add(chan_160m_array, json_object_new_string("0"));
+	json_object_array_add(chanspec_160m_array, json_object_new_string("0"));
+
+#ifdef RTCONFIG_CFGSYNC
+	/* get onbonding avaiable channel */
+	struct json_object *cfg_chan_20m_array = json_object_new_array();
+	cfg_rejoin = nvram_get_int("cfg_rejoin");
+	if (get_chanspec_info(&avbl_chanspec) == 1 && cfg_rejoin > 0) {
+		if(unit == 0){
+			avlbl_bw = avbl_chanspec.bw2g;
+			for (i = 0; i < MAX_2G_CHANNEL_LIST_NUM && avbl_chanspec.channelList2g[i] != 0; i++) {
+				snprintf(buf, sizeof(buf), "%d", avbl_chanspec.channelList2g[i]);
+				json_object_array_add(cfg_chan_20m_array, json_object_new_string(buf));
+			}
+		}else{
+			avlbl_bw = avbl_chanspec.bw5g;
+#ifdef RTCONFIG_AVBLCHAN
+			int exist5ghighch = 0;
+			if ((num_of_wl_if() == 2) && avbl_chanspec.existTribandRe) {
+				for (i = 0; i < MAX_5G_CHANNEL_LIST_NUM; ++i) {
+					if (avbl_chanspec.channelList5g[i] >= 100) {
+						exist5ghighch = 1;
+						break;
+					}
+				}
+			}
+#endif
+
+			for (i = 0; i < MAX_5G_CHANNEL_LIST_NUM && avbl_chanspec.channelList5g[i] != 0; i++) {
+#ifdef RTCONFIG_AVBLCHAN
+				if (unit == 1 && exist5ghighch && avbl_chanspec.channelList5g[i] < 100) continue; //filter dual band <100 channel
+#endif
+				snprintf(buf, sizeof(buf), "%d", avbl_chanspec.channelList5g[i]);
+				json_object_array_add(cfg_chan_20m_array, json_object_new_string(buf));
+			}
+		}
+		/* avaiable bandwidth */
+		avlbl_bw20 = (avlbl_bw & AVLBL_BW20);
+		avlbl_bw40 = (avlbl_bw & AVLBL_BW40);
+		avlbl_bw80 = (avlbl_bw & AVLBL_BW80);
+		avlbl_bw160 = (avlbl_bw & AVLBL_BW160);
+	}
+	dbg("cfg_chan_20m_array: %s\n", json_object_to_json_string(cfg_chan_20m_array));
+#endif
+
+	foreach(word, wl_chansps, next){
+		if((chanspec = strchr(word, 'l')) != NULL){
+			*chanspec='\0';
+			json_object_array_add(chan_above_array, json_object_new_string(word));
+		}else if((chanspec = strchr(word, 'u')) != NULL){
+			*chanspec='\0';
+			json_object_array_add(chan_below_array, json_object_new_string(word));
+		}else if((chanspec = strstr(word, "/80")) != NULL){
+			*chanspec='\0';
+			json_object_array_add(chan_80m_tmp, json_object_new_string(word));
+		}else if((chanspec = strstr(word, "/160")) != NULL){
+			*chanspec='\0';
+			json_object_array_add(chan_160m_tmp, json_object_new_string(word));
+		}else{
+#ifdef RTCONFIG_CFGSYNC
+			/* filter cfg avbl_chanspec base on channel of band */
+			if(cfg_rejoin > 0){
+				for (i = 0; i < json_object_array_length(cfg_chan_20m_array); i++){
+					chan_tmp = json_object_array_get_idx(cfg_chan_20m_array, i);
+					if(!strcmp(word, json_object_get_string(chan_tmp)))
+						json_object_array_add(chan_20m_array, json_object_new_string(word));
+				}
+			}else
+#endif
+				json_object_array_add(chan_20m_array, json_object_new_string(word));
+		}
+	}
+	if(unit> 0){
+		filter_5g_channel_by_bw(filter_channel_40, chan_20m_array, 40);
+		filter_5g_channel_by_bw(filter_channel_80, chan_20m_array, 80);
+		filter_5g_channel_by_bw(filter_channel_160, chan_20m_array, 160);
+	}
+
+	for (i = 0; i < json_object_array_length(chan_20m_array); i++)
+	{
+		memset(chanspec_buf, 0, sizeof(chanspec_buf));
+		memset(chanspec_auto_buf, 0, sizeof(chanspec_auto_buf));
+		chan_tmp = json_object_array_get_idx(chan_20m_array, i);
+		snprintf(chanspec_buf, sizeof(chanspec_buf), "%s", json_object_get_string(chan_tmp));
+#ifdef RTCONFIG_CFGSYNC
+		if(avlbl_bw20)
+			strlcpy(chanspec_auto_buf, chanspec_buf, sizeof(chanspec_auto_buf));
+#endif
+		/* find 40m above */
+		for (j = 0; j < json_object_array_length(chan_above_array); j++)
+		{
+			chan_compare_tmp = json_object_array_get_idx(chan_above_array, j);
+			if(unit> 0 && !is_avaiable_channel(filter_channel_40, chan_compare_tmp))
+				continue;
+
+			if (!strcmp(json_object_get_string(chan_tmp), json_object_get_string(chan_compare_tmp)))
+			{
+				snprintf(chanspec_buf, sizeof(chanspec_buf), "%sl", json_object_get_string(chan_compare_tmp));
+#ifdef RTCONFIG_CFGSYNC
+				if(cfg_rejoin > 0 && avlbl_bw40)
+					strlcpy(chanspec_auto_buf, chanspec_buf, sizeof(chanspec_auto_buf));
+#endif
+				json_object_array_add(chan_40m_array, chan_tmp);
+				json_object_array_add(chanspec_40m_array, json_object_new_string(chanspec_buf));
+				if(unit == 0){
+					json_object_array_add(chan_auto_array, chan_tmp);
+					json_object_array_add(chanspec_auto_array, json_object_new_string(chanspec_buf));
+				}
+			}
+		}
+		/* find 40m below */
+		for (j = 0; j < json_object_array_length(chan_below_array); j++)
+		{
+			chan_compare_tmp = json_object_array_get_idx(chan_below_array, j);
+			if(unit> 0 && !is_avaiable_channel(filter_channel_40, chan_compare_tmp))
+				continue;
+
+			if (!strcmp(json_object_get_string(chan_tmp), json_object_get_string(chan_compare_tmp)))
+			{
+				snprintf(chanspec_buf, sizeof(chanspec_buf), "%su", json_object_get_string(chan_compare_tmp));
+#ifdef RTCONFIG_CFGSYNC
+				if(avlbl_bw40)
+					strlcpy(chanspec_auto_buf, chanspec_buf, sizeof(chanspec_auto_buf));
+#endif
+				json_object_array_add(chan_40m_array, chan_tmp);
+				json_object_array_add(chanspec_40m_array, json_object_new_string(chanspec_buf));
+				if(unit == 0){
+					json_object_array_add(chan_auto_array, chan_tmp);
+					json_object_array_add(chanspec_auto_array, json_object_new_string(chanspec_buf));
+				}
+			}
+		}
+		/* find 80m */
+		for (j = 0; j < json_object_array_length(chan_80m_tmp); j++)
+		{
+			chan_compare_tmp = json_object_array_get_idx(chan_80m_tmp, j);
+			if(unit> 0 && !is_avaiable_channel(filter_channel_80, chan_compare_tmp))
+				continue;
+
+			if (!strcmp(json_object_get_string(chan_tmp), json_object_get_string(chan_compare_tmp)))
+			{
+				snprintf(chanspec_buf, sizeof(chanspec_buf), "%s/80", json_object_get_string(chan_compare_tmp));
+#ifdef RTCONFIG_CFGSYNC
+				if(avlbl_bw80)
+					strlcpy(chanspec_auto_buf, chanspec_buf, sizeof(chanspec_auto_buf));
+#endif
+				json_object_array_add(chan_80m_array, chan_tmp);
+				json_object_array_add(chanspec_80m_array, json_object_new_string(chanspec_buf));
+			}
+		}
+		/* find 160m */
+		for (j = 0; j < json_object_array_length(chan_160m_tmp); j++)
+		{
+			chan_compare_tmp = json_object_array_get_idx(chan_160m_tmp, j);
+			if(unit> 0 && !is_avaiable_channel(filter_channel_160, chan_compare_tmp))
+				continue;
+
+			if (!strcmp(json_object_get_string(chan_tmp), json_object_get_string(chan_compare_tmp)))
+			{
+				snprintf(chanspec_buf, sizeof(chanspec_buf), "%s/160", json_object_get_string(chan_compare_tmp));
+#ifdef RTCONFIG_CFGSYNC
+				if(avlbl_bw160)
+					strlcpy(chanspec_auto_buf, chanspec_buf, sizeof(chanspec_auto_buf));
+#endif
+				json_object_array_add(chan_160m_array, chan_tmp);
+				json_object_array_add(chanspec_160m_array, json_object_new_string(chanspec_buf));
+			}
+		}
+
+		if((unit == 0 && strpbrk(chanspec_buf, "lu") == NULL) || unit > 0){
+			json_object_array_add(chan_auto_array, chan_tmp);
+			if(cfg_rejoin > 0)
+				json_object_array_add(chanspec_auto_array, json_object_new_string(chanspec_auto_buf));
+			else
+				json_object_array_add(chanspec_auto_array, json_object_new_string(chanspec_buf));
+		}
+	}
+
+	json_object_object_add(chan_auto_obj, "chanlist", chan_auto_array);
+	json_object_object_add(chan_auto_obj, "chanspec", chanspec_auto_array);
+	json_object_object_add(chanspec_obj, "auto", chan_auto_obj);
+
+	json_object_object_add(chan_20m_obj, "chanlist", chan_20m_array);
+	json_object_object_add(chan_20m_obj, "chanspec", chan_20m_array);
+	if(json_object_array_length(chan_20m_array)>1 && avlbl_bw20){
+		json_object_object_add(chanspec_obj, "chan_20m", chan_20m_obj);
+	}
+
+	json_object_object_add(chan_40m_obj, "chanlist", chan_40m_array);
+	json_object_object_add(chan_40m_obj, "chanspec", chanspec_40m_array);
+	if(json_object_array_length(chan_40m_array)>1 && avlbl_bw40){
+		json_object_object_add(chanspec_obj, "chan_40m", chan_40m_obj);
+	}
+
+	json_object_object_add(chan_80m_obj, "chanlist", chan_80m_array);
+	json_object_object_add(chan_80m_obj, "chanspec", chanspec_80m_array);
+	if(json_object_array_length(chan_80m_array)>1 && avlbl_bw80){
+		json_object_object_add(chanspec_obj, "chan_80m", chan_80m_obj);
+	}
+
+	if(json_object_array_length(chan_160m_tmp)>1){
+		if(avlbl_bw160){
+			json_object_object_add(chan_160m_obj, "chanlist", chan_160m_array);
+			json_object_object_add(chan_160m_obj, "chanspec", chanspec_160m_array);
+			json_object_object_add(chanspec_obj, "chan_160m", chan_160m_obj);
+		}
+		else{
+			json_object_array_add(chan_160m_cfg_tmp, json_object_new_string("0"));
+			json_object_object_add(chan_160m_obj, "chanlist", chan_160m_cfg_tmp);
+			json_object_object_add(chan_160m_obj, "chanspec", chan_160m_cfg_tmp);
+			json_object_object_add(chanspec_obj, "chan_160m", chan_160m_obj);
+		}
+	}
+
+	websWrite(wp,"%s", json_object_to_json_string(chanspec_obj));
+
+	if(chan_above_array)	json_object_put(chan_above_array);
+	if(chan_below_array)	json_object_put(chan_below_array);
+	if(chan_80m_tmp)	json_object_put(chan_80m_tmp);
+	if(chan_160m_tmp)	json_object_put(chan_160m_tmp);
+	if(chan_160m_array)	json_object_put(chan_160m_array);
+	if(chanspec_160m_array) json_object_put(chanspec_160m_array);
+	if(chan_160m_cfg_tmp) json_object_put(chan_160m_cfg_tmp);
+	if(filter_channel_40)	json_object_put(filter_channel_40);
+	if(filter_channel_80)	json_object_put(filter_channel_80);
+	if(filter_channel_160)	json_object_put(filter_channel_160);
+	if(chan_20m_obj)	json_object_put(chan_20m_obj);
+	if(chan_40m_obj)	json_object_put(chan_40m_obj);
+	if(chan_80m_obj)	json_object_put(chan_80m_obj);
+	if(chan_160m_obj) 	json_object_put(chan_160m_obj);
+	if(chan_auto_obj) 	json_object_put(chan_auto_obj);
+	if(chanspec_obj)	json_object_put(chanspec_obj);
+#ifdef RTCONFIG_CFGSYNC
+	if(cfg_chan_20m_array) json_object_put(cfg_chan_20m_array);
+#endif
+
+	return 0;
+}
+
+static int
+ej_get_wl_channel_list_2g(int eid, webs_t wp, int argc, char **argv)
+{
+#ifdef CONFIG_BCMWL5
+	ej_wl_chanspecs_2g(0, NULL, 1, NULL);
+	return ej_get_wl_channel_list(eid, wp, argc, argv, 0);
+#else
+	return 0;
+#endif
+}
+
+static int
+ej_get_wl_channel_list_5g(int eid, webs_t wp, int argc, char **argv) {
+#ifdef CONFIG_BCMWL5
+	ej_wl_chanspecs_5g(0, NULL, 1, NULL);
+	return ej_get_wl_channel_list(eid, wp, argc, argv, 1);
+#else
+	return 0;
+#endif
+}
+
+static int
+ej_get_wl_channel_list_5g_2(int eid, webs_t wp, int argc, char **argv) {
+#ifdef CONFIG_BCMWL5
+	ej_wl_chanspecs_5g_2(0, NULL, 1, NULL);
+	return ej_get_wl_channel_list(eid, wp, argc, argv, 2);
+#else
+	return 0;
+#endif
+}
+
 static int ej_get_sw_mode(int eid, webs_t wp, int argc, char **argv) {
 
 	websWrite(wp, "\"%d\"", get_sw_mode());
 
+	return 0;
+}
+
+static int ej_wan_bonding_speed(int eid, webs_t wp, int argc, char **argv) { //bond0: LAN aggregation bond1: WAN aggregation
+#ifdef RTCONFIG_BONDING_WAN
+	if(check_user_agent(user_agent) == FROM_BROWSER)
+		websWrite(wp, "%d", get_bonding_speed("bond1"));//bond0: LAN aggregation bond1: WAN aggregation
+	else
+		websWrite(wp, "\"%d\"", get_bonding_speed("bond1"));
+#else
+	websWrite(wp, "\"0\"");
+#endif
+	return 0;
+}
+
+static int ej_wan_bonding_p1_status(int eid, webs_t wp, int argc, char **argv)
+{
+#ifdef RTCONFIG_BONDING_WAN
+	if(check_user_agent(user_agent) == FROM_BROWSER)
+		websWrite(wp, "%d", get_bonding_port_status(0));
+	else
+		websWrite(wp, "\"%d\"", get_bonding_port_status(0));
+#else
+	websWrite(wp, "\"0\"");
+#endif
+	return 0;
+}
+
+static int ej_wan_bonding_p2_status(int eid, webs_t wp, int argc, char **argv)
+{
+#ifdef RTCONFIG_BONDING_WAN
+	if(check_user_agent(user_agent) == FROM_BROWSER)
+		websWrite(wp, "%d", get_bonding_port_status(4));
+	else
+		websWrite(wp, "\"%d\"", get_bonding_port_status(4));
+#else
+	websWrite(wp, "\"0\"");
+#endif
 	return 0;
 }
 
@@ -23983,6 +24467,9 @@ struct ej_handler ej_handlers[] = {
 #endif
 #endif
 	{ "nat_accel_status", ej_nat_accel_status },
+	{ "get_wl_channel_list_2g", ej_get_wl_channel_list_2g },
+	{ "get_wl_channel_list_5g", ej_get_wl_channel_list_5g },
+	{ "get_wl_channel_list_5g_2", ej_get_wl_channel_list_5g_2 },
 #ifdef RTCONFIG_PROXYSTA
 	{ "wlc_psta_state", ej_wl_auth_psta},
 #endif
@@ -24124,6 +24611,9 @@ struct ej_handler ej_handlers[] = {
 #endif
 	{ "get_sw_mode", ej_get_sw_mode},
 	{ "get_iptvSettings", ej_get_iptvSettings },
+	{ "wan_bonding_speed", ej_wan_bonding_speed },
+	{ "wan_bonding_p1_status", ej_wan_bonding_p1_status},
+	{ "wan_bonding_p2_status", ej_wan_bonding_p2_status},
 	{ NULL, NULL }
 };
 

@@ -352,6 +352,18 @@ static u8 __get_duplex(struct port *port)
 	return retval;
 }
 
+#if defined(CONFIG_BCM_KF_KBONDING) && defined(CONFIG_BCM_KERNEL_BONDING)
+static inline u32 __get_agg_async_linkspeed(struct port *port)
+{
+	struct bonding *bond = __get_bond_by_port(port);
+
+	if (bond == NULL)
+		return BOND_ASYNC_LINKSPEED_OFF;
+
+	return bond->params.async_linkspeed;
+}
+#endif /* defined(CONFIG_BCM_KF_KBONDING) && defined(CONFIG_BCM_KERNEL_BONDING) */
+
 /* Conversions */
 
 /**
@@ -1950,7 +1962,10 @@ void bond_3ad_bind_slave(struct slave *slave)
 		 */
 		port->actor_admin_port_key = 0;
 		port->actor_admin_port_key |= __get_duplex(port);
-		port->actor_admin_port_key |= (__get_link_speed(port) << 1);
+#if defined(CONFIG_BCM_KF_KBONDING) && defined(CONFIG_BCM_KERNEL_BONDING)
+		if (!__get_agg_async_linkspeed(port))
+#endif /* defined(CONFIG_BCM_KF_KBONDING) && defined(CONFIG_BCM_KERNEL_BONDING) */
+			port->actor_admin_port_key |= (__get_link_speed(port) << 1);
 		port->actor_oper_port_key = port->actor_admin_port_key;
 		/* if the port is not full duplex, then the port should be not
 		 * lacp Enabled
@@ -2325,7 +2340,10 @@ void bond_3ad_adapter_speed_changed(struct slave *slave)
 	spin_lock_bh(&slave->bond->mode_lock);
 
 	port->actor_admin_port_key &= ~AD_SPEED_KEY_MASKS;
-	port->actor_admin_port_key |= __get_link_speed(port) << 1;
+#if defined(CONFIG_BCM_KF_KBONDING) && defined(CONFIG_BCM_KERNEL_BONDING)
+	if (!__get_agg_async_linkspeed(port))
+#endif /* defined(CONFIG_BCM_KF_KBONDING) && defined(CONFIG_BCM_KERNEL_BONDING) */
+		port->actor_admin_port_key |= __get_link_speed(port) << 1;
 	port->actor_oper_port_key = port->actor_admin_port_key;
 	netdev_dbg(slave->bond->dev, "Port %d changed speed\n", port->actor_port_number);
 	/* there is no need to reselect a new aggregator, just signal the
@@ -2403,8 +2421,13 @@ void bond_3ad_handle_link_change(struct slave *slave, char link)
 	port->actor_admin_port_key &= ~(AD_DUPLEX_KEY_MASKS|AD_SPEED_KEY_MASKS);
 	if (link == BOND_LINK_UP) {
 		port->is_enabled = true;
-		port->actor_admin_port_key |=
-			(__get_link_speed(port) << 1) | __get_duplex(port);
+#if defined(CONFIG_BCM_KF_KBONDING) && defined(CONFIG_BCM_KERNEL_BONDING)
+		if (__get_agg_async_linkspeed(port))
+			port->actor_admin_port_key |= __get_duplex(port);
+		else 
+#endif /* defined(CONFIG_BCM_KF_KBONDING) && defined(CONFIG_BCM_KERNEL_BONDING) */
+			port->actor_admin_port_key |=
+				(__get_link_speed(port) << 1) | __get_duplex(port);
 		if (port->actor_admin_port_key & AD_DUPLEX_KEY_MASKS)
 			port->sm_vars |= AD_PORT_LACP_ENABLED;
 	} else {

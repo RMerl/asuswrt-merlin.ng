@@ -529,7 +529,7 @@ int cleantrack_daytime_pc_list(pc_s *pc_list, int target_day, int target_hour, i
 			}
 #ifdef HND_ROUTER
 			eval("fc", "flush");
-#elif RTCONFIG_BCMARM
+#elif defined(RTCONFIG_BCMARM)
 			/* TBD. ctf ipct entries cleanup. */
 #endif
 			if(follow_pc->dtimes-- > 0) 

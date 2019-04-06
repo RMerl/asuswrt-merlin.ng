@@ -1652,6 +1652,7 @@ void set_action(int a)
 
 	act.action = a;
 	act.pid = getpid();
+	memset(act.comm, 0, sizeof(act.comm));
 	snprintf(stat, sizeof(stat), "/proc/%d/stat", act.pid);
 	s = file2str(stat);
 	if (s) {
@@ -1682,8 +1683,8 @@ static int __check_action(struct action_s *pa)
 		if (--r == 0) return ACT_UNKNOWN;
 	}
 	if (pa)
-		*pa = act;
-	_dprintf("%d: check_action %d\n", getpid(), act.action);
+		memcpy(pa, &act, sizeof(act));
+	_dprintf("%d: check_action %d: %d(%s)\n", getpid(), act.action, act.pid, act.comm);
 
 	return act.action;
 }
@@ -1693,23 +1694,33 @@ int check_action(void)
 	return __check_action(NULL);
 }
 
+/* wait_action_idle(int n)
+ *
+ * n: the number (count down value) to try
+ *
+ * return value
+ * 	n: success and return the remainng value of n.
+ * 	0: fail
+ */
 int wait_action_idle(int n)
 {
 	int r;
 	struct action_s act;
 
+	memset(&act, 0, sizeof(act));
 	while (n-- > 0) {
 		act.pid = 0;
-		if (__check_action(&act) == ACT_IDLE) return 1;
+		if (__check_action(&act) == ACT_IDLE) return n;
 		if (act.pid > 0 && !process_exists(act.pid)) {
 			if (!(r = unlink(ACTION_LOCK)) || errno == ENOENT) {
 				_dprintf("Terminated process, pid %d %s, hold action lock %d !!!\n",
 					act.pid, act.comm, act.action);
-				return 1;
+				return n;
 			}
 			_dprintf("Remove " ACTION_LOCK " failed. errno %d (%s)\n", errno, strerror(errno));
 		}
 		sleep(1);
+		n--;
 	}
 	_dprintf("pid %d %s hold action lock %d !!!\n", act.pid, act.comm, act.action);
 	return 0;
@@ -4259,10 +4270,26 @@ int is_amaslib_enabled()
 }
 #endif
 
+int get_chance_to_control(void)
+{
+	time_t now_t, login_ts, app_login_ts;
+
+	now_t = uptime();
+	login_ts = atol(nvram_safe_get("login_timestamp"));
+	app_login_ts = atol(nvram_safe_get("app_login_timestamp"));
+	if(((unsigned long)(login_ts) == 0 || (unsigned long)(now_t-login_ts) > 1800 || nvram_match("login_ip", ""))
+	&& ((unsigned long)(app_login_ts) == 0 || (unsigned long)(now_t-app_login_ts) > 1800 )) //check httpd from browser not in use
+	{
+		return 1;
+	}else
+		return 0;
+}
+
 int get_index_page(char *page, int size)
 {
 	if(check_if_file_exist("/www/GameDashboard.asp"))
 		strlcpy(page, "GameDashboard.asp", size);
 	else
 		strlcpy(page, "index.asp", size);
+	return 0;
 }

@@ -176,14 +176,14 @@ enum {
 	SUBFT_WPS,
 	/* sub feature for Reboot schedule */
 	SUBFT_REBOOT_SCHEDULE,
+	/* sub feature for bandwidth 160 support */
+	SUBFT_BW_160_2G,
+	SUBFT_BW_160_5G,
+	SUBFT_BW_160_5G1,	
 	/* sub feature for HE ddfeatures */
 	SUBFT_HE_FEATURES_2G,
 	SUBFT_HE_FEATURES_5G,
 	SUBFT_HE_FEATURES_5G1,
-	/* sub feature for bandwidth 160 support */
-	SUBFT_BW_160_2G,
-	SUBFT_BW_160_5G,
-	SUBFT_BW_160_5G1,
 	/* sub feature for ACS include DFS */
 	SUBFT_ACS_INCLUDE_DFS,
 };
@@ -294,15 +294,17 @@ struct subfeature_mapping_s subfeature_mapping_list[] = {
 #ifdef RTCONFIG_WIFI_SON
 	{ "spcmd",		SUBFT_SPCMD,	FT_SPCMD },
 #endif
-#ifdef RTCONFIG_HND_ROUTER_AX
-	/* HE feaure */
-	{ "he_features_2g", SUBFT_HE_FEATURES_2G, FT_WIRELESS },
-	{ "he_features_5g", SUBFT_HE_FEATURES_5G, FT_WIRELESS },
-	{ "he_features_5g1", SUBFT_HE_FEATURES_5G1, FT_WIRELESS },
+#if defined(RTCONFIG_BW160M)
 	/* sub feature for bandwidth 160 support */	
 	{ "bw_160_2g", SUBFT_BW_160_2G, FT_WIRELESS },
 	{ "bw_160_5g", SUBFT_BW_160_5G, FT_WIRELESS },
 	{ "bw_160_5g1", SUBFT_BW_160_5G1, FT_WIRELESS },
+#endif
+#if defined(RTCONFIG_HND_ROUTER_AX) 	
+	/* HE feaure */
+	{ "he_features_2g", SUBFT_HE_FEATURES_2G, FT_WIRELESS },
+	{ "he_features_5g", SUBFT_HE_FEATURES_5G, FT_WIRELESS },
+	{ "he_features_5g1", SUBFT_HE_FEATURES_5G1, FT_WIRELESS },
 	/* sub feature for ACS include DFS */
 	{ "acs_dfs", SUBFT_ACS_INCLUDE_DFS, FT_WIRELESS },
 #endif	
@@ -509,6 +511,7 @@ struct param_mapping_s param_mapping_list[] = {
 	{ "fb_transid",		FT_FEEDBACK,		SUBFT_FEEDBACK},
 	{ "fb_email_dbg", 	FT_FEEDBACK,		SUBFT_FEEDBACK},
 	{ "fb_email", 	FT_FEEDBACK,		SUBFT_FEEDBACK},
+	{ "fb_serviceno", 	FT_FEEDBACK,		SUBFT_FEEDBACK},
 	{ "fb_ptype", 	FT_FEEDBACK,		SUBFT_FEEDBACK},
 	{ "fb_pdesc", 	FT_FEEDBACK,		SUBFT_FEEDBACK},
 	{ "fb_country", 	FT_FEEDBACK,		SUBFT_FEEDBACK},
@@ -640,14 +643,16 @@ struct param_mapping_s param_mapping_list[] = {
 #ifdef RTCONFIG_WIFI_SON
 	{ "spcmd", 		FT_SPCMD,		SUBFT_SPCMD},
 #endif
-#ifdef RTCONFIG_HND_ROUTER_AX
-	{ "wl0_he_features", FT_WIRELESS, SUBFT_HE_FEATURES_2G },
-	{ "wl1_he_features", FT_WIRELESS, SUBFT_HE_FEATURES_5G },
-	{ "wl2_he_features", FT_WIRELESS, SUBFT_HE_FEATURES_5G1 },
+#if defined(RTCONFIG_BW160M)
 	/* Bandwidth 160 support */
 	{ "wl0_bw_160", FT_WIRELESS, SUBFT_BW_160_2G },
 	{ "wl1_bw_160", FT_WIRELESS, SUBFT_BW_160_5G },
 	{ "wl2_bw_160", FT_WIRELESS, SUBFT_BW_160_5G1 },
+#endif	
+#if defined(RTCONFIG_HND_ROUTER_AX)
+	{ "wl0_he_features", FT_WIRELESS, SUBFT_HE_FEATURES_2G },
+	{ "wl1_he_features", FT_WIRELESS, SUBFT_HE_FEATURES_5G },
+	{ "wl2_he_features", FT_WIRELESS, SUBFT_HE_FEATURES_5G1 },
 	/* ACS include DFS channels */
 	{ "acs_dfs", FT_WIRELESS, SUBFT_ACS_INCLUDE_DFS },
 #endif	

@@ -37,6 +37,11 @@
 #define AD_LACP_SLOW 0
 #define AD_LACP_FAST 1
 
+#if defined(CONFIG_BCM_KF_KBONDING) && defined(CONFIG_BCM_KERNEL_BONDING)
+#define BOND_ASYNC_LINKSPEED_OFF	0
+#define BOND_ASYNC_LINKSPEED_ON		1
+#endif /* defined(CONFIG_BCM_KF_KBONDING) && defined(CONFIG_BCM_KERNEL_BONDING) */
+
 typedef struct mac_addr {
 	u8 mac_addr_value[ETH_ALEN];
 } __packed mac_addr_t;

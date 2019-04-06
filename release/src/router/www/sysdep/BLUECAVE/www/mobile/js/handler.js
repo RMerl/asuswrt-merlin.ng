@@ -511,7 +511,7 @@ apply.wireless = function(){
 		qisPostData.wl2_crypto = "aes";
 	}
 
-	if(isSupport("11AX") && isSupport("qis_he_features")){
+	if(isSupport("11AX") && !isSupport("qis_hide_he_features")){
 		goTo.axMode();
 	}
 	else if(isSupport("boostkey")){
@@ -776,7 +776,7 @@ abort.login = function(){
 	if(isSupport("boostkey")){
 		goTo.loadPage("boostKey_page", true);
 	}
-	else if(isSupport("11AX") && isSupport("qis_he_features")){
+	else if(isSupport("11AX") && !isSupport("qis_hide_he_features")){
 		goTo.loadPage("axMode_page", true);
 	}
 	else if(systemVariable.forceChangePwInTheEnd){
@@ -2396,7 +2396,7 @@ goTo.Modem = function(){
 };
 
 goTo.Update = function(){
-	var applyBtn = (systemVariable.isNewFw == 2) ? "<#CTL_UpgradeNow#>" : "<#CTL_Agree#>";
+	var applyBtn = (systemVariable.isNewFw == 2) ? "<#CTL_UpgradeNow#>" : "<#CTL_upgrade#>";
 	var abortBtn = (systemVariable.isNewFw == 2) ? "<#CTL_UpgradeNight#>" : "<#CTL_Cancel#>";
 
 	$("#newVersion").val(systemVariable.newFwVersion);

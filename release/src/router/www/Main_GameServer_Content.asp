@@ -18,7 +18,7 @@
 <style>
 	@font-face{
 		font-family: rog;
-		src: url(/ROG_Fonts-Regular.otf) format("opentype");
+		src: url(/fonts/ROG_Fonts-Regular.otf) format("opentype");
 	}
 	.tableApi_table, .tableApi_table th{
 		font-family: rog;
@@ -347,6 +347,7 @@
 			if(!netoolApi.queueList[obj.serverIp]) return false;
 
 			breath.stop($(".s"+obj.pointId));
+			setTimeout(function(){$(".s"+obj.pointId).fadeIn(100)}, 500);
 			netoolApi.queueList[obj.serverIp].finish = true;
 			netoolApi.queue();
 

@@ -628,18 +628,6 @@ void update_wan_state(char *prefix, int state, int reason)
 		sprintf(tmp,"%c",prefix[3]);
                 run_custom_script("wan-start", tmp);
         }
-
-#if defined(RTCONFIG_WANRED_LED)
-	switch (state) {
-	case WAN_STATE_INITIALIZING:
-	case WAN_STATE_STOPPED:
-	case WAN_STATE_CONNECTING:
-	case WAN_STATE_STOPPING:
-	case WAN_STATE_CONNECTED:
-		/* update WAN LED(s) as soon as possible. */
-		update_wan_leds(unit);
-	}
-#endif
 }
 
 #ifdef RTCONFIG_IPV6
@@ -996,6 +984,15 @@ start_wan_if(int unit)
 #endif
 	struct vlan_ioctl_args ifv;
 
+
+#ifdef RTCONFIG_HND_ROUTER_AX
+#ifdef RTCONFIG_BONDING_WAN
+	if(nvram_get_int("bond_wan") == 1)
+		start_wan_bonding();
+	else
+		stop_wan_bonding();
+#endif
+#endif
 	TRACE_PT("unit=%d.\n", unit);
 	snprintf(prefix, sizeof(prefix), "wan%d_", unit);
 
@@ -2190,19 +2187,29 @@ void wan6_up(const char *wan_ifname)
 	struct in6_addr addr;
 	char gateway[INET6_ADDRSTRLEN];
 	int mtu, service = get_ipv6_service();
+	char tmp[100];
+	char prefix[] = "wanXXXXXXXXXX_";
+	char wan_proto[16];
+	int ipv6_ifdev_ppp = 0;
 
 	if (!wan_ifname || (strlen(wan_ifname) <= 0) ||
 		(service == IPV6_DISABLED))
 		return;
 
+	snprintf(prefix, sizeof(prefix), "wan%d_", wan_primary_ifunit_ipv6());
+	snprintf(wan_proto, sizeof(wan_proto), "%s", nvram_safe_get(strcat_r(prefix, "proto", tmp)));
+	if (strcmp(wan_proto, "dhcp") != 0 && strcmp(wan_proto, "static") != 0 &&
+		nvram_match(ipv6_nvname("ipv6_ifdev"), "ppp"))
+		ipv6_ifdev_ppp = 1;
+
 	switch (service) {
 	case IPV6_NATIVE_DHCP:
-		ipv6_sysconf(wan_ifname, "accept_ra", nvram_get_int(ipv6_nvname("ipv6_accept_ra")) ? 1 : 0);
+		ipv6_sysconf(wan_ifname, "accept_ra", ipv6_ifdev_ppp && nvram_get_int(ipv6_nvname("ipv6_accept_ra")) ? 1 : 0);
 		ipv6_sysconf(wan_ifname, "forwarding", 0);
 		break;
 #ifdef RTCONFIG_6RELAYD
 	case IPV6_PASSTHROUGH:
-		ipv6_sysconf(wan_ifname, "accept_ra", 0);
+		ipv6_sysconf(wan_ifname, "accept_ra", 1);
 		ipv6_sysconf(wan_ifname, "forwarding", 0);
 		break;
 #endif
@@ -3394,6 +3401,12 @@ start_wan(void)
 				_dprintf("%s: start_wan_if(%d)!\n", __FUNCTION__, unit);
 				start_wan_if(unit);
 			}
+#ifdef RTCONFIG_HND_ROUTER
+			else if(!strcmp(wans_mode, "fo") || !strcmp(wans_mode, "fb")){
+				_dprintf("%s: stop_wan_if(%d) for IFUP only!\n", __func__, unit);
+				stop_wan_if(unit);
+			}
+#endif
 		}
 	}
 #else // RTCONFIG_DUALWAN

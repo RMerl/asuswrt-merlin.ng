@@ -317,6 +317,7 @@ endif
 endif
 
 OBJS += $(if $(wildcard private.c),private.o,prebuild/private.o)
+
 ifeq ($(RTCONFIG_CONNDIAG),y)
 ifeq ($(RTCONFIG_BCMBSD),y)
 CFLAGS += -I$(TOP)/bsd
@@ -867,6 +868,9 @@ endif
 	@cd $(INSTALLDIR)/sbin && ln -sf rc asus_tty
 	@cd $(INSTALLDIR)/sbin && ln -sf rc asus_usbbcm
 	@cd $(INSTALLDIR)/sbin && ln -sf rc asus_usb_interface
+	@cd $(INSTALLDIR)/sbin && ln -sf rc get_usb_node_by_string
+	@cd $(INSTALLDIR)/sbin && ln -sf rc unset_usb_nvram
+	@cd $(INSTALLDIR)/sbin && ln -sf rc detect_usb_devices
 	@cd $(INSTALLDIR)/sbin && ln -sf rc usb_notify
 	@cd $(INSTALLDIR)/sbin && ln -sf rc ejusb
 ifeq ($(RTCONFIG_DISK_MONITOR),y)

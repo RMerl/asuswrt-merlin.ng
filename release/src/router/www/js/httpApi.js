@@ -799,5 +799,17 @@ var httpApi ={
 
 	"updateClientList": function(){
 		$.post("/applyapp.cgi?action_mode=update_client_list");
+	},
+
+	"hasAiMeshNode": function(){
+		var status = false;
+		if(amesh_support && (isSwMode("rt") || isSwMode("ap"))) {
+			var get_cfg_clientlist = httpApi.hookGet("get_cfg_clientlist", true);
+			get_cfg_clientlist.shift();//filter CAP
+			var online_node_list = get_cfg_clientlist.filter(function(item) { return item.online == "1"; });
+			if(online_node_list.length > 0)
+				status = true;
+		}
+		return status;
 	}
 }

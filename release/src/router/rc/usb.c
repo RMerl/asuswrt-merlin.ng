@@ -1948,7 +1948,7 @@ done:
 		ptr = dev_name+5;
 
 		// Get USB node.
-		if(get_usb_node_by_device(ptr, usb_node, 32) != NULL){
+		if(get_usb_node_by_device(ptr, usb_node, sizeof(usb_node)) != NULL){
 			if(get_path_by_node(usb_node, port_path, 8) != NULL){
 				snprintf(prefix, sizeof(prefix), "usb_path%s", port_path);
 				// for ATE.
@@ -4569,13 +4569,11 @@ int remove_usb_disk(char *disk_port)
 		if (strcmp(disk_info->port, disk_port))
 			continue;
 
-		sprintf(nv_name, "usb_path_%s", disk_info->device);
-		strlcpy(node, nvram_safe_get(nv_name), sizeof(node));
+		get_usb_node_by_device(disk_info->device, node, sizeof(node));
 		for (partition_info = disk_info->partitions; partition_info != NULL; partition_info = partition_info->next) {
 			count++;
 			if (*node == '\0') {
-				sprintf(nv_name, "usb_path_%s", partition_info->device);
-				strlcpy(node, nvram_safe_get(nv_name), sizeof(node));
+				get_usb_node_by_device(partition_info->device, node, sizeof(node));
 			}
 			if (!partition_info->mount_point)
 				continue;
@@ -4586,12 +4584,12 @@ int remove_usb_disk(char *disk_port)
 
 		if (ret)
 			break;
-		sprintf(nv_name, "ignore_nas_service_%s", disk_info->device);
+		snprintf(nv_name, sizeof(nv_name), "ignore_nas_service_%s", disk_info->device);
 		nvram_set_int(nv_name, count);
 		if (is_m2ssd_port(node)) {
 			snprintf(path_name, sizeof(path_name), "/sys/block/%s/device/delete", disk_info->device);
 		} else {
-			snprintf(path_name, sizeof(path_name), "/sys/bus/usb/devices/%s/remove", node);
+			snprintf(path_name, sizeof(path_name), "%s/%s/remove", USB_DEVICE_PATH, node);
 		}
 		f_write_string(path_name, "1", 0, 0);
 	}

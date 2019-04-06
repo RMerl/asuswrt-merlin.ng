@@ -1,0 +1,620 @@
+@font-face{
+	font-family: Roboto;
+	src: url(../fonts/Roboto-Regular.ttf) format("opentype");
+}
+@font-face{
+	font-family: Roboto-light;
+	src: url(../fonts/Roboto-Light.otf) format("opentype");
+}
+@font-face{
+	font-family: Xolonium;
+	src: url(../fonts/xolonium.regular.otf) format("opentype");
+}
+*{
+    box-sizing: border-box;
+}
+.flexbox{
+    display: flex;
+}
+.flex-j-center{
+    justify-content: center;
+}
+.flex-a-center{
+    align-items: center;
+}
+.flex-as-start{
+    align-self: flex-start;
+}
+.border-container{
+    width: 769px; 
+    position: relative;
+    margin-bottom: 20px;
+    border: 1px solid #5C0C0B;
+    border-top-left-radius: 18px;
+    border-top-right-radius: 8px;
+    border-bottom-left-radius: 18px;
+    border-bottom-right-radius: 8px;
+    background-color: rgba(0, 0, 0, 0.4);
+}
+.border-corner{
+    width: 26px; 
+    height:40px;
+    position: absolute;
+    background-image: url('../images/gameprofile/card-frame-corner.svg');
+}
+.border-corner-top-left{
+    top: -1px;
+    left: -3px;
+}
+.border-corner-bottom-left{
+    bottom: -1px;
+    left: -3px;
+    transform: scaleY(-1);
+}
+.border-bar{
+    width: 5px;
+    height: 77%;
+    position: absolute;
+    margin: auto 0;
+    top: 0;
+    bottom: 0;
+    left: 3px;
+    background-color: #5C0C0B;
+}
+
+
+
+
+.world-map{
+    width: 744px;
+    height: 412px;
+    margin-top: -80px;
+    background: url('../images/gameprofile/world_map.png') no-repeat;
+    position: relative;
+}
+.location-indicator{
+    width: 78px;
+    height: 154px;
+    position: absolute;
+    background-image: url('../images/gameprofile/map_light_indicator.png');
+}
+.location-US2{
+    margin: 132px 0 0 92px;
+    animation: indicator-shine 1s linear 0s 2;
+}
+.location-BR{
+    margin: 202px 0 0 175px;
+    animation: indicator-shine 1s linear 0s 2;
+}
+.location-US3{
+    margin: 107px 0 0 121px;
+    animation: indicator-shine 1s linear 2s 2;
+}
+.location-CL{
+    margin: 223px 0 0 135px;
+    animation: indicator-shine 1s linear 2s 2;
+}
+.location-SA{
+    margin: 230px 0 0 330px;
+    animation: indicator-shine 1s linear 2s 2;
+}
+.location-US1{
+    margin: 105px 0 0 192px;
+    animation: indicator-shine 1s linear 4s 2;
+}
+.location-EU1{
+    margin: 105px 0 0 305px;
+    animation: indicator-shine 1s linear 4s 2;
+}
+.location-RU{
+    margin: 98px 0 0 410px;
+    animation: indicator-shine 1s linear 4s 2;
+}
+.location-EU2{
+    margin: 120px 0 0 286px;
+    animation: indicator-shine 1s linear 6s 2;
+}
+.location-TW{
+    margin: 138px 0 0 508px;
+    animation: indicator-shine 1s linear 6s 2;
+}
+.location-CN{
+    margin: 126px 0 0 470px;
+    animation: indicator-shine 1s linear 8s 2;
+}
+.location-AU{
+    margin: 226px 0 0 595px;
+    animation: indicator-shine 1s linear 8s 2;
+}
+
+/* map connectioon line animation */
+.map-connection-line{
+    width: 744px;
+    height: 412px;
+    background-image: url('../images/gameprofile/open-nat_map-link.png');
+    position: absolute;
+    animation: located-connection 10s linear 0s 1;
+}
+@keyframes located-connection{
+    0%{
+        width: 0;
+    }
+    75%{
+        width: 0;
+    }
+    100%{
+        width: 774px;
+    }
+}
+@keyframes indicator-shine{
+    0% {
+        -webkit-filter: brightness(100%);
+        filter: brightness(100%);
+    }
+    30%{
+        -webkit-filter: brightness(250%);
+        filter: brightness(250%);
+    }
+    60%{
+        -webkit-filter: brightness(100%);
+        filter: brightness(100%);
+    }
+    90%{
+        -webkit-filter: brightness(70%);
+        filter: brightness(70%);
+    }
+    100%{
+        -webkit-filter: brightness(100%);
+        filter: brightness(100%);
+    }
+}
+/* End map connectioon line animation */
+/* Title */
+.title-container{
+    display: flex;
+    margin: 40px 20px 0 40px;
+}
+.title-symbol{
+    width: 9px;
+    transform: skew(24deg);
+    background-color: #E64100;
+}
+.title-content{
+    width: 100%;
+    font-family: ROG;
+    font-size: 36px;
+    margin: -20px 0 0 18px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid #5C0C0B;
+}
+/* End Title */
+/* Description */
+.description-container{
+    font-size: 14px;
+    font-family: Xolonium;
+    color:#DFDFDF;
+    margin: 12px 20px 0 68px;
+}
+/* End Description */
+/* Control Feild */
+.control-field-container{
+    display: flex;
+    align-items: center;
+    margin: 18px 20px 18px 40px;
+}
+.control-description{
+    font-size: 14px;
+    font-family: Xolonium;
+    color:#FFFFFF;
+}
+
+.switch-button-container{
+   margin: 0 12px 0 24px; 
+}
+.switch-button-container label{
+    cursor: pointer;
+}
+.switch-button-bg{
+    width: 38px;
+    height: 15px;
+    border-radius: 15px;
+    background-color: #717171;
+}
+.switch-button-circle{
+    width: 15px;
+    height: 15px;
+    border-radius: 15px;
+    background-color: #FFFFFF;
+    margin: -15px 0 0 0;
+    transition-duration: .1s;
+}
+.switch-button{
+    display:none; 
+}
+.switch-button:checked ~.switch-button-bg{
+    background-color: #E64100;
+}
+.switch-button:checked ~.switch-button-circle{
+    margin:-15px 0 0 23px;
+}
+
+/* End Control Feild */
+/* Button*/
+.button-container:hover, .button-container:active{
+    border: 1px solid #E64100;
+}
+.button-container{
+    display: table;
+    border: 1px solid #842500;
+    border-radius: 24px;
+    padding: 12px 36px;
+    background-color: #141618;
+    cursor: pointer;
+}
+.button-container:active{
+    background-color: #000000;
+}
+.button-container-left{
+    margin: 18px 20px 18px 68px;
+}
+.button-container-center{
+    margin: 18px auto;
+}
+.button-text{
+    display: table-cell;
+    vertical-align: middle;
+    font-family: Roboto;
+    font-size: 14px;
+    padding-left: 12px;
+}
+.button-icon{
+    width: 18px;
+    height: 18px;
+    display:table-cell;
+    background-repeat: no-repeat;
+    background-size: 100%;
+}
+.icon-plus{
+    background-image: url('../images/gameprofile/plus.svg');
+}
+/* End Button */
+.divide-line{
+    height:1px;
+    margin: 12px 24px 12px 36px;
+    background-color: #5C0C0B;
+}
+/* Game Profile*/
+.game-profile-container{
+    height: 560px;
+    display: flex;
+    flex-direction: column;
+    flex-wrap: wrap;
+    margin: 6px 12px 6px 14px;
+    overflow-x: auto;
+    overflow-y: hidden;
+}
+.game-profile{
+    width: 180px;
+    height: 234px;
+    margin: 18px 2px;
+    position: relative;
+    border: 1px solid #404247;
+    border-radius: 4px;
+    background-color: #222426;
+}
+.game-profile:nth-child(odd){
+    margin-bottom: 4px;
+}
+.game-profile-title-container{
+    width: 100%;
+    height: 82px;
+    position: absolute;
+    bottom: 0;
+    background-image: linear-gradient(to bottom, rgba(47,48,50,0.7), rgba(0,0,0,1));
+    border-radius: 4px;
+    transition-duration: 0.5s;
+    transition-timing-function: ease-out;
+}
+/* customized scrollbar*/
+.game-profile-container::-webkit-scrollbar-track{
+    border: 6px solid #000;
+	padding: 2px 0;
+	background-color: #404040;
+}
+.game-profile-container::-webkit-scrollbar {
+    width: 10px;
+}
+.game-profile-container::-webkit-scrollbar-thumb {
+    border: 4px solid #000;
+    border-radius: 10px;
+    background-color: #737272;
+}
+/* End customized scrollbar*/
+.game-profile-bar{
+    width: 18px;
+    height: 2px;
+    background-color:#E64100;
+    margin: 18px auto 6px auto;
+}
+.game-profile-title{
+    font-family: Xolonium;
+    font-size: 14px;
+    text-align: center;
+}
+.game-profile:hover > .game-profile-title-container{
+    height: 0px;
+}
+.game-profile:hover .game-profile-bar,
+.game-profile:hover .game-profile-title{
+    display:none;
+}
+.game-profile-cod4{
+    background-image: url('../images/gameprofile/call-of-duty_modenWarefare.jpg');
+}
+.game-profile-destiny2{
+    background-image: url('../images/gameprofile/destiny2.jpg');
+}
+.game-profile-diablo3{
+    background-image: url('../images/gameprofile/diablo3.jpg');
+}
+.game-profile-fifa17{
+    background-image: url('../images/gameprofile/fifa17.jpg');
+}
+.game-profile-LoL{
+    background-image: url('../images/gameprofile/league-of-legends.jpg');
+}
+.game-profile-left4dead{
+    background-image: url('../images/gameprofile/left-4-dead.jpg');
+}
+.game-profile-left4dead2{
+    background-image: url('../images/gameprofile/left-4-dead2.jpg');
+}
+.game-profile-WoT{
+    background-image: url('../images/gameprofile/world-of-tanks.jpg');
+}
+.game-profile-assassins-creed3{
+    background-image: url('../images/gameprofile/assassins-creed.jpg');
+}
+.game-profile-overwatch{
+    background-image: url('../images/gameprofile/overwatch.jpg');
+}
+
+.game-profile-starcraft2{
+    background-image: url('../images/gameprofile/starcraft2.jpg');
+}
+.game-profile-WoW{
+    background-image: url('../images/gameprofile/world-of-warcraft.jpg');
+}
+/* End Game Profile*/
+
+
+
+/* checkbox */
+input[type="checkbox"]{
+    display: none;
+}
+.checkbox-container{
+    display: flex;
+    align-items: center;
+    margin: 4px 8px;
+}
+input[type="checkbox"] + label{
+    width: 16px;
+    height: 16px;
+    display: inline-block;
+    position: relative;
+    background: #0C0C0D;
+    border: 1px solid #70000E;
+    border-radius: 4px;
+    box-sizing: border-box;
+    cursor: pointer;
+    padding:2px;
+}
+input[type="checkbox"] + label:hover{
+    border: 1px solid #AB0015;
+}
+input[type="checkbox"]:checked + label{
+    background: #AB0015;
+}
+input[type="checkbox"] + label > div{
+    background: url('../images/gameprofile/check.svg') no-repeat;
+    width: 100%;
+    height: 100%;
+    display: inline-block;
+    background-size: contain;
+    transition: ease-in-out 0.2s;
+    transform: scale(0, 0);
+    content: '';
+}
+input[type="checkbox"]:checked + label > div{
+    transform: scale(1, 1);
+}
+
+.checkbox-desc{
+    font-size: 12px;
+    font-family: Xolonium;
+    color: #848c98;
+    margin-left: 8px;
+}
+/* End checkbox */
+/* select option*/
+.select-container{
+    position: relative;
+    overflow: hidden;
+}
+.select-container > select{
+    width: 245px;
+    height: 36px;
+    border: 1px solid #70000E;
+    border-radius: 4px;
+    background-color:#0C0C0D;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    -ms-appearance: none;
+    appearance: none;
+    color:#FFF;
+    font-size: 14px;
+    font-family: Xolonium;
+    padding: 8px 36px 8px 8px;
+    outline: none;
+    cursor: pointer;
+}
+.select-container > select:focus{
+    border: 1px solid #AB0015;
+}
+.select-arrow{
+    width: 24px;
+    height: 36px;
+    border-left: 1px solid #70000E;
+    position: absolute;
+    top: 0;
+    right: 4px;
+    pointer-events: none;
+}
+.select-arrow > div{
+    width: 12px;
+    height: 12px;
+    background-image: url('../images/gameprofile/arrow-icon.svg');
+    background-size: 100%;
+    background-repeat: no-repeat;
+    margin: 12px 0 0 7px;
+    transform: rotate(-90deg);
+}
+/* End select option*/
+
+/* input*/
+.input-container{
+    width: 245px;
+    height: 36px;
+    color: #FFF;
+    padding: 8px;
+    border: 1px solid #70000E;
+    border-radius: 4px;
+    background-color: #0C0C0D;
+    box-sizing: border-box;
+    font-size: 14px;
+    font-family: Roboto;
+    outline: none;
+}
+.input-container:focus{
+    border: 1px solid #AB0015;
+}
+/* End input */
+.cancel-container{
+    display: flex;
+    justify-content: flex-end;
+}
+/* cancel button */
+.icon-button{
+    width: 36px;
+    height: 36px;
+    border: 1px solid #842500;
+    background-color:#262626;
+    background-size: 100%;
+    margin: 18px 0 12px 0;
+    border-radius: 8px;
+    cursor: pointer;
+}
+.icon-cancel{
+    background-image: url('../images/gameprofile/cancel.svg');
+}
+
+/* End cancel button */
+
+
+.new-game-profile-title-field{
+    display: flex;
+    align-items: center;
+    height: 70px;
+    background-color: rgba(30,28,28,0.8);
+    margin: 0 18px 12px 8px;
+}
+.new-game-profile-title{
+    font-size: 18px;
+    font-family: Xolonium;
+    margin-left: 40px;
+}
+.new-game-profile-title::first-letter{
+    color: #E64100;
+}
+.new-game-profile{
+    display: flex;
+    align-items: center;
+    margin-left: 40px;
+}
+.new-game-profile-step{
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    background-color:#70000E;
+    border-radius:50%;
+}
+.new-game-profile-step-title{
+    margin-left: 18px;
+    font-size: 16px;
+    font-family: Xolonium;
+}
+
+.settings-filed-title{
+    width:150px;
+    margin: 0 36px 0 0;
+    font-size: 14px;
+    font-family: Xolonium;
+    color: #848c98;
+    /*text-align: right;*/
+}
+.game-profile-setings-field{
+    display: flex;
+    align-items: center;
+    margin: 12px 0;
+}
+
+.new-game-profile-game{
+    margin: 0 4px;
+}
+.new-game-profile-game:hover{
+    border: 1px solid #E64100;
+    box-shadow: 0 0 6px 2px #E64100;
+}
+.new-game-profile-game-container{
+    display: flex;
+    height: 190px;
+    margin: 0 18px 0 98px;
+    overflow-x: auto;
+    overflow-y: hidden;
+}
+.new-game-profile-game-container::-webkit-scrollbar-track{
+    border: 6px solid #000;
+	padding: 2px 0;
+	background-color: #404040;
+}
+.new-game-profile-game-container::-webkit-scrollbar {
+    width: 10px;
+}
+.new-game-profile-game-container::-webkit-scrollbar-thumb {
+    border: 4px solid #000;
+    border-radius: 10px;
+    background-color: #737272;
+}
+.new-game-profile-game-image{
+    width: 92px;
+    height: 127px;
+    background-repeat: no-repeat;
+    background-size: 100%;
+}
+
+.new-game-profile-game-desc{
+    width: 92px;
+    font-size: 12px;
+    font-family: Xolonium;
+    text-align: center;
+}
+.button-icon-check{
+    background-image: url('../images/gameprofile/ok.svg');
+}
+
+.icon-go{
+    background-image: url('../images/triLvGameAcceleration/go.svg');
+}

@@ -2718,7 +2718,8 @@ static int ej_wl_chanspecs(int eid, webs_t wp, int argc, char_t **argv, int unit
 	}
 
 ERROR:
-	retval += websWrite(wp, "%s", tmp1);
+	if(argc == 0)
+		retval += websWrite(wp, "%s", tmp1);
 	return retval;
 }
 
@@ -3814,7 +3815,7 @@ ej_SiteSurvey(int eid, webs_t wp, int argc, char_t **argv)
 	memset(params, 0, params_size);
 	params->bss_type = DOT11_BSSTYPE_INFRASTRUCTURE;
 	memcpy(&params->bssid, &ether_bcast, ETHER_ADDR_LEN);
-	params->scan_type = nvram_match(strcat_r(prefix, "reg_mode", tmp), "h") ? WL_SCANFLAGS_PASSIVE : 0;
+	params->scan_type = (nvram_match(strcat_r(prefix, "reg_mode", tmp), "h") && !nvram_match(strcat_r(prefix, "mode", tmp), "psta")) ? WL_SCANFLAGS_PASSIVE : 0;
 	params->nprobes = -1;
 	params->active_time = -1;
 	params->passive_time = -1;
@@ -5309,7 +5310,7 @@ wl_get_scan_results_escan(char *ifname, chanspec_t chanspec, int ctl_ch)
 	memset(params, 0, params_size);
 	params->params.bss_type = DOT11_BSSTYPE_INFRASTRUCTURE;
 	memcpy(&params->params.bssid, &ether_bcast, ETHER_ADDR_LEN);
-	params->params.scan_type = nvram_match(strcat_r(prefix, "reg_mode", tmp), "h") ? WL_SCANFLAGS_PASSIVE : 0;
+	params->params.scan_type = (nvram_match(strcat_r(prefix, "reg_mode", tmp), "h") && !nvram_match(strcat_r(prefix, "mode", tmp), "psta")) ? WL_SCANFLAGS_PASSIVE : 0;
 	params->params.nprobes = -1;
 	params->params.active_time = -1;
 	params->params.passive_time = -1;
@@ -5368,8 +5369,9 @@ wl_get_scan_results_escan(char *ifname, chanspec_t chanspec, int ctl_ch)
 	if (chanspec != 0) {
 		dbg("restore original chanspec: %s (0x%x)\n", wf_chspec_ntoa(chanspec, chanbuf), chanspec);
 #ifndef RTCONFIG_BCM7
-                if ((ctl_ch > 64) && wl_cap(unit, "bgdfs"))
+		if ((ctl_ch > 64) && wl_cap(unit, "bgdfs"))
 			wl_iovar_setint(ifname, "dfs_ap_move", chanspec);
+		else
 #endif
 		{
 			wl_iovar_setint(ifname, "chanspec", chanspec);
@@ -5409,7 +5411,7 @@ wl_get_scan_results(char *ifname, chanspec_t chanspec, int ctl_ch)
 	memset(params, 0, params_size);
 	params->bss_type = DOT11_BSSTYPE_INFRASTRUCTURE;
 	memcpy(&params->bssid, &ether_bcast, ETHER_ADDR_LEN);
-	params->scan_type = nvram_match(strcat_r(prefix, "reg_mode", tmp), "h") ? WL_SCANFLAGS_PASSIVE : 0;
+	params->scan_type = (nvram_match(strcat_r(prefix, "reg_mode", tmp), "h") && !nvram_match(strcat_r(prefix, "mode", tmp), "psta")) ? WL_SCANFLAGS_PASSIVE : 0;
 	params->nprobes = -1;
 	params->active_time = -1;
 	params->passive_time = -1;
@@ -5446,6 +5448,7 @@ wl_get_scan_results(char *ifname, chanspec_t chanspec, int ctl_ch)
 #if defined(RTCONFIG_DHDAP) && !defined(RTCONFIG_BCM7)
 		if ((ctl_ch > 64) && wl_cap(unit, "bgdfs"))
 			wl_iovar_setint(ifname, "dfs_ap_move", chanspec);
+		else
 #endif
 		{
 			wl_iovar_setint(ifname, "chanspec", chanspec);
@@ -5499,7 +5502,8 @@ wl_scan(int eid, webs_t wp, int argc, char_t **argv, int unit)
 #endif
 
 	ctl_ch = wl_control_channel(unit);
-	if (nvram_match(strcat_r(prefix, "reg_mode", tmp), "h")) {
+	if (nvram_match(strcat_r(prefix, "reg_mode", tmp), "h") &&
+		!nvram_match(strcat_r(prefix, "mode", tmp), "psta")) {
 		if ((ctl_ch > 48) && (ctl_ch < 149)) {
 			if (!with_non_dfs_chspec(name)) {
 				dbg("%s scan rejected under DFS mode\n", name);

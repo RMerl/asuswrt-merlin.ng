@@ -6040,6 +6040,12 @@ int start_firewall(int wanunit, int lanunit)
 		modprobe("ip6t_ROUTE");
 		modprobe("ip6t_LOG");
 		modprobe("xt_length");
+	} else {
+		modprobe_r("xt_length");
+		modprobe_r("ip6t_LOG");
+		modprobe_r("ip6t_ROUTE");
+		modprobe_r("ip6t_REJECT");
+		modprobe_r("nf_conntrack_ipv6");
 	}
 #endif
 	if (nvram_get_int("ttl_inc_enable") || nvram_get_int("ttl_spoof_enable")) {
@@ -6261,17 +6267,6 @@ int start_firewall(int wanunit, int lanunit)
 #if defined(RTCONFIG_APP_PREINSTALLED) || defined(RTCONFIG_APP_NETINSTALLED)
 	if(strcmp(nvram_safe_get("apps_dev"), "") != 0)
 		run_app_script(NULL, "firewall-start");
-#endif
-
-#ifdef RTCONFIG_IPV6
-	if (get_ipv6_service() != IPV6_DISABLED)
-	{
-		modprobe_r("xt_length");
-		modprobe_r("ip6t_LOG");
-		modprobe_r("ip6t_ROUTE");
-		modprobe_r("ip6t_REJECT");
-		modprobe_r("nf_conntrack_ipv6");
-	}
 #endif
 
 #ifdef RTCONFIG_OPENVPN

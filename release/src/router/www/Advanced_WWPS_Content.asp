@@ -882,7 +882,7 @@ function checkWLReady(){
 							</td>
 							<td style="border:0px">
 								<input class="button_gen" type="button" onClick="resetWPS();" id="Reset_OOB" name="Reset_OOB" value="<#CTL_Reset_OOB#>" style="padding:0 0.3em 0 0.3em;" >
-								<br><span id="Reset_OOB_desc"><#WLANConfig11b_x_ResetWPS_desc#>Pressing the reset button resets the network name (SSID) and WPA encryption key.</span>
+								<br><span id="Reset_OOB_desc"><#WLANConfig11b_x_ResetWPS_desc#></span>
 							</td>
 						</tr></table>
 					</div>

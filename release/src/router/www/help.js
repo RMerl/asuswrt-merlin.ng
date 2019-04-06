@@ -230,8 +230,15 @@ function overHint(itemNum){
 	var statusmenu = "";
 	var title2 = 0;
 	var title5 = 0;
-	var title5_2 = 0;	
-	
+	var title5_2 = 0;
+
+	if(itemNum == 101){
+		statusmenu ="<span>Please confirm WAN port of your router is connected to your modem’s LAN port, and make sure you use two cables with the same spec.</span>";
+	}
+	else if(itemNum == 102){
+		statusmenu ="<span>Please confirm LAN 4 port of your router is connected to your modem’s LAN port, and make sure you use two cables with the same spec.</span>";
+	}
+
 	if(itemNum == 50){
 		statusmenu ="<span><#QIS_PPTP_L2TP_enable#></span>";
 	}
@@ -318,7 +325,7 @@ function overHint(itemNum){
 	
 	//for AiProtection-Router Security Assessment
 	if(itemNum == 25)
-		statusmenu += "<span>Disable Wi-Fi Protected Setup to avoid attacker to obtain the keys via an intelligent brute force </span>";
+		statusmenu += "<span><#AiProtection_scan_note24#></span>";
 	else if(itemNum == 23)		
 		statusmenu += "<span><#AiProtection_scan_note23#></span>";
 	else if(itemNum == 22)		
@@ -1186,7 +1193,20 @@ function openHint(hint_array_id, hint_show_id, flag){
 
 		return overlib(statusmenu, OFFSETX, -160, LEFT, STICKY, CAPTION, " ", CLOSETITLE, '');
 	}
+	else if(hint_array_id == 28){ //wan aggregation
+		statusmenu = "<div>";
+		statusmenu += "<#WANAggregation_help_desc#>";
+		statusmenu += "<ol>";
+		statusmenu += "<li><#WANAggregation_help_step1#></li>";
+		statusmenu += "<li><#WANAggregation_help_step2#></li>";
+		statusmenu += "<li><#WANAggregation_help_step3#></li>";
+		statusmenu += "<li><#WANAggregation_help_step4#></li>";
+		statusmenu += "</ol>";
+		statusmenu += "<#WANAggregation_help_final#>";
+		statusmenu += "</div>";
 
+		return overlib(statusmenu, OFFSETX, -160, LEFT, DELAY, 400, WIDTH, 300, STICKY, CAPTION, " ");
+	}
 	var tag_name= document.getElementsByTagName('a');	
 	for (var i=0;i<tag_name.length;i++)
 		tag_name[i].onmouseout=nd;
@@ -1407,7 +1427,7 @@ var docRoot = 'document.body';
 if (olNs4) {
 	var oW = window.innerWidth;
 	var oH = window.innerHeight;
-	window.onresize = function() { if (oW != window.innerWidth || oH != window.innerHeight) location.reload(); }
+	window.onresize = function() { if (oW != window.innerWidth || oH != window.innerHeight) location.href = location.href; }
 }
 
 // Microsoft Stupidity Check(tm).

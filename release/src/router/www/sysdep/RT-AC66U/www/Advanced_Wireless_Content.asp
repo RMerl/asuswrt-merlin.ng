@@ -44,7 +44,7 @@ else
 
 var wl_bw_160 = '<% nvram_get("wl_bw_160"); %>';
 var enable_bw_160 = (wl_bw_160 == 1) ? true : false;
-
+var wl_reg_mode = '<% nvram_get("wl_reg_mode"); %>';
 function initial(){
 	show_menu();
 	if(band5g_11ac_support){
@@ -145,15 +145,15 @@ function initial(){
 	change_wl_nmode(document.form.wl_nmode_x);
 
 	var is_RU_sku = ('<% nvram_get("location_code"); %>'.indexOf("RU") != -1);
-	if(based_modelid == 'RT-AX88U' || based_modelid == 'GT-AX11000' || (based_modelid == 'RT-AX92U' && wl_unit == '2') || (based_modelid == 'GT-AC2900' && wl_unit == '1')){
-		if(bw_160_support){
-			document.getElementById('enable_160_field').style.display = "";
-			if((based_modelid == 'GT-AX11000' || based_modelid == 'RT-AX92U') && wl2.channel_160m == "" && wl_unit == '2'){
+	if(bw_160_support){
+		document.getElementById('enable_160_field').style.display = "";
+		if((based_modelid == 'GT-AX11000' || based_modelid == 'RT-AX92U') && wl2.channel_160m == "" && wl_unit == '2'){
 				document.getElementById('enable_160_field').style.display = "none";
-			}
 		}
+	}
 
-		if(document.form.wl_channel.value  == '0' && ((wl_unit == '1' && based_modelid != 'RT-AX92U') || wl_unit == '2')){
+	if(wl_reg_mode == 'h'){
+		if(document.form.wl_channel.value  == '0' && wl_unit == '1'){
 			document.getElementById('dfs_checkbox').style.display = "";
 			check_DFS_support(document.form.acs_dfs_checkbox);
 		}
@@ -162,24 +162,6 @@ function initial(){
 		if(document.form.wl_channel.value  == '0' && wl_unit == '1'){
 			document.getElementById('acs_band3_checkbox').style.display = "";
 		}		
-	}
-	else if(country == "EU"){		//display checkbox of DFS channel under 5GHz
-		if(based_modelid == "RT-AC68U" || based_modelid == "RT-AC68A" || based_modelid == "4G-AC68U" || based_modelid == "DSL-AC68U"
-		|| based_modelid == "RT-AC87U"
-		|| based_modelid == "RT-AX92U"
-		|| (based_modelid == "RT-AC66U" && wl1_dfs == "1")		//0: A2 not support, 1: B0 support
-		|| based_modelid == "RT-N66U"){
-			if(document.form.wl_channel.value  == '0' && wl_unit == '1'){
-				document.getElementById('dfs_checkbox').style.display = "";
-				check_DFS_support(document.form.acs_dfs_checkbox);
-			}
-		}
-	}
-	else if(country == "US" && dfs_US_support){
-		if(document.form.wl_channel.value  == '0' && wl_unit == '1'){
-			document.getElementById('dfs_checkbox').style.display = "";
-			check_DFS_support(document.form.acs_dfs_checkbox);
-		}
 	}
 	else if(country == "US" || country == "SG"){		//display checkbox of band1 channel under 5GHz
 		if(based_modelid == "RT-AC68U" || based_modelid == "RT-AC68A" || based_modelid == "4G-AC68U" || based_modelid == "DSL-AC68U"
@@ -192,17 +174,11 @@ function initial(){
 				document.getElementById('acs_band1_checkbox').style.display = "";					
 		}
 	}
-	else if((odmpid == "RT-AC66U_B1" || odmpid == "RT-AC1750_B1" || odmpid == "RT-N66U_C1" || odmpid == "RT-AC1900U" || odmpid == "RP-AC1900" || odmpid == "RT-AC67U") && country == "AU"){
-		if(document.form.wl_channel.value  == '0' && wl_unit == '1'){
-			document.getElementById('dfs_checkbox').style.display = "";
-			check_DFS_support(document.form.acs_dfs_checkbox);
-		}
-	}
 
-	if(country == "EU" || country == "JP" || country == "SG" || country == "CN" || country == "UA" || country == "KR"){
+	if(wl_channel_list_2g.length == '14'){
 		if(!Qcawifi_support && !Rawifi_support){
 			if(document.form.wl_channel.value  == '0' && wl_unit == '0' && document.form.wl_channel.length == '14')
-				document.getElementById('acs_ch13_checkbox').style.display = "";				
+			$('#acs_ch13_checkbox').show();					
 		}
 	}
 
@@ -1093,12 +1069,12 @@ function enableSmartCon(val){
 			$('#acs_ch13_checkbox').hide();
 		}
 		else {
-			if (country == "EU" || country == "JP" || country == "SG" || country == "CN" || country == "UA" || country == "KR") {
-				if (!Qcawifi_support && !Rawifi_support) {
-					if (document.form.wl_channel.value == '0' && wl_unit == '0' && document.form.wl_channel.length == '14')
-						document.getElementById('acs_ch13_checkbox').style.display = "";
+			if (!Qcawifi_support && !Rawifi_support) {
+				if (document.form.wl_channel.value == '0' && wl_unit == '0' && document.form.wl_channel.length == '14'){
+					$('#acs_ch13_checkbox').show();
 				}
 			}
+
 			$("#dfs_checkbox").hide();
 		}
 
@@ -1126,18 +1102,15 @@ function enableSmartCon(val){
 		}
 
 		if((wl_unit == '0' && val == '2')){
-			if (country == "EU" || country == "JP" || country == "SG" || country == "CN" || country == "UA" || country == "KR") {
-				if (!Qcawifi_support && !Rawifi_support) {
-					if (document.form.wl_channel.value == '0' && wl_unit == '0' && document.form.wl_channel.length == '14')
-						document.getElementById('acs_ch13_checkbox').style.display = "";
+			if (!Qcawifi_support && !Rawifi_support) {
+				if (document.form.wl_channel.value == '0' && wl_unit == '0' && document.form.wl_channel.length == '14'){
+					$('#acs_ch13_checkbox').show();
 				}
 			}
 		}
 		else if(val == '1'){
-			if (country == "EU" || country == "JP" || country == "SG" || country == "CN" || country == "UA" || country == "KR") {
-				if (!Qcawifi_support && !Rawifi_support) {
-					document.getElementById('acs_ch13_checkbox').style.display = "";
-				}
+			if (!Qcawifi_support && !Rawifi_support) {
+				$('#acs_ch13_checkbox').show();
 			}
 		}
 		else{

@@ -87,9 +87,20 @@ void start_pptpd(void)
 	}
 
 #ifdef HND_ROUTER
-	/* workaround for ppp packets are dropped by fc GRE learning when pptp server / client enabled  */
-	if (nvram_match("fc_disable", "0") && 
-		(nvram_match("wan_proto", "pppoe") || nvram_match("wan_proto", "pptp") || nvram_match("wan_proto", "l2tp"))) {
+	char tmp[100], prefix[] = "wanXXXXXXXXXX_";
+	char wan_proto[16];
+
+	snprintf(prefix, sizeof(prefix), "wan%d_", wan_primary_ifunit());
+	snprintf(wan_proto, sizeof(wan_proto), "%s", nvram_safe_get(strcat_r(prefix, "proto", tmp)));
+
+	if (nvram_match("fc_disable", "0") &&
+		(
+#ifdef RTCONFIG_HND_ROUTER_AX
+		 !strcmp(wan_proto, "pppoe") ||
+#endif
+		 !strcmp(wan_proto, "pptp") ||
+		 !strcmp(wan_proto, "l2tp"))) {
+		dbg("[%s, %d] Flow Cache Learning of GRE flows Tunnel: DISABLED, PassThru: ENABLED\n", __FUNCTION__, __LINE__);
 		eval("fc", "config", "--gre", "0");
 	}
 #endif
@@ -300,8 +311,8 @@ void stop_pptpd(void)
 
 	killall_tk("pptpd");
 	killall_tk("bcrelay");
+
 #ifdef HND_ROUTER
-	/* workaround for ppp packets are dropped by fc GRE learning when pptp server / client enabled  */
 	if (nvram_match("fc_disable", "0")) eval("fc", "config", "--gre", "1");
 #endif
 }

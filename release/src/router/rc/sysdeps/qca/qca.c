@@ -4804,16 +4804,26 @@ int wlcscan_core(char *ofile, char *wif)
 	return 0;
 }
 
-#ifdef RTCONFIG_LAN4WAN_LED
 int LanWanLedCtrl(void)
 {
+#ifdef RTCONFIG_LANWAN_LED
+	if(get_lanports_status()
+#if defined(RTCONFIG_WPS_ALLLED_BTN) || defined(RTCONFIG_WPS_RST_BTN)
+			&& nvram_match("AllLED", "1")
+#endif
+			)
+		led_control(LED_LAN, LED_ON);
+	else
+		led_control(LED_LAN, LED_OFF);
+#elif defined(RTCONFIG_LAN4WAN_LED)
 #ifdef RTCONFIG_WPS_ALLLED_BTN
 	if (nvram_match("AllLED", "1"))
 #endif
 	led_ctrl();
+#endif
+
 	return 1;
 }
-#endif	/* LAN4WAN_LED*/
 
 #if defined(MAPAC1300) || defined(VZWAC1300)
 int get_wifi_thermal(int band)

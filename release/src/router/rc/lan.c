@@ -1435,6 +1435,9 @@ void config_ipv6(int enable, int incl_wan)
 	struct dirent *dirent;
 	char word[256], *next;
 	int service, match;
+	char tmp[100];
+	char prefix[] = "wanXXXXXXXXXX_";
+	char wan_proto[16];
 
 	if (enable) {
 		enable_ipv6("default");
@@ -1480,8 +1483,13 @@ void config_ipv6(int enable, int incl_wan)
 		service = get_ipv6_service();
 		switch (service) {
 		case IPV6_NATIVE_DHCP:
-			set_default_accept_ra(nvram_get_int(ipv6_nvname("ipv6_accept_ra")) ? 1 : 0);
-			break;
+			snprintf(prefix, sizeof(prefix), "wan%d_", wan_primary_ifunit_ipv6());
+			snprintf(wan_proto, sizeof(wan_proto), "%s", nvram_safe_get(strcat_r(prefix, "proto", tmp)));
+			if (strcmp(wan_proto, "dhcp") != 0 && strcmp(wan_proto, "static") != 0 &&
+				nvram_match(ipv6_nvname("ipv6_ifdev"), "ppp")) {
+				set_default_accept_ra(nvram_get_int(ipv6_nvname("ipv6_accept_ra")) ? 1 : 0);
+				break;
+			}
 #ifdef RTCONFIG_6RELAYD
 		case IPV6_PASSTHROUGH:
 			set_default_accept_ra(1);
@@ -1771,64 +1779,6 @@ int is_add_if(const char *ifname)
 }
 #endif
 
-#ifdef HND_ROUTER
-static int
-get_bonding_enabled(void)
-{
-	int enable = 0;
-
-	if (nvram_match("lacp_enabled", "1"))
-		enable= 1;
-
-	return enable;
-}
-
-#define MAX_LACP_PORTS	4
-uint32
-get_bonding_ports(void)
-{
-	char port[] = "XXXX", *next;
-	char ports[128], *cur;
-	int pid, len;
-	uint32 portmask = 0;
-
-	/* get lacp ports defeinitions from nvram */
-	snprintf(ports, sizeof(ports), "%s", nvram_safe_get("lacpports"));
-	printf("lacpports %s\n", ports);
-	if(strlen(ports) > 0){
-		for (cur = ports; cur; cur = next) {
-			/* tokenize the port list */
-			while (*cur == ' ')
-				cur ++;
-			next = strstr(cur, " ");
-			len = next ? next - cur : strlen(cur);
-			if (!len)
-				break;
-			if (len > sizeof(port) - 1)
-				len = sizeof(port) - 1;
-			strncpy(port, cur, len);
-			port[len] = 0;
-
-			/* make sure port # is within the range */
-			/* TOF: suppor port1 ~ port4 now */
-			pid = atoi(port);
-			if (pid == 0 || pid > MAX_LACP_PORTS) {
-				printf("ERROR: port %d is out of range[1-%d]\n",
-					pid, MAX_LACP_PORTS);
-				continue;
-			}
-			portmask |= (1 << pid);
-		}
-	}
-	/* WAN port can't be lacp ports now */
-	portmask >>= 1;
-	printf("lacp portmask 0x%4.4x\n", portmask);
-
-	return portmask;
-}
-#endif /* HND_ROUTER */
-
-
 #ifdef RTCONFIG_TAGGED_BASED_VLAN
 void update_subnet_rulelist(void){
 	char *nv, *nvp, *b;
@@ -1889,6 +1839,7 @@ void update_subnet_rulelist(void){
 	}
 }
 #endif
+
 void start_lan(void)
 {
 	char *lan_ifname;
@@ -1922,12 +1873,10 @@ void start_lan(void)
 	int is_dhd;
 #endif /* __CONFIG_DHDAP__ */
 #ifdef HND_ROUTER
-	char lacp_rate = 0, bonding_ifnames[80];
-	int bonding_enabled = 0;
-#ifndef RTCONFIG_HND_ROUTER_AX
-	uint32 bonding_portmask = 0;
+	char bonding_ifnames[80];
 #endif
 
+#ifdef HND_ROUTER
 	if (!is_routing_enabled())
 		fc_init();
 #endif /* HND_ROUTER */
@@ -2014,27 +1963,7 @@ void start_lan(void)
 #endif
 
 #ifdef HND_ROUTER
-	bonding_enabled = get_bonding_enabled();
-	_dprintf("lacp %s\n", bonding_enabled ? "enabled" : "disabled");
-	if (bonding_enabled) {
-#ifdef RTCONFIG_HND_ROUTER_AX
-		lacp_rate = nvram_match("lacp_rate", "1") ? 1 : 0;
-		//100ms MII monitor event, IEEE 802.3ad, count select logic,layer3+4 hash policy, duplicate frames are delivered
-		sprintf(tmp, "insmod /lib/modules/*/kernel/drivers/net/bonding/bonding.ko" \
-			" miimon=100 mode=4 ad_select=2 xmit_hash_policy=1 all_slaves_active=1 lacp_rate=%d", lacp_rate);
-#else
-		bonding_portmask = get_bonding_ports();
-		if (nvram_match("lacp_rate", "1")) {
-			lacp_rate= 1;
-		}
-		sprintf(tmp, "insmod /lib/modules/*/kernel/drivers/net/bonding/bonding.ko" \
-			" mode=4 miimon=100 lacp_rate=%d", lacp_rate);
-#endif
-		system(tmp);
-		memset(bonding_ifnames, 0, sizeof(bonding_ifnames));
-		strlcpy(bonding_ifnames, nvram_safe_get("lacp_ifnames"), strlen(nvram_safe_get("lacp_ifnames"))+1);
-		_dprintf("\nbonding ifnames is %s\n", bonding_ifnames);
-	}
+	bonding_init();
 #endif /* HND_ROUTER */
 
 #ifdef CONFIG_BCMWL5
@@ -2479,6 +2408,9 @@ void start_lan(void)
 						eval("brctl", "addif", lan_ifname, ifname);
 #else
 #ifdef HND_ROUTER
+					memset(bonding_ifnames, 0, sizeof(bonding_ifnames));
+					strlcpy(bonding_ifnames, nvram_safe_get("lacp_ifnames"), strlen(nvram_safe_get("lacp_ifnames"))+1);
+					_dprintf("[%s][%d]bonding ifnames is %s\n", __func__, __LINE__,  bonding_ifnames);
 					if (!strstr(bonding_ifnames, ifname))
 #endif
 					{
@@ -2642,27 +2574,7 @@ gmac3_no_swbr:
 #endif
 
 #ifdef HND_ROUTER
-	/* Configure Bonding */
-	if (bonding_enabled) {
-#ifdef RTCONFIG_HND_ROUTER_AX
-		foreach(word, nvram_safe_get("lacp_ifnames"), next)
-			eval("brctl", "delif", "br0", word);
-
-		ifconfig("bond0", IFUP, NULL, NULL);
-		sprintf(tmp, "ifenslave bond0 %s", bonding_ifnames);
-		system(tmp);
-		eval("brctl", "addif", nvram_safe_get("lan_ifname"), "bond0");
-#else
-		/* Bring up bond0 interface */
-		ifconfig("bond0", IFUP, NULL, NULL);
-		sprintf(tmp, "ifenslave bond0 %s", bonding_ifnames);
-		system(tmp);
-		eval("brctl", "addif", nvram_safe_get("lan_ifname"), "bond0");
-		/* remap imp port */
-		sprintf(tmp, "ethswctl -c bondingports -v 0x%x", bonding_portmask);
-		system(tmp);
-#endif
-	}
+	bonding_config();
 #endif /* BCA_HNDROUTER */
 
 #ifdef RTCONFIG_DPSTA
@@ -2951,10 +2863,7 @@ void stop_lan(void)
 	if (!is_routing_enabled())
 		fc_fini();
 
-	/* Remove bonding driver */
-	if (get_bonding_enabled()) {
-		eval("rmmod", "bonding");
-	}
+	bonding_uninit();
 #endif /* HND_ROUTER */
 
 #ifdef RTCONFIG_GMAC3
@@ -4543,10 +4452,7 @@ void stop_lan_wl(void)
 	if (!is_routing_enabled())
 		fc_fini();
 
-	/* Remove bonding driver */
-	if (get_bonding_enabled()) {
-		eval("rmmod", "bonding");
-	}
+	bonding_uninit();
 #endif /* HND_ROUTER */
 
 	snprintf(lan_ifname, sizeof(lan_ifname), "%s", nvram_safe_get("lan_ifname"));
@@ -4754,13 +4660,8 @@ void start_lan_wl(void)
 #ifdef __CONFIG_DHDAP__
 	int is_dhd;
 #endif /* __CONFIG_DHDAP__ */
-#ifdef HND_ROUTER
-	char lacp_rate = 0, bonding_ifnames[80];
-	int bonding_enabled = 0;
-#ifndef RTCONFIG_HND_ROUTER_AX
-	uint32 bonding_portmask = 0;
-#endif
 
+#ifdef HND_ROUTER
 	if (!is_routing_enabled())
 		fc_init();
 #endif /* HND_ROUTER */
@@ -4813,32 +4714,15 @@ void start_lan_wl(void)
 	wlconf_pre();
 #endif
 #endif
+#ifdef HND_ROUTER
+	char bonding_ifnames[80];
+#endif
 
 
 	check_wps_enable();
 
 #ifdef HND_ROUTER
-
-	bonding_enabled = get_bonding_enabled();
-	_dprintf("lacp %s\n", bonding_enabled ? "enabled" : "disabled");
-	if (bonding_enabled) {
-#ifdef RTCONFIG_HND_ROUTER_AX
-		lacp_rate = nvram_match("lacp_rate", "1") ? 1 : 0;
-		//100ms MII monitor event, IEEE 802.3ad, count select logic,layer3+4 hash policy, duplicate frames are delivered
-		sprintf(tmp, "insmod /lib/modules/*/kernel/drivers/net/bonding/bonding.ko" \
-			" miimon=100 mode=4 ad_select=2 xmit_hash_policy=1 all_slaves_active=1 lacp_rate=%d", lacp_rate);
-#else
-		bonding_portmask = get_bonding_ports();
-                if (nvram_match("lacp_rate", "1")) {
-                        lacp_rate= 1;
-                }
-		sprintf(tmp, "insmod /lib/modules/*/kernel/drivers/net/bonding/bonding.ko" \
-			" mode=4 miimon=100 lacp_rate=%d", lacp_rate);
-#endif
-		system(tmp);
-		memset(bonding_ifnames, 0, sizeof(bonding_ifnames));
-		strlcpy(bonding_ifnames, nvram_safe_get("lacp_ifnames"), strlen(nvram_safe_get("lacp_ifnames"))+1);
-	}
+	bonding_init();
 #endif /* HND_ROUTER */
 
 #ifdef CONFIG_BCMWL5
@@ -5234,6 +5118,9 @@ void start_lan_wl(void)
 #endif
 
 #ifdef HND_ROUTER
+					memset(bonding_ifnames, 0, sizeof(bonding_ifnames));
+					strlcpy(bonding_ifnames, nvram_safe_get("lacp_ifnames"), strlen(nvram_safe_get("lacp_ifnames"))+1);
+					_dprintf("[%s][%d]bonding ifnames is %s\n", __func__, __LINE__,  bonding_ifnames);
 					if (!strstr(bonding_ifnames, ifname))
 #elif defined(RTCONFIG_WIFI_SON)
 					if ( sw_mode()!=SW_MODE_REPEATER && nvram_get_int("wl0.1_bss_enabled") 
@@ -5280,27 +5167,7 @@ gmac3_no_swbr:
 #endif
 
 #ifdef HND_ROUTER
-	/* Configure Bonding */
-	if (bonding_enabled) {
-#ifdef RTCONFIG_HND_ROUTER_AX
-		foreach(word, nvram_safe_get("lacp_ifnames"), next)
-			eval("brctl", "delif", "br0", word);
-
-		ifconfig("bond0", IFUP, NULL, NULL);
-		sprintf(tmp, "ifenslave bond0 %s", bonding_ifnames);
-		system(tmp);
-		eval("brctl", "addif", nvram_safe_get("lan_ifname"), "bond0");
-#else
-		/* Bring up bond0 interface */
-		ifconfig("bond0", IFUP, NULL, NULL);
-		sprintf(tmp, "ifenslave bond0 %s", bonding_ifnames);
-		system(tmp);
-		eval("brctl", "addif", nvram_safe_get("lan_ifname"), "bond0");
-		/* remap imp port */
-		sprintf(tmp, "ethswctl -c bondingports -v 0x%x", bonding_portmask);
-		system(tmp);
-#endif
-	}
+	bonding_config();
 #endif /* BCA_HNDROUTER */
 
 #ifdef RTCONFIG_DPSTA
@@ -5804,7 +5671,10 @@ void restart_wireless(void)
 #endif
 
 	start_lan_wl();
-
+#ifdef CONFIG_BCMWL5
+	restart_wl();
+	lanaccess_wl();
+#endif
 #if defined(RTCONFIG_QCA) || \
 		(defined(RTCONFIG_RALINK) && !defined(RTCONFIG_DSL) && !defined(RTN13U))
 	reinit_hwnat(-1);
@@ -5858,8 +5728,11 @@ void restart_wireless(void)
 	start_amas_wlcconnect();
 	start_amas_bhctrl();
 #endif
+
+#ifndef CONFIG_BCMWL5
 	restart_wl();
 	lanaccess_wl();
+#endif
 
 #ifdef CONFIG_BCMWL5
 	/* for MultiSSID */

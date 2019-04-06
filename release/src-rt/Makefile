@@ -1116,6 +1116,10 @@ define RouterOptions
 	if [ "$(PARENTAL2)" = "y" -o "$(PARENTAL)" = "y" ]; then \
 		sed -i "/RTCONFIG_PARENTALCTRL/d" $(1); \
 		echo "RTCONFIG_PARENTALCTRL=y" >>$(1); \
+		if [ "$(CONFIG_BCMWL5)" = "y" ] && [ "$(ARM)" = "y" ]; then \
+			sed -i "/RTCONFIG_CONNTRACK/d" $(1); \
+			echo "RTCONFIG_CONNTRACK=y" >>$(1); \
+		fi; \
 	fi; \
 	if [ "$(YANDEXDNS)" = "y" ]; then \
 		sed -i "/RTCONFIG_YANDEXDNS/d" $(1); \
@@ -1224,6 +1228,10 @@ define RouterOptions
 	if [ "$(NEWSSID_REV2)" = "y" ]; then \
 		sed -i "/RTCONFIG_NEWSSID_REV2/d" $(1); \
 		echo "RTCONFIG_NEWSSID_REV2=y" >>$(1); \
+		if [ "$(NEWSSID_REV4)" = "y" ]; then \
+			sed -i "/RTCONFIG_NEWSSID_REV4/d" $(1); \
+			echo "RTCONFIG_NEWSSID_REV4=y" >>$(1); \
+		fi; \
 	fi; \
 	if [ "$(NEW_APP_ARM)" = "y" ]; then \
 		sed -i "/RTCONFIG_NEW_APP_ARM/d" $(1); \
@@ -2223,8 +2231,12 @@ define RouterOptions
 			echo "RTCONFIG_NVRAM_SIZE=`printf 0x%x $(NVRAM_SIZE)`" >>$(1); \
 		fi; \
 	fi; \
+	if [ "$(BONDING_WAN)" = "y" ]; then \
+		sed -i "/RTCONFIG_BONDING_WAN/d" $(1); \
+		echo "RTCONFIG_BONDING_WAN=y" >>$(1); \
+	fi; \
 	if [ "$(BONDING)" = "y" ]; then \
-		sed -i "/RTCONFIG_BONDING/d" $(1); \
+		sed -i "/\bRTCONFIG_BONDING\b/d" $(1); \
 		echo "RTCONFIG_BONDING=y" >>$(1); \
 	fi; \
 	if [ "$(WIFILOGO)" = "y" ]; then \
@@ -2563,9 +2575,11 @@ define RouterOptions
 		sed -i "/RTCONFIG_PERMISSION_MANAGEMENT/d" $(1); \
 		echo "RTCONFIG_PERMISSION_MANAGEMENT=y" >>$(1); \
 	fi; \
+	sed -i "/RTCONFIG_CONNTRACK/d" $(1); \
 	if [ "$(CONNTRACK)" = "y" ]; then \
-		sed -i "/RTCONFIG_CONNTRACK/d" $(1); \
 		echo "RTCONFIG_CONNTRACK=y" >>$(1); \
+	else \
+		echo "# RTCONFIG_CONNTRACK is not set" >>$(1); \
  	fi; \
 	if [ "$(DETWAN)" = "y" ]; then \
 		sed -i "/RTCONFIG_DETWAN/d" $(1); \
@@ -2709,6 +2723,11 @@ define RouterOptions
 			echo "RTCONFIG_AMASDB=y" >>$(1); \
 		else \
 			echo "# RTCONFIG_AMASDB is not set" >>$(1); \
+		fi; \
+		if [ "$(AVBLCHAN)" = "y" ]; then \
+			echo "RTCONFIG_AVBLCHAN=y" >>$(1); \
+		else \
+			echo "# RTCONFIG_AVBLCHAN is not set" >>$(1); \
 		fi; \
 	fi; \
 	sed -i "/RTCONFIG_WATCH_WLREINIT/d" $(1); \
@@ -3855,10 +3874,14 @@ fi; \
 		echo "CONFIG_LINUX_MTD=$(LINUX_MTD)" >>$(1); \
 	fi; \
 	sed -i "/CONFIG_NF_CONNTRACK_EVENTS/d" $(1); \
-	if [ "$(BWDPI)" = "y" ] || [ "$(HND_ROUTER)" = "y" ]; then \
+	if [ "$(BWDPI)" = "y" ] || [ "$(HND_ROUTER)" = "y" || "$(CONNTRACK)" = "y" ] || [ "$(PARENTAL2)" = "y" -o "$(PARENTAL)" = "y" ] && [ "$(CONFIG_BCMWL5)" = "y" ] && [ "$(ARM)" = "y" ]; then \
 		echo "CONFIG_NF_CONNTRACK_EVENTS=y" >>$(1); \
 	else \
 		echo "# CONFIG_NF_CONNTRACK_EVENTS is not set" >>$(1); \
+	fi; \
+	if [ "$(CONNTRACK)" = "y" ] || [ "$(PARENTAL2)" = "y" -o "$(PARENTAL)" = "y" ] && [ "$(CONFIG_BCMWL5)" = "y" ] && [ "$(ARM)" = "y" ]; then \
+		sed -i "/CONFIG_NF_CT_NETLINK/d" $(1); \
+		echo "CONFIG_NF_CT_NETLINK=y" >>$(1); \
 	fi; \
 	if [ "$(BWDPI)" = "y" ]; then \
 		sed -i "/CONFIG_NET_SCH_HTB/d" $(1); \

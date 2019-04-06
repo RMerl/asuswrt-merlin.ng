@@ -106,6 +106,8 @@ var totalClientNum = {
 	wireless_ifnames: []
 }
 
+var AiMeshTotalClientNum = [];
+
 var setClientAttr = function(){
 	this.hostname = "";
 	this.type = "0";
@@ -155,6 +157,7 @@ function genClientList(){
 	totalClientNum.online = 0;
 	totalClientNum.wired = 0;
 	totalClientNum.wireless = 0;
+	AiMeshTotalClientNum = [];
 	for(var i=0; i<wl_nband_title.length; i++) totalClientNum.wireless_ifnames[i] = 0;
 
 	if(originData.fromNetworkmapd.length > 0) {
@@ -203,6 +206,8 @@ function genClientList(){
 			clientList[thisClientMacAddr].vendor = thisClient.vendor;
 			clientList[thisClientMacAddr].rssi = parseInt(thisClient.rssi);
 			clientList[thisClientMacAddr].isWL = parseInt(thisClient.isWL);
+			if(amesh_support && isSupport("dualband") && clientList[thisClientMacAddr].isWL == 3)
+				clientList[thisClientMacAddr].isWL = 2;
 			if(clientList[thisClientMacAddr].isOnline) {
 				if(clientList[thisClientMacAddr].isWL > 0) {
 					totalClientNum.wireless += clientList[thisClientMacAddr].macRepeat;
@@ -242,14 +247,20 @@ function genClientList(){
 						else {
 							totalClientNum.wired -= clientList[thisClientMacAddr].macRepeat;
 						}
+						if(AiMeshTotalClientNum[thisClientMacAddr] == undefined)
+							AiMeshTotalClientNum[thisClientMacAddr] = 0;
 					}
 				}
-				
-				if(thisClient.amesh_isReClient != undefined) {
-					if(thisClient.amesh_papMac != undefined) {
-						if(clientList[thisClient.amesh_papMac] != undefined)
-							clientList[thisClientMacAddr].amesh_isReClient = (thisClient.amesh_isReClient == "1") ? true : false;
-							clientList[thisClientMacAddr].amesh_papMac = thisClient.amesh_papMac;
+
+				if(thisClient.amesh_isReClient != undefined && thisClient.amesh_papMac != undefined) {
+					clientList[thisClientMacAddr].amesh_isReClient = (thisClient.amesh_isReClient == "1") ? true : false;
+					clientList[thisClientMacAddr].amesh_papMac = thisClient.amesh_papMac;
+
+					if(clientList[thisClientMacAddr].isOnline) {
+						if(AiMeshTotalClientNum[thisClient.amesh_papMac] == undefined)
+							AiMeshTotalClientNum[thisClient.amesh_papMac] = 1;
+						else
+							AiMeshTotalClientNum[thisClient.amesh_papMac] = AiMeshTotalClientNum[thisClient.amesh_papMac] + 1;
 					}
 				}
 			}

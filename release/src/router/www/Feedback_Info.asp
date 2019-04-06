@@ -36,6 +36,10 @@ FWString += "_"+extendno;
 function initial(){
 	show_menu();
 	check_info();
+	$("#bind_google")
+		.attr('target','_self')
+		.attr("href", "Advanced_Feedback.asp?provider=google&reload=1")
+		.attr("style", "text-decoration:underline;color:#FFCC00;");
 }
 
 function check_info(){
@@ -253,7 +257,7 @@ function get_split_feedback(seg){
 	<br><br>
 	<#feedback_fail1#> : ( <a href="mailto:xdsl_feedback@asus.com?Subject=<%nvram_get("productid");%>" target="_top" style="color:#FFCC00;">xdsl_feedback@asus.com </a>) <#feedback_fail2#>
 	<br>
-	And download these debug files and add as email attachment:
+	<#feedback_fail3#> :
 	<br>
 	<ul>
 		<li id="dbg_dsl_file" style="display:none;"><span onClick="get_split_feedback(1);" style="text-decoration: underline; color:#FFCC00; cursor:pointer;">debug file</span></li>
@@ -268,9 +272,9 @@ function get_split_feedback(seg){
 	<#feedback_fail0#>
 	<br><br>
 	<#feedback_fail1#> : ( <a href="mailto:router_feedback@asus.com?Subject=<%nvram_get("productid");%>" target="_top" style="color:#FFCC00;">router_feedback@asus.com </a>) <#feedback_fail2#>
-	&nbsp;OR you can try to <a href="Advanced_Feedback.asp?provider=google&reload=1" target="_self" style="text-decoration:underline;color:#FFCC00;">bind your Google account</a> to send feedback mail.
+	&nbsp;<#feedback_fail_BindGoogle#>
 	<br>
-	And download these debug files and add as email attachment:
+	<#feedback_fail3#> :
 	<br>
 	<ul>
 		<li id="dbg_rt_file" style="display:none;"><span onClick="get_split_feedback(1);" style="text-decoration: underline; color:#FFCC00; cursor:pointer;">debug file</span></li>

@@ -292,3 +292,7 @@ ifeq ($(HND_ROUTER),y)
 	mkdir -p $(INSTALLDIR)/rom/scripts
 	cp -rf zoneinfo/* $(INSTALLDIR)/rom/usr/share/zoneinfo/
 endif
+
+ifeq ($(HND_ROUTER),y)
+	mv -f $(INSTALLDIR)/rom/etc/profile.hnd $(INSTALLDIR)/rom/etc/profile
+endif

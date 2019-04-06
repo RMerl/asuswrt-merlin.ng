@@ -45,6 +45,7 @@
 #endif
 #define SYS_SG "/sys/class/scsi_generic"
 #define USB_DEVICE_PATH "/sys/bus/usb/devices"
+#define USB_DRIVER_PATH "/sys/bus/usb/drivers"
 #define SYS_RNDIS_PATH "/sys/module/rndis_host/drivers/usb:rndis_host"
 #define SYS_CDCETH_PATH "/sys/module/cdc_ether/drivers/usb:cdc_ether"
 #define SYS_NCM_PATH "/sys/module/cdc_ncm/drivers/usb:cdc_ncm"
@@ -70,20 +71,23 @@
 #endif
 
 enum {
-	DEVICE_TYPE_UNKNOWN=0,
+	DEVICE_TYPE_PRINTER=0,
+	DEVICE_TYPE_MODEM,
 	DEVICE_TYPE_DISK,
-	DEVICE_TYPE_PRINTER,
 	DEVICE_TYPE_SG,
 	DEVICE_TYPE_CD,
-	DEVICE_TYPE_MODEM,
-	DEVICE_TYPE_BECEEM
+	DEVICE_TYPE_BECEEM,
+	DEVICE_TYPE_UNKNOWN,
 };
+
+extern char *supported_types[];
 
 extern int find_str_host_info(const char *str, int *host, int *channel, int *id, int *lun);
 extern int find_disk_host_info(const char *dev, int *host, int *channel, int *id, int *lun);
 
+extern char *get_device_type_by_interface(const char *usb_interface, char *type, const int type_size, char *dev, const int dev_size);
+extern char *get_device_type_by_node(const char *usb_node, char *type, const int type_size, char *dev, const int dev_size);
 extern int get_device_type_by_device(const char *device_name);
-extern char *get_device_type_by_node(const char *usb_node, char *buf, const int buf_size);
 extern char *get_usb_node_by_string(const char *target_string, char *ret, const int ret_size);
 extern char *get_usb_node_by_device(const char *device_name, char *buf, const int buf_size);
 extern char *get_usb_port_by_string(const char *target_string, char *buf, const int buf_size);
@@ -105,7 +109,14 @@ extern char *get_usb_interface_subclass(const char *interface_name, char *buf, c
 extern int get_interface_numendpoints(const char *interface_name);
 extern int get_interface_Int_endpoint(const char *interface_name);
 
+extern int check_hotplug_action(const char *action);
+extern int set_usb_common_nvram(const char *action, const char *device_name, const char *usb_node, const char *known_type);
+extern int detect_usb_devices();
+extern void unset_usb_nvram(char *port_path);
+
 #ifdef RTCONFIG_USB_MODEM
+extern void clean_modem_state(int modem_unit, int flag);
+
 #if LINUX_KERNEL_VERSION >= KERNEL_VERSION(2,6,36)
 extern int hadWWANModule(void);
 #endif
@@ -119,8 +130,11 @@ extern int isACMNode(const char *device_name);
 extern int isSerialInterface(const char *interface_name, const int specifics, const unsigned int vid, const unsigned int pid);
 extern int isACMInterface(const char *interface_name, const int specifics, const unsigned int vid, const unsigned int pid);
 extern int isRNDISInterface(const char *interface_name, const unsigned int vid, const unsigned int pid);
+extern int isQMIInterface(const char *interface_name);
+extern int isGOBIInterface(const char *interface_name);
 extern int isCDCETHInterface(const char *interface_name);
 extern int isNCMInterface(const char *interface_name);
+extern int isASIXInterface(const char *interface_name);
 #ifdef RTCONFIG_USB_BECEEM
 extern int isGCTInterface(const char *interface_name);
 extern int hadBeceemModule();

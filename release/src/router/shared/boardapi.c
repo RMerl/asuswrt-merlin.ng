@@ -99,7 +99,7 @@ static const struct led_btn_table_s {
 	{ "led_lan4_gpio",	&led_gpio_table[LED_LAN4] },
 #else
 	{ "led_lan_gpio",	&led_gpio_table[LED_LAN] },
-#endif	/* LAN4WAN_LED */
+#endif
 	{ "led_wan_gpio",	&led_gpio_table[LED_WAN] },
 #ifdef HND_ROUTER
 	{ "led_wan_normal_gpio",&led_gpio_table[LED_WAN_NORMAL] },
@@ -263,7 +263,7 @@ int init_gpio(void)
 		, "btn_ejusb1_gpio", "btn_ejusb2_gpio"
 #endif
 	};
-	char *led_list[] = { "led_pwr_gpio", "led_usb_gpio", "led_wps_gpio", "fan_gpio", "have_fan_gpio", "led_lan_gpio", "led_wan_gpio", "led_usb3_gpio", "led_2g_gpio", "led_5g_gpio"
+	char *led_list[] = { "led_pwr_gpio", "led_usb_gpio", "led_wps_gpio", "fan_gpio", "have_fan_gpio", "led_wan_gpio", "led_usb3_gpio", "led_2g_gpio", "led_5g_gpio"
 #if defined(RTCONFIG_HAS_5G_2)
 		, "led_5g2_gpio"
 #endif
@@ -284,7 +284,9 @@ int init_gpio(void)
 #endif
 #ifdef RTCONFIG_LAN4WAN_LED
 		, "led_lan1_gpio", "led_lan2_gpio", "led_lan3_gpio", "led_lan4_gpio"
-#endif	/* LAN4WAN_LED */
+#else
+		, "led_lan_gpio"
+#endif
 #ifdef RTCONFIG_LED_ALL
 		, "led_all_gpio"
 #endif
@@ -946,6 +948,17 @@ int wanport_status(int wan_unit)
 		}
 
 		mask |= (0x0001<<atoi(word2));
+#ifdef RTCONFIG_BONDING_WAN
+		if (nvram_match("bond_wan", "1")){
+			memset(wan_ports, 0, 16);
+			mask = 0;
+			strcpy(wan_ports, "wanports_bond");
+			foreach(word2, nvram_safe_get(wan_ports), next2){
+				mask |= (0x0001<<atoi(word2));
+				// _dprintf("wan_bond: port mask[%08X]\n", mask);
+			}
+		}
+#endif
 	}
 #else
 #ifndef RTN53
@@ -1116,7 +1129,7 @@ int lanport_ctrl(int ctrl)
 	else
 		rtkswitch_LanPort_linkDown();
 	return 1;
-#elif RTCONFIG_REALTEK
+#elif defined(RTCONFIG_REALTEK)
 	char word[100], *next;
 	int mask = 0;
 	char cmd[64];

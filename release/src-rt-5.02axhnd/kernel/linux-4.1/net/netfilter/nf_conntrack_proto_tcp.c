@@ -888,6 +888,7 @@ static int tcp_packet(struct nf_conn *ct,
 				if (del_timer(&ct->timeout)) {
 					printk("%s: delete ct right now.\n", __FUNCTION__);
 					nf_ct_delete(ct, 0, 0);
+					return NF_DROP;
 				}
 				return -NF_REPEAT;
 			}

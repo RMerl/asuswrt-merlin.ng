@@ -56,6 +56,10 @@
 #include <linux/blog.h>
 #endif /* CONFIG_BCM_KF_NETFILTER && CONFIG_BLOG */
 
+#if defined(CONFIG_BCM_KF_NETFILTER) && defined(CONFIG_BLOG)
+#include <linux/blog.h>
+#endif /* CONFIG_BCM_KF_NETFILTER && CONFIG_BLOG */
+
 __visible u64 jiffies_64 __cacheline_aligned_in_smp = INITIAL_JIFFIES;
 
 EXPORT_SYMBOL(jiffies_64);

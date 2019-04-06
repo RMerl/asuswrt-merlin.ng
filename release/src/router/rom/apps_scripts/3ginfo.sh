@@ -1,14 +1,8 @@
 #!/bin/sh
 
-kernel_version=`uname -r`
-ver_1st=`echo -n $kernel_version |awk 'BEGIN{FS="."}{print $1}'`
-ver_2nd=`echo -n $kernel_version |awk 'BEGIN{FS="."}{print $2}'`
-
 
 echo ">"
-if [ "$ver_1st" -ge "4" ]; then
-	cat /sys/kernel/debug/usb/devices
-elif [ "$ver_1st" -ge "3" ] && [ "$ver_2nd" -ge "2" ]; then
+if [ -f "/sys/kernel/debug/usb/devices" ]; then
 	cat /sys/kernel/debug/usb/devices
 else
 	cat /proc/bus/usb/devices

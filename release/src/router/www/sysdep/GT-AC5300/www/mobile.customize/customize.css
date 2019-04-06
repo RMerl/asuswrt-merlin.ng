@@ -1,6 +1,6 @@
 ﻿@font-face{
 	font-family: rog;
-	src: url(/ROG_Fonts-Regular.otf) format("opentype");
+	src: url(/fonts/ROG_Fonts-Regular.otf) format("opentype");
 }
 #welcomeTitle{
 	font-family: rog;

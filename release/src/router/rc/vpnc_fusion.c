@@ -378,7 +378,7 @@ vpnc_ipup_main(int argc, char **argv)
 	FILE *fp;
 	char *vpnc_ifname = safe_getenv("IFNAME");
 	char *vpnc_linkname = safe_getenv("LINKNAME");
-	char tmp[100], prefix[] = "vpnc_", vpnc_prefix[] ="vpncXXXX_";
+	char tmp[100], vpnc_prefix[] ="vpncXXXX_";
 	char buf[256], *value;
 	int unit;
 
@@ -1769,14 +1769,15 @@ start_vpnc_by_unit(const int unit)
 	if (VPNC_PROTO_PPTP == prof->protocol || VPNC_PROTO_L2TP == prof->protocol) {
 		mask = umask(0000);
 
-#ifdef RTCONFIG_HND_ROUTER_AX
-		/* workaround for ppp packets are dropped by fc GRE learning when pptp server / client enabled  */
-		if (nvram_match("fc_disable", "0") && 
-			(nvram_match(strcat_r(wan_prefix, "proto", tmp), "pppoe")) ||
-			(nvram_match(strcat_r(wan_prefix, "proto", tmp), "pptp")) ||
-			(nvram_match(strcat_r(wan_prefix, "proto", tmp), "l2tp")))
-		{
-			_dprintf("[%s, %d] Disable GRE learning\n", __FUNCTION__, __LINE__);
+#ifdef HND_ROUTER
+		/* workaround for ppp packets are dropped by fc GRE learning when pptp server / client enabled */
+		char wan_proto[16];
+		snprintf(wan_proto, sizeof(wan_proto), "%s", nvram_safe_get(strcat_r(wan_prefix, "proto", tmp)));
+		if (nvram_match("fc_disable", "0") &&
+			(!strcmp(wan_proto, "pppoe") ||
+			 !strcmp(wan_proto, "pptp") ||
+			 !strcmp(wan_proto, "l2tp"))) {
+			dbg("[%s, %d] Flow Cache Learning of GRE flows Tunnel: DISABLED, PassThru: ENABLED\n", __FUNCTION__, __LINE__);
 			eval("fc", "config", "--gre", "0");
 		}
 #endif
@@ -2009,8 +2010,8 @@ stop_vpnc_by_unit(const int unit)
 			usleep(3000*1000);
 			kill_pidfile_tk(pidfile);
 		}
-#ifdef RTCONFIG_HND_ROUTER_AX
-		/* workaround for ppp packets are dropped by fc GRE learning when pptp server / client enabled  */
+#ifdef HND_ROUTER
+		/* workaround for ppp packets are dropped by fc GRE learning when pptp server / client enabled */
 		if (nvram_match("fc_disable", "0")) eval("fc", "config", "--gre", "1");
 #endif
 	}
@@ -2158,7 +2159,7 @@ int set_routing_table(const int cmd, const int vpnc_id)
 					snprintf(tmp2, sizeof(tmp2), "remote_%d", i);
 					eval("ip", "route", "add", nvram_safe_get(strlcat_r(prefix, tmp2, tmp, sizeof(tmp))), 
 						"via", nvram_safe_get(strlcat_r(wan_prefix, "gateway", tmp, sizeof(tmp))), 
-						"dev", nvram_safe_get(strlcat_r(wan_prefix, "ifname", tmp, sizeof(tmp))),
+						"dev", nvram_safe_get(strlcat_r(wan_prefix, "gw_ifname", tmp, sizeof(tmp))),
 						"table", id_str);
 				}
 

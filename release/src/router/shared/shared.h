@@ -857,7 +857,8 @@ extern void file_unlock(int lockfd);
 #define ACTION_LOCK_FILE "/var/lock/a_w_l" // action write lock
 
 extern unsigned long f_size(const char *path);
-extern int f_exists(const char *file);
+extern int f_exists(const char *path);
+extern int l_exists(const char *path);
 extern int d_exists(const char *path);
 extern int f_read_excl(const char *path, void *buffer, int max);
 extern int f_read(const char *file, void *buffer, int max);												// returns bytes read
@@ -941,7 +942,6 @@ enum led_id {
 	LED_WPS,
 	FAN,
 	HAVE_FAN,
-	LED_LAN,
 	LED_WAN,
 #if defined(RTCONFIG_WANPORT2)
 	LED_WAN2,
@@ -959,6 +959,8 @@ enum led_id {
 	LED_LAN2,
 	LED_LAN3,
 	LED_LAN4,
+#else
+	LED_LAN,
 #endif
 #ifdef RTCONFIG_LOGO_LED
 	LED_LOGO,
@@ -1536,6 +1538,10 @@ extern int wl_get_bw(int unit);
 extern int get_psta_status(int unit);
 #endif
 
+#if defined(RTCONFIG_QCA)
+extern int get_psta_status(int unit);
+#endif
+
 #define WLSTA_JSON_FILE 				"/tmp/wl_sta_list.json"
 #define MAX_STA_COUNT 128
 #define MAX_SUBIF_NUM 4
@@ -1893,6 +1899,11 @@ extern struct vlan_rules_s *get_vlan_rules(void);
 #endif
 #if defined(HND_ROUTER) && defined(RTCONFIG_BONDING)
 extern int get_bonding_status();
+#endif
+#ifdef RTCONFIG_BONDING
+#ifdef RTCONFIG_HND_ROUTER_AX
+extern int get_bonding_speed(char *bond_if);
+#endif
 #endif
 extern int isValidMacAddress(const char* mac);
 extern int isValidEnableOption(const char* option, int range);
@@ -2548,4 +2559,5 @@ extern int is_amaslib_enabled();
 #endif /* defined(RTCONFIG_AMAS) */
 
 extern int get_index_page(char *page, int size);
+extern int get_chance_to_control(void);
 #endif	/* !__SHARED_H__ */

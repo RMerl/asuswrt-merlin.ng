@@ -60,6 +60,7 @@ extern int cm_isSlaveOnline(time_t startTime);
 #ifdef RTCONFIG_BCN_RPT
 extern void cm_handleAPListUpdate(unsigned char *decodeMsg);
 #endif
+extern void cm_updateTribandReList(char *newReMac, int bandNum, char *modelName, int action, int commit);
 
 #endif /* __CFG_SLAVELIST_H__ */
 /* End of cfg_slavelist.h */

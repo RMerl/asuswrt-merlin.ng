@@ -150,7 +150,7 @@ static int setAllSpecificColorLedOn(enum ate_led_color color)
 		{
 			static enum led_id white_led[] = {
 				LED_POWER, LED_WAN_NORMAL,
-				LED_LAN1, LED_WPS, LED_USB, LED_USB3,
+				LED_LAN, LED_WPS, LED_USB, LED_USB3,
                                 LED_ID_MAX
                         };
 			static enum led_id red_led[] = {
@@ -736,7 +736,7 @@ int asus_ate_command(const char *command, const char *value, const char *value2)
 		return setCentralLedLv(atoi(value));
 	}
 #endif
-#if RTCONFIG_RGBLED
+#ifdef RTCONFIG_RGBLED
 	else if (!strcmp(command, "Set_RogRGBRedLedOn")) {
 		return setRogRGBLedTest(0);
 	}

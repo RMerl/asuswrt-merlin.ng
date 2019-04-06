@@ -742,6 +742,11 @@ config RTCONFIG_NEWSSID_REV2
 	bool "New ASUS_2GMAC_xG rule"
 	default n
 
+config RTCONFIG_NEWSSID_REV4
+	bool "RT-V4 SSID rule"
+	depends on RTCONFIG_NEWSSID_REV2
+	default n
+
 config RTCONFIG_QCA
 	bool "Qualcomm Atheros Chip Support"
 	default n
@@ -1225,6 +1230,7 @@ config RTCONFIG_PWRRED_LED
 
 config RTCONFIG_FAILOVER_LED
 	bool "Fail-over LED"
+	depends on RTCONFIG_LANWAN_LED
 	default n
 
 config RTCONFIG_SATA_LED
@@ -1324,6 +1330,10 @@ config RTCONFIG_SPEEDTEST
 
 config RTCONFIG_BONDING
 	bool "Linux Net Bonding"
+	default n
+
+config RTCONFIG_BONDING_WAN
+	bool "WAN Bonding"
 	default n
 
 config RTCONFIG_UIDEBUG
@@ -1783,6 +1793,10 @@ config RTCONFIG_AMAS
 
 config RTCONFIG_AMASDB
 	bool "AMAS DB-sta collection."
+	default n
+
+config RTCONFIG_AVBLCHAN
+	bool "(CAP)exclude (RE)unavailble chanspec."
 	default n
 
 config RTCONFIG_NO_SELECT_CHANNEL

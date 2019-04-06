@@ -2082,19 +2082,28 @@ init_switch_misc()
         system("ethswctl -c pmdioaccess -x 0x1330 -l 2 -d 0xf017");
 #endif
 #endif
-#ifdef RTCONFIG_HND_ROUTER_AX
-        system("ethctl eth0 phy-power up");
-#endif
 }
 
 #ifdef RTCONFIG_HND_ROUTER_AX
-void
-reset_phy(char *port)
-{
-	char cmd[64];
+void eth_phypower(char *port, int onoff){
 
-	snprintf(cmd, sizeof(cmd), "ethctl %s phy-reset", port);
-	system(cmd);
+	char cmd[64];
+	char word[64], *next;
+	
+#ifdef RTCONFIG_BONDING_WAN
+	if(strcmp(port, "bond1") == 0){
+		foreach(word, nvram_safe_get("bond_wan_ifnames"), next){
+			snprintf(cmd, sizeof(cmd),
+				"ethctl %s phy-power %s", word, onoff ? "up" : "down");
+			system(cmd);
+		}
+	}
+	else
+#endif
+	{
+		snprintf(cmd, sizeof(cmd), "ethctl %s phy-power %s", port, onoff ? "up" : "down");
+		system(cmd);
+	}
 }
 #endif
 
@@ -4019,11 +4028,13 @@ void generate_wl_para(char *ifname, int unit, int subunit)
 
 #if (defined(RTCONFIG_BCM7) || defined(RTCONFIG_BCM_7114) || defined(HND_ROUTER) || defined(RTCONFIG_HND_ROUTER_AX)) && defined(BCM_BSD)
 		if (nvram_get_int("smart_connect_x") && get_bsd_nonvht_status(unit) && (bss_opmode_cap_reqd < 3)) {
+/* drop the implication for smart connect not working on unit 2 now
 #ifdef RTAX92U
 			if (unit == 2 && nvram_match(strcat_r(prefix, "he_features", tmp), "3"))
 				bss_opmode_cap_reqd = 4;			// devices must advertise HE (11ax) capabilities to be allowed to associate
 			else
 #endif
+*/
 			bss_opmode_cap_reqd = 3;				// devices must advertise VHT (11ac) capabilities to be allowed to associate
 		}
 #endif
@@ -4173,12 +4184,26 @@ void generate_wl_para(char *ifname, int unit, int subunit)
 #endif
 			)
 			{
+#ifdef RTCONFIG_HND_ROUTER_AX
+				nvram_set(strcat_r(prefix, "txbf_bfr_cap", tmp),
+						!nvram_match(strcat_r(prefix, "he_features", tmp2), "0") ? "15" : "3");
+				nvram_set(strcat_r(prefix, "txbf_bfe_cap", tmp),
+						!nvram_match(strcat_r(prefix, "he_features", tmp2), "0") ? "15" : "3");
+#else
 				nvram_set(strcat_r(prefix, "txbf_bfr_cap", tmp), "2");
 				nvram_set(strcat_r(prefix, "txbf_bfe_cap", tmp), "2");
+#endif				
 			} else {
 #endif
+#ifdef RTCONFIG_HND_ROUTER_AX
+				nvram_set(strcat_r(prefix, "txbf_bfr_cap", tmp),
+					!nvram_match(strcat_r(prefix, "he_features", tmp2), "0") ? "5" : "1");
+				nvram_set(strcat_r(prefix, "txbf_bfe_cap", tmp),
+					!nvram_match(strcat_r(prefix, "he_features", tmp2), "0") ? "5" : "1");
+#else
 				nvram_set(strcat_r(prefix, "txbf_bfr_cap", tmp), "1");
 				nvram_set(strcat_r(prefix, "txbf_bfe_cap", tmp), "1");
+#endif				
 #ifdef RTCONFIG_MUMIMO
 			}
 #endif
@@ -7246,6 +7271,87 @@ ERROR:
 	return 0;
 }
 
+#ifdef RTCONFIG_AVBLCHAN
+#define MAX_CHANS	32
+
+void add_cfgexcl_2_acsexcl(unsigned int *echx)
+{
+	char ex_tmp[24], word[256], *next, *asus_excl;
+	int i = 0, unit = 0, exist = 0;
+	unsigned int ech;
+	char acsexcl_wlx[1024], *sp;
+
+	for(unit = 0; unit < 3; ++unit) {
+		memset(ex_tmp, 0, sizeof(ex_tmp));
+		sprintf(ex_tmp, "wl%d_acs_excl_chans", unit);
+		asus_excl = nvram_safe_get(ex_tmp);
+
+		foreach_44 (word, asus_excl, next) {
+			ech = strtol(word, NULL, 16);
+			exist = 0;
+			if(!ech) continue;
+			for(i=0; i<MAX_CHANS; ++i) {
+				if(ech == *(echx + unit*MAX_CHANS + i)) {
+					exist = 1;
+					break;
+				} else if(!*(echx + unit*MAX_CHANS + i))
+					break;
+			}
+			if(!exist) {
+				*(echx + unit*MAX_CHANS + i) = ech;
+			}
+		}
+		memset(acsexcl_wlx, 0, sizeof(acsexcl_wlx));
+		for(i=0; i<MAX_CHANS; ++i) {
+			sp = acsexcl_wlx;
+			if(*(echx + unit*MAX_CHANS + i)) {
+				if(strlen(acsexcl_wlx) + 6 < sizeof(acsexcl_wlx) - 1)
+					snprintf(acsexcl_wlx, sizeof(acsexcl_wlx), "%s%s0x%2x", sp, *sp?",":"", *(echx + unit*MAX_CHANS + i));
+				else
+					_dprintf("acsexcl_wlx full!(rc)\n");
+			}
+		}
+		nvram_set(ex_tmp, acsexcl_wlx);
+	}
+}
+
+void init_cfg_excl(char *cfg_excl, unsigned int *ech, int unit)
+{
+	char word[256], *next;
+	int i = 0, ui = 0;
+	unsigned int chan;
+
+	foreach_44 (word, cfg_excl, next) {
+		chan = strtol(word, NULL, 16);
+		if(chan > 0) {
+			if(i < MAX_CHANS) {
+				*(ech + unit*MAX_CHANS + i) = chan;
+			} else
+				break;
+			i++;
+		}
+	}
+}
+
+void dump_exclchans(unsigned int *excs, char *des) {
+
+	int i=0 , j= 0;
+
+	_dprintf("\n%s. dump cfg_excl_chans:\n", des);
+
+	for(i=0; i<3; ++i) {
+		_dprintf("\n<%d>\n", i);
+		for(j=0; j<MAX_CHANS; ++j) {
+			_dprintf("[%2x] ", *(excs + i*MAX_CHANS + j));
+			if(j==10)
+				_dprintf("\n");
+		}
+	}
+	_dprintf("\n");
+}
+
+#endif
+
 #ifdef RTCONFIG_BCMWL6
 void set_acs_ifnames()
 {
@@ -7258,6 +7364,11 @@ void set_acs_ifnames()
 	char wlvif[] = "wlxxxx";
 #endif
 	char list[1024], list2[1024], list_5g_band1_chans[1024], list_5g_band2_chans[1024], list_5g_band3_chans[1024];
+#ifdef RTCONFIG_AVBLCHAN
+	char *cfg_excl = NULL;
+	unsigned int cfg_excl_chans[3][MAX_CHANS];	// 2g/5g chans num
+	memset(cfg_excl_chans, 0, sizeof(cfg_excl_chans));
+#endif
 
 	wl_check_5g_band_group();
 
@@ -7276,6 +7387,12 @@ void set_acs_ifnames()
 #endif
 		snprintf(prefix, sizeof(prefix), "wl%d_", unit);
 
+#ifdef RTCONFIG_AVBLCHAN
+		cfg_excl = nvram_safe_get(strcat_r(prefix, "acs_excl_chans_cfg", tmp));
+		if(*cfg_excl) {
+			init_cfg_excl(cfg_excl, cfg_excl_chans, unit);
+		}
+#endif
 		if (nvram_match(strcat_r(prefix, "radio", tmp), "1") &&
 			((nvram_match(strcat_r(prefix, "mode", tmp), "ap") &&
 			 (nvram_match(strcat_r(prefix, "chanspec", tmp), "0") ||
@@ -7379,6 +7496,9 @@ void set_acs_ifnames()
 	}
 #endif
 
+#ifdef RTCONFIG_AVBLCHAN
+	add_cfgexcl_2_acsexcl(cfg_excl_chans);
+#endif
 	nvram_set_int("wl0_acs_dfs", 0);
 	nvram_set_int("wl1_acs_dfs", nvram_match("wl1_reg_mode", "h") ? 2 : 0);
 #if defined(RTAC3200) || defined(RTAC5300) || defined(GTAC5300) || defined(GTAX11000) || defined(RTAX92U)

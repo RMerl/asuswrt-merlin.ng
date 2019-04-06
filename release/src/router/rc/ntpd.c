@@ -35,6 +35,7 @@ int start_ntpd(void)
 		NULL, NULL,		/* -p second_server */
 		NULL };
 	int ret, index = 7;
+	pid_t pid;
 
 	if (!nvram_get_int("ntpd_enable"))
 		return 0;
@@ -54,7 +55,7 @@ int start_ntpd(void)
 		ntpd_argv[index++] = nvram_safe_get("ntp_server1");
 	}
 
-	ret = _eval(ntpd_argv, NULL, 0, NULL);
+	ret = _eval(ntpd_argv, NULL, 0, &pid);
 	if (ret == 0)
 		logmessage("ntpd", "Started ntpd");
 

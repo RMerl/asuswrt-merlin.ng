@@ -19,6 +19,8 @@ Asuswrt-Merlin 384/NG Changelog
              notification popup.
   - CHANGED: Moved LED control (formerly known as Stealth Mode) to
              the System page.
+  - CHANGED: Do not restart whole network whenever changing an IP
+             reservation on the Networkmap card.
 
 
 384.10_2 (3-Apr-2019)

@@ -748,6 +748,7 @@ ifeq ($(RTCONFIG_QTN),y)
 	@cd $(INSTALLDIR)/sbin && ln -sf rc restart_qtn
 endif
 	@cd $(INSTALLDIR)/sbin && ln -sf rc ntp
+	@cd $(INSTALLDIR)/sbin && ln -sf rc ntp_synced
 	@cd $(INSTALLDIR)/sbin && ln -sf rc autodet
 ifeq ($(RTCONFIG_DETWAN),y)
 	@cd $(INSTALLDIR)/sbin && ln -sf rc detwan

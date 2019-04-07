@@ -29,15 +29,17 @@
 int start_ntpd(void)
 {
 	char *ntpd_argv[] = { "/usr/sbin/ntpd",
-		"-I", nvram_safe_get("lan_ifname"),
-		"-l", "-t",
+		"-t",
+		"-S", "/sbin/ntp_synced",
 		"-p", "pool.ntp.org",
 		NULL, NULL,		/* -p second_server */
+		NULL, NULL, NULL,	/* -l, -I, ifname */
 		NULL };
-	int ret, index = 7;
+	int ret, index = 6;
 	pid_t pid;
 
-	if (!nvram_get_int("ntpd_enable") || f_exists(NTPD_PIDFILE))
+	/* TODO: should we stop and restart instead? */
+	if (f_exists(NTPD_PIDFILE))
 		return 0;
 
 	if (getpid() != 1) {
@@ -47,9 +49,16 @@ int start_ntpd(void)
 
 	if (!nvram_match("ntp_server0", ""))
 		ntpd_argv[index - 1] = nvram_safe_get("ntp_server0");
+
 	if (!nvram_match("ntp_server1", "")) {
 		ntpd_argv[index++] = "-p";
 		ntpd_argv[index++] = nvram_safe_get("ntp_server1");
+	}
+
+	if (nvram_get_int("ntpd_enable")) {
+		ntpd_argv[index++] = "-l";
+		ntpd_argv[index++] = "-I";
+		ntpd_argv[index++] = nvram_safe_get("lan_ifname");
 	}
 
 	ret = _eval(ntpd_argv, NULL, 0, &pid);
@@ -71,3 +80,38 @@ void stop_ntpd(void)
 		logmessage("ntpd", "Stopped ntpd");
 	}
 }
+
+void ntp_time_synced(int argc, char *argv[])
+{
+	if (!nvram_match("ntp_ready", "1") && (argc == 2 && !strcmp(argv[1], "step"))) {
+		nvram_set("ntp_ready", "1");
+		logmessage("ntp", "Initial clock set");
+/* Code from ntpclient */
+#if !defined(RPAC56) && !defined(MAPAC1300) && !defined(MAPAC2200) && !defined(VZWAC1300)
+		if(nvram_contains_word("rc_support", "defpsk"))
+			nvram_set("x_Setting", "1");
+#endif
+#ifdef RTCONFIG_CFGSYNC
+		if (pidof("cfg_server") >= 0)
+			kill_pidfile_s("/var/run/cfg_server.pid", SIGUSR1);
+		if (pidof("cfg_client") >= 0)
+			kill_pidfile_s("/var/run/cfg_client.pid", SIGUSR1);
+#endif
+
+/* Code from ntp */
+		nvram_set("reload_svc_radio", "1");
+		nvram_set("svc_ready", "1");
+
+		setup_timezone();
+
+#ifdef RTCONFIG_DISK_MONITOR
+		notify_rc("restart_diskmon");
+#endif
+
+#ifdef RTCONFIG_DNSSEC
+		if (nvram_get_int("dnssec_enable"))
+			kill_pidfile_s("/var/run/dnsmasq.pid", SIGINT);
+#endif
+	}
+}
+

@@ -4826,6 +4826,9 @@ void refresh_ntpc(void)
 		start_ntpc();
 	else
 		kill_pidfile_s("/var/run/ntp.pid", SIGALRM);
+
+	stop_ntpd();
+	start_ntpd();
 }
 
 #ifdef RTCONFIG_BCMARM
@@ -8072,8 +8075,6 @@ start_services(void)
 	start_dblog(0);
 #endif /* RTCONFIG_DBLOG */
 #endif /* RTCONFIG_PUSH_EMAIL */
-
-	start_ntpd();
 
 	run_custom_script("services-start", NULL);
 

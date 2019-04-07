@@ -37,11 +37,8 @@ int start_ntpd(void)
 	int ret, index = 7;
 	pid_t pid;
 
-	if (!nvram_get_int("ntpd_enable"))
+	if (!nvram_get_int("ntpd_enable") || f_exists(NTPD_PIDFILE))
 		return 0;
-
-	//if (!nvram_get_int("ntp_ready"))
-	//	return;
 
 	if (getpid() != 1) {
 		notify_rc("start_ntpd");

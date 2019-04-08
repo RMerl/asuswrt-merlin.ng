@@ -4798,11 +4798,12 @@ start_ntpc(void)
 #if 0
 	char *ntp_argv[] = {"ntp", NULL};
 	int pid;
+#endif
 	int unit = wan_primary_ifunit();
 
 	if(dualwan_unit__usbif(unit) && nvram_get_int("modem_pdp") == 2)
 		return 0;
-
+#if 0
 	if (!pids("ntp"))
 		_eval(ntp_argv, NULL, 0, &pid);
 #endif

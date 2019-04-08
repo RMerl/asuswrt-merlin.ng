@@ -2884,7 +2884,7 @@ void write_UrlFilter(char *chain, char *lan_if, char *lan_ip, char *logdrop, FIL
 			srcips[0] = '\0';
 			if(addr && *addr)
 			{
-				char srcAddr[32];
+				char srcAddr[64];
 				int src_type = addr_type_parse(addr, srcAddr, sizeof(srcAddr));
 				if (src_type == TYPE_IP)
 					snprintf(srcips, sizeof(srcips), "-s %s", srcAddr);

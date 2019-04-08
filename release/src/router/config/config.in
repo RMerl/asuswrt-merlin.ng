@@ -1787,3 +1787,7 @@ config RTCONFIG_LIBASUSLOG
 config RTCONFIG_ETHOBD
 	bool "ethernet onboarding for Aimash."
 	default n
+
+config RTCONFIG_NTPD
+	bool "ntp & ntpd support"
+	default n

@@ -499,6 +499,16 @@ function applyRule(){
 			updateDateTime();
 		}
 
+		if(document.form.wandog_enable_chk.checked)
+			document.form.wandog_enable.value = "1";
+		else
+			document.form.wandog_enable.value = "0";
+
+		if(document.form.dns_probe_chk.checked)
+			document.form.dns_probe.value = "1";
+		else
+			document.form.dns_probe.value = "0";
+
 		showLoading();
 
 		var action_script_tmp = "restart_time;restart_upnp;";
@@ -528,20 +538,6 @@ function applyRule(){
 
 			action_script_tmp += "restart_usb_idle;";
 		}
-
-		if(document.form.wandog_enable_chk.checked)
-			document.form.wandog_enable.value = "1";
-		else
-			document.form.wandog_enable.value = "0";
-
-		if(document.form.dns_probe_chk.checked)
-			document.form.dns_probe.value = "1";
-		else
-			document.form.dns_probe.value = "0";
-
-		showLoading();
-
-		var action_script_tmp = "restart_time;restart_upnp;";
 
 		if(restart_httpd_flag) {
 			action_script_tmp += "restart_httpd;";

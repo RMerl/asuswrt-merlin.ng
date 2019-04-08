@@ -4992,6 +4992,7 @@ void reload_upnp(void)
 int
 start_ntpc(void)
 {
+#if 0
 	char *ntp_argv[] = {"ntp", NULL};
 	int pid;
 	int unit = wan_primary_ifunit();
@@ -5001,28 +5002,36 @@ start_ntpc(void)
 
 	if (!pids("ntp"))
 		_eval(ntp_argv, NULL, 0, &pid);
-
+#endif
+	start_ntpd();
 	return 0;
 }
 
 void
 stop_ntpc(void)
 {
+#if 0
 	if (pids("ntpclient"))
 		killall_tk("ntpclient");
+#endif
+	stop_ntpd();
 }
 
 
 void refresh_ntpc(void)
 {
 	setup_timezone();
-
+#if 0
 	stop_ntpc();
 
 	if (!pids("ntp"))
 		start_ntpc();
 	else
 		kill_pidfile_s("/var/run/ntp.pid", SIGALRM);
+#endif
+
+	stop_ntpd();
+	start_ntpd();
 }
 
 #ifdef RTCONFIG_BCMARM

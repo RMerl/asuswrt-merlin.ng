@@ -782,7 +782,7 @@ obj-y += etc
 endif
 # obj-y += vlan # use Busybox vconfig
 #obj-y += utils
-obj-y += ntpclient
+# obj-y += ntpclient
 
 ifeq ($(RTCONFIG_REALTEK),y)
 obj-y += rtk_flash

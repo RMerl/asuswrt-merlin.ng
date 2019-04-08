@@ -3745,8 +3745,9 @@ void timecheck(void)
 			if (timecheck_reboot(reboot_schedule))
 			{
 				_dprintf("reboot plan alert...\n");
-				sleep(1);
-				eval("reboot");
+//				sleep(1);
+//				eval("reboot");
+				notify_rc("reboot");
 			}
 		}
 	}

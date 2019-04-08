@@ -6,9 +6,13 @@ Asuswrt-Merlin 384/NG Changelog
          synchronize their clocks with it.  Dnsmasq will also
          announce it through DHCP option 42, for clients using
          that parameter.
-  - CHANGED: Updated nano to 4.0.
-  - CHANGED: Updated curl to 7.64.1.
-  - CHANGED: Updated dropbear to 2019.78.
+  - UPDATED: RT-AX88U to 384_5951 GPL.
+  - UPDATED: Nano 4.0.
+  - UPDATED: Curl 7.64.1.
+  - UPDATED: Dropbear 2019.78.
+  - CHANGED: Replaced the custom ntpclient with a proper ntpd
+             implementation, for reduced memory footprint and
+             increased accuracy.
   - CHANGED: Re-designed firmware upgrade page, moving the schedule
              option to that page, and removed support for the Beta
              channel.
@@ -21,6 +25,11 @@ Asuswrt-Merlin 384/NG Changelog
              the System page.
   - CHANGED: Do not restart whole network whenever changing an IP
              reservation on the Networkmap card.
+  - CHANGED: Allow URLs up to 64 chars long on the URL filter.
+  - FIXED: Reboot scheduler would sometime get stuck or corrupt
+           plugged USB drives.  Now doing a more thorough
+           shutdown of services, should hopefully make it
+           more reliable.
 
 
 384.10_2 (3-Apr-2019)

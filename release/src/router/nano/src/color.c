@@ -1,7 +1,7 @@
 /**************************************************************************
  *   color.c  --  This file is part of GNU nano.                          *
  *                                                                        *
- *   Copyright (C) 2001-2011, 2013-2018 Free Software Foundation, Inc.    *
+ *   Copyright (C) 2001-2011, 2013-2019 Free Software Foundation, Inc.    *
  *   Copyright (C) 2014-2017 Benno Schulenberg                            *
  *                                                                        *
  *   GNU nano is free software: you can redistribute it and/or modify     *
@@ -70,6 +70,8 @@ void set_colorpairs(void)
 		} else {
 			if (i == FUNCTION_TAG)
 				interface_color_pair[i] = A_NORMAL;
+			else if (i == GUIDE_STRIPE)
+				interface_color_pair[i] = A_REVERSE;
 			else if (i == ERROR_MESSAGE) {
 				init_pair(i + 1, COLOR_WHITE, COLOR_RED);
 				interface_color_pair[i] = COLOR_PAIR(i + 1) | A_BOLD | A_BANDAID;
@@ -144,7 +146,7 @@ bool found_in_list(regexlisttype *head, const char *shibboleth)
 	regex_t rgx;
 
 	for (item = head; item != NULL; item = item->next) {
-		regcomp(&rgx, fixbounds(item->full_regex), NANO_REG_EXTENDED);
+		regcomp(&rgx, item->full_regex, NANO_REG_EXTENDED);
 
 		if (regexec(&rgx, shibboleth, 0, NULL, 0) == 0) {
 			regfree(&rgx);
@@ -215,7 +217,7 @@ void color_update(void)
 	/* If the filename didn't match anything, try the first line. */
 	if (sint == NULL && !inhelp) {
 		for (sint = syntaxes; sint != NULL; sint = sint->next) {
-			if (found_in_list(sint->headers, openfile->fileage->data))
+			if (found_in_list(sint->headers, openfile->filetop->data))
 				break;
 		}
 	}
@@ -273,19 +275,19 @@ void color_update(void)
 	for (ink = openfile->colorstrings; ink != NULL; ink = ink->next) {
 		if (ink->start == NULL) {
 			ink->start = (regex_t *)nmalloc(sizeof(regex_t));
-			regcomp(ink->start, fixbounds(ink->start_regex), ink->rex_flags);
+			regcomp(ink->start, ink->start_regex, ink->rex_flags);
 		}
 
 		if (ink->end_regex != NULL && ink->end == NULL) {
 			ink->end = (regex_t *)nmalloc(sizeof(regex_t));
-			regcomp(ink->end, fixbounds(ink->end_regex), ink->rex_flags);
+			regcomp(ink->end, ink->end_regex, ink->rex_flags);
 		}
 	}
 }
 
 /* Determine whether the matches of multiline regexes are still the same,
  * and if not, schedule a screen refresh, so things will be repainted. */
-void check_the_multis(filestruct *line)
+void check_the_multis(linestruct *line)
 {
 	const colortype *ink;
 	bool astart, anend;
@@ -330,7 +332,7 @@ void check_the_multis(filestruct *line)
 }
 
 /* Allocate (for one line) the cache space for multiline color regexes. */
-void alloc_multidata_if_needed(filestruct *fileptr)
+void alloc_multidata_if_needed(linestruct *fileptr)
 {
 	int i;
 
@@ -348,7 +350,7 @@ void precalc_multicolorinfo(void)
 {
 	const colortype *ink;
 	regmatch_t startmatch, endmatch;
-	filestruct *line, *tailline;
+	linestruct *line, *tailline;
 
 	if (openfile->colorstrings == NULL || ISSET(NO_COLOR_SYNTAX))
 		return;
@@ -362,7 +364,7 @@ void precalc_multicolorinfo(void)
 		if (ink->end == NULL)
 			continue;
 
-		for (line = openfile->fileage; line != NULL; line = line->next) {
+		for (line = openfile->filetop; line != NULL; line = line->next) {
 			int index = 0;
 
 			alloc_multidata_if_needed(line);

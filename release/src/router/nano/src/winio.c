@@ -1,8 +1,8 @@
 /**************************************************************************
  *   winio.c  --  This file is part of GNU nano.                          *
  *                                                                        *
- *   Copyright (C) 1999-2011, 2013-2018 Free Software Foundation, Inc.    *
- *   Copyright (C) 2014-2018 Benno Schulenberg                            *
+ *   Copyright (C) 1999-2011, 2013-2019 Free Software Foundation, Inc.    *
+ *   Copyright (C) 2014-2019 Benno Schulenberg                            *
  *                                                                        *
  *   GNU nano is free software: you can redistribute it and/or modify     *
  *   it under the terms of the GNU General Public License as published    *
@@ -122,14 +122,14 @@ void run_macro(void)
  * - Ctrl-M is Enter under ASCII, ANSI, VT100, VT220, and VT320.
  * - Ctrl-Q is XON under ASCII, ANSI, VT100, VT220, and VT320.
  * - Ctrl-S is XOFF under ASCII, ANSI, VT100, VT220, and VT320.
- * - Ctrl-8 (Ctrl-?) is Delete under ASCII, ANSI, VT100, and VT220,
+ * - Ctrl-? is Delete under ASCII, ANSI, VT100, and VT220,
  *          but is Backspace under VT320.
  *
  * Note: VT220 and VT320 also generate Esc [ 3 ~ for Delete.  By default,
- * xterm assumes it's running on a VT320 and generates Ctrl-8 (Ctrl-?)
+ * xterm assumes it's running on a VT320 and generates Ctrl-?
  * for Backspace and Esc [ 3 ~ for Delete.  This causes problems for
  * VT100-derived terminals such as the FreeBSD console, which expect
- * Ctrl-H for Backspace and Ctrl-8 (Ctrl-?) for Delete, and on which the
+ * Ctrl-H for Backspace and Ctrl-? for Delete, and on which the
  * VT320 sequences are translated by the keypad to KEY_DC and [nothing].
  * We work around this conflict via the REBIND_DELETE flag: if it's not set,
  * we assume VT320 compatibility, and if it is, we assume VT100 compatibility.
@@ -475,7 +475,7 @@ int parse_kbinput(WINDOW *win)
 						 * or control character sequence mode. */
 						if (!solitary) {
 							meta_key = TRUE;
-							retval = keycode;
+							retval = tolower(keycode);
 						} else
 							retval = get_control_kbinput(keycode);
 					else {
@@ -502,11 +502,13 @@ int parse_kbinput(WINDOW *win)
 			break;
 		case 3:
 			if (key_buffer_len == 0) {
-				if (!solitary)
+				if (!solitary) {
 					meta_key = TRUE;
-				/* Three escapes followed by a non-escape, and no
-				 * other codes are waiting: normal input mode. */
-				retval = keycode;
+					retval = tolower(keycode);
+				} else
+					/* Three escapes followed by a non-escape, and no
+					 * other codes are waiting: normal input mode. */
+					retval = keycode;
 			} else
 				/* Three escapes followed by a non-escape, and more
 				 * codes are waiting: combined control character and
@@ -724,6 +726,12 @@ int parse_kbinput(WINDOW *win)
 #endif
 		case KEY_C3:    /* PageDown (3) on keypad with NumLock off. */
 			return KEY_NPAGE;
+		/* When requested, swap meanings of keycodes for <Bsp> and <Del>. */
+		case DEL_CODE:
+		case KEY_BACKSPACE:
+			return (ISSET(REBIND_DELETE) ? KEY_DC : KEY_BACKSPACE);
+		case KEY_DC:
+			return (ISSET(REBIND_DELETE) ? KEY_BACKSPACE : KEY_DC);
 #ifdef KEY_SDC  /* Slang doesn't support KEY_SDC. */
 		case KEY_SDC:
 			return SHIFT_DELETE;
@@ -1491,34 +1499,31 @@ long get_unicode_kbinput(WINDOW *win, int kbinput)
 }
 #endif /* ENABLE_UTF8 */
 
-/* Translate a control character sequence: turn an ASCII non-control
- * character into its corresponding control character. */
+/* Translate a normal ASCII character into its corresponding control code.
+ * The following groups of control keystrokes are equivalent:
+ *   Ctrl-2 == Ctrl-@ == Ctrl-` == Ctrl-Space
+ *   Ctrl-3 == Ctrl-[ == <Esc>
+ *   Ctrl-4 == Ctrl-\ == Ctrl-|
+ *   Ctrl-5 == Ctrl-]
+ *   Ctrl-6 == Ctrl-^ == Ctrl-~
+ *   Ctrl-7 == Ctrl-/ == Ctrl-_
+ *   Ctrl-8 == Ctrl-? */
 int get_control_kbinput(int kbinput)
 {
-	int retval;
-
-	/* Ctrl-Space (Ctrl-2, Ctrl-@, Ctrl-`) */
+	if ('@' <= kbinput && kbinput <= '_')
+		return kbinput - '@';
+	if ('`' <= kbinput && kbinput <= '~')
+		return kbinput - '`';
+	if ('3' <= kbinput && kbinput <= '7')
+		return kbinput - 24;
+	if (kbinput == '?' || kbinput == '8')
+		return DEL_CODE;
 	if (kbinput == ' ' || kbinput == '2')
-		retval = 0;
-	/* Ctrl-/ (Ctrl-7, Ctrl-_) */
-	else if (kbinput == '/')
-		retval = 31;
-	/* Ctrl-3 (Ctrl-[, Esc) to Ctrl-7 (Ctrl-/, Ctrl-_) */
-	else if ('3' <= kbinput && kbinput <= '7')
-		retval = kbinput - 24;
-	/* Ctrl-8 (Ctrl-?) */
-	else if (kbinput == '8' || kbinput == '?')
-		retval = DEL_CODE;
-	/* Ctrl-@ (Ctrl-Space, Ctrl-2, Ctrl-`) to Ctrl-_ (Ctrl-/, Ctrl-7) */
-	else if ('@' <= kbinput && kbinput <= '_')
-		retval = kbinput - '@';
-	/* Ctrl-` (Ctrl-2, Ctrl-Space, Ctrl-@) to Ctrl-~ (Ctrl-6, Ctrl-^) */
-	else if ('`' <= kbinput && kbinput <= '~')
-		retval = kbinput - '`';
-	else
-		retval = kbinput;
+		return 0;
+	if (kbinput == '/')
+		return 31;
 
-	return retval;
+	return kbinput;
 }
 
 /* Read in a stream of characters verbatim, and return the length of the
@@ -1532,7 +1537,7 @@ int *get_verbatim_kbinput(WINDOW *win, size_t *kbinput_len)
 	 * don't get extended keypad values. */
 	if (ISSET(PRESERVE))
 		disable_flow_control();
-	if (!ISSET(REBIND_KEYPAD))
+	if (!ISSET(RAW_SEQUENCES))
 		keypad(win, FALSE);
 
 	/* Read in one keycode, or one or two escapes. */
@@ -1551,7 +1556,7 @@ int *get_verbatim_kbinput(WINDOW *win, size_t *kbinput_len)
 		enable_flow_control();
 	/* Use the global window pointers, because a resize may have freed
 	 * the data that the win parameter points to. */
-	if (!ISSET(REBIND_KEYPAD)) {
+	if (!ISSET(RAW_SEQUENCES)) {
 		keypad(edit, TRUE);
 		keypad(bottomwin, TRUE);
 	}
@@ -1669,65 +1674,56 @@ int get_mouseinput(int *mouse_y, int *mouse_x, bool allow_shortcuts)
 		 * to figure out which shortcut was released on/clicked and put
 		 * back the equivalent keystroke(s) for it. */
 		if (allow_shortcuts && !ISSET(NO_HELP) && in_bottomwin) {
-			int i;
-				/* The width of all the shortcuts, except for the last
-				 * two, in the shortcut list in bottomwin. */
-			int j;
-				/* The calculated index number of the clicked item. */
+			int width;
+				/* The width of each shortcut item, except the last two. */
+			int index;
+				/* The calculated index of the clicked item. */
 			size_t number;
-				/* The number of available shortcuts in the current menu. */
+				/* The number of shortcut items that get displayed. */
 
-			/* Translate the mouse event coordinates so that they're
-			 * relative to bottomwin. */
+			/* Translate the coordinates to become relative to bottomwin. */
 			wmouse_trafo(bottomwin, mouse_y, mouse_x, FALSE);
 
-			/* Handle releases/clicks of the first mouse button on the
-			 * statusbar elsewhere. */
+			/* Clicks on the status bar are handled elsewhere, so
+			 * restore the untranslated mouse-event coordinates. */
 			if (*mouse_y == 0) {
-				/* Restore the untranslated mouse event coordinates, so
-				 * that they're relative to the entire screen again. */
 				*mouse_x = mevent.x - margin;
 				*mouse_y = mevent.y;
-
 				return 0;
 			}
 
-			/* Determine how many shortcuts are being shown. */
+			/* Determine how many shortcuts will be shown. */
 			number = length_of_list(currmenu);
-
 			if (number > MAIN_VISIBLE)
 				number = MAIN_VISIBLE;
 
-			/* Calculate the width of all of the shortcuts in the list
-			 * except for the last two, which are longer by (COLS % i)
-			 * columns so as to not waste space. */
+			/* Calculate the width of each non-rightmost shortcut item;
+			 * the rightmost ones will "absorb" any remaining slack. */
 			if (number < 2)
-				i = COLS / (MAIN_VISIBLE / 2);
+				width = COLS / (MAIN_VISIBLE / 2);
 			else
-				i = COLS / ((number / 2) + (number % 2));
+				width = COLS / ((number / 2) + (number % 2));
 
 			/* Calculate the one-based index in the shortcut list. */
-			j = (*mouse_x / i) * 2 + *mouse_y;
+			index = (*mouse_x / width) * 2 + *mouse_y;
 
 			/* Adjust the index if we hit the last two wider ones. */
-			if ((j > number) && (*mouse_x % i < COLS % i))
-				j -= 2;
+			if ((index > number) && (*mouse_x % width < COLS % width))
+				index -= 2;
 
-			/* Ignore releases/clicks of the first mouse button beyond
-			 * the last shortcut. */
-			if (j > number)
+			/* Ignore clicks beyond the last shortcut. */
+			if (index > number)
 				return 2;
 
 			/* Go through the list of functions to determine which
-			 * shortcut in the current menu we released/clicked on. */
+			 * shortcut in the current menu we clicked/released on. */
 			for (f = allfuncs; f != NULL; f = f->next) {
 				if ((f->menus & currmenu) == 0)
 					continue;
 				if (first_sc_for(currmenu, f->func) == NULL)
 					continue;
 				/* Tick off an actually shown shortcut. */
-				j -= 1;
-				if (j == 0)
+				if (--index == 0)
 					break;
 			}
 
@@ -1738,8 +1734,7 @@ int get_mouseinput(int *mouse_y, int *mouse_x, bool allow_shortcuts)
 			}
 			return 1;
 		} else
-			/* Handle releases/clicks of the first mouse button that
-			 * aren't on the current shortcut list elsewhere. */
+			/* Clicks outside of bottomwin are handled elsewhere. */
 			return 0;
 	}
 #if NCURSES_MOUSE_VERSION >= 2
@@ -1750,27 +1745,21 @@ int get_mouseinput(int *mouse_y, int *mouse_x, bool allow_shortcuts)
 		bool in_edit = wenclose(edit, *mouse_y, *mouse_x);
 
 		if (in_bottomwin)
-			/* Translate the mouse event coordinates so that they're
-			 * relative to bottomwin. */
+			/* Translate the coordinates to become relative to bottomwin. */
 			wmouse_trafo(bottomwin, mouse_y, mouse_x, FALSE);
 
 		if (in_edit || (in_bottomwin && *mouse_y == 0)) {
-			int i;
-
 			/* One roll of the mouse wheel should move three lines. */
-			for (i = 0; i < 3; i++)
+			for (int count = 1; count <= 3; count++)
 				unget_kbinput((mevent.bstate & BUTTON4_PRESSED) ?
 								KEY_UP : KEY_DOWN, FALSE);
-
 			return 1;
 		} else
-			/* Ignore presses of the fourth mouse button and presses of
-			 * the fifth mouse buttons that aren't on the edit window or
-			 * the statusbar. */
+			/* Ignore presses of the fourth and fifth mouse buttons
+			 * that aren't on the edit window or the status bar. */
 			return 2;
 	}
 #endif
-
 	/* Ignore all other mouse events. */
 	return 2;
 }
@@ -1874,8 +1863,11 @@ void check_statusblank(void)
  * at most span columns.  column is zero-based, and span is one-based, so
  * span == 0 means you get "" returned.  The returned string is dynamically
  * allocated, and should be freed.  If isdata is TRUE, the caller might put
- * "$" at the beginning or end of the line if it's too long. */
-char *display_string(const char *buf, size_t column, size_t span, bool isdata)
+ * "<" at the beginning or ">" at the end of the line if it's too long.  If
+ * isprompt is TRUE, the caller might put ">" at the end of the line if it's
+ * too long. */
+char *display_string(const char *buf, size_t column, size_t span,
+						bool isdata, bool isprompt)
 {
 	size_t start_index = actual_x(buf, column);
 		/* The index of the first character that the caller wishes to show. */
@@ -1897,7 +1889,7 @@ char *display_string(const char *buf, size_t column, size_t span, bool isdata)
 	converted = charalloc(strlen(buf) * (MAXCHARLEN + tabsize) + 1);
 
 	/* If the first character starts before the left edge, or would be
-	 * overwritten by a "$" token, then show placeholders instead. */
+	 * overwritten by a "<" token, then show placeholders instead. */
 	if (*buf != '\0' && *buf != '\t' && (start_col < column ||
 						(start_col > 0 && isdata && !ISSET(SOFTWRAP)))) {
 		if (is_cntrl_mbchar(buf)) {
@@ -1914,8 +1906,8 @@ char *display_string(const char *buf, size_t column, size_t span, bool isdata)
 				column++;
 			}
 
-			/* Display the right half of a two-column character as '<'. */
-			converted[index++] = '<';
+			/* Display the right half of a two-column character as ']'. */
+			converted[index++] = ']';
 			column++;
 			buf += parse_mbchar(buf, NULL, NULL);
 		}
@@ -1929,9 +1921,9 @@ char *display_string(const char *buf, size_t column, size_t span, bool isdata)
 			/* Show a space as a visible character, or as a space. */
 #ifndef NANO_TINY
 			if (ISSET(WHITESPACE_DISPLAY)) {
-				int i = whitespace_len[0];
+				int i = whitelen[0];
 
-				while (i < whitespace_len[0] + whitespace_len[1])
+				while (i < whitelen[0] + whitelen[1])
 					converted[index++] = whitespace[i++];
 			} else
 #endif
@@ -1947,7 +1939,7 @@ char *display_string(const char *buf, size_t column, size_t span, bool isdata)
 						column == start_col)) {
 				int i = 0;
 
-				while (i < whitespace_len[0])
+				while (i < whitelen[0])
 					converted[index++] = whitespace[i++];
 			} else
 #endif
@@ -1998,14 +1990,17 @@ char *display_string(const char *buf, size_t column, size_t span, bool isdata)
 			buf += charlength + 7;
 	}
 
-	/* If there is more text than can be shown, make room for the $ or >. */
-	if (*buf != '\0' && (column > beyond || (isdata && !ISSET(SOFTWRAP)))) {
-		index = move_mbleft(converted, index);
+	/* If there is more text than can be shown, make room for the ">". */
+	if (column > beyond || (*buf != '\0' && (isprompt ||
+					(isdata && !ISSET(SOFTWRAP))))) {
+		do {
+			index = move_mbleft(converted, index);
+		} while (mbwidth(converted + index) == 0);
 
 #ifdef ENABLE_UTF8
-		/* Display the left half of a two-column character as '>'. */
+		/* Display the left half of a two-column character as '['. */
 		if (mbwidth(converted + index) == 2)
-			converted[index++] = '>';
+			converted[index++] = '[';
 #endif
 	}
 
@@ -2070,7 +2065,7 @@ void titlebar(const char *path)
 	/* Figure out the path, prefix and state strings. */
 #ifdef ENABLE_COLOR
 	if (currmenu == MLINTER) {
-		/* TRANSLATORS: The next four are "labels" in the title bar. */
+		/* TRANSLATORS: The next five are "labels" in the title bar. */
 		prefix = _("Linting --");
 		path = openfile->filename;
 	} else
@@ -2101,6 +2096,8 @@ void titlebar(const char *path)
 			state = _("Modified");
 		else if (ISSET(VIEW_MODE))
 			state = _("View");
+		else if (ISSET(RESTRICTED))
+			state = _("Restricted");
 
 		pluglen = strlenpt(_("Modified")) + 1;
 	}
@@ -2149,13 +2146,13 @@ void titlebar(const char *path)
 
 	/* Print the full path if there's room; otherwise, dottify it. */
 	if (pathlen + pluglen + statelen <= COLS) {
-		caption = display_string(path, 0, pathlen, FALSE);
+		caption = display_string(path, 0, pathlen, FALSE, FALSE);
 		waddstr(topwin, caption);
 		free(caption);
 	} else if (5 + statelen <= COLS) {
 		waddstr(topwin, "...");
 		caption = display_string(path, 3 + pathlen - COLS + statelen,
-										COLS - statelen, FALSE);
+										COLS - statelen, FALSE, FALSE);
 		waddstr(topwin, caption);
 		free(caption);
 	}
@@ -2246,7 +2243,7 @@ void statusline(message_type importance, const char *msg, ...)
 	compound = charalloc(MAXCHARLEN * (COLS + 1));
 	vsnprintf(compound, MAXCHARLEN * (COLS + 1), msg, ap);
 	va_end(ap);
-	message = display_string(compound, 0, COLS, FALSE);
+	message = display_string(compound, 0, COLS, FALSE, FALSE);
 	free(compound);
 
 	start_col = (COLS - strlenpt(message)) / 2;
@@ -2363,7 +2360,7 @@ void place_the_cursor(void)
 
 #ifndef NANO_TINY
 	if (ISSET(SOFTWRAP)) {
-		filestruct *line = openfile->edittop;
+		linestruct *line = openfile->edittop;
 		size_t leftedge;
 
 		row -= chunk_for(openfile->firstcolumn, openfile->edittop);
@@ -2398,7 +2395,7 @@ void place_the_cursor(void)
  * character of this page.  That is, the first character of converted
  * corresponds to character number actual_x(fileptr->data, from_col) of the
  * line. */
-void edit_draw(filestruct *fileptr, const char *converted,
+void edit_draw(linestruct *fileptr, const char *converted,
 		int row, size_t from_col)
 {
 #if !defined(NANO_TINY) || defined(ENABLE_COLOR)
@@ -2459,9 +2456,9 @@ void edit_draw(filestruct *fileptr, const char *converted,
 				/* The place in converted from where painting starts. */
 			regmatch_t match;
 				/* The match positions of a single-line regex. */
-			const filestruct *start_line = fileptr->prev;
+			const linestruct *start_line = fileptr->prev;
 				/* The first line before fileptr that matches 'start'. */
-			const filestruct *end_line = fileptr;
+			const linestruct *end_line = fileptr;
 				/* The line that matches 'end'. */
 			regmatch_t startmatch, endmatch;
 				/* The match positions of the start and end regexes. */
@@ -2689,6 +2686,34 @@ void edit_draw(filestruct *fileptr, const char *converted,
 #endif /* ENABLE_COLOR */
 
 #ifndef NANO_TINY
+	if (stripe_column > from_col && !inhelp &&
+						stripe_column <= from_col + editwincols) {
+		ssize_t target_column = stripe_column - from_col - 1;
+		size_t target_x = actual_x(converted, target_column);
+		char striped_char[MAXCHARLEN];
+		size_t charlen = 1;
+
+		if (*(converted + target_x) != '\0') {
+			charlen = parse_mbchar(converted + target_x, striped_char, NULL);
+			target_column = strnlenpt(converted, target_x);
+		} else if (target_column + 1 == editwincols) {
+			/* Defeat a VTE bug -- see https://sv.gnu.org/bugs/?55896. */
+#ifdef ENABLE_UTF8
+			if (using_utf8()) {
+				striped_char[0] = '\xC2';
+				striped_char[1] = '\xA0';
+				charlen = 2;
+			} else
+#endif
+				striped_char[0] = '.';
+		} else
+			striped_char[0] = ' ';
+
+		wattron(edit, interface_color_pair[GUIDE_STRIPE]);
+		mvwaddnstr(edit, row, margin + target_column, striped_char, charlen);
+		wattroff(edit, interface_color_pair[GUIDE_STRIPE]);
+	}
+
 	/* If the mark is on, and fileptr is at least partially selected, we
 	 * need to paint it. */
 	if (openfile->mark &&
@@ -2696,7 +2721,7 @@ void edit_draw(filestruct *fileptr, const char *converted,
 				fileptr->lineno <= openfile->current->lineno) &&
 				(fileptr->lineno >= openfile->mark->lineno ||
 				fileptr->lineno >= openfile->current->lineno)) {
-		const filestruct *top, *bot;
+		const linestruct *top, *bot;
 			/* The lines where the marked region begins and ends. */
 		size_t top_x, bot_x;
 			/* The x positions where the marked region begins and ends. */
@@ -2745,7 +2770,7 @@ void edit_draw(filestruct *fileptr, const char *converted,
  * line will be passed to update_softwrapped_line().  Likely values of
  * index are current_x or zero.  Return the number of additional rows
  * consumed (when softwrapping). */
-int update_line(filestruct *fileptr, size_t index)
+int update_line(linestruct *fileptr, size_t index)
 {
 	int row = 0;
 		/* The row in the edit window we will be updating. */
@@ -2778,16 +2803,22 @@ int update_line(filestruct *fileptr, size_t index)
 
 	/* Expand the line, replacing tabs with spaces, and control
 	 * characters with their displayed forms. */
-	converted = display_string(fileptr->data, from_col, editwincols, TRUE);
+	converted = display_string(fileptr->data, from_col, editwincols, TRUE, FALSE);
 
 	/* Draw the line. */
 	edit_draw(fileptr, converted, row, from_col);
 	free(converted);
 
-	if (from_col > 0)
-		mvwaddch(edit, row, margin, '$');
-	if (strlenpt(fileptr->data) > from_col + editwincols)
-		mvwaddch(edit, row, COLS - 1, '$');
+	if (from_col > 0) {
+		wattron(edit, hilite_attribute);
+		mvwaddch(edit, row, margin, '<');
+		wattroff(edit, hilite_attribute);
+	}
+	if (strlenpt(fileptr->data) > from_col + editwincols) {
+		wattron(edit, hilite_attribute);
+		mvwaddch(edit, row, COLS - 1, '>');
+		wattroff(edit, hilite_attribute);
+	}
 
 	if (spotlighted && !inhelp)
 		spotlight(light_from_col, light_to_col);
@@ -2799,11 +2830,11 @@ int update_line(filestruct *fileptr, size_t index)
 /* Redraw all the chunks of the given line (as far as they fit onscreen),
  * unless it's edittop, which will be displayed from column firstcolumn.
  * Return the number of additional rows consumed. */
-int update_softwrapped_line(filestruct *fileptr)
+int update_softwrapped_line(linestruct *fileptr)
 {
 	int row = 0;
 		/* The row in the edit window we will write to. */
-	filestruct *line = openfile->edittop;
+	linestruct *line = openfile->edittop;
 		/* An iterator needed to find the relevant row. */
 	int starting_row;
 		/* The first row in the edit window that gets updated. */
@@ -2842,18 +2873,18 @@ int update_softwrapped_line(filestruct *fileptr)
 		blank_row(edit, row, 0, COLS);
 
 		/* Convert the chunk to its displayable form and draw it. */
-		converted = display_string(fileptr->data, from_col, to_col - from_col, TRUE);
+		converted = display_string(fileptr->data, from_col, to_col - from_col,
+									TRUE, FALSE);
 		edit_draw(fileptr, converted, row++, from_col);
 		free(converted);
 
 		if (end_of_line)
 			break;
 
-		/* If the line is softwrapped before its last column, add a ">" just
-		 * after its softwrap breakpoint, unless we're softwrapping at blanks
-		 * and not in the middle of a word. */
+		/* If the line is softwrapped early (because of a two-column character),
+		 * show a "[" placeholder, unless we're softwrapping at blanks. */
 		if (!ISSET(AT_BLANKS) && to_col - from_col < editwincols)
-			mvwaddch(edit, row - 1, to_col - from_col, '>');
+			mvwaddch(edit, row - 1, to_col - from_col, '[');
 
 		from_col = to_col;
 	}
@@ -2882,7 +2913,7 @@ bool line_needs_update(const size_t old_column, const size_t new_column)
  * given column (leftedge).  After moving, leftedge will be set to the
  * starting column of the current chunk.  Return the number of chunks we
  * couldn't move up, which will be zero if we completely succeeded. */
-int go_back_chunks(int nrows, filestruct **line, size_t *leftedge)
+int go_back_chunks(int nrows, linestruct **line, size_t *leftedge)
 {
 	int i;
 
@@ -2897,7 +2928,7 @@ int go_back_chunks(int nrows, filestruct **line, size_t *leftedge)
 			if (chunk >= i)
 				return go_forward_chunks(chunk - i, line, leftedge);
 
-			if (*line == openfile->fileage)
+			if (*line == openfile->filetop)
 				break;
 
 			i -= chunk;
@@ -2919,7 +2950,7 @@ int go_back_chunks(int nrows, filestruct **line, size_t *leftedge)
  * given column (leftedge).  After moving, leftedge will be set to the
  * starting column of the current chunk.  Return the number of chunks we
  * couldn't move down, which will be zero if we completely succeeded. */
-int go_forward_chunks(int nrows, filestruct **line, size_t *leftedge)
+int go_forward_chunks(int nrows, linestruct **line, size_t *leftedge)
 {
 	int i;
 
@@ -2962,7 +2993,7 @@ bool less_than_a_screenful(size_t was_lineno, size_t was_leftedge)
 {
 #ifndef NANO_TINY
 	if (ISSET(SOFTWRAP)) {
-		filestruct *line = openfile->current;
+		linestruct *line = openfile->current;
 		size_t leftedge = leftedge_for(xplustabs(), openfile->current);
 		int rows_left = go_back_chunks(editwinrows - 1, &line, &leftedge);
 
@@ -2977,7 +3008,7 @@ bool less_than_a_screenful(size_t was_lineno, size_t was_leftedge)
  * draw the relevant content on the resultant blank row. */
 void edit_scroll(bool direction)
 {
-	filestruct *line;
+	linestruct *line;
 	size_t leftedge;
 	int remainder = 0, nrows = 1;
 
@@ -3094,7 +3125,7 @@ size_t get_softwrap_breakpoint(const char *text, size_t leftedge,
 /* Get the row of the softwrapped chunk of the given line that column is on,
  * relative to the first row (zero-based), and return it.  If leftedge isn't
  * NULL, return the leftmost column of the chunk in it. */
-size_t get_chunk_and_edge(size_t column, filestruct *line, size_t *leftedge)
+size_t get_chunk_and_edge(size_t column, linestruct *line, size_t *leftedge)
 {
 	size_t current_chunk = 0, start_col = 0, end_col;
 	bool end_of_line = FALSE;
@@ -3116,7 +3147,7 @@ size_t get_chunk_and_edge(size_t column, filestruct *line, size_t *leftedge)
 
 /* Return the row of the softwrapped chunk of the given line that column is on,
  * relative to the first row (zero-based). */
-size_t chunk_for(size_t column, filestruct *line)
+size_t chunk_for(size_t column, linestruct *line)
 {
 	if (ISSET(SOFTWRAP))
 		return get_chunk_and_edge(column, line, NULL);
@@ -3126,7 +3157,7 @@ size_t chunk_for(size_t column, filestruct *line)
 
 /* Return the leftmost column of the softwrapped chunk of the given line that
  * column is on. */
-size_t leftedge_for(size_t column, filestruct *line)
+size_t leftedge_for(size_t column, linestruct *line)
 {
 	size_t leftedge;
 
@@ -3140,7 +3171,7 @@ size_t leftedge_for(size_t column, filestruct *line)
 
 /* Return the row of the last softwrapped chunk of the given line, relative to
  * the first row (zero-based). */
-size_t number_of_chunks_in(filestruct *line)
+size_t number_of_chunks_in(linestruct *line)
 {
 	return chunk_for((size_t)-1, line);
 }
@@ -3206,7 +3237,7 @@ bool current_is_below_screen(void)
 {
 #ifndef NANO_TINY
 	if (ISSET(SOFTWRAP)) {
-		filestruct *line = openfile->edittop;
+		linestruct *line = openfile->edittop;
 		size_t leftedge = openfile->firstcolumn;
 
 		/* If current[current_x] is more than a screen's worth of lines after
@@ -3231,7 +3262,7 @@ bool current_is_offscreen(void)
 
 /* Update any lines between old_current and current that need to be
  * updated.  Use this if we've moved without changing any text. */
-void edit_redraw(filestruct *old_current, update_type manner)
+void edit_redraw(linestruct *old_current, update_type manner)
 {
 	size_t was_pww = openfile->placewewant;
 
@@ -3239,7 +3270,7 @@ void edit_redraw(filestruct *old_current, update_type manner)
 
 	/* If the current line is offscreen, scroll until it's onscreen. */
 	if (current_is_offscreen()) {
-		adjust_viewport(ISSET(SMOOTH_SCROLL) ? manner : CENTERING);
+		adjust_viewport(ISSET(JUMPY_SCROLLING) ? CENTERING : manner);
 		refresh_needed = TRUE;
 		return;
 	}
@@ -3247,7 +3278,7 @@ void edit_redraw(filestruct *old_current, update_type manner)
 #ifndef NANO_TINY
 	/* If the mark is on, update all lines between old_current and current. */
 	if (openfile->mark) {
-		filestruct *line = old_current;
+		linestruct *line = old_current;
 
 		while (line != openfile->current) {
 			update_line(line, 0);
@@ -3274,7 +3305,7 @@ void edit_redraw(filestruct *old_current, update_type manner)
  * if we've moved and changed text. */
 void edit_refresh(void)
 {
-	filestruct *line;
+	linestruct *line;
 	int row = 0;
 
 #ifdef ENABLE_COLOR
@@ -3285,7 +3316,7 @@ void edit_refresh(void)
 
 	/* If the current line is out of view, get it back on screen. */
 	if (current_is_offscreen())
-		adjust_viewport((focusing || !ISSET(SMOOTH_SCROLL)) ? CENTERING : FLOWING);
+		adjust_viewport((focusing || ISSET(JUMPY_SCROLLING)) ? CENTERING : FLOWING);
 
 	line = openfile->edittop;
 
@@ -3383,7 +3414,7 @@ void do_cursorpos(bool force)
 	saved_byte = openfile->current->data[openfile->current_x];
 	openfile->current->data[openfile->current_x] = '\0';
 
-	sum = get_totsize(openfile->fileage, openfile->current);
+	sum = get_totsize(openfile->filetop, openfile->current);
 
 	openfile->current->data[openfile->current_x] = saved_byte;
 
@@ -3426,8 +3457,9 @@ void enable_waiting(void)
 /* Highlight the text between from_col and to_col. */
 void spotlight(size_t from_col, size_t to_col)
 {
+	size_t right_edge;
+	bool overshoots = FALSE;
 	char *word;
-	size_t word_span, room;
 
 	place_the_cursor();
 
@@ -3438,29 +3470,28 @@ void spotlight(size_t from_col, size_t to_col)
 	}
 #endif
 
+	right_edge = get_page_start(from_col) + editwincols;
+
+	/* Limit the end column to the edge of the screen. */
+	if (to_col > right_edge) {
+		to_col = right_edge;
+		overshoots = TRUE;
+	}
+
 	/* This is so we can show zero-length matches. */
 	if (to_col == from_col) {
 		word = mallocstrcpy(NULL, " ");
 		to_col++;
 	} else
 		word = display_string(openfile->current->data, from_col,
-								to_col - from_col, FALSE);
-
-	word_span = strlenpt(word);
-
-	/* Compute the number of columns that are available for the word. */
-	room = editwincols + get_page_start(from_col) - from_col;
-
-	/* If the word is partially offscreen, reserve space for the "$". */
-	if (word_span > room)
-		room--;
+								to_col - from_col, FALSE, overshoots);
 
 	wattron(edit, interface_color_pair[SELECTED_TEXT]);
 
-	waddnstr(edit, word, actual_x(word, room));
+	waddnstr(edit, word, actual_x(word, to_col));
 
-	if (word_span > room)
-		waddch(edit, '$');
+	if (overshoots)
+		mvwaddch(edit, openfile->current_y, COLS - 1, '>');
 
 	wattroff(edit, interface_color_pair[SELECTED_TEXT]);
 
@@ -3497,7 +3528,7 @@ void spotlight_softwrapped(size_t from_col, size_t to_col)
 			break_col++;
 		} else
 			word = display_string(openfile->current->data, from_col,
-										break_col - from_col, FALSE);
+										break_col - from_col, FALSE, FALSE);
 
 		wattron(edit, interface_color_pair[SELECTED_TEXT]);
 
@@ -3528,8 +3559,8 @@ void spotlight_softwrapped(size_t from_col, size_t to_col)
  * are FALSE. */
 void do_credits(void)
 {
-	bool old_more_space = ISSET(MORE_SPACE);
-	bool old_no_help = ISSET(NO_HELP);
+	bool with_empty_line = ISSET(EMPTY_LINE);
+	bool with_help = !ISSET(NO_HELP);
 	int kbinput = ERR, crpos = 0, xlpos = 0;
 	const char *credits[CREDIT_LEN] = {
 		NULL,                /* "The nano text editor" */
@@ -3579,7 +3610,7 @@ void do_credits(void)
 		"",
 		"",
 		"",
-		"(C) 2018",
+		"(C) 2019",
 		"Free Software Foundation, Inc.",
 		"",
 		"",
@@ -3600,8 +3631,8 @@ void do_credits(void)
 		N_("Thank you for using nano!")
 	};
 
-	if (!old_more_space || !old_no_help) {
-		SET(MORE_SPACE);
+	if (with_empty_line || with_help) {
+		UNSET(EMPTY_LINE);
 		SET(NO_HELP);
 		window_init();
 	}
@@ -3659,9 +3690,9 @@ void do_credits(void)
 	if (kbinput != ERR)
 		ungetch(kbinput);
 
-	if (!old_more_space)
-		UNSET(MORE_SPACE);
-	if (!old_no_help)
+	if (with_empty_line)
+		SET(EMPTY_LINE);
+	if (with_help)
 		UNSET(NO_HELP);
 	window_init();
 

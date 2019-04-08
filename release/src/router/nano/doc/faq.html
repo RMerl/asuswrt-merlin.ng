@@ -32,25 +32,19 @@
   <a href="#3.6">3.6. How can I make the executable smaller? This is too bloated!</a><br>
   <a href="#3.7">3.7. Tell me more about this multibuffer stuff!</a><br>
   <a href="#3.8">3.8. Tell me more about this verbatim input stuff!</a><br>
-  <a href="#3.9a">3.9a. How do I make a .nanorc file that nano will read when I start it?</a><br>
-  <a href="#3.9b">3.9b. How about in Win32?</a>
+  <a href="#3.9">3.9. How do I make a .nanorc file that nano will read when I start it?</a><br>
 </p></blockquote>
 <h3><a href="#4">4. Running</a></h3>
 <blockquote><p>
   <a href="#4.1">4.1. How do I open a file with a name beginning with '+' from the command line?</a><br>
   <a href="#4.2">4.2. Ack! My Backspace/Delete/Enter/Meta/double bucky key doesn't seem to work! What can I do?</a><br>
   <a href="#4.3">4.3. Ack! My numeric keypad's keys don't work properly when NumLock is off! What can I do?</a><br>
-  <a href="#4.4">4.4. Ack! When I hold down a Meta key combination for a while, the character of the held key gets inserted now and then. What gives?</a><br>
-  <a href="#4.5">4.5. How do I type the F13-F16 keys listed in the help viewer? My keyboard only has F1-F12!</a><br>
-  <a href="#4.6">4.6. nano crashes when I type &lt;insert keystrokes here&gt;!</a><br>
-  <a href="#4.7">4.7. nano crashes when I resize my window. How can I fix that?</a><br>
-  <a href="#4.8a">4.8a. With what keystroke can I paste text from the clipboard into nano?</a><br>
-  <a href="#4.8b">4.8b. When I paste text into a document, each line gets indented further than the last. Why? And how can I stop this?</a><br>
-  <a href="#4.8c">4.8c. When I paste from Windows into a remote nano, nano rewraps the lines. What gives?<a><br>
-  <a href="#4.9">4.9. I've compiled nano with color support, but I don't see any color when I run it!</a><br>
-  <a href="#4.10">4.10. How do I make nano my default editor (in Pine, mutt, etc.)?</a><br>
-  <a href="#4.11">4.11. How do I select text for or paste text from the clipboard in an X terminal when I'm running nano in one and nano's mouse support is turned on?</a><br>
-  <a href="#4.12">4.12. On startup I get a message that says "Detected a legacy nano history file".  Now older nano versions can't find my search history!</a>
+  <a href="#4.4">4.4. With what keystroke can I paste text from the clipboard into nano?</a><br>
+  <a href="#4.5">4.5. How do I select text for or paste text from the clipboard when nano's mouse support is turned on?</a><br>
+  <a href="#4.6">4.6. When I paste text into a document, each line gets indented further than the last. Why? And how can I stop this?</a><br>
+  <a href="#4.7">4.7. When I paste from Windows into a remote nano, nano rewraps the lines. What gives?<a><br>
+  <a href="#4.8">4.8. I've compiled nano with color support, but I don't see any color when I run it!</a><br>
+  <a href="#4.9">4.9. How do I make nano my default editor (in Pine, mutt, etc.)?</a><br>
 </p></blockquote>
 <h3><a href="#5">5. Internationalization</a></h3>
 <blockquote><p>
@@ -77,7 +71,7 @@
 
 <h1><a name="1"></a>1. General</h1>
 <h3><a name="1.1"></a>1.1. What is GNU nano?</h3>
-<blockquote><p>GNU nano is designed to be a free replacement for the Pico text editor, part of the Pine email suite from <a href="http://www.washington.edu/pine/">The University of Washington</a>. It aims to &quot;emulate Pico as closely as possible and then include extra functionality&quot;.</p></blockquote>
+<blockquote><p>GNU nano was designed to be a free replacement for the Pico text editor, part of the Pine email suite from <a href="http://www.washington.edu/pine/">The University of Washington</a>. It aimed to &quot;emulate Pico as closely as is reasonable and then include extra functionality&quot;.</p></blockquote>
 <h3><a name="1.2"></a>1.2. What is the history behind nano?</h3>
 <blockquote><p>Funny you should ask!</p>
   <p><b>In the beginning...</b></p>
@@ -91,7 +85,7 @@
 <h3><a name="1.3"></a>1.3. Why the name change from TIP?</h3>
 <blockquote><p>On January 10, 2000, TIP was officially renamed to nano because of a namespace conflict with another program called 'tip'. The original 'tip' program &quot;establishes a full duplex terminal connection to a remote host&quot;, and was included with many older Unix systems (and newer ones like Solaris). The conflict was not noticed at first because there is no 'tip' utility included with most GNU/Linux distributions (where nano was developed).</p></blockquote>
 <h3><a name="1.4"></a>1.4. What is the current version of nano?</h3>
-<blockquote><p>The current version of nano <i>should</i> be <b>3.2</b>.  Of course, you should always check the <a href="https://nano-editor.org/">nano homepage</a> to see what the latest and greatest version is.</p></blockquote>
+<blockquote><p>The current version of nano <i>should</i> be <b>4.0</b>.  Of course, you should always check the <a href="https://nano-editor.org/">nano homepage</a> to see what the latest and greatest version is.</p></blockquote>
 <h3><a name="1.5"></a>1.5. I want to read the man page without having to download the program!</h3>
 <blockquote><p>Jeez, demanding, aren't we? Okay, look <a href="https://nano-editor.org/dist/latest/nano.1.html">here</a>.</p></blockquote>
 <hr width="100%">
@@ -163,7 +157,6 @@
   <b>--disable-wordcomp</b>      Disable the word-completion function
   <b>--disable-wrapping</b>      Disable all hard-wrapping of text</pre>
   <p>There's also the <b>--enable-tiny</b> option which disables everything above, as well as some larger chunks of the program (like the marker code that you use with Control-^ to select text). Also, if you know you aren't going to be using other languages, you can use <b>--disable-nls</b> to disable internationalization and save a few K to a few dozen K depending on whether you have locale support on your system. And finally, there's always good old <b>strip</b> to strip all debugging code and code that exists in libraries on your system.</p>
-  <p>With <b>--disable-wrapping-as-root</b> you can disable any hard-wrapping by default when the user is root, useful to prevent accidentally changing long lines in system configuration files.</p>
 </blockquote>
 <h3><a name="3.7"></a>3.7. Tell me more about this multibuffer stuff!</h3>
 <blockquote><p>To use multiple file buffers, you must not have configured nano with <b>--disable-multibuffer</b> nor with <b>--enable-tiny</b> (use <b>nano -V</b> to check the compilation options). Then when you want to insert a file into its own buffer instead of into the current file, just hit <b>Meta-F</b> after typing <b>^R</b>. If you always want files to be loaded into their own buffers, use the <b>-F</b> or <b>--multibuffer</b> flag when you invoke nano, or add <b>set multibuffer</b> to your .nanorc file.</p>
@@ -171,12 +164,8 @@
 <h3><a name="3.8"></a>3.8. Tell me more about this verbatim input stuff!</h3>
 <blockquote><p>When you want to insert a literal character into the file you're editing, such as a control character that nano usually treats as a command, first press <b>Meta-V</b> (if you're not at a prompt, you'll get the message &quot;Verbatim Input&quot; on the status bar), then press the key(s) that generate the character you want.</p>
   <p>Alternatively, if Unicode support is enabled (see section <a href="#5.3">5.3</a>), you can press <b>Meta-V</b> and then type a six-digit hexadecimal code (from 000000 to 10FFFF, case-insensitive), and the character with the corresponding value will be inserted. The status bar will change to &quot;Unicode Input: ......&quot; when you do this.</p></blockquote>
-<h3><a name="3.9a"></a>3.9a. How do I make a .nanorc file that will be read when I start nano?</h3>
+<h3><a name="3.9"></a>3.9. How do I make a .nanorc file that will be read when I start nano?</h3>
 <blockquote><p>It's not hard at all! But, your nano must <b>not</b> have been compiled with <b>--disable-nanorc</b>. Then simply copy the <b>sample.nanorc</b> that came with the nano source or your nano package (most likely in /usr/doc/nano) to .nanorc in your home directory. If you didn't get one, the syntax of the file is simple. Flags are turned on and off by using the words <b>set</b> and <b>unset</b> plus the long option name for the feature. For example, &quot;set nowrap&quot; or &quot;set smarthome&quot;.</p></blockquote>
-<h3><a name="3.9b"></a>3.9b. How about in Win32?</h3>
-<blockquote><p>If you're using the official nano .zip file and have extracted all the files, you should take the file nano.rc and place it somewhere on your Win32 system (for example, if you have write permission to do so, at the top of C:\).  Then you must create an Environment variable called HOME which points to the directory where you put nano.rc.  In Windows XP, you can get to Environment variables by right-clicking "My Computer" either on the desktop or in the Start Menu, and selecting Properties.  This should bring up the System Properties panel.  Then click the Advanced Tab, and there should be a button called Environment Variables.  Click that to bring up the Environment Variables section. Now, under User Variables you should be able to click the New button, and make a new Variables Name called HOME, with the Variable Value of whatever path you copied nano.rc into (just the directory name; don't add nano.rc onto the end).</p>
-  <p>We're still working on documentation for enabling syntax highlighting on Win32; please bear with us.</p>
-  <p>Note that the nano.rc file must remain Unix-formatted in order for nano to understand it.  In other words, you should probably use only nano to edit its config file.  Other programs like Wordpad and Notepad will convert the file to DOS format when saving, and the latter does not even properly read Unix-formatted files to begin with.</p></blockquote>
 <hr width="100%">
 
 <h1><a name="4"></a>4. Running</h1>
@@ -192,24 +181,18 @@
   <p>Bourne shell users (bash and sh): <b>export TERM=vt100</b><br>
   C Shell users (tcsh and csh): <b>setenv TERM vt100</b></p></blockquote>
 <h3><a name="4.3"></a>4.3. Ack! My numeric keypad's keys don't work properly when NumLock is off! What can I do?</h3>
-<blockquote><p>You can use the <b>-K</b> or <b>--rebindkeypad</b> option on the command line, or add the line <b>set rebindkeypad</b> to your .nanorc. However, nano's mouse support won't work properly if you do any of these things.</p></blockquote>
-<h3><a name="4.4"></a>4.4. Ack! When I hold down a Meta key combination for a while, the character of the held key gets inserted now and then. What gives?</h3>
-<blockquote><p>This was a bug in how nano handled consecutive escape sequences. It should be fixed since version 2.6.0.</p></blockquote>
-<h3><a name="4.5"></a>4.5. How do I type the F13-F16 keys listed in the help viewer? My keyboard only has F1-F12!</h3>
-<blockquote><p>It depends on the terminal type you're using. On some terminals, such as the FreeBSD console, xterm, konsole, and gnome-terminal, Shift-F1 to Shift-F4 will generate F13 to F16. On other terminals, such as the Linux console, rxvt, and Eterm, Shift-F3 to Shift-F6 will generate F13 to F16.</p></blockquote>
-<h3><a name="4.6"></a>4.6. nano crashes when I type &lt;insert keystrokes here&gt;!</h3>
-<blockquote><p>If you aren't trying some bizarre keystroke combination with some bizarre $TERM entry, chances are you have found a bug. You are welcome to submit it to the <a href="mailto:nano-devel@gnu.org">nano-devel</a> list or in the <a href="https://savannah.gnu.org/bugs/?group=nano">bug tracker</a> on Savannah.</p></blockquote>
-<h3><a name="4.7"></a>4.7. nano crashes when I resize my window. How can I fix that?</h3>
-<blockquote><p>Older versions of nano had this problem.  Please upgrade to version 2.7.0 or newer.</p></blockquote>
-<h3><a name="4.8a"></a>4.8a. With what keystroke can I paste text from the clipboard into nano?</h3>
+<blockquote><p>You can use the <b>-K</b> or <b>--rawsequences</b> option on the command line, or add the line <b>set rawsequences</b> to your .nanorc. However, nano's mouse support will be disabled if you do any of these things.</p></blockquote>
+<h3><a name="4.4"></a>4.4. With what keystroke can I paste text from the clipboard into nano?</h3>
 <blockquote><p>In most desktop environments <b>Shift+Insert</b> will paste the contents of the clipboard.</p></blockquote>
-<h3><a name="4.8b"></a>4.8b. When I paste text into a document, each line gets indented further than the last. Why? And how can I stop this?</h3>
+<h3><a name="4.5"></a>4.5. How do I select text for or paste text from the clipboard when nano's mouse support is turned on?</h3>
+<blockquote><p>Try holding down the Shift key and selecting or pasting the text as you normally would.</p></blockquote>
+<h3><a name="4.6"></a>4.6. When I paste text into a document, each line gets indented further than the last. Why? And how can I stop this?</h3>
 <blockquote><p>You have the <i>autoindent</i> feature turned on. Hit <b>Meta-I</b> to turn it off, paste your text, and then hit <b>Meta-I</b> again to turn it back on.</p></blockquote>
-<h3><a name="4.8c"></a>4.8c. When I paste from Windows into a remote nano, nano rewraps the lines. What gives?</h3>
+<h3><a name="4.7"></a>4.7. When I paste from Windows into a remote nano, nano rewraps the lines. What gives?</h3>
 <blockquote><p>When pasting from Windows, in some situations linefeeds are sent instead of carriage returns (Enters). And linefeeds are <b>^J</b>s, which make nano justify (rewrap) the current paragraph. To prevent these linefeeds from causing these unwanted justifications, add this line to your .nanorc on the remote Linux box: <b>unbind ^J main</b> or <b>bind ^J enter main</b>, depending on whether the paste contains CR + LF or only LF.</p></blockquote>
-<h3><a name="4.9"></a>4.9. I've compiled nano with color support, but I don't see any color when I run it!</h3>
-<blockquote><p>If you want nano to actually use color, you have to specify the color configurations you want it to use in your .nanorc. Several example configurations are in the <b>syntax/</b> subdirectory of the nano source, which are normally installed to <b>/usr/local/share/nano/</b>. To enable all of them, uncomment the line <b># include "/usr/local/share/nano/*.nanorc"</b> in your nanorc. See also section <a href="#3.9a">3.9a</a>.</p></blockquote>
-<h3><a name="4.10"></a>4.10. How do I make nano my default editor (in Pine, mutt, etc.)?</h3>
+<h3><a name="4.8"></a>4.8. I've compiled nano with color support, but I don't see any color when I run it!</h3>
+<blockquote><p>If you want nano to actually use color, you have to specify the color configurations you want it to use in your .nanorc. Several example configurations are in the <b>syntax/</b> subdirectory of the nano source, which are normally installed to <b>/usr/local/share/nano/</b>. To enable all of them, uncomment the line <b># include "/usr/local/share/nano/*.nanorc"</b> in your nanorc. See also section <a href="#3.9">3.9</a>.</p></blockquote>
+<h3><a name="4.9"></a>4.9. How do I make nano my default editor (in Pine, mutt, etc.)?</h3>
 <blockquote><p>You need to make nano your $EDITOR. If you want this to be saved, you should put a line like this in your <b>.bashrc</b> if you use bash (or <b>.zshrc</b> if you believe in zsh):</p>
   <p><b>export EDITOR=/usr/local/bin/nano</b></p>
   <p>or, if you use tcsh, put this in your <b>.cshrc</b> file:</p>
@@ -222,12 +205,6 @@
   <p>If you're a mutt user, you should see an effect immediately the next time you log in. No further configuration is needed. However, if you want to let people know you use nano to compose your email messages, you can put a line like this in your <b>.muttrc</b>:</p>
   <p><b>my_hdr X-Composer: nano x.y.z</b></p>
   <p>Again, replace x.y.z with the version of nano you use.</p></blockquote>
-<h3><a name="4.11"></a>4.11. How do I select text for or paste text from the clipboard in an X terminal when I'm running nano in one and nano's mouse support is turned on?</h3>
-<blockquote><p>Try holding down the Shift key and selecting or pasting the text as you normally would.</p></blockquote>
-<h3><a name="4.12"></a>4.12. On startup I get a message that says "Detected a legacy nano history file".  Now older nano versions can't find my search history!</h3>
-<blockquote><p>In nano 2.3.0, cursor-position history was introduced, and both history files now reside in a .nano subdirectory in your home directory.  A newer nano will move an existing search-history file to this new location so it can continue to be used.  This means that if you then try and use an earlier version of nano, it will be unable to see your current search history.  To fix this, run the following command:</p>
-  <p><b>ln -sf ~/.nano/search_history ~/.nano_history</b></p>
-  <p>The "migration service" (moving the search-history file to its new location) has been deleted from nano in late 2017, since version 2.9.0.  The search-history and position-history files will now be looked for first in ~/.nano/ and, when not found there, then in ~/.local/share/nano/.</p></blockquote>
 <hr width="100%">
 
 <h1><a name="5"></a>5. Internationalization</h1>
@@ -243,10 +220,9 @@
 
 <h1><a name="6"></a>6. Advocacy and Licensing</h1>
 <h3><a name="6.1"></a>6.1. Why should I use nano instead of Pico?</h3>
-<blockquote><p>There are many reasons to use nano instead of Pico. A more complete list can be found at the <a href="https://nano-editor.org/">nano homepage</a>.</p></blockquote>
+<blockquote><p>If you want features like undo/redo, syntax highlighting, line numbers, soft-wrapping, opening multiple files at once, an interface localized to your language, or search and replace with support for regular expressions, then you want nano.</p></blockquote>
 <h3><a name="6.2"></a>6.2. Why should I use Pico instead of nano?</h3>
-<blockquote><p>Again, check out the <a href="https://nano-editor.org/">nano homepage</a> for a good summary of reasons. It really is a matter of personal preference as to which editor you should use. If you're the type of person who likes using the original version of a program, then Pico is the editor for you. If you don't mind sacrificing mailer integration with Pine, and are looking for a few more features, as well as a 'better' license in terms of adding your own changes, nano is the way to go.</p>
-<p>Note that the last of these no longer applies to the new version of Pine, <a href="http://www.washington.edu/alpine/">Alpine</a>, which is under the Apache License, version 2.0.</p></blockquote>
+<blockquote><p>If you use your editor only to write emails or other texts and have no need for the above-mentioned features, then Pico will do fine for you.</p></blockquote>
 <h3><a name="6.3"></a>6.3. What is so bad about the older Pine license?</h3>
 <blockquote><p>The U of W license for older versions of Pine and Pico is not considered truly Free Software according to both the Free Software Foundation and the <a href="https://www.debian.org/social_contract#guidelines">Debian Free Software Guidelines</a>. The main problem regards the limitations on distributing derived works: according to UW, you can distribute their software, and you can modify it, but you can not do both, i.e. distribute modified binaries.</p></blockquote>
 <h3><a name="6.4"></a>6.4. Okay, well, what mail program should I use then?</h3>
@@ -257,9 +233,9 @@
 <h1><a name="7"></a>7. Miscellaneous</h1>
 <h3><a name="7.1"></a>7.1. Where can I ask questions or send suggestions?</h3>
 <blockquote><p>There are three mailing lists for nano hosted at <a href="https://savannah.gnu.org/">Savannah</a>: info-nano, help-nano and nano-devel. info-nano is a very low traffic list where new versions of nano are announced (surprise!). help-nano is for getting help with the editor without needing to hear all of the development issues surrounding it. nano-devel is a normally low, sometimes high traffic list for discussing the present and future development of nano. Here are links to where you can sign up for a given list:</p>
-  <p>info-nano - <a href="https://mail.gnu.org/mailman/listinfo/info-nano/">https://mail.gnu.org/mailman/listinfo/info-nano/</a><br>
-  help-nano - <a href="https://mail.gnu.org/mailman/listinfo/help-nano/">https://mail.gnu.org/mailman/listinfo/help-nano/</a><br>
-  nano-devel - <a href="https://mail.gnu.org/mailman/listinfo/nano-devel/">https://mail.gnu.org/mailman/listinfo/nano-devel/</a></p></blockquote>
+  <p>info-nano - <a href="https://lists.gnu.org/mailman/listinfo/info-nano/">https://lists.gnu.org/mailman/listinfo/info-nano/</a><br>
+  help-nano - <a href="https://lists.gnu.org/mailman/listinfo/help-nano/">https://lists.gnu.org/mailman/listinfo/help-nano/</a><br>
+  nano-devel - <a href="https://lists.gnu.org/mailman/listinfo/nano-devel/">https://lists.gnu.org/mailman/listinfo/nano-devel/</a></p></blockquote>
 <h3><a name="7.2"></a>7.3. How do I submit a bug report or patch?</h3>
 <blockquote>
   <p>The best way to submit bugs is through the <a href="https://savannah.gnu.org/bugs/?group=nano">Savannah bug tracker</a>, as you can check whether the bug you are reporting has already been submitted, and it makes it easier for the maintainers to keep track of them.

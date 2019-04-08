@@ -1079,7 +1079,11 @@ void start_ovpn_server(int serverNum)
 			if(fp) {
 				fprintf(fp, "#!/bin/sh\n");
 				//fprintf(fp, ". /rom/easy-rsa/vars\n");
+#ifdef RTCONFIG_OPENSSL11
+				fprintf(fp, "export OPENSSL=\"openssl11\"\n");
+#else
 				fprintf(fp, "export OPENSSL=\"openssl\"\n");
+#endif
 				fprintf(fp, "export GREP=\"grep\"\n");
 				fprintf(fp, "export KEY_CONFIG=\"/rom/easy-rsa/openssl-1.0.0.cnf\"\n");
 				fprintf(fp, "export KEY_DIR=\"/etc/openvpn/server%d\"\n", serverNum);

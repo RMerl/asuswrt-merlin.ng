@@ -54,11 +54,17 @@
 /* Use zlib */
 #undef DISABLE_ZLIB
 
+/* Fuzzing */
+#undef DROPBEAR_FUZZ
+
 /* Define to 1 if you have the `basename' function. */
 #undef HAVE_BASENAME
 
 /* Define to 1 if you have the `clearenv' function. */
 #undef HAVE_CLEARENV
+
+/* Define to 1 if you have the `clock_gettime' function. */
+#undef HAVE_CLOCK_GETTIME
 
 /* Define if gai_strerror() returns const char * */
 #undef HAVE_CONST_GAI_STRERROR_PROTO

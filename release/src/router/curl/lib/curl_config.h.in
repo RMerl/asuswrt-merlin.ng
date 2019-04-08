@@ -190,9 +190,6 @@
 /* Define to 1 if you have a working fcntl O_NONBLOCK function. */
 #undef HAVE_FCNTL_O_NONBLOCK
 
-/* Define to 1 if you have the fdopen function. */
-#undef HAVE_FDOPEN
-
 /* Define to 1 if you have the `fnmatch' function. */
 #undef HAVE_FNMATCH
 
@@ -526,6 +523,9 @@
 /* Define to 1 if you have a working POSIX-style strerror_r function. */
 #undef HAVE_POSIX_STRERROR_R
 
+/* Define to 1 if you have the <proto/bsdsocket.h> header file. */
+#undef HAVE_PROTO_BSDSOCKET_H
+
 /* if you have <pthread.h> */
 #undef HAVE_PTHREAD_H
 
@@ -615,9 +615,6 @@
 
 /* Define to 1 if you have the <stdint.h> header file. */
 #undef HAVE_STDINT_H
-
-/* Define to 1 if you have the <stdio.h> header file. */
-#undef HAVE_STDIO_H
 
 /* Define to 1 if you have the <stdlib.h> header file. */
 #undef HAVE_STDLIB_H
@@ -765,9 +762,6 @@
 
 /* Define to 1 if you have the `wolfSSLv3_client_method' function. */
 #undef HAVE_WOLFSSLV3_CLIENT_METHOD
-
-/* Define to 1 if you have the `wolfSSL_CTX_UseSupportedCurve' function. */
-#undef HAVE_WOLFSSL_CTX_USESUPPORTEDCURVE
 
 /* Define to 1 if you have the `wolfSSL_get_peer_certificate' function. */
 #undef HAVE_WOLFSSL_GET_PEER_CERTIFICATE
@@ -925,14 +919,17 @@
 /* Define to 1 if you can safely include both <sys/time.h> and <time.h>. */
 #undef TIME_WITH_SYS_TIME
 
+/* to enable alt-svc */
+#undef USE_ALTSVC
+
+/* if AmiSSL is in use */
+#undef USE_AMISSL
+
 /* Define to enable c-ares support */
 #undef USE_ARES
 
 /* if CyaSSL/WolfSSL is enabled */
 #undef USE_CYASSL
-
-/* to enable Apple OS native SSL/TLS support */
-#undef USE_DARWINSSL
 
 /* if GnuTLS is enabled */
 #undef USE_GNUTLS
@@ -981,6 +978,9 @@
 
 /* to enable Windows native SSL/TLS support */
 #undef USE_SCHANNEL
+
+/* enable Secure Transport */
+#undef USE_SECTRANSP
 
 /* if you want POSIX threaded DNS lookup */
 #undef USE_THREADS_POSIX

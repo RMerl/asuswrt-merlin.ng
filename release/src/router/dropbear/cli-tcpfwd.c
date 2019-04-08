@@ -40,6 +40,7 @@ const struct ChanType cli_chan_tcpremote = {
 	newtcpforwarded,
 	NULL,
 	NULL,
+	NULL,
 	NULL
 };
 #endif
@@ -53,6 +54,7 @@ static const struct ChanType cli_chan_tcplocal = {
 	1, /* sepfds */
 	"direct-tcpip",
 	tcp_prio_inithandler,
+	NULL,
 	NULL,
 	NULL,
 	NULL
@@ -135,7 +137,7 @@ static int cli_localtcp(const char* listenaddr,
 	tcpinfo->chantype = &cli_chan_tcplocal;
 	tcpinfo->tcp_type = direct;
 
-	ret = listen_tcpfwd(tcpinfo);
+	ret = listen_tcpfwd(tcpinfo, NULL);
 
 	if (ret == DROPBEAR_FAILURE) {
 		m_free(tcpinfo);

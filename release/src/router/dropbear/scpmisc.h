@@ -27,8 +27,8 @@ struct passwd *pwcopy(struct passwd *);
 typedef struct arglist arglist;
 struct arglist {
 	char    **list;
-	int     num;
-	int     nalloc;
+	u_int   num;
+	u_int   nalloc;
 };
 void	 addargs(arglist *, char *, ...);
 void	 replacearg(arglist *, u_int, char *, ...);

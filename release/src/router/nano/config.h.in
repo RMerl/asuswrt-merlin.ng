@@ -1,113 +1,5 @@
 /* config.h.in.  Generated from configure.ac by autoheader.  */
 
-/* CPU and C ABI indicator */
-#ifndef __i386__
-#undef __i386__
-#endif
-#ifndef __x86_64_x32__
-#undef __x86_64_x32__
-#endif
-#ifndef __x86_64__
-#undef __x86_64__
-#endif
-#ifndef __alpha__
-#undef __alpha__
-#endif
-#ifndef __arm__
-#undef __arm__
-#endif
-#ifndef __armhf__
-#undef __armhf__
-#endif
-#ifndef __arm64_ilp32__
-#undef __arm64_ilp32__
-#endif
-#ifndef __arm64__
-#undef __arm64__
-#endif
-#ifndef __hppa__
-#undef __hppa__
-#endif
-#ifndef __hppa64__
-#undef __hppa64__
-#endif
-#ifndef __ia64_ilp32__
-#undef __ia64_ilp32__
-#endif
-#ifndef __ia64__
-#undef __ia64__
-#endif
-#ifndef __m68k__
-#undef __m68k__
-#endif
-#ifndef __mips__
-#undef __mips__
-#endif
-#ifndef __mipsn32__
-#undef __mipsn32__
-#endif
-#ifndef __mips64__
-#undef __mips64__
-#endif
-#ifndef __powerpc__
-#undef __powerpc__
-#endif
-#ifndef __powerpc64__
-#undef __powerpc64__
-#endif
-#ifndef __powerpc64_elfv2__
-#undef __powerpc64_elfv2__
-#endif
-#ifndef __riscv32__
-#undef __riscv32__
-#endif
-#ifndef __riscv64__
-#undef __riscv64__
-#endif
-#ifndef __riscv32_ilp32__
-#undef __riscv32_ilp32__
-#endif
-#ifndef __riscv32_ilp32f__
-#undef __riscv32_ilp32f__
-#endif
-#ifndef __riscv32_ilp32d__
-#undef __riscv32_ilp32d__
-#endif
-#ifndef __riscv64_ilp32__
-#undef __riscv64_ilp32__
-#endif
-#ifndef __riscv64_ilp32f__
-#undef __riscv64_ilp32f__
-#endif
-#ifndef __riscv64_ilp32d__
-#undef __riscv64_ilp32d__
-#endif
-#ifndef __riscv64_lp64__
-#undef __riscv64_lp64__
-#endif
-#ifndef __riscv64_lp64f__
-#undef __riscv64_lp64f__
-#endif
-#ifndef __riscv64_lp64d__
-#undef __riscv64_lp64d__
-#endif
-#ifndef __s390__
-#undef __s390__
-#endif
-#ifndef __s390x__
-#undef __s390x__
-#endif
-#ifndef __sh__
-#undef __sh__
-#endif
-#ifndef __sparc__
-#undef __sparc__
-#endif
-#ifndef __sparc64__
-#undef __sparc64__
-#endif
-
-
 /* Define if building universal (internal helper macro) */
 #undef AC_APPLE_UNIVERSAL_BUILD
 
@@ -166,9 +58,6 @@
 # define DIR_TO_FD(Dir_p) -1
 #endif
 
-
-/* Define this to disable text wrapping as root by default. */
-#undef DISABLE_ROOTWRAPPING
 
 /* Define this to enable the built-in file browser. */
 #undef ENABLE_BROWSER
@@ -397,9 +286,6 @@
 
 /* Define to 1 when the gnulib module wcwidth should be tested. */
 #undef GNULIB_TEST_WCWIDTH
-
-/* Define this if the system supports GNU-style word boundaries in regexes. */
-#undef GNU_WORDBOUNDS
 
 /* Define to 1 if you have 'alloca' after including <alloca.h>, a header that
    may be supplied by this distribution. */

@@ -1,7 +1,7 @@
 /**************************************************************************
  *   browser.c  --  This file is part of GNU nano.                        *
  *                                                                        *
- *   Copyright (C) 2001-2011, 2013-2018 Free Software Foundation, Inc.    *
+ *   Copyright (C) 2001-2011, 2013-2019 Free Software Foundation, Inc.    *
  *   Copyright (C) 2015-2016 Benno Schulenberg                            *
  *                                                                        *
  *   GNU nano is free software: you can redistribute it and/or modify     *
@@ -462,7 +462,7 @@ functionptrtype parse_browser_input(int *kbinput)
 {
 	if (!meta_key) {
 		switch (*kbinput) {
-			case DEL_CODE:
+			case BS_CODE:
 			case '-':
 				return do_page_up;
 			case ' ':
@@ -529,7 +529,7 @@ void browser_refresh(void)
 				/* Whether to put an ellipsis before the filename?  We don't
 				 * waste space on dots when there are fewer than 15 columns. */
 		char *disp = display_string(thename, dots ?
-				namelen + infomaxlen + 4 - longest : 0, longest, FALSE);
+				namelen + infomaxlen + 4 - longest : 0, longest, FALSE, FALSE);
 				/* The filename (or a fragment of it) in displayable format.
 				 * When a fragment, account for dots plus one space padding. */
 
@@ -667,7 +667,7 @@ int filesearch_init(bool forwards)
 
 	/* If something was searched for before, show it between square brackets. */
 	if (*last_search != '\0') {
-		char *disp = display_string(last_search, 0, COLS / 3, FALSE);
+		char *disp = display_string(last_search, 0, COLS / 3, FALSE, FALSE);
 
 		thedefault = charalloc(strlen(disp) + 7);
 		/* We use (COLS / 3) here because we need to see more on the line. */

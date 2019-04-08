@@ -3,6 +3,13 @@
 PID=$$
 SECS=1262278080
 
+if [ -f /usr/sbin/openssl11 ]
+then
+	OPENSSL=/usr/sbin/openssl11
+else
+	OPENSSL=/usr/sbin/openssl
+fi
+
 WAITTIMER=0
 while [ -f "/var/run/gencert.pid" -a $WAITTIMER -lt 14 ]
 do
@@ -118,9 +125,9 @@ fi
 
 
 # create the key
-openssl genrsa -out $KEYNAME.$PID 2048 -config $OPENSSLCNF
+$OPENSSL genpkey -out $KEYNAME.$PID -algorithm rsa -pkeyopt rsa_keygen_bits:2048
 # create certificate request and sign it
-openssl req -new -x509 -key $KEYNAME.$PID -sha256 -out $CERTNAME.$PID -days 3653 -config $OPENSSLCNF
+$OPENSSL req -new -x509 -key $KEYNAME.$PID -sha256 -out $CERTNAME.$PID -days 3653 -config $OPENSSLCNF
 
 # server.pem for WebDav SSL
 cat $KEYNAME.$PID $CERTNAME.$PID > server.pem

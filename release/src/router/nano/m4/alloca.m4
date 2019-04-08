@@ -1,5 +1,5 @@
-# alloca.m4 serial 14
-dnl Copyright (C) 2002-2004, 2006-2007, 2009-2018 Free Software Foundation,
+# alloca.m4 serial 15
+dnl Copyright (C) 2002-2004, 2006-2007, 2009-2019 Free Software Foundation,
 dnl Inc.
 dnl This file is free software; the Free Software Foundation
 dnl gives unlimited permission to copy and/or distribute it,
@@ -37,6 +37,13 @@ AC_DEFUN([gl_FUNC_ALLOCA],
   fi
   AC_SUBST([ALLOCA_H])
   AM_CONDITIONAL([GL_GENERATE_ALLOCA_H], [test -n "$ALLOCA_H"])
+
+  if test $ac_cv_working_alloca_h = yes; then
+    HAVE_ALLOCA_H=1
+  else
+    HAVE_ALLOCA_H=0
+  fi
+  AC_SUBST([HAVE_ALLOCA_H])
 ])
 
 # Prerequisites of lib/alloca.c.

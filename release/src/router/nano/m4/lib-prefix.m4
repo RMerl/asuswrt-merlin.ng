@@ -1,5 +1,5 @@
-# lib-prefix.m4 serial 13
-dnl Copyright (C) 2001-2005, 2008-2018 Free Software Foundation, Inc.
+# lib-prefix.m4 serial 14
+dnl Copyright (C) 2001-2005, 2008-2019 Free Software Foundation, Inc.
 dnl This file is free software; the Free Software Foundation
 dnl gives unlimited permission to copy and/or distribute it,
 dnl with or without modifications, as long as this notice is preserved.
@@ -167,7 +167,7 @@ AC_DEFUN([AC_LIB_PREPARE_MULTILIB],
   dnl $prefix/lib/64 (which is a symlink to either $prefix/lib/sparcv9 or
   dnl $prefix/lib/amd64) and 32-bit libraries go under $prefix/lib.
   AC_REQUIRE([AC_CANONICAL_HOST])
-  AC_REQUIRE([gl_HOST_CPU_C_ABI])
+  AC_REQUIRE([gl_HOST_CPU_C_ABI_32BIT])
 
   case "$host_os" in
     solaris*)
@@ -208,40 +208,36 @@ AC_DEFUN([AC_LIB_PREPARE_MULTILIB],
        *)
          dnl If $CC generates code for a 32-bit ABI, the libraries are
          dnl surely under $prefix/lib, not $prefix/lib64.
-         case "$gl_cv_host_cpu_c_abi" in
-           i386 | arm | armhf | arm64-ilp32 | hppa | ia64-ilp32 | mips | mipsn32 | powerpc | s390 | sparc)
-             ;;
-           *) # x86_64 | arm64 | hppa64 | ia64 | mips64 | powerpc64* | s390x | sparc64 | ...
-             dnl The result is a property of the system. However, non-system
-             dnl compilers sometimes have odd library search paths. Therefore
-             dnl prefer asking /usr/bin/gcc, if available, rather than $CC.
-             searchpath=`(if test -f /usr/bin/gcc \
-                             && LC_ALL=C /usr/bin/gcc -print-search-dirs >/dev/null 2>/dev/null; then \
-                            LC_ALL=C /usr/bin/gcc -print-search-dirs; \
-                          else \
-                            LC_ALL=C $CC -print-search-dirs; \
-                          fi) 2>/dev/null \
-                         | sed -n -e 's,^libraries: ,,p' | sed -e 's,^=,,'`
-             if test -n "$searchpath"; then
-               acl_save_IFS="${IFS= 	}"; IFS=":"
-               for searchdir in $searchpath; do
-                 if test -d "$searchdir"; then
-                   case "$searchdir" in
-                     */lib64/ | */lib64 ) acl_libdirstem=lib64 ;;
-                     */../ | */.. )
-                       # Better ignore directories of this form. They are misleading.
-                       ;;
-                     *) searchdir=`cd "$searchdir" && pwd`
-                        case "$searchdir" in
-                          */lib64 ) acl_libdirstem=lib64 ;;
-                        esac ;;
-                   esac
-                 fi
-               done
-               IFS="$acl_save_IFS"
-             fi
-             ;;
-         esac
+         if test "$HOST_CPU_C_ABI_32BIT" != yes; then
+           dnl The result is a property of the system. However, non-system
+           dnl compilers sometimes have odd library search paths. Therefore
+           dnl prefer asking /usr/bin/gcc, if available, rather than $CC.
+           searchpath=`(if test -f /usr/bin/gcc \
+                           && LC_ALL=C /usr/bin/gcc -print-search-dirs >/dev/null 2>/dev/null; then \
+                          LC_ALL=C /usr/bin/gcc -print-search-dirs; \
+                        else \
+                          LC_ALL=C $CC -print-search-dirs; \
+                        fi) 2>/dev/null \
+                       | sed -n -e 's,^libraries: ,,p' | sed -e 's,^=,,'`
+           if test -n "$searchpath"; then
+             acl_save_IFS="${IFS= 	}"; IFS=":"
+             for searchdir in $searchpath; do
+               if test -d "$searchdir"; then
+                 case "$searchdir" in
+                   */lib64/ | */lib64 ) acl_libdirstem=lib64 ;;
+                   */../ | */.. )
+                     # Better ignore directories of this form. They are misleading.
+                     ;;
+                   *) searchdir=`cd "$searchdir" && pwd`
+                      case "$searchdir" in
+                        */lib64 ) acl_libdirstem=lib64 ;;
+                      esac ;;
+                 esac
+               fi
+             done
+             IFS="$acl_save_IFS"
+           fi
+         fi
          ;;
      esac
      test -n "$acl_libdirstem2" || acl_libdirstem2="$acl_libdirstem"

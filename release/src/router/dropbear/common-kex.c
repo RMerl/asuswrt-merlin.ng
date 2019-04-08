@@ -48,7 +48,6 @@ static void read_kex_algos(void);
 /* helper function for gen_new_keys */
 static void hashkeys(unsigned char *out, unsigned int outlen, 
 		const hash_state * hs, const unsigned char X);
-static void finish_kexhashbuf(void);
 
 
 /* Send our list of algorithms we can use */
@@ -391,6 +390,14 @@ int is_compress_recv() {
 			&& ses.keys->recv.algo_comp == DROPBEAR_COMP_ZLIB_DELAY);
 }
 
+static void* dropbear_zalloc(void* UNUSED(opaque), uInt items, uInt size) {
+	return m_calloc(items, size);
+}
+
+static void dropbear_zfree(void* UNUSED(opaque), void* ptr) {
+	m_free(ptr);
+}
+
 /* Set up new zlib compression streams, close the old ones. Only
  * called from gen_new_keys() */
 static void gen_new_zstream_recv() {
@@ -399,8 +406,8 @@ static void gen_new_zstream_recv() {
 	if (ses.newkeys->recv.algo_comp == DROPBEAR_COMP_ZLIB
 			|| ses.newkeys->recv.algo_comp == DROPBEAR_COMP_ZLIB_DELAY) {
 		ses.newkeys->recv.zstream = (z_streamp)m_malloc(sizeof(z_stream));
-		ses.newkeys->recv.zstream->zalloc = Z_NULL;
-		ses.newkeys->recv.zstream->zfree = Z_NULL;
+		ses.newkeys->recv.zstream->zalloc = dropbear_zalloc;
+		ses.newkeys->recv.zstream->zfree = dropbear_zfree;
 		
 		if (inflateInit(ses.newkeys->recv.zstream) != Z_OK) {
 			dropbear_exit("zlib error");
@@ -423,8 +430,8 @@ static void gen_new_zstream_trans() {
 	if (ses.newkeys->trans.algo_comp == DROPBEAR_COMP_ZLIB
 			|| ses.newkeys->trans.algo_comp == DROPBEAR_COMP_ZLIB_DELAY) {
 		ses.newkeys->trans.zstream = (z_streamp)m_malloc(sizeof(z_stream));
-		ses.newkeys->trans.zstream->zalloc = Z_NULL;
-		ses.newkeys->trans.zstream->zfree = Z_NULL;
+		ses.newkeys->trans.zstream->zalloc = dropbear_zalloc;
+		ses.newkeys->trans.zstream->zfree = dropbear_zfree;
 	
 		if (deflateInit2(ses.newkeys->trans.zstream, Z_DEFAULT_COMPRESSION,
 					Z_DEFLATED, DROPBEAR_ZLIB_WINDOW_BITS, 
@@ -687,6 +694,9 @@ void kexecdh_comb_key(struct kex_ecdh_param *param, buffer *pub_them,
 	/* K, the shared secret */
 	buf_putmpint(ses.kexhashbuf, ses.dh_K);
 
+	ecc_free(Q_them);
+	m_free(Q_them);
+
 	/* calculate the hash H to sign */
 	finish_kexhashbuf();
 }
@@ -761,8 +771,7 @@ void kexcurve25519_comb_key(const struct kex_curve25519_param *param, const buff
 #endif /* DROPBEAR_CURVE25519 */
 
 
-
-static void finish_kexhashbuf(void) {
+void finish_kexhashbuf(void) {
 	hash_state hs;
 	const struct ltc_hash_descriptor *hash_desc = ses.newkeys->algo_kex->hash_desc;
 
@@ -942,6 +951,12 @@ static void read_kex_algos() {
 		ses.newkeys->recv.algo_comp = c2s_comp_algo->val;
 		ses.newkeys->trans.algo_comp = s2c_comp_algo->val;
 	}
+
+#if DROPBEAR_FUZZ
+	if (fuzz.fuzzing) {
+		fuzz_kex_fakealgos();
+	}
+#endif
 
 	/* reserved for future extensions */
 	buf_getint(ses.payload);

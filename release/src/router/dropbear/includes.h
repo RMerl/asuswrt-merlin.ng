@@ -56,6 +56,7 @@
 #include <stdarg.h>
 #include <dirent.h>
 #include <time.h>
+#include <setjmp.h>
 
 #ifdef RTCONFIG_PROTECTION_SERVER
 #include <libptcsrv.h>
@@ -135,7 +136,6 @@
 #include <tommath.h>
 #endif
 
-
 #include "compat.h"
 
 #ifndef HAVE_U_INT8_T
@@ -159,12 +159,18 @@ typedef unsigned int u_int32_t;
 typedef u_int32_t uint32_t;
 #endif /* HAVE_UINT32_T */
 
+#ifndef SIZE_T_MAX
+#define SIZE_T_MAX ULONG_MAX
+#endif /* SIZE_T_MAX */
+
 #ifdef HAVE_LINUX_PKT_SCHED_H
 #include <linux/types.h>
 #include <linux/pkt_sched.h>
 #endif
 
 #include "fake-rfc2553.h"
+
+#include "fuzz.h"
 
 #ifndef LOG_AUTHPRIV
 #define LOG_AUTHPRIV LOG_AUTH

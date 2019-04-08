@@ -1,5 +1,5 @@
 
-          GNU nano -- an enhanced clone of the Pico text editor
+          GNU nano -- a simple editor, inspired by Pico
 
 Overview
 
@@ -7,15 +7,18 @@ Overview
     wonderfully easy-to-use and friendly Pico text editor.
 
     First and foremost was its license: the Pine suite does not use
-    the GPL or a GPL-friendly license, and has unclear restrictions on
-    redistribution.  Because of this, Pine and Pico are not included
-    with many GNU/Linux distributions.  Also, other features (like
-    go-to-line-number or search-and-replace) were unavailable until
-    recently or require a command-line flag.  Yuck.
+    the GPL, and (before using the Apache License) it had unclear
+    restrictions on redistribution.  Because of this, Pine and Pico
+    were not included in many GNU/Linux distributions.  Furthermore,
+    some features (like go-to-line-number or search-and-replace) were
+    unavailable for a long time or require a command-line flag.  Yuck.
 
-    nano aims to solve these problems by emulating the functionality of
-    Pico as closely as possible while addressing the problems above and
-    providing other extra functionality.
+    Nano aimed to solve these problems by: 1) being truly free software
+    by using the GPL, 2) emulating the functionality of Pico as closely
+    as is reasonable, and 3) include extra functionality by default.
+
+    Nowadays, nano wants to be a generally useful editor, with default
+    settings that do not change the file contents automatically.
 
     The nano editor is an official GNU package.  For more information on
     GNU and the Free Software Foundation, please see https://www.gnu.org/.

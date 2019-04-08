@@ -19741,15 +19741,15 @@ int ej_backup_nvram(int eid, webs_t wp, int argc, char_t **argv)
 		if (!v) {
 			v = "";
 		}
-		websWrite(wp, "\t%s: '", k);
+		websWrite(wp, "\t%s: \"", k);
 		websWrite(wp, v);
 //		web_puts((p == NULL) ? "'\n" : "',\n");
-		websWrite(wp, "',\n");
+		websWrite(wp, "\",\n");
 	}
 	free(list);
-	websWrite(wp, "\thttp_id: '");
+	websWrite(wp, "\thttp_id: \"");
 	websWrite(wp, nvram_safe_get("http_id"));
-	websWrite(wp, "'};\n");
+	websWrite(wp, "\"};\n");
 //	web_puts("};\n");
 	return 0;
 }

@@ -3575,30 +3575,6 @@ function checkIPConflict(CompareItem, sourceIP, sourceMask, compareIP, compareMa
 	return ipConflict;
 }
 
-var isNewFW = function(FWVer, check_path, current_path){	//path> 0:stable, 1:beta
-	if (no_update_support) return false;
-
-	var Latest_firmver = FWVer.split("_");
-	// 3004_999_2262-g260cdd9
-	if(typeof Latest_firmver[0] !== "undefined" && typeof Latest_firmver[1] !== "undefined" && typeof Latest_firmver[2] !== "undefined"){
-		var Latest_firm = parseInt(Latest_firmver[0]);
-		var Latest_buildno = parseInt(Latest_firmver[1]);
-		var Latest_extendno = parseInt(Latest_firmver[2].split("-g")[0].replace(/^[0-9]$/,"10$&").replace(/alpha/gi,"1").replace(/beta/gi,"5"));
-
-		current_firm = parseInt('<% nvram_get("buildno"); %>'.split(".")[0].replace(/[.]/gi,""));
-		current_buildno = parseInt('<% nvram_get("buildno"); %>'.split(".")[1].replace(/[.]/gi,""));
-		//current_rcno = parseInt('<% nvram_get("rcno"); %>');
-		current_extendno = parseInt('<% nvram_get("extendno"); %>'.split("-g")[0].replace(/^[0-9]$/,"10$&").replace(/alpha/gi,"1").replace(/beta/gi,"5"));
-		if((current_firm < Latest_firm) ||
-			(current_buildno < Latest_buildno && current_firm == Latest_firm) ||
-			(current_extendno < Latest_extendno && current_buildno == Latest_buildno && current_firm == Latest_firm))
-		{
-			return true;
-		}
-	}
-	return false;
-}
-
 function getBrowser_info(){
 	var browser = {};
         var temp = navigator.userAgent.toUpperCase();

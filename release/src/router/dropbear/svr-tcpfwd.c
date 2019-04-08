@@ -57,6 +57,7 @@ static const struct ChanType svr_chan_tcpremote = {
 	tcp_prio_inithandler,
 	NULL,
 	NULL,
+	NULL,
 	NULL
 };
 
@@ -168,6 +169,7 @@ static int svr_remotetcpreq(int *allocated_listen_port) {
 	unsigned int addrlen;
 	struct TCPListener *tcpinfo = NULL;
 	unsigned int port;
+	struct Listener *listener = NULL;
 
 	TRACE(("enter remotetcpreq"))
 
@@ -208,9 +210,9 @@ static int svr_remotetcpreq(int *allocated_listen_port) {
 		tcpinfo->listenaddr = m_strdup(request_addr);
 	}
 
-	ret = listen_tcpfwd(tcpinfo);
+	ret = listen_tcpfwd(tcpinfo, &listener);
 	if (DROPBEAR_SUCCESS == ret) {
-		tcpinfo->listenport = get_sock_port(ses.listeners[0]->socks[0]);
+		tcpinfo->listenport = get_sock_port(listener->socks[0]);
 		*allocated_listen_port = tcpinfo->listenport;
 	}
 
@@ -237,7 +239,8 @@ const struct ChanType svr_chan_tcpdirect = {
 	newtcpdirect, /* init */
 	NULL, /* checkclose */
 	NULL, /* reqhandler */
-	NULL /* closehandler */
+	NULL, /* closehandler */
+	NULL /* cleanup */
 };
 
 /* Called upon creating a new direct tcp channel (ie we connect out to an

@@ -26,6 +26,7 @@
 
 #include "channel.h"
 #include "list.h"
+#include "listener.h"
 
 struct TCPListener {
 
@@ -69,7 +70,7 @@ void cli_recv_msg_request_success(void);
 void cli_recv_msg_request_failure(void);
 
 /* Common */
-int listen_tcpfwd(struct TCPListener* tcpinfo);
+int listen_tcpfwd(struct TCPListener* tcpinfo, struct Listener **ret_listener);
 int tcp_prio_inithandler(struct Channel* chan);
 
 /* A random identifier */

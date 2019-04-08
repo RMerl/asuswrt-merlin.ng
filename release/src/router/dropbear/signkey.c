@@ -580,6 +580,10 @@ int cmp_base64_key(const unsigned char* keyblob, unsigned int keybloblen,
 
 	/* now we have the actual data */
 	len = line->len - line->pos;
+	if (len == 0) {
+		/* base64_decode doesn't like NULL argument */
+		return DROPBEAR_FAILURE;
+	}
 	decodekeylen = len * 2; /* big to be safe */
 	decodekey = buf_new(decodekeylen);
 
@@ -622,4 +626,9 @@ out:
 	decodekey = NULL;
 	return ret;
 }
+#endif
+
+#if DROPBEAR_FUZZ
+const char * const * fuzz_signkey_names = signkey_names;
+
 #endif

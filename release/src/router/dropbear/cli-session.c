@@ -356,6 +356,7 @@ static void cli_session_cleanup(void) {
 }
 
 static void cli_finished() {
+	TRACE(("cli_finised()"))
 
 	session_cleanup();
 	fprintf(stderr, "Connection to %s@%s:%s closed.\n", cli_opts.username,

@@ -3,11 +3,11 @@
 % Load plain if necessary, i.e., if running under initex.
 \expandafter\ifx\csname fmtname\endcsname\relax\input plain\fi
 %
-\def\texinfoversion{2017-06-04.19}
+\def\texinfoversion{2018-02-12.17}
 %
 % Copyright 1985, 1986, 1988, 1990, 1991, 1992, 1993, 1994, 1995,
 % 1996, 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,
-% 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014, 2015, 2016, 2017
+% 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018
 % Free Software Foundation, Inc.
 %
 % This texinfo.tex file is free software: you can redistribute it and/or
@@ -21,7 +21,7 @@
 % General Public License for more details.
 %
 % You should have received a copy of the GNU General Public License
-% along with this program.  If not, see <http://www.gnu.org/licenses/>.
+% along with this program.  If not, see <https://www.gnu.org/licenses/>.
 %
 % As a special exception, when this file is read by TeX when processing
 % a Texinfo source document, you may use the result without
@@ -30,9 +30,9 @@
 %
 % Please try the latest version of texinfo.tex before submitting bug
 % reports; you can get the latest version from:
-%   http://ftp.gnu.org/gnu/texinfo/ (the Texinfo release area), or
-%   http://ftpmirror.gnu.org/texinfo/ (same, via a mirror), or
-%   http://www.gnu.org/software/texinfo/ (the Texinfo home page)
+%   https://ftp.gnu.org/gnu/texinfo/ (the Texinfo release area), or
+%   https://ftpmirror.gnu.org/texinfo/ (same, via a mirror), or
+%   https://www.gnu.org/software/texinfo/ (the Texinfo home page)
 % The texinfo.tex in any given distribution could well be out
 % of date, so if that's what you're using, please check.
 %
@@ -56,7 +56,7 @@
 % extent.  You can get the existing language-specific files from the
 % full Texinfo distribution.
 %
-% The GNU Texinfo home page is http://www.gnu.org/software/texinfo.
+% The GNU Texinfo home page is https://www.gnu.org/software/texinfo.
 
 
 \message{Loading texinfo [version \texinfoversion]:}
@@ -182,7 +182,7 @@
 % Hyphenation fixes.
 \hyphenation{
   Flor-i-da Ghost-script Ghost-view Mac-OS Post-Script
-  ap-pen-dix bit-map bit-maps
+  auto-ma-ti-cal-ly ap-pen-dix bit-map bit-maps
   data-base data-bases eshell fall-ing half-way long-est man-u-script
   man-u-scripts mini-buf-fer mini-buf-fers over-view par-a-digm
   par-a-digms rath-er rec-tan-gu-lar ro-bot-ics se-vere-ly set-up spa-ces
@@ -2235,6 +2235,20 @@ end
 \font\smallersy=cmsy8
 \def\smallerecsize{0800}
 
+% Fonts for math mode superscripts (7pt).
+\def\sevennominalsize{7pt}
+\setfont\sevenrm\rmshape{7}{1000}{OT1}
+\setfont\seventt\ttshape{10}{700}{OT1TT}
+\setfont\sevenbf\bfshape{10}{700}{OT1}
+\setfont\sevenit\itshape{7}{1000}{OT1IT}
+\setfont\sevensl\slshape{10}{700}{OT1}
+\setfont\sevensf\sfshape{10}{700}{OT1}
+\setfont\sevensc\scshape{10}{700}{OT1}
+\setfont\seventtsl\ttslshape{10}{700}{OT1TT}
+\font\seveni=cmmi7
+\font\sevensy=cmsy7
+\def\sevenecsize{0700}
+
 % Fonts for title page (20.4pt):
 \def\titlenominalsize{20pt}
 \setfont\titlerm\rmbshape{12}{\magstep3}{OT1}
@@ -2368,6 +2382,20 @@ end
 \font\smalleri=cmmi8
 \font\smallersy=cmsy8
 \def\smallerecsize{0800}
+
+% Fonts for math mode superscripts (7pt).
+\def\sevennominalsize{7pt}
+\setfont\sevenrm\rmshape{7}{1000}{OT1}
+\setfont\seventt\ttshape{10}{700}{OT1TT}
+\setfont\sevenbf\bfshape{10}{700}{OT1}
+\setfont\sevenit\itshape{7}{1000}{OT1IT}
+\setfont\sevensl\slshape{10}{700}{OT1}
+\setfont\sevensf\sfshape{10}{700}{OT1}
+\setfont\sevensc\scshape{10}{700}{OT1}
+\setfont\seventtsl\ttslshape{10}{700}{OT1TT}
+\font\seveni=cmmi7
+\font\sevensy=cmsy7
+\def\sevenecsize{0700}
 
 % Fonts for title page (20.4pt):
 \def\titlenominalsize{20pt}
@@ -2503,13 +2531,20 @@ end
 
 
 % In order for the font changes to affect most math symbols and letters,
-% we have to define the \textfont of the standard families.  We don't
-% bother to reset \scriptfont and \scriptscriptfont; awaiting user need.
+% we have to define the \textfont of the standard families.
+% We don't bother to reset \scriptscriptfont; awaiting user need.
 %
 \def\resetmathfonts{%
   \textfont0=\rmfont \textfont1=\ifont \textfont2=\syfont
   \textfont\itfam=\itfont \textfont\slfam=\slfont \textfont\bffam=\bffont
   \textfont\ttfam=\ttfont \textfont\sffam=\sffont
+  %
+  % Fonts for superscript.  Note that the 7pt fonts are used regardless
+  % of the current font size.
+  \scriptfont0=\sevenrm \scriptfont1=\seveni \scriptfont2=\sevensy
+  \scriptfont\itfam=\sevenit \scriptfont\slfam=\sevensl
+  \scriptfont\bffam=\sevenbf \scriptfont\ttfam=\seventt
+  \scriptfont\sffam=\sevensf
 }
 
 %
@@ -2518,6 +2553,9 @@ end
 % of \STYLEfont, instead of just \STYLE.  We do this because \STYLE needs
 % to also set the current \fam for math mode.  Our \STYLE (e.g., \rm)
 % commands hardwire \STYLEfont to set the current font.
+%
+% The fonts used for \ifont are for "math italics"  (\itfont is for italics
+% in regular text).  \syfont is also used in math mode only.
 %
 % Each font-changing command also sets the names \lsize (one size lower)
 % and \lllsize (three sizes lower).  These relative commands are used
@@ -2619,26 +2657,11 @@ end
 % Markup style infrastructure.  \defmarkupstylesetup\INITMACRO will
 % define and register \INITMACRO to be called on markup style changes.
 % \INITMACRO can check \currentmarkupstyle for the innermost
-% style and the set of \ifmarkupSTYLE switches for all styles
-% currently in effect.
-\newif\ifmarkupvar
-\newif\ifmarkupsamp
-\newif\ifmarkupkey
-%\newif\ifmarkupfile % @file == @samp.
-%\newif\ifmarkupoption % @option == @samp.
-\newif\ifmarkupcode
-\newif\ifmarkupkbd
-%\newif\ifmarkupenv % @env == @code.
-%\newif\ifmarkupcommand % @command == @code.
-\newif\ifmarkuptex % @tex (and part of @math, for now).
-\newif\ifmarkupexample
-\newif\ifmarkupverb
-\newif\ifmarkupverbatim
+% style.
 
 \let\currentmarkupstyle\empty
 
 \def\setupmarkupstyle#1{%
-  \csname markup#1true\endcsname
   \def\currentmarkupstyle{#1}%
   \markupstylesetup
 }
@@ -2700,11 +2723,15 @@ end
 % lilypond developers report.  xpdf does work with the regular 0x27.
 %
 \def\codequoteright{%
-  \expandafter\ifx\csname SETtxicodequoteundirected\endcsname\relax
-    \expandafter\ifx\csname SETcodequoteundirected\endcsname\relax
-      '%
+  \ifmonospace
+    \expandafter\ifx\csname SETtxicodequoteundirected\endcsname\relax
+      \expandafter\ifx\csname SETcodequoteundirected\endcsname\relax
+        '%
+      \else \char'15 \fi
     \else \char'15 \fi
-  \else \char'15 \fi
+   \else
+     '%
+   \fi
 }
 %
 % and a similar option for the left quote char vs. a grave accent.
@@ -2712,13 +2739,17 @@ end
 % the code environments to do likewise.
 %
 \def\codequoteleft{%
-  \expandafter\ifx\csname SETtxicodequotebacktick\endcsname\relax
-    \expandafter\ifx\csname SETcodequotebacktick\endcsname\relax
-      % [Knuth] pp. 380,381,391
-      % \relax disables Spanish ligatures ?` and !` of \tt font.
-      \relax`%
+  \ifmonospace
+    \expandafter\ifx\csname SETtxicodequotebacktick\endcsname\relax
+      \expandafter\ifx\csname SETcodequotebacktick\endcsname\relax
+        % [Knuth] pp. 380,381,391
+        % \relax disables Spanish ligatures ?` and !` of \tt font.
+        \relax`%
+      \else \char'22 \fi
     \else \char'22 \fi
-  \else \char'22 \fi
+   \else
+     \relax`%
+   \fi
 }
 
 % Commands to set the quote options.
@@ -5696,10 +5727,13 @@ end
       \advance\dimen@ii by 1\dimen@i
       \ifdim\wd\boxA > \dimen@ii % If the entry doesn't fit in one line
       \ifdim\dimen@ > 0.8\dimen@ii   % due to long index text
-        \dimen@ = 0.7\dimen@ % Try to split the text roughly evenly
+        % Try to split the text roughly evenly.  \dimen@ will be the length of 
+        % the first line.
+        \dimen@ = 0.7\dimen@
         \dimen@ii = \hsize
         \ifnum\dimen@>\dimen@ii
-          % If the entry is too long, use the whole line
+          % If the entry is too long (for example, if it needs more than
+          % two lines), use all the space in the first line.
           \dimen@ = \dimen@ii
         \fi
         \advance\leftskip by 0pt plus 1fill % ragged right
@@ -5709,8 +5743,9 @@ end
         % instead of using \parshape with explicit line lengths, but TeX
         % doesn't seem to provide a way to do such a thing.
         %
-        \leftskip = 1em
-        \parindent = -1em
+        % Indent all lines but the first one.
+        \advance\leftskip by 1em
+        \advance\parindent by -1em
       \fi\fi
       \indent % start paragraph
       \unhbox\boxA
@@ -5965,24 +6000,30 @@ end
     % Split the last of the double-column material.
     \savemarks
     \balancecolumns
-    %
+  }%
+  \eject % call the \output just set
+  \ifdim\pagetotal=0pt
     % Having called \balancecolumns once, we do not
     % want to call it again.  Therefore, reset \output to its normal
     % definition right away.
     \global\output = {\onepageout{\pagecontents\PAGE}}%
-  }%
-  \eject
-  \endgroup % started in \begindoublecolumns
-  \restoremarks
-  % Leave the double-column material on the current page, no automatic
-  % page break.
-  \box\balancedcolumns
-  %
-  % \pagegoal was set to the doubled \vsize above, since we restarted
-  % the current page.  We're now back to normal single-column
-  % typesetting, so reset \pagegoal to the normal \vsize.
-  \global\vsize = \txipageheight %
-  \pagegoal = \txipageheight %
+    %
+    \endgroup % started in \begindoublecolumns
+    \restoremarks
+    % Leave the double-column material on the current page, no automatic
+    % page break.
+    \box\balancedcolumns
+    %
+    % \pagegoal was set to the doubled \vsize above, since we restarted
+    % the current page.  We're now back to normal single-column
+    % typesetting, so reset \pagegoal to the normal \vsize.
+    \global\vsize = \txipageheight %
+    \pagegoal = \txipageheight %
+  \else
+    % We had some left-over material.  This might happen when \doublecolumnout
+    % is called in \balancecolumns.  Try again.
+    \expandafter\enddoublecolumns
+  \fi
 }
 \newbox\balancedcolumns
 \setbox\balancedcolumns=\vbox{shouldnt see this}%
@@ -5997,6 +6038,7 @@ end
   \ifdim\dimen@<5\baselineskip
     % Don't split a short final column in two.
     \setbox2=\vbox{}%
+    \global\setbox\balancedcolumns=\vbox{\pagesofar}%
   \else
     \divide\dimen@ by 2 % target to split to
     \dimen@ii = \dimen@
@@ -6012,15 +6054,15 @@ end
       \repeat
     }%
     % Now the left column is in box 1, and the right column in box 3.
+    %
     % Check whether the left column has come out higher than the page itself.  
     % (Note that we have doubled \vsize for the double columns, so
     % the actual height of the page is 0.5\vsize).
     \ifdim2\ht1>\vsize
-      % Just split the last of the double column material roughly in half.
-      \setbox2=\box0
-      \setbox0 = \vsplit2 to \dimen@ii
-      \setbox0=\vbox to \dimen@ii {\unvbox0\vfill}%
-      \setbox2=\vbox to \dimen@ii {\unvbox2\vfill}%
+      % It appears that we have been called upon to balance too much material.
+      % Output some of it with \doublecolumnout, leaving the rest on the page.
+      \setbox\PAGE=\box0
+      \doublecolumnout
     \else
       % Compare the heights of the two columns.
       \ifdim4\ht1>5\ht3
@@ -6033,10 +6075,10 @@ end
         \setbox2=\vbox to\ht1{\unvbox3\unskip}%
         \setbox0=\vbox to\ht1{\unvbox1\unskip}%
       \fi
+      \global\setbox\balancedcolumns=\vbox{\pagesofar}%
     \fi
   \fi
   %
-  \global\setbox\balancedcolumns=\vbox{\pagesofar}%
 }
 \catcode`\@ = \other
 
@@ -6943,7 +6985,15 @@ end
 % exist, with an empty box.  Let's hope all the numbers have the same width.
 % Also ignore the page number, which is conventionally not printed.
 \def\numeralbox{\setbox0=\hbox{8}\hbox to \wd0{\hfil}}
-\def\partentry#1#2#3#4{\dochapentry{\numeralbox\labelspace#1}{}}
+\def\partentry#1#2#3#4{%
+  % Add stretch and a bonus for breaking the page before the part heading.
+  % This reduces the chance of the page being broken immediately after the
+  % part heading, before a following chapter heading.
+  \vskip 0pt plus 5\baselineskip
+  \penalty-300
+  \vskip 0pt plus -5\baselineskip
+  \dochapentry{\numeralbox\labelspace#1}{}%
+}
 %
 % Parts, in the short toc.
 \def\shortpartentry#1#2#3#4{%
@@ -9434,7 +9484,7 @@ end
 \newif\ifwarnednoepsf
 \newhelp\noepsfhelp{epsf.tex must be installed for images to
   work.  It is also included in the Texinfo distribution, or you can get
-  it from ftp://tug.org/tex/epsf.tex.}
+  it from https://ctan.org/texarchive/macros/texinfo/texinfo/doc/epsf.tex.}
 %
 \def\image#1{%
   \ifx\epsfbox\thisisundefined
@@ -11009,7 +11059,6 @@ directory should work if nowhere else does.}
   \DeclareUnicodeCharacter{2113}{\ensuremath\ell}%
   \DeclareUnicodeCharacter{2118}{\ensuremath\wp}%
   \DeclareUnicodeCharacter{211C}{\ensuremath\Re}%
-  \DeclareUnicodeCharacter{2127}{\ensuremath\mho}%
   \DeclareUnicodeCharacter{2135}{\ensuremath\aleph}%
   \DeclareUnicodeCharacter{2190}{\ensuremath\leftarrow}%
   \DeclareUnicodeCharacter{2191}{\ensuremath\uparrow}%
@@ -11025,7 +11074,6 @@ directory should work if nowhere else does.}
   \DeclareUnicodeCharacter{21AA}{\ensuremath\hookrightarrow}%
   \DeclareUnicodeCharacter{21BC}{\ensuremath\leftharpoonup}%
   \DeclareUnicodeCharacter{21BD}{\ensuremath\leftharpoondown}%
-  \DeclareUnicodeCharacter{21BE}{\ensuremath\upharpoonright}%
   \DeclareUnicodeCharacter{21C0}{\ensuremath\rightharpoonup}%
   \DeclareUnicodeCharacter{21C1}{\ensuremath\rightharpoondown}%
   \DeclareUnicodeCharacter{21CC}{\ensuremath\rightleftharpoons}%
@@ -11034,8 +11082,6 @@ directory should work if nowhere else does.}
   \DeclareUnicodeCharacter{21D3}{\ensuremath\Downarrow}%
   \DeclareUnicodeCharacter{21D4}{\ensuremath\Leftrightarrow}%
   \DeclareUnicodeCharacter{21D5}{\ensuremath\Updownarrow}%
-  \DeclareUnicodeCharacter{21DD}{\ensuremath\leadsto}%
-  \DeclareUnicodeCharacter{2201}{\ensuremath\complement}%
   \DeclareUnicodeCharacter{2202}{\ensuremath\partial}%
   \DeclareUnicodeCharacter{2205}{\ensuremath\emptyset}%
   \DeclareUnicodeCharacter{2207}{\ensuremath\nabla}%
@@ -11069,8 +11115,6 @@ directory should work if nowhere else does.}
   \DeclareUnicodeCharacter{2283}{\ensuremath\supset}%
   \DeclareUnicodeCharacter{2286}{\ensuremath\subseteq}%
   \DeclareUnicodeCharacter{228E}{\ensuremath\uplus}%
-  \DeclareUnicodeCharacter{228F}{\ensuremath\sqsubset}%
-  \DeclareUnicodeCharacter{2290}{\ensuremath\sqsupset}%
   \DeclareUnicodeCharacter{2291}{\ensuremath\sqsubseteq}%
   \DeclareUnicodeCharacter{2292}{\ensuremath\sqsupseteq}%
   \DeclareUnicodeCharacter{2293}{\ensuremath\sqcap}%
@@ -11085,8 +11129,6 @@ directory should work if nowhere else does.}
   \DeclareUnicodeCharacter{22A4}{\ensuremath\ptextop}%
   \DeclareUnicodeCharacter{22A5}{\ensuremath\bot}%
   \DeclareUnicodeCharacter{22A8}{\ensuremath\models}%
-  \DeclareUnicodeCharacter{22B4}{\ensuremath\unlhd}%
-  \DeclareUnicodeCharacter{22B5}{\ensuremath\unrhd}%
   \DeclareUnicodeCharacter{22C0}{\ensuremath\bigwedge}%
   \DeclareUnicodeCharacter{22C1}{\ensuremath\bigvee}%
   \DeclareUnicodeCharacter{22C2}{\ensuremath\bigcap}%
@@ -11102,12 +11144,11 @@ directory should work if nowhere else does.}
   \DeclareUnicodeCharacter{2322}{\ensuremath\frown}%
   \DeclareUnicodeCharacter{2323}{\ensuremath\smile}%
   %
-  \DeclareUnicodeCharacter{25A1}{\ensuremath\Box}%
   \DeclareUnicodeCharacter{25B3}{\ensuremath\triangle}%
   \DeclareUnicodeCharacter{25B7}{\ensuremath\triangleright}%
   \DeclareUnicodeCharacter{25BD}{\ensuremath\bigtriangledown}%
   \DeclareUnicodeCharacter{25C1}{\ensuremath\triangleleft}%
-  \DeclareUnicodeCharacter{25C7}{\ensuremath\Diamond}%
+  \DeclareUnicodeCharacter{25C7}{\ensuremath\diamond}%
   \DeclareUnicodeCharacter{2660}{\ensuremath\spadesuit}%
   \DeclareUnicodeCharacter{2661}{\ensuremath\heartsuit}%
   \DeclareUnicodeCharacter{2662}{\ensuremath\diamondsuit}%
@@ -11129,7 +11170,6 @@ directory should work if nowhere else does.}
   \DeclareUnicodeCharacter{2A02}{\ensuremath\bigotimes}%
   \DeclareUnicodeCharacter{2A04}{\ensuremath\biguplus}%
   \DeclareUnicodeCharacter{2A06}{\ensuremath\bigsqcup}%
-  \DeclareUnicodeCharacter{2A1D}{\ensuremath\Join}%
   \DeclareUnicodeCharacter{2A3F}{\ensuremath\amalg}%
   \DeclareUnicodeCharacter{2AAF}{\ensuremath\preceq}%
   \DeclareUnicodeCharacter{2AB0}{\ensuremath\succeq}%
@@ -11423,9 +11463,11 @@ directory should work if nowhere else does.}
   %
   \dimen0 = #1\relax
   \advance\dimen0 by \voffset
+  \advance\dimen0 by 1in % reference point for DVI is 1 inch from top of page
   %
   \dimen2 = \hsize
   \advance\dimen2 by \normaloffset
+  \advance\dimen2 by 1in % reference point is 1 inch from left edge of page
   %
   \internalpagesizes{#1}{\hsize}%
                     {\voffset}{\normaloffset}%

@@ -1,6 +1,37 @@
 Asuswrt-Merlin 384/NG Changelog
 ===============================
 
+384.11 (xx-xxx-2019)
+  - NEW: NTP daemon on the router, to allow your LAN clients to
+         synchronize their clocks with it.  Dnsmasq will also
+         announce it through DHCP option 42, for clients using
+         that parameter.
+  - UPDATED: RT-AX88U to 384_5951 GPL.
+  - UPDATED: Nano 4.0.
+  - UPDATED: Curl 7.64.1.
+  - UPDATED: Dropbear 2019.78.
+  - CHANGED: Replaced the custom ntpclient with a proper ntpd
+             implementation, for reduced memory footprint and
+             increased accuracy.
+  - CHANGED: Re-designed firmware upgrade page, moving the schedule
+             option to that page, and removed support for the Beta
+             channel.
+  - CHANGED: Removed popup messages showing on the DDNS page when
+             a service state change was detected.  Report it within
+             the page instead.
+  - CHANGED: Report available firmware version within the new firmware
+             notification popup.
+  - CHANGED: Moved LED control (formerly known as Stealth Mode) to
+             the System page.
+  - CHANGED: Do not restart whole network whenever changing an IP
+             reservation on the Networkmap card.
+  - CHANGED: Allow URLs up to 64 chars long on the URL filter.
+  - FIXED: Reboot scheduler would sometime get stuck or corrupt
+           plugged USB drives.  Now doing a more thorough
+           shutdown of services, should hopefully make it
+           more reliable.
+
+
 384.10_2 (3-Apr-2019)
   - CHANGED: Increased OpenVPN interface queue length from 100
              to 1000 bytes, to reduce the amount of dropped

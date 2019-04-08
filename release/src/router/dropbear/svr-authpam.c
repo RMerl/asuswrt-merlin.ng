@@ -275,6 +275,7 @@ void svr_auth_pam(int valid_user) {
 		/* PAM auth succeeded but the username isn't allowed in for another reason
 		(checkusername() failed) */
 		send_msg_userauth_failure(0, 1);
+		goto cleanup;
 	}
 
 	/* successful authentication */

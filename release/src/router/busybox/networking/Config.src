@@ -691,6 +691,13 @@ config FEATURE_NTPD_CONF
 	  Make ntpd look in /etc/ntp.conf for peers. Only "server address"
 	  is supported.
 
+config FEATURE_NTPD_NTP_ALIAS
+	bool "Enable ntp alias for ntpd"
+	default n
+	depends on NTPD
+	help
+	  The NTP client/server daemon.
+
 config PSCAN
 	bool "pscan"
 	default y

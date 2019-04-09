@@ -1991,12 +1991,6 @@ function pullPingTargetList(obj){
 					</td>
 				</tr>
 				<tr>
-					<th>Secondary NTP Server</th>
-					<td>
-						<input type="text" maxlength="31" class="input_32_table" name="ntp_server1" value="<% nvram_get("ntp_server1"); %>" onKeyPress="return validator.isString(this, event);" autocorrect="off" autocapitalize="off">
-					</td>
-				</tr>
-				<tr>
 					<th><#System_AutoLogout#></th>
 					<td>
 						<input type="text" class="input_3_table" maxlength="3" name="http_autologout" value='<% nvram_get("http_autologout"); %>' onKeyPress="return validator.isNumber(this,event);" autocorrect="off" autocapitalize="off"> <#Minute#>

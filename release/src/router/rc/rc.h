@@ -1621,9 +1621,11 @@ extern void dnsfilter_setup_dnsmasq(FILE *fp);
 extern void dnsfilter_dot_rules(FILE *fp, char *lan_if);
 
 // ntpd.c
+#ifdef RTCONFIG_NTPD
 extern int start_ntpd(void);
 extern void stop_ntpd(void);
 extern void ntp_time_synced(int argc, char *argv[]);
+#endif
 
 // lan.c
 #ifdef RTCONFIG_TIMEMACHINE

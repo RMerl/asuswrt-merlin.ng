@@ -816,8 +816,11 @@ static const applets_t applets[] = {
 #endif
 	{ "halt",			reboothalt_main			},
 	{ "reboot",			reboothalt_main			},
+#ifndef RTCONFIG_NTPD
 	{ "ntp", 			ntp_main			},
+#else
 	{ "ntp_synced",			ntp_time_synced			},
+#endif
 #ifdef RTCONFIG_NETOOL
 	{ "netool", 			netool_main			},
 #endif

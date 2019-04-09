@@ -602,7 +602,9 @@ endif
 ifeq ($(RTCONFIG_DNSFILTER),y)
 OBJS += dnsfilter.o
 endif
+ifeq ($(RTCONFIG_NTPD),y)
 OBJS += ntpd.o
+endif
 
 ifeq ($(RTCONFIG_BCMARM),y)
 ifeq ($(RTCONFIG_QTN),y)
@@ -747,8 +749,11 @@ ifeq ($(RTCONFIG_QTN),y)
 	@cd $(INSTALLDIR)/sbin && ln -sf rc start_qtn_stateless
 	@cd $(INSTALLDIR)/sbin && ln -sf rc restart_qtn
 endif
+ifneq ($(RTCONFIG_NTPD),y)
 	@cd $(INSTALLDIR)/sbin && ln -sf rc ntp
+else
 	@cd $(INSTALLDIR)/sbin && ln -sf rc ntp_synced
+endif
 	@cd $(INSTALLDIR)/sbin && ln -sf rc autodet
 ifeq ($(RTCONFIG_DETWAN),y)
 	@cd $(INSTALLDIR)/sbin && ln -sf rc detwan

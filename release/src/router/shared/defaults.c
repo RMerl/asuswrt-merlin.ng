@@ -3507,7 +3507,9 @@ struct nvram_tuple router_defaults[] = {
 	{ "snmpd_wan", "0", CKN_STR1, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
 #endif
 
+#ifdef RTCONFIG_NTPD
 	{ "ntpd_enable", "0", CKN_STR1, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+#endif
 
 /* End of Merlin-specific settings */
 

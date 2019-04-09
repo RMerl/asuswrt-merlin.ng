@@ -1624,7 +1624,7 @@ extern void dnsfilter_dot_rules(FILE *fp, char *lan_if);
 #ifdef RTCONFIG_NTPD
 extern int start_ntpd(void);
 extern void stop_ntpd(void);
-extern void ntp_time_synced(int argc, char *argv[]);
+extern int ntpd_synced_main(int argc, char *argv[]);
 #endif
 
 // lan.c

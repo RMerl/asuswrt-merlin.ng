@@ -30,7 +30,7 @@ int start_ntpd(void)
 {
 	char *ntpd_argv[] = { "/usr/sbin/ntp",
 		"-t",
-		"-S", "/sbin/ntp_synced",
+		"-S", "/sbin/ntpd_synced",
 		"-p", "pool.ntp.org",
 		NULL, NULL,		/* -p second_server */
 		NULL, NULL, NULL,	/* -l, -I, ifname */
@@ -80,7 +80,7 @@ void stop_ntpd(void)
 	}
 }
 
-void ntp_time_synced(int argc, char *argv[])
+int ntpd_synced_main(int argc, char *argv[])
 {
 	if (!nvram_match("ntp_ready", "1") && (argc == 2 && !strcmp(argv[1], "step"))) {
 		nvram_set("ntp_ready", "1");
@@ -112,5 +112,7 @@ void ntp_time_synced(int argc, char *argv[])
 			kill_pidfile_s("/var/run/dnsmasq.pid", SIGINT);
 #endif
 	}
+
+	return 0;
 }
 

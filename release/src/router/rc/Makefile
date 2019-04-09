@@ -755,7 +755,7 @@ endif
 ifneq ($(RTCONFIG_NTPD),y)
 	@cd $(INSTALLDIR)/sbin && ln -sf rc ntp
 else
-	@cd $(INSTALLDIR)/sbin && ln -sf rc ntp_synced
+	@cd $(INSTALLDIR)/sbin && ln -sf rc ntpd_synced
 endif
 	@cd $(INSTALLDIR)/sbin && ln -sf rc autodet
 ifeq ($(RTCONFIG_DETWAN),y)

@@ -234,7 +234,7 @@ endif
 
 OBJS := rc.o init.o interface.o lan.o wireless.o wan.o pppd.o auth.o services.o
 OBJS += firewall.o ppp.o services.o common.o
-OBJS += watchdog.o ntp.o $(if $(RTCONFIG_MULTIWAN_CFG),qos_multiwan.o,qos.o) udhcpc.o ate.o
+OBJS += watchdog.o $(if $(RTCONFIG_MULTIWAN_CFG),qos_multiwan.o,qos.o) udhcpc.o ate.o
 OBJS += format.o
 
 ifeq ($(RTCONFIG_NETOOL),y)
@@ -602,8 +602,11 @@ endif
 ifeq ($(RTCONFIG_DNSFILTER),y)
 OBJS += dnsfilter.o
 endif
+
 ifeq ($(RTCONFIG_NTPD),y)
 OBJS += ntpd.o
+else
+OBJS += ntp.o
 endif
 
 ifeq ($(RTCONFIG_BCMARM),y)

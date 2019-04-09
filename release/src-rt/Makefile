@@ -2494,6 +2494,10 @@ define RouterOptions
 		sed -i "/RTCONFIG_OPENSSL11/d" $(1); \
 		echo "RTCONFIG_OPENSSL11=y" >>$(1); \
 	fi; \
+	if [ "$(NTPD)" = "y" ]; then \
+		sed -i "/RTCONFIG_NTPD/d" $(1); \
+		echo "RTCONFIG_NTPD=y" >>$(1); \
+	fi; \
 	if [ "$(CFGSYNC)" = "y" ]; then \
 		sed -i "/RTCONFIG_CFGSYNC/d" $(1); \
 		echo "RTCONFIG_CFGSYNC=y" >>$(1); \
@@ -2992,6 +2996,10 @@ define BusyboxOptions
 		echo "CONFIG_FEATURE_BASH_IS_ASH=y" >>$(1); \
 		sed -i "/CONFIG_FEATURE_BASH_IS_NONE/d" $(1); \
 		echo "# CONFIG_FEATURE_BASH_IS_NONE is not set" >>$(1); \
+	fi; \
+	if [ "$(NTPD)" = "y" ]; then \
+		sed -i "/CONFIG_FEATURE_NTPD_NTP_ALIAS/d" $(1); \
+		echo "CONFIG_FEATURE_NTPD_NTP_ALIAS=y" >>$(1); \
 	fi; \
 	)
 	$(call platformBusyboxOptions, $(1))

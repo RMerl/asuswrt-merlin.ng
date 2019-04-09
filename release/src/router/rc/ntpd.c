@@ -28,7 +28,7 @@
 
 int start_ntpd(void)
 {
-	char *ntpd_argv[] = { "/usr/sbin/ntpd",
+	char *ntpd_argv[] = { "/usr/sbin/ntp",
 		"-t",
 		"-S", "/sbin/ntp_synced",
 		"-p", "pool.ntp.org",
@@ -38,14 +38,13 @@ int start_ntpd(void)
 	int ret, index = 6;
 	pid_t pid;
 
-	/* TODO: should we stop and restart instead? */
-	if (f_exists(NTPD_PIDFILE))
-		return 0;
-
 	if (getpid() != 1) {
 		notify_rc("start_ntpd");
 		return 0;
 	}
+
+	if (pids("ntp"))
+		stop_ntpd();
 
 	if (!nvram_match("ntp_server0", ""))
 		ntpd_argv[index - 1] = nvram_safe_get("ntp_server0");
@@ -75,8 +74,8 @@ void stop_ntpd(void)
 		return;
 	}
 
-	if (f_exists(NTPD_PIDFILE)) {
-		kill_pidfile_tk(NTPD_PIDFILE);
+	if (pids("ntp")) {
+		killall_tk("ntp");
 		logmessage("ntpd", "Stopped ntpd");
 	}
 }

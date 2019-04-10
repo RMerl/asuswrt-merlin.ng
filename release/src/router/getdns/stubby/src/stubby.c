@@ -45,6 +45,9 @@
 #else
 #include <unistd.h>
 #endif
+#if !defined(STUBBY_ON_WINDOWS) && !defined(GETDNS_ON_WINDOWS)
+#include <syslog.h>
+#endif
 
 #ifdef HAVE_GETDNS_YAML2DICT
 getdns_return_t getdns_yaml2dict(const char *str, getdns_dict **dict);
@@ -174,6 +177,9 @@ static getdns_list *listen_list = NULL;
 static size_t listen_count = 0;
 static int run_in_foreground = 1;
 static int dnssec_validation = 0;
+#if !defined(STUBBY_ON_WINDOWS) && !defined(GETDNS_ON_WINDOWS)
+static int use_syslog = 0;
+#endif
 
 static void stubby_local_log(void *userarg, uint64_t system,
 	getdns_loglevel_type level, const char *fmt, ...);
@@ -741,6 +747,8 @@ static void stubby_log(void *userarg, uint64_t system,
 	tsec = (time_t) tv.tv_sec;
 	gmtime_s(&tm, (const time_t *) &tsec);
 #else
+	if (use_syslog)
+		(void) vsyslog(level, fmt, ap);
 	gettimeofday(&tv, NULL);
 	gmtime_r(&tv.tv_sec, &tm);
 #endif
@@ -820,6 +828,13 @@ main(int argc, char **argv)
 		        _getdns_strerror(r));
 		return r;
 	}
+
+#if !defined(STUBBY_ON_WINDOWS) && !defined(GETDNS_ON_WINDOWS)
+	use_syslog = log_connections || !run_in_foreground;
+	if (use_syslog)
+		openlog(STUBBY_PACKAGE, LOG_PID, LOG_DAEMON);
+#endif
+
 	if (log_connections) {
 		(void) getdns_context_set_logfunc(context, NULL,
 	    	GETDNS_LOG_UPSTREAM_STATS, (int)log_level, stubby_log);

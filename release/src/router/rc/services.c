@@ -4814,18 +4814,23 @@ start_ntpc(void)
 void
 stop_ntpc(void)
 {
-#if 0
+#ifdef RTCONFIG_NTPD
+	stop_ntpd();
+#else
 	if (pids("ntpclient"))
 		killall_tk("ntpclient");
 #endif
-	stop_ntpd();
 }
 
 
 void refresh_ntpc(void)
 {
 	setup_timezone();
-#if 0
+
+#ifdef RTCONFIG_NTPD
+	stop_ntpd();
+	start_ntpd();
+#else
 	stop_ntpc();
 
 	if (!pids("ntp"))
@@ -4833,9 +4838,6 @@ void refresh_ntpc(void)
 	else
 		kill_pidfile_s("/var/run/ntp.pid", SIGALRM);
 #endif
-
-	stop_ntpd();
-	start_ntpd();
 }
 
 #ifdef RTCONFIG_BCMARM

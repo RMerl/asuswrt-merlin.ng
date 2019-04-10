@@ -102,13 +102,16 @@ int ntpd_synced_main(int argc, char *argv[])
 
 		setup_timezone();
 
-#ifdef RTCONFIG_DISK_MONITOR
-		notify_rc("restart_diskmon");
+#ifdef RTCONFIG_DNSPRIVACY
+		if (nvram_get_int("dnspriv_enable"))
+			notify_rc("restart_stubby");
 #endif
-
 #ifdef RTCONFIG_DNSSEC
 		if (nvram_get_int("dnssec_enable"))
 			kill_pidfile_s("/var/run/dnsmasq.pid", SIGINT);
+#endif
+#ifdef RTCONFIG_DISK_MONITOR
+		notify_rc("restart_diskmon");
 #endif
 	}
 

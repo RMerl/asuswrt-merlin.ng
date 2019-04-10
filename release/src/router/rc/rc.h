@@ -1382,6 +1382,10 @@ extern int restart_dnsmasq(int need_link_DownUp);
 extern void start_dnsmasq(void);
 extern void stop_dnsmasq(void);
 extern void reload_dnsmasq(void);
+#ifdef RTCONFIG_DNSPRIVACY
+extern void start_stubby(void);
+extern void stop_stubby(void);
+#endif
 extern int ddns_updated_main(int argc, char *argv[]);
 #ifdef RTCONFIG_IPV6
 extern void add_ip6_lanaddr(void);

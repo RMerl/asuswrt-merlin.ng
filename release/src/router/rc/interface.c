@@ -180,7 +180,7 @@ void gen_lan_ports(char *buf, const int sample[SWPORT_COUNT], int index, int ind
 
 int _ifconfig(const char *name, int flags, const char *addr, const char *netmask, const char *dstaddr, int mtu)
 {
-	int s, err;
+	int s, err, postup;
 	struct ifreq ifr;
 	struct in_addr in_addr, in_netmask, in_broadaddr;
 
@@ -218,10 +218,11 @@ int _ifconfig(const char *name, int flags, const char *addr, const char *netmask
 
 	/* Set interface name */
 	strlcpy(ifr.ifr_name, name, IFNAMSIZ);
+	postup = strchr(name, ':') && (flags & IFUP);
 
 	/* Set interface flags */
 	ifr.ifr_flags = flags;
-	if (ioctl(s, SIOCSIFFLAGS, &ifr) < 0)
+	if (!postup && ioctl(s, SIOCSIFFLAGS, &ifr) < 0)
 		goto ERROR;
 
 	/* Set IP address */
@@ -256,6 +257,11 @@ int _ifconfig(const char *name, int flags, const char *addr, const char *netmask
 		if (ioctl(s, SIOCSIFDSTADDR, &ifr) < 0)
 			goto ERROR;
 	}
+
+	/* Set interface flags */
+	ifr.ifr_flags = flags;
+	if (postup && ioctl(s, SIOCSIFFLAGS, &ifr) < 0)
+		goto ERROR;
 
 	/* Set MTU */
 	if (mtu > 0) {
@@ -403,6 +409,9 @@ void config_loopback(void)
 {
 	/* Bring up loopback interface */
 	ifconfig("lo", IFUP, "127.0.0.1", "255.0.0.0");
+#ifdef RTCONFIG_DNSPRIVACY
+	ifconfig("lo:0", IFUP, "127.0.1.1", "255.0.0.0");
+#endif
 
 	/* Add to routing table */
 	route_add("lo", 0, "127.0.0.0", "0.0.0.0", "255.0.0.0");

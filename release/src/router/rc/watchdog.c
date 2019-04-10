@@ -5303,9 +5303,8 @@ void wave_monitor_check()
 
 void dnsmasq_check()
 {
-	if (!pids("dnsmasq")) {
-		if (nvram_get_int("asus_mfg") == 1)
-			return;
+	if (nvram_get_int("asus_mfg") == 1)
+		return;
 
 	if (!is_routing_enabled()
 		&& (repeater_mode()
@@ -5329,6 +5328,7 @@ void dnsmasq_check()
 		return;
 	}
 
+	if (!pids("dnsmasq")) {
 #if defined(RTL_WTDOG)
 		stop_rtl_watchdog();
 #endif
@@ -5339,6 +5339,19 @@ void dnsmasq_check()
 		start_rtl_watchdog();
 #endif
 	}
+#ifdef RTCONFIG_DNSPRIVACY
+	else if (nvram_get_int("dnspriv_enable") && !pids("stubby")) {
+#if defined(RTL_WTDOG)
+		stop_rtl_watchdog();
+#endif
+		start_stubby();
+		TRACE_PT("watchdog: stubby died. start stubby...\n");
+
+#if defined(RTL_WTDOG)
+		start_rtl_watchdog();
+#endif
+	}
+#endif
 }
 
 #ifdef RTCONFIG_NEW_USER_LOW_RSSI

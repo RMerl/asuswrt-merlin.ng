@@ -1,0 +1,97 @@
+.\" The "BSD-New" License
+.\" 
+.\" Copyright (c) 2013, NLnet Labs, Verisign, Inc.
+.\" All rights reserved.
+.\" 
+.\" Redistribution and use in source and binary forms, with or without
+.\" modification, are permitted provided that the following conditions are met:
+.\" * Redistributions of source code must retain the above copyright
+.\"   notice, this list of conditions and the following disclaimer.
+.\" * Redistributions in binary form must reproduce the above copyright
+.\"   notice, this list of conditions and the following disclaimer in the
+.\"   documentation and/or other materials provided with the distribution.
+.\" * Neither the names of the copyright holders nor the
+.\"   names of its contributors may be used to endorse or promote products
+.\"   derived from this software without specific prior written permission.
+.\" 
+.\" THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+.\" ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+.\" WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+.\" DISCLAIMED. IN NO EVENT SHALL Verisign, Inc. BE LIABLE FOR ANY
+.\" DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+.\" (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+.\" LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+.\" ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+.\" (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+.\" SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+.\" 
+
+.TH getdns_cancel_callback 3 "@date@" "getdns @version@" getdns
+.SH NAME
+.B getdns_cancel_callback
+-- cancel an outstanding asyn getdns request
+
+.SH LIBRARY
+DNS Resolver library (libgetdns, \-lgetdns)
+
+.SH SYNOPSIS
+#include <getdns.h>
+
+getdns_return_t 
+.br
+.B getdns_cancel_callback
+(getdns_context_t context,
+.RS 3
+.br
+getdns_transaction_t *transaction_id)
+.RE
+
+.SH DESCRIPTION
+
+.LP
+To cancel an outstanding callback, use getdns_cancel_callback. This causes the
+API to call the callback with a callback_type of GETDNS_CALLBACK_CANCEL if the
+callback for this transaction_id has not already been called. The callback code
+for cancellation should clean up any memory related to the identified call,
+such as to deallocate the memory for the userarg. getdns_cancel_callback() may
+return immediately, even before the callback finishes its work and returns. 
+
+.HP 3
+.I context
+see getdns_context (3)
+
+.HP 3
+.I transaction_id
+populated by the API and used to identify the callback (for example to getdns_cancel_callback), can be NULL, set to 0 if the function fails
+
+.HP
+.SH "RETURN VALUES"
+
+Upon successful completion the functions return
+.B GETDNS_RETURN_GOOD
+, otherwise the following error values are returned:
+
+.LP
+.B GETDNS_RETURN_INVALID_PARAMETER
+if context == NULL
+.LP
+.B GETDNS_RETURN_UNKNOWN_TRANSACTION 
+if the transaction_id that is unknown or belongs to a callback that has already been called 
+
+.SH EXAMPLES
+
+TBD
+
+.SH FILES
+.br
+/etc/hosts
+.br
+/etc/resolv.conf
+
+.SH SEE ALSO
+.BR libgetdns (3),
+.BR getdns_context (3),
+.BR getdns_general (3),
+.BR getdns_hostname (3),
+.BR getdns_service (3),
+

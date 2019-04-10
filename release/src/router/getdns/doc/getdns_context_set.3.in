@@ -1,0 +1,326 @@
+.\" The "BSD-New" License
+.\" 
+.\" Copyright (c) 2013, NLNet Labs, Verisign, Inc.
+.\" All rights reserved.
+.\" 
+.\" Redistribution and use in source and binary forms, with or without
+.\" modification, are permitted provided that the following conditions are met:
+.\" * Redistributions of source code must retain the above copyright
+.\"   notice, this list of conditions and the following disclaimer.
+.\" * Redistributions in binary form must reproduce the above copyright
+.\"   notice, this list of conditions and the following disclaimer in the
+.\"   documentation and/or other materials provided with the distribution.
+.\" * Neither the names of the copyright holders nor the
+.\"   names of its contributors may be used to endorse or promote products
+.\"   derived from this software without specific prior written permission.
+.\" 
+.\" THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+.\" ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+.\" WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+.\" DISCLAIMED. IN NO EVENT SHALL Verisign, Inc. BE LIABLE FOR ANY
+.\" DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+.\" (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+.\" LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+.\" ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+.\" (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+.\" SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+.\" 
+
+.TH getdns_context_set 3 "@date@" "getdns @version@" getdns
+.ad l
+.SH NAME
+.B getdns_context_set_append_name, 
+.B getdns_context_set_context_update_callback, 
+.B getdns_context_set_dns_root_servers, 
+.B getdns_context_set_dns_transport, 
+.B getdns_context_set_dnssec_trust_anchors, 
+.B getdns_context_set_dnssec_allowed_skew,
+.B getdns_context_set_follow_redirects, 
+.B getdns_context_set_limit_outstanding_queries, 
+.B getdns_context_set_namespaces, 
+.B getdns_context_set_resolution_type, 
+.B getdns_context_set_suffix, 
+.B getdns_context_set_timeout, 
+-- getdns context manipulation routines
+.ad n
+
+.SH LIBRARY
+DNS Resolver library (libgetdns, \-lgetdns)
+
+.SH SYNOPSIS
+#include <getdns.h>
+
+getdns_return_t 
+.br
+.B getdns_context_set_append_name
+(getdns_context_t context,
+.RS 3
+.br
+getdns_append_name_t when_to_append)
+.RE
+
+getdns_return_t 
+.br
+.B getdns_context_set_context_update_callback
+(getdns_context_t context,
+.RS 3
+.br
+(*callback)(struct getdns_context *context, uint16_t changed_item))
+.RE
+
+getdns_return_t 
+.br
+.B getdns_context_set_dns_root_servers
+(getdns_context_t context,
+.RS 3
+.br
+getdns_list *root_addresses)
+.RE
+
+getdns_return_t 
+.br
+.B getdns_context_set_dns_transport
+(getdns_context_t context,
+.RS 3
+.br
+uint16_t transport)
+.RE
+
+getdns_return_t
+.br
+.B getdns_contet_set_dnssec_allowed_skew
+(getdns_context *context,
+.RS 3
+uint32_t skew_seconds)
+.RE
+
+getdns_return_t
+.br
+.B getdns_contet_set_dnssec_trust_anchors
+(getdns_context *context,
+.RS 3
+getdns_list *trust_anchors)
+.RE
+
+getdns_return_t 
+.br
+.B getdns_context_set_follow_redirects
+(getdns_context_t context,
+.RS 3
+.br
+getdns_redirects_t followredir)
+.RE
+
+getdns_return_t 
+.br
+.B getdns_context_set_limit_outstanding_queries
+(getdns_context_t context,
+.RS 3
+.br
+uint16_t limit)
+.RE
+
+getdns_return_t 
+.br
+.B getdns_context_set_namespaces
+(getdns_context_t context,
+.RS 3
+.br
+size_t namespace_count,
+.br
+uint16_t *namespaces)
+.RE
+
+getdns_return_t 
+.br
+.B getdns_context_set_resolution_type
+(getdns_context_t context,
+.RS 3
+uint16_t restype)
+.RE
+
+getdns_return_t
+.br
+.B getdns_context_set_suffix
+(getdns_context *context,
+.RS 3
+getdns_list *suffixes)
+.RE
+
+getdns_return_t 
+.br
+.B getdns_context_set_timeout
+(getdns_context_t context,
+.RS 3
+uint16_t timeout)
+.RE
+
+.SH DESCRIPTION
+
+.LP
+These functions are used to manipulate a previously allocated and initialized context, see getdns_context (3) for more details on the functions used to allocate, initialized and destroy contexts and for a more detailed discussion of the getdns_context in general.
+
+.LP
+.B getdns_context_set_append_name
+Specifies whether to append a suffix supplied via getdns_context_set_suffix (3)
+to the query string before the API starts resolving a name.
+
+.LP
+.B getdns_context_set_context_update_callback
+sets a function that will be called if changes to the system files (for example /etc/resolv.conf and /etc/hosts).
+
+.LP
+.B getdns_context_set_dns_transport
+specifies the transport used for DNS lookups, the default is to use UDP and fall back to
+TCP as needed.
+
+.LP
+.B getdns_context_set_dnssec_trust_anchors
+allows the caller to specify trust anchors as alternatives to the default trust anchors
+
+.LP
+.B getdns_context_set_dnssec_allowed_skew
+set the number of seconds skew allowed in either direction when checking an RRSIGs expiration and inception fields, the default is 0.
+
+.LP
+.B getdns_context_set_limit_outstanding_queries
+specifies the maximum number of outstanding DNS queries, the API will queue queries
+over this limit until current queries are answers and will then automatically issue
+the queries on the queue.
+
+.LP
+.B
+getdns_context_set_dns_root_servers
+provides an alternate set of addresses to use
+to look up the top level domains.  The default (if this function is not called) is the
+list of IANA root servers (think of this as the root hints).
+
+.LP
+.B
+getdns_context_set_follow_redirects
+specifies whether or not DNS queries follow redirects (CNAME and DNAME), the default
+behavior is to follow redirects and return the eventual target.
+
+.LP
+.B getdns_context_set_namespaces
+sets the namespaces to be used by the resolver, the default is DNS and then local
+files.  Future implementations will support netbios, mdns, and nis.
+
+.LP
+.B getdns_context_set_resolution_type
+specifies whether DNS queries are performed with non-recursive lookups or as a stub resolver.
+
+.LP
+.B getdns_context_set_suffix
+Append suffixes to domain names prior to executing the lookup based on
+getdns_context_set_append_name. 
+
+.LP
+.B getdns_context_set_timeout
+specifies the number of milliseconds the API will wait for a response.
+
+.HP 3
+.I context
+a previously allocated and initialized getdns_context
+
+.HP 3
+.I callback
+a callback function that will be called when changes are made to the system files (/etc/resolv.conf and /etc/hosts) for contexts created with set_from_os = 1.  When this function is called the changed_item parameter indicates which item in the context has changed.
+
+.HP 3
+.I root_addresses
+This is a list of getdns_dict types that each identify a single root server to
+use to look up top level domains.  Each dictionary includes two names,
+.I address_type
+, a bindata containing the string "IPv4" or "IPv6" and 
+.I address_data
+a bindata containing the IP address.
+
+.HP 3
+.I transport
+may be one of GETDNS_CONTEXT_UDP_FIRST_AND_FALL_BACK_TO_TCP, GETDNS_CONTEXT_UDP_ONLY, GETDNS_CONTEXT_TCP_ONLY, GETDNS_CONTEXT_TCP_ONLY_KEEP_CONNECTIONS_OPEN.  If you need more information on what each of these means reread the mnemonic and take a guess ;)
+
+.HP 3
+.I followredir
+If set to GETDNS_REDIRECTS_FOLLOW (the default) then the eventual target of the redirect is returned.  If set to GETDNS_REDIRECTS_DO_NOT_FOLLOW then the CNAME or DNAME is returned and NOT the eventual target.
+
+.HP 3
+.I limit
+the maximum number of concurrent outstanding (unanswered) DNS queries, if exceeded the API will queue queries and issue them as the number of outstanding queries drops.  A value of 0 indicates that there is no limit.
+
+.ad l
+.HP 3
+.I namespaces
+The namespaces array contains an ordered list of namespaces that will be queried. Important: this context setting is ignored for the getdns_general and getdns_general_sync functions; it is used for the other functions. The values are GETDNS_CONTEXT_NAMESPACE_DNS, GETDNS_CONTEXT_NAMESPACE_LOCALNAMES, GETDNS_CONTEXT_NAMESPACE_NETBIOS, GETDNS_CONTEXT_NAMESPACE_MDNS, and GETDNS_CONTEXT_NAMESPACE_NIS. When a normal lookup is done, the API does the lookups in the order given and stops when it gets the first result; a different method with the same result would be to run the queries in parallel and return when it gets the first result. Because lookups might be done over different mechanisms because of the different namespaces, there can be information leakage that is similar to that seen with getaddrinfo(). The default is determined by the OS.
+.ad n
+
+.HP 3
+.I restype
+can be set to either GETDNS_CONTEXT_RECURSIVE (the default) or GETDNS_CONTEXT_STUB (requires that forwarders be specified by the caller).
+
+.HP 3
+.I seconds_skew
+the number of seconds skew allowed in either direction when checking an RRSIGs expiration and inception fields.
+
+.HP 3
+.I suffixes
+A list of bindatas that are strings that are to be appended based on getdns_context_set_append_name. The values here follow the rules in section 2.1 of RFC 4343 to allow non-ASCII octets and special characters in labels.
+
+.HP 3
+.I timeout
+the number of milliseconds the API will wait for a response, after which the callback will be invoked (or the synchronous function will return) with a timeout error.
+
+.HP 3
+.I trust_anchors
+list of bindatas that are the DNSSEC trust anchors expressed as RDATA from the DNSKEY resource records, the default are supplied by the IANA root.
+
+.HP 3
+.I when_to_append
+The value is
+.RS
+.IP \(bu 3
+GETDNS_APPEND_NAME_ALWAYS,
+.IP \(bu 3
+GETDNS_APPEND_NAME_ONLY_TO_SINGLE_LABEL_AFTER_FAILURE,
+.IP \(bu 3
+GETDNS_APPEND_NAME_ONLY_TO_MULTIPLE_LABEL_NAME_AFTER_FAILURE, or
+.IP \(bu 3
+GETDNS_APPEND_NAME_NEVER.
+.RE
+
+.HP
+.SH "RETURN VALUES"
+
+Upon successful completion the functions return
+.B GETDNS_RETURN_GOOD
+, otherwise the following error values are returned:
+
+.LP
+.B GETDNS_RETURN_BAD_CONTEXT 
+if the context pointer is invalid
+.LP
+.B GETDNS_RETURN_CONTEXT_UPDATE_FAIL
+if there was a problem updating the context
+
+.SH EXAMPLES
+
+TBD
+
+.SH FILES
+.br
+/etc/hosts
+.br
+/etc/resolv.conf
+
+.SH SEE ALSO
+.BR libgetdns (3),
+.BR getdns_address (3),
+.BR getdns_address_sync (3),
+.BR getdns_context (3),
+.BR getdns_general (3),
+.BR getdns_general_sync (3),
+.BR getdns_hostname (3),
+.BR getdns_hostname_sync (3),
+.BR getdns_service (3),
+.BR getdns_service_sync (3).
+

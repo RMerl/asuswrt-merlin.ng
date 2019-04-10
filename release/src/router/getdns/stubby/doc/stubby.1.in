@@ -1,0 +1,226 @@
+.TH STUBBY 1
+
+.SH NAME
+stubby \- a local DNS Privacy stub resolver
+
+.SH SYNOPSIS
+.B stubby
+[\fB\-C\fR \fIfile\fR]
+[\fB\-ghilV\fR]
+[\fB\-v\fR \fIloglevel\fR]
+
+.SH DESCRIPTION
+.B stubby
+acts as a local DNS Privacy stub resolver, using
+DNS\-over\-TLS. Stubby encrypts DNS queries sent from the local
+machine to a DNS Privacy resolver, increasing end user privacy.
+.PP
+.B stubby
+is in the early stages of development but is suitable for
+technical/advanced users.
+.PP
+.B stubby
+provides DNS Privacy by running as a daemon that listens on the
+loopback address for DNS queries, and forwards those queries out over TLS.
+The default configuration provides Strict Privacy, and uses a subset of
+available DNS Privacy servers. See
+.I https://dnsprivacy.org/wiki/display/DP/DNS+Privacy+Test+Servers
+\.
+
+.SH OPTIONS
+.TP
+.BR \-C \ \fIfile\fR
+Read settings from the configuration file \fIfile\fR. If this option is not
+given, \fBstubby\fR looks for a configuration file at \fI~/.stubby.yml\fR.
+If this is not present, \fBstubby\fR falls back to the global configuration
+file \fI@ETCDIR@/stubby.yml\fR.
+.TP
+.BR \-g
+Run \fBstubby\fR as a daemon.
+.TP
+.BR \-h
+Print a usage message and exit.
+.TP
+.BR \-i
+Read the configuration, validate the contents, pretty-print them to
+the standard output and exit.
+.TP
+.BR \-l
+Enable all logging. Equivalent to \fB\-v 7\fR.
+.TP
+.BR \-v \ \fIloglevel\fR
+Enable logging. All logging messages at or below \fIloglevel\fR are printed
+to standard error:
+.RS
+.TP
+0: EMERG
+The system is unusable
+.TP
+1: ALERT
+Action must be taken immediately
+.TP
+2: CRIT
+Critical conditions
+.TP
+3: ERROR
+Error conditions
+.TP
+4: WARN
+Warning conditions
+.TP
+5: NOTICE
+Normal, but significant, conditions
+.TP
+6: INFO
+Information messages
+.TP
+7: DEBUG
+Debug-level messages
+.RE
+.TP
+.BR \-V
+Print the \fBstubby\fR version and exit.
+
+.SH CONFIGURATION
+The configuration file is in YAML. An example config is:
+.PP
+.nf
+.RS
+resolution_type: GETDNS_RESOLUTION_STUB
+dns_transport_list:
+  - GETDNS_TRANSPORT_TLS
+tls_authentication: GETDNS_AUTHENTICATION_REQUIRED
+tls_query_padding_blocksize: 256
+edns_client_subnet_private : 1
+idle_timeout: 10000
+listen_addresses:
+  - 127.0.0.1
+  -  0::1
+round_robin_upstreams: 1
+upstream_recursive_servers:
+  - address_data: 145.100.185.15
+    tls_auth_name: "dnsovertls.sinodun.com"
+    tls_pubkey_pinset:
+      - digest: "sha256"
+        value: 62lKu9HsDVbyiPenApnc4sfmSYTHOVfFgL3pyB+cBL4=
+  - address_data: 145.100.185.16
+    tls_auth_name: "dnsovertls1.sinodun.com"
+    tls_pubkey_pinset:
+      - digest: "sha256"
+        value: cE2ecALeE5B+urJhDrJlVFmf38cJLAvqekONvjvpqUA=
+  - address_data: 185.49.141.37
+    tls_auth_name: "getdnsapi.net"
+    tls_pubkey_pinset:
+      - digest: "sha256"
+        value: foxZRnIh9gZpWnl+zEiKa0EJ2rdCGroMWm02gaxSc9Q=
+  - address_data: 2001:610:1:40ba:145:100:185:15
+    tls_auth_name: "dnsovertls.sinodun.com"
+    tls_pubkey_pinset:
+      - digest: "sha256"
+        value: 62lKu9HsDVbyiPenApnc4sfmSYTHOVfFgL3pyB+cBL4=
+  - address_data: 2001:610:1:40ba:145:100:185:16
+    tls_auth_name: "dnsovertls1.sinodun.com"
+    tls_pubkey_pinset:
+      - digest: "sha256"
+        value: cE2ecALeE5B+urJhDrJlVFmf38cJLAvqekONvjvpqUA=
+  - address_data: 2a04:b900:0:100::38
+    tls_auth_name: "getdnsapi.net"
+    tls_pubkey_pinset:
+      - digest: "sha256"
+        value: foxZRnIh9gZpWnl+zEiKa0EJ2rdCGroMWm02gaxSc9Q=
+.RE
+.fi
+.PP
+The configuration items are as follow. Some take constant values from
+the
+.B getdns
+library underlying
+.B
+stubby
+and further explanation of their values may be found in the
+.B getdns
+documentation or at
+.I http://www.getdnsapi.net
+\.
+.TP
+.B resolution_type \fIresolution\fR.
+This must be set to \fIGETDNS_RESOLUTION_STUB\fR for historic reasons.
+.B stubby
+will exit with an error if any other setting is used.
+.TP
+.B dns_transport_list \fIlist\fR
+Set the list of transport types to be used. For DNS Privacy this must be set
+to \fIGETDNS_TRANSPORT_TLS\fR. Clear text transports are
+.I GETDNS_TRANSPORT_TCP
+and
+.I GETDNS_TRANSPORT_UDP
+\.
+.TP
+.B tls_authentication \fItype\fR
+Set the type of authentication required. For Strict Privacy, this
+should be set to \fIGETDNS_AUTHENTICATION_REQUIRED\fR. For
+Opportunistic mode, remove this setting or set to
+\fIGETDNS_AUTHENTICATION_NONE\fR.  In Opportunistic mode
+authentication of the nameserver is not required and fallback to clear
+text transports is permitted if they are in
+.I dns_transport_list
+\.
+.TP
+.B tls_query_padding_blocksize \fIblocksize\fR
+Use the EDNS0 padding option to pad DNS queries to hide their size.
+.TP
+.B edns_client_subnet_private \fI0\fR or \fI1\fR
+If 1, use EDNS0 Client Subnet privacy so the client s
+ubnet is not sent to authoritative servers.
+.TP
+.B idle_timeout \fItimeout\fR
+Use an EDNS0 Keepalive idle timeout of
+.I timeout
+milliseconds unless overridden by the server. This keeps idle TLS
+connections open to avoid the overhead of opening a new connection
+for every query.
+.TP
+.B round_robin_upstreams \fI0\fR or \fI1\fR
+If 1, round robin queries across all the configured upstream
+servers. Without this option
+.B stubby
+will use each upstream server sequentially until it becomes
+unavailable and then move on to use the next.
+.TP
+.B upstream_recursive_servers \fIserver list\fR
+Specify the upstream servers that
+.B stubby
+is to use. Each item in the list contains the following items:
+.RS
+.TP
+.B address_data \fIaddress\fR
+IPv4 or IPv6 address of the server.
+.TP
+.B tls_auth_name \fIname\fR
+This is the authentication domain name that will be verified against
+the presented certificate.
+.TP
+.B tls_pubkey_pinset \fIpinset\fR
+The sha256 SPKI pinset for the server. This is also verified against
+the presented certificate. This contains two items:
+.RS
+.TP
+.B digest \fItype\fR
+The type of the key digest.
+.TP
+.B value \fIkeyval\fR
+The key value.
+.RE
+.RE
+
+.SH FILES
+.nf
+.I ~/.stubby.yml
+.I @ETCDIR@/stubby.yml
+.fi
+
+.SH SEE ALSO
+.nf
+.I https://getdnsapi.net/
+.I https://dnsprivacy.org/wiki/display/DP/DNS+Privacy+Daemon+-+Stubby
+.fi

@@ -357,6 +357,10 @@ config RTCONFIG_YANDEXDNS
 	depends on !RTCONFIG_DNSFILTER
 	default n
 
+config RTCONFIG_DNSPRIVACY
+	bool "DNS-over-TLS Support"
+	default n
+
 config RTCONFIG_DSL
 	bool "DSL Support"
 	default n
@@ -1810,4 +1814,8 @@ config RTCONFIG_CONNDIAG
 
 config RTCONFIG_REPEATER_STAALLBAND
 	bool "select one of tri band to connect P-AP"
+	default n
+
+config RTCONFIG_NTPD
+	bool "ntp & ntpd support"
 	default n

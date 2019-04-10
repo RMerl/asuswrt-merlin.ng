@@ -1,0 +1,328 @@
+#
+# @configure_input@
+#
+#
+# Copyright (c) 2013, Verisign, Inc., NLnet Labs
+# All rights reserved.
+#
+# Redistribution and use in source and binary forms, with or without
+# modification, are permitted provided that the following conditions are met:
+# * Redistributions of source code must retain the above copyright
+# notice, this list of conditions and the following disclaimer.
+# * Redistributions in binary form must reproduce the above copyright
+#   notice, this list of conditions and the following disclaimer in the
+#   documentation and/or other materials provided with the distribution.
+# * Neither the names of the copyright holders nor the
+#   names of its contributors may be used to endorse or promote products
+#   derived from this software without specific prior written permission.
+#
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+# ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+# WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+# DISCLAIMED. IN NO EVENT SHALL Verisign, Inc. BE LIABLE FOR ANY
+# DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+# (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+# LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+# ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+# (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+# SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+package = @PACKAGE_NAME@
+version = @PACKAGE_VERSION@@RELEASE_CANDIDATE@
+tarname	= @PACKAGE_TARNAME@
+PACKAGE_TARNAME	= @PACKAGE_TARNAME@
+distdir	= $(tarname)-$(version)
+bintar  = $(distdir)-bin.tar.gz
+
+prefix = @prefix@
+datarootdir=@datarootdir@
+exec_prefix = @exec_prefix@
+bindir = @bindir@
+docdir = @docdir@
+libdir = @libdir@
+
+srcdir = @srcdir@
+INSTALL = @INSTALL@
+
+all : default @GETDNS_QUERY@ @GETDNS_SERVER_MON@
+
+everything: default
+	cd src/test && $(MAKE)
+
+default:
+	cd src && $(MAKE) $@
+
+install-lib:
+	cd src && $(MAKE) install
+
+install: getdns.pc getdns_ext_event.pc install-lib @INSTALL_GETDNS_QUERY@ @INSTALL_GETDNS_SERVER_MON@
+	$(INSTALL) -m 755 -d $(DESTDIR)$(docdir)
+	$(INSTALL) -m 644 $(srcdir)/AUTHORS $(DESTDIR)$(docdir)
+	$(INSTALL) -m 644 $(srcdir)/ChangeLog $(DESTDIR)$(docdir)
+	$(INSTALL) -m 644 $(srcdir)/COPYING $(DESTDIR)$(docdir)
+	$(INSTALL) -m 644 $(srcdir)/INSTALL $(DESTDIR)$(docdir)
+	$(INSTALL) -m 644 $(srcdir)/LICENSE $(DESTDIR)$(docdir)
+	$(INSTALL) -m 644 $(srcdir)/NEWS $(DESTDIR)$(docdir)
+	$(INSTALL) -m 644 $(srcdir)/README.md $(DESTDIR)$(docdir)
+	$(INSTALL) -m 755 -d $(DESTDIR)$(libdir)/pkgconfig
+	$(INSTALL) -m 644 getdns.pc $(DESTDIR)$(libdir)/pkgconfig
+	$(INSTALL) -m 644 getdns_ext_event.pc $(DESTDIR)$(libdir)/pkgconfig
+	$(INSTALL) -m 755 -d $(DESTDIR)$(docdir)/spec
+	$(INSTALL) -m 644 $(srcdir)/spec/index.html $(DESTDIR)$(docdir)/spec
+	cd doc && $(MAKE) install
+	@echo "***"
+	@echo "***  !!! IMPORTANT !!!!"
+	@echo "***"
+	@echo "***  From release 1.2.0, getdns comes with built-in DNSSEC"
+	@echo "***  trust anchor management.  External trust anchor management,"
+	@echo "***  for example with unbound-anchor, is no longer necessary"
+	@echo "***  and no longer recommended."
+	@echo "***"
+	@echo "***  Previously installed trust anchors, in the default location -"
+	@echo "***"
+	@echo "***        @TRUST_ANCHOR_FILE@"
+	@echo "***"
+	@echo "***  - will be preferred and used for DNSSEC validation, however"
+	@echo "***  getdns will fallback to trust-anchors obtained via built-in"
+	@echo "***  trust anchor management when the anchors from the default"
+	@echo "***  location fail to validate the root DNSKEY rrset."
+	@echo "***"
+	@echo "***  To prevent expired DNSSEC trust anchors to be used for"
+	@echo "***  validation, we strongly recommend removing the trust anchors"
+	@echo "***  on the default location when there is no active external"
+	@echo "***  trust anchor management keeping it up-to-date."
+	@echo "***"
+
+uninstall: @UNINSTALL_GETDNS_QUERY@ @UNINSTALL_GETDNS_SERVER_MON@
+	rm -rf $(DESTDIR)$(docdir)
+	cd doc && $(MAKE) $@
+	cd src && $(MAKE) $@
+
+doc:	FORCE
+	cd doc && $(MAKE) $@
+
+example:
+	cd spec/example && $(MAKE) $@
+
+test: default
+	cd src/test && $(MAKE) $@
+
+getdns_query: default
+	cd src/tools && $(MAKE) $@
+
+getdns_server_mon: default
+	cd src/tools && $(MAKE) $@
+
+stubby:
+	cd src && $(MAKE) $@
+
+scratchpad: default
+	cd src/test && $(MAKE) $@
+
+pad: scratchpad
+	src/test/scratchpad || ./libtool exec gdb src/test/scratchpad
+
+install-getdns_query: install-lib
+	cd src/tools && $(MAKE) $@
+
+uninstall-getdns_query:
+	cd src/tools && $(MAKE) $@
+
+install-getdns_server_mon: install-lib @INSTALL_GETDNS_QUERY@
+	cd src/tools && $(MAKE) $@
+
+uninstall-getdns_server_mon:
+	cd src/tools && $(MAKE) $@
+
+install-stubby:
+	cd src && $(MAKE) $@
+
+uninstall-stubby:
+	cd src && $(MAKE) $@
+
+clean:
+	cd src && $(MAKE) $@
+	cd doc && $(MAKE) $@
+	cd spec/example && $(MAKE) $@
+	rm -f *.o *.pc
+
+depend:
+	cd src && $(MAKE) $@
+	cd spec/example && $(MAKE) $@
+
+distclean:
+	cd src && $(MAKE) $@
+	rmdir src 2>/dev/null || true
+	cd doc && $(MAKE) $@
+	rmdir doc 2>/dev/null || true
+	cd spec/example && $(MAKE) $@
+	rmdir spec/example 2>/dev/null || true
+	rmdir spec 2>/dev/null || true
+	rm -f config.log config.status Makefile libtool getdns.pc getdns_ext_event.pc
+	rm -fR autom4te.cache
+#	rm -f m4/libtool.m4
+#	rm -f m4/lt~obsolete.m4
+#	rm -f m4/ltoptions.m4
+#	rm -f m4/ltsugar.m4
+#	rm -f m4/ltversion.m4
+	rm -f $(distdir).tar.gz $(distdir).tar.gz.sha256 $(distdir).tar.gz.sha1
+	rm -f $(distdir).tar.gz.md5 $(distdir).tar.gz.asc
+
+megaclean:
+	cd $(srcdir) && rm -fr * .dir-locals.el .gitignore .indent.pro .travis.yml && git reset --hard && git submodule update --init
+
+autoclean: megaclean
+	libtoolize -ci
+	autoreconf -fi
+
+dist: $(distdir).tar.gz
+
+pub: $(distdir).tar.gz.sha256 $(distdir).tar.gz.md5 $(distdir).tar.gz.asc $(distdir).tar.gz.sha1
+
+$(distdir).tar.gz.sha256: $(distdir).tar.gz
+	openssl sha256 $(distdir).tar.gz >$@
+
+$(distdir).tar.gz.sha1: $(distdir).tar.gz
+	openssl sha1 $(distdir).tar.gz >$@
+
+$(distdir).tar.gz.md5: $(distdir).tar.gz
+	openssl md5 $(distdir).tar.gz >$@
+
+$(distdir).tar.gz.asc: $(distdir).tar.gz
+	gpg --armor --detach-sig $(distdir).tar.gz
+
+bindist: $(bintar)
+
+$(bintar): $(distdir)
+	chown -R 0:0 $(distdir) 2>/dev/null || true
+	cd $(distdir); ./configure; make
+	tar chof - $(distdir) | gzip -9 -c > $@
+	rm -rf $(distdir)
+
+$(distdir).tar.gz: $(distdir)
+	chown -R 0:0 $(distdir) 2>/dev/null || true
+	tar chof - $(distdir) | gzip -9 -c > $@
+	rm -rf $(distdir)
+
+$(distdir):
+	mkdir -p $(distdir)/m4
+	mkdir -p $(distdir)/src
+	mkdir -p $(distdir)/src/getdns
+	mkdir -p $(distdir)/src/test
+	mkdir -p $(distdir)/src/extension
+	mkdir -p $(distdir)/src/compat
+	mkdir -p $(distdir)/src/util
+	mkdir -p $(distdir)/src/gldns
+	mkdir -p $(distdir)/src/tls/validator
+	mkdir -p $(distdir)/src/gnutls
+	mkdir -p $(distdir)/src/openssl
+	mkdir -p $(distdir)/src/tools
+	mkdir -p $(distdir)/src/jsmn
+	mkdir -p $(distdir)/src/yxml
+	mkdir -p $(distdir)/src/ssl_dane
+	mkdir -p $(distdir)/doc
+	mkdir -p $(distdir)/spec
+	mkdir -p $(distdir)/spec/example
+	mkdir -p $(distdir)/stubby
+	mkdir -p $(distdir)/stubby/src
+	mkdir -p $(distdir)/stubby/src/yaml
+	mkdir -p $(distdir)/stubby/doc
+	mkdir -p $(distdir)/stubby/systemd
+	mkdir -p $(distdir)/stubby/contrib/upstart
+	cp $(srcdir)/configure.ac $(distdir)
+	cp $(srcdir)/configure $(distdir)
+	cp $(srcdir)/AUTHORS $(distdir)
+	cp $(srcdir)/ChangeLog $(distdir)
+	cp $(srcdir)/COPYING $(distdir)
+	cp $(srcdir)/INSTALL $(distdir)
+	cp $(srcdir)/LICENSE $(distdir)
+	cp $(srcdir)/NEWS $(distdir)
+	cp $(srcdir)/README.md $(distdir)
+	cp $(srcdir)/Makefile.in $(distdir)
+	cp $(srcdir)/install-sh $(distdir)
+	cp $(srcdir)/config.sub $(distdir)
+	cp $(srcdir)/config.guess $(distdir)
+	cp $(srcdir)/getdns.pc.in $(distdir)
+	cp $(srcdir)/getdns_ext_event.pc.in $(distdir)
+	cp libtool $(distdir)
+	cp $(srcdir)/ltmain.sh $(distdir)
+	cp $(srcdir)/m4/*.m4 $(distdir)/m4
+	cp $(srcdir)/src/*.in $(distdir)/src
+	cp $(srcdir)/src/*.[ch] $(distdir)/src
+	cp $(srcdir)/src/*.symbols $(distdir)/src
+	cp $(srcdir)/src/extension/*.[ch] $(distdir)/src/extension
+	cp $(srcdir)/src/extension/*.symbols $(distdir)/src/extension
+	cp $(srcdir)/src/getdns/*.in $(distdir)/src/getdns
+	cp $(srcdir)/src/getdns/getdns_*.h $(distdir)/src/getdns
+	cp $(srcdir)/src/test/Makefile.in $(distdir)/src/test
+	cp $(srcdir)/src/test/*.[ch] $(distdir)/src/test
+	cp $(srcdir)/src/test/*.sh $(distdir)/src/test
+	cp $(srcdir)/src/test/*.good $(distdir)/src/test
+	cp $(srcdir)/src/compat/*.[ch] $(distdir)/src/compat
+	cp $(srcdir)/src/util/*.[ch] $(distdir)/src/util
+	cp -r $(srcdir)/src/util/orig-headers $(distdir)/src/util
+	cp -r $(srcdir)/src/util/auxiliary $(distdir)/src/util
+	cp $(srcdir)/src/gldns/*.[ch] $(distdir)/src/gldns
+	cp $(srcdir)/src/tls/*.[ch] $(distdir)/src/tls
+	cp $(srcdir)/src/tls/validator/*.[ch] $(distdir)/src/tls/validator
+	cp $(srcdir)/src/gnutls/*.[ch] $(distdir)/src/gnutls
+	cp $(srcdir)/src/openssl/*.[ch] $(distdir)/src/openssl
+	cp $(srcdir)/doc/Makefile.in $(distdir)/doc
+	cp $(srcdir)/doc/*.in $(distdir)/doc
+	cp $(srcdir)/doc/manpgaltnames $(distdir)/doc
+	cp $(srcdir)/spec/*.html $(distdir)/spec
+	cp $(srcdir)/spec/example/Makefile.in $(distdir)/spec/example
+	cp $(srcdir)/spec/example/*.[ch] $(distdir)/spec/example
+	cp $(srcdir)/src/tools/Makefile.in $(distdir)/src/tools
+	cp $(srcdir)/src/tools/*.[ch] $(distdir)/src/tools
+	cp $(srcdir)/stubby/stubby.yml.example $(distdir)/stubby
+	cp $(srcdir)/stubby/macos/stubby-setdns-macos.sh $(distdir)/stubby
+	cp $(srcdir)/stubby/src/*.[ch] $(distdir)/stubby/src
+	cp $(srcdir)/stubby/src/yaml/*.[ch] $(distdir)/stubby/src/yaml
+	cp $(srcdir)/stubby/COPYING $(distdir)/stubby
+	cp $(srcdir)/stubby/README.md $(distdir)/stubby
+	cp $(srcdir)/stubby/doc/stubby.1.in $(distdir)/stubby/doc
+	cp $(srcdir)/stubby/systemd/README.md $(distdir)/stubby/systemd
+	cp $(srcdir)/stubby/systemd/stubby.conf $(distdir)/stubby/systemd
+	cp $(srcdir)/stubby/systemd/stubby.service $(distdir)/stubby/systemd
+	cp $(srcdir)/stubby/contrib/upstart/stubby.conf $(distdir)/stubby/contrib/upstart
+	cp $(srcdir)/src/jsmn/*.[ch] $(distdir)/src/jsmn
+	cp $(srcdir)/src/jsmn/LICENSE $(distdir)/src/jsmn
+	cp $(srcdir)/src/jsmn/README.md $(distdir)/src/jsmn
+	cp $(srcdir)/src/yxml/*.[ch] $(distdir)/src/yxml
+	cp $(srcdir)/src/yxml/COPYING $(distdir)/src/yxml
+	cp $(srcdir)/src/yxml/yxml.pod $(distdir)/src/yxml
+	cp $(srcdir)/src/ssl_dane/danessl.[ch] $(distdir)/src/ssl_dane
+	cp $(srcdir)/src/ssl_dane/README.md $(distdir)/src/ssl_dane
+	rm -f $(distdir)/Makefile $(distdir)/src/Makefile $(distdir)/src/getdns/getdns.h $(distdir)/spec/example/Makefile $(distdir)/src/test/Makefile $(distdir)/doc/Makefile $(distdir)/src/config.h
+
+distcheck: $(distdir).tar.gz
+	gzip -cd $(distdir).tar.gz | tar xvf -
+	cd $(distdir) && ./configure
+	cd $(distdir) && $(MAKE) all
+	cd $(distdir) && $(MAKE) check
+	cd $(distdir) && $(MAKE) DESTDIR=$${PWD}/_inst install
+	cd $(distdir) && $(MAKE) DESTDIR=$${PWD}/_inst uninstall
+	@remaining="`find $${PWD}/$(distdir)/_inst -type f | wc -l`"; \
+	if test "$${remaining}" -ne	0; then
+	echo "@@@	$${remaining} file(s) remaining	in stage directory!"; \
+	exit 1; \
+	fi
+	cd $(distdir) && $(MAKE) clean
+	rm -rf $(distdir)
+	@echo "*** Package $(distdir).tar.gz is ready for distribution"
+
+getdns.pc: $(srcdir)/getdns.pc.in
+	./config.status $@
+
+getdns_ext_event.pc: $(srcdir)/getdns_ext_event.pc.in
+	./config.status $@
+
+Makefile: $(srcdir)/Makefile.in config.status
+	./config.status $@
+
+configure.status: configure
+	./config.status --recheck
+
+.PHONY: all distclean clean default doc test
+FORCE:

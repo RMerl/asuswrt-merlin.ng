@@ -1,0 +1,665 @@
+* 2019-04-03: Version 1.5.2
+  * PR #424: Two small trust anchor fetcher fixes
+    Thanks Maciej S. Szmigiero
+  * Issue #422: Enable server side and update client side TCP Fast
+    Open implementation. Thanks Craig Andrews
+  * Issue #423: Fix insecure delegation detection while scheduling.
+    Thanks Charles Milette
+  * Issue #419: Escape backslashed when printing in JSON format.
+    Thanks boB Rudis
+  * Use GnuTLS instead of OpenSSL for TLS with the --with-gnutls
+    option to configure.  libcrypto (from OpenSSL) still needed
+    for Zero configuration DNSSEC.
+  * DOA rr-type
+  * AMTRELAY rr-type
+
+* 2019-01-11: Version 1.5.1
+  * Introduce proof of concept GnuTLS implementation. Incomplete support
+    for Trust Anchor validation. Requires GnuTLS DANE library. Currently
+    untested with GnuTLS prior to 3.5.19, so configure demands a minumum
+    version of 3.5.0.
+  * Be consistent and always fail connection setup if setting ciphers/curves/
+    TLS version/cipher suites fails.
+  * Refactor OpenSSL usage into modules under src/openssl.
+    Drop support for LibreSSL and versions of OpenSSL prior to 1.0.2.
+  * PR #414: remove TLS13 ciphers from cipher_list, but
+    only when SSL_CTX_set_ciphersuites is available.
+    Thanks Bruno Pagani
+  * Issue #415: Filter out #defines etc. when creating
+    symbols file.  Thanks Zero King
+
+* 2018-12-21: Version 1.5.0
+  * RFE getdnsapi/stubby#121 log re-instantiating TLS
+    upstreams (because they reached tls_backoff_time) at
+    log level 4 (WARNING)
+  * GETDNS_RESPSTATUS_NO_NAME for NODATA answers too
+  * ZONEMD rr-type
+  * getdns_query queries for addresses when a query name
+    without a type is given.
+  * RFE #408: Fetching of trust anchors will be retried
+    after failure, after a certain backoff time. The time
+    can be configured with
+    getdns_context_set_trust_anchors_backoff_time().
+  * RFE #408: A "dnssec" extension that requires DNSSEC
+    verification.  When this extension is set, Indeterminate
+    DNSSEC status will not be returned.
+  * Issue #410: Unspecified ownership of get_api_information()
+  * Fix for DNSSEC bug in finding most specific key when
+    trust anchor proves non-existance of one of the labels
+    along the authentication chain other than the non-
+    existance of a DS record on a zonecut.
+  * Enhancement getdnsapi/stubby#56 & getdnsapi/stubby#130:
+    Configurable minimum and maximum TLS versions with
+    getdns_context_set_tls_min_version() and
+    getdns_context_set_tls_max_version() functions and
+    tls_min_version and tls_max_version configuration parameters
+    for upstreams.
+  * Configurable TLS1.3 ciphersuites with the
+    getdns_context_set_tls_ciphersuites() function and
+    tls_ciphersuites config parameter for upstreams.
+  * Bugfix in upstream string configurations: tls_cipher_list and
+    tls_curve_list
+  * Bugfix finding signer for validating NSEC and NSEC3s, which
+    caused trouble with the partly tracing DNSSEC from the root
+    up, introduced in 1.4.2.  Thanks Philip Homburg
+
+* 2018-05-11: Version 1.4.2
+  * Bugfix getdnsapi/stubby#87: Detect and ignore duplicate certs
+    in the Windows root CA store.
+  * PR #397: No TCP sendto without TCP_FASTOPEN
+    Thanks Emery Hemingway
+  * Bugfix getdnsapi/stubby#106: Core dump when printing certain
+    configuration. Thanks Han Vinke
+  * Bugfix getdnsapi/stubby#99: Partly trace DNSSEC from the root
+    up (for tld and sld), to find insecure delegations quicker.
+    Thanks UniverseXXX
+  * Bugfix: Allow NSEC spans starting from (unexpanded) wildcards
+    Bug was introduced when dealing with CVE-2017-15105
+  * Bugfix getdnsapi/stubby#46: Don't assume trailing zero with
+    string bindata's.  Thanks Lonnie Abelbeck
+  * Bugfix #394: Update src/compat/getentropy_linux.c in order to
+    handle ENOSYS (not implemented) fallback.
+    Thanks Brent Blood
+  * Bugfix #395: Clarify that libidn2 dependency is for version 2.0.0
+    or higher. Thanks mire3212
+
+* 2018-03-12: Version 1.4.1
+  * Bugfix #388: Prevent fallback to an earlier tries upstream within a
+    single query.  Thanks Robert Groenenberg
+  * PR #387: Compile with OpenSSL with deprecated APIs disabled.
+    Thanks Rosen Penev
+  * PR #386: UDP failover improvements:
+    - When all UDP upstreams fail, retry them (more or less) equally
+    - Limit maximum UDP backoff (default to 1000)
+      This is configurable with the --with-max-udp-backoff configure
+      option.
+    Thanks Robert Groenenberg
+  * Bugfix: Find zonecut with DS queries (instead of SOA queries).
+    Thanks Elmer Lastdrager
+  * Bugfix #385: Verifying insecure NODATA answers (broken since 1.2.1).
+    Thanks hanvinke
+  * PR #384: Fix minor spelling and formatting.  Thanks dkg.
+  * Bugfix #382: Parallel install of getdns_query and getdns_server_mon
+
+* 2018-02-21: Version 1.4.0
+  * .so revision bump to please fedora packaging system.
+    Thanks Paul Wouters
+  * Specify the supported curves with getdns_context_set_tls_curves_list()
+    An upstream specific list of supported curves may also be given
+    with the tls_curves_list setting in the upstream dict with
+    getdns_context_set_upstream_recursive_servers()
+  * New tool getdns_server_mon for checking upstream recursive
+    resolver's capabilities.
+  * Improved handling of opportunistic back-off.  If other transports
+    are working, don’t forcibly promote failed upstreams just wait for
+    the re-try timer.
+  * Hostname authentication with libressl
+    Thanks Norbert Copones
+  * Security bugfix in response to CVE-2017-15105.  Although getdns was
+    not vulnerable for this specific issue, as a precaution code has been
+    adapted so that signatures of DNSKEYs, DSs, NSECs and NSEC3s can not
+    be wildcard expansions when used with DNSSEC proofs.  Only direct
+    queries for those types are allowed to be wildcard expansions.
+  * Bugfix PR#379: Miscelleneous double free or corruption, and corrupted
+    memory double linked list detected issue, with serving functionality.
+    Thanks maddie and Bruno Pagani
+  * Security Bugfix PR#293: Check sha256 pinset's
+    with OpenSSL native DANE functions for OpenSSL >= 1.1.0
+    with Viktor Dukhovni's danessl library for OpenSSL >= 1.0.0
+    don't allow for authentication exceptions (like self-signed
+    certificates) otherwise.  Thanks Viktor Dukhovni
+  * libidn2 support.  Thanks Paul Wouters
+
+* 2017-12-21: Version 1.3.0
+  * Bugfix #300: Detect dnsmasq and skip unit test that fails with it.
+    Thanks Tim Rühsen and Konomi Kitten
+  * Specify default available cipher suites for authenticated TLS
+    upstreams with getdns_context_set_tls_ciphers_list()
+    An upstream specific available cipher suite may also be given
+    with the tls_cipher_list setting in the upstream dict with
+    getdns_context_set_upstream_recursive_servers()
+  * PR #366: Add support for TLS 1.3 and Chacha20-Poly1305
+    Thanks Pascal Ernster
+  * Bugfix #356: Do Zero configuration DNSSEC meta queries over on the
+    context configured upstreams.  Thanks Andreas Schulze
+  * Report default extension settings with
+    getdns_context_get_api_information()
+  * Specify locations at which CA certificates for verification purposes
+    are located: getdns_context_set_tls_ca_path()
+    getdns_context_set_tls_ca_file()
+  * getdns_context_set_resolvconf() function to initialize a context 
+    upstreams and suffices with a resolv.conf file.
+    getdns_context_get_resolvconf() to get the file used to initialize
+    the context's upstreams and suffixes.
+    getdns_context_set_hosts() function to initialize a context's
+    LOCALNAMES namespace.
+    getdns_context_get_hosts() function to get the file used to initialize
+    the context's LOCALNAMES namespace.
+  * get which version of OpenSSL was used at build time and at run time
+    when available with getdns_context_get_api_information()
+  * GETDNS_RETURN_IO_ERROR return error code
+  * Bugfix #359: edns_client_subnet_private should set family
+    Thanks Daniel Areiza & Andreas Schulze
+  * Bugfix getdnsapi/stubby#34: Segfault issue with native DNSSEC
+    validation.  Thanks Bruno Pagani
+
+* 2017-11-11: Version 1.2.1
+  * Handle more I/O error cases.  Also, when an I/O error does occur,
+    never stop listening (with servers), and
+    never exit (when running the built-in event loop).
+  * Bugfix: Tolerate unsigned and unused RRsets in the authority section.
+            Fixes DNSSEC with BIND upstream.
+  * Bugfix: DNSSEC validation without support records
+  * Bugfix: Validation of full recursive DNSKEY lookups
+  * Bugfix: Retry to validate full recursion BOGUS replies with zero
+    configuration DNSSEC only when DNSSEC was actually requested
+  * Bugfix #348: Fix a linking issue in stubby when libbsd is present
+    Thanks Remi Gacogne
+  * More robust scheduling; Eliminating a segfault with long running
+    applications.
+  * Miscellaneous Windows portability fixes from Jim Hague.
+  * Fix Makefile dependencies for parallel install.
+    Thanks ilovezfs
+
+* 2017-09-29: Version 1.2.0
+  * Bugfix of rc1: authentication of first query with TLS
+    Thanks Travis Burtrum
+  * A function to set the location for library specific data,
+    like trust-anchors: getdns_context_set_appdata().
+  * Zero configuration DNSSEC - build upon the scheme
+    described in RFC7958.  The URL from which to fetch
+    the trust anchor, the verification CA and email
+    can be set with the new getdns_context_set_trust_anchor_url(),
+    getdns_context_set_trust_anchor_verify_CA() and
+    getdns_context_set_trust_anchor_verify_email() functions.
+    The default values are to fetch from IANA and to validate
+    with the ICANN CA.
+  * Update of Stubby with yaml configuration file and
+    logging from a certain severity support.
+  * Fix tpkg exit status on test failure. Thanks Jim Hague.
+  * Refined logging levels for upstream statistics
+  * Reuse (best behaving) backed-off TLS upstreams when non are usable.
+  * Let TLS upstreams back-off a incremental amount of time.
+    Back-off time starts with 1 second and is doubled each failure, but
+    will not exceed the time given by getdns_context_set_tls_backoff_time()
+  * Make TLS upstream management more resilient to temporary outages
+    (like laptop sleeps)
+
+* 2017-09-04: Version 1.1.3
+  * Small bugfixes that came out of static analysis
+  * No annotations with the output of getdns_query anymore,
+    unless -V option is given to increase verbosity
+    Thanks Ollivier Robert
+  * getdns_query will now exit with failure status if replies are BOGUS
+  * Bugfix: dnssec_return_validation_chain now also works when fallback
+    to full recursion was needed with dnssec_roadblock_avoidance
+  * More clear build instructions from Paul Hoffman.  Thanks.
+  * Bugfix #320.1: Eliminate multiple closing of file descriptors
+    Thanks Neil Cook
+  * Bugfix #320.2: Array bounds bug in upstream_select
+    Thanks Neil Cook
+  * Bugfix #318: getdnsapi/getdns/README.md links to nonexistent wiki
+    pages.  Thanks James Raftery
+  * Bugfix #322: MacOS 10.10 (Yosemite) provides TCP fastopen interface
+    but does not have it implemented.  Thanks Joel Purra
+  * Compile without Stubby by default.  Stubby now has a git repository
+    of its own.  The new Stubby repository is added as a submodule.
+    Stubby will still be build alongside getdns with the --with-stubby
+    configure option.
+
+* 2017-07-03: Version 1.1.2
+  * Bugfix for parallel make install
+  * Bugfix to trigger event callbacks on socket errors
+  * A getdns_context_set_logfunc() function with which one may
+    register a callback log function for certain library subsystems
+    at certain levels.  Currently this can only be used for
+    upstream stastistics subsystem.
+
+* 2017-06-15: Version 1.1.1
+  * Bugfix #306 hanging/segfaulting on certain (IPv6) upstream failures
+  * Spelling fix s/receive/receive.  Thanks Andreas Schulze.
+  * Added stubby-setdns-macos.sh script to support Homebrew formula
+  * Include stubby.conf in the districution tarball
+  * Bugfix #286 reschedule reused listening addresses
+  * Bugfix #166 Allow parallel builds and unit-tests
+  * NSAP-PTR, EID and NIMLOC, TALINK, AVC support
+  * Bugfix of TA RR type
+  * OPENPGPKEY and SMIMEA support
+  * Bugfix TAG rdata type presentation format for CAA RR type
+  * Bugfix Zero sized gateways with IPSECKEY gateway_type 0
+  * Guidance for integration with systemd
+  * Also check for memory leaks with advances server capabilities.
+  * Bugfix convert IP string to IP dict with getdns_str2dict() directly.
+
+* 2017-04-13: Version 1.1.0
+  * bugfix: Check size of tls_auth_name.
+  * Improvements that came from Visual Studio static analysis
+  * Fix to compile with libressl.  Thanks phicoh.
+  * Spelling fixes.  Thanks Andreas Schulze.
+  * bugfix: Reschedule request timeout when getting the DNSSEC chain.
+  * getdns_context_unset_edns_maximum_udp_payload_size() to reset
+    to default IPv4/IPv6 dependent edns max udp payload size.
+  * Implement sensible default edns0 padding policy.  Thanks DKG.
+  * Keep connections open with sync requests too.
+  * Fix of event loops so they do not give up with naked timers with
+    windows.  Thanks Christian Huitema.
+  * Include peer certificate with DNS-over-TLS in combination with
+    the return_call_reporting extension.
+  * More fine grained control over TLS upstream retry and back off
+    behaviour with getdns_context_set_tls_backoff_time() and
+    getdns_context_set_tls_connection_retries().
+  * New round robin over the available upstreams feaure.
+    Enable with getdns_context_set_round_robin_upstreams()
+  * Bugfix: Queue requests when no sockets available for outgoing queries.
+  * Obey the outstanding query limit with STUB resolution mode too.
+  * Updated stubby config file
+  * Draft MDNS client implementation by Christian Huitema.
+    Enable with --enable-draft-mdns-support to configure
+  * bugfix: Let synchronous queries use fds > MAX_FDSETSIZE;
+            By moving default eventloop from select to poll
+    Thanks Neil Cook
+  * bugfix: authentication failure for self signed cert + only pinset
+  * bugfix: issue with session re-use making authentication appear to fail
+
+* 2017-01-13: Version 1.0.0
+  * edns0_cookies extension enabled by default (per RFC7873)
+  * dnssec_roadblock_avoidance enabled by default (per RFC8027)
+  * bugfix: DSA support with OpenSSL 1.1.0
+  * Initialize OpenSSL just once in a thread safe way
+  * Thread safety with arc4random function
+  * Improvements that came from Visual Studio static analysis
+    Thanks Christian Huitema
+  * Conventional RFC3986 IPv6 [address]:port parsing from getdns_query
+  * bugfix: OpenSSL 1.1.0 style crypto locking
+    Thanks volkommenheit
+  * configure tells *which* dependency is missing
+  * bugfix: Exclude terminating '\0' from bindata's returned by
+    getdns_get_suffix(). Thanks Jim Hague
+  * Better README.md.  Thanks Andrew Sullivan
+
+* 2016-10-19: Version 1.1.0-a2
+  * Improved TLS connection management
+  * OpenSSL 1.1 support
+  * Stubby, Server version of getdns_query that by default listens
+    on 127.0.0.1 and ::1 and reads config from /etc/stubby.conf
+    and $HOME/.stubby.conf
+
+* 2016-07-14: Version 1.1.0a1
+  * Conversion functions from text strings to getdns native types:
+    getdns_str2dict(), getdns_str2list(), getdns_str2bindata() and
+    getdns_str2int()
+  * A getdns_context_config() function that configures a context
+    with settings given in a getdns_dict
+  * A a getdns_context_set_listen_addresses() function and companion
+    getdns_reply() function to construct simple name servers.
+  * Relocate getdns_query to src/tools and build by default
+  * Enhancements to the logic used to select connection based upstream
+    transports (TCP, TLS) to improve robustness and re-use of
+    connections/upstreams.
+
+* 2016-07-14: Version 1.0.0b2
+  * Collect coverage information from the unit tests
+    Thanks Shane Kerr
+  * pkg-config for the getdns_ext_event library
+    Thanks Tom Pusateri
+  * Bugfix: Multiple requests on the same upstream with a transport 
+    that keeps connections open in synchronous stub mode.
+  * Canonicalized DNSSEC chain with dnssec_return_validation_chain
+    (when validated)
+  * A dnssec_return_full_validation_chain extension which includes
+    then validated resource records.
+  * Bugfix: Callbacks fired while scheduling (answer from cache)
+    with the unbound plugable event API
+  * header extension to set opcode and flags in stub mode
+  * Unit tests that cover more code
+  * Static checking with the clang analyzer
+  * getdns_pretty_print_dict prints dname's as primitives
+  * Accept just bindata's instead of address dicts.
+    Allow misshing "address_type" in address dicts.
+  * TLS session resumption
+  * -C <config file> option to getdns_query to configure context 
+    from a json like formatted file.  The output of -i (print API
+    information) can be used as config file directly.
+    Settings may also be given in this format as arguments of
+    the getdns_query command directly.
+  * DNS server mode for getdns_query.  Enable by providing addresses
+    to listen on, either by giving "-z <listen address>" options or by
+    providing "listen_addresses" in the config file or settings.
+  * Bugfixes from deckard testing: CNAME loop protection.
+  * "srv_addresses" in response dict with getdns_service()
+  * use libbsd when available
+    Thanks Guillem Jover
+  * Bugfix: DNSSEC wildcard validation issue
+  * Bugfix: TLS timeouts not re-using a connection
+  * A getdns_context_get_eventloop(), to get the current
+    (pluggable) eventloop from context
+  * getdns_query now uses the default event loop (instead of custom)
+  * Return call_reporting info in case of timeout
+    Thanks Robert Groenenberg
+  * Bugfix: Build fails with autoconf 2.63, works with 2.68.
+    Thanks Robert Groenenberg
+  * Doxygen output for getdns.h and getdns_extra.h only
+  * Do not call SSL_library_init() from getdns_context_create() when
+    the second bit from the set_from_os parameter is set.
+
+* 2016-03-31: Version 1.0.0b1
+  * openssl 1.1.0 support
+  * GETDNS_APPEND_NAME_TO_SINGLE_LABEL_FIRST default suffix handling
+  * getdns_context_set_follow_redirects()
+  * Read suffix list from registry on Windows
+  * A dnssec_return_all_statuses extension
+  * Set root servers without temporary file (libunbound >= 1.5.8 needed)
+  * Eliminate unit test's ldns dependency
+  * pkts wireformat <-> getdns_dict <-> string
+    conversion functions
+  * Eliminate all side effects when doing sync requests
+    (libunbound >= 1.5.9 needed)
+  * Bugfix: Load gost algorithm if digest is seen before key algorithm
+    Thanks Jelte Janssen
+  * Bugfix: Respect DNSSEC skew.
+  * Offline dnssec validation for any given point in time
+  * Correct return value in documentation for getdns_pretty_print_dict().
+    Thanks Linus Nordberg
+  * Bugfix: Don't treat "domain" or "search" as a nameserver.
+    Thanks Linus Nordberg
+  * Use the default CA trust store on Windows (for DNS over TLS).
+  * Propagate eventloop to unbound when unbound has pluggable event loops
+    (libunbound >= 1.5.9 needed)
+  * Replace mini_event extension by default_eventloop
+  * Bugfix: Segfault on NULL pin
+  * Bugfix: Correct output of get_api_settings
+  * Bugfix: Memory leak with getdns_get_api_information() 
+    Thanks Robert Groenenberg.
+
+* 2015-12-31: Version 0.9.0
+  * Update of unofficial extension to the API that supports stub mode 
+    TLS verification. GETDNS_AUTHENTICATION_HOSTNAME is replaced by 
+    GETDNS_AUTHENTICATION_REQUIRED (but remains available as an alias). 
+    Upstreams can now be configured with either a hostname or a SPKI pinset 
+    for TLS authentication (or both). If the GETDNS_AUTHENTICATION_REQUIRED
+    option is used at least one piece of authentication information must be 
+    configured for each upstream, and all the configured authentication 
+    information for an upstream must validate.
+  * Remove STARTTLS implementation (no change to SPEC)
+  * Enable TCP Fast Open when possible. Add OSX support for TFO.
+  * Rename return_call_debugging to return_call_reporting
+  * Bugfix: configure problem with getdns-0.5.1 on OpenBSD
+    Thanks Claus Assmann.
+  * pkg-config support.  Thanks Neil Cook.
+  * Functions to convert from RR dicts to wireformat and text format
+    and vice versa.  Including a function that builds a getdns_list
+    of RR dicts from a zonefile.
+  * Use the with the getdns_context_set_dns_root_servers() function
+    provided root servers in recursing resolution modus.
+  * getdns_query option (-f) to read a DNSSEC trust anchor from file.
+  * getdns_query option (-R) to read a "root hints" file.
+  * Bugfix: Detect and prevent duplicate NSEC(3)s to be returned with
+    dnssec_return_validation_chain.
+  * Bugfix: Remove duplicate RRs from RRsets when DNSSEC verifying
+  * Client side edns-tcp-keepalive support
+  * TSIG support + getdns_query syntax to specify TSIG parameters
+    per upstream: @<ip>[^[<algorithm>:]<name>:<secret in Base64>]
+  * Bugfix: Allow truncated answers to be returned in case of missing
+    fallback transport.
+  * Verify upstream TLS pubkeys with pinsets; A getdns_query option
+    (-K) to attach pinsets to getdns_contexts.
+    Thanks Daniel Kahn Gillmor
+  * Initial support for Windows.  Thanks Gowri Visweswaran
+  * add_warning_for_bad_dns extension
+  * Try and retry with suffixes giving with getdns_context_set_suffix()
+    following directions given by getdns_context_set_append_name()
+    getdns_query options to set suffixes and append_name directions:
+    '-W' to append suffix always (default)
+    '-1' to append suffix only to single label after failure
+    '-M' to append suffix only to multi label name after failure
+    '-N' to never append a suffix
+    '-Z <suffixes>' to set suffixes with the given comma separated list
+  * Better help text for getdns_query (printed with the '-h' option)
+  * Setting the +specify_class extension with getdns_query
+  * Return NOT_IMPLEMENTED for not implemented namespaces, and the
+    not implemented getdns_context_set_follow_redirects() function.
+
+* 2015-11-18: Version 0.5.1
+  * Bugfix: growing upstreams arrow.
+  * Bugfix: Segfault on timeout in specific conditions
+  * Bugfix: install getdns_extra.h from build location
+  * Bugfix: Don't let cookies overwrite existing EDNS0 options
+  * Don't link libdl
+  * The EDNS(0) Padding Option (draft-mayrhofer-edns0-padding).
+    When using DNS over TLS, query sizes will be padded to multiples
+    of a block size given with:
+    getdns_context_set_tls_query_padding_blocksize()
+  * An EDNS client subnet private option, that will ask a EDNS client
+    subnet aware resolver to not reveal any details about the 
+    originating network.  See: draft-ietf-dnsop-edns-client-subnet
+    Set with: getdns_context_set_edns_client_subnet_private()
+  * The return_call_debugging extension.  The extension will also return
+    the transport used on top of the information about the request which
+    is described in the API spec.
+  * A dnssec_roadblock_avoidance extension.  When set, the library will
+    work in stub resolution mode and try to get a by DNSSEC validation
+    assessed answer.  On BOGUS answers the library will retry rescursive
+    resolution mode.  This is the simplest form of passive roadblock
+    detection and avoidance: draft-ietf-dnsop-dnssec-roadblock-avoidance.
+    Use the --enable-draft-dnssec-roadblock-avoidance option to configure
+    to compile with this extension.
+
+* 2015-10-29: Version 0.5.0
+  * Native crypto.  No ldns dependency anymore.
+    (ldns still necessary to be able to run tests though)
+  * JSON pointer arguments to getdns_dict_get_* and getdns_dict_set_* 
+    to dereference nested dicts and lists.
+  * Bugfix: DNSSEC code finding zone cut with redirects + pursuing unsigned
+    DS answers close to the root.  Thanks Theogene Bucuti!
+  * Default port for TLS changed to 853
+  * Unofficial extension to the API to allow TLS hostname verification to be
+    required for stub mode when using only TLS as a transport. 
+    When required a hostname must be supplied in the
+    'hostname' field of the upstream_list dict and the TLS cipher suites are
+    restricted to the 4 AEAD suites recommended in RFC7525.
+
+* 2015-09-09: Version 0.3.3
+  * Fix clearing upstream events on shutdown
+  * Fix dnssec validation of direct CNAME queries.
+    Thanks Simson L. Garfinkel.
+  * Fix get_api_information():version_string also for release candidates
+
+* 2015-09-04: Version 0.3.2
+  * Fix returned upstreams list by getdns_context_get_api_information()
+  * Fix some autoconf issues when srcdir != builddir
+  * Fix remove build date from manpage version for reproducible builds
+  * Fix transport fallback issues plus transport fallback unit test script
+  * Fix string bindata's need not contain trailing zero byte
+  * --enable-stub-only configure option for stub only operation.
+    Stub mode will be the default.  Removes the dependency on libunbound
+  * --with-getdns_query compiles and installs the getdns_query tool too
+  * Fix assert on context destruction from a callback in stub mode too.
+  * Use a thread instead of a process for running the unbound event loop.
+
+* 2015-07-18: Version 0.3.1
+  * Fix repeating rdata fields
+
+* 2015-07-17: Version 0.3.0
+  * Unit test for spurious execute bits.  Thanks Paul Wouters.
+  * Added new transport list options in API. The option is now an ordered
+    list of GETDNS_TRANSPORT_UDP, GETDNS_TRANSPORT_TCP,
+    GETDNS_TRANSPORT_TLS, GETDNS_TRANSPORT_STARTTLS.
+  * Added new context setting for idle_timeout
+  * CSYNC RR type
+  * EDNS0 COOKIE option code set to 10
+  * dnssec_return_validation_chain for negative and insecure responses.
+  * dnssec_return_validation_chain return a single RRSIG on each RRSET
+    (whenever possible)
+  * getdns_validate_dnssec() accept replies from the replies_tree
+  * getdns_validate_dnssec() asses negative and insecure responses.
+  * Native stub dnssec validation
+  * Implemented getdns_context_set_dnssec_trust_anchors()
+  * Switch freely between stub and recursive mode
+  * getdns_query -k shows default trust anchors
+  * functions and defines to get library and API versions in string
+    and numeric values: getdns_get_version(), getdns_get_version_number(),
+    getdns_get_api_version() and getdns_get_api_version_number()
+
+* 2015-05-21: Version 0.2.0
+  * Fix libversion numbering:  Thanks Daniel Kahn Gillmor
+  * run_once method for the libevent extension
+  * autoreconf -fi on FreeBSD always, because of newer libtool version
+    suitable for FreeBSD installs too.  Thanks Robert Edmonds
+  * True asynchronous processing of the new TLS transport options
+  * GETDNS_TRANSPORT_STARTTLS_FIRST_AND_FALL_BACK_TO_TCP_KEEP_CONNECTIONS_OPEN
+    transport option.
+  * Manpage fixes: Thanks Anthony Kirby
+
+* 2015-04-19: Version 0.1.8
+  * The GETDNS_TRANSPORT_TLS_ONLY_KEEP_CONNECTIONS_OPEN and
+    GETDNS_TRANSPORT_TLS_FIRST_AND_FALL_BACK_TO_TCP_KEEP_CONNECTIONS_OPEN
+    DNS over TLS transport options. 
+
+* 2015-04-08: Version 0.1.7
+  * Individual getter functions for context settings
+  * Fix: --with-current-date function to make build deterministically
+    reproducible (i.e. the GETDNS_COMPILATION_COMMENT define from
+    getdns.h contains a date value).  Thanks Ondřej Surý
+  * Fix: Include m4 dir in distribution tarball
+  * Fix: Link build requirements in tests too.  Thanks Ondřej Surý
+  * Fix: Remove executable flags on source files.  Thanks Paul Wouters
+  * Fix: Return "just_address_answers" only when queried for addresses
+  * Eliminate ldns intermediate wireformat parsing
+  * The CSYNC RR type
+  * Fix: canonical_name in response dict returns the canonical name
+    found after following all CNAMEs
+  * Implementation of the section 6 and 7 version of 
+    draft-ietf-dnsop-cookies-01.txt for stub resolution.  Enable with the
+    --enable-draft-edns-cookies option to configure.  Use it by setting the
+    edns_cookies extension to GETDNS_EXTENSION_TRUE.
+  * Pretty printing of lists with:
+    char *getdns_pretty_print_list(getdns_list *list)
+  * Output to json format with:
+    char * getdns_print_json_dict(const getdns_dict *some_dict, int pretty);
+    char * getdns_print_json_list(const getdns_list *some_list, int pretty);
+  * snprintf style versions of the dict, list and json print functions.
+  * Better random number generation with OpenBSD's arc4random
+  * Let getdns_address schedule the AAAA query first.  This results in AAAA
+    being the first in the just_address_answers sections of the response dict.
+  * New context update callback function to also return a user given argument
+    along with the context and which item was changed.
+    Thanks Scott Hollenbeck.
+  * Demotivate use of getdns_strerror and expose getdns_get_errorstr_by_id.
+    Thanks Scott Hollenbeck.
+  * A getter for context update callback, to allow for chaining update
+    callbacks.
+
+* 2015-01-16: Version 0.1.6
+  * Fix: linking against libev on FreeBSD
+  * Fix: Let configure report problem on FreeBSD when configuring with
+    libevent and libunbound <= 1.4.22 is not compiled with libevent.
+  * Fix: Build on Mac OS-X
+  * Fix: Lintian errors in manpages
+  * Better libcheck detection
+  * Better portability with UNIX systems
+
+* 2014-10-31: Version 0.1.5
+  * Unit tests for transport settings
+  * Fix: adhere to set maximum UDP payload size
+  * API change: when no maximum UDP payload size is set, outgoing
+    values will adhere to the suggestions in RFC 6891 and may follow
+    a scheme that uses multiple values to maximize receptivity.
+  * Stub mode use 1232 maximum UDP payload size when connecting to an
+    IPv6 upstreams and 1432 with an IPv4 upstream.
+  * Evaluate namespaces (or not) on a per query basis
+  * GETDNS_NAMESPACE_LOCALNAMES namespace now gives just_address_answers
+    only and does not mimic a DNS packet answer anymore
+  * The add_opt_parameters extension
+  * IPv6 scope_id support with link-local addresses.  Both with parsing
+    /etc/resolv.conf and by providing them explicitly via
+    getdns_context_set_upstream_recursive_servers
+  * Query for A and AAAA simultaneously with return_both_v4_and_v6
+  * GETDNS_TRANSPORT_TCP_ONLY_KEEP_CONNECTIONS_OPEN DNS transport
+  * Fix: Answers without RRs in query secion (i.e. REFUSED)
+  * Fix: Return empty response dict on timeout in async mode too
+  * Move spec examples to spec subdirectory
+  * Fix issue#76: Setting UDP Payload size below 512 should not error
+  * Fix: Include OPT RR in response dict always (even without options)
+  * TCP Fast open support (linux only).
+    Enable with the --enable-tcp-fastopen configure option
+  * Bump library version because of binary API change
+
+* 2014-09-03: Version 0.1.4
+  * Synchronous resolves now respect timeout setting,
+  * On timeout *_sync functions now return GETDNS_RETURN_GOOD and a
+    response dict with "status" GETDNS_RESPSTATUS_ALL_TIMEOUT>
+  * Fix issue#50: getdns_dict_remove_name returns GETDNS_RETURN_GOOD on
+    success.
+  * Fix Issue#54: set_ub_dns_transport() not working
+  * Fix Issue#49: Typo in documentation (thanks Stephane Bortzmeyer)
+  * getdns_context_set_limit_outstanding_queries(),
+    getdns_context_set_dnssec_allowed_skew() and
+    getdns_context_set_edns_maximum_udp_payload_size() now working
+  * <rr>_unknown rdata field for unknown or unsupported RR types
+  * Temporarily disable timeout unit test 3 because of unpredictable results
+  * Spec updated to version 0.507
+  * Renamed "resolver_type" to "resolution_type" in dict returned from
+    getdns_context_get_api_information()
+  * Added GETDNS_RESPSTATUS_ALL_BOGUS_ANSWERS return code for with the
+    dnssec_return_only_secure extension
+  * Added support for CDS and CDNSKEY RR types, but needs ldns > 1.6.17 to
+    be able to parse the wire format (not released yet at time of writing)
+  * Added OPENPGPKEY RR type, but no rdata fields implementation yet
+  * Updated spec to version 0.508 (September 2014)
+  * Also chase NSEC and NSEC3 RRSIGs with dnssec_return_validation_chain
+
+* 2014-06-25: Version 0.1.3
+  * libtool chage, remove -release, added -version-info
+  * Update specification to the June 2014 version (0.501)
+
+* 2014-06-02: Version 0.1.2
+  * Fixed rdata fields for MX
+  * Expose only public API symbols
+  * Updated manpages
+  * specify_class extension
+  * Build from separate build directory
+  * Anticipate libunbound not returning the answer packet
+  * Pretty print bindata's representing IP addresses
+  * Anticipate absence of implicit DSO linking
+  * Mention getdns specific options to configure in INSTALL
+    Thanks Paul Hoffman
+  * Mac OSX package built instructions for generic user in README.md
+    Thanks Joel Purra
+  * Fixed build problems on RHEL/CentOS due using libevent 1.x
+
+
+* 2014-03-24 : Version 0.1.1
+  * default to NOT build extensions (libev, libuv, libevent), handle
+    --with/--without options to configure for them
+  * Fixed some build/make nits
+  * respect configure --docdir=X
+  * Documentation/man page updates
+  * Fix install and cpp guards in getdns_extra.h
+  * Add method to switch between threads and fork mode for unbound
+  * Fixes for libuv integration (saghul)
+  * Fixes for calling getdns_destroy_context within a callback
+  * Fixed signal related defines/decls
+
+
+* 2014-02-25 : Version 0.1.0
+  * Initial public release of the getdns API

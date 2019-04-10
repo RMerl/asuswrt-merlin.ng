@@ -725,6 +725,11 @@ int do_tcp_dns_detect(int wan_unit){
 
 	snprintf(prefix_wan, sizeof(prefix_wan), "wan%d_", wan_unit);
 
+#ifdef RTCONFIG_DNSPRIVACY
+	if (nvram_get_int("dnspriv_enable"))
+		strcpy(wan_dns, "127.0.1.1");
+	else
+#endif
 	snprintf(wan_dns, sizeof(wan_dns), "%s", nvram_safe_get(strcat_r(prefix_wan, "dns", nvram_name)));
 
 	if(organize_tcpcheck_cmd(wan_dns, cmd, PATH_MAX) == NULL){

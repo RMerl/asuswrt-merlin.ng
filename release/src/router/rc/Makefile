@@ -236,7 +236,7 @@ endif
 
 OBJS := rc.o init.o interface.o lan.o wireless.o wan.o pppd.o auth.o services.o
 OBJS += firewall.o ppp.o services.o common.o
-OBJS += watchdog.o ntp.o $(if $(RTCONFIG_MULTIWAN_CFG),qos_multiwan.o,qos.o) udhcpc.o ate.o
+OBJS += watchdog.o $(if $(RTCONFIG_MULTIWAN_CFG),qos_multiwan.o,qos.o) udhcpc.o ate.o
 OBJS += format.o
 ifeq ($(RTCONFIG_CONNTRACK),y)
 OBJS += pctime.o
@@ -618,7 +618,12 @@ endif
 ifeq ($(RTCONFIG_DNSFILTER),y)
 OBJS += dnsfilter.o
 endif
+
+ifeq ($(RTCONFIG_NTPD),y)
 OBJS += ntpd.o
+else
+OBJS += ntp.o
+endif
 
 ifeq ($(RTCONFIG_BCMARM),y)
 ifeq ($(RTCONFIG_QTN),y)
@@ -771,8 +776,11 @@ ifeq ($(RTCONFIG_QTN),y)
 	@cd $(INSTALLDIR)/sbin && ln -sf rc start_qtn_stateless
 	@cd $(INSTALLDIR)/sbin && ln -sf rc restart_qtn
 endif
+ifneq ($(RTCONFIG_NTPD),y)
 	@cd $(INSTALLDIR)/sbin && ln -sf rc ntp
-	@cd $(INSTALLDIR)/sbin && ln -sf rc ntp_synced
+else
+	@cd $(INSTALLDIR)/sbin && ln -sf rc ntpd_synced
+endif
 	@cd $(INSTALLDIR)/sbin && ln -sf rc autodet
 ifeq ($(RTCONFIG_DETWAN),y)
 	@cd $(INSTALLDIR)/sbin && ln -sf rc detwan

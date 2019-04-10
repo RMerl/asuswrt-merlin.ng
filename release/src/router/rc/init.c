@@ -8609,6 +8609,11 @@ int init_nvram(void)
 #ifdef RTCONFIG_DNSFILTER
 	add_rc_support("dnsfilter");
 #endif
+
+#ifdef RTCONFIG_DNSPRIVACY
+	add_rc_support("dnspriv");
+#endif
+
 #ifdef RTCONFIG_DUALWAN // RTCONFIG_DUALWAN
 	add_rc_support("dualwan");
 

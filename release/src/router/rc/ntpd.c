@@ -28,9 +28,9 @@
 
 int start_ntpd(void)
 {
-	char *ntpd_argv[] = { "/usr/sbin/ntpd",
+	char *ntpd_argv[] = { "/usr/sbin/ntp",
 		"-t",
-		"-S", "/sbin/ntp_synced",
+		"-S", "/sbin/ntpd_synced",
 		"-p", "pool.ntp.org",
 		NULL, NULL,		/* -p second_server */
 		NULL, NULL, NULL,	/* -l, -I, ifname */
@@ -38,14 +38,12 @@ int start_ntpd(void)
 	int ret, index = 6;
 	pid_t pid;
 
-	/* TODO: should we stop and restart instead? */
-	if (f_exists(NTPD_PIDFILE))
-		return 0;
-
 	if (getpid() != 1) {
 		notify_rc("start_ntpd");
 		return 0;
 	}
+
+	stop_ntpd();
 
 	if (!nvram_match("ntp_server0", ""))
 		ntpd_argv[index - 1] = nvram_safe_get("ntp_server0");
@@ -75,13 +73,13 @@ void stop_ntpd(void)
 		return;
 	}
 
-	if (f_exists(NTPD_PIDFILE)) {
-		kill_pidfile_tk(NTPD_PIDFILE);
+	if (pids("ntp")) {
+		killall_tk("ntp");
 		logmessage("ntpd", "Stopped ntpd");
 	}
 }
 
-void ntp_time_synced(int argc, char *argv[])
+int ntpd_synced_main(int argc, char *argv[])
 {
 	if (!nvram_match("ntp_ready", "1") && (argc == 2 && !strcmp(argv[1], "step"))) {
 		nvram_set("ntp_ready", "1");
@@ -104,14 +102,18 @@ void ntp_time_synced(int argc, char *argv[])
 
 		setup_timezone();
 
-#ifdef RTCONFIG_DISK_MONITOR
-		notify_rc("restart_diskmon");
+#ifdef RTCONFIG_DNSPRIVACY
+		if (nvram_get_int("dnspriv_enable"))
+			notify_rc("restart_stubby");
 #endif
-
 #ifdef RTCONFIG_DNSSEC
 		if (nvram_get_int("dnssec_enable"))
 			kill_pidfile_s("/var/run/dnsmasq.pid", SIGINT);
 #endif
+#ifdef RTCONFIG_DISK_MONITOR
+		notify_rc("restart_diskmon");
+#endif
 	}
-}
 
+	return 0;
+}

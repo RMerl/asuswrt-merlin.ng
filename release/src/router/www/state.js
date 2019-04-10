@@ -456,6 +456,7 @@ var nocloudsync_support = isSupport("nocloudsync");
 var aicloudipk_support = isSupport("aicloudipk");
 var yadns_hideqis = isSupport("yadns_hideqis");
 var yadns_support = yadns_hideqis || isSupport("yadns");
+var dnspriv_support = isSupport("dnspriv");
 var manualstb_support = isSupport("manual_stb"); 
 var wps_multiband_support = isSupport("wps_multiband");
 var modem_support = isSupport("modem"); 

@@ -1,0 +1,392 @@
+The packet {
+  "answer_type": GETDNS_NAMETYPE_DNS,
+  "canonical_name": <bindata of "www.google.com.">,
+  "just_address_answers":
+  [
+    {
+      "address_data": <bindata for 74.125.230.81>,
+      "address_type": <bindata of "IPv4">
+    },
+    {
+      "address_data": <bindata for 74.125.230.80>,
+      "address_type": <bindata of "IPv4">
+    },
+    {
+      "address_data": <bindata for 74.125.230.82>,
+      "address_type": <bindata of "IPv4">
+    },
+    {
+      "address_data": <bindata for 74.125.230.83>,
+      "address_type": <bindata of "IPv4">
+    },
+    {
+      "address_data": <bindata for 74.125.230.84>,
+      "address_type": <bindata of "IPv4">
+    },
+    {
+      "address_data": <bindata for 2a00:1450:4009:800::1014>,
+      "address_type": <bindata of "IPv6">
+    }
+  ],
+  "replies_full":
+  [
+     <bindata of 0xb1808180000100050000000103777777...>,
+     <bindata of 0xeba08180000100010000000103777777...>
+  ],
+  "replies_tree":
+  [
+    {
+      "additional": [],
+      "answer":
+      [
+        {
+          "class": GETDNS_RRCLASS_IN,
+          "name": <bindata for www.google.com.>,
+          "rdata":
+          {
+            "ipv4_address": <bindata for 74.125.230.81>,
+            "rdata_raw": <bindata of 0x4a7de651>
+          },
+          "ttl": 300,
+          "type": GETDNS_RRTYPE_A
+        },
+        {
+          "class": GETDNS_RRCLASS_IN,
+          "name": <bindata for www.google.com.>,
+          "rdata":
+          {
+            "ipv4_address": <bindata for 74.125.230.80>,
+            "rdata_raw": <bindata of 0x4a7de650>
+          },
+          "ttl": 300,
+          "type": GETDNS_RRTYPE_A
+        },
+        {
+          "class": GETDNS_RRCLASS_IN,
+          "name": <bindata for www.google.com.>,
+          "rdata":
+          {
+            "ipv4_address": <bindata for 74.125.230.82>,
+            "rdata_raw": <bindata of 0x4a7de652>
+          },
+          "ttl": 300,
+          "type": GETDNS_RRTYPE_A
+        },
+        {
+          "class": GETDNS_RRCLASS_IN,
+          "name": <bindata for www.google.com.>,
+          "rdata":
+          {
+            "ipv4_address": <bindata for 74.125.230.83>,
+            "rdata_raw": <bindata of 0x4a7de653>
+          },
+          "ttl": 300,
+          "type": GETDNS_RRTYPE_A
+        },
+        {
+          "class": GETDNS_RRCLASS_IN,
+          "name": <bindata for www.google.com.>,
+          "rdata":
+          {
+            "ipv4_address": <bindata for 74.125.230.84>,
+            "rdata_raw": <bindata of 0x4a7de654>
+          },
+          "ttl": 300,
+          "type": GETDNS_RRTYPE_A
+        }
+      ],
+      "answer_type": GETDNS_NAMETYPE_DNS,
+      "authority": [],
+      "canonical_name": <bindata of "www.google.com.">,
+      "header":
+      {
+        "aa": 0,
+        "ad": 0,
+        "ancount": 5,
+        "arcount": 0,
+        "cd": 0,
+        "id": 45440,
+        "nscount": 0,
+        "opcode": GETDNS_OPCODE_QUERY,
+        "qdcount": 1,
+        "qr": 1,
+        "ra": 1,
+        "rcode": GETDNS_RCODE_NOERROR,
+        "rd": 1,
+        "tc": 0,
+        "z": 0
+      },
+      "question":
+      {
+        "qclass": GETDNS_RRCLASS_IN,
+        "qname": <bindata for www.google.com.>,
+        "qtype": GETDNS_RRTYPE_A
+      }
+    },
+    {
+      "additional": [],
+      "answer":
+      [
+        {
+          "class": GETDNS_RRCLASS_IN,
+          "name": <bindata for www.google.com.>,
+          "rdata":
+          {
+            "ipv6_address": <bindata for 2a00:1450:4009:800::1014>,
+            "rdata_raw": <bindata of 0x2a001450400908000000000000001014>
+          },
+          "ttl": 300,
+          "type": GETDNS_RRTYPE_AAAA
+        }
+      ],
+      "answer_type": GETDNS_NAMETYPE_DNS,
+      "authority": [],
+      "canonical_name": <bindata of "www.google.com.">,
+      "header":
+      {
+        "aa": 0,
+        "ad": 0,
+        "ancount": 1,
+        "arcount": 0,
+        "cd": 0,
+        "id": 60320,
+        "nscount": 0,
+        "opcode": GETDNS_OPCODE_QUERY,
+        "qdcount": 1,
+        "qr": 1,
+        "ra": 1,
+        "rcode": GETDNS_RCODE_NOERROR,
+        "rd": 1,
+        "tc": 0,
+        "z": 0
+      },
+      "question":
+      {
+        "qclass": GETDNS_RRCLASS_IN,
+        "qname": <bindata for www.google.com.>,
+        "qtype": GETDNS_RRTYPE_AAAA
+      }
+    }
+  ],
+  "status": GETDNS_RESPSTATUS_GOOD
+}
+The packet {
+  "answer_type": GETDNS_NAMETYPE_DNS,
+  "canonical_name": <bindata of "_xmpp-client._tcp.jabber.com.">,
+  "just_address_answers": [],
+  "replies_full":
+  [
+     <bindata of 0xad6f818000010001000200020c5f786d...>
+  ],
+  "replies_tree":
+  [
+    {
+      "additional":
+      [
+        {
+          "class": GETDNS_RRCLASS_IN,
+          "name": <bindata for denjab2.jabber.com.>,
+          "rdata":
+          {
+            "ipv4_address": <bindata for 216.24.133.14>,
+            "rdata_raw": <bindata of 0xd818850e>
+          },
+          "ttl": 85567,
+          "type": GETDNS_RRTYPE_A
+        }
+      ],
+      "answer":
+      [
+        {
+          "class": GETDNS_RRCLASS_IN,
+          "name": <bindata for _xmpp-client._tcp.jabber.com.>,
+          "rdata":
+          {
+            "port": 5222,
+            "priority": 10,
+            "rdata_raw": <bindata of 0x000a000014660764656e6a616232066a...>,
+            "target": <bindata for denjab2.jabber.com.>,
+            "weight": 0
+          },
+          "ttl": 6367,
+          "type": GETDNS_RRTYPE_SRV
+        }
+      ],
+      "answer_type": GETDNS_NAMETYPE_DNS,
+      "authority":
+      [
+        {
+          "class": GETDNS_RRCLASS_IN,
+          "name": <bindata for jabber.com.>,
+          "rdata":
+          {
+            "nsdname": <bindata for ns1.as13445.net.>,
+            "rdata_raw": <bindata for ns1.as13445.net.>
+          },
+          "ttl": 85567,
+          "type": GETDNS_RRTYPE_NS
+        },
+        {
+          "class": GETDNS_RRCLASS_IN,
+          "name": <bindata for jabber.com.>,
+          "rdata":
+          {
+            "nsdname": <bindata for ns2.as13445.net.>,
+            "rdata_raw": <bindata for ns2.as13445.net.>
+          },
+          "ttl": 85567,
+          "type": GETDNS_RRTYPE_NS
+        }
+      ],
+      "canonical_name": <bindata of "_xmpp-client._tcp.jabber.com.">,
+      "header":
+      {
+        "aa": 0,
+        "ad": 0,
+        "ancount": 1,
+        "arcount": 1,
+        "cd": 0,
+        "id": 44399,
+        "nscount": 2,
+        "opcode": GETDNS_OPCODE_QUERY,
+        "qdcount": 1,
+        "qr": 1,
+        "ra": 1,
+        "rcode": GETDNS_RCODE_NOERROR,
+        "rd": 1,
+        "tc": 0,
+        "z": 0
+      },
+      "question":
+      {
+        "qclass": GETDNS_RRCLASS_IN,
+        "qname": <bindata for _xmpp-client._tcp.jabber.com.>,
+        "qtype": GETDNS_RRTYPE_SRV
+      }
+    }
+  ],
+  "status": GETDNS_RESPSTATUS_GOOD
+}
+The packet {
+  "answer_type": GETDNS_NAMETYPE_DNS,
+  "canonical_name": <bindata of "www.google.com.">,
+  "just_address_answers":
+  [
+    {
+      "address_data": <bindata for 74.125.230.81>,
+      "address_type": <bindata of "IPv4">
+    },
+    {
+      "address_data": <bindata for 74.125.230.80>,
+      "address_type": <bindata of "IPv4">
+    },
+    {
+      "address_data": <bindata for 74.125.230.82>,
+      "address_type": <bindata of "IPv4">
+    },
+    {
+      "address_data": <bindata for 74.125.230.83>,
+      "address_type": <bindata of "IPv4">
+    },
+    {
+      "address_data": <bindata for 74.125.230.84>,
+      "address_type": <bindata of "IPv4">
+    }
+  ],
+  "replies_full":
+  [
+     <bindata of 0x6f2c8180000100050000000103777777...>
+  ],
+  "replies_tree":
+  [
+    {
+      "additional": [],
+      "answer":
+      [
+        {
+          "class": GETDNS_RRCLASS_IN,
+          "name": <bindata for www.google.com.>,
+          "rdata":
+          {
+            "ipv4_address": <bindata for 74.125.230.81>,
+            "rdata_raw": <bindata of 0x4a7de651>
+          },
+          "ttl": 300,
+          "type": GETDNS_RRTYPE_A
+        },
+        {
+          "class": GETDNS_RRCLASS_IN,
+          "name": <bindata for www.google.com.>,
+          "rdata":
+          {
+            "ipv4_address": <bindata for 74.125.230.80>,
+            "rdata_raw": <bindata of 0x4a7de650>
+          },
+          "ttl": 300,
+          "type": GETDNS_RRTYPE_A
+        },
+        {
+          "class": GETDNS_RRCLASS_IN,
+          "name": <bindata for www.google.com.>,
+          "rdata":
+          {
+            "ipv4_address": <bindata for 74.125.230.82>,
+            "rdata_raw": <bindata of 0x4a7de652>
+          },
+          "ttl": 300,
+          "type": GETDNS_RRTYPE_A
+        },
+        {
+          "class": GETDNS_RRCLASS_IN,
+          "name": <bindata for www.google.com.>,
+          "rdata":
+          {
+            "ipv4_address": <bindata for 74.125.230.83>,
+            "rdata_raw": <bindata of 0x4a7de653>
+          },
+          "ttl": 300,
+          "type": GETDNS_RRTYPE_A
+        },
+        {
+          "class": GETDNS_RRCLASS_IN,
+          "name": <bindata for www.google.com.>,
+          "rdata":
+          {
+            "ipv4_address": <bindata for 74.125.230.84>,
+            "rdata_raw": <bindata of 0x4a7de654>
+          },
+          "ttl": 300,
+          "type": GETDNS_RRTYPE_A
+        }
+      ],
+      "answer_type": GETDNS_NAMETYPE_DNS,
+      "authority": [],
+      "canonical_name": <bindata of "www.google.com.">,
+      "header":
+      {
+        "aa": 0,
+        "ad": 0,
+        "ancount": 5,
+        "arcount": 0,
+        "cd": 0,
+        "id": 28460,
+        "nscount": 0,
+        "opcode": GETDNS_OPCODE_QUERY,
+        "qdcount": 1,
+        "qr": 1,
+        "ra": 1,
+        "rcode": GETDNS_RCODE_NOERROR,
+        "rd": 1,
+        "tc": 0,
+        "z": 0
+      },
+      "question":
+      {
+        "qclass": GETDNS_RRCLASS_IN,
+        "qname": <bindata for www.google.com.>,
+        "qtype": GETDNS_RRTYPE_A
+      }
+    }
+  ],
+  "status": GETDNS_RESPSTATUS_GOOD
+}

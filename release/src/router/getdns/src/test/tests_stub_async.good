@@ -1,0 +1,322 @@
+{
+  "answer_type": GETDNS_NAMETYPE_DNS,
+  "canonical_name": <bindata of "getdnsapi.net.">,
+  "just_address_answers":
+  [
+    {
+      "address_data": <bindata for 185.49.141.37>,
+      "address_type": <bindata of "IPv4">
+    },
+    {
+      "address_data": <bindata for 2a04:b900:0:100::37>,
+      "address_type": <bindata of "IPv6">
+    }
+  ],
+  "replies_full":
+  [
+     <bindata of 0x705f8180000100020004000309676574...>,
+     <bindata of 0x5fb58180000100020004000309676574...>
+  ],
+  "replies_tree":
+  [
+    {
+      "additional":
+      [
+        {
+          "class": GETDNS_RRCLASS_IN,
+          "name": <bindata for getdnsapi.net.>,
+          "rdata":
+          {
+            "ipv6_address": <bindata for 2a04:b900:0:100::37>,
+            "rdata_raw": <bindata of 0x2a04b900000001000000000000000037>
+          },
+          "ttl": 376,
+          "type": GETDNS_RRTYPE_AAAA
+        },
+        {
+          "class": GETDNS_RRCLASS_IN,
+          "name": <bindata for getdnsapi.net.>,
+          "rdata":
+          {
+            "algorithm": 7,
+            "key_tag": 50394,
+            "labels": 2,
+            "original_ttl": 450,
+            "rdata_raw": <bindata of 0x001c0702000001c25462c1ca54465e04...>,
+            "signature": <bindata of 0x997567f31b90d7edb2500dcc5c6f6ee3...>,
+            "signature_expiration": 1415758282,
+            "signature_inception": 1413897732,
+            "signers_name": <bindata for getdnsapi.net.>,
+            "type_covered": GETDNS_RRTYPE_AAAA
+          },
+          "ttl": 376,
+          "type": GETDNS_RRTYPE_RRSIG
+        }
+      ],
+      "answer":
+      [
+        {
+          "class": GETDNS_RRCLASS_IN,
+          "name": <bindata for getdnsapi.net.>,
+          "rdata":
+          {
+            "ipv4_address": <bindata for 185.49.141.37>,
+            "rdata_raw": <bindata of 0xb9318d25>
+          },
+          "ttl": 376,
+          "type": GETDNS_RRTYPE_A
+        },
+        {
+          "class": GETDNS_RRCLASS_IN,
+          "name": <bindata for getdnsapi.net.>,
+          "rdata":
+          {
+            "algorithm": 7,
+            "key_tag": 50394,
+            "labels": 2,
+            "original_ttl": 450,
+            "rdata_raw": <bindata of 0x00010702000001c254616f025445ed84...>,
+            "signature": <bindata of 0x6b0f75546e89e16a45d6ffec4dcb9bb0...>,
+            "signature_expiration": 1415671554,
+            "signature_inception": 1413868932,
+            "signers_name": <bindata for getdnsapi.net.>,
+            "type_covered": GETDNS_RRTYPE_A
+          },
+          "ttl": 376,
+          "type": GETDNS_RRTYPE_RRSIG
+        }
+      ],
+      "answer_type": GETDNS_NAMETYPE_DNS,
+      "authority":
+      [
+        {
+          "class": GETDNS_RRCLASS_IN,
+          "name": <bindata for getdnsapi.net.>,
+          "rdata":
+          {
+            "nsdname": <bindata for getdnsapi.net.>,
+            "rdata_raw": <bindata for getdnsapi.net.>
+          },
+          "ttl": 376,
+          "type": GETDNS_RRTYPE_NS
+        },
+        {
+          "class": GETDNS_RRCLASS_IN,
+          "name": <bindata for getdnsapi.net.>,
+          "rdata":
+          {
+            "nsdname": <bindata for mcvax.nlnet.nl.>,
+            "rdata_raw": <bindata for mcvax.nlnet.nl.>
+          },
+          "ttl": 376,
+          "type": GETDNS_RRTYPE_NS
+        },
+        {
+          "class": GETDNS_RRCLASS_IN,
+          "name": <bindata for getdnsapi.net.>,
+          "rdata":
+          {
+            "nsdname": <bindata for dicht.nlnetlabs.nl.>,
+            "rdata_raw": <bindata for dicht.nlnetlabs.nl.>
+          },
+          "ttl": 376,
+          "type": GETDNS_RRTYPE_NS
+        },
+        {
+          "class": GETDNS_RRCLASS_IN,
+          "name": <bindata for getdnsapi.net.>,
+          "rdata":
+          {
+            "algorithm": 7,
+            "key_tag": 50394,
+            "labels": 2,
+            "original_ttl": 450,
+            "rdata_raw": <bindata of 0x00020702000001c254606b0054450c84...>,
+            "signature": <bindata of 0x103f5f653c8eca57c2544af8afe62158...>,
+            "signature_expiration": 1415604992,
+            "signature_inception": 1413811332,
+            "signers_name": <bindata for getdnsapi.net.>,
+            "type_covered": GETDNS_RRTYPE_NS
+          },
+          "ttl": 376,
+          "type": GETDNS_RRTYPE_RRSIG
+        }
+      ],
+      "canonical_name": <bindata of "getdnsapi.net.">,
+      "header":
+      {
+        "aa": 0,
+        "ad": 0,
+        "ancount": 2,
+        "arcount": 2,
+        "cd": 0,
+        "id": 28767,
+        "nscount": 4,
+        "opcode": GETDNS_OPCODE_QUERY,
+        "qdcount": 1,
+        "qr": 1,
+        "ra": 1,
+        "rcode": GETDNS_RCODE_NOERROR,
+        "rd": 1,
+        "tc": 0,
+        "z": 0
+      },
+      "question":
+      {
+        "qclass": GETDNS_RRCLASS_IN,
+        "qname": <bindata for getdnsapi.net.>,
+        "qtype": GETDNS_RRTYPE_A
+      }
+    },
+    {
+      "additional":
+      [
+        {
+          "class": GETDNS_RRCLASS_IN,
+          "name": <bindata for getdnsapi.net.>,
+          "rdata":
+          {
+            "ipv4_address": <bindata for 185.49.141.37>,
+            "rdata_raw": <bindata of 0xb9318d25>
+          },
+          "ttl": 376,
+          "type": GETDNS_RRTYPE_A
+        },
+        {
+          "class": GETDNS_RRCLASS_IN,
+          "name": <bindata for getdnsapi.net.>,
+          "rdata":
+          {
+            "algorithm": 7,
+            "key_tag": 50394,
+            "labels": 2,
+            "original_ttl": 450,
+            "rdata_raw": <bindata of 0x00010702000001c254616f025445ed84...>,
+            "signature": <bindata of 0x6b0f75546e89e16a45d6ffec4dcb9bb0...>,
+            "signature_expiration": 1415671554,
+            "signature_inception": 1413868932,
+            "signers_name": <bindata for getdnsapi.net.>,
+            "type_covered": GETDNS_RRTYPE_A
+          },
+          "ttl": 376,
+          "type": GETDNS_RRTYPE_RRSIG
+        }
+      ],
+      "answer":
+      [
+        {
+          "class": GETDNS_RRCLASS_IN,
+          "name": <bindata for getdnsapi.net.>,
+          "rdata":
+          {
+            "ipv6_address": <bindata for 2a04:b900:0:100::37>,
+            "rdata_raw": <bindata of 0x2a04b900000001000000000000000037>
+          },
+          "ttl": 376,
+          "type": GETDNS_RRTYPE_AAAA
+        },
+        {
+          "class": GETDNS_RRCLASS_IN,
+          "name": <bindata for getdnsapi.net.>,
+          "rdata":
+          {
+            "algorithm": 7,
+            "key_tag": 50394,
+            "labels": 2,
+            "original_ttl": 450,
+            "rdata_raw": <bindata of 0x001c0702000001c25462c1ca54465e04...>,
+            "signature": <bindata of 0x997567f31b90d7edb2500dcc5c6f6ee3...>,
+            "signature_expiration": 1415758282,
+            "signature_inception": 1413897732,
+            "signers_name": <bindata for getdnsapi.net.>,
+            "type_covered": GETDNS_RRTYPE_AAAA
+          },
+          "ttl": 376,
+          "type": GETDNS_RRTYPE_RRSIG
+        }
+      ],
+      "answer_type": GETDNS_NAMETYPE_DNS,
+      "authority":
+      [
+        {
+          "class": GETDNS_RRCLASS_IN,
+          "name": <bindata for getdnsapi.net.>,
+          "rdata":
+          {
+            "nsdname": <bindata for getdnsapi.net.>,
+            "rdata_raw": <bindata for getdnsapi.net.>
+          },
+          "ttl": 376,
+          "type": GETDNS_RRTYPE_NS
+        },
+        {
+          "class": GETDNS_RRCLASS_IN,
+          "name": <bindata for getdnsapi.net.>,
+          "rdata":
+          {
+            "nsdname": <bindata for mcvax.nlnet.nl.>,
+            "rdata_raw": <bindata for mcvax.nlnet.nl.>
+          },
+          "ttl": 376,
+          "type": GETDNS_RRTYPE_NS
+        },
+        {
+          "class": GETDNS_RRCLASS_IN,
+          "name": <bindata for getdnsapi.net.>,
+          "rdata":
+          {
+            "nsdname": <bindata for dicht.nlnetlabs.nl.>,
+            "rdata_raw": <bindata for dicht.nlnetlabs.nl.>
+          },
+          "ttl": 376,
+          "type": GETDNS_RRTYPE_NS
+        },
+        {
+          "class": GETDNS_RRCLASS_IN,
+          "name": <bindata for getdnsapi.net.>,
+          "rdata":
+          {
+            "algorithm": 7,
+            "key_tag": 50394,
+            "labels": 2,
+            "original_ttl": 450,
+            "rdata_raw": <bindata of 0x00020702000001c254606b0054450c84...>,
+            "signature": <bindata of 0x103f5f653c8eca57c2544af8afe62158...>,
+            "signature_expiration": 1415604992,
+            "signature_inception": 1413811332,
+            "signers_name": <bindata for getdnsapi.net.>,
+            "type_covered": GETDNS_RRTYPE_NS
+          },
+          "ttl": 376,
+          "type": GETDNS_RRTYPE_RRSIG
+        }
+      ],
+      "canonical_name": <bindata of "getdnsapi.net.">,
+      "header":
+      {
+        "aa": 0,
+        "ad": 0,
+        "ancount": 2,
+        "arcount": 2,
+        "cd": 0,
+        "id": 24501,
+        "nscount": 4,
+        "opcode": GETDNS_OPCODE_QUERY,
+        "qdcount": 1,
+        "qr": 1,
+        "ra": 1,
+        "rcode": GETDNS_RCODE_NOERROR,
+        "rd": 1,
+        "tc": 0,
+        "z": 0
+      },
+      "question":
+      {
+        "qclass": GETDNS_RRCLASS_IN,
+        "qname": <bindata for getdnsapi.net.>,
+        "qtype": GETDNS_RRTYPE_AAAA
+      }
+    }
+  ],
+  "status": GETDNS_RESPSTATUS_GOOD
+}

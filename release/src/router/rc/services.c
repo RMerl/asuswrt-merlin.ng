@@ -4111,10 +4111,14 @@ stop_misc(void)
 	if (pids("qtn_monitor"))
 		killall_tk("qtn_monitor");
 #endif
+#ifdef RTCONFIG_NTPD
+	stop_ntpd();
+#else
 	if (pids("ntp"))
 		killall_tk("ntp");
 	if (pids("ntpclient"))
 		killall_tk("ntpclient");
+#endif
 
 	stop_hotplug2();
 #ifdef RTCONFIG_BCMWL6
@@ -4810,6 +4814,7 @@ start_ntpc(void)
 	if (!pids("ntp"))
 		_eval(ntp_argv, NULL, 0, &pid);
 #endif
+
 	return 0;
 }
 
@@ -4824,12 +4829,12 @@ stop_ntpc(void)
 #endif
 }
 
-
 void refresh_ntpc(void)
 {
 	setup_timezone();
 
 #ifdef RTCONFIG_NTPD
+	/* TODO: refresh ntpd with signal */
 	stop_ntpd();
 	start_ntpd();
 #else
@@ -8110,8 +8115,6 @@ stop_services(void)
 {
 	run_custom_script("services-stop", NULL);
 
-	stop_ntpd();
-
 #ifdef RTCONFIG_ADTBW
 	stop_adtbw();
 #endif
@@ -8462,8 +8465,12 @@ stop_services_mfg(void)
 #if defined(RTCONFIG_BWDPI)
 	stop_bwdpi_check();
 #endif
+#ifdef RTCONFIG_NTPD
+	stop_ntpd();
+#else
 	killall_tk("ntp");
 	stop_ntpc();
+#endif
 	stop_udhcpc(-1);
 	platform_start_ate_mode();
 #ifdef RTCONFIG_QCA_PLC_UTILS
@@ -12198,6 +12205,13 @@ check_ddr_done:
 		if(action & RC_SERVICE_STOP) stop_ntpc();
 		if(action & RC_SERVICE_START) start_ntpc();
 	}
+#ifdef RTCONFIG_NTPD
+	else if (strcmp(script, "ntpd") == 0)
+	{
+		if(action & RC_SERVICE_STOP) stop_ntpd();
+		if(action & RC_SERVICE_START) start_ntpd();
+	}
+#endif
 	else if (strcmp(script, "rebuild_cifs_config_and_password") ==0)
 	{
 		fprintf(stderr, "rc rebuilding CIFS config and password databases.\n");
@@ -12207,7 +12221,9 @@ check_ddr_done:
 	else if (strcmp(script, "time") == 0)
 	{
 		if(action & RC_SERVICE_STOP) {
+#ifdef RTCONFIG_NTPD
 			stop_ntpd();
+#endif
 			stop_hour_monitor_service();
 			stop_telnetd();
 #ifdef RTCONFIG_SSH
@@ -12227,7 +12243,6 @@ check_ddr_done:
 			//start_httpd();
 			start_firewall(wan_primary_ifunit(), 0);
 			start_hour_monitor_service();
-			start_ntpd();
 		}
 	}
 	else if (strcmp(script, "wps_method")==0)
@@ -12691,11 +12706,6 @@ retry_wps_enr:
 	}
 	else if (strcmp(script, "leds") == 0) {
 		setup_leds();
-	}
-	else if (strcmp(script, "ntpd") == 0)
-	{
-		if(action & RC_SERVICE_STOP) stop_ntpd();
-		if(action & RC_SERVICE_START) start_ntpd();
 	}
 	else if (strcmp(script, "updateresolv") == 0) {
 		update_resolvconf();

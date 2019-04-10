@@ -43,8 +43,7 @@ int start_ntpd(void)
 		return 0;
 	}
 
-	if (pids("ntp"))
-		stop_ntpd();
+	stop_ntpd();
 
 	if (!nvram_match("ntp_server0", ""))
 		ntpd_argv[index - 1] = nvram_safe_get("ntp_server0");
@@ -115,4 +114,3 @@ int ntpd_synced_main(int argc, char *argv[])
 
 	return 0;
 }
-

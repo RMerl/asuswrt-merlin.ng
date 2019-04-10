@@ -1861,7 +1861,9 @@ stop_wan_if(int unit)
 	// Handel for each interface
 	if(unit == wan_primary_ifunit()){
 		killall_tk("stats");
+#ifndef RTCONFIG_NTPD
 		killall_tk("ntpclient");
+#endif
 
 		/* Shutdown and kill all possible tasks */
 #if 0

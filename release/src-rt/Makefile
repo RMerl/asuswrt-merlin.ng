@@ -1065,6 +1065,10 @@ define RouterOptions
 		sed -i "/RTCONFIG_YANDEXDNS/d" $(1); \
 		echo "RTCONFIG_YANDEXDNS=y" >>$(1); \
 	fi; \
+	if [ "$(DNSPRIVACY)" = "y" ]; then \
+		sed -i "/RTCONFIG_DNSPRIVACY/d" $(1); \
+		echo "RTCONFIG_DNSPRIVACY=y" >>$(1); \
+	fi; \
 	if [ "$(PPTPD)" = "y" ]; then \
 		sed -i "/RTCONFIG_PPTPD/d" $(1); \
 		echo "RTCONFIG_PPTPD=y" >>$(1); \

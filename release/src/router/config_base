@@ -87,6 +87,7 @@ RTCONFIG_DDNS=y
 # RTCONFIG_COMA is not set
 # RTCONFIG_PARENTALCTRL is not set
 # RTCONFIG_YANDEXDNS is not set
+# RTCONFIG_DNSPRIVACY is not set
 # RTCONFIG_PPTPD is not set
 # RTCONFIG_ACCEL_PPTPD is not set
 # RTCONFIG_DSL is not set

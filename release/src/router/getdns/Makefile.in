@@ -160,11 +160,11 @@ distclean:
 	rmdir spec 2>/dev/null || true
 	rm -f config.log config.status Makefile libtool getdns.pc getdns_ext_event.pc
 	rm -fR autom4te.cache
-	rm -f m4/libtool.m4
-	rm -f m4/lt~obsolete.m4
-	rm -f m4/ltoptions.m4
-	rm -f m4/ltsugar.m4
-	rm -f m4/ltversion.m4
+#	rm -f m4/libtool.m4
+#	rm -f m4/lt~obsolete.m4
+#	rm -f m4/ltoptions.m4
+#	rm -f m4/ltsugar.m4
+#	rm -f m4/ltversion.m4
 	rm -f $(distdir).tar.gz $(distdir).tar.gz.sha256 $(distdir).tar.gz.sha1
 	rm -f $(distdir).tar.gz.md5 $(distdir).tar.gz.asc
 

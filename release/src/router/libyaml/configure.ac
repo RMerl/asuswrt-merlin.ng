@@ -28,6 +28,7 @@ AC_INIT([yaml], [YAML_MAJOR.YAML_MINOR.YAML_PATCH], [YAML_BUGS])
 AC_CONFIG_AUX_DIR([config])
 AC_CONFIG_HEADERS([config.h])
 AM_INIT_AUTOMAKE([1.9 foreign])
+AM_MAINTAINER_MODE
 
 # Define macro variables for the package version numbers.
 AC_DEFINE(YAML_VERSION_MAJOR, YAML_MAJOR, [Define the major version number.])

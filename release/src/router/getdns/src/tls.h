@@ -38,11 +38,13 @@
 
 #include "types-internal.h"
 
-#include "tls-internal.h"
-
 /* Forward declare type. */
 struct sha256_pin;
 typedef struct sha256_pin sha256_pin_t;
+struct getdns_log_config;
+typedef struct getdns_log_config getdns_log_config;
+
+#include "tls-internal.h"
 
 /* Additional return codes required by TLS abstraction. Internal use only. */
 #define GETDNS_RETURN_TLS_WANT_READ		((getdns_return_t) 420)

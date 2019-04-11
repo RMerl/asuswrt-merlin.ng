@@ -53,8 +53,6 @@
 #define HAVE_TLS_CTX_CURVES_LIST	0
 #define HAVE_TLS_CONN_CURVES_LIST	0
 
-typedef struct getdns_log_config getdns_log_config;
-
 typedef struct _getdns_tls_context {
 	struct mem_funcs* mfs;
 	char* cipher_list;

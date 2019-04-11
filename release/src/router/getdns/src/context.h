@@ -127,10 +127,10 @@ typedef struct getdns_tsig_info {
 const getdns_tsig_info *_getdns_get_tsig_info(getdns_tsig_algo tsig_alg);
 
 /* for doing public key pinning of TLS-capable upstreams: */
-typedef struct sha256_pin {
+struct sha256_pin {
 	uint8_t pin[SHA256_DIGEST_LENGTH];
 	struct sha256_pin *next;
-} sha256_pin_t;
+};
 
 typedef struct getdns_upstream {
 	/* backpointer to containing upstreams structure */
@@ -259,12 +259,12 @@ typedef struct getdns_upstream {
 
 } getdns_upstream;
 
-typedef struct getdns_log_config {
+struct getdns_log_config {
 	getdns_logfunc_type  func;
 	void                *userarg;
 	uint64_t             system;
 	getdns_loglevel_type level;
-} getdns_log_config;
+};
 
 typedef struct getdns_upstreams {
 	struct mem_funcs mf;

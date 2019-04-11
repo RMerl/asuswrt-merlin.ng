@@ -54,9 +54,6 @@
 
 #define GETDNS_TLS_MAX_DIGEST_LENGTH	(EVP_MAX_MD_SIZE)
 
-typedef struct sha256_pin sha256_pin_t;
-typedef struct getdns_log_config getdns_log_config;
-
 typedef struct _getdns_tls_context {
 	SSL_CTX* ssl;
 	const getdns_log_config* log;

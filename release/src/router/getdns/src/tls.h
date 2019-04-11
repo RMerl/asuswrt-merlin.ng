@@ -42,7 +42,6 @@
 
 /* Forward declare type. */
 struct sha256_pin;
-typedef struct sha256_pin sha256_pin_t;
 
 /* Additional return codes required by TLS abstraction. Internal use only. */
 #define GETDNS_RETURN_TLS_WANT_READ		((getdns_return_t) 420)

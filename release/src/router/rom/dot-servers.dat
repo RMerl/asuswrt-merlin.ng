@@ -1,0 +1,40 @@
+# Layout:
+# Name,IP_Address,Port,TLS_Hostname,SPKI
+# Single entry = group label
+# Empty lines are ignored
+
+IPv4
+Adguard 1,176.103.130.130,,dns.adguard.com,
+Adguard 2,176.103.130.131,,dns.adguard.com,
+Adguard Family Protect 1,176.103.130.132,,dns-family.adguard.com,
+Adguard Family Protect 2,176.103.130.134,,dns-family.adguard.com,
+Cloudflare 1.1.1.1,1.1.1.1,,cloudflare-dns.com,
+Cloudflare 1.0.0.1,1.0.0.1,,cloudflare-dns.com,
+Getdns,185.49.141.37,,getdnsapi.net,foxZRnIh9gZpWnl+zEiKa0EJ2rdCGroMWm02gaxSc9Q=
+Google 8.8.8.8,8.8.8.8,,dns.google,
+Google 8.8.4.4,8.8.4.4,,dns.google,
+Quad9 (secure),9.9.9.9,,dns.quad9.net,
+Quad9 (insecure),9.9.9.10,,dns.quad9.net,
+Surfnet/Sinodun 1,145.100.185.15,,dnsovertls.sinodun.com,62lKu9HsDVbyiPenApnc4sfmSYTHOVfFgL3pyB+cBL4=
+Surfnet/Sinodun 2,145.100.185.16,,dnsovertls1.sinodun.com,cE2ecALeE5B+urJhDrJlVFmf38cJLAvqekONvjvpqUA=
+
+IPv4 (port 443)
+Neutopia,89.234.186.112,443,dns.neutopia.org,wTeXHM8aczvhRSi0cv2qOXkXInoDU+2C+M8MpRyT3OI=
+Surfnet/Sinodun 1,145.100.185.15,443,dnsovertls.sinodun.com,62lKu9HsDVbyiPenApnc4sfmSYTHOVfFgL3pyB+cBL4=
+Surfnet/Sinodun 2,145.100.185.16,443,dnsovertls1.sinodun.com,cE2ecALeE5B+urJhDrJlVFmf38cJLAvqekONvjvpqUA=
+
+IPv6
+Adguard 1,2a00:5a60::ad1:0ff,,dns.adguard.com,
+Adguard 2,2a00:5a60::ad2:0ff,,dns.adguard.com,
+Adguard Family Protect 1,2a00:5a60::bad1:0ff,,dns-family.adguard.com,
+Adguard Family Protect 2,2a00:5a60::bad2:0ff,,dns-family.adguard.com,
+Cloudflare :1111,2606:4700:4700::1111,,cloudflare-dns.com,
+Cloudflare :1001,2606:4700:4700::1001,,cloudflare-dns.com,
+Getdnsapi,2a04:b900:0:100::38,,getdnsapi.net,foxZRnIh9gZpWnl+zEiKa0EJ2rdCGroMWm02gaxSc9Q=
+Surfnet/Sinodun 1,2001:610:1:40ba:145:100:185:15,,dnsovertls.sinodun.com,62lKu9HsDVbyiPenApnc4sfmSYTHOVfFgL3pyB+cBL4=
+Surfnet/Sinodun 2,2001:610:1:40ba:145:100:185:16,,dnsovertls1.sinodun.com,cE2ecALeE5B+urJhDrJlVFmf38cJLAvqekONvjvpqUA=
+
+IPv6 (port 443)
+Neutopia,2a00:5884:8209::2,443,dns.neutopia.org,wTeXHM8aczvhRSi0cv2qOXkXInoDU+2C+M8MpRyT3OI=
+Surfnet/Sinodun 1,2001:610:1:40ba:145:100:185:15,443,dnsovertls.sinodun.com,62lKu9HsDVbyiPenApnc4sfmSYTHOVfFgL3pyB+cBL4=
+Surfnet/Sinodun 2,2001:610:1:40ba:145:100:185:16,443,dnsovertls1.sinodun.com,cE2ecALeE5B+urJhDrJlVFmf38cJLAvqekONvjvpqUA=

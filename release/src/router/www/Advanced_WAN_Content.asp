@@ -49,6 +49,7 @@ if(dualWAN_support && ( wans_dualwan.search("wan") >= 0 || wans_dualwan.search("
 }
 <% login_state_hook(); %>
 <% wan_get_parameter(); %>
+<% get_dnsprivacy_presets("dot"); %>
 
 var wan_proto_orig = '<% nvram_get("wan_proto"); %>';
 var original_wan_type = wan_proto_orig;
@@ -100,6 +101,7 @@ function initial(){
 	change_nat(<% nvram_get("wan_nat_x"); %>);
 
 	if(dnspriv_support){
+		build_dot_server_presets();
 		inputCtrl(document.form.dnspriv_enable, 1);
 		change_dnspriv_enable(document.form.dnspriv_enable.value);
 	}
@@ -884,6 +886,7 @@ function change_dnspriv_enable(flag){
 		inputCtrl(document.form.dnspriv_profile[1], 1);
 		document.getElementById("DNSPrivacy").style.display = "";
 		document.getElementById("dnspriv_rulelist_Block").style.display = "";
+		document.getElementById("dot_presets_tr").style.display = "";
 		show_dnspriv_rulelist();
 	}
 	else{
@@ -891,6 +894,7 @@ function change_dnspriv_enable(flag){
 		inputCtrl(document.form.dnspriv_profile[1], 0);
 		document.getElementById("DNSPrivacy").style.display = "none";
 		document.getElementById("dnspriv_rulelist_Block").style.display = "none";
+		document.getElementById("dot_presets_tr").style.display = "none";
 	}
 }
 
@@ -906,16 +910,19 @@ function addRow(obj, head){
 
 function addRow_Group(upper){
 	var rule_num = document.getElementById('dnspriv_rulelist_table').rows.length;
-	var item_num = document.getElementById('dnspriv_rulelist_table').rows[0].cells.length;		
+	var item_num = document.getElementById('dnspriv_rulelist_table').rows[0].cells.length;
+
+	document.getElementById("dotPresets").selectedIndex = 0;
+
 	if(rule_num >= upper){
 		alert("<#JS_itemlimit1#> " + upper + " <#JS_itemlimit2#>");
-		return false;	
-	}	
+		return false;
+	}
 
 	if(document.form.dnspriv_server_0.value==""){
 		alert("<#JS_fieldblank#>");
 		document.form.dnspriv_server_0.focus();
-		document.form.dnspriv_server_0.select();		
+		document.form.dnspriv_server_0.select();
 		return false;
 	}
 	else{
@@ -927,9 +934,9 @@ function addRow_Group(upper){
 	}
 }
 
-function edit_Row(r){ 	
+function edit_Row(r){
 	var i=r.parentNode.parentNode.rowIndex;
-  	document.form.dnspriv_server_0.value = document.getElementById('dnspriv_rulelist_table').rows[i].cells[0].innerHTML;
+	document.form.dnspriv_server_0.value = document.getElementById('dnspriv_rulelist_table').rows[i].cells[0].innerHTML;
 	document.form.dnspriv_port_0.value = document.getElementById('dnspriv_rulelist_table').rows[i].cells[1].innerHTML; 
 	document.form.dnspriv_hostname_0.value = document.getElementById('dnspriv_rulelist_table').rows[i].cells[2].innerHTML; 
 	document.form.dnspriv_spkipin_0.value = document.getElementById('dnspriv_rulelist_table').rows[i].cells[3].innerHTML;
@@ -979,6 +986,41 @@ function show_dnspriv_rulelist(){
 	code +='</table>';
 	document.getElementById("dnspriv_rulelist_Block").innerHTML = code;
 }
+
+function build_dot_server_presets(){
+	var optGroup = "", opt;
+
+	free_options(document.form.dotPresets);
+	add_option(document.form.dotPresets, "<#Select_menu_default#>", 0, 1);
+
+	for(var i = 0; i < dot_servers_array.length; i++) {
+		if (dot_servers_array[i].length == 1) {
+			if (optGroup != "")	// Close existing group
+				document.form.dotPresets.appendChild(optGroup);
+			optGroup = document.createElement('optgroup');
+			optGroup.label = dot_servers_array[i][0];
+		} else {
+			if (optGroup == "")
+				optGroup = document.createElement('optgroup');	// No group was initialized, so do one
+			opt = document.createElement('option');
+			opt.innerHTML = dot_servers_array[i][0];
+			opt.value = i;
+			optGroup.appendChild(opt);
+		}
+	}
+	if (optGroup != "") document.form.dotPresets.appendChild(optGroup);
+}
+
+function change_wizard(o, id){
+	if (id == "dotPresets") {
+		var i = o.value;
+		document.form.dnspriv_server_0.value = dot_servers_array[i][1];
+		document.form.dnspriv_port_0.value = dot_servers_array[i][2];
+		document.form.dnspriv_hostname_0.value = dot_servers_array[i][3];
+		document.form.dnspriv_spkipin_0.value = dot_servers_array[i][4];
+	}
+}
+
 </script>
 </head>
 
@@ -1238,6 +1280,12 @@ function show_dnspriv_rulelist(){
 				<td>
 					<input type="radio" name="dnspriv_profile" class="input" value="1" onclick="return change_common_radio(this, 'IPConnection', 'dnspriv_profile', 1)" <% nvram_match("dnspriv_profile", "1", "checked"); %> />Strict
 					<input type="radio" name="dnspriv_profile" class="input" value="0" onclick="return change_common_radio(this, 'IPConnection', 'dnspriv_profile', 0)" <% nvram_match("dnspriv_profile", "0", "checked"); %> />Opportunistic
+				</td>
+			</tr>
+			<tr style="display:none" id="dot_presets_tr">
+				<th>Preset servers</th>
+				<td>
+					<select name="dotPresets" id="dotPresets" class="input_option" onchange="change_wizard(this, 'dotPresets');">
 				</td>
 			</tr>
         		</table>

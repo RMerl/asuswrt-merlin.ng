@@ -1416,7 +1416,7 @@ struct nvram_tuple router_defaults[] = {
 	{ "time_zone", "GMT0", CKN_STR32, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
 	{ "time_zone_dst", "0", CKN_STR1, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
 	{ "time_zone_dstoff", "M3.2.0/2,M10.2.0/2", CKN_STR32, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT },	/* 0 */
-	{ "ntp_server1", "time.nist.gov", CKN_STR256, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "ntp_server1", "", CKN_STR256, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
 	{ "ntp_server0", "pool.ntp.org", CKN_STR256, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
 
 	// NVRAM for do_startic_routes
@@ -1530,6 +1530,12 @@ struct nvram_tuple router_defaults[] = {
 	{ "dns_probe_content", "131.107.255.255 112.4.20.71", CKN_STR1024, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },	/* resolve target addr or wildcard */
 #endif
 	{ "dns_delay_round", "2", CKN_STR6, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+
+#ifdef RTCONFIG_DNSPRIVACY
+	{ "dnspriv_enable", "0", CKN_STR1, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },	/* 0: None 1: DNS-over-TLS */
+	{ "dnspriv_profile", "1", CKN_STR1, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },	/* 0: Opportunistic 1: Strict */
+	{ "dnspriv_rulelist", "", CKN_STR1024, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },	/* ... */
+#endif
 
 	/* Misc WAN parameters */
 	{ "wan_desc", "", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },	/* WAN connection description */
@@ -3740,7 +3746,9 @@ struct nvram_tuple router_defaults[] = {
 	{ "snmpd_wan", "0", CKN_STR1, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
 #endif
 
+#ifdef RTCONFIG_NTPD
 	{ "ntpd_enable", "0", CKN_STR1, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+#endif
 
 /* End of Merlin-specific settings */
 

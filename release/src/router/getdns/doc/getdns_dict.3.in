@@ -1,0 +1,124 @@
+.\" The "BSD-New" License
+.\" 
+.\" Copyright (c) 2013, NLnet Labs, Verisign, Inc.
+.\" All rights reserved.
+.\" 
+.\" Redistribution and use in source and binary forms, with or without
+.\" modification, are permitted provided that the following conditions are met:
+.\" * Redistributions of source code must retain the above copyright
+.\"   notice, this list of conditions and the following disclaimer.
+.\" * Redistributions in binary form must reproduce the above copyright
+.\"   notice, this list of conditions and the following disclaimer in the
+.\"   documentation and/or other materials provided with the distribution.
+.\" * Neither the names of the copyright holders nor the
+.\"   names of its contributors may be used to endorse or promote products
+.\"   derived from this software without specific prior written permission.
+.\" 
+.\" THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+.\" ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+.\" WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+.\" DISCLAIMED. IN NO EVENT SHALL Verisign, Inc. BE LIABLE FOR ANY
+.\" DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+.\" (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+.\" LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+.\" ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+.\" (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+.\" SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+.\" 
+
+.TH getdns_dict 3 "@date@" "getdns @version@" getdns
+.ad l
+.SH NAME
+.B getdns_dict, 
+.B getdns_dict_create, 
+.B getdns_dict_create_with_extended_memory_functions, 
+.B getdns_dict_create_with_memory_functions, 
+.B getdns_dict_destroy 
+-- getdns dict create and destroy routines
+.ad n
+
+.SH LIBRARY
+DNS Resolver library (libgetdns, \-lgetdns)
+
+.SH SYNOPSIS
+#include <getdns.h>
+
+getdns_dict * 
+.br
+.B getdns_dict_create
+()
+
+getdns_dict *
+.br
+.B getdns_dict_create_with_extended_memory_functions
+.RS 3
+(void *userarg,
+.br
+void *(*malloc)(void *userarg, size_t sz),
+.br
+void *(*realloc)(void *userarg, void *buf, size_t sz),
+.br
+void (*free)(void *userarg, void *buf)
+.RE 3
+
+getdns_dict *
+.br
+.B getdns_dict_create_with_memory_functions
+.RS 3
+(void *(*malloc)(size_t sz),
+.br
+void *(*realloc)(void *buf, size_t sz),
+.br
+void (*free)(void *buf)
+.RE 3
+
+void 
+.br
+.B getdns_dict_destroy
+(getdns_dict *this_dict)
+
+.SH DESCRIPTION
+
+.LP
+The getdns_dict type is used to manage name/value pairs in which the names are strings and the data types of the values are heterogeneous and include
+.RS 3
+.br
+getdns_bindata
+.br
+getdns_dict
+.br
+getdns_list
+.br
+uint32_t
+.RE
+
+.LP
+The destroy function performs a "deep" destroy, freeing storage for all of the members
+of the dictionary before destroying the dictionary.  There are a number of helper
+functions that provide access to the dictionary object, see their respective man pages.
+
+.LP
+.I userarg
+pass this argument to the user specified memory management functions for operations on lists created using extended memory functions 
+.LP
+.I this_dict
+the dictionary to destroy
+
+.SH "RETURN VALUES"
+
+Upon successful completion the getdns_dict_create function returns a valid
+(empty) dictionary structure that should be freed via a call to
+getdns_dict_destroy.  If a parameter in invalid or in the event of some error
+getdns_dict_create returns NULL.
+
+.SH EXAMPLES
+
+TBD
+
+.SH SEE ALSO
+.BR libgetdns (3),
+.BR getdns_dict_get (3),
+.BR getdns_dict_set (3),
+.BR getdns_list (3),
+.BR getdns_pretty_print_dict (3).
+

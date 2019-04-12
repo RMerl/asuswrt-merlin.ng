@@ -1,0 +1,157 @@
+.\" The "BSD-New" License
+.\" 
+.\" Copyright (c) 2013, NLNet Labs, Verisign, Inc.
+.\" All rights reserved.
+.\" 
+.\" Redistribution and use in source and binary forms, with or without
+.\" modification, are permitted provided that the following conditions are met:
+.\" * Redistributions of source code must retain the above copyright
+.\"   notice, this list of conditions and the following disclaimer.
+.\" * Redistributions in binary form must reproduce the above copyright
+.\"   notice, this list of conditions and the following disclaimer in the
+.\"   documentation and/or other materials provided with the distribution.
+.\" * Neither the names of the copyright holders nor the
+.\"   names of its contributors may be used to endorse or promote products
+.\"   derived from this software without specific prior written permission.
+.\" 
+.\" THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+.\" ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+.\" WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+.\" DISCLAIMED. IN NO EVENT SHALL Verisign, Inc. BE LIABLE FOR ANY
+.\" DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+.\" (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+.\" LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+.\" ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+.\" (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+.\" SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+.\" 
+
+.TH getdns_list 3 "@date@" "getdns @version@" getdns
+.SH NAME
+.B getdns_list_get, 
+.B getdns_list_get_bindata, 
+.B getdns_list_get_data_type, 
+.B getdns_list_get_dict, 
+.B getdns_list_get_length,
+.B getdns_list_get_list, 
+.B getdns_list_get_int
+-- get a value by index from a getdns list
+
+.SH LIBRARY
+DNS Resolver library (libgetdns, \-lgetdns)
+
+.SH SYNOPSIS
+#include <getdns.h>
+
+getdns_return_t 
+.br
+.B getdns_list_get_bindata
+(getdns_list *this_list,
+.RS 3
+size_t index,
+.br
+getdns_bindata **answer)
+.RE
+
+getdns_return_t 
+.br
+.B getdns_list_get_data_type
+(getdns_list *this_list,
+.RS 3
+size_t index,
+.br
+getdns_data_type *answer)
+.RE
+
+getdns_return_t
+.br
+.B getdns_list_get_dict
+(getdns_list *this_list,
+.RS 3
+size_t index,
+.br
+getdns_dict **answer)
+.RE
+
+getdns_return_t 
+.br
+.B getdns_list_get_length
+(getdns_list *this_list,
+.RS 3
+size_t *answer)
+.RE
+
+getdns_return_t 
+.br
+.B getdns_list_get_list
+(getdns_list *this_list,
+.RS 3
+size_t index,
+.br
+getdns_list **answer)
+.RE
+
+getdns_return_t 
+.br
+.B getdns_list_get_int
+(getdns_list *this_list,
+.RS 3
+size_t index,
+.br
+uint32_t *answer)
+.RE
+
+.SH DESCRIPTION
+
+.LP
+The getdns_list type is used to manage heterogeneous lists in which the objects are each one of the data types:
+.RS 3
+.br
+getdns_bindata
+.br
+getdns_dict
+.br
+getdns_list
+.br
+uint32_t
+.RE
+
+.LP
+.I this_list
+the list from which to retrieve the object
+.LP
+.I index
+the numeric index (0 based) of the item in the list you would like copied to answer
+.LP
+.I answer
+a copy of the object in the list is placed in answer, the caller is responsible
+for freeing the storage associated with that object by calling the appropriate
+destroy function.
+
+.SH "RETURN VALUES"
+
+Upon successful completion the functions return
+.B GETDNS_RETURN_GOOD
+, otherwise the following error values are returned:
+.LP
+.B GETDNS_RETURN_GENERIC_ERROR
+if this_list is not a valid list
+.LP
+.B GETDNS_RETURN_NO_SUCH_LIST_ITEM
+if index is out of range
+.LP
+.B GETDNS_RETURN_WRONG_TYPE_REQUESTED
+if the requested data type doesn't match the contents of the indexed argument
+
+.SH EXAMPLES
+
+TBD
+
+.SH SEE ALSO
+.BR libgetdns (3),
+.BR getdns_address (3),
+.BR getdns_dict (3),
+.BR getdns_general (3),
+.BR getdns_hostname (3),
+.BR getdns_service (3),
+

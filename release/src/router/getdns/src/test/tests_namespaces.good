@@ -1,0 +1,379 @@
+The packet {
+  "canonical_name": <bindata of "localhost.">,
+  "just_address_answers":
+  [
+    {
+      "address_data": <bindata for 127.0.0.1>,
+      "address_type": <bindata of "IPv4">
+    },
+    {
+      "address_data": <bindata for ::1>,
+      "address_type": <bindata of "IPv6">
+    }
+  ],
+  "replies_full": [],
+  "replies_tree": [],
+  "status": GETDNS_RESPSTATUS_GOOD
+}
+The packet {
+  "answer_type": GETDNS_NAMETYPE_DNS,
+  "canonical_name": <bindata of "www.google.com.">,
+  "just_address_answers":
+  [
+    {
+      "address_data": <bindata for 74.125.24.104>,
+      "address_type": <bindata of "IPv4">
+    },
+    {
+      "address_data": <bindata for 74.125.24.103>,
+      "address_type": <bindata of "IPv4">
+    },
+    {
+      "address_data": <bindata for 74.125.24.105>,
+      "address_type": <bindata of "IPv4">
+    },
+    {
+      "address_data": <bindata for 74.125.24.99>,
+      "address_type": <bindata of "IPv4">
+    },
+    {
+      "address_data": <bindata for 74.125.24.147>,
+      "address_type": <bindata of "IPv4">
+    },
+    {
+      "address_data": <bindata for 74.125.24.106>,
+      "address_type": <bindata of "IPv4">
+    },
+    {
+      "address_data": <bindata for 2a00:1450:400b:c02::63>,
+      "address_type": <bindata of "IPv6">
+    }
+  ],
+  "replies_full":
+  [
+     <bindata for \022\129\128\000\001\000\006\000\000\000\001\003www\006google\003com\000\000\001\000\001\003www\006google\003com\000\000\001\000\001\000\000\001,\000\004J}\024h\003www\006google\003com\000\000\001\000\001\000\000\001,\000\004J}\024g\003www\006google\003com\000\000\001\000\001\000\000\001,\000\004J}\024i\003www\006google\003com\000\000\001\000\001\000\000\001,\000\004J}\024c\003www\006google\003com\000\000\001\000\001\000\000\001,\000\004J}\024\147\003www\006google\003com\000\000\001\000\001\000\000\001,\000\004J}\024j\000\000\)\016\000\000.>,
+     <bindata of 0xe4e98180000100010000000103777777...>
+  ],
+  "replies_tree":
+  [
+    {
+      "additional": [],
+      "answer":
+      [
+        {
+          "class": GETDNS_RRCLASS_IN,
+          "name": <bindata for www.google.com.>,
+          "rdata":
+          {
+            "ipv4_address": <bindata for 74.125.24.104>,
+            "rdata_raw": <bindata of 0x4a7d1868>
+          },
+          "ttl": 300,
+          "type": GETDNS_RRTYPE_A
+        },
+        {
+          "class": GETDNS_RRCLASS_IN,
+          "name": <bindata for www.google.com.>,
+          "rdata":
+          {
+            "ipv4_address": <bindata for 74.125.24.103>,
+            "rdata_raw": <bindata of 0x4a7d1867>
+          },
+          "ttl": 300,
+          "type": GETDNS_RRTYPE_A
+        },
+        {
+          "class": GETDNS_RRCLASS_IN,
+          "name": <bindata for www.google.com.>,
+          "rdata":
+          {
+            "ipv4_address": <bindata for 74.125.24.105>,
+            "rdata_raw": <bindata of 0x4a7d1869>
+          },
+          "ttl": 300,
+          "type": GETDNS_RRTYPE_A
+        },
+        {
+          "class": GETDNS_RRCLASS_IN,
+          "name": <bindata for www.google.com.>,
+          "rdata":
+          {
+            "ipv4_address": <bindata for 74.125.24.99>,
+            "rdata_raw": <bindata of 0x4a7d1863>
+          },
+          "ttl": 300,
+          "type": GETDNS_RRTYPE_A
+        },
+        {
+          "class": GETDNS_RRCLASS_IN,
+          "name": <bindata for www.google.com.>,
+          "rdata":
+          {
+            "ipv4_address": <bindata for 74.125.24.147>,
+            "rdata_raw": <bindata of 0x4a7d1893>
+          },
+          "ttl": 300,
+          "type": GETDNS_RRTYPE_A
+        },
+        {
+          "class": GETDNS_RRCLASS_IN,
+          "name": <bindata for www.google.com.>,
+          "rdata":
+          {
+            "ipv4_address": <bindata for 74.125.24.106>,
+            "rdata_raw": <bindata of 0x4a7d186a>
+          },
+          "ttl": 300,
+          "type": GETDNS_RRTYPE_A
+        }
+      ],
+      "answer_type": GETDNS_NAMETYPE_DNS,
+      "authority": [],
+      "canonical_name": <bindata of "www.google.com.">,
+      "header":
+      {
+        "aa": 0,
+        "ad": 0,
+        "ancount": 6,
+        "arcount": 0,
+        "cd": 0,
+        "id": 55574,
+        "nscount": 0,
+        "opcode": GETDNS_OPCODE_QUERY,
+        "qdcount": 1,
+        "qr": 1,
+        "ra": 1,
+        "rcode": GETDNS_RCODE_NOERROR,
+        "rd": 1,
+        "tc": 0,
+        "z": 0
+      },
+      "question":
+      {
+        "qclass": GETDNS_RRCLASS_IN,
+        "qname": <bindata for www.google.com.>,
+        "qtype": GETDNS_RRTYPE_A
+      }
+    },
+    {
+      "additional": [],
+      "answer":
+      [
+        {
+          "class": GETDNS_RRCLASS_IN,
+          "name": <bindata for www.google.com.>,
+          "rdata":
+          {
+            "ipv6_address": <bindata for 2a00:1450:400b:c02::63>,
+            "rdata_raw": <bindata of 0x2a001450400b0c020000000000000063>
+          },
+          "ttl": 300,
+          "type": GETDNS_RRTYPE_AAAA
+        }
+      ],
+      "answer_type": GETDNS_NAMETYPE_DNS,
+      "authority": [],
+      "canonical_name": <bindata of "www.google.com.">,
+      "header":
+      {
+        "aa": 0,
+        "ad": 0,
+        "ancount": 1,
+        "arcount": 0,
+        "cd": 0,
+        "id": 58601,
+        "nscount": 0,
+        "opcode": GETDNS_OPCODE_QUERY,
+        "qdcount": 1,
+        "qr": 1,
+        "ra": 1,
+        "rcode": GETDNS_RCODE_NOERROR,
+        "rd": 1,
+        "tc": 0,
+        "z": 0
+      },
+      "question":
+      {
+        "qclass": GETDNS_RRCLASS_IN,
+        "qname": <bindata for www.google.com.>,
+        "qtype": GETDNS_RRTYPE_AAAA
+      }
+    }
+  ],
+  "status": GETDNS_RESPSTATUS_GOOD
+}
+The packet {
+  "answer_type": GETDNS_NAMETYPE_DNS,
+  "canonical_name": <bindata of "localhost.">,
+  "just_address_answers":
+  [
+    {
+      "address_data": <bindata for 127.0.0.1>,
+      "address_type": <bindata of "IPv4">
+    }
+  ],
+  "replies_full":
+  [
+     <bindata of 0x55bf85800001000100000001096c6f63...>
+  ],
+  "replies_tree":
+  [
+    {
+      "additional": [],
+      "answer":
+      [
+        {
+          "class": GETDNS_RRCLASS_IN,
+          "name": <bindata for localhost.>,
+          "rdata":
+          {
+            "ipv4_address": <bindata for 127.0.0.1>,
+            "rdata_raw": <bindata of 0x7f000001>
+          },
+          "ttl": 86400,
+          "type": GETDNS_RRTYPE_A
+        }
+      ],
+      "answer_type": GETDNS_NAMETYPE_DNS,
+      "authority": [],
+      "canonical_name": <bindata of "localhost.">,
+      "header":
+      {
+        "aa": 1,
+        "ad": 0,
+        "ancount": 1,
+        "arcount": 0,
+        "cd": 0,
+        "id": 21951,
+        "nscount": 0,
+        "opcode": GETDNS_OPCODE_QUERY,
+        "qdcount": 1,
+        "qr": 1,
+        "ra": 1,
+        "rcode": GETDNS_RCODE_NOERROR,
+        "rd": 1,
+        "tc": 0,
+        "z": 0
+      },
+      "question":
+      {
+        "qclass": GETDNS_RRCLASS_IN,
+        "qname": <bindata for localhost.>,
+        "qtype": GETDNS_RRTYPE_A
+      }
+    }
+  ],
+  "status": GETDNS_RESPSTATUS_GOOD
+}
+The packet {
+  "answer_type": GETDNS_NAMETYPE_DNS,
+  "canonical_name": <bindata of "localhost.">,
+  "just_address_answers":
+  [
+    {
+      "address_data": <bindata for 127.0.0.1>,
+      "address_type": <bindata of "IPv4">
+    },
+    {
+      "address_data": <bindata for ::1>,
+      "address_type": <bindata of "IPv6">
+    }
+  ],
+  "replies_full":
+  [
+     <bindata of 0x8cbe85800001000100000001096c6f63...>,
+     <bindata of 0xa65485800001000100000001096c6f63...>
+  ],
+  "replies_tree":
+  [
+    {
+      "additional": [],
+      "answer":
+      [
+        {
+          "class": GETDNS_RRCLASS_IN,
+          "name": <bindata for localhost.>,
+          "rdata":
+          {
+            "ipv4_address": <bindata for 127.0.0.1>,
+            "rdata_raw": <bindata of 0x7f000001>
+          },
+          "ttl": 86400,
+          "type": GETDNS_RRTYPE_A
+        }
+      ],
+      "answer_type": GETDNS_NAMETYPE_DNS,
+      "authority": [],
+      "canonical_name": <bindata of "localhost.">,
+      "header":
+      {
+        "aa": 1,
+        "ad": 0,
+        "ancount": 1,
+        "arcount": 0,
+        "cd": 0,
+        "id": 36030,
+        "nscount": 0,
+        "opcode": GETDNS_OPCODE_QUERY,
+        "qdcount": 1,
+        "qr": 1,
+        "ra": 1,
+        "rcode": GETDNS_RCODE_NOERROR,
+        "rd": 1,
+        "tc": 0,
+        "z": 0
+      },
+      "question":
+      {
+        "qclass": GETDNS_RRCLASS_IN,
+        "qname": <bindata for localhost.>,
+        "qtype": GETDNS_RRTYPE_A
+      }
+    },
+    {
+      "additional": [],
+      "answer":
+      [
+        {
+          "class": GETDNS_RRCLASS_IN,
+          "name": <bindata for localhost.>,
+          "rdata":
+          {
+            "ipv6_address": <bindata for ::1>,
+            "rdata_raw": <bindata of 0x00000000000000000000000000000001>
+          },
+          "ttl": 10800,
+          "type": GETDNS_RRTYPE_AAAA
+        }
+      ],
+      "answer_type": GETDNS_NAMETYPE_DNS,
+      "authority": [],
+      "canonical_name": <bindata of "localhost.">,
+      "header":
+      {
+        "aa": 1,
+        "ad": 0,
+        "ancount": 1,
+        "arcount": 0,
+        "cd": 0,
+        "id": 42580,
+        "nscount": 0,
+        "opcode": GETDNS_OPCODE_QUERY,
+        "qdcount": 1,
+        "qr": 1,
+        "ra": 1,
+        "rcode": GETDNS_RCODE_NOERROR,
+        "rd": 1,
+        "tc": 0,
+        "z": 0
+      },
+      "question":
+      {
+        "qclass": GETDNS_RRCLASS_IN,
+        "qname": <bindata for localhost.>,
+        "qtype": GETDNS_RRTYPE_AAAA
+      }
+    }
+  ],
+  "status": GETDNS_RESPSTATUS_GOOD
+}

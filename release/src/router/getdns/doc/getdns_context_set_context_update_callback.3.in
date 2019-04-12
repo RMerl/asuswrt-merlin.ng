@@ -1,0 +1,89 @@
+.\" The "BSD-New" License
+.\" 
+.\" Copyright (c) 2013, NLnet Labs, Verisign, Inc.
+.\" All rights reserved.
+.\" 
+.\" Redistribution and use in source and binary forms, with or without
+.\" modification, are permitted provided that the following conditions are met:
+.\" * Redistributions of source code must retain the above copyright
+.\"   notice, this list of conditions and the following disclaimer.
+.\" * Redistributions in binary form must reproduce the above copyright
+.\"   notice, this list of conditions and the following disclaimer in the
+.\"   documentation and/or other materials provided with the distribution.
+.\" * Neither the names of the copyright holders nor the
+.\"   names of its contributors may be used to endorse or promote products
+.\"   derived from this software without specific prior written permission.
+.\" 
+.\" THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+.\" ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+.\" WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+.\" DISCLAIMED. IN NO EVENT SHALL Verisign, Inc. BE LIABLE FOR ANY
+.\" DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+.\" (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+.\" LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+.\" ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+.\" (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+.\" SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+.\" 
+
+.TH getdns_context_set_context_update_callback 3 "@date@" "getdns @version@" getdns
+.SH NAME
+.B getdns_context_set_context_update_callback 
+-- get informed on getdns context updates
+
+.SH LIBRARY
+DNS Resolver library (libgetdns, \-lgetdns)
+
+.SH SYNOPSIS
+#include <getdns.h>
+
+getdns_return_t
+.br
+.B getdns_context_set_context_update_callback
+(getdns_context ** context,
+.RS 3
+.br
+void (*cbfun)(getdns_context *context, getdns_context_code_t changed_item)
+.RE
+
+.SH DESCRIPTION
+
+.LP
+Changes to the context such as in response to system files that affect the contet (/etc/resolv.conf etc.) trigger a call to the callback function specified as
+.B
+cbfun
+
+.HP 3
+.I context
+a previously initialized context
+
+.HP 3
+.I cbfun
+callback function to invoked when the specified context changes.  If this 
+argument is NULL then updates to the context will not invoke a callback.
+
+.HP
+.SH "RETURN VALUES"
+
+Upon successful completion each of these functions return
+.B GETDNS_RETURN_GOOD
+, otherwise the following error values are returned:
+
+.LP
+.B GETDNS_RETURN_GENERIC_ERROR
+memory allocation failed or some other untoward thing happened 
+
+.LP
+.B GETDNS_RETURN_BAD_CONTEXT 
+if the context pointer is invalid
+
+.SH EXAMPLES
+
+TBD
+
+.SH SEE ALSO
+.BR libgetdns (3),
+.BR getdns_context_create (3),
+.BR getdns_context_set (3),
+.BR getdns_context_set_context_update_callback (3),
+

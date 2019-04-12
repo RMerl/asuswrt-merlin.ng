@@ -1,0 +1,85 @@
+TESTPROG tests_dict START
+TESTCASE tests_dict:tst_create BEGIN
+  tests_dict:tst_create: getdns_dict_create
+  tests_dict:tst_create: getdns_dict_destroy(dict)
+  tests_dict:tst_create: getdns_dict_destroy(NULL)
+TESTCASE tests_dict:tst_create END
+TESTCASE tests_dict:tst_bindatasetget BEGIN
+  tests_dict:tst_bindatasetget: getdns_dict_get_bindata() empty dict
+  tests_dict:tst_bindatasetget: test 1: getdns_dict_get_bindata(NULL, key, &ans_bdata),retval = 311
+  tests_dict:tst_bindatasetget: test 2: getdns_dict_get_bindata(dict, key, NULL),retval = 311
+  tests_dict:tst_bindatasetget: getdns_dict_get_bindata(dict, NULL, &ans_bindata)
+  tests_dict:tst_bindatasetget: test 3: getdns_dict_get_bindata,retval = 311
+  tests_dict:tst_bindatasetget: getdns_dict_get_bindata(dict, key, &ans_bdata)
+  tests_dict:tst_bindatasetget: test 4: getdns_list_get_bindata,retval = 305
+  tests_dict:tst_bindatasetget: getdns_dict_set_bindata(dict, key, bindata)
+  tests_dict:tst_bindatasetget: test 5: getdns_dict_set_bindata,retval=0,key=foo
+  tests_dict:tst_bindatasetget: getdns_dict_get_bindata(dict, key, &ans_bdata)
+  tests_dict:tst_bindatasetget: test 6: getdns_dict_get_bindata,retval=0,key=foo,data=foobar
+TESTCASE tests_dict:tst_bindatasetget END
+TESTCASE tests_dict:tst_dictsetget BEGIN
+  tests_dict:tst_dictsetget: getdns_dict_get_dict() empty dict
+  tests_dict:tst_dictsetget: test 7: getdns_dict_get_dict(NULL, key, &ansdict),retval = 311
+  tests_dict:tst_dictsetget: test 8: getdns_dict_get_dict(dict, key, NULL),retval = 311
+  tests_dict:tst_dictsetget: getdns_dict_get_dict(dict, NULL, &ansdict)
+  tests_dict:tst_dictsetget: test 9: getdns_dict_get_dict,retval = 311
+  tests_dict:tst_dictsetget: getdns_dict_get_dict(dict, key, &ansdict)
+  tests_dict:tst_dictsetget: test 10: getdns_list_get_dict,retval = 305
+  tests_dict:tst_dictsetget: getdns_dict_set_dict(dict, key, newdict)
+  tests_dict:tst_dictsetget: test 11: getdns_dict_set_dict,retval=0,key=foo
+  tests_dict:tst_dictsetget: getdns_dict_get_dict(dict, key, &ansdict)
+  tests_dict:tst_dictsetget: test 12: getdns_dict_get_dict,retval=0,key=foo,int1=42,int2=52
+TESTCASE tests_dict:tst_dictsetget END
+TESTCASE tests_dict:tst_intsetget BEGIN
+  tests_dict:tst_intsetget: getdns_dict_get_int() empty dict
+  tests_dict:tst_intsetget: test 19: getdns_dict_get_int(NULL, key, &ans_int),retval = 311
+  tests_dict:tst_intsetget: test 20: getdns_dict_get_int(dict, key, NULL),retval = 311
+  tests_dict:tst_intsetget: getdns_dict_get_int(dict, NULL, &ans_int)
+  tests_dict:tst_intsetget: test 21: getdns_dict_get_int,retval = 311
+  tests_dict:tst_intsetget: getdns_dict_get_int(dict, key, &ans_int)
+  tests_dict:tst_intsetget: test 22: getdns_list_get_int,retval = 305
+  tests_dict:tst_intsetget: getdns_dict_set_int(dict, key, newint)
+  tests_dict:tst_intsetget: test 23: getdns_dict_set_int,retval=0,key=foo,int=42
+  tests_dict:tst_intsetget: getdns_dict_get_int(dict, key, &ans_int)
+  tests_dict:tst_intsetget: test 24: getdns_dict_get_int,retval=0,key=foo,int=42
+  tests_dict:tst_intsetget: getdns_dict_set_int(dict, key, newint)
+  tests_dict:tst_intsetget: test 25: getdns_dict_set_int,retval=0,key=bar,int=52
+  tests_dict:tst_intsetget: getdns_dict_get_int(dict, key, &ans_int)
+  tests_dict:tst_intsetget: test 26: getdns_dict_get_int,retval=0,key=bar,int=52
+  tests_dict:tst_intsetget: getdns_dict_get_data_type(dict, key, &dtype)
+  tests_dict:tst_intsetget: test 27: getdns_dict_get_data_type,retval=0,key=bar,dtype=2
+TESTCASE tests_dict:tst_intsetget END
+TESTCASE tests_dict:tst_listsetget BEGIN
+  tests_dict:tst_listsetget: getdns_dict_get_list() empty dict
+  tests_dict:tst_listsetget: test 13: getdns_dict_get_list(NULL, key, &anslist),retval = 311
+  tests_dict:tst_listsetget: test 14: getdns_dict_get_list(dict, key, NULL),retval = 311
+  tests_dict:tst_listsetget: getdns_dict_get_list(dict, NULL, &anslist)
+  tests_dict:tst_listsetget: test 15: getdns_dict_get_list,retval = 311
+  tests_dict:tst_listsetget: getdns_dict_get_list(dict, key, &anslist)
+  tests_dict:tst_listsetget: test 16: getdns_list_get_list,retval = 305
+  tests_dict:tst_listsetget: getdns_dict_set_list(dict, key, newlist)
+  tests_dict:tst_listsetget: test 17: getdns_dict_set_list,retval=0,key=foo
+  tests_dict:tst_listsetget: getdns_dict_get_list(dict, key, &anslist)
+  tests_dict:tst_listsetget: test 18: getdns_dict_get_list,retval=0,key=foo,int1=42,int2=52
+TESTCASE tests_dict:tst_listsetget END
+TESTCASE tests_dict:tst_getnames BEGIN
+  tests_dict:tst_getnames: getdns_dict_get_names(NULL, &list)
+  tests_dict:tst_getnames: getdns_dict_get_names(dict, NULL)
+  tests_dict:tst_getnames: getdns_dict_get_names(dict, &list), empty dictionary
+    list item 0: NOTIMPLEMENTED    list item 1: NOTIMPLEMENTED    list item 2: NOTIMPLEMENTED    list item 3: NOTIMPLEMENTEDTESTCASE tests_dict:tst_getnames END
+TESTCASE tests_dict:tst_copy BEGIN
+  tests_dict:tst_copy: empty list cases
+  tests_dict:tst_copy: dict1 populate
+{
+  "bar": 52,
+  "foo": 42,
+  "quz": 62
+}
+  tests_dict:tst_copy: getdns_dict_copy(dict1, &dict2)
+{
+  "bar": 52,
+  "foo": 42,
+  "quz": 62
+}
+TESTCASE tests_dict:tst_copy END
+TESTPROG tests_dict END

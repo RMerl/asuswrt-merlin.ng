@@ -1,0 +1,728 @@
+.\" The "BSD-New" License
+.\" 
+.\" Copyright (c) 2013, NLnet Labs, Verisign, Inc.
+.\" All rights reserved.
+.\" 
+.\" Redistribution and use in source and binary forms, with or without
+.\" modification, are permitted provided that the following conditions are met:
+.\" * Redistributions of source code must retain the above copyright
+.\"   notice, this list of conditions and the following disclaimer.
+.\" * Redistributions in binary form must reproduce the above copyright
+.\"   notice, this list of conditions and the following disclaimer in the
+.\"   documentation and/or other materials provided with the distribution.
+.\" * Neither the names of the copyright holders nor the
+.\"   names of its contributors may be used to endorse or promote products
+.\"   derived from this software without specific prior written permission.
+.\" 
+.\" THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+.\" ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+.\" WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+.\" DISCLAIMED. IN NO EVENT SHALL Verisign, Inc. BE LIABLE FOR ANY
+.\" DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+.\" (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+.\" LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+.\" ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+.\" (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+.\" SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+.\" 
+
+.TH libgetdns 3 "@date@" "getdns @version@" getdns
+.SH NAME
+libgetdns
+-- an implementation of a modern asynchronous DNS API by and for application developers
+
+.SH LIBRARY
+DNS Resolver library (libgetdns, \-lgetdns)
+
+.SH SYNOPSIS
+.B libgetdns
+
+This man page describes the getdns library, the general concepts behind the API and some of the common elements of the public interface to the library.  Each of the public entry points and more complex data types are captured in separate man pages.
+
+.SH DESCRIPTION
+
+.LP
+getdns is modern asynchronous DNS API intended to be useful to application developers and operating system distributors as a way of making all types of DNS information easily available in many types of programs. The major features of this new API are:
+
+.RS 3
+    Full support for event-driven programming
+    Supports DNSSEC in multiple ways
+    Mirroring of the resolution in getaddrinfo()
+    Easily supports all RRtypes, even those yet to be defined
+.RE
+
+.LP
+Each of the entry points is offered with both asynchronous and synchronous signatures.  The asynchronous functions rely on event handling and callback via libevent.
+Functions are thread safe.
+
+.LP
+A context structure maintains DNS query and response data and is used to maintain state during calls to the public entry points.
+
+.LP
+The project page for this implementation is at
+.IP
+http://getdnsapi.net
+
+.LP
+The specification is maintained at
+.IP
+http://getdnsapi.net/spec
+
+.LP
+The git repository for this implementation is at
+.IP
+http://github.com/getdnsapi/getdns
+
+.SH DATA STRUCTURES
+
+.LP
+The API uses a few data structures to pass data into and return data from the public
+entry points.
+
+.IP list
+an ordered list, the members of the list can be any of the four data types.
+.IP dict
+a name-value pair. The name is a string literal, and the value can be any of the four data types. The order of the name-value pairs in a dict is not important.
+.IP int
+an integer compatible with uint32_t.
+.IP bindata
+a struct used to hold binary data defined as { size_t size; uint8_t *binary_stuff; }.
+
+.SH ASYNCHRONOUS USE
+
+.LP
+The getdns specification emphasizes the asynchronous nature of the API and
+allows implementations to define their own approach. This page documents this
+implementation's decisions and facilities provided to the developer.
+
+.LP
+This implementation provides asynchronous support via the following mechanisms:
+
+.RS 3
+File Descriptor Polling
+.br
+Event Loop Integrations:
+.RS 3
+libevent
+.br
+libuv
+.br
+libev
+.RE
+Custom Event Loop Integrations
+.RE
+
+.LP
+All functions and types discussed in this page are declared in getdns_extra.h
+
+.SS "Build-in Event loop"
+
+The library has an built in event loop that can be used if none of the extensions for external event loops are used. The library will execute requests and dispatch callbacks with a call to
+.I getdns_context_run().
+If an event loop extension is used, this will run the extension's eventloop.
+
+.HP 3
+void getdns_context_run(getdns_context *context)
+
+Run the context's event loop until nothing more to do.
+
+.HP 3
+uint32_t getdns_context_get_num_pending_requests(getdns_context* context, struct timeval* next_timeout)
+
+Get the number of outstanding asynchronous requests for a given context as well as the the amount of time until the next timeout.  The next_timeout struct can be NULL.  If supplied and the number of outstanding requests is > 0, then the timeout represents the relative time until the next timeout.
+
+.HP 3
+getdns_return_t getdns_context_process_async(getdns_context* context)
+
+Inform the context to process its outstanding requests.  Users should call this when either a timeout has occurred or the file descriptor signals that it is ready.  User callbacks are fired during this call.
+
+.SS "Included Event Loop Integrations"
+
+.LP
+A number of applications achieve asynchronous behavior by leveraging event loop abstraction libraries. If the build system discovers a supported event loop, the event loop extension is built in addition to the getdns library. Extensions are built as an additional shared library. The following event loop libraries are supported:
+
+.B
+libevent1 and libevent2
+
+.LP
+The libevent extension allows a context to attach to a event_base. The event loop is then run like any other application using libevent via event_base_dispatch or event_base_loop and expect getdns callbacks to fire.
+
+.LP
+Note that if both libevent1 and libevent2 reside on system, the extension uses libevent2.
+
+.RS 3
+Extension library: libgetdns_ext_event.[shared_lib_ext]
+.br
+Extension header: getdns/getdns_ext_libevent.h
+.RE
+
+.B
+libuv
+
+.LP
+The libuv extension allows a context to attach to a uv_loop_s. The event loop can then be run like any other application using libuv via uv_run and expect getdns callbacks to fire.
+
+.RS 3
+Extension library: libgetdns_ext_uv.[shared_lib_ext]
+.br
+Extension header: getdns_ext_libuv.h
+.RE
+
+.B
+libev
+
+.LP
+The libev extension allows a context to attach to a ev_loop. The event loop can then be run like any other application using libev via ev_run and expect getdns callbacks to fire.
+
+.RS 3
+Extension library: libgetdns_ext_ev.[shared_lib_ext]
+.br
+Extension header: getdns_ext_libev.h
+.RE
+
+.SS "getdns_context event loop extension functions"
+
+.LP
+The following are functions used by the extension entry point to attach to a particular context.
+
+.LP
+The application sets an event loop extension on a context.  The extension_data is optional data that is passed into the extension methods.  If an event loop is already set on a context then it is cleaned up.  All outstanding requests are also canceled.
+
+.IP
+getdns_return_t getdns_extension_set_eventloop(struct getdns_context* context, getdns_eventloop_extension* extension, void* extension_data);
+
+.LP
+The application gets the extension data associated with a context.
+
+.IP
+void* getdns_context_get_extension_data(struct getdns_context* context);
+
+.LP
+When no more work must be done the application detaches an event loop from a context
+
+.IP
+getdns_return_t getdns_extension_detach_eventloop(struct getdns_context* context);
+
+
+.SH SYNCHRONOUS USE
+
+.LP
+There are four synchronous functions parallel to the four getdns async
+functions, except that there is no callback parameter. When an application
+calls one of these synchronous functions, the API gathers all the required
+information and then returns the result. The value returned is exactly the same
+as the response returned in the callback if you had used the async version of
+the function.
+
+.LP
+When you are done with the data in the response, call getdns_free_sync_request_memory so
+that the API can free the memory from its internal pool.
+
+.SH EXTENSIONS
+
+Applications may populate an extension dictionary when making a call to the public entry points.  To use an extension add it to the extension dictionary prior to making the call to the public entry point and set the value depending on the behavior you expect.  These extensions include:
+
+.HP 3
+"dnssec_return_status" (int)
+
+Set to GETDNS_EXTENSION_TRUE to include the DNSSEC status for each DNS record in the replies_tree
+
+.HP 3
+"dnssec_return_only_secure" (int)
+
+Set to GETDNS_EXTENSION_TRUE to cause only records that the API can validate as secure with DNSSEC to be returned in the
+.I replies_tree
+and
+.I replies_full lists
+
+.HP 3
+"dnssec_return_validation_chain" (int)
+
+Set to GETDNS_EXTENSION_TRUE to cause the set of additional DNSSEC-related records needed for validation to be returned in the response object as the list named
+.I additional_dnssec
+at the top level of the response object
+
+.HP 3
+"return_both_v4_and_v6" (int)
+
+Set to GETDNS_EXTENSION_TRUE to cause the results of both A and AAAA records for the queried name to be included in the response object.
+
+.HP 3
+"add_opt_parameters" (dict)
+
+TBD (complicated)
+
+.HP 3
+"add_warning_for_bad_dns"
+
+Set to GETDNS_EXTENSION_TRUE to cause each reply in the
+.I replies_tree
+to contain an additional name whose data type is a list,
+.I bad_dns
+which contains zero or more ints that indicate the types of bad DNS found in the reply.  
+.RS 6
+.br
+GETDNS_BAD_DNS_CNAME_IN_TARGET: query type does not allow a CNAME pointed to a CNAME
+.br
+GETDNS_BAD_DNS_ALL_NUMERIC_LABEL: one or more labels is all numeric
+.br
+GETDNS_BAD_DNS_CNAME_RETURNED_FOR_OTHER_TYPE: query type for other than CNAME returned a CNAME
+.RE
+
+.HP 3
+"specify_class" (int)
+
+Set to the DNS class number (other than Internet (IN) class desired in query.
+
+.HP 3
+"return_call_reporting" (int)
+
+Set to GETDNS_EXTENSION_TRUE to add the name
+.I call_reporting
+(list) to the top level of the response object that includes a dict for each call made to the API.  TBD: more detail
+
+.LP
+This implementation of the getdns API is licensed under the BSD license.
+
+.SH DNSSEC
+
+.LP
+If an application wants the API to do DNSSEC validation for a request, it must
+set one or more DNSSEC-related extensions. Note that the default is for none of
+these extensions to be set and the API will not perform DNSSEC. Note that
+getting DNSSEC results can take longer in a few circumstances.
+
+.LP
+To return the DNSSEC status for each DNS record in the replies_tree list, use
+the dnssec_return_status extension. The extension's value (an int) is set to
+GETDNS_EXTENSION_TRUE to cause the returned status to have the name
+dnssec_status (an int) added to the other names in the record's dict ("header",
+"question", and so on). The values for that name are GETDNS_DNSSEC_SECURE,
+GETDNS_DNSSEC_BOGUS, GETDNS_DNSSEC_INDETERMINATE, and GETDNS_DNSSEC_INSECURE.
+Thus, a reply might look like:
+
+.EX
+{     # This is the first reply
+      "dnssec_status": GETDNS_DNSSEC_INDETERMINATE,
+      "header": { "id": 23456, "qr": 1, "opcode": 0, ... },
+      . . .
+.EE
+
+.LP
+If instead of returning the status, you want to only see secure results, use
+the dnssec_return_only_secure extension. The extension's value (an int) is set
+to GETDNS_EXTENSION_TRUE to cause only records that the API can validate as
+secure with DNSSEC to be returned in the replies_tree and replies_full lists.
+No additional names are added to the dict of the record; the change is that
+some records might not appear in the results. When this context option is set,
+if the API receives DNS replies but none are determined to be secure, the error
+code at the top level of the response object is
+GETDNS_RESPSTATUS_NO_SECURE_ANSWERS.
+
+.LP
+Applications that want to do their own validation will want to have the
+DNSSEC-related records for a particular response. Use the
+dnssec_return_validation_chain extension. The extension's value (an int) is set
+to GETDNS_EXTENSION_TRUE to cause a set of additional DNSSEC-related records
+needed for validation to be returned in the response object. This set comes as
+validation_chain (a list) at the top level of the response object. This list
+includes all resource record dicts for all the resource records (DS, DNSKEY and
+their RRSIGs) that are needed to perform the validation from the root up. Thus,
+a reply might look like:
+
+.EX
+{     # This is the response object
+    "validation_chain":
+    [ { "name": <bindata for .>,
+    "type": GETDNS_RRTYPE_DNSKEY,
+    "rdata": { "flags": 256, . . . },
+      . . . 
+    },
+    { "name": <bindata for .>,
+      "type": GETDNS_RRTYPE_DNSKEY,
+      "rdata": { "flags": 257, . . . },
+      . . .
+    },
+    { "name": <bindata for .>,
+      "type": GETDNS_RRTYPE_RRSIG,
+      "rdata": { "signers_name": <bindata for .>,
+                 "type_covered": GETDNS_RRTYPE_DNSKEY,
+                 . . .
+               },
+    },
+    { "name": <bindata for com.>,
+      "type": GETDNS_RRTYPE_DS,
+      . . .
+    },
+    { "name": <bindata for com.>,
+      "type": GETDNS_RRTYPE_RRSIG
+      "rdata": { "signers_name": <bindata for .>,
+                 "type_covered": GETDNS_RRTYPE_DS,
+                 . . .
+               },
+      . . .
+    },
+    { "name": <bindata for com.>,
+      "type": GETDNS_RRTYPE_DNSKEY
+      "rdata": { "flags": 256, . . . },
+      . . .
+    },
+    { "name": <bindata for com.>,
+      "type": GETDNS_RRTYPE_DNSKEY
+      "rdata": { "flags": 257, . . . },
+      . . .
+    },
+    { "name": <bindata for com.>,
+      "type": GETDNS_RRTYPE_RRSIG
+      "rdata": { "signers_name": <bindata for com.>,
+                 "type_covered": GETDNS_RRTYPE_DNSKEY,
+                 . . .
+               },
+      . . .
+    },
+    { "name": <bindata for example.com.>,
+      "type": GETDNS_RRTYPE_DS,
+      . . .
+    },
+    { "name": <bindata for example.com.>,
+      "type": GETDNS_RRTYPE_RRSIG
+      "rdata": { "signers_name": <bindata for com.>,
+                 "type_covered": GETDNS_RRTYPE_DS,
+                 . . .
+               },
+      . . .
+    },
+    { "name": <bindata for example.com.>,
+      "type": GETDNS_RRTYPE_DNSKEY
+      "rdata": { "flags": 257, ... },
+      . . .
+    },
+    . . .
+  ]
+  "replies_tree":
+  [
+  . . .
+.EE
+
+.LP
+If a request is using a context in which stub resolution is set, and that
+request also has any of the dnssec_return_status, dnssec_return_only_secure, or
+dnssec_return_validation_chain extensions specified, the API will not perform
+the request and will instead return an error of
+GETDNS_RETURN_DNSSEC_WITH_STUB_DISALLOWED.
+
+.SH OPT RESOURCE RECORDS
+
+.LP
+For lookups that need an OPT resource record in the Additional Data section,
+use the add_opt_parameters extension. The extension's value (a dict) contains
+the parameters; these are described in more detail in RFC 2671. They are:
+
+.HP 3
+.I maximum_udp_payload_size
+(an int) between 512 and 65535; if not specified, this defaults to those from the DNS context
+
+.HP 3
+.I extended_rcode
+(an int) between 0 and 255; if not specified, this defaults to those from the DNS context
+
+.HP 3
+.I version
+(an int) between 0 and 255; if not specified, this defaults to 0
+
+.HP 3
+.I do_bit
+(an int) between 0 and 1; if not specified, this defaults to those from the DNS context
+
+.HP 3
+.I options
+(a list) contains dicts for each option to be specified. Each list time
+contains two names: option_code (an int) and option_data (a bindata). The API
+marshalls the entire set of options into a properly-formatted RDATA for the
+resource record.
+
+.LP
+It is very important to note that the OPT resource record specified in the
+add_opt_parameters extension might not be the same the one that the API sends
+in the query. For example, if the application also includes any of the DNSSEC
+extensions, the API will make sure that the OPT resource record sets the
+resource record appropriately, making the needed changes to the settings from
+the add_opt_parameters extension.
+
+.LP
+The use of this extension can conflict with the values in the DNS context. For
+example, the default for an OS might be a maximum payload size of 65535, but
+the extension might specify 1550. In such a case, the API will honor the values
+stated in the extension, but will honor the values from the DNS context if
+values are not given in the extension.
+
+.SH RESPONSE DATA
+
+.LP
+The callback function contains a pointer to a response object. A response
+object is always a dict. The response object always contains at least three
+names: replies_full (a list) and replies_tree (a list), and status (an int).
+replies_full is a list of DNS replies (each is bindata) as they appear on the
+wire. replies_tree is a list of DNS replies (each is a dict) with the various
+part of the reply parsed out. status is a status code for the query.
+
+.LP
+Because the API might be extended in the future, a response object might also
+contain names other than replies_full, replies_tree, and status. Similarly, any
+of the dicts described here might be extended in later versions of the API.
+Thus, an application using the API must not assume that it knows all possible
+names in a dict.
+
+.LP
+The following lists the status codes for response objects. Note that, if the
+status is that there are no responses for the query, the lists in replies_full
+and replies_tree will have zero length.
+
+.HP 3
+.B GETDNS_RESPSTATUS_GOOD
+At least one response was returned
+.HP 3
+.B GETDNS_RESPSTATUS_NO_NAME
+Queries for the name yielded all negative responses
+.HP 3
+.B GETDNS_RESPSTATUS_ALL_TIMEOUT
+All queries for the name timed out
+.HP 3
+.B GETDNS_RESPSTATUS_NO_SECURE_ANSWERS
+The context setting for getting only secure responses was specified, and at least one DNS response was received, but no DNS response was determined to be secure through DNSSEC.
+
+.LP
+The top level of replies_tree can optionally have the following names: canonical_name (a bindata), intermediate_aliases (a list), answer_ipv4_address (a bindata), answer_ipv6_address (a bindata), and answer_type (an int).
+
+.LP
+The value of canonical_name is the name that the API used for its lookup. It is
+in FQDN presentation format.  The values in the intermediate_aliases list are
+domain names from any CNAME or unsynthesized DNAME found when resolving the
+original query. The list might have zero entries if there were no CNAMEs in the
+path. These may be useful, for example, for name comparisons when following the
+rules in RFC 6125.  The value of answer_ipv4_address and answer_ipv6_address
+are the addresses of the server from which the answer was received.  The value
+of answer_type is the type of name service that generated the response. The
+values are:
+
+.RS 3
+    GETDNS_NAMETYPE_DNS
+    Normal DNS (RFC 1035)
+    GETDNS_NAMETYPE_WINS
+    The WINS name service (some reference needed)
+.RE
+
+.LP
+If the call was getdns_address or getdns_address_sync, the top level of
+replies_tree has an additional name, just_address_answers (a list). The value
+of just_address_answers is a list that contains all of the A and AAAA records
+from the answer sections of any of the replies, in the order they appear in the
+replies. Each item in the list is a dict with at least two names: address_type
+(whose value is a bindata; it is currently either "IPv4" or "IPv6") and
+address_data (whose value is a bindata). Note that the
+dnssec_return_only_secure extension affects what will appear in the
+just_address_answers list. If the DNS returns other
+address types, those types will appear in this list as well.
+
+.LP
+The API can make service discovery through SRV records easier. If the call was
+getdns_service or getdns_service_sync, the top level of replies_tree has an
+additional name, srv_addresses (a list). The list is ordered by priority and
+weight based on the weighting algorithm in RFC 2782, lowest priority value
+first. Each element of the list is dict has at least two names: port and
+domain_name. If the API was able to determine the address of the target domain
+name (such as from its cache or from the Additional section of responses), the
+dict for an element will also contain address_type (whose value is a bindata;
+it is currently either "IPv4" or "IPv6") and address_data (whose value is a
+bindata). Note that the dnssec_return_only_secure extension affects what will
+appear in the srv_addresses list.
+
+.SH STRUCTURE OF DNS REPLIES_TREE
+
+.LP
+The names in each entry in the the replies_tree list for DNS responses include
+header (a dict), question (a dict), answer (a list), authority (a list), and
+additional (a list), corresponding to the sections in the DNS message format.
+The answer, authority, and additional lists each contain zero or more dicts,
+with each dict in each list representing a resource record.
+
+.LP
+The names in the header dict are all the fields from Section 4.1.1. of RFC
+1035. They are: id, qr, opcode, aa, tc, rd, ra, z, rcode, qdcount, ancount,
+nscount, and arcount. All are ints.
+
+.LP
+The names in the question dict are the three fields from Section 4.1.2. of RFC
+1035: qname (a bindata), qtype (an int), and qclass (an int).
+
+.LP
+Resource records are a bit different than headers and question sections in that
+the RDATA portion often has its own structure. The other names in the resource
+record dicts are name (a bindata), type (an int), class (an int), ttl (an int)
+and rdata (a dict); there is no name equivalent to the RDLENGTH field.
+
+.LP
+The rdata dict has different names for each response type. There is a complete
+list of the types defined in the API. For names that end in "-obsolete" or
+"-unknown", the bindata is the entire RDATA field. For example, the rdata for
+an A record has a name ipv4_address (a bindata); the rdata for an SRV record
+has the names priority (an int), weight (an int), port (an int), and target (a
+bindata).
+
+.LP
+Each rdata dict also has a rdata_raw field (a bindata). This is useful for
+types not defined in this version of the API. It also might be of value if a
+later version of the API allows for additional parsers. Thus, doing a query for
+types not known by the API still will return a result: an rdata with just a
+rdata_raw.
+
+.LP
+It is expected that later extensions to the API will give some DNS types
+different names. It is also possible that later extensions will change the
+names for some of the DNS types listed above.
+
+.SH CALLBACK FUNCTIONS
+
+.LP
+A call to the async getdns functions typically returns before any network or
+file I/O occurs. After the API marshalls all the needed information, it calls
+the callback function that was passed by the application. The callback function
+might be called at any time, even before the calling function has returned. The
+API guarantees that the callback will be called exactly once unless the calling
+function returned an error, in which case the callback function is never
+called.
+
+The getdns calling function calls the callback with the parameters defined as
+follows:
+
+.br
+typedef void (*getdns_callback_t)( 
+.RS 3
+getdns_context_t context,
+.br
+uint16_t callback_type,
+.br
+getdns_dict *response,
+.br
+void *userarg,
+.br
+getdns_transaction_t transaction_id)
+.RE
+
+.HP 3
+.I context
+see getdns_context (3)
+
+.HP 3
+.I callback_type
+Supplies the reason for the callback.
+.RS 3
+.LP
+.B GETDNS_CALLBACK_COMPLETE
+The response has the requested data in it
+.LP
+.B GETDNS_CALLBACK_CANCEL
+The calling program canceled the callback; response is NULL
+.LP
+.B GETDNS_CALLBACK_TIMEOUT
+The requested action timed out; response is NULL
+.LP
+.B GETDNS_CALLBACK_ERROR
+The requested action had an error; response is NULL
+.RE
+
+.HP 3
+.I response
+A response object with the response data. This is described in the section
+titled "RESPONSE DATA" elsewhere in this manual page. The response object is
+part of the API's memory space, and will be freed by the API with the callback
+returns.
+
+.HP 3
+.I userarg
+Identical to the userarg passed to the calling function.
+
+.HP 3
+.I transaction_id
+The transaction identified assigned by the calling function, used to associate a DNS response to a specific DNS request.
+
+.LP
+To cancel an outstanding callback, use the following function.
+
+.RS 3
+.br
+getdns_return_t
+.br
+.B
+getdns_cancel_callback
+(getdns_context_t context, getdns_transaction_t transaction_id)
+.RE
+
+.LP
+This causes the API to call the callback with a callback_type of
+GETDNS_CALLBACK_CANCEL if the callback for this transaction_id has not already
+been called. The callback code for cancellation should clean up any memory
+related to the identified call, such as to deallocate the memory for the
+userarg. getdns_cancel_callback() may return immediately, even before the
+callback finishes its work and returns. Calling getdns_cancel_callback() with a
+transaction_id of a callback that has already been called or an unknown
+transaction_id returns GETDNS_RETURN_UNKNOWN_TRANSACTION; otherwise,
+getdns_cancel_callback() returns GETDNS_RETURN_GOOD.
+
+.SH FILES
+.br /etc/hosts
+.br /etc/resolv.conf
+
+.SH EXAMPLES
+TBD
+
+.SH DIAGNOSTICS
+TBD
+
+.SH "SEE ALSO"
+.BR getdns_address (3),
+.BR getdns_bindata (3),
+.BR getdns_context (3),
+.BR getdns_convert (3),
+.BR getdns_dict (3),
+.BR getdns_general (3),
+.BR getdns_hostname (3),
+.BR getdns_list (3),
+.BR getdns_root_trust_anchor (3)
+.BR getdns_service (3)
+.BR getdns_validate_dnssec (3)
+
+.SH REPORTING PROBLEMS
+Bug reports should be sent to the getdns-bugs@getdns.net
+
+.SH AUTHORS
+
+The getdns API was documented by Paul Hoffman.  This implementation of the getdns API was written by:
+.LP
+.RS 3
+.br
+Craig Despeaux, Verisign Inc.
+.br
+John Dickinson, Sinodun
+.br
+Sara Dickinson, Sinodun
+.br
+Neel Goyal, Verisign Inc.
+.br
+Shumon Huque, Verisign Labs
+.br
+Olaf Kolkman, NLnet Labs
+.br
+Allison Mankin, Verisign Inc. - Verisign Labs.
+.br
+Melinda Shore, No Mountain Software LLC
+.br
+Willem Toorop, NLnet Labs
+.br
+Gowri Visweswaran, Verisign Labs
+.br
+Wouter Wijngaards, NLnet Labs
+.br
+Glen Wiley, Verisign Inc.
+.RE
+

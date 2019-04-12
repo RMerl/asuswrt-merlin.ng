@@ -1427,6 +1427,10 @@ extern void reload_dnsmasq(void);
 #if defined(RTCONFIG_TR069) || defined(RTCONFIG_AMAS)
 extern int dnsmasq_script_main(int argc, char **argv);
 #endif
+#ifdef RTCONFIG_DNSPRIVACY
+extern void start_stubby(void);
+extern void stop_stubby(void);
+#endif
 extern int ddns_updated_main(int argc, char *argv[]);
 #ifdef RTCONFIG_IPV6
 extern void add_ip6_lanaddr(void);
@@ -1670,9 +1674,11 @@ extern void dnsfilter_setup_dnsmasq(FILE *fp);
 extern void dnsfilter_dot_rules(FILE *fp, char *lan_if);
 
 // ntpd.c
+#ifdef RTCONFIG_NTPD
 extern int start_ntpd(void);
 extern void stop_ntpd(void);
-extern void ntp_time_synced(int argc, char *argv[]);
+extern int ntpd_synced_main(int argc, char *argv[]);
+#endif
 
 // lan.c
 #ifdef RTCONFIG_TIMEMACHINE

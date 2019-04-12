@@ -1,0 +1,269 @@
+.\" The "BSD-New" License
+.\" 
+.\" Copyright (c) 2013, NLnet Labs, Verisign, Inc.
+.\" All rights reserved.
+.\" 
+.\" Redistribution and use in source and binary forms, with or without
+.\" modification, are permitted provided that the following conditions are met:
+.\" * Redistributions of source code must retain the above copyright
+.\"   notice, this list of conditions and the following disclaimer.
+.\" * Redistributions in binary form must reproduce the above copyright
+.\"   notice, this list of conditions and the following disclaimer in the
+.\"   documentation and/or other materials provided with the distribution.
+.\" * Neither the names of the copyright holders nor the
+.\"   names of its contributors may be used to endorse or promote products
+.\"   derived from this software without specific prior written permission.
+.\" 
+.\" THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+.\" ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+.\" WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+.\" DISCLAIMED. IN NO EVENT SHALL Verisign, Inc. BE LIABLE FOR ANY
+.\" DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+.\" (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+.\" LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+.\" ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+.\" (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+.\" SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+.\" 
+
+.TH getdns_general 3 "@date@" "getdns @version@" getdns
+.SH NAME
+.B getdns_general, 
+.B getdns_general_sync
+-- do a getdns DNS lookup
+
+.SH LIBRARY
+DNS Resolver library (libgetdns, \-lgetdns)
+
+.SH SYNOPSIS
+#include <getdns.h>
+
+getdns_return_t 
+.br
+.B getdns_general
+(getdns_context *context,
+.RS 3
+const char *name,
+.br
+uint16_t request_type
+.br
+getdns_dict *extensions,
+.br
+void *userarg,
+.br
+getdns_transaction_t *transaction_id,
+.br
+getdns_callback_t callbackfn)
+.RE
+
+getdns_return_t 
+.br
+.B getdns_general_sync
+(getdns_context *context,
+.RS 3
+const char *name,
+.br
+uint16_t request_type
+.br
+getdns_dict *extensions,
+.br
+getdns_dict **response)
+.RE
+
+.SH DESCRIPTION
+
+.LP
+The getdns_general(3) and getdns_general_sync functions provide public entry
+points into the getdns API library to retrieve any valid responses to a query
+from the DNS (note that other namespaces in the context are not used).   Most
+typical use cases for applications are probably satisifed via calls to
+getdns_address(3) which would replace getaddrinfo(3).
+
+.HP 3
+.I context
+A pointer to the previsouly created DNS context that is to be used with this DNS request. see getdns_context (3)
+
+.HP 3
+.I name
+The ASCII-based domain name looked up as a string. This can also be an
+IPv4 or IPv6 address for request types that take addresses instead of domain
+names, such as PTR. The values here follow the rules in section 2.1 of RFC 4343
+to allow non-ASCII octets and special characters in labels.
+
+.HP 3
+.I request_type
+Specifies the RRtype for the query; the RRtype numbers are listed in the IANA registry. For example, to get the NS records, request_type would be 2. The API also has defined macros for most of the RRtypes by name; the definition names all start with "GETDNS_RRTYPE_". For example, to get the NS records, you can also set the request_type to GETDNS_RRTYPE_NS.
+
+.HP 3
+.I extensions
+extensions for this request, NULL if no extensions, see libgetnds (3) for a detailed description of extensions
+
+.HP 3
+.I userarg
+returned to the callback function untouched, can be NULL
+
+.HP 3
+.I transaction_id
+populated by the API and used to identify the callback (for example to getdns_cancel_callback), can be NULL, set to 0 if the function fails
+
+.HP 3
+.I callbackfn
+non-NULL pointer to a callback function defined by the application, typically
+used to process the response. Only the asynchronous signature accepts a
+callback function, the synchronous signature does not include a callback.  See
+libgetdns (3) for a more detailed discussion of callback functions.
+
+.HP 3
+.I response
+A getdns_dict type is returned in response and always contains at least three names: replies_full (a list containing the DNS response as binary data), replies_tree (a list containing the parsed DNS response data) and status (an int).  The storage associated with this must be freed by a call to getdns_free_sync_request_memory (3).
+
+.HP
+.SH "RETURN VALUES"
+
+Upon successful completion the functions return
+.B GETDNS_RETURN_GOOD
+, otherwise the following error values are returned:
+
+.LP
+.B GETDNS_RETURN_BAD_CONTEXT 
+if the context pointer is invalid or the context has internal deficiencies
+.LP
+.B GETDNS_RETURN_BAD_DOMAIN_NAME
+if the domain name passed to the function is invalid
+.LP
+.B GETDNS_RETURN_EXTENSION_MISFORMAT
+if the data type specified in one or more of the extensions does not match the specifications
+.LP
+.B GETDNS_RETURN_GENERIC_ERROR
+if some problem was encountered in the function not addressed by one of the more
+specific return codes
+.LP
+.B GETDNS_RETURN_INVALID PARAMETER 
+if one or more parameters has an invalid value
+.LP
+.B GETDNS_RETURN_MEMORY_ERROR
+if unable to allocate the memory required
+.LP
+.B GETDNS_RETURN_NO_SUCH_EXTENSION
+if one or more of the strings specified in the extensions are not valid
+
+The values of status included in the response parameter are:
+
+.LP
+.B GETDNS_RESPSTATUS_GOOD
+if at least one response was returned
+.LP
+.B GETDNS_RESPSTATUS_NO_NAME
+if queries for the name yielded all negative responses
+.LP
+.B GETDNS_RESPSTATUS_ALL_TIMEOUT
+if all queries for the name timed out
+.LP
+.B GETDNS_RESPSTATUS_NO_SECURE_ANSWERS
+if only secure replies accepted (per context) and at least one response was received but no DNS responses were secure through DNSSEC
+
+.LP
+For a more detailed explanation of the response object see
+.I libgetdns
+(3)
+
+.SH REQUEST TYPES
+
+This is a list of the most common request types, a full list of request types in more detail is available at http://www.iana.org/assignments/dns-parameters/dns-parameters.xml
+
+.RS 3
+.TP 11
+.B A
+Host address
+.TP 
+.B AAAA
+IPv6 address
+.TP
+.B CAA
+Certificate Authority Authorization
+.TP
+.B CNAME
+Canonical name for an alias
+.TP
+.B DLV
+DNSSEC lookaside validation
+.TP
+.B DNAME
+DNAME
+.TP
+.B DS
+Delegation signer
+.TP
+.B HINFO
+Host information
+.TP
+.B KEY
+Security key
+.TP
+.B MINFO
+Mailbox or mail list information
+.TP
+.B MX
+Mail exchange
+.TP
+.B NS
+Authoritative name server
+.TP
+.B NSEC
+Next secure record
+.TP
+.B NSEC3
+Next secure record (hashed)
+.TP
+.B NSEC3PARAM
+NSEC3PARAM
+.TP
+.B PTR
+Domain name pointer
+.TP
+.B RRSIG
+Signature for a record set
+.TP
+.B SIG
+Security signature
+.TP
+.B SOA
+Marks the start of a zone of authority
+.TP
+.B SRV
+Server selection
+.TP
+.B TA
+DNSSEC trust authorities
+.TP
+.B TKEY
+Transaction key
+.TP
+.B TLSA
+TLSA
+.TP
+.B TSIG
+Transaction signature
+.TP
+.B TXT
+Text strings
+.RE
+
+.SH EXAMPLES
+
+TBD
+
+.SH FILES
+.br
+/etc/hosts
+.br
+/etc/resolv.conf
+
+.SH SEE ALSO
+.BR libgetdns (3),
+.BR getdns_address (3),
+.BR getdns_context (3),
+.BR getdns_free_sync_request_memory (3), 
+.BR getdns_hostname (3),
+.BR getdns_service (3),
+

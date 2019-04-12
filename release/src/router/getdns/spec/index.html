@@ -1,0 +1,2504 @@
+<!DOCTYPE html SYSTEM 'about:legacy-compat'>
+<html><head><title>DNS API Description</title>
+<meta http-equiv="Content-type" content="text/html;charset=UTF-8"> 
+
+<style type="text/css">
+<!--
+div.forh { white-space: pre; font-family: monospace; margin-top: 0; margin-bottom: 0 }
+h1 { font-size: 18pt; }
+h2 { font-size: 14pt; }
+p { margin-bottom: 0 }
+p.title { font-size: 24pt; font-weight: bold; margin-top: 0; margin-bottom: 0; text-align: center; }
+p.title2 { font-size: 12pt; margin-top: 0; text-align: center; }
+p.define { font-family: monospace; font-weight: bold; margin-bottom: 0; margin-left: 2em; }
+p.descrip { margin-left: 4em; margin-top: 0; }
+p.cont { margin-top: 0 }
+p.bull { margin-top: 0; margin-bottom: 0 }
+p.bull:before { content: "• " }
+pre { margin-bottom: 0 }
+table { border-spacing: 8pt }
+td, th { vertical-align: top; text-align: left }
+td.num { font-weight: bold; width: 2em }
+tr.code { font-family: monospace }
+.done { background: lightgreen }
+.wontdo { background: lightpink }
+.moved { background: lightskyblue }
+.default { font-weight: bold }
+/* The following is for Pygments-highlighted code */
+.highlight .hll { background-color: #ffffcc }
+.highlight  { background: #ffffff; }
+.highlight .c { color: #408080; font-style: italic } /* Comment */
+.highlight .err { border: 1px solid #FF0000 } /* Error */
+.highlight .k { color: #008000; font-weight: bold } /* Keyword */
+.highlight .o { color: #666666 } /* Operator */
+.highlight .cm { color: #408080; font-style: italic } /* Comment.Multiline */
+.highlight .cp { color: #BC7A00 } /* Comment.Preproc */
+.highlight .c1 { color: #408080; font-style: italic } /* Comment.Single */
+.highlight .cs { color: #408080; font-style: italic } /* Comment.Special */
+.highlight .gd { color: #A00000 } /* Generic.Deleted */
+.highlight .ge { font-style: italic } /* Generic.Emph */
+.highlight .gr { color: #FF0000 } /* Generic.Error */
+.highlight .gh { color: #000080; font-weight: bold } /* Generic.Heading */
+.highlight .gi { color: #00A000 } /* Generic.Inserted */
+.highlight .go { color: #808080 } /* Generic.Output */
+.highlight .gp { color: #000080; font-weight: bold } /* Generic.Prompt */
+.highlight .gs { font-weight: bold } /* Generic.Strong */
+.highlight .gu { color: #800080; font-weight: bold } /* Generic.Subheading */
+.highlight .gt { color: #0040D0 } /* Generic.Traceback */
+.highlight .kc { color: #008000; font-weight: bold } /* Keyword.Constant */
+.highlight .kd { color: #008000; font-weight: bold } /* Keyword.Declaration */
+.highlight .kn { color: #008000; font-weight: bold } /* Keyword.Namespace */
+.highlight .kp { color: #008000 } /* Keyword.Pseudo */
+.highlight .kr { color: #008000; font-weight: bold } /* Keyword.Reserved */
+.highlight .kt { color: #B00040 } /* Keyword.Type */
+.highlight .m { color: #666666 } /* Literal.Number */
+.highlight .s { color: #BA2121 } /* Literal.String */
+.highlight .na { color: #7D9029 } /* Name.Attribute */
+.highlight .nb { color: #008000 } /* Name.Builtin */
+.highlight .nc { color: #0000FF; font-weight: bold } /* Name.Class */
+.highlight .no { color: #880000 } /* Name.Constant */
+.highlight .nd { color: #AA22FF } /* Name.Decorator */
+.highlight .ni { color: #999999; font-weight: bold } /* Name.Entity */
+.highlight .ne { color: #D2413A; font-weight: bold } /* Name.Exception */
+.highlight .nf { color: #0000FF } /* Name.Function */
+.highlight .nl { color: #A0A000 } /* Name.Label */
+.highlight .nn { color: #0000FF; font-weight: bold } /* Name.Namespace */
+.highlight .nt { color: #008000; font-weight: bold } /* Name.Tag */
+.highlight .nv { color: #19177C } /* Name.Variable */
+.highlight .ow { color: #AA22FF; font-weight: bold } /* Operator.Word */
+.highlight .w { color: #bbbbbb } /* Text.Whitespace */
+.highlight .mf { color: #666666 } /* Literal.Number.Float */
+.highlight .mh { color: #666666 } /* Literal.Number.Hex */
+.highlight .mi { color: #666666 } /* Literal.Number.Integer */
+.highlight .mo { color: #666666 } /* Literal.Number.Oct */
+.highlight .sb { color: #BA2121 } /* Literal.String.Backtick */
+.highlight .sc { color: #BA2121 } /* Literal.String.Char */
+.highlight .sd { color: #BA2121; font-style: italic } /* Literal.String.Doc */
+.highlight .s2 { color: #BA2121 } /* Literal.String.Double */
+.highlight .se { color: #BB6622; font-weight: bold } /* Literal.String.Escape */
+.highlight .sh { color: #BA2121 } /* Literal.String.Heredoc */
+.highlight .si { color: #BB6688; font-weight: bold } /* Literal.String.Interpol */
+.highlight .sx { color: #008000 } /* Literal.String.Other */
+.highlight .sr { color: #BB6688 } /* Literal.String.Regex */
+.highlight .s1 { color: #BA2121 } /* Literal.String.Single */
+.highlight .ss { color: #19177C } /* Literal.String.Symbol */
+.highlight .bp { color: #008000 } /* Name.Builtin.Pseudo */
+.highlight .vc { color: #19177C } /* Name.Variable.Class */
+.highlight .vg { color: #19177C } /* Name.Variable.Global */
+.highlight .vi { color: #19177C } /* Name.Variable.Instance */
+.highlight .il { color: #666666 } /* Literal.Number.Integer.Long */-->
+</style>
+</head><body>
+
+<p class=title>Description of the <code>getdns</code> API</p>
+<p class=title2>Originally edited by Paul Hoffman</p>
+<p class=title2>Currently maintained by the <a
+href="mailto:team@getdnsapi.net">getdns team</a></p>
+<p class=title2>Document version: "getdns December 2015"</p>
+
+<p>This document describes a modern asynchronous DNS API. This new API is intended to be useful to
+application developers and operating system distributors as a way of making
+all types of DNS information easily available in many types of programs. The major features
+of this new API are:</p>
+
+<ul>
+<li>Full support for event-driven programming</li>
+<li>Supports DNSSEC in multiple ways</li>
+<li>Mirroring of the resolution in <code>getaddrinfo()</code></li>
+<li>Easily supports all RRtypes, even those yet to be defined</li>
+</ul>
+
+<p>There is more background into the design and future goals of this API
+<a href="#Commentary">later in this document</a>.</p>
+
+<p>This document was discussed on the <a href="http://www.vpnc.org/mailman/listinfo/getdns-api">
+getdns-api mailing list</a>; future versions of the API might be discussed there as well.
+(If you
+want to contact the editors off-list, please send mail to <a
+href="mailto:team@getdnsapi.net">team@getdnsapi.net</a>.)</p>
+
+<h1>1. The <code>getdns</code> Async Functions</h1>
+
+<p>The API has four async functions:</p>
+
+<ul>
+
+<li><code>getdns_address</code> for doing <code>getaddrinfo()</code>-like address lookups</li>
+
+<li><code>getdns_hostname</code> for doing <code>getnameinfo()</code>-like name lookups</li>
+
+<li><code>getdns_service</code> for getting results from SRV lookups</li>
+
+<li><code>getdns_general</code> for looking up any type of DNS record</li>
+
+</ul>
+
+<h2>1.1 <code>getdns_general()</code></h2>
+
+<div class=forh id="getdnsfuncgeneral">getdns_return_t
+getdns_general(
+  getdns_context        *context,
+  const char            *name,
+  uint16_t              request_type,
+  getdns_dict           *extensions,
+  void                  *userarg,
+  getdns_transaction_t  *transaction_id,
+  getdns_callback_t     callbackfn
+);
+</div>
+
+<p class=define><code><b>context</b></code></p>
+<p class=descrip>A pointer to the DNS context that is to be used with this call. DNS contexts are
+described <a href="#Contexts">later in this document</a>. Note that a context <i>must</i> be created
+before calling the function.</p>
+
+<p class=define><code><b>*name</b></code></p>
+<p class=descrip>This is a null-terminted string consisting of an
+ASCII-based domain name to be looked up.
+The values here follow the rules in section 2.1 of RFC 4343
+to allow non-ASCII octets and special characters in labels.</p>
+
+<p class=define><code><b>request_type</b></code></p>
+<p class=descrip>Specifies the RRtype for the query; the RRtype numbers are listed in the IANA
+registry. For example, to get the NS records, <code>request_type</code> would be 2. The API also has
+defined macros for most of the RRtypes by name; the definition names all start with
+"<code>GETDNS_RRTYPE_</code>". For example, to get the NS records, you can also set the
+<code>request_type</code> to <code>GETDNS_RRTYPE_NS</code>.
+(The full list of request types is always
+<a href="https://www.iana.org/assignments/dns-parameters/dns-parameters.xml">here</a>.)</p>
+
+<p class=define><code><b>*extensions</b></code></p>
+<p class=descrip>Specifies the extensions for this request; the value may be NULL if there are no
+extensions. See <a href="#Extensions">the section below</a> for information on how to specify
+the extensions used for a request.</p>
+
+<p class=define><code><b>*userarg</b></code></p>
+<p class=descrip>A void* that is passed to the function, which the function
+returns to the callback function untouched. <code>userarg</code> can be used by the callback
+function for any user-specific data needed. This can be NULL.</p>
+
+<p class=define><code><b>*transaction_id</b></code></p>
+<p class=descrip>A pointer to a value that is filled in by the
+function to identify the callback being made.
+This pointer can be NULL, in which case it is ignored and no value is assigned.
+The <code>getdns_cancel_callback()</code> function uses the
+<code>transaction_id</code> to determine which callback is to be cancelled.
+If the function fails,
+<code>transaction_id</code> is set to 0.</p>
+
+<p class=define><code><b>*callbackfn</b></code></p>
+<p class=descrip>A pointer to a callback function that is defined by the application.
+Typically, the callback function will do all the processing on the results from
+the API. The parameters of the callback are defined below. This really needs
+to be a pointer to a function (and not something like NULL); otherwise, the
+results are unpredictable.</p>
+
+<p>The async <code>getdns</code> functions return <code>GETDNS_RETURN_GOOD</code> if the call was properly formatted.
+It returns <code>GETDNS_RETURN_BAD_DOMAIN_NAME</code> if the API determines that the name passed to
+the function was bad, <code>GETDNS_RETURN_BAD_CONTEXT</code> if the context has internal deficiencies,
+<code>GETDNS_RETURN_NO_SUCH_EXTENSION</code> if one or more extensions do not exist, or
+<code>GETDNS_RETURN_EXTENSION_MISFORMAT</code> if the contents of one or more of the
+extensions is incorrect. All of the return values are given <a
+href="#ReturnCodes">later in this document</a>.</p>
+
+<h2>1.2 <code>getdns_address()</code></h2>
+
+<div class=forh id="getdnsfuncaddress">getdns_return_t
+getdns_address(
+  getdns_context        *context,
+  const char            *name,
+  getdns_dict           *extensions,
+  void                  *userarg,
+  getdns_transaction_t  *transaction_id,
+  getdns_callback_t     callbackfn
+);
+</div>
+
+<p>There are three critical differences between <code>getdns_address()</code> and
+<code>getdns_general()</code> beyond the missing <code>request_type</code> argument:</p>
+
+<ul>
+
+<li>In <code>getdns_address()</code>, the <code>name</code> argument can only take a host name.</li>
+
+<li>You do not need to include a <code>return_both_v4_and_v6</code> extension with the call in
+<code>getdns_address()</code>: it will always return both IPv4 and IPv6 addresses.</li>
+
+<li><code>getdns_address()</code> always uses all of namespaces from the context (to better emulate
+<code>getaddrinfo()</code>), while <code>getdns_general()</code> only uses the DNS namespace.</li>
+
+</ul>
+
+<h2>1.3 <code>getdns_hostname()</code></h2>
+
+<div class=forh id="getdnsfunchostname">getdns_return_t
+getdns_hostname(
+  getdns_context        *context,
+  getdns_dict           *address,
+  getdns_dict           *extensions,
+  void                  *userarg,
+  getdns_transaction_t  *transaction_id,
+  getdns_callback_t     callbackfn
+);
+</div>
+
+<p>The address is given as a <code>getdns_dict</code> data structure (defined below). The list must
+have two names: <code>address_type</code> (whose value is a bindata; it is currently either "IPv4"
+or "IPv6" (which are case-sensitive)) and <code>address_data</code> (whose value is a bindata).</p>
+
+<h2>1.4 <code>getdns_service()</code></h2>
+
+<div class=forh id="getdnsfuncservice">getdns_return_t
+getdns_service(
+  getdns_context        *context,
+  const char            *name,
+  getdns_dict           *extensions,
+  void                  *userarg,
+  getdns_transaction_t  *transaction_id,
+  getdns_callback_t     callbackfn
+);
+</div>
+
+<p><code>name</code> must be a domain name for an SRV lookup; the call returns the
+relevant SRV information for the name.</p>
+
+<h2>1.5 Callback Functions for <code>getdns</code></h2>
+
+<p>A call to the async <code>getdns</code> functions typically returns before any network or file I/O occurs. After
+the API marshalls all the needed information, it calls the callback function that was passed by the
+application. The callback function might be called at any time, even before the calling function
+has returned. The API guarantees that the callback will be called exactly once unless the calling function
+returned an error, in which case the callback function is never called.<p>
+
+<p>The <code>getdns</code> calling function calls the callback with the parameters defined
+as follows:</p>
+<div class=forh id="getdns_callback_t">
+typedef void (*getdns_callback_t)(
+                                  getdns_context         *context,
+                                  getdns_callback_type_t callback_type,
+                                  getdns_dict            *response,
+                                  void                   *userarg,
+                                  getdns_transaction_t   transaction_id);
+</div>
+
+<p class=define><code><b>context</b></code></p>
+<p class=descrip>The DNS context that was used in the calling function. See <a
+href="#ContextInitial">below</a> for a description of the basic use of contexts, and <a
+href="#Contexts">later</a> for more advanced use.</p>
+
+<p class=define><code><b>callback_type</b></code></p>
+<p class=descrip>Supplies the reason for the callback. See below for the codes and reasons.</p>
+
+<p class=define><code><b>*response</b></code></p>
+<p class=descrip>A response object with the response data.
+This is described below.
+The application is responsible for cleaning up the response object with getdns_dict_destroy.</p>
+
+<p class=define><code><b>*userarg</b></code></p>
+<p class=descrip>Identical to the <code>*userarg</code> passed to the calling function.</p>
+
+<p class=define><code><b>transaction_id</b></code></p>
+<p class=descrip>The transaction identifier that was assigned by the calling function.</p>
+
+<p>The following are the values for callback_type.</p>
+
+<p class=define>GETDNS_CALLBACK_COMPLETE</p>
+<p class=descrip>The response has the requested data in it</p>
+<p class=define>GETDNS_CALLBACK_CANCEL</p>
+<p class=descrip>The calling program cancelled the callback; response is NULL</p>
+<p class=define>GETDNS_CALLBACK_TIMEOUT</p>
+<p class=descrip>The requested action timed out; response is filled in with empty structures</p>
+<p class=define>GETDNS_CALLBACK_ERROR</p>
+<p class=descrip>The requested action had an error; response is NULL</p>
+
+
+<h2>1.6 <a id="ContextInitial">Setting Up The DNS Context</a></h2>
+
+<p>Calls to <code>getdns</code> functions require a DNS context, which is a group of API settings
+that affect how DNS calls are made. For most applications, a default context is sufficient.</p>
+
+<p>To create a new DNS context, use the function:</p>
+
+<div class=forh>getdns_return_t
+getdns_context_create(
+  getdns_context  **context,
+  int             set_from_os
+);
+</div>
+
+<p class=cont>The call to <code>getdns_context_create</code> immediately returns a context that can
+be used with other API calls; that context contains the API's default values. Most applications will
+want <code>set_from_os</code> set to <code>1</code>.</p>
+
+<div class=forh>getdns_return_t
+getdns_context_create_with_memory_functions(
+  getdns_context  **context,
+  int             set_from_os,
+  void            *(*malloc)(size_t),
+  void            *(*realloc)(void *, size_t),
+  void            (*free)(void *)
+);
+getdns_return_t
+getdns_context_create_with_extended_memory_functions(
+  getdns_context  **context,
+  int             set_from_os,
+  void            *userarg,
+  void            *(*malloc)(void *userarg, size_t),
+  void            *(*realloc)(void *userarg, void *, size_t),
+  void            (*free)(void *userarg, void *)
+);
+</div>
+
+<p>To clean up the context, including cleaning up all outstanding transactions that were called
+using this context, use the function:</p>
+
+<div class=forh>void
+getdns_context_destroy(
+  getdns_context   *context
+);
+</div>
+
+<p class=cont>When <code>getdns_context_destroy()</code> returns, the
+application knows that all outstanding transactions associated with this
+context will have been called; callbacks that had not been called before
+<code>getdns_context_destroy()</code> was called will be called with a callback_type of
+<code>GETDNS_CALLBACK_CANCEL</code>. <code>getdns_context_destroy()</code> returns after
+all of the needed cleanup is done and callbacks are made.</p>
+
+<h2>1.7 Canceling a Callback</h2>
+
+<p>To cancel an outstanding callback, use the following function.</p>
+
+<div class=forh>getdns_return_t
+getdns_cancel_callback(
+  getdns_context        *context,
+  getdns_transaction_t  transaction_id
+);
+</div>
+
+<p class=cont>This causes the API to call the callback with a <code>callback_type</code> of
+<code>GETDNS_CALLBACK_CANCEL</code> if the callback for this <code>transaction_id</code> has not
+already been called. This will cancel the callback regardless of what the original call was
+doing (such as in the middle of a DNS request, while DNSSEC validation is happening, and so on).
+The callback code for cancellation should clean up any memory related to the
+identified call, such as to deallocate the memory for the userarg.
+<code>getdns_cancel_callback()</code> may return immediately, even before the callback finishes its
+work and returns. Calling <code>getdns_cancel_callback()</code> with a <code>transaction_id</code>
+of a callback that has already been called or an unknown <code>transaction_id</code> returns
+<code>GETDNS_RETURN_UNKNOWN_TRANSACTION</code>; otherwise, <code>getdns_cancel_callback()</code>
+returns <code>GETDNS_RETURN_GOOD</code>.</p>
+
+<h2>1.8 Event-driven Programs</h2>
+
+<p>Event-driven programs (sometimes called "async programs") require an event
+base and event loop (among other things). Different event libraries have
+different structures or the event base. Because of this, there is no standard
+method to set the event base in the DNS API: those are all added as
+extensions. The API is distributed as a core package and one or more sets of
+extensions to align with event libraries. It is mandatory to use one of the extension
+functions to set the event base in the DNS context; this is required before
+calling any event-driven calls like the <code>getdns</code> functions.</p>
+
+<p>Each implementation of the DNS API will specify an extension function that
+tells the DNS context which event base is being used. For example, one
+implementation of this API that uses the libevent event library might name
+this function "<code>getdns_extension_set_libevent_base()</code>" while
+another might name it
+"<code>getdns_extension_set_eventbase_for_libevent()</code>"; the two
+extension functions could have very different calling patterns and return
+values. Thus, the application developer <i>must</i> read the API documentation
+(not just this design document) in order to determine what extension function
+to use to tell the API the event base to use.</p>
+
+<p>The structure of a typical event-driven application might look like the following pseudocode.
+The code in italics is specific to the event mechanism.</p>
+
+<pre>
+Includes for one or more regular C libraries
+<i>An include for the getdns library specific to the event library you use</i>
+Definition of your callback function
+    Get the DNS data from the allocated pointer
+    Process that data
+    Check for errors
+Definition of main()
+    Create context
+    <i>Set up your event base</i>
+    <i>Point the context to your event base</i>
+    Set up the getdns call arguments
+    Make the getdns call
+    Check if the getdns return is good
+    Destroy the context
+    Exit
+</pre>
+
+<p>The API does not have direct support for a polling interface. Instead, the callback interface is
+specifically designed to allow an application that wants to process results in polling instead of in
+callbacks to be able to create its own polling interface fairly trivially. Such a program would
+create a data structure for the calls, including their <code>transaction_id</code> and
+<code>userarg</code>. The <code>userarg</code> could be the polling data structure or have a pointer to it.
+The application would have just
+one callback function for all requests, and that function would copy the <code>response</code> into
+application memory, update the data structure based on the <code>transaction_id</code> index,
+and return from the callback. The polling code could then check the data structure for any updates
+at its leisure.</p>
+
+<h2>1.9 Calling the API Synchronously (Without Events)</h2>
+
+<p>There are functions parallel to the four <code>getdns</code> async functions,
+except that there is no callback. That is, when an application calls one of these
+synchronous functions, the
+API gathers all the required information and then returns the result. The value returned is exactly the
+same as the response returned in the callback if you had used the async version of the function.</p>
+
+<div class=forh>getdns_return_t
+getdns_general_sync(
+  getdns_context  *context,
+  const char      *name,
+  uint16_t        request_type,
+  getdns_dict     *extensions,
+  getdns_dict     **response
+);
+</div>
+
+<div class=forh>getdns_return_t
+getdns_address_sync(
+  getdns_context  *context,
+  const char      *name,
+  getdns_dict     *extensions,
+  getdns_dict     **response
+);
+</div>
+
+<div class=forh>getdns_return_t
+getdns_hostname_sync(
+  getdns_context  *context,
+  getdns_dict     *address,
+  getdns_dict     *extensions,
+  getdns_dict     **response
+);
+</div>
+
+<div class=forh>getdns_return_t
+getdns_service_sync(
+  getdns_context  *context,
+  const char      *name,
+  getdns_dict     *extensions,
+  getdns_dict     **response
+);
+</div>
+
+<p>When you are done with the data in the response, use the following function so that the API can
+free the memory from its internal pool.</p>
+
+<div class=forh>void
+getdns_dict_destroy(
+  getdns_dict  *response
+);
+</div>
+
+<h1>2. Data structures in the API</h1>
+
+<p>The API returns data structures. The data structure is not a representational language like JSON:
+it is really just a data structure. Data structures can have four types of members:</p>
+
+<ul>
+
+<li><span class=default>list</span> is an ordered list, like JSON and Python lists.
+The members of the list can be any of the four data types.</li>
+
+<li><span class=default>dict</span> is a name-value pair, like a JSON object or Python dict. The
+name is a string literal, and the value can be any of the four data types. The order of the
+name-value pairs in a dict is not important.</li>
+
+<li><span class=default>int</span> is an integer compatible with uint32_t.</li>
+
+<li><span class=default>bindata</span> is a struct to hold binary data. It is defined as
+<code>{ size_t size; uint8_t *binary_stuff; }</code>.</li>
+
+</ul>
+
+<p>The API comes with helper functions to get data from the list and dict data types:</p>
+
+<div class=forh id="datagetters">
+/* Lists: get the length, get the data_type of the value at a given
+   position, and get the data at a given position */
+getdns_return_t getdns_list_get_length(const getdns_list *list, size_t *answer);
+getdns_return_t getdns_list_get_data_type(const getdns_list *list, size_t index, getdns_data_type *answer);
+getdns_return_t getdns_list_get_dict(const getdns_list *list, size_t index, getdns_dict **answer);
+getdns_return_t getdns_list_get_list(const getdns_list *list, size_t index, getdns_list **answer);
+getdns_return_t getdns_list_get_bindata(const getdns_list *list, size_t index, getdns_bindata **answer);
+getdns_return_t getdns_list_get_int(const getdns_list *list, size_t index, uint32_t *answer);
+
+/* Dicts: get the list of names, get the data_type of the
+   value at a given name, and get the data at a given name */
+getdns_return_t getdns_dict_get_names(const getdns_dict *dict, getdns_list **answer);
+getdns_return_t getdns_dict_get_data_type(const getdns_dict *dict, const char *name, getdns_data_type *answer);
+getdns_return_t getdns_dict_get_dict(const getdns_dict *dict, const char *name, getdns_dict **answer);
+getdns_return_t getdns_dict_get_list(const getdns_dict *dict, const char *name, getdns_list **answer);
+getdns_return_t getdns_dict_get_bindata(const getdns_dict *dict, const char *name, getdns_bindata **answer);
+getdns_return_t getdns_dict_get_int(const getdns_dict *dict, const char *name, uint32_t *answer);
+</div>
+
+<p>All of these helper getter functions return <code>GETDNS_RETURN_GOOD</code> if the call is successful.
+The list functions will return <code>GETDNS_RETURN_NO_SUCH_LIST_ITEM</code> if the index argument is
+out of range; the dict functions will return <code>GETDNS_RETURN_NO_SUCH_DICT_NAME</code> if the name
+argument doesn't exist in the dict. The functions also return <code>GETDNS_RETURN_WRONG_TYPE_REQUESTED</code>
+if the requested data type doesn't match the contents of the indexed argument or name.</p>
+
+<p>This document uses graphical representations of data structures. It is important to note that
+this is only a graphical representation; the brackets, commas, quotation marks, comments, and so on
+are not part of the data. Also, this document uses macro names instead of some of the int
+arguments; of course, the data structures have the actual int in them.</p>
+
+<p>The <code>getdns_dict_get_names</code> helper function creates a newly created list
+containing the names in a dict.  The caller is responsible for disposing this list.</p>
+
+<p>The helper getter functions return references to <code>getdns_dict</code>, <code>getdns_list</code> and <code>getdns_bindata</code> data structures.
+The user must not directly destroy these retrieved "child" data structures; instead, 
+they will automatically be destroyed when the containing "parent" data structure is destroyed.
+Because of this, retrieved "child" data structures cannot be used any more after the containing "parent" data structure has been destroyed.</p>
+
+<p>When the name parameter to the <code>getdns_dict_get_</code> functions, starts with a '<code>/</code>' (<code>%x2F</code>) character, it is interpreted as a JSON Pointer as described in RFC 6901, and will then be used to dereference the nested data structures to get to the requested data type.</p>
+
+<h2>2.1 Creating Data Structures</h2>
+
+<p>Some of the features of the API require that you create your own data structures to be used in
+arguments passed to the API. For example, if you want to use any extensions for the calling functions,
+you need to create a dict. The requisite functions are:</p>
+
+<div class=forh id="datasetters">
+/* Lists: create, destroy, and set the data at a given position */
+getdns_list * getdns_list_create();
+getdns_list * getdns_list_create_with_context(
+  getdns_context *context
+);
+getdns_list * getdns_list_create_with_memory_functions(
+  void *(*malloc)(size_t),
+  void *(*realloc)(void *, size_t),
+  void (*free)(void *)
+);
+getdns_list * getdns_list_create_with_extended_memory_functions(
+  void *userarg,
+  void *(*malloc)(void *userarg, size_t),
+  void *(*realloc)(void *userarg, void *, size_t),
+  void (*free)(void *userarg, void *)
+);
+void getdns_list_destroy(getdns_list *list);
+getdns_return_t getdns_list_set_dict(getdns_list *list, size_t index, const getdns_dict *child_dict);
+getdns_return_t getdns_list_set_list(getdns_list *list, size_t index, const getdns_list *child_list);
+getdns_return_t getdns_list_set_bindata(getdns_list *list, size_t index, const getdns_bindata *child_bindata);
+getdns_return_t getdns_list_set_int(getdns_list *list, size_t index, uint32_t child_uint32);
+
+/* Dicts: create, destroy, and set the data at a given name */
+getdns_dict * getdns_dict_create();
+getdns_dict * getdns_dict_create_with_context(
+  getdns_context *context
+);
+getdns_dict * getdns_dict_create_with_memory_functions(
+  void *(*malloc)(size_t),
+  void *(*realloc)(void *, size_t),
+  void (*free)(void *)
+);
+getdns_dict * getdns_dict_create_with_extended_memory_functions(
+  void *userarg,
+  void *(*malloc)(void *userarg, size_t),
+  void *(*realloc)(void *userarg, void *, size_t),
+  void (*free)(void *userarg, void *)
+);
+void getdns_dict_destroy(getdns_dict *dict);
+getdns_return_t getdns_dict_set_dict(getdns_dict *dict, const char *name, const getdns_dict *child_dict);
+getdns_return_t getdns_dict_set_list(getdns_dict *dict, const char *name, const getdns_list *child_list);
+getdns_return_t getdns_dict_set_bindata(getdns_dict *dict, const char *name, const getdns_bindata *child_bindata);
+getdns_return_t getdns_dict_set_int(getdns_dict *dict, const char *name, uint32_t child_uint32);
+getdns_return_t getdns_dict_remove_name(getdns_dict *dict, const char *name);
+</div>
+
+<p>Lists are extended with the <code>getdns_list_set_</code> calls with the <code>index</code> set to the
+size of the list (such as 0 for an empty list). Dicts are extended with the <code>getdns_dict_set_</code> calls
+with the <code>name</code> set to a name that does not yet exist. Name-value pairs are removed with
+<code>getdns_dict_remove_name()</code>.</p>
+
+<p>These helper setter functions return <code>GETDNS_RETURN_GOOD</code> if the call is successful.
+The functions return <code>GETDNS_RETURN_WRONG_TYPE_REQUESTED</code> if the requested data type
+doesn't match the contents of the indexed argument or name. The list functions will return
+<code>GETDNS_RETURN_NO_SUCH_LIST_ITEM</code> if the index argument is higher than the length of the
+list. <code>getdns_dict_remove_name()</code> will return
+<code>GETDNS_RETURN_NO_SUCH_DICT_NAME</code> if the name argument doesn't exist in the dict. </p>
+
+<p>The helper setter functions store copies of the given "child" values.
+It is the responsibility of the caller to dispose of the original values.</p>
+
+<p>When the name parameter to the <code>getdns_dict_set_</code> functions, starts with a '<code>/</code>' (<code>%x2F</code>) character, it is interpreted as a JSON Pointer as described in RFC 6901, and will then be used to dereference the nested data structures to set the given value at the specified name or list index.</p>
+
+<h1>3. <a id="Extensions">Extensions</a></h1>
+
+<p>Extensions are dict data structures. The names in the dict are the names of the extensions.
+The definition of each extension describes the value associated with the name. For most extensions,
+it is an on-off boolean, and the value is <code>GETDNS_EXTENSION_TRUE</code>. (There is
+not currently a good reason to specify an extension name and give it a value of <code>GETDNS_EXTENSION_FALSE</code>,
+but that is allowed by the API.)</p>
+
+<p>For example, to create a dict for extensions and specify the extension to only return
+results that have been validated with DNSSEC, you might use:</p>
+
+<pre>
+/* . . . */
+getdns_dict * extensions = getdns_dict_create();
+ret = getdns_dict_set_int(extensions, "dnssec_return_only_secure", GETDNS_EXTENSION_TRUE);
+/* . . . Do some processing with the extensions and results . . . */
+/* Remember to clean up memory*/
+getdns_dict_destroy(extensions);
+</pre>
+
+<p>The extensions described in this section are are:
+
+<ul>
+
+<li><code>dnssec_return_status</code></li>
+
+<li><code>dnssec_return_only_secure</code></li>
+
+<li><code>dnssec_return_validation_chain</code></li>
+
+<li><code>return_both_v4_and_v6</code></li>
+
+<li><code>add_opt_parameters</code></li>
+
+<li><code>add_warning_for_bad_dns</code></li>
+
+<li><code>specify_class</code></li>
+
+<li><code>return_call_reporting</code></li>
+
+</ul>
+
+<h2>3.1 Extensions for DNSSEC</h2>
+
+<p>If an application wants the API to do DNSSEC validation for a request, it must set one or more DNSSEC-related extensions.
+Note that the default is for none of these extensions to be set and the API will not perform DNSSEC.
+Note that getting DNSSEC results can take longer in a few circumstances.</p>
+
+<p>To return the DNSSEC status for each DNS record in the <code>replies_tree</code> list, use the
+<code>dnssec_return_status</code> extension. The extension's value (an int) is set to
+<code>GETDNS_EXTENSION_TRUE</code> to cause the returned status to have the name
+<code>dnssec_status</code> (an int) added to the other names in the record's dict ("header",
+"question", and so on). The values for that name are <code>GETDNS_DNSSEC_SECURE</code>,
+<code>GETDNS_DNSSEC_BOGUS</code>, <code>GETDNS_DNSSEC_INDETERMINATE</code>, and
+<code>GETDNS_DNSSEC_INSECURE</code>. Thus, a reply might look like:</p>
+
+<pre>
+    {     # This is the first reply
+      "dnssec_status": GETDNS_DNSSEC_INDETERMINATE,
+      "header": { "id": 23456, "qr": 1, "opcode": 0, ... },
+      . . .
+</pre>
+
+<p>If instead of returning the status, you want to only see secure results, use the
+<code>dnssec_return_only_secure</code> extension. The extension's value (an int) is set to
+<code>GETDNS_EXTENSION_TRUE</code> to cause only records that the API can validate as secure with
+DNSSEC to be returned in the <code>replies_tree</code> and <code>replies_full</code> lists. No
+additional names are added to the dict of the record; the change is that some records might not
+appear in the results. When this context option is set, if the API receives DNS replies but none
+are determined to be secure, the error code at the top level of the response object is
+<code>GETDNS_RESPSTATUS_NO_SECURE_ANSWERS</code>.</p>
+
+<p>Applications that want to do their own validation will want to have the DNSSEC-related records
+for a particular response. Use the <code>dnssec_return_validation_chain</code> extension. The
+extension's value (an int) is set to <code>GETDNS_EXTENSION_TRUE</code> to cause a set
+of additional DNSSEC-related records needed for validation to be returned in the response object.
+This set comes as <code>validation_chain</code> (a list) at the top level of the response object.
+This list includes all resource record dicts for all the resource records (DS, DNSKEY and their RRSIGs) that are needed to perform the validation from the root up. Thus, a reply might look like:</p>
+
+<pre>
+{     # This is the response object
+  "validation_chain":
+  [ { "name": &lt;bindata for .&gt;,
+      "type": GETDNS_RRTYPE_DNSKEY,
+      "rdata": { "flags": 256, . . . },
+      . . . 
+    },
+    { "name": &lt;bindata for .&gt;,
+      "type": GETDNS_RRTYPE_DNSKEY,
+      "rdata": { "flags": 257, . . . },
+      . . .
+    },
+    { "name": &lt;bindata for .&gt;,
+      "type": GETDNS_RRTYPE_RRSIG,
+      "rdata": { "signers_name": &lt;bindata for .&gt;,
+                 "type_covered": GETDNS_RRTYPE_DNSKEY,
+                 . . .
+               },
+    },
+    { "name": &lt;bindata for com.&gt;,
+      "type": GETDNS_RRTYPE_DS,
+      . . .
+    },
+    { "name": &lt;bindata for com.&gt;,
+      "type": GETDNS_RRTYPE_RRSIG
+      "rdata": { "signers_name": &lt;bindata for .&gt;,
+                 "type_covered": GETDNS_RRTYPE_DS,
+                 . . .
+               },
+      . . .
+    },
+    { "name": &lt;bindata for com.&gt;,
+      "type": GETDNS_RRTYPE_DNSKEY
+      "rdata": { "flags": 256, . . . },
+      . . .
+    },
+    { "name": &lt;bindata for com.&gt;,
+      "type": GETDNS_RRTYPE_DNSKEY
+      "rdata": { "flags": 257, . . . },
+      . . .
+    },
+    { "name": &lt;bindata for com.&gt;,
+      "type": GETDNS_RRTYPE_RRSIG
+      "rdata": { "signers_name": &lt;bindata for com.&gt;,
+                 "type_covered": GETDNS_RRTYPE_DNSKEY,
+                 . . .
+               },
+      . . .
+    },
+    { "name": &lt;bindata for example.com.&gt;,
+      "type": GETDNS_RRTYPE_DS,
+      . . .
+    },
+    { "name": &lt;bindata for example.com.&gt;,
+      "type": GETDNS_RRTYPE_RRSIG
+      "rdata": { "signers_name": &lt;bindata for com.&gt;,
+                 "type_covered": GETDNS_RRTYPE_DS,
+                 . . .
+               },
+      . . .
+    },
+    { "name": &lt;bindata for example.com.&gt;,
+      "type": GETDNS_RRTYPE_DNSKEY
+      "rdata": { "flags": 257, ... },
+      . . .
+    },
+    . . .
+  ]
+  "replies_tree":
+  [
+  . . .
+</pre>
+
+<p>Implementations not capable of performing DNSSEC in stub resolution mode may
+indicate this by not performing a request and instead return an error of 
+<code>GETDNS_RETURN_DNSSEC_WITH_STUB_DISALLOWED</code> when using a context
+in which stub resolution is set, and having any of the
+<code>dnssec_return_status</code>, <code>dnssec_return_only_secure</code>, or
+<code>dnssec_return_validation_chain</code> extensions specified.</p>
+
+<h2>3.2 Returning Both IPv4 and IPv6 Responses</h2>
+
+<p>Many applications want to get both IPv4 and IPv6 addresses in a single call so that the results
+can be processed together. The <code>getdns_address</code> and <code>getdns_address_sync</code>
+functions are able to do this automatically. If you are using the <code>getdns_general</code> or
+<code>getdns_general_sync</code> function, you can enable this with the
+<code>return_both_v4_and_v6</code> extension. The extension's value (an int) is set to
+<code>GETDNS_EXTENSION_TRUE</code> to cause the results to be the lookup of either A or AAAA records
+to include any A and AAAA records for the queried name (otherwise, the extension does nothing).
+These results are expected to be used with Happy Eyeballs systems that will find the best socket for
+an application.</p>
+
+<h2>3.3 Setting Up OPT Resource Records</h2>
+
+<p>For lookups that need an OPT resource record in the Additional Data section, use the
+<code>add_opt_parameters</code> extension. The extension's value (a dict) contains the
+parameters; these are described in more detail in RFC 6891. They are:</p>
+
+<ul>
+
+<li><code>maximum_udp_payload_size</code> (an int), a value between 512 and 65535; if not specified,
+this defaults to those from the DNS context</li>
+
+<li><code>extended_rcode</code> (an int), a value between 0 and 255; if not specified,
+this defaults to those from the DNS context</li>
+
+<li><code>version</code> (an int), a value between 0 and 255; if not specified, this
+defaults to 0</li>
+
+<li><code>do_bit</code> (an int), a value between 0 and 1; if not specified, this defaults
+to those from the DNS context</li>
+
+<li><code>options</code> (a list) contains dicts for each option to be specified.
+Each list time contains two names: <code>option_code</code> (an int) and <code>option_data</code>
+(a bindata). The API marshalls the entire set of options into a properly-formatted RDATA
+for the resource record.</li>
+
+</ul>
+
+<p>It is very important to note that the OPT resource record specified in the
+<code>add_opt_parameters</code> extension might not be the same the one that the API sends in the
+query. For example, if the application also includes any of the DNSSEC extensions, the API will make
+sure that the OPT resource record sets the resource record appropriately, making the needed changes
+to the settings from the <code>add_opt_parameters</code> extension.</p>
+
+<p>The use of this extension can conflict with the values in the DNS context. For example,
+the default for an OS might be a maximum payload size of 65535, but the extension might specify
+1550. In such a case, the API will honor the values stated in the extension, but will honor the
+values from the DNS context if values are not given in the extension.</p>
+
+<h2>3.4 Getting Warnings for Responses that Violate the DNS Standard</h2>
+
+<p>To receive a warning if a particular response violates some parts of the DNS standard, use
+the <code>add_warning_for_bad_dns</code> extension. The extension's value (an int) is set to
+<code>GETDNS_EXTENSION_TRUE</code> to cause each reply in the <code>replies_tree</code>
+to contain an additional name, <code>bad_dns</code> (a list). The list is zero or more
+ints that indicate types of bad DNS found in that reply. The list of values is:
+
+<p class=define>GETDNS_BAD_DNS_CNAME_IN_TARGET</p>
+<p class=descrip>A DNS query type that does not allow a target to be a CNAME pointed to a CNAME</p>
+<p class=define>GETDNS_BAD_DNS_ALL_NUMERIC_LABEL</p>
+<p class=descrip>One or more labels in a returned domain name is all-numeric; this is not legal for a hostname</p>
+<p class=define>GETDNS_BAD_DNS_CNAME_RETURNED_FOR_OTHER_TYPE</p>
+<p class=descrip>A DNS query for a type other than CNAME returned a CNAME response</p>
+
+
+<h2>3.5 Using Other Class Types</h2>
+
+<p>The vast majority of DNS requests are made with the Internet (IN) class. To make a request in a
+different DNS class, use, the <code>specify_class</code> extension. The extension's value (an int)
+contains the class number. Few applications will ever use this extension.</p>
+
+<h2>3.6 Extensions Relating to the API</h2>
+
+<p>An application might want to see debugging information for queries such as the length of time it
+takes for each query to return to the API. Use the <code>return_call_reporting</code> extension. The
+extension's value (an int) is set to <code>GETDNS_EXTENSION_TRUE</code> to add the name
+<code>call_reporting</code> (a list) to the top level of the response object. Each member of the
+list is a dict that represents one call made for the call to the API. Each member has the following
+names:</p>
+
+<ul>
+<li><code>query_name</code> (a bindata) is the name that was sent</li>
+<li><code>query_type</code> (an int) is the type that was queried for</li>
+<li><code>query_to</code> (a bindata) is the address to which the query was sent</li>
+<li><code>run_time/ms</code> (a bindata) is the difference between the time the successful
+query started and ended in milliseconds, represented
+as a uint32_t (this does not include time taken for connection set up
+or transport fallback)</li>
+<li><code>entire_reply</code> (a bindata) is the entire response received</li>
+<li><code>dnssec_result</code> (an int) is the DNSSEC status, or <code>GETDNS_DNSSEC_NOT_PERFORMED</code>
+if DNSSEC validation was not performed</li>
+</ul>
+
+<h1>4. Response Data from Queries</h1>
+
+<p>The callback function contains a pointer to a response object.
+A response object is always a dict. The response
+object always contains at least three names: <code>replies_full</code> (a list) and
+<code>replies_tree</code> (a list), and <code>status</code> (an int).
+<code>replies_full</code> is a list of DNS replies (each is bindata) as they appear on the wire.
+<code>replies_tree</code> is a list of DNS replies (each is a dict) with the various part of the
+reply parsed out. <code>status</code> is a status code for the query.</p>
+
+<p>Because the API might be extended in the future, a response object might also contain names other
+than <code>replies_full</code>, <code>replies_tree</code>, and <code>status</code>. Similarly, any
+of the dicts described here might be extended in later versions of the API. Thus, an application
+using the API must not assume that it knows all possible names in a dict.</p>
+
+<p>The following lists the status codes for response objects. Note that, if the status is that there
+are no responses for the query, the lists in <code>replies_full</code> and <code>replies_tree</code>
+will have zero length.</p>
+
+<p class=define>GETDNS_RESPSTATUS_GOOD</p>
+<p class=descrip>At least one response was returned</p>
+<p class=define>GETDNS_RESPSTATUS_NO_NAME</p>
+<p class=descrip>Queries for the name yielded all negative responses</p>
+<p class=define>GETDNS_RESPSTATUS_ALL_TIMEOUT</p>
+<p class=descrip>All queries for the name timed out</p>
+<p class=define>GETDNS_RESPSTATUS_NO_SECURE_ANSWERS</p>
+<p class=descrip>The context setting for getting only secure responses was specified, and at least one DNS response was received, but no DNS response was determined to be secure through DNSSEC.</p>
+<p class=define>GETDNS_RESPSTATUS_ALL_BOGUS_ANSWERS</p>
+<p class=descrip>The context setting for getting only secure responses was specified, and at least one DNS response was received, but all received responses for the requested name were bogus.</p>
+
+
+<p>The top level of <code>replies_tree</code> can optionally have the following names: <code>canonical_name</code> (a
+bindata), <code>intermediate_aliases</code> (a list), <code>answer_ipv4_address</code> (a bindata),
+<code>answer_ipv6_address</code> (a bindata),  and <code>answer_type</code> (an int).</p>
+
+<ul>
+
+<li>The value of <code>canonical_name</code> is the name that the API used for its lookup. It is in
+FQDN presentation format.</li>
+
+<li>The values in the <code>intermediate_aliases</code> list are domain names from any CNAME or
+unsynthesized DNAME found when resolving the original query. The list might have zero entries
+if there were no CNAMEs in the path. These may be useful, for example, for name comparisons
+when following the rules in RFC 6125.</li>
+
+<li>The value of <code>answer_ipv4_address</code> and <code>answer_ipv6_address</code> are
+the addresses of the server from which the answer was received.</li>
+
+<li>The value of <code>answer_type</code> is the type of name service that generated the response.
+The values are:</li>
+
+</ul>
+
+<p class=define>GETDNS_NAMETYPE_DNS</p>
+<p class=descrip>Normal DNS (RFC 1035)</p>
+<p class=define>GETDNS_NAMETYPE_WINS</p>
+<p class=descrip>The WINS name service (some reference needed)</p>
+
+
+<p>If the call was <code>getdns_address</code> or <code>getdns_address_sync</code>, the top level
+of <code>replies_tree</code> has an additional name, <code>just_address_answers</code> (a list).
+The value of <code>just_address_answers</code> is a list that contains all of the A and AAAA
+records from the answer sections of any of the replies, in the order they appear in the replies.
+Each item in the list is a dict with at least two names: <code>address_type</code> (whose value is
+a bindata; it is currently either "IPv4" or "IPv6") and <code>address_data</code> (whose value is a bindata).
+Note that the <code>dnssec_return_only_secure</code> extension affects
+what will appear in the <code>just_address_answers</code> list. Also note if later versions of the
+DNS return other address types, those types will appear in this list as well.</p>
+
+<p>The API can make service discovery through SRV records easier. If 
+the call was <code>getdns_service</code> or <code>getdns_service_sync</code>,
+the top level of <code>replies_tree</code> has an additional name,
+<code>srv_addresses</code> (a list).
+The list is ordered by priority and weight based on the weighting
+algorithm in RFC 2782, lowest priority value first. Each element
+of the list is dict has at least two names: <code>port</code> and <code>domain_name</code>. If the
+API was able to determine the address of the target domain name (such as from its cache or from the
+Additional section of responses), the dict for an element will also contain
+<code>address_type</code> (whose value is a bindata; it is currently either "IPv4" or "IPv6") and
+<code>address_data</code> (whose value is a bindata). Note that the
+<code>dnssec_return_only_secure</code> extension affects what will appear in the
+<code>srv_addresses</code> list.</p>
+
+<h2>4.1 Structure of DNS <code>replies_tree</code></h2>
+
+<p>The names in each entry in the the <code>replies_tree</code> list for DNS responses include
+<code>header</code> (a dict), <code>question</code> (a dict), <code>answer</code> (a list),
+<code>authority</code> (a list), and <code>additional</code> (a list), corresponding to the sections
+in the DNS message format. The answer, authority, and additional lists each contain zero or more
+dicts, with each dict in each list representing a resource record.</p>
+
+<p>The names in the <code>header</code> dict are all the fields from Section 4.1.1. of RFC 1035.
+They are: <code>id</code>, <code>qr</code>, <code>opcode</code>, <code>aa</code>, <code>tc</code>,
+<code>rd</code>, <code>ra</code>, <code>z</code>, <code>rcode</code>, <code>qdcount</code>,
+<code>ancount</code>, <code>nscount</code>, and <code>arcount</code>. All are ints.</p>
+
+<p>The names in the <code>question</code> dict are the three fields from Section 4.1.2. of RFC 1035:
+<code>qname</code> (a bindata), <code>qtype</code> (an int), and <code>qclass</code> (an int).</p>
+
+<p>Resource records are a bit different than headers and question sections in that the RDATA portion
+often has its own structure. The other names in the resource record dicts are <code>name</code> (a
+bindata), <code>type</code> (an int), <code>class</code> (an int), <code>ttl</code> (an int) and
+<code>rdata</code> (a dict); there is no name equivalent to the RDLENGTH field.
+The <code>OPT</code> resource record does not have the <code>class</code> and the <code>ttl</code> name, but in stead provides <code>udp_payload_size</code> (an int), <code>extended_rcode</code> (an int), <code>version</code> (an int), <code>do</code> (an int), and <code>z</code> (an int).</p>
+
+<p>The <code>rdata</code> dict has different names for each response type. There is a <a
+href="#TypeList">complete list of the types defined</a> in the API. For names that end in
+"-obsolete" or "-unknown", the bindata is the entire RDATA field. For example, the
+<code>rdata</code> for an A record has a name <code>ipv4_address</code> (a bindata); the
+<code>rdata</code> for an SRV record has the names <code>priority</code> (an int),
+<code>weight</code> (an int), <code>port</code> (an int), and <code>target</code> (a bindata).</p>
+
+<p>Each <code>rdata</code> dict also has a <code>rdata_raw</code> field (a bindata). This is useful
+for types not defined in this version of the API. It also might be of value if a later version of
+the API allows for additional parsers. Thus, doing a query for types not known by the API still will
+return a result: an <code>rdata</code> with just a <code>rdata_raw</code>.</p>
+
+<p>It is expected that later extensions to the API will give some DNS types different names. It is
+also possible that later extensions will change the names for some of the DNS types listed above.</p>
+
+<p>For example, a response to a <code>getdns_address()</code> call for www.example.com would
+look something like this:</p>
+
+<pre>
+{     # This is the response object
+  "replies_full": [ &lt;bindata of the first response&gt;, &lt;bindata of the second response&gt; ],
+  "just_address_answers":
+  [
+    {
+      "address_type": &lt;bindata of "IPv4"&gt;,
+      "address_data": &lt;bindata of 0x0a0b0c01&gt;,
+    },
+    {
+      "address_type": &lt;bindata of "IPv6"&gt;,
+      "address_data": &lt;bindata of 0x33445566334455663344556633445566&gt;
+    }
+  ],
+  "canonical_name": &lt;bindata of "www.example.com"&gt;,
+  "answer_type": GETDNS_NAMETYPE_DNS,
+  "intermediate_aliases": [],
+  "replies_tree":
+  [
+    {     # This is the first reply
+      "header": { "id": 23456, "qr": 1, "opcode": 0, ... },
+      "question": { "qname": &lt;bindata of "www.example.com"&gt;, "qtype": 1, "qclass": 1 },
+      "answer":
+      [
+        {
+          "name": &lt;bindata of "www.example.com"&gt;,
+          "type": 1,
+          "class": 1,
+          "ttl": 33000,
+          "rdata":
+          {
+            "ipv4_address": &lt;bindata of 0x0a0b0c01&gt;
+            "rdata_raw": &lt;bindata of 0x0a0b0c01&gt;
+          }
+        }
+      ],
+      "authority":
+      [
+        {
+          "name": &lt;bindata of "ns1.example.com"&gt;,
+          "type": 1,
+          "class": 1,
+          "ttl": 600,
+          "rdata":
+          {
+            "ipv4_address": &lt;bindata of 0x65439876&gt;
+            "rdata_raw": &lt;bindata of 0x65439876&gt;
+          }
+        }
+      ]
+      "additional": [],
+      "canonical_name": &lt;bindata of "www.example.com"&gt;,
+      "answer_type": GETDNS_NAMETYPE_DNS
+    },
+    {     # This is the second reply
+      "header": { "id": 47809, "qr": 1, "opcode": 0, ... },
+      "question": { "qname": &lt;bindata of "www.example.com"&gt;, "qtype": 28, "qclass": 1 },
+      "answer":
+      [
+        {
+          "name": &lt;bindata of "www.example.com"&gt;,
+          "type": 28,
+          "class": 1,
+          "ttl": 1000,
+          "rdata":
+          {
+            "ipv6_address": &lt;bindata of 0x33445566334455663344556633445566&gt;
+            "rdata_raw": &lt;bindata of 0x33445566334455663344556633445566&gt;
+          }
+       }
+      ],
+      "authority": [  # Same as for other record... ]
+      "additional": [],
+    },
+  ]
+}
+</pre>
+
+<p>In DNS responses, domain names are treated special. RFC 1035 describes a form of name compression
+that requires that the entire record be available for analysis. The API deals with this by
+converting compressed names into full names when returning names in the <code>replies_tree</code>.
+This conversion happens for <code>qname</code> in <code>question</code>; <code>name</code> in the
+<code>answer</code>, <code>authority</code>, and <code>additional</code>; and in domain names in the
+data in names under <code>rdata</code> where the response type is AFSDB, CNAME, MX, NS, PTR, RP, RT, and SOA.</p>
+
+<h2>4.2 Converting Domain Names</h2>
+
+<p>Names in DNS fields are stored in a fashion very different from the normal presentation format
+normally used in applications. The DNS format is described in the first paragraph in Section 3.1 of
+RFC 1035; the presentation format here is a null-terminated string with interior dots. These helper
+functions only work with names in the DNS format that are not compressed. They are useful for
+converting domain names in the <code>replies_tree</code> to and from the FQDN presentation
+format.</p>
+
+<p><code>getdns_convert_dns_name_to_fqdn()</code> converts a domain name in DNS format to the
+presentation format. For example, the hex sequence <code>03 77 77 77 07 65 78 61 6d 70 6c 65 03 63
+6f 6d 00</code> would be converted to "www.example.com".
+<code>getdns_convert_fqdn_to_dns_name()</code> does the reverse: it converts a null-terminated
+string in FQDN format to bytes in DNS format.</p>
+
+<div class=forh>
+getdns_return_t
+getdns_convert_dns_name_to_fqdn(
+  const getdns_bindata *dns_name_wire_fmt,
+  char **fqdn_as_string
+);
+
+getdns_return_t
+getdns_convert_fqdn_to_dns_name(
+  const char *fqdn_as_string,
+  getdns_bindata **dns_name_wire_fmt
+);
+</div>
+
+<p>The returned values are allocated with the default system allocator, namely <code>malloc</code>.
+The caller is responsible of disposing these allocations with <code>free</code>. </p>
+
+<h1>5. Additional Definitions and Descriptions</h1>
+
+<h2>5.1 A Few Needed Definitions</h2>
+
+<div class=forh id="Various">typedef struct getdns_context getdns_context;
+typedef uint64_t   getdns_transaction_t;
+typedef enum getdns_data_type {
+    t_dict, t_list, t_int, t_bindata
+} getdns_data_type;
+typedef struct getdns_bindata {
+    size_t size;
+    uint8_t *data;
+} getdns_bindata;
+typedef struct getdns_dict getdns_dict;
+typedef struct getdns_list getdns_list;
+</div>
+
+<h2>5.2 <a id="ReturnCodes">Return Codes</a></h2>
+
+<p>The return codes for all the functions are:</p>
+
+<p class=define>GETDNS_RETURN_GOOD</p>
+<p class=descrip>Good</p>
+<p class=define>GETDNS_RETURN_GENERIC_ERROR</p>
+<p class=descrip>Generic error</p>
+<p class=define>GETDNS_RETURN_BAD_DOMAIN_NAME</p>
+<p class=descrip>Badly-formed domain name in first argument</p>
+<p class=define>GETDNS_RETURN_BAD_CONTEXT</p>
+<p class=descrip>The context has internal deficiencies</p>
+<p class=define>GETDNS_RETURN_CONTEXT_UPDATE_FAIL</p>
+<p class=descrip>Did not update the context</p>
+<p class=define>GETDNS_RETURN_UNKNOWN_TRANSACTION</p>
+<p class=descrip>An attempt was made to cancel a callback with a transaction_id that is not recognized</p>
+<p class=define>GETDNS_RETURN_NO_SUCH_LIST_ITEM</p>
+<p class=descrip>A helper function for lists had an index argument that was too high.</p>
+<p class=define>GETDNS_RETURN_NO_SUCH_DICT_NAME</p>
+<p class=descrip>A helper function for dicts had a name argument that for a name that is not in the dict.</p>
+<p class=define>GETDNS_RETURN_WRONG_TYPE_REQUESTED</p>
+<p class=descrip>A helper function was supposed to return a certain type for an item, but the wrong type was given.</p>
+<p class=define>GETDNS_RETURN_NO_SUCH_EXTENSION</p>
+<p class=descrip>A name in the extensions dict is not a valid extension.</p>
+<p class=define>GETDNS_RETURN_EXTENSION_MISFORMAT</p>
+<p class=descrip>One or more of the extensions have a bad format.</p>
+<p class=define>GETDNS_RETURN_DNSSEC_WITH_STUB_DISALLOWED</p>
+<p class=descrip>A query was made with a context that is using stub resolution and a DNSSEC extension specified.</p>
+<p class=define>GETDNS_RETURN_MEMORY_ERROR</p>
+<p class=descrip>Unable to allocate the memory required.</p>
+<p class=define>GETDNS_RETURN_INVALID_PARAMETER</p>
+<p class=descrip>A required parameter had an invalid value.</p>
+<p class=define>GETDNS_RETURN_NOT_IMPLEMENTED</p>
+<p class=descrip>The library did not have the requested API feature implemented.</p>
+
+
+<h2>5.3 <a id="TypeList">Types of RDATA Returned in the API</a></h2>
+
+<p>The names in the <code>rdata</code> dicts in replies are:</p>
+
+
+<p class=define>A (1)</p>
+<p class=descrip><code>ipv4_address</code> (a bindata)</p>
+
+<p class=define>NS (2)</p>
+<p class=descrip><code>nsdname</code> (a bindata)</p>
+
+<p class=define>MD (3)</p>
+<p class=descrip><code>madname</code> (a bindata)</p>
+
+<p class=define>MF (4)</p>
+<p class=descrip><code>madname</code> (a bindata)</p>
+
+<p class=define>CNAME (5)</p>
+<p class=descrip><code>cname</code> (a bindata)</p>
+
+<p class=define>SOA (6)</p>
+<p class=descrip><code>mname</code> (a bindata), <code>rname</code>  (a bindata),
+<code>serial</code> (an int), <code>refresh</code> (an int), <code>refresh</code> (an int),
+<code>retry</code> (an int), and <code>expire</code> (an int)</p>
+
+<p class=define>MB (7)</p>
+<p class=descrip><code>madname</code> (a bindata)</p>
+
+<p class=define>MG (8)</p>
+<p class=descrip><code>mgmname</code> (a bindata)</p>
+
+<p class=define>MR (9)</p>
+<p class=descrip><code>newname</code> (a bindata)</p>
+
+<p class=define>NULL (10)</p>
+<p class=descrip><code>anything</code> (a bindata)</p>
+
+<p class=define>WKS (11)</p>
+<p class=descrip><code>address</code> (a bindata), <code>protocol</code> (an int),
+and <code>bitmap</code> (a bindata)</p>
+
+<p class=define>PTR (12)</p>
+<p class=descrip><code>ptrdname</code> (a bindata)</p>
+
+<p class=define>HINFO (13)</p>
+<p class=descrip><code>cpu</code> (a bindata) and <code>os</code> (a bindata)</p>
+
+<p class=define>MINFO (14)</p>
+<p class=descrip><code>rmailbx</code> (a bindata) and <code>emailbx</code> (a bindata)</p>
+
+<p class=define>MX (15)</p>
+<p class=descrip><code>preference</code> (an int) and <code>exchange</code> (a bindata)</p>
+
+<p class=define>TXT (16)</p>
+<p class=descrip><code>txt_strings</code> (a list) which contains zero or more bindata elements
+that are text strings</p>
+
+<p class=define>RP (17)</p>
+<p class=descrip><code>mbox_dname</code> (a bindata) and <code>txt_dname</code> (a bindata)</p>
+
+<p class=define>AFSDB (18)</p>
+<p class=descrip><code>subtype</code> (an int) and <code>hostname</code> (a bindata)</p>
+
+<p class=define>X25 (19)</p>
+<p class=descrip><code>psdn_address</code> (a bindata)</p>
+
+<p class=define>ISDN (20)</p>
+<p class=descrip><code>isdn_address</code> (a bindata) and <code>sa</code> (a bindata)</p>
+
+<p class=define>RT (21)</p>
+<p class=descrip><code>preference</code> (an int) and <code>intermediate_host</code> (a bindata)</p>
+
+<p class=define>NSAP (22)</p>
+<p class=descrip><code>nsap</code> (a bindata)</p>
+
+<p class=define>SIG (24)</p>
+<p class=descrip><code>sig_obsolete</code> (a bindata)</p>
+
+<p class=define>KEY (25)</p>
+<p class=descrip><code>key_obsolete</code> (a bindata)</p>
+
+<p class=define>PX (26)</p>
+<p class=descrip><code>preference</code> (an int), <code>map822</code> (a bindata), and <code>mapx400</code> (a bindata)</p>
+
+<p class=define>GPOS (27)</p>
+<p class=descrip><code>longitude</code> (a bindata), <code>latitude</code> (a bindata), and <code>altitude</code> (a bindata)</p>
+
+<p class=define>AAAA (28)</p>
+<p class=descrip><code>ipv6_address</code> (a bindata)</p>
+
+<p class=define>LOC (29)</p>
+<p class=descrip><code>loc_obsolete</code> (a bindata)</p>
+
+<p class=define>NXT (30)</p>
+<p class=descrip><code>nxt_obsolete</code> (a bindata)</p>
+
+<p class=define>EID (31)</p>
+<p class=descrip><code>eid_unknown</code> (a bindata)</p>
+
+<p class=define>NIMLOC (32)</p>
+<p class=descrip><code>nimloc_unknown</code> (a bindata)</p>
+
+<p class=define>SRV (33)</p>
+<p class=descrip><code>priority</code> (an int), <code>weight</code> (an int),
+<code>port</code> (an int), and <code>target</code> (a bindata)</p>
+
+<p class=define>ATMA (34)</p>
+<p class=descrip><code>format</code> (an int) and <code>address</code> (a bindata)</p>
+
+<p class=define>NAPTR (35)</p>
+<p class=descrip><code>order</code> (an int), <code>preference</code> (an int), <code>flags</code>
+(a bindata), <code>service</code> (a bindata), <code>regexp</code> (a bindata), and
+<code>replacement</code> (a bindata).</p>
+
+<p class=define>KX (36)</p>
+<p class=descrip><code>preference</code> (an int) and <code>exchanger</code> (a bindata)</p>
+
+<p class=define>CERT (37)</p>
+<p class=descrip><code>type</code> (an int), <code>key_tag</code> (an int), <code>algorithm</code> (an int),
+and <code>certificate_or_crl</code> (a bindata)</p>
+
+<p class=define>A6 (38)</p>
+<p class=descrip><code>a6_obsolete</code> (a bindata)</p>
+
+<p class=define>DNAME (39)</p>
+<p class=descrip><code>target</code> (a bindata)</p>
+
+<p class=define>SINK (40)</p>
+<p class=descrip><code>sink_unknown</code> (a bindata)</p>
+
+<p class=define>OPT (41)</p>
+<p class=descrip><code>options</code> (a list). Each element of the <code>options</code> list is a
+dict with two names: <code>option_code</code> (an int) and <code>option_data</code> (a bindata).</p>
+
+<p class=define>APL (42)</p>
+<p class=descrip><code>apitems</code> (a list).
+Each element of the <code>apitems</code> list is a dict with four names:
+<code>address_family</code> (an int), <code>prefix</code> (an int),
+<code>n</code> (an int), and <code>afdpart</code> (a bindata)</p>
+
+<p class=define>DS (43)</p>
+<p class=descrip><code>key_tag</code> (an int), <code>algorithm</code> (an int), <code>digest_type</code> (an int), 
+and <code>digest</code> (a bindata)</p>
+
+<p class=define>SSHFP (44)</p>
+<p class=descrip><code>algorithm</code> (an int), <code>fp_type</code> (an int),
+and <code>fingerprint</code> (a bindata)</p>
+
+<p class=define>IPSECKEY (45)</p>
+<p class=descrip><code>algorithm</code> (an int), <code>gateway_type</code> (an int), <code>precedence</code> (an int),
+<code>gateway</code>, and <code>public_key</code> (a bindata)</p>
+
+<p class=define>RRSIG (46)</p>
+<p class=descrip> <code>type_covered</code> (an int), <code>algorithm</code> (an int),
+<code>labels</code> (an int), <code>original_ttl</code> (an int), <code>signature_expiration</code>
+(an int), <code>signature_inception</code> (an int), <code>key_tag</code> (an int),
+<code>signers_name</code> (a bindata), and <code>signature</code> (a bindata)</p>
+
+<p class=define>NSEC (47)</p>
+<p class=descrip><code>next_domain_name</code> (a bindata) and <code>type_bit_maps</code> (a bindata)</p>
+
+<p class=define>DNSKEY (48)</p>
+<p class=descrip><code>flags</code> (an int), <code>protocol</code> (an int), <code>algorithm</code> (an int), 
+and <code>public_key</code> (a bindata)</p>
+
+<p class=define>DHCID (49)</p>
+<p class=descrip><code>dhcid_opaque</code> (a bindata)</p>
+
+<p class=define>NSEC3 (50)</p>
+<p class=descrip><code>hash_algorithm</code> (an int), <code>flags</code> (an int),
+<code>iterations</code> (an int), <code>salt</code> (a bindata),
+<code>next_hashed_owner_name</code> (a bindata), and
+<code>type_bit_maps</code> (a bindata)</p>
+
+<p class=define>NSEC3PARAM (51)</p>
+<p class=descrip><code>hash_algorithm</code> (an int), <code>flags</code> (an int),
+<code>iterations</code> (an int), and
+<code>salt</code> (a bindata)</p>
+
+<p class=define>TLSA (52)</p>
+<p class=descrip><code>certificate_usage</code> (an int), <code>selector</code> (an int),
+<code>matching_type</code> (an int), and <code>certificate_association_data</code> (a
+bindata).</p>
+
+<p class=define>HIP (55)</p>
+<p class=descrip><code>pk_algorithm</code> (an int),
+<code>hit</code> (a bindata), <code>public_key</code>
+(a bindata), and <code>rendezvous_servers</code> (a list) with each element a bindata with the dname of the rendezvous_server.</p>
+
+<p class=define>NINFO (56)</p>
+<p class=descrip><code>ninfo_unknown</code> (a bindata)</p>
+
+<p class=define>RKEY (57)</p>
+<p class=descrip><code>rkey_unknown</code> (a bindata)</p>
+
+<p class=define>TALINK (58)</p>
+<p class=descrip><code>talink_unknown</code> (a bindata)</p>
+
+<p class=define>CDS (59)</p>
+<p class=descrip><code>key_tag</code> (an int), <code>algorithm</code> (an int), <code>digest_type</code> (an int), 
+and <code>digest</code> (a bindata)</p>
+
+<p class=define>CDNSKEY (60)</p>
+<p class=descrip><code>flags</code> (an int), <code>protocol</code> (an int), <code>algorithm</code> (an int), 
+and <code>public_key</code> (a bindata)</p>
+
+<p class=define>OPENPGPKEY (61)</p>
+<p class=descrip><code>openpgpkey_unknown</code> (a bindata)</p>
+
+<p class=define>CSYNC (62)</p>
+<p class=descrip><code>serial</code> (an int), <code>flags</code> (an int), and <code>type_bit_maps</code> (a bindata)</p>
+
+<p class=define>SPF (99)</p>
+<p class=descrip><code>text</code> (a bindata)</p>
+
+<p class=define>UINFO (100)</p>
+<p class=descrip><code>uinfo_unknown</code> (a bindata)</p>
+
+<p class=define>UID (101)</p>
+<p class=descrip><code>uid_unknown</code> (a bindata)</p>
+
+<p class=define>GID (102)</p>
+<p class=descrip><code>gid_unknown</code> (a bindata)</p>
+
+<p class=define>UNSPEC (103)</p>
+<p class=descrip><code>unspec_unknown</code> (a bindata)</p>
+
+<p class=define>NID (104)</p>
+<p class=descrip><code>preference</code> (an int) and
+<code>node_id</code> (a bindata)</p>
+
+<p class=define>L32 (105)</p>
+<p class=descrip><code>preference</code> (an int) and <code>locator32</code> (a bindata)</p>
+
+<p class=define>L64 (106)</p>
+<p class=descrip><code>preference</code> (an int) and <code>locator64</code> (a bindata)</p>
+
+<p class=define>LP (107)</p>
+<p class=descrip><code>preference</code> (an int) and <code>fqdn</code> (a bindata)</p>
+
+<p class=define>EUI48 (108)</p>
+<p class=descrip><code>eui48_address</code> (a bindata)</p>
+
+<p class=define>EUI64 (109)</p>
+<p class=descrip><code>eui64_address</code> (a bindata)</p>
+
+<p class=define>TKEY (249)</p>
+<p class=descrip><code>algorithm</code> (a bindata), <code>inception</code> (an int),
+<code>expiration</code> (an int), <code>mode</code> (an int), <code>error</code> (an int),
+<code>key_data</code> (a bindata), and <code>other_data</code> (a bindata)</p>
+
+<p class=define>TSIG (250)</p>
+<p class=descrip><code>algorithm</code> (a bindata), <code>time_signed</code> (a bindata),
+<code>fudge</code> (an int), <code>mac</code> (a bindata), <code>original_id</code> (an int),
+<code>error</code> (an int), and <code>other_data</code> (a bindata)</p>
+
+<p class=define>MAILB (253)</p>
+<p class=descrip><code>mailb-unknown</code> (a bindata)</p>
+
+<p class=define>MAILA (254)</p>
+<p class=descrip><code>maila-unknown</code> (a bindata)</p>
+
+<p class=define>URI (256)</p>
+<p class=descrip><code>priority</code> (an int), <code>weight</code> (an int),
+and <code>target</code> (a bindata)</p>
+
+<p class=define>CAA (257)</p>
+<p class=descrip><code>flags</code> (an int), <code>tag</code> (a bindata), and <code>value</code> (a bindata)</p>
+
+<p class=define>TA (32768)</p>
+<p class=descrip><code>ta_unknown</code> (a bindata)</p>
+
+<p class=define>DLV (32769)</p>
+<p class=descrip>Identical to DS (43)</p>
+
+
+<h1>6. Examples</h1>
+
+<p>This section gives examples of code that calls the API to do many common tasks.
+The purpose of the code here is to give application developers a quick hands-on
+demo of using the API.</p>
+
+<p>Note that the examples here all use getdns_libevent.h as the include that will call in the API
+code as well as calling in libevent as the event library. They also use
+<code>getdns_context_set_libevent_base()</code> as the name of the function to set the event base in
+the DNS context. If you are using a different event library, you will of course use a different
+<code>#include</code> at the beginning of your code, and a different name for the event base
+function.</p>
+
+<h2>6.1 Get Both IPv4 and IPv6 Addresses for a Domain Name Using Quick Results</h2>
+
+<p>This is an example of a common call to <code>getdns_address()</code>.</p>
+
+<br><div class="highlight"><pre><span class="cp">#include &lt;assert.h&gt;</span>
+<span class="cp">#include &lt;inttypes.h&gt;</span>
+<span class="cp">#include &lt;stdio.h&gt;</span>
+<span class="cp">#include &lt;getdns_libevent.h&gt;</span>
+
+<span class="cm">/* Set up the callback function, which will also do the processing of the results */</span>
+<span class="kt">void</span> <span class="nf">callback</span><span class="p">(</span><span class="n">getdns_context</span>        <span class="o">*</span><span class="n">context</span><span class="p">,</span>
+              <span class="kt">getdns_callback_type_t</span> <span class="n">callback_type</span><span class="p">,</span>
+              <span class="n">getdns_dict</span>           <span class="o">*</span><span class="n">response</span><span class="p">,</span> 
+              <span class="kt">void</span>                  <span class="o">*</span><span class="n">userarg</span><span class="p">,</span>
+              <span class="kt">getdns_transaction_t</span>   <span class="n">transaction_id</span><span class="p">)</span>
+<span class="p">{</span>
+    <span class="kt">getdns_return_t</span> <span class="n">r</span><span class="p">;</span>  <span class="cm">/* Holder for all function returns */</span>
+    <span class="kt">uint32_t</span>        <span class="n">status</span><span class="p">;</span>
+    <span class="n">getdns_bindata</span>  <span class="o">*</span><span class="n">address_data</span><span class="p">;</span>
+    <span class="kt">char</span>            <span class="o">*</span><span class="n">first</span> <span class="o">=</span> <span class="nb">NULL</span><span class="p">,</span> <span class="o">*</span><span class="n">second</span> <span class="o">=</span> <span class="nb">NULL</span><span class="p">;</span>
+
+    <span class="p">(</span><span class="kt">void</span><span class="p">)</span> <span class="n">context</span><span class="p">;</span> <span class="cm">/* unused parameter */</span>
+
+    <span class="n">printf</span><span class="p">(</span> <span class="s">&quot;Callback for query </span><span class="se">\&quot;</span><span class="s">%s</span><span class="se">\&quot;</span><span class="s"> with request ID %&quot;</span><span class="n">PRIu64</span><span class="s">&quot;.</span><span class="se">\n</span><span class="s">&quot;</span>
+          <span class="p">,</span> <span class="p">(</span><span class="kt">char</span> <span class="o">*</span><span class="p">)</span><span class="n">userarg</span><span class="p">,</span> <span class="n">transaction_id</span> <span class="p">);</span>
+
+    <span class="k">switch</span><span class="p">(</span><span class="n">callback_type</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">case</span> <span class="nl">GETDNS_CALLBACK_CANCEL</span><span class="p">:</span>
+        <span class="n">printf</span><span class="p">(</span><span class="s">&quot;Transaction with ID %&quot;</span><span class="n">PRIu64</span><span class="s">&quot; was cancelled.</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span> <span class="n">transaction_id</span><span class="p">);</span>
+        <span class="k">return</span><span class="p">;</span>
+    <span class="k">case</span> <span class="nl">GETDNS_CALLBACK_TIMEOUT</span><span class="p">:</span>
+        <span class="n">printf</span><span class="p">(</span><span class="s">&quot;Transaction with ID %&quot;</span><span class="n">PRIu64</span><span class="s">&quot; timed out.</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span> <span class="n">transaction_id</span><span class="p">);</span>
+        <span class="k">return</span><span class="p">;</span>
+    <span class="k">case</span> <span class="nl">GETDNS_CALLBACK_ERROR</span><span class="p">:</span>
+        <span class="n">printf</span><span class="p">(</span><span class="s">&quot;An error occurred for transaction ID %&quot;</span><span class="n">PRIu64</span><span class="s">&quot;.</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span> <span class="n">transaction_id</span><span class="p">);</span>
+        <span class="k">return</span><span class="p">;</span>
+    <span class="k">default</span><span class="o">:</span> <span class="k">break</span><span class="p">;</span>
+    <span class="p">}</span>
+    <span class="n">assert</span><span class="p">(</span> <span class="n">callback_type</span> <span class="o">==</span> <span class="n">GETDNS_CALLBACK_COMPLETE</span> <span class="p">);</span>
+
+    <span class="k">if</span> <span class="p">((</span><span class="n">r</span> <span class="o">=</span> <span class="n">getdns_dict_get_int</span><span class="p">(</span><span class="n">response</span><span class="p">,</span> <span class="s">&quot;status&quot;</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">status</span><span class="p">)))</span>
+        <span class="n">fprintf</span><span class="p">(</span><span class="n">stderr</span><span class="p">,</span> <span class="s">&quot;Could not get </span><span class="se">\&quot;</span><span class="s">status</span><span class="se">\&quot;</span><span class="s"> from response&quot;</span><span class="p">);</span>
+
+    <span class="k">else</span> <span class="k">if</span> <span class="p">(</span><span class="n">status</span> <span class="o">!=</span> <span class="n">GETDNS_RESPSTATUS_GOOD</span><span class="p">)</span>
+        <span class="n">fprintf</span><span class="p">(</span><span class="n">stderr</span><span class="p">,</span> <span class="s">&quot;The search had no results, and a return value of %&quot;</span><span class="n">PRIu32</span><span class="s">&quot;.</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span> <span class="n">status</span><span class="p">);</span>
+
+    <span class="k">else</span> <span class="k">if</span> <span class="p">((</span><span class="n">r</span> <span class="o">=</span> <span class="n">getdns_dict_get_bindata</span><span class="p">(</span><span class="n">response</span><span class="p">,</span> <span class="s">&quot;/just_address_answers/0/address_data&quot;</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">address_data</span><span class="p">)))</span>
+        <span class="n">fprintf</span><span class="p">(</span><span class="n">stderr</span><span class="p">,</span> <span class="s">&quot;Could not get first address&quot;</span><span class="p">);</span>
+
+    <span class="k">else</span> <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="p">(</span><span class="n">first</span> <span class="o">=</span> <span class="n">getdns_display_ip_address</span><span class="p">(</span><span class="n">address_data</span><span class="p">)))</span>
+        <span class="n">fprintf</span><span class="p">(</span><span class="n">stderr</span><span class="p">,</span> <span class="s">&quot;Could not convert first address to string</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">);</span>
+
+    <span class="k">else</span> <span class="k">if</span> <span class="p">((</span><span class="n">r</span> <span class="o">=</span> <span class="n">getdns_dict_get_bindata</span><span class="p">(</span><span class="n">response</span><span class="p">,</span> <span class="s">&quot;/just_address_answers/1/address_data&quot;</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">address_data</span><span class="p">)))</span>
+        <span class="n">fprintf</span><span class="p">(</span><span class="n">stderr</span><span class="p">,</span> <span class="s">&quot;Could not get second address&quot;</span><span class="p">);</span>
+
+    <span class="k">else</span> <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="p">(</span><span class="n">second</span> <span class="o">=</span> <span class="n">getdns_display_ip_address</span><span class="p">(</span><span class="n">address_data</span><span class="p">)))</span>
+        <span class="n">fprintf</span><span class="p">(</span><span class="n">stderr</span><span class="p">,</span> <span class="s">&quot;Could not convert second address to string</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">);</span>
+
+    <span class="k">if</span> <span class="p">(</span><span class="n">first</span><span class="p">)</span> <span class="p">{</span>
+        <span class="n">printf</span><span class="p">(</span><span class="s">&quot;The address is %s</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span> <span class="n">first</span><span class="p">);</span>
+        <span class="n">free</span><span class="p">(</span><span class="n">first</span><span class="p">);</span>
+    <span class="p">}</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">second</span><span class="p">)</span> <span class="p">{</span>
+        <span class="n">printf</span><span class="p">(</span><span class="s">&quot;The address is %s</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span> <span class="n">second</span><span class="p">);</span>
+        <span class="n">free</span><span class="p">(</span><span class="n">second</span><span class="p">);</span>
+    <span class="p">}</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">r</span><span class="p">)</span> <span class="p">{</span>
+        <span class="n">assert</span><span class="p">(</span> <span class="n">r</span> <span class="o">!=</span> <span class="n">GETDNS_RETURN_GOOD</span> <span class="p">);</span>
+        <span class="n">fprintf</span><span class="p">(</span><span class="n">stderr</span><span class="p">,</span> <span class="s">&quot;: %d</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span> <span class="n">r</span><span class="p">);</span>
+    <span class="p">}</span>
+    <span class="n">getdns_dict_destroy</span><span class="p">(</span><span class="n">response</span><span class="p">);</span> 
+<span class="p">}</span>
+
+<span class="kt">int</span> <span class="nf">main</span><span class="p">()</span>
+<span class="p">{</span>
+    <span class="kt">getdns_return_t</span>      <span class="n">r</span><span class="p">;</span>  <span class="cm">/* Holder for all function returns */</span>
+    <span class="n">getdns_context</span>      <span class="o">*</span><span class="n">context</span>    <span class="o">=</span> <span class="nb">NULL</span><span class="p">;</span>
+    <span class="k">struct</span> <span class="n">event_base</span>   <span class="o">*</span><span class="n">event_base</span> <span class="o">=</span> <span class="nb">NULL</span><span class="p">;</span>
+    <span class="n">getdns_dict</span>         <span class="o">*</span><span class="n">extensions</span> <span class="o">=</span> <span class="nb">NULL</span><span class="p">;</span>
+    <span class="kt">char</span>                <span class="o">*</span><span class="n">query_name</span> <span class="o">=</span> <span class="s">&quot;www.example.com&quot;</span><span class="p">;</span>
+    <span class="cm">/* Could add things here to help identify this call */</span>
+    <span class="kt">char</span>                <span class="o">*</span><span class="n">userarg</span>    <span class="o">=</span> <span class="n">query_name</span><span class="p">;</span>
+    <span class="kt">getdns_transaction_t</span> <span class="n">transaction_id</span><span class="p">;</span>
+
+    <span class="k">if</span> <span class="p">((</span><span class="n">r</span> <span class="o">=</span> <span class="n">getdns_context_create</span><span class="p">(</span><span class="o">&amp;</span><span class="n">context</span><span class="p">,</span> <span class="mi">1</span><span class="p">)))</span>
+        <span class="n">fprintf</span><span class="p">(</span><span class="n">stderr</span><span class="p">,</span> <span class="s">&quot;Trying to create the context failed&quot;</span><span class="p">);</span>
+
+    <span class="k">else</span> <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="p">(</span><span class="n">event_base</span> <span class="o">=</span> <span class="n">event_base_new</span><span class="p">()))</span>
+        <span class="n">fprintf</span><span class="p">(</span><span class="n">stderr</span><span class="p">,</span> <span class="s">&quot;Trying to create the event base failed.</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">);</span>
+
+    <span class="k">else</span> <span class="k">if</span> <span class="p">((</span><span class="n">r</span> <span class="o">=</span> <span class="n">getdns_extension_set_libevent_base</span><span class="p">(</span><span class="n">context</span><span class="p">,</span> <span class="n">event_base</span><span class="p">)))</span>
+        <span class="n">fprintf</span><span class="p">(</span><span class="n">stderr</span><span class="p">,</span> <span class="s">&quot;Setting the event base failed&quot;</span><span class="p">);</span>
+
+    <span class="k">else</span> <span class="k">if</span> <span class="p">((</span><span class="n">r</span> <span class="o">=</span> <span class="n">getdns_address</span><span class="p">(</span> <span class="n">context</span><span class="p">,</span> <span class="n">query_name</span><span class="p">,</span> <span class="n">extensions</span>
+                                <span class="p">,</span> <span class="n">userarg</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">transaction_id</span><span class="p">,</span> <span class="n">callback</span><span class="p">)))</span>
+        <span class="n">fprintf</span><span class="p">(</span><span class="n">stderr</span><span class="p">,</span> <span class="s">&quot;Error scheduling asynchronous request&quot;</span><span class="p">);</span>
+
+    <span class="k">else</span> <span class="p">{</span>
+        <span class="n">printf</span><span class="p">(</span><span class="s">&quot;Request with transaction ID %&quot;</span><span class="n">PRIu64</span><span class="s">&quot; scheduled.</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span> <span class="n">transaction_id</span><span class="p">);</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">event_base_dispatch</span><span class="p">(</span><span class="n">event_base</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">)</span>
+            <span class="n">fprintf</span><span class="p">(</span><span class="n">stderr</span><span class="p">,</span> <span class="s">&quot;Error dispatching events</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">);</span>
+    <span class="p">}</span>
+
+    <span class="cm">/* Clean up */</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">event_base</span><span class="p">)</span>
+        <span class="n">event_base_free</span><span class="p">(</span><span class="n">event_base</span><span class="p">);</span>
+
+    <span class="k">if</span> <span class="p">(</span><span class="n">context</span><span class="p">)</span>
+        <span class="n">getdns_context_destroy</span><span class="p">(</span><span class="n">context</span><span class="p">);</span>
+
+    <span class="cm">/* Assuming we get here, leave gracefully */</span>
+    <span class="n">exit</span><span class="p">(</span><span class="n">EXIT_SUCCESS</span><span class="p">);</span>
+<span class="p">}</span>
+</pre></div>
+
+
+
+<h2>6.2 Get IPv4 and IPv6 Addresses for a Domain Name</h2>
+
+<p>This example is similar to the previous one, except that it retrieves more information than just
+the addresses, so it traverses the replies_tree. In this case, it gets both the addresses and
+their TTLs.</p>
+
+<br><div class="highlight"><pre><span class="cp">#include &lt;assert.h&gt;</span>
+<span class="cp">#include &lt;inttypes.h&gt;</span>
+<span class="cp">#include &lt;stdio.h&gt;</span>
+<span class="cp">#include &lt;getdns_libevent.h&gt;</span>
+
+<span class="cm">/* Set up the callback function, which will also do the processing of the results */</span>
+<span class="kt">void</span> <span class="nf">callback</span><span class="p">(</span><span class="n">getdns_context</span>        <span class="o">*</span><span class="n">context</span><span class="p">,</span>
+              <span class="kt">getdns_callback_type_t</span> <span class="n">callback_type</span><span class="p">,</span>
+              <span class="n">getdns_dict</span>           <span class="o">*</span><span class="n">response</span><span class="p">,</span> 
+              <span class="kt">void</span>                  <span class="o">*</span><span class="n">userarg</span><span class="p">,</span>
+              <span class="kt">getdns_transaction_t</span>   <span class="n">transaction_id</span><span class="p">)</span>
+<span class="p">{</span>
+    <span class="kt">getdns_return_t</span> <span class="n">r</span><span class="p">;</span>  <span class="cm">/* Holder for all function returns */</span>
+    <span class="n">getdns_list</span>    <span class="o">*</span><span class="n">replies_tree</span><span class="p">;</span>
+    <span class="kt">size_t</span>          <span class="n">n_replies</span><span class="p">,</span> <span class="n">i</span><span class="p">;</span>
+
+    <span class="p">(</span><span class="kt">void</span><span class="p">)</span> <span class="n">context</span><span class="p">;</span> <span class="p">(</span><span class="kt">void</span><span class="p">)</span> <span class="n">userarg</span><span class="p">;</span> <span class="cm">/* unused parameters */</span>
+
+    <span class="k">switch</span><span class="p">(</span><span class="n">callback_type</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">case</span> <span class="nl">GETDNS_CALLBACK_CANCEL</span><span class="p">:</span>
+        <span class="n">printf</span><span class="p">(</span><span class="s">&quot;Transaction with ID %&quot;</span><span class="n">PRIu64</span><span class="s">&quot; was cancelled.</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span> <span class="n">transaction_id</span><span class="p">);</span>
+        <span class="k">return</span><span class="p">;</span>
+    <span class="k">case</span> <span class="nl">GETDNS_CALLBACK_TIMEOUT</span><span class="p">:</span>
+        <span class="n">printf</span><span class="p">(</span><span class="s">&quot;Transaction with ID %&quot;</span><span class="n">PRIu64</span><span class="s">&quot; timed out.</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span> <span class="n">transaction_id</span><span class="p">);</span>
+        <span class="k">return</span><span class="p">;</span>
+    <span class="k">case</span> <span class="nl">GETDNS_CALLBACK_ERROR</span><span class="p">:</span>
+        <span class="n">printf</span><span class="p">(</span><span class="s">&quot;An error occurred for transaction ID %&quot;</span><span class="n">PRIu64</span><span class="s">&quot;.</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span> <span class="n">transaction_id</span><span class="p">);</span>
+        <span class="k">return</span><span class="p">;</span>
+    <span class="k">default</span><span class="o">:</span> <span class="k">break</span><span class="p">;</span>
+    <span class="p">}</span>
+    <span class="n">assert</span><span class="p">(</span> <span class="n">callback_type</span> <span class="o">==</span> <span class="n">GETDNS_CALLBACK_COMPLETE</span> <span class="p">);</span>
+
+    <span class="k">if</span> <span class="p">((</span><span class="n">r</span> <span class="o">=</span> <span class="n">getdns_dict_get_list</span><span class="p">(</span><span class="n">response</span><span class="p">,</span> <span class="s">&quot;replies_tree&quot;</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">replies_tree</span><span class="p">)))</span>
+        <span class="n">fprintf</span><span class="p">(</span><span class="n">stderr</span><span class="p">,</span> <span class="s">&quot;Could not get </span><span class="se">\&quot;</span><span class="s">replies_tree</span><span class="se">\&quot;</span><span class="s"> from response&quot;</span><span class="p">);</span>
+
+    <span class="k">else</span> <span class="k">if</span> <span class="p">((</span><span class="n">r</span> <span class="o">=</span> <span class="n">getdns_list_get_length</span><span class="p">(</span><span class="n">replies_tree</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">n_replies</span><span class="p">)))</span>
+        <span class="n">fprintf</span><span class="p">(</span><span class="n">stderr</span><span class="p">,</span> <span class="s">&quot;Could not get replies_tree</span><span class="se">\&#39;</span><span class="s">s length&quot;</span><span class="p">);</span>
+
+    <span class="k">else</span> <span class="k">for</span> <span class="p">(</span><span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">n_replies</span> <span class="o">&amp;&amp;</span> <span class="n">r</span> <span class="o">==</span> <span class="n">GETDNS_RETURN_GOOD</span><span class="p">;</span> <span class="n">i</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
+        <span class="n">getdns_dict</span> <span class="o">*</span><span class="n">reply</span><span class="p">;</span>
+        <span class="n">getdns_list</span> <span class="o">*</span><span class="n">answer</span><span class="p">;</span>
+        <span class="kt">size_t</span>       <span class="n">n_answers</span><span class="p">,</span> <span class="n">j</span><span class="p">;</span>
+
+        <span class="k">if</span> <span class="p">((</span><span class="n">r</span> <span class="o">=</span> <span class="n">getdns_list_get_dict</span><span class="p">(</span><span class="n">replies_tree</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">reply</span><span class="p">)))</span>
+            <span class="n">fprintf</span><span class="p">(</span><span class="n">stderr</span><span class="p">,</span> <span class="s">&quot;Could not get address %zu from just_address_answers&quot;</span><span class="p">,</span> <span class="n">i</span><span class="p">);</span>
+
+        <span class="k">else</span> <span class="k">if</span> <span class="p">((</span><span class="n">r</span> <span class="o">=</span> <span class="n">getdns_dict_get_list</span><span class="p">(</span><span class="n">reply</span><span class="p">,</span> <span class="s">&quot;answer&quot;</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">answer</span><span class="p">)))</span>
+            <span class="n">fprintf</span><span class="p">(</span><span class="n">stderr</span><span class="p">,</span> <span class="s">&quot;Could not get </span><span class="se">\&quot;</span><span class="s">address_data</span><span class="se">\&quot;</span><span class="s"> from address&quot;</span><span class="p">);</span>
+
+        <span class="k">else</span> <span class="k">if</span> <span class="p">((</span><span class="n">r</span> <span class="o">=</span> <span class="n">getdns_list_get_length</span><span class="p">(</span><span class="n">answer</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">n_answers</span><span class="p">)))</span>
+            <span class="n">fprintf</span><span class="p">(</span><span class="n">stderr</span><span class="p">,</span> <span class="s">&quot;Could not get answer section</span><span class="se">\&#39;</span><span class="s">s length&quot;</span><span class="p">);</span>
+
+        <span class="k">else</span> <span class="k">for</span> <span class="p">(</span><span class="n">j</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">j</span> <span class="o">&lt;</span> <span class="n">n_answers</span> <span class="o">&amp;&amp;</span> <span class="n">r</span> <span class="o">==</span> <span class="n">GETDNS_RETURN_GOOD</span><span class="p">;</span> <span class="n">j</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
+            <span class="n">getdns_dict</span>    <span class="o">*</span><span class="n">rr</span><span class="p">;</span>
+            <span class="n">getdns_bindata</span> <span class="o">*</span><span class="n">address</span> <span class="o">=</span> <span class="nb">NULL</span><span class="p">;</span>
+
+            <span class="k">if</span> <span class="p">((</span><span class="n">r</span> <span class="o">=</span> <span class="n">getdns_list_get_dict</span><span class="p">(</span><span class="n">answer</span><span class="p">,</span> <span class="n">j</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">rr</span><span class="p">)))</span>
+                <span class="n">fprintf</span><span class="p">(</span><span class="n">stderr</span><span class="p">,</span> <span class="s">&quot;Could net get rr %zu from answer section&quot;</span><span class="p">,</span> <span class="n">j</span><span class="p">);</span>
+
+            <span class="k">else</span> <span class="k">if</span> <span class="p">(</span><span class="n">getdns_dict_get_bindata</span><span class="p">(</span><span class="n">rr</span><span class="p">,</span> <span class="s">&quot;/rdata/ipv4_address&quot;</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">address</span><span class="p">)</span> <span class="o">==</span> <span class="n">GETDNS_RETURN_GOOD</span><span class="p">)</span>
+                <span class="n">printf</span><span class="p">(</span><span class="s">&quot;The IPv4 address is &quot;</span><span class="p">);</span>
+
+            <span class="k">else</span> <span class="k">if</span> <span class="p">(</span><span class="n">getdns_dict_get_bindata</span><span class="p">(</span><span class="n">rr</span><span class="p">,</span> <span class="s">&quot;/rdata/ipv6_address&quot;</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">address</span><span class="p">)</span> <span class="o">==</span> <span class="n">GETDNS_RETURN_GOOD</span><span class="p">)</span>
+                <span class="n">printf</span><span class="p">(</span><span class="s">&quot;The IPv6 address is &quot;</span><span class="p">);</span>
+
+            <span class="k">if</span> <span class="p">(</span><span class="n">address</span><span class="p">)</span> <span class="p">{</span>
+                <span class="kt">char</span> <span class="o">*</span><span class="n">address_str</span><span class="p">;</span>
+                <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="p">(</span><span class="n">address_str</span> <span class="o">=</span> <span class="n">getdns_display_ip_address</span><span class="p">(</span><span class="n">address</span><span class="p">)))</span> <span class="p">{</span>
+                    <span class="n">fprintf</span><span class="p">(</span><span class="n">stderr</span><span class="p">,</span> <span class="s">&quot;Could not convert second address to string&quot;</span><span class="p">);</span>
+                    <span class="n">r</span> <span class="o">=</span> <span class="n">GETDNS_RETURN_MEMORY_ERROR</span><span class="p">;</span>
+                    <span class="k">break</span><span class="p">;</span>
+                <span class="p">}</span>
+                <span class="n">printf</span><span class="p">(</span><span class="s">&quot;%s</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span> <span class="n">address_str</span><span class="p">);</span>
+                <span class="n">free</span><span class="p">(</span><span class="n">address_str</span><span class="p">);</span>
+            <span class="p">}</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">r</span><span class="p">)</span> <span class="p">{</span>
+        <span class="n">assert</span><span class="p">(</span> <span class="n">r</span> <span class="o">!=</span> <span class="n">GETDNS_RETURN_GOOD</span> <span class="p">);</span>
+        <span class="n">fprintf</span><span class="p">(</span><span class="n">stderr</span><span class="p">,</span> <span class="s">&quot;: %d</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span> <span class="n">r</span><span class="p">);</span>
+    <span class="p">}</span>
+    <span class="n">getdns_dict_destroy</span><span class="p">(</span><span class="n">response</span><span class="p">);</span> 
+<span class="p">}</span>
+
+<span class="kt">int</span> <span class="nf">main</span><span class="p">()</span>
+<span class="p">{</span>
+    <span class="kt">getdns_return_t</span>      <span class="n">r</span><span class="p">;</span>  <span class="cm">/* Holder for all function returns */</span>
+    <span class="n">getdns_context</span>      <span class="o">*</span><span class="n">context</span>    <span class="o">=</span> <span class="nb">NULL</span><span class="p">;</span>
+    <span class="k">struct</span> <span class="n">event_base</span>   <span class="o">*</span><span class="n">event_base</span> <span class="o">=</span> <span class="nb">NULL</span><span class="p">;</span>
+    <span class="n">getdns_dict</span>         <span class="o">*</span><span class="n">extensions</span> <span class="o">=</span> <span class="nb">NULL</span><span class="p">;</span>
+    <span class="kt">char</span>                <span class="o">*</span><span class="n">query_name</span> <span class="o">=</span> <span class="s">&quot;www.example.com&quot;</span><span class="p">;</span>
+    <span class="cm">/* Could add things here to help identify this call */</span>
+    <span class="kt">char</span>                <span class="o">*</span><span class="n">userarg</span>    <span class="o">=</span> <span class="nb">NULL</span><span class="p">;</span>
+    <span class="kt">getdns_transaction_t</span> <span class="n">transaction_id</span><span class="p">;</span>
+
+    <span class="k">if</span> <span class="p">((</span><span class="n">r</span> <span class="o">=</span> <span class="n">getdns_context_create</span><span class="p">(</span><span class="o">&amp;</span><span class="n">context</span><span class="p">,</span> <span class="mi">1</span><span class="p">)))</span>
+        <span class="n">fprintf</span><span class="p">(</span><span class="n">stderr</span><span class="p">,</span> <span class="s">&quot;Trying to create the context failed&quot;</span><span class="p">);</span>
+
+    <span class="k">else</span> <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="p">(</span><span class="n">event_base</span> <span class="o">=</span> <span class="n">event_base_new</span><span class="p">()))</span>
+        <span class="n">fprintf</span><span class="p">(</span><span class="n">stderr</span><span class="p">,</span> <span class="s">&quot;Trying to create the event base failed.</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">);</span>
+
+    <span class="k">else</span> <span class="k">if</span> <span class="p">((</span><span class="n">r</span> <span class="o">=</span> <span class="n">getdns_extension_set_libevent_base</span><span class="p">(</span><span class="n">context</span><span class="p">,</span> <span class="n">event_base</span><span class="p">)))</span>
+        <span class="n">fprintf</span><span class="p">(</span><span class="n">stderr</span><span class="p">,</span> <span class="s">&quot;Setting the event base failed&quot;</span><span class="p">);</span>
+
+    <span class="k">else</span> <span class="k">if</span> <span class="p">((</span><span class="n">r</span> <span class="o">=</span> <span class="n">getdns_address</span><span class="p">(</span> <span class="n">context</span><span class="p">,</span> <span class="n">query_name</span><span class="p">,</span> <span class="n">extensions</span>
+                                <span class="p">,</span> <span class="n">userarg</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">transaction_id</span><span class="p">,</span> <span class="n">callback</span><span class="p">)))</span>
+        <span class="n">fprintf</span><span class="p">(</span><span class="n">stderr</span><span class="p">,</span> <span class="s">&quot;Error scheduling asynchronous request&quot;</span><span class="p">);</span>
+
+    <span class="k">else</span> <span class="k">if</span> <span class="p">(</span><span class="n">event_base_dispatch</span><span class="p">(</span><span class="n">event_base</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">)</span>
+        <span class="n">fprintf</span><span class="p">(</span><span class="n">stderr</span><span class="p">,</span> <span class="s">&quot;Error dispatching events</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">);</span>
+
+    <span class="cm">/* Clean up */</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">event_base</span><span class="p">)</span>
+        <span class="n">event_base_free</span><span class="p">(</span><span class="n">event_base</span><span class="p">);</span>
+
+    <span class="k">if</span> <span class="p">(</span><span class="n">context</span><span class="p">)</span>
+        <span class="n">getdns_context_destroy</span><span class="p">(</span><span class="n">context</span><span class="p">);</span>
+
+    <span class="cm">/* Assuming we get here, leave gracefully */</span>
+    <span class="n">exit</span><span class="p">(</span><span class="n">EXIT_SUCCESS</span><span class="p">);</span>
+<span class="p">}</span>
+</pre></div>
+
+
+
+<h2>6.3 Get Addresses for a Domain Name And Their Associated DNSSEC Validation Status</h2>
+
+<p>This example shows how to check for secure DNSSEC results using the
+<code>dnssec_return_status</code> extension. In the innermost loop of the
+callback function, add a check for the DNSSEC status. It shows how to add two
+extensions to the <code>extensions</code> argument of the call.</p>
+
+<pre>
+getdns_dict *extensions = getdns_dict_create();
+r = getdns_dict_set_int(extensions, "return_both_v4_and_v6", GETDNS_EXTENSION_TRUE);
+r = getdns_dict_set_int(extensions, "dnssec_return_status", GETDNS_EXTENSION_TRUE);
+. . .
+if (rr_type == GETDNS_RRTYPE_A) {
+    uint32_t dnssec_status;
+    r = getdns_dict_get_int(answer, "dnssec_status", &amp;dnssec_status);
+    if (dnssec_status != GETDNS_DNSSEC_SECURE) {
+        // Log the DNSSEC status somewhere
+
+    } else {
+        // Deal with the record however you were going to
+    }
+}
+. . .
+</pre>
+
+<p>You can put the DNSSEC status check outside the check for the particular type of record you care about, but
+you will then get log messages for bad status on records you might not care about as well.</p>
+
+<h2>6.4 Using the API Synchronously with <code>getdns_general_sync()</code></h2>
+
+<p>This example is the same as the earlier examples, but uses <code>getdns_general_sync()</code>
+and thus does not use the async code. Note that the processing of the answers is essentially the same
+as it is for the synchronous example, it is just done in <code>main()</code>.</p>
+
+<br><div class="highlight"><pre><span class="cp">#include &lt;stdio.h&gt;</span>
+<span class="cp">#include &lt;assert.h&gt;</span>
+<span class="cp">#include &lt;getdns_core_only.h&gt;</span>
+
+<span class="kt">int</span> <span class="nf">main</span><span class="p">()</span>
+<span class="p">{</span>
+    <span class="kt">getdns_return_t</span>  <span class="n">r</span><span class="p">;</span> <span class="cm">/* Holder for all function returns */</span>
+    <span class="n">getdns_context</span>  <span class="o">*</span><span class="n">context</span>    <span class="o">=</span> <span class="nb">NULL</span><span class="p">;</span>
+    <span class="n">getdns_dict</span>     <span class="o">*</span><span class="n">response</span>   <span class="o">=</span> <span class="nb">NULL</span><span class="p">;</span>
+    <span class="n">getdns_dict</span>     <span class="o">*</span><span class="n">extensions</span> <span class="o">=</span> <span class="nb">NULL</span><span class="p">;</span>
+    <span class="n">getdns_bindata</span>  <span class="o">*</span><span class="n">address_data</span><span class="p">;</span>
+    <span class="kt">char</span>            <span class="o">*</span><span class="n">first</span> <span class="o">=</span> <span class="nb">NULL</span><span class="p">,</span> <span class="o">*</span><span class="n">second</span> <span class="o">=</span> <span class="nb">NULL</span><span class="p">;</span>
+
+    <span class="cm">/* Create the DNS context for this call */</span>
+    <span class="k">if</span> <span class="p">((</span><span class="n">r</span> <span class="o">=</span> <span class="n">getdns_context_create</span><span class="p">(</span><span class="o">&amp;</span><span class="n">context</span><span class="p">,</span> <span class="mi">1</span><span class="p">)))</span>
+        <span class="n">fprintf</span><span class="p">(</span><span class="n">stderr</span><span class="p">,</span> <span class="s">&quot;Trying to create the context failed&quot;</span><span class="p">);</span>
+
+    <span class="k">else</span> <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="p">(</span><span class="n">extensions</span> <span class="o">=</span> <span class="n">getdns_dict_create</span><span class="p">()))</span>
+        <span class="n">fprintf</span><span class="p">(</span><span class="n">stderr</span><span class="p">,</span> <span class="s">&quot;Could not create extensions dict.</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">);</span>
+
+    <span class="k">else</span> <span class="k">if</span> <span class="p">((</span><span class="n">r</span> <span class="o">=</span> <span class="n">getdns_dict_set_int</span><span class="p">(</span><span class="n">extensions</span><span class="p">,</span> <span class="s">&quot;return_both_v4_and_v6&quot;</span><span class="p">,</span> <span class="n">GETDNS_EXTENSION_TRUE</span><span class="p">)))</span>
+        <span class="n">fprintf</span><span class="p">(</span><span class="n">stderr</span><span class="p">,</span> <span class="s">&quot;Trying to set an extension do both IPv4 and IPv6 failed&quot;</span><span class="p">);</span>
+
+    <span class="k">else</span> <span class="k">if</span> <span class="p">((</span><span class="n">r</span> <span class="o">=</span> <span class="n">getdns_general_sync</span><span class="p">(</span><span class="n">context</span><span class="p">,</span> <span class="s">&quot;example.com&quot;</span><span class="p">,</span> <span class="n">GETDNS_RRTYPE_A</span><span class="p">,</span> <span class="n">extensions</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">response</span><span class="p">)))</span>
+        <span class="n">fprintf</span><span class="p">(</span><span class="n">stderr</span><span class="p">,</span> <span class="s">&quot;Error scheduling synchronous request&quot;</span><span class="p">);</span>
+    
+    <span class="k">else</span> <span class="k">if</span> <span class="p">((</span><span class="n">r</span> <span class="o">=</span> <span class="n">getdns_dict_get_bindata</span><span class="p">(</span><span class="n">response</span><span class="p">,</span> <span class="s">&quot;/just_address_answers/0/address_data&quot;</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">address_data</span><span class="p">)))</span>
+        <span class="n">fprintf</span><span class="p">(</span><span class="n">stderr</span><span class="p">,</span> <span class="s">&quot;Could not get first address&quot;</span><span class="p">);</span>
+
+    <span class="k">else</span> <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="p">(</span><span class="n">first</span> <span class="o">=</span> <span class="n">getdns_display_ip_address</span><span class="p">(</span><span class="n">address_data</span><span class="p">)))</span>
+        <span class="n">fprintf</span><span class="p">(</span><span class="n">stderr</span><span class="p">,</span> <span class="s">&quot;Could not convert first address to string</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">);</span>
+
+    <span class="k">else</span> <span class="k">if</span> <span class="p">((</span><span class="n">r</span> <span class="o">=</span> <span class="n">getdns_dict_get_bindata</span><span class="p">(</span><span class="n">response</span><span class="p">,</span> <span class="s">&quot;/just_address_answers/1/address_data&quot;</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">address_data</span><span class="p">)))</span>
+        <span class="n">fprintf</span><span class="p">(</span><span class="n">stderr</span><span class="p">,</span> <span class="s">&quot;Could not get second address&quot;</span><span class="p">);</span>
+
+    <span class="k">else</span> <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="p">(</span><span class="n">second</span> <span class="o">=</span> <span class="n">getdns_display_ip_address</span><span class="p">(</span><span class="n">address_data</span><span class="p">)))</span>
+        <span class="n">fprintf</span><span class="p">(</span><span class="n">stderr</span><span class="p">,</span> <span class="s">&quot;Could not convert second address to string</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">);</span>
+
+    <span class="k">if</span> <span class="p">(</span><span class="n">first</span><span class="p">)</span> <span class="p">{</span>
+        <span class="n">printf</span><span class="p">(</span><span class="s">&quot;The address is %s</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span> <span class="n">first</span><span class="p">);</span>
+        <span class="n">free</span><span class="p">(</span><span class="n">first</span><span class="p">);</span>
+    <span class="p">}</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">second</span><span class="p">)</span> <span class="p">{</span>
+        <span class="n">printf</span><span class="p">(</span><span class="s">&quot;The address is %s</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span> <span class="n">second</span><span class="p">);</span>
+        <span class="n">free</span><span class="p">(</span><span class="n">second</span><span class="p">);</span>
+    <span class="p">}</span>
+    <span class="cm">/* Clean up */</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">response</span><span class="p">)</span>
+        <span class="n">getdns_dict_destroy</span><span class="p">(</span><span class="n">response</span><span class="p">);</span> 
+
+    <span class="k">if</span> <span class="p">(</span><span class="n">extensions</span><span class="p">)</span>
+        <span class="n">getdns_dict_destroy</span><span class="p">(</span><span class="n">extensions</span><span class="p">);</span>
+
+    <span class="k">if</span> <span class="p">(</span><span class="n">context</span><span class="p">)</span>
+        <span class="n">getdns_context_destroy</span><span class="p">(</span><span class="n">context</span><span class="p">);</span>
+
+    <span class="k">if</span> <span class="p">(</span><span class="n">r</span><span class="p">)</span> <span class="p">{</span>
+        <span class="n">assert</span><span class="p">(</span> <span class="n">r</span> <span class="o">!=</span> <span class="n">GETDNS_RETURN_GOOD</span> <span class="p">);</span>
+
+        <span class="n">fprintf</span><span class="p">(</span><span class="n">stderr</span><span class="p">,</span> <span class="s">&quot;: %d</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span> <span class="n">r</span><span class="p">);</span>
+        <span class="n">exit</span><span class="p">(</span><span class="n">EXIT_FAILURE</span><span class="p">);</span>
+    <span class="p">}</span>
+    <span class="cm">/* Assuming we get here, leave gracefully */</span>
+    <span class="n">exit</span><span class="p">(</span><span class="n">EXIT_SUCCESS</span><span class="p">);</span>
+<span class="p">}</span>
+</pre></div>
+
+
+
+<h2>6.5 Getting Names from the Reverse Tree with <code>getdns_hostname()</code></h2>
+
+<p>This example shows how to use <code>getdns_hostname()</code> to get names from the DNS reverse tree.</p>
+
+<br><div class="highlight"><pre><span class="cp">#include &lt;assert.h&gt;</span>
+<span class="cp">#include &lt;inttypes.h&gt;</span>
+<span class="cp">#include &lt;stdio.h&gt;</span>
+<span class="cp">#include &lt;getdns_libevent.h&gt;</span>
+
+<span class="cm">/* Set up the callback function, which will also do the processing of the results */</span>
+<span class="kt">void</span> <span class="nf">callback</span><span class="p">(</span><span class="n">getdns_context</span>        <span class="o">*</span><span class="n">context</span><span class="p">,</span>
+              <span class="kt">getdns_callback_type_t</span> <span class="n">callback_type</span><span class="p">,</span>
+              <span class="n">getdns_dict</span>           <span class="o">*</span><span class="n">response</span><span class="p">,</span> 
+              <span class="kt">void</span>                  <span class="o">*</span><span class="n">userarg</span><span class="p">,</span>
+              <span class="kt">getdns_transaction_t</span>   <span class="n">transaction_id</span><span class="p">)</span>
+<span class="p">{</span>
+    <span class="kt">getdns_return_t</span> <span class="n">r</span><span class="p">;</span>  <span class="cm">/* Holder for all function returns */</span>
+    <span class="n">getdns_list</span>    <span class="o">*</span><span class="n">answer</span><span class="p">;</span>
+    <span class="kt">size_t</span>          <span class="n">n_answers</span><span class="p">,</span> <span class="n">i</span><span class="p">;</span>
+
+    <span class="p">(</span><span class="kt">void</span><span class="p">)</span> <span class="n">context</span><span class="p">;</span> <span class="p">(</span><span class="kt">void</span><span class="p">)</span> <span class="n">userarg</span><span class="p">;</span> <span class="cm">/* unused parameters */</span>
+
+    <span class="k">switch</span><span class="p">(</span><span class="n">callback_type</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">case</span> <span class="nl">GETDNS_CALLBACK_CANCEL</span><span class="p">:</span>
+        <span class="n">printf</span><span class="p">(</span><span class="s">&quot;Transaction with ID %&quot;</span><span class="n">PRIu64</span><span class="s">&quot; was cancelled.</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span> <span class="n">transaction_id</span><span class="p">);</span>
+        <span class="k">return</span><span class="p">;</span>
+    <span class="k">case</span> <span class="nl">GETDNS_CALLBACK_TIMEOUT</span><span class="p">:</span>
+        <span class="n">printf</span><span class="p">(</span><span class="s">&quot;Transaction with ID %&quot;</span><span class="n">PRIu64</span><span class="s">&quot; timed out.</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span> <span class="n">transaction_id</span><span class="p">);</span>
+        <span class="k">return</span><span class="p">;</span>
+    <span class="k">case</span> <span class="nl">GETDNS_CALLBACK_ERROR</span><span class="p">:</span>
+        <span class="n">printf</span><span class="p">(</span><span class="s">&quot;An error occurred for transaction ID %&quot;</span><span class="n">PRIu64</span><span class="s">&quot;.</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span> <span class="n">transaction_id</span><span class="p">);</span>
+        <span class="k">return</span><span class="p">;</span>
+    <span class="k">default</span><span class="o">:</span> <span class="k">break</span><span class="p">;</span>
+    <span class="p">}</span>
+    <span class="n">assert</span><span class="p">(</span> <span class="n">callback_type</span> <span class="o">==</span> <span class="n">GETDNS_CALLBACK_COMPLETE</span> <span class="p">);</span>
+
+    <span class="k">if</span> <span class="p">((</span><span class="n">r</span> <span class="o">=</span> <span class="n">getdns_dict_get_list</span><span class="p">(</span><span class="n">response</span><span class="p">,</span> <span class="s">&quot;/replies_tree/0/answer&quot;</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">answer</span><span class="p">)))</span>
+        <span class="n">fprintf</span><span class="p">(</span><span class="n">stderr</span><span class="p">,</span> <span class="s">&quot;Could not get </span><span class="se">\&quot;</span><span class="s">answer</span><span class="se">\&quot;</span><span class="s"> section from first reply in the response&quot;</span><span class="p">);</span>
+
+    <span class="k">else</span> <span class="k">if</span> <span class="p">((</span><span class="n">r</span> <span class="o">=</span> <span class="n">getdns_list_get_length</span><span class="p">(</span><span class="n">answer</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">n_answers</span><span class="p">)))</span>
+        <span class="n">fprintf</span><span class="p">(</span><span class="n">stderr</span><span class="p">,</span> <span class="s">&quot;Could not get replies_tree</span><span class="se">\&#39;</span><span class="s">s length&quot;</span><span class="p">);</span>
+
+    <span class="k">else</span> <span class="k">for</span> <span class="p">(</span><span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">n_answers</span> <span class="o">&amp;&amp;</span> <span class="n">r</span> <span class="o">==</span> <span class="n">GETDNS_RETURN_GOOD</span><span class="p">;</span> <span class="n">i</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
+        <span class="n">getdns_dict</span>    <span class="o">*</span><span class="n">rr</span><span class="p">;</span>
+        <span class="n">getdns_bindata</span> <span class="o">*</span><span class="n">dname</span><span class="p">;</span>
+        <span class="kt">char</span>           <span class="o">*</span><span class="n">dname_str</span><span class="p">;</span>
+
+        <span class="k">if</span> <span class="p">((</span><span class="n">r</span> <span class="o">=</span> <span class="n">getdns_list_get_dict</span><span class="p">(</span><span class="n">answer</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">rr</span><span class="p">)))</span>
+            <span class="n">fprintf</span><span class="p">(</span><span class="n">stderr</span><span class="p">,</span> <span class="s">&quot;Could not get rr %zu from answer section&quot;</span><span class="p">,</span> <span class="n">i</span><span class="p">);</span>
+
+        <span class="k">else</span> <span class="k">if</span> <span class="p">(</span><span class="n">getdns_dict_get_bindata</span><span class="p">(</span><span class="n">rr</span><span class="p">,</span> <span class="s">&quot;/rdata/ptrdname&quot;</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">dname</span><span class="p">))</span>
+            <span class="k">continue</span><span class="p">;</span> <span class="cm">/* Not a PTR */</span>
+
+        <span class="k">else</span> <span class="k">if</span> <span class="p">((</span><span class="n">r</span> <span class="o">=</span> <span class="n">getdns_convert_dns_name_to_fqdn</span><span class="p">(</span><span class="n">dname</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">dname_str</span><span class="p">)))</span>
+            <span class="n">fprintf</span><span class="p">(</span><span class="n">stderr</span><span class="p">,</span> <span class="s">&quot;Could not convert PTR dname to string&quot;</span><span class="p">);</span>
+
+        <span class="k">else</span> <span class="p">{</span>
+            <span class="n">printf</span><span class="p">(</span><span class="s">&quot;The dname is %s</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span> <span class="n">dname_str</span><span class="p">);</span>
+            <span class="n">free</span><span class="p">(</span><span class="n">dname_str</span><span class="p">);</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">r</span><span class="p">)</span> <span class="p">{</span>
+        <span class="n">assert</span><span class="p">(</span> <span class="n">r</span> <span class="o">!=</span> <span class="n">GETDNS_RETURN_GOOD</span> <span class="p">);</span>
+        <span class="n">fprintf</span><span class="p">(</span><span class="n">stderr</span><span class="p">,</span> <span class="s">&quot;: %d</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span> <span class="n">r</span><span class="p">);</span>
+    <span class="p">}</span>
+    <span class="n">getdns_dict_destroy</span><span class="p">(</span><span class="n">response</span><span class="p">);</span> 
+<span class="p">}</span>
+
+<span class="kt">int</span> <span class="nf">main</span><span class="p">()</span>
+<span class="p">{</span>
+    <span class="kt">getdns_return_t</span>      <span class="n">r</span><span class="p">;</span>  <span class="cm">/* Holder for all function returns */</span>
+    <span class="n">getdns_context</span>      <span class="o">*</span><span class="n">context</span>      <span class="o">=</span> <span class="nb">NULL</span><span class="p">;</span>
+    <span class="k">struct</span> <span class="n">event_base</span>   <span class="o">*</span><span class="n">event_base</span>   <span class="o">=</span> <span class="nb">NULL</span><span class="p">;</span>
+    <span class="n">getdns_bindata</span>       <span class="n">address_type</span> <span class="o">=</span> <span class="p">{</span> <span class="mi">4</span><span class="p">,</span> <span class="p">(</span><span class="kt">void</span> <span class="o">*</span><span class="p">)</span><span class="s">&quot;IPv4&quot;</span> <span class="p">};</span>
+    <span class="n">getdns_bindata</span>       <span class="n">address_data</span> <span class="o">=</span> <span class="p">{</span> <span class="mi">4</span><span class="p">,</span> <span class="p">(</span><span class="kt">void</span> <span class="o">*</span><span class="p">)</span><span class="s">&quot;</span><span class="se">\x08\x08\x08\x08</span><span class="s">&quot;</span> <span class="p">};</span>
+    <span class="n">getdns_dict</span>         <span class="o">*</span><span class="n">address</span>      <span class="o">=</span> <span class="nb">NULL</span><span class="p">;</span>
+    <span class="n">getdns_dict</span>         <span class="o">*</span><span class="n">extensions</span>   <span class="o">=</span> <span class="nb">NULL</span><span class="p">;</span>
+    <span class="cm">/* Could add things here to help identify this call */</span>
+    <span class="kt">char</span>                <span class="o">*</span><span class="n">userarg</span>      <span class="o">=</span> <span class="nb">NULL</span><span class="p">;</span>
+    <span class="kt">getdns_transaction_t</span> <span class="n">transaction_id</span><span class="p">;</span>
+
+    <span class="k">if</span> <span class="p">((</span><span class="n">r</span> <span class="o">=</span> <span class="n">getdns_context_create</span><span class="p">(</span><span class="o">&amp;</span><span class="n">context</span><span class="p">,</span> <span class="mi">1</span><span class="p">)))</span>
+        <span class="n">fprintf</span><span class="p">(</span><span class="n">stderr</span><span class="p">,</span> <span class="s">&quot;Trying to create the context failed&quot;</span><span class="p">);</span>
+
+    <span class="k">else</span> <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="p">(</span><span class="n">event_base</span> <span class="o">=</span> <span class="n">event_base_new</span><span class="p">()))</span>
+        <span class="n">fprintf</span><span class="p">(</span><span class="n">stderr</span><span class="p">,</span> <span class="s">&quot;Trying to create the event base failed.</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">);</span>
+
+    <span class="k">else</span> <span class="k">if</span> <span class="p">((</span><span class="n">r</span> <span class="o">=</span> <span class="n">getdns_extension_set_libevent_base</span><span class="p">(</span><span class="n">context</span><span class="p">,</span> <span class="n">event_base</span><span class="p">)))</span>
+        <span class="n">fprintf</span><span class="p">(</span><span class="n">stderr</span><span class="p">,</span> <span class="s">&quot;Setting the event base failed&quot;</span><span class="p">);</span>
+
+    <span class="k">else</span> <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="p">(</span><span class="n">address</span> <span class="o">=</span> <span class="n">getdns_dict_create</span><span class="p">()))</span>
+        <span class="n">fprintf</span><span class="p">(</span><span class="n">stderr</span><span class="p">,</span> <span class="s">&quot;Could not create address dict.</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">);</span>
+
+    <span class="k">else</span> <span class="k">if</span> <span class="p">((</span><span class="n">r</span> <span class="o">=</span> <span class="n">getdns_dict_set_bindata</span><span class="p">(</span><span class="n">address</span><span class="p">,</span> <span class="s">&quot;address_type&quot;</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">address_type</span><span class="p">)))</span>
+        <span class="n">fprintf</span><span class="p">(</span><span class="n">stderr</span><span class="p">,</span> <span class="s">&quot;Could not set address_type in address dict.</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">);</span>
+
+    <span class="k">else</span> <span class="k">if</span> <span class="p">((</span><span class="n">r</span> <span class="o">=</span> <span class="n">getdns_dict_set_bindata</span><span class="p">(</span><span class="n">address</span><span class="p">,</span> <span class="s">&quot;address_data&quot;</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">address_data</span><span class="p">)))</span>
+        <span class="n">fprintf</span><span class="p">(</span><span class="n">stderr</span><span class="p">,</span> <span class="s">&quot;Could not set address_data in address dict.</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">);</span>
+
+    <span class="k">else</span> <span class="k">if</span> <span class="p">((</span><span class="n">r</span> <span class="o">=</span> <span class="n">getdns_hostname</span><span class="p">(</span> <span class="n">context</span><span class="p">,</span> <span class="n">address</span><span class="p">,</span> <span class="n">extensions</span>
+                                 <span class="p">,</span> <span class="n">userarg</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">transaction_id</span><span class="p">,</span> <span class="n">callback</span><span class="p">)))</span>
+        <span class="n">fprintf</span><span class="p">(</span><span class="n">stderr</span><span class="p">,</span> <span class="s">&quot;Error scheduling asynchronous request&quot;</span><span class="p">);</span>
+
+    <span class="k">else</span> <span class="k">if</span> <span class="p">(</span><span class="n">event_base_dispatch</span><span class="p">(</span><span class="n">event_base</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">)</span>
+        <span class="n">fprintf</span><span class="p">(</span><span class="n">stderr</span><span class="p">,</span> <span class="s">&quot;Error dispatching events</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">);</span>
+
+    <span class="cm">/* Clean up */</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">event_base</span><span class="p">)</span>
+        <span class="n">event_base_free</span><span class="p">(</span><span class="n">event_base</span><span class="p">);</span>
+
+    <span class="k">if</span> <span class="p">(</span><span class="n">context</span><span class="p">)</span>
+        <span class="n">getdns_context_destroy</span><span class="p">(</span><span class="n">context</span><span class="p">);</span>
+
+    <span class="cm">/* Assuming we get here, leave gracefully */</span>
+    <span class="n">exit</span><span class="p">(</span><span class="n">EXIT_SUCCESS</span><span class="p">);</span>
+<span class="p">}</span>
+</pre></div>
+
+
+
+<h1>7. More Helper Functions</h1>
+
+<p>The following two functions convert individual labels of IDNs between their Unicode
+encoding and their ASCII encoding. They follow the rules for IDNA 2008 described in
+RFC 5890-5892.</p>
+<div class=forh>char *
+getdns_convert_ulabel_to_alabel(
+  const char  *ulabel
+);
+</div>
+<div class=forh>char *
+getdns_convert_alabel_to_ulabel(
+  const char  *alabel
+);
+</div>
+
+<p>If an application wants the API do perform DNSSEC validation without using the extensions, it
+can use the <code>getdns_validate_dnssec()</code> helper function.</p>
+<div class=forh>getdns_return_t
+getdns_validate_dnssec(
+  getdns_list     *to_validate,
+  getdns_list     *bundle_of_support_records,
+  getdns_list     *trust_anchor_records
+);
+</div>
+<p class=cont>
+The <code>to_validate</code> is a list of resource records being validated together with the associated signatures.
+The API will use the resource records in <code>bundle_of_support_records</code> to construct the validation chain and the DNSKEY or DS records in <code>trust_anchor_records</code> as trust anchors.
+The function returns one of <code>GETDNS_DNSSEC_SECURE</code>, <code>GETDNS_DNSSEC_BOGUS</code>, <code>GETDNS_DNSSEC_INDETERMINATE</code>, or <code>GETDNS_DNSSEC_INSECURE</code>.
+</p>
+
+<p class=cont>
+The default list of trust anchor records that is used by the library to validate DNSSEC can
+be retrieved by using the <code>getdns_root_trust_anchor</code> helper function.</p>
+<div class=forh>getdns_list *
+getdns_root_trust_anchor(
+  time_t *utc_date_of_anchor
+);
+</div>
+<p class=cont>
+When there are no default trust anchors <code>NULL</code> is returned.
+Upon successful return, the variable of type <code>time_t</code>, referenced by
+<code>utc_date_of_anchor</code> is set to the number of seconds since epoch
+the trust anchors were obtained.
+</p>
+
+<p>There are two functions that help process data:</p>
+
+<div class=forh>
+char *
+getdns_pretty_print_dict(
+  const getdns_dict  *some_dict
+);
+</div>
+<p class=cont>This returns a string that is the nicely-formatted version
+of the dict and all of the named elements in it.</p>
+
+<div class=forh>
+char *
+getdns_display_ip_address(
+  const getdns_bindata  *bindata_of_ipv4_or_ipv6_address
+);
+</div>
+<p class=cont>This returns a string that is the nicely-formatted version
+of the IPv4 or IPv6 address in it. The API determines they type of address
+by the length given in the bindata.</p>
+
+<p class=cont>All memory locations returned by these helper functions are allocated by the default system allocator, namely <code>malloc</code>.
+The caller is responsible of disposing these allocations with <code>free</code>.</p>
+
+<h1>8. <a id="Contexts">DNS Contexts</a></h1>
+
+<p>Many calls in the DNS API require a DNS context. A DNS
+context contains the information that the API needs in order to process DNS calls, such as the
+locations of upstream DNS servers, DNSSEC trust anchors, and so on. The internal structure of the
+DNS context is opaque, and might be different on each OS. When a context is passed to any function,
+it must be an allocated context; the context must not be NULL.</p>
+
+<p>A typical application using this API doesn't need to know anything about contexts. Basically,
+the application creates a default context, uses it in the functions that require a context, and
+then deallocates it when done. Context manipulation is available for more DNS-aware programs,
+but is unlikely to be of interest to applications that just want the results of lookups for
+A, AAAA, SRV, and PTR records.</p>
+
+<p>It is expected that contexts in implementations of the API will not necessarily be thread-safe,
+but they will not be thread-hostile. A context should not be used by multiple threads: create a new
+context for use on a different thread. It is just fine for an application to have many contexts,
+and some DNS-heavy applications will certainly want to have many even if the application uses
+a single thread.</p>
+
+<p>See <a href="#ContextInitial">above</a> for the method for creating and destroying
+contexts. When the context is used in the API for the first time and <code>set_from_os</code> is
+<code>1</code>, the API starts replacing some of the values with values from the OS, such as
+those that would be found in res_query(3), /etc/resolv.conf, and so on, then proceeds with the new
+function. Some advanced users will not want the API to change the values to the OS's defaults; if
+<code>set_from_os</code> is <code>0</code>, the API will not do any updates to the initial
+values based on changes in the OS. For example, this might be useful if the API is acting
+as a stub resolver that is using a specific upstream recursive resolver chosen by the
+application, not the one that might come back from DHCP.</p>
+
+<h2>8.1 Updating the Context Automatically</h2>
+
+<p>The context returned by <code>getdns_context_create()</code> is updated by the API by default,
+such as when changes are made to /etc/resolv.conf. When there is a change, the callback function
+that is set in <code>getdns_context_set_context_update_callback()</code> (described below) is
+called.</p>
+
+<p>Many of the defaults for a context come from the operating system under which the API is running.
+In specific, it is important that the implementation should try to replicate as best as possible the
+logic of a local <code>getaddrinfo()</code> when creating a new context. This includes making
+lookups in WINS for NetBIOS, mDNS lookups, nis names, and any other name lookup that
+<code>getaddrinfo()</code> normally does automatically. The API should look at nsswitch, the Windows
+resolver, and so on.</p>
+
+<p>In the function definitions below, the choice listed <span class=default>in bold</span> is the one used
+for the API default context.</p>
+
+<h2>8.2 Updating the Context Manually</h2>
+
+<p>Setting specific values in a context are done with value-specific
+functions shown here. The setting functions all return either <code>GETDNS_RETURN_GOOD</code> for
+success or <code>GETDNS_RETURN_CONTEXT_UPDATE_FAIL</code> for a failure to update the context.</p>
+
+<p>An application can be notified when the context is changed.</p>
+
+<div class=forh>
+getdns_return_t
+getdns_context_set_context_update_callback(
+  getdns_context  *context,
+  void            (*value)(getdns_context *context, getdns_context_code_t changed_item)
+);</div>
+<p class=cont>The value is a pointer to the callback function that will be
+called when any context is changed. Such changes might be from automatic
+changes from the API (such as changes to /etc/resolv.conf), or might be from any of the
+API functions in this section being called. The second argument to the callback function
+specifies which of the context changed; the context codes are listed
+<a href="#ContextCodes">later in this document</a>.</p>
+<p class=cont>Calling getdns_context_set_context_update_callback with a second argument of NULL prevents updates to the context from causing callbacks.</p>
+
+<h2>8.3 Contexts for Basic Resolution</h2>
+
+<div class=forh>
+getdns_return_t
+getdns_context_set_resolution_type(
+  getdns_context       *context,
+  getdns_resolution_t  value
+);</div>
+<p class=cont>Specifies whether DNS queries are performed with nonrecurive lookups or
+as a stub resolver. The value is <span class=default><code>GETDNS_RESOLUTION_RECURSING</code></span> or
+<code>GETDNS_RESOLUTION_STUB</code>.</p>
+
+<p>All implementations of this API can act as recursive resolvers, and that must be the
+default mode of the default context.
+Some implementations of this API are expected to also be able to act as stub resolvers.
+If an
+implementation of this API is only able to act as a recursive resolver, a call to
+<code>getdns_context_set_resolution_type(somecontext, GETDNS_RESOLUTION_STUB)</code> will
+return <code>GETDNS_RETURN_CONTEXT_UPDATE_FAIL</code>.</p>
+
+<div class=forh>
+getdns_return_t
+getdns_context_set_namespaces(
+  getdns_context      *context,
+  size_t              namespace_count,
+  getdns_namespace_t  *namespaces
+);</div>
+<p class=cont>The <code>namespaces</code> array contains an ordered list
+of namespaces that will be queried.
+<b>Important:</b> this context setting is ignored for the <code>getdns_general</code> and
+<code>getdns_general_sync</code> functions; it is used for the other funtions.
+The values
+are <code>GETDNS_NAMESPACE_DNS</code>,
+<code>GETDNS_NAMESPACE_LOCALNAMES</code>,
+<code>GETDNS_NAMESPACE_NETBIOS</code>,
+<code>GETDNS_NAMESPACE_MDNS</code>, and
+<code>GETDNS_NAMESPACE_NIS</code>. When a normal lookup is done,
+the API does the lookups in the order given and stops when it gets the
+first result; a different method with the same result would be to run
+the queries in parallel and return when it gets the first result.
+Because lookups might be done over different mechanisms because of the
+different namespaces, there can be information leakage that is similar
+to that seen with <code>getaddrinfo()</code>. The
+default is <span class=default>determined by the OS</span>.</p>
+
+<div class=forh>
+getdns_return_t
+getdns_context_set_dns_transport(
+  getdns_context      *context,
+  getdns_transport_t  value
+);</div>
+<p class=cont>Specifies what transport is used for DNS lookups.
+The value is <span class=default>
+<code>GETDNS_TRANSPORT_UDP_FIRST_AND_FALL_BACK_TO_TCP</code></span>,
+<code>GETDNS_TRANSPORT_UDP_ONLY</code>,
+<code>GETDNS_TRANSPORT_TCP_ONLY</code>, or
+<code>GETDNS_TRANSPORT_TCP_ONLY_KEEP_CONNECTIONS_OPEN</code>.</p>
+
+<div class=forh>
+getdns_return_t
+getdns_context_set_dns_transport_list(
+  getdns_context           *context,
+  size_t                   transport_count, 
+  getdns_transport_list_t  *transports
+);</div>
+<p class=cont>The <code>transports</code> array contains an ordered list of transports that will be used for DNS lookups.
+If only one transport value is specified it will be the only transport used.
+Should it not be available basic resolution will fail.
+Fallback transport options are specified by including multiple values in the list.
+The values are <span class=default>
+<code>GETDNS_TRANSPORT_UDP</code></span>,
+<code>GETDNS_TRANSPORT_TCP</code>, or
+<code>GETDNS_TRANSPORT_TLS</code>.
+The default is <span class=default> a list containing <code>GETDNS_TRANSPORT_UDP</code> then <code>GETDNS_TRANSPORT_TCP</code></span>.</p>
+
+<div class=forh>
+getdns_return_t
+getdns_context_set_idle_timeout(
+  getdns_context  *context,
+  uint64_t        timeout
+);</div>
+<p class=cont>Specifies number of milliseconds the API will leave an idle TCP or TLS connection open for (idle means no outstanding responses and no pending queries).
+The default is <span class=default>0</span>.</p>
+
+<div class=forh>
+getdns_return_t
+getdns_context_set_limit_outstanding_queries(
+  getdns_context  *context,
+  uint16_t        limit
+);</div>
+<p class=cont>Specifies limit the number of outstanding DNS queries.
+The API will block itself from sending more queries if it is about to exceed
+this value, and instead keep those queries in an internal queue.
+The a value of <span class=default>0</span> indicates that
+the number of outstanding DNS queries is unlimited.</p>
+
+<div class=forh>
+getdns_return_t
+getdns_context_set_timeout(
+  getdns_context  *context,
+  uint64_t        timeout
+);</div>
+<p class=cont>Specifies number of milliseconds the API will wait for request to return.
+The default is <span class=default>not specified</span>.</p>
+
+<h2>8.4 Context for Recursive Resolvers</h2>
+
+<div class=forh>
+getdns_return_t
+getdns_context_set_follow_redirects(
+  getdns_context      *context,
+  getdns_redirects_t  value
+);</div>
+<p class=cont>Specifies whether or not DNS queries follow redirects.
+The value is <span class=default><code>GETDNS_REDIRECTS_FOLLOW</code></span> for normal
+following of redirects though CNAME and DNAME; or
+<code>GETDNS_REDIRECTS_DO_NOT_FOLLOW</code> to cause any lookups that would have gone
+through CNAME and DNAME to return the CNAME or DNAME, not the eventual target.</p>
+
+<div class=forh>
+getdns_return_t
+getdns_context_set_dns_root_servers(
+  getdns_context  *context,
+  getdns_list     *addresses
+);</div>
+<p class=cont>The list contains dicts that are addresses to be used for looking up top-level
+domains; the default is the list of <b>"normal" IANA root servers</b>. Each dict in the list
+contains at least two names: <code>address_type</code> (whose value is a bindata; it is currently
+either "IPv4" or "IPv6") and <code>address_data</code> (whose value is a bindata).</p>
+
+<h2>8.5 Context for Local Naming</h2>
+
+<div class=forh>
+getdns_return_t
+getdns_context_set_append_name(
+  getdns_context        *context,
+  getdns_append_name_t  value
+);</div>
+<p class=cont>Specifies whether to append a suffix to the query string
+before the API starts resolving a name.
+The value is <span class=default>
+<code>GETDNS_APPEND_NAME_ALWAYS</code></span>,
+<code>GETDNS_APPEND_NAME_ONLY_TO_SINGLE_LABEL_AFTER_FAILURE</code>,
+<code>GETDNS_APPEND_NAME_ONLY_TO_MULTIPLE_LABEL_NAME_AFTER_FAILURE</code>,
+or <code>GETDNS_APPEND_NAME_NEVER</code>. This controls
+whether or not to append the suffix given by <code>getdns_context_set_suffix</code></p>
+
+<div class=forh>
+getdns_return_t
+getdns_context_set_suffix(
+  getdns_context  *context,
+  getdns_list     *value
+);</div>
+<p class=cont>The value is a list of bindatas that are strings that are
+to be appended based on <code>getdns_context_set_append_name</code>; the default is an <span
+class=default>empty list</span>. The values here follow the rules in section 2.1 of RFC 4343
+to allow non-ASCII octets and special characters in labels.</p>
+
+<h2>8.6 Context for DNSSEC</h2>
+
+<p>These context settings affect queries that have extensions that specify the use of DNSSEC.</p>
+
+<p>Applications that need to specify the DNSSEC trust anchors can use:</p>
+<div class=forh>
+getdns_return_t
+getdns_context_set_dnssec_trust_anchors(
+  getdns_context  *context,
+  getdns_list     *value
+);</div>
+<p class=cont>The value is a list of bindatas that are the DNSSEC trust anchors. The default
+is the trust anchors from the <span class=default>IANA root</span>. The trust anchors
+are expressed as RDATAs from DNSKEY resource records.</p>
+
+<p>In the rare case that an application needs to set the DNSSEC skew, it can:</p>
+<div class=forh>
+getdns_return_t
+getdns_context_set_dnssec_allowed_skew(
+  getdns_context  *context,
+  uint32_t        value
+);</div>
+<p class=cont>The value is the number of seconds of skew that is allowed in either direction when
+checking an RRSIG's Expiration and Inception fields. The default
+is <span class=default>0</span>.</p>
+
+<h2>8.7 Context Specific to Stub Resolvers</h2>
+
+<p>An application can change the quering mechanism of a context to be to act as a stub
+resolver. Such an application might first get the default information to make this change
+from the operating system, probably through DHCP.</p>
+
+<p>Note that if a context is changed to being a stub resolver, this automatically prevents the application
+from using the extenstions for DNSSEC. An application that wants to both do DNSSEC and stub resolution
+must do its own DNSSEC processing, possibly with the <code>getdns_validate_dnssec()</code> function.</p>
+
+<div class=forh>
+getdns_return_t
+getdns_context_set_upstream_recursive_servers(
+  getdns_context  *context,
+  getdns_list     *upstream_list
+);</div>
+<p class=cont>The list of dicts define where a stub resolver will send queries. Each dict contains
+at least two names: <code>address_type</code> (whose value is a bindata; it is currently either
+"IPv4" or "IPv6") and <code>address_data</code> (whose value is a bindata).
+For IPv6 link-local addresses, a <code>scope_id</code> name (a bindata) can be provided.  It might also contain
+<code>port</code> to specify which port to use to contact these DNS servers; the default is 53. If
+the stub and a recursive resolver both support TSIG (RFC 2845), the <code>upstream_list</code> entry
+can also contain <code>tsig_algorithm</code> (a bindata) that is the name of the TSIG hash
+algorithm, <code>tsig_name</code> (a bindata) that is the name of the TSIG key, and <code>tsig_secret</code> (a bindata) that is the TSIG key.</p>
+
+<h2>8.8 Context for EDNS</h2>
+
+<p>These context settings affect queries that have extensions that specify the use of OPT resource records.
+These come from RFC 6891.</p>
+
+<div class=forh>
+getdns_return_t
+getdns_context_set_edns_maximum_udp_payload_size(
+  getdns_context  *context,
+  uint16_t        value
+);</div>
+<p class=cont>The value is between 512 and 65535; when not set, outgoing values will
+adhere to the suggestions in RFC 6891 and may follow a scheme that uses multiple values
+to maximize receptivity.</p>
+
+<div class=forh>
+getdns_return_t
+getdns_context_set_edns_extended_rcode(
+  getdns_context  *context,
+  uint8_t         value
+);</div>
+<p class=cont>The value is between 0 and 255; the default
+is <span class=default>0</span>.</p>
+
+<div class=forh>
+getdns_return_t
+getdns_context_set_edns_version(
+  getdns_context  *context,
+  uint8_t         value
+);</div>
+<p class=cont>The value is between 0 and 255; the default
+is <span class=default>0</span>.</p>
+
+<div class=forh>
+getdns_return_t
+getdns_context_set_edns_do_bit(
+  getdns_context  *context,
+  uint8_t         value
+);</div>
+<p class=cont>The value is between 0 and 1; the default
+is <span class=default>0</span>.</p>
+
+<h2>8.9 Context Use of Custom Memory Management Functions</h2>
+
+<div class=forh>
+getdns_return_t
+getdns_context_set_memory_functions(
+  getdns_context *context,
+  void           *(*malloc) (size_t),
+  void           *(*realloc) (void *, size_t),
+  void           (*free) (void *)
+);</div>
+<p class=cont>The given memory management functions will be used for creating the response dicts.
+The response dicts inherit the custom memory management functions from the context and will deallocate themselves (and their members) with the custom deallocator.
+By default, the system <span class=default>malloc</span>, <span class=default>realloc</span>, and <span>free</span> are used.</p>
+
+<div class=forh>
+getdns_return_t
+getdns_context_set_extended_memory_functions(
+  getdns_context *context,
+  void           *userarg,
+  void           *(*malloc)(void *userarg, size_t sz),
+  void           *(*realloc)(void *userarg, void *ptr, size_t sz),
+  void           (*free)(void *userarg, void *ptr)
+);</div>
+<p class=cont>The given extended memory management functions will be used for creating the response dicts.
+The value of <code>userarg</code> argument will be passed to the custom <code>malloc</code>, <code>realloc</code>, and <code>free</code>.
+The response dicts inherit the custom memory management functions and the value for <code>userarg</code> from the context and will deallocate themselves (and their members) with the custom deallocator.</p>
+
+<h2>8.10 <a id="ContextCodes">Context Codes</a></h2>
+
+<p>The context codes for <code>getdns_context_set_context_update_callback()</code> are:</p>
+
+<p class=define>GETDNS_CONTEXT_CODE_NAMESPACES</p>
+<p class=descrip>Change related to <code>getdns_context_set_namespaces</code></p>
+<p class=define>GETDNS_CONTEXT_CODE_RESOLUTION_TYPE</p>
+<p class=descrip>Change related to <code>getdns_context_set_resolution_type</code></p>
+<p class=define>GETDNS_CONTEXT_CODE_FOLLOW_REDIRECTS</p>
+<p class=descrip>Change related to <code>getdns_context_set_follow_redirects</code></p>
+<p class=define>GETDNS_CONTEXT_CODE_UPSTREAM_RECURSIVE_SERVERS</p>
+<p class=descrip>Change related to <code>getdns_context_set_upstream_recursive_servers</code></p>
+<p class=define>GETDNS_CONTEXT_CODE_DNS_ROOT_SERVERS</p>
+<p class=descrip>Change related to <code>getdns_context_set_dns_root_servers</code></p>
+<p class=define>GETDNS_CONTEXT_CODE_DNS_TRANSPORT</p>
+<p class=descrip>Change related to <code>getdns_context_set_dns_transport</code></p>
+<p class=define>GETDNS_CONTEXT_CODE_LIMIT_OUTSTANDING_QUERIES</p>
+<p class=descrip>Change related to <code>getdns_context_set_limit_outstanding_queries</code></p>
+<p class=define>GETDNS_CONTEXT_CODE_APPEND_NAME</p>
+<p class=descrip>Change related to <code>getdns_context_set_append_name</code></p>
+<p class=define>GETDNS_CONTEXT_CODE_SUFFIX</p>
+<p class=descrip>Change related to <code>getdns_context_set_suffix</code></p>
+<p class=define>GETDNS_CONTEXT_CODE_DNSSEC_TRUST_ANCHORS</p>
+<p class=descrip>Change related to <code>getdns_context_set_dnssec_trust_anchors</code></p>
+<p class=define>GETDNS_CONTEXT_CODE_EDNS_MAXIMUM_UDP_PAYLOAD_SIZE</p>
+<p class=descrip>Change related to <code>getdns_context_set_edns_maximum_udp_payload_size</code></p>
+<p class=define>GETDNS_CONTEXT_CODE_EDNS_EXTENDED_RCODE</p>
+<p class=descrip>Change related to <code>getdns_context_set_edns_extended_rcode</code></p>
+<p class=define>GETDNS_CONTEXT_CODE_EDNS_VERSION</p>
+<p class=descrip>Change related to <code>getdns_context_set_edns_version</code></p>
+<p class=define>GETDNS_CONTEXT_CODE_EDNS_DO_BIT</p>
+<p class=descrip>Change related to <code>getdns_context_set_edns_do_bit</code></p>
+<p class=define>GETDNS_CONTEXT_CODE_DNSSEC_ALLOWED_SKEW</p>
+<p class=descrip>Change related to <code>getdns_context_set_dnssec_allowed_skew</code></p>
+<p class=define>GETDNS_CONTEXT_CODE_MEMORY_FUNCTIONS</p>
+<p class=descrip>Change related to <code>getdns_context_set_memory_functions</code></p>
+<p class=define>GETDNS_CONTEXT_CODE_TIMEOUT</p>
+<p class=descrip>Change related to <code>getdns_context_set_timeout</code></p>
+<p class=define>GETDNS_CONTEXT_CODE_IDLE_TIMEOUT</p>
+<p class=descrip>Change related to <code>getdns_context_set_idle_timeout</code></p>
+
+
+<h2>8.11 Getting API information and current Contexts</h2>
+<p>An application might want to see information about the API itself and inspect the current context.
+Use the <code>getdns_context_get_api_information</code> function.</p>
+<div class=forh>
+getdns_dict *
+getdns_context_get_api_information(
+  getdns_context *context
+);
+</div>
+<p>The returned <code>getdns_dict</code> will contain the following name/value pairs:</p>
+<ul>
+<li><code>version_string</code> (a bindata) represents the version string for this version of the DNS
+API.</li>
+
+<li><code>implementation_string</code> (a bindata) is a string set by the API implementer. It might
+be human-readable, and it might have information in it useful to an application developer (but it doesn't
+have to).</li>
+
+<li><code>resolution_type</code> (an int) is the type of resolver that the API is acting as in this context:
+<code>GETDNS_RESOLUTION_RECURSING</code> or <code>GETDNS_RESOLUTION_STUB</code> (it will be
+a recursing resolver unless the application changed this in a context.</li>
+
+<li><code>all_context</code> (a dict) with names for all the types of context. This can be used with
+getdns_pretty_print_dict() for debugging.</li>
+
+</ul>
+
+<h1>9. The Generated Files</h1>
+
+<p>There is <a href="getdns-0.901.tgz">a tarball</a> that includes the .h files,
+the examples, and so on. The examples all make, even though there is no API implementation, based
+on a pseudo-implementation in the tarball; see make-examples-PLATFORM.sh. Note that this currently builds fine
+on the Macintosh and Ubuntu; help is definitely appreciated on making the build process
+work on more platforms if it fails there.</p>
+
+<h1>10. <a id="Commentary">Commentary</a></h1>
+
+<p>The following description of the API may be of value to those who might implement the design, and
+those who are using an implementation of the design.</p>
+
+<h2>10.1 API Design Considerations</h2>
+
+<p>The genesis of this DNS API design was seeing other DNS API designs flounder. There are other
+DNS APIs already available (such as draft-hayatnagarkar-dnsext-validator-api, as well
+as DNSSEC APIs in BIND and Unbound), but there has been very little uptake of them. In talking to
+application developers, there was a consistent story: that they felt that the APIs were developed by and
+for DNS people, not applications developers.</p>
+
+<p>This API design comes from talking to a small handful of applications developers about what they
+would want to see in a modern DNS API. Now that the API is public, it would be great to hear from many
+more application developers about whether it would meet their needs if it was implemented. My goal
+is to create a design that is a natural follow-on to <code>getaddrinfo()</code> that has all the
+capabilities that most application developers might want now or in the next few years: access to all
+types of DNS records (including those which are yet to be defined), full DNSSEC awareness, IDN
+handling, and parity for IPv4 and IPv6 addresses.</p>
+
+<p>Note that this is just a design for a new API: there is no implementation of the design yet, but
+at least one is being worked on. The process of designing the API without implementing it at the
+same time has the huge advantage that major design changes could be made without any worry about
+"but we already coded it the other way". In the early revisions of this document, many fundamental
+design choices changed over and over, and even bike-shedding-like changes were allowed because they
+didn't involve any programming effort.</p>
+
+<p>This work was done independently, not through the IETF because the IETF generally doesn't take on
+API work, and has explicitly avoided DNS API work in the past.</p>
+
+<p>This API design has a Creative Commons license so that it can be
+used widely by potential API implementers. This also allows other people who want to fork the design
+to do so cleanly. Of course, any implementation of this API can choose whatever kind of license the
+API implementer wishes, but it would be fabulous if one or more such implementations had Creative
+Commons or BSD-ish licenses.</p>
+
+<p>The API relies heavily on C macros and hopefully has no magic numbers.</p>
+
+<h2>10.2 API Implementation Considerations</h2>
+
+<p>All implementations of this API must act as recursive resolvers, and some might choose not to be
+able to act as stub resolvers. Note that all implementations of this API must be DNSSEC validators.</p>
+
+<p>Because there are many C event libraries available, and they have different calling routines,
+it is the implementation of an API that determines which event library is used. This is certainly
+not optimal for C programmers, but they appear to have gotten used to is so far. All implementations
+of this API must support synchronous calls with <code>getdns_general_sync()</code>.</p>
+
+<p>Versions are differentiated by version strings instead of version numbers. The version string for
+this API is "getdns April 2013". Each implementation is free to set the implementation string as it
+feels fit.</p>
+
+<p>The API's .h file contains a macro called <code>GETDNS_COMPILATION_COMMENT</code>. This can be useful
+to an application which will use the API because it can check the string without calling any
+functions. Each time the API implementation is compiled, this string should be updated with unique
+information about the implementation build.</p>
+
+<p>The implementation of both the async and sync <code>getdns</code> functions will
+copy all the values of the parameters into local memory, in case the application changes or
+deallocates them.</p>
+
+<hr width=90%>
+
+<p><a rel="license" href="https://creativecommons.org/licenses/by/3.0/deed.en_US"><img alt="Creative
+Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/3.0/80x15.png"
+/></a><br />This work is licensed under a <a rel="license"
+href="https://creativecommons.org/licenses/by/3.0/deed.en_US">Creative Commons Attribution 3.0
+Unported License</a>.</p>
+
+</body></html>

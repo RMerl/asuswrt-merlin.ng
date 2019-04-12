@@ -367,6 +367,10 @@ config RTCONFIG_YANDEXDNS
 	depends on !RTCONFIG_DNSFILTER
 	default n
 
+config RTCONFIG_DNSPRIVACY
+	bool "DNS-over-TLS Support"
+	default n
+
 config RTCONFIG_DSL
 	bool "DSL Support"
 	default n
@@ -1870,3 +1874,6 @@ config RTCONFIG_GAME_PROFILE
 	bool "enable Game Profile"
 	default n
 
+config RTCONFIG_NTPD
+	bool "ntp & ntpd support"
+	default n

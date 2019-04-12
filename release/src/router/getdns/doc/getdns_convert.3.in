@@ -1,0 +1,101 @@
+.\" The "BSD-New" License
+.\" 
+.\" Copyright (c) 2013, NLnet Labs, Verisign, Inc.
+.\" All rights reserved.
+.\" 
+.\" Redistribution and use in source and binary forms, with or without
+.\" modification, are permitted provided that the following conditions are met:
+.\" * Redistributions of source code must retain the above copyright
+.\"   notice, this list of conditions and the following disclaimer.
+.\" * Redistributions in binary form must reproduce the above copyright
+.\"   notice, this list of conditions and the following disclaimer in the
+.\"   documentation and/or other materials provided with the distribution.
+.\" * Neither the names of the copyright holders nor the
+.\"   names of its contributors may be used to endorse or promote products
+.\"   derived from this software without specific prior written permission.
+.\" 
+.\" THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+.\" ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+.\" WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+.\" DISCLAIMED. IN NO EVENT SHALL Verisign, Inc. BE LIABLE FOR ANY
+.\" DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+.\" (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+.\" LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+.\" ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+.\" (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+.\" SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+.\" 
+
+.TH getdns_convert 3 "@date@" "getdns @version@" getdns
+.SH NAME
+.B getdns_convert, 
+.B getdns_convert_dns_name_to_fqdn, 
+.B getdns_convert_fqdn_to_dns_name
+-- convert dname between presentation- and wire-format
+
+.SH LIBRARY
+DNS Resolver library (libgetdns, \-lgetdns)
+
+.SH SYNOPSIS
+#include <getdns.h>
+
+getdns_return_t 
+.br
+.B getdns_convert_dns_name_to_fqdn
+(const getdns_bindata *dns_name_wire_fmt,
+.br
+.RS 3
+char **fqdn_as_string)
+.RE
+
+getdns_return_t 
+.br
+.B getdns_convert_fqdn_to_dns_name
+(char *fqdn_as_string, 
+.br
+.RS 3
+const getdns_bindata **dns_name_wire_fmt)
+.RE
+
+.SH DESCRIPTION
+
+.LP
+Names in DNS fields are stored in a fashion very different from the normal
+presentation format normally used in applications. The DNS format is described
+in the first paragraph in Section 3.1 of RFC 1035; the presentation format here
+is a null-terminated string with interior dots. These helper functions only
+work with names in the DNS format that are not compressed. They are useful for
+converting domain names in the replies_tree to and from the FQDN presentation
+format.
+
+getdns_convert_dns_name_to_fqdn() converts a domain name in DNS format to the
+presentation format. For example, the hex sequence 03 77 77 77 07 65 78 61 6d
+70 6c 65 03 63 6f 6d 00 would be converted to "www.example.com".
+getdns_convert_fqdn_to_dns_name() does the reverse: it converts a
+null-terminated string in FQDN format to bytes in DNS format.
+
+.HP 3
+.I dns_name_wire_fmt
+The non-compressed DNS wire format name (per RFC 1035) in a bindata structure that
+will be converted to/from an fqdn.  In getdns_convert_fqdn_to_dns_name storage is
+allocated using the system allocator (malloc) and must be freed by the caller.
+
+.HP 3
+.I fqdn_as_string
+a null terminated string to be converted to/from non-compressed DNS wire format name (per RFC 1035).
+In getdns_convert_dns_name_to_fqdn storage is
+allocated using the system allocator (malloc) and must be freed by the caller.
+
+.HP
+.SH "RETURN VALUES"
+
+Upon successful completion the function returns
+.B GETDNS_RETURN_GOOD
+
+.SH EXAMPLES
+
+TBD
+
+.SH SEE ALSO
+.BR libgetdns (3)
+

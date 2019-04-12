@@ -1,0 +1,158 @@
+.\" The "BSD-New" License
+.\" 
+.\" Copyright (c) 2013, NLNet Labs, Verisign, Inc.
+.\" All rights reserved.
+.\" 
+.\" Redistribution and use in source and binary forms, with or without
+.\" modification, are permitted provided that the following conditions are met:
+.\" * Redistributions of source code must retain the above copyright
+.\"   notice, this list of conditions and the following disclaimer.
+.\" * Redistributions in binary form must reproduce the above copyright
+.\"   notice, this list of conditions and the following disclaimer in the
+.\"   documentation and/or other materials provided with the distribution.
+.\" * Neither the names of the copyright holders nor the
+.\"   names of its contributors may be used to endorse or promote products
+.\"   derived from this software without specific prior written permission.
+.\" 
+.\" THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+.\" ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+.\" WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+.\" DISCLAIMED. IN NO EVENT SHALL Verisign, Inc. BE LIABLE FOR ANY
+.\" DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+.\" (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+.\" LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+.\" ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+.\" (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+.\" SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+.\" 
+
+.TH getdns_dict_get 3 "@date@" "getdns @version@" getdns
+.SH NAME
+.B getdns_dict_get, 
+.B getdns_dict_get_bindata, 
+.B getdns_dict_get_data_type, 
+.B getdns_dict_get_dict, 
+.B getdns_dict_get_int, 
+.B getdns_dict_get_list, 
+.B getdns_dict_get_names
+-- get value by name from a getdns dict
+
+.SH LIBRARY
+DNS Resolver library (libgetdns, \-lgetdns)
+
+.SH SYNOPSIS
+#include <getdns.h>
+
+getdns_return_t 
+.br
+.B getdns_dict_get_bindata
+(getdns_dict *this_dict,
+.RS 3
+char *name,
+.br
+getdns_bindata **answer)
+.RE
+
+getdns_return_t 
+.br
+.B getdns_dict_get_data_type
+(getdns_dict *this_dict,
+.RS 3
+char *name,
+.br
+getdns_data_type *answer)
+.RE
+
+getdns_return_t
+.br
+.B getdns_dict_get_dict
+(getdns_dict *this_dict,
+.RS 3
+char *name,
+.br
+getdns_dict **answer)
+.RE
+
+getdns_return_t 
+.br
+.B getdns_dict_get_int
+(getdns_dict *this_dict,
+.RS 3
+char *name,
+.br
+uint32_t *answer)
+.RE
+
+getdns_return_t 
+.br
+.B getdns_dict_get_list
+(getdns_dict *this_dict,
+.RS 3
+char *name,
+.br
+getdns_list **answer)
+.RE
+
+getdns_return_t 
+.br
+.B getdns_dict_get_names
+(getdns_dict *this_dict,
+.RS 3
+getdns_list **answer)
+.RE
+
+.SH DESCRIPTION
+
+.LP
+The getdns_dict type is used to manage name/value pairs in which the names are strings and the data types of the values are heterogeneous and include
+.RS 3
+.br
+getdns_bindata
+.br
+getdns_dict
+.br
+getdns_list
+.br
+uint32_t
+.RE
+
+.LP
+.I this_dict
+the dictionary from which to retrieve the list of names
+.LP
+.I name
+the name whose associated value is to be returned in answer
+.LP
+.I answer
+the list of all names in the dictionary, note that the caller must free storage allocated to the list via a call to
+.B getdns_list_destroy(3)
+
+.SH "RETURN VALUES"
+
+Upon successful completion the functions return
+.B GETDNS_RETURN_GOOD
+, otherwise the following error values are returned:
+.LP
+.B GETDNS_RETURN_GENERIC_ERROR
+if this_dict is not a valid dictionary
+.LP
+.B GETDNS_RETURN_NO_SUCH_DICT_NAME
+if the name argument doesn't exist in the dictionary
+.LP
+.B GETDNS_RETURN_WRONG_TYPE_REQUESTED
+if the requested data type doesn't match the contents of the indexed argument or name
+
+.SH EXAMPLES
+
+TBD
+
+.SH SEE ALSO
+.BR libgetdns (3),
+.BR getdns_address (3),
+.BR getdns_dict (3),
+.BR getdns_dict_set (3),
+.BR getdns_general (3),
+.BR getdns_hostname (3),
+.BR getdns_list (3),
+.BR getdns_service (3),
+

@@ -1,0 +1,532 @@
+################################################################################
+######################## STUBBY YAML CONFIG FILE ###############################
+################################################################################
+# This is a yaml version of the stubby configuration file (it replaces the
+# json based stubby.conf file used in earlier versions of getdns/stubby).
+#
+# For more information see
+# https://dnsprivacy.org/wiki/display/DP/Configuring+Stubby
+#
+# This format does not fully support all yaml features - the restrictions are:
+#   - the outer-most data structure must be a yaml mapping
+#   - mapping keys must be yaml scalars
+#   - plain scalars will be converted to json unchanged
+#   - non-plain scalars (quoted, double-quoted, wrapped) will be interpreted
+#     as json strings, i.e. double quoted.
+#   - yaml tags are not supported
+#   - IPv6 addresses ending in :: are not yet supported (use ::0)
+#
+# Also beware that yaml is sensitive to the indentation at the start of each
+# line so if you encounter errors when parsing the config file then please check
+# that. We will add better checking but a useful online tool to check yaml
+# format is here (it also converts yaml to json)
+# https://yaml-online-parser.appspot.com/
+#
+# Note that we plan to introduce a more compact format for defining upstreams
+# in future: https://github.com/getdnsapi/stubby/issues/79
+
+################################### LOGGING ####################################
+# Logging is currently configured at runtime using command line arguments. See
+# > stubby -h
+# for details.
+
+########################## BASIC & PRIVACY SETTINGS ############################
+# Specifies whether to run as a recursive or stub resolver
+# For stubby this MUST be set to GETDNS_RESOLUTION_STUB
+resolution_type: GETDNS_RESOLUTION_STUB
+
+# Ordered list composed of one or more transport protocols:
+# GETDNS_TRANSPORT_UDP, GETDNS_TRANSPORT_TCP or GETDNS_TRANSPORT_TLS
+# If only one transport value is specified it will be the only transport used.
+# Should it not be available basic resolution will fail.
+# Fallback transport options are specified by including multiple values in the
+# list.  Strict mode (see below) should use only GETDNS_TRANSPORT_TLS.
+dns_transport_list:
+  - GETDNS_TRANSPORT_TLS
+
+# Selects Strict or Opportunistic Usage profile as described in
+# https://datatracker.ietf.org/doc/draft-ietf-dprive-dtls-and-tls-profiles/
+# Strict mode requires that authentication information for the upstreams is
+# specified below. Opportunistic may fallback to clear text DNS if UDP or TCP
+# is included in the transport list above.
+# For Strict use        GETDNS_AUTHENTICATION_REQUIRED
+# For Opportunistic use GETDNS_AUTHENTICATION_NONE
+tls_authentication: GETDNS_AUTHENTICATION_REQUIRED
+
+# EDNS0 option to pad the size of the DNS query to the given blocksize
+# 128 is currently recommended by
+# https://tools.ietf.org/html/draft-ietf-dprive-padding-policy-03
+tls_query_padding_blocksize: 128
+
+# EDNS0 option for ECS client privacy as described in Section 7.1.2 of
+# https://tools.ietf.org/html/rfc7871
+edns_client_subnet_private : 1
+
+############################# CONNECTION SETTINGS ##############################
+# Set to 1 to instruct stubby to distribute queries across all available name
+# servers - this will use multiple simultaneous connections which can give
+# better performance in most (but not all) cases.
+# Set to 0 to treat the upstreams below as an ordered list and use a single
+# upstream until it becomes unavailable, then use the next one.
+round_robin_upstreams: 1
+
+# EDNS0 option for keepalive idle timeout in milliseconds as specified in
+# https://tools.ietf.org/html/rfc7828
+# This keeps idle TLS connections open to avoid the overhead of opening a new
+# connection for every query.
+idle_timeout: 10000
+
+# Control the maximum number of connection failures that will be permitted
+# before Stubby backs-off from using an individual upstream (default 2)
+# tls_connection_retries: 5
+
+# Control the maximum time in seconds Stubby will back-off from using an
+# individual upstream after failures under normal circumstances (default 3600)
+# tls_backoff_time: 300
+
+# Specify the location for CA certificates used for verification purposes are
+# located - this overrides the OS specific default location.
+# tls_ca_path: "/etc/ssl/certs/"
+
+# Limit the total number of outstanding queries permitted
+# limit_outstanding_queries: 100
+
+# Specify the timeout in milliseconds on getting a response to an individual
+# request (default 5000)
+# timeout: 1000
+
+# Set the acceptable ciphers for DNS over TLS.  With OpenSSL 1.1.1 this list is
+# for TLS1.2 and older only. Ciphers for TLS1.3 should be set with the
+# tls_ciphersuites option. This option can also be given per upstream.
+# tls_cipher_list: "EECDH+AESGCM:EECDH+CHACHA20"
+
+# Set the acceptable cipher for DNS over TLS1.3. OpenSSL >= 1.1.1 is required
+# for this option. This option can also be given per upstream.
+# tls_ciphersuites: "TLS_AES_256_GCM_SHA384:TLS_CHACHA20_POLY1305_SHA256:TLS_AES_128_GCM_SHA256"
+
+# Set the minimum acceptable TLS version. Works with OpenSSL >= 1.1.1 only.
+# This option can also be given per upstream.
+# tls_min_version: GETDNS_TLS1_2
+
+# Set the maximum acceptable TLS version. Works with OpenSSL >= 1.1.1 only.
+# This option can also be given per upstream.
+# tls_max_version: GETDNS_TLS1_3
+
+################################ LISTEN ADDRESS ################################
+# Set the listen addresses for the stubby DAEMON. This specifies localhost IPv4
+# and IPv6. It will listen on port 53 by default. Use <IP_address>@<port> to
+# specify a different port
+listen_addresses:
+  - 127.0.0.1
+  - 0::1
+
+############################### DNSSEC SETTINGS ################################
+# Require DNSSEC validation. This will withhold answers with BOGUS DNSSEC
+# status and answers that could not be validated (i.e. with DNSSEC status
+# INDETERMINATE). Beware that if no DNSSEC trust-anchor is provided, or if
+# stubby is not able to fetch and validate the DNSSEC trust-anchor itself,
+# (using Zero configuration DNSSEC) stubby will not return answers at all.
+# If DNSSEC validation is required, a trust-anchor is also required.
+# dnssec: GETDNS_EXTENSION_TRUE
+
+# Stubby tries to fetch and validate the DNSSEC root trust anchor on the fly
+# when needed (Zero configuration DNSSEC), but only if it can store then
+# somewhere.  The default location to store these files is the ".getdns"
+# subdirectory in the user's home directory on Unixes, and the %appdata%\getdns
+# directory on Windows. If there is no home directory, or
+# the required subdirectory could not be created (or is not present), Stubby
+# will fall back to the current working directory to try to store the
+# trust-anchor files.
+#
+# When stubby runs as a special system-level user without a home directory
+# however (such as in setups using systemd), it is recommended that an explicit
+# location for storing the trust-anchor files is provided that is writable (and
+# readable) by that special system user.
+# appdata_dir: "/var/cache/stubby"
+
+# When Zero configuration DNSSEC failed, because of network unavailability or
+# failure to write to the appdata directory, stubby will backoff trying to
+# refetch the DNSSEC trust-anchor for a specified amount of time  expressed
+# in milliseconds (which defaults to two and a half seconds).
+# trust_anchors_backoff_time: 2500
+
+# Specify the location of the installed trust anchor file (leave commented out
+# for zero configuration DNSSEC)
+# dnssec_trust_anchors: "/etc/unbound/getdns-root.key"
+
+
+##################################  UPSTREAMS  ################################
+# Specify the list of upstream recursive name servers to send queries to
+# In Strict mode upstreams need either a tls_auth_name or a tls_pubkey_pinset
+# so the upstream can be authenticated.
+# The list below includes all the available test servers but only has the subset
+# operated the stubby/getdns developers enabled. You can enable any of the
+# others you want to use by uncommenting the relevant section. See:
+# https://dnsprivacy.org/wiki/display/DP/DNS+Privacy+Test+Servers
+# If you don't have IPv6 then comment then out those upstreams.
+# In Opportunistic mode they only require an IP address in address_data.
+# The information for an upstream can include the following:
+# - address_data: IPv4 or IPv6 address of the upstream
+#   port: Port for UDP/TCP (default is 53)
+#   tls_auth_name: Authentication domain name checked against the server
+#                  certificate
+#   tls_pubkey_pinset: An SPKI pinset verified against the keys in the server
+#                      certificate
+#     - digest: Only "sha256" is currently supported
+#       value: Base64 encoded value of the sha256 fingerprint of the public
+#              key
+#   tls_port: Port for TLS (default is 853)
+upstream_recursive_servers:
+############################ DEFAULT UPSTREAMS  ################################
+####### IPv4 addresses ######
+### Test servers ###
+# The Surfnet/Sinodun servers
+  - address_data: 145.100.185.15
+    tls_auth_name: "dnsovertls.sinodun.com"
+    tls_pubkey_pinset:
+      - digest: "sha256"
+        value: 62lKu9HsDVbyiPenApnc4sfmSYTHOVfFgL3pyB+cBL4=
+  - address_data: 145.100.185.16
+    tls_auth_name: "dnsovertls1.sinodun.com"
+    tls_pubkey_pinset:
+      - digest: "sha256"
+        value: cE2ecALeE5B+urJhDrJlVFmf38cJLAvqekONvjvpqUA=
+# The getdnsapi.net server
+  - address_data: 185.49.141.37
+    tls_auth_name: "getdnsapi.net"
+    tls_pubkey_pinset:
+      - digest: "sha256"
+        value: foxZRnIh9gZpWnl+zEiKa0EJ2rdCGroMWm02gaxSc9Q=
+####### IPv6 addresses ######
+### Test servers ###
+# The Surfnet/Sinodun servers
+  - address_data: 2001:610:1:40ba:145:100:185:15
+    tls_auth_name: "dnsovertls.sinodun.com"
+    tls_pubkey_pinset:
+      - digest: "sha256"
+        value: 62lKu9HsDVbyiPenApnc4sfmSYTHOVfFgL3pyB+cBL4=
+  - address_data: 2001:610:1:40ba:145:100:185:16
+    tls_auth_name: "dnsovertls1.sinodun.com"
+    tls_pubkey_pinset:
+      - digest: "sha256"
+        value: cE2ecALeE5B+urJhDrJlVFmf38cJLAvqekONvjvpqUA=
+# The getdnsapi.net server
+  - address_data: 2a04:b900:0:100::38
+    tls_auth_name: "getdnsapi.net"
+    tls_pubkey_pinset:
+      - digest: "sha256"
+        value: foxZRnIh9gZpWnl+zEiKa0EJ2rdCGroMWm02gaxSc9Q=
+
+
+############################ OPTIONAL UPSTREAMS  ###############################
+####### IPv4 addresses ######
+### Anycast services ###
+## Quad 9 'secure' service - Filters, does DNSSEC, doesn't send ECS
+#  - address_data: 9.9.9.9
+#    tls_auth_name: "dns.quad9.net"
+## Quad 9 'insecure' service - No filtering, no DNSSEC, doesn't send ECS
+#  - address_data: 9.9.9.10
+#    tls_auth_name: "dns.quad9.net"
+## Cloudflare 1.1.1.1 and 1.0.0.1
+#  - address_data: 1.1.1.1
+#    tls_auth_name: "cloudflare-dns.com"
+#  - address_data: 1.0.0.1
+#    tls_auth_name: "cloudflare-dns.com"
+## The Uncensored DNS servers
+#  - address_data: 89.233.43.71
+#    tls_auth_name: "unicast.censurfridns.dk"
+#    tls_pubkey_pinset:
+#      - digest: "sha256"
+#        value: wikE3jYAA6jQmXYTr/rbHeEPmC78dQwZbQp6WdrseEs=
+## Fondation RESTENA (NREN for Luxembourg)
+#  - address_data: 158.64.1.29
+#    tls_auth_name: "kaitain.restena.lu"
+#    tls_pubkey_pinset:
+#      - digest: "sha256"
+#        value: 7ftvIkA+UeN/ktVkovd/7rPZ6mbkhVI7/8HnFJIiLa4=
+## Google
+#  - address_data: 8.8.8.8
+#    tls_auth_name: "dns.google"
+#  - address_data: 8.8.4.4
+#    tls_auth_name: "dns.google"
+## Adguard Default servers
+#  - address_data: 176.103.130.130
+#    tls_auth_name: "dns.adguard.com"
+#  - address_data: 176.103.130.131
+#    tls_auth_name: "dns.adguard.com"
+## Adguard Family Protection servers
+#  - address_data: 176.103.130.132
+#    tls_auth_name: "dns-family.adguard.com"
+#  - address_data: 176.103.130.134
+#    tls_auth_name: "dns-family.adguard.com"
+### Test servers ###
+## A Surfnet/Sinodun server supporting TLS 1.2 and 1.3
+#  - address_data: 145.100.185.18
+#    tls_auth_name: "dnsovertls3.sinodun.com"
+#    tls_pubkey_pinset:
+#      - digest: "sha256"
+#        value: 5SpFz7JEPzF71hditH1v2dBhSErPUMcLPJx1uk2svT8=
+## A Surfnet/Sinodun server using Knot resolver. Warning - has issue when used
+## for DNSSEC
+#  - address_data: 145.100.185.17
+#    tls_auth_name: "dnsovertls2.sinodun.com"
+#    tls_pubkey_pinset:
+#      - digest: "sha256"
+#        value: NAXBESvpjZMnPWQcrxa2KFIkHV/pDEIjRkA3hLWogSg=
+## dns.cmrg.net server using Knot resolver. Warning - has issue when used for
+## DNSSEC.
+#  - address_data: 199.58.81.218
+#    tls_auth_name: "dns.cmrg.net"
+#    tls_pubkey_pinset:
+#      - digest: "sha256"
+#        value: 3IOHSS48KOc/zlkKGtI46a9TY9PPKDVGhE3W2ZS4JZo=
+#      - digest: "sha256"
+#        value: 5zFN3smRPuHIlM/8L+hANt99LW26T97RFHqHv90awjo=
+## dns.larsdebruin.net (formerly dns1.darkmoon.is)
+#  - address_data: 51.15.70.167
+#    tls_auth_name: "dns.larsdebruin.net "
+#    tls_pubkey_pinset:
+#      - digest: "sha256"
+#        value: AAT+rHoKx5wQkWhxlfrIybFocBu3RBrPD2/ySwIwmvA=
+## dot.securedns.eu
+#  - address_data: 146.185.167.43
+#    tls_auth_name: "dot.securedns.eu"
+#    tls_pubkey_pinset:
+#      - digest: "sha256"
+#        value: h3mufC43MEqRD6uE4lz6gAgULZ5/riqH/E+U+jE3H8g=
+## dns-tls.bitwiseshift.net
+#  - address_data: 81.187.221.24
+#    tls_auth_name: "dns-tls.bitwiseshift.net"
+#    tls_pubkey_pinset:
+#      - digest: "sha256"
+#        value: YmcYWZU5dd2EoblZHNf1jTUPVS+uK3280YYCdz4l4wo=
+## ns1.dnsprivacy.at
+#  - address_data: 94.130.110.185
+#    tls_auth_name: "ns1.dnsprivacy.at"
+#    tls_pubkey_pinset:
+#      - digest: "sha256"
+#        value: vqVQ9TcoR9RDY3TpO0MTXw1YQLjF44zdN3/4PkLwtEY=
+## ns2.dnsprivacy.at
+#  - address_data: 94.130.110.178
+#    tls_auth_name: "ns2.dnsprivacy.at"
+#    tls_pubkey_pinset:
+#      - digest: "sha256"
+#        value: s5Em89o0kigwfBF1gcXWd8zlATSWVXsJ6ecZfmBDTKg=
+## dns.bitgeek.in
+#  - address_data: 139.59.51.46
+#    tls_auth_name: "dns.bitgeek.in"
+#    tls_pubkey_pinset:
+#      - digest: "sha256"
+#        value: FndaG4ezEBQs4k0Ya3xt3z4BjFEyQHd7B75nRyP1nTs=
+## Lorraine Data Network  (self-signed cert).
+#  - address_data: 80.67.188.188
+#    tls_pubkey_pinset:
+#      - digest: "sha256"
+#        value: WaG0kHUS5N/ny0labz85HZg+v+f0b/UQ73IZjFep0nM=
+## dns.neutopia.org
+#  - address_data: 89.234.186.112
+#    tls_auth_name: "dns.neutopia.org"
+#    tls_pubkey_pinset:
+#      - digest: "sha256"
+#        value: wTeXHM8aczvhRSi0cv2qOXkXInoDU+2C+M8MpRyT3OI=
+## NIC Chile (self-signed cert)
+#  - address_data: 200.1.123.46
+#    tls_pubkey_pinset:
+#      - digest: "sha256"
+#        value: sG6kj+XJToXwt1M6+9BeCz1SOj/1/mdZn56OZvCyZZc=
+## # OARC. Note: this server currently doesn't support strict mode!
+##   - address_data: 184.105.193.78
+##     tls_auth_name: "tls-dns-u.odvr.dns-oarc.net"
+##     tls_pubkey_pinset:
+##       - digest: "sha256"
+##         value: pOXrpUt9kgPgbWxBFFcBTbRH2heo2wHwXp1fd4AEVXI=
+
+####### IPv6 addresses #######
+### Anycast services ###
+## Quad 9 'secure' service - Filters, does DNSSEC, doesn't send ECS
+#  - address_data: 2620:fe::fe
+#    tls_auth_name: "dns.quad9.net"
+## Quad 9 'insecure' service - No filtering, does DNSSEC, may send ECS (it is
+## unclear if it honours the edns_client_subnet_private request from stubby)
+#  - address_data: 2620:fe::10
+#    tls_auth_name: "dns.quad9.net"
+## Cloudflare servers
+#  - address_data: 2606:4700:4700::1111
+#    tls_auth_name: "cloudflare-dns.com"
+#  - address_data: 2606:4700:4700::1001
+#    tls_auth_name: "cloudflare-dns.com"
+## Google
+#  - address_data: 2001:4860:4860::8888
+#    tls_auth_name: "dns.google"
+#  - address_data: 2001:4860:4860::8844
+#    tls_auth_name: "dns.google"
+## Adguard Default servers
+#  - address_data: 2a00:5a60::ad1:0ff
+#    tls_auth_name: "dns.adguard.com"
+#  - address_data: 2a00:5a60::ad2:0ff
+#    tls_auth_name: "dns.adguard.com"
+## Adguard Family Protection servers
+#  - address_data: 2a00:5a60::bad1:0ff
+#    tls_auth_name: "dns-family.adguard.com"
+#  - address_data: 2a00:5a60::bad2:0ff
+#    tls_auth_name: "dns-family.adguard.com"
+### Test servers ###
+## The Uncensored DNS server
+#  - address_data: 2a01:3a0:53:53::0
+#    tls_auth_name: "unicast.censurfridns.dk"
+#    tls_pubkey_pinset:
+#      - digest: "sha256"
+#        value: wikE3jYAA6jQmXYTr/rbHeEPmC78dQwZbQp6WdrseEs=
+## Fondation RESTENA (NREN for Luxembourg)
+#  - address_data: 2001:a18:1::29
+#    tls_auth_name: "kaitain.restena.lu"
+#    tls_pubkey_pinset:
+#      - digest: "sha256"
+#        value: 7ftvIkA+UeN/ktVkovd/7rPZ6mbkhVI7/8HnFJIiLa4=
+## A Surfnet/Sinodun server supporting TLS 1.2 and 1.3
+#  - address_data: 2001:610:1:40ba:145:100:185:18
+#    tls_auth_name: "dnsovertls3.sinodun.com"
+#    tls_pubkey_pinset:
+#      - digest: "sha256"
+#        value: 5SpFz7JEPzF71hditH1v2dBhSErPUMcLPJx1uk2svT8=
+## A Surfnet/Sinodun server using Knot resolver. Warning - has issue when used
+## for DNSSEC
+#  - address_data: 2001:610:1:40ba:145:100:185:17
+#    tls_auth_name: "dnsovertls2.sinodun.com"
+#    tls_pubkey_pinset:
+#      - digest: "sha256"
+#        value: NAXBESvpjZMnPWQcrxa2KFIkHV/pDEIjRkA3hLWogSg=
+## dns.cmrg.net server using Knot resolver. Warning - has issue when used for
+## DNSSEC.
+#  - address_data: 2001:470:1c:76d::53
+#    tls_auth_name: "dns.cmrg.net"
+#    tls_pubkey_pinset:
+#      - digest: "sha256"
+#        value: 3IOHSS48KOc/zlkKGtI46a9TY9PPKDVGhE3W2ZS4JZo=
+#      - digest: "sha256"
+#        value: 5zFN3smRPuHIlM/8L+hANt99LW26T97RFHqHv90awjo=
+## dot.securedns.eu
+#  - address_data: 2a03:b0c0:0:1010::e9a:3001
+#    tls_auth_name: "dot.securedns.eu"
+#    tls_pubkey_pinset:
+#      - digest: "sha256"
+#        value: h3mufC43MEqRD6uE4lz6gAgULZ5/riqH/E+U+jE3H8g=
+## dns-tls.bitwiseshift.net
+#  - address_data: 2001:8b0:24:24::24
+#    tls_auth_name: "dns-tls.bitwiseshift.net"
+#    tls_pubkey_pinset:
+#      - digest: "sha256"
+#        value: YmcYWZU5dd2EoblZHNf1jTUPVS+uK3280YYCdz4l4wo=
+## ns1.dnsprivacy.at
+#  - address_data: 2a01:4f8:c0c:3c03::2
+#    tls_auth_name: "ns1.dnsprivacy.at"
+#    tls_pubkey_pinset:
+#      - digest: "sha256"
+#        value: vqVQ9TcoR9RDY3TpO0MTXw1YQLjF44zdN3/4PkLwtEY=
+## ns2.dnsprivacy.at
+#  - address_data: 2a01:4f8:c0c:3bfc::2
+#    tls_auth_name: "ns2.dnsprivacy.at"
+#    tls_pubkey_pinset:
+#      - digest: "sha256"
+#        value: s5Em89o0kigwfBF1gcXWd8zlATSWVXsJ6ecZfmBDTKg=
+## Go6Lab
+#  - address_data: 2001:67c:27e4::35
+#    tls_auth_name: "privacydns.go6lab.si"
+#    tls_pubkey_pinset:
+#      - digest: "sha256"
+#        value: g5lqtwHia/plKqWU/Fe2Woh4+7MO3d0JYqYJpj/iYAw=
+## Lorraine Data Network  (self-signed cert).
+#  - address_data: 2001:913::8
+#    tls_pubkey_pinset:
+#      - digest: "sha256"
+#        value: WaG0kHUS5N/ny0labz85HZg+v+f0b/UQ73IZjFep0nM=
+## dns.neutopia.org
+#  - address_data: 2a00:5884:8209::2
+#    tls_auth_name: "dns.neutopia.org"
+#    tls_pubkey_pinset:
+#      - digest: "sha256"
+#        value: wTeXHM8aczvhRSi0cv2qOXkXInoDU+2C+M8MpRyT3OI=
+## NIC Chile (self-signed cert)
+#  - address_data: 2001:1398:1:0:200:1:123:46
+#    tls_pubkey_pinset:
+#      - digest: "sha256"
+#        value: sG6kj+XJToXwt1M6+9BeCz1SOj/1/mdZn56OZvCyZZc=
+## # OARC. Note: this server currently doesn't support strict mode!
+##   - address_data: 2620:ff:c000:0:1::64:25
+##     tls_auth_name: "tls-dns-u.odvr.dns-oarc.net"
+##     tls_pubkey_pinset:
+##       - digest: "sha256"
+##         value: pOXrpUt9kgPgbWxBFFcBTbRH2heo2wHwXp1fd4AEVXI=
+
+####### Servers that listen on port 443 (IPv4 and IPv6) #######
+### Test servers ###
+## Surfnet/Sinodun servers
+#  - address_data: 145.100.185.15
+#    tls_port: 443
+#    tls_auth_name: "dnsovertls.sinodun.com"
+#    tls_pubkey_pinset:
+#      - digest: "sha256"
+#        value: 62lKu9HsDVbyiPenApnc4sfmSYTHOVfFgL3pyB+cBL4=
+#  - address_data: 145.100.185.16
+#    tls_port: 443
+#    tls_auth_name: "dnsovertls1.sinodun.com"
+#    tls_pubkey_pinset:
+#      - digest: "sha256"
+#        value: cE2ecALeE5B+urJhDrJlVFmf38cJLAvqekONvjvpqUA=
+## dns.cmrg.net server using Knot resolver
+#  - address_data: 199.58.81.218
+#    tls_port: 443
+#    tls_auth_name: "dns.cmrg.net"
+#    tls_pubkey_pinset:
+#      - digest: "sha256"
+#        value: 3IOHSS48KOc/zlkKGtI46a9TY9PPKDVGhE3W2ZS4JZo=
+#      - digest: "sha256"
+#        value: 5zFN3smRPuHIlM/8L+hANt99LW26T97RFHqHv90awjo=
+## Lorraine Data Network  (self-signed cert)
+#  - address_data: 80.67.188.188
+#    tls_port: 443
+#    tls_pubkey_pinset:
+#      - digest: "sha256"
+#        value: WaG0kHUS5N/ny0labz85HZg+v+f0b/UQ73IZjFep0nM=
+## dns.neutopia.org
+#  - address_data: 89.234.186.112
+#    tls_port: 443
+#    tls_auth_name: "dns.neutopia.org"
+#    tls_pubkey_pinset:
+#      - digest: "sha256"
+#        value: wTeXHM8aczvhRSi0cv2qOXkXInoDU+2C+M8MpRyT3OI=
+## The Surfnet/Sinodun servers
+#  - address_data: 2001:610:1:40ba:145:100:185:15
+#    tls_port: 443
+#    tls_auth_name: "dnsovertls.sinodun.com"
+#    tls_pubkey_pinset:
+#      - digest: "sha256"
+#        value: 62lKu9HsDVbyiPenApnc4sfmSYTHOVfFgL3pyB+cBL4=
+#  - address_data: 2001:610:1:40ba:145:100:185:16
+#    tls_port: 443
+#    tls_auth_name: "dnsovertls1.sinodun.com"
+#    tls_pubkey_pinset:
+#      - digest: "sha256"
+#        value: cE2ecALeE5B+urJhDrJlVFmf38cJLAvqekONvjvpqUA=
+## dns.cmrg.net server using Knot resolver
+#  - address_data: 2001:470:1c:76d::53
+#    tls_port: 443
+#    tls_auth_name: "dns.cmrg.net"
+#    tls_pubkey_pinset:
+#      - digest: "sha256"
+#        value: 3IOHSS48KOc/zlkKGtI46a9TY9PPKDVGhE3W2ZS4JZo=
+#      - digest: "sha256"
+#        value: 5zFN3smRPuHIlM/8L+hANt99LW26T97RFHqHv90awjo=
+## Lorraine Data Network (self-signed cert)
+#  - address_data: 2001:913::8
+#    tls_port: 443
+#    tls_pubkey_pinset:
+#      - digest: "sha256"
+#        value: WaG0kHUS5N/ny0labz85HZg+v+f0b/UQ73IZjFep0nM=
+## dns.neutopia.org
+#  - address_data: 2a00:5884:8209::2
+#    tls_port: 443
+#    tls_auth_name: "dns.neutopia.org"
+#    tls_pubkey_pinset:
+#      - digest: "sha256"
+#        value: wTeXHM8aczvhRSi0cv2qOXkXInoDU+2C+M8MpRyT3OI=

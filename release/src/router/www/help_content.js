@@ -139,7 +139,15 @@ helpcontent[7] = new Array("",
 							 "<b>PPP Echo:</b> Use Echo-Request and Echo-Reply message defined in PPP Link Control Protocol (LCP) to test the PPP connection. <b>DNS Probe:</b> Performs a DNS lookup request and resolved IP address to test DNS connection",	//31
 							 "Send an LCP Echo-Request frame to the peer every n seconds.",
 							 "Presume the peer to be dead if n LCP Echo-Requests are sent without receiving a valid LCP Echo-Reply. Use of this option requires a non-zero value for the Echo Interval parameter.",
-"If DNS resolution fails or returns the wrong address to n times, then it is assumed that the internet connection is completely unsuccessful");
+							 "If DNS resolution fails or returns the wrong address to n times, then it is assumed that the internet connection is completely unsuccessful",
+							 "You can configure your router to use a third party DNS server that supports encryption to prevent snooping on your DNS queries.  While this increases privacy, note that it might decrease general DNS performance.",
+							 "In strict mode, only allow the use of a DNS server if the identity of the remote server can be authenticated.  In opportunistic mode it will attempt to authetnticate, but will still use that server if it fails to authenticate its identity, allowing name resolution to still work properly.",
+							 "The IP address of the nameserver.",
+							 "TLS Port  (defaults to 853 if left empty).",
+							 "Authentication domain name checked against the server certificate.",
+							 "(Optional) Base64 hash value of the sha256 fingerprint of the public key.",
+							 "Pre-configured servers, select one to prefill the fields below for you, then click on the Add button to add it to the list.");	//41
+
 //Firewall
 helpcontent[8] = new Array("",
 						   "<#FirewallConfig_WanLanLog_itemdesc#>",

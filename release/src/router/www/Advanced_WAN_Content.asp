@@ -1279,7 +1279,7 @@ function change_wizard(o, id){
             		<td><input type="text" maxlength="15" class="input_15_table" name="wan_dns2_x" value="<% nvram_get("wan_dns2_x"); %>" onkeypress="return validator.isIPAddr(this, event)" autocorrect="off" autocapitalize="off"></td>
           		</tr>
 			<tr style="display:none">
-				<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(-1,-1);">DNS Privacy Protocol</a></th>
+				<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(7,35);">DNS Privacy Protocol</a></th>
 				<td align="left">
 					<select id="dnspriv_enable" class="input_option" name="dnspriv_enable" onChange="change_dnspriv_enable(this.value);">
 					<option value="0" <% nvram_match("dnspriv_enable", "0", "selected"); %>>None</option>
@@ -1291,31 +1291,31 @@ function change_wizard(o, id){
 				</td>
 			</tr>
 			<tr style="display:none">
-				<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(-1,-1);">DNS-over-TLS Profile</a></th>
+				<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(7,36);">DNS-over-TLS Profile</a></th>
 				<td>
 					<input type="radio" name="dnspriv_profile" class="input" value="1" onclick="return change_common_radio(this, 'IPConnection', 'dnspriv_profile', 1)" <% nvram_match("dnspriv_profile", "1", "checked"); %> />Strict
 					<input type="radio" name="dnspriv_profile" class="input" value="0" onclick="return change_common_radio(this, 'IPConnection', 'dnspriv_profile', 0)" <% nvram_match("dnspriv_profile", "0", "checked"); %> />Opportunistic
 				</td>
 			</tr>
 			<tr style="display:none" id="dot_presets_tr">
-				<th>Preset servers</th>
+				<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(7,41);"><div class="table_text">Preset servers</a></th>
 				<td>
 					<select name="dotPresets" id="dotPresets" class="input_option" onchange="change_wizard(this, 'dotPresets');">
 				</td>
 			</tr>
-        		</table>
+			</table>
 
 			<table id="DNSPrivacy" width="100%" border="1" align="center" cellpadding="4" cellspacing="0" bordercolor="#6b8fa3" class="FormTable_table" style="display:none">
 			<thead>
-			  	<tr>
+				<tr>
 					<td colspan="5">DNS-over-TLS Server List (Max Limit : 8)</td>
-			  	</tr>
+				</tr>
 			</thead>
 				<tr>
-					<th><a href="javascript:void(0);" onClick="openHint(-1,-1);"><div class="table_text">Address</div></a></th>
-					<th><a href="javascript:void(0);" onClick="openHint(-1,-1);"><div class="table_text">TLS Port</div></a></th>
-					<th><a href="javascript:void(0);" onClick="openHint(-1,-1);"><div class="table_text">TLS Hostname</div></a></th>
-					<th><a href="javascript:void(0);" onClick="openHint(-1,-1);"><div class="table_text">SPKI Fingerprint</div></a></th>
+					<th><a href="javascript:void(0);" onClick="openHint(7,37);"><div class="table_text">Address</div></a></th>
+					<th><a href="javascript:void(0);" onClick="openHint(7,38);"><div class="table_text">TLS Port</div></a></th>
+					<th><a href="javascript:void(0);" onClick="openHint(7,39);"><div class="table_text">TLS Hostname</div></a></th>
+					<th><a href="javascript:void(0);" onClick="openHint(7,40);"><div class="table_text">SPKI Fingerprint</div></a></th>
 					<th><#list_add_delete#></th>
 				</tr>
 				<!-- server info -->

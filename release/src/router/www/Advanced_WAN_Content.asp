@@ -258,7 +258,10 @@ function applyRule(){
 							dnspriv_rulelist_value += "<";
 						else
 							dnspriv_rulelist_value += ">";
-						dnspriv_rulelist_value += document.getElementById('dnspriv_rulelist_table').rows[k].cells[j].innerHTML;
+						if (document.getElementById('dnspriv_rulelist_table').rows[k].cells[j].innerHTML.lastIndexOf("...") < 0)
+							dnspriv_rulelist_value += document.getElementById('dnspriv_rulelist_table').rows[k].cells[j].innerHTML;
+						else
+							dnspriv_rulelist_value += document.getElementById('dnspriv_rulelist_table').rows[k].cells[j].title;
 					}
 				}
 				document.form.dnspriv_rulelist.disabled = false;
@@ -955,7 +958,11 @@ function del_Row(r){
 				dnspriv_rulelist_value += "&#60";
 			else
 				dnspriv_rulelist_value += "&#62";
-			dnspriv_rulelist_value += document.getElementById('dnspriv_rulelist_table').rows[k].cells[j].innerHTML;
+
+			if (document.getElementById('dnspriv_rulelist_table').rows[k].cells[j].innerHTML.lastIndexOf("...") < 0)
+				dnspriv_rulelist_value += document.getElementById('dnspriv_rulelist_table').rows[k].cells[j].innerHTML;
+			else
+				dnspriv_rulelist_value += document.getElementById('dnspriv_rulelist_table').rows[k].cells[j].title;
 		}
 	}
 
@@ -967,6 +974,7 @@ function del_Row(r){
 function show_dnspriv_rulelist(){
 	var dnspriv_rulelist_row = dnspriv_rulelist_array.split('&#60');
 	var code = "";
+	var overlib_str;
 
 	code +='<table width="100%" border="1" cellspacing="0" cellpadding="4" align="center" class="list_table" id="dnspriv_rulelist_table">';
 	if(dnspriv_rulelist_row.length == 1)
@@ -977,7 +985,14 @@ function show_dnspriv_rulelist(){
 			var dnspriv_rulelist_col = dnspriv_rulelist_row[i].split('&#62');
 			var wid=[27, 10, 27, 27];
 				for(var j = 0; j < dnspriv_rulelist_col.length; j++){
-					code +='<td width="'+wid[j]+'%">'+ dnspriv_rulelist_col[j] +'</td>';
+
+					if (dnspriv_rulelist_col[j].length > 25) {
+						overlib_str = dnspriv_rulelist_col[j];
+						dnspriv_rulelist_col[j] = dnspriv_rulelist_col[j].substring(0, 22)+"...";
+						code +='<td width="'+wid[j]+'%" title="' + overlib_str + '">'+ dnspriv_rulelist_col[j] +'</td>';
+					} else {
+						code +='<td width="'+wid[j]+'%">'+ dnspriv_rulelist_col[j] +'</td>';
+					}
 				}
 				code +='<td width="9%"><!--input class="edit_btn" onclick="edit_Row(this);" value=""/-->';
 				code +='<input class="remove_btn" onclick="del_Row(this);" value=""/></td></tr>';

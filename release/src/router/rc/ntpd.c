@@ -107,6 +107,7 @@ int ntpd_synced_main(int argc, char *argv[])
 			notify_rc("restart_stubby");
 #endif
 #ifdef RTCONFIG_DNSSEC
+		/* Should be safe w/o DNSSEC configured */
 		if (nvram_get_int("dnssec_enable"))
 			kill_pidfile_s("/var/run/dnsmasq.pid", SIGINT);
 #endif

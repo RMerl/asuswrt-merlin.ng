@@ -79,6 +79,7 @@ static void ntp_service()
 			kill_pidfile_s("/var/run/dnsmasq.pid", SIGINT);
 #endif
 #ifdef RTCONFIG_DISK_MONITOR
+		/* Should be safe w/o DNSSEC configured */
 		notify_rc("restart_diskmon");
 #endif
 	}

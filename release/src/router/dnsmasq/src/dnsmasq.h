@@ -910,6 +910,16 @@ struct dhcp_context {
   struct dhcp_context *next, *current;
 };
 
+struct shared_network {
+  int if_index;
+  struct in_addr match_addr, shared_addr;
+#ifdef HAVE_DHCP6
+  /* shared_addr == 0 for IP6 entries. */
+  struct in6_addr match_addr6, shared_addr6;
+#endif
+  struct shared_network *next;
+};
+
 #define CONTEXT_STATIC         (1u<<0)
 #define CONTEXT_NETMASK        (1u<<1)
 #define CONTEXT_BRDCAST        (1u<<2)
@@ -1107,6 +1117,7 @@ extern struct daemon {
   struct ping_result *ping_results;
   FILE *lease_stream;
   struct dhcp_bridge *bridges;
+  struct shared_network *shared_networks;
 #ifdef HAVE_DHCP6
   int duid_len;
   unsigned char *duid;
@@ -1118,6 +1129,11 @@ extern struct daemon {
   void *dbus;
 #ifdef HAVE_DBUS
   struct watch *watches;
+#endif
+  /* UBus stuff */
+#ifdef HAVE_UBUS
+  /* void * here to avoid depending on ubus headers outside ubus.c */
+  void *ubus;
 #endif
 
   /* TFTP stuff */
@@ -1460,6 +1476,7 @@ void emit_dbus_signal(int action, struct dhcp_lease *lease, char *hostname);
 
 /* ubus.c */
 #ifdef HAVE_UBUS
+void ubus_init(void);
 void set_ubus_listeners(void);
 void check_ubus_listeners(void);
 void ubus_event_bcast(const char *type, const char *mac, const char *ip, const char *name, const char *interface);

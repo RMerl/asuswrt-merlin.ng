@@ -1741,6 +1741,27 @@ It is permissible to add more than one alias using more than one \fB--bridge-int
 \fB--bridge-interface=int1,alias1,alias2\fP is exactly equivalent to
 \fB--bridge-interface=int1,alias1 --bridge-interface=int1,alias2\fP
 .TP
+.B --shared-network=<interface>|<addr>,<addr>
+The DHCP server determines which dhcp ranges are useable for allocating and
+address to a DHCP client based on the network from which the DHCP request arrives,
+and the IP configuration of the server's interface on that network. The shared-network
+option extends the available subnets (and therefore dhcp ranges) beyond the
+subnets configured on the arrival interface. The first argument is either the
+name of an interface or an address which is configured on a local interface, and the
+second argument is an address which defines another subnet on which addresses can be allocated.
+To be useful, there must be suitable dhcp-range which allows address allocation on this subnet
+and this dhcp-range MUST include the netmask. Use shared-network also needs extra
+consideration of routing. Dnsmasq doesn't have the usual information which it uses to
+determine the default route, so the default route option (or other routing) MUST be
+manually configured. The client must have a route to the server: if the two-address form
+of shared-network is used, this will be to the first specified address. If the interface,address
+form is used, there must be a route to all of the addresses configured on the interface.
+
+The two-address form of shared-network is also usable with a DHCP relay: the first address
+is the address of the relay and the second, as before, specifies an extra subnet which
+may be allocated.
+
+.TP
 .B \-s, --domain=<domain>[,<address range>[,local]]
 Specifies DNS domains for the DHCP server. Domains may be be given 
 unconditionally (without the IP range) or for limited IP ranges. This has two effects;
@@ -1921,8 +1942,9 @@ cannot be lower than 1025 unless dnsmasq is running as root. The number
 of concurrent TFTP connections is limited by the size of the port range. 
 .TP  
 .B \-C, --conf-file=<file>
-Specify a different configuration file. The \fB--conf-file\fP option is also allowed in
-configuration files, to include multiple configuration files. A
+Specify a configuration file. The presence of this option stops dnsmasq from reading the default configuration
+file (normally /etc/dnsmasq.conf). Multiple files may be specified by repeating the option
+either on the command line or in configuration files. A
 filename of "-" causes dnsmasq to read configuration from stdin.
 .TP
 .B \-7, --conf-dir=<directory>[,<file-extension>......],

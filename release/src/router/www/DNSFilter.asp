@@ -371,7 +371,7 @@ function showhide_settings(state) {
 	<tr>
 		<td bgcolor="#4D595D" valign="top">
 		<div>&nbsp;</div>
-		<div class="formfonttitle">DNS-based Filtering</div>
+		<div class="formfonttitle">DNSFilter</div>
 		<div style="margin:10px 0 10px 5px;" class="splitLine"></div>
 
 		<div id="dnsfilter_desc" style="margin-bottom:10px;">
@@ -383,10 +383,11 @@ function showhide_settings(state) {
 					<td>&nbsp;&nbsp;</td>
 					<td style="font-style: italic;font-size: 14px;">
 						<div>
-							<p>DNS-based filtering lets you protect specific LAN devices
-							against harmful online content.  The following filtering services
-							are currently supported (some of which offer multiple levels of
-							protection):
+							<p>DNSFilter allows you to protect specific LAN devices
+							against harmful online content by forcing them to use a
+							DNS server that provides filtering services.  The following
+							services are currently supported (you can also manually
+                                                        specify another DNS server through the custom entries):
 							<ul>
 								<li><a target="_blank" style="font-weight: bolder; cursor:pointer;text-decoration: underline;" href="https://cleanbrowsing.org/">CleanBrowsing</a>
 									<ul><li>Security = Malicious content

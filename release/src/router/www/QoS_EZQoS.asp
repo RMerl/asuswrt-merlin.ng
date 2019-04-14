@@ -1614,7 +1614,7 @@ function change_scheduler(value){
 											</td>
 										</tr>
 										<tr id="qos_overhead_tr" style="display:none">
-											<th>WAN packet overhead</th>
+											<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(50, 28);">WAN packet overhead</a></th>
 											<td colspan="2">
 												<select name="qos_overhead_preset" class="input_option" onchange="set_overhead(this);">
 												</select>

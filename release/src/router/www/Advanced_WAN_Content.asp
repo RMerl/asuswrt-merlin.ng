@@ -55,6 +55,7 @@ if(dualWAN_support && ( wans_dualwan.search("wan") >= 0 || wans_dualwan.search("
 }
 <% login_state_hook(); %>
 <% wan_get_parameter(); %>
+<% get_dnsprivacy_presets("dot"); %>
 
 var wan_proto_orig = '<% nvram_get("wan_proto"); %>';
 var original_wan_type = wan_proto_orig;
@@ -106,12 +107,18 @@ function initial(){
 	change_nat(<% nvram_get("wan_nat_x"); %>);
 
 	if(dnspriv_support){
+		build_dot_server_presets();
 		inputCtrl(document.form.dnspriv_enable, 1);
 		change_dnspriv_enable(document.form.dnspriv_enable.value);
 	}
 	else{
 		inputCtrl(document.form.dnspriv_enable, 0);
 		change_dnspriv_enable(0);
+	}
+
+	if(dnssec_support){
+		document.getElementById("dnssec_tr").style.display = "";
+		showhide("dnssec_strict_tr", "<% nvram_get("dnssec_enable"); %>" == "1" ? 1 : 0);
 	}
 
 	if(yadns_support){
@@ -294,7 +301,10 @@ function applyRule(){
 							dnspriv_rulelist_value += "<";
 						else
 							dnspriv_rulelist_value += ">";
-						dnspriv_rulelist_value += document.getElementById('dnspriv_rulelist_table').rows[k].cells[j].innerHTML;
+						if (document.getElementById('dnspriv_rulelist_table').rows[k].cells[j].innerHTML.lastIndexOf("...") < 0)
+							dnspriv_rulelist_value += document.getElementById('dnspriv_rulelist_table').rows[k].cells[j].innerHTML;
+						else
+							dnspriv_rulelist_value += document.getElementById('dnspriv_rulelist_table').rows[k].cells[j].title;
 					}
 				}
 				document.form.dnspriv_rulelist.disabled = false;
@@ -999,6 +1009,7 @@ function change_dnspriv_enable(flag){
 		inputCtrl(document.form.dnspriv_profile[1], 1);
 		document.getElementById("DNSPrivacy").style.display = "";
 		document.getElementById("dnspriv_rulelist_Block").style.display = "";
+		document.getElementById("dot_presets_tr").style.display = "";
 		show_dnspriv_rulelist();
 	}
 	else{
@@ -1006,6 +1017,7 @@ function change_dnspriv_enable(flag){
 		inputCtrl(document.form.dnspriv_profile[1], 0);
 		document.getElementById("DNSPrivacy").style.display = "none";
 		document.getElementById("dnspriv_rulelist_Block").style.display = "none";
+		document.getElementById("dot_presets_tr").style.display = "none";
 	}
 }
 
@@ -1021,16 +1033,19 @@ function addRow(obj, head){
 
 function addRow_Group(upper){
 	var rule_num = document.getElementById('dnspriv_rulelist_table').rows.length;
-	var item_num = document.getElementById('dnspriv_rulelist_table').rows[0].cells.length;		
+	var item_num = document.getElementById('dnspriv_rulelist_table').rows[0].cells.length;
+
+	document.getElementById("dotPresets").selectedIndex = 0;
+
 	if(rule_num >= upper){
 		alert("<#JS_itemlimit1#> " + upper + " <#JS_itemlimit2#>");
-		return false;	
-	}	
+		return false;
+	}
 
 	if(document.form.dnspriv_server_0.value==""){
 		alert("<#JS_fieldblank#>");
 		document.form.dnspriv_server_0.focus();
-		document.form.dnspriv_server_0.select();		
+		document.form.dnspriv_server_0.select();
 		return false;
 	}
 	else{
@@ -1042,9 +1057,9 @@ function addRow_Group(upper){
 	}
 }
 
-function edit_Row(r){ 	
+function edit_Row(r){
 	var i=r.parentNode.parentNode.rowIndex;
-  	document.form.dnspriv_server_0.value = document.getElementById('dnspriv_rulelist_table').rows[i].cells[0].innerHTML;
+	document.form.dnspriv_server_0.value = document.getElementById('dnspriv_rulelist_table').rows[i].cells[0].innerHTML;
 	document.form.dnspriv_port_0.value = document.getElementById('dnspriv_rulelist_table').rows[i].cells[1].innerHTML; 
 	document.form.dnspriv_hostname_0.value = document.getElementById('dnspriv_rulelist_table').rows[i].cells[2].innerHTML; 
 	document.form.dnspriv_spkipin_0.value = document.getElementById('dnspriv_rulelist_table').rows[i].cells[3].innerHTML;
@@ -1063,7 +1078,11 @@ function del_Row(r){
 				dnspriv_rulelist_value += "&#60";
 			else
 				dnspriv_rulelist_value += "&#62";
-			dnspriv_rulelist_value += document.getElementById('dnspriv_rulelist_table').rows[k].cells[j].innerHTML;
+
+			if (document.getElementById('dnspriv_rulelist_table').rows[k].cells[j].innerHTML.lastIndexOf("...") < 0)
+				dnspriv_rulelist_value += document.getElementById('dnspriv_rulelist_table').rows[k].cells[j].innerHTML;
+			else
+				dnspriv_rulelist_value += document.getElementById('dnspriv_rulelist_table').rows[k].cells[j].title;
 		}
 	}
 
@@ -1075,6 +1094,7 @@ function del_Row(r){
 function show_dnspriv_rulelist(){
 	var dnspriv_rulelist_row = dnspriv_rulelist_array.split('&#60');
 	var code = "";
+	var overlib_str;
 
 	code +='<table width="100%" border="1" cellspacing="0" cellpadding="4" align="center" class="list_table" id="dnspriv_rulelist_table">';
 	if(dnspriv_rulelist_row.length == 1)
@@ -1085,7 +1105,14 @@ function show_dnspriv_rulelist(){
 			var dnspriv_rulelist_col = dnspriv_rulelist_row[i].split('&#62');
 			var wid=[27, 10, 27, 27];
 				for(var j = 0; j < dnspriv_rulelist_col.length; j++){
-					code +='<td width="'+wid[j]+'%">'+ dnspriv_rulelist_col[j] +'</td>';
+
+					if (dnspriv_rulelist_col[j].length > 25) {
+						overlib_str = dnspriv_rulelist_col[j];
+						dnspriv_rulelist_col[j] = dnspriv_rulelist_col[j].substring(0, 22)+"...";
+						code +='<td width="'+wid[j]+'%" title="' + overlib_str + '">'+ dnspriv_rulelist_col[j] +'</td>';
+					} else {
+						code +='<td width="'+wid[j]+'%">'+ dnspriv_rulelist_col[j] +'</td>';
+					}
 				}
 				code +='<td width="9%"><!--input class="edit_btn" onclick="edit_Row(this);" value=""/-->';
 				code +='<input class="remove_btn" onclick="del_Row(this);" value=""/></td></tr>';
@@ -1094,6 +1121,41 @@ function show_dnspriv_rulelist(){
 	code +='</table>';
 	document.getElementById("dnspriv_rulelist_Block").innerHTML = code;
 }
+
+function build_dot_server_presets(){
+	var optGroup = "", opt;
+
+	free_options(document.form.dotPresets);
+	add_option(document.form.dotPresets, "<#Select_menu_default#>", 0, 1);
+
+	for(var i = 0; i < dot_servers_array.length; i++) {
+		if (dot_servers_array[i].length == 1) {
+			if (optGroup != "")	// Close existing group
+				document.form.dotPresets.appendChild(optGroup);
+			optGroup = document.createElement('optgroup');
+			optGroup.label = dot_servers_array[i][0];
+		} else {
+			if (optGroup == "")
+				optGroup = document.createElement('optgroup');	// No group was initialized, so do one
+			opt = document.createElement('option');
+			opt.innerHTML = dot_servers_array[i][0];
+			opt.value = i;
+			optGroup.appendChild(opt);
+		}
+	}
+	if (optGroup != "") document.form.dotPresets.appendChild(optGroup);
+}
+
+function change_wizard(o, id){
+	if (id == "dotPresets") {
+		var i = o.value;
+		document.form.dnspriv_server_0.value = dot_servers_array[i][1];
+		document.form.dnspriv_port_0.value = dot_servers_array[i][2];
+		document.form.dnspriv_hostname_0.value = dot_servers_array[i][3];
+		document.form.dnspriv_spkipin_0.value = dot_servers_array[i][4];
+	}
+}
+
 </script>
 </head>
 
@@ -1366,8 +1428,36 @@ function show_dnspriv_rulelist(){
             		<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(7,14);"><#IPConnection_x_DNSServer2_itemname#></a></th>
             		<td><input type="text" maxlength="15" class="input_15_table" name="wan_dns2_x" value="<% nvram_get("wan_dns2_x"); %>" onkeypress="return validator.isIPAddr(this, event)" autocorrect="off" autocapitalize="off"></td>
           		</tr>
+			<tr>
+				<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(50,5);">Forward local domain queries to upstream DNS</a></th>
+				<td>
+					<input type="radio" value="1" name="lan_dns_fwd_local" <% nvram_match("lan_dns_fwd_local", "1", "checked"); %> /><#checkbox_Yes#>
+					<input type="radio" value="0" name="lan_dns_fwd_local" <% nvram_match("lan_dns_fwd_local", "0", "checked"); %> /><#checkbox_No#>
+				</td>
+			</tr>
+			<tr>
+				<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(50,9);">Enable DNS Rebind protection</a></th>
+				<td>
+					<input type="radio" value="1" name="dns_norebind" <% nvram_match("dns_norebind", "1", "checked"); %> /><#checkbox_Yes#>
+					<input type="radio" value="0" name="dns_norebind" <% nvram_match("dns_norebind", "0", "checked"); %> /><#checkbox_No#>
+				</td>
+			</tr>
+			<tr id="dnssec_tr" style="display:none;">
+				<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(50,6);">Enable DNSSEC support</a></th>
+				<td>
+					<input type="radio" value="1" name="dnssec_enable" onclick="showhide('dnssec_strict_tr',1);" <% nvram_match("dnssec_enable", "1", "checked"); %> /><#checkbox_Yes#>
+					<input type="radio" value="0" name="dnssec_enable" onclick="showhide('dnssec_strict_tr',0);" <% nvram_match("dnssec_enable", "0", "checked"); %> /><#checkbox_No#>
+				</td>
+			</tr>
+			<tr id="dnssec_strict_tr" style="display:none;">
+				<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(50,25);">Validate unsigned DNSSEC replies</a></th>
+				<td>
+					<input type="radio" value="1" name="dnssec_check_unsigned_x" <% nvram_match("dnssec_check_unsigned_x", "1", "checked"); %> /><#checkbox_Yes#>
+					<input type="radio" value="0" name="dnssec_check_unsigned_x" <% nvram_match("dnssec_check_unsigned_x", "0", "checked"); %> /><#checkbox_No#>
+				</td>
+			</tr>
 			<tr style="display:none">
-				<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(-1,-1);">DNS Privacy Protocol</a></th>
+				<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(7,35);">DNS Privacy Protocol</a></th>
 				<td align="left">
 					<select id="dnspriv_enable" class="input_option" name="dnspriv_enable" onChange="change_dnspriv_enable(this.value);">
 					<option value="0" <% nvram_match("dnspriv_enable", "0", "selected"); %>>None</option>
@@ -1379,25 +1469,31 @@ function show_dnspriv_rulelist(){
 				</td>
 			</tr>
 			<tr style="display:none">
-				<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(-1,-1);">DNS-over-TLS Profile</a></th>
+				<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(7,36);">DNS-over-TLS Profile</a></th>
 				<td>
 					<input type="radio" name="dnspriv_profile" class="input" value="1" onclick="return change_common_radio(this, 'IPConnection', 'dnspriv_profile', 1)" <% nvram_match("dnspriv_profile", "1", "checked"); %> />Strict
 					<input type="radio" name="dnspriv_profile" class="input" value="0" onclick="return change_common_radio(this, 'IPConnection', 'dnspriv_profile', 0)" <% nvram_match("dnspriv_profile", "0", "checked"); %> />Opportunistic
 				</td>
 			</tr>
-        		</table>
+			<tr style="display:none" id="dot_presets_tr">
+				<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(7,41);"><div class="table_text">Preset servers</a></th>
+				<td>
+					<select name="dotPresets" id="dotPresets" class="input_option" onchange="change_wizard(this, 'dotPresets');">
+				</td>
+			</tr>
+			</table>
 
 			<table id="DNSPrivacy" width="100%" border="1" align="center" cellpadding="4" cellspacing="0" bordercolor="#6b8fa3" class="FormTable_table" style="display:none">
 			<thead>
-			  	<tr>
-					<td colspan="5">DNS-over-TLS Server List</td>
-			  	</tr>
+				<tr>
+					<td colspan="5">DNS-over-TLS Server List (Max Limit : 8)</td>
+				</tr>
 			</thead>
 				<tr>
-					<th><a href="javascript:void(0);" onClick="openHint(-1,-1);"><div class="table_text">Address</div></a></th>
-					<th><a href="javascript:void(0);" onClick="openHint(-1,-1);"><div class="table_text">TLS Port</div></a></th>
-					<th><a href="javascript:void(0);" onClick="openHint(-1,-1);"><div class="table_text">TLS Hostname</div></a></th>
-					<th><a href="javascript:void(0);" onClick="openHint(-1,-1);"><div class="table_text">SPKI Fingerprint</div></a></th>
+					<th><a href="javascript:void(0);" onClick="openHint(7,37);"><div class="table_text">Address</div></a></th>
+					<th><a href="javascript:void(0);" onClick="openHint(7,38);"><div class="table_text">TLS Port</div></a></th>
+					<th><a href="javascript:void(0);" onClick="openHint(7,39);"><div class="table_text">TLS Hostname</div></a></th>
+					<th><a href="javascript:void(0);" onClick="openHint(7,40);"><div class="table_text">SPKI Fingerprint</div></a></th>
 					<th><#list_add_delete#></th>
 				</tr>
 				<!-- server info -->

@@ -296,3 +296,7 @@ endif
 ifeq ($(HND_ROUTER),y)
 	mv -f $(INSTALLDIR)/rom/etc/profile.hnd $(INSTALLDIR)/rom/etc/profile
 endif
+
+ifeq ($(RTCONFIG_DNSPRIVACY),y)
+	install -m 0644 dot-servers.dat $(INSTALLDIR)/rom/dot-servers.dat
+endif

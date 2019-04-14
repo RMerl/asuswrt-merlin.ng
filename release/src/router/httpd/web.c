@@ -24614,6 +24614,9 @@ struct ej_handler ej_handlers[] = {
 	{ "wan_bonding_speed", ej_wan_bonding_speed },
 	{ "wan_bonding_p1_status", ej_wan_bonding_p1_status},
 	{ "wan_bonding_p2_status", ej_wan_bonding_p2_status},
+#ifdef RTCONFIG_DNSPRIVACY
+	{ "get_dnsprivacy_presets", ej_get_dnsprivacy_presets },
+#endif
 	{ NULL, NULL }
 };
 
@@ -24990,3 +24993,63 @@ err:
 	fcntl(fileno(stream), F_SETOWN, -ret);
 }
 #endif // (defined(RTCONFIG_JFFS2) || defined(RTCONFIG_BRCM_NAND_JFFS2)
+
+#ifdef RTCONFIG_DNSPRIVACY
+int
+ej_get_dnsprivacy_presets(int eid, webs_t wp, int argc, char_t **argv)
+{
+	int ret, len;
+	FILE *fp;
+	char line[256];
+	char *item, *buf, *type, *typeString, *datafile;
+
+	if (ejArgs(argc, argv, "%s", &type) < 1) {
+		websError(wp, 400, "Insufficient args\n");
+		return -1;
+	}
+
+	if (!strcmp(type, "dot")) {
+		typeString = "dot";
+		datafile = "/rom/dot-servers.dat";
+	} else {
+		websError(wp, 400, "Invalid argument\n");
+		return -1;
+	}
+
+	ret = websWrite(wp, "var %s_servers_array = [", typeString);
+
+	if (!(fp = fopen(datafile, "r"))) {
+		ret += websWrite(wp, "];\n");
+		return ret;
+	}
+
+	while (fgets(line, sizeof(line), fp) != NULL) {
+		len = strlen(line);
+		if (len == 0 || line[0] == '#' || line[0] == '\n')
+			continue;
+
+		if (line[len-1] == '\n')
+			line[len-1] = '\0';
+
+		buf = strdup(line);
+		item = strsep(&buf, ",");
+
+		ret += websWrite(wp, "[");
+		while (item != NULL) {
+			ret += websWrite(wp, "\"%s\"", item);
+			item = strsep(&buf, ",");
+
+			if (item)
+				ret += websWrite(wp, ",");
+		}
+		ret += websWrite(wp, "],\n");
+		free(buf);
+	}
+
+	fclose(fp);
+	ret += websWrite(wp, "];\n");
+
+	return ret;
+}
+#endif
+

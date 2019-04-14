@@ -23882,58 +23882,41 @@ err:
 int
 ej_get_dnsprivacy_presets(int eid, webs_t wp, int argc, char_t **argv)
 {
-	int ret, len;
 	FILE *fp;
-	char line[256];
-	char *item, *buf, *type, *typeString, *datafile;
+	char buf[256], *type, *datafile, *ptr, *item, *lsep, *fsep;
+	int ret = 0;
 
 	if (ejArgs(argc, argv, "%s", &type) < 1) {
 		websError(wp, 400, "Insufficient args\n");
 		return -1;
 	}
 
-	if (!strcmp(type, "dot")) {
-		typeString = "dot";
+	if (!strcmp(type, "dot"))
 		datafile = "/rom/dot-servers.dat";
-	} else {
+	else {
 		websError(wp, 400, "Invalid argument\n");
 		return -1;
 	}
 
-	ret = websWrite(wp, "var %s_servers_array = [", typeString);
+	if (!(fp = fopen(datafile, "r")))
+		return 0;
 
-	if (!(fp = fopen(datafile, "r"))) {
-		ret += websWrite(wp, "];\n");
-		return ret;
-	}
-
-	while (fgets(line, sizeof(line), fp) != NULL) {
-		len = strlen(line);
-		if (len == 0 || line[0] == '#' || line[0] == '\n')
+	for (lsep = ""; (ptr = fgets(buf, sizeof(buf), fp)) != NULL;) {
+		buf[sizeof(buf) - 1] = '\0';
+		ptr = strsep(&ptr, "#\n");
+		if (*ptr == '\0')
 			continue;
 
-		if (line[len-1] == '\n')
-			line[len-1] = '\0';
-
-		buf = strdup(line);
-		item = strsep(&buf, ",");
-
-		ret += websWrite(wp, "[");
-		while (item != NULL) {
-			ret += websWrite(wp, "\"%s\"", item);
-			item = strsep(&buf, ",");
-
-			if (item)
-				ret += websWrite(wp, ",");
+		ret += websWrite(wp, "%s[", lsep);
+		for (fsep = ""; (item = strsep(&ptr, ",")) != NULL;) {
+			ret += websWrite(wp, "%s\"%s\"", fsep, item);
+			fsep = ",";
 		}
-		ret += websWrite(wp, "],\n");
-		free(buf);
+		ret += websWrite(wp, "]");
+		lsep = ",";
 	}
-
 	fclose(fp);
-	ret += websWrite(wp, "];\n");
 
 	return ret;
 }
 #endif
-

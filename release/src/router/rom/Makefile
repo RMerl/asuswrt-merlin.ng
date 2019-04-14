@@ -288,3 +288,7 @@ ifeq ($(HND_ROUTER),y)
 	mkdir -p $(INSTALLDIR)/rom/scripts
 	cp -rf zoneinfo/* $(INSTALLDIR)/rom/usr/share/zoneinfo/
 endif
+
+ifeq ($(RTCONFIG_DNSPRIVACY),y)
+	install -m 0644 dot-servers.dat $(INSTALLDIR)/rom/dot-servers.dat
+endif

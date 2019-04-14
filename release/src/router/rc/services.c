@@ -1737,7 +1737,11 @@ void start_dnsmasq(void)
 	}
 
 #ifdef RTCONFIG_DNSSEC
-	if (nvram_match("dnssec_enable", "1")) {
+	if (nvram_get_int("dnssec_enable")
+#ifdef RTCONFIG_DNSPRIVACY
+	    && !nvram_get_int("dnspriv_enable")
+#endif
+	) {
 		fprintf(fp, "trust-anchor=.,19036,8,2,49AAC11D7B6F6446702E54A1607371607A1A41855200FD2CE1CDDE32F24E8FB5\n"
 		            "trust-anchor=.,20326,8,2,E06D44B80B8F1D39A95C0B0D7C65D08458E880409BBC683457104237C7F8EC8D\n"
 		            "dnssec\n");
@@ -1922,11 +1926,12 @@ void start_stubby(void)
 		tls_required && tls_possible ?
 			"GETDNS_AUTHENTICATION_REQUIRED" : "GETDNS_AUTHENTICATION_NONE");
 
-#if 0
+#ifdef RTCONFIG_DNSSEC
 	/* DNSSEC settings */
-	fprintf(fp,
-		"dnssec_return_status: GETDNS_EXTENSION_TRUE\n"
-		"dnssec_trust_anchors: \"/etc/unbound/getdns-root.key\"\n"
+	if (nvram_get_int("dnssec_enable")) {
+		fprintf(fp,
+			"dnssec_return_status: GETDNS_EXTENSION_TRUE\n");
+	}
 #endif
 
 	/* Connection settings */

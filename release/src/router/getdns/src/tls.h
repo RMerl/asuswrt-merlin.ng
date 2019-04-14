@@ -42,7 +42,7 @@
 
 /* Forward declare type. */
 struct sha256_pin;
-typedef struct sha256_pin sha256_pin_t;
+struct getdns_log_config;
 
 /* Additional return codes required by TLS abstraction. Internal use only. */
 #define GETDNS_RETURN_TLS_WANT_READ		((getdns_return_t) 420)
@@ -61,7 +61,7 @@ void _getdns_tls_init();
  * @paam log	pointer to context log config.
  * @return pointer to new context or NULL on error.
  */
-_getdns_tls_context* _getdns_tls_context_new(struct mem_funcs* mfs, const getdns_log_config* log);
+_getdns_tls_context* _getdns_tls_context_new(struct mem_funcs* mfs, const struct getdns_log_config* log);
 
 /**
  * Free a TLS context.
@@ -166,7 +166,7 @@ getdns_return_t _getdns_tls_context_set_ca(_getdns_tls_context* ctx, const char*
  * @paam log	pointer to connection log config.
  * @return pointer to new connection or NULL on error.
  */
-_getdns_tls_connection* _getdns_tls_connection_new(struct mem_funcs* mfs, _getdns_tls_context* ctx, int fd, const getdns_log_config* log);
+_getdns_tls_connection* _getdns_tls_connection_new(struct mem_funcs* mfs, _getdns_tls_context* ctx, int fd, const struct getdns_log_config* log);
 
 /**
  * Free a TLS connection.
@@ -314,7 +314,7 @@ getdns_return_t _getdns_tls_connection_setup_hostname_auth(_getdns_tls_connectio
  * @return GETDNS_RETURN_GOOD if all OK.
  * @return GETDNS_RETURN_INVALID_PARAMETER if conn is null or has no SSL.
  */
-getdns_return_t _getdns_tls_connection_set_host_pinset(_getdns_tls_connection* conn, const char* auth_name, const sha256_pin_t* pinset);
+getdns_return_t _getdns_tls_connection_set_host_pinset(_getdns_tls_connection* conn, const char* auth_name, const struct sha256_pin* pinset);
 
 /**
  * Get result of certificate verification.

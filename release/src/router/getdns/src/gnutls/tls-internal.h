@@ -53,7 +53,8 @@
 #define HAVE_TLS_CTX_CURVES_LIST	0
 #define HAVE_TLS_CONN_CURVES_LIST	0
 
-typedef struct getdns_log_config getdns_log_config;
+/* Forward declare type. */
+struct getdns_log_config;
 
 typedef struct _getdns_tls_context {
 	struct mem_funcs* mfs;
@@ -64,7 +65,7 @@ typedef struct _getdns_tls_context {
 	gnutls_protocol_t max_tls;
 	char* ca_trust_file;
 	char* ca_trust_path;
-	const getdns_log_config* log;
+	const struct getdns_log_config* log;
 } _getdns_tls_context;
 
 typedef struct _getdns_tls_connection {
@@ -81,7 +82,7 @@ typedef struct _getdns_tls_connection {
 	dane_query_t dane_query;
 	dane_state_t dane_state;
 	char* tlsa;
-	const getdns_log_config* log;
+	const struct getdns_log_config* log;
 } _getdns_tls_connection;
 
 typedef struct _getdns_tls_session {

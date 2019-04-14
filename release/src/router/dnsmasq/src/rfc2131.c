@@ -274,8 +274,9 @@ size_t dhcp_reply(struct dhcp_context *context, char *iface_name, int int_index,
   if (mess->giaddr.s_addr || subnet_addr.s_addr || mess->ciaddr.s_addr)
     {
       struct dhcp_context *context_tmp, *context_new = NULL;
+      struct shared_network *share = NULL;
       struct in_addr addr;
-      int force = 0;
+      int force = 0, via_relay = 0;
       
       if (subnet_addr.s_addr)
 	{
@@ -286,6 +287,7 @@ size_t dhcp_reply(struct dhcp_context *context, char *iface_name, int int_index,
 	{
 	  addr = mess->giaddr;
 	  force = 1;
+	  via_relay = 1;
 	}
       else
 	{
@@ -302,42 +304,65 @@ size_t dhcp_reply(struct dhcp_context *context, char *iface_name, int int_index,
 	} 
 		
       if (!context_new)
-	for (context_tmp = daemon->dhcp; context_tmp; context_tmp = context_tmp->next)
-	  {
-	    struct in_addr netmask = context_tmp->netmask;
+	{
+	  for (context_tmp = daemon->dhcp; context_tmp; context_tmp = context_tmp->next)
+	    {
+	      struct in_addr netmask = context_tmp->netmask;
+	      
+	      /* guess the netmask for relayed networks */
+	      if (!(context_tmp->flags & CONTEXT_NETMASK) && context_tmp->netmask.s_addr == 0)
+		{
+		  if (IN_CLASSA(ntohl(context_tmp->start.s_addr)) && IN_CLASSA(ntohl(context_tmp->end.s_addr)))
+		    netmask.s_addr = htonl(0xff000000);
+		  else if (IN_CLASSB(ntohl(context_tmp->start.s_addr)) && IN_CLASSB(ntohl(context_tmp->end.s_addr)))
+		    netmask.s_addr = htonl(0xffff0000);
+		  else if (IN_CLASSC(ntohl(context_tmp->start.s_addr)) && IN_CLASSC(ntohl(context_tmp->end.s_addr)))
+		    netmask.s_addr = htonl(0xffffff00); 
+		}
 
-	    /* guess the netmask for relayed networks */
-	    if (!(context_tmp->flags & CONTEXT_NETMASK) && context_tmp->netmask.s_addr == 0)
-	      {
-		if (IN_CLASSA(ntohl(context_tmp->start.s_addr)) && IN_CLASSA(ntohl(context_tmp->end.s_addr)))
-		  netmask.s_addr = htonl(0xff000000);
-		else if (IN_CLASSB(ntohl(context_tmp->start.s_addr)) && IN_CLASSB(ntohl(context_tmp->end.s_addr)))
-		  netmask.s_addr = htonl(0xffff0000);
-		else if (IN_CLASSC(ntohl(context_tmp->start.s_addr)) && IN_CLASSC(ntohl(context_tmp->end.s_addr)))
-		  netmask.s_addr = htonl(0xffffff00); 
-	      }
-	    
-	    /* This section fills in context mainly when a client which is on a remote (relayed)
-	       network renews a lease without using the relay, after dnsmasq has restarted. */
-	    if (netmask.s_addr != 0  && 
-		is_same_net(addr, context_tmp->start, netmask) &&
-		is_same_net(addr, context_tmp->end, netmask))
-	      {
-		context_tmp->netmask = netmask;
-		if (context_tmp->local.s_addr == 0)
-		  context_tmp->local = fallback;
-		if (context_tmp->router.s_addr == 0)
-		  context_tmp->router = mess->giaddr;
-	   
-		/* fill in missing broadcast addresses for relayed ranges */
-		if (!(context_tmp->flags & CONTEXT_BRDCAST) && context_tmp->broadcast.s_addr == 0 )
-		  context_tmp->broadcast.s_addr = context_tmp->start.s_addr | ~context_tmp->netmask.s_addr;
-		
-		context_tmp->current = context_new;
-		context_new = context_tmp;
-	      }
-	  }
-      
+	      /* check to see is a context is OK because of a shared address on
+		 the relayed subnet. */
+	      if (via_relay)
+		for (share = daemon->shared_networks; share; share = share->next)
+		  {
+#ifdef HAVE_DHCP6
+		    if (share->shared_addr.s_addr == 0)
+		      continue;
+#endif
+		    if (share->if_index != 0 ||
+			share->match_addr.s_addr != mess->giaddr.s_addr)
+		      continue;
+		    
+		    if (netmask.s_addr != 0  && 
+			is_same_net(share->shared_addr, context_tmp->start, netmask) &&
+			is_same_net(share->shared_addr, context_tmp->end, netmask))
+		      break;
+		  }
+	      
+	      /* This section fills in context mainly when a client which is on a remote (relayed)
+		 network renews a lease without using the relay, after dnsmasq has restarted. */
+	      if (share ||
+		  (netmask.s_addr != 0  && 
+		   is_same_net(addr, context_tmp->start, netmask) &&
+		   is_same_net(addr, context_tmp->end, netmask)))
+		{
+		  context_tmp->netmask = netmask;
+		  if (context_tmp->local.s_addr == 0)
+		    context_tmp->local = fallback;
+		  if (context_tmp->router.s_addr == 0 && !share)
+		    context_tmp->router = mess->giaddr;
+		  
+		  /* fill in missing broadcast addresses for relayed ranges */
+		  if (!(context_tmp->flags & CONTEXT_BRDCAST) && context_tmp->broadcast.s_addr == 0 )
+		    context_tmp->broadcast.s_addr = context_tmp->start.s_addr | ~context_tmp->netmask.s_addr;
+		  
+		  context_tmp->current = context_new;
+		  context_new = context_tmp;
+		}
+	      
+	    }
+	}
+	  
       if (context_new || force)
 	context = context_new; 
     }

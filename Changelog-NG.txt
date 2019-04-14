@@ -36,12 +36,14 @@ Asuswrt-Merlin 384/NG Changelog
   - CHANGED: Allow URLs up to 64 chars long on the URL filter.
   - CHANGED: pre-mount user script now receives the filesystem
              as second argument.
+  - CHANGED: Moved DNSSEC and DNS Rebind protection settings
+             to the WAN page.
   - FIXED: Reboot scheduler would sometime get stuck or corrupt
            plugged USB drives.  Now doing a more thorough
            shutdown of services, should hopefully make it
            more reliable.
- - FIXED: CVE-2019-1543 issue with Chacha20-poly1305 in
-          OpenSSL 1.1 (themiron)
+  - FIXED: CVE-2019-1543 issue with Chacha20-poly1305 in
+           OpenSSL 1.1 (themiron)
 
 
 384.10_2 (3-Apr-2019)

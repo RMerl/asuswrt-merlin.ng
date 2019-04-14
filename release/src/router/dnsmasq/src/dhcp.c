@@ -401,7 +401,8 @@ void dhcp_packet(time_t now, int pxe_fd)
       pkt = (struct in_pktinfo *)CMSG_DATA(cmptr);
       pkt->ipi_ifindex = rcvd_iface_index;
       pkt->ipi_spec_dst.s_addr = 0;
-      msg.msg_controllen = cmptr->cmsg_len = CMSG_LEN(sizeof(struct in_pktinfo));
+      msg.msg_controllen = CMSG_SPACE(sizeof(struct in_pktinfo));
+      cmptr->cmsg_len = CMSG_LEN(sizeof(struct in_pktinfo));
       cmptr->cmsg_level = IPPROTO_IP;
       cmptr->cmsg_type = IP_PKTINFO;
 
@@ -507,33 +508,83 @@ static int check_listen_addrs(struct in_addr local, int if_index, char *label,
 
    Note that the current chain may be superseded later for configured hosts or those coming via gateways. */
 
-static int complete_context(struct in_addr local, int if_index, char *label,
-			    struct in_addr netmask, struct in_addr broadcast, void *vparam)
+static void guess_range_netmask(struct in_addr addr, struct in_addr netmask)
 {
   struct dhcp_context *context;
-  struct dhcp_relay *relay;
-  struct iface_param *param = vparam;
 
-  (void)label;
-  
   for (context = daemon->dhcp; context; context = context->next)
-    {
-      if (!(context->flags & CONTEXT_NETMASK) &&
-	  (is_same_net(local, context->start, netmask) ||
-	   is_same_net(local, context->end, netmask)))
+    if (!(context->flags & CONTEXT_NETMASK) &&
+	(is_same_net(addr, context->start, netmask) ||
+	 is_same_net(addr, context->end, netmask)))
       { 
 	if (context->netmask.s_addr != netmask.s_addr &&
-	    !(is_same_net(local, context->start, netmask) &&
-	      is_same_net(local, context->end, netmask)))
+	    !(is_same_net(addr, context->start, netmask) &&
+	      is_same_net(addr, context->end, netmask)))
 	  {
 	    strcpy(daemon->dhcp_buff, inet_ntoa(context->start));
 	    strcpy(daemon->dhcp_buff2, inet_ntoa(context->end));
 	    my_syslog(MS_DHCP | LOG_WARNING, _("DHCP range %s -- %s is not consistent with netmask %s"),
 		      daemon->dhcp_buff, daemon->dhcp_buff2, inet_ntoa(netmask));
 	  }	
- 	context->netmask = netmask;
+	context->netmask = netmask;
       }
+}
+
+static int complete_context(struct in_addr local, int if_index, char *label,
+			    struct in_addr netmask, struct in_addr broadcast, void *vparam)
+{
+  struct dhcp_context *context;
+  struct dhcp_relay *relay;
+  struct iface_param *param = vparam;
+  struct shared_network *share;
+  
+  (void)label;
+
+  for (share = daemon->shared_networks; share; share = share->next)
+    {
       
+#ifdef HAVE_DHCP6
+      if (share->shared_addr.s_addr == 0)
+	continue;
+#endif
+      
+      if (share->if_index != 0)
+	{
+	  if (share->if_index != if_index)
+	    continue;
+	}
+      else
+	{
+	  if (share->match_addr.s_addr != local.s_addr)
+	    continue;
+	}
+
+      for (context = daemon->dhcp; context; context = context->next)
+	{
+	  if (context->netmask.s_addr != 0 &&
+	      is_same_net(share->shared_addr, context->start, context->netmask) &&
+	      is_same_net(share->shared_addr, context->end, context->netmask))
+	    {
+	      /* link it onto the current chain if we've not seen it before */
+	      if (context->current == context)
+		{
+		  /* For a shared network, we have no way to guess what the default route should be. */
+		  context->router.s_addr = 0;
+		  context->local = local; /* Use configured address for Server Identifier */
+		  context->current = param->current;
+		  param->current = context;
+		}
+	      
+	      if (!(context->flags & CONTEXT_BRDCAST))
+		context->broadcast.s_addr  = context->start.s_addr | ~context->netmask.s_addr;
+	    }		
+	}
+    }
+
+  guess_range_netmask(local, netmask);
+  
+  for (context = daemon->dhcp; context; context = context->next)
+    {
       if (context->netmask.s_addr != 0 &&
 	  is_same_net(local, context->start, context->netmask) &&
 	  is_same_net(local, context->end, context->netmask))

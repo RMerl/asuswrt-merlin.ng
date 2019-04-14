@@ -369,6 +369,10 @@ static char *compile_opts =
 "no-"
 #endif
 "DBus "
+#ifndef HAVE_UBUS
+"no-"
+#endif
+"UBus "
 #ifndef LOCALEDIR
 "no-"
 #endif

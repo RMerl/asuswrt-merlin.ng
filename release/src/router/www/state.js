@@ -506,6 +506,7 @@ function isSupport(_ptn){
 var igd2_support = isSupport("igd2");
 var nfsd_support = isSupport("nfsd");
 var dnsfilter_support = isSupport("dnsfilter");
+var dnssec_support = isSupport("dnssec");
 var spirit_logo_support = isSupport("spirit");
 var wifilogo_support = isSupport("WIFI_LOGO"); 
 var new_wifi_cert_support = isSupport("wifi2017"); 

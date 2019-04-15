@@ -1011,7 +1011,7 @@ function build_dot_server_presets(){
 	var optGroup = "", opt;
 
 	free_options(document.form.dotPresets);
-	add_option(document.form.dotPresets, "<#Select_menu_default#>", 0, 1);
+	add_option(document.form.dotPresets, "<#Select_menu_default#>", -1, 1);
 
 	for(var i = 0; i < dot_servers_array.length; i++) {
 		if (dot_servers_array[i].length == 1) {
@@ -1034,6 +1034,7 @@ function build_dot_server_presets(){
 function change_wizard(o, id){
 	if (id == "dotPresets") {
 		var i = o.value;
+		if (i == -1) return;
 		document.form.dnspriv_server_0.value = dot_servers_array[i][1];
 		document.form.dnspriv_port_0.value = dot_servers_array[i][2];
 		document.form.dnspriv_hostname_0.value = dot_servers_array[i][3];

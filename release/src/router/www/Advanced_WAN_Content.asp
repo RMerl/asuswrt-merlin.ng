@@ -291,6 +291,14 @@ function applyRule(){
 			document.form.action_script.value += ";restart_stubby";
 		}
 
+		if ((dnssec_support &&
+		      (getRadioValue(document.form.dnssec_enable) != '<% nvram_get("dnssec_enable"); %>') ||
+		      (getRadioValue(document.form.dnssec_check_unsigned_x) != '<% nvram_get("dnssec_check_unsigned_x"); %>')) ||
+
+		    (getRadioValue(document.form.dns_norebind) != '<% nvram_get("dns_norebind"); %>') ||
+		    (getRadioValue(document.form.lan_dns_fwd_local) != '<% nvram_get("lan_dns_fwd_local"); %>') )
+				document.form.action_script.value += ";restart_dnsmasq";
+
 		document.form.submit();	
 	}
 

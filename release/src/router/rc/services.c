@@ -1925,14 +1925,11 @@ void start_stubby(void)
 		/* Check server, can be IPv4/IPv6 address */
 		if (*server == '\0')
 			continue;
-		else
+		else if (inet_pton(AF_INET, server, &addr) <= 0
 #ifdef RTCONFIG_IPV6
-		if (inet_pton(AF_INET6, server, &addr) > 0 && !ipv6_enabled())
-			continue;
-		else
+			&& (inet_pton(AF_INET6, server, &addr) <= 0 || !ipv6_enabled())
 #endif
-		if (inet_pton(AF_INET, server, &addr) <= 0)
-			continue;
+		)	continue;
 
 		/* Check port, if specified */
 		port = *tlsport ? atoi(tlsport) : 0;

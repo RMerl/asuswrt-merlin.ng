@@ -10,14 +10,13 @@
 
 char *alloc_string(const char *string){
 	char *buf;
-	int len;
+	size_t len;
 
 	len = strlen(string);
 	if((buf = (char *)malloc(len+1)) == NULL)
 		return NULL;
 
-	strcpy(buf, string);
-	buf[len] = 0;
+	strlcpy(buf, string, len+1);
 
 	return buf;
 }

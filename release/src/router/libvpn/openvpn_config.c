@@ -99,34 +99,6 @@ void reset_ovpn_setting(ovpn_type_t type, int unit, int full){
 		}
 	}
 
-#if 0	// Rename
-	logmessage("openvpn", "Preserving backup of key/certs as .old files");
-	if (type == OVPN_TYPE_SERVER)	// server-only files
-	{
-		sprintf(tmp, "mv %s/vpn_crt_%s%d_ca_key %s/vpn_crt_%s%d_ca_key.old", OVPN_FS_PATH, service, unit, service, unit);
-		system(tmp);
-		sprintf(tmp, "mv %s/vpn_crt_%s%d_client_crt %s/vpn_crt_%s%d_client_crt.old", OVPN_FS_PATH, service, unit, service, unit);
-		system(tmp);
-		sprintf(tmp, "mv %s/vpn_crt_%s%d_client_key %s/vpn_crt_%s%d_client_key.old", OVPN_FS_PATH, service, unit, service, unit);
-		system(tmp);
-		sprintf(tmp, "mv %s/vpn_crt_%s%d_dh %s/vpn_crt_%s%d_dh.old", OVPN_FS_PATH, service, unit, service, unit);
-		system(tmp);
-	}
-
-	sprintf(tmp, "mv %s/vpn_crt_%s%d_ca %s/vpn_crt_%s%d_ca.old", OVPN_FS_PATH, service, unit, service, unit);
-	system(tmp);
-	sprintf(tmp, "mv %s/vpn_crt_%s%d_crt %s/vpn_crt_%s%d_crt.old", OVPN_FS_PATH, service, unit, service, unit);
-	system(tmp);
-	sprintf(tmp, "mv %s/vpn_crt_%s%d_key %s/vpn_crt_%s%d_key.old", OVPN_FS_PATH, service, unit, service, unit);
-	system(tmp);
-	sprintf(tmp, "mv %s/vpn_crt_%s%d_crl %s/vpn_crt_%s%d_crl.old", OVPN_FS_PATH, service, unit, service, unit);
-	system(tmp);
-	sprintf(tmp, "mv %s/vpn_crt_%s%d_static %s/vpn_crt_%s%d_static.old", OVPN_FS_PATH, service, unit, service, unit);
-	system(tmp);
-	sprintf(tmp, "mv %s/vpn_crt_%s%d_extra %s/vpn_crt_%s%d_extra.old", OVPN_FS_PATH, service, unit, service, unit);
-	system(tmp);
-
-#else	// Delete
         if (type == OVPN_TYPE_SERVER)  // server-only files
         {
 		set_ovpn_key(type, unit, OVPN_SERVER_CA_KEY, NULL, NULL);
@@ -147,7 +119,6 @@ void reset_ovpn_setting(ovpn_type_t type, int unit, int full){
 		set_ovpn_key(type, unit, OVPN_CLIENT_CRL, NULL, NULL);
 		set_ovpn_key(type, unit, OVPN_CLIENT_CA_EXTRA, NULL, NULL);
 	}
-#endif
 
 	nvram_commit();
 }

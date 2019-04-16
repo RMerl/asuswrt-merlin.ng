@@ -1747,11 +1747,12 @@ void start_dnsmasq(void)
 	}
 
 #ifdef RTCONFIG_DNSSEC
-	if (nvram_get_int("dnssec_enable")
 #ifdef RTCONFIG_DNSPRIVACY
-	    && !nvram_get_int("dnspriv_enable")
+	if (nvram_get_int("dnspriv_enable") && nvram_get_int("dnssec_enable")) {
+		fprintf(fp, "proxy-dnssec\n");
+	} else
 #endif
-	) {
+	if (nvram_get_int("dnssec_enable")) {
 		fprintf(fp, "trust-anchor=.,19036,8,2,49AAC11D7B6F6446702E54A1607371607A1A41855200FD2CE1CDDE32F24E8FB5\n"
 		            "trust-anchor=.,20326,8,2,E06D44B80B8F1D39A95C0B0D7C65D08458E880409BBC683457104237C7F8EC8D\n"
 		            "dnssec\n");
@@ -1762,7 +1763,6 @@ void start_dnsmasq(void)
 
 		if (nvram_match("dnssec_check_unsigned_x", "0"))
 			fprintf(fp, "dnssec-check-unsigned=no\n");
-
 	}
 #endif
 	if (nvram_match("dns_norebind", "1"))
@@ -1933,7 +1933,7 @@ void start_stubby(void)
 
 #ifdef RTCONFIG_DNSSEC
 	/* DNSSEC settings */
-	if (nvram_get_int("dnssec_enable")) {
+	if (nvram_get_int("dnssec_enable") && tls_possible) {
 		fprintf(fp,
 			"dnssec_return_status: GETDNS_EXTENSION_TRUE\n");
 	}
@@ -1975,14 +1975,11 @@ void start_stubby(void)
 		/* Check server, can be IPv4/IPv6 address */
 		if (*server == '\0')
 			continue;
-		else
+		else if (inet_pton(AF_INET, server, &addr) <= 0
 #ifdef RTCONFIG_IPV6
-		if (inet_pton(AF_INET6, server, &addr) > 0 && !ipv6_enabled())
-			continue;
-		else
+			&& (inet_pton(AF_INET6, server, &addr) <= 0 || !ipv6_enabled())
 #endif
-		if (inet_pton(AF_INET, server, &addr) <= 0)
-			continue;
+		)	continue;
 
 		/* Check port, if specified */
 		port = *tlsport ? atoi(tlsport) : 0;

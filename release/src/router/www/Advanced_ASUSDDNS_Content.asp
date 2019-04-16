@@ -840,7 +840,7 @@ function save_cert_key(){
 						<div style="display:table-cell;">Issued to :</div> <!--untranslated-->
 						<div id="issueTo" style="display:table-cell; padding-left:10px;"></div>
 					</div>
-					<div style="display:table-row;white-space: nowrap;">
+					<div style="display:table-row;">
 						<div style="display:table-cell;">SAN :</div>
 						<div id="SAN" style="display:table-cell; padding-left:10px;"></div>
 					</div>

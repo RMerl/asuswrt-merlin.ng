@@ -72,6 +72,15 @@ var pppoe_username = decodeURIComponent('<% nvram_char_to_ascii("", "wan_pppoe_u
 var pppoe_password = decodeURIComponent('<% nvram_char_to_ascii("", "wan_pppoe_passwd"); %>');
 
 function initial(){
+	if (dnspriv_support) {
+		if (dnsfilter_support)
+			var dnsfilter_enable = '<% nvram_get("dnsfilter_enable_x"); %>';
+
+		var dhcp_dns1 = '<% nvram_get("dhcp_dns1_x"); %>';
+		var dhcp_dns2 = '<% nvram_get("dhcp_dns2_x"); %>';
+		var lan_ipaddr = '<% nvram_get("lan_ipaddr"); %>';
+	}
+
 	if(!dualWAN_support){
 		if(wan_unit_flag == 1){	
 			document.wanUnit_form.wan_unit.value = 0;
@@ -104,6 +113,13 @@ function initial(){
 		build_dot_server_presets();
 		inputCtrl(document.form.dnspriv_enable, 1);
 		change_dnspriv_enable(document.form.dnspriv_enable.value);
+
+		if (dnsfilter_support && dnsfilter_enable == 1)
+			document.getElementById("dnsfilter_hint_dnspriv").style.display = "";
+
+		if ((dhcp_dns1 != "" && dhcp_dns1 != lan_ipaddr) ||
+		    (dhcp_dns2 != "" && dhcp_dns2 != lan_ipaddr))
+			document.getElementById("dhcpdns_hint_dnspriv").style.display = "";
 	}
 	else{
 		inputCtrl(document.form.dnspriv_enable, 0);
@@ -920,8 +936,6 @@ function addRow_Group(upper){
 	var rule_num = document.getElementById('dnspriv_rulelist_table').rows.length;
 	var item_num = document.getElementById('dnspriv_rulelist_table').rows[0].cells.length;
 
-	document.getElementById("dotPresets").selectedIndex = 0;
-
 	if(rule_num >= upper){
 		alert("<#JS_itemlimit1#> " + upper + " <#JS_itemlimit2#>");
 		return false;
@@ -933,13 +947,23 @@ function addRow_Group(upper){
 		document.form.dnspriv_server_0.select();
 		return false;
 	}
-	else{
-		addRow(document.form.dnspriv_server_0, 1);
-		addRow(document.form.dnspriv_port_0, 0);
-		addRow(document.form.dnspriv_hostname_0, 0);
-		addRow(document.form.dnspriv_spkipin_0, 0);
-		show_dnspriv_rulelist();
+
+	var is_ipv4 = (document.form.dnspriv_server_0.value.indexOf(".") != -1) ? true : false;
+	var is_ipv6 = (document.form.dnspriv_server_0.value.indexOf(":") != -1) ? true : false;
+	if(!is_ipv4 && !is_ipv6) {
+		alert(document.form.dnspriv_server_0.value + "<#JS_validip#>");
+		document.form.dnspriv_server_0.focus();
+		return false;
 	}
+	if ((is_ipv4 && !validator.isLegalIP(document.form.dnspriv_server_0)) ||
+	    (is_ipv6 && !validator.isLegal_ipv6(document.form.dnspriv_server_0)))
+		return false;
+
+	addRow(document.form.dnspriv_server_0, 1);
+	addRow(document.form.dnspriv_port_0, 0);
+	addRow(document.form.dnspriv_hostname_0, 0);
+	addRow(document.form.dnspriv_spkipin_0, 0);
+	show_dnspriv_rulelist();
 }
 
 function edit_Row(r){
@@ -1039,6 +1063,8 @@ function change_wizard(o, id){
 		document.form.dnspriv_port_0.value = dot_servers_array[i][2];
 		document.form.dnspriv_hostname_0.value = dot_servers_array[i][3];
 		document.form.dnspriv_spkipin_0.value = dot_servers_array[i][4];
+
+		document.getElementById("dotPresets").selectedIndex = 0;
 	}
 }
 
@@ -1322,6 +1348,8 @@ function change_wizard(o, id){
 					<!--option value="3" <% nvram_match("dnspriv_enable", "3", "selected"); %>>DNS-over-TLS/HTTPS (DoT+DoH)</option-->
 					</select>
 					<div id="yadns_hint_dnspriv" style="display:none;"></div>
+					<div id="dhcpdns_hint_dnspriv" style="display:none;"><span>Your router's <a style="text-decoration:underline; color:#FFCC00;" href="Advanced_DHCP_Content.asp">DHCP server</a> is configured to provide a DNS server that's different from your router's IP address.  This will prevent clients from using the DNS Privacy servers.</span></div>
+					<div id="dnsfilter_hint_dnspriv" style="display:none;"><span><a style="text-decoration:underline; color:#FFCC00;" href="DNSFilter.asp">DNSFilter</a> is enabled - anything configured there to something other than No Filtering or Router will bypass DNS Privacy servers.</span></div>
 				</td>
 			</tr>
 			<tr style="display:none">

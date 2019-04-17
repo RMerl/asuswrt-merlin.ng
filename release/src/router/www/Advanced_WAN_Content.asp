@@ -435,6 +435,14 @@ function validForm(){
 		if(!valid_IP(document.form.wan_dns2_x, "DNS")) return false;  //DNS2
 	}
 	
+	if(dnspriv_support) {
+		if(document.form.dnspriv_enable.value == 1 && dnspriv_rulelist_array == ""){
+			// TODO: rephrase
+			alert("<#IPConnection_x_DNSServer_blank#>");
+			return false;
+		}
+	}
+	
 	if(wan_type == "pppoe" || wan_type == "pptp" || wan_type == "l2tp" ||
 	   document.form.wan_auth_x.value != ""){
 	   	

@@ -1872,6 +1872,7 @@ void start_stubby(void)
 		"tls_query_padding_blocksize: 128\n"
 		"tls_ca_file: \"/etc/ssl/certs/ca-certificates.crt\"\n"
 		"appdata_dir: \"/var/lib/misc\"\n"
+		"resolvconf: \"%s\"\n"
 		"edns_client_subnet_private: 1\n",
 		tls_possible ?
 			"  - GETDNS_TRANSPORT_TLS\n" : "",
@@ -1879,7 +1880,8 @@ void start_stubby(void)
 			"  - GETDNS_TRANSPORT_UDP\n"
 			"  - GETDNS_TRANSPORT_TCP\n",
 		tls_required && tls_possible ?
-			"GETDNS_AUTHENTICATION_REQUIRED" : "GETDNS_AUTHENTICATION_NONE");
+			"GETDNS_AUTHENTICATION_REQUIRED" : "GETDNS_AUTHENTICATION_NONE",
+		dmresolv);
 
 #ifdef RTCONFIG_DNSSEC
 	/* DNSSEC settings */

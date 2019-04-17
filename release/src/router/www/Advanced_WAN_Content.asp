@@ -437,8 +437,7 @@ function validForm(){
 	
 	if(dnspriv_support) {
 		if(document.form.dnspriv_enable.value == 1 && dnspriv_rulelist_array == ""){
-			// TODO: rephrase
-			alert("<#IPConnection_x_DNSServer_blank#>");
+			alert("DNS Privacy requires at least one configured server.");
 			return false;
 		}
 	}

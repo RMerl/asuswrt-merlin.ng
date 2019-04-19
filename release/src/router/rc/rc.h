@@ -1305,7 +1305,6 @@ extern void stop_ovpn_eas(void);
 extern void run_ovpn_fw_script();
 extern void create_ovpn_passwd();
 extern void stop_ovpn_all();
-extern void update_ovpn_profie_remote();
 #endif
 
 // wanduck.c

@@ -104,4 +104,6 @@ extern int set_ovpn_custom(ovpn_type_t type, int unit, char* buffer);
 extern int get_max_dnsmode(void);
 extern void write_ovpn_dns(FILE* dnsmasq_conf);
 extern void write_ovpn_dnsmasq_config(FILE* dnsmasq_conf);
+extern char *get_ovpn_remote_address(char *buf, int len);
+extern void update_ovpn_profie_remote(void);
 #endif

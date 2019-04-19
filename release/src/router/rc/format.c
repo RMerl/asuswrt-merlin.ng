@@ -178,7 +178,11 @@ void adjust_merlin_config(void)
 	free(nv);
 #endif
 
-
+// Migrate lan_dns_fwd_local (384.11)
+	if (nvram_get_int("lan_dns_fwd_local")) {
+		nvram_set("dns_fwd_local", "1");
+		nvram_unset("lan_dns_fwd_local")
+	}
 }
 
 void adjust_url_urlelist(void)

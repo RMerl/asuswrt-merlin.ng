@@ -323,7 +323,7 @@ function applyRule(){
 		      (getRadioValue(document.form.dnssec_check_unsigned_x) != '<% nvram_get("dnssec_check_unsigned_x"); %>')) ||
 
 		    (getRadioValue(document.form.dns_norebind) != '<% nvram_get("dns_norebind"); %>') ||
-		    (getRadioValue(document.form.lan_dns_fwd_local) != '<% nvram_get("lan_dns_fwd_local"); %>') )
+		    (getRadioValue(document.form.dns_fwd_local) != '<% nvram_get("dns_fwd_local"); %>') )
 				document.form.action_script.value += ";restart_dnsmasq";
 
 		document.form.submit();	
@@ -460,6 +460,13 @@ function validForm(){
 	if(!document.form.wan_dnsenable_x[0].checked){
 		if(!valid_IP(document.form.wan_dns1_x, "DNS")) return false;  //DNS1
 		if(!valid_IP(document.form.wan_dns2_x, "DNS")) return false;  //DNS2
+	}
+	
+	if(dnspriv_support) {
+		if(document.form.dnspriv_enable.value == 1 && dnspriv_rulelist_array == ""){
+			alert("DNS Privacy requires at least one configured server.");
+			return false;
+		}
 	}
 	
 	if(wan_type == "pppoe" || wan_type == "pptp" || wan_type == "l2tp" ||
@@ -1365,8 +1372,8 @@ function change_wizard(o, id){
 			<tr>
 				<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(50,5);">Forward local domain queries to upstream DNS</a></th>
 				<td>
-					<input type="radio" value="1" name="lan_dns_fwd_local" <% nvram_match("lan_dns_fwd_local", "1", "checked"); %> /><#checkbox_Yes#>
-					<input type="radio" value="0" name="lan_dns_fwd_local" <% nvram_match("lan_dns_fwd_local", "0", "checked"); %> /><#checkbox_No#>
+					<input type="radio" value="1" name="dns_fwd_local" <% nvram_match("dns_fwd_local", "1", "checked"); %> /><#checkbox_Yes#>
+					<input type="radio" value="0" name="dns_fwd_local" <% nvram_match("dns_fwd_local", "0", "checked"); %> /><#checkbox_No#>
 				</td>
 			</tr>
 			<tr>

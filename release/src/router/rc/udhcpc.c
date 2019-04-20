@@ -638,7 +638,7 @@ udhcpc_wan(int argc, char **argv)
 {
 	_dprintf("%s:: %s\n", __FUNCTION__, argv[1] ? : "");
 
-	run_custom_script("dhcpc-event", argv[1]);
+	run_custom_script("dhcpc-event", 0, argv[1], NULL);
 
 	if (!argv[1])
 		return EINVAL;
@@ -912,7 +912,7 @@ zcip_wan(int argc, char **argv)
 {
 	_dprintf("%s:: %s\n", __FUNCTION__, argv[1] ? : "");
 
-        run_custom_script("zcip-event", argv[1]);
+        run_custom_script("zcip-event", 0, argv[1], NULL);
 
 	if (!argv[1])
 		return EINVAL;
@@ -1150,7 +1150,7 @@ udhcpc_lan(int argc, char **argv)
 {
 	_dprintf("%s:: %s\n", __FUNCTION__, argv[1] ? : "");
 
-        run_custom_script("dhcpc-event", argv[1]);
+        run_custom_script("dhcpc-event", 0, argv[1], NULL);
 
 	if (!argv[1])
 		return EINVAL;
@@ -1348,7 +1348,7 @@ ra_updated6(char *wan_ifname)
 int dhcp6c_wan(int argc, char **argv)
 {
 
-	if (argv[2]) run_custom_script("dhcpc-event", argv[2]);
+	if (argv[2]) run_custom_script("dhcpc-event", 0, argv[2], NULL);
 
 	if (!argv[1] || !argv[2])
 		return EINVAL;

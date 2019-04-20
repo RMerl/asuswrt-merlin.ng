@@ -5918,7 +5918,7 @@ static void auto_firmware_check()
 
 				sscanf(nvram_safe_get("webs_state_info"), "%3[^_]_%2[^_]_%15s", version, revision, build);
 				logmessage("watchdog", "New firmware version %s.%s_%s is available.", version, revision, build);
-				run_custom_script("update-notification", NULL);
+				run_custom_script("update-notification", 0, NULL, NULL);
 			}
 
 #ifdef RTCONFIG_FORCE_AUTO_UPGRADE

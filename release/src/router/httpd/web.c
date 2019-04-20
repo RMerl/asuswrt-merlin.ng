@@ -23808,9 +23808,11 @@ ej_get_wl_channel_list(int eid, webs_t wp, int argc, char **argv, int unit) {
 
 		if((unit == 0 && strpbrk(chanspec_buf, "lu") == NULL) || unit > 0){
 			json_object_array_add(chan_auto_array, chan_tmp);
+#ifdef RTCONFIG_CFGSYNC
 			if(cfg_rejoin > 0)
 				json_object_array_add(chanspec_auto_array, json_object_new_string(chanspec_auto_buf));
 			else
+#endif
 				json_object_array_add(chanspec_auto_array, json_object_new_string(chanspec_buf));
 		}
 	}

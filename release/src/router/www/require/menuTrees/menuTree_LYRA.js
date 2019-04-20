@@ -490,7 +490,7 @@ define(function(){
 					}
 				}
 
-				if(!SwitchCtrl_support){
+				if(!SwitchCtrl_support || wifison_ready == "1"){
 					retArray.push("Advanced_SwitchCtrl_Content.asp");		
 				}
 

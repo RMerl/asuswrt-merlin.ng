@@ -1,6 +1,6 @@
 /* 
    HTTP Authentication routines
-   Copyright (C) 1999-2009, Joe Orton <joe@manyfish.co.uk>
+   Copyright (C) 1999-2011, Joe Orton <joe@manyfish.co.uk>
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Library General Public
@@ -181,6 +181,7 @@ typedef struct {
     /* This is used for SSPI (Negotiate/NTLM) auth */
     char *sspi_token;
     void *sspi_context;
+    char *sspi_host;
 #endif
 #ifdef HAVE_NTLM
      /* This is used for NTLM auth */
@@ -299,6 +300,8 @@ static void clean_session(auth_session *sess)
     sess->sspi_token = NULL;
     ne_sspi_destroy_context(sess->sspi_context);
     sess->sspi_context = NULL;
+    if (sess->sspi_host) ne_free(sess->sspi_host);
+    sess->sspi_host = NULL;
 #endif
 #ifdef HAVE_NTLM
     if (sess->ntlm_context) {
@@ -330,7 +333,7 @@ static char *get_cnonce(void)
     }
     else
 #elif defined(HAVE_OPENSSL)
-    if (RAND_status() == 1 && RAND_pseudo_bytes(data, sizeof data) >= 0) {
+    if (RAND_status() == 1 && RAND_bytes(data, sizeof data) >= 0) {
 	ne_md5_process_bytes(data, sizeof data, hash);
     } 
     else 
@@ -627,14 +630,7 @@ static int continue_sspi(auth_session *sess, int ntlm, const char *hdr)
     NE_DEBUG(NE_DBG_HTTPAUTH, "auth: SSPI challenge.\n");
     
     if (!sess->sspi_context) {
-        ne_uri uri = {0};
-
-        ne_fill_server_uri(sess->sess, &uri);
-
-        status = ne_sspi_create_context(&sess->sspi_context, uri.host, ntlm);
-
-        ne_uri_free(&uri);
-
+        status = ne_sspi_create_context(&sess->sspi_context, sess->sspi_host, ntlm);
         if (status) {
             return status;
         }
@@ -1232,7 +1228,7 @@ static const struct auth_protocol protocols[] = {
       digest_challenge, request_digest, verify_digest_response,
       0 },
 #ifdef HAVE_GSSAPI
-    { NE_AUTH_GSSAPI, 30, "Negotiate",
+    { NE_AUTH_GSSAPI_ONLY, 30, "Negotiate",
       negotiate_challenge, request_negotiate, verify_negotiate_response,
       AUTH_FLAG_OPAQUE_PARAM|AUTH_FLAG_VERIFY_NON40x|AUTH_FLAG_CONN_AUTH },
 #endif
@@ -1240,7 +1236,7 @@ static const struct auth_protocol protocols[] = {
     { NE_AUTH_NTLM, 30, "NTLM",
       sspi_challenge, request_sspi, NULL,
       AUTH_FLAG_OPAQUE_PARAM|AUTH_FLAG_VERIFY_NON40x|AUTH_FLAG_CONN_AUTH },
-    { NE_AUTH_GSSAPI, 30, "Negotiate",
+    { NE_AUTH_SSPI, 30, "Negotiate",
       sspi_challenge, request_sspi, verify_sspi,
       AUTH_FLAG_OPAQUE_PARAM|AUTH_FLAG_VERIFY_NON40x|AUTH_FLAG_CONN_AUTH },
 #endif
@@ -1551,8 +1547,8 @@ static int ah_post_send(ne_request *req, void *cookie, const ne_status *status)
     }
 
 #ifdef HAVE_SSPI
-    /* Clear the SSPI context after successfull authentication. */
-    if ((status->klass == 2 || status->klass == 3) && sess->sspi_context) {
+    /* Clear the SSPI context after successful authentication. */
+    if (status->code != sess->spec->status_code && sess->sspi_context) {
         ne_sspi_clear_context(sess->sspi_context);
     }
 #endif
@@ -1614,6 +1610,11 @@ static void auth_register(ne_session *sess, int isproxy, unsigned protomask,
         /* Map NEGOTIATE to NTLM | GSSAPI. */
         protomask |= NE_AUTH_GSSAPI | NE_AUTH_NTLM;
     }
+    
+    if ((protomask & NE_AUTH_GSSAPI) == NE_AUTH_GSSAPI) {
+        /* Map GSSAPI to GSSAPI_ONLY | SSPI. */
+        protomask |= NE_AUTH_GSSAPI_ONLY | NE_AUTH_SSPI;
+    }
 
     ahs = ne_get_session_private(sess, id);
     if (ahs == NULL) {
@@ -1639,7 +1640,7 @@ static void auth_register(ne_session *sess, int isproxy, unsigned protomask,
     }
 
 #ifdef HAVE_GSSAPI
-    if ((protomask & NE_AUTH_GSSAPI) && ahs->gssname == GSS_C_NO_NAME) {
+    if ((protomask & NE_AUTH_GSSAPI_ONLY) && ahs->gssname == GSS_C_NO_NAME) {
         ne_uri uri = {0};
         
         if (isproxy)
@@ -1652,6 +1653,21 @@ static void auth_register(ne_session *sess, int isproxy, unsigned protomask,
         ne_uri_free(&uri);
     }
 #endif
+#ifdef HAVE_SSPI
+    if ((protomask & (NE_AUTH_NTLM|NE_AUTH_SSPI)) && !ahs->sspi_host) {
+        ne_uri uri = {0};
+        
+        if (isproxy)
+            ne_fill_proxy_uri(sess, &uri);
+        else
+            ne_fill_server_uri(sess, &uri);
+
+        ahs->sspi_host = uri.host;
+        uri.host = NULL;
+
+        ne_uri_free(&uri);
+    }
+#endif        
 
     /* Find the end of the handler list, and add a new one. */
     hdl = &ahs->handlers;

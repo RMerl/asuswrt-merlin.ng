@@ -338,6 +338,7 @@ int main(int argc, char *argv[])
 	    break;
 	case FAILHARD:
 	    aborted = 1;
+	    COL("41;37;01"); printf("fatal error - "); NOCOL;
 	    /* fall-through */
 	case FAIL:
 	    COL("41;37;01"); printf("FAIL"); NOCOL;
@@ -414,7 +415,7 @@ int main(int argc, char *argv[])
 	if (warnings) {
 	    if (quiet) {
                 printf("(%d warning%s)\n", warnings, 
-                       warnings==1?"s":"");
+                       warnings > 1 ? "s" : "");
             }
             else {
                 printf("-> %d warning%s issued.\n", warnings, 

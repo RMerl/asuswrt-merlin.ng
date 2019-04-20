@@ -95,7 +95,7 @@ static int stub_decompress(void)
 #ifndef NE_HAVE_SSL
 static int stub_ssl(void)
 {
-    ne_session *sess = ne_session_create("https", "localhost", 7777);
+    ne_session *sess = ne_session_create("https", "localhost", 1234);
     ne_ssl_certificate *cert;
     ne_ssl_client_cert *cc;
 

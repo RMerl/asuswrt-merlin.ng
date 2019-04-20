@@ -287,11 +287,15 @@ var Get_Component_WirelessInput = function(wlArray){
 	var container = $("<div>");
 
 	wlArray.forEach(function(wl, idx){
-		var wirelessAP = httpApi.nvramCharToAscii(["wl" + wl.ifname + "_ssid", "wl" + wl.ifname + "_wpa_psk"]);
+		var wirelessAP = httpApi.nvramCharToAscii(["wl" + wl.ifname + "_ssid", "wl" + wl.ifname + "_wpa_psk", "wl" + wl.ifname + "_auth_mode_x"]);
 		// Do not use default value.
 		if(systemVariable.isDefault){
 			wirelessAP["wl" + wl.ifname + "_ssid"] = "";
 			wirelessAP["wl" + wl.ifname + "_wpa_psk"] = "";
+		}
+		else{
+			if(wirelessAP["wl" + wl.ifname + "_auth_mode_x"] != "psk2")
+				wirelessAP["wl" + wl.ifname + "_wpa_psk"] = "";
 		}
 
 		if(systemVariable.multiPAP.wlcOrder.length > 0){
@@ -376,7 +380,7 @@ var Get_Component_WirelessInput = function(wlArray){
 					"type": "password",
 					"maxlength": "64",
 					"class": "textInput wlInput",
-					"autocomplete": "off",
+					"autocomplete": "new-password",
 					"autocorrect": "off",
 					"autocapitalize": "off",
 					"spellcheck": "false",
@@ -713,6 +717,10 @@ var getRestartService = function(){
 		actionScript.push("restart_cfgsync");
 	}
 
+	if(isSwModeChanged() && isSwMode("RT")){
+		return "restart_all";
+	}
+
 	if( qisPostData.hasOwnProperty("switch_wantag") ||
 		qisPostData.hasOwnProperty("wlc_ssid") ||
 		qisPostData.hasOwnProperty("lan_proto") ||
@@ -952,6 +960,8 @@ validator.hostNameString = function(str){
 
 	var re = new RegExp("^[a-zA-Z0-9][a-zA-Z0-9\-\_]+$","gi");
 	testResult.isError = re.test(str) ? false : true;
+	if(testResult.isError && str.length < 2)
+		testResult.errReason = "<#JS_short_username#>";
 
 	return testResult;
 };

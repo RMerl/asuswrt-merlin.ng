@@ -14,6 +14,9 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston,
  * MA 02111-1307 USA
  */
+#ifndef _GNU_SOURCE
+#define _GNU_SOURCE
+#endif
 
 #define VERSION 1
 //#define PC
@@ -1206,7 +1209,7 @@ extern int set_permission(const int type, const char *const name, const char *co
 	target[len] = 0;
 	
 	// 5. judge if the target is in the var file.
-	follow_info = upper_strstr(var_info, target);
+	follow_info = strcasestr(var_info, target);
 	if(follow_info == NULL){
 		if(name == NULL)
 			usb_dbg("No right about \"%s\" with the share mode.\n", (folder == NULL?"Pool":folder));
@@ -1354,7 +1357,7 @@ retry_get_permission:
 	snprintf(target, (len+1), "*%s=", (f != NULL)?f:"");
 	target[len] = 0;
 
-	follow_info = upper_strstr(var_info, target);
+	follow_info = strcasestr(var_info, target);
 	free(target);
 	if(follow_info == NULL){
 		if(name == NULL)
@@ -1557,7 +1560,7 @@ extern int add_folder(const char *const account, const char *const mount_path, c
 		if(var_info == NULL){
 			usb_dbg("add_folder: \"%s\" isn't existed or there's no content.\n", var_file);
 		}
-		else if(upper_strstr(var_info, target) != NULL){
+		else if(strcasestr(var_info, target) != NULL){
 			free(var_file);
 			free(var_info);
 			continue;
@@ -1660,7 +1663,7 @@ extern int add_folder(const char *const account, const char *const mount_path, c
 		if(var_info == NULL){
 			usb_dbg("add_folder: \"%s\" isn't existed or there's no content.\n", var_file);
 		}
-		else if(upper_strstr(var_info, target) != NULL){
+		else if(strcasestr(var_info, target) != NULL){
 			free(var_file);
 			free(var_info);
 			continue;
@@ -1840,7 +1843,7 @@ extern int del_folder(const char *const mount_path, const char *const folder){
 			continue;
 		}
 
-		follow_info = upper_strstr(var_info, target);
+		follow_info = strcasestr(var_info, target);
 		if(follow_info == NULL){
 			if(i == -1)
 				usb_dbg("No right about \"%s\" of the share mode.\n", folder);
@@ -1917,7 +1920,7 @@ extern int del_folder(const char *const mount_path, const char *const folder){
 			continue;
 		}
 
-		follow_info = upper_strstr(var_info, target);
+		follow_info = strcasestr(var_info, target);
 		if(follow_info == NULL){
 			if(i == -1)
 				usb_dbg("No right about \"%s\" of the share mode.\n", folder);
@@ -2105,7 +2108,7 @@ extern int mod_folder(const char *const mount_path, const char *const folder, co
 			return -1;
 		}
 
-		if((follow_info = upper_strstr(var_info, target)) == NULL){
+		if((follow_info = strcasestr(var_info, target)) == NULL){
 			usb_dbg("1. No \"%s\" in \"%s\"..\n", folder, var_file);
 			PMS_FreeAccountInfo(&account_list);
 			free(target);
@@ -2193,7 +2196,7 @@ extern int mod_folder(const char *const mount_path, const char *const folder, co
 			return -1;
 		}
 
-		if((follow_info = upper_strstr(var_info, target)) == NULL){
+		if((follow_info = strcasestr(var_info, target)) == NULL){
 			usb_dbg("1. No \"%s\" in \"%s\"..\n", folder, var_file);
 			PMS_FreeAccountGroupInfo(&group_list);
 			free(target);
@@ -2260,7 +2263,7 @@ extern int test_if_exist_share(const char *const mount_path, const char *const f
 	
 	result = 0;
 	for (i = 0; i < sh_num; ++i)
-		if(!upper_strcmp(folder, folder_list[i])){
+		if(strcasecmp(folder, folder_list[i]) == 0){
 			result = 1;
 			break;
 		}

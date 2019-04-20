@@ -528,9 +528,14 @@ static int check_arp_entry_table(char *mac, char *ip)
 	char buf[256] = {0};
 	char macbuf[18] = {0};
 	char ipbuf[16] = {0};
+	int n = 0;
+
+OPEN_ARP_FILE:
 
 	if ((fp = fopen(ARP_TABLE, "r")) != NULL)
 	{
+		n++;
+
 		// skip first row
 		fgets(buf, sizeof(buf), fp);
 
@@ -546,6 +551,14 @@ static int check_arp_entry_table(char *mac, char *ip)
 				}
 				else if (strcasecmp(macbuf, mac) && strcasecmp(macbuf, "00:00:00:00:00:00")) {
 					ret = 2;
+				} else if(!strcasecmp(macbuf, "00:00:00:00:00:00")) { // if mac is empty, retry it.
+					if (fp) fclose(fp);
+					sleep(1);
+					AMASLIB_DBG(" IP matched but mac is empty, retry to read arp table!!\n");
+					if (n > 9)
+						goto END;
+					else
+						goto OPEN_ARP_FILE;
 				}
 				break;
 			}
@@ -556,7 +569,7 @@ static int check_arp_entry_table(char *mac, char *ip)
 	else {
 		printf("FAIL to open %s\n", ARP_TABLE);
 	}
-
+END:
 	AMASLIB_DBG(" mac=%s, ip=%s, macbuf=%s, ipbuf=%s, ret=%d\n", mac, ip, macbuf, ipbuf, ret);
 	return ret;
 }
@@ -819,6 +832,30 @@ static void handlesignal(int sig)
 		AMASLIB_DBG(" receive SIGUSR1\n");
 		trigger_full_scan(0);
 	}
+	else if (sig == SIGUSR2) {
+		int i = 0;
+		int lock;
+		AMASLIB_DHCP_T *mylist = NULL;
+		struct listnode *ln = NULL;
+		AMASLIB_DBG(" receive SIGUSR2\n");
+		AMASLIB_DBG(" amas_count=%d\n", amas_count);
+		lock = file_lock(AMAS_ENTRY_FILE_LOCK);
+		LIST_LOOP(amas_entry_list, mylist, ln)
+		{
+			AMASLIB_DBG(" amas_entry_list index=%d, mac=%s, ip=%s, flag=%d\n", i, mylist->mac, mylist->ip, mylist->flag);
+			i++;
+		}
+		file_unlock(lock);
+		i = 0;
+		AMASLIB_DBG(" amas_node_count=%d\n", amas_node_count);
+		lock = file_lock(AMAS_NODE_FILE_LOCK);
+		LIST_LOOP(amas_node_list, mylist, ln)
+		{
+			AMASLIB_DBG(" amas_node_list index=%d, mac=%s\n", i, mylist->mac);
+			i++;
+		}
+		file_unlock(lock);
+	}
 	else {
 		AMASLIB_DBG(" Unknown SIGNAL or No defined\n");
 	}
@@ -1014,6 +1051,12 @@ int amas_lib_device_ip_query(char *mac, char *ip)
 	int ret = 0;
 	AMASLIB_EVENT_T *event = NULL;
 
+	// Workaround for ipv6 case.
+#ifdef RTCONFIG_IPV6
+	if(ipv6_enabled())
+		return ret;
+#endif
+
 #if defined(RTCONFIG_WIFI_SON)
         if (nvram_match("wifison_ready", "1"))
                 return ret;
@@ -1109,6 +1152,7 @@ int amas_lib_main(int argc, char **argv)
 	sigaction(SIGTERM, &sa, NULL);
 	sigaction(SIGALRM, &sa, NULL);
 	sigaction(SIGUSR1, &sa, NULL); // Trigger full scan, just for test.
+	sigaction(SIGUSR2, &sa, NULL); // Print all list, just for test.
 
 	/* create linked list */
 	amas_entry_list = list_new();

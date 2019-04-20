@@ -1,0 +1,9 @@
+AM_CPPFLAGS = -I$(top_srcdir)/include
+
+AM_CFLAGS = -std=gnu99 -W -Wall \
+	-Wmissing-prototypes -Wwrite-strings -Wfloat-equal -Wshadow -Wpointer-arith -Wbad-function-cast -Wsign-compare -Waggregate-return -Wmissing-declarations -Wredundant-decls -Wnested-externs -Winline -Wstrict-prototypes -Wundef \
+	-Wno-unused-parameter ${LIBNFNETLINK_CFLAGS} ${LIBMNL_CFLAGS} \
+	${LIBNETFILTER_CONNTRACK_CFLAGS} \
+	${LIBNETFILTER_CTTIMEOUT_CFLAGS} \
+	${LIBNETFILTER_QUEUE_CFLAGS} \
+	${LIBNETFILTER_CTHELPER_CFLAGS}

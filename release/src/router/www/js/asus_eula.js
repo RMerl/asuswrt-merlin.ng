@@ -47,12 +47,19 @@ var ASUS_EULA = {
 		}
 	},
 
-	"check": function(eula_type){
+	"status": function(eula_type){
 		var eulaName = eula_type.toUpperCase() + "_EULA";
 		var eulaTime = eula_type.toUpperCase() + "_EULA_time";
 		var asusEula = httpApi.nvramGet([eulaName , eulaTime], true);
 
-		if(asusEula[eulaName] != "1" || asusEula[eulaTime] == ""){
+		if(asusEula[eulaName] != "1" || asusEula[eulaTime] == "")
+			return false;
+		else
+			return true;
+	},
+
+	"check": function(eula_type){
+		if(!ASUS_EULA.status(eula_type)){
 			ASUS_EULA.show(eula_type);
 			return false;
 		}

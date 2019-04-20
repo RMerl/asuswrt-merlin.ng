@@ -318,7 +318,7 @@ static int retries(void)
 /* crashes with neon <0.22 */
 static int forget_regress(void)
 {
-    ne_session *sess = ne_session_create("http", "localhost", 7777);
+    ne_session *sess = ne_session_create("http", "localhost", 1234);
     ne_forget_auth(sess);
     ne_session_destroy(sess);
     return OK;    
@@ -333,13 +333,14 @@ static int fail_auth_cb(void *ud, const char *realm, int attempt,
 /* this may trigger a segfault in neon 0.21.x and earlier. */
 static int tunnel_regress(void)
 {
-    ne_session *sess = ne_session_create("https", "localhost", 443);
-    ne_session_proxy(sess, "localhost", 7777);
+    ne_session *sess;
+    
+    CALL(proxied_session_server(&sess, "http", "localhost", 443,
+                                single_serve_string,
+                                "HTTP/1.1 401 Auth failed.\r\n"
+                                "WWW-Authenticate: Basic realm=asda\r\n"
+                                "Content-Length: 0\r\n\r\n"));
     ne_set_server_auth(sess, fail_auth_cb, NULL);
-    CALL(spawn_server(7777, single_serve_string,
-		      "HTTP/1.1 401 Auth failed.\r\n"
-		      "WWW-Authenticate: Basic realm=asda\r\n"
-		      "Content-Length: 0\r\n\r\n"));
     any_request(sess, "/foo");
     ne_session_destroy(sess);
     CALL(await_server());
@@ -350,12 +351,13 @@ static int tunnel_regress(void)
  * token. */
 static int negotiate_regress(void)
 {
-    ne_session *sess = ne_session_create("http", "localhost", 7777);
+    ne_session *sess;
+    
+    CALL(session_server(&sess, single_serve_string,
+                        "HTTP/1.1 401 Auth failed.\r\n"
+                        "WWW-Authenticate: Negotiate\r\n"
+                        "Content-Length: 0\r\n\r\n"));
     ne_set_server_auth(sess, fail_auth_cb, NULL);
-    CALL(spawn_server(7777, single_serve_string,
-		      "HTTP/1.1 401 Auth failed.\r\n"
-		      "WWW-Authenticate: Negotiate\r\n"
-		      "Content-Length: 0\r\n\r\n"));
     any_request(sess, "/foo");
     ne_session_destroy(sess);
     CALL(await_server());
@@ -789,16 +791,14 @@ static int test_digest(struct digest_parms *parms)
              parms->stale);
 
     if (parms->proxy) {
-        sess = ne_session_create("http", "www.example.com", 80);
-        ne_session_proxy(sess, "localhost", 7777);
+        CALL(proxied_session_server(&sess, "http", "www.example.com", 80,
+                                    serve_digest, parms));
         ne_set_proxy_auth(sess, auth_cb, NULL);
     } 
     else {
-        sess = ne_session_create("http", "localhost", 7777);
+        CALL(session_server(&sess, serve_digest, parms));
         ne_set_server_auth(sess, auth_cb, NULL);
     }
-
-    CALL(spawn_server(7777, serve_digest, parms));
 
     do {
         CALL(any_2xx_request(sess, "/fish"));
@@ -879,7 +879,7 @@ static int digest_failures(void)
     parms.num_requests = 1;
 
     for (n = 0; fails[n].message; n++) {
-        ne_session *sess = ne_session_create("http", "localhost", 7777);
+        ne_session *sess;
         int ret;
 
         parms.failure = fails[n].mode;
@@ -892,8 +892,9 @@ static int digest_failures(void)
         NE_DEBUG(NE_DBG_HTTP, ">>> New Digest failure test, "
                  "expecting failure '%s'\n", fails[n].message);
         
+        CALL(session_server(&sess, serve_digest, &parms));
+
         ne_set_server_auth(sess, auth_cb, NULL);
-        CALL(spawn_server(7777, serve_digest, &parms));
         
         ret = any_2xx_request(sess, "/fish");
         ONV(ret == NE_OK,
@@ -1067,14 +1068,13 @@ static int domains(void)
     parms.realm = "WallyWorld";
     parms.rfc2617 = 1;
     parms.nonce = "agoog";
-    parms.domain = "http://localhost:7777/fish/ https://example.com /agaor /other";
+    parms.domain = "http://localhost:4242/fish/ https://example.com /agaor /other";
     parms.num_requests = 6;
 
-    CALL(make_session(&sess, serve_digest, &parms));
+    CALL(proxied_session_server(&sess, "http", "localhost", 4242,
+                                serve_digest, &parms));
 
     ne_set_server_auth(sess, auth_cb, NULL);
-
-    ne_session_proxy(sess, "localhost", 7777);
 
     CALL(any_2xx_request(sess, "/fish/0"));
     CALL(any_2xx_request(sess, "/outside"));
@@ -1101,11 +1101,10 @@ static int CVE_2008_3746(void)
     parms.domain = "foo";
     parms.num_requests = 1;
 
-    CALL(make_session(&sess, serve_digest, &parms));
+    CALL(proxied_session_server(&sess, "http", "www.example.com", 80,
+                                serve_digest, &parms));
 
     ne_set_server_auth(sess, auth_cb, NULL);
-
-    ne_session_proxy(sess, "localhost", 7777);
 
     any_2xx_request(sess, "/fish/0");
     

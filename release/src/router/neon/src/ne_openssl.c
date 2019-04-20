@@ -1,6 +1,6 @@
 /* 
    neon SSL/TLS support using OpenSSL
-   Copyright (C) 2002-2009, Joe Orton <joe@manyfish.co.uk>
+   Copyright (C) 2002-2011, Joe Orton <joe@manyfish.co.uk>
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Library General Public
@@ -38,7 +38,9 @@
 
 #ifdef NE_HAVE_TS_SSL
 #include <stdlib.h> /* for abort() */
+#ifndef _WIN32
 #include <pthread.h>
+#endif
 #endif
 
 #include "ne_ssl.h"
@@ -62,6 +64,12 @@
 typedef unsigned char ne_d2i_uchar;
 #else
 typedef const unsigned char ne_d2i_uchar;
+#endif
+
+#if OPENSSL_VERSION_NUMBER < 0x10100000L
+#define X509_up_ref(x) x->references++
+#define EVP_PKEY_up_ref(x) x->references++
+#define EVP_PKEY_get0_RSA(evp) (evp->pkey.rsa)
 #endif
 
 struct ne_ssl_dname_s {
@@ -149,15 +157,16 @@ char *ne_ssl_readable_dname(const ne_ssl_dname *name)
 
     for (n = X509_NAME_entry_count(name->dn); n > 0; n--) {
 	X509_NAME_ENTRY *ent = X509_NAME_get_entry(name->dn, n-1);
+	ASN1_OBJECT *obj = X509_NAME_ENTRY_get_object(ent);
 	
         /* Skip commonName or emailAddress except if there is no other
          * attribute in dname. */
-	if ((OBJ_cmp(ent->object, cname) && OBJ_cmp(ent->object, email)) ||
+	if ((OBJ_cmp(obj, cname) && OBJ_cmp(obj, email)) ||
             (!flag && n == 1)) {
  	    if (flag++)
 		ne_buffer_append(dump, ", ", 2);
 
-            if (append_dirstring(dump, ent->value))
+            if (append_dirstring(dump, X509_NAME_ENTRY_get_data(ent)))
                 ne_buffer_czappend(dump, "???");
 	}
     }
@@ -498,8 +507,8 @@ static ne_ssl_client_cert *dup_client_cert(const ne_ssl_client_cert *cc)
 
     populate_cert(&newcc->cert, cc->cert.subject);
 
-    cc->cert.subject->references++;
-    cc->pkey->references++;
+    X509_up_ref(cc->cert.subject);
+    EVP_PKEY_up_ref(cc->pkey);
     return newcc;
 }
 
@@ -537,8 +546,8 @@ static int provide_client_cert(SSL *ssl, X509 **cert, EVP_PKEY **pkey)
     if (sess->client_cert) {
         ne_ssl_client_cert *const cc = sess->client_cert;
 	NE_DEBUG(NE_DBG_SSL, "Supplying client certificate.\n");
-	cc->pkey->references++;
-	cc->cert.subject->references++;
+	EVP_PKEY_up_ref(cc->pkey);
+	X509_up_ref(cc->cert.subject);
 	*cert = cc->cert.subject;
 	*pkey = cc->pkey;
 	return 1;
@@ -568,9 +577,14 @@ ne_ssl_context *ne_ssl_context_create(int mode)
     } else if (mode == NE_SSL_CTX_SERVER) {
         ctx->ctx = SSL_CTX_new(SSLv23_server_method());
         SSL_CTX_set_session_cache_mode(ctx->ctx, SSL_SESS_CACHE_CLIENT);
+#ifdef SSL_OP_NO_TICKET
+        /* disable ticket support since it inhibits testing of session
+         * caching. */
+        SSL_CTX_set_options(ctx->ctx, SSL_OP_NO_TICKET);
+#endif
     } else {
-        ctx->ctx = SSL_CTX_new(SSLv2_server_method());
-        SSL_CTX_set_session_cache_mode(ctx->ctx, SSL_SESS_CACHE_CLIENT);
+        ne_free(ctx);
+        return NULL;
     }
     return ctx;
 }
@@ -592,6 +606,22 @@ void ne_ssl_context_set_flag(ne_ssl_context *ctx, int flag, int value)
     }
 
     SSL_CTX_set_options(ctx->ctx, opts);
+}
+
+int ne_ssl_context_get_flag(ne_ssl_context *ctx, int flag)
+{
+    switch (flag) {
+    case NE_SSL_CTX_SSLv2:
+#ifdef OPENSSL_NO_SSL2
+        return 0;
+#else
+        return ! (SSL_CTX_get_options(ctx->ctx) & SSL_OP_NO_SSLv2);
+#endif
+    default:
+        break;
+    }
+
+    return 0;
 }
 
 int ne_ssl_context_keypair(ne_ssl_context *ctx, const char *cert,
@@ -642,8 +672,14 @@ void ne_ssl_context_destroy(ne_ssl_context *ctx)
  * sufficient. */
 static int SSL_SESSION_cmp(SSL_SESSION *a, SSL_SESSION *b)
 {
-    return a->session_id_length == b->session_id_length
-        && memcmp(a->session_id, b->session_id, a->session_id_length) == 0;
+    const unsigned char *session1_buf, *session2_buf;
+    unsigned int session1_len, session2_len;
+
+    session1_buf = SSL_SESSION_get_id(a, &session1_len);
+    session2_buf = SSL_SESSION_get_id(b, &session2_len);
+
+    return session1_len == session2_len
+        && memcmp(session1_buf, session2_buf, session1_len) == 0;
 }
 #endif
 
@@ -700,17 +736,10 @@ int ne__negotiate_ssl(ne_session *sess)
 	return NE_ERROR;
     }
 
-    if (sess->server_cert) {
-        int diff = X509_cmp(sk_X509_value(chain, 0), sess->server_cert->subject);
+    if (sess->server_cert 
+        && X509_cmp(sk_X509_value(chain, 0), sess->server_cert->subject) == 0) {
+        /* Same leaf cert used as last time - no need to reverify. */
         if (freechain) sk_X509_free(chain); /* no longer need the chain */
-	if (diff) {
-	    /* This could be a MITM attack: fail the request. */
-	    ne_set_error(sess, _("Server certificate changed: "
-				 "connection intercepted?"));
-	    return NE_ERROR;
-	} 
-	/* certificate has already passed verification: no need to
-	 * verify it again. */
     } else {
 	/* new connection: create the chain. */
         ne_ssl_certificate *cert = make_chain(chain);
@@ -814,22 +843,12 @@ static char *find_friendly_name(PKCS12 *p12)
     return name;
 }
 
-ne_ssl_client_cert *ne_ssl_clicert_read(const char *filename)
+static ne_ssl_client_cert *parse_client_cert(PKCS12 *p12)
 {
-    PKCS12 *p12;
-    FILE *fp;
     X509 *cert;
     EVP_PKEY *pkey;
     ne_ssl_client_cert *cc;
 
-    fp = fopen(filename, "rb");
-    if (fp == NULL)
-        return NULL;
-
-    p12 = d2i_PKCS12_fp(fp, NULL);
-
-    fclose(fp);
-    
     if (p12 == NULL) {
         ERR_clear_error();
         return NULL;
@@ -875,6 +894,34 @@ ne_ssl_client_cert *ne_ssl_clicert_read(const char *filename)
     }
 }
 
+ne_ssl_client_cert *ne_ssl_clicert_import(const unsigned char *buffer, 
+                                          size_t buflen)
+{
+    ne_d2i_uchar *p;
+    PKCS12 *p12;
+
+    p = buffer;
+    p12 = d2i_PKCS12(NULL, &p, buflen);
+    
+    return parse_client_cert(p12);
+}
+    
+ne_ssl_client_cert *ne_ssl_clicert_read(const char *filename)
+{
+    PKCS12 *p12;
+    FILE *fp;
+
+    fp = fopen(filename, "rb");
+    if (fp == NULL)
+        return NULL;
+
+    p12 = d2i_PKCS12_fp(fp, NULL);
+
+    fclose(fp);
+
+    return parse_client_cert(p12);
+}
+
 #ifdef HAVE_PAKCHOIS
 ne_ssl_client_cert *ne__ssl_clicert_exkey_import(const unsigned char *der,
                                                  size_t der_len,
@@ -883,8 +930,8 @@ ne_ssl_client_cert *ne__ssl_clicert_exkey_import(const unsigned char *der,
     ne_ssl_client_cert *cc;
     ne_d2i_uchar *p;
     X509 *x5;
-    RSA *pk;    
-    EVP_PKEY *epk, *tpk;
+    EVP_PKEY *pubkey, *privkey;
+    RSA *rsa;
 
     p = der;
     x5 = d2i_X509(NULL, &p, der_len); /* p is incremented */
@@ -892,24 +939,28 @@ ne_ssl_client_cert *ne__ssl_clicert_exkey_import(const unsigned char *der,
         ERR_clear_error();
         return NULL;
     }
-    
-    pk = RSA_new();
-    RSA_set_method(pk, method);
-    epk = EVP_PKEY_new();
-    EVP_PKEY_assign_RSA(epk, pk);
-    
-    /* It is necessary to initialize pk->n otherwise OpenSSL will barf
-     * later calling RSA_size() on this RSA structure.
-     * X509_get_pubkey() forces the relevant RSA parameters to be
-     * extracted from the certificate. */
-    tpk = X509_get_pubkey(x5);
-    pk->n = BN_dup(tpk->pkey.rsa->n);
-    EVP_PKEY_free(tpk);
 
-    cc = ne_calloc(sizeof *cc);
+    pubkey = X509_get_pubkey(x5);
+    if (EVP_PKEY_base_id(pubkey) != EVP_PKEY_RSA) {
+        X509_free(x5);
+        NE_DEBUG(NE_DBG_SSL, "ssl: Only RSA private keys are supported via PKCS#11.\n");
+        return NULL;
+    }
+
+    /* Duplicate the public parameters of the RSA key. */
+    rsa = RSAPublicKey_dup(EVP_PKEY_get0_RSA(pubkey));
+    /* Done with the copied public key. */
+    EVP_PKEY_free(pubkey);
     
+    /* Switch to using customer RSA_METHOD for RSA object. */
+    RSA_set_method(rsa, method);
+    /* Set up new EVP_PKEY. */
+    privkey = EVP_PKEY_new();
+    EVP_PKEY_assign_RSA(privkey, rsa);
+    
+    cc = ne_calloc(sizeof *cc);
     cc->decrypted = 1;
-    cc->pkey = epk;
+    cc->pkey = privkey;
 
     populate_cert(&cc->cert, x5);
 
@@ -1087,17 +1138,25 @@ int ne_ssl_cert_digest(const ne_ssl_certificate *cert, char *digest)
  * it's necessary to cast from a pthread_t to an unsigned long at some
  * point.  */
 
+#ifndef _WIN32
 static pthread_mutex_t *locks;
+#else
+static HANDLE *locks;
+#endif
 static size_t num_locks;
 
 #ifndef HAVE_CRYPTO_SET_IDPTR_CALLBACK
 /* Named to be obvious when it shows up in a backtrace. */
 static unsigned long thread_id_neon(void)
 {
+#ifndef _WIN32
     /* This will break if pthread_t is a structure; upgrading OpenSSL
      * >= 0.9.9 (which does not require this callback) is the only
      * solution.  */
     return (unsigned long) pthread_self();
+#else
+    return (unsigned long) GetCurrentThreadId();
+#endif
 }
 #endif
 
@@ -1106,12 +1165,20 @@ static unsigned long thread_id_neon(void)
 static void thread_lock_neon(int mode, int n, const char *file, int line)
 {
     if (mode & CRYPTO_LOCK) {
+#ifndef _WIN32
         if (pthread_mutex_lock(&locks[n])) {
+#else
+        if (WaitForSingleObject(locks[n], INFINITE)) {
+#endif
             abort();
         }
     }
     else {
+#ifndef _WIN32
         if (pthread_mutex_unlock(&locks[n])) {
+#else
+        if (!ReleaseMutex(locks[n])) {
+#endif
             abort();
         }
     }
@@ -1132,6 +1199,7 @@ static void thread_lock_neon(int mode, int n, const char *file, int line)
 
 int ne__ssl_init(void)
 {
+#if OPENSSL_VERSION_NUMBER < 0x10100000L
     CRYPTO_malloc_init();
     SSL_load_error_strings();
     SSL_library_init();
@@ -1160,7 +1228,11 @@ int ne__ssl_init(void)
 
         locks = malloc(num_locks * sizeof *locks);
         for (n = 0; n < num_locks; n++) {
+#ifndef _WIN32
             if (pthread_mutex_init(&locks[n], NULL)) {
+#else
+            if ((locks[n] = CreateMutex(NULL, FALSE, NULL)) == NULL) {
+#endif
                 NE_DEBUG(NE_DBG_SOCKET, "ssl: Failed to initialize pthread mutex.\n");
                 return -1;
             }
@@ -1170,6 +1242,7 @@ int ne__ssl_init(void)
                  "for %" NE_FMT_SIZE_T " locks.\n", num_locks);
     }
 #endif
+#endif /* OPENSSL_VERSION_NUMBER < 0x10100000L */
 
     return 0;
 }
@@ -1193,7 +1266,11 @@ void ne__ssl_exit(void)
         CRYPTO_set_locking_callback(NULL);
 
         for (n = 0; n < num_locks; n++) {
+#ifndef _WIN32
             pthread_mutex_destroy(&locks[n]);
+#else
+            CloseHandle(locks[n]);
+#endif
         }
 
         free(locks);

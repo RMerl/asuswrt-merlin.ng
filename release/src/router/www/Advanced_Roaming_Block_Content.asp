@@ -140,7 +140,7 @@ function addRow(obj, upper){
 		obj.select();
 		return false;
 	}
-	else if(!check_macaddr(obj, check_hwaddr_flag(obj))) {
+	else if(!check_macaddr(obj, check_hwaddr_flag(obj, 'inner'))) {
 		obj.focus();
 		obj.select();
 		return false;

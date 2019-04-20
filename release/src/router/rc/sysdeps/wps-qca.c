@@ -97,6 +97,9 @@ int is_wps_stopped(void)
 	char status[16], tmp[128], prefix[] = "wlXXXXXXXXXX_", word[256], *next, ifnames[128];
 	int wps_band = nvram_get_int("wps_band_x"), multiband = get_wps_multiband();
 	char tmpbuf[512];
+#if defined(RTCONFIG_WIFI_SON) || defined(RTCONFIG_AMAS)
+	int wps_enrollee_band = nvram_match("wifison_ready", "1") ? 1 : 0;
+#endif
 
 	i = 0;
 	strcpy(ifnames, nvram_safe_get("wl_ifnames"));
@@ -115,30 +118,16 @@ int is_wps_stopped(void)
 			continue;
 		}
 
-#ifdef RTCONFIG_WIFI_SON
-		if(sw_mode() != SW_MODE_REPEATER && nvram_match("wifison_ready", "1")) {
-			if(i==0 || i==2)
-			{	
-				++i;
-				continue;
-			}
-		}
-#ifdef RTCONFIG_AMAS
-		else if(sw_mode() == SW_MODE_ROUTER && !nvram_match("wifison_ready", "1") && (
-			(nvram_match("x_Setting", "1")) ||
-			(nvram_match("x_Setting", "0") && nvram_match("wps_enrollee", "1"))
-		)) {	/* only check 2G in AiMesh mode */
-			if (i != 0) {
-				++i;
-				continue;
-			}
-		}
-#endif	/* RTCONFIG_AMAS */
-#endif
-
 #ifdef RTCONFIG_WPS_ENROLLEE
-		if (nvram_match("wps_enrollee", "1"))
+		if (nvram_match("wps_enrollee", "1")) {
+#if defined(RTCONFIG_WIFI_SON) || defined(RTCONFIG_AMAS)
+			if (i != wps_enrollee_band) {
+				++i;
+				continue;
+			}
+#endif
 			strcpy(status, getWscStatus_enrollee(i, tmpbuf, sizeof(tmpbuf)));
+		}
 		else
 #endif
 			strcpy(status, getWscStatus(i, tmpbuf, sizeof(tmpbuf)));
@@ -153,10 +142,6 @@ int is_wps_stopped(void)
 #ifdef RTCONFIG_WPS_LED
 			nvram_set("wps_success", "1");
 #endif
-#if defined(RTCONFIG_LP5523)
-//			lp55xx_leds_proc(LP55XX_ALL_LEDS_OFF, LP55XX_WPS_SUCCESS);
-//			usleep(3990 * 1000); // flashing 4 times is about 3990 ms
-#endif
 #if (defined(RTCONFIG_WPS_ENROLLEE))
 			if (nvram_match("wps_enrollee", "1")) {
 				nvram_set("wps_e_success", "1");
@@ -164,13 +149,16 @@ int is_wps_stopped(void)
 				set_wifiled(4);
 #endif
 #if defined(RTCONFIG_AMAS)
-#if defined(RTCONFIG_WIFI_SON) && defined(RTCONFIG_AMAS)
-				if(!nvram_match("wifison_ready", "1"))
+#if defined(RTCONFIG_WIFI_SON)
+				if (!nvram_match("wifison_ready", "1"))
 #endif
-				amas_save_wifi_para();
+					amas_save_wifi_para();
+#if defined(RTCONFIG_WIFI_SON)
+				else
+#endif
 #endif	/* RTCONFIG_AMAS */
 #if defined(RTCONFIG_WIFI_CLONE)
-				wifi_clone(i);
+					wifi_clone(i);
 #endif
 			}
 #endif

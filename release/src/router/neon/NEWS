@@ -1,8 +1,39 @@
+Changes in release 0.30.2:
+* Add support for OpenSSL 1.1.x (Kurt Roeckx).
+* Fix PKCS#11 support under GnuTLS 3.x.
+ - PKCS#11 API no longer supported with GnuTLS 2.x
+
+Changes in release 0.30.1:
+* Fix memory leak with GnuTLS (Werner Baumann, Patrick Ohly).
+* Fix possible crash after DNS lookup errors on Windows (Olivier Goffart).
+* Don't fail if the SSL cert changes between connections with OpenSSL,
+  behaviour now matches that with GnuTLS.
+* Fix PKCS#11 support under OpenSSL with TLS 1.2.
+* Fix static linking with pkg-config file (Alan H).
+
+Changes in release 0.30.0:
+* Interface changes:
+ - none, API and ABI backwards-compatible with 0.27.x and later
+* New interfaces and features:
+ - ne_ssl.h: added ne_ssl_clicert_import, ne_ssl_context_get_flag
+ - ne_session.h: added ne_set_addrlist2
+ - ne_socket.h: added ne_addr_canonical
+ - ne_auth.h: added NE_AUTH_GSSAPI_ONLY, NE_AUTH_SSPI (Nathanael Rensen)
+ - ne_basic.h: added NE_CAP_EXT_MKCOL options test
+ - ne_request.h: support chunked bodies with negative length passed to
+   ne_set_request_body_provider (Julien Reichel)
+* Bug fixes:
+ - ne_path_escape: fix excessive memory allocation (Pierre Crokaert)
+ - SSPI auth: use canonical server hostname, clear SSPI context after
+   successful auth (Nathanael Rensen)
+ - build fixes for Open Watcom compiler (NormW)
+ - fix Win32 error code handling for local ne_sock_prebind bind failure
+ - Win32: support LFS, thread-safe OpenSSL (Diego Santa Cruz)
+ - GnuTLS: fix GnuTLS 3.x support (Matthias Petschick, Bartosz Brachaczek)
+
 Changes in release 0.29.6:
 * Don't abort SSL handshake with GnuTLS if a client cert is requested
   but none is configured/available (thanks to Patrick Ohly)
-* Fix GnuTLS build with Nettle (Arfrever Frehtes Taifersar Arahesis)
-* Win32: Fix handling of SSPI challenges (Ivan Zhakov)
 * Fix the method string passed to create_request hooks to have the same
   lifetime as the request object (Patrick Ohly)
 * Docs updates.
@@ -38,6 +69,7 @@ Changes in release 0.29.1:
 * Fixes for (Unix) NTLM implementation:
  - fix handling of session timeout (Kai Sommerfeld)
  - fix possible crash (basic@mozdev.org)
+* Fix unnecessary re-authentication with SSPI (Danil Shopyrin)
 * Build fixes for Win32:
   - fix use of socklen_t with recent SDKs (Stefan Kung)
   - fix USE_GETADDRINFO on Win2K (Kai Sommerfeld)

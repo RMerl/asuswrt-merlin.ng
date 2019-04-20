@@ -82,13 +82,24 @@ void ne_set_proxy_auth(ne_session *sess, ne_auth_creds creds, void *userdata);
 
 /* NE_AUTH_GSSAPI: Use GSSAPI or SSPI to authenticate the user; an
  * active attacker can modify any of the request/response at will, so
- * this must not be used over an unsecured channel. */
+ * this must not be used over an unsecured channel. NE_AUTH_GSSAPI
+ * is currently equivalent to (NE_AUTH_GSSAPI_ONLY | NE_AUTH_SSPI). */
 #define NE_AUTH_GSSAPI (0x0008)
 
 /* NE_AUTH_NTLM: Use NTLM to authenticate the user; an active attacker
  * can modify any of the request/response at will, so this must not be
  * used over an unsecured channel. */
 #define NE_AUTH_NTLM (0x0010)
+
+/* NE_AUTH_SSPI: Use SSPI to authenticate the user; an
+ * active attacker can modify any of the request/response at will, so
+ * this must not be used over an unsecured channel. */
+#define NE_AUTH_SSPI (0x0020)
+
+/* NE_AUTH_GSSAPI_ONLY: Use GSSAPI to authenticate the user; an
+ * active attacker can modify any of the request/response at will, so
+ * this must not be used over an unsecured channel. */
+#define NE_AUTH_GSSAPI_ONLY (0x0040)
 
 /* The default set of supported protocols, as deemed appropriate for
  * the given session scheme. */

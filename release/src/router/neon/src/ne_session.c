@@ -74,6 +74,7 @@ static void free_proxies(ne_session *sess)
         ne_free(hi);
     }
 
+    sess->proxies = NULL;
     sess->any_proxy_http = 0;
 }
 
@@ -320,7 +321,8 @@ void ne_session_system_proxy(ne_session *sess, unsigned int flags)
 #endif
 }
 
-void ne_set_addrlist(ne_session *sess, const ne_inet_addr **addrs, size_t n)
+void ne_set_addrlist2(ne_session *sess, unsigned int port,
+                      const ne_inet_addr **addrs, size_t n)
 {
     struct host_info *hi, **lasthi;
     size_t i;
@@ -334,10 +336,15 @@ void ne_set_addrlist(ne_session *sess, const ne_inet_addr **addrs, size_t n)
         
         hi->proxy = PROXY_NONE;
         hi->network = addrs[i];
-        hi->port = sess->server.port;
+        hi->port = port;
 
         lasthi = &hi->next;
     }
+}
+
+void ne_set_addrlist(ne_session *sess, const ne_inet_addr **addrs, size_t n)
+{
+    ne_set_addrlist2(sess, sess->server.port, addrs, n);
 }
 
 void ne_set_localaddr(ne_session *sess, const ne_inet_addr *addr)
@@ -361,6 +368,7 @@ void ne_set_session_flag(ne_session *sess, ne_session_flag flag, int value)
 #ifdef NE_HAVE_SSL
         if (flag == NE_SESSFLAG_SSLv2 && sess->ssl_context) {
             ne_ssl_context_set_flag(sess->ssl_context, NE_SSL_CTX_SSLv2, value);
+            sess->flags[flag] = ne_ssl_context_get_flag(sess->ssl_context, NE_SSL_CTX_SSLv2);
         }
 #endif
     }

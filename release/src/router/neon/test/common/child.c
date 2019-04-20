@@ -1,6 +1,6 @@
 /* 
    Framework for testing with a server process
-   Copyright (C) 2001-2008, Joe Orton <joe@manyfish.co.uk>
+   Copyright (C) 2001-2010, Joe Orton <joe@manyfish.co.uk>
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -54,7 +54,9 @@ static pid_t child = 0;
 
 int clength;
 
-static struct in_addr lh_addr = {0}, hn_addr = {0};
+static struct in_addr lh_addr, hn_addr;
+
+static int have_lh_addr;
 
 const char *want_header = NULL;
 got_header_fn got_header = NULL;
@@ -73,6 +75,7 @@ int lookup_localhost(void)
     /* this will break if a system is set up so that `localhost' does
      * not resolve to 127.0.0.1, but... */
     lh_addr.s_addr = inet_addr("127.0.0.1");
+    have_lh_addr = 1;
     return OK;
 }
 
@@ -221,7 +224,8 @@ int spawn_server_addr(int bind_local, int port, server_fn fn, void *ud)
 
 	/* print the error out otherwise it gets lost. */
 	if (ret) {
-	    printf("server child failed: %s\n", test_context);
+	    printf("server child failed (%s): %s\n", 
+                   tests[test_num].name, test_context);
 	}
 	
 	/* and quit the child. */
@@ -283,10 +287,11 @@ int spawn_server_repeat(int port, server_fn fn, void *userdata, int n)
 	    NE_DEBUG(NE_DBG_HTTP, "child awaiting connection #%d.\n", count);
 	    ONN("accept failed", ne_sock_accept(sock, listener));
 	    ret = fn(sock, userdata);
+	    NE_DEBUG(NE_DBG_HTTP, "child handled connection, %d.\n", ret);
 	    close_socket(sock);
-	    NE_DEBUG(NE_DBG_HTTP, "child served request, %d.\n", ret);
 	    if (ret) {
-		printf("server child failed: %s\n", test_context);
+                printf("server child failed (%s, iteration %d/%d): %s\n", 
+                       tests[test_num].name, count, n, test_context);
 		exit(-1);
 	    }
 	    /* don't send back notification to parent more than
@@ -311,6 +316,89 @@ int spawn_server_repeat(int port, server_fn fn, void *userdata, int n)
 	minisleep();
 #endif
     }
+
+    return OK;
+}
+
+int new_spawn_server(int count, server_fn fn, void *userdata,
+                     unsigned int *port)
+{
+    ne_inet_addr *addr;
+    int ret;
+
+    ret = new_spawn_server2(count, fn, userdata, &addr, port);
+    
+    ne_iaddr_free(addr);
+
+    return ret;
+}
+
+int new_spawn_server2(int count, server_fn fn, void *userdata,
+                      ne_inet_addr **addr, unsigned int *port)
+{
+    struct sockaddr_in sa;
+    socklen_t salen = sizeof sa;
+    int ls;
+    
+    if (!have_lh_addr)
+        lookup_localhost();
+
+    ls = do_listen(lh_addr, 0);
+    ONN("could not bind/listen fd for server", ls < 0);
+
+    ONV(getsockname(ls, &sa, &salen) != 0,
+        ("could not get socket name for listening fd: %s",
+         strerror(errno)));
+    
+    *port = ntohs(sa.sin_port);
+    *addr = ne_iaddr_make(ne_iaddr_ipv4, (unsigned char *)&lh_addr.s_addr);
+
+    NE_DEBUG(NE_DBG_SOCKET, "child using port %u\n", *port);
+    
+    NE_DEBUG(NE_DBG_SOCKET, "child forking now...\n");
+
+    child = fork();
+    ONN("failed to fork server", child == -1);
+
+    if (child == 0) {
+        int ret, iter = 1;
+        
+        in_child();
+
+        NE_DEBUG(NE_DBG_SOCKET, ">>> child spawned, port %u, %d iterations.\n",
+                 *port, count);
+
+        do {
+            ne_socket *sock = ne_sock_create();
+            char errbuf[256];            
+            int cret;
+
+            NE_DEBUG(NE_DBG_HTTP, "child iteration #%d (of %d), "
+                     "awaiting connection...\n", iter, count);
+
+            if (ne_sock_accept(sock, ls)) {
+                t_context("Server child could not accept connection: %s", 
+                          ne_sock_error(sock));
+                exit(FAIL);
+            }
+
+            NE_DEBUG(NE_DBG_HTTP, "child got connection, invoking server\n");
+            ret = fn(sock, userdata);
+            NE_DEBUG(NE_DBG_HTTP, "child iteration #%d returns %d\n",
+                     iter, ret);
+
+	    cret = close_socket(sock);
+	    NE_DEBUG(NE_DBG_HTTP, "child closed connection, %d: %s.\n", cret,
+                     cret ? ne_strerror(cret, errbuf, sizeof errbuf) 
+                     : "no error");
+
+        } while (ret == 0 && ++iter <= count);
+
+        NE_DEBUG(NE_DBG_HTTP, "child terminating with %d\n", ret);
+        exit(ret);
+    }
+
+    close(ls);
 
     return OK;
 }

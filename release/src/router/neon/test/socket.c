@@ -1,6 +1,6 @@
 /* 
    Socket handling tests
-   Copyright (C) 2002-2009, Joe Orton <joe@manyfish.co.uk>
+   Copyright (C) 2002-2011, Joe Orton <joe@manyfish.co.uk>
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -171,10 +171,11 @@ static int wrap_serve(ne_socket *sock, void *ud)
 static int begin(ne_socket **sock, server_fn fn, void *ud)
 {
     struct serve_pair pair;
+    unsigned int port;
     pair.fn = fn;
     pair.userdata = ud;
-    CALL(spawn_server(7777, wrap_serve, &pair));
-    CALL(do_connect(sock, localhost, 7777));
+    CALL(new_spawn_server(1, wrap_serve, &pair, &port));
+    CALL(do_connect(sock, localhost, port));
     ONV(ne_sock_connect_ssl(*sock, client_ctx, NULL),
 	("SSL negotation failed: %s", ne_sock_error(*sock)));
     return OK;
@@ -184,8 +185,9 @@ static int begin(ne_socket **sock, server_fn fn, void *ud)
 /* non-SSL begin() function. */
 static int begin(ne_socket **sock, server_fn fn, void *ud)
 {
-    CALL(spawn_server(7777, fn, ud));
-    return do_connect(sock, localhost, 7777);
+    unsigned int port;
+    CALL(new_spawn_server(1, fn, ud, &port));
+    return do_connect(sock, localhost, port);
 }
 #endif
 
@@ -220,7 +222,6 @@ static const unsigned char raw_127[4] = "\x7f\0\0\01", /* 127.0.0.1 */
     raw6_nuls[16] = /* :: */ "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0";
 #ifdef TEST_IPV6
 static const unsigned char 
-raw6_local[16] = "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\1",
 raw6_cafe[16] = /* feed::cafe */ "\xfe\xed\0\0\0\0\0\0\0\0\0\0\0\0\xca\xfe",
 raw6_babe[16] = /* cafe:babe:: */ "\xca\xfe\xba\xbe\0\0\0\0\0\0\0\0\0\0\0\0";
 #endif
@@ -372,6 +373,7 @@ static int addr_reverse(void)
 {
     ne_inet_addr *ia = ne_iaddr_make(ne_iaddr_ipv4, raw_127);
     char buf[128], *syshost = NULL;
+    int match;
 
 #ifdef HAVE_GETHOSTNAME
     char host[128];
@@ -386,13 +388,41 @@ static int addr_reverse(void)
     ONN("reverse lookup for 127.0.0.1 failed",
         ne_iaddr_reverse(ia, buf, sizeof buf) != 0);
 
-    ONV(!(strcmp(buf, "localhost.localdomain") == 0
-          || strcmp(buf, "localhost") == 0
-          || (syshost && strcmp(buf, syshost) == 0)),
-        ("reverse lookup for 127.0.0.1 got %s", buf));
+    NE_DEBUG(NE_DBG_SOCKET, "Reverse lookup for 127.0.0.1 => %s\n", buf);
+
+    match = strcmp(buf, "localhost.localdomain") == 0
+        || strcmp(buf, "localhost") == 0;
+
+    if (!match && syshost)
+        /* If the returned name has the system hostname as a prefix, that's
+         * good enough. */
+        match = strncmp(buf, syshost, strlen(syshost)) == 0;
+
+    if (!match)
+        t_warning("reverse lookup for 127.0.0.1 got '%s'", buf);
+    
+    ONN("reverse lookup for 127.0.0.1 got empty string", strlen(buf) == 0);
 
     ne_iaddr_free(ia);
 
+    return OK;
+}
+
+static int addr_canonical(void)
+{
+    ne_sock_addr *sa;
+    const char *h;
+
+    sa = ne_addr_resolve("localhost", NE_ADDR_CANON);
+    ONN("could not resolve localhost", sa == NULL);
+    
+    h = ne_addr_canonical(sa);
+    ONN("no canonical name for localhost", h == NULL);
+
+    NE_DEBUG(NE_DBG_SOCKET, "canonical name: %s\n", h);
+
+    ne_addr_destroy(sa);
+    
     return OK;
 }
 
@@ -411,12 +441,13 @@ static int addr_connect(void)
 {
     ne_socket *sock = ne_sock_create();
     ne_inet_addr *ia;
+    unsigned int port;
 
     ia = ne_iaddr_make(ne_iaddr_ipv4, raw_127);
     ONN("ne_iaddr_make returned NULL", ia == NULL);
     
-    CALL(spawn_server(7777, serve_close, NULL));
-    ONN("could not connect", ne_sock_connect(sock, ia, 7777));
+    CALL(new_spawn_server(1, serve_close, NULL, &port));
+    ONN("could not connect", ne_sock_connect(sock, ia, port));
     ne_sock_close(sock);
     CALL(await_server());
 
@@ -428,21 +459,21 @@ static int addr_peer(void)
 {
     ne_socket *sock = ne_sock_create();
     ne_inet_addr *ia, *ia2;
-    unsigned int port = 9999;
+    unsigned int port = 9999, realport;
     int ret;
 
     ia = ne_iaddr_make(ne_iaddr_ipv4, raw_127);
     ONN("ne_iaddr_make returned NULL", ia == NULL);
     
-    CALL(spawn_server(7777, serve_close, NULL));
-    ONN("could not connect", ne_sock_connect(sock, ia, 7777));
+    CALL(new_spawn_server(1, serve_close, NULL, &realport));
+    ONN("could not connect", ne_sock_connect(sock, ia, realport));
 
     ia2 = ne_sock_peer(sock, &port);
     ret = ne_iaddr_cmp(ia, ia2);
     ONV(ret != 0,
         ("comparison of peer with server address was %d", ret));
 
-    ONV(port != 7777, ("got peer port %u", port));
+    ONV(port != realport, ("got peer port %u, expected %u", port, realport));
  
     ne_sock_close(sock);
     CALL(await_server());
@@ -1009,7 +1040,8 @@ static int ssl_closure(void)
     ONV(ret != NE_SOCK_RESET && ret != NE_SOCK_CLOSED, 
 	("write got %" NE_FMT_SSIZE_T " not reset or closure: %s", ret,
          ne_sock_error(sock)));
-    return good_close(sock);
+    ne_sock_close(sock);
+    return OK;
 }
 
 static int serve_truncate(ne_socket *sock, void *userdata)
@@ -1028,7 +1060,9 @@ static int ssl_truncate(void)
     ONV(ret != NE_SOCK_TRUNC,
 	("socket got error %d not truncation: `%s'", ret,
 	 ne_sock_error(sock)));
-    return finish(sock, 0);
+    ne_sock_close(sock);
+    CALL(await_server());
+    return OK;
 }
 
 #else
@@ -1203,15 +1237,16 @@ static int try_prebind(int addr, int port)
     ne_socket *sock = ne_sock_create();
     ne_inet_addr *ia;
     char buf[128], line[256];
+    unsigned int srvport;
 
     ia = ne_iaddr_make(ne_iaddr_ipv4, raw_127);
     ONN("ne_iaddr_make returned NULL", ia == NULL);
     
-    CALL(spawn_server(7777, serve_ppeer, NULL));
+    CALL(new_spawn_server(1, serve_ppeer, NULL, &srvport));
 
     ne_sock_prebind(sock, addr ? ia : NULL, port ? 7778 : 0);
 
-    ONN("could not connect", ne_sock_connect(sock, ia, 7777));
+    ONN("could not connect", ne_sock_connect(sock, ia, srvport));
 
     ne_snprintf(line, sizeof line,
                 "%s@%d\n", ne_iaddr_print(ia, buf, sizeof buf),
@@ -1303,11 +1338,12 @@ static int error(void)
 static int begin_socks(ne_socket **sock, struct socks_server *srv,
                        server_fn server, void *userdata)
 {
+    unsigned int port;
     srv->server = server;
     srv->userdata = userdata;
     srv->say_hello = 1;
-    CALL(spawn_server(7777, socks_server, srv));
-    return do_connect(sock, localhost, 7777);
+    CALL(new_spawn_server(1, socks_server, srv, &port));
+    return do_connect(sock, localhost, port);
 }
 
 static int socks_proxy(void)
@@ -1448,6 +1484,7 @@ ne_test tests[] = {
     T(just_connect),
     T(addr_connect),
     T(addr_peer),
+    T(addr_canonical),
     T(read_close),
     T(peek_close),
     T(single_read),

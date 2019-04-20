@@ -28,7 +28,7 @@ struct connect_param_mapping_s {
 	char *param;
 };
 
-static const struct connect_param_mapping_s connect_param_mapping_list[] = {
+static struct connect_param_mapping_s connect_param_mapping_list[] = {
     { "ssid" },
     { "bss_enabled" },
     { "wpa_psk" },

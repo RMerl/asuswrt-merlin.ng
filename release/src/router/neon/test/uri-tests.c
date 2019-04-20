@@ -222,7 +222,7 @@ static int cmp(void)
             ("'%s' and '%s' did not compare as different",
              diff[n].left, diff[n].right));
 
-        ONV(r1 + r2 != 0,
+        ONV(((r1 > 0) != (r2 < 0) || (r1 < 0) != (r2 > 0)),
             ("'%s' and '%s' did not compare reflexively (%d vs %d)",
              diff[n].left, diff[n].right, r1, r2));
 

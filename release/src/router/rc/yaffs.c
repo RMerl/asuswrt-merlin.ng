@@ -78,7 +78,7 @@ void start_yaffs(void)
 		return;
 	}
 	if (nvram_get_int("yaffs_clean_fs")) {
-		if (!mtd_unlock(YAFFS_VOL_NAME)) {
+		if (mtd_unlock(YAFFS_VOL_NAME)) {
 			error("unlocking");
 			return;
 		}

@@ -318,7 +318,7 @@ function overHint(itemNum){
 	
 	//for AiProtection-Router Security Assessment
 	if(itemNum == 25)
-		statusmenu += "<span>Disable Wi-Fi Protected Setup to avoid attacker to obtain the keys via an intelligent brute force </span>";
+		statusmenu += "<span><#AiProtection_scan_note24#></span>";
 	else if(itemNum == 23)		
 		statusmenu += "<span><#AiProtection_scan_note23#></span>";
 	else if(itemNum == 22)		
@@ -1407,7 +1407,7 @@ var docRoot = 'document.body';
 if (olNs4) {
 	var oW = window.innerWidth;
 	var oH = window.innerHeight;
-	window.onresize = function() { if (oW != window.innerWidth || oH != window.innerHeight) location.reload(); }
+	window.onresize = function() { if (oW != window.innerWidth || oH != window.innerHeight) location.href = location.href; }
 }
 
 // Microsoft Stupidity Check(tm).

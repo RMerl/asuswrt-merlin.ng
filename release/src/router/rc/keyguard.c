@@ -58,7 +58,7 @@
 #define IP_STR_LEN 15
 #define WIFI_INF_MAX 3
 #define MAX_STA_COUNT   128
-#define DHCP_LEASE "var/lib/misc/dnsmasq.leases"
+#define DHCP_LEASE "/var/lib/misc/dnsmasq.leases"
 #define PACKETSIZE  64
 
 #define KGINFO(fmt, arg...) \

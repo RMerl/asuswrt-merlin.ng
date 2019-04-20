@@ -555,7 +555,11 @@ void start_wl(void)
 #endif
 	nvram_set("reload_svc_radio", "1");
 #ifdef RTCONFIG_CFGSYNC
-	if (nvram_get("cfg_relist") && strlen(nvram_safe_get("cfg_relist")))
+	if (
+#ifdef RTCONFIG_WIFI_SON
+		!nvram_match("wifison_ready", "1") &&
+#endif /* WIFI_SON */
+		(nvram_get("cfg_relist") && strlen(nvram_safe_get("cfg_relist"))))
 		update_macfilter_relist();
 #endif
 }
@@ -1010,6 +1014,14 @@ gen_qca_wifi_cfgs(void)
 				}
 			}
 			ifconfig(sta, IFUP, NULL, NULL);
+#if defined(RTCONFIG_AMAS)
+			sprintf(path2, "/etc/Wireless/sh/postwifi_%s.sh", get_wififname(swap_5g_band(i)));
+			if (fp = fopen(path2, "a")) {
+				fprintf(fp, "delay_exec 15 /usr/bin/wpa_cli -p /var/run/wpa_supplicant-%s -i %s enable_network all&\n", sta, sta);
+				fclose(fp);
+			}
+#endif
+
 #if defined(RTCONFIG_REPEATER_STAALLBAND)
 			if (nvram_match("wlc_triBand", "-1"))
 				nvram_set_int("wlc_triBand", i);
@@ -1054,11 +1066,21 @@ gen_qca_wifi_cfgs(void)
 			}
 			else
 #endif
+			{
+#ifdef RTCONFIG_AMAS
+				if (sw_mode() == SW_MODE_AP && nvram_match("re_mode", "1")) {
+					if (sunit == 1) {		// skip wlX.1_ for the first interface to client that has been set in 0.
+						sidx--;
+						continue;
+					}
+				}
+#endif	/* RTCONFIG_AMAS */
 				if (sidx > 0 && !nvram_match(wl_nvname("bss_enabled", unit, sunit), "1"))
 				{
 					sidx--;
 					continue;
 				}
+			}
 
 				__get_wlifname(swap_5g_band(unit), sidx, wif);
 				tweak_wifi_ps(wif);
@@ -1421,6 +1443,12 @@ void set_default_accept_ra(int flag)
 	ipv6_sysconf("default", "accept_ra", flag ? 1 : 0);
 }
 
+void set_default_accept_ra_defrtr(int flag)
+{
+	ipv6_sysconf("all", "accept_ra_defrtr", flag ? 1 : 0);
+	ipv6_sysconf("default", "accept_ra_defrtr", flag ? 1 : 0);
+}
+
 void set_default_forwarding(int flag)
 {
 	ipv6_sysconf("all", "forwarding", flag ? 1 : 0);
@@ -1455,7 +1483,8 @@ void config_ipv6(int enable, int incl_wan)
 	DIR *dir;
 	struct dirent *dirent;
 	char word[256], *next;
-	int service, match;
+	char prefix[sizeof("wanXXXXXXXXXX_")], *wan_proto;
+	int service, match, accept_defrtr;
 
 	if (enable) {
 		enable_ipv6("default");
@@ -1504,7 +1533,14 @@ void config_ipv6(int enable, int incl_wan)
 #ifdef RTCONFIG_6RELAYD
 		case IPV6_PASSTHROUGH:
 #endif
+			snprintf(prefix, sizeof(prefix), "wan%d_", wan_primary_ifunit_ipv6());
+			wan_proto = nvram_safe_get(strcat_r(prefix, "proto", word));
+			accept_defrtr = service == IPV6_NATIVE_DHCP && /* limit to native by now */
+					strcmp(wan_proto, "dhcp") != 0 && strcmp(wan_proto, "static") != 0 &&
+					nvram_match(ipv6_nvname("ipv6_ifdev"), "ppp") ?
+					nvram_get_int(ipv6_nvname("ipv6_accept_defrtr")) : 1;
 			set_default_accept_ra(1);
+			set_default_accept_ra_defrtr(accept_defrtr);
 			break;
 		case IPV6_6IN4:
 		case IPV6_6TO4:
@@ -2609,7 +2645,7 @@ gmac3_no_swbr:
 		if (memcmp(hwaddr, "\0\0\0\0\0\0", ETHER_ADDR_LEN)) {
 			strncpy(ifr.ifr_name, lan_ifname, IFNAMSIZ);
 			ifr.ifr_hwaddr.sa_family = ARPHRD_ETHER;
-#if defined(RTCONFIG_QCA) && defined(RTCONFIG_WIRELESSREPEATER) && !defined(RTCONFIG_CONCURRENTREPEATER)
+#if defined(RTCONFIG_QCA) && defined(RTCONFIG_WIRELESSREPEATER) && !(defined(RTCONFIG_CONCURRENTREPEATER) || defined(RTCONFIG_REPEATER_STAALLBAND))
 			if (sw_mode() == SW_MODE_REPEATER) {
 				char tmpmac[512];
 				char *stamac;
@@ -2691,9 +2727,13 @@ gmac3_no_swbr:
 			gip = ntohl(inet_addr(APMODE_BRGUEST_IP));
 
 		g_lan_ipaddr.s_addr = htonl(gip);
+
 		ifconfig(BR_GUEST, IFUP | IFF_ALLMULTI, inet_ntoa(g_lan_ipaddr),
 			sw_mode()==SW_MODE_ROUTER?nvram_safe_get("lan_netmask"):nvram_safe_get("lan_netmask_rt"));
 	}
+	
+	if (sw_mode() == SW_MODE_AP && nvram_match("wifison_ready", "1") && !nvram_match("cfg_master", "1"))
+		ifconfig(BR_GUEST, IFUP | IFF_ALLMULTI, "0.0.0.0",NULL);
 #endif
 
 
@@ -2918,6 +2958,9 @@ _dprintf("nat_rule: stop_nat_rules 1.\n");
 #ifdef RTCONFIG_CFGSYNC
 	//update_macfilter_relist();start lan??
 #endif
+#if defined(RTCONFIG_QCA_LBD)
+	start_qca_lbd();
+#endif
 
 	_dprintf("%s %d\n", __FUNCTION__, __LINE__);
 }
@@ -3016,6 +3059,9 @@ void stop_lan(void)
 	stop_ipv6();
 	set_intf_ipv6_dad(lan_ifname, 0, 0);
 	config_ipv6(0, 1);
+#endif
+#if defined(RTCONFIG_QCA_LBD)
+	stop_qca_lbd();
 #endif
 
 	ifconfig(lan_ifname, 0, NULL, NULL);
@@ -4624,6 +4670,9 @@ void stop_lan_wl(void)
 		eval("rmmod", "bonding");
 	}
 #endif /* HND_ROUTER */
+#if defined(RTCONFIG_QCA_LBD)
+	stop_qca_lbd();
+#endif
 
 	snprintf(lan_ifname, sizeof(lan_ifname), "%s", nvram_safe_get("lan_ifname"));
 	if ((wl_ifnames = strdup(nvram_safe_get("lan_ifnames"))) != NULL) {
@@ -5404,6 +5453,9 @@ gmac3_no_swbr:
 #if defined(RTCONFIG_QCA) && defined(RTCONFIG_SOC_IPQ40XX)
 	enable_jumbo_frame();
 #endif
+#if defined(RTCONFIG_QCA_LBD)
+	start_qca_lbd();
+#endif
 
 	free(lan_ifname);
 }
@@ -5510,7 +5562,12 @@ void restart_wl(void)
 	timecheck();
 #endif
 #ifdef RTCONFIG_CFGSYNC
-	if (nvram_get("cfg_relist") && strlen(nvram_safe_get("cfg_relist")))
+	if (
+#ifdef RTCONFIG_WIFI_SON
+		!nvram_match("wifison_ready", "1") &&
+#endif /* WIFI_SON */
+		(nvram_get("cfg_relist") && strlen(nvram_safe_get("cfg_relist"))))
+
 		update_macfilter_relist();
 #endif
 }
@@ -5719,6 +5776,9 @@ void lanaccess_wl(void)
 	CP_lanaccess_wl();
 #endif
 	setup_leds();   // Refresh LED state if in Stealth Mode
+#if defined(RTCONFIG_QCA_LBD)
+	start_qca_lbd();
+#endif
 
 }
 
@@ -5769,6 +5829,14 @@ void restart_wireless(void)
 
 #ifdef RTCONFIG_AMAS
 	if (nvram_get_int("re_mode") == 1) {
+#if defined(RTCONFIG_LP5523) || defined(MAPAC1750)
+		nvram_set("cfg_sync", "30");
+#if defined(RTCONFIG_LP5523)
+		lp55xx_leds_proc(LP55XX_GREENERY_LEDS, LP55XX_ACT_3ON1OFF);
+#elif defined(MAPAC1750)
+		set_rgbled(RGBLED_GREEN_3ON1OFF);
+#endif
+#endif
 		stop_amas_wlcconnect();
 		stop_amas_bhctrl();
 	}

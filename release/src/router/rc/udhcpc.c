@@ -1031,6 +1031,10 @@ bound_lan(void)
 	if ((value = getenv("ip"))) {
 		/* restart httpd after lan_ipaddr udpating through lan dhcp client */
 		if (!nvram_match("lan_ipaddr", trim_r(value))) {
+#if defined(HND_ROUTER) && defined(MCPD_PROXY)
+			stop_mcpd_proxy();
+			start_mcpd_proxy();
+#endif
 			stop_httpd();
 			start_httpd();
 			lanchange = 1;

@@ -1,4 +1,4 @@
-# Copyright (C) 1998-2010 Joe Orton <joe@manyfish.co.uk>    -*- autoconf -*-
+# Copyright (C) 1998-2009 Joe Orton <joe@manyfish.co.uk>    -*- autoconf -*-
 # Copyright (C) 2004 Aleix Conchillo Flaque <aleix@member.fsf.org>
 #
 # This file is free software; you may copy and/or distribute it with
@@ -136,12 +136,12 @@ AC_DEFUN([NE_VERSIONS_BUNDLED], [
 
 # Define the current versions.
 NE_VERSION_MAJOR=0
-NE_VERSION_MINOR=29
-NE_VERSION_PATCH=6
+NE_VERSION_MINOR=30
+NE_VERSION_PATCH=2
 NE_VERSION_TAG=
 
-# 0.29.x is backwards-compatible to 0.27.x, so AGE=2
-NE_LIBTOOL_VERSINFO="29:${NE_VERSION_PATCH}:2"
+# 0.30.x is backwards-compatible to 0.27.x, so AGE=3
+NE_LIBTOOL_VERSINFO="30:${NE_VERSION_PATCH}:3"
 
 NE_DEFINE_VERSIONS
 
@@ -448,7 +448,7 @@ AC_REQUIRE([AC_PROG_MAKE_SET])
 
 AC_REQUIRE([AC_HEADER_STDC])
 
-AC_CHECK_HEADERS([errno.h stdarg.h string.h stdlib.h])
+AC_CHECK_HEADERS([errno.h stdarg.h string.h stdlib.h sys/uio.h])
 
 NEON_FORMAT(size_t,,u) dnl size_t is unsigned; use %u formats
 NEON_FORMAT(off_t)
@@ -510,6 +510,7 @@ fi
 if test "$NE_FLAG_LFS" = "yes"; then
    AC_DEFINE_UNQUOTED([NE_FMT_NE_OFF_T], [NE_FMT_OFF64_T], 
                       [Define to be printf format string for ne_off_t])
+   NE_ADD_ABITAG(LFS)
 else
    AC_DEFINE_UNQUOTED([NE_FMT_NE_OFF_T], [NE_FMT_OFF_T])
 fi
@@ -981,13 +982,15 @@ gnutls)
 
    # Check for functions in later releases
    NE_CHECK_FUNCS([gnutls_session_get_data2 gnutls_x509_dn_get_rdn_ava \
-                  gnutls_sign_callback_set \
+                  gnutls_certificate_get_issuer \
                   gnutls_certificate_get_x509_cas \
-                  gnutls_certificate_verify_peers2])
+                  gnutls_x509_crt_sign2 \
+                  gnutls_certificate_set_retrieve_function2 \
+                  gnutls_privkey_import_ext])
 
-   # fail if gnutls_certificate_verify_peers2 is not found
-   if test x${ac_cv_func_gnutls_certificate_verify_peers2} != xyes; then
-       AC_MSG_ERROR([GnuTLS version predates gnutls_certificate_verify_peers2, newer version required])
+   # fail if gnutls_x509_crt_sign2 is not found (it was introduced in 1.2.0, which is required)
+   if test x${ac_cv_func_gnutls_x509_crt_sign2} != xyes; then
+       AC_MSG_ERROR([GnuTLS version predates gnutls_x509_crt_sign2, newer version required (at least 1.2.0)])
    fi
                   
    # Check for iconv support if using the new RDN access functions:
@@ -1037,7 +1040,7 @@ posix|yes)
   ;;
 esac
 
-case ${with_pakchois}X${ac_cv_func_gnutls_sign_callback_set}Y${ne_cv_lib_ssl097} in
+case ${with_pakchois}X${ac_cv_func_gnutls_privkey_import_ext}Y${ne_cv_lib_ssl097} in
 noX*Y*) ;;
 *X*Yyes|*XyesY*)
     # PKCS#11... ho!
@@ -1181,7 +1184,7 @@ if test x${enable_nls} = xyes; then
   # presume that dgettext() is available if bindtextdomain() is...
   # checking for dgettext() itself is awkward because gcc has a 
   # builtin of that function, which confuses AC_CHECK_FUNCS et al.
-  NE_SEARCH_LIBS(bindtextdomain, intl,,[enable_nls=no])
+  NE_SEARCH_LIBS(bindtextdomain, intl, -liconv ,[enable_nls=no])
   NE_CHECK_FUNCS(bind_textdomain_codeset)
 fi
 

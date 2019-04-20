@@ -831,46 +831,18 @@ int do_dns_detect(int wan_unit)
 			ret = read(pipefd[0], &status, sizeof(status));
 		} while (ret < 0 && errno == EINTR);
 
-		if (nvram_match("wifison_ready", "1"))
-		{
-#ifdef RTCONFIG_WIFI_SON
-                	if(sw_mode() != SW_MODE_REPEATER && ret == 0)
-                		ret = 0;
-			else
-				ret = (ret == sizeof(status)) ? status : -1;
-#else
-			_dprintf("no wifison feature\n");
-#endif
-		}
-		else {
-			/* ret > 0: status has been read, return real status
-			 * ret = 0: child timeout or dead w/o status, return 0
-			 * ret < 0: child read error, return -1 */
-			if (ret >= sizeof(status))
-				ret = status;
-			else if (ret != 0)
-				ret = -1;
-		}
+		/* ret > 0: status has been read, return real status
+		 * ret = 0: child timeout or dead w/o status, return 0
+		 * ret < 0: child read error, return -1 */
+		if (ret >= sizeof(status))
+			ret = status;
+		else if (ret != 0)
+			ret = -1;
 	error:
 		close(pipefd[0]);
 
 		if (debug)
 			_dprintf("%s: %s ret %d\n", __FUNCTION__, host, ret);
-
-		if (nvram_match("wifison_ready", "1"))
-		{
-#ifdef RTCONFIG_WIFI_SON
-                	if(ret == 0)
-				logmessage("WAN Connection", "DNS probe failed");
-#else
-			_dprintf("no wifison feature\n");
-#endif
-		}
-		else
-		{
-			if (ret == 0 && debug)
-				logmessage("WAN Connection", "DNS probe failed");
-		}
 
 		return ret;
 	}

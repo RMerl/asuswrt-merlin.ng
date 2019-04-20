@@ -1,0 +1,16 @@
+# add policy object `test'
+nfct add timeout test inet generic timeout 10 ; OK
+# get policy object `test'
+nfct get timeout test ; OK
+# delete policy object `test'
+nfct delete timeout test ; OK
+# get unexistent policy object `dummy'
+nfct get timeout test ; BAD
+# delete policy object `test', however, it does not exists anymore
+nfct delete timeout test ; BAD
+# add policy object `test'
+nfct add timeout test inet generic timeout 1 ; OK
+# get policy object `test'
+nfct get timeout test ; OK
+# delete policy object `test'
+nfct delete timeout test ; OK

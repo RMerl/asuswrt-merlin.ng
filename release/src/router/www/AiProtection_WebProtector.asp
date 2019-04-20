@@ -66,7 +66,7 @@ var curState = '<% nvram_get("wrs_enable"); %>';
 
 function initial(){
 	show_menu();
-	//	http://www.asus.com/support/FAQ/1008720/
+	//	https://www.asus.com/support/FAQ/1008720/
 	httpApi.faqURL("1008720", function(url){document.getElementById("faq").href=url;});
 	translate_category_id();
 	genMain_table();
@@ -76,6 +76,9 @@ function initial(){
 		showhide("list_table",0);
 
 	showDropdownClientList('setClientIP', 'mac', 'all', 'ClientList_Block_PC', 'pull_arrow', 'all');
+
+	if(!ASUS_EULA.status("tm"))
+		ASUS_EULA.config(eula_confirm, cancel);
 }
 
 function pullLANIPList(obj){
@@ -245,7 +248,7 @@ function addRow_main(obj, length){
 		document.form.PC_devicename.focus();
 		return false;
 	}
-	else if(!check_macaddr(document.form.PC_devicename, check_hwaddr_flag(document.form.PC_devicename))){
+	else if(!check_macaddr(document.form.PC_devicename, check_hwaddr_flag(document.form.PC_devicename, 'inner'))){
 		document.form.PC_devicename.focus();
 		document.form.PC_devicename.select();
 		return false;
@@ -565,95 +568,102 @@ function edit_table(){
 var ctf_disable = '<% nvram_get("ctf_disable"); %>';
 var ctf_fa_mode = '<% nvram_get("ctf_fa_mode"); %>';
 function applyRule(){
-	var apps_filter_row = "";
-	if(document.form.PC_devicename.value != ""){
-		alert("You must press add icon to add a new rule first.");
-		return false;
-	}
+	document.form.action_script.value = "restart_wrs;restart_firewall";
+	if(amesh_support && isSwMode("rt"))
+		document.form.action_script.value += ";apply_amaslib";
 
-	if(apps_filter != ""){
-		if(edit_table())
-			apps_filter_row =  apps_filter.split("<");
-		else
+	if(document.form.wrs_enable.value == "1") {
+		var apps_filter_row = "";
+		if(document.form.PC_devicename.value != ""){
+			alert("You must press add icon to add a new rule first.");
 			return false;
-	}
+		}
 
-	var wrs_rulelist = "";
-	var apps_rulelist = "";
-	for(var i=0;i<apps_filter_row.length;i++){
-		var apps_filter_col =  apps_filter_row[i].split(">");
-		for(var j=0;j<apps_filter_col.length;j++){
-			if(j == 0){
-				if(wrs_rulelist == ""){
+		if(apps_filter != ""){
+			if(edit_table())
+				apps_filter_row =  apps_filter.split("<");
+			else
+				return false;
+		}
+
+		var wrs_rulelist = "";
+		var apps_rulelist = "";
+		for(var i=0;i<apps_filter_row.length;i++){
+			var apps_filter_col =  apps_filter_row[i].split(">");
+			for(var j=0;j<apps_filter_col.length;j++){
+				if(j == 0){
+					if(wrs_rulelist == ""){
+						wrs_rulelist += apps_filter_col[j] + ">";
+						apps_rulelist += apps_filter_col[j] + ">";
+					}
+					else{
+						wrs_rulelist += "<" + apps_filter_col[j] + ">";
+						apps_rulelist += "<" + apps_filter_col[j] + ">";
+					}
+				}
+				else if(j == 1){
 					wrs_rulelist += apps_filter_col[j] + ">";
 					apps_rulelist += apps_filter_col[j] + ">";
 				}
 				else{
-					wrs_rulelist += "<" + apps_filter_col[j] + ">";
-					apps_rulelist += "<" + apps_filter_col[j] + ">";
-				}
-			}
-			else if(j == 1){
-				wrs_rulelist += apps_filter_col[j] + ">";
-				apps_rulelist += apps_filter_col[j] + ">";
-			}
-			else{
-				var cate_id_array = apps_filter_col[j].split(",");
-				var wrs_first_cate = 0;
-				var apps_first_cate = 0;
-				for(var k=0;k<cate_id_array.length;k++){
-					if(cate_id_array[k] == 1){
-						if(wrs_first_cate == 0){
-							if(wrs_id_array[j-2][k] != ""){
-								wrs_rulelist += wrs_id_array[j-2][k];
-								wrs_first_cate = 1;
+					var cate_id_array = apps_filter_col[j].split(",");
+					var wrs_first_cate = 0;
+					var apps_first_cate = 0;
+					for(var k=0;k<cate_id_array.length;k++){
+						if(cate_id_array[k] == 1){
+							if(wrs_first_cate == 0){
+								if(wrs_id_array[j-2][k] != ""){
+									wrs_rulelist += wrs_id_array[j-2][k];
+									wrs_first_cate = 1;
+								}
 							}
-						}
-						else{
-							if(wrs_id_array[j-2][k] != ""){
-								wrs_rulelist += "," + wrs_id_array[j-2][k];
+							else{
+								if(wrs_id_array[j-2][k] != ""){
+									wrs_rulelist += "," + wrs_id_array[j-2][k];
+								}
 							}
-						}
 
-						if(apps_first_cate == 0){
-							if(apps_id_array[j-2][k] != ""){
-								apps_rulelist += apps_id_array[j-2][k];
-								apps_first_cate = 1;
+							if(apps_first_cate == 0){
+								if(apps_id_array[j-2][k] != ""){
+									apps_rulelist += apps_id_array[j-2][k];
+									apps_first_cate = 1;
+								}
 							}
-						}
-						else{
-							if(apps_id_array[j-2][k] != ""){
-								apps_rulelist += "," + apps_id_array[j-2][k];
+							else{
+								if(apps_id_array[j-2][k] != ""){
+									apps_rulelist += "," + apps_id_array[j-2][k];
+								}
 							}
 						}
 					}
-				}
 
-				if(j != apps_filter_col.length-1){
-					wrs_rulelist += ">";
-					apps_rulelist += ">";
+					if(j != apps_filter_col.length-1){
+						wrs_rulelist += ">";
+						apps_rulelist += ">";
+					}
 				}
 			}
 		}
-	}
 
-	document.form.action_script.value = "restart_wrs;restart_firewall";
-	document.form.wrs_rulelist.value = wrs_rulelist;
-	document.form.wrs_app_rulelist.value = apps_rulelist;
-	if(ctf_disable == 0 && ctf_fa_mode == 2){
-		if(!confirm(Untranslated.ctf_fa_hint)){
-			return false;
+	
+		document.form.wrs_rulelist.value = wrs_rulelist;
+		document.form.wrs_app_rulelist.value = apps_rulelist;
+		if(ctf_disable == 0 && ctf_fa_mode == 2){
+			if(!confirm(Untranslated.ctf_fa_hint)){
+				return false;
+			}
+			else{
+				document.form.action_script.value = "reboot";
+				document.form.action_wait.value = "<% nvram_get("reboot_time"); %>";
+			}
 		}
-		else{
-			document.form.action_script.value = "reboot";
-			document.form.action_wait.value = "<% nvram_get("reboot_time"); %>";
-		}
-	}
 
-	if(reset_wan_to_fo(document.form, document.form.wrs_enable.value)) {
-		showLoading();
-		document.form.submit();
+		if(reset_wan_to_fo.change_status)
+			reset_wan_to_fo.change_wan_mode(document.form);
 	}
+	
+	showLoading();
+	document.form.submit();
 }
 
 function translate_category_id(){
@@ -754,6 +764,8 @@ function show_inner_tab(){
 function cancel(){
 	$('#iphone_switch').animate({backgroundPosition: -37}, "slow", function() {});
 	curState = 0;
+	document.form.action_script.value = "";
+	document.form.action_wait.value = "5";
 }
 
 function eula_confirm(){
@@ -764,6 +776,27 @@ function eula_confirm(){
 	applyRule();
 }
 
+function switch_control(_status){
+	if(_status) {
+		if(reset_wan_to_fo.check_status()) {
+			if(ASUS_EULA.check("tm")){
+				document.form.wrs_enable.value = 1;
+				document.form.wrs_app_enable.value = 1;
+				applyRule();
+			}
+		}
+		else
+			cancel();
+	}
+	else {
+		document.form.wrs_enable.value = 0;
+		document.form.wrs_app_enable.value = 0;
+		showhide("list_table",0);
+		document.form.wrs_rulelist.disabled = true;
+		document.form.wrs_app_rulelist.disabled = true;
+		applyRule();
+	}
+}
 </script>
 </head>
 
@@ -817,12 +850,12 @@ function eula_confirm(){
 												<div class="formfonttitle" style="width:400px"><#AiProtection_title#> - <#AiProtection_filter#></div>
 											</td>
 											<td>
-												<div id="switch_menu" style="margin:-20px 0px 0px -20px;">
-													<div style="width:173px;height:30px;border-top-left-radius:8px;border-bottom-left-radius:8px;" class="block_filter_pressed">
+												<div id="switch_menu" style="margin:-20px 0px 0px 0px;">
+													<div style="width:168px;height:30px;border-top-left-radius:8px;border-bottom-left-radius:8px;" class="block_filter_pressed">
 														<table class="block_filter_name_table_pressed"><tr><td style="line-height:13px;"><#AiProtection_filter#></td></tr></table>
 													</div>
 													<a href="ParentalControl.asp">
-														<div style="width:172px;height:30px;margin:-32px 0px 0px 173px;border-top-right-radius:8px;border-bottom-right-radius:8px;" class="block_filter">
+														<div style="width:160px;height:30px;margin:-32px 0px 0px 168px;border-top-right-radius:8px;border-bottom-right-radius:8px;" class="block_filter">
 															<table class="block_filter_name_table"><tr><td style="line-height:13px;"><#Time_Scheduling#></td></tr></table>
 														</div>
 													</a>
@@ -865,28 +898,10 @@ function eula_confirm(){
 												<script type="text/javascript">
 													$('#radio_web_restrict_enable').iphoneSwitch('<% nvram_get("wrs_enable"); %>',
 														function(){
-															curState = 1;
-															ASUS_EULA.config(eula_confirm, cancel);
-
-															if(ASUS_EULA.check("tm")){
-																document.form.wrs_enable.value = 1;
-																document.form.wrs_app_enable.value = 1;
-																showhide("list_table",1);
-															}
+															switch_control(1);
 														},
 														function(){
-															document.form.wrs_enable.value = 0;
-															document.form.wrs_app_enable.value = 0;
-															showhide("list_table",0);
-															document.form.wrs_rulelist.disabled = true;
-															document.form.wrs_app_rulelist.disabled = true;
-															if(document.form.wrs_enable_ori.value == 1){
-																applyRule();
-															}
-															else{
-																curState = 0;
-															}
-
+															switch_control(0);
 														}
 													);
 												</script>

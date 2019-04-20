@@ -261,14 +261,13 @@
     <title>Large File Support</title>
 
     <para>Since version 0.27.0, &neon; transparently uses the "LFS
-    transitional" interfaces in places where file-backed file
-    descriptors are manipulated.  This means files larger than 2GiB
-    can be handled on platforms with a native 32-bit
-    <literal>off_t</literal> type, where LFS support is
+    transitional" interfaces in functions which use file descriptors.
+    This allows use of files larger than 2GiB on platforms with a
+    native 32-bit <literal>off_t</literal> type, where LFS support is
     available.</para>
 
-    <para>Some interfaces use the <literal>ne_off_t</literal> type,
-    which is defined to be either <literal>off_t</literal> or
+    <para>Some &neon; interfaces use the <literal>ne_off_t</literal>
+    type, which is defined to be either <literal>off_t</literal> or
     <literal>off64_t</literal> according to whether LFS support is
     detected at build time.  &neon; does not use or require the
     <literal>-D_FILE_OFFSET_BITS=64</literal> macro definition.</para>

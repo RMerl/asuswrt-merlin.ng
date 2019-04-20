@@ -231,13 +231,13 @@ static int any_ssl_request(ne_session *sess, server_fn fn, void *server_ud,
 
 static int init(void)
 {
-    /* take srcdir as argv[1]. */
+    /* take srcdir as argv[1] for VPATH builds. */
     if (test_argc > 1) {
-	srcdir = test_argv[1];
-	server_key = ne_concat(srcdir, "/server.key", NULL);
-    } else {
-	server_key = "server.key";
+        srcdir = test_argv[1];
     }
+        
+    /* take srcdir as argv[1]. */
+    server_key = "server.key";
     
     if (ne_sock_init()) {
 	t_context("could not initialize socket/SSL library.");
@@ -382,6 +382,23 @@ static int load_client_cert(void)
     return OK;
 }
 
+static int clicert_import(void)
+{
+    ne_ssl_client_cert *cc;
+    ne_buffer *buf = ne_buffer_create();
+
+    CALL(file_to_buffer("client.p12", buf));
+
+    cc = ne_ssl_clicert_import((unsigned char *)buf->data, ne_buffer_size(buf));
+    ONN("could not import client cert from buffer", cc == NULL);
+    
+    ONN("failed to decrypt", ne_ssl_clicert_decrypt(cc, P12_PASSPHRASE));
+    ne_ssl_clicert_free(cc);
+    ne_buffer_destroy(buf);
+
+    return OK;
+}
+
 /* Test that 'cert', which is signed by CA_CERT, is accepted
  * unconditionaly. */
 static int accept_signed_cert_for_hostname(char *cert, const char *hostname)
@@ -405,22 +422,27 @@ static int simple(void)
     return accept_signed_cert(SERVER_CERT);
 }
 
+#if 0 /* No longer works for modern SSL libraries, rightly so. */
 /* Test for SSL operation when server uses SSLv2 */
 static int simple_sslv2(void)
 {
-#ifdef HAVE_OPENSSL
-    return SKIP; /* this is breaking with current SSL. */
-#else
     ne_session *sess = ne_session_create("https", "localhost", 7777);
     struct ssl_server_args args = {SERVER_CERT, 0};
+
     args.use_ssl2 = 1;
-    
     ne_set_session_flag(sess, NE_SESSFLAG_SSLv2, 1);
+
+    if (ne_get_session_flag(sess, NE_SESSFLAG_SSLv2) != 1) {
+        t_context("no SSLv2 support in SSL library");
+        ne_session_destroy(sess);
+        return SKIP;
+    }
+
     CALL(any_ssl_request(sess, ssl_server, &args, CA_CERT, NULL, NULL));
     ne_session_destroy(sess);
     return OK;
-#endif
 }
+#endif
 
 /* Serves using HTTP/1.0 get-till-EOF semantics. */
 static int serve_eof(ne_socket *sock, void *ud)
@@ -730,15 +752,15 @@ static int no_verify(void)
 static int cache_verify(void)
 {
     ne_session *sess = DEFSESS;
-    int ret, count = 0;
+    int count = 0;
     struct ssl_server_args args = {SERVER_CERT, 0};
     
     /* force verify cert. */
-    ret = any_ssl_request(sess, ssl_server, &args, NULL, count_vfy,
-			  &count);
+    CALL(any_ssl_request(sess, ssl_server, &args, NULL, count_vfy,
+                         &count));
 
     CALL(spawn_server(7777, ssl_server, &args));
-    ret = any_request(sess, "/foo2");
+    ONREQ(any_request(sess, "/foo2"));
     CALL(await_server());
 
     ONV(count != 1,
@@ -757,29 +779,51 @@ static int get_failures(void *userdata, int fs, const ne_ssl_certificate *c)
     return -1;
 }
 
-/* Helper function: run a request using the given self-signed server
- * certificate, and expect the request to fail with the given
- * verification failure flags. */
+/* Helper function for expected-to-fail SSL tests.
+ *
+ * An SSL server is spawned using 'cert' and 'key' as the key pair.
+ * The client will trust CA cert 'cacert', and use 'host' as the server
+ * name.  If realhost is non-NULL, this address will be used to connect
+ * to in favour of host; the server is otherwise identified as 'host'.
+ * 'msg' must be a substring of the error string.
+ * 'failures' must equal the failure bitmask passed to the verify
+ * callback in the client.
+ * If none of the expected conditions is met, 'errstr' will be
+ * used in the test failure context.
+ */
 static int fail_ssl_request_with_error2(char *cert, char *key, char *cacert, 
-                                        const char *host, const char *fakehost,
+                                        const char *host, const char *realhost,
                                         const char *msg, int failures,
                                         const char *errstr)
 {
     ne_session *sess = ne_session_create("https", host, 7777);
     int gotf = 0, ret;
     struct ssl_server_args args = {0};
-    ne_sock_addr *addr;
-    const ne_inet_addr *list[1];
+    ne_sock_addr *addr = NULL;
+    const ne_inet_addr **list = NULL;
 
-    if (fakehost) {
-        addr = ne_addr_resolve(fakehost, 0);
+    if (realhost) {
+        size_t n;
+        const ne_inet_addr *ia;
+
+        addr = ne_addr_resolve(realhost, 0);
 
         ONV(ne_addr_result(addr),
-            ("fake hostname lookup failed for %s", fakehost));
+            ("fake hostname lookup failed for %s", realhost));
+
+        NE_DEBUG(NE_DBG_SSL, "ssl: Using fake hostname '%s'\n", realhost);
+
+        for (n = 0, ia = ne_addr_first(addr); ia; ia = ne_addr_next(addr))
+            n++;
+
+        NE_DEBUG(NE_DBG_SSL, "ssl: Address count '%lu'\n", n);
+
+        list = ne_calloc(n * sizeof(*list));
+
+        for (n = 0, ia = ne_addr_first(addr); ia; ia = ne_addr_next(addr))
+            list[n++] = ia;
         
-        list[0] = ne_addr_first(addr);
-        
-        ne_set_addrlist(sess, list, 1);
+        ne_set_addrlist(sess, list, n);
     }
 
     args.cert = cert;
@@ -808,6 +852,7 @@ static int fail_ssl_request_with_error2(char *cert, char *key, char *cacert,
          ne_get_error(sess), errstr));
         
     ne_session_destroy(sess);
+    if (addr) ne_addr_destroy(addr);
 
     return OK;
 }
@@ -881,24 +926,18 @@ static int fail_nul_san(void)
 /* Check that an expired certificate is flagged as such. */
 static int fail_expired(void)
 {
-    char *c = ne_concat(srcdir, "/expired.pem", NULL);
-    CALL(fail_ssl_request_with_error(c, c,  "localhost",
-                                     "expired certificate was accepted", 
-                                     NE_SSL_EXPIRED,
-                                     "certificate has expired"));
-    ne_free(c);
-    return OK;
+    return fail_ssl_request_with_error("expired.cert", CA_CERT,  "localhost",
+                                       "expired certificate was accepted", 
+                                       NE_SSL_EXPIRED,
+                                       "certificate has expired");
 }
 
 static int fail_notvalid(void)
 {
-    char *c = ne_concat(srcdir, "/notvalid.pem", NULL);
-    CALL(fail_ssl_request_with_error(c, c,  "localhost",
-                                     "not yet valid certificate was accepted",
-                                     NE_SSL_NOTYETVALID,
-                                     "certificate is not yet valid"));
-    ne_free(c);
-    return OK;    
+    return fail_ssl_request_with_error("notyet.cert", CA_CERT,  "localhost",
+                                       "not yet valid certificate was accepted",
+                                       NE_SSL_NOTYETVALID,
+                                       "certificate is not yet valid");
 }
 
 /* Check that a server cert with a random issuer and self-signed cert
@@ -1443,16 +1482,14 @@ static int cert_identities(void)
 static int nulcn_identity(void)
 {
     ne_ssl_certificate *cert = ne_ssl_cert_read(nul_cn_fn);
-    const char *id, *expected = "www.bank.com\\x00.badguy.com";
+    const char *id;
 
     ONN("could not read nulcn.pem", cert == NULL);
 
     id = ne_ssl_cert_identity(cert);
 
-    ONV(id != NULL
-        && strcmp(id, expected) != 0,
-        ("certificate `nulcn.pem' had identity `%s' not `%s'", 
-         id, expected));
+    ONN("embedded NUL byte not quoted",
+        id != NULL && strcmp(id, "www.bank.com") == 0);
     
     ne_ssl_cert_free(cert);
     return OK;
@@ -1829,6 +1866,7 @@ static int pkcs11_dsa(void)
  * only really happen if they mess with the SSL_CTX and enable
  * ADH cipher manually; but good to check the failure case is 
  * safe.
+ * -  SSL cert changes between connections; handle as normal & re-verify
  * From the SSL book:
  * - an early FIN should be returned as a possible truncation attack,
  * NOT just an NE_SOCK_CLOSED.
@@ -1852,9 +1890,12 @@ ne_test tests[] = {
     T(read_write),
 
     T(load_client_cert),
+    T(clicert_import),
 
     T(simple),
+#if 0
     T(simple_sslv2),
+#endif
     T(simple_eof),
     T(empty_truncated_eof),
     T(fail_not_ssl),

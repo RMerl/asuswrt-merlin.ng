@@ -1,0 +1,27 @@
+# create with a mark
+-I -s 1.1.1.1 -d 2.2.2.2 -p tcp --sport 10 --dport 20 --state LISTEN -u SEEN_REPLY -t 50 --mark 42 ; OK
+# find it again using mark
+-L -s 1.1.1.1 -d 2.2.2.2 -p tcp --sport 10 --dport 20 --mark 42 ; OK
+-L --mark 42; OK
+# ct already exists
+-I -s 1.1.1.1 -d 2.2.2.2 -p tcp --sport 10 --dport 20 --state LISTEN -u SEEN_REPLY -t 50 --mark 42/0xffffffff ; BAD
+# delete by mark
+-D -s 1.1.1.1 -d 2.2.2.2 -p tcp --sport 10 --dport 20 --mark 42/0xffffffff ; OK
+# try again after del
+-I -s 1.1.1.1 -d 2.2.2.2 -p tcp --sport 10 --dport 20 --state LISTEN -u SEEN_REPLY -t 50 --mark 417889/0xffffffff ; OK
+# delete by mark
+-D --mark 417889 ; OK
+-I -s 1.1.1.1 -d 2.2.2.2 -p tcp --sport 10 --dport 20 --state LISTEN -u SEEN_REPLY -t 50 --mark 0xffffffff ; OK
+# zap top 16.
+-U -s 1.1.1.1 -d 2.2.2.2 -p tcp --sport 10 --dport 20 --mark 0/0xffff0000 ; OK
+-L -s 1.1.1.1 -d 2.2.2.2 -p tcp --sport 10 --dport 20 --mark 0x0000ffff ; OK
+-U -s 1.1.1.1 -d 2.2.2.2 -p tcp --sport 10 --dport 20 --mark 42/0xffff ; OK
+-L -s 1.1.1.1 -d 2.2.2.2 -p tcp --sport 10 --dport 20 --mark 42/0x0000ffff ; OK
+-L -s 1.1.1.1 -d 2.2.2.2 -p tcp --sport 10 --dport 20 --mark 42/42 ; OK
+-L -s 1.1.1.1 -d 2.2.2.2 -p tcp --sport 10 --dport 20 --mark 2/2 ; OK
+-L -s 1.1.1.1 -d 2.2.2.2 -p tcp --sport 10 --dport 20 --mark 2/3 ; OK
+# OK, but no flow entries should be shown here:
+-L -s 1.1.1.1 -d 2.2.2.2 -p tcp --sport 10 --dport 20 --mark 2/0xf ; OK
+# BAD, because no updates done (mark is already 42).
+-U -s 1.1.1.1 -d 2.2.2.2 -p tcp --sport 10 --dport 20 --mark 42 ; BAD
+-D -s 1.1.1.1 -d 2.2.2.2 -p tcp --sport 10 --dport 20 --mark 42 ; OK

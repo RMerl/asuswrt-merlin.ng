@@ -26,6 +26,7 @@
 #ifdef RTCONFIG_WIFI_SON
 #define FT_SPCMD	BIT(11)	/* special command */
 #endif
+#define FT_LP55XX_LED	BIT(12)	/* control lp55xx led */
 
 
 struct feature_mapping_s {
@@ -44,7 +45,6 @@ struct feature_mapping_s feature_mapping_list[] = {
 	{ "diagnostic",	FT_DIAGNOSTIC,	"restart_dblog" },
 	{ "backhalctrl", 	FT_BACKHAULCTRL,	"restart_amas_bhctrl"},
 	{ "central_led",	FT_CENTRAL_LED,	"reset_led" },
-
 	/* END */
 	{ "region", FT_REGION, 	"reboot" },
 #ifdef RTCONFIG_WIFI_SON
@@ -53,6 +53,7 @@ struct feature_mapping_s feature_mapping_list[] = {
 #endif
 	{ "spcmd", 	FT_SPCMD,	"restart_spcmd" },
 #endif
+	{ "lp55xx_led", FT_LP55XX_LED,	"reset_led" },
 	{ NULL, 0, NULL }
 };
 
@@ -138,6 +139,7 @@ enum {
 	SUBFT_SPCMD,
 #endif
 	SUBFT_CENTRAL_LED,
+	SUBFT_LP55XX_LED,	/* LP55XX LED */
 
 	/* sub feature for Roaming Assistant */
 	SUBFT_ROAMING_ASSISTANT,
@@ -284,6 +286,7 @@ struct subfeature_mapping_s subfeature_mapping_list[] = {
 #ifdef RTCONFIG_WIFI_SON
 	{ "spcmd",		SUBFT_SPCMD,	FT_SPCMD },
 #endif
+	{ "lp55xx_led",		SUBFT_LP55XX_LED,	FT_LP55XX_LED },
 	/* END */
 	{ NULL, 0, 0}
 };
@@ -487,6 +490,7 @@ struct param_mapping_s param_mapping_list[] = {
 	{ "fb_transid",		FT_FEEDBACK,		SUBFT_FEEDBACK},
 	{ "fb_email_dbg", 	FT_FEEDBACK,		SUBFT_FEEDBACK},
 	{ "fb_email", 	FT_FEEDBACK,		SUBFT_FEEDBACK},
+	{ "fb_serviceno", 	FT_FEEDBACK,		SUBFT_FEEDBACK},
 	{ "fb_ptype", 	FT_FEEDBACK,		SUBFT_FEEDBACK},
 	{ "fb_pdesc", 	FT_FEEDBACK,		SUBFT_FEEDBACK},
 	{ "fb_country", 	FT_FEEDBACK,		SUBFT_FEEDBACK},
@@ -515,6 +519,9 @@ struct param_mapping_s param_mapping_list[] = {
 	{ "smart_connect_x", 	FT_WIRELESS,	SUBFT_SMART_CONNECT},
 	/* led */
 	{ "bc_ledLv",	FT_CENTRAL_LED,		SUBFT_CENTRAL_LED},	/* for BLUECAVE */
+	{ "lp55xx_lp5523_user_enable",	FT_LP55XX_LED,		SUBFT_LP55XX_LED},	/* for Lyra */
+	{ "lp55xx_lp5523_user_col",	FT_LP55XX_LED,		SUBFT_LP55XX_LED},	/* for Lyra */
+	{ "lp55xx_lp5523_user_beh",	FT_LP55XX_LED,		SUBFT_LP55XX_LED},	/* for Lyra */
 	/* Roaming Assistant */
 	{ "rast_static_cli_enable", FT_WIRELESS, SUBFT_ROAMING_ASSISTANT },
 	{ "wl0_rast_static_client", FT_WIRELESS, SUBFT_ROAMING_ASSISTANT_2G, },

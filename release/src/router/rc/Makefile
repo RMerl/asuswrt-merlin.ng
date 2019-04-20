@@ -102,7 +102,7 @@ endif
 
 ifeq ($(RTCONFIG_HTTPS),y)
 CFLAGS += -I$(TOP)/openssl/include
-LDFLAGS += -L$(TOP)/openssl -lcrypto -lssl
+LDFLAGS += -L$(TOP)/openssl -lcrypto -lssl $(if $(RTCONFIG_OPENSSL11),-lpthread,)
 endif
 
 ifeq ($(RTCONFIG_BWDPI),y)
@@ -291,7 +291,7 @@ ifeq ($(RTCONFIG_DSL),y)
 OBJS += init-ralink-dsl.o
 endif
 else ifeq ($(RTCONFIG_QCA),y)
-OBJS += init-qca.o wps-qca.o qca.o ate-qca.o $(if $(wildcard sysdeps/qca/ctl.c),ctl.obj,prebuild/ctl.obj)
+OBJS += init-qca.o wps-qca.o qca.o ate-qca.o ctl.obj
 ifeq ($(RTCONFIG_AMAS),y)
 OBJS += obd-qca.o
 endif
@@ -674,8 +674,14 @@ endif
 
 CFLAGS += -I$(TOP)/wlceventd
 
+ifeq ($(RTCONFIG_QCA_LBD),y)
+OBJS += lbd-qca.o
+endif
 
-all: rc init.prep
+all: PB rc init.prep
+
+PB:
+	[ ! -d prebuild ] || cp prebuild/*.o ./
 
 rc: $(OBJS)
 	@echo " [rc] CC $@"

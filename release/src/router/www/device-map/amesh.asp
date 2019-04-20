@@ -40,6 +40,69 @@ var aimesh_node_client_upload_icon = new Array();
 var aimesh_select_new_re_mac = "";
 var AUTOLOGOUT_MAX_MINUTE_ORI = 0;
 var restore_autologout = false;
+var led_control = {
+	"status": function(_node_info){
+		var result = {"support": 0, "value": 0};
+		var firstCheck = false;
+		var secondCheck = false;
+
+		if("capability" in _node_info) {
+			if("1" in _node_info.capability) {
+				result.support = _node_info.capability["1"];
+				firstCheck = true;
+			}
+		}
+
+		if("config" in _node_info) {
+			if("central_led" in _node_info.config) {
+				if("bc_ledLv" in _node_info.config.central_led) {
+					result.value = parseInt(_node_info.config.central_led.bc_ledLv);
+					secondCheck = true;
+				}
+			}
+			else if("lp55xx_led" in _node_info.config) {
+				if("lp55xx_lp5523_user_enable" in _node_info.config.lp55xx_led) {
+					result.value = parseInt(_node_info.config.lp55xx_led.lp55xx_lp5523_user_enable);
+					secondCheck = true;
+				}
+			}
+		}
+
+		if(isNaN(result.value))
+			result.value = 0;
+		if(!firstCheck || !secondCheck) {
+			result.support = 0;
+			result.value = 0;
+		}
+		return result;
+	},
+	"component": function(_supportType) {
+		var html = "";
+		switch(parseInt(_supportType)) {
+			case 1 :
+				html += "<div style='margin-top:10px;'>";
+				html += "<div class='aimesh_node_setting_info_title'><#LED_Brightness#></div>";
+				html += "<div class='aimesh_node_setting_info_content'>";
+				html += "<div id='led_slider' class='led_slider'></div>";
+				html += "<div id='led_text'></div>";
+				html += "</div>";
+				html += "<div class='clear_both'></div>";
+				html += "</div>";
+				break;
+			case 2 :
+				html += "<div style='margin-top:10px;'>";
+				html += "<div class='aimesh_node_setting_info_title'>LED</div>";
+				html += "<div class='aimesh_node_setting_info_content'>";
+				html += "<div align='center' style='float:left;cursor:pointer;' id='led_radio'></div>";
+				html += "</div>";
+				html += "<div class='clear_both'></div>";
+				html += "</div>";
+				break;
+		}
+		return html;
+	}
+};
+
 function initial(){
 	if(parent.$('link[rel=stylesheet][href~="/device-map/amesh.css"]').length > 0)
 		parent.$('link[rel=stylesheet][href~="/device-map/amesh.css"]').remove();
@@ -384,6 +447,9 @@ var setAMeshAttr = function(){
 };
 
 function gen_current_onboardinglist(_onboardingList, _wclientlist, _wiredclientlist, _allclientlist) {
+	originData.fromNetworkmapd[0] = httpApi.hookGet("get_clientlist", true);
+	genClientList();
+
 	$('#onBoarding_block').empty();
 	for (var idx in _onboardingList) {
 		if(_onboardingList.hasOwnProperty(idx)) {
@@ -411,17 +477,18 @@ function gen_current_onboardinglist(_onboardingList, _wclientlist, _wiredclientl
 						}
 					}
 				}
-				if(model_name == "BLUE_CAVE"){
-					if("config" in _onboardingList[idx]) {
-						if("central_led" in _onboardingList[idx].config) {
-							if("bc_ledLv" in _onboardingList[idx].config.central_led) {
-								if(parent.$("script[src='/calendar/jquery-ui.js']").length == 0)
-									parent.addNewScript("/calendar/jquery-ui.js");
-								if($("script[src='../calendar/jquery-ui.js']").length == 0)
-									addNewScript("../calendar/jquery-ui.js");
-							}
-						}
-					}
+
+				if($("script[src='../calendar/jquery-ui.js']").length == 0) {
+					if(led_control.status(_onboardingList[idx]).support == 1)
+						addNewScript("../calendar/jquery-ui.js");
+				}
+				if(parent.$("script[src='/calendar/jquery-ui.js']").length == 0) {
+					if(led_control.status(_onboardingList[idx]).support == 1)
+						parent.addNewScript("/calendar/jquery-ui.js");
+				}
+				if($("script[src='../switcherplugin/jquery.iphone-switch.js']").length == 0) {
+					if(led_control.status(_onboardingList[idx]).support == 2)
+						addNewScript("../switcherplugin/jquery.iphone-switch.js");
 				}
 
 				if(connect_type == "1")
@@ -466,13 +533,8 @@ function gen_current_onboardinglist(_onboardingList, _wclientlist, _wiredclientl
 								code += "</div>";
 								code += "<div class='amesh_router_info_text'><#Full_Clients#>: ";
 								var re_client_num = 0;
-								if(online == "1") {
-									for (var wc_idx in _wclientlist[mac]) {
-										if(_wclientlist[mac].hasOwnProperty(wc_idx))
-											re_client_num += _wclientlist[mac][wc_idx].length;
-									}
-									if(_wiredclientlist[mac] != undefined)
-										re_client_num += _wiredclientlist[mac].length;
+								if(online == "1" && AiMeshTotalClientNum[mac] != undefined) {
+									re_client_num = AiMeshTotalClientNum[mac];
 								}
 								code += "<span class='amesh_node_content'>" + re_client_num + "</span>";
 								code += "</div>";
@@ -495,7 +557,7 @@ function gen_current_onboardinglist(_onboardingList, _wclientlist, _wiredclientl
 					$('#onBoarding_block').append(code);
 
 					$('#onBoarding_block').find('#' + device_id + '').click(
-						{"node_info" : _onboardingList[idx], "wl_client" : _wclientlist[mac], "wired_client" :  _wiredclientlist[mac], "all_client" : _allclientlist[mac]},
+						{"node_info" : _onboardingList[idx], "wl_client" : _wclientlist[mac], "wired_client" :  _wiredclientlist[mac]},
 						popAMeshClientListEditTable);
 
 					if(isNaN(parseInt(checkCloudIconErrorTimes[model_name])))
@@ -704,7 +766,7 @@ function scenario() {
 	description += "<br>";
 	description += "<#AiMesh_Desc32#>";
 	description += "<br>";
-	description += "<a style='font-weight:bolder;text-decoration:underline;color:#FC0;' href='http://www.asus.com/support/' target='_blank'><#AiMesh_Desc3_note#></a>";
+	description += "<a style='font-weight:bolder;text-decoration:underline;color:#FC0;' href='https://www.asus.com/AiMesh/' target='_blank'><#AiMesh_Desc3_note#></a>";
 	gen_each_step_content(description, 3);
 
 	interval = setInterval(set_slider, 15000);
@@ -830,7 +892,7 @@ function show_connect_msg(_reMac, _newReMac, _model_name, _rssi, _ob_path) {
 
 				var $amesh_quality_text = $('<div>');
 				$amesh_quality_text.addClass("amesh_hint_text amesh_quality_text quality_weak");
-				$amesh_quality_text.html("<#AiMesh_info_weak#><br><#AiMesh_FindNode_Not_advA4#>");
+				$amesh_quality_text.html("<#AiMesh_info_weak#>");
 				$connectHtml.append($amesh_quality_text);
 
 				var $amesh_action_bg = $('<div>');
@@ -1182,50 +1244,7 @@ function convRSSI(val) {
 	else if(val >= -90)	return Math.ceil((((val + 90) * 26)/10)/25);
 	else return 1;
 }
-function gen_current_onboardinglist_detail(_mac) {
-	initial_amesh_obj();
 
-	var $popupBgHtml = $('<div>');
-	$popupBgHtml.attr({"id" : "amesh_current_onboardinglist_detail"});
-	$popupBgHtml.addClass("amesh_popup_bg");
-	$popupBgHtml.css("display", "none");
-	$popupBgHtml.attr({"onselectstart" : "return false"});
-	$popupBgHtml.appendTo(parent.$('body'));
-
-	var $closeHtml = $('<div>');
-	$closeHtml.addClass("amesh_popup_close");
-	$closeHtml.click(
-		function() {
-			initial_amesh_obj();
-		}
-	);
-	$popupBgHtml.append($closeHtml);
-
-	var $clearHtml = $('<div>');
-	$clearHtml.css("clear", "both");
-	$popupBgHtml.append($clearHtml);
-
-	var $mainContentsBgHtml = $('<div>');
-	$mainContentsBgHtml.addClass('mainContentsBg');
-	$popupBgHtml.append($mainContentsBgHtml);
-
-	var $smallIconBg = $('<div>');
-	$smallIconBg.addClass("smallIconBg");
-	$mainContentsBgHtml.append($smallIconBg);
-	var $smallIcon = $('<div>');
-	$smallIcon.addClass("amesh_router_icon");
-	$smallIconBg.append($smallIcon);
-
-	var $mainDeviceTitleBg = $('<div>');
-	$mainContentsBgHtml.append($mainDeviceTitleBg);
-
-	var $mainDeviceInfoBg = $('<div>');
-	$mainContentsBgHtml.append($mainDeviceInfoBg);
-
-	parent.$("#amesh_current_onboardinglist_detail").fadeIn(300);
-	parent.cal_panel_block("amesh_current_onboardinglist_detail", 0.2);
-	parent.adjust_panel_block_top("amesh_current_onboardinglist_detail", 170);
-}
 function reset_re_device(_reMac, _reModelName, _evt) {
 	_evt.stopPropagation();
 	initial_amesh_obj();
@@ -1342,7 +1361,6 @@ function popAMeshClientListEditTable(event) {
 	var node_info = event.data.node_info;
 	var wl_client = event.data.wl_client;
 	var wired_client = event.data.wired_client;
-	var all_client = event.data.all_client;
 	initial_amesh_obj();
 
 	var $popupBgHtml = $('<div>');
@@ -1416,16 +1434,10 @@ function popAMeshClientListEditTable(event) {
 	code += "<div class='clear_both'></div>";
 	code += "</div>";
 
-	if(node_info.model_name == "BLUE_CAVE") {
-		code += "<div style='margin-top:10px;'>";
-		code += "<div class='aimesh_node_setting_info_title'><#LED_Brightness#></div>";
-		code += "<div class='aimesh_node_setting_info_content'>";
-		code += "<div id='led_slider' class='led_slider'></div>";
-		code += "<div id='led_text'></div>";
-		code += "</div>";
-		code += "<div class='clear_both'></div>";
-		code += "</div>";
-	}
+	var led_status = led_control.status(node_info);
+	if(led_status.support)
+		code += led_control.component(led_status.support);
+
 	code += "</div>";
 
 	code += "<div class='clientList_line aimesh_node_line_bg'></div>";
@@ -1446,7 +1458,7 @@ function popAMeshClientListEditTable(event) {
 	/* handle node client start */
 	aimesh_node_client_list = [];
 	if(node_info.online == "1")
-		aimesh_node_client_list = get_aimesh_node_client_list(wired_client, wl_client, all_client);
+		aimesh_node_client_list = get_aimesh_node_client_list(wired_client, wl_client, node_info.mac);
 	//set default sort property
 	sorterApi.method = "increase";
 	sorterApi.key = "name";
@@ -1624,34 +1636,51 @@ function popAMeshClientListEditTable(event) {
 			re_sort_AiMesh_node_client("rssi", "num", "client_interface");
 		}
 	);
-	if(node_info.model_name == "BLUE_CAVE"){
-		var central_led_bc_ledLv = 3;
-		if("config" in node_info) {
-			if("central_led" in node_info.config) {
-				if("bc_ledLv" in node_info.config.central_led)
-					central_led_bc_ledLv = parseInt(node_info.config.central_led.bc_ledLv);
-			}
+
+	if(led_status.support) {
+		switch(led_status.support) {
+			case 1:
+				var color_table = ["#c6dafc", "#7baaf7", "#4285f4", "#3367d6"];
+				var led_table = ["<#CTL_close#>", "<#Low#>", "<#Medium#>", "<#High#>"];
+				parent.$("#edit_amesh_client_block").find("#led_text").html(led_table[led_status.value]);
+				parent.$("#edit_amesh_client_block").find("#led_slider").slider({
+					orientation: "horizontal",
+					range: "min",
+					min: 1,
+					max: 4,
+					value: (led_status.value + 1),
+					slide: function(event, ui) {
+						parent.$("#edit_amesh_client_block").find("#led_text").html(led_table[ui.value-1]);
+						parent.$("#edit_amesh_client_block").find("#led_slider .ui-slider-range").css("background-color", color_table[ui.value-1]);
+						parent.$("#edit_amesh_client_block").find("#led_slider .ui-slider-handle").css("border-color", color_table[ui.value-1]);
+					},
+					stop: function(event, ui) {
+						var data = new Object();
+						data.bc_ledLv = (ui.value - 1);
+						set_AiMesh_node_config(data, node_info.mac);
+					}
+				});
+				break;
+			case 2:
+				var led_status = (led_status.value == "0") ? 1 : 0;
+				parent.$("#edit_amesh_client_block").find('#led_radio').iphoneSwitch(led_status,
+					function(){
+						var data = new Object();
+						data.lp55xx_lp5523_user_enable = 0;
+						data.lp55xx_lp5523_user_col = 0;
+						data.lp55xx_lp5523_user_beh = 0;
+						set_AiMesh_node_config(data, node_info.mac);
+					},
+					function(){
+						var data = new Object();
+						data.lp55xx_lp5523_user_enable = 1;
+						data.lp55xx_lp5523_user_col = 101;
+						data.lp55xx_lp5523_user_beh = 300;
+						set_AiMesh_node_config(data, node_info.mac);
+					}
+				);
+				break;
 		}
-		var color_table = ["#c6dafc", "#7baaf7", "#4285f4", "#3367d6"];
-		var led_table = ["<#CTL_close#>", "<#Low#>", "<#Medium#>", "<#High#>"];
-		$popupBgHtml.find("#led_text").html(led_table[central_led_bc_ledLv]);
-		parent.$("#edit_amesh_client_block").find( "#led_slider" ).slider({
-			orientation: "horizontal",
-			range: "min",
-			min: 1,
-			max: 4,
-			value: (central_led_bc_ledLv + 1),
-			slide: function(event, ui) {
-				$popupBgHtml.find("#led_text").html(led_table[ui.value-1]);
-				$popupBgHtml.find("#led_slider .ui-slider-range").css("background-color", color_table[ui.value-1]);
-				$popupBgHtml.find("#led_slider .ui-slider-handle").css("border-color", color_table[ui.value-1]);
-			},
-			stop: function(event, ui) {
-				var data = new Object();
-				data.bc_ledLv = (ui.value - 1);
-				set_AiMesh_node_config(data, node_info.mac);
-			}
-		});
 	}
 	/* set event end */
 
@@ -1862,7 +1891,6 @@ function ajax_AiMesh_node_clients(_nodeMac){
 		dataType: 'script',
 		success: function(response){
 			if(parent.$("#edit_amesh_client_block").length > 0) {
-				genClientList();
 				if(parent.$("#edit_amesh_client_block").children().find(".aimesh_node_client_tr").length > 0)
 					parent.$("#edit_amesh_client_block").children().find(".aimesh_node_client_tr").remove();
 
@@ -1887,10 +1915,9 @@ function ajax_AiMesh_node_clients(_nodeMac){
 				var node_rssi5g = getNodeStatus(get_cfg_clientlist, ["mac", _nodeMac], "rssi5g");
 				var wired_client = get_wiredclientlist[_nodeMac];
 				var wl_client = get_wclientlist[_nodeMac];
-				var all_client = get_allclientlist[_nodeMac];
 				aimesh_node_client_list = [];
 				if(node_online == "1")
-					aimesh_node_client_list = get_aimesh_node_client_list(wired_client, wl_client, all_client);
+					aimesh_node_client_list = get_aimesh_node_client_list(wired_client, wl_client, _nodeMac);
 				aimesh_node_client_list = sorterApi.sortJson(aimesh_node_client_list, sorterApi.key, sorterApi.type);
 				parent.$("#edit_amesh_client_block").children().find("#aimesh_node_client_header_tr").after(gen_AiMesh_node_client(aimesh_node_client_list));
 
@@ -1985,6 +2012,11 @@ function gen_AiMesh_node_client(_nodeClient_array) {
 
 			nodeClientHtml += "<td width='" + aimesh_node_client_info_width[3] + "' align='center'>";
 			nodeClientHtml += "<div style='margin: auto;' class='radioIcon radio_" + rssi + "'></div>";
+			if(nodeClientObj.isWL != "0") {
+				var wireless_band_array = ["", "2.4 G", "5 G", "5 G-2"];
+				var bandClass = (navigator.userAgent.toUpperCase().match(/CHROME\/([\d.]+)/)) ? "band_txt_chrome" : "band_txt";
+				nodeClientHtml += "<div class='band_block' style='margin: auto;'><span class=" + bandClass + " style='color: #000000;'>" + wireless_band_array[nodeClientObj.isWL] + "</span></div>";
+			}
 			nodeClientHtml += "</td>";
 			nodeClientHtml += "</tr>";
 		}
@@ -2000,87 +2032,32 @@ function set_AiMesh_node_config(_data, _nodeMac) {
 		"action_mode": "config_changed"
 	}, ajax_onboarding);
 }
-function get_aimesh_node_client_list(_wired_client, _wl_client, _all_client) {
+function get_aimesh_node_client_list(_wired_client, _wl_client, _node_mac) {
 	var node_client_array = [];
 	var node_client_mac = "";
-	var node_client_interface = "";
 	if(_wired_client != undefined) {
 		for(var i = 0; i < _wired_client.length; i += 1) {
 			node_client_mac = _wired_client[i];
-			if(clientList[node_client_mac] == undefined) {
-				clientList[node_client_mac] = new setClientAttr();
-				clientList[node_client_mac].name = node_client_mac;
-				clientList[node_client_mac].isWL = 0;
+			if(clientList[node_client_mac] != undefined) {
+				if(clientList[node_client_mac].isOnline && clientList[node_client_mac].amesh_papMac == _node_mac)
+					node_client_array.push(clientList[node_client_mac]);
 			}
-			else
-				clientList[node_client_mac].isWL = 0;
-
-			node_client_array.push(clientList[node_client_mac]);
 		}
 	}
+
 	for(var wc_idx in _wl_client) {
 		if(_wl_client.hasOwnProperty(wc_idx)) {
-			node_client_interface = wc_idx;
 			for(var i = 0; i < _wl_client[wc_idx].length; i += 1) {
 				node_client_mac = _wl_client[wc_idx][i];
-				var node_client_isWL = 1;
-				switch(node_client_interface) {
-					case "2G" :
-						node_client_isWL = 1;
-						break;
-					case "5G" :
-						node_client_isWL = 2;
-						break;
-					case "5G1" :
-						node_client_isWL = 3;
-						break;
-				}
-				if(clientList[node_client_mac] == undefined) {
-					clientList[node_client_mac] = new setClientAttr();
-					clientList[node_client_mac].name = node_client_mac;
-					clientList[node_client_mac].isWL = node_client_isWL;
-					clientList[node_client_mac].rssi = 0;
-				}
-				else {
-					clientList[node_client_mac].isWL = node_client_isWL;
-					if(clientList[node_client_mac].ip == "offline")
-						clientList[node_client_mac].rssi = 0;
-				}
-				node_client_array.push(clientList[node_client_mac]);
-			}
-		}
-	}
-	for (var allc_idx in _all_client) {
-		if(_all_client.hasOwnProperty(allc_idx)) {
-			node_client_interface = allc_idx;
-			for (var nodeClient_idx in _all_client[allc_idx]) {
-				node_client_mac = nodeClient_idx;
 				if(clientList[node_client_mac] != undefined) {
-					var node_client_detail = _all_client[allc_idx][nodeClient_idx];
-					if(node_client_detail.ip != "")
-						clientList[node_client_mac].ip = node_client_detail.ip;
-					switch(node_client_interface) {
-						case "2G" :
-							clientList[node_client_mac].isWL = 1;
-							break;
-						case "5G" :
-							clientList[node_client_mac].isWL = 2;
-							break;
-						case "5G1" :
-							clientList[node_client_mac].isWL = 3;
-							break;
-						case "wired_mac" :
-							clientList[node_client_mac].isWL = 0;
-							break;
-					}
-					if(node_client_interface != "wired_mac") {
-						if(node_client_detail.rssi != "")
-							clientList[node_client_mac].rssi = node_client_detail.rssi;
+					if(clientList[node_client_mac].isOnline && clientList[node_client_mac].amesh_papMac == _node_mac) {
+						node_client_array.push(clientList[node_client_mac]);
 					}
 				}
 			}
 		}
 	}
+
 	return node_client_array;
 }
 function get_connect_type(_node_info) {

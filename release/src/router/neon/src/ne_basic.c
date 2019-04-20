@@ -65,7 +65,6 @@ int ne_getmodtime(ne_session *sess, const char *uri, time_t *modtime)
 	ret = NE_ERROR;
     } 
     else if (value) {
-    	//printf("value = %s\n",value);
         *modtime = ne_httpdate_parse(value);
     }
     else {
@@ -326,7 +325,8 @@ static const struct options_map {
     { "working-resource", NE_CAP_WORK_RESOURCE },
     { "merge", NE_CAP_MERGE },
     { "baseline", NE_CAP_BASELINE },
-    { "version-controlled-collection", NE_CAP_VC_COLLECTION }
+    { "version-controlled-collection", NE_CAP_VC_COLLECTION },
+    { "extended-mkcol", NE_CAP_EXT_MKCOL }
 };
 
 static void parse_dav_header(const char *value, unsigned int *caps)

@@ -1026,9 +1026,7 @@ int asus_ate_command(const char *command, const char *value, const char *value2)
 	}
 #endif	/* RTCONFIG_HAS_5G */
 	else if (!strcmp(command, "Set_RestoreDefault")) {
-#ifdef RTAC87U
 		int ret_reset;
-#endif
 #ifndef HND_ROUTER
 		nvram_set("restore_defaults", "1");
 		nvram_set(ASUS_STOP_COMMIT, "1");
@@ -1045,9 +1043,9 @@ int asus_ate_command(const char *command, const char *value, const char *value2)
 			puts("0");
 		}
 #else
-		ResetDefault();
+		ret_reset = ResetDefault();
 #endif
-		return 0;
+		return ret_reset;
 	}
 	else if (!strcmp(command, "Set_Eject")) {
 		if (!Ej_device(value)) {
@@ -1587,7 +1585,7 @@ int asus_ate_command(const char *command, const char *value, const char *value2)
 		return 0;
 	}
 #endif
-#if defined(RTCONFIG_WIFI_QCA9990_QCA9990) || defined(RTCONFIG_WIFI_QCA9994_QCA9994) || defined(RTCONFIG_PCIE_QCA9880) || defined(RTCONFIG_PCIE_QCA9882) || defined(RTCONFIG_SOC_IPQ40XX) || defined(RPAC51)
+#if defined(RTCONFIG_WIFI_QCA9990_QCA9990) || defined(RTCONFIG_WIFI_QCA9994_QCA9994) || defined(RTCONFIG_PCIE_AR9888) || defined(RTCONFIG_PCIE_QCA9888) || defined(RTCONFIG_SOC_IPQ40XX)
 	else if (!strcmp(command, "Set_Qcmbr")) {
 #if defined(RTCONFIG_QCA) && defined(RTCONFIG_SOC_IPQ40XX)
 		nvram_set_int("restwifi_qis", 1);
@@ -1598,7 +1596,7 @@ int asus_ate_command(const char *command, const char *value, const char *value2)
 		return 0;
 	}
 #endif
-#if defined(RTCONFIG_WIFI_QCA9990_QCA9990) || defined(RTCONFIG_WIFI_QCA9994_QCA9994) || defined(RTCONFIG_SOC_IPQ40XX) || defined(RPAC51)
+#if defined(RTCONFIG_WIFI_QCA9990_QCA9990) || defined(RTCONFIG_WIFI_QCA9994_QCA9994) || defined(RTCONFIG_PCIE_QCA9888) || defined(RTCONFIG_SOC_IPQ40XX)
 	/* ATE Get_BData_2G / ATE Get_BData_5G
 	 * To prevent whole ATE command strings exposed in rc binary,
 	 * compare these commands in 3 steps instead.

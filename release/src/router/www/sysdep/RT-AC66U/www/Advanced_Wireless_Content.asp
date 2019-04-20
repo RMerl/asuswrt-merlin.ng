@@ -42,7 +42,8 @@ if(wl_unit == '1')
 	country = '<% nvram_get("wl1_country_code"); %>';
 else		
 	country = '<% nvram_get("wl0_country_code"); %>';
-
+	
+var wl_reg_mode = '<% nvram_get("wl_reg_mode"); %>';
 function initial(){
 	show_menu();
 	if(band5g_11ac_support){
@@ -124,28 +125,16 @@ function initial(){
 	change_wl_nmode(document.form.wl_nmode_x);
 
 	var is_RU_sku = ('<% nvram_get("location_code"); %>'.indexOf("RU") != -1);
-	if((is_UA_sku || is_RU_sku) && !Qcawifi_support && !Rawifi_support && !sdk_5){
-		if(document.form.wl_channel.value  == '0' && wl_unit == '1'){
-			document.getElementById('acs_band3_checkbox').style.display = "";
-		}		
-	}
-	else if(country == "EU"){		//display checkbox of DFS channel under 5GHz
-		if(based_modelid == "RT-AC68U" || based_modelid == "RT-AC68A" || based_modelid == "4G-AC68U" || based_modelid == "DSL-AC68U"
-		|| based_modelid == "RT-AC87U"
-		|| based_modelid == "RT-AC3200"
-		|| (based_modelid == "RT-AC66U" && wl1_dfs == "1")		//0: A2 not support, 1: B0 support
-		|| based_modelid == "RT-N66U"){
-				if(document.form.wl_channel.value  == '0' && wl_unit == '1'){
-						document.getElementById('dfs_checkbox').style.display = "";
-						check_DFS_support(document.form.acs_dfs_checkbox);
-				}
-		}
-	}
-	else if(country == "US" && dfs_US_support){
+	if(wl_reg_mode == 'h'){
 		if(document.form.wl_channel.value  == '0' && wl_unit == '1'){
 			document.getElementById('dfs_checkbox').style.display = "";
 			check_DFS_support(document.form.acs_dfs_checkbox);
 		}
+	}
+	else if((is_UA_sku || is_RU_sku) && !Qcawifi_support && !Rawifi_support && !sdk_5){
+		if(document.form.wl_channel.value  == '0' && wl_unit == '1'){
+			document.getElementById('acs_band3_checkbox').style.display = "";
+		}		
 	}
 	else if(country == "US" || country == "SG"){		//display checkbox of band1 channel under 5GHz
 		if(based_modelid == "RT-AC68U" || based_modelid == "RT-AC68A" || based_modelid == "4G-AC68U" || based_modelid == "DSL-AC68U"
@@ -158,15 +147,8 @@ function initial(){
 				document.getElementById('acs_band1_checkbox').style.display = "";					
 		}
 	}
-	else if((odmpid == "RT-AC66U_B1" || odmpid == "RT-AC1750_B1" || odmpid == "RT-N66U_C1" || odmpid == "RT-AC1900U" || odmpid == "RP-AC1900" || odmpid == "RT-AC67U") && country == "AU"){
-		if(document.form.wl_channel.value  == '0' && wl_unit == '1'){
-			document.getElementById('dfs_checkbox').style.display = "";
-			check_DFS_support(document.form.acs_dfs_checkbox);
-		}
-	}
 
-	
-	if(country == "EU" || country == "JP" || country == "SG" || country == "CN" || country == "UA" || country == "KR"){
+	if(wl_channel_list_2g.length == '14'){
 		if(!Qcawifi_support && !Rawifi_support){
 			if(document.form.wl_channel.value  == '0' && wl_unit == '0' && document.form.wl_channel.length == '14')
 				document.getElementById('acs_ch13_checkbox').style.display = "";				
@@ -251,6 +233,7 @@ function change_wl_nmode(o){
 	
 	wl_chanspec_list_change();
 	genBWTable(wl_unit);
+	change_channel(document.form.wl_channel);
 }
 
 function genBWTable(_unit){

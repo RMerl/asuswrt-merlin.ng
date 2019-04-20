@@ -1,0 +1,78 @@
+Copyright (C) 2005-2008 Pablo Neira Ayuso <pablo netfilter org>
+
+0.Introduction
+==============
+
+ The conntrack-tools package contains two programs:
+
+  - conntrack:	the command line interface to interact with the connection 
+		tracking system.
+
+  - conntrackd: the connection tracking userspace daemon that can be used to
+  		deploy highly available GNU/Linux firewalls and collect 
+		statistics of the firewall use.
+
+ Although their names are similar, they are used for different tasks.
+
+1. Requirements
+===============
+
+ You have to install the following software in order to get the conntrack-tools
+ working, make sure that you have installed them correctly before going forward:
+
+ o linux kernel version >= 2.6.18 (http://www.kernel.org) that, at least,
+   has support for:
+
+     - connection tracking system
+	   CONFIG_NF_CONNTRACK=m
+	   CONFIG_NF_CONNTRACK_IPV4=m
+	   CONFIG_NF_CONNTRACK_IPV6=m (if you need IPv6 support)
+
+     - nfnetlink
+           CONFIG_NETFILTER_NETLINK=m
+
+     - ctnetlink (nf_conntrack_netlink)
+           CONFIG_NF_CT_NETLINK=m
+
+     - connection tracking event notification API
+           CONFIG_NF_CONNTRACK_EVENTS=y
+
+     	(To check that the event API is enabled in the kernel, make sure
+	 you have loaded nf_netlink_conntrack module, run conntrack -E and 
+	 generate traffic, you should see network events)
+
+ o libnfnetlink: the netfilter netlink library available at:
+
+     <http://www.netfilter.org/projects/libnfnetlink/files/>
+
+ o libnetfilter_conntrack: the netfilter conntrack library available at:
+
+     <http://www.netfilter.org/projects/libnetfilter_conntrack/files/>
+
+2.Compilation and Installation
+==============================
+
+ To compile and install conntrack-tools just follow the classical steps:
+
+	$ ./configure --prefix=/usr
+	$ make
+	# make install
+
+ Up to this point, the command line interface `conntrack' is ready for use,
+ see man conntrack(8). However, the userspace daemon so-called `conntrackd' 
+ requires some magic spells to get it working.
+
+ *Fedora users*: If you are trying to install the libraries in /usr/local/,
+ do not forget to do the following things:
+
+	* PKG_CONFIG_PATH=/usr/local/lib/pkgconfig; export PKG_CONFIG_PATH
+ 	* Add `/usr/local/lib' to your /etc/ld.so.conf file and run `ldconfig'
+ 
+ Check `ldd' for trouble-shooting, read <http://tldp.org/HOWTO/Program-Library-HOWTO/shared-libraries.html#AEN70> for more information on how libraries work.
+
+3.How-to use and set up
+=======================
+
+ Please, refer to the user manual for further information on how to use and
+ set up the conntrack-tools. This user manual is is available in the 
+ documentation directory included in this tarball.

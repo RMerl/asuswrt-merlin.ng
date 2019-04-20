@@ -96,7 +96,8 @@ typedef struct {
 				  * property a. la. mod_dav */
 } ne_server_capabilities;
 
-/* DEPRECATED: Determines server capabilities (using OPTIONS). */
+/* DEPRECATED: Determines server capabilities (using OPTIONS).  Use
+ * ne_options2() instead. */
 int ne_options(ne_session *sess, const char *path,
                ne_server_capabilities *caps);
 
@@ -116,6 +117,7 @@ int ne_options(ne_session *sess, const char *path,
 #define NE_CAP_BASELINE      (0x2000) /* DeltaV baseline */
 #define NE_CAP_ACTIVITY      (0x4000) /* DeltaV activity */
 #define NE_CAP_VC_COLLECTION (0x8000) /* DeltaV version-controlled-collection */
+#define NE_CAP_EXT_MKCOL    (0x10000) /* extended-mkcol (RFC 5689) */
 
 /* Determines resource capailities, using an OPTIONS request.  On
  * return, *caps is set to a bit-mask of the above NE_CAP_* constants

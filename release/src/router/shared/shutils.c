@@ -651,14 +651,14 @@ void cprintf(const char *format, ...)
 #endif
 #endif
 #endif
-		if((nfd = open("/dev/console", O_WRONLY | O_NONBLOCK)) > 0){
+		if((nfd = open("/dev/console", O_WRONLY | O_NONBLOCK)) >= 0){
 			if((f = fdopen(nfd, "w")) != NULL){
 				va_start(args, format);
 				vfprintf(f, format, args);
 				va_end(args);
 				fclose(f);
-			}
-			close(nfd);
+			} else
+				close(nfd);
 		}
 	}
 #if 1
@@ -2238,8 +2238,8 @@ int arpcache(char *tgmac, char *tgip)
 	char ipAddr[ARP_BUFFER_LEN], hwAddr[ARP_BUFFER_LEN], device[ARP_BUFFER_LEN];
 	while (fscanf(arpCache, ARP_LINE_FORMAT, ipAddr, hwAddr, device) == 3)
 	{
-		if(!stricmp(tgmac, hwAddr, IPLEN-1)) {
-			strncpy(tgip, ipAddr, IPLEN);
+		if(strncasecmp(tgmac, hwAddr, IPLEN-1) == 0) {
+			strlcpy(tgip, ipAddr, IPLEN);
 			break;
 		}
 	}

@@ -717,6 +717,10 @@ void config_switch(void)
 					if((p = nvram_get("switch_wan0prio")) != NULL && *p != '\0')
 						prio_val = safe_atoi(p);
 
+#if defined(RTCONFIG_SOC_IPQ40XX)
+					if (vlan_val == 2)
+						doSystem("echo 10 > /proc/sys/net/edma/default_group1_vlan_tag");
+#endif
 					__setup_vlan(vlan_val, prio_val, 0x02000210);
 				}
 
@@ -1449,7 +1453,12 @@ void init_wl(void)
 	}
 
 #ifdef RTCONFIG_WIFI_SON
-	if(sw_mode() == SW_MODE_REPEATER && nvram_match("wifison_ready", "1"))
+#ifdef RTCONFIG_AMAS
+	if(!nvram_match("wifison_ready", "1"))
+		goto skip_wifison;
+#endif	/* RTCONFIG_AMAS */
+
+	if(sw_mode() == SW_MODE_REPEATER)
 		goto skip_wifison;
 
 	int i;
@@ -1464,6 +1473,7 @@ void init_wl(void)
 				tmp_pt = get_stamac(i, stamac, sizeof(stamac));
 				if(!tmp_pt)
 				{
+					char *sta = get_staifname(i);
 					if(nvram_match("wl1_country_code", "GB"))
 					{
 						_dprintf("=> RE: hold for cac timeout...\n");
@@ -1473,11 +1483,11 @@ void init_wl(void)
 						}
 						_dprintf("exit!!!\n");
 					}
-					_dprintf("=> switch router to ap : create sta%d\n",i);
+					_dprintf("=> switch router to ap : create %s\n", sta);
 					doSystem("wlanconfig %s create wlandev %s wlanmode sta nosbeacon",
-						get_staifname(i), get_vphyifname(i));
+						sta, get_vphyifname(i));
 					sleep(1);
-					ifconfig(get_staifname(i), IFUP, NULL, NULL);
+					ifconfig(sta, IFUP, NULL, NULL);
 				}
 			}
 		}
@@ -2104,11 +2114,7 @@ void reinit_sfe(int unit)
 
 	/* If QoS is enabled, disable sfe. */
 	if (nvram_get_int("qos_enable") == 1 && nvram_get_int("qos_type") != 1)
-#if defined(RTCONFIG_SOC_IPQ40XX) && defined(RTCONFIG_BWDPI)
-		handle_bwdpi = 1;
-#else
 		act = 0;
-#endif
 
 #if defined(RTCONFIG_QCA956X) && defined(RTCONFIG_BWDPI)
 	/* For MAP-AC1750, not to integrate fast-path in stage 1 */
@@ -2229,6 +2235,12 @@ void reinit_sfe(int unit)
 	if (act < 0)
 		return;
 
+#if defined(RTCONFIG_SOC_IPQ40XX) && defined(RTCONFIG_BWDPI)
+	if ((act == 0) && (check_bwdpi_nvram_setting() == 1)) {
+		handle_bwdpi = 1;
+		act = 1;
+	}
+#endif
 
 	for (i = 0, p = &load_nat_accel_kmod_seq[i]; i < ARRAY_SIZE(load_nat_accel_kmod_seq); ++i, ++p) {
 		if (!act) {
@@ -2237,6 +2249,7 @@ void reinit_sfe(int unit)
 				continue;
 
 			modprobe_r(p->kmod_name);
+
 			if (p->remove_sleep)
 				sleep(p->load_sleep);
 

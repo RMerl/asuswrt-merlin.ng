@@ -697,6 +697,10 @@ else
 endif
 
 	ln -sf /tmp/fb_data.tgz.gz $(INSTALLDIR)/www/fb_data.tgz.gz
+	ln -sf /tmp/fb_data.tgz.gz.part.a $(INSTALLDIR)/www/fb_data.tgz.gz.part.a
+	ln -sf /tmp/fb_data.tgz.gz.part.b $(INSTALLDIR)/www/fb_data.tgz.gz.part.b
+	ln -sf /tmp/fb_data.tgz.gz.part.c $(INSTALLDIR)/www/fb_data.tgz.gz.part.c
+	ln -sf /tmp/fb_data.tgz.gz.part.d $(INSTALLDIR)/www/fb_data.tgz.gz.part.d
 
 ifneq ($(RTCONFIG_AMAS), y)
 	rm -rf $(INSTALLDIR)/www/device-map/amesh.asp

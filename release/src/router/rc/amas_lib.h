@@ -53,7 +53,7 @@ typedef struct __amaslib_dhcp__t_
 } AMASLIB_DHCP_T;
 
 /* define amas usage */
-#define DHCP_TABLE     "/tmp/var/lib/misc/dnsmasq.leases"
+#define DHCP_TABLE     "/var/lib/misc/dnsmasq.leases"
 #define ARP_TABLE      "/proc/net/arp"
 
 int amas_lib_device_ip_query(char *mac, char *ip);

@@ -28,10 +28,11 @@ for i in ca ca1 ca2 ca3; do
     mkdir $i
     touch $i/index.txt
     echo 01 > $i/serial
-    ${OPENSSL} genrsa -rand ${srcdir}/../configure > $i/key.pem
+    ${OPENSSL} genrsa -rand ${srcdir}/../configure 2048 > $i/key.pem
 done
 
-${OPENSSL} genrsa -rand ${srcdir}/../configure > client.key
+${OPENSSL} genrsa -rand ${srcdir}/../configure 2048 > client.key
+${OPENSSL} genrsa -rand ${srcdir}/../configure 2048 > server.key
 
 ${OPENSSL} dsaparam -genkey -rand ${srcdir}/../configure 1024 > client.dsap
 ${OPENSSL} gendsa client.dsap > clientdsa.key
@@ -80,82 +81,82 @@ CADIR=./ca1 ${CA} -name neoncainit -extensions caExt -startdate `asn1date "2 day
 CADIR=./ca3 ${CA} -name neoncainit -extensions caExt -startdate `asn1date "1 year"` -enddate `asn1date "2 years"` \
   -in ca3/cert.csr -keyfile ca3/key.pem -out ca3/cert.pem -selfsign
 
-csr_fields | ${REQ} -new -key ${srcdir}/server.key -out server.csr
+csr_fields | ${REQ} -new -key server.key -out server.csr
 
-csr_fields | ${REQ} -new -key ${srcdir}/server.key -out expired.csr
-csr_fields | ${REQ} -new -key ${srcdir}/server.key -out notyet.csr
+csr_fields | ${REQ} -new -key server.key -out expired.csr
+csr_fields | ${REQ} -new -key server.key -out notyet.csr
 
 csr_fields "Upper Case Dept" lOcALhost | \
-${REQ} -new -key ${srcdir}/server.key -out caseless.csr
+${REQ} -new -key server.key -out caseless.csr
 
 csr_fields "Use AltName Dept" nowhere.example.com | \
-${REQ} -new -key ${srcdir}/server.key -out altname1.csr
+${REQ} -new -key server.key -out altname1.csr
 
 csr_fields "Two AltName Dept" nowhere.example.com | \
-${REQ} -new -key ${srcdir}/server.key -out altname2.csr
+${REQ} -new -key server.key -out altname2.csr
 
 csr_fields "Third AltName Dept" nowhere.example.com | \
-${REQ} -new -key ${srcdir}/server.key -out altname3.csr
+${REQ} -new -key server.key -out altname3.csr
 
 csr_fields "Fourth AltName Dept" localhost | \
-${REQ} -new -key ${srcdir}/server.key -out altname4.csr
+${REQ} -new -key server.key -out altname4.csr
 
 csr_fields "Good ipAddress altname Dept" nowhere.example.com | \
-${REQ} -new -key ${srcdir}/server.key -out altname5.csr
+${REQ} -new -key server.key -out altname5.csr
 
 csr_fields "Bad ipAddress altname 1 Dept" nowhere.example.com | \
-${REQ} -new -key ${srcdir}/server.key -out altname6.csr
+${REQ} -new -key server.key -out altname6.csr
 
 csr_fields "Bad ipAddress altname 2 Dept" nowhere.example.com | \
-${REQ} -new -key ${srcdir}/server.key -out altname7.csr
+${REQ} -new -key server.key -out altname7.csr
 
 csr_fields "Bad ipAddress altname 3 Dept" nowhere.example.com | \
-${REQ} -new -key ${srcdir}/server.key -out altname8.csr
+${REQ} -new -key server.key -out altname8.csr
 
 csr_fields "Wildcard Altname Dept 1" | \
-${REQ} -new -key ${srcdir}/server.key -out altname9.csr
+${REQ} -new -key server.key -out altname9.csr
 
 csr_fields "Bad Hostname Department" nohost.example.com | \
-${REQ} -new -key ${srcdir}/server.key -out wrongcn.csr
+${REQ} -new -key server.key -out wrongcn.csr
 
 csr_fields "Self-Signed" | \
-${MKCERT} -key ${srcdir}/server.key -out ssigned.pem
+${MKCERT} -key server.key -out ssigned.pem
 
 # default => T61String
 csr_fields "`echo -e 'H\0350llo World'`" localhost |
-${REQ} -new -key ${srcdir}/server.key -out t61subj.csr
+${REQ} -new -key server.key -out t61subj.csr
 
 STRMASK=pkix # => BMPString
 csr_fields "`echo -e 'H\0350llo World'`" localhost |
-${REQ} -new -key ${srcdir}/server.key -out bmpsubj.csr
+${REQ} -new -key server.key -out bmpsubj.csr
 
 STRMASK=utf8only # => UTF8String
 csr_fields "`echo -e 'H\0350llo World'`" localhost |
-${REQ} -new -key ${srcdir}/server.key -out utf8subj.csr
+${REQ} -new -key server.key -out utf8subj.csr
 
 STRMASK=default
 
 ### produce a set of CA certs
 
 csr_fields "First Random CA" "first.example.com" "CAs Ltd." Lincoln Lincolnshire | \
-${MKCERT} -key ${srcdir}/server.key -out ca1.pem
+${MKCERT} -key server.key -out ca1.pem
 
 csr_fields "Second Random CA" "second.example.com" "CAs Ltd." Falmouth Cornwall | \
-${MKCERT} -key ${srcdir}/server.key -out ca2.pem
+${MKCERT} -key server.key -out ca2.pem
 
 csr_fields "Third Random CA" "third.example.com" "CAs Ltd." Ipswich Suffolk | \
-${MKCERT} -key ${srcdir}/server.key -out ca3.pem
+${MKCERT} -key server.key -out ca3.pem
 
 csr_fields "Fourth Random CA" "fourth.example.com" "CAs Ltd." Norwich Norfolk | \
-${MKCERT} -key ${srcdir}/server.key -out ca4.pem
+${MKCERT} -key server.key -out ca4.pem
 
 cat ca/cert.pem ca[1234].pem > calist.pem
 
 csr_fields "Wildcard Cert Dept" "*.example.com" | \
-${REQ} -new -key ${srcdir}/server.key -out wildcard.csr
+${REQ} -new -key server.key -out wildcard.csr
 
 csr_fields "Wildcard IP Cert" "*.0.0.1" | \
-${REQ} -new -key ${srcdir}/server.key -out wildip.csr
+${REQ} -new -key server.key -out wildip.csr
 
 csr_fields "Neon Client Cert" ignored.example.com | \
 ${REQ} -new -key client.key -out client.csr
@@ -167,21 +168,21 @@ ${REQ} -new -key clientdsa.key -out clientdsa.csr
 
 REQDN=reqDN.doubleCN
 csr_fields "Double CN Dept" "nohost.example.com
-localhost" | ${REQ} -new -key ${srcdir}/server.key -out twocn.csr
+localhost" | ${REQ} -new -key server.key -out twocn.csr
 
 REQDN=reqDN.CNfirst
-echo localhost | ${REQ} -new -key ${srcdir}/server.key -out cnfirst.csr
+echo localhost | ${REQ} -new -key server.key -out cnfirst.csr
 
 REQDN=reqDN.missingCN
-echo GB | ${REQ} -new -key ${srcdir}/server.key -out missingcn.csr
+echo GB | ${REQ} -new -key server.key -out missingcn.csr
 
 REQDN=reqDN.justEmail
-echo blah@example.com | ${REQ} -new -key ${srcdir}/server.key -out justmail.csr
+echo blah@example.com | ${REQ} -new -key server.key -out justmail.csr
 
 # presume AVAs will come out in least->most specific order still...
 REQDN=reqDN.twoOU
 csr_fields "Second OU Dept
-First OU Dept" | ${REQ} -new -key ${srcdir}/server.key -out twoou.csr
+First OU Dept" | ${REQ} -new -key server.key -out twoou.csr
 
 ### don't put ${REQ} invocations after here
 

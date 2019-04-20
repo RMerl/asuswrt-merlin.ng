@@ -24,8 +24,6 @@
 #include <unistd.h>
 #endif
 
-#include <fcntl.h>
-
 #include "ne_compress.h"
 #include "ne_auth.h"
 
@@ -91,33 +89,18 @@ static int reader(void *ud, const char *block, size_t len)
     return 0;
 }
 
-static int file2buf(int fd, ne_buffer *buf)
-{
-    char buffer[BUFSIZ];
-    ssize_t n;
-    
-    while ((n = read(fd, buffer, BUFSIZ)) > 0) {
-	ne_buffer_append(buf, buffer, n);
-    }
-    
-    return 0;
-}
-
 static int do_fetch(const char *realfn, const char *gzipfn,
 		    int chunked, int expect_fail)
 {
     ne_session *sess;
     ne_request *req;
-    int fd, ret;
+    int ret;
     ne_buffer *buf = ne_buffer_create();
     struct serve_file_args sfargs;
     ne_decompress *dc;
     struct string body;
     
-    fd = open(realfn, O_RDONLY);
-    ONN("failed to open file", fd < 0);
-    file2buf(fd, buf);
-    (void) close(fd);
+    CALL(file_to_buffer(realfn, buf));
 
     body.data = buf->data;
     body.len = buf->used - 1;

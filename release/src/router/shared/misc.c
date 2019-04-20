@@ -116,111 +116,6 @@ extern char *get_line_from_buffer(const char *buf, char *line, const int line_si
 	return line;
 }
 
-extern char *get_upper_str(const char *const str, char **target){
-	int len, i;
-	char *ptr;
-
-	len = strlen(str);
-	*target = (char *)malloc(sizeof(char)*(len+1));
-	if(*target == NULL){
-		_dprintf("No memory \"*target\".\n");
-		return NULL;
-	}
-	ptr = *target;
-	for(i = 0; i < len; ++i)
-		ptr[i] = toupper(str[i]);
-	ptr[len] = 0;
-
-	return ptr;
-}
-
-extern int upper_strcmp(const char *const str1, const char *const str2){
-	char *upper_str1, *upper_str2;
-	int ret;
-
-	if(str1 == NULL || str2 == NULL)
-		return -1;
-
-	if(get_upper_str(str1, &upper_str1) == NULL)
-		return -1;
-
-	if(get_upper_str(str2, &upper_str2) == NULL){
-		free(upper_str1);
-		return -1;
-	}
-
-	ret = strcmp(upper_str1, upper_str2);
-	free(upper_str1);
-	free(upper_str2);
-
-	return ret;
-}
-
-extern int upper_strncmp(const char *const str1, const char *const str2, int count){
-	char *upper_str1, *upper_str2;
-	int ret;
-
-	if(str1 == NULL || str2 == NULL)
-		return -1;
-
-	if(get_upper_str(str1, &upper_str1) == NULL)
-		return -1;
-
-	if(get_upper_str(str2, &upper_str2) == NULL){
-		free(upper_str1);
-		return -1;
-	}
-
-	ret = strncmp(upper_str1, upper_str2, count);
-	free(upper_str1);
-	free(upper_str2);
-
-	return ret;
-}
-
-extern char *upper_strstr(const char *const str, const char *const target){
-	char *upper_str, *upper_target;
-	char *ret;
-	int len;
-
-	if(str == NULL || target == NULL)
-		return NULL;
-
-	if(get_upper_str(str, &upper_str) == NULL)
-		return NULL;
-
-	if(get_upper_str(target, &upper_target) == NULL){
-		free(upper_str);
-		return NULL;
-	}
-
-	ret = strstr(upper_str, upper_target);
-	if(ret == NULL){
-		free(upper_str);
-		free(upper_target);
-		return NULL;
-	}
-
-	if((len = upper_str-ret) < 0)
-		len = ret-upper_str;
-
-	free(upper_str);
-	free(upper_target);
-
-	return (char *)(str+len);
-}
-
-int stricmp(char const *a, char const *b, int len)
-{
-	for (;len--; a++, b++) {
-		int d = tolower(*a) - tolower(*b);
-		if (d != 0 || !*a)
-			return d;
-	}
-
-	return 0;
-}
-
 #ifdef HND_ROUTER
 // defined (__GLIBC__) && !defined(__UCLIBC__)
 size_t strlcpy(char *dst, const char *src, size_t size)
@@ -1658,6 +1553,7 @@ void set_action(int a)
 
 	act.action = a;
 	act.pid = getpid();
+	memset(act.comm, 0, sizeof(act.comm));
 	snprintf(stat, sizeof(stat), "/proc/%d/stat", act.pid);
 	s = file2str(stat);
 	if (s) {
@@ -1688,8 +1584,8 @@ static int __check_action(struct action_s *pa)
 		if (--r == 0) return ACT_UNKNOWN;
 	}
 	if (pa)
-		*pa = act;
-	_dprintf("%d: check_action %d\n", getpid(), act.action);
+		memcpy(pa, &act, sizeof(act));
+	_dprintf("%d: check_action %d: %d(%s)\n", getpid(), act.action, act.pid, act.comm);
 
 	return act.action;
 }
@@ -1699,23 +1595,33 @@ int check_action(void)
 	return __check_action(NULL);
 }
 
+/* wait_action_idle(int n)
+ *
+ * n: the number (count down value) to try
+ *
+ * return value
+ * 	n: success and return the remainng value of n.
+ * 	0: fail
+ */
 int wait_action_idle(int n)
 {
 	int r;
 	struct action_s act;
 
-	while (n-- > 0) {
+	memset(&act, 0, sizeof(act));
+	while (n > 0) {
 		act.pid = 0;
-		if (__check_action(&act) == ACT_IDLE) return 1;
+		if (__check_action(&act) == ACT_IDLE) return n;
 		if (act.pid > 0 && !process_exists(act.pid)) {
 			if (!(r = unlink(ACTION_LOCK)) || errno == ENOENT) {
 				_dprintf("Terminated process, pid %d %s, hold action lock %d !!!\n",
 					act.pid, act.comm, act.action);
-				return 1;
+				return n;
 			}
 			_dprintf("Remove " ACTION_LOCK " failed. errno %d (%s)\n", errno, strerror(errno));
 		}
 		sleep(1);
+		n--;
 	}
 	_dprintf("pid %d %s hold action lock %d !!!\n", act.pid, act.comm, act.action);
 	return 0;
@@ -4320,3 +4226,18 @@ int is_amaslib_enabled()
 	return ret;
 }
 #endif
+
+int get_chance_to_control(void)
+{
+	time_t now_t, login_ts, app_login_ts;
+
+	now_t = uptime();
+	login_ts = atol(nvram_safe_get("login_timestamp"));
+	app_login_ts = atol(nvram_safe_get("app_login_timestamp"));
+	if(((unsigned long)(login_ts) == 0 || (unsigned long)(now_t-login_ts) > 1800 || nvram_match("login_ip", ""))
+	&& ((unsigned long)(app_login_ts) == 0 || (unsigned long)(now_t-app_login_ts) > 1800 )) //check httpd from browser not in use
+	{
+		return 1;
+	}else
+		return 0;
+}

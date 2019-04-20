@@ -163,14 +163,9 @@ var httpApi ={
 			return _nvrams.map(function(elem){return "nvram_char_to_ascii(" + elem + "," + elem + ")";}).join("%3B");
 		};
 
-		if(forceUpdate) cachedData.clear(objItems);
-
 		objItems.forEach(function(key){
-			if(cachedData.get.hasOwnProperty(key)){
-				retData[key] = cachedData.get[key];
-			}
-			else if(asyncData.get.hasOwnProperty(key)){
-				retData[key] = cachedData.get[key] = asyncData.get[key];
+			if(asyncData.get.hasOwnProperty(key)){
+				retData[key] = asyncData.get[key];
 				if(forceUpdate) delete asyncData.get[key];
 			}
 			else{
@@ -199,7 +194,7 @@ var httpApi ={
 					});
 				},
 				success: function(response){
-					Object.keys(response).forEach(function(key){retData[key] = cachedData.get[key] = response[key];})
+					Object.keys(response).forEach(function(key){retData[key] = response[key];})
 					retData.isError = false;
 				}
 			});
@@ -597,7 +592,16 @@ var httpApi ={
 			return ssid;
 		};
 		var dpsta_rep = (httpApi.nvramGet(["wlc_dpsta"]).wlc_dpsta == "") ? false : true;
-		if(dpsta_rep){
+		if(isSupport("proxysta") && !dpsta_rep){
+			var wlc_psta_state = httpApi.hookGet("wlc_psta_state", true);
+			if(wlc_psta_state.wlc_state == "1" && wlc_psta_state.wlc_state_auth == "0")
+				papStatus = get_ssid(_band);
+			else if(wlc_psta_state.wlc_state == "2" && wlc_psta_state.wlc_state_auth == "1")
+				papStatus = "<#APSurvey_action_ConnectingStatus1#>";
+			else
+				papStatus = "<#Disconnected#>";
+		}
+		else{
 			var wlc_state = "0";
 			if(_band == undefined)
 				wlc_state = httpApi.nvramGet(["wlc_state"]).wlc_state;
@@ -617,16 +621,6 @@ var httpApi ={
 					papStatus = "<#Disconnected#>";
 					break;
 			}
-		}
-		else{
-			var wlc_psta_state = httpApi.hookGet("wlc_psta_state", true);
-			if(wlc_psta_state.wlc_state == "1" && wlc_psta_state.wlc_state_auth == "0")
-				papStatus = get_ssid(_band);
-			else if(wlc_psta_state.wlc_state == "2" && wlc_psta_state.wlc_state_auth == "1")
-				papStatus = "<#APSurvey_action_ConnectingStatus1#>";
-			else
-				papStatus = "<#Disconnected#>";
-
 		}
 		return papStatus;
 	},
@@ -730,8 +724,15 @@ var httpApi ={
 		var returnMacAddr = "";
 		var offset = 0;
 		switch(modelName){
-			case "LYRA_VOICE":
 			case "Lyra":
+				{
+					var last_mac = _macAddr.substr(-1);
+				        if (last_mac == "9") offset = -9;
+				        else if (last_mac == "5" || last_mac == "D") offset = -5;
+				        else offset = -3;
+				}
+				break;
+			case "LYRA_VOICE":
 			case "Lyra_Mini":
 			case "LyraMini":
 				offset = -3;
@@ -753,5 +754,21 @@ var httpApi ={
 			if(callBackError)
 				callBackError();
 		}
+	},
+
+	"updateClientList": function(){
+		$.post("/applyapp.cgi?action_mode=update_client_list");
+	},
+
+	"hasAiMeshNode": function(){
+		var status = false;
+		if(amesh_support && (isSwMode("rt") || isSwMode("ap"))) {
+			var get_cfg_clientlist = httpApi.hookGet("get_cfg_clientlist", true);
+			get_cfg_clientlist.shift();//filter CAP
+			var online_node_list = get_cfg_clientlist.filter(function(item) { return item.online == "1"; });
+			if(online_node_list.length > 0)
+				status = true;
+		}
+		return status;
 	}
 }

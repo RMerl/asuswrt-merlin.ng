@@ -307,6 +307,7 @@ get_wlname_by_mac(unsigned char *mac, char *wlname)
 {
 	char eabuf[18];
 	char tmptr[] = "wlXXXXX_hwaddr";
+	char bss_en[] = "wlXXX_bss_enabled";
 	char *wl_hw;
 	int i, j;
 
@@ -315,18 +316,22 @@ get_wlname_by_mac(unsigned char *mac, char *wlname)
 	for (i = 0; i < MAX_NVPARSE; i++) {
 		sprintf(wlname, "wl%d", i);
 		sprintf(tmptr, "wl%d_hwaddr", i);
+		sprintf(bss_en, "wl%d_bss_enabled", i);
 		wl_hw = nvram_get(tmptr);
 		if (wl_hw) {
-			if (!strncasecmp(wl_hw, eabuf, sizeof(eabuf)))
+			if (!strncasecmp(wl_hw, eabuf, sizeof(eabuf)) &&
+				nvram_match(bss_en, "1"))
 				return 0;
 		}
 
 		for (j = 1; j < WL_MAXBSSCFG; j++) {
 			sprintf(wlname, "wl%d.%d", i, j);
 			sprintf(tmptr, "wl%d.%d_hwaddr", i, j);
+			sprintf(bss_en, "wl%d.%d_bss_enabled", i, j);
 			wl_hw = nvram_get(tmptr);
 			if (wl_hw) {
-				if (!strncasecmp(wl_hw, eabuf, sizeof(eabuf)))
+				if (!strncasecmp(wl_hw, eabuf, sizeof(eabuf)) &&
+					nvram_match(bss_en, "1"))
 					return 0;
 			}
 		}

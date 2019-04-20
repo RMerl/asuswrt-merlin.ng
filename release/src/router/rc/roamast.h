@@ -157,7 +157,7 @@ typedef struct _WLANCONFIG_LIST {
          unsigned int chan;
          char txrate[6];
          char rxrate[6];
-         unsigned int rssi;
+         int rssi;
          unsigned int rssi_min;
          unsigned int rssi_max;
          unsigned int idle;

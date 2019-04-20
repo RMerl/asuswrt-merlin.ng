@@ -45,17 +45,21 @@ static char buffer[BUFSIZ];
 static ne_session *def_sess;
 static ne_request *def_req;
 
+/* Last (real) port used by fail_request_with_error(). */
+static unsigned int fail_request_last_port;
+
 static int prepare_request(server_fn fn, void *ud)
 {
     static char uri[100];
+    unsigned int port;
 
-    def_sess = ne_session_create("http", "localhost", 7777);
+    CALL(new_spawn_server(1, fn, ud, &port));
+
+    def_sess = ne_session_create("http", "localhost", port);
 
     sprintf(uri, "/test%d", test_num);
 
     def_req = ne_request_create(def_sess, "GET", uri);
-
-    CALL(spawn_server(7777, fn, ud));
 
     return OK;
 }
@@ -144,15 +148,12 @@ static int expect_header_value(const char *name, const char *value,
  * 'expect' */
 static int expect_response(const char *expect, server_fn fn, void *userdata)
 {
-    ne_session *sess = ne_session_create("http", "localhost", 7777);
+    ne_session *sess;
     ne_buffer *buf = ne_buffer_create();
 
-    ON(sess == NULL || buf == NULL);
-    ON(spawn_server(7777, fn, userdata));
-
+    CALL(session_server(&sess, fn, userdata));
     CALL(run_request(sess, 200, construct_get, buf));
-
-    ON(await_server());
+    CALL(await_server());
 
     ONN("response body match", strcmp(buf->data, expect));
 
@@ -171,16 +172,17 @@ static int expect_response(const char *expect, server_fn fn, void *userdata)
  * header. */
 static int expect_no_body(const char *method, const char *resp)
 {
-    ne_session *sess = ne_session_create("http", "localhost", 7777);
-    ne_request *req = ne_request_create(sess, method, "/first");
+    ne_session *sess;
+    ne_request *req;
     ssize_t ret;
     char *r = ne_malloc(strlen(resp) + sizeof(EMPTY_RESP));
     
     strcpy(r, resp);
     strcat(r, EMPTY_RESP);
-    ON(spawn_server(7777, single_serve_string, r));
+    CALL(session_server(&sess, single_serve_string, r));
     ne_free(r);
 
+    req = ne_request_create(sess, method, "/first");
     ONN("failed to begin request", ne_begin_request(req));
     ret = ne_read_response_block(req, buffer, BUFSIZ);
     ONV(ret != 0, ("got response block of size %" NE_FMT_SSIZE_T, ret));
@@ -412,15 +414,16 @@ static int serve_twice(ne_socket *sock, void *userdata)
  * 'body' both times. */
 static int test_persist_p(const char *response, const char *body, int proxy)
 {
-    ne_session *sess = ne_session_create("http", "localhost", 7777);
+    ne_session *sess;
     ne_buffer *buf = ne_buffer_create();
 
-    ON(sess == NULL || buf == NULL);
-    ON(spawn_server(7777, serve_twice, (char *)response));
-
     if (proxy) {
-        ne_session_proxy(sess, "localhost", 7777);
+        CALL(proxied_session_server(&sess, "http", "localhost", 1234,
+                                    serve_twice, (void *)response));
         ne_set_session_flag(sess, NE_SESSFLAG_CONNAUTH, 1);
+    }
+    else {
+        CALL(session_server(&sess, serve_twice, (void *)response));
     }
 
     CALL(run_request(sess, 200, construct_get, buf));
@@ -497,10 +500,12 @@ static int serve_eof(ne_socket *sock, void *ud)
  * error if the request is then retried, and the test fails. */
 static int fail_early_eof(const char *resp)
 {
-    ne_session *sess = ne_session_create("http", "localhost", 7777);
+    ne_session *sess;
+    unsigned int port;
 
-    CALL(spawn_server_repeat(7777, serve_eof, (char *)resp, 3));
-
+    CALL(new_spawn_server(3, serve_eof, (char *)resp, &port));
+    
+    sess = ne_session_create("http", "localhost", port);
     ONREQ(any_request(sess, "/foo"));
     ONN("request retried after early EOF",
 	any_request(sess, "/foobar") == NE_OK);
@@ -536,10 +541,13 @@ static int fail_eof_badclen(void)
  * second request reads the status-line. */
 static int ptimeout_eof(void)
 {
-    ne_session *sess = ne_session_create("http", "localhost", 7777);
+    ne_session *sess;
+    unsigned int port;
 
-    CALL(spawn_server_repeat(7777, single_serve_string, 
-			     RESP200 "Content-Length: 0\r\n" "\r\n", 4));
+    CALL(new_spawn_server(4, single_serve_string, 
+                          RESP200 "Content-Length: 0\r\n" "\r\n",
+                          &port));
+    sess = ne_session_create("http", "localhost", port);
     
     CALL(any_2xx_request(sess, "/first"));
     CALL(any_2xx_request(sess, "/second"));
@@ -556,11 +564,14 @@ static int ptimeout_eof(void)
  * the body. */
 static int ptimeout_eof2(void)
 {
-    ne_session *sess = ne_session_create("http", "localhost", 7777);
+    ne_session *sess;
+    unsigned int port;
 
-    CALL(spawn_server_repeat(7777, single_serve_string, 
-			     RESP200 "Content-Length: 0\r\n" "\r\n", 4));
+    CALL(new_spawn_server(4, single_serve_string, 
+                          RESP200 "Content-Length: 0\r\n" "\r\n",
+                          &port));
     
+    sess = ne_session_create("http", "localhost", port);
     CALL(any_2xx_request(sess, "/first"));
     minisleep();
     CALL(any_2xx_request_body(sess, "/second"));
@@ -575,26 +586,38 @@ static int ptimeout_eof2(void)
 /* TODO: add a ptimeout_reset too, if an RST can be reliably generated
  * mid-connection. */
 
+static int incr_server(ne_socket *sock, void *arg)
+{
+    struct many_serve_args *msa = arg;
+    
+    CALL(many_serve_string(sock, msa));
+    
+    msa->count++;
+    
+    return OK;
+}
+
 /* Emulates a persistent connection timeout on the server. This tests
  * the timeout occuring after between 1 and 10 requests down the
  * connection. */
 static int persist_timeout(void)
 {
-    ne_session *sess = ne_session_create("http", "localhost", 7777);
+    ne_session *sess;
     ne_buffer *buf = ne_buffer_create();
-    int n;
     struct many_serve_args args;
-
-    ON(sess == NULL || buf == NULL);
+    unsigned int port;
+    int n;
 
     args.str = RESP200 "Content-Length: 5\r\n\r\n" "abcde";
+    args.count = 1;
+
+    CALL(new_spawn_server(9, incr_server, &args, &port));
     
+    sess = ne_session_create("http", "localhost", port);
+
     for (args.count = 1; args.count < 10; args.count++) {
 
-	ON(spawn_server(7777, many_serve_string, &args));
-
 	for (n = 0; n < args.count; n++) {
-	    
 	    ONV(run_request(sess, 200, construct_get, buf),
 		("%d of %d, request failed: %s", n, args.count,
 		 ne_get_error(sess)));
@@ -605,9 +628,6 @@ static int persist_timeout(void)
 	    /* Ready for next time. */
 	    ne_buffer_clear(buf);
 	}
-
-	ON(await_server());
-
     }
 
     ne_session_destroy(sess);
@@ -620,14 +640,17 @@ static int persist_timeout(void)
  * connections by default. */
 static int no_persist_http10(void)
 {
-    ne_session *sess = ne_session_create("http", "localhost", 7777);
+    ne_session *sess;
+    unsigned int port;
 
-    CALL(spawn_server_repeat(7777, single_serve_string,
-			     "HTTP/1.0 200 OK\r\n"
-			     "Content-Length: 5\r\n\r\n"
-			     "abcde"
-			     "Hello, world - what a nice day!\r\n",
-			     4));
+    CALL(new_spawn_server(4, single_serve_string,
+                          "HTTP/1.0 200 OK\r\n"
+                          "Content-Length: 5\r\n\r\n"
+                          "abcde"
+                          "Hello, world - what a nice day!\r\n",
+                          &port));
+
+    sess = ne_session_create("http", "localhost", port);
 
     /* if the connection is treated as persistent, the status-line for
      * the second request will be "Hello, world...", which will
@@ -1080,11 +1103,10 @@ static int send_bodies(void)
 
     for (m = 0; m < 2; m++) {
 	for (n = 0; bodies[n].body != NULL; n++) {
-	    ne_session *sess = ne_session_create("http", "localhost", 7777);
+	    ne_session *sess;
 	    ne_request *req;
 	    
-	    ON(sess == NULL);
-	    ON(spawn_server(7777, want_body, &(bodies[n])));
+	    CALL(session_server(&sess, want_body, &(bodies[n])));
 
 	    req = ne_request_create(sess, "PUT", "/");
 	    ON(req == NULL);
@@ -1115,20 +1137,14 @@ static int send_bodies(void)
 static int fail_request_with_error(int with_body, server_fn fn, void *ud, 
                                    int forever, const char *error)
 {
-    ne_session *sess = ne_session_create("http", "localhost", 7777);
+    ne_session *sess;
     ne_request *req;
+    unsigned int port;
     int ret;
 
-    ON(sess == NULL);
-    
-    if (forever) {
-	ON(spawn_server_repeat(7777, fn, ud, 100));
-    } else {
-	ON(spawn_server(7777, fn, ud));
-    }
-    
+    CALL(new_spawn_server(forever ? 100 : 1, fn, ud, &port));
+    sess = ne_session_create("http", "localhost", port);
     req = ne_request_create(sess, "GET", "/");
-    ON(req == NULL);
 
     if (with_body) {
 	static const char *body = "random stuff";
@@ -1156,6 +1172,8 @@ static int fail_request_with_error(int with_body, server_fn fn, void *ud,
 
     ne_request_destroy(req);
     ne_session_destroy(sess);
+
+    fail_request_last_port = port;
    
     return OK;    
 }
@@ -1223,7 +1241,7 @@ static int is_alive(int port)
 
     addr = ne_addr_resolve("localhost", 0);
     for (ia = ne_addr_first(addr); ia && !connected; ia = ne_addr_next(addr))
-	connected = ne_sock_connect(sock, ia, 7777) == 0;
+	connected = ne_sock_connect(sock, ia, port) == 0;
     ne_addr_destroy(addr);
     if (sock == NULL)
 	return 0;
@@ -1245,7 +1263,7 @@ static int closed_connection(void)
      * request eventually fails... */
     CALL(fail_request(1, serve_close, NULL, 1));
     /* if server died -> infinite loop was detected. */
-    ret = !is_alive(7777);
+    ret = !is_alive(fail_request_last_port);
     reap_server();
     ONN("server aborted, infinite loop?", ret);
     return OK;
@@ -1269,8 +1287,10 @@ static int serve_close2(ne_socket *sock, void *userdata)
 static int close_not_retried(void)
 {
     int count = 0;
-    ne_session *sess = ne_session_create("http", "localhost", 7777);
-    CALL(spawn_server_repeat(7777, serve_close2, &count, 3));
+    ne_session *sess;
+    unsigned int port;
+    CALL(new_spawn_server(3, serve_close2, &count, &port));
+    sess = ne_session_create("http", "localhost", port);
     ONN("request was retried after EOF", any_request(sess, "/foo") == NE_OK);
     reap_server();
     ne_session_destroy(sess);
@@ -1411,7 +1431,7 @@ static int fail_noserver(const char *hostname, unsigned int port, int code)
 
 static int fail_lookup(void)
 {
-    return fail_noserver("no.such.domain", 7777, NE_LOOKUP);
+    return fail_noserver("no.such.domain", 4242, NE_LOOKUP);
 }
 
 /* neon 0.23.0 to 0.23.3: if a nameserver lookup failed, subsequent
@@ -1429,28 +1449,28 @@ static int fail_double_lookup(void)
 
 static int fail_connect(void)
 {
-    return fail_noserver("localhost", 7777, NE_CONNECT);
+    return fail_noserver("localhost", 32767, NE_CONNECT);
 }
 
 /* Test that the origin server hostname is NOT resolved for a proxied
  * request. */
 static int proxy_no_resolve(void)
 {
-     ne_session *sess = ne_session_create("http", "nonesuch2.invalid", 80);
-     int ret;
-     
-     ne_session_proxy(sess, "localhost", 7777);
-     CALL(spawn_server(7777, single_serve_string,
-		       RESP200 "Content-Length: 0\r\n\r\n"));
-     
-     ret = any_request(sess, "/foo");
-     ne_session_destroy(sess);
-
-     ONN("origin server name resolved when proxy used", ret == NE_LOOKUP);
-
-     CALL(await_server());
-
-     return OK;
+    ne_session *sess;
+    int ret;
+    
+    CALL(proxied_session_server(&sess, "http", "no.such.server.invalid", 80,
+                                single_serve_string,
+                                RESP200 "Content-Length: 0\r\n\r\n"));
+    
+    ret = any_request(sess, "/foo");
+    ne_session_destroy(sess);
+    
+    ONN("origin server name resolved when proxy used", ret == NE_LOOKUP);
+    
+    CALL(await_server());
+    
+    return OK;
 }
 
 /* If the chunk size is entirely invalid, the request should be
@@ -1488,8 +1508,18 @@ static int abort_respbody(void)
     return OK;
 }
 
-static int serve_abort(ne_socket *sock, void *ud)
+static int serve_then_abort(ne_socket *sock, void *ud)
 {
+    int *flag = ud;
+
+    if (*flag == 1) {
+        CALL(single_serve_string(sock, 
+                                 RESP200 "Content-Length: 0\r\n\r\n"
+                                 RESP200 TE_CHUNKED "\r\n"
+                                 "zzzzz\r\n"));
+        *flag = 0;
+    }
+
     exit(0);
 }
 
@@ -1499,27 +1529,23 @@ static int serve_abort(ne_socket *sock, void *ud)
 static int retry_after_abort(void)
 {
     ne_session *sess;
+    int flag = 1;
     
     /* Serve two responses down a single persistent connection, the
      * second of which is invalid and will cause the request to be
      * aborted. */
-    CALL(make_session(&sess, single_serve_string, 
-		      RESP200 "Content-Length: 0\r\n\r\n"
-		      RESP200 TE_CHUNKED "\r\n"
-		      "zzzzz\r\n"));
+    CALL(make_session(&sess, serve_then_abort, &flag));
 
-    CALL(any_request(sess, "/first"));
+    ONREQ(any_request(sess, "/first"));
     ONN("second request should fail", any_request(sess, "/second") == NE_OK);
+
     CALL(await_server());
 
-    /* spawn a server, abort the server immediately.  If the
-     * connection reset is interpreted as a p.conn timeout, a new
-     * connection will be attempted, which will fail with
-     * NE_CONNECT. */
-    CALL(spawn_server(7777, serve_abort, NULL));
+    /* A third attempt to connect to the server should fail to
+     * connect, though this is racy since someone else might come 
+     * along and steal the port... oh well. */
     ONN("third request was retried",
-	any_request(sess, "/third") == NE_CONNECT);
-    reap_server();
+	any_request(sess, "/third") != NE_CONNECT);
 
     ne_session_destroy(sess);    
     return OK;
@@ -1662,6 +1688,8 @@ static int hook_create_req(void)
 {
     ne_session *sess;
     struct cr_args args;
+    ne_uri uri;
+    char *u;
 
     CALL(make_session(&sess, single_serve_string, EMPTY_RESP EMPTY_RESP));
 
@@ -1676,9 +1704,16 @@ static int hook_create_req(void)
     ONN("first hook never called", args.result == -1);
     if (args.result) return FAIL;
 
-    args.uri = "http://localhost:7777/bar";
+    memset(&uri, 0, sizeof uri);
+    ne_fill_server_uri(sess, &uri);
+    uri.path = "/bar";
+
+    args.uri = u = ne_uri_unparse(&uri);
     args.result = -1;
-    
+
+    ne_free(uri.host);
+    ne_free(uri.scheme);
+
     /* force use of absoluteURI in request-uri */
     ne_session_proxy(sess, "localhost", 7777);
 
@@ -1686,6 +1721,8 @@ static int hook_create_req(void)
     
     ONN("second hook never called", args.result == -1);
     if (args.result) return FAIL;
+
+    ne_free(u);
 
     ne_session_destroy(sess);
 
@@ -2034,23 +2071,17 @@ static int status(void)
 {
     ne_session *sess;
     ne_buffer *buf = ne_buffer_create();
-    ne_sock_addr *sa = ne_addr_resolve("localhost", 0);
-    char addr[64], expect[1024];
-
-    ONN("could not resolve localhost", ne_addr_result(sa));
+    char expect[1024];
 
     ne_snprintf(expect, sizeof expect,
-                "lookup(localhost)-"
-                "connecting(localhost,%s)-"
-                "connected(localhost)-"
+                "lookup(127.0.0.1)-"
+                "connecting(127.0.0.1,127.0.0.1)-"
+                "connected(127.0.0.1)-"
                 "send(0,5000)-"
                 "send(5000,5000)-"
                 "recv(0,5)-"
                 "recv(5,5)-"
-                "disconnected(localhost)-",
-                ne_iaddr_print(ne_addr_first(sa), addr, sizeof addr));
-
-    ne_addr_destroy(sa);
+                "disconnected(127.0.0.1)-");
 
     CALL(make_session(&sess, single_serve_string, RESP200
                       "Content-Length: 5\r\n\r\n" "abcde"));
@@ -2075,17 +2106,14 @@ static int status_chunked(void)
 {
     ne_session *sess;
     ne_buffer *buf = ne_buffer_create();
-    ne_sock_addr *sa = ne_addr_resolve("localhost", 0);
-    char addr[64], expect[1024];
-
-    ONN("could not resolve localhost", ne_addr_result(sa));
+    char expect[1024];
 
     /* This sequence is not exactly guaranteed by the API, but it's
      * what the current implementation should do. */
     ne_snprintf(expect, sizeof expect,
-                "lookup(localhost)-"
-                "connecting(localhost,%s)-"
-                "connected(localhost)-"
+                "lookup(127.0.0.1)-"
+                "connecting(127.0.0.1,127.0.0.1)-"
+                "connected(127.0.0.1)-"
                 "send(0,5000)-"
                 "send(5000,5000)-"
                 "recv(0,-1)-"
@@ -2094,10 +2122,7 @@ static int status_chunked(void)
                 "recv(3,-1)-"
                 "recv(4,-1)-"
                 "recv(5,-1)-"
-                "disconnected(localhost)-",
-                ne_iaddr_print(ne_addr_first(sa), addr, sizeof addr));
-
-    ne_addr_destroy(sa);
+                "disconnected(127.0.0.1)-");
 
     CALL(make_session(&sess, single_serve_string, 
                       RESP200 TE_CHUNKED "\r\n" ABCDE_CHUNKS));
@@ -2161,10 +2186,10 @@ static int addrlist(void)
     ne_session *sess;
     ne_inet_addr *ia = ne_iaddr_make(ne_iaddr_ipv4, raw_127);
     const ne_inet_addr *ial[1];
+    unsigned int port;
 
-    sess = ne_session_create("http", "www.example.com", 7777);
-
-    CALL(spawn_server(7777, single_serve_string, EMPTY_RESP));
+    CALL(new_spawn_server(1, single_serve_string, EMPTY_RESP, &port));
+    sess = ne_session_create("http", "www.example.com", port);
 
     ial[0] = ia;
 
@@ -2182,11 +2207,14 @@ static int socks_session(ne_session **sess, struct socks_server *srv,
                          const char *hostname, unsigned int port,
                          server_fn server, void *userdata)
 {
+    unsigned int realport;
+
     srv->server = server;
     srv->userdata = userdata;
-    CALL(spawn_server(7777, socks_server, srv));
+    
+    CALL(new_spawn_server(1, socks_server, srv, &realport));
     *sess = ne_session_create("http", hostname, port);
-    ne_session_socks_proxy(*sess, srv->version, "localhost", 7777,
+    ne_session_socks_proxy(*sess, srv->version, "localhost", realport,
                            srv->username, srv->password);
     return OK;    
 }
@@ -2292,6 +2320,7 @@ static int send_length(void)
 
     ne_request_destroy(req);
     ne_session_destroy(sess);
+    ne_buffer_destroy(buf);
     close(fd);
     return await_server();
 }
@@ -2397,8 +2426,6 @@ ne_test tests[] = {
     T(fail_long_header),
     T(fail_on_invalid),
     T(read_timeout),
-    T(fail_lookup),
-    T(fail_double_lookup),
     T(fail_connect),
     T(proxy_no_resolve),
     T(fail_chunksize),
@@ -2422,5 +2449,7 @@ ne_test tests[] = {
     T(socks_v4_proxy),
     T(send_length),
     T(socks_fail),
+    T(fail_lookup),
+    T(fail_double_lookup),
     T(NULL)
 };

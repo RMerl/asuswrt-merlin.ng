@@ -58,16 +58,23 @@ void config_blocking_redirect(FILE *fp){
 					fprintf(fp, "-A %s -i %s -m time", fftype, lan_if);
 					if(follow_e->start_hour > 0)
 						fprintf(fp, " --timestart %d:0", follow_e->start_hour);
-						if(follow_e->end_hour < 24)
-							fprintf(fp, " --timestop %d:0", follow_e->end_hour);
-						fprintf(fp, DAYS_PARAM "%s %s %s -j ACCEPT\n", datestr[follow_e->start_day], chk_type, follow_addr);
+					if(follow_e->end_hour < 24)
+						fprintf(fp, " --timestop %d:0", follow_e->end_hour);
+					fprintf(fp, DAYS_PARAM "%s %s %s -j ACCEPT\n", datestr[follow_e->start_day], chk_type, follow_addr);
+
+					if(follow_e->start_hour > follow_e->end_hour){
+						fprintf(fp, "-A %s -i %s -m time" DAYS_PARAM, fftype, lan_if);
+						for(i = follow_e->start_day+1; i < follow_e->start_day+7; ++i)
+							fprintf(fp, "%s%s", (i == follow_e->start_day+1)?"":",", datestr[i%7]);
+						fprintf(fp, " %s %s -j ACCEPT\n", chk_type, follow_addr);
 					}
 				}
-				else if(follow_e->start_day < follow_e->end_day
-						|| follow_e->end_day == 0
-						){ // start_day < end_day.
-					if(follow_e->end_day == 0)
-						follow_e->end_day += 7;
+			}
+			else if(follow_e->start_day < follow_e->end_day
+					|| follow_e->end_day == 0
+					){ // start_day < end_day.
+				if(follow_e->end_day == 0)
+					follow_e->end_day += 7;
 
 				// first interval.
 				fprintf(fp, "-A %s -i %s -m time", fftype, lan_if);

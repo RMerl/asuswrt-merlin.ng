@@ -44,6 +44,7 @@
 <!ENTITY refsessflags SYSTEM "ref/sessflags.xml">
 <!ENTITY referr SYSTEM "ref/err.xml">
 <!ENTITY refopts SYSTEM "ref/opts.xml">
+<!ENTITY refproxy SYSTEM "ref/proxy.xml">
 <!ENTITY refsslvfy SYSTEM "ref/sslvfy.xml">
 <!ENTITY refsslcert SYSTEM "ref/sslcert.xml">
 <!ENTITY refsslcert2 SYSTEM "ref/sslcert2.xml">
@@ -176,6 +177,7 @@ ignoring the WebDAV support if desired.</para>
     &refiaddr; <!-- ne_iaddr_make -->
     &refalloc; <!-- ne_malloc -->
     &refsess; <!-- ne_session_create -->
+    &refproxy; <!-- ne_session_proxy -->
     &refsessflags; <!-- ne_set_session_flag -->
     &refreq; <!-- ne_request_create -->
     &refreqhdr; <!-- ne_add_request_header -->

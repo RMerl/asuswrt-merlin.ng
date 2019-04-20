@@ -101,7 +101,7 @@ function initial(){
 	}
 	else{
 		if(document.cookie.search('demo=1') == "-1"){
-			introduce_demo();
+			setTimeout("introduce_demo();", 1000);
 			document.cookie = "demo=1";
 		}
 
@@ -112,6 +112,9 @@ function initial(){
 	setTimeout(function(){
 		get_wan_data("all", "hour", "24", date_second, date_string);
 	}, 1000);
+
+	if(!ASUS_EULA.status("tm"))
+		ASUS_EULA.config(eula_confirm, cancel);
 }
 
 var date_string = "";
@@ -1468,19 +1471,32 @@ function eula_confirm(){
 function cancel(){
 	curState = 0;
 	$('#iphone_switch').animate({backgroundPosition: -37}, "slow", function() {});
+	document.form.action_script.value = "";
+	document.form.action_wait.value = "5";
 }
-
+function switch_control(_status){
+	if(_status) {
+		if(reset_wan_to_fo.check_status()) {
+			if(ASUS_EULA.check("tm")){
+				document.form.bwdpi_db_enable.value = 1;
+				applyRule();
+			}
+		}
+		else
+			cancel();
+	}
+	else {
+		document.form.bwdpi_db_enable.value = 0;
+		applyRule();
+	}
+}
 function applyRule(){
 	document.form.action_script.value = "restart_wrs;restart_firewall";
 
-	if(reset_wan_to_fo(document.form, document.form.bwdpi_db_enable.value)) {
-		document.form.submit();
-	}
-	else {
-		curState = 0;
-		document.form.bwdpi_db_enable.value = 0;
-		$('#traffic_analysis_enable').find('.iphone_switch').animate({backgroundPosition: -37}, "slow");
-	}
+	if(reset_wan_to_fo.change_status)
+		reset_wan_to_fo.change_wan_mode(document.form);
+
+	document.form.submit();
 }
 
 function setHover_css(){
@@ -1579,16 +1595,10 @@ function updateTrafficAnalyzer() {
 																	<script type="text/javascript">
 																		$('#traffic_analysis_enable').iphoneSwitch('<% nvram_get("bwdpi_db_enable"); %>',
 																			function(){
-																				ASUS_EULA.config(eula_confirm, cancel);
-																				
-																				if(ASUS_EULA.check("tm")){
-																					document.form.bwdpi_db_enable.value = 1;
-																					applyRule();
-																				}
+																				switch_control(1);
 																			},
 																			function(){
-																				document.form.bwdpi_db_enable.value = 0;
-																				applyRule();
+																				switch_control(0);
 																			}
 																		);
 																	</script>

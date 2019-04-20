@@ -483,6 +483,10 @@ static void build_wan_lan_mask(int stb)
 				nvram_unset(nvram_ports);
 		}
 		nvram_set_int("lanports_mask", lan_mask);
+#if defined(MAPAC1300) /* Lyra mini fixed the WAN / LAN port mask. */
+		nvram_set_int(nvram_ports, lan_mask);
+		nvram_set_int("lanports_mask", wan_mask);
+#endif
 	}
 }
 

@@ -652,6 +652,20 @@ void config_daytime_string(pc_s *pc_list, FILE *fp, char *logaccept, char *logdr
 					if(follow_e->end_hour > 0 || follow_e->end_min > 0)
 						fprintf(fp, " --timestop %d:%d", follow_e->end_hour, follow_e->end_min);
 					fprintf(fp, DAYS_PARAM "%s %s %s -j %s\n", datestr[follow_e->start_day], chk_type, follow_addr, fftype);
+
+					if(follow_e->start_hour > follow_e->end_hour){
+#ifdef BLOCKLOCAL
+						fprintf(fp, "-A INPUT -i %s -m time" DAYS_PARAM, lan_if);
+						for(i = follow_e->start_day+1; i < follow_e->start_day+7; ++i)
+							fprintf(fp, "%s%s", (i == follow_e->start_day+1)?"":",", datestr[i%7]);
+						fprintf(fp, " %s %s -j %s\n", chk_type, follow_addr, ftype);
+#endif
+
+						fprintf(fp, "-A FORWARD -i %s -m time" DAYS_PARAM, lan_if);
+						for(i = follow_e->start_day+1; i < follow_e->start_day+7; ++i)
+							fprintf(fp, "%s%s", (i == follow_e->start_day+1)?"":",", datestr[i%7]);
+						fprintf(fp, " %s %s -j %s\n", chk_type, follow_addr, fftype);
+					}
 				}
 			}
 			else if(follow_e->start_day < follow_e->end_day){

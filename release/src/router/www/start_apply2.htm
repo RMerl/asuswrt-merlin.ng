@@ -10,6 +10,8 @@
 var page_modified = 0;
 var restart_time = 0;
 
+var rc_support = '<% nvram_get("rc_support"); %>'; 
+var dsl_support = (rc_support.search("dsl") == -1) ? false : true;
 var current_page = '<% get_parameter("current_page"); %>';
 var next_page = '<% get_parameter("next_page"); %>';
 var action_script = '<% get_parameter("action_script"); %>';
@@ -518,10 +520,16 @@ function initial(){
 			}
 		}
 		
-		if(action_script == "reboot" || action_script.search("restart_dsl_wireless") != -1){
-			setTimeout(function(){
-				top.location.href = next_page;
-			}, restart_time*1000);
+		if(action_script == "reboot"){
+            setTimeout(function(){
+                top.location.href = next_page;
+            }, restart_time*1000);
+        }
+        else if(dsl_support){
+			//if(action_script.search("restart_dsl_wireless") != -1){
+			setTimeout(parent.startLiveUpdate, 40000);
+			setTimeout("parent.parent.document.getElementById('btn_gotoindex').style.visibility = 'visible';", 40000);
+			//}
 		}
 		else if(action_script.search("restart_subnet") !== -1){
 			setTimeout(doDetect, restart_time*1000);

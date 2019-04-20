@@ -14,7 +14,7 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston,
  * MA 02111-1307 USA
  */
-#include <stdio.h>	     
+#include <stdio.h>
 #include <fcntl.h>
 
 #include <shutils.h>
@@ -49,7 +49,7 @@ void add_beacon_vsie(char *hexdata)
 	//_dprintf("%s: wl0_ifname=%s\n", __func__, ifname);
 
 	if (ifname && strlen(ifname)) {
-		snprintf(cmd, sizeof(cmd), "hostapd_cli set_vsie -i%s %d DD%02X%02X%02X%02X%s", 
+		snprintf(cmd, sizeof(cmd), "hostapd_cli set_vsie -i%s %d DD%02X%02X%02X%02X%s",
 			ifname, pktflag, (uint8_t)len, (uint8_t)OUI_ASUS[0], (uint8_t)OUI_ASUS[1], (uint8_t)OUI_ASUS[2], hexdata);
 		_dprintf("%s: cmd=%s\n", __func__, cmd);
 		system(cmd);
@@ -90,7 +90,7 @@ void del_beacon_vsie(char *hexdata)
 	}
 }
 
-/* 
+/*
  * int get_psta_status(int unit)
  *
  * return value
@@ -101,7 +101,7 @@ void del_beacon_vsie(char *hexdata)
  */
 int get_psta_status(int unit)
 {
-	unsigned int ret;
+	int ret;
 	const char *sta;
 	int pid;
 	pid = getpid();
@@ -153,14 +153,50 @@ int Pty_get_upstream_rssi(int band)
 	return 0;
 }
 
+/*
+ * int get_wlan_service_status(int bssidx, int vifidx)
+ *
+ * Get the status of interface that indicate by bssidx and vifidx.
+ *
+ * return
+ * 	-1: invalid
+ * 	 0: inactive
+ * 	 1: active
+ */
 int get_wlan_service_status(int bssidx, int vifidx)
 {
-	return 0;
+	int ret;
+	char athfix[8];
+
+	if(bssidx < 0 || bssidx >= MAX_NR_WL_IF || vifidx < 0 || vifidx >= MAX_NO_MSSID)
+		return -1;
+	if(sw_mode() == SW_MODE_AP && nvram_match("re_mode", "1")) {
+		if(vifidx == 0)
+			strcpy(athfix, get_staifname(swap_5g_band(bssidx)));
+		else
+			__get_wlifname(swap_5g_band(bssidx), 0, athfix);
+	}
+	else {
+		__get_wlifname(swap_5g_band(bssidx), vifidx, athfix);
+	}
+	ret = is_intf_up(athfix);
+	return ret;
 }
 
 void set_wlan_service_status(int bssidx, int vifidx, int enabled)
 {
-
+	char athfix[8];
+	if(bssidx < 0 || bssidx >= MAX_NR_WL_IF || vifidx < 0 || vifidx >= MAX_NO_MSSID)
+		return;
+	if(sw_mode() == SW_MODE_AP && nvram_match("re_mode", "1")) {
+		if(vifidx <= 0) {
+			strcpy(athfix, get_staifname(swap_5g_band(bssidx)));
+			doSystem("ifconfig %s %s", athfix, enabled?"up":"down");
+			return;
+		}
+		vifidx--;
+	}
+	set_radio(enabled, swap_5g_band(bssidx), vifidx);
 }
 
 /*
@@ -212,6 +248,16 @@ char *get_pap_bssid(int unit, char bssid_str[])
 	}
 
 	return bssid_str;
+}
+
+int wl_get_bw(int unit)
+{
+	int athfix[8];
+	int bw, nctrlsb;
+
+	__get_wlifname(swap_5g_band(unit), 0, athfix);
+	get_bw_nctrlsb(athfix, &bw, &nctrlsb);
+	return bw;
 }
 #endif
 
@@ -345,7 +391,7 @@ int swap_5g_band(int band)
 		return band;
 #endif
 #ifdef RTCONFIG_WIRELESSREPEATER
-	if (sw_mode() == SW_MODE_REPEATER) 
+	if (sw_mode() == SW_MODE_REPEATER)
 		return band;
 #endif
 	switch(band)

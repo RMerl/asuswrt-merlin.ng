@@ -6,6 +6,6 @@ includedir=@includedir@
 Name: neon
 Description: HTTP/WebDAV client library
 Version: @NEON_VERSION@
-Libs.private: @NEON_LIBS@
 Libs: -L${libdir} -lneon @NEON_PC_LIBS@
+Libs.private: @NEON_LIBS@
 Cflags: -I${includedir}/neon @NEON_CFLAGS@

@@ -74,10 +74,21 @@ static int check_redir(struct redir_args *args, const char *expect)
     ne_session *sess;
     const ne_uri *loc;
     char *unp;
+    char *full_expect = NULL;
     
     CALL(make_session(&sess, serve_redir, args));
     ne_redirect_register(sess);
     
+    if (expect[0] == '/') {
+        ne_uri uri = {0};
+        ne_fill_server_uri(sess, &uri);
+        uri.path = (char *)expect;
+        full_expect = ne_uri_unparse(&uri);
+        expect = full_expect;
+        uri.path = NULL;
+        ne_uri_free(&uri);
+    }
+
     CALL(process_redir(sess, args->path, &loc));
     ONN("redirect location was NULL", loc == NULL);
 
@@ -87,6 +98,7 @@ static int check_redir(struct redir_args *args, const char *expect)
 
     ne_session_destroy(sess);
     CALL(await_server());
+    if (full_expect) ne_free(full_expect);
 
     return OK;
 }
@@ -115,19 +127,19 @@ static int simple(void)
 static int non_absolute(void)
 {
     struct redir_args args = {302, "/foo/bar/blah", PATH};
-    return check_redir(&args, "http://localhost:7777/foo/bar/blah");
+    return check_redir(&args, "/foo/bar/blah");
 }
 
 static int relative_1(void)
 {
     struct redir_args args = {302, "norman", "/foo/bar"};
-    return check_redir(&args, "http://localhost:7777/foo/norman");
+    return check_redir(&args, "/foo/norman");
 }
     
 static int relative_2(void)
 {
     struct redir_args args = {302, "wishbone", "/foo/bar/"};
-    return check_redir(&args, "http://localhost:7777/foo/bar/wishbone");
+    return check_redir(&args, "/foo/bar/wishbone");
 }    
 
 #if 0
@@ -154,22 +166,21 @@ static int fail_loop(void)
  * been encountered, or redirect hooks aren't registered. */
 static int no_redirect(void)
 {
-    ne_session *sess = ne_session_create("http", "localhost", 7777);
+    ne_session *sess;
     const ne_uri *loc;
 
+    CALL(session_server(&sess, single_serve_string, 
+                        "HTTP/1.1 200 OK\r\n" "Content-Length: 0\r\n\r\n"
+                        "HTTP/1.0 302 Get Ye Away\r\n"
+                        "Location: /blah\r\n" "\r\n"));
     ONN("redirect non-NULL before register", ne_redirect_location(sess));
     ne_redirect_register(sess);
     ONN("initial redirect non-NULL", ne_redirect_location(sess));
 
-    CALL(spawn_server(7777, single_serve_string, 
-                      "HTTP/1.0 200 OK\r\n\r\n\r\n"));
     ONREQ(any_request(sess, "/noredir"));
-    CALL(await_server());
 
     ONN("redirect non-NULL after non-redir req", ne_redirect_location(sess));
 
-    CALL(spawn_server(7777, single_serve_string, "HTTP/1.0 302 Get Ye Away\r\n"
-                      "Location: /blah\r\n" "\r\n"));
     CALL(process_redir(sess, "/foo", &loc));
     CALL(await_server());
 

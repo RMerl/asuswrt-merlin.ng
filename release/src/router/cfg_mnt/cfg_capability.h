@@ -16,6 +16,7 @@ enum capabilityType {
 /* subtype */
 /* for LED_CONTROL */
 #define CENTRAL_LED		BIT(0)
+#define LP55XX_LED		BIT(1)
 
 #endif /* __CFG_CAPABILITY_H__ */
 /* End of cfg_capability.h */

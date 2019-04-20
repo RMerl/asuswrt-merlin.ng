@@ -500,7 +500,7 @@ function initial(){
 		return false;
 	}
 	else if(getflag == "set_language"){
-		top.location.reload();
+		parent.location.href = current_page;
 	}
 	else if(next_page.indexOf("MobileQIS_Login") != -1){
 	}
@@ -619,8 +619,10 @@ function initial(){
 	else if(current_page.indexOf("Feedback") != -1){
 		if(action_script == "stop_dblog")
 			setTimeout("top_delay_redirect('"+current_page+"');", restart_time*1000);
-		else
+		else if(dsl_support)
 			setTimeout("parent.redirect();", action_wait*1000);
+		else
+			setTimeout("parent.CheckFBSize();", 15000);
 	}	
 	else if(getflag == "ddnscheck"){
 		setTimeout("parent.go_index_page();", 2000);

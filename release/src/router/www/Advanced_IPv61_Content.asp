@@ -78,12 +78,15 @@ function initial(){
 
 function showInputfield(v){
 	if(v == "dhcp6"){
-		if(wan_proto_orig == "l2tp" || wan_proto_orig == "pptp" || wan_proto_orig == "pppoe")
+		if(wan_proto_orig == "l2tp" || wan_proto_orig == "pptp" || wan_proto_orig == "pppoe"){
 			inputCtrl(document.form.ipv61_ifdev_select, 1);
-		else
+			showInputfield2('ipv61_ifdev', document.form.ipv61_ifdev_select.value);
+		}else{
 			inputCtrl(document.form.ipv61_ifdev_select, 0);
-		inputCtrl(document.form.ipv61_dhcp_pd[0], 1);	
-		inputCtrl(document.form.ipv61_dhcp_pd[1], 1);		
+			showInputfield2('ipv61_ifdev', 0);
+		}
+		inputCtrl(document.form.ipv61_dhcp_pd[0], 1);
+		inputCtrl(document.form.ipv61_dhcp_pd[1], 1);
 		inputCtrl(document.form.ipv61_tun_v4end, 0);
 		inputCtrl(document.form.ipv61_relay, 0);
 		inputCtrl(document.form.ipv61_6rd_dhcp[0], 0);
@@ -155,6 +158,7 @@ function showInputfield(v){
 			inputCtrl(document.form.ipv61_ifdev_select, 0);
 		inputCtrl(document.form.ipv61_dhcp_pd[0], 0);
 		inputCtrl(document.form.ipv61_dhcp_pd[1], 0);
+		showInputfield2('ipv61_ifdev', 0);
 		inputCtrl(document.form.ipv61_tun_v4end, 0);
 		inputCtrl(document.form.ipv61_relay, 0);
 		inputCtrl(document.form.ipv61_6rd_dhcp[0], 0);
@@ -195,7 +199,8 @@ function showInputfield(v){
 	else if(v == "6to4"){
 		inputCtrl(document.form.ipv61_ifdev_select, 0);
 		inputCtrl(document.form.ipv61_dhcp_pd[0], 0);
-		inputCtrl(document.form.ipv61_dhcp_pd[1], 0);	
+		inputCtrl(document.form.ipv61_dhcp_pd[1], 0);
+		showInputfield2('ipv61_ifdev', 0);
 		inputCtrl(document.form.ipv61_tun_v4end, 0);
 		inputCtrl(document.form.ipv61_relay, 1);
 		inputCtrl(document.form.ipv61_6rd_dhcp[0], 0);
@@ -245,7 +250,8 @@ function showInputfield(v){
 	else if(v == "6in4"){
 		inputCtrl(document.form.ipv61_ifdev_select, 0);
 		inputCtrl(document.form.ipv61_dhcp_pd[0], 0);
-		inputCtrl(document.form.ipv61_dhcp_pd[1], 0);	
+		inputCtrl(document.form.ipv61_dhcp_pd[1], 0);
+		showInputfield2('ipv61_ifdev', 0);
 		inputCtrl(document.form.ipv61_tun_v4end, 1);
 		inputCtrl(document.form.ipv61_relay, 0);
 		inputCtrl(document.form.ipv61_6rd_dhcp[0], 0);
@@ -295,6 +301,7 @@ function showInputfield(v){
 		inputCtrl(document.form.ipv61_ifdev_select, 0);
 		inputCtrl(document.form.ipv61_dhcp_pd[0], 0);
 		inputCtrl(document.form.ipv61_dhcp_pd[1], 0);
+		showInputfield2('ipv61_ifdev', 0);
 		inputCtrl(document.form.ipv61_tun_v4end, 0);
 		inputCtrl(document.form.ipv61_relay, 0);
 		inputCtrl(document.form.ipv61_6rd_dhcp[0], 1);
@@ -340,8 +347,9 @@ function showInputfield(v){
 			inputCtrl(document.form.ipv61_ifdev_select, 1);
 		else
 			inputCtrl(document.form.ipv61_ifdev_select, 0);
-		inputCtrl(document.form.ipv61_dhcp_pd[0], 0);	
-		inputCtrl(document.form.ipv61_dhcp_pd[1], 0);	
+		inputCtrl(document.form.ipv61_dhcp_pd[0], 0);
+		inputCtrl(document.form.ipv61_dhcp_pd[1], 0);
+		showInputfield2('ipv61_ifdev', 0);
 		inputCtrl(document.form.ipv61_tun_v4end, 0);
 		inputCtrl(document.form.ipv61_relay, 0);
 		inputCtrl(document.form.ipv61_6rd_dhcp[0], 0);
@@ -404,7 +412,8 @@ function showInputfield(v){
 	else{		// disabled
 		inputCtrl(document.form.ipv61_ifdev_select, 0);
 		inputCtrl(document.form.ipv61_dhcp_pd[0], 0);
-		inputCtrl(document.form.ipv61_dhcp_pd[1], 0);	
+		inputCtrl(document.form.ipv61_dhcp_pd[1], 0);
+		showInputfield2('ipv61_ifdev', 0);
 		inputCtrl(document.form.ipv61_tun_v4end, 0);
 		inputCtrl(document.form.ipv61_relay, 0);
 		inputCtrl(document.form.ipv61_6rd_dhcp[0], 0);
@@ -549,6 +558,10 @@ function showInputfield2(s, v){
 				document.form.ipv61_dhcp_start_start.value = ipv61_dhcp_start_orig.split("::")[1];
 				document.form.ipv61_dhcp_end_end.value = ipv61_dhcp_end_orig.split("::")[1];
 		}
+	}else if(s=='ipv61_ifdev'){
+		var enable = (document.form.ipv61_service.value == "dhcp6" && v == "ppp") ? 1 : 0;
+		inputCtrl(document.form._ipv61_accept_defrtr[0], enable);
+		inputCtrl(document.form._ipv61_accept_defrtr[1], enable);
 	}
 }
 // } Viz 2013.08 modify for dhcp-pd 
@@ -804,7 +817,10 @@ function applyRule(){
 				document.form.ipv61_prefix_length.disabled = false;
 				document.form.ipv61_prefix.disabled = false;
 			}
-				
+
+			document.form.ipv61_accept_defrtr.disabled = false;
+			document.form.ipv61_accept_defrtr.value = document.form._ipv61_accept_defrtr[0].checked?1:0;
+
 			if(document.form.ipv61_autoconf_type[1].checked){
 				document.form.ipv61_dhcp_start.disabled = false;
 				document.form.ipv61_dhcp_start.value = document.form.ipv61_prefix_span_for_start.value +"::"+document.form.ipv61_dhcp_start_start.value;
@@ -813,7 +829,7 @@ function applyRule(){
 			}
 		}
 
-		if(document.form.ipv61_service.value=="flets"){
+		if(IPv61_Passthrough_support && document.form.ipv61_service.value=="flets"){
 			inputCtrl(document.form.ipv61_ifdev_select, 1);
 			document.form.ipv61_ifdev.value = "eth";
 		}else if(document.form.ipv61_ifdev_select.disabled){	// set ipv6_ifdev="ppp" while interface is disabled.
@@ -844,6 +860,8 @@ function applyRule(){
 				document.form.ipv61_prefix_s.value = document.form.ipv61_prefix.value;
 		}
 		//End
+
+		document.form.ipv61_radvd.value = document.form._ipv61_radvd[0].checked?1:0;
 
 		/*if(machine_arm)	//Viz 2013.06 Don't need to reboot anymore
 		{ // MODELDEP: Machine ARM structure
@@ -974,6 +992,8 @@ function genWANSoption(){
 <input type="hidden" name="ipv61_prefix_length_s" value="">
 <input type="hidden" name="ipv61_rtr_addr_s" value="">
 <input type="hidden" name="ipv61_prefix_s" value="">
+<input type="hidden" name="ipv61_radvd" value="<% nvram_get("ipv61_radvd"); %>">
+<input type="hidden" name="ipv61_accept_defrtr" value="<% nvram_get("ipv61_accept_defrtr"); %>" disabled>
 <table class="content" align="center" cellpadding="0" cellspacing="0">
   <tr>
 	<td width="17">&nbsp;</td>
@@ -1037,7 +1057,7 @@ function genWANSoption(){
 				<tr>
 					<th><#wan_interface#></th>
 		     		<td>
-						<select name="ipv61_ifdev_select" class="input_option">
+						<select name="ipv61_ifdev_select" class="input_option" onchange="showInputfield2('ipv61_ifdev', this.value);">
 							<option class="content_input_fd" value="ppp" <% nvram_match("ipv61_ifdev", "ppp","selected"); %>>PPP</option>
 							<option class="content_input_fd" value="eth" <% nvram_match("ipv61_ifdev", "eth","selected"); %>><#wan_ethernet#></option>
 						</select>
@@ -1051,6 +1071,13 @@ function genWANSoption(){
 						<input type="radio" name="ipv61_dhcp_pd" class="input" value="0" onclick="showInputfield2('ipv61_dhcp_pd', this.value);" <% nvram_match("ipv61_dhcp_pd", "0","checked"); %>><#btn_disable#>
 		     		</td>
 		     	</tr>
+		     	<tr style="display:none;"><!-- Viz add ipv6_accept_defrtr 2019.01-->
+					<th>Accept Default Route</th>		<!-- Untranslated -->
+					<td>
+						<input type="radio" name="_ipv61_accept_defrtr" class="input" value="1" <% nvram_match("ipv61_accept_defrtr", "1","checked"); %>><#WLANConfig11b_WirelessCtrl_button1name#>
+						<input type="radio" name="_ipv61_accept_defrtr" class="input" value="0" <% nvram_match("ipv61_accept_defrtr", "0","checked"); %>><#btn_disable#>
+					</td>
+				</tr>
 
 				<tr style="display:none;">
 					<th><#IPv6_tun_v4end#></th>
@@ -1282,15 +1309,13 @@ function genWANSoption(){
 						<td colspan="2"><#ipv6_auto_config#></td>
 				  </tr>
 				  </thead>		
-					<tr>
+				  <tr>
 						<th><#Enable_Router_AD#></th>
-		     		<td>
-							<select name="ipv61_radvd" class="input_option">
-								<option class="content_input_fd" value="1" <% nvram_match("ipv61_radvd", "1","selected"); %>><#WLANConfig11b_WirelessCtrl_button1name#></option>
-								<option class="content_input_fd" value="0" <% nvram_match("ipv61_radvd", "0","selected"); %>><#btn_disable#></option>
-							</select>
-		     		</td>
-		     	</tr>
+		     			<td>
+							<input type="radio" name="_ipv6_radvd" class="input" value="1" <% nvram_match("ipv6_radvd", "1","checked"); %>><#WLANConfig11b_WirelessCtrl_button1name#>
+							<input type="radio" name="_ipv6_radvd" class="input" value="0" <% nvram_match("ipv6_radvd", "0","checked"); %>><#btn_disable#>
+		     			</td>
+		     	  </tr>
 			</table>
 			<!--====================================Auto Config end===============================-->  	
 				

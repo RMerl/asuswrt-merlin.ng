@@ -264,7 +264,7 @@
 								<div class="inputTitle"><#Router_Login_Name#></div>
 							</div>
 							<div class="inputContainer">
-								<input id="http_username" type="text" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" maxlength="64" class="textInput" data-role="none" value="" data-clear-btn="true" />
+								<input id="http_username" type="text" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" maxlength="20" class="textInput" data-role="none" value="" data-clear-btn="true" />
 							</div>
 						</div>
 						<div>
@@ -273,7 +273,7 @@
 								<div class="secureInput icon_eye_close" for="http_passwd http_passwd_confirm"></div>
 							</div>
 							<div class="inputContainer">
-								<input id="http_passwd" type="password" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" maxlength="64" class="textInput" data-role="none" value="" data-clear-btn="true" />
+								<input id="http_passwd" type="password" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" maxlength="16" class="textInput" data-role="none" value="" data-clear-btn="true" />
 							</div>
 						</div>
 						<div>
@@ -281,7 +281,7 @@
 								<div class="inputTitle"><#PASS_retype#></div>
 							</div>
 							<div class="inputContainer">
-								<input id="http_passwd_confirm" type="password" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" maxlength="64" class="textInput" data-role="none" value="" data-clear-btn="true" />
+								<input id="http_passwd_confirm" type="password" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" maxlength="16" class="textInput" data-role="none" value="" data-clear-btn="true" />
 							</div>
 						</div>
 						<!-- Action Button -->
@@ -951,7 +951,7 @@
 								<div class="inputTitle" id="iptv_voip_title">VoIP Port</div>
 							</div>
 							<div class="inputContainer">
-								<input class="textInput" id="iptv_voip" data-role="none" type="text" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" value="LAN3" disabled />
+								<input class="textInput" id="iptv_voip_port" data-role="none" type="text" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" value="LAN3" disabled />
 							</div>
 						</div>
 
@@ -960,7 +960,7 @@
 								<div class="inputTitle" id="iptv_stb_title">IPTV STB Port</div>
 							</div>
 							<div class="inputContainer">
-								<input class="textInput" id="iptv_stb" data-role="none" type="text" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" value="LAN4" disabled />
+								<input class="textInput" id="iptv_stb_port" data-role="none" type="text" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" value="LAN4" disabled />
 							</div>
 						</div>
 
@@ -980,9 +980,9 @@
 									</div>
 								</div>
 							</div>
-							<div>
+							<div id="manual_iptv_settings">
 								<div class="inputTitleContainer">
-									<div class="inputTitle">IPTV (LAN port 4)</div>
+									<div class="inputTitle" id="manual_iptv_port">IPTV (LAN port 4)</div>
 								</div>
 								<div class="inputContainer">
 									<div class="ui-grid-a">
@@ -995,9 +995,9 @@
 									</div>
 								</div>
 							</div>
-							<div>
+							<div id="manual_voip_settings">
 								<div class="inputTitleContainer">
-									<div class="inputTitle">VoIP (LAN port 3):</div>
+									<div class="inputTitle" id="manual_voip_port">VoIP (LAN port 3):</div>
 								</div>
 								<div class="inputContainer">
 									<div class="ui-grid-a">
@@ -1568,7 +1568,7 @@
 								<div class="inputTitle"><#QIS_finish_wireless_item1#></div>
 							</div>
 							<div class="inputContainer">
-								<input id="wlc_ssid_manual" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" maxlength="64" class="textInput" data-role="none" value="" data-clear-btn="true" />
+								<input id="wlc_ssid_manual" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" maxlength="32" class="textInput" data-role="none" value="" data-clear-btn="true" />
 							</div>
 						</div>
 
@@ -1856,13 +1856,13 @@
 						
 					<div id="finishButton" style="display:none">
 						<div class="footer_desktop">
-							<div class="desktop_applyBtn" onclick="goTo.leaveQIS();"><#CTL_finish#></div>
+							<div class="desktop_applyBtn" onclick="goTo.leaveQIS();"><#QKSet_finishpre_rebootnow#></div>
 						</div>
 						<div class="footer_mobile">
 							<table style="width:100%;" cellpadding="0" cellspacing="0">
 								<tr>
 									<td class="mobileApply" onclick="goTo.leaveQIS();">
-										<div class="mobile_applyBtn"><#CTL_finish#></div>
+										<div class="mobile_applyBtn"><#QKSet_finishpre_rebootnow#></div>
 									</td>
 								</tr>
 							</table>

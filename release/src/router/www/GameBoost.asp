@@ -100,10 +100,17 @@ function initial(){
 		document.getElementById("game_boost_enable").checked = false;
 	}
 
+	if(!ASUS_EULA.status("tm"))
+		ASUS_EULA.config(eula_confirm, cancel);
 }
 
 function sign_eula(){
-	ASUS_EULA.config(eula_confirm, cancel);
+	if(document.getElementById("game_boost_enable").checked){
+		if(!reset_wan_to_fo.check_status()) {
+			document.getElementById("game_boost_enable").checked = false;
+			return false;
+		}
+	}
 
 	if(ASUS_EULA.check("tm")){
 		check_game_boost();
@@ -112,10 +119,6 @@ function sign_eula(){
 
 function check_game_boost(){
 	if(document.getElementById("game_boost_enable").checked){
-		if(!reset_wan_to_fo(document.form, 1)) {
-			document.getElementById("game_boost_enable").checked = false;
-			return false;
-		}
 		document.form.qos_enable.value = '1';
 		document.form.qos_type.value = '1';
 		document.form.bwdpi_app_rulelist.disabled = false;
@@ -141,6 +144,9 @@ function check_game_boost(){
 			}
 		}
 	}
+
+	if(reset_wan_to_fo.change_status)
+		reset_wan_to_fo.change_wan_mode(document.form);
 
 	document.form.submit();
 }

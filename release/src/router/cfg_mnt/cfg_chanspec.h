@@ -20,6 +20,7 @@ extern void cm_updatePrivateChanspec();
 extern int cm_loadPrivateChannel(chinfo_t *avblChannel, int channelCount);
 extern int cm_isValidChannel(int channel);
 extern void cm_resetChanspec();
+extern int cm_checkBwCapability(int unit, int *bwCap, int *nctrlsbCap, int *bwRe, int *nctrlsbRe);
 
 #endif /* __CFG_CHANSPEC_H__ */
 /* End of cfg_chanspec.h */

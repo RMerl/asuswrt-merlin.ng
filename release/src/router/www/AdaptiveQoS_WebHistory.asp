@@ -41,6 +41,8 @@ function initial(){
 	else{
 		document.getElementById("log_field").style.display = "none";
 	}
+	if(!ASUS_EULA.status("tm"))
+		ASUS_EULA.config(eula_confirm, cancel);
 }
 
 var htmlEnDeCode = (function() {
@@ -249,17 +251,45 @@ function change_page(flag, target){
 		getWebHistory(target, page);
 	}
 }
+function applyRule(){
+	if(reset_wan_to_fo.change_status)
+		reset_wan_to_fo.change_wan_mode(document.form);
+
+	if(document.form.bwdpi_wh_enable.value == 1) {
+		var t = new Date();
+		var timestamp = t.getTime().toString().substring(0,10);
+		document.form.bwdpi_wh_stamp.value = timestamp;
+	}
+	document.form.submit();
+}
 function eula_confirm(){
 	document.form.TM_EULA.value = 1;
 	document.form.bwdpi_wh_enable.value = 1;
 	document.form.action_wait.value = "15";
-	document.form.submit();
+	applyRule();
 }
 
 function cancel(){
 	curState = 0;
-	document.form.bwdpi_wh_enable.value = 1;
 	$('#iphone_switch').animate({backgroundPosition: -37}, "slow", function() {});
+	document.form.action_wait.value = "3";
+	document.form.action_script.value = "restart_qos;restart_firewall";
+}
+function switch_control(_status){
+	if(_status) {
+		if(reset_wan_to_fo.check_status()) {
+			if(ASUS_EULA.check("tm")){
+				document.form.bwdpi_wh_enable.value = 1;
+				applyRule();
+			}
+		}
+		else
+			cancel();
+	}
+	else {
+		document.form.bwdpi_wh_enable.value = 0;
+		applyRule();
+	}
 }
 function cal_panel_block(obj){
 	var blockmarginLeft;
@@ -342,22 +372,10 @@ function updateWebHistory() {
 															<script type="text/javascript">
 																$('#bwdpi_wh_enable').iphoneSwitch('<% nvram_get("bwdpi_wh_enable"); %>',
 																	function(){
-																		if(reset_wan_to_fo(document.form, document.form.bwdpi_wh_enable.value)) {
-																			ASUS_EULA.config(eula_confirm, cancel);
-
-																			if(ASUS_EULA.check("tm")){
-																				var t = new Date();
-																				var timestamp = t.getTime().toString().substring(0,10);
-
-																				document.form.bwdpi_wh_stamp.value = timestamp;
-																				document.form.bwdpi_wh_enable.value = 1;
-																				document.form.submit();
-																			}
-																		}
+																		switch_control(1);
 																	},
 																	function(){
-																		document.form.bwdpi_wh_enable.value = 0;
-																		document.form.submit();
+																		switch_control(0);
 																	}
 																);
 															</script>

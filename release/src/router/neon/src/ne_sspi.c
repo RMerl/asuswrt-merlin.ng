@@ -337,34 +337,24 @@ static int freeBuffer(SecBufferDesc * secBufferDesc)
  */
 static char *canonical_hostname(const char *serverName)
 {
-    char *hostname;
-    ne_sock_addr *addresses;
+    const char *hostname;
+    ne_sock_addr *addr;
     
-    /* DNS resolution.  It would be useful to be able to use the
-     * AI_CANONNAME flag where getaddrinfo() is available, but the
-     * reverse-lookup is sufficient and simpler. */
-    addresses = ne_addr_resolve(serverName, 0);
-    if (ne_addr_result(addresses)) {
+    addr = ne_addr_resolve(serverName, NE_ADDR_CANON);
+    if (ne_addr_result(addr) || ne_addr_canonical(addr) == NULL) {
         /* Lookup failed */
         char buf[256];
         NE_DEBUG(NE_DBG_HTTPAUTH,
                  "sspi: Could not resolve IP address for `%s': %s\n",
-                 serverName, ne_addr_error(addresses, buf, sizeof buf));
+                 serverName, ne_addr_error(addr, buf, sizeof buf));
         hostname = ne_strdup(serverName);
-    } else {
-        char hostbuffer[256];
-        const ne_inet_addr *address = ne_addr_first(addresses);
-
-        if (ne_iaddr_reverse(address, hostbuffer, sizeof hostbuffer) == 0) {
-            hostname = ne_strdup(hostbuffer);
-        } else {
-            NE_DEBUG(NE_DBG_HTTPAUTH, "sspi: Could not resolve host name"
-                     "from IP address for `%s'\n", serverName);
-            hostname = ne_strdup(serverName);
-        }
+    }
+    else {
+        hostname = ne_strdup(ne_addr_canonical(addr));
     }
 
-    ne_addr_destroy(addresses);
+    ne_addr_destroy(addr);
+
     return hostname;
 }
 
@@ -477,6 +467,7 @@ int ne_sspi_clear_context(void *context)
         return status;
     }
     sspiContext->authfinished = 0;
+    sspiContext->continueNeeded = 0;
     return 0;
 }
 /*

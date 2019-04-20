@@ -5932,6 +5932,79 @@ ERROR:
 		nvram_set_int("auto_upgrade", 0);
 	}
 }
+
+#else	// Asuswrt-Merlin's code, without the auto-upgrade and debug logging
+
+static void auto_firmware_check_merlin()
+{
+	static int period_retry = -1;
+	static int period = 5757;
+	static int bootup_check = 1;
+	static int periodic_check = 0;
+	int cycle_manual = nvram_get_int("fw_check_period");
+	int cycle = (cycle_manual > 1) ? cycle_manual : 5760;
+	int initial_state;
+
+	time_t now;
+	struct tm *tm;
+	static int rand_hr, rand_min;
+
+	if (!nvram_get_int("ntp_ready") || !nvram_get_int("firmware_check_enable"))
+		return;
+
+	if (!bootup_check && !periodic_check)
+	{
+		time(&now);
+		tm = localtime(&now);
+
+		if ((tm->tm_hour == (2 + rand_hr)) &&	// every 48 hours at 2 am + random offset
+		    (tm->tm_min == rand_min))
+		{
+			periodic_check = 1;
+			period = -1;
+		}
+	}
+
+	if (bootup_check || periodic_check)
+		period = (period + 1) % cycle;
+	else
+		return;
+
+	if (!period || (period_retry < 2 && bootup_check == 0))
+	{
+		period_retry = (period_retry+1) % 3;
+		if (bootup_check)
+		{
+			bootup_check = 0;
+			rand_hr = rand_seed_by_time() % 4;
+			rand_min = rand_seed_by_time() % 60;
+		}
+		initial_state = nvram_get_int("webs_state_flag");
+
+		if(!nvram_contains_word("rc_support", "noupdate")){
+			eval("/usr/sbin/webs_update.sh");
+		}
+
+		if (nvram_get_int("webs_state_update") &&
+		    !nvram_get_int("webs_state_error") &&
+		    strlen(nvram_safe_get("webs_state_info")))
+		{
+			if ((initial_state == 0) && (nvram_get_int("webs_state_flag") == 1))		// New update
+			{
+				char version[4], revision[3], build[16];
+
+				memset(version, 0, sizeof(version));
+				memset(revision, 0, sizeof(revision));
+				memset(build, 0, sizeof(build));
+
+				sscanf(nvram_safe_get("webs_state_info"), "%3[^_]_%2[^_]_%15s", version, revision, build);
+				logmessage("watchdog", "New firmware version %s.%s_%s is available.", version, revision, build);
+				run_custom_script("update-notification", 0, NULL, NULL);
+			}
+
+		}
+	}
+}
 #endif
 
 #if defined(RTCONFIG_LP5523) || defined(RTCONFIG_LYRA_HIDE)
@@ -7416,6 +7489,8 @@ wdp:
 #endif
 #ifdef RTCONFIG_FORCE_AUTO_UPGRADE
 	auto_firmware_check();
+#else
+	auto_firmware_check_merlin();
 #endif
 #ifdef RTCONFIG_BWDPI
 	auto_sig_check();		// libbwdpi.so

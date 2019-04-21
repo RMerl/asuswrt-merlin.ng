@@ -111,6 +111,7 @@ Networking:
    - Detailed wireless troubleshooting information (HND devices
      only)
    - Modern DDNS client (In-a-Dyn), with HTTPS support
+   - DNS-over-TLS support
 
 
 Web interface:

@@ -1909,10 +1909,7 @@ extern int isValidMacAddress(const char* mac);
 extern int isValidEnableOption(const char* option, int range);
 
 /* scripts.c */
-#define xstart(args...) _xstart(args, NULL)
-extern int _xstart(const char *cmd, ...);
-extern void run_custom_script(char *name, char *args);
-extern void run_custom_script_blocking(char *name, char *arg1, char*arg2);
+extern void run_custom_script(char *name, int timeout, char *arg1, char *arg2);
 extern void run_postconf(char *name, char *config);
 extern void use_custom_config(char *config, char *target);
 extern void append_custom_config(char *config, FILE *fp);

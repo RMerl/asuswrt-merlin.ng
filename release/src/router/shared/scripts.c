@@ -1,3 +1,21 @@
+/*
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation; either version 2 of
+ * the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston,
+ * MA 02111-1307 USA
+ *
+ */
+
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -10,24 +28,6 @@
 #include "shutils.h"
 #include "shared.h"
 
-
-int _xstart(const char *cmd, ...)
-{
-        va_list ap;
-        char *argv[16];
-        int argc;
-        int pid;
-
-        argv[0] = (char *)cmd;
-        argc = 1;
-        va_start(ap, cmd);
-        while ((argv[argc++] = va_arg(ap, char *)) != NULL) {
-                //
-        }
-        va_end(ap);
-
-        return _eval(argv, NULL, 0, &pid);
-}
 
 long fappend(FILE *out, const char *fname)
 {
@@ -51,56 +51,49 @@ long fappend(FILE *out, const char *fname)
 	return r;
 }
 
-void run_custom_script(char *name, char *args)
-{
-	char script[120];
-
-	snprintf(script, sizeof(script), "/jffs/scripts/%s", name);
-
-	if(f_exists(script)) {
-		if (nvram_match("jffs2_scripts", "0")) {
-			logmessage("custom_script", "Found %s, but custom script execution is disabled!", name);
-			return;
-		}
-		if (args)
-			logmessage("custom_script" ,"Running %s (args: %s)", script, args);
-		else
-			logmessage("custom_script" ,"Running %s", script);
-		xstart(script, args);
-	}
-}
-
-void run_custom_script_blocking(char *name, char *arg1, char *arg2)
+void run_custom_script(char *name, int timeout, char *arg1, char *arg2)
 {
 	char script[120];
 	char *cmd[4];
+	int pid;
+	struct stat st;
+	char *error;
 
 	snprintf(script, sizeof(script), "/jffs/scripts/%s", name);
 
-	if(f_exists(script)) {
-		if (nvram_match("jffs2_scripts", "0")) {
-			logmessage("custom_script", "Found %s, but custom script execution is disabled!", name);
+	if (!stat(script, &st)) {
+		if (nvram_match("jffs2_scripts", "0"))
+			error = "custom script execution is disabled!";
+		else if (!(st.st_mode & (S_IXUSR | S_IXGRP | S_IXOTH)))
+			error = "script is not set executable!";
+		else
+			error = NULL;
+
+		if (error) {
+			logmessage("custom_script", "Found %s, but %s", name, error);
 			return;
 		}
+
 		if (arg1)
-			logmessage("custom_script" ,"Running %s (args: %s %s) - max timeout = 120s", script, arg1, (arg2 ? arg2 : ""));
+			logmessage("custom_script" ,"Running %s (args: %s%s%s)", script, arg1, (arg2 ? " " : ""), (arg2 ? arg2 : ""));
 		else
-			logmessage("custom_script" ,"Running %s - max timeout = 120s", script);
+			logmessage("custom_script" ,"Running %s", script);
 
 		cmd[0] = script;
 		cmd[1] = arg1;
 		cmd[2] = arg2;
 		cmd[3] = NULL;
-		_eval( cmd, NULL, 120, NULL);
+		_eval( cmd, NULL, timeout, (timeout ? NULL : &pid));
 	}
 }
+
 
 void run_postconf(char *name, char *config)
 {
 	char filename[64];
 
 	snprintf(filename, sizeof (filename), "%s.postconf", name);
-	run_custom_script_blocking(filename, config, NULL);
+	run_custom_script(filename, 120, config, NULL);
 }
 
 
@@ -110,7 +103,7 @@ void use_custom_config(char *config, char *target)
 
         snprintf(filename, sizeof(filename), "/jffs/configs/%s", config);
 
-	if (check_if_file_exist(filename)) {
+	if (f_exists(filename)) {
 		if (nvram_match("jffs2_scripts", "0")) {
 			logmessage("custom config", "Found %s, but custom configs are disabled!", filename);
 			return;
@@ -127,7 +120,7 @@ void append_custom_config(char *config, FILE *fp)
 
 	snprintf(filename, sizeof(filename), "/jffs/configs/%s.add", config);
 
-	if (check_if_file_exist(filename)) {
+	if (f_exists(filename)) {
 		if (nvram_match("jffs2_scripts", "0")) {
 			logmessage("custom config", "Found %s, but custom configs are disabled!", filename);
 			return;

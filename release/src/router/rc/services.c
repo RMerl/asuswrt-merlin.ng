@@ -1412,7 +1412,7 @@ void start_dnsmasq(void)
 		fprintf(fp, "domain=%s\n"
 			    "expand-hosts\n", value);	// expand hostnames in hosts file
 	}
-	if (nvram_get_int("lan_dns_fwd_local") != 1) {
+	if (nvram_get_int("dns_fwd_local") != 1) {
 		fprintf(fp, "bogus-priv\n"			// don't forward private reverse lookups upstream
 		            "domain-needed\n");			// don't forward plain name queries upstream
 		if (*value)
@@ -2003,7 +2003,10 @@ void start_stubby(void)
 	if (nv)
 		free(nv);
 
+	append_custom_config("stubby", fp);
 	fclose(fp);
+	use_custom_config("stubby.yml", (char *)stubby_config);
+	run_postconf("stubby", (char *)stubby_config);
 	chmod(stubby_config, 0644);
 
 	if (nvram_get_int("stubby_debug")) {
@@ -3579,11 +3582,11 @@ start_ddns(void)
 		}
 	} else {	// Custom DDNS
 		// Block until it completes and updates the DDNS update results in nvram
-		run_custom_script_blocking("ddns-start", wan_ip, NULL);
+		run_custom_script("ddns-start", 120, wan_ip, NULL);
 		return 0;
 	}
 
-	run_custom_script("ddns-start", wan_ip);
+	run_custom_script("ddns-start", 0, wan_ip, NULL);
 	return 0;
 }
 
@@ -8513,7 +8516,7 @@ start_services(void)
 #endif
 	start_ntpd();
 
-	run_custom_script("services-start", NULL);
+	run_custom_script("services-start", 0, NULL, NULL);
 
 	return 0;
 }
@@ -8521,7 +8524,7 @@ start_services(void)
 void
 stop_services(void)
 {
-	run_custom_script("services-stop", NULL);
+	run_custom_script("services-stop", 0, NULL, NULL);
 
 #if defined(RTCONFIG_AMAS)
 	stop_amas_lib();
@@ -9849,7 +9852,7 @@ again:
 
 	TRACE_PT("running: %d %s\n", action, script);
 
-	run_custom_script_blocking("service-event", actionstr, script);
+	run_custom_script("service-event", 120, actionstr, script);
 
 #ifdef RTCONFIG_USB_MODEM
 	if(!strcmp(script, "simauth")
@@ -13815,6 +13818,8 @@ _dprintf("goto again(%d)...\n", getpid());
 	}
 #endif
 
+	run_custom_script("service-event-end", 0, actionstr, script);
+
 	nvram_set("rc_service", "");
 	nvram_set("rc_service_pid", "");
 _dprintf("handle_notifications() end\n");
@@ -14395,7 +14400,7 @@ _dprintf("nat_rule: the nat rule file was not ready. wait %d seconds...\n", retr
 	setup_ct_timeout(TRUE);
 	setup_udp_timeout(TRUE);
 
-	run_custom_script("nat-start", NULL);
+	run_custom_script("nat-start", 0, NULL, NULL);
 
 	return NAT_STATE_NORMAL;
 }

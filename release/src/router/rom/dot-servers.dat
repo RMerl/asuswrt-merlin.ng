@@ -10,7 +10,6 @@ Adguard Family Protect 1,176.103.130.132,,dns-family.adguard.com,
 Adguard Family Protect 2,176.103.130.134,,dns-family.adguard.com,
 Cloudflare 1.1.1.1,1.1.1.1,,cloudflare-dns.com,
 Cloudflare 1.0.0.1,1.0.0.1,,cloudflare-dns.com,
-Getdns,185.49.141.37,,getdnsapi.net,foxZRnIh9gZpWnl+zEiKa0EJ2rdCGroMWm02gaxSc9Q=
 Google 8.8.8.8,8.8.8.8,,dns.google,
 Google 8.8.4.4,8.8.4.4,,dns.google,
 Quad9 (secure),9.9.9.9,,dns.quad9.net,
@@ -30,7 +29,6 @@ Adguard Family Protect 1,2a00:5a60::bad1:0ff,,dns-family.adguard.com,
 Adguard Family Protect 2,2a00:5a60::bad2:0ff,,dns-family.adguard.com,
 Cloudflare :1111,2606:4700:4700::1111,,cloudflare-dns.com,
 Cloudflare :1001,2606:4700:4700::1001,,cloudflare-dns.com,
-Getdnsapi,2a04:b900:0:100::38,,getdnsapi.net,foxZRnIh9gZpWnl+zEiKa0EJ2rdCGroMWm02gaxSc9Q=
 Surfnet/Sinodun 1,2001:610:1:40ba:145:100:185:15,,dnsovertls.sinodun.com,62lKu9HsDVbyiPenApnc4sfmSYTHOVfFgL3pyB+cBL4=
 Surfnet/Sinodun 2,2001:610:1:40ba:145:100:185:16,,dnsovertls1.sinodun.com,cE2ecALeE5B+urJhDrJlVFmf38cJLAvqekONvjvpqUA=
 

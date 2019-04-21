@@ -56,6 +56,7 @@ extern int cm_prepareReListMsg(char *msg, int msgLen);
 extern void cm_generateReList();
 extern void cm_updateReListTimestamp(unsigned char *decodeMsg);
 extern int cm_isSlaveOnline(time_t startTime);
+extern void cm_updateTribandReList(char *newReMac, int bandNum, char *modelName, int action, int commit);
 
 #endif /* __CFG_SLAVELIST_H__ */
 /* End of cfg_slavelist.h */

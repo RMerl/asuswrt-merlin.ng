@@ -6,10 +6,11 @@ msgid ""
 msgstr ""
 "Project-Id-Version: sitecopy 0.11.4\n"
 "Report-Msgid-Bugs-To: neon@lists.manyfish.co.uk\n"
-"POT-Creation-Date: 2010-10-01 13:30+0100\n"
+"POT-Creation-Date: 2016-09-30 09:51+0100\n"
 "PO-Revision-Date: 2002-11-07 18:11+0100\n"
 "Last-Translator: Karl Ove Hufthammer <karl@huftis.org>\n"
 "Language-Team: Norwegian Nynorsk <i18n-nn@lister.ping.uio.no>\n"
+"Language: nn\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -23,109 +24,114 @@ msgstr ""
 "Ugyldig HTTP-statuslinje i statuselement på linje %d av svaret:\n"
 "Statuslinja var: %s"
 
-#: src/ne_auth.c:134
+#: src/ne_auth.c:139
 #, fuzzy, c-format
 msgid "Could not authenticate to server: %s"
 msgstr "Klarte ikkje kopla til tenaren."
 
-#: src/ne_auth.c:139
+#: src/ne_auth.c:144
 #, fuzzy, c-format
 msgid "Could not authenticate to proxy server: %s"
 msgstr "Klarte ikkje kopla til mellomtenar"
 
-#: src/ne_auth.c:374
+#: src/ne_auth.c:386
 #, c-format
 msgid "rejected %s challenge"
 msgstr ""
 
-#: src/ne_auth.c:390
+#: src/ne_auth.c:402
 msgid "missing realm in Basic challenge"
 msgstr ""
 
-#: src/ne_auth.c:485
+#: src/ne_auth.c:497
 msgid "invalid Negotiate token"
 msgstr ""
 
-#: src/ne_auth.c:508
+#: src/ne_auth.c:520
 #, fuzzy
 msgid "GSSAPI authentication error: "
 msgstr "Krev autentisering på %s «%s»:\n"
 
-#: src/ne_auth.c:521
+#: src/ne_auth.c:533
 #, c-format
 msgid "GSSAPI failure (code %u)"
 msgstr ""
 
-#: src/ne_auth.c:556
+#: src/ne_auth.c:568
 msgid "ignoring empty Negotiate continuation"
 msgstr ""
 
-#: src/ne_auth.c:571
+#: src/ne_auth.c:583
 #, c-format
 msgid "Negotiate response verification failed: invalid response header token"
 msgstr ""
 
-#: src/ne_auth.c:593
+#: src/ne_auth.c:605
 #, fuzzy, c-format
 msgid "Negotiate response verification failure: %s"
 msgstr "Tenarsertifikatet er utgått på dato."
 
-#: src/ne_auth.c:765
+#: src/ne_auth.c:669
+#, c-format
+msgid "SSPI response verification failed: invalid response header token"
+msgstr ""
+
+#: src/ne_auth.c:802
 msgid "unknown algorithm in Digest challenge"
 msgstr ""
 
-#: src/ne_auth.c:769
+#: src/ne_auth.c:806
 msgid "incompatible algorithm in Digest challenge"
 msgstr ""
 
-#: src/ne_auth.c:773
+#: src/ne_auth.c:810
 msgid "missing parameter in Digest challenge"
 msgstr ""
 
-#: src/ne_auth.c:777
+#: src/ne_auth.c:814
 msgid "initial Digest challenge was stale"
 msgstr ""
 
-#: src/ne_auth.c:784
+#: src/ne_auth.c:821
 msgid "stale Digest challenge with new algorithm or realm"
 msgstr ""
 
-#: src/ne_auth.c:796
+#: src/ne_auth.c:833
 #, fuzzy
 msgid "could not parse domain in Digest challenge"
 msgstr "Klarte ikkje tolka storleik på oppdelt svar"
 
-#: src/ne_auth.c:1105
+#: src/ne_auth.c:1142
 #, c-format
 msgid "Digest mutual authentication failure: missing parameters"
 msgstr ""
 
-#: src/ne_auth.c:1110
+#: src/ne_auth.c:1147
 #, c-format
 msgid "Digest mutual authentication failure: client nonce mismatch"
 msgstr ""
 
-#: src/ne_auth.c:1120
+#: src/ne_auth.c:1157
 #, c-format
 msgid "Digest mutual authentication failure: could not parse nonce count"
 msgstr ""
 
-#: src/ne_auth.c:1125
+#: src/ne_auth.c:1162
 #, c-format
 msgid "Digest mutual authentication failure: nonce count mismatch (%u not %u)"
 msgstr ""
 
-#: src/ne_auth.c:1168
+#: src/ne_auth.c:1205
 #, c-format
 msgid "Digest mutual authentication failure: request-digest mismatch"
 msgstr ""
 
-#: src/ne_auth.c:1299
+#: src/ne_auth.c:1336
 #, c-format
 msgid "ignored %s challenge"
 msgstr ""
 
-#: src/ne_auth.c:1378
+#: src/ne_auth.c:1415
 #, fuzzy
 msgid "could not parse challenge"
 msgstr "Klarte ikkje tolka storleik på oppdelt svar"
@@ -165,50 +171,55 @@ msgstr "Klarte ikkje opna fil: "
 msgid "Could not initialize zlib"
 msgstr "Klarte ikkje opna fil: "
 
-#: src/ne_gnutls.c:172
+#: src/ne_gnutls.c:183
 #, c-format
 msgid "[unprintable:#%lu]"
 msgstr ""
 
-#: src/ne_gnutls.c:201
+#: src/ne_gnutls.c:212
 msgid "[unprintable]"
 msgstr ""
 
-#: src/ne_gnutls.c:817
+#: src/ne_gnutls.c:659
+#, c-format
+msgid "Failed to import private key: %s"
+msgstr ""
+
+#: src/ne_gnutls.c:903
 msgid "signed using insecure algorithm"
 msgstr ""
 
-#: src/ne_gnutls.c:820
+#: src/ne_gnutls.c:906
 #, c-format
 msgid "unrecognized errors (%u)"
 msgstr ""
 
-#: src/ne_gnutls.c:865 src/ne_openssl.c:468
+#: src/ne_gnutls.c:951 src/ne_openssl.c:477
 #, c-format
 msgid "Server certificate was missing commonName attribute in subject name"
 msgstr ""
 
-#: src/ne_gnutls.c:879
+#: src/ne_gnutls.c:965
 #, fuzzy, c-format
 msgid "Could not verify server certificate: %s"
 msgstr "Klarte ikkje skriva til fil: %s"
 
-#: src/ne_gnutls.c:891 src/ne_openssl.c:455
+#: src/ne_gnutls.c:977 src/ne_openssl.c:464
 #, c-format
 msgid "Certificate verification error: %s"
 msgstr ""
 
-#: src/ne_gnutls.c:924 src/ne_openssl.c:674
+#: src/ne_gnutls.c:1010 src/ne_openssl.c:710
 #, c-format
 msgid "SSL handshake failed, client certificate was requested: %s"
 msgstr ""
 
-#: src/ne_gnutls.c:929 src/ne_openssl.c:679
+#: src/ne_gnutls.c:1015 src/ne_openssl.c:715
 #, fuzzy, c-format
 msgid "SSL handshake failed: %s"
 msgstr "Klarte ikkje skriva til fil: %s"
 
-#: src/ne_gnutls.c:939
+#: src/ne_gnutls.c:1025
 #, c-format
 msgid "Server did not send certificate chain"
 msgstr ""
@@ -227,15 +238,10 @@ msgstr ""
 msgid "No activelock for <%s> returned in LOCK refresh response"
 msgstr ""
 
-#: src/ne_openssl.c:699
+#: src/ne_openssl.c:735
 #, c-format
 msgid "SSL server did not present certificate"
 msgstr ""
-
-#: src/ne_openssl.c:708
-#, fuzzy, c-format
-msgid "Server certificate changed: connection intercepted?"
-msgstr "Tenarsertifikatet er utgått på dato."
 
 #: src/ne_props.c:371 src/ne_props.c:435
 #, fuzzy
@@ -281,214 +287,214 @@ msgstr ""
 msgid "Could not seek to offset %s of request body file: %s"
 msgstr "Klarte ikkje skriva til fil: %s"
 
-#: src/ne_request.c:385
+#: src/ne_request.c:423
 msgid "Could not send request body"
 msgstr "Klarte ikkje senda førespurnad"
 
-#: src/ne_request.c:728
+#: src/ne_request.c:450
+#, fuzzy
+msgid "Could not send chunked request terminator"
+msgstr "Klarte ikkje senda førespurnad"
+
+#: src/ne_request.c:784
 msgid "Could not read chunk size"
 msgstr "Klarte ikkje lesa storleik på oppdelt svar"
 
-#: src/ne_request.c:735
+#: src/ne_request.c:791
 msgid "Could not parse chunk size"
 msgstr "Klarte ikkje tolka storleik på oppdelt svar"
 
-#: src/ne_request.c:772
+#: src/ne_request.c:828
 msgid "Could not read response body"
 msgstr "Klarte ikkje lesa svar"
 
-#: src/ne_request.c:788
+#: src/ne_request.c:844
 #, fuzzy
 msgid "Could not read chunk delimiter"
 msgstr "Klarte ikkje lesa storleik på oppdelt svar"
 
-#: src/ne_request.c:791
+#: src/ne_request.c:847
 msgid "Chunk delimiter was invalid"
 msgstr ""
 
-#: src/ne_request.c:896
+#: src/ne_request.c:952
 msgid "Could not read status line"
 msgstr "Klarte ikkje lesa statuslinja"
 
-#: src/ne_request.c:918
+#: src/ne_request.c:974
 #, fuzzy
 msgid "Could not parse response status line"
 msgstr "Klarte ikkje tolka statuslinja i svaret."
 
-#: src/ne_request.c:930
+#: src/ne_request.c:986
 #, fuzzy
 msgid "Could not read interim response headers"
 msgstr "Klarte ikkje lesa svarlinje"
 
-#: src/ne_request.c:964
+#: src/ne_request.c:1020
 msgid "Could not send request"
 msgstr "Klarte ikkje senda førespurnad"
 
-#: src/ne_request.c:1012 src/ne_request.c:1030 src/ne_request.c:1040
+#: src/ne_request.c:1068 src/ne_request.c:1086 src/ne_request.c:1096
 msgid "Error reading response headers"
 msgstr "Feil ved lesing av svarhovud"
 
-#: src/ne_request.c:1058
+#: src/ne_request.c:1114
 #, c-format
 msgid "Response header too long"
 msgstr "For langt svarhovud"
 
-#: src/ne_request.c:1140
+#: src/ne_request.c:1196
 #, fuzzy
 msgid "Response exceeded maximum number of header fields"
 msgstr "Svaret inneheld for mange header-felt."
 
-#: src/ne_request.c:1155
+#: src/ne_request.c:1211
 #, fuzzy, c-format
 msgid "Could not resolve hostname `%s': %s"
 msgstr "%s: Feil: Fann ikkje adressa til nettverksvert (%s).\n"
 
-#: src/ne_request.c:1286
+#: src/ne_request.c:1342
 msgid "Unknown transfer-coding in response"
 msgstr ""
 
-#: src/ne_request.c:1299
+#: src/ne_request.c:1355
 msgid "Invalid Content-Length in response"
 msgstr ""
 
-#: src/ne_request.c:1372
+#: src/ne_request.c:1428
 #, c-format
 msgid "Could not write to file: %s"
 msgstr "Klarte ikkje skriva til fil: %s"
 
-#: src/ne_request.c:1445
+#: src/ne_request.c:1501
 #, fuzzy, c-format
 msgid "Could not create SSL connection through proxy server: %s"
 msgstr "Klarte ikkje oppretta SSL-tilkopling til mellomtenar"
 
-#: src/ne_request.c:1484
+#: src/ne_request.c:1540
 #, fuzzy, c-format
 msgid "Could not create socket"
 msgstr "Klarte ikkje forhandla SSL-økt"
 
-#: src/ne_request.c:1518
+#: src/ne_request.c:1574
 msgid "Could not connect to server"
 msgstr "Klarte ikkje kopla til tenaren."
 
-#: src/ne_request.c:1520
+#: src/ne_request.c:1576
 msgid "Could not connect to proxy server"
 msgstr "Klarte ikkje kopla til mellomtenar"
 
-#: src/ne_request.c:1563
+#: src/ne_request.c:1619
 #, c-format
 msgid "Could not find IPv4 address of hostname %s for SOCKS v4 proxy"
 msgstr ""
 
-#: src/ne_request.c:1621
+#: src/ne_request.c:1677
 #, fuzzy, c-format
 msgid "Could not establish connection from SOCKS proxy (%s:%u): %s"
 msgstr "Klarte ikkje oppretta SSL-tilkopling til mellomtenar"
 
-#: src/ne_session.c:530 src/ne_session.c:541
+#: src/ne_session.c:538 src/ne_session.c:549
 #, fuzzy
 msgid "[invalid date]"
 msgstr "[ugyldig dato]"
 
-#: src/ne_session.c:554
+#: src/ne_session.c:562
 #, fuzzy
 msgid "certificate is not yet valid"
 msgstr "Sertifikatet er gyldig"
 
-#: src/ne_session.c:555
+#: src/ne_session.c:563
 #, fuzzy
 msgid "certificate has expired"
 msgstr "Tenarsertifikatet er utgått på dato."
 
-#: src/ne_session.c:556
+#: src/ne_session.c:564
 #, fuzzy
 msgid "certificate issued for a different hostname"
 msgstr "Sertifikatet er utferda av:"
 
-#: src/ne_session.c:557
+#: src/ne_session.c:565
 msgid "issuer is not trusted"
 msgstr ""
 
-#: src/ne_session.c:558
+#: src/ne_session.c:566
 #, fuzzy
 msgid "bad certificate chain"
 msgstr "Tenarsertifikatet er utgått på dato."
 
-#: src/ne_session.c:559
+#: src/ne_session.c:567
 #, fuzzy
 msgid "certificate has been revoked"
 msgstr "Tenarsertifikatet er utgått på dato."
 
-#: src/ne_session.c:564
+#: src/ne_session.c:572
 #, fuzzy
 msgid "Server certificate verification failed: "
 msgstr "Tenarsertifikatet er utgått på dato."
 
-#: src/ne_socket.c:516 src/ne_socket.c:612 src/ne_socket.c:716
+#: src/ne_socket.c:522 src/ne_socket.c:618 src/ne_socket.c:722
 #, fuzzy
 msgid "Connection closed"
 msgstr "Tilkoplinga vart lukka av tenaren"
 
-#: src/ne_socket.c:622 src/ne_socket.c:728
+#: src/ne_socket.c:628 src/ne_socket.c:736
 #, fuzzy
 msgid "Secure connection truncated"
 msgstr "Sambandet vart tidsavbrote."
 
-#: src/ne_socket.c:634 src/ne_socket.c:740
+#: src/ne_socket.c:640 src/ne_socket.c:748
 #, fuzzy, c-format
 msgid "SSL error: %s"
 msgstr "%s: Feil: %s\n"
 
-#: src/ne_socket.c:637
+#: src/ne_socket.c:643
 #, c-format
 msgid "SSL error code %d/%d/%lu"
 msgstr ""
 
-#: src/ne_socket.c:721
+#: src/ne_socket.c:727
 #, fuzzy, c-format
 msgid "SSL alert received: %s"
 msgstr "%s: Feil: %s\n"
 
-#: src/ne_socket.c:736
+#: src/ne_socket.c:744
 msgid "SSL socket read failed"
 msgstr ""
 
-#: src/ne_socket.c:867
+#: src/ne_socket.c:875
 msgid "Line too long"
 msgstr "For lang linje"
 
-#: src/ne_socket.c:1012 src/ne_socket.c:1018
+#: src/ne_socket.c:1036 src/ne_socket.c:1042
 msgid "Host not found"
 msgstr "Fann ikkje vert"
 
-#: src/ne_socket.c:1221
+#: src/ne_socket.c:1251
 #, fuzzy
 msgid "Connection timed out"
 msgstr "%s: sambandet vart tidsavbrote."
 
-#: src/ne_socket.c:1412
+#: src/ne_socket.c:1444
 msgid "Socket descriptor number exceeds FD_SETSIZE"
 msgstr ""
 
-#: src/ne_socket.c:1474
+#: src/ne_socket.c:1506
 msgid "Socket family not supported"
 msgstr ""
 
-#: src/ne_socket.c:1701
+#: src/ne_socket.c:1737
 #, fuzzy
 msgid "Client certificate verification failed"
 msgstr "Tenarsertifikatet er utgått på dato."
 
-#: src/ne_socket.c:1717
+#: src/ne_socket.c:1753
 #, fuzzy
 msgid "SSL disabled due to lack of entropy"
 msgstr "SSL avslått grunna mangel på entropi"
 
-#: src/ne_socket.c:1724
-#, fuzzy
-msgid "SSL disabled due to library version mismatch"
-msgstr "SSL avslått grunna mangel på entropi"
-
-#: src/ne_socket.c:1730
+#: src/ne_socket.c:1759
 #, fuzzy
 msgid "Could not create SSL structure"
 msgstr "Klarte ikkje forhandla SSL-økt"
@@ -646,6 +652,14 @@ msgstr "XML-tolkingsfeil på linje %d: %s."
 #, fuzzy, c-format
 msgid "Could not parse response: %s"
 msgstr "Klarte ikkje lesa «LIST»-svar."
+
+#, fuzzy
+#~ msgid "Server certificate changed: connection intercepted?"
+#~ msgstr "Tenarsertifikatet er utgått på dato."
+
+#, fuzzy
+#~ msgid "SSL disabled due to library version mismatch"
+#~ msgstr "SSL avslått grunna mangel på entropi"
 
 #, fuzzy
 #~ msgid "%s: %s"

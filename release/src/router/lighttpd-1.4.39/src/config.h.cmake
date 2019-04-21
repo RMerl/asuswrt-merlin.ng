@@ -40,7 +40,6 @@
 /* OpenSSL */
 #cmakedefine  HAVE_OPENSSL_SSL_H
 #cmakedefine  HAVE_LIBCRYPTO
-#cmakedefine  OPENSSL_NO_KRB5
 #cmakedefine  HAVE_LIBSSL
 
 /* BZip */

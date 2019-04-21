@@ -937,6 +937,9 @@ void add_lan_phy(char *phy)
 		return;
 
 	ifnames = nvram_safe_get("lan_ifnames");
+	if(find_word(ifnames, phy) != NULL)
+		return;	/* exist */
+
 	snprintf(phys, sizeof(phys), "%s%s%s", ifnames,
 		(*ifnames && *phy) ? " " : "", phy);
 	nvram_set("lan_ifnames", phys);
@@ -955,6 +958,9 @@ void add_wan_phy(char *phy)
 		return;
 
 	ifnames = nvram_safe_get("wan_ifnames");
+	if(find_word(ifnames, phy) != NULL)
+		return;	/* exist */
+
 	snprintf(phys, sizeof(phys), "%s%s%s", ifnames,
 		(*ifnames && *phy) ? " " : "", phy);
 	nvram_set("wan_ifnames", phys);
@@ -1101,6 +1107,8 @@ char *get_default_ssid(int unit, int subunit)
 #if defined(RTAC58U)
 		if (!strncmp(nvram_safe_get("territory_code"), "SP", 2))
 			sprintf((char *)ssidbase, "Spirit_%02X", mac_binary[5]);
+		else if (!strncmp(nvram_safe_get("territory_code"), "CX", 2))
+			sprintf((char *)ssidbase, "Stuff-Fibre_%02X", mac_binary[5]);
 		else
 #endif
 #ifdef RTAC68U

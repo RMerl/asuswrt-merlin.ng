@@ -121,11 +121,19 @@ void ne_ssl_cert_free(ne_ssl_certificate *cert);
  * "decrypted" state.  */
 typedef struct ne_ssl_client_cert_s ne_ssl_client_cert;
 
-/* Read a client certificate and private key from a PKCS12 file;
- * returns NULL if the file could not be parsed, or otherwise
- * returning a client certificate object.  The returned object may be
- * in either the encrypted or decrypted state. */
+/* Read a client certificate (and private key) in PKCS#12 format from
+ * file 'filename'; returns NULL if the file could not be parsed, or
+ * otherwise returning a client certificate object.  The returned
+ * object may be in either the encrypted or decrypted state. */
 ne_ssl_client_cert *ne_ssl_clicert_read(const char *filename);
+
+/* Read a client certificate (and private key) in PKCS#12 format from
+ * 'buffer', of length 'buflen', returning NULL if the certificate
+ * could not be parsed, or otherwise returning a client certificate
+ * object.  The returned object may be in either the encrypted or
+ * decrypted state. */
+ne_ssl_client_cert *ne_ssl_clicert_import(const unsigned char *buffer, 
+                                          size_t buflen);
 
 /* Returns non-zero if client cert is in the encrypted state. */
 int ne_ssl_clicert_encrypted(const ne_ssl_client_cert *ccert);
@@ -181,6 +189,9 @@ int ne_ssl_context_set_verify(ne_ssl_context *ctx, int required,
 #define NE_SSL_CTX_SSLv2 (0)
 /* Set a flag for the SSL context. */
 void ne_ssl_context_set_flag(ne_ssl_context *ctx, int flag, int value);
+
+/* Return flag value. */
+int ne_ssl_context_get_flag(ne_ssl_context *ctx, int flag);
 
 /* Destroy an SSL context. */
 void ne_ssl_context_destroy(ne_ssl_context *ctx);

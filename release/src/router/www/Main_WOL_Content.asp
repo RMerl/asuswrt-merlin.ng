@@ -35,8 +35,8 @@ Object.prototype.getKey = function(value) {
 };
 function initial(){
 	show_menu();
-	//	http://www.asus.com/support/FAQ/1009775
-	httpApi.faqURL("1009775", function(url){document.getElementById("faq3").href=url;});	// id in #smart_access3#
+	//	https://www.asus.com/support/FAQ/1011268
+	httpApi.faqURL("1011268", function(url){document.getElementById("faq3").href=url;});	// id in #smart_access3#
 
 	var wollist_row = wollist_array.split('&#60');
 	for(var i = 1; i < wollist_row.length; i += 1) {
@@ -55,7 +55,7 @@ function onSubmitCtrl(o, s) {
 		return false;
 	}
 
-	if(check_hwaddr_flag(document.form.destIP) != 0){
+	if(check_hwaddr_flag(document.form.destIP, 'inner') != 0){
 		alert("<#IPConnection_x_illegal_mac#>");
 		document.form.destIP.focus();
 		return false;
@@ -206,7 +206,7 @@ function addRow_Group(upper){
 		document.form.wollist_macAddr.focus();
 		document.form.wollist_macAddr.select();			
 		return false;
-	}else if(!check_macaddr(document.form.wollist_macAddr, check_hwaddr_flag(document.form.wollist_macAddr))){
+	}else if(!check_macaddr(document.form.wollist_macAddr, check_hwaddr_flag(document.form.wollist_macAddr, 'inner'))){
 		document.form.wollist_macAddr.focus();
 		document.form.wollist_macAddr.select();	
 		return false;	

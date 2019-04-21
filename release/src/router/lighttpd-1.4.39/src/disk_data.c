@@ -3303,29 +3303,6 @@ extern int add_account(const char *const account, const char *const password){
 }
 
 //==========================================================================================================================
-// shared/misc.c
-int upper_strncmp(const char *const str1, const char *const str2, int count){
-	char *upper_str1, *upper_str2;
-	int ret;
-
-	if(str1 == NULL || str2 == NULL)
-		return -1;
-
-	if(get_upper_str(str1, &upper_str1) == NULL)
-		return -1;
-
-	if(get_upper_str(str2, &upper_str2) == NULL){
-		free(upper_str1);
-		return -1;
-	}
-
-	ret = strncmp(upper_str1, upper_str2, count);
-	free(upper_str1);
-	free(upper_str2);
-
-	return ret;
-}
-//==========================================================================================================================
 // libpasswd/passwd.c
 #include <shadow.h>
 //#include <crypt.h>

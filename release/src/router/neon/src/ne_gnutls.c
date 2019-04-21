@@ -1,6 +1,6 @@
 /*
    neon SSL/TLS support using GNU TLS
-   Copyright (C) 2002-2010, Joe Orton <joe@manyfish.co.uk>
+   Copyright (C) 2002-2011, Joe Orton <joe@manyfish.co.uk>
    Copyright (C) 2004, Aleix Conchillo Flaque <aleix@member.fsf.org>
 
    This library is free software; you can redistribute it and/or
@@ -71,30 +71,37 @@ struct ne_ssl_dname_s {
     gnutls_x509_dn_t dn;
 #else
     int subject; /* non-zero if this is the subject DN object */
-    gnutls_x509_crt cert;
+    gnutls_x509_crt_t cert;
 #endif
 };
 
 struct ne_ssl_certificate_s {
     ne_ssl_dname subj_dn, issuer_dn;
-    gnutls_x509_crt subject;
+    gnutls_x509_crt_t subject;
     ne_ssl_certificate *issuer;
     char *identity;
 };
 
 struct ne_ssl_client_cert_s {
-    gnutls_pkcs12 p12;
+    gnutls_pkcs12_t p12;
     int decrypted; /* non-zero if successfully decrypted. */
     int keyless;
     ne_ssl_certificate cert;
-    gnutls_x509_privkey pkey;
+    gnutls_x509_privkey_t pkey;
     char *friendly_name;
+#ifdef HAVE_GNUTLS_PRIVKEY_IMPORT_EXT
+    /* Signing callback & userdata provided by ne_pkcs11.c.  It would
+     * be better to rewrite the whole module to use gnutls_privkey_t
+     * directly, but it seems impossible to dup such an object. */
+    gnutls_privkey_sign_func sign_func;
+    void *sign_ud;
+#endif
 };
 
 /* Returns the highest used index in subject (or issuer) DN of
  * certificate CERT for OID, or -1 if no RDNs are present in the DN
  * using that OID. */
-static int oid_find_highest_index(gnutls_x509_crt cert, int subject, const char *oid)
+static int oid_find_highest_index(gnutls_x509_crt_t cert, int subject, const char *oid)
 {
     int ret, idx = -1;
 
@@ -117,7 +124,7 @@ static int oid_find_highest_index(gnutls_x509_crt cert, int subject, const char 
 
 #ifdef HAVE_ICONV
 static void convert_dirstring(ne_buffer *buf, const char *charset, 
-                              gnutls_datum *data)
+                              gnutls_datum_t *data)
 {
     iconv_t id = iconv_open("UTF-8", charset);
     size_t inlen = data->size, outlen = buf->length - buf->used;
@@ -154,7 +161,7 @@ static void convert_dirstring(ne_buffer *buf, const char *charset,
 #define TAG_UNIVERSAL (28)
 #define TAG_BMP (30)
 
-static void append_dirstring(ne_buffer *buf, gnutls_datum *data, unsigned long tag)
+static void append_dirstring(ne_buffer *buf, gnutls_datum_t *data, unsigned long tag)
 {
     switch (tag) {
     case TAG_UTF8:
@@ -189,7 +196,7 @@ static void append_dirstring(ne_buffer *buf, gnutls_datum *data, unsigned long t
 char *ne_ssl_readable_dname(const ne_ssl_dname *name)
 {
     gnutls_x509_dn_t dn;
-    int ret, rdn = 0, flag = 0;
+    int ret, rdn = 0;
     ne_buffer *buf;
     gnutls_x509_ava_st val;
 
@@ -227,7 +234,6 @@ char *ne_ssl_readable_dname(const ne_ssl_dname *name)
                 && ((!CMPOID(&val, OID_emailAddress)
                      && !CMPOID(&val, OID_commonName))
                     || (buf->used == 1 && rdn == 0))) {
-                flag = 1;
                 if (buf->used > 1) ne_buffer_append(buf, ", ", 2);
 
                 append_dirstring(buf, &val.value, val.value_tag);
@@ -244,7 +250,7 @@ char *ne_ssl_readable_dname(const ne_ssl_dname *name)
 
 /* Appends the value of RDN with given oid from certitifcate x5
  * subject (if subject is non-zero), or issuer DN to buffer 'buf': */
-static void append_rdn(ne_buffer *buf, gnutls_x509_crt x5, int subject, const char *oid)
+static void append_rdn(ne_buffer *buf, gnutls_x509_crt_t x5, int subject, const char *oid)
 {
     int idx, top, ret;
     char rdn[50];
@@ -357,7 +363,7 @@ void ne_ssl_cert_validity_time(const ne_ssl_certificate *cert,
  * If 'identity' is non-NULL, store the malloc-allocated identity in
  * *identity.  If 'server' is non-NULL, it must be the network address
  * of the server in use, and identity must be NULL. */
-static int check_identity(const ne_uri *server, gnutls_x509_crt cert,
+static int check_identity(const ne_uri *server, gnutls_x509_crt_t cert,
                           char **identity)
 {
     char name[255];
@@ -464,7 +470,7 @@ static int check_identity(const ne_uri *server, gnutls_x509_crt cert,
  * that x5 is owned by returned cert object and must not be otherwise
  * freed by the caller.  */
 static ne_ssl_certificate *populate_cert(ne_ssl_certificate *cert,
-                                         gnutls_x509_crt x5)
+                                         gnutls_x509_crt_t x5)
 {
 #ifdef HAVE_NEW_DN_API
     gnutls_x509_crt_get_subject(x5, &cert->subj_dn.dn);
@@ -483,12 +489,12 @@ static ne_ssl_certificate *populate_cert(ne_ssl_certificate *cert,
 }
 
 /* Returns a copy certificate of certificate SRC. */
-static gnutls_x509_crt x509_crt_copy(gnutls_x509_crt src)
+static gnutls_x509_crt_t x509_crt_copy(gnutls_x509_crt_t src)
 {
     int ret;
-    size_t size;
-    gnutls_datum tmp;
-    gnutls_x509_crt dest;
+    size_t size = 0;
+    gnutls_datum_t tmp;
+    gnutls_x509_crt_t dest;
     
     if (gnutls_x509_crt_init(&dest) != 0) {
         return NULL;
@@ -526,6 +532,10 @@ static ne_ssl_client_cert *dup_client_cert(const ne_ssl_client_cert *cc)
     
     if (cc->keyless) {
         newcc->keyless = 1;
+#ifdef HAVE_GNUTLS_PRIVKEY_IMPORT_EXT
+        newcc->sign_func = cc->sign_func;
+        newcc->sign_ud = cc->sign_ud;
+#endif
     }
     else {
         ret = gnutls_x509_privkey_init(&newcc->pkey);
@@ -551,10 +561,18 @@ dup_error:
 }    
 
 /* Callback invoked when the SSL server requests a client certificate.  */
-static int provide_client_cert(gnutls_session session,
-                               const gnutls_datum *req_ca_rdn, int nreqs,
-                               const gnutls_pk_algorithm *sign_algos,
-                               int sign_algos_length, gnutls_retr_st *st)
+static int provide_client_cert(gnutls_session_t session,
+                               const gnutls_datum_t *req_ca_rdn, int nreqs,
+                               const gnutls_pk_algorithm_t *sign_algos,
+                               int sign_algos_length, 
+#ifdef HAVE_GNUTLS_CERTIFICATE_SET_RETRIEVE_FUNCTION2
+                               gnutls_pcert_st **pcert, 
+                               unsigned int *pcert_length, 
+                               gnutls_privkey_t *pkey
+#else
+                               gnutls_retr2_st *st
+#endif
+    )
 {
     ne_session *sess = gnutls_session_get_ptr(session);
     
@@ -610,24 +628,61 @@ static int provide_client_cert(gnutls_session session,
     }
 
     if (sess->client_cert) {
-        gnutls_certificate_type type = gnutls_certificate_type_get(session);
-        if (type == GNUTLS_CRT_X509) {
-            NE_DEBUG(NE_DBG_SSL, "Supplying client certificate.\n");
+        gnutls_certificate_type_t type = gnutls_certificate_type_get(session);
+        if (type == GNUTLS_CRT_X509
+            && (sess->client_cert->pkey || sess->client_cert->keyless)) {
+            int ret;
 
-            st->type = type;
+#ifdef HAVE_GNUTLS_CERTIFICATE_SET_RETRIEVE_FUNCTION2
+            *pkey = gnutls_malloc(sizeof *pkey);
+            gnutls_privkey_init(pkey);
+
+#ifdef HAVE_GNUTLS_PRIVKEY_IMPORT_EXT
+            if (sess->client_cert->sign_func) {
+                int algo = gnutls_x509_crt_get_pk_algorithm(sess->client_cert->cert.subject, NULL);
+                NE_DEBUG(NE_DBG_SSL, "ssl: Signing for %s.\n", gnutls_pk_algorithm_get_name(algo));
+                         
+                ret = gnutls_privkey_import_ext(*pkey, algo, sess->client_cert->sign_ud,
+                                                sess->client_cert->sign_func, NULL, 0);
+            }
+            else
+#endif
+            if (sess->client_cert->keyless) {
+                ret = GNUTLS_E_UNSUPPORTED_CERTIFICATE_TYPE;
+            }
+            else {
+                ret = gnutls_privkey_import_x509(*pkey, sess->client_cert->pkey, 0);
+            }
+
+            if (ret) {
+                NE_DEBUG(NE_DBG_SSL, "ssl: Failed to import private key: %s.\n", gnutls_strerror(ret));
+                ne_set_error(sess, _("Failed to import private key: %s"), gnutls_strerror(ret));
+                return ret;
+            }
+            
+            *pcert = gnutls_malloc(sizeof *pcert);
+            gnutls_pcert_import_x509(*pcert, sess->client_cert->cert.subject, 0);
+            *pcert_length = 1;
+#else /* !HAVE_GNUTLS_CERTIFICATE_SET_RETRIEVE_FUNCTION2 */
+            st->cert_type = type;
             st->ncerts = 1;
             st->cert.x509 = &sess->client_cert->cert.subject;
             st->key.x509 = sess->client_cert->pkey;
             
             /* tell GNU TLS not to deallocate the certs. */
             st->deinit_all = 0;
+#endif
         } else {
             return GNUTLS_E_UNSUPPORTED_CERTIFICATE_TYPE;
         }
     } 
     else {
-        NE_DEBUG(NE_DBG_SSL, "No client certificate supplied.\n");
+        NE_DEBUG(NE_DBG_SSL, "ssl: No client certificate supplied.\n");
+#ifdef HAVE_GNUTLS_CERTIFICATE_SET_RETRIEVE_FUNCTION2
+        *pcert_length = 0;
+#else        
         st->ncerts = 0;
+#endif
         sess->ssl_cc_requested = 1;
         return 0;
     }
@@ -645,8 +700,12 @@ ne_ssl_context *ne_ssl_context_create(int flags)
     ne_ssl_context *ctx = ne_calloc(sizeof *ctx);
     gnutls_certificate_allocate_credentials(&ctx->cred);
     if (flags == NE_SSL_CTX_CLIENT) {
+#ifdef HAVE_GNUTLS_CERTIFICATE_SET_RETRIEVE_FUNCTION2
+        gnutls_certificate_set_retrieve_function2(ctx->cred, provide_client_cert);
+#else
         gnutls_certificate_client_set_retrieve_function(ctx->cred,
                                                         provide_client_cert);
+#endif
     }
     gnutls_certificate_set_verify_flags(ctx->cred, 
                                         GNUTLS_VERIFY_ALLOW_X509_V1_CA_CRT);
@@ -680,11 +739,20 @@ void ne_ssl_context_set_flag(ne_ssl_context *ctx, int flag, int value)
     /* SSLv2 not supported. */
 }
 
+int ne_ssl_context_get_flag(ne_ssl_context *ctx, int flag)
+{
+    return 0;
+}
+
 void ne_ssl_context_destroy(ne_ssl_context *ctx)
 {
     gnutls_certificate_free_credentials(ctx->cred);
     if (ctx->cache.client.data) {
+#if defined(HAVE_GNUTLS_SESSION_GET_DATA2)
+        gnutls_free(ctx->cache.client.data);
+#else
         ne_free(ctx->cache.client.data);
+#endif
     } else if (ctx->cache.server.key.data) {
         gnutls_free(ctx->cache.server.key.data);
         gnutls_free(ctx->cache.server.data.data);
@@ -692,12 +760,12 @@ void ne_ssl_context_destroy(ne_ssl_context *ctx)
     ne_free(ctx);
 }
 
-#ifdef HAVE_GNUTLS_CERTIFICATE_GET_X509_CAS
+#if !defined(HAVE_GNUTLS_CERTIFICATE_GET_ISSUER) && defined(HAVE_GNUTLS_CERTIFICATE_GET_X509_CAS)
 /* Return the issuer of the given certificate, or NULL if none can be
  * found. */
-static gnutls_x509_crt find_issuer(gnutls_x509_crt *ca_list,
+static gnutls_x509_crt_t find_issuer(gnutls_x509_crt_t *ca_list,
                                    unsigned int num_cas,
-                                   gnutls_x509_crt cert)
+                                   gnutls_x509_crt_t cert)
 {
     unsigned int n;
 
@@ -711,11 +779,11 @@ static gnutls_x509_crt find_issuer(gnutls_x509_crt *ca_list,
 #endif
 
 /* Return the certificate chain sent by the peer, or NULL on error. */
-static ne_ssl_certificate *make_peers_chain(gnutls_session sock,
-                                            gnutls_certificate_credentials crd)
+static ne_ssl_certificate *make_peers_chain(gnutls_session_t sock,
+                                            gnutls_certificate_credentials_t crd)
 {
     ne_ssl_certificate *current = NULL, *top = NULL;
-    const gnutls_datum *certs;
+    const gnutls_datum_t *certs;
     unsigned int n, count;
     ne_ssl_certificate *cert;
 
@@ -727,7 +795,7 @@ static ne_ssl_certificate *make_peers_chain(gnutls_session sock,
     NE_DEBUG(NE_DBG_SSL, "ssl: Got %u certs in peer chain.\n", count);
     
     for (n = 0; n < count; n++) {
-        gnutls_x509_crt x5;
+        gnutls_x509_crt_t x5;
 
         if (gnutls_x509_crt_init(&x5) ||
             gnutls_x509_crt_import(x5, &certs[n], GNUTLS_X509_FMT_DER)) {
@@ -747,22 +815,34 @@ static ne_ssl_certificate *make_peers_chain(gnutls_session sock,
         }
     }
 
-#ifdef HAVE_GNUTLS_CERTIFICATE_GET_X509_CAS
+#if defined(HAVE_GNUTLS_CERTIFICATE_GET_ISSUER) || defined(HAVE_GNUTLS_CERTIFICATE_GET_X509_CAS)
     /* GnuTLS only returns the peers which were *sent* by the server
      * in the Certificate list during the handshake.  Fill in the
      * complete chain manually against the certs we trust: */
     if (current->issuer == NULL) {
-        gnutls_x509_crt issuer;
-        gnutls_x509_crt *ca_list;
+        gnutls_x509_crt_t issuer;
+
+#ifndef HAVE_GNUTLS_CERTIFICATE_GET_ISSUER
+        gnutls_x509_crt_t *ca_list;
         unsigned int num_cas;
         
         gnutls_certificate_get_x509_cas(crd, &ca_list, &num_cas);
+#endif
 
         do { 
             /* Look up the issuer. */
+#ifndef HAVE_GNUTLS_CERTIFICATE_GET_ISSUER
             issuer = find_issuer(ca_list, num_cas, current->subject);
+#else
+            if (gnutls_certificate_get_issuer(crd, current->subject, &issuer, 0))
+                issuer = NULL;
+#endif
+
             if (issuer) {
                 issuer = x509_crt_copy(issuer);
+                if (issuer == NULL)
+                    break;
+
                 cert = populate_cert(ne_calloc(sizeof *cert), issuer);
                 /* Check that the issuer does not match the current
                  * cert. */
@@ -855,7 +935,7 @@ static int check_chain_expiry(ne_ssl_certificate *chain)
 }
 
 /* Verifies an SSL server certificate. */
-static int check_certificate(ne_session *sess, gnutls_session sock,
+static int check_certificate(ne_session *sess, gnutls_session_t sock,
                              ne_ssl_certificate *chain)
 {
     int ret, failures = 0;
@@ -917,7 +997,7 @@ int ne__negotiate_ssl(ne_session *sess)
 {
     ne_ssl_context *const ctx = sess->ssl_context;
     ne_ssl_certificate *chain;
-    gnutls_session sock;
+    gnutls_session_t sock;
 
     NE_DEBUG(NE_DBG_SSL, "Negotiating SSL connection.\n");
 
@@ -986,7 +1066,7 @@ const char *ne_ssl_cert_identity(const ne_ssl_certificate *cert)
 
 void ne_ssl_context_trustcert(ne_ssl_context *ctx, const ne_ssl_certificate *cert)
 {
-    gnutls_x509_crt certs = cert->subject;
+    gnutls_x509_crt_t certs = cert->subject;
     gnutls_certificate_set_x509_trust(ctx->cred, &certs, 1);
 }
 
@@ -1000,7 +1080,7 @@ void ne_ssl_trust_default_ca(ne_session *sess)
 }
 
 /* Read the contents of file FILENAME into *DATUM. */
-static int read_to_datum(const char *filename, gnutls_datum *datum)
+static int read_to_datum(const char *filename, gnutls_datum_t *datum)
 {
     FILE *f = fopen(filename, "r");
     ne_buffer *buf;
@@ -1032,11 +1112,11 @@ static int read_to_datum(const char *filename, gnutls_datum *datum)
 /* Parses a PKCS#12 structure and loads the certificate, private key
  * and friendly name if possible.  Returns zero on success, non-zero
  * on error. */
-static int pkcs12_parse(gnutls_pkcs12 p12, gnutls_x509_privkey *pkey,
-                        gnutls_x509_crt *x5, char **friendly_name,
+static int pkcs12_parse(gnutls_pkcs12_t p12, gnutls_x509_privkey_t *pkey,
+                        gnutls_x509_crt_t *x5, char **friendly_name,
                         const char *password)
 {
-    gnutls_pkcs12_bag bag = NULL;
+    gnutls_pkcs12_bag_t bag = NULL;
     int i, j, ret = 0;
 
     for (i = 0; ret == 0; ++i) {
@@ -1051,8 +1131,8 @@ static int pkcs12_parse(gnutls_pkcs12 p12, gnutls_x509_privkey *pkey,
         gnutls_pkcs12_bag_decrypt(bag, password);
 
         for (j = 0; ret == 0 && j < gnutls_pkcs12_bag_get_count(bag); ++j) {
-            gnutls_pkcs12_bag_type type;
-            gnutls_datum data;
+            gnutls_pkcs12_bag_type_t type;
+            gnutls_datum_t data;
 
             if (friendly_name && *friendly_name == NULL) {
                 char *name = NULL;
@@ -1119,23 +1199,39 @@ static int pkcs12_parse(gnutls_pkcs12 p12, gnutls_x509_privkey *pkey,
 
 ne_ssl_client_cert *ne_ssl_clicert_read(const char *filename)
 {
+    gnutls_datum_t datum;
+    ne_ssl_client_cert *cc;
+
+    if (read_to_datum(filename, &datum))
+        return NULL;
+
+    cc = ne_ssl_clicert_import(datum.data, datum.size);
+
+    ne_free(datum.data);
+
+    return cc;
+}
+
+ne_ssl_client_cert *ne_ssl_clicert_import(const unsigned char *buffer, size_t buflen)
+{
     int ret;
-    gnutls_datum data;
-    gnutls_pkcs12 p12;
+    gnutls_datum_t data;
+    gnutls_pkcs12_t p12;
     ne_ssl_client_cert *cc;
     char *friendly_name = NULL;
-    gnutls_x509_crt cert = NULL;
-    gnutls_x509_privkey pkey = NULL;
+    gnutls_x509_crt_t cert = NULL;
+    gnutls_x509_privkey_t pkey = NULL;
 
-    if (read_to_datum(filename, &data))
-        return NULL;
+    /* The datum structure is not modified by gnutls_pkcs12_import,
+     * cast safely: */
+    data.data = (unsigned char *)buffer;
+    data.size = buflen;
 
     if (gnutls_pkcs12_init(&p12) != 0) {
         return NULL;
     }
 
     ret = gnutls_pkcs12_import(p12, &data, GNUTLS_X509_FMT_DER, 0);
-    ne_free(data.data);
     if (ret < 0) {
         gnutls_pkcs12_deinit(p12);
         return NULL;
@@ -1165,12 +1261,14 @@ ne_ssl_client_cert *ne_ssl_clicert_read(const char *filename)
     }
 }
 
-ne_ssl_client_cert *ne__ssl_clicert_exkey_import(const unsigned char *der,
-                                                 size_t der_len)
+#ifdef HAVE_GNUTLS_PRIVKEY_IMPORT_EXT
+ne_ssl_client_cert *ne__ssl_clicert_exkey_import(const unsigned char *der, size_t der_len,
+                                                 gnutls_privkey_sign_func sign_func,
+                                                 void *userdata)
 {
     ne_ssl_client_cert *cc;
-    gnutls_x509_crt x5;
-    gnutls_datum datum;
+    gnutls_x509_crt_t x5;
+    gnutls_datum_t datum;
 
     datum.data = (unsigned char *)der;
     datum.size = der_len;    
@@ -1185,9 +1283,12 @@ ne_ssl_client_cert *ne__ssl_clicert_exkey_import(const unsigned char *der,
     cc->keyless = 1;
     cc->decrypted = 1;
     populate_cert(&cc->cert, x5);
+    cc->sign_func = sign_func;
+    cc->sign_ud = userdata;
 
-    return cc;    
+    return cc;
 }
+#endif
 
 int ne_ssl_clicert_encrypted(const ne_ssl_client_cert *cc)
 {
@@ -1197,8 +1298,8 @@ int ne_ssl_clicert_encrypted(const ne_ssl_client_cert *cc)
 int ne_ssl_clicert_decrypt(ne_ssl_client_cert *cc, const char *password)
 {
     int ret;
-    gnutls_x509_crt cert = NULL;
-    gnutls_x509_privkey pkey = NULL;
+    gnutls_x509_crt_t cert = NULL;
+    gnutls_x509_privkey_t pkey = NULL;
 
     if (gnutls_pkcs12_verify_mac(cc->p12, password) != 0) {
         return -1;
@@ -1235,8 +1336,8 @@ const char *ne_ssl_clicert_name(const ne_ssl_client_cert *ccert)
 ne_ssl_certificate *ne_ssl_cert_read(const char *filename)
 {
     int ret;
-    gnutls_datum data;
-    gnutls_x509_crt x5;
+    gnutls_datum_t data;
+    gnutls_x509_crt_t x5;
 
     if (read_to_datum(filename, &data))
         return NULL;
@@ -1307,8 +1408,8 @@ ne_ssl_certificate *ne_ssl_cert_import(const char *data)
     int ret;
     size_t len;
     unsigned char *der;
-    gnutls_datum buffer = { NULL, 0 };
-    gnutls_x509_crt x5;
+    gnutls_datum_t buffer = { NULL, 0 };
+    gnutls_x509_crt_t x5;
 
     if (gnutls_x509_crt_init(&x5) != 0)
         return NULL;

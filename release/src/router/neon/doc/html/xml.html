@@ -1,8 +1,8 @@
-<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><title>Parsing XML</title><link rel="stylesheet" type="text/css" href="../manual.css"><meta name="generator" content="DocBook XSL Stylesheets V1.76.1"><link rel="home" href="index.html" title="neon HTTP/WebDAV client library"><link rel="up" href="api.html" title="Chapter 2. The neon C language interface"><link rel="prev" href="api.html" title="Chapter 2. The neon C language interface"><link rel="next" href="ref.html" title="neon API reference"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Parsing XML</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="api.html">Prev</a> </td><th width="60%" align="center">Chapter 2. The neon C language interface</th><td width="20%" align="right"> <a accesskey="n" href="ref.html">Next</a></td></tr></table><hr></div><div class="sect1" title="Parsing XML"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="xml"></a>Parsing XML</h2></div></div></div><p>The neon XML interface is exposed by the
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><title>Parsing XML</title><link rel="stylesheet" type="text/css" href="../manual.css"><meta name="generator" content="DocBook XSL Stylesheets V1.78.1"><link rel="home" href="index.html" title="neon HTTP/WebDAV client library"><link rel="up" href="api.html" title="Chapter 2. The neon C language interface"><link rel="prev" href="api.html" title="Chapter 2. The neon C language interface"><link rel="next" href="ref.html" title="neon API reference"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Parsing XML</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="api.html">Prev</a> </td><th width="60%" align="center">Chapter 2. The neon C language interface</th><td width="20%" align="right"> <a accesskey="n" href="ref.html">Next</a></td></tr></table><hr></div><div class="sect1"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="xml"></a>Parsing XML</h2></div></div></div><p>The neon XML interface is exposed by the
   <code class="filename">ne_xml.h</code> header file.  This interface gives a
   wrapper around the standard <a class="ulink" href="http://www.saxproject.org/" target="_top">SAX</a> API used by XML
   parsers, with an additional abstraction, <em class="firstterm">stacked SAX
-  handlers</em>, and also giving consistent <a class="ulink" href="http://www.w3.org/TR/REC-xml-names" target="_top">XML Namespace</a> support.</p><div class="sect2" title="Introduction to SAX"><div class="titlepage"><div><div><h3 class="title"><a name="xml-sax"></a>Introduction to SAX</h3></div></div></div><p>A SAX-based parser works by emitting a sequence of
+  handlers</em>, and also giving consistent <a class="ulink" href="http://www.w3.org/TR/REC-xml-names" target="_top">XML Namespace</a> support.</p><div class="sect2"><div class="titlepage"><div><div><h3 class="title"><a name="xml-sax"></a>Introduction to SAX</h3></div></div></div><p>A SAX-based parser works by emitting a sequence of
   <em class="firstterm">events</em> to reflect the tokens being parsed
   from the XML document.  For example, parsing the following document
   fragment:
@@ -19,13 +19,13 @@
   subset of SAX exposed by the neon XML interface: <span class="emphasis"><em>start-element</em></span>,
   <span class="emphasis"><em>character-data</em></span> and <span class="emphasis"><em>end-element</em></span>.  In a C API, an <span class="quote">“<span class="quote">event</span>”</span> is
   implemented as a function callback; three callback types are used in
-  neon, one for each type of event.</p></div><div class="sect2" title="Stacked SAX handlers"><div class="titlepage"><div><div><h3 class="title"><a name="xml-stacked"></a>Stacked SAX handlers</h3></div></div></div><p>WebDAV property values are represented as fragments of XML,
+  neon, one for each type of event.</p></div><div class="sect2"><div class="titlepage"><div><div><h3 class="title"><a name="xml-stacked"></a>Stacked SAX handlers</h3></div></div></div><p>WebDAV property values are represented as fragments of XML,
   transmitted as parts of larger XML documents over HTTP (notably in
   the body of the response to a <code class="literal">PROPFIND</code> request).
   When neon parses such documents, the SAX events generated for
   these property value fragments may need to be handled by the
   application, since neon has no knowledge of the structure of
-  properties used by the application.</p><p>To solve this problem<sup>[<a name="foot.xml.sax" href="#ftn.foot.xml.sax" class="footnote">1</a>]</sup> the neon XML interface introduces
+  properties used by the application.</p><p>To solve this problem<a href="#ftn.foot.xml.sax" class="footnote" name="foot.xml.sax"><sup class="footnote">[1]</sup></a> the neon XML interface introduces
   the concept of a <em class="firstterm">SAX handler</em>.  A SAX handler
   comprises a <span class="emphasis"><em>start-element</em></span>, <span class="emphasis"><em>character-data</em></span> and <span class="emphasis"><em>end-element</em></span> callback; the
   <span class="emphasis"><em>start-element</em></span> callback being defined such that each handler may
@@ -58,7 +58,7 @@
   the stack.  In the above example, handler A is at the base, and
   handler B at the top; if the <code class="literal">name</code> element had any
   children, only B's <span class="emphasis"><em>start-element</em></span> would be invoked to accept
-  them.</p></div><div class="sect2" title="Maintaining state"><div class="titlepage"><div><div><h3 class="title"><a name="xml-state"></a>Maintaining state</h3></div></div></div><p>To facilitate communication between independent handlers, a
+  them.</p></div><div class="sect2"><div class="titlepage"><div><div><h3 class="title"><a name="xml-state"></a>Maintaining state</h3></div></div></div><p>To facilitate communication between independent handlers, a
   <em class="firstterm">state integer</em> is associated with each element
   being parsed.  This integer is returned by <span class="emphasis"><em>start-element</em></span> callback and
   is passed to the subsequent <span class="emphasis"><em>character-data</em></span> and <span class="emphasis"><em>end-element</em></span> callbacks
@@ -78,12 +78,12 @@
       <span class="emphasis"><em>decline</em></span></li><li class="listitem">B <span class="emphasis"><em>start-element</em></span> (parent = 42, "name") →
       <span class="emphasis"><em>accept</em></span>, state = 99</li><li class="listitem">B <span class="emphasis"><em>character-data</em></span> (state = 99, "Bob")</li><li class="listitem">B <span class="emphasis"><em>end-element</em></span> (state = 99, "name")</li><li class="listitem">A <span class="emphasis"><em>end-element</em></span> (state = 42, "cat")</li></ol></div><p>To avoid collisions between state integers used by different
   handlers, the interface definition of any handler includes the range
-  of integers it will use.</p></div><div class="sect2" title="XML namespaces"><div class="titlepage"><div><div><h3 class="title"><a name="xml-ns"></a>XML namespaces</h3></div></div></div><p>To support XML namespaces, every element name is represented
+  of integers it will use.</p></div><div class="sect2"><div class="titlepage"><div><div><h3 class="title"><a name="xml-ns"></a>XML namespaces</h3></div></div></div><p>To support XML namespaces, every element name is represented
   as a <span class="emphasis"><em>(namespace, name)</em></span> pair.  The <span class="emphasis"><em>start-element</em></span>
   and <span class="emphasis"><em>end-element</em></span> callbacks are passed namespace and name strings
   accordingly.  If an element in the XML document has no declared
   namespace, the namespace given will be the empty string,
-  <code class="literal">""</code>.</p></div><div class="footnotes"><br><hr width="100" align="left"><div class="footnote"><p><sup>[<a id="ftn.foot.xml.sax" href="#foot.xml.sax" class="para">1</a>] </sup>This
+  <code class="literal">""</code>.</p></div><div class="footnotes"><br><hr style="width:100; text-align:left;margin-left: 0"><div id="ftn.foot.xml.sax" class="footnote"><p><a href="#foot.xml.sax" class="para"><sup class="para">[1] </sup></a>This
   <span class="quote">“<span class="quote">problem</span>”</span> only needs solving because the SAX interface
   is so inflexible when implemented as C function callbacks; a better
   approach would be to use an XML parser interface which is not based

@@ -41,14 +41,14 @@
       <refsect1>
 	<title>Description</title>
 
-	<para>An HTTP request, represented by the
-<type>ne_request</type> type, specifies that some operation is to be
-performed on some resource.  The
-<function>ne_request_create</function> function creates a request
-object, specifying the operation in the <parameter>method</parameter>
-parameter. The location of the resource is determined by the server in
-use for the session given by the <parameter>sess</parameter>
-parameter, combined with the <parameter>path</parameter> parameter.</para>
+	<para>The <type>ne_request</type> object represents an HTTP
+        request and the associated response.
+        The <function>ne_request_create</function> function creates a
+        new request object for the
+        given <parameter>session</parameter>.  The target resource for
+        the request is identified by the <parameter>path</parameter>,
+        and the method to be performed on that resource via
+        the <parameter>method</parameter> parameter.</para>
 
 <para>The <parameter>path</parameter> string used must conform to the
 <literal>abs_path</literal> definition given in RFC2396, with an

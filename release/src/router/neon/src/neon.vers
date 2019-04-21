@@ -12,5 +12,11 @@ NEON_0_29 {
     ne_acl3744_set;
     ne_buffer_qappend;
     ne_strnqdup;
-    ne_iaddr_parse;
+};
+
+NEON_0_30 {
+    ne_ssl_clicert_import;
+    ne_addr_canonical;
+    ne_ssl_context_get_flag;
+    ne_set_addrlist2;
 };

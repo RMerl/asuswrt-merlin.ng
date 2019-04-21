@@ -385,8 +385,8 @@ AC_ARG_WITH(kerberos5,
 )
 
 if test "x$use_openssl" = "xyes"; then
-    if test "x$use_kerberos" != "xyes"; then
-        CPPFLAGS="$CPPFLAGS -DOPENSSL_NO_KRB5"
+    if test "x$use_kerberos" = "xyes"; then
+        AC_DEFINE([USE_OPENSSL_KERBEROS], [1], [with kerberos])
     fi
 
     AC_CHECK_HEADERS([openssl/ssl.h])

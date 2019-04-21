@@ -1,0 +1,27 @@
+# create dummy
+conntrack -I -s 1.1.1.1 -d 2.2.2.2 -p tcp --sport 10 --dport 20 --state LISTEN -u SEEN_REPLY -t 50 ; OK
+# filter by source
+conntrack -L -s 1.1.1.1 ; OK
+# filter by destination
+conntrack -L -d 2.2.2.2 ; OK
+# filter by protocol
+conntrack -L -p tcp ; OK
+# filter by status
+conntrack -L -u SEEN_REPLY ; OK
+# filter by TCP protocol state
+conntrack -L -p tcp --state LISTEN ; OK
+# update mark of dummy conntrack
+conntrack -U -s 1.1.1.1 -m 1 ; OK
+# filter by mark
+conntrack -L -m 1 ; OK
+# filter by layer 3 protocol
+conntrack -L -f ipv4 ; OK
+# filter by mark
+conntrack -L --mark 0 ; OK
+conntrack -L --mark 0/0xffffffff; OK
+# filter by netmask
+conntrack -L -s 1.1.1.0 --mask-src 255.255.255.0 -d 2.0.0.0 --mask-dst 255.0.0.0 ; OK
+conntrack -L -s 1.1.1.4/24 -d 2.3.4.5/8 ; OK
+conntrack -L -s 1.1.2.0/24 -d 2.3.4.5/8 ; OK
+# delete dummy
+conntrack -D -d 2.2.2.2 ; OK

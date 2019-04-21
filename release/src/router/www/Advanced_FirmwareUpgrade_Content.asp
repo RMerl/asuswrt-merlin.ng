@@ -328,8 +328,8 @@ function initial(){
 	*/
 
 //	if(based_modelid == "RT-AC68R"){	//MODELDEP	//id: asus_link is in string tag #FW_desc0#
-//		document.getElementById("asus_link").href = "http://www.asus.com/us/supportonly/RT-AC68R/";
-//		document.getElementById("asus_link").innerHTML = "http://www.asus.com/us/supportonly/RT-AC68R/";
+//		document.getElementById("asus_link").href = "https://www.asus.com/us/supportonly/RT-AC68R/";
+//		document.getElementById("asus_link").innerHTML = "https://www.asus.com/us/supportonly/RT-AC68R/";
 //	}
 
 	if(based_modelid == "RT-AC68A"){        //MODELDEP : Spec special fine tune
@@ -672,6 +672,7 @@ function sig_version_check(){
 }
 
 var sdead=0;
+var sig_chk_count=60;
 function sig_check_status(){
 	$.ajax({
     	url: '/detect_firmware.asp',
@@ -679,7 +680,7 @@ function sig_check_status(){
     	timeout: 3000,
     	error:	function(xhr){
 			sdead++;
-			if(sdead < 20){				
+			if(sdead < 20){
 				setTimeout("sig_check_status();", 1000);
 			}
 			else{
@@ -687,6 +688,7 @@ function sig_check_status(){
 			}
     		},
     	success: function(){
+			--sig_chk_count;
 			$("#sig_status").show();
 			if(sig_state_flag == 0 && sig_state_error == 0 && sig_state_update == 1){		// no need upgrade
 				$("#sig_status").html("Signature is up to date");	/* Untranslated */
@@ -700,14 +702,21 @@ function sig_check_status(){
 					document.getElementById("sig_check").disabled = false;
 				}
 				else{
-					if(sig_state_flag == 1 && sig_state_update == 0 && sig_state_upgrade == 1){		//update complete						
+					if(sig_state_flag == 1 && sig_state_update == 0 && sig_state_upgrade == 1){		//update complete
 						update_sig_ver();
 					}
 					else{		//updating
-						$("#sig_status").html("Signature is updating");	/* Untranslated */
-						setTimeout("sig_check_status();", 1000);
-					}				
-				}			
+						if(sig_chk_count < 1){
+							$("#sig_status").hide();
+							document.getElementById("sig_update_scan").style.display = "none";
+							document.getElementById("sig_check").disabled = false;
+						}
+						else{
+							$("#sig_status").html("Signature is updating");	/* Untranslated */
+							setTimeout("sig_check_status();", 1000);
+						}
+					}
+				}
 			}
   		}
   	});

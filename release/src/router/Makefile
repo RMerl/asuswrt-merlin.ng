@@ -404,7 +404,7 @@ export CFLAGS := $(shell echo $(CFLAGS)| sed 's/-fno-common//g')
 endif
 
 ifeq ($(RTCONFIG_NOTIFICATION_CENTER),y)
-KERNEL_PTHREAD_ONE = $(if $(or $(findstring linux-3.4.x,$(LINUXDIR)),$(findstring linux-4.1,$(LINUXDIR)),$(findstring linux-3.10,$(LINUXDIR)),$(findstring linux-3.14.x,$(LINUXDIR))),y)
+KERNEL_PTHREAD_ONE = $(if $(or $(findstring linux-4.1,$(LINUXDIR)),$(findstring linux-3.10,$(LINUXDIR)),$(RTCONFIG_QCA)),y)
 export CONFIG_KERNEL_PTHREAD_ONE = $(KERNEL_PTHREAD_ONE)
 endif
 #
@@ -1245,7 +1245,7 @@ ifeq ($(RTCONFIG_OPENSSL11),y)
 obj-$(RTCONFIG_OPENSSL11) += openssl-1.1.x
 OPENSSLDIR=openssl-1.1.x
 else
-OPENSSLDIR=openssl
+OPENSSLDIR=openssl-1.0
 endif
 
 ifneq ($(HND_ROUTER),y)
@@ -1348,6 +1348,7 @@ obj-$(HND_ROUTER) += mcpd
 #obj-$(HND_ROUTER) += jqplot
 #obj-$(HND_ROUTER) += jquery
 #obj-$(HND_ROUTER) += tablesorter
+obj-$(HND_ROUTER) += memaccess
 
 # ALPINE compile package
 obj-$(RTCONFIG_ALPINE) += qsr10g_image
@@ -2148,7 +2149,7 @@ ifneq (,$(filter y,$(RTCONFIG_RALINK) $(RTCONFIG_QCA) $(RTCONFIG_REALTEK) $(RTCO
 	@$(MAKE) -C $(LINUXDIR)/scripts/squashfs $(MKSQUASHFS_TARGET)
 	@$(LINUXDIR)/scripts/squashfs/$(MKSQUASHFS) $(TARGETDIR) $(PLATFORMDIR)/target.image -all-root -noappend -nopad
 else ifeq ($(RTCONFIG_BCMARM),y)
-	@$(SRCBASE)/ctools/mksquashfs $(TARGETDIR) $(PLATFORMDIR)/target.image -all-root -noappend
+	@$(SRCBASE)/ctools/mksquashfs $(TARGETDIR) $(PLATFORMDIR)/target.image -all-root -noappend -Xbcj arm,armthumb
 else ifeq ($(RTCONFIG_REALTEK),y)
 	@$(MAKE) -C $(LINUXDIR)/rtkload rtk-clean
 	@$(MAKE) -C $(LINUXDIR)/.. image
@@ -2296,7 +2297,8 @@ ifeq ($(HND_ROUTER),y)
 define makeBusybox
 	@$(MAKE) -C $(BUSYBOX_DIR) $(1) $(PARALLEL_BUILD) \
 		EXTRA_CFLAGS="-fPIC $(PRIVATE_EXTRACFLAGS) -I$(STAGEDIR)/usr/include -I$(TOOL_SYS_INCLUDE) \
-			$(if $(RTCONFIG_PROTECTION_SERVER),-DSECURITY_NOTIFY,)" \
+			$(if $(RTCONFIG_PROTECTION_SERVER),-DSECURITY_NOTIFY,) \
+			$(if $(RTCONFIG_BWDPI),-DBWDPI_LOGWAR,)" \
 		EXTRA_LDFLAGS="-L$(STAGEDIR)/usr/lib" \
 		EXTRA_LDLIBS="$(if $(RTCONFIG_PROTECTION_SERVER),ptcsrv,)"
 endef
@@ -2304,7 +2306,8 @@ else
 define makeBusybox
 	@$(MAKE) -C $(BUSYBOX_DIR) $(1) $(PARALLEL_BUILD) \
 		EXTRA_CFLAGS="-fPIC $(EXTRACFLAGS) -I$(STAGEDIR)/usr/include -idirafter $(KDIR)/include \
-			$(if $(RTCONFIG_PROTECTION_SERVER),-DSECURITY_NOTIFY,)" \
+			$(if $(RTCONFIG_PROTECTION_SERVER),-DSECURITY_NOTIFY,) \
+			$(if $(RTCONFIG_BWDPI),-DBWDPI_LOGWAR,)" \
 		EXTRA_LDFLAGS="-L$(STAGEDIR)/usr/lib" \
 		EXTRA_LDLIBS="$(if $(RTCONFIG_PROTECTION_SERVER),ptcsrv,)"
 endef
@@ -2391,7 +2394,7 @@ conntrack: libnfnetlink-1.0.1 libmnl-1.0.4 libnetfilter_conntrack-1.0.7 libnetfi
 	$(MAKE) -C conntrack
 
 conntrack/Makefile:
-	(cd conntrack && touch aclocal.m4  configure Makefile.in m4)
+	(cd conntrack && autoreconf -i -f)
 	$(MAKE) conntrack-configure
 
 conntrack-configure:
@@ -2426,7 +2429,7 @@ libnfnetlink-1.0.1/Makefile:
 	$(MAKE) libnfnetlink-1.0.1-configure
 
 libnfnetlink-1.0.1-configure:
-	( cd libnfnetlink-1.0.1 ; \
+	( cd libnfnetlink-1.0.1 && autoreconf -i -f ; \
 		$(CONFIGURE) \
 		--prefix=/usr \
 		--bindir=/usr/sbin \
@@ -2444,6 +2447,7 @@ libmnl-1.0.4: libmnl-1.0.4/Makefile
 	$(MAKE) -C libmnl-1.0.4
 
 libmnl-1.0.4/Makefile:
+	(cd libmnl-1.0.4 && autoreconf -i -f)
 	$(MAKE) libmnl-1.0.4-configure
 
 libmnl-1.0.4-configure:
@@ -2465,7 +2469,7 @@ libnetfilter_conntrack-1.0.7: libnfnetlink-1.0.1 libmnl-1.0.4 libnetfilter_connt
 	$(MAKE) -C libnetfilter_conntrack-1.0.7
 
 libnetfilter_conntrack-1.0.7/Makefile:
-	(cd libnetfilter_conntrack-1.0.7 && touch configure aclocal.m4  m4 Makefile.in config.h.in)
+	(cd libnetfilter_conntrack-1.0.7 && autoreconf -i -f)
 	$(MAKE) libnetfilter_conntrack-1.0.7-configure
 
 libnetfilter_conntrack-1.0.7-configure:
@@ -2492,6 +2496,7 @@ libnetfilter_cttimeout-1.0.0: libnetfilter_cttimeout-1.0.0/Makefile
 	$(MAKE) -C libnetfilter_cttimeout-1.0.0
 
 libnetfilter_cttimeout-1.0.0/Makefile:
+	(cd libnetfilter_cttimeout-1.0.0 && autoreconf -i -f)
 	$(MAKE) libnetfilter_cttimeout-1.0.0-configure
 
 libnetfilter_cttimeout-1.0.0-configure:
@@ -4128,8 +4133,11 @@ libevent-2.0.21: libevent-2.0.21/Makefile
 	$(MAKE) -C $@ $(PARALLEL_BUILD) && $(MAKE) $@-stage && sed 's|/usr/lib|$(STAGEDIR)/usr/lib|g' -i $(STAGEDIR)/usr/lib/libevent.la
 
 libevent-2.0.21/Makefile:
-	( cd libevent-2.0.21 && autoreconf -i -f ; CFLAGS="$(CFLAGS) -Os -Wall $(EXTRACFLAGS)" \
+	( cd libevent-2.0.21 && autoreconf -i -f ; \
+		CFLAGS="$(CFLAGS) -Os -Wall $(EXTRACFLAGS) -I$(STAGEDIR)/usr/include" \
+		LDFLAGS="-L$(STAGEDIR)/usr/lib" \
 		$(CONFIGURE) --prefix=/usr --bindir=/usr/sbin --libdir=/usr/lib \
+		--disable-openssl --disable-debug-mode \
 	)
 
 libevent-2.0.21-install: libevent-2.0.21
@@ -4137,7 +4145,7 @@ libevent-2.0.21-install: libevent-2.0.21
 	$(STRIP) $(INSTALLDIR)/$</usr/lib/libevent-2.0.so*
 
 libevent-2.0.21-clean:
-	[ ! -f libevent-2.0.21/Makefile ] || $(MAKE) -C libevent-2.0.21 clean
+	[ ! -f libevent-2.0.21/Makefile ] || $(MAKE) -C libevent-2.0.21 distclean
 	@rm -f libevent-2.0.21/Makefile
 
 tor: $(OPENSSLDIR) zlib libevent-2.0.21 tor/Makefile
@@ -4611,8 +4619,9 @@ mt-daapd-svn-1696-install:
 	rm -rf $(INSTALLDIR)/rom/mt-daapd/admin-root
 	rm -rf $(INSTALLDIR)/rom/mt-daapd/plugins
 	install -d $(INSTALLDIR)/mt-daapd-svn-1696/rom/mt-daapd/plugins
+	rm -rf $(INSTALLDIR)/mt-daapd-svn-1696/rom/mt-daapd
 	cp -rf mt-daapd-svn-1696/admin-root $(INSTALLDIR)/mt-daapd-svn-1696/rom/mt-daapd
-	cd $(INSTALLDIR)/mt-daapd-svn-1696/rom/mt-daapd/admin-root && rm -rf `find -name Makefile` && rm -rf `find -name Makefile.in` && rm -rf `find -name Makefile.am`
+	find $(INSTALLDIR)/mt-daapd-svn-1696/rom/mt-daapd -name 'Makefile*' -exec rm -rf {} +
 	cp -rf mt-daapd-svn-1696/src/plugins/.libs/*.so $(INSTALLDIR)/mt-daapd-svn-1696/rom/mt-daapd/plugins
 	install -D mt-daapd-svn-1696/src/.libs/mt-daapd $(INSTALLDIR)/mt-daapd-svn-1696/usr/sbin/mt-daapd
 	$(STRIP) $(INSTALLDIR)/mt-daapd-svn-1696/usr/sbin/mt-daapd
@@ -5445,7 +5454,7 @@ sw-hw-auth-clean:
 
 #add by alan
 #add install neon
-neon/stamp-h1 neon/config.h:
+neon/Makefile neon/config.h:
 	cd neon && \
 	$(CONFIGURE) CC=$(CC) \
 		--prefix=/usr \
@@ -5460,18 +5469,18 @@ neon/stamp-h1 neon/config.h:
 	cp -f neon/config.h neon/src/config.h
 	touch $@
 
-neon: libxml2 openssl neon/stamp-h1 neon/config.h
+neon: libxml2 $(OPENSSLDIR) neon/Makefile neon/config.h
 	$(MAKE) -C neon && $(MAKE) $@-stage
 
 neon-install:
 	@$(SEP)
-	install -D neon/src/.libs/libneon.so.27.2.6 $(INSTALLDIR)/neon/usr/lib/libneon.so.27.2.6
-	$(STRIP) $(INSTALLDIR)/neon/usr/lib/libneon.so.27.2.6
-	cd $(INSTALLDIR)/neon/usr/lib && ln -sf libneon.so.27.2.6 libneon.so && ln -sf libneon.so.27.2.6 libneon.so.27
+	install -D neon/src/.libs/libneon.so.27.3.2 $(INSTALLDIR)/neon/usr/lib/libneon.so.27.3.2
+	$(STRIP) $(INSTALLDIR)/neon/usr/lib/libneon.so.27.3.2
+	cd $(INSTALLDIR)/neon/usr/lib && ln -sf libneon.so.27.3.2 libneon.so && ln -sf libneon.so.27.3.2 libneon.so.27
 
 neon-clean:
-	-@$(MAKE) -C neon clean
-	@rm -f neon/stamp-h1
+	[ ! -f neon/Makefile ] || $(MAKE) -C neon distclean
+	@rm -f neon/Makefile
 
 neon-stage:
 	@$(MAKE) -C neon install DESTDIR=$(STAGEDIR)
@@ -6705,7 +6714,8 @@ ethtool-3.7: ethtool-3.7/Makefile
 	$(MAKE) -C $@ KERNEL_DIR=$(LINUXDIR)
 
 ethtool-3.7-clean:
-	$(MAKE) -C ethtool-3.7 distclean
+	[ ! -f ethtool-3.7/Makefile ] || $(MAKE) -C ethtool-3.7 distclean
+	@rm -f ethtool-3.7/Makefile
 
 ethtool-3.7-install: ethtool-3.7
 	install -D ethtool-3.7/ethtool $(INSTALLDIR)/ethtool-3.7/usr/bin/ethtool
@@ -6815,8 +6825,8 @@ ifeq ($(wildcard bluez-5.41/prebuild),)
 		--datadir=/usr/share --localstatedir=/var --mandir=/usr/man --infodir=/usr/info --disable-systemd --with-udevdir=$(STAGEDIR)/usr/lib/udev\
 		--enable-experimental --enable-maintainer-mode $(AQIS) \
 		UDEV_CFLAGS="-I$(STAGEDIR)/usr/include" UDEV_LIBS="$(STAGEDIR)/usr/lib/libudev.so" \
-		CFLAGS="-I$(STAGEDIR)/usr/include -I$(STAGEDIR)/usr/local/include -I$(SRCBASE)/include -I$(STAGEDIR)/usr/local/include/glib-2.0 -I$(STAGEDIR)/usr/local/lib/glib-2.0/include -I$(TOP)/shared -DENCRYPT -D$(MODEL)" \
-		LDFLAGS="-L$(STAGEDIR)/lib -L$(STAGEDIR)/usr/lib -ldbus-1 -liconv -ldl -lpthread -L$(STAGEDIR)/usr/local/lib -lglib-2.0 -lical -licalvcal -L$(TOP)/openssl -lssl -lcrypto -L$(TOP)/nvram -L$(INSTALLDIR)/nvram/usr/lib -lnvram -L$(TOP)/shared -L$(INSTALLDIR)/shared/usr/lib -lshared -L$(INSTALLDIR)/zlib/usr/lib -lz"
+		CFLAGS="-I$(STAGEDIR)/usr/include -I$(STAGEDIR)/usr/local/include -I$(SRCBASE)/include -I$(STAGEDIR)/usr/local/include/glib-2.0 -I$(STAGEDIR)/usr/local/lib/glib-2.0/include -I$(TOP)/shared -I$(TOP)/json-c -DENCRYPT -D$(MODEL)" \
+		LDFLAGS="-L$(STAGEDIR)/lib -L$(STAGEDIR)/usr/lib -ldbus-1 -liconv -ldl -lpthread -L$(STAGEDIR)/usr/local/lib -lglib-2.0 -lical -licalvcal -L$(TOP)/openssl -lssl -lcrypto -L$(TOP)/nvram -L$(INSTALLDIR)/nvram/usr/lib -lnvram -L$(TOP)/shared -L$(INSTALLDIR)/shared/usr/lib -lshared -L$(INSTALLDIR)/zlib/usr/lib -lz -lm -lc -ljson-c"
 		touch $@
 endif
 bluez-5.41: bluez-5.41/stamp-h1
@@ -6904,6 +6914,8 @@ jansson-2.7/Makefile:
 
 jansson-2.7: jansson-2.7/Makefile
 	@$(MAKE) -C $@ && $(MAKE) $@-stage
+	## a workaround to avoid libtool error
+	sed 's|/usr/lib|$(STAGEDIR)/usr/lib|g' -i $(STAGEDIR)/usr/lib/libjansson.la
 
 jansson-2.7-install: jansson-2.7
 	install -D jansson-2.7/src/.libs/libjansson.so $(INSTALLDIR)/jansson-2.7/usr/lib/libjansson.so
@@ -6969,7 +6981,8 @@ libical-2.0.0: libical-2.0.0/Makefile
 	$(MAKE) -C $@ && $(MAKE) $@-stage
 
 libical-2.0.0-clean:
-	[ ! -f libical-2.0.0/Makefile ] || $(MAKE) -C libical-2.0.0 distclean
+	[ ! -f libical-2.0.0/Makefile ] || $(MAKE) -C libical-2.0.0 clean
+	@rm -f libical-2.0.0/Makefile
 
 libical-2.0.0-install:
 	install -D libical-2.0.0/lib/libical_cxx.so.2.0.0 $(INSTALLDIR)/libical-2.0.0/usr/lib/libical_cxx.so.2.0.0
@@ -7593,22 +7606,25 @@ acme-client-portable-install: acme-client-portable
 	install -D acme-client-portable/acme-client $(INSTALLDIR)/acme-client-portable/usr/sbin/acme-client
 	$(STRIP) $(INSTALLDIR)/acme-client-portable/usr/sbin/acme-client
 
-lighttpd-le/stamp-h1:
-	cd lighttpd-le && ./autogen.sh && \
+lighttpd-le/configure:
+	cd lighttpd-le && ./autogen.sh
+
+lighttpd-le/Makefile: lighttpd-le/configure
+	cd lighttpd-le && \
 	$(CONFIGURE) \
 	--prefix=/usr/local \
+	--with-openssl=$(STAGEDIR)/usr \
 	--without-pcre \
-	--with-openssl=$(TOP)/openssl \
 	--without-zlib \
 	--without-bzip2
 	@touch $@
 
-lighttpd-le: lighttpd-le/stamp-h1
+lighttpd-le: openssl lighttpd-le/Makefile
 	$(MAKE) -C lighttpd-le
 
 lighttpd-le-clean:
-	-@$(MAKE) -C lighttpd-le clean
-	@rm -f lighttpd-le/stamp-h1
+	-@[ ! -f lighttpd-le/Makefile ] || $(MAKE) -C lighttpd-le distclean
+	@rm -f lighttpd-le/Makefile
 
 lighttpd-le-install: lighttpd-le
 	install -D lighttpd-le/src/lighttpd $(INSTALLDIR)/lighttpd-le/usr/sbin/lighttpd

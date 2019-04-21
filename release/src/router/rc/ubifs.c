@@ -162,7 +162,7 @@ void start_ubifs(void)
 		_dprintf("*** ubifs: ubi volume not found\n");
 
 		/* mtd erase on UBIFS_VOL_NAME first */
-		if (!mtd_erase(JFFS2_MTD_NAME)) {
+		if (mtd_erase(JFFS2_MTD_NAME)) {
 			error("formatting");
 			return;
 		}

@@ -242,9 +242,11 @@ create_install:
 		-mkdir -p $(INSTALL_DIR)/etc/snmp
 		-mkdir -p $(INSTALL_DIR)/etc/iproute2
 		-mkdir -p $(INSTALL_DIR)/rom/bin
+#		-mkdir -p $(INSTALL_DIR)/opt/bin
+#		-mkdir -p $(INSTALL_DIR)/opt/modules
+#		-mkdir -p $(INSTALL_DIR)/opt/scripts
 		-mkdir -p $(INSTALL_DIR)/rom/modules
 		-mkdir -p $(INSTALL_DIR)/rom/scripts
-
 
 # By default, let make spawn 1 job per core.
 # To set max jobs, specify on command line, BRCM_MAX_JOBS=8

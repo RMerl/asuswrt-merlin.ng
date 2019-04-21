@@ -78,12 +78,18 @@ enum
 #define NMP_DEBUG_FUNCTION_FILE		"/tmp/NMP_DEBUG_FUNCTION"
 
 #define NEWORKMAP_OUI_FILE		"/usr/networkmap/networkmap.oui.js"
-#if (defined(RTCONFIG_JFFS2) || defined(RTCONFIG_JFFSV1) || defined(RTCONFIG_BRCM_NAND_JFFS2))
+#if (defined(RTCONFIG_JFFS2) || defined(RTCONFIG_JFFSV1) || defined(RTCONFIG_BRCM_NAND_JFFS2) || defined(RTCONFIG_UBIFS))
 #define NMP_CL_JSON_FILE		"/jffs/nmp_cl_json.js"
 #else
 #define NMP_CL_JSON_FILE		"/tmp/nmp_cl_json.js"
 #endif
 #define ARP_PATH			"/proc/net/arp"
+
+#define NMP_CONSOLE_DEBUG(fmt, args...) do{ \
+	if(nvram_match("nmp_debug", "1")) { \
+		cprintf(fmt, ## args); \
+	} \
+}while(0)
 
 #if !defined(RTCONFIG_RALINK) && !defined(HND_ROUTER)
 #define NMP_DEBUG(fmt, args...) \
@@ -203,5 +209,6 @@ typedef struct
 } ARP_HEADER;
 
 int FindHostname(P_CLIENT_DETAIL_INFO_TABLE p_client_detail_info_tab);
+int FindDeviceMac(unsigned char *pIP, unsigned char *pMac);
 void find_wireless_device(P_CLIENT_DETAIL_INFO_TABLE p_client_detail_info_tab, int offline);
 #endif

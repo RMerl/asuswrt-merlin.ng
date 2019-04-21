@@ -9,7 +9,7 @@ OPENSSL_INC=$OPENSSL_DIR/include
 OPENSSL_LIB=$OPENSSL_DIR
 OPENSSL_CFLAGS=-I$OPENSSL_INC
 OPENSSL_LDFLAGS="-L$OPENSSL_LIB"
-OPENSSL_LDLIBS="-lssl -lcrypto"
+OPENSSL_LDLIBS="-lssl -lcrypto -lpthread"
 
 ##### UMEM
 #UMEM_DIR=$CUR_DIR/../umem-1.0.1
@@ -28,7 +28,7 @@ OPENSSL_LDLIBS="-lssl -lcrypto"
 #NVRAM_LIBS="-lnvram"
 
 if [ "$QCA" = "y" ]; then
-	EXTRA_LDFLAGS="-L$LIBDIR -L$LIBDIR/gcc/arm-openwrt-linux-uclibcgnueabi/4.6.3 -lc -lm -ldl -lgcc_s"
+	EXTRA_LDFLAGS="-L$LIBDIR -L$(ls -d -1 $LIBDIR/gcc/*/*) -lc -lm -ldl -lgcc_s"
 fi
 
 if [ "$ALPINE" = "y" ]; then

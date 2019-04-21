@@ -1,0 +1,176 @@
+     <refentry id="refproxy">
+      
+      <refmeta>
+	<refentrytitle>ne_session_proxy</refentrytitle>
+	<manvolnum>3</manvolnum>
+      </refmeta>
+
+      <refnamediv>
+	<refname id="ne_session_proxy">ne_session_proxy</refname>
+	<refname id="ne_session_socks_proxy">ne_session_socks_proxy</refname>
+	<refname id="ne_session_system_proxy">ne_session_system_proxy</refname>
+	<refname id="ne_set_addrlist">ne_set_addrlist</refname>
+	<refpurpose>configure proxy servers</refpurpose>
+      </refnamediv>
+      
+      <refsynopsisdiv>
+	
+	<funcsynopsis>
+	  <funcsynopsisinfo>#include &lt;ne_session.h&gt;</funcsynopsisinfo>
+
+	  <funcprototype>
+	    <funcdef>void <function>ne_session_proxy</function></funcdef>
+	    <paramdef>ne_session *<parameter>session</parameter></paramdef>
+	    <paramdef>const char *<parameter>hostname</parameter></paramdef>
+	    <paramdef>unsigned int <parameter>port</parameter></paramdef>
+	  </funcprototype>
+
+	  <funcprototype>
+	    <funcdef>void <function>ne_session_system_proxy</function></funcdef>
+	    <paramdef>ne_session *<parameter>session</parameter></paramdef>
+	    <paramdef>unsigned int <parameter>flags</parameter></paramdef>
+	  </funcprototype>
+
+	  <funcprototype>
+	    <funcdef>void <function>ne_session_socks_proxy</function></funcdef>
+	    <paramdef>ne_session *<parameter>session</parameter></paramdef>
+	    <paramdef>enum ne_sock_sversion <parameter>version</parameter></paramdef>
+	    <paramdef>const char *<parameter>hostname</parameter></paramdef>
+	    <paramdef>unsigned int <parameter>port</parameter></paramdef>
+	    <paramdef>const char *<parameter>username</parameter></paramdef>
+	    <paramdef>const char *<parameter>password</parameter></paramdef>
+	  </funcprototype>
+
+	  <funcprototype>
+	    <funcdef>void <function>ne_set_addrlist</function></funcdef>
+	    <paramdef>ne_session *<parameter>session</parameter></paramdef>
+	    <paramdef>const ne_inet_addr **<parameter>addrlist</parameter></paramdef>
+	    <paramdef>size_t <parameter>count</parameter></paramdef>
+	  </funcprototype>
+
+	</funcsynopsis>
+      </refsynopsisdiv>
+
+      <refsect1>
+	<title>Description</title>
+
+	<para>One (and no more than one) of the functions
+	<function>ne_session_proxy</function>,
+	<function>ne_session_system_proxy</function>,
+	<function>ne_session_socks_proxy</function>,
+	<function>ne_set_addrlist</function> can be used to configure
+	a proxy server for a given session object.  If more than one
+	function is invoked for any given session object, only the
+	last call has effect.  If one of the functions is to be used,
+	it must be used before the creation of any request object for
+	the session.</para>
+        
+        <refsect2>
+          <title>HTTP proxy specification</title>
+          
+          <para>The <function>ne_session_proxy</function> function
+          configures use of an HTTP proxy server for the session, the
+          location of which is given by the
+          <parameter>hostname</parameter> and
+          <parameter>port</parameter> paramters.  If the proxy
+          requires authentication, <xref linkend="ne_set_proxy_auth"/>
+          should be used.</para>
+        </refsect2>
+          
+        <refsect2>
+          <title>System proxy configuration</title>
+          
+          <para>The <function>ne_session_system_proxy</function>
+          function configures the session to use any proxy servers
+          specified by the system configuration.  Support for this
+          function is platform-specific; if unsupported, the function
+          has no effect.</para>
+        </refsect2>
+
+        <refsect2>
+          <title>SOCKS proxy configuration</title>
+          
+          <para>The <function>ne_session_socks_proxy</function>
+          function configures the session to use a SOCKS proxy.  The
+          <parameter>version</parameter> indicates which version of
+          the SOCKS protocol should be used.  The
+          <parameter>hostname</parameter> and
+          <parameter>port</parameter> parameters specify the SOCKS
+          proxy location.  Note that a server with only an IPv6
+          address cannot be used with SOCKS v4 or v4A.  The
+          interpretation of the other arguments depends on the version
+          specified:</para>
+          
+          <variablelist>
+            <varlistentry><term><constant>NE_SOCK_SOCKSV4</constant> (version 4)</term>
+	    <listitem>
+	      <simpara>The <parameter>username</parameter> parameter
+	       must be non-&null;; the <parameter>password</parameter>
+	       parameter is ignored.</simpara>
+	    </listitem>
+            </varlistentry>
+
+            <varlistentry><term><constant>NE_SOCK_SOCKSV4A</constant> (version 4A)</term>
+	    <listitem>
+	      <simpara>The <parameter>username</parameter> parameter
+	      must be non-&null;; the <parameter>password</parameter>
+	      parameter is ignored.</simpara>
+	    </listitem>
+            </varlistentry>
+
+            <varlistentry><term><constant>NE_SOCK_SOCKSV5</constant> (version 5)</term>
+	    <listitem>
+	      <simpara>The <parameter>username</parameter> parameter
+	      may be &null;; if it is non-&null;,
+	      the <parameter>password</parameter> parameter must also
+	      be non-&null;; otherwise, it is ignored..</simpara>
+	    </listitem>
+            </varlistentry>
+          </variablelist>
+
+        </refsect2>
+
+        <refsect2>
+          <title>Origin server address override</title>
+          
+          <para>The <function>ne_set_addrlist</function> function
+          forces use of an address and port the a specified list when
+          establishing a TCP connection, ignoring the "real" hostname
+          and port identifying the origin server for the session (as
+          passed to <function>ne_session_create</function>).  The
+          origin server's "real" hostname and port will still be used
+          in the <literal>Host</literal> header in HTTP requests.
+          When a connection is required, the library will iterate
+          through the <parameter>addrlist</parameter> list, attempting
+          to connect to the address <parameter>addrlist[0]</parameter>
+          through to <parameter>addrlist[count-1]</parameter> in turn,
+          until a connection can be established.</para>
+
+        </refsect2>
+
+      </refsect1>
+
+      <refsect1>
+	<title>Return Values</title>
+	<para>None of the functions described here has a return
+	value.</para>
+      </refsect1>
+
+      <refsect1>
+	<title>Examples</title>
+	<para>Create and destroy a session:</para>
+	<programlisting>ne_session *sess;
+sess = ne_session_create("http", "host.example.com", 80);
+ne_session_proxy(sess, "proxy.example.com", 3128);
+/* ... use sess ... */
+ne_session_destroy(sess);
+</programlisting>
+      </refsect1>
+
+      <refsect1>
+	<title>See Also</title>
+
+	<para><xref linkend="ne_ssl_set_verify"/>, <xref linkend="ne_ssl_trust_cert"/>, <xref linkend="ne_sock_init"/>, <xref linkend="ne_set_session_flag"/></para>
+      </refsect1>
+
+    </refentry>

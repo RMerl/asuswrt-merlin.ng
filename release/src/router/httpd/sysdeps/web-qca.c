@@ -587,7 +587,7 @@ typedef struct _WLANCONFIG_LIST {
 	unsigned int chan;
 	char txrate[10];
 	char rxrate[10];
-	unsigned int rssi;
+	int rssi;
 	unsigned int idle;
 	unsigned int txseq;
 	unsigned int rxseq;
@@ -635,23 +635,15 @@ typedef struct _WIFI_STA_TABLE {
 static int __getSTAInfo(int unit, WIFI_STA_TABLE *sta_info, char *ifname, char id)
 {
 	FILE *fp;
-	int l2_offset, subunit, channf;
-	char *l2, *l3;
+	int l2_offset, subunit, channf, ax2he = 0;
+	char *l2, *l3, *p;
 	char line_buf[300]; // max 14x
 	char subunit_str[4] = "0", wlif[sizeof("wlX.Yxxx")];
 
-	if (unit < 0 || unit >= MAX_NR_WL_IF)
+	if (absent_band(unit))
 		return -1;
 	if (!ifname || *ifname == '\0')
 		return -1;
-#if !defined(RTCONFIG_HAS_5G_2)
-	if (unit == 2)
-		return -1;
-#endif
-#if !defined(RTCONFIG_WIGIG)
-	if (unit == 3)
-		return -1;
-#endif
 
 	subunit = get_wlsubnet(unit, ifname);
 	if (subunit < 0)
@@ -661,6 +653,10 @@ static int __getSTAInfo(int unit, WIFI_STA_TABLE *sta_info, char *ifname, char i
 		return -2;
 	}
 
+#if defined(RTCONFIG_WIFI_QCN5024_QCN5054)
+	if (!find_word(nvram_safe_get("rc_support"), "11AX"))
+		ax2he = 1;
+#endif
 	channf = QCA_DEFAULT_NOISE_FLOOR;
 
 	snprintf(wlif, sizeof(wlif), "wl%d.%d", unit, subunit);
@@ -696,6 +692,12 @@ ADDR               AID CHAN TXRATE RXRATE RSSI IDLE  TXSEQ  RXSEQ  CAPS        A
 			if (l3) {
 				*(l3 - 1) = '\0';
 				sscanf(l3, "IEEE80211_MODE_%s %d", r->mode, &r->u_psmode);
+				if (ax2he) {
+					if ((p = strstr(r->mode, "11AXA")) != NULL)
+						memcpy(p, "11AHE", 5);
+					else if ((p = strstr(r->mode, "11AXG")) != NULL)
+						memcpy(p, "11GHE", 5);
+				}
 			}
 			*(l2 - 1) = '\0';
 			sscanf(line_buf, "%s%u%u%s%s%u%u%u%u%[^\n]",
@@ -1250,10 +1252,18 @@ wl_status(int eid, webs_t wp, int argc, char_t **argv, int unit)
 #if !defined(RTCONFIG_CONCURRENTREPEATER)
 		if (!unit && repeater_mode()) {
 			/* Show P-AP information first, if we are about to show 2.4G information in repeater mode. */
+#if defined(RTCONFIG_REPEATER_STAALLBAND)
+			unit = nvram_get_int("wlc_triBand");
+			snprintf(prefix, sizeof(prefix), "sta%d", unit);
+			ret += show_wliface_info(wp, unit, prefix, "Repeater");
+			ret += websWrite(wp, "\n");
+			unit = 0;
+#else
 			snprintf(prefix, sizeof(prefix), "wl%d.1_", nvram_get_int("wlc_band"));
 			ifname = nvram_safe_get(strcat_r(prefix, "ifname", tmp));
 			ret += show_wliface_info(wp, unit, ifname, "Repeater");
 			ret += websWrite(wp, "\n");
+#endif
 		}
 #else
 		if (repeater_mode()) {
@@ -2244,9 +2254,6 @@ ej_nat_accel_status(int eid, webs_t wp, int argc, char_t **argv)
 {
 	int i, status = 1, retval = 0;
 	struct nat_accel_kmod_s *p = &nat_accel_kmod[0];
-#if defined(RTCONFIG_SOC_IPQ8064)
-	int s1, s2;
-#endif
 
 	for (i = 0, p = &nat_accel_kmod[i]; status && i < ARRAY_SIZE(nat_accel_kmod); ++i, ++p) {
 		if (module_loaded(p->kmod_name))
@@ -2260,8 +2267,19 @@ ej_nat_accel_status(int eid, webs_t wp, int argc, char_t **argv)
 	 * Don't claim hardware NAT is enabled if one of them is non-zero value.
 	 */
 	if (status) {
-		s1 = safe_atoi(file2str("/sys/kernel/debug/ecm/ecm_nss_ipv4/stop"));
-		s2 = safe_atoi(file2str("/sys/kernel/debug/ecm/ecm_nss_ipv6/stop"));
+		const char *v4_stop_fn = "/sys/kernel/debug/ecm/ecm_nss_ipv4/stop", *v6_stop_fn = "/sys/kernel/debug/ecm/ecm_nss_ipv6/stop";
+		int s1, s2;
+		char *str;
+
+		s1 = s2 = 0;
+		if((str = file2str(v4_stop_fn)) != NULL) {
+			s1 = safe_atoi(str);
+			free(str);
+		}
+		if((str = file2str(v6_stop_fn)) != NULL) {
+			s2 = safe_atoi(str);
+			free(str);
+		}
 
 		if (s1 != 0 || s2 != 0)
 			status = 0;

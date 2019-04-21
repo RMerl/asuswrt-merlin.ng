@@ -295,7 +295,10 @@ var validator = {
 			return true;
 		}
 		else{
-			showError("<#JS_validhostname#>");
+			if(obj.value.length < 2)
+				showError("<#JS_short_username#>");
+			else
+				showError("<#JS_validhostname#>");
 			obj.value = "";
 			obj.focus();
 			obj.select();

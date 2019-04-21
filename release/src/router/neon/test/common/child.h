@@ -1,6 +1,6 @@
 /* 
    Framework for testing with a server process
-   Copyright (C) 2001-2004, Joe Orton <joe@manyfish.co.uk>
+   Copyright (C) 2001-2004, 2009, Joe Orton <joe@manyfish.co.uk>
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -62,6 +62,16 @@ int spawn_server_addr(int bind_local, int port, server_fn fn, void *userdata);
  * processing requests, up to 'n' times. If 'n' is reached, then the
  * child process exits with a failure status. */
 int spawn_server_repeat(int port, server_fn fn, void *userdata, int n);
+
+/* Forks a server child process running 'fn(userdata)' on an
+ * unspecified port.  Sets test suite error on failure; on success,
+ * sets *port to bound port number. */
+int new_spawn_server(int count, server_fn fn, void *userdata, 
+                     unsigned int *port);
+
+/* As per new_spawn_server, but also returns the bound address as *addr. */
+int new_spawn_server2(int count, server_fn fn, void *userdata,
+                      ne_inet_addr **addr, unsigned int *port);
 
 /* Blocks until child process exits, and gives return code of 'fn'. */
 int await_server(void);

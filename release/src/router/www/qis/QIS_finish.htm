@@ -568,7 +568,9 @@ function QKfinish_load_body(){
 	var shown_str;
 
 	// disable click button for low-end HW SPEC
-	if(document.restartForm.productid.value == "RT-AC51U+"){
+	if(document.restartForm.productid.value == "RT-AC51U+"
+	|| document.restartForm.productid.value == "RT-ACRH26"
+	|| document.restartForm.productid.value == "RT-AC85P"){
 		$("#nextButton").hide();
 		$("#loadingIcon").show();
 

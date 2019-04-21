@@ -208,12 +208,6 @@ function update_QKForm()
 
 	parent.document.QKform.switch_wantag.value = document.form.switch_wantag.value;
 	parent.document.QKform.switch_stb_x.value = document.form.switch_stb_x.value;
-	parent.document.QKform.mr_enable_x.value = document.form.mr_enable_x.value;
-	parent.document.QKform.emf_enable.value = document.form.emf_enable.value;
-	parent.document.QKform.ttl_inc_enable.value = document.form.ttl_inc_enable.value;
-	parent.document.QKform.wan_vpndhcp.value = document.form.wan_vpndhcp.value;
-	parent.document.QKform.quagga_enable.value = document.form.quagga_enable.value;
-	parent.document.QKform.mr_altnet_x.value = document.form.mr_altnet_x.value;
 	if(document.form.switch_wantag.value == "manual"){
 		parent.document.QKform.switch_wan0tagid.value = document.form.switch_wan0tagid.value;
 		parent.document.QKform.switch_wan0prio.value = document.form.switch_wan0prio.value;
@@ -481,45 +475,6 @@ function ISP_Profile_Selection(isp){
 		document.getElementById("iptv_configuration").style.display = "";
 	else
 		document.getElementById("iptv_configuration").style.display = "none";
-
-	/* Special Applications */
-	if(isp_settings.mr_enable_x != ""){
-		document.form.mr_enable_x.value = isp_settings.mr_enable_x;
-	}
-	else{
-		document.form.mr_enable_x.value = parent.orig_mr_enable;
-	}
-
-	if(isp_settings.emf_enable != ""){
-		document.form.emf_enable.value = isp_settings.emf_enable;
-	}
-	else{
-		document.form.emf_enable.value = parent.orig_emf_enable;
-	}
-
-	if(isp_settings.wan_vpndhcp != ""){
-		document.form.wan_vpndhcp.value = isp_settings.wan_vpndhcp;
-	}
-	else{
-		document.form.wan_vpndhcp.value = parent.orig_wan_vpndhcp;
-	}
-
-	if(isp_settings.quagga_enable != ""){
-		document.form.quagga_enable.value = isp_settings.quagga_enable;
-	}
-	else{
-		document.form.quagga_enable.value = parent.orig_quagga_enable;
-	}
-
-	document.form.mr_altnet_x.value = isp_settings.mr_altnet_x;
-
-	if(isp_settings.ttl_inc_enable != ""){
-		document.form.ttl_inc_enable.value = isp_settings.ttl_inc_enable;
-	}
-	else{
-		document.form.ttl_inc_enable.value = parent.orig_ttl_inc_enable;
-	}
-	/*--*/
 }
 
 function set_manual_items(){
@@ -636,12 +591,6 @@ function pass_checked_iptv(obj){
 <input type="hidden" name="x_Setting" id="x_Setting" value="" disabled>
 <input type="hidden" name="sw_mode" value="">
 <input type="hidden" name="switch_stb_x" value='<% nvram_get("switch_stb_x"); %>' disabled>
-<input type="hidden" name="mr_enable_x" value='<% nvram_get("mr_enable_x"); %>'>
-<input type="hidden" name="emf_enable" value='<% nvram_get("emf_enable"); %>'>
-<input type="hidden" name="ttl_inc_enable" value='<% nvram_get("ttl_inc_enable"); %>'>
-<input type="hidden" name="wan_vpndhcp" value='<% nvram_get("wan_vpndhcp"); %>'>
-<input type="hidden" name="quagga_enable" value='<% nvram_get("quagga_enable"); %>'>
-<input type="hidden" name="mr_altnet_x" value='<% nvram_get("mr_altnet_x"); %>'>
 <input type="hidden" name="wan10_proto" value='<% nvram_get("wan10_proto"); %>'>
 <input type="hidden" name="wan11_proto" value='<% nvram_get("wan11_proto"); %>'>
 

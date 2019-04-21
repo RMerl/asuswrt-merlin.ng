@@ -224,7 +224,7 @@ li{
 <script type="text/javascript">
 var new_lan_ip = [<% get_next_lanip(); %>][0].next_lanip;
 var header_info = [<% get_header_info(); %>];
-var location_org = header_info[0].protocol + "://" + header_info.host + ":" + header_info.port;
+var location_org = header_info[0].protocol + "://" + header_info[0].host + ":" + header_info[0].port;
 
 function initial(){
 	var html_code = '';

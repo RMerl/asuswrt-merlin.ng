@@ -185,9 +185,12 @@ dnetUseTls(dsocket *sd)
 		return ERROR;
 	}
 #if OPENSSL_VERSION_NUMBER >= 0x10100000L
-	SSL_CTX_set_min_proto_version(sd->ctx, TLS1_VERSION);
+	// SSL_CTX_set_min_proto_version(sd->ctx, TLS1_VERSION);
+	SSL_CTX_set_min_proto_version(sd->ctx, TLS1_2_VERSION);
 #else
-	SSL_CTX_set_options(sd->ctx, SSL_OP_NO_SSLv2 | SSL_OP_NO_SSLv3);
+	// SSL_CTX_set_options(sd->ctx, SSL_OP_NO_SSLv2 | SSL_OP_NO_SSLv3);
+	SSL_CTX_set_options(sd->ctx, SSL_OP_NO_SSLv2 | SSL_OP_NO_SSLv3 |
+				     SSL_OP_NO_TLSv1 | SSL_OP_NO_TLSv1_1);
 #endif
 	sd->ssl = SSL_new(sd->ctx);
 	if (!sd->ssl) {

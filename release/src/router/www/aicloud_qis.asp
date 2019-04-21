@@ -94,7 +94,7 @@ function onProcessTimer(){
 		setTimeout("onProcessTimer();", 1000);
 	}
 	else
-		window.location.reload();
+		window.location.href = location.href;
 }
 
 function checkDDNSReturnCode(){
@@ -109,7 +109,7 @@ function checkDDNSReturnCode(){
       	if(ddns_return_code == 'ddns_query')
         	setTimeout("checkDDNSReturnCode();", 500);
         else 
-        	window.location.reload();
+        	window.location.href = location.href;
       }
    });
 }

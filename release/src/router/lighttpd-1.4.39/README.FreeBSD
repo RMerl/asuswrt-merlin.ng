@@ -46,6 +46,3 @@ Configure:
 
 To help autotools find libraries and headers:
 CPPFLAGS=-I/usr/local/include LDFLAGS=-L/usr/local/lib ./configure ...
-
-With ssl the compiler might warn about OPENSSL_NO_KRB5 redefinitions, just
-configure "--with-kerberos5" for now.

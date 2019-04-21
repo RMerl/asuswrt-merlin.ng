@@ -200,13 +200,12 @@ extern disk_info_t *create_disk(const char *device_name, disk_info_t **new_disk_
 
 		len = strlen(buf);
 		if(len > 0){
-			port = (char *)malloc(8);
+			port = strdup(port_path);
 			if(port == NULL){
 				usb_dbg("No memory!!(port)\n");
 				free_disk_data(&follow_disk_info);
 				return NULL;
 			}
-			snprintf(port, sizeof(port), "%s", port_path);
 
 			follow_disk_info->port = port;
 		}
@@ -216,14 +215,12 @@ extern disk_info_t *create_disk(const char *device_name, disk_info_t **new_disk_
 
 		len = strlen(buf);
 		if(len > 0){
-			vendor = (char *)malloc(len+1);
+			vendor = strdup(buf);
 			if(vendor == NULL){
 				usb_dbg("No memory!!(vendor)\n");
 				free_disk_data(&follow_disk_info);
 				return NULL;
 			}
-			strncpy(vendor, buf, len);
-			vendor[len] = 0;
 			strntrim(vendor);
 
 			follow_disk_info->vendor = vendor;
@@ -234,14 +231,12 @@ extern disk_info_t *create_disk(const char *device_name, disk_info_t **new_disk_
 
 		len = strlen(buf);
 		if(len > 0){
-			model = (char *)malloc(len+1);
+			model = strdup(buf);
 			if(model == NULL){
 				usb_dbg("No memory!!(model)\n");
 				free_disk_data(&follow_disk_info);
 				return NULL;
 			}
-			strncpy(model, buf, len);
-			model[len] = 0;
 			strntrim(model);
 
 			follow_disk_info->model = model;

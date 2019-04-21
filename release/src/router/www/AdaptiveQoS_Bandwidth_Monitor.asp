@@ -168,9 +168,32 @@ function initial(){
 	}
 
 	show_menu();
-	// http://www.asus.com/support/FAQ/1008717/
-	httpApi.faqURL("1008717", function(url){document.getElementById("faq").href=url;});
-	show_clients();
+	// https://www.asus.com/support/FAQ/1010934/
+	httpApi.faqURL("1010934", function(url){document.getElementById("faq").href=url;});
+
+	if(totalClientNum.online == 0) {
+		var loop_count = 0;
+		httpApi.updateClientList();
+		setTimeout(function(){
+			if(loop_count >= 60) {
+				$("#sortable").html("<div style='text-align:center;color:#FFCC00'><#IPConnection_VSList_Norule#></div>");
+				return false;
+			}
+			if(totalClientNum.online != 0)
+				show_clients();
+			else {
+				loop_count++;
+				originData.fromNetworkmapd[0] = httpApi.hookGet("get_clientlist", true);
+				genClientList();
+				setTimeout(arguments.callee, 1000);
+			}
+		}, 1000);
+	}
+	else
+		show_clients();
+
+	if(!ASUS_EULA.status("tm"))
+		ASUS_EULA.config(eula_confirm, cancel);
 }
 
 
@@ -364,11 +387,6 @@ function show_clients(priority_type){
 	var short_name = "";
 	//user icon
 	var userIconBase64 = "NoIcon";
-
-	if(clientList.length == 0){
-		setTimeout("show_clients();", 500);
-		return false;
-	}
 
 	if(typeof(priority_type) != "undefined"){
 		document.getElementById('block_all').style.visibility = "visible";
@@ -1181,15 +1199,11 @@ function regen_qos_rule(obj, priority){
 }
 
 function applyRule(){
-	if(reset_wan_to_fo(document.form, document.form.apps_analysis.value)) {
-		document.form.qos_rulelist.value = qos_rulelist;
-		document.form.submit();
-	}
-	else {
-		curState = 0;
-		document.form.apps_analysis.value = 0;
-		$('#apps_analysis_enable').find('.iphone_switch').animate({backgroundPosition: -37}, "slow");
-	}
+	if(reset_wan_to_fo.change_status)
+		reset_wan_to_fo.change_wan_mode(document.form);
+
+	document.form.qos_rulelist.value = qos_rulelist;
+	document.form.submit();
 }
 
 function eula_confirm(){
@@ -1202,6 +1216,24 @@ function eula_confirm(){
 function cancel(){
 	curState = 0;
 	$('#iphone_switch').animate({backgroundPosition: -37}, "slow", function() {});
+	document.form.action_script.value = "restart_qos;restart_firewall";
+	document.form.action_wait.value = "5";
+}
+function switch_control(_status){
+	if(_status) {
+		if(reset_wan_to_fo.check_status()) {
+			if(ASUS_EULA.check("tm")){
+				document.form.apps_analysis.value = 1;
+				applyRule();
+			}
+		}
+		else
+			cancel();
+	}
+	else {
+		document.form.apps_analysis.value = 0;
+		applyRule();
+	}
 }
 </script>
 </head>
@@ -1262,16 +1294,10 @@ function cancel(){
 															<script type="text/javascript">
 																$('#apps_analysis_enable').iphoneSwitch('<% nvram_get("apps_analysis"); %>',
 																	function(){
-																		ASUS_EULA.config(eula_confirm, cancel);
-																		
-																		if(ASUS_EULA.check("tm")){
-																			document.form.apps_analysis.value = 1;
-																			applyRule();
-																		}
+																		switch_control(1);
 																	},
 																	function(){
-																		document.form.apps_analysis.value = 0;
-																		applyRule();
+																		switch_control(0);
 																	}
 																);
 															</script>

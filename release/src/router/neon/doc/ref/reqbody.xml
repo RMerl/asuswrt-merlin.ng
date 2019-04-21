@@ -8,7 +8,6 @@
       <refnamediv>
 	<refname id="ne_set_request_body_buffer">ne_set_request_body_buffer</refname>
 	<refname id="ne_set_request_body_fd">ne_set_request_body_fd</refname>
-	<refname id="ne_set_request_body_fd64">ne_set_request_body_fd64</refname>
 	<refpurpose>include a message body with a request</refpurpose>
       </refnamediv>
       
@@ -29,8 +28,8 @@
 	    <funcdef>int <function>ne_set_request_body_fd</function></funcdef>
 	    <paramdef>ne_request *<parameter>req</parameter></paramdef>
 	    <paramdef>int <parameter>fd</parameter></paramdef>
-	    <paramdef>off_t <parameter>begin</parameter></paramdef>
-	    <paramdef>off_t <parameter>length</parameter></paramdef>
+	    <paramdef>ne_off_t <parameter>begin</parameter></paramdef>
+	    <paramdef>ne_off_t <parameter>length</parameter></paramdef>
 	  </funcprototype>
 
 	</funcsynopsis>

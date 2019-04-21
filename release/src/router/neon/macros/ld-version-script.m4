@@ -1,5 +1,5 @@
-# ld-version-script.m4 serial 1
-dnl Copyright (C) 2008, 2009 Free Software Foundation, Inc.
+# ld-version-script.m4 serial 3
+dnl Copyright (C) 2008-2013 Free Software Foundation, Inc.
 dnl This file is free software; the Free Software Foundation
 dnl gives unlimited permission to copy and/or distribute it,
 dnl with or without modifications, as long as this notice is preserved.
@@ -26,18 +26,28 @@ AC_DEFUN([gl_LD_VERSION_SCRIPT],
     save_LDFLAGS="$LDFLAGS"
     LDFLAGS="$LDFLAGS -Wl,--version-script=conftest.map"
     cat > conftest.map <<EOF
+foo
+EOF
+    AC_LINK_IFELSE([AC_LANG_PROGRAM([], [])],
+                   [accepts_syntax_errors=yes], [accepts_syntax_errors=no])
+    if test "$accepts_syntax_errors" = no; then
+      cat > conftest.map <<EOF
 VERS_1 {
-	global: sym;
+        global: sym;
 };
 
 VERS_2 {
         global: sym;
 } VERS_1;
 EOF
-    AC_LINK_IFELSE(AC_LANG_PROGRAM([], []),
-                   [have_ld_version_script=yes], [have_ld_version_script=no])
+      AC_LINK_IFELSE([AC_LANG_PROGRAM([], [])],
+                     [have_ld_version_script=yes], [have_ld_version_script=no])
+    else
+      have_ld_version_script=no
+    fi
     rm -f conftest.map
     LDFLAGS="$save_LDFLAGS"
     AC_MSG_RESULT($have_ld_version_script)
   fi
+  AM_CONDITIONAL(HAVE_LD_VERSION_SCRIPT, test "$have_ld_version_script" = "yes")
 ])

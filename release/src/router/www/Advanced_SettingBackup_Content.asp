@@ -29,6 +29,8 @@ function initial(){
 	show_menu();
 	if(ddns_enable == 1 && ddns_server == "WWW.ASUS.COM")
 		document.getElementById("transfer_ddns_field").style.display = "";
+	else
+		document.getElementById("transfer_ddns_field").style.display = "none";
 
 	if ('<% nvram_get("jffs2_enable"); %>' != '1') {
 		document.getElementById("jffsrestore").style.display = "none";
@@ -75,14 +77,16 @@ function restoreRule(_flag){
 
 function saveSetting(mode){
 	var flag = 0;
+	var remove_passwd = 0;
 	if(ddns_enable == 1 && ddns_server != "WWW.ASUS.COM"){
 		flag = 1;
 	}
 	else{	//ASUS DDNS
 		flag = document.getElementById("transfer_ddns").checked ? 1 : 0;
 	}
+	remove_passwd = document.getElementById("remove_passwd").checked ? 1 : 0;
 
-	location.href='Settings_'+productid+'.CFG?path=' + flag;
+	location.href='Settings_'+productid+'.CFG?path=' + flag+'&remove_passwd='+remove_passwd;
 }
 
 function uploadSetting(){
@@ -267,12 +271,29 @@ function selectSetting() {
 												<th align="right" style="border-bottom:none">
 													<a class="hintstyle"  href="javascript:void(0);" onclick="openHint(19,2)"><#Setting_save_itemname#></a>
 												</th>
-												<td><input class="button_gen" onclick="saveSetting('Router');" type="button" value="<#CTL_onlysave#>" name="action2" /><span id="transfer_ddns_field" style="display:none;margin-left:5px;"><input id="transfer_ddns" type="checkbox"><#DDNS_transfer#></span>
+												<td>
+													<div style="float:left;display:table-cell">
+														<input class="button_gen" onclick="saveSetting('Router');" type="button" value="<#Setting_save_itemname#>" name="action2" />
+													</div>
+													<div style="display:table-cell">
+														<div id="remove_passwd_field" style="display:table-row">
+															<div style="float:left;margin-left:5px;">
+																<input id="remove_passwd" type="checkbox">
+															</div>
+															<div style="float:left;width:80%;">
+																<span><label for="remove_passwd"><#Setting_remove_passwd#></span></label>
+															</div>
+														</div>
+														<div id="transfer_ddns_field" style="display:table-row">
+															<div style="float:left;margin-left:5px;">
+																<input id="transfer_ddns" type="checkbox">
+															</div>
+															<div style="float:left;width:80%;">
+																<span><label for="transfer_ddns"><#DDNS_transfer#></span></label>
+															</div>
+														</div>
+													</div>
 												</td>
-											</tr>
-											<tr id="transfer_ddns_field" style="display:none">
-												<th align="right" style="border-top:none;height:10px;padding:0px">
-												<td colspan = "4" style="border:none;padding:0px;padding-left:14px"><span><input id="transfer_ddns" type="checkbox">Transfer ASUS DDNS name</span></td>
 											</tr>
 											<tr>
 												<th align="right">

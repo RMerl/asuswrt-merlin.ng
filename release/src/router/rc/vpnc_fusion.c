@@ -1782,6 +1782,19 @@ start_vpnc_by_unit(const int unit)
 			return -1;
 		}
 
+#ifdef HND_ROUTER
+		/* workaround for ppp packets are dropped by fc GRE learning when pptp server / client enabled */
+		char wan_proto[16];
+		snprintf(wan_proto, sizeof(wan_proto), "%s", nvram_safe_get(strcat_r(wan_prefix, "proto", tmp)));
+		if (nvram_match("fc_disable", "0") &&
+			(!strcmp(wan_proto, "pppoe") ||
+			 !strcmp(wan_proto, "pptp") ||
+			 !strcmp(wan_proto, "l2tp"))) {
+			dbg("[%s, %d] Flow Cache Learning of GRE flows Tunnel: DISABLED, PassThru: ENABLED\n", __FUNCTION__, __LINE__);
+			eval("fc", "config", "--gre", "0");
+		}
+#endif
+
 		umask(mask);
 
 		/* route for pptp/l2tp's server */
@@ -2002,7 +2015,11 @@ stop_vpnc_by_unit(const int unit)
 		    kill_pidfile_s(pidfile, SIGTERM) == 0) {
 			usleep(3000*1000);
 			kill_pidfile_tk(pidfile);
-		}	
+		}
+#ifdef HND_ROUTER
+		/* workaround for ppp packets are dropped by fc GRE learning when pptp server / client enabled */
+		if (nvram_match("fc_disable", "0")) eval("fc", "config", "--gre", "1");
+#endif
 	}
 	else if(VPNC_PROTO_OVPN == prof->protocol)
 	{
@@ -2148,7 +2165,7 @@ int set_routing_table(const int cmd, const int vpnc_id)
 					snprintf(tmp2, sizeof(tmp2), "remote_%d", i);
 					eval("ip", "route", "add", nvram_safe_get(strlcat_r(prefix, tmp2, tmp, sizeof(tmp))), 
 						"via", nvram_safe_get(strlcat_r(wan_prefix, "gateway", tmp, sizeof(tmp))), 
-						"dev", nvram_safe_get(strlcat_r(wan_prefix, "ifname", tmp, sizeof(tmp))),
+						"dev", nvram_safe_get(strlcat_r(wan_prefix, "gw_ifname", tmp, sizeof(tmp))),
 						"table", id_str);
 				}
 

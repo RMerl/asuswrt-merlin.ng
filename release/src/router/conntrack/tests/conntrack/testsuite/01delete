@@ -1,0 +1,16 @@
+# create dummy
+-I -s 1.1.1.1 -d 2.2.2.2 -p tcp --sport 10 --dport 20 --state LISTEN -u SEEN_REPLY -t 50 ; OK
+# delete bad source
+-D -s 2.2.2.2 -p tcp --sport 10 --dport 20 ; BAD
+# delete by source
+-D -s 1.1.1.1 ; OK
+# re-create dummy
+-I -s 1.1.1.1 -d 2.2.2.2 -p tcp --sport 10 --dport 20 --state LISTEN -u SEEN_REPLY -t 50 ; OK
+# delete by netmask
+-D -s 1.1.1.0 --mask-src 255.255.255.0 -d 2.2.2.0 --mask-dst 255.255.255.0 ; OK
+# fails due to 0 matches
+-D -s 1.1.1.0 --mask-src 255.255.255.0 -d 2.2.2.0 --mask-dst 255.255.255.0 ; BAD
+# re-create dummy
+-I -s 1.1.1.1 -d 2.2.2.2 -p tcp --sport 10 --dport 20 --state LISTEN -u SEEN_REPLY -t 50 ; OK
+# try same command again but with CIDR
+-D -s 1.1.1.0/24 -d 2.2.2.0/24 ; OK

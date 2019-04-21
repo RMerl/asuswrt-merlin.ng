@@ -54,6 +54,7 @@ int ne_version_match(int major, int minor);
 #define NE_FEATURE_SOCKS (5) /* SOCKSv5 support */
 #define NE_FEATURE_TS_SSL (6) /* Thread-safe SSL/TLS support */
 #define NE_FEATURE_I18N (7) /* i18n error message support */
+#define NE_FEATURE_SSPI (8) /* NTLM/Negotiate authentication protocol via SSPI */
 
 /* Returns non-zero if library is built with support for the given
  * NE_FEATURE_* feature code 'code'. */

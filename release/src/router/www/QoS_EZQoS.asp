@@ -360,7 +360,7 @@ if(pm_support) {
 
 function initial(){
 	show_menu();
-	// http://www.asus.com/support/FAQ/1008718/
+	// https://www.asus.com/support/FAQ/1008718/
 	httpApi.faqURL("1008718", function(url){document.getElementById("faq").href=url;});
 
 	if(downsize_4m_support || downsize_8m_support)
@@ -558,9 +558,8 @@ function validForm(){
 	if(document.form.qos_enable.value == 1){
 		var qos_type = document.form.qos_type.value;
 		if(qos_type == 1) {
-			if(!reset_wan_to_fo(document.form, 1)) {
+			if(!reset_wan_to_fo.check_status())
 				return false;
-			}
 		}
 		if(qos_type != 2){	//not Bandwidth Limiter
 			if( ((qos_type == 1 && document.form.bw_setting_name[1].checked == true ) || qos_type == 0) && document.form.obw.value.length == 0){	//To check field is empty
@@ -688,6 +687,9 @@ function submitQoS(){
 					}
 				}
 			}
+
+			if(reset_wan_to_fo.change_status)
+				reset_wan_to_fo.change_wan_mode(document.form);
 
 			showLoading();
 			document.form.submit();

@@ -137,6 +137,8 @@
 
 /* Internal GPHY MII registers */
 #define REG_GPHY_MII_CTL	0x0	/* MII Control register */
+#define REG_GPHY_MII_CL45_CTL1	0x1a	/* MII Clause 45 control 1 */
+#define REG_GPHY_MII_CL45_CTL2	0x1c	/* MII Clause 45 control 2 */
 #define REG_GPHY_DSP		0x2a	/* DSP Coefficient Read/Write Port register */
 #define REG_GPHY_DSPA		0x2e	/* DSP Coefficient Address register */
 #define REG_GPHY_AUXCTL		0x30	/* Auxiliary Control register */
@@ -2425,6 +2427,9 @@ bcm_robo_enable_switch(robo_info_t *robo)
 		}
 #endif
 
+		/* Init the EEE feature */
+		robo_eee_advertise_init(robo);
+
 		/* Find the first cpu port and do software override */
 		for (i = 0; i < pdescsz; i++) {
 			/* Port 6 is not able to use */
@@ -3277,38 +3282,68 @@ robo_watchdog(robo_info_t *robo)
 void
 robo_eee_advertise_init(robo_info_t *robo)
 {
-	uint16 val16;
+	uint16 val16, eee_enable_ctl;
 	int32 phy;
 
 	ASSERT(robo);
 
 	val16 = 0;
 	robo->ops->read_reg(robo, 0x92, 0x00, &val16, sizeof(val16));
-	if (val16 == 0x1f) {
-		robo->eee_status = TRUE;
-		printf("bcm_robo_enable_switch: EEE is enabled\n");
-	} else {
-		for (phy = 0; phy < MAX_NO_PHYS; phy++) {
-			/* select DEVAD 7 */
-			robo->miiwr(robo->h, phy, REG_MII_CLAUSE_45_CTL1, 0x0007);
-			/* select register 3Ch */
-			robo->miiwr(robo->h, phy, REG_MII_CLAUSE_45_CTL2, 0x003c);
-			/* read command */
-			robo->miiwr(robo->h, phy, REG_MII_CLAUSE_45_CTL1, 0xc007);
-			/* read data */
-			val16 = robo->miird(robo->h, phy, REG_MII_CLAUSE_45_CTL2);
-			val16 &= ~0x6;
-			/* select DEVAD 7 */
-			robo->miiwr(robo->h, phy, REG_MII_CLAUSE_45_CTL1, 0x0007);
-			/* select register 3Ch */
-			robo->miiwr(robo->h, phy, REG_MII_CLAUSE_45_CTL2, 0x003c);
-			/* write command */
-			robo->miiwr(robo->h, phy, REG_MII_CLAUSE_45_CTL1, 0x4007);
-			/* write data */
-			robo->miiwr(robo->h, phy, REG_MII_CLAUSE_45_CTL2, val16);
+
+	if (robo->devid == DEVID53125) {
+		if (val16 == 0x1f) {
+			robo->eee_status = TRUE;
+			printf("bcm_robo_enable_switch: EEE is enabled\n");
+		} else {
+			for (phy = 0; phy < MAX_NO_PHYS; phy++) {
+				/* select DEVAD 7 */
+				robo->miiwr(robo->h, phy, REG_MII_CLAUSE_45_CTL1, 0x0007);
+				/* select register 3Ch */
+				robo->miiwr(robo->h, phy, REG_MII_CLAUSE_45_CTL2, 0x003c);
+				/* read command */
+				robo->miiwr(robo->h, phy, REG_MII_CLAUSE_45_CTL1, 0xc007);
+				/* read data */
+				val16 = robo->miird(robo->h, phy, REG_MII_CLAUSE_45_CTL2);
+				val16 &= ~0x6;
+				/* select DEVAD 7 */
+				robo->miiwr(robo->h, phy, REG_MII_CLAUSE_45_CTL1, 0x0007);
+				/* select register 3Ch */
+				robo->miiwr(robo->h, phy, REG_MII_CLAUSE_45_CTL2, 0x003c);
+				/* write command */
+				robo->miiwr(robo->h, phy, REG_MII_CLAUSE_45_CTL1, 0x4007);
+				/* write data */
+				robo->miiwr(robo->h, phy, REG_MII_CLAUSE_45_CTL2, val16);
+			}
+			robo->eee_status = FALSE;
+			printf("bcm_robo_enable_switch: EEE is disabled\n");
 		}
-		robo->eee_status = FALSE;
-		printf("bcm_robo_enable_switch: EEE is disabled\n");
+	}
+	else if (ROBO_IS_BCM5301X(robo->devid)) {
+		eee_enable_ctl = val16;
+		for (phy = 0; phy < MAX_NO_PHYS; phy++) {
+			/* EEE is enabled */
+			if (eee_enable_ctl & (1 << phy))
+				continue;
+			/* Disable EEE advertisement if EEE is disabled */
+			/* Set Function field 15:14=00 for Address and select DEVAD 7 */
+			val16 = 0x0007;
+			robo->ops->write_reg(robo, (PAGE_GPHY_MII_P0 + phy),
+				REG_GPHY_MII_CL45_CTL1, &val16, sizeof(val16));
+			/* Select register 3Ch */
+			val16 = 0x003c;
+			robo->ops->write_reg(robo, (PAGE_GPHY_MII_P0 + phy),
+				REG_GPHY_MII_CL45_CTL2, &val16, sizeof(val16));
+			/* Set Function field 15:14=01 for Data and select DEVAD 7 */
+			val16 = 0x4007;
+			robo->ops->write_reg(robo, (PAGE_GPHY_MII_P0 + phy),
+				REG_GPHY_MII_CL45_CTL1, &val16, sizeof(val16));
+			/* Write data 0 to disable EEE advertisement */
+			val16 = 0;
+			robo->ops->write_reg(robo, (PAGE_GPHY_MII_P0 + phy),
+				REG_GPHY_MII_CL45_CTL2, &val16, sizeof(val16));
+			printf("%s: GPHY%d: EEE advertisement is disabled\n",
+				__FUNCTION__, phy);
+		}
 	}
 }
 

@@ -342,7 +342,7 @@ static int detectARP(void)
 	ioctl(sock_fd, SIOCGIFINDEX, (char*)&ifr);
 	me.sll_ifindex = ifr.ifr_ifindex;
 	ioctl(sock_fd, SIOCGIFFLAGS, (char*)&ifr);
-	if (!ifr.ifr_flags & IFF_UP) {
+	if (!(ifr.ifr_flags & IFF_UP)) {
 #ifdef DEBUG
 		dbg("[detectWan_arp] %s is down\n", device);
 #endif

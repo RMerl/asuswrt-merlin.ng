@@ -107,6 +107,11 @@ config RTCONFIG_DHDAP
 	bool "Bcm7 dhdap"
 	default n
 
+config RTCONFIG_BW160M
+	bool "Bandwidth 160MHz support"
+	depends on RTCONFIG_DHDAP
+	default n
+
 config RTCONFIG_WLEXE
 	bool "dhd wl exe"
 	default n
@@ -759,23 +764,18 @@ config RTCONFIG_NSS_IPSEC
 	depends on RTCONFIG_SOC_IPQ8064
 	default n
 
-config RTCONFIG_PCIE_QCA9880
-	bool "Qualcomm Atheros QCA9880 WiFi chip"
+config RTCONFIG_PCIE_AR9888
+	bool "Qualcomm Atheros QCA9880/QCA9882 WiFi chip"
 	depends on RTCONFIG_QCA
 	default n
 
-config RTCONFIG_PCIE_QCA9882
-	bool "Qualcomm Atheros QCA9882 WiFi chip"
+config RTCONFIG_PCIE_QCA9888
+	bool "Qualcomm Atheros QCA9886/QCA9888 WiFi chip"
 	depends on RTCONFIG_QCA
 	default n
 
 config RTCONFIG_PCIE_QCA9984
 	bool "Qualcomm Atheros QCA9994 WiFi chip (Cascade)"
-	depends on RTCONFIG_QCA
-	default n
-
-config RTCONFIG_PCIE_QCA9888
-	bool "Qualcomm Atheros QCA9888 WiFi chip"
 	depends on RTCONFIG_QCA
 	default n
 
@@ -1808,6 +1808,10 @@ config RTCONFIG_DWB
 	bool "Dedicated WiFi Backhaul for Aimash."
 	default n
 
+config RTCONFIG_NO_TRY_DWB_PROFILE
+	bool "Do not try dwb profile for Aimash."
+	default n
+
 config RTCONFIG_CONNDIAG
 	bool "enable conn_diag in AiMesh"
 	default n
@@ -1819,3 +1823,19 @@ config RTCONFIG_REPEATER_STAALLBAND
 config RTCONFIG_NTPD
 	bool "ntp & ntpd support"
 	default n
+
+config RTCONFIG_QCA_LBD
+	bool "qca lbd support"
+	default n
+
+choice
+	prompt "SSL library"
+	default RTCONFIG_OPENSSL10
+
+config RTCONFIG_OPENSSL10
+	bool "OpenSSL 1.0.x"
+
+config RTCONFIG_OPENSSL11
+	bool "OpenSSL 1.1.x"
+
+endchoice

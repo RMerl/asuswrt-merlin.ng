@@ -1,6 +1,6 @@
 /* 
    Utility functions for HTTP client tests
-   Copyright (C) 2001-2008, Joe Orton <joe@manyfish.co.uk>
+   Copyright (C) 2001-2009, Joe Orton <joe@manyfish.co.uk>
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -26,18 +26,13 @@
 #ifdef HAVE_STDLIB_H
 #include <stdlib.h>
 #endif
+#include <fcntl.h>
 
 #include "ne_session.h"
 
 #include "child.h"
 #include "tests.h"
 #include "utils.h"
-
-int make_session(ne_session **sess, server_fn fn, void *ud)
-{
-    *sess = ne_session_create("http", "localhost", 7777);
-    return spawn_server(7777, fn, ud);
-}
 
 static int serve_response(ne_socket *s, const char *response)
 {
@@ -180,3 +175,81 @@ int full_write(ne_socket *sock, const char *data, size_t len)
     return OK;
 }
 
+int session_server(ne_session **sess, server_fn fn, void *userdata)
+{
+    unsigned int port;
+    
+    CALL(new_spawn_server(1, fn, userdata, &port));
+    
+    *sess = ne_session_create("http", "127.0.0.1", port);
+
+    return OK;
+}
+
+int proxied_session_server(ne_session **sess, const char *scheme,
+                           const char *host, unsigned int fakeport,
+                           server_fn fn, void *userdata)
+{
+    unsigned int port;
+    
+    CALL(new_spawn_server(1, fn, userdata, &port));
+    
+    *sess = ne_session_create(scheme, host, fakeport);
+
+    NE_DEBUG(NE_DBG_HTTP, "test: Using proxied session to port %u.\n", port);
+
+    ne_session_proxy(*sess, "127.0.0.1", port);
+
+    return OK;
+}
+
+static void fakesess_destroy(void *userdata)
+{
+    ne_inet_addr *addr = userdata;
+
+    ne_iaddr_free(addr);
+}
+
+int fakeproxied_session_server(ne_session **sess, const char *scheme,
+                               const char *host, unsigned int fakeport,
+                               server_fn fn, void *userdata)
+{
+    unsigned int port;
+    ne_inet_addr *addr;
+    const ne_inet_addr *alist[1];
+    
+    CALL(new_spawn_server2(1, fn, userdata, &addr, &port));
+    
+    alist[0] = addr;
+
+    *sess = ne_session_create(scheme, host, fakeport);
+
+    ne_set_addrlist2(*sess, port, alist, 1);
+
+    ne_hook_destroy_session(*sess, fakesess_destroy, addr);
+
+    return OK;
+}
+
+int make_session(ne_session **sess, server_fn fn, void *ud)
+{
+    return session_server(sess, fn, ud);
+}
+
+int file_to_buffer(const char *filename, ne_buffer *buf)
+{
+    char buffer[BUFSIZ];
+    int fd;
+    ssize_t n;
+    
+    fd = open(filename, O_RDONLY);
+    ONV(fd < 0, ("could not open file %s", filename));
+
+    while ((n = read(fd, buffer, BUFSIZ)) > 0) {
+	ne_buffer_append(buf, buffer, n);
+    }
+
+    close(fd);
+    
+    return 0;
+}

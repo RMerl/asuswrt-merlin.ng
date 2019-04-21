@@ -319,7 +319,10 @@ var validator = {
 			return "Client device name only accept alphanumeric characters, under line and dash symbol. The first character cannot be dash \"-\" or under line \"_\".";
 		}
 		else{
-			return "<#JS_validhostname#>";
+			if(obj.value.length < 2)
+				return "<#JS_short_username#>";
+			else
+				return "<#JS_validhostname#>";
 		}
 	},
 

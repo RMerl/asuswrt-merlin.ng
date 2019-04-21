@@ -132,7 +132,7 @@ mtd_unlock(const char *mtdname)
 	erase_info_t erase_info;
 	int ret;
 
-	if(!wait_action_idle(5)) return 0;
+	if(!wait_action_idle(10)) return 1;	//timeout
 	set_action(ACT_ERASE_NVRAM);
 
 	ret = 0;
@@ -171,7 +171,8 @@ mtd_unlock(const char *mtdname)
 	else printf("Error unlocking MTD \"%s\".\n", mtdname);
 	sleep(1);
 
-	return ret;
+	if(ret)	return 0;	//0: success
+	return -1;		//1: fail
 }
 
 static char *

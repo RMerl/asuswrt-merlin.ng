@@ -310,8 +310,9 @@ int remove_word(char *buffer, const char *word)
 	p += strlen(word);
 	while (*p == ' ') ++p;
 	while ((q > buffer) && (*(q - 1) == ' ')) --q;
-	if (*q != 0) *q++ = ' ';
-	strcpy(q, p);
+	if (*p != '\0' && q != buffer) *q++ = ' ';		/* add ' ' if have remain string and not in the head of buffer */
+	if(p != q)
+		memmove(q, p, strlen(p)+1);			/* including '\0' */
 
 	return 1;
 }

@@ -1377,8 +1377,22 @@ char *get_wlifname(int unit, int subunit, int subunit_x, char *buf)
 #endif
 		 && subunit == 1) {
 		strcpy(buf, get_staifname(unit));
+		return buf;
 	} else
 #endif /* RTCONFIG_WIRELESSREPEATER */
+#if defined(RTCONFIG_AMAS)
+	if (sw_mode() == SW_MODE_AP && nvram_match("re_mode", "1")) {
+		/*
+		 * wlX.0_bss_enabled: the interface to Upper.
+		 * wlX.1_bss_enabled: the interface to Lowwer (main)
+		 * wlX.2_bss_enabled: the interface for guest networks 1
+		 */
+		if (subunit <= 1) {
+			strcpy(buf, "");
+			return buf;
+		}
+	}
+#endif	/* RTCONFIG_AMAS */
 	{
 		__get_wlifname(unit, 0, wifbuf);
 		snprintf(prefix, sizeof(prefix), "wl%d.%d_", unit, subunit);
@@ -1469,7 +1483,7 @@ const char *get_5ghigh_ifname(int *unit)
 {
 	if(unit != NULL)
 		*unit = 1;
-	return "ath1";
+	return WIF_5G;
 }
 #endif
 
@@ -1496,6 +1510,12 @@ int get_wlsubnet(int band, const char *ifname)
 
 	for (subnet = 0, sidx = 0; subnet < MAX_NO_MSSID; subnet++)
 	{
+#ifdef RTCONFIG_AMAS
+		if (sw_mode() == SW_MODE_AP && nvram_match("re_mode", "1")) {
+			if(subnet == 1)
+				subnet++;
+		}
+#endif	/* RTCONFIG_AMAS */
 		if(!nvram_match(wl_nvname("bss_enabled", band, subnet), "1")) {
 			if (!subnet)
 				sidx++;
@@ -1508,6 +1528,43 @@ int get_wlsubnet(int band, const char *ifname)
 		sidx++;
 	}
 	return -1;
+}
+
+int get_wlif_unit(const char *wlifname, int *unit, int *subunit)
+{
+	int i;
+	int _unit = -1, _subunit = -1;
+	char *wlif;
+	int cmp;
+
+	for (i = WL_2G_BAND; i < MAX_NR_WL_IF; ++i) {
+		SKIP_ABSENT_BAND(i);
+
+		wlif = get_wififname(i);
+		cmp = strcmp(wlifname, wlif);
+		if(cmp < 0)		/* wlifname is less than wlif */
+			continue;
+		_unit = i;
+		break;
+	}
+	if (_unit < 0 || absent_band(_unit))
+		return -1;
+
+	if(cmp == 0 || subunit == NULL) {
+		_subunit = 0;
+	}
+	else {
+		_subunit = get_wlsubnet(_unit, wlifname);
+		if (_subunit < 0)
+			_subunit = 0;
+	}
+
+	if(unit)
+		*unit = _unit;
+	if(subunit)
+		*subunit = _subunit;
+
+	return 0;
 }
 
 #define PROC_NET_WIRELESS  "/proc/net/wireless"

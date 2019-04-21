@@ -6,7 +6,8 @@
 
 # enable glibc malloc safety checks
 MALLOC_CHECK_=2
-export MALLOC_CHECK_
+MALLOC_PERTURB_=242
+export MALLOC_CHECK_ MALLOC_PERTURB_
 
 cd data
 

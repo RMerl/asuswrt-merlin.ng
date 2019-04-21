@@ -235,6 +235,7 @@ if [ "$BRCM_DRIVER_GPON" != "" ] ; then
    if [ "$CONFIG_BCM_GPON_IMPL" == "2" ]; then
      TGT_DIR=$ROOTFS/rom/etc
    else
+#    TGT_DIR=$ROOTFS/opt
      TGT_DIR=$ROOTFS/rom
    fi
 
@@ -253,25 +254,20 @@ if [ "$BRCM_DRIVER_GPON" != "" ] ; then
 fi
 
 #Copying i2c scripts to /opt/scripts
-if [ "$BRCM_DRIVER_I2C" != "" ] ; then
-   echo "Copying i2c scripts to /rom/"
-   cp -avrf $BRCMDRIVERS_DIR/broadcom/char/i2c/chips/impl1/fs/* $ROOTFS/rom/rom
+if [ "$BRCM_DRIVER_I2C" ] ; then
+   echo "Copying i2c scripts to /opt/"
+#  cp -avrf $BRCMDRIVERS_DIR/broadcom/char/i2c/chips/impl1/fs/* $ROOTFS/opt
+   cp -avrf $BRCMDRIVERS_DIR/broadcom/char/i2c/chips/impl1/fs/* $ROOTFS/rom
 fi
 
-   if [ -d $ROOTFS/rom/rom/modules ]; then
-     pushd $ROOTFS/rom/rom/modules && for f in *.ko.save; do mv "$f" "${f%.ko.save}.ko"; done
+#  if [ -d $ROOTFS/opt/modules ]; then
+#    pushd $ROOTFS/opt/modules && for f in *.ko.save; do mv "$f" "${f%.ko.save}.ko"; done
+   if [ -d $ROOTFS/rom/modules ]; then
+     pushd $ROOTFS/rom/modules && for f in *.ko.save; do mv "$f" "${f%.ko.save}.ko"; done
      popd
    fi
 cd $MOD_DIR
 cp -a lib $TARGETS_DIR/$ROOTFS/.
-
-#DMfiles="bin etc lib sbin share tmp usr include doc var root home libexec"
-
-#for f in $DMfiles
-#do
-#	echo "ln -sf /tmp/opt/$f opt/$f"
-#	(cd $TARGETS_DIR/$ROOTFS && ln -sf /tmp/opt/$f opt/$f)
-#done
 
 if [ "$KSTRIP" != "/bin/touch" ]; then
 # Stripping unneeded module symbols only when strip is "enabled"

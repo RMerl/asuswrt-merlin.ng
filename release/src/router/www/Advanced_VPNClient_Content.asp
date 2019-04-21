@@ -914,6 +914,33 @@ function connect_Row(rowdata, flag){
 		}			
 	}
 	else{		//"vpnc" making connection
+		if(isSupport("sdk7114")) {
+			var wan_proto = httpApi.nvramGet(["wan_proto"], true).wan_proto;
+			var ctf_disable = httpApi.nvramGet(["ctf_disable"], true).ctf_disable;
+			if(wan_proto == "pppoe" && ctf_disable == "0") {
+				var vpncoppp = httpApi.nvramGet(["vpncoppp"], true).vpncoppp;
+				if(vpncoppp == "" || vpncoppp == "0") {
+					if(confirm("When you use the PPPoE WAN connected, Router will reboot automatically for NAT Acceleration. Are you sure you want to continue?")) {
+						httpApi.nvramSet({
+							"ctf_nonat_force" : "1",
+							"action_mode": "apply"
+						}, function() {
+							document.form.action_script.value = "reboot";
+							document.form.action_wait.value = httpApi.hookGet("get_default_reboot_time");
+							showLoading(parseInt(document.form.action_wait.value));
+						});
+					}
+					else
+						return false;
+				}
+				else if(vpncoppp == "1") {
+					httpApi.nvramSet({
+						"ctf_nonat_force" : "1",
+						"action_mode": "apply"
+					});
+				}
+			}
+		}
 		document.form.vpnc_des_edit.value = vpnc_desc;
 
 		if(vpnc_proto == "PPTP")

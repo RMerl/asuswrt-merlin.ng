@@ -213,7 +213,7 @@ function detect_httpd() {
 				document.getElementById('loading_block1').style.display = "none";
 				document.getElementById('loading_block2').style.display = "none";
 				document.getElementById('loading_block3').style.display = "";
-				document.getElementById('loading_block3').innerHTML = "<div>Firmware upgrade is done. Close this window and access AiMesh router again.</div>";/* untranslated */
+				document.getElementById('loading_block3').innerHTML = "<div><#FIRM_ok_aimesh#></div>";
 				document.getElementById('tr_closeWindow').style.display = "";
 			}
 			else {
@@ -226,7 +226,7 @@ function detect_httpd() {
 			document.getElementById('loading_block1').style.display = "none";
 			document.getElementById('loading_block2').style.display = "none";
 			document.getElementById('loading_block3').style.display = "";
-			document.getElementById('loading_block3').innerHTML = "<div>Firmware upgrade is done. Close this window and access AiMesh router again.</div>";/* untranslated */
+			document.getElementById('loading_block3').innerHTML = "<div><#FIRM_ok_aimesh#></div>";
 			document.getElementById('tr_closeWindow').style.display = "";
 		}
 	});

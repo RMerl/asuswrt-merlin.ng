@@ -1,4 +1,4 @@
-/* config.h.in.  Generated from configure.in by autoheader.  */
+/* config.h.in.  Generated from configure.ac by autoheader.  */
 
 /* Define if building universal (internal helper macro) */
 #undef AC_APPLE_UNIVERSAL_BUILD
@@ -66,17 +66,24 @@
 /* Define if GnuTLS support is enabled */
 #undef HAVE_GNUTLS
 
+/* Define to 1 if you have the `gnutls_certificate_get_issuer' function. */
+#undef HAVE_GNUTLS_CERTIFICATE_GET_ISSUER
+
 /* Define to 1 if you have the `gnutls_certificate_get_x509_cas' function. */
 #undef HAVE_GNUTLS_CERTIFICATE_GET_X509_CAS
 
-/* Define to 1 if you have the `gnutls_certificate_verify_peers2' function. */
-#undef HAVE_GNUTLS_CERTIFICATE_VERIFY_PEERS2
+/* Define to 1 if you have the `gnutls_certificate_set_retrieve_function2'
+   function. */
+#undef HAVE_GNUTLS_CERTIFICATE_SET_RETRIEVE_FUNCTION2
+
+/* Define to 1 if you have the `gnutls_privkey_import_ext' function. */
+#undef HAVE_GNUTLS_PRIVKEY_IMPORT_EXT
 
 /* Define to 1 if you have the `gnutls_session_get_data2' function. */
 #undef HAVE_GNUTLS_SESSION_GET_DATA2
 
-/* Define to 1 if you have the `gnutls_sign_callback_set' function. */
-#undef HAVE_GNUTLS_SIGN_CALLBACK_SET
+/* Define to 1 if you have the `gnutls_x509_crt_sign2' function. */
+#undef HAVE_GNUTLS_X509_CRT_SIGN2
 
 /* Define to 1 if you have the `gnutls_x509_dn_get_rdn_ava' function. */
 #undef HAVE_GNUTLS_X509_DN_GET_RDN_AVA
@@ -264,6 +271,9 @@
 /* Define to 1 if you have the <sys/types.h> header file. */
 #undef HAVE_SYS_TYPES_H
 
+/* Define to 1 if you have the <sys/uio.h> header file. */
+#undef HAVE_SYS_UIO_H
+
 /* Define if the timezone global is available */
 #undef HAVE_TIMEZONE
 
@@ -285,8 +295,7 @@
 /* Define to be location of localedir */
 #undef LOCALEDIR
 
-/* Define to the sub-directory in which libtool stores uninstalled libraries.
-   */
+/* Define to the sub-directory where libtool stores uninstalled libraries. */
 #undef LT_OBJDIR
 
 /* Defined when neon is built as a library */

@@ -181,11 +181,6 @@ var original_switch_wan1tagid = '<%nvram_get("switch_wan1tagid"); %>';
 var original_switch_wan1prio  = '<%nvram_get("switch_wan1prio"); %>';
 var original_switch_wan2tagid = '<%nvram_get("switch_wan2tagid"); %>';
 var original_switch_wan2prio  = '<%nvram_get("switch_wan2prio"); %>';
-var orig_mr_enable = '<% nvram_get("mr_enable_x"); %>';
-var orig_emf_enable = '<% nvram_get("emf_enable"); %>';
-var orig_wan_vpndhcp = '<% nvram_get("wan_vpndhcp"); %>';
-var orig_quagga_enable = '<% nvram_get("quagga_enable"); %>';
-var orig_ttl_inc_enable = '<% nvram_get("ttl_inc_enable"); %>';
 
 var htmlEnDeCode = (function() {
 	var charToEntityRegex,
@@ -950,12 +945,6 @@ function get_isp_settings(isp){
 	<input type="hidden" name="switch_wan2tagid" value='<% nvram_get("switch_wan2tagid"); %>'>
 	<input type="hidden" name="switch_wan2prio" value='<% nvram_get("switch_wan2prio"); %>'>
 	<input type="hidden" name="switch_stb_x" value='<% nvram_get("switch_stb_x"); %>'>
-	<input type="hidden" name="mr_enable_x" value='<% nvram_get("mr_enable_x"); %>'>
-	<input type="hidden" name="emf_enable" value='<% nvram_get("emf_enable"); %>'>
-	<input type="hidden" name="ttl_inc_enable" value='<% nvram_get("ttl_inc_enable"); %>'>
-	<input type="hidden" name="wan_vpndhcp" value='<% nvram_get("wan_vpndhcp"); %>'>
-	<input type="hidden" name="quagga_enable" value='<% nvram_get("quagga_enable"); %>'>
-	<input type="hidden" name="mr_altnet_x" value='<% nvram_get("mr_altnet_x"); %>'>
 	<!-- wireless client -->
 	<input type="hidden" name="wlc_band" value="<% nvram_get("wlc_band"); %>">
 	<input type="hidden" name="wlc_ssid" value="<% nvram_char_to_ascii("", "wlc_ssid"); %>">

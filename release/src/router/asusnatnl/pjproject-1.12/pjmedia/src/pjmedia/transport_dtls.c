@@ -46,6 +46,13 @@
 #include <openssl/err.h>
 #include <openssl/x509v3.h>
 #include <openssl/rand.h>
+#if OPENSSL_VERSION_NUMBER < 0x10100000L
+#define ASN1_STRING_get0_data(x) ASN1_STRING_data(x)
+#define OPENSSL_CONST
+#else
+#define OPENSSL_CONST const
+#endif
+
 #if defined(ENABLE_MEMWATCH) && ENABLE_MEMWATCH != 0
 #include <memwatch.h>
 #endif
@@ -93,10 +100,12 @@ int cookie_initialized=0;
 #error You must define mutex operations appropriate for your platform!
 #endif
 
-static MUTEX_TYPE *mutex_buf = NULL;
 #ifdef USE_GLOBAL_CTX
 static SSL_CTX *g_ctx = NULL;
 #endif
+
+#if OPENSSL_VERSION_NUMBER < 0x10100000L
+static MUTEX_TYPE *mutex_buf = NULL;
 
 static void static_locking_function(int mode, int n, const char *file, int line)
 {
@@ -127,7 +136,7 @@ static void static_thread_setup(void)
 	}
 
 	CRYPTO_THREADID_set_callback(id_function);
-	CRYPTO_set_locking_callback((void (*)(int,int,char *,int))static_locking_function);
+	CRYPTO_set_locking_callback((void (*)(int,int,const char *,int))static_locking_function);
 	/* id callback defined */
 }
 
@@ -188,6 +197,7 @@ static void thread_cleanup() {
 	static_thread_cleanup();
 	dynamic_thread_cleanup();
 }
+#endif
 
 #if 0//!defined(WIN32) && !defined(PJ_ANDROID)
 
@@ -585,7 +595,9 @@ static pj_status_t init_openssl(pj_pool_t *pool)
 
 	/* Init OpenSSL lib */
 
+#if OPENSSL_VERSION_NUMBER < 0x10100000L
 	thread_setup();
+#endif
 	SSL_library_init();
 	SSL_load_error_strings();
 	ERR_load_BIO_strings();
@@ -614,10 +626,10 @@ static pj_status_t init_openssl(pj_pool_t *pool)
 			n = PJ_ARRAY_SIZE(openssl_ciphers);
 
 		for (i = 0; i < n; ++i) {
-			SSL_CIPHER *c;
-			c = sk_SSL_CIPHER_value(sk_cipher,i);
+			const SSL_CIPHER *c;
+			c = sk_SSL_CIPHER_value(sk_cipher, i);
 			openssl_ciphers[i].id = (pj_ssl_cipher)
-				(pj_uint32_t)c->id & 0x00FFFFFF;
+				(pj_uint32_t)SSL_CIPHER_get_id(c) & 0x00FFFFFF;
 			openssl_ciphers[i].name = SSL_CIPHER_get_name(c);
 		}
 
@@ -649,7 +661,9 @@ static void shutdown_openssl(void)
 	}
 #endif
 
+#if OPENSSL_VERSION_NUMBER < 0x10100000L
 	thread_cleanup();
+#endif
 
 #ifdef USE_GLOBAL_LOCK
 	MUTEX_CLEANUP(global_mutex);
@@ -850,7 +864,7 @@ static int generate_cookie(SSL *ssl, unsigned char *cookie, unsigned int *cookie
 	return 1;
 }
 
-static int verify_cookie(SSL *ssl, unsigned char *cookie, unsigned int cookie_len)
+static int verify_cookie(SSL *ssl, OPENSSL_CONST unsigned char *cookie, unsigned int cookie_len)
 {
 	transport_dtls *dtls = NULL;
 	unsigned char *buffer, result[EVP_MAX_MD_SIZE];
@@ -1275,10 +1289,10 @@ static pj_status_t set_cipher_list(transport_dtls *dtls)
 	sk_cipher = SSL_get_ciphers(dtls->ossl_ssl);
 	for (i = 0; i < dtls->setting.ciphers_num; ++i) {
 		for (j = 0; j < sk_SSL_CIPHER_num(sk_cipher); ++j) {
-			SSL_CIPHER *c;
+			const SSL_CIPHER *c;
 			c = sk_SSL_CIPHER_value(sk_cipher, j);
 			if (dtls->setting.ciphers[i] == (pj_ssl_cipher)
-				((pj_uint32_t)c->id & 0x00FFFFFF))
+				((pj_uint32_t)SSL_CIPHER_get_id(c) & 0x00FFFFFF))
 			{
 				const char *c_name;
 
@@ -1410,8 +1424,8 @@ static void get_cert_info(pj_pool_t *pool, pj_ssl_cert_info *ci, X509 *x)
     X509_NAME_oneline(X509_get_issuer_name(x), buf, sizeof(buf));
 
     /* Get serial no */
-    p = (pj_uint8_t*) M_ASN1_STRING_data(X509_get_serialNumber(x));
-    len = M_ASN1_STRING_length(X509_get_serialNumber(x));
+    p = (pj_uint8_t*) ASN1_STRING_get0_data(X509_get_serialNumber(x));
+    len = ASN1_STRING_length(X509_get_serialNumber(x));
     if (len > sizeof(ci->serial_no)) 
 	len = sizeof(ci->serial_no);
     pj_memcpy(serial_no + sizeof(ci->serial_no) - len, p, len);

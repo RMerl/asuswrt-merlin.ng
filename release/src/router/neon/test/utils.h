@@ -1,6 +1,6 @@
 /* 
    neon-specific test utils
-   Copyright (C) 2001-2008, Joe Orton <joe@manyfish.co.uk>
+   Copyright (C) 2001-2009, Joe Orton <joe@manyfish.co.uk>
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -110,4 +110,27 @@ int socks_server(ne_socket *sock, void *userdata);
 
 int full_write(ne_socket *sock, const char *data, size_t len);
     
+/* Create a session with server process running fn(userdata).  Sets
+ * test suite error on failure; initializes *sess with a new session
+ * on success.  Uses an unspecified hostname/port for the server. */
+int session_server(ne_session **sess, server_fn fn, void *userdata);
+
+/* Create a session with server process running fn(userdata).  Sets
+ * test suite error on failure; initializes *sess with a new session
+ * on success.  Uses an unspecified hostname/port for the server;
+ * session is created as if using origin 'host:fakeport' via HTTP
+ * proxy to spawned server.  */
+int proxied_session_server(ne_session **sess, const char *scheme,
+                           const char *host, unsigned int fakeport,
+                           server_fn fn, void *userdata);
+
+/* As per proxied_session_server, but uses a "fake" (direct) TCP proxy
+ * rather than an HTTP proxy. */
+int fakeproxied_session_server(ne_session **sess, const char *scheme,
+                               const char *host, unsigned int fakeport,
+                               server_fn fn, void *userdata);
+
+/* Read contents of file 'filename' into buffer 'buf'. */
+int file_to_buffer(const char *filename, ne_buffer *buf);
+   
 #endif /* UTILS_H */

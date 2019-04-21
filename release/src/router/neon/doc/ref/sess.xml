@@ -8,7 +8,6 @@
       <refnamediv>
 	<refname id="ne_session_create">ne_session_create</refname>
 	<refname id="ne_close_connection">ne_close_connection</refname>
-	<refname id="ne_session_proxy">ne_session_proxy</refname>
 	<refname id="ne_session_destroy">ne_session_destroy</refname>
 	<refpurpose>set up HTTP sessions</refpurpose>
       </refnamediv>
@@ -20,13 +19,6 @@
 	  <funcprototype>
 	    <funcdef>ne_session *<function>ne_session_create</function></funcdef>
 	    <paramdef>const char *<parameter>scheme</parameter></paramdef>
-	    <paramdef>const char *<parameter>hostname</parameter></paramdef>
-	    <paramdef>unsigned int <parameter>port</parameter></paramdef>
-	  </funcprototype>
-
-	  <funcprototype>
-	    <funcdef>void <function>ne_session_proxy</function></funcdef>
-	    <paramdef>ne_session *<parameter>session</parameter></paramdef>
 	    <paramdef>const char *<parameter>hostname</parameter></paramdef>
 	    <paramdef>unsigned int <parameter>port</parameter></paramdef>
 	  </funcprototype>
@@ -53,14 +45,15 @@ certain server. Any requests made using the session can use a
 persistent connection, share cached authentication credentials and any
 other common attributes.</para>
 
-	<para>A new HTTP session is created using
-<function>ne_session_create</function>, giving the
-<parameter>hostname</parameter> and <parameter>port</parameter> of the
-server to use, along with the <parameter>scheme</parameter> used to
-contact the server (usually <literal>"http"</literal>).  Before the
-first use of <function>ne_session_create</function> in a process,
-<xref linkend="ne_sock_init"/> must have been called to perform any
-global initialization needed by any libraries used by &neon;.</para>
+	<para>A new HTTP session is created using the
+<function>ne_session_create</function> function; the 
+<parameter>hostname</parameter> and <parameter>port</parameter>
+parameters specify the origin server to use, along with
+the <parameter>scheme</parameter> (usually <literal>"http"</literal>).
+Before the first use of <function>ne_session_create</function> in a
+process, <xref linkend="ne_sock_init"/> must have been called to
+perform any global initialization needed by any libraries used by
+&neon;.</para>
 
 	<para>To enable SSL/TLS for the session, pass the string
 <literal>"https"</literal> as the <parameter>scheme</parameter>
@@ -69,12 +62,12 @@ parameter, and either register a certificate verification function
 certificate (see <xref linkend="ne_ssl_trust_cert"/>, <xref
 linkend="ne_ssl_trust_default_ca"/>).</para>
 
-	<para>If an HTTP proxy server should be used for the session,
-	<function>ne_session_proxy</function> must be called giving
-	the hostname and port on which to contact the proxy.</para>
+	<para>To use a proxy server for the session, it must be
+	configured (see <xref linkend="ne_session_proxy"/>) before any
+	requests are created from session object.</para>
 
         <para>Further per-session options may be changed using the
-        <xref linkend="ne_set_request_flag"/> interface.</para>
+        <xref linkend="ne_set_session_flag"/> interface.</para>
 
 	<para>If it is known that the session will not be used for a
 significant period of time, <function>ne_close_connection</function>
@@ -83,9 +76,12 @@ this function is entirely optional, but it must not be called if there
 is a request active using the session.</para>
 
 	<para>Once a session has been completed,
-<function>ne_session_destroy</function> must be called to destroy the
-resources associated with the session.  Any subsequent use of the
-session pointer produces undefined behaviour.</para>
+	<function>ne_session_destroy</function> must be called to
+	destroy the resources associated with the session.  Any
+	subsequent use of the session pointer produces undefined
+	behaviour.  The session object must not be destroyed until
+	after all associated request objects have been
+	destroyed.</para>
 
       </refsect1>
 

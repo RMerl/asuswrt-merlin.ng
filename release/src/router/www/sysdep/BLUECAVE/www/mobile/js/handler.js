@@ -296,21 +296,33 @@ apply.iptv = function(){
 		qisPostData.wan10_pppoe_passwd = $("#iptv_pppoe_passwd").val();
 	}
 	else if(qisPostData.switch_wantag == "manual"){
-		if(hasBlank([
-			$("#internet_vid"), 
-			$("#internet_prio"), 
-			$("#stb_vid"),
-			$("#stb_prio"),
-			$("#voip_vid"),
-			$("#voip_prio")
-		])) return false;
+		if(isSupport("port2_device")){
+			if(hasBlank([
+				$("#internet_vid"),
+				$("#internet_prio"),
+				$("#stb_vid"),
+				$("#stb_prio"),
+			])) return false;
+		}
+		else{
+			if(hasBlank([
+				$("#internet_vid"),
+				$("#internet_prio"),
+				$("#stb_vid"),
+				$("#stb_prio"),
+				$("#voip_vid"),
+				$("#voip_prio")
+			])) return false;
+		}
 
 		qisPostData.switch_wan0tagid = $("#internet_vid").val();
 		qisPostData.switch_wan0prio = $("#internet_prio").val();
 		qisPostData.switch_wan1tagid = $("#stb_vid").val();
 		qisPostData.switch_wan1prio = $("#stb_prio").val();
-		qisPostData.switch_wan2tagid = $("#voip_vid").val();
-		qisPostData.switch_wan2prio = $("#voip_prio").val();
+		if(!isSupport("port2_device")){
+			qisPostData.switch_wan2tagid = $("#voip_vid").val();
+			qisPostData.switch_wan2prio = $("#voip_prio").val();
+		}
 	}
 
 	if(hadPlugged("modem")){
@@ -715,6 +727,10 @@ abort.wan = function(){
 abort.wanType = function(){
 	postDataModel.remove(wanObj.all);
 	delete systemVariable.manualWanType;
+	if(systemVariable.advSetting && isSwModeChanged() && isSwMode("RT")){
+		postDataModel.remove(lanObj.general);
+		postDataModel.remove(lanObj.staticIp);
+	}
 
 	if(qisPostData.hasOwnProperty("sw_mode") && !systemVariable.meshRole){
 		goTo.loadPage("opMode_page", true);
@@ -1324,6 +1340,19 @@ goTo.rtMode = function(){
 		qisPostData.cfg_master = "1";
 	}
 
+	if(systemVariable.advSetting && isSwModeChanged()){
+		postDataModel.insert(lanObj.general);
+		postDataModel.insert(lanObj.staticIp);
+		qisPostData.lan_proto = "static";
+		qisPostData.lan_dnsenable_x = "1";
+		var lan_info_rt = httpApi.nvramGet(["lan_ipaddr_rt", "lan_netmask_rt"],true);
+		qisPostData.lan_ipaddr = lan_info_rt.lan_ipaddr_rt;
+		qisPostData.lan_netmask = lan_info_rt.lan_netmask_rt;
+		qisPostData.lan_gateway = lan_info_rt.lan_ipaddr_rt;
+		qisPostData.lan_dns1_x = "";
+		qisPostData.lan_dns2_x = "";
+	}
+
 	apply.manual();
 };
 
@@ -1678,13 +1707,17 @@ goTo.IPTV = function(){
 			var isp = $("#switch_wantag").val();
 			var isp_profile = httpApi.getISPProfile(isp);
 
-			if(isp_profile.iptv_port != "")
+			if(isp_profile.iptv_port != "" && isp != "manual"){
+				$("#iptv_stb_port").attr("value", isp_profile.iptv_port);
 				$("#iptv_stb").show();
+			}
 			else
 				$("#iptv_stb").hide();
 
-			if(isp_profile.voip_port != "")
+			if(isp_profile.voip_port != "" && isp != "manual"){
+				$("#iptv_voip_port").attr("value", isp_profile.voip_port);
 				$("#iptv_voip").show();
+			}
 			else
 				$("#iptv_voip").hide();
 
@@ -1702,6 +1735,34 @@ goTo.IPTV = function(){
 			}
 
 			if(isp == "manual"){
+				if(isp_profile.iptv_port != ""){
+					$("#manual_iptv_port").html(function(){
+						var port_str = "";
+						if(isp_profile.iptv_port.substr(0, 3) == "LAN")
+							port_str = "LAN Port " + isp_profile.iptv_port.substr(3);
+						else
+							port_str = isp_profile.iptv_port;
+
+						return port_str;
+					});
+				}
+				else
+					$("#manual_iptv_settings").hide();
+
+				if(isp_profile.voip_port != ""){
+					$("#manual_voip_port").html(function(){
+						var port_str = "";
+						if(isp_profile.voip_port.substr(0, 3) == "LAN")
+							port_str = "LAN Port " + isp_profile.voip_port.substr(3);
+						else
+							port_str = isp_profile.voip_port;
+
+						return port_str;
+					});
+				}
+				else
+					$("#manual_voip_settings").hide();
+
 				$("#iptv_manual").show();
 				postDataModel.insert(iptvManualObj);
 			}
@@ -2243,10 +2304,12 @@ goTo.Upload = function(){
 }
 
 goTo.Finish = function(){
+	var restartService = getRestartService();
 	if(
-		!(getRestartService().indexOf("restart_wireless") != -1 && isWlUser) &&
-		getRestartService().indexOf("restart_subnet") == -1 &&
-		getRestartService().indexOf("reboot") == -1 &&
+		!(restartService.indexOf("restart_wireless") != -1 && isWlUser) &&
+		restartService.indexOf("restart_subnet") == -1 &&
+		restartService.indexOf("reboot") == -1 &&
+		restartService.indexOf("restart_all") == -1 &&
 		systemVariable.isNewFw == 0 &&
 		!isSupport("lantiq")
 	){

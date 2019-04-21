@@ -295,12 +295,26 @@ function drawClientList(tab){
 	if(!(isSwMode('mb') || isSwMode('ew'))) {
 		document.getElementById("tabWired").style.display = (totalClientNum.wired == 0) ? "none" : "";
 		document.getElementById("tabWiredNum").innerHTML = 	totalClientNum.wired;
+
+		if(document.getElementById("tabWired").offsetWidth > 150 || 
+			(document.getElementById("tabOnline").offsetWidth+document.getElementById("tabWired").offsetWidth+document.getElementById("tabWireless").offsetWidth) > 300){
+			var wired_span = document.getElementById("tabWiredSpan").innerHTML;
+			var Modified_wired_term = wired_span.replace("<#tm_wired#>", "<#wan_ethernet#>");
+			document.getElementById("tabWiredSpan").innerHTML = Modified_wired_term;
+		}	
 	}
 
 	// Wireless
 	if(!(isSwMode('mb') || isSwMode('ew'))) {
 		document.getElementById("tabWireless").style.display = (totalClientNum.wireless == 0) ? "none" : "";
 		document.getElementById("tabWirelessNum").innerHTML = totalClientNum.wireless;
+
+		if(document.getElementById("tabWireless").offsetWidth > 150 || 
+			(document.getElementById("tabOnline").offsetWidth+document.getElementById("tabWired").offsetWidth+document.getElementById("tabWireless").offsetWidth) > 300){
+			var wireless_span = document.getElementById("tabWirelessSpan").innerHTML;
+			var Modified_wireless_term = wireless_span.replace("<#tm_wireless#>", "Wi-Fi");
+			document.getElementById("tabWirelessSpan").innerHTML = Modified_wireless_term;
+		}
 	}
 	if(totalClientNum.wireless == 0) 
 		wirelessOverFlag = false;
@@ -434,7 +448,7 @@ function updateClientList(e){
 			<table width="100px" border="0" align="left" style="margin-left:8px;" cellpadding="0" cellspacing="0">
 				<td>
 					<div id="tabOnline" class="tabclick_NW" align="center">
-						<span>
+						<span id="tabOnlineSpan">
 							<#Clientlist_Online#>
 						</span>
 					</div>
@@ -451,8 +465,8 @@ function updateClientList(e){
 				</td>
 				<td>
 					<div id="tabWired" class="tab_NW" align="center" style="display:none">
-						<span>
-							<#tm_wired#> (<b style="font-size:10px;" id="tabWiredNum">0</b>)
+						<span id="tabWiredSpan">
+							<#tm_wired#>&nbsp;(<b style="font-size:10px;" id="tabWiredNum">0</b>)
 						</span>
 					</div>
 					<script>
@@ -469,7 +483,7 @@ function updateClientList(e){
 				<td>
 					<div id="tabWireless" class="tab_NW" align="center" style="display:none;position:relative;min-width:85px;">
     					<span id="tabWirelessSpan">
-							<#tm_wireless#> (<b style="font-size:10px;" id="tabWirelessNum">0</b>)
+							<#tm_wireless#>&nbsp;(<b style="font-size:10px;" id="tabWirelessNum">0</b>)
 						</span>
 						<nav class="nav" style="position:absolute;" id="select_wlclient_band"></nav>
 					</div>

@@ -474,8 +474,8 @@ char *ne_path_unescape(const char *uri)
 }
 
 /* CH must be an unsigned char; evaluates to 1 if CH should be
- * percent-encoded. */
-#define path_escape_ch(ch) (uri_lookup(ch) & URI_ESCAPE)
+ * percent-encoded (note !!x == x ? 1 : 0). */
+#define path_escape_ch(ch) (!!(uri_lookup(ch) & URI_ESCAPE))
 
 char *ne_path_escape(const char *path) 
 {

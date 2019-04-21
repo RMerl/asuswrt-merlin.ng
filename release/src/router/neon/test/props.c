@@ -1,6 +1,6 @@
 /* 
    Tests for property handling
-   Copyright (C) 2002-2008, Joe Orton <joe@manyfish.co.uk>
+   Copyright (C) 2002-2009, Joe Orton <joe@manyfish.co.uk>
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -36,8 +36,7 @@
 #include "utils.h"
 
 static const ne_propname p_alpha = {"DAV:", "alpha"},
-    p_beta = {"http://webdav.org/random/namespace", "beta"},
-    p_delta = {NULL, "delta"};
+    p_beta = {"http://webdav.org/random/namespace", "beta"};
 
 /* Tests little except that ne_proppatch() doesn't segfault. */
 static int patch_simple(void)
@@ -242,13 +241,15 @@ static int tos_endprop(void *userdata, int state,
 static int run_207_response(char *resp, const char *expected)
 {
     ne_buffer *buf = ne_buffer_create();
-    ne_session *sess = ne_session_create("http", "localhost", 7777);
+    ne_session *sess;
     ne_xml_parser *p = ne_xml_create();
     ne_207_parser *p207;
-    ne_request *req = ne_request_create(sess, "PROPFIND", "/foo");
+    ne_request *req;
     ne_uri base = {0};
     struct propctx ctx;
 
+    CALL(session_server(&sess, single_serve_string, resp));
+    req = ne_request_create(sess, "PROPFIND", "/foo");
     ne_fill_server_uri(sess, &base);
     base.path = ne_strdup("/foo");
     p207 = ne_207_create(p, &base, buf);
@@ -263,7 +264,6 @@ static int run_207_response(char *resp, const char *expected)
     ctx.p207 = p207;
     ne_xml_push_handler(p, tos_startprop, tos_cdata, tos_endprop, &ctx);
 
-    CALL(spawn_server(7777, single_serve_string, resp));
 
     ONREQ(ne_request_dispatch(req));
 
@@ -592,14 +592,14 @@ static int propfind(void)
           0, PF_SIMPLE},
 
         /* whitespace handling. */
-        { MULTI_207(RESP_207("\r\nhttp://localhost:7777/alpha ",
+        { MULTI_207(RESP_207("\r\nhttp://localhost/alpha ",
                              PSTAT_207(PROPS_207(APROP_207("alpha", "beta"))
                                        "<D:status>\r\nHTTP/1.1 200 OK </D:status>"))),
           "results(/alpha,prop:[{DAV:,alpha}='beta':{200 OK}];)//",
           0, PF_SIMPLE},
         
         /* attribute handling. */
-        { MULTI_207(RESP_207("\r\nhttp://localhost:7777/alpha ",
+        { MULTI_207(RESP_207("\r\nhttp://localhost/alpha ",
                              PSTAT_207(PROPS_207("<D:alpha>"
                                                  "<D:foo D:fee='bar' bar='fee'>beta</D:foo></D:alpha>")
                                        "<D:status>\r\nHTTP/1.1 200 OK </D:status>"))),
@@ -637,11 +637,8 @@ static int unbounded_response(const char *header, const char *repeats)
 {
     ne_session *sess;
     struct infinite i = { header, repeats};
-    int dbg;
 
     CALL(make_session(&sess, serve_infinite, &i));
-
-    dbg = ne_debug_mask;
 
     ONN("unbounded PROPFIND response did not fail",
         ne_simple_propfind(sess, "/", 0, NULL, 

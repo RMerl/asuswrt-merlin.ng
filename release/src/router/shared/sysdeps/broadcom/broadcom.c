@@ -26,7 +26,7 @@
 static int _gpio_ioctl(int f, int gpioreg, unsigned int mask, unsigned int val)
 {
 	struct gpio_ioctl gpio;
-                                                                                                                     
+
 	gpio.val = val;
 	gpio.mask = mask;
 
@@ -159,7 +159,7 @@ uint32_t gpio_read(void)
 
 #endif
 
-#ifdef RTCONFIG_AMAS 
+#ifdef RTCONFIG_AMAS
 static bool g_swap = FALSE;
 #define htod32(i) (g_swap?bcmswap32(i):(uint32)(i))
 #define dtoh32(i) (g_swap?bcmswap32(i):(uint32)(i))
@@ -304,7 +304,7 @@ static int is_hex(char c)
 	return (((c >= '0') && (c <= '9')) ||
 		((c >= 'A') && (c <= 'F')) ||
 		((c >= 'a') && (c <= 'f')));
-} /* End of is_hex */ 
+} /* End of is_hex */
 
 int string2hex(const char *a, unsigned char *e, int len)
 {
@@ -319,7 +319,7 @@ int string2hex(const char *a, unsigned char *e, int len)
 		e[ii++] = (unsigned char) strtol(tmpBuf, (char**)NULL, 16);
 	}
 	return 1;
-} /* End of string2hex */ 
+} /* End of string2hex */
 
 void add_beacon_vsie(char *hexdata)
 {
@@ -470,4 +470,50 @@ void update_macfilter_relist()
 		}
 	}
 }
+
+int wl_get_bw(int unit)
+{
+	char ifname[NVRAM_MAX_PARAM_LEN];
+	int up = 0;
+	chanspec_t chspec = 0;
+	int bw = 0;
+
+	wl_ifname(unit, 0, ifname);
+
+	wl_iovar_getint(ifname, "bss", (int *) &up);
+	wl_iovar_getint(ifname, "chanspec", (int *) &chspec);
+
+	if (up && wf_chspec_valid(chspec)) {
+		if (CHSPEC_IS20(chspec))
+			bw = 20;
+		else if (CHSPEC_IS40(chspec))
+			bw = 40;
+		else if (CHSPEC_IS80(chspec))
+			bw = 80;
+#if defined(RTCONFIG_HND_ROUTER_AX) || defined(RTCONFIG_BW160M)
+		else if (CHSPEC_IS160(chspec))
+			bw = 160;
 #endif
+	}
+
+	return bw;
+}
+#endif
+
+int wl_cap(int unit, char *cap_check)
+{
+	char ifname[NVRAM_MAX_PARAM_LEN];
+	char cap[WLC_IOCTL_SMLEN];
+	char caps[WLC_IOCTL_SMLEN * 2];
+	char *next = NULL;
+
+	wl_ifname(unit, 0, ifname);
+	if (!wl_iovar_get(ifname, "cap", (void *)caps, sizeof(caps))) {
+		foreach(cap, caps, next) {
+			if (!strcmp(cap, cap_check))
+				return 1;
+		}
+	}
+
+	return 0;
+}

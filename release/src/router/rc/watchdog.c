@@ -3669,14 +3669,6 @@ void timecheck(void)
 
 		/*transfer wl_sched NULL value to 000000 value, because
 		of old version firmware with wrong default value*/
-		if(!strcmp(nvram_safe_get("wl_sched"), "") || !strcmp(nvram_safe_get(strcat_r(prefix, "sched", tmp)), ""))
-		{
-			nvram_set(strcat_r(prefix, "sched", tmp),"000000");
-			nvram_set("wl_sched", "000000");
-		}
-
-		/*transfer wl_sched NULL value to 000000 value, because
-		of old version firmware with wrong default value*/
 		if (!strcmp(nvram_safe_get(strcat_r(prefix, "sched", tmp)), ""))
 		{
 			nvram_set(strcat_r(prefix, "sched", tmp),"000000");

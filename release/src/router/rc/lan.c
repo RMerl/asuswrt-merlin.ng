@@ -6029,10 +6029,6 @@ void start_lan_port(int dt)
 #else
 	lanport_ctrl(1);
 #endif
-
-#ifdef RTCONFIG_PORT_BASED_VLAN
-	vlan_lanaccess_wl();
-#endif
 }
 
 void stop_lan_port(void)
@@ -6242,7 +6238,6 @@ void stop_lan_wlc(void)
 	dbg("%s %d\n", __FUNCTION__, __LINE__);
 }
 #endif //RTCONFIG_WIRELESSREPEATER
-
 
 #ifdef RTCONFIG_QTN
 int reset_qtn(int restart)

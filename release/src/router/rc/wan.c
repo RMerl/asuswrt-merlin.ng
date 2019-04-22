@@ -671,7 +671,7 @@ void update_wan_state(char *prefix, int state, int reason)
 	}
         else if (state == WAN_STATE_CONNECTED) {
 		sprintf(tmp,"%c",prefix[3]);
-                run_custom_script("wan-start", 0, tmp, NULL);
+		run_custom_script("wan-start", 0, tmp, NULL);
         }
 
 #if defined(RTCONFIG_WANRED_LED)

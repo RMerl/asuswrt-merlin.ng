@@ -1801,8 +1801,8 @@ extern int dump_powertable(void);
 
 //speedtest.c
 extern int speedtest_main(int argc, char **argv);
-extern int speedtest();
 extern void wan_bandwidth_detect(void);
+extern int speedtest();
 
 #if defined(RTCONFIG_BWDPI)
 extern int bwdpi_main(int argc, char **argv);

@@ -1477,6 +1477,7 @@ void start_dnsmasq(void)
 				dhcp_start, dhcp_end, nvram_safe_get("lan_netmask"), dhcp_lease);
 
 #ifdef RTCONFIG_WIFI_SON
+			//if (nvram_get_int("wl0.1_bss_enabled"))
 			if (sw_mode() != SW_MODE_REPEATER)
 			{
 
@@ -1505,6 +1506,7 @@ void start_dnsmasq(void)
 				lan, start, lan, start + count - 1, nvram_safe_get("lan_netmask"), dhcp_lease);
 
 #ifdef RTCONFIG_WIFI_SON
+			//if (nvram_get_int("wl0.1_bss_enabled"))
 			if (sw_mode() != SW_MODE_REPEATER)
 			{
 				char glan[24];
@@ -10078,6 +10080,8 @@ again:
 						kill(1, SIGTERM);
 					}
 				}
+				if(stop_commit == 0)
+					nvram_unset(ASUS_STOP_COMMIT);		/* FINISH FW Writting */
 			}
 			else {
 				// recover? or reboot directly
@@ -10327,8 +10331,6 @@ again:
 				} else {
 					kill(1, SIGTERM);
 				}
-				if(stop_commit == 0)
-					nvram_unset(ASUS_STOP_COMMIT);		/* FINISH FW Writting */
 			}
 			else {
 				// recover? or reboot directly
@@ -13591,7 +13593,14 @@ _dprintf("test 2. turn off the USB power during %d seconds.\n", reset_seconds[re
 	{
 		// TODO : add path here
 	}
- 	else
+#if defined(RTCONFIG_QCA_LBD)
+	else if (strcmp(script, "qca_lbd") == 0)
+	{
+		if(action & RC_SERVICE_STOP) stop_qca_lbd();
+		if(action & RC_SERVICE_START) start_qca_lbd();
+	}
+#endif
+	else
 	{
 		fprintf(stderr,
 			"WARNING: rc notified of unrecognized event `%s'.\n",
@@ -13993,13 +14002,6 @@ void start_amas_lldpd(void)
 		dbG("exec lldpd debug mode(%s)\n", exec_lldpd);
 		system(exec_lldpd);
 	}
-#if defined(RTCONFIG_QCA_LBD)
-	else if (strcmp(script, "qca_lbd") == 0)
-	{
-		if(action & RC_SERVICE_STOP) stop_qca_lbd();
-		if(action & RC_SERVICE_START) start_qca_lbd();
-	}
-#endif
 	else
 		fprintf(fp, "lldpd -L /usr/sbin/lldpcli -I %s -s %s\n", bind_ifnames, productid);
 

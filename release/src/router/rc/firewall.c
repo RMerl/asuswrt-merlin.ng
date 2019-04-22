@@ -1920,6 +1920,7 @@ void nat_setting2(char *lan_if, char *lan_ip, char *logaccept, char *logdrop)	//
 	int nat_t_port = nvram_get_int("ipsec_nat_t_port");
 #endif
 
+
 	ip2class(lan_ip, nvram_safe_get("lan_netmask"), lan_class);
 
 #ifdef RTCONFIG_MULTICAST_IPTV
@@ -4138,12 +4139,16 @@ TRACE_PT("write wl filter\n");
 	dnsfilter_dot_rules(fp, lan_if);
 #endif
 
-	fprintf(fp, "-A FORWARD -i %s -j %s\n", lan_if, logaccept);
+	// Default rule
+	if (nvram_get_int("fw_enable_x"))
+		fprintf(fp, "-A FORWARD -j %s\n", logdrop);
+#ifdef RTCONFIG_IPV6
+	if (ipv6_enabled() && nvram_match("ipv6_fw_enable", "1"))
+		fprintf(fp_ipv6, "-A FORWARD -j %s\n", logdrop);
+#endif
 
 	fprintf(fp, "COMMIT\n\n");
-	if(fp) fclose(fp);
-
-	//system("iptables -F");
+	if (fp) fclose(fp);
 	eval("iptables-restore", "/tmp/filter_rules");
 
 #ifdef RTCONFIG_PROTECTION_SERVER
@@ -4153,13 +4158,8 @@ TRACE_PT("write wl filter\n");
 #ifdef RTCONFIG_IPV6
 	if (ipv6_enabled())
 	{
-		// Default rule
-		if (nvram_match("ipv6_fw_enable", "1"))
-		{
-			fprintf(fp_ipv6, "-A FORWARD -j %s\n", logdrop);
-		}
 		fprintf(fp_ipv6, "COMMIT\n\n");
-		fclose(fp_ipv6);
+		if (fp_ipv6) fclose(fp_ipv6);
 		eval("ip6tables-restore", "/tmp/filter_rules_ipv6");
 	}
 #endif
@@ -4305,7 +4305,7 @@ filter_setting2(char *lan_if, char *lan_ip, char *logaccept, char *logdrop)
 
 	get_all_pc_tmp_list(&pc_list);
 	pc_count = count_pc_rules(pc_list, 1);
-	pc_count += count_pc_rules(pc_list, 2);
+	 pc_count += count_pc_rules(pc_list, 2);
 
 	if(pc_count > 0){
 TRACE_PT("writing temporary Parental Control\n");
@@ -5313,13 +5313,6 @@ TRACE_PT("write wl filter\n");
 		fprintf(fp_ipv6, "-A FORWARD -j %s\n", logdrop);
 #endif
 
-	// Default rule
-	if (nvram_get_int("fw_enable_x"))
-		fprintf(fp, "-A FORWARD -j %s\n", logdrop);
-#ifdef RTCONFIG_IPV6
-	if (ipv6_enabled() && nvram_match("ipv6_fw_enable", "1"))
-		fprintf(fp_ipv6, "-A FORWARD -j %s\n", logdrop);
-#endif
 	fprintf(fp, "COMMIT\n\n");
 	if (fp) fclose(fp);
 	eval("iptables-restore", "/tmp/filter_rules");
@@ -5576,6 +5569,22 @@ mangle_setting(char *wan_if, char *wan_ip, char *lan_if, char *lan_ip, char *log
 			     "-m", "state", "--state", "NEW", "-j", "MARK", "--set-mark", "0x01/0x7");
 		}
 
+		/* mark 5060 port connection for SIP signaling of VoIP, including UDP and TCP type */
+#ifdef CONFIG_BCMWL5
+		if (nvram_match("fw_pt_sip", "1") && nvram_get_int("stop_sip_pt_r") != 1) {
+#ifdef HND_ROUTER
+			//do nothing
+#else
+			eval("iptables", "-t", "mangle", "-A", "FORWARD",
+				"-p", "udp", "-m", "udp",
+				"--dport", "5060", "-j", "MARK", "--set-mark", "0x01/0x7");
+			eval("iptables", "-t", "mangle", "-A", "FORWARD",
+				"-p", "tcp", "-m", "tcp",
+				"--dport", "5060", "-j", "MARK", "--set-mark", "0x01/0x7");
+#endif /* HND_ROUTER */
+		}
+#endif /* CONFIG_BCMWL5 */
+
 		/* mark VTS loopback connections */
 		if (nvram_match("vts_enable_x", "1") || dmz_enabled() ||
 			(is_nat_enabled() && nvram_get_int("upnp_enable"))) {
@@ -5626,7 +5635,6 @@ mangle_setting2(char *lan_if, char *lan_ip, char *logaccept, char *logdrop)
 {
 	int unit;
 	char *wan_if;
-	char tmp[32], prefix[sizeof("wanxXXX_")];
 	char chain[sizeof("QOSOxXXX")];
 	int wan_max_unit = WAN_UNIT_MAX;
 #ifdef CONFIG_BCMWL5 /* the only use so far */
@@ -5827,22 +5835,6 @@ mangle_setting2(char *lan_if, char *lan_ip, char *logaccept, char *logdrop)
 			     "-p", "tcp", "--dport", "80",
 			     "-m", "state", "--state", "NEW", "-j", "MARK", "--set-mark", "0x01/0x7");
 		}
-
-		/* mark 5060 port connection for SIP signaling of VoIP, including UDP and TCP type */
-#ifdef CONFIG_BCMWL5
-		if (nvram_match("fw_pt_sip", "1") && nvram_get_int("stop_sip_pt_r") != 1) {
-#ifdef HND_ROUTER
-			//do nothing
-#else
-			eval("iptables", "-t", "mangle", "-A", "FORWARD",
-				"-p", "udp", "-m", "udp",
-				"--dport", "5060", "-j", "MARK", "--set-mark", "0x01/0x7");
-			eval("iptables", "-t", "mangle", "-A", "FORWARD",
-				"-p", "tcp", "-m", "tcp",
-				"--dport", "5060", "-j", "MARK", "--set-mark", "0x01/0x7");
-#endif /* HND_ROUTER */
-		}
-#endif /* CONFIG_BCMWL5 */
 
 		/* mark VTS loopback connections */
 		if (nvram_match("vts_enable_x", "1") || dmz_enabled() ||

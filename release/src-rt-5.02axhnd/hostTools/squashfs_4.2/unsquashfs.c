@@ -31,6 +31,7 @@
 
 #include <sys/sysinfo.h>
 #include <sys/types.h>
+#include <sys/sysmacros.h>
 
 struct cache *fragment_cache, *data_cache;
 struct queue *to_reader, *to_deflate, *to_writer, *from_writer;

@@ -53,7 +53,7 @@ main()
 {
 	[ -e "$RESULT_PATH" ] && rm -f $RESULT_PATH
 
-	wget -S --no-check-certificate "https://$USER:$PASSWD@domains.google.com/nic/update?hostname=$HOST&myip=$CurrWANIP" -O $RESULT_PATH
+	wget -S "https://$USER:$PASSWD@domains.google.com/nic/update?hostname=$HOST&myip=$CurrWANIP" -O $RESULT_PATH
 	
 	sleep 1;
 	

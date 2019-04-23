@@ -196,7 +196,7 @@ echo "file_ver4=$file_ver4, list_ver4=$list_ver4."
 		if [ "$pkg_type" != "arm" ] && [ -n "$apps_ipkg_old" ] && [ "$apps_ipkg_old" == "1" ]; then
 			IS_SUPPORT_SSL=`nvram get rc_support|grep -i HTTPS`
 			if [ -n "$IS_SUPPORT_SSL" ]; then
-				wget_options="$wget_options --no-check-certificate"
+				wget_options="$wget_options"
 			fi
 		fi
 
@@ -347,7 +347,7 @@ _download_lib_package(){
 		if [ "$pkg_type" != "arm" ] && [ -n "$apps_ipkg_old" ] && [ "$apps_ipkg_old" == "1" ]; then
 			IS_SUPPORT_SSL=`nvram get rc_support|grep -i HTTPS`
 			if [ -n "$IS_SUPPORT_SSL" ]; then
-				wget_options="$wget_options --no-check-certificate"
+				wget_options="$wget_options"
 			fi
 		fi
 

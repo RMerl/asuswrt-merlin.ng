@@ -1,7 +1,7 @@
 #!/bin/sh
 
 wget_timeout=`nvram get apps_wget_timeout`
-wget_options="-q -t 2 -T $wget_timeout --no-check-certificate"
+wget_options="-q -t 2 -T $wget_timeout"
 
 nvram set cfg_note=0
 get_preferred_lang=`nvram get preferred_lang`

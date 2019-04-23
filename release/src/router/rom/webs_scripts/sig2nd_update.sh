@@ -1,7 +1,7 @@
 #!/bin/sh
 
 wget_timeout=`nvram get apps_wget_timeout`
-wget_options="-q -t 2 -T $wget_timeout --no-check-certificate"
+wget_options="-q -t 2 -T $wget_timeout"
 
 nvram set sig_state_update=0 # INITIALIZING
 nvram set sig_state_flag=0   # 0: Don't do upgrade  1: Do upgrade	

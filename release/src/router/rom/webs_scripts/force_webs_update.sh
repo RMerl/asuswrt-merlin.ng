@@ -3,9 +3,9 @@
 wget_timeout=`nvram get apps_wget_timeout`
 #wget_options="-nv -t 2 -T $wget_timeout --dns-timeout=120"
 if [ "$wget_timeout" != "" ]; then
-	wget_options="-q -t 2 -T $wget_timeout --no-check-certificate"
+	wget_options="-q -t 2 -T $wget_timeout"
 else
-	wget_options="-q -t 2 -T 30 --no-check-certificate"
+	wget_options="-q -t 2 -T 30"
 fi
 
 nvram set webs_state_update=0 # INITIALIZING

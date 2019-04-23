@@ -1863,16 +1863,6 @@ void nat_setting(char *wan_if, char *wan_ip, char *wanx_if, char *wanx_ip, char 
 		}
 	}
 #endif
-#ifdef RTCONFIG_WIFI_SON
-	char g_lan_class[32];
-	char g_lan_ip[20];
-	unsigned int dip;
-	struct in_addr gst;
-
-	dip = ntohl(inet_addr(lan_ip)) + 0x100;
-	gst.s_addr = htonl(dip);
-	strcpy(g_lan_ip, inet_ntoa(gst));
-#endif
 
 	fprintf(fp, "COMMIT\n");
 	fclose(fp);
@@ -1904,6 +1894,16 @@ void nat_setting2(char *lan_if, char *lan_ip, char *logaccept, char *logdrop)	//
 	int wan_max_unit = WAN_UNIT_MAX;
 #ifdef RTCONFIG_MULTIWAN_CFG
 	int wanx_rules = 0;
+#endif
+#ifdef RTCONFIG_WIFI_SON
+	char g_lan_class[32];
+	char g_lan_ip[20];
+	unsigned int dip;
+	struct in_addr gst;
+
+	dip = ntohl(inet_addr(lan_ip)) + 0x100;
+	gst.s_addr = htonl(dip);
+	strcpy(g_lan_ip, inet_ntoa(gst));
 #endif
 #ifdef RTCONFIG_TOR
 	char addr_new[32];

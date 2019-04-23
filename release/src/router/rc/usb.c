@@ -352,6 +352,7 @@ void add_usb_modem_modules(void)
 	if (usb_modem_modules_loaded)
 		return;
 	usb_modem_modules_loaded = 1;
+
 #ifdef RTAC68U
 	if (!hw_usb_cap())
 		return;
@@ -3129,7 +3130,7 @@ start_samba(void)
 	char cmd[256];
 #if defined(SMP)
 char *cpu_list = nvram_get("usb_user_core");
-#if (defined(RTCONFIG_BCMARM) || defined(RTCONFIG_SOC_IPQ8064))
+#if defined(RTCONFIG_BCMARM) || defined(RTCONFIG_SOC_IPQ8064)
 	int cpu_num = sysconf(_SC_NPROCESSORS_CONF);
 	int taskset_ret = -1;
 #endif
@@ -4316,6 +4317,17 @@ void stop_cloudsync(int type)
 	else if(type == 0){
 		if(pids("inotify") && !pids("webdav_client") && !pids("dropbox_client") && !pids("ftpclient") && !pids("sambaclient")  && !pids("usbclient")&& !pids("google_client"))
 			killall_tk("inotify");
+
+		if(pids("asuswebstorage"))
+			killall_tk("asuswebstorage");
+		logmessage("Cloudsync client", "daemon is stoped");
+	}
+	else{
+	if(pids("inotify"))
+			killall_tk("inotify");
+
+	if(pids("webdav_client"))
+			killall_tk("webdav_client");
 
 		if(pids("asuswebstorage"))
 			killall_tk("asuswebstorage");

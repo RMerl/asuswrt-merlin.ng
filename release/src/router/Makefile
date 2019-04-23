@@ -5436,7 +5436,7 @@ curl-7.21.7/Makefile: curl/configure
 		--disable-proxy --disable-manual --disable-libcurl-option \
 		--disable-threaded-resolver \
 		LDFLAGS='$(LDFLAGS) -L$(TOP)/openssl' LIBS='-lcrypto -lssl -ldl' \
-		--with-ca-bundle=/etc/ssl/certs/ca-certificates.crt
+		--with-ca-fallback
 
 curl-7.21.7-install: curl-7.21.7
 	@$(SEP)

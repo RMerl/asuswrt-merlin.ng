@@ -1394,7 +1394,7 @@ start_dhcp6c(void)
 	struct duid duid;
 	char duid_arg[sizeof(duid)*2+1];
 	char prefix_arg[sizeof("128:xxxxxxxx")];
-	int service, i;
+	int service;
 
 #ifndef RT4GAC68U
 	if (getpid() != 1) {

@@ -2744,7 +2744,7 @@ ej_wl_status_qtn_array(int eid, webs_t wp, int argc, char_t **argv, const char *
 				arplistptr = arplist;
 
 				while ((arplistptr < arplist+strlen(arplist)-2) && (sscanf(arplistptr,"%15s %*s %*s %17s",ipentry,macentry) == 2)) {
-					if (upper_strcmp(macentry, wl_ether_etoa((struct ether_addr *) &sta_address)) == 0) {
+					if (strcasecmp(macentry, wl_ether_etoa((struct ether_addr *) &sta_address)) == 0) {
 						found = 1;
 						break;
 					} else {
@@ -2764,7 +2764,7 @@ ej_wl_status_qtn_array(int eid, webs_t wp, int argc, char_t **argv, const char *
 				leaselistptr = leaselist;
 
 				while ((leaselistptr < leaselist+strlen(leaselist)-2) && (sscanf(leaselistptr,"%*s %17s %15s %15s %*s", macentry, ipentry, tmp) == 3)) {
-					if (upper_strcmp(macentry,  wl_ether_etoa((struct ether_addr *) &sta_address)) == 0) {
+					if (strcasecmp(macentry,  wl_ether_etoa((struct ether_addr *) &sta_address)) == 0) {
 						found += 2;
 						break;
 					} else {
@@ -2797,7 +2797,7 @@ ej_wl_status_qtn_array(int eid, webs_t wp, int argc, char_t **argv, const char *
 				ipv6listptr = ipv6list;
 				foundipv6 = 0;
 				while ((ipv6listptr < ipv6list+strlen(ipv6list)-2) && (sscanf(ipv6listptr,"%*s %17s %40s", macentry, ipentry) == 2)) {
-					if (upper_strcmp(macentry,  wl_ether_etoa((struct ether_addr *) &sta_address)) == 0) {
+					if (strcasecmp(macentry,  wl_ether_etoa((struct ether_addr *) &sta_address)) == 0) {
 						ret += websWrite(wp, "\"%s\",", ipentry);
 						foundipv6 = 1;
 						break;

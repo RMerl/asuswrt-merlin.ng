@@ -101,7 +101,7 @@ while [ $i -lt $row_num ]; do
 				else
 					server_name=https://dlcdnets.asus.com/pub/ASUS/LiveUpdate/Release/Wireless
 				fi
-				wget_options="$wget_options --no-check-certificate"
+				wget_options="$wget_options"
 			else
 				if [ "$SQ_TEST" == "1" ]; then
 					server_name=http://dlcdnet.asus.com/pub/ASUS/LiveUpdate/Release/Wireless_SQ

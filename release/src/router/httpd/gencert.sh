@@ -24,7 +24,7 @@ CERTNAME="cert.pem"
 
 OPENSSLCNF="/etc/openssl.config.$PID"
 
-cp -L /etc/openssl.cnf $OPENSSLCNF
+cp -L /etc/ssl/openssl.cnf $OPENSSLCNF
 
 LANCN=$(nvram get https_crt_cn)
 LANIP=$(nvram get lan_ipaddr)

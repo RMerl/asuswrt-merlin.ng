@@ -129,7 +129,7 @@ if [ ! -f "$APPS_INSTALL_PATH/bin/ipkg" ] || [ -z "$had_uclibc" ]; then
 		IS_SUPPORT_SSL=`nvram get rc_support|grep -i HTTPS`
 		if [ -n "$IS_SUPPORT_SSL" ]; then
 			dl_path=https://dlcdnets.asus.com/pub/ASUS/LiveUpdate/Release/Wireless
-			wget_options="$wget_options --no-check-certificate"
+			wget_options="$wget_options"
 		else
 			dl_path=http://dlcdnet.asus.com/pub/ASUS/LiveUpdate/Release/Wireless
 		fi

@@ -557,7 +557,7 @@ function validForm(){
 	}	
 	
 	if(document.form.wan_hwaddr_x.value.length > 0)
-			if(!check_macaddr(document.form.wan_hwaddr_x,check_hwaddr_flag(document.form.wan_hwaddr_x))){
+			if(!check_macaddr(document.form.wan_hwaddr_x,check_hwaddr_flag(document.form.wan_hwaddr_x,'inner'))){
 					document.form.wan_hwaddr_x.select();
 					document.form.wan_hwaddr_x.focus();
 		 	return false;

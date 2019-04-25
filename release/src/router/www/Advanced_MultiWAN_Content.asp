@@ -212,7 +212,7 @@ function validForm(){
 	}	
 	
 	if(document.form.wan_hwaddr_x_now.value.length > 0)
-			if(!check_macaddr(document.form.wan_hwaddr_x_now,check_hwaddr_flag(document.form.wan_hwaddr_x_now))){
+			if(!check_macaddr(document.form.wan_hwaddr_x_now,check_hwaddr_flag(document.form.wan_hwaddr_x_now,'inner'))){
 					document.form.wan_hwaddr_x_now.select();
 					document.form.wan_hwaddr_x_now.focus();
 		 	return false;

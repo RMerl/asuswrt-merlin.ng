@@ -473,7 +473,7 @@ function addRule(){
 		change_add_btn(0);
 		return false;
 	}
-	else if(check_macaddr(document.form.clientmac_x_0, check_hwaddr_flag(document.form.clientmac_x_0)) == true){
+	else if(check_macaddr(document.form.clientmac_x_0, check_hwaddr_flag(document.form.clientmac_x_0,'inner')) == true){
 		Object.keys(wtfast_rulelist_array).forEach(function(key){
 			if(wtfast_rulelist_array[key][1].toUpperCase() == mac){
 				alert("<#JS_duplicate#>");

@@ -621,10 +621,10 @@ unsigned int get_wifi_clients(int unit, int querytype)
 
 #ifdef RTCONFIG_QTN
 		if (unit == 1) {
-			if ((nvram_match("wl1_unit", "0")) || (!rpc_qtn_ready())
+			if ((nvram_match("wl1_unit", "0")) || (!rpc_qtn_ready()))
 				count = -1;
 			else if ((querytype == SI_WL_QUERY_ASSOC) &&
-				qcsapi_wifi_get_count_associations(name, &association_count) >= 0)
+				 (qcsapi_wifi_get_count_associations(name, &association_count) >= 0))
 					count = association_count;
 			else	// All other queries aren't support by QTN
 				count = -1;

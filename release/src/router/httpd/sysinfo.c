@@ -462,6 +462,7 @@ int ej_show_sysinfo(int eid, webs_t wp, int argc, char_t ** argv)
 #endif
 
 		} else if(strcmp(type,"ethernet") == 0 ) {
+#ifndef HND_ROUTER
 			int len, j;
 
 			system("/usr/sbin/robocfg showports >/tmp/output.txt");
@@ -485,6 +486,9 @@ int ej_show_sysinfo(int eid, webs_t wp, int argc, char_t ** argv)
 
 			}
 			unlink("/tmp/output.txt");
+#else	// HND lacks robocfg support
+			strcpy(result, "[]");
+#endif
 		} else {
 			strcpy(result,"Not implemented");
 		}

@@ -1748,7 +1748,7 @@ void start_dnsmasq(void)
 
 #ifdef RTCONFIG_DNSSEC
 #ifdef RTCONFIG_DNSPRIVACY
-	if (nvram_get_int("dnspriv_enable") && nvram_get_int("dnssec_enable")) {
+	if (nvram_get_int("dnspriv_enable") && nvram_get_int("dnssec_enable") == 2) {
 		fprintf(fp, "proxy-dnssec\n");
 	} else
 #endif
@@ -1935,7 +1935,7 @@ void start_stubby(void)
 
 #ifdef RTCONFIG_DNSSEC
 	/* DNSSEC settings */
-	if (nvram_get_int("dnssec_enable") && tls_possible) {
+	if (nvram_get_int("dnssec_enable") == 2 && tls_possible) {
 		fprintf(fp,
 			"dnssec_return_status: GETDNS_EXTENSION_TRUE\n");
 	}

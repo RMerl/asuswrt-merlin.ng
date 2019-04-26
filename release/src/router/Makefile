@@ -5727,7 +5727,7 @@ net-snmp-5.7.2-install:
 
 net-snmp-5.7.2-clean:
 	@[ ! -f net-snmp-5.7.2/Makefile ] || $(MAKE) -C net-snmp-5.7.2 clean
-	@rm -f net-snmp-5.7.2/stamp-h1
+	@rm -f net-snmp-5.7.2/Makefile net-snmp-5.7.2/stamp-h1
 
 asuswebstorage/stamp-h1:
 	touch $@

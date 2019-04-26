@@ -88,7 +88,7 @@ typedef struct {
 
 
 unsigned int get_phy_temperature(int radio);
-unsigned int get_wifi_clients(int radio, int querytype);
+unsigned int get_wifi_clients(int unit, int querytype);
 
 #ifdef RTCONFIG_QTN
 unsigned int get_qtn_temperature(void);
@@ -574,40 +574,18 @@ unsigned int get_phy_temperature(int radio)
 }
 
 
-unsigned int get_wifi_clients(int radio, int querytype)
+unsigned int get_wifi_clients(int unit, int querytype)
 {
-	char *name, ifname[]="wlXXXXXXXXXX";
+	char *name, prefix[8];
 	struct maclist *clientlist;
 	int max_sta_count, maclist_size;
-	int val, count = 0;
+	int val, count = 0, subunit;
 #ifdef RTCONFIG_QTN
 	qcsapi_unsigned_int association_count = 0;
 #endif
-
-	snprintf(ifname, sizeof(ifname), "wl%d_ifname", radio);
-	name = nvram_get(ifname);
-	if ((!name) || (!strlen(name))) return 0;
-
-#ifdef RTCONFIG_QTN
-	if (radio == 1) {
-
-		if (nvram_match("wl1_radio", "0"))
-			return -1;	// Best way I can find to check if it's disabled
-
-		if (!rpc_qtn_ready())
-			return -1;
-
-		if (querytype == SI_WL_QUERY_ASSOC) {
-			if (qcsapi_wifi_get_count_associations(name, &association_count) >= 0)
-				return association_count;
-		}
-		return -1;	// All other queries aren't supported by QTN
-	}
+#ifdef RTCONFIG_WIRELESSREPEATER
+	int isrepeater = 0;
 #endif
-
-	wl_ioctl(name, WLC_GET_RADIO, &val, sizeof(val));
-	if (val == 1)
-		return -1;	// Radio is disabled
 
 	/* buffers and length */
 	max_sta_count = 128;
@@ -617,25 +595,73 @@ unsigned int get_wifi_clients(int radio, int querytype)
 	if (!clientlist)
 		return 0;
 
-	if (querytype == SI_WL_QUERY_AUTHE) {
-		strcpy((char*)clientlist, "authe_sta_list");
-		if (wl_ioctl(name, WLC_GET_VAR, clientlist, maclist_size))
-			goto exit;
+	for (subunit = 0; subunit < 4; subunit++) {
+#ifdef RTCONFIG_WIRELESSREPEATER
+		if ((nvram_get_int("sw_mode") == SW_MODE_REPEATER) && (unit == nvram_get_int("wlc_band"))) {
+			if (subunit == 0)
+				continue;
+			else if (subunit == 1)
+				isrepeater = 1;
+			else
+				break;
+		}
+#endif
 
-	} else if (querytype == SI_WL_QUERY_AUTHO) {
-		strcpy((char*)clientlist, "autho_sta_list");
-		if (wl_ioctl(name, WLC_GET_VAR, clientlist, maclist_size))
-			goto exit;
+		if (subunit == 0)
+			snprintf(prefix, sizeof(prefix), "wl%d_", unit);
+		else
+			snprintf(prefix, sizeof(prefix), "wl%d.%d_", unit, subunit);
 
-	} else if (querytype == SI_WL_QUERY_ASSOC) {
-		clientlist->count = max_sta_count;
-		if (wl_ioctl(name, WLC_GET_ASSOCLIST, clientlist, maclist_size))
+		name = nvram_pf_safe_get(prefix, "ifname");
+		if (*name == '\0') continue;
+
+#ifdef RTCONFIG_QTN
+		if (unit == 1) {
+			if ((nvram_match("wl1_unit", "0")) || (!rpc_qtn_ready())
+				count = -1;
+			else if ((querytype == SI_WL_QUERY_ASSOC) &&
+				qcsapi_wifi_get_count_associations(name, &association_count) >= 0)
+					count = association_count;
+			else	// All other queries aren't support by QTN
+				count = -1;
+
 			goto exit;
-	} else {
-		goto exit;
+		}
+#endif
+
+		if (subunit == 0) {
+			wl_ioctl(name, WLC_GET_RADIO, &val, sizeof(val));
+			if (val == 1) {
+				count = -1;	// Radio is disabled
+				goto exit;
+			}
+		}
+
+		if ((subunit > 0) &&
+#ifdef RTCONFIG_WIRELESSREPEATER
+			!isrepeater &&
+#endif
+			!nvram_pf_get_int(prefix, "bss_enabled"))
+				continue;	// Guest interface disabled
+
+		switch (querytype) {
+			case SI_WL_QUERY_AUTHE:
+				strcpy((char*)clientlist, "authe_sta_list");
+				if (!wl_ioctl(name, WLC_GET_VAR, clientlist, maclist_size))
+					count += clientlist->count;
+				break;
+			case SI_WL_QUERY_AUTHO:
+				strcpy((char*)clientlist, "autho_sta_list");
+				if (!wl_ioctl(name, WLC_GET_VAR, clientlist, maclist_size))
+					count += clientlist->count;
+				break;
+			case SI_WL_QUERY_ASSOC:
+				clientlist->count = max_sta_count;
+				if (!wl_ioctl(name, WLC_GET_ASSOCLIST, clientlist, maclist_size))
+					count += clientlist->count;
+				break;
+		}
 	}
-
-	count = clientlist->count;
 
 exit:
 	free(clientlist);

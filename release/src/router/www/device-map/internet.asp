@@ -77,6 +77,9 @@ if(yadns_support){
 	var yadns_servers = [ <% yadns_servers(); %> ];
 }
 
+if(dnspriv_support)
+	var dnspriv_enable = '<% nvram_get("dnspriv_enable"); %>';
+
 var wan_enable_orig = (parent.document.form.dual_wan_flag.value == 0)? '<% nvram_get("wan0_enable"); %>':'<% nvram_get("wan1_enable"); %>';
 
 function add_lanport_number(if_name)
@@ -235,6 +238,22 @@ function initial(){
 			showtext2($("#yadns_DNS2")[0], yadns_servers[1], yadns_servers[1]);
 			document.getElementById('yadns_ctrl').style.display = "";
 		}
+	}
+
+	if(dnspriv_support){
+		if(dnspriv_enable != 0 )
+			showtext(document.getElementById("dnspriv_notice"), "(overriden by DNS Privacy)");
+
+		if (dnspriv_enable == 1)
+			var dnspriv_mode = "DNS-over-TLS";
+//		else if (dnspriv_enable == 2)
+//			var dnspriv_mode = "DNS-over-HTTPS";
+//		else if (dnspriv_enable == 3)
+//			var dnspriv_mode = "DNS-over-TLS/HTTPS";
+		else
+			var dnspriv_mode = "Disabled";
+
+		showtext(document.getElementById("dnspriv_mode"), dnspriv_mode);
 	}
 
 	if(parent.wans_flag){
@@ -908,9 +927,17 @@ function manualSetup(){
     </td>
 </tr>
 
+<tr id="dnspriv_enabled">
+    <td style="padding:5px 10px 5px 15px;">
+    		<p class="formfonttitle_nwm">DNS Privacy mode</p>
+    		<p class="tab_info_bg" style="padding-left:10px; margin-top:3px;line-height:20px;" id="dnspriv_mode"></p>
+        <div style="margin-top:5px;" class="line_horizontal"></div>
+    </td>
+</tr>
+
 <tr id="primary_DNS_ctrl">
     <td style="padding:5px 10px 5px 15px;">
-    		<p class="formfonttitle_nwm">DNS</p>
+    		<p class="formfonttitle_nwm">DNS <span id="dnspriv_notice" style="color:#FFCC00;"></span></p>
     		<p class="tab_info_bg" style="padding-left:10px; margin-top:3px;line-height:20px;" id="DNS1"></p>
     		<p class="tab_info_bg" style="padding-left:10px; margin-top:3px;line-height:20px;" id="DNS2"></p>
     		<p class="tab_info_bg" style="padding-left:10px; margin-top:3px;line-height:20px;" id="xDNS1"></p>

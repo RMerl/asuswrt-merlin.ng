@@ -1955,7 +1955,7 @@ void start_stubby(void)
 
 	append_custom_config("stubby", fp);
 	fclose(fp);
-	use_custom_config("stubby.yml", (char *)stubby_config);
+//	use_custom_config("stubby.yml", (char *)stubby_config);
 	run_postconf("stubby", (char *)stubby_config);
 	chmod(stubby_config, 0644);
 

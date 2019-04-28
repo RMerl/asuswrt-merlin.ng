@@ -1916,7 +1916,6 @@ void start_stubby(void)
 		"%s%s"
 		"tls_authentication: %s\n"
 		"tls_query_padding_blocksize: 128\n"
-		"tls_ca_file: \"/etc/ssl/certs/ca-certificates.crt\"\n"
 		"appdata_dir: \"/var/lib/misc\"\n"
 		"resolvconf: \"%s\"\n"
 		"edns_client_subnet_private: 1\n",
@@ -1999,9 +1998,9 @@ void start_stubby(void)
 	if (nv)
 		free(nv);
 
-	append_custom_config("stubby", fp);
+	append_custom_config("stubby.yml", fp);
 	fclose(fp);
-	use_custom_config("stubby.yml", (char *)stubby_config);
+//	use_custom_config("stubby.yml", (char *)stubby_config);
 	run_postconf("stubby", (char *)stubby_config);
 	chmod(stubby_config, 0644);
 

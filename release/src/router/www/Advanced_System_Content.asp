@@ -92,7 +92,8 @@ dstoffset = '<% nvram_get("time_zone_dstoff"); %>';
 var orig_shell_timeout_x = Math.floor(parseInt("<% nvram_get("shell_timeout"); %>")/60);
 var orig_enable_acc_restriction = '<% nvram_get("enable_acc_restriction"); %>';
 var orig_restrict_rulelist_array = [];
-var orig_ntpd_server_redir = '<% nvram_get("ntpd_server_redir"); %>';
+if(ntpd_support)
+	var orig_ntpd_server_redir = '<% nvram_get("ntpd_server_redir"); %>';
 var restrict_rulelist_array = [];
 var accounts = [<% get_all_accounts(); %>][0];
 for(var i=0; i<accounts.length; i++){
@@ -314,7 +315,12 @@ function initial(){
 			document.form.usb_idle_exclude_i.checked = true;
 	}
 
-	showhide("ntpd_redir_tr", '<% nvram_get("ntpd_enable"); %>');
+	if (ntpd_support)
+		showhide("ntpd_redir_tr", '<% nvram_get("ntpd_enable"); %>');
+	else {
+		showhide("ntpd_server_tr", 0);
+		showhide("ntpd_redir_tr", 0);
+	}
 }
 
 var time_zone_tmp="";
@@ -1752,7 +1758,7 @@ function warn_jffs_format(){
 					  <td colspan="2"><#t2BC#></td>
 					</tr>
 				</thead>
-				<tr>
+				<tr id="ntpd_server_tr">
 					<th>Enable local NTP server</th>
 					<td>
 						<input type="radio" name="ntpd_enable" value="1" onclick="showhide('ntpd_redir_tr', 1);" <% nvram_match_x("","ntpd_enable","1", "checked"); %> ><#checkbox_Yes#>

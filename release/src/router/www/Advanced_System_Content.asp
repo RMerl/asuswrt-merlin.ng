@@ -487,7 +487,7 @@ function applyRule(){
 
 		showLoading();
 
-		var action_script_tmp = "restart_time;restart_upnp;restart_leds;";
+		var action_script_tmp = "restart_time;restart_leds;";
 
 		if(hdspindown_support) {
 			var excluded = "";
@@ -529,6 +529,8 @@ function applyRule(){
 
 		if(restart_firewall_flag)
 			action_script_tmp += "restart_firewall;";
+		else
+			action_script_tmp += "restart_upnp;";	// Normally done by restart_firewall
 
 		if(pwrsave_support)
 			action_script_tmp += "pwrsave;";

@@ -60,7 +60,16 @@ var netoolApi = {
 }
 
 function hideCNT(obj){
-	return false;
+
+	if (obj.value == 6) {		// Netstat
+		document.getElementById("netstat_td").style.display="";
+		document.getElementById("netstat_nat_td").style.display="none";
+
+	} else if (obj.value == 7) {	// Netstat-nat
+                document.getElementById("netstat_td").style.display="none";
+                document.getElementById("netstat_nat_td").style.display="";
+	}
+	return true;
 }
 </script>
 </head>
@@ -73,6 +82,7 @@ function hideCNT(obj){
 <input type="hidden" name="next_page" value="Main_Netstat_Content.asp">
 <input type="hidden" name="preferred_lang" id="preferred_lang" value="<% nvram_get("preferred_lang"); %>">
 <input type="hidden" name="firmver" value="<% nvram_get("firmver"); %>">
+<input type="hidden" name="action_mode" value="">
 
 <table class="content" align="center" cellpadding="0" cellspacing="0">
 	<tr>
@@ -99,12 +109,13 @@ function hideCNT(obj){
 											<td>
 												<select id="cmdMethod" class="input_option" name="cmdMethod" onchange="hideCNT(this);">
 													<option value="6" selected>Netstat</option>
- 												</select>
+													<option value="7">Netstat-NAT</option>
+												</select>
 											</td>										
 										</tr>										
 										<tr>
 											<th width="20%"><#NetworkTools_option#></th>
-											<td>
+											<td id="netstat_td">
 												<input type="checkbox" class="options" value="00000001"><#sockets_listening#>
 												<br>
 												<input type="checkbox" class="options" value="00000010"><#sockets_all#>
@@ -120,7 +131,24 @@ function hideCNT(obj){
 												<input type="checkbox" class="options" value="10000000"><#Display_routingtable#>
 												<br>
 												<input type="checkbox" class="options" value="00000100"><#sockets_not_resolve_names#>
-											</td>			
+											</td>
+											<td id="netstat_nat_td" style="display:none;">
+												<input type="checkbox" class="options" value="00000010">Strip header
+												<br>
+												<input type="checkbox" class="options" value="00000100">Extend hostname
+												<br>
+												<input type="checkbox" class="options" value="00001000">Show SNAT
+												<br>
+												<input type="checkbox" class="options" value="00010000">Show DNAT
+												<br>
+												<input type="checkbox" class="options" value="00100000">Show only NAT to router itself
+												<br>
+												<input type="checkbox" class="options" value="01000000">Show only NAT to clients
+												<br>
+												<input type="checkbox" class="options" value="10000000">Show router NAT info
+												<br>
+												<input type="checkbox" class="options" value="00000001"><#sockets_not_resolve_names#>
+											</td>
 										</tr>
 									</table>
 

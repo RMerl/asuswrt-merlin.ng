@@ -82,6 +82,7 @@ function hideCNT(obj){
 <input type="hidden" name="next_page" value="Main_Netstat_Content.asp">
 <input type="hidden" name="preferred_lang" id="preferred_lang" value="<% nvram_get("preferred_lang"); %>">
 <input type="hidden" name="firmver" value="<% nvram_get("firmver"); %>">
+<input type="hidden" name="action_mode" value="">
 
 <table class="content" align="center" cellpadding="0" cellspacing="0">
 	<tr>

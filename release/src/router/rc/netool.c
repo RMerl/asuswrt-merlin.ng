@@ -36,7 +36,7 @@
 	dbg("[Netool][%s:(%d)]"fmt, __FUNCTION__, __LINE__, ##args);
 
 #ifdef RTCONFIG_TRACEROUTE
-#define TRACEROUTE    "usr/sbin/traceroute"
+#define TRACEROUTE    "/usr/sbin/traceroute"
 #else
 #define TRACEROUTE    "traceroute"
 #endif

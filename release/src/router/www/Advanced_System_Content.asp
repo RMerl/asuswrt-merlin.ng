@@ -92,6 +92,8 @@ dstoffset = '<% nvram_get("time_zone_dstoff"); %>';
 var orig_shell_timeout_x = Math.floor(parseInt("<% nvram_get("shell_timeout"); %>")/60);
 var orig_enable_acc_restriction = '<% nvram_get("enable_acc_restriction"); %>';
 var orig_restrict_rulelist_array = [];
+if(ntpd_support)
+	var orig_ntpd_server_redir = '<% nvram_get("ntpd_server_redir"); %>';
 var restrict_rulelist_array = [];
 var accounts = [<% get_all_accounts(); %>][0];
 for(var i=0; i<accounts.length; i++){
@@ -312,6 +314,13 @@ function initial(){
 		if (document.form.usb_idle_exclude.value.indexOf("i") != -1)
 			document.form.usb_idle_exclude_i.checked = true;
 	}
+
+	if (ntpd_support)
+		showhide("ntpd_redir_tr", '<% nvram_get("ntpd_enable"); %>');
+	else {
+		showhide("ntpd_server_tr", 0);
+		showhide("ntpd_redir_tr", 0);
+	}
 }
 
 var time_zone_tmp="";
@@ -378,7 +387,8 @@ function applyRule(){
 			return false;
 		}
 
-		if((document.form.enable_acc_restriction.value != orig_enable_acc_restriction) || (restrict_rulelist_array.toString() != orig_restrict_rulelist_array.toString()))
+		if((document.form.enable_acc_restriction.value != orig_enable_acc_restriction) || (restrict_rulelist_array.toString() != orig_restrict_rulelist_array.toString())
+			|| (document.form.ntpd_server_redir.value != orig_ntpd_server_redir) )
 			restart_firewall_flag = true;
 
 		if(document.form.http_passwd2.value.length > 0){
@@ -487,7 +497,7 @@ function applyRule(){
 
 		showLoading();
 
-		var action_script_tmp = "restart_time;restart_upnp;restart_leds;";
+		var action_script_tmp = "restart_time;restart_leds;";
 
 		if(hdspindown_support) {
 			var excluded = "";
@@ -529,6 +539,8 @@ function applyRule(){
 
 		if(restart_firewall_flag)
 			action_script_tmp += "restart_firewall;";
+		else
+			action_script_tmp += "restart_upnp;";	// Normally done by restart_firewall
 
 		if(needReboot){
 			action_script_tmp = "reboot";
@@ -1855,13 +1867,19 @@ function pullPingTargetList(obj){
 					  <td colspan="2"><#t2BC#></td>
 					</tr>
 				</thead>
-				<tr>
+				<tr id="ntpd_server_tr">
 					<th>Enable local NTP server</th>
 					<td>
-						<input type="radio" name="ntpd_enable" value="1" <% nvram_match_x("","ntpd_enable","1", "checked"); %> ><#checkbox_Yes#>
-						<input type="radio" name="ntpd_enable" value="0" <% nvram_match_x("","ntpd_enable","0", "checked"); %> ><#checkbox_No#>
+						<input type="radio" name="ntpd_enable" value="1" onclick="showhide('ntpd_redir_tr', 1);" <% nvram_match_x("","ntpd_enable","1", "checked"); %> ><#checkbox_Yes#>
+						<input type="radio" name="ntpd_enable" value="0" onclick="showhide('ntpd_redir_tr', 0);" <% nvram_match_x("","ntpd_enable","0", "checked"); %> ><#checkbox_No#>
 					</td>
 				</tr>
+				<tr id="ntpd_redir_tr">
+					<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(50,29)">Intercept NTP client requests</a></th>
+					<td>
+						<input type="radio" name="ntpd_server_redir" value="1" <% nvram_match_x("","ntpd_server_redir","1", "checked"); %> ><#checkbox_Yes#>
+						<input type="radio" name="ntpd_server_redir" value="0" <% nvram_match_x("","ntpd_server_redir","0", "checked"); %> ><#checkbox_No#>
+					</td>
 				<tr>
 					<th><a class="hintstyle"  href="javascript:void(0);" onClick="openHint(11,2)"><#LANHostConfig_x_TimeZone_itemname#></a></th>
 					<td>

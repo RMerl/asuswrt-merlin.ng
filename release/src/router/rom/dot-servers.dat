@@ -4,18 +4,18 @@
 # Empty lines are ignored
 
 IPv4
-Adguard 1,176.103.130.130,,dns.adguard.com,
-Adguard 2,176.103.130.131,,dns.adguard.com,
-Adguard Family Protect 1,176.103.130.132,,dns-family.adguard.com,
-Adguard Family Protect 2,176.103.130.134,,dns-family.adguard.com,
+CleanBrowsing 1 (security),185.228.168.9,,security-filter-dns.cleanbrowsing.org,
+CleanBrowsing 2 (security),185.228.169.9,,security-filter-dns.cleanbrowsing.org,
+CleanBrowsing 1 (family),185.228.168.168,,family-filter-dns.cleanbrowsing.org,
+CleanBrowsing 2 (family),185.228.168.168,,family-filter-dns.cleanbrowsing.org,
+CleanBrowsing 1 (adult filter),185.228.168.10,,adult-filter-dns.cleanbrowsing.org,
+CleanBrowsing 2 (adult filter),185.228.169.10,,adult-filter-dns.cleanbrowsing.org,
 Cloudflare 1.1.1.1,1.1.1.1,,cloudflare-dns.com,
 Cloudflare 1.0.0.1,1.0.0.1,,cloudflare-dns.com,
 Google 8.8.8.8,8.8.8.8,,dns.google,
 Google 8.8.4.4,8.8.4.4,,dns.google,
 Quad9 (secure),9.9.9.9,,dns.quad9.net,
 Quad9 (insecure),9.9.9.10,,dns.quad9.net,
-Surfnet/Sinodun 1,145.100.185.15,,dnsovertls.sinodun.com,62lKu9HsDVbyiPenApnc4sfmSYTHOVfFgL3pyB+cBL4=
-Surfnet/Sinodun 2,145.100.185.16,,dnsovertls1.sinodun.com,cE2ecALeE5B+urJhDrJlVFmf38cJLAvqekONvjvpqUA=
 
 IPv4 (port 443)
 Neutopia,89.234.186.112,443,dns.neutopia.org,wTeXHM8aczvhRSi0cv2qOXkXInoDU+2C+M8MpRyT3OI=
@@ -23,14 +23,18 @@ Surfnet/Sinodun 1,145.100.185.15,443,dnsovertls.sinodun.com,62lKu9HsDVbyiPenApnc
 Surfnet/Sinodun 2,145.100.185.16,443,dnsovertls1.sinodun.com,cE2ecALeE5B+urJhDrJlVFmf38cJLAvqekONvjvpqUA=
 
 IPv6
-Adguard 1,2a00:5a60::ad1:0ff,,dns.adguard.com,
-Adguard 2,2a00:5a60::ad2:0ff,,dns.adguard.com,
-Adguard Family Protect 1,2a00:5a60::bad1:0ff,,dns-family.adguard.com,
-Adguard Family Protect 2,2a00:5a60::bad2:0ff,,dns-family.adguard.com,
+CleanBrowsing 1 (security),2a0d:2a00:1::2,,security-filter-dns.cleanbrowsing.org,
+CleanBrowsing 2 (security),2a0d:2a00:2::2,,security-filter-dns.cleanbrowsing.org,
+CleanBrowsing 1 (family),2a0d:2a00:1::,,family-filter-dns.cleanbrowsing.org,
+CleanBrowsing 2 (family),2a0d:2a00:2::,,family-filter-dns.cleanbrowsing.org,
+CleanBrowsing 1 (adult filter),2a0d:2a00:1::1,,adult-filter-dns.cleanbrowsing.org,
+CleanBrowsing 2 (adult filter),2a0d:2a00:2::1,,adult-filter-dns.cleanbrowsing.org,
 Cloudflare :1111,2606:4700:4700::1111,,cloudflare-dns.com,
 Cloudflare :1001,2606:4700:4700::1001,,cloudflare-dns.com,
-Surfnet/Sinodun 1,2001:610:1:40ba:145:100:185:15,,dnsovertls.sinodun.com,62lKu9HsDVbyiPenApnc4sfmSYTHOVfFgL3pyB+cBL4=
-Surfnet/Sinodun 2,2001:610:1:40ba:145:100:185:16,,dnsovertls1.sinodun.com,cE2ecALeE5B+urJhDrJlVFmf38cJLAvqekONvjvpqUA=
+Google :8888,2001:4860:4860::8888,,dns.google,
+Google :8844,2001:4860:4860::8844,,dns.google,
+Quad9 (secure),2620:fe::fe,,dns.quad9.net,
+Quad9 (insecure),2620:fe::10,,dns.quad9.net,
 
 IPv6 (port 443)
 Neutopia,2a00:5884:8209::2,443,dns.neutopia.org,wTeXHM8aczvhRSi0cv2qOXkXInoDU+2C+M8MpRyT3OI=

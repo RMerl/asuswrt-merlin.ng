@@ -12647,7 +12647,7 @@ check_ddr_done:
 			start_sshd();
 #endif
 			//start_httpd();
-			start_firewall(wan_primary_ifunit(), 0);
+//			start_firewall(wan_primary_ifunit(), 0);
 			start_hour_monitor_service();
 		}
 	}

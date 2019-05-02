@@ -2141,6 +2141,8 @@ int update_resolvconf(void)
 #endif
 #ifdef RTCONFIG_DNSPRIVACY
 	if (dnspriv_enable) {
+		if (!nvram_get_int("dns_local"))
+			fprintf(fp, "nameserver %s\n", "127.0.1.1");
 		fprintf(fp_servers, "server=%s\n", "127.0.1.1");
 	} else
 #endif

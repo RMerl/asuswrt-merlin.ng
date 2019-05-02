@@ -202,6 +202,7 @@ function display_clients(clientsarray, obj) {
 function display_header(dataarray, title, obj, show_dfs) {
 	var code;
 	var channel, i;
+	var time, formatted_time;
 
 	code = '<table width="100%" style="border: none;">';
 	code += '<thead><tr><span class="wifiheader" style="font-size: 125%;">' + title +'</span></tr></thead>';
@@ -218,9 +219,11 @@ function display_header(dataarray, title, obj, show_dfs) {
 	code += '<td><span class="wifiheader">Channel: </span>'+ dataarray[4] + '</td> <td><span class="wifiheader">BSSID: </span>' + dataarray[5] +'</td></tr>';
 
 	if (show_dfs && dfs_statusarray.length > 1) {
-                code += '<tr><td colspan="2"><span class="wifiheader">DFS State: </span>' + dfs_statusarray[0] + '</td>';
-                code += '<td><span class="wifiheader">Time elapsed: </span>' + dfs_statusarray[1] + '</td>';
-                code += '<td><span class="wifiheader">Channel cleared for radar: </span>' + dfs_statusarray[2] + '</td></tr>';
+		code += '<tr><td colspan="2"><span class="wifiheader">DFS State: </span>' + dfs_statusarray[0] + '</td>';
+		time = parseInt(dfs_statusarray[1]);
+		formatted_time = Math.floor(time / 3600) + "h " + Math.floor(time / 60) % 60 + "m " + time % 60 + "s";
+		code += '<td><span class="wifiheader">Time elapsed: </span>' + formatted_time + '</td>';
+		code += '<td><span class="wifiheader">Channel cleared for radar: </span>' + dfs_statusarray[2] + '</td></tr>';
 	}
 
 	code += '</table>';

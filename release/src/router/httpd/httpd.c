@@ -903,7 +903,7 @@ handle_request(void)
 				alang = &cur[16];
 				strncpy(lang_buf, alang, sizeof(lang_buf)-1);
 				p = lang_buf;
-				while (p != NULL)
+				while (p != NULL && (p - lang_buf) < sizeof(lang_buf))
 				{
 					p = strtok (p, "\r\n ,;");
 					if (p == NULL)  break;

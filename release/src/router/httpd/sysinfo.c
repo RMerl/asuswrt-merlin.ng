@@ -154,7 +154,7 @@ int ej_show_sysinfo(int eid, webs_t wp, int argc, char_t ** argv)
 					    && !strcmp(variant, "0x0")
 					    && !strcmp(part, "0x100")
 					    && !strcmp(arch, "8"))
-						strcpy(model, "Cortex B53 ARMv8");
+						strcpy(model, "Cortex A53 ARMv8");
 					else
 						sprintf(model, "Implementer: %s, Part: %s, Variant: %s, Arch: %s",impl, part, variant, arch);
 				}

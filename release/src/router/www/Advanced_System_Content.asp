@@ -92,7 +92,7 @@ dstoffset = '<% nvram_get("time_zone_dstoff"); %>';
 var orig_shell_timeout_x = Math.floor(parseInt("<% nvram_get("shell_timeout"); %>")/60);
 var orig_enable_acc_restriction = '<% nvram_get("enable_acc_restriction"); %>';
 var orig_restrict_rulelist_array = [];
-if(ntpd_support)
+if((ntpd_support) && (isSwMode('rt')))
 	var orig_ntpd_server_redir = '<% nvram_get("ntpd_server_redir"); %>';
 var restrict_rulelist_array = [];
 var accounts = [<% get_all_accounts(); %>][0];
@@ -315,7 +315,7 @@ function initial(){
 			document.form.usb_idle_exclude_i.checked = true;
 	}
 
-	if (ntpd_support)
+	if ( (ntpd_support) && (isSwMode('rt')) )
 		showhide("ntpd_redir_tr", '<% nvram_get("ntpd_enable"); %>');
 	else {
 		showhide("ntpd_server_tr", 0);

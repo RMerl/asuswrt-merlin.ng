@@ -387,8 +387,8 @@ function applyRule(){
 			return false;
 		}
 
-		if((document.form.enable_acc_restriction.value != orig_enable_acc_restriction) || (restrict_rulelist_array.toString() != orig_restrict_rulelist_array.toString())
-			|| (document.form.ntpd_server_redir.value != orig_ntpd_server_redir) )
+//		if((document.form.enable_acc_restriction.value != orig_enable_acc_restriction) || (restrict_rulelist_array.toString() != orig_restrict_rulelist_array.toString())
+//			|| (document.form.ntpd_server_redir.value != orig_ntpd_server_redir) )
 			restart_firewall_flag = true;
 
 		if(document.form.http_passwd2.value.length > 0){

@@ -13360,6 +13360,9 @@ _dprintf("test 2. turn off the USB power during %d seconds.\n", reset_seconds[re
 	}
 
 skip:
+
+	run_custom_script("service-event-end", 0, actionstr, script);
+
 	if(nvptr){
 _dprintf("goto again(%d)...\n", getpid());
 		goto again;
@@ -13376,8 +13379,6 @@ _dprintf("goto again(%d)...\n", getpid());
 		unsetenv("unit");
 	}
 #endif
-
-	run_custom_script("service-event-end", 0, actionstr, script);
 
 	nvram_set("rc_service", "");
 	nvram_set("rc_service_pid", "");

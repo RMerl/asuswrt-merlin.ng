@@ -6,7 +6,7 @@ resolvfile=$filebase\.resolv
 dnsscript=$(echo /etc/openvpn/fw/$(echo $dev)-dns\.sh | sed 's/\(tun\|tap\)1/client/;s/\(tun\|tap\)2/server/')
 qosscript=$(echo /etc/openvpn/fw/$(echo $dev)-qos\.sh | sed 's/\(tun\|tap\)1/client/;s/\(tun\|tap\)2/server/')
 fileexists=
-instance=$(echo $dev | sed "s/tun1//;s/tun2*/0/")
+instance=$(echo $dev | sed "s/tun1//;s/tun2//")
 serverips=
 searchdomains=
 

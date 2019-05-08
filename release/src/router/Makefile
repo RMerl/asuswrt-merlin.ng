@@ -4307,7 +4307,9 @@ sqlite-clean:
 sqlite-install: sqlite
 	@$(SEP)
 	install -D sqlite/.libs/libsqlite3.so.0 $(INSTALLDIR)/sqlite/usr/lib/libsqlite3.so.0
+	install -D sqlite/.libs/sqlite3 $(INSTALLDIR)/sqlite/usr/sbin/sqlite3
 	$(STRIP) $(INSTALLDIR)/sqlite/usr/lib/libsqlite3.so.0
+	$(STRIP) $(INSTALLDIR)/sqlite/usr/sbin/sqlite3
 
 # sqlite encrpted version
 sqlCipher/stamp-h1:

@@ -1036,14 +1036,11 @@ void start_ovpn_server(int serverNum)
 			fprintf(fp, "secret static.key\n");
 	}
 
-	if (check_if_file_exist("/jffs/scripts/openvpn-event"))
-	{
-		sprintf(buffer, "/etc/openvpn/server%d/updown.sh", serverNum);
-		symlink("/jffs/scripts/openvpn-event", buffer);
-		fprintf(fp, "script-security 2\n");
-		fprintf(fp, "up updown.sh\n");
-		fprintf(fp, "down updown.sh\n");
-	}
+	sprintf(buffer, "/etc/openvpn/server%d/updown.sh", serverNum);
+	symlink("/usr/sbin/updown-server.sh", buffer);
+	fprintf(fp, "script-security 2\n");
+	fprintf(fp, "up updown.sh\n");
+	fprintf(fp, "down updown.sh\n");
 
 	fprintf(fp, "status-version 2\n");
 	fprintf(fp, "status status 5\n");

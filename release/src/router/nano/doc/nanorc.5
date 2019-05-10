@@ -16,28 +16,27 @@
 .\"   Documentation License along with this program.  If not, see
 .\"   <https://www.gnu.org/licenses/>.
 .\"
-.TH NANORC 5 "version 4.0" "March 2019"
+.TH NANORC 5 "version 4.2" "April 2019"
 
 .SH NAME
 nanorc \- GNU nano's configuration file
 
-.SH NOTE
+.SH NOTICE
 Starting with version 4.0, \fBnano\fR no longer hard-wraps an overlong
-line by default, and no longer automatically adds a newline at the end
-of the text if one is missing.  Furthermore, it uses smooth scrolling
-by default and makes use of the line below the title bar.
+line by default, uses smooth scrolling by default, and by default makes
+use of the line below the title bar.
 .sp
 If you want the old, Pico behavior back, you can use \fBset breaklonglines\fR,
-\fBset finalnewline\fR, \fBset jumpyscrolling\fR, and \fBset emptyline\fR.
+\fBset jumpyscrolling\fR, and \fBset emptyline\fR.
 
 .SH DESCRIPTION
 The \fInanorc\fP file contains the default settings for \fBnano\fP, a
 small and friendly editor.  The file should be in Unix format, not in
 DOS or Mac format.  During startup, \fBnano\fP will first read the
-system-wide settings, from \fB/etc/nanorc\fP (the exact path might be
+system-wide settings, from \fI/etc/nanorc\fP (the exact path might be
 different on your system), and then the user-specific settings, either
-from \fB~/.nanorc\fR or from \fI$XDG_CONFIG_HOME\fB/nano/nanorc\fR
-or from \fB~/.config/nano/nanorc\fR, whichever is encountered first.
+from \fI~/.nanorc\fR or from \fI$XDG_CONFIG_HOME/nano/nanorc\fR
+or from \fI~/.config/nano/nanorc\fR, whichever is encountered first.
 
 .SH OPTIONS
 The configuration file accepts a series of \fBset\fP and \fBunset\fP
@@ -45,20 +44,20 @@ commands, which can be used to configure nano on startup without using
 command-line options.  Additionally, there are some commands to define
 syntax highlighting and to rebind keys -- see the two separate sections
 on those.  \fBnano\fP reads one command per line.
-.PP
+.sp
 Options in \fInanorc\fP files take precedence over nano's defaults, and
 command-line options override \fInanorc\fP settings.  Also, options that
 do not take an argument are unset by default.  So using the \fBunset\fR
 command is only needed when wanting to override a setting of the system's
 \fInanorc\fR file in your own \fInanorc\fR.  Options that take an
 argument cannot be unset.
-.PP
+.sp
 Below, the \fIstring\fR parameters need to be enclosed in double quotes.
 Quotes inside these string parameters don't have to be escaped with
 backslashes.  The last double quote in the string will be treated as its
 end.  For example, for the \fBbrackets\fP option, "\fB"')>]}\fP" will
 match \fB"\fP, \fB'\fP, \fB)\fP, \fB>\fP, \fB]\fP, and \fB}\fP.
-.PP
+.sp
 The supported commands and arguments are:
 
 .TP 3
@@ -121,9 +120,6 @@ Do not use the line below the title bar, leaving it entirely blank.
 Use this color combination for the status bar when an error message is displayed.
 See \fBset titlecolor\fR for valid color names.
 .TP
-.B set finalnewline
-If the buffer is not empty, ensure that it ends with a newline character.
-.TP
 .B set fill \fInumber\fR
 Set the target width for justifying and automatic hard-wrapping at this
 \fInumber\fR of columns.  If the value is 0 or less, wrapping will occur
@@ -135,6 +131,10 @@ The default value is \-8.
 Specify the color combination to use for the function descriptions
 in the two help lines at the bottom of the screen.
 See \fBset titlecolor\fR for more details.
+.TP
+.B set guidestripe \fInumber
+Draw a vertical stripe at the given column, to help judge the width of the
+text.  (The color of the stripe can be changed with \fBset stripecolor\fR.)
 .TP
 .B set historylog
 Save the last hundred search strings and replacement strings and
@@ -153,10 +153,6 @@ Display line numbers to the left of the text area.
 .TP
 .B set locking
 Enable vim-style lock-files for when editing files.
-.TP
-.B set guidestripe \fInumber
-Draw a vertical stripe at the given column, to help judge the width of the
-text.  (The color of the stripe can be changed with \fBset stripecolor\fR.)
 .TP
 .B set matchbrackets "\fIstring\fP"
 Set the opening and closing brackets that can be found by bracket
@@ -185,8 +181,7 @@ Don't convert files from DOS/Mac format.
 Don't display the two help lines at the bottom of the screen.
 .TP
 .B set nonewlines
-Deprecated option since it has become the default setting.
-When needed, use \fBunset finalnewline\fR instead.
+Don't automatically add a newline when a file does not end with one.
 .TP
 .B set nopauses
 Don't pause between warnings at startup.  This means that only
@@ -434,14 +429,14 @@ a more general mechanism: the filtering of buffer or marked text through
 an external command.  Such filtering is done by typing \fB^R^X\fR and then
 preceding your formatter command with the pipe symbol (\fB|\fR).  It has
 the added advantage that the operation can be undone.
-.PP
+.sp
 If you use such a formatting command regularly, you could assign the relevant
 series of keystrokes to a single key in your nanorc:
-.PP
+.sp
 .RS
 .B "bind  M\-F  \(dq^R^X|yourformatcommand^M\(dq  main"
 .RE
-.PP
+.sp
 (Note that the \fB^R\fR, \fB^X\fR, and \fB^M\fR are each a single, literal
 control character.  You can enter them by preceding each with \fBM\-V\fR.)
 
@@ -776,9 +771,6 @@ Toggles the presence of the two-line list of key bindings at the bottom of the s
 .B constantshow
 Toggles the constant display of the current line, column, and character positions.
 .TP
-.B smoothscroll
-Toggles smooth scrolling (when moving around with the arrow keys).
-.TP
 .B softwrap
 Toggles the displaying of overlong lines on multiple screen lines.
 .TP
@@ -873,16 +865,11 @@ for \fBunbind\fR it means all menus where the specified \fIkey\fR exists.
 
 .SH FILES
 .TP
-.B /etc/nanorc
+.I /etc/nanorc
 System-wide configuration file.
 .TP
-.BR ~/.nanorc " or " \fI$XDG_CONFIG_HOME\fB/nano/nanorc " or " ~/.config/nano/nanorc
+.IR ~/.nanorc " or " $XDG_CONFIG_HOME/nano/nanorc " or " ~/.config/nano/nanorc
 Per-user configuration file.
 
 .SH SEE ALSO
 .BR nano (1)
-
-.SH AUTHOR
-Chris Allegretta and others (see the files \fIAUTHORS\fP and
-\fITHANKS\fP for details).  This manual page was originally written by
-Jordi Mallach for the Debian system (but may be used by others).

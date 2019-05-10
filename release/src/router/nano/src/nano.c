@@ -131,6 +131,11 @@ void unlink_node(linestruct *fileptr)
 /* Free the data structures in the given node. */
 void delete_node(linestruct *fileptr)
 {
+#ifdef ENABLE_WRAPPING
+	/* If the spill-over line for hard-wrapping is deleted... */
+	if (fileptr == openfile->spillage_line)
+		openfile->spillage_line = NULL;
+#endif
 	free(fileptr->data);
 #ifdef ENABLE_COLOR
 	free(fileptr->multidata);
@@ -178,16 +183,7 @@ void free_lines(linestruct *src)
 /* Renumber the lines in a buffer, starting with the given line. */
 void renumber(linestruct *line)
 {
-	ssize_t number;
-
-	if (line == NULL) {
-#ifndef NANO_TINY
-		statusline(ALERT, "Trying to renumber nothing -- please report a bug");
-#endif
-		return;
-	}
-
-	number = (line->prev == NULL) ? 0 : line->prev->lineno;
+	ssize_t number = (line->prev == NULL) ? 0 : line->prev->lineno;
 
 	while (line != NULL) {
 		line->lineno = ++number;
@@ -389,7 +385,7 @@ void extract_buffer(linestruct **file_top, linestruct **file_bot,
 	renumber(top_save);
 
 	/* If the text doesn't end with a newline, and it should, add one. */
-	if (ISSET(FINAL_NEWLINE) && openfile->filebot->data[0] != '\0')
+	if (!ISSET(NO_NEWLINES) && openfile->filebot->data[0] != '\0')
 		new_magicline();
 }
 
@@ -486,7 +482,7 @@ void ingraft_buffer(linestruct *somebuffer)
 	renumber(top_save);
 
 	/* If the text doesn't end with a newline, and it should, add one. */
-	if (ISSET(FINAL_NEWLINE) && openfile->filebot->data[0] != '\0')
+	if (!ISSET(NO_NEWLINES) && openfile->filebot->data[0] != '\0')
 		new_magicline();
 }
 
@@ -502,13 +498,12 @@ void copy_from_buffer(linestruct *somebuffer)
 /* Unlink a node from the rest of the circular list, and delete it. */
 void unlink_opennode(openfilestruct *fileptr)
 {
-#ifdef ENABLE_MULTIBUFFER
-	if (fileptr == firstfile)
-		firstfile = firstfile->next;
+	if (fileptr == startfile)
+		startfile = startfile->next;
 
 	fileptr->prev->next = fileptr->next;
 	fileptr->next->prev = fileptr->prev;
-#endif
+
 	delete_opennode(fileptr);
 }
 
@@ -525,7 +520,7 @@ void delete_opennode(openfilestruct *fileptr)
 #endif
 	free(fileptr);
 }
-#endif
+#endif /* ENABLE_MULTIBUFFER */
 
 /* Display a warning about a key disabled in view mode. */
 void print_view_warning(void)
@@ -746,13 +741,13 @@ void mouse_init(void)
 void print_opt(const char *shortflag, const char *longflag, const char *desc)
 {
 	printf(" %s\t", shortflag);
-	if (strlenpt(shortflag) < 8)
+	if (breadth(shortflag) < 8)
 		printf("\t");
 
 	printf("%s\t", longflag);
-	if (strlenpt(longflag) < 8)
+	if (breadth(longflag) < 8)
 		printf("\t\t");
-	else if (strlenpt(longflag) < 16)
+	else if (breadth(longflag) < 16)
 		printf("\t");
 
 	printf("%s\n", _(desc));
@@ -806,7 +801,7 @@ void usage(void)
 					N_("Fix numeric keypad key confusion problem"));
 #ifndef NANO_TINY
 	print_opt("-L", "--nonewlines",
-					N_("Don't add an automatic newline [default]"));
+					N_("Don't add an automatic newline"));
 #endif
 #ifdef ENABLED_WRAPORJUSTIFY
 	print_opt("-M", "--trimblanks",
@@ -853,7 +848,6 @@ void usage(void)
 	print_opt("-d", "--rebinddelete",
 					N_("Fix Backspace/Delete confusion problem"));
 	print_opt("-e", "--emptyline", N_("Keep the line below the title bar empty"));
-	print_opt("-f", "--finalnewline", N_("Ensure that text ends with a newline"));
 #ifdef ENABLE_BROWSER
 	if (!ISSET(RESTRICTED))
 		print_opt("-g", "--showcursor", N_("Show cursor in file browser & help text"));
@@ -1064,8 +1058,7 @@ void do_exit(void)
 		if (ISSET(TEMP_FILE))
 			warn_and_shortly_pause(_("No file name"));
 
-		choice = do_yesno_prompt(FALSE, _("Save modified buffer?  "
-						"(Answering \"No\" will DISCARD changes.) "));
+		choice = do_yesno_prompt(FALSE, _("Save modified buffer? "));
 	}
 
 	/* If the user chose not to save, or if the user chose to save and
@@ -1299,6 +1292,23 @@ RETSIGTYPE do_continue(int signal)
 	/* Tickle the input routine so it will update the screen. */
 	ungetch(KEY_FLUSH);
 }
+
+#if !defined(NANO_TINY) || defined(ENABLE_SPELLER)
+/* Block or unblock the SIGWINCH signal, depending on the blockit parameter. */
+void block_sigwinch(bool blockit)
+{
+	sigset_t winch;
+
+	sigemptyset(&winch);
+	sigaddset(&winch, SIGWINCH);
+	sigprocmask(blockit ? SIG_BLOCK : SIG_UNBLOCK, &winch, NULL);
+
+#ifndef NANO_TINY
+	if (the_window_resized)
+		regenerate_screen();
+#endif
+}
+#endif
 
 #ifndef NANO_TINY
 /* Handler for SIGWINCH (window size change). */
@@ -1649,9 +1659,9 @@ bool wanted_to_move(void (*func)(void))
 }
 
 /* Return TRUE when the given shortcut is admissible in view mode. */
-bool okay_for_view(const sc *shortcut)
+bool okay_for_view(const keystruct *shortcut)
 {
-	const subnfunc *func = sctofunc(shortcut);
+	const funcstruct *func = sctofunc(shortcut);
 
 	return (func == NULL || func->viewok);
 }
@@ -1668,7 +1678,7 @@ void do_input(void)
 		/* The length of the input buffer. */
 	bool retain_cuts = FALSE;
 		/* Whether to conserve the current contents of the cutbuffer. */
-	const sc *shortcut;
+	const keystruct *shortcut;
 
 	/* Read in a keystroke, and show the cursor while waiting. */
 	input = get_kbinput(edit, VISIBLE);
@@ -1775,9 +1785,6 @@ void do_input(void)
 		} else
 #endif
 		{
-#ifdef ENABLE_WRAPPING
-			linestruct *was_next = openfile->current->next;
-#endif
 #ifndef NANO_TINY
 			linestruct *was_current = openfile->current;
 			size_t was_x = openfile->current_x;
@@ -1806,14 +1813,6 @@ void do_input(void)
 				} else if (openfile->current != was_current)
 					also_the_last = FALSE;
 			}
-#endif
-#ifdef ENABLE_WRAPPING
-			/* If the cursor moved to another line and this was not caused
-			 * by adding characters to the buffer, clear the prepend flag. */
-			if (openfile->current->next != was_next &&
-							shortcut->func != do_tab &&
-							shortcut->func != do_verbatim_input)
-				wrap_reset();
 #endif
 #ifdef ENABLE_COLOR
 			if (!refresh_needed && !okay_for_view(shortcut))
@@ -1906,7 +1905,7 @@ void do_output(char *output, size_t output_len, bool allow_cntrls)
 #endif
 
 		/* If we've added text to the magic line, create a new magic line. */
-		if (openfile->filebot == openfile->current && ISSET(FINAL_NEWLINE)) {
+		if (openfile->filebot == openfile->current && !ISSET(NO_NEWLINES)) {
 			new_magicline();
 			if (margin > 0)
 				refresh_needed = TRUE;
@@ -1914,7 +1913,7 @@ void do_output(char *output, size_t output_len, bool allow_cntrls)
 
 #ifdef ENABLE_WRAPPING
 		/* If text gets wrapped, the edit window needs a refresh. */
-		if (ISSET(BREAK_LONG_LINES) && do_wrap(openfile->current))
+		if (ISSET(BREAK_LONG_LINES) && do_wrap())
 			refresh_needed = TRUE;
 #endif
 	}
@@ -1953,6 +1952,8 @@ int main(int argc, char **argv)
 	bool fill_used = FALSE;
 		/* Was the fill option used on the command line? */
 #endif
+	int hardwrap = -2;
+		/* Becomes 0 when --nowrap and 1 when --breaklonglines is used. */
 #ifdef ENABLE_JUSTIFY
 	int quoterc;
 		/* Whether the quoting regex was compiled successfully. */
@@ -1985,7 +1986,6 @@ int main(int argc, char **argv)
 		{"constantshow", 0, NULL, 'c'},
 		{"rebinddelete", 0, NULL, 'd'},
 		{"emptyline", 0, NULL, 'e'},
-		{"finalnewline", 0, NULL, 'f'},
 #ifdef ENABLE_BROWSER
 		{"showcursor", 0, NULL, 'g'},
 #endif
@@ -2083,7 +2083,6 @@ int main(int argc, char **argv)
 
 	/* Set sensible defaults, different from what Pico does. */
 	SET(NO_WRAP);
-	SET(NO_NEWLINES);
 	SET(SMOOTH_SCROLL);
 
 	/* Give a small visual hint that nano has changed. */
@@ -2095,7 +2094,7 @@ int main(int argc, char **argv)
 
 	while ((optchr =
 		getopt_long(argc, argv,
-				"ABC:DEFGHIJ:KLMNOPQ:RST:UVWX:Y:Zabcdefghijklmno:pr:s:tuvwxyz$",
+				"ABC:DEFGHIJ:KLMNOPQ:RST:UVWX:Y:Zabcdeghijklmno:pr:s:tuvwxyz$",
 				long_options, NULL)) != -1) {
 		switch (optchr) {
 #ifndef NANO_TINY
@@ -2151,7 +2150,7 @@ int main(int argc, char **argv)
 				break;
 #ifndef NANO_TINY
 			case 'L':
-				UNSET(FINAL_NEWLINE);
+				SET(NO_NEWLINES);
 				break;
 #endif
 #ifdef ENABLED_WRAPORJUSTIFY
@@ -2223,7 +2222,7 @@ int main(int argc, char **argv)
 #endif
 #ifdef ENABLE_WRAPPING
 			case 'b':
-				SET(BREAK_LONG_LINES);
+				hardwrap = 1;
 				break;
 #endif
 			case 'c':
@@ -2234,9 +2233,6 @@ int main(int argc, char **argv)
 				break;
 			case 'e':
 				SET(EMPTY_LINE);
-				break;
-			case 'f':
-				SET(FINAL_NEWLINE);
 				break;
 			case 'g':
 				SET(SHOW_CURSOR);
@@ -2308,7 +2304,7 @@ int main(int argc, char **argv)
 				break;
 #ifdef ENABLE_WRAPPING
 			case 'w':
-				UNSET(BREAK_LONG_LINES);
+				hardwrap = 0;
 				break;
 #endif
 			case 'x':
@@ -2426,8 +2422,6 @@ int main(int argc, char **argv)
 		/* If an rcfile undid the default settings, copy it to the new flags. */
 		if (!ISSET(NO_WRAP))
 			SET(BREAK_LONG_LINES);
-		if (!ISSET(NO_NEWLINES))
-			SET(FINAL_NEWLINE);
 		if (!ISSET(SMOOTH_SCROLL))
 			SET(JUMPY_SCROLLING);
 		if (!ISSET(MORE_SPACE))
@@ -2438,6 +2432,11 @@ int main(int argc, char **argv)
 			flags[i] |= flags_cmdline[i];
 	}
 #endif /* ENABLE_NANORC */
+
+	if (hardwrap == 0)
+		UNSET(BREAK_LONG_LINES);
+	else if (hardwrap == 1)
+		SET(BREAK_LONG_LINES);
 
 	/* If the user wants bold instead of reverse video for hilited text... */
 	if (ISSET(BOLD_TEXT))

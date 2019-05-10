@@ -127,8 +127,10 @@ partition *filepart = NULL;
 		/* The "partition" where we store a portion of the current file. */
 openfilestruct *openfile = NULL;
 		/* The list of all open file buffers. */
-openfilestruct *firstfile = NULL;
+#ifdef ENABLE_MULTIBUFFER
+openfilestruct *startfile = NULL;
 		/* The first open buffer. */
+#endif
 
 #ifndef NANO_TINY
 char *matchbrackets = NULL;
@@ -194,13 +196,13 @@ bool refresh_needed = FALSE;
 
 int currmenu = MMOST;
 		/* The currently active menu, initialized to a dummy value. */
-sc *sclist = NULL;
+keystruct *sclist = NULL;
 		/* The start of the shortcuts list. */
-subnfunc *allfuncs = NULL;
+funcstruct *allfuncs = NULL;
 		/* The start of the functions list. */
-subnfunc *tailfunc;
+funcstruct *tailfunc;
 		/* The last function in the list. */
-subnfunc *exitfunc;
+funcstruct *exitfunc;
 		/* A pointer to the special Exit/Close item. */
 
 linestruct *search_history = NULL;
@@ -269,7 +271,7 @@ size_t light_to_col = 0;
 /* Return the number of entries in the shortcut list for a given menu. */
 size_t length_of_list(int menu)
 {
-	subnfunc *f;
+	funcstruct *f;
 	size_t i = 0;
 
 	for (f = allfuncs; f != NULL; f = f->next)
@@ -359,7 +361,7 @@ void do_cancel(void)
 void add_to_funcs(void (*func)(void), int menus, const char *desc, const char *help,
 	bool blank_after, bool viewok)
 {
-	subnfunc *f = nmalloc(sizeof(subnfunc));
+	funcstruct *f = nmalloc(sizeof(funcstruct));
 
 	if (allfuncs == NULL)
 		allfuncs = f;
@@ -386,18 +388,17 @@ void add_to_funcs(void (*func)(void), int menus, const char *desc, const char *h
 void add_to_sclist(int menus, const char *scstring, const int keycode,
 						void (*func)(void), int toggle)
 {
-	static sc *tailsc;
+	static keystruct *tailsc;
 #ifndef NANO_TINY
 	static int counter = 0;
 #endif
-	sc *s = nmalloc(sizeof(sc));
+	keystruct *s = nmalloc(sizeof(keystruct));
 
 	/* Start the list, or tack on the next item. */
 	if (sclist == NULL)
 		sclist = s;
 	else
 		tailsc->next = s;
-	tailsc = s;
 	s->next = NULL;
 
 	/* Fill in the data. */
@@ -405,10 +406,13 @@ void add_to_sclist(int menus, const char *scstring, const int keycode,
 	s->func = func;
 #ifndef NANO_TINY
 	s->toggle = toggle;
+	/* When not the same toggle as the previous one, increment the ID. */
 	if (toggle)
-		s->ordinal = ++counter;
+		s->ordinal = (tailsc->toggle == toggle) ? counter : ++counter;
 #endif
 	assign_keyinfo(s, scstring, keycode);
+
+	tailsc = s;
 
 #ifdef DEBUG
 	fprintf(stderr, "Setting keycode to %d for shortcut \"%s\" in menus %x\n", s->keycode, scstring, s->menus);
@@ -417,9 +421,9 @@ void add_to_sclist(int menus, const char *scstring, const int keycode,
 
 /* Return the first shortcut in the list of shortcuts that
  * matches the given func in the given menu. */
-const sc *first_sc_for(int menu, void (*func)(void))
+const keystruct *first_sc_for(int menu, void (*func)(void))
 {
-	const sc *s;
+	const keystruct *s;
 
 	for (s = sclist; s != NULL; s = s->next)
 		if ((s->menus & menu) && s->func == func)
@@ -435,7 +439,7 @@ const sc *first_sc_for(int menu, void (*func)(void))
  * current menu, if any; otherwise, return the given default value. */
 int the_code_for(void (*func)(void), int defaultval)
 {
-	const sc *s = first_sc_for(currmenu, func);
+	const keystruct *s = first_sc_for(currmenu, func);
 
 	if (s == NULL)
 		return defaultval;
@@ -447,7 +451,7 @@ int the_code_for(void (*func)(void), int defaultval)
 /* Return a pointer to the function that is bound to the given key. */
 functionptrtype func_from_key(int *kbinput)
 {
-	const sc *s = get_shortcut(kbinput);
+	const keystruct *s = get_shortcut(kbinput);
 
 	if (s)
 		return s->func;
@@ -456,7 +460,7 @@ functionptrtype func_from_key(int *kbinput)
 }
 
 /* Set the string and its corresponding keycode for the given shortcut s. */
-void assign_keyinfo(sc *s, const char *keystring, const int keycode)
+void assign_keyinfo(keystruct *s, const char *keystring, const int keycode)
 {
 	s->keystr = keystring;
 	s->meta = (keystring[0] == 'M' && keycode == 0);
@@ -505,8 +509,8 @@ int keycode_from_string(const char *keystring)
 #ifdef DEBUG
 void print_sclist(void)
 {
-	sc *s;
-	const subnfunc *f;
+	keystruct *s;
+	const funcstruct *f;
 
 	for (s = sclist; s != NULL; s = s->next) {
 		f = sctofunc(s);
@@ -1039,7 +1043,7 @@ void shortcut_init(void)
 		N_("No Conversion"), WITHORSANS(convert_gist), TOGETHER, NOVIEW);
 
 	/* Command execution is only available when not in restricted mode. */
-	if (!ISSET(RESTRICTED)) {
+	if (!ISSET(RESTRICTED) && !ISSET(VIEW_MODE)) {
 		add_to_funcs(flip_execute, MINSERTFILE,
 			N_("Execute Command"), WITHORSANS(execute_gist), TOGETHER, NOVIEW);
 
@@ -1256,9 +1260,10 @@ void shortcut_init(void)
 	/* Group of "Appearance" toggles. */
 	add_to_sclist(MMAIN, "M-X", 0, do_toggle_void, NO_HELP);
 	add_to_sclist(MMAIN, "M-C", 0, do_toggle_void, CONSTANT_SHOW);
-	add_to_sclist(MMAIN, "M-S", 0, do_toggle_void, JUMPY_SCROLLING);
+	add_to_sclist(MMAIN, "M-S", 0, do_toggle_void, SOFTWRAP);
 	add_to_sclist(MMAIN, "M-$", 0, do_toggle_void, SOFTWRAP);
 #ifdef ENABLE_LINENUMBERS
+	add_to_sclist(MMAIN, "M-N", 0, do_toggle_void, LINE_NUMBERS);
 	add_to_sclist(MMAIN, "M-#", 0, do_toggle_void, LINE_NUMBERS);
 #endif
 	add_to_sclist(MMAIN, "M-P", 0, do_toggle_void, WHITESPACE_DISPLAY);
@@ -1309,6 +1314,9 @@ void shortcut_init(void)
 #endif
 	add_to_sclist(MGOTOLINE, "^Y", 0, to_first_line, 0);
 	add_to_sclist(MGOTOLINE, "^V", 0, to_last_line, 0);
+	/* Some people are used to having these keystrokes in the Search menu. */
+	add_to_sclist(MWHEREIS, "^Y", 0, to_first_line, 0);
+	add_to_sclist(MWHEREIS, "^V", 0, to_last_line, 0);
 #ifdef ENABLE_BROWSER
 	add_to_sclist(MWHEREISFILE, "^Y", 0, to_first_file, 0);
 	add_to_sclist(MWHEREISFILE, "^V", 0, to_last_file, 0);
@@ -1328,7 +1336,7 @@ void shortcut_init(void)
 	add_to_sclist(MWRITEFILE, "M-M", 0, mac_format_void, 0);
 	/* Only when not in restricted mode, allow Appending, Prepending,
 	 * making backups, and executing a command. */
-	if (!ISSET(RESTRICTED)) {
+	if (!ISSET(RESTRICTED) && !ISSET(VIEW_MODE)) {
 		add_to_sclist(MWRITEFILE, "M-A", 0, append_void, 0);
 		add_to_sclist(MWRITEFILE, "M-P", 0, prepend_void, 0);
 		add_to_sclist(MWRITEFILE, "M-B", 0, backup_file_void, 0);
@@ -1387,9 +1395,9 @@ void shortcut_init(void)
 #endif
 }
 
-const subnfunc *sctofunc(const sc *s)
+const funcstruct *sctofunc(const keystruct *s)
 {
-	subnfunc *f = allfuncs;
+	funcstruct *f = allfuncs;
 
 	while (f != NULL && f->func != s->func)
 		f = f->next;
@@ -1408,8 +1416,6 @@ const char *flagtostr(int flag)
 			return N_("Help mode");
 		case CONSTANT_SHOW:
 			return N_("Constant cursor position display");
-		case JUMPY_SCROLLING:
-			return N_("Jumpy scrolling (per half-screen)");
 		case SOFTWRAP:
 			return N_("Soft wrapping of overlong lines");
 		case WHITESPACE_DISPLAY:
@@ -1441,9 +1447,9 @@ const char *flagtostr(int flag)
 #ifdef ENABLE_NANORC
 /* Interpret a function string given in the rc file, and return a
  * shortcut record with the corresponding function filled in. */
-sc *strtosc(const char *input)
+keystruct *strtosc(const char *input)
 {
-	sc *s = nmalloc(sizeof(sc));
+	keystruct *s = nmalloc(sizeof(keystruct));
 
 #ifndef NANO_TINY
 	s->toggle = 0;
@@ -1661,8 +1667,6 @@ sc *strtosc(const char *input)
 			s->toggle = NO_HELP;
 		else if (!strcasecmp(input, "constantshow"))
 			s->toggle = CONSTANT_SHOW;
-		else if (!strcasecmp(input, "smoothscroll"))
-			s->toggle = JUMPY_SCROLLING;
 		else if (!strcasecmp(input, "softwrap"))
 			s->toggle = SOFTWRAP;
 #ifdef ENABLE_LINENUMBERS

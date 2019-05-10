@@ -1,5 +1,5 @@
 <!-- Creator     : groff version 1.22.3 -->
-<!-- CreationDate: Sun Mar 24 12:17:14 2019 -->
+<!-- CreationDate: Wed Apr 24 10:58:45 2019 -->
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
 "http://www.w3.org/TR/html4/loose.dtd">
 <html>
@@ -21,14 +21,13 @@
 <h1 align="center">NANORC</h1>
 
 <a href="#NAME">NAME</a><br>
-<a href="#NOTE">NOTE</a><br>
+<a href="#NOTICE">NOTICE</a><br>
 <a href="#DESCRIPTION">DESCRIPTION</a><br>
 <a href="#OPTIONS">OPTIONS</a><br>
 <a href="#SYNTAX HIGHLIGHTING">SYNTAX HIGHLIGHTING</a><br>
 <a href="#REBINDING KEYS">REBINDING KEYS</a><br>
 <a href="#FILES">FILES</a><br>
 <a href="#SEE ALSO">SEE ALSO</a><br>
-<a href="#AUTHOR">AUTHOR</a><br>
 
 <hr>
 
@@ -41,22 +40,20 @@
 <p style="margin-left:11%; margin-top: 1em">nanorc &minus;
 GNU nano&rsquo;s configuration file</p>
 
-<h2>NOTE
-<a name="NOTE"></a>
+<h2>NOTICE
+<a name="NOTICE"></a>
 </h2>
 
 
 <p style="margin-left:11%; margin-top: 1em">Starting with
 version 4.0, <b>nano</b> no longer hard-wraps an overlong
-line by default, and no longer automatically adds a newline
-at the end of the text if one is missing. Furthermore, it
-uses smooth scrolling by default and makes use of the line
-below the title bar.</p>
+line by default, uses smooth scrolling by default, and by
+default makes use of the line below the title bar.</p>
 
 <p style="margin-left:11%; margin-top: 1em">If you want the
 old, Pico behavior back, you can use <b>set
-breaklonglines</b>, <b>set finalnewline</b>, <b>set
-jumpyscrolling</b>, and <b>set emptyline</b>.</p>
+breaklonglines</b>, <b>set jumpyscrolling</b>, and <b>set
+emptyline</b>.</p>
 
 <h2>DESCRIPTION
 <a name="DESCRIPTION"></a>
@@ -68,11 +65,11 @@ jumpyscrolling</b>, and <b>set emptyline</b>.</p>
 <b>nano</b>, a small and friendly editor. The file should be
 in Unix format, not in DOS or Mac format. During startup,
 <b>nano</b> will first read the system-wide settings, from
-<b>/etc/nanorc</b> (the exact path might be different on
+<i>/etc/nanorc</i> (the exact path might be different on
 your system), and then the user-specific settings, either
-from <b>~/.nanorc</b> or from
-<i>$XDG_CONFIG_HOME</i><b>/nano/nanorc</b> or from
-<b>~/.config/nano/nanorc</b>, whichever is encountered
+from <i>~/.nanorc</i> or from
+<i>$XDG_CONFIG_HOME/nano/nanorc</i> or from
+<i>~/.config/nano/nanorc</i>, whichever is encountered
 first.</p>
 
 <h2>OPTIONS
@@ -204,11 +201,6 @@ title bar, leaving it entirely blank.</p>
 the status bar when an error message is displayed. See
 <b>set titlecolor</b> for valid color names.</p>
 
-<p style="margin-left:11%;"><b>set finalnewline</b></p>
-
-<p style="margin-left:15%;">If the buffer is not empty,
-ensure that it ends with a newline character.</p>
-
 <p style="margin-left:11%;"><b>set fill</b>
 <i>number</i></p>
 
@@ -227,6 +219,14 @@ screen if the screen is resized. The default value is
 to use for the function descriptions in the two help lines
 at the bottom of the screen. See <b>set titlecolor</b> for
 more details.</p>
+
+<p style="margin-left:11%;"><b>set guidestripe</b>
+<i>number</i></p>
+
+<p style="margin-left:15%;">Draw a vertical stripe at the
+given column, to help judge the width of the text. (The
+color of the stripe can be changed with <b>set
+stripecolor</b>.)</p>
 
 <p style="margin-left:11%;"><b>set historylog</b></p>
 
@@ -256,14 +256,6 @@ left of the text area.</p>
 
 <p style="margin-left:15%;">Enable vim-style lock-files for
 when editing files.</p>
-
-<p style="margin-left:11%;"><b>set guidestripe</b>
-<i>number</i></p>
-
-<p style="margin-left:15%;">Draw a vertical stripe at the
-given column, to help judge the width of the text. (The
-color of the stripe can be changed with <b>set
-stripecolor</b>.)</p>
 
 <p style="margin-left:11%;"><b>set matchbrackets</b>
 <i>string</i></p>
@@ -307,9 +299,8 @@ help lines at the bottom of the screen.</p>
 
 <p style="margin-left:11%;"><b>set nonewlines</b></p>
 
-<p style="margin-left:15%;">Deprecated option since it has
-become the default setting. When needed, use <b>unset
-finalnewline</b> instead.</p>
+<p style="margin-left:15%;">Don&rsquo;t automatically add a
+newline when a file does not end with one.</p>
 
 <p style="margin-left:11%;"><b>set nopauses</b></p>
 
@@ -1244,11 +1235,6 @@ screen.</p>
 <p style="margin-left:18%;">Toggles the constant display of
 the current line, column, and character positions.</p>
 
-<p style="margin-left:15%;"><b>smoothscroll</b></p>
-
-<p style="margin-left:18%;">Toggles smooth scrolling (when
-moving around with the arrow keys).</p>
-
 <p style="margin-left:15%;"><b>softwrap</b></p>
 
 <p style="margin-left:18%;">Toggles the displaying of
@@ -1396,14 +1382,14 @@ all menus where the specified <i>key</i> exists.</p>
 
 
 
-<p style="margin-left:11%; margin-top: 1em"><b>/etc/nanorc</b></p>
+<p style="margin-left:11%; margin-top: 1em"><i>/etc/nanorc</i></p>
 
 <p style="margin-left:22%;">System-wide configuration
 file.</p>
 
-<p style="margin-left:11%;"><b>~/.nanorc</b> or
-<i>$XDG_CONFIG_HOME</i><b>/nano/nanorc</b> or
-<b>~/.config/nano/nanorc</b></p>
+<p style="margin-left:11%;"><i>~/.nanorc</i> or
+<i>$XDG_CONFIG_HOME/nano/nanorc</i> or
+<i>~/.config/nano/nanorc</i></p>
 
 <p style="margin-left:22%;">Per-user configuration
 file.</p>
@@ -1415,17 +1401,6 @@ file.</p>
 
 
 <p style="margin-left:11%; margin-top: 1em"><b>nano</b>(1)</p>
-
-<h2>AUTHOR
-<a name="AUTHOR"></a>
-</h2>
-
-
-<p style="margin-left:11%; margin-top: 1em">Chris
-Allegretta and others (see the files <i>AUTHORS</i> and
-<i>THANKS</i> for details). This manual page was originally
-written by Jordi Mallach for the Debian system (but may be
-used by others).</p>
 <hr>
 </body>
 </html>

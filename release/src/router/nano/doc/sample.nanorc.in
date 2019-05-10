@@ -61,9 +61,6 @@
 ## less, the wrapping point will be the screen width minus this number.
 # set fill -8
 
-## Ensure that a non-empty buffer ends with a newline character.
-# set finalnewline
-
 ## Remember the used search/replace strings for the next session.
 # set historylog
 
@@ -98,6 +95,9 @@
 
 ## Don't display the helpful shortcut lists at the bottom of the screen.
 # set nohelp
+
+## Don't automatically add a newline when a file does not end with one.
+# set nonewlines
 
 ## Don't pause between warnings at startup.  Which means that only the
 ## last one will be readable (when there are multiple ones).

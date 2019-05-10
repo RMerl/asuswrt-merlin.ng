@@ -1,4 +1,4 @@
-# Check for fnmatch - serial 13.  -*- coding: utf-8 -*-
+# Check for fnmatch - serial 14.  -*- coding: utf-8 -*-
 
 # Copyright (C) 2000-2007, 2009-2019 Free Software Foundation, Inc.
 # This file is free software; the Free Software Foundation
@@ -14,6 +14,7 @@ AC_DEFUN([gl_FUNC_FNMATCH_POSIX],
   m4_divert_text([DEFAULTS], [gl_fnmatch_required=POSIX])
 
   AC_REQUIRE([gl_FNMATCH_H])
+  AC_REQUIRE([AC_CANONICAL_HOST]) dnl for cross-compiles
   gl_fnmatch_required_lowercase=`
     echo $gl_fnmatch_required | LC_ALL=C tr '[[A-Z]]' '[[a-z]]'
   `
@@ -117,12 +118,19 @@ AC_DEFUN([gl_FUNC_FNMATCH_POSIX],
             ]])],
          [eval "$gl_fnmatch_cache_var=yes"],
          [eval "$gl_fnmatch_cache_var=no"],
-         [eval "$gl_fnmatch_cache_var=\"guessing no\""])
+         [case "$host_os" in
+                     # Guess yes on musl systems.
+            *-musl*) eval "$gl_fnmatch_cache_var=\"guessing yes\"" ;;
+                     # Guess no otherwise, even on glibc systems.
+            *)       eval "$gl_fnmatch_cache_var=\"guessing no\"" ;;
+          esac
+         ])
       ])
     eval "gl_fnmatch_result=\"\$$gl_fnmatch_cache_var\""
-    if test "$gl_fnmatch_result" != yes; then
-      REPLACE_FNMATCH=1
-    fi
+    case "$gl_fnmatch_result" in
+      *yes) ;;
+      *) REPLACE_FNMATCH=1 ;;
+    esac
   fi
   if test $HAVE_FNMATCH = 0 || test $REPLACE_FNMATCH = 1; then
     gl_REPLACE_FNMATCH_H

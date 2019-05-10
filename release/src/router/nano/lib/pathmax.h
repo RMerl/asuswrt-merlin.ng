@@ -68,7 +68,7 @@
 # if defined _WIN32 && ! defined __CYGWIN__
 /* The page "Naming Files, Paths, and Namespaces" on msdn.microsoft.com,
    section "Maximum Path Length Limitation",
-   <https://msdn.microsoft.com/en-us/library/aa365247.aspx#maxpath>
+   <https://docs.microsoft.com/en-us/windows/desktop/FileIO/naming-a-file#maximum-path-length-limitation>
    explains that the maximum size of a filename, including the terminating
    NUL byte, is 260 = 3 + 256 + 1.
    This is the same value as

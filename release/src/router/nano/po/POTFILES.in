@@ -2,6 +2,7 @@
 
 src/browser.c
 src/color.c
+src/cut.c
 src/files.c
 src/global.c
 src/help.c
@@ -13,3 +14,6 @@ src/search.c
 src/text.c
 src/utils.c
 src/winio.c
+
+lib/getopt.c
+lib/regcomp.c

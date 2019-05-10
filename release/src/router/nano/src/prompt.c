@@ -37,13 +37,13 @@ int do_statusbar_mouse(void)
 
 	/* We can click on the statusbar window text to move the cursor. */
 	if (retval == 0 && wmouse_trafo(bottomwin, &click_row, &click_col, FALSE)) {
-		size_t start_col = strlenpt(prompt) + 2;
+		size_t start_col = breadth(prompt) + 2;
 
 		/* Move to where the click occurred. */
 		if (click_row == 0 && click_col >= start_col)
 			typing_x = actual_x(answer,
 							get_statusbar_page_start(start_col, start_col +
-							strnlenpt(answer, typing_x)) + click_col - start_col);
+							wideness(answer, typing_x)) + click_col - start_col);
 	}
 
 	return retval;
@@ -61,7 +61,7 @@ int do_statusbar_input(bool *finished)
 		/* The input buffer. */
 	static size_t kbinput_len = 0;
 		/* The length of the input buffer. */
-	const sc *shortcut;
+	const keystruct *shortcut;
 
 	*finished = FALSE;
 
@@ -385,12 +385,12 @@ void put_cursor_at_end_of_answer(void)
 /* Redraw the promptbar and place the cursor at the right spot. */
 void draw_the_promptbar(void)
 {
-	size_t base = strlenpt(prompt) + 2;
+	size_t base = breadth(prompt) + 2;
 	size_t the_page, end_page, column;
 	char *expanded;
 
-	the_page = get_statusbar_page_start(base, base + strnlenpt(answer, typing_x));
-	end_page = get_statusbar_page_start(base, base + strlenpt(answer) - 1);
+	the_page = get_statusbar_page_start(base, base + wideness(answer, typing_x));
+	end_page = get_statusbar_page_start(base, base + breadth(answer) - 1);
 
 	/* Color the promptbar over its full width. */
 	wattron(bottomwin, interface_color_pair[TITLE_BAR]);
@@ -404,7 +404,7 @@ void draw_the_promptbar(void)
 	waddstr(bottomwin, expanded);
 	free(expanded);
 
-	if (base + strlenpt(answer) != COLS && the_page < end_page)
+	if (base + breadth(answer) != COLS && the_page < end_page)
 		mvwaddch(bottomwin, 0, COLS - 1, '>');
 
 	wattroff(bottomwin, interface_color_pair[TITLE_BAR]);
@@ -414,7 +414,7 @@ void draw_the_promptbar(void)
 	wrefresh(bottomwin);
 
 	/* Place the cursor at the right spot. */
-	column = base + strnlenpt(answer, typing_x);
+	column = base + wideness(answer, typing_x);
 	wmove(bottomwin, 0, column - get_statusbar_page_start(base, column));
 	wnoutrefresh(bottomwin);
 }
@@ -667,7 +667,7 @@ int do_yesno_prompt(bool all, const char *msg)
 		if (!ISSET(NO_HELP)) {
 			char shortstr[MAXCHARLEN + 2];
 				/* Temporary string for (translated) " Y", " N" and " A". */
-			const sc *cancelshortcut = first_sc_for(MYESNO, do_cancel);
+			const keystruct *cancelshortcut = first_sc_for(MYESNO, do_cancel);
 				/* The keystroke that is bound to the Cancel function. */
 
 			if (COLS < 32)

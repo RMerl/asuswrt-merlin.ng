@@ -1,5 +1,5 @@
 <!-- Creator     : groff version 1.22.3 -->
-<!-- CreationDate: Sun Mar 24 12:17:13 2019 -->
+<!-- CreationDate: Wed Apr 24 10:58:43 2019 -->
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
 "http://www.w3.org/TR/html4/loose.dtd">
 <html>
@@ -22,17 +22,16 @@
 
 <a href="#NAME">NAME</a><br>
 <a href="#SYNOPSIS">SYNOPSIS</a><br>
-<a href="#NOTE">NOTE</a><br>
+<a href="#NOTICE">NOTICE</a><br>
 <a href="#DESCRIPTION">DESCRIPTION</a><br>
 <a href="#EDITING">EDITING</a><br>
 <a href="#OPTIONS">OPTIONS</a><br>
 <a href="#TOGGLES">TOGGLES</a><br>
-<a href="#INITIALIZATION FILE">INITIALIZATION FILE</a><br>
+<a href="#FILES">FILES</a><br>
 <a href="#NOTES">NOTES</a><br>
 <a href="#BUGS">BUGS</a><br>
 <a href="#HOMEPAGE">HOMEPAGE</a><br>
 <a href="#SEE ALSO">SEE ALSO</a><br>
-<a href="#AUTHOR">AUTHOR</a><br>
 
 <hr>
 
@@ -54,24 +53,21 @@ Nano&rsquo;s ANOther editor, inspired by Pico</p>
 [<i>options</i>]
 [[+<i>line</i>[,<i>column</i>]]&nbsp;<i>file</i>]...</p>
 
-<h2>NOTE
-<a name="NOTE"></a>
+<h2>NOTICE
+<a name="NOTICE"></a>
 </h2>
 
 
 <p style="margin-left:11%; margin-top: 1em">Starting with
 version 4.0, <b>nano</b> no longer hard-wraps an overlong
-line by default, and no longer automatically adds a newline
-at the end of the text if one is missing. Furthermore, it
-uses smooth scrolling by default and makes use of the line
-below the title bar.</p>
+line by default, uses smooth scrolling by default, and by
+default makes use of the line below the title bar.</p>
 
 <p style="margin-left:11%; margin-top: 1em">If you want the
 old, Pico behavior back, you can use
 <b>&minus;&minus;breaklonglines</b>,
-<b>&minus;&minus;finalnewline</b>,
 <b>&minus;&minus;jumpyscrolling</b>, and
-<b>&minus;&minus;emptyline</b> (or <b>&minus;bfje</b> for
+<b>&minus;&minus;emptyline</b> (or <b>&minus;bje</b> for
 short).</p>
 
 <h2>DESCRIPTION
@@ -226,8 +222,7 @@ properly, please report a bug. Using this option disables
 <b>&minus;&minus;nonewlines</b></p>
 
 <p style="margin-left:22%;">Don&rsquo;t automatically add a
-newline when a file does not end with one. (This is the
-default.)</p>
+newline when a file does not end with one.</p>
 
 <p style="margin-left:11%;"><b>&minus;M</b>,
 <b>&minus;&minus;trimblanks</b></p>
@@ -381,15 +376,6 @@ Backspace.</p>
 <p style="margin-left:22%;">Do not use the line below the
 title bar, leaving it entirely blank.</p>
 
-<p style="margin-left:11%;"><b>&minus;f</b>,
-<b>&minus;&minus;finalnewline</b></p>
-
-<p style="margin-left:22%;">If the buffer is not empty,
-ensure that it ends with a newline character. (This option
-is the opposite of <b>&minus;L</b>
-(<b>&minus;&minus;nonewlines</b>) -- the last one given
-takes effect.)</p>
-
 <p style="margin-left:11%;"><b>&minus;g</b>,
 <b>&minus;&minus;showcursor</b></p>
 
@@ -515,8 +501,10 @@ also other files for viewing, unless
 <b>&minus;&minus;nowrap</b></p>
 
 <p style="margin-left:22%;">Do not automatically hard-wrap
-the current line when it becomes overlong. (This is the
-default.)</p>
+the current line when it becomes overlong. This is the
+default. (This option is the opposite of <b>&minus;b</b>
+(<b>&minus;&minus;breaklonglines</b>) -- the last one given
+takes effect.)</p>
 
 <p style="margin-left:11%;"><b>&minus;x</b>,
 <b>&minus;&minus;nohelp</b></p>
@@ -556,24 +544,24 @@ last when using other options (e.g. &rsquo;nano
 <p style="margin-left:11%; margin-top: 1em">Several of the
 above options can be switched on and off also while
 <b>nano</b> is running. For example, <b>M&minus;L</b>
-toggles the hard-wrapping of long lines, <b>M&minus;$</b>
-toggles soft-wrapping, <b>M&minus;#</b> toggles line
+toggles the hard-wrapping of long lines, <b>M&minus;S</b>
+toggles soft-wrapping, <b>M&minus;N</b> toggles line
 numbers, <b>M&minus;M</b> toggles the mouse,
 <b>M&minus;I</b> auto-indentation, and <b>M&minus;X</b> the
 help lines. See at the end of the <b>^G</b> help text for a
 complete list.</p>
 
-<h2>INITIALIZATION FILE
-<a name="INITIALIZATION FILE"></a>
+<h2>FILES
+<a name="FILES"></a>
 </h2>
 
 
 <p style="margin-left:11%; margin-top: 1em"><b>nano</b>
 will read two configuration files: first the system&rsquo;s
 <i>nanorc</i> (if it exists), and then the user&rsquo;s
-<i>nanorc</i> (if it exists), either <b>~/.nanorc</b> or
-<i>$XDG_CONFIG_HOME</i><b>/nano/nanorc</b> or
-<b>~/.config/nano/nanorc</b>, whichever is encountered
+<i>nanorc</i> (if it exists), either <i>~/.nanorc</i> or
+<i>$XDG_CONFIG_HOME/nano/nanorc</i> or
+<i>~/.config/nano/nanorc</i>, whichever is encountered
 first. See <b>nanorc</b>(5) for more information on the
 possible contents of those files.</p>
 
@@ -642,17 +630,6 @@ want to get a backtrace, define the environment variable
 
 <p style="margin-left:11%; margin-top: 1em"><i>/usr/share/doc/nano/</i>
 (or equivalent on your system)</p>
-
-<h2>AUTHOR
-<a name="AUTHOR"></a>
-</h2>
-
-
-<p style="margin-left:11%; margin-top: 1em">Chris
-Allegretta and others (see the files <i>AUTHORS</i> and
-<i>THANKS</i> for details). This manual page was originally
-written by Jordi Mallach for the Debian system (but may be
-used by others).</p>
 <hr>
 </body>
 </html>

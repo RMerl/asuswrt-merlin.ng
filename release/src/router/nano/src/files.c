@@ -64,26 +64,25 @@ void make_new_buffer(void)
 {
 	openfilestruct *newnode = nmalloc(sizeof(openfilestruct));
 
+#ifdef ENABLE_MULTIBUFFER
 	if (openfile == NULL) {
 		/* Make the first open file the only element in the list. */
-#ifdef ENABLE_MULTIBUFFER
 		newnode->prev = newnode;
 		newnode->next = newnode;
-#endif
-		firstfile = newnode;
+
+		startfile = newnode;
 	} else {
 		/* Add the new open file after the current one in the list. */
-#ifdef ENABLE_MULTIBUFFER
 		newnode->prev = openfile;
 		newnode->next = openfile->next;
 		openfile->next->prev = newnode;
 		openfile->next = newnode;
-#endif
+
 		/* There is more than one file open: show "Close" in help lines. */
 		exitfunc->desc = close_tag;
 		more_than_one = !inhelp || more_than_one;
 	}
-
+#endif
 	/* Make the new buffer the current one, and start initializing it. */
 	openfile = newnode;
 
@@ -95,6 +94,9 @@ void make_new_buffer(void)
 	openfile->current_y = 0;
 
 	openfile->modified = FALSE;
+#ifdef ENABLE_WRAPPING
+	openfile->spillage_line = NULL;
+#endif
 #ifndef NANO_TINY
 	openfile->mark = NULL;
 
@@ -353,13 +355,13 @@ int do_lockfile(const char *filename)
 
 		/* TRANSLATORS: The second %s is the name of the user, the third that of the editor. */
 		question = _("File %s is being edited (by %s with %s, PID %s); continue?");
-		room = COLS - strlenpt(question) + 7 - strlenpt(lockuser) -
-								strlenpt(lockprog) - strlenpt(pidstring);
+		room = COLS - breadth(question) + 7 - breadth(lockuser) -
+								breadth(lockprog) - breadth(pidstring);
 		if (room < 4)
 			postedname = mallocstrcpy(NULL, "_");
-		else if (room < strlenpt(filename)) {
+		else if (room < breadth(filename)) {
 			char *fragment = display_string(filename,
-								strlenpt(filename) - room + 3, room, FALSE, FALSE);
+								breadth(filename) - room + 3, room, FALSE, FALSE);
 			postedname = charalloc(strlen(fragment) + 4);
 			strcpy(postedname, "...");
 			strcat(postedname, fragment);
@@ -557,7 +559,7 @@ void replace_marked_buffer(const char *filename)
 {
 	FILE *f;
 	int descriptor;
-	bool using_magicline = ISSET(FINAL_NEWLINE);
+	bool using_magicline = !ISSET(NO_NEWLINES);
 	linestruct *was_cutbuffer = cutbuffer;
 
 	descriptor = open_file(filename, FALSE, TRUE, &f);
@@ -566,7 +568,7 @@ void replace_marked_buffer(const char *filename)
 		return;
 
 	/* Don't add a magic line when replacing text in the buffer. */
-	UNSET(FINAL_NEWLINE);
+	SET(NO_NEWLINES);
 
 	add_undo(COUPLE_BEGIN);
 	openfile->undotop->strdata = mallocstrcpy(NULL, _("spelling correction"));
@@ -584,7 +586,7 @@ void replace_marked_buffer(const char *filename)
 
 	/* Restore the magic-line behavior now that we're done fiddling. */
 	if (using_magicline)
-		SET(FINAL_NEWLINE);
+		UNSET(NO_NEWLINES);
 
 	add_undo(COUPLE_END);
 	openfile->undotop->strdata = mallocstrcpy(NULL, _("spelling correction"));
@@ -800,6 +802,10 @@ void read_file(FILE *f, int fd, const char *filename, bool undoable)
 	topline = make_new_node(NULL);
 	bottomline = topline;
 
+#ifndef NANO_TINY
+	block_sigwinch(TRUE);
+#endif
+
 	/* Lock the file before starting to read it, to avoid the overhead
 	 * of locking it for each single byte that we read from it. */
 	flockfile(f);
@@ -874,6 +880,10 @@ void read_file(FILE *f, int fd, const char *filename, bool undoable)
 
 	/* We are done with the file, unlock it. */
 	funlockfile(f);
+
+#ifndef NANO_TINY
+	block_sigwinch(FALSE);
+#endif
 
 	/* Perhaps this could use some better handling. */
 	if (ferror(f))
@@ -2054,7 +2064,7 @@ bool write_marked_file(const char *name, FILE *f_open, bool tmp,
 
 	/* If we are using a magic line, and the last line of the partition
 	 * isn't blank, then add a newline at the end of the buffer. */
-	if (ISSET(FINAL_NEWLINE) && openfile->filebot->data[0] != '\0') {
+	if (!ISSET(NO_NEWLINES) && openfile->filebot->data[0] != '\0') {
 		new_magicline();
 		added_magicline = TRUE;
 	}
@@ -2101,7 +2111,7 @@ int do_writeout(bool exiting, bool withprompt)
 
 	while (TRUE) {
 		const char *msg;
-		int response, choice;
+		int response = 0, choice = 0;
 		functionptrtype func;
 #ifndef NANO_TINY
 		const char *formatstr, *backupstr;
@@ -2256,7 +2266,7 @@ int do_writeout(bool exiting, bool withprompt)
 				if (name_exists) {
 					char *question = _("File \"%s\" exists; OVERWRITE? ");
 					char *name = display_string(answer, 0,
-										COLS - strlenpt(question) + 1, FALSE, FALSE);
+										COLS - breadth(question) + 1, FALSE, FALSE);
 					char *message = charalloc(strlen(question) +
 												strlen(name) + 1);
 
@@ -2673,7 +2683,7 @@ char *input_tab(char *buf, bool allow_files, size_t *place,
 
 			/* Find the length of the longest among the choices. */
 			for (match = 0; match < num_matches; match++) {
-				size_t namelen = strlenpt(matches[match]);
+				size_t namelen = breadth(matches[match]);
 
 				if (namelen > longest_name)
 					longest_name = namelen;

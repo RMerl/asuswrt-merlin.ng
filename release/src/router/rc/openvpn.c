@@ -1,7 +1,7 @@
 /*
 
 	Copyright (C) 2008-2010 Keith Moyer, tomatovpn@keithmoyer.com
-	Portions Copyright (C) 2012-2018 Eric Sauvageau
+	Portions Copyright (C) 2012-2019 Eric Sauvageau
 
 	No part of this file may be used without permission.
 
@@ -277,14 +277,6 @@ void start_ovpn_client(int clientNum)
 		if ( (nvl = atol(nvram_pf_safe_get(prefix, "reneg"))) >= 0 )
 			fprintf(fp, "reneg-sec %ld\n", nvl);
 
-		if ( nvram_pf_get_int(prefix, "adns") != OVPN_DNSMODE_IGNORE )
-		{
-			sprintf(buffer, "/etc/openvpn/client%d/updown.sh", clientNum);
-			symlink("/usr/sbin/updown.sh", buffer);
-			fprintf(fp, "up updown.sh\n");
-			fprintf(fp, "down updown.sh\n");
-		}
-
 		nvi = nvram_pf_get_int(prefix, "hmac");
 		if (ovpn_key_exists(OVPN_TYPE_CLIENT, clientNum, OVPN_CLIENT_STATIC) && (nvi >= 0))
 		{
@@ -328,14 +320,10 @@ void start_ovpn_client(int clientNum)
 
 	}
 
-	// All other cryptmodes need a default up/down script set
-	if ( (cryptMode != TLS) && (check_if_file_exist("/jffs/scripts/openvpn-event")) )
-	{
-		sprintf(buffer, "/etc/openvpn/client%d/updown.sh", clientNum);
-		symlink("/jffs/scripts/openvpn-event", buffer);
-		fprintf(fp, "up updown.sh\n");
-		fprintf(fp, "down updown.sh\n");
-	}
+	sprintf(buffer, "/etc/openvpn/client%d/updown.sh", clientNum);
+	symlink("/usr/sbin/updown-client.sh", buffer);
+	fprintf(fp, "up updown.sh\n");
+	fprintf(fp, "down updown.sh\n");
 
 	fprintf(fp, "status-version 2\n");
 	fprintf(fp, "status status 5\n");

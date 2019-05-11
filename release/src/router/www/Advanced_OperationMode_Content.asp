@@ -42,7 +42,7 @@
 	font-size:14px;
 	z-index:200;
 	position:relative;
-	background-color:balck:
+	background-color:black;
 }	
 .QISform_wireless{
 	width:600px;

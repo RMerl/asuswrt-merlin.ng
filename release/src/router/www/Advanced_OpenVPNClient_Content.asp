@@ -226,7 +226,7 @@ function initial()
 	}
 
 	showclientlist();
-	showLANIPList();
+	showDropdownClientList('setClientIP', 'name>ip', 'all', 'ClientList_Block_PC', 'pull_arrow', 'online');
 
 	// Client list
 	free_options(document.form.vpn_client_unit);
@@ -825,61 +825,36 @@ function del_Row(r){
 		showclientlist();
 }
 
-function showLANIPList(){
-	if(clientList.length == 0){
-		setTimeout(function() {
-			genClientList();
-			showLANIPList();
-		}, 500);
-		return false;
-	}
+function hideClients_Block(evt){
+	if(typeof(evt) != "undefined"){
+		if(!evt.srcElement)
+			evt.srcElement = evt.target; // for Firefox
 
-	var htmlCode = "";
-	for(var i=0; i<clientList.length;i++){
-		var clientObj = clientList[clientList[i]];
-
-		if(clientObj.ip != "offline"){
-			if(clientObj.name.length > 20) clientObj.name = clientObj.name.substring(0, 16) + "..";
-
-			htmlCode += '<a><div onmouseover="over_var=1;" onmouseout="over_var=0;" onclick="setClientIP(\'';
-			htmlCode += clientObj.name;
-			htmlCode += '\', \'';
-			htmlCode += clientObj.ip;
-			htmlCode += '\');"><strong>';
-			htmlCode += clientObj.name;
-			htmlCode += '</strong> ('+clientObj.ip+')</div></a><!--[if lte IE 6.5]><iframe class="hackiframe2"></iframe><![endif]-->';
+		if(evt.srcElement.id == "pull_arrow" || evt.srcElement.id == "ClientList_Block"){
+			return;
 		}
 	}
 
-	document.getElementById("ClientList_Block_PC").innerHTML = htmlCode;
-}
-
-function setClientIP(_name, _ipaddr){
-	document.form.clientlist_deviceName.value = _name;
-	document.form.clientlist_ipAddr.value = _ipaddr;
-	hideClients_Block();
-	over_var = 0;
-}
-
-var over_var = 0;
-var isMenuopen = 0;
-function hideClients_Block(){
 	document.getElementById("pull_arrow").src = "/images/arrow-down.gif";
 	document.getElementById('ClientList_Block_PC').style.display='none';
-	isMenuopen = 0;
 }
 
 function pullLANIPList(obj){
+	var element = document.getElementById('ClientList_Block_PC');
+	var isMenuopen = element.offsetWidth > 0 || element.offsetHeight > 0;
 	if(isMenuopen == 0){
 		obj.src = "/images/arrow-top.gif"
-		document.getElementById("ClientList_Block_PC").style.display = 'block';
-		document.form.clientlist_deviceName.focus();
-		isMenuopen = 1;
+		element.style.display = 'block';
 	}
 	else
 		hideClients_Block();
 }
 
+function setClientIP(name, ipaddr){
+	document.form.clientlist_ipAddr.value = ipaddr;
+	document.form.clientlist_deviceName.value = name;
+	hideClients_Block();
+}
 
 function getConnStatus() {
 	$.ajax({
@@ -1469,9 +1444,9 @@ function refreshVPNIP() {
 							<input type="text" class="input_15_table" maxlength="15" name="clientlist_deviceName" onClick="hideClients_Block();" onKeyPress="return validator.isString(this, event);">
 						</td>
 						<td width="29%">
-							<input type="text" class="input_18_table" maxlength="18" name="clientlist_ipAddr" onKeyPress="return validator.isIPAddrPlusNetmask(this, event)" autocomplete="off" autocorrect="off" autocapitalize="off">
-							<img id="pull_arrow" height="14px;" src="/images/arrow-down.gif" style="position:absolute;*margin-left:-3px;*margin-top:1px;" onclick="pullLANIPList(this);" title="<#select_device_name#>" onmouseover="over_var=1;" onmouseout="over_var=0;">
-							<div id="ClientList_Block_PC" class="ClientList_Block_PC"></div>
+							<input type="text" class="input_18_table" maxlength="18" name="clientlist_ipAddr" onKeyPress="return validator.isIPAddrPlusNetmask(this, event)" onClick="hideClients_Block();" autocomplete="off" autocorrect="off" autocapitalize="off">
+							<img id="pull_arrow" height="14px;" src="/images/arrow-down.gif" style="position:absolute;*margin-left:-3px;*margin-top:1px;" onclick="pullLANIPList(this);" title="<#select_device_name#>">
+							<div id="ClientList_Block_PC" class="clientlist_dropdown"></div>
 						</td>
 						<td width="25%">
 							<input type="text" class="input_18_table" maxlength="18" name="clientlist_dstipAddr" onKeyPress="return validator.isIPAddrPlusNetmask(this, event)" autocomplete="off" autocorrect="off" autocapitalize="off">

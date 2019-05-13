@@ -2348,7 +2348,9 @@ int ntpd_main(int argc UNUSED_PARAM, char **argv)
 
 		/* Nothing between here and poll() blocks for any significant time */
 
-		nextaction = G.cur_time + 3600;
+		nextaction = G.last_script_run + (11*60);
+		if (nextaction < G.cur_time + 1)
+			nextaction = G.cur_time + 1;
 
 		i = 0;
 #if ENABLE_FEATURE_NTPD_SERVER

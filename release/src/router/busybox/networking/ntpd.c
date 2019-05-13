@@ -68,11 +68,11 @@
 
 #include "libbb.h"
 #include <math.h>
-#include <netinet/ip.h> /* For IPTOS_LOWDELAY definition */
+#include <netinet/ip.h> /* For IPTOS_DSCP_AF21 definition */
 #include <sys/resource.h> /* setpriority */
 #include <sys/timex.h>
-#ifndef IPTOS_LOWDELAY
-# define IPTOS_LOWDELAY 0x10
+#ifndef IPTOS_DSCP_AF21
+# define IPTOS_DSCP_AF21 0x48
 #endif
 
 
@@ -888,7 +888,7 @@ send_query_to_peer(peer_t *p)
 #if ENABLE_FEATURE_IPV6
 		if (family == AF_INET)
 #endif
-			setsockopt_int(fd, IPPROTO_IP, IP_TOS, IPTOS_LOWDELAY);
+			setsockopt_int(fd, IPPROTO_IP, IP_TOS, IPTOS_DSCP_AF21);
 		free(local_lsa);
 	}
 
@@ -2308,7 +2308,7 @@ static NOINLINE void ntp_init(char **argv)
 				xfunc_die();
 		}
 		socket_want_pktinfo(G_listen_fd);
-		setsockopt_int(G_listen_fd, IPPROTO_IP, IP_TOS, IPTOS_LOWDELAY);
+		setsockopt_int(G_listen_fd, IPPROTO_IP, IP_TOS, IPTOS_DSCP_AF21);
 	}
 #endif
 	/* I hesitate to set -20 prio. -15 should be high enough for timekeeping */

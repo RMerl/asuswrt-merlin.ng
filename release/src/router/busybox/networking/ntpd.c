@@ -733,7 +733,7 @@ reset_peer_stats(peer_t *p, double offset)
 	 * and clear reachable bits, but this proved to be too agressive:
 	 * after step (tested with suspending laptop for ~30 secs),
 	 * this caused all previous data to be considered invalid,
-	 * making us needing to collect full ~8 datapoins per peer
+	 * making us needing to collect full ~8 datapoints per peer
 	 * after step in order to start trusting them.
 	 * In turn, this was making poll interval decrease even after
 	 * step was done. (Poll interval decreases already before step
@@ -776,6 +776,8 @@ resolve_peer_hostname(peer_t *p)
 		free(p->p_dotted);
 		p->p_lsa = lsa;
 		p->p_dotted = xmalloc_sockaddr2dotted_noport(&lsa->u.sa);
+		VERB1 if (strcmp(p->p_hostname, p->p_dotted) != 0)
+			bb_error_msg("'%s' is %s", p->p_hostname, p->p_dotted);
 	} else {
 		/* error message is emitted by host2sockaddr() */
 		set_next(p, HOSTNAME_INTERVAL);

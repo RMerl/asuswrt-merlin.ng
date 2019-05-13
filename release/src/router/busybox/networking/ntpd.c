@@ -2064,6 +2064,13 @@ recv_and_process_client_pkt(void /*int fd*/)
 		goto bail;
 	}
 
+	/* Respond only to client and symmetric active packets */
+	if ((msg.m_status & MODE_MASK) != MODE_CLIENT
+	 && (msg.m_status & MODE_MASK) != MODE_SYM_ACT
+	) {
+		goto bail;
+	}
+
 	query_status = msg.m_status;
 	query_xmttime = msg.m_xmttime;
 

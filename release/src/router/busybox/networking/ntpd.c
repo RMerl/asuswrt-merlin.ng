@@ -125,6 +125,7 @@
  */
 
 #define INITIAL_SAMPLES    1    /* how many samples do we want for init */
+#define MIN_FREQHOLD      10    /* adjust offset, but not freq in this many first adjustments */
 #define BAD_DELAY_GROWTH   4    /* drop packet if its delay grew by more than this */
 
 #define RETRY_INTERVAL    32    /* on send/recv error, retry in N secs (need to be power of 2) */
@@ -1734,7 +1735,7 @@ update_local_clock(peer_t *p)
 //15:19:39.114 update from:<IP> offset:+0.327022 delay:0.158384 jitter:0.108538 clock drift:-1.393ppm tc:4
 //15:20:12.715 update from:<IP> offset:+0.275596 delay:0.158297 jitter:0.097292 clock drift:-1.393ppm tc:4
 //15:20:45.111 update from:<IP> offset:+0.225715 delay:0.158271 jitter:0.087841 clock drift:-1.393ppm tc:4
-// If allwed to continue, it would start increasing tmx.freq now.
+// If allowed to continue, it would start increasing tmx.freq now.
 // Instead, it was ^Ced, and started anew:
 //15:21:15.043 no valid datapoints, no peer selected
 //15:21:17.408 update from:<IP> offset:+0.175910 delay:0.158314 jitter:0.076683 clock drift:-1.393ppm tc:4
@@ -1757,9 +1758,9 @@ update_local_clock(peer_t *p)
 //15:31:53.473 update from:<IP> offset:+0.000007 delay:0.158142 jitter:0.010922 clock drift:+9.343ppm tc:6
 //15:32:58.902 update from:<IP> offset:-0.000728 delay:0.158222 jitter:0.009454 clock drift:+9.298ppm tc:6
 			/*
-			 * This expression would choose 15 in the above example.
+			 * This expression would choose MIN_FREQHOLD + 7 in the above example.
 			 */
-			G.FREQHOLD_cnt = 8 + ((unsigned)(abs(tmx.offset)) >> 16);
+			G.FREQHOLD_cnt = MIN_FREQHOLD + ((unsigned)(abs(tmx.offset)) >> 16);
 		}
 		G.FREQHOLD_cnt--;
 		tmx.status |= STA_FREQHOLD;

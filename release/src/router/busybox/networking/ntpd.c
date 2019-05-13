@@ -781,6 +781,7 @@ resolve_peer_hostname(peer_t *p)
 		VERB1 if (strcmp(p->p_hostname, p->p_dotted) != 0)
 			bb_error_msg("'%s' is %s", p->p_hostname, p->p_dotted);
 		p->dns_errors = 0;
+		return lsa;
 	}
 	p->dns_errors = ((p->dns_errors << 1) | 1) & DNS_ERRORS_CAP;
 	return lsa;
@@ -2427,6 +2428,7 @@ int ntpd_main(int argc UNUSED_PARAM, char **argv)
 		gettime1900d(); /* sets G.cur_time */
 		if (nfds <= 0) {
 			double ct;
+			int dns_error;
 
 			if (bb_got_signal)
 				break; /* poll was interrupted by a signal */
@@ -2442,16 +2444,19 @@ int ntpd_main(int argc UNUSED_PARAM, char **argv)
 			 * this way, we almost never overlap DNS resolution with
 			 * "request-reply" packet round trip.
 			 */
+			dns_error = 0;
 			ct = G.cur_time;
 			for (item = G.ntp_peers; item != NULL; item = item->link) {
 				peer_t *p = (peer_t *) item->data;
 				if (p->next_action_time <= ct && !p->p_lsa) {
 					/* This can take up to ~10 sec per each DNS query */
-					resolve_peer_hostname(p);
+					dns_error |= (!resolve_peer_hostname(p));
 				}
 			}
-			gettime1900d(); /* sets G.cur_time (needed for set_next()) */
+			if (!dns_error)
+				goto check_unsync;
 			/* Set next time for those which are still not resolved */
+			gettime1900d(); /* sets G.cur_time (needed for set_next()) */
 			for (item = G.ntp_peers; item != NULL; item = item->link) {
 				peer_t *p = (peer_t *) item->data;
 				if (p->next_action_time <= ct && !p->p_lsa) {

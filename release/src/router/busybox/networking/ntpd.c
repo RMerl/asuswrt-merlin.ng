@@ -141,7 +141,12 @@
  */
 #define SLEW_THRESHOLD 0.25
 /* Stepout threshold (sec). std ntpd uses 900 (11 mins (!)) */
-#define WATCH_THRESHOLD  128
+//^^^^^^^^^^^^^^^^^^^^^^^^^^ TODO: man adjtimex about tmx.offset:
+// "Since Linux 2.6.26, the supplied value is clamped to the range (-0.5s, +0.5s)"
+// - can use this larger value instead?
+
+/* Stepout threshold (sec). std ntpd uses 900 (11 mins (!)) */
+//UNUSED: #define WATCH_THRESHOLD  128
 /* NB: set WATCH_THRESHOLD to ~60 when debugging to save time) */
 //UNUSED: #define PANIC_THRESHOLD 1000    /* panic threshold (sec) */
 
@@ -395,6 +400,7 @@ struct globals {
 	uint8_t  discipline_state;      // doc calls it c.state
 	uint8_t  poll_exp;              // s.poll
 	int      polladj_count;         // c.count
+	int      FREQHOLD_cnt;
 	long     kernel_freq_drift;
 	peer_t   *last_update_peer;
 	double   last_update_offset;    // c.last
@@ -1010,6 +1016,7 @@ step_time(double offset)
 	tval = tvn.tv_sec;
 	strftime_YYYYMMDDHHMMSS(buf, sizeof(buf), &tval);
 	bb_error_msg("setting time to %s.%06u (offset %+fs)", buf, (unsigned)tvn.tv_usec, offset);
+	//maybe? G.FREQHOLD_cnt = 0;
 
 	/* Correct various fields which contain time-relative values: */
 
@@ -1688,6 +1695,28 @@ update_local_clock(peer_t *p)
 	tmx.freq = G.discipline_freq_drift * 65536e6;
 #endif
 	tmx.modes = ADJ_OFFSET | ADJ_STATUS | ADJ_TIMECONST;// | ADJ_MAXERROR | ADJ_ESTERROR;
+	tmx.status = STA_PLL;
+	if (G.FREQHOLD_cnt != 0) {
+		G.FREQHOLD_cnt--;
+		/* man adjtimex on STA_FREQHOLD:
+		 * "Normally adjustments made via ADJ_OFFSET result in dampened
+		 * frequency adjustments also being made.
+		 * This flag prevents the small frequency adjustment from being
+		 * made when correcting for an ADJ_OFFSET value."
+		 *
+		 * Use this flag for a few first adjustments at the beginning
+		 * of ntpd execution, otherwise even relatively small initial
+		 * offset tend to cause largish changes to in-kernel tmx.freq.
+		 * If ntpd was restarted due to e.g. switch to another network,
+		 * this destroys already well-established tmx.freq value.
+		 */
+		tmx.status |= STA_FREQHOLD;
+	}
+	if (G.ntp_status & LI_PLUSSEC)
+		tmx.status |= STA_INS;
+	if (G.ntp_status & LI_MINUSSEC)
+		tmx.status |= STA_DEL;
+
 	tmx.constant = (int)G.poll_exp - 4;
 	/* EXPERIMENTAL.
 	 * The below if statement should be unnecessary, but...
@@ -1701,25 +1730,18 @@ update_local_clock(peer_t *p)
 	 */
 	if (G.offset_to_jitter_ratio >= TIMECONST_HACK_GATE)
 		tmx.constant--;
+	if (tmx.constant < 0)
+		tmx.constant = 0;
+
 	tmx.offset = (long)(offset * 1000000); /* usec */
 	if (SLEW_THRESHOLD < STEP_THRESHOLD) {
 		if (tmx.offset > (long)(SLEW_THRESHOLD * 1000000)) {
 			tmx.offset = (long)(SLEW_THRESHOLD * 1000000);
-			tmx.constant--;
 		}
 		if (tmx.offset < -(long)(SLEW_THRESHOLD * 1000000)) {
 			tmx.offset = -(long)(SLEW_THRESHOLD * 1000000);
-			tmx.constant--;
 		}
 	}
-	if (tmx.constant < 0)
-		tmx.constant = 0;
-
-	tmx.status = STA_PLL;
-	if (G.ntp_status & LI_PLUSSEC)
-		tmx.status |= STA_INS;
-	if (G.ntp_status & LI_MINUSSEC)
-		tmx.status |= STA_DEL;
 
 	//tmx.esterror = (uint32_t)(clock_jitter * 1e6);
 	//tmx.maxerror = (uint32_t)((sys_rootdelay / 2 + sys_rootdisp) * 1e6);
@@ -2214,6 +2236,7 @@ static NOINLINE void ntp_init(char **argv)
 	if (BURSTPOLL != 0)
 		G.poll_exp = BURSTPOLL; /* speeds up initial sync */
 	G.last_script_run = G.reftime = G.last_update_recv_time = gettime1900d(); /* sets G.cur_time too */
+	G.FREQHOLD_cnt = 8;
 
 	/* Parse options */
 	peers = NULL;

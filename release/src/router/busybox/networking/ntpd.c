@@ -138,13 +138,11 @@
  */
 #define STEP_THRESHOLD     1
 /* Slew threshold (sec): adjtimex() won't accept offsets larger than this.
- * Using exact power of 2 (1/8) results in smaller code
+ * Using exact power of 2 (1/8, 1/2 etc) results in smaller code
  */
-#define SLEW_THRESHOLD 0.25
-/* Stepout threshold (sec). std ntpd uses 900 (11 mins (!)) */
-//^^^^^^^^^^^^^^^^^^^^^^^^^^ TODO: man adjtimex about tmx.offset:
-// "Since Linux 2.6.26, the supplied value is clamped to the range (-0.5s, +0.5s)"
-// - can use this larger value instead?
+#define SLEW_THRESHOLD   0.5
+// ^^^^ used to be 0.125.
+// Since Linux 2.6.26 (circa 2006), kernel accepts (-0.5s, +0.5s) range
 
 /* Stepout threshold (sec). std ntpd uses 900 (11 mins (!)) */
 //UNUSED: #define WATCH_THRESHOLD  128

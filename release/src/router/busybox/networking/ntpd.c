@@ -1695,9 +1695,19 @@ update_local_clock(peer_t *p)
 	tmx.freq = G.discipline_freq_drift * 65536e6;
 #endif
 	tmx.modes = ADJ_OFFSET | ADJ_STATUS | ADJ_TIMECONST;// | ADJ_MAXERROR | ADJ_ESTERROR;
+
+	tmx.offset = (long)(offset * 1000000); /* usec */
+	if (SLEW_THRESHOLD < STEP_THRESHOLD) {
+		if (tmx.offset > (long)(SLEW_THRESHOLD * 1000000)) {
+			tmx.offset = (long)(SLEW_THRESHOLD * 1000000);
+		}
+		if (tmx.offset < -(long)(SLEW_THRESHOLD * 1000000)) {
+			tmx.offset = -(long)(SLEW_THRESHOLD * 1000000);
+		}
+	}
+
 	tmx.status = STA_PLL;
 	if (G.FREQHOLD_cnt != 0) {
-		G.FREQHOLD_cnt--;
 		/* man adjtimex on STA_FREQHOLD:
 		 * "Normally adjustments made via ADJ_OFFSET result in dampened
 		 * frequency adjustments also being made.
@@ -1710,6 +1720,48 @@ update_local_clock(peer_t *p)
 		 * If ntpd was restarted due to e.g. switch to another network,
 		 * this destroys already well-established tmx.freq value.
 		 */
+		if (G.FREQHOLD_cnt < 0) {
+			/* Initialize it */
+// Example: a laptop whose clock runs slower when hibernated,
+// after wake up it still has good tmx.freq, but accumulated ~0.5 sec offset:
+// Run with code where initial G.FREQHOLD_cnt was always 8:
+//15:17:52.947 no valid datapoints, no peer selected
+//15:17:56.515 update from:<IP> offset:+0.485133 delay:0.157762 jitter:0.209310 clock drift:-1.393ppm tc:4
+//15:17:57.719 update from:<IP> offset:+0.483825 delay:0.158070 jitter:0.181159 clock drift:-1.393ppm tc:4
+//15:17:59.925 update from:<IP> offset:+0.479504 delay:0.158147 jitter:0.156657 clock drift:-1.393ppm tc:4
+//15:18:33.322 update from:<IP> offset:+0.428119 delay:0.158317 jitter:0.138071 clock drift:-1.393ppm tc:4
+//15:19:06.718 update from:<IP> offset:+0.376932 delay:0.158276 jitter:0.122075 clock drift:-1.393ppm tc:4
+//15:19:39.114 update from:<IP> offset:+0.327022 delay:0.158384 jitter:0.108538 clock drift:-1.393ppm tc:4
+//15:20:12.715 update from:<IP> offset:+0.275596 delay:0.158297 jitter:0.097292 clock drift:-1.393ppm tc:4
+//15:20:45.111 update from:<IP> offset:+0.225715 delay:0.158271 jitter:0.087841 clock drift:-1.393ppm tc:4
+// If allwed to continue, it would start increasing tmx.freq now.
+// Instead, it was ^Ced, and started anew:
+//15:21:15.043 no valid datapoints, no peer selected
+//15:21:17.408 update from:<IP> offset:+0.175910 delay:0.158314 jitter:0.076683 clock drift:-1.393ppm tc:4
+//15:21:19.774 update from:<IP> offset:+0.171784 delay:0.158401 jitter:0.066436 clock drift:-1.393ppm tc:4
+//15:21:22.140 update from:<IP> offset:+0.171660 delay:0.158592 jitter:0.057536 clock drift:-1.393ppm tc:4
+//15:21:22.140 update from:<IP> offset:+0.167126 delay:0.158507 jitter:0.049792 clock drift:-1.393ppm tc:4
+//15:21:55.696 update from:<IP> offset:+0.115223 delay:0.158277 jitter:0.050240 clock drift:-1.393ppm tc:4
+//15:22:29.093 update from:<IP> offset:+0.068051 delay:0.158243 jitter:0.049405 clock drift:-1.393ppm tc:5
+//15:23:02.490 update from:<IP> offset:+0.051632 delay:0.158215 jitter:0.043545 clock drift:-1.393ppm tc:5
+//15:23:34.726 update from:<IP> offset:+0.039984 delay:0.158157 jitter:0.038106 clock drift:-1.393ppm tc:5
+// STA_FREQHOLD no longer set, started increasing tmx.freq now:
+//15:24:06.961 update from:<IP> offset:+0.030968 delay:0.158190 jitter:0.033306 clock drift:+2.387ppm tc:5
+//15:24:40.357 update from:<IP> offset:+0.023648 delay:0.158211 jitter:0.029072 clock drift:+5.454ppm tc:5
+//15:25:13.774 update from:<IP> offset:+0.018068 delay:0.157660 jitter:0.025288 clock drift:+7.728ppm tc:5
+//15:26:19.173 update from:<IP> offset:+0.010057 delay:0.157969 jitter:0.022255 clock drift:+8.361ppm tc:6
+//15:27:26.602 update from:<IP> offset:+0.006737 delay:0.158103 jitter:0.019316 clock drift:+8.792ppm tc:6
+//15:28:33.030 update from:<IP> offset:+0.004513 delay:0.158294 jitter:0.016765 clock drift:+9.080ppm tc:6
+//15:29:40.617 update from:<IP> offset:+0.002787 delay:0.157745 jitter:0.014543 clock drift:+9.258ppm tc:6
+//15:30:47.045 update from:<IP> offset:+0.001324 delay:0.157709 jitter:0.012594 clock drift:+9.342ppm tc:6
+//15:31:53.473 update from:<IP> offset:+0.000007 delay:0.158142 jitter:0.010922 clock drift:+9.343ppm tc:6
+//15:32:58.902 update from:<IP> offset:-0.000728 delay:0.158222 jitter:0.009454 clock drift:+9.298ppm tc:6
+			/*
+			 * This expression would choose 15 in the above example.
+			 */
+			G.FREQHOLD_cnt = 8 + ((unsigned)(abs(tmx.offset)) >> 16);
+		}
+		G.FREQHOLD_cnt--;
 		tmx.status |= STA_FREQHOLD;
 	}
 	if (G.ntp_status & LI_PLUSSEC)
@@ -1732,16 +1784,6 @@ update_local_clock(peer_t *p)
 		tmx.constant--;
 	if (tmx.constant < 0)
 		tmx.constant = 0;
-
-	tmx.offset = (long)(offset * 1000000); /* usec */
-	if (SLEW_THRESHOLD < STEP_THRESHOLD) {
-		if (tmx.offset > (long)(SLEW_THRESHOLD * 1000000)) {
-			tmx.offset = (long)(SLEW_THRESHOLD * 1000000);
-		}
-		if (tmx.offset < -(long)(SLEW_THRESHOLD * 1000000)) {
-			tmx.offset = -(long)(SLEW_THRESHOLD * 1000000);
-		}
-	}
 
 	//tmx.esterror = (uint32_t)(clock_jitter * 1e6);
 	//tmx.maxerror = (uint32_t)((sys_rootdelay / 2 + sys_rootdisp) * 1e6);
@@ -2236,7 +2278,7 @@ static NOINLINE void ntp_init(char **argv)
 	if (BURSTPOLL != 0)
 		G.poll_exp = BURSTPOLL; /* speeds up initial sync */
 	G.last_script_run = G.reftime = G.last_update_recv_time = gettime1900d(); /* sets G.cur_time too */
-	G.FREQHOLD_cnt = 8;
+	G.FREQHOLD_cnt = -1;
 
 	/* Parse options */
 	peers = NULL;

@@ -842,10 +842,8 @@ do_sendto(int fd,
 static void
 send_query_to_peer(peer_t *p)
 {
-	if (!p->p_lsa) {
-		if (!resolve_peer_hostname(p))
-			return;
-	}
+	if (!p->p_lsa)
+		return;
 
 	/* Why do we need to bind()?
 	 * See what happens when we don't bind:
@@ -2345,6 +2343,14 @@ int ntpd_main(int argc UNUSED_PARAM, char **argv)
 		unsigned i, j;
 		int nfds, timeout;
 		double nextaction;
+
+		/* Resolve peer names to IPs, if not resolved yet */
+		for (item = G.ntp_peers; item != NULL; item = item->link) {
+			peer_t *p = (peer_t *) item->data;
+
+			if (p->next_action_time <= G.cur_time && !p->p_lsa)
+				resolve_peer_hostname(p);
+		}
 
 		/* Nothing between here and poll() blocks for any significant time */
 

@@ -1094,7 +1094,8 @@ fit(peer_t *p, double rd)
 {
 	if ((p->reachable_bits & (p->reachable_bits-1)) == 0) {
 		/* One or zero bits in reachable_bits */
-		VERB4 bb_error_msg("peer %s unfit for selection: unreachable", p->p_dotted);
+		VERB4 bb_error_msg("peer %s unfit for selection: "
+				"unreachable", p->p_dotted);
 		return 0;
 	}
 	if (option_mask32 & OPT_t) /* RFC-4330 check disabled */
@@ -1104,13 +1105,17 @@ fit(peer_t *p, double rd)
 	if ((p->lastpkt_status & LI_ALARM) == LI_ALARM
 	 || p->lastpkt_stratum >= MAXSTRAT
 	) {
-		VERB4 bb_error_msg("peer %s unfit for selection: bad status/stratum", p->p_dotted);
+		VERB4 bb_error_msg("peer %s unfit for selection: "
+				"bad status/stratum", p->p_dotted);
 		return 0;
 	}
 #endif
 	/* rd is root_distance(p) */
 	if (rd > MAXDIST + FREQ_TOLERANCE * (1 << G.poll_exp)) {
-		VERB4 bb_error_msg("peer %s unfit for selection: root distance too high", p->p_dotted);
+		VERB3 bb_error_msg("peer %s unfit for selection: "
+			"root distance %f too high, jitter:%f",
+			p->p_dotted, rd, p->filter_jitter
+		);
 		return 0;
 	}
 //TODO

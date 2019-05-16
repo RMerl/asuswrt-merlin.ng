@@ -14,6 +14,9 @@ Asuswrt-Merlin 384/NG Changelog
  - FIXED: Movistar stopped working for some users.  Re-disabled
           udpxy on Movistar profile for now.  A more complete
           fix will have to come from Asus.
+ - FIXED: Re-disabled memaccess debugging tool, as it creates
+          a symlink called "sh" which is a pretty bad
+          idea from Broadcom. (RT-AC86U, RT-AX88U)
 
 
 384.11 (8-May-2019)

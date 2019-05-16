@@ -54,6 +54,8 @@
 
 #define UUIDLEN	37
 
+static char hostname[HOST_NAME_MAX + 1];
+static char *netbiosname, *workgroup;
 static time_t wsd_instance;
 static char wsd_sequence[UUIDLEN], wsd_endpoint[UUIDLEN];
 
@@ -116,6 +118,7 @@ static void uuid_endpoint(char *uuid, size_t len)
 	}
 }
 
+#ifndef ASUSWRT
 static char *get_smbparm(struct endpoint *ep,
 			const char *name, const char *_default)
 {
@@ -159,7 +162,46 @@ static char *get_smbparm(struct endpoint *ep,
 	return result;
 #undef __FUNCTION__
 }
+#else
+void get_smbinfo(struct endpoint *ep)
+{
+#define __FUNCTION__    "get_smbinfo"
+	char buf[256];
+	FILE *fp;
 
+	if (!netbiosname)
+		netbiosname = malloc(HOST_NAME_MAX + 1);
+	if (!workgroup)
+		workgroup = malloc(15);
+
+	strcpy(netbiosname, "");
+	strcpy(workgroup, "");
+
+        if (!(fp = fopen("/etc/smb.conf","r"))) {
+		ep->_errno = errno;
+		ep->errstr = __FUNCTION__ ": Can't access smb.conf";
+		goto exit;
+        }
+
+	while (fgets(buf, sizeof(buf), fp) && (!*netbiosname || !*workgroup)) {
+		if (!*workgroup)
+			sscanf(buf, "workgroup = %14[^\n]s", workgroup);
+		if (!*netbiosname)
+			sscanf(buf, "netbios name = %16[^\n]s", netbiosname);
+	}
+	fclose(fp);
+
+exit:
+	/* Set defaults if needed */
+	if (!*netbiosname)
+		strncpy(netbiosname, hostname, 16);
+	if (!*workgroup)
+		strcpy(workgroup, "WORKGROUP");
+#undef __FUNCTION__
+}
+#endif
+
+#ifndef ASUSWRT
 static struct {
 	const char *key, *_default;
 	char *value;
@@ -173,6 +215,22 @@ static struct {
 	{ .key	= "presentationurl:",	._default = "http://www.netgear.com"},
 	{}
 };
+#else
+static struct {
+	const char *key, *_default;
+	char *value;
+} bootinfo[] = {
+	{ .key  = "vendor:",    ._default = "ASUS"},
+	{ .key  = "model:",     ._default = "Asuswrt-Merlin"},
+	{ .key  = "serial:",    ._default = "0"},
+	{ .key  = "sku:",       ._default = "Asus router"},
+	{ .key  = "vendorurl:", ._default = "https://www.asus.com"},
+	{ .key  = "modelurl:",  ._default = "https://asuswrt.lostrealm.ca"},
+	{ .key  = "presentationurl:",   ._default = "http://router.asus.com"},
+	{}
+};
+
+#endif
 
 void printBootInfoKeys(FILE *fp, int sp)
 {
@@ -807,8 +865,6 @@ static int send_http_resp_header(int fd, struct endpoint *ep,
 	return rv;
 }
 
-static char *netbiosname, *workgroup;
-
 static int wsd_send_get_response(int fd,
 				struct endpoint *ep,
 				const _saddr_t *sa,
@@ -983,7 +1039,6 @@ again:
 #undef	__FUNCTION__
 }
 
-static char hostname[HOST_NAME_MAX + 1];
 
 int wsd_init(struct endpoint *ep)
 {
@@ -1006,12 +1061,18 @@ int wsd_init(struct endpoint *ep)
 		return -1;
 	}
 
+#ifndef ASUSWRT
 	if (!workgroup &&
 		!(workgroup = get_smbparm(ep, "workgroup", "WORKGROUP")))
 		return -1;
 	if (!netbiosname &&
 		!(netbiosname = get_smbparm(ep, "netbios name", hostname)))
 		return -1;
+
+#else
+	if (!workgroup || !netbiosname)
+		get_smbinfo(ep);
+#endif
 
 	if (!getresp_inited)
 		init_getresp();

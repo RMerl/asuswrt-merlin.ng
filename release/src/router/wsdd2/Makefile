@@ -4,8 +4,16 @@
 #	Copyright (c) 2016 NETGEAR
 #	Copyright (c) 2016 Hiro Sugawara
 #
+include ../common.mak
 
 OBJFILES	= wsdd2.o wsd.o llmnr.o
+
+ifeq ($(RTCONFIG_BCMARM),y)
+ifneq ($(HND_ROUTER),y)
+	OBJFILES += ifaddrs.o
+endif
+endif
+
 HEADERS		= wsdd.h wsd.h
 
 INSTALLPREFIX ?= $(PREFIX)/usr

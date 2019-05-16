@@ -1244,6 +1244,8 @@ obj-$(RTCONFIG_SAMBA36X) += libiconv-1.14
 obj-$(RTCONFIG_TELENET) += lanauth
 obj-y += inadyn
 obj-y += libconfuse
+obj-y += wsdd2
+
 ifeq ($(RTCONFIG_OPENSSL11),y)
 obj-$(RTCONFIG_OPENSSL11) += openssl-1.1.x
 OPENSSLDIR=openssl-1.1.x
@@ -7220,7 +7222,7 @@ libvpn: shared nvram$(BCMEX)$(EX7)
 
 wsdd2:
 	@$(SEP)
-	$(MAKE) -C $@
+	$(MAKE) CFLAGS+="-DASUSWRT -Os" -C $@
 
 wsdd2-install:
 	install -D wsdd2/wsdd2 $(INSTALLDIR)/wsdd2/usr/sbin/wsdd2

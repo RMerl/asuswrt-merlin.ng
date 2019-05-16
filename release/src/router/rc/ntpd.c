@@ -81,6 +81,11 @@ void stop_ntpd(void)
 
 int ntpd_synced_main(int argc, char *argv[])
 {
+#if 0
+	if (argc == 2 && !strcmp(argv[1], "unsync"))
+		logmessage("ntp", "Unable to reach ntp server so far, keep trying");
+#endif
+
 	if (!nvram_match("ntp_ready", "1") && (argc == 2 && !strcmp(argv[1], "step"))) {
 		nvram_set("ntp_ready", "1");
 		logmessage("ntp", "Initial clock set");

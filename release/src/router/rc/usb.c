@@ -5600,8 +5600,10 @@ void start_wsdd()
 	snprintf(bootparms, sizeof(bootparms), "sku:%s,serial:%s", get_productid(), serial);
 	wsdd_argv[3] = bootparms;
 
+#if 0
 	if(!f_exists("/etc/machine-id"))
 		system("echo $(nvram get lan_hwaddr) | md5sum | cut -b -32 > /etc/machine-id");
+#endif
 
 	_eval(wsdd_argv, NULL, 0, &pid);
 }

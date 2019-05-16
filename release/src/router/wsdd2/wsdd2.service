@@ -1,0 +1,8 @@
+[Unit]
+Description=WSD/LLMNR Discovery/Name Service Daemon
+BindsTo=smb.service
+
+[Service]
+ExecStart=/usr/sbin/wsdd2
+ExecReload=/bin/kill -HUP $MAINPID
+Restart=on-failure

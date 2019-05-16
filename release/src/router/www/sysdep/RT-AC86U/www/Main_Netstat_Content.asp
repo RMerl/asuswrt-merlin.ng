@@ -8,16 +8,20 @@
 <link rel="shortcut icon" href="images/favicon.png">
 <link rel="icon" href="images/favicon.png">
 <title><#Network_Tools#> - Netstat</title>
-<link rel="stylesheet" type="text/css" href="index_style.css"> 
+<link rel="stylesheet" type="text/css" href="index_style.css">
 <link rel="stylesheet" type="text/css" href="form_style.css">
+<link rel="stylesheet" type="text/css" href="device-map/device-map.css">
 <script language="JavaScript" type="text/javascript" src="/state.js"></script>
 <script language="JavaScript" type="text/javascript" src="/general.js"></script>
 <script language="JavaScript" type="text/javascript" src="/popup.js"></script>
 <script language="JavaScript" type="text/javascript" src="/help.js"></script>
 <script language="JavaScript" type="text/javascript" src="/js/jquery.js"></script>
+<script language="JavaScript" type="text/javascript" src="/validator.js"></script>
+<script language="JavaScript" type="text/javascript" src="/client_function.js"></script>
 <script>
 function init(){
 	show_menu();
+	showDropdownClientList('setClientIP', 'ip', 'all', 'ClientList_Block_PC', 'pull_arrow', 'online');
 }
 
 var netoolApi = {
@@ -43,7 +47,7 @@ var netoolApi = {
 				if(data.search("XU6J03M6") == -1){
 					setTimeout(function(){
 						netoolApi.check(fileName);
-					}, 500);				
+					}, 500);
 				}
 				else{
 					$("#loadingIcon").hide();
@@ -60,17 +64,49 @@ var netoolApi = {
 }
 
 function hideCNT(obj){
-
 	if (obj.value == 6) {		// Netstat
 		document.getElementById("netstat_td").style.display="";
 		document.getElementById("netstat_nat_td").style.display="none";
-
+		document.getElementById("ipfilter_tr").style.display="none";
 	} else if (obj.value == 7) {	// Netstat-nat
-                document.getElementById("netstat_td").style.display="none";
-                document.getElementById("netstat_nat_td").style.display="";
+		document.getElementById("netstat_td").style.display="none";
+		document.getElementById("netstat_nat_td").style.display="";
+		document.getElementById("ipfilter_tr").style.display="";
 	}
 	return true;
 }
+
+function hideClients_Block(evt){
+	if(typeof(evt) != "undefined"){
+		if(!evt.srcElement)
+			evt.srcElement = evt.target; // for Firefox
+
+		if(evt.srcElement.id == "pull_arrow" || evt.srcElement.id == "ClientList_Block"){
+			return;
+		}
+	}
+
+	document.getElementById("pull_arrow").src = "/images/arrow-down.gif";
+	document.getElementById('ClientList_Block_PC').style.display='none';
+}
+
+function pullLANIPList(obj){
+	var element = document.getElementById('ClientList_Block_PC');
+	var isMenuopen = element.offsetWidth > 0 || element.offsetHeight > 0;
+	if(isMenuopen == 0){
+		obj.src = "/images/arrow-top.gif"
+		element.style.display = 'block';
+	}
+	else
+		hideClients_Block();
+}
+
+function setClientIP(ipaddr){
+	document.form.srchost.value = ipaddr;
+	hideClients_Block();
+}
+
+
 </script>
 </head>
 <body onload="init();">
@@ -111,8 +147,8 @@ function hideCNT(obj){
 													<option value="6" selected>Netstat</option>
 													<option value="7">Netstat-NAT</option>
 												</select>
-											</td>										
-										</tr>										
+											</td>
+										</tr>
 										<tr>
 											<th width="20%"><#NetworkTools_option#></th>
 											<td id="netstat_td">
@@ -150,6 +186,17 @@ function hideCNT(obj){
 												<input type="checkbox" class="options" value="00000001"><#sockets_not_resolve_names#>
 											</td>
 										</tr>
+										<tr id="ipfilter_tr" style="display:none;">
+											<th width="20%">IP filters</th>
+											<td>
+												<label>Source:</label>
+												<input type="text" id="srchost" class="input_15_table" maxlength="15" name="srchost" onKeyPress="return validator.isIPAddr(this,event)" onClick="hideClients_Block();" autocorrect="off" autocapitalize="off">
+												<img id="pull_arrow" height="14px;" src="/images/arrow-down.gif" style="position:absolute;*margin-left:-3px;*margin-top:1px;margin-right:40px;" onclick="pullLANIPList(this);" title="<#select_device_name#>">
+												<label style="margin-left:60px;">Destination:</label>
+												<input type="text" id="dsthost" class="input_15_table" maxlength="15" name="dsthost" onKeyPress="return validator.isIPAddr(this,event)" autocorrect="off" autocapitalize="off">
+												<div id="ClientList_Block_PC" class="clientlist_dropdown" style="margin-left:2px;"></div>
+											</td>
+										</tr>
 									</table>
 
 									<div class="apply_gen" style="height:40px">
@@ -164,7 +211,9 @@ function hideCNT(obj){
 												$("#textarea").val("");
 												netoolApi.start({
 													"type": $("#cmdMethod").val(),
-													"netst": "0x00" + parseInt(options, 2).toString(16)
+													"netst": "0x00" + parseInt(options, 2).toString(16),
+													"srchost": document.form.srchost.value,
+													"dsthost": document.form.dsthost.value,
 												})
 											})
 										</script>

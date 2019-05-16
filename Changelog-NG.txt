@@ -1,6 +1,24 @@
 Asuswrt-Merlin 384/NG Changelog
 ===============================
 
+384.11_2 (xx-xxx-2019)
+  - NEW: Implemented source/destination IP filtering
+         for the Netool version of Netstat web page.
+  - CHANGED: Backported multiple fixes and improvements
+             for ntpd from upstream, improving handling
+             of failed server hostname resolution, and better
+             clock sync discipline.
+  - FIXED: RT-AC88U/3100/5300 were accidentally compiled
+           with Netool enabled, which isn't compatible with
+           these model's kernel.
+ - FIXED: Movistar stopped working for some users.  Re-disabled
+          udpxy on Movistar profile for now.  A more complete
+          fix will have to come from Asus.
+ - FIXED: Re-disabled memaccess debugging tool, as it creates
+          a symlink called "sh" which is a pretty bad
+          idea from Broadcom. (RT-AC86U, RT-AX88U)
+
+
 384.11 (8-May-2019)
   - NEW: Added DNS Privacy feature, with support for
          DNS-over-TLS (also known as DoT).

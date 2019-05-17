@@ -580,7 +580,11 @@ function draw_chart(data_array, ctx, pie) {
 					<th width="27%">Application</th>
 				</tr>
 				<tr>
-					<td><input type="text" class="input_3_table" maxlength="3" oninput="set_filter(0, this);"></input></td>
+					<td><select class="input_option" onchange="set_filter(0, this);">
+						<option value="">any</option>
+						<option value="tcp">tcp</option>
+						<option value="udp">udp</option>
+					</select></td>
 					<td><input type="text" class="input_15_table" maxlength="39" oninput="set_filter(1, this);"></input></td>
 					<td><input type="text" class="input_6_table" maxlength="5" oninput="set_filter(2, this);"></input></td>
 					<td><input type="text" class="input_15_table" maxlength="39" oninput="set_filter(3, this);"></input></td>

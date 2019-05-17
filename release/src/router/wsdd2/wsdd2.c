@@ -543,6 +543,7 @@ static void help(const char *prog, int ec, const char *fmt, ...)
 		"       -W  WSDD debug mode (incremental level)\n"
 		"       -d  go daemon\n"
 		"       -h  This message\n"
+		"       -i  <interface> Specify which interface to bind to, otherwise bind to all\n"
 		"       -l  LLMNR only\n"
 		"       -t  TCP only\n"
 		"       -u  UDP only\n"
@@ -566,8 +567,9 @@ int main(int argc, char **argv)
 	int opt;
 	const char *prog = basename(*argv);
 	unsigned int ipv46 = 0, tcpudp = 0, llmnrwsdd = 0;
+	char *ifname = NULL;
 
-	while ((opt = getopt(argc, argv, "?46LWb:dhltuw")) != -1) {
+	while ((opt = getopt(argc, argv, "?46LWb:dhltuwi:")) != -1) {
 		switch (opt) {
 		case 'L':
 			debug_L++;
@@ -605,6 +607,12 @@ int main(int argc, char **argv)
 			break;
 		case 'u':
 			tcpudp	|= _UDP;
+			break;
+		case 'i':
+			if (!optarg)
+				help(prog, EXIT_FAILURE, "-i provided without interface\n");
+			else
+				ifname = strdup(optarg);
 			break;
 		default:
 			help(prog, EXIT_FAILURE, "bad option '%c'\n", opt);
@@ -682,6 +690,7 @@ again:
 					(!strncmp(ifa->ifa_name, "veth", 4)) ||
 					(!strncmp(ifa->ifa_name, "tun", 3)) ||
 					(!strncmp(ifa->ifa_name, "zt", 2)) ||
+					(ifname && strcmp(ifa->ifa_name, ifname)) ||
 					(sv->mcast_addr &&
 					!(ifa->ifa_flags & IFF_MULTICAST)))
 					continue;

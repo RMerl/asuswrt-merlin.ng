@@ -313,7 +313,6 @@ function pullLANIPList(obj){
 </form>
 
 <div id="footer"></div>
-</body>
 <script type="text/javascript">
 <!--[if !IE]>-->
 	(function($){
@@ -322,4 +321,5 @@ function pullLANIPList(obj){
 	})(jQuery);
 <!--<![endif]-->
 </script>
+</body>
 </html>

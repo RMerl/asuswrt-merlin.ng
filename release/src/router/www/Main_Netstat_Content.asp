@@ -291,7 +291,7 @@ function validForm(){
 
 									<div class="apply_gen">
 										<input class="button_gen" id="cmdBtn" onClick="onSubmitCtrl(this, ' Refresh ')" type="button" value="Netstat">
-										<img id="loadingIcon" style="display:none;" src="/images/InternetScan.gif"></span>
+										<img id="loadingIcon" style="display:none;" src="/images/InternetScan.gif">
 									</div>
 
 									<div style="margin-top:8px" id="logArea">
@@ -311,7 +311,6 @@ function validForm(){
 </form>
 
 <div id="footer"></div>
-</body>
 <script type="text/javascript">
 <!--[if !IE]>-->
 	(function($){
@@ -320,4 +319,5 @@ function validForm(){
 	})(jQuery);
 <!--<![endif]-->
 </script>
+</body>
 </html>

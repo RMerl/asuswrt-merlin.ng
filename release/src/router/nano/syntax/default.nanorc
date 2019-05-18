@@ -11,7 +11,7 @@ color cyan "^[[:space:]]*#.*"
 color ,red " +	+"
 
 # Nano's name, including version.
-color brightred "(GNU )?[Nn]ano [1-3]\.[0-9][-.[:alnum:]]*\>"
+color brightred "(GNU )?[Nn]ano [1-4]\.[0-9][-.[:alnum:]]*\>"
 
 # Email addresses.
 color magenta "<[[:alnum:].%_+-]+@[[:alnum:].-]+\.[[:alpha:]]{2,}>"

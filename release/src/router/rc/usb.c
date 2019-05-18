@@ -3290,6 +3290,8 @@ start_samba(void)
 		xstart(smbd_cmd, "-D", "-s", "/etc/smb.conf");
 #endif
 
+	start_wsdd();
+
 	logmessage("Samba Server", "daemon is started");
 
 	return;
@@ -3302,6 +3304,7 @@ void stop_samba(void)
 		return;
 	}
 
+	stop_wsdd();
 	kill_samba(SIGTERM);
 	/* clean up */
 	unlink("/var/log/smb");
@@ -5573,4 +5576,42 @@ void stop_nfsd(void)
 }
 
 #endif
+
+
+void start_wsdd()
+{
+	unsigned char ea[ETHER_ADDR_LEN];
+	char serial[18];
+	pid_t pid;
+	char bootparms[64];
+	char *wsdd_argv[] = { "/usr/sbin/wsdd2",
+				"-d",
+				"-b",
+				"-i",
+				nvram_safe_get("lan_ifname"),
+				NULL,	// boot parameters
+				NULL };
+	stop_wsdd();
+
+	if (!ether_atoe(get_lan_hwaddr(), ea))
+		f_read("/dev/urandom", ea, sizeof(ea));
+
+	snprintf(serial, sizeof(serial), "%02x%02x%02x%02x%02x%02x",
+		ea[0], ea[1], ea[2], ea[3], ea[4], ea[5]);
+
+	snprintf(bootparms, sizeof(bootparms), "sku:%s,serial:%s", get_productid(), serial);
+	wsdd_argv[5] = bootparms;
+
+#if 0
+	if(!f_exists("/etc/machine-id"))
+		system("echo $(nvram get lan_hwaddr) | md5sum | cut -b -32 > /etc/machine-id");
+#endif
+
+	_eval(wsdd_argv, NULL, 0, &pid);
+}
+
+void stop_wsdd() {
+	if (pids("wsdd2"))
+		killall_tk("wsdd2");
+}
 

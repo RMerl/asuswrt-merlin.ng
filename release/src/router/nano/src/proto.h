@@ -98,7 +98,9 @@ extern bool keep_cutbuffer;
 
 extern partition *filepart;
 extern openfilestruct *openfile;
-extern openfilestruct *firstfile;
+#ifdef ENABLE_MULTIBUFFER
+extern openfilestruct *startfile;
+#endif
 
 #ifndef NANO_TINY
 extern char *matchbrackets;
@@ -143,9 +145,9 @@ extern bool have_palette;
 extern bool refresh_needed;
 
 extern int currmenu;
-extern sc *sclist;
-extern subnfunc *allfuncs;
-extern subnfunc *exitfunc;
+extern keystruct *sclist;
+extern funcstruct *allfuncs;
+extern funcstruct *exitfunc;
 
 extern linestruct *search_history;
 extern linestruct *replace_history;
@@ -315,17 +317,17 @@ char *input_tab(char *buf, bool allow_files, size_t *place,
 
 /* Some functions in global.c. */
 size_t length_of_list(int menu);
-const sc *first_sc_for(int menu, void (*func)(void));
+const keystruct *first_sc_for(int menu, void (*func)(void));
 int the_code_for(void (*func)(void), int defaultval);
 functionptrtype func_from_key(int *kbinput);
 int keycode_from_string(const char *keystring);
-void assign_keyinfo(sc *s, const char *keystring, const int keycode);
+void assign_keyinfo(keystruct *s, const char *keystring, const int keycode);
 void print_sclist(void);
 void shortcut_init(void);
-const subnfunc *sctofunc(const sc *s);
+const funcstruct *sctofunc(const keystruct *s);
 const char *flagtostr(int flag);
 #ifdef ENABLE_NANORC
-sc *strtosc(const char *input);
+keystruct *strtosc(const char *input);
 int name_to_menu(const char *name);
 char *menu_to_name(int menu);
 #endif
@@ -424,6 +426,9 @@ RETSIGTYPE handle_crash(int signal);
 #endif
 RETSIGTYPE do_suspend(int signal);
 RETSIGTYPE do_continue(int signal);
+#if !defined(NANO_TINY) || defined(ENABLE_SPELLER)
+void block_sigwinch(bool blockit);
+#endif
 #ifndef NANO_TINY
 RETSIGTYPE handle_sigwinch(int signal);
 void regenerate_screen(void);
@@ -437,7 +442,7 @@ void terminal_init(void);
 void confirm_margin(void);
 #endif
 void unbound_key(int code);
-bool okay_for_view(const sc *shortcut);
+bool okay_for_view(const keystruct *shortcut);
 void do_output(char *output, size_t output_len, bool allow_cntrls);
 
 /* Most functions in prompt.c. */
@@ -520,8 +525,7 @@ void update_multiline_undo(ssize_t lineno, char *indentation);
 void update_undo(undo_type action);
 #endif /* !NANO_TINY */
 #ifdef ENABLE_WRAPPING
-void wrap_reset(void);
-bool do_wrap(linestruct *line);
+bool do_wrap(void);
 #endif
 #if defined(ENABLE_HELP) || defined(ENABLED_WRAPORJUSTIFY)
 ssize_t break_line(const char *line, ssize_t goal, bool snap_at_nl);
@@ -557,7 +561,6 @@ int digits(ssize_t n);
 #endif
 bool parse_num(const char *str, ssize_t *val);
 bool parse_line_column(const char *str, ssize_t *line, ssize_t *column);
-void null_at(char **data, size_t index);
 void unsunder(char *str, size_t true_len);
 void sunder(char *str);
 #if !defined(ENABLE_TINY) || defined(ENABLE_TABCOMP) || defined(ENABLE_BROWSER)
@@ -577,8 +580,8 @@ char *free_and_assign(char *dest, char *src);
 size_t get_page_start(size_t column);
 size_t xplustabs(void);
 size_t actual_x(const char *text, size_t column);
-size_t strnlenpt(const char *text, size_t maxlen);
-size_t strlenpt(const char *text);
+size_t wideness(const char *text, size_t maxlen);
+size_t breadth(const char *text);
 void new_magicline(void);
 #if !defined(NANO_TINY) || defined(ENABLE_HELP)
 void remove_magicline(void);
@@ -613,7 +616,7 @@ int *parse_verbatim_kbinput(WINDOW *win, size_t *count);
 #ifdef ENABLE_MOUSE
 int get_mouseinput(int *mouse_row, int *mouse_col, bool allow_shortcuts);
 #endif
-const sc *get_shortcut(int *kbinput);
+const keystruct *get_shortcut(int *kbinput);
 void blank_row(WINDOW *win, int y, int x, int n);
 void blank_edit(void);
 void blank_statusbar(void);

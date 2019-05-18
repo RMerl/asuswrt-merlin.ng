@@ -75,7 +75,7 @@ size_t proper_x(linestruct *line, size_t *leftedge, bool forward,
 
 #ifndef NANO_TINY
 	if (ISSET(SOFTWRAP) && line->data[index] == '\t' &&
-				((forward && strnlenpt(line->data, index) < *leftedge) ||
+				((forward && wideness(line->data, index) < *leftedge) ||
 				(!forward && column / tabsize == (*leftedge - 1) / tabsize &&
 				column / tabsize < (*leftedge + editwincols - 1) / tabsize))) {
 		index++;
@@ -85,7 +85,7 @@ size_t proper_x(linestruct *line, size_t *leftedge, bool forward,
 	}
 
 	if (ISSET(SOFTWRAP))
-		*leftedge = leftedge_for(strnlenpt(line->data, index), line);
+		*leftedge = leftedge_for(wideness(line->data, index), line);
 #endif
 
 	return index;

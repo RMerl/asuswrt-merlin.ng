@@ -1,4 +1,4 @@
-# getdelim.m4 serial 12
+# getdelim.m4 serial 13
 
 dnl Copyright (C) 2005-2007, 2009-2019 Free Software Foundation, Inc.
 dnl
@@ -11,6 +11,7 @@ AC_PREREQ([2.59])
 AC_DEFUN([gl_FUNC_GETDELIM],
 [
   AC_REQUIRE([gl_STDIO_H_DEFAULTS])
+  AC_REQUIRE([AC_CANONICAL_HOST]) dnl for cross-compiles
 
   dnl Persuade glibc <stdio.h> to declare getdelim().
   AC_REQUIRE([AC_USE_SYSTEM_EXTENSIONS])
@@ -21,9 +22,10 @@ AC_DEFUN([gl_FUNC_GETDELIM],
   if test $ac_cv_func_getdelim = yes; then
     HAVE_GETDELIM=1
     dnl Found it in some library.  Verify that it works.
-    AC_CACHE_CHECK([for working getdelim function], [gl_cv_func_working_getdelim],
-    [echo fooNbarN | tr -d '\012' | tr N '\012' > conftest.data
-    AC_RUN_IFELSE([AC_LANG_SOURCE([[
+    AC_CACHE_CHECK([for working getdelim function],
+      [gl_cv_func_working_getdelim],
+      [echo fooNbarN | tr -d '\012' | tr N '\012' > conftest.data
+       AC_RUN_IFELSE([AC_LANG_SOURCE([[
 #    include <stdio.h>
 #    include <stdlib.h>
 #    include <string.h>
@@ -53,25 +55,31 @@ AC_DEFUN([gl_FUNC_GETDELIM],
       fclose (in);
       return 0;
     }
-    ]])], [gl_cv_func_working_getdelim=yes] dnl The library version works.
-    , [gl_cv_func_working_getdelim=no] dnl The library version does NOT work.
-    , dnl We're cross compiling. Assume it works on glibc2 systems.
-      [AC_EGREP_CPP([Lucky GNU user],
-         [
+    ]])],
+         [gl_cv_func_working_getdelim=yes],
+         [gl_cv_func_working_getdelim=no],
+         [dnl We're cross compiling.
+          dnl Guess it works on glibc2 systems and musl systems.
+          AC_EGREP_CPP([Lucky GNU user],
+            [
 #include <features.h>
 #ifdef __GNU_LIBRARY__
  #if (__GLIBC__ >= 2) && !defined __UCLIBC__
   Lucky GNU user
  #endif
 #endif
-         ],
-         [gl_cv_func_working_getdelim="guessing yes"],
-         [gl_cv_func_working_getdelim="guessing no"])]
-    )])
+            ],
+            [gl_cv_func_working_getdelim="guessing yes"],
+            [case "$host_os" in
+               *-musl*) gl_cv_func_working_getdelim="guessing yes" ;;
+               *)       gl_cv_func_working_getdelim="guessing no" ;;
+             esac
+            ])
+         ])
+      ])
     case "$gl_cv_func_working_getdelim" in
-      *no)
-        REPLACE_GETDELIM=1
-        ;;
+      *yes) ;;
+      *) REPLACE_GETDELIM=1 ;;
     esac
   else
     HAVE_GETDELIM=0

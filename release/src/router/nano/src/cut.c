@@ -67,7 +67,7 @@ void do_deletion(undo_type action)
 
 		/* If there is a magic line, and we're before it: don't eat it. */
 		if (joining == openfile->filebot && openfile->current_x != 0 &&
-				ISSET(FINAL_NEWLINE)) {
+				!ISSET(NO_NEWLINES)) {
 #ifndef NANO_TINY
 			if (action == BACK)
 				add_undo(BACK);
@@ -279,7 +279,7 @@ void do_cut_text(bool copy_text, bool marked, bool cut_till_eof, bool append)
 	size_t cb_save_len = 0;
 		/* The length of the string at the current end of the cutbuffer,
 		 * before we add text to it. */
-	bool using_magicline = ISSET(FINAL_NEWLINE);
+	bool using_magicline = !ISSET(NO_NEWLINES);
 		/* Whether an automatic newline should be added at end-of-buffer. */
 	bool right_side_up = TRUE;
 		/* There *is* no region, *or* it is marked forward. */
@@ -301,7 +301,7 @@ void do_cut_text(bool copy_text, bool marked, bool cut_till_eof, bool append)
 			cb_save_len = strlen(cutbottom->data);
 		}
 		/* Don't add a magic line when moving text to the cutbuffer. */
-		UNSET(FINAL_NEWLINE);
+		SET(NO_NEWLINES);
 	}
 
 	if (cut_till_eof) {
@@ -339,7 +339,7 @@ void do_cut_text(bool copy_text, bool marked, bool cut_till_eof, bool append)
 		}
 		/* Restore the magic-line behavior now that we're done fiddling. */
 		if (using_magicline)
-			SET(FINAL_NEWLINE);
+			UNSET(NO_NEWLINES);
 	} else
 #endif /* !NANO_TINY */
 
@@ -358,8 +358,8 @@ bool is_cuttable(bool test_cliff)
 					(openfile->mark == openfile->current &&
 					openfile->mark_x == openfile->current_x) ||
 					(test_cliff && openfile->current->data[openfile->current_x] == '\0' &&
-					((!ISSET(FINAL_NEWLINE) && openfile->current == openfile->filebot) ||
-					(ISSET(FINAL_NEWLINE) && openfile->current == openfile->filebot->prev))
+					((ISSET(NO_NEWLINES) && openfile->current == openfile->filebot) ||
+					(!ISSET(NO_NEWLINES) && openfile->current == openfile->filebot->prev))
 #endif
 					)) {
 #ifndef NANO_TINY
@@ -428,7 +428,7 @@ void do_copy_text(void)
 void do_cut_till_eof(void)
 {
 	if ((openfile->current == openfile->filebot && openfile->current->data[0] == '\0') ||
-				(ISSET(FINAL_NEWLINE) && openfile->current->next == openfile->filebot &&
+				(!ISSET(NO_NEWLINES) && openfile->current->next == openfile->filebot &&
 				openfile->current->data[openfile->current_x] == '\0')) {
 		statusbar(_("Nothing was cut"));
 		return;
@@ -478,7 +478,7 @@ void do_uncut_text(void)
 		/* The leftedge where we started the paste. */
 
 	if (cutbuffer == NULL) {
-		statusbar(_("The cutbuffer is empty"));
+		statusbar(_("Cutbuffer is empty"));
 		return;
 	}
 

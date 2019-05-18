@@ -18,7 +18,7 @@ icolor brightgreen "^[[:space:]]*(syntax|linter)[[:space:]]+[^[:blank:]]+"
 icolor green "^[[:space:]]*((un)?(bind|set)|include|syntax|header|magic|comment|linter|extendsyntax)\>"
 
 # Strings
-color brightmagenta "".+"([[:space:]]|$)"
+color brightmagenta "([[:space:]]|(start|end)=)".+"([[:space:]]|$)"
 
 # Colors
 icolor yellow "^[[:space:]]*i?color[[:space:]]*(bright)?(white|black|red|blue|green|yellow|magenta|cyan|normal)?(,(white|black|red|blue|green|yellow|magenta|cyan|normal))?\>"

@@ -1,4 +1,4 @@
-# printf.m4 serial 60
+# printf.m4 serial 61
 dnl Copyright (C) 2003, 2007-2019 Free Software Foundation, Inc.
 dnl This file is free software; the Free Software Foundation
 dnl gives unlimited permission to copy and/or distribute it,
@@ -62,6 +62,8 @@ int main ()
 changequote(,)dnl
                                  # Guess yes on glibc systems.
            *-gnu* | gnu*)        gl_cv_func_printf_sizes_c99="guessing yes";;
+                                 # Guess yes on musl systems.
+           *-musl*)              gl_cv_func_printf_sizes_c99="guessing yes";;
                                  # Guess yes on FreeBSD >= 5.
            freebsd[1-4].*)       gl_cv_func_printf_sizes_c99="guessing no";;
            freebsd* | kfreebsd*) gl_cv_func_printf_sizes_c99="guessing yes";;
@@ -240,6 +242,8 @@ int main ()
 changequote(,)dnl
                                  # Guess yes on glibc systems.
            *-gnu* | gnu*)        gl_cv_func_printf_infinite="guessing yes";;
+                                 # Guess yes on musl systems.
+           *-musl*)              gl_cv_func_printf_infinite="guessing yes";;
                                  # Guess yes on FreeBSD >= 6.
            freebsd[1-5].*)       gl_cv_func_printf_infinite="guessing no";;
            freebsd* | kfreebsd*) gl_cv_func_printf_infinite="guessing yes";;
@@ -457,6 +461,8 @@ int main ()
 changequote(,)dnl
                                          # Guess yes on glibc systems.
                    *-gnu* | gnu*)        gl_cv_func_printf_infinite_long_double="guessing yes";;
+                                         # Guess yes on musl systems.
+                   *-musl*)              gl_cv_func_printf_infinite_long_double="guessing yes";;
                                          # Guess yes on FreeBSD >= 6.
                    freebsd[1-5].*)       gl_cv_func_printf_infinite_long_double="guessing no";;
                    freebsd* | kfreebsd*) gl_cv_func_printf_infinite_long_double="guessing yes";;
@@ -575,6 +581,8 @@ int main ()
                [gl_cv_func_printf_directive_a="guessing yes"],
                [gl_cv_func_printf_directive_a="guessing no"])
              ;;
+                                 # Guess yes on musl systems.
+           *-musl*)              gl_cv_func_printf_directive_a="guessing yes";;
                                  # Guess no on Android.
            linux*-android*)      gl_cv_func_printf_directive_a="guessing no";;
                                  # Guess no on native Windows.
@@ -625,6 +633,8 @@ int main ()
 changequote(,)dnl
                                  # Guess yes on glibc systems.
            *-gnu* | gnu*)        gl_cv_func_printf_directive_f="guessing yes";;
+                                 # Guess yes on musl systems.
+           *-musl*)              gl_cv_func_printf_directive_f="guessing yes";;
                                  # Guess yes on FreeBSD >= 6.
            freebsd[1-5].*)       gl_cv_func_printf_directive_f="guessing no";;
            freebsd* | kfreebsd*) gl_cv_func_printf_directive_f="guessing yes";;
@@ -960,6 +970,8 @@ changequote(,)dnl
          case "$host_os" in
                             # Guess yes on glibc systems.
            *-gnu* | gnu*)   gl_cv_func_printf_flag_zero="guessing yes";;
+                            # Guess yes on musl systems.
+           *-musl*)         gl_cv_func_printf_flag_zero="guessing yes";;
                             # Guess yes on BeOS.
            beos*)           gl_cv_func_printf_flag_zero="guessing yes";;
                             # Guess no on Android.
@@ -1206,6 +1218,8 @@ changequote(,)dnl
          case "$host_os" in
                                  # Guess yes on glibc systems.
            *-gnu* | gnu*)        gl_cv_func_snprintf_truncation_c99="guessing yes";;
+                                 # Guess yes on musl systems.
+           *-musl*)              gl_cv_func_snprintf_truncation_c99="guessing yes";;
                                  # Guess yes on FreeBSD >= 5.
            freebsd[1-4].*)       gl_cv_func_snprintf_truncation_c99="guessing no";;
            freebsd* | kfreebsd*) gl_cv_func_snprintf_truncation_c99="guessing yes";;
@@ -1308,6 +1322,8 @@ int main ()
 changequote(,)dnl
                                  # Guess yes on glibc systems.
            *-gnu* | gnu*)        gl_cv_func_snprintf_retval_c99="guessing yes";;
+                                 # Guess yes on musl systems.
+           *-musl*)              gl_cv_func_snprintf_retval_c99="guessing yes";;
                                  # Guess yes on FreeBSD >= 5.
            freebsd[1-4].*)       gl_cv_func_snprintf_retval_c99="guessing no";;
            freebsd* | kfreebsd*) gl_cv_func_snprintf_retval_c99="guessing yes";;
@@ -1400,6 +1416,8 @@ changequote(,)dnl
          case "$host_os" in
                                  # Guess yes on glibc systems.
            *-gnu* | gnu*)        gl_cv_func_snprintf_directive_n="guessing yes";;
+                                 # Guess yes on musl systems.
+           *-musl*)              gl_cv_func_snprintf_directive_n="guessing yes";;
                                  # Guess yes on FreeBSD >= 5.
            freebsd[1-4].*)       gl_cv_func_snprintf_directive_n="guessing no";;
            freebsd* | kfreebsd*) gl_cv_func_snprintf_directive_n="guessing yes";;
@@ -1554,6 +1572,8 @@ changequote(,)dnl
          case "$host_os" in
                                  # Guess yes on glibc systems.
            *-gnu* | gnu*)        gl_cv_func_vsnprintf_zerosize_c99="guessing yes";;
+                                 # Guess yes on musl systems.
+           *-musl*)              gl_cv_func_vsnprintf_zerosize_c99="guessing yes";;
                                  # Guess yes on FreeBSD >= 5.
            freebsd[1-4].*)       gl_cv_func_vsnprintf_zerosize_c99="guessing no";;
            freebsd* | kfreebsd*) gl_cv_func_vsnprintf_zerosize_c99="guessing yes";;

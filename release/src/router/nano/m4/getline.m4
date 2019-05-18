@@ -1,4 +1,4 @@
-# getline.m4 serial 28
+# getline.m4 serial 29
 
 dnl Copyright (C) 1998-2003, 2005-2007, 2009-2019 Free Software Foundation,
 dnl Inc.
@@ -16,6 +16,7 @@ dnl to do with the function we need.
 AC_DEFUN([gl_FUNC_GETLINE],
 [
   AC_REQUIRE([gl_STDIO_H_DEFAULTS])
+  AC_REQUIRE([AC_CANONICAL_HOST]) dnl for cross-compiles
 
   dnl Persuade glibc <stdio.h> to declare getline().
   AC_REQUIRE([AC_USE_SYSTEM_EXTENSIONS])
@@ -28,9 +29,10 @@ AC_DEFUN([gl_FUNC_GETLINE],
                  gl_getline_needs_run_time_check=yes],
                 [am_cv_func_working_getline=no])
   if test $gl_getline_needs_run_time_check = yes; then
-    AC_CACHE_CHECK([for working getline function], [am_cv_func_working_getline],
-    [echo fooNbarN | tr -d '\012' | tr N '\012' > conftest.data
-    AC_RUN_IFELSE([AC_LANG_SOURCE([[
+    AC_CACHE_CHECK([for working getline function],
+      [am_cv_func_working_getline],
+      [echo fooNbarN | tr -d '\012' | tr N '\012' > conftest.data
+       AC_RUN_IFELSE([AC_LANG_SOURCE([[
 #    include <stdio.h>
 #    include <stdlib.h>
 #    include <string.h>
@@ -61,21 +63,28 @@ AC_DEFUN([gl_FUNC_GETLINE],
       fclose (in);
       return 0;
     }
-    ]])], [am_cv_func_working_getline=yes] dnl The library version works.
-    , [am_cv_func_working_getline=no] dnl The library version does NOT work.
-    , dnl We're cross compiling. Assume it works on glibc2 systems.
-      [AC_EGREP_CPP([Lucky GNU user],
-         [
+    ]])],
+         [am_cv_func_working_getline=yes],
+         [am_cv_func_working_getline=no],
+         [dnl We're cross compiling.
+          dnl Guess it works on glibc2 systems and musl systems.
+          AC_EGREP_CPP([Lucky GNU user],
+            [
 #include <features.h>
 #ifdef __GNU_LIBRARY__
  #if (__GLIBC__ >= 2) && !defined __UCLIBC__
   Lucky GNU user
  #endif
 #endif
-         ],
-         [am_cv_func_working_getline="guessing yes"],
-         [am_cv_func_working_getline="guessing no"])]
-    )])
+            ],
+            [am_cv_func_working_getline="guessing yes"],
+            [case "$host_os" in
+               *-musl*) am_cv_func_working_getline="guessing yes" ;;
+               *)       am_cv_func_working_getline="guessing no" ;;
+             esac
+            ])
+         ])
+      ])
   fi
 
   if test $ac_cv_have_decl_getline = no; then
@@ -83,7 +92,8 @@ AC_DEFUN([gl_FUNC_GETLINE],
   fi
 
   case "$am_cv_func_working_getline" in
-    *no)
+    *yes) ;;
+    *)
       dnl Set REPLACE_GETLINE always: Even if we have not found the broken
       dnl getline function among $LIBS, it may exist in libinet and the
       dnl executable may be linked with -linet.

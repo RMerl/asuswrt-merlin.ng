@@ -50,7 +50,6 @@ static const rcoption rcopts[] = {
 #ifdef ENABLED_WRAPORJUSTIFY
 	{"fill", 0},
 #endif
-	{"finalnewline", FINAL_NEWLINE},
 #ifdef ENABLE_HISTORIES
 	{"historylog", HISTORYLOG},
 #endif
@@ -66,7 +65,7 @@ static const rcoption rcopts[] = {
 	{"multibuffer", MULTIBUFFER},
 #endif
 	{"nohelp", NO_HELP},
-	{"nonewlines", NO_NEWLINES},  /* Deprecated; remove in 2021. */
+	{"nonewlines", NO_NEWLINES},
 	{"nopauses", NO_PAUSES},
 #ifdef ENABLE_WRAPPING
 	{"nowrap", NO_WRAP},  /* Deprecated; remove in 2021. */
@@ -347,9 +346,9 @@ bool is_universal(void (*func)(void))
 void parse_binding(char *ptr, bool dobind)
 {
 	char *keyptr = NULL, *keycopy = NULL, *funcptr = NULL, *menuptr = NULL;
-	sc *s, *newsc = NULL;
+	keystruct *s, *newsc = NULL;
 	int menu, mask = 0;
-	subnfunc *f;
+	funcstruct *f;
 
 	if (*ptr == '\0') {
 		rcfile_error(N_("Missing key name"));
@@ -413,7 +412,7 @@ void parse_binding(char *ptr, bool dobind)
 		/* If the thing to bind starts with a double quote, it is a string,
 		 * otherwise it is the name of a function. */
 		if (*funcptr == '"') {
-			newsc = nmalloc(sizeof(sc));
+			newsc = nmalloc(sizeof(keystruct));
 			newsc->func = (functionptrtype)implant;
 			newsc->expansion = mallocstrcpy(NULL, funcptr + 1);
 #ifndef NANO_TINY
@@ -462,7 +461,7 @@ void parse_binding(char *ptr, bool dobind)
 	menu = menu & (is_universal(newsc->func) ? MMOST : mask);
 
 	if (!menu) {
-		if (!ISSET(RESTRICTED))
+		if (!ISSET(RESTRICTED) && !ISSET(VIEW_MODE))
 			rcfile_error(N_("Function '%s' does not exist in menu '%s'"),
 								funcptr, menuptr);
 		goto free_things;
@@ -556,7 +555,7 @@ void parse_includes(char *ptr)
 
 	/* Expand a tilde first, then try to match the globbing pattern. */
 	expanded = real_dir_from_tilde(pattern);
-	result = glob(expanded, GLOB_ERR|GLOB_NOSORT, NULL, &files);
+	result = glob(expanded, GLOB_ERR, NULL, &files);
 
 	/* If there are matches, process each of them.  Otherwise, only
 	 * report an error if it's something other than zero matches. */
@@ -884,7 +883,7 @@ void pick_up_name(const char *kind, char *ptr, char **storage)
  * function that we consider 'vital' (such as "Exit"). */
 static void check_vitals_mapped(void)
 {
-	subnfunc *f;
+	funcstruct *f;
 	int v;
 #define VITALS 3
 	void (*vitals[VITALS])(void) = { do_exit, do_exit, do_cancel };
@@ -893,7 +892,7 @@ static void check_vitals_mapped(void)
 	for  (v = 0; v < VITALS; v++) {
 		for (f = allfuncs; f != NULL; f = f->next) {
 			if (f->func == vitals[v] && f->menus & inmenus[v]) {
-				const sc *s = first_sc_for(inmenus[v], f->func);
+				const keystruct *s = first_sc_for(inmenus[v], f->func);
 				if (!s) {
 					fprintf(stderr, _("No key is bound to function '%s' in "
 										"menu '%s'.  Exiting.\n"), f->desc,
@@ -1126,15 +1125,17 @@ void parse_rcfile(FILE *rcstream, bool syntax_only)
 				stripe_column = 0;
 			}
 			free(option);
-		}
-		if (strcasecmp(rcopts[i].name, "matchbrackets") == 0) {
+		} else if (strcasecmp(rcopts[i].name, "matchbrackets") == 0) {
 			if (has_blank_char(option)) {
 				rcfile_error(N_("Non-blank characters required"));
+				free(option);
+			} else if (mbstrlen(option) % 2 != 0) {
+				rcfile_error(N_("Even number of characters required"));
 				free(option);
 			} else
 				matchbrackets = option;
 		} else if (strcasecmp(rcopts[i].name, "whitespace") == 0) {
-			if (mbstrlen(option) != 2 || strlenpt(option) != 2) {
+			if (mbstrlen(option) != 2 || breadth(option) != 2) {
 				rcfile_error(N_("Two single-column characters required"));
 				free(option);
 			} else {

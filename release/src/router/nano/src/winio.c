@@ -656,7 +656,7 @@ int parse_kbinput(WINDOW *win)
 #ifndef NANO_TINY
 	/* When <Tab> is pressed while the mark is on, do an indent. */
 	if (retval == TAB_CODE && openfile->mark && currmenu == MMAIN) {
-		const sc *command = first_sc_for(MMAIN, do_indent);
+		const keystruct *command = first_sc_for(MMAIN, do_indent);
 
 		meta_key = command->meta;
 		return command->keycode;
@@ -1654,7 +1654,7 @@ int get_mouseinput(int *mouse_y, int *mouse_x, bool allow_shortcuts)
 {
 	MEVENT mevent;
 	bool in_bottomwin;
-	subnfunc *f;
+	funcstruct *f;
 
 	/* First, get the actual mouse event. */
 	if (getmouse(&mevent) == ERR)
@@ -1729,7 +1729,7 @@ int get_mouseinput(int *mouse_y, int *mouse_x, bool allow_shortcuts)
 
 			/* And put the corresponding key into the keyboard buffer. */
 			if (f != NULL) {
-				const sc *s = first_sc_for(currmenu, f->func);
+				const keystruct *s = first_sc_for(currmenu, f->func);
 				unget_kbinput(s->keycode, s->meta);
 			}
 			return 1;
@@ -1769,9 +1769,9 @@ int get_mouseinput(int *mouse_y, int *mouse_x, bool allow_shortcuts)
  * key itself) and meta_key (whether the key is a meta sequence).  The
  * returned shortcut will be the first in the list that corresponds to
  * the given sequence. */
-const sc *get_shortcut(int *kbinput)
+const keystruct *get_shortcut(int *kbinput)
 {
-	sc *s;
+	keystruct *s;
 
 	/* Plain characters cannot be shortcuts, so just skip those. */
 	if (!meta_key && ((*kbinput >= 0x20 && *kbinput < 0x7F) ||
@@ -1871,7 +1871,7 @@ char *display_string(const char *buf, size_t column, size_t span,
 {
 	size_t start_index = actual_x(buf, column);
 		/* The index of the first character that the caller wishes to show. */
-	size_t start_col = strnlenpt(buf, start_index);
+	size_t start_col = wideness(buf, start_index);
 		/* The actual column where that first character starts. */
 	char *converted;
 		/* The expanded string we will return. */
@@ -1888,6 +1888,13 @@ char *display_string(const char *buf, size_t column, size_t span,
 	/* Allocate enough space for converting the relevant part of the line. */
 	converted = charalloc(strlen(buf) * (MAXCHARLEN + tabsize) + 1);
 
+#ifndef NANO_TINY
+	if (span > HIGHEST_POSITIVE) {
+		statusline(ALERT, "Span has underflowed -- please report a bug");
+		converted[0] = '\0';
+		return converted;
+	}
+#endif
 	/* If the first character starts before the left edge, or would be
 	 * overwritten by a "<" token, then show placeholders instead. */
 	if (*buf != '\0' && *buf != '\t' && (start_col < column ||
@@ -2016,7 +2023,7 @@ int buffer_number(openfilestruct *buffer)
 {
 	int count = 1;
 
-	while (buffer != firstfile) {
+	while (buffer != startfile) {
 		buffer = buffer->prev;
 		count++;
 	}
@@ -2081,7 +2088,7 @@ void titlebar(const char *path)
 		if (more_than_one) {
 			indicator = charalloc(24);
 			sprintf(indicator, "[%i/%i]", buffer_number(openfile),
-										buffer_number(firstfile->prev));
+										buffer_number(startfile->prev));
 			upperleft = indicator;
 		} else
 #endif
@@ -2099,16 +2106,16 @@ void titlebar(const char *path)
 		else if (ISSET(RESTRICTED))
 			state = _("Restricted");
 
-		pluglen = strlenpt(_("Modified")) + 1;
+		pluglen = breadth(_("Modified")) + 1;
 	}
 
 	/* Determine the widths of the four elements, including their padding. */
-	verlen = strlenpt(upperleft) + 3;
-	prefixlen = strlenpt(prefix);
+	verlen = breadth(upperleft) + 3;
+	prefixlen = breadth(prefix);
 	if (prefixlen > 0)
 		prefixlen++;
-	pathlen = strlenpt(path);
-	statelen = strlenpt(state) + 2;
+	pathlen = breadth(path);
+	statelen = breadth(state) + 2;
 	if (statelen > 2) {
 		pathlen++;
 		pluglen = 0;
@@ -2246,7 +2253,7 @@ void statusline(message_type importance, const char *msg, ...)
 	message = display_string(compound, 0, COLS, FALSE, FALSE);
 	free(compound);
 
-	start_col = (COLS - strlenpt(message)) / 2;
+	start_col = (COLS - breadth(message)) / 2;
 	bracketed = (start_col > 1);
 
 	wmove(bottomwin, 0, (bracketed ? start_col - 2 : start_col));
@@ -2286,8 +2293,8 @@ void statusline(message_type importance, const char *msg, ...)
 void bottombars(int menu)
 {
 	size_t number, itemwidth, i;
-	subnfunc *f;
-	const sc *s;
+	funcstruct *f;
+	const keystruct *s;
 
 	/* Set the global variable to the given menu. */
 	currmenu = menu;
@@ -2341,7 +2348,7 @@ void post_one_key(const char *keystroke, const char *tag, int width)
 	wattroff(bottomwin, interface_color_pair[KEY_COMBO]);
 
 	/* If the remaning space is too small, skip the description. */
-	width -= strlenpt(keystroke);
+	width -= breadth(keystroke);
 	if (width < 2)
 		return;
 
@@ -2502,12 +2509,12 @@ void edit_draw(linestruct *fileptr, const char *converted,
 						continue;
 
 					start_col = (match.rm_so <= from_x) ?
-										0 : strnlenpt(fileptr->data,
+										0 : wideness(fileptr->data,
 										match.rm_so) - from_col;
 
 					thetext = converted + actual_x(converted, start_col);
 
-					paintlen = actual_x(thetext, strnlenpt(fileptr->data,
+					paintlen = actual_x(thetext, wideness(fileptr->data,
 										match.rm_eo) - from_col - start_col);
 
 					mvwaddnstr(edit, row, margin + start_col,
@@ -2606,7 +2613,7 @@ void edit_draw(linestruct *fileptr, const char *converted,
 
 			/* Only if it is visible, paint the part to be coloured. */
 			if (endmatch.rm_eo > from_x) {
-				paintlen = actual_x(converted, strnlenpt(fileptr->data,
+				paintlen = actual_x(converted, wideness(fileptr->data,
 												endmatch.rm_eo) - from_col);
 				mvwaddnstr(edit, row, margin, converted, paintlen);
 			}
@@ -2626,7 +2633,7 @@ void edit_draw(linestruct *fileptr, const char *converted,
 				startmatch.rm_eo += index;
 
 				start_col = (startmatch.rm_so <= from_x) ?
-								0 : strnlenpt(fileptr->data,
+								0 : wideness(fileptr->data,
 								startmatch.rm_so) - from_col;
 
 				thetext = converted + actual_x(converted, start_col);
@@ -2642,7 +2649,7 @@ void edit_draw(linestruct *fileptr, const char *converted,
 					 * it is more than zero characters long. */
 					if (endmatch.rm_eo > from_x &&
 										endmatch.rm_eo > startmatch.rm_so) {
-						paintlen = actual_x(thetext, strnlenpt(fileptr->data,
+						paintlen = actual_x(thetext, wideness(fileptr->data,
 										endmatch.rm_eo) - from_col - start_col);
 
 						mvwaddnstr(edit, row, margin + start_col,
@@ -2695,7 +2702,7 @@ void edit_draw(linestruct *fileptr, const char *converted,
 
 		if (*(converted + target_x) != '\0') {
 			charlen = parse_mbchar(converted + target_x, striped_char, NULL);
-			target_column = strnlenpt(converted, target_x);
+			target_column = wideness(converted, target_x);
 		} else if (target_column + 1 == editwincols) {
 			/* Defeat a VTE bug -- see https://sv.gnu.org/bugs/?55896. */
 #ifdef ENABLE_UTF8
@@ -2742,7 +2749,7 @@ void edit_draw(linestruct *fileptr, const char *converted,
 		/* Only paint if the marked part of the line is on this page. */
 		if (top_x < till_x && bot_x > from_x) {
 			/* Compute on which screen column to start painting. */
-			start_col = strnlenpt(fileptr->data, top_x) - from_col;
+			start_col = wideness(fileptr->data, top_x) - from_col;
 
 			if (start_col < 0)
 				start_col = 0;
@@ -2752,7 +2759,7 @@ void edit_draw(linestruct *fileptr, const char *converted,
 			/* If the end of the mark is onscreen, compute how many
 			 * characters to paint.  Otherwise, just paint all. */
 			if (bot_x < till_x) {
-				size_t end_col = strnlenpt(fileptr->data, bot_x) - from_col;
+				size_t end_col = wideness(fileptr->data, bot_x) - from_col;
 				paintlen = actual_x(thetext, end_col - start_col);
 			}
 
@@ -2786,20 +2793,11 @@ int update_line(linestruct *fileptr, size_t index)
 
 	row = fileptr->lineno - openfile->edittop->lineno;
 
-	/* If the line is offscreen, don't even try to display it. */
-	if (row < 0 || row >= editwinrows) {
-#ifndef NANO_TINY
-		statusline(ALERT, "Badness: tried to display a line on row %i"
-								" -- please report a bug", row);
-#endif
-		return 0;
-	}
-
 	/* First, blank out the row. */
 	blank_row(edit, row, 0, COLS);
 
 	/* Next, find out from which column to start displaying the line. */
-	from_col = get_page_start(strnlenpt(fileptr->data, index));
+	from_col = get_page_start(wideness(fileptr->data, index));
 
 	/* Expand the line, replacing tabs with spaces, and control
 	 * characters with their displayed forms. */
@@ -2814,7 +2812,7 @@ int update_line(linestruct *fileptr, size_t index)
 		mvwaddch(edit, row, margin, '<');
 		wattroff(edit, hilite_attribute);
 	}
-	if (strlenpt(fileptr->data) > from_col + editwincols) {
+	if (breadth(fileptr->data) > from_col + editwincols) {
 		wattron(edit, hilite_attribute);
 		mvwaddch(edit, row, COLS - 1, '>');
 		wattroff(edit, hilite_attribute);
@@ -3010,20 +3008,13 @@ void edit_scroll(bool direction)
 {
 	linestruct *line;
 	size_t leftedge;
-	int remainder = 0, nrows = 1;
+	int nrows = 1;
 
 	/* Move the top line of the edit window one row up or down. */
 	if (direction == BACKWARD)
-		remainder = go_back_chunks(1, &openfile->edittop, &openfile->firstcolumn);
+		go_back_chunks(1, &openfile->edittop, &openfile->firstcolumn);
 	else
-		remainder = go_forward_chunks(1, &openfile->edittop, &openfile->firstcolumn);
-
-	if (remainder > 0) {
-#ifndef NANO_TINY
-		statusline(ALERT, "Could not scroll -- please report a bug");
-#endif
-		return;
-	}
+		go_forward_chunks(1, &openfile->edittop, &openfile->firstcolumn);
 
 	/* Actually scroll the text of the edit window one row up or down. */
 	scrollok(edit, TRUE);
@@ -3197,7 +3188,7 @@ size_t actual_last_column(size_t leftedge, size_t column)
 {
 #ifndef NANO_TINY
 	if (ISSET(SOFTWRAP)) {
-		bool last_chunk;
+		bool last_chunk = FALSE;
 		size_t end_col = get_softwrap_breakpoint(openfile->current->data,
 										leftedge, &last_chunk) - leftedge;
 
@@ -3401,7 +3392,7 @@ void do_cursorpos(bool force)
 {
 	char saved_byte;
 	size_t sum, cur_xpt = xplustabs() + 1;
-	size_t cur_lenpt = strlenpt(openfile->current->data) + 1;
+	size_t cur_lenpt = breadth(openfile->current->data) + 1;
 	int linepct, colpct, charpct;
 
 	/* If the showing needs to be suppressed, don't suppress it next time. */
@@ -3661,7 +3652,7 @@ void do_credits(void)
 			else
 				what = credits[crpos];
 
-			start_col = COLS / 2 - strlenpt(what) / 2 - 1;
+			start_col = COLS / 2 - breadth(what) / 2 - 1;
 			mvwaddstr(edit, editwinrows - 1 - (editwinrows % 2),
 												start_col, what);
 		}

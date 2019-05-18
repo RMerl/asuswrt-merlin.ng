@@ -159,13 +159,6 @@ bool parse_line_column(const char *str, ssize_t *line, ssize_t *column)
 	return retval;
 }
 
-/* Null a string at a certain index and align it. */
-void null_at(char **data, size_t index)
-{
-	*data = charealloc(*data, index + 1);
-	(*data)[index] = '\0';
-}
-
 /* For non-null-terminated lines.  A line, by definition, shouldn't
  * normally have newlines in it, so encode its nulls as newlines. */
 void unsunder(char *str, size_t true_len)
@@ -336,10 +329,6 @@ char *mallocstrncpy(char *dest, const char *src, size_t n)
 	if (src == NULL)
 		src = "";
 
-#ifndef NANO_TINY
-	if (src == dest)
-		fprintf(stderr, "\r*** Copying a string to itself -- please report a bug ***");
-#endif
 	dest = charealloc(dest, n);
 	strncpy(dest, src, n);
 
@@ -379,7 +368,7 @@ size_t get_page_start(size_t column)
  * column position of the cursor. */
 size_t xplustabs(void)
 {
-	return strnlenpt(openfile->current->data, openfile->current_x);
+	return wideness(openfile->current->data, openfile->current_x);
 }
 
 /* Return the index in text of the character that (when displayed) will
@@ -405,10 +394,9 @@ size_t actual_x(const char *text, size_t column)
 
 /* A strnlen() with tabs and multicolumn characters factored in:
  * how many columns wide are the first maxlen bytes of text? */
-size_t strnlenpt(const char *text, size_t maxlen)
+size_t wideness(const char *text, size_t maxlen)
 {
 	size_t width = 0;
-		/* The screen display width to text[maxlen]. */
 
 	if (maxlen == 0)
 		return 0;
@@ -427,7 +415,7 @@ size_t strnlenpt(const char *text, size_t maxlen)
 }
 
 /* Return the number of columns that the given text occupies. */
-size_t strlenpt(const char *text)
+size_t breadth(const char *text)
 {
 	size_t span = 0;
 
@@ -519,12 +507,10 @@ linestruct *fsfromline(ssize_t lineno)
 		while (f->lineno != lineno && f->next != NULL)
 			f = f->next;
 
-	if (f->lineno != lineno) {
-		statusline(ALERT, "Gone undo line -- please report a bug");
+	if (f->lineno == lineno)
+		return f;
+	else
 		return NULL;
-	}
-
-	return f;
 }
 #endif /* !NANO_TINY */
 

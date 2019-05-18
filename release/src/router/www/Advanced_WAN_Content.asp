@@ -1608,7 +1608,7 @@ function change_wizard(o, id){
 			<td><input type="text" name="wan_vendorid" class="input_32_table" maxlength="128" value="<% nvram_get("wan_vendorid"); %>" onKeyPress="return validator.isString(this, event)"></td>
 		</tr>
 
-		<tr style="display:none;">
+		<tr>
 			<th><a class="hintstyle" href="javascript:void(0);" onClick=""><#Extend_TTL_Value#></a></th>
 				<td>
 					<input type="radio" name="ttl_inc_enable" class="input" value="1" <% nvram_match("ttl_inc_enable", "1", "checked"); %>><#checkbox_Yes#>

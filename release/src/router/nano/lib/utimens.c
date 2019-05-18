@@ -288,8 +288,8 @@ fdutimens (int fd, char const *file, struct timespec const timespec[2])
 
 #ifdef USE_SETFILETIME
   /* On native Windows, use SetFileTime(). See
-     <https://msdn.microsoft.com/en-us/library/ms724933.aspx>
-     <https://msdn.microsoft.com/en-us/library/ms724284.aspx>  */
+     <https://docs.microsoft.com/en-us/windows/desktop/api/fileapi/nf-fileapi-setfiletime>
+     <https://docs.microsoft.com/en-us/windows/desktop/api/minwinbase/ns-minwinbase-filetime>  */
   if (0 <= fd)
     {
       HANDLE handle;
@@ -307,10 +307,10 @@ fdutimens (int fd, char const *file, struct timespec const timespec[2])
       if (ts == NULL || ts[0].tv_nsec == UTIME_NOW || ts[1].tv_nsec == UTIME_NOW)
         {
           /* GetSystemTimeAsFileTime
-             <https://msdn.microsoft.com/en-us/library/ms724397.aspx>.
+             <https://docs.microsoft.com/en-us/windows/desktop/api/sysinfoapi/nf-sysinfoapi-getsystemtimeasfiletime>.
              It would be overkill to use
              GetSystemTimePreciseAsFileTime
-             <https://msdn.microsoft.com/en-us/library/hh706895.aspx>.  */
+             <https://docs.microsoft.com/en-us/windows/desktop/api/sysinfoapi/nf-sysinfoapi-getsystemtimepreciseasfiletime>.  */
           GetSystemTimeAsFileTime (&current_time);
         }
 

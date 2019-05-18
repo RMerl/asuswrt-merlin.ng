@@ -1268,6 +1268,8 @@ extern void start_webdav(void);
 extern void create_custom_passwd(void);
 extern void stop_samba(void);
 extern void start_samba(void);
+extern void stop_wsdd(void);
+extern void start_wsdd(void);
 #endif
 #ifdef RTCONFIG_NFS
 extern void start_nfsd(void);

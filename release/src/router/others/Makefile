@@ -31,7 +31,8 @@ endif
 # OpenVPN
 ifeq ($(RTCONFIG_OPENVPN),y)
 	install -m 0700 setuprsa.sh $(INSTALLDIR)/usr/sbin
-	install -m 0700 -D updown.sh $(INSTALLDIR)/usr/sbin
+	install -m 0700 -D updown-client.sh $(INSTALLDIR)/usr/sbin
+	install -m 0700 -D updown-server.sh $(INSTALLDIR)/usr/sbin
 	install -m 0700 -D vpnrouting.sh $(INSTALLDIR)/usr/sbin
 endif
 

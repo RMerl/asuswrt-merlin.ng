@@ -383,6 +383,10 @@ typedef struct openfilestruct {
 		/* Whether the file has been modified. */
 	struct stat *current_stat;
 		/* The file's current stat information. */
+#ifdef ENABLE_WRAPPING
+	linestruct *spillage_line;
+		/* The line for prepending stuff to during automatic hard-wrapping. */
+#endif
 #ifndef NANO_TINY
 	linestruct *mark;
 		/* The line in the file where the mark is set; NULL if not set. */
@@ -426,17 +430,17 @@ typedef struct rcoption {
 } rcoption;
 #endif
 
-typedef struct sc {
+typedef struct keystruct {
 	const char *keystr;
-		/* The string that describes a keystroke, like "^C" or "M-R". */
+		/* The string that describes the keystroke, like "^C" or "M-R". */
 	bool meta;
 		/* Whether this is a Meta keystroke. */
 	int keycode;
 		/* The integer that, together with meta, identifies the keystroke. */
 	int menus;
-		/* Which menus this applies to. */
+		/* The menus in which this keystroke is bound. */
 	void (*func)(void);
-		/* The function we're going to run. */
+		/* The function to which this keystroke is bound. */
 #ifndef NANO_TINY
 	int toggle;
 		/* If a toggle, what we're toggling. */
@@ -448,11 +452,11 @@ typedef struct sc {
 	char *expansion;
 		/* The string of keycodes to which this shortcut is expanded. */
 #endif
-	struct sc *next;
+	struct keystruct *next;
 		/* Next in the list. */
-} sc;
+} keystruct;
 
-typedef struct subnfunc {
+typedef struct funcstruct {
 	void (*func)(void);
 		/* The actual function to call. */
 	int menus;
@@ -470,9 +474,9 @@ typedef struct subnfunc {
 		/* Is this function allowed when in view mode? */
 	long toggle;
 		/* If this is a toggle, which toggle to affect. */
-	struct subnfunc *next;
+	struct funcstruct *next;
 		/* Next item in the list. */
-} subnfunc;
+} funcstruct;
 
 #ifdef ENABLE_WORDCOMPLETION
 typedef struct completion_word {
@@ -543,7 +547,6 @@ enum
 	AFTER_ENDS,
 	LET_THEM_ZAP,
 	BREAK_LONG_LINES,
-	FINAL_NEWLINE,
 	JUMPY_SCROLLING,
 	EMPTY_LINE
 };

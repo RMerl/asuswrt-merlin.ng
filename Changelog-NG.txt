@@ -1,6 +1,25 @@
 Asuswrt-Merlin 384/NG Changelog
 ===============================
 
+384.12 (xx-xxx-2019)
+  - NEW: Added WSD discovery support.  This allows Windows clients
+         to detect the router's shared USB drive even if SMB1
+         is disabled.
+  - NEW: Re-added option to extend the WAN's TTL (from stock
+         firmware, was previously disabled as it used to
+         be broken)
+  - UPDATED: Nano 4.2.
+  - CHANGED: Local clients will be shown by their hostname
+             on the Classification page.
+  - CHANGED: Reworked handling of up/down events in OpenVPN.
+             Server instance will now also use its own
+             updown script, which will handle firing up
+             openvpn-event (if present).
+  - FIXED: openvpn-event script not launching if the
+           client was configured in Secret Key auth
+           mode.
+
+
 384.11_2 (18-May-2019)
   - NEW: Implemented source/destination IP filtering
          for the Netool version of Netstat web page.

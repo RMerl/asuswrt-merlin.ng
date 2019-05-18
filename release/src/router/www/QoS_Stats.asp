@@ -184,7 +184,8 @@ function draw_conntrack_table(){
 	var i, j, qosclass;
 	var tracklen, shownlen = 0;
 	var code;
-	var clientObj, clientName, clientName2;
+	var clientObj, clientName;
+	var srchost, srctitle, dsthost, dsttitle;
 
 	tracklen = bwdpi_conntrack.length;
 
@@ -229,12 +230,48 @@ function draw_conntrack_table(){
 		else
 			bwdpi_conntrack[i][3] = bwdpi_conntrack[i][3];
 
+		// Retrieve hostname from networkmap
+		clientObj = clientFromIP(bwdpi_conntrack[i][1]);
+		if (clientObj) {
+			clientName = (clientObj.nickName == "") ? clientObj.hostname : clientObj.nickName;
+		} else {
+			srchost = bwdpi_conntrack[i][1];
+			clientName = "";
+		}
+		srchost = (clientName == "") ? bwdpi_conntrack[i][1] : clientName;
+		srctitle = bwdpi_conntrack[i][1];
+
+		clientObj = clientFromIP(bwdpi_conntrack[i][3]);
+		if (clientObj) {
+			clientName = (clientObj.nickName == "") ? clientObj.hostname : clientObj.nickName;
+		} else {
+			clientName = "";
+		}
+		dsthost = (clientName == "") ? bwdpi_conntrack[i][3] : clientName;
+		dsttitle = bwdpi_conntrack[i][3];
+
+
 		// Filter in place?
 		var filtered = 0;
 		for (j = 0; j < 6; j++) {
-			if ((filter[j]) && (bwdpi_conntrack[i][j].toLowerCase().indexOf(filter[j]) < 0)) {
-				filtered = 1;
-				continue;
+			if (filter[j]) {
+				switch (j) {
+					case 1:
+						if (srchost.toLowerCase().indexOf(filter[1].toLowerCase()) < 0 &&
+						    bwdpi_conntrack[i][1].toLowerCase().indexOf(filter[1]) < 0)
+							filtered = 1;
+						break;
+					case 3:
+						if (srchost.toLowerCase().indexOf(filter[1].toLowerCase()) < 0 &&
+						    bwdpi_conntrack[i][1].toLowerCase().indexOf(filter[1]) < 0)
+							filtered = 1;
+						break;
+					default:
+						if (bwdpi_conntrack[i][j].toLowerCase().indexOf(filter[j]) < 0) {
+						filtered = 1;
+					}
+				}
+				if (filtered) continue;
 			}
 		}
 		if (filtered) continue;
@@ -244,26 +281,14 @@ function draw_conntrack_table(){
 		// Get QoS Class for popup
 		qosclass = get_qos_class(bwdpi_conntrack[i][7], bwdpi_conntrack[i][6]);
 
-		// Retrieve hostname from networkmap
-		clientObj = clientFromIP(bwdpi_conntrack[i][1]);
-		if (clientObj)
-			clientName = (clientObj.nickName == "") ? clientObj.hostname : clientObj.nickName;
-		else
-			clientName = bwdpi_conntrack[i][1];
-
-		clientObj = clientFromIP(bwdpi_conntrack[i][3]);
-		if (clientObj)
-			clientName2 = (clientObj.nickName == "") ? clientObj.hostname : clientObj.nickName;
-		else
-			clientName2 = bwdpi_conntrack[i][3];
 
 		// Output row
 		code += "<tr><td>" + bwdpi_conntrack[i][0] + "</td>";
-		code += "<td title=\"" + clientName + "\"" + (bwdpi_conntrack[i][1].length > 36 ? "style=\"font-size: 80%;\"" : "") +">" +
-	                  bwdpi_conntrack[i][1] + "</td>";
+		code += "<td title=\"" + srctitle + "\"" + (srchost.length > 36 ? "style=\"font-size: 80%;\"" : "") +">" +
+	                  srchost + "</td>";
 		code += "<td>" + bwdpi_conntrack[i][2] + "</td>";
-		code += "<td title=\"" + clientName2 + "\"" + (bwdpi_conntrack[i][3].length > 36 ? "style=\"font-size: 80%;\"" : "") + ">" +
-		          bwdpi_conntrack[i][3] + "</td>";
+		code += "<td title=\"" + dsttitle + "\"" + (dsthost.length > 36 ? "style=\"font-size: 80%;\"" : "") + ">" +
+		          dsthost + "</td>";
 		code += "<td>" + bwdpi_conntrack[i][4] + "</td>";
 		code += "<td><span title=\"" + (qos_mode == 2 ? category_title[qosclass] : "") + "\" class=\"catrow cat" +
 	                  qosclass + "\"" + (bwdpi_conntrack[i][5].length > 27 ? "style=\"font-size: 75%;\"" : "") + ">" +
@@ -555,7 +580,11 @@ function draw_chart(data_array, ctx, pie) {
 					<th width="27%">Application</th>
 				</tr>
 				<tr>
-					<td><input type="text" class="input_3_table" maxlength="3" oninput="set_filter(0, this);"></input></td>
+					<td><select class="input_option" onchange="set_filter(0, this);">
+						<option value="">any</option>
+						<option value="tcp">tcp</option>
+						<option value="udp">udp</option>
+					</select></td>
 					<td><input type="text" class="input_15_table" maxlength="39" oninput="set_filter(1, this);"></input></td>
 					<td><input type="text" class="input_6_table" maxlength="5" oninput="set_filter(2, this);"></input></td>
 					<td><input type="text" class="input_15_table" maxlength="39" oninput="set_filter(3, this);"></input></td>

@@ -2204,9 +2204,9 @@ sift_states_iter_mb (const re_match_context_t *mctx, re_sift_context_t *sctx,
   int naccepted;
   /* Check the node can accept "multi byte".  */
   naccepted = check_node_accept_bytes (dfa, node_idx, &mctx->input, str_idx);
-  if (naccepted > 0 && str_idx + naccepted <= max_str_idx &&
-      !STATE_NODE_CONTAINS (sctx->sifted_states[str_idx + naccepted],
-			    dfa->nexts[node_idx]))
+  if (naccepted > 0 && str_idx + naccepted <= max_str_idx
+      && !STATE_NODE_CONTAINS (sctx->sifted_states[str_idx + naccepted],
+			       dfa->nexts[node_idx]))
     /* The node can't accept the "multi byte", or the
        destination was already thrown away, then the node
        couldn't accept the current input "multi byte".   */
@@ -3782,10 +3782,10 @@ check_node_accept_bytes (const re_dfa_t *dfa, Idx node_idx,
       /* FIXME: I don't think this if is needed, as both '\n'
 	 and '\0' are char_len == 1.  */
       /* '.' accepts any one character except the following two cases.  */
-      if ((!(dfa->syntax & RE_DOT_NEWLINE) &&
-	   re_string_byte_at (input, str_idx) == '\n') ||
-	  ((dfa->syntax & RE_DOT_NOT_NULL) &&
-	   re_string_byte_at (input, str_idx) == '\0'))
+      if ((!(dfa->syntax & RE_DOT_NEWLINE)
+	   && re_string_byte_at (input, str_idx) == '\n')
+	  || ((dfa->syntax & RE_DOT_NOT_NULL)
+	      && re_string_byte_at (input, str_idx) == '\0'))
 	return 0;
       return char_len;
     }

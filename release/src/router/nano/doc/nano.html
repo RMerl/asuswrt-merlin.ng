@@ -1,6 +1,6 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
 <html>
-<!-- Created by GNU Texinfo 6.5, http://www.gnu.org/software/texinfo/ -->
+<!-- Created by GNU Texinfo 6.6, http://www.gnu.org/software/texinfo/ -->
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
 <title>nano</title>
@@ -17,23 +17,14 @@
 <!--
 a.summary-letter {text-decoration: none}
 blockquote.indentedblock {margin-right: 0em}
-blockquote.smallindentedblock {margin-right: 0em; font-size: smaller}
-blockquote.smallquotation {font-size: smaller}
 div.display {margin-left: 3.2em}
 div.example {margin-left: 3.2em}
 div.lisp {margin-left: 3.2em}
-div.smalldisplay {margin-left: 3.2em}
-div.smallexample {margin-left: 3.2em}
-div.smalllisp {margin-left: 3.2em}
 kbd {font-style: oblique}
 pre.display {font-family: inherit}
 pre.format {font-family: inherit}
 pre.menu-comment {font-family: serif}
 pre.menu-preformatted {font-family: serif}
-pre.smalldisplay {font-family: inherit; font-size: smaller}
-pre.smallexample {font-size: smaller}
-pre.smallformat {font-family: inherit; font-size: smaller}
-pre.smalllisp {font-size: smaller}
 span.nolinebreak {white-space: nowrap}
 span.roman {font-family: initial; font-weight: normal}
 span.sansserif {font-family: sans-serif; font-weight: normal}
@@ -54,40 +45,36 @@ ul.no-bullet {list-style: none}
 
 
 
-<a name="Top"></a>
-<a name="SEC_Top"></a>
-
-<p>This manual documents the GNU <code>nano</code> editor, version 4.0.
+<span id="Top"></span><span id="SEC_Top"></span>
+<p>This manual documents the GNU <code>nano</code> editor, version 4.2.
 </p>
 <table class="menu" border="0" cellspacing="0">
-<tr><td align="left" valign="top">&bull; <a href="#Introduction" accesskey="1">Introduction</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
+<tr><td align="left" valign="top">&bull; <a href="#Introduction" accesskey="1">Introduction</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
 </td></tr>
-<tr><td align="left" valign="top">&bull; <a href="#Invoking" accesskey="2">Invoking</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
+<tr><td align="left" valign="top">&bull; <a href="#Invoking" accesskey="2">Invoking</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
 </td></tr>
-<tr><td align="left" valign="top">&bull; <a href="#Command_002dline-Options" accesskey="3">Command-line Options</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
+<tr><td align="left" valign="top">&bull; <a href="#Command_002dline-Options" accesskey="3">Command-line Options</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
 </td></tr>
-<tr><td align="left" valign="top">&bull; <a href="#Editor-Basics" accesskey="4">Editor Basics</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
+<tr><td align="left" valign="top">&bull; <a href="#Editor-Basics" accesskey="4">Editor Basics</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
 </td></tr>
-<tr><td align="left" valign="top">&bull; <a href="#Built_002din-Help" accesskey="5">Built-in Help</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
+<tr><td align="left" valign="top">&bull; <a href="#Built_002din-Help" accesskey="5">Built-in Help</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
 </td></tr>
-<tr><td align="left" valign="top">&bull; <a href="#Feature-Toggles" accesskey="6">Feature Toggles</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
+<tr><td align="left" valign="top">&bull; <a href="#Feature-Toggles" accesskey="6">Feature Toggles</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
 </td></tr>
-<tr><td align="left" valign="top">&bull; <a href="#Nanorc-Files" accesskey="7">Nanorc Files</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
+<tr><td align="left" valign="top">&bull; <a href="#Nanorc-Files" accesskey="7">Nanorc Files</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
 </td></tr>
-<tr><td align="left" valign="top">&bull; <a href="#The-File-Browser" accesskey="8">The File Browser</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
+<tr><td align="left" valign="top">&bull; <a href="#The-File-Browser" accesskey="8">The File Browser</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
 </td></tr>
-<tr><td align="left" valign="top">&bull; <a href="#Pico-Compatibility" accesskey="9">Pico Compatibility</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
+<tr><td align="left" valign="top">&bull; <a href="#Pico-Compatibility" accesskey="9">Pico Compatibility</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
 </td></tr>
-<tr><td align="left" valign="top">&bull; <a href="#Building-and-Configure-Options">Building and Configure Options</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
+<tr><td align="left" valign="top">&bull; <a href="#Building-and-Configure-Options">Building and Configure Options</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
 </td></tr>
 </table>
 
 
 
 <hr>
-<a name="Introduction"></a>
-<a name="Introduction-1"></a>
-<h2 class="chapter">1 Introduction</h2>
+<span id="Introduction"></span><span id="Introduction-1"></span><h2 class="chapter">1 Introduction</h2>
 
 <p>GNU <code>nano</code> is a small and friendly text editor.  Besides
 basic text editing, <code>nano</code> offers features like undo/redo,
@@ -102,22 +89,19 @@ See <a href="#Pico-Compatibility">Pico Compatibility</a> for more details on how
 Pico differ.
 </p>
 <p>Starting with version 4.0, <code>nano</code> no longer hard-wraps an overlong
-line by default, and no longer automatically adds a newline at the end
-of the text if one is missing.  Furthermore, it uses smooth scrolling
-by default and makes use of the line below the title bar.
+line by default, uses smooth scrolling by default, and by default makes
+use of the line below the title bar.
 </p>
 <p>If you want the old, Pico behavior back, you can use the
-following options: <samp>--breaklonglines</samp>, <samp>--finalnewline</samp>,
+following options: <samp>--breaklonglines</samp>,
 <samp>--jumpyscrolling</samp>, and <samp>--emptyline</samp>
-(or <samp>-bfje</samp> for short).
+(or <samp>-bje</samp> for short).
 </p>
 <p>Please report bugs via <a href="https://savannah.gnu.org/bugs/?group=nano">https://savannah.gnu.org/bugs/?group=nano</a>.
 </p>
 
 <hr>
-<a name="Invoking"></a>
-<a name="Invoking-1"></a>
-<h2 class="chapter">2 Invoking</h2>
+<span id="Invoking"></span><span id="Invoking-1"></span><h2 class="chapter">2 Invoking</h2>
 
 <p>The usual way to invoke <code>nano</code> is:
 </p>
@@ -145,9 +129,7 @@ will read data from standard input.  This means you can pipe the output of
 a command straight into a buffer, and then edit it.
 </p>
 <hr>
-<a name="Command_002dline-Options"></a>
-<a name="Command_002dline-Options-1"></a>
-<h2 class="chapter">3 Command-line Options</h2>
+<span id="Command_002dline-Options"></span><span id="Command_002dline-Options-1"></span><h2 class="chapter">3 Command-line Options</h2>
 
 <p><code>nano</code> takes the following options from the command line:
 </p>
@@ -223,7 +205,6 @@ mouse support.
 <dt><samp>-L</samp></dt>
 <dt><samp>--nonewlines</samp></dt>
 <dd><p>Don&rsquo;t automatically add a newline when a file does not end with one.
-(This is the default.)
 </p>
 </dd>
 <dt><samp>-M</samp></dt>
@@ -352,13 +333,6 @@ system either Backspace acts like Delete or Delete acts like Backspace.
 <dd><p>Do not use the line below the title bar, leaving it entirely blank.
 </p>
 </dd>
-<dt><samp>-f</samp></dt>
-<dt><samp>--finalnewline</samp></dt>
-<dd><p>If the buffer is not empty, ensure that it ends with a newline character.
-(This option is the opposite of <samp>-L</samp> (<samp>--nonewlines</samp>) &mdash;
-the last one given takes effect.)
-</p>
-</dd>
 <dt><samp>-g</samp></dt>
 <dt><samp>--showcursor</samp></dt>
 <dd><p>Make the cursor visible in the file browser (putting it on the
@@ -432,7 +406,7 @@ at the width of the screen minus <var>number</var> columns, allowing the wrap
 point to vary along with the width of the screen if the screen is resized.
 The default value is <tt>-8</tt>.
 </p>
-<a name="g_t_002d_002dspeller"></a></dd>
+<span id="g_t_002d_002dspeller"></span></dd>
 <dt><samp>-s <var>program</var></samp></dt>
 <dt><samp>--speller=<var>program</var></samp></dt>
 <dd><p>Use the given program to do spell checking and correcting.  By default,
@@ -468,9 +442,11 @@ file permissions to implement a read-only file.)
 <dt><samp>-w</samp></dt>
 <dt><samp>--nowrap</samp></dt>
 <dd><p>Do not automatically hard-wrap the current line when it becomes overlong.
-(This is the default.)
+This is the default.  (This option is the opposite of <samp>-b</samp>
+(<samp>--breaklonglines</samp>) &mdash; the last one given takes effect.)
 </p>
-<a name="Expert-Mode"></a></dd>
+
+<span id="Expert-Mode"></span></dd>
 <dt><samp>-x</samp></dt>
 <dt><samp>--nohelp</samp></dt>
 <dd><p>Expert Mode: don&rsquo;t show the Shortcut List at the bottom of the screen.
@@ -506,33 +482,29 @@ separately (e.g. <code>nano -wS -$</code>).
 
 
 <hr>
-<a name="Editor-Basics"></a>
-<a name="Editor-Basics-1"></a>
-<h2 class="chapter">4 Editor Basics</h2>
+<span id="Editor-Basics"></span><span id="Editor-Basics-1"></span><h2 class="chapter">4 Editor Basics</h2>
 
 <table class="menu" border="0" cellspacing="0">
-<tr><td align="left" valign="top">&bull; <a href="#Entering-Text" accesskey="1">Entering Text</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
+<tr><td align="left" valign="top">&bull; <a href="#Entering-Text" accesskey="1">Entering Text</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
 </td></tr>
-<tr><td align="left" valign="top">&bull; <a href="#Commands" accesskey="2">Commands</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
+<tr><td align="left" valign="top">&bull; <a href="#Commands" accesskey="2">Commands</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
 </td></tr>
-<tr><td align="left" valign="top">&bull; <a href="#The-Cutbuffer" accesskey="3">The Cutbuffer</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
+<tr><td align="left" valign="top">&bull; <a href="#The-Cutbuffer" accesskey="3">The Cutbuffer</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
 </td></tr>
-<tr><td align="left" valign="top">&bull; <a href="#The-Mark" accesskey="4">The Mark</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
+<tr><td align="left" valign="top">&bull; <a href="#The-Mark" accesskey="4">The Mark</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
 </td></tr>
-<tr><td align="left" valign="top">&bull; <a href="#Screen-Layout" accesskey="5">Screen Layout</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
+<tr><td align="left" valign="top">&bull; <a href="#Screen-Layout" accesskey="5">Screen Layout</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
 </td></tr>
-<tr><td align="left" valign="top">&bull; <a href="#Search-and-Replace" accesskey="6">Search and Replace</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
+<tr><td align="left" valign="top">&bull; <a href="#Search-and-Replace" accesskey="6">Search and Replace</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
 </td></tr>
-<tr><td align="left" valign="top">&bull; <a href="#Using-the-Mouse" accesskey="7">Using the Mouse</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
+<tr><td align="left" valign="top">&bull; <a href="#Using-the-Mouse" accesskey="7">Using the Mouse</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
 </td></tr>
-<tr><td align="left" valign="top">&bull; <a href="#Limitations" accesskey="8">Limitations</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
+<tr><td align="left" valign="top">&bull; <a href="#Limitations" accesskey="8">Limitations</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
 </td></tr>
 </table>
 
 <hr>
-<a name="Entering-Text"></a>
-<a name="Entering-Text-1"></a>
-<h3 class="section">4.1 Entering Text</h3>
+<span id="Entering-Text"></span><span id="Entering-Text-1"></span><h3 class="section">4.1 Entering Text</h3>
 
 <p><code>nano</code> is a &quot;modeless&quot; editor.  This means that all keystrokes,
 with the exception of Control and Meta sequences, enter text into the
@@ -556,9 +528,7 @@ useful when writing about a French party.  Typing <kbd>M-V 0 0 2 2 c 4</kbd>
 will enter the symbol &quot;⋄&quot;, a little diamond.
 </p>
 <hr>
-<a name="Commands"></a>
-<a name="Commands-1"></a>
-<h3 class="section">4.2 Commands</h3>
+<span id="Commands"></span><span id="Commands-1"></span><h3 class="section">4.2 Commands</h3>
 
 <p>Commands are given by using the Control key (Ctrl, shown as <kbd>^</kbd>)
 or the Meta key (Alt or Cmd, shown as <kbd>M-</kbd>).
@@ -578,9 +548,7 @@ the desired key, and a meta-key sequence by pressing the Esc key once
 and then pressing the desired key.
 </p>
 <hr>
-<a name="The-Cutbuffer"></a>
-<a name="The-Cutbuffer-1"></a>
-<h3 class="section">4.3 The Cutbuffer</h3>
+<span id="The-Cutbuffer"></span><span id="The-Cutbuffer-1"></span><h3 class="section">4.3 The Cutbuffer</h3>
 
 <p>Text can be cut from a file, a whole line at a time, by using the &rsquo;Cut Text&rsquo;
 command (default key binding: <kbd>^K</kbd>).  The cut line is stored in
@@ -595,9 +563,7 @@ after any other keystroke will overwrite the entire cutbuffer.
 the &rsquo;Copy Text&rsquo; command (default key binding: <kbd>M-6</kbd>).
 </p>
 <hr>
-<a name="The-Mark"></a>
-<a name="The-Mark-1"></a>
-<h3 class="section">4.4 The Mark</h3>
+<span id="The-Mark"></span><span id="The-Mark-1"></span><h3 class="section">4.4 The Mark</h3>
 
 <p>Text can be selected by first &rsquo;setting the Mark&rsquo; (default key bindings:
 <kbd>^6</kbd> and <kbd>M-A</kbd>) and then moving the cursor to the other end of the portion
@@ -615,9 +581,7 @@ upon any cursor movement where <kbd>Shift</kbd> isn&rsquo;t held.
 If necessary, it can be toggled off manually with another <kbd>^6</kbd> or <kbd>M-A</kbd>.
 </p>
 <hr>
-<a name="Screen-Layout"></a>
-<a name="Screen-Layout-1"></a>
-<h3 class="section">4.5 Screen Layout</h3>
+<span id="Screen-Layout"></span><span id="Screen-Layout-1"></span><h3 class="section">4.5 Screen Layout</h3>
 
 <p>The default screen of nano consists of five areas.  From top to bottom
 these are: the title bar, a blank line, the edit window, the status bar,
@@ -641,9 +605,7 @@ essential functions of the editor.  These two lines are called the
 Shortcut List.
 </p>
 <hr>
-<a name="Search-and-Replace"></a>
-<a name="Search-and-Replace-1"></a>
-<h3 class="section">4.6 Search and Replace</h3>
+<span id="Search-and-Replace"></span><span id="Search-and-Replace-1"></span><h3 class="section">4.6 Search and Replace</h3>
 
 <p>One can search the current buffer for the occurrence of any string
 with the Search command (default key binding: <kbd>^W</kbd>).  The default search
@@ -656,9 +618,7 @@ it cannot span multiple lines.  And when replacing (with <kbd>^\</kbd> or <kbd>M
 the replacement string cannot contain a newline (LF).
 </p>
 <hr>
-<a name="Using-the-Mouse"></a>
-<a name="Using-the-Mouse-1"></a>
-<h3 class="section">4.7 Using the Mouse</h3>
+<span id="Using-the-Mouse"></span><span id="Using-the-Mouse-1"></span><h3 class="section">4.7 Using the Mouse</h3>
 
 <p>When mouse support has been configured and enabled, a single mouse click
 places the cursor at the indicated position.  Clicking a second time in
@@ -671,18 +631,14 @@ Shift key during those actions.
 is running.
 </p>
 <hr>
-<a name="Limitations"></a>
-<a name="Limitations-1"></a>
-<h3 class="section">4.8 Limitations</h3>
+<span id="Limitations"></span><span id="Limitations-1"></span><h3 class="section">4.8 Limitations</h3>
 
 <p>The recording and playback of keyboard macros works correctly only on a
 terminal emulator, not on a Linux console (VT), because the latter does
 not by default distinguish modified from unmodified arrow keys.
 </p>
 <hr>
-<a name="Built_002din-Help"></a>
-<a name="Built_002din-Help-1"></a>
-<h2 class="chapter">5 Built-in Help</h2>
+<span id="Built_002din-Help"></span><span id="Built_002din-Help-1"></span><h2 class="chapter">5 Built-in Help</h2>
 
 <p>The built-in help system in <code>nano</code> is available by pressing <kbd>^G</kbd>.
 It is fairly self-explanatory.  It documents the various parts of the
@@ -691,9 +647,7 @@ and <kbd>^V</kbd> (Page Down) keys.  <kbd>^X</kbd> exits from the help system.
 </p>
 
 <hr>
-<a name="Feature-Toggles"></a>
-<a name="Feature-Toggles-1"></a>
-<h2 class="chapter">6 Feature Toggles</h2>
+<span id="Feature-Toggles"></span><span id="Feature-Toggles-1"></span><h2 class="chapter">6 Feature Toggles</h2>
 
 <p>Toggles allow you to change on-the-fly certain aspects of the editor
 which would normally be specified via command-line options.  They are
@@ -718,11 +672,15 @@ The following global toggles are available:
 </p>
 </dd>
 <dt><code>Long-Line Wrapping</code></dt>
-<dd><p><kbd>Meta-L</kbd> toggles the <samp>-w</samp> (<samp>--nowrap</samp>) command-line option.
+<dd><p><kbd>Meta-L</kbd> toggles the <samp>-b</samp> (<samp>--breaklonglines</samp>) command-line option.
 </p>
 </dd>
 <dt><code>Mouse Support</code></dt>
 <dd><p><kbd>Meta-M</kbd> toggles the <samp>-m</samp> (<samp>--mouse</samp>) command-line option.
+</p>
+</dd>
+<dt><code>Line Numbers</code></dt>
+<dd><p><kbd>Meta-N</kbd> toggles the <samp>-l</samp> (<samp>--linenumbers</samp>) command-line option.
 </p>
 </dd>
 <dt><code>Tabs To Spaces</code></dt>
@@ -733,8 +691,8 @@ The following global toggles are available:
 <dd><p><kbd>Meta-P</kbd> toggles the displaying of whitespace (see <a href="#Whitespace">Whitespace</a>).
 </p>
 </dd>
-<dt><code>Smooth Scrolling</code></dt>
-<dd><p><kbd>Meta-S</kbd> toggles the <samp>-S</samp> (<samp>--smooth</samp>) command-line option.
+<dt><code>Soft Wrapping</code></dt>
+<dd><p><kbd>Meta-S</kbd> toggles the <samp>-$</samp> (<samp>--softwrap</samp>) command-line option.
 </p>
 </dd>
 <dt><code>Expert/No Help</code></dt>
@@ -750,21 +708,11 @@ The following global toggles are available:
 <dd><p><kbd>Meta-Z</kbd> toggles the <samp>-z</samp> (<samp>--suspend</samp>) command-line option.
 </p>
 </dd>
-<dt><code>Line Numbers</code></dt>
-<dd><p><kbd>Meta-#</kbd> toggles the <samp>-l</samp> (<samp>--linenumbers</samp>) command-line option.
-</p>
-</dd>
-<dt><code>Soft Wrapping</code></dt>
-<dd><p><kbd>Meta-$</kbd> toggles the <samp>-$</samp> (<samp>--softwrap</samp>) command-line option.
-</p>
-</dd>
 </dl>
 
 
 <hr>
-<a name="Nanorc-Files"></a>
-<a name="Nanorc-Files-1"></a>
-<h2 class="chapter">7 Nanorc Files</h2>
+<span id="Nanorc-Files"></span><span id="Nanorc-Files-1"></span><h2 class="chapter">7 Nanorc Files</h2>
 
 <p>The nanorc files contain the default settings for <code>nano</code>.  They
 should be in Unix format, not in DOS or Mac format.  During startup,
@@ -791,18 +739,16 @@ end.  For example, for the <code>brackets</code> option, <tt>&quot;&quot;')&gt;]
 <code>&quot;</code>, <code>'</code>, <code>)</code>, <code>&gt;</code>, <code>]</code>, and <code>}</code>.
 </p>
 <table class="menu" border="0" cellspacing="0">
-<tr><td align="left" valign="top">&bull; <a href="#Settings" accesskey="1">Settings</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
+<tr><td align="left" valign="top">&bull; <a href="#Settings" accesskey="1">Settings</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
 </td></tr>
-<tr><td align="left" valign="top">&bull; <a href="#Syntax-Highlighting" accesskey="2">Syntax Highlighting</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
+<tr><td align="left" valign="top">&bull; <a href="#Syntax-Highlighting" accesskey="2">Syntax Highlighting</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
 </td></tr>
-<tr><td align="left" valign="top">&bull; <a href="#Rebinding-Keys" accesskey="3">Rebinding Keys</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
+<tr><td align="left" valign="top">&bull; <a href="#Rebinding-Keys" accesskey="3">Rebinding Keys</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
 </td></tr>
 </table>
 
 <hr>
-<a name="Settings"></a>
-<a name="Settings-1"></a>
-<h3 class="section">7.1 Settings</h3>
+<span id="Settings"></span><span id="Settings-1"></span><h3 class="section">7.1 Settings</h3>
 
 <p>The supported settings in a nanorc file are:
 </p>
@@ -881,10 +827,6 @@ Note that this overrides <samp>quickblank</samp>.
 See <a href="#set-functioncolor"><code>set functioncolor</code></a> for valid color names.
 </p>
 </dd>
-<dt><code>set finalnewline</code></dt>
-<dd><p>If the buffer is not empty, ensure that it ends with a newline character.
-</p>
-</dd>
 <dt><code>set fill <var>number</var></code></dt>
 <dd><p>Set the target width for justifying and automatic hard-wrapping at this
 <var>number</var> of columns.  If the value is 0 or less, wrapping will occur
@@ -892,7 +834,7 @@ at the width of the screen minus <var>number</var> columns, allowing the wrap
 point to vary along with the width of the screen if the screen is resized.
 The default value is <tt>-8</tt>.
 </p>
-<a name="set-functioncolor"></a></dd>
+<span id="set-functioncolor"></span></dd>
 <dt><code>set functioncolor <var>fgcolor</var>,<var>bgcolor</var></code></dt>
 <dd><p>Use this color combination for the concise function descriptions
 in the two help lines at the bottom of the screen.
@@ -902,6 +844,11 @@ Valid names for foreground and background color are:
 &mdash; where <code>normal</code> means the default foreground or background color.
 The name of the foreground color may be prefixed with <code>bright</code>.
 And either <var>fgcolor</var> or ,<var>bgcolor</var> may be left out.
+</p>
+</dd>
+<dt><code>set guidestripe <var>number</var></code></dt>
+<dd><p>Draw a vertical stripe at the given column, to help judge the width of the
+text.  (The color of the stripe can be changed with <code>set stripecolor</code>.)
 </p>
 </dd>
 <dt><code>set historylog</code></dt>
@@ -925,11 +872,6 @@ See <a href="#set-functioncolor"><code>set functioncolor</code></a> for valid co
 </dd>
 <dt><code>set locking</code></dt>
 <dd><p>Enable vim-style lock-files for when editing files.
-</p>
-</dd>
-<dt><code>set guidestripe <var>number</var></code></dt>
-<dd><p>Draw a vertical stripe at the given column, to help judge the width of the
-text.  (The color of the stripe can be changed with <code>set stripecolor</code>.)
 </p>
 </dd>
 <dt><code>set matchbrackets &quot;<var>string</var>&quot;</code></dt>
@@ -962,8 +904,7 @@ cursor, set the mark (with a double click), or execute shortcuts.
 </p>
 </dd>
 <dt><code>set nonewlines</code></dt>
-<dd><p>Deprecated option since it has become the default setting.
-When needed, use <code>unset finalnewline</code> instead.
+<dd><p>Don&rsquo;t automatically add a newline when a file does not end with one.
 </p>
 </dd>
 <dt><code>set nopauses</code></dt>
@@ -1116,7 +1057,7 @@ default behavior of saving a file in the format that it had.
 This mode allows the user to open also other files for viewing,
 unless <samp>--restricted</samp> is given on the command line.
 </p>
-<a name="Whitespace"></a></dd>
+<span id="Whitespace"></span></dd>
 <dt><code>set whitespace &quot;<var>string</var>&quot;</code></dt>
 <dd><p>Set the two characters used to indicate the presence of tabs and
 spaces.  They must be single-column characters.  The default pair
@@ -1142,9 +1083,7 @@ should be considered as parts of words.  This overrides the option
 </dl>
 
 <hr>
-<a name="Syntax-Highlighting"></a>
-<a name="Syntax-Highlighting-1"></a>
-<h3 class="section">7.2 Syntax Highlighting</h3>
+<span id="Syntax-Highlighting"></span><span id="Syntax-Highlighting-1"></span><h3 class="section">7.2 Syntax Highlighting</h3>
 
 <p>Coloring the different syntactic elements of a file
 is done via regular expressions (see the <code>color</code> command below).
@@ -1270,9 +1209,7 @@ series of keystrokes to a single key in your nanorc:
 control character.  You can enter them by preceding each with <tt class="key">M-V</tt>.)
 </p>
 <hr>
-<a name="Rebinding-Keys"></a>
-<a name="Rebinding-Keys-1"></a>
-<h3 class="section">7.3 Rebinding Keys</h3>
+<span id="Rebinding-Keys"></span><span id="Rebinding-Keys-1"></span><h3 class="section">7.3 Rebinding Keys</h3>
 
 <p>Key bindings can be changed via the following three commands in a
 nanorc file:
@@ -1689,10 +1626,6 @@ in the filesystem.
 <dd><p>Toggles the constant display of the current line, column, and character positions.
 </p>
 </dd>
-<dt><code>smoothscroll</code></dt>
-<dd><p>Toggles smooth scrolling (when moving around with the arrow keys).
-</p>
-</dd>
 <dt><code>softwrap</code></dt>
 <dd><p>Toggles the displaying of overlong lines on multiple screen lines.
 </p>
@@ -1816,9 +1749,7 @@ it means all menus where the specified <code>key</code> exists.
 
 
 <hr>
-<a name="The-File-Browser"></a>
-<a name="The-File-Browser-1"></a>
-<h2 class="chapter">8 The File Browser</h2>
+<span id="The-File-Browser"></span><span id="The-File-Browser-1"></span><h2 class="chapter">8 The File Browser</h2>
 
 <p>When in the Read-File (<kbd>^R</kbd>) or Write-Out menu (<kbd>^O</kbd>),
 pressing <kbd>^T</kbd> will invoke the file browser.
@@ -1837,9 +1768,7 @@ browser exits.
 </p>
 
 <hr>
-<a name="Pico-Compatibility"></a>
-<a name="Pico-Compatibility-1"></a>
-<h2 class="chapter">9 Pico Compatibility</h2>
+<span id="Pico-Compatibility"></span><span id="Pico-Compatibility-1"></span><h2 class="chapter">9 Pico Compatibility</h2>
 
 <p><code>nano</code> emulates Pico quite closely, but there
 are some differences between the two editors:
@@ -1852,13 +1781,6 @@ switched on with the <samp>--breaklonglines</samp> option.  With that option,
 <code>nano</code> by default breaks lines at screen width minus eight columns,
 whereas Pico does it at screen width minus six columns. You can make
 <code>nano</code> do as Pico by using <samp>--fill=-6</samp>.
-</p>
-</dd>
-<dt><code>Magic Newline</code></dt>
-<dd><p>Pico ensures that any text always ends with a newline character.
-Nano does not do this by default: the user is left in full control
-of the formatting. You can get the automatic newline by using the
-<samp>--finalnewline</samp> option.
 </p>
 </dd>
 <dt><code>Scrolling</code></dt>
@@ -1950,9 +1872,7 @@ Or see the list at the end of the main internal help text (<kbd>^G</kbd>) instea
 
 
 <hr>
-<a name="Building-and-Configure-Options"></a>
-<a name="Building-and-Configure-Options-1"></a>
-<h2 class="chapter">10 Building and Configure Options</h2>
+<span id="Building-and-Configure-Options"></span><span id="Building-and-Configure-Options-1"></span><h2 class="chapter">10 Building and Configure Options</h2>
 
 <p>Building <code>nano</code> from source is fairly straightforward if you are
 familiar with compiling programs with autoconf support:
@@ -2101,37 +2021,37 @@ curses libraries.
 
 <hr>
 
-<a name="SEC_Contents"></a>
+<span id="SEC_Contents"></span>
 <h2 class="contents-heading">Table of Contents</h2>
 
 <div class="contents">
 
 <ul class="no-bullet">
-  <li><a name="toc-Introduction-1" href="#Introduction">1 Introduction</a></li>
-  <li><a name="toc-Invoking-1" href="#Invoking">2 Invoking</a></li>
-  <li><a name="toc-Command_002dline-Options-1" href="#Command_002dline-Options">3 Command-line Options</a></li>
-  <li><a name="toc-Editor-Basics-1" href="#Editor-Basics">4 Editor Basics</a>
+  <li><a id="toc-Introduction-1" href="#Introduction">1 Introduction</a></li>
+  <li><a id="toc-Invoking-1" href="#Invoking">2 Invoking</a></li>
+  <li><a id="toc-Command_002dline-Options-1" href="#Command_002dline-Options">3 Command-line Options</a></li>
+  <li><a id="toc-Editor-Basics-1" href="#Editor-Basics">4 Editor Basics</a>
   <ul class="no-bullet">
-    <li><a name="toc-Entering-Text-1" href="#Entering-Text">4.1 Entering Text</a></li>
-    <li><a name="toc-Commands-1" href="#Commands">4.2 Commands</a></li>
-    <li><a name="toc-The-Cutbuffer-1" href="#The-Cutbuffer">4.3 The Cutbuffer</a></li>
-    <li><a name="toc-The-Mark-1" href="#The-Mark">4.4 The Mark</a></li>
-    <li><a name="toc-Screen-Layout-1" href="#Screen-Layout">4.5 Screen Layout</a></li>
-    <li><a name="toc-Search-and-Replace-1" href="#Search-and-Replace">4.6 Search and Replace</a></li>
-    <li><a name="toc-Using-the-Mouse-1" href="#Using-the-Mouse">4.7 Using the Mouse</a></li>
-    <li><a name="toc-Limitations-1" href="#Limitations">4.8 Limitations</a></li>
+    <li><a id="toc-Entering-Text-1" href="#Entering-Text">4.1 Entering Text</a></li>
+    <li><a id="toc-Commands-1" href="#Commands">4.2 Commands</a></li>
+    <li><a id="toc-The-Cutbuffer-1" href="#The-Cutbuffer">4.3 The Cutbuffer</a></li>
+    <li><a id="toc-The-Mark-1" href="#The-Mark">4.4 The Mark</a></li>
+    <li><a id="toc-Screen-Layout-1" href="#Screen-Layout">4.5 Screen Layout</a></li>
+    <li><a id="toc-Search-and-Replace-1" href="#Search-and-Replace">4.6 Search and Replace</a></li>
+    <li><a id="toc-Using-the-Mouse-1" href="#Using-the-Mouse">4.7 Using the Mouse</a></li>
+    <li><a id="toc-Limitations-1" href="#Limitations">4.8 Limitations</a></li>
   </ul></li>
-  <li><a name="toc-Built_002din-Help-1" href="#Built_002din-Help">5 Built-in Help</a></li>
-  <li><a name="toc-Feature-Toggles-1" href="#Feature-Toggles">6 Feature Toggles</a></li>
-  <li><a name="toc-Nanorc-Files-1" href="#Nanorc-Files">7 Nanorc Files</a>
+  <li><a id="toc-Built_002din-Help-1" href="#Built_002din-Help">5 Built-in Help</a></li>
+  <li><a id="toc-Feature-Toggles-1" href="#Feature-Toggles">6 Feature Toggles</a></li>
+  <li><a id="toc-Nanorc-Files-1" href="#Nanorc-Files">7 Nanorc Files</a>
   <ul class="no-bullet">
-    <li><a name="toc-Settings-1" href="#Settings">7.1 Settings</a></li>
-    <li><a name="toc-Syntax-Highlighting-1" href="#Syntax-Highlighting">7.2 Syntax Highlighting</a></li>
-    <li><a name="toc-Rebinding-Keys-1" href="#Rebinding-Keys">7.3 Rebinding Keys</a></li>
+    <li><a id="toc-Settings-1" href="#Settings">7.1 Settings</a></li>
+    <li><a id="toc-Syntax-Highlighting-1" href="#Syntax-Highlighting">7.2 Syntax Highlighting</a></li>
+    <li><a id="toc-Rebinding-Keys-1" href="#Rebinding-Keys">7.3 Rebinding Keys</a></li>
   </ul></li>
-  <li><a name="toc-The-File-Browser-1" href="#The-File-Browser">8 The File Browser</a></li>
-  <li><a name="toc-Pico-Compatibility-1" href="#Pico-Compatibility">9 Pico Compatibility</a></li>
-  <li><a name="toc-Building-and-Configure-Options-1" href="#Building-and-Configure-Options">10 Building and Configure Options</a></li>
+  <li><a id="toc-The-File-Browser-1" href="#The-File-Browser">8 The File Browser</a></li>
+  <li><a id="toc-Pico-Compatibility-1" href="#Pico-Compatibility">9 Pico Compatibility</a></li>
+  <li><a id="toc-Building-and-Configure-Options-1" href="#Building-and-Configure-Options">10 Building and Configure Options</a></li>
 </ul>
 </div>
 

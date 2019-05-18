@@ -1,18 +1,23 @@
-## Here is an example for manpages.
+## Syntax highlighting for man pages.
 
 syntax man "\.[1-9]x?$"
 magic "troff or preprocessor input"
 comment ".\""
 
-color green "\.(SH|SS|TH) .*"
-color brightgreen "\.(SH|SS|TH) " "\.([HIT]P)"
-color brightred "\.(B[IR]?|I[BR]?|R[BI]|S[BM]) .*"
-color brightblue "\.(B[IR]?|I[BR]?|R[BI]|S[BM]) " "\.([LP]?P)$"
+# Section headers, title line, and indented paragraphs.
+color green "^\.(SH|SS|TH) .*"
+color brightgreen "^\.(SH|SS|TH) " "^\.([HIT]P)"
+# Type faces, and normal paragraphs.
+color brightred "^\.(B[IR]?|I[BR]?|R[BI]|S[BM]) .*"
+color brightblue "^\.(B[IR]?|I[BR]?|R[BI]|S[BM]) " "^\.([LP]?P)$"
+# Inline type faces.
 color magenta "\\f[BIPR]"
-color yellow "\.(br|DT|RS|RE|PD)"
+# Relative margins, hyperlinks, and various other stuff.
+color yellow "^\.(RS|RE|UR|UE|PD|DT)"
+color yellow "^\.(ad|bp|br|ce|de|ds|el|ie|if|fi|ft|hy|ig|in|na|ne|nf|nh|ps|so|sp|ti|tr)"
 
 # Comments.
-color cyan "\.?\\\".*"
+color cyan "(^\.)?\\\".*"
 
 # Trailing whitespace.
 color ,green "[[:space:]]+$"

@@ -1,7 +1,7 @@
 Asuswrt-Merlin 384/NG Changelog
 ===============================
 
-384.11_2 (xx-xxx-2019)
+384.11_2 (18-May-2019)
   - NEW: Implemented source/destination IP filtering
          for the Netool version of Netstat web page.
   - CHANGED: Backported multiple fixes and improvements

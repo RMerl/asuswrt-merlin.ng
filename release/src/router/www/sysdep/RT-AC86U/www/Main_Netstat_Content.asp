@@ -218,7 +218,7 @@ function setClientIP(ipaddr){
 											})
 										</script>
 
-										<img id="loadingIcon" style="display:none;" src="/images/InternetScan.gif"></span>
+										<img id="loadingIcon" style="display:none;" src="/images/InternetScan.gif">
 									</div>
 
 									<div style="margin-top:8px" id="logArea">
@@ -238,7 +238,6 @@ function setClientIP(ipaddr){
 </form>
 
 <div id="footer"></div>
-</body>
 <script type="text/javascript">
 <!--[if !IE]>-->
 	(function($){
@@ -247,4 +246,5 @@ function setClientIP(ipaddr){
 	})(jQuery);
 <!--<![endif]-->
 </script>
+</body>
 </html>

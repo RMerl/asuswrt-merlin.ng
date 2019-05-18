@@ -291,8 +291,8 @@ void help_init(void)
 		/* Untranslated help introduction.  We break it up into three chunks
 		 * in case the full string is too long for the compiler to handle. */
 	char *ptr;
-	const subnfunc *f;
-	const sc *s;
+	const funcstruct *f;
+	const keystruct *s;
 
 	/* First, set up the initial help text for the current function. */
 	if (currmenu == MWHEREIS || currmenu == MREPLACE || currmenu == MREPLACEWITH) {
@@ -556,9 +556,6 @@ void help_init(void)
 		}
 	}
 #endif /* !NANO_TINY */
-
-	if (strlen(help_text) > allocsize)
-		statusline(ALERT, "Help text spilled over -- please report a bug");
 }
 
 /* Return the function that is bound to the given key, accepting certain
@@ -613,7 +610,7 @@ size_t help_line_len(const char *ptr)
 		length = move_mbright(ptr, length);
 
 	/* If the entire line will just fit the screen, don't wrap it. */
-	if (strnlenpt(ptr, length) <= wrapping_point + 1)
+	if (wideness(ptr, length) <= wrapping_point + 1)
 		return length;
 	else if (wrap_location > 0)
 		return wrap_location;

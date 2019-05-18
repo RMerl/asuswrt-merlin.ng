@@ -400,7 +400,7 @@ void read_the_list(const char *path, DIR *dir)
 
 	/* Find the length of the longest filename in the current folder. */
 	while ((nextdir = readdir(dir)) != NULL) {
-		size_t name_len = strlenpt(nextdir->d_name);
+		size_t name_len = breadth(nextdir->d_name);
 
 		if (name_len > longest)
 			longest = name_len;
@@ -518,7 +518,7 @@ void browser_refresh(void)
 		struct stat st;
 		const char *thename = tail(filelist[i]);
 				/* The filename we display, minus the path. */
-		size_t namelen = strlenpt(thename);
+		size_t namelen = breadth(thename);
 				/* The length of the filename in columns. */
 		size_t infolen;
 				/* The length of the file information in columns. */
@@ -598,7 +598,7 @@ void browser_refresh(void)
 		}
 
 		/* Make sure info takes up no more than infomaxlen columns. */
-		infolen = strlenpt(info);
+		infolen = breadth(info);
 		if (infolen > infomaxlen) {
 			info[actual_x(info, infomaxlen)] = '\0';
 			infolen = infomaxlen;
@@ -672,7 +672,7 @@ int filesearch_init(bool forwards)
 		thedefault = charalloc(strlen(disp) + 7);
 		/* We use (COLS / 3) here because we need to see more on the line. */
 		sprintf(thedefault, " [%s%s]", disp,
-				(strlenpt(last_search) > COLS / 3) ? "..." : "");
+				(breadth(last_search) > COLS / 3) ? "..." : "");
 		free(disp);
 	} else
 		thedefault = mallocstrcpy(NULL, "");

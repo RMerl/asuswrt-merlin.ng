@@ -16,7 +16,7 @@
 .\"   Documentation License along with this program.  If not, see
 .\"   <https://www.gnu.org/licenses/>.
 .\"
-.TH NANO 1 "version 4.0" "March 2019"
+.TH NANO 1 "version 4.2" "April 2019"
 
 .SH NAME
 nano \- Nano's ANOther editor, inspired by Pico
@@ -25,15 +25,13 @@ nano \- Nano's ANOther editor, inspired by Pico
 .B nano
 .RI [ options "] [[+" line [, column "]]\ " file "]..."
 
-.SH NOTE
+.SH NOTICE
 Starting with version 4.0, \fBnano\fR no longer hard-wraps an overlong
-line by default, and no longer automatically adds a newline at the end
-of the text if one is missing.  Furthermore, it uses smooth scrolling
-by default and makes use of the line below the title bar.
+line by default, uses smooth scrolling by default, and by default makes
+use of the line below the title bar.
 .sp
 If you want the old, Pico behavior back, you can use \fB\-\-breaklonglines\fR,
-\fB\-\-finalnewline\fR, \fB\-\-jumpyscrolling\fR, and \fB\-\-emptyline\fR
-(or \fB\-bfje\fR for short).
+\fB\-\-jumpyscrolling\fR, and \fB\-\-emptyline\fR (or \fB\-bje\fR for short).
 
 .SH DESCRIPTION
 \fBnano\fP is a small and friendly editor.  It copies the look and feel
@@ -57,18 +55,18 @@ Consecutive \fB^K\fRs will put all deleted lines together in the cutbuffer.
 Any cursor movement or executing any other command will cause the next
 \fB^K\fR to overwrite the cutbuffer.  A \fB^U\fR will paste the current
 contents of the cutbuffer at the current cursor position.
-.PP
+.sp
 When a more precise piece of text needs to be cut or copied, one can mark
 its start with \fB^6\fR, move the cursor to its end (the marked text will be
 highlighted), and then use \fB^K\fR to cut it, or \fBM\-6\fR to copy it to the
 cutbuffer.  One can also save the marked text to a file with \fB^O\fR, or
 spell check it with \fB^T\fR.
-.PP
+.sp
 On some terminals, text can be selected also by holding down Shift while
 using the arrow keys.  Holding down the Ctrl or Alt key too will increase
 the stride.
 Any cursor movement without Shift being held will cancel such a selection.
-.PP
+.sp
 The two lines at the bottom of the screen show some important commands;
 the built-in help (\fB^G\fR) lists all the available ones.
 The default key bindings can be changed via a \fInanorc\fR file -- see
@@ -124,7 +122,6 @@ mouse support.
 .TP
 .BR \-L ", " \-\-nonewlines
 Don't automatically add a newline when a file does not end with one.
-(This is the default.)
 .TP
 .BR \-M ", " \-\-trimblanks
 Snip trailing whitespace from the wrapped line when automatic
@@ -213,11 +210,6 @@ system either Backspace acts like Delete or Delete acts like Backspace.
 .BR \-e ", " \-\-emptyline
 Do not use the line below the title bar, leaving it entirely blank.
 .TP
-.BR \-f ", " \-\-finalnewline
-If the buffer is not empty, ensure that it ends with a newline character.
-(This option is the opposite of \fB\-L\fR (\fB\-\-nonewlines\fR) --
-the last one given takes effect.)
-.TP
 .BR \-g ", " \-\-showcursor
 Make the cursor visible in the file browser (putting it on the
 highlighted item) and in the help viewer.  Useful for braille users
@@ -288,7 +280,9 @@ unless \fB\-\-restricted\fR is given too.
 .TP
 .BR \-w ", " \-\-nowrap
 Do not automatically hard-wrap the current line when it becomes overlong.
-(This is the default.)
+This is the default.  (This option is the opposite of \fB\-b\fR
+(\fB\-\-breaklonglines\fR) -- the last one given takes effect.)
+
 .TP
 .BR \-x ", " \-\-nohelp
 Don't show the two help lines at the bottom of the screen.
@@ -310,16 +304,16 @@ separately (e.g.\& 'nano \-wS \-$').
 .SH TOGGLES
 Several of the above options can be switched on and off also while
 \fBnano\fR is running.  For example, \fBM\-L\fR toggles the
-hard-wrapping of long lines, \fBM\-$\fR toggles soft-wrapping,
-\fBM\-#\fR toggles line numbers, \fBM\-M\fR toggles the mouse,
+hard-wrapping of long lines, \fBM\-S\fR toggles soft-wrapping,
+\fBM\-N\fR toggles line numbers, \fBM\-M\fR toggles the mouse,
 \fBM\-I\fR auto-indentation, and \fBM\-X\fR the help lines.
 See at the end of the \fB^G\fR help text for a complete list.
 
-.SH INITIALIZATION FILE
+.SH FILES
 \fBnano\fR will read two configuration files: first the system's
 \fInanorc\fR (if it exists), and then the user's \fInanorc\fR (if it
-exists), either \fB~/.nanorc\fR or \fI$XDG_CONFIG_HOME\fB/nano/nanorc\fR
-or \fB~/.config/nano/nanorc\fR, whichever is encountered first.  See
+exists), either \fI~/.nanorc\fR or \fI$XDG_CONFIG_HOME/nano/nanorc\fR
+or \fI~/.config/nano/nanorc\fR, whichever is encountered first.  See
 .BR nanorc (5)
 for more information on the possible contents of those files.
 
@@ -345,21 +339,16 @@ not by default distinguish modified from unmodified arrow keys.
 .sp
 Please report any other bugs that you encounter via:
 .br
-\fIhttps://savannah.gnu.org/bugs/?group=nano\fR.
+.IR https://savannah.gnu.org/bugs/?group=nano .
 .sp
 When nano crashes, it will save any modified buffers to emergency .save files.
 If you are able to reproduce the crash and you want to get a backtrace, define
 the environment variable \fBNANO_NOCATCH\fR.
 
 .SH HOMEPAGE
-\fIhttps://nano\-editor.org/\fR
+.I https://nano\-editor.org/
 
 .SH SEE ALSO
 .BR nanorc (5)
-.PP
+.sp
 \fI/usr/share/doc/nano/\fP (or equivalent on your system)
-
-.SH AUTHOR
-Chris Allegretta and others (see the files \fIAUTHORS\fR and
-\fITHANKS\fP for details).  This manual page was originally written by
-Jordi Mallach for the Debian system (but may be used by others).

@@ -1,4 +1,4 @@
-# glob.m4 serial 21
+# glob.m4 serial 22
 dnl Copyright (C) 2005-2007, 2009-2019 Free Software Foundation, Inc.
 dnl This file is free software; the Free Software Foundation
 dnl gives unlimited permission to copy and/or distribute it,
@@ -49,13 +49,14 @@ char a[_GNU_GLOB_INTERFACE_VERSION == 1 || _GNU_GLOB_INTERFACE_VERSION == 2 ? 1 
                 ]])],
              [gl_cv_glob_lists_symlinks=yes],
              [gl_cv_glob_lists_symlinks=no],
-             [gl_cv_glob_lists_symlinks=no])
+             [gl_cv_glob_lists_symlinks="guessing no"])
          fi
          rm -f conf$$-globtest
         ])
-      if test $gl_cv_glob_lists_symlinks = no; then
-        REPLACE_GLOB=1
-      fi
+      case "$gl_cv_glob_lists_symlinks" in
+        *yes) ;;
+        *) REPLACE_GLOB=1 ;;
+      esac
     fi
 
   fi

@@ -83,8 +83,8 @@ _gl_utimens_windows (const char *name, struct timespec ts[2])
 
   /* Open a handle to the file.
      CreateFile
-     <https://msdn.microsoft.com/en-us/library/aa363858.aspx>
-     <https://msdn.microsoft.com/en-us/library/aa363874.aspx>  */
+     <https://docs.microsoft.com/en-us/windows/desktop/api/fileapi/nf-fileapi-createfilea>
+     <https://docs.microsoft.com/en-us/windows/desktop/FileIO/creating-and-opening-files>  */
   HANDLE handle =
     CreateFile (rname,
                 FILE_READ_ATTRIBUTES | FILE_WRITE_ATTRIBUTES,
@@ -105,7 +105,7 @@ _gl_utimens_windows (const char *name, struct timespec ts[2])
   if (check_dir)
     {
       /* GetFileAttributes
-         <https://msdn.microsoft.com/en-us/library/aa364944.aspx>  */
+         <https://docs.microsoft.com/en-us/windows/desktop/api/fileapi/nf-fileapi-getfileattributesa>  */
       DWORD attributes = GetFileAttributes (rname);
       if (attributes == INVALID_FILE_ATTRIBUTES)
         {
@@ -125,18 +125,18 @@ _gl_utimens_windows (const char *name, struct timespec ts[2])
 
   {
     /* Use SetFileTime(). See
-       <https://msdn.microsoft.com/en-us/library/ms724933.aspx>
-       <https://msdn.microsoft.com/en-us/library/ms724284.aspx>  */
+       <https://docs.microsoft.com/en-us/windows/desktop/api/fileapi/nf-fileapi-setfiletime>
+       <https://docs.microsoft.com/en-us/windows/desktop/api/minwinbase/ns-minwinbase-filetime>  */
     FILETIME last_access_time;
     FILETIME last_write_time;
     if (ts == NULL)
       {
         /* GetSystemTimeAsFileTime is the same as
            GetSystemTime followed by SystemTimeToFileTime.
-           <https://msdn.microsoft.com/en-us/library/ms724397.aspx>.
+           <https://docs.microsoft.com/en-us/windows/desktop/api/sysinfoapi/nf-sysinfoapi-getsystemtimeasfiletime>.
            It would be overkill to use
            GetSystemTimePreciseAsFileTime
-           <https://msdn.microsoft.com/en-us/library/hh706895.aspx>.  */
+           <https://docs.microsoft.com/en-us/windows/desktop/api/sysinfoapi/nf-sysinfoapi-getsystemtimepreciseasfiletime>.  */
         FILETIME current_time;
         GetSystemTimeAsFileTime (&current_time);
         last_access_time = current_time;

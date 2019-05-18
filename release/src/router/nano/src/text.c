@@ -35,11 +35,6 @@
 static pid_t pid_of_command = -1;
 		/* The PID of the forked process -- needed when wanting to abort it. */
 #endif
-#ifdef ENABLE_WRAPPING
-static bool prepend_wrap = FALSE;
-		/* Should we prepend wrapped text to the next line? */
-#endif
-
 #ifdef ENABLE_WORDCOMPLETION
 static int pletion_x = 0;
 		/* The x position in pletion_line of the last found completion. */
@@ -65,8 +60,9 @@ void do_mark(void)
 #endif /* !NANO_TINY */
 
 #if defined(ENABLE_COLOR) || defined(ENABLE_SPELLER)
-/* Return an error message about invoking the given name. */
-char *invocation_error(const char *name)
+/* Return an error message about invoking the given name.  The message
+ * should not be freed; this leak is not worth the trouble avoiding. */
+const char *invocation_error(const char *name)
 {
 	char *message, *invoke_error = _("Error invoking \"%s\"");
 
@@ -167,6 +163,7 @@ void do_indent(void)
 	free(indentation);
 
 	set_modified();
+	ensure_firstcolumn_is_aligned();
 	refresh_needed = TRUE;
 	shift_held = TRUE;
 }
@@ -262,6 +259,7 @@ void do_unindent(void)
 	}
 
 	set_modified();
+	ensure_firstcolumn_is_aligned();
 	refresh_needed = TRUE;
 	shift_held = TRUE;
 }
@@ -323,7 +321,7 @@ bool comment_line(undo_type action, linestruct *line, const char *comment_seq)
 		/* Length of postfix. */
 	size_t line_len = strlen(line->data);
 
-	if (ISSET(FINAL_NEWLINE) && line == openfile->filebot)
+	if (!ISSET(NO_NEWLINES) && line == openfile->filebot)
 		return FALSE;
 
 	if (action == COMMENT) {
@@ -393,7 +391,7 @@ void do_comment(void)
 	get_range((const linestruct **)&top, (const linestruct **)&bot);
 
 	/* If only the magic line is selected, don't do anything. */
-	if (top == bot && bot == openfile->filebot && ISSET(FINAL_NEWLINE)) {
+	if (top == bot && bot == openfile->filebot && !ISSET(NO_NEWLINES)) {
 		statusbar(_("Cannot comment past end of file"));
 		return;
 	}
@@ -427,6 +425,7 @@ void do_comment(void)
 	}
 
 	set_modified();
+	ensure_firstcolumn_is_aligned();
 	refresh_needed = TRUE;
 	shift_held = TRUE;
 }
@@ -480,7 +479,7 @@ void undo_cut(undo *u)
 	copy_from_buffer(u->cutbuffer);
 
 	/* If the final line was originally cut, remove the extra magic line. */
-	if ((u->xflags & WAS_FINAL_LINE) && ISSET(FINAL_NEWLINE) &&
+	if ((u->xflags & WAS_FINAL_LINE) && !ISSET(NO_NEWLINES) &&
 			openfile->current != openfile->filebot)
 		remove_magicline();
 
@@ -521,8 +520,8 @@ void do_undo(void)
 	char *data, *undidmsg = NULL;
 	size_t from_x, to_x;
 
-	if (!u) {
-		statusbar(_("Nothing in undo buffer!"));
+	if (u == NULL) {
+		statusbar(_("Nothing to undo"));
 		return;
 	}
 
@@ -538,7 +537,7 @@ void do_undo(void)
 		/* TRANSLATORS: The next thirteen strings describe actions
 		 * that are undone or redone.  They are all nouns, not verbs. */
 		undidmsg = _("addition");
-		if ((u->xflags & WAS_FINAL_LINE) && ISSET(FINAL_NEWLINE))
+		if ((u->xflags & WAS_FINAL_LINE) && !ISSET(NO_NEWLINES))
 			remove_magicline();
 		data = charalloc(strlen(f->data) - strlen(u->strdata) + 1);
 		strncpy(data, f->data, u->begin);
@@ -548,10 +547,6 @@ void do_undo(void)
 		goto_line_posx(u->lineno, u->begin);
 		break;
 	case ENTER:
-		if (f->next == NULL) {
-			statusline(ALERT, "Missing break line -- please report a bug");
-			break;
-		}
 		undidmsg = _("line break");
 		from_x = (u->begin == 0) ? 0 : u->mark_begin_x;
 		to_x = (u->begin == 0) ? u->mark_begin_x : u->begin;
@@ -578,7 +573,7 @@ void do_undo(void)
 		/* When the join was done by a Backspace at the tail of the file,
 		 * and the nonewlines flag isn't set, do not re-add a newline that
 		 * wasn't actually deleted; just position the cursor. */
-		if ((u->xflags & WAS_FINAL_BACKSPACE) && ISSET(FINAL_NEWLINE)) {
+		if ((u->xflags & WAS_FINAL_BACKSPACE) && !ISSET(NO_NEWLINES)) {
 			goto_line_posx(openfile->filebot->lineno, 0);
 			break;
 		}
@@ -669,7 +664,6 @@ void do_undo(void)
 		break;
 #endif
 	default:
-		statusline(ALERT, "Wrong undo type -- please report a bug");
 		break;
 	}
 
@@ -699,18 +693,13 @@ void do_redo(void)
 	undo *u = openfile->undotop;
 
 	if (u == NULL || u == openfile->current_undo) {
-		statusbar(_("Nothing to re-do!"));
+		statusbar(_("Nothing to redo"));
 		return;
 	}
 
-	/* Get the previous undo item. */
-	while (u != NULL && u->next != openfile->current_undo)
+	/* Find the item before the current one in the undo stack. */
+	while (u->next != openfile->current_undo)
 		u = u->next;
-
-	if (u == NULL) {
-		statusline(ALERT, "Bad undo stack -- please report a bug");
-		return;
-	}
 
 	if (u->type <= REPLACE) {
 		f = fsfromline(u->mark_begin_lineno);
@@ -721,7 +710,7 @@ void do_redo(void)
 	switch (u->type) {
 	case ADD:
 		redidmsg = _("addition");
-		if ((u->xflags & WAS_FINAL_LINE) && ISSET(FINAL_NEWLINE))
+		if ((u->xflags & WAS_FINAL_LINE) && !ISSET(NO_NEWLINES))
 			new_magicline();
 		data = charalloc(strlen(f->data) + strlen(u->strdata) + 1);
 		strncpy(data, f->data, u->begin);
@@ -754,15 +743,11 @@ void do_redo(void)
 		goto_line_posx(u->lineno, u->begin);
 		break;
 	case JOIN:
-		if (f->next == NULL) {
-			statusline(ALERT, "Missing join line -- please report a bug");
-			break;
-		}
 		redidmsg = _("line join");
 		/* When the join was done by a Backspace at the tail of the file,
 		 * and the nonewlines flag isn't set, do not join anything, as
 		 * nothing was actually deleted; just position the cursor. */
-		if ((u->xflags & WAS_FINAL_BACKSPACE) && ISSET(FINAL_NEWLINE)) {
+		if ((u->xflags & WAS_FINAL_BACKSPACE) && !ISSET(NO_NEWLINES)) {
 			goto_line_posx(u->mark_begin_lineno, u->mark_begin_x);
 			break;
 		}
@@ -840,7 +825,6 @@ void do_redo(void)
 		break;
 #endif
 	default:
-		statusline(ALERT, "Wrong redo type -- please report a bug");
 		break;
 	}
 
@@ -903,7 +887,8 @@ void do_enter(void)
 	}
 #endif
 
-	null_at(&openfile->current->data, openfile->current_x);
+	/* Make the current line end at the cursor position. */
+	openfile->current->data[openfile->current_x] = '\0';
 
 #ifndef NANO_TINY
 	add_undo(ENTER);
@@ -1018,6 +1003,8 @@ bool execute_command(const char *command)
 		close(from_fd[0]);
 		return FALSE;
 	}
+
+	statusbar(_("Executing..."));
 
 	/* If the command starts with "|", pipe buffer or region to the command. */
 	if (should_pipe) {
@@ -1263,7 +1250,6 @@ void add_undo(undo_type action)
 		break;
 #endif
 	default:
-		statusline(ALERT, "Wrong undo adding type -- please report a bug");
 		break;
 	}
 
@@ -1402,7 +1388,7 @@ void update_undo(undo_type action)
 				if (u->lineno == u->mark_begin_lineno)
 					u->begin += u->mark_begin_x;
 			} else if (openfile->current == openfile->filebot &&
-						!ISSET(FINAL_NEWLINE))
+						ISSET(NO_NEWLINES))
 				u->begin = strlen(u->cutbottom->data);
 		}
 		break;
@@ -1416,103 +1402,72 @@ void update_undo(undo_type action)
 		u->begin = openfile->current_x;
 		break;
 	default:
-		statusline(ALERT, "Wrong undo update type -- please report a bug");
 		break;
 	}
 }
 #endif /* !NANO_TINY */
 
 #ifdef ENABLE_WRAPPING
-/* Unset the prepend_wrap flag.  We need to do this as soon as we do
- * something other than type text. */
-void wrap_reset(void)
+/* When the current line is overlong, hard-wrap it at the furthest possible
+ * whitespace character, and (if possible) prepend the remainder of the line
+ * to the next line.  Return TRUE if wrapping occurred, and FALSE otherwise. */
+bool do_wrap(void)
 {
-	prepend_wrap = FALSE;
-}
-
-/* Try wrapping the given line.  Return TRUE if wrapped, FALSE otherwise. */
-bool do_wrap(linestruct *line)
-{
+	linestruct *line = openfile->current;
+		/* The line to be wrapped, if needed and possible. */
 	size_t line_len = strlen(line->data);
-		/* The length of the line we wrap. */
+		/* The length of this line. */
+	size_t cursor_x = openfile->current_x;
+		/* The current cursor position, for comparison with the wrap point. */
 	ssize_t wrap_loc;
-		/* The index of line->data where we wrap. */
+		/* The position in the line's text where we wrap. */
 	const char *remainder;
 		/* The text after the wrap point. */
 	size_t rest_length;
 		/* The length of the remainder. */
 
-	size_t old_x = openfile->current_x;
-	linestruct *old_line = openfile->current;
-
-	/* There are three steps.  First, we decide where to wrap.  Then, we
-	 * create the new wrap line.  Finally, we clean up. */
-
-	/* Step 1, finding where to wrap.  We are going to add a new line
-	 * after a blank character.  In this step, we call break_line() to
-	 * get the location of the last blank we can break the line at, and
-	 * set wrap_loc to the location of the character after it, so that
-	 * the blank is preserved at the end of the line.
-	 *
-	 * If there is no legal wrap point, or we reach the last character
-	 * of the line while trying to find one, we should return without
-	 * wrapping.  Note that if autoindent is turned on, we don't break
-	 * at the end of it! */
-
-	/* Find the last blank where we can break the line. */
+	/* First find the last blank character where we can break the line. */
 	wrap_loc = break_line(line->data, wrap_at, FALSE);
 
-	/* If we couldn't break the line, or we've reached the end of it, we
-	 * don't wrap. */
+	/* If no wrapping point was found before end-of-line, we don't wrap. */
 	if (wrap_loc == -1 || line->data[wrap_loc] == '\0')
 		return FALSE;
 
-	/* Otherwise, move forward to the character just after the blank. */
+	/* Step forward to the character just after the blank. */
 	wrap_loc += move_mbright(line->data + wrap_loc, 0);
 
-	/* If we've reached the end of the line, we don't wrap. */
+	/* When now at end-of-line, no need to wrap. */
 	if (line->data[wrap_loc] == '\0')
 		return FALSE;
 
 #ifndef NANO_TINY
-	/* If autoindent is turned on, and we're on the character just after
-	 * the indentation, we don't wrap. */
+	/* When autoindenting, we don't wrap right after the indentation. */
 	if (ISSET(AUTOINDENT) && wrap_loc == indent_length(line->data))
 		return FALSE;
 
 	add_undo(SPLIT_BEGIN);
 #endif
 
-	openfile->current = line;
-
-	/* Step 2, making the new wrap line.  It will consist of indentation
-	 * followed by the text after the wrap point, optionally followed by
-	 * a space (if the text after the wrap point doesn't end in a blank)
-	 * and the text of the next line, if they can fit without wrapping,
-	 * the next line exists, and the prepend_wrap flag is set. */
-
 	/* The remainder is the text that will be wrapped to the next line. */
 	remainder = line->data + wrap_loc;
 	rest_length = line_len - wrap_loc;
 
-	/* We prepend the wrapped text to the next line, if the prepend_wrap
-	 * flag is set, there is a next line, and prepending would not make
-	 * the line too long. */
-	if (prepend_wrap && line != openfile->filebot) {
-		const char *tail = remainder + move_mbleft(remainder, rest_length);
-
-		/* Go to the end of the line. */
+	/* When prepending and the remainder of this line will not make the next
+	 * line too long, then join the two lines, so that, after the line wrap,
+	 * the remainder will effectively have been prefixed to the next line. */
+	if (openfile->spillage_line && openfile->spillage_line == line->next &&
+				rest_length + breadth(line->next->data) <= wrap_at) {
+		/* Go to the end of this line. */
 		openfile->current_x = line_len;
 
 		/* If the remainder doesn't end in a blank, add a space. */
-		if (!is_blank_mbchar(tail)) {
+		if (!is_blank_mbchar(remainder + move_mbleft(remainder, rest_length))) {
 #ifndef NANO_TINY
 			add_undo(ADD);
 #endif
 			line->data = charealloc(line->data, line_len + 2);
 			line->data[line_len] = ' ';
 			line->data[line_len + 1] = '\0';
-			remainder = line->data + wrap_loc;
 			rest_length++;
 			openfile->totsize++;
 			openfile->current_x++;
@@ -1521,13 +1476,10 @@ bool do_wrap(linestruct *line)
 #endif
 		}
 
-		if (rest_length + strlen(line->next->data) <= wrap_at) {
-			/* Delete the LF to join the two lines. */
+		/* Join the next line to this one, and delete any extra blanks. */
+		do {
 			do_delete();
-			/* Delete any leading blanks from the joined-on line. */
-			while (is_blank_mbchar(&line->data[openfile->current_x]))
-				do_delete();
-		}
+		} while (is_blank_mbchar(&line->data[openfile->current_x]));
 	}
 
 	/* Go to the wrap location. */
@@ -1536,9 +1488,10 @@ bool do_wrap(linestruct *line)
 	/* When requested, snip trailing blanks off the wrapped line. */
 	if (ISSET(TRIM_BLANKS)) {
 		size_t tail_x = move_mbleft(line->data, wrap_loc);
-		size_t typed_x = move_mbleft(line->data, old_x);
+		size_t typed_x = move_mbleft(line->data, cursor_x);
 
-		while (tail_x != typed_x && is_blank_mbchar(line->data + tail_x)) {
+		while ((tail_x != typed_x || cursor_x >= wrap_loc) &&
+						is_blank_mbchar(line->data + tail_x)) {
 			openfile->current_x = tail_x;
 			do_delete();
 			tail_x = move_mbleft(line->data, tail_x);
@@ -1548,14 +1501,13 @@ bool do_wrap(linestruct *line)
 	/* Now split the line. */
 	do_enter();
 
-	if (old_x < wrap_loc) {
-		openfile->current_x = old_x;
-		openfile->current = old_line;
-		prepend_wrap = TRUE;
-	} else {
-		openfile->current_x += (old_x - wrap_loc);
-		prepend_wrap = FALSE;
-	}
+	openfile->spillage_line = openfile->current;
+
+	if (cursor_x < wrap_loc) {
+		openfile->current = openfile->current->prev;
+		openfile->current_x = cursor_x;
+	} else
+		openfile->current_x += (cursor_x - wrap_loc);
 
 	openfile->placewewant = xplustabs();
 
@@ -1671,101 +1623,80 @@ size_t indent_length(const char *line)
  * number of characters untreated. */
 void squeeze(linestruct *line, size_t skip)
 {
-	char *end, *new_end, *newdata;
-	size_t shift = 0;
+	char *from, *to, *newdata;
+	size_t shrunk = 0;
+	int charlen;
 
-	end = line->data + skip;
 	newdata = charalloc(strlen(line->data) + 1);
 	strncpy(newdata, line->data, skip);
-	new_end = newdata + skip;
+	from = line->data + skip;
+	to = newdata + skip;
 
-	while (*end != '\0') {
-		int end_len;
-
+	while (*from != '\0') {
 		/* If this character is blank, change it to a space,
 		 * and pass over all blanks after it. */
-		if (is_blank_mbchar(end)) {
-			end_len = parse_mbchar(end, NULL, NULL);
+		if (is_blank_mbchar(from)) {
+			from += parse_mbchar(from, NULL, NULL);
+			*(to++) = ' ';
 
-			*new_end = ' ';
-			new_end++;
-			end += end_len;
-
-			while (*end != '\0' && is_blank_mbchar(end)) {
-				end_len = parse_mbchar(end, NULL, NULL);
-
-				end += end_len;
-				shift += end_len;
+			while (*from != '\0' && is_blank_mbchar(from)) {
+				charlen = parse_mbchar(from, NULL, NULL);
+				from += charlen;
+				shrunk += charlen;
 			}
-		/* If this character is punctuation optionally followed by a bracket
-		 * and then followed by blanks, change no more than two of the blanks
-		 * to spaces if necessary, and pass over all blanks after them. */
-		} else if (mbstrchr(punct, end) != NULL) {
-			end_len = parse_mbchar(end, NULL, NULL);
+		/* If this character is punctuation, then copy it plus a possible
+		 * bracket, and change at most two of subsequent blanks to spaces,
+		 * and pass over all blanks after these. */
+		} else if (mbstrchr(punct, from) != NULL) {
+			charlen = parse_mbchar(from, NULL, NULL);
 
-			while (end_len > 0) {
-				*new_end = *end;
-				new_end++;
-				end++;
-				end_len--;
+			while (charlen > 0) {
+				*(to++) = *(from++);
+				charlen--;
 			}
 
-			if (*end != '\0' && mbstrchr(brackets, end) != NULL) {
-				end_len = parse_mbchar(end, NULL, NULL);
+			if (*from != '\0' && mbstrchr(brackets, from) != NULL) {
+				charlen = parse_mbchar(from, NULL, NULL);
 
-				while (end_len > 0) {
-					*new_end = *end;
-					new_end++;
-					end++;
-					end_len--;
+				while (charlen > 0) {
+					*(to++) = *(from++);
+					charlen--;
 				}
 			}
 
-			if (*end != '\0' && is_blank_mbchar(end)) {
-				end_len = parse_mbchar(end, NULL, NULL);
-
-				*new_end = ' ';
-				new_end++;
-				end += end_len;
+			if (*from != '\0' && is_blank_mbchar(from)) {
+				from += parse_mbchar(from, NULL, NULL);
+				*(to++) = ' ';
+			}
+			if (*from != '\0' && is_blank_mbchar(from)) {
+				from += parse_mbchar(from, NULL, NULL);
+				*(to++) = ' ';
 			}
 
-			if (*end != '\0' && is_blank_mbchar(end)) {
-				end_len = parse_mbchar(end, NULL, NULL);
-
-				*new_end = ' ';
-				new_end++;
-				end += end_len;
-			}
-
-			while (*end != '\0' && is_blank_mbchar(end)) {
-				end_len = parse_mbchar(end, NULL, NULL);
-
-				end += end_len;
-				shift += end_len;
+			while (*from != '\0' && is_blank_mbchar(from)) {
+				charlen = parse_mbchar(from, NULL, NULL);
+				from += charlen;
+				shrunk += charlen;
 			}
 		/* Leave unchanged anything that is neither blank nor punctuation. */
 		} else {
-			end_len = parse_mbchar(end, NULL, NULL);
+			charlen = parse_mbchar(from, NULL, NULL);
 
-			while (end_len > 0) {
-				*new_end = *end;
-				new_end++;
-				end++;
-				end_len--;
+			while (charlen > 0) {
+				*(to++) = *(from++);
+				charlen--;
 			}
 		}
 	}
 
-	*new_end = *end;
-
 	/* If there are spaces at the end of the line, remove them. */
-	while (new_end > newdata + skip && *(new_end - 1) == ' ') {
-		new_end--;
-		shift++;
+	while (to > newdata + skip && *(to - 1) == ' ') {
+		to--;
+		shrunk++;
 	}
 
-	if (shift > 0) {
-		null_at(&newdata, new_end - newdata);
+	if (shrunk > 0) {
+		*to = '\0';
 		free(line->data);
 		line->data = newdata;
 	} else
@@ -1905,12 +1836,12 @@ void rewrap_paragraph(linestruct **line, char *lead_string, size_t lead_len)
 	ssize_t break_pos;
 		/* The x-coordinate where the current line is to be broken. */
 
-	while (strlenpt((*line)->data) > wrap_at) {
+	while (breadth((*line)->data) > wrap_at) {
 		size_t line_len = strlen((*line)->data);
 
 		/* Find a point in the line where it can be broken. */
 		break_pos = break_line((*line)->data + lead_len,
-						wrap_at - strnlenpt((*line)->data, lead_len), FALSE);
+						wrap_at - wideness((*line)->data, lead_len), FALSE);
 
 		/* If we can't break the line, or don't need to, we're done. */
 		if (break_pos == -1 || break_pos + lead_len == line_len)
@@ -1935,7 +1866,7 @@ void rewrap_paragraph(linestruct **line, char *lead_string, size_t lead_len)
 		}
 
 		/* Now actually break the current line, and go to the next. */
-		null_at(&(*line)->data, break_pos);
+		(*line)->data[break_pos] = '\0';
 		*line = (*line)->next;
 	}
 
@@ -2028,32 +1959,6 @@ void do_justify(bool full_justify)
 #endif
 
 #ifndef NANO_TINY
-	/* Do normal justification only when the mark is off. */
-	if (!openfile->mark)
-#endif
-	{
-		/* When justifying the entire buffer, start at the top.  Otherwise, when
-		 * in a paragraph but not at its beginning, move back to its first line. */
-		if (full_justify)
-			openfile->current = openfile->filetop;
-		else if (inpar(openfile->current) && !begpar(openfile->current, 0))
-			do_para_begin(&openfile->current);
-
-		/* Find the first line of the paragraph(s) to be justified.  If the
-		 * search fails, there is nothing to justify, and we will be on the
-		 * last line of the file, so put the cursor at the end of it. */
-		if (!find_paragraph(&openfile->current, &par_len)) {
-			openfile->current_x = strlen(openfile->filebot->data);
-			refresh_needed = TRUE;
-			return;
-		}
-	}
-
-	/* Prepare to put the text we want to justify in the cutbuffer. */
-	cutbuffer = NULL;
-	cutbottom = NULL;
-
-#ifndef NANO_TINY
 	/* If the mark is on, do as Pico: treat all marked text as one paragraph. */
 	if (openfile->mark) {
 		size_t quote_len;
@@ -2099,19 +2004,33 @@ void do_justify(bool full_justify)
 		size_t jus_len;
 			/* The number of lines we're storing in the current cutbuffer. */
 
-		/* Start out at the first line of the paragraph. */
+		/* When justifying the entire buffer, start at the top.  Otherwise, when
+		 * in a paragraph but not at its beginning, move back to its first line. */
+		if (full_justify)
+			openfile->current = openfile->filetop;
+		else if (inpar(openfile->current) && !begpar(openfile->current, 0))
+			do_para_begin(&openfile->current);
+
+		/* Find the first line of the paragraph(s) to be justified.  If the
+		 * search fails, there is nothing to justify, and we will be on the
+		 * last line of the file, so put the cursor at the end of it. */
+		if (!find_paragraph(&openfile->current, &par_len)) {
+			openfile->current_x = strlen(openfile->filebot->data);
+			refresh_needed = TRUE;
+			return;
+		}
+
 		first_par_line = openfile->current;
-		last_par_line = openfile->current;
 		top_x = 0;
 
 		/* Set the number of lines to be pulled into the cutbuffer. */
 		if (full_justify)
-			jus_len = openfile->filebot->lineno;
+			jus_len = openfile->filebot->lineno - first_par_line->lineno + 1;
 		else
 			jus_len = par_len;
 
 		/* Move down to the last line to be extracted. */
-		for (; jus_len > 1; jus_len--)
+		for (last_par_line = openfile->current; jus_len > 1; jus_len--)
 			last_par_line = last_par_line->next;
 
 		/* When possible, step one line further; otherwise, to line's end. */
@@ -2132,7 +2051,10 @@ void do_justify(bool full_justify)
 
 	add_undo(CUT);
 #endif
-	/* Do the equivalent of a marked cut. */
+
+	/* Do the equivalent of a marked cut into an empty cutbuffer. */
+	cutbuffer = NULL;
+	cutbottom = NULL;
 	extract_buffer(&cutbuffer, &cutbottom, first_par_line, top_x,
 											last_par_line, bot_x);
 #ifndef NANO_TINY
@@ -2374,7 +2296,7 @@ bool fix_spello(const char *word)
 	} else if (result == 1) {
 		spotlighted = TRUE;
 		light_from_col = xplustabs();
-		light_to_col = light_from_col + strlenpt(word);
+		light_to_col = light_from_col + breadth(word);
 #ifndef NANO_TINY
 		linestruct *saved_mark = openfile->mark;
 		openfile->mark = NULL;
@@ -2437,8 +2359,9 @@ bool fix_spello(const char *word)
  * termination, and the error string otherwise. */
 const char *do_int_speller(const char *tempfile_name)
 {
-	char *read_buff, *read_buff_ptr, *read_buff_word;
-	size_t pipe_buff_size, read_buff_size, read_buff_read, bytesread;
+	char *misspellings, *pointer, *oneword;
+	long pipesize;
+	size_t buffersize, bytesread, totalread;
 	int spell_fd[2], sort_fd[2], uniq_fd[2], tempfile_fd = -1;
 	pid_t pid_spell, pid_sort, pid_uniq;
 	int spell_status, sort_status, uniq_status;
@@ -2538,53 +2461,61 @@ const char *do_int_speller(const char *tempfile_name)
 	}
 
 	/* Get the system pipe buffer size. */
-	if ((pipe_buff_size = fpathconf(uniq_fd[0], _PC_PIPE_BUF)) < 1) {
+	pipesize = fpathconf(uniq_fd[0], _PC_PIPE_BUF);
+
+	if (pipesize < 1) {
 		close(uniq_fd[0]);
 		return _("Could not get size of pipe buffer");
 	}
 
-	/* Read in the returned spelling errors. */
-	read_buff_read = 0;
-	read_buff_size = pipe_buff_size + 1;
-	read_buff = read_buff_ptr = charalloc(read_buff_size);
+	/* Block SIGWINCHes while reading misspelled words from the pipe. */
+	block_sigwinch(TRUE);
 
-	while ((bytesread = read(uniq_fd[0], read_buff_ptr, pipe_buff_size)) > 0) {
-		read_buff_read += bytesread;
-		read_buff_size += pipe_buff_size;
-		read_buff = read_buff_ptr = charealloc(read_buff, read_buff_size);
-		read_buff_ptr += read_buff_read;
+	totalread = 0;
+	buffersize = pipesize + 1;
+	misspellings = charalloc(buffersize);
+	pointer = misspellings;
+
+	while ((bytesread = read(uniq_fd[0], pointer, pipesize)) > 0) {
+		totalread += bytesread;
+		buffersize += pipesize;
+		misspellings = charealloc(misspellings, buffersize);
+		pointer = misspellings + totalread;
 	}
 
-	*read_buff_ptr = '\0';
+	*pointer = '\0';
 	close(uniq_fd[0]);
+
+	block_sigwinch(FALSE);
 
 	/* Do any replacements case sensitive, forward, and without regexes. */
 	SET(CASE_SENSITIVE);
 	UNSET(BACKWARDS_SEARCH);
 	UNSET(USE_REGEXP);
 
-	read_buff_word = read_buff_ptr = read_buff;
+	pointer = misspellings;
+	oneword = misspellings;
 
 	/* Process each of the misspelled words. */
-	while (*read_buff_ptr != '\0') {
-		if ((*read_buff_ptr == '\r') || (*read_buff_ptr == '\n')) {
-			*read_buff_ptr = '\0';
-			if (read_buff_word != read_buff_ptr) {
-				if (!fix_spello(read_buff_word)) {
-					read_buff_word = read_buff_ptr;
+	while (*pointer != '\0') {
+		if ((*pointer == '\r') || (*pointer == '\n')) {
+			*pointer = '\0';
+			if (oneword != pointer) {
+				if (!fix_spello(oneword)) {
+					oneword = pointer;
 					break;
 				}
 			}
-			read_buff_word = read_buff_ptr + 1;
+			oneword = pointer + 1;
 		}
-		read_buff_ptr++;
+		pointer++;
 	}
 
 	/* Special case: the last word doesn't end with '\r' or '\n'. */
-	if (read_buff_word != read_buff_ptr)
-		fix_spello(read_buff_word);
+	if (oneword != pointer)
+		fix_spello(oneword);
 
-	free(read_buff);
+	free(misspellings);
 	tidy_up_after_search();
 	refresh_needed = TRUE;
 
@@ -2652,8 +2583,11 @@ const char *do_alt_speller(char *tempfile_name)
 	} else if (pid_spell < 0)
 		return _("Could not fork");
 
-	/* Wait for the alternate spell checker to finish. */
+	/* Block SIGWINCHes while waiting for the alternate spell checker's end,
+	 * so nano doesn't get pushed past the wait(). */
+	block_sigwinch(TRUE);
 	wait(&alt_spell_status);
+	block_sigwinch(FALSE);
 
 	/* Reenter curses mode. */
 	doupdate();
@@ -2736,7 +2670,7 @@ void do_spell(void)
 	memcpy(stash, flags, sizeof(flags));
 
 	/* Don't add an extra newline when writing out the (selected) text. */
-	UNSET(FINAL_NEWLINE);
+	SET(NO_NEWLINES);
 
 #ifndef NANO_TINY
 	if (openfile->mark)
@@ -2782,8 +2716,9 @@ void do_spell(void)
  * termination, and the error string otherwise. */
 void do_linter(void)
 {
-	char *read_buff, *read_buff_ptr, *read_buff_word;
-	size_t pipe_buff_size, read_buff_size, read_buff_read, bytesread;
+	char *lintings, *pointer, *onelint;
+	long pipesize;
+	size_t buffersize, bytesread, totalread;
 	size_t parsesuccess = 0;
 	int lint_status, lint_fd[2];
 	pid_t pid_lint;
@@ -2861,36 +2796,40 @@ void do_linter(void)
 	}
 
 	/* Get the system pipe buffer size. */
-	if ((pipe_buff_size = fpathconf(lint_fd[0], _PC_PIPE_BUF)) < 1) {
+	pipesize = fpathconf(lint_fd[0], _PC_PIPE_BUF);
+
+	if (pipesize < 1) {
 		close(lint_fd[0]);
 		statusbar(_("Could not get size of pipe buffer"));
 		return;
 	}
 
 	/* Read in the returned syntax errors. */
-	read_buff_read = 0;
-	read_buff_size = pipe_buff_size + 1;
-	read_buff = read_buff_ptr = charalloc(read_buff_size);
+	totalread = 0;
+	buffersize = pipesize + 1;
+	lintings = charalloc(buffersize);
+	pointer = lintings;
 
-	while ((bytesread = read(lint_fd[0], read_buff_ptr, pipe_buff_size)) > 0) {
-		read_buff_read += bytesread;
-		read_buff_size += pipe_buff_size;
-		read_buff = read_buff_ptr = charealloc(read_buff, read_buff_size);
-		read_buff_ptr += read_buff_read;
+	while ((bytesread = read(lint_fd[0], pointer, pipesize)) > 0) {
+		totalread += bytesread;
+		buffersize += pipesize;
+		lintings = charealloc(lintings, buffersize);
+		pointer = lintings + totalread;
 	}
 
-	*read_buff_ptr = '\0';
+	*pointer = '\0';
 	close(lint_fd[0]);
 
 	/* Process the linter output. */
-	read_buff_word = read_buff_ptr = read_buff;
+	pointer = lintings;
+	onelint = lintings;
 
-	while (*read_buff_ptr != '\0') {
-		if ((*read_buff_ptr == '\r') || (*read_buff_ptr == '\n')) {
-			*read_buff_ptr = '\0';
-			if (read_buff_word != read_buff_ptr) {
+	while (*pointer != '\0') {
+		if ((*pointer == '\r') || (*pointer == '\n')) {
+			*pointer = '\0';
+			if (onelint != pointer) {
 				char *filename = NULL, *linestr = NULL, *maybecol = NULL;
-				char *message = mallocstrcpy(NULL, read_buff_word);
+				char *message = mallocstrcpy(NULL, onelint);
 
 				/* At the moment we handle the following formats:
 				 *
@@ -2898,7 +2837,7 @@ void do_linter(void)
 				 * filenameorcategory:line,column:message (e.g. pylint)
 				 * filenameorcategory:line:message        (e.g. pyflakes) */
 				if (strstr(message, ": ") != NULL) {
-					filename = strtok(read_buff_word, ":");
+					filename = strtok(onelint, ":");
 					if ((linestr = strtok(NULL, ":")) != NULL) {
 						if ((maybecol = strtok(NULL, ":")) != NULL) {
 							ssize_t tmplineno = 0, tmpcolno = 0;
@@ -2906,7 +2845,7 @@ void do_linter(void)
 
 							tmplineno = strtol(linestr, NULL, 10);
 							if (tmplineno <= 0) {
-								read_buff_ptr++;
+								pointer++;
 								free(message);
 								continue;
 							}
@@ -2938,13 +2877,15 @@ void do_linter(void)
 								lints = curlint;
 						}
 					}
-				} else
-					free(message);
+				}
+				free(message);
 			}
-			read_buff_word = read_buff_ptr + 1;
+			onelint = pointer + 1;
 		}
-		read_buff_ptr++;
+		pointer++;
 	}
+
+	free(lintings);
 
 	/* Process the end of the linting process. */
 	waitpid(pid_lint, &lint_status, 0);
@@ -2953,8 +2894,6 @@ void do_linter(void)
 		statusbar(invocation_error(openfile->syntax->linter));
 		return;
 	}
-
-	free(read_buff);
 
 	if (parsesuccess == 0) {
 		statusline(HUSH, _("Got 0 parsable lines from command: %s"),
@@ -3125,7 +3064,6 @@ void do_wordlinechar_count(void)
 	size_t words = 0, chars = 0;
 	ssize_t nlines = 0;
 	size_t current_x_save = openfile->current_x;
-	size_t pww_save = openfile->placewewant;
 	linestruct *current_save = openfile->current;
 	linestruct *was_mark = openfile->mark;
 	linestruct *top, *bot;
@@ -3143,7 +3081,6 @@ void do_wordlinechar_count(void)
 	/* Start at the top of the file. */
 	openfile->current = openfile->filetop;
 	openfile->current_x = 0;
-	openfile->placewewant = 0;
 
 	/* Keep moving to the next word (counting punctuation characters as
 	 * part of a word, as "wc -w" does), without updating the screen,
@@ -3173,7 +3110,6 @@ void do_wordlinechar_count(void)
 	/* Restore where we were. */
 	openfile->current = current_save;
 	openfile->current_x = current_x_save;
-	openfile->placewewant = pww_save;
 
 	/* Display the total word, line, and character counts on the statusbar. */
 	statusline(HUSH, _("%sWords: %zu  Lines: %zd  Chars: %zu"), was_mark ?
@@ -3363,7 +3299,7 @@ void complete_a_word(void)
 			/* If needed, reenable wrapping and wrap the current line. */
 			if (was_set_wrapping) {
 				SET(BREAK_LONG_LINES);
-				do_wrap(openfile->current);
+				do_wrap();
 			}
 #endif
 			/* Set the position for a possible next search attempt. */

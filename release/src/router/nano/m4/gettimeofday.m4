@@ -1,4 +1,4 @@
-# serial 25
+# serial 26
 
 # Copyright (C) 2001-2003, 2005, 2007, 2009-2019 Free Software Foundation, Inc.
 # This file is free software; the Free Software Foundation
@@ -105,6 +105,8 @@ AC_DEFUN([gl_FUNC_GETTIMEOFDAY_CLOBBER],
       case "$host_os" in
                        # Guess all is fine on glibc systems.
         *-gnu* | gnu*) gl_cv_func_gettimeofday_clobber="guessing no" ;;
+                       # Guess all is fine on musl systems.
+        *-musl*)       gl_cv_func_gettimeofday_clobber="guessing no" ;;
                        # Guess no on native Windows.
         mingw*)        gl_cv_func_gettimeofday_clobber="guessing no" ;;
                        # If we don't know, assume the worst.

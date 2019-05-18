@@ -88,7 +88,7 @@ void search_init(bool replacing, bool keep_the_answer)
 		thedefault = charalloc(strlen(disp) + 7);
 		/* We use (COLS / 3) here because we need to see more on the line. */
 		sprintf(thedefault, " [%s%s]", disp,
-				(strlenpt(last_search) > COLS / 3) ? "..." : "");
+				(breadth(last_search) > COLS / 3) ? "..." : "");
 		free(disp);
 	} else
 		thedefault = mallocstrcpy(NULL, "");
@@ -389,7 +389,7 @@ void do_findnext(void)
 void not_found_msg(const char *str)
 {
 	char *disp = display_string(str, 0, (COLS / 2) + 1, FALSE, FALSE);
-	size_t numchars = actual_x(disp, strnlenpt(disp, COLS / 2));
+	size_t numchars = actual_x(disp, wideness(disp, COLS / 2));
 
 	statusline(HUSH, _("\"%.*s%s\" not found"), numchars, disp,
 						(disp[numchars] == '\0') ? "" : "...");
@@ -577,7 +577,7 @@ ssize_t do_replace_loop(const char *needle, bool whole_word_only,
 		if (!replaceall) {
 			spotlighted = TRUE;
 			light_from_col = xplustabs();
-			light_to_col = strnlenpt(openfile->current->data,
+			light_to_col = wideness(openfile->current->data,
 										openfile->current_x + match_len);
 
 			/* Refresh the edit window, scrolling it if necessary. */
@@ -681,7 +681,7 @@ ssize_t do_replace_loop(const char *needle, bool whole_word_only,
 
 	/* If "automatic newline" is enabled, and text has been added to the
 	 * magic line, make a new magic line. */
-	if (ISSET(FINAL_NEWLINE) && openfile->filebot->data[0] != '\0')
+	if (!ISSET(NO_NEWLINES) && openfile->filebot->data[0] != '\0')
 		new_magicline();
 
 	return numreplaced;
@@ -810,7 +810,7 @@ void do_gotolinecolumn(ssize_t line, ssize_t column, bool use_answer,
 
 	/* Take a negative column number to mean: from the end of the line. */
 	if (column < 0)
-		column = strlenpt(openfile->current->data) + column + 2;
+		column = breadth(openfile->current->data) + column + 2;
 	if (column < 1)
 		column = 1;
 
@@ -820,8 +820,8 @@ void do_gotolinecolumn(ssize_t line, ssize_t column, bool use_answer,
 
 #ifndef NANO_TINY
 	if (ISSET(SOFTWRAP) && openfile->placewewant / editwincols >
-						strlenpt(openfile->current->data) / editwincols)
-		openfile->placewewant = strlenpt(openfile->current->data);
+						breadth(openfile->current->data) / editwincols)
+		openfile->placewewant = breadth(openfile->current->data);
 #endif
 
 	/* When the position was manually given, center the target line. */
@@ -862,58 +862,53 @@ void do_gotolinecolumn_void(void)
 }
 
 #ifndef NANO_TINY
-/* Search for a match to one of the two characters in bracket_set.  If
- * reverse is TRUE, search backwards for the leftmost bracket.
- * Otherwise, search forwards for the rightmost bracket.  Return TRUE if
- * we found a match, and FALSE otherwise. */
+/* Search, starting from the current position, for any of the two characters
+ * in bracket_set.  If reverse is TRUE, search backwards, otherwise forwards.
+ * Return TRUE when one of the brackets was found, and FALSE otherwise. */
 bool find_bracket_match(bool reverse, const char *bracket_set)
 {
-	linestruct *fileptr = openfile->current;
-	const char *rev_start = NULL, *found = NULL;
+	linestruct *line = openfile->current;
+	const char *pointer = line->data + openfile->current_x;
+	const char *found = NULL;
 
-	assert(mbstrlen(bracket_set) == 2);
+	/* Step away from the current bracket, either backwards or forwards. */
+	if (reverse) {
+		if (--pointer < line->data) {
+			line = line->prev;
+			if (line == NULL)
+				return FALSE;
+			pointer = line->data + strlen(line->data);
+		}
+	} else
+		++pointer;
 
-	/* rev_start might end up 1 character before the start or after the
-	 * end of the line.  This won't be a problem because we'll skip over
-	 * it below in that case, and rev_start will be properly set when
-	 * the search continues on the previous or next line. */
-	if (reverse)
-		rev_start = fileptr->data + (openfile->current_x - 1);
-	else
-		rev_start = fileptr->data + (openfile->current_x + 1);
-
-	/* Look for either of the two characters in bracket_set.  rev_start
-	 * can be 1 character before the start or after the end of the line.
-	 * In either case, just act as though no match is found. */
+	/* Now seek for any of the two brackets, either backwards or forwards. */
 	while (TRUE) {
-		if ((rev_start > fileptr->data && *(rev_start - 1) == '\0') ||
-						rev_start < fileptr->data)
-			found = NULL;
-		else if (reverse)
-			found = mbrevstrpbrk(fileptr->data, bracket_set, rev_start);
+		if (reverse)
+			found = mbrevstrpbrk(line->data, bracket_set, pointer);
 		else
-			found = mbstrpbrk(rev_start, bracket_set);
+			found = mbstrpbrk(pointer, bracket_set);
 
 		if (found)
 			break;
 
 		if (reverse)
-			fileptr = fileptr->prev;
+			line = line->prev;
 		else
-			fileptr = fileptr->next;
+			line = line->next;
 
 		/* If we've reached the start or end of the buffer, get out. */
-		if (fileptr == NULL)
+		if (line == NULL)
 			return FALSE;
 
-		rev_start = fileptr->data;
+		pointer = line->data;
 		if (reverse)
-			rev_start += strlen(fileptr->data);
+			pointer += strlen(line->data);
 	}
 
-	/* Set the current position to the found matching bracket. */
-	openfile->current = fileptr;
-	openfile->current_x = found - fileptr->data;
+	/* Set the current position to the found bracket. */
+	openfile->current = line;
+	openfile->current_x = found - line->data;
 
 	return TRUE;
 }
@@ -922,73 +917,52 @@ bool find_bracket_match(bool reverse, const char *bracket_set)
  * there is one. */
 void do_find_bracket(void)
 {
-	linestruct *current_save;
-	size_t current_x_save;
+	linestruct *was_current = openfile->current;
+	size_t was_current_x = openfile->current_x;
+		/* The current cursor position, in case we don't find a complement. */
 	const char *ch;
-		/* The location in matchbrackets of the bracket at the current
-		 * cursor position. */
+		/* The location in matchbrackets of the bracket under the cursor. */
 	int ch_len;
 		/* The length of ch in bytes. */
 	const char *wanted_ch;
-		/* The location in matchbrackets of the bracket complementing
-		 * the bracket at the current cursor position. */
+		/* The location in matchbrackets of the complementing bracket. */
 	int wanted_ch_len;
 		/* The length of wanted_ch in bytes. */
 	char bracket_set[MAXCHARLEN * 2 + 1];
 		/* The pair of characters in ch and wanted_ch. */
-	size_t i;
-		/* Generic loop variable. */
-	size_t matchhalf;
-		/* The number of single-byte characters in one half of
-		 * matchbrackets. */
-	size_t mbmatchhalf;
-		/* The number of multibyte characters in one half of
-		 * matchbrackets. */
-	size_t count = 1;
+	size_t halfway = 0;
+		/* The index in matchbrackets where the closing brackets start. */
+	size_t charcount = mbstrlen(matchbrackets) / 2;
+		/* Half the number of characters in matchbrackets. */
+	size_t balance = 1;
 		/* The initial bracket count. */
 	bool reverse;
 		/* The direction we search. */
 
-	assert(mbstrlen(matchbrackets) % 2 == 0);
+	ch = mbstrchr(matchbrackets, openfile->current->data + openfile->current_x);
 
-	ch = openfile->current->data + openfile->current_x;
-
-	if ((ch = mbstrchr(matchbrackets, ch)) == NULL) {
+	if (ch == NULL) {
 		statusbar(_("Not a bracket"));
 		return;
 	}
 
-	/* Save where we are. */
-	current_save = openfile->current;
-	current_x_save = openfile->current_x;
+	/* Find the halfway point in matchbrackets, where the closing ones start. */
+	for (size_t i = 0; i < charcount; i++)
+		halfway += parse_mbchar(matchbrackets + halfway, NULL, NULL);
 
-	/* If we're on an opening bracket, which must be in the first half
-	 * of matchbrackets, we want to search forwards for a closing
-	 * bracket.  If we're on a closing bracket, which must be in the
-	 * second half of matchbrackets, we want to search backwards for an
-	 * opening bracket. */
-	matchhalf = 0;
-	mbmatchhalf = mbstrlen(matchbrackets) / 2;
+	/* When on a closing bracket, we have to search backwards for a matching
+	 * opening bracket; otherwise, forward for a matching closing bracket. */
+	reverse = (ch >= (matchbrackets + halfway));
 
-	for (i = 0; i < mbmatchhalf; i++)
-		matchhalf += parse_mbchar(matchbrackets + matchhalf, NULL, NULL);
-
-	reverse = ((ch - matchbrackets) >= matchhalf);
-
-	/* If we're on an opening bracket, set wanted_ch to the character
-	 * that's matchhalf characters after ch.  If we're on a closing
-	 * bracket, set wanted_ch to the character that's matchhalf
-	 * characters before ch. */
+	/* Step half the number of total characters either backwards or forwards
+	 * through matchbrackets to find the wanted complementary bracket. */
 	wanted_ch = ch;
-
-	while (mbmatchhalf > 0) {
+	while (charcount-- > 0) {
 		if (reverse)
 			wanted_ch = matchbrackets + move_mbleft(matchbrackets,
 								wanted_ch - matchbrackets);
 		else
 			wanted_ch += move_mbright(wanted_ch, 0);
-
-		mbmatchhalf--;
 	}
 
 	ch_len = parse_mbchar(ch, NULL, NULL);
@@ -1001,23 +975,23 @@ void do_find_bracket(void)
 
 	while (TRUE) {
 		if (find_bracket_match(reverse, bracket_set)) {
-			/* If we found an identical bracket, increment count.  If we
+			/* If we found an identical bracket, increment balance.  If we
 			 * found a complementary bracket, decrement it. */
-			count += (strncmp(openfile->current->data + openfile->current_x,
+			balance += (strncmp(openfile->current->data + openfile->current_x,
 								ch, ch_len) == 0) ? 1 : -1;
 
-			/* If count is zero, we've found a matching bracket.  Update
+			/* If balance is zero, we've found a matching bracket.  Update
 			 * the screen and get out. */
-			if (count == 0) {
-				edit_redraw(current_save, FLOWING);
+			if (balance == 0) {
+				edit_redraw(was_current, FLOWING);
 				break;
 			}
 		} else {
 			/* We didn't find either an opening or closing bracket.
 			 * Indicate this, restore where we were, and get out. */
 			statusbar(_("No matching bracket"));
-			openfile->current = current_save;
-			openfile->current_x = current_x_save;
+			openfile->current = was_current;
+			openfile->current_x = was_current_x;
 			break;
 		}
 	}

@@ -1,3 +1,23 @@
+2019.04.24 - GNU nano 4.2 "Tax the rich, pay the teachers"
+• The integrated spell checker does not crash when 'spell' is missing.
+• Option --breaklonglines works also when --ignorercfiles is used.
+• Automatic hard-wrapping is more persistent in pushing words to the
+  same overflow line.
+
+2019.04.15 - GNU nano 4.1 "Qué corchos será eso?"
+• By default, a newline character is again automatically added at the
+  end of a buffer, to produce valid POSIX text files by default, but
+  also to get back the easy adding of text at the bottom.
+• The now unneeded option --finalnewline (-f) has been removed.
+• Syntax files are read in alphabetical order when globbing, so that
+  the precedence of syntaxes becomes predictable.
+• In the C syntax, preprocessor directives are highlighted differently.
+• M-S now toggles soft wrapping, and M-N toggles line numbers.
+• The jumpy-scrolling toggle has been removed.
+• The legacy keystrokes ^W^Y and ^W^V are recognized again.
+• Executing an external command is disallowed when in view mode.
+• Problems with resizing during external or speller commands were fixed.
+
 2019.03.24 - GNU nano 4.0 "Thy Rope of Sands"
 • An overlong line is no longer automatically hard-wrapped.
 • Smooth scrolling (one line at a time) has become the default.
@@ -13,7 +33,7 @@
 • Option --guidestripe=<number> draws a vertical bar at the given column.
 • Option --fill=<number> no longer turns on automatic hard-wrapping.
 • When a line continues offscreen, it now ends with a highlighted ">".
-• The halfs of a split two-column character are shown as "[" and "]".
+• The halves of a split two-column character are shown as "[" and "]".
 • A line now scrolls horizontally one column earlier.
 • The bindable functions 'cutwordleft' and 'cutwordright' were renamed
   to 'chopwordleft' and 'chopwordright' as they don't use the cutbuffer.
@@ -670,8 +690,8 @@
              without the usual truncation and a '$' symbol at the end
              of the line.  It can be enabled via Meta-$ inside the
              editor, via the -$ or --softwrap command-line flags,
-             or "set softwrap" in your .nanorc).  As always, please
-             report any bugs to the nano Savannah project page
+             or via "set softwrap" in your .nanorc.  As always,
+             please report any bugs to the nano Savannah project page
              (http://savannah.gnu.org/bugs/?func=additem&group=nano)
              Remember: data loss happens, back up your files.
 

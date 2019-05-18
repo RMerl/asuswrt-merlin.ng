@@ -1,3 +1,132 @@
+Changes between v4.1 and v4.2:
+------------------------------
+
+Benno Schulenberg (23):
+      build: be more specific and avoid committing accidentally changed files
+      bump version numbers and add a news item for the 4.2 release
+      docs: put the 'set guidestripe' option into its alphabetical position
+      options: make --breaklonglines work also when --ignorercfiles is used
+      speller: do not crash by trying to free something that cannot be freed
+      tweaks: adjust a few comments and some indentation
+      tweaks: condense and improve a handful of comments
+      tweaks: declare a function as const and let its allocated string leak
+      tweaks: drop an unneeded saving and restoring of a variable
+      tweaks: elide an unneeded intermediate variable
+      tweaks: elide an unneeded parameter, as the function already assumes it
+      tweaks: elide an unneeded variable
+      tweaks: exclude a bit more code from a single-buffer build
+      tweaks: remove an unneeded condition
+      tweaks: remove a redundant, enclosed #ifdef
+      tweaks: rename a function, to be distinct and fitting
+      tweaks: rename another function, to be distinct and fitting
+      tweaks: rename a variable, for a little more meaning
+      tweaks: rename a variable, to distinguish it from a browser function
+      wrapping: add a missing space only when the remainder will be prepended
+      wrapping: compute the width of a succeeding line in the correct manner
+      wrapping: improve the persistence of the prepending behavior
+      wrapping: trim any trailing blanks when cursor goes to next line
+
+
+Changes between v4.0 and v4.1:
+------------------------------
+
+Benno Schulenberg (85):
+      bindings: add easier keystrokes for the linenumber and softwrap toggles
+      bindings: disallow executing an external command when in view mode
+      bindings: recognize the ^W^Y and ^W^V legacy keystrokes again
+      bindings: remove the jumpy-scrolling toggle entirely
+      build: add gnulib modules to the list of files with translatable strings
+      build: add src/cut.c to the list of files with translatable strings
+      build: don't do fuzzy matching when merging PO files against the POT file
+      build: remove obsolete translations from the PO files after merging
+      bump version numbers and add a news item for the 4.1 release
+      display: report and catch a bad state, to prevent a possible hang
+      docs: for two of the toggles, mention the new instead of the old option
+      docs: give the FILES section in the man page its canonical title
+      docs: mention that -b is the opposite of -w also in the latter's item
+      docs: mention that M-S now toggles softwrap and M-N line numbers
+      docs: put paths and filenames in italics, per 'man man-pages'
+      docs: remove all mention of --finalnewline, and undefault --nonewlines
+      docs: remove the AUTHOR section, per advice from 'man man-pages'
+      docs: re-title the temporary section about the changed defaults
+      feedback: replace an assert with a check plus error message at startup
+      feedback: show a message while executing an external command
+      feedback: spare the user a superfluous scaring when trying to exit
+      gnulib: update to its current upstream state
+      help: don't doubly list toggles that have two keys assigned to them
+      indenting, commenting: ensure a partial line stays displayed properly
+      justify: correctly compute the number of lines to take, to avoid a crash
+      options: make --nowrap override again a contrary nanorc setting
+      options: remove -f (--finalnewline); go back to auto-adding this newline
+      rcfile: don't break a chain of 'else if'  [scan-build]
+      rcfile: read the syntax files in alphabetical order when globbing
+      speller: block the resizing signal again during an external spell check
+      speller: block the resizing signal also during an integrated spell check
+      speller: resizing can happen also when configured with --enable-tiny
+      syntax: c: color as a type any lowercase word that ends with "_t"
+      syntax: default: color in red also versions 4.x of nano
+      syntax: man: add comments, and color all the safe lowercase macros
+      syntax: man: anchor macros at start of line, as only then they are valid
+      syntax: man: require the dot to be at start of line, not the comment
+      syntax: nanorc: colorize also strings preceded by 'start=' or 'end='
+      syntax: nanorc: require whitespace both before and after a quoted string
+      tweaks: adjust the indentation after the previous change
+      tweaks: condense a bit of copying code
+      tweaks: consistently use .sp instead of .PP to insert a blank line
+      tweaks: do a check up front instead of every time round the loop
+      tweaks: don't bother copying the NUL byte -- it is set nine lines down
+      tweaks: don't bother reallocating the data when a line gets hard-wrapped
+      tweaks: don't bother reallocating the squeezed string, just terminate it
+      tweaks: don't bother special-casing non-UTF8 when seeking a character
+      tweaks: drop an assignment whose value is never used  [scan-build]
+      tweaks: drop two 'const' qualifiers, to silence the compiler
+      tweaks: free some memory before a possible error exit  [coverity]
+      tweaks: free the copy of a linter message in all cases  [valgrind]
+      tweaks: free the result string from an invocation error  [coverity]
+      tweaks: initialize a boolean before it is referenced  [valgrind]
+      tweaks: put the unblocking of SIGWINCHes in a better place
+      tweaks: remove a function that is now unused
+      tweaks: remove an unneeded check for NULL and its associated message
+      tweaks: remove an unneeded check for NULL  [coverity]
+      tweaks: remove an unpaired closing parenthesis from the NEWS file
+      tweaks: remove a superfluous check for NULL plus the associated message
+      tweaks: remove several unneeded bad-state checks and their messages
+      tweaks: rename a cryptic type to something that makes a little sense
+      tweaks: rename a function plus parameter, to stay closer to what it does
+      tweaks: rename another variable, to be more descriptive
+      tweaks: rename another variable, to be more fitting
+      tweaks: rename an overshort type to something that makes some sense
+      tweaks: rename a variable, to be more distinct and more apt
+      tweaks: rename a variable, to be more distinct and more descriptive
+      tweaks: rename a variable, to get out of the way for another rename
+      tweaks: rename some variables, for more contrast and to match others
+      tweaks: rename some variables, to be less repititious
+      tweaks: rename two variables, for more contrast
+      tweaks: rename two variables, to be more distinct and more fitting
+      tweaks: rename two variables, to make more sense
+      tweaks: rename two variables, to match others
+      tweaks: reshuffle some lines, condense a comment and drop another
+      tweaks: reshuffle some lines, to elide an 'if'
+      tweaks: reshuffle two lines, and reword a comment
+      tweaks: reword a comment, and drop an unneeded assert
+      tweaks: shorten a comment to its essence
+      tweaks: shorten and improve some comments, and reshuffle a few lines
+      tweaks: simplify a message, and normalize the spelling of another one
+      tweaks: stop doing tandem assignments (one passing through the other)
+      tweaks: switch back from checking FINAL_NEWLINE to checking NO_NEWLINES
+      tweaks: use a signed type for a result that could be negative  [coverity]
+      unindent: ensure that a partial line gets displayed properly afterwards
+
+Brand Huntsman (1):
+      files: block the resizing signal while reading from an external command
+
+Devin Hussey (1):
+      files: initialize a variable before referencing it
+
+Liu Hao (1):
+      syntax: c: change the highlighting of preprocessor directives
+
+
 Changes between v3.2 and v4.0:
 ------------------------------
 

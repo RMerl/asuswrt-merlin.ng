@@ -840,15 +840,16 @@ function showMailPanel(){
 
 function switchMode(mode){
 	if(mode == "1"){		//general setting
-		document.getElementById("trRSAEncryptionBasic").style.display = ("<% nvram_get("vpn_server_crypt"); %>" == "secret")?"none":"";
 		document.getElementById("trClientWillUseVPNToAccess").style.display = "";
 		document.getElementById("OpenVPN_setting").style.display = "";
 		if(vpn_server_enable == '0') {
+			document.getElementById("trRSAEncryptionBasic").style.display = ("<% nvram_get("vpn_server_crypt"); %>" == "secret")?"none":"";
 			document.getElementById('openvpn_export').style.display = "none";
 			document.getElementById('openvpn_export_cert').style.display = "none";
 			document.getElementById('openvpn_import_cert').style.display = "none";
 		}
 		else {
+			document.getElementById("trRSAEncryptionBasic").style.display = "none";
 			document.getElementById('openvpn_export').style.display = "";
 			document.getElementById('openvpn_export_cert').style.display = "";
 			document.getElementById('openvpn_import_cert').style.display = "";

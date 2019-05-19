@@ -269,6 +269,7 @@ void start_ubifs(void)
 
 	notice_set("ubifs", format ? "Formatted" : "Loaded");
 
+/* obsolete, keep for merge
 #ifndef RTCONFIG_NVRAM_FILE
 	if (((p = nvram_get("ubifs_exec")) != NULL) && (*p != 0)) {
 		chdir(UBIFS_MNT_DIR);
@@ -277,6 +278,7 @@ void start_ubifs(void)
 	}
 #endif
 	run_userfile(UBIFS_MNT_DIR, ".asusrouter", UBIFS_MNT_DIR, 3);
+*/
 
 #ifndef RTCONFIG_NVRAM_FILE
 #if defined(RTCONFIG_TEST_BOARDDATA_FILE)

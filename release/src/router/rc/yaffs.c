@@ -100,6 +100,8 @@ void start_yaffs(void)
 		}
 	}
 
+//	set_proper_perm();
+
 	if (nvram_get_int("yaffs_clean_fs")) {
 		_dprintf("Clean /jffs/*\n");
 		system("rm -fr /jffs/*");

@@ -3003,6 +3003,7 @@ void allow_sroutes(FILE *fp)
 	__allow_sroutes(fp, "lan_", "route", nvram_get("lan_ifname"), nvram_get("lan_ipaddr"), nvram_get("lan_netmask"));
 }
 
+extern void write_rules(FILE *fp);
 void
 filter_setting(char *wan_if, char *wan_ip, char *lan_if, char *lan_ip, char *logaccept, char *logdrop)
 {
@@ -4162,6 +4163,8 @@ TRACE_PT("write wl filter\n");
 	if (ipv6_enabled() && nvram_match("ipv6_fw_enable", "1"))
 		fprintf(fp_ipv6, "-A FORWARD -j %s\n", logdrop);
 #endif
+
+//	write_rules(fp);
 
 	fprintf(fp, "COMMIT\n\n");
 	if (fp) fclose(fp);
@@ -5328,6 +5331,8 @@ TRACE_PT("write wl filter\n");
 	if (ipv6_enabled() && nvram_match("ipv6_fw_enable", "1"))
 		fprintf(fp_ipv6, "-A FORWARD -j %s\n", logdrop);
 #endif
+
+//	write_rules(fp);
 
 	fprintf(fp, "COMMIT\n\n");
 	if (fp) fclose(fp);

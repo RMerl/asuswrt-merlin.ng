@@ -600,6 +600,16 @@ int smbc_parse_path(const char *puri,
 		return -1;
 	}
 
+	if (strlen(workgroup)>30||                                                                                                                         
+            strlen(server)>64||                                                                                                                            
+            strlen(share)>1280||                                                                                                                           
+            strlen(path)>1280)                                                                                                                             
+        {                                                                                                                                                  
+                errno = EINVAL;                                                                                                                            
+                TALLOC_FREE(frame);                                                                                                                        
+                return -1;                                                                                                                                 
+        }   
+
 	memcpy(pWorkgroup, workgroup, strlen(workgroup));
 	memcpy(pServer, server, strlen(server));
 	memcpy(pShare, share, strlen(share));

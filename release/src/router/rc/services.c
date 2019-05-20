@@ -1244,6 +1244,7 @@ void start_dnsmasq(void)
 					    nvram_safe_get("lan_hostname"));
 			}
 		}
+
 #endif
 		append_custom_config("hosts", fp);
 		fclose(fp);

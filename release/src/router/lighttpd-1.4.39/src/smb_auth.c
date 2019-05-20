@@ -1548,7 +1548,9 @@ smbc_wrapper_lseek(connection* con, int fd, off_t offset, int whence)
 int smbc_wrapper_parse_path(connection* con, char *pWorkgroup, char *pServer, char *pShare, char *pPath){
 	if(con->mode== SMB_BASIC||con->mode== SMB_NTLM){ 
 
-		smbc_parse_path(con->physical.path->ptr, pWorkgroup, pServer, pShare, pPath);
+		if(smbc_parse_path(con->physical.path->ptr, pWorkgroup, pServer, pShare, pPath)!=0){
+			return -1;
+		}
 		
 		//- Jerry add: replace '\\' to '/'
 		do{
@@ -1563,7 +1565,9 @@ int smbc_wrapper_parse_path(connection* con, char *pWorkgroup, char *pServer, ch
 int smbc_wrapper_parse_path2(connection* con, char *pWorkgroup, char *pServer, char *pShare, char *pPath){	 
 	if(con->mode== SMB_BASIC||con->mode== SMB_NTLM){
 
-		smbc_parse_path(con->physical_auth_url->ptr, pWorkgroup, pServer, pShare, pPath);
+		if(smbc_parse_path(con->physical_auth_url->ptr, pWorkgroup, pServer, pShare, pPath)!=0){
+			return -1;
+		}
 
 		int len = strlen(pPath)+1;
 		

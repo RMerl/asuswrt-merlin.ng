@@ -726,7 +726,13 @@ int network_init(server *srv) {
 		//- 20160204 Sungmin add
 		ssloptions &= ~SSL_OP_ALLOW_UNSAFE_LEGACY_RENEGOTIATION;
 		//ssloptions |= SSL_OP_ALLOW_UNSAFE_LEGACY_RENEGOTIATION;
-		
+
+		//- 20181017 Sungmin add
+		ssloptions |= SSL_OP_NO_SSLv2;
+		ssloptions |= SSL_OP_NO_SSLv3;
+		ssloptions |= SSL_OP_NO_TLSv1;
+		ssloptions |= SSL_OP_NO_TLSv1_1;
+
 		Cdbg(DBE, "ssloptions = %d", ssloptions);
 		
 		if (buffer_string_is_empty(s->ssl_pemfile) && buffer_string_is_empty(s->ssl_ca_file)) continue;

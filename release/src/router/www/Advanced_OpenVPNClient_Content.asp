@@ -371,6 +371,7 @@ function update_visibility(){
 
 	showhide("client_bridge_warn_text", (bridge == 0));
 	showhide("client_nat", ((iface == "tun") || (bridge == 0)));
+
 	showhide("client_nat_warn_text", (((nat == 0) || (auth == "secret" && iface == "tun"))));
 
 	showhide("client_local_1", (iface == "tun" && auth == "secret"));
@@ -1179,7 +1180,7 @@ function refreshVPNIP() {
 						</td>
 					</tr>
 					<tr>
-							<th><#vpn_openvpnc_importovpn#></th>
+						<th><#vpn_openvpnc_importovpn#></th>
 						<td>
 							<input id="ovpnfile" type="file" name="file" class="input" style="color:#FFCC00;*color:#000;">
 							<input id="" class="button_gen" onclick="ImportOvpn();" type="button" value="<#CTL_upload#>" />
@@ -1243,6 +1244,13 @@ function refreshVPNIP() {
 							<input type="radio" name="vpn_client_nat" class="input" value="1" onclick="update_visibility();" <% nvram_match_x("", "vpn_client_nat", "1", "checked"); %>><#checkbox_Yes#>
 							<input type="radio" name="vpn_client_nat" class="input" value="0" onclick="update_visibility();" <% nvram_match_x("", "vpn_client_nat", "0", "checked"); %>><#checkbox_No#>
 							<span id="client_nat_warn_text">Routes must be configured manually.</span>
+						</td>
+					</tr>
+					<tr>
+						<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(50,30);">Inbound Firewall</a></th>
+						<td>
+							<input type="radio" name="vpn_client_fw" class="input" value="1" <% nvram_match_x("", "vpn_client_fw", "1", "checked"); %>>Block
+							<input type="radio" name="vpn_client_fw" class="input" value="0" <% nvram_match_x("", "vpn_client_fw", "0", "checked"); %>>Allow
 						</td>
 					</tr>
 					<tr id="client_local_1">

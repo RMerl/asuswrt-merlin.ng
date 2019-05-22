@@ -12528,6 +12528,7 @@ check_ddr_done:
 	{
 		update_nc_setting_conf();
 	}
+#ifndef RTAC3200	// Kludge
 	else if (strcmp(script, "oauth_google_gen_token_email") == 0)
 	{
 		oauth_google_gen_token_email();
@@ -12548,6 +12549,7 @@ check_ddr_done:
 		//  WEVENT_GENERIC_MSG	 "{\""WEVENT_PREFIX"\":{\""EVENT_ID"\":\"%d\"}}"
 #endif	// RTCONFIG_CFGSYNC
 	}
+#endif	// RTAC3200
 #endif
 	else if (strcmp(script, "logger") == 0)
 	{

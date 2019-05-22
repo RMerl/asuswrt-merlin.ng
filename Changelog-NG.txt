@@ -2,12 +2,15 @@ Asuswrt-Merlin 384/NG Changelog
 ===============================
 
 384.12 (xx-xxx-2019)
-  - NEW: Added WSD discovery support.  This allows Windows clients
-         to detect the router's shared USB drive even if SMB1
-         is disabled.
+  - NEW: Added WS-Discovery support.  This allows Windows clients
+         to detect the router's shared USB drives even if SMBv1
+         support is disabled.
   - NEW: Re-added option to extend the WAN's TTL (from stock
          firmware, was previously disabled as it used to
          be broken)
+  - UPDATED: RT-AC3200 to 382_51636 binary blobs (with a few
+             exceptions for 384_xxxx compatibility)
+  - UPDATED: Merged GPL 384_45717 (except for RT-AX88U)
   - UPDATED: Nano 4.2.
   - CHANGED: Local clients will be shown by their hostname
              on the Classification page.
@@ -15,6 +18,21 @@ Asuswrt-Merlin 384/NG Changelog
              Server instance will now also use its own
              updown script, which will handle firing up
              openvpn-event (if present).
+  - CHANGED: Inbound traffic sent to you through an OpenVPN client
+             will now be dropped by default.  This can be changed
+             through the new "Inbound Firewall" parameter found
+             on the OpenVPN client page.  You should only change
+             this to "Allow" if running a site2site tunnel with
+             a trusted remote server, or if you do expect
+             traffic to be forwarded to you through the tunnel.
+  - CHANGED: The router will now use ISP-provided resolvers
+             instead of local dnsmasq when attempting to
+             resolve addresses, for improved reliability.
+             This reproduces how stock firmware behaves.
+             This only affects name resolution done
+             by the router itself, not by the LAN clients.
+             The behaviour can still be changed on the
+             Tools -> Other Settings page.
   - FIXED: openvpn-event script not launching if the
            client was configured in Secret Key auth
            mode.
@@ -30,11 +48,11 @@ Asuswrt-Merlin 384/NG Changelog
   - FIXED: RT-AC88U/3100/5300 were accidentally compiled
            with Netool enabled, which isn't compatible with
            these model's kernel.
- - FIXED: Movistar stopped working for some users.  Re-disabled
-          udpxy on Movistar profile for now.  A more complete
-          fix will have to come from Asus.
- - FIXED: Re-disabled memaccess debugging tool, as it creates
-          a symlink called "sh" which is a pretty bad
+  - FIXED: Movistar stopped working for some users.  Re-disabled
+           udpxy on Movistar profile for now.  A more complete
+           fix will have to come from Asus.
+  - FIXED: Re-disabled memaccess debugging tool, as it creates
+           a symlink called "sh" which is a pretty bad
           idea from Broadcom. (RT-AC86U, RT-AX88U)
 
 

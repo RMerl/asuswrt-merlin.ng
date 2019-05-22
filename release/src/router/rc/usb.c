@@ -5607,9 +5607,9 @@ void start_wsdd()
 	char bootparms[64];
 	char *wsdd_argv[] = { "/usr/sbin/wsdd2",
 				"-d",
-				"-b",
 				"-i",
 				nvram_safe_get("lan_ifname"),
+				"-b",
 				NULL,	// boot parameters
 				NULL };
 	stop_wsdd();

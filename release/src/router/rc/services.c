@@ -1800,7 +1800,7 @@ void start_dnsmasq(void)
 
 	/* Update local resolving mode */
 	n = readlink("/etc/resolv.conf", buf, sizeof(buf));
-	if (nvram_get_int("dns_local")) {
+	if (nvram_get_int("dns_local_cache")) {
 		/* Use dnsmasq for local resolving if it did start,
 		 * fallback to wan dns otherwise */
 		path = (char *)dmresolv;

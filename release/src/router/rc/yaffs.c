@@ -109,13 +109,14 @@ void start_yaffs(void)
 
 	notice_set("yaffs", format ? "Formatted" : "Loaded");
 
+/* obsolete, keep for merge
 	if (((p = nvram_get("yaffs_exec")) != NULL) && (*p != 0)) {
 		chdir(YAFFS_MNT_DIR);
 		system(p);
 		chdir("/");
 	}
 	run_userfile(YAFFS_MNT_DIR, ".asusrouter", YAFFS_MNT_DIR, 3);
-
+*/
 }
 
 void stop_yaffs(int stop)

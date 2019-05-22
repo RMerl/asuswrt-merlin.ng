@@ -178,11 +178,17 @@ void adjust_merlin_config(void)
 	free(nv);
 #endif
 
-// Migrate lan_dns_fwd_local (384.11)
+/* Migrate lan_dns_fwd_local (384.11) */
 	if (nvram_get_int("lan_dns_fwd_local")) {
 		nvram_set("dns_fwd_local", "1");
 		nvram_unset("lan_dns_fwd_local");
 	}
+
+/* Enable experimental AiMesh */
+#ifdef RTCONFIG_AMAS
+	if (f_exists("/jffs/.gomesh"))
+		nvram_set("amas_force", "1");
+#endif
 }
 
 void adjust_url_urlelist(void)

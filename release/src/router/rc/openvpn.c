@@ -414,7 +414,8 @@ void start_ovpn_client(int clientNum)
 	fp = fopen(buffer, "w");
 	chmod(buffer, S_IRUSR|S_IWUSR|S_IXUSR);
 	fprintf(fp, "#!/bin/sh\n");
-	fprintf(fp, "iptables -I OVPN -i %s -j ACCEPT\n", iface);
+	fprintf(fp, "iptables -I OVPN -i %s -j %s\n",
+	             iface, (nvram_pf_get_int(prefix, "fw") ? "DROP" : "ACCEPT"));
 #ifdef HND_ROUTER
 	if (nvram_match("fc_disable", "0")) {
 #else

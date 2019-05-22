@@ -26,13 +26,13 @@
 
 /*
  * Automatically generated make config: don't edit
- * Date: Tue May 16 16:07:17 2017
+ * Date: Mon Jun  5 15:27:34 2017
  */
 #ifndef __TMCFG__AUTOCONF_OUTPUT_H_
 #define __TMCFG__AUTOCONF_OUTPUT_H_
 
 #define TMCFG_BRAND "asus"
-#define TMCFG_MODEL "rt-ac3100"
+#define TMCFG_MODEL "rt-ac3200"
 
 /*
  * Target device information
@@ -47,7 +47,7 @@
 #define TMCFG_ARCH_POWERPC 0 // n
 #define TMCFG_CPU_BIG_ENDIAN 0 // n
 #define TMCFG_CPU_LITTLE_ENDIAN 1 // y
-#define TMCFG_KERN_DIR "/opt/ASUS/asuswrt_AC3100_GPL_382_11683/release/src-rt-7.14.114.x/src/linux/linux-2.6.36"
+#define TMCFG_KERN_DIR "/opt/ASUS/asuswrt_AC3200_GPL_382_11683/release/src-rt-7.x.main/src/linux/linux-2.6.36"
 #define TMCFG_KERN_ARCH "arm"
 #define TMCFG_CPU_32BITS 1 // y
 #define TMCFG_CPU_64BITS 0 // n
@@ -60,7 +60,7 @@
 /*
  * Target device toolchain (cross utilities)
  */
-#define TMCFG_TC_PFX "/opt/ASUS/toolchains/hndtools-arm-linux-2.6.36-uclibc-4.5.3-AC88U/bin/arm-brcm-linux-uclibcgnueabi-"
+#define TMCFG_TC_PFX "/opt/ASUS/toolchains/hndtools-arm-linux-2.6.36-uclibc-4.5.3/bin/arm-brcm-linux-uclibcgnueabi-"
 #define TMCFG_TC_BIT_FIELD_ORDER_LITTLE_ENDIAN 1 // y
 #define TMCFG_TC_BIT_FIELD_ORDER_BIG_ENDIAN 0 // n
 #define TMCFG_TC_CC "$(TMCFG_TC_PFX)gcc"
@@ -241,7 +241,7 @@
 /*
  * Userspace toolchain
  */
-#define TMCFG_APP_U_TC_PFX "/opt/ASUS/toolchains/hndtools-arm-linux-2.6.36-uclibc-4.5.3-AC88U/bin/arm-brcm-linux-uclibcgnueabi-"
+#define TMCFG_APP_U_TC_PFX "/opt/ASUS/toolchains/hndtools-arm-linux-2.6.36-uclibc-4.5.3/bin/arm-brcm-linux-uclibcgnueabi-"
 #define TMCFG_APP_U_TC_CC "$(TMCFG_APP_U_TC_PFX)gcc"
 #define TMCFG_APP_U_TC_AR "$(TMCFG_APP_U_TC_PFX)ar"
 #define TMCFG_APP_U_TC_LD "$(TMCFG_APP_U_TC_PFX)ld"

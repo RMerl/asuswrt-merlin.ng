@@ -61,7 +61,7 @@ clean:
 	rm -f $(INSTALL_DIR)/bin/brctl
 	rm -f $(INSTALL_DIR)/*/bin/brctl
 	rm -rf objs
-	rm -rf $(APP)
+#	rm -rf $(APP)
 
 distclean: clean
 

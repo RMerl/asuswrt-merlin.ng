@@ -2207,33 +2207,24 @@ void wan6_up(const char *wan_ifname)
 	struct in_addr addr4;
 	struct in6_addr addr;
 	char gateway[INET6_ADDRSTRLEN];
-	int mtu, service = get_ipv6_service();
-	char tmp[100];
-	char prefix[] = "wanXXXXXXXXXX_";
-	char wan_proto[16];
-	int ipv6_ifdev_ppp = 0;
+	int mtu, service, accept_defrtr;
 
-	if (!wan_ifname || (strlen(wan_ifname) <= 0) ||
-		(service == IPV6_DISABLED))
+	if (!wan_ifname || *wan_ifname == '\0')
 		return;
 
-	snprintf(prefix, sizeof(prefix), "wan%d_", wan_primary_ifunit_ipv6());
-	snprintf(wan_proto, sizeof(wan_proto), "%s", nvram_safe_get(strcat_r(prefix, "proto", tmp)));
-	if (strcmp(wan_proto, "dhcp") != 0 && strcmp(wan_proto, "static") != 0 &&
-		nvram_match(ipv6_nvname("ipv6_ifdev"), "ppp"))
-		ipv6_ifdev_ppp = 1;
-
+	service = get_ipv6_service();
 	switch (service) {
 	case IPV6_NATIVE_DHCP:
-		ipv6_sysconf(wan_ifname, "accept_ra", ipv6_ifdev_ppp && nvram_get_int(ipv6_nvname("ipv6_accept_ra")) ? 1 : 0);
-		ipv6_sysconf(wan_ifname, "forwarding", 0);
-		break;
 #ifdef RTCONFIG_6RELAYD
 	case IPV6_PASSTHROUGH:
+#endif
+		accept_defrtr = service == IPV6_NATIVE_DHCP && /* limit to native by now */
+				nvram_match(ipv6_nvname("ipv6_ifdev"), "ppp") ?
+				nvram_get_int(ipv6_nvname("ipv6_accept_defrtr")) : 1;
 		ipv6_sysconf(wan_ifname, "accept_ra", 1);
+		ipv6_sysconf(wan_ifname, "accept_ra_defrtr", accept_defrtr);
 		ipv6_sysconf(wan_ifname, "forwarding", 0);
 		break;
-#endif
 	case IPV6_MANUAL:
 		ipv6_sysconf(wan_ifname, "accept_ra", 0);
 		ipv6_sysconf(wan_ifname, "forwarding", 1);
@@ -2241,6 +2232,8 @@ void wan6_up(const char *wan_ifname)
 	case IPV6_6RD:
 		update_6rd_info();
 		break;
+	case IPV6_DISABLED:
+		return;
 	}
 
 	set_intf_ipv6_dad(wan_ifname, 0, 1);

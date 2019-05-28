@@ -651,7 +651,7 @@ function validForm(){
 	if(hdspindown_support) {
 		if($('select[name="usb_idle_enable"]').val() == 1) {
 			$('input[name="usb_idle_timeout"]').prop("disabled", false);
-			if (!validator.range($('input[name="usb_idle_timeout"]')[0], 60, 3600))
+			if (!validator.range($('input[name="usb_idle_timeout"]')[0], 60, 9999))
 				return false;
 		}
 		else {

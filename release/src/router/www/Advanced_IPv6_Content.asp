@@ -422,8 +422,6 @@ function showInputfield(v){
 		inputCtrl(document.form.ipv6_relay, 0);
 		inputCtrl(document.form.ipv6_6rd_dhcp[0], 0);
 		inputCtrl(document.form.ipv6_6rd_dhcp[1], 0);
-		inputCtrl(document.form.ipv6_dhcp6c_release[0], 0);
-		inputCtrl(document.form.ipv6_dhcp6c_release[1], 0);
 		inputCtrl(document.form.ipv6_6rd_prefix, 0);
 		inputCtrl(document.form.ipv6_6rd_prefixlen, 0);
 		inputCtrl(document.form.ipv6_6rd_router, 0);

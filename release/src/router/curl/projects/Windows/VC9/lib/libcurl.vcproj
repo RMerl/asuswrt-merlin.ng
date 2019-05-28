@@ -3618,6 +3618,10 @@
 			>
 			</File>
 			<File
+				RelativePath="..\..\..\..\lib\curl_get_line.c"
+			>
+			</File>
+			<File
 				RelativePath="..\..\..\..\lib\curl_gssapi.c"
 			>
 			</File>
@@ -3854,10 +3858,6 @@
 			>
 			</File>
 			<File
-				RelativePath="..\..\..\..\lib\pipeline.c"
-			>
-			</File>
-			<File
 				RelativePath="..\..\..\..\lib\pop3.c"
 			>
 			</File>
@@ -4071,6 +4071,10 @@
 			</File>
 			<File
 				RelativePath="..\..\..\..\lib\curl_gethostname.h"
+			>
+			</File>
+			<File
+				RelativePath="..\..\..\..\lib\curl_get_line.h"
 			>
 			</File>
 			<File
@@ -4303,10 +4307,6 @@
 			</File>
 			<File
 				RelativePath="..\..\..\..\lib\pingpong.h"
-			>
-			</File>
-			<File
-				RelativePath="..\..\..\..\lib\pipeline.h"
 			>
 			</File>
 			<File

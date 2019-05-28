@@ -22252,7 +22252,7 @@ fi
 
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether to enable Amiga native SSL/TLS (AmiSSL)" >&5
 $as_echo_n "checking whether to enable Amiga native SSL/TLS (AmiSSL)... " >&6; }
-if test "$HAVE_PROTO_BSDSOCKET_H" == "1"; then
+if test "$HAVE_PROTO_BSDSOCKET_H" = "1"; then
   if test -z "$ssl_backends" -o "x$OPT_AMISSL" != xno; then
     ssl_msg=
     if test "x$OPT_AMISSL" != "xno"; then
@@ -23620,6 +23620,16 @@ $as_echo "$as_me: WARNING: $tst_warns" >&2;}
   fi
 
   test -z "$ssl_msg" || ssl_backends="${ssl_backends:+$ssl_backends, }$ssl_msg"
+fi
+
+if test X"$OPT_SSL" != Xoff &&
+  test X"$OPT_SSL" != Xno &&
+  test "$OPENSSL_ENABLED" != "1"; then
+  { $as_echo "$as_me:${as_lineno-$LINENO}: OPT_SSL: $OPT_SSL" >&5
+$as_echo "$as_me: OPT_SSL: $OPT_SSL" >&6;}
+  { $as_echo "$as_me:${as_lineno-$LINENO}: OPENSSL_ENABLED: $OPENSSL_ENABLED" >&5
+$as_echo "$as_me: OPENSSL_ENABLED: $OPENSSL_ENABLED" >&6;}
+  as_fn_error $? "--with-ssl was given but OpenSSL could not be detected" "$LINENO" 5
 fi
 
 
@@ -27842,7 +27852,137 @@ case "$OPT_FISH_FPATH" in
   no)
         ;;
   default|yes)
-        FISH_FUNCTIONS_DIR="$datarootdir/fish/completions"
+
+    if test -n "$PKG_CONFIG"; then
+      PKGCONFIG="$PKG_CONFIG"
+    else
+      if test -n "$ac_tool_prefix"; then
+  # Extract the first word of "${ac_tool_prefix}pkg-config", so it can be a program name with args.
+set dummy ${ac_tool_prefix}pkg-config; ac_word=$2
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
+$as_echo_n "checking for $ac_word... " >&6; }
+if ${ac_cv_path_PKGCONFIG+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  case $PKGCONFIG in
+  [\\/]* | ?:[\\/]*)
+  ac_cv_path_PKGCONFIG="$PKGCONFIG" # Let the user override the test with a path.
+  ;;
+  *)
+  as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+as_dummy="$PATH:/usr/bin:/usr/local/bin"
+for as_dir in $as_dummy
+do
+  IFS=$as_save_IFS
+  test -z "$as_dir" && as_dir=.
+    for ac_exec_ext in '' $ac_executable_extensions; do
+  if as_fn_executable_p "$as_dir/$ac_word$ac_exec_ext"; then
+    ac_cv_path_PKGCONFIG="$as_dir/$ac_word$ac_exec_ext"
+    $as_echo "$as_me:${as_lineno-$LINENO}: found $as_dir/$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+  done
+IFS=$as_save_IFS
+
+  ;;
+esac
+fi
+PKGCONFIG=$ac_cv_path_PKGCONFIG
+if test -n "$PKGCONFIG"; then
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $PKGCONFIG" >&5
+$as_echo "$PKGCONFIG" >&6; }
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+fi
+
+
+fi
+if test -z "$ac_cv_path_PKGCONFIG"; then
+  ac_pt_PKGCONFIG=$PKGCONFIG
+  # Extract the first word of "pkg-config", so it can be a program name with args.
+set dummy pkg-config; ac_word=$2
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
+$as_echo_n "checking for $ac_word... " >&6; }
+if ${ac_cv_path_ac_pt_PKGCONFIG+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  case $ac_pt_PKGCONFIG in
+  [\\/]* | ?:[\\/]*)
+  ac_cv_path_ac_pt_PKGCONFIG="$ac_pt_PKGCONFIG" # Let the user override the test with a path.
+  ;;
+  *)
+  as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+as_dummy="$PATH:/usr/bin:/usr/local/bin"
+for as_dir in $as_dummy
+do
+  IFS=$as_save_IFS
+  test -z "$as_dir" && as_dir=.
+    for ac_exec_ext in '' $ac_executable_extensions; do
+  if as_fn_executable_p "$as_dir/$ac_word$ac_exec_ext"; then
+    ac_cv_path_ac_pt_PKGCONFIG="$as_dir/$ac_word$ac_exec_ext"
+    $as_echo "$as_me:${as_lineno-$LINENO}: found $as_dir/$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+  done
+IFS=$as_save_IFS
+
+  ;;
+esac
+fi
+ac_pt_PKGCONFIG=$ac_cv_path_ac_pt_PKGCONFIG
+if test -n "$ac_pt_PKGCONFIG"; then
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_pt_PKGCONFIG" >&5
+$as_echo "$ac_pt_PKGCONFIG" >&6; }
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+fi
+
+  if test "x$ac_pt_PKGCONFIG" = x; then
+    PKGCONFIG="no"
+  else
+    case $cross_compiling:$ac_tool_warned in
+yes:)
+{ $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: using cross tools not prefixed with host triplet" >&5
+$as_echo "$as_me: WARNING: using cross tools not prefixed with host triplet" >&2;}
+ac_tool_warned=yes ;;
+esac
+    PKGCONFIG=$ac_pt_PKGCONFIG
+  fi
+else
+  PKGCONFIG="$ac_cv_path_PKGCONFIG"
+fi
+
+    fi
+
+    if test "x$PKGCONFIG" != "xno"; then
+      { $as_echo "$as_me:${as_lineno-$LINENO}: checking for fish options with pkg-config" >&5
+$as_echo_n "checking for fish options with pkg-config... " >&6; }
+            itexists=`
+    if test -n ""; then
+      PKG_CONFIG_LIBDIR=""
+      export PKG_CONFIG_LIBDIR
+    fi
+         $PKGCONFIG --exists fish >/dev/null 2>&1 && echo 1`
+
+      if test -z "$itexists"; then
+                        PKGCONFIG="no"
+        { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+      else
+        { $as_echo "$as_me:${as_lineno-$LINENO}: result: found" >&5
+$as_echo "found" >&6; }
+      fi
+    fi
+
+    if test "$PKGCONFIG" != "no" ; then
+      FISH_FUNCTIONS_DIR="$($PKGCONFIG --variable completionsdir fish)"
+    else
+      FISH_FUNCTIONS_DIR="$datarootdir/fish/vendor_completions.d"
+    fi
 
     ;;
   *)
@@ -33727,6 +33867,296 @@ _ACEOF
     { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
 $as_echo "no" >&6; }
     curl_cv_func_gethostname="no"
+  fi
+
+
+          #
+  tst_links_getpeername="unknown"
+  tst_proto_getpeername="unknown"
+  tst_compi_getpeername="unknown"
+  tst_allow_getpeername="unknown"
+  #
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking if getpeername can be linked" >&5
+$as_echo_n "checking if getpeername can be linked... " >&6; }
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+
+      $curl_includes_winsock2
+      $curl_includes_bsdsocket
+      $curl_includes_sys_socket
+
+int main (void)
+{
+
+      if(0 != getpeername(0, (void *)0, (void *)0))
+        return 1;
+
+ ;
+ return 0;
+}
+
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+
+    { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
+    tst_links_getpeername="yes"
+
+else
+
+    { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+    tst_links_getpeername="no"
+
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+  #
+  if test "$tst_links_getpeername" = "yes"; then
+    { $as_echo "$as_me:${as_lineno-$LINENO}: checking if getpeername is prototyped" >&5
+$as_echo_n "checking if getpeername is prototyped... " >&6; }
+    cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+      $curl_includes_winsock2
+      $curl_includes_bsdsocket
+      $curl_includes_sys_socket
+
+_ACEOF
+if (eval "$ac_cpp conftest.$ac_ext") 2>&5 |
+  $EGREP "getpeername" >/dev/null 2>&1; then :
+
+      { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
+      tst_proto_getpeername="yes"
+
+else
+
+      { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+      tst_proto_getpeername="no"
+
+fi
+rm -f conftest*
+
+  fi
+  #
+  if test "$tst_proto_getpeername" = "yes"; then
+    { $as_echo "$as_me:${as_lineno-$LINENO}: checking if getpeername is compilable" >&5
+$as_echo_n "checking if getpeername is compilable... " >&6; }
+    cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+
+        $curl_includes_winsock2
+        $curl_includes_bsdsocket
+        $curl_includes_sys_socket
+
+int main (void)
+{
+
+        if(0 != getpeername(0, (void *)0, (void *)0))
+          return 1;
+
+ ;
+ return 0;
+}
+
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"; then :
+
+      { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
+      tst_compi_getpeername="yes"
+
+else
+
+      { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+      tst_compi_getpeername="no"
+
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+  fi
+  #
+  if test "$tst_compi_getpeername" = "yes"; then
+    { $as_echo "$as_me:${as_lineno-$LINENO}: checking if getpeername usage allowed" >&5
+$as_echo_n "checking if getpeername usage allowed... " >&6; }
+    if test "x$curl_disallow_getpeername" != "xyes"; then
+      { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
+      tst_allow_getpeername="yes"
+    else
+      { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+      tst_allow_getpeername="no"
+    fi
+  fi
+  #
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking if getpeername might be used" >&5
+$as_echo_n "checking if getpeername might be used... " >&6; }
+  if test "$tst_links_getpeername" = "yes" &&
+     test "$tst_proto_getpeername" = "yes" &&
+     test "$tst_compi_getpeername" = "yes" &&
+     test "$tst_allow_getpeername" = "yes"; then
+    { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
+
+cat >>confdefs.h <<_ACEOF
+#define HAVE_GETPEERNAME 1
+_ACEOF
+
+    curl_cv_func_getpeername="yes"
+  else
+    { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+    curl_cv_func_getpeername="no"
+  fi
+
+
+          #
+  tst_links_getsockname="unknown"
+  tst_proto_getsockname="unknown"
+  tst_compi_getsockname="unknown"
+  tst_allow_getsockname="unknown"
+  #
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking if getsockname can be linked" >&5
+$as_echo_n "checking if getsockname can be linked... " >&6; }
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+
+      $curl_includes_winsock2
+      $curl_includes_bsdsocket
+      $curl_includes_sys_socket
+
+int main (void)
+{
+
+      if(0 != getsockname(0, (void *)0, (void *)0))
+        return 1;
+
+ ;
+ return 0;
+}
+
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+
+    { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
+    tst_links_getsockname="yes"
+
+else
+
+    { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+    tst_links_getsockname="no"
+
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+  #
+  if test "$tst_links_getsockname" = "yes"; then
+    { $as_echo "$as_me:${as_lineno-$LINENO}: checking if getsockname is prototyped" >&5
+$as_echo_n "checking if getsockname is prototyped... " >&6; }
+    cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+      $curl_includes_winsock2
+      $curl_includes_bsdsocket
+      $curl_includes_sys_socket
+
+_ACEOF
+if (eval "$ac_cpp conftest.$ac_ext") 2>&5 |
+  $EGREP "getsockname" >/dev/null 2>&1; then :
+
+      { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
+      tst_proto_getsockname="yes"
+
+else
+
+      { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+      tst_proto_getsockname="no"
+
+fi
+rm -f conftest*
+
+  fi
+  #
+  if test "$tst_proto_getsockname" = "yes"; then
+    { $as_echo "$as_me:${as_lineno-$LINENO}: checking if getsockname is compilable" >&5
+$as_echo_n "checking if getsockname is compilable... " >&6; }
+    cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+
+        $curl_includes_winsock2
+        $curl_includes_bsdsocket
+        $curl_includes_sys_socket
+
+int main (void)
+{
+
+        if(0 != getsockname(0, (void *)0, (void *)0))
+          return 1;
+
+ ;
+ return 0;
+}
+
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"; then :
+
+      { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
+      tst_compi_getsockname="yes"
+
+else
+
+      { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+      tst_compi_getsockname="no"
+
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+  fi
+  #
+  if test "$tst_compi_getsockname" = "yes"; then
+    { $as_echo "$as_me:${as_lineno-$LINENO}: checking if getsockname usage allowed" >&5
+$as_echo_n "checking if getsockname usage allowed... " >&6; }
+    if test "x$curl_disallow_getsockname" != "xyes"; then
+      { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
+      tst_allow_getsockname="yes"
+    else
+      { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+      tst_allow_getsockname="no"
+    fi
+  fi
+  #
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking if getsockname might be used" >&5
+$as_echo_n "checking if getsockname might be used... " >&6; }
+  if test "$tst_links_getsockname" = "yes" &&
+     test "$tst_proto_getsockname" = "yes" &&
+     test "$tst_compi_getsockname" = "yes" &&
+     test "$tst_allow_getsockname" = "yes"; then
+    { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
+
+cat >>confdefs.h <<_ACEOF
+#define HAVE_GETSOCKNAME 1
+_ACEOF
+
+    curl_cv_func_getsockname="yes"
+  else
+    { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+    curl_cv_func_getsockname="no"
   fi
 
 

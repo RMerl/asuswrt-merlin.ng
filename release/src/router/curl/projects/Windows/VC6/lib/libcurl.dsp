@@ -790,6 +790,10 @@ SOURCE=..\..\..\..\lib\curl_gethostname.c
 # End Source File
 # Begin Source File
 
+SOURCE=..\..\..\..\lib\curl_get_line.c
+# End Source File
+# Begin Source File
+
 SOURCE=..\..\..\..\lib\curl_gssapi.c
 # End Source File
 # Begin Source File
@@ -1023,10 +1027,6 @@ SOURCE=..\..\..\..\lib\parsedate.c
 # Begin Source File
 
 SOURCE=..\..\..\..\lib\pingpong.c
-# End Source File
-# Begin Source File
-
-SOURCE=..\..\..\..\lib\pipeline.c
 # End Source File
 # Begin Source File
 
@@ -1346,6 +1346,10 @@ SOURCE=..\..\..\..\lib\curl_gethostname.h
 # End Source File
 # Begin Source File
 
+SOURCE=..\..\..\..\lib\curl_get_line.h
+# End Source File
+# Begin Source File
+
 SOURCE=..\..\..\..\lib\curl_gssapi.h
 # End Source File
 # Begin Source File
@@ -1575,10 +1579,6 @@ SOURCE=..\..\..\..\lib\parsedate.h
 # Begin Source File
 
 SOURCE=..\..\..\..\lib\pingpong.h
-# End Source File
-# Begin Source File
-
-SOURCE=..\..\..\..\lib\pipeline.h
 # End Source File
 # Begin Source File
 

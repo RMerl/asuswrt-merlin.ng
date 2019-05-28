@@ -93,6 +93,7 @@ Example set of cookies:
 #include "share.h"
 #include "strtoofft.h"
 #include "strcase.h"
+#include "curl_get_line.h"
 #include "curl_memrchr.h"
 #include "inet_pton.h"
 
@@ -873,11 +874,13 @@ Curl_cookie_add(struct Curl_easy *data,
         co->name = strdup(ptr);
         if(!co->name)
           badcookie = TRUE;
-        /* For Netscape file format cookies we check prefix on the name */
-        if(strncasecompare("__Secure-", co->name, 9))
-          co->prefix |= COOKIE_PREFIX__SECURE;
-        else if(strncasecompare("__Host-", co->name, 7))
-          co->prefix |= COOKIE_PREFIX__HOST;
+        else {
+          /* For Netscape file format cookies we check prefix on the name */
+          if(strncasecompare("__Secure-", co->name, 9))
+            co->prefix |= COOKIE_PREFIX__SECURE;
+          else if(strncasecompare("__Host-", co->name, 7))
+            co->prefix |= COOKIE_PREFIX__HOST;
+        }
         break;
       case 6:
         co->value = strdup(ptr);
@@ -1083,33 +1086,6 @@ Curl_cookie_add(struct Curl_easy *data,
   }
 
   return co;
-}
-
-/*
- * get_line() makes sure to only return complete whole lines that fit in 'len'
- * bytes and end with a newline.
- */
-char *Curl_get_line(char *buf, int len, FILE *input)
-{
-  bool partial = FALSE;
-  while(1) {
-    char *b = fgets(buf, len, input);
-    if(b) {
-      size_t rlen = strlen(b);
-      if(rlen && (b[rlen-1] == '\n')) {
-        if(partial) {
-          partial = FALSE;
-          continue;
-        }
-        return b;
-      }
-      /* read a partial, discard the next piece that ends with newline */
-      partial = TRUE;
-    }
-    else
-      break;
-  }
-  return NULL;
 }
 
 
@@ -1533,10 +1509,6 @@ static int cookie_output(struct CookieInfo *c, const char *dumphere)
   struct Cookie *co;
   FILE *out;
   bool use_stdout = FALSE;
-  char *format_ptr;
-  unsigned int i;
-  unsigned int j;
-  struct Cookie **array;
 
   if(!c)
     /* no cookie engine alive */
@@ -1563,6 +1535,10 @@ static int cookie_output(struct CookieInfo *c, const char *dumphere)
         out);
 
   if(c->numcookies) {
+    unsigned int i;
+    unsigned int j;
+    struct Cookie **array;
+
     array = malloc(sizeof(struct Cookie *) * c->numcookies);
     if(!array) {
       if(!use_stdout)
@@ -1582,7 +1558,7 @@ static int cookie_output(struct CookieInfo *c, const char *dumphere)
     qsort(array, c->numcookies, sizeof(struct Cookie *), cookie_sort_ct);
 
     for(i = 0; i < j; i++) {
-      format_ptr = get_netscape_format(array[i]);
+      char *format_ptr = get_netscape_format(array[i]);
       if(format_ptr == NULL) {
         fprintf(out, "#\n# Fatal libcurl error\n");
         free(array);

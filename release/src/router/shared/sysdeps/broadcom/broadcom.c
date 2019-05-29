@@ -297,6 +297,22 @@ PSTA_ERR:
 
 	return ret;
 }
+
+void wait_connection_finished(int band)
+{
+    int wait_time = 0;
+    int conn_stat = 0;
+	int wlc_conn_time = nvram_get_int("wlc_conn_time") ? : 10;
+
+    while (wait_time++ < wlc_conn_time)
+    {
+    	conn_stat = get_psta_status(band);
+    	//dbG("[%s] (wait_time = %d) conn_stat[band%d] = %d\n", __FUNCTION__, wait_time, band, conn_stat);
+        if ( conn_stat == WLC_STATE_CONNECTED)
+            break;
+        sleep(1);
+    }
+}
 #endif
 
 static int is_hex(char c)

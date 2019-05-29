@@ -1529,6 +1529,7 @@ extern int get_wl_sta_list(void);
 extern int get_maxassoc(char *ifname);
 extern int wl_add_ie(int unit, uint32 pktflag, int ielen, uchar *oui, uchar *data);
 extern void wl_del_ie_with_oui(int unit, uchar *oui);
+extern void wait_connection_finished(int band);
 #endif
 #if defined(RTCONFIG_LANTIQ)
 extern int get_wl_sta_list(void);

@@ -715,6 +715,7 @@ again:
 				if (!ifa->ifa_addr ||
 					(ifa->ifa_addr->sa_family != sv->family) ||
 					(ifa->ifa_flags & IFF_LOOPBACK) ||
+					(ifa->ifa_flags & IFF_SLAVE) ||
 					(ifname && strcmp(ifa->ifa_name, ifname)) ||
 					(!strcmp(ifa->ifa_name, "LeafNets")) ||
 					(!strncmp(ifa->ifa_name, "docker", 6)) ||
@@ -724,6 +725,14 @@ again:
 					(sv->mcast_addr &&
 					!(ifa->ifa_flags & IFF_MULTICAST)))
 					continue;
+
+				if (!ifname) {
+					char path[sizeof("/sys/class/net//brport")+IFNAMSIZ];
+					struct stat st;
+					snprintf(path, sizeof(path), "/sys/class/net/%s/brport", ifa->ifa_name);
+					if (stat(path, &st) == 0)
+						continue;
+				}
 
 				char ifaddr[_ADDRSTRLEN];
 				void *addr =

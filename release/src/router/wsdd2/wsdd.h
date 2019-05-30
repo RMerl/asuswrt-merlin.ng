@@ -39,6 +39,7 @@
 #include <time.h>
 #include <syslog.h>
 #include <sys/socket.h>
+#include <sys/stat.h>
 #include <arpa/inet.h>
 #include <net/if.h>
 #include <netinet/in.h>

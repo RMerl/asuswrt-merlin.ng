@@ -20,7 +20,7 @@ AUTH DIGEST-MD5 PLAIN
 REPLY "AUTH DIGEST-MD5" + Rubbish
 REPLY * -ERR AUTH exchange cancelled by client
 REPLY "AUTH PLAIN" +
-REPLY AHVzZXIAc2VjcmV0 +OK Login successful
+REPLY dXNlcgB1c2VyAHNlY3JldA== +OK Login successful
 </servercmd>
 <data>
 From: me@somewhere
@@ -60,7 +60,7 @@ CAPA
 AUTH DIGEST-MD5
 *
 AUTH PLAIN
-AHVzZXIAc2VjcmV0
+dXNlcgB1c2VyAHNlY3JldA==
 RETR 881
 QUIT
 </protocol>

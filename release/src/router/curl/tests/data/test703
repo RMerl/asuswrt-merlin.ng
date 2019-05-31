@@ -12,10 +12,6 @@ FAILURE
 <reply>
 <data>
 </data>
-# 1 is socks5 failure
-<servercmd>
-response 1
-</servercmd>
 </reply>
 
 # Client-side

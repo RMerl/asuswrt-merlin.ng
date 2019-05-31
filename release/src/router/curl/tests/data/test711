@@ -15,8 +15,6 @@ all_proxy
 <data>
 silly content
 </data>
-<servercmd>
-</servercmd>
 </reply>
 
 #
@@ -27,7 +25,7 @@ ftp
 socks5
 </server>
 <setenv>
-all_proxy=socks5://%HOSTIP:%SOCKSPORT
+all_proxy=socks5://%HOSTIP:%SOCKSPORT 
 </setenv>
  <name>
 FTP fetch with all_proxy set to socks5

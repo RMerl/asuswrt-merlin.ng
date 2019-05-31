@@ -240,7 +240,6 @@ int main()
 #ifndef inet_ntoa_r
   func_type func;
   func = (func_type)inet_ntoa_r;
-  (void)func;
 #endif
   return 0;
 }
@@ -256,7 +255,6 @@ int main()
 #ifndef inet_ntoa_r
   func_type func;
   func = (func_type)&inet_ntoa_r;
-  (void)func;
 #endif
   return 0;
 }
@@ -585,8 +583,6 @@ int
 main() {
   int res3 = c99_vmacro3(1, 2, 3);
   int res2 = c99_vmacro2(1, 2);
-  (void)res3;
-  (void)res2;
   return 0;
 }
 #endif
@@ -608,8 +604,6 @@ int
 main() {
   int res3 = gcc_vmacro3(1, 2, 3);
   int res2 = gcc_vmacro2(1, 2);
-  (void)res3;
-  (void)res2;
   return 0;
 }
 #endif

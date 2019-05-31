@@ -21,8 +21,6 @@
  ***************************************************************************/
 #include "test.h"
 
-#include <string.h>
-
 /*
  * This test uses these funny custom memory callbacks for the only purpose
  * of verifying that curl_global_init_mem() functionality is present in

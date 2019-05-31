@@ -97,7 +97,7 @@ CURLcode Curl_auth_decode_spnego_message(struct Curl_easy *data,
     /* We finished successfully our part of authentication, but server
      * rejected it (since we're again here). Exit with an error since we
      * can't invent anything better */
-    Curl_auth_cleanup_spnego(nego);
+    Curl_auth_spnego_cleanup(nego);
     return CURLE_LOGIN_DENIED;
   }
 
@@ -170,7 +170,7 @@ CURLcode Curl_auth_decode_spnego_message(struct Curl_easy *data,
     Curl_gss_log_error(data, "gss_init_sec_context() failed: ",
                        major_status, minor_status);
 
-    return CURLE_LOGIN_DENIED;
+    return CURLE_OUT_OF_MEMORY;
   }
 
   if(!output_token.value || !output_token.length) {
@@ -238,7 +238,7 @@ CURLcode Curl_auth_create_spnego_message(struct Curl_easy *data,
 }
 
 /*
- * Curl_auth_cleanup_spnego()
+ * Curl_auth_spnego_cleanup()
  *
  * This is used to clean up the SPNEGO (Negotiate) specific data.
  *
@@ -247,7 +247,7 @@ CURLcode Curl_auth_create_spnego_message(struct Curl_easy *data,
  * nego     [in/out] - The Negotiate data struct being cleaned up.
  *
  */
-void Curl_auth_cleanup_spnego(struct negotiatedata *nego)
+void Curl_auth_spnego_cleanup(struct negotiatedata *nego)
 {
   OM_uint32 minor_status;
 
@@ -273,6 +273,7 @@ void Curl_auth_cleanup_spnego(struct negotiatedata *nego)
 
   /* Reset any variables */
   nego->status = 0;
+  nego->state = GSS_AUTHNONE;
   nego->noauthpersist = FALSE;
   nego->havenoauthpersist = FALSE;
   nego->havenegdata = FALSE;

@@ -22,7 +22,7 @@
 
 #include "curl_setup.h"
 
-#if defined(USE_SSH)
+#if defined(USE_LIBSSH2) || defined(USE_LIBSSH)
 
 #include <curl/curl.h>
 #include "curl_memory.h"

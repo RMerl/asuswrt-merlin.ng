@@ -5,7 +5,7 @@
  *                            | (__| |_| |  _ <| |___
  *                             \___|\___/|_| \_\_____|
  *
- * Copyright (C) 1998 - 2019, Daniel Stenberg, <daniel@haxx.se>, et al.
+ * Copyright (C) 1998 - 2018, Daniel Stenberg, <daniel@haxx.se>, et al.
  *
  * This software is licensed as described in the file COPYING, which
  * you should have received as part of this distribution. The terms
@@ -97,7 +97,7 @@ unsigned int Curl_ipv6_scope(const struct sockaddr *sa)
 #if defined(HAVE_GETIFADDRS)
 
 if2ip_result_t Curl_if2ip(int af, unsigned int remote_scope,
-                          unsigned int local_scope_id, const char *interf,
+                          unsigned int remote_scope_id, const char *interf,
                           char *buf, int buf_size)
 {
   struct ifaddrs *iface, *head;
@@ -109,7 +109,7 @@ if2ip_result_t Curl_if2ip(int af, unsigned int remote_scope,
 
 #if !defined(HAVE_SOCKADDR_IN6_SIN6_SCOPE_ID) || \
     !defined(ENABLE_IPV6)
-  (void) local_scope_id;
+  (void) remote_scope_id;
 #endif
 
   if(getifaddrs(&head) >= 0) {
@@ -123,9 +123,7 @@ if2ip_result_t Curl_if2ip(int af, unsigned int remote_scope,
             char ipstr[64];
 #ifdef ENABLE_IPV6
             if(af == AF_INET6) {
-#ifdef HAVE_SOCKADDR_IN6_SIN6_SCOPE_ID
               unsigned int scopeid = 0;
-#endif
               unsigned int ifscope = Curl_ipv6_scope(iface->ifa_addr);
 
               if(ifscope != remote_scope) {
@@ -145,16 +143,15 @@ if2ip_result_t Curl_if2ip(int af, unsigned int remote_scope,
                             ->sin6_scope_id;
 
               /* If given, scope id should match. */
-              if(local_scope_id && scopeid != local_scope_id) {
+              if(remote_scope_id && scopeid != remote_scope_id) {
                 if(res == IF2IP_NOT_FOUND)
                   res = IF2IP_AF_NOT_SUPPORTED;
 
                 continue;
               }
-
-              if(scopeid)
-                  msnprintf(scope, sizeof(scope), "%%%u", scopeid);
 #endif
+              if(scopeid)
+                msnprintf(scope, sizeof(scope), "%%%u", scopeid);
             }
             else
 #endif
@@ -182,7 +179,7 @@ if2ip_result_t Curl_if2ip(int af, unsigned int remote_scope,
 #elif defined(HAVE_IOCTL_SIOCGIFADDR)
 
 if2ip_result_t Curl_if2ip(int af, unsigned int remote_scope,
-                          unsigned int local_scope_id, const char *interf,
+                          unsigned int remote_scope_id, const char *interf,
                           char *buf, int buf_size)
 {
   struct ifreq req;
@@ -192,7 +189,7 @@ if2ip_result_t Curl_if2ip(int af, unsigned int remote_scope,
   size_t len;
 
   (void)remote_scope;
-  (void)local_scope_id;
+  (void)remote_scope_id;
 
   if(!interf || (af != AF_INET))
     return IF2IP_NOT_FOUND;
@@ -228,12 +225,12 @@ if2ip_result_t Curl_if2ip(int af, unsigned int remote_scope,
 #else
 
 if2ip_result_t Curl_if2ip(int af, unsigned int remote_scope,
-                          unsigned int local_scope_id, const char *interf,
+                          unsigned int remote_scope_id, const char *interf,
                           char *buf, int buf_size)
 {
     (void) af;
     (void) remote_scope;
-    (void) local_scope_id;
+    (void) remote_scope_id;
     (void) interf;
     (void) buf;
     (void) buf_size;

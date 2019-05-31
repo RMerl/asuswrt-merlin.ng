@@ -81,7 +81,6 @@ size_t tool_write_cb(char *buffer, size_t sz, size_t nmemb, void *userdata)
   bool is_tty = config->global->isatty;
 #ifdef WIN32
   CONSOLE_SCREEN_BUFFER_INFO console_info;
-  intptr_t fhnd;
 #endif
 
   /*
@@ -159,13 +158,14 @@ size_t tool_write_cb(char *buffer, size_t sz, size_t nmemb, void *userdata)
     }
   }
 
-#ifdef WIN32
-  fhnd = _get_osfhandle(fileno(outs->stream));
+#ifdef _WIN32
   if(isatty(fileno(outs->stream)) &&
-     GetConsoleScreenBufferInfo((HANDLE)fhnd, &console_info)) {
+     GetConsoleScreenBufferInfo(
+       (HANDLE)_get_osfhandle(fileno(outs->stream)), &console_info)) {
     DWORD in_len = (DWORD)(sz * nmemb);
     wchar_t* wc_buf;
     DWORD wc_len;
+    intptr_t fhnd;
 
     /* calculate buffer size for wide characters */
     wc_len = MultiByteToWideChar(CP_UTF8, 0, buffer, in_len,  NULL, 0);
@@ -179,6 +179,8 @@ size_t tool_write_cb(char *buffer, size_t sz, size_t nmemb, void *userdata)
       free(wc_buf);
       return failure;
     }
+
+    fhnd = _get_osfhandle(fileno(outs->stream));
 
     if(!WriteConsoleW(
         (HANDLE) fhnd,

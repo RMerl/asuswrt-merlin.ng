@@ -22,8 +22,6 @@
 
 #include "curl_setup.h"
 
-#ifndef CURL_DISABLE_DOH
-
 #include "urldata.h"
 #include "curl_addrinfo.h"
 #include "doh.h"
@@ -584,6 +582,7 @@ UNITTEST DOHcode doh_decode(unsigned char *doh,
   unsigned short qdcount;
   unsigned short ancount;
   unsigned short type = 0;
+  unsigned short class;
   unsigned short rdlength;
   unsigned short nscount;
   unsigned short arcount;
@@ -611,7 +610,6 @@ UNITTEST DOHcode doh_decode(unsigned char *doh,
 
   ancount = get16bit(doh, 6);
   while(ancount) {
-    unsigned short class;
     unsigned int ttl;
 
     rc = skipqname(doh, dohlen, &index);
@@ -896,6 +894,8 @@ CURLcode Curl_doh_is_resolved(struct connectdata *conn,
     DOHcode rc;
     DOHcode rc2;
     struct dohentry de;
+    struct Curl_dns_entry *dns;
+    struct Curl_addrinfo *ai;
     /* remove DOH handles from multi handle and close them */
     curl_multi_remove_handle(data->multi, data->req.doh.probe[0].easy);
     Curl_close(data->req.doh.probe[0].easy);
@@ -925,9 +925,6 @@ CURLcode Curl_doh_is_resolved(struct connectdata *conn,
             data->req.doh.host);
     }
     if(!rc || !rc2) {
-      struct Curl_dns_entry *dns;
-      struct Curl_addrinfo *ai;
-
       infof(data, "DOH Host name: %s\n", data->req.doh.host);
       showdoh(data, &de);
 
@@ -963,5 +960,3 @@ CURLcode Curl_doh_is_resolved(struct connectdata *conn,
 
   return CURLE_OK;
 }
-
-#endif /* CURL_DISABLE_DOH */

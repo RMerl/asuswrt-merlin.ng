@@ -148,6 +148,7 @@ static void timer_cb(GlobalInfo* g, int revents);
 static int multi_timer_cb(CURLM *multi, long timeout_ms, GlobalInfo *g)
 {
   struct itimerspec its;
+  CURLMcode rc;
 
   fprintf(MSG_OUT, "multi_timer_cb: Setting timeout to %ld ms\n", timeout_ms);
 
@@ -340,8 +341,7 @@ static size_t write_cb(void *ptr _Unused, size_t size, size_t nmemb,
                        void *data)
 {
   size_t realsize = size * nmemb;
-  (void)_Unused;
-  (void)data;
+  ConnInfo *conn _Unused = (ConnInfo*) data;
 
   return realsize;
 }
@@ -518,6 +518,9 @@ int main(int argc _Unused, char **argv _Unused)
   fprintf(MSG_OUT, "Entering wait loop\n");
   fflush(MSG_OUT);
   while(!g_should_exit_) {
+    /* TODO(josh): use epoll_pwait to avoid a race on the signal. Mask the
+     * signal before the while loop, and then re-enable the signal during
+     * epoll wait. Mask at the end of the loop. */
     err = epoll_wait(g.epfd, events, sizeof(events)/sizeof(struct epoll_event),
                      10000);
     if(err == -1) {

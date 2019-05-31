@@ -6,7 +6,7 @@
 #                            | (__| |_| |  _ <| |___
 #                             \___|\___/|_| \_\_____|
 #
-# Copyright (C) 1998 - 2019, Daniel Stenberg, <daniel@haxx.se>, et al.
+# Copyright (C) 1998 - 2014, Daniel Stenberg, <daniel@haxx.se>, et al.
 #
 # This software is licensed as described in the file COPYING, which
 # you should have received as part of this distribution. The terms
@@ -21,7 +21,7 @@
 #
 #***************************************************************************
 
-# Starts sshd for use in the SCP and SFTP curl test harness tests.
+# Starts sshd for use in the SCP, SFTP and SOCKS curl test harness tests.
 # Also creates the ssh configuration files needed for these tests.
 
 use strict;
@@ -81,6 +81,7 @@ use pathhelp;
 my $verbose = 0;              # set to 1 for debugging
 my $debugprotocol = 0;        # set to 1 for protocol debugging
 my $port = 8999;              # our default SCP/SFTP server port
+my $socksport = $port + 1;    # our default SOCKS4/5 server port
 my $listenaddr = '127.0.0.1'; # default address on which to listen
 my $ipvnum = 4;               # default IP version of listener address
 my $idnum = 1;                # default ssh daemon instance number
@@ -156,6 +157,14 @@ while(@ARGV) {
             }
         }
     }
+    elsif($ARGV[0] eq '--socksport') {
+        if($ARGV[1]) {
+            if($ARGV[1] =~ /^(\d+)$/) {
+                $socksport = $1;
+                shift @ARGV;
+            }
+        }
+    }
     else {
         print STDERR "\nWarning: sshserver.pl unknown parameter: $ARGV[0]\n";
     }
@@ -172,10 +181,11 @@ if(!$pidfile) {
 
 
 #***************************************************************************
-# ssh and sftp server log file names
+# ssh, socks and sftp server log file names
 #
 $sshdlog = server_logfilename($logdir, 'ssh', $ipvnum, $idnum);
 $sftplog = server_logfilename($logdir, 'sftp', $ipvnum, $idnum);
+$sshlog  = server_logfilename($logdir, 'socks', $ipvnum, $idnum);
 
 
 #***************************************************************************
@@ -216,7 +226,7 @@ my ($sshdid, $sshdvernum, $sshdverstr, $sshderror) = sshversioninfo($sshd);
 if(!$sshdid) {
     # Not an OpenSSH or SunSSH ssh daemon
     logmsg $sshderror if($verbose);
-    logmsg 'SCP and SFTP tests require OpenSSH 2.9.9 or later';
+    logmsg 'SCP, SFTP and SOCKS tests require OpenSSH 2.9.9 or later';
     exit 1;
 }
 logmsg "ssh server found $sshd is $sshdverstr" if($verbose);
@@ -245,7 +255,7 @@ logmsg "ssh server found $sshd is $sshdverstr" if($verbose);
 #
 if((($sshdid =~ /OpenSSH/) && ($sshdvernum < 299)) ||
    (($sshdid =~ /SunSSH/)  && ($sshdvernum < 100))) {
-    logmsg 'SCP and SFTP tests require OpenSSH 2.9.9 or later';
+    logmsg 'SCP, SFTP and SOCKS tests require OpenSSH 2.9.9 or later';
     exit 1;
 }
 
@@ -300,7 +310,7 @@ my ($sshid, $sshvernum, $sshverstr, $ssherror) = sshversioninfo($ssh);
 if(!$sshid) {
     # Not an OpenSSH or SunSSH ssh client
     logmsg $ssherror if($verbose);
-    logmsg 'SCP and SFTP tests require OpenSSH 2.9.9 or later';
+    logmsg 'SCP, SFTP and SOCKS tests require OpenSSH 2.9.9 or later';
     exit 1;
 }
 logmsg "ssh client found $ssh is $sshverstr" if($verbose);
@@ -331,7 +341,7 @@ logmsg "ssh client found $ssh is $sshverstr" if($verbose);
 #
 if((($sshid =~ /OpenSSH/) && ($sshvernum < 299)) ||
    (($sshid =~ /SunSSH/)  && ($sshvernum < 100))) {
-    logmsg 'SCP and SFTP tests require OpenSSH 2.9.9 or later';
+    logmsg 'SCP, SFTP and SOCKS tests require OpenSSH 2.9.9 or later';
     exit 1;
 }
 
@@ -854,6 +864,7 @@ push @cfgarr, "User $username";
 push @cfgarr, 'Protocol 2';
 push @cfgarr, '#';
 push @cfgarr, "BindAddress $listenaddr";
+push @cfgarr, "DynamicForward $socksport";
 push @cfgarr, '#';
 push @cfgarr, "IdentityFile $identity_config";
 push @cfgarr, "UserKnownHostsFile $knownhosts_config";

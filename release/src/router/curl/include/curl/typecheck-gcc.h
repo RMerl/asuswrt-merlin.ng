@@ -113,6 +113,7 @@ __extension__ ({                                                              \
 })
 
 /* wraps curl_easy_getinfo() with typechecking */
+/* FIXME: don't allow const pointers */
 #define curl_easy_getinfo(handle, info, arg)                                  \
 __extension__ ({                                                              \
   __typeof__(info) _curl_info = info;                                         \
@@ -145,8 +146,9 @@ __extension__ ({                                                              \
   curl_easy_getinfo(handle, _curl_info, arg);                                 \
 })
 
-/*
- * For now, just make sure that the functions are called with three arguments
+/* TODO: typechecking for curl_share_setopt() and curl_multi_setopt(),
+ * for now just make sure that the functions are called with three
+ * arguments
  */
 #define curl_share_setopt(share,opt,param) curl_share_setopt(share,opt,param)
 #define curl_multi_setopt(handle,opt,param) curl_multi_setopt(handle,opt,param)
@@ -504,6 +506,10 @@ _CURL_WARNING(_curl_easy_getinfo_err_curl_off_t,
    _curl_is_arr((expr), char) ||                                              \
    _curl_is_arr((expr), unsigned char))
 
+/* FIXME: the whole callback checking is messy...
+ * The idea is to tolerate char vs. void and const vs. not const
+ * pointers in arguments at least
+ */
 /* helper: __builtin_types_compatible_p distinguishes between functions and
  * function pointers, hide it */
 #define _curl_callback_compatible(func, type)                                 \

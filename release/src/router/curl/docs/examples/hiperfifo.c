@@ -307,8 +307,7 @@ static size_t write_cb(void *ptr _Unused, size_t size, size_t nmemb,
                        void *data)
 {
   size_t realsize = size * nmemb;
-  (void)_Unused;
-  (void)data;
+  ConnInfo *conn _Unused = (ConnInfo*) data;
 
   return realsize;
 }

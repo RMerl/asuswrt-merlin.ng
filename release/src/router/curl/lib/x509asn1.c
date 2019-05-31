@@ -266,6 +266,8 @@ utf8asn1str(char **to, int type, const char *from, const char *end)
   size_t inlength = end - from;
   int size = 1;
   size_t outlength;
+  int charsize;
+  unsigned int wc;
   char *buf;
 
   *to = NULL;
@@ -303,9 +305,6 @@ utf8asn1str(char **to, int type, const char *from, const char *end)
   }
   else {
     for(outlength = 0; from < end;) {
-      int charsize;
-      unsigned int wc;
-
       wc = 0;
       switch(size) {
       case 4:
@@ -878,6 +877,9 @@ static void do_pubkey(struct Curl_easy *data, int certnum,
   curl_asn1Element elem;
   curl_asn1Element pk;
   const char *p;
+  const char *q;
+  unsigned long len;
+  unsigned int i;
 
   /* Generate all information records for the public key. */
 
@@ -886,9 +888,6 @@ static void do_pubkey(struct Curl_easy *data, int certnum,
     return;
 
   if(strcasecompare(algo, "rsaEncryption")) {
-    const char *q;
-    unsigned long len;
-
     p = getASN1Element(&elem, pk.beg, pk.end);
     if(!p)
       return;
@@ -897,11 +896,9 @@ static void do_pubkey(struct Curl_easy *data, int certnum,
     for(q = elem.beg; !*q && q < elem.end; q++)
       ;
     len = (unsigned long)((elem.end - q) * 8);
-    if(len) {
-      unsigned int i;
+    if(len)
       for(i = *(unsigned char *) q; !(i & 0x80); i <<= 1)
         len--;
-    }
     if(len > 32)
       elem.beg = q;     /* Strip leading zero bytes. */
     if(!certnum)
@@ -1058,6 +1055,8 @@ CURLcode Curl_extract_certinfo(struct connectdata *conn,
     infof(data, "   Public Key Algorithm: %s\n", ccp);
   do_pubkey(data, certnum, ccp, &param, &cert.subjectPublicKey);
   free((char *) ccp);
+
+/* TODO: extensions. */
 
   /* Signature. */
   ccp = ASN1tostr(&cert.signature, 0);

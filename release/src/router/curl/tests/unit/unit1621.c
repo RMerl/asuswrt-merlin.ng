@@ -35,9 +35,7 @@ static void unit_stop(void)
 {
 }
 
-#if defined(__MINGW32__)  || \
-  (!defined(HAVE_FSETXATTR) && \
-  (!defined(__FreeBSD_version) || (__FreeBSD_version < 500000)))
+#ifdef __MINGW32__
 UNITTEST_START
 {
   return 0;

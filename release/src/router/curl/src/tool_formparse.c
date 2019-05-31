@@ -347,11 +347,12 @@ CURLcode tool2curlmime(CURL *curl, tool_mime *m, curl_mime **mime)
 static char *get_param_word(char **str, char **end_pos, char endchar)
 {
   char *ptr = *str;
-  /* the first non-space char is here */
-  char *word_begin = ptr;
+  char *word_begin = NULL;
   char *ptr2;
   char *escape = NULL;
 
+  /* the first non-space char is here */
+  word_begin = ptr;
   if(*ptr == '"') {
     ++ptr;
     while(*ptr) {
@@ -567,6 +568,7 @@ static int get_param_part(struct OperationConfig *config, char endchar,
             endpos--;
         sep = *p;
         *endpos = '\0';
+        /* TODO: maybe special fopen for VMS? */
         fp = fopen(hdrfile, FOPEN_READTEXT);
         if(!fp)
           warnf(config->global, "Cannot read from %s: %s\n", hdrfile,

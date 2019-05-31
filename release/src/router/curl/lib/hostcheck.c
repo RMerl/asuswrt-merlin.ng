@@ -127,14 +127,16 @@ static int hostmatch(char *hostname, char *pattern)
 
 int Curl_cert_hostcheck(const char *match_pattern, const char *hostname)
 {
+  char *matchp;
+  char *hostp;
   int res = 0;
   if(!match_pattern || !*match_pattern ||
       !hostname || !*hostname) /* sanity check */
     ;
   else {
-    char *matchp = strdup(match_pattern);
+    matchp = strdup(match_pattern);
     if(matchp) {
-      char *hostp = strdup(hostname);
+      hostp = strdup(hostname);
       if(hostp) {
         if(hostmatch(hostp, matchp) == CURL_HOST_MATCH)
           res = 1;

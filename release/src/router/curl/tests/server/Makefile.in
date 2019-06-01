@@ -91,7 +91,7 @@ host_triplet = @host@
 @DOING_NATIVE_WINDOWS_TRUE@am__append_1 = -DCURL_STATICLIB
 noinst_PROGRAMS = getpart$(EXEEXT) resolve$(EXEEXT) rtspd$(EXEEXT) \
 	sockfilt$(EXEEXT) sws$(EXEEXT) tftpd$(EXEEXT) \
-	fake_ntlm$(EXEEXT)
+	fake_ntlm$(EXEEXT) socksd$(EXEEXT)
 subdir = tests/server
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/m4/ax_compile_check_sizeof.m4 \
@@ -208,33 +208,50 @@ sockfilt_DEPENDENCIES =
 sockfilt_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \
 	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(sockfilt_CFLAGS) \
 	$(CFLAGS) $(AM_LDFLAGS) $(LDFLAGS) -o $@
-am__objects_16 = ../../lib/sws-mprintf.$(OBJEXT) \
+am__objects_16 = ../../lib/socksd-mprintf.$(OBJEXT) \
+	../../lib/socksd-nonblock.$(OBJEXT) \
+	../../lib/socksd-strtoofft.$(OBJEXT) \
+	../../lib/socksd-warnless.$(OBJEXT) \
+	../../lib/socksd-curl_ctype.$(OBJEXT)
+am__objects_17 = socksd-getpart.$(OBJEXT) \
+	../../lib/socksd-base64.$(OBJEXT) \
+	../../lib/socksd-memdebug.$(OBJEXT)
+am__objects_18 = socksd-util.$(OBJEXT)
+am_socksd_OBJECTS = $(am__objects_16) $(am__objects_2) \
+	$(am__objects_17) $(am__objects_18) socksd-socksd.$(OBJEXT) \
+	../../lib/socksd-inet_pton.$(OBJEXT)
+socksd_OBJECTS = $(am_socksd_OBJECTS)
+socksd_DEPENDENCIES =
+socksd_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \
+	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(socksd_CFLAGS) $(CFLAGS) \
+	$(AM_LDFLAGS) $(LDFLAGS) -o $@
+am__objects_19 = ../../lib/sws-mprintf.$(OBJEXT) \
 	../../lib/sws-nonblock.$(OBJEXT) \
 	../../lib/sws-strtoofft.$(OBJEXT) \
 	../../lib/sws-warnless.$(OBJEXT) \
 	../../lib/sws-curl_ctype.$(OBJEXT)
-am__objects_17 = sws-getpart.$(OBJEXT) ../../lib/sws-base64.$(OBJEXT) \
+am__objects_20 = sws-getpart.$(OBJEXT) ../../lib/sws-base64.$(OBJEXT) \
 	../../lib/sws-memdebug.$(OBJEXT)
-am__objects_18 = sws-util.$(OBJEXT)
-am_sws_OBJECTS = $(am__objects_16) $(am__objects_2) $(am__objects_17) \
-	$(am__objects_18) sws-sws.$(OBJEXT) \
+am__objects_21 = sws-util.$(OBJEXT)
+am_sws_OBJECTS = $(am__objects_19) $(am__objects_2) $(am__objects_20) \
+	$(am__objects_21) sws-sws.$(OBJEXT) \
 	../../lib/sws-inet_pton.$(OBJEXT)
 sws_OBJECTS = $(am_sws_OBJECTS)
 sws_DEPENDENCIES =
 sws_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \
 	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(sws_CFLAGS) $(CFLAGS) \
 	$(AM_LDFLAGS) $(LDFLAGS) -o $@
-am__objects_19 = ../../lib/tftpd-mprintf.$(OBJEXT) \
+am__objects_22 = ../../lib/tftpd-mprintf.$(OBJEXT) \
 	../../lib/tftpd-nonblock.$(OBJEXT) \
 	../../lib/tftpd-strtoofft.$(OBJEXT) \
 	../../lib/tftpd-warnless.$(OBJEXT) \
 	../../lib/tftpd-curl_ctype.$(OBJEXT)
-am__objects_20 = tftpd-getpart.$(OBJEXT) \
+am__objects_23 = tftpd-getpart.$(OBJEXT) \
 	../../lib/tftpd-base64.$(OBJEXT) \
 	../../lib/tftpd-memdebug.$(OBJEXT)
-am__objects_21 = tftpd-util.$(OBJEXT)
-am_tftpd_OBJECTS = $(am__objects_19) $(am__objects_2) \
-	$(am__objects_20) $(am__objects_21) tftpd-tftpd.$(OBJEXT)
+am__objects_24 = tftpd-util.$(OBJEXT)
+am_tftpd_OBJECTS = $(am__objects_22) $(am__objects_2) \
+	$(am__objects_23) $(am__objects_24) tftpd-tftpd.$(OBJEXT)
 tftpd_OBJECTS = $(am_tftpd_OBJECTS)
 tftpd_DEPENDENCIES =
 tftpd_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \
@@ -291,6 +308,14 @@ am__depfiles_remade = ../../lib/$(DEPDIR)/fake_ntlm-base64.Po \
 	../../lib/$(DEPDIR)/sockfilt-nonblock.Po \
 	../../lib/$(DEPDIR)/sockfilt-strtoofft.Po \
 	../../lib/$(DEPDIR)/sockfilt-warnless.Po \
+	../../lib/$(DEPDIR)/socksd-base64.Po \
+	../../lib/$(DEPDIR)/socksd-curl_ctype.Po \
+	../../lib/$(DEPDIR)/socksd-inet_pton.Po \
+	../../lib/$(DEPDIR)/socksd-memdebug.Po \
+	../../lib/$(DEPDIR)/socksd-mprintf.Po \
+	../../lib/$(DEPDIR)/socksd-nonblock.Po \
+	../../lib/$(DEPDIR)/socksd-strtoofft.Po \
+	../../lib/$(DEPDIR)/socksd-warnless.Po \
 	../../lib/$(DEPDIR)/sws-base64.Po \
 	../../lib/$(DEPDIR)/sws-curl_ctype.Po \
 	../../lib/$(DEPDIR)/sws-inet_pton.Po \
@@ -314,9 +339,11 @@ am__depfiles_remade = ../../lib/$(DEPDIR)/fake_ntlm-base64.Po \
 	./$(DEPDIR)/rtspd-rtspd.Po ./$(DEPDIR)/rtspd-util.Po \
 	./$(DEPDIR)/sockfilt-getpart.Po \
 	./$(DEPDIR)/sockfilt-sockfilt.Po ./$(DEPDIR)/sockfilt-util.Po \
-	./$(DEPDIR)/sws-getpart.Po ./$(DEPDIR)/sws-sws.Po \
-	./$(DEPDIR)/sws-util.Po ./$(DEPDIR)/tftpd-getpart.Po \
-	./$(DEPDIR)/tftpd-tftpd.Po ./$(DEPDIR)/tftpd-util.Po
+	./$(DEPDIR)/socksd-getpart.Po ./$(DEPDIR)/socksd-socksd.Po \
+	./$(DEPDIR)/socksd-util.Po ./$(DEPDIR)/sws-getpart.Po \
+	./$(DEPDIR)/sws-sws.Po ./$(DEPDIR)/sws-util.Po \
+	./$(DEPDIR)/tftpd-getpart.Po ./$(DEPDIR)/tftpd-tftpd.Po \
+	./$(DEPDIR)/tftpd-util.Po
 am__mv = mv -f
 COMPILE = $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) \
 	$(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
@@ -337,11 +364,11 @@ am__v_CCLD_ = $(am__v_CCLD_@AM_DEFAULT_V@)
 am__v_CCLD_0 = @echo "  CCLD    " $@;
 am__v_CCLD_1 = 
 SOURCES = $(fake_ntlm_SOURCES) $(getpart_SOURCES) $(resolve_SOURCES) \
-	$(rtspd_SOURCES) $(sockfilt_SOURCES) $(sws_SOURCES) \
-	$(tftpd_SOURCES)
+	$(rtspd_SOURCES) $(sockfilt_SOURCES) $(socksd_SOURCES) \
+	$(sws_SOURCES) $(tftpd_SOURCES)
 DIST_SOURCES = $(fake_ntlm_SOURCES) $(getpart_SOURCES) \
 	$(resolve_SOURCES) $(rtspd_SOURCES) $(sockfilt_SOURCES) \
-	$(sws_SOURCES) $(tftpd_SOURCES)
+	$(socksd_SOURCES) $(sws_SOURCES) $(tftpd_SOURCES)
 am__can_run_installinfo = \
   case $$AM_UPDATE_INFO_DIR in \
     n|no|NO) false;; \
@@ -663,6 +690,12 @@ sockfilt_SOURCES = $(CURLX_SRCS) $(CURLX_HDRS) $(USEFUL) $(UTIL) \
 
 sockfilt_LDADD = @CURL_NETWORK_AND_TIME_LIBS@
 sockfilt_CFLAGS = $(AM_CFLAGS)
+socksd_SOURCES = $(CURLX_SRCS) $(CURLX_HDRS) $(USEFUL) $(UTIL) \
+ server_sockaddr.h socksd.c \
+ ../../lib/inet_pton.c
+
+socksd_LDADD = @CURL_NETWORK_AND_TIME_LIBS@
+socksd_CFLAGS = $(AM_CFLAGS)
 sws_SOURCES = $(CURLX_SRCS) $(CURLX_HDRS) $(USEFUL) $(UTIL) \
  server_sockaddr.h \
  sws.c \
@@ -830,6 +863,26 @@ rtspd$(EXEEXT): $(rtspd_OBJECTS) $(rtspd_DEPENDENCIES) $(EXTRA_rtspd_DEPENDENCIE
 sockfilt$(EXEEXT): $(sockfilt_OBJECTS) $(sockfilt_DEPENDENCIES) $(EXTRA_sockfilt_DEPENDENCIES) 
 	@rm -f sockfilt$(EXEEXT)
 	$(AM_V_CCLD)$(sockfilt_LINK) $(sockfilt_OBJECTS) $(sockfilt_LDADD) $(LIBS)
+../../lib/socksd-mprintf.$(OBJEXT): ../../lib/$(am__dirstamp) \
+	../../lib/$(DEPDIR)/$(am__dirstamp)
+../../lib/socksd-nonblock.$(OBJEXT): ../../lib/$(am__dirstamp) \
+	../../lib/$(DEPDIR)/$(am__dirstamp)
+../../lib/socksd-strtoofft.$(OBJEXT): ../../lib/$(am__dirstamp) \
+	../../lib/$(DEPDIR)/$(am__dirstamp)
+../../lib/socksd-warnless.$(OBJEXT): ../../lib/$(am__dirstamp) \
+	../../lib/$(DEPDIR)/$(am__dirstamp)
+../../lib/socksd-curl_ctype.$(OBJEXT): ../../lib/$(am__dirstamp) \
+	../../lib/$(DEPDIR)/$(am__dirstamp)
+../../lib/socksd-base64.$(OBJEXT): ../../lib/$(am__dirstamp) \
+	../../lib/$(DEPDIR)/$(am__dirstamp)
+../../lib/socksd-memdebug.$(OBJEXT): ../../lib/$(am__dirstamp) \
+	../../lib/$(DEPDIR)/$(am__dirstamp)
+../../lib/socksd-inet_pton.$(OBJEXT): ../../lib/$(am__dirstamp) \
+	../../lib/$(DEPDIR)/$(am__dirstamp)
+
+socksd$(EXEEXT): $(socksd_OBJECTS) $(socksd_DEPENDENCIES) $(EXTRA_socksd_DEPENDENCIES) 
+	@rm -f socksd$(EXEEXT)
+	$(AM_V_CCLD)$(socksd_LINK) $(socksd_OBJECTS) $(socksd_LDADD) $(LIBS)
 ../../lib/sws-mprintf.$(OBJEXT): ../../lib/$(am__dirstamp) \
 	../../lib/$(DEPDIR)/$(am__dirstamp)
 ../../lib/sws-nonblock.$(OBJEXT): ../../lib/$(am__dirstamp) \
@@ -912,6 +965,14 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@../../lib/$(DEPDIR)/sockfilt-nonblock.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@../../lib/$(DEPDIR)/sockfilt-strtoofft.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@../../lib/$(DEPDIR)/sockfilt-warnless.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@../../lib/$(DEPDIR)/socksd-base64.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@../../lib/$(DEPDIR)/socksd-curl_ctype.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@../../lib/$(DEPDIR)/socksd-inet_pton.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@../../lib/$(DEPDIR)/socksd-memdebug.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@../../lib/$(DEPDIR)/socksd-mprintf.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@../../lib/$(DEPDIR)/socksd-nonblock.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@../../lib/$(DEPDIR)/socksd-strtoofft.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@../../lib/$(DEPDIR)/socksd-warnless.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@../../lib/$(DEPDIR)/sws-base64.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@../../lib/$(DEPDIR)/sws-curl_ctype.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@../../lib/$(DEPDIR)/sws-inet_pton.Po@am__quote@ # am--include-marker
@@ -941,6 +1002,9 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sockfilt-getpart.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sockfilt-sockfilt.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sockfilt-util.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/socksd-getpart.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/socksd-socksd.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/socksd-util.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sws-getpart.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sws-sws.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sws-util.Po@am__quote@ # am--include-marker
@@ -1678,6 +1742,160 @@ sockfilt-sockfilt.obj: sockfilt.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(sockfilt_CFLAGS) $(CFLAGS) -c -o ../../lib/sockfilt-inet_pton.obj `if test -f '../../lib/inet_pton.c'; then $(CYGPATH_W) '../../lib/inet_pton.c'; else $(CYGPATH_W) '$(srcdir)/../../lib/inet_pton.c'; fi`
 
+../../lib/socksd-mprintf.o: ../../lib/mprintf.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(socksd_CFLAGS) $(CFLAGS) -MT ../../lib/socksd-mprintf.o -MD -MP -MF ../../lib/$(DEPDIR)/socksd-mprintf.Tpo -c -o ../../lib/socksd-mprintf.o `test -f '../../lib/mprintf.c' || echo '$(srcdir)/'`../../lib/mprintf.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) ../../lib/$(DEPDIR)/socksd-mprintf.Tpo ../../lib/$(DEPDIR)/socksd-mprintf.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='../../lib/mprintf.c' object='../../lib/socksd-mprintf.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(socksd_CFLAGS) $(CFLAGS) -c -o ../../lib/socksd-mprintf.o `test -f '../../lib/mprintf.c' || echo '$(srcdir)/'`../../lib/mprintf.c
+
+../../lib/socksd-mprintf.obj: ../../lib/mprintf.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(socksd_CFLAGS) $(CFLAGS) -MT ../../lib/socksd-mprintf.obj -MD -MP -MF ../../lib/$(DEPDIR)/socksd-mprintf.Tpo -c -o ../../lib/socksd-mprintf.obj `if test -f '../../lib/mprintf.c'; then $(CYGPATH_W) '../../lib/mprintf.c'; else $(CYGPATH_W) '$(srcdir)/../../lib/mprintf.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) ../../lib/$(DEPDIR)/socksd-mprintf.Tpo ../../lib/$(DEPDIR)/socksd-mprintf.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='../../lib/mprintf.c' object='../../lib/socksd-mprintf.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(socksd_CFLAGS) $(CFLAGS) -c -o ../../lib/socksd-mprintf.obj `if test -f '../../lib/mprintf.c'; then $(CYGPATH_W) '../../lib/mprintf.c'; else $(CYGPATH_W) '$(srcdir)/../../lib/mprintf.c'; fi`
+
+../../lib/socksd-nonblock.o: ../../lib/nonblock.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(socksd_CFLAGS) $(CFLAGS) -MT ../../lib/socksd-nonblock.o -MD -MP -MF ../../lib/$(DEPDIR)/socksd-nonblock.Tpo -c -o ../../lib/socksd-nonblock.o `test -f '../../lib/nonblock.c' || echo '$(srcdir)/'`../../lib/nonblock.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) ../../lib/$(DEPDIR)/socksd-nonblock.Tpo ../../lib/$(DEPDIR)/socksd-nonblock.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='../../lib/nonblock.c' object='../../lib/socksd-nonblock.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(socksd_CFLAGS) $(CFLAGS) -c -o ../../lib/socksd-nonblock.o `test -f '../../lib/nonblock.c' || echo '$(srcdir)/'`../../lib/nonblock.c
+
+../../lib/socksd-nonblock.obj: ../../lib/nonblock.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(socksd_CFLAGS) $(CFLAGS) -MT ../../lib/socksd-nonblock.obj -MD -MP -MF ../../lib/$(DEPDIR)/socksd-nonblock.Tpo -c -o ../../lib/socksd-nonblock.obj `if test -f '../../lib/nonblock.c'; then $(CYGPATH_W) '../../lib/nonblock.c'; else $(CYGPATH_W) '$(srcdir)/../../lib/nonblock.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) ../../lib/$(DEPDIR)/socksd-nonblock.Tpo ../../lib/$(DEPDIR)/socksd-nonblock.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='../../lib/nonblock.c' object='../../lib/socksd-nonblock.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(socksd_CFLAGS) $(CFLAGS) -c -o ../../lib/socksd-nonblock.obj `if test -f '../../lib/nonblock.c'; then $(CYGPATH_W) '../../lib/nonblock.c'; else $(CYGPATH_W) '$(srcdir)/../../lib/nonblock.c'; fi`
+
+../../lib/socksd-strtoofft.o: ../../lib/strtoofft.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(socksd_CFLAGS) $(CFLAGS) -MT ../../lib/socksd-strtoofft.o -MD -MP -MF ../../lib/$(DEPDIR)/socksd-strtoofft.Tpo -c -o ../../lib/socksd-strtoofft.o `test -f '../../lib/strtoofft.c' || echo '$(srcdir)/'`../../lib/strtoofft.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) ../../lib/$(DEPDIR)/socksd-strtoofft.Tpo ../../lib/$(DEPDIR)/socksd-strtoofft.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='../../lib/strtoofft.c' object='../../lib/socksd-strtoofft.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(socksd_CFLAGS) $(CFLAGS) -c -o ../../lib/socksd-strtoofft.o `test -f '../../lib/strtoofft.c' || echo '$(srcdir)/'`../../lib/strtoofft.c
+
+../../lib/socksd-strtoofft.obj: ../../lib/strtoofft.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(socksd_CFLAGS) $(CFLAGS) -MT ../../lib/socksd-strtoofft.obj -MD -MP -MF ../../lib/$(DEPDIR)/socksd-strtoofft.Tpo -c -o ../../lib/socksd-strtoofft.obj `if test -f '../../lib/strtoofft.c'; then $(CYGPATH_W) '../../lib/strtoofft.c'; else $(CYGPATH_W) '$(srcdir)/../../lib/strtoofft.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) ../../lib/$(DEPDIR)/socksd-strtoofft.Tpo ../../lib/$(DEPDIR)/socksd-strtoofft.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='../../lib/strtoofft.c' object='../../lib/socksd-strtoofft.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(socksd_CFLAGS) $(CFLAGS) -c -o ../../lib/socksd-strtoofft.obj `if test -f '../../lib/strtoofft.c'; then $(CYGPATH_W) '../../lib/strtoofft.c'; else $(CYGPATH_W) '$(srcdir)/../../lib/strtoofft.c'; fi`
+
+../../lib/socksd-warnless.o: ../../lib/warnless.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(socksd_CFLAGS) $(CFLAGS) -MT ../../lib/socksd-warnless.o -MD -MP -MF ../../lib/$(DEPDIR)/socksd-warnless.Tpo -c -o ../../lib/socksd-warnless.o `test -f '../../lib/warnless.c' || echo '$(srcdir)/'`../../lib/warnless.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) ../../lib/$(DEPDIR)/socksd-warnless.Tpo ../../lib/$(DEPDIR)/socksd-warnless.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='../../lib/warnless.c' object='../../lib/socksd-warnless.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(socksd_CFLAGS) $(CFLAGS) -c -o ../../lib/socksd-warnless.o `test -f '../../lib/warnless.c' || echo '$(srcdir)/'`../../lib/warnless.c
+
+../../lib/socksd-warnless.obj: ../../lib/warnless.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(socksd_CFLAGS) $(CFLAGS) -MT ../../lib/socksd-warnless.obj -MD -MP -MF ../../lib/$(DEPDIR)/socksd-warnless.Tpo -c -o ../../lib/socksd-warnless.obj `if test -f '../../lib/warnless.c'; then $(CYGPATH_W) '../../lib/warnless.c'; else $(CYGPATH_W) '$(srcdir)/../../lib/warnless.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) ../../lib/$(DEPDIR)/socksd-warnless.Tpo ../../lib/$(DEPDIR)/socksd-warnless.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='../../lib/warnless.c' object='../../lib/socksd-warnless.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(socksd_CFLAGS) $(CFLAGS) -c -o ../../lib/socksd-warnless.obj `if test -f '../../lib/warnless.c'; then $(CYGPATH_W) '../../lib/warnless.c'; else $(CYGPATH_W) '$(srcdir)/../../lib/warnless.c'; fi`
+
+../../lib/socksd-curl_ctype.o: ../../lib/curl_ctype.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(socksd_CFLAGS) $(CFLAGS) -MT ../../lib/socksd-curl_ctype.o -MD -MP -MF ../../lib/$(DEPDIR)/socksd-curl_ctype.Tpo -c -o ../../lib/socksd-curl_ctype.o `test -f '../../lib/curl_ctype.c' || echo '$(srcdir)/'`../../lib/curl_ctype.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) ../../lib/$(DEPDIR)/socksd-curl_ctype.Tpo ../../lib/$(DEPDIR)/socksd-curl_ctype.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='../../lib/curl_ctype.c' object='../../lib/socksd-curl_ctype.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(socksd_CFLAGS) $(CFLAGS) -c -o ../../lib/socksd-curl_ctype.o `test -f '../../lib/curl_ctype.c' || echo '$(srcdir)/'`../../lib/curl_ctype.c
+
+../../lib/socksd-curl_ctype.obj: ../../lib/curl_ctype.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(socksd_CFLAGS) $(CFLAGS) -MT ../../lib/socksd-curl_ctype.obj -MD -MP -MF ../../lib/$(DEPDIR)/socksd-curl_ctype.Tpo -c -o ../../lib/socksd-curl_ctype.obj `if test -f '../../lib/curl_ctype.c'; then $(CYGPATH_W) '../../lib/curl_ctype.c'; else $(CYGPATH_W) '$(srcdir)/../../lib/curl_ctype.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) ../../lib/$(DEPDIR)/socksd-curl_ctype.Tpo ../../lib/$(DEPDIR)/socksd-curl_ctype.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='../../lib/curl_ctype.c' object='../../lib/socksd-curl_ctype.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(socksd_CFLAGS) $(CFLAGS) -c -o ../../lib/socksd-curl_ctype.obj `if test -f '../../lib/curl_ctype.c'; then $(CYGPATH_W) '../../lib/curl_ctype.c'; else $(CYGPATH_W) '$(srcdir)/../../lib/curl_ctype.c'; fi`
+
+socksd-getpart.o: getpart.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(socksd_CFLAGS) $(CFLAGS) -MT socksd-getpart.o -MD -MP -MF $(DEPDIR)/socksd-getpart.Tpo -c -o socksd-getpart.o `test -f 'getpart.c' || echo '$(srcdir)/'`getpart.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/socksd-getpart.Tpo $(DEPDIR)/socksd-getpart.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='getpart.c' object='socksd-getpart.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(socksd_CFLAGS) $(CFLAGS) -c -o socksd-getpart.o `test -f 'getpart.c' || echo '$(srcdir)/'`getpart.c
+
+socksd-getpart.obj: getpart.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(socksd_CFLAGS) $(CFLAGS) -MT socksd-getpart.obj -MD -MP -MF $(DEPDIR)/socksd-getpart.Tpo -c -o socksd-getpart.obj `if test -f 'getpart.c'; then $(CYGPATH_W) 'getpart.c'; else $(CYGPATH_W) '$(srcdir)/getpart.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/socksd-getpart.Tpo $(DEPDIR)/socksd-getpart.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='getpart.c' object='socksd-getpart.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(socksd_CFLAGS) $(CFLAGS) -c -o socksd-getpart.obj `if test -f 'getpart.c'; then $(CYGPATH_W) 'getpart.c'; else $(CYGPATH_W) '$(srcdir)/getpart.c'; fi`
+
+../../lib/socksd-base64.o: ../../lib/base64.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(socksd_CFLAGS) $(CFLAGS) -MT ../../lib/socksd-base64.o -MD -MP -MF ../../lib/$(DEPDIR)/socksd-base64.Tpo -c -o ../../lib/socksd-base64.o `test -f '../../lib/base64.c' || echo '$(srcdir)/'`../../lib/base64.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) ../../lib/$(DEPDIR)/socksd-base64.Tpo ../../lib/$(DEPDIR)/socksd-base64.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='../../lib/base64.c' object='../../lib/socksd-base64.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(socksd_CFLAGS) $(CFLAGS) -c -o ../../lib/socksd-base64.o `test -f '../../lib/base64.c' || echo '$(srcdir)/'`../../lib/base64.c
+
+../../lib/socksd-base64.obj: ../../lib/base64.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(socksd_CFLAGS) $(CFLAGS) -MT ../../lib/socksd-base64.obj -MD -MP -MF ../../lib/$(DEPDIR)/socksd-base64.Tpo -c -o ../../lib/socksd-base64.obj `if test -f '../../lib/base64.c'; then $(CYGPATH_W) '../../lib/base64.c'; else $(CYGPATH_W) '$(srcdir)/../../lib/base64.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) ../../lib/$(DEPDIR)/socksd-base64.Tpo ../../lib/$(DEPDIR)/socksd-base64.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='../../lib/base64.c' object='../../lib/socksd-base64.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(socksd_CFLAGS) $(CFLAGS) -c -o ../../lib/socksd-base64.obj `if test -f '../../lib/base64.c'; then $(CYGPATH_W) '../../lib/base64.c'; else $(CYGPATH_W) '$(srcdir)/../../lib/base64.c'; fi`
+
+../../lib/socksd-memdebug.o: ../../lib/memdebug.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(socksd_CFLAGS) $(CFLAGS) -MT ../../lib/socksd-memdebug.o -MD -MP -MF ../../lib/$(DEPDIR)/socksd-memdebug.Tpo -c -o ../../lib/socksd-memdebug.o `test -f '../../lib/memdebug.c' || echo '$(srcdir)/'`../../lib/memdebug.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) ../../lib/$(DEPDIR)/socksd-memdebug.Tpo ../../lib/$(DEPDIR)/socksd-memdebug.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='../../lib/memdebug.c' object='../../lib/socksd-memdebug.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(socksd_CFLAGS) $(CFLAGS) -c -o ../../lib/socksd-memdebug.o `test -f '../../lib/memdebug.c' || echo '$(srcdir)/'`../../lib/memdebug.c
+
+../../lib/socksd-memdebug.obj: ../../lib/memdebug.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(socksd_CFLAGS) $(CFLAGS) -MT ../../lib/socksd-memdebug.obj -MD -MP -MF ../../lib/$(DEPDIR)/socksd-memdebug.Tpo -c -o ../../lib/socksd-memdebug.obj `if test -f '../../lib/memdebug.c'; then $(CYGPATH_W) '../../lib/memdebug.c'; else $(CYGPATH_W) '$(srcdir)/../../lib/memdebug.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) ../../lib/$(DEPDIR)/socksd-memdebug.Tpo ../../lib/$(DEPDIR)/socksd-memdebug.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='../../lib/memdebug.c' object='../../lib/socksd-memdebug.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(socksd_CFLAGS) $(CFLAGS) -c -o ../../lib/socksd-memdebug.obj `if test -f '../../lib/memdebug.c'; then $(CYGPATH_W) '../../lib/memdebug.c'; else $(CYGPATH_W) '$(srcdir)/../../lib/memdebug.c'; fi`
+
+socksd-util.o: util.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(socksd_CFLAGS) $(CFLAGS) -MT socksd-util.o -MD -MP -MF $(DEPDIR)/socksd-util.Tpo -c -o socksd-util.o `test -f 'util.c' || echo '$(srcdir)/'`util.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/socksd-util.Tpo $(DEPDIR)/socksd-util.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='util.c' object='socksd-util.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(socksd_CFLAGS) $(CFLAGS) -c -o socksd-util.o `test -f 'util.c' || echo '$(srcdir)/'`util.c
+
+socksd-util.obj: util.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(socksd_CFLAGS) $(CFLAGS) -MT socksd-util.obj -MD -MP -MF $(DEPDIR)/socksd-util.Tpo -c -o socksd-util.obj `if test -f 'util.c'; then $(CYGPATH_W) 'util.c'; else $(CYGPATH_W) '$(srcdir)/util.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/socksd-util.Tpo $(DEPDIR)/socksd-util.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='util.c' object='socksd-util.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(socksd_CFLAGS) $(CFLAGS) -c -o socksd-util.obj `if test -f 'util.c'; then $(CYGPATH_W) 'util.c'; else $(CYGPATH_W) '$(srcdir)/util.c'; fi`
+
+socksd-socksd.o: socksd.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(socksd_CFLAGS) $(CFLAGS) -MT socksd-socksd.o -MD -MP -MF $(DEPDIR)/socksd-socksd.Tpo -c -o socksd-socksd.o `test -f 'socksd.c' || echo '$(srcdir)/'`socksd.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/socksd-socksd.Tpo $(DEPDIR)/socksd-socksd.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='socksd.c' object='socksd-socksd.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(socksd_CFLAGS) $(CFLAGS) -c -o socksd-socksd.o `test -f 'socksd.c' || echo '$(srcdir)/'`socksd.c
+
+socksd-socksd.obj: socksd.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(socksd_CFLAGS) $(CFLAGS) -MT socksd-socksd.obj -MD -MP -MF $(DEPDIR)/socksd-socksd.Tpo -c -o socksd-socksd.obj `if test -f 'socksd.c'; then $(CYGPATH_W) 'socksd.c'; else $(CYGPATH_W) '$(srcdir)/socksd.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/socksd-socksd.Tpo $(DEPDIR)/socksd-socksd.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='socksd.c' object='socksd-socksd.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(socksd_CFLAGS) $(CFLAGS) -c -o socksd-socksd.obj `if test -f 'socksd.c'; then $(CYGPATH_W) 'socksd.c'; else $(CYGPATH_W) '$(srcdir)/socksd.c'; fi`
+
+../../lib/socksd-inet_pton.o: ../../lib/inet_pton.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(socksd_CFLAGS) $(CFLAGS) -MT ../../lib/socksd-inet_pton.o -MD -MP -MF ../../lib/$(DEPDIR)/socksd-inet_pton.Tpo -c -o ../../lib/socksd-inet_pton.o `test -f '../../lib/inet_pton.c' || echo '$(srcdir)/'`../../lib/inet_pton.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) ../../lib/$(DEPDIR)/socksd-inet_pton.Tpo ../../lib/$(DEPDIR)/socksd-inet_pton.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='../../lib/inet_pton.c' object='../../lib/socksd-inet_pton.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(socksd_CFLAGS) $(CFLAGS) -c -o ../../lib/socksd-inet_pton.o `test -f '../../lib/inet_pton.c' || echo '$(srcdir)/'`../../lib/inet_pton.c
+
+../../lib/socksd-inet_pton.obj: ../../lib/inet_pton.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(socksd_CFLAGS) $(CFLAGS) -MT ../../lib/socksd-inet_pton.obj -MD -MP -MF ../../lib/$(DEPDIR)/socksd-inet_pton.Tpo -c -o ../../lib/socksd-inet_pton.obj `if test -f '../../lib/inet_pton.c'; then $(CYGPATH_W) '../../lib/inet_pton.c'; else $(CYGPATH_W) '$(srcdir)/../../lib/inet_pton.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) ../../lib/$(DEPDIR)/socksd-inet_pton.Tpo ../../lib/$(DEPDIR)/socksd-inet_pton.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='../../lib/inet_pton.c' object='../../lib/socksd-inet_pton.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(socksd_CFLAGS) $(CFLAGS) -c -o ../../lib/socksd-inet_pton.obj `if test -f '../../lib/inet_pton.c'; then $(CYGPATH_W) '../../lib/inet_pton.c'; else $(CYGPATH_W) '$(srcdir)/../../lib/inet_pton.c'; fi`
+
 ../../lib/sws-mprintf.o: ../../lib/mprintf.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(sws_CFLAGS) $(CFLAGS) -MT ../../lib/sws-mprintf.o -MD -MP -MF ../../lib/$(DEPDIR)/sws-mprintf.Tpo -c -o ../../lib/sws-mprintf.o `test -f '../../lib/mprintf.c' || echo '$(srcdir)/'`../../lib/mprintf.c
 @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) ../../lib/$(DEPDIR)/sws-mprintf.Tpo ../../lib/$(DEPDIR)/sws-mprintf.Po
@@ -2142,6 +2360,14 @@ distclean: distclean-am
 	-rm -f ../../lib/$(DEPDIR)/sockfilt-nonblock.Po
 	-rm -f ../../lib/$(DEPDIR)/sockfilt-strtoofft.Po
 	-rm -f ../../lib/$(DEPDIR)/sockfilt-warnless.Po
+	-rm -f ../../lib/$(DEPDIR)/socksd-base64.Po
+	-rm -f ../../lib/$(DEPDIR)/socksd-curl_ctype.Po
+	-rm -f ../../lib/$(DEPDIR)/socksd-inet_pton.Po
+	-rm -f ../../lib/$(DEPDIR)/socksd-memdebug.Po
+	-rm -f ../../lib/$(DEPDIR)/socksd-mprintf.Po
+	-rm -f ../../lib/$(DEPDIR)/socksd-nonblock.Po
+	-rm -f ../../lib/$(DEPDIR)/socksd-strtoofft.Po
+	-rm -f ../../lib/$(DEPDIR)/socksd-warnless.Po
 	-rm -f ../../lib/$(DEPDIR)/sws-base64.Po
 	-rm -f ../../lib/$(DEPDIR)/sws-curl_ctype.Po
 	-rm -f ../../lib/$(DEPDIR)/sws-inet_pton.Po
@@ -2171,6 +2397,9 @@ distclean: distclean-am
 	-rm -f ./$(DEPDIR)/sockfilt-getpart.Po
 	-rm -f ./$(DEPDIR)/sockfilt-sockfilt.Po
 	-rm -f ./$(DEPDIR)/sockfilt-util.Po
+	-rm -f ./$(DEPDIR)/socksd-getpart.Po
+	-rm -f ./$(DEPDIR)/socksd-socksd.Po
+	-rm -f ./$(DEPDIR)/socksd-util.Po
 	-rm -f ./$(DEPDIR)/sws-getpart.Po
 	-rm -f ./$(DEPDIR)/sws-sws.Po
 	-rm -f ./$(DEPDIR)/sws-util.Po
@@ -2258,6 +2487,14 @@ maintainer-clean: maintainer-clean-am
 	-rm -f ../../lib/$(DEPDIR)/sockfilt-nonblock.Po
 	-rm -f ../../lib/$(DEPDIR)/sockfilt-strtoofft.Po
 	-rm -f ../../lib/$(DEPDIR)/sockfilt-warnless.Po
+	-rm -f ../../lib/$(DEPDIR)/socksd-base64.Po
+	-rm -f ../../lib/$(DEPDIR)/socksd-curl_ctype.Po
+	-rm -f ../../lib/$(DEPDIR)/socksd-inet_pton.Po
+	-rm -f ../../lib/$(DEPDIR)/socksd-memdebug.Po
+	-rm -f ../../lib/$(DEPDIR)/socksd-mprintf.Po
+	-rm -f ../../lib/$(DEPDIR)/socksd-nonblock.Po
+	-rm -f ../../lib/$(DEPDIR)/socksd-strtoofft.Po
+	-rm -f ../../lib/$(DEPDIR)/socksd-warnless.Po
 	-rm -f ../../lib/$(DEPDIR)/sws-base64.Po
 	-rm -f ../../lib/$(DEPDIR)/sws-curl_ctype.Po
 	-rm -f ../../lib/$(DEPDIR)/sws-inet_pton.Po
@@ -2287,6 +2524,9 @@ maintainer-clean: maintainer-clean-am
 	-rm -f ./$(DEPDIR)/sockfilt-getpart.Po
 	-rm -f ./$(DEPDIR)/sockfilt-sockfilt.Po
 	-rm -f ./$(DEPDIR)/sockfilt-util.Po
+	-rm -f ./$(DEPDIR)/socksd-getpart.Po
+	-rm -f ./$(DEPDIR)/socksd-socksd.Po
+	-rm -f ./$(DEPDIR)/socksd-util.Po
 	-rm -f ./$(DEPDIR)/sws-getpart.Po
 	-rm -f ./$(DEPDIR)/sws-sws.Po
 	-rm -f ./$(DEPDIR)/sws-util.Po

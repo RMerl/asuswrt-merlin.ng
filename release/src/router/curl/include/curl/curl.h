@@ -114,7 +114,7 @@ typedef void CURLSH;
 
 #ifdef CURL_STATICLIB
 #  define CURL_EXTERN
-#elif defined(WIN32) || defined(_WIN32) || defined(__SYMBIAN32__) || \
+#elif defined(WIN32) || defined(__SYMBIAN32__) || \
      (__has_declspec_attribute(dllexport) && \
       __has_declspec_attribute(dllimport))
 #  if defined(BUILDING_LIBCURL)
@@ -290,7 +290,7 @@ typedef enum {
 struct curl_fileinfo {
   char *filename;
   curlfiletype filetype;
-  time_t time;
+  time_t time; /* always zero! */
   unsigned int perm;
   int uid;
   int gid;
@@ -1917,6 +1917,9 @@ typedef enum {
 
   /* alt-svc cache file name to possibly read from/write to */
   CINIT(ALTSVC, STRINGPOINT, 287),
+
+  /* maximum age of a connection to consider it for reuse (in seconds) */
+  CINIT(MAXAGE_CONN, LONG, 288),
 
   CURLOPT_LASTENTRY /* the last unused */
 } CURLoption;

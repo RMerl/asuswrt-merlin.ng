@@ -79,6 +79,7 @@ and that's a problem since options.h hasn't been included yet. */
 #include "strcase.h"
 #include "x509asn1.h"
 #include "curl_printf.h"
+#include "multiif.h"
 
 #include <cyassl/openssl/ssl.h>
 #include <cyassl/ssl.h>
@@ -142,7 +143,6 @@ static CURLcode
 cyassl_connect_step1(struct connectdata *conn,
                      int sockindex)
 {
-  char error_buffer[CYASSL_MAX_ERROR_SZ];
   char *ciphers;
   struct Curl_easy *data = conn->data;
   struct ssl_connect_data* connssl = &conn->ssl[sockindex];
@@ -419,6 +419,7 @@ cyassl_connect_step1(struct connectdata *conn,
     if(!Curl_ssl_getsessionid(conn, &ssl_sessionid, NULL, sockindex)) {
       /* we got a session id, use it! */
       if(!SSL_set_session(BACKEND->handle, ssl_sessionid)) {
+        char error_buffer[CYASSL_MAX_ERROR_SZ];
         Curl_ssl_sessionid_unlock(conn);
         failf(data, "SSL: SSL_set_session failed: %s",
               ERR_error_string(SSL_get_error(BACKEND->handle, 0),
@@ -599,6 +600,8 @@ cyassl_connect_step2(struct connectdata *conn,
       else
         infof(data, "ALPN, unrecognized protocol %.*s\n", protocol_len,
               protocol);
+      Curl_multiuse_state(conn, conn->negnpn == CURL_HTTP_VERSION_2 ?
+                          BUNDLE_MULTIPLEX : BUNDLE_NO_MULTIUSE);
     }
     else if(rc == SSL_ALPN_NOT_FOUND)
       infof(data, "ALPN, server did not agree to a protocol\n");

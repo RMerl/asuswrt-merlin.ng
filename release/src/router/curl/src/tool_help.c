@@ -20,6 +20,9 @@
  *
  ***************************************************************************/
 #include "tool_setup.h"
+#ifdef HAVE_STRCASECMP
+#include <strings.h>
+#endif
 
 #include "tool_panykey.h"
 #include "tool_help.h"
@@ -592,6 +595,10 @@ void tool_version_info(void)
     for(i = 0; i< numfeat; i++)
       printf(" %s", featp[i]);
     puts(""); /* newline */
+  }
+  if(strcmp(CURL_VERSION, curlinfo->version)) {
+    printf("WARNING: curl and libcurl versions do not match. "
+           "Functionality may be affected.\n");
   }
 }
 

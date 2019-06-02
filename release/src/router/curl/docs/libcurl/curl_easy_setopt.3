@@ -20,7 +20,7 @@
 .\" *
 .\" **************************************************************************
 .\"
-.TH curl_easy_setopt 3 "March 03, 2019" "libcurl 7.64.1" "libcurl Manual"
+.TH curl_easy_setopt 3 "April 14, 2019" "libcurl 7.65.0" "libcurl Manual"
 
 .SH NAME
 curl_easy_setopt \- set options for a curl easy handle
@@ -469,6 +469,8 @@ Maximum number of connections in the connection pool. See \fICURLOPT_MAXCONNECTS
 Use a new connection. \fICURLOPT_FRESH_CONNECT(3)\fP
 .IP CURLOPT_FORBID_REUSE
 Prevent subsequent connections from re-using this. See \fICURLOPT_FORBID_REUSE(3)\fP
+.IP CURLOPT_MAXAGE_CONN
+Limit the age of connections for reuse. See \fICURLOPT_MAXAGE_CONN(3)\fP
 .IP CURLOPT_CONNECTTIMEOUT
 Timeout for the connection phase. See \fICURLOPT_CONNECTTIMEOUT(3)\fP
 .IP CURLOPT_CONNECTTIMEOUT_MS

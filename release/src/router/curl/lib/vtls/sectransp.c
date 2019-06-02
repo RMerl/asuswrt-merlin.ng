@@ -31,6 +31,7 @@
 #include "urldata.h" /* for the Curl_easy definition */
 #include "curl_base64.h"
 #include "strtok.h"
+#include "multiif.h"
 
 #ifdef USE_SECTRANSP
 
@@ -1902,7 +1903,6 @@ static CURLcode sectransp_connect_step1(struct connectdata *conn,
   /* We want to enable 1/n-1 when using a CBC cipher unless the user
      specifically doesn't want us doing that: */
   if(SSLSetSessionOption != NULL) {
-    /* TODO s/data->set.ssl.enable_beast/SSL_SET_OPTION(enable_beast)/g */
     SSLSetSessionOption(BACKEND->ssl_ctx, kSSLSessionOptionSendOneByteRecord,
                       !data->set.ssl.enable_beast);
     SSLSetSessionOption(BACKEND->ssl_ctx, kSSLSessionOptionFalseStart,
@@ -2651,6 +2651,9 @@ sectransp_connect_step2(struct connectdata *conn, int sockindex)
         else
           infof(data, "ALPN, server did not agree to a protocol\n");
 
+        Curl_multiuse_state(conn, conn->negnpn == CURL_HTTP_VERSION_2 ?
+                            BUNDLE_MULTIPLEX : BUNDLE_NO_MULTIUSE);
+
         /* chosenProtocol is a reference to the string within alpnArr
            and doesn't need to be freed separately */
         if(alpnArr)
@@ -2960,8 +2963,10 @@ static int Curl_sectransp_shutdown(struct connectdata *conn, int sockindex)
   if(!BACKEND->ssl_ctx)
     return 0;
 
+#ifndef CURL_DISABLE_FTP
   if(data->set.ftp_ccc != CURLFTPSSL_CCC_ACTIVE)
     return 0;
+#endif
 
   Curl_sectransp_close(conn, sockindex);
 

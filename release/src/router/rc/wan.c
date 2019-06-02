@@ -2463,6 +2463,7 @@ wan_up(const char *pwan_ifname)
 	char ppa_cmd[255] = {0};
 #endif
 	FILE *fp;
+	int i=0;
 
 	/* Value of pwan_ifname can be modfied after do_dns_detect */
 	strlcpy(wan_ifname, pwan_ifname, 16);
@@ -2694,6 +2695,9 @@ wan_up(const char *pwan_ifname)
 
 	/* Sync time */
 	refresh_ntpc();
+	while ((!nvram_get_int("ntp_ready")) && (i++ < 6)) {
+		sleep(i*i);
+	}
 
 #if !defined(RTCONFIG_MULTIWAN_CFG)
 	if (wan_unit != wan_primary_ifunit()

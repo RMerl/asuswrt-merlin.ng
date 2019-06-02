@@ -1569,7 +1569,7 @@ AC_HELP_STRING([--without-amissl], [disable Amiga native SSL/TLS (AmiSSL)]),
   OPT_AMISSL=$withval)
 
 AC_MSG_CHECKING([whether to enable Amiga native SSL/TLS (AmiSSL)])
-if test "$HAVE_PROTO_BSDSOCKET_H" == "1"; then
+if test "$HAVE_PROTO_BSDSOCKET_H" = "1"; then
   if test -z "$ssl_backends" -o "x$OPT_AMISSL" != xno; then
     ssl_msg=
     if test "x$OPT_AMISSL" != "xno"; then
@@ -1887,6 +1887,14 @@ if test -z "$ssl_backends" -o "x$OPT_SSL" != xno &&
   fi
 
   test -z "$ssl_msg" || ssl_backends="${ssl_backends:+$ssl_backends, }$ssl_msg"
+fi
+
+if test X"$OPT_SSL" != Xoff &&
+  test X"$OPT_SSL" != Xno &&
+  test "$OPENSSL_ENABLED" != "1"; then
+  AC_MSG_NOTICE([OPT_SSL: $OPT_SSL])
+  AC_MSG_NOTICE([OPENSSL_ENABLED: $OPENSSL_ENABLED])
+  AC_MSG_ERROR([--with-ssl was given but OpenSSL could not be detected])
 fi
 
 dnl **********************************************************************
@@ -3479,7 +3487,12 @@ case "$OPT_FISH_FPATH" in
     ;;
   default|yes)
     dnl --with-fish-functions-dir option used without path
-    FISH_FUNCTIONS_DIR="$datarootdir/fish/completions"
+    CURL_CHECK_PKGCONFIG(fish)
+    if test "$PKGCONFIG" != "no" ; then
+      FISH_FUNCTIONS_DIR="$($PKGCONFIG --variable completionsdir fish)"
+    else
+      FISH_FUNCTIONS_DIR="$datarootdir/fish/vendor_completions.d"
+    fi
     AC_SUBST(FISH_FUNCTIONS_DIR)
     ;;
   *)
@@ -3706,6 +3719,8 @@ CURL_CHECK_FUNC_GETHOSTBYADDR_R
 CURL_CHECK_FUNC_GETHOSTBYNAME
 CURL_CHECK_FUNC_GETHOSTBYNAME_R
 CURL_CHECK_FUNC_GETHOSTNAME
+CURL_CHECK_FUNC_GETPEERNAME
+CURL_CHECK_FUNC_GETSOCKNAME
 CURL_CHECK_FUNC_GETIFADDRS
 CURL_CHECK_FUNC_GETSERVBYPORT_R
 CURL_CHECK_FUNC_GMTIME_R

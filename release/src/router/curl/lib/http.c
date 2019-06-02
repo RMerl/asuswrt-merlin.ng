@@ -73,7 +73,6 @@
 #include "http_proxy.h"
 #include "warnless.h"
 #include "non-ascii.h"
-#include "pipeline.h"
 #include "http2.h"
 #include "connect.h"
 #include "strdup.h"
@@ -93,7 +92,9 @@ static int http_getsock_do(struct connectdata *conn,
                            int numsocks);
 static int http_should_fail(struct connectdata *conn);
 
+#ifndef CURL_DISABLE_PROXY
 static CURLcode add_haproxy_protocol_header(struct connectdata *conn);
+#endif
 
 #ifdef USE_SSL
 static CURLcode https_connecting(struct connectdata *conn, bool *done);
@@ -177,7 +178,7 @@ static CURLcode http_setup_conn(struct connectdata *conn)
   return CURLE_OK;
 }
 
-
+#ifndef CURL_DISABLE_PROXY
 /*
  * checkProxyHeaders() checks the linked list of custom proxy headers
  * if proxy headers are not available, then it will lookup into http header
@@ -204,6 +205,10 @@ char *Curl_checkProxyheaders(const struct connectdata *conn,
 
   return NULL;
 }
+#else
+/* disabled */
+#define Curl_checkProxyheaders(x,y) NULL
+#endif
 
 /*
  * Strip off leading and trailing whitespace from the value in the
@@ -258,6 +263,7 @@ char *Curl_copy_header_value(const char *header)
   return value;
 }
 
+#ifndef CURL_DISABLE_HTTP_AUTH
 /*
  * http_output_basic() sets up an Authorization: header (or the proxy version)
  * for HTTP Basic authentication.
@@ -338,6 +344,8 @@ static CURLcode http_output_bearer(struct connectdata *conn)
   fail:
   return result;
 }
+
+#endif
 
 /* pickoneauth() selects the most favourable authentication method from the
  * ones available and the ones we want.
@@ -458,8 +466,8 @@ static CURLcode http_perhapsrewind(struct connectdata *conn)
        (data->state.authproxy.picked == CURLAUTH_NTLM_WB) ||
        (data->state.authhost.picked == CURLAUTH_NTLM_WB)) {
       if(((expectsend - bytessent) < 2000) ||
-         (conn->ntlm.state != NTLMSTATE_NONE) ||
-         (conn->proxyntlm.state != NTLMSTATE_NONE)) {
+         (conn->http_ntlm_state != NTLMSTATE_NONE) ||
+         (conn->proxy_ntlm_state != NTLMSTATE_NONE)) {
         /* The NTLM-negotiation has started *OR* there is just a little (<2K)
            data left to send, keep on sending. */
 
@@ -486,8 +494,8 @@ static CURLcode http_perhapsrewind(struct connectdata *conn)
     if((data->state.authproxy.picked == CURLAUTH_NEGOTIATE) ||
        (data->state.authhost.picked == CURLAUTH_NEGOTIATE)) {
       if(((expectsend - bytessent) < 2000) ||
-         (conn->negotiate.state != GSS_AUTHNONE) ||
-         (conn->proxyneg.state != GSS_AUTHNONE)) {
+         (conn->http_negotiate_state != GSS_AUTHNONE) ||
+         (conn->proxy_negotiate_state != GSS_AUTHNONE)) {
         /* The NEGOTIATE-negotiation has started *OR*
         there is just a little (<2K) data left to send, keep on sending. */
 
@@ -612,6 +620,7 @@ CURLcode Curl_http_auth_act(struct connectdata *conn)
   return result;
 }
 
+#ifndef CURL_DISABLE_HTTP_AUTH
 /*
  * Output the correct authentication header depending on the auth type
  * and whether or not it is to a proxy.
@@ -800,6 +809,22 @@ Curl_http_output_auth(struct connectdata *conn,
   return result;
 }
 
+#else
+/* when disabled */
+CURLcode
+Curl_http_output_auth(struct connectdata *conn,
+                      const char *request,
+                      const char *path,
+                      bool proxytunnel)
+{
+  (void)conn;
+  (void)request;
+  (void)path;
+  (void)proxytunnel;
+  return CURLE_OK;
+}
+#endif
+
 /*
  * Curl_http_input_auth() deals with Proxy-Authenticate: and WWW-Authenticate:
  * headers. They are dealt with both in the transfer.c main loop and in the
@@ -815,8 +840,8 @@ CURLcode Curl_http_input_auth(struct connectdata *conn, bool proxy,
   struct Curl_easy *data = conn->data;
 
 #ifdef USE_SPNEGO
-  struct negotiatedata *negdata = proxy?
-    &conn->proxyneg:&conn->negotiate;
+  curlnegotiate *negstate = proxy ? &conn->proxy_negotiate_state :
+                                    &conn->http_negotiate_state;
 #endif
   unsigned long *availp;
   struct auth *authp;
@@ -863,7 +888,7 @@ CURLcode Curl_http_input_auth(struct connectdata *conn, bool proxy,
               return CURLE_OUT_OF_MEMORY;
             data->state.authproblem = FALSE;
             /* we received a GSS auth token and we dealt with it fine */
-            negdata->state = GSS_AUTHRECV;
+            *negstate = GSS_AUTHRECV;
           }
           else
             data->state.authproblem = TRUE;
@@ -894,19 +919,10 @@ CURLcode Curl_http_input_auth(struct connectdata *conn, bool proxy,
                 *availp |= CURLAUTH_NTLM_WB;
                 authp->avail |= CURLAUTH_NTLM_WB;
 
-                /* Get the challenge-message which will be passed to
-                 * ntlm_auth for generating the type 3 message later */
-                while(*auth && ISSPACE(*auth))
-                  auth++;
-                if(checkprefix("NTLM", auth)) {
-                  auth += strlen("NTLM");
-                  while(*auth && ISSPACE(*auth))
-                    auth++;
-                  if(*auth) {
-                    conn->challenge_header = strdup(auth);
-                    if(!conn->challenge_header)
-                      return CURLE_OUT_OF_MEMORY;
-                  }
+                result = Curl_input_ntlm_wb(conn, proxy, auth);
+                if(result) {
+                  infof(data, "Authentication problem. Ignoring this.\n");
+                  data->state.authproblem = TRUE;
                 }
               }
 #endif
@@ -1280,7 +1296,6 @@ CURLcode Curl_add_buffer_send(Curl_send_buffer **inp,
            This needs FIXing.
         */
         return CURLE_SEND_ERROR;
-      Curl_pipeline_leave_write(conn);
     }
   }
   Curl_add_buffer_free(&in);
@@ -1457,12 +1472,14 @@ CURLcode Curl_http_connect(struct connectdata *conn, bool *done)
     /* nothing else to do except wait right now - we're not done here. */
     return CURLE_OK;
 
+#ifndef CURL_DISABLE_PROXY
   if(conn->data->set.haproxyprotocol) {
     /* add HAProxy PROXY protocol header */
     result = add_haproxy_protocol_header(conn);
     if(result)
       return result;
   }
+#endif
 
   if(conn->given->protocol & CURLPROTO_HTTPS) {
     /* perform SSL initialization */
@@ -1489,6 +1506,7 @@ static int http_getsock_do(struct connectdata *conn,
   return GETSOCK_WRITESOCK(0);
 }
 
+#ifndef CURL_DISABLE_PROXY
 static CURLcode add_haproxy_protocol_header(struct connectdata *conn)
 {
   char proxy_header[128];
@@ -1529,6 +1547,7 @@ static CURLcode add_haproxy_protocol_header(struct connectdata *conn)
 
   return result;
 }
+#endif
 
 #ifdef USE_SSL
 static CURLcode https_connecting(struct connectdata *conn, bool *done)
@@ -1688,8 +1707,6 @@ CURLcode Curl_http_compile_trailers(struct curl_slist *trailers,
   CURLcode result = CURLE_OK;
   const char *endofline_native = NULL;
   const char *endofline_network = NULL;
-
-  /* TODO: Maybe split Curl_add_custom_headers to make it reusable here */
 
   if(
 #ifdef CURL_DO_LINEEND_CONV
@@ -1863,6 +1880,7 @@ CURLcode Curl_add_custom_headers(struct connectdata *conn,
   return CURLE_OK;
 }
 
+#ifndef CURL_DISABLE_PARSEDATE
 CURLcode Curl_add_timecondition(struct Curl_easy *data,
                                 Curl_send_buffer *req_buffer)
 {
@@ -1921,6 +1939,16 @@ CURLcode Curl_add_timecondition(struct Curl_easy *data,
 
   return result;
 }
+#else
+/* disabled */
+CURLcode Curl_add_timecondition(struct Curl_easy *data,
+                                Curl_send_buffer *req_buffer)
+{
+  (void)data;
+  (void)req_buffer;
+  return CURLE_OK;
+}
+#endif
 
 /*
  * Curl_http() gets called from the generic multi_do() function when a HTTP
@@ -1972,6 +2000,13 @@ CURLcode Curl_http(struct connectdata *conn, bool *done)
 #ifdef USE_NGHTTP2
       if(conn->data->set.httpversion ==
          CURL_HTTP_VERSION_2_PRIOR_KNOWLEDGE) {
+        if(conn->bits.httpproxy && !conn->bits.tunnel_proxy) {
+          /* We don't support HTTP/2 proxies yet. Also it's debatable whether
+             or not this setting should apply to HTTP/2 proxies. */
+          infof(data, "Ignoring HTTP/2 prior knowledge due to proxy\n");
+          break;
+        }
+
         DEBUGF(infof(data, "HTTP/2 over clean TCP\n"));
         conn->httpversion = 20;
 
@@ -2149,6 +2184,7 @@ CURLcode Curl_http(struct connectdata *conn, bool *done)
     http->sendit = NULL;
   }
 
+#ifndef CURL_DISABLE_MIME
   if(http->sendit) {
     const char *cthdr = Curl_checkheaders(conn, "Content-Type");
 
@@ -2173,6 +2209,7 @@ CURLcode Curl_http(struct connectdata *conn, bool *done)
       return result;
     http->postsize = Curl_mime_size(http->sendit);
   }
+#endif
 
   ptr = Curl_checkheaders(conn, "Transfer-Encoding");
   if(ptr) {
@@ -2741,6 +2778,7 @@ CURLcode Curl_http(struct connectdata *conn, bool *done)
         return result;
     }
 
+#ifndef CURL_DISABLE_MIME
     /* Output mime-generated headers. */
     {
       struct curl_slist *hdr;
@@ -2751,6 +2789,7 @@ CURLcode Curl_http(struct connectdata *conn, bool *done)
           return result;
       }
     }
+#endif
 
     /* For really small posts we don't use Expect: headers at all, and for
        the somewhat bigger ones we allow the app to disable it. Just make
@@ -3372,9 +3411,9 @@ CURLcode Curl_http_readwrite_headers(struct Curl_easy *data,
 #if defined(USE_NTLM)
       if(conn->bits.close &&
          (((data->req.httpcode == 401) &&
-           (conn->ntlm.state == NTLMSTATE_TYPE2)) ||
+           (conn->http_ntlm_state == NTLMSTATE_TYPE2)) ||
           ((data->req.httpcode == 407) &&
-           (conn->proxyntlm.state == NTLMSTATE_TYPE2)))) {
+           (conn->proxy_ntlm_state == NTLMSTATE_TYPE2)))) {
         infof(data, "Connection closure while negotiating auth (HTTP 1.0?)\n");
         data->state.authproblem = TRUE;
       }
@@ -3382,19 +3421,19 @@ CURLcode Curl_http_readwrite_headers(struct Curl_easy *data,
 #if defined(USE_SPNEGO)
       if(conn->bits.close &&
         (((data->req.httpcode == 401) &&
-          (conn->negotiate.state == GSS_AUTHRECV)) ||
+          (conn->http_negotiate_state == GSS_AUTHRECV)) ||
          ((data->req.httpcode == 407) &&
-          (conn->proxyneg.state == GSS_AUTHRECV)))) {
+          (conn->proxy_negotiate_state == GSS_AUTHRECV)))) {
         infof(data, "Connection closure while negotiating auth (HTTP 1.0?)\n");
         data->state.authproblem = TRUE;
       }
-      if((conn->negotiate.state == GSS_AUTHDONE) &&
+      if((conn->http_negotiate_state == GSS_AUTHDONE) &&
          (data->req.httpcode != 401)) {
-        conn->negotiate.state = GSS_AUTHSUCC;
+        conn->http_negotiate_state = GSS_AUTHSUCC;
       }
-      if((conn->proxyneg.state == GSS_AUTHDONE) &&
+      if((conn->proxy_negotiate_state == GSS_AUTHDONE) &&
          (data->req.httpcode != 407)) {
-        conn->proxyneg.state = GSS_AUTHSUCC;
+        conn->proxy_negotiate_state = GSS_AUTHSUCC;
       }
 #endif
       /*
@@ -3632,6 +3671,10 @@ CURLcode Curl_http_readwrite_headers(struct Curl_easy *data,
             if(conn->httpversion != 20)
               infof(data, "Lying server, not serving HTTP/2\n");
           }
+          if(conn->httpversion < 20) {
+            conn->bundle->multiuse = BUNDLE_NO_MULTIUSE;
+            infof(data, "Mark bundle as not supporting multiuse\n");
+          }
         }
         else if(!nc) {
           /* this is the real world, not a Nirvana
@@ -3669,7 +3712,6 @@ CURLcode Curl_http_readwrite_headers(struct Curl_easy *data,
           conn->httpversion = 11; /* For us, RTSP acts like HTTP 1.1 */
         }
         else {
-          /* TODO: do we care about the other cases here? */
           nc = 0;
         }
       }
@@ -3722,16 +3764,9 @@ CURLcode Curl_http_readwrite_headers(struct Curl_easy *data,
         }
         else if(conn->httpversion >= 11 &&
                 !conn->bits.close) {
-          /* If HTTP version is >= 1.1 and connection is persistent
-             server supports pipelining. */
+          /* If HTTP version is >= 1.1 and connection is persistent */
           DEBUGF(infof(data,
-                       "HTTP 1.1 or later with persistent connection, "
-                       "pipelining supported\n"));
-          /* Activate pipelining if needed */
-          if(conn->bundle) {
-            if(!Curl_pipeline_site_blacklisted(data, conn))
-              conn->bundle->multiuse = BUNDLE_PIPELINING;
-          }
+                       "HTTP 1.1 or later with persistent connection\n"));
         }
 
         switch(k->httpcode) {
@@ -3814,19 +3849,6 @@ CURLcode Curl_http_readwrite_headers(struct Curl_easy *data,
       else {
         Curl_safefree(data->info.contenttype);
         data->info.contenttype = contenttype;
-      }
-    }
-    else if(checkprefix("Server:", k->p)) {
-      if(conn->httpversion < 20) {
-        /* only do this for non-h2 servers */
-        char *server_name = Curl_copy_header_value(k->p);
-
-        /* Turn off pipelining if the server version is blacklisted  */
-        if(conn->bundle && (conn->bundle->multiuse == BUNDLE_PIPELINING)) {
-          if(Curl_pipeline_server_blacklisted(data, server_name))
-            conn->bundle->multiuse = BUNDLE_NO_MULTIUSE;
-        }
-        free(server_name);
       }
     }
     else if((conn->httpversion == 10) &&

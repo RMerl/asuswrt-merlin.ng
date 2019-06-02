@@ -23,6 +23,7 @@
 #include "wsdd.h"
 
 int debug_L, debug_W, debug_N;
+int ifindex = 0;
 
 static int netlink_recv(struct endpoint *ep);
 
@@ -376,6 +377,31 @@ static int open_ep(struct endpoint **epp, struct service *sv,
 	setsockopt(ep->sock, SOL_SOCKET, SO_REUSEPORT,
 				&enable, sizeof enable);
 #endif
+#ifdef IPV6_V6ONLY
+	if ((ep->family == AF_INET6) &&
+		setsockopt(ep->sock, sp->ipproto_ip, IPV6_V6ONLY,
+				&enable, sizeof enable)) {
+		ep->errstr = __FUNCTION__ ": IPV6_V6ONLY";
+		ep->_errno = errno;
+		close(ep->sock);
+		return -1;
+	}
+#endif
+
+#ifdef SO_BINDTODEVICE
+	if (!sv->mcast_addr &&
+			(ep->family == AF_INET || ep->family == AF_INET6)) {
+		struct ifreq ifr;
+		strncpy(ifr.ifr_name, ep->ifname, IFNAMSIZ-1);
+		if (setsockopt(ep->sock, SOL_SOCKET, SO_BINDTODEVICE,
+				&ifr, sizeof(ifr))) {
+			ep->errstr = __FUNCTION__ ": SO_BINDTODEVICE";
+			ep->_errno = errno;
+			close(ep->sock);
+			return -1;
+		}
+	}
+#endif
 
 	if (bind(ep->sock, (struct sockaddr *)&ep->local, ep->llen)) {
 		ep->errstr = __FUNCTION__ ": bind";
@@ -468,6 +494,9 @@ static bool is_new_addr(struct nlmsghdr *nh)
 	if (nh->nlmsg_type != RTM_NEWADDR)
 		return false;
 
+	if (ifindex && ifam->ifa_index != ifindex)
+		return false;
+
 	while (RTA_OK(rta, rtasize)) {
 		struct ifa_cacheinfo *cache_info;
 		if (rta->rta_type == IFA_CACHEINFO) {
@@ -543,11 +572,11 @@ static void help(const char *prog, int ec, const char *fmt, ...)
 		"       -W  WSDD debug mode (incremental level)\n"
 		"       -d  go daemon\n"
 		"       -h  This message\n"
-		"       -i  <interface> Specify which interface to bind to, otherwise bind to all\n"
 		"       -l  LLMNR only\n"
 		"       -t  TCP only\n"
 		"       -u  UDP only\n"
 		"       -w  WSDD only\n"
+		"       -i \"interface\"  Listening interface (optional)\n"		
 		"       -b \"key1:val1,key2:val2,...\"  Boot parameters\n",
 			prog);
 	printBootInfoKeys(stdout, 11);
@@ -609,10 +638,11 @@ int main(int argc, char **argv)
 			tcpudp	|= _UDP;
 			break;
 		case 'i':
-			if (!optarg)
-				help(prog, EXIT_FAILURE, "-i provided without interface\n");
-			else
-				ifname = strdup(optarg);
+			ifname = optarg;
+			ifindex = if_nametoindex(optarg);
+			if (ifindex == 0)
+				help(prog, EXIT_FAILURE,
+					"bad interface '%s'\n", optarg);
 			break;
 		default:
 			help(prog, EXIT_FAILURE, "bad option '%c'\n", opt);
@@ -685,15 +715,24 @@ again:
 				if (!ifa->ifa_addr ||
 					(ifa->ifa_addr->sa_family != sv->family) ||
 					(ifa->ifa_flags & IFF_LOOPBACK) ||
+					(ifa->ifa_flags & IFF_SLAVE) ||
+					(ifname && strcmp(ifa->ifa_name, ifname)) ||
 					(!strcmp(ifa->ifa_name, "LeafNets")) ||
 					(!strncmp(ifa->ifa_name, "docker", 6)) ||
 					(!strncmp(ifa->ifa_name, "veth", 4)) ||
 					(!strncmp(ifa->ifa_name, "tun", 3)) ||
 					(!strncmp(ifa->ifa_name, "zt", 2)) ||
-					(ifname && strcmp(ifa->ifa_name, ifname)) ||
 					(sv->mcast_addr &&
 					!(ifa->ifa_flags & IFF_MULTICAST)))
 					continue;
+
+				if (!ifname) {
+					char path[sizeof("/sys/class/net//brport")+IFNAMSIZ];
+					struct stat st;
+					snprintf(path, sizeof(path), "/sys/class/net/%s/brport", ifa->ifa_name);
+					if (stat(path, &st) == 0)
+						continue;
+				}
 
 				char ifaddr[_ADDRSTRLEN];
 				void *addr =

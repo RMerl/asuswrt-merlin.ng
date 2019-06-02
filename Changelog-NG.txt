@@ -14,6 +14,7 @@ Asuswrt-Merlin 384/NG Changelog
   - UPDATED: Nano 4.2.
   - UPDATED: OpenSSL-11x to 1.1.1c.
   - UPDATED: OpenSSL-102 to 1.0.2s.
+  - UPDATED: curl 7.65.0.
   - CHANGED: Local clients will be shown by their hostname
              on the Classification page.
   - CHANGED: Reworked handling of up/down events in OpenVPN.

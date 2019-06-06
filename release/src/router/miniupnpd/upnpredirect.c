@@ -356,6 +356,10 @@ upnp_redirect(const char * rhost, unsigned short eport,
 		                 "%hu->%s:%hu %s", eport, iaddr, iport, protocol);
 		return -3;
 	}
+
+	if (desc == NULL)
+		desc = "";	/* assume empty description */
+
 	/* IGDv1 (WANIPConnection:1 Service Template Version 1.01 / Nov 12, 2001)
 	 * - 2.2.20.PortMappingDescription :
 	 *  Overwriting Previous / Existing Port Mappings:

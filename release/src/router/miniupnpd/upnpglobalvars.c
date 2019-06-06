@@ -1,4 +1,4 @@
-/* $Id: upnpglobalvars.c,v 1.43 2018/07/06 12:05:48 nanard Exp $ */
+/* $Id: upnpglobalvars.c,v 1.44 2019/05/21 08:39:45 nanard Exp $ */
 /* vim: tabstop=4 shiftwidth=4 noexpandtab
  * MiniUPnP project
  * http://miniupnp.free.fr/ or http://miniupnp.tuxfamily.org/
@@ -15,6 +15,11 @@
 
 /* network interface for internet */
 const char * ext_if_name = 0;
+
+#ifdef ENABLE_IPV6
+/* network interface for internet - IPv6 */
+const char * ext_if_name6 = 0;
+#endif
 
 /* stun host/port configuration */
 const char * ext_stun_host = 0;

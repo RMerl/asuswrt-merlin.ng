@@ -57,9 +57,9 @@ if [ -n "$EXT" ]; then
 	#fi
 fi
 
-FDIRTY=$(LC_ALL=C $IPTABLES -t filter -L -n | awk "/$CHAIN/ {printf \$1}")
+FDIRTY=$(LC_ALL=C $IPTABLES -t filter -L -n | awk "/$CHAIN / {printf \$1}")
 if [ -z "$IPV6" ]; then
-	NDIRTY=$(LC_ALL=C $IPTABLES -t nat -L -n | awk "/$CHAIN/ {printf \$1}")
-	MDIRTY=$(LC_ALL=C $IPTABLES -t mangle -L -n | awk "/$CHAIN/ {printf \$1}")
-	NPDIRTY=$(LC_ALL=C $IPTABLES -t nat -L -n | awk "/$CHAIN-POSTROUTING/ {printf \$1}")
+	NDIRTY=$(LC_ALL=C $IPTABLES -t nat -L -n | awk "/$CHAIN / {printf \$1}")
+	MDIRTY=$(LC_ALL=C $IPTABLES -t mangle -L -n | awk "/$CHAIN / {printf \$1}")
+	NPDIRTY=$(LC_ALL=C $IPTABLES -t nat -L -n | awk "/$CHAIN-POSTROUTING / {printf \$1}")
 fi

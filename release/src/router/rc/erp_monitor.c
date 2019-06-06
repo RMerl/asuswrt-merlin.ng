@@ -134,6 +134,7 @@ static int erp_check_wl_auth_stat()
 		unit++;
 	}
 
+	free(mac_list);
 	return total_sta_cnt;
 
 exit:

@@ -1,8 +1,8 @@
-/* $Id: upnpglobalvars.h,v 1.47 2018/07/06 12:05:48 nanard Exp $ */
+/* $Id: upnpglobalvars.h,v 1.48 2019/05/21 08:39:45 nanard Exp $ */
 /* vim: tabstop=4 shiftwidth=4 noexpandtab
  * MiniUPnP project
  * http://miniupnp.free.fr/ or https://miniupnp.tuxfamily.org/
- * (c) 2006-2018 Thomas Bernard
+ * (c) 2006-2019 Thomas Bernard
  * This software is subject to the conditions detailed
  * in the LICENCE file provided within the distribution */
 
@@ -16,6 +16,11 @@
 
 /* name of the network interface used to access internet */
 extern const char * ext_if_name;
+
+#ifdef ENABLE_IPV6
+/* name of the network interface used to access internet - for IPv6*/
+extern const char * ext_if_name6;
+#endif
 
 /* stun host/port configuration */
 extern const char * ext_stun_host;

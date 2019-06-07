@@ -1,4 +1,4 @@
-/* $Id: minixml.h,v 1.6 2006/11/30 11:47:21 nanard Exp $ */
+/* $Id: minixml.h,v 1.8 2019/02/10 12:29:25 nanard Exp $ */
 /* minimal xml parser
  *
  * Project : miniupnp
@@ -10,7 +10,7 @@
  * */
 #ifndef MINIXML_H_INCLUDED
 #define MINIXML_H_INCLUDED
-#define IS_WHITE_SPACE(c) ((c==' ') || (c=='\t') || (c=='\r') || (c=='\n'))
+#define IS_WHITE_SPACE(c) ((c)==' ' || (c)=='\t' || (c)=='\r' || (c)=='\n')
 
 /* if a callback function pointer is set to NULL,
  * the function is not called */

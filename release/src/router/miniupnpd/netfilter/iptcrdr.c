@@ -2,7 +2,7 @@
 /* vim: tabstop=4 shiftwidth=4 noexpandtab
  * MiniUPnP project
  * http://miniupnp.free.fr/ or http://miniupnp.tuxfamily.org/
- * (c) 2006-2018 Thomas Bernard
+ * (c) 2006-2019 Thomas Bernard
  * This software is subject to the conditions detailed
  * in the LICENCE file provided within the distribution */
 #include <stdio.h>
@@ -1180,9 +1180,13 @@ addnatrule(int proto, unsigned short eport,
 	} else {
 		match = get_udp_match(eport, 0);
 	}
-	e->nfcache = NFC_IP_DST_PT;
+#ifdef NFC_UNKNOWN
+	e->nfcache = NFC_UNKNOWN;
+#endif
 	target = get_dnat_target(iaddr, iport);
-	e->nfcache |= NFC_UNKNOWN;
+#ifdef NFC_IP_DST_PT
+	e->nfcache |= NFC_IP_DST_PT;
+#endif
 	tmp = realloc(e, sizeof(struct ipt_entry)
 	               + match->u.match_size
 				   + target->u.target_size);
@@ -1250,9 +1254,13 @@ addmasqueraderule(int proto,
 	} else {
 		match = get_udp_match(0, iport);
 	}
-	e->nfcache = NFC_IP_DST_PT;
+#ifdef NFC_UNKNOWN
+	e->nfcache = NFC_UNKNOWN;
+#endif
 	target = get_masquerade_target(eport);
-	e->nfcache |= NFC_UNKNOWN;
+#ifdef NFC_IP_DST_PT
+	e->nfcache |= NFC_IP_DST_PT;
+#endif
 	tmp = realloc(e, sizeof(struct ipt_entry)
 	               + match->u.match_size
 				   + target->u.target_size);
@@ -1330,9 +1338,16 @@ addpeernatrule(int proto,
 	} else {
 		match = get_udp_match(rport, iport);
 	}
-	e->nfcache = NFC_IP_DST_PT | NFC_IP_SRC_PT;
+#ifdef NFC_UNKNOWN
+	e->nfcache = NFC_UNKNOWN;
+#endif
 	target = get_snat_target(eaddr, eport);
-	e->nfcache |= NFC_UNKNOWN;
+#ifdef NFC_IP_DST_PT
+	e->nfcache |= NFC_IP_DST_PT;
+#endif
+#ifdef NFC_IP_SRC_PT
+	e->nfcache |= NFC_IP_SRC_PT;
+#endif
 	tmp = realloc(e, sizeof(struct ipt_entry)
 	               + match->u.match_size
 				   + target->u.target_size);
@@ -1401,9 +1416,16 @@ addpeerdscprule(int proto, unsigned char dscp,
 	} else {
 		match = get_udp_match(rport, iport);
 	}
-	e->nfcache = NFC_IP_DST_PT | NFC_IP_SRC_PT;
+#ifdef NFC_UNKNOWN
+	e->nfcache = NFC_UNKNOWN;
+#endif
 	target = get_dscp_target(dscp);
-	e->nfcache |= NFC_UNKNOWN;
+#ifdef NFC_IP_DST_PT
+	e->nfcache |= NFC_IP_DST_PT;
+#endif
+#ifdef NFC_IP_SRC_PT
+	e->nfcache |= NFC_IP_SRC_PT;
+#endif
 	tmp = realloc(e, sizeof(struct ipt_entry)
 	               + match->u.match_size
 				   + target->u.target_size);
@@ -1484,11 +1506,15 @@ add_filter_rule(int proto, const char * rhost,
 	} else {
 		match = get_udp_match(iport,0);
 	}
-	e->nfcache = NFC_IP_DST_PT;
 	e->ip.dst.s_addr = inet_addr(iaddr);
 	e->ip.dmsk.s_addr = INADDR_NONE;
+#ifdef NFC_UNKNOWN
+	e->nfcache = NFC_UNKNOWN;
+#endif
 	target = get_accept_target();
-	e->nfcache |= NFC_UNKNOWN;
+#ifdef NFC_IP_DST_PT
+	e->nfcache |= NFC_IP_DST_PT;
+#endif
 	tmp = realloc(e, sizeof(struct ipt_entry)
 	               + match->u.match_size
 				   + target->u.target_size);

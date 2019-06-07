@@ -11705,7 +11705,7 @@ dbg("boot/continue fail= %d/%d\n", nvram_get_int("Ate_boot_fail"),nvram_get_int(
 int reboothalt_main(int argc, char *argv[])
 {
 	int reboot = (strstr(argv[0], "reboot") != NULL);
-	int def_reset_wait = 20;
+	int def_reset_wait = 30;
 
 	_dprintf(reboot ? "Rebooting..." : "Shutting down...");
 	kill(1, reboot ? SIGTERM : SIGQUIT);
@@ -11717,7 +11717,7 @@ int reboothalt_main(int argc, char *argv[])
 	int wait = nvram_get_int("reset_wait") ? : def_reset_wait;
 	/* In the case we're hung, we'll get stuck and never actually reboot.
 	 * The only way out is to pull power.
-	 * So after 'reset_wait' seconds (default: 20), forcibly crash & restart.
+	 * So after 'reset_wait' seconds (default: 30), forcibly crash & restart.
 	 */
 	if (fork() == 0) {
 		if ((wait < 10) || (wait > 120)) wait = 10;

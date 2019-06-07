@@ -1,7 +1,7 @@
 /* $Id: getifstats.c,v 1.14 2018/03/13 23:05:21 nanard Exp $ */
 /* MiniUPnP project
  * http://miniupnp.free.fr/ or http://miniupnp.tuxfamily.org/
- * (c) 2006-2018 Thomas Bernard
+ * (c) 2006-2019 Thomas Bernard
  * This software is subject to the conditions detailed
  * in the LICENCE file provided within the distribution */
 
@@ -23,6 +23,51 @@
 
 /* that is the answer */
 #define BAUDRATE_DEFAULT 4200000
+
+/* this custom implementation of strtoul() rollover
+ * this is needed by the UPnP standard */
+static unsigned long my_strtoul(const char * p, char ** endptr, int base)
+{
+	unsigned long value;
+
+	if (base == 0) {
+		/* autodetect base :
+		 * 0xnnnnn is hexadecimal
+		 * 0nnnnnn is octal
+		 * everything else is decimal */
+		if (*p == '0') {
+			p++;
+			if (*p == 'x') {
+				p++;
+				base = 16;
+			} else {
+				base = 8;
+			}
+		} else {
+			base = 10;
+		}
+	}
+
+	for (value = 0; *p >= '0'; p++) {
+		value *= (unsigned long)base;
+		if (*p <= '9') {
+			if (base < 10 && *p >= ('0' + base))
+				break;
+			value += (unsigned long)(*p - '0');	/* 0-9 */
+		} else if (base <= 10 || *p < 'A') {
+			break;
+		} else if (*p < ('A' + base - 10)) {
+			value += (unsigned long)(*p - 'A' + 10);	/* A-F */
+		} else if (*p >= 'a' && *p < ('a' + base - 10)) {
+			value += (unsigned long)(*p - 'a' + 10);	/* a-f */
+		} else {
+			break;
+		}
+	}
+	if (endptr != NULL)
+		*endptr = (char *)p;
+	return value;
+}
 
 int
 getifstats(const char * ifname, struct ifdata * data)
@@ -80,18 +125,18 @@ getifstats(const char * ifname, struct ifdata * data)
 			continue;
 		p++;
 		while(*p==' ') p++;
-		data->ibytes = strtoul(p, &p, 0);
+		data->ibytes = my_strtoul(p, &p, 0);
 		while(*p==' ') p++;
-		data->ipackets = strtoul(p, &p, 0);
+		data->ipackets = my_strtoul(p, &p, 0);
 		/* skip 6 columns */
 		for(i=6; i>0 && *p!='\0'; i--) {
 			while(*p==' ') p++;
 			while(*p!=' ' && *p) p++;
 		}
 		while(*p==' ') p++;
-		data->obytes = strtoul(p, &p, 0);
+		data->obytes = my_strtoul(p, &p, 0);
 		while(*p==' ') p++;
-		data->opackets = strtoul(p, &p, 0);
+		data->opackets = my_strtoul(p, &p, 0);
 		r = 0;
 		break;
 	}

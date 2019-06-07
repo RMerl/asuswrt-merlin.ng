@@ -102,19 +102,19 @@ clean:
 	$(RM) miniupnpdctl.o
 
 install:	miniupnpd miniupnpd.8 miniupnpd.conf genuuid \
-	netfilter/iptables_init.sh netfilter/iptables_removeall.sh \
-	netfilter/ip6tables_init.sh netfilter/ip6tables_removeall.sh \
-	netfilter/miniupnpd_functions.sh \
+	netfilter_nft/scripts/nft_init.sh \
+	netfilter_nft/scripts/nft_removeall.sh \
+	netfilter_nft/scripts/nft_flush.sh \
+	netfilter_nft/scripts/nft_delete_chain.sh \
 	linux/miniupnpd.init.d.script
 	$(STRIP) miniupnpd
 	$(INSTALL) -d $(DESTDIR)$(SBININSTALLDIR)
 	$(INSTALL) miniupnpd $(DESTDIR)$(SBININSTALLDIR)
 	$(INSTALL) -d $(DESTDIR)$(ETCINSTALLDIR)
-	$(INSTALL) netfilter/iptables_init.sh $(DESTDIR)$(ETCINSTALLDIR)
-	$(INSTALL) netfilter/iptables_removeall.sh $(DESTDIR)$(ETCINSTALLDIR)
-	$(INSTALL) netfilter/ip6tables_init.sh $(DESTDIR)$(ETCINSTALLDIR)
-	$(INSTALL) netfilter/ip6tables_removeall.sh $(DESTDIR)$(ETCINSTALLDIR)
-	$(INSTALL) netfilter/miniupnpd_functions.sh $(DESTDIR)$(ETCINSTALLDIR)
+	$(INSTALL) netfilter_nft/scripts/nft_init.sh $(DESTDIR)$(ETCINSTALLDIR)
+	$(INSTALL) netfilter_nft/scripts/nft_removeall.sh $(DESTDIR)$(ETCINSTALLDIR)
+	$(INSTALL) netfilter_nft/scripts/nft_flush.sh $(DESTDIR)$(ETCINSTALLDIR)
+	$(INSTALL) netfilter_nft/scripts/nft_delete_chain.sh $(DESTDIR)$(ETCINSTALLDIR)
 	$(INSTALL) --mode=0644 -b miniupnpd.conf $(DESTDIR)$(ETCINSTALLDIR)
 	$(INSTALL) -d $(DESTDIR)$(PREFIX)/etc/init.d
 	$(INSTALL) linux/miniupnpd.init.d.script $(DESTDIR)$(PREFIX)/etc/init.d/miniupnpd

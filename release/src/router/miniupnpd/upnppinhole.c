@@ -1,7 +1,8 @@
-/* $Id: upnppinhole.c,v 1.13 2018/03/13 10:49:13 nanard Exp $ */
-/* MiniUPnP project
+/* $Id: upnppinhole.c,v 1.14 2019/05/21 08:39:45 nanard Exp $ */
+/* vim: tabstop=4 shiftwidth=4 noexpandtab
+ * MiniUPnP project
  * http://miniupnp.free.fr/ or http://miniupnp.tuxfamily.org/
- * (c) 2006-2018 Thomas Bernard
+ * (c) 2006-2019 Thomas Bernard
  * This software is subject to the conditions detailed
  * in the LICENCE file provided within the distribution */
 
@@ -142,7 +143,7 @@ upnp_add_inboundpinhole(const char * raddr,
 		return (r >= 0) ? 1 : r;
 	}
 #if defined(USE_PF) || defined(USE_NETFILTER)
-	*uid = add_pinhole (ext_if_name, raddr, rport,
+	*uid = add_pinhole (ext_if_name6, raddr, rport,
 	                    iaddr, iport, proto, desc, timestamp);
 	return *uid >= 0 ? 1 : -1;
 #else

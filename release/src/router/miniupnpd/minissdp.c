@@ -1,8 +1,8 @@
-/* $Id: minissdp.c,v 1.92 2018/03/13 10:52:39 nanard Exp $ */
+/* $Id: minissdp.c,v 1.95 2019/05/02 10:08:14 nanard Exp $ */
 /* vim: tabstop=4 shiftwidth=4 noexpandtab
  * MiniUPnP project
  * http://miniupnp.free.fr/ or https://miniupnp.tuxfamily.org/
- * (c) 2006-2018 Thomas Bernard
+ * (c) 2006-2019 Thomas Bernard
  * This software is subject to the conditions detailed
  * in the LICENCE file provided within the distribution */
 
@@ -67,6 +67,7 @@ AddMulticastMembership(int s, struct lan_addr_s * lan_addr)
 
 	/* setting up imr structure */
 	imr.imr_multiaddr.s_addr = inet_addr(SSDP_MCAST_ADDR);
+	/*imr.imr_interface.s_addr = htonl(INADDR_ANY);*/
 #ifndef HAVE_IP_MREQN
 	imr.imr_interface.s_addr = lan_addr->addr.s_addr;
 #else	/* HAVE_IP_MREQN */
@@ -1413,10 +1414,10 @@ SendSSDPGoodbye(int * sockets, int n_sockets)
 	int ret = 0;
 	const char * dest_str;
 
-    memset(&sockname4, 0, sizeof(struct sockaddr_in));
-    sockname4.sin_family = AF_INET;
-    sockname4.sin_port = htons(SSDP_PORT);
-    sockname4.sin_addr.s_addr = inet_addr(SSDP_MCAST_ADDR);
+	memset(&sockname4, 0, sizeof(struct sockaddr_in));
+	sockname4.sin_family = AF_INET;
+	sockname4.sin_port = htons(SSDP_PORT);
+	sockname4.sin_addr.s_addr = inet_addr(SSDP_MCAST_ADDR);
 #ifdef ENABLE_IPV6
 	memset(&sockname6, 0, sizeof(struct sockaddr_in6));
 	sockname6.sin6_family = AF_INET6;
@@ -1471,7 +1472,7 @@ SendSSDPGoodbye(int * sockets, int n_sockets)
 				                      known_service_types[i].uuid, "",	/* NT: */
 				                      known_service_types[i].uuid, "", ""); /* ver_str, USN: */
 			}
-    	}
+		}
 	}
 	return ret;
 }

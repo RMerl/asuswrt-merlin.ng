@@ -134,6 +134,7 @@ static int erp_check_wl_auth_stat()
 		unit++;
 	}
 
+	free(mac_list);
 	return total_sta_cnt;
 
 exit:
@@ -521,7 +522,7 @@ static void ERP_CHECK_MODE()
 	if (strstr(tcode, "EE") == NULL && strstr(tcode, "WE") == NULL
 		&& strstr(tcode, "UK") == NULL && strstr(tcode, "EU") == NULL)
 	{
-		ERP_DBG("The model isn't under EU SKU!\n");
+//		ERP_DBG("The model isn't under EU SKU!\n");
 		return;
 	}
 
@@ -663,7 +664,7 @@ int erp_monitor_main(int argc, char **argv)
 	if (strstr(tcode, "EE") == NULL && strstr(tcode, "WE") == NULL
 		&& strstr(tcode, "UK") == NULL && strstr(tcode, "EU") == NULL)
 	{
-		logmessage("ERP", "The model isn't under EU SKU!\n");
+//		logmessage("ERP", "The model isn't under EU SKU!\n");
 		return -2;
 	}
 

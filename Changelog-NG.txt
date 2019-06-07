@@ -13,8 +13,9 @@ Asuswrt-Merlin 384/NG Changelog
   - UPDATED: Merged GPL 384_45717 (except for RT-AX88U)
   - UPDATED: Nano 4.2.
   - UPDATED: OpenSSL-11x to 1.1.1c.
-  - UPDATED: OpenSSL-102 to 1.0.2s.
+  - UPDATED: OpenSSL-10x to 1.0.2s.
   - UPDATED: curl 7.65.0.
+  - UPDATED: miniupnpd 20190604.
   - CHANGED: Local clients will be shown by their hostname
              on the Classification page.
   - CHANGED: Reworked handling of up/down events in OpenVPN.
@@ -41,11 +42,18 @@ Asuswrt-Merlin 384/NG Changelog
              using a router-generated certificate, then
              it's recommended to generate a new one.
   - CHANGED: Allow USB idle values up to 9999.
+  - CHANGED: Replaced Network Analysis and Netstat pages (under
+             Network Tools) with new versions based on Asus's
+             Netool daemon for non-HND models, but based
+             around the more limited traceroute busybox applet.
+             RT-AC86U and RT-AX88U still use the newer
+             traceroute executable.
   - FIXED: openvpn-event script not launching if the
            client was configured in Secret Key auth
            mode.
   - FIXED: IPv6 on RT-AX88U - backported accept_ra fix
            from 45717 (themiron)
+  - FIXED: Memory leak in erp_monitor process.
 
 
 384.11_2 (18-May-2019)

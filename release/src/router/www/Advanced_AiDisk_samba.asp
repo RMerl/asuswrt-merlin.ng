@@ -798,7 +798,7 @@ function switchUserType(flag){
 			</div>
 			<div style="margin:5px;" class="splitLine"></div>
 			<div class="formfontdesc"><#Samba_desc#></div>
-			<div class="formfontdesc"><#ADSL_FW_note#>&nbsp;<#SMBv1_enable_hint#></div>
+			<!-- div class="formfontdesc"><#ADSL_FW_note#>&nbsp;<#SMBv1_enable_hint#></div -->
 
 			<table width="740px" border="1" align="center" cellpadding="4" cellspacing="0" bordercolor="#6b8fa3" class="FormTable">
 				<tr>

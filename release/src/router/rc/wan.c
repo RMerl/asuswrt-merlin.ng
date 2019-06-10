@@ -2727,7 +2727,7 @@ wan_up(const char *pwan_ifname)
 
 	/* Sync time */
 	refresh_ntpc();
-	while ((!nvram_get_int("ntp_ready")) && (i++ < 6)) {
+	while ((!nvram_get_int("ntp_ready")) && (i++ < 5)) {
 		sleep(i*i);
 	}
 

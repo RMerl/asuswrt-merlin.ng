@@ -60,7 +60,6 @@ void start_ovpn_client(int clientNum)
 	int userauth, useronly;
 	char cpulist[2];
 	int taskset_ret;
-	int i;
 	char prefix[16];
 
 	snprintf(prefix, sizeof(prefix), "vpn_client%d_", clientNum);
@@ -69,11 +68,6 @@ void start_ovpn_client(int clientNum)
 	if (getpid() != 1) {
 		notify_rc(buffer);
 		return;
-	}
-
-	i = 0;
-	while ((!nvram_get_int("ntp_ready")) && (i++ < 10)) {
-		sleep(i*i);
 	}
 
 	vpnlog(VPN_LOG_INFO,"VPN GUI client backend starting...");
@@ -610,7 +604,7 @@ void start_ovpn_server(int serverNum)
 	int taskset_ret;
 	int valid = 0;
 	int userauth = 0, useronly = 0;
-	int i, len;
+	int len;
 	char prefix[16];
 	DH *dhparams = NULL;
 
@@ -620,11 +614,6 @@ void start_ovpn_server(int serverNum)
 	if (getpid() != 1) {
 		notify_rc(buffer);
 		return;
-	}
-
-	i = 0;
-	while ((!nvram_get_int("ntp_ready")) && (i++ < 10)) {
-		sleep(i*i);
 	}
 
 	vpnlog(VPN_LOG_INFO,"VPN GUI server backend starting...");
@@ -1521,20 +1510,13 @@ void stop_ovpn_server(int serverNum)
 void start_ovpn_eas()
 {
 	char buffer[16], *cur;
-	int nums[OVPN_CLIENT_MAX], i;
+	int nums[OVPN_CLIENT_MAX], i = 0;
 
 	if (strlen(nvram_safe_get("vpn_serverx_start")) == 0 && strlen(nvram_safe_get("vpn_clientx_eas")) == 0) return;
-
-	// wait for time sync for a while
-	i = 0;
-	while ((!nvram_get_int("ntp_ready")) && (i++ < 10)) {
-		sleep(i*i);
-	}
 
 	// Parse and start servers
 	strlcpy(buffer, nvram_safe_get("vpn_serverx_start"), sizeof(buffer));
 	if ( strlen(buffer) != 0 ) vpnlog(VPN_LOG_INFO, "Starting OpenVPN servers (eas): %s", buffer);
-	i = 0;
 	for( cur = strtok(buffer,","); cur != NULL && i < OVPN_CLIENT_MAX; cur = strtok(NULL, ",")) { nums[i++] = atoi(cur); }
 	if(i < OVPN_CLIENT_MAX) nums[i] = 0;
 	for( i = 0; nums[i] > 0 && i < OVPN_CLIENT_MAX; i++ )

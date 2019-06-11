@@ -60,6 +60,7 @@ void start_ovpn_client(int clientNum)
 	int userauth, useronly;
 	char cpulist[2];
 	int taskset_ret;
+	int i;
 	char prefix[16];
 
 	snprintf(prefix, sizeof(prefix), "vpn_client%d_", clientNum);
@@ -604,7 +605,7 @@ void start_ovpn_server(int serverNum)
 	int taskset_ret;
 	int valid = 0;
 	int userauth = 0, useronly = 0;
-	int len;
+	int i, len;
 	char prefix[16];
 	DH *dhparams = NULL;
 

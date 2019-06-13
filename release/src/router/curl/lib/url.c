@@ -34,10 +34,12 @@
 #ifdef HAVE_NET_IF_H
 #include <net/if.h>
 #endif
+#ifdef HAVE_IPHLPAPI_H
+#include <Iphlpapi.h>
+#endif
 #ifdef HAVE_SYS_IOCTL_H
 #include <sys/ioctl.h>
 #endif
-
 #ifdef HAVE_SYS_PARAM_H
 #include <sys/param.h>
 #endif
@@ -93,6 +95,7 @@ bool curl_win32_idn_to_ascii(const char *in, char **out);
 #include "inet_pton.h"
 #include "getinfo.h"
 #include "urlapi-int.h"
+#include "system_win32.h"
 
 /* And now for the protocols */
 #include "ftp.h"
@@ -439,7 +442,7 @@ CURLcode Curl_init_userdefined(struct Curl_easy *data)
 
   set->httpreq = HTTPREQ_GET; /* Default HTTP request */
   set->rtspreq = RTSPREQ_OPTIONS; /* Default RTSP request */
-#ifndef CURL_DISABLE_FILE
+#ifndef CURL_DISABLE_FTP
   set->ftp_use_epsv = TRUE;   /* FTP defaults to EPSV operations */
   set->ftp_use_eprt = TRUE;   /* FTP defaults to EPRT operations */
   set->ftp_use_pret = FALSE;  /* mainly useful for drftpd servers */
@@ -1004,6 +1007,7 @@ ConnectionExists(struct Curl_easy *data,
   bool canmultiplex = IsMultiplexingPossible(data, needle);
   struct connectbundle *bundle;
   struct curltime now = Curl_now();
+  const char *hostbundle;
 
 #ifdef USE_NTLM
   bool wantNTLMhttp = ((data->state.authhost.want &
@@ -1020,16 +1024,15 @@ ConnectionExists(struct Curl_easy *data,
 
   /* Look up the bundle with all the connections to this particular host.
      Locks the connection cache, beware of early returns! */
-  bundle = Curl_conncache_find_bundle(needle, data->state.conn_cache);
+  bundle = Curl_conncache_find_bundle(needle, data->state.conn_cache,
+                                      &hostbundle);
   if(bundle) {
     /* Max pipe length is zero (unlimited) for multiplexed connections */
     struct curl_llist_element *curr;
 
     infof(data, "Found bundle for host %s: %p [%s]\n",
-          (needle->bits.conn_to_host ? needle->conn_to_host.name :
-           needle->host.name), (void *)bundle,
-          (bundle->multiuse == BUNDLE_MULTIPLEX ?
-           "can multiplex" : "serially"));
+          hostbundle, (void *)bundle, (bundle->multiuse == BUNDLE_MULTIPLEX ?
+                                       "can multiplex" : "serially"));
 
     /* We can't multiplex if we don't know anything about the server */
     if(canmultiplex) {
@@ -1884,6 +1887,50 @@ CURLcode Curl_uc_to_curlcode(CURLUcode uc)
 }
 
 /*
+ * If the URL was set with an IPv6 numerical address with a zone id part, set
+ * the scope_id based on that!
+ */
+
+static void zonefrom_url(CURLU *uh, struct connectdata *conn)
+{
+  char *zoneid;
+  CURLUcode uc;
+
+  uc = curl_url_get(uh, CURLUPART_ZONEID, &zoneid, 0);
+
+  if(!uc && zoneid) {
+    char *endp;
+    unsigned long scope = strtoul(zoneid, &endp, 10);
+    if(!*endp && (scope < UINT_MAX))
+      /* A plain number, use it directly as a scope id. */
+      conn->scope_id = (unsigned int)scope;
+#if defined(HAVE_IF_NAMETOINDEX)
+    else {
+#elif defined(WIN32)
+    else if(Curl_if_nametoindex) {
+#endif
+
+#if defined(HAVE_IF_NAMETOINDEX) || defined(WIN32)
+      /* Zone identifier is not numeric */
+      unsigned int scopeidx = 0;
+#if defined(WIN32)
+      scopeidx = Curl_if_nametoindex(zoneid);
+#else
+      scopeidx = if_nametoindex(zoneid);
+#endif
+      if(!scopeidx)
+        infof(conn->data, "Invalid zoneid: %s; %s\n", zoneid,
+              strerror(errno));
+      else
+        conn->scope_id = scopeidx;
+    }
+#endif /* HAVE_IF_NAMETOINDEX || WIN32 */
+
+    free(zoneid);
+  }
+}
+
+/*
  * Parse URL and fill in the relevant members of the connection struct.
  */
 static CURLcode parseurlandfillconn(struct Curl_easy *data,
@@ -1991,7 +2038,7 @@ static CURLcode parseurlandfillconn(struct Curl_easy *data,
   }
   else {
     unsigned long port = strtoul(data->state.up.port, NULL, 10);
-    conn->remote_port = curlx_ultous(port);
+    conn->port = conn->remote_port = curlx_ultous(port);
   }
 
   (void)curl_url_get(uh, CURLUPART_QUERY, &data->state.up.query, 0);
@@ -2004,38 +2051,14 @@ static CURLcode parseurlandfillconn(struct Curl_easy *data,
   if(hostname[0] == '[') {
     /* This looks like an IPv6 address literal. See if there is an address
        scope. */
-    char *zoneid;
     size_t hlen;
-    uc = curl_url_get(uh, CURLUPART_ZONEID, &zoneid, 0);
     conn->bits.ipv6_ip = TRUE;
-
     /* cut off the brackets! */
     hostname++;
     hlen = strlen(hostname);
     hostname[hlen - 1] = 0;
-    if(!uc && zoneid) {
-      char *endp;
-      unsigned long scope;
-      scope = strtoul(zoneid, &endp, 10);
-      if(!*endp && (scope < UINT_MAX)) {
-        /* A plain number, use it direcly as a scope id. */
-        conn->scope_id = (unsigned int)scope;
-      }
-#ifdef HAVE_IF_NAMETOINDEX
-      else {
-        /* Zone identifier is not numeric */
-        unsigned int scopeidx = 0;
-        scopeidx = if_nametoindex(zoneid);
-        if(!scopeidx)
-          infof(data, "Invalid zoneid id: %s; %s\n", zoneid,
-                strerror(errno));
-        else
-          conn->scope_id = scopeidx;
 
-      }
-#endif /* HAVE_IF_NAMETOINDEX */
-      free(zoneid);
-    }
+    zonefrom_url(uh, conn);
   }
 
   /* make sure the connect struct gets its own copy of the host name */
@@ -2298,7 +2321,7 @@ static CURLcode parse_proxy(struct Curl_easy *data,
                             struct connectdata *conn, char *proxy,
                             curl_proxytype proxytype)
 {
-  char *portptr;
+  char *portptr = NULL;
   long port = -1;
   char *proxyuser = NULL;
   char *proxypasswd = NULL;
@@ -2422,6 +2445,7 @@ static CURLcode parse_proxy(struct Curl_easy *data,
     size_t len = strlen(host);
     host[len-1] = 0; /* clear the trailing bracket */
     host++;
+    zonefrom_url(uhp, conn);
   }
   proxyinfo->host.name = host;
 
@@ -3749,8 +3773,9 @@ static CURLcode create_conn(struct Curl_easy *data,
       connections_available = FALSE;
     else {
       /* this gets a lock on the conncache */
+      const char *bundlehost;
       struct connectbundle *bundle =
-        Curl_conncache_find_bundle(conn, data->state.conn_cache);
+        Curl_conncache_find_bundle(conn, data->state.conn_cache, &bundlehost);
 
       if(max_host_connections > 0 && bundle &&
          (bundle->num_connections >= max_host_connections)) {
@@ -3764,8 +3789,8 @@ static CURLcode create_conn(struct Curl_easy *data,
           (void)Curl_disconnect(data, conn_candidate,
                                 /* dead_connection */ FALSE);
         else {
-          infof(data, "No more connections allowed to host: %zu\n",
-                max_host_connections);
+          infof(data, "No more connections allowed to host %s: %zu\n",
+                bundlehost, max_host_connections);
           connections_available = FALSE;
         }
       }

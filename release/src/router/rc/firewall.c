@@ -1204,7 +1204,9 @@ void redirect_nat_setting(void)
 	fprintf(fp, "*nat\n"
 		":PREROUTING ACCEPT [0:0]\n"
 		":POSTROUTING ACCEPT [0:0]\n"
-		":OUTPUT ACCEPT [0:0]\n");
+		":OUTPUT ACCEPT [0:0]\n"
+		":PUPNP - [0:0]\n"
+		":VUPNP - [0:0]\n");
 	if(nvram_match("wifison_ready", "1"))
 	{
 #ifdef RTCONFIG_WIFI_SON
@@ -1243,7 +1245,9 @@ void repeater_nat_setting(){
 	fprintf(fp, "*nat\n"
 		":PREROUTING ACCEPT [0:0]\n"
 		":POSTROUTING ACCEPT [0:0]\n"
-		":OUTPUT ACCEPT [0:0]\n");
+		":OUTPUT ACCEPT [0:0]\n"
+		":PUPNP - [0:0]\n"
+		":VUPNP - [0:0]\n");
 
 	fprintf(fp, "-A PREROUTING -d 10.0.0.1 -p tcp --dport 80 -j DNAT --to-destination %s:%d\n", lan_ip, lan_port);
 	fprintf(fp, "-A PREROUTING -d %s -p tcp --dport 80 -j DNAT --to-destination %s:%d\n", nvram_default_get("lan_ipaddr"), lan_ip, lan_port);

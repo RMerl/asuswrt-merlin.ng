@@ -2727,7 +2727,7 @@ wan_up(const char *pwan_ifname)
 
 	/* Sync time */
 	refresh_ntpc();
-	while ((!nvram_get_int("ntp_ready")) && (i++ < 5)) {
+	while ((!nvram_get_int("ntp_ready")) && (i++ < 4)) {
 		sleep(i*i);
 	}
 
@@ -2738,11 +2738,13 @@ wan_up(const char *pwan_ifname)
 #endif
 			)
 	{
+		if (nvram_get_int("ntp_ready")) {
 #ifdef RTCONFIG_OPENVPN
-		start_ovpn_eas();
+			start_ovpn_eas();
 #endif
-		stop_ddns();
-		start_ddns();
+			stop_ddns();
+			start_ddns();
+		}
 		return;
 	}
 #endif
@@ -2755,8 +2757,10 @@ wan_up(const char *pwan_ifname)
 	stop_upnp();
 	start_upnp();
 
-	stop_ddns();
-	start_ddns();
+	if (nvram_get_int("ntp_ready")) {
+		stop_ddns();
+		start_ddns();
+	}
 
 #ifdef RTCONFIG_VPNC
 #ifdef RTCONFIG_VPN_FUSION
@@ -2907,7 +2911,9 @@ wan_up(const char *pwan_ifname)
 #endif
 
 #ifdef RTCONFIG_OPENVPN
-	start_ovpn_eas();
+	if (nvram_get_int("ntp_ready")) {
+		start_ovpn_eas();
+	}
 #endif
 
 _dprintf("%s(%s): done.\n", __FUNCTION__, wan_ifname);

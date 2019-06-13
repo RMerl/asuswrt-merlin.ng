@@ -118,6 +118,13 @@ int ntpd_synced_main(int argc, char *argv[])
 #ifdef RTCONFIG_DISK_MONITOR
 		notify_rc("restart_diskmon");
 #endif
+
+		stop_ddns();
+		start_ddns();
+#ifdef RTCONFIG_OPENVPN
+		start_ovpn_eas();
+#endif
+
 	}
 
 	return 0;

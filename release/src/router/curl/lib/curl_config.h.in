@@ -979,9 +979,6 @@
 /* if OpenSSL is in use */
 #undef USE_OPENSSL
 
-/* if PolarSSL is enabled */
-#undef USE_POLARSSL
-
 /* to enable Windows native SSL/TLS support */
 #undef USE_SCHANNEL
 

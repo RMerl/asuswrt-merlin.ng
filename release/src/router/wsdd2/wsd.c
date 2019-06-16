@@ -231,7 +231,7 @@ static struct {
 	{ .key  = "serial:",    ._default = "0"},
 	{ .key  = "sku:",       ._default = "Asus router"},
 	{ .key  = "vendorurl:", ._default = "https://www.asus.com"},
-	{ .key  = "modelurl:",  ._default = "https://asuswrt.lostrealm.ca"},
+	{ .key  = "modelurl:",  ._default = "https://www.asuswrt-merlin.net"},
 	{ .key  = "presentationurl:",   ._default = "http://router.asus.com"},
 	{}
 };

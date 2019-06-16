@@ -189,6 +189,11 @@ void adjust_merlin_config(void)
 	if (f_exists("/jffs/.gomesh"))
 		nvram_set("amas_force", "1");
 #endif
+
+/* Migrate update server */
+	if (nvram_match("firmware_server", "https://fwupdate.lostrealm.ca/asuswrt-merlin"))
+		nvram_set("firmware_server", "https://fwupdate.asuswrt-merlin.net");
+
 }
 
 void adjust_url_urlelist(void)

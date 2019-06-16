@@ -115,7 +115,7 @@ if(cfg_sync_support){
 }
 var download_srv = '<% nvram_get("firmware_server"); %>';
 if (download_srv == "") {
-	download_url = "https://asuswrt.lostrealm.ca/download";
+	download_url = "https://www.asuswrt-merlin.net/download";
 } else {
 	download_url = download_srv + "/" + based_modelid;
 }
@@ -1166,7 +1166,7 @@ function toggle_fw_check(state) {
 					<li><#FW_n0#></li>
 					<li><#FW_n1#></li>
 					<li id="fw_note2"><#FW_n2#></li>
-					<li id="fw_note3">Get the latest firmware version from the download site at <a style="font-weight: bolder;text-decoration: underline;color:#FFFFFF;" href="https://asuswrt.lostrealm.ca/download/" target="_blank">https://asuswrt.lostrealm.ca/download/</a></li>
+					<li id="fw_note3">Get the latest firmware version from the download site at <a style="font-weight: bolder;text-decoration: underline;color:#FFFFFF;" href="https://www.asuswrt-merlin.net/download/" target="_blank">https://www.asuswrt-merlin.net/download/</a></li>
 				</ol>
 		  </div>
 		  <br>

@@ -14,7 +14,7 @@ Asuswrt-Merlin 384/NG Changelog
   - UPDATED: Nano 4.2.
   - UPDATED: OpenSSL-11x to 1.1.1c.
   - UPDATED: OpenSSL-10x to 1.0.2s.
-  - UPDATED: curl 7.65.0.
+  - UPDATED: curl 7.65.1.
   - UPDATED: miniupnpd 20190604.
   - CHANGED: Local clients will be shown by their hostname
              on the Classification page.
@@ -48,12 +48,19 @@ Asuswrt-Merlin 384/NG Changelog
              around the more limited traceroute busybox applet.
              RT-AC86U and RT-AX88U still use the newer
              traceroute executable.
+  - CHANGED: Reworked how some services are started when the WAN
+             interface comes up to prevent deadlocks between
+             the WAN completing its initialisation, and the
+             clock getting set.  These could result is fairly
+             long boot time for some ISPs.
   - FIXED: openvpn-event script not launching if the
            client was configured in Secret Key auth
            mode.
   - FIXED: IPv6 on RT-AX88U - backported accept_ra fix
            from 45717 (themiron)
   - FIXED: Memory leak in erp_monitor process.
+  - FIXED: Page redirection failing to apply at boot
+           time if WAN was down.
 
 
 384.11_2 (18-May-2019)

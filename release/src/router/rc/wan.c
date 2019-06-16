@@ -2693,11 +2693,11 @@ wan_up(const char *pwan_ifname)
 	stop_ovpn_all();
 #endif
 
-	/* Sync time */
-	refresh_ntpc();
-	while ((!nvram_get_int("ntp_ready")) && (i++ < 4)) {
-		sleep(i*i);
-	}
+	/* Sync time if not already set, or not running a daemon */
+#ifdef RTCONFIG_NTPD
+	if (!nvram_get_int("ntp_ready"))
+#endif
+		refresh_ntpc();
 
 #if !defined(RTCONFIG_MULTIWAN_CFG)
 	if (wan_unit != wan_primary_ifunit()

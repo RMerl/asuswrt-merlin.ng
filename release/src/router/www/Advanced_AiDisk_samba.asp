@@ -51,9 +51,9 @@ function initial(){
 	document.aidiskForm.protocol.value = PROTOCOL;
 	
 	//complete SMBv1_FAQ link
-	document.getElementById('SMBv1_FAQ').target="_blank";
-	document.getElementById('SMBv1_FAQ').style.textDecoration="underline";
-	httpApi.faqURL("1037477", function(url){document.getElementById("SMBv1_FAQ").href=url;});
+	//document.getElementById('SMBv1_FAQ').target="_blank";
+	//document.getElementById('SMBv1_FAQ').style.textDecoration="underline";
+	//httpApi.faqURL("1037477", function(url){document.getElementById("SMBv1_FAQ").href=url;});
 
 	if(is_KR_sku){
 		document.getElementById("radio_anonymous_enable_tr").style.display = "none";

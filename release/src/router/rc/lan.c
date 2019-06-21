@@ -6249,7 +6249,7 @@ void start_lan_port(int dt)
 	}
 
 #ifdef RTCONFIG_QTN
-	if (nvram_get_int("qtn_ready") == 1)
+	if (nvram_get_int("qtn_ready") == 0)
 		dbG("do not start lan port due to QTN not ready\n");
 	else
 		lanport_ctrl(1);

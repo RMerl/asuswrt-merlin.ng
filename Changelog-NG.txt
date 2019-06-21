@@ -1,19 +1,19 @@
 Asuswrt-Merlin 384/NG Changelog
 ===============================
 
-384.12 (xx-xxx-2019)
+384.12 (21-June-2019)
   - NEW: Added WS-Discovery support.  This allows Windows clients
          to detect the router's shared USB drives even if SMBv1
          support is disabled.
   - NEW: Re-added option to extend the WAN's TTL (from stock
          firmware, was previously disabled as it used to
          be broken)
-  - UPDATED: RT-AC3200 and RT-AC87U to 382_51634/51636 binary blobs
+  - UPDATED: RT-AC3200 and RT-AC87U to 382_51640/51634 binary blobs
              (with a few exceptions for 384_xxxx compatibility)
   - UPDATED: Merged GPL 384_45717 (except for RT-AX88U)
   - UPDATED: Nano 4.2.
-  - UPDATED: OpenSSL-11x to 1.1.1c.
-  - UPDATED: OpenSSL-10x to 1.0.2s.
+  - UPDATED: OpenSSL-11 to 1.1.1c.
+  - UPDATED: OpenSSL-10 to 1.0.2s.
   - UPDATED: curl 7.65.1.
   - UPDATED: miniupnpd 20190604.
   - CHANGED: Local clients will be shown by their hostname
@@ -56,11 +56,13 @@ Asuswrt-Merlin 384/NG Changelog
   - FIXED: openvpn-event script not launching if the
            client was configured in Secret Key auth
            mode.
-  - FIXED: IPv6 on RT-AX88U - backported accept_ra fix
+  - FIXED: IPv6 issues on RT-AX88U - backported accept_ra fix
            from 45717 (themiron)
   - FIXED: Memory leak in erp_monitor process.
   - FIXED: Page redirection failing to apply at boot
            time if WAN was down.
+  - FIXED: CVE-2019-11477, CVE-2019-11478 and
+           CVE-2019-11479 (themiron)
 
 
 384.11_2 (18-May-2019)

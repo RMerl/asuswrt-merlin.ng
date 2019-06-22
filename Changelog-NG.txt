@@ -1,7 +1,12 @@
 Asuswrt-Merlin 384/NG Changelog
 ===============================
 
-384.12 (21-June-2019)
+384.12 (22-June-2019)
+  - NOTE: The project now has its own domain name.  Official website
+          is now https://www.asuswrt-merlin.net/ and my email address
+          for anything related to the project is now
+          merlin@asuswrt-merlin.net.
+
   - NEW: Added WS-Discovery support.  This allows Windows clients
          to detect the router's shared USB drives even if SMBv1
          support is disabled.

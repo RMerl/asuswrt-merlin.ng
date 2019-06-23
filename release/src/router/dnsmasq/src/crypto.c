@@ -16,15 +16,18 @@
 
 #include "dnsmasq.h"
 
-#ifdef HAVE_DNSSEC
+#if defined(HAVE_DNSSEC) && defined(HAVE_NETTLE)
 
 #include <nettle/rsa.h>
-#include <nettle/dsa.h>
 #include <nettle/ecdsa.h>
 #include <nettle/ecc-curve.h>
 #include <nettle/eddsa.h>
 #include <nettle/nettle-meta.h>
 #include <nettle/bignum.h>
+
+#ifdef HAVE_DSA
+#include <nettle/dsa.h>
+#endif
 
 /* Implement a "hash-function" to the nettle API, which simply returns
    the input data, concatenated into a single, statically maintained, buffer.
@@ -99,7 +102,7 @@ static struct nettle_hash null_hash = {
 };
 
 /* Find pointer to correct hash function in nettle library */
-const struct nettle_hash *hash_find(char *name)
+const void *hash_find(char *name)
 {
   if (!name)
     return NULL;
@@ -129,8 +132,9 @@ const struct nettle_hash *hash_find(char *name)
 }
 
 /* expand ctx and digest memory allocations if necessary and init hash function */
-int hash_init(const struct nettle_hash *hash, void **ctxp, unsigned char **digestp)
+int hash_init(const void *hashv, void **ctxp, unsigned char **digestp)
 {
+  const struct nettle_hash *hash = (const struct nettle_hash *)hashv;
   static void *ctx = NULL;
   static unsigned char *digest = NULL;
   static unsigned int ctx_sz = 0;
@@ -166,6 +170,21 @@ int hash_init(const struct nettle_hash *hash, void **ctxp, unsigned char **diges
   return 1;
 }
   
+void hash_update(const void *hash, void *ctx, size_t length, const unsigned char *src)
+{
+  return ((struct nettle_hash *)hash)->update(ctx, length, src);
+}
+
+void hash_digest(const void *hash, void *ctx, size_t length, unsigned char *dst)
+{
+  return ((struct nettle_hash *)hash)->digest(ctx, length, dst);
+}
+
+size_t hash_length(const void *hash)
+{
+  return ((struct nettle_hash *)hash)->digest_size;
+}
+
 static int dnsmasq_rsa_verify(struct blockdata *key_data, unsigned int key_len, unsigned char *sig, size_t sig_len,
 			      unsigned char *digest, size_t digest_len, int algo)
 {
@@ -220,6 +239,7 @@ static int dnsmasq_rsa_verify(struct blockdata *key_data, unsigned int key_len, 
   return 0;
 }  
 
+#ifdef HAVE_DSA
 static int dnsmasq_dsa_verify(struct blockdata *key_data, unsigned int key_len, unsigned char *sig, size_t sig_len,
 			      unsigned char *digest, size_t digest_len, int algo)
 {
@@ -263,6 +283,7 @@ static int dnsmasq_dsa_verify(struct blockdata *key_data, unsigned int key_len, 
   
   return nettle_dsa_verify(params, y, digest_len, digest, sig_struct);
 } 
+#endif
  
 static int dnsmasq_ecdsa_verify(struct blockdata *key_data, unsigned int key_len, 
 				unsigned char *sig, size_t sig_len,
@@ -379,8 +400,10 @@ static int (*verify_func(int algo))(struct blockdata *key_data, unsigned int key
     case 1: case 5: case 7: case 8: case 10:
       return dnsmasq_rsa_verify;
       
+#ifdef HAVE_DSA
     case 3: case 6: 
       return dnsmasq_dsa_verify;
+#endif
     
     case 13: case 14:
       return dnsmasq_ecdsa_verify;
@@ -419,7 +442,9 @@ char *ds_digest_name(int digest)
     {
     case 1: return "sha1";
     case 2: return "sha256";
+#ifndef NO_GOST
     case 3: return "gosthash94";
+#endif
     case 4: return "sha384";
     default: return NULL;
     }
@@ -432,13 +457,17 @@ char *algo_digest_name(int algo)
     {
     case 1: return NULL;          /* RSA/MD5 - Must Not Implement.  RFC 6944 para 2.3. */
     case 2: return NULL;          /* Diffie-Hellman */
-    case 3: return "sha1";        /* DSA/SHA1 */ 
+#ifdef HAVE_DSA
+    case 3: return "sha1";        /* DSA/SHA1 - Must Not Implement. RFC 8624 para 1.3. */
+    case 6: return "sha1";        /* DSA-NSEC3-SHA1 - Must Not Implement. RFC 8624 para 1.3. */
+#endif
     case 5: return "sha1";        /* RSA/SHA1 */
-    case 6: return "sha1";        /* DSA-NSEC3-SHA1 */
     case 7: return "sha1";        /* RSASHA1-NSEC3-SHA1 */
     case 8: return "sha256";      /* RSA/SHA-256 */
     case 10: return "sha512";     /* RSA/SHA-512 */
+#ifndef NO_GOST
     case 12: return NULL;         /* ECC-GOST */
+#endif
     case 13: return "sha256";     /* ECDSAP256SHA256 */
     case 14: return "sha384";     /* ECDSAP384SHA384 */ 	
     case 15: return "null_hash";  /* ED25519 */
@@ -455,6 +484,11 @@ char *nsec3_digest_name(int digest)
     case 1: return "sha1";
     default: return NULL;
     }
+}
+
+void crypto_init(void)
+{
+  /* dummy */
 }
 
 #endif

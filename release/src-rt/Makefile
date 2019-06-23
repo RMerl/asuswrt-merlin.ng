@@ -2483,7 +2483,7 @@ define RouterOptions
 		echo "RTCONFIG_IGD2=y" >>$(1); \
 	fi; \
 	if [ "$(DNSSEC)" = "y" ]; then \
-		sed -i "/RTCONFIG_DNSSEC/d" $(1); \
+		sed -i "/RTCONFIG_DNSSEC\b/d" $(1); \
 		echo "RTCONFIG_DNSSEC=y" >>$(1); \
 	fi; \
 	if [ "$(MERLINUPDATE)" = "y" ]; then\

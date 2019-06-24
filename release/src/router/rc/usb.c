@@ -5586,6 +5586,7 @@ void start_wsdd()
 	char bootparms[64];
 	char *wsdd_argv[] = { "/usr/sbin/wsdd2",
 				"-d",
+				"-w",
 				"-i",
 				nvram_safe_get("lan_ifname"),
 				"-b",
@@ -5600,7 +5601,7 @@ void start_wsdd()
 		ea[0], ea[1], ea[2], ea[3], ea[4], ea[5]);
 
 	snprintf(bootparms, sizeof(bootparms), "sku:%s,serial:%s", get_productid(), serial);
-	wsdd_argv[5] = bootparms;
+	wsdd_argv[6] = bootparms;
 
 #if 0
 	if(!f_exists("/etc/machine-id"))

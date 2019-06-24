@@ -303,7 +303,7 @@ var netoolApi = {
 }
 
 function hideCNT(_val){
-	if(_val == "3"){
+	if(_val == "3" || _val == "1" ){
 		document.getElementById("pingCNT_tr").style.display = "";
 		document.getElementById("cmdDesc").innerHTML = "<#NetworkTools_Ping#>";
 	}

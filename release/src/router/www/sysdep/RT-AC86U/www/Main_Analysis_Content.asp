@@ -303,13 +303,17 @@ var netoolApi = {
 }
 
 function hideCNT(_val){
-	if(_val == "3" || _val == "1" ){
+	if(_val == "3"){
 		document.getElementById("pingCNT_tr").style.display = "";
 		document.getElementById("cmdDesc").innerHTML = "<#NetworkTools_Ping#>";
 	}
 	else if(_val == "4"){
 		document.getElementById("pingCNT_tr").style.display = "none";
 		document.getElementById("cmdDesc").innerHTML = "<#NetworkTools_tr#>";
+	}
+	else if(_val == "1"){
+		document.getElementById("pingCNT_tr").style.display = "none";
+		document.getElementById("cmdDesc").innerHTML = "<#NetworkTools_Ping#>";
 	}
 	else{
 		document.getElementById("pingCNT_tr").style.display = "none";

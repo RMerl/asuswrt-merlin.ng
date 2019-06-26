@@ -1,6 +1,15 @@
 Asuswrt-Merlin 384/NG Changelog
 ===============================
 
+384.13 (xx-xxx-xxxx)
+  - FIXED: Firmware Update check button would redirect to Asus
+           support site if scheduled checks are disabled.
+  - FIXED: Firefox was showing a no-op Uninstall button on the
+           AiCloud page
+  - FIXED: 5 GHz radio showing as disabled on the Sysinfo page for
+           the RT-AC87U
+
+
 384.12 (22-June-2019)
   - NOTE: The project now has its own domain name.  Official website
           is now https://www.asuswrt-merlin.net/ and my email address

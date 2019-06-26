@@ -1146,11 +1146,14 @@ function hide_traffic_warning(){
 }
 
 function get_helplink(){
+	return "https://www.asuswrt-merlin.net/";
+/*
 	var href_lang = get_supportsite_lang();
 	var model_name_supportsite = supportsite_model(support_site_modelid, hw_ver);  // @ /js/support_site.js
 
 	var getlink="https://www.asus.com"+href_lang+"Networking/" +model_name_supportsite+ "/HelpDesk_Download/";       
 	return getlink;
+*/
 }
 
 function Block_chars(obj, keywordArray){

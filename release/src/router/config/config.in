@@ -1635,14 +1635,15 @@ config RTCONFIG_DNSSEC
 
 choice
 	prompt "dnsmasq: DNSSEC crypto library"
-	depends on RTCONFIG_DNSSEC
 	default RTCONFIG_DNSSEC_NETTLE
 
 config RTCONFIG_DNSSEC_OPENSSL
 	bool "OpenSSL"
+	depends on RTCONFIG_DNSSEC
 
 config RTCONFIG_DNSSEC_NETTLE
 	bool "Nettle"
+	depends on RTCONFIG_DNSSEC
 
 endchoice
 

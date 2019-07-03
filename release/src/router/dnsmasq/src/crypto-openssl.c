@@ -45,6 +45,9 @@ static char *gost_hash = NULL;
 #endif
 
 #if OPENSSL_VERSION_NUMBER < 0x10100000L
+#define EVP_MD_CTX_new EVP_MD_CTX_create
+#define EVP_MD_CTX_reset EVP_MD_CTX_cleanup
+
 static void BN_set(BIGNUM **bp, BIGNUM *b)
 {
   if (b != NULL) {
@@ -205,8 +208,8 @@ int hash_init(const void *hash, void **ctxp, unsigned char **digestp)
 #endif
 
   if (mdctx)
-    EVP_MD_CTX_init(mdctx);
-  else if (!(mdctx = EVP_MD_CTX_create()))
+    EVP_MD_CTX_reset(mdctx);
+  else if (!(mdctx = EVP_MD_CTX_new()))
     return 0;
 
   if (EVP_DigestInit_ex(mdctx, md, NULL) == 0)
@@ -256,6 +259,9 @@ void hash_digest(const void *hash, void *ctx, size_t length, unsigned char *dst)
 #endif
 
   EVP_DigestFinal_ex(mdctx, dst, NULL);
+
+  /* hash_name calls update/digest multiple times w/o init */
+  EVP_DigestInit_ex(mdctx, EVP_MD_CTX_md(mdctx), NULL);
 }
 
 size_t hash_length(const void *hash)
@@ -566,8 +572,8 @@ static int dnsmasq_eddsa_verify(struct blockdata *key_data, unsigned int key_len
     return 0;
 
   if (mdctx)
-    EVP_MD_CTX_init(mdctx);
-  else if (!(mdctx = EVP_MD_CTX_create()))
+    EVP_MD_CTX_reset(mdctx);
+  else if (!(mdctx = EVP_MD_CTX_new()))
     return 0;
 
   if (EVP_DigestVerifyInit(mdctx, NULL, NULL, NULL, pkey) <= 0)
@@ -728,9 +734,9 @@ static void *dnsmasq_realloc(void *p, size_t size)
 }
 
 #if OPENSSL_VERSION_NUMBER >= 0x10100000L
-static void dnsmasq_free(void *str, const char *file, int line)
+static void dnsmasq_free(void *p, const char *file, int line)
 #else
-static void dnsmasq_free(void *str)
+static void dnsmasq_free(void *p)
 #endif
 {
 #if OPENSSL_VERSION_NUMBER >= 0x10100000L
@@ -738,7 +744,7 @@ static void dnsmasq_free(void *str)
   (void)line;
 #endif
 
-  free(str);
+  free(p);
 }
 
 void crypto_init(void)

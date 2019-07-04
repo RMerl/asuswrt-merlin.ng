@@ -48,6 +48,7 @@ var wl_maclist_x_array = gn_array[0][16];
 var captive_portal_used_wl_array = new Array();
 
 var manually_maclist_list_array = new Array();
+var all_gn_status = [];
 Object.prototype.getKey = function(value) {
 	for(var key in this) {
 		if(this[key] == value) {
@@ -393,6 +394,8 @@ function gen_gntable_tr(unit, gn_array, slicesb){
 				htmlcode += '<tfoot><tr><td align="center"><div id="smart_home_'+unit+'" style="font-size: 12px;font-weight:bolder;color:rgb(255, 204, 0);position:absolute;margin:33px 0px 0px -20px;display:none"><#Guest_Network_AlexaIFTTT_setting#></div></td></tr></tfoot>';
 			}
 			htmlcode += '</table></td>';		
+
+			all_gn_status.push({"idx" : unit_subunit, "enable" : (gn_array[i][0] == '1'), "bw_enabled" : (gn_array[i][18] == '1')});
 	}	
 
 	if(slicesb > 0){
@@ -556,6 +559,8 @@ function applyRule(){
 				document.form.action_script.value = "restart_wireless;restart_qos;restart_firewall;";
 			}
 		}
+
+		dis_qos_enable(document.form.wl_unit.value + "." + document.form.wl_subunit.value, document.form, "bw_enabled");
 
 		var _unit_subunit = "wl" + document.form.wl_unit.value + "." + document.form.wl_subunit.value;
 		if(captive_portal_used_wl_array[_unit_subunit] != undefined) {
@@ -780,6 +785,10 @@ function en_dis_guest_unit(_unit, _subunit, _setting){
 	document.unitform.appendChild(NewInput);
 	document.unitform.wl_unit.value = _unit;
 	document.unitform.wl_subunit.value = _subunit;
+
+	if(_setting == "0")
+		dis_qos_enable(_unit + "." + _subunit, document.unitform, "enable");
+
 	document.unitform.submit();
 }
 
@@ -1184,6 +1193,42 @@ function show_bandwidth(flag){
 		inputCtrl(document.form.wl_bw_dl_x, 0);
 		inputCtrl(document.form.wl_bw_ul_x, 0);		
 	}	
+}
+
+function dis_qos_enable(_wl_idx, _form_obj, _control_item){
+	if(_wl_idx == "" || _wl_idx == undefined || _form_obj == "" || _form_obj == undefined || _control_item == "" || _control_item == undefined)
+		return;
+
+	if(!(all_gn_status.some(function(item, index, array){return (item.enable == true && item.bw_enabled == true)})))//if all gn bw disabled, not need disable qos
+		return;
+
+	var sw_mode_support = isSwMode("rt");
+	var cp_wifi_not_used = (captive_portal_used_wl_array["wl" + _wl_idx] == undefined) ? true : false;
+	if(sw_mode_support && cp_wifi_not_used){
+		var specific_gn = all_gn_status.filter(function(item, index, array){
+			return (item.idx == _wl_idx);
+		})[0];
+
+		if(_control_item == "enable")
+			specific_gn.enable = false;
+		else if(_control_item == "bw_enabled")
+			specific_gn.bw_enabled = document.form.bw_enabled_x[0].checked;
+
+		var all_gn_bw_dis = !(all_gn_status.some(function(item, index, array){return (item.enable == true && item.bw_enabled == true)}));
+		var QoS_bw_rulelist_orig = '<% nvram_get("qos_bw_rulelist"); %>';
+		var qos_can_dis = (QoS_enable_orig == "1" && QoS_type_orig == "2" && QoS_bw_rulelist_orig == "") ? true : false;
+		if(all_gn_bw_dis && qos_can_dis){
+			if(_form_obj.qos_enable == undefined){
+				var qos_enable = document.createElement("input");
+				qos_enable.type = "hidden";
+				qos_enable.name = "qos_enable";
+				qos_enable.value = "0";
+				_form_obj.appendChild(qos_enable);
+			}
+			else
+				_form_obj.qos_enable.value = "0";
+		}
+	}
 }
 </script>
 </head>

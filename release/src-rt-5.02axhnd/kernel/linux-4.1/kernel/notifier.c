@@ -5,6 +5,9 @@
 #include <linux/rcupdate.h>
 #include <linux/vmalloc.h>
 #include <linux/reboot.h>
+#ifdef CONFIG_BCM_PKTRUNNER_WAR_SKIP_TUN
+#include <linux/module.h>
+#endif
 
 /*
  *	Notifier list for kernel code which wants to be called
@@ -59,6 +62,56 @@ static int notifier_chain_unregister(struct notifier_block **nl,
 	return -ENOENT;
 }
 
+#ifdef CONFIG_BCM_PKTRUNNER_WAR_SKIP_TUN
+extern int netdev_notifier_skip(void *nl, void *notifier_call_fn, unsigned long val, void *v);
+extern int notifier_match_netdev(void *nl, void *v, char *dev_name_prefix, int prefix_size);
+#ifdef CONFIG_IPV6
+extern int notifier_match_inet6addr_dev(void *nl, void *v, char *dev_name_prefix, int prefix_size);
+#endif /* CONFIG_IPV6 */
+extern int notifier_match_inetaddr_dev(void *nl, void *v, char *dev_name_prefix, int prefix_size);
+
+static int notifier_skip(void *nl, void *notifier_call_fn, void *v)
+{
+	struct module *mod = NULL;
+	static unsigned long pktrunner_module_core = 0;
+	static unsigned int pktrunner_core_size;
+
+	if (pktrunner_module_core == 0) {
+		mutex_lock(&module_mutex);
+		mod = find_module("pktrunner");
+		if (mod) {
+			pktrunner_module_core = (unsigned long)mod->module_core;
+			pktrunner_core_size = mod->core_size;
+			//printk("%s: pktrunner_module_core 0x%lx size %d",
+			//	__FUNCTION__, pktrunner_module_core, pktrunner_core_size);
+		}
+		mutex_unlock(&module_mutex);
+	}
+
+	/* return if pktrunner module does not exist */
+	if (pktrunner_module_core == 0)
+		return 0;
+
+	/* return if notifier is not for interesting dev */
+	if (!notifier_match_netdev(nl, v, "tun", 3) &&
+#ifdef CONFIG_IPV6
+		!notifier_match_inet6addr_dev(nl, v, "tun", 3) &&
+#endif /* CONFIG_IPV6 */
+		!notifier_match_inetaddr_dev(nl, v, "tun", 3))
+		return 0;
+
+	if (pktrunner_module_core < (unsigned long)notifier_call_fn &&
+		(unsigned long)notifier_call_fn < (pktrunner_module_core + pktrunner_core_size)) {
+		//printk("%s: notifier_call_fn %p\n",
+		//	__FUNCTION__, notifier_call_fn);
+		return 1;
+	}
+
+	return 0;
+}
+#endif
+
+
 /**
  * notifier_call_chain - Informs the registered notifiers about an event.
  *	@nl:		Pointer to head of the blocking notifier chain
@@ -90,7 +143,13 @@ static int notifier_call_chain(struct notifier_block **nl,
 			continue;
 		}
 #endif
+#ifdef CONFIG_BCM_PKTRUNNER_WAR_SKIP_TUN
+		if (!notifier_skip(nl, nb->notifier_call, v)) {
+			ret = nb->notifier_call(nb, val, v);
+		}
+#else
 		ret = nb->notifier_call(nb, val, v);
+#endif
 
 		if (nr_calls)
 			(*nr_calls)++;

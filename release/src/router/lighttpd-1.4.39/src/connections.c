@@ -204,7 +204,7 @@ static void dump_packet(const unsigned char *data, size_t len) {
 
 static int connection_handle_read_ssl(server *srv, connection *con) {
 #ifdef USE_OPENSSL
-	int r, ssl_err, len, count = 0;
+	int r, ssl_err, len;
 	char *mem = NULL;
 	size_t mem_len = 0;
 
@@ -219,20 +219,19 @@ static int connection_handle_read_ssl(server *srv, connection *con) {
 #endif
 
 		len = SSL_read(con->ssl, mem, mem_len);
-		chunkqueue_use_memory(con->read_queue, len > 0 ? len : 0);
+		if (len > 0) {
+			chunkqueue_use_memory(con->read_queue, len);
+			con->bytes_read += len;
+		} else {
+			chunkqueue_use_memory(con->read_queue, 0);
+		}
 
 		if (con->renegotiations > 1 && con->conf.ssl_disable_client_renegotiation) {
 			log_error_write(srv, __FILE__, __LINE__, "s", "SSL: renegotiation initiated by client, killing connection");
 			connection_set_state(srv, con, CON_STATE_ERROR);
 			return -1;
 		}
-
-		if (len > 0) {
-			con->bytes_read += len;
-			count += len;
-		}
-	} while (len == (ssize_t) mem_len && count < MAX_READ_LIMIT);
-
+	} while (len > 0);
 
 	if (len < 0) {
 		int oerrno = errno;
@@ -286,9 +285,15 @@ static int connection_handle_read_ssl(server *srv, connection *con) {
 			while((ssl_err = ERR_get_error())) {
 				switch (ERR_GET_REASON(ssl_err)) {
 				case SSL_R_SSL_HANDSHAKE_FAILURE:
+			      #ifdef SSL_R_TLSV1_ALERT_UNKNOWN_CA
 				case SSL_R_TLSV1_ALERT_UNKNOWN_CA:
+			      #endif
+			      #ifdef SSL_R_SSLV3_ALERT_CERTIFICATE_UNKNOWN
 				case SSL_R_SSLV3_ALERT_CERTIFICATE_UNKNOWN:
+			      #endif
+			      #ifdef SSL_R_SSLV3_ALERT_BAD_CERTIFICATE
 				case SSL_R_SSLV3_ALERT_BAD_CERTIFICATE:
+			      #endif
 					if (!con->conf.log_ssl_noise) continue;
 					break;
 				default:

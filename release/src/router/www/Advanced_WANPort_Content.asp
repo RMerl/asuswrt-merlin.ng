@@ -174,6 +174,9 @@ function initial(){
 		add_options_x2(document.form.wans_lanport1, arr, varr, <% nvram_get("wans_lanport"); %>);
 		add_options_x2(document.form.wans_lanport2, arr, varr, <% nvram_get("wans_lanport"); %>);
 	}
+
+	if(wan_bonding_support)
+		$("#wan_aggre_desc").css("display", "");
 }
 
 function form_show(v){
@@ -1191,7 +1194,7 @@ function remain_origins(){
 									<div class="formfonttitle"><#menu5_3#> - <#dualwan#></div>
 									<div style="margin:10px 0 10px 5px;" class="splitLine"></div>
 									<div class="formfontdesc"><#dualwan_desc#><a id="dualwan_faq" href="" target="_blank" style="margin-left:5px; text-decoration: underline;"><#dualwan#> FAQ</a></div>
-									<div class="formfontdesc" style="color:#FFCC00;"><#WANAggregation_goto_WAN#></div>
+									<div id="wan_aggre_desc" class="formfontdesc" style="color:#FFCC00; display:none;"><#WANAggregation_goto_WAN#></div>
 									<table width="100%" border="1" align="center" cellpadding="4" cellspacing="0" bordercolor="#6b8fa3"  class="FormTable">
 										
 			  						<thead>

@@ -114,6 +114,10 @@ apply.login = function(){
 			httpPassInput.showTextHint("<#JS_short_password#>");
 			return false;
 		}
+		else if(httpPassInput.val().length > 16){
+			httpPassInput.showTextHint("<#JS_max_password#>");
+			return false;
+		}
 
 		var isValidChar = validator.invalidChar(httpPassInput.val())
 		if(isValidChar.isError){

@@ -3082,6 +3082,7 @@ enum {
 	WL_REINIT_RC_TX_FIFO_SUSP         = 51,
 	WL_REINIT_RC_MAC_ENABLE           = 52,
 	WL_REINIT_RC_SCAN_STALLED         = 53,
+	WL_REINIT_RC_RX_DECRYPT_ERROR	  = 54,
 	WL_REINIT_RC_LAST	/* This must be the last entry */
 };
 

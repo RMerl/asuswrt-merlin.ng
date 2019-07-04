@@ -395,7 +395,7 @@ define(function(){
 					retArray.push("menu_ParentalControl");
 					retArray.push("menu_QoS");
 
-					if(userRSSI_support){
+					if(!userRSSI_support){
 						retArray.push("menu_Wireless");
 					}
 

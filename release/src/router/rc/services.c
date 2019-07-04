@@ -1244,6 +1244,7 @@ void start_dnsmasq(void)
 					    nvram_safe_get("lan_hostname"));
 			}
 		}
+
 #endif
 		append_custom_config("hosts", fp);
 		fclose(fp);
@@ -4151,7 +4152,11 @@ mcpd_conf(void)
 
 	/* IGMP configuration */
 	fprintf(fp, "##### IGMP configuration #####\n");
-	fprintf(fp, "igmp-default-version 3\n");
+	/* set igmp default version / default version 3 for protection*/
+	if (nvram_match("igmp_default_version", "2"))
+		fprintf(fp, "igmp-default-version 2\n");
+	else
+		fprintf(fp, "igmp-default-version 3\n");
 	fprintf(fp, "igmp-query-interval 20\n");
 	fprintf(fp, "igmp-query-response-interval 100\n");
 	fprintf(fp, "igmp-last-member-query-interval 10\n");
@@ -4170,8 +4175,18 @@ mcpd_conf(void)
 	fprintf(fp, "igmp-admission-bridging-filter 0\n");
 	/* Do not set igmp proxy in IPTV bridge case */
 	if (nvram_get_int("switch_stb_x") == 0 || nvram_get_int("switch_stb_x") > 6) {
-		if(nvram_match("switch_wantag", "movistar"))
+		if (nvram_match("switch_wantag", "movistar")) 
 			fprintf(fp, "igmp-proxy-interfaces %s\n", "vlan2");
+		else if (nvram_match("switch_wantag", "unifi_biz") || 
+			nvram_match("switch_wantag", "stuff_fibre") || nvram_match("switch_wantag", "spark") ||
+			nvram_match("switch_wantag", "2degrees") || nvram_match("switch_wantag", "slingshot") ||
+			nvram_match("switch_wantag", "orcon") || nvram_match("switch_wantag", "voda_nz") ||
+			nvram_match("switch_wantag", "tpg") || nvram_match("switch_wantag", "iinet") ||
+			nvram_match("switch_wantag", "aapt") || nvram_match("switch_wantag", "intronode") ||
+			nvram_match("switch_wantag", "amaysim") || nvram_match("switch_wantag", "dodo") ||
+			nvram_match("switch_wantag", "iprimus") ||
+			(nvram_match("switch_wantag", "manual") && !nvram_get_int("switch_stb_x") && nvram_get_int("switch_wan0tagid"))) 
+			fprintf(fp, "igmp-proxy-interfaces %s\n", nvram_safe_get("wan0_ifname"));
 		else
 			fprintf(fp, "igmp-proxy-interfaces %s\n", proxy_ifname);
 	}
@@ -4184,6 +4199,16 @@ mcpd_conf(void)
 		fprintf(fp, "igmp-snooping-interfaces %s\n", nvram_safe_get("lan_ifname"));
 	if(nvram_match("switch_wantag", "movistar"))
 		fprintf(fp, "igmp-mcast-interfaces %s\n", "vlan2");
+	else if (nvram_match("switch_wantag", "unifi_biz") || 
+		nvram_match("switch_wantag", "stuff_fibre") || nvram_match("switch_wantag", "spark") ||
+		nvram_match("switch_wantag", "2degrees") || nvram_match("switch_wantag", "slingshot") ||
+		nvram_match("switch_wantag", "orcon") || nvram_match("switch_wantag", "voda_nz") ||
+		nvram_match("switch_wantag", "tpg") || nvram_match("switch_wantag", "iinet") ||
+		nvram_match("switch_wantag", "aapt") || nvram_match("switch_wantag", "intronode") ||
+		nvram_match("switch_wantag", "amaysim") || nvram_match("switch_wantag", "dodo") ||
+		nvram_match("switch_wantag", "iprimus") ||
+		(nvram_match("switch_wantag", "manual") && !nvram_get_int("switch_stb_x") && nvram_get_int("switch_wan0tagid"))) 
+		fprintf(fp, "igmp-mcast-interfaces %s\n", nvram_safe_get("wan0_ifname"));
 	else
 		fprintf(fp, "igmp-mcast-interfaces %s\n", proxy_ifname);
 
@@ -4270,8 +4295,12 @@ int
 start_acsd()
 {
 	int ret = 0;
-#ifdef RTCONFIG_BCM_7114
+#if defined(RTCONFIG_BCM_7114) || defined(RTCONFIG_HND_ROUTER_AX)
+#if defined(RTCONFIG_HND_ROUTER_AX)
+	char *acsd_argv[] = { "/usr/sbin/acsd2", NULL };
+#else
 	char *acsd_argv[] = { "/usr/sbin/acsd", NULL };
+#endif
 	int pid;
 #endif
 
@@ -4289,7 +4318,7 @@ start_acsd()
 #ifdef RTCONFIG_HND_ROUTER_AX
 		/* depending on NVRAM start the respective version */
 		if (nvram_match("acs_version", "2"))
-			ret = eval("/usr/sbin/acsd2");
+			ret = _eval(acsd_argv, NULL, 0, &pid);
 		/* default acsd version; to use even when the NVRAM is not set */
 		else
 #endif
@@ -12869,6 +12898,10 @@ check_ddr_done:
 #endif
 		) {
 			if (is_router_mode()) {
+#ifdef RTCONFIG_HND_ROUTER_AX
+				nvram_set_int("amesh_wps_enr", 1);
+#endif
+
 				int unit = nvram_get_int("wps_band_x");
 				char tmp[100], prefix[] = "wlXXXXXXXXXX_";
 				char *ifname;

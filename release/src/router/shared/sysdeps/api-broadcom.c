@@ -11,6 +11,7 @@
 #include <net/if.h>
 #include <sys/socket.h>
 #include <linux/sockios.h>
+#include <ctype.h>
 #include <wlutils.h>
 #include <linux_gpio.h>
 #include <etioctl.h>
@@ -1384,24 +1385,36 @@ char *get_wan_mac_name(void)
 	return "et0macaddr";
 }
 
+static char* mac_str_toupper(char *str)
+{
+	char *c;
+	static char buf[18];
+
+	strncpy(buf, str, sizeof(buf) - 1);
+	for (c = buf; *c; ++c)
+		*c = toupper(*c);
+
+	return buf;
+}
+
 char *get_label_mac()
 {
-	return get_2g_hwaddr();
+	return mac_str_toupper(get_2g_hwaddr());
 }
 
 char *get_lan_hwaddr(void)
 {
-	return nvram_safe_get(get_lan_mac_name());
+	return mac_str_toupper(nvram_safe_get(get_lan_mac_name()));
 }
 
 char *get_2g_hwaddr(void)
 {
-	return nvram_safe_get(get_lan_mac_name());
+	return mac_str_toupper(nvram_safe_get(get_lan_mac_name()));
 }
 
 char *get_wan_hwaddr(void)
 {
-	return nvram_safe_get(get_wan_mac_name());
+	return mac_str_toupper(nvram_safe_get(get_wan_mac_name()));
 }
 
 char *get_wlifname(int unit, int subunit, int subunit_x, char *buf)
@@ -1479,6 +1492,11 @@ int get_bonding_port_status(int port)
 #ifdef RTCONFIG_EXT_BCM53134 /* RT-AX88U */
 	int lan_ports=4;
 	int ports[lan_ports+1];
+	ports[0]=7; ports[1]=3; ports[2]=2; ports[3]=1; ports[4]=0;
+#elif defined(RTAX92U)
+	int lan_ports=4;
+	int ports[lan_ports+1];
+	/* 7 3 2 1 0	W0 L1 L2 L3 L4 */
 	ports[0]=7; ports[1]=3; ports[2]=2; ports[3]=1; ports[4]=0;
 #elif defined(RTCONFIG_EXTPHY_BCM84880) /* GT-AX11000 */
 	int lan_ports=5;

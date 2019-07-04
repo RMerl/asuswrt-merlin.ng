@@ -59,10 +59,10 @@ OPTIONS
        -O, --no-orpan-check
               Don't check for orphaned files. This option speeds up ntfsck.
 
-       -S, --no-sync
-              Don't sync NTFS metadata before exit. This option speeds up
-              ntfsck however it's safe to use only if device is not
-              removed/ejected.
+       -M, --no-mft-scan
+              Don't scan $MFT.  -S, --no-sync Don't sync NTFS metadata before
+              exit. This option speeds up ntfsck however it's safe to use only
+              if device is not removed/ejected.
 
        -F, --file FILE
               Check and repair FILE only. FILE is absolute path to a file or
@@ -162,5 +162,5 @@ SEE ALSO
 
 
 
-Tuxera NTFS Utilities 3017.7.18.4
+Tuxera NTFS Utilities 3017.7.18.13
                                  January 2017                        NTFSCK(8)

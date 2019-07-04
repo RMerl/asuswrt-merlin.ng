@@ -567,7 +567,7 @@ function show_apps(){
 		// apps_name
 		htmlcode += '<td class="app_table_radius_right" style="width:350px;">\n';
 		if(apps_array[i][0] == "downloadmaster")
-			apps_array[i][0] = "Download Master";
+			apps_array[i][0] = "<#DM_title#>";
 		else if(apps_array[i][0] == "mediaserver" || apps_array[i][0] == "mediaserver2")
 			apps_array[i][0] = "Media Server";
 		else if(apps_array[i][0] == "aicloud")
@@ -582,7 +582,7 @@ function show_apps(){
 				else if(apps_array[i][4] == "no" && apps_array[i][3] == "yes") // disable
 					htmlcode += '<a href="' + apps_array[i][6] + '" style="color:gray;">' + apps_array[i][0] + '<span class="app_ver" style="color:gray">' + apps_array[i][1] + '</sapn></a></div>\n';
 				else{ // enable
-					if(apps_array[i][0] == "Download Master")
+					if(apps_array[i][0] == "<#DM_title#>")
 						htmlcode += '<a target="_blank" href="' + apps_array[i][6] + '" style="text-decoration: underline;">' + apps_array[i][0] + '</a><span class="app_ver">' + apps_array[i][1] + '</sapn></div>\n';		
 					else
 						htmlcode += '<a href="' + apps_array[i][6] + '" style="text-decoration: underline;">' + apps_array[i][0] + '</a><span class="app_ver">' + apps_array[i][1] + '</sapn></div>\n';		
@@ -592,7 +592,7 @@ function show_apps(){
 				if(apps_array[i][4] == "no" && apps_array[i][3] == "yes") // disable
 					htmlcode += '<a href="' + apps_array[i][6] + '" style="color:gray">' + apps_array[i][0] + '<span class="app_ver" style="color:gray">ver. ' + apps_array[i][1] + '</sapn></a></div>\n';
 				else{ // enable
-					if(apps_array[i][0] == "Download Master")
+					if(apps_array[i][0] == "<#DM_title#>")
 						htmlcode += '<a target="_blank" href="' + apps_array[i][6] + '" style="text-decoration: underline;">' + apps_array[i][0] + '</a><span class="app_ver">ver. ' + apps_array[i][1] + '</sapn></div>\n';
 					else
 						htmlcode += '<a href="' + apps_array[i][6] + '" style="text-decoration: underline;">' + apps_array[i][0] + '</a><span class="app_ver">ver. ' + apps_array[i][1] + '</sapn></div>\n';
@@ -610,7 +610,7 @@ function show_apps(){
 				htmlcode += apps_array[i][0] + '<span class="app_ver">ver. ' + apps_array[i][1] + '</sapn></div>\n';
 		}
 
-		if(apps_array[i][0] == "Download Master")
+		if(apps_array[i][0] == "<#DM_title#>")
 			apps_array[i][0] = "downloadmaster";
 		else if(apps_array[i][0] == "Media Server"){
 			if(!nodm_support)
@@ -934,7 +934,7 @@ function go_modem_page(usb_unit_flag){
 								<a id="faq" href="" target="_blank" style="text-decoration:underline;font-size:14px;font-weight:bolder;color:#FFF"><#DM_title#> FAQ</a>
 							</li>
 							<li style="margin-top:10px;">
-								<a id="faq2" href="" target="_blank" style="text-decoration:underline;font-size:14px;font-weight:bolder;color:#FFF">Download Master Tool FAQ</a>
+								<a id="faq2" href="" target="_blank" style="text-decoration:underline;font-size:14px;font-weight:bolder;color:#FFF"><#DM_title#> Tool FAQ</a>
 							</li>
 							<li style="margin-top:10px;">
 								<a id="DMUtilityLink" href="http://dlcdnet.asus.com/pub/ASUS/wireless/RT-AC5300/UT_Download_Master_2228_Win.zip" style="text-decoration:underline;font-size:14px;font-weight:bolder;color:#FFF"><#DM_Download_Tool#></a>

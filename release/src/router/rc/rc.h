@@ -583,6 +583,9 @@ extern int wl_subband(char *wif, int idx);
 extern void check_4366_dummy(void);
 extern void check_4366_fabid(void);
 #endif
+#ifdef RTAX88U
+extern void pcie_probe_check(void);
+#endif
 extern void wl_dfs_radarthrs_config(char *ifname, int unit);
 #if defined(RTCONFIG_BCM7) || defined(RTCONFIG_BCM_7114) || defined(HND_ROUTER) || defined(RTCONFIG_HND_ROUTER_AX)
 extern int wlcscan_core_escan(char *ofile, char *wif);
@@ -637,6 +640,7 @@ extern void fc_fini();
 extern void hnd_nat_ac_init(int bootup);
 extern void setLANLedOn(void);
 extern void setLANLedOff(void);
+extern void activateLANLed();
 #ifdef RTCONFIG_HNDMFG
 extern void hnd_mfg_init();
 extern void hnd_mfg_services();
@@ -669,7 +673,7 @@ void set_dpsta_ifnames();
 extern void hnd_cfe_check();
 #endif
 #ifdef RTCONFIG_HND_ROUTER_AX
-extern void dump_WlGetDriverStats(int fb);
+extern void dump_WlGetDriverStats(int fb, int count);
 extern void config_bcn_stuck_watchdog();
 extern void dfs_cac_check(void);
 #endif
@@ -2233,11 +2237,40 @@ extern void oauth_google_update_token(void);
 extern int oauth_google_send_message(const char* receiver, const char* subject, const char* message, const char* attached_files[], int attached_files_count);
 #endif
 
+#ifdef RTCONFIG_UUPLUGIN
+extern void exec_uu();
+#endif
+
 // rmd.c
 #if defined(RTCONFIG_AMAS) && defined(RTCONFIG_CFGSYNC)
 #if defined(RTCONFIG_HND_ROUTER_AX)
 extern int rmd_main(int argc, char *argv[]);
 #endif
 #endif
+
+// hostapd_config.c
+#ifdef RTCONFIG_BRCM_HOSTAPD
+extern int start_hostapd();
+extern int stop_hostapd();
+extern void hapd_wps_main_loop();
+extern int start_wps_pbcd();
+extern int stop_wps_pbcd();
+#endif
+
+// dsl_fb.c
+#if defined(RTCONFIG_BCM_7114) || defined(HND_ROUTER)
+typedef struct probe_4366_param_s {
+	int bECode_2G;
+	int bECode_5G;
+	int bECode_5G_2;
+	int bECode_fabid;
+} probe_4366_param_t;
+#endif /* RTCONFIG_BCM_7114 || HND_ROUTER */
+
+#if defined(RTAX88U)
+typedef struct probe_PCIE_param_s {
+	int bPCIE_down;
+} probe_PCIE_param_t;
+#endif /* RTAX88U */
 
 #endif	/* __RC_H__ */

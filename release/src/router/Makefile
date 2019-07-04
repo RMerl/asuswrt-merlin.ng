@@ -8489,6 +8489,13 @@ rsyslog-install:
 	install -D rsyslog/plugins/fmhttp/.libs/fmhttp.so $(INSTALLDIR)/rsyslog/usr/lib/rsyslog/fmhttp.so
 	$(STRIP) $(INSTALLDIR)/rsyslog/usr/lib/rsyslog/fmhttp.so
 
+#
+# lite-auth
+# for 3rd party, sw-hw-auth lite version with static library
+#
+lite-auth-3rd-install:
+	cd lite-auth-3rd && CC=$(CC) && AR=$(AR) && $(MAKE) all
+	tar -jcvf `date +%Y%m%d-%H%M`-lite-auth-3rd.tar.bz2 --exclude="*.o" --exclude="auth.c" lite-auth-3rd
 
 #
 # Generic rules

@@ -553,7 +553,8 @@ function wl_chanspec_list_change(){
 	else{
 		document.form.acs_dfs_checkbox.disabled = false;
 	}
-	dwbMode_control_dfs({"band": band, "smart_connect": smart_connect});
+  
+        change_channel(document.form.wl_channel);
 }
 
 function wlextchannel_fourty(v){
@@ -630,7 +631,8 @@ function change_channel(obj){
 	}
 	
 	if(band == 1 || band == 2){
-		if(wl_reg_mode == 'h'){
+		if((band == 1 && (_chanspecs_5g.indexOf('56') != -1 || _chanspecs_5g.indexOf('100') != -1)) 
+		|| (band == 2 && _chanspecs_5g_2.indexOf('100') != -1)){
 			if(document.form.wl_channel.value  == 0){
 				if(based_modelid == "RT-AC87U"){
 					if(document.form.wl_bw.value == "1"){
@@ -669,7 +671,7 @@ function change_channel(obj){
 			}
 		}
 
-		dwbMode_control_dfs({"band": band, "smart_connect": smart_connect});
+		//dwbMode_control_dfs({"band": band, "smart_connect": smart_connect});
 	}
 	else if(band == 0){
 		if(wl_channel_list_2g.length == '14'){

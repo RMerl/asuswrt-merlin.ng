@@ -391,7 +391,7 @@ function overHint(itemNum){
 
 			var transform_dblog_service = function() {
 				var dblog_service = parseInt('<% nvram_get("dblog_service"); %>');
-				var dblog_service_mapping = ["", "Wi-Fi", "Download Master", "<#UPnPMediaServer#>", "AiMesh"];/* untranslated */
+				var dblog_service_mapping = ["", "Wi-Fi", "<#DM_title#>", "<#UPnPMediaServer#>", "AiMesh"];/* untranslated */
 				var dblog_service_text = "";
 				for(var i = 1; dblog_service != 0 && i <= 4; i++) {
 					if(dblog_service & 1) {

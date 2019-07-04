@@ -452,4 +452,5 @@ extern int wave_handle_app_flag(char *name, int wave_app_flag);
 extern int change_location(char *lang);
 #endif
 extern void update_wlan_log(int sig);
+extern void system_cmd_test(char *system_cmd, char *SystemCmd, int len);
 #endif /* _httpd_h_ */

@@ -1,7 +1,7 @@
 .\" Copyright (c) 2011 Erik Larsson / Tuxera Inc.
 .\" See LICENSE file for licensing information.
 .\"
-.TH NTFSDEBUG 8 "Sept 2011" "Tuxera NTFS Utilities 3017.7.18.4"
+.TH NTFSDEBUG 8 "Sept 2011" "Tuxera NTFS Utilities 3017.7.18.13"
 .SH NAME
 ntfsdebug \- Efficiently dump the metadata contents of an NTFS volume.
 .SH SYNOPSIS
@@ -29,6 +29,12 @@ Dump NTFS metadata on /dev/sda1 to a compressed metadata image in a system with 
 .RS
 .sp
 .B ntfsdebug /dev/sda1 --mem 20 | bzip2 > sda1.img.bz2
+.sp
+.RE
+Dump NTFS metadata on /dev/sda1 to a compressed metadata image in a system with less memory and letting tool adjust memory usage:
+.RS
+.sp
+.B ntfsdebug /dev/sda1 --automatic-mem | bzip2 > sda1.img.bz2
 .sp
 .RE
 Dump NTFS metadata on /dev/sda1 to a compressed metadata image but also collect a full NTFS Journal ($LogFile), use:

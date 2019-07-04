@@ -191,7 +191,7 @@ function switchUSBType(){
 
   <tr id="dmLink" style="display:none;">
     <td height="50" style="padding:10px 15px 0px 15px;">
-    	<p class="formfonttitle_nwm" style="float:left;width:138px;">Download Master</p>
+    	<p class="formfonttitle_nwm" style="float:left;width:138px;"><#DM_title#>:</p>
     	<input type="button" class="button_gen" onclick="gotoDM();" value="<#btn_go#>" >
 		<div style="margin-top:5px;" class="line_horizontal"></div>
     </td>

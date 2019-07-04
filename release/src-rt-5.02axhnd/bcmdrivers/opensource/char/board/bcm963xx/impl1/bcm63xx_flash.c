@@ -1476,8 +1476,19 @@ int crashFileSet(const char* filename)
         printk("crashFileSet: log signature invalid ! \n");
         size = 0; /* zero-length file */
     }
-    kerSysFsFileSet(filename, pbuffer, size);
+
+    if(size) {
+	printk("%s: export crash log! \n", __FUNCTION__);
+    	kerSysFsFileSet(filename, pbuffer, size);
+    }
     kfree(pbuffer);
+
+    /* erase NAND flash to destory log signature*/
+    if (size && pbuffer[0] == 'L' && pbuffer[1] == 'O' && pbuffer[2] == 'G') {
+	if(nandEraseBlk(mtd, 0) == 0)
+	printk("%s: erase block 0 to destory log signature! \n", __FUNCTION__);
+    }
+
     return 0;
 }
 #endif

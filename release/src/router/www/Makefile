@@ -742,10 +742,16 @@ ifneq ($(BUILD_NAME),$(filter $(BUILD_NAME),  GT-AX11000))
 	rm -rf $(INSTALLDIR)/www/images/aura
 endif
 
+ifneq ($(RTCONFIG_UUPLUGIN), y)
+	rm -rf $(INSTALLDIR)/www/images/uu_accelerator.png
+endif
+
 ifneq ($(RTCONFIG_ROG_UI),y)
 	rm -rf $(INSTALLDIR)/www/fonts
 	rm -rf $(INSTALLDIR)/www/css/basic.css
 	rm -rf $(INSTALLDIR)/www/images/triLvGameAcceleration
 	rm -rf $(INSTALLDIR)/www/css/triLvGameAcceleration.css
+	rm -rf $(INSTALLDIR)/www/images/gameprofile
+	rm -rf $(INSTALLDIR)/www/css/gameprofile.css
 	rm -rf $(INSTALLDIR)/www/ajax_wanlink.asp
 endif

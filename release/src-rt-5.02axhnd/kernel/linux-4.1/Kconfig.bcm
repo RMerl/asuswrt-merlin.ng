@@ -288,6 +288,9 @@ config BCM_CSO
 config BCM_PKTRUNNER_MCAST_DNAT
 	bool "Runner MCAST_DNAT Support "
 
+config BCM_PKTRUNNER_WAR_SKIP_TUN
+	bool "Runner workaround to skip TUN device"
+
 config BCM_CMDLIST
 	tristate "Support for Command List Driver"
 

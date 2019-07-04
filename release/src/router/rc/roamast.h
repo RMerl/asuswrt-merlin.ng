@@ -217,6 +217,10 @@ typedef struct rast_sta_info {
 	int next_trigger_interval;	/* interval of next STAMON event trigger */
 	int stamon_event_count;		/* counter of STAMON event trigger */
 	int32 previous_rssi;		/* save previous rssi for detecting sticky sta */
+	uint32 wnm_cap;                 /* WNM capability */
+#ifdef RTCONFIG_BCN_RPT
+	uint8 rrm_bcn_passive_cap;	/* RRM Beacon Passive Measurement capability */
+#endif
 #endif
 #if defined(RTCONFIG_LANTIQ)
 	unsigned long last_txrx_bytes;

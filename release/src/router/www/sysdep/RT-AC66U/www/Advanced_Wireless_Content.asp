@@ -152,16 +152,25 @@ function initial(){
 		}
 	}
 
-	if(wl_reg_mode == 'h'){
+	if(wl_unit == 1 && (_chanspecs_5g.indexOf('56') != -1 || _chanspecs_5g.indexOf('100') != -1)){
 		if(document.form.wl_channel.value  == '0' && wl_unit == '1'){
 			document.getElementById('dfs_checkbox').style.display = "";
 			check_DFS_support(document.form.acs_dfs_checkbox);
 		}
 	}
 	else if((is_UA_sku || is_RU_sku) && !Qcawifi_support && !Rawifi_support && !sdk_5){
+
 		if(document.form.wl_channel.value  == '0' && wl_unit == '1'){
 			document.getElementById('acs_band3_checkbox').style.display = "";
 		}		
+	}
+	else if(wl_unit == '2' && band5g2_support){
+		if(document.form.acs_band3.value == '1'){
+			document.form.acs_dfs_checkbox.checked = true;
+		}
+		else{
+			document.form.acs_dfs_checkbox.checked = false;
+		}
 	}
 	else if(country == "US" || country == "SG"){		//display checkbox of band1 channel under 5GHz
 		if(based_modelid == "RT-AC68U" || based_modelid == "RT-AC68A" || based_modelid == "4G-AC68U" || based_modelid == "DSL-AC68U"
@@ -174,6 +183,7 @@ function initial(){
 				document.getElementById('acs_band1_checkbox').style.display = "";					
 		}
 	}
+	
 
 	if(wl_channel_list_2g.length == '14'){
 		if(!Qcawifi_support && !Rawifi_support){
@@ -201,6 +211,7 @@ function initial(){
 			return true;
 
 		document.getElementById("auto_channel").style.display = "";
+		ajax_wl_channel();
 		var temp = "";
 		if(smart_connect_flag_t == "1"){		//Tri-Band Smart Connect
 			if(isSupport("triband") && dwb_info.mode) {
@@ -342,7 +353,6 @@ function change_wl_nmode(o){
 
 	wl_chanspec_list_change();
 	genBWTable(wl_unit);
-	change_channel(document.form.wl_channel);
 	controlAXOnlyHint();
 }
 
@@ -743,8 +753,18 @@ function applyRule(){
 				}
 			}
 		}
+		else{
+			if(wl_unit == '2' && band5g2_support){
+				document.form.acs_dfs.disabled = true;
+				if(document.form.acs_dfs_checkbox.checked){
+					document.form.acs_band3.value = "1";
+				}
+				else{
+					document.form.acs_band3.value = "0";
+				}
+			}
+		}
 		
-
 		if (based_modelid == "RT-AC87U" && wl_unit == "1"){
 			detect_qtn_ready();
 		}
@@ -1108,15 +1128,6 @@ function enableSmartCon(val){
 				}
 			}
 		}
-		else if(val == '1'){
-			if (!Qcawifi_support && !Rawifi_support) {
-				$('#acs_ch13_checkbox').show();
-			}
-		}
-		else{
-			$("#acs_ch13_checkbox").hide();
-		}
-		
 		
 		if(dwb_info.mode && wl_unit == dwb_info.band && wl_unit != 0 && bw_160_support) {
 			$("#enable_160_field").show();
@@ -1508,15 +1519,6 @@ function separateGenChannel(unit, channel, bandwidth){
 			$('#band0_extChannel_field').hide();
 		}
 
-		if (channel_2g.length == '13') {
-			if (document.form.band0_channel.value == '0') {
-				$('#band0_acs_ch13').show();
-			}
-			else {
-				$('#band0_acs_ch13').hide();
-			}
-		}
-
 		channel_2g.unshift('<#Auto#>');
 		channel_2g_val.unshift('0');
 		add_options_x2(document.form.band0_channel, channel_2g, channel_2g_val, band0_curCtrlChannel);		
@@ -1851,6 +1853,20 @@ function controlAXOnlyHint() {
 		$("#wl_AXOnly_note").show();
 	else
 		$("#wl_AXOnly_note").hide();
+}
+
+function ajax_wl_channel(){
+	$.ajax({
+		url: '/ajax_wl_channel.asp',
+		dataType: 'script',	
+		error: function(xhr) {
+			setTimeout("ajax_wl_channel();", 1000);
+		},
+		success: function(response){
+			$("#auto_channel").html("<#wireless_control_channel#>: " + cur_control_channel[wl_unit]);
+			setTimeout("ajax_wl_channel();", 5000);
+		}
+	});
 }
 </script>
 </head>

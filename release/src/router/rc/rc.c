@@ -845,7 +845,7 @@ static const applets_t applets[] = {
 	{ "delay_exec",			delay_main			},
 
 	{ "wanduck",			wanduck_main			},
-#ifdef RTCONFIG_CONNDIAG
+#if defined(RTCONFIG_CONNDIAG) && defined(RTCONFIG_ADV_RAST)
 	{ "conn_diag",			conn_diag_main			},
 #endif
 #if defined(CONFIG_BCMWL5) && !defined(HND_ROUTER) && defined(RTCONFIG_DUALWAN)

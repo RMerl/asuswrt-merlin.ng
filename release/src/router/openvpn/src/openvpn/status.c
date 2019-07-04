@@ -338,6 +338,7 @@ void update_nvram_status(int flag)
 	char buf[32] = {0};
 	char name[16] = {0};
 	char *p = NULL;
+	int vpnerrno = 0;
 
 	psname(pid, name, 16);	//vpnserverX or vpnclientX
 	p = name + 3;
@@ -345,7 +346,8 @@ void update_nvram_status(int flag)
 	switch(flag) {
 	case EXIT_GOOD:
 		sprintf(buf, "vpn_%s_errno", p);
-		if(nvram_get_int(buf)) {
+		vpnerrno = nvram_get_int(buf);
+		if(vpnerrno & ERRNO_IP || vpnerrno & ERRNO_ROUTE) {
 			sprintf(buf, "vpn_%s_state", p);
 			nvram_set_int(buf, ST_ERROR);
 		}

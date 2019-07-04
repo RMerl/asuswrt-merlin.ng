@@ -81,6 +81,9 @@ static void ntp_service()
 #ifdef RTCONFIG_DISK_MONITOR
 		notify_rc("restart_diskmon");
 #endif
+#ifdef RTCONFIG_UUPLUGIN
+		exec_uu();
+#endif
 	}
 }
 

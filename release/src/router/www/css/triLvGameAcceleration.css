@@ -52,18 +52,18 @@
     top: 135px;
 }
 .border1-LV-container{
-    margin-top:220px;
+    margin-top: 220px;
 }
 .triLv-container{
     margin: 0 12px 0 32px;
 }
 .triLv-level, .triLv-step{
-    background: -webkit-linear-gradient(#ff8c00 55%, #f90000 100%);
+    background: -webkit-linear-gradient(#ff8c00 50%, #f90000 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
 }
 .triLv-level{
-    font-size: 14px;
+    font-size: 16px;
     text-align: center;
     margin-bottom: 4px;
 }
@@ -76,12 +76,12 @@
 }
 .triLv-step{
     font-size: 48px;
-    margin-top: -32px;
+    margin-top: -34px;
 }
 .triLv-desc{
     width:138px;
     font-size: 18px;
-    margin-left: 12px;
+    margin: 12px 0 0 12px;
 }
 
 .card-boder{
@@ -96,11 +96,11 @@
 }
 .border2-title-container{
     width: 100%;
-    margin: 18px 12px 10px 0;
+    margin: 18px 24px 10px 0 !important;
 }
 .border2-title-desc{
-    font-size: 18px;
-    margin: 0 0 0 18px;
+    font-size: 28px !important;
+    margin: -12px 0 0 18px !important;
 }
 .content-image-container{
     width: 180px;
@@ -112,6 +112,9 @@
 }
 .ROG-D-Opt-image{
     background-image: url('../images/triLvGameAcceleration/triLv1.png');
+}
+.Game-D-device-image{
+    background-image: url('../images/triLvGameAcceleration/triLv1_device.png');
 }
 .Game-Packet-Pri-iamge{
     background-image: url('../images/triLvGameAcceleration/triLv2.png');
@@ -126,7 +129,7 @@
     background-image: url('../images/triLvGameAcceleration/triLv3_wtfast.png');
 }
 .Game-uu-image{
-    background-image: url('../images/triLvGameAcceleration/triLv3_uu.png');
+    background-image: url('../images/uu_accelerator.png');
 }
 .content-divide-line, .content-divide-line-sm{
     width: 1px;
@@ -170,5 +173,5 @@
     margin: 8px 0;
 }
 .gameBoost-enable-offset{
-    margin-left: 65px;
+    margin: 12px 0 12px 65px !important;
 }

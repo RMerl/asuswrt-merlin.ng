@@ -132,10 +132,9 @@ int http_response_write_header(server *srv, connection *con) {
 }
 
 #ifdef USE_OPENSSL
-static void https_add_ssl_entries(connection *con) {
+static void https_add_ssl_entries(server *srv, connection *con) {
 	X509 *xs;
 	X509_NAME *xn;
-	X509_NAME_ENTRY *xe;
 	int i, nentries;
 
 	if (
@@ -145,46 +144,36 @@ static void https_add_ssl_entries(connection *con) {
 		return;
 	}
 
+	buffer_copy_string_len(srv->tmp_buf, CONST_STR_LEN("SSL_CLIENT_S_DN_"));
 	xn = X509_get_subject_name(xs);
 	for (i = 0, nentries = X509_NAME_entry_count(xn); i < nentries; ++i) {
 		int xobjnid;
 		const char * xobjsn;
-		data_string *envds;
+		X509_NAME_ENTRY *xe;
 
 		if (!(xe = X509_NAME_get_entry(xn, i))) {
 			continue;
 		}
 		xobjnid = OBJ_obj2nid((ASN1_OBJECT*)X509_NAME_ENTRY_get_object(xe));
 		xobjsn = OBJ_nid2sn(xobjnid);
-		if (!xobjsn) {
-			continue;
+		if (xobjsn) {
+			buffer_string_set_length(srv->tmp_buf, sizeof("SSL_CLIENT_S_DN_")-1);
+			buffer_append_string(srv->tmp_buf, xobjsn);
+			array_set_key_value(con->environment,
+					    CONST_BUF_LEN(srv->tmp_buf),
+					    (const char *)X509_NAME_ENTRY_get_data(xe)->data,
+					    X509_NAME_ENTRY_get_data(xe)->length);
 		}
+	}
 
-		if (NULL == (envds = (data_string *)array_get_unused_element(con->environment, TYPE_STRING))) {
-			envds = data_string_init();
-		}
-		buffer_copy_string_len(envds->key, CONST_STR_LEN("SSL_CLIENT_S_DN_"));
-		buffer_append_string(envds->key, xobjsn);
-		buffer_copy_string_len(
-			envds->value,
-			(const char *)xe->value->data, xe->value->length
-		);
+	if (!buffer_string_is_empty(con->conf.ssl_verifyclient_username)) {
 		/* pick one of the exported values as "REMOTE_USER", for example
 		 * ssl.verifyclient.username   = "SSL_CLIENT_S_DN_UID" or "SSL_CLIENT_S_DN_emailAddress"
 		 */
-		if (buffer_is_equal(con->conf.ssl_verifyclient_username, envds->key)) {
-			data_string *ds;
-			if (NULL == (ds = (data_string *)array_get_element(con->environment, "REMOTE_USER"))) {
-				if (NULL == (ds = (data_string *)array_get_unused_element(con->environment, TYPE_STRING))) {
-					ds = data_string_init();
-				}
-				buffer_copy_string(ds->key, "REMOTE_USER");
-				array_insert_unique(con->environment, (data_unset *)ds);
-			}
-			buffer_copy_buffer(ds->value, envds->value);
-		}
-		array_insert_unique(con->environment, (data_unset *)envds);
+		data_string *ds = (data_string *)array_get_element(con->environment, con->conf.ssl_verifyclient_username->ptr);
+		if (ds) array_set_key_value(con->environment, CONST_STR_LEN("REMOTE_USER"), CONST_BUF_LEN(ds->value));
 	}
+
 	if (con->conf.ssl_verifyclient_export_cert) {
 		BIO *bio;
 		if (NULL != (bio = BIO_new(BIO_s_mem()))) {
@@ -203,7 +192,7 @@ static void https_add_ssl_entries(connection *con) {
 			BIO_read(bio, envds->value->ptr, n);
 			BIO_free(bio);
 			buffer_commit(envds->value, n);
-			array_insert_unique(con->environment, (data_unset *)envds);
+			array_replace(con->environment, (data_unset *)envds);
 		}
 	}
 	X509_free(xs);
@@ -324,7 +313,7 @@ handler_t http_response_prepare(server *srv, connection *con) {
 
 #ifdef USE_OPENSSL
 		if (con->srv_socket->is_ssl && con->conf.ssl_verifyclient) {
-			https_add_ssl_entries(con);
+			https_add_ssl_entries(srv, con);
 		}
 #endif
 

@@ -2100,6 +2100,12 @@ void eth_phypower(char *port, int onoff){
 	}
 	else
 #endif
+	if(!strncmp(port, "br1", 3) || !strncmp(port, "vlan", 4) || !strncmp(port, "eth", 3))
+	{
+		snprintf(cmd, sizeof(cmd), "ethctl %s phy-power %s", "eth0", onoff ? "up" : "down");
+		system(cmd);
+	}
+	else
 	{
 		snprintf(cmd, sizeof(cmd), "ethctl %s phy-power %s", port, onoff ? "up" : "down");
 		system(cmd);
@@ -2257,7 +2263,7 @@ reset_mssid_hwaddr(int unit)
 
 #ifdef RTCONFIG_PSR_GUEST
 			snprintf(prefix, sizeof(prefix), "wl%d_", unit);
-			if (is_psr(unit) && nvram_match(strcat_r(prefix, "psr_guest", tmp), "1")) {
+			if (is_psr(unit) && nvram_match(strcat_r(prefix, "psr_mbss", tmp), "1")) {
 				max_mssid++;
 				macvalue--;
 				macvalue_local--;
@@ -2278,12 +2284,12 @@ reset_mssid_hwaddr(int unit)
 #if defined(RTCONFIG_BCMWL6) && defined(RTCONFIG_PROXYSTA)
 					|| (is_psr(unit) &&
 #ifdef RTCONFIG_PSR_GUEST
-						!nvram_match(strcat_r(prefix, "psr_guest", tmp), "1") &&
+						!nvram_match(strcat_r(prefix, "psr_mbss", tmp), "1") &&
 #endif
 						(subunit > 1))
 #ifdef RTCONFIG_PSR_GUEST
 					|| (!unit && is_psr(unit) &&
-						nvram_match(strcat_r(prefix, "psr_guest", tmp), "1") &&
+						nvram_match(strcat_r(prefix, "psr_mbss", tmp), "1") &&
 						subunit == 4)
 #endif
 #endif
@@ -2972,6 +2978,12 @@ void init_others(void)
 #if defined(RTCONFIG_HND_ROUTER_AX) && defined(BCA_HNDROUTER) && defined(RTCONFIG_HND_WL)
 	wl_thread_affinity_update();
 #endif
+
+#if defined(RTAX88U) || defined(RTAX92U)
+	if(nvram_match("HwVer", "1.0")) {
+		system("pwr config --cpuwait off");
+	}
+#endif
 }
 #else
 
@@ -3201,7 +3213,7 @@ int wl_max_no_vifs(int unit)
 #else
 	if (!atoi(nvram_safe_get("ure_disable")) || is_psr(unit)) {
 #endif
-		if (is_psr(unit) && nvram_match(strcat_r(prefix, "psr_guest", tmp), "1"))
+		if (is_psr(unit) && nvram_match(strcat_r(prefix, "psr_mbss", tmp), "1"))
 			max_no_vifs = min(max_no_vifs, 5);
 		else
 			max_no_vifs = 2;
@@ -3309,6 +3321,9 @@ void generate_wl_para(char *ifname, int unit, int subunit)
 #ifdef RTCONFIG_DPSTA
 				|| is_dpsta(unit)
 #endif
+#if defined(RTCONFIG_AMAS) && defined(RTCONFIG_HND_ROUTER_AX)
+				|| is_router_mode() && !nvram_get_int("x_Setting") && nvram_get_int("amesh_wps_enr")
+#endif
 			))
 #endif
 			)) ? "enabled" : "disabled");
@@ -3377,6 +3392,9 @@ void generate_wl_para(char *ifname, int unit, int subunit)
 				nvram_set(strcat_r(prefix, "bw", tmp), "1");
 #endif
 				nvram_set(strcat_r(prefix, "chanspec", tmp), "0");
+#ifdef RTCONFIG_HND_ROUTER_AX
+				nvram_set(strcat_r(prefix, "he_features", tmp), "3");
+#endif
 			}
 
 #if defined(RTCONFIG_BCMWL6) && defined(RTCONFIG_PROXYSTA)
@@ -3414,15 +3432,14 @@ void generate_wl_para(char *ifname, int unit, int subunit)
 				nvram_set(tmp, "0");
 			}
 		}
-
-#ifdef RTCONFIG_PSR_GUEST
-		nvram_set(strcat_r(prefix, "mbss_rmac", tmp), (nvram_match(strcat_r(prefix, "psr_guest", tmp2), "1") && (dpsr_mode()
+#if defined(RTCONFIG_PSR_GUEST) && defined(RTCONFIG_HND_ROUTER_AX)
+		nvram_set(strcat_r(prefix, "ure_mbss", tmp), (nvram_match(strcat_r(prefix, "psr_mbss", tmp2), "1") && (dpsr_mode()
 #ifdef RTCONFIG_DPSTA
 			|| dpsta_mode()
 #endif
 			)) ? "1" : "0");
 #else
-		nvram_unset(strcat_r(prefix, "mbss_rmac", tmp));
+		nvram_unset(strcat_r(prefix, "ure_mbss", tmp));
 #endif
 #endif
 
@@ -3453,7 +3470,7 @@ void generate_wl_para(char *ifname, int unit, int subunit)
 			}
 			else
 #ifdef RTCONFIG_PSR_GUEST
-			if (!nvram_match(strcat_r(prefix2, "psr_guest", tmp), "1"))
+			if (!nvram_match(strcat_r(prefix2, "psr_mbss", tmp), "1"))
 #endif
 				nvram_set(strcat_r(prefix, "bss_enabled", tmp), "0");
 		}
@@ -3603,7 +3620,7 @@ void generate_wl_para(char *ifname, int unit, int subunit)
 			/* early set wlx_vifs for psr mode */
 			if (is_psr(unit)
 #ifdef RTCONFIG_PSR_GUEST
-				&& !nvram_match(strcat_r(prefix, "psr_guest", tmp), "1")
+				&& !nvram_match(strcat_r(prefix, "psr_mbss", tmp), "1")
 #endif
 			) {
 				sprintf(tmp2, "wl%d.1", unit);
@@ -4335,6 +4352,17 @@ void generate_wl_para(char *ifname, int unit, int subunit)
 			nvram_set_int(strcat_r(prefix, "probresp_sw", tmp), 0);
 #endif
 
+#ifdef RTCONFIG_BCMARM
+#ifndef RTCONFIG_BCM4708
+		if (is_ure(unit)
+#if defined(RTCONFIG_BCMWL6) && defined(RTCONFIG_PROXYSTA)
+			|| is_psta(unit) || is_psr(unit)
+#endif
+		)
+			nvram_set_int(strcat_r(prefix, "mfp", tmp), 1);
+#endif
+#endif
+
 		dbG("bw: %s\n", nvram_safe_get(strcat_r(prefix, "bw", tmp)));
 #ifdef RTCONFIG_BCMWL6
 		dbG("chanspec: %s\n", nvram_safe_get(strcat_r(prefix, "chanspec", tmp)));
@@ -4413,6 +4441,15 @@ void generate_wl_para(char *ifname, int unit, int subunit)
 			nvram_set(strcat_r(prefix, "dwds", tmp), "1");
 #else
 			nvram_set(strcat_r(prefix, "dwds", tmp), is_ure(unit) ? "0" : "1");
+
+#ifndef RTCONFIG_BCM4708
+			if (is_ure(unit)
+#if defined(RTCONFIG_BCMWL6) && defined(RTCONFIG_PROXYSTA)
+				|| is_psta(unit) || is_psr(unit)
+#endif
+			)
+				nvram_set_int(strcat_r(prefix, "mfp", tmp), 1);
+#endif
 #endif
 #endif
 		}
@@ -5467,7 +5504,7 @@ _dprintf("*** Multicast IPTV: config Singtel TR069 on wan port ***\n");
 		}
 
 		/* Using vlanctl to handle vlan forwarding */
-		if (wan_vid || switch_stb > 0 || nvram_match("switch_wantag", "unifi_biz")) { /* config wan port or bridge hinet IPTV traffic */
+		if ((wan_vid || switch_stb > 0 || nvram_match("switch_wantag", "unifi_biz")) && !nvram_match("switch_wantag", "superonline")) { /* config wan port or bridge hinet IPTV traffic */
 #if 0
 			/* Handle no vid traffic */
 #endif
@@ -5481,7 +5518,7 @@ _dprintf("*** Multicast IPTV: config Singtel TR069 on wan port ***\n");
 				nvram_match("switch_wantag", "aapt") || nvram_match("switch_wantag", "intronode") ||
 				nvram_match("switch_wantag", "amaysim") || nvram_match("switch_wantag", "dodo") ||
 				nvram_match("switch_wantag", "iprimus") ||
-				(nvram_match("switch_wantag", "none") && switch_stb == 0 && !wan_vid)) {
+				(nvram_match("switch_wantag", "manual") && switch_stb == 0 && wan_vid)) {
 				eval("vconfig", "add", "eth0", port_id);
 				sprintf(wan_dev, "vlan%d", wan_vid);
 				eval("ifconfig", wan_dev, "allmulti", "up");
@@ -5681,6 +5718,21 @@ _dprintf("*** Multicast IPTV: config Singtel TR069 on wan port ***\n");
 				eval("vlanctl", "--if", ethPort1, "--tx", "--tags", "0", "--filter-txif", vlanDev1, "--rule-append");
 				eval("ifconfig", vlanDev1, "allmulti", "up");
 				eval("brctl", "addif", "br1", vlanDev1);
+			}
+			else if (nvram_match("switch_wantag", "superonline")) {
+				sprintf(port_id, "%d", iptv_vid);
+				eval("vconfig", "add", "eth0", port_id);
+				sprintf(vlanDev1, "vlan%d", iptv_vid);
+				if (!nvram_match("switch_wan1prio", "0"))
+					eval("vconfig", "set_egress_map", vlanDev1, "0", nvram_get("switch_wan1prio"));
+				eval("ifconfig", vlanDev1, "allmulti", "up");
+				eval("brctl", "addbr", "br1");
+				eval("bcmmcastctl", "mode", "-i",  "br1",  "-p", "1",  "-m", "0");
+				eval("bcmmcastctl", "mode", "-i",  "br1",  "-p", "2",  "-m", "0");
+				eval("ifconfig", "br1", "allmulti", "up");
+				eval("brctl", "delif", "br0", ethPort1);
+				eval("brctl", "addif", "br1", vlanDev1);
+				eval("brctl", "addif", "br1", ethPort1);
 			}
 			else {  /* Nomo case, untag it. */
 				/* config ethPort1 = IPTV */
@@ -7272,14 +7324,15 @@ ERROR:
 }
 
 #ifdef RTCONFIG_AVBLCHAN
-#define MAX_CHANS	32
+#define MAX_5G_CHANNEL_LIST_NUM 	32
+#define MAX_CHANS			MAX_5G_CHANNEL_LIST_NUM*4 
 
 void add_cfgexcl_2_acsexcl(unsigned int *echx)
 {
 	char ex_tmp[24], word[256], *next, *asus_excl;
 	int i = 0, unit = 0, exist = 0;
 	unsigned int ech;
-	char acsexcl_wlx[1024], *sp;
+	char acsexcl_wlx[1000], chtmp[7], *sp;
 
 	for(unit = 0; unit < 3; ++unit) {
 		memset(ex_tmp, 0, sizeof(ex_tmp));
@@ -7303,11 +7356,12 @@ void add_cfgexcl_2_acsexcl(unsigned int *echx)
 		}
 		memset(acsexcl_wlx, 0, sizeof(acsexcl_wlx));
 		for(i=0; i<MAX_CHANS; ++i) {
-			sp = acsexcl_wlx;
-			if(*(echx + unit*MAX_CHANS + i)) {
-				if(strlen(acsexcl_wlx) + 6 < sizeof(acsexcl_wlx) - 1)
-					snprintf(acsexcl_wlx, sizeof(acsexcl_wlx), "%s%s0x%2x", sp, *sp?",":"", *(echx + unit*MAX_CHANS + i));
-				else
+			sp = acsexcl_wlx[0]?",":"";
+			if(*(echx + unit*MAX_CHANS + i) && snprintf(chtmp, sizeof(chtmp), "0x%x", *(echx + unit*MAX_CHANS + i)) > 0) {
+				if(strlen(acsexcl_wlx) + 6 < sizeof(acsexcl_wlx) - 1) {
+					strncat(acsexcl_wlx, sp, sizeof(acsexcl_wlx)-strlen(acsexcl_wlx)-1);
+					strncat(acsexcl_wlx, chtmp, sizeof(acsexcl_wlx)-strlen(acsexcl_wlx)-1);
+				} else
 					_dprintf("acsexcl_wlx full!(rc)\n");
 			}
 		}
@@ -7334,22 +7388,42 @@ void init_cfg_excl(char *cfg_excl, unsigned int *ech, int unit)
 }
 
 void dump_exclchans(unsigned int *excs, char *des) {
-
-	int i=0 , j= 0;
+	int i=0 , j= 0, k=0;
 
 	_dprintf("\n%s. dump cfg_excl_chans:\n", des);
 
 	for(i=0; i<3; ++i) {
-		_dprintf("\n<%d>\n", i);
+		_dprintf("\n<wl%d>\n", i);
+		k=0;
 		for(j=0; j<MAX_CHANS; ++j) {
-			_dprintf("[%2x] ", *(excs + i*MAX_CHANS + j));
-			if(j==10)
-				_dprintf("\n");
+			if(*(excs + i*MAX_CHANS + j)) {
+				_dprintf("[%2x] ", *(excs + i*MAX_CHANS + j));
+				++k;
+				if(k%10==0)
+					_dprintf("\n");
+			}
 		}
 	}
 	_dprintf("\n");
 }
 
+int init_exclbase(int unit)
+{
+	if(!nvram_get_int("excbase")) {
+		nvram_set("excbase", "1");
+		nvram_set("wl0_acs_excl_chans_base", nvram_safe_get("wl0_acs_excl_chans"));
+		nvram_set("wl1_acs_excl_chans_base", nvram_safe_get("wl1_acs_excl_chans"));
+		if(unit == 3)
+			nvram_set("wl2_acs_excl_chans_base", nvram_safe_get("wl2_acs_excl_chans"));
+
+		_dprintf("\nset exclchans base:\n0:[%s]\n1:[%s]\n2:[%s]\n", nvram_safe_get("wl0_acs_excl_chans_base"), nvram_safe_get("wl1_acs_excl_chans_base"), nvram_safe_get("wl2_acs_excl_chans_base"));
+		nvram_set("wl0_acs_excl_chans_cfg", "");
+		nvram_set("wl1_acs_excl_chans_cfg", "");
+		nvram_set("wl2_acs_excl_chans_cfg", "");
+		return 0;
+	}
+	return 1;
+}
 #endif
 
 #ifdef RTCONFIG_BCMWL6
@@ -7497,7 +7571,10 @@ void set_acs_ifnames()
 #endif
 
 #ifdef RTCONFIG_AVBLCHAN
-	add_cfgexcl_2_acsexcl(cfg_excl_chans);
+	int excinit = 0;
+	excinit = init_exclbase(unit);
+	if(excinit)
+		add_cfgexcl_2_acsexcl(cfg_excl_chans);
 #endif
 	nvram_set_int("wl0_acs_dfs", 0);
 	nvram_set_int("wl1_acs_dfs", nvram_match("wl1_reg_mode", "h") ? 2 : 0);

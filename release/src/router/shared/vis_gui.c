@@ -780,11 +780,11 @@ vis_zwd_allocate_output_buf(char *wlname)
 
 /* Get intiger value from driver */
 static int
-vis_zwd_get_iovar_int(void *wlname, char *cmd, int *val)
+vis_zwd_get_iovar(void *wlname, char *cmd, int *val, int len)
 {
 	int err = 0;
 
-	if ((err = wl_iovar_getint(wlname, cmd, (int*)(void*)val)) < 0) {
+	if ((err = wl_iovar_get(wlname, cmd, val, len)) < 0) {
 		VIS_DEBUG("ZWD : %s : Failed to get %s - err : %d\n", (char*)wlname, cmd, err);
 		return err;
 	}
@@ -1170,7 +1170,7 @@ vis_zwd_get_rxchain_from_oper_mode(void *wlname, int *rxchain)
 	uint16 oper_mode = 0x0, rxnss = 0x0;
 
 	/* get the oper_mode */
-	if ((err = vis_zwd_get_iovar_int(wlname, "oper_mode", &tmpmode)) != 0)
+	if ((err = vis_zwd_get_iovar(wlname, "oper_mode", &tmpmode, sizeof(int))) != 0)
 		return err;
 
 	/* In oper_mode first byte (MSB) - 0 (disable) / 1 (enable) and
@@ -1203,15 +1203,15 @@ vis_zwd_get_ap_status(vis_zwd_req_t *zwdreq)
 	uint32 rspec = 0;
 
 	/* get the txchain */
-	vis_zwd_get_iovar_int(zwdreq->wlname, "txchain", (int*)&apstatus.primary.txchain);
+	vis_zwd_get_iovar(zwdreq->wlname, "txchain", &apstatus.primary.txchain, sizeof(uint32));
 	/* get the rxchain */
-	vis_zwd_get_iovar_int(zwdreq->wlname, "rxchain", (int*)&apstatus.primary.rxchain);
+	vis_zwd_get_iovar(zwdreq->wlname, "rxchain", &apstatus.primary.rxchain, sizeof(uint32));
 	/* Get Chanspec */
-	vis_zwd_get_iovar_int(zwdreq->wlname, "chanspec", (int*)&apstatus.primary.channel);
+	vis_zwd_get_iovar(zwdreq->wlname, "chanspec", &apstatus.primary.channel, sizeof(chanspec_t));
 	/* Get DFS Status */
 	vis_zwd_get_dfs_status(zwdreq, &apstatus);
 	/* Get Phymode */
-	vis_zwd_get_iovar_int(zwdreq->wlname, "phymode", (int*)&phymode);
+	vis_zwd_get_iovar(zwdreq->wlname, "phymode", &phymode, sizeof(int));
 	if (phymode == 31) { /* DFS move processing */
 		apstatus.isprocessing = 1;
 		apstatus.scancore.rxchain = apstatus.scancore.txchain = 1;
@@ -1222,11 +1222,11 @@ vis_zwd_get_ap_status(vis_zwd_req_t *zwdreq)
 		vis_zwd_get_rxchain_from_oper_mode(zwdreq->wlname, (int*)&apstatus.primary.rxchain);
 		apstatus.primary.txchain = apstatus.primary.rxchain;
 		/* Get sc_chan. i.e scan core channel */
-		vis_zwd_get_iovar_int(zwdreq->wlname, "sc_chan", (int*)&apstatus.scancore.channel);
+		vis_zwd_get_iovar(zwdreq->wlname, "sc_chan", (&apstatus.scancore.channel, sizeof(chanspec_t));
 	}
 
 	/* Get Nrate buffer */
-	if (vis_zwd_get_iovar_int(zwdreq->wlname, "nrate", (int*)&rspec) == 0) {
+	if (vis_zwd_get_iovar(zwdreq->wlname, "nrate", &rspec, sizeof(uint32)) == 0) {
 		vis_zwd_format_nrate_output(rspec, apstatus.primary.nratebuf,
 			sizeof(apstatus.primary.nratebuf));
 	}
@@ -1274,7 +1274,7 @@ vis_do_zero_wait_dfs_op(vis_zwd_req_t *zwdreq)
 		chanspec_t chspec = 0;
 
 		/* Get the current chanspec to get the bandwidth */
-		if (vis_zwd_get_iovar_int(zwdreq->wlname, "chanspec", (int*)&chspec) == 0)
+		if (vis_zwd_get_iovar(zwdreq->wlname, "chanspec", &chspec, sizeof(chanspec_t)) == 0)
 			ret = vis_zwd_get_dfs_channels(zwdreq, CHSPEC_BW(chspec));
 	} else if (strcmp(zwdreq->req, VIS_REQ_ZWD_ISSUPPORTED) == 0) {
 		int chipnum = 0, issuport = 0;

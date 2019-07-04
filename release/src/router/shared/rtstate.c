@@ -1053,7 +1053,7 @@ char *get_default_ssid(int unit, int subunit)
 	unsigned char mac_binary[6];
 	const char *post_5g = "-1", *post_5g2 = "-2", *post_guest = "_Guest";	/* postfix for RTCONFIG_NEWSSID_REV2 case */
 
-#ifdef RTCONFIG_NEWSSID_REV2
+#if defined(RTCONFIG_NEWSSID_REV2) || defined(RTCONFIG_NEWSSID_REV4)
 	rev3 = 1;
 #endif
 
@@ -1066,7 +1066,7 @@ char *get_default_ssid(int unit, int subunit)
 #if defined(GTAC5300) || defined(GTAX11000)
 	post_5g = "";
 	post_5g2 = "_Gaming";
-#elif !defined(RTCONFIG_NEWSSID_REV2) && !defined(RTCONFIG_SINGLE_SSID)
+#elif !defined(RTCONFIG_NEWSSID_REV2) && !defined(RTCONFIG_NEWSSID_REV4) && !defined(RTCONFIG_SINGLE_SSID)
 	post_5g = "";
 #endif
 
@@ -1112,11 +1112,16 @@ char *get_default_ssid(int unit, int subunit)
 #endif
 
 	strlcpy(ssid, ssidbase, sizeof(ssid));
-#if defined(RTCONFIG_NEWSSID_REV2) && !defined(RTCONFIG_NEWSSID_REV4)
+
+#ifdef RTCONFIG_NEWSSID_REV4
+	if (!subunit)
+		return ssid;
+#endif
+
 #if !defined(RTCONFIG_SINGLE_SSID)	/* including RTCONFIG_NEWSSID_REV2 */
 	switch (unit) {
 	case WL_2G_BAND:
-#if defined(RTCONFIG_NEWSSID_REV2)
+#if defined(RTCONFIG_NEWSSID_REV2) || defined(RTCONFIG_NEWSSID_REV4)
 		if ((band_num > 1)
 #ifdef RTAC68U
 			&& !is_dpsta_repeater()
@@ -1144,7 +1149,6 @@ char *get_default_ssid(int unit, int subunit)
 		dbg("%s: Unknown wl_unit (%d)\n", __func__, unit);
 		strlcat(ssid, "_UNKNOWN", sizeof(ssid));
 	}
-#endif
 #endif
 
 	/* Handle guest network SSID. */

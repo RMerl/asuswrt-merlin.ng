@@ -154,6 +154,7 @@ function initial(){
 	}
 	
 	if(!Rawifi_support && document.form.wl_channel.value  == '0' && cur_control_channel){
+		ajax_wl_channel();
 		document.getElementById("auto_channel").style.display = "";
 		document.getElementById("auto_channel").innerHTML = "Current control channel: " + cur_control_channel[wl_unit_value];
 	}
@@ -881,6 +882,19 @@ function change_wl_nmode(o){
 	genBWTable(wl_unit);
 }
 
+function ajax_wl_channel(){
+	$.ajax({
+		url: '/ajax_wl_channel.asp',
+		dataType: 'script',	
+		error: function(xhr) {
+			setTimeout("ajax_wl_channel();", 1000);
+		},
+		success: function(response){
+			$("#auto_channel").html("<#wireless_control_channel#>: " + cur_control_channel[wl_unit]);
+			setTimeout("ajax_wl_channel();", 5000);
+		}
+	});
+}
 </script>
 </head>
 

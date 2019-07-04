@@ -166,3 +166,25 @@ void in6_dev_finish_destroy(struct inet6_dev *idev)
 	call_rcu(&idev->rcu, in6_dev_finish_destroy_rcu);
 }
 EXPORT_SYMBOL(in6_dev_finish_destroy);
+
+#ifdef CONFIG_BCM_PKTRUNNER_WAR_SKIP_TUN
+int notifier_match_inet6addr_dev(void *nl, void *v, char *dev_name_prefix, int prefix_size)
+{
+	struct inet6_ifaddr *ifa;
+
+	if (nl != &inet6addr_chain.head)
+		return 0;
+
+	ifa = (struct inet6_ifaddr *)v;
+	if (ifa && ifa->idev && ifa->idev->dev) {
+		//printk("%s: dev name %s\n", __FUNCTION__, ifa->idev->dev->name);
+		if (!strncmp(ifa->idev->dev->name, dev_name_prefix, prefix_size)) {
+			//printk("%s: dev name %s matched\n",  __FUNCTION__, ifa->idev->dev->name);
+			return 1;
+		}
+	}
+
+	return 0;
+}
+EXPORT_SYMBOL(notifier_match_inet6addr_dev);
+#endif

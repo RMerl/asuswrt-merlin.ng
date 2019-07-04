@@ -101,7 +101,7 @@ function initial(){
 	}
 	else{
 		if(document.cookie.search('demo=1') == "-1"){
-			introduce_demo();
+			setTimeout("introduce_demo();", 1000);
 			document.cookie = "demo=1";
 		}
 

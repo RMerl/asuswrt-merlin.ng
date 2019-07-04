@@ -49,7 +49,6 @@ include ../.config
 include $(SRCBASE)/makefiles/WLAN_Common.mk
 
 CFLAGS	+= -I. -I$(TOP)/shared -I$(SRCBASE)/include ${WLAN_StdIncPathA} -I$(SRCBASE)/../components/shared -I$(SRCBASE)/../components/wlioctl/include -I$(SRCBASE)/../components/proto/include -I$(SRCBASE)/common/include -Wall
-CFLAGS  += -I$(TOP_PLATFORM)/dpsta
 CFLAGS	+= $(WLAN_ComponentIncPathA)
 CFLAGS  += -I$(SRCBASE)/shared/bcmwifi/include
 #CFLAGS	+= -g -DDEBUG

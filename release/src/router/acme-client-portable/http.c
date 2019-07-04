@@ -742,12 +742,14 @@ http_open(const struct http *http, const void *p, size_t psz)
 		c = asprintf(&req,
 			"GET %s HTTP/1.0\r\n"
 			"Host: %s\r\n"
+			"User-Agent: asusrouter/0.1.11\r\n"
 			"\r\n",
 			http->path, http->host);
 	} else {
 		c = asprintf(&req,
 			"POST %s HTTP/1.0\r\n"
 			"Host: %s\r\n"
+			"User-Agent: asusrouter/0.1.11\r\n"
 			"Content-Length: %zu\r\n"
 			"\r\n",
 			http->path, http->host, psz);

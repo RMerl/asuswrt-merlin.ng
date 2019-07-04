@@ -258,6 +258,8 @@ void start_ubifs(void)
 		}
 	}
 
+	set_proper_perm();
+
 #ifndef RTCONFIG_NVRAM_FILE
 	if (nvram_get_int("ubifs_clean_fs")) {
 		_dprintf("Clean /jffs/*\n");

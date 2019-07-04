@@ -5508,7 +5508,7 @@ wl_scan(int eid, webs_t wp, int argc, char_t **argv, int unit)
 			if (!with_non_dfs_chspec(name)) {
 				dbg("%s scan rejected under DFS mode\n", name);
 				return 0;
-			} else if (wl_iovar_getint(name, "chanspec", (int *) &chspec_cur) < 0) {
+			} else if (wl_iovar_get(name, "chanspec", &chspec_cur, sizeof(chanspec_t)) < 0) {
 				dbg("get current chanpsec failed\n");
 				return 0;
 			} else {

@@ -558,6 +558,7 @@ var vpn_fusion_support = isSupport("vpn_fusion");
 var meoVoda_support = isSupport("meoVoda");
 var movistarTriple_support = isSupport("movistarTriple");
 var utf8_ssid_support = isSupport("utf8_ssid");
+var uu_support = isSupport('uu_accel');
 
 var QISWIZARD = "QIS_wizard.htm";
 
@@ -1509,8 +1510,8 @@ function show_footer(){
 		footer_code +='</div>';
 		footer_code +='<div style="display:table-cell;vertical-align:middle;width:100%;text-align:center">';
 		if(is_CN){
-			Android_app_link = "http://www.wandoujia.com/apps/com.asus.aihome";
-			footer_code +='<div style="padding-left: 30px;"><a href="'+Android_app_link+'" target="_blank"><div style="width:172px;font-size:24px;font-weight:bold;text-decoration:underline"><#WanDouJia#></div></a></div>';
+			Android_app_link = "https://dlcdnets.asus.com/pub/ASUS/LiveUpdate/Release/Wireless/ASUSRouter_Android_Release.apk";
+			footer_code +='<div style="padding-left: 30px;"><a href="'+Android_app_link+'" target="_blank"><div style="width:172px;font-size:24px;font-weight:bold;text-decoration:underline">Android App</div></a></div>';
 		}
 		else{
 			footer_code +='<div style="padding-left: 30px;"><a href="'+Android_app_link+'" target="_blank"><div style="width:172px;height:60px;background:url(\'images/googleplay.png\') no-repeat;"></div></a></div>';
@@ -3294,13 +3295,13 @@ function set_variable(_variable, _val){
 
 function isPortConflict(_val){
 	if(_val == '<% nvram_get("http_lanport"); %>')
-		return "<#portConflictHint#> HTTP LAN port.";
+		return "<#portConflictHint#>: HTTP LAN port.";
 	else if(_val == '<% nvram_get("dm_http_port"); %>')
-		return "<#portConflictHint#> Download Master.";
+		return "<#portConflictHint#>: <#DM_title#>.";
 	else if(_val == '<% nvram_get("webdav_http_port"); %>')
-		return "<#portConflictHint#> Cloud Disk.";
+		return "<#portConflictHint#>: Cloud Disk.";
 	else if(_val == '<% nvram_get("webdav_https_port"); %>')
-		return "<#portConflictHint#> Cloud Disk.";
+		return "<#portConflictHint#>: Cloud Disk.";
 	else
 		return false;
 }

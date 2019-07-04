@@ -103,6 +103,10 @@ function initial(){
 		document.form.iptv_port_settings.disabled = false;
 		change_port_settings(iptv_port_settings_orig);
 	}
+
+	if(hnd_support){
+		$('#igmp_default_ver_field').show();
+	}
 }
 
 function create_stb_select(switch_stb_x){
@@ -744,6 +748,7 @@ function copy_index_to_unindex(service){
 		document.form.wan_pppoe_service_now.value = document.form.wan10_pppoe_service.value;
 		document.form.wan_pppoe_ac_now.value = document.form.wan10_pppoe_ac.value;
 		document.form.wan_pppoe_options_x_now.value = document.form.wan10_pppoe_options_x.value;
+		document.form.wan_pptp_options_x_now.value = document.form.wan10_pptp_options_x.value;
 		document.form.wan_ipaddr_x_now.value = document.form.wan10_ipaddr_x.value;
 		document.form.wan_netmask_x_now.value = document.form.wan10_netmask_x.value;
 		document.form.wan_gateway_x_now.value = document.form.wan10_gateway_x.value;
@@ -763,6 +768,7 @@ function copy_index_to_unindex(service){
 		document.form.wan_pppoe_service_now.value = document.form.wan11_pppoe_service.value;
 		document.form.wan_pppoe_ac_now.value = document.form.wan11_pppoe_ac.value;
 		document.form.wan_pppoe_options_x_now.value = document.form.wan11_pppoe_options_x.value;
+		document.form.wan_pptp_options_x_now.value = document.form.wan11_pptp_options_x.value;
 		document.form.wan_ipaddr_x_now.value = document.form.wan11_ipaddr_x.value;
 		document.form.wan_netmask_x_now.value = document.form.wan11_netmask_x.value;
 		document.form.wan_gateway_x_now.value = document.form.wan11_gateway_x.value;
@@ -785,6 +791,7 @@ function copy_unindex_to_index(service){
 		document.form.wan10_pppoe_service.value = document.form.wan_pppoe_service_now.value;
 		document.form.wan10_pppoe_ac.value = document.form.wan_pppoe_ac_now.value;
 		document.form.wan10_pppoe_options_x.value = document.form.wan_pppoe_options_x_now.value;
+		document.form.wan10_pptp_options_x.value = document.form.wan_pptp_options_x_now.value;
 		document.form.wan10_ipaddr_x.value = document.form.wan_ipaddr_x_now.value;
 		document.form.wan10_netmask_x.value = document.form.wan_netmask_x_now.value;
 		document.form.wan10_gateway_x.value = document.form.wan_gateway_x_now.value;
@@ -805,6 +812,7 @@ function copy_unindex_to_index(service){
 		document.form.wan11_pppoe_service.value = document.form.wan_pppoe_service_now.value;
 		document.form.wan11_pppoe_ac.value = document.form.wan_pppoe_ac_now.value;
 		document.form.wan11_pppoe_options_x.value = document.form.wan_pppoe_options_x_now.value;
+		document.form.wan11_pptp_options_x.value = document.form.wan_pptp_options_x_now.value;
 		document.form.wan11_ipaddr_x.value = document.form.wan_ipaddr_x_now.value;
 		document.form.wan11_netmask_x.value = document.form.wan_netmask_x_now.value;
 		document.form.wan11_gateway_x.value = document.form.wan_gateway_x_now.value;
@@ -1148,6 +1156,7 @@ function change_mr_enable(switch_stb_x){
 <input type="hidden" name="wan10_pppoe_service" value="<% nvram_get("wan10_pppoe_service"); %>">
 <input type="hidden" name="wan10_pppoe_ac" value="<% nvram_get("wan10_pppoe_ac"); %>">
 <input type="hidden" name="wan10_pppoe_options_x" value="<% nvram_get("wan10_pppoe_options_x"); %>">
+<input type="hidden" name="wan10_pptp_options_x" value="<% nvram_get("wan10_pptp_options_x"); %>">
 <input type="hidden" name="wan10_ipaddr_x" value="<% nvram_get("wan10_ipaddr_x"); %>">
 <input type="hidden" name="wan10_netmask_x" value="<% nvram_get("wan10_netmask_x"); %>">
 <input type="hidden" name="wan10_gateway_x" value="<% nvram_get("wan10_gateway_x"); %>">
@@ -1166,6 +1175,7 @@ function change_mr_enable(switch_stb_x){
 <input type="hidden" name="wan11_pppoe_service" value="<% nvram_get("wan11_pppoe_service"); %>">
 <input type="hidden" name="wan11_pppoe_ac" value="<% nvram_get("wan11_pppoe_ac"); %>">
 <input type="hidden" name="wan11_pppoe_options_x" value="<% nvram_get("wan11_pppoe_options_x"); %>">
+<input type="hidden" name="wan11_pptp_options_x" value="<% nvram_get("wan11_pptp_options_x"); %>">
 <input type="hidden" name="wan11_ipaddr_x" value="<% nvram_get("wan11_ipaddr_x"); %>">
 <input type="hidden" name="wan11_netmask_x" value="<% nvram_get("wan11_netmask_x"); %>">
 <input type="hidden" name="wan11_gateway_x" value="<% nvram_get("wan11_gateway_x"); %>">
@@ -1355,10 +1365,10 @@ function change_mr_enable(switch_stb_x){
 					<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(7,17);"><#PPPConnection_x_PPTPOptions_itemname#></a></th>
 					<td>
 						<select name="wan_pptp_options_x_now" class="input_option">
-							<option value="" <% nvram_match("wan_pptp_options_x_now", "","selected"); %>><#Auto#></option>
-							<option value="-mppc" <% nvram_match("wan_pptp_options_x_now", "-mppc","selected"); %>><#No_Encryp#></option>
-							<option value="+mppe-40" <% nvram_match("wan_pptp_options_x_now", "+mppe-40","selected"); %>>MPPE 40</option>
-							<option value="+mppe-128" <% nvram_match("wan_pptp_options_x_now", "+mppe-128","selected"); %>>MPPE 128</option>
+							<option value=""><#Auto#></option>
+							<option value="-mppc"><#No_Encryp#></option>
+							<option value="+mppe-40">MPPE 40</option>
+							<option value="+mppe-128">MPPE 128</option>
 						</select>
 					</td>
 				</tr>
@@ -1584,6 +1594,15 @@ function change_mr_enable(switch_stb_x){
 			<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(6, 6);"><#RouterConfig_IPTV_itemname#></a></th>
 			<td>
 				<input id="udpxy_enable_x" type="text" maxlength="5" class="input_6_table" name="udpxy_enable_x" value="<% nvram_get("udpxy_enable_x"); %>" onkeypress="return validator.isNumber(this,event);" autocorrect="off" autocapitalize="off">
+			</td>
+		</tr>
+		<tr id="igmp_default_ver_field" style="display:none;">
+			<th>IGMP default version</th>
+			<td>
+				<select name="igmp_default_version" class="input_option">
+					<option value="2" <% nvram_match("igmp_default_version", "2","selected"); %> >2</option>
+					<option value="3" <% nvram_match("igmp_default_version", "3","selected"); %> >3</option>
+				</select>
 			</td>
 		</tr>
 		</table>

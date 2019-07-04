@@ -386,7 +386,8 @@ helpcontent[33] = new Array("",
 
 //Feedback
 helpcontent[34] = new Array("",
-							"This feature allows system to capture diagnostic System debug log in the background, duration depends on the “Diagnostic debug log capture duration” option, depends on the option selected, system might transmit single debug log automatically to ASUS Support Team for analysis after capture completed or transmit multiple debug logs over a period of time. Click on the yellow System icon could cancel the debug log capture."/*untranslated*/
+							"This feature allows system to capture diagnostic System debug log in the background, duration depends on the “Diagnostic debug log capture duration” option, depends on the option selected, system might transmit single debug log automatically to ASUS Support Team for analysis after capture completed or transmit multiple debug logs over a period of time. Click on the yellow System icon could cancel the debug log capture.",/*untranslated*/
+							"<#Feedback_case_No_desc#>"
 							);
 
 helpcontent[50] = new Array("",

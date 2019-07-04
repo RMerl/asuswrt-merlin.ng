@@ -128,16 +128,16 @@ var AccLinkStatus = {
 }
 
 var Amazon_URLs = [
-	{ "Region": "Australia and New Zealand", "WebSite": "https://www.amazon.com.au/ASUS-ROUTER/dp/B07285G1RK" },
-	{ "Region": "Canada", "WebSite": "https://www.amazon.ca/ASUS-ROUTER/dp/B07285G1RK" },
-	{ "Region": "France", "WebSite": "https://www.amazon.fr/ASUS-ROUTER/dp/B07285G1RK" },
-	{ "Region": "Germany and Austria", "WebSite": "https://www.amazon.de/ASUS-ROUTER/dp/B07285G1RK" },
-	{ "Region": "India", "WebSite": "https://www.amazon.in/ASUS-ROUTER/dp/B07285G1RK" },
-	{ "Region": "Italy", "WebSite": "https://www.amazon.it/ASUS-ROUTER/dp/B07285G1RK" },
-	{ "Region": "Japan", "WebSite": "https://www.amazon.co.jp/ASUS-ROUTER/dp/B07285G1RK" },
-	{ "Region": "Spain", "WebSite": "https://www.amazon.es/ASUS-ROUTER/dp/B07285G1RK" },
-	{ "Region": "United States", "WebSite": "https://www.amazon.com/ASUS-ROUTER/dp/B07285G1RK" },
-	{ "Region": "United Kingdom and Ireland", "WebSite": "https://www.amazon.co.uk/ASUS-ROUTER/dp/B07285G1RK" }
+	{ "Region": "<#Alexa_Region_au#>", "WebSite": "https://www.amazon.com.au/ASUS-ROUTER/dp/B07285G1RK" },
+	{ "Region": "<#Alexa_Region_ca#>", "WebSite": "https://www.amazon.ca/ASUS-ROUTER/dp/B07285G1RK" },
+	{ "Region": "<#Alexa_Region_fr#>", "WebSite": "https://www.amazon.fr/ASUS-ROUTER/dp/B07285G1RK" },
+	{ "Region": "<#Alexa_Region_de#>", "WebSite": "https://www.amazon.de/ASUS-ROUTER/dp/B07285G1RK" },
+	{ "Region": "<#Alexa_Region_in#>", "WebSite": "https://www.amazon.in/ASUS-ROUTER/dp/B07285G1RK" },
+	{ "Region": "<#Alexa_Region_it#>", "WebSite": "https://www.amazon.it/ASUS-ROUTER/dp/B07285G1RK" },
+	{ "Region": "<#Alexa_Region_jp#>", "WebSite": "https://www.amazon.co.jp/ASUS-ROUTER/dp/B07285G1RK" },
+	{ "Region": "<#Alexa_Region_es#>", "WebSite": "https://www.amazon.es/ASUS-ROUTER/dp/B07285G1RK" },
+	{ "Region": "<#Alexa_Region_us#>", "WebSite": "https://www.amazon.com/ASUS-ROUTER/dp/B07285G1RK" },
+	{ "Region": "<#Alexa_Region_uk#>", "WebSite": "https://www.amazon.co.uk/ASUS-ROUTER/dp/B07285G1RK" }
 ]
 
 function initial(){
@@ -177,7 +177,7 @@ function create_AmazonRegion_select(){
 		select.length = 0;
 		for(var i = 0; i < Amazon_URLs.length; i++){
 			text = Amazon_URLs[i].Region;
-			if(Amazon_URLs[i].Region == "United States")
+			if(Amazon_URLs[i].Region == "<#Alexa_Region_us#>")
 				selected = true;
 			else
 				selected = false;
@@ -464,10 +464,10 @@ function show_account_state(){
 																		<div class="title_num">1</div>
 																	</div>
 																	<div class="div_td step_div" style="padding-top:0px;">
-																		Select and go to your preferred Amazon country/region website
+																		<#Alexa_Region_select#>
 																		<select class="input_option" id="service_region" name="service_region" style="margin-top: 10px;">
 																		</select>
-																		<input class="button_gen" style="margin-top: 10px;" type="button" onclick="window.open(document.form.service_region.value);" value="GO">
+																		<input class="button_gen" style="margin-top: 10px;" type="button" onclick="window.open(document.form.service_region.value);" value="<#CTL_link#>">
 																	</div>
 																</div>
 																<div class="div_tr">

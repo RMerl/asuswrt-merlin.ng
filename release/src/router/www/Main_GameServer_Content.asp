@@ -430,11 +430,9 @@
 										<tr>
 											<td bgcolor="#4D595D" valign="top"  >
 												<div>&nbsp;</div>
-												<div class="formfonttitle">
-												Game Radar</div>
+												<div class="formfonttitle"><#AiProtection_title_Radar#></div>
 												<div style="margin:10px 0 10px 5px;" class="splitLine"></div>
-												<div class="formfontdesc">All game names, logos, and brands are property of their respective owners. Use of these names, logos, and brands does
-												not imply endorsement.</div>
+												<div class="formfontdesc"><#AiProtection_title_Radar_desc2#></div>
 
 												<div style="margin-left:10px">
 												<!--

@@ -75,7 +75,6 @@
 	background-repeat: no-repeat;
 	border-radius: 3px;
 	position:absolute;
-	top: 150px;
 	z-index:1;
 	width:760px; 
 	height:800px; 
@@ -279,7 +278,6 @@ function initial(){
 	if(rog_support){
   		$("#goBackBtn").hide();
   		$("#goBackBtn_M").hide();
-  		document.getElementById("WTFast_login_div").style.top = "150px";
   	}
 
 	var Newstr = document.getElementById("benefit3").innerHTML.replace(/, Console game/, "");

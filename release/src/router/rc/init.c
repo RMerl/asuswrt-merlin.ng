@@ -218,6 +218,9 @@ virtual_radio_restore_defaults(void)
 		nvram_unset(strcat_r(prefix, "ure", tmp));
 		nvram_unset(strcat_r(prefix, "ipconfig_index", tmp));
 		nvram_unset(strcat_r(prefix, "nas_dbg", tmp));
+#ifdef RTCONFIG_PSR_GUEST
+		nvram_unset(strcat_r(prefix, "psr_mbss", tmp));
+#endif
 		sprintf(prefix, "lan%d_", i);
 		nvram_unset(strcat_r(prefix, "ifname", tmp));
 		nvram_unset(strcat_r(prefix, "ifnames", tmp));
@@ -271,9 +274,6 @@ virtual_radio_restore_defaults(void)
 			nvram_unset(strcat_r(prefix, "key4", tmp));
 			nvram_unset(strcat_r(prefix, "wpa_gtk_rekey", tmp));
 			nvram_unset(strcat_r(prefix, "nas_dbg", tmp));
-#ifdef RTCONFIG_PSR_GUEST
-			nvram_unset(strcat_r(prefix, "psr_guest", tmp));
-#endif
 			nvram_unset(strcat_r(prefix, "probresp_mf", tmp));
 
 			nvram_unset(strcat_r(prefix, "bss_opmode_cap_reqd", tmp));
@@ -357,7 +357,7 @@ misc_ioctrl(void)
 #endif
 
 #if defined(HND_ROUTER)
-			setLANLedOn();
+			activateLANLed();
 #endif
 
 #if defined(HND_ROUTER) && defined(RTCONFIG_HNDMFG)
@@ -701,6 +701,7 @@ wl_defaults(void)
 		}
 
 		snprintf(prefix, sizeof(prefix), "wl%d_", unit);
+
 		if (strlen(wlx_vifnames))
 		{
 #if defined(RTCONFIG_AMAS)
@@ -766,6 +767,15 @@ wl_defaults(void)
 #if defined(RTCONFIG_BCMWL6) && defined(RTCONFIG_PROXYSTA)
 	reset_psr_hwaddr();
 #endif
+#ifdef RTCONFIG_AVBLCHAN
+	nvram_set("wl0_acs_excl_chans_cfg", "");
+	nvram_set("wl1_acs_excl_chans_cfg", "");
+	nvram_set("wl2_acs_excl_chans_cfg", "");
+	nvram_set("wl0_acs_excl_chans", "");
+	nvram_set("wl1_acs_excl_chans", "");
+	nvram_set("wl2_acs_excl_chans", "");
+	nvram_set("excbase", "0");
+#endif
 }
 
 /* for WPS Reset */
@@ -824,7 +834,7 @@ restore_defaults_wifi(int all)
 	unsigned int max_mssid;
 	char prefix[]="wlXXXXXX_", tmp[100];
 
-#ifdef RTCONFIG_NEWSSID_REV2
+#if defined(RTCONFIG_NEWSSID_REV2) || defined(RTCONFIG_NEWSSID_REV4)
 	rev3 = 1;
 #endif
 	unit = 0;
@@ -1609,10 +1619,11 @@ misc_defaults(int restore_defaults)
 #ifdef RTCONFIG_AMAS
 	nvram_unset("amesh_found_cap");
 	nvram_unset("amesh_led");
-#ifdef RTCONFIG_LANTIQ
-	nvram_unset("amesh_hexdata");
+#ifdef CONFIG_BCMWL5
+	nvram_unset("amesh_wps_enr");
+	nvram_unset("obd_allow_scan");
 #endif
-
+	nvram_unset("obd_scan_state");
 #ifdef RTCONFIG_ADV_RAST
 	nvram_unset("diag_chk_cap");
 	nvram_unset("diag_chk_re1");
@@ -1625,6 +1636,7 @@ misc_defaults(int restore_defaults)
 	nvram_unset("diag_chk_re8");
 #endif
 #endif
+	nvram_unset("wlc_scan_state");
 }
 
 /* ASUS use erase nvram to reset default only */
@@ -11036,11 +11048,18 @@ int init_main(int argc, char *argv[])
 #endif
 
 #ifdef RTCONFIG_BCM_HND_CRASHLOG
+	struct stat crashlog_stat;
+	char clogpath[32];
 #if defined(RTCONFIG_JFFS2) || defined(RTCONFIG_BRCM_NAND_JFFS2)
-	f_write_string("/proc/sys/kernel/crashlog_filename", "/jffs/crashlog.log", 0, 0);
+	snprintf(clogpath, sizeof(clogpath), "/jffs/crashlog.log");
 #else
-	f_write_string("/proc/sys/kernel/crashlog_filename", "/tmp/crashlog.log", 0, 0);
+	snprintf(clogpath, sizeof(clogpath), "/tmp/crashlog.log");
 #endif
+	f_write_string("/proc/sys/kernel/crashlog_filename", clogpath, 0, 0);
+	if(!stat(clogpath, &crashlog_stat)) {
+		if(!crashlog_stat.st_size)
+			unlink(clogpath);
+	}
 #endif
 
 #ifdef RTN65U
@@ -11284,20 +11303,10 @@ dbg("boot/continue fail= %d/%d\n", nvram_get_int("Ate_boot_fail"),nvram_get_int(
 			start_wan();
 
 #ifdef RTCONFIG_HND_ROUTER_AX
-#ifdef RTCONFIG_AMAS
-			if(!is_router_mode())
-				eth_phypower("eth0", 1);
-			else
-#endif
+			char word[64], *next;
+			foreach(word, nvram_safe_get("wan_ifnames"), next)
 			{
-			    	char word[64], *next;
-				foreach(word, nvram_safe_get("wan_ifnames"), next)
-				{
-					if(!strncmp(word, "br1", 3) || !strncmp(word, "vlan", 4) || !strncmp(word, "eth", 3))
-						eth_phypower("eth0", 1);
-					else
-						eth_phypower(word, 1);
-				}
+				eth_phypower(word, 1);
 			}
 #endif
 
@@ -11392,6 +11401,10 @@ dbg("boot/continue fail= %d/%d\n", nvram_get_int("Ate_boot_fail"),nvram_get_int(
 				start_telnetd();
 				Ate_on_off_led_fail_loop();	// keep loop in this function
 			}
+
+#ifdef RTAX88U
+			pcie_probe_check();
+#endif
 
 #if defined(RTCONFIG_BCM_7114) || (defined(HND_ROUTER) && !defined(RTCONFIG_HND_ROUTER_AX))
 			if(!factory_debug()) {

@@ -2559,7 +2559,8 @@ $(document).ready(function(){
 				selectFileArray = null;
 			}
         },
-        items: {			
+        items: {
+			/*			
 			"submenu_upload": { 
 				name : m.getString("title_upload2"),
 				disabled: function(key, opt) {							
@@ -2591,16 +2592,16 @@ $(document).ready(function(){
 						name: m.getString("title_twitter")
 					}
                 }
-            },
+            },*/
 			"submenu_share": { 
 				name : m.getString("title_share2"),
                 items : {
                 	"share2facebook": {
 						name: m.getString("title_facebook")
 					},
-					"share2googleplus": {
-						name: m.getString("title_googleplus")
-					},
+					//"share2googleplus": {
+					//	name: m.getString("title_googleplus")
+					//},
 					"share2twitter": {
 						name: m.getString("title_twitter")
 					},
@@ -2853,7 +2854,7 @@ $(document).ready(function(){
 				}
 			},
 			"sep2": "---------",
-			"submenu_upload": { 
+			/*"submenu_upload": { 
 				name : m.getString("title_upload2"),
 				disabled: function(key, opt) {							
 					if(g_select_array.length<=0)
@@ -2884,16 +2885,16 @@ $(document).ready(function(){
 						name: m.getString("title_twitter")
 					}
                 }
-            },
+            },*/
 			"submenu_share": { 
 				name : m.getString("title_share2"),
                 items : {
                 	"share2facebook": {
 						name: m.getString("title_facebook")
 					},
-					"share2googleplus": {
-						name: m.getString("title_googleplus")
-					},
+					//"share2googleplus": {
+					//	name: m.getString("title_googleplus")
+					//},
 					"share2twitter": {
 						name: m.getString("title_twitter")
 					},

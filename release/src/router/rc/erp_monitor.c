@@ -133,12 +133,12 @@ static int erp_check_wl_auth_stat()
 		}
 		unit++;
 	}
+	if(mac_list) free(mac_list);
 
-	free(mac_list);
 	return total_sta_cnt;
 
 exit:
-        if(mac_list) free(mac_list);
+	if(mac_list) free(mac_list);
 	return -1;
 
 }
@@ -460,7 +460,11 @@ static void ERP_BTN_WAKEUP()
 
 #ifdef RTCONFIG_LED_BTN
 	if (model != MODEL_RTAC87U) {
+#if defined(RTAX88U) || defined(RTAX92U)
+		if (button_pressed(BTN_LED))
+#else
 		if (!button_pressed(BTN_LED))
+#endif
 		{
 			ERP_DBG("PRESSED LED BUTTON!\n");
 			active = 1;

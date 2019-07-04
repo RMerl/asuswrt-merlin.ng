@@ -70,8 +70,8 @@ config RTCONFIG_HND_ROUTER
 	default n
 
 config RTCONFIG_HND_ROUTER_AX
-        bool "Bcm hnd 11ax bsp"
-        default n
+	bool "Bcm hnd 11ax bsp"
+	default n
 
 config RTCONFIG_HND_WL
 	bool "BCM wl NIC mode support"
@@ -292,6 +292,11 @@ config RTCONFIG_BCMWL6
 
 config RTCONFIG_BCMWL6A
 	bool "BCM WL 6.30.143"
+	depends on RTCONFIG_BCMARM && RTCONFIG_BCMWL6
+	default n
+
+config RTCONFIG_BCM4708
+	bool "BCM WL 6.37.14"
 	depends on RTCONFIG_BCMARM && RTCONFIG_BCMWL6
 	default n
 
@@ -748,7 +753,6 @@ config RTCONFIG_NEWSSID_REV2
 
 config RTCONFIG_NEWSSID_REV4
 	bool "RT-V4 SSID rule"
-	depends on RTCONFIG_NEWSSID_REV2
 	default n
 
 config RTCONFIG_QCA
@@ -1751,6 +1755,18 @@ config RTCONFIG_BCN_RPT
 	bool "enable 802.11k beacon request/report for roaming"
 	default n
 
+config RTCONFIG_BTM_11V
+	bool "enable 802.11v BTM request/report for roaming"
+	default n
+
+config RTCONFIG_RAST_NONMESH_KVONLY
+	bool "enable roamast in a nonmesh device"
+	default n
+
+config RTCONFIG_CONN_EVENT_TO_EX_AP
+	bool "enable AP to info the EX-Ap of the connect event of a connected client"
+	default n
+
 config RTCONFIG_CFGSYNC
 	bool "Sync config"
 
@@ -1877,3 +1893,8 @@ config RTCONFIG_GAME_PROFILE
 config RTCONFIG_NTPD
 	bool "ntp & ntpd support"
 	default n
+
+config RTCONFIG_UUPLUGIN
+	bool "UU plugin support"
+	default n
+

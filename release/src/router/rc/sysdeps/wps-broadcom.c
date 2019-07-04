@@ -202,15 +202,6 @@ start_wps_method(void)
 #endif
 	nvram_unset("wps_band");
 
-#if defined(HND_ROUTER) && defined(RTCONFIG_PROXYSTA)
-	if (!wps_band && (is_dpsr(wps_band)
-#ifdef RTCONFIG_DPSTA
-		|| is_dpsta(wps_band)
-#endif
-	))
-		eval("wl", "spatial_policy", "0");
-#endif
-
 	nvram_set("wps_env_buf", buf);
 	nvram_set_int("wps_restart_war", 1);
 	set_wps_env(buf);
@@ -242,15 +233,6 @@ stop_wps_method(void)
 	len += sprintf(buf + len, "wps_action=%d ", WPS_UI_ACT_NONE);
 
 	set_wps_env(buf);
-
-#if defined(HND_ROUTER) && defined(RTCONFIG_PROXYSTA)
-	if (!nvram_get_int("wps_band_x") && (is_dpsr(nvram_get_int("wps_band_x"))
-#ifdef RTCONFIG_DPSTA
-		|| is_dpsta(nvram_get_int("wps_band_x"))
-#endif
-	))
-		eval("wl", "spatial_policy", "1");
-#endif
 
 	nvram_set_int("wps_uptime", 0);
 

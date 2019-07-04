@@ -60,39 +60,33 @@ define(function(){
 				] 
 			},
 			{
-				menuName: "<#Game_Boost#>",
+				menuName: "Game Acceleration",
 				index: "menu_GameBoost",
 				tab: [
-					{url: "GameBoost_ROG.asp", tabName: "<#Game_Boost#>"},
+					{url: "GameBoost.asp", tabName: "Game Acceleration"},
 					{url: "QoS_EZQoS.asp", tabName: "<#menu5_3_2#>"},
-					{url: "AdaptiveQoS_WebHistory.asp", tabName: "<#Adaptive_History#>"},
-					{url: "Main_Spectrum_Content.asp", tabName: "<#Spectrum_title#>"},
+					//{url: "AdaptiveQoS_WebHistory.asp", tabName: "<#Adaptive_History#>"},
+					//{url: "Main_Spectrum_Content.asp", tabName: "<#Spectrum_title#>"},
 					{url: "Advanced_QOSUserPrio_Content.asp", tabName: "__INHERIT__"},
 					{url: "Advanced_QOSUserRules_Content.asp", tabName: "__INHERIT__"},
-					{url: "AdaptiveQoS_Adaptive.asp", tabName: "__INHERIT__"},
+					{url: "Advanced_WTFast_Content.asp", tabName: "WTFast"},
+					//{url: "AdaptiveQoS_Adaptive.asp", tabName: "__INHERIT__"},
 					{url: "NULL", tabName: "__INHERIT__"}
 				] 
 			},
 			{
-				menuName: "Game Private Network",
-				index: "menu_Wtfast",
-				tab: [
-					{url: "Advanced_WTFast_Content.asp", tabName: "<#Game_Boost#>"},
-					{url: "NULL", tabName: "__INHERIT__"}
-				] 
-			},			{
-				menuName: "<#Game_Profile#>",
+				menuName: "Open NAT",
 				index: "menu_GameProfile", 
 				tab: [
-					{url: "GameProfile.asp", tabName: "<#Game_Profile#>"},
+					{url: "GameProfile.asp", tabName: "Open NAT"},
 					{url: "NULL", tabName: "__INHERIT__"}
 				] 
 			},
 			{
-				menuName: "Game Radar",
+				menuName: "<#AiProtection_title_Radar#>",
 				index: "menu_GameRadar", 
 				tab: [
-					{url: "Main_GameServer_Content.asp", tabName: "Game Radar"},
+					{url: "Main_GameServer_Content.asp", tabName: "<#AiProtection_title_Radar#>"},
 					{url: "NULL", tabName: "__INHERIT__"}
 				] 
 			},
@@ -121,10 +115,12 @@ define(function(){
 				index: "menu_TrafficAnalyzer", 
 				tab: [
 					{url: "TrafficAnalyzer_Statistic.asp", tabName: "<#Statistic#>"},
+					{url: "AdaptiveQoS_Bandwidth_Monitor.asp", tabName: "<#Bandwidth_monitor#>"},
 					{url: "Main_TrafficMonitor_realtime.asp", tabName: "<#traffic_monitor#>"},
 					{url: "Main_TrafficMonitor_last24.asp", tabName: "__INHERIT__"},
 					{url: "Main_TrafficMonitor_daily.asp", tabName: "__INHERIT__"},
 					{url: "AdaptiveQoS_TrafficLimiter.asp", tabName: "Traffic Limiter"},
+					{url: "AdaptiveQoS_WebHistory.asp", tabName: "<#Adaptive_History#>"},
 					{url: "NULL", tabName: "__INHERIT__"}
 				] 
 			},
@@ -372,7 +368,7 @@ define(function(){
 					retArray.push("menu_VLAN");
 					retArray.push("menu_Firewall");
 
-					if(userRSSI_support){
+					if(!userRSSI_support){
 						retArray.push("menu_Wireless");
 					}
 

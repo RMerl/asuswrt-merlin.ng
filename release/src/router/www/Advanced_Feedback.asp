@@ -74,7 +74,7 @@ function initial(){
 		Reload_pdesc(document.form.fb_ptype,orig_page);
 	}		
 
-	if(modem_support == -1 || nomodem_support){
+	if(!modem_support || nomodem_support){
 		document.form.attach_modemlog.checked = false;
 		document.getElementById("attach_modem_span").style.display = "none";
 	}
@@ -417,7 +417,14 @@ function applyRule(){
 				return false;
 			}
 		}
-
+		
+		var re = new RegExp("^[a-zA-Z][0-9]{10}","gi");
+		if(!re.test(document.form.fb_serviceno.value) && document.form.fb_serviceno.value != ""){
+			alert("<#JS_validchar#>");
+			document.form.fb_serviceno.focus();
+			return false;
+		}
+		
 		if(fb_trans_id != "")
 		{
 			document.form.fb_transid.value = fb_trans_id;
@@ -944,9 +951,9 @@ function CheckFBSize(){
 </tr>
 
 <tr>
-<th>ASUS Service No./Case#</th>
+<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(34,2);">ASUS Service No./Case#</a></th>
 <td>
-	<input type="text" name="fb_serviceno" maxlength="50" class="input_25_table" value="" autocorrect="off" autocapitalize="off">
+	<input type="text" name="fb_serviceno" maxlength="11" class="input_15_table" value="" autocorrect="off" autocapitalize="off">
 </td>
 </tr>
 
@@ -1080,7 +1087,7 @@ function CheckFBSize(){
 	<td colspan="2">
 		<strong><#FW_note#></strong>
 		<ul>
-			<li><#feedback_note4#></li>
+			<li><#feedback_note4#><br><a style="font-weight: bolder;text-decoration:underline;cursor:pointer;" href="https://www.asus.com/support/CallUs/" target="_blank">https://www.asus.com/support/CallUs/</a></li>
 		</ul>
 	</td>
 </tr>	

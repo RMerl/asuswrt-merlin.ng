@@ -1000,6 +1000,7 @@ fail:
 #endif
 
 #ifdef HND_ROUTER
+#include <bcm_hwdefs.h>
 
 #define TEMP_KERNEL_NVRM_FILE "/var/.temp.kernel.nvram"
 #define PRE_COMMIT_KERNEL_NVRM_FILE "/var/.kernel_nvram.setting.prec"
@@ -1203,12 +1204,15 @@ bca_sys_upgrade(const char *path)
 		fclose(fp);
 	if (imgifHandle != NULL) {
 		if (imgif_close(imgifHandle, (ret != 0)) == 0) {
-			if (ret == 0)
+			if (ret == 0) {
 				_dprintf("\nDone. (written %d bytes, %d blocks with size %d\n",
 					ulimgsz, blknum, flash_info.eraseSize);
+				setBootImageState(BOOT_SET_NEW_IMAGE);
+			}
 		} else {
-			if (ret == 0)
+			if (ret == 0) {
 				_dprintf("\n*** Fail to write the image\n");
+			}
 			ret = EIO;
 		}
 	}

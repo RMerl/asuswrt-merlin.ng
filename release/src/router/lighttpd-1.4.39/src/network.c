@@ -45,8 +45,21 @@ static void ssl_info_callback(const SSL *ssl, int where, int ret) {
 
 	if (0 != (where & SSL_CB_HANDSHAKE_START)) {
 		connection *con = SSL_get_app_data(ssl);
-		++con->renegotiations;
+		if (con->renegotiations >= 0) ++con->renegotiations;
 	}
+#ifdef TLS1_3_VERSION
+	/* https://github.com/openssl/openssl/issues/5721
+	 * "TLSv1.3 unexpected InfoCallback after handshake completed" */
+	if (0 != (where & SSL_CB_HANDSHAKE_DONE)) {
+		/* SSL_version() is valid after initial handshake completed */
+		if (SSL_version(ssl) >= TLS1_3_VERSION) {
+			/* https://wiki.openssl.org/index.php/TLS1.3
+			 * "Renegotiation is not possible in a TLSv1.3 connection" */
+			connection *con = SSL_get_app_data(ssl);
+			con->renegotiations = -1;
+		}
+	}
+#endif
 }
 #endif
 
@@ -111,6 +124,7 @@ static int network_ssl_servername_callback(SSL *ssl, int *al, server *srv) {
 	config_setup_connection(srv, con);
 
 	config_patch_connection(srv, con, COMP_SERVER_SOCKET);
+	config_patch_connection(srv, con, COMP_HTTP_REMOTE_IP);
 	config_patch_connection(srv, con, COMP_HTTP_SCHEME);
 	config_patch_connection(srv, con, COMP_HTTP_HOST);
 
@@ -152,6 +166,8 @@ static int network_ssl_servername_callback(SSL *ssl, int *al, server *srv) {
 			NULL
 		);
 		SSL_set_verify_depth(ssl, con->conf.ssl_verifyclient_depth);
+	} else {
+		SSL_set_verify(ssl, SSL_VERIFY_NONE, NULL);
 	}
 
 	return SSL_TLSEXT_ERR_OK;
@@ -701,21 +717,39 @@ int network_init(server *srv) {
 #ifndef SSL_OP_NO_COMPRESSION
 # define SSL_OP_NO_COMPRESSION 0
 #endif
+#ifndef SSL_MODE_RELEASE_BUFFERS    /* OpenSSL >= 1.0.0 */
+#define SSL_MODE_RELEASE_BUFFERS 0
+#endif
 		long ssloptions =
 			SSL_OP_ALL | SSL_OP_NO_SESSION_RESUMPTION_ON_RENEGOTIATION | SSL_OP_NO_COMPRESSION;
 
 		//- 20160204 Sungmin add
 		ssloptions &= ~SSL_OP_ALLOW_UNSAFE_LEGACY_RENEGOTIATION;
 		//ssloptions |= SSL_OP_ALLOW_UNSAFE_LEGACY_RENEGOTIATION;
-		
+
+		//- 20181017 Sungmin add
+		ssloptions |= SSL_OP_NO_SSLv2;
+		ssloptions |= SSL_OP_NO_SSLv3;
+		ssloptions |= SSL_OP_NO_TLSv1;
+		ssloptions |= SSL_OP_NO_TLSv1_1;
+
 		Cdbg(DBE, "ssloptions = %d", ssloptions);
 		
 		if (buffer_string_is_empty(s->ssl_pemfile) && buffer_string_is_empty(s->ssl_ca_file)) continue;
 
 		if (srv->ssl_is_init == 0) {
+		      #if OPENSSL_VERSION_NUMBER >= 0x10100000L \
+		       && !defined(LIBRESSL_VERSION_NUMBER)
+			OPENSSL_init_ssl(OPENSSL_INIT_LOAD_SSL_STRINGS
+					|OPENSSL_INIT_LOAD_CRYPTO_STRINGS,NULL);
+			OPENSSL_init_crypto(OPENSSL_INIT_ADD_ALL_CIPHERS
+					   |OPENSSL_INIT_ADD_ALL_DIGESTS
+					   |OPENSSL_INIT_LOAD_CONFIG, NULL);
+		      #else
 			SSL_load_error_strings();
 			SSL_library_init();
 			OpenSSL_add_all_algorithms();
+		      #endif
 			srv->ssl_is_init = 1;
 
 			if (0 == RAND_status()) {
@@ -748,7 +782,14 @@ int network_init(server *srv) {
 
 		if (buffer_string_is_empty(s->ssl_pemfile) || !s->ssl_enabled) continue;
 
-		if (NULL == (s->ssl_ctx = SSL_CTX_new(SSLv23_server_method()))) {
+	      #if OPENSSL_VERSION_NUMBER >= 0x10100000L
+		s->ssl_ctx = (!s->ssl_use_sslv2 && !s->ssl_use_sslv3)
+			? SSL_CTX_new(TLS_server_method())
+			: SSL_CTX_new(SSLv23_server_method());
+	      #else
+		s->ssl_ctx = SSL_CTX_new(SSLv23_server_method());
+	      #endif
+		if (NULL == s->ssl_ctx) {
 			log_error_write(srv, __FILE__, __LINE__, "ss", "SSL:",
 					ERR_error_string(ERR_get_error(), NULL));
 			return -1;
@@ -775,18 +816,18 @@ int network_init(server *srv) {
 		SSL_CTX_set_options(s->ssl_ctx, ssloptions);
 		SSL_CTX_set_info_callback(s->ssl_ctx, ssl_info_callback);
 
-		if (!s->ssl_use_sslv2) {
+		if (!s->ssl_use_sslv2 && 0 != SSL_OP_NO_SSLv2) {
 			/* disable SSLv2 */
-			if (!(SSL_OP_NO_SSLv2 & SSL_CTX_set_options(s->ssl_ctx, SSL_OP_NO_SSLv2))) {
+			if ((SSL_OP_NO_SSLv2 & SSL_CTX_set_options(s->ssl_ctx, SSL_OP_NO_SSLv2)) != SSL_OP_NO_SSLv2) {
 				log_error_write(srv, __FILE__, __LINE__, "ss", "SSL:",
 						ERR_error_string(ERR_get_error(), NULL));
 				return -1;
 			}
 		}
 
-		if (!s->ssl_use_sslv3) {
+		if (!s->ssl_use_sslv3 && 0 != SSL_OP_NO_SSLv3) {
 			/* disable SSLv3 */
-			if (!(SSL_OP_NO_SSLv3 & SSL_CTX_set_options(s->ssl_ctx, SSL_OP_NO_SSLv3))) {
+			if ((SSL_OP_NO_SSLv3 & SSL_CTX_set_options(s->ssl_ctx, SSL_OP_NO_SSLv3)) != SSL_OP_NO_SSLv3) {
 				log_error_write(srv, __FILE__, __LINE__, "ss", "SSL:",
 						ERR_error_string(ERR_get_error(), NULL));
 				return -1;
@@ -822,20 +863,29 @@ int network_init(server *srv) {
 				return -1;
 			}
 		} else {
+			BIGNUM *dh_p, *dh_g;
 			/* Default DH parameters from RFC5114 */
 			dh = DH_new();
 			if (dh == NULL) {
 				log_error_write(srv, __FILE__, __LINE__, "s", "SSL: DH_new () failed");
 				return -1;
 			}
-			dh->p = BN_bin2bn(dh1024_p,sizeof(dh1024_p), NULL);
-			dh->g = BN_bin2bn(dh1024_g,sizeof(dh1024_g), NULL);
-			dh->length = 160;
-			if ((dh->p == NULL) || (dh->g == NULL)) {
+			dh_p = BN_bin2bn(dh1024_p,sizeof(dh1024_p), NULL);
+			dh_g = BN_bin2bn(dh1024_g,sizeof(dh1024_g), NULL);
+			if ((dh_p == NULL) || (dh_g == NULL)) {
 				DH_free(dh);
 				log_error_write(srv, __FILE__, __LINE__, "s", "SSL: BN_bin2bn () failed");
 				return -1;
 			}
+		      #if OPENSSL_VERSION_NUMBER < 0x10100000L \
+			|| defined(LIBRESSL_VERSION_NUMBER)
+			dh->p = dh_p;
+			dh->g = dh_g;
+			dh->length = 160;
+		      #else
+			DH_set0_pqg(dh, dh_p, NULL, dh_g);
+			DH_set_length(dh, 160);
+		      #endif
 		}
 		SSL_CTX_set_tmp_dh(s->ssl_ctx,dh);
 		SSL_CTX_set_options(s->ssl_ctx,SSL_OP_SINGLE_DH_USE);
@@ -848,6 +898,7 @@ int network_init(server *srv) {
 
 #if OPENSSL_VERSION_NUMBER >= 0x0090800fL
 #ifndef OPENSSL_NO_ECDH
+	nid = 0;
 		/* Support for Elliptic-Curve Diffie-Hellman key exchange */
 		if (!buffer_string_is_empty(s->ssl_ec_curve)) {
 			/* OpenSSL only supports the "named curves" from RFC 4492, section 5.1.1. */
@@ -857,9 +908,18 @@ int network_init(server *srv) {
 				return -1;
 			}
 		} else {
+		      #if OPENSSL_VERSION_NUMBER < 0x10002000
 			/* Default curve */
 			nid = OBJ_sn2nid("prime256v1");
+		      #elif OPENSSL_VERSION_NUMBER < 0x10100000L \
+			 || defined(LIBRESSL_VERSION_NUMBER)
+			if (!SSL_CTX_set_ecdh_auto(s->ssl_ctx, 1)) {
+				log_error_write(srv, __FILE__, __LINE__, "s",
+						"SSL: SSL_CTX_set_ecdh_auto() failed");
+			}
+		      #endif
 		}
+	if (nid) {
 		ecdh = EC_KEY_new_by_curve_name(nid);
 		if (ecdh == NULL) {
 			log_error_write(srv, __FILE__, __LINE__, "ss", "SSL: Unable to create curve", s->ssl_ec_curve->ptr);
@@ -868,6 +928,7 @@ int network_init(server *srv) {
 		SSL_CTX_set_tmp_ecdh(s->ssl_ctx,ecdh);
 		SSL_CTX_set_options(s->ssl_ctx,SSL_OP_SINGLE_ECDH_USE);
 		EC_KEY_free(ecdh);
+	}
 #endif
 #endif
 
@@ -900,13 +961,13 @@ int network_init(server *srv) {
 			SSL_CTX_set_verify_depth(s->ssl_ctx, s->ssl_verifyclient_depth);
 		}
 
-		if (SSL_CTX_use_certificate(s->ssl_ctx, s->ssl_pemfile_x509) < 0) {
+		if (1 != SSL_CTX_use_certificate(s->ssl_ctx, s->ssl_pemfile_x509)) {
 			log_error_write(srv, __FILE__, __LINE__, "ssb", "SSL:",
 					ERR_error_string(ERR_get_error(), NULL), s->ssl_pemfile);
 			return -1;
 		}
 
-		if (SSL_CTX_use_PrivateKey(s->ssl_ctx, s->ssl_pemfile_pkey) < 0) {
+		if (1 != SSL_CTX_use_PrivateKey(s->ssl_ctx, s->ssl_pemfile_pkey)) {
 			log_error_write(srv, __FILE__, __LINE__, "ssb", "SSL:",
 					ERR_error_string(ERR_get_error(), NULL), s->ssl_pemfile);
 			return -1;
@@ -920,7 +981,10 @@ int network_init(server *srv) {
 			return -1;
 		}
 		SSL_CTX_set_default_read_ahead(s->ssl_ctx, 1);
-		SSL_CTX_set_mode(s->ssl_ctx, SSL_CTX_get_mode(s->ssl_ctx) | SSL_MODE_ACCEPT_MOVING_WRITE_BUFFER);
+		SSL_CTX_set_mode(s->ssl_ctx,  SSL_CTX_get_mode(s->ssl_ctx)
+					    | SSL_MODE_ENABLE_PARTIAL_WRITE
+					    | SSL_MODE_ACCEPT_MOVING_WRITE_BUFFER
+					    | SSL_MODE_RELEASE_BUFFERS);
 
 # ifndef OPENSSL_NO_TLSEXT
 		if (!SSL_CTX_set_tlsext_servername_callback(s->ssl_ctx, network_ssl_servername_callback) ||

@@ -2888,6 +2888,12 @@ int is_dpsr(int unit)
 int is_psta(int unit)
 {
 	if (unit < 0) return 0;
+#if defined(RTCONFIG_AMAS) && defined(RTCONFIG_HND_ROUTER_AX)
+	if (sw_mode() == SW_MODE_ROUTER && !unit) {
+		if (!nvram_get_int("x_Setting") && nvram_get_int("amesh_wps_enr"))
+			return 1;
+	}
+#endif
 	if ((sw_mode() == SW_MODE_AP) &&
 		(nvram_get_int("wlc_psta") == 1) &&
 		(nvram_get_int("wlc_band") == unit))
@@ -3887,7 +3893,12 @@ char *if_nametoalias(char *name, char *alias, int alias_len)
 		subunit = 0;
 
 		if (!strcmp(ifname, name)) {
+#if defined(RTCONFIG_LYRA_5G_SWAP)
+			snprintf(alias, alias_len, "%s",
+				swap_5g_band(unit) ? (swap_5g_band(unit) == 2 ? "5G1" : "5G") : "2G");
+#else
 			snprintf(alias, alias_len, "%s", unit ? (unit == 2 ? "5G1" : "5G") : "2G");
+#endif
 			found = 1;
 			break;
 		}
@@ -3908,7 +3919,12 @@ char *if_nametoalias(char *name, char *alias, int alias_len)
 					snprintf(alias, alias_len, "%s", unit ? (unit == 2 ? "5G1" : "5G") : "2G");
 				else
 #endif
+#if defined(RTCONFIG_LYRA_5G_SWAP)
+				snprintf(alias, alias_len, "%s_%d",
+					swap_5g_band(unit) ? (swap_5g_band(unit) == 2 ? "5G1" : "5G") : "2G", subunit);
+#else
 				snprintf(alias, alias_len, "%s_%d", unit ? (unit == 2 ? "5G1" : "5G") : "2G", subunit);
+#endif
 				found = 1;
 				break;
 			}

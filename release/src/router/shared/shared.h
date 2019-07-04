@@ -349,10 +349,13 @@ enum {
 
 #ifdef RTCONFIG_ADV_RAST
 enum romaingEvent {
-        EID_RM_STA_MON = 1,
-        EID_RM_STA_MON_REPORT,
-        EID_RM_STA_CANDIDATE,
-        EID_RM_STA_ACL,
+	EID_RM_STA_MON = 1,
+	EID_RM_STA_MON_REPORT,
+	EID_RM_STA_CANDIDATE,
+	EID_RM_STA_ACL,
+#ifdef RTCONFIG_CONN_EVENT_TO_EX_AP
+	EID_RM_STA_EX_AP_CHECK,
+#endif
 	EID_RM_STA_FILTER,
 	EID_RM_MAX
 };
@@ -390,7 +393,10 @@ enum conndiagEvent {
 #define RAST_RCPI       "RCPI"
 #define RAST_STA_RCPI	"STA_RCPI"
 #define RAST_CANDIDATE_AP_RCPI	"AP_RCPI"
-
+#define RAST_AP_TARGET_MAC "AP_TARGET_MAC"
+#ifdef RTCONFIG_CONN_EVENT_TO_EX_AP
+#define RAST_STA_EX_AP_IP	"STA_EX_AP_IP"
+#endif
 #define RAST_JVALUE_BAND_2G "2"
 #define RAST_JVALUE_BAND_5G "1"
 
@@ -400,6 +406,23 @@ enum conndiagEvent {
 #define RMD_IPC_SOCKET_PATH    "/etc/rmd_ipc_socket"
 #endif
 #endif	//END RTCONFIG_CFGSYNC
+
+#ifdef RTCONFIG_BCN_RPT
+#define RAST_RSSI_INFO_GATHER_METHOD "RSSI_INFO_GATHER_METHOD"
+#define RSSI_INFO_GATHER_NONE		0
+#define RSSI_INFO_GATHER_BY_11K		1
+#define RSSI_INFO_GATHER_BY_STAMON	2
+#define RSSI_INFO_GATHER_DEFAULT	RSSI_INFO_GATHER_BY_11K
+#endif
+#ifdef RTCONFIG_BTM_11V
+#define RAST_SUPPORT_11KV "SUPPORT_11KV"
+#define BTM_RET_ACCEPT_TARGETMAC_NOTSELF	0
+#define BTM_RET_ACCEPT_TARGETMAC_SELF		1
+#define BTM_RET_REJECT	2
+#define BTM_CMD_FAIL	3
+#define BTM_TIMEOUT		4
+#define BTM_OTHER		5
+#endif
 
 #ifdef RTCONFIG_AMAS
 #define OUI_ASUS      "\xF8\x32\xE4"
@@ -1526,6 +1549,7 @@ extern int get_wl_sta_list(void);
 extern int get_maxassoc(char *ifname);
 extern int wl_add_ie(int unit, uint32 pktflag, int ielen, uchar *oui, uchar *data);
 extern void wl_del_ie_with_oui(int unit, uchar *oui);
+extern void wait_connection_finished(int band);
 #endif
 #if defined(RTCONFIG_LANTIQ)
 extern int get_wl_sta_list(void);

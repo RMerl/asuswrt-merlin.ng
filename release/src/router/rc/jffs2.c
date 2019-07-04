@@ -301,6 +301,8 @@ void start_jffs2(void)
 		}
 	}
 
+	set_proper_perm();
+
 	if(jffs2_fail == 1) {
 		nvram_set("jffs2_fail", "1");
 		nvram_commit();

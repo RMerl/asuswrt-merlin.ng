@@ -3840,7 +3840,7 @@ static inline netdev_tx_t __netdev_start_xmit(const struct net_device_ops *ops,
 					      bool more)
 {
 	skb->xmit_more = more ? 1 : 0;
-	if (PKTDEVQXMIT(skb)) {
+	if (PKTDEVQXMIT(skb) && (dev->priv_flags & IFF_EBRIDGE)) {
 		struct net_bridge *br = netdev_priv(dev);
 		const unsigned char *dest = skb->data;
 		struct net_device *txdev = NULL;

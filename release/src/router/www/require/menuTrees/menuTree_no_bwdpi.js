@@ -74,6 +74,14 @@ define(function(){
 				] 
 			},
 			{
+				menuName: "网易UU加速器",
+				index: "menu_UU", 
+				tab: [
+					{url: "UUAccelerator.asp", tabName: "网易UU加速器"},
+					{url: "NULL", tabName: "__INHERIT__"}
+				] 
+			},
+			{
 				menuName: "<#Parental_Control#>",
 				index: "menu_ParentalControl", 
 				tab: [
@@ -317,6 +325,9 @@ define(function(){
 					retArray.push("menu_GameBoost");
 				}
 
+				if(!uu_support){
+					retArray.push("menu_UU");
+				}
 				/* Operation Mode */
 				if(isSwMode("re")){
 					retArray.push("menu_ParentalControl");

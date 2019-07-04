@@ -319,6 +319,7 @@ www.juliendecaudin.com
 					}
 		        },
 		        items: {
+					/*
 					"submenu_upload": { 
 						name : settings.stringTable.getString("title_upload2"),
 		                items : {
@@ -335,16 +336,16 @@ www.juliendecaudin.com
 								name: settings.stringTable.getString("title_twitter")
 							}
 		                }
-		            },
+		            },*/
 					"submenu_share": { 
 						name : settings.stringTable.getString("title_share2"),
 		                items : {
 		                	"share2facebook": {
 								name: settings.stringTable.getString("title_facebook")
 							},
-							"share2googleplus": {
-								name: settings.stringTable.getString("title_googleplus")
-							},
+							//"share2googleplus": {
+							//	name: settings.stringTable.getString("title_googleplus")
+							//},
 							"share2twitter": {
 								name: settings.stringTable.getString("title_twitter")
 							},

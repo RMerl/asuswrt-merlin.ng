@@ -285,12 +285,6 @@ function applyRule(){
 		document.form.wan_vid.disabled = true;
 	}
 
-	if(wan_bonding_support && orig_bond_wan != document.form.bond_wan_radio.value){
-		document.form.bond_wan.disabled = false;
-		document.form.bond_wan.value = document.form.bond_wan_radio.value;
-		FormActions("start_apply.htm", "apply", "reboot", "<% get_default_reboot_time(); %>");
-	}
-
 	if(validForm()){
 		showLoading();
 		inputCtrl(document.form.wan_dhcpenable_x[0], 1);
@@ -336,6 +330,12 @@ function applyRule(){
 		    (getRadioValue(document.form.dns_norebind) != '<% nvram_get("dns_norebind"); %>') ||
 		    (getRadioValue(document.form.dns_fwd_local) != '<% nvram_get("dns_fwd_local"); %>') )
 				document.form.action_script.value += ";restart_dnsmasq";
+
+		if(wan_bonding_support && orig_bond_wan != document.form.bond_wan_radio.value){
+			document.form.bond_wan.disabled = false;
+			document.form.bond_wan.value = document.form.bond_wan_radio.value;
+			FormActions("start_apply.htm", "apply", "reboot", "<% get_default_reboot_time(); %>");
+		}
 
 		document.form.submit();	
 	}
@@ -597,6 +597,7 @@ function validForm(){
 		var msg_dualwan = "<#WANAggregation_disable_dualwan#>";
 		var msg_iptv = "<#WANAggregation_PortConflict_hint2#>";
 		var msg_both = "<#WANAggregation_disable_IPTVDualWAN#>";
+		var msg_wanType = "<#WANAggregation_wanType_hint#>";
 
 		if(orig_bond_wan != document.form.bond_wan_radio.value && document.form.bond_wan_radio.value == "1"){
 			if(wans_dualwan.indexOf("none") == -1 && (original_switch_stb_x == "4" || original_switch_stb_x == "6")){
@@ -634,6 +635,14 @@ function validForm(){
 					document.form.switch_stb_x.disabled = false;
 					document.form.switch_stb_x.value = "0";
 				}
+			}
+		}
+
+		if(document.form.wan_proto.value != "dhcp" && document.form.wan_proto.value != "static" && orig_bond_wan == "1"){
+			if(!confirm(msg_wanType)){
+				document.form.wan_proto.value = wan_proto_orig;
+				change_wan_type(wan_proto_orig);
+				return false;
 			}
 		}
 	}
@@ -1367,7 +1376,7 @@ function change_wizard(o, id){
 							</tr>
 
 							<tr style="display:none;">
-								<th>Enable WAN Aggregation</th>
+								<th><#WANAggregation_enable#></th>
 								<td>
 									<input type="radio" name="bond_wan_radio" class="input" value="1" onclick="return change_common_radio(this, 'LANHostConfig', 'bond_wan', '1')" <% nvram_match("bond_wan", "1", "checked"); %>><#checkbox_Yes#>
 									<input type="radio" name="bond_wan_radio" class="input" value="0" onclick="return change_common_radio(this, 'LANHostConfig', 'bond_wan', '0')" <% nvram_match("bond_wan", "0", "checked"); %>><#checkbox_No#>

@@ -301,6 +301,22 @@ PSTA_ERR:
 
 	return ret;
 }
+
+void wait_connection_finished(int band)
+{
+    int wait_time = 0;
+    int conn_stat = 0;
+	int wlc_conn_time = nvram_get_int("wlc_conn_time") ? : 10;
+
+    while (wait_time++ < wlc_conn_time)
+    {
+    	conn_stat = get_psta_status(band);
+    	//dbG("[%s] (wait_time = %d) conn_stat[band%d] = %d\n", __FUNCTION__, wait_time, band, conn_stat);
+        if ( conn_stat == WLC_STATE_CONNECTED)
+            break;
+        sleep(1);
+    }
+}
 #endif
 
 static int is_hex(char c)
@@ -484,8 +500,8 @@ int wl_get_bw(int unit)
 
 	wl_ifname(unit, 0, ifname);
 
-	wl_iovar_getint(ifname, "bss", (int *) &up);
-	wl_iovar_getint(ifname, "chanspec", (int *) &chspec);
+	wl_iovar_getint(ifname, "bss", &up);
+	wl_iovar_get(ifname, "chanspec", &chspec, sizeof(chanspec_t));
 
 	if (up && wf_chspec_valid(chspec)) {
 		if (CHSPEC_IS20(chspec))

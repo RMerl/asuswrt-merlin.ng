@@ -3184,7 +3184,7 @@ void write_static_leases(FILE *fp)
 {
 	FILE *fp2;
 	char *nv, *nvp, *b;
-	char *mac, *ip, *name;
+	char *mac, *ip;
 	char lan_if[IFNAMSIZ];
 	int vars;
 	in_addr_t ip1, lan_net, lan_mask;
@@ -3199,6 +3199,10 @@ void write_static_leases(FILE *fp)
 		char br_if[IFNAMSIZ];
 	} vlan_nets[VLAN_MAX_NUM], *v;
 #endif
+	char *nv2, *nvp2;
+	char *name2, *mac2;
+	char *entry, *hostnames;
+	int len, found;
 
 	if (!fp)
 		return;
@@ -3262,16 +3266,47 @@ void write_static_leases(FILE *fp)
 	}
 #endif
 
+#ifdef HND_ROUTER
+	hostnames = jffs_nvram_get("dhcp_hostnames");
+	if (hostnames) {
+		len = strlen(hostnames) + 1;
+		nv2 = nvp2 = malloc(len);
+	} else {
+		len = 0;
+		nv2 = NULL;
+	}
+#else
+	hostnames = nvram_safe_get("dhcp_hostnames");
+	len = strlen(hostnames) + 1;
+	nv2 = nvp2 = malloc(len);
+#endif
+
 	/* Parsing dhcp_staticlist nvram variable. */
 	while ((b = strsep(&nvp, "<")) != NULL) {
-		vars = vstrsep(b, ">", &mac, &ip, &name);
-		if ((vars != 2) && (vars != 3))
+		vars = vstrsep(b, ">", &mac, &ip);
+		if (vars != 2)
 			continue;
 		if (!strlen(mac) || !strlen(ip) || (ip1 = inet_network(ip)) == -1)
 			continue;
 
-		if ((vars == 3) && (strlen(name)) && (is_valid_hostname(name))) {
-			fprintf(fp2, "%s %s\n", ip, name);
+		/* Find hostname if we have one */
+		if ((len > 1) && (nv2)) {
+			strlcpy(nv2, hostnames, len);
+			nvp2 = nv2;
+			found = 0;
+
+			while ((entry = strsep(&nvp2, "<")) != NULL) {
+				if (vstrsep(entry, ">", &mac2, &name2) == 2) {
+					if (!strcasecmp(mac, mac2)) {
+						found = 1;
+						break;
+					}
+				}
+			}
+
+			if ((found) && (*name2) && (is_valid_hostname(name2))) {
+				fprintf(fp2, "%s %s\n", ip, name2);
+			}
 		}
 
 		if ((ip1 & lan_mask) == lan_net) {
@@ -3288,6 +3323,7 @@ void write_static_leases(FILE *fp)
 		}
 #endif
 	}
+	if (nv2) free(nv2);
 	free(nv);
 	fclose(fp2);
 }

@@ -1,0 +1,71 @@
+#!/usr/bin/make -f
+
+#export DH_VERBOSE=1
+
+CC = gcc
+CFLAGS = -Wall -Wno-format -Wno-pointer-sign -g
+CONFIGURE_ARGS = \
+	--prefix=/usr --libexecdir=/usr/lib --sysconfdir=/etc --enable-curl \
+	--enable-ldap --disable-aes --disable-des --disable-md5 --disable-sha1 \
+	--disable-sha2 --disable-fips-prf --disable-gmp --disable-pgp --disable-dnskey \
+	--enable-mysql --enable-sqlite --enable-eap-identity --enable-eap-md5 \
+	--enable-eap-mschapv2 --enable-eap-tls --enable-eap-radius --enable-xauth-eap \
+	--enable-farp --enable-attr-sql --enable-dhcp --enable-openssl --enable-agent \
+	--enable-pkcs11 --enable-ctr --enable-ccm --enable-gcm --enable-addrblock \
+	--enable-nm  --disable-hmac --with-capabilities=libcap \
+	--with-ipsecdir=/usr/lib/strongswan --with-ipseclibdir=/usr/lib/strongswan \
+	--with-dev-headers=/usr/include/strongswan
+
+ifeq (,$(filter noopt,$(DEB_BUILD_OPTIONS)))
+	CFLAGS += -O2
+endif
+ifneq (,$(filter parallel=%,$(DEB_BUILD_OPTIONS)))
+	NUMJOBS = $(patsubst parallel=%,%,$(filter parallel=%,$(DEB_BUILD_OPTIONS)))
+	MAKEFLAGS += -j$(NUMJOBS)
+endif
+ifeq ($(DEB_BUILD_ARCH_CPU),i386)
+  CONFIGURE_ARGS += --enable-padlock
+endif
+
+build:
+	dh_testdir
+	./configure $(CONFIGURE_ARGS) CC="$(CC)" CFLAGS="$(CFLAGS)"
+	$(MAKE)
+	touch build
+
+clean:
+	dh_testdir
+	dh_testroot
+	rm -f build
+	[ ! -f Makefile ] || $(MAKE) clean
+	dh_clean
+
+install: build
+	dh_testdir
+	dh_testroot
+	dh_clean
+	dh_installdirs
+	$(MAKE) DESTDIR=$(CURDIR)/debian/tmp install
+
+binary-indep: build install
+binary-arch: build install
+	dh_testdir
+	dh_testroot
+	dh_installchangelogs NEWS
+	dh_installdocs README
+	dh_installinit --name=ipsec
+	dh_install -s
+	dh_link
+	dh_strip --dbg=strongswan-dbg
+	dh_compress
+	dh_fixperms -Xetc/ipsec.secrets -Xetc/ipsec.d
+	dh_makeshlibs
+	dh_installdeb
+	dh_shlibdeps
+	dh_gencontrol -s
+	dh_md5sums
+	dh_builddeb -s
+
+binary: binary-indep binary-arch
+.PHONY: build clean binary-indep binary-arch binary install
+

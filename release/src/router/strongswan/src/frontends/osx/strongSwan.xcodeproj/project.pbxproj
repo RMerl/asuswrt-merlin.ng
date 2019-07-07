@@ -1,0 +1,600 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 46;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		5B04A712174558F100A13BDC /* icon.png in Resources */ = {isa = PBXBuildFile; fileRef = 5B04A711174558F100A13BDC /* icon.png */; };
+		5B04A7211747800F00A13BDC /* icon-alt.png in Resources */ = {isa = PBXBuildFile; fileRef = 5B04A7201747800F00A13BDC /* icon-alt.png */; };
+		5B313F9A17A93D590055C86A /* icon-large.icns in Resources */ = {isa = PBXBuildFile; fileRef = 5B313F9917A93D590055C86A /* icon-large.icns */; };
+		5B74989217311B200041971E /* xpc_channels.c in Sources */ = {isa = PBXBuildFile; fileRef = 5B74989117311B200041971E /* xpc_channels.c */; };
+		5B7498B8173275D10041971E /* xpc_logger.c in Sources */ = {isa = PBXBuildFile; fileRef = 5B7498B7173275D10041971E /* xpc_logger.c */; };
+		5B7FA5A11754D5DB00264BAC /* LogController.m in Sources */ = {isa = PBXBuildFile; fileRef = 5B7FA59F1754D5DB00264BAC /* LogController.m */; };
+		5B7FA5B01754EBC800264BAC /* ConnController.m in Sources */ = {isa = PBXBuildFile; fileRef = 5B7FA5AE1754EBC800264BAC /* ConnController.m */; };
+		5B7FA5B51754F5AF00264BAC /* PasswordController.m in Sources */ = {isa = PBXBuildFile; fileRef = 5B7FA5B31754F5AF00264BAC /* PasswordController.m */; };
+		5B8D879B1A40658B008E5702 /* Helper.m in Sources */ = {isa = PBXBuildFile; fileRef = 5B8D879A1A40658B008E5702 /* Helper.m */; };
+		5B8D879C1A409E4D008E5702 /* LogWindow.xib in Resources */ = {isa = PBXBuildFile; fileRef = 5B8D879E1A409E4D008E5702 /* LogWindow.xib */; };
+		5B8D879F1A409E5A008E5702 /* ConnWindow.xib in Resources */ = {isa = PBXBuildFile; fileRef = 5B8D87A11A409E5A008E5702 /* ConnWindow.xib */; };
+		5B8D87A21A409E6D008E5702 /* PasswordWindow.xib in Resources */ = {isa = PBXBuildFile; fileRef = 5B8D87A41A409E6D008E5702 /* PasswordWindow.xib */; };
+		5BAE9E9A17A94A2600858FE2 /* icon-active.png in Resources */ = {isa = PBXBuildFile; fileRef = 5BAE9E9917A94A2500858FE2 /* icon-active.png */; };
+		5BD1CCB11726DB0100587077 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5BD1CCB01726DB0100587077 /* Cocoa.framework */; };
+		5BD1CCBB1726DB0100587077 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 5BD1CCB91726DB0100587077 /* InfoPlist.strings */; };
+		5BD1CCBD1726DB0100587077 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 5BD1CCBC1726DB0100587077 /* main.m */; };
+		5BD1CCC11726DB0100587077 /* Credits.rtf in Resources */ = {isa = PBXBuildFile; fileRef = 5BD1CCBF1726DB0100587077 /* Credits.rtf */; };
+		5BD1CCC41726DB0100587077 /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 5BD1CCC31726DB0100587077 /* AppDelegate.m */; };
+		5BD1CCC71726DB0200587077 /* MainMenu.xib in Resources */ = {isa = PBXBuildFile; fileRef = 5BD1CCC51726DB0200587077 /* MainMenu.xib */; };
+		5BD1CCD71726DB4000587077 /* charon-xpc.c in Sources */ = {isa = PBXBuildFile; fileRef = 5BD1CCD61726DB4000587077 /* charon-xpc.c */; };
+		5BD1CCDF1726DC0A00587077 /* org.strongswan.charon-xpc in Copy Files */ = {isa = PBXBuildFile; fileRef = 5BD1CCD11726DB4000587077 /* org.strongswan.charon-xpc */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
+		5BD1CCEB1727CCA400587077 /* README.md in Resources */ = {isa = PBXBuildFile; fileRef = 5BD1CCEA1727CCA400587077 /* README.md */; };
+		5BD1CCED1727D7AF00587077 /* ServiceManagement.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5BD1CCEC1727D7AF00587077 /* ServiceManagement.framework */; };
+		5BD1CCF31727DE3E00587077 /* Security.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5BD1CCF21727DE3E00587077 /* Security.framework */; };
+		5BD1CCFB1729365F00587077 /* Control.m in Sources */ = {isa = PBXBuildFile; fileRef = 5BD1CCFA1729365F00587077 /* Control.m */; };
+		5BF60F31173405A000E5D608 /* CoreFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5BD1CCD31726DB4000587077 /* CoreFoundation.framework */; };
+		5BF60F33173405AC00E5D608 /* Security.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5BD1CCF21727DE3E00587077 /* Security.framework */; };
+		5BF60F3E1734070A00E5D608 /* xpc_dispatch.c in Sources */ = {isa = PBXBuildFile; fileRef = 5B74984C172AA3550041971E /* xpc_dispatch.c */; };
+		5BF60F631743C57500E5D608 /* SystemConfiguration.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5BF60F621743C57500E5D608 /* SystemConfiguration.framework */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		5BD1CCE81726E45200587077 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 5BD1CCA31726DB0100587077 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 5BD1CCD01726DB4000587077;
+			remoteInfo = "charon-xpc";
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		5BD1CCDE1726DBF100587077 /* Copy Files */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 12;
+			dstPath = Contents/Library/LaunchServices;
+			dstSubfolderSpec = 1;
+			files = (
+				5BD1CCDF1726DC0A00587077 /* org.strongswan.charon-xpc in Copy Files */,
+			);
+			name = "Copy Files";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
+/* Begin PBXFileReference section */
+		5B04A711174558F100A13BDC /* icon.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = icon.png; sourceTree = "<group>"; };
+		5B04A7201747800F00A13BDC /* icon-alt.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "icon-alt.png"; sourceTree = "<group>"; };
+		5B313F9917A93D590055C86A /* icon-large.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; path = "icon-large.icns"; sourceTree = "<group>"; };
+		5B74984C172AA3550041971E /* xpc_dispatch.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = xpc_dispatch.c; sourceTree = "<group>"; };
+		5B74984E172AA3670041971E /* xpc_dispatch.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = xpc_dispatch.h; sourceTree = "<group>"; };
+		5B74989017311AFC0041971E /* xpc_channels.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = xpc_channels.h; sourceTree = "<group>"; };
+		5B74989117311B200041971E /* xpc_channels.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = xpc_channels.c; sourceTree = "<group>"; };
+		5B7498B7173275D10041971E /* xpc_logger.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = xpc_logger.c; sourceTree = "<group>"; };
+		5B7498B9173275DD0041971E /* xpc_logger.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = xpc_logger.h; sourceTree = "<group>"; };
+		5B7FA59E1754D5DB00264BAC /* LogController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LogController.h; sourceTree = "<group>"; };
+		5B7FA59F1754D5DB00264BAC /* LogController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = LogController.m; sourceTree = "<group>"; };
+		5B7FA5AD1754EBC800264BAC /* ConnController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ConnController.h; sourceTree = "<group>"; };
+		5B7FA5AE1754EBC800264BAC /* ConnController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ConnController.m; sourceTree = "<group>"; };
+		5B7FA5B21754F5AF00264BAC /* PasswordController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PasswordController.h; sourceTree = "<group>"; };
+		5B7FA5B31754F5AF00264BAC /* PasswordController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PasswordController.m; sourceTree = "<group>"; };
+		5B8D87991A406572008E5702 /* Helper.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Helper.h; sourceTree = "<group>"; };
+		5B8D879A1A40658B008E5702 /* Helper.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Helper.m; sourceTree = "<group>"; };
+		5B8D879D1A409E4D008E5702 /* en */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = en; path = en.lproj/LogWindow.xib; sourceTree = "<group>"; };
+		5B8D87A01A409E5A008E5702 /* en */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = en; path = en.lproj/ConnWindow.xib; sourceTree = "<group>"; };
+		5B8D87A31A409E6D008E5702 /* en */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = en; path = en.lproj/PasswordWindow.xib; sourceTree = "<group>"; };
+		5BAE9E9917A94A2500858FE2 /* icon-active.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "icon-active.png"; sourceTree = "<group>"; };
+		5BD1CCAC1726DB0100587077 /* strongSwan.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = strongSwan.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		5BD1CCB01726DB0100587077 /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = System/Library/Frameworks/Cocoa.framework; sourceTree = SDKROOT; };
+		5BD1CCB81726DB0100587077 /* strongSwan-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "strongSwan-Info.plist"; sourceTree = "<group>"; };
+		5BD1CCBA1726DB0100587077 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
+		5BD1CCBC1726DB0100587077 /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
+		5BD1CCBE1726DB0100587077 /* strongSwan-Prefix.pch */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "strongSwan-Prefix.pch"; sourceTree = "<group>"; };
+		5BD1CCC01726DB0100587077 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.rtf; name = en; path = en.lproj/Credits.rtf; sourceTree = "<group>"; };
+		5BD1CCC21726DB0100587077 /* AppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
+		5BD1CCC31726DB0100587077 /* AppDelegate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AppDelegate.m; sourceTree = "<group>"; };
+		5BD1CCC61726DB0200587077 /* en */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = en; path = en.lproj/MainMenu.xib; sourceTree = "<group>"; };
+		5BD1CCD11726DB4000587077 /* org.strongswan.charon-xpc */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = "org.strongswan.charon-xpc"; sourceTree = BUILT_PRODUCTS_DIR; };
+		5BD1CCD31726DB4000587077 /* CoreFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreFoundation.framework; path = System/Library/Frameworks/CoreFoundation.framework; sourceTree = SDKROOT; };
+		5BD1CCD61726DB4000587077 /* charon-xpc.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = "charon-xpc.c"; sourceTree = "<group>"; };
+		5BD1CCE01726DCD000587077 /* charon-xpc-Launchd.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "charon-xpc-Launchd.plist"; sourceTree = "<group>"; };
+		5BD1CCE11726DD9900587077 /* charon-xpc-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "charon-xpc-Info.plist"; sourceTree = "<group>"; };
+		5BD1CCEA1727CCA400587077 /* README.md */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = README.md; sourceTree = "<group>"; };
+		5BD1CCEC1727D7AF00587077 /* ServiceManagement.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = ServiceManagement.framework; path = System/Library/Frameworks/ServiceManagement.framework; sourceTree = SDKROOT; };
+		5BD1CCF21727DE3E00587077 /* Security.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Security.framework; path = System/Library/Frameworks/Security.framework; sourceTree = SDKROOT; };
+		5BD1CCF91729365F00587077 /* Control.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Control.h; sourceTree = "<group>"; };
+		5BD1CCFA1729365F00587077 /* Control.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Control.m; sourceTree = "<group>"; };
+		5BF60F621743C57500E5D608 /* SystemConfiguration.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SystemConfiguration.framework; path = System/Library/Frameworks/SystemConfiguration.framework; sourceTree = SDKROOT; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		5BD1CCA91726DB0100587077 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				5BD1CCF31727DE3E00587077 /* Security.framework in Frameworks */,
+				5BD1CCED1727D7AF00587077 /* ServiceManagement.framework in Frameworks */,
+				5BD1CCB11726DB0100587077 /* Cocoa.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		5BD1CCCE1726DB4000587077 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				5BF60F631743C57500E5D608 /* SystemConfiguration.framework in Frameworks */,
+				5BF60F31173405A000E5D608 /* CoreFoundation.framework in Frameworks */,
+				5BF60F33173405AC00E5D608 /* Security.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		5BD1CCA11726DB0100587077 = {
+			isa = PBXGroup;
+			children = (
+				5BD1CCEA1727CCA400587077 /* README.md */,
+				5BD1CCB61726DB0100587077 /* strongSwan */,
+				5BD1CCD51726DB4000587077 /* charon-xpc */,
+				5BD1CCAF1726DB0100587077 /* Frameworks */,
+				5BD1CCAD1726DB0100587077 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		5BD1CCAD1726DB0100587077 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				5BD1CCAC1726DB0100587077 /* strongSwan.app */,
+				5BD1CCD11726DB4000587077 /* org.strongswan.charon-xpc */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		5BD1CCAF1726DB0100587077 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				5BF60F621743C57500E5D608 /* SystemConfiguration.framework */,
+				5BD1CCF21727DE3E00587077 /* Security.framework */,
+				5BD1CCEC1727D7AF00587077 /* ServiceManagement.framework */,
+				5BD1CCB01726DB0100587077 /* Cocoa.framework */,
+				5BD1CCD31726DB4000587077 /* CoreFoundation.framework */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		5BD1CCB61726DB0100587077 /* strongSwan */ = {
+			isa = PBXGroup;
+			children = (
+				5B04A711174558F100A13BDC /* icon.png */,
+				5B04A7201747800F00A13BDC /* icon-alt.png */,
+				5BAE9E9917A94A2500858FE2 /* icon-active.png */,
+				5B313F9917A93D590055C86A /* icon-large.icns */,
+				5BD1CCBF1726DB0100587077 /* Credits.rtf */,
+				5BD1CCBE1726DB0100587077 /* strongSwan-Prefix.pch */,
+				5BD1CCBC1726DB0100587077 /* main.m */,
+				5BD1CCB91726DB0100587077 /* InfoPlist.strings */,
+				5BD1CCB81726DB0100587077 /* strongSwan-Info.plist */,
+				5BD1CCC21726DB0100587077 /* AppDelegate.h */,
+				5BD1CCC31726DB0100587077 /* AppDelegate.m */,
+				5B7FA59E1754D5DB00264BAC /* LogController.h */,
+				5B7FA59F1754D5DB00264BAC /* LogController.m */,
+				5B8D879E1A409E4D008E5702 /* LogWindow.xib */,
+				5BD1CCC51726DB0200587077 /* MainMenu.xib */,
+				5BD1CCF91729365F00587077 /* Control.h */,
+				5BD1CCFA1729365F00587077 /* Control.m */,
+				5B7FA5AD1754EBC800264BAC /* ConnController.h */,
+				5B7FA5AE1754EBC800264BAC /* ConnController.m */,
+				5B8D87A11A409E5A008E5702 /* ConnWindow.xib */,
+				5B7FA5B21754F5AF00264BAC /* PasswordController.h */,
+				5B7FA5B31754F5AF00264BAC /* PasswordController.m */,
+				5B8D87A41A409E6D008E5702 /* PasswordWindow.xib */,
+				5B8D87991A406572008E5702 /* Helper.h */,
+				5B8D879A1A40658B008E5702 /* Helper.m */,
+			);
+			path = strongSwan;
+			sourceTree = "<group>";
+		};
+		5BD1CCD51726DB4000587077 /* charon-xpc */ = {
+			isa = PBXGroup;
+			children = (
+				5BD1CCD61726DB4000587077 /* charon-xpc.c */,
+				5BD1CCE01726DCD000587077 /* charon-xpc-Launchd.plist */,
+				5BD1CCE11726DD9900587077 /* charon-xpc-Info.plist */,
+				5B74984C172AA3550041971E /* xpc_dispatch.c */,
+				5B74984E172AA3670041971E /* xpc_dispatch.h */,
+				5B74989017311AFC0041971E /* xpc_channels.h */,
+				5B74989117311B200041971E /* xpc_channels.c */,
+				5B7498B7173275D10041971E /* xpc_logger.c */,
+				5B7498B9173275DD0041971E /* xpc_logger.h */,
+			);
+			path = "charon-xpc";
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		5BD1CCAB1726DB0100587077 /* strongSwan */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 5BD1CCCA1726DB0200587077 /* Build configuration list for PBXNativeTarget "strongSwan" */;
+			buildPhases = (
+				5BD1CCA81726DB0100587077 /* Sources */,
+				5BD1CCA91726DB0100587077 /* Frameworks */,
+				5BD1CCAA1726DB0100587077 /* Resources */,
+				5BD1CCDE1726DBF100587077 /* Copy Files */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				5BD1CCE91726E45200587077 /* PBXTargetDependency */,
+			);
+			name = strongSwan;
+			productName = strongSwan;
+			productReference = 5BD1CCAC1726DB0100587077 /* strongSwan.app */;
+			productType = "com.apple.product-type.application";
+		};
+		5BD1CCD01726DB4000587077 /* charon-xpc */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 5BD1CCDA1726DB4000587077 /* Build configuration list for PBXNativeTarget "charon-xpc" */;
+			buildPhases = (
+				5BD1CCCD1726DB4000587077 /* Sources */,
+				5BD1CCCE1726DB4000587077 /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = "charon-xpc";
+			productName = "charon-xpc";
+			productReference = 5BD1CCD11726DB4000587077 /* org.strongswan.charon-xpc */;
+			productType = "com.apple.product-type.tool";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		5BD1CCA31726DB0100587077 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				LastUpgradeCheck = 0620;
+				ORGANIZATIONNAME = "revosec AG";
+			};
+			buildConfigurationList = 5BD1CCA61726DB0100587077 /* Build configuration list for PBXProject "strongSwan" */;
+			compatibilityVersion = "Xcode 3.2";
+			developmentRegion = English;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+			);
+			mainGroup = 5BD1CCA11726DB0100587077;
+			productRefGroup = 5BD1CCAD1726DB0100587077 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				5BD1CCAB1726DB0100587077 /* strongSwan */,
+				5BD1CCD01726DB4000587077 /* charon-xpc */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		5BD1CCAA1726DB0100587077 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				5BD1CCBB1726DB0100587077 /* InfoPlist.strings in Resources */,
+				5BD1CCC11726DB0100587077 /* Credits.rtf in Resources */,
+				5BD1CCC71726DB0200587077 /* MainMenu.xib in Resources */,
+				5BD1CCEB1727CCA400587077 /* README.md in Resources */,
+				5B04A712174558F100A13BDC /* icon.png in Resources */,
+				5B04A7211747800F00A13BDC /* icon-alt.png in Resources */,
+				5B8D879C1A409E4D008E5702 /* LogWindow.xib in Resources */,
+				5B8D879F1A409E5A008E5702 /* ConnWindow.xib in Resources */,
+				5B8D87A21A409E6D008E5702 /* PasswordWindow.xib in Resources */,
+				5B313F9A17A93D590055C86A /* icon-large.icns in Resources */,
+				5BAE9E9A17A94A2600858FE2 /* icon-active.png in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		5BD1CCA81726DB0100587077 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				5BD1CCBD1726DB0100587077 /* main.m in Sources */,
+				5BD1CCC41726DB0100587077 /* AppDelegate.m in Sources */,
+				5BD1CCFB1729365F00587077 /* Control.m in Sources */,
+				5B7FA5A11754D5DB00264BAC /* LogController.m in Sources */,
+				5B8D879B1A40658B008E5702 /* Helper.m in Sources */,
+				5B7FA5B01754EBC800264BAC /* ConnController.m in Sources */,
+				5B7FA5B51754F5AF00264BAC /* PasswordController.m in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		5BD1CCCD1726DB4000587077 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				5BD1CCD71726DB4000587077 /* charon-xpc.c in Sources */,
+				5B74989217311B200041971E /* xpc_channels.c in Sources */,
+				5BF60F3E1734070A00E5D608 /* xpc_dispatch.c in Sources */,
+				5B7498B8173275D10041971E /* xpc_logger.c in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		5BD1CCE91726E45200587077 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 5BD1CCD01726DB4000587077 /* charon-xpc */;
+			targetProxy = 5BD1CCE81726E45200587077 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin PBXVariantGroup section */
+		5B8D879E1A409E4D008E5702 /* LogWindow.xib */ = {
+			isa = PBXVariantGroup;
+			children = (
+				5B8D879D1A409E4D008E5702 /* en */,
+			);
+			name = LogWindow.xib;
+			sourceTree = "<group>";
+		};
+		5B8D87A11A409E5A008E5702 /* ConnWindow.xib */ = {
+			isa = PBXVariantGroup;
+			children = (
+				5B8D87A01A409E5A008E5702 /* en */,
+			);
+			name = ConnWindow.xib;
+			sourceTree = "<group>";
+		};
+		5B8D87A41A409E6D008E5702 /* PasswordWindow.xib */ = {
+			isa = PBXVariantGroup;
+			children = (
+				5B8D87A31A409E6D008E5702 /* en */,
+			);
+			name = PasswordWindow.xib;
+			sourceTree = "<group>";
+		};
+		5BD1CCB91726DB0100587077 /* InfoPlist.strings */ = {
+			isa = PBXVariantGroup;
+			children = (
+				5BD1CCBA1726DB0100587077 /* en */,
+			);
+			name = InfoPlist.strings;
+			sourceTree = "<group>";
+		};
+		5BD1CCBF1726DB0100587077 /* Credits.rtf */ = {
+			isa = PBXVariantGroup;
+			children = (
+				5BD1CCC01726DB0100587077 /* en */,
+			);
+			name = Credits.rtf;
+			sourceTree = "<group>";
+		};
+		5BD1CCC51726DB0200587077 /* MainMenu.xib */ = {
+			isa = PBXVariantGroup;
+			children = (
+				5BD1CCC61726DB0200587077 /* en */,
+			);
+			name = MainMenu.xib;
+			sourceTree = "<group>";
+		};
+/* End PBXVariantGroup section */
+
+/* Begin XCBuildConfiguration section */
+		5BD1CCC81726DB0200587077 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_ENABLE_OBJC_EXCEPTIONS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 10.7;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = macosx;
+			};
+			name = Debug;
+		};
+		5BD1CCC91726DB0200587077 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = YES;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_ENABLE_OBJC_EXCEPTIONS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 10.7;
+				SDKROOT = macosx;
+			};
+			name = Release;
+		};
+		5BD1CCCB1726DB0200587077 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_IDENTITY = "Developer ID Application";
+				COMBINE_HIDPI_IMAGES = YES;
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = "strongSwan/strongSwan-Prefix.pch";
+				INFOPLIST_FILE = "strongSwan/strongSwan-Info.plist";
+				MACOSX_DEPLOYMENT_TARGET = 10.7;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE = "";
+				SDKROOT = macosx;
+				WRAPPER_EXTENSION = app;
+			};
+			name = Debug;
+		};
+		5BD1CCCC1726DB0200587077 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_IDENTITY = "Developer ID Application";
+				COMBINE_HIDPI_IMAGES = YES;
+				COPY_PHASE_STRIP = NO;
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = "strongSwan/strongSwan-Prefix.pch";
+				INFOPLIST_FILE = "strongSwan/strongSwan-Info.plist";
+				MACOSX_DEPLOYMENT_TARGET = 10.7;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE = "";
+				SDKROOT = macosx;
+				WRAPPER_EXTENSION = app;
+			};
+			name = Release;
+		};
+		5BD1CCDB1726DB4000587077 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_IDENTITY = "Developer ID Application";
+				GCC_WARN_64_TO_32_BIT_CONVERSION = NO;
+				GCC_WARN_ABOUT_POINTER_SIGNEDNESS = NO;
+				GCC_WARN_TYPECHECK_CALLS_TO_PRINTF = NO;
+				HEADER_SEARCH_PATHS = (
+					/usr/include,
+					../../libstrongswan,
+					../../libcharon,
+				);
+				INFOPLIST_FILE = "charon-xpc/charon-xpc-Info.plist";
+				INSTALL_PATH = /;
+				LIBRARY_SEARCH_PATHS = (
+					/usr/lib,
+					../../libstrongswan/.libs,
+					../../libcharon/.libs,
+				);
+				MACOSX_DEPLOYMENT_TARGET = 10.7;
+				OTHER_CFLAGS = (
+					"-include",
+					../../../config.h,
+				);
+				OTHER_LDFLAGS = (
+					"-lcrypto",
+					"-force_load",
+					../../libstrongswan/.libs/libstrongswan.a,
+					"-force_load",
+					../../libipsec/.libs/libipsec.a,
+					"-force_load",
+					../../libcharon/.libs/libcharon.a,
+					"-sectcreate",
+					__TEXT,
+					__info_plist,
+					"charon-xpc/charon-xpc-Info.plist",
+					"-sectcreate",
+					__TEXT,
+					__launchd_plist,
+					"charon-xpc/charon-xpc-Launchd.plist",
+				);
+				PRODUCT_NAME = "org.strongswan.charon-xpc";
+				PROVISIONING_PROFILE = "";
+				SDKROOT = macosx;
+				STRIP_STYLE = "non-global";
+			};
+			name = Debug;
+		};
+		5BD1CCDC1726DB4000587077 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_IDENTITY = "Developer ID Application";
+				COPY_PHASE_STRIP = NO;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = NO;
+				GCC_WARN_ABOUT_POINTER_SIGNEDNESS = NO;
+				GCC_WARN_TYPECHECK_CALLS_TO_PRINTF = NO;
+				HEADER_SEARCH_PATHS = (
+					/usr/include,
+					../../libstrongswan,
+					../../libcharon,
+				);
+				INFOPLIST_FILE = "charon-xpc/charon-xpc-Info.plist";
+				INSTALL_PATH = /;
+				LIBRARY_SEARCH_PATHS = (
+					/usr/lib,
+					../../libstrongswan/.libs,
+					../../libcharon/.libs,
+				);
+				MACOSX_DEPLOYMENT_TARGET = 10.7;
+				OTHER_CFLAGS = (
+					"-include",
+					../../../config.h,
+				);
+				OTHER_LDFLAGS = (
+					"-lcrypto",
+					"-force_load",
+					../../libstrongswan/.libs/libstrongswan.a,
+					"-force_load",
+					../../libipsec/.libs/libipsec.a,
+					"-force_load",
+					../../libcharon/.libs/libcharon.a,
+					"-sectcreate",
+					__TEXT,
+					__info_plist,
+					"charon-xpc/charon-xpc-Info.plist",
+					"-sectcreate",
+					__TEXT,
+					__launchd_plist,
+					"charon-xpc/charon-xpc-Launchd.plist",
+				);
+				PRODUCT_NAME = "org.strongswan.charon-xpc";
+				PROVISIONING_PROFILE = "";
+				SDKROOT = macosx;
+				STRIP_STYLE = "non-global";
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		5BD1CCA61726DB0100587077 /* Build configuration list for PBXProject "strongSwan" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				5BD1CCC81726DB0200587077 /* Debug */,
+				5BD1CCC91726DB0200587077 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		5BD1CCCA1726DB0200587077 /* Build configuration list for PBXNativeTarget "strongSwan" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				5BD1CCCB1726DB0200587077 /* Debug */,
+				5BD1CCCC1726DB0200587077 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		5BD1CCDA1726DB4000587077 /* Build configuration list for PBXNativeTarget "charon-xpc" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				5BD1CCDB1726DB4000587077 /* Debug */,
+				5BD1CCDC1726DB4000587077 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 5BD1CCA31726DB0100587077 /* Project object */;
+}

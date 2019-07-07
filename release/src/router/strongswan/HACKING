@@ -1,0 +1,62 @@
+                ------------------------
+                strongSwan - Development
+                ------------------------
+
+Git repository
+---------------------
+
+For interested developers, we have a public repository. To check out and compile
+the code, you need the following tools:
+
+    - Git
+    - a recent GNU C compiler (>= 3.x)
+    - automake
+    - autoconf
+    - libtool
+    - pkg-config
+    - gettext
+    - perl
+    - python
+    - lex/flex
+    - yacc/bison
+    - gperf
+
+    Optionally:
+    - lcov/genhtml
+    - Doxygen
+
+To check out the master branch, use:
+
+    git clone git://git.strongswan.org/strongswan.git
+
+or using HTTP:
+
+    git clone https://git.strongswan.org/strongswan.git
+
+After a successful check out, give the autotools a try:
+
+    cd strongswan/
+    ./autogen.sh
+
+Then you're in, start the build as usual:
+
+    ./configure [options]
+    make
+    make install
+
+
+API documentation
+-----------------
+
+Charon and libstrongswan contain inline code documentation. These comments can
+be extracted using doxygen. It is built using 'make apidoc', which creates an
+'apidoc' folder containing the HTML files.
+
+strongSwan wiki
+---------------
+
+A wiki for users and developers, including ticket system and source browser
+is available at
+
+    https://wiki.strongswan.org
+

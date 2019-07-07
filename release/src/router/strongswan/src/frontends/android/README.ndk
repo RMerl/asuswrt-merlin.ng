@@ -1,0 +1,14 @@
+To build this within the NDK the following things have to be done:
+
+ - By default the strongSwan sources of the current Git tree are used. They have
+   to be prepared first (see HACKING for a list of required tools):
+
+     ./autogen.sh && ./configure && make && make distclean
+
+   It is also possible to use the sources from a different directory (e.g. an
+   extracted tarball) by setting strongswan_DIR in app/src/main/jni/Android.mk.
+
+ - The OpenSSL or BoringSSL sources are expected in app/src/main/jni/openssl.
+   Since the sources need to be changed to be built on Android (and especially
+   in the NDK) we provide a modified mirror of the official Android repositories
+   on git.strongswan.org.

@@ -5305,47 +5305,47 @@ usbclient-clean:
 	rm -rf usbclient/stamp-h1
 
 ##strongswan/IPSEC
-strongswan/stamp-h1: $(OPENSSLDIR)
-	cd strongswan && autoreconf -i -f && \
-	$(CONFIGURE) \
-	--prefix=/usr/ --sysconfdir=/etc/ --localstatedir=/var/ \
-	--bindir=/usr/sbin --libdir=/usr/lib \
-	--libexecdir=/usr/lib --with-ipsecdir=/usr/lib/ipsec --with-user=admin \
-	--disable-gmp --enable-openssl --enable-agent --enable-eap-peap \
-	--enable-eap-md5 --enable-eap-mschapv2 --enable-eap-identity \
-	--with-strongswan-conf=/etc/strongswan.conf --enable-md4 --enable-acert \
-	--enable-cmd --enable-eap-tls --enable-libipsec \
-	CFLAGS="-O3 -I$(TOP)/$(OPENSSLDIR)/include $(if $(RTCONFIG_HND_ROUTER),-DHND_ROUTER,)" \
-	LDFLAGS="-L$(TOP)/$(OPENSSLDIR) -L$(STAGEDIR)/usr/lib" \
-	LIBS="-lssl -lcrypto -lpthread -ldl -lm"
-	touch $@
+strongswan/configure:
+	cd strongswan && autoreconf -i
 
-strongswan: strongswan/stamp-h1
-	$(MAKE) $(PARALLEL_BUILD) -C strongswan
+strongswan/Makefile: strongswan/configure
+	cd strongswan && \
+	$(CONFIGURE) \
+	--prefix=/usr/ --bindir=/usr/sbin --sysconfdir=/etc/ --localstatedir=/var/ --libexecdir=/usr/lib \
+	--enable-silent-rules \
+	--disable-gmp --enable-openssl \
+	--enable-acert --enable-agent \
+	--enable-md4 \
+	--enable-eap-identity --enable-eap-md5 --enable-eap-mschapv2 --enable-eap-tls --enable-eap-peap \
+	--enable-cmd --enable-libipsec \
+	--enable-shared --disable-static \
+	--with-ipsecdir=/usr/lib/ipsec \
+	--with-strongswan-conf=/etc/strongswan.conf \
+	--with-user=admin \
+	CFLAGS="-O2 -Wall -Wno-format -Wno-format-security -Wno-pointer-sign \
+		-I$(TOP)/$(OPENSSLDIR)/include -I$(STAGEDIR)/usr/include $(EXTRACFLAGS) \
+		$(if $(RTCONFIG_HND_ROUTER),-DHND_ROUTER,)" \
+	LDFLAGS="-L$(TOP)/$(OPENSSLDIR) -L$(STAGEDIR)/usr/lib $(EXTRALDFLAGS)" \
+	LIBS="-lssl -lcrypto -lpthread -ldl -lm"
+
+strongswan: $(OPENSSLDIR) strongswan/Makefile
+	@$(SEP)
+	$(MAKE) -j 8 -C strongswan
 
 strongswan-install: strongswan
 	@$(SEP)
-	@$(MAKE) -C strongswan install DESTDIR=$(INSTALLDIR)/strongswan/ ; chmod 755 $(INSTALLDIR)/strongswan/usr/lib
-	@rm -rf $(INSTALLDIR)/strongswan/usr/etc
-	@rm -f $(INSTALLDIR)/strongswan/usr/lib/ipsec/*.la
-	@rm -f $(INSTALLDIR)/strongswan/usr/lib/ipsec/plugins/*.la
-	@rm -f $(INSTALLDIR)/strongswan/usr/lib/ipsec/*.a
-	@rm -f $(INSTALLDIR)/strongswan/usr/lib/ipsec/plugins/*.a
-	$(STRIP) $(INSTALLDIR)/strongswan/usr/lib/ipsec/*.so
-	$(STRIP) $(INSTALLDIR)/strongswan/usr/lib/ipsec/starter
-	$(STRIP) $(INSTALLDIR)/strongswan/usr/lib/ipsec/stroke
-	$(STRIP) $(INSTALLDIR)/strongswan/usr/lib/ipsec/scepclient
-	$(STRIP) $(INSTALLDIR)/strongswan/usr/lib/ipsec/charon
-	$(STRIP) $(INSTALLDIR)/strongswan/usr/lib/ipsec/plugins/*.so
-
+	$(MAKE) -C strongswan install-strip DESTDIR=$(INSTALLDIR)/strongswan/ ; chmod 755 $(INSTALLDIR)/strongswan/usr/lib
+	rm -rf $(INSTALLDIR)/strongswan/usr/etc
+	rm -rf $(INSTALLDIR)/strongswan/usr/lib/ipsec/*.a
+	rm -rf $(INSTALLDIR)/strongswan/usr/lib/ipsec/*.la
+	rm -rf $(INSTALLDIR)/strongswan/usr/lib/ipsec/plugins/*.a
+	rm -rf $(INSTALLDIR)/strongswan/usr/lib/ipsec/plugins/*.la
+	rm -rf $(INSTALLDIR)/strongswan/usr/share/man
 	mv $(INSTALLDIR)/strongswan/etc $(INSTALLDIR)/strongswan/usr/
 
 strongswan-clean:
-	-@$(MAKE) -C strongswan clean
-	@rm -f strongswan/stamp-h1
-	@rm -rf $(INSTALLDIR)/strongswan/
-	@rm -rf $(TARGETDIR)/usr/sbin/strongswan/*
-	@rm -rf $(TARGETDIR)/usr/lib/strongswan/*
+	[ ! -f strongswan/Makefile ] || $(MAKE) -C strongswan distclean
+	@rm -f strongswan/Makefile
 
 sw-hw-auth:
 	cd sw-hw-auth && \

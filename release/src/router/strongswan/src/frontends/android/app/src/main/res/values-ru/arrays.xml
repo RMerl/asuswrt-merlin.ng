@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Copyright (C) 2012 Dmitry Korzhevin
+
+    This program is free software; you can redistribute it and/or modify it
+    under the terms of the GNU General Public License as published by the
+    Free Software Foundation; either version 2 of the License, or (at your
+    option) any later version.  See <http://www.fsf.org/copyleft/gpl.txt>.
+
+    This program is distributed in the hope that it will be useful, but
+    WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+    or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+    for more details.
+-->
+<resources>
+    <!-- the order here must match the enum entries in VpnType.java -->
+    <string-array name="vpn_types">
+        <item>IKEv2 EAP (Логин/Пароль)</item>
+        <item>IKEv2 Сертификат</item>
+        <item>IKEv2 Сертификат + EAP (Логин/Пароль)</item>
+        <item>IKEv2 EAP-TLS (Сертификат)</item>
+        <item>IKEv2 EAP-TNC (Логин/Пароль)</item>
+    </string-array>
+
+    <!-- the order here must match the enum entries in VpnProfile.java -->
+    <string-array name="apps_handling">
+        <item>All applications use the VPN</item>
+        <item>Exclude selected applications from the VPN</item>
+        <item>Only selected applications use the VPN</item>
+    </string-array>
+</resources>

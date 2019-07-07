@@ -1,0 +1,283 @@
+
+
+
+
+
+
+Network Working Group                                             Y. Nir
+Request for Comments: 4478                                   Check Point
+Category: Experimental                                        April 2006
+
+
+   Repeated Authentication in Internet Key Exchange (IKEv2) Protocol
+
+Status of This Memo
+
+   This memo defines an Experimental Protocol for the Internet
+   community.  It does not specify an Internet standard of any kind.
+   Discussion and suggestions for improvement are requested.
+   Distribution of this memo is unlimited.
+
+Copyright Notice
+
+   Copyright (C) The Internet Society (2006).
+
+Abstract
+
+   This document extends the Internet Key Exchange (IKEv2) Protocol
+   document [IKEv2].  With some IPsec peers, particularly in the remote
+   access scenario, it is desirable to repeat the mutual authentication
+   periodically.  The purpose of this is to limit the time that security
+   associations (SAs) can be used by a third party who has gained
+   control of the IPsec peer.  This document describes a mechanism to
+   perform this function.
+
+1.  Introduction
+
+   In several cases, such as the remote access scenario, policy dictates
+   that the mutual authentication needs to be repeated periodically.
+   Repeated authentication can usually be achieved by simply repeating
+   the Initial exchange by whichever side has a stricter policy.
+
+   However, in the remote access scenario it is usually up to a human
+   user to supply the authentication credentials, and often Extensible
+   Authentication Protocol (EAP) is used for authentication, which makes
+   it unreasonable or impossible for the remote access gateway to
+   initiate the IKEv2 exchange.
+
+   This document describes a new notification that the original
+   Responder can send to the original Initiator with the number of
+   seconds before the authentication needs to be repeated.  The
+   Initiator SHOULD repeat the Initial exchange before that time is
+   expired.  If the Initiator fails to do so, the Responder may close
+   all Security Associations.
+
+
+
+
+Nir                           Experimental                      [Page 1]
+
+RFC 4478            Repeated Authentication in IKEv2          April 2006
+
+
+   Repeated authentication is not the same as IKE SA rekeying, and need
+   not be tied to it.  The key words "MUST", "MUST NOT", "SHOULD",
+   "SHOULD NOT", and "MAY" in this document are to be interpreted as
+   described in [RFC2119].
+
+2.  Authentication Lifetime
+
+   The Responder in an IKEv2 negotiation MAY be configured to limit the
+   time that an IKE SA and the associated IPsec SAs may be used before
+   the peer is required to repeat the authentication, through a new
+   Initial Exchange.
+
+   The Responder MUST send this information to the Initiator in an
+   AUTH_LIFETIME notification either in the last message of an IKE_AUTH
+   exchange, or in an INFORMATIONAL request, which may be sent at any
+   time.
+
+   When sent as part of the IKE SA setup, the AUTH_LIFETIME notification
+   is used as follows:
+
+      Initiator                            Responder
+      -------------------------------      -----------------------------
+      HDR, SAi1, KEi, Ni              -->
+                                      <--  HDR, SAr1, KEr, Nr, [CERTREQ]
+      HDR, SK {IDi, [CERT,] [CERTREQ,]
+         [IDr,] AUTH, SAi2, TSi, TSr} -->
+                                      <--  HDR, SK {IDr, [CERT,] AUTH,
+                                                    SAr2, TSi, TSr,
+                                                     N(AUTH_LIFETIME)}
+
+   The separate Informational exchange is formed as follows:
+
+                                      <--  HDR, SK {N(AUTH_LIFETIME)}
+      HDR  SK {}                      -->
+
+   The AUTH_LIFETIME notification is described in Section 3.
+
+   The original Responder that sends the AUTH_LIFETIME notification
+   SHOULD send a DELETE notification soon after the end of the lifetime
+   period, unless the IKE SA is deleted before the lifetime period
+   elapses.  If the IKE SA is rekeyed, then the time limit applies to
+   the new SA.
+
+   An Initiator that received an AUTH_LIFETIME notification SHOULD
+   repeat the Initial exchange within the time indicated in the
+   notification.  The time is measured from the time that the original
+   Initiator receives the notification.
+
+
+
+
+Nir                           Experimental                      [Page 2]
+
+RFC 4478            Repeated Authentication in IKEv2          April 2006
+
+
+   A special case is where the notification is sent in an Informational
+   exchange, and the lifetime is zero.  In that case, the original
+   responder SHOULD allow a reasonable time for the repeated
+   authentication to occur.
+
+   The AUTH_LIFETIME notification MUST be protected and MAY be sent by
+   the original Responder at any time.  If the policy changes, the
+   original Responder MAY send it again in a new Informational.
+
+   The new Initial exchange is not altered.  The initiator SHOULD delete
+   the old IKE SA within a reasonable time of the new Auth exchange.
+
+3.  AUTH_LIFETIME Notification
+
+   The AUTH_LIFETIME message is a notification payload formatted as
+   follows:
+
+                           1                   2                   3
+       0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+      +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+      ! Next Payload  !C!  RESERVED   !         Payload Length        !
+      +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+      !  Protocol ID  !   SPI Size    !      Notify Message Type      !
+      +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+      !                           Lifetime                            !
+      +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+
+      o  Payload Length is 12.
+      o  Protocol ID (1 octet) MUST be 0.
+      o  SPI size is 0 (SPI is in message header).
+      o  Notify Message type is 16403 by IANA.
+      o  Lifetime is the amount of time (in seconds) left before the
+         peer should repeat the Initial exchange.  A zero value
+         signifies that the Initial exchange should begin immediately.
+         It is usually not reasonable to set this value to less than 300
+         (5 minutes) since that is too cumbersome for a user.
+         It is also usually not reasonable to set this value to more
+         than 86400 (1 day) as that would negate the security benefit of
+         repeating the authentication.
+
+4.  Interoperability with Non-Supporting IKEv2 Implementations
+
+   IKEv2 implementations that do not support the AUTH_LIFETIME
+   notification will ignore it and will not repeat the authentication.
+   In that case the original Responder will send a Delete notification
+   for the IKE SA in an Informational exchange.  Such implementations
+   may be configured manually to repeat the authentication periodically.
+
+
+
+
+Nir                           Experimental                      [Page 3]
+
+RFC 4478            Repeated Authentication in IKEv2          April 2006
+
+
+   Non-supporting Responders are not a problem because they will simply
+   not send these notifications.  In that case, there is no requirement
+   that the original Initiator re-authenticate.
+
+5.  Security Considerations
+
+   The AUTH_LIFETIME notification sent by the Responder does not
+   override any security policy on the Initiator.  In particular, the
+   Initiator may have a different policy regarding re-authentication,
+   requiring more frequent re-authentication.  Such an Initiator can
+   repeat the authentication earlier then is required by the
+   notification.
+
+   An Initiator MAY set reasonable limits on the amount of time in the
+   AUTH_LIFETIME notification.  For example, an authentication lifetime
+   of less than 300 seconds from SA initiation may be considered
+   unreasonable.
+
+6.  IANA Considerations
+
+   The IANA has assigned a notification payload type for the
+   AUTH_LIFETIME notifications from the IKEv2 Notify Message Types
+   registry.
+
+7.  Normative References
+
+   [IKEv2]    Kaufman, C., "Internet Key Exchange (IKEv2) Protocol", RFC
+              4306, December 2005.
+
+   [RFC2119]  Bradner, S., "Key words for use in RFCs to Indicate
+              Requirement Levels", BCP 14, RFC 2119, March 1997.
+
+Author's Address
+
+   Yoav Nir
+   Check Point Software Technologies
+
+   EMail: ynir@checkpoint.com
+
+
+
+
+
+
+
+
+
+
+
+
+
+Nir                           Experimental                      [Page 4]
+
+RFC 4478            Repeated Authentication in IKEv2          April 2006
+
+
+Full Copyright Statement
+
+   Copyright (C) The Internet Society (2006).
+
+   This document is subject to the rights, licenses and restrictions
+   contained in BCP 78, and except as set forth therein, the authors
+   retain all their rights.
+
+   This document and the information contained herein are provided on an
+   "AS IS" basis and THE CONTRIBUTOR, THE ORGANIZATION HE/SHE REPRESENTS
+   OR IS SPONSORED BY (IF ANY), THE INTERNET SOCIETY AND THE INTERNET
+   ENGINEERING TASK FORCE DISCLAIM ALL WARRANTIES, EXPRESS OR IMPLIED,
+   INCLUDING BUT NOT LIMITED TO ANY WARRANTY THAT THE USE OF THE
+   INFORMATION HEREIN WILL NOT INFRINGE ANY RIGHTS OR ANY IMPLIED
+   WARRANTIES OF MERCHANTABILITY OR FITNESS FOR A PARTICULAR PURPOSE.
+
+Intellectual Property
+
+   The IETF takes no position regarding the validity or scope of any
+   Intellectual Property Rights or other rights that might be claimed to
+   pertain to the implementation or use of the technology described in
+   this document or the extent to which any license under such rights
+   might or might not be available; nor does it represent that it has
+   made any independent effort to identify any such rights.  Information
+   on the procedures with respect to rights in RFC documents can be
+   found in BCP 78 and BCP 79.
+
+   Copies of IPR disclosures made to the IETF Secretariat and any
+   assurances of licenses to be made available, or the result of an
+   attempt made to obtain a general license or permission for the use of
+   such proprietary rights by implementers or users of this
+   specification can be obtained from the IETF on-line IPR repository at
+   http://www.ietf.org/ipr.
+
+   The IETF invites any interested party to bring to its attention any
+   copyrights, patents or patent applications, or other proprietary
+   rights that may cover technology that may be required to implement
+   this standard.  Please address the information to the IETF at
+   ietf-ipr@ietf.org.
+
+Acknowledgement
+
+   Funding for the RFC Editor function is provided by the IETF
+   Administrative Support Activity (IASA).
+
+
+
+
+
+
+
+Nir                           Experimental                      [Page 5]
+

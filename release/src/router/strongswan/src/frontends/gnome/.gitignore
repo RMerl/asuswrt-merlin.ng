@@ -1,0 +1,12 @@
+compile
+config.h
+config.h.in
+intltool-extract.in
+intltool-merge.in
+intltool-update.in
+mkinstalldirs
+nm-strongswan-service.name
+stamp-h1
+config.guess.cdbs-orig
+config.sub.cdbs-orig
+NetworkManager-strongswan.appdata.xml

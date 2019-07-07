@@ -1,0 +1,10 @@
+Format-Specification: http://svn.debian.org/wsvn/dep/web/deps/dep5.mdwn?op=file&rev=59
+Name: NetworkManager-strongswan
+Source: http://download.strongswan.org/NetworkManager
+
+Copyright: 2008-2009, Martin Willi <martin@strongswan.org>
+           2005-2008, Dan Williams
+           2005, David Zeuthen
+License: GPL-2
+ On Debian systems the full text of the GNU General Public License can be found
+ in the `/usr/share/common-licenses/GPL-2' file.

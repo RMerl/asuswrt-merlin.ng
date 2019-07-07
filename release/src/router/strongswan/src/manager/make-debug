@@ -1,0 +1,15 @@
+#!/bin/bash
+#
+# Debug helper script, launches manager statically. Use Apache config:
+#   FastCgiIpcDir /var/lib/apache2/fastcgi
+#   FastCgiExternalServer /var/www/manager-dbg -socket manager
+
+make CFLAGS="-g -O2 -DFCGI_SOCKET=\\\"/var/lib/apache2/fastcgi/manager\\\"" || exit
+sudo make install || exit
+
+if [ "$1" == "dbg" ]
+then
+	sudo -u www-data gdb -q /usr/local/libexec/ipsec/manager.fcgi
+else
+	sudo -u www-data /usr/local/libexec/ipsec/manager.fcgi
+fi

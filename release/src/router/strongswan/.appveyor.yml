@@ -1,0 +1,29 @@
+clone_depth: 50
+
+image:
+  - Visual Studio 2015
+  - Visual Studio 2017
+
+environment:
+  global:
+    TESTS_REDUCED_KEYLENGTHS: yes
+    LEAK_DETECTIVE: no
+    MONOLITHIC: yes
+    TZ: Europe/Zurich
+  matrix:
+    - arch: x86_64
+      bits: 64
+    # no 32-bit build as 32-bit msys is not installed
+    #- arch: i686
+    #  bits: 32
+
+install:
+  - set MSYS_SH=C:\msys%BITS%\usr\bin\sh.exe
+  - set MSYSTEM=MINGW%BITS%
+  - set TEST=win%BITS%
+
+build_script:
+  - '%MSYS_SH% --login -c ". /etc/profile && cd $APPVEYOR_BUILD_FOLDER && ./scripts/test.sh deps"'
+
+test_script:
+  - '%MSYS_SH% --login -c ". /etc/profile && cd $APPVEYOR_BUILD_FOLDER && ./scripts/test.sh"'

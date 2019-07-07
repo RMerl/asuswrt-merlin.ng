@@ -1,0 +1,55 @@
+apply plugin: 'com.android.application'
+
+android {
+    compileSdkVersion 26
+    buildToolsVersion '27.0.3'
+
+    defaultConfig {
+        applicationId "org.strongswan.android"
+        minSdkVersion 15
+        targetSdkVersion 26
+        versionCode 62
+        versionName "2.0.2"
+    }
+
+    sourceSets.main {
+        jni.srcDirs = [] // disables the default ndk-build call (with on-the-fly Android.mk files)
+        jniLibs.srcDir 'src/main/libs'
+    }
+
+    task buildNative(type: Exec) {
+        workingDir 'src/main/jni'
+        commandLine "${android.ndkDirectory}/ndk-build", '-j', Runtime.runtime.availableProcessors()
+    }
+
+    task cleanNative(type: Exec) {
+        workingDir 'src/main/jni'
+        commandLine "${android.ndkDirectory}/ndk-build", 'clean'
+    }
+
+    tasks.withType(JavaCompile) {
+        compileTask -> compileTask.dependsOn buildNative
+        options.compilerArgs << "-Xlint:unchecked" << "-Xlint:deprecation"
+    }
+
+    clean.dependsOn 'cleanNative'
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.txt'
+        }
+    }
+    compileOptions {
+        targetCompatibility 1.8
+        sourceCompatibility 1.8
+    }
+}
+
+dependencies {
+    implementation 'com.android.support:appcompat-v7:26.0.2'
+    implementation 'com.android.support:design:26.0.2'
+    implementation 'com.android.support:preference-v7:26.0.2'
+    implementation 'com.android.support:support-v4:26.0.2'
+    testImplementation 'junit:junit:4.12'
+}

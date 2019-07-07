@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013 Tobias Brunner
+ * Copyright (C) 2013-2019 Tobias Brunner
  * HSR Hochschule fuer Technik Rapperswil
  *
  * This program is free software; you can redistribute it and/or modify it
@@ -14,14 +14,14 @@
  */
 
 /**
- * Implements the aead_t interface using OpenSSL in GCM mode.
+ * Implements the aead_t interface using OpenSSL.
  *
- * @defgroup openssl_gcm openssl_gcm
+ * @defgroup openssl_aead openssl_aead
  * @{ @ingroup openssl_p
  */
 
-#ifndef OPENSSL_GCM_H_
-#define OPENSSL_GCM_H_
+#ifndef OPENSSL_AEAD_H_
+#define OPENSSL_AEAD_H_
 
 #include <crypto/aead.h>
 
@@ -33,7 +33,7 @@
  * @param salt_size		size of implicit salt length
  * @return				aead_t object, NULL if not supported
  */
-aead_t *openssl_gcm_create(encryption_algorithm_t algo, size_t key_size,
+aead_t *openssl_aead_create(encryption_algorithm_t algo, size_t key_size,
 							size_t salt_size);
 
-#endif /** OPENSSL_GCM_H_ @}*/
+#endif /** OPENSSL_AEAD_H_ @}*/

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013 Tobias Brunner
+ * Copyright (C) 2013-2019 Tobias Brunner
  * HSR Hochschule fuer Technik Rapperswil
  *
  * This program is free software; you can redistribute it and/or modify it
@@ -17,10 +17,17 @@
 
 #if OPENSSL_VERSION_NUMBER >= 0x1000100fL
 
-#include "openssl_gcm.h"
+#include "openssl_aead.h"
 
 #include <openssl/evp.h>
 #include <crypto/iv/iv_gen_seq.h>
+
+/* the generic AEAD identifiers were added with 1.1.0 */
+#ifndef EVP_CTRL_AEAD_SET_IVLEN
+#define EVP_CTRL_AEAD_SET_IVLEN EVP_CTRL_GCM_SET_IVLEN
+#define EVP_CTRL_AEAD_SET_TAG EVP_CTRL_GCM_SET_TAG
+#define EVP_CTRL_AEAD_GET_TAG EVP_CTRL_GCM_GET_TAG
+#endif
 
 /** as defined in RFC 4106 */
 #define IV_LEN		8
@@ -82,12 +89,12 @@ static bool crypt(private_aead_t *this, chunk_t data, chunk_t assoc, chunk_t iv,
 	ctx = EVP_CIPHER_CTX_new();
 	EVP_CIPHER_CTX_set_padding(ctx, 0);
 	if (!EVP_CipherInit_ex(ctx, this->cipher, NULL, NULL, NULL, enc) ||
-		!EVP_CIPHER_CTX_ctrl(ctx, EVP_CTRL_GCM_SET_IVLEN, NONCE_LEN, NULL) ||
+		!EVP_CIPHER_CTX_ctrl(ctx, EVP_CTRL_AEAD_SET_IVLEN, NONCE_LEN, NULL) ||
 		!EVP_CipherInit_ex(ctx, NULL, NULL, this->key.ptr, nonce, enc))
 	{
 		goto done;
 	}
-	if (!enc && !EVP_CIPHER_CTX_ctrl(ctx, EVP_CTRL_GCM_SET_TAG, this->icv_size,
+	if (!enc && !EVP_CIPHER_CTX_ctrl(ctx, EVP_CTRL_AEAD_SET_TAG, this->icv_size,
 									 data.ptr + data.len))
 	{	/* set ICV for verification on decryption */
 		goto done;
@@ -101,7 +108,7 @@ static bool crypt(private_aead_t *this, chunk_t data, chunk_t assoc, chunk_t iv,
 	{	/* EVP_CipherFinal_ex fails if ICV is incorrect on decryption */
 		goto done;
 	}
-	if (enc && !EVP_CIPHER_CTX_ctrl(ctx, EVP_CTRL_GCM_GET_TAG, this->icv_size,
+	if (enc && !EVP_CIPHER_CTX_ctrl(ctx, EVP_CTRL_AEAD_GET_TAG, this->icv_size,
 									out + data.len))
 	{	/* copy back the ICV when encrypting */
 		goto done;
@@ -202,8 +209,8 @@ METHOD(aead_t, destroy, void,
 /*
  * Described in header
  */
-aead_t *openssl_gcm_create(encryption_algorithm_t algo,
-						   size_t key_size, size_t salt_size)
+aead_t *openssl_aead_create(encryption_algorithm_t algo,
+							size_t key_size, size_t salt_size)
 {
 	private_aead_t *this;
 
@@ -230,6 +237,9 @@ aead_t *openssl_gcm_create(encryption_algorithm_t algo,
 			this->icv_size = 12;
 			break;
 		case ENCR_AES_GCM_ICV16:
+			this->icv_size = 16;
+			break;
+		case ENCR_CHACHA20_POLY1305:
 			this->icv_size = 16;
 			break;
 		default:
@@ -268,6 +278,22 @@ aead_t *openssl_gcm_create(encryption_algorithm_t algo,
 					return NULL;
 			}
 			break;
+#if OPENSSL_VERSION_NUMBER >= 0x1010000fL && !defined(OPENSSL_NO_CHACHA)
+		case ENCR_CHACHA20_POLY1305:
+			switch (key_size)
+			{
+				case 0:
+					key_size = 32;
+					/* FALL */
+				case 32:
+					this->cipher = EVP_chacha20_poly1305();
+					break;
+				default:
+					free(this);
+					return NULL;
+			}
+			break;
+#endif /* OPENSSL_NO_CHACHA */
 		default:
 			free(this);
 			return NULL;

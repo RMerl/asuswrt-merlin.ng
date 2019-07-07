@@ -1536,6 +1536,11 @@ void start_dnsmasq(void)
 		if (nvram_get_int("dhcpd_send_wpad")) {
 			fprintf(fp, "dhcp-option=lan,252,\"\\n\"\n");
 		}
+
+		/* NTP server */
+		if (nvram_get_int("ntpd_enable"))
+			fprintf(fp, "dhcp-option=lan,42,%s\n", "0.0.0.0");
+
 #if defined(RTCONFIG_TR069) && !defined(RTCONFIG_TR181)
 		if (ether_atoe(get_lan_hwaddr(), hwaddr)) {
 			snprintf(buffer, sizeof(buffer), "%02X%02X%02X", hwaddr[0], hwaddr[1], hwaddr[2]);
@@ -1651,6 +1656,12 @@ void start_dnsmasq(void)
 		value = nvram_safe_get("lan_domain");
 		if (*value)
 			fprintf(fp, "dhcp-option=lan,option6:24,%s\n", value);
+
+		/* NTP server */
+		/* not supported yet by dnsmasq *//*
+		if (nvram_get_int("ntpd_enable"))
+			fprintf(fp, "dhcp-option=lan,option6:56,%s\n", "[::]");
+		*/
 	}
 #endif
 
@@ -1734,9 +1745,6 @@ void start_dnsmasq(void)
 #endif
 	if (nvram_match("dns_norebind", "1"))
 		fprintf(fp, "stop-dns-rebind\n");
-
-	if (nvram_match("ntpd_enable", "1"))
-		fprintf(fp, "dhcp-option=option:ntp-server,%s\n", lan_ipaddr);
 
 	/* Protect against VU#598349 */
 	fprintf(fp,"dhcp-name-match=set:wpad-ignore,wpad\n"

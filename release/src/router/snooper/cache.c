@@ -130,7 +130,7 @@ static struct host_entry *get_host(unsigned char *ea, unsigned long time)
 		if (prev)
 			STAILQ_REMOVE_AFTER(&hosts.pool, prev, link);
 		else	STAILQ_REMOVE_HEAD(&hosts.pool, link);
-		memset(&host, 0, sizeof(*host));
+		memset(host, 0, sizeof(*host));
 	}
 
 	memcpy(host->ea, ea, ETHER_ADDR_LEN);

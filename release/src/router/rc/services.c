@@ -1658,10 +1658,8 @@ void start_dnsmasq(void)
 			fprintf(fp, "dhcp-option=lan,option6:24,%s\n", value);
 
 		/* NTP server */
-		/* not supported yet by dnsmasq *//*
 		if (nvram_get_int("ntpd_enable"))
 			fprintf(fp, "dhcp-option=lan,option6:56,%s\n", "[::]");
-		*/
 	}
 #endif
 

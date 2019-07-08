@@ -10053,7 +10053,7 @@ again:
 		if(action & RC_SERVICE_START) {
 			int sw = 0, r;
 			char upgrade_file[64] = "/tmp/linux.trx";
-			char *webs_state_info = nvram_safe_get("webs_state_info");
+			char *webs_state_info = nvram_safe_get("webs_state_info_am");
 
 #ifdef RTCONFIG_SMALL_FW_UPDATE
 			snprintf(upgrade_file,sizeof(upgrade_file),"/tmp/mytmpfs/linux.trx");

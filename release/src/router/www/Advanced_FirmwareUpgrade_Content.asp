@@ -944,7 +944,11 @@ function show_amas_fw_result() {
 					var online = get_cfg_clientlist[idx].online;
 					$("#amas_" + mac_id + "").children().find(".checkFWReuslt").html(ck_fw_result);
 					if(newfwver != "") {
-						ck_fw_result = newfwver;
+						if (mac_id != local_id) {
+							ck_fw_result = newfwver;
+						} else {
+							ck_fw_result = newfwver.replace("3.0.0.4.","");
+						}
 						$("#amas_" + mac_id + "").children().find(".checkFWReuslt").addClass("aimesh_fw_release_note");
 						$("#amas_" + mac_id + "").children().find(".checkFWReuslt").html(ck_fw_result);
 						if (mac_id != local_id) {    // Not Local AM router

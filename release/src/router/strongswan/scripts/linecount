@@ -1,0 +1,3 @@
+#!/bin/bash
+
+find $1 -name '*.[ch]' | grep -v .svn | xargs cat | grep -v ^[[:space:]]*$ | wc -l

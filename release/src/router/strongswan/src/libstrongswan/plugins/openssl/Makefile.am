@@ -29,7 +29,7 @@ libstrongswan_openssl_la_SOURCES = \
 	openssl_pkcs12.c openssl_pkcs12.h \
 	openssl_rng.c openssl_rng.h \
 	openssl_hmac.c openssl_hmac.h \
-	openssl_gcm.c openssl_gcm.h \
+	openssl_aead.c openssl_aead.h \
 	openssl_x_diffie_hellman.c openssl_x_diffie_hellman.h \
 	openssl_ed_private_key.c openssl_ed_private_key.h \
 	openssl_ed_public_key.c openssl_ed_public_key.h

@@ -311,6 +311,10 @@ function hideCNT(_val){
 		document.getElementById("pingCNT_tr").style.display = "none";
 		document.getElementById("cmdDesc").innerHTML = "<#NetworkTools_tr#>";
 	}
+	else if(_val == "1"){
+		document.getElementById("pingCNT_tr").style.display = "none";
+		document.getElementById("cmdDesc").innerHTML = "<#NetworkTools_Ping#>";
+	}
 	else{
 		document.getElementById("pingCNT_tr").style.display = "none";
 		document.getElementById("cmdDesc").innerHTML = "<#NetworkTools_nslookup#>";

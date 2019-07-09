@@ -1,0 +1,351 @@
+Grammar
+
+    0 $accept: config_file $end
+
+    1 config_file: config_file section_or_include
+    2            | /* empty */
+
+    3 section_or_include: FILE_VERSION STRING EOL
+
+    4 $@1: /* empty */
+
+    5 section_or_include: CONFIG SETUP EOL $@1 kw_section
+
+    6 $@2: /* empty */
+
+    7 section_or_include: CONN STRING EOL $@2 kw_section
+
+    8 $@3: /* empty */
+
+    9 section_or_include: CA STRING EOL $@3 kw_section
+
+   10 $@4: /* empty */
+
+   11 section_or_include: INCLUDE STRING $@4 EOL
+   12                   | EOL
+
+   13 kw_section: FIRST_SPACES statement_kw EOL kw_section
+   14           | /* empty */
+
+   15 statement_kw: STRING EQUAL STRING
+   16             | STRING EQUAL
+   17             | /* empty */
+
+
+Terminals, with rules where they appear
+
+$end (0) 0
+error (256)
+EQUAL (258) 15 16
+FIRST_SPACES (259) 13
+EOL (260) 3 5 7 9 11 12 13
+CONFIG (261) 5
+SETUP (262) 5
+CONN (263) 7
+CA (264) 9
+INCLUDE (265) 11
+FILE_VERSION (266) 3
+STRING (267) 3 7 9 11 15 16
+
+
+Nonterminals, with rules where they appear
+
+$accept (13)
+    on left: 0
+config_file (14)
+    on left: 1 2, on right: 0 1
+section_or_include (15)
+    on left: 3 5 7 9 11 12, on right: 1
+$@1 (16)
+    on left: 4, on right: 5
+$@2 (17)
+    on left: 6, on right: 7
+$@3 (18)
+    on left: 8, on right: 9
+$@4 (19)
+    on left: 10, on right: 11
+kw_section (20)
+    on left: 13 14, on right: 5 7 9 13
+statement_kw (21)
+    on left: 15 16 17, on right: 13
+
+
+state 0
+
+    0 $accept: . config_file $end
+
+    $default  reduce using rule 2 (config_file)
+
+    config_file  go to state 1
+
+
+state 1
+
+    0 $accept: config_file . $end
+    1 config_file: config_file . section_or_include
+
+    $end          shift, and go to state 2
+    EOL           shift, and go to state 3
+    CONFIG        shift, and go to state 4
+    CONN          shift, and go to state 5
+    CA            shift, and go to state 6
+    INCLUDE       shift, and go to state 7
+    FILE_VERSION  shift, and go to state 8
+
+    section_or_include  go to state 9
+
+
+state 2
+
+    0 $accept: config_file $end .
+
+    $default  accept
+
+
+state 3
+
+   12 section_or_include: EOL .
+
+    $default  reduce using rule 12 (section_or_include)
+
+
+state 4
+
+    5 section_or_include: CONFIG . SETUP EOL $@1 kw_section
+
+    SETUP  shift, and go to state 10
+
+
+state 5
+
+    7 section_or_include: CONN . STRING EOL $@2 kw_section
+
+    STRING  shift, and go to state 11
+
+
+state 6
+
+    9 section_or_include: CA . STRING EOL $@3 kw_section
+
+    STRING  shift, and go to state 12
+
+
+state 7
+
+   11 section_or_include: INCLUDE . STRING $@4 EOL
+
+    STRING  shift, and go to state 13
+
+
+state 8
+
+    3 section_or_include: FILE_VERSION . STRING EOL
+
+    STRING  shift, and go to state 14
+
+
+state 9
+
+    1 config_file: config_file section_or_include .
+
+    $default  reduce using rule 1 (config_file)
+
+
+state 10
+
+    5 section_or_include: CONFIG SETUP . EOL $@1 kw_section
+
+    EOL  shift, and go to state 15
+
+
+state 11
+
+    7 section_or_include: CONN STRING . EOL $@2 kw_section
+
+    EOL  shift, and go to state 16
+
+
+state 12
+
+    9 section_or_include: CA STRING . EOL $@3 kw_section
+
+    EOL  shift, and go to state 17
+
+
+state 13
+
+   11 section_or_include: INCLUDE STRING . $@4 EOL
+
+    $default  reduce using rule 10 ($@4)
+
+    $@4  go to state 18
+
+
+state 14
+
+    3 section_or_include: FILE_VERSION STRING . EOL
+
+    EOL  shift, and go to state 19
+
+
+state 15
+
+    5 section_or_include: CONFIG SETUP EOL . $@1 kw_section
+
+    $default  reduce using rule 4 ($@1)
+
+    $@1  go to state 20
+
+
+state 16
+
+    7 section_or_include: CONN STRING EOL . $@2 kw_section
+
+    $default  reduce using rule 6 ($@2)
+
+    $@2  go to state 21
+
+
+state 17
+
+    9 section_or_include: CA STRING EOL . $@3 kw_section
+
+    $default  reduce using rule 8 ($@3)
+
+    $@3  go to state 22
+
+
+state 18
+
+   11 section_or_include: INCLUDE STRING $@4 . EOL
+
+    EOL  shift, and go to state 23
+
+
+state 19
+
+    3 section_or_include: FILE_VERSION STRING EOL .
+
+    $default  reduce using rule 3 (section_or_include)
+
+
+state 20
+
+    5 section_or_include: CONFIG SETUP EOL $@1 . kw_section
+
+    FIRST_SPACES  shift, and go to state 24
+
+    $default  reduce using rule 14 (kw_section)
+
+    kw_section  go to state 25
+
+
+state 21
+
+    7 section_or_include: CONN STRING EOL $@2 . kw_section
+
+    FIRST_SPACES  shift, and go to state 24
+
+    $default  reduce using rule 14 (kw_section)
+
+    kw_section  go to state 26
+
+
+state 22
+
+    9 section_or_include: CA STRING EOL $@3 . kw_section
+
+    FIRST_SPACES  shift, and go to state 24
+
+    $default  reduce using rule 14 (kw_section)
+
+    kw_section  go to state 27
+
+
+state 23
+
+   11 section_or_include: INCLUDE STRING $@4 EOL .
+
+    $default  reduce using rule 11 (section_or_include)
+
+
+state 24
+
+   13 kw_section: FIRST_SPACES . statement_kw EOL kw_section
+
+    STRING  shift, and go to state 28
+
+    $default  reduce using rule 17 (statement_kw)
+
+    statement_kw  go to state 29
+
+
+state 25
+
+    5 section_or_include: CONFIG SETUP EOL $@1 kw_section .
+
+    $default  reduce using rule 5 (section_or_include)
+
+
+state 26
+
+    7 section_or_include: CONN STRING EOL $@2 kw_section .
+
+    $default  reduce using rule 7 (section_or_include)
+
+
+state 27
+
+    9 section_or_include: CA STRING EOL $@3 kw_section .
+
+    $default  reduce using rule 9 (section_or_include)
+
+
+state 28
+
+   15 statement_kw: STRING . EQUAL STRING
+   16             | STRING . EQUAL
+
+    EQUAL  shift, and go to state 30
+
+
+state 29
+
+   13 kw_section: FIRST_SPACES statement_kw . EOL kw_section
+
+    EOL  shift, and go to state 31
+
+
+state 30
+
+   15 statement_kw: STRING EQUAL . STRING
+   16             | STRING EQUAL .
+
+    STRING  shift, and go to state 32
+
+    $default  reduce using rule 16 (statement_kw)
+
+
+state 31
+
+   13 kw_section: FIRST_SPACES statement_kw EOL . kw_section
+
+    FIRST_SPACES  shift, and go to state 24
+
+    $default  reduce using rule 14 (kw_section)
+
+    kw_section  go to state 33
+
+
+state 32
+
+   15 statement_kw: STRING EQUAL STRING .
+
+    $default  reduce using rule 15 (statement_kw)
+
+
+state 33
+
+   13 kw_section: FIRST_SPACES statement_kw EOL kw_section .
+
+    $default  reduce using rule 13 (kw_section)

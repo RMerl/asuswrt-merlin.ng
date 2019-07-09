@@ -46,7 +46,7 @@
 #include "openssl_pkcs12.h"
 #include "openssl_rng.h"
 #include "openssl_hmac.h"
-#include "openssl_gcm.h"
+#include "openssl_aead.h"
 #include "openssl_x_diffie_hellman.h"
 #include "openssl_ed_public_key.h"
 #include "openssl_ed_private_key.h"
@@ -580,10 +580,11 @@ METHOD(plugin_t, get_features, int,
 			PLUGIN_PROVIDE(SIGNER, AUTH_HMAC_SHA2_512_512),
 #endif
 #endif /* OPENSSL_NO_HMAC */
-#if OPENSSL_VERSION_NUMBER >= 0x1000100fL
+#if (OPENSSL_VERSION_NUMBER >= 0x1000100fL && !defined(OPENSSL_NO_AES)) || \
+	(OPENSSL_VERSION_NUMBER >= 0x1010000fL && !defined(OPENSSL_NO_CHACHA))
+		/* AEAD (AES GCM since 1.0.1, ChaCha20-Poly1305 since 1.1.0) */
+		PLUGIN_REGISTER(AEAD, openssl_aead_create),
 #ifndef OPENSSL_NO_AES
-		/* AES GCM */
-		PLUGIN_REGISTER(AEAD, openssl_gcm_create),
 			PLUGIN_PROVIDE(AEAD, ENCR_AES_GCM_ICV16, 16),
 			PLUGIN_PROVIDE(AEAD, ENCR_AES_GCM_ICV16, 24),
 			PLUGIN_PROVIDE(AEAD, ENCR_AES_GCM_ICV16, 32),
@@ -594,6 +595,9 @@ METHOD(plugin_t, get_features, int,
 			PLUGIN_PROVIDE(AEAD, ENCR_AES_GCM_ICV8,  24),
 			PLUGIN_PROVIDE(AEAD, ENCR_AES_GCM_ICV8,  32),
 #endif /* OPENSSL_NO_AES */
+#if OPENSSL_VERSION_NUMBER >= 0x1010000fL && !defined(OPENSSL_NO_CHACHA)
+			PLUGIN_PROVIDE(AEAD, ENCR_CHACHA20_POLY1305, 32),
+#endif /* OPENSSL_NO_CHACHA */
 #endif /* OPENSSL_VERSION_NUMBER */
 #ifndef OPENSSL_NO_ECDH
 		/* EC DH groups */

@@ -1,0 +1,216 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Copyright (C) 2017 Chris Chiang
+
+    This program is free software; you can redistribute it and/or modify it
+    under the terms of the GNU General Public License as published by the
+    Free Software Foundation; either version 2 of the License, or (at your
+    option) any later version.  See <http://www.fsf.org/copyleft/gpl.txt>.
+
+    This program is distributed in the hope that it will be useful, but
+    WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+    or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+    for more details.
+-->
+<resources>
+
+    <!-- Application -->
+    <string name="app_name">strongSwan VPN 用戶端</string>
+    <string name="main_activity_name">strongSwan</string>
+    <string name="show_log">觀看日誌</string>
+    <string name="search">搜尋</string>
+    <string name="vpn_not_supported_title">無法支援VPN</string>
+    <string name="vpn_not_supported">您的設備無法使用VPN。\n請聯絡供應商。</string>
+    <string name="vpn_not_supported_during_lockdown">VPN connections are not supported if a built-in VPN has the always-on feature enabled.</string>
+    <string name="vpn_not_supported_no_permission">Unable to get permission to create VPN connections. Either because it was denied by the user, or because a different VPN app has the always-on feature enabled.</string>
+    <string name="loading">載入中&#8230;</string>
+    <string name="profile_not_found">沒有找到設定檔</string>
+    <string name="strongswan_shortcut">strongSwan快速選單</string>
+    <string name="permanent_notification_name">VPN connection state</string>
+    <string name="permanent_notification_description">Provides information about the VPN connection state and serves as permanent notification to keep the VPN service running in the background.</string>
+
+    <!-- Settings -->
+    <string name="pref_title">Settings</string>
+    <string name="pref_default_vpn_profile">Default VPN profile</string>
+    <string name="pref_default_vpn_profile_mru">Connect to most recently used profile</string>
+
+    <!-- Log view -->
+    <string name="log_title">日誌</string>
+    <string name="send_log">發送日誌檔</string>
+    <string name="empty_log">沒有日誌檔</string>
+    <string name="log_mail_subject">strongSwan %1$s 日誌檔</string>
+
+    <!-- VPN profile list -->
+    <string name="no_profiles">沒有設定檔</string>
+    <string name="add_profile">新增VPN設定檔</string>
+    <string name="edit_profile">編輯</string>
+    <string name="delete_profile">刪除</string>
+    <string name="select_profiles">選擇設定檔</string>
+    <string name="profiles_deleted">選擇的設定檔已經刪除</string>
+    <string name="no_profile_selected">沒有選擇設定檔</string>
+    <string name="one_profile_selected">已選擇1個設定檔</string>
+    <string name="x_profiles_selected">已選擇%1$d個設定檔</string>
+
+    <!-- VPN profile details -->
+    <string name="profile_edit_save">儲存</string>
+    <string name="profile_edit_import">匯入</string>
+    <string name="profile_edit_cancel">取消</string>
+    <string name="profile_name_label">設定檔名稱(選填)</string>
+    <string name="profile_name_label_simple">設定檔名稱</string>
+    <string name="profile_name_hint">預設為已設定的伺服器位置</string>
+    <string name="profile_name_hint_gateway">預設為 \"%1$s\"</string>
+    <string name="profile_gateway_label">伺服器位置</string>
+    <string name="profile_gateway_hint">IP位置或伺服器網域</string>
+    <string name="profile_vpn_type_label">VPN類型</string>
+    <string name="profile_username_label">用戶ID</string>
+    <string name="profile_password_label">密碼(選填)</string>
+    <string name="profile_password_hint">可留空白在需要時才請您設定</string>
+    <string name="profile_user_certificate_label">用戶憑證</string>
+    <string name="profile_user_select_certificate_label">選擇用戶憑證</string>
+    <string name="profile_user_select_certificate">選擇指定的用戶憑證</string>
+    <string name="profile_user_select_id_label">用戶帳號</string>
+    <string name="profile_user_select_id_init">請先選擇一個憑證</string>
+    <string name="profile_user_select_id_default">預設(%1$s)</string>
+    <string name="profile_ca_label">CA憑證</string>
+    <string name="profile_ca_auto_label">自動選擇</string>
+    <string name="profile_ca_select_certificate_label">選擇CA憑證</string>
+    <string name="profile_ca_select_certificate">選擇一個指定的CA憑證</string>
+    <string name="profile_advanced_label">進階設定</string>
+    <string name="profile_show_advanced_label">顯示進階設定</string>
+    <string name="profile_remote_id_label">伺服器ID</string>
+    <string name="profile_remote_id_hint">預設為已設定的伺服器位置。自訂值會在授權期間送到伺服器</string>
+    <string name="profile_remote_id_hint_gateway">預設為 \"%1$s\"。自訂值會在授權期間送到伺服器</string>
+    <string name="profile_mtu_label">VPN通道裝置的MTU值</string>
+    <string name="profile_mtu_hint">如果在某個網路下預設值不適合</string>
+    <string name="profile_port_label">伺服器Port</string>
+    <string name="profile_port_hint">如果和預設值不同，則需要連接的UDP Port</string>
+    <string name="profile_nat_keepalive_label">NAT-T keepalive interval</string>
+    <string name="profile_nat_keepalive_hint">Small packets are sent to keep mappings on NAT routers alive if there is no other traffic. In order to save energy the default interval is 45 seconds. Behind NAT routers that remove mappings early this might be too high, try 20 seconds or less in that case.</string>
+    <string name="profile_cert_req_label">Send certificate requests</string>
+    <string name="profile_cert_req_hint">Certificate requests are sent for all available or selected CA certificates. To reduce the size of the IKE_AUTH message this can be disabled. However, this only works if the server sends its certificate even if it didn\'t receive any certificate requests.</string>
+    <string name="profile_use_ocsp_label">Use OCSP to check certificate</string>
+    <string name="profile_use_ocsp_hint">Use the Online Certificate Status Protocol (OCSP), if available, to check that the server certificate has not been revoked.</string>
+    <string name="profile_use_crl_label">Use CRLs to check certificate</string>
+    <string name="profile_use_crl_hint">Use Certificate Revocation Lists (CRL), if available, to check that the server certificate has not been revoked. CRLs are only used if OCSP doesn\'t yield a result.</string>
+    <string name="profile_strict_revocation_label">Use strict revocation checking</string>
+    <string name="profile_strict_revocation_hint">In strict mode the authentication will fail not only if the server certificate has been revoked but also if its status is unknown (e.g. because OCSP failed and no valid CRL was available).</string>
+    <string name="profile_rsa_pss_label">Use RSA/PSS signatures</string>
+    <string name="profile_rsa_pss_hint">Use the stronger PSS encoding instead of the classic PKCS#1 encoding for RSA signatures. Authentication will fail if the server does not support such signatures.</string>
+    <string name="profile_split_tunneling_label">拆分隧道</string>
+    <string name="profile_split_tunneling_intro">By default, the client will route all network traffic through the VPN, unless the server narrows the subnets when the connection is established, in which case only traffic the server allows will be routed via VPN (by default, all other traffic is routed as if there was no VPN).</string>
+    <string name="profile_split_tunnelingv4_title">屏蔽不通过VPN的IPV4流量</string>
+    <string name="profile_split_tunnelingv6_title">屏蔽不通过VPN的IPV6流量</string>
+    <string name="profile_included_subnets_label">Custom subnets</string>
+    <string name="profile_included_subnets_hint">Only route traffic to specific subnets via VPN, everything else is routed as if there was no VPN (separated by spaces, e.g. \"192.168.1.0/24 2001:db8::/64\")</string>
+    <string name="profile_excluded_subnets_label">Excluded subnets</string>
+    <string name="profile_excluded_subnets_hint">Traffic to these subnets will not be routed via VPN, but as if there was no VPN (separated by spaces, e.g. \"192.168.1.0/24 2001:db8::/64\")</string>
+    <string name="profile_select_apps_label">Applications</string>
+    <string name="profile_select_apps">Select applications</string>
+    <string name="profile_select_no_apps">No applications selected</string>
+    <string name="profile_select_one_app">One application selected</string>
+    <string name="profile_select_x_apps">%1$d applications selected</string>
+    <string name="profile_proposals_label">Algorithms</string>
+    <string name="profile_proposals_intro">Optionally configure specific algorithms to use for IKEv2 and/or IPsec/ESP instead of the defaults. Refer to our wiki for a <a href="https://wiki.strongswan.org/projects/strongswan/wiki/IKEv2CipherSuites">list of algorithm identifiers</a> (note that not all are supported by this app). Both fields take a list of algorithms, each separated by a hyphen.</string>
+    <string name="profile_proposals_ike_label">IKEv2 Algorithms</string>
+    <string name="profile_proposals_ike_hint">For non-AEAD/classic encryption algorithms, an integrity algorithm, a pseudo random function (optional, defaults to one based on the integrity algorithm) and a Diffie-Hellman group are required (e.g. aes256-sha256-ecp256). For combined-mode/AEAD algorithms, the integrity algorithm is omitted but a PRF is required (e.g. aes256gcm16-prfsha256-ecp256).</string>
+    <string name="profile_proposals_esp_label">IPsec/ESP Algorithms</string>
+    <string name="profile_proposals_esp_hint">For non-AEAD/classic encryption algorithms, an integrity algorithm is required, a Diffie-Hellman group is optional (e.g. aes256-sha256 or aes256-sha256-ecp256). For combined-mode/AEAD algorithms, the integrity algorithm is omitted (e.g. aes256gcm16 or aes256gcm16-ecp256). If a DH group is specified IPsec SA rekeying will use a DH key exchange. However, DH groups specified here are not used when the connection is established initially because the keys there are derived from the IKE SA key material. Therefore, any configuration mismatch with the server will only cause errors later during rekeying.</string>
+    <string name="profile_import">匯入VPN設定檔</string>
+    <string name="profile_import_failed">匯入VPN設定檔失敗</string>
+    <string name="profile_import_failed_detail">匯入VPN設定檔失敗: %1$s</string>
+    <string name="profile_import_failed_not_found">沒有找到檔案</string>
+    <string name="profile_import_failed_host">不明主機</string>
+    <string name="profile_import_failed_tls">TLS連線失敗</string>
+    <string name="profile_import_failed_value">Invalid value in \"%1$s\"</string>
+    <string name="profile_import_exists">這個VPN設定檔已經存在，當前設定檔會被覆蓋。</string>
+    <string name="profile_cert_import">從VPN設定檔匯入憑證</string>
+    <string name="profile_cert_alias">\"%1$s\" 對應的憑證</string>
+    <string name="profile_profile_id">Profile ID</string>
+    <!-- Warnings/Notifications in the details view -->
+    <string name="alert_text_no_input_gateway">請填寫必要訊息才能初始化連線</string>
+    <string name="alert_text_no_input_username">請輸入您的用戶名稱</string>
+    <string name="alert_text_nocertfound_title">沒有選擇CA憑證</string>
+    <string name="alert_text_nocertfound">請選擇一項或啟動 <i>自動選擇</i></string>
+    <string name="alert_text_out_of_range">請輸入一個數字範圍從%1$d到%2$d</string>
+    <string name="alert_text_no_subnets">Please enter valid subnets and/or IP addresses, separated by spaces</string>
+    <string name="alert_text_no_proposal">Please enter a valid list of algorithms, separated by hyphens</string>
+    <string name="tnc_notice_title">EAP-TNC可能會影響您的隱私安全</string>
+    <string name="tnc_notice_subtitle">裝置資料已經發送給伺服器管理者</string>
+    <string name="tnc_notice_details"><![CDATA[<p>Trusted Network Connect (TNC) 可以讓伺服器管理者評估用戶裝置的狀況。</p><p>在這個目的下，伺服器管理者可能會要求以下資料，例如ID、已安裝的App項目、系統設定、或加密檔案驗證值。</p><b>任何資料都只有在驗證伺服器的身分ID之後才會被送出。</b>]]></string>
+
+    <!-- Trusted certificate selection -->
+    <string name="trusted_certs_title">CA憑證</string>
+    <string name="no_certificates">沒有憑證</string>
+    <string name="reload_trusted_certs">重新載入CA憑證</string>
+    <string name="system_tab">系統</string>
+    <string name="user_tab">用戶</string>
+    <string name="local_tab">已經匯入</string>
+    <string name="delete_certificate_question">是否刪除憑證？</string>
+    <string name="delete_certificate">憑證將被永久移除！</string>
+    <string name="import_certificate">導入憑證</string>
+    <string name="cert_imported_successfully">憑證已經成功匯入</string>
+    <string name="cert_import_failed">憑證匯入失敗</string>
+    <string name="crl_cache">CRL cache</string>
+    <string name="clear_crl_cache_title">Clear CRL cache?</string>
+    <string name="clear_crl_cache_msg_none">The CRL cache is empty</string>
+    <plurals name="clear_crl_cache_msg">
+        <item quantity="one">The CRL cache contains %1$d file (%2$s).</item>
+        <item quantity="other">The CRL cache contains %1$d files (%2$s).</item>
+    </plurals>
+    <string name="clear">Clear</string>
+
+    <!-- VPN state fragment -->
+    <string name="state_label">狀態：</string>
+    <string name="profile_label">設定檔：</string>
+    <string name="disconnect">結束連線</string>
+    <string name="state_connecting">連線中&#8230;</string>
+    <string name="state_connected">已連線</string>
+    <string name="state_disconnecting">結束連線中&#8230;</string>
+    <string name="state_disabled">無運作中的VPN</string>
+    <string name="state_error">錯誤</string>
+    <string name="dismiss">Dismiss</string>
+
+    <!-- IMC state fragment -->
+    <string name="imc_state_label">評估詳情：</string>
+    <string name="imc_state_isolate">受限的</string>
+    <string name="imc_state_block">失敗的</string>
+    <string name="show_remediation_instructions">觀看修復說明</string>
+
+    <!-- Remediation instructions -->
+    <string name="remediation_instructions_title">修復說明</string>
+
+    <!-- Dialogs -->
+    <string name="login_title">輸入密碼進行連線</string>
+    <string name="login_username">用戶名稱</string>
+    <string name="login_password">密碼</string>
+    <string name="login_confirm">連線</string>
+    <string name="error_format">無法建立VPN：%1$s。</string>
+    <string name="error_lookup_failed">伺服器位置查詢失敗</string>
+    <string name="error_unreachable">伺服器位置無法連線</string>
+    <string name="error_peer_auth_failed">驗證伺服器授權失敗</string>
+    <string name="error_auth_failed">用戶授權失敗</string>
+    <string name="error_assessment_failed">穩定性評估失敗</string>
+    <string name="error_generic">連線中遇到不明錯誤</string>
+    <string name="error_password_missing">Password unavailable</string>
+    <string name="error_certificate_unavailable">Client certificate unavailable</string>
+    <string name="vpn_connected">VPN已連線</string>
+    <string name="vpn_profile_connected">這個VPN設定檔目前已經連線。</string>
+    <string name="reconnect">重新連線</string>
+    <string name="connect_profile_question">是否連線%1$s？</string>
+    <string name="replaces_active_connection">這將會覆蓋您當前運作的VPN連線！</string>
+    <string name="disconnect_question">Disconnect VPN?</string>
+    <string name="disconnect_active_connection">This will disconnect the active VPN connection!</string>
+    <string name="connect">連線</string>
+    <string name="retry">Retry</string>
+    <plurals name="retry_in">
+        <item quantity="one">Retry in %1$d second</item>
+        <item quantity="other">Retry in %1$d seconds</item>
+    </plurals>
+    <string name="cancel_retry">Cancel retry</string>
+
+    <!-- Quick Settings tile -->
+    <string name="tile_default">Toggle VPN</string>
+    <string name="tile_connect">Connect VPN</string>
+    <string name="tile_disconnect">Disconnect VPN</string>
+
+</resources>

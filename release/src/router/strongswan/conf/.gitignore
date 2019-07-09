@@ -1,0 +1,7 @@
+default.conf
+strongswan.conf.5
+strongswan.conf.5.head
+strongswan.conf.5.main
+strongswan.conf.5.tail
+*/*.conf
+*/*.tmp

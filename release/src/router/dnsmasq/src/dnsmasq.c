@@ -126,6 +126,8 @@ int main (int argc, char **argv)
       /* one char flag per possible RR in answer section (may get extended). */
       daemon->rr_status_sz = 64;
       daemon->rr_status = safe_malloc(daemon->rr_status_sz);
+
+      crypto_init();
     }
 #endif
 

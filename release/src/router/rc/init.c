@@ -9673,7 +9673,7 @@ int init_nvram2(void)
 
 /* Remove potentially outdated data */
 	nvram_unset("webs_state_info");
-	nvram_unset("webs_state_info_beta");
+	nvram_unset("webs_state_info_am");
 	nvram_set("webs_state_flag","0");
 
 	if (restore_defaults_g)
@@ -11015,6 +11015,12 @@ int init_main(int argc, char *argv[])
 		init_others_defer();
 #endif
 
+#ifndef RTCONFIG_NVRAM_FILE
+#if !defined(RTCONFIG_TEST_BOARDDATA_FILE)
+		start_jffs2();
+#endif
+#endif
+
 		config_format_compatibility_handler();
 
 		sigemptyset(&sigset);
@@ -11023,11 +11029,6 @@ int init_main(int argc, char *argv[])
 		}
 		sigprocmask(SIG_BLOCK, &sigset, NULL);
 
-#ifndef RTCONFIG_NVRAM_FILE
-#if !defined(RTCONFIG_TEST_BOARDDATA_FILE)
-		start_jffs2();
-#endif
-#endif
 #ifdef RTCONFIG_NVRAM_ENCRYPT
 		init_enc_nvram();
 #endif

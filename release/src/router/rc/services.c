@@ -1560,6 +1560,11 @@ void start_dnsmasq(void)
 		if (nvram_get_int("dhcpd_send_wpad")) {
 			fprintf(fp, "dhcp-option=lan,252,\"\\n\"\n");
 		}
+
+		/* NTP server */
+		if (nvram_get_int("ntpd_enable"))
+			fprintf(fp, "dhcp-option=lan,42,%s\n", "0.0.0.0");
+
 #if defined(RTCONFIG_TR069) && !defined(RTCONFIG_TR181)
 		if (ether_atoe(get_lan_hwaddr(), hwaddr)) {
 			snprintf(buffer, sizeof(buffer), "%02X%02X%02X", hwaddr[0], hwaddr[1], hwaddr[2]);
@@ -1675,6 +1680,10 @@ void start_dnsmasq(void)
 		value = nvram_safe_get("lan_domain");
 		if (*value)
 			fprintf(fp, "dhcp-option=lan,option6:24,%s\n", value);
+
+		/* NTP server */
+		if (nvram_get_int("ntpd_enable"))
+			fprintf(fp, "dhcp-option=lan,option6:56,%s\n", "[::]");
 	}
 #endif
 
@@ -1768,9 +1777,6 @@ void start_dnsmasq(void)
 #endif
 	if (nvram_match("dns_norebind", "1"))
 		fprintf(fp, "stop-dns-rebind\n");
-
-	if (nvram_match("ntpd_enable", "1"))
-		fprintf(fp, "dhcp-option=option:ntp-server,%s\n", lan_ipaddr);
 
 	/* Protect against VU#598349 */
 	fprintf(fp,"dhcp-name-match=set:wpad-ignore,wpad\n"
@@ -3235,7 +3241,7 @@ void write_static_leases(FILE *fp)
 {
 	FILE *fp2;
 	char *nv, *nvp, *b;
-	char *mac, *ip, *name;
+	char *mac, *ip;
 	char lan_if[IFNAMSIZ];
 	int vars;
 	in_addr_t ip1, lan_net, lan_mask;
@@ -3250,6 +3256,10 @@ void write_static_leases(FILE *fp)
 		char br_if[IFNAMSIZ];
 	} vlan_nets[VLAN_MAX_NUM], *v;
 #endif
+	char *nv2, *nvp2;
+	char *name2, *mac2;
+	char *entry, *hostnames;
+	int len, found;
 
 	if (!fp)
 		return;
@@ -3313,16 +3323,47 @@ void write_static_leases(FILE *fp)
 	}
 #endif
 
+#ifdef HND_ROUTER
+	hostnames = jffs_nvram_get("dhcp_hostnames");
+	if (hostnames) {
+		len = strlen(hostnames) + 1;
+		nv2 = nvp2 = malloc(len);
+	} else {
+		len = 0;
+		nv2 = NULL;
+	}
+#else
+	hostnames = nvram_safe_get("dhcp_hostnames");
+	len = strlen(hostnames) + 1;
+	nv2 = nvp2 = malloc(len);
+#endif
+
 	/* Parsing dhcp_staticlist nvram variable. */
 	while ((b = strsep(&nvp, "<")) != NULL) {
-		vars = vstrsep(b, ">", &mac, &ip, &name);
-		if ((vars != 2) && (vars != 3))
+		vars = vstrsep(b, ">", &mac, &ip);
+		if (vars != 2)
 			continue;
 		if (!strlen(mac) || !strlen(ip) || (ip1 = inet_network(ip)) == -1)
 			continue;
 
-		if ((vars == 3) && (strlen(name)) && (is_valid_hostname(name))) {
-			fprintf(fp2, "%s %s\n", ip, name);
+		/* Find hostname if we have one */
+		if ((len > 1) && (nv2)) {
+			strlcpy(nv2, hostnames, len);
+			nvp2 = nv2;
+			found = 0;
+
+			while ((entry = strsep(&nvp2, "<")) != NULL) {
+				if (vstrsep(entry, ">", &mac2, &name2) == 2) {
+					if (!strcasecmp(mac, mac2)) {
+						found = 1;
+						break;
+					}
+				}
+			}
+
+			if ((found) && (*name2) && (is_valid_hostname(name2))) {
+				fprintf(fp2, "%s %s\n", ip, name2);
+			}
 		}
 
 		if ((ip1 & lan_mask) == lan_net) {
@@ -3339,6 +3380,7 @@ void write_static_leases(FILE *fp)
 		}
 #endif
 	}
+	if (nv2) free(nv2);
 	free(nv);
 	fclose(fp2);
 }
@@ -10353,7 +10395,7 @@ again:
 		if(action & RC_SERVICE_START) {
 			int sw = 0, r;
 			char upgrade_file[64] = "/tmp/linux.trx";
-			char *webs_state_info = nvram_safe_get("webs_state_info");
+			char *webs_state_info = nvram_safe_get("webs_state_info_am");
 
 #ifdef RTCONFIG_SMALL_FW_UPDATE
 			snprintf(upgrade_file,sizeof(upgrade_file),"/tmp/mytmpfs/linux.trx");

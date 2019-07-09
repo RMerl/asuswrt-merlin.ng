@@ -27,7 +27,7 @@ void adjust_merlin_config(void)
 	char *newstr, *hostnames;
 	char *nv, *nvp, *entry;
 	char *name, *mac, *mode, *ipaddr, *nvname;
-	char tmp[32];
+	char tmp[64];
 #ifdef RTCONFIG_DNSFILTER
 	int globalmode;
 #endif

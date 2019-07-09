@@ -5887,7 +5887,7 @@ static void auto_firmware_check()
 
 		if (nvram_get_int("webs_state_update") &&
 		    !nvram_get_int("webs_state_error") &&
-		    strlen(nvram_safe_get("webs_state_info_am")))
+		    strlen(nvram_safe_get("webs_state_info")))
 		{
 			FAUPGRADE_DBG("retrieve firmware information");
 
@@ -5979,7 +5979,7 @@ static void auto_firmware_check_merlin()
 
 		if (nvram_get_int("webs_state_update") &&
 		    !nvram_get_int("webs_state_error") &&
-		    strlen(nvram_safe_get("webs_state_info")))
+		    strlen(nvram_safe_get("webs_state_info_am")))
 		{
 			if ((initial_state == 0) && (nvram_get_int("webs_state_flag") == 1))		// New update
 			{

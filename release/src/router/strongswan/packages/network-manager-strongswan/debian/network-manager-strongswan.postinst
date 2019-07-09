@@ -1,0 +1,19 @@
+#!/bin/sh
+
+set -e
+
+case "$1" in
+	configure)
+		if [ -x "/etc/init.d/network-manager" ]; then
+			if [ -x /usr/sbin/invoke-rc.d ]; then
+				invoke-rc.d network-manager force-reload || true
+			else
+				/etc/init.d/network-manager force-reload || true
+			fi
+		fi
+		;;
+esac
+
+#DEBHELPER#
+
+exit 0

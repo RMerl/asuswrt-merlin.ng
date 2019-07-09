@@ -510,7 +510,7 @@ static int validate_rrset(time_t now, struct dns_header *header, size_t plen, in
     {
       unsigned char *psav, *sig, *digest;
       int i, wire_len, sig_len;
-      const struct nettle_hash *hash;
+      const void *hash;
       void *ctx;
       char *name_start;
       u32 nsigttl;
@@ -545,9 +545,9 @@ static int validate_rrset(time_t now, struct dns_header *header, size_t plen, in
               
       nsigttl = htonl(orig_ttl);
       
-      hash->update(ctx, 18, psav);
+      hash_update(hash, ctx, 18, psav);
       wire_len = to_wire(keyname);
-      hash->update(ctx, (unsigned int)wire_len, (unsigned char*)keyname);
+      hash_update(hash, ctx, (unsigned int)wire_len, (unsigned char*)keyname);
       from_wire(keyname);
       
       for (i = 0; i < rrsetidx; ++i)
@@ -583,9 +583,9 @@ static int validate_rrset(time_t now, struct dns_header *header, size_t plen, in
 	    }
 	  
 	  wire_len = to_wire(name_start);
-	  hash->update(ctx, (unsigned int)wire_len, (unsigned char *)name_start);
-	  hash->update(ctx, 4, p); /* class and type */
-	  hash->update(ctx, 4, (unsigned char *)&nsigttl);
+	  hash_update(hash, ctx, (unsigned int)wire_len, (unsigned char *)name_start);
+	  hash_update(hash, ctx, 4, p); /* class and type */
+	  hash_update(hash, ctx, 4, (unsigned char *)&nsigttl);
 	  
 	  p += 8; /* skip class, type, ttl */
 	  GETSHORT(rdlen, p);
@@ -601,18 +601,18 @@ static int validate_rrset(time_t now, struct dns_header *header, size_t plen, in
 	  for (len = 0; (seg = get_rdata(header, plen, end, name, MAXDNAME * 2, &cp, &dp)) != 0; len += seg);
 	  len += end - cp;
 	  len = htons(len);
-	  hash->update(ctx, 2, (unsigned char *)&len); 
+	  hash_update(hash, ctx, 2, (unsigned char *)&len); 
 	  
 	  /* Now canonicalise again and digest. */
 	  cp = p;
 	  dp = rr_desc;
 	  while ((seg = get_rdata(header, plen, end, name, MAXDNAME * 2, &cp, &dp)))
-	    hash->update(ctx, seg, (unsigned char *)name);
+	    hash_update(hash, ctx, seg, (unsigned char *)name);
 	  if (cp != end)
-	    hash->update(ctx, end - cp, cp);
+	    hash_update(hash, ctx, end - cp, cp);
 	}
      
-      hash->digest(ctx, hash->digest_size, digest);
+      hash_digest(hash, ctx, hash_length(hash), digest);
       
       /* namebuff used for workspace above, restore to leave unchanged on exit */
       p = (unsigned char*)(rrset[0]);
@@ -621,7 +621,7 @@ static int validate_rrset(time_t now, struct dns_header *header, size_t plen, in
       if (key)
 	{
 	  if (algo_in == algo && keytag_in == key_tag &&
-	      verify(key, keylen, sig, sig_len, digest, hash->digest_size, algo))
+	      verify(key, keylen, sig, sig_len, digest, hash_length(hash), algo))
 	    return STAT_SECURE;
 	}
       else
@@ -631,7 +631,7 @@ static int validate_rrset(time_t now, struct dns_header *header, size_t plen, in
 	    if (crecp->addr.key.algo == algo && 
 		crecp->addr.key.keytag == key_tag &&
 		crecp->uid == (unsigned int)class &&
-		verify(crecp->addr.key.keydata, crecp->addr.key.keylen, sig, sig_len, digest, hash->digest_size, algo))
+		verify(crecp->addr.key.keydata, crecp->addr.key.keylen, sig, sig_len, digest, hash_length(hash), algo))
 	      return (labels < name_labels) ? STAT_SECURE_WILDCARD : STAT_SECURE;
 	}
     }
@@ -725,7 +725,7 @@ int dnssec_validate_by_ds(time_t now, struct dns_header *header, size_t plen, ch
 	{
 	  void *ctx;
 	  unsigned char *digest, *ds_digest;
-	  const struct nettle_hash *hash;
+	  const void *hash;
 	  int sigcnt, rrcnt;
 
 	  if (recp1->addr.ds.algo == algo && 
@@ -733,20 +733,19 @@ int dnssec_validate_by_ds(time_t now, struct dns_header *header, size_t plen, ch
 	      recp1->uid == (unsigned int)class &&
 	      (hash = hash_find(ds_digest_name(recp1->addr.ds.digest))) &&
 	      hash_init(hash, &ctx, &digest))
-	    
 	    {
 	      int wire_len = to_wire(name);
 	      
 	      /* Note that digest may be different between DSs, so 
 		 we can't move this outside the loop. */
-	      hash->update(ctx, (unsigned int)wire_len, (unsigned char *)name);
-	      hash->update(ctx, (unsigned int)rdlen, psave);
-	      hash->digest(ctx, hash->digest_size, digest);
+	      hash_update(hash, ctx, (unsigned int)wire_len, (unsigned char *)name);
+	      hash_update(hash, ctx, (unsigned int)rdlen, psave);
+	      hash_digest(hash, ctx, hash_length(hash), digest);
 	      
 	      from_wire(name);
 	      
 	      if (!(recp1->flags & F_NEG) &&
-		  recp1->addr.ds.keylen == (int)hash->digest_size &&
+		  recp1->addr.ds.keylen == (int)hash_length(hash) &&
 		  (ds_digest = blockdata_retrieve(recp1->addr.ds.keydata, recp1->addr.ds.keylen, NULL)) &&
 		  memcmp(ds_digest, digest, recp1->addr.ds.keylen) == 0 &&
 		  explore_rrset(header, plen, class, T_DNSKEY, name, keyname, &sigcnt, &rrcnt) &&
@@ -1207,7 +1206,7 @@ static int prove_non_existence_nsec(struct dns_header *header, size_t plen, unsi
 }
 
 /* return digest length, or zero on error */
-static int hash_name(char *in, unsigned char **out, struct nettle_hash const *hash, 
+static int hash_name(char *in, unsigned char **out, const void *hash, 
 		     unsigned char *salt, int salt_len, int iterations)
 {
   void *ctx;
@@ -1217,21 +1216,21 @@ static int hash_name(char *in, unsigned char **out, struct nettle_hash const *ha
   if (!hash_init(hash, &ctx, &digest))
     return 0;
  
-  hash->update(ctx, to_wire(in), (unsigned char *)in);
-  hash->update(ctx, salt_len, salt);
-  hash->digest(ctx, hash->digest_size, digest);
+  hash_update(hash, ctx, to_wire(in), (unsigned char *)in);
+  hash_update(hash, ctx, salt_len, salt);
+  hash_digest(hash, ctx, hash_length(hash), digest);
 
   for(i = 0; i < iterations; i++)
     {
-      hash->update(ctx, hash->digest_size, digest);
-      hash->update(ctx, salt_len, salt);
-      hash->digest(ctx, hash->digest_size, digest);
+      hash_update(hash, ctx, hash_length(hash), digest);
+      hash_update(hash, ctx, salt_len, salt);
+      hash_digest(hash, ctx, hash_length(hash), digest);
     }
    
   from_wire(in);
 
   *out = digest;
-  return hash->digest_size;
+  return hash_length(hash);
 }
 
 /* Decode base32 to first "." or end of string */
@@ -1381,7 +1380,7 @@ static int prove_non_existence_nsec3(struct dns_header *header, size_t plen, uns
 {
   unsigned char *salt, *p, *digest;
   int digest_len, i, iterations, salt_len, base32_len, algo = 0;
-  struct nettle_hash const *hash;
+  const void *hash;
   char *closest_encloser, *next_closest, *wildcard;
   
   if (nons)
@@ -2056,11 +2055,11 @@ unsigned char* hash_questions(struct dns_header *header, size_t plen, char *name
   int q;
   unsigned int len;
   unsigned char *p = (unsigned char *)(header+1);
-  const struct nettle_hash *hash;
+  const void *hash;
   void *ctx;
   unsigned char *digest;
   
-  if (!(hash = hash_find("sha1")) || !hash_init(hash, &ctx, &digest))
+  if (!(hash = hash_find(HASH_NAME)) || !hash_init(hash, &ctx, &digest))
     return NULL;
   
   for (q = ntohs(header->qdcount); q != 0; q--) 
@@ -2069,16 +2068,16 @@ unsigned char* hash_questions(struct dns_header *header, size_t plen, char *name
 	break; /* bad packet */
       
       len = to_wire(name);
-      hash->update(ctx, len, (unsigned char *)name);
+      hash_update(hash, ctx, len, (unsigned char *)name);
       /* CRC the class and type as well */
-      hash->update(ctx, 4, p);
+      hash_update(hash, ctx, 4, p);
 
       p += 4;
       if (!CHECK_LEN(header, p, plen, 0))
 	break; /* bad packet */
     }
   
-  hash->digest(ctx, hash->digest_size, digest);
+  hash_digest(hash, ctx, hash_length(hash), digest);
   return digest;
 }
 

@@ -1641,6 +1641,20 @@ config RTCONFIG_DNSSEC
 	bool "dnsmasq: Enable DNSSEC support"
 	default n
 
+choice
+	prompt "dnsmasq: DNSSEC crypto library"
+	default RTCONFIG_DNSSEC_NETTLE
+
+config RTCONFIG_DNSSEC_OPENSSL
+	bool "OpenSSL"
+	depends on RTCONFIG_DNSSEC
+
+config RTCONFIG_DNSSEC_NETTLE
+	bool "Nettle"
+	depends on RTCONFIG_DNSSEC
+
+endchoice
+
 config RTCONFIG_MERLINUPDATE
 	bool "Check for new firmware version - Merlin-only"
 	default n

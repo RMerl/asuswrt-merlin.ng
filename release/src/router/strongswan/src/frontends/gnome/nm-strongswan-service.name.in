@@ -1,0 +1,12 @@
+[VPN Connection]
+name=strongswan
+service=org.freedesktop.NetworkManager.strongswan
+program=@CHARON@
+
+[libnm]
+plugin=@NM_PLUGINDIR@/libnm-vpn-plugin-strongswan.so
+
+[GNOME]
+auth-dialog=@NM_LIBEXECDIR@/nm-strongswan-auth-dialog
+properties=@NM_PLUGINDIR_ABS@/libnm-strongswan-properties
+supports-external-ui-mode=true

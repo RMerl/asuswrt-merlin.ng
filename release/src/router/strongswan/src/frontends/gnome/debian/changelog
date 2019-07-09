@@ -1,0 +1,39 @@
+network-manager-strongswan (1.3.0-1) unstable; urgency=low
+
+  * New upstream release, support for NetworkManager 0.9 (Closes: #639400)
+
+ -- Martin Willi <martin@strongswan.org>  Wed, 07 Sep 2011 15:23:22 +0200
+
+network-manager-strongswan (1.1.2-1) unstable; urgency=low
+
+  * New upstream release, fixes pkgconfig for new libnm-glib packages
+    (Closes: #569302)
+
+ -- Martin Willi <martin@strongswan.org>  Thu, 18 Feb 2010 09:41:39 +0100
+
+network-manager-strongswan (1.1.1-2) unstable; urgency=low
+
+  * Added ${shlibs:Depends} dependency
+  * Reload network-manager after installation, reloading dbus is insufficient.
+  * Fixed debhelper-but-no-misc-depends, out-of-date-standards-version and
+    copyright-without-copyright-notice lintian warnings
+
+ -- Martin Willi <martin@strongswan.org>  Mon, 12 Oct 2009 10:19:40 +0200
+
+network-manager-strongswan (1.1.1-1) unstable; urgency=low
+
+  * New upstream release fixing a crasher when saving connections
+  * Fix "Wrong path to network-manager initscript in postinst"
+    Reload dbus instead of network-manager, as other VPN plugins do.
+    (Closes: #529189)
+  * Fix "FTBFS: No package 'libnm-util' found"
+    added dependencies to libnm-util-dev and libnm-glib-vpn-dev
+    (Closes: #528977)
+
+ -- Martin Willi <martin@strongswan.org>  Tue, 19 May 2009 13:16:51 +0200
+
+network-manager-strongswan (1.1.0-1) unstable; urgency=low
+
+  * Initial Debian packaging of NetworkManager plugin for strongSwan
+
+ -- Martin Willi <martin@strongswan.org>  Wed, 25 Mar 2009 09:07:05 +0100

@@ -1,6 +1,27 @@
 Asuswrt-Merlin 384/NG Changelog
 ===============================
 
+384.13 (xx-xxx-xxxx)
+  - NEW: ChaCha20-Poly1305 support in Strongswan (themiron)
+  - UPDATED: RT-AX88U to GPL 384_6210.
+  - CHANGED: dhcp_staticlist no longer contains hostnames, these
+             have been moved to dhcp_hostnames for better
+             compatibility with upstream and closed source
+             components, also allows more static leases to be
+             defined.
+  - FIXED: Firmware Update check button would redirect to Asus
+           support site if scheduled checks are disabled.
+  - FIXED: Firefox was showing a no-op Uninstall button on the
+           AiCloud page
+  - FIXED: 5 GHz radio showing as disabled on the Sysinfo page for
+           the RT-AC87U
+  - FIXED: FTP would be accessible from the WAN even while disabled
+           if you had DualWAN load balancing enabled, or IPTV
+           configured.
+  - FIXED: IGMP Snooper daemon crashing when more than 32 hosts
+           are present (themiron)
+
+
 384.12 (22-June-2019)
   - NOTE: The project now has its own domain name.  Official website
           is now https://www.asuswrt-merlin.net/ and my email address

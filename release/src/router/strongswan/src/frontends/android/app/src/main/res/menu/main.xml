@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Copyright (C) 2012-2017 Tobias Brunner
+    HSR Hochschule fuer Technik Rapperswil
+
+    This program is free software; you can redistribute it and/or modify it
+    under the terms of the GNU General Public License as published by the
+    Free Software Foundation; either version 2 of the License, or (at your
+    option) any later version.  See <http://www.fsf.org/copyleft/gpl.txt>.
+
+    This program is distributed in the hope that it will be useful, but
+    WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+    or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+    for more details.
+-->
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+      xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <item
+        android:id="@+id/menu_import_profile"
+        android:title="@string/profile_import"
+        app:showAsAction="withText" />
+
+    <item
+        android:id="@+id/menu_manage_certs"
+        android:title="@string/trusted_certs_title"
+        app:showAsAction="withText" />
+
+    <item
+        android:id="@+id/menu_crl_cache"
+        android:title="@string/crl_cache"
+        app:showAsAction="withText" />
+
+    <item
+        android:id="@+id/menu_show_log"
+        android:title="@string/show_log"
+        app:showAsAction="withText" />
+
+    <item
+        android:id="@+id/menu_settings"
+        android:title="@string/pref_title"
+        app:showAsAction="withText" />
+
+</menu>

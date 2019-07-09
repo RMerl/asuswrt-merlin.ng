@@ -151,10 +151,6 @@ extern int capget(cap_user_header_t header, cap_user_data_t data);
 #include <priv.h>
 #endif
 
-#ifdef HAVE_DNSSEC
-#  include <nettle/nettle-meta.h>
-#endif
-
 /* daemon is function in the C library.... */
 #define daemon dnsmasq_daemon
 
@@ -646,6 +642,7 @@ struct hostsfile {
 #define FREC_HAS_EXTRADATA    512        
 
 #ifdef HAVE_DNSSEC
+#define HASH_NAME "sha1"
 #define HASH_SIZE 20 /* SHA-1 digest size */
 #else
 #define HASH_SIZE sizeof(int)
@@ -1245,13 +1242,17 @@ unsigned char* hash_questions(struct dns_header *header, size_t plen, char *name
 int setup_timestamp(void);
 
 /* crypto.c */
-const struct nettle_hash *hash_find(char *name);
-int hash_init(const struct nettle_hash *hash, void **ctxp, unsigned char **digestp);
+const void *hash_find(char *name);
+int hash_init(const void *hash, void **ctxp, unsigned char **digestp);
+void hash_update(const void *hash, void *ctx, size_t length, const unsigned char *src);
+void hash_digest(const void *hash, void *ctx, size_t length, unsigned char *dst);
+size_t hash_length(const void *hash);
 int verify(struct blockdata *key_data, unsigned int key_len, unsigned char *sig, size_t sig_len,
 	   unsigned char *digest, size_t digest_len, int algo);
 char *ds_digest_name(int digest);
 char *algo_digest_name(int algo);
 char *nsec3_digest_name(int digest);
+void crypto_init(void);
 
 /* util.c */
 void rand_init(void);

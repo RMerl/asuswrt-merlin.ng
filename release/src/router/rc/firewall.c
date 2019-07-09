@@ -4587,7 +4587,8 @@ TRACE_PT("writing Parental Control\n");
 #endif
 
 #ifdef RTCONFIG_FTP
-		if (nvram_get_int("enable_ftp")) {
+		if ((nvram_get_int("enable_ftp")) && (nvram_get_int("ftp_wanac")))
+		{
 			fprintf(fp, "-A INPUT -p tcp -m tcp --dport 21 -j %s\n", logaccept);
 #ifdef RTCONFIG_IPV6
 			if (ipv6_enabled() && nvram_match("ipv6_fw_enable", "1"))

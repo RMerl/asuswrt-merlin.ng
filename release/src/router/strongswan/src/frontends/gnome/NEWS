@@ -1,0 +1,76 @@
+NetworkManager-strongswan-1.4.4
+-------------------------------
+
+- Fixed paths when building without libnm-glib
+- Fixed proposal tooltips and updated German translation
+
+NetworkManager-strongswan-1.4.3
+-------------------------------
+
+- Add option to disable libnm-glib compatibility
+
+NetworkManager-strongswan-1.4.2
+-------------------------------
+
+- Add support to configure IKE/ESP proposals
+- Explicitly prevent PIN from getting stored
+
+NetworkManager-strongswan-1.4.1
+-------------------------------
+
+- Fixed several build issues
+
+NetworkManager-strongswan-1.4.0
+-------------------------------
+
+- Updated to NetworkManager 1.2
+- Updated dependencies (GTK+, libnm, libnma)
+- GUI updated (password widget, not hiding credential widgets)
+
+NetworkManager-strongswan-1.3.2
+-------------------------------
+
+- GUI fix
+- Update to libsecret
+- D-Bus policy moved to charon-nm
+
+NetworkManager-strongswan-1.3.1
+-------------------------------
+
+- Add PSK support
+- Updated German translation
+
+NetworkManager-strongswan-1.3.0
+-------------------------------
+
+- Updated to NetworkManager 0.9
+
+NetworkManager-strongswan-1.2.0
+-------------------------------
+
+- Added Smartcard support
+
+NetworkManager-strongswan-1.1.2
+-------------------------------
+
+- Additionally look for libnm-glib[-vpn] pkgconfig packages during configure
+- Tooltips are translatable
+- Update German translation
+
+NetworkManager-strongswan-1.1.1
+-------------------------------
+
+- Implemented save_secrets(), fixes crash when saving connections
+
+NetworkManager-strongswan-1.1.0
+-------------------------------
+
+- updated to NetworkManager 7.1 API
+
+- requires >= strongswan-4.1.13
+
+
+NetworkManager-strongswan-1.0.0
+-------------------------------
+
+- First release

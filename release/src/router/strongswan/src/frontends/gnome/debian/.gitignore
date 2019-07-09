@@ -1,0 +1,6 @@
+files
+network-manager-strongswan.debhelper.log
+network-manager-strongswan.substvars
+network-manager-strongswan/
+stamp-autotools-files
+stamp-makefile-build

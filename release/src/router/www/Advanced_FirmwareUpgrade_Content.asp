@@ -96,7 +96,7 @@ $(function () {
 var webs_state_update = '<% nvram_get("webs_state_update"); %>';
 var webs_state_upgrade = '<% nvram_get("webs_state_upgrade"); %>';
 var webs_state_error = '<% nvram_get("webs_state_error"); %>';
-var webs_state_info = '<% nvram_get("webs_state_info"); %>';
+var webs_state_info = '<% nvram_get("webs_state_info_am"); %>';
 var webs_state_REQinfo = '<% nvram_get("webs_state_REQinfo"); %>';
 var webs_state_flag = '<% nvram_get("webs_state_flag"); %>';
 
@@ -112,6 +112,7 @@ var sig_update_t = '<% nvram_get("sig_update_t"); %>';
 if(cfg_sync_support){
 	var cfg_check = '<% nvram_get("cfg_check"); %>';
 	var cfg_upgrade = '<% nvram_get("cfg_upgrade"); %>';
+	var local_id = '<% get_lan_hwaddr(); %>'.replace(/:/g, "");
 }
 var download_srv = '<% nvram_get("firmware_server"); %>';
 if (download_srv == "") {
@@ -167,7 +168,7 @@ function initial(){
 		html += "</tr>";
 		$("#fw_version_tr").before(html);
 
-		var mac_id = '<% get_lan_hwaddr(); %>'.replace(/:/g, "");
+		var mac_id = local_id;
 		html = "";
 		html += "<tr style='height:15px;'></tr>";
 		html += "<tr>";
@@ -278,9 +279,9 @@ function initial(){
 		document.getElementById("fwcheck_tr").style.display = "none";
 	}
 	else{
-		if(!live_update_support || !HTTPS_support || ("<% nvram_get("firmware_check_enable"); %>" != "1")){
+		if(!live_update_support || !HTTPS_support){
 			document.getElementById("update_div").style.display = "none";
-			document.getElementById("fw_tr").style.display = "none";
+//			document.getElementById("fw_tr").style.display = "none";
 			document.getElementById("linkpage_div").style.display = "";
 			helplink = get_helplink();
 			document.getElementById("linkpage").href = helplink;
@@ -953,10 +954,16 @@ function show_amas_fw_result() {
 					var online = get_cfg_clientlist[idx].online;
 					$("#amas_" + mac_id + "").children().find(".checkFWReuslt").html(ck_fw_result);
 					if(newfwver != "") {
-						ck_fw_result = newfwver;
+						if (mac_id != local_id) {
+							ck_fw_result = newfwver;
+						} else {
+							ck_fw_result = newfwver.replace("3.0.0.4.","");
+						}
 						$("#amas_" + mac_id + "").children().find(".checkFWReuslt").addClass("aimesh_fw_release_note");
 						$("#amas_" + mac_id + "").children().find(".checkFWReuslt").html(ck_fw_result);
-						$("#amas_update").css("display", "");
+						if (mac_id != local_id) {    // Not Local AM router
+							$("#amas_update").css("display", "");
+						}
 						$("#amas_" + mac_id + "").children().find(".checkFWReuslt").click({"model_name": model_name, "newfwver": newfwver}, show_fw_relese_note);
 					}
 					if(online == "1")
@@ -1049,9 +1056,11 @@ function update_AiMesh_fw() {
 					var ip = get_cfg_clientlist[idx].ip;
 					var online = get_cfg_clientlist[idx].online;
 					var mac_id = mac.replace(/:/g, "");
-					$("#amas_" + mac_id + "").children("#current_version").html("<#ADSL_FW_item1#> : " + fwver + "");
-					$("#amas_" + mac_id + "").children("#manual_firmware_update").empty();
-					$("#amas_" + mac_id + "").children("#manual_firmware_update").html(gen_AiMesh_fw_status(check_AiMesh_fw_version(fwver), ip, online));
+					if (mac_id != local_id) {	// Not Local AM router
+						$("#amas_" + mac_id + "").children("#current_version").html("<#ADSL_FW_item1#> : " + fwver + "");
+						$("#amas_" + mac_id + "").children("#manual_firmware_update").empty();
+						$("#amas_" + mac_id + "").children("#manual_firmware_update").html(gen_AiMesh_fw_status(check_AiMesh_fw_version(fwver), ip, online));
+					}
 				}
 			}
 		}

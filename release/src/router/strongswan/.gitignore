@@ -52,7 +52,3 @@ coverage/
 /*.files
 /*.includes
 test-driver
-
-*.tmp
-src/pki/man/*.1
-

@@ -1,0 +1,28 @@
+DELETE FROM triplets;
+DELETE FROM quintuplets;
+
+INSERT INTO triplets
+  (id, used, rand, sres, kc) VALUES
+  ('moon@strongswan.org', 0,
+   X'00112233445566778899AABBCCDDEEFF', X'01234567', X'0123456789ABCDEF'
+  );
+INSERT INTO triplets
+  (id, used, rand, sres, kc) VALUES
+  ('moon@strongswan.org', 0,
+   X'112233445566778899AABBCCDDEEFF00', X'12345678', X'123456789ABCDEF0'
+  );
+INSERT INTO triplets
+  (id, used, rand, sres, kc) VALUES
+  ('moon@strongswan.org', 0,
+   X'2233445566778899AABBCCDDEEFF0011', X'23456789', X'23456789ABCDEF01'
+  );
+
+INSERT INTO quintuplets
+  (id, used, rand, autn, ck, ik, res) VALUES
+  ('moon@strongswan.org', 0,
+   X'00112233445566778899AABBCCDDEEFF',
+   X'112233445566778899AABBCCDDEEFF00',
+   X'2233445566778899AABBCCDDEEFF0011',
+   X'33445566778899AABBCCDDEEFF001122',
+   X'00112233445566778899'
+  );

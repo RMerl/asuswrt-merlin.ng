@@ -1,0 +1,6 @@
+# List of source files containing translatable strings.
+# Please keep this file sorted alphabetically.
+properties/nm-strongswan.c
+[type: gettext/glade]properties/nm-strongswan-dialog.ui
+auth-dialog/main.c
+NetworkManager-strongswan.appdata.xml.in

@@ -395,9 +395,8 @@ var Get_Component_WirelessInput = function(wlArray){
 function handleSysDep(){
 	var isNoWAN = (httpApi.detwanGetRet().wanType == 'NOWAN');
 
-	var enableAMAS = httpApi.nvramGet(["amas_force"], true);
-	$(".amasSupport").toggle(isSupport("AMAS") && (enableAMAS.amas_force == "1"));
-	$(".noAmasSupport").toggle(!isSupport("AMAS") || (enableAMAS.amas_force != "1"));
+	$(".amasSupport").toggle(isSupport("AMAS"));
+	$(".noAmasSupport").toggle(!isSupport("AMAS"));
 	$(".tosSupport").toggle(systemVariable.isDefault && isSupport("QISBWDPI"));
 	$(".repeaterSupport").toggle(isSupport("repeater"));
 	$(".pstaSupport").toggle(isSupport("psta"));

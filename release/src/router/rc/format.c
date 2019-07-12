@@ -193,12 +193,6 @@ void adjust_merlin_config(void)
 		nvram_unset("lan_dns_fwd_local");
 	}
 
-/* Enable experimental AiMesh */
-#ifdef RTCONFIG_AMAS
-	if (f_exists("/jffs/.gomesh"))
-		nvram_set("amas_force", "1");
-#endif
-
 /* Migrate update server */
 	if (nvram_match("firmware_server", "https://fwupdate.lostrealm.ca/asuswrt-merlin"))
 		nvram_set("firmware_server", "https://fwupdate.asuswrt-merlin.net");

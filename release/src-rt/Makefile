@@ -2621,10 +2621,6 @@ define RouterOptions
 		sed -i "/RTCONFIG_IGD2/d" $(1); \
 		echo "RTCONFIG_IGD2=y" >>$(1); \
 	fi; \
-	if [ "$(DNSSEC)" = "y" ]; then \
-		sed -i "/RTCONFIG_DNSSEC\b/d" $(1); \
-		echo "RTCONFIG_DNSSEC=y" >>$(1); \
-	fi; \
 	if [ "$(MERLINUPDATE)" = "y" ]; then\
 		sed -i "/RTCONFIG_MERLINUPDATE/d" $(1); \
 		echo "RTCONFIG_MERLINUPDATE=y" >>$(1); \

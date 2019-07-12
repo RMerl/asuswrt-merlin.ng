@@ -2680,6 +2680,7 @@ ej_wl_status_qtn_array(int eid, webs_t wp, int argc, char_t **argv, const char *
 	char *arplist = NULL, *arplistptr;
 	char *leaselist = NULL, *leaselistptr;
 	char *ipv6list = NULL, *ipv6listptr;
+	char *line;
 	int found, foundipv6 = 0;
 	char ipentry[42], macentry[18];
 	char hostnameentry[32], tmp[16];
@@ -2741,16 +2742,17 @@ ej_wl_status_qtn_array(int eid, webs_t wp, int argc, char_t **argv, const char *
 
 			found = 0;
 			if (arplist) {
-				arplistptr = arplist;
-
-				while ((arplistptr < arplist+strlen(arplist)-2) && (sscanf(arplistptr,"%15s %*s %*s %17s",ipentry,macentry) == 2)) {
-					if (strcasecmp(macentry, wl_ether_etoa((struct ether_addr *) &sta_address)) == 0) {
+				arplistptr = strdup(arplist);
+				line = strtok(arplistptr, "\n");
+				while (line) {
+					if ( (sscanf(line,"%15s %*s %*s %17s",ipentry,macentry) == 2) &&
+					     (!strcasecmp(macentry, wl_ether_etoa((struct ether_addr *) &sta_address))) ) {
 						found = 1;
 						break;
-					} else {
-						arplistptr = strstr(arplistptr,"\n")+1;
-					}
+					} else
+						line  = strtok(NULL, "\n");
 				}
+				if (arplistptr) free(arplistptr);
 
 				if (found || !leaselist) {
 					retval += websWrite(wp, "\"%s\",", (found ? ipentry : ""));
@@ -2761,25 +2763,28 @@ ej_wl_status_qtn_array(int eid, webs_t wp, int argc, char_t **argv, const char *
 
 			// Retrieve hostname from dnsmasq leases
 			if (leaselist) {
-				leaselistptr = leaselist;
-
-				while ((leaselistptr < leaselist+strlen(leaselist)-2) && (sscanf(leaselistptr,"%*s %17s %15s %15s %*s", macentry, ipentry, tmp) == 3)) {
-					if (strcasecmp(macentry,  wl_ether_etoa((struct ether_addr *) &sta_address)) == 0) {
+				leaselistptr = strdup(leaselist);
+				line = strtok(leaselistptr, "\n");
+				while (line) {
+					if ( (sscanf(line,"%*s %17s %15s %32s %*s", macentry, ipentry, tmp) == 3) &&
+					     (!strcasecmp(macentry,  wl_ether_etoa((struct ether_addr *) &sta_address))) ) {
 						found += 2;
 						break;
 					} else {
-						leaselistptr = strstr(leaselistptr,"\n")+1;
+						line = strtok(NULL, "\n");
 					}
 				}
+				if (leaselistptr) free(leaselistptr);
+
 				if ((found) && (str_escape_quotes(hostnameentry, tmp, sizeof(hostnameentry)) == 0 ))
 					strncpy(hostnameentry, tmp, sizeof(hostnameentry));
 
 				if (found == 0) {
 					// Not in arplist nor in leaselist
-					retval += websWrite(wp, "\"<not found>\",\"<not found>\",");
+					retval += websWrite(wp, "\"<unknown>\",\"<unknown>\",");
 				} else if (found == 1) {
 					// Only in arplist (static IP)
-					retval += websWrite(wp, "\"<not found>\",");
+					retval += websWrite(wp, "\"<unknown>\",");
 				} else if (found == 2) {
 					// Only in leaselist (dynamic IP that has not communicated with router for a while)
 					retval += websWrite(wp, "\"%s\", \"%s\",", ipentry, hostnameentry);

@@ -5829,6 +5829,7 @@ ej_wl_status_array(int eid, webs_t wp, int argc, char_t **argv, int unit)
 	char *arplist = NULL, *arplistptr;
 	char *leaselist = NULL, *leaselistptr;
 	char *ipv6list = NULL, *ipv6listptr;
+	char *line;
 	char hostnameentry[65];
 	char ipentry[42], macentry[18];
 	int found, foundipv6 = 0, noclients = 0;
@@ -6050,45 +6051,47 @@ sta_list:
 
 		found = 0;
 		if (arplist) {
-			arplistptr = arplist;
-
-			while ((arplistptr < arplist+strlen(arplist)-2) && (sscanf(arplistptr,"%15s %*s %*s %17s",ipentry,macentry) == 2)) {
-				if (strcasecmp(macentry, ether_etoa((void *)&auth->ea[i], ea)) == 0) {
+			arplistptr = strdup(arplist);
+			line = strtok(arplistptr, "\n");
+			while (line) {
+				if ( (sscanf(line,"%15s %*s %*s %17s",ipentry,macentry) == 2) &&
+				     (!strcasecmp(macentry, ether_etoa((void *)&auth->ea[i], ea))) ) {
 					found = 1;
 					break;
-				} else {
-					arplistptr = strstr(arplistptr,"\n")+1;
-				}
+				} else
+					line  = strtok(NULL, "\n");
 			}
+			if (arplistptr)	free(arplistptr);
 
-			if (found || !leaselist) {
+			if (found || !leaselist)
 				ret += websWrite(wp, "\"%s\",", (found ? ipentry : "<unknown>"));
-			}
 		} else {
 			ret += websWrite(wp, "\"<unknown>\",");
 		}
 
 		// Retrieve hostname from dnsmasq leases
 		if (leaselist) {
-			leaselistptr = leaselist;
-
-			while ((leaselistptr < leaselist+strlen(leaselist)-2) && (sscanf(leaselistptr,"%*s %17s %15s %32s %*s", macentry, ipentry, tmp) == 3)) {
-				if (strcasecmp(macentry, ether_etoa((void *)&auth->ea[i], ea)) == 0) {
+			leaselistptr = strdup(leaselist);
+			line = strtok(leaselistptr, "\n");
+			while (line) {
+				if ( (sscanf(line,"%*s %17s %15s %32s %*s", macentry, ipentry, tmp) == 3) &&
+				     (!strcasecmp(macentry, ether_etoa((void *)&auth->ea[i], ea))) ) {
 					found += 2;
 					break;
-				} else {
-					leaselistptr = strstr(leaselistptr,"\n")+1;
-				}
+				} else
+					line = strtok(NULL, "\n");
 			}
+			if (leaselistptr) free(leaselistptr);
+
 			if ((found) && (str_escape_quotes(hostnameentry, tmp, sizeof(hostnameentry)) == 0 ))
 				strlcpy(hostnameentry, tmp, sizeof(hostnameentry));
 
 			switch (found) {
 			case 0:	// Not in arplist nor in leaselist
-				ret += websWrite(wp, "\"<not found>\",\"<not found>\",");
+				ret += websWrite(wp, "\"<unknown>\",\"<unknown>\",");
 				break;
 			case 1:	// Only in arplist (static IP)
-				ret += websWrite(wp, "\"<not found>\",");
+				ret += websWrite(wp, "\"<unknown>\",");
 				break;
 			case 2:	// Only in leaselist (dynamic IP that has not communicated with router for a while)
 				ret += websWrite(wp, "\"%s\", \"%s\",", ipentry, hostnameentry);
@@ -6215,36 +6218,37 @@ sta_list:
 
 				found = 0;
 				if (arplist) {
-					arplistptr = arplist;
-
-					while ((arplistptr < arplist+strlen(arplist)-2) && (sscanf(arplistptr,"%15s %*s %*s %17s",ipentry,macentry) == 2)) {
-						if (strcasecmp(macentry, ether_etoa((void *)&auth->ea[ii], ea)) == 0) {
+					arplistptr = strdup(arplist);
+					line = strtok(arplistptr, "\n");
+					while (line) {
+						if ( (sscanf(line,"%15s %*s %*s %17s",ipentry,macentry) == 2) &&
+						     (!strcasecmp(macentry, ether_etoa((void *)&auth->ea[ii], ea))) ) {
 							found = 1;
 							break;
-						} else {
-							arplistptr = strstr(arplistptr,"\n")+1;
-						}
+						} else
+							line  = strtok(NULL, "\n");
 					}
+					if (arplistptr) free(arplistptr);
 
-					if (found || !leaselist) {
-						ret += websWrite(wp, "\"%s\",", (found ? ipentry : ""));
-					}
+					if (found || !leaselist)
+						ret += websWrite(wp, "\"%s\",", (found ? ipentry : "<unknown>"));
 				} else {
 					ret += websWrite(wp, "\"<unknown>\",");
 				}
 
 				// Retrieve hostname from dnsmasq leases
 				if (leaselist) {
-					leaselistptr = leaselist;
-
-					while ((leaselistptr < leaselist+strlen(leaselist)-2) && (sscanf(leaselistptr,"%*s %17s %15s %32s %*s", macentry, ipentry, tmp) == 3)) {
-						if (strcasecmp(macentry, ether_etoa((void *)&auth->ea[ii], ea)) == 0) {
+					leaselistptr = strdup(leaselist);
+					line = strtok(leaselistptr, "\n");
+					while (line) {
+						if ( (sscanf(line,"%*s %17s %15s %32s %*s", macentry, ipentry, tmp) == 3) &&
+						     (!strcasecmp(macentry, ether_etoa((void *)&auth->ea[ii], ea))) ) {
 							found += 2;
 							break;
-						} else {
-							leaselistptr = strstr(leaselistptr,"\n")+1;
-						}
+						} else
+							line = strtok(NULL, "\n");
 					}
+					if (leaselistptr) free(leaselistptr);
 
 					if ((found) && (str_escape_quotes(hostnameentry, tmp,sizeof(hostnameentry)) == 0 ))
 						strlcpy(hostnameentry, tmp, sizeof(hostnameentry));

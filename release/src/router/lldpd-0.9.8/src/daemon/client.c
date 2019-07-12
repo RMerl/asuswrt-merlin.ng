@@ -421,7 +421,7 @@ _client_handle_set_port(struct lldpd *cfg,
 		lldpd_custom_list_cleanup(port);
 	} else {
 		if (set->custom) {
-			log_info("rpc", "custom TLV op %s oui %02x:%02x:%02x subtype %x",
+			log_debug("rpc", "custom TLV op %s oui %02x:%02x:%02x subtype %x",
 			    (set->custom_tlv_op == CUSTOM_TLV_REMOVE)?"remove":
 			    (set->custom_tlv_op == CUSTOM_TLV_ADD)?"add":
 			    "replace",

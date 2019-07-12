@@ -536,22 +536,15 @@ var wifiproxy_support = isSupport("wifiproxy");
 var lyra_hide_support = isSupport("lyra_hide");
 var port2_device = isSupport("port2_device");
 var hdspindown_support = isSupport("hdspindown");
-if ("<% nvram_get("amas_force"); %>" == "1") {
-	var amesh_support = isSupport("amas");
-	var cfg_sync_support = isSupport("cfg_sync");
-	var ameshRouter_support = isSupport("amasRouter");
-	var ameshNode_support = isSupport("amasNode");
-} else {
-	var amesh_support = false;
-	var cfg_sync_support = false;
-	var ameshRouter_support = false;
-	var ameshNode_support = false;
-}
+var amesh_support = isSupport("amas");
+var ameshRouter_support = isSupport("amasRouter");
+var ameshNode_support = isSupport("amasNode");
 var ifttt_support = isSupport("ifttt");
 var alexa_support = isSupport("alexa");
 var hnd_support = isSupport("hnd");
 var tagged_based_vlan = isSupport("tagged_based_vlan");
 var vpn_fusion_support = isSupport("vpn_fusion");
+var cfg_sync_support = isSupport("cfg_sync");
 var meoVoda_support = isSupport("meoVoda");
 var movistarTriple_support = isSupport("movistarTriple");
 var utf8_ssid_support = isSupport("utf8_ssid");

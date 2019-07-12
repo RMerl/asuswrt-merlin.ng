@@ -2,26 +2,21 @@ Asuswrt-Merlin 384/NG Changelog
 ===============================
 
 384.13 (xx-xxx-xxxx)
-  - EXPERIMENTAL: AiMesh support (only for the primary router).
-                  All nodes other than the main router must use
-                  the stock firmware from Asus.
-
-                  To enable, run the following command on your
-                  main router (over SSH), then reboot:
-                      touch /jffs/.gomesh
-
-  - EXPERIMENTAL: Replace nettle with OpenSSL in dnsmasq.  This
-                  is used for dnssec validation, and should allow
-                  more ciphers to be supported than with nettle.
-                  (themiron)
-
+  - NEW: AiMesh Router and node support.  Note that automatic live
+         update of Merlin-based nodes is not supported, you will have
+         to manually update any Merlin-based nodes when a new firmware
+         is available.  Asus-based nodes (which is recommended) will be
+         able to make use of the automatic live update.
   - NEW: ChaCha20-Poly1305 support in Strongswan (themiron)
   - UPDATED: RT-AX88U to GPL 384_6210.
   - CHANGED: dhcp_staticlist no longer contains hostnames, these
              have been moved to dhcp_hostnames for better
              compatibility with upstream and closed source
              components, also allows more static leases to be
-             defined.
+             defined before reaching the size limit.
+  - CHANGED: Replace Nettle with OpenSSL for dnsmasq's DNSSEC
+             validation, which opens the door to supporting
+             more ciphers.  (themiron)
   - FIXED: Firmware Update check button would redirect to Asus
            support site if scheduled checks are disabled.
   - FIXED: Firefox was showing a no-op Uninstall button on the

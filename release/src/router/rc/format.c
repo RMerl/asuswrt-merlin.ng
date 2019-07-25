@@ -27,7 +27,7 @@ void adjust_merlin_config(void)
 	char *newstr, *hostnames;
 	char *nv, *nvp, *entry;
 	char *name, *mac, *mode, *ipaddr, *nvname;
-	char tmp[32];
+	char tmp[64];
 #ifdef RTCONFIG_DNSFILTER
 	int globalmode;
 #endif
@@ -192,12 +192,6 @@ void adjust_merlin_config(void)
 		nvram_set("dns_fwd_local", "1");
 		nvram_unset("lan_dns_fwd_local");
 	}
-
-/* Enable experimental AiMesh */
-#ifdef RTCONFIG_AMAS
-	if (f_exists("/jffs/.gomesh"))
-		nvram_set("amas_force", "1");
-#endif
 
 /* Migrate update server */
 	if (nvram_match("firmware_server", "https://fwupdate.lostrealm.ca/asuswrt-merlin"))

@@ -37,7 +37,7 @@
 #define DDNS_USER_AGENT "inadyn/" VERSION " " PACKAGE_BUGREPORT
 
 /* 2017-01-05: Dyn.com does NOT support HTTPS for checkip */
-#define DYNDNS_MY_IP_SERVER	"checkip.dyndns.org"
+#define DYNDNS_MY_IP_SERVER	"checkip.dyndns.com"
 #define DYNDNS_MY_CHECKIP_URL	"/"
 #define DYNDNS_MY_IP_SSL        DDNS_CHECKIP_SSL_UNSUPPORTED
 

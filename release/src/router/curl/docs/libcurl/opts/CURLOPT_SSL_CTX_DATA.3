@@ -5,7 +5,7 @@
 .\" *                            | (__| |_| |  _ <| |___
 .\" *                             \___|\___/|_| \_\_____|
 .\" *
-.\" * Copyright (C) 1998 - 2017, Daniel Stenberg, <daniel@haxx.se>, et al.
+.\" * Copyright (C) 1998 - 2019, Daniel Stenberg, <daniel@haxx.se>, et al.
 .\" *
 .\" * This software is licensed as described in the file COPYING, which
 .\" * you should have received as part of this distribution. The terms
@@ -20,7 +20,7 @@
 .\" *
 .\" **************************************************************************
 .\"
-.TH CURLOPT_SSL_CTX_DATA 3 "May 31, 2017" "libcurl 7.65.1" "curl_easy_setopt options"
+.TH CURLOPT_SSL_CTX_DATA 3 "June 02, 2019" "libcurl 7.65.3" "curl_easy_setopt options"
 
 .SH NAME
 CURLOPT_SSL_CTX_DATA \- custom pointer passed to ssl_ctx callback
@@ -113,8 +113,8 @@ int main(void)
 }
 .fi
 .SH AVAILABILITY
-Added in 7.11.0 for OpenSSL. Added in 7.42.0 for wolfSSL/CyaSSL. Other SSL
-backends not supported.
+Added in 7.11.0 for OpenSSL, in 7.42.0 for wolfSSL and in 7.54.0 for
+mbedTLS. Other SSL backends are not supported.
 .SH RETURN VALUE
 CURLE_OK if supported; or an error such as:
 

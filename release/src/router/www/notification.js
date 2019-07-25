@@ -19,7 +19,7 @@ else{
 	}
 }
 
-var webs_state_info = '<% nvram_get("webs_state_info"); %>';
+var webs_state_info = '<% nvram_get("webs_state_info_am"); %>';
 var webs_state_info_beta = '<% nvram_get("webs_state_info_beta"); %>';
 var webs_state_flag = '<% nvram_get("webs_state_flag"); %>';
 

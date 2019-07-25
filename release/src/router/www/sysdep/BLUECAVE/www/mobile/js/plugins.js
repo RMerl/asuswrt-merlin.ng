@@ -395,9 +395,8 @@ var Get_Component_WirelessInput = function(wlArray){
 function handleSysDep(){
 	var isNoWAN = (httpApi.detwanGetRet().wanType == 'NOWAN');
 
-	var enableAMAS = httpApi.nvramGet(["amas_force"], true);
-	$(".amasSupport").toggle(isSupport("AMAS") && (enableAMAS.amas_force == "1"));
-	$(".noAmasSupport").toggle(!isSupport("AMAS") || (enableAMAS.amas_force != "1"));
+	$(".amasSupport").toggle(isSupport("AMAS"));
+	$(".noAmasSupport").toggle(!isSupport("AMAS"));
 	$(".tosSupport").toggle(systemVariable.isDefault && isSupport("QISBWDPI"));
 	$(".repeaterSupport").toggle(isSupport("repeater"));
 	$(".pstaSupport").toggle(isSupport("psta"));
@@ -831,14 +830,14 @@ function startLiveUpdate(){
 	else{
 		httpApi.nvramSet({"action_mode":"apply", "rc_service":"start_webs_update"}, function(){
 			setTimeout(function(){
-				var fwInfo = httpApi.nvramGet(["webs_state_update", "webs_state_info", "webs_state_flag"], true);
+				var fwInfo = httpApi.nvramGet(["webs_state_update", "webs_state_info_am", "webs_state_flag"], true);
 
 				if(fwInfo.webs_state_update == "0" || fwInfo.webs_state_update == ""){
 					setTimeout(arguments.callee, 1000);
 				}
-				else if(fwInfo.webs_state_info !== ""){
+				else if(fwInfo.webs_state_info_am !== ""){
 					systemVariable.isNewFw = fwInfo.webs_state_flag;
-					systemVariable.newFwVersion = fwInfo.webs_state_info;
+					systemVariable.newFwVersion = fwInfo.webs_state_info_am;
 				}
 			}, 1000);
 		});

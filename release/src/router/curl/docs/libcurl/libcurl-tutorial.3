@@ -20,7 +20,7 @@
 .\" *
 .\" **************************************************************************
 .\"
-.TH libcurl-tutorial 3 "September 23, 2018" "libcurl 7.65.1" "libcurl programming"
+.TH libcurl-tutorial 3 "June 08, 2019" "libcurl 7.65.3" "libcurl programming"
 
 .SH NAME
 libcurl-tutorial \- libcurl programming tutorial
@@ -497,13 +497,13 @@ and then a file with binary contents and uploads the whole thing.
 
 .nf
  curl_mime *multipart = curl_mime_init(easyhandle);
- curl_mimepart *part = curl_mime_addpart(mutipart);
+ curl_mimepart *part = curl_mime_addpart(multipart);
  curl_mime_name(part, "name");
  curl_mime_data(part, "daniel", CURL_ZERO_TERMINATED);
- part = curl_mime_addpart(mutipart);
+ part = curl_mime_addpart(multipart);
  curl_mime_name(part, "project");
  curl_mime_data(part, "curl", CURL_ZERO_TERMINATED);
- part = curl_mime_addpart(mutipart);
+ part = curl_mime_addpart(multipart);
  curl_mime_name(part, "logotype-image");
  curl_mime_filedata(part, "curl.png");
 

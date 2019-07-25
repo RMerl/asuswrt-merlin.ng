@@ -168,7 +168,7 @@ function redraw() {
 				clientObj = clientFromIP(b[1]);
 
 				if (clientObj) {
-					clientName = (clientObj.nickName == "") ? clientObj.hostname : clientObj.nickName;
+					clientName = (clientObj.nickName == "") ? clientObj.name : clientObj.nickName;
 					h = "<b>" + clientName.shorter(24) + '</b> <small>(' + b[1] + ')</small>';
 				} else {
 					clientName = b[1];	// fallback for chart labels

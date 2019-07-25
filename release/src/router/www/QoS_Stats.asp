@@ -233,7 +233,7 @@ function draw_conntrack_table(){
 		// Retrieve hostname from networkmap
 		clientObj = clientFromIP(bwdpi_conntrack[i][1]);
 		if (clientObj) {
-			clientName = (clientObj.nickName == "") ? clientObj.hostname : clientObj.nickName;
+			clientName = (clientObj.nickName == "") ? clientObj.name : clientObj.nickName;
 		} else {
 			srchost = bwdpi_conntrack[i][1];
 			clientName = "";
@@ -243,7 +243,7 @@ function draw_conntrack_table(){
 
 		clientObj = clientFromIP(bwdpi_conntrack[i][3]);
 		if (clientObj) {
-			clientName = (clientObj.nickName == "") ? clientObj.hostname : clientObj.nickName;
+			clientName = (clientObj.nickName == "") ? clientObj.name : clientObj.nickName;
 		} else {
 			clientName = "";
 		}

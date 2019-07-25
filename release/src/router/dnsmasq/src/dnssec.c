@@ -374,7 +374,7 @@ static int explore_rrset(struct dns_header *header, size_t plen, int class, int 
   int gotkey = 0;
 
   if (!(p = skip_questions(header, plen)))
-    return STAT_BOGUS;
+    return 0;
 
    /* look for RRSIGs for this RRset and get pointers to each RR in the set. */
   for (rrsetidx = 0, sigidx = 0, j = ntohs(header->ancount) + ntohs(header->nscount); 
@@ -386,7 +386,7 @@ static int explore_rrset(struct dns_header *header, size_t plen, int class, int 
       pstart = p;
       
       if (!(res = extract_name(header, plen, &p, name, 0, 10)))
-	return STAT_BOGUS; /* bad packet */
+	return 0; /* bad packet */
       
       GETSHORT(stype, p);
       GETSHORT(sclass, p);

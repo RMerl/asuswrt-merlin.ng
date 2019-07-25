@@ -365,6 +365,7 @@ function popupWindow(ip) {
 
 
 function init() {
+	show_menu();
 	if (nvram.cstats_enable == '1') {
 		selGroup = E('page_select');
 
@@ -433,7 +434,6 @@ function init() {
 		setRadioValue(document.form._f_show_hostnames , (c == 1))
 	}
 
-	show_menu();
 	update_visibility();
 	initDate('ymd');
 	daily_history.sort(cmpDualFields);

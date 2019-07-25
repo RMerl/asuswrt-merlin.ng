@@ -201,9 +201,9 @@ function draw_conntrack_table(){
 
 	code = '<table cellpadding="4" class="FormTable_table"><thead><tr><td colspan="6">Tracked connections (total: ' + tracklen + ')</td></tr></thead>' +
 		'<tr><th width="5%" id="track_header_0" style="cursor: pointer;" onclick="setsort(0); draw_conntrack_table()">Proto</th>' +
-		'<th width="28%" id="track_header_1" style="cursor: pointer;" onclick="setsort(1); draw_conntrack_table()">Local IP</th>' +
+		'<th width="28%" id="track_header_1" style="cursor: pointer;" onclick="setsort(1); draw_conntrack_table()">Source IP</th>' +
 		'<th width="6%" id="track_header_2" style="cursor: pointer;" onclick="setsort(2); draw_conntrack_table()">Port</th>' +
-		'<th width="28%" id="track_header_3" style="cursor: pointer;" onclick="setsort(3); draw_conntrack_table()">Remote IP</th>' +
+		'<th width="28%" id="track_header_3" style="cursor: pointer;" onclick="setsort(3); draw_conntrack_table()">Destination IP</th>' +
 		'<th width="6%" id="track_header_4" style="cursor: pointer;" onclick="setsort(4); draw_conntrack_table()">Port</th>' +
 		'<th width="27%" id="track_header_5" style="cursor: pointer;" onclick="setsort(5); draw_conntrack_table()">Application</th></tr>';
 
@@ -321,8 +321,8 @@ function table_sort(a, b){
 
 	switch (sortfield) {
 		case 0:		// Proto
-		case 1:		// Local IP
-		case 3:		// Remote IP
+		case 1:		// Source IP
+		case 3:		// Destination IP
 			if (sortdir) {
 				aa = full_IPv6(a[sortfield].toString());
 				bb = full_IPv6(b[sortfield].toString());
@@ -573,9 +573,9 @@ function draw_chart(data_array, ctx, pie) {
 			<table cellpadding="4" class="FormTable_table" id="tracked_filters" style="display:none;"><thead><tr><td colspan="6">Filter connections</td></tr></thead>
 				<tr>
 					<th width="5%">Proto</th>
-					<th width="28%">Local IP</th>
+					<th width="28%">Source IP</th>
 					<th width="6%">Port</th>
-					<th width="28%">Remote IP</th>
+					<th width="28%">Destination IP</th>
 					<th width="6%">Port</th>
 					<th width="27%">Application</th>
 				</tr>

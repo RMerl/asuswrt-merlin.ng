@@ -262,8 +262,8 @@ function draw_conntrack_table(){
 							filtered = 1;
 						break;
 					case 3:
-						if (srchost.toLowerCase().indexOf(filter[1].toLowerCase()) < 0 &&
-						    bwdpi_conntrack[i][1].toLowerCase().indexOf(filter[1]) < 0)
+						if (dsthost.toLowerCase().indexOf(filter[3].toLowerCase()) < 0 &&
+						    bwdpi_conntrack[i][3].toLowerCase().indexOf(filter[3]) < 0)
 							filtered = 1;
 						break;
 					default:

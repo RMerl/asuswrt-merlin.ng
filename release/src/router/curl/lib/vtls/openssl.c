@@ -75,7 +75,7 @@
 #endif
 
 #if (OPENSSL_VERSION_NUMBER >= 0x0090700fL) && /* 0.9.7 or later */     \
-  !defined(OPENSSL_NO_ENGINE)
+  !defined(OPENSSL_NO_ENGINE) && !defined(OPENSSL_NO_UI_CONSOLE)
 #define USE_OPENSSL_ENGINE
 #include <openssl/engine.h>
 #endif
@@ -154,6 +154,10 @@
     !(defined(LIBRESSL_VERSION_NUMBER) && \
       LIBRESSL_VERSION_NUMBER < 0x20700000L)
 #define HAVE_X509_GET0_SIGNATURE 1
+#endif
+
+#if (OPENSSL_VERSION_NUMBER >= 0x1000200fL) /* 1.0.2 or later */
+#define HAVE_SSL_GET_SHUTDOWN 1
 #endif
 
 #if OPENSSL_VERSION_NUMBER >= 0x10002003L && \
@@ -1022,14 +1026,8 @@ static int Curl_ossl_init(void)
   ENGINE_load_builtin_engines();
 #endif
 
-  /* OPENSSL_config(NULL); is "strongly recommended" to use but unfortunately
-     that function makes an exit() call on wrongly formatted config files
-     which makes it hard to use in some situations. OPENSSL_config() itself
-     calls CONF_modules_load_file() and we use that instead and we ignore
-     its return code! */
-
-  /* CONF_MFLAGS_DEFAULT_SECTION introduced some time between 0.9.8b and
-     0.9.8e */
+/* CONF_MFLAGS_DEFAULT_SECTION was introduced some time between 0.9.8b and
+   0.9.8e */
 #ifndef CONF_MFLAGS_DEFAULT_SECTION
 #define CONF_MFLAGS_DEFAULT_SECTION 0x0
 #endif
@@ -3091,18 +3089,25 @@ static CURLcode get_cert_chain(struct connectdata *conn,
 
 #if defined(HAVE_X509_GET0_SIGNATURE) && defined(HAVE_X509_GET0_EXTENSIONS)
     {
-      const X509_ALGOR *palg = NULL;
-      ASN1_STRING *a = ASN1_STRING_new();
-      if(a) {
-        X509_get0_signature(&psig, &palg, x);
-        X509_signature_print(mem, ARG2_X509_signature_print palg, a);
-        ASN1_STRING_free(a);
+      const X509_ALGOR *sigalg = NULL;
+      X509_PUBKEY *xpubkey = NULL;
+      ASN1_OBJECT *pubkeyoid = NULL;
 
-        if(palg) {
-          i2a_ASN1_OBJECT(mem, palg->algorithm);
+      X509_get0_signature(&psig, &sigalg, x);
+      if(sigalg) {
+        i2a_ASN1_OBJECT(mem, sigalg->algorithm);
+        push_certinfo("Signature Algorithm", i);
+      }
+
+      xpubkey = X509_get_X509_PUBKEY(x);
+      if(xpubkey) {
+        X509_PUBKEY_get0_param(&pubkeyoid, NULL, NULL, NULL, xpubkey);
+        if(pubkeyoid) {
+          i2a_ASN1_OBJECT(mem, pubkeyoid);
           push_certinfo("Public Key Algorithm", i);
         }
       }
+
       X509V3_ext(data, i, X509_get0_extensions(x));
     }
 #else
@@ -3154,7 +3159,7 @@ static CURLcode get_cert_chain(struct connectdata *conn,
           const BIGNUM *e;
 
           RSA_get0_key(rsa, &n, &e, NULL);
-          BN_print(mem, n);
+          BIO_printf(mem, "%d", BN_num_bits(n));
           push_certinfo("RSA Public Key", i);
           print_pubkey_BN(rsa, n, i);
           print_pubkey_BN(rsa, e, i);
@@ -3279,7 +3284,6 @@ static CURLcode pkp_pin_peer_pubkey(struct Curl_easy *data, X509* cert,
     if(len1 < 1)
       break; /* failed */
 
-    /* https://www.openssl.org/docs/crypto/buffer.html */
     buff1 = temp = malloc(len1);
     if(!buff1)
       break; /* failed */
@@ -3301,7 +3305,6 @@ static CURLcode pkp_pin_peer_pubkey(struct Curl_easy *data, X509* cert,
     result = Curl_pin_peer_pubkey(data, pinnedpubkey, buff1, len1);
   } while(0);
 
-  /* https://www.openssl.org/docs/crypto/buffer.html */
   if(buff1)
     free(buff1);
 

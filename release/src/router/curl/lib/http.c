@@ -383,7 +383,7 @@ static bool pickoneauth(struct auth *pick, unsigned long mask)
 }
 
 /*
- * Curl_http_perhapsrewind()
+ * http_perhapsrewind()
  *
  * If we are doing POST or PUT {
  *   If we have more data to send {
@@ -1881,9 +1881,10 @@ CURLcode Curl_add_custom_headers(struct connectdata *conn,
 }
 
 #ifndef CURL_DISABLE_PARSEDATE
-CURLcode Curl_add_timecondition(struct Curl_easy *data,
+CURLcode Curl_add_timecondition(const struct connectdata *conn,
                                 Curl_send_buffer *req_buffer)
 {
+  struct Curl_easy *data = conn->data;
   const struct tm *tm;
   struct tm keeptime;
   CURLcode result;
@@ -1916,6 +1917,11 @@ CURLcode Curl_add_timecondition(struct Curl_easy *data,
     break;
   }
 
+  if(Curl_checkheaders(conn, condp)) {
+    /* A custom header was specified; it will be sent instead. */
+    return CURLE_OK;
+  }
+
   /* The If-Modified-Since header family should have their times set in
    * GMT as RFC2616 defines: "All HTTP date/time stamps MUST be
    * represented in Greenwich Mean Time (GMT), without exception. For the
@@ -1941,10 +1947,10 @@ CURLcode Curl_add_timecondition(struct Curl_easy *data,
 }
 #else
 /* disabled */
-CURLcode Curl_add_timecondition(struct Curl_easy *data,
+CURLcode Curl_add_timecondition(const struct connectdata *conn,
                                 Curl_send_buffer *req_buffer)
 {
-  (void)data;
+  (void)conn;
   (void)req_buffer;
   return CURLE_OK;
 }
@@ -2683,7 +2689,7 @@ CURLcode Curl_http(struct connectdata *conn, bool *done)
   }
 #endif
 
-  result = Curl_add_timecondition(data, req_buffer);
+  result = Curl_add_timecondition(conn, req_buffer);
   if(result)
     return result;
 
@@ -3147,6 +3153,9 @@ static CURLcode header_append(struct Curl_easy *data,
                               struct SingleRequest *k,
                               size_t length)
 {
+  /* length is at most the size of a full read buffer, for which the upper
+     bound is CURL_MAX_READ_SIZE. There is thus no chance of overflow in this
+     calculation. */
   size_t newsize = k->hbuflen + length;
   if(newsize > CURL_MAX_HTTP_HEADER) {
     /* The reason to have a max limit for this is to avoid the risk of a bad
@@ -3511,8 +3520,10 @@ CURLcode Curl_http_readwrite_headers(struct Curl_easy *data,
               else {
                 infof(data, "HTTP error before end of send, stop sending\n");
                 streamclose(conn, "Stop sending data before everything sent");
+                result = Curl_done_sending(conn, k);
+                if(result)
+                  return result;
                 k->upload_done = TRUE;
-                k->keepon &= ~KEEP_SEND; /* don't send */
                 if(data->state.expect100header)
                   k->exp100 = EXP100_FAILED;
               }

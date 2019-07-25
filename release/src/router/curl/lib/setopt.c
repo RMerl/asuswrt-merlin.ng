@@ -119,8 +119,11 @@ static CURLcode setstropt_userpwd(char *option, char **userp, char **passwdp)
 #define C_SSLVERSION_VALUE(x) (x & 0xffff)
 #define C_SSLVERSION_MAX_VALUE(x) (x & 0xffff0000)
 
-static CURLcode vsetopt(struct Curl_easy *data, CURLoption option,
-                        va_list param)
+/*
+ * Do not make Curl_vsetopt() static: it is called from
+ * packages/OS400/ccsidcurl.c.
+ */
+CURLcode Curl_vsetopt(struct Curl_easy *data, CURLoption option, va_list param)
 {
   char *argptr;
   CURLcode result = CURLE_OK;
@@ -2371,8 +2374,7 @@ static CURLcode vsetopt(struct Curl_easy *data, CURLoption option,
   case CURLOPT_REDIR_PROTOCOLS:
     /* set the bitmask for the protocols that libcurl is allowed to follow to,
        as a subset of the CURLOPT_PROTOCOLS ones. That means the protocol needs
-       to be set in both bitmasks to be allowed to get redirected to. Defaults
-       to all protocols except FILE and SCP. */
+       to be set in both bitmasks to be allowed to get redirected to. */
     data->set.redir_protocols = va_arg(param, long);
     break;
 
@@ -2770,7 +2772,7 @@ CURLcode curl_easy_setopt(struct Curl_easy *data, CURLoption tag, ...)
 
   va_start(arg, tag);
 
-  result = vsetopt(data, tag, arg);
+  result = Curl_vsetopt(data, tag, arg);
 
   va_end(arg);
   return result;

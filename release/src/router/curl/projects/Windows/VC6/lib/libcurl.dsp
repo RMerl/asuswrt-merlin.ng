@@ -1226,10 +1226,6 @@ SOURCE=..\..\..\..\lib\vauth\vauth.c
 # End Source File
 # Begin Source File
 
-SOURCE=..\..\..\..\lib\vtls\cyassl.c
-# End Source File
-# Begin Source File
-
 SOURCE=..\..\..\..\lib\vtls\gskit.c
 # End Source File
 # Begin Source File
@@ -1275,6 +1271,10 @@ SOURCE=..\..\..\..\lib\vtls\sectransp.c
 # Begin Source File
 
 SOURCE=..\..\..\..\lib\vtls\vtls.c
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\..\lib\vtls\wolfssl.c
 # End Source File
 # End Group
 # Begin Group "Header Files"
@@ -1734,10 +1734,6 @@ SOURCE=..\..\..\..\lib\vauth\vauth.h
 # End Source File
 # Begin Source File
 
-SOURCE=..\..\..\..\lib\vtls\cyassl.h
-# End Source File
-# Begin Source File
-
 SOURCE=..\..\..\..\lib\vtls\gskit.h
 # End Source File
 # Begin Source File
@@ -1779,6 +1775,10 @@ SOURCE=..\..\..\..\lib\vtls\sectransp.h
 # Begin Source File
 
 SOURCE=..\..\..\..\lib\vtls\vtls.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\..\lib\vtls\wolfssl.h
 # End Source File
 # End Group
 # Begin Group "Resource Files"

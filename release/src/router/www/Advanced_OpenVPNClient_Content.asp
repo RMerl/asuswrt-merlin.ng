@@ -406,7 +406,7 @@ function update_rgw_options(){
 
 	free_options(document.form.vpn_client_rgw);
 	add_option(document.form.vpn_client_rgw, "No","0",(currentpolicy == 0));
-	add_option(document.form.vpn_client_rgw, "All","1",(currentpolicy == 1));
+	add_option(document.form.vpn_client_rgw, "Yes","1",(currentpolicy == 1));
 	if (iface == "tun") {
 		add_option(document.form.vpn_client_rgw, "Policy Rules","2",(currentpolicy == 2));
 		add_option(document.form.vpn_client_rgw, "Policy Rules (strict)","3",(currentpolicy == 3));
@@ -1418,7 +1418,7 @@ function refreshVPNIP() {
 						</td>
 					</tr>
 					<tr>
-						<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(50,19);">Redirect Internet traffic</a></th>
+						<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(50,19);">Force Internet traffic through tunnel</a></th>
 						<td colspan="2">
 							<select name="vpn_client_rgw" class="input_option" onChange="update_visibility();">
 							</select>

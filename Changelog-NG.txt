@@ -9,6 +9,7 @@ Asuswrt-Merlin 384/NG Changelog
          able to make use of the automatic live update.
   - NEW: ChaCha20-Poly1305 support in Strongswan (themiron)
   - UPDATED: RT-AX88U to GPL 384_6210.
+  - UPDATED: Curl 7.65.3.
   - CHANGED: dhcp_staticlist no longer contains hostnames, these
              have been moved to dhcp_hostnames for better
              compatibility with upstream and closed source
@@ -28,6 +29,13 @@ Asuswrt-Merlin 384/NG Changelog
            configured.
   - FIXED: IGMP Snooper daemon crashing when more than 32 hosts
            are present (themiron)
+  - FIXED: External DDNS IP checker would fail for Chinese users,
+           as checkip.dyndns.org is blocked - switched to .com TLD.
+  - FIXED: Devices without a networkmap-defined alias wouldn't fallback
+           to their hostname on some webui pages like the IPTraffic
+           and QoS Classification pages.
+  - FIXED: Remote IP field filtering on Classification page wasn't
+           working.
 
 
 384.12 (22-June-2019)

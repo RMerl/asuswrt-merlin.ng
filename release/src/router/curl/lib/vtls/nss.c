@@ -223,9 +223,12 @@ static const cipher_s cipherlist[] = {
 #endif
 };
 
-#ifdef WIN32
+#if defined(WIN32)
 static const char *pem_library = "nsspem.dll";
 static const char *trust_library = "nssckbi.dll";
+#elif defined(__APPLE__)
+static const char *pem_library = "libnsspem.dylib";
+static const char *trust_library = "libnssckbi.dylib";
 #else
 static const char *pem_library = "libnsspem.so";
 static const char *trust_library = "libnssckbi.so";
@@ -578,17 +581,19 @@ static CURLcode nss_cache_crl(SECItem *crl_der)
   /* acquire lock before call of CERT_CacheCRL() and accessing nss_crl_list */
   PR_Lock(nss_crllock);
 
-  /* store the CRL item so that we can free it in Curl_nss_cleanup() */
-  if(insert_wrapped_ptr(&nss_crl_list, crl_der) != CURLE_OK) {
-    SECITEM_FreeItem(crl_der, PR_TRUE);
-    PR_Unlock(nss_crllock);
-    return CURLE_OUT_OF_MEMORY;
-  }
-
   if(SECSuccess != CERT_CacheCRL(db, crl_der)) {
     /* unable to cache CRL */
+    SECITEM_FreeItem(crl_der, PR_TRUE);
     PR_Unlock(nss_crllock);
     return CURLE_SSL_CRL_BADFILE;
+  }
+
+  /* store the CRL item so that we can free it in Curl_nss_cleanup() */
+  if(insert_wrapped_ptr(&nss_crl_list, crl_der) != CURLE_OK) {
+    if(SECSuccess == CERT_UncacheCRL(db, crl_der))
+      SECITEM_FreeItem(crl_der, PR_TRUE);
+    PR_Unlock(nss_crllock);
+    return CURLE_OUT_OF_MEMORY;
   }
 
   /* we need to clear session cache, so that the CRL could take effect */
@@ -686,7 +691,10 @@ static CURLcode nss_load_key(struct connectdata *conn, int sockindex,
   tmp = SECMOD_WaitForAnyTokenEvent(pem_module, 0, 0);
   if(tmp)
     PK11_FreeSlot(tmp);
-  PK11_IsPresent(slot);
+  if(!PK11_IsPresent(slot)) {
+    PK11_FreeSlot(slot);
+    return CURLE_SSL_CERTPROBLEM;
+  }
 
   status = PK11_Authenticate(slot, PR_TRUE, SSL_SET_OPTION(key_passwd));
   PK11_FreeSlot(slot);
@@ -1421,7 +1429,7 @@ static int Curl_nss_init(void)
 {
   /* curl_global_init() is not thread-safe so this test is ok */
   if(nss_initlock == NULL) {
-    PR_Init(PR_USER_THREAD, PR_PRIORITY_NORMAL, 256);
+    PR_Init(PR_USER_THREAD, PR_PRIORITY_NORMAL, 0);
     nss_initlock = PR_NewLock();
     nss_crllock = PR_NewLock();
     nss_findslot_lock = PR_NewLock();

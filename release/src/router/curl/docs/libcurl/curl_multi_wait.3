@@ -19,7 +19,7 @@
 .\" * KIND, either express or implied.
 .\" *
 .\" **************************************************************************
-.TH curl_multi_wait 3 "March 09, 2016" "libcurl 7.65.1" "libcurl Manual"
+.TH curl_multi_wait 3 "June 26, 2019" "libcurl 7.65.3" "libcurl Manual"
 
 .SH NAME
 curl_multi_wait - polls on all easy handles in a multi handle
@@ -92,7 +92,7 @@ do {
   }
 
   if(mc != CURLM_OK) {
-    fprintf(stderr, "curl_multi failed, code %d.\n", mc);
+    fprintf(stderr, "curl_multi failed, code %d.\\n", mc);
     break;
   }
 

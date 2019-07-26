@@ -168,7 +168,7 @@ function redraw() {
 				clientObj = clientFromIP(b[1]);
 
 				if (clientObj) {
-					clientName = (clientObj.nickName == "") ? clientObj.hostname : clientObj.nickName;
+					clientName = (clientObj.nickName == "") ? clientObj.name : clientObj.nickName;
 					h = "<b>" + clientName.shorter(24) + '</b> <small>(' + b[1] + ')</small>';
 				} else {
 					clientName = b[1];	// fallback for chart labels
@@ -364,6 +364,7 @@ function popupWindow(ip) {
 
 
 function init() {
+	show_menu();
 	if (nvram.cstats_enable == '1') {
 		selGroup = E('page_select');
 
@@ -424,7 +425,6 @@ function init() {
 		setRadioValue(document.form._f_show_hostnames , (c == 1))
 	}
 
-	show_menu();
 	update_visibility();
 	initDate('ymd');
 	monthly_history.sort(cmpDualFields);

@@ -1997,9 +1997,6 @@
 				Name="Source Files"
 				Filter="">
 				<File
-					RelativePath="..\..\..\..\lib\vtls\cyassl.c">
-				</File>
-				<File
 					RelativePath="..\..\..\..\lib\vtls\gskit.c">
 				</File>
 				<File
@@ -2035,13 +2032,13 @@
 				<File
 					RelativePath="..\..\..\..\lib\vtls\vtls.c">
 				</File>
+				<File
+					RelativePath="..\..\..\..\lib\vtls\wolfssl.c">
+				</File>
 			</Filter>
 			<Filter
 				Name="Header Files"
 				Filter="">
-				<File
-					RelativePath="..\..\..\..\lib\vtls\cyassl.h">
-				</File>
 				<File
 					RelativePath="..\..\..\..\lib\vtls\gskit.h">
 				</File>
@@ -2074,6 +2071,9 @@
 				</File>
 				<File
 					RelativePath="..\..\..\..\lib\vtls\vtls.h">
+				</File>
+				<File
+					RelativePath="..\..\..\..\lib\vtls\wolfssl.h">
 				</File>
 			</Filter>
 		</Filter>

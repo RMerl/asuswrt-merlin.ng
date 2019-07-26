@@ -924,7 +924,7 @@ SSL_ENABLED
 NSS_LIBS
 USE_NSS
 USE_MESALINK
-USE_CYASSL
+USE_WOLFSSL
 USE_MBEDTLS
 HAVE_GNUTLS_SRP
 USE_GNUTLS_NETTLE
@@ -1020,7 +1020,6 @@ am__nodep
 AMDEPBACKSLASH
 AMDEP_FALSE
 AMDEP_TRUE
-am__quote
 am__include
 DEPDIR
 am__untar
@@ -1108,7 +1107,8 @@ PACKAGE_VERSION
 PACKAGE_TARNAME
 PACKAGE_NAME
 SHELL
-PATH_SEPARATOR'
+PATH_SEPARATOR
+am__quote'
 ac_subst_files=''
 ac_user_opts='
 enable_option_checking
@@ -1199,6 +1199,13 @@ enable_ntlm_wb
 enable_tls_srp
 enable_unix_sockets
 enable_cookies
+enable_http_auth
+enable_doh
+enable_mime
+enable_dateparse
+enable_netrc
+enable_progress_meter
+enable_dnsshuffle
 enable_alt_svc
 '
       ac_precious_vars='build_alias
@@ -1943,6 +1950,21 @@ Optional Features:
   --disable-unix-sockets  Disable Unix domain sockets
   --enable-cookies        Enable cookies support
   --disable-cookies       Disable cookies support
+  --enable-http-auth      Enable HTTP authentication support
+  --disable-http-auth     Disable HTTP authentication support
+  --enable-doh            Enable DoH support
+  --disable-doh           Disable DoH support
+  --enable-mime           Enable mime API support
+  --disable-mime          Disable mime API support
+  --enable-dateparse      Enable date parsing
+  --disable-dateparse     Disable date parsing
+  --enable-netrc          Enable netrc parsing
+  --disable-netrc         Disable netrc parsing
+  --enable-progress-meter Enable progress-meter
+  --disable-progress-meter
+                          Disable progress-meter
+  --enable-dnsshuffle     Enable DNS shuffling
+  --disable-dnsshuffle    Disable DNS shufflinf
   --enable-alt-svc        Enable alt-svc support
   --disable-alt-svc       Disable alt-svc support
 
@@ -4976,9 +4998,7 @@ $as_echo_n "checking for code coverage support... " >&6; }
 
     # Check whether --enable-code-coverage was given.
 if test "${enable_code_coverage+set}" = set; then :
-  enableval=$enable_code_coverage; coverage="yes"
-else
-  coverage="no"
+  enableval=$enable_code_coverage; coverage="$enableval"
 fi
 
 
@@ -5133,7 +5153,7 @@ fi
   fi
 
 
-am__api_version='1.15'
+am__api_version='1.16'
 
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether build environment is sane" >&5
 $as_echo_n "checking whether build environment is sane... " >&6; }
@@ -5466,45 +5486,45 @@ DEPDIR="${am__leading_dot}deps"
 
 ac_config_commands="$ac_config_commands depfiles"
 
-
-am_make=${MAKE-make}
-cat > confinc << 'END'
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking whether ${MAKE-make} supports the include directive" >&5
+$as_echo_n "checking whether ${MAKE-make} supports the include directive... " >&6; }
+cat > confinc.mk << 'END'
 am__doit:
-	@echo this is the am__doit target
+	@echo this is the am__doit target >confinc.out
 .PHONY: am__doit
 END
-# If we don't find an include directive, just comment out the code.
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for style of include used by $am_make" >&5
-$as_echo_n "checking for style of include used by $am_make... " >&6; }
 am__include="#"
 am__quote=
-_am_result=none
-# First try GNU make style include.
-echo "include confinc" > confmf
-# Ignore all kinds of additional output from 'make'.
-case `$am_make -s -f confmf 2> /dev/null` in #(
-*the\ am__doit\ target*)
-  am__include=include
-  am__quote=
-  _am_result=GNU
-  ;;
-esac
-# Now try BSD make style include.
-if test "$am__include" = "#"; then
-   echo '.include "confinc"' > confmf
-   case `$am_make -s -f confmf 2> /dev/null` in #(
-   *the\ am__doit\ target*)
-     am__include=.include
-     am__quote="\""
-     _am_result=BSD
+# BSD make does it like this.
+echo '.include "confinc.mk" # ignored' > confmf.BSD
+# Other make implementations (GNU, Solaris 10, AIX) do it like this.
+echo 'include confinc.mk # ignored' > confmf.GNU
+_am_result=no
+for s in GNU BSD; do
+  { echo "$as_me:$LINENO: ${MAKE-make} -f confmf.$s && cat confinc.out" >&5
+   (${MAKE-make} -f confmf.$s && cat confinc.out) >&5 2>&5
+   ac_status=$?
+   echo "$as_me:$LINENO: \$? = $ac_status" >&5
+   (exit $ac_status); }
+  case $?:`cat confinc.out 2>/dev/null` in #(
+  '0:this is the am__doit target') :
+    case $s in #(
+  BSD) :
+    am__include='.include' am__quote='"' ;; #(
+  *) :
+    am__include='include' am__quote='' ;;
+esac ;; #(
+  *) :
      ;;
-   esac
-fi
-
-
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $_am_result" >&5
-$as_echo "$_am_result" >&6; }
-rm -f confinc confmf
+esac
+  if test "$am__include" != "#"; then
+    _am_result="yes ($s style)"
+    break
+  fi
+done
+rm -f confinc.* confmf.*
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: ${_am_result}" >&5
+$as_echo "${_am_result}" >&6; }
 
 # Check whether --enable-dependency-tracking was given.
 if test "${enable_dependency_tracking+set}" = set; then :
@@ -5581,8 +5601,8 @@ MAKEINFO=${MAKEINFO-"${am_missing_run}makeinfo"}
 
 # For better backward compatibility.  To be removed once Automake 1.9.x
 # dies out for good.  For more background, see:
-# <http://lists.gnu.org/archive/html/automake/2012-07/msg00001.html>
-# <http://lists.gnu.org/archive/html/automake/2012-07/msg00014.html>
+# <https://lists.gnu.org/archive/html/automake/2012-07/msg00001.html>
+# <https://lists.gnu.org/archive/html/automake/2012-07/msg00014.html>
 mkdir_p='$(MKDIR_P)'
 
 # We need awk for the "check" target (and possibly the TAP driver).  The
@@ -5761,7 +5781,7 @@ END
 Aborting the configuration process, to ensure you take notice of the issue.
 
 You can download and install GNU coreutils to get an 'rm' implementation
-that behaves properly: <http://www.gnu.org/software/coreutils/>.
+that behaves properly: <https://www.gnu.org/software/coreutils/>.
 
 If you want to complete the configuration process using your problematic
 'rm' anyway, export the environment variable ACCEPT_INFERIOR_RM_PROGRAM
@@ -5794,7 +5814,7 @@ PKGADD_VENDOR="curl.haxx.se"
 
 
 
-    curl_ssl_msg="no      (--with-{ssl,gnutls,nss,mbedtls,cyassl,schannel,secure-transport,mesalink,amissl} )"
+    curl_ssl_msg="no      (--with-{ssl,gnutls,nss,mbedtls,wolfssl,schannel,secure-transport,mesalink,amissl} )"
     curl_ssh_msg="no      (--with-libssh2)"
    curl_zlib_msg="no      (--with-zlib)"
  curl_brotli_msg="no      (--with-brotli)"
@@ -9201,11 +9221,8 @@ _LT_EOF
   test $ac_status = 0; }; then
     # Now try to grab the symbols.
     nlist=conftest.nm
-    if { { eval echo "\"\$as_me\":${as_lineno-$LINENO}: \"$NM conftest.$ac_objext \| "$lt_cv_sys_global_symbol_pipe" \> $nlist\""; } >&5
-  (eval $NM conftest.$ac_objext \| "$lt_cv_sys_global_symbol_pipe" \> $nlist) 2>&5
-  ac_status=$?
-  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
-  test $ac_status = 0; } && test -s "$nlist"; then
+    $ECHO "$as_me:$LINENO: $NM conftest.$ac_objext | $lt_cv_sys_global_symbol_pipe > $nlist" >&5
+    if eval "$NM" conftest.$ac_objext \| "$lt_cv_sys_global_symbol_pipe" \> $nlist 2>&5 && test -s "$nlist"; then
       # Try sorting and uniquifying the output.
       if sort "$nlist" | uniq > "$nlist"T; then
 	mv -f "$nlist"T "$nlist"
@@ -11816,6 +11833,12 @@ lt_prog_compiler_static=
       ecc*)
 	lt_prog_compiler_wl='-Wl,'
 	lt_prog_compiler_pic='-KPIC'
+	lt_prog_compiler_static='-static'
+        ;;
+      # flang / f18. f95 an alias for gfortran or flang on Debian
+      flang* | f18* | f95*)
+	lt_prog_compiler_wl='-Wl,'
+	lt_prog_compiler_pic='-fPIC'
 	lt_prog_compiler_static='-static'
         ;;
       # icc used to be incompatible with GCC.
@@ -22848,7 +22871,6 @@ done
   if test X"$OPENSSL_ENABLED" = X"1"; then
 
     for ac_func in RAND_egd \
-                    SSL_get_shutdown \
                     SSLv2_client_method \
                     OpenSSL_version
 do :
@@ -24413,37 +24435,37 @@ $as_echo "$as_me: Added $mbedtlslib to CURL_LIBRARY_PATH" >&6;}
 fi
 
 
-OPT_CYASSL=no
+OPT_WOLFSSL=no
 
 _cppflags=$CPPFLAGS
 _ldflags=$LDFLAGS
 
 # Check whether --with-cyassl was given.
 if test "${with_cyassl+set}" = set; then :
-  withval=$with_cyassl; OPT_CYASSL=$withval
+  withval=$with_cyassl; OPT_WOLFSSL=$withval
 fi
 
 
 
 # Check whether --with-wolfssl was given.
 if test "${with_wolfssl+set}" = set; then :
-  withval=$with_wolfssl; OPT_CYASSL=$withval
+  withval=$with_wolfssl; OPT_WOLFSSL=$withval
 fi
 
 
-if test -z "$ssl_backends" -o "x$OPT_CYASSL" != xno; then
+if test -z "$ssl_backends" -o "x$OPT_WOLFSSL" != xno; then
   ssl_msg=
 
-  if test X"$OPT_CYASSL" != Xno; then
+  if test X"$OPT_WOLFSSL" != Xno; then
 
-    if test "$OPT_CYASSL" = "yes"; then
-      OPT_CYASSL=""
+    if test "$OPT_WOLFSSL" = "yes"; then
+      OPT_WOLFSSL=""
     fi
 
 
     cyassllibname=cyassl
 
-    if test -z "$OPT_CYASSL" ; then
+    if test -z "$OPT_WOLFSSL" ; then
 
       { $as_echo "$as_me:${as_lineno-$LINENO}: checking for CyaSSL_Init in -lcyassl" >&5
 $as_echo_n "checking for CyaSSL_Init in -lcyassl... " >&6; }
@@ -24481,12 +24503,12 @@ $as_echo "$ac_cv_lib_cyassl_CyaSSL_Init" >&6; }
 if test "x$ac_cv_lib_cyassl_CyaSSL_Init" = xyes; then :
 
 
-$as_echo "#define USE_CYASSL 1" >>confdefs.h
+$as_echo "#define USE_WOLFSSL 1" >>confdefs.h
 
-         USE_CYASSL=1
+         USE_WOLFSSL=1
 
-         CYASSL_ENABLED=1
-         USE_CYASSL="yes"
+         WOLFSSL_ENABLED=1
+         USE_WOLFSSL="yes"
          ssl_msg="CyaSSL"
 	 test cyassl != "$DEFAULT_SSL_BACKEND" || VALID_DEFAULT_SSL_BACKEND=yes
 
@@ -24499,10 +24521,10 @@ fi
     addcflags=""
     cyassllib=""
 
-    if test "x$USE_CYASSL" != "xyes"; then
-            addld=-L$OPT_CYASSL/lib$libsuff
-      addcflags=-I$OPT_CYASSL/include
-      cyassllib=$OPT_CYASSL/lib$libsuff
+    if test "x$USE_WOLFSSL" != "xyes"; then
+            addld=-L$OPT_WOLFSSL/lib$libsuff
+      addcflags=-I$OPT_WOLFSSL/include
+      cyassllib=$OPT_WOLFSSL/lib$libsuff
 
       LDFLAGS="$LDFLAGS $addld"
       if test "$addcflags" != "-I/usr/include"; then
@@ -24545,12 +24567,12 @@ $as_echo "$ac_cv_lib_cyassl_CyaSSL_Init" >&6; }
 if test "x$ac_cv_lib_cyassl_CyaSSL_Init" = xyes; then :
 
 
-$as_echo "#define USE_CYASSL 1" >>confdefs.h
+$as_echo "#define USE_WOLFSSL 1" >>confdefs.h
 
-       USE_CYASSL=1
+       USE_WOLFSSL=1
 
-       CYASSL_ENABLED=1
-       USE_CYASSL="yes"
+       WOLFSSL_ENABLED=1
+       USE_WOLFSSL="yes"
        ssl_msg="CyaSSL"
        test cyassl != "$DEFAULT_SSL_BACKEND" || VALID_DEFAULT_SSL_BACKEND=yes
 
@@ -24568,10 +24590,10 @@ fi
     addlib=""
     addcflags=""
 
-    if test "x$USE_CYASSL" != "xyes"; then
-            addld=-L$OPT_CYASSL/lib$libsuff
-      addcflags=-I$OPT_CYASSL/include
-      cyassllib=$OPT_CYASSL/lib$libsuff
+    if test "x$USE_WOLFSSL" != "xyes"; then
+            addld=-L$OPT_WOLFSSL/lib$libsuff
+      addcflags=-I$OPT_WOLFSSL/include
+      cyassllib=$OPT_WOLFSSL/lib$libsuff
 
       LDFLAGS="$LDFLAGS $addld"
       if test "$addcflags" != "-I/usr/include"; then
@@ -24609,12 +24631,12 @@ if ac_fn_c_try_link "$LINENO"; then :
          { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
 $as_echo "yes" >&6; }
 
-$as_echo "#define USE_CYASSL 1" >>confdefs.h
+$as_echo "#define USE_WOLFSSL 1" >>confdefs.h
 
-         USE_CYASSL=1
+         USE_WOLFSSL=1
 
-         CYASSL_ENABLED=1
-         USE_CYASSL="yes"
+         WOLFSSL_ENABLED=1
+         USE_WOLFSSL="yes"
          ssl_msg="WolfSSL"
 	 test cyassl != "$DEFAULT_SSL_BACKEND" || VALID_DEFAULT_SSL_BACKEND=yes
 
@@ -24632,7 +24654,7 @@ rm -f core conftest.err conftest.$ac_objext \
       LIBS="$my_ac_save_LIBS"
     fi
 
-    if test "x$USE_CYASSL" = "xyes"; then
+    if test "x$USE_WOLFSSL" = "xyes"; then
       { $as_echo "$as_me:${as_lineno-$LINENO}: detected $cyassllibname" >&5
 $as_echo "$as_me: detected $cyassllibname" >&6;}
       check_for_ca_bundle=1
@@ -24677,38 +24699,11 @@ _ACEOF
 
 
 
-            for ac_header in cyassl/options.h
-do :
-  ac_fn_c_check_header_mongrel "$LINENO" "cyassl/options.h" "ac_cv_header_cyassl_options_h" "$ac_includes_default"
-if test "x$ac_cv_header_cyassl_options_h" = xyes; then :
-  cat >>confdefs.h <<_ACEOF
-#define HAVE_CYASSL_OPTIONS_H 1
-_ACEOF
-
-fi
-
-done
-
-
-            for ac_header in cyassl/error-ssl.h
-do :
-  ac_fn_c_check_header_mongrel "$LINENO" "cyassl/error-ssl.h" "ac_cv_header_cyassl_error_ssl_h" "$ac_includes_default"
-if test "x$ac_cv_header_cyassl_error_ssl_h" = xyes; then :
-  cat >>confdefs.h <<_ACEOF
-#define HAVE_CYASSL_ERROR_SSL_H 1
-_ACEOF
-
-fi
-
-done
-
-
       LIBS="-l$cyassllibname -lm $LIBS"
 
-      if test "x$cyassllibname" = "xwolfssl"; then
-                        for ac_func in wolfSSLv3_client_method \
-                       wolfSSL_get_peer_certificate \
-                       wolfSSL_UseALPN
+                  for ac_func in wolfSSLv3_client_method \
+                     wolfSSL_get_peer_certificate \
+                     wolfSSL_UseALPN
 do :
   as_ac_var=`$as_echo "ac_cv_func_$ac_func" | $as_tr_sh`
 ac_fn_c_check_func "$LINENO" "$ac_func" "$as_ac_var"
@@ -24720,21 +24715,6 @@ _ACEOF
 fi
 done
 
-      else
-                for ac_func in CyaSSL_CTX_UseSupportedCurve \
-                       CyaSSL_get_peer_certificate
-do :
-  as_ac_var=`$as_echo "ac_cv_func_$ac_func" | $as_tr_sh`
-ac_fn_c_check_func "$LINENO" "$ac_func" "$as_ac_var"
-if eval test \"x\$"$as_ac_var"\" = x"yes"; then :
-  cat >>confdefs.h <<_ACEOF
-#define `$as_echo "HAVE_$ac_func" | $as_tr_cpp` 1
-_ACEOF
-
-fi
-done
-
-      fi
 
       if test -n "$cyassllib"; then
                                         if test "x$cross_compiling" != "xyes"; then
@@ -25349,12 +25329,12 @@ $as_echo "$as_me: Added $nssprefix/lib$libsuff to CURL_LIBRARY_PATH" >&6;}
   test -z "$ssl_msg" || ssl_backends="${ssl_backends:+$ssl_backends, }$ssl_msg"
 fi
 
-case "x$OPENSSL_ENABLED$GNUTLS_ENABLED$NSS_ENABLED$MBEDTLS_ENABLED$CYASSL_ENABLED$WINSSL_ENABLED$SECURETRANSPORT_ENABLED$MESALINK_ENABLED$AMISSL_ENABLED" in
+case "x$OPENSSL_ENABLED$GNUTLS_ENABLED$NSS_ENABLED$MBEDTLS_ENABLED$WOLFSSL_ENABLED$WINSSL_ENABLED$SECURETRANSPORT_ENABLED$MESALINK_ENABLED$AMISSL_ENABLED" in
 x)
   { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: SSL disabled, you will not be able to use HTTPS, FTPS, NTLM and more." >&5
 $as_echo "$as_me: WARNING: SSL disabled, you will not be able to use HTTPS, FTPS, NTLM and more." >&2;}
-  { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: Use --with-ssl, --with-gnutls, --with-cyassl, --with-nss, --with-schannel, --with-secure-transport, --with-mesalink or --with-amissl to address this." >&5
-$as_echo "$as_me: WARNING: Use --with-ssl, --with-gnutls, --with-cyassl, --with-nss, --with-schannel, --with-secure-transport, --with-mesalink or --with-amissl to address this." >&2;}
+  { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: Use --with-ssl, --with-gnutls, --with-wolfssl, --with-mbedtls, --with-nss, --with-schannel, --with-secure-transport, --with-mesalink or --with-amissl to address this." >&5
+$as_echo "$as_me: WARNING: Use --with-ssl, --with-gnutls, --with-wolfssl, --with-mbedtls, --with-nss, --with-schannel, --with-secure-transport, --with-mesalink or --with-amissl to address this." >&2;}
   ;;
 x1)
   # one SSL backend is enabled
@@ -26800,8 +26780,8 @@ $as_echo "yes" >&6; }
           versioned_symbols_flavour="GNUTLS_"
         elif test "x$NSS_ENABLED" = "x1"; then
           versioned_symbols_flavour="NSS_"
-        elif test "x$CYASSL_ENABLED" = "x1"; then
-          versioned_symbols_flavour="CYASSL_"
+        elif test "x$WOLFSSL_ENABLED" = "x1"; then
+          versioned_symbols_flavour="WOLFSSL_"
         elif test "x$WINSSL_ENABLED" = "x1"; then
           versioned_symbols_flavour="SCHANNEL_"
         elif test "x$SECURETRANSPORT_ENABLED" = "x1"; then
@@ -41282,9 +41262,6 @@ if test "${enable_tls_srp+set}" = set; then :
   no)
        { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
 $as_echo "no" >&6; }
-
-$as_echo "#define CURL_DISABLE_TLS_SRP 1" >>confdefs.h
-
        want_tls_srp=no
        ;;
   *)   { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
@@ -41355,8 +41332,8 @@ fi
 
 fi
 
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking whether to enable support for cookies" >&5
-$as_echo_n "checking whether to enable support for cookies... " >&6; }
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking whether to support cookies" >&5
+$as_echo_n "checking whether to support cookies... " >&6; }
 # Check whether --enable-cookies was given.
 if test "${enable_cookies+set}" = set; then :
   enableval=$enable_cookies;  case "$enableval" in
@@ -41365,6 +41342,167 @@ if test "${enable_cookies+set}" = set; then :
 $as_echo "no" >&6; }
 
 $as_echo "#define CURL_DISABLE_COOKIES 1" >>confdefs.h
+
+       ;;
+  *)   { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
+       ;;
+  esac
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
+
+fi
+
+
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking whether to support HTTP authentication" >&5
+$as_echo_n "checking whether to support HTTP authentication... " >&6; }
+# Check whether --enable-http-auth was given.
+if test "${enable_http_auth+set}" = set; then :
+  enableval=$enable_http_auth;  case "$enableval" in
+  no)
+       { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+
+$as_echo "#define CURL_DISABLE_HTTP_AUTH 1" >>confdefs.h
+
+       ;;
+  *)   { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
+       ;;
+  esac
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
+
+fi
+
+
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking whether to support DoH" >&5
+$as_echo_n "checking whether to support DoH... " >&6; }
+# Check whether --enable-doh was given.
+if test "${enable_doh+set}" = set; then :
+  enableval=$enable_doh;  case "$enableval" in
+  no)
+       { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+
+$as_echo "#define CURL_DISABLE_DOH 1" >>confdefs.h
+
+       ;;
+  *)   { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
+       ;;
+  esac
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
+
+fi
+
+
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking whether to support the MIME API" >&5
+$as_echo_n "checking whether to support the MIME API... " >&6; }
+# Check whether --enable-mime was given.
+if test "${enable_mime+set}" = set; then :
+  enableval=$enable_mime;  case "$enableval" in
+  no)
+       { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+
+$as_echo "#define CURL_DISABLE_MIME 1" >>confdefs.h
+
+       ;;
+  *)   { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
+       ;;
+  esac
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
+
+fi
+
+
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking whether to support date parsing" >&5
+$as_echo_n "checking whether to support date parsing... " >&6; }
+# Check whether --enable-dateparse was given.
+if test "${enable_dateparse+set}" = set; then :
+  enableval=$enable_dateparse;  case "$enableval" in
+  no)
+       { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+
+$as_echo "#define CURL_DISABLE_PARSEDATE 1" >>confdefs.h
+
+       ;;
+  *)   { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
+       ;;
+  esac
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
+
+fi
+
+
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking whether to support netrc parsing" >&5
+$as_echo_n "checking whether to support netrc parsing... " >&6; }
+# Check whether --enable-netrc was given.
+if test "${enable_netrc+set}" = set; then :
+  enableval=$enable_netrc;  case "$enableval" in
+  no)
+       { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+
+$as_echo "#define CURL_DISABLE_NETRC 1" >>confdefs.h
+
+       ;;
+  *)   { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
+       ;;
+  esac
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
+
+fi
+
+
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking whether to support progress-meter" >&5
+$as_echo_n "checking whether to support progress-meter... " >&6; }
+# Check whether --enable-progress-meter was given.
+if test "${enable_progress_meter+set}" = set; then :
+  enableval=$enable_progress_meter;  case "$enableval" in
+  no)
+       { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+
+$as_echo "#define CURL_DISABLE_PROGRESS_METER 1" >>confdefs.h
+
+       ;;
+  *)   { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
+       ;;
+  esac
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
+
+fi
+
+
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking whether to support DNS shuffling" >&5
+$as_echo_n "checking whether to support DNS shuffling... " >&6; }
+# Check whether --enable-dnsshuffle was given.
+if test "${enable_dnsshuffle+set}" = set; then :
+  enableval=$enable_dnsshuffle;  case "$enableval" in
+  no)
+       { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+
+$as_echo "#define CURL_DISABLE_SHUFFLE_DNS 1" >>confdefs.h
 
        ;;
   *)   { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
@@ -42603,7 +42741,7 @@ cat >>$CONFIG_STATUS <<_ACEOF || ac_write_fail=1
 #
 # INIT-COMMANDS
 #
-AMDEP_TRUE="$AMDEP_TRUE" ac_aux_dir="$ac_aux_dir"
+AMDEP_TRUE="$AMDEP_TRUE" MAKE="${MAKE-make}"
 
 
 # The HP-UX ksh and POSIX shell print the target directory to stdout
@@ -43523,29 +43661,35 @@ $as_echo "$as_me: executing $ac_file commands" >&6;}
   # Older Autoconf quotes --file arguments for eval, but not when files
   # are listed without --file.  Let's play safe and only enable the eval
   # if we detect the quoting.
-  case $CONFIG_FILES in
-  *\'*) eval set x "$CONFIG_FILES" ;;
-  *)   set x $CONFIG_FILES ;;
-  esac
+  # TODO: see whether this extra hack can be removed once we start
+  # requiring Autoconf 2.70 or later.
+  case $CONFIG_FILES in #(
+  *\'*) :
+    eval set x "$CONFIG_FILES" ;; #(
+  *) :
+    set x $CONFIG_FILES ;; #(
+  *) :
+     ;;
+esac
   shift
-  for mf
+  # Used to flag and report bootstrapping failures.
+  am_rc=0
+  for am_mf
   do
     # Strip MF so we end up with the name of the file.
-    mf=`echo "$mf" | sed -e 's/:.*$//'`
-    # Check whether this is an Automake generated Makefile or not.
-    # We used to match only the files named 'Makefile.in', but
-    # some people rename them; so instead we look at the file content.
-    # Grep'ing the first line is not enough: some people post-process
-    # each Makefile.in and add a new line on top of each file to say so.
-    # Grep'ing the whole file is not good either: AIX grep has a line
+    am_mf=`$as_echo "$am_mf" | sed -e 's/:.*$//'`
+    # Check whether this is an Automake generated Makefile which includes
+    # dependency-tracking related rules and includes.
+    # Grep'ing the whole file directly is not great: AIX grep has a line
     # limit of 2048, but all sed's we know have understand at least 4000.
-    if sed -n 's,^#.*generated by automake.*,X,p' "$mf" | grep X >/dev/null 2>&1; then
-      dirpart=`$as_dirname -- "$mf" ||
-$as_expr X"$mf" : 'X\(.*[^/]\)//*[^/][^/]*/*$' \| \
-	 X"$mf" : 'X\(//\)[^/]' \| \
-	 X"$mf" : 'X\(//\)$' \| \
-	 X"$mf" : 'X\(/\)' \| . 2>/dev/null ||
-$as_echo X"$mf" |
+    sed -n 's,^am--depfiles:.*,X,p' "$am_mf" | grep X >/dev/null 2>&1 \
+      || continue
+    am_dirpart=`$as_dirname -- "$am_mf" ||
+$as_expr X"$am_mf" : 'X\(.*[^/]\)//*[^/][^/]*/*$' \| \
+	 X"$am_mf" : 'X\(//\)[^/]' \| \
+	 X"$am_mf" : 'X\(//\)$' \| \
+	 X"$am_mf" : 'X\(/\)' \| . 2>/dev/null ||
+$as_echo X"$am_mf" |
     sed '/^X\(.*[^/]\)\/\/*[^/][^/]*\/*$/{
 	    s//\1/
 	    q
@@ -43563,53 +43707,48 @@ $as_echo X"$mf" |
 	    q
 	  }
 	  s/.*/./; q'`
-    else
-      continue
-    fi
-    # Extract the definition of DEPDIR, am__include, and am__quote
-    # from the Makefile without running 'make'.
-    DEPDIR=`sed -n 's/^DEPDIR = //p' < "$mf"`
-    test -z "$DEPDIR" && continue
-    am__include=`sed -n 's/^am__include = //p' < "$mf"`
-    test -z "$am__include" && continue
-    am__quote=`sed -n 's/^am__quote = //p' < "$mf"`
-    # Find all dependency output files, they are included files with
-    # $(DEPDIR) in their names.  We invoke sed twice because it is the
-    # simplest approach to changing $(DEPDIR) to its actual value in the
-    # expansion.
-    for file in `sed -n "
-      s/^$am__include $am__quote\(.*(DEPDIR).*\)$am__quote"'$/\1/p' <"$mf" | \
-	 sed -e 's/\$(DEPDIR)/'"$DEPDIR"'/g'`; do
-      # Make sure the directory exists.
-      test -f "$dirpart/$file" && continue
-      fdir=`$as_dirname -- "$file" ||
-$as_expr X"$file" : 'X\(.*[^/]\)//*[^/][^/]*/*$' \| \
-	 X"$file" : 'X\(//\)[^/]' \| \
-	 X"$file" : 'X\(//\)$' \| \
-	 X"$file" : 'X\(/\)' \| . 2>/dev/null ||
-$as_echo X"$file" |
-    sed '/^X\(.*[^/]\)\/\/*[^/][^/]*\/*$/{
+    am_filepart=`$as_basename -- "$am_mf" ||
+$as_expr X/"$am_mf" : '.*/\([^/][^/]*\)/*$' \| \
+	 X"$am_mf" : 'X\(//\)$' \| \
+	 X"$am_mf" : 'X\(/\)' \| . 2>/dev/null ||
+$as_echo X/"$am_mf" |
+    sed '/^.*\/\([^/][^/]*\)\/*$/{
 	    s//\1/
 	    q
 	  }
-	  /^X\(\/\/\)[^/].*/{
+	  /^X\/\(\/\/\)$/{
 	    s//\1/
 	    q
 	  }
-	  /^X\(\/\/\)$/{
-	    s//\1/
-	    q
-	  }
-	  /^X\(\/\).*/{
+	  /^X\/\(\/\).*/{
 	    s//\1/
 	    q
 	  }
 	  s/.*/./; q'`
-      as_dir=$dirpart/$fdir; as_fn_mkdir_p
-      # echo "creating $dirpart/$file"
-      echo '# dummy' > "$dirpart/$file"
-    done
+    { echo "$as_me:$LINENO: cd "$am_dirpart" \
+      && sed -e '/# am--include-marker/d' "$am_filepart" \
+        | $MAKE -f - am--depfiles" >&5
+   (cd "$am_dirpart" \
+      && sed -e '/# am--include-marker/d' "$am_filepart" \
+        | $MAKE -f - am--depfiles) >&5 2>&5
+   ac_status=$?
+   echo "$as_me:$LINENO: \$? = $ac_status" >&5
+   (exit $ac_status); } || am_rc=$?
   done
+  if test $am_rc -ne 0; then
+    { { $as_echo "$as_me:${as_lineno-$LINENO}: error: in \`$ac_pwd':" >&5
+$as_echo "$as_me: error: in \`$ac_pwd':" >&2;}
+as_fn_error $? "Something went wrong bootstrapping makefile fragments
+    for automatic dependency tracking.  Try re-running configure with the
+    '--disable-dependency-tracking' option to at least be able to build
+    the package (albeit without support for automatic dependency tracking).
+See \`config.log' for more details" "$LINENO" 5; }
+  fi
+  { am_dirpart=; unset am_dirpart;}
+  { am_filepart=; unset am_filepart;}
+  { am_mf=; unset am_mf;}
+  { am_rc=; unset am_rc;}
+  rm -f conftest-deps.mk
 }
  ;;
     "libtool":C)

@@ -24,6 +24,9 @@
 /* to disable DICT */
 #undef CURL_DISABLE_DICT
 
+/* disable DoH */
+#undef CURL_DISABLE_DOH
+
 /* to disable FILE */
 #undef CURL_DISABLE_FILE
 
@@ -35,6 +38,9 @@
 
 /* to disable HTTP */
 #undef CURL_DISABLE_HTTP
+
+/* disable HTTP authentication */
+#undef CURL_DISABLE_HTTP_AUTH
 
 /* to disable IMAP */
 #undef CURL_DISABLE_IMAP
@@ -48,17 +54,32 @@
 /* to disable --libcurl C code generation option */
 #undef CURL_DISABLE_LIBCURL_OPTION
 
+/* disable mime API */
+#undef CURL_DISABLE_MIME
+
+/* disable netrc parsing */
+#undef CURL_DISABLE_NETRC
+
 /* if the OpenSSL configuration won't be loaded automatically */
 #undef CURL_DISABLE_OPENSSL_AUTO_LOAD_CONFIG
 
+/* disable date parsing */
+#undef CURL_DISABLE_PARSEDATE
+
 /* to disable POP3 */
 #undef CURL_DISABLE_POP3
+
+/* disable progress-meter */
+#undef CURL_DISABLE_PROGRESS_METER
 
 /* to disable proxies */
 #undef CURL_DISABLE_PROXY
 
 /* to disable RTSP */
 #undef CURL_DISABLE_RTSP
+
+/* disable DNS shuffling */
+#undef CURL_DISABLE_SHUFFLE_DNS
 
 /* to disable SMB/CIFS */
 #undef CURL_DISABLE_SMB
@@ -71,9 +92,6 @@
 
 /* to disable TFTP */
 #undef CURL_DISABLE_TFTP
-
-/* to disable TLS-SRP authentication */
-#undef CURL_DISABLE_TLS_SRP
 
 /* to disable verbose strings */
 #undef CURL_DISABLE_VERBOSE_STRINGS
@@ -152,18 +170,6 @@
 
 /* Define to 1 if you have the <crypto.h> header file. */
 #undef HAVE_CRYPTO_H
-
-/* Define to 1 if you have the `CyaSSL_CTX_UseSupportedCurve' function. */
-#undef HAVE_CYASSL_CTX_USESUPPORTEDCURVE
-
-/* Define to 1 if you have the <cyassl/error-ssl.h> header file. */
-#undef HAVE_CYASSL_ERROR_SSL_H
-
-/* Define to 1 if you have the `CyaSSL_get_peer_certificate' function. */
-#undef HAVE_CYASSL_GET_PEER_CERTIFICATE
-
-/* Define to 1 if you have the <cyassl/options.h> header file. */
-#undef HAVE_CYASSL_OPTIONS_H
 
 /* Define to 1 if you have the declaration of `getpwuid_r', and to 0 if you
    don't. */
@@ -610,9 +616,6 @@
 /* Define to 1 if you have the `SSLv2_client_method' function. */
 #undef HAVE_SSLV2_CLIENT_METHOD
 
-/* Define to 1 if you have the `SSL_get_shutdown' function. */
-#undef HAVE_SSL_GET_SHUTDOWN
-
 /* Define to 1 if you have the <ssl.h> header file. */
 #undef HAVE_SSL_H
 
@@ -934,9 +937,6 @@
 /* Define to enable c-ares support */
 #undef USE_ARES
 
-/* if CyaSSL/WolfSSL is enabled */
-#undef USE_CYASSL
-
 /* if GnuTLS is enabled */
 #undef USE_GNUTLS
 
@@ -1013,6 +1013,9 @@
 
 /* to enable SSPI support */
 #undef USE_WINDOWS_SSPI
+
+/* if wolfSSL is enabled */
+#undef USE_WOLFSSL
 
 /* Version number of package */
 #undef VERSION

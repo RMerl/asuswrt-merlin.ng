@@ -2447,7 +2447,6 @@
     <ClCompile Include="..\..\..\..\lib\vauth\spnego_gssapi.c" />
     <ClCompile Include="..\..\..\..\lib\vauth\spnego_sspi.c" />
     <ClCompile Include="..\..\..\..\lib\vauth\vauth.c" />
-    <ClCompile Include="..\..\..\..\lib\vtls\cyassl.c" />
     <ClCompile Include="..\..\..\..\lib\vtls\gskit.c" />
     <ClCompile Include="..\..\..\..\lib\vtls\gtls.c" />
     <ClCompile Include="..\..\..\..\lib\vtls\mbedtls.c" />
@@ -2460,6 +2459,7 @@
     <ClCompile Include="..\..\..\..\lib\vtls\schannel_verify.c" />
     <ClCompile Include="..\..\..\..\lib\vtls\sectransp.c" />
     <ClCompile Include="..\..\..\..\lib\vtls\vtls.c" />
+    <ClCompile Include="..\..\..\..\lib\vtls\wolfssl.c" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\..\lib\altsvc.h" />
@@ -2575,7 +2575,6 @@
     <ClInclude Include="..\..\..\..\lib\vauth\digest.h" />
     <ClInclude Include="..\..\..\..\lib\vauth\ntlm.h" />
     <ClInclude Include="..\..\..\..\lib\vauth\vauth.h" />
-    <ClInclude Include="..\..\..\..\lib\vtls\cyassl.h" />
     <ClInclude Include="..\..\..\..\lib\vtls\gskit.h" />
     <ClInclude Include="..\..\..\..\lib\vtls\gtls.h" />
     <ClInclude Include="..\..\..\..\lib\vtls\mbedtls.h" />
@@ -2587,6 +2586,7 @@
     <ClInclude Include="..\..\..\..\lib\vtls\schannel.h" />
     <ClInclude Include="..\..\..\..\lib\vtls\sectransp.h" />
     <ClInclude Include="..\..\..\..\lib\vtls\vtls.h" />
+    <ClInclude Include="..\..\..\..\lib\vtls\wolfssl.h" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="..\..\..\..\lib\libcurl.rc" />

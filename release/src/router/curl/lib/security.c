@@ -7,7 +7,7 @@
  * rewrite to work around the paragraph 2 in the BSD licenses as explained
  * below.
  *
- * Copyright (c) 1998, 1999, 2017 Kungliga Tekniska Högskolan
+ * Copyright (c) 1998, 1999, 2017 Kungliga Tekniska HÃ¶gskolan
  * (Royal Institute of Technology, Stockholm, Sweden).
  *
  * Copyright (C) 2001 - 2019, Daniel Stenberg, <daniel@haxx.se>, et al.
@@ -267,7 +267,7 @@ static ssize_t sec_recv(struct connectdata *conn, int sockindex,
 }
 
 /* Send |length| bytes from |from| to the |fd| socket taking care of encoding
-   and negociating with the server. |from| can be NULL. */
+   and negotiating with the server. |from| can be NULL. */
 static void do_sec_send(struct connectdata *conn, curl_socket_t fd,
                         const char *from, int length)
 {

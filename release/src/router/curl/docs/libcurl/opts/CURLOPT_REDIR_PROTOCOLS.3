@@ -20,7 +20,7 @@
 .\" *
 .\" **************************************************************************
 .\"
-.TH CURLOPT_REDIR_PROTOCOLS 3 "September 21, 2016" "libcurl 7.65.1" "curl_easy_setopt options"
+.TH CURLOPT_REDIR_PROTOCOLS 3 "July 16, 2019" "libcurl 7.65.3" "curl_easy_setopt options"
 
 .SH NAME
 CURLOPT_REDIR_PROTOCOLS \- set protocols allowed to redirect to
@@ -38,10 +38,11 @@ redirections.
 Protocols denied by \fICURLOPT_PROTOCOLS(3)\fP are not overridden by this
 option.
 
-By default libcurl will allow all protocols on redirect except several disabled
-for security reasons: Since 7.19.4 FILE and SCP are disabled, and since 7.40.0
-SMB and SMBS are also disabled. \fICURLPROTO_ALL\fP enables all protocols on
-redirect, including those disabled for security.
+By default libcurl will allow HTTP, HTTPS, FTP and FTPS on redirect (7.65.2).
+Older versions of libcurl allowed all protocols on redirect except several
+disabled for security reasons: Since 7.19.4 FILE and SCP are disabled, and
+since 7.40.0 SMB and SMBS are also disabled. \fICURLPROTO_ALL\fP enables all
+protocols on redirect, including those disabled for security.
 
 These are the available protocol defines:
 .nf

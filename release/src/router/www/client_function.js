@@ -109,7 +109,6 @@ var totalClientNum = {
 var AiMeshTotalClientNum = [];
 
 var setClientAttr = function(){
-	this.hostname = "";
 	this.type = "0";
 	this.defaultType = "0";
 	this.name = "";

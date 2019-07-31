@@ -1,7 +1,7 @@
 Asuswrt-Merlin 384/NG Changelog
 ===============================
 
-384.13 (xx-xxx-xxxx)
+384.13 (31-July-2019)
   - NEW: AiMesh Router and node support.  Note that automatic live
          update of Merlin-based nodes is not supported, you will have
          to manually update any Merlin-based nodes when a new firmware
@@ -36,6 +36,9 @@ Asuswrt-Merlin 384/NG Changelog
            and QoS Classification pages.
   - FIXED: Remote IP field filtering on Classification page wasn't
            working.
+  - FIXED: Incorrect user permissions displayed on the FTP page.
+  - FIXED: Performance issues for some users, following the kernel
+           security fixes in 384.12. (gzenux)
 
 
 384.12 (22-June-2019)

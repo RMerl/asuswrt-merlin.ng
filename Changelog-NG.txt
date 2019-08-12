@@ -1,6 +1,10 @@
 Asuswrt-Merlin 384/NG Changelog
 ===============================
 
+384.13_1 (12-Aug-2019)
+  - FIXED: RT-AC87U failing to boot when configuring in AP mode.
+
+
 384.13 (31-July-2019)
   - NEW: AiMesh Router and node support.  Note that automatic live
          update of Merlin-based nodes is not supported, you will have

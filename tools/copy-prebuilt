@@ -20,7 +20,6 @@ then
 	cp release/src/router/wl_arm_7114/prebuilt/* $REPO/release/src/router/wl_arm_7114/prebuilt/$MODEL/
 	cp release/src/router/envram_bin/envram$ARCH$SDK/* $REPO/release/src/router/envram_bin/envram$ARCH$SDK/
 	cp release/src-rt-7.14.114.x/src/wl/exe/prebuilt/* $REPO/release/src-rt-7.14.114.x/src/wl/exe/prebuilt/
-	cp -a release/src/router/Beceem_BCMS250/prebuild/* $REPO/release/src/router/Beceem_BCMS250$ARCH/prebuild/
 	cp -a release/src/router/tuxera/broadcom$ARCH$SDK/* $REPO/release/src/router/tuxera/broadcom$ARCH$SDK/
 
 elif [ "$MODEL" == "RT-AC3200" ]
@@ -32,7 +31,6 @@ then
 	cp release/src/router/ctf_arm/bcm7/* $REPO/release/src/router/ctf_arm/bcm7/
 	cp release/src/router/wl_arm_7/prebuilt/* $REPO/release/src/router/wl_arm_7/prebuilt/
 	cp release/src-rt-7.x.main/src/wl/exe/prebuilt/* $REPO/release/src-rt-7.x.main/src/wl/exe/prebuilt/
-	cp -a release/src/router/Beceem_BCMS250/prebuild/* $REPO/release/src/router/Beceem_BCMS250$ARCH/prebuild/
 	cp -a release/src/router/tuxera/broadcom$ARCH$SDK/* $REPO/release/src/router/tuxera/broadcom$ARCH$SDK/
 
 elif [ "$MODEL" == "RT-AC56U" ] || [ "$MODEL" == "RT-AC68U" ] || [ "$MODEL" == "RT-AC87U" ]
@@ -44,7 +42,6 @@ then
         cp release/src/router/ctf_arm/bcm6/* $REPO/release/src/router/ctf_arm/bcm6/
         cp release/src/router/wl_arm/prebuilt/* $REPO/release/src/router/wl_arm/prebuilt/$MODEL/
 	cp release/src-rt-6.x.4708/wl/exe/prebuilt/* $REPO/release/src-rt-6.x.4708/wl/exe/prebuilt/
-	cp -a release/src/router/Beceem_BCMS250/prebuild/* $REPO/release/src/router/Beceem_BCMS250$ARCH/prebuild/
 	cp -a release/src/router/tuxera/broadcom$ARCH$SDK/* $REPO/release/src/router/tuxera/broadcom$ARCH$SDK/
 
 elif [ "$MODEL" == "RT-AC86U" ]
@@ -77,7 +74,7 @@ then
 	cp release/src/router/appeventd/prebuilt/* $REPO/release/src/router/appeventd/prebuilt/
 	cp release/src/router/bcm_boardctl/prebuilt/* $REPO/release/src/router/bcm_boardctl/prebuilt/
 	cp release/src/router/mcpd/prebuilt/* $REPO/release/src/router/mcpd/prebuilt/
-	cp release/src/router//prebuilt/* $REPO/release/src/router//prebuilt/
+	cp release/src/router/prebuilt/* $REPO/release/src/router/prebuilt/
 	cp release/src/router/ethswctl_lib/prebuilt/* $REPO/release/src/router/ethswctl_lib/prebuilt/
 	cp release/src/router/bcmtm/prebuilt/* $REPO/release/src/router/bcmtm/prebuilt/
 	cp release/src/router/bcm_flashutil/prebuilt/* $REPO/release/src/router/bcm_flashutil/prebuilt/
@@ -95,6 +92,14 @@ then
 	cp release/src/router/eventd/prebuilt/* $REPO/release/src/router/eventd/prebuilt/
 	cp -a release/src/router/tuxera/broadcom$ARCH$HND/* $REPO/release/src/router/tuxera/broadcom$ARCH$HND/
 
+elif [ "$MODEL" == "RT-AX88U" ]
+then
+        SDK="_axhnd"
+        ARCH="_arm"
+        HND="_axhnd"
+
+	cp release/src-rt-5.02axhnd/wl/exe/prebuilt/* $REPO/release/src-rt-5.02axhnd/wl/exe/prebuilt/
+	cp -a release/src/router/tuxera/broadcom_arm_ax/* $REPO/release/src/router/tuxera/broadcom_arm_ax/
 else
 	echo "Unrecognized model!"
 	exit
@@ -121,21 +126,32 @@ then
 	cp release/src/router/emf$ARCH$SDK/igsconf/prebuilt/* $REPO/release/src/router/emf$ARCH$SDK/igsconf/prebuilt/
 fi
 
+# On AX these are in router-sysdep
+if [ "$MODEL" != "RT-AX88U" ]
+then
+	cp release/src/router/acsd$ARCH$SDK/prebuilt/* $REPO/release/src/router/acsd$ARCH$SDK/prebuilt/
+	cp release/src/router/eapd$ARCH$SDK/linux/prebuilt/* $REPO/release/src/router/eapd$ARCH$SDK/linux/prebuilt/
+	cp -a release/src/router/libupnp$ARCH$SDK/* $REPO/release/src/router/libupnp$ARCH$SDK/
+	cp release/src/router/nas$ARCH$SDK/nas/prebuilt/* $REPO/release/src/router/nas$ARCH$SDK/nas/prebuilt/
+	cp release/src/router/wlconf$ARCH$SDK/prebuilt/* $REPO/release/src/router/wlconf$ARCH$SDK/prebuilt/
+	cp release/src/router/wps$ARCH$SDK/prebuilt/* $REPO/release/src/router/wps$ARCH$SDK/prebuilt/
+	cp release/src/router/wlceventd/prebuilt/* $REPO/release/src/router/wlceventd/prebuilt$ARCH$SDK/
+	cp release/src/router/dhd_monitor/prebuilt/* $REPO/release/src/router/dhd_monitor/prebuilt$HND/
+	cp release/src/router/dblog/daemon/prebuild/* $REPO/release/src/router/dblog/daemon/prebuild$ARCH$HND/
+	cp release/src/router/dblog/commands/prebuild/* $REPO/release/src/router/dblog/commands/prebuild$ARCH$HND/
+	cp release/src/router/lighttpd-1.4.39/prebuild/* $REPO/release/src/router/lighttpd-1.4.39/prebuild$HND/
+else
+	cp release/src/router/lighttpd-1.4.39/prebuild/* $REPO/release/src/router/lighttpd-1.4.39/prebuild_arm_axhnd/
+        cp release/src/router/dblog/daemon/prebuild/* $REPO/release/src/router/dblog/daemon/prebuild_arm_axhnd/
+        cp release/src/router/dblog/commands/prebuild/* $REPO/release/src/router/dblog/commands/prebuild_arm_axhnd/
+fi
+
 cp release/src/router/bwdpi_source/asus/prebuild/libbwdpi.so $REPO/release/src/router/bwdpi_source/asus/prebuild$ARCH$SDK/$MODEL/
 cp release/src/router/bwdpi_source/asus/prebuild/hwinfo $REPO/release/src/router/bwdpi_source/asus/prebuild$ARCH$SDK/
 cp release/src/router/bwdpi_source/asus_sql/prebuild/* $REPO/release/src/router/bwdpi_source/asus_sql/prebuild$ARCH$SDK
 cp release/src/router/bwdpi_source/prebuild/* $REPO/release/src/router/bwdpi_source/prebuild$ARCH$SDK
-cp release/src/router/acsd$ARCH$SDK/prebuilt/* $REPO/release/src/router/acsd$ARCH$SDK/prebuilt/
-cp release/src/router/eapd$ARCH$SDK/linux/prebuilt/* $REPO/release/src/router/eapd$ARCH$SDK/linux/prebuilt/
-cp -a release/src/router/libupnp$ARCH$SDK/* $REPO/release/src/router/libupnp$ARCH$SDK/
-cp release/src/router/nas$ARCH$SDK/nas/prebuilt/* $REPO/release/src/router/nas$ARCH$SDK/nas/prebuilt/
-cp release/src/router/wlconf$ARCH$SDK/prebuilt/* $REPO/release/src/router/wlconf$ARCH$SDK/prebuilt/
-cp release/src/router/wps$ARCH$SDK/prebuilt/* $REPO/release/src/router/wps$ARCH$SDK/prebuilt/
-cp release/src/router/wlceventd/prebuilt/* $REPO/release/src/router/wlceventd/prebuilt$ARCH$SDK/
 
 
-# Arch-specific (like _arm_hnd)
-cp release/src/router/dhd_monitor/prebuilt/* $REPO/release/src/router/dhd_monitor/prebuilt$HND/
 cp release/src/router/aaews/prebuild/* $REPO/release/src/router/aaews/prebuild$ARCH$HND/
 cp release/src/router/asusnatnl/natnl/prebuild/* $REPO/release/src/router/asusnatnl/natnl/prebuild$ARCH$HND/
 cp -a release/src/router/cloudcheck/broadcom_arm/* $REPO/release/src/router/cloudcheck/broadcom_arm/
@@ -147,12 +163,9 @@ cp release/src/router/protect_srv/lib/prebuild/* $REPO/release/src/router/protec
 cp release/src/router/sambaclient/prebuild/* $REPO/release/src/router/sambaclient/prebuild$ARCH$HND/
 cp release/src/router/u2ec/prebuild/* $REPO/release/src/router/u2ec/prebuild$ARCH$HND/
 cp release/src/router/wlc_nt/prebuild/* $REPO/release/src/router/wlc_nt/prebuild$ARCH$HND/
-cp release/src/router/dblog/daemon/prebuild/* $REPO/release/src/router/dblog/daemon/prebuild$ARCH$HND/
-cp release/src/router/dblog/commands/prebuild/* $REPO/release/src/router/dblog/commands/prebuild$ARCH$HND/
 cp release/src/router/sysstate/log_daemon/prebuild/* $REPO/release/src/router/sysstate/log_daemon/prebuild$ARCH$HND/
 cp release/src/router/sysstate/commands/prebuild/* $REPO/release/src/router/sysstate/commands/prebuild$ARCH$HND/
 cp release/src/router/networkmap/prebuild/* $REPO/release/src/router/networkmap/prebuild$ARCH$SDK/
-cp release/src/router/lighttpd-1.4.39/prebuild/* $REPO/release/src/router/lighttpd-1.4.39/prebuild$HND/
 cp release/src/router/nt_center/prebuild/* $REPO/release/src/router/nt_center/prebuild$ARCH$HND/
 cp release/src/router/nt_center/actMail/prebuild/* $REPO/release/src/router/nt_center/actMail/prebuild$ARCH$HND/
 cp release/src/router/nt_center/lib/prebuild/* $REPO/release/src/router/nt_center/lib/prebuild$ARCH$HND/

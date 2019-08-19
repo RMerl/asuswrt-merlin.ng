@@ -242,7 +242,7 @@ function initial(){
 
 	if(dnspriv_support){
 		if(dnspriv_enable != 0 )
-			showtext(document.getElementById("dnspriv_notice"), "(overriden by DNS Privacy)");
+			showtext(document.getElementById("dnspriv_notice"), "(overridden by DNS Privacy)");
 
 		if (dnspriv_enable == 1)
 			var dnspriv_mode = "DNS-over-TLS";

@@ -1,5 +1,5 @@
-#! /sbin/nft -f
+#!/bin/sh
 
-flush chain ip nat miniupnpd
-flush chain ip nat miniupnpd-pcp-peer
-flush chain ip filter miniupnpd
+nft flush chain ip nat MINIUPNPD
+nft flush chain ip nat MINIUPNPD-POSTROUTING
+nft flush chain inet filter MINIUPNPD

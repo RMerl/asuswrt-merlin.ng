@@ -1,4 +1,10 @@
-$Id: Changelog.txt,v 1.448 2019/05/21 08:39:42 nanard Exp $
+$Id: Changelog.txt,v 1.450 2019/08/24 08:42:50 nanard Exp $
+
+2019/08/24:
+  Small fixes in netfilter code
+
+2019/06/25:
+  Update netfilter nftables code
 
 2019/05/21:
   Allow to use two different network interfaces for IPv4 and IPv6 internet

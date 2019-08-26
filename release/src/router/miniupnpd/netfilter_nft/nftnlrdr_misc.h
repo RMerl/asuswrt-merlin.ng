@@ -10,6 +10,7 @@
 
 #define NFT_TABLE_NAT  "nat"
 #define NFT_TABLE_FILTER  "filter"
+#define NFT_DESCR_SIZE 1024
 
 enum rule_reg_type { 
 	RULE_REG_NONE,
@@ -18,7 +19,11 @@ enum rule_reg_type {
 	RULE_REG_IP_SRC_ADDR,
 	RULE_REG_IP_DEST_ADDR,
 	RULE_REG_IP_SD_ADDR, /* source & dest */
+	RULE_REG_IP6_SRC_ADDR,
+	RULE_REG_IP6_DEST_ADDR,
+	RULE_REG_IP6_SD_ADDR, /* source & dest */
 	RULE_REG_IP_PROTO,
+	RULE_REG_IP6_PROTO,
 	RULE_REG_TCP_DPORT,
 	RULE_REG_TCP_SD_PORT, /* source & dest */
 	RULE_REG_IMM_VAL,
@@ -28,12 +33,17 @@ enum rule_reg_type {
 enum rule_type {
 	RULE_NONE,
 	RULE_NAT,
-	RULE_SNAT,
 	RULE_FILTER,
 	RULE_COUNTER,
 };
 
-typedef struct rule_ {
+enum rule_chain_type {
+	RULE_CHAIN_FILTER,
+	RULE_CHAIN_PEER,
+	RULE_CHAIN_REDIRECT,
+};
+
+typedef struct rule_t {
 	LIST_ENTRY(rule_t) entry;
 	char * table;
 	char * chain;
@@ -47,6 +57,8 @@ typedef struct rule_ {
 	in_addr_t eaddr;
 	in_addr_t iaddr;
 	in_addr_t rhost;
+	struct in6_addr iaddr6;
+	struct in6_addr rhost6;
 	uint16_t eport;
 	uint16_t iport;
 	uint16_t rport;
@@ -57,16 +69,18 @@ typedef struct rule_ {
 	uint32_t reg2_val;
 	uint64_t packets;
 	uint64_t bytes;
-	char *desc;
+	char * desc;
+	uint32_t desc_len;
+	int index;
 } rule_t;
 
-LIST_HEAD(rule_list, rule_);
-extern struct rule_list head;
-extern rule_t **peer_cache;
-extern rule_t **redirect_cache;
+LIST_HEAD(rule_list, rule_t);
+extern struct rule_list head_filter;
+extern struct rule_list head_redirect;
+extern struct rule_list head_peer;
 
 int
-nft_send_request(struct nftnl_rule * rule, uint16_t cmd);
+nft_send_request(struct nftnl_rule * rule, uint16_t cmd, enum rule_chain_type type);
 struct nftnl_rule *
 rule_set_dnat(uint8_t family, const char * ifname, uint8_t proto,
 	      in_addr_t rhost, unsigned short eport,
@@ -82,10 +96,21 @@ rule_set_snat(uint8_t family, uint8_t proto,
 	      const char *handle);
 struct nftnl_rule *
 rule_set_filter(uint8_t family, const char * ifname, uint8_t proto,
-		in_addr_t rhost, in_addr_t iaddr, unsigned short eport,
-		unsigned short iport, const char * descr, const char *handle);
+		in_addr_t rhost, in_addr_t iaddr,
+		unsigned short eport, unsigned short iport,
+		unsigned short rport, const char * descr, const char *handle);
 struct nftnl_rule *
-rule_del_handle(rule_t *r);
-void
-reflesh_nft_cache(uint32_t family);
+rule_set_filter6(uint8_t family, const char * ifname, uint8_t proto,
+		struct in6_addr *rhost6, struct in6_addr *iaddr6,
+		unsigned short eport, unsigned short iport, 
+		unsigned short rport, const char *descr, const char *handle);
+struct nftnl_rule *
+rule_set_filter_common(struct nftnl_rule *r, uint8_t family, const char * ifname,
+		uint8_t proto, unsigned short eport, unsigned short iport, 
+		unsigned short rport, const char *descr, const char *handle);
+struct nftnl_rule *rule_del_handle(rule_t *r);
+void reflesh_nft_cache_filter(void);
+void reflesh_nft_cache_redirect(void);
+void reflesh_nft_cache_peer(void);
+void reflesh_nft_cache(struct rule_list *head, char *table, const char *chain, uint32_t family);
 void print_rule(rule_t *r);

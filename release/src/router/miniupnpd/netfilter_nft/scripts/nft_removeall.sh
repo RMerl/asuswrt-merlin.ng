@@ -1,5 +1,4 @@
-#! /sbin/nft -f
+#!/bin/sh
 
-delete rule nat miniupnpd
-delete rule nat miniupnpd-pcp-peer
-delete rule filter miniupnpd
+# Remove all rules in nft not just miniupnpd
+nft flush ruleset

@@ -1,6 +1,12 @@
 Asuswrt-Merlin 384/NG Changelog
 ===============================
 
+384.14 (xx-xxx-xxxx)
+  - UPDATED: miniupnpd 20190824
+  - FIXED: Webui wouldn't notify when running dangerously low on
+           free nvram (feature was lost at some point in the past)
+
+
 384.13_1 (12-Aug-2019)
   - FIXED: RT-AC87U failing to boot when configuring in AP mode.
 

@@ -1,7 +1,7 @@
-/* $Id: iptcrdr.c,v 1.60 2018/07/06 12:00:09 nanard Exp $ */
+/* $Id: iptcrdr.c,v 1.62 2019/08/24 07:06:22 nanard Exp $ */
 /* vim: tabstop=4 shiftwidth=4 noexpandtab
  * MiniUPnP project
- * http://miniupnp.free.fr/ or http://miniupnp.tuxfamily.org/
+ * http://miniupnp.free.fr/ or https://miniupnp.tuxfamily.org/
  * (c) 2006-2019 Thomas Bernard
  * This software is subject to the conditions detailed
  * in the LICENCE file provided within the distribution */
@@ -1617,6 +1617,9 @@ get_portmappings_in_range(unsigned short startport, unsigned short endport,
 					{
 						unsigned short * tmp;
 						/* need to increase the capacity of the array */
+						capacity += 128;
+						if (capacity <= *number)
+							capacity = *number + 1;
 						tmp = realloc(array, sizeof(unsigned short)*capacity);
 						if(!tmp)
 						{

@@ -1,3 +1,6 @@
+/* $Id: test_nfct_get.c,v 1.2 2019/06/30 19:49:18 nanard Exp $ */
+#include <stdio.h>
+#include <syslog.h>
 #include "nfct_get.c"
 
 int main(int argc, char *argv[])
@@ -5,8 +8,12 @@ int main(int argc, char *argv[])
 	struct sockaddr_storage src, dst, ext;
 	char buff[INET6_ADDRSTRLEN];
 
-	if (argc!=5)
-		return 0;
+	if (argc!=5) {
+		fprintf(stderr, "Usage: %s SRC_IP SRC_PORT DST_IP DST_PORT\n", argv[0]);
+		return 1;
+	}
+
+	openlog("test_nfct_get", LOG_PERROR|LOG_CONS, LOG_LOCAL0);
 
 	if (1 != inet_pton(AF_INET, argv[1],
 				&((struct sockaddr_in*)&src)->sin_addr)) {

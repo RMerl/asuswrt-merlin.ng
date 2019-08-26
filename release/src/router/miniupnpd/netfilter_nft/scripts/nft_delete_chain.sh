@@ -1,5 +1,5 @@
-#! /sbin/nft -f
+#!/bin/sh
 
-delete chain nat miniupnpd
-delete chain nat miniupnpd-pcp-peer
-delete chain filter miniupnpd
+nft delete chain nat MINIUPNPD
+nft delete chain nat MINIUPNPD-POSTROUTING
+nft delete chain filter MINIUPNPD

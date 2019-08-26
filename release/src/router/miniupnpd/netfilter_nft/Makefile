@@ -5,15 +5,15 @@ LIBS = -lnftnl -lmnl
 
 ARCH := $(shell uname -m | grep -q "x86_64" && echo 64)
 
-all:	test_nfct_get testnftnlrdr 
+all:	test_nfct_get testnftnlrdr testnftpinhole
 
 clean:
-	$(RM) *.o testnftnlcrdr testnftnlpinhole testnftnlrdr_peer \
+	$(RM) *.o testnftnlcrdr testnftpinhole testnftnlrdr_peer \
 		test_nfct_get testnftnlrdr 
 
 testnftnlrdr:	nftnlrdr.o nftnlrdr_misc.o testnftnlrdr.o upnpglobalvars.o $(LIBS)
 
-testiptpinhole:	testiptpinhole.o iptpinhole.o upnpglobalvars.o $(LIBS)
+testnftpinhole:	nftpinhole.o nftnlrdr_misc.o testnftpinhole.o upnpglobalvars.o $(LIBS)
 
 test_nfct_get:	test_nfct_get.o test_nfct_get.o -lmnl -lnetfilter_conntrack
 
@@ -27,7 +27,7 @@ nftnlrdr.o:		nftnlrdr.c nftnlrdr.h
 
 nftnlrdr_misc.o:	nftnlrdr_misc.c
 
-iptpinhole.o:		iptpinhole.c iptpinhole.h
+nftpinhole.o:		nftpinhole.c nftpinhole.h
 
 upnpglobalvars.o:	../upnpglobalvars.c ../upnpglobalvars.h
 	$(CC) -c -o $@ $<

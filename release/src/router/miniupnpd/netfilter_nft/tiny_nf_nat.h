@@ -1,4 +1,4 @@
-/* $Id: tiny_nf_nat.h,v 1.1 2011/07/30 13:14:36 nanard Exp $ */
+/* $Id: tiny_nf_nat.h,v 1.1 2015/04/30 09:05:08 nanard Exp $ */
 /* Only what miniupnpd needs, until linux-libc-dev gains nf_nat.h */
 
 #ifndef TINY_NF_NAT_H

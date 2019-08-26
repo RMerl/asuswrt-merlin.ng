@@ -46,7 +46,8 @@ BASEOBJS = miniupnpd.o upnphttp.o upnpdescgen.o upnpsoap.o \
            upnppinhole.o pcplearndscp.o asyncsendto.o
 
 LNXOBJS = linux/getifstats.o linux/ifacewatcher.o linux/getroute.o
-NETFILTEROBJS = netfilter_nft/nftnlrdr.o netfilter_nft/nfct_get.o netfilter_nft/nftnlrdr_misc.o
+NETFILTEROBJS = netfilter_nft/nftnlrdr.o netfilter_nft/nftpinhole.o \
+                netfilter_nft/nfct_get.o netfilter_nft/nftnlrdr_misc.o
 
 ALLOBJS = $(BASEOBJS) $(LNXOBJS) $(NETFILTEROBJS)
 
@@ -210,7 +211,7 @@ upnputils.o: miniupnpdtypes.h getroute.h
 getconnstatus.o: getconnstatus.h getifaddr.h
 upnppinhole.o: macros.h config.h upnpredirect.h upnpglobalvars.h
 upnppinhole.o: upnppermissions.h miniupnpdtypes.h upnpevents.h
-#upnppinhole.o: netfilter/iptpinhole.h
+upnppinhole.o: netfilter_nft/nftpinhole.h
 pcplearndscp.o: config.h upnpglobalvars.h upnppermissions.h miniupnpdtypes.h
 pcplearndscp.o: pcplearndscp.h
 asyncsendto.o: asyncsendto.h
@@ -222,8 +223,8 @@ linux/getroute.o: getroute.h upnputils.h
 netfilter_nft/nftnlrdr.o: macros.h config.h netfilter_nft/nftnlrdr.h commonrdr.h
 netfilter_nft/nftnlrdr.o: config.h upnpglobalvars.h upnppermissions.h
 netfilter_nft/nftnlrdr.o: miniupnpdtypes.h
-netfilter_nft/iptpinhole.o: config.h netfilter_nft/iptpinhole.h upnpglobalvars.h
-netfilter_nft/iptpinhole.o: upnppermissions.h config.h miniupnpdtypes.h
+netfilter_nft/nftpinhole.o: config.h netfilter_nft/nftpinhole.h upnpglobalvars.h
+netfilter_nft/nftpinhole.o: upnppermissions.h config.h miniupnpdtypes.h
 testupnpdescgen.o: macros.h config.h upnpdescgen.h upnpdescstrings.h
 testupnpdescgen.o: getifaddr.h
 upnpdescgen.o: config.h getifaddr.h upnpredirect.h upnpdescgen.h

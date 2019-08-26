@@ -1,7 +1,7 @@
-/* $Id: iptpinhole.c,v 1.18 2018/03/13 23:05:21 nanard Exp $ */
+/* $Id: iptpinhole.c,v 1.20 2019/08/24 07:18:23 nanard Exp $ */
 /* MiniUPnP project
- * http://miniupnp.free.fr/ or http://miniupnp.tuxfamily.org/
- * (c) 2012-2018 Thomas Bernard
+ * http://miniupnp.free.fr/ or https://miniupnp.tuxfamily.org/
+ * (c) 2012-2019 Thomas Bernard
  * This software is subject to the conditions detailed
  * in the LICENCE file provided within the distribution */
 
@@ -186,6 +186,7 @@ ip6tc_init_verify_append(const char * table,
 		syslog(LOG_ERR, "ip6tc_commit() error : %s", ip6tc_strerror(errno));
 		goto error;
 	}
+	ip6tc_free(h);
 	return 0;	/* ok */
 error:
 	ip6tc_free(h);

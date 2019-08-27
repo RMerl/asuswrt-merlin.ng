@@ -57,6 +57,9 @@ else
 	echo "0.emailAddress_value=root@localhost" >> $OPENSSLCNF
 fi
 
+# Required extension
+sed -i "/\[ v3_ca \]/aextendedKeyUsage = serverAuth" $OPENSSLCNF
+
 I=0
 # Start of SAN extensions
 sed -i "/\[ CA_default \]/acopy_extensions = copy" $OPENSSLCNF

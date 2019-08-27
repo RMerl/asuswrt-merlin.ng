@@ -2692,6 +2692,14 @@ static int one_opt(int option, char *arg, char *errstr, char *gen_err, int comma
 	    
 	    if (size < 0)
 	      size = 0;
+
+	    /* Note that for very large cache sizes, the malloc()
+	       will overflow. For the size of the cache record
+	       at the time this was noted, the value of "very large"
+               was 46684428. Limit to an order of magnitude less than
+	       that to be safe from changes to the cache record. */
+	    if (size > 5000000)
+	      size = 5000000;
 	    
 	    daemon->cachesize = size;
 	  }

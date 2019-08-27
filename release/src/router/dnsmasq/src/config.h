@@ -284,11 +284,16 @@ HAVE_SOCKADDR_SA_LEN
 #define HAVE_BSD_NETWORK
 #define HAVE_GETOPT_LONG
 #define HAVE_SOCKADDR_SA_LEN
+#define NO_IPSET
 /* Define before sys/socket.h is included so we get socklen_t */
 #define _BSD_SOCKLEN_T_
 /* Select the RFC_3542 version of the IPv6 socket API. 
    Define before netinet6/in6.h is included. */
-#define __APPLE_USE_RFC_3542 
+#define __APPLE_USE_RFC_3542
+/* Required for Mojave. */
+#ifndef SOL_TCP
+#  define SOL_TCP IPPROTO_TCP
+#endif
 #define NO_IPSET
 
 #elif defined(__NetBSD__)

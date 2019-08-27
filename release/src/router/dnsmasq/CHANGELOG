@@ -38,6 +38,12 @@ version 2.81
 	the DHCP server in subnets where the server (or relay) doesn't
 	have an interface on the network in that subnet. Many thanks to
 	kamp.de for sponsoring this feature.
+	
+	Fix broken contrib/lease_tools/dhcp_lease_time.c. A packet
+	validation check got borked in commit 2b38e382 and release 2.80.
+	Thanks to Tomasz Szajner for spotting this.
+
+	Fix compilation against nettle version 3.5 and later.
 
 	
 version 2.80

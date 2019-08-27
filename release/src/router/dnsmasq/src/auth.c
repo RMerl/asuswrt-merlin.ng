@@ -836,6 +836,9 @@ size_t answer_auth(struct dns_header *header, char *limit, size_t qlen, time_t n
       header->hb4 &= ~HB4_RA;
     }
 
+  /* data is never DNSSEC signed. */
+  header->hb4 &= ~HB4_AD;
+
   /* authoritative */
   if (auth)
     header->hb3 |= HB3_AA;

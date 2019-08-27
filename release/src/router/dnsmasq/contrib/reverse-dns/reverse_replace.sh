@@ -1,4 +1,4 @@
-#!/bin/ash
+#!/bin/dash
 # $Id: reverse_replace.sh 18 2015-03-01 16:12:35Z jo $
 #
 # Usage e.g.: netstat -n -4 | reverse_replace.sh 

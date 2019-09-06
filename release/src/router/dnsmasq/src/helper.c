@@ -80,7 +80,8 @@ int create_helper(int event_fd, int err_fd, uid_t uid, gid_t gid, long max_fd)
   pid_t pid;
   int i, pipefd[2];
   struct sigaction sigact;
-
+  unsigned char *alloc_buff = NULL;
+  
   /* create the pipe through which the main program sends us commands,
      then fork our process. */
   if (pipe(pipefd) == -1 || !fix_fd(pipefd[1]) || (pid = fork()) == -1)
@@ -186,11 +187,16 @@ int create_helper(int event_fd, int err_fd, uid_t uid, gid_t gid, long max_fd)
       struct script_data data;
       char *p, *action_str, *hostname = NULL, *domain = NULL;
       unsigned char *buf = (unsigned char *)daemon->namebuff;
-      unsigned char *end, *extradata, *alloc_buff = NULL;
+      unsigned char *end, *extradata;
       int is6, err = 0;
       int pipeout[2];
 
-      free(alloc_buff);
+      /* Free rarely-allocated memory from previous iteration. */
+      if (alloc_buff)
+	{
+	  free(alloc_buff);
+	  alloc_buff = NULL;
+	}
       
       /* we read zero bytes when pipe closed: this is our signal to exit */ 
       if (!read_write(pipefd[0], (unsigned char *)&data, sizeof(data), 1))

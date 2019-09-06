@@ -14,5 +14,5 @@ log-facility=/var/log/dnsmasq.log
 
 in the dnsmasq configuration.
 
-The script runs on debian (with ash installed) and on busybox.
+The script runs on debian (with dash installed) and on busybox.
 

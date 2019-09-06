@@ -137,6 +137,7 @@ typedef unsigned long long u64;
 #endif
 
 #if defined(HAVE_LINUX_NETWORK)
+#include <linux/sockios.h>
 #include <linux/capability.h>
 /* There doesn't seem to be a universally-available 
    userspace header for these. */

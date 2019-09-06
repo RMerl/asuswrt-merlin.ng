@@ -3,8 +3,13 @@ Asuswrt-Merlin 384/NG Changelog
 
 384.14 (xx-xxx-xxxx)
   - UPDATED: miniupnpd 20190824
+  - UPDATED: dnsmasq 2.80-67-g5a91334 (themiron)
+  - CHANGED: Made webui SSL certificate generation compliant with
+             IOS 13 and MacOS 10.15 new requirements.
   - FIXED: Webui wouldn't notify when running dangerously low on
            free nvram (feature was lost at some point in the past)
+  - FIXED: Non-working link to YandexDNS on the webui for
+           Russian models.
 
 
 384.13_1 (12-Aug-2019)

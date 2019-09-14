@@ -48,6 +48,7 @@
 #define CTF_ACTION_PPTP_DEL	(1 << 12)
 #define CTF_ACTION_L2TP_ADD	(1 << 13)
 #define CTF_ACTION_L2TP_DEL	(1 << 14)
+#define CTF_ACTION_ROAM		(1 << 15)
 #endif
 
 #define CTF_SUSPEND_TCP		(1 << 0)

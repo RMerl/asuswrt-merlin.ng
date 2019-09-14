@@ -2349,7 +2349,10 @@ typedef struct dot11_rrm_cap_ie dot11_rrm_cap_ie_t;
 #define DOT11_RRM_CAP_BSSAAD		31
 #define DOT11_RRM_CAP_BSSAAC		32
 #define DOT11_RRM_CAP_AI		33
-
+#define DOT11_RRM_CAP_FTM_RANGE		34
+#define DOT11_RRM_CAP_CIVIC_LOC		35
+#define DOT11_RRM_CAP_IDENT_LOC		36
+#define DOT11_RRM_CAP_LAST		36
 /* Operating Class (formerly "Regulatory Class") definitions */
 #define DOT11_OP_CLASS_NONE			255
 

@@ -352,7 +352,8 @@ ip_conntrack_ipct_add(struct sk_buff *skb, u_int32_t hooknum,
 	ipc_entry.tuple.dp = tcph->dest;
 
 	ipc_entry.next = NULL;
-/* CS5006664 */
+
+// CS5006664
 //#if defined(CTF_PPPOE) || defined(CTF_PPTP) || defined(CTF_L2TP)
 //	if ((skb_dst(skb)->dev->flags & IFF_POINTOPOINT) && (skb->dev->flags & IFF_POINTOPOINT))
 //		return;

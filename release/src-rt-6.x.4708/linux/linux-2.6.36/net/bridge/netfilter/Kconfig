@@ -177,6 +177,16 @@ config BRIDGE_EBT_SNAT
 	  source address of frames.
 
 	  To compile it as a module, choose M here.  If unsure, say N.
+
+config BRIDGE_EBT_SKIPCTF
+	tristate "ebt: skipctf target support"
+	depends on BRIDGE_NF_EBTABLES
+	help
+	  This option adds the skiplog target, which can prevent packet from
+	  acceleration.
+
+	  To compile it as a module, choose M here.  If unsure, say N.
+
 #
 # watchers
 #

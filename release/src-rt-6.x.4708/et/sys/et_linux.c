@@ -3015,12 +3015,22 @@ et_ctf_forward(et_info_t *et, struct sk_buff *skb)
 {
 #ifdef HNDCTF
 	int ret;
+	ctf_brc_t *brcp;
+	struct ether_header *eh;
 #ifdef CONFIG_IP_NF_DNSMQ
 	bool dnsmq_hit = FALSE;
 
 	if (dnsmq_hit_hook && dnsmq_hit_hook(skb))
 		dnsmq_hit = TRUE;
 #endif
+
+	eh = (struct ether_header *)skb->data;
+	if ((brcp = ctf_brc_lkup(et->cih, eh->ether_shost))) {
+		if (brcp->action & CTF_ACTION_SUSPEND)
+			PKTSETSKIPCT(et->osh, skb);
+		ctf_brc_release(et->cih, brcp);
+	}
+
 	/* try cut thru first */
 	if (CTF_ENAB(et->cih) &&
 #ifdef CONFIG_IP_NF_DNSMQ

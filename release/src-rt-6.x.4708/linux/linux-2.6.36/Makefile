@@ -564,6 +564,10 @@ KBUILD_CFLAGS += -DCTF_IPV6
 endif
 endif
 
+ifeq ($(BCM_MFG),y)
+KBUILD_CFLAGS += -DWLTEST
+endif
+
 ifneq ($(CONFIG_BCM_FA),)
 KBUILD_CFLAGS += -DBCMFA
 endif

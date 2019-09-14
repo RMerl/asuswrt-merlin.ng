@@ -109,6 +109,10 @@ br_brc_add(unsigned char *ea, struct net_device *rxdev, struct sk_buff *skb)
 	printk("%s: Adding brc entry\n", __FUNCTION__);
 #endif
 
+	if (PKTSKIPCT(NULL, skb)) {
+		brc_entry.action |= CTF_ACTION_SUSPEND;
+	}
+
 	/* Add the bridge cache entry */
 	if ((brcp = ctf_brc_lkup(kcih, ea)) == NULL)
 		ctf_brc_add(kcih, &brc_entry);
@@ -266,7 +270,7 @@ void br_fdb_cleanup(unsigned long _data)
 						continue;
 					} else if (brcp->hitting > 0) {
 						/* When bridge deletes a CTF hitting cache entry,
-						/* we use DHCP "probes" (ARP Request) to trigger
+						 * we use DHCP "probes" (ARP Request) to trigger
 						 * the CTF fast path restoration.
 						 */
 						brcp->hitting = 0;

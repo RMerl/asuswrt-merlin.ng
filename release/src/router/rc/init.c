@@ -11302,7 +11302,7 @@ dbg("boot/continue fail= %d/%d\n", nvram_get_int("Ate_boot_fail"),nvram_get_int(
 			start_dsl();
 #endif
 			start_lan();
-#ifdef CONFIG_BCMWL5
+#if defined(CONFIG_BCMWL5) && defined(RTCONFIG_DHDAP)
 			if (!restore_defaults_g) {
 				start_wl();
 				lanaccess_wl();
@@ -11343,7 +11343,7 @@ dbg("boot/continue fail= %d/%d\n", nvram_get_int("Ate_boot_fail"),nvram_get_int(
 			else
 #endif
 			{
-#ifndef CONFIG_BCMWL5
+#ifndef RTCONFIG_DHDAP
 				start_wl();
 				lanaccess_wl();
 #endif

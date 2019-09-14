@@ -5108,7 +5108,7 @@ void restart_wireless(void)
 #endif
 
 	start_lan_wl();
-#ifdef CONFIG_BCMWL5
+#if defined(CONFIG_BCMWL5) && defined(RTCONFIG_DHDAP)
 	restart_wl();
 	lanaccess_wl();
 #endif
@@ -5165,7 +5165,7 @@ void restart_wireless(void)
 	}
 #endif
 
-#ifndef CONFIG_BCMWL5
+#ifndef RTCONFIG_DHDAP
 	restart_wl();
 	lanaccess_wl();
 #endif

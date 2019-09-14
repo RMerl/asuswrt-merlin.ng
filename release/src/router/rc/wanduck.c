@@ -201,7 +201,7 @@ void set_link_internet(int wan_unit, int link_internet){
 
 	nvram_set_int("link_internet", link_internet);
 
-#if defined(RTCONFIG_HND_ROUTER) || defined(RTCONFIG_LANWAN_LED) || defined(RTCONFIG_WANRED_LED) || defined(RTCONFIG_FAILOVER_LED)
+#if defined(RTCONFIG_HND_ROUTER_AX) || defined(RTCONFIG_LANWAN_LED) || defined(RTCONFIG_WANRED_LED) || defined(RTCONFIG_FAILOVER_LED)
 	update_wan_leds(wan_unit, link_wan[wan_unit]);
 #endif
 }
@@ -279,7 +279,7 @@ void enable_wan_led()
 {
 	int usb_wan = get_dualwan_by_unit(wan_primary_ifunit()) == WANS_DUALWAN_IF_USB ? 1:0;
 
-#ifdef RTCONFIG_HND_ROUTER
+#ifdef RTCONFIG_HND_ROUTER_AX
 	return;
 #endif
 
@@ -330,18 +330,18 @@ void enable_wan_led()
 
 void disable_wan_led()
 {
-#ifdef RTCONFIG_HND_ROUTER
+#ifdef RTCONFIG_HND_ROUTER_AX
 	return;
-#endif
-
-	led_control(LED_WAN, LED_ON);
-
+#elif defined(HND_ROUTER)
+	led_control(LED_WAN_NORMAL, LED_OFF);
+#else
 	eval("et", "-i", "eth0", "robowr", "0", "0x18", "0x01fe");
 	eval("et", "-i", "eth0", "robowr", "0", "0x1a", "0x01fe");
+#endif
 }
 
 static void wan_led_control(int sig) {
-#ifdef RTCONFIG_HND_ROUTER
+#ifdef RTCONFIG_HND_ROUTER_AX
 	int unit;
 
 	for(unit = WAN_UNIT_FIRST; unit < WAN_UNIT_MAX; ++unit){
@@ -357,13 +357,13 @@ static void wan_led_control(int sig) {
 
 		update_wan_leds(unit, !rule_setup);
 	}
-#elif defined(RTAC68U) ||  defined(RTAC87U) || defined(RTAC3200) || defined(RTCONFIG_BCM_7114) || defined(DSL_AC68U)
+#elif defined(RTAC68U) ||  defined(RTAC87U) || defined(RTAC3200) || defined(RTCONFIG_BCM_7114) || defined(DSL_AC68U) || defined(HND_ROUTER)
 	if(nvram_match("AllLED", "1")
 #ifdef RTAC68U
 		&& is_ac66u_v2_series()
 #endif
 	) {
-#if defined(RTAC68U) ||  defined(RTAC87U) || defined(RTAC3200) || defined(RTCONFIG_BCM_7114)
+#if defined(RTAC68U) ||  defined(RTAC87U) || defined(RTAC3200) || defined(RTCONFIG_BCM_7114) || defined(HND_ROUTER)
 		if (rule_setup)
 			disable_wan_led();
 		else
@@ -376,7 +376,7 @@ static void wan_led_control(int sig) {
 		}
 #endif
 	}
-#endif // RTCONFIG_HND_ROUTER
+#endif // RTCONFIG_HND_ROUTER_AX
 
 #if defined(RTCONFIG_QCA) && (defined(RTCONFIG_LED_BTN) || defined(RTCONFIG_TURBO_BTN))
 	if (!inhibit_led_on()) {
@@ -2878,7 +2878,7 @@ int wanduck_main(int argc, char *argv[]){
 	char cmd[32];
 #endif
 #ifdef RTCONFIG_DUALWAN
-#if defined(RTAC68U) ||  defined(RTAC87U) || defined(RTAC3200) || defined(RTCONFIG_BCM_7114)
+#if defined(RTAC68U) ||  defined(RTAC87U) || defined(RTAC3200) || defined(RTCONFIG_BCM_7114) || defined(HND_ROUTER) && !defined(RTCONFIG_HND_ROUTER_AX)
 	int wanred_led_status = 0;	/* 1 is no internet, 2 is internet ok */
 	int u, link_status;
 #endif
@@ -3256,19 +3256,21 @@ _dprintf("wanduck(%d)(first detect start): state %d, state_old %d, changed %d, w
 			led_control(LED_WAN, LED_OFF);
 #elif defined(DSL_N55U) || defined(DSL_N55U_B)
 		led_control(LED_WAN, LED_ON);
-#elif defined(RTAC68U) || defined(RTAC87U) || defined(RTAC3200) || defined(RTCONFIG_BCM_7114)
+#elif defined(RTAC68U) || defined(RTAC87U) || defined(RTAC3200) || defined(RTCONFIG_BCM_7114) || (defined(HND_ROUTER) && !defined(RTCONFIG_HND_ROUTER_AX))
 		if(nvram_match("AllLED", "1")
 #ifdef RTAC68U
 				&& is_ac66u_v2_series()
 #endif
 				)
+		{
 			enable_wan_led();
+		}
 #endif
 		_dprintf("\n#CONNED : first detect\n");
 		rule_setup = 0;
 	}
 
-#if defined(RTCONFIG_HND_ROUTER) || defined(RTCONFIG_LANWAN_LED) || defined(RTCONFIG_WANRED_LED) || defined(RTCONFIG_FAILOVER_LED)
+#if defined(RTCONFIG_HND_ROUTER_AX) || defined(RTCONFIG_LANWAN_LED) || defined(RTCONFIG_WANRED_LED) || defined(RTCONFIG_FAILOVER_LED)
 	for(wan_unit = WAN_UNIT_FIRST; wan_unit < WAN_UNIT_MAX; ++wan_unit){
 		if(get_dualwan_by_unit(wan_unit) == WANS_DUALWAN_IF_NONE)
 			continue;
@@ -3381,7 +3383,7 @@ _dprintf("wanduck(%d)(PHY state): PHY_RECONN=%d...\n", wan_unit, PHY_RECONN);
 _dprintf("wanduck(%d)(PHY state): %d...\n", wan_unit, conn_state[wan_unit]);
 }
 
-#if defined(RTCONFIG_HND_ROUTER) || defined(RTCONFIG_LANWAN_LED) || defined(RTCONFIG_WANRED_LED) || defined(RTCONFIG_FAILOVER_LED)
+#if defined(RTCONFIG_HND_ROUTER_AX) || defined(RTCONFIG_LANWAN_LED) || defined(RTCONFIG_WANRED_LED) || defined(RTCONFIG_FAILOVER_LED)
 					if(link_wan[wan_unit] != link_wan_old)
 						update_wan_leds(wan_unit, link_wan[wan_unit]);
 #endif
@@ -4339,9 +4341,9 @@ _dprintf("nat_rule: start_nat_rules 6.\n");
 				if(conn_changed_state[current_wan_unit] == C2D){
 #if defined(RTCONFIG_WPS_ALLLED_BTN) || defined(RTCONFIG_DSL)
 					led_control(LED_WAN, LED_OFF);
-#elif defined(RTCONFIG_HND_ROUTER) || defined(RTCONFIG_LANWAN_LED) || defined(RTCONFIG_WANRED_LED) || defined(RTCONFIG_FAILOVER_LED)
+#elif defined(RTCONFIG_HND_ROUTER_AX) || defined(RTCONFIG_LANWAN_LED) || defined(RTCONFIG_WANRED_LED) || defined(RTCONFIG_FAILOVER_LED)
 					update_wan_leds(current_wan_unit, link_wan[current_wan_unit]);
-#elif defined(RTAC68U) || defined(RTAC87U) || defined(RTAC3200) || defined(RTCONFIG_BCM_7114)
+#elif defined(RTAC68U) || defined(RTAC87U) || defined(RTAC3200) || defined(RTCONFIG_BCM_7114) || defined(HND_ROUTER)
 					if(
 #ifdef RTAC68U
 						is_ac66u_v2_series()
@@ -4424,9 +4426,9 @@ _dprintf("nat_rule: start_nat_rules 6.\n");
 					led_control(LED_WAN, LED_OFF);
 #elif defined(DSL_N55U) || defined(DSL_N55U_B)
 				led_control(LED_WAN, LED_ON);
-#elif defined(RTCONFIG_HND_ROUTER) || defined(RTCONFIG_LANWAN_LED) || defined(RTCONFIG_WANRED_LED) || defined(RTCONFIG_FAILOVER_LED)
+#elif defined(RTCONFIG_HND_ROUTER_AX) || defined(RTCONFIG_LANWAN_LED) || defined(RTCONFIG_WANRED_LED) || defined(RTCONFIG_FAILOVER_LED)
 				update_wan_leds(current_wan_unit, link_wan[current_wan_unit]);
-#elif defined(RTAC68U) || defined(RTAC87U) || defined(RTAC3200) || defined(RTCONFIG_BCM_7114)
+#elif defined(RTAC68U) || defined(RTAC87U) || defined(RTAC3200) || defined(RTCONFIG_BCM_7114) || defined(HND_ROUTER)
 				if(nvram_match("AllLED", "1")
 #ifdef RTAC68U
 						&& is_ac66u_v2_series()
@@ -4501,7 +4503,7 @@ _dprintf("nat_rule: stop_nat_rules 7.\n");
 				nat_state = stop_nat_rules();
 			}
 
-#if defined(RTCONFIG_HND_ROUTER) || defined(RTCONFIG_LANWAN_LED) || defined(RTCONFIG_WANRED_LED) || defined(RTCONFIG_FAILOVER_LED)
+#if defined(RTCONFIG_HND_ROUTER_AX) || defined(RTCONFIG_LANWAN_LED) || defined(RTCONFIG_WANRED_LED) || defined(RTCONFIG_FAILOVER_LED)
 			update_wan_leds(current_wan_unit, link_wan[current_wan_unit]);
 #endif
 		}
@@ -4529,7 +4531,7 @@ _dprintf("nat_rule: stop_nat_rules 7.\n");
 
 			conn_changed_state[current_wan_unit] = conn_state[current_wan_unit];
 
-#if defined(RTCONFIG_HND_ROUTER) || defined(RTCONFIG_LANWAN_LED) || defined(RTCONFIG_WANRED_LED) || defined(RTCONFIG_FAILOVER_LED)
+#if defined(RTCONFIG_HND_ROUTER_AX) || defined(RTCONFIG_LANWAN_LED) || defined(RTCONFIG_WANRED_LED) || defined(RTCONFIG_FAILOVER_LED)
 			update_wan_leds(current_wan_unit, link_wan[current_wan_unit]);
 #endif
 		}
@@ -4553,7 +4555,7 @@ _dprintf("nat_rule: stop_nat_rules 7.\n");
 			}
 		}
 
-#if defined(RTAC68U) || defined(RTAC87U) || defined(RTAC3200) || defined(RTCONFIG_BCM_7114)
+#if defined(RTAC68U) || defined(RTAC87U) || defined(RTAC3200) || defined(RTCONFIG_BCM_7114) || (defined(HND_ROUTER) && !defined(RTCONFIG_HND_ROUTER_AX))
 		if (strcmp(dualwan_wans, "wan none")) {
 			if(nvram_match("AllLED", "1")
 #ifdef RTAC68U

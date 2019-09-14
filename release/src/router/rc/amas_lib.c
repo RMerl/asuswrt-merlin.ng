@@ -1250,7 +1250,7 @@ void start_amas_lib()
 		return;
 #endif
 
-	if (repeater_mode() || mediabridge_mode())
+	if (repeater_mode() || mediabridge_mode() || access_point_mode() || nvram_get_int("re_mode") == 1)
 		return;
 
 #if defined(RTCONFIG_BCMWL6) && defined(RTCONFIG_PROXYSTA)

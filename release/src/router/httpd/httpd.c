@@ -278,6 +278,8 @@ time_t request_timestamp = 0;
 time_t turn_off_auth_timestamp = 0;
 int temp_turn_off_auth = 0;	// for QISxxx.htm pages
 
+int amas_support = 0;
+
 /* Const vars */
 const int int_1 = 1;
 
@@ -2063,6 +2065,9 @@ int main(int argc, char **argv)
 
 	/* handler global variable */
 	get_index_page(indexpage, sizeof(indexpage));
+#if defined(RTCONFIG_SW_HW_AUTH) && defined(RTCONFIG_AMAS)
+	amas_support = getAmasSupportMode();
+#endif
 
 	/* Loop forever handling requests */
 	for (;;) {

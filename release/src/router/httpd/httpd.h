@@ -346,6 +346,7 @@ extern void set_cgi(char *name, char *value);
 
 /* httpd.c */
 extern int json_support;
+extern int amas_support;
 extern void start_ssl(void);
 extern char *gethost(void);
 extern void http_logout(unsigned int ip, char *cookies, int fromapp_flag);

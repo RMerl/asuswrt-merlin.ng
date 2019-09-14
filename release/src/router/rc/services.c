@@ -4384,7 +4384,7 @@ start_acsd()
 	stop_acsd();
 
 	if (!restore_defaults_g && strlen(nvram_safe_get("acs_ifnames")))
-#if RTCONFIG_BCM_7114
+#ifdef RTCONFIG_BCM_7114
 		ret = _eval(acsd_argv, NULL, 0, &pid);
 #else
 		ret = eval("/usr/sbin/acsd");
@@ -10937,7 +10937,7 @@ script_allnet:
 			start_dsl();
 #endif
 			start_lan();
-#ifdef CONFIG_BCMWL5
+#if defined(CONFIG_BCMWL5) && defined(RTCONFIG_DHDAP)
 			start_wl();
 			lanaccess_wl();
 #endif
@@ -11023,7 +11023,7 @@ script_allnet:
 #if defined(RTCONFIG_USB) && defined(RTCONFIG_USB_PRINTER)
 			start_usblpsrv();
 #endif
-#ifndef CONFIG_BCMWL5
+#ifndef RTCONFIG_DHDAP
 			start_wl();
 			lanaccess_wl();
 #endif
@@ -11134,7 +11134,7 @@ script_allnet:
 		if(action & RC_SERVICE_START) {
 			//start_vlan();
 			start_lan();
-#ifdef CONFIG_BCMWL5
+#if defined(CONFIG_BCMWL5) && defined(RTCONFIG_DHDAP)
 			start_wl();
 			lanaccess_wl();
 #endif
@@ -11225,7 +11225,7 @@ script_allnet:
 			setup_passwd();
 			start_uam_srv();
 #endif
-#ifndef CONFIG_BCMWL5
+#ifndef RTCONFIG_DHDAP
 			start_wl();
 			lanaccess_wl();
 #endif
@@ -11377,7 +11377,7 @@ script_allnet:
 			config_lacp();
 #endif
 			start_lan();
-#ifdef CONFIG_BCMWL5
+#if defined(CONFIG_BCMWL5) && defined(RTCONFIG_DHDAP)
 			start_wl();
 			lanaccess_wl();
 #endif
@@ -11474,7 +11474,7 @@ script_allnet:
 			start_samba();
 			start_ftpd();
 #endif
-#ifndef CONFIG_BCMWL5
+#ifndef RTCONFIG_DHDAP
 			start_wl();
 			lanaccess_wl();
 #endif
@@ -11963,8 +11963,10 @@ check_ddr_done:
 	else if (strcmp(script, "nas") == 0) {
 		if(action & RC_SERVICE_STOP) stop_nas();
 		if(action & RC_SERVICE_START) {
+#ifdef RTCONFIG_DHDAP
 			start_wl();
 			lanaccess_wl();
+#endif
 			start_eapd();
 			start_nas();
 			start_wps();
@@ -11998,6 +12000,10 @@ check_ddr_done:
 #ifdef BCM_ASPMD
 			start_aspmd();
 #endif
+#endif
+#ifndef RTCONFIG_DHDAP
+			start_wl();
+			lanaccess_wl();
 #endif
 #ifdef RTCONFIG_BCMWL6
 #ifdef RTCONFIG_HSPOT
